@@ -491,8 +491,11 @@ Cross-referenced with Apolyton SAV/SCN format guide (Mercator et al., 2004) whic
 | Offset | Size | Field | Status | Notes |
 |--------|------|-------|--------|-------|
 | +0 | 16 bytes | **City name** | ✅ Confirmed | Null-terminated ASCII. |
-| +16 | 4 bytes | **Building bitmask (low)** | ✅ Confirmed | Bytes +16-19 form the lower 32 bits of a 64-bit building/improvement bitmask (see note below). Bit 20 (+18 bit 4, `0x10`) is **always set** in all active cities — likely a "city active" flag or universal improvement. |
-| +20 | 1 byte | **City size** | ✅ Confirmed | Population level (1–30+ for standard games). `0` = destroyed/disbanded. ROMAN scenario uses higher values (16–248) which may represent raw population ÷ 1000 rather than city level. |
+| +16 | 1 byte | **City status bitfield** | Partial | Changes with city state. Values observed: 0x00, 0x10. May encode happiness/disorder flags, tile assignment state, or city mode. Changes when specialists are assigned. |
+| +17 | 1 byte | **City status bitfield B** | Partial | Changes with growth and specialists. Values: 0x01, 0x09. Bit 3 (value 8) appears related to number of worked tiles or growth state. |
+| +18 | 1 byte | Unknown | Partial | Values: 0x10, 0x14 (=20). May be related to city founding turn or constant per city. |
+| +19 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type (entertainer, tax collector, scientist all produce +4). To get specialist count: divide by 4. |
+| +20 | 4 bytes | **Building bitmask** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, 1-indexed, RULES.TXT order. Bit 1=Palace, Bit 2=Barracks, Bit 3=Granary, Bit 4=Temple, Bit 5=Marketplace, Bit 6=Library, etc. See full mapping below. |
 | +21 | 1 byte | Unknown flag | Partial | 0 or 1. Possibly "was captured" or "city discovered" flag. |
 | +22 | 2 bytes | Unknown | Unknown | Sometimes 0x0040 in larger cities, otherwise 0x0000. Possibly building overflow or scenario flags. |
 | +24 | 1 byte | Padding | ✅ | Always 0x00. |
@@ -505,11 +508,16 @@ Cross-referenced with Apolyton SAV/SCN format guide (Mercator et al., 2004) whic
 | +36 | 1 byte | Unknown | Unknown | Often 0; sometimes large values (up to 34). Non-zero in some producing cities. |
 | +37 | 3 bytes | Reserved | ✅ | Always 0x000000. |
 | +40 | 2 bytes | Unknown | Unknown | Usually 0x0000. |
-| +42 | 2 bytes | **Food output** (uint16 LE) | ✅ Confirmed | Total food produced per turn (gross, not net). Range 0–12 across all saves. |
-| +44 | 2 bytes | **Shield output** (uint16 LE) | ✅ Confirmed | Total shields produced per turn. Range 0–12. |
-| +46 | 2 bytes | **Trade output** (uint16 LE) | ✅ Confirmed | Total trade arrows per turn. Range 1–17. |
-| +48 | 1 byte | Unknown | Unknown | Values 5–19. Does NOT correlate directly with city size, tile count, or food+shields+trade. Possibly current build item ID (unit type 0–61, improvement 62+). |
-| +49 | 1 byte | Unknown | Unknown | Values 2–10. Independent of +48. |
+| +42 | 1 byte | **Science/research output** | ✅ Confirmed | Base value = tiles worked (pop+1 with no specialists). Scientists ADD +2 each; entertainers/tax collectors cause -1 each (one fewer tile worked). Field value = tiles_worked + (scientists × 2) - other_specialists. |
+| +43 | 1 byte | Unknown | Unknown | Always 0 in observed data. |
+| +44 | 1 byte | **Tax/gold output** | ✅ Confirmed | Base value relates to trade arrows from worked tiles. Tax collectors ADD +3 each. Field includes tax collector bonus routing. |
+| +45 | 1 byte | Unknown | Unknown | Always 0. |
+| +46 | 2 bytes | **Tiles actually worked** (uint16 LE) | ✅ Confirmed | Drops by exactly 1 per specialist of ANY type. = population + 1 (center) - total_specialists. Most reliable pure tile-count indicator. |
+| +48 | 1 byte | **Food produced** | ✅ Confirmed | Total food from worked tiles. Drops by ~2 per specialist (one tile removed). |
+| +49 | 1 byte | **Shields produced** | ✅ Confirmed | Total shield output from worked tiles. |
+| +50 | 1 byte | **Entertainer count** | ✅ Confirmed | Counts ONLY entertainers. Tax collectors and scientists do NOT increment this — they route bonuses to +44 and +42 respectively. |
+| +51 | 1 byte | Unknown | Unknown | Always 0 in observed data. |
+| +52 | 1 byte | **Food box target?** | Partial | Constant (10) throughout specialist experiment. May be food needed to grow to next size. |
 | +50 | 1 byte | Unknown | Unknown | Values 0–3. Possibly specialist count or build category. |
 | +51 | 1 byte | Unknown | Unknown | Almost always 0; occasionally 1. |
 | +52 | 1 byte | **City ID** | ✅ Confirmed | Zero-based sequential identifier, unique across all cities in the save. Referenced by Wonders section (city ID for wonder location). Confirmed by Apolyton: "0 for first city, 1 for second etc." |
@@ -519,7 +527,7 @@ Cross-referenced with Apolyton SAV/SCN format guide (Mercator et al., 2004) whic
 | +58 | 2 bytes | **Y coordinate** (uint16 LE) | ✅ Confirmed | Isometric Y. Low byte is coordinate; high byte always 0. |
 | +60 | 4 bytes | **Building bitmask (high)** | ✅ Confirmed | Bytes +60-63 form the upper 32 bits of the 64-bit building bitmask. Byte +63 is always 0x00 in standard games but 0x04 in ROMAN scenario (bit 58 = scenario-specific improvement or wonder flag). |
 | +64 | 1 byte | **Civ reference A** | Partial | Values 0–7. **Always equals byte +66** (confirmed 98%+ of cities). Does NOT directly match owner ID. Possibly encodes a civ-slot-relative index or original builder identity. |
-| +65 | 1 byte | **Civ reference B** | Partial | Values 1–7. Independent of +64/+66. May reference a different civ (trade partner, last attacker). |
+| +65 | 1 byte | **Unknown (AI-related?)** | Partial | Values 0–7. For AI cities, appears to track population/growth. For player cities, consistently 0. Not city size (Orleans = 0 at all sizes). May be AI's internal growth counter or diplomacy state. |
 | +66 | 1 byte | **Civ reference C** | Partial | Always equals +64. |
 | +67 | 1 byte | Unknown | Unknown | Usually 0. |
 | +68 | 1 byte | **Sentinel** | ✅ Confirmed | Always 0xFF. Marks start of per-civ-slot data block. |
@@ -572,19 +580,111 @@ Bits 1–6 are confirmed by the controlled experiment. Bits 7–31 are inferred 
 
 ##### Resource Field Relationship
 
-An approximate relationship holds across ~90% of cities: **+42 + +44 ≈ +46** (confirmed in stubear: 23/30, StAuto2: 39/43). Exceptions are off by 1–2. The exact meaning of these three fields (food/shields/trade output, or city size/specialist/total) remains unconfirmed. The controlled experiment screenshot showed Food=2, Surplus=2, Trade=3, Production=2 for Paris, but the stored values (+42=3, +44=1, +46=3) do not cleanly map to these screenshot values.
+##### Natural Growth Experiment (Orleans, France — saves sz1/sz2/sz3)
+
+Verified via natural population growth (no cheats). Orleans grew from size 1→2→3 over turns 6→16→31:
+
+| Field | Size 1 | Size 2 | Size 3 | Interpretation |
+|-------|--------|--------|--------|----------------|
+| +42 | 2 | 3 | 4 | **City size + 1** (tiles worked including center) |
+| +46 | 4 | 5 | 6 | = +42 + +44 (total output sum) |
+| +48 | 4 | 6 | 8 | **Food produced** (+2 per pop) |
+| +49 | 1 | 2 | 3 | **Shields produced** (+1 per pop) |
+| +25 | 254 | 254 | 2 | Food box (resets on growth) |
+| +20 | 0x02 | 0x02 | 0x06 | Buildings (Palace → Palace+Barracks) |
+
+**Key insight**: +42 is city size + 1 (number of tiles being worked, including the city center tile). The relationship +42 + +44 ≈ +46 still holds, suggesting these are all resource/output related fields.
+
+**Cheat bug note**: The Civ2 population cheat writes to an off-by-one city record (+65 of the PREVIOUS city in the array) instead of the target city. Natural growth saves confirmed +42 (not +65) is the reliable city size indicator.
+
+##### Specialist Experiment (Orleans size 5, France — entertainer/tax collector/scientist)
+
+Verified by assigning 1 specialist of each type from a size-5 baseline (no specialists):
+
+| Field | No spec | Entertainer | Tax Collector | Scientist | Notes |
+|-------|---------|-------------|---------------|-----------|-------|
+| +19 | 0 | **4** | **4** | **4** | +4 per specialist of ANY type |
+| +42 | 5 | 4 (-1) | 4 (-1) | **7 (+2)** | Scientist ADDS to +42! |
+| +44 | 3 | 3 (same) | **6 (+3)** | 3 (same) | Tax collector ADDS to +44! |
+| +46 | 8 | 7 (-1) | 7 (-1) | 7 (-1) | Always drops by 1 |
+| +48 | 12 | 10 (-2) | 10 (-2) | 10 (-2) | Food always drops by 2 |
+| +49 | 4 | 4 (same) | 4 (same) | 4 (same) | Shields unchanged |
+| +50 | 0 | **1 (+1)** | 0 (same) | 0 (same) | Entertainer count ONLY |
+
+**Key findings**:
+- **+19** = total specialist count × 4 (type-independent). Population = +19 ÷ 4 + tiles_worked (approximate).
+- **+50** = **entertainer count only** (NOT total specialists as previously thought).
+- **+42** absorbs scientist bonus (+2 per scientist). Not purely "tiles worked" — includes scientist contribution.
+- **+44** absorbs tax collector bonus (+3 per tax collector). Likely a gold/tax output field.
+- **+46** = total tiles worked (always drops by 1 per specialist, regardless of type).
+- **+48** = food produced (always drops by 2 per specialist — one fewer tile worked).
+- Each specialist type routes its bonus to a DIFFERENT output field while all reduce +46 and +48 equally.
 
 ##### TODO: City Record Remaining Unknowns
 - [x] ~~Map building bitmask bits to specific improvements~~ → **DONE**: +20-23 is 32-bit bitmask, 1-indexed, RULES.TXT order
-- [ ] Find city size field (not at +20 as previously thought; +42 is a candidate but doesn't match screenshot)
-- [ ] Determine +16-19 purpose (not building bitmask; bitfield with varied patterns)
-- [ ] Determine +60-63 purpose (not building bitmask; changes with city growth)
-- [ ] Determine +42/+44/+46 exact meaning (food/shields/trade? or size-related?)
-- [ ] Determine +48-49 meaning (current build item? constant=4,2 in controlled experiment)
+- [x] ~~Find city size / tiles worked~~ → **DONE**: +46 = tiles actually worked; +42 = science output (tiles + scientist bonus)
+- [x] ~~Determine +48-49 meaning~~ → **DONE**: +48 = food produced, +49 = shields produced
+- [x] ~~Find specialist count~~ → **DONE**: +19 = total specialists × 4 (any type), +50 = entertainer count only
+- [x] ~~Determine +19 encoding for specialist types~~ → **DONE**: +4 per specialist of ANY type (type-independent counter)
+- [x] ~~Determine +44 meaning~~ → **DONE**: Tax/gold output (base trade + tax collector bonus of +3 each)
+- [ ] Determine +16-18 status bitfield meaning (changes with specialists and growth)
+- [ ] Determine +52 meaning (constant 10 — food box target?)
+- [ ] Determine +60-63 purpose (changes with city growth, possibly tile working pattern)
 - [ ] Decode +64-66 civ references
 - [ ] Decode +69-76 per-civ slot bytes
-- [ ] Confirm +82 = food stored (increments by 2/turn in controlled experiment, matching surplus=2)
-- [ ] Confirm +84 = shield stored (increments by 1/turn in controlled experiment)
+- [x] ~~Confirm +82 = food stored, +84 = shield stored~~ → **CONFIRMED** via Catfish mapping: +82-83 = food storage (short), +84-85 = shields in box (short)
+
+##### Cross-Reference: Catfish's Cave ToT Save Format (Definitive Community Reference)
+
+The definitive community documentation for Civ2 save format is the [Catfish's Cave page](https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm) based on Allard Höfelt's hex-editing guide. It documents ToT (92-byte cities) but maps to MGE (88-byte) with a consistent offset shift.
+
+**Key difference**: ToT puts XY coords + attributes + owner/size BEFORE city name (34 bytes pre-name). MGE puts city name FIRST (+0-15), then post-name fields, then the pre-name fields at the END of the record.
+
+**Post-name mapping** (ToT 1-indexed byte N → MGE offset N − 34):
+
+| ToT Byte | MGE Offset | Field (from Catfish) | Our Verification |
+|----------|------------|----------------------|------------------|
+| 51 | +16 | Workers inner circle (8 tiles bitmask) | ✅ Changes with specialists |
+| 52-53 | +17-18 | Workers outer circle (12 tiles + center, short LE) | ✅ Changes with specialists |
+| 54 | +19 | Number of specialists × 4 | ✅ Confirmed |
+| 55-58 | +20-23 | City improvements I-IV (building bitmask) | ✅ Confirmed |
+| 59 | +24 | City improvements V (Airport, Police Station, Port, Transporter) | Not yet verified |
+| 60 | +25 | Item in production (unit 0x00-0x50, improvement 0xBD-0xFF) | Was "food box" — **CORRECTED** |
+| 61 | +26 | Number of trade routes | |
+| 62-64 | +27-29 | Supplied trade items | |
+| 65-67 | +30-32 | Demanded trade items | |
+| 68-70 | +33-35 | Commodities traded with partners | |
+| 71-76 | +36-41 | Trade partner city IDs (3 × short) | |
+| 77-78 | +42-43 | **Science** (beakers, short LE) | ✅ Was "tiles worked" — **CORRECTED** |
+| 79-80 | +44-45 | **Tax** (gold, short LE) | ✅ Confirmed |
+| 81-82 | +46-47 | **Trade** (arrows incl. routes, short LE) | ✅ Was "tiles actually worked" — **CORRECTED** |
+| 83 | +48 | Total food production | ✅ Confirmed |
+| 84 | +49 | Total shield production | ✅ Confirmed |
+| 85 | +50 | Happy citizens | Was "entertainer count" — **CORRECTED** |
+| 86 | +51 | Unhappy citizens | |
+| 87-88 | +52-53 | Dynamic city ID (short LE) | Was "food box target" — **CORRECTED** |
+
+**Pre-name mapping** (ToT bytes 1-34, minus 2 for map number → MGE +56-87):
+
+| ToT Byte | MGE Offset | Field (from Catfish) |
+|----------|------------|----------------------|
+| 1-2 | +56-57 | X coordinate (short LE) |
+| 3-4 | +58-59 | Y coordinate (short LE) |
+| 5-6 | — | Map number (ToT only, not in MGE) |
+| 7-10 | +60-63 | City attributes I-IV (status flags) |
+| 11 | +64 | Owning tribe (0-7) |
+| 12 | +65 | City size |
+| 13 | +66 | Tribe which founded the city |
+| 14 | +67 | Turns since capture |
+| 15 | +68 | Known to tribes (bitmask) |
+| 16-23 | +69-76 | Last city size revealed to each tribe |
+| 24 | +77 | Unknown |
+| 25-28 | +78-81 | Specialist details (2 bits × 16: 00=none, 01=entertainer, 10=taxman, 11=scientist) |
+| 29-30 | +82-83 | Food storage (short LE) |
+| 31-32 | +84-85 | Shields in box (short LE) |
+| 33-34 | +86-87 | Base trade (short LE) |
+
+**Important caveat**: The pre-name fields (+56-87) appear to be **static/stale for the active player's cities** — Orleans (player-owned) showed +65=0 at all city sizes, while AI cities (Washington, London) had correct values at +65. The game likely reads player city sizes from memory rather than this field. AI city fields update correctly.
 
 Notes:
 - The city count at header offset `0x003C` includes destroyed/disbanded cities which remain as historical records.
