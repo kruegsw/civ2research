@@ -146,35 +146,44 @@ This section contains global game parameters. It extends from the end of the hea
 | 0x0016 | 2 bytes | Reserved | Always `0` | |
 | 0x0018 | 2 bytes | Unknown | `0` or `4` | |
 | 0x001A | 2 bytes | Reserved | Always `0` | |
-| 0x001C | 2 bytes | **Turn number** (int16 LE) | 60–135 | Current game turn |
-| 0x001E | 2 bytes | **Treasury** (int16 LE) | -2820 to 680 | Player's gold. Can be negative. |
+| 0x001C | 2 bytes | **Turns passed** (uint16 LE) | 60–135 | Höfelt byte 28-29. Current game turn count. |
+| 0x001E | 2 bytes | **Turns for year calculation** (uint16 LE) | | Höfelt byte 30-31. Used for game year display in pop-ups/status bar. |
 | 0x0020 | 2 bytes | Unknown constant | Always `0xFFFF` (-1) | Possibly sentinel value |
-| 0x0022 | 2 bytes | Unknown counter | 2–101, or `0xFFFF` | |
-| 0x0027 | 1 byte | **Player's civ slot** | 2, 3, 5, 7 | Index into the internal civ array. Repeated identically at 0x28 and 0x29. |
-| 0x002A | 1 byte | Unknown constant | Always `0xFF` (255) | |
-| 0x002C | 1 byte | **Difficulty level** | 1, 5 | 0=Chieftain, 1=Warlord, 2=Prince, 3=King, 4=Emperor, 5=Deity |
-| 0x003A | 2 bytes | **Total unit count** (uint16 LE) | 51–136 | Number of unit records in Section 5 |
-| 0x003C | 2 bytes | **Total city count** (uint16 LE) | 16–43 | Number of city records in Section 6. **Confirmed** by cross-reference with parsed city blocks in all 5 saves. |
-| 0x003E | 2 bytes | **Technology count** (uint16 LE) | Always `89` | Number of technologies defined in RULES.TXT. Constant across all saves using the same ruleset. |
+| 0x0022 | 2 bytes | **Selected unit ID** (uint16 LE) | 2–101, or `0xFFFF` | Höfelt byte 34-35. Unit ID selected at start of turn. Can find by right-clicking unit. |
+| 0x0027 | 1 byte | **Which human player** | | Höfelt byte 39. Changes which human player is used. |
+| 0x0028 | 1 byte | **Player's map** | | Höfelt byte 40. Which civ's map is displayed. |
+| 0x0029 | 1 byte | **Player's civ number** | 2, 3, 5, 7 | Höfelt byte 41. civ2mod.c: `PLAYERS_CIV_OFFSET 41`. |
+| 0x002A | 1 byte | **Map-related byte** | 0xFF | Höfelt byte 42. "Changes with map used. Sometimes FF." |
+| 0x002B | 1 byte | **Map revealed** | | Höfelt byte 43. Whether the full map is revealed (cheat mode). |
+| 0x002C | 1 byte | **Difficulty level** | 1, 5 | Höfelt byte 44. civ2mod.c: `DIFFICULTY_LEVEL_OFFSET 44`. 0=Chieftain through 5=Deity. |
+| 0x002D | 1 byte | **Barbarian activity** | | Höfelt byte 45. civ2mod.c: `BARB_LEVEL_OFFSET 45`. 0=villages only, 1=roving, 2=restless, 3=raging. |
+| 0x002E | 1 byte | **Civs alive bitmask** | | Höfelt byte 46. civ2mod.c: `CIVS_ACTIVE_OFFSET 46`. Read binary R→L: bit 0=barbs, bit 1=white, etc. |
+| 0x002F | 1 byte | **Human players bitmask** | | Höfelt byte 47. Bit per civ: which civs are human-controlled. Toggling enables hotseat mode in FW! |
+| 0x0032 | 1 byte | **Current pollution** | | Höfelt byte 50. 0x7F=max (causes warming). 0x80-0xFF=negative (resets to 0). |
+| 0x0033 | 1 byte | **Global warming count** | | Höfelt byte 51. Times warming occurred. 0x7F=max swamp. 0x80+=prevents all warming. |
+| 0x0038 | 1 byte | **Turns of peace** | | Höfelt byte 56. Only counts after turn 200. |
+| 0x003A | 2 bytes | **Total unit count** (uint16 LE) | 51–136 | Höfelt byte 58-59. civ2mod.c: `TOTAL_UNITS_OFFSET 58`. Includes empty slots from destroyed units. |
+| 0x003C | 2 bytes | **Total city count** (uint16 LE) | 16–43 | Höfelt byte 60-61. civ2mod.c: `TOTAL_CITIES_OFFSET 60`. Includes empty slots from destroyed cities. |
+| 0x003E | 2 bytes | **Technology count** (uint16 LE) | Always `89` | Number of technologies defined in RULES.TXT. Constant across saves using same ruleset. |
+| 0x0042 | 100 bytes | **First discoverer per advance** | | Höfelt bytes 66-165. One byte per advance: civ number (1=white, 2=green, etc.) of first discoverer. |
+| 0x00A6 | 100 bytes | **Tech discovery bitmask per advance** | | Höfelt bytes 166-265. One byte per advance: bit per civ that has discovered it. |
+| 0x010A | 56 bytes | **Wonder city IDs** (28 × uint16 LE) | | Höfelt bytes 266-321. Per wonder: 0xFFFF=not built, 0xFFEF=destroyed, else city sequence ID (0x0000=first city). |
 
-##### TODO: Game State Preamble Unknown Fields (0x40–0x0158)
-<!-- PRIORITY 3: ~280 bytes unmapped. Contains global game settings. -->
-- [ ] Decode 0x20-0x26: 7 unknown bytes between treasury and player slot
-- [ ] Decode 0x28-0x2B: player slot repeats? or separate fields
-- [ ] Decode 0x2D-0x39: 13 bytes before unit/city counts (barbarian activity? revolution counter? pollution?)
-- [ ] Decode 0x40-0x0158: ~280 bytes of global game state
-  - [ ] Tax/luxury/science percentage rates
-  - [ ] Global wonder completion state (which wonders built, by whom)
-  - [ ] Spaceship component state
-  - [ ] Game options (bloodlust, flat earth, etc.)
-  - [ ] Current research target and progress
-  - [ ] Revolution/anarchy countdown
-  - [ ] Global pollution level
-  - [ ] Active civ being processed (whose turn it is)
+##### TODO: Game State Preamble Remaining Unknowns
+<!-- Many fields now identified from Höfelt. Remaining unknowns: -->
+- [x] Decode 0x2D: barbarian activity (confirmed by Höfelt + civ2mod.c)
+- [x] Decode 0x2E-0x2F: civs alive + human player bitmasks (confirmed)
+- [x] Decode 0x0042-0x0149: tech/wonder data (confirmed by Höfelt)
+- [ ] Decode 0x0024-0x0026: 3 unknown bytes between selected unit and player fields
+- [ ] Decode 0x0030-0x0031: 2 bytes between human player bitmask and pollution
+- [ ] Decode 0x0034-0x0037: 4 bytes between global warming and peace turns
+- [ ] Decode 0x0039: 1 byte between peace turns and total units
+- [ ] Decode 0x0040-0x0041: 2 bytes between tech count and first-discoverer array
+- [ ] Decode 0x014A-0x0158: ~14 bytes between wonder data and per-civ name blocks
 
 #### Player's Civ Slot vs. LEADERS.TXT Index
 
-The value at offset 0x0027 is the player's **civ slot** — their position in the game's internal civilization array (0–7). This is **not** the same as the civilization's index in `LEADERS.TXT` (0–20). The civ slot is assigned at game start based on the number of players and their selection order.
+The value at offset 0x0029 is the player's **civ number** (Höfelt byte 41, civ2mod.c `PLAYERS_CIV_OFFSET`) — their position in the game's internal civilization array (0–7, where 0=barbarians). This is **not** the same as the civilization's index in `LEADERS.TXT` (0–20). Offset 0x0027 controls which human player is active, 0x0028 which civ's map is displayed, and 0x0029 which civ number is the player's.
 
 ### Section 3: Civilization Data (variable size per game configuration)
 
@@ -482,68 +491,61 @@ A fixed 32-byte record separates the last unit record from the first city record
 City records are **88 bytes each**, stored contiguously. The total count is given by the uint16 at header offset `0x003C`. The city block can be located by:
 
 1. **From the end**: `city_block_start = EOF - 1807 - (num_cities × 88)`
-2. **By searching**: Scan for known capital city names (`Washington`, `Rome`, `London`, `Delhi`, `Kyoto`, `Moscow`, `Beijing`, `Zimbabwe`, etc.) which appear at the start of each 88-byte record.
+2. **By searching**: Scan for known capital city names (`Washington`, `Rome`, `London`, etc.) which appear at **offset +32** within each 88-byte record (subtract 32 from the name's file position to get the record start).
 
 #### City Record Structure (88 bytes)
 
-Cross-referenced with Apolyton SAV/SCN format guide (Mercator et al., 2004) which confirms 88 bytes/city for MGE, and with FoxAhead's Civ2Types.pas from the Civ2-UI-Additions project.
+Cross-referenced and confirmed against four independent sources: (1) Allard Höfelt's hex-editing guide v1.8 (hexedit.rtf, FW-centric), (2) TE Kimball's civ2mod.c (MGE-specific C source), (3) Catfish's Cave / FoxAhead's Civ2Types.pas (ToT-based), and (4) direct hex verification of MGE save files.
+
+**CRITICAL LAYOUT CORRECTION**: Previous versions of this document incorrectly stated that the city name was at offset +0 (record start). In fact, the MGE city record layout matches FW exactly: XY coordinates and metadata come FIRST (+0 to +31), city name is in the MIDDLE (+32 to +47), and output/production fields follow (+48 to +87). This is confirmed by civ2mod.c (`CITY_ITEM_NAME_OFFSET 32`, `CITY_ITEM_OWNER_OFFSET 8`) and verified by reading actual save file bytes.
 
 | Offset | Size | Field | Status | Notes |
 |--------|------|-------|--------|-------|
-| +0 | 16 bytes | **City name** | ✅ Confirmed | Null-terminated ASCII. |
-| +16 | 1 byte | **City status bitfield** | Partial | Changes with city state. Values observed: 0x00, 0x10. May encode happiness/disorder flags, tile assignment state, or city mode. Changes when specialists are assigned. |
-| +17 | 1 byte | **City status bitfield B** | Partial | Changes with growth and specialists. Values: 0x01, 0x09. Bit 3 (value 8) appears related to number of worked tiles or growth state. |
-| +18 | 1 byte | Unknown | Partial | Values: 0x10, 0x14 (=20). May be related to city founding turn or constant per city. |
-| +19 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type (entertainer, tax collector, scientist all produce +4). To get specialist count: divide by 4. |
-| +20 | 4 bytes | **Building bitmask** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, 1-indexed, RULES.TXT order. Bit 1=Palace, Bit 2=Barracks, Bit 3=Granary, Bit 4=Temple, Bit 5=Marketplace, Bit 6=Library, etc. See full mapping below. |
-| +21 | 1 byte | Unknown flag | Partial | 0 or 1. Possibly "was captured" or "city discovered" flag. |
-| +22 | 2 bytes | Unknown | Unknown | Sometimes 0x0040 in larger cities, otherwise 0x0000. Possibly building overflow or scenario flags. |
-| +24 | 1 byte | Padding | ✅ | Always 0x00. |
-| +25 | 1 byte | **Food box progress** | Strong | Unsigned byte (0–217 observed). Represents food accumulated toward next population growth point. NOT a simple signed surplus — values >128 appear in large cities. The growth target varies by city size and Granary status. |
-| +26 | 1 byte | Unknown | Partial | Usually 0; occasionally 1. |
-| +27 | 5 bytes | **Terrain/resource data** | Partial | Five uint8 values (range 0–13, occasionally >128 as signed). Related to terrain in city radius. Byte +30 is constant (=7) within all cities of a single standard game but varies in scenarios, suggesting it may encode difficulty level or a game-wide terrain modifier. Other bytes vary per city and may represent tile types or resource counts. |
-| +32 | 1 byte | **Shield box progress** | Tentative | Small values (0–13 typical, occasionally >128 signed). Likely accumulated shields toward current production item. Resets on build completion. |
-| +33 | 1 byte | Unknown | Unknown | Often 0; sometimes small values (2–11). Only non-zero in ~40% of cities. |
-| +34 | 2 bytes | Unknown | Unknown | Usually 0x0000. |
-| +36 | 1 byte | Unknown | Unknown | Often 0; sometimes large values (up to 34). Non-zero in some producing cities. |
-| +37 | 3 bytes | Reserved | ✅ | Always 0x000000. |
-| +40 | 2 bytes | Unknown | Unknown | Usually 0x0000. |
-| +42 | 1 byte | **Science/research output** | ✅ Confirmed | Base value = tiles worked (pop+1 with no specialists). Scientists ADD +2 each; entertainers/tax collectors cause -1 each (one fewer tile worked). Field value = tiles_worked + (scientists × 2) - other_specialists. |
-| +43 | 1 byte | Unknown | Unknown | Always 0 in observed data. |
-| +44 | 1 byte | **Tax/gold output** | ✅ Confirmed | Base value relates to trade arrows from worked tiles. Tax collectors ADD +3 each. Field includes tax collector bonus routing. |
-| +45 | 1 byte | Unknown | Unknown | Always 0. |
-| +46 | 2 bytes | **Tiles actually worked** (uint16 LE) | ✅ Confirmed | Drops by exactly 1 per specialist of ANY type. = population + 1 (center) - total_specialists. Most reliable pure tile-count indicator. |
-| +48 | 1 byte | **Food produced** | ✅ Confirmed | Total food from worked tiles. Drops by ~2 per specialist (one tile removed). |
-| +49 | 1 byte | **Shields produced** | ✅ Confirmed | Total shield output from worked tiles. |
-| +50 | 1 byte | **Entertainer count** | ✅ Confirmed | Counts ONLY entertainers. Tax collectors and scientists do NOT increment this — they route bonuses to +44 and +42 respectively. |
-| +51 | 1 byte | Unknown | Unknown | Always 0 in observed data. |
-| +52 | 1 byte | **Food box target?** | Partial | Constant (10) throughout specialist experiment. May be food needed to grow to next size. |
-| +50 | 1 byte | Unknown | Unknown | Values 0–3. Possibly specialist count or build category. |
-| +51 | 1 byte | Unknown | Unknown | Almost always 0; occasionally 1. |
-| +52 | 1 byte | **City ID** | ✅ Confirmed | Zero-based sequential identifier, unique across all cities in the save. Referenced by Wonders section (city ID for wonder location). Confirmed by Apolyton: "0 for first city, 1 for second etc." |
-| +53 | 1 byte | Padding | ✅ | Always 0x00. |
-| +54 | 2 bytes | Reserved | ✅ | Always 0x0000. |
-| +56 | 2 bytes | **X coordinate** (uint16 LE) | ✅ Confirmed | Isometric X. Low byte is coordinate; high byte always 0. |
-| +58 | 2 bytes | **Y coordinate** (uint16 LE) | ✅ Confirmed | Isometric Y. Low byte is coordinate; high byte always 0. |
-| +60 | 4 bytes | **Building bitmask (high)** | ✅ Confirmed | Bytes +60-63 form the upper 32 bits of the 64-bit building bitmask. Byte +63 is always 0x00 in standard games but 0x04 in ROMAN scenario (bit 58 = scenario-specific improvement or wonder flag). |
-| +64 | 1 byte | **Civ reference A** | Partial | Values 0–7. **Always equals byte +66** (confirmed 98%+ of cities). Does NOT directly match owner ID. Possibly encodes a civ-slot-relative index or original builder identity. |
-| +65 | 1 byte | **Unknown (AI-related?)** | Partial | Values 0–7. For AI cities, appears to track population/growth. For player cities, consistently 0. Not city size (Orleans = 0 at all sizes). May be AI's internal growth counter or diplomacy state. |
-| +66 | 1 byte | **Civ reference C** | Partial | Always equals +64. |
-| +67 | 1 byte | Unknown | Unknown | Usually 0. |
-| +68 | 1 byte | **Sentinel** | ✅ Confirmed | Always 0xFF. Marks start of per-civ-slot data block. |
-| +69 | 8 bytes | **Per-civ slot data** | Partial | 8 bytes, one per civ slot. In scenarios (ROMAN), all 8 values are usually identical per city (e.g., all 4s, all 6s). In standard games (stubear), mostly zeros with occasional non-zero values. The uniform value in scenarios may encode the civ slot of the founding civilization. Exceptions exist (e.g., Carthage: `[5,5,5,5,5,5,5,2]` — 7 fives and one 2). |
-| +77 | 3 bytes | Unknown | Unknown | Usually 0x000000. Occasionally byte +78 = 1 (e.g., Alexandria). |
-| +80 | 2 bytes | Unknown | Unknown | Usually 0x0000. |
-| +82 | 2 bytes | **Unknown stored value** (uint16 LE) | Tentative | Range 0–53. Possibly accumulated food toward growth, or some other resource counter. |
-| +84 | 2 bytes | **Stored shields** (uint16 LE) | Strong | Range 0–207. Accumulated shields toward current production. Cities building expensive items (Wonders) have higher values. |
-| +86 | 1 byte | **Owner civ slot** | ✅ Confirmed | Current owner's civilization slot ID. NOT the founding civ — changes when cities are conquered. |
-| +87 | 1 byte | Unknown | Unknown | Usually 0. |
+| +0 | 2 bytes | **X coordinate** (short LE) | ✅ Confirmed (civ2mod.c, Höfelt) | Isometric map X. civ2mod.c: `getShort(cityblockptr)`. |
+| +2 | 2 bytes | **Y coordinate** (short LE) | ✅ Confirmed (civ2mod.c, Höfelt) | Isometric map Y. civ2mod.c: `getShort(cityblockptr+2)`. |
+| +4 | 1 byte | **City attributes I** | Höfelt, Catfish | 0x80=Coastal, 0x10=Auto-build, 0x08=Tech stolen, 0x04=Improvement sold, 0x02=WLTK Day, 0x01=Disorder. |
+| +5 | 1 byte | **City attributes II** | Höfelt, Catfish | 0x04=Can build hydroplant. |
+| +6 | 1 byte | **City attributes III** | Höfelt, Catfish | 0x20=Can build ships (if coastal). |
+| +7 | 1 byte | **City attributes IV** | Höfelt, Catfish | 0x10=Objective ×3, 0x04=Objective ×1, 0x02=Domestic advisor auto-build, 0x01=Military advisor auto-build. |
+| +8 | 1 byte | **Owning civilization** (0-7) | ✅ Confirmed (civ2mod.c) | `CITY_ITEM_OWNER_OFFSET 8`. 0=barbarians, 1-7=civs. |
+| +9 | 1 byte | **City size** | ✅ Confirmed (Höfelt) | Population level. **Note**: May be stale/zero for active human player's cities; reliable for AI cities. |
+| +10 | 1 byte | **Founding/last owner tribe** (0-7) | Höfelt | Who originally built the city (or last owner). |
+| +11 | 1 byte | **Turns since capture** | Höfelt | Counter increments each turn after capture; used for post-capture unhappiness. |
+| +12 | 1 byte | **Known to tribes** (bitmask) | Höfelt | Does NOT apply for city's own owner. Leftmost bit = tribe 7, rightmost = barbarians. |
+| +13 | 1 byte | Unknown/padding | | Höfelt's FW byte 14 — undocumented. |
+| +14 | 8 bytes | **Last city size revealed** | Höfelt | One byte per tribe (0-7). Size each tribe last saw this city at. Used for the Shift+C city list display. |
+| +22 | 4 bytes | **Specialist details** | Höfelt, Catfish | 16 × 2-bit entries: 00=none, 01=entertainer, 10=taxman, 11=scientist. Example: 0x06 = 1 taxman (10) + 1 entertainer (01) packed into first byte. |
+| +26 | 2 bytes | **Food in food box** (short LE) | ✅ Confirmed (Höfelt) | Accumulated food toward next population growth. 0xFFFF = famine. |
+| +28 | 2 bytes | **Shields in shield box** (short LE) | ✅ Confirmed (Höfelt) | Accumulated shields toward current production item. |
+| +30 | 2 bytes | **Net trade** (short LE) | Höfelt | Base trade arrows (excluding trade routes). |
+| +32 | 16 bytes | **City name** | ✅ Confirmed (civ2mod.c) | `CITY_ITEM_NAME_OFFSET 32`. 15 chars max + null terminator. |
+| +48 | 1 byte | **Workers inner circle** | ✅ Confirmed (Catfish) | Bitmask: each bit = 1 of 8 inner-ring tiles being worked. FF = all 8 worked. |
+| +49 | 1 byte | **Workers outer circle A** | Catfish | 8 of the 12 outer-ring tile positions. |
+| +50 | 1 byte | **Workers outer circle B** | Catfish | 4 remaining outer-ring positions (high nibble always 0x1x — bit 12 = center tile always set). |
+| +51 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type. Specialist count = value ÷ 4. |
+| +52 | 4 bytes | **Building bitmask I-IV** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, 1-indexed, RULES.TXT order. See full mapping below. |
+| +56 | 1 byte | **Building bitmask V** | Catfish | Airport (0x01), Police Station (0x02), Port Facility (0x04), Transporter (0x08). |
+| +57 | 1 byte | **Item in production** | Höfelt, Catfish | Units: 0x00-0x3F. Improvements: inverted (0xFF=1st, 0xFE=2nd, etc.). Can force production via hex edit. |
+| +58 | 1 byte | **Number of active trade routes** | Höfelt | 0-3 (can be >3 via hex edit). |
+| +59 | 3 bytes | **Trade commodities available/supplied** | Höfelt | 0x00-0x0F = available (RULES.TXT order). Supplied goods use 0xFF complement (e.g., 0xF3 = commodity 13 supplied). |
+| +62 | 3 bytes | **Trade commodities demanded** | Höfelt | 0x00-0x0F. |
+| +65 | 3 bytes | **Commodities in trade route** | Catfish | With partners 1-3. 0x00-0x0F = @CARAVAN item, 0xFF = food supplies. |
+| +68 | 6 bytes | **Trade partner city IDs** | Catfish | 3 × uint16 LE. City sequence ID of each trade partner. |
+| +74 | 2 bytes | **Science output** (short LE) | ✅ Confirmed (Catfish, experiment) | Beakers generated. Scientists add +2 each. |
+| +76 | 2 bytes | **Tax output** (short LE) | ✅ Confirmed (Catfish, experiment) | Gold generated. Tax collectors add +3 each. |
+| +78 | 2 bytes | **Trade output** (short LE) | ✅ Confirmed (Catfish) | Total trade arrows including trade routes. |
+| +80 | 1 byte | **Total food production** | ✅ Confirmed | Food from worked tiles. Drops ~2 per specialist (one fewer tile worked). |
+| +81 | 1 byte | **Total shield production** | ✅ Confirmed | Shields from worked tiles. |
+| +82 | 1 byte | **Happy citizens** | ✅ Confirmed (Catfish, experiment) | Entertainers generate happy citizens (+1 each). |
+| +83 | 1 byte | **Unhappy citizens** | Catfish, Höfelt | Double-unhappy may count twice(?). |
+| +84 | 2 bytes | **City sequence ID** (short LE) | ✅ Confirmed (Catfish) | MGE-only (bytes 85-86 of 88). Sequential identifier unique per city. Referenced by Wonders section (0x0000 = first city built). Same as value at Höfelt FW byte 85-86. |
+| +86 | 2 bytes | Unknown | | MGE-only (bytes 87-88 of 88). Usually 0x0000. |
 
-##### Building Bitmask (+20-23, uint32 LE) — CONFIRMED
+##### Building Bitmask (+52-55, uint32 LE) — CONFIRMED
 
-**Verified via controlled experiment**: Playing as France, built Palace, Granary, Temple, Marketplace, and Library one per turn in Paris, saving after each. The bitmask at +20-23 changed exactly as predicted:
+**Verified via controlled experiment**: Playing as France, built Palace, Granary, Temple, Marketplace, and Library one per turn in Paris, saving after each. The bitmask at +52-55 changed exactly as predicted:
 
-| Save | Buildings present | +20 value | Binary | Bits set |
+| Save | Buildings present | +52 value | Binary | Bits set |
 |------|------------------|-----------|--------|----------|
 | base | Palace only | `0x02` | `00000010` | 1 |
 | granary | +Granary | `0x0A` | `00001010` | 1,3 |
@@ -576,7 +578,7 @@ The bit numbering is **1-indexed**, matching the RULES.TXT improvement order:
 
 Bits 1–6 are confirmed by the controlled experiment. Bits 7–31 are inferred from RULES.TXT order and validated against the ROMAN scenario (e.g., cities with City Walls, Aqueduct, Cathedral, SDI Defense all have the expected bits set). Bit 0 appears in ~46% of ROMAN cities but no user-game cities; its meaning is unknown (possibly a scenario flag or the "Nothing" entry in RULES.TXT).
 
-**Key correction**: +20-23 was previously misidentified as "city size" (byte +20) because the bitmask value for a Palace-only city (`0x02`) coincidentally resembled a size value. The fields at +16-19 and +60-63 were previously misidentified as a split 64-bit building bitmask; they are now known to be separate fields (purpose unknown — possibly tile working patterns or city state flags).
+**Key correction**: +52-55 was previously misidentified as "city size" (byte +52) because the bitmask value for a Palace-only city (`0x02`) coincidentally resembled a size value.
 
 ##### Resource Field Relationship
 
@@ -586,16 +588,16 @@ Verified via natural population growth (no cheats). Orleans grew from size 1→2
 
 | Field | Size 1 | Size 2 | Size 3 | Interpretation |
 |-------|--------|--------|--------|----------------|
-| +42 | 2 | 3 | 4 | **City size + 1** (tiles worked including center) |
-| +46 | 4 | 5 | 6 | = +42 + +44 (total output sum) |
-| +48 | 4 | 6 | 8 | **Food produced** (+2 per pop) |
-| +49 | 1 | 2 | 3 | **Shields produced** (+1 per pop) |
-| +25 | 254 | 254 | 2 | Food box (resets on growth) |
-| +20 | 0x02 | 0x02 | 0x06 | Buildings (Palace → Palace+Barracks) |
+| +74 (Science) | 2 | 3 | 4 | Beakers: increases with more worked tiles |
+| +78 (Trade) | 4 | 5 | 6 | Trade arrows: increases with more worked tiles |
+| +80 (Food) | 4 | 6 | 8 | **Food produced** (+2 per pop) |
+| +81 (Shields) | 1 | 2 | 3 | **Shields produced** (+1 per pop) |
+| +57 (Production) | 254 | 254 | 2 | Item in production (changed build item) |
+| +52 (Buildings) | 0x02 | 0x02 | 0x06 | Bitmask (Palace → Palace+Barracks) |
 
-**Key insight**: +42 is city size + 1 (number of tiles being worked, including the city center tile). The relationship +42 + +44 ≈ +46 still holds, suggesting these are all resource/output related fields.
+**Key insight**: With Catfish cross-reference, +74 is confirmed as **science output** (not city size). Science, tax, trade, food, and shield outputs all scale naturally with population as more tiles are worked.
 
-**Cheat bug note**: The Civ2 population cheat writes to an off-by-one city record (+65 of the PREVIOUS city in the array) instead of the target city. Natural growth saves confirmed +42 (not +65) is the reliable city size indicator.
+**Cheat bug note**: The Civ2 population cheat writes to an off-by-one city record (+9 of the PREVIOUS city in the array) instead of the target city.
 
 ##### Specialist Experiment (Orleans size 5, France — entertainer/tax collector/scientist)
 
@@ -603,88 +605,52 @@ Verified by assigning 1 specialist of each type from a size-5 baseline (no speci
 
 | Field | No spec | Entertainer | Tax Collector | Scientist | Notes |
 |-------|---------|-------------|---------------|-----------|-------|
-| +19 | 0 | **4** | **4** | **4** | +4 per specialist of ANY type |
-| +42 | 5 | 4 (-1) | 4 (-1) | **7 (+2)** | Scientist ADDS to +42! |
-| +44 | 3 | 3 (same) | **6 (+3)** | 3 (same) | Tax collector ADDS to +44! |
-| +46 | 8 | 7 (-1) | 7 (-1) | 7 (-1) | Always drops by 1 |
-| +48 | 12 | 10 (-2) | 10 (-2) | 10 (-2) | Food always drops by 2 |
-| +49 | 4 | 4 (same) | 4 (same) | 4 (same) | Shields unchanged |
-| +50 | 0 | **1 (+1)** | 0 (same) | 0 (same) | Entertainer count ONLY |
+| +51 | 0 | **4** | **4** | **4** | +4 per specialist of ANY type |
+| +74 (Science) | 5 | 4 (-1) | 4 (-1) | **7 (+2)** | Scientist ADDS to science! |
+| +76 (Tax) | 3 | 3 (same) | **6 (+3)** | 3 (same) | Tax collector ADDS to tax! |
+| +78 (Trade) | 8 | 7 (-1) | 7 (-1) | 7 (-1) | Always drops by 1 |
+| +80 (Food) | 12 | 10 (-2) | 10 (-2) | 10 (-2) | Food always drops by 2 |
+| +81 (Shields) | 4 | 4 (same) | 4 (same) | 4 (same) | Shields unchanged |
+| +82 (Happy) | 0 | **1 (+1)** | 0 (same) | 0 (same) | Entertainers add happy citizens |
 
 **Key findings**:
-- **+19** = total specialist count × 4 (type-independent). Population = +19 ÷ 4 + tiles_worked (approximate).
-- **+50** = **entertainer count only** (NOT total specialists as previously thought).
-- **+42** absorbs scientist bonus (+2 per scientist). Not purely "tiles worked" — includes scientist contribution.
-- **+44** absorbs tax collector bonus (+3 per tax collector). Likely a gold/tax output field.
-- **+46** = total tiles worked (always drops by 1 per specialist, regardless of type).
-- **+48** = food produced (always drops by 2 per specialist — one fewer tile worked).
-- Each specialist type routes its bonus to a DIFFERENT output field while all reduce +46 and +48 equally.
+- **+51** = total specialist count × 4 (type-independent).
+- **+82** = **happy citizens** (Catfish-confirmed). Entertainers generate happy citizens, which is why +82 increments only for entertainers.
+- **+74 (Science)** absorbs scientist bonus (+2 per scientist).
+- **+76 (Tax)** absorbs tax collector bonus (+3 per tax collector).
+- **+78 (Trade)** = total trade (always drops by 1 per specialist, regardless of type — one fewer tile worked).
+- **+80 (Food)** = food produced (always drops by 2 per specialist — one fewer tile worked).
+- Each specialist type routes its bonus to a DIFFERENT output field while all reduce trade and food equally.
 
 ##### TODO: City Record Remaining Unknowns
-- [x] ~~Map building bitmask bits to specific improvements~~ → **DONE**: +20-23 is 32-bit bitmask, 1-indexed, RULES.TXT order
-- [x] ~~Find city size / tiles worked~~ → **DONE**: +46 = tiles actually worked; +42 = science output (tiles + scientist bonus)
-- [x] ~~Determine +48-49 meaning~~ → **DONE**: +48 = food produced, +49 = shields produced
-- [x] ~~Find specialist count~~ → **DONE**: +19 = total specialists × 4 (any type), +50 = entertainer count only
-- [x] ~~Determine +19 encoding for specialist types~~ → **DONE**: +4 per specialist of ANY type (type-independent counter)
-- [x] ~~Determine +44 meaning~~ → **DONE**: Tax/gold output (base trade + tax collector bonus of +3 each)
-- [ ] Determine +16-18 status bitfield meaning (changes with specialists and growth)
-- [ ] Determine +52 meaning (constant 10 — food box target?)
-- [ ] Determine +60-63 purpose (changes with city growth, possibly tile working pattern)
-- [ ] Decode +64-66 civ references
-- [ ] Decode +69-76 per-civ slot bytes
-- [x] ~~Confirm +82 = food stored, +84 = shield stored~~ → **CONFIRMED** via Catfish mapping: +82-83 = food storage (short), +84-85 = shields in box (short)
+- [x] All major fields mapped via civ2mod.c, hexedit.rtf, Catfish cross-reference, and controlled experiments
+- [x] Layout correction: XY coords at +0, name at +32 (confirmed by civ2mod.c and hex verification)
+- [ ] Verify +56 as building bitmask V (Airport/Police Station/Port Facility/Transporter)
+- [ ] Verify +57 as item in production with a controlled build experiment
+- [ ] Verify +4-7 as city attributes I-IV with disorder/WLTK saves
+- [ ] Investigate why +9 (city size) is stale/zero for active player's cities
+- [ ] Decode +86-87 (unknown, MGE extra bytes, usually 0x0000)
 
-##### Cross-Reference: Catfish's Cave ToT Save Format (Definitive Community Reference)
+##### Cross-Reference: Source Documentation
 
-The definitive community documentation for Civ2 save format is the [Catfish's Cave page](https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm) based on Allard Höfelt's hex-editing guide. It documents ToT (92-byte cities) but maps to MGE (88-byte) with a consistent offset shift.
+Four independent sources confirm the MGE city record layout:
 
-**Key difference**: ToT puts XY coords + attributes + owner/size BEFORE city name (34 bytes pre-name). MGE puts city name FIRST (+0-15), then post-name fields, then the pre-name fields at the END of the record.
+**1. hexedit.rtf** (Allard Höfelt, v1.8, 16 April 2005) — The original community hex-editing guide. Documents FW format (84-byte cities, 1-based offsets). Notes that MGE cities are 88 bytes (4 extra at end). FW layout = MGE layout for bytes 1-84; MGE adds bytes 85-88.
 
-**Post-name mapping** (ToT 1-indexed byte N → MGE offset N − 34):
+**2. civ2mod.c** (TE Kimball) — C program for modifying MGE save files. Confirms via code:
+- `CITY_ITEM_SIZE 88` — 88 bytes per city
+- `CITY_ITEM_NAME_OFFSET 32` — city name at offset +32
+- `CITY_ITEM_OWNER_OFFSET 8` — owner at offset +8
+- `findCityItem()` searches for city name then subtracts 32 to get record start
+- `addCityToVisibilityMap()` reads X at +0, Y at +2 from record start
 
-| ToT Byte | MGE Offset | Field (from Catfish) | Our Verification |
-|----------|------------|----------------------|------------------|
-| 51 | +16 | Workers inner circle (8 tiles bitmask) | ✅ Changes with specialists |
-| 52-53 | +17-18 | Workers outer circle (12 tiles + center, short LE) | ✅ Changes with specialists |
-| 54 | +19 | Number of specialists × 4 | ✅ Confirmed |
-| 55-58 | +20-23 | City improvements I-IV (building bitmask) | ✅ Confirmed |
-| 59 | +24 | City improvements V (Airport, Police Station, Port, Transporter) | Not yet verified |
-| 60 | +25 | Item in production (unit 0x00-0x50, improvement 0xBD-0xFF) | Was "food box" — **CORRECTED** |
-| 61 | +26 | Number of trade routes | |
-| 62-64 | +27-29 | Supplied trade items | |
-| 65-67 | +30-32 | Demanded trade items | |
-| 68-70 | +33-35 | Commodities traded with partners | |
-| 71-76 | +36-41 | Trade partner city IDs (3 × short) | |
-| 77-78 | +42-43 | **Science** (beakers, short LE) | ✅ Was "tiles worked" — **CORRECTED** |
-| 79-80 | +44-45 | **Tax** (gold, short LE) | ✅ Confirmed |
-| 81-82 | +46-47 | **Trade** (arrows incl. routes, short LE) | ✅ Was "tiles actually worked" — **CORRECTED** |
-| 83 | +48 | Total food production | ✅ Confirmed |
-| 84 | +49 | Total shield production | ✅ Confirmed |
-| 85 | +50 | Happy citizens | Was "entertainer count" — **CORRECTED** |
-| 86 | +51 | Unhappy citizens | |
-| 87-88 | +52-53 | Dynamic city ID (short LE) | Was "food box target" — **CORRECTED** |
+**3. Catfish's Cave / FoxAhead** (jp_hex.htm) — Documents ToT format (92-byte cities). ToT adds 2 bytes for map number before the name block and 2 bytes after the name block. ToT byte numbers can be converted to MGE offsets but require careful adjustment for the structural differences.
 
-**Pre-name mapping** (ToT bytes 1-34, minus 2 for map number → MGE +56-87):
+**4. Direct hex verification** — Reading actual MGE save files confirms Washington at record offset +0=40 (X=40), +2=16 (Y=16), +8=5 (owner=civ 5), +9=1 (size=1), +32="Washington".
 
-| ToT Byte | MGE Offset | Field (from Catfish) |
-|----------|------------|----------------------|
-| 1-2 | +56-57 | X coordinate (short LE) |
-| 3-4 | +58-59 | Y coordinate (short LE) |
-| 5-6 | — | Map number (ToT only, not in MGE) |
-| 7-10 | +60-63 | City attributes I-IV (status flags) |
-| 11 | +64 | Owning tribe (0-7) |
-| 12 | +65 | City size |
-| 13 | +66 | Tribe which founded the city |
-| 14 | +67 | Turns since capture |
-| 15 | +68 | Known to tribes (bitmask) |
-| 16-23 | +69-76 | Last city size revealed to each tribe |
-| 24 | +77 | Unknown |
-| 25-28 | +78-81 | Specialist details (2 bits × 16: 00=none, 01=entertainer, 10=taxman, 11=scientist) |
-| 29-30 | +82-83 | Food storage (short LE) |
-| 31-32 | +84-85 | Shields in box (short LE) |
-| 33-34 | +86-87 | Base trade (short LE) |
+**FW-to-MGE offset conversion**: Subtract 1 from Höfelt's 1-based FW byte number to get 0-based MGE offset. FW bytes 1-84 map directly to MGE +0 through +83. MGE +84-87 are the 4 extra MGE bytes.
 
-**Important caveat**: The pre-name fields (+56-87) appear to be **static/stale for the active player's cities** — Orleans (player-owned) showed +65=0 at all city sizes, while AI cities (Washington, London) had correct values at +65. The game likely reads player city sizes from memory rather than this field. AI city fields update correctly.
+**Stale player fields caveat**: Fields in the +0-31 range (XY, attributes, owner, size, etc.) appear to be **static/stale for the active human player's cities** — Orleans (player-owned) showed +9=0 at all city sizes, while AI cities (Washington, London) had correct values. The game likely reads player city data from memory rather than from the save file for these fields.
 
 Notes:
 - The city count at header offset `0x003C` includes destroyed/disbanded cities which remain as historical records.
@@ -2343,7 +2309,7 @@ The minimap territory display uses **byte[3] of the tile record** — a per-bit 
 
 ### 2. Civ Slot ≠ Owner ID
 
-City records use an "owner" byte (offset +86) that does **not** correspond to the civ slot number in the tile visibility bitmask. The owner ID is a separate numbering system. Mapping between them requires cross-referencing city positions with the tile data.
+City records use an "owner" byte (offset +8) that does **not** correspond to the civ slot number in the tile visibility bitmask. The owner ID is a separate numbering system. Mapping between them requires cross-referencing city positions with the tile data.
 
 ### 3. Destroyed Cities Are Misleading
 
@@ -2369,6 +2335,9 @@ The autosave file is named `St_Auto.SAV` (not `AUTO.SAV` as some community docs 
 
 ## Community References
 
-- **Catfish's Cave** (ToT format guide): https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm — Partial documentation of the save format for Test of Time, which shares heritage with MGE.
+- **Allard Höfelt's Hex-Editing Guide** (hexedit.rtf, v1.8, April 2005): The original and most comprehensive community documentation. Written for Fantastic Worlds but applicable to all versions. Covers header, tribes, technologies, map, units, cities, post-city data, passwords, and events. Confirms MGE city = 88 bytes (vs FW 84 bytes), MGE unit = 32 bytes (vs FW 26 bytes). Available in tek10/civ2mod repository.
+- **TE Kimball's civ2mod.c**: C program for modifying MGE save files. Provides definitive MGE-specific offset constants (`CITY_ITEM_NAME_OFFSET 32`, `CITY_ITEM_OWNER_OFFSET 8`, `CITY_ITEM_SIZE 88`, `UNIT_ITEM_SIZE 32`) and demonstrates file navigation from map header through units to cities. Source: https://github.com/tek10/civ2mod
+- **Catfish's Cave** (FoxAhead's ToT format guide): https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm — Documents the save format for Test of Time (92-byte cities). Derived from Höfelt's guide with ToT-specific extensions. Useful cross-reference but requires offset conversion for MGE.
+- **FoxAhead's Civ2Types.pas**: Pascal type definitions from the Civ2-UI-Additions project. Based on Catfish's Cave documentation.
 - **Apolyton Forums** and **CivFanatics** — Community hex editing threads provided clues for city record structure and map data locations.
-- Note: Community documentation is often for original Civ2 or Test of Time, and offsets/structures differ slightly in MGE.
+- Note: Community documentation is often for original Civ2, Fantastic Worlds, or Test of Time. MGE uses the same layout as FW but with 4 extra bytes per city (88 vs 84) and 6 extra bytes per unit (32 vs 26).
