@@ -81,23 +81,38 @@ All `.SAV` files (including `.NET`, `.HOT`, `.EML` network/multiplayer variants)
 ┌─────────────────────────────────────────────────┐
 │ 1. Header (14 bytes, fixed)                     │  0x0000
 ├─────────────────────────────────────────────────┤
-│ 2. Game State (variable, ~60 bytes + per-civ)   │  0x000E
+│ 2. Game State Preamble (330 bytes)              │  0x000E
 ├─────────────────────────────────────────────────┤
-│ 3. Civilization Data (variable, large)          │  varies
-│    - Per-civ blocks: techs, diplomacy, etc.     │
-│    - Player name embedded here                  │
+│ 3a. Per-Civ Name Blocks (8 × 242 bytes)        │  0x0158
+├─────────────────────────────────────────────────┤
+│ 3b. Per-Civ Data Blocks (8 × 3,833 bytes)      │  0x08E8
+├─────────────────────────────────────────────────┤
+│ 3c. Extended Game Data (0 to ~93 KB, variable)  │  0x080B0 (if present)
 ├─────────────────────────────────────────────────┤
 │ 4. Map Tile Data (fixed: num_tiles × 6 bytes)   │  varies
 ├─────────────────────────────────────────────────┤
-│ 5. Unit Records (variable)                      │  varies
+│ 5. Unit Records (num_units × 32 bytes)          │  varies
+├─────────────────────────────────────────────────┤
+│ 5b. Bridge Record (32 bytes, fixed)             │
 ├─────────────────────────────────────────────────┤
 │ 6. City Records (num_cities × 88 bytes)         │  varies
 ├─────────────────────────────────────────────────┤
-│ 7. Tail Data (fixed: 1,807 bytes)               │  EOF - 1807
+│ 7. Tail Data (fixed: 1,807 or 1,907 bytes)      │  EOF - tail_size
 └─────────────────────────────────────────────────┘
 ```
 
-Across all saves analyzed, the **tail section is always exactly 1,807 bytes**, providing a reliable anchor from the end of the file. The city count at header offset `0x3C` and the 88-byte city record size allow computing the city block boundaries, and from there the rest of the structure can be derived.
+Across all saves analyzed, the **tail section is 1,807 bytes** for standard games or **1,907 bytes** for scenario saves (identifiable by header byte `0x0D` bit 0). Combined with the city count at header offset `0x3C`, the unit count at offset `0x3A`, and the confirmed record sizes (88 bytes/city, 32 bytes/unit, 32-byte bridge), the entire file can be navigated from the end:
+
+```
+tail_size         = 1907 if (header[0x0D] & 0x01) else 1807
+city_block_start  = file_size - tail_size - (num_cities × 88)
+bridge_start      = city_block_start - 32
+unit_block_start  = bridge_start - (num_units × 32)
+tile_block_end    = unit_block_start
+tile_block_start  = tile_block_end - ((map_width / 2) × map_height × 6)
+```
+
+Note: `map_height` is a **single byte** at offset `0x0C` (not uint16).
 
 ### Section 1: Header (Bytes 0x0000–0x000D, 14 bytes, fixed)
 
@@ -107,7 +122,8 @@ Across all saves analyzed, the **tail section is always exactly 1,807 bytes**, p
 | 0x0008 | 1 byte | Null separator | Always `0x00` |
 | 0x0009 | 1 byte | Format marker | Always `0x1A` (ASCII SUB character) |
 | 0x000A | 2 bytes | Map width (uint16 LE) | `44` in all saves analyzed |
-| 0x000C | 2 bytes | Map height (uint16 LE) | `63` in all saves analyzed |
+| 0x000C | 1 byte | **Map height** | Height in tiles. Single byte (NOT uint16). Standard=`63`, large=`191`. |
+| 0x000D | 1 byte | Map flags | `0x00`=standard, `0x80`=large map, `0x81`=large map + scenario. Bit 7=large map flag. |
 
 Notes:
 - **Previous documentation error corrected**: Bytes 0x08 and 0x09 were previously described as "separator 0x1A" and "version 0x2C". In reality, 0x08 is a null byte (`0x00`) and 0x09 is `0x1A`. The value `0x2C` (44) at offset 0x0A is the map width, not a version number.
@@ -126,7 +142,7 @@ This section contains global game parameters. It extends from the end of the hea
 | 0x000E | 2 bytes | Unknown constant | Always `30272` (0x7640) | Possibly format sub-version or flags |
 | 0x0010 | 2 bytes | Unknown constant | Always `13` | |
 | 0x0012 | 2 bytes | **Enemy civs alive** (uint16 LE) | 0, 4, 5, 6 | Number of AI civilizations still in the game |
-| 0x0014 | 2 bytes | **Total civ slots** (uint16 LE) | 4, 8 | Maximum civilization slots (includes player) |
+| 0x0014 | 2 bytes | **Total civ slots / scenario flag** (uint16 LE) | 4, 8, 128 | Standard games: `4` or `8` (actual civ slot count). Scenario saves: `128` (`0x0080`) acts as a scenario flag (bit 7 set); actual civ slot count is still 8. |
 | 0x0016 | 2 bytes | Reserved | Always `0` | |
 | 0x0018 | 2 bytes | Unknown | `0` or `4` | |
 | 0x001A | 2 bytes | Reserved | Always `0` | |
@@ -139,30 +155,163 @@ This section contains global game parameters. It extends from the end of the hea
 | 0x002C | 1 byte | **Difficulty level** | 1, 5 | 0=Chieftain, 1=Warlord, 2=Prince, 3=King, 4=Emperor, 5=Deity |
 | 0x003A | 2 bytes | **Total unit count** (uint16 LE) | 51–136 | Number of unit records in Section 5 |
 | 0x003C | 2 bytes | **Total city count** (uint16 LE) | 16–43 | Number of city records in Section 6. **Confirmed** by cross-reference with parsed city blocks in all 5 saves. |
+| 0x003E | 2 bytes | **Technology count** (uint16 LE) | Always `89` | Number of technologies defined in RULES.TXT. Constant across all saves using the same ruleset. |
+
+##### TODO: Game State Preamble Unknown Fields (0x40–0x0158)
+<!-- PRIORITY 3: ~280 bytes unmapped. Contains global game settings. -->
+- [ ] Decode 0x20-0x26: 7 unknown bytes between treasury and player slot
+- [ ] Decode 0x28-0x2B: player slot repeats? or separate fields
+- [ ] Decode 0x2D-0x39: 13 bytes before unit/city counts (barbarian activity? revolution counter? pollution?)
+- [ ] Decode 0x40-0x0158: ~280 bytes of global game state
+  - [ ] Tax/luxury/science percentage rates
+  - [ ] Global wonder completion state (which wonders built, by whom)
+  - [ ] Spaceship component state
+  - [ ] Game options (bloodlust, flat earth, etc.)
+  - [ ] Current research target and progress
+  - [ ] Revolution/anarchy countdown
+  - [ ] Global pollution level
+  - [ ] Active civ being processed (whose turn it is)
 
 #### Player's Civ Slot vs. LEADERS.TXT Index
 
 The value at offset 0x0027 is the player's **civ slot** — their position in the game's internal civilization array (0–7). This is **not** the same as the civilization's index in `LEADERS.TXT` (0–20). The civ slot is assigned at game start based on the number of players and their selection order.
 
-### Section 3: Civilization Data (variable size, large)
+### Section 3: Civilization Data (variable size per game configuration)
 
-This is the largest variable-size section, ranging from ~25 KB (7-civ games) to ~120 KB (observed in one save). It contains per-civilization data blocks including technology trees, diplomacy states, government types, and other per-civ state.
+This section contains all per-civilization data. It always has **8 civ slots** regardless of the `total_civs` header field (verified across all 7 saves, including games with 4, 8, and 20 civs at header offset `0x14`).
 
-#### Player Name
+The section has three sub-parts:
 
-The player's name is embedded within this section as a **null-terminated ASCII string in a 24-byte fixed field**, preceded by a 2-byte value. Its offset is **not fixed** — it varies between saves depending on the game configuration:
+| Sub-section | Start Offset | Size | Description |
+|-------------|-------------|------|-------------|
+| Game State Preamble | `0x000E` | 330 bytes | Global game state fields (turn, difficulty, etc.) |
+| Per-Civ Name Blocks | `0x0158` | 8 × 242 = 1,936 bytes | Leader names, tribe names, government titles |
+| Per-Civ Data Blocks | `0x08E8` | 8 × N bytes | Technology, diplomacy, AI state, resources |
 
-| Save | Player Name Offset | Preceding uint16 |
-|------|--------------------|-------------------|
-| Save A (enemies=6) | `0x033C` | `2` |
-| Save B (enemies=5) | `0x042E` | `3` |
-| Save C (enemies=4) | `0x033C` | `2` |
-| Save D (enemies=0) | `0x0612` | `1` |
-| Save E (enemies=4) | `0x07F6` | `3` |
+The name block region (0x0158–0x08E8) and the `"dddddddd"` marker at `0x0926` are **identical across all 7 saves**, confirming the first two sub-sections are fixed-size. The per-civ data block size N **varies by game configuration**:
 
-The 2-byte prefix before the name may indicate the player's position in the civ array or a related index. Residual bytes from previously longer names may follow the null terminator (e.g., `"oln"` from overwriting `"Lincoln"` with `"Stubear"`).
+| Save | Map | 0x14 | Block (N) | Total Civ Data |
+|------|-----|------|-----------|----------------|
+| Stubear (×4) | 44×63 | 8 | 3,833 | 30,664 |
+| EMMA | 44×63 | 4 | 15,428 | 123,424 |
+| Roman (scenario) | 44×191 | 128 | 5,031 | 40,248 |
+| Claire | 44×191 | 20 | 13,316 | 106,528 |
 
-To find the player name: search for the expected leader name from `LEADERS.TXT` for the player's civilization, or search for known player name strings.
+The block size does NOT simply correlate with map size or civ count. The formula is not yet determined — it likely depends on multiple game parameters (map size, number of civilizations, scenario flags, and possibly ruleset modifications).
+
+#### Per-Civ Name Block (242 bytes each)
+
+Each civ slot has a 242-byte block containing identity strings in fixed-width fields. The block starts at `0x0158 + (slot × 242)`. The player's slot is determined by `header[0x27]`.
+
+| Offset | Size | Field | Example (EMMA slot 7) |
+|--------|------|-------|------------------------|
+| +0 | 24 bytes | **Leader name** | `"Emmalia"` |
+| +24 | 24 bytes | **Tribe name** (plural) | `"Silewolves"` |
+| +48 | 24 bytes | **Tribe adjective** (singular) | `"Sielean"` |
+| +72 | 24 bytes | Title: Anarchy/default | `"Ms."` |
+| +96 | 24 bytes | Title: Despotism | `"Empress"` |
+| +120 | 24 bytes | Title: Monarchy | `"Maharaja"` |
+| +144 | 24 bytes | Title: Communism | `"Comrade"` |
+| +168 | 24 bytes | Title: Republic | `"High Priestess"` |
+| +192 | 24 bytes | Title: Democracy | `"Consul"` |
+| +216 | 24 bytes | Title: Fundamentalism | `"President"` |
+| +240 | 2 bytes | Padding | `0x0000` |
+
+All string fields are null-terminated within their 24-byte allocation. Residual bytes from previous save data may appear after the null terminator (e.g., `"andhi"` leftover from overwriting `"Gandhi"` with `"Emmalia"`). Fields are populated only for civs the player has met; unmet or eliminated civs have all-zero blocks.
+
+**Verification**: Across all 5 saves, `"Stubear"` (player name) always appears at exactly `0x0158 + (player_slot × 242)`, and AI leader names (e.g., `"Mao Tse Tung"`, `"Mohandas Gandhi"`) appear at their corresponding slot offsets.
+
+#### Per-Civ Data Block (3,833 bytes each)
+
+Each civ slot has a 3,833-byte block starting at `0x08E8 + (slot × 3,833)` (for 8-slot games). These blocks contain:
+
+- **Technology state**: 6-byte entries per technology (pattern: `01 XX F0 YY 00 00` where XX encodes acquisition method and YY encodes tech level/era). Matches the 89 technologies from RULES.TXT.
+- **Diplomacy/attitudes**: int16 pairs encoding relationships with other civs.
+- **AI behavior state**: Strategy priorities, production preferences (non-zero for AI civs; mostly zero for the human player's slot and eliminated civs).
+- **Resource/treasury data**: Gold, science, luxury allocation percentages.
+
+The blocks persist even for eliminated civs (retaining historical data). Active AI civs have the most non-zero data. The player's block has minimal data since AI behavior fields are not used.
+
+#### Per-Civ Data Block Internal Structure (confirmed for 3,833-byte blocks)
+
+Each 3,833-byte per-civ data block contains **repeating sub-blocks** of **1,428 bytes** each. The block holds 2 full sub-blocks and one truncated sub-block:
+
+**Independent confirmation**: AGRICOLA (Apolyton, May 2004) independently confirmed the 1,428-byte block size. Mercator's file format table of contents lists `Properties (8 × 1428 = 11424)` for the Civilizations section. Our autocorrelation analysis rediscovered this period from the binary data alone.
+
+| Sub-block | Absolute Offset | Size | Notes |
+|-----------|----------------|------|-------|
+| 0 | `+0` to `+1427` | 1,428 bytes | Full |
+| 1 | `+1428` to `+2855` | 1,428 bytes | Full |
+| 2 | `+2856` to `+3832` | 977 bytes | Truncated (1,428 − 451) |
+
+**Verification**: Boolean flag regions at relative offset +32 within each sub-block appear at absolute offsets +32, +1460, +2888 — exactly 1,428 bytes apart. City coordinate entries at relative +64 also repeat at the same interval. The 0xFF sentinel patterns at relative +357–447 repeat identically across all three sub-blocks.
+
+Each sub-block appears to encode this civilization's **knowledge of and relationship with other civilizations**. The city knowledge lists in each sub-block reference different sets of cities with different "focus" cities (e.g., sub-block 0 focuses on Leptis, sub-block 1 on Carthage, sub-block 2 on Pella in the ROMAN save).
+
+##### Sub-Block Internal Layout (1,428 bytes)
+
+| Relative Offset | Size | Field | Notes |
+|----------------|------|-------|-------|
+| +0 | 14 bytes | **Attitude/relationship scores** | int16 LE pairs. Values like -20, -10, -2 observed. Likely diplomatic attitude modifiers toward other civs. |
+| +15–20 | 6 bytes | **Relationship int16 pairs** | 0xFFFF sentinel values when no contact. |
+| +31–38 | 8 bytes | **Per-civ diplomatic flags** | One byte per civ slot (0–7). Values: 0=no contact(?), 1=at war(?), 8 or 11 for barbarians (slot 0). Pattern `[8, 1, 1, 0, 1, 0, 0, 1]` seen in ROMAN player slot. |
+| +64 | 386 bytes | **City knowledge list** | Up to ~64 entries × 6 bytes. See structure below. Populated entries followed by sentinel entries `[00 00 00 00 00 FF]` for empty slots. |
+| +451–465 | 15 bytes | **Game state values** | int16 pairs — scores, treasury, or economic counters. Values vary between saves and between sub-blocks. |
+| +468–469 | 2 bytes | **Marker bytes** | Values like `04 06`, `05 04`, `05 0C`. Possibly indicating era or tech level. |
+| +479–505 | 27 bytes | **Civ flags and identifiers** | Includes 0x01 boolean pairs and values like `0x44` (68). Partially decoded. |
+| +513–548 | 36 bytes | **Statistics block** | 8-byte packed values at +513; treasury/production metrics at +537–548. Includes values matching game engine constants. |
+| +565–660 | ~96 bytes | **Technology/visibility bitmask** | Dense region of 0xFF bytes. Player's block has most bits set (all techs known); AI civs have sparser patterns. Not a simple 89-bit tech bitmask — likely visibility or capabilities. |
+| +665–810 | ~146 bytes | **Sparse boolean flags** | Values 0 or 1. Possibly per-wonder completion, per-building availability, or treaty states. |
+| +811–1427 | ~617 bytes | **Padding/reserved** | Mostly zeros with occasional non-zero values in advanced game states. |
+
+##### City Knowledge Entry (6 bytes)
+
+Each entry in the city knowledge list encodes a city this civ knows about:
+
+| Byte | Field | Notes |
+|------|-------|-------|
+| 0 | **Relationship type** (int8) | `0` to `4` = friendly/own cities. `-5` (0xFB) = ?, `-3` (0xFD) = foreign/known, `-2` (0xFE) = foreign/different state, `-1` (0xFF) = boundary. |
+| 1–2 | **X coordinate** (uint16 LE) | Isometric X of the city |
+| 3–4 | **Y coordinate** (uint16 LE) | Isometric Y of the city |
+| 5 | **Flags** | 0x00 or 0x01 typically. 0xFF = empty sentinel slot. |
+
+**Verified**: City coordinates in these entries match actual city positions in the city record section. In the ROMAN save, entries include Leptis (31,61), Caralis (40,72), Rome (36,62), Carthage (57,31), Pella (69,69), Alexandria (78,46), etc.
+
+##### TODO: Per-Civ Data Block — Remaining Unknowns
+<!-- Significant progress made. Key remaining items: -->
+- [x] ~~Determine sub-block boundaries within each 3,833-byte block~~ → 3 × 1,428-byte sub-blocks
+- [x] ~~Locate per-civ diplomacy state~~ → +31–38 diplomatic flags per sub-block
+- [ ] Determine what each of the 3 sub-blocks represents (which foreign civ? chronological? grouped?)
+- [ ] Decode the relationship type byte values (what do 0, 2, 3, 4, -5, -3, -2 mean specifically?)
+- [ ] Decode the +565–660 bitmask region (tech bitmask? visibility? capabilities?)
+- [ ] Identify technology research state (which techs has this civ researched?)
+- [ ] Locate per-civ government type, treasury, and tax/luxury/science rates
+- [ ] Identify AI behavior / strategy priority fields
+- [ ] Determine per-civ data block formula for non-standard block sizes (EMMA=15,428, Claire=13,316) — internal layout differs from 3,833-byte blocks
+- [ ] Map the +451–548 statistics block fields to specific game values
+
+#### Extended Game Data (variable size, 0 to ~93 KB)
+
+Between the per-civ data blocks (`0x080B0` for 8-slot games) and the tile data, there may be an **additional variable-size section**. This section is absent in standard random-map games but present in scenarios, custom starts, and some modified games.
+
+| Save Type | Gap Size | Notes |
+|-----------|----------|-------|
+| Stubear (standard random) | **0 bytes** | Tiles follow immediately after civ data |
+| ROMAN (scenario) | 9,684 bytes | Scenario-specific data (events, victory conditions) |
+| ACCEL (accelerated start) | 77,976 bytes | Extended tech/resource state |
+| EMMA (custom game) | 92,760 bytes | Additional game configuration data |
+
+The section contains sparse data with large zero regions. Near the tile data boundary, 6-byte entries with technology-like patterns (e.g., `XX 00 00 01 FF F0`) appear, suggesting extended per-civ technology or diplomacy state. The presence of this section does NOT correlate with header byte `0x0D` (EMMA has `0x0D=0x00` but still has a 93 KB gap).
+
+**To locate tile data reliably**: Always calculate tile position from the end of the file (using the unit/city/tail formula), not by assuming tiles start at `0x080B0`.
+
+##### TODO: Extended Game Data Internal Structure
+<!-- PRIORITY 4: 0-93 KB variable section, present in non-standard games. -->
+- [ ] Determine what triggers this section's presence (scenario flag? custom rules? map size?)
+- [ ] Identify if it contains per-civ extensions or global data
+- [ ] Map scenario event data (triggers, conditions, actions)
+- [ ] Map extended technology definitions
+- [ ] Determine relationship between section size and game parameters
 
 #### Autosave Filename
 
@@ -189,6 +338,14 @@ Tile data consists of **6-byte records**, one per tile. The total number of tile
 | 5 | Continent / region | Encodes continent ID or territory region. Common values: `0xF0` (ocean), `0x50`, `0x30`, `0x20`, `0x24`, `0x52` (various land regions). |
 
 These per-tile fields are confirmed by the network message types: `NM_TERRAIN_SET`, `NM_SEEN_SET`, `NM_OWNER_SET`, `NM_CITY_USING_SET`, `NM_REGION_SET`, `NM_FEATURE_SET`.
+
+##### TODO: Tile Record Remaining Unknowns
+<!-- PRIORITY 7: Bytes 4 and 5 partially decoded. -->
+- [ ] Fully decode byte 4: city working assignment (which city? which ring position?)
+- [ ] Fully decode byte 5: continent/region encoding (how are continent IDs assigned? what do the bit patterns mean?)
+- [ ] Decode byte 0 upper nibble: river flag, special resource flags, pollution flag
+- [ ] Decode byte 1: which bits correspond to which improvements (road, railroad, irrigation, farmland, mine, fortress, airbase)
+- [ ] Decode byte 2: additional improvement bits (pollution? fallout? goody hut?)
 
 #### Terrain Type IDs
 
@@ -241,11 +398,84 @@ Civ2 uses an **isometric diamond grid**:
 
 For rendering, each tile is a **diamond** shape. Odd rows are offset horizontally by half a tile width.
 
-### Section 5: Unit Records (variable size)
+### Section 5: Unit Records (`num_units × 32` bytes)
 
-Located between the tile data and city records. The total number of units is stored at header offset `0x003A`. The exact **unit record size has not yet been determined** — it does not appear to be a simple fixed size. The section size varies across saves from ~4,700 to ~10,900 bytes. Further analysis (likely requiring comparison of saves before and after unit creation/deletion) is needed to establish the record format.
+Located between the tile data and city records. The total number of units is stored at header offset `0x003A`. Each unit record is **32 bytes**. This has been **confirmed across all 5 saves** by validating structural invariants (byte 17 is always `0x00`, bytes 28–31 are always `0x00000000`).
 
-Community documentation (Catfish's Cave, for Test of Time) suggests unit records may be 26 or 32 bytes depending on game version, but this has not been confirmed for MGE.
+A **32-byte bridge record** of unknown purpose separates the unit block from the city block.
+
+**Calculating the unit block position**:
+```
+city_block_start  = file_size - 1807 - (num_cities × 88)
+bridge_start      = city_block_start - 32
+unit_block_end    = bridge_start
+unit_block_start  = unit_block_end - (num_units × 32)
+```
+
+#### Unit Record Structure (32 bytes)
+
+| Offset | Size | Field | Notes |
+|--------|------|-------|-------|
+| +0 | 2 bytes | **X coordinate** (int16 LE) | Isometric X (0 to `width×2 − 1`) |
+| +2 | 2 bytes | **Y coordinate** (int16 LE) | Isometric Y (0 to `height − 1`) |
+| +4 | 1 byte | Turn action flags | Bit 6 (0x40) = unit has moved this turn. Bit 7 (0x80) and bit 5 (0x20) occasionally set. |
+| +5 | 1 byte | Activity/work flags | Bit pattern encoding. Common for Settlers performing terrain improvements. |
+| +6 | 1 byte | **Unit type** | Index into RULES.TXT unit list (0=Settlers, 2=Warriors, 3=Phalanx, etc.) |
+| +7 | 1 byte | **Owner civ slot** | Which civilization owns this unit |
+| +8 | 1 byte | Movement remaining | In thirds of a move point (0, 3, 6, 9 = 0, 1, 2, 3 full moves) |
+| +9 | 1 byte | Special status flags | Bit flags; `0x00` in 89% of units. Rare bits: 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x80. |
+| +10 | 1 byte | Terrain under unit | Matches terrain type IDs (0–10) |
+| +11 | 1 byte | Civ slot reference | Values 0–7 (matching civ slot numbers) or `0xFF`. Purpose not fully determined; may relate to fog-of-war visibility or diplomacy state. |
+| +12 | 1 byte | **Player control flag** | `0x58` (88) = **human player's unit**. Confirmed across all 5 saves: every unit belonging to the player's civ slot (offset `0x0027`) has this value exclusively. AI unit values vary (commonly `0x31`, `0x39`, `0x3F`, `0x46`). |
+| +13 | 1 byte | Cargo / ship state | 0 for land units; values 224–240 observed for ships (likely carried unit count or fuel) |
+| +14 | 1 byte | **Veteran status** | 0 = regular, 1 = veteran. Only 2 of 488 units across all saves are veterans (early/mid game). |
+| +15 | 1 byte | **Unit orders** | Current activity. Confirmed values: `0x02`=Fortified, `0x03`=Sleep, `0x05`=Build Road, `0x06`=Build Irrigation, `0x07`=Build Mine, `0x0B`=Sentry, `0x1B`=GoTo (units with this value always have valid goto coordinates at +18/+20), `0xFF`=No orders/Idle. |
+| +16 | 1 byte | Unknown | Varies widely |
+| +17 | 1 byte | **Always `0x00`** | Structural invariant — useful for validation |
+| +18 | 2 bytes | Goto X (int16 LE) | Destination X, or `0xFFFF` (-1) if no movement orders |
+| +20 | 2 bytes | Goto Y (int16 LE) | Destination Y, or `0xFFFF` (-1) if no movement orders |
+| +22 | 2 bytes | Previous/waypoint X | `0xFFFF` if N/A |
+| +24 | 2 bytes | Previous/waypoint Y | `0xFFFF` if N/A |
+| +26 | 2 bytes | Unit ID (uint16 LE) | Global unique ID (not sequential, not sorted) |
+| +28 | 4 bytes | **Always `0x00000000`** | Structural padding — useful for validation |
+
+##### TODO: Unit Record Remaining Unknowns
+<!-- PRIORITY 6: 5 partially-decoded bytes + bridge record. -->
+- [ ] Decode +5: activity/work flags (which bits map to which settler actions?)
+- [ ] Decode +9: special status flags (which bits map to which states?)
+- [ ] Decode +11: civ slot reference — determine if fog-of-war, home city owner, or diplomacy related
+- [ ] Decode +13: cargo for ships — confirm carried unit encoding and fuel/range tracking
+- [ ] Decode +16: widely varying byte (hit points? experience? accumulated damage?)
+- [ ] Fully decode the 32-byte bridge record between units and cities
+
+#### Standard Unit Type IDs (default RULES.TXT)
+
+| ID | Unit | ID | Unit | ID | Unit |
+|----|------|----|------|----|------|
+| 0 | Settlers | 15 | Horsemen | 32 | Frigate |
+| 1 | Engineers | 16 | Chariot | 33 | Ironclad |
+| 2 | Warriors | 17 | Elephant | 34 | Destroyer |
+| 3 | Phalanx | 18 | Crusaders | 35 | Cruiser |
+| 4 | Archers | 19 | Knights | 36 | AEGIS Cruiser |
+| 5 | Legion | 20 | Dragoons | 37 | Battleship |
+| 6 | Pikemen | 21 | Cavalry | 38 | Submarine |
+| 7 | Musketeers | 22 | Armor | 39 | Carrier |
+| 8 | Fanatics | 23 | Diplomat | 40 | Transport |
+| 9 | Partisans | 24 | Spy | 43 | Catapult |
+| 10 | Alpine Troops | 25 | Caravan | 44 | Cannon |
+| 11 | Riflemen | 26 | Freight | 45 | Artillery |
+| 12 | Marines | 27 | Explorer | 46 | Howitzer |
+| 13 | Paratroopers | 28 | Trireme | 47 | Fighter |
+| 14 | Mech. Inf. | 29 | Galley | 48 | Bomber |
+
+Note: Unit type IDs above 51 indicate a modded RULES.TXT with custom unit definitions.
+
+#### Bridge Record (32 bytes)
+
+A fixed 32-byte record separates the last unit record from the first city record. Its exact purpose is not fully decoded, but it appears to contain:
+- Bytes 0–3: A coordinate pair (possibly the currently selected unit or map cursor position)
+- Bytes 4–25: Game state flags
+- Bytes 26–31: Three uint16 values; the last appears related to the number of active civilizations
 
 ### Section 6: City Records (`num_cities × 88` bytes)
 
@@ -256,36 +486,144 @@ City records are **88 bytes each**, stored contiguously. The total count is give
 
 #### City Record Structure (88 bytes)
 
-| Offset | Size | Field |
-|--------|------|-------|
-| +0 | 16 bytes | City name, null-terminated ASCII. |
-| +16 | 2 bytes | Unknown (possibly production/state flags). |
-| +18 | 2 bytes | Unknown. |
-| +20 | 1 byte | **City size** (population level). `0` = city destroyed/disbanded. |
-| +21 | 1 byte | Unknown. |
-| +52 | 1 byte | City ID (sequential, 1-based). |
-| +56 | 1 byte | **X coordinate** (isometric, range 0 to `width × 2 − 1`). |
-| +58 | 1 byte | **Y coordinate** (isometric, range 0 to `height − 1`). |
-| +86 | 1 byte | **Current owner ID.** Identifies which civ currently controls this city. |
+Cross-referenced with Apolyton SAV/SCN format guide (Mercator et al., 2004) which confirms 88 bytes/city for MGE, and with FoxAhead's Civ2Types.pas from the Civ2-UI-Additions project.
+
+| Offset | Size | Field | Status | Notes |
+|--------|------|-------|--------|-------|
+| +0 | 16 bytes | **City name** | ✅ Confirmed | Null-terminated ASCII. |
+| +16 | 4 bytes | **Building bitmask (low)** | ✅ Confirmed | Bytes +16-19 form the lower 32 bits of a 64-bit building/improvement bitmask (see note below). Bit 20 (+18 bit 4, `0x10`) is **always set** in all active cities — likely a "city active" flag or universal improvement. |
+| +20 | 1 byte | **City size** | ✅ Confirmed | Population level (1–30+ for standard games). `0` = destroyed/disbanded. ROMAN scenario uses higher values (16–248) which may represent raw population ÷ 1000 rather than city level. |
+| +21 | 1 byte | Unknown flag | Partial | 0 or 1. Possibly "was captured" or "city discovered" flag. |
+| +22 | 2 bytes | Unknown | Unknown | Sometimes 0x0040 in larger cities, otherwise 0x0000. Possibly building overflow or scenario flags. |
+| +24 | 1 byte | Padding | ✅ | Always 0x00. |
+| +25 | 1 byte | **Food box progress** | Strong | Unsigned byte (0–217 observed). Represents food accumulated toward next population growth point. NOT a simple signed surplus — values >128 appear in large cities. The growth target varies by city size and Granary status. |
+| +26 | 1 byte | Unknown | Partial | Usually 0; occasionally 1. |
+| +27 | 5 bytes | **Terrain/resource data** | Partial | Five uint8 values (range 0–13, occasionally >128 as signed). Related to terrain in city radius. Byte +30 is constant (=7) within all cities of a single standard game but varies in scenarios, suggesting it may encode difficulty level or a game-wide terrain modifier. Other bytes vary per city and may represent tile types or resource counts. |
+| +32 | 1 byte | **Shield box progress** | Tentative | Small values (0–13 typical, occasionally >128 signed). Likely accumulated shields toward current production item. Resets on build completion. |
+| +33 | 1 byte | Unknown | Unknown | Often 0; sometimes small values (2–11). Only non-zero in ~40% of cities. |
+| +34 | 2 bytes | Unknown | Unknown | Usually 0x0000. |
+| +36 | 1 byte | Unknown | Unknown | Often 0; sometimes large values (up to 34). Non-zero in some producing cities. |
+| +37 | 3 bytes | Reserved | ✅ | Always 0x000000. |
+| +40 | 2 bytes | Unknown | Unknown | Usually 0x0000. |
+| +42 | 2 bytes | **Food output** (uint16 LE) | ✅ Confirmed | Total food produced per turn (gross, not net). Range 0–12 across all saves. |
+| +44 | 2 bytes | **Shield output** (uint16 LE) | ✅ Confirmed | Total shields produced per turn. Range 0–12. |
+| +46 | 2 bytes | **Trade output** (uint16 LE) | ✅ Confirmed | Total trade arrows per turn. Range 1–17. |
+| +48 | 1 byte | Unknown | Unknown | Values 5–19. Does NOT correlate directly with city size, tile count, or food+shields+trade. Possibly current build item ID (unit type 0–61, improvement 62+). |
+| +49 | 1 byte | Unknown | Unknown | Values 2–10. Independent of +48. |
+| +50 | 1 byte | Unknown | Unknown | Values 0–3. Possibly specialist count or build category. |
+| +51 | 1 byte | Unknown | Unknown | Almost always 0; occasionally 1. |
+| +52 | 1 byte | **City ID** | ✅ Confirmed | Zero-based sequential identifier, unique across all cities in the save. Referenced by Wonders section (city ID for wonder location). Confirmed by Apolyton: "0 for first city, 1 for second etc." |
+| +53 | 1 byte | Padding | ✅ | Always 0x00. |
+| +54 | 2 bytes | Reserved | ✅ | Always 0x0000. |
+| +56 | 2 bytes | **X coordinate** (uint16 LE) | ✅ Confirmed | Isometric X. Low byte is coordinate; high byte always 0. |
+| +58 | 2 bytes | **Y coordinate** (uint16 LE) | ✅ Confirmed | Isometric Y. Low byte is coordinate; high byte always 0. |
+| +60 | 4 bytes | **Building bitmask (high)** | ✅ Confirmed | Bytes +60-63 form the upper 32 bits of the 64-bit building bitmask. Byte +63 is always 0x00 in standard games but 0x04 in ROMAN scenario (bit 58 = scenario-specific improvement or wonder flag). |
+| +64 | 1 byte | **Civ reference A** | Partial | Values 0–7. **Always equals byte +66** (confirmed 98%+ of cities). Does NOT directly match owner ID. Possibly encodes a civ-slot-relative index or original builder identity. |
+| +65 | 1 byte | **Civ reference B** | Partial | Values 1–7. Independent of +64/+66. May reference a different civ (trade partner, last attacker). |
+| +66 | 1 byte | **Civ reference C** | Partial | Always equals +64. |
+| +67 | 1 byte | Unknown | Unknown | Usually 0. |
+| +68 | 1 byte | **Sentinel** | ✅ Confirmed | Always 0xFF. Marks start of per-civ-slot data block. |
+| +69 | 8 bytes | **Per-civ slot data** | Partial | 8 bytes, one per civ slot. In scenarios (ROMAN), all 8 values are usually identical per city (e.g., all 4s, all 6s). In standard games (stubear), mostly zeros with occasional non-zero values. The uniform value in scenarios may encode the civ slot of the founding civilization. Exceptions exist (e.g., Carthage: `[5,5,5,5,5,5,5,2]` — 7 fives and one 2). |
+| +77 | 3 bytes | Unknown | Unknown | Usually 0x000000. Occasionally byte +78 = 1 (e.g., Alexandria). |
+| +80 | 2 bytes | Unknown | Unknown | Usually 0x0000. |
+| +82 | 2 bytes | **Unknown stored value** (uint16 LE) | Tentative | Range 0–53. Possibly accumulated food toward growth, or some other resource counter. |
+| +84 | 2 bytes | **Stored shields** (uint16 LE) | Strong | Range 0–207. Accumulated shields toward current production. Cities building expensive items (Wonders) have higher values. |
+| +86 | 1 byte | **Owner civ slot** | ✅ Confirmed | Current owner's civilization slot ID. NOT the founding civ — changes when cities are conquered. |
+| +87 | 1 byte | Unknown | Unknown | Usually 0. |
+
+##### Building Bitmask (+20-23, uint32 LE) — CONFIRMED
+
+**Verified via controlled experiment**: Playing as France, built Palace, Granary, Temple, Marketplace, and Library one per turn in Paris, saving after each. The bitmask at +20-23 changed exactly as predicted:
+
+| Save | Buildings present | +20 value | Binary | Bits set |
+|------|------------------|-----------|--------|----------|
+| base | Palace only | `0x02` | `00000010` | 1 |
+| granary | +Granary | `0x0A` | `00001010` | 1,3 |
+| temple | +Temple | `0x1A` | `00011010` | 1,3,4 |
+| market | +Marketplace | `0x3A` | `00111010` | 1,3,4,5 |
+| library | +Library | `0x7A` | `01111010` | 1,3,4,5,6 |
+
+Confirmed by matching the city screen screenshot (showing all 5 improvements in City Improvements list).
+
+The bit numbering is **1-indexed**, matching the RULES.TXT improvement order:
+
+| Bit | Improvement | Bit | Improvement |
+|-----|-------------|-----|-------------|
+| 0 | *(unknown flag)* | 16 | Manufacturing Plant |
+| 1 | Palace | 17 | SDI Defense |
+| 2 | Barracks | 18 | Recycling Center |
+| 3 | Granary | 19 | Power Plant |
+| 4 | Temple | 20 | Hydro Plant |
+| 5 | Marketplace | 21 | Nuclear Plant |
+| 6 | Library | 22 | Stock Exchange |
+| 7 | Courthouse | 23 | Superhighways |
+| 8 | City Walls | 24 | Research Lab |
+| 9 | Aqueduct | 25 | SAM Missile Battery |
+| 10 | Bank | 26 | Coastal Fortress |
+| 11 | Cathedral | 27 | Solar Plant |
+| 12 | University | 28 | Harbor |
+| 13 | Mass Transit | 29 | Offshore Platform |
+| 14 | Colosseum | 30 | Airport |
+| 15 | Factory | 31 | Police Station |
+
+Bits 1–6 are confirmed by the controlled experiment. Bits 7–31 are inferred from RULES.TXT order and validated against the ROMAN scenario (e.g., cities with City Walls, Aqueduct, Cathedral, SDI Defense all have the expected bits set). Bit 0 appears in ~46% of ROMAN cities but no user-game cities; its meaning is unknown (possibly a scenario flag or the "Nothing" entry in RULES.TXT).
+
+**Key correction**: +20-23 was previously misidentified as "city size" (byte +20) because the bitmask value for a Palace-only city (`0x02`) coincidentally resembled a size value. The fields at +16-19 and +60-63 were previously misidentified as a split 64-bit building bitmask; they are now known to be separate fields (purpose unknown — possibly tile working patterns or city state flags).
+
+##### Resource Field Relationship
+
+An approximate relationship holds across ~90% of cities: **+42 + +44 ≈ +46** (confirmed in stubear: 23/30, StAuto2: 39/43). Exceptions are off by 1–2. The exact meaning of these three fields (food/shields/trade output, or city size/specialist/total) remains unconfirmed. The controlled experiment screenshot showed Food=2, Surplus=2, Trade=3, Production=2 for Paris, but the stored values (+42=3, +44=1, +46=3) do not cleanly map to these screenshot values.
+
+##### TODO: City Record Remaining Unknowns
+- [x] ~~Map building bitmask bits to specific improvements~~ → **DONE**: +20-23 is 32-bit bitmask, 1-indexed, RULES.TXT order
+- [ ] Find city size field (not at +20 as previously thought; +42 is a candidate but doesn't match screenshot)
+- [ ] Determine +16-19 purpose (not building bitmask; bitfield with varied patterns)
+- [ ] Determine +60-63 purpose (not building bitmask; changes with city growth)
+- [ ] Determine +42/+44/+46 exact meaning (food/shields/trade? or size-related?)
+- [ ] Determine +48-49 meaning (current build item? constant=4,2 in controlled experiment)
+- [ ] Decode +64-66 civ references
+- [ ] Decode +69-76 per-civ slot bytes
+- [ ] Confirm +82 = food stored (increments by 2/turn in controlled experiment, matching surplus=2)
+- [ ] Confirm +84 = shield stored (increments by 1/turn in controlled experiment)
 
 Notes:
-- Cities with `size = 0` are destroyed or disbanded. They remain in the save as historical records. The city count at header offset `0x003C` includes these dead cities.
+- The city count at header offset `0x003C` includes destroyed/disbanded cities which remain as historical records.
 - Destroyed cities retain their `owner` byte, which reflects the **last known owner**, not necessarily the founding civilization.
 - Cities at coordinates `(0, 0)` with nonsensical names (e.g., single character `"H"`) are likely dummy/invalid records.
 - City records for destroyed cities can span the entire map — they are **not** reliable for computing current territorial control. Use the tile visibility bitmask instead.
 - A city's "owner" ID is **not** the same as the civ slot number used in tile byte[3]. The relationship between owner IDs and slot numbers must be determined per-save.
 
-### Section 7: Tail Data (1,807 bytes, fixed)
+### Section 7: Tail Data (1,807 bytes standard; 1,907 bytes for scenarios)
 
-The final 1,807 bytes of every `.SAV` file contain post-city data. This section has been confirmed as **exactly 1,807 bytes** in all 5 saves analyzed (ranging from 16-city early-game to 43-city late-game saves of different sizes).
+The final section of every `.SAV` file contains post-city data. In standard games, this section is **exactly 1,807 bytes** (confirmed across 6 of 7 saves). **Scenario saves** have a 100-byte appendix (1,907 bytes total), with the extra 100 bytes appended at the end (all zeros in the observed save, likely reserved for additional scenario metadata). The scenario name string (e.g., `"The Rise Of Rome"`) appears at tail offset +1471.
 
-Contents include:
-- Game completion/scoring data
-- Tribe name strings (e.g., `"Aztecs"`, `"Mongols"`, `"Carthaginians"`, `"Sioux"`) — these appear to be the names of **eliminated civilizations**
-- Possible wonder ownership data, spaceship status, or other endgame state
-- A structured block with what appears to be technology cost progression tables
+The fixed constants at tail +1384 (`0xAB 0x05 0x46 0x03 0x01 0x00 0x03`) are **identical** in both standard and scenario saves, confirming the extra 100 bytes are appended, not inserted.
 
-The tribe names found in the tail section provide a way to identify which civilizations were destroyed during the game.
+#### Tail Internal Structure
+
+| Offset | Size | Sub-section | Notes |
+|--------|------|-------------|-------|
+| +0 | 32 bytes | Per-civ state flags | Small values; appears to encode current civ status (alive/dead, government type, etc.) |
+| +32 | 12 bytes | Game counters | Includes turn-related values and technology advancement flags |
+| +44 | 38 bytes | Technology/wonder ID list | 19 × uint16 LE. Values like `0x0483`, `0x048C`, `0x04FE` (category `0x04`) and `0xFBxx` (different category). May represent available or researched technologies. |
+| +82 | ~270 bytes | **Historical score table** | 8 bytes per row, one row per ~4 game turns. Column 0 = player metric (likely score or tech count), column 1 = always 0, columns 2–7 = per-civ metrics. Rows increment over time, providing a turn-by-turn history of civilization progress. Number of populated rows ≈ `turn_number / 4`. |
+| ~+350 | ~940 bytes | Zero padding | Reserved space for additional history rows in longer games (maximum ~117 rows for a 500-turn game) |
+| +1288 | 96 bytes | Game engine constants | Contains fixed values consistent across saves: `0x0780` (1920), `0x0438` (1080), `0x067A` (1658), `0x03DE` (990). Possibly scoring coefficients, map display parameters, or spaceship component data. |
+| +1384 | 8 bytes | Fixed constants | Always `0xAB00`, `0x4603`, `0x0103`, `0x0300` — identical across all saves |
+| +1392 | 6 bytes | Per-game summary | Three uint16 values that vary per save (possibly total score components) |
+| +1398 | ~100 bytes | **Per-civ starting positions** | 7 × 14-byte blocks. Each block contains a coordinate pair `(x, y)` stored as `(x*256, y*256)` in uint16 format. Observed values: `(41, 25)` for all stubear saves (44×63 map), `(74, 60)` for EMMA save. These likely represent the initial settler spawn positions for each civilization. |
+| ~+1498 | to EOF | **Eliminated civ tribe names** | Null-terminated ASCII strings in 24-byte padded fields. Contains names of civilizations destroyed during the game (e.g., `"Mongols"`, `"Carthaginians"`, `"Sioux"`, `"Aztecs"`). Empty in saves where no civs have been eliminated. |
+
+The historical score table and eliminated civ names provide a way to reconstruct the game's progression timeline and identify which civilizations were destroyed.
+
+##### TODO: Tail Data Unknown Fields
+<!-- PRIORITY 5: ~60% of 1807 bytes still unknown. -->
+- [ ] Decode +0-31 per-civ state flags in detail (alive/dead, government type, war/peace state)
+- [ ] Decode +32-43 game counters (what do they count?)
+- [ ] Decode +44-81 technology/wonder ID list (which tech/wonder does each uint16 reference?)
+- [ ] Map the ~940-byte zero padding region (+350 to +1288) — is it truly empty or does it contain sparse data?
+- [ ] Decode +1288-1383 game engine constants (scoring coefficients? display params? spaceship data?)
+- [ ] Decode +1392-1397 per-game summary values
 
 ### Tribe / Civilization Name
 
