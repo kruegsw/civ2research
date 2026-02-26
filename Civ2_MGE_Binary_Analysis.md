@@ -326,71 +326,129 @@ The section contains sparse data with large zero regions. Near the tile data bou
 
 The autosave produced when "Autosave each turn" is enabled is named `St_Auto.SAV`, saved to the game's installation directory.
 
-### Section 4: Map Tile Data (fixed size: `num_tiles × 6` bytes)
+### Section 4: Map Data (three blocks + padding)
 
-Tile data consists of **6-byte records**, one per tile. The total number of tiles is `(map_width / 2) × map_height`. Tiles are stored row by row, with `map_width / 2` tiles per row (22 tiles per row for a 44-wide map).
+The map data consists of a **fixed-position map header**, three contiguous data blocks, and a 1024-byte padding block. Unlike most other sections, the map header offset is **fixed at byte 13702** in all saves (confirmed by civ2mod.c: `MAP_HEADER_OFFSET 13702`).
 
-**Finding the tile data offset**: The tile data offset varies between saves. Two approaches:
+#### Map Header (14 bytes at offset 13702)
 
-1. **From the end**: Calculate `EOF - 1807 - (num_cities × 88)` to find the end of the unit section. The tile data ends some distance before that.
-2. **By scanning**: Search for a contiguous block of exactly `num_tiles × 6` bytes where `byte[0] & 0x0F` is always ≤ 10 (valid terrain) and the terrain distribution is realistic (ocean at 40–60%, at least 7 terrain types, no single land type exceeding ~25%). **Caution**: Blocks of zero bytes elsewhere in the file will appear as valid "Desert" (terrain ID 0) and produce false positives with high desert percentages (>50%). Reject candidates where any single terrain type exceeds 30% of tiles.
+Seven uint16 LE values (confirmed by civ2mod.c and hexedit.rtf):
 
-#### Tile Record Structure (6 bytes)
+| Offset | Field | Example | Notes |
+|--------|-------|---------|-------|
+| 13702 | `map_width2` | 80 | Map width × 2 (Civ2 doubled coordinate system). Actual tile columns = value / 2. |
+| 13704 | `map_height` | 50 | Map height in rows. |
+| 13706 | `map_size` | 2000 | Total tiles = (map_width2 / 2) × map_height. |
+| 13708 | `map_shape` | 0 | 0 = round (wraps horizontally), 1 = flat. Also controlled by header byte 13. |
+| 13710 | `map_seed` | 16388 | Random seed for map generation. Only 64 patterns exist (Höfelt). |
+| 13712 | `quarter_width` | 20 | (map_width2 / 4), rounded up. Used for Block 3 dimensions. |
+| 13714 | `quarter_height` | 13 | (map_height / 4), rounded up. Used for Block 3 dimensions. |
+
+#### Block 1: Per-Civ Known Improvements (offset 13716, size = `map_size × 7`)
+
+Starts at fixed offset **13716** (`MAP_DATA_OFFSET` in civ2mod.c). Contains 7 sections of `map_size` bytes each — one section per non-barbarian civilization. Each byte in a section encodes the tile improvements that civilization has last observed for that tile:
+
+| Bit | Improvement |
+|-----|-------------|
+| 0x01 | Unit present |
+| 0x02 | City present |
+| 0x04 | Irrigation |
+| 0x08 | Mining |
+| 0x10 | Road |
+| 0x20 | Railroad (upgrade over road) |
+| 0x40 | Fortress |
+| 0x80 | Pollution |
+
+Farmland = irrigation + mining. Airbase = fortress + city present (explains the airbase bugs: extra food, acts as railroad). Undiscovered tiles are `0x00`.
+
+#### Block 2: Terrain Data (offset = `13716 + map_size × 7`, size = `map_size × 6`)
+
+**This is the actual map data.** Each tile is a 6-byte record. The block offset is calculated as:
+
+```
+block2_offset = 13716 + (map_size * 7)
+```
+
+From civ2mod.c: `map_block2_offset = MAP_DATA_OFFSET + (mapSize * 7)`
+
+##### Tile Record Structure (6 bytes per tile)
 
 | Byte | Field | Encoding |
 |------|-------|----------|
-| 0 | Terrain type | Lower nibble (`& 0x0F`): terrain ID. Upper nibble: flags (river, special resource, etc.) |
-| 1 | Improvements A | Roads, irrigation, mining, fortress, etc. |
-| 2 | Improvements B | Additional improvement flags. |
-| 3 | **Visibility / Territory bitmask** | **Each bit represents one civ slot. Bit N set = civ in slot N has explored this tile.** This is what the minimap uses to color territory. |
-| 4 | City working / misc | Bit 5 (`0x20`) is a flag (possibly "being worked by a city"). Lower bits relate to which city is working the tile. |
-| 5 | Continent / region | Encodes continent ID or territory region. Common values: `0xF0` (ocean), `0x50`, `0x30`, `0x20`, `0x24`, `0x52` (various land regions). |
+| 0 | **Terrain type + flags** | Low nibble (`& 0x0F`): terrain ID (0-10, see table below). Bit 6 (`0x40`): no resource. Bit 7 (`0x80`): river. Bit 5 (`0x20`): terrain resource animation (ToT only). |
+| 1 | **Tile improvements** | Same encoding as Block 1 (0x01=unit, 0x02=city, 0x04=irrigation, 0x08=mining, 0x10=road, 0x20=railroad, 0x40=fortress, 0x80=pollution). This byte holds the *actual* improvements; Block 1 holds per-civ *known* improvements. |
+| 2 | **City radius indicator** | Which civ's city radius covers this tile. 0x00=none/barbarian. 0x20=White, 0x40=Green, 0x60=Blue, 0x80=Yellow, 0xA0=Cyan, 0xC0=Orange, 0xE0=Purple. When two cities overlap, tiles are assigned to one city. |
+| 3 | **Land/sea body counter** | Each contiguous body of land or water gets a unique number. Counting starts top-left, proceeds left-to-right, top-to-bottom. Water bodies < 9 tiles always get number 63. Visible via right-click in game: "Loc: (12, 34) **5**" where 5 is this body counter. |
+| 4 | **Visibility bitmask** | Per-civ exploration flags. Bit 0 (0x01) = Red/Barbarians, Bit 1 (0x02) = White, Bit 2 (0x04) = Green, Bit 3 (0x08) = Blue, Bit 4 (0x10) = Yellow, Bit 5 (0x20) = Cyan, Bit 6 (0x40) = Orange, Bit 7 (0x80) = Purple. |
+| 5 | **Ownership + Fertility** | Low nibble (`& 0x0F`): tile owner (0=Red/Barb, 1=White, ..., 7=Purple, 15(0xF)=None). Owner 0 required for goody huts. High nibble (`>> 4`): fertility (0-15). AI uses fertility > 7 for city placement; 15 = build immediately. Only Grassland/Plains get initial fertility; other terrains start at 0 but increase with improvements. |
 
-These per-tile fields are confirmed by the network message types: `NM_TERRAIN_SET`, `NM_SEEN_SET`, `NM_OWNER_SET`, `NM_CITY_USING_SET`, `NM_REGION_SET`, `NM_FEATURE_SET`.
+These per-tile fields are confirmed by hexedit.rtf (Höfelt), civ2mod.c (uses `MAP_ITEM_TERRAIN 0`, `MAP_ITEM_VISIBILITY 4`, `MAP_ITEM_OWNER 5`, `MAP_ITEM_COUNTER 3`), and the network message types: `NM_TERRAIN_SET`, `NM_SEEN_SET`, `NM_OWNER_SET`, `NM_CITY_USING_SET`, `NM_REGION_SET`, `NM_FEATURE_SET`.
 
-##### TODO: Tile Record Remaining Unknowns
-<!-- PRIORITY 7: Bytes 4 and 5 partially decoded. -->
-- [ ] Fully decode byte 4: city working assignment (which city? which ring position?)
-- [ ] Fully decode byte 5: continent/region encoding (how are continent IDs assigned? what do the bit patterns mean?)
-- [ ] Decode byte 0 upper nibble: river flag, special resource flags, pollution flag
-- [ ] Decode byte 1: which bits correspond to which improvements (road, railroad, irrigation, farmland, mine, fortress, airbase)
-- [ ] Decode byte 2: additional improvement bits (pollution? fallout? goody hut?)
+#### Block 3: Quarter-Resolution Data (offset = Block 2 end, size = `quarter_width × quarter_height × 2`)
+
+Purpose unclear. Höfelt: "This section seems to be entirely pointless. Even more so because in Test of Time there's only ever one third block." Two parts with structure roughly similar to the map at quarter resolution.
+
+#### 1024-Byte Padding
+
+Located between Block 3 and the unit section. Höfelt: "almost certainly nothing to do with the map." In ToT this is 10,240 bytes.
+
+#### Section Navigation Formula (civ2mod.c algorithm)
+
+The complete formula to navigate from the map header to every subsequent section:
+
+```
+map_header      = 13702                                    # Fixed
+map_width2      = uint16 at 13702
+map_height      = uint16 at 13704
+map_size        = uint16 at 13706                          # = map_width2/2 * map_height
+quarter_width   = uint16 at 13712
+quarter_height  = uint16 at 13714
+
+block1_offset   = 13716                                    # Fixed
+block2_offset   = 13716 + map_size * 7                     # Terrain data
+block3_offset   = block2_offset + map_size * 6
+unit_offset     = block3_offset + quarter_width * quarter_height * 2 + 1024
+city_offset     = unit_offset + total_units * 32           # total_units from header byte 58
+```
+
+This matches the civ2mod.c navigation exactly, validated against all test saves. The city section calculated this way agrees with the end-of-file method (`EOF - tail_size - num_cities * 88`).
 
 #### Terrain Type IDs
 
-| ID | Terrain |
-|----|---------|
-| 0 | Desert |
-| 1 | Plains |
-| 2 | Grassland |
-| 3 | Forest |
-| 4 | Hills |
-| 5 | Mountains |
-| 6 | Tundra |
-| 7 | Glacier |
-| 8 | Swamp |
-| 9 | Jungle |
-| 10 | Ocean |
+| ID | Terrain | ID | Terrain |
+|----|---------|----|---------|
+| 0 | Desert | 6 | Tundra |
+| 1 | Plains | 7 | Glacier |
+| 2 | Grassland | 8 | Swamp |
+| 3 | Forest | 9 | Jungle |
+| 4 | Hills | 10 | Ocean |
+| 5 | Mountains | | |
 
-#### Territory / Visibility (Byte 3) — Key Finding
+#### Territory / Visibility (Byte 4) — Key Finding
 
 **This is the most important byte for territory visualization.** It is a bitmask where each bit represents one civilization slot:
 
 ```
-Bit 0 = Civ slot 0 has explored/controls this tile
-Bit 1 = Civ slot 1
-Bit 2 = Civ slot 2
-...
-Bit 5 = Civ slot 5
+Bit 0 (0x01) = Barbarians (Red)
+Bit 1 (0x02) = White (civ 1)
+Bit 2 (0x04) = Green (civ 2)
+Bit 3 (0x08) = Blue (civ 3)
+Bit 4 (0x10) = Yellow (civ 4)
+Bit 5 (0x20) = Cyan (civ 5)
+Bit 6 (0x40) = Orange (civ 6)
+Bit 7 (0x80) = Purple (civ 7)
 ```
 
-The minimap colors each tile by the **highest bit set** — i.e., the last civ to explore it. For example, in a late-game save where one civ dominates:
-- Most land tiles have only bit 0 set → the dominant civ (slot 0) controls nearly everything
-- A handful of tiles have bit 2 or bit 3 set → minor surviving civs
+The minimap colors each tile by the **highest bit set** — i.e., the last civ to explore it.
 
 For ocean tiles, multiple bits are commonly set (e.g., `0b00111111` = 63, meaning all 6 civs have sailed there).
 
-**Civ slot ≠ owner ID in city records.** The slot is the position in the game's internal civ array (0–6 for 7 civs). The "owner" byte in city records uses a different numbering. Mapping between them requires cross-referencing city positions against tile visibility data.
+##### TODO: Map Data Remaining Unknowns
+- [x] Three-block structure confirmed (Höfelt, civ2mod.c)
+- [x] All 6 tile bytes fully documented (Höfelt)
+- [x] Block offset formula confirmed (civ2mod.c)
+- [ ] Block 3 purpose — verify whether it has any gameplay effect
+- [ ] Determine if the 1024-byte padding block contains any meaningful data
 
 ### Isometric Coordinate System
 
@@ -406,6 +464,162 @@ Civ2 uses an **isometric diamond grid**:
 - **The map wraps horizontally.** Column `(x // 2) % (width // 2)` gives the visual position.
 
 For rendering, each tile is a **diamond** shape. Odd rows are offset horizontally by half a tile width.
+
+#### Map Rendering Algorithm (Validated Against Game Screenshot)
+
+The following algorithm produces a map render that matches the actual Civ2 game display. It was validated by comparing the output against a cheat-mode zoomed-out screenshot of the same save file, confirming correct terrain, city positions, continent shapes, and ocean layout.
+
+##### Step 1: Read Map Header (fixed offset 13702)
+
+```python
+MAP_HEADER_OFFSET = 13702
+
+map_width2      = uint16_le(data, 13702)   # Width × 2 (doubled coordinate system)
+map_height      = uint16_le(data, 13704)   # Height in rows
+map_size        = uint16_le(data, 13706)   # Total tiles
+quarter_width   = uint16_le(data, 13712)   # For Block 3 size calculation
+quarter_height  = uint16_le(data, 13714)   # For Block 3 size calculation
+
+map_width = map_width2 // 2                # Actual tile columns per row
+```
+
+##### Step 2: Calculate Block 2 Offset (terrain data)
+
+```python
+block2_offset = 13716 + (map_size * 7)     # Skip Block 1 (per-civ improvements)
+```
+
+Block 1 is 7 sections of `map_size` bytes each (one per non-barbarian civ, containing known tile improvements). This is the most common source of errors — reading Block 1 instead of Block 2 produces garbage terrain.
+
+##### Step 3: Read Terrain for Each Tile
+
+Tiles are stored row by row, `map_width` tiles per row. For tile at grid position (grid_x, grid_y):
+
+```python
+tile_index = grid_y * map_width + grid_x
+tile_offset = block2_offset + tile_index * 6
+
+terrain_id = data[tile_offset] & 0x0F      # 0=Desert ... 10=Ocean
+has_river  = bool(data[tile_offset] & 0x80)
+```
+
+##### Step 4: Convert City Coordinates to Grid Position
+
+City coordinates use the doubled X system. Convert to grid position for rendering:
+
+```python
+# City record: X at +0, Y at +2 (uint16 LE), Name at +32
+city_x = uint16_le(data, city_offset + 0)   # Doubled coordinate (0 to map_width2-1)
+city_y = uint16_le(data, city_offset + 2)   # Row (0 to map_height-1)
+
+grid_x = city_x // 2                        # Grid column (0 to map_width-1)
+grid_y = city_y                              # Grid row (unchanged)
+```
+
+##### Step 5: Render Isometric Diamond Grid
+
+Each tile is rendered as a diamond. Odd rows are offset horizontally by half a tile width:
+
+```python
+TILE_W = 32    # Diamond width in pixels
+TILE_H = 16    # Diamond height in pixels
+
+for y in range(map_height):
+    for x in range(map_width):
+        # Isometric pixel position
+        x_pixel_offset = (TILE_W // 2) if (y % 2 == 1) else 0
+        px = x * TILE_W + x_pixel_offset
+        py = y * (TILE_H // 2)
+
+        # Diamond vertices
+        center_x = px + TILE_W // 2
+        center_y = py + TILE_H // 2
+        diamond = [
+            (center_x, py),                    # top
+            (px + TILE_W, center_y),           # right
+            (center_x, py + TILE_H),           # bottom
+            (px, center_y),                    # left
+        ]
+        draw_polygon(diamond, fill=terrain_color[terrain_id])
+```
+
+##### Step 6: Apply Horizontal Wrapping (camera offset)
+
+The game view wraps horizontally. To match a specific camera position (e.g., from a screenshot), apply a column offset:
+
+```python
+camera_x_start = 34   # In doubled coordinates; adjust to match desired view
+
+for vis_col in range(map_width):
+    actual_grid_x = (vis_col + camera_x_start // 2) % map_width
+    # Read tile at (actual_grid_x, y) but render at visual column vis_col
+```
+
+##### Step 7: Navigate to City Section
+
+To find city records, chain the offset calculations forward from the map header:
+
+```python
+total_units  = uint16_le(data, 58)          # Header offset 0x003A
+total_cities = uint16_le(data, 60)          # Header offset 0x003C
+
+block3_offset = block2_offset + map_size * 6
+unit_offset   = block3_offset + quarter_width * quarter_height * 2 + 1024
+city_offset   = unit_offset + total_units * 32
+
+# Each city is 88 bytes: X at +0, Y at +2, Owner at +8, Name at +32
+for i in range(total_cities):
+    record = city_offset + i * 88
+    cx = uint16_le(data, record + 0)
+    cy = uint16_le(data, record + 2)
+    owner = data[record + 8]
+    name = null_terminated_string(data, record + 32, 16)
+```
+
+##### Terrain Color Palette
+
+Approximate RGB values matching the Civ2 game palette:
+
+| ID | Terrain | RGB |
+|----|---------|-----|
+| 0 | Desert | (210, 180, 100) |
+| 1 | Plains | (170, 155, 75) |
+| 2 | Grassland | (80, 145, 50) |
+| 3 | Forest | (30, 105, 30) |
+| 4 | Hills | (155, 125, 75) |
+| 5 | Mountains | (170, 160, 150) |
+| 6 | Tundra | (175, 190, 200) |
+| 7 | Glacier | (230, 240, 250) |
+| 8 | Swamp | (50, 85, 65) |
+| 9 | Jungle | (20, 70, 20) |
+| 10 | Ocean | (40, 60, 155) |
+
+##### Civilization Colors
+
+| Slot | Color | RGB |
+|------|-------|-----|
+| 0 | Red (Barbarians) | (200, 0, 0) |
+| 1 | White | (255, 255, 255) |
+| 2 | Green | (0, 180, 0) |
+| 3 | Blue | (50, 80, 220) |
+| 4 | Yellow | (240, 220, 0) |
+| 5 | Cyan | (0, 200, 200) |
+| 6 | Orange | (240, 140, 0) |
+| 7 | Purple | (180, 0, 200) |
+
+##### Common Pitfalls
+
+1. **Reading Block 1 instead of Block 2**: Block 1 (per-civ improvements) starts at offset 13716. Block 2 (actual terrain) starts at `13716 + map_size * 7`. Forgetting to skip Block 1 is the most common error.
+
+2. **City name at +0 vs +32**: The city record starts with XY coordinates, not the name. The name is at offset +32 within the record. (civ2mod.c: `CITY_ITEM_NAME_OFFSET 32`.)
+
+3. **Doubled coordinate system**: City X coordinates are in the doubled system (0 to `map_width2 - 1`). Divide by 2 to get the grid column. Even rows use even X, odd rows use odd X.
+
+4. **Isometric stagger**: Odd rows must be shifted right by half a tile width when rendering. Without this offset, the map appears as a rectangular grid instead of the correct diamond pattern.
+
+5. **Horizontal wrapping**: The map wraps. Cities near X=0 or X=map_width2 may appear on the opposite edge of the display. Apply modular arithmetic: `grid_x % map_width`.
+
+6. **Tile byte 3 vs byte 4**: Old community docs sometimes had these swapped. Byte 3 is the land/sea body counter; byte 4 is the visibility bitmask. civ2mod.c confirms: `MAP_ITEM_COUNTER 3`, `MAP_ITEM_VISIBILITY 4`.
 
 ### Section 5: Unit Records (`num_units × 32` bytes)
 
