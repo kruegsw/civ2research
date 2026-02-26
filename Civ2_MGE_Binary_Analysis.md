@@ -178,24 +178,28 @@ All `.SAV` files (including `.NET`, `.HOT`, `.EML` network/multiplayer variants)
 
 ### Overall File Layout
 
+The layout below applies to `.SAV`, `.NET`, `.HOT`, and `.EML` files. `.SCN` files share the same structure but with shorter per-civ blocks, shorter unit/city records, and different map header offsets — see "SCN vs SAV Structural Differences" below.
+
 ```
 ┌─────────────────────────────────────────────────┐
 │ 1. Header (14 bytes, fixed)                     │  0x0000
 ├─────────────────────────────────────────────────┤
-│ 2. Game State Preamble (330 bytes)              │  0x000E
+│ 2. Game State Preamble (330 bytes, SAV/NET)     │  0x000E
+│    (316 bytes for SCN files)                    │
 ├─────────────────────────────────────────────────┤
-│ 3a. Per-Civ Name Blocks (8 × 242 bytes)        │  0x0158
+│ 3a. Per-Civ Name Blocks (8 × 242 bytes)        │  0x0158 (SAV/NET)
+│                                                 │  0x014A (SCN)
 ├─────────────────────────────────────────────────┤
-│ 3b. Per-Civ Data Blocks (8 × 3,833 bytes)      │  0x08E8
+│ 3b. Per-Civ Data Blocks (8 × 1,428 bytes)      │  0x08E8 (SAV/NET)
+│     Last block truncated by 2 bytes             │  0x08DA (SCN, 8 × 1,396)
 ├─────────────────────────────────────────────────┤
-│ 3c. Extended Game Data (0 to ~93 KB, variable)  │  0x080B0 (if present)
+│ 4a. Map Header (14 bytes)                       │  13702/0x3586 (SAV/NET)
+│                                                 │  13432/0x3478 (SCN)
 ├─────────────────────────────────────────────────┤
-│ 4a. Map Header (14 bytes, FIXED at 13702)       │  0x3586
-├─────────────────────────────────────────────────┤
-│ 4b. Block 1: Per-Civ Known Improvements         │  13716 (0x3594)
+│ 4b. Block 1: Per-Civ Known Improvements         │  map_header + 14
 │     (map_size × 7 bytes)                        │
 ├─────────────────────────────────────────────────┤
-│ 4c. Block 2: TERRAIN DATA ← use this!           │  13716 + map_size×7
+│ 4c. Block 2: TERRAIN DATA ← use this!           │  Block 1 end
 │     (map_size × 6 bytes)                        │
 ├─────────────────────────────────────────────────┤
 │ 4d. Block 3: Quarter-Resolution Data            │  Block 2 end
@@ -203,35 +207,51 @@ All `.SAV` files (including `.NET`, `.HOT`, `.EML` network/multiplayer variants)
 ├─────────────────────────────────────────────────┤
 │ 4e. 1024-Byte Padding                           │
 ├─────────────────────────────────────────────────┤
-│ 5. Unit Records (num_units × 32 bytes)          │  varies
+│ 5. Unit Records (num_units × 32 bytes, SAV/NET) │  varies
+│    (num_units × 26 bytes for SCN)               │
 ├─────────────────────────────────────────────────┤
 │ 5b. Bridge Record (32 bytes, fixed)             │
 ├─────────────────────────────────────────────────┤
-│ 6. City Records (num_cities × 88 bytes)         │  varies
+│ 6. City Records (num_cities × 88 bytes, SAV/NET)│  varies
+│    (num_cities × 84 bytes for SCN)              │
 ├─────────────────────────────────────────────────┤
-│ 7. Tail Data (fixed: 1,807 or 1,907 bytes)      │  EOF - tail_size
+│ 7. Tail Data (see table below for sizes)        │  EOF - tail_size
 └─────────────────────────────────────────────────┘
 ```
 
-Across all saves analyzed, the **tail section is 1,807 bytes** for standard games or **1,907 bytes** for scenario saves (identifiable by header byte `0x0D` bit 0). Combined with the city count at header offset `0x3C`, the unit count at offset `0x3A`, and the confirmed record sizes (88 bytes/city, 32 bytes/unit), the entire file can be navigated from the end:
+#### Tail Size by File Type
+
+| File Type | Tail Size | Condition |
+|-----------|-----------|-----------|
+| Standard `.SAV` | **1,807 bytes** | `header[0x0D] & 0x01 == 0` |
+| Scenario `.SAV` | **1,907 bytes** | `header[0x0D] & 0x01 == 1` |
+| `.SCN` | **1,907 bytes** | Always scenario |
+| `.NET` | **2,979 bytes** | Network autosave |
+
+Combined with the city count at header offset `0x3C`, the unit count at offset `0x3A`, and the confirmed record sizes, the entire file can be navigated from the end:
 
 ```
-tail_size         = 1907 if (header[0x0D] & 0x01) else 1807
+# For SAV/NET files (32-byte units, 88-byte cities):
+tail_size         = { 1807 if standard SAV, 1907 if scenario SAV, 2979 if NET }
 tail_start        = file_size - tail_size
 gap_record        = tail_start - 32                     # 32-byte record before tail
 city_block_start  = gap_record - (num_cities × 88)
-unit_block_start  = city_block_start - (num_units × 32)  # cities follow units directly
-tile_block_end    = unit_block_start
-tile_block_start  = tile_block_end - ((map_width / 2) × map_height × 6)
+unit_block_start  = city_block_start - (num_units × 32)
+
+# For SCN files (26-byte units, 84-byte cities):
+tail_size         = 1907
+gap_record        = file_size - tail_size - 32
+city_block_start  = gap_record - (num_cities × 84)
+unit_block_start  = city_block_start - (num_units × 26)
 ```
 
-Note: `map_height` is a **single byte** at offset `0x0C` (not uint16). **However**, for tile data calculations, always use the map header at offset 13702, not the file header at 0x0A/0x0C. The end-of-file navigation shown above is useful for locating city and unit blocks, but tile block size should be calculated as `map_size × 6` where `map_size` comes from offset 13706.
+Note: `map_height` is a **single byte** at offset `0x0C` (not uint16). **However**, for tile data calculations, always use the map data header (offset 13702 for SAV/NET, 13432 for SCN), not the file header at 0x0A/0x0C. The end-of-file navigation shown above is useful for locating city and unit blocks, but tile block size should be calculated as `map_size × 6` where `map_size` comes from the map header.
 
 ### Section 1: Header (Bytes 0x0000–0x000D, 14 bytes, fixed)
 
 > **⚠️ CRITICAL: DO NOT USE THESE DIMENSIONS FOR MAP RENDERING OR TILE DATA.**
 >
-> The map width (0x0A) and height (0x0C) in this file header **do not match** the map data header at fixed offset 13702, and they **cannot be used** to calculate tile offsets, tile counts, or coordinate mappings. For the Stubear saves, this header says `width=44, height=63` while the map data header says `map_width2=80, map_height=50` (a 40×50 tile grid with 2,000 tiles — not 22×63 = 1,386).
+> The map width (0x0A) and height (0x0C) in this file header **do not match** the map data header, and they **cannot be used** to calculate tile offsets, tile counts, or coordinate mappings. For example, a file header may say `width=44, height=63` while the map data header says `map_width2=80, map_height=50` (a 40×50 tile grid with 2,000 tiles — not 22×63 = 1,386).
 >
 > Using the wrong dimensions cascades into every subsequent calculation: wrong Block 2 offset, wrong terrain reads, wrong city-to-tile mapping, and a completely garbled map.
 >
@@ -244,16 +264,18 @@ Note: `map_height` is a **single byte** at offset `0x0C` (not uint16). **However
 | 0x0009 | 1 byte | Format marker | Always `0x1A` (ASCII SUB character) |
 | 0x000A | 2 bytes | Map width (uint16 LE) | `44` in all saves analyzed |
 | 0x000C | 1 byte | **Map height** | Height in tiles. Single byte (NOT uint16). Standard=`63`, large=`191`. |
-| 0x000D | 1 byte | Map flags | `0x00`=standard, `0x80`=large map, `0x81`=large map + scenario. Bit 7=large map flag. |
+| 0x000D | 1 byte | Flags | Bitmask: **Bit 0** = scenario flag (game loaded from `.SCN`). **Bit 7** = large map flag. Observed: `0x00` = standard game, `0x81` = scenario on large map. |
 
 Notes:
 - **Previous documentation error corrected**: Bytes 0x08 and 0x09 were previously described as "separator 0x1A" and "version 0x2C". In reality, 0x08 is a null byte (`0x00`) and 0x09 is `0x1A`. The value `0x2C` (44) at offset 0x0A is the map width, not a version number.
-- `.NET` files (network saves) share the same `CIVILIZE` header format.
-- **These dimensions disagree with the map data header.** For the same save file, the file header stores `width=44, height=63` while the map data header at offset 13702 stores `map_width2=80, map_height=50`. The exact relationship between these two sets of values is not fully understood — the file header may represent the map generator's nominal settings or a legacy coordinate space, while the map data header defines the actual storage grid. Key observations:
+- `.NET` files (network autosaves), `.HOT` (hot-seat), and `.EML` (email play) files all share the same `CIVILIZE` header and binary structure as `.SAV` files.
+- `.SCN` files (original scenario data before being loaded as a game) also use `CIVILIZE` but have a **different internal structure** — see "SCN vs SAV Structural Differences" below.
+- `.MP` files (map templates) do **NOT** use the `CIVILIZE` header — see "Map Template File Format (.MP)" below.
+- **These dimensions disagree with the map data header.** The file header values at 0x0A/0x0C do not match the map data header. Key observations:
   - File header width `44` ≈ `map_width2 / 2 + 4` (i.e., 80/2 + 4 = 44). The "+4" is unexplained.
-  - File header height `63` has no obvious arithmetic relationship to `map_height=50`.
-  - The formula `total_tiles = (width × height) / 2 = 1,386` using file header values is **incorrect** for tile data purposes. The actual tile count is `map_size = 2,000` from offset 13706.
-- **For all map rendering, tile data navigation, and city coordinate mapping: always use the map header at offset 13702.** See Section 4.
+  - File header height varies: `63` for standard maps, `191` for large maps. Neither has an obvious arithmetic relationship to the actual `map_height`.
+  - The formula `total_tiles = (width × height) / 2` using file header values is **incorrect** for tile data purposes.
+- **For all map rendering, tile data navigation, and city coordinate mapping: always use the map data header.** See Section 4.
 
 ### Section 2: Game State (Bytes 0x000E–variable)
 
@@ -311,33 +333,32 @@ The value at offset 0x0029 is the player's **civ number** (Höfelt byte 41, civ2
 
 ### Section 3: Civilization Data (variable size per game configuration)
 
-This section contains all per-civilization data. It always has **8 civ slots** regardless of the `total_civs` header field (verified across all 7 saves, including games with 4, 8, and 20 civs at header offset `0x14`).
+This section contains all per-civilization data. It always has **8 civ slots** regardless of the `total_civs` header field or how many civilizations are actually active in the game.
 
-The section has three sub-parts:
+The section has two sub-parts:
 
-| Sub-section | Start Offset | Size | Description |
-|-------------|-------------|------|-------------|
-| Game State Preamble | `0x000E` | 330 bytes | Global game state fields (turn, difficulty, etc.) |
-| Per-Civ Name Blocks | `0x0158` | 8 × 242 = 1,936 bytes | Leader names, tribe names, government titles |
-| Per-Civ Data Blocks | `0x08E8` | 8 × N bytes | Technology, diplomacy, AI state, resources |
+| Sub-section | Start Offset (SAV/NET) | Start Offset (SCN) | Size | Description |
+|-------------|----------------------|-------------------|------|-------------|
+| Per-Civ Name Blocks | `0x0158` | `0x014A` | 8 × 242 = 1,936 bytes | Leader names, tribe names, government titles |
+| Per-Civ Data Blocks | `0x08E8` | `0x08DA` | 8 × N bytes (see below) | Technology, diplomacy, AI state, resources |
 
-The name block region (0x0158–0x08E8) and the `"dddddddd"` marker at `0x0926` are **identical across all 7 saves**, confirming the first two sub-sections are fixed-size. The per-civ data block size N **varies by game configuration**:
+The name block region and the `"dddddddd"` marker at `0x0926` (SAV/NET) or `0x0918` (SCN) are **fixed-size** across all files of the same type. The per-civ data block size N is **fixed per file type**:
 
-| Save | Map | 0x14 | Block (N) | Total Civ Data |
-|------|-----|------|-----------|----------------|
-| Stubear (×4) | 44×63 | 8 | 3,833 | 30,664 |
-| EMMA | 44×63 | 4 | 15,428 | 123,424 |
-| Roman (scenario) | 44×191 | 128 | 5,031 | 40,248 |
-| Claire | 44×191 | 20 | 13,316 | 106,528 |
+| File Type | Per-Civ Block Size (N) | Total (8 × N - 2)* | Map Header Offset |
+|-----------|----------------------|--------------------|--------------------|
+| SAV / NET | **1,428 bytes** | 11,422 bytes | 13702 (0x3586) |
+| SCN | **1,396 bytes** | 11,166 bytes | 13432 (0x3478) |
 
-The block size does NOT simply correlate with map size or civ count. The formula is not yet determined — it likely depends on multiple game parameters (map size, number of civilizations, scenario flags, and possibly ruleset modifications).
+\*The last of the 8 per-civ blocks is truncated by 2 bytes (i.e., 7 blocks × N + 1 block × (N-2)).
+
+**SAV vs SCN offset difference**: SAV/NET files have 270 extra bytes before the map header compared to SCN files: 14 bytes in the game state preamble + 32 bytes per civ slot × 8 slots = 14 + 256 = 270 bytes. This is because SAV files include additional per-unit and per-city ID tracking fields that SCN files omit.
 
 #### Per-Civ Name Block (242 bytes each)
 
 Each civ slot has a 242-byte block containing identity strings in fixed-width fields. The block starts at `0x0158 + (slot × 242)`. The player's slot is determined by `header[0x27]`.
 
-| Offset | Size | Field | Example (EMMA slot 7) |
-|--------|------|-------|------------------------|
+| Offset | Size | Field | Example |
+|--------|------|-------|---------|
 | +0 | 24 bytes | **Leader name** | `"Emmalia"` |
 | +24 | 24 bytes | **Tribe name** (plural) | `"Silewolves"` |
 | +48 | 24 bytes | **Tribe adjective** (singular) | `"Sielean"` |
@@ -352,11 +373,11 @@ Each civ slot has a 242-byte block containing identity strings in fixed-width fi
 
 All string fields are null-terminated within their 24-byte allocation. Residual bytes from previous save data may appear after the null terminator (e.g., `"andhi"` leftover from overwriting `"Gandhi"` with `"Emmalia"`). Fields are populated only for civs the player has met; unmet or eliminated civs have all-zero blocks.
 
-**Verification**: Across all 5 saves, `"Stubear"` (player name) always appears at exactly `0x0158 + (player_slot × 242)`, and AI leader names (e.g., `"Mao Tse Tung"`, `"Mohandas Gandhi"`) appear at their corresponding slot offsets.
+**Verification**: The player's name always appears at exactly `name_block_start + (player_slot × 242)`, and AI leader names (e.g., `"Mao Tse Tung"`, `"Mohandas Gandhi"`) appear at their corresponding slot offsets.
 
-#### Per-Civ Data Block (3,833 bytes each)
+#### Per-Civ Data Block (1,428 bytes each for SAV/NET; 1,396 bytes for SCN)
 
-Each civ slot has a 3,833-byte block starting at `0x08E8 + (slot × 3,833)` (for 8-slot games). These blocks contain:
+Each civ slot has a data block starting at `per_civ_data_start + (slot × block_size)` where `per_civ_data_start` is `0x08E8` for SAV/NET or `0x08DA` for SCN. The last (8th) block is 2 bytes shorter. These blocks contain:
 
 - **Technology state**: 6-byte entries per technology (pattern: `01 XX F0 YY 00 00` where XX encodes acquisition method and YY encodes tech level/era). Matches the 89 technologies from RULES.TXT.
 - **Diplomacy/attitudes**: int16 pairs encoding relationships with other civs.
@@ -365,29 +386,17 @@ Each civ slot has a 3,833-byte block starting at `0x08E8 + (slot × 3,833)` (for
 
 The blocks persist even for eliminated civs (retaining historical data). Active AI civs have the most non-zero data. The player's block has minimal data since AI behavior fields are not used.
 
-#### Per-Civ Data Block Internal Structure (confirmed for 3,833-byte blocks)
+The 32-byte difference between SAV (1,428) and SCN (1,396) blocks per civ corresponds to the extra unit/city ID tracking fields that the runtime game engine adds when a scenario is loaded and saved.
 
-Each 3,833-byte per-civ data block contains **repeating sub-blocks** of **1,428 bytes** each. The block holds 2 full sub-blocks and one truncated sub-block:
+**Independent confirmation**: AGRICOLA (Apolyton, May 2004) independently confirmed the 1,428-byte block size. Mercator's file format table of contents lists `Properties (8 × 1428 = 11424)` for the Civilizations section.
 
-**Independent confirmation**: AGRICOLA (Apolyton, May 2004) independently confirmed the 1,428-byte block size. Mercator's file format table of contents lists `Properties (8 × 1428 = 11424)` for the Civilizations section. Our autocorrelation analysis rediscovered this period from the binary data alone.
-
-| Sub-block | Absolute Offset | Size | Notes |
-|-----------|----------------|------|-------|
-| 0 | `+0` to `+1427` | 1,428 bytes | Full |
-| 1 | `+1428` to `+2855` | 1,428 bytes | Full |
-| 2 | `+2856` to `+3832` | 977 bytes | Truncated (1,428 − 451) |
-
-**Verification**: Boolean flag regions at relative offset +32 within each sub-block appear at absolute offsets +32, +1460, +2888 — exactly 1,428 bytes apart. City coordinate entries at relative +64 also repeat at the same interval. The 0xFF sentinel patterns at relative +357–447 repeat identically across all three sub-blocks.
-
-Each sub-block appears to encode this civilization's **knowledge of and relationship with other civilizations**. The city knowledge lists in each sub-block reference different sets of cities with different "focus" cities (e.g., sub-block 0 focuses on Leptis, sub-block 1 on Carthage, sub-block 2 on Pella in the ROMAN save).
-
-##### Sub-Block Internal Layout (1,428 bytes)
+##### Per-Civ Block Internal Layout (1,428 bytes for SAV/NET; 1,396 bytes for SCN)
 
 | Relative Offset | Size | Field | Notes |
 |----------------|------|-------|-------|
 | +0 | 14 bytes | **Attitude/relationship scores** | int16 LE pairs. Values like -20, -10, -2 observed. Likely diplomatic attitude modifiers toward other civs. |
 | +15–20 | 6 bytes | **Relationship int16 pairs** | 0xFFFF sentinel values when no contact. |
-| +31–38 | 8 bytes | **Per-civ diplomatic flags** | One byte per civ slot (0–7). Values: 0=no contact(?), 1=at war(?), 8 or 11 for barbarians (slot 0). Pattern `[8, 1, 1, 0, 1, 0, 0, 1]` seen in ROMAN player slot. |
+| +31–38 | 8 bytes | **Per-civ diplomatic flags** | One byte per civ slot (0–7). Values: 0=no contact(?), 1=at war(?), 8 or 11 for barbarians (slot 0). |
 | +64 | 386 bytes | **City knowledge list** | Up to ~64 entries × 6 bytes. See structure below. Populated entries followed by sentinel entries `[00 00 00 00 00 FF]` for empty slots. |
 | +451–465 | 15 bytes | **Game state values** | int16 pairs — scores, treasury, or economic counters. Values vary between saves and between sub-blocks. |
 | +468–469 | 2 bytes | **Marker bytes** | Values like `04 06`, `05 04`, `05 0C`. Possibly indicating era or tech level. |
@@ -408,70 +417,53 @@ Each entry in the city knowledge list encodes a city this civ knows about:
 | 3–4 | **Y coordinate** (uint16 LE) | Isometric Y of the city |
 | 5 | **Flags** | 0x00 or 0x01 typically. 0xFF = empty sentinel slot. |
 
-**Verified**: City coordinates in these entries match actual city positions in the city record section. In the ROMAN save, entries include Leptis (31,61), Caralis (40,72), Rome (36,62), Carthage (57,31), Pella (69,69), Alexandria (78,46), etc.
+**Verified**: City coordinates in these entries match actual city positions in the city record section.
 
-##### TODO: Per-Civ Data Block — Remaining Unknowns
-<!-- Significant progress made. Key remaining items: -->
-- [x] ~~Determine sub-block boundaries within each 3,833-byte block~~ → 3 × 1,428-byte sub-blocks
-- [x] ~~Locate per-civ diplomacy state~~ → +31–38 diplomatic flags per sub-block
-- [ ] Determine what each of the 3 sub-blocks represents (which foreign civ? chronological? grouped?)
+##### TODO: Per-Civ Block — Remaining Unknowns
+- [ ] Determine what each internal region represents (which foreign civ? chronological? grouped?)
 - [ ] Decode the relationship type byte values (what do 0, 2, 3, 4, -5, -3, -2 mean specifically?)
 - [ ] Decode the +565–660 bitmask region (tech bitmask? visibility? capabilities?)
 - [ ] Identify technology research state (which techs has this civ researched?)
 - [ ] Locate per-civ government type, treasury, and tax/luxury/science rates
 - [ ] Identify AI behavior / strategy priority fields
-- [ ] Determine per-civ data block formula for non-standard block sizes (EMMA=15,428, Claire=13,316) — internal layout differs from 3,833-byte blocks
 - [ ] Map the +451–548 statistics block fields to specific game values
+- [ ] Determine what the 32 extra bytes per civ in SAV vs SCN contain
 
-#### Extended Game Data (variable size, 0 to ~93 KB)
-
-Between the per-civ data blocks (`0x080B0` for 8-slot games) and the tile data, there may be an **additional variable-size section**. This section is absent in standard random-map games but present in scenarios, custom starts, and some modified games.
-
-| Save Type | Gap Size | Notes |
-|-----------|----------|-------|
-| Stubear (standard random) | **0 bytes** | Tiles follow immediately after civ data |
-| ROMAN (scenario) | 9,684 bytes | Scenario-specific data (events, victory conditions) |
-| ACCEL (accelerated start) | 77,976 bytes | Extended tech/resource state |
-| EMMA (custom game) | 92,760 bytes | Additional game configuration data |
-
-The section contains sparse data with large zero regions. Near the tile data boundary, 6-byte entries with technology-like patterns (e.g., `XX 00 00 01 FF F0`) appear, suggesting extended per-civ technology or diplomacy state. The presence of this section does NOT correlate with header byte `0x0D` (EMMA has `0x0D=0x00` but still has a 93 KB gap).
-
-**To locate tile data reliably**: Always calculate tile position from the end of the file (using the unit/city/tail formula), not by assuming tiles start at `0x080B0`.
-
-##### TODO: Extended Game Data Internal Structure
-<!-- PRIORITY 4: 0-93 KB variable section, present in non-standard games. -->
-- [ ] Determine what triggers this section's presence (scenario flag? custom rules? map size?)
-- [ ] Identify if it contains per-civ extensions or global data
-- [ ] Map scenario event data (triggers, conditions, actions)
-- [ ] Map extended technology definitions
-- [ ] Determine relationship between section size and game parameters
+> **CORRECTION**: Previous versions of this document described a variable-size "Extended Game Data" section (0 to ~93 KB) between per-civ data and the map header. This was based on an incorrect per-civ block size of 3,833 bytes. The actual per-civ block size is **1,428 bytes** (SAV/NET) or **1,396 bytes** (SCN), and the per-civ data blocks end immediately before the map header with no variable-size gap. The "extended data" observed in some saves was likely the per-civ data itself being misattributed.
 
 #### Autosave Filename
 
 The autosave produced when "Autosave each turn" is enabled is named `St_Auto.SAV`, saved to the game's installation directory.
 
 ### Section 4: Map Data (three blocks + padding)
-The map data consists of a **fixed-position map header**, three contiguous data blocks, and a 1024-byte padding block. Unlike most other sections, the map header offset is **fixed at byte 13702** in all saves (confirmed by civ2mod.c: `MAP_HEADER_OFFSET 13702`).
+The map data consists of a **fixed-position map header**, three contiguous data blocks, and a 1024-byte padding block. The map header offset depends on the file type:
 
-#### Map Header (14 bytes at offset 13702)
+| File Type | Map Header Offset | Source |
+|-----------|------------------|--------|
+| `.SAV`, `.NET`, `.HOT`, `.EML` | **13702** (0x3586) | civ2mod.c: `MAP_HEADER_OFFSET 13702` |
+| `.SCN` | **13432** (0x3478) | 270 bytes earlier (14 preamble + 8×32 per-civ) |
+
+#### Map Header (14 bytes)
 
 Seven uint16 LE values (confirmed by civ2mod.c and hexedit.rtf):
 
-| Offset | Field | Example | Notes |
+| Relative Offset | Field | Example | Notes |
 |--------|-------|---------|-------|
-| 13702 | `map_width2` | 80 | Map width × 2 (Civ2 doubled coordinate system). Actual tile columns = value / 2. |
-| 13704 | `map_height` | 50 | Map height in rows. |
-| 13706 | `map_size` | 2000 | Total tiles = (map_width2 / 2) × map_height. |
-| 13708 | `map_shape` | 0 | 0 = round (wraps horizontally), 1 = flat. Also controlled by header byte 13. |
-| 13710 | `map_seed` | 16388 | Random seed for map generation. Only 64 patterns exist (Höfelt). |
-| 13712 | `quarter_width` | 20 | (map_width2 / 4), rounded up. Used for Block 3 dimensions. |
-| 13714 | `quarter_height` | 13 | (map_height / 4), rounded up. Used for Block 3 dimensions. |
+| +0 | `map_width2` | 80 | Map width × 2 (Civ2 doubled coordinate system). Actual tile columns = value / 2. |
+| +2 | `map_height` | 50 | Map height in rows. |
+| +4 | `map_size` | 2000 | Total tiles = (map_width2 / 2) × map_height. |
+| +6 | `map_shape` | 0 | 0 = round (wraps horizontally), 1 = flat. |
+| +8 | `map_seed` | 16388 | Random seed for map generation. Only 64 patterns exist (Höfelt). |
+| +10 | `quarter_width` | 20 | ⌈map_width2 / 4⌉, rounded up. Used for Block 3 dimensions. |
+| +12 | `quarter_height` | 13 | ⌈map_height / 4⌉, rounded up. Used for Block 3 dimensions. |
 
-**Relationship to file header (offset 0x0A/0x0C):** The file header contains different map dimension values than this map header. For the Stubear saves, the file header says 44×63 while this header says 80×50 (40×50 grid, 2000 tiles). The file header value of 44 equals `map_width2 / 2 + 4` (80/2 + 4 = 44); the "+4" is unexplained. The file header height of 63 has no obvious arithmetic relationship to `map_height = 50`. These discrepancies were confirmed across multiple saves. **⚠️ Always use this map header (offset 13702) for tile data calculations. Using the file header values produces completely wrong offsets and a garbled map.** See the Debugging Guide in Common Pitfalls for a detailed symptom→cause table.
+**Validation**: `map_size` must equal `(map_width2 / 2) × map_height`. If not, the header read is at the wrong offset.
 
-#### Block 1: Per-Civ Known Improvements (offset 13716, size = `map_size × 7`)
+**Relationship to file header (offset 0x0A/0x0C):** The file header contains different map dimension values than this map header. The file header value at 0x0A equals approximately `map_width2 / 2 + 4`; the "+4" is unexplained. The file header height at 0x0C has no obvious arithmetic relationship to `map_height`. **⚠️ Always use this map header for tile data calculations. Using the file header values produces completely wrong offsets and a garbled map.** See the Debugging Guide in Common Pitfalls for a detailed symptom→cause table.
 
-Starts at fixed offset **13716** (`MAP_DATA_OFFSET` in civ2mod.c). Contains 7 sections of `map_size` bytes each — one section per non-barbarian civilization. Each byte in a section encodes the tile improvements that civilization has last observed for that tile:
+#### Block 1: Per-Civ Known Improvements (offset = map_header + 14, size = `map_size × 7`)
+
+Starts immediately after the map header. Contains 7 sections of `map_size` bytes each — one section per non-barbarian civilization. Each byte in a section encodes the tile improvements that civilization has last observed for that tile:
 
 | Bit | Improvement |
 |-----|-------------|
@@ -486,12 +478,13 @@ Starts at fixed offset **13716** (`MAP_DATA_OFFSET` in civ2mod.c). Contains 7 se
 
 Farmland = irrigation + mining. Airbase = fortress + city present (explains the airbase bugs: extra food, acts as railroad). Undiscovered tiles are `0x00`.
 
-#### Block 2: Terrain Data (offset = `13716 + map_size × 7`, size = `map_size × 6`)
+#### Block 2: Terrain Data (offset = `block1_offset + map_size × 7`, size = `map_size × 6`)
 
 **This is the actual map data.** Each tile is a 6-byte record. The block offset is calculated as:
 
 ```
-block2_offset = 13716 + (map_size * 7)
+block1_offset = MAP_HEADER_OFFSET + 14
+block2_offset = block1_offset + (map_size * 7)
 ```
 
 From civ2mod.c: `map_block2_offset = MAP_DATA_OFFSET + (mapSize * 7)`
@@ -524,19 +517,19 @@ The complete formula to navigate from the map header to every subsequent section
 ```
 map_header      = 13702                                    # Fixed
 map_width2      = uint16 at 13702
-map_height      = uint16 at 13704
-map_size        = uint16 at 13706                          # = map_width2/2 * map_height
-quarter_width   = uint16 at 13712
-quarter_height  = uint16 at 13714
+map_height      = uint16 at MAP_HEADER_OFFSET + 2
+map_size        = uint16 at MAP_HEADER_OFFSET + 4            # = map_width2/2 * map_height
+quarter_width   = uint16 at MAP_HEADER_OFFSET + 10
+quarter_height  = uint16 at MAP_HEADER_OFFSET + 12
 
-block1_offset   = 13716                                    # Fixed
-block2_offset   = 13716 + map_size * 7                     # Terrain data
+block1_offset   = MAP_HEADER_OFFSET + 14
+block2_offset   = block1_offset + map_size * 7               # Terrain data
 block3_offset   = block2_offset + map_size * 6
 unit_offset     = block3_offset + quarter_width * quarter_height * 2 + 1024
-city_offset     = unit_offset + total_units * 32           # total_units from header byte 58
+city_offset     = unit_offset + total_units * UNIT_RECORD_SIZE
 ```
 
-This matches the civ2mod.c navigation exactly, validated against all test saves. The city section calculated this way agrees with the end-of-file method (`EOF - tail_size - num_cities * 88`).
+This matches the civ2mod.c navigation exactly. The city section calculated this way agrees with the end-of-file method (`EOF - tail_size - 32 - num_cities * CITY_RECORD_SIZE`).
 
 #### Terrain Type IDs
 
@@ -603,24 +596,32 @@ For rendering, each tile is a **diamond** shape. Odd rows are offset horizontall
 
 The following algorithm produces a map render that matches the actual Civ2 game display. It was validated by comparing the output against a cheat-mode zoomed-out screenshot of the same save file, confirming correct terrain, city positions, continent shapes, and ocean layout.
 
-##### Step 1: Read Map Header (fixed offset 13702)
+##### Step 1: Read Map Header
 
 ```python
-MAP_HEADER_OFFSET = 13702
+# Determine map header offset based on file type
+if file_extension == '.SCN':
+    MAP_HEADER_OFFSET = 13432
+else:
+    MAP_HEADER_OFFSET = 13702     # SAV, NET, HOT, EML
 
-map_width2      = uint16_le(data, 13702)   # Width × 2 (doubled coordinate system)
-map_height      = uint16_le(data, 13704)   # Height in rows
-map_size        = uint16_le(data, 13706)   # Total tiles
-quarter_width   = uint16_le(data, 13712)   # For Block 3 size calculation
-quarter_height  = uint16_le(data, 13714)   # For Block 3 size calculation
+map_width2      = uint16_le(data, MAP_HEADER_OFFSET + 0)    # Width × 2 (doubled coordinate system)
+map_height      = uint16_le(data, MAP_HEADER_OFFSET + 2)    # Height in rows
+map_size        = uint16_le(data, MAP_HEADER_OFFSET + 4)    # Total tiles
+quarter_width   = uint16_le(data, MAP_HEADER_OFFSET + 10)   # For Block 3 size calculation
+quarter_height  = uint16_le(data, MAP_HEADER_OFFSET + 12)   # For Block 3 size calculation
 
 map_width = map_width2 // 2                # Actual tile columns per row
+
+# Validate: map_size must equal map_width * map_height
+assert map_size == map_width * map_height
 ```
 
 ##### Step 2: Calculate Block 2 Offset (terrain data)
 
 ```python
-block2_offset = 13716 + (map_size * 7)     # Skip Block 1 (per-civ improvements)
+block1_offset = MAP_HEADER_OFFSET + 14
+block2_offset = block1_offset + (map_size * 7)     # Skip Block 1 (per-civ improvements)
 ```
 
 Block 1 is 7 sections of `map_size` bytes each (one per non-barbarian civ, containing known tile improvements). This is the most common source of errors — reading Block 1 instead of Block 2 produces garbage terrain.
@@ -694,16 +695,25 @@ for vis_col in range(map_width):
 To find city records, chain the offset calculations forward from the map header:
 
 ```python
-total_units  = uint16_le(data, 58)          # Header offset 0x003A
-total_cities = uint16_le(data, 60)          # Header offset 0x003C
+total_units  = uint16_le(data, 0x003A)     # Header offset 0x003A
+total_cities = uint16_le(data, 0x003C)     # Header offset 0x003C
 
 block3_offset = block2_offset + map_size * 6
 unit_offset   = block3_offset + quarter_width * quarter_height * 2 + 1024
-city_offset   = unit_offset + total_units * 32
 
-# Each city is 88 bytes: X at +0, Y at +2, Owner at +8, Name at +32
+# Record sizes depend on file type
+if file_extension == '.SCN':
+    unit_record_size = 26
+    city_record_size = 84
+else:
+    unit_record_size = 32      # SAV/NET/HOT/EML
+    city_record_size = 88
+
+city_offset = unit_offset + total_units * unit_record_size
+
+# Each city: X at +0, Y at +2, Owner at +8, Name at +32
 for i in range(total_cities):
-    record = city_offset + i * 88
+    record = city_offset + i * city_record_size
     cx = uint16_le(data, record + 0)
     cy = uint16_le(data, record + 2)
     owner = data[record + 8]
@@ -743,7 +753,7 @@ Approximate RGB values matching the Civ2 game palette:
 
 ##### Common Pitfalls
 
-1. **Reading Block 1 instead of Block 2**: Block 1 (per-civ improvements) starts at offset 13716. Block 2 (actual terrain) starts at `13716 + map_size * 7`. Forgetting to skip Block 1 is the most common error.
+1. **Reading Block 1 instead of Block 2**: Block 1 (per-civ improvements) starts immediately after the map header. Block 2 (actual terrain) starts at `block1_offset + map_size * 7`. Forgetting to skip Block 1 is the most common error.
 
 2. **City name at +0 vs +32**: The city record starts with XY coordinates, not the name. The name is at offset +32 within the record. (civ2mod.c: `CITY_ITEM_NAME_OFFSET 32`.)
 
@@ -757,7 +767,7 @@ Approximate RGB values matching the Civ2 game palette:
 
 7. **Two different dimension sources — file header vs. map header**: The file begins with a `CIVILIZE` header containing map width (offset 0x0A) and height (0x0C). These values (e.g., 44×63) are **completely different** from the map data header at offset 13702 (e.g., 80×50 → 40-column × 50-row grid). If you use the file header dimensions:
    - You calculate `total_tiles = 22 × 63 = 1,386` instead of the correct `2,000`
-   - `block2_offset = 13716 + 1386 × 7 = 23,418` instead of the correct `13716 + 2000 × 7 = 27,716`
+   - You calculate `block2_offset` with the wrong `map_size`, landing inside Block 1
    - You read data ~4,300 bytes too early — likely still inside Block 1 (per-civ improvements), which is mostly zeros
    - Zeros in byte[0] decode as terrain ID 0 (Desert), producing a map that is ~96% desert
    - City coordinate-to-tile mapping uses wrong grid width, placing many cities on ocean
@@ -775,11 +785,11 @@ This section documents failure modes discovered through extensive debugging. If 
 
 | Symptom | Most Likely Root Cause | Fix |
 |---------|----------------------|-----|
-| Map is ~96% Desert (terrain ID 0) | Reading Block 1 instead of Block 2. Block 1 is per-civ known improvements; undiscovered tiles are `0x00`, which looks like terrain ID 0 (Desert). | Recalculate `block2_offset = 13716 + (map_size * 7)` using `map_size` from offset 13706. |
-| Map is ~96% Desert AND `map_size` seems wrong | Using file header dimensions (44×63 → map_size=1386) instead of map header (offset 13702 → map_size=2000). The wrong map_size produces a wrong Block 2 offset that lands inside Block 1. | Read `map_size` from uint16 at offset 13706, NOT from `(header[0x0A] / 2) × header[0x0C]`. |
+| Map is ~96% Desert (terrain ID 0) | Reading Block 1 instead of Block 2. Block 1 is per-civ known improvements; undiscovered tiles are `0x00`, which looks like terrain ID 0 (Desert). | Recalculate `block2_offset = MAP_HEADER_OFFSET + 14 + (map_size * 7)` using `map_size` from the map header. |
+| Map is ~96% Desert AND `map_size` seems wrong | Using file header dimensions (0x0A/0x0C) instead of the map data header. The wrong map_size produces a wrong Block 2 offset that lands inside Block 1. | Read `map_size` from the map data header (offset 13702 for SAV/NET, 13432 for SCN), NOT from the file header. |
 | Terrain distribution looks realistic (~45-55% ocean) but many cities are on ocean tiles | Block 2 offset is close but not exact, OR you're reading the right block but using wrong map dimensions for coordinate-to-tile conversion. Coincidentally plausible distributions can occur at slightly wrong offsets. | Verify `block2_offset` arithmetic. Verify `grid_x = city_x // 2` uses `map_width = map_width2 // 2` from offset 13702. |
 | City names and owners are correct, positions are spatially wrong | City record format is correctly parsed (name at +32, coords at +0/+2), but coordinate-to-grid mapping uses wrong map width. | Use `map_width = uint16(offset 13702) // 2` for grid conversion, not file header width. |
-| Continent shapes don't match game screenshot | Wrong tile block. Even a few hundred bytes of offset error produces completely different continent shapes. | Double-check: `block2_offset = 13716 + (map_size * 7)` with `map_size` from offset 13706. Cross-validate by checking terrain under known city positions. |
+| Continent shapes don't match game screenshot | Wrong tile block. Even a few hundred bytes of offset error produces completely different continent shapes. | Double-check: `block2_offset = MAP_HEADER_OFFSET + 14 + (map_size * 7)` with `map_size` from the map header. Cross-validate by checking terrain under known city positions. |
 | Ocean appears where land should be (spotty, not systematic) | Possible byte-swap within tile record — reading byte[4] (visibility bitmask) instead of byte[0] (terrain). Visibility bytes can contain `0x0A`-like values. | Terrain is byte[0] & 0x0F in Block 2 tile records. Byte[4] is visibility, byte[3] is body counter. |
 | Many tiles show as "unknown terrain" (IDs > 10) | Reading the wrong byte, or at a misaligned offset. All 6-byte tile records in Block 2 should have byte[0] & 0x0F ≤ 10. | If you find IDs > 10, you are NOT reading Block 2 terrain. Recalculate offset. |
 
@@ -821,7 +831,8 @@ For an AI or human implementing a Civ2 save renderer from scratch, follow this e
 3. VERIFY: map_size == map_width * map_height     # 40 × 50 = 2000 ✓
 
 4. CALCULATE Block 2 offset (terrain data):
-     block2_offset = 13716 + (map_size * 7)       # 13716 + 14000 = 27716
+     block1_offset = MAP_HEADER_OFFSET + 14
+     block2_offset = block1_offset + (map_size * 7)
 
 5. READ terrain for each tile:
      for y in range(map_height):
@@ -875,28 +886,35 @@ The file header's width (0x0A) and height (0x0C) are read by the game engine dur
 
 Regardless of their purpose, **they must not be used for tile data parsing.** The authoritative dimensions live at offset 13702.
 
-### Section 5: Unit Records (`num_units × 32` bytes)
+### Section 5: Unit Records
 
-Located between the tile data and city records. The total number of units is stored at header offset `0x003A`. Each unit record is **32 bytes**. This has been **confirmed across all 5 saves** by validating structural invariants (byte 17 is always `0x00`, bytes 28–31 are always `0x00000000`).
+Located between the tile data and city records. The total number of units is stored at header offset `0x003A`. The record size depends on file type:
 
-> **CORRECTION (Session 12):** There is NO 32-byte bridge record between units and cities. Cities start immediately after units. The previously documented "bridge record" was a misidentification — a 32-byte record of unknown purpose exists between the END of city records and the START of the tail section.
+| File Type | Record Size | Notes |
+|-----------|------------|-------|
+| SAV / NET / HOT / EML | **32 bytes** | 26 core bytes + 6-byte trailer (unique unit ID + padding) |
+| SCN | **26 bytes** | Core record only, no unit ID trailer |
+
+The first 26 bytes of each record are **identical** between SAV and SCN files. SAV/NET files append 6 extra bytes per unit: a **unit sequence ID** (uint16 LE) at offset +26, followed by 4 bytes of zero padding (`0x00000000`). This ID is a globally unique counter assigned at unit creation and never reused — gaps in the sequence indicate destroyed units.
+
+> **CORRECTION**: There is NO 32-byte bridge record between units and cities. Cities start immediately after units. A 32-byte record of unknown purpose exists between the END of city records and the START of the tail section.
 
 **Calculating the unit block position**:
 ```
 # FORWARD CHAIN (preferred):
-unit_offset   = 13716 + map_size*7 + map_size*6 + qw*qh*2 + 1024
-city_offset   = unit_offset + total_units * 32         # NO bridge gap!
-tail_offset   = city_offset + total_cities * 88 + 32   # 32-byte gap before tail
+unit_offset   = MAP_HEADER_OFFSET + 14 + map_size*7 + map_size*6 + qw*qh*2 + 1024
+city_offset   = unit_offset + total_units * unit_record_size   # NO bridge gap!
+tail_offset   = city_offset + total_cities * city_record_size + 32   # 32-byte gap before tail
 
-# BACKWARD CHAIN:
-tail_start       = file_size - 1807
+# BACKWARD CHAIN (for SAV/NET):
+tail_start       = file_size - tail_size
 city_block_end   = tail_start - 32                     # 32 bytes before tail
-city_block_start = city_block_end - (num_cities × 88)
+city_block_start = city_block_end - (num_cities × city_record_size)
 unit_block_end   = city_block_start
-unit_block_start = unit_block_end - (num_units × 32)
+unit_block_start = unit_block_end - (num_units × unit_record_size)
 ```
 
-#### Unit Record Structure (32 bytes)
+#### Unit Record Structure (26 core bytes; 32 bytes in SAV/NET)
 
 | Offset | Size | Field | Notes |
 |--------|------|-------|-------|
@@ -920,8 +938,8 @@ unit_block_start = unit_block_end - (num_units × 32)
 | +20 | 2 bytes | **Goto Y** (int16 LE) | Destination Y, or `0xFFFF` (-1) if no goto orders. |
 | +22 | 2 bytes | **Waypoint/origin X** (int16 LE) | Secondary coordinate, possibly patrol waypoint or origin. Often `0xFFFF`. When set, contains valid map coordinates. |
 | +24 | 2 bytes | **Waypoint/origin Y** (int16 LE) | Paired with +22. Often `0xFFFF`. |
-| +26 | 2 bytes | **Unit sequence ID** (uint16 LE) | **Global unique creation counter.** All 130 live units have unique values (range 7–324). Gaps represent destroyed units. Lower = older unit. Slot reuse confirmed: low slot numbers can have high seqIDs when a destroyed unit's slot is reused by a newly built unit. |
-| +28 | 4 bytes | **Always `0x00000000`** | Structural padding — useful for validation. |
+| +26 | 2 bytes | **Unit sequence ID** (uint16 LE) | **SAV/NET only** (not present in SCN). Global unique creation counter. Lower = older unit. Gaps represent destroyed units. Slot reuse confirmed: low slot numbers can have high seqIDs when a destroyed unit's slot is reused. |
+| +28 | 4 bytes | **Always `0x00000000`** | **SAV/NET only** (not present in SCN). Structural padding. |
 
 #### Activity Bitmask (+5) Decoded
 
@@ -977,15 +995,24 @@ This fixed 32-byte record's exact purpose is not fully decoded, but it appears t
 - Bytes 4–25: Game state flags
 - Bytes 26–31: Three uint16 values; the last appears related to the number of active civilizations
 
-### Section 6: City Records (`num_cities × 88` bytes)
+### Section 6: City Records
 
-City records are **88 bytes each**, stored contiguously immediately after unit records. The total count is given by the uint16 at header offset `0x003C`. The city block can be located by:
+City records are stored contiguously immediately after unit records. The record size depends on file type:
 
-1. **Forward chain**: `city_offset = unit_offset + total_units * 32` (no bridge gap)
-2. **From the end**: `city_block_start = EOF - 1807 - 32 - (num_cities × 88)`
-3. **By searching**: Scan for known capital city names which appear at **offset +32** within each 88-byte record.
+| File Type | Record Size | Notes |
+|-----------|------------|-------|
+| SAV / NET / HOT / EML | **88 bytes** | 84 core bytes + 4-byte trailer (unique city ID + padding) |
+| SCN | **84 bytes** | Core record only, no city ID trailer |
 
-#### City Record Structure (88 bytes)
+The first 84 bytes of each city record are **identical** between SAV and SCN files (verified by byte-for-byte comparison of matching cities). SAV/NET files append 4 extra bytes: a **city sequence ID** (uint16 LE) at offset +84, followed by 2 bytes of zero padding. This ID is a globally unique counter (1-indexed) — gaps indicate destroyed/disbanded cities.
+
+The total count is given by the uint16 at header offset `0x003C`. The city block can be located by:
+
+1. **Forward chain**: `city_offset = unit_offset + total_units * unit_record_size` (no bridge gap)
+2. **From the end**: `city_block_start = EOF - tail_size - 32 - (num_cities × city_record_size)`
+3. **By searching**: Scan for known capital city names which appear at **offset +32** within each record.
+
+#### City Record Structure (84 core bytes; 88 bytes in SAV/NET)
 
 Cross-referenced and confirmed against four independent sources: (1) Allard Höfelt's hex-editing guide v1.8 (hexedit.rtf, FW-centric), (2) TE Kimball's civ2mod.c (MGE-specific C source), (3) Catfish's Cave / FoxAhead's Civ2Types.pas (ToT-based), and (4) direct hex verification of MGE save files.
 
@@ -1030,8 +1057,8 @@ Cross-referenced and confirmed against four independent sources: (1) Allard Höf
 | +81 | 1 byte | **Total shield production** | ✅ Hex-verified | Shields from worked tiles. Range 1-10 across 43 cities. |
 | +82 | 1 byte | **Happy citizens** | ✅ Confirmed (Catfish, experiment) | Entertainers generate happy citizens (+1 each). In main save: 1 for all human cities (baseline happy), 0 for AI, 3 for WLTK capital. |
 | +83 | 1 byte | **Unhappy citizens** | Catfish, Höfelt | In main save: only San Francisco and Kansas City have value 1 (mildly unhappy). |
-| +84 | 2 bytes | **City sequence ID** (short LE) | ✅ Hex-verified | 1-indexed, 43 unique values across 43 cities, range 1-46. Gaps at 4, 13, 27 = destroyed cities (46 total cities founded, 3 destroyed). Referenced by trade partner fields and wonder assignments. |
-| +86 | 2 bytes | Padding | ✅ Hex-verified | Always 0x0000 across all 43 cities. |
+| +84 | 2 bytes | **City sequence ID** (short LE) | **SAV/NET only** (not present in SCN). 1-indexed unique ID. Gaps indicate destroyed/disbanded cities. Referenced by trade partner fields and wonder assignments. |
+| +86 | 2 bytes | Padding | **SAV/NET only** (not present in SCN). Always 0x0000. |
 
 ##### Building Bitmask (+52-55, uint32 LE) — CONFIRMED
 
@@ -1068,7 +1095,7 @@ The bit numbering is **1-indexed**, matching the RULES.TXT improvement order:
 | 14 | Colosseum | 30 | Airport |
 | 15 | Factory | 31 | Police Station |
 
-Bits 1–6 are confirmed by the controlled experiment. Bits 7–31 are inferred from RULES.TXT order and validated against the ROMAN scenario (e.g., cities with City Walls, Aqueduct, Cathedral, SDI Defense all have the expected bits set). Bit 0 appears in ~46% of ROMAN cities but no user-game cities; its meaning is unknown (possibly a scenario flag or the "Nothing" entry in RULES.TXT).
+Bits 1–6 are confirmed by a controlled experiment. Bits 7–31 are inferred from RULES.TXT order and validated against scenario saves (e.g., cities with City Walls, Aqueduct, Cathedral, SDI Defense all have the expected bits set). Bit 0 appears in some scenario cities but no standard-game cities; its meaning is unknown (possibly a scenario flag or the "Nothing" entry in RULES.TXT).
 
 **Key correction**: +52-55 was previously misidentified as "city size" (byte +52) because the bitmask value for a Palace-only city (`0x02`) coincidentally resembled a size value.
 
@@ -1160,7 +1187,7 @@ Four independent sources confirm the MGE city record layout:
 
 **4. Direct hex verification** — Reading actual MGE save files confirms Washington at record offset +0=40 (X=40), +2=16 (Y=16), +8=5 (owner=civ 5), +9=1 (size=1), +32="Washington".
 
-**FW-to-MGE offset conversion**: Subtract 1 from Höfelt's 1-based FW byte number to get 0-based MGE offset. FW bytes 1-84 map directly to MGE +0 through +83. MGE +84-87 are the 4 extra MGE bytes.
+**FW-to-MGE offset conversion**: Subtract 1 from Höfelt's 1-based FW byte number to get 0-based MGE offset. FW bytes 1-84 map directly to MGE +0 through +83. MGE SAV/NET files add +84-87 (city sequence ID + padding) that FW does not have. **SCN files match FW's 84-byte city size** — the FW format predates the SAV format's added ID fields.
 
 **Stale player fields caveat**: Fields in the +0-31 range (XY, attributes, owner, size, etc.) appear to be **static/stale for the active human player's cities** — Orleans (player-owned) showed +9=0 at all city sizes, while AI cities (Washington, London) had correct values. The game likely reads player city data from memory rather than from the save file for these fields.
 
@@ -1171,11 +1198,20 @@ Notes:
 - City records for destroyed cities can span the entire map — they are **not** reliable for computing current territorial control. Use the tile visibility bitmask instead.
 - A city's "owner" ID is **not** the same as the civ slot number used in tile byte[3]. The relationship between owner IDs and slot numbers must be determined per-save.
 
-### Section 7: Tail Data (1,807 bytes standard; 1,907 bytes for scenarios)
+### Section 7: Tail Data (variable size by file type)
 
-The final section of every `.SAV` file contains post-city data. In standard games, this section is **exactly 1,807 bytes** (confirmed across 6 of 7 saves). **Scenario saves** have a 100-byte appendix (1,907 bytes total), with the extra 100 bytes appended at the end (all zeros in the observed save, likely reserved for additional scenario metadata). The scenario name string (e.g., `"The Rise Of Rome"`) appears at tail offset +1471.
+The final section of every save file contains post-city data. The tail size depends on the file type:
 
-The fixed constants at tail +1384 (`0xAB 0x05 0x46 0x03 0x01 0x00 0x03`) are **identical** in both standard and scenario saves, confirming the extra 100 bytes are appended, not inserted.
+| File Type | Tail Size | Notes |
+|-----------|-----------|-------|
+| Standard `.SAV` | **1,807 bytes** | `header[0x0D] & 0x01 == 0` |
+| Scenario `.SAV` | **1,907 bytes** | `header[0x0D] & 0x01 == 1` (100 extra bytes) |
+| `.SCN` | **1,907 bytes** | Always scenario |
+| `.NET` | **2,979 bytes** | Network saves (1,172 extra bytes for network state) |
+
+**Scenario saves** have a 100-byte appendix compared to standard saves, with the extra 100 bytes appended at the end (all zeros in observed saves, likely reserved for additional scenario metadata). The scenario name string (e.g., `"The Rise Of Rome"`) appears at tail offset +1471.
+
+The fixed constants at tail +1384 (`0xAB 0x05 0x46 0x03 0x01 0x00 0x03`) are **identical** in standard, scenario, and network saves, confirming the extra bytes are appended, not inserted.
 
 #### Tail Internal Structure
 
@@ -1189,7 +1225,7 @@ The fixed constants at tail +1384 (`0xAB 0x05 0x46 0x03 0x01 0x00 0x03`) are **i
 | +1288 | 96 bytes | Game engine constants | Contains fixed values consistent across saves: `0x0780` (1920), `0x0438` (1080), `0x067A` (1658), `0x03DE` (990). Possibly scoring coefficients, map display parameters, or spaceship component data. |
 | +1384 | 8 bytes | Fixed constants | Always `0xAB00`, `0x4603`, `0x0103`, `0x0300` — identical across all saves |
 | +1392 | 6 bytes | Per-game summary | Three uint16 values that vary per save (possibly total score components) |
-| +1398 | ~100 bytes | **Per-civ starting positions** | 7 × 14-byte blocks. Each block contains a coordinate pair `(x, y)` stored as `(x*256, y*256)` in uint16 format. Observed values: `(41, 25)` for all stubear saves (44×63 map), `(74, 60)` for EMMA save. These likely represent the initial settler spawn positions for each civilization. |
+| +1398 | ~100 bytes | **Per-civ starting positions** | 7 × 14-byte blocks. Each block contains a coordinate pair `(x, y)` stored as `(x*256, y*256)` in uint16 format. These likely represent the initial settler spawn positions for each civilization. |
 | ~+1498 | to EOF | **Eliminated civ tribe names** | Null-terminated ASCII strings in 24-byte padded fields. Contains names of civilizations destroyed during the game (e.g., `"Mongols"`, `"Carthaginians"`, `"Sioux"`, `"Aztecs"`). Empty in saves where no civs have been eliminated. |
 
 The historical score table and eliminated civ names provide a way to reconstruct the game's progression timeline and identify which civilizations were destroyed.
@@ -1207,7 +1243,7 @@ The historical score table and eliminated civ names provide a way to reconstruct
 
 Tribe names appear in two places:
 1. **In the tail section** (Section 7): Names of eliminated civilizations appear as null-terminated strings near the end of the file.
-2. **In the civilization data** (Section 3): The player's name (e.g., `"Stubear"`) is stored at offset `0x0158 + (player_slot × 242)` in the per-civ name block. Residual bytes from previous names may follow the null terminator (e.g., `"oln"` from overwriting `"Lincoln"`).
+2. **In the civilization data** (Section 3): The player's name is stored at `name_block_start + (player_slot × 242)` in the per-civ name block (`0x0158` for SAV/NET, `0x014A` for SCN). Residual bytes from previous names may follow the null terminator (e.g., leftover characters from overwriting a longer name).
 
 **AI tribe names are NOT stored in the save file.** The per-civ name blocks for AI civilizations are empty (all zeros). The game loads AI names from `LEADERS.TXT` and `CITY.TXT` at runtime based on each civ slot's assigned civilization index. To determine which civilization occupies which slot, you must cross-reference the city names in the save (e.g., "Zimbabwe", "Trondheim") against `CITY.TXT` (which maps city names to civilizations).
 
@@ -2946,4 +2982,195 @@ An earlier rendering session accidentally used offset `0x076dc` (30428) with a 2
 - **Catfish's Cave** (FoxAhead's ToT format guide): https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm — Documents the save format for Test of Time (92-byte cities). Derived from Höfelt's guide with ToT-specific extensions. Useful cross-reference but requires offset conversion for MGE.
 - **FoxAhead's Civ2Types.pas**: Pascal type definitions from the Civ2-UI-Additions project. Based on Catfish's Cave documentation.
 - **Apolyton Forums** and **CivFanatics** — Community hex editing threads provided clues for city record structure and map data locations.
-- Note: Community documentation is often for original Civ2, Fantastic Worlds, or Test of Time. MGE uses the same layout as FW but with 4 extra bytes per city (88 vs 84) and 6 extra bytes per unit (32 vs 26).
+- Note: Community documentation is often for original Civ2, Fantastic Worlds, or Test of Time. MGE uses the same layout as FW but with 4 extra bytes per city (88 vs 84) and 6 extra bytes per unit (32 vs 26). **SCN files use the FW record sizes** (26-byte units, 84-byte cities).
+
+---
+
+## SCN vs SAV Structural Differences
+
+`.SCN` files are the original scenario data as authored in the scenario editor, before being loaded into the game engine. When a player opens a `.SCN` and saves it, the resulting `.SAV` file has a different internal structure. The differences are systematic and consistent:
+
+| Feature | SCN | SAV / NET / HOT / EML |
+|---------|-----|----------------------|
+| Game state preamble size | 316 bytes | 330 bytes (+14) |
+| Per-civ name blocks start | 0x014A | 0x0158 |
+| Per-civ data block size | 1,396 bytes | 1,428 bytes (+32 each) |
+| Map header offset | **13432** (0x3478) | **13702** (0x3586) |
+| Unit record size | **26 bytes** | **32 bytes** (+6: unit ID + padding) |
+| City record size | **84 bytes** | **88 bytes** (+4: city ID + padding) |
+| Unit sequence ID field | Not present | +26: uint16 LE (unique ID) |
+| City sequence ID field | Not present | +84: uint16 LE (unique ID) |
+| Tail size | 1,907 bytes | 1,807 (standard) / 1,907 (scenario) / 2,979 (NET) |
+
+**Total offset shift**: 14 (preamble) + 8 × 32 (per-civ) = **270 bytes**. This is the constant difference between SCN and SAV map header offsets: 13702 − 13432 = 270.
+
+**Detection**: Check `header[0x0D] & 0x01` for the scenario flag. Additionally, SCN files can be distinguished from scenario SAV files by checking whether the per-civ name blocks start at 0x014A (SCN) vs 0x0158 (SAV). In practice, the file extension is the most reliable indicator.
+
+**Parsing strategy**: To write a universal parser, determine the file type first, then set record sizes and offsets accordingly:
+
+```python
+if is_scn_file:
+    MAP_HEADER_OFFSET = 13432
+    UNIT_RECORD_SIZE  = 26
+    CITY_RECORD_SIZE  = 84
+else:
+    MAP_HEADER_OFFSET = 13702
+    UNIT_RECORD_SIZE  = 32
+    CITY_RECORD_SIZE  = 88
+```
+
+---
+
+## Map Template File Format (.MP)
+
+`.MP` files are pre-built map templates used by the scenario editor and "Load Map" option. They do **NOT** use the `CIVILIZE` header. The format is simple and self-contained:
+
+### Structure
+
+```
+┌──────────────────────────────────────┐
+│ Map Header (14 bytes)                │  offset 0
+├──────────────────────────────────────┤
+│ Starting Positions (84 bytes)        │  offset 14
+│   21 civs × 4 bytes (x, y uint16)   │
+├──────────────────────────────────────┤
+│ Tile Data (map_size × 6 bytes)       │  offset 98
+│   6-byte interleaved records         │
+└──────────────────────────────────────┘
+```
+
+Total file size: `98 + map_size × 6` bytes.
+
+### Map Header (14 bytes, offset 0)
+
+Identical structure to the SAV map header:
+
+| Offset | Size | Field | Example (Small World) |
+|--------|------|-------|----------------------|
+| 0 | 2 bytes | `map_width2` (uint16 LE) | 80 |
+| 2 | 2 bytes | `map_height` (uint16 LE) | 50 |
+| 4 | 2 bytes | `map_size` (uint16 LE) | 2000 |
+| 6 | 2 bytes | `map_shape` (uint16 LE) | 0=wrapping, 1=flat |
+| 8 | 2 bytes | Unknown | |
+| 10 | 2 bytes | `quarter_width` (uint16 LE) | 20 |
+| 12 | 2 bytes | `quarter_height` (uint16 LE) | 13 |
+
+**Validation**: `map_size` must equal `(map_width2 / 2) × map_height`.
+
+### Starting Positions (84 bytes, offset 14)
+
+21 entries of 4 bytes each — one per civilization in `LEADERS.TXT` order (index 0 = Romans, 1 = Babylonians, ..., 20 = Sioux):
+
+| Offset | Size | Field |
+|--------|------|-------|
+| 14 + civ×4 | 2 bytes | Starting X (uint16 LE) |
+| 14 + civ×4 + 2 | 2 bytes | Starting Y (uint16 LE) |
+
+A value of `0xFFFF` for either coordinate means the civilization has no preset starting location on this map (random placement or unused).
+
+### Tile Data (offset 98, 6 bytes per tile)
+
+Each tile is stored as a 6-byte interleaved record, in the same row-major order as SAV Block 2. The format is similar to but not identical to SAV terrain data:
+
+| Byte | Field | Notes |
+|------|-------|-------|
+| 0 | Terrain + flags | Low nibble = terrain type (0-10). Bit 7 = special resource. Same encoding as SAV Block 2 byte[0]. |
+| 1 | Rivers | Bit 1 (0x02) = river. Same encoding as SAV Block 2 byte[1]. Usually 0x00. |
+| 2 | Reserved | Always 0x00 in base maps. |
+| 3 | Body ID | Always 0x00 in base maps (assigned at game generation). |
+| 4 | Terrain copy | Near-duplicate of byte 0. Possibly used for validation or undo. |
+| 5 | Status byte | Usually 0xF0 (240). Occasionally 0xF8, 0x10, or 0x18. Bit meanings not fully decoded. |
+
+**Key differences from SAV Block 2**: MP files lack per-civ visibility data (SAV byte[4]), ownership information, and city radius markings. The tile data represents raw geography only.
+
+---
+
+## RULES.TXT — Game Rules Definition
+
+`RULES.TXT` defines the core game rules and is parsed by the game engine at startup. Scenarios can override it with a local copy. The file uses semicolons (`;`) for comments and `@SECTION` markers for each data block.
+
+### Sections
+
+| Section | Content | Records |
+|---------|---------|---------|
+| `@COSMIC` | Global game constants | 21 numeric values (road multiplier, food per citizen, tech paradigm, etc.) |
+| `@CIVILIZE` | Technology definitions | 93 entries (89 standard + Future Tech + 3 user-defined + 7 extra slots) |
+| `@IMPROVE` | City improvements & wonders | 59 entries (improvements 0-31, wonders 32-59) |
+| `@ENDWONDER` | Wonder expiration advances | 28 entries (one per wonder) |
+| `@UNITS` | Unit type definitions | 62 entries (52 standard + 11 user-defined slots) |
+| `@TERRAIN` | Terrain properties | 11 base types + 11 special resource variants |
+| `@GOVERNMENTS` | Government types | 7 entries (Anarchy through Democracy) |
+| `@LEADERS` | Civilization definitions | 21 entries + 2 extra slots |
+| `@CARAVAN` | Trade commodities | 16 entries |
+| `@ORDERS` | Unit order names | 11 entries with keyboard shortcuts |
+| `@DIFFICULTY` | Difficulty level names | 6 entries (Chieftain through Deity) |
+| `@ATTITUDES` | Diplomatic attitude names | 9 entries (Worshipful through Enraged) |
+
+### Unit Definition Format (`@UNITS`)
+
+Each line: `Name, obsolete_tech, domain, move, range, attack, defense, hp, firepower, cost, hold, role, prereq, flags`
+
+- **Domain**: 0=Ground, 1=Air, 2=Sea
+- **Role**: 0=Attack, 1=Defend, 2=Naval, 3=Air Superiority, 4=Sea Transport, 5=Settle, 6=Diplomacy, 7=Trade
+- **Flags**: 15-bit binary string encoding special abilities (two-space visibility, ignore ZOC, amphibious, submarine, etc.)
+
+Unit type IDs in save files (byte +6 of unit records) correspond directly to the 0-indexed line number in `@UNITS`.
+
+### Technology Definition Format (`@CIVILIZE`)
+
+Each line: `Name, AI_value, civilize_modifier, prereq1, prereq2, epoch, category`
+
+- **Epoch**: 0=Ancient, 1=Renaissance, 2=Industrial, 3=Modern
+- **Category**: 0=Military, 1=Economic, 2=Social, 3=Academic, 4=Applied
+- **Prerequisites**: 3-letter abbreviation of another tech, or `nil`/`no` for none
+
+Technology IDs in save files (byte arrays at 0x0042 and 0x00A6) correspond to 0-indexed line numbers in `@CIVILIZE`.
+
+### Improvement/Wonder Definition Format (`@IMPROVE`)
+
+Each line: `Name, cost_x10, upkeep, prerequisite_tech`
+
+- IDs 0-31 are city improvements (Palace=1, Barracks=2, ...)
+- IDs 32-59 are Wonders of the World (Pyramids=32, Hanging Gardens=33, ...)
+- The building bitmask in city records (+52-55) uses 1-indexed bits matching these IDs
+
+### Terrain Definition Format (`@TERRAIN`)
+
+Each line: `Name, move_cost, defense, food, shields, trade, irrigate_type, irrigate_bonus, irrigate_turns, ai_irrigate, mine_type, mine_bonus, mine_turns, ai_mine, transform_to`
+
+Terrain type IDs in save file tile data (byte[0] & 0x0F) correspond to 0-indexed line numbers: 0=Desert, 1=Plains, 2=Grassland, 3=Forest, 4=Hills, 5=Mountains, 6=Tundra, 7=Glacier, 8=Swamp, 9=Jungle, 10=Ocean.
+
+Lines 11-21 define **special resource** variants for each terrain type (Oasis for Desert, Buffalo for Plains, etc.), which appear when byte[0] bit 7 is set.
+
+---
+
+## Other Data Files
+
+### Game.txt — UI String Database
+
+Contains **2,179+ named sections** (marked with `@SECTIONNAME`) defining all UI dialog text, popup messages, menu labels, and in-game notifications. Each section specifies optional width (`@width=N`), title (`@title=...`), button labels, and content lines. Used by the game engine for all localizable user-facing text.
+
+### Describe.txt — Advisor Dialog Text
+
+Contains detailed text blocks for the science advisor, trade advisor, military advisor, and other in-game advisor screens. Organized by section markers similar to Game.txt.
+
+### CITY.TXT — City Name Lists
+
+Defines the ordered list of city names for each of the 21 civilizations. When a civilization founds a new city, the game assigns names sequentially from this list. The order matches `LEADERS.TXT` civilization indices.
+
+### PEDIA.TXT — Civilopedia Entries
+
+Contains the text for all Civilopedia encyclopedia entries (technologies, units, improvements, wonders, terrain types, concepts). Displayed in the in-game Civilopedia reference.
+
+### COUNCIL0/1/2.TXT — Advisor Council Dialogs
+
+Three files for the three eras of advisor council discussions: `COUNCIL0.TXT` (Ancient era), `COUNCIL1.TXT` (Renaissance era), `COUNCIL2.TXT` (Modern era). Each contains dialog lines for the six advisors (military, science, trade, domestic, foreign, attitude) with conditional text based on game state.
+
+### DEBUG.TXT — Debug Message Templates
+
+Contains internal debug message format strings that reveal variable names and data structures used by the game engine. Useful for reverse engineering as it exposes field names like `Attack Factor`, `Defense Factor`, `Hit Points`, and state machine labels.
+
+### Labels.txt — UI Label Strings
+
+Contains **888+ strings** used for UI labels, button text, menu items, and status bar messages. Numbered sequentially. Cross-referencing with game screenshots helps identify which label IDs correspond to which UI elements.
+
