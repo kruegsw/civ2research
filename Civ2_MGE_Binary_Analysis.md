@@ -38,14 +38,115 @@ A comprehensive record of everything discovered through reverse engineering Civi
 
 ### Graphics Files
 
-| File | Description |
-|------|-------------|
-| `TERRAIN1.GIF`, `TERRAIN2.GIF` | Terrain tile sprites (isometric). |
-| `UNITS.GIF` | Unit sprites. |
-| `PEOPLE.GIF` | People/citizen sprites. |
-| `CITIES.GIF`, `CITY.GIF` | City graphics. |
-| `ICONS.GIF` | UI icons. |
-| `EDITORS*.GIF` | Map editor graphics. |
+All main sprite sheets are 640×480 pixels, GIF87a format with 256-color indexed palettes. Sprites are arranged in a 10-column × 15-row grid of 64×32 pixel cells (isometric diamond format). **Two different chroma-key colors** are used for transparency:
+
+| File | Size | Chroma Key | Description |
+|------|------|-----------|-------------|
+| `TERRAIN1.GIF` | 46,452 | Cyan (0,255,255) idx 248 | Base terrain tiles, improvements, resources, roads, railroads |
+| `TERRAIN2.GIF` | 55,966 | Magenta (255,0,255) idx 253 | Terrain overlays: forests, mountains, hills, rivers, coastlines |
+| `UNITS.GIF` | 54,012 | Magenta (255,0,255) idx 253 | All 52 unit types + modding instructions, 150 sprites |
+| `CITIES.GIF` | 46,452 | Magenta (255,0,255) idx 253 | Map-view city sprites by era × style × size, 150 sprites |
+| `CITY.GIF` | 66,152 | — | City view screen sprites |
+| `PEOPLE.GIF` | 21,227 | Magenta (255,0,255) idx 253 | Citizen type faces by era (92% chroma = mostly empty) |
+| `ICONS.GIF` | 54,098 | Magenta (255,0,255) idx 253 | UI icons: wonder thumbnails, government icons, misc |
+| `EDITORS*.GIF` | ~35K each | — | Map editor graphics (4 files for different map projections) |
+
+#### TERRAIN1.GIF Sprite Layout
+
+The game embeds text labels directly in the sprite sheet. Layout confirmed by visual inspection:
+
+| Row | Col 0–8 | Col 9 |
+|-----|---------|-------|
+| 0 | **Desert** base tiles (9 variants) | Desert variant |
+| 1 | **Plains** base tiles (9 variants) | Plains variant |
+| 2 | **Grassland** base tiles (9 variants) | Grassland variant |
+| 3 | **Forest** base filler tiles (9 variants) | **Irrigation** improvement |
+| 4 | **Hills** base filler tiles (9 variants) | **Farmland** improvement |
+| 5 | **Mountains** base filler tiles (9 variants) | **Mining** improvement |
+| 6 | **Tundra** base tiles (9 variants) | **Pollution** overlay |
+| 7 | **Arctic/Glacier** base tiles (9 variants) | **Resource** (Grassland special) |
+| 8 | **Swamp** base tiles (9 variants) | Swamp variant |
+| 9 | **Jungle** base tiles (9 variants) | Jungle variant |
+| 10 | **Ocean** base tiles (9 variants) | Ocean variant |
+| 11 | Coastline/transition tiles | More transitions |
+| 12 | **Road** sprites (directional, 8+ directions) | Road variants |
+| 13 | **Railroad** sprites (directional) | Railroad variants |
+| 14 | Dither pattern, Mouse cursors, Blank, "Mouse 2" | Utility sprites |
+
+**Rows 0–10 correspond directly to terrain type IDs 0–10** from the save file. The game selects among the 9 column variants using map position or terrain flags to avoid visual repetition.
+
+**Tile compositing order** (back to front): Base terrain (TERRAIN1 rows 0-10) → Terrain overlays (TERRAIN2: forests, mountains, hills) → Rivers (TERRAIN2) → Roads/Railroads (TERRAIN1 rows 12-13) → Improvements (TERRAIN1 col 9: irrigation/farmland/mining) → City sprite → Unit sprite.
+
+#### TERRAIN2.GIF Sprite Layout
+
+Contains overlay sprites composited on top of base terrain. Uses magenta chroma key.
+
+| Row | Content |
+|-----|---------|
+| 0–1 | **Tile connections** / coastline transition masks |
+| 2 | **Rivers** (directional segments) |
+| 3–4 | **Forest** overlay sprites (multiple tree cluster variants) |
+| 5 | More forest/dead tree variants |
+| 6–7 | **Mountain** overlay sprites (peaked mountain variants) |
+| 8–9 | **Hill** overlay sprites (including jungle hills) |
+| 10 | **River Mouths** (labeled in sprite sheet) |
+| 11 | Numbers 0–7 (labeled; used for land/sea body counter display in debug mode) |
+| 12–13 | **Coastline** tiles (labeled "l= land, w= water"; 8 directional variants) |
+| 14 | Additional coastline sprites ("new" label visible) |
+
+#### UNITS.GIF Sprite Layout
+
+150 sprites (all 150 cells contain content). Unit type IDs from save file byte +6 map to sprite positions:
+
+| Row | Col 0 | Col 1 | Col 2 | Col 3 | Col 4 | Col 5 | Col 6 | Col 7 | Col 8 | Col 9 |
+|-----|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
+| 0 | Settlers(0) | Engineers(1) | Warriors(2) | Phalanx(3) | Archers(4) | Legion(5) | Pikemen(6) | Musketeers(7) | Fanatics(8) | Partisan(9) |
+| 1 | Alpine(10) | Riflemen(11) | Marines(12) | Paratroop(13) | Mech Inf(14) | Horsemen(15) | Chariot(16) | Elephant(17) | Crusaders(18) | Knights(19) |
+| 2 | Dragoons(20) | Cavalry(21) | Armor(22) | Catapult(23) | Cannon(24) | Artillery(25) | Howitzer(26) | Fighter(27) | Bomber(28) | Heli(29) |
+| 3 | Stealth F(30) | Stealth B(31) | Trireme(32) | Caravel(33) | Galleon(34) | Frigate(35) | Ironclad(36) | Destroyer(37) | Cruiser(38) | AEGIS(39) |
+| 4 | Battleship(40) | Submarine(41) | Carrier(42) | Transport(43) | Cruise M(44) | Nuke(45) | Diplomat(46) | Spy(47) | Caravan(48) | Freight(49) |
+| 5 | Explorer(50) | ExtraLand(51) | *custom*... | | | | | | | |
+| 6–8 | Additional naval/air sprites and custom unit slots | | | | | | | | | |
+| 9 | Empty/reserved custom slots | | | | | | | | | |
+| 10 | Stack count numbers 1–8 (for displaying unit stacks on map) | | | | | | | | | |
+| 11–12 | **Modding instructions** (text labels embedded in sprite sheet explaining palette rules) |
+| 13–14 | Explosion effects, shield/flag overlays, additional sprites |
+
+**Unit sprite indexing**: Unit type ID from save file = `row * 10 + col` for rows 0–5. Types 0–51 are standard; types 52+ are mod-defined custom units.
+
+**Key modding notes embedded in UNITS.GIF text**:
+- "Units cannot overlap the area below the main diamond"
+- "ONLY colors in palette (only) are for players' (border) (xt.ext=shield)"  
+- "Borders & writing may be changed to any RGB but must be last 3 colors of palette"
+
+#### CITIES.GIF Sprite Layout
+
+150 sprites organized by **era** (rows) × **architectural style** (column groups) × **city size**. The game selects the city sprite based on the era (determined by techs discovered), the civilization's art style, and the city's population size.
+
+Approximate layout (from visual inspection):
+- **Rows 0–2**: Ancient era (mud brick, primitive structures)
+- **Rows 3–5**: Medieval era (stone castles, cathedrals)
+- **Rows 6–8**: Industrial era (factories, brick buildings)
+- **Rows 9–11**: Modern era (skyscrapers, glass buildings)
+- **Rows 12–14**: City walls, special variants, and utility sprites
+- **Columns**: Different architectural styles (4 styles × varying sizes)
+
+#### PEOPLE.GIF Sprite Layout
+
+Citizen type faces for the city screen, organized by era. Only rows 0–4 contain sprites (92% of the sheet is empty magenta).
+
+| Row | Era | Content |
+|-----|-----|---------|
+| 0 | Ancient | ~4 citizen types (entertainer, taxman, scientist, etc.) |
+| 1 | Renaissance | Same citizen types, period-appropriate faces |
+| 2 | Industrial | Same citizen types, industrial-era faces |
+| 3 | Modern | Same citizen types, modern faces |
+| 4 | Additional specialist faces | |
+| 5–14 | Empty (magenta) | |
+
+#### ICONS.GIF Layout
+
+Mixed UI elements including wonder thumbnails (C5–C9 rows 0–5), government icons, resource symbols, warning/status icons, and gameplay indicators. Not a simple grid mapping — contains irregularly sized elements.
 
 ### Scenario Files
 
@@ -112,13 +213,14 @@ All `.SAV` files (including `.NET`, `.HOT`, `.EML` network/multiplayer variants)
 └─────────────────────────────────────────────────┘
 ```
 
-Across all saves analyzed, the **tail section is 1,807 bytes** for standard games or **1,907 bytes** for scenario saves (identifiable by header byte `0x0D` bit 0). Combined with the city count at header offset `0x3C`, the unit count at offset `0x3A`, and the confirmed record sizes (88 bytes/city, 32 bytes/unit, 32-byte bridge), the entire file can be navigated from the end:
+Across all saves analyzed, the **tail section is 1,807 bytes** for standard games or **1,907 bytes** for scenario saves (identifiable by header byte `0x0D` bit 0). Combined with the city count at header offset `0x3C`, the unit count at offset `0x3A`, and the confirmed record sizes (88 bytes/city, 32 bytes/unit), the entire file can be navigated from the end:
 
 ```
 tail_size         = 1907 if (header[0x0D] & 0x01) else 1807
-city_block_start  = file_size - tail_size - (num_cities × 88)
-bridge_start      = city_block_start - 32
-unit_block_start  = bridge_start - (num_units × 32)
+tail_start        = file_size - tail_size
+gap_record        = tail_start - 32                     # 32-byte record before tail
+city_block_start  = gap_record - (num_cities × 88)
+unit_block_start  = city_block_start - (num_units × 32)  # cities follow units directly
 tile_block_end    = unit_block_start
 tile_block_start  = tile_block_end - ((map_width / 2) × map_height × 6)
 ```
@@ -398,14 +500,14 @@ From civ2mod.c: `map_block2_offset = MAP_DATA_OFFSET + (mapSize * 7)`
 
 | Byte | Field | Encoding |
 |------|-------|----------|
-| 0 | **Terrain type + flags** | Low nibble (`& 0x0F`): terrain ID (0-10, see table below). Bit 6 (`0x40`): no resource. Bit 7 (`0x80`): river. Bit 5 (`0x20`): terrain resource animation (ToT only). |
-| 1 | **Tile improvements** | Same encoding as Block 1 (0x01=unit, 0x02=city, 0x04=irrigation, 0x08=mining, 0x10=road, 0x20=railroad, 0x40=fortress, 0x80=pollution). This byte holds the *actual* improvements; Block 1 holds per-civ *known* improvements. |
-| 2 | **City radius indicator** | Which civ's city radius covers this tile. 0x00=none/barbarian. 0x20=White, 0x40=Green, 0x60=Blue, 0x80=Yellow, 0xA0=Cyan, 0xC0=Orange, 0xE0=Purple. When two cities overlap, tiles are assigned to one city. |
-| 3 | **Land/sea body counter** | Each contiguous body of land or water gets a unique number. Counting starts top-left, proceeds left-to-right, top-to-bottom. Water bodies < 9 tiles always get number 63. Visible via right-click in game: "Loc: (12, 34) **5**" where 5 is this body counter. |
-| 4 | **Visibility bitmask** | Per-civ exploration flags. Bit 0 (0x01) = Red/Barbarians, Bit 1 (0x02) = White, Bit 2 (0x04) = Green, Bit 3 (0x08) = Blue, Bit 4 (0x10) = Yellow, Bit 5 (0x20) = Cyan, Bit 6 (0x40) = Orange, Bit 7 (0x80) = Purple. |
-| 5 | **Ownership + Fertility** | Low nibble (`& 0x0F`): tile owner (0=Red/Barb, 1=White, ..., 7=Purple, 15(0xF)=None). Owner 0 required for goody huts. High nibble (`>> 4`): fertility (0-15). AI uses fertility > 7 for city placement; 15 = build immediately. Only Grassland/Plains get initial fertility; other terrains start at 0 but increase with improvements. |
+| 0 | **Terrain type + resource flags** | Low nibble (`& 0x0F`): terrain ID (0–10). **Bit 7 (0x80)**: tile has **shield/resource bonus** — confirmed on Plains (11 tiles = Wheat special), Grassland (44 tiles = the famous "Grassland with shield", 41% of all grasslands), and Forest (1 tile = Pheasant). **Bit 6 (0x40)**: ocean special resource (7 tiles = Fish or Whale). Bits 4–5 unused (always 0). |
+| 1 | **River directions + roads** | **Bits 0–3**: river segment directions (4 diagonal neighbors). Bit 0 = river toward NE, bit 1 = SE, bit 2 = SW, bit 3 = NW. 93 tiles have river-only, 85 have river+road. **Bit 4 (0x10)**: **road present** — 132 tiles, distributed: civ 5 (69), civ 2 (25), civ 0 (19), civ 3 (12), civ 1 (7). **Bit 6 (0x40)**: **railroad present** — 8 tiles, ALL also have bit 4 (road) set, confirming railroad is an upgrade built on existing roads. Bit 5 and bit 7 not observed. |
+| 2 | **City radius owner** | Bits 5–7 encode which civ's city radius claims this tile: `civ_id = (byte >> 5) & 7`. **Confirmed by direct cross-reference**: every civ's city tile has exactly its civ ID encoded here. `0x00` = unclaimed, `0x20` = civ 1, `0x40` = civ 2, `0x60` = civ 3, `0x80` = civ 4, `0xA0` = civ 5, `0xC0` = civ 6, `0xE0` = civ 7. Low 5 bits are **always zero** (verified across all 2,000 tiles). Territory counts: civ 5 = 453 tiles, civ 2 = 160, civ 3 = 105, civ 1 = 40, civ 4 = 16, unclaimed = 1,226. |
+| 3 | **Continent/body ID** | Each contiguous body of land or water gets a unique number. Body 1 = main continental landmass + global ocean (1,785 tiles, 49% ocean + 51% land). Smaller IDs (2–9) = islands and small landmasses. IDs ≥ 20 (20, 30, 39, 63) = enclosed seas, inland lakes, and small water bodies. Body 63 specifically used for small water bodies (< 9 tiles per Höfelt). Spatial clustering confirmed: each non-1 body occupies a contiguous geographic region. |
+| 4 | **Visibility bitmask** | Per-civ exploration flags. Bit N = civ N has explored this tile. **Confirmed by cross-reference**: bit 1 sees 100% of civ 1's territory, bit 2 sees 100% of civ 2's territory, bit 3 sees 98% of civ 3's, bit 5 sees 98% of civ 5's (player). Coverage: bit 0 (barbarian) = 195 tiles (10%), bit 1 = 205 (10%), bit 2 = 581 (29%), bit 3 = 276 (14%), bit 5 = 1,123 (56%). Bits 4, 6, 7 not set in this save (civs 4, 6, 7 are dead/absent). |
+| 5 | **Sprite variant + fertility** | **Low nibble (`& 0x0F`)**: for Plains and Grassland, encodes the visual variant / food bonus. Resource tiles (byte[0] bit 7 set) cluster at values 6–7 for Plains and 5–7 for Grassland. Normal tiles spread across 2–14. For all other terrain types, low nibble is nearly always 0 or 8. **High nibble (`>> 4`)**: AI fertility score or terrain overlay variant selector. Value 0xF (15) = most common (311 land tiles, 100% of Glacier/Tundra, 74% of Ocean). Values 1–5 appear on tiles that need visual variety (266 tiles with value 5, 158 with value 2, etc.). Adjacent tiles of the same type typically have different byte[5] values, providing visual variety in rendering. |
 
-These per-tile fields are confirmed by hexedit.rtf (Höfelt), civ2mod.c (uses `MAP_ITEM_TERRAIN 0`, `MAP_ITEM_VISIBILITY 4`, `MAP_ITEM_OWNER 5`, `MAP_ITEM_COUNTER 3`), and the network message types: `NM_TERRAIN_SET`, `NM_SEEN_SET`, `NM_OWNER_SET`, `NM_CITY_USING_SET`, `NM_REGION_SET`, `NM_FEATURE_SET`.
+> **Höfelt alignment check (Session 12):** Höfelt's documentation was mostly correct: byte[0] terrain type ✓, byte[1] improvements ✓ (though we decoded individual bits: 0–3 = river, 4 = road, 6 = railroad), byte[2] city radius ✓ (formula confirmed: `civ = byte >> 5`), byte[3] body counter ✓ (including body 63 for small water), byte[4] visibility ✓ (per-civ bit mapping confirmed), byte[5] ownership/fertility ✓ (though the "ownership" is really in byte[2]; byte[5] low nibble is variant/resource-related). The main correction: Höfelt attributed byte[0] bit 7 to "river" — it is actually the **resource/shield flag**. Rivers are in byte[1] bits 0–3.
 
 #### Block 3: Quarter-Resolution Data (offset = Block 2 end, size = `quarter_width × quarter_height × 2`)
 
@@ -468,10 +570,16 @@ For ocean tiles, multiple bits are commonly set (e.g., `0b00111111` = 63, meanin
 
 ##### TODO: Map Data Remaining Unknowns
 - [x] Three-block structure confirmed (Höfelt, civ2mod.c)
-- [x] All 6 tile bytes fully documented (Höfelt)
+- [x] All 6 tile bytes decoded and verified against binary data (Session 12)
 - [x] Block offset formula confirmed (civ2mod.c)
+- [x] Byte[0] bit 7 corrected: resource/shield flag, NOT river (Session 12)
+- [x] Byte[1] fully decoded: bits 0–3 = river directions, bit 4 = road, bit 6 = railroad (Session 12)
+- [x] Byte[2] formula confirmed: civ_id = (byte >> 5) & 7, low 5 bits always zero (Session 12)
+- [x] Byte[4] per-civ bit mapping verified: bit N = civ N visibility (Session 12)
 - [ ] Block 3 purpose — verify whether it has any gameplay effect
 - [ ] Determine if the 1024-byte padding block contains any meaningful data
+- [ ] Byte[5] high nibble: confirm if values 1–5 are overlay variant indices for TERRAIN2.GIF
+- [ ] Byte[1] bits 0–3: verify exact river direction mapping (NE/SE/SW/NW assignment)
 
 ### Isometric Coordinate System
 
@@ -771,51 +879,72 @@ Regardless of their purpose, **they must not be used for tile data parsing.** Th
 
 Located between the tile data and city records. The total number of units is stored at header offset `0x003A`. Each unit record is **32 bytes**. This has been **confirmed across all 5 saves** by validating structural invariants (byte 17 is always `0x00`, bytes 28–31 are always `0x00000000`).
 
-A **32-byte bridge record** of unknown purpose separates the unit block from the city block.
+> **CORRECTION (Session 12):** There is NO 32-byte bridge record between units and cities. Cities start immediately after units. The previously documented "bridge record" was a misidentification — a 32-byte record of unknown purpose exists between the END of city records and the START of the tail section.
 
 **Calculating the unit block position**:
 ```
-city_block_start  = file_size - 1807 - (num_cities × 88)
-bridge_start      = city_block_start - 32
-unit_block_end    = bridge_start
-unit_block_start  = unit_block_end - (num_units × 32)
+# FORWARD CHAIN (preferred):
+unit_offset   = 13716 + map_size*7 + map_size*6 + qw*qh*2 + 1024
+city_offset   = unit_offset + total_units * 32         # NO bridge gap!
+tail_offset   = city_offset + total_cities * 88 + 32   # 32-byte gap before tail
+
+# BACKWARD CHAIN:
+tail_start       = file_size - 1807
+city_block_end   = tail_start - 32                     # 32 bytes before tail
+city_block_start = city_block_end - (num_cities × 88)
+unit_block_end   = city_block_start
+unit_block_start = unit_block_end - (num_units × 32)
 ```
 
 #### Unit Record Structure (32 bytes)
 
 | Offset | Size | Field | Notes |
 |--------|------|-------|-------|
-| +0 | 2 bytes | **X coordinate** (int16 LE) | Isometric X (0 to `width×2 − 1`) |
-| +2 | 2 bytes | **Y coordinate** (int16 LE) | Isometric Y (0 to `height − 1`) |
-| +4 | 1 byte | Turn action flags | Bit 6 (0x40) = unit has moved this turn. Bit 7 (0x80) and bit 5 (0x20) occasionally set. |
-| +5 | 1 byte | Activity/work flags | Bit pattern encoding. Common for Settlers performing terrain improvements. |
-| +6 | 1 byte | **Unit type** | Index into RULES.TXT unit list (0=Settlers, 2=Warriors, 3=Phalanx, etc.) |
-| +7 | 1 byte | **Owner civ slot** | Which civilization owns this unit |
-| +8 | 1 byte | Movement remaining | In thirds of a move point (0, 3, 6, 9 = 0, 1, 2, 3 full moves) |
-| +9 | 1 byte | Special status flags | Bit flags; `0x00` in 89% of units. Rare bits: 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x80. |
-| +10 | 1 byte | Terrain under unit | Matches terrain type IDs (0–10) |
-| +11 | 1 byte | Civ slot reference | Values 0–7 (matching civ slot numbers) or `0xFF`. Purpose not fully determined; may relate to fog-of-war visibility or diplomacy state. |
-| +12 | 1 byte | **Player control flag** | `0x58` (88) = **human player's unit**. Confirmed across all 5 saves: every unit belonging to the player's civ slot (offset `0x0027`) has this value exclusively. AI unit values vary (commonly `0x31`, `0x39`, `0x3F`, `0x46`). |
-| +13 | 1 byte | Cargo / ship state | 0 for land units; values 224–240 observed for ships (likely carried unit count or fuel) |
-| +14 | 1 byte | **Veteran status** | 0 = regular, 1 = veteran. Only 2 of 488 units across all saves are veterans (early/mid game). |
-| +15 | 1 byte | **Unit orders** | Current activity. Confirmed values: `0x02`=Fortified, `0x03`=Sleep, `0x05`=Build Road, `0x06`=Build Irrigation, `0x07`=Build Mine, `0x0B`=Sentry, `0x1B`=GoTo (units with this value always have valid goto coordinates at +18/+20), `0xFF`=No orders/Idle. |
-| +16 | 1 byte | Unknown | Varies widely |
-| +17 | 1 byte | **Always `0x00`** | Structural invariant — useful for validation |
-| +18 | 2 bytes | Goto X (int16 LE) | Destination X, or `0xFFFF` (-1) if no movement orders |
-| +20 | 2 bytes | Goto Y (int16 LE) | Destination Y, or `0xFFFF` (-1) if no movement orders |
-| +22 | 2 bytes | Previous/waypoint X | `0xFFFF` if N/A |
-| +24 | 2 bytes | Previous/waypoint Y | `0xFFFF` if N/A |
-| +26 | 2 bytes | Unit ID (uint16 LE) | Global unique ID (not sequential, not sorted) |
-| +28 | 4 bytes | **Always `0x00000000`** | Structural padding — useful for validation |
+| +0 | 2 bytes | **X coordinate** (int16 LE) | Doubled-coordinate X (0 to `map_width2 − 1`). Dead/destroyed units have large negative values (e.g., -200). |
+| +2 | 2 bytes | **Y coordinate** (int16 LE) | Y coordinate (0 to `map_height − 1`) |
+| +4 | 1 byte | **Movement/action flags** | Bitmask. **Bit 6 (0x40)**: performing multi-turn action (settlers working, siege moving); all 21 units with this bit have active goto. **Bit 5 (0x20)**: rare (6 units). **Bit 7 (0x80)**: very rare (2 units). NOT a linked-list pointer. |
+| +5 | 1 byte | **Activity bitmask** | Encodes current orders. See Activity Bitmask table below. |
+| +6 | 1 byte | **Unit type** | Index into RULES.TXT unit list. Maps to UNITS.GIF: `row = type_id / 10`, `col = type_id % 10`. |
+| +7 | 1 byte | **Visibility flags** | Values 1–5 observed. Likely movement domain or visibility range. |
+| +8 | 1 byte | **Home city ID** | Index into the city record array (0-based). Verified: value 0 → first city, value 3 → fourth city, etc. |
+| +9 | 1 byte | **Special status flags** | Bitmask. **Bit 2 (0x04)**: **veteran status** (7 of 130 units; grants +50% combat). **Bit 1 (0x02)**: unit at sea / embarked (Triremes and coastal military). **Bit 5 (0x20)**: combat-related flag (4 units). Zero for 87% of units. |
+| +10 | 1 byte | **Owner civ slot** | Which civilization owns this unit (0–7). Slot 0 = Barbarians. |
+| +11 | 1 byte | **Original builder civ** | Civ slot that originally built this unit. Barbarian military: always `0xFF` (spawned, no builder). Non-barbarian: usually matches owner, differs after capture. Barbarian settlers: 0–7 indicates source civ's population. |
+| +12 | 1 byte | **Continent/body ID** | Which land/sea body the unit occupies. `0x58` (88) = main continent (74 of 130 units). Smaller values for islands. Triremes show sea body IDs. Units on the same coastal tile may differ (land vs sea body). Spatially clusters but not stored in terrain bytes. |
+| +13 | 1 byte | **Cargo / work counter** | **Triremes**: carried units/fuel in high bits (0xE0, 0xEC, 0xF0). **Settlers**: small values 1–7 (turns of work remaining on improvement). Zero for all other types. |
+| +14 | 1 byte | **Always 0** | Structural invariant — useful for validation. |
+| +15 | 1 byte | **Movement class** | Enumerated movement type from RULES.TXT. `0x02` = standard infantry/1 MP (62 units). `0x03` = enhanced melee/2 MP (Crusaders). `0x0B` = slow/siege (Elephants, Catapults). `0x05`–`0x07` = settler actions. `0xFF` = mobile cavalry or naval. NOT raw movement points. |
+| +16 | 1 byte | **Counter (unknown)** | Widely varying (0–41+, 41 unique values). No correlation with seqID, activity, or unit type. Possibly accumulated combat XP, turns since creation, or HP remaining. One outlier at 255. |
+| +17 | 1 byte | **Always `0x00`** | Structural invariant — useful for validation. |
+| +18 | 2 bytes | **Goto X** (int16 LE) | Destination X, or `0xFFFF` (-1) if no goto orders. |
+| +20 | 2 bytes | **Goto Y** (int16 LE) | Destination Y, or `0xFFFF` (-1) if no goto orders. |
+| +22 | 2 bytes | **Waypoint/origin X** (int16 LE) | Secondary coordinate, possibly patrol waypoint or origin. Often `0xFFFF`. When set, contains valid map coordinates. |
+| +24 | 2 bytes | **Waypoint/origin Y** (int16 LE) | Paired with +22. Often `0xFFFF`. |
+| +26 | 2 bytes | **Unit sequence ID** (uint16 LE) | **Global unique creation counter.** All 130 live units have unique values (range 7–324). Gaps represent destroyed units. Lower = older unit. Slot reuse confirmed: low slot numbers can have high seqIDs when a destroyed unit's slot is reused by a newly built unit. |
+| +28 | 4 bytes | **Always `0x00000000`** | Structural padding — useful for validation. |
+
+#### Activity Bitmask (+5) Decoded
+
+| Bit | Mask | Meaning | Evidence |
+|-----|------|---------|----------|
+| 0 | 0x01 | **Fortified / standing orders** | 64 units, exclusively ground military (Warriors, Phalanx, Archers, Legion, Pikemen). Never set for Settlers or ships. |
+| 1 | 0x02 | **Settler working** | 22 units, **exclusively Settlers**. Set when performing terrain improvements (road, irrigation, mine). |
+| 2 | 0x04 | **Moving / goto active** | 27 units, various military and siege. Indicates unit is in transit toward destination. |
+| 3 | 0x08 | **Active modifier** | 29 units, mixed types including some Settlers. Modifies the base order. |
+| 4 | 0x10 | **Rare flag** | 5 units only (Phalanx, Legion, Crusaders). Possibly "has fought this turn" or "intercepted". |
+| 5 | 0x20 | **Major state flag** | 74 of 130 units. Set for units with active orders (goto, sentry, build). Possibly "has received orders this session" or "automated". |
+| 6 | 0x40 | **Sea movement flag** | 1 unit (Trireme). Possibly domain-specific movement modifier. |
+| 7 | 0x80 | Never set | |
+
+Common combined values: `0x01` (fortified, 33 units), `0x21` (fortified + bit5, 20 units), `0x22` (settler working + bit5, 14 units), `0x24` (moving + bit5, 11 units).
 
 ##### TODO: Unit Record Remaining Unknowns
-<!-- PRIORITY 6: 5 partially-decoded bytes + bridge record. -->
-- [ ] Decode +5: activity/work flags (which bits map to which settler actions?)
-- [ ] Decode +9: special status flags (which bits map to which states?)
-- [ ] Decode +11: civ slot reference — determine if fog-of-war, home city owner, or diplomacy related
-- [ ] Decode +13: cargo for ships — confirm carried unit encoding and fuel/range tracking
-- [ ] Decode +16: widely varying byte (hit points? experience? accumulated damage?)
-- [ ] Fully decode the 32-byte bridge record between units and cities
+<!-- PRIORITY 6: fewer unknowns now. -->
+- [ ] Determine exact meaning of +16 counter (controlled experiment: save before/after combat)
+- [ ] Determine exact meaning of +15 movement class values vs RULES.TXT columns
+- [ ] Determine what +22/+24 waypoint coordinates represent (patrol? origin? rally point?)
+- [ ] Decode +13 high bits for Triremes (exact carried unit count vs fuel encoding)
+- [ ] Decode +4 bit 5 and bit 7 (rare flags, need more saves with diverse unit states)
 
 #### Standard Unit Type IDs (default RULES.TXT)
 
@@ -839,19 +968,22 @@ unit_block_start  = unit_block_end - (num_units × 32)
 
 Note: Unit type IDs above 51 indicate a modded RULES.TXT with custom unit definitions.
 
-#### Bridge Record (32 bytes)
+#### Gap Record (32 bytes, between cities and tail)
 
-A fixed 32-byte record separates the last unit record from the first city record. Its exact purpose is not fully decoded, but it appears to contain:
+> **CORRECTION (Session 12):** This 32-byte record is located between the END of city records and the START of the tail section — NOT between units and cities as previously documented. Cities follow directly after units with no gap.
+
+This fixed 32-byte record's exact purpose is not fully decoded, but it appears to contain:
 - Bytes 0–3: A coordinate pair (possibly the currently selected unit or map cursor position)
 - Bytes 4–25: Game state flags
 - Bytes 26–31: Three uint16 values; the last appears related to the number of active civilizations
 
 ### Section 6: City Records (`num_cities × 88` bytes)
 
-City records are **88 bytes each**, stored contiguously. The total count is given by the uint16 at header offset `0x003C`. The city block can be located by:
+City records are **88 bytes each**, stored contiguously immediately after unit records. The total count is given by the uint16 at header offset `0x003C`. The city block can be located by:
 
-1. **From the end**: `city_block_start = EOF - 1807 - (num_cities × 88)`
-2. **By searching**: Scan for known capital city names (`Washington`, `Rome`, `London`, etc.) which appear at **offset +32** within each 88-byte record (subtract 32 from the name's file position to get the record start).
+1. **Forward chain**: `city_offset = unit_offset + total_units * 32` (no bridge gap)
+2. **From the end**: `city_block_start = EOF - 1807 - 32 - (num_cities × 88)`
+3. **By searching**: Scan for known capital city names which appear at **offset +32** within each 88-byte record.
 
 #### City Record Structure (88 bytes)
 
@@ -863,43 +995,43 @@ Cross-referenced and confirmed against four independent sources: (1) Allard Höf
 |--------|------|-------|--------|-------|
 | +0 | 2 bytes | **X coordinate** (short LE) | ✅ Confirmed (civ2mod.c, Höfelt) | Isometric map X. civ2mod.c: `getShort(cityblockptr)`. |
 | +2 | 2 bytes | **Y coordinate** (short LE) | ✅ Confirmed (civ2mod.c, Höfelt) | Isometric map Y. civ2mod.c: `getShort(cityblockptr+2)`. |
-| +4 | 1 byte | **City attributes I** | Höfelt, Catfish | 0x80=Coastal, 0x10=Auto-build, 0x08=Tech stolen, 0x04=Improvement sold, 0x02=WLTK Day, 0x01=Disorder. |
-| +5 | 1 byte | **City attributes II** | Höfelt, Catfish | 0x04=Can build hydroplant. |
-| +6 | 1 byte | **City attributes III** | Höfelt, Catfish | 0x20=Can build ships (if coastal). |
-| +7 | 1 byte | **City attributes IV** | Höfelt, Catfish | 0x10=Objective ×3, 0x04=Objective ×1, 0x02=Domestic advisor auto-build, 0x01=Military advisor auto-build. |
+| +4 | 1 byte | **City attributes I** | ✅ Hex-verified | 0x80=Coastal (30/43 cities), 0x40=On lake/river? (10/43), 0x02=WLTK Day (1/43, Washington), 0x01=Disorder. Höfelt also lists: 0x10=Auto-build, 0x08=Tech stolen, 0x04=Improvement sold. |
+| +5 | 1 byte | **City attributes II** | ✅ Hex-verified | 0x40=Can build hydroplant (16/43), 0x08=has river in city radius? (32/43), 0x01/0x02/0x04=rare flags (<3 cities). |
+| +6 | 1 byte | **City attributes III** | ✅ Hex-verified | 0x20=Can build ships (26/43 coastal cities), 0x08=universal flag (42/43, meaning unknown). |
+| +7 | 1 byte | **City attributes IV** | ✅ Hex-verified | Always 0x00 in main save. Höfelt: 0x10=Objective ×3, 0x04=Objective ×1, 0x02=Domestic auto, 0x01=Military auto. |
 | +8 | 1 byte | **Owning civilization** (0-7) | ✅ Confirmed (civ2mod.c) | `CITY_ITEM_OWNER_OFFSET 8`. 0=barbarians, 1-7=civs. |
 | +9 | 1 byte | **City size** | ✅ Confirmed (Höfelt) | Population level. **Note**: May be stale/zero for active human player's cities; reliable for AI cities. |
-| +10 | 1 byte | **Founding/last owner tribe** (0-7) | Höfelt | Who originally built the city (or last owner). |
-| +11 | 1 byte | **Turns since capture** | Höfelt | Counter increments each turn after capture; used for post-capture unhappiness. |
-| +12 | 1 byte | **Known to tribes** (bitmask) | Höfelt | Does NOT apply for city's own owner. Leftmost bit = tribe 7, rightmost = barbarians. |
-| +13 | 1 byte | Unknown/padding | | Höfelt's FW byte 14 — undocumented. |
-| +14 | 8 bytes | **Last city size revealed** | Höfelt | One byte per tribe (0-7). Size each tribe last saw this city at. Used for the Shift+C city list display. |
+| +10 | 1 byte | **Founding/last owner tribe** (0-7) | ✅ Hex-verified | Who originally built the city. Kells (own=5, founder=1) and Carmarthen (own=5, founder=1) confirm capture detection. |
+| +11 | 1 byte | **Turns since capture** | ✅ Hex-verified | Kells=120, Carmarthen=133. Counter increments each turn after capture; used for post-capture unhappiness. |
+| +12 | 1 byte | **Known to tribes** (bitmask) | ✅ Hex-verified | Bit N (MSB→LSB = civ7→civ0). Zimbabwe/Cardiff/Ulundi = 0xFF (known to all). Does NOT include city's own owner. |
+| +13 | 1 byte | Padding | ✅ Hex-verified | Always 0x00 across all 43 cities. |
+| +14 | 8 bytes | **Last city size revealed** | ✅ Hex-verified | One byte per tribe (index 0-7). Zimbabwe revealed[3]=3 (Viking saw size 3). Cardiff revealed[4]=7 (dead civ saw size 7, now 8). |
 | +22 | 4 bytes | **Specialist details** | Höfelt, Catfish | 16 × 2-bit entries: 00=none, 01=entertainer, 10=taxman, 11=scientist. Example: 0x06 = 1 taxman (10) + 1 entertainer (01) packed into first byte. |
 | +26 | 2 bytes | **Food in food box** (short LE) | ✅ Confirmed (Höfelt) | Accumulated food toward next population growth. 0xFFFF = famine. |
 | +28 | 2 bytes | **Shields in shield box** (short LE) | ✅ Confirmed (Höfelt) | Accumulated shields toward current production item. |
-| +30 | 2 bytes | **Net trade** (short LE) | Höfelt | Base trade arrows (excluding trade routes). |
+| +30 | 2 bytes | **Net base trade** (short LE) | ✅ Hex-verified | Base trade arrows (excluding trade routes). Identical to +78 when no trade routes active (verified 43/43 cities). |
 | +32 | 16 bytes | **City name** | ✅ Confirmed (civ2mod.c) | `CITY_ITEM_NAME_OFFSET 32`. 15 chars max + null terminator. |
-| +48 | 1 byte | **Workers inner circle** | ✅ Confirmed (Catfish) | Bitmask: each bit = 1 of 8 inner-ring tiles being worked. FF = all 8 worked. |
-| +49 | 1 byte | **Workers outer circle A** | Catfish | 8 of the 12 outer-ring tile positions. |
-| +50 | 1 byte | **Workers outer circle B** | Catfish | 4 remaining outer-ring positions (high nibble always 0x1x — bit 12 = center tile always set). |
-| +51 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type. Specialist count = value ÷ 4. |
-| +52 | 4 bytes | **Building bitmask I-IV** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, 1-indexed, RULES.TXT order. See full mapping below. |
-| +56 | 1 byte | **Building bitmask V** | Catfish | Airport (0x01), Police Station (0x02), Port Facility (0x04), Transporter (0x08). |
-| +57 | 1 byte | **Item in production** | Höfelt, Catfish | Units: 0x00-0x3F. Improvements: inverted (0xFF=1st, 0xFE=2nd, etc.). Can force production via hex edit. |
+| +48 | 1 byte | **Workers inner circle** | ✅ Hex-verified | Bitmask: each bit = 1 of 8 inner-ring tiles being worked. Verification: `popcount(+48) + popcount(+49) + popcount(+50 & 0x0F) + specialists = city_size` holds for ALL 43 cities. |
+| +49 | 1 byte | **Workers outer circle A** | ✅ Hex-verified | 8 of the 12 outer-ring tile positions. |
+| +50 | 1 byte | **Workers outer circle B** | ✅ Hex-verified | Low 4 bits = remaining 4 outer-ring positions. **Bit 4 (0x10) = center tile, ALWAYS set** (43/43 cities). Center tile is free — not counted in population. |
+| +51 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type. Specialist count = value ÷ 4. All 0 in main save (no specialists). |
+| +52 | 4 bytes | **Building bitmask I-IV** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, **1-indexed**, RULES.TXT order. **Palace validation**: exactly 1 Palace per active civ — Zimbabwe(civ2), Trondheim(civ3), Washington(civ5), Cardiff(civ1). See full mapping below. |
+| +56 | 1 byte | **Building bitmask V** | Catfish | Buildings 33+. Bit 0=Police Station, Bit 1=Port Facility, etc. All 0 in main save. |
+| +57 | 1 byte | **Item in production** | ✅ Hex-verified | Units: 0x00-0x3F (direct type ID). Improvements/Wonders: `building_id = 256 - byte_value`. E.g., 0xCA=Hoover Dam (#54), 0xFD=Granary (#3), 0xF8=City Walls (#8). Production includes wonders (#33+ in RULES.TXT). |
 | +58 | 1 byte | **Number of active trade routes** | Höfelt | 0-3 (can be >3 via hex edit). |
 | +59 | 3 bytes | **Trade commodities available/supplied** | Höfelt | 0x00-0x0F = available (RULES.TXT order). Supplied goods use 0xFF complement (e.g., 0xF3 = commodity 13 supplied). |
 | +62 | 3 bytes | **Trade commodities demanded** | Höfelt | 0x00-0x0F. |
 | +65 | 3 bytes | **Commodities in trade route** | Catfish | With partners 1-3. 0x00-0x0F = @CARAVAN item, 0xFF = food supplies. |
 | +68 | 6 bytes | **Trade partner city IDs** | Catfish | 3 × uint16 LE. City sequence ID of each trade partner. |
-| +74 | 2 bytes | **Science output** (short LE) | ✅ Confirmed (Catfish, experiment) | Beakers generated. Scientists add +2 each. |
-| +76 | 2 bytes | **Tax output** (short LE) | ✅ Confirmed (Catfish, experiment) | Gold generated. Tax collectors add +3 each. |
-| +78 | 2 bytes | **Trade output** (short LE) | ✅ Confirmed (Catfish) | Total trade arrows including trade routes. |
-| +80 | 1 byte | **Total food production** | ✅ Confirmed | Food from worked tiles. Drops ~2 per specialist (one fewer tile worked). |
-| +81 | 1 byte | **Total shield production** | ✅ Confirmed | Shields from worked tiles. |
-| +82 | 1 byte | **Happy citizens** | ✅ Confirmed (Catfish, experiment) | Entertainers generate happy citizens (+1 each). |
-| +83 | 1 byte | **Unhappy citizens** | Catfish, Höfelt | Double-unhappy may count twice(?). |
-| +84 | 2 bytes | **City sequence ID** (short LE) | ✅ Confirmed (Catfish) | MGE-only (bytes 85-86 of 88). Sequential identifier unique per city. Referenced by Wonders section (0x0000 = first city built). Same as value at Höfelt FW byte 85-86. |
-| +86 | 2 bytes | Unknown | | MGE-only (bytes 87-88 of 88). Usually 0x0000. |
+| +74 | 2 bytes | **Science output** (short LE) | ✅ Hex-verified | Beakers generated. Verified: sci + tax = trade (±1 rounding) for all 43 cities. |
+| +76 | 2 bytes | **Tax output** (short LE) | ✅ Hex-verified | Gold generated. Tax collectors add +3 each. |
+| +78 | 2 bytes | **Total trade** (short LE) | ✅ Hex-verified | Total trade arrows including trade routes. = +30 when no routes. |
+| +80 | 1 byte | **Total food production** | ✅ Hex-verified | Food from worked tiles. Range 3-21 across 43 cities. Correlates strongly with size (r=0.93). |
+| +81 | 1 byte | **Total shield production** | ✅ Hex-verified | Shields from worked tiles. Range 1-10 across 43 cities. |
+| +82 | 1 byte | **Happy citizens** | ✅ Confirmed (Catfish, experiment) | Entertainers generate happy citizens (+1 each). In main save: 1 for all human cities (baseline happy), 0 for AI, 3 for WLTK capital. |
+| +83 | 1 byte | **Unhappy citizens** | Catfish, Höfelt | In main save: only San Francisco and Kansas City have value 1 (mildly unhappy). |
+| +84 | 2 bytes | **City sequence ID** (short LE) | ✅ Hex-verified | 1-indexed, 43 unique values across 43 cities, range 1-46. Gaps at 4, 13, 27 = destroyed cities (46 total cities founded, 3 destroyed). Referenced by trade partner fields and wonder assignments. |
+| +86 | 2 bytes | Padding | ✅ Hex-verified | Always 0x0000 across all 43 cities. |
 
 ##### Building Bitmask (+52-55, uint32 LE) — CONFIRMED
 
@@ -939,6 +1071,21 @@ The bit numbering is **1-indexed**, matching the RULES.TXT improvement order:
 Bits 1–6 are confirmed by the controlled experiment. Bits 7–31 are inferred from RULES.TXT order and validated against the ROMAN scenario (e.g., cities with City Walls, Aqueduct, Cathedral, SDI Defense all have the expected bits set). Bit 0 appears in ~46% of ROMAN cities but no user-game cities; its meaning is unknown (possibly a scenario flag or the "Nothing" entry in RULES.TXT).
 
 **Key correction**: +52-55 was previously misidentified as "city size" (byte +52) because the bitmask value for a Palace-only city (`0x02`) coincidentally resembled a size value.
+
+##### Production Item Encoding (+57)
+
+The production item byte encodes both units and improvements/wonders in a single byte:
+
+- **Units**: Direct type ID (0x00-0x3F). E.g., 0x00=Settlers, 0x05=Legion, 0x06=Pikemen, 0x12=Crusaders.
+- **Improvements/Wonders**: Inverted encoding: `building_id = 256 - byte_value`. E.g., 0xFF=Palace(#1), 0xFD=Granary(#3), 0xF8=City Walls(#8), 0xD5=Michelangelo's Chapel(#43), 0xCA=Hoover Dam(#54).
+
+**Hex-verified production summary** (43 cities in main save):
+- 16 cities building Settlers (rapid expansion phase)
+- 6 cities building Crusaders (medieval military)
+- 5 cities building Pikemen (defense)
+- 3 cities building Legion
+- 2 cities building Granary, 2 building City Walls
+- 1 city each: Hoover Dam (#54), Michelangelo's Chapel (#43), Temple, Warriors, Elephant, Light Artillery, Horsemen, Ironclad
 
 ##### Resource Field Relationship
 
@@ -985,11 +1132,16 @@ Verified by assigning 1 specialist of each type from a size-5 baseline (no speci
 ##### TODO: City Record Remaining Unknowns
 - [x] All major fields mapped via civ2mod.c, hexedit.rtf, Catfish cross-reference, and controlled experiments
 - [x] Layout correction: XY coords at +0, name at +32 (confirmed by civ2mod.c and hex verification)
-- [ ] Verify +56 as building bitmask V (Airport/Police Station/Port Facility/Transporter)
-- [ ] Verify +57 as item in production with a controlled build experiment
-- [ ] Verify +4-7 as city attributes I-IV with disorder/WLTK saves
-- [ ] Investigate why +9 (city size) is stale/zero for active player's cities
-- [ ] Decode +86-87 (unknown, MGE extra bytes, usually 0x0000)
+- [x] Verify +57 as item in production — **confirmed**: units 0x00-0x3F, buildings/wonders via `256 - byte_value`. Washington building Hoover Dam (0xCA=#54), Philadelphia building Michelangelo's Chapel (0xD5=#43).
+- [x] Verify +48-50 as worker tile assignments — **confirmed**: workers + specialists = city_size for ALL 43 cities. Bit 4 of +50 = center tile, always set.
+- [x] Verify building bitmask 1-indexed — **confirmed**: Palace (bit 1) present in exactly 1 city per active civ (Zimbabwe, Trondheim, Washington, Cardiff).
+- [x] Verify +84 as city sequence ID — **confirmed**: 43 unique values (1-46), gaps at 4/13/27 = destroyed cities.
+- [x] Verify +30 vs +78 relationship — **confirmed**: identical when no trade routes (43/43 cities).
+- [x] Verify +86-87 — **confirmed**: always 0x0000 (padding).
+- [ ] Verify +56 as building bitmask V (all 0 in main save — need game with Airport/Police Station)
+- [ ] Verify +4-7 attribute bits not yet seen (Auto-build, Tech stolen, Disorder, Objective flags)
+- [ ] Decode +6 bit 3 (0x08) — present in 42/43 cities, meaning unknown
+- [ ] Investigate +5 bit 3 (0x08) — present in 32/43 cities, possibly "has river in city radius"
 
 ##### Cross-Reference: Source Documentation
 
@@ -1032,7 +1184,7 @@ The fixed constants at tail +1384 (`0xAB 0x05 0x46 0x03 0x01 0x00 0x03`) are **i
 | +0 | 32 bytes | Per-civ state flags | Small values; appears to encode current civ status (alive/dead, government type, etc.) |
 | +32 | 12 bytes | Game counters | Includes turn-related values and technology advancement flags |
 | +44 | 38 bytes | Technology/wonder ID list | 19 × uint16 LE. Values like `0x0483`, `0x048C`, `0x04FE` (category `0x04`) and `0xFBxx` (different category). May represent available or researched technologies. |
-| +82 | ~270 bytes | **Historical score table** | 8 bytes per row, one row per ~4 game turns. Column 0 = player metric (likely score or tech count), column 1 = always 0, columns 2–7 = per-civ metrics. Rows increment over time, providing a turn-by-turn history of civilization progress. Number of populated rows ≈ `turn_number / 4`. |
+| +82 | ~270 bytes | **Historical power graph data** | 8 bytes per entry, one entry per ~4 game turns. This is the data behind the in-game "Power Graph" (Demographics → Power Graph). The 8 bytes contain per-civ metrics that track civilization growth over time. Observed structure: 4 per-civ metric values followed by a total/player metric + padding. Values grow monotonically and represent cumulative scores (likely based on city count, population, or tech count). When a civ is destroyed, its value drops to 0. Number of populated entries ≈ `turn_number / 4` (e.g., 34 entries for 135 turns). |
 | ~+350 | ~940 bytes | Zero padding | Reserved space for additional history rows in longer games (maximum ~117 rows for a 500-turn game) |
 | +1288 | 96 bytes | Game engine constants | Contains fixed values consistent across saves: `0x0780` (1920), `0x0438` (1080), `0x067A` (1658), `0x03DE` (990). Possibly scoring coefficients, map display parameters, or spaceship component data. |
 | +1384 | 8 bytes | Fixed constants | Always `0xAB00`, `0x4603`, `0x0103`, `0x0300` — identical across all saves |
@@ -1055,9 +1207,9 @@ The historical score table and eliminated civ names provide a way to reconstruct
 
 Tribe names appear in two places:
 1. **In the tail section** (Section 7): Names of eliminated civilizations appear as null-terminated strings near the end of the file.
-2. **In the civilization data** (Section 3): The player's tribe name may be stored near the player name field.
+2. **In the civilization data** (Section 3): The player's name (e.g., `"Stubear"`) is stored at offset `0x0158 + (player_slot × 242)` in the per-civ name block. Residual bytes from previous names may follow the null terminator (e.g., `"oln"` from overwriting `"Lincoln"`).
 
-AI tribe names may be computed from `LEADERS.TXT` at runtime rather than stored explicitly in the save.
+**AI tribe names are NOT stored in the save file.** The per-civ name blocks for AI civilizations are empty (all zeros). The game loads AI names from `LEADERS.TXT` and `CITY.TXT` at runtime based on each civ slot's assigned civilization index. To determine which civilization occupies which slot, you must cross-reference the city names in the save (e.g., "Zimbabwe", "Trondheim") against `CITY.TXT` (which maps city names to civilizations).
 
 ---
 
