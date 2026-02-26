@@ -89,7 +89,18 @@ All `.SAV` files (including `.NET`, `.HOT`, `.EML` network/multiplayer variants)
 ├─────────────────────────────────────────────────┤
 │ 3c. Extended Game Data (0 to ~93 KB, variable)  │  0x080B0 (if present)
 ├─────────────────────────────────────────────────┤
-│ 4. Map Tile Data (fixed: num_tiles × 6 bytes)   │  varies
+│ 4a. Map Header (14 bytes, FIXED at 13702)       │  0x3586
+├─────────────────────────────────────────────────┤
+│ 4b. Block 1: Per-Civ Known Improvements         │  13716 (0x3594)
+│     (map_size × 7 bytes)                        │
+├─────────────────────────────────────────────────┤
+│ 4c. Block 2: TERRAIN DATA ← use this!           │  13716 + map_size×7
+│     (map_size × 6 bytes)                        │
+├─────────────────────────────────────────────────┤
+│ 4d. Block 3: Quarter-Resolution Data            │  Block 2 end
+│     (quarter_width × quarter_height × 2)        │
+├─────────────────────────────────────────────────┤
+│ 4e. 1024-Byte Padding                           │
 ├─────────────────────────────────────────────────┤
 │ 5. Unit Records (num_units × 32 bytes)          │  varies
 ├─────────────────────────────────────────────────┤
@@ -112,9 +123,17 @@ tile_block_end    = unit_block_start
 tile_block_start  = tile_block_end - ((map_width / 2) × map_height × 6)
 ```
 
-Note: `map_height` is a **single byte** at offset `0x0C` (not uint16).
+Note: `map_height` is a **single byte** at offset `0x0C` (not uint16). **However**, for tile data calculations, always use the map header at offset 13702, not the file header at 0x0A/0x0C. The end-of-file navigation shown above is useful for locating city and unit blocks, but tile block size should be calculated as `map_size × 6` where `map_size` comes from offset 13706.
 
 ### Section 1: Header (Bytes 0x0000–0x000D, 14 bytes, fixed)
+
+> **⚠️ CRITICAL: DO NOT USE THESE DIMENSIONS FOR MAP RENDERING OR TILE DATA.**
+>
+> The map width (0x0A) and height (0x0C) in this file header **do not match** the map data header at fixed offset 13702, and they **cannot be used** to calculate tile offsets, tile counts, or coordinate mappings. For the Stubear saves, this header says `width=44, height=63` while the map data header says `map_width2=80, map_height=50` (a 40×50 tile grid with 2,000 tiles — not 22×63 = 1,386).
+>
+> Using the wrong dimensions cascades into every subsequent calculation: wrong Block 2 offset, wrong terrain reads, wrong city-to-tile mapping, and a completely garbled map.
+>
+> **For ALL map-related work, use the map header at offset 13702.** See Section 4.
 
 | Offset | Size | Field | Values Observed |
 |--------|------|-------|-----------------|
@@ -128,8 +147,11 @@ Note: `map_height` is a **single byte** at offset `0x0C` (not uint16).
 Notes:
 - **Previous documentation error corrected**: Bytes 0x08 and 0x09 were previously described as "separator 0x1A" and "version 0x2C". In reality, 0x08 is a null byte (`0x00`) and 0x09 is `0x1A`. The value `0x2C` (44) at offset 0x0A is the map width, not a version number.
 - `.NET` files (network saves) share the same `CIVILIZE` header format.
-- Map width and height define the isometric coordinate space, not pixel dimensions.
-- Total tiles = `(width × height) / 2` = 1,386 for a 44×63 map.
+- **These dimensions disagree with the map data header.** For the same save file, the file header stores `width=44, height=63` while the map data header at offset 13702 stores `map_width2=80, map_height=50`. The exact relationship between these two sets of values is not fully understood — the file header may represent the map generator's nominal settings or a legacy coordinate space, while the map data header defines the actual storage grid. Key observations:
+  - File header width `44` ≈ `map_width2 / 2 + 4` (i.e., 80/2 + 4 = 44). The "+4" is unexplained.
+  - File header height `63` has no obvious arithmetic relationship to `map_height=50`.
+  - The formula `total_tiles = (width × height) / 2 = 1,386` using file header values is **incorrect** for tile data purposes. The actual tile count is `map_size = 2,000` from offset 13706.
+- **For all map rendering, tile data navigation, and city coordinate mapping: always use the map header at offset 13702.** See Section 4.
 
 ### Section 2: Game State (Bytes 0x000E–variable)
 
@@ -327,7 +349,6 @@ The section contains sparse data with large zero regions. Near the tile data bou
 The autosave produced when "Autosave each turn" is enabled is named `St_Auto.SAV`, saved to the game's installation directory.
 
 ### Section 4: Map Data (three blocks + padding)
-
 The map data consists of a **fixed-position map header**, three contiguous data blocks, and a 1024-byte padding block. Unlike most other sections, the map header offset is **fixed at byte 13702** in all saves (confirmed by civ2mod.c: `MAP_HEADER_OFFSET 13702`).
 
 #### Map Header (14 bytes at offset 13702)
@@ -343,6 +364,8 @@ Seven uint16 LE values (confirmed by civ2mod.c and hexedit.rtf):
 | 13710 | `map_seed` | 16388 | Random seed for map generation. Only 64 patterns exist (Höfelt). |
 | 13712 | `quarter_width` | 20 | (map_width2 / 4), rounded up. Used for Block 3 dimensions. |
 | 13714 | `quarter_height` | 13 | (map_height / 4), rounded up. Used for Block 3 dimensions. |
+
+**Relationship to file header (offset 0x0A/0x0C):** The file header contains different map dimension values than this map header. For the Stubear saves, the file header says 44×63 while this header says 80×50 (40×50 grid, 2000 tiles). The file header value of 44 equals `map_width2 / 2 + 4` (80/2 + 4 = 44); the "+4" is unexplained. The file header height of 63 has no obvious arithmetic relationship to `map_height = 50`. These discrepancies were confirmed across multiple saves. **⚠️ Always use this map header (offset 13702) for tile data calculations. Using the file header values produces completely wrong offsets and a garbled map.** See the Debugging Guide in Common Pitfalls for a detailed symptom→cause table.
 
 #### Block 1: Per-Civ Known Improvements (offset 13716, size = `map_size × 7`)
 
@@ -452,18 +475,21 @@ For ocean tiles, multiple bits are commonly set (e.g., `0b00111111` = 63, meanin
 
 ### Isometric Coordinate System
 
-Civ2 uses an **isometric diamond grid**:
+Civ2 uses an **isometric diamond grid** with a doubled X coordinate system:
 
-- Map dimensions (e.g., 44×63) define the coordinate space.
-- **Even rows** (0, 2, 4, ...) have tiles at even X positions: 0, 2, 4, ..., `width×2 − 2`
-- **Odd rows** (1, 3, 5, ...) have tiles at odd X positions: 1, 3, 5, ..., `width×2 − 1`
-- Each row stores `width / 2` tiles sequentially.
-- Tile index in the data: `index = row × (width / 2) + col_within_row`
-- City X coordinates range from 0 to `width × 2 − 1` (0–87 for a 44-wide map).
-- City Y coordinates range from 0 to `height − 1` (0–62 for a 63-tall map).
-- **The map wraps horizontally.** Column `(x // 2) % (width // 2)` gives the visual position.
+- The map data header at offset 13702 defines the grid: `map_width2` (doubled width) and `map_height`. Actual tile columns per row = `map_width2 / 2` (e.g., 80/2 = 40).
+- **Even rows** (0, 2, 4, ...) have tiles at even X positions: 0, 2, 4, ..., `map_width2 − 2`
+- **Odd rows** (1, 3, 5, ...) have tiles at odd X positions: 1, 3, 5, ..., `map_width2 − 1`
+- Each row stores `map_width2 / 2` tiles sequentially in the tile data blocks.
+- Tile index in Block 2: `index = row × (map_width2 / 2) + col_within_row`
+- City X coordinates (from city records at +0) range from 0 to `map_width2 − 1` (0–79 for an 80-wide doubled coordinate map).
+- City Y coordinates (from city records at +2) range from 0 to `map_height − 1` (0–49 for a 50-tall map).
+- To convert city coordinates to grid position: `grid_x = city_x // 2`, `grid_y = city_y`.
+- **The map wraps horizontally.** Apply `grid_x % (map_width2 // 2)` when needed.
 
-For rendering, each tile is a **diamond** shape. Odd rows are offset horizontally by half a tile width.
+For rendering, each tile is a **diamond** shape. Odd rows are offset horizontally by half a tile width. See the rendering algorithm below.
+
+> **⚠️ Do NOT use the file header values at 0x0A/0x0C (e.g., 44×63) for coordinate math. Use the map header at offset 13702.**
 
 #### Map Rendering Algorithm (Validated Against Game Screenshot)
 
@@ -620,6 +646,126 @@ Approximate RGB values matching the Civ2 game palette:
 5. **Horizontal wrapping**: The map wraps. Cities near X=0 or X=map_width2 may appear on the opposite edge of the display. Apply modular arithmetic: `grid_x % map_width`.
 
 6. **Tile byte 3 vs byte 4**: Old community docs sometimes had these swapped. Byte 3 is the land/sea body counter; byte 4 is the visibility bitmask. civ2mod.c confirms: `MAP_ITEM_COUNTER 3`, `MAP_ITEM_VISIBILITY 4`.
+
+7. **Two different dimension sources — file header vs. map header**: The file begins with a `CIVILIZE` header containing map width (offset 0x0A) and height (0x0C). These values (e.g., 44×63) are **completely different** from the map data header at offset 13702 (e.g., 80×50 → 40-column × 50-row grid). If you use the file header dimensions:
+   - You calculate `total_tiles = 22 × 63 = 1,386` instead of the correct `2,000`
+   - `block2_offset = 13716 + 1386 × 7 = 23,418` instead of the correct `13716 + 2000 × 7 = 27,716`
+   - You read data ~4,300 bytes too early — likely still inside Block 1 (per-civ improvements), which is mostly zeros
+   - Zeros in byte[0] decode as terrain ID 0 (Desert), producing a map that is ~96% desert
+   - City coordinate-to-tile mapping uses wrong grid width, placing many cities on ocean
+   - The resulting map has wrong continent shapes, wrong terrain, and cities in the water
+
+   **This is the #1 most catastrophic error and the hardest to debug**, because the wrong data can still look superficially plausible (valid terrain IDs, some non-zero values). The correct source for all map dimensions is **always** offset 13702.
+
+8. **Validating terrain reads — the "cities on ocean" test**: After reading terrain, verify that no alive city (size > 0) sits on an ocean tile. For a correctly parsed map, the count should be exactly zero. If any alive city maps to ocean, either the block offset, the terrain byte, or the coordinate mapping is wrong. This is the single most reliable validation check.
+
+9. **Terrain distribution sanity check**: A correctly parsed standard Civ2 map should show roughly 40–55% ocean, with the remaining land distributed across multiple terrain types (no single land type exceeding ~15%). If you see >80% of any terrain type (especially Desert), you are reading the wrong block or the wrong byte within the block.
+
+##### Debugging Guide: Symptom → Root Cause
+
+This section documents failure modes discovered through extensive debugging. If your render doesn't match the game, consult this table first.
+
+| Symptom | Most Likely Root Cause | Fix |
+|---------|----------------------|-----|
+| Map is ~96% Desert (terrain ID 0) | Reading Block 1 instead of Block 2. Block 1 is per-civ known improvements; undiscovered tiles are `0x00`, which looks like terrain ID 0 (Desert). | Recalculate `block2_offset = 13716 + (map_size * 7)` using `map_size` from offset 13706. |
+| Map is ~96% Desert AND `map_size` seems wrong | Using file header dimensions (44×63 → map_size=1386) instead of map header (offset 13702 → map_size=2000). The wrong map_size produces a wrong Block 2 offset that lands inside Block 1. | Read `map_size` from uint16 at offset 13706, NOT from `(header[0x0A] / 2) × header[0x0C]`. |
+| Terrain distribution looks realistic (~45-55% ocean) but many cities are on ocean tiles | Block 2 offset is close but not exact, OR you're reading the right block but using wrong map dimensions for coordinate-to-tile conversion. Coincidentally plausible distributions can occur at slightly wrong offsets. | Verify `block2_offset` arithmetic. Verify `grid_x = city_x // 2` uses `map_width = map_width2 // 2` from offset 13702. |
+| City names and owners are correct, positions are spatially wrong | City record format is correctly parsed (name at +32, coords at +0/+2), but coordinate-to-grid mapping uses wrong map width. | Use `map_width = uint16(offset 13702) // 2` for grid conversion, not file header width. |
+| Continent shapes don't match game screenshot | Wrong tile block. Even a few hundred bytes of offset error produces completely different continent shapes. | Double-check: `block2_offset = 13716 + (map_size * 7)` with `map_size` from offset 13706. Cross-validate by checking terrain under known city positions. |
+| Ocean appears where land should be (spotty, not systematic) | Possible byte-swap within tile record — reading byte[4] (visibility bitmask) instead of byte[0] (terrain). Visibility bytes can contain `0x0A`-like values. | Terrain is byte[0] & 0x0F in Block 2 tile records. Byte[4] is visibility, byte[3] is body counter. |
+| Many tiles show as "unknown terrain" (IDs > 10) | Reading the wrong byte, or at a misaligned offset. All 6-byte tile records in Block 2 should have byte[0] & 0x0F ≤ 10. | If you find IDs > 10, you are NOT reading Block 2 terrain. Recalculate offset. |
+
+##### Implementation Validation Checklist
+
+After parsing the save file, run these checks before attempting a render. If any check fails, **stop and fix the underlying issue** before proceeding — rendering with wrong data wastes time and produces misleading output.
+
+1. **Map header consistency**: `map_size` at offset 13706 must equal `(map_width2 // 2) × map_height`. If not, the header read is wrong.
+
+2. **Terrain distribution**: Count terrain IDs across all `map_size` tiles in Block 2. Expect: Ocean 40–55%, no single land terrain > 15%, at least 7 of 11 terrain types present. If Desert > 30%, you are likely reading Block 1.
+
+3. **Cities on land**: For every alive city (size > 0), convert its coordinates to a grid position and read the terrain at that tile. Expect: zero cities on ocean (terrain 10). If even 1 alive city maps to ocean, the coordinate mapping or block offset is wrong.
+
+4. **Parity check**: City X coordinates must have the same parity as the Y coordinate (even X on even rows, odd X on odd rows). If any city violates this, the coordinate read is wrong.
+
+5. **Coordinate ranges**: All city X values should be 0 to `map_width2 - 1`, all Y values should be 0 to `map_height - 1`. Out-of-range values indicate wrong record structure.
+
+6. **Cross-validation**: The city block can be located two independent ways:
+   - Forward: `city_offset = unit_offset + total_units × 32` (chaining from map header)
+   - Backward: `city_offset = file_size - tail_size - (num_cities × 88)`
+   These must agree. If they differ, one of the intermediate calculations is wrong.
+
+##### Correct Rendering Pipeline (Summary)
+
+For an AI or human implementing a Civ2 save renderer from scratch, follow this exact sequence. Do NOT skip steps or substitute values from the file header.
+
+```
+1. OPEN the .sav file as binary data.
+
+2. READ map header at FIXED offset 13702:
+     map_width2     = uint16_le(data, 13702)     # e.g., 80
+     map_height     = uint16_le(data, 13704)     # e.g., 50
+     map_size       = uint16_le(data, 13706)     # e.g., 2000
+     quarter_width  = uint16_le(data, 13712)     # e.g., 20
+     quarter_height = uint16_le(data, 13714)     # e.g., 13
+
+     map_width = map_width2 // 2                  # Actual tile columns: 40
+
+3. VERIFY: map_size == map_width * map_height     # 40 × 50 = 2000 ✓
+
+4. CALCULATE Block 2 offset (terrain data):
+     block2_offset = 13716 + (map_size * 7)       # 13716 + 14000 = 27716
+
+5. READ terrain for each tile:
+     for y in range(map_height):
+         for x in range(map_width):
+             idx = y * map_width + x
+             off = block2_offset + idx * 6
+             terrain_id = data[off] & 0x0F        # 0=Desert...10=Ocean
+             has_river  = bool(data[off] & 0x80)
+
+6. VALIDATE: check terrain distribution and cities-on-land (see checklist above).
+
+7. LOCATE cities by chaining forward:
+     total_units  = uint16_le(data, 58)
+     total_cities = uint16_le(data, 60)
+     block3_off   = block2_offset + map_size * 6
+     unit_offset  = block3_off + quarter_width * quarter_height * 2 + 1024
+     city_offset  = unit_offset + total_units * 32
+
+8. READ city records (88 bytes each):
+     city_x = uint16_le(data, city_offset + i*88 + 0)  # Doubled coordinate
+     city_y = uint16_le(data, city_offset + i*88 + 2)
+     grid_x = city_x // 2                                # Grid column
+     grid_y = city_y                                      # Grid row
+     owner  = data[city_offset + i*88 + 8]
+     size   = data[city_offset + i*88 + 9]
+     name   = null_terminated(data, city_offset + i*88 + 32, 16)
+
+9. RENDER isometric diamond grid:
+     TILE_W, TILE_H = 32, 16   # or 48×24, 64×32 depending on desired resolution
+     for y in range(map_height):
+         for x in range(map_width):
+             x_offset = (TILE_W // 2) if (y % 2 == 1) else 0
+             px = x * TILE_W + x_offset
+             py = y * (TILE_H // 2)
+             # Draw diamond at (px, py) with terrain color/sprite
+
+10. APPLY camera offset for wrapping (optional):
+      To match a specific game view, shift all x reads by a column offset:
+      actual_x = (visual_x + camera_col_offset) % map_width
+```
+
+##### What the File Header Values (0x0A, 0x0C) Are For
+
+The file header's width (0x0A) and height (0x0C) are read by the game engine during file loading but serve a **different purpose** than the map data header. Hypotheses:
+
+1. **Map generator nominal size**: These may be the "Earth-like", "Random small", etc. template dimensions that the map generator used as a starting point, before the actual tile grid was finalized.
+
+2. **Legacy format compatibility**: Civ2 evolved through multiple versions (Classic → Conflicts in Civilization → Fantastic Worlds → MGE). These fields may be vestigial from an earlier format where the file header dimensions matched the tile grid.
+
+3. **Display/UI parameters**: The game UI (minimap, scrolling bounds) might use these values independently of the tile data dimensions.
+
+Regardless of their purpose, **they must not be used for tile data parsing.** The authoritative dimensions live at offset 13702.
 
 ### Section 5: Unit Records (`num_units × 32` bytes)
 
