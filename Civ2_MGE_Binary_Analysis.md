@@ -2845,6 +2845,100 @@ The autosave file is named `St_Auto.SAV` (not `AUTO.SAV` as some community docs 
 
 ---
 
+## Sprite Sheet Mapping (TERRAIN1.GIF / TERRAIN2.GIF)
+
+All Civ2 MGE graphics files are 640×480 paletted GIFs with magenta (255,0,255) as the chroma key (transparent) color.
+
+### TERRAIN1.GIF — Base Terrain Tiles
+
+Grid: **65×33 pixel cells** (64×32 tile + 1px green border). Isometric diamond tiles.
+
+| Row | Terrain ID | Type | Columns 0-4 | Right Side (cols 5+) |
+|-----|-----------|------|-------------|---------------------|
+| 0 | 0 | Desert | 5 variants | Oasis special resource |
+| 1 | 1 | Plains | 5 variants | Buffalo/Wheat special |
+| 2 | 2 | Grassland | 5 variants | Pheasant special |
+| 3 | 3 | Forest (base filler) | 5 variants | Irrigation, Farmland overlays |
+| 4 | 4 | Hills (base filler) | 5 variants | Mining overlay |
+| 5 | 5 | Mountains (base filler) | 5 variants | Pollution overlay |
+| 6 | 6 | Tundra | 5 variants | Grassland shield resource |
+| 7 | 7 | Glacier/Arctic | 5 variants | Tundra specials |
+| 8 | 8 | Swamp | 5 variants | Swamp special |
+| 9 | 9 | Jungle | 5 variants | Jungle special |
+| 10 | 10 | Ocean | 5 variants | Ocean fish/whale |
+| 11 | — | Roads | Directional combos | — |
+| 12 | — | Railroads | Directional combos | — |
+| Bottom | — | Dither, Mouse cursor, Blank | — | — |
+
+**WARNING: Artist annotation text** ("desert", "prairie", "Arctic", "Ocean" etc.) is baked into certain tile variants as dark/green pixel labels. Affected variants include: Desert v2-3, Plains v2, Tundra v1-2-4, Glacier v1-2-3, Swamp v0, Jungle v0-1, Ocean v2-3. **Use variant 0 for safe rendering** or maintain a blacklist of contaminated variants.
+
+**Tile extraction formula**: For terrain type T, variant V (0-4): `x = V * 65 + 1`, `y = T * 33 + 1`, extract 64×32 pixels.
+
+### TERRAIN2.GIF — Overlays, Rivers, Coastlines
+
+Same 65×33 grid for main section (rows 0-10), smaller grids in bottom section.
+
+| Row | Content | Notes |
+|-----|---------|-------|
+| 0-1 | **Coastline transitions** | 16 tiles (8 per row), 4-bit neighbor encoding. Contain green shore-edge art but also annotation text fragments. |
+| 2-3 | **River sprites** | Directional river segments, 16 combos |
+| 4-5 | **Forest overlays** | 8+ variants per row. Overlay on Forest base (TERRAIN1 row 3). |
+| 6-7 | **Hills overlays** | 8+ variants. Overlay on Hills base (TERRAIN1 row 4). |
+| 8-9 | **Mountain overlays** | 8+ variants. Overlay on Mountains base (TERRAIN1 row 5). |
+| 10 | **River mouths** + color swatches | Small terrain color reference squares |
+| Bottom (y≈377+) | **Coastline edge pieces** | 8 numbered (0-7) half-diamond coast tiles, labeled "l=land w=water". Multiple sub-rows for top/bottom halves. |
+
+**Overlay extraction**: For Forest tiles use row 4 col `overlay_var % 8`. For Hills use row 6. For Mountains use row 8. `overlay_var = (byte5 >> 4) & 0x0F`.
+
+### CITIES.GIF — City Graphics
+
+Irregular grid. City sprites vary by size and era (Ancient, Renaissance, Industrial, Modern). Organized as rows of city graphics getting larger/more detailed. 8 columns for different civilization styles. Full mapping requires identifying size-to-row and era-to-column relationships.
+
+### UNITS.GIF — Unit Sprites
+
+Grid: **65×49 pixel cells** (64×48 unit + 1px border). 10 columns × 7 rows = 70 unit slots. Bottom row (row 7) has civilization color variant examples. Unit type maps to position: `col = type % 10`, `row = type // 10`.
+
+### Rendering Pipeline
+
+The correct render order for a single tile:
+
+1. **Base terrain** from TERRAIN1 (row = terrain_type, col = variant)
+2. **Terrain overlay** from TERRAIN2 (Forest/Hills/Mountains only)
+3. **Coastline transition** for ocean tiles adjacent to land
+4. **Rivers** from byte[1] bits 0-3 (procedural or TERRAIN2 rows 2-3)
+5. **Roads/Railroads** from byte[1] bits 4/6 (TERRAIN1 rows 11-12 or procedural)
+6. **Resource icons** if byte[0] bit 7 set (from TERRAIN1 right-side columns)
+7. **City sprites** from CITIES.GIF
+8. **Unit sprites** from UNITS.GIF
+
+### Isometric Coordinate → Pixel Position
+
+For a tile at save-file linear index `i`, with `TPR = map_width2 / 2 = 40`:
+- `row = i // TPR`, `col = i % TPR`
+- `pixel_x = col * 64 + (32 if row % 2 else 0)` (half-tile horizontal offset for odd rows)
+- `pixel_y = row * 16` (tile_height / 2, rows overlap)
+- Image dimensions: `width = TPR * 64 + 32`, `height = (map_height - 1) * 16 + 32`
+
+For city/unit isometric coordinates (cx, cy) to tile position: `col = (cx // 2) % TPR`, `row = cy`.
+
+### ⚠️ Rendering Pitfall: Interleaved Records vs Byte Planes
+
+The tile data in Block 2 is stored as **6-byte interleaved records** (one complete 6-byte record per tile, sequentially). Session 13 initially misread this block as 6 **separate byte planes** (all byte[0] values, then all byte[1] values, etc.), which produced a map with wildly wrong terrain distribution (e.g., 64% "desert" instead of 52% ocean). The correct reading is:
+
+```python
+# CORRECT: 6-byte interleaved records
+for i in range(map_size):
+    offset = block2_offset + i * 6
+    byte0, byte1, byte2, byte3, byte4, byte5 = sav[offset:offset+6]
+
+# WRONG: byte planes (DO NOT USE)
+# byte0 = sav[block2_offset + i]  ← reads byte[1] of tile i-1 as byte[0] of tile i!
+```
+
+An earlier rendering session accidentally used offset `0x076dc` (30428) with a 22×63 grid and 6-byte records, which happened to start 452 records into the tile data block. The resulting map appeared plausible because it coincidentally showed recognizable geography, but it was reading the wrong portion of the data with incorrect dimensions. The **correct parameters** are: `block2_offset = 27716`, `TPR = 40`, `MAP_H = 50`, with 6-byte interleaved records.
+
+---
+
 ## Community References
 
 - **Allard Höfelt's Hex-Editing Guide** (hexedit.rtf, v1.8, April 2005): The original and most comprehensive community documentation. Written for Fantastic Worlds but applicable to all versions. Covers header, tribes, technologies, map, units, cities, post-city data, passwords, and events. Confirms MGE city = 88 bytes (vs FW 84 bytes), MGE unit = 32 bytes (vs FW 26 bytes). Available in tek10/civ2mod repository.
