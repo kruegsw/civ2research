@@ -93,23 +93,19 @@ Contains overlay sprites composited on top of base terrain. Uses magenta chroma 
 
 #### UNITS.GIF Sprite Layout
 
-150 sprites (all 150 cells contain content). Unit type IDs from save file byte +6 map to sprite positions:
+63 standard unit cells (9 columns × 7 rows). Unit type IDs from save file byte +6 map to sprite positions via `col = type % 9`, `row = type // 9`. The rightmost 55px of the image (x=585–639) contains the shield/flag template, not a 10th column.
 
-| Row | Col 0 | Col 1 | Col 2 | Col 3 | Col 4 | Col 5 | Col 6 | Col 7 | Col 8 | Col 9 |
-|-----|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|
-| 0 | Settlers(0) | Engineers(1) | Warriors(2) | Phalanx(3) | Archers(4) | Legion(5) | Pikemen(6) | Musketeers(7) | Fanatics(8) | Partisan(9) |
-| 1 | Alpine(10) | Riflemen(11) | Marines(12) | Paratroop(13) | Mech Inf(14) | Horsemen(15) | Chariot(16) | Elephant(17) | Crusaders(18) | Knights(19) |
-| 2 | Dragoons(20) | Cavalry(21) | Armor(22) | Catapult(23) | Cannon(24) | Artillery(25) | Howitzer(26) | Fighter(27) | Bomber(28) | Heli(29) |
-| 3 | Stealth F(30) | Stealth B(31) | Trireme(32) | Caravel(33) | Galleon(34) | Frigate(35) | Ironclad(36) | Destroyer(37) | Cruiser(38) | AEGIS(39) |
-| 4 | Battleship(40) | Submarine(41) | Carrier(42) | Transport(43) | Cruise M(44) | Nuke(45) | Diplomat(46) | Spy(47) | Caravan(48) | Freight(49) |
-| 5 | Explorer(50) | ExtraLand(51) | *custom*... | | | | | | | |
-| 6–8 | Additional naval/air sprites and custom unit slots | | | | | | | | | |
-| 9 | Empty/reserved custom slots | | | | | | | | | |
-| 10 | Stack count numbers 1–8 (for displaying unit stacks on map) | | | | | | | | | |
-| 11–12 | **Modding instructions** (text labels embedded in sprite sheet explaining palette rules) |
-| 13–14 | Explosion effects, shield/flag overlays, additional sprites |
+| Row | Col 0 | Col 1 | Col 2 | Col 3 | Col 4 | Col 5 | Col 6 | Col 7 | Col 8 |
+|-----|-------|-------|-------|-------|-------|-------|-------|-------|-------|
+| 0 | Settlers(0) | Engineers(1) | Warriors(2) | Phalanx(3) | Archers(4) | Legion(5) | Pikemen(6) | Musketeers(7) | Fanatics(8) |
+| 1 | Partisans(9) | Alpine(10) | Riflemen(11) | Marines(12) | Paratroop(13) | Mech Inf(14) | Horsemen(15) | Chariot(16) | Elephant(17) |
+| 2 | Crusaders(18) | Knights(19) | Dragoons(20) | Cavalry(21) | Armor(22) | Catapult(23) | Cannon(24) | Artillery(25) | Howitzer(26) |
+| 3 | Fighter(27) | Bomber(28) | Heli(29) | Stealth F(30) | Stealth B(31) | Trireme(32) | Caravel(33) | Galleon(34) | Frigate(35) |
+| 4 | Ironclad(36) | Destroyer(37) | Cruiser(38) | AEGIS(39) | Battleship(40) | Submarine(41) | Carrier(42) | Transport(43) | Cruise M(44) |
+| 5 | Nuke(45) | Diplomat(46) | Spy(47) | Caravan(48) | Freight(49) | Explorer(50) | ExtraLand(51) | *custom*... | |
+| 6 | Additional custom unit slots and modding instruction text | | | | | | | | |
 
-**Unit sprite indexing**: Unit type ID from save file = `row * 10 + col` for rows 0–5. Types 0–51 are standard; types 52+ are mod-defined custom units.
+**Unit sprite indexing**: Unit type ID from save file = `row * 9 + col` for rows 0–5. Types 0–51 are standard; types 52+ are mod-defined custom units.
 
 **UNITS.GIF palette (confirmed via Civ2-clone `UnitLoader.cs`)**:
 
@@ -1068,7 +1064,7 @@ All offsets are 0-indexed from the start of each unit record. Höfelt uses 1-ind
 | +2 | 2 bytes | **Y coordinate** (int16 LE) | Y coordinate (0 to `map_height − 1`). Höfelt bytes 3-4. |
 | +4 | 1 byte | **Movement flags** | Höfelt byte 5 (1st byte of a 2-byte pair). Bitmask: bit 6 = set on first move (remains set permanently), bit 4 = paratrooper launched this turn, bit 1 = unit is immobile. |
 | +5 | 1 byte | **Status flags** | Höfelt byte 6 (2nd byte of pair). Bitmask: bit 7 = automate (not just settlers!), bit 6 = unit is "waiting" (W key pressed), bit 5 = **veteran status** (+50% combat). |
-| +6 | 1 byte | **Unit type** | Höfelt byte 7. Index into RULES.TXT `@UNITS` section (0=Settlers, 1=Engineers, etc.). Maps to UNITS.GIF: `row = type_id / 10`, `col = type_id % 10`. |
+| +6 | 1 byte | **Unit type** | Höfelt byte 7. Index into RULES.TXT `@UNITS` section (0=Settlers, 1=Engineers, etc.). Maps to UNITS.GIF: `row = type_id / 9`, `col = type_id % 9`. |
 | +7 | 1 byte | **Owner civ slot** | Höfelt byte 8. Which civilization owns this unit (0–7, 0=Barbarians). |
 | +8 | 1 byte | **Movement points remaining** | Höfelt byte 9. Multiplied by road move multiplier from RULES.TXT `@COSMIC`, except for "Alpine" units which ignore the multiplier. |
 | +9 | 1 byte | **Visibility bitmask** | Höfelt byte 10. Which civs can see this unit. Bit 0 = barbarians, bit 1 = civ 1, etc. The corresponding unit flag in map Block 1 must also be set for the unit to display on that civ's map. |
@@ -1129,23 +1125,26 @@ All offsets are 0-indexed from the start of each unit record. Höfelt uses 1-ind
 
 | ID | Unit | ID | Unit | ID | Unit |
 |----|------|----|------|----|------|
-| 0 | Settlers | 15 | Horsemen | 32 | Frigate |
-| 1 | Engineers | 16 | Chariot | 33 | Ironclad |
-| 2 | Warriors | 17 | Elephant | 34 | Destroyer |
-| 3 | Phalanx | 18 | Crusaders | 35 | Cruiser |
-| 4 | Archers | 19 | Knights | 36 | AEGIS Cruiser |
-| 5 | Legion | 20 | Dragoons | 37 | Battleship |
-| 6 | Pikemen | 21 | Cavalry | 38 | Submarine |
-| 7 | Musketeers | 22 | Armor | 39 | Carrier |
-| 8 | Fanatics | 23 | Diplomat | 40 | Transport |
-| 9 | Partisans | 24 | Spy | 43 | Catapult |
-| 10 | Alpine Troops | 25 | Caravan | 44 | Cannon |
-| 11 | Riflemen | 26 | Freight | 45 | Artillery |
-| 12 | Marines | 27 | Explorer | 46 | Howitzer |
-| 13 | Paratroopers | 28 | Trireme | 47 | Fighter |
-| 14 | Mech. Inf. | 29 | Galley | 48 | Bomber |
+| 0 | Settlers | 18 | Crusaders | 36 | Ironclad |
+| 1 | Engineers | 19 | Knights | 37 | Destroyer |
+| 2 | Warriors | 20 | Dragoons | 38 | Cruiser |
+| 3 | Phalanx | 21 | Cavalry | 39 | AEGIS Cruiser |
+| 4 | Archers | 22 | Armor | 40 | Battleship |
+| 5 | Legion | 23 | Catapult | 41 | Submarine |
+| 6 | Pikemen | 24 | Cannon | 42 | Carrier |
+| 7 | Musketeers | 25 | Artillery | 43 | Transport |
+| 8 | Fanatics | 26 | Howitzer | 44 | Cruise Msl. |
+| 9 | Partisans | 27 | Fighter | 45 | Nuclear Msl. |
+| 10 | Alpine Troops | 28 | Bomber | 46 | Diplomat |
+| 11 | Riflemen | 29 | Helicopter | 47 | Spy |
+| 12 | Marines | 30 | Stealth Ftr. | 48 | Caravan |
+| 13 | Paratroopers | 31 | Stealth Bmbr. | 49 | Freight |
+| 14 | Mech. Inf. | 32 | Trireme | 50 | Explorer |
+| 15 | Horsemen | 33 | Caravel | 51 | Extra Land |
+| 16 | Chariot | 34 | Galleon | | |
+| 17 | Elephant | 35 | Frigate | | |
 
-Note: Unit type IDs above 51 indicate a modded RULES.TXT with custom unit definitions.
+Note: Unit type IDs above 51 indicate a modded RULES.TXT with custom unit definitions. Order matches the `@UNITS` section in RULES.TXT and the sprite grid in UNITS.GIF (9 columns: `col = id % 9`, `row = id // 9`).
 
 #### Gap Record (32 bytes, between cities and tail)
 
@@ -3168,7 +3167,7 @@ Row borders (y): 38, 87, 136, 185, 234, 283, 332, 346, 395 — main rows are 49p
 
 ### UNITS.GIF — Unit Sprites
 
-Grid: **65×49 pixel cells** (64×48 unit + 1px border). 10 columns × 7 rows = 70 unit slots. Bottom row (row 7) has civilization color variant examples. Unit type maps to position: `col = type % 10`, `row = type // 10`.
+Grid: **65×49 pixel cells** (64×48 unit + 1px border). 9 columns × 7 rows = 63 unit slots (9 × 65 = 585px of sprite cells + 55px shield/flag template area = 640px). Unit type maps to position: `col = type % 9`, `row = type // 9`.
 
 ### Rendering Pipeline (Reverse-Engineered)
 
@@ -3789,13 +3788,13 @@ sprite_y = 39 + era_row * 49         # Era row
 
 #### Layer 10: Unit Sprites
 
-**Sprite sheet**: UNITS.GIF, 65×49 pixel grid (64×48 unit sprite + 1px border), 10 columns × 7 rows.
+**Sprite sheet**: UNITS.GIF, 65×49 pixel grid (64×48 unit sprite + 1px border), 9 columns × 7 rows.
 
 **Sprite selection**:
 ```python
 unit_type = unit_record[6]          # Byte +6 of unit record
-col = unit_type % 10
-row = unit_type // 10
+col = unit_type % 9
+row = unit_type // 9
 sprite_x = col * 65 + 1
 sprite_y = row * 49 + 1
 # Extract 64×48 pixels
