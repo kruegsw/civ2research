@@ -249,7 +249,9 @@ mapCanvas.addEventListener('mousemove', e => {
     // Check for city at this location
     for (const c of md.cities) {
       if (c.gx === gx && c.gy === gy) {
-        info += `\n${c.name} (size ${c.size}, owner ${c.owner}, style ${c.style}${c.hasWalls ? ', walled' : ''})`;
+        const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;
+        const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
+        info += `\n${c.name} (size ${c.size}, ${epochNames[epoch]}, style ${c.style}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''})`;
         break;
       }
     }

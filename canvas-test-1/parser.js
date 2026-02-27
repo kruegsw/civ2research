@@ -62,10 +62,14 @@ const Civ2Parser = {
     // Tech discovery: 100 bytes at 0x00A6, one byte per advance
     // Each byte is a bitmask of which civs discovered that tech (bit 0=barbs, bit 1=civ1, etc.)
     const civTechCounts = new Array(8).fill(0);
+    const civTechs = Array.from({length: 8}, () => new Set());
     for (let adv = 0; adv < 89; adv++) {
       const byte = savBuf[0x00A6 + adv];
       for (let civ = 0; civ < 8; civ++) {
-        if (byte & (1 << civ)) civTechCounts[civ]++;
+        if (byte & (1 << civ)) {
+          civTechCounts[civ]++;
+          civTechs[civ].add(adv);
+        }
       }
     }
 
@@ -104,12 +108,13 @@ const Civ2Parser = {
       const owner = savBuf[off + 8];
       const size  = savBuf[off + 9];
       const name  = this.nullStr(savBuf, off + 32, 16);
-      // City Walls: building bitmask at +52 (uint32 LE), bit 8 = City Walls
+      // Building bitmask at +52 (uint32 LE), 1-indexed: bit 1=Palace, bit 8=City Walls
       const buildings = this.u32(savBuf, off + 52);
       const hasWalls = (buildings & 0x100) !== 0;
+      const hasPalace = (buildings & 0x02) !== 0;
       const style = civStyles[owner] || 0;
       if (name && size > 0) {
-        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, style });
+        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, hasPalace, style });
       }
     }
 
@@ -199,7 +204,7 @@ const Civ2Parser = {
     return {
       mw, mh, mw2, ms, mapSeed, qw, qh, mapShape, isScn,
       tileData, cities, units, civStyles,
-      playerCiv, civsAlive, civTechCounts,
+      playerCiv, civsAlive, civTechCounts, civTechs,
       s1x, s1y, s2x, s2y,
       terrainCounts, oceanPct, citiesOnOcean,
       // Accessor functions

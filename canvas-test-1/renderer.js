@@ -205,21 +205,21 @@ const Civ2Renderer = {
     }
 
     // City sprites from CITIES.GIF: 65×49 grid (64×48 sprite + 1px border)
-    // 38px header row, then 49px per era row
-    // sprites.city[walled][style][era] — walled: 0/1, style: 0-3, era: 0-6
-    // Chroma: Magenta (255,0,255) + Cyan (0,255,255) + Gray (135,135,135), killGreen=true
-    // Cyan is transparent in CITIES.GIF (palette indices 236-252 per docs)
-    sprites.city = [[], []]; // [open, walled]
+    // 6 rows (0-3=architectural styles for Ancient/Renaissance, 4=Industrial, 5=Modern)
+    // 8 cols per row: 0-3=unwalled sizes, 4-7=walled sizes (same size thresholds)
+    // Left half (x=0-259): unwalled 4 cols; center: label col; right half (x=333+): walled 4 cols
+    // sprites.city[row][col] — row: 0-5, col: 0-7
+    sprites.city = [];
     if (citiesCtx) {
       const CC = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
-      for (let w = 0; w < 2; w++) {
-        for (let s = 0; s < 4; s++) {
-          sprites.city[w][s] = [];
-          for (let era = 0; era < 7; era++) {
-            const cx = (w * 334) + s * 65 + 1;
-            const cy = 39 + era * 49;
-            sprites.city[w][s][era] = this.extractSprite(citiesCtx, cx, cy, 64, 48, CC, true);
-          }
+      for (let row = 0; row < 6; row++) {
+        sprites.city[row] = [];
+        for (let sizeIdx = 0; sizeIdx < 4; sizeIdx++) {
+          const cy = 39 + row * 49;
+          // Unwalled (cols 0-3)
+          sprites.city[row][sizeIdx] = this.extractSprite(citiesCtx, sizeIdx * 65 + 1, cy, 64, 48, CC, true);
+          // Walled (cols 4-7)
+          sprites.city[row][sizeIdx + 4] = this.extractSprite(citiesCtx, 334 + sizeIdx * 65 + 1, cy, 64, 48, CC, true);
         }
       }
     }
@@ -495,15 +495,17 @@ const Civ2Renderer = {
       const cy = tpy + (TH >> 1);
       const color = this.CIV_COLORS[c.owner] || '#ccc';
 
-      // City sprite — era based on owning civ's tech count
-      const era = mapData.civTechCounts
-        ? this._getEra(mapData.civTechCounts[c.owner] || 0)
-        : 3;
-      const walled = c.hasWalls ? 1 : 0;
-      const style = c.style || 0;
-      if (citySprites[walled] && citySprites[walled][style] && citySprites[walled][style][era]) {
+      // City sprite — epoch from civ's techs, row from epoch+style, col from size
+      const epoch = mapData.civTechs
+        ? this._getEpoch(mapData.civTechs[c.owner])
+        : 0;
+      const row = this._getCityRow(epoch, c.style || 0);
+      let col = this._getCitySizeCol(c.size, epoch);
+      if (c.hasPalace && col < 3) col++;       // capital bonus
+      if (c.hasWalls) col += 4;                 // walled offset
+      if (citySprites[row] && citySprites[row][col]) {
         // Sprites are 64×48: 16px taller than a tile, so draw 16px above tile top
-        ctx.drawImage(citySprites[walled][style][era], tpx, tpy - 16);
+        ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
       } else {
         // Fallback: colored square if CITIES.GIF not loaded
         ctx.fillStyle = '#000';
@@ -884,15 +886,53 @@ const Civ2Renderer = {
     return c;
   },
 
-  // Map tech count to era row index for city sprites
-  _getEra(techCount) {
-    if (techCount <= 5) return 0;   // Ancient
-    if (techCount <= 15) return 1;  // Classical
-    if (techCount <= 25) return 2;  // Renaissance
-    if (techCount <= 40) return 3;  // Medieval
-    if (techCount <= 60) return 4;  // Industrial
-    if (techCount <= 75) return 5;  // Modern
-    return 6;                       // Modern Alt
+  // Epoch tech IDs (from RULES.TXT advance order)
+  EPOCH_TECHS: {
+    INVENTION: 38, PHILOSOPHY: 60,       // Renaissance (epoch 1)
+    INDUSTRIALIZATION: 37,               // Industrial (epoch 2)
+    AUTOMOBILE: 5, ELECTRONICS: 24,      // Modern (epoch 3)
+  },
+
+  // Determine epoch for a civ from its tech set
+  // Returns 0=Ancient, 1=Renaissance, 2=Industrial, 3=Modern
+  _getEpoch(civTechSet) {
+    if (!civTechSet) return 0;
+    const T = this.EPOCH_TECHS;
+    if (civTechSet.has(T.AUTOMOBILE) && civTechSet.has(T.ELECTRONICS)) return 3;
+    if (civTechSet.has(T.INDUSTRIALIZATION)) return 2;
+    if (civTechSet.has(T.INVENTION) && civTechSet.has(T.PHILOSOPHY)) return 1;
+    return 0;
+  },
+
+  // Get city sprite row from epoch and architectural style
+  // Ancient/Renaissance (epochs 0-1): use civ's style (rows 0-3)
+  // Industrial (epoch 2): all civs use row 4
+  // Modern (epoch 3): all civs use row 5
+  _getCityRow(epoch, style) {
+    if (epoch >= 3) return 5;
+    if (epoch >= 2) return 4;
+    return style;  // 0-3
+  },
+
+  // Get city size column (0-3) from population and epoch
+  _getCitySizeCol(size, epoch) {
+    if (epoch >= 3) {  // Modern
+      if (size <= 4) return 0;
+      if (size <= 10) return 1;
+      if (size <= 18) return 2;
+      return 3;
+    }
+    if (epoch >= 2) {  // Industrial
+      if (size <= 4) return 0;
+      if (size <= 7) return 1;
+      if (size <= 10) return 2;
+      return 3;
+    }
+    // Ancient/Renaissance
+    if (size <= 3) return 0;
+    if (size <= 5) return 1;
+    if (size <= 7) return 2;
+    return 3;
   },
 
   // Yield to event loop for UI updates
