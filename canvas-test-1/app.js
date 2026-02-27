@@ -123,6 +123,7 @@ async function doRender() {
     const fowSelect = document.getElementById('fow-civ');
     fowSelect.innerHTML = '';
     const civNames = Civ2Renderer._identifyCivs(mapData.cities);
+    mapData.civNames = civNames;
     for (let i = 0; i < 8; i++) {
       if (!(mapData.civsAlive & (1 << i))) continue;
       const opt = document.createElement('option');
@@ -251,6 +252,14 @@ mapCanvas.addEventListener('mousemove', e => {
         info += `\n${c.name} (size ${c.size}, owner ${c.owner}, style ${c.style}${c.hasWalls ? ', walled' : ''})`;
         break;
       }
+    }
+
+    // Check for units at this location
+    for (const u of md.units) {
+      if (u.gx !== gx || u.gy !== gy) continue;
+      const name = Civ2Renderer.UNIT_NAMES[u.type] || `Unit#${u.type}`;
+      const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
+      info += `\n[Unit] ${name} (id ${u.type}, ${owner}, hp-${u.hpLost}, orders ${u.orders})`;
     }
 
     tooltip.textContent = info;

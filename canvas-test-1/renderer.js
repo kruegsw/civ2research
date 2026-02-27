@@ -11,6 +11,19 @@ const Civ2Renderer = {
   TERRAIN_NAMES: ['Desert','Plains','Grassland','Forest','Hills','Mountains',
                   'Tundra','Glacier','Swamp','Jungle','Ocean'],
 
+  UNIT_NAMES: [
+    'Settlers','Engineers','Warriors','Phalanx','Archers','Legion','Pikemen','Musketeers',   // 0-7
+    'Fanatics','Partisans','Alpine Troops','Riflemen','Marines','Paratroopers','Mech. Inf.', // 8-14
+    'Horsemen','Chariot','Elephant','Crusaders','Knights',                                    // 15-19
+    'Dragoons','Cavalry','Armor','Catapult','Cannon','Artillery','Howitzer',                  // 20-26
+    'Fighter','Bomber','Helicopter',                                                          // 27-29
+    'Stealth Fighter','Stealth Bomber','Trireme','Caravel','Galleon','Frigate','Ironclad',    // 30-36
+    'Destroyer','Cruiser','AEGIS Cruiser',                                                    // 37-39
+    'Battleship','Submarine','Carrier','Transport','Cruise Msl.','Nuclear Msl.',              // 40-45
+    'Diplomat','Spy','Caravan','Freight',                                                     // 46-49
+    'Explorer','Extra Land',                                                                  // 50-51
+  ],
+
   CIV_COLORS: ['#c80000','#ffffff','#00b400','#3250dc','#f0dc00','#00c8c8','#f08c00','#b400c8'],
 
   // Clean (text-free) column indices per terrain type in TERRAIN1.GIF
