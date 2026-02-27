@@ -251,7 +251,8 @@ mapCanvas.addEventListener('mousemove', e => {
       if (c.gx === gx && c.gy === gy) {
         const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;
         const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
-        info += `\n${c.name} (size ${c.size}, ${epochNames[epoch]}, style ${c.style}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''})`;
+        const styleNames = ['Bronze','Classical','Far East','Medieval'];
+        info += `\n${c.name} (size ${c.size}, ${epochNames[epoch]}, ${styleNames[c.style] || '?'}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''})`;
         break;
       }
     }

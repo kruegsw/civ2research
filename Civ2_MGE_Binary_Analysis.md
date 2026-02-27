@@ -206,11 +206,11 @@ The layout below applies to `.SAV`, `.NET`, `.HOT`, and `.EML` files. `.SCN` fil
 │ 2. Game State Preamble (330 bytes, SAV/NET)     │  0x000E
 │    (316 bytes for SCN files)                    │
 ├─────────────────────────────────────────────────┤
-│ 3a. Per-Civ Name Blocks (8 × 242 bytes)        │  0x0158 (SAV/NET)
-│                                                 │  0x014A (SCN)
+│ 3a. Per-Civ Name Blocks (8 × 242 bytes)        │  0x0156 (SAV/NET)
+│                                                 │  0x0148 (SCN)
 ├─────────────────────────────────────────────────┤
-│ 3b. Per-Civ Data Blocks (8 × 1,428 bytes)      │  0x08E8 (SAV/NET)
-│     Last block truncated by 2 bytes             │  0x08DA (SCN, 8 × 1,396)
+│ 3b. Per-Civ Data Blocks (8 × 1,428 bytes)      │  0x08E6 (SAV/NET)
+│     Last block truncated by 2 bytes             │  0x08D8 (SCN, 8 × 1,396)
 ├─────────────────────────────────────────────────┤
 │ 4a. Map Header (14 bytes)                       │  13702/0x3586 (SAV/NET)
 │                                                 │  13432/0x3478 (SCN)
@@ -398,8 +398,8 @@ The section has two sub-parts:
 
 | Sub-section | Start Offset (SAV/NET) | Start Offset (SCN) | Size | Description |
 |-------------|----------------------|-------------------|------|-------------|
-| Per-Civ Name Blocks | `0x0158` | `0x014A` | 8 × 242 = 1,936 bytes | Leader names, tribe names, government titles |
-| Per-Civ Data Blocks | `0x08E8` | `0x08DA` | 8 × N bytes (see below) | Technology, diplomacy, AI state, resources |
+| Per-Civ Name Blocks | `0x0156` | `0x0148` | 8 × 242 = 1,936 bytes | Leader names, tribe names, government titles |
+| Per-Civ Data Blocks | `0x08E6` | `0x08D8` | 8 × N bytes (see below) | Technology, diplomacy, AI state, resources |
 
 The name block region and the `"dddddddd"` marker at `0x0926` (SAV/NET) or `0x0918` (SCN) are **fixed-size** across all files of the same type. The per-civ data block size N is **fixed per file type**:
 
@@ -414,7 +414,7 @@ The name block region and the `"dddddddd"` marker at `0x0926` (SAV/NET) or `0x09
 
 #### Per-Civ Name Block (242 bytes each, 7 blocks — excludes barbarians)
 
-Each of the 7 non-barbarian civ slots has a 242-byte block containing identity strings. The block starts at `name_block_start + (slot × 242)` where `name_block_start` is `0x0158` for SAV/NET or `0x014A` for SCN. Slot 0 here corresponds to civ slot 1 (the first non-barbarian civ).
+Each of the 8 civ slots (including barbarians at slot 0) has a 242-byte block containing identity strings. The block starts at `name_block_start + (slot × 242)` where `name_block_start` is `0x0156` for SAV/NET or `0x0148` for SCN. AI civs typically have all-zero name blocks; their identity data comes from RULES.TXT at runtime.
 
 > **Note**: Höfelt documents only **7** name blocks (slots 1–7, no barbarian slot), covering offsets 584–2277 (FW), consistent with 7 × 242 = 1,694 bytes.
 
@@ -439,7 +439,7 @@ All string fields are null-terminated within their allocation. Residual bytes fr
 
 #### Per-Civ Data Block (1,428 bytes each for SAV/NET; 1,396 bytes for SCN)
 
-Each civ slot has a data block starting at `per_civ_data_start + (slot × block_size)` where `per_civ_data_start` is `0x08E8` for SAV/NET or `0x08DA` for SCN. The last (8th) block is 2 bytes shorter. These blocks contain:
+Each civ slot has a data block starting at `per_civ_data_start + (slot × block_size)` where `per_civ_data_start` is `0x08E6` for SAV/NET or `0x08D8` for SCN. The last (8th) block is 2 bytes shorter. These blocks contain:
 
 - **Technology state**: 6-byte entries per technology (pattern: `01 XX F0 YY 00 00` where XX encodes acquisition method and YY encodes tech level/era). Matches the 89 technologies from RULES.TXT.
 - **Diplomacy/attitudes**: int16 pairs encoding relationships with other civs.
@@ -1426,7 +1426,7 @@ Password encryption uses a 3-step algorithm: (1) rotate character bits left by 1
 
 Tribe names appear in two places:
 1. **In the tail section** (Section 7): Names of eliminated civilizations appear as null-terminated strings near the end of the file.
-2. **In the civilization data** (Section 3): The player's name is stored at `name_block_start + (player_slot × 242)` in the per-civ name block (`0x0158` for SAV/NET, `0x014A` for SCN). Residual bytes from previous names may follow the null terminator (e.g., leftover characters from overwriting a longer name).
+2. **In the civilization data** (Section 3): The player's name is stored at `name_block_start + (player_slot × 242)` in the per-civ name block (`0x0156` for SAV/NET, `0x0148` for SCN). Residual bytes from previous names may follow the null terminator (e.g., leftover characters from overwriting a longer name).
 
 **AI tribe names are NOT stored in the save file.** The per-civ name blocks for AI civilizations are empty (all zeros). The game loads AI names from `LEADERS.TXT` and `CITY.TXT` at runtime based on each civ slot's assigned civilization index. To determine which civilization occupies which slot, you must cross-reference the city names in the save (e.g., "Zimbabwe", "Trondheim") against `CITY.TXT` (which maps city names to civilizations).
 
@@ -4172,7 +4172,7 @@ This script produces a correct map rendering with verified coastlines, rivers, r
 
 **Total offset shift**: 14 (preamble) + 8 × 32 (per-civ) = **270 bytes**. This is the constant difference between SCN and SAV map header offsets: 13702 − 13432 = 270.
 
-**Detection**: Check `header[0x0D] & 0x01` for the scenario flag. Additionally, SCN files can be distinguished from scenario SAV files by checking whether the per-civ name blocks start at 0x014A (SCN) vs 0x0158 (SAV). In practice, the file extension is the most reliable indicator.
+**Detection**: Check `header[0x0D] & 0x01` for the scenario flag. Additionally, SCN files can be distinguished from scenario SAV files by checking whether the per-civ name blocks start at 0x0148 (SCN) vs 0x0156 (SAV). In practice, the file extension is the most reliable indicator.
 
 **Parsing strategy**: To write a universal parser, determine the file type first, then set record sizes and offsets accordingly:
 

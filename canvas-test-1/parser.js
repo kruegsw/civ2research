@@ -86,15 +86,29 @@ const Civ2Parser = {
     const unitOff   = block3Off + qw * qh * 2 + 1024;
     const cityOff   = unitOff + totalUnits * unitRecSize;
 
-    // Parse per-civ city styles from name blocks
-    // Name blocks: 242 bytes each, 7 blocks for civs 1-7 (no barbarians)
-    // City style byte is at offset +0 within each block, value 0-3
-    const civNameBlockStart = isScn ? 0x014A : 0x0158;
-    const civStyles = new Array(8).fill(0); // slot 0 = barbarians, default 0
-    for (let slot = 1; slot <= 7; slot++) {
-      const blockOff = civNameBlockStart + (slot - 1) * 242;
-      if (blockOff < savBuf.length) {
-        civStyles[slot] = savBuf[blockOff] & 0x03;
+    // Parse per-civ city styles
+    // Name blocks: 8 × 242 bytes, style byte at +0 of each block (value 0-3)
+    // AI civs often have empty name blocks, so fall back to RULES.TXT defaults
+    const civNameBlockStart = isScn ? 0x0148 : 0x0156;
+    const civDataBlockStart = isScn ? 0x08D8 : 0x08E6;
+    const civDataBlockSize = isScn ? 1396 : 1428;
+    // Default city styles per RULES.TXT @LEADERS index (0-20)
+    const RULES_STYLES = [1,0,3,0,1,1,2,3,0,3,0,2,3,0,0,2,3,3,0,1,0];
+    const civStyles = new Array(8).fill(0);
+    for (let slot = 0; slot < 8; slot++) {
+      const nameOff = civNameBlockStart + slot * 242;
+      // Check if name block has content (leader name at +2)
+      const hasNameBlock = nameOff + 2 < savBuf.length && savBuf[nameOff + 2] !== 0;
+      if (hasNameBlock) {
+        // Player civ or customized: read style from name block
+        civStyles[slot] = savBuf[nameOff] & 0x03;
+      } else {
+        // AI civ with empty name block: look up RULES.TXT civ number from per-civ data block
+        const dataOff = civDataBlockStart + slot * civDataBlockSize;
+        if (dataOff + 7 < savBuf.length) {
+          const rulesIdx = savBuf[dataOff + 6];  // byte 7 (1-indexed) = RULES.TXT civ#
+          civStyles[slot] = (rulesIdx < RULES_STYLES.length) ? RULES_STYLES[rulesIdx] : 0;
+        }
       }
     }
 
