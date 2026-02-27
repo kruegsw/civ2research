@@ -150,6 +150,20 @@ const Civ2Renderer = {
       sprites.railroads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 12*33+1, 64, 32, T1, true);
     }
 
+    // Improvements from TERRAIN1 col 7: irrigation, farmland, mining, pollution
+    // (col 9 is text labels; col 7 at x=456 has the actual sprites — confirmed via Civ2-clone)
+    sprites.irrigation = this.extractSprite(t1Ctx, 7*65+1, 3*33+1, 64, 32, T1, true);
+    sprites.farmland   = this.extractSprite(t1Ctx, 7*65+1, 4*33+1, 64, 32, T1, true);
+    sprites.mining     = this.extractSprite(t1Ctx, 7*65+1, 5*33+1, 64, 32, T1, true);
+    sprites.pollution  = this.extractSprite(t1Ctx, 7*65+1, 6*33+1, 64, 32, T1, true);
+
+    // Fortress and Airbase from CITIES.GIF y=423 row (64×48 city-sized)
+    if (citiesCtx) {
+      const CC = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
+      sprites.fortress = this.extractSprite(citiesCtx, 208, 423, 64, 48, CC, true);
+      sprites.airbase  = this.extractSprite(citiesCtx, 273, 423, 64, 48, CC, true);
+    }
+
     // City sprites from CITIES.GIF: 65×49 grid (64×48 sprite + 1px border)
     // 38px header row, then 49px per era row
     // sprites.city[walled][style][era] — walled: 0/1, style: 0-3, era: 0-6
@@ -352,6 +366,14 @@ const Civ2Renderer = {
           }
         }
 
+        // ── Tile improvements: irrigation/farmland/mining/pollution ──
+        if (imp & 0x8C) { // irrigation(0x04), mining(0x08), pollution(0x80)
+          if ((imp & 0x04) && (imp & 0x08)) ctx.drawImage(sprites.farmland, px, py);
+          else if (imp & 0x04) ctx.drawImage(sprites.irrigation, px, py);
+          else if (imp & 0x08) ctx.drawImage(sprites.mining, px, py);
+          if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
+        }
+
         // ── Resources (seed-based) ──
         const res = getResource(gx, gy);
         if (res > 0 && ter <= 10) {
@@ -436,6 +458,21 @@ const Civ2Renderer = {
 
         const [tpx, tpy] = tilePos(u.gx, u.gy);
         ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
+      }
+    }
+
+    // ────────────────────────────────────────
+    // PASS 6: Fortress/Airbase (drawn over units)
+    // ────────────────────────────────────────
+    if (sprites.fortress || sprites.airbase) {
+      for (let gy = 0; gy < mh; gy++) {
+        for (let gx = 0; gx < mw; gx++) {
+          const imp = getImprovements(gx, gy);
+          if (!(imp & 0x40)) continue;
+          const [px, py] = tilePos(gx, gy);
+          if ((imp & 0x02) && sprites.airbase) ctx.drawImage(sprites.airbase, px, py - 16);
+          else if (sprites.fortress) ctx.drawImage(sprites.fortress, px, py - 16);
+        }
       }
     }
 

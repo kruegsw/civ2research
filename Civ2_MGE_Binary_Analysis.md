@@ -3174,7 +3174,7 @@ Grid: **65×49 pixel cells** (64×48 unit + 1px border). 10 columns × 7 rows = 
 
 > ⚠️ **ALGORITHM STATUS**: The rendering algorithms below were reverse-engineered from sprite sheet analysis, save file data correlation, pattern matching, and cross-referencing with the [Civ2-clone](https://github.com/axx0/Civ2-clone) open source reimplementation. Algorithms marked ✅ **CONFIRMED** have been verified against the Civ2-clone source code and/or in-game screenshots. Remaining algorithms (especially base terrain variant selection) are well-informed best guesses. **Confirmed algorithms**: Coastline 4-quadrant system (Layer 2), rivers (Layer 3), terrain overlay neighbor-connectivity bitmask (Layer 4), resource placement (Layer 8), dither blending (Layer 1b).
 >
-> **RENDERER IMPLEMENTATION STATUS** (`canvas-test-1/renderer.js`): Layers 1–6, 8, 9, and 10 are implemented. Layer 7 (improvements: irrigation/farmland/mining/pollution/fortress) is not yet implemented. City sprites (Layer 9) use a fixed Medieval era — see Layer 9 note. Unit sprites (Layer 10) use per-civ cyan→color substitution — see Layer 10 note. Gray diamond-corner artifacts were fixed by adding palette index 255 gray (135,135,135) to the TERRAIN1 chroma key set alongside magenta and cyan.
+> **RENDERER IMPLEMENTATION STATUS** (`canvas-test-1/renderer.js`): Layers 1–10 are all implemented. City sprites (Layer 9) use a fixed Medieval era — see Layer 9 note. Unit sprites (Layer 10) use per-civ cyan→color substitution — see Layer 10 note. Gray diamond-corner artifacts were fixed by adding palette index 255 gray (135,135,135) to the TERRAIN1 chroma key set alongside magenta and cyan.
 
 #### Overview: Compositing Order (Back to Front)
 
@@ -3659,14 +3659,16 @@ The road sprites have **magenta chroma key** in the non-road areas and are compo
 
 | Improvement | Detected From | Sprite Location |
 |-------------|---------------|-----------------|
-| Irrigation | `byte[1] & 0x04` | TERRAIN1 row 3 col 9 |
-| Farmland | `byte[1] & 0x04` AND `byte[1] & 0x08` | TERRAIN1 row 4 col 9 |
-| Mining | `byte[1] & 0x08` (without irrigation) | TERRAIN1 row 5 col 9 |
-| Pollution | `byte[1] & 0x80` | TERRAIN1 row 6 col 9 |
+| Irrigation | `byte[1] & 0x04` | TERRAIN1 row 3 col 7 |
+| Farmland | `byte[1] & 0x04` AND `byte[1] & 0x08` | TERRAIN1 row 4 col 7 |
+| Mining | `byte[1] & 0x08` (without irrigation) | TERRAIN1 row 5 col 7 |
+| Pollution | `byte[1] & 0x80` | TERRAIN1 row 6 col 7 |
 | Fortress | `byte[1] & 0x40` | CITIES.GIF bottom section (labeled "FORTRESS") |
 | Airbase | `byte[1] & 0x40` + `byte[1] & 0x02` | CITIES.GIF bottom section (labeled "AIRBASE") |
 
 > **Note**: Farmland = irrigation + mining flags both set. Airbase = fortress + city-present flags (0x40 + 0x02), though the exact detection logic for airbase vs fortress may differ. The CITIES.GIF bottom section labels for FORTRESS and AIRBASE were confirmed by visual inspection of the sprite sheet.
+>
+> **RENDERER IMPLEMENTED**: Improvement overlays are implemented in `canvas-test-1/renderer.js`. Irrigation/farmland/mining/pollution extracted from TERRAIN1 col 7 rows 3-6 (64×32, tile-sized) and rendered in Pass 3. Fortress/airbase extracted from CITIES.GIF y=423 (64×48, city-sized) and rendered in Pass 6 (after units, so fortress draws on top). Detection: farmland when both 0x04+0x08 set, irrigation when only 0x04, mining when only 0x08, pollution when 0x80 (independent overlay), airbase when 0x40+0x02, fortress when only 0x40. Fortress/airbase draw at py-16 (extends above tile like cities). Note: col 9 in TERRAIN1 contains text labels, not sprites.
 
 #### Layer 8: Resource/Special Icons
 
