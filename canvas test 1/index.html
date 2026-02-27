@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Civilization II Map Renderer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+#controls {
+  padding: 12px 20px; background: #16213e; border-bottom: 2px solid #0f3460;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+#controls label { font-size: 14px; cursor: pointer; }
+#controls input[type="file"] { display: none; }
+.file-btn {
+  background: #0f3460; color: #e0e0e0; border: 1px solid #1a5276;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 13px;
+}
+.file-btn:hover { background: #1a5276; }
+.file-btn.loaded { border-color: #2ecc71; color: #2ecc71; }
+#status { font-size: 13px; color: #7f8c8d; flex: 1; }
+#render-btn {
+  background: #2ecc71; color: #000; border: none; padding: 8px 20px;
+  border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;
+}
+#render-btn:disabled { background: #555; color: #999; cursor: not-allowed; }
+#render-btn:hover:not(:disabled) { background: #27ae60; }
+#map-container {
+  width: 100vw; height: calc(100vh - 50px); overflow: auto; position: relative;
+  background: #0a0a1a;
+}
+canvas { image-rendering: pixelated; }
+#tooltip {
+  position: fixed; background: rgba(0,0,0,0.9); color: #fff; padding: 6px 10px;
+  border-radius: 4px; font-size: 12px; pointer-events: none; display: none;
+  border: 1px solid #555; z-index: 100; font-family: monospace; white-space: pre;
+}
+#loading-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7); display: none; justify-content: center;
+  align-items: center; z-index: 200; flex-direction: column; gap: 12px;
+}
+#loading-overlay .spinner {
+  width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid #2ecc71;
+  border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading-overlay .msg { font-size: 14px; color: #ccc; }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <label class="file-btn" id="sav-btn">
+    Load .SAV <input type="file" id="sav-input" accept=".sav,.SAV,.net,.NET,.scn,.SCN">
+  </label>
+  <label class="file-btn" id="t1-btn">
+    TERRAIN1.GIF <input type="file" id="t1-input" accept=".gif,.GIF">
+  </label>
+  <label class="file-btn" id="t2-btn">
+    TERRAIN2.GIF <input type="file" id="t2-input" accept=".gif,.GIF">
+  </label>
+  <button id="render-btn" disabled>Render Map</button>
+  <span id="status">Load a .SAV file and both TERRAIN GIFs to begin.</span>
+</div>
+
+<div id="map-container">
+  <canvas id="map-canvas"></canvas>
+</div>
+
+<div id="tooltip"></div>
+<div id="loading-overlay"><div class="spinner"></div><div class="msg" id="loading-msg">Rendering...</div></div>
+
+<script src="parser.js"></script>
+<script src="renderer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
