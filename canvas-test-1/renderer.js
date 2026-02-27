@@ -534,7 +534,7 @@ const Civ2Renderer = {
 
       // City name — centered below sprite, drop shadow, per-civ text color
       const textColor = sprites.civTextColors[c.owner] || '#fff';
-      ctx.font = '11px "Times New Roman", serif';
+      ctx.font = '14px "Times New Roman", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       const nameY = tpy - 16 + 48; // bottom of city sprite
@@ -551,8 +551,9 @@ const Civ2Renderer = {
       const sh = 12;
       let ssx, ssy;
       if (sizeLoc) {
-        ssx = tpx + sizeLoc.x;
-        ssy = tpy - 16 + sizeLoc.y;
+        // sizeLoc is relative to cell including 1px border; sprite drawn at border+1
+        ssx = tpx + sizeLoc.x - 1;
+        ssy = tpy - 16 + sizeLoc.y - 1;
       } else {
         ssx = cx - sw / 2;
         ssy = tpy - 16;
