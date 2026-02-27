@@ -73,8 +73,8 @@ const Civ2Renderer = {
   // Extract all sprites from the two terrain sheets
   // ═══════════════════════════════════════════════════════════
   extractAllSprites(t1Ctx, t2Ctx) {
-    // TERRAIN1 chroma: Cyan (0,255,255) palette index 248
-    const T1 = [[0, 255, 255]];
+    // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248
+    const T1 = [[255, 0, 255], [0, 255, 255]];
     // TERRAIN1 for resources: also remove Magenta text labels
     const T1R = [[0, 255, 255], [255, 0, 255]];
     // TERRAIN2 chroma: Magenta (255,0,255) idx 253 + gray corners (~132,132,132) idx 255
@@ -103,31 +103,31 @@ const Civ2Renderer = {
     // Rivers: rows 2-3, 16 directional masks (4-bit: NE=1 SE=2 SW=4 NW=8)
     sprites.rivers = [];
     for (let i = 0; i < 16; i++) {
-      sprites.rivers[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+2)*33+1, 64, 32, T2, false);
+      sprites.rivers[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+2)*33+1, 64, 32, T2, true);
     }
 
     // River mouths: row 10, cols 0-3 (NE, SE, SW, NW)
     sprites.mouths = [];
     for (let col = 0; col < 4; col++) {
-      sprites.mouths[col] = this.extractSprite(t2Ctx, col*65+1, 10*33+1, 64, 32, T2, false);
+      sprites.mouths[col] = this.extractSprite(t2Ctx, col*65+1, 10*33+1, 64, 32, T2, true);
     }
 
     // Forest overlays: rows 4-5 (16 variants)
     sprites.forest = [];
     for (let i = 0; i < 16; i++) {
-      sprites.forest[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+4)*33+1, 64, 32, T2, false);
+      sprites.forest[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+4)*33+1, 64, 32, T2, true);
     }
 
     // Mountain overlays: rows 6-7
     sprites.mountains = [];
     for (let i = 0; i < 16; i++) {
-      sprites.mountains[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+6)*33+1, 64, 32, T2, false);
+      sprites.mountains[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+6)*33+1, 64, 32, T2, true);
     }
 
     // Hill overlays: rows 8-9
     sprites.hills = [];
     for (let i = 0; i < 16; i++) {
-      sprites.hills[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+8)*33+1, 64, 32, T2, false);
+      sprites.hills[i] = this.extractSprite(t2Ctx, (i%8)*65+1, (Math.floor(i/8)+8)*33+1, 64, 32, T2, true);
     }
 
     // Resources: TERRAIN1 col 2 = special 1, col 3 = special 2 per terrain row
@@ -137,9 +137,10 @@ const Civ2Renderer = {
       sprites.resources[tid * 2 + 2] = this.extractSprite(t1Ctx, 3*65+1, tid*33+1, 64, 32, T1R, false);
     }
 
-    // Dither mask: row 14 col 0, bottom 16 rows of diamond
+    // Dither mask: bottom 16 rows of the 64x32 dither tile at y=447
+    // (tile spans y=447-478; we use the bottom half at y=463 and flip for top half)
     // Black pixels (< 10 in all channels) = dither holes
-    const ditherData = t1Ctx.getImageData(1, 14*33+1, 64, 16).data;
+    const ditherData = t1Ctx.getImageData(1, 463, 64, 16).data;
     sprites.ditherMask = new Uint8Array(64 * 16);
     for (let i = 0; i < 64 * 16; i++) {
       const r = ditherData[i*4], g = ditherData[i*4+1], b = ditherData[i*4+2];
@@ -277,12 +278,17 @@ const Civ2Renderer = {
         }
 
         // ── Terrain overlays (forest/mountains/hills) ──
-        if (ter === 3) { // Forest
-          ctx.drawImage(forest[((gx * 13 + gy * 7) % 16 + 16) % 16], px, py);
-        } else if (ter === 5) { // Mountains
-          ctx.drawImage(mountains[((gx * 13 + gy * 7) % 16 + 16) % 16], px, py);
-        } else if (ter === 4) { // Hills
-          ctx.drawImage(hills[((gx * 13 + gy * 7) % 16 + 16) % 16], px, py);
+        // Variant index is a 4-bit neighbor connectivity bitmask:
+        // NE=1, SE=2, SW=4, NW=8 — bit set when diagonal neighbor is same terrain
+        if (ter === 3 || ter === 4 || ter === 5) {
+          let ovi = 0;
+          if (getTerrain(nb.NE[0], nb.NE[1]) === ter) ovi |= 1;
+          if (getTerrain(nb.SE[0], nb.SE[1]) === ter) ovi |= 2;
+          if (getTerrain(nb.SW[0], nb.SW[1]) === ter) ovi |= 4;
+          if (getTerrain(nb.NW[0], nb.NW[1]) === ter) ovi |= 8;
+          if (ter === 3) ctx.drawImage(forest[ovi], px, py);
+          else if (ter === 5) ctx.drawImage(mountains[ovi], px, py);
+          else ctx.drawImage(hills[ovi], px, py);
         }
 
         // ── Resources (seed-based) ──

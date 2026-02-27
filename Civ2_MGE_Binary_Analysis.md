@@ -3060,6 +3060,8 @@ All Civ2 MGE graphics files are 640×480 paletted GIFs. Transparency is implemen
 
 > **IMPORTANT**: Do NOT use RGB color matching for transparency — use palette index comparison on the original paletted image data. Multiple palette indices map to the same RGB value, and the game's palette can be modded.
 
+> **Browser/Canvas exception**: When rendering in a web browser using HTML5 Canvas, the browser's GIF decoder converts indexed palettes to RGBA, making palette indices inaccessible. In this case, use **fuzzy RGB color matching** (tolerance ±15 per channel) as a fallback. For TERRAIN1 sprites, match **both** magenta `(255,0,255)` and cyan `(0,255,255)`. For TERRAIN2 sprites, match magenta `(255,0,255)` and gray `(135,135,135)`. Also remove bright green grid line pixels (`R<100, G>200, B<100`) from overlay sprites to prevent 1px border artifacts. This RGB approach is imperfect (risk of false positives on near-chroma terrain pixels) but produces acceptable results for unmodded sprite sheets.
+
 ### TERRAIN1.GIF — Base Terrain Tiles
 
 Grid: **65×33 pixel cells** (64×32 tile + 1px green border). Isometric diamond tiles.
@@ -3115,7 +3117,7 @@ Same 65×33 grid for main section (rows 0-10), smaller grids in bottom section.
 | 10 | **River mouths** + color swatches | 4 river mouth sprites (cols 0-3): col 0=NE, 1=SE, 2=SW, 3=NW. Drawn on ocean tiles where diagonal neighbor is land+river. Remaining cols have terrain color reference squares. |
 | Bottom (y≈364+) | **Coastline quadrant sprites + encoding diagrams** | y=364-410 (rows 11-12): Encoding DIAGRAMS with green zigzag lines and "w"/"l" labels showing 3-bit neighbor patterns per quadrant (reference only, NOT renderable art). **Coastline art sprites** on 33px column grid (16 columns = 8 groups × 2 cols each): y=429 = TOP quadrant pieces (piece 0), y=446 = BOTTOM quadrant pieces (piece 1), y=463 = LEFT quadrant pieces (piece 2, even cols) + RIGHT quadrant pieces (piece 3, odd cols). Each piece is 32×16 pixels. See Rendering Pipeline Layer 2 for full extraction and compositing algorithm. Also: River Mouths, color swatches, "new 25" grassland tile. |
 
-**Overlay extraction**: Forest overlays use rows 4-5 (16 variants, cols 0-7 each row). Hills overlays use rows 8-9. Mountains overlays use rows 6-7. Variant is NOT from byte[5] — it is computed from tile position at render time (e.g., `variant = hash(x,y) % 16`). See detailed Rendering Pipeline section.
+**Overlay extraction**: Forest overlays use rows 4-5 (16 variants, cols 0-7 each row). Hills overlays use rows 8-9. Mountains overlays use rows 6-7. ✅ **CONFIRMED**: The 16 variants are indexed by a **4-bit diagonal neighbor connectivity bitmask** (NE=bit0, SE=bit1, SW=bit2, NW=bit3), where each bit is set when the diagonal neighbor is the **same terrain type**. This was confirmed by the [Civ2-clone](https://github.com/axx0/Civ2-clone) open source project and produces correct connected terrain edges. See detailed Rendering Pipeline Layer 4.
 
 ### CITIES.GIF — City Graphics
 
@@ -3145,7 +3147,7 @@ Grid: **65×49 pixel cells** (64×48 unit + 1px border). 10 columns × 7 rows = 
 
 ### Rendering Pipeline (Reverse-Engineered)
 
-> ⚠️ **BEST-GUESS ALGORITHMS**: The rendering algorithms below were reverse-engineered from sprite sheet analysis, save file data correlation, and pattern matching — NOT from disassembled game code. They produce results that closely match the game's visual output, but some details (especially variant selection formulas) may not perfectly match the original engine. Treat these as a well-informed starting point, not gospel. **Exception**: The coastline 4-quadrant system (Layer 2) has been **confirmed** by matching against in-game screenshots and the encoding diagrams embedded in the sprite sheet.
+> ⚠️ **ALGORITHM STATUS**: The rendering algorithms below were reverse-engineered from sprite sheet analysis, save file data correlation, pattern matching, and cross-referencing with the [Civ2-clone](https://github.com/axx0/Civ2-clone) open source reimplementation. Algorithms marked ✅ **CONFIRMED** have been verified against the Civ2-clone source code and/or in-game screenshots. Remaining algorithms (especially base terrain variant selection) are well-informed best guesses. **Confirmed algorithms**: Coastline 4-quadrant system (Layer 2), rivers (Layer 3), terrain overlay neighbor-connectivity bitmask (Layer 4), resource placement (Layer 8), dither blending (Layer 1b).
 
 #### Overview: Compositing Order (Back to Front)
 
@@ -3153,7 +3155,7 @@ Each map tile is rendered as a layered composite. The correct draw order for a s
 
 ```
 1. Base terrain         (TERRAIN1.GIF, rows 0-10)
-1b. Dither blend        (TERRAIN1.GIF, row 14 col 0 mask)              [between different land terrain types]
+1b. Dither blend        (TERRAIN1.GIF, dither tile at y=447)           [between different land terrain types]
 2. Coastline transitions (TERRAIN2.GIF, bottom section quadrant sprites) [ocean tiles only]
 3. River overlay        (TERRAIN2.GIF, rows 2-3)                    [if byte[0] & 0x80]
 4. Terrain overlay      (TERRAIN2.GIF, rows 4-9)                    [forest/hills/mountains only]
@@ -3196,11 +3198,12 @@ sprite_y = T * 33 + 1     # Skip 1px top border
 
 **Purpose**: Smooths visual transitions between adjacent tiles of different land terrain types. Creates a speckled blend at tile edges where, for example, grassland meets desert, by punching sparse holes in the current tile through which the neighbor's terrain is visible.
 
-**Dither mask source**: TERRAIN1.GIF row 14 col 0 (64×16 pixels, bottom half of diamond only). The mask uses palette index 0 (black) for dither hole positions, palette index 253 (magenta) for non-hole diamond area, and palette index 255 (gray) for outside the diamond. Only the black pixels (index 0) are dither holes.
+**Dither mask source**: TERRAIN1.GIF bottom section — the dither tile is a 64×32 diamond at **y=447** (labeled "Dither" in the sprite sheet). This tile is NOT on the standard 33px grid — it lives in the non-standard bottom area of the sprite sheet. For rendering, only the bottom 16 rows (y=463–478) are needed; the top half is reconstructed by vertical flip (the diamond is vertically symmetric). The mask uses palette index 0 (black) for dither hole positions, palette index 253 (magenta) for non-hole diamond area, and palette index 255 (gray) for outside the diamond. Only the black pixels (index 0) are dither holes.
 
 ```python
 # Extract dither mask (boolean array, True = dither hole)
-y_dither = 14 * 33 + 1   # = 463
+# The dither tile sits at y=447 (32px tall). We need only the bottom 16 rows.
+y_dither = 463   # = 447 + 16 (bottom half of the dither tile)
 dither_mask = (t1_palette_indices[y_dither:y_dither+16, 1:65] == 0)  # 64×16 boolean
 ```
 
@@ -3528,6 +3531,8 @@ def render_rivers(gx, gy, tile_position, canvas):
 
 #### Layer 4: Terrain Overlays (Forest, Hills, Mountains)
 
+✅ **CONFIRMED** — variant selection uses 4-bit neighbor connectivity bitmask, verified against [Civ2-clone](https://github.com/axx0/Civ2-clone) source code (`Draw.Terrain.cs`).
+
 **Applies to**: Forest (terrain_type 3), Hills (terrain_type 4), and Mountains (terrain_type 5).
 
 These terrain types use a TWO-LAYER approach:
@@ -3544,18 +3549,43 @@ The overlay adds the visual detail (trees, rocky hills, mountain peaks) on top o
 | Mountains | 6-7 (cols 0-7 each) | 16 art sprites (col 8 = label "9") |
 | Hills | 8-9 (cols 0-7 each) | 16 art sprites (col 8 = label "12") |
 
-**Variant selection**: Like base terrain, the overlay variant is computed from position, not stored:
+**Variant selection — 4-bit neighbor connectivity bitmask**: The 16 overlay variants are NOT random visual variants — they encode which diagonal neighbors share the same terrain type. This produces proper connected terrain: forests show linked canopies, mountains form ridgelines, and hills blend into each other where adjacent.
+
+The variant index is a 4-bit bitmask where each bit is set when the corresponding diagonal neighbor is the **same terrain type** as the current tile:
+
+| Bit | Value | Direction | Meaning |
+|-----|-------|-----------|---------|
+| 0 | 1 | NE | NE diagonal neighbor is same terrain type |
+| 1 | 2 | SE | SE diagonal neighbor is same terrain type |
+| 2 | 4 | SW | SW diagonal neighbor is same terrain type |
+| 3 | 8 | NW | NW diagonal neighbor is same terrain type |
 
 ```python
-# BEST GUESS: Overlay variant selection
-overlay_variant = hash(grid_x, grid_y) % 16   # Select from 16 variants
-overlay_row = base_row + (overlay_variant // 8)  # Which of the 2 rows
-overlay_col = overlay_variant % 8                # Which column (0-7)
+# CONFIRMED: Overlay variant = 4-bit diagonal neighbor connectivity bitmask
+# Source: Civ2-clone Draw.Terrain.cs
+def overlay_variant(gx, gy, terrain_type):
+    nb = get_diagonal_neighbors(gx, gy)  # NE, SE, SW, NW
+    idx = 0
+    if get_terrain(*nb['NE']) == terrain_type: idx |= 1   # bit 0
+    if get_terrain(*nb['SE']) == terrain_type: idx |= 2   # bit 1
+    if get_terrain(*nb['SW']) == terrain_type: idx |= 4   # bit 2
+    if get_terrain(*nb['NW']) == terrain_type: idx |= 8   # bit 3
+    return idx  # 0-15
 
+# Sprite extraction from the variant index:
+overlay_row = base_row + (variant // 8)  # Which of the 2 rows
+overlay_col = variant % 8                # Which column (0-7)
 # Where base_row is: Forest=4, Mountains=6, Hills=8
 ```
 
-The overlays use magenta chroma key and are drawn AFTER coastlines and rivers but BEFORE roads.
+**Examples**:
+- An isolated forest tile (no forest neighbors): variant = 0 → row 4, col 0 (standalone tree cluster)
+- A forest with forest neighbors to NE and SE: variant = 3 → row 4, col 3 (trees with right-side connections)
+- A forest surrounded by forest in all diagonal directions: variant = 15 → row 5, col 7 (fully connected canopy)
+
+> **⚠️ PREVIOUS ERROR**: Earlier versions of this document and the JavaScript renderer used a position-based hash (`(gx * 13 + gy * 7) % 16`) for variant selection. This produced random-looking, disconnected terrain overlays. The correct bitmask approach was confirmed by the Civ2-clone open source project.
+
+The overlays use magenta chroma key and are drawn AFTER coastlines and rivers but BEFORE roads. Also apply green grid line removal (kill bright green pixels where R<100, G>200, B<100) to prevent 1px border artifacts.
 
 #### Layer 5-6: Road and Railroad Overlays
 
@@ -3831,7 +3861,7 @@ An earlier rendering session accidentally used offset `0x076dc` (30428) with a 2
 
 ## Complete Map Rendering Recipe (Python)
 
-This is a self-contained, copy-paste-ready script that renders a Civ2 MGE save file map with base terrain, dither blending, coastlines, rivers, river mouths, and special resources. It requires only `PIL/Pillow` and `numpy`, plus the game's `TERRAIN1.GIF`, `TERRAIN2.GIF`, and a `.SAV` file.
+This is a self-contained, copy-paste-ready script that renders a Civ2 MGE save file map with base terrain, dither blending, coastlines, rivers, river mouths, terrain overlays (forest/mountain/hill with neighbor-connectivity), and special resources. It requires only `PIL/Pillow` and `numpy`, plus the game's `TERRAIN1.GIF`, `TERRAIN2.GIF`, and a `.SAV` file.
 
 ```python
 import struct
@@ -3886,7 +3916,13 @@ for g in range(8):
 rivers = [extract(t2_rgba, t2_idx, (i%8)*65+1, (i//8+2)*33+1, 64, 32, T_OVL) for i in range(16)]
 
 # River mouths: TERRAIN2 row 10 cols 0-3 (NE, SE, SW, NW)
-mouths = [extract(t2_rgba, t2_idx, col*65+1, 10*33+1, 64, 32, T_OVL) for col in range(4)]
+mouths = [extract(t2_rgba, t2_idx, col*65+1, 10*33+1, 64, 32, T_OVL, True) for col in range(4)]
+
+# Terrain overlays: TERRAIN2 rows 4-9, 16 variants each (neighbor connectivity bitmask)
+# kill_green=True to remove any green grid line bleed
+forests   = [extract(t2_rgba, t2_idx, (i%8)*65+1, (i//8+4)*33+1, 64, 32, T_OVL, True) for i in range(16)]
+mountains = [extract(t2_rgba, t2_idx, (i%8)*65+1, (i//8+6)*33+1, 64, 32, T_OVL, True) for i in range(16)]
+hills     = [extract(t2_rgba, t2_idx, (i%8)*65+1, (i//8+8)*33+1, 64, 32, T_OVL, True) for i in range(16)]
 
 # Resource sprites: TERRAIN1 col 2 = special 1, col 3 = special 2 per terrain row
 resources = {}
@@ -3894,9 +3930,11 @@ for tid in range(11):
     resources[(tid, 1)] = extract(t1_rgba, t1_idx, 2*65+1, tid*33+1, 64, 32, [253, 255])
     resources[(tid, 2)] = extract(t1_rgba, t1_idx, 3*65+1, tid*33+1, 64, 32, [253, 255])
 
-# Dither mask: TERRAIN1 row 14 col 0, bottom half of diamond (64×16)
+# Dither mask: bottom half of the 64×32 dither tile located at y=447 in TERRAIN1.GIF
+# (The dither tile is NOT on the standard 33px grid — it sits at y=447-478 in the bottom section.)
+# We extract only the bottom 16 rows (y=463-478) and flip vertically for the top half.
 # Black pixels (palette index 0) = dither holes
-y_dith = 14 * 33 + 1
+y_dith = 463  # = 447 + 16 (bottom half of dither tile)
 dither_mask = (t1_idx[y_dith:y_dith+16, 1:65] == 0)  # 64×16 boolean
 
 # ── Parse save file ──
@@ -4009,16 +4047,16 @@ for gy in range(mh):
                 apply_dither(canvas_arr, px, py, terrain[nter], d)
 canvas = Image.fromarray(canvas_arr)
 
-# Pass 3: Coastline, river mouths, rivers, resources
+# Pass 3: Coastline, river mouths, rivers, terrain overlays, resources
 for gy in range(mh):
     for gx in range(mw):
         px = gx * TW + ((TW // 2) if gy % 2 else 0)
         py = gy * (TH // 2)
         ter = get_terrain(gx, gy)
+        nb = neighbors(gx, gy)
 
         # Coastline + river mouths (ocean tiles only)
         if ter == 10:
-            nb = neighbors(gx, gy)
             L = {d: is_land(*nb[d]) for d in nb}
             top_g   = (1 if L['NW'] else 0) | (2 if L['N']  else 0) | (4 if L['NE'] else 0)
             right_g = (1 if L['NE'] else 0) | (2 if L['E']  else 0) | (4 if L['SE'] else 0)
@@ -4034,13 +4072,22 @@ for gy in range(mh):
 
         # Rivers (land tiles, ocean neighbors count as connections)
         if has_river(gx, gy):
-            nb = neighbors(gx, gy)
             is_oc = lambda x, y: get_terrain(x, y) == 10
             rm = (1 if has_river(*nb['NE']) or is_oc(*nb['NE']) else 0) | \
                  (2 if has_river(*nb['SE']) or is_oc(*nb['SE']) else 0) | \
                  (4 if has_river(*nb['SW']) or is_oc(*nb['SW']) else 0) | \
                  (8 if has_river(*nb['NW']) or is_oc(*nb['NW']) else 0)
             canvas.paste(rivers[rm], (px, py), rivers[rm])
+
+        # Terrain overlays: forest/mountains/hills (4-bit neighbor connectivity bitmask)
+        if ter in (3, 4, 5):
+            ovi = 0
+            if get_terrain(*nb['NE']) == ter: ovi |= 1
+            if get_terrain(*nb['SE']) == ter: ovi |= 2
+            if get_terrain(*nb['SW']) == ter: ovi |= 4
+            if get_terrain(*nb['NW']) == ter: ovi |= 8
+            overlay = {3: forests, 4: hills, 5: mountains}[ter]
+            canvas.paste(overlay[ovi], (px, py), overlay[ovi])
 
         # Resources (seed-based placement)
         res = get_resource(gx, gy)
@@ -4054,7 +4101,7 @@ canvas.convert('RGB').save(OUTPUT_PATH)
 print(f"Saved {OUTPUT_PATH} ({canvas.width}×{canvas.height})")
 ```
 
-This script produces a correct map rendering with verified coastlines, rivers, river mouths, dither terrain blending, and seed-based resource placement. To use: set the four paths at the top and run.
+This script produces a correct map rendering with verified coastlines, rivers, river mouths, dither terrain blending, terrain overlays (forest/mountain/hill with neighbor-connectivity bitmask), and seed-based resource placement. To use: set the four paths at the top and run.
 
 ---
 
@@ -4064,6 +4111,8 @@ This script produces a correct map rendering with verified coastlines, rivers, r
 - **TE Kimball's civ2mod.c**: C program for modifying MGE save files. Provides definitive MGE-specific offset constants (`CITY_ITEM_NAME_OFFSET 32`, `CITY_ITEM_OWNER_OFFSET 8`, `CITY_ITEM_SIZE 88`, `UNIT_ITEM_SIZE 32`, `UNIT_OWNER_OFFSET 7`, `UNIT_TYPE_OFFSET 6`, `UNIT_HOMECITY_OFFSET 16`). Demonstrates complete file navigation from map header through units to cities. Key algorithms confirmed: tile coordinate→offset formula (`(y*mapWidth + x/2) * 6`), map ownership modification (high nibble of byte 5), visibility radius patterns (radius 0/1/2 tile offsets), horizontal wrapping with vertical clipping, unit home city as uint16 array index, and city finding via name string search. Source: https://github.com/tek10/civ2mod
 - **Catfish's Cave** (FoxAhead's ToT format guide): https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm — Documents the save format for Test of Time (92-byte cities). Derived from Höfelt's guide with ToT-specific extensions. Useful cross-reference but requires offset conversion for MGE.
 - **FoxAhead's Civ2Types.pas**: Pascal type definitions from the Civ2-UI-Additions project. Based on Catfish's Cave documentation.
+- **Civ2-clone** (axx0): https://github.com/axx0/Civ2-clone — Open source C# reimplementation of Civilization II. The most authoritative source for sprite extraction coordinates and rendering algorithms. Key files: `Civ2GoldInterface.cs` (sprite sheet Rectangle coordinates), `Draw.Terrain.cs` (terrain overlay rendering with neighbor-connectivity bitmask). Confirmed the 4-bit diagonal neighbor bitmask for forest/mountain/hill overlay variant selection (NE=1, SE=2, SW=4, NW=8).
+- **Scenario League Wiki — The Palette Explained**: https://sleague.civfanatics.com/index.php?title=The_Palette_Explained — Definitive documentation of the Civ2 256-color palette, including reserved indices (253=magenta transparent, 254=green grid, 255=gray transparent) and civ-color substitution ranges for unit/city sprites.
 - **Apolyton Forums** and **CivFanatics** — Community hex editing threads provided clues for city record structure and map data locations.
 - Note: Community documentation is often for original Civ2, Fantastic Worlds, or Test of Time. MGE uses the same layout as FW but with 4 extra bytes per city (88 vs 84) and 6 extra bytes per unit (32 vs 26). **SCN files use the FW record sizes** (26-byte units, 84-byte cities).
 
