@@ -234,10 +234,27 @@ const Civ2Renderer = {
           const ux = sizeIdx * 65;
           sprites.city[row][sizeIdx] = this.extractSprite(citiesCtx, ux + 1, cy, 64, 48, CC, true);
           sprites.citySizeLoc[row][sizeIdx] = this._findMarkerPixel(px, iw, ux, cy - 1, 65, 49, 255, 155, 0);
-          // Walled (cols 4-7)
+          // Walled (cols 4-7): walled cells lack left-border Y marker,
+          // so use X from walled cell's top border and Y from unwalled cell's left border
           const wx = 334 + sizeIdx * 65;
           sprites.city[row][sizeIdx + 4] = this.extractSprite(citiesCtx, wx + 1, cy, 64, 48, CC, true);
-          sprites.citySizeLoc[row][sizeIdx + 4] = this._findMarkerPixel(px, iw, wx, cy - 1, 65, 49, 255, 155, 0);
+          const walledMarker = this._findMarkerPixel(px, iw, wx, cy - 1, 65, 49, 255, 155, 0);
+          const unwalledMarker = sprites.citySizeLoc[row][sizeIdx];
+          if (walledMarker) {
+            sprites.citySizeLoc[row][sizeIdx + 4] = walledMarker;
+          } else if (unwalledMarker) {
+            // Scan walled top border for X only, use unwalled Y
+            let walledX = -1;
+            for (let col = 0; col < 65; col++) {
+              const off = ((cy - 1) * iw + wx + col) * 4;
+              if (px[off] === 255 && px[off+1] === 155 && px[off+2] === 0) { walledX = col; break; }
+            }
+            sprites.citySizeLoc[row][sizeIdx + 4] = walledX >= 0
+              ? { x: walledX, y: unwalledMarker.y }
+              : { x: unwalledMarker.x, y: unwalledMarker.y };
+          } else {
+            sprites.citySizeLoc[row][sizeIdx + 4] = null;
+          }
         }
       }
     }
@@ -534,9 +551,9 @@ const Civ2Renderer = {
 
       // City name — centered below sprite, drop shadow, per-civ text color
       const textColor = sprites.civTextColors[c.owner] || '#fff';
-      ctx.font = '14px "Times New Roman", serif';
+      ctx.font = '18px "Times New Roman", serif';
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
+      ctx.textBaseline = 'middle';
       const nameY = tpy - 16 + 48; // bottom of city sprite
       ctx.fillStyle = '#000';
       ctx.fillText(c.name, cx + 1, nameY + 1); // shadow
@@ -545,10 +562,11 @@ const Civ2Renderer = {
 
       // City size box — positioned via orange marker pixel, or fallback centered
       const sizeStr = String(c.size);
-      ctx.font = 'bold 10px "Times New Roman", serif';
+      ctx.font = 'bold 14px "Times New Roman", serif';
       const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
-      const sw = Math.max(ctx.measureText(sizeStr).width + 4, 10);
-      const sh = 12;
+      const tm = ctx.measureText(sizeStr);
+      const sw = Math.ceil(tm.width);
+      const sh = Math.ceil(tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent);
       let ssx, ssy;
       if (sizeLoc) {
         // sizeLoc is relative to cell including 1px border; sprite drawn at border+1
@@ -558,14 +576,15 @@ const Civ2Renderer = {
         ssx = cx - sw / 2;
         ssy = tpy - 16;
       }
-      ctx.fillStyle = '#000';
-      ctx.fillRect(ssx - 1, ssy - 1, sw + 2, sh + 2); // black border
       ctx.fillStyle = color;
       ctx.fillRect(ssx, ssy, sw, sh);                   // civ color fill
       ctx.fillStyle = '#000';
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);         // black border
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText(sizeStr, ssx + 2, ssy + 1);
+      ctx.fillText(sizeStr, ssx, ssy);
     }
 
     // ────────────────────────────────────────
