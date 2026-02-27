@@ -209,17 +209,35 @@ const Civ2Renderer = {
     // 8 cols per row: 0-3=unwalled sizes, 4-7=walled sizes (same size thresholds)
     // Left half (x=0-259): unwalled 4 cols; center: label col; right half (x=333+): walled 4 cols
     // sprites.city[row][col] — row: 0-5, col: 0-7
+    // sprites.citySizeLoc[row][col] — {x,y} position of size box from orange marker (palette 249)
     sprites.city = [];
+    sprites.citySizeLoc = [];
+    sprites.civTextColors = [];
     if (citiesCtx) {
       const CC = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
+      const imgData = citiesCtx.getImageData(0, 0, citiesCtx.canvas.width, citiesCtx.canvas.height);
+      const px = imgData.data;
+      const iw = imgData.width;
+
+      // Extract per-civ text colors from CITIES.GIF y=423, 15px spacing
+      for (let civ = 0; civ < 8; civ++) {
+        const off = (423 * iw + 1 + civ * 15) * 4;
+        sprites.civTextColors[civ] = `rgb(${px[off]},${px[off+1]},${px[off+2]})`;
+      }
+
       for (let row = 0; row < 6; row++) {
         sprites.city[row] = [];
+        sprites.citySizeLoc[row] = [];
         for (let sizeIdx = 0; sizeIdx < 4; sizeIdx++) {
           const cy = 39 + row * 49;
           // Unwalled (cols 0-3)
-          sprites.city[row][sizeIdx] = this.extractSprite(citiesCtx, sizeIdx * 65 + 1, cy, 64, 48, CC, true);
+          const ux = sizeIdx * 65;
+          sprites.city[row][sizeIdx] = this.extractSprite(citiesCtx, ux + 1, cy, 64, 48, CC, true);
+          sprites.citySizeLoc[row][sizeIdx] = this._findMarkerPixel(px, iw, ux, cy - 1, 65, 49, 255, 155, 0);
           // Walled (cols 4-7)
-          sprites.city[row][sizeIdx + 4] = this.extractSprite(citiesCtx, 334 + sizeIdx * 65 + 1, cy, 64, 48, CC, true);
+          const wx = 334 + sizeIdx * 65;
+          sprites.city[row][sizeIdx + 4] = this.extractSprite(citiesCtx, wx + 1, cy, 64, 48, CC, true);
+          sprites.citySizeLoc[row][sizeIdx + 4] = this._findMarkerPixel(px, iw, wx, cy - 1, 65, 49, 255, 155, 0);
         }
       }
     }
@@ -514,31 +532,39 @@ const Civ2Renderer = {
         ctx.fillRect(cx - 6, cy - 6, 12, 12);
       }
 
-      // Name label — below the city sprite
-      ctx.font = '9px sans-serif';
+      // City name — centered below sprite, drop shadow, per-civ text color
+      const textColor = sprites.civTextColors[c.owner] || '#fff';
+      ctx.font = '11px "Times New Roman", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      const tw = ctx.measureText(c.name).width;
-      const ty = cy + 17;
-      ctx.fillStyle = 'rgba(0,0,0,0.8)';
-      ctx.fillRect(cx - tw / 2 - 3, ty - 1, tw + 6, 13);
-      ctx.fillStyle = '#fff';
-      ctx.fillText(c.name, cx, ty);
-
-      // City size shield — above the city sprite
-      const sizeStr = String(c.size);
-      ctx.font = 'bold 9px monospace';
-      const sw = Math.max(ctx.measureText(sizeStr).width + 4, 10);
-      const sh = 11;
-      const ssx = cx - sw / 2, ssy = tpy - 16 - sh - 1;
+      const nameY = tpy - 16 + 48; // bottom of city sprite
       ctx.fillStyle = '#000';
-      ctx.fillRect(ssx - 1, ssy - 1, sw + 2, sh + 2);
+      ctx.fillText(c.name, cx + 1, nameY + 1); // shadow
+      ctx.fillStyle = textColor;
+      ctx.fillText(c.name, cx, nameY);
+
+      // City size box — positioned via orange marker pixel, or fallback centered
+      const sizeStr = String(c.size);
+      ctx.font = 'bold 10px "Times New Roman", serif';
+      const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+      const sw = Math.max(ctx.measureText(sizeStr).width + 4, 10);
+      const sh = 12;
+      let ssx, ssy;
+      if (sizeLoc) {
+        ssx = tpx + sizeLoc.x;
+        ssy = tpy - 16 + sizeLoc.y;
+      } else {
+        ssx = cx - sw / 2;
+        ssy = tpy - 16;
+      }
+      ctx.fillStyle = '#000';
+      ctx.fillRect(ssx - 1, ssy - 1, sw + 2, sh + 2); // black border
       ctx.fillStyle = color;
-      ctx.fillRect(ssx, ssy, sw, sh);
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center';
+      ctx.fillRect(ssx, ssy, sw, sh);                   // civ color fill
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText(sizeStr, cx, ssy + 1);
+      ctx.fillText(sizeStr, ssx + 2, ssy + 1);
     }
 
     // ────────────────────────────────────────
@@ -884,6 +910,23 @@ const Civ2Renderer = {
     ctx.closePath();
     ctx.fill();
     return c;
+  },
+
+  // Find a marker pixel (e.g. orange palette 249) in the 1px border around a sprite cell
+  // Scans top border row for X, left border column for Y
+  _findMarkerPixel(px, iw, cellX, cellY, cellW, cellH, r, g, b) {
+    let mx = -1, my = -1;
+    // Scan top border row (cellY row, across cellW pixels)
+    for (let col = 0; col < cellW; col++) {
+      const off = (cellY * iw + cellX + col) * 4;
+      if (px[off] === r && px[off+1] === g && px[off+2] === b) { mx = col; break; }
+    }
+    // Scan left border column (cellX column, down cellH pixels)
+    for (let row = 0; row < cellH; row++) {
+      const off = ((cellY + row) * iw + cellX) * 4;
+      if (px[off] === r && px[off+1] === g && px[off+2] === b) { my = row; break; }
+    }
+    return (mx >= 0 && my >= 0) ? { x: mx, y: my } : null;
   },
 
   // Epoch tech IDs (from RULES.TXT advance order)
