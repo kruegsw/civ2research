@@ -268,8 +268,9 @@ const Civ2Renderer = {
       sprites.ditherMask[i] = (r < 10 && g < 10 && b < 10) ? 1 : 0;
     }
 
-    // Validate terrain sprites: warn if any have suspiciously low opaque pixel coverage
+    // Validate terrain sprites: discard variants with <50% opaque pixels (chroma-key placeholders)
     for (let tid = 0; tid < sprites.terrain.length; tid++) {
+      const valid = [];
       for (let vi = 0; vi < sprites.terrain[tid].length; vi++) {
         const spr = sprites.terrain[tid][vi];
         const sctx = spr.getContext('2d');
@@ -278,10 +279,17 @@ const Civ2Renderer = {
         for (let i = 3; i < sd.length; i += 4) if (sd[i] > 0) opaque++;
         const total = spr.width * spr.height;
         const pct = (opaque / total * 100).toFixed(1);
-        if (opaque < total * 0.5) {
-          console.warn(`Sprite warning: terrain[${tid}][${vi}] (${this.TERRAIN_NAMES[tid]}) only ${pct}% opaque (${opaque}/${total}px)`);
+        if (opaque >= total * 0.5) {
+          valid.push(spr);
+        } else {
+          console.warn(`Discarding terrain[${tid}][${vi}] (${this.TERRAIN_NAMES[tid]}): only ${pct}% opaque — chroma-key placeholder`);
         }
       }
+      if (valid.length === 0) {
+        console.error(`No valid sprites for terrain ${tid} (${this.TERRAIN_NAMES[tid]}), keeping first variant as fallback`);
+        valid.push(sprites.terrain[tid][0]);
+      }
+      sprites.terrain[tid] = valid;
     }
 
     return sprites;
