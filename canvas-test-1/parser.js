@@ -135,7 +135,8 @@ const Civ2Parser = {
 
     function getTerrain(gx, gy) {
       if (gy < 0 || gy >= mh) return 10;
-      return tileData[gy * mw + wrap(gx)][0] & 0x0F;
+      const ter = tileData[gy * mw + wrap(gx)][0] & 0x0F;
+      return ter > 10 ? 10 : ter;
     }
 
     function isLand(gx, gy) { return getTerrain(gx, gy) !== 10; }

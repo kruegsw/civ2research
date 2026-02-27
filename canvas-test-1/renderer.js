@@ -58,7 +58,8 @@ const Civ2Renderer = {
   },
 
   // ── Extract a sprite region, applying chroma key transparency ──
-  // chromaColors: array of [r,g,b] colors to make transparent (fuzzy match ±15)
+  // chromaColors: array of [r,g,b] or [r,g,b,tolerance] colors to make transparent
+  // 4th element is per-color tolerance (default 15)
   // killGreen: also remove bright green grid lines
   extractSprite(sheetCtx, sx, sy, w, h, chromaColors, killGreen) {
     const c = document.createElement('canvas');
@@ -77,8 +78,9 @@ const Civ2Renderer = {
       const r = d[i], g = d[i+1], b = d[i+2];
       // Check each chroma color
       let transparent = false;
-      for (const [cr, cg, cb] of chromaColors) {
-        if (Math.abs(r - cr) < 15 && Math.abs(g - cg) < 15 && Math.abs(b - cb) < 15) {
+      for (const ck of chromaColors) {
+        const tol = ck[3] != null ? ck[3] : 15;
+        if (Math.abs(r - ck[0]) < tol && Math.abs(g - ck[1]) < tol && Math.abs(b - ck[2]) < tol) {
           transparent = true; break;
         }
       }
@@ -98,9 +100,10 @@ const Civ2Renderer = {
   // ═══════════════════════════════════════════════════════════
   extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx) {
     // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248 + Gray (135,135,135) idx 255
-    const T1 = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
+    // Gray tolerance tightened to ±5 to avoid stripping muted terrain pixels (plains/tundra/grassland)
+    const T1 = [[255, 0, 255, 15], [0, 255, 255, 15], [135, 135, 135, 5]];
     // TERRAIN1 for resources: also remove Magenta text labels
-    const T1R = [[0, 255, 255], [255, 0, 255], [135, 135, 135]];
+    const T1R = [[0, 255, 255, 15], [255, 0, 255, 15], [135, 135, 135, 5]];
     // TERRAIN2 chroma: Magenta (255,0,255) idx 253 + gray corners (~132,132,132) idx 255
     const T2 = [[255, 0, 255], [132, 132, 132]];
 
@@ -263,6 +266,22 @@ const Civ2Renderer = {
     for (let i = 0; i < 64 * 16; i++) {
       const r = ditherData[i*4], g = ditherData[i*4+1], b = ditherData[i*4+2];
       sprites.ditherMask[i] = (r < 10 && g < 10 && b < 10) ? 1 : 0;
+    }
+
+    // Validate terrain sprites: warn if any have suspiciously low opaque pixel coverage
+    for (let tid = 0; tid < sprites.terrain.length; tid++) {
+      for (let vi = 0; vi < sprites.terrain[tid].length; vi++) {
+        const spr = sprites.terrain[tid][vi];
+        const sctx = spr.getContext('2d');
+        const sd = sctx.getImageData(0, 0, spr.width, spr.height).data;
+        let opaque = 0;
+        for (let i = 3; i < sd.length; i += 4) if (sd[i] > 0) opaque++;
+        const total = spr.width * spr.height;
+        const pct = (opaque / total * 100).toFixed(1);
+        if (opaque < total * 0.5) {
+          console.warn(`Sprite warning: terrain[${tid}][${vi}] (${this.TERRAIN_NAMES[tid]}) only ${pct}% opaque (${opaque}/${total}px)`);
+        }
+      }
     }
 
     return sprites;
