@@ -98,6 +98,10 @@ function checkReady() {
 
 document.getElementById('render-btn').addEventListener('click', doRender);
 
+// FOW toggle/civ change → auto re-render if map already loaded
+document.getElementById('fow-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
+document.getElementById('fow-civ').addEventListener('change', () => { if (currentMapData) doRender(); });
+
 // ── Main render flow ──
 async function doRender() {
   const overlay = document.getElementById('loading-overlay');
@@ -114,6 +118,20 @@ async function doRender() {
     await new Promise(r => setTimeout(r, 10));
     const mapData = Civ2Parser.parse(savBuf, files.sav.name);
     currentMapData = mapData;
+
+    // Populate FOW civ selector
+    const fowSelect = document.getElementById('fow-civ');
+    fowSelect.innerHTML = '';
+    const civNames = Civ2Renderer._identifyCivs(mapData.cities);
+    for (let i = 0; i < 8; i++) {
+      if (!(mapData.civsAlive & (1 << i))) continue;
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = civNames[i] || `Civ ${i}`;
+      fowSelect.appendChild(opt);
+    }
+    fowSelect.value = mapData.playerCiv;
+    fowSelect.disabled = false;
 
     // 3. Load sprite sheets
     msg.textContent = 'Loading sprite sheets...';
@@ -140,7 +158,13 @@ async function doRender() {
 
     // 5. Render to canvas
     const canvas = document.getElementById('map-canvas');
-    const result = await Civ2Renderer.render(canvas, mapData, sprites, m => { msg.textContent = m; });
+    const fowEnabled = document.getElementById('fow-toggle').checked;
+    const fowCivVal = document.getElementById('fow-civ').value;
+    const renderOptions = {
+      fowEnabled,
+      fowCiv: fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv
+    };
+    const result = await Civ2Renderer.render(canvas, mapData, sprites, m => { msg.textContent = m; }, renderOptions);
 
     // 6. Done
     document.getElementById('status').textContent =

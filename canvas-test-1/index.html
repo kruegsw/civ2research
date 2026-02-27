@@ -67,6 +67,12 @@ canvas { image-rendering: pixelated; }
     UNITS.GIF <input type="file" id="units-input" accept=".gif,.GIF">
   </label>
   <button id="render-btn" disabled>Render Map</button>
+  <label style="display:flex;align-items:center;gap:4px">
+    <input type="checkbox" id="fow-toggle"> Fog of War
+  </label>
+  <select id="fow-civ" style="background:#0f3460;color:#e0e0e0;border:1px solid #1a5276;padding:4px 8px;border-radius:4px;font-size:13px" disabled>
+    <option value="">— select civ —</option>
+  </select>
   <span id="status">Load a .SAV file and both TERRAIN GIFs to begin.</span>
 </div>
 

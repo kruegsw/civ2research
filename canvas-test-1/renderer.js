@@ -174,9 +174,10 @@ const Civ2Renderer = {
     sprites.mining     = this.extractSprite(t1Ctx, 7*65+1, 5*33+1, 64, 32, T1, true);
     sprites.pollution  = this.extractSprite(t1Ctx, 7*65+1, 6*33+1, 64, 32, T1, true);
 
-    // Fortress and Airbase from CITIES.GIF y=423 row (64×48 city-sized)
+    // Fortress, Airbase, and Fortify from CITIES.GIF y=423 row (64×48 city-sized)
     if (citiesCtx) {
       const CC = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
+      sprites.fortify  = this.extractSprite(citiesCtx, 143, 423, 64, 48, CC, true);
       sprites.fortress = this.extractSprite(citiesCtx, 208, 423, 64, 48, CC, true);
       sprites.airbase  = this.extractSprite(citiesCtx, 273, 423, 64, 48, CC, true);
     }
@@ -208,12 +209,42 @@ const Civ2Renderer = {
     // Civ-color placeholders (idx 251-252) are red (127,0,0)/(255,0,0), kept for recoloring
     sprites.unitTemplates = [];
     sprites.unitColored = {};
+    sprites.shieldOffsets = [];
     if (unitsCtx) {
       const UC = [[255, 0, 255], [135, 83, 135]];
       for (let id = 0; id < 70; id++) {
         const col = id % 10, row = Math.floor(id / 10);
-        sprites.unitTemplates[id] = this.extractSprite(unitsCtx, col * 65 + 1, row * 49 + 1, 64, 48, UC, true);
+        const cellX = col * 65, cellY = row * 49;
+        sprites.unitTemplates[id] = this.extractSprite(unitsCtx, cellX + 1, cellY + 1, 64, 48, UC, true);
+
+        // Find blue marker pixel (idx 250 = 0,0,255) in cell border for shield position
+        // Scan top border row for X, left border column for Y
+        let sx = -1, sy = -1;
+        const imgW = unitsCtx.canvas.width;
+        // Scan top border (y = cellY, x from cellX to cellX+65)
+        if (cellY < unitsCtx.canvas.height) {
+          const topRow = unitsCtx.getImageData(cellX, cellY, Math.min(65, imgW - cellX), 1).data;
+          for (let x = 0; x < Math.min(65, imgW - cellX); x++) {
+            const i = x * 4;
+            if (topRow[i] < 15 && topRow[i+1] < 15 && topRow[i+2] > 240) { sx = x; break; }
+          }
+        }
+        // Scan left border (x = cellX, y from cellY to cellY+49)
+        if (cellX < imgW) {
+          const leftCol = unitsCtx.getImageData(cellX, cellY, 1, Math.min(49, unitsCtx.canvas.height - cellY)).data;
+          for (let y = 0; y < Math.min(49, unitsCtx.canvas.height - cellY); y++) {
+            const i = y * 4;
+            if (leftCol[i] < 15 && leftCol[i+1] < 15 && leftCol[i+2] > 240) { sy = y; break; }
+          }
+        }
+        sprites.shieldOffsets[id] = (sx >= 0 && sy >= 0) ? { x: sx, y: sy } : null;
       }
+
+      // Extract shield template from UNITS.GIF right edge area (x≈599, y≈1)
+      // The shield is a small sprite (~15×20) with civ-color placeholders
+      // Try extracting from rows 13-14 area or right edge
+      sprites.shieldTemplate = this._extractShieldTemplate(unitsCtx);
+      sprites.shieldColored = {};
     }
 
     // Dither mask: bottom 16 rows of the 64x32 dither tile at y=447
@@ -232,7 +263,8 @@ const Civ2Renderer = {
   // ═══════════════════════════════════════════════════════════
   // Multi-pass rendering pipeline
   // ═══════════════════════════════════════════════════════════
-  async render(canvas, mapData, sprites, onProgress) {
+  async render(canvas, mapData, sprites, onProgress, options) {
+    options = options || {};
     const { mw, mh, getTerrain, isLand, hasRiver, getImprovements, getResource, getNeighbors } = mapData;
     const { terrain, coast, rivers, mouths, forest, mountains, hills,
             roads, railroads, resources, ditherMask, city: citySprites } = sprites;
@@ -415,8 +447,10 @@ const Civ2Renderer = {
       const cy = tpy + (TH >> 1);
       const color = this.CIV_COLORS[c.owner] || '#ccc';
 
-      // City sprite — fixed Medieval era (row 3) as interim
-      const era = 3;
+      // City sprite — era based on owning civ's tech count
+      const era = mapData.civTechCounts
+        ? this._getEra(mapData.civTechCounts[c.owner] || 0)
+        : 3;
       const walled = c.hasWalls ? 1 : 0;
       const style = c.style || 0;
       if (citySprites[walled] && citySprites[walled][style] && citySprites[walled][style][era]) {
@@ -476,6 +510,22 @@ const Civ2Renderer = {
 
         const [tpx, tpy] = tilePos(u.gx, u.gy);
         ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
+
+        // Shield (nationality indicator)
+        if (sprites.shieldTemplate && sprites.shieldOffsets[u.type]) {
+          const so = sprites.shieldOffsets[u.type];
+          const shieldKey = 'shield-' + u.owner;
+          if (!sprites.shieldColored[shieldKey]) {
+            const color = this.CIV_COLORS[u.owner] || '#cccccc';
+            sprites.shieldColored[shieldKey] = this._recolorUnit(sprites.shieldTemplate, color);
+          }
+          ctx.drawImage(sprites.shieldColored[shieldKey], tpx + so.x - 1, tpy - 16 + so.y - 1);
+        }
+
+        // Fortification overlay
+        if (sprites.fortify && (u.orders === 0x01 || u.orders === 0x02)) {
+          ctx.drawImage(sprites.fortify, tpx, tpy - 16);
+        }
       }
     }
 
@@ -496,6 +546,34 @@ const Civ2Renderer = {
 
     // ── Legend ──
     this._drawLegend(ctx, canvasW, canvasH, mapData);
+
+    // ────────────────────────────────────────
+    // PASS 7: Fog of War (optional)
+    // ────────────────────────────────────────
+    if (options.fowEnabled && options.fowCiv != null) {
+      if (onProgress) onProgress('Applying fog of war...');
+      await this._yield();
+
+      const fowBit = 1 << options.fowCiv;
+      let fogCount = 0, visCount = 0;
+      ctx.fillStyle = '#000';
+      for (let gy = 0; gy < mh; gy++) {
+        for (let gx = 0; gx < mw; gx++) {
+          if (mapData.getVisibility(gx, gy) & fowBit) { visCount++; continue; } // visible
+          fogCount++;
+          const [px, py] = tilePos(gx, gy);
+          // Fill diamond with black
+          ctx.beginPath();
+          ctx.moveTo(px + TW / 2, py);
+          ctx.lineTo(px + TW, py + TH / 2);
+          ctx.lineTo(px + TW / 2, py + TH);
+          ctx.lineTo(px, py + TH / 2);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+      console.log(`FOW: civ=${options.fowCiv}, bit=${fowBit}, fogged=${fogCount}, visible=${visCount}`);
+    }
 
     return { canvasW, canvasH };
   },
@@ -650,6 +728,71 @@ const Civ2Renderer = {
     }
     ctx.putImageData(imgData, 0, 0);
     return c;
+  },
+
+  // Extract shield/flag template from UNITS.GIF
+  // The shield is stored in the right portion of the sprite sheet, around x≈599, y≈1
+  // It uses civ-color placeholders (idx 251/252: dark red/light red) like unit sprites
+  _extractShieldTemplate(unitsCtx) {
+    // The shield template is typically at the very end of the first row,
+    // in the border/margin area after the 10 unit cells
+    // 10 cols × 65px = 650, but image is 640px wide, so look in the rightmost area
+    // Try a 15×20 region at x=600, y=1 (within the border strip of col 9)
+    const candidates = [
+      { x: 599, y: 1, w: 15, h: 20 },
+      { x: 601, y: 1, w: 14, h: 20 },
+      { x: 597, y: 1, w: 16, h: 20 },
+    ];
+    const UC = [[255, 0, 255], [135, 83, 135]];
+
+    for (const c of candidates) {
+      if (c.x + c.w > unitsCtx.canvas.width || c.y + c.h > unitsCtx.canvas.height) continue;
+      const testData = unitsCtx.getImageData(c.x, c.y, c.w, c.h).data;
+      // Check if this region has any civ-color pixels (red placeholders)
+      let hasColor = false;
+      for (let i = 0; i < testData.length; i += 4) {
+        const r = testData[i], g = testData[i+1], b = testData[i+2];
+        if ((Math.abs(r - 255) < 15 && g < 15 && b < 15) ||
+            (Math.abs(r - 127) < 15 && g < 15 && b < 15)) {
+          hasColor = true; break;
+        }
+      }
+      if (hasColor) {
+        return this.extractSprite(unitsCtx, c.x, c.y, c.w, c.h, UC, true);
+      }
+    }
+
+    // Fallback: generate a simple colored rectangle shield (15×20)
+    const c = document.createElement('canvas');
+    c.width = 15; c.height = 20;
+    const ctx = c.getContext('2d');
+    // Draw a shield shape with civ-color placeholders (pure red)
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(1, 1, 13, 16);
+    ctx.fillStyle = '#7f0000';
+    ctx.fillRect(1, 1, 13, 2);
+    ctx.fillRect(1, 1, 2, 16);
+    ctx.fillRect(12, 1, 2, 16);
+    // Bottom triangle
+    ctx.fillStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.moveTo(1, 17);
+    ctx.lineTo(7, 19);
+    ctx.lineTo(14, 17);
+    ctx.closePath();
+    ctx.fill();
+    return c;
+  },
+
+  // Map tech count to era row index for city sprites
+  _getEra(techCount) {
+    if (techCount <= 5) return 0;   // Ancient
+    if (techCount <= 15) return 1;  // Classical
+    if (techCount <= 25) return 2;  // Renaissance
+    if (techCount <= 40) return 3;  // Medieval
+    if (techCount <= 60) return 4;  // Industrial
+    if (techCount <= 75) return 5;  // Modern
+    return 6;                       // Modern Alt
   },
 
   // Yield to event loop for UI updates

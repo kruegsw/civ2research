@@ -55,6 +55,20 @@ const Civ2Parser = {
     const s1x = s & 3, s1y = (s >> 2) & 3;
     const s2x = (s1x + 2) % 4, s2y = (s1y + 2) % 4;
 
+    // Player civ slot and alive bitmask
+    const playerCiv = savBuf[0x0029];
+    const civsAlive = savBuf[0x002E];
+
+    // Tech discovery: 100 bytes at 0x00A6, one byte per advance
+    // Each byte is a bitmask of which civs discovered that tech (bit 0=barbs, bit 1=civ1, etc.)
+    const civTechCounts = new Array(8).fill(0);
+    for (let adv = 0; adv < 89; adv++) {
+      const byte = savBuf[0x00A6 + adv];
+      for (let civ = 0; civ < 8; civ++) {
+        if (byte & (1 << civ)) civTechCounts[civ]++;
+      }
+    }
+
     // Record sizes depend on file type
     const unitRecSize = isScn ? 26 : 32;
     const cityRecSize = isScn ? 84 : 88;
@@ -109,8 +123,9 @@ const Civ2Parser = {
       const utype  = savBuf[off + 6];
       const uowner = savBuf[off + 7];
       const alive  = savBuf[off + 14];
+      const orders = savBuf[off + 15];
       if (alive === 0 && ux >= 0 && ux < mw2 && uy >= 0 && uy < mh) {
-        units.push({ gx: ux >> 1, gy: uy, type: utype, owner: uowner });
+        units.push({ gx: ux >> 1, gy: uy, type: utype, owner: uowner, orders });
       }
     }
 
@@ -182,6 +197,7 @@ const Civ2Parser = {
     return {
       mw, mh, mw2, ms, mapSeed, qw, qh, mapShape, isScn,
       tileData, cities, units, civStyles,
+      playerCiv, civsAlive, civTechCounts,
       s1x, s1y, s2x, s2y,
       terrainCounts, oceanPct, citiesOnOcean,
       // Accessor functions
