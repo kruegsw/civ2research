@@ -452,13 +452,15 @@ const Civ2Renderer = {
         // ── Roads & Railroads — 8 directional segments ──
         // Direction order: NE=0, E=1, SE=2, S=3, SW=4, W=5, NW=6, N=7
         const imp = getImprovements(gx, gy);
-        if (imp & 0x30) { // has road (0x10) or railroad (0x20)
+        const hasCity = imp & 0x02; // cities act as road/railroad endpoints
+        if (imp & 0x30 || hasCity) { // has road (0x10), railroad (0x20), or city
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
           for (let di = 0; di < 8; di++) {
             const [nx, ny] = nb[DIR_KEYS[di]];
             const nimp = getImprovements(nx, ny);
-            if ((imp & 0x10) && (nimp & 0x10)) ctx.drawImage(roads[di], px, py);
-            if ((imp & 0x20) && (nimp & 0x20)) ctx.drawImage(railroads[di], px, py);
+            const nCity = nimp & 0x02;
+            if ((imp & 0x10 || hasCity) && (nimp & 0x10 || nCity)) ctx.drawImage(roads[di], px, py);
+            if ((imp & 0x20 || hasCity) && (nimp & 0x20 || nCity)) ctx.drawImage(railroads[di], px, py);
           }
         }
 
