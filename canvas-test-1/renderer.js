@@ -14,14 +14,12 @@ const Civ2Renderer = {
   UNIT_NAMES: [
     'Settlers','Engineers','Warriors','Phalanx','Archers','Legion','Pikemen','Musketeers',   // 0-7
     'Fanatics','Partisans','Alpine Troops','Riflemen','Marines','Paratroopers','Mech. Inf.', // 8-14
-    'Horsemen','Chariot','Elephant','Crusaders','Knights',                                    // 15-19
-    'Dragoons','Cavalry','Armor','Catapult','Cannon','Artillery','Howitzer',                  // 20-26
-    'Fighter','Bomber','Helicopter',                                                          // 27-29
+    'Horsemen','Chariot','Elephant','Crusaders','Knights','Dragoons','Cavalry','Armor',       // 15-22
+    'Catapult','Cannon','Artillery','Howitzer','Fighter','Bomber','Helicopter',               // 23-29
     'Stealth Fighter','Stealth Bomber','Trireme','Caravel','Galleon','Frigate','Ironclad',    // 30-36
-    'Destroyer','Cruiser','AEGIS Cruiser',                                                    // 37-39
-    'Battleship','Submarine','Carrier','Transport','Cruise Msl.','Nuclear Msl.',              // 40-45
-    'Diplomat','Spy','Caravan','Freight',                                                     // 46-49
-    'Explorer','Extra Land',                                                                  // 50-51
+    'Destroyer','Cruiser','AEGIS Cruiser','Battleship','Submarine','Carrier','Transport',     // 37-43
+    'Cruise Msl.','Nuclear Msl.','Diplomat','Spy','Caravan','Freight','Explorer',             // 44-50
+    'Extra Land',                                                                             // 51
   ],
 
   CIV_COLORS: ['#c80000','#ffffff','#00b400','#3250dc','#f0dc00','#00c8c8','#f08c00','#b400c8'],
@@ -227,7 +225,7 @@ const Civ2Renderer = {
     }
 
     // Unit template sprites from UNITS.GIF: 65×49 grid (64×48 sprite + 1px border)
-    // 10 cols × 7 rows = 70 unit types
+    // 9 cols × 7 rows = 63 unit slots (52 standard + 11 custom)
     // Chroma: Magenta (255,0,255) idx 253 + Purplish-gray (135,83,135) idx 255
     // NOTE: UNITS.GIF palette idx 255 is (135,83,135), NOT (135,135,135) like TERRAIN GIFs
     // Civ-color placeholders (idx 251-252) are red (127,0,0)/(255,0,0), kept for recoloring
@@ -236,8 +234,8 @@ const Civ2Renderer = {
     sprites.shieldOffsets = [];
     if (unitsCtx) {
       const UC = [[255, 0, 255], [135, 83, 135]];
-      for (let id = 0; id < 70; id++) {
-        const col = id % 10, row = Math.floor(id / 10);
+      for (let id = 0; id < 63; id++) {
+        const col = id % 9, row = Math.floor(id / 9);
         const cellX = col * 65, cellY = row * 49;
         sprites.unitTemplates[id] = this.extractSprite(unitsCtx, cellX + 1, cellY + 1, 64, 48, UC, true);
 
