@@ -44,8 +44,8 @@ All main sprite sheets are 640×480 pixels, GIF87a format with 256-color indexed
 |------|------|-----------|-------------|
 | `TERRAIN1.GIF` | 46,452 | Cyan (0,255,255) idx 248 | Base terrain tiles, improvements, resources, roads, railroads |
 | `TERRAIN2.GIF` | 55,966 | Magenta (255,0,255) idx 253 | Terrain overlays: forests, mountains, hills, rivers, coastlines |
-| `UNITS.GIF` | 54,012 | Magenta (255,0,255) idx 253 | All 52 unit types + modding instructions, 150 sprites |
-| `CITIES.GIF` | 46,452 | Magenta (255,0,255) idx 253 | Map-view city sprites by era × style × size, 150 sprites |
+| `UNITS.GIF` | 54,012 | Magenta idx 253 + Purplish-gray (135,83,135) idx 255 | All 52 unit types + modding instructions; civ-color via idx 251-252 (red shades) |
+| `CITIES.GIF` | 46,452 | Magenta idx 253 + Cyan (0,255,255) idx 236-249 | Map-view city sprites by era × style × size |
 | `CITY.GIF` | 66,152 | — | City view screen sprites |
 | `PEOPLE.GIF` | 21,227 | Magenta (255,0,255) idx 253 | Citizen type faces by era (92% chroma = mostly empty) |
 | `ICONS.GIF` | 54,098 | Magenta (255,0,255) idx 253 | UI icons: wonder thumbnails, government icons, misc |
@@ -111,9 +111,22 @@ Contains overlay sprites composited on top of base terrain. Uses magenta chroma 
 
 **Unit sprite indexing**: Unit type ID from save file = `row * 10 + col` for rows 0–5. Types 0–51 are standard; types 52+ are mod-defined custom units.
 
+**UNITS.GIF palette (confirmed via Civ2-clone `UnitLoader.cs`)**:
+
+| Index | RGB | Purpose |
+|-------|-----|---------|
+| 250 | (0,0,255) blue | **Flag marker** — embedded in 1px green border to encode shield position per unit cell |
+| 251 | (127,0,0) dark red | **Dark civ-color placeholder** — replaced with owning civ's dark shade at render time |
+| 252 | (255,0,0) pure red | **Light civ-color placeholder** — replaced with owning civ's light shade at render time |
+| 253 | (255,0,255) magenta | Transparent background inside diamond |
+| 254 | (0,255,0) green | Grid border lines (1px between cells) |
+| 255 | (135,83,135) purplish-gray | Transparent background outside diamond — **differs from TERRAIN GIFs' (135,135,135)** |
+
+**Shield/flag system** (confirmed via Civ2-clone): Each unit cell encodes its shield position using a blue pixel (idx 250) in the 1px green border. The flag X is found by scanning the top border row for the first non-green pixel, flag Y by scanning the left border column. Shield templates are extracted from the right edge of UNITS.GIF (x≈599-611, y=1-20) and recolored per-civ using the idx 251/252 replacement.
+
 **Key modding notes embedded in UNITS.GIF text**:
 - "Units cannot overlap the area below the main diamond"
-- "ONLY colors in palette (only) are for players' (border) (xt.ext=shield)"  
+- "ONLY colors in palette (only) are for players' (border) (xt.ext=shield)"
 - "Borders & writing may be changed to any RGB but must be last 3 colors of palette"
 
 #### CITIES.GIF Sprite Layout
@@ -138,6 +151,8 @@ City sprites organized by **era** (rows) × **architectural style** (columns) ×
 | 6 | 333+ | MODERN ALT | Alternative modern sprites |
 
 **Bottom section** (y ≈ 395+, confirmed from embedded labels): FLAGS (civ color swatches), FORTIFY icon, FORTRESS sprite, AIRBASE sprite (2 variants), plus 2 large city sprites.
+
+**CITIES.GIF transparency**: Uses **three** chroma key colors — magenta (255,0,255) idx 253, cyan (0,255,255) idx 236-249, and gray (135,135,135) idx 255. The cyan indices are transparent in CITIES.GIF (unlike UNITS.GIF where they are fixed colors). Bright green grid lines should also be removed.
 
 #### PEOPLE.GIF Sprite Layout
 
@@ -3054,13 +3069,23 @@ The autosave file is named `St_Auto.SAV` (not `AUTO.SAV` as some community docs 
 
 All Civ2 MGE graphics files are 640×480 paletted GIFs. Transparency is implemented via **palette indices**, not RGB color matching:
 
-- **Palette index 255** = (135,135,135) gray — used for the area **outside** the isometric diamond in all sprite cells. Must be made transparent when compositing.
+- **Palette index 255** = gray, used for the area **outside** the isometric diamond in all sprite cells. Must be made transparent when compositing. **WARNING**: The RGB value of index 255 varies between GIF files: TERRAIN1/TERRAIN2 use `(135,135,135)`, but UNITS.GIF uses `(135,83,135)` (purplish-gray). The Civ2-clone dynamically samples the bottom-right pixel `(639,479)` to detect this color at runtime.
+- **Palette index 254** = (0,255,0) bright green — grid border lines separating sprite cells. Also used as flag/shield position markers in UNITS.GIF (see Layer 10).
 - **Palette index 253** = (255,0,255) magenta — used for transparent areas **inside** the diamond on overlay sprites (TERRAIN2, roads, improvements). Also used for annotation text baked into base terrain variants (see warning below). Must be made transparent on overlay sprites; on base terrain sprites it indicates contaminated variants that should be avoided.
-- **Palette indices 236–252** = (0,255,255) cyan — used for transparent areas on unit and city sprites (UNITS.GIF, CITIES.GIF). All indices in this range map to the same cyan RGB value.
+- **Palette indices 252** = (255,0,0) pure red — **light civ-color placeholder** in UNITS.GIF. Replaced at render time with the owning civilization's primary color.
+- **Palette index 251** = (127,0,0) dark red — **dark civ-color placeholder** in UNITS.GIF. Replaced with a darker shade of the owning civilization's color.
+- **Palette index 250** = (0,0,255) blue — flag/shield position marker embedded in UNITS.GIF cell borders. Not a transparency color.
+- **Palette indices 236–249** = (0,255,255) cyan — transparent areas on city sprites (CITIES.GIF). In UNITS.GIF these indices are present but treated as fixed colors by the game engine.
 
 > **IMPORTANT**: Do NOT use RGB color matching for transparency — use palette index comparison on the original paletted image data. Multiple palette indices map to the same RGB value, and the game's palette can be modded.
 
-> **Browser/Canvas exception**: When rendering in a web browser using HTML5 Canvas, the browser's GIF decoder converts indexed palettes to RGBA, making palette indices inaccessible. In this case, use **fuzzy RGB color matching** (tolerance ±15 per channel) as a fallback. For TERRAIN1 sprites, match **both** magenta `(255,0,255)` and cyan `(0,255,255)`. For TERRAIN2 sprites, match magenta `(255,0,255)` and gray `(135,135,135)`. Also remove bright green grid line pixels (`R<100, G>200, B<100`) from overlay sprites to prevent 1px border artifacts. This RGB approach is imperfect (risk of false positives on near-chroma terrain pixels) but produces acceptable results for unmodded sprite sheets.
+> **Browser/Canvas exception**: When rendering in a web browser using HTML5 Canvas, the browser's GIF decoder converts indexed palettes to RGBA, making palette indices inaccessible. In this case, use **fuzzy RGB color matching** (tolerance ±15 per channel) as a fallback. Per-GIF chroma key sets:
+> - **TERRAIN1**: magenta `(255,0,255)` + cyan `(0,255,255)` + gray `(135,135,135)`
+> - **TERRAIN2**: magenta `(255,0,255)` + gray `(135,135,135)` (gray is ~132,132,132 in TERRAIN2)
+> - **CITIES.GIF**: magenta `(255,0,255)` + cyan `(0,255,255)` + gray `(135,135,135)`
+> - **UNITS.GIF**: magenta `(255,0,255)` + purplish-gray `(135,83,135)` — do NOT include cyan (it's not a transparency color here); red placeholders `(255,0,0)` and `(127,0,0)` are kept for civ-color recoloring
+>
+> Also remove bright green grid line pixels (`R<100, G>200, B<100`) from overlay sprites to prevent 1px border artifacts. This RGB approach is imperfect (risk of false positives on near-chroma terrain pixels) but produces acceptable results for unmodded sprite sheets.
 
 ### TERRAIN1.GIF — Base Terrain Tiles
 
@@ -3746,7 +3771,7 @@ else:
     sprite_x = 1 + style * 65        # Left half (open)
 
 sprite_y = 39 + era_row * 49         # Era row
-# Extract 64×48 pixels using magenta chroma key
+# Extract 64×48 pixels using magenta + cyan + gray chroma key
 ```
 
 > **NOTE**: The "FAR EAST" row may function as a style-specific variant rather than a chronological era — some civilizations may use this row instead of Ancient/Classical based on their style assignment. The exact tech→era mapping thresholds are defined in RULES.TXT and have not been extracted here. The "MODERN ALT" row may be used for specific city sizes or as an alternate for variety.
@@ -3774,9 +3799,11 @@ sprite_y = row * 49 + 1
 # Extract 64×48 pixels
 ```
 
-Like cities, unit sprites are 48 pixels tall and extend above the tile diamond. Units are drawn with **civilization color substitution**: palette indices 251-252 (per Scenario League Wiki) are the civ-color dark/light shade pair — these decode to cyan (0,255,255) in the default palette and are replaced with the owning civilization's color at render time.
+Like cities, unit sprites are 48 pixels tall and extend above the tile diamond. Units are drawn with **civilization color substitution**: palette index 252 = (255,0,0) pure red is the **light** civ-color placeholder, and palette index 251 = (127,0,0) dark red is the **dark** civ-color placeholder. At render time, both are replaced with the owning civilization's light and dark colors respectively.
 
-> **RENDERER IMPLEMENTED** (`canvas-test-1/renderer.js`): Unit sprites are rendered from UNITS.GIF with per-civ color substitution. Template sprites are extracted once with magenta+gray chroma key (cyan preserved as placeholder), then recolored per civ by replacing cyan pixels with the civ's color. Recolored sprites are cached by (unit_type, owner) pair. One unit drawn per tile (no stack indicators). UNITS.GIF is optional — units simply don't render without it.
+**Important**: UNITS.GIF palette index 255 = (135,83,135) purplish-gray, which differs from TERRAIN1/TERRAIN2's (135,135,135) gray. Both must be made transparent but require different chroma key values.
+
+> **RENDERER IMPLEMENTED** (`canvas-test-1/renderer.js`): Unit sprites are rendered from UNITS.GIF with per-civ color substitution. Template sprites are extracted once with magenta (255,0,255) + purplish-gray (135,83,135) chroma key. Civ-color placeholders — light red (255,0,0) idx 252 and dark red (127,0,0) idx 251 — are recolored per civ at runtime. Recolored sprites are cached by (unit_type, owner) pair. One unit drawn per tile; garrisoned units in cities are hidden. UNITS.GIF is optional.
 
 #### Neighbor Lookup Reference
 
@@ -4120,7 +4147,7 @@ This script produces a correct map rendering with verified coastlines, rivers, r
 - **Catfish's Cave** (FoxAhead's ToT format guide): https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm — Documents the save format for Test of Time (92-byte cities). Derived from Höfelt's guide with ToT-specific extensions. Useful cross-reference but requires offset conversion for MGE.
 - **FoxAhead's Civ2Types.pas**: Pascal type definitions from the Civ2-UI-Additions project. Based on Catfish's Cave documentation.
 - **Civ2-clone** (axx0): https://github.com/axx0/Civ2-clone — Open source C# reimplementation of Civilization II. The most authoritative source for sprite extraction coordinates and rendering algorithms. Key files: `Civ2GoldInterface.cs` (sprite sheet Rectangle coordinates), `Draw.Terrain.cs` (terrain overlay rendering with neighbor-connectivity bitmask). Confirmed the 4-bit diagonal neighbor bitmask for forest/mountain/hill overlay variant selection (NE=1, SE=2, SW=4, NW=8).
-- **Scenario League Wiki — The Palette Explained**: https://sleague.civfanatics.com/index.php?title=The_Palette_Explained — Definitive documentation of the Civ2 256-color palette, including reserved indices (253=magenta transparent, 254=green grid, 255=gray transparent) and civ-color substitution ranges for unit/city sprites.
+- **Scenario League Wiki — The Palette Explained**: https://sleague.civfanatics.com/index.php?title=The_Palette_Explained — Definitive documentation of the Civ2 256-color palette, including reserved indices (253=magenta transparent, 254=green grid, 255=gray transparent) and civ-color substitution indices (251=dark shade, 252=light shade).
 - **Apolyton Forums** and **CivFanatics** — Community hex editing threads provided clues for city record structure and map data locations.
 - Note: Community documentation is often for original Civ2, Fantastic Worlds, or Test of Time. MGE uses the same layout as FW but with 4 extra bytes per city (88 vs 84) and 6 extra bytes per unit (32 vs 26). **SCN files use the FW record sizes** (26-byte units, 84-byte cities).
 

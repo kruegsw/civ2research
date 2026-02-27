@@ -153,10 +153,11 @@ const Civ2Renderer = {
     // City sprites from CITIES.GIF: 65×49 grid (64×48 sprite + 1px border)
     // 38px header row, then 49px per era row
     // sprites.city[walled][style][era] — walled: 0/1, style: 0-3, era: 0-6
-    // Chroma: Magenta (255,0,255) + Gray (135,135,135), killGreen=true
+    // Chroma: Magenta (255,0,255) + Cyan (0,255,255) + Gray (135,135,135), killGreen=true
+    // Cyan is transparent in CITIES.GIF (palette indices 236-252 per docs)
     sprites.city = [[], []]; // [open, walled]
     if (citiesCtx) {
-      const CC = [[255, 0, 255], [135, 135, 135]];
+      const CC = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
       for (let w = 0; w < 2; w++) {
         for (let s = 0; s < 4; s++) {
           sprites.city[w][s] = [];
@@ -171,11 +172,13 @@ const Civ2Renderer = {
 
     // Unit template sprites from UNITS.GIF: 65×49 grid (64×48 sprite + 1px border)
     // 10 cols × 7 rows = 70 unit types
-    // Chroma: Magenta + Gray transparent; cyan pixels preserved as civ-color placeholder
+    // Chroma: Magenta (255,0,255) idx 253 + Purplish-gray (135,83,135) idx 255
+    // NOTE: UNITS.GIF palette idx 255 is (135,83,135), NOT (135,135,135) like TERRAIN GIFs
+    // Civ-color placeholders (idx 251-252) are red (127,0,0)/(255,0,0), kept for recoloring
     sprites.unitTemplates = [];
     sprites.unitColored = {};
     if (unitsCtx) {
-      const UC = [[255, 0, 255], [135, 135, 135]];
+      const UC = [[255, 0, 255], [135, 83, 135]];
       for (let id = 0; id < 70; id++) {
         const col = id % 10, row = Math.floor(id / 10);
         sprites.unitTemplates[id] = this.extractSprite(unitsCtx, col * 65 + 1, row * 49 + 1, 64, 48, UC, true);
@@ -411,10 +414,15 @@ const Civ2Renderer = {
       if (onProgress) onProgress('Drawing units...');
       await this._yield();
 
+      // Build set of city tiles so we don't draw garrisoned units over cities
+      const cityTiles = new Set();
+      for (const c of mapData.cities) cityTiles.add(c.gx + ',' + c.gy);
+
       const drawnTiles = new Set();
       for (const u of mapData.units) {
         const tileKey = u.gx + ',' + u.gy;
         if (drawnTiles.has(tileKey)) continue; // one unit per tile
+        if (cityTiles.has(tileKey)) continue;  // skip garrisoned units
         drawnTiles.add(tileKey);
 
         const template = sprites.unitTemplates[u.type];
@@ -556,7 +564,8 @@ const Civ2Renderer = {
     return result;
   },
 
-  // ── Recolor unit template: replace cyan pixels with civ color ──
+  // ── Recolor unit template: replace civ-color placeholder pixels ──
+  // Palette idx 252 = (255,0,0) light civ-color, idx 251 = (127,0,0) dark civ-color
   _recolorUnit(templateCanvas, hexColor) {
     const w = templateCanvas.width, h = templateCanvas.height;
     const c = document.createElement('canvas');
@@ -566,17 +575,22 @@ const Civ2Renderer = {
     const imgData = ctx.getImageData(0, 0, w, h);
     const d = imgData.data;
 
-    // Parse hex color
+    // Parse hex color → light shade; derive dark shade at 50% brightness
     const cr = parseInt(hexColor.slice(1, 3), 16);
     const cg = parseInt(hexColor.slice(3, 5), 16);
     const cb = parseInt(hexColor.slice(5, 7), 16);
+    const dr = cr >> 1, dg = cg >> 1, db = cb >> 1;
 
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] === 0) continue; // skip transparent
       const r = d[i], g = d[i+1], b = d[i+2];
-      // Cyan-ish: low red, high green, high blue
-      if (r < 15 && g > 240 && b > 240) {
+      // Light civ-color: idx 252 = (255,0,0) — pure red
+      if (Math.abs(r - 255) < 15 && g < 15 && b < 15) {
         d[i] = cr; d[i+1] = cg; d[i+2] = cb;
+      }
+      // Dark civ-color: idx 251 = (127,0,0) — dark red
+      else if (Math.abs(r - 127) < 15 && g < 15 && b < 15) {
+        d[i] = dr; d[i+1] = dg; d[i+2] = db;
       }
     }
     ctx.putImageData(imgData, 0, 0);
