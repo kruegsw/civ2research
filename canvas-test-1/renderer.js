@@ -137,6 +137,21 @@ const Civ2Renderer = {
       sprites.resources[tid * 2 + 2] = this.extractSprite(t1Ctx, 3*65+1, tid*33+1, 64, 32, T1R, false);
     }
 
+    // Roads: TERRAIN1 row 11, cols 1-8 (8 directional segments)
+    // Direction: 0=NE, 1=E, 2=SE, 3=S, 4=SW, 5=W, 6=NW, 7=N
+    // Overlay sprites: need magenta (inside diamond) + gray (outside diamond) chroma
+    const T1OV = [[255, 0, 255], [0, 255, 255], [132, 132, 132]];
+    sprites.roads = [];
+    for (let i = 0; i < 8; i++) {
+      sprites.roads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 11*33+1, 64, 32, T1OV, true);
+    }
+
+    // Railroads: TERRAIN1 row 12, cols 1-8
+    sprites.railroads = [];
+    for (let i = 0; i < 8; i++) {
+      sprites.railroads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 12*33+1, 64, 32, T1OV, true);
+    }
+
     // Dither mask: bottom 16 rows of the 64x32 dither tile at y=447
     // (tile spans y=447-478; we use the bottom half at y=463 and flip for top half)
     // Black pixels (< 10 in all channels) = dither holes
@@ -154,9 +169,9 @@ const Civ2Renderer = {
   // Multi-pass rendering pipeline
   // ═══════════════════════════════════════════════════════════
   async render(canvas, mapData, sprites, onProgress) {
-    const { mw, mh, getTerrain, isLand, hasRiver, getResource, getNeighbors } = mapData;
+    const { mw, mh, getTerrain, isLand, hasRiver, getImprovements, getResource, getNeighbors } = mapData;
     const { terrain, terrainAlt, coast, rivers, mouths, forest, mountains, hills,
-            resources, ditherMask } = sprites;
+            roads, railroads, resources, ditherMask } = sprites;
     const TW = this.TW, TH = this.TH;
 
     const canvasW = mw * TW + (TW >> 1);
@@ -289,6 +304,19 @@ const Civ2Renderer = {
           if (ter === 3) ctx.drawImage(forest[ovi], px, py);
           else if (ter === 5) ctx.drawImage(mountains[ovi], px, py);
           else ctx.drawImage(hills[ovi], px, py);
+        }
+
+        // ── Roads & Railroads — 8 directional segments ──
+        // Direction order: NE=0, E=1, SE=2, S=3, SW=4, W=5, NW=6, N=7
+        const imp = getImprovements(gx, gy);
+        if (imp & 0x30) { // has road (0x10) or railroad (0x20)
+          const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
+          for (let di = 0; di < 8; di++) {
+            const [nx, ny] = nb[DIR_KEYS[di]];
+            const nimp = getImprovements(nx, ny);
+            if ((imp & 0x10) && (nimp & 0x10)) ctx.drawImage(roads[di], px, py);
+            if ((imp & 0x20) && (nimp & 0x20)) ctx.drawImage(railroads[di], px, py);
+          }
         }
 
         // ── Resources (seed-based) ──
