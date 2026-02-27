@@ -72,7 +72,7 @@ const Civ2Renderer = {
   // ═══════════════════════════════════════════════════════════
   // Extract all sprites from the two terrain sheets
   // ═══════════════════════════════════════════════════════════
-  extractAllSprites(t1Ctx, t2Ctx, citiesCtx) {
+  extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx) {
     // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248 + Gray (135,135,135) idx 255
     const T1 = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
     // TERRAIN1 for resources: also remove Magenta text labels
@@ -166,6 +166,19 @@ const Civ2Renderer = {
             sprites.city[w][s][era] = this.extractSprite(citiesCtx, cx, cy, 64, 48, CC, true);
           }
         }
+      }
+    }
+
+    // Unit template sprites from UNITS.GIF: 65×49 grid (64×48 sprite + 1px border)
+    // 10 cols × 7 rows = 70 unit types
+    // Chroma: Magenta + Gray transparent; cyan pixels preserved as civ-color placeholder
+    sprites.unitTemplates = [];
+    sprites.unitColored = {};
+    if (unitsCtx) {
+      const UC = [[255, 0, 255], [135, 135, 135]];
+      for (let id = 0; id < 70; id++) {
+        const col = id % 10, row = Math.floor(id / 10);
+        sprites.unitTemplates[id] = this.extractSprite(unitsCtx, col * 65 + 1, row * 49 + 1, 64, 48, UC, true);
       }
     }
 
@@ -391,6 +404,33 @@ const Civ2Renderer = {
       ctx.fillText(c.name, cx, ty);
     }
 
+    // ────────────────────────────────────────
+    // PASS 5: Units
+    // ────────────────────────────────────────
+    if (sprites.unitTemplates.length > 0) {
+      if (onProgress) onProgress('Drawing units...');
+      await this._yield();
+
+      const drawnTiles = new Set();
+      for (const u of mapData.units) {
+        const tileKey = u.gx + ',' + u.gy;
+        if (drawnTiles.has(tileKey)) continue; // one unit per tile
+        drawnTiles.add(tileKey);
+
+        const template = sprites.unitTemplates[u.type];
+        if (!template) continue;
+
+        const cacheKey = u.type + '-' + u.owner;
+        if (!sprites.unitColored[cacheKey]) {
+          const color = this.CIV_COLORS[u.owner] || '#cccccc';
+          sprites.unitColored[cacheKey] = this._recolorUnit(template, color);
+        }
+
+        const [tpx, tpy] = tilePos(u.gx, u.gy);
+        ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
+      }
+    }
+
     // ── Legend ──
     this._drawLegend(ctx, canvasW, canvasH, mapData);
 
@@ -514,6 +554,33 @@ const Civ2Renderer = {
       result[owner] = best;
     }
     return result;
+  },
+
+  // ── Recolor unit template: replace cyan pixels with civ color ──
+  _recolorUnit(templateCanvas, hexColor) {
+    const w = templateCanvas.width, h = templateCanvas.height;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(templateCanvas, 0, 0);
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+
+    // Parse hex color
+    const cr = parseInt(hexColor.slice(1, 3), 16);
+    const cg = parseInt(hexColor.slice(3, 5), 16);
+    const cb = parseInt(hexColor.slice(5, 7), 16);
+
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] === 0) continue; // skip transparent
+      const r = d[i], g = d[i+1], b = d[i+2];
+      // Cyan-ish: low red, high green, high blue
+      if (r < 15 && g > 240 && b > 240) {
+        d[i] = cr; d[i+1] = cg; d[i+2] = cb;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return c;
   },
 
   // Yield to event loop for UI updates

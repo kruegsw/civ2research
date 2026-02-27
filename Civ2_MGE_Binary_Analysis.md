@@ -3149,7 +3149,7 @@ Grid: **65×49 pixel cells** (64×48 unit + 1px border). 10 columns × 7 rows = 
 
 > ⚠️ **ALGORITHM STATUS**: The rendering algorithms below were reverse-engineered from sprite sheet analysis, save file data correlation, pattern matching, and cross-referencing with the [Civ2-clone](https://github.com/axx0/Civ2-clone) open source reimplementation. Algorithms marked ✅ **CONFIRMED** have been verified against the Civ2-clone source code and/or in-game screenshots. Remaining algorithms (especially base terrain variant selection) are well-informed best guesses. **Confirmed algorithms**: Coastline 4-quadrant system (Layer 2), rivers (Layer 3), terrain overlay neighbor-connectivity bitmask (Layer 4), resource placement (Layer 8), dither blending (Layer 1b).
 >
-> **RENDERER IMPLEMENTATION STATUS** (`canvas-test-1/renderer.js`): Layers 1–6, 8, and 9 are implemented. Layer 7 (improvements: irrigation/farmland/mining/pollution/fortress) and Layer 10 (unit sprites) are not yet implemented. City sprites (Layer 9) use a fixed Medieval era — see Layer 9 note. Gray diamond-corner artifacts were fixed by adding palette index 255 gray (135,135,135) to the TERRAIN1 chroma key set alongside magenta and cyan.
+> **RENDERER IMPLEMENTATION STATUS** (`canvas-test-1/renderer.js`): Layers 1–6, 8, 9, and 10 are implemented. Layer 7 (improvements: irrigation/farmland/mining/pollution/fortress) is not yet implemented. City sprites (Layer 9) use a fixed Medieval era — see Layer 9 note. Unit sprites (Layer 10) use per-civ cyan→color substitution — see Layer 10 note. Gray diamond-corner artifacts were fixed by adding palette index 255 gray (135,135,135) to the TERRAIN1 chroma key set alongside magenta and cyan.
 
 #### Overview: Compositing Order (Back to Front)
 
@@ -3774,7 +3774,9 @@ sprite_y = row * 49 + 1
 # Extract 64×48 pixels
 ```
 
-Like cities, unit sprites are 48 pixels tall and extend above the tile diamond. Units are drawn with **civilization color substitution**: palette indices 240-247 (the "civ color" range in the cyan index block) are replaced with the owning civilization's color.
+Like cities, unit sprites are 48 pixels tall and extend above the tile diamond. Units are drawn with **civilization color substitution**: palette indices 251-252 (per Scenario League Wiki) are the civ-color dark/light shade pair — these decode to cyan (0,255,255) in the default palette and are replaced with the owning civilization's color at render time.
+
+> **RENDERER IMPLEMENTED** (`canvas-test-1/renderer.js`): Unit sprites are rendered from UNITS.GIF with per-civ color substitution. Template sprites are extracted once with magenta+gray chroma key (cyan preserved as placeholder), then recolored per civ by replacing cyan pixels with the civ's color. Recolored sprites are cached by (unit_type, owner) pair. One unit drawn per tile (no stack indicators). UNITS.GIF is optional — units simply don't render without it.
 
 #### Neighbor Lookup Reference
 

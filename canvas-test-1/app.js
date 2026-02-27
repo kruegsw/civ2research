@@ -2,7 +2,7 @@
 // app.js — Glue: file loading, render trigger, tooltip, controls
 // ═══════════════════════════════════════════════════════════════════
 
-const files = { sav: null, t1: null, t2: null, cities: null };
+const files = { sav: null, t1: null, t2: null, cities: null, units: null };
 let currentMapData = null;
 
 // ── File input handlers ──
@@ -30,13 +30,23 @@ document.getElementById('cities-input').addEventListener('change', e => {
   document.getElementById('cities-btn').childNodes[0].textContent = 'CITIES ✓ ';
   checkReady();
 });
+document.getElementById('units-input').addEventListener('change', e => {
+  files.units = e.target.files[0];
+  document.getElementById('units-btn').classList.add('loaded');
+  document.getElementById('units-btn').childNodes[0].textContent = 'UNITS ✓ ';
+  checkReady();
+});
 
 function checkReady() {
   const ready = files.sav && files.t1 && files.t2;
   document.getElementById('render-btn').disabled = !ready;
   if (ready) {
-    const citiesNote = files.cities ? '' : ' (CITIES.GIF optional)';
-    document.getElementById('status').textContent = 'Ready — click Render Map.' + citiesNote;
+    const optionalNote = [
+      !files.cities && 'CITIES.GIF',
+      !files.units && 'UNITS.GIF'
+    ].filter(Boolean).join(', ');
+    const suffix = optionalNote ? ` (${optionalNote} optional)` : '';
+    document.getElementById('status').textContent = 'Ready — click Render Map.' + suffix;
   }
 }
 
@@ -66,7 +76,12 @@ async function doRender() {
       Civ2Renderer.loadImage(files.t2)
     ];
     if (files.cities) imgPromises.push(Civ2Renderer.loadImage(files.cities));
-    const [t1Img, t2Img, citiesImg] = await Promise.all(imgPromises);
+    if (files.units) imgPromises.push(Civ2Renderer.loadImage(files.units));
+    const imgs = await Promise.all(imgPromises);
+    const t1Img = imgs[0], t2Img = imgs[1];
+    let idx = 2;
+    const citiesImg = files.cities ? imgs[idx++] : null;
+    const unitsImg = files.units ? imgs[idx++] : null;
 
     // 4. Extract sprites
     msg.textContent = 'Extracting sprites...';
@@ -74,7 +89,8 @@ async function doRender() {
     const t1Ctx = Civ2Renderer.imgToCtx(t1Img);
     const t2Ctx = Civ2Renderer.imgToCtx(t2Img);
     const citiesCtx = citiesImg ? Civ2Renderer.imgToCtx(citiesImg) : null;
-    const sprites = Civ2Renderer.extractAllSprites(t1Ctx, t2Ctx, citiesCtx);
+    const unitsCtx = unitsImg ? Civ2Renderer.imgToCtx(unitsImg) : null;
+    const sprites = Civ2Renderer.extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx);
 
     // 5. Render to canvas
     const canvas = document.getElementById('map-canvas');
