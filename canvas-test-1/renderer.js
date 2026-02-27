@@ -73,10 +73,10 @@ const Civ2Renderer = {
   // Extract all sprites from the two terrain sheets
   // ═══════════════════════════════════════════════════════════
   extractAllSprites(t1Ctx, t2Ctx) {
-    // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248
-    const T1 = [[255, 0, 255], [0, 255, 255]];
+    // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248 + Gray (135,135,135) idx 255
+    const T1 = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
     // TERRAIN1 for resources: also remove Magenta text labels
-    const T1R = [[0, 255, 255], [255, 0, 255]];
+    const T1R = [[0, 255, 255], [255, 0, 255], [135, 135, 135]];
     // TERRAIN2 chroma: Magenta (255,0,255) idx 253 + gray corners (~132,132,132) idx 255
     const T2 = [[255, 0, 255], [132, 132, 132]];
 
@@ -139,17 +139,15 @@ const Civ2Renderer = {
 
     // Roads: TERRAIN1 row 11, cols 1-8 (8 directional segments)
     // Direction: 0=NE, 1=E, 2=SE, 3=S, 4=SW, 5=W, 6=NW, 7=N
-    // Overlay sprites: need magenta (inside diamond) + gray (outside diamond) chroma
-    const T1OV = [[255, 0, 255], [0, 255, 255], [132, 132, 132]];
     sprites.roads = [];
     for (let i = 0; i < 8; i++) {
-      sprites.roads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 11*33+1, 64, 32, T1OV, true);
+      sprites.roads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 11*33+1, 64, 32, T1, true);
     }
 
     // Railroads: TERRAIN1 row 12, cols 1-8
     sprites.railroads = [];
     for (let i = 0; i < 8; i++) {
-      sprites.railroads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 12*33+1, 64, 32, T1OV, true);
+      sprites.railroads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 12*33+1, 64, 32, T1, true);
     }
 
     // Dither mask: bottom 16 rows of the 64x32 dither tile at y=447
