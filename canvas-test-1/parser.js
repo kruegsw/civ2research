@@ -50,10 +50,7 @@ const Civ2Parser = {
                      savBuf[off+3], savBuf[off+4], savBuf[off+5]];
     }
 
-    // Resource seed computation
-    const s = mapSeed % 64;
-    const s1x = s & 3, s1y = (s >> 2) & 3;
-    const s2x = (s1x + 2) % 4, s2y = (s1y + 2) % 4;
+    // Resource seed — used by getResource() with TheNamelessOne's algorithm
 
     // Player civ slot and alive bitmask
     const playerCiv = savBuf[0x0029];
@@ -175,12 +172,21 @@ const Civ2Parser = {
       return tileData[gy * mw + wrap(gx)][4];
     }
 
+    // Resource placement algorithm by TheNamelessOne (CivFanatics):
+    // https://forums.civfanatics.com/threads/518649/#post-13002282
+    // Ported from Civ2-clone (axx0): https://github.com/axx0/Civ2-clone
+    // Uses doubled isometric coordinates and full mapSeed value.
     function getResource(gx, gy) {
       if (gy < 0 || gy >= mh) return 0;
       if (tileData[gy * mw + wrap(gx)][0] & 0x40) return 0; // "no resource" flag
-      if (wrap(gx) % 4 === s1x && gy % 4 === s1y) return 1;
-      if (wrap(gx) % 4 === s2x && gy % 4 === s2y) return 2;
-      return 0;
+      const X = 2 * wrap(gx) + (gy % 2); // doubled isometric X
+      const Y = gy;
+      const a = (X + Y) >> 1;
+      const b = X - a;
+      const c = 13 * (b >> 2) + 11 * ((X + Y) >> 3) + mapSeed;
+      if ((a & 3) + 4 * (b & 3) !== (c & 15)) return 0;
+      const d = 1 << ((mapSeed >> 4) & 3);
+      return (d & a) === (d & b) ? 1 : 2;
     }
 
     // Neighbor lookup — the critical isometric stagger logic
@@ -219,7 +225,6 @@ const Civ2Parser = {
       mw, mh, mw2, ms, mapSeed, qw, qh, mapShape, isScn,
       tileData, cities, units, civStyles,
       playerCiv, civsAlive, civTechCounts, civTechs,
-      s1x, s1y, s2x, s2y,
       terrainCounts, oceanPct, citiesOnOcean,
       // Accessor functions
       getTerrain, isLand, hasRiver, getImprovements, getVisibility, getResource, getNeighbors, wrap
