@@ -5,6 +5,52 @@
 const files = { sav: null, t1: null, t2: null, cities: null, units: null };
 let currentMapData = null;
 
+// ── Auto-detect files in same directory ──
+// Requires serving via HTTP (e.g. python3 -m http.server). Silently skipped on file://.
+(async function autoDetect() {
+  if (location.protocol === 'file:') return;
+
+  // Known GIF files
+  const known = [
+    { name: 'TERRAIN1.GIF', key: 't1',     btnId: 't1-btn',     label: 'TERRAIN1 \u2713 ' },
+    { name: 'TERRAIN2.GIF', key: 't2',     btnId: 't2-btn',     label: 'TERRAIN2 \u2713 ' },
+    { name: 'CITIES.GIF',   key: 'cities', btnId: 'cities-btn', label: 'CITIES \u2713 ' },
+    { name: 'UNITS.GIF',    key: 'units',  btnId: 'units-btn',  label: 'UNITS \u2713 ' },
+  ];
+  await Promise.all(known.map(async ({ name, key, btnId, label }) => {
+    try {
+      const resp = await fetch(name);
+      if (!resp.ok) return;
+      const blob = await resp.blob();
+      files[key] = new File([blob], name, { type: blob.type });
+      document.getElementById(btnId).classList.add('loaded');
+      document.getElementById(btnId).childNodes[0].textContent = label;
+    } catch (_) {}
+  }));
+
+  // Find first .sav/.scn/.net via directory listing
+  try {
+    const resp = await fetch('./');
+    if (resp.ok) {
+      const html = await resp.text();
+      const re = /href="([^"]+\.(?:sav|SAV|scn|SCN|net|NET))"/g;
+      const match = re.exec(html);
+      if (match) {
+        const savName = match[1];
+        const savResp = await fetch(savName);
+        if (savResp.ok) {
+          const blob = await savResp.blob();
+          files.sav = new File([blob], savName, { type: 'application/octet-stream' });
+          document.getElementById('sav-btn').classList.add('loaded');
+          document.getElementById('sav-btn').childNodes[0].textContent = savName + ' ';
+        }
+      }
+    }
+  } catch (_) {}
+
+  checkReady();
+})();
+
 // ── File input handlers ──
 document.getElementById('sav-input').addEventListener('change', e => {
   files.sav = e.target.files[0];
