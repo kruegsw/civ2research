@@ -198,7 +198,7 @@ const Civ2Parser = {
       const c = 13 * (b >> 2) + 11 * ((X + Y) >> 3) + mapSeed;
       if ((a & 3) + 4 * (b & 3) !== (c & 15)) return 0;
       const d = 1 << ((mapSeed >> 4) & 3);
-      return (d & a) === (d & b) ? 1 : 2;
+      return (d & a) === (d & b) ? 2 : 1;
     }
 
     // Neighbor lookup — the critical isometric stagger logic
