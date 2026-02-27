@@ -13,6 +13,22 @@ const Civ2Renderer = {
 
   CIV_COLORS: ['#c80000','#ffffff','#00b400','#3250dc','#f0dc00','#00c8c8','#f08c00','#b400c8'],
 
+  // Clean (text-free) column indices per terrain type in TERRAIN1.GIF
+  // Only cols 0 and 1 are consistently free of baked-in text labels
+  CLEAN_VARIANTS: [
+    [0, 1],  // 0 Desert
+    [0, 1],  // 1 Plains
+    [0, 1],  // 2 Grassland
+    [0, 1],  // 3 Forest
+    [0, 1],  // 4 Hills
+    [0, 1],  // 5 Mountains
+    [0, 1],  // 6 Tundra
+    [0, 1],  // 7 Glacier
+    [0, 1],  // 8 Swamp
+    [0, 1],  // 9 Jungle
+    [0, 1],  // 10 Ocean
+  ],
+
   // ── Load image from File ──
   loadImage(file) {
     return new Promise((resolve, reject) => {
@@ -82,12 +98,13 @@ const Civ2Renderer = {
 
     const sprites = {};
 
-    // Base terrain: rows 0-10, 65×33 grid (64×32 + 1px border)
+    // Base terrain: rows 0-10, extract all clean (text-free) variant columns
+    // sprites.terrain[tid][variantIndex] — up to 6 variants per terrain type
     sprites.terrain = [];
-    sprites.terrainAlt = [];
     for (let tid = 0; tid < 11; tid++) {
-      sprites.terrain[tid]    = this.extractSprite(t1Ctx, 0*65+1, tid*33+1, 64, 32, T1, false);
-      sprites.terrainAlt[tid] = this.extractSprite(t1Ctx, 1*65+1, tid*33+1, 64, 32, T1, false);
+      sprites.terrain[tid] = this.CLEAN_VARIANTS[tid].map(col =>
+        this.extractSprite(t1Ctx, col * 65 + 1, tid * 33 + 1, 64, 32, T1, false)
+      );
     }
 
     // Coastline: 8 groups × 4 quadrant pieces (32×16 each)
@@ -217,7 +234,7 @@ const Civ2Renderer = {
   // ═══════════════════════════════════════════════════════════
   async render(canvas, mapData, sprites, onProgress) {
     const { mw, mh, getTerrain, isLand, hasRiver, getImprovements, getResource, getNeighbors } = mapData;
-    const { terrain, terrainAlt, coast, rivers, mouths, forest, mountains, hills,
+    const { terrain, coast, rivers, mouths, forest, mountains, hills,
             roads, railroads, resources, ditherMask, city: citySprites } = sprites;
     const TW = this.TW, TH = this.TH;
 
@@ -251,8 +268,9 @@ const Civ2Renderer = {
       for (let gx = 0; gx < mw; gx++) {
         const [px, py] = tilePos(gx, gy);
         const ter = getTerrain(gx, gy);
-        const spr = ((gx + gy) % 2 === 0) ? terrain[ter] : terrainAlt[ter];
-        ctx.drawImage(spr, px, py);
+        const variants = terrain[ter];
+        const vi = ((gx * 13 + gy * 7) & 0x7FFFFFFF) % variants.length;
+        ctx.drawImage(variants[vi], px, py);
       }
     }
 
@@ -265,10 +283,10 @@ const Civ2Renderer = {
     const imgData = ctx.getImageData(0, 0, canvasW, canvasH);
     const pix = imgData.data;
 
-    // Pre-cache terrain sprite pixel data for dithering
+    // Pre-cache terrain sprite pixel data for dithering (use first variant per type)
     const terrainPixData = [];
     for (let tid = 0; tid < 11; tid++) {
-      const tc = terrain[tid].getContext('2d');
+      const tc = terrain[tid][0].getContext('2d');
       terrainPixData[tid] = tc.getImageData(0, 0, 64, 32).data;
     }
 
