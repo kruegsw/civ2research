@@ -1,6 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════
 // renderer.js — Civilization II Canvas Map Renderer
 // Sprite extraction and multi-pass rendering pipeline
+//
+// Sources & Acknowledgments:
+//   Civ2-clone (axx0) — https://github.com/axx0/Civ2-clone
+//     City sprite grid layout, epoch/era tech detection, population
+//     size thresholds, marker pixel system (orange=size box, blue=shield),
+//     per-civ text colors, city name/size label rendering approach
+//   Scenario League Wiki — palette documentation
+//     https://sleague.civfanatics.com/index.php?title=The_Palette_Explained
+//   Allard Höfelt — Hex-Editing Guide (hexedit.rtf v1.8, 2005)
+//     Binary format offsets, tile data structure
 // ═══════════════════════════════════════════════════════════════════
 
 const Civ2Renderer = {
@@ -190,7 +200,8 @@ const Civ2Renderer = {
     }
 
     // Improvements from TERRAIN1 col 7: irrigation, farmland, mining, pollution
-    // (col 9 is text labels; col 7 at x=456 has the actual sprites — confirmed via Civ2-clone)
+    // (col 9 is text labels; col 7 at x=456 has the actual sprites
+    //  — confirmed via Civ2-clone (axx0): https://github.com/axx0/Civ2-clone)
     sprites.irrigation = this.extractSprite(t1Ctx, 7*65+1, 3*33+1, 64, 32, T1, true);
     sprites.farmland   = this.extractSprite(t1Ctx, 7*65+1, 4*33+1, 64, 32, T1, true);
     sprites.mining     = this.extractSprite(t1Ctx, 7*65+1, 5*33+1, 64, 32, T1, true);

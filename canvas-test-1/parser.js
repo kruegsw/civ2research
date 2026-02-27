@@ -1,6 +1,18 @@
 // ═══════════════════════════════════════════════════════════════════
 // parser.js — Civilization II MGE Save File Binary Parser
 // Algorithms from Civ2_MGE_Binary_Analysis.md
+//
+// Sources & Acknowledgments:
+//   Allard Höfelt — Hex-Editing Guide (hexedit.rtf v1.8, 2005)
+//     Binary format offsets, tile data structure, map header fields
+//   TE Kimball — civ2mod.c: https://github.com/tek10/civ2mod
+//     Unit/city record structures
+//   TheNamelessOne (CivFanatics) — resource placement algorithm
+//     https://forums.civfanatics.com/threads/518649/#post-13002282
+//   Civ2-clone (axx0) — https://github.com/axx0/Civ2-clone
+//     Resource algorithm port, city style/epoch verification
+//   FoxAhead — Civ2Types.pas, ToT format guide
+//     https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm
 // ═══════════════════════════════════════════════════════════════════
 
 const Civ2Parser = {
