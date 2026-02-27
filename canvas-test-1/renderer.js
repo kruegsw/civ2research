@@ -72,7 +72,7 @@ const Civ2Renderer = {
   // ═══════════════════════════════════════════════════════════
   // Extract all sprites from the two terrain sheets
   // ═══════════════════════════════════════════════════════════
-  extractAllSprites(t1Ctx, t2Ctx) {
+  extractAllSprites(t1Ctx, t2Ctx, citiesCtx) {
     // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248 + Gray (135,135,135) idx 255
     const T1 = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
     // TERRAIN1 for resources: also remove Magenta text labels
@@ -150,6 +150,25 @@ const Civ2Renderer = {
       sprites.railroads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 12*33+1, 64, 32, T1, true);
     }
 
+    // City sprites from CITIES.GIF: 65×49 grid (64×48 sprite + 1px border)
+    // 38px header row, then 49px per era row
+    // sprites.city[walled][style][era] — walled: 0/1, style: 0-3, era: 0-6
+    // Chroma: Magenta (255,0,255) + Gray (135,135,135), killGreen=true
+    sprites.city = [[], []]; // [open, walled]
+    if (citiesCtx) {
+      const CC = [[255, 0, 255], [135, 135, 135]];
+      for (let w = 0; w < 2; w++) {
+        for (let s = 0; s < 4; s++) {
+          sprites.city[w][s] = [];
+          for (let era = 0; era < 7; era++) {
+            const cx = (w * 334) + s * 65 + 1;
+            const cy = 39 + era * 49;
+            sprites.city[w][s][era] = this.extractSprite(citiesCtx, cx, cy, 64, 48, CC, true);
+          }
+        }
+      }
+    }
+
     // Dither mask: bottom 16 rows of the 64x32 dither tile at y=447
     // (tile spans y=447-478; we use the bottom half at y=463 and flip for top half)
     // Black pixels (< 10 in all channels) = dither holes
@@ -169,7 +188,7 @@ const Civ2Renderer = {
   async render(canvas, mapData, sprites, onProgress) {
     const { mw, mh, getTerrain, isLand, hasRiver, getImprovements, getResource, getNeighbors } = mapData;
     const { terrain, terrainAlt, coast, rivers, mouths, forest, mountains, hills,
-            roads, railroads, resources, ditherMask } = sprites;
+            roads, railroads, resources, ditherMask, city: citySprites } = sprites;
     const TW = this.TW, TH = this.TH;
 
     const canvasW = mw * TW + (TW >> 1);
@@ -340,11 +359,20 @@ const Civ2Renderer = {
       const cy = tpy + (TH >> 1);
       const color = this.CIV_COLORS[c.owner] || '#ccc';
 
-      // City marker square
-      ctx.fillStyle = '#000';
-      ctx.fillRect(cx - 7, cy - 7, 14, 14);
-      ctx.fillStyle = color;
-      ctx.fillRect(cx - 6, cy - 6, 12, 12);
+      // City sprite — fixed Medieval era (row 3) as interim
+      const era = 3;
+      const walled = c.hasWalls ? 1 : 0;
+      const style = c.style || 0;
+      if (citySprites[walled] && citySprites[walled][style] && citySprites[walled][style][era]) {
+        // Sprites are 64×48: 16px taller than a tile, so draw 16px above tile top
+        ctx.drawImage(citySprites[walled][style][era], tpx, tpy - 16);
+      } else {
+        // Fallback: colored square if CITIES.GIF not loaded
+        ctx.fillStyle = '#000';
+        ctx.fillRect(cx - 7, cy - 7, 14, 14);
+        ctx.fillStyle = color;
+        ctx.fillRect(cx - 6, cy - 6, 12, 12);
+      }
 
       // Size number
       ctx.fillStyle = '#000';

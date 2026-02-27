@@ -3148,6 +3148,8 @@ Grid: **65×49 pixel cells** (64×48 unit + 1px border). 10 columns × 7 rows = 
 ### Rendering Pipeline (Reverse-Engineered)
 
 > ⚠️ **ALGORITHM STATUS**: The rendering algorithms below were reverse-engineered from sprite sheet analysis, save file data correlation, pattern matching, and cross-referencing with the [Civ2-clone](https://github.com/axx0/Civ2-clone) open source reimplementation. Algorithms marked ✅ **CONFIRMED** have been verified against the Civ2-clone source code and/or in-game screenshots. Remaining algorithms (especially base terrain variant selection) are well-informed best guesses. **Confirmed algorithms**: Coastline 4-quadrant system (Layer 2), rivers (Layer 3), terrain overlay neighbor-connectivity bitmask (Layer 4), resource placement (Layer 8), dither blending (Layer 1b).
+>
+> **RENDERER IMPLEMENTATION STATUS** (`canvas-test-1/renderer.js`): Layers 1–6, 8, and 9 are implemented. Layer 7 (improvements: irrigation/farmland/mining/pollution/fortress) and Layer 10 (unit sprites) are not yet implemented. City sprites (Layer 9) use a fixed Medieval era — see Layer 9 note. Gray diamond-corner artifacts were fixed by adding palette index 255 gray (135,135,135) to the TERRAIN1 chroma key set alongside magenta and cyan.
 
 #### Overview: Compositing Order (Back to Front)
 
@@ -3624,6 +3626,8 @@ The road sprites have **magenta chroma key** in the non-road areas and are compo
 
 > **Note**: Column 0 in both rows shows all 8 directions drawn simultaneously. This is likely a debug/reference sprite and not used in normal rendering. The game composites individual direction sprites (cols 1-8) rather than using pre-combined intersection sprites.
 
+> **RENDERER IMPLEMENTED**: Road and railroad rendering is implemented in `canvas-test-1/renderer.js` Pass 3. Extracts 8 directional road sprites from TERRAIN1 row 11 cols 1-8, and 8 railroad sprites from row 12 cols 1-8. Each segment draws only when the neighbor in that direction also has the matching improvement flag (`byte[1] & 0x10` for roads, `byte[1] & 0x20` for railroads). Uses TERRAIN1 chroma key (magenta + cyan + gray) with green grid line removal.
+
 #### Layer 7: Improvement Overlays
 
 **Sprite sources**: TERRAIN1.GIF right-side columns + CITIES.GIF bottom section.
@@ -3746,6 +3750,8 @@ sprite_y = 39 + era_row * 49         # Era row
 ```
 
 > **NOTE**: The "FAR EAST" row may function as a style-specific variant rather than a chronological era — some civilizations may use this row instead of Ancient/Classical based on their style assignment. The exact tech→era mapping thresholds are defined in RULES.TXT and have not been extracted here. The "MODERN ALT" row may be used for specific city sizes or as an alternate for variety.
+
+> **RENDERER INTERIM**: The current renderer (`canvas-test-1/renderer.js`) uses a fixed era row (row 3 = Medieval) for all cities. The correct era should be determined from per-civ tech advancement data (RULES.TXT `@CIVILIZE` section defines tech→era thresholds). This requires parsing the per-civ technology bitmask from Section 3b of the save file, which is not yet implemented. City style (0-3) is correctly parsed from per-civ name blocks, and City Walls detection uses the building bitmask at city record offset +52 (bit 8). CITIES.GIF is an optional input — the renderer falls back to colored squares when not provided.
 
 **Bottom section** (y ≈ 395+, confirmed from embedded labels):
 - **FLAGS**: Small color flag sprites for each civilization (2 rows of 8 color swatches)

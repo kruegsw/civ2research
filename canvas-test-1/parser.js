@@ -68,6 +68,18 @@ const Civ2Parser = {
     const unitOff   = block3Off + qw * qh * 2 + 1024;
     const cityOff   = unitOff + totalUnits * unitRecSize;
 
+    // Parse per-civ city styles from name blocks
+    // Name blocks: 242 bytes each, 7 blocks for civs 1-7 (no barbarians)
+    // City style byte is at offset +0 within each block, value 0-3
+    const civNameBlockStart = isScn ? 0x014A : 0x0158;
+    const civStyles = new Array(8).fill(0); // slot 0 = barbarians, default 0
+    for (let slot = 1; slot <= 7; slot++) {
+      const blockOff = civNameBlockStart + (slot - 1) * 242;
+      if (blockOff < savBuf.length) {
+        civStyles[slot] = savBuf[blockOff] & 0x03;
+      }
+    }
+
     // Parse cities
     const cities = [];
     for (let i = 0; i < totalCities; i++) {
@@ -78,8 +90,12 @@ const Civ2Parser = {
       const owner = savBuf[off + 8];
       const size  = savBuf[off + 9];
       const name  = this.nullStr(savBuf, off + 32, 16);
+      // City Walls: building bitmask at +52 (uint32 LE), bit 8 = City Walls
+      const buildings = this.u32(savBuf, off + 52);
+      const hasWalls = (buildings & 0x100) !== 0;
+      const style = civStyles[owner] || 0;
       if (name && size > 0) {
-        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size });
+        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, style });
       }
     }
 
@@ -165,7 +181,7 @@ const Civ2Parser = {
 
     return {
       mw, mh, mw2, ms, mapSeed, qw, qh, mapShape, isScn,
-      tileData, cities, units,
+      tileData, cities, units, civStyles,
       s1x, s1y, s2x, s2y,
       terrainCounts, oceanPct, citiesOnOcean,
       // Accessor functions
