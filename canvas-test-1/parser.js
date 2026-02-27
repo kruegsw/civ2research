@@ -124,8 +124,9 @@ const Civ2Parser = {
       const uowner = savBuf[off + 7];
       const alive  = savBuf[off + 14];
       const orders = savBuf[off + 15];
+      const hpLost = savBuf[off + 10];
       if (alive === 0 && ux >= 0 && ux < mw2 && uy >= 0 && uy < mh) {
-        units.push({ gx: ux >> 1, gy: uy, type: utype, owner: uowner, orders });
+        units.push({ gx: ux >> 1, gy: uy, type: utype, owner: uowner, orders, hpLost });
       }
     }
 

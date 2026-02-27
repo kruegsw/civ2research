@@ -29,6 +29,14 @@ const Civ2Renderer = {
     [0, 1],  // 10 Ocean
   ],
 
+  // Standard Civ2 MGE max HP per unit type (RULES.TXT @UNITS field 7)
+  UNIT_MAX_HP: [
+    10,20,10,10,10,10,10,20,20,20,20,30,20,20,30,10,  // 0-15
+    10,10,10,10,20,20,30,10,10,10,10,10,10,10,10,20,  // 16-31
+    20,30,30,30,30,40,30,40,30,10,10,20,20,20,20,20,  // 32-47
+    10,10,20,30                                         // 48-51
+  ],
+
   // ── Load image from File ──
   loadImage(file) {
     return new Promise((resolve, reject) => {
@@ -464,21 +472,31 @@ const Civ2Renderer = {
         ctx.fillRect(cx - 6, cy - 6, 12, 12);
       }
 
-      // Size number
-      ctx.fillStyle = '#000';
-      ctx.font = 'bold 10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(String(c.size), cx, cy - 5);
-
-      // Name label
+      // Name label (drawn first, above the shield)
       ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
       const tw = ctx.measureText(c.name).width;
       const tx = cx - tw / 2, ty = cy - 19;
       ctx.fillStyle = 'rgba(0,0,0,0.8)';
       ctx.fillRect(tx - 3, ty - 1, tw + 6, 13);
       ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center';
       ctx.fillText(c.name, cx, ty);
+
+      // City size shield — colored rectangle with white number
+      const sizeStr = String(c.size);
+      ctx.font = 'bold 9px monospace';
+      const sw = Math.max(ctx.measureText(sizeStr).width + 4, 10);
+      const sh = 11;
+      const ssx = cx - sw / 2, ssy = cy - 5;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(ssx - 1, ssy - 1, sw + 2, sh + 2);
+      ctx.fillStyle = color;
+      ctx.fillRect(ssx, ssy, sw, sh);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(sizeStr, cx, ssy + 1);
     }
 
     // ────────────────────────────────────────
@@ -491,6 +509,14 @@ const Civ2Renderer = {
       // Build set of city tiles so we don't draw garrisoned units over cities
       const cityTiles = new Set();
       for (const c of mapData.cities) cityTiles.add(c.gx + ',' + c.gy);
+
+      // Pre-build unit counts per tile (for stacked unit badge)
+      const unitCounts = {};
+      for (const u of mapData.units) {
+        const tileKey = u.gx + ',' + u.gy;
+        if (cityTiles.has(tileKey)) continue;
+        unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
+      }
 
       const drawnTiles = new Set();
       for (const u of mapData.units) {
@@ -512,6 +538,7 @@ const Civ2Renderer = {
         ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
 
         // Shield (nationality indicator)
+        let shieldX = tpx, shieldY = tpy - 16;
         if (sprites.shieldTemplate && sprites.shieldOffsets[u.type]) {
           const so = sprites.shieldOffsets[u.type];
           const shieldKey = 'shield-' + u.owner;
@@ -519,12 +546,45 @@ const Civ2Renderer = {
             const color = this.CIV_COLORS[u.owner] || '#cccccc';
             sprites.shieldColored[shieldKey] = this._recolorUnit(sprites.shieldTemplate, color);
           }
-          ctx.drawImage(sprites.shieldColored[shieldKey], tpx + so.x - 1, tpy - 16 + so.y - 1);
+          shieldX = tpx + so.x - 1;
+          shieldY = tpy - 16 + so.y - 1;
+          ctx.drawImage(sprites.shieldColored[shieldKey], shieldX, shieldY);
+        }
+
+        // HP bar — only shown when unit has taken damage
+        if (u.hpLost > 0) {
+          const maxHp = this.UNIT_MAX_HP[u.type] || 10;
+          const curHp = Math.max(0, maxHp - u.hpLost);
+          const barW = 15, barH = 3;
+          const barX = shieldX, barY = shieldY + (sprites.shieldTemplate ? sprites.shieldTemplate.height : 20) + 1;
+          const greenW = Math.round((curHp / maxHp) * barW);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+          ctx.fillStyle = '#00c800';
+          ctx.fillRect(barX, barY, greenW, barH);
+          ctx.fillStyle = '#c80000';
+          ctx.fillRect(barX + greenW, barY, barW - greenW, barH);
         }
 
         // Fortification overlay
         if (sprites.fortify && (u.orders === 0x01 || u.orders === 0x02)) {
           ctx.drawImage(sprites.fortify, tpx, tpy - 16);
+        }
+
+        // Stacked unit count badge
+        const count = unitCounts[tileKey] || 1;
+        if (count > 1) {
+          const badgeStr = String(count);
+          ctx.font = 'bold 9px monospace';
+          const bw = ctx.measureText(badgeStr).width + 4;
+          const bh = 11;
+          const bx = tpx + TW - bw - 2, by = tpy - 16 + 48 - bh - 2;
+          ctx.fillStyle = '#000';
+          ctx.fillRect(bx, by, bw, bh);
+          ctx.fillStyle = '#fff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(badgeStr, bx + bw / 2, by + 1);
         }
       }
     }
