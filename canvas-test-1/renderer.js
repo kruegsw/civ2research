@@ -514,23 +514,23 @@ const Civ2Renderer = {
         ctx.fillRect(cx - 6, cy - 6, 12, 12);
       }
 
-      // Name label (drawn first, above the shield)
+      // Name label — below the city sprite
       ctx.font = '9px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       const tw = ctx.measureText(c.name).width;
-      const tx = cx - tw / 2, ty = cy - 19;
+      const ty = cy + 17;
       ctx.fillStyle = 'rgba(0,0,0,0.8)';
-      ctx.fillRect(tx - 3, ty - 1, tw + 6, 13);
+      ctx.fillRect(cx - tw / 2 - 3, ty - 1, tw + 6, 13);
       ctx.fillStyle = '#fff';
       ctx.fillText(c.name, cx, ty);
 
-      // City size shield — colored rectangle with white number
+      // City size shield — above the city sprite
       const sizeStr = String(c.size);
       ctx.font = 'bold 9px monospace';
       const sw = Math.max(ctx.measureText(sizeStr).width + 4, 10);
       const sh = 11;
-      const ssx = cx - sw / 2, ssy = cy - 5;
+      const ssx = cx - sw / 2, ssy = tpy - 16 - sh - 1;
       ctx.fillStyle = '#000';
       ctx.fillRect(ssx - 1, ssy - 1, sw + 2, sh + 2);
       ctx.fillStyle = color;
