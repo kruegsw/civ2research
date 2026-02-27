@@ -549,24 +549,16 @@ const Civ2Renderer = {
         ctx.fillRect(cx - 6, cy - 6, 12, 12);
       }
 
-      // City name — centered below sprite, drop shadow, per-civ text color
-      const textColor = sprites.civTextColors[c.owner] || '#fff';
-      ctx.font = '18px "Times New Roman", serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const nameY = tpy - 16 + 48; // bottom of city sprite
-      ctx.fillStyle = '#000';
-      ctx.fillText(c.name, cx + 1, nameY + 1); // shadow
-      ctx.fillStyle = textColor;
-      ctx.fillText(c.name, cx, nameY);
-
       // City size box — positioned via orange marker pixel, or fallback centered
       const sizeStr = String(c.size);
-      ctx.font = 'bold 14px "Times New Roman", serif';
+      ctx.font = 'bold 12px "Times New Roman", serif';
       const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
       const tm = ctx.measureText(sizeStr);
-      const sw = Math.ceil(tm.width);
-      const sh = Math.ceil(tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent);
+      const tw = Math.ceil(tm.width);
+      const th = Math.ceil(tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent);
+      const padX = 3, padY = 2;
+      const sw = tw + padX * 2;
+      const sh = th + padY * 2;
       let ssx, ssy;
       if (sizeLoc) {
         // sizeLoc is relative to cell including 1px border; sprite drawn at border+1
@@ -582,9 +574,9 @@ const Civ2Renderer = {
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 1;
       ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);         // black border
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(sizeStr, ssx, ssy);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(sizeStr, ssx + sw / 2, ssy + sh / 2 + 1);
     }
 
     // ────────────────────────────────────────
@@ -690,6 +682,23 @@ const Civ2Renderer = {
           else if (sprites.fortress) ctx.drawImage(sprites.fortress, px, py - 16);
         }
       }
+    }
+
+    // ────────────────────────────────────────
+    // PASS 6b: City name labels (drawn over units)
+    // ────────────────────────────────────────
+    for (const c of mapData.cities) {
+      const [tpx, tpy] = tilePos(c.gx, c.gy);
+      const cx = tpx + (TW >> 1);
+      const textColor = this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
+      ctx.font = '18px "Times New Roman", serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const nameY = tpy - 16 + 48; // bottom of city sprite
+      ctx.fillStyle = '#000';
+      ctx.fillText(c.name, cx + 1, nameY + 1);
+      ctx.fillStyle = textColor;
+      ctx.fillText(c.name, cx, nameY);
     }
 
     // ── Legend ──
@@ -930,6 +939,17 @@ const Civ2Renderer = {
     ctx.closePath();
     ctx.fill();
     return c;
+  },
+
+  // Brighten a hex color by mixing it toward white. amount 0=unchanged, 1=white.
+  _brighten(hex, amount) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const br = Math.round(r + (255 - r) * amount);
+    const bg = Math.round(g + (255 - g) * amount);
+    const bb = Math.round(b + (255 - b) * amount);
+    return `rgb(${br},${bg},${bb})`;
   },
 
   // Find a marker pixel (e.g. orange palette 249) in the 1px border around a sprite cell
