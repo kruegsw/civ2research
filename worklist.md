@@ -216,3 +216,47 @@ Partially addressed: gray tolerance tightened to ±3, sRGB color space enforced.
 ### ~~Veteran Star on Unit Shields~~
 **CONFIRMED: Not shown on main map.** Civ2-clone source proves the `IUnit` rendering interface doesn't expose veteran status. The shield only shows: civ-colored body, HP bar, and order letter. Veteran status is used in combat calculations only (+50% attack/defense). No implementation needed.
 
+---
+
+#### Item 22: Full Game Screen Chrome — Panels, Menus, Borders, Minimap
+
+**Problem**: The current renderer only produces the map canvas. The actual Civ2 game screen (see `realCiv2GameScreenshots/20260228_actual civ2 screenshot.png`) has significant UI chrome surrounding the map viewport that gives the game its distinctive look and provides key information at a glance.
+
+**Reference screenshot elements** (all missing from current implementation):
+
+**A. Menu bar** — 9 dropdown menus across the top: Game, Kingdom, View, Orders, Advisors, World, Cheat, Editor, Civilopedia. In the original game these are functional menus; for our renderer they could be decorative or wired to relevant actions (e.g., View → toggle FOW, toggle grid).
+
+**B. Map title / header** — "American Map" (or "[Civ Name] Map") centered above the map viewport. Uses the player civ name. Already have `civNames` data from parser.
+
+**C. Decorative border / frame** — Stone-textured beveled border surrounds the map viewport area, separating it from the side panels and menu bar. Gives the characteristic Civ2 "carved stone" look.
+
+**D. Minimap ("World" panel)** — Small overview map in the top-right showing the full world. Territory colored by civ ownership. Shows explored vs unexplored areas. Already have all the data needed: terrain types, tile visibility (byte[4] highest bit = territory color), city positions. This would be a scaled-down rendering of the full map.
+
+**E. Status panel** — Below the minimap on the right side. Shows:
+- Civilization name and population count
+- Treasury (gold) — would need to parse this from save file if not already
+- Per-turn income/expenses summary
+- Current game year / turn number (offsets `0x001C` and `0x001E` in save file, not currently parsed)
+
+**F. Selected unit info** — Bottom portion of the status panel. Shows the selected unit's sprite, name, civ, terrain type, and movement points. In our static renderer there's no "selected" unit, but this could show summary stats or the first unit on a hovered tile (extending the existing tooltip).
+
+**Implementation considerations — this needs careful architectural thought:**
+
+- **Canvas vs HTML**: Some elements are natural fits for HTML/CSS (menu bar, status panel text, dropdowns) while others may work better drawn on a canvas (minimap, decorative border, map title). A hybrid approach is likely best — HTML layout for the overall page structure with the map canvas embedded inside a bordered container.
+
+- **Responsive layout**: The original Civ2 has a fixed 640×480 (or 800×600 / 1024×768) layout with the side panel always visible. Our renderer currently lets the map canvas fill the page. Adding side panels means establishing a proper layout grid.
+
+- **Data requirements**: Some status panel fields (treasury, population, turn number) are not currently parsed. These would need parser additions.
+
+- **Scope**: This is a large feature that should probably be split into sub-items once the implementation approach is decided. Suggested breakdown:
+  1. Page layout restructure (HTML/CSS grid with map area + side panel)
+  2. Decorative border/frame around map viewport
+  3. Map title header ("[Civ Name] Map")
+  4. Minimap with territory colors
+  5. Status panel (civ info, treasury, turn/year)
+  6. Menu bar (decorative or functional)
+  7. Unit/tile info panel (extending tooltip into side panel)
+
+- **File impact**: This will likely touch `index.html` (layout), add CSS, modify `app.js` (panel population), and possibly `parser.js` (new fields). The map canvas rendering in `renderer.js` should ideally stay unchanged — the chrome wraps around it rather than being drawn into it.
+
+**Priority**: High visual impact — this is what makes it look like "the actual game" rather than "a map export tool." But it's also the most complex single item and needs design discussion before implementation begins.

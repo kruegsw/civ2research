@@ -416,7 +416,9 @@ const Civ2Renderer = {
             roads, railroads, resources, ditherMask, city: citySprites } = sprites;
     const TW = this.TW, TH = this.TH;
 
-    const canvasW = mw * TW + (TW >> 1);
+    const wraps = mapData.mapShape === 0;  // 0 = round/wrapping, 1 = flat
+    const xMax = wraps ? mw + 1 : mw;    // extra tile column for wrap seam
+    const canvasW = xMax * TW + (TW >> 1);
     const canvasH = (mh - 1) * (TH >> 1) + TH;
     canvas.width = canvasW;
     canvas.height = canvasH;
@@ -465,7 +467,7 @@ const Civ2Renderer = {
     await this._yield();
 
     for (let gy = 0; gy < mh; gy++) {
-      for (let gx = 0; gx < mw; gx++) {
+      for (let gx = 0; gx < xMax; gx++) {
         const [px, py] = tilePos(gx, gy);
         const ter = getTerrain(gx, gy);
         const variants = terrain[ter];
@@ -491,7 +493,7 @@ const Civ2Renderer = {
     }
 
     for (let gy = 0; gy < mh; gy++) {
-      for (let gx = 0; gx < mw; gx++) {
+      for (let gx = 0; gx < xMax; gx++) {
         const ter = getTerrain(gx, gy);
         if (ter === 10) continue; // skip ocean
         const [px, py] = tilePos(gx, gy);
@@ -516,7 +518,7 @@ const Civ2Renderer = {
     await this._yield();
 
     for (let gy = 0; gy < mh; gy++) {
-      for (let gx = 0; gx < mw; gx++) {
+      for (let gx = 0; gx < xMax; gx++) {
         const [px, py] = tilePos(gx, gy);
         const ter = getTerrain(gx, gy);
         const nb = getNeighbors(gx, gy);
@@ -573,7 +575,11 @@ const Civ2Renderer = {
 
         // ── Roads & Railroads — 8 directional segments ──
         // Direction order: NE=0, E=1, SE=2, S=3, SW=4, W=5, NW=6, N=7
-        const imp = getImprovements(gx, gy);
+        // When FOW is enabled and tile is dimmed, use last-known improvements (Block 1)
+        let imp = getImprovements(gx, gy);
+        if (fowEnabled && isDimmed(gx, gy)) {
+          imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
+        }
         const hasCity = imp & 0x02; // cities act as road/railroad endpoints
         if (imp & 0x30 || hasCity) { // has road (0x10), railroad (0x20), or city
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
@@ -627,59 +633,66 @@ const Civ2Renderer = {
     ctx.textBaseline = 'top';
 
     for (const c of mapData.cities) {
-      const [tpx, tpy] = tilePos(c.gx, c.gy);
-      const cx = tpx + (TW >> 1);
-      const cy = tpy + (TH >> 1);
-      const color = this.CIV_COLORS[c.owner] || '#ccc';
+      // Draw at canonical position, and again at wrap seam if applicable
+      const drawPositions = [c.gx];
+      if (wraps && c.gx === 0) drawPositions.push(mw);
+      for (const drawGx of drawPositions) {
+        const [tpx, tpy] = tilePos(drawGx, c.gy);
+        const cx = tpx + (TW >> 1);
+        const cy = tpy + (TH >> 1);
+        const color = this.CIV_COLORS[c.owner] || '#ccc';
 
-      // City sprite — epoch from civ's techs, row from epoch+style, col from size
-      const epoch = mapData.civTechs
-        ? this._getEpoch(mapData.civTechs[c.owner])
-        : 0;
-      const row = this._getCityRow(epoch, c.style || 0);
-      let col = this._getCitySizeCol(c.size, epoch);
-      if (c.hasPalace && col < 3) col++;       // capital bonus
-      if (c.hasWalls) col += 4;                 // walled offset
-      if (citySprites[row] && citySprites[row][col]) {
-        // Sprites are 64×48: 16px taller than a tile, so draw 16px above tile top
-        ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
-      } else {
-        // Fallback: colored square if CITIES.GIF not loaded
-        ctx.fillStyle = '#000';
-        ctx.fillRect(cx - 7, cy - 7, 14, 14);
+        // City sprite — epoch from civ's techs, row from epoch+style, col from size
+        const epoch = mapData.civTechs
+          ? this._getEpoch(mapData.civTechs[c.owner])
+          : 0;
+        const row = this._getCityRow(epoch, c.style || 0);
+        let col = this._getCitySizeCol(c.size, epoch);
+        if (c.hasPalace && col < 3) col++;       // capital bonus
+        if (c.hasWalls) col += 4;                 // walled offset
+        if (citySprites[row] && citySprites[row][col]) {
+          // Sprites are 64×48: 16px taller than a tile, so draw 16px above tile top
+          ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
+        } else {
+          // Fallback: colored square if CITIES.GIF not loaded
+          ctx.fillStyle = '#000';
+          ctx.fillRect(cx - 7, cy - 7, 14, 14);
+          ctx.fillStyle = color;
+          ctx.fillRect(cx - 6, cy - 6, 12, 12);
+        }
+
+        // City size box — positioned via orange marker pixel, or fallback centered
+        // Source: Civ2-clone MapControl.cs — TNR Bold 14px, box = text size, no padding
+        const sizeStr = String(c.size);
+        ctx.font = 'bold 14px "Times New Roman", serif';
+        ctx.letterSpacing = '0px';
+        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+        const tm = ctx.measureText(sizeStr);
+        const sw = Math.ceil(tm.width);
+        const sh = 14;  // Raylib MeasureTextEx returns fontSize (14) as height for single-line text
+        let ssx, ssy;
+        if (sizeLoc) {
+          ssx = tpx + sizeLoc.x - 1;
+          ssy = tpy - 16 + sizeLoc.y - 1;
+        } else {
+          ssx = cx - sw / 2;
+          ssy = tpy - 16;
+        }
         ctx.fillStyle = color;
-        ctx.fillRect(cx - 6, cy - 6, 12, 12);
+        ctx.fillRect(ssx, ssy, sw, sh);                   // civ color fill
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);         // black border (1px wider each side)
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(sizeStr, ssx, ssy);
       }
-
-      // City size box — positioned via orange marker pixel, or fallback centered
-      // Source: Civ2-clone MapControl.cs — TNR Bold 14px, box = text size, no padding
-      const sizeStr = String(c.size);
-      ctx.font = 'bold 14px "Times New Roman", serif';
-      ctx.letterSpacing = '0px';
-      const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
-      const tm = ctx.measureText(sizeStr);
-      const sw = Math.ceil(tm.width);
-      const sh = 14;  // Raylib MeasureTextEx returns fontSize (14) as height for single-line text
-      let ssx, ssy;
-      if (sizeLoc) {
-        ssx = tpx + sizeLoc.x - 1;
-        ssy = tpy - 16 + sizeLoc.y - 1;
-      } else {
-        ssx = cx - sw / 2;
-        ssy = tpy - 16;
-      }
-      ctx.fillStyle = color;
-      ctx.fillRect(ssx, ssy, sw, sh);                   // civ color fill
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);         // black border (1px wider each side)
-      ctx.fillStyle = '#000';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(sizeStr, ssx, ssy);
     }
 
     // ── Ghost cities: previously seen cities in explored-but-not-visible tiles ──
+    // Known limitation: owner/name/walls use current true state because the save
+    // format only stores believedSize per civ, not last-known owner/name/walls.
     if (fowEnabled) {
       for (const c of mapData.cities) {
         const currentlySeen = !!(mapData.getVisibility(c.gx, c.gy) & fowBit);
@@ -689,8 +702,6 @@ const Civ2Renderer = {
         if (!(known & 0x02)) continue;  // civ hasn't seen a city here
 
         const ghostSize = c.believedSize[options.fowCiv] || c.size;
-        const [tpx, tpy] = tilePos(c.gx, c.gy);
-        const cx = tpx + (TW >> 1);
         const color = this.CIV_COLORS[c.owner] || '#ccc';
 
         // Draw ghost city sprite at believed size, with reduced opacity
@@ -702,59 +713,66 @@ const Civ2Renderer = {
         if (c.hasPalace && col < 3) col++;
         if (c.hasWalls) col += 4;
 
-        ctx.globalAlpha = 0.5;
-        if (citySprites[row] && citySprites[row][col]) {
-          ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
-        } else {
-          const cy = tpy + (TH >> 1);
-          ctx.fillStyle = '#000';
-          ctx.fillRect(cx - 7, cy - 7, 14, 14);
+        const ghostPositions = [c.gx];
+        if (wraps && c.gx === 0) ghostPositions.push(mw);
+        for (const drawGx of ghostPositions) {
+          const [tpx, tpy] = tilePos(drawGx, c.gy);
+          const cx = tpx + (TW >> 1);
+
+          ctx.globalAlpha = 0.5;
+          if (citySprites[row] && citySprites[row][col]) {
+            ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
+          } else {
+            const cy = tpy + (TH >> 1);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(cx - 7, cy - 7, 14, 14);
+            ctx.fillStyle = color;
+            ctx.fillRect(cx - 6, cy - 6, 12, 12);
+          }
+
+          // Ghost city size box
+          const sizeStr = String(ghostSize);
+          ctx.font = 'bold 14px "Times New Roman", serif';
+          ctx.letterSpacing = '0px';
+          const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+          const tm = ctx.measureText(sizeStr);
+          const sw = Math.ceil(tm.width);
+          const sh = 14;
+          let ssx, ssy;
+          if (sizeLoc) {
+            ssx = tpx + sizeLoc.x - 1;
+            ssy = tpy - 16 + sizeLoc.y - 1;
+          } else {
+            ssx = cx - sw / 2;
+            ssy = tpy - 16;
+          }
           ctx.fillStyle = color;
-          ctx.fillRect(cx - 6, cy - 6, 12, 12);
-        }
+          ctx.fillRect(ssx, ssy, sw, sh);
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);
+          ctx.fillStyle = '#000';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText(sizeStr, ssx, ssy);
 
-        // Ghost city size box
-        const sizeStr = String(ghostSize);
-        ctx.font = 'bold 14px "Times New Roman", serif';
-        ctx.letterSpacing = '0px';
-        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
-        const tm = ctx.measureText(sizeStr);
-        const sw = Math.ceil(tm.width);
-        const sh = 14;
-        let ssx, ssy;
-        if (sizeLoc) {
-          ssx = tpx + sizeLoc.x - 1;
-          ssy = tpy - 16 + sizeLoc.y - 1;
-        } else {
-          ssx = cx - sw / 2;
-          ssy = tpy - 16;
-        }
-        ctx.fillStyle = color;
-        ctx.fillRect(ssx, ssy, sw, sh);
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);
-        ctx.fillStyle = '#000';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText(sizeStr, ssx, ssy);
+          // Ghost city name label
+          const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
+          ctx.font = '20px "Times New Roman", serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.letterSpacing = '1px';
+          const nameY = tpy - 16 + 48;
+          ctx.fillStyle = '#000';
+          for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+            ctx.fillText(c.name, cx + sdx, nameY + sdy);
+          }
+          ctx.fillStyle = textColor;
+          ctx.fillText(c.name, cx, nameY);
+          ctx.letterSpacing = '0px';
 
-        // Ghost city name label
-        const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
-        ctx.font = '20px "Times New Roman", serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.letterSpacing = '1px';
-        const nameY = tpy - 16 + 48;
-        ctx.fillStyle = '#000';
-        for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
-          ctx.fillText(c.name, cx + sdx, nameY + sdy);
+          ctx.globalAlpha = 1.0;
         }
-        ctx.fillStyle = textColor;
-        ctx.fillText(c.name, cx, nameY);
-        ctx.letterSpacing = '0px';
-
-        ctx.globalAlpha = 1.0;
       }
     }
 
@@ -774,6 +792,8 @@ const Civ2Renderer = {
       for (const u of mapData.units) {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
+        if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
+        if (fowEnabled && u.visFlag != null && !(u.visFlag & fowBit)) continue;
         unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
       }
 
@@ -782,6 +802,8 @@ const Civ2Renderer = {
         const tileKey = u.gx + ',' + u.gy;
         if (drawnTiles.has(tileKey)) continue; // one unit per tile
         if (cityTiles.has(tileKey)) continue;  // skip garrisoned units
+        if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
+        if (fowEnabled && u.visFlag != null && !(u.visFlag & fowBit)) continue;
         drawnTiles.add(tileKey);
 
         const template = sprites.unitTemplates[u.type];
@@ -793,75 +815,80 @@ const Civ2Renderer = {
           sprites.unitColored[cacheKey] = this._recolorUnit(template, color);
         }
 
-        const [tpx, tpy] = tilePos(u.gx, u.gy);
-        ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
+        // Draw at canonical position, and again at wrap seam if applicable
+        const unitPositions = [u.gx];
+        if (wraps && u.gx === 0) unitPositions.push(mw);
+        for (const drawGx of unitPositions) {
+          const [tpx, tpy] = tilePos(drawGx, u.gy);
+          ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
 
-        // Shield position
-        let shieldX = tpx, shieldY = tpy - 16;
-        const so = sprites.shieldOffsets ? sprites.shieldOffsets[u.type] : null;
-        if (so && sprites.shieldFront) {
-          shieldX = tpx + so.x - 1;
-          shieldY = tpy - 16 + so.y - 1;
+          // Shield position
+          let shieldX = tpx, shieldY = tpy - 16;
+          const so = sprites.shieldOffsets ? sprites.shieldOffsets[u.type] : null;
+          if (so && sprites.shieldFront) {
+            shieldX = tpx + so.x - 1;
+            shieldY = tpy - 16 + so.y - 1;
 
-          // Shadow offset: mirrors stacking direction
-          // Source: Civ2-clone UnitShield: ShadowOffset=(-1,1) or (1,1)
-          const shadowDX = (so.x < 32) ? -1 : 1;
-          const shadowDY = 1;
+            // Shadow offset: mirrors stacking direction
+            // Source: Civ2-clone UnitShield: ShadowOffset=(-1,1) or (1,1)
+            const shadowDX = (so.x < 32) ? -1 : 1;
+            const shadowDY = 1;
 
-          // Stacking indicator: shadow + back shield offset behind main shield
-          const count = unitCounts[tileKey] || 1;
-          if (count > 1) {
-            const backKey = 'shieldBack-' + u.owner;
-            if (!sprites.shieldBackColored[backKey]) {
-              const color = this.CIV_COLORS[u.owner] || '#cccccc';
-              sprites.shieldBackColored[backKey] = this._recolorUnit(sprites.shieldBack, color);
+            // Stacking indicator: shadow + back shield offset behind main shield
+            const count = unitCounts[tileKey] || 1;
+            if (count > 1) {
+              const backKey = 'shieldBack-' + u.owner;
+              if (!sprites.shieldBackColored[backKey]) {
+                const color = this.CIV_COLORS[u.owner] || '#cccccc';
+                sprites.shieldBackColored[backKey] = this._recolorUnit(sprites.shieldBack, color);
+              }
+              const stackDX = (so.x < 32) ? -4 : 4;
+              // Stacked shield shadow
+              if (sprites.shieldShadow) {
+                ctx.drawImage(sprites.shieldShadow, shieldX + stackDX + shadowDX, shieldY + shadowDY);
+              }
+              ctx.drawImage(sprites.shieldBackColored[backKey], shieldX + stackDX, shieldY);
             }
-            const stackDX = (so.x < 32) ? -4 : 4;
-            // Stacked shield shadow
+
+            // Front shield shadow
             if (sprites.shieldShadow) {
-              ctx.drawImage(sprites.shieldShadow, shieldX + stackDX + shadowDX, shieldY + shadowDY);
+              ctx.drawImage(sprites.shieldShadow, shieldX + shadowDX, shieldY + shadowDY);
             }
-            ctx.drawImage(sprites.shieldBackColored[backKey], shieldX + stackDX, shieldY);
+
+            // Front shield (top 7 rows blacked out)
+            const frontKey = 'shieldFront-' + u.owner;
+            if (!sprites.shieldFrontColored[frontKey]) {
+              const color = this.CIV_COLORS[u.owner] || '#cccccc';
+              sprites.shieldFrontColored[frontKey] = this._recolorUnit(sprites.shieldFront, color);
+            }
+            ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
+
+            // HP bar inside shield — offset (0,2) from shield, 12×3px
+            // Source: Civ2-clone UnitShield: HPbarOffset=(0,2), HPbarSize=(12,3)
+            const maxHp = this.UNIT_MAX_HP[u.type] || 10;
+            const curHp = Math.max(0, maxHp - u.hpLost);
+            const barW = 12, barH = 3;
+            const barX = shieldX, barY = shieldY + 2;
+            const greenW = Math.floor((curHp / maxHp) * barW);
+            if (greenW > 8) ctx.fillStyle = 'rgb(87,171,39)';
+            else if (greenW > 3) ctx.fillStyle = 'rgb(255,223,79)';
+            else ctx.fillStyle = 'rgb(243,0,0)';
+            ctx.fillRect(barX, barY, greenW, barH);
+
+            // Order letter — offset (width/2, 7) from shield, 13px tall area
+            // Source: Civ2-clone UnitShield: OrderOffset=(width/2, 7), OrderTextHeight=13
+            const orderLetter = this.ORDER_KEYS[u.orders] || '-';
+            ctx.font = '13px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#000';
+            ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
           }
 
-          // Front shield shadow
-          if (sprites.shieldShadow) {
-            ctx.drawImage(sprites.shieldShadow, shieldX + shadowDX, shieldY + shadowDY);
+          // Fortification overlay — only for fully fortified (0x02)
+          if (sprites.fortify && u.orders === 0x02) {
+            ctx.drawImage(sprites.fortify, tpx, tpy - 16);
           }
-
-          // Front shield (top 7 rows blacked out)
-          const frontKey = 'shieldFront-' + u.owner;
-          if (!sprites.shieldFrontColored[frontKey]) {
-            const color = this.CIV_COLORS[u.owner] || '#cccccc';
-            sprites.shieldFrontColored[frontKey] = this._recolorUnit(sprites.shieldFront, color);
-          }
-          ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
-
-          // HP bar inside shield — offset (0,2) from shield, 12×3px
-          // Source: Civ2-clone UnitShield: HPbarOffset=(0,2), HPbarSize=(12,3)
-          const maxHp = this.UNIT_MAX_HP[u.type] || 10;
-          const curHp = Math.max(0, maxHp - u.hpLost);
-          const barW = 12, barH = 3;
-          const barX = shieldX, barY = shieldY + 2;
-          const greenW = Math.floor((curHp / maxHp) * barW);
-          if (greenW > 8) ctx.fillStyle = 'rgb(87,171,39)';
-          else if (greenW > 3) ctx.fillStyle = 'rgb(255,223,79)';
-          else ctx.fillStyle = 'rgb(243,0,0)';
-          ctx.fillRect(barX, barY, greenW, barH);
-
-          // Order letter — offset (width/2, 7) from shield, 13px tall area
-          // Source: Civ2-clone UnitShield: OrderOffset=(width/2, 7), OrderTextHeight=13
-          const orderLetter = this.ORDER_KEYS[u.orders] || '-';
-          ctx.font = '13px Arial';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillStyle = '#000';
-          ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
-        }
-
-        // Fortification overlay — only for fully fortified (0x02)
-        if (sprites.fortify && u.orders === 0x02) {
-          ctx.drawImage(sprites.fortify, tpx, tpy - 16);
         }
       }
     }
@@ -871,7 +898,7 @@ const Civ2Renderer = {
     // ────────────────────────────────────────
     if (sprites.fortress || sprites.airbase) {
       for (let gy = 0; gy < mh; gy++) {
-        for (let gx = 0; gx < mw; gx++) {
+        for (let gx = 0; gx < xMax; gx++) {
           const imp = getImprovements(gx, gy);
           if (!(imp & 0x40)) continue;
           const [px, py] = tilePos(gx, gy);
@@ -904,7 +931,7 @@ const Civ2Renderer = {
     if (fowEnabled) {
       let unexploredCount = 0, dimmedCount = 0, visCount = 0;
       for (let gy = 0; gy < mh; gy++) {
-        for (let gx = 0; gx < mw; gx++) {
+        for (let gx = 0; gx < xMax; gx++) {
           if (isUnexplored(gx, gy)) {
             unexploredCount++;
             const [px, py] = tilePos(gx, gy);
@@ -923,7 +950,7 @@ const Civ2Renderer = {
       console.log(`FOW: civ=${options.fowCiv}, bit=${fowBit}, unexplored=${unexploredCount}, dimmed=${dimmedCount}, visible=${visCount}`);
     }
     // Map edges (always) — covers triangular gaps at north/south borders
-    for (let gx = 0; gx < mw; gx++) {
+    for (let gx = 0; gx < xMax; gx++) {
       const [px1, py1] = tilePos(gx, -1);
       ctx.moveTo(px1 + TW / 2, py1);
       ctx.lineTo(px1 + TW, py1 + TH / 2);
@@ -945,7 +972,7 @@ const Civ2Renderer = {
       const shroudImg = ctx.getImageData(0, 0, canvasW, canvasH);
       const shroudPix = shroudImg.data;
       for (let gy = 0; gy < mh; gy++) {
-        for (let gx = 0; gx < mw; gx++) {
+        for (let gx = 0; gx < xMax; gx++) {
           if (isUnexplored(gx, gy)) continue;  // skip unexplored tiles (already black)
           const [tpx, tpy] = tilePos(gx, gy);
           const nb = getNeighbors(gx, gy);
@@ -965,7 +992,7 @@ const Civ2Renderer = {
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
       ctx.beginPath();
       for (let gy = 0; gy < mh; gy++) {
-        for (let gx = 0; gx < mw; gx++) {
+        for (let gx = 0; gx < xMax; gx++) {
           if (!isDimmed(gx, gy)) continue;
           const [px, py] = tilePos(gx, gy);
           ctx.moveTo(px + TW / 2, py);
@@ -985,22 +1012,26 @@ const Civ2Renderer = {
     // Ghost city labels are already drawn in Pass 4 with reduced opacity (dimmed by shroud).
     for (const c of mapData.cities) {
       if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
-      const [tpx, tpy] = tilePos(c.gx, c.gy);
-      const cx = tpx + (TW >> 1);
-      const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
-      ctx.font = '20px "Times New Roman", serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.letterSpacing = '1px';
-      const nameY = tpy - 16 + 48; // bottom of city sprite
-      // 4-direction black outline for better readability (matches original Civ2)
-      ctx.fillStyle = '#000';
-      for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
-        ctx.fillText(c.name, cx + sdx, nameY + sdy);
+      const namePositions = [c.gx];
+      if (wraps && c.gx === 0) namePositions.push(mw);
+      for (const drawGx of namePositions) {
+        const [tpx, tpy] = tilePos(drawGx, c.gy);
+        const cx = tpx + (TW >> 1);
+        const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
+        ctx.font = '20px "Times New Roman", serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.letterSpacing = '1px';
+        const nameY = tpy - 16 + 48; // bottom of city sprite
+        // 4-direction black outline for better readability (matches original Civ2)
+        ctx.fillStyle = '#000';
+        for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+          ctx.fillText(c.name, cx + sdx, nameY + sdy);
+        }
+        ctx.fillStyle = textColor;
+        ctx.fillText(c.name, cx, nameY);
+        ctx.letterSpacing = '0px';
       }
-      ctx.fillStyle = textColor;
-      ctx.fillText(c.name, cx, nameY);
-      ctx.letterSpacing = '0px';
     }
 
     return { canvasW, canvasH };
