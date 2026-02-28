@@ -10,131 +10,135 @@ Items 7 (goody huts), 9 (city name 4-direction shadow), 6 (three-state FOW), 8 (
 
 ---
 
-## Batch 4
+## Batch 4 (COMPLETED)
 
-### worker-a: Renderer Fixes (Irrigation Order, Pole Dither, City Names Above Shroud)
-
-#### What to do
-
-Fix 3 rendering issues in `renderer.js`: reorder irrigation/resource drawing, suppress dither at map pole edges, and move city name labels above the shroud pass.
-
-#### Files to modify
-- `canvas-test-1/renderer.js`
-
-#### Files NOT to touch
-- `canvas-test-1/parser.js`
-- `canvas-test-1/app.js`
-- `canvas-test-1/index.html`
-
-#### Item 19: Irrigation Drawn Beneath Resources
-
-**Problem**: Irrigation sprites are drawn ON TOP of resource sprites (buffalo, wheat) and the grassland shield. In original Civ2, irrigation is a ground-level improvement that appears beneath the resource icon.
-
-**Current code** (Pass 3, lines 589-611): Resources/grassland shield are drawn first, then ALL improvements (irrigation/farmland/mining/pollution) on top. This is wrong for irrigation/farmland which should be beneath resources.
-
-**Fix**: In Pass 3, split the improvement/resource drawing into 3 steps. Replace lines 589-611 with:
-
-```javascript
-// Step 1: Draw irrigation/farmland FIRST (beneath resources)
-if (imp & 0x04) {  // irrigation or farmland
-  if ((imp & 0x04) && (imp & 0x08)) ctx.drawImage(sprites.farmland, px, py);
-  else ctx.drawImage(sprites.irrigation, px, py);
-}
-
-// Step 2: Draw resources/grassland shield ON TOP of irrigation
-if (ter === 2) {
-  if (mapData.hasShield(gx, gy) && sprites.grasslandShield) {
-    ctx.drawImage(sprites.grasslandShield, px, py);
-  }
-} else {
-  const res = getResource(gx, gy);
-  if (res > 0 && ter <= 10) {
-    const key = ter * 2 + res;
-    if (resources[key]) ctx.drawImage(resources[key], px, py);
-  }
-}
-
-// Step 3: Draw mining/pollution on top of everything
-if (imp & 0x08 && !(imp & 0x04)) ctx.drawImage(sprites.mining, px, py);  // mining only (not farmland)
-if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
-```
-
-**Key detail**: Farmland = irrigation + mining bits both set (0x04 | 0x08). When both bits are set, draw farmland in Step 1 and do NOT draw mining in Step 3. Mining alone (only 0x08) still draws in Step 3.
-
-#### Item 17: No Dither at Map Pole Edges
-
-**Problem**: North pole tiles (`gy=0`) and south pole tiles (`gy=mh-1`) show shroud dither at their edges facing out of bounds. In real Civ2, pole edges have a hard black border with no dither transition.
-
-**Root cause**: `isUnexplored()` returns `true` for out-of-bounds tiles (`gy < 0 || gy >= mh`). The dither loop (Step 2, line 978) checks `isUnexplored(nx, ny)` on neighbors, so pole tiles see out-of-bounds neighbors as "unexplored" and get dither applied.
-
-**Fix**: In the shroud Step 2 dither loop (line 976-980), add an out-of-bounds guard before the `isUnexplored` check. Change:
-
-```javascript
-const [nx, ny] = nb[dir];
-if (!isUnexplored(nx, ny)) continue;  // dither only toward unexplored
-```
-to:
-```javascript
-const [nx, ny] = nb[dir];
-if (ny < 0 || ny >= mh) continue;  // no dither at map edges — hard black border
-if (!isUnexplored(nx, ny)) continue;  // dither only toward unexplored
-```
-
-#### Item 18: City Name Labels Above Shroud
-
-**Problem**: City name labels are drawn in Pass 6b (lines 884-906) BEFORE the shroud pass (Pass 7+8, line 912+), so the black shroud diamonds cover them up. In real Civ2, city names are always visible on top of the fog/shroud.
-
-**Fix**: Move Pass 6b (city name label drawing, lines 884-906) to AFTER the shroud pass (after line 1002, after the `ctx.fill()` that closes Step 3's dimming overlay). The legend draw (`this._drawLegend()`) at line 909 should stay where it is (between Pass 6b and the shroud) or also move — use your judgement, but city names MUST be after the shroud.
-
-The block to move is everything from `// PASS 6b: City name labels` through the `ctx.letterSpacing = '0px';` closing. Cut it from its current location and paste it after line 1002 (after the shroud Step 3 closing brace).
-
-**Important**: Ghost city name labels (drawn in Pass 4 at lines 741-754 with `globalAlpha = 0.5`) will still be covered by the shroud dimming overlay. That's acceptable — ghost city names should look dimmed. Only the currently-visible city names need to be on top.
+Items 19 (irrigation beneath resources), 17 (no pole dither), 18 (city names above shroud), 20 (FOW civ selector fix + reentrancy guard).
 
 ---
 
-### worker-b: FOW Civ Selector Bug Fix
+## Batch 5
+
+### worker-a: FOW-Accurate Rendering + Map Edge Wrapping
 
 #### What to do
 
-Fix the FOW civ dropdown so user selections persist across re-renders.
+Fix 3 FOW correctness issues in `renderer.js` and add east-west map wrapping. When FOW is enabled, the renderer should only show what the selected civ actually knows — not the omniscient god-view masked by black paint.
 
 #### Files to modify
-- `canvas-test-1/app.js`
+- `canvas-test-1/renderer.js`
 
 #### Files NOT to touch
-- `canvas-test-1/renderer.js`
-- `canvas-test-1/parser.js`
+- `canvas-test-1/parser.js` (worker-b owns this)
+- `canvas-test-1/app.js`
 - `canvas-test-1/index.html`
 
-#### Item 20: FOW Civ Selector Always Resets to Player Civ
+#### Item 21A: Hide Units the FOW Civ Cannot See
 
-**Problem**: Changing the FOW civ dropdown to a non-player civ (e.g., from Americans to Romans) has no effect — the map always renders with the player civ's FOW. Only the player civ works.
+**Problem**: Pass 5 (lines 762-866) draws ALL units regardless of FOW. Enemy units on fogged/unexplored tiles get drawn and then painted over by the shroud — but this is fragile and wrong. In real Civ2, units are only visible on tiles the player currently has line of sight to.
 
-**Root cause**: In `app.js` `doRender()` (lines 122-134), every render cycle clears the dropdown (`fowSelect.innerHTML = ''`), repopulates it, then unconditionally resets it to `mapData.playerCiv` (line 134). The dropdown value is read AFTER this reset (line 163), so the user's selection is always overwritten.
-
-**Fix**: At line 123, save the current dropdown value BEFORE clearing it. After repopulating the options (after line 132), restore the previous value if it's still a valid option, otherwise default to `mapData.playerCiv`. Replace lines 123-134 with:
+**Fix**: In Pass 5, after the `cityTiles` and `drawnTiles` checks (line 784), add a FOW visibility check. Skip the unit if the FOW civ can't currently see the tile:
 
 ```javascript
-const fowSelect = document.getElementById('fow-civ');
-const previousValue = fowSelect.value;  // save user's selection BEFORE clearing
-fowSelect.innerHTML = '';
-const civNames = Civ2Renderer._identifyCivs(mapData.cities);
-mapData.civNames = civNames;
-for (let i = 0; i < 8; i++) {
-  if (!(mapData.civsAlive & (1 << i))) continue;
-  const opt = document.createElement('option');
-  opt.value = i;
-  opt.textContent = civNames[i] || `Civ ${i}`;
-  fowSelect.appendChild(opt);
-}
-// Restore previous selection if valid, otherwise default to playerCiv
-if (previousValue !== '' && [...fowSelect.options].some(o => o.value === previousValue)) {
-  fowSelect.value = previousValue;
-} else {
-  fowSelect.value = mapData.playerCiv;
-}
-fowSelect.disabled = false;
+if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
 ```
+
+Also apply the same filter when counting units per tile for the stacked unit badge (lines 773-778):
+
+```javascript
+for (const u of mapData.units) {
+  const tileKey = u.gx + ',' + u.gy;
+  if (cityTiles.has(tileKey)) continue;
+  if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
+  unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
+}
+```
+
+**Optional extra accuracy**: worker-b is parsing unit visibility byte (`u.visFlag`). If available, also check `!(u.visFlag & fowBit)`. Use both checks: tile must be visible AND unit must be visible. But if `visFlag` is undefined (parser not updated yet), fall back to tile visibility only.
+
+#### Item 21B: Use Last-Known Improvements on Dimmed Tiles
+
+**Problem**: Pass 3 (lines 574-617) reads true improvements from `mapData.getImprovements(gx, gy)` for ALL tiles, including explored-but-not-visible ones. In real Civ2, fogged tiles show what the player LAST SAW, not the current true state. If an enemy built a road after you lost sight, you shouldn't see it.
+
+**Fix**: At line 576, when FOW is enabled and the tile is dimmed, substitute Block 1 data for the true improvements:
+
+```javascript
+let imp = getImprovements(gx, gy);
+if (fowEnabled && isDimmed(gx, gy)) {
+  imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
+}
+```
+
+The bit layout is the same: bit 2=irrigation, 3=mining, 4=road, 5=railroad, 6=fortress, 7=pollution. The `const imp` on line 576 needs to become `let imp` to allow reassignment.
+
+**Important**: This substitution only affects the improvement-related drawing (roads, railroads, irrigation, mining, pollution). Base terrain, overlays, rivers, and resources are NOT affected — those come from Block 2 tile data and don't change based on FOW civ. Coastlines and terrain type are always drawn from true data (terrain doesn't change in Civ2).
+
+#### Item 21C: Ghost City Limitations
+
+**Problem**: Ghost cities (Pass 4, lines 682-757) use `believedSize[fowCiv]` for size (correct), but they use the current true `owner`, `hasWalls`, `style`, and `name`. If an enemy conquered a city while fogged, the player would incorrectly see the new owner's colors.
+
+**What the save format stores per-civ per-city**: Only two things: (1) Block 1 bit 0x02 = "civ knows a city exists here", (2) `believedSize[civ]` = what size the civ last saw. It does NOT store last-known owner, name, or walls.
+
+**Fix**: Since we can't know the last-known owner, accept this as a known limitation. Add a code comment at line 682 documenting it:
+
+```javascript
+// Ghost cities: previously seen cities in explored-but-not-visible tiles
+// Known limitation: owner/name/walls use current true state because the save
+// format only stores believedSize per civ, not last-known owner/name/walls.
+```
+
+No code change needed beyond the comment.
+
+#### Item 14: Map Edge Wrapping (East-West)
+
+**Problem**: For east-west wrapping maps (the default), the right edge of the canvas stops abruptly. In real Civ2, the map wraps seamlessly.
+
+**Fix**: Widen the canvas and re-render the leftmost tiles at the right edge. The map already wraps logically via `wrap()` in the parser — this is purely a visual fix.
+
+1. **Canvas width** (line 419): Change from `mw * TW + (TW >> 1)` to `(mw + 1) * TW + (TW >> 1)`. This adds one extra tile column width (64px).
+
+2. **All rendering passes** (Pass 1 through Pass 9): Change the inner loop from `for (let gx = 0; gx < mw; gx++)` to `for (let gx = 0; gx < mw + 1; gx++)`. The `wrap()` function in the parser already handles `gx >= mw` by wrapping to 0, so `getTerrain(mw, gy)` returns `getTerrain(0, gy)` automatically. All accessor functions (`getImprovements`, `getVisibility`, `hasRiver`, `getResource`, `hasShield`, `hasGoodyHut`, `getKnownImprovements`) already use `wrap()`.
+
+3. **Cities and units**: These are drawn by iterating `mapData.cities` and `mapData.units` arrays (not by tile grid), so they only appear at their canonical `gx` position. To show them at the wrapped edge, add a second draw for any city/unit where `c.gx === 0` (or `u.gx === 0`), drawing it again at `gx = mw`. Apply this to Pass 4 (cities), Pass 4 ghost cities, Pass 5 (units), Pass 6 (fortress/airbase), and Pass 9 (city name labels).
+
+4. **Shroud passes** (Pass 7+8): Extend the tile loops to `mw + 1` as well, so shroud/dither/dimming covers the extra column.
+
+5. **Legend**: The legend draw position at line 883 (`this._drawLegend(ctx, canvasW, canvasH, mapData)`) will automatically use the new wider canvas.
+
+**Check `mapShape`**: The parser reads `mapShape` at offset MAP_HEADER + 6. Value 0 = flat earth (no wrapping), value 1 = round earth (east-west wrap). Only apply wrapping if `mapData.mapShape === 1`. If flat, keep the original canvas width and loop bounds.
+
+---
+
+### worker-b: Parse Unit Visibility Byte
+
+#### What to do
+
+Parse the unit visibility bitmask from the save file so the renderer can filter which units each civ can see.
+
+#### Files to modify
+- `canvas-test-1/parser.js`
+
+#### Files NOT to touch
+- `canvas-test-1/renderer.js` (worker-a owns this)
+- `canvas-test-1/app.js`
+- `canvas-test-1/index.html`
+
+#### Item 21D: Unit Visibility Bitmask
+
+**Problem**: Unit record offset +9 (Höfelt byte 10, 1-indexed) contains a visibility bitmask indicating which civs can currently see the unit. This byte is not currently parsed.
+
+**Fix**: In the unit parsing loop (lines 170-184), add one line after `const hpLost = savBuf[off + 10];` (line 180):
+
+```javascript
+const visFlag = savBuf[off + 9];
+```
+
+Then include `visFlag` in the pushed unit object at line 182:
+
+```javascript
+units.push({ gx: ux >> 1, gy: uy, type: utype, owner: uowner, orders, hpLost, visFlag });
+```
+
+That's it. The renderer (worker-a) will use `u.visFlag & fowBit` to filter units.
 
 ---
 
@@ -181,12 +185,6 @@ Remaining improvements, ordered by impact.
 **Problem**: Currently `nter === 10` skips dithering for ocean neighbors. Original Civ2 *does* dither-blend land→ocean transitions. The coastline sprites handle ocean→land, but the land side also gets slight dithering for a smoother land-to-water transition.
 
 **Fix**: Remove the `nter === 10` skip in the dither pass and test for artifacts. May need special handling to avoid overwriting coastline sprites.
-
-#### Item 14: Map Edge Wrapping Visual Continuity
-
-**Problem**: For east-west wrapping maps (most standard games), the right edge of the canvas stops abruptly. Original Civ2 scrolls seamlessly.
-
-**Possible fix**: Duplicate a strip of tiles on the right edge so the map appears to wrap, or add a note that this is a static render limitation.
 
 #### Item 15: Unit Rendering Order
 
