@@ -728,7 +728,7 @@ const Civ2Renderer = {
           // Order letter — offset (width/2, 7) from shield, 13px tall area
           // Source: Civ2-clone UnitShield: OrderOffset=(width/2, 7), OrderTextHeight=13
           const orderLetter = this.ORDER_KEYS[u.orders] || '-';
-          ctx.font = 'bold 13px Arial';
+          ctx.font = '13px Arial';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
           ctx.fillStyle = '#000';
