@@ -128,8 +128,10 @@ const Civ2Renderer = {
     const T1 = [[255, 0, 255, 15], [0, 255, 255, 15], [135, 135, 135, 3]];
     // TERRAIN1 for resources: also remove Magenta text labels
     const T1R = [[0, 255, 255, 40], [255, 0, 255, 15], [135, 135, 135, 3]];
-    // TERRAIN2 chroma: Magenta (255,0,255) idx 253 + gray corners (~132,132,132) idx 255
-    const T2 = [[255, 0, 255], [132, 132, 132]];
+    // TERRAIN2 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248 + gray corners (~132,132,132) idx 255
+    // Cyan must be included — TERRAIN2 uses the same palette as TERRAIN1, and overlay sprites
+    // (forest/mountain/hill) have cyan transparency pixels (including baked-in variant annotations)
+    const T2 = [[255, 0, 255], [0, 255, 255], [132, 132, 132]];
 
     const sprites = {};
 
@@ -209,6 +211,11 @@ const Civ2Renderer = {
     sprites.farmland   = this.extractSprite(t1Ctx, 7*65+1, 4*33+1, 64, 32, T1, true);
     sprites.mining     = this.extractSprite(t1Ctx, 7*65+1, 5*33+1, 64, 32, T1, true);
     sprites.pollution  = this.extractSprite(t1Ctx, 7*65+1, 6*33+1, 64, 32, T1, true);
+
+    // Grassland production shield: TERRAIN1 col 7, row 7 (x=456, y=232)
+    // Separate from seed-based resources — uses coordinate-only HasShield() formula
+    // Source: Civ2-clone Civ2GoldInterface.cs "shield" PicSource
+    sprites.grasslandShield = this.extractSprite(t1Ctx, 7*65+1, 7*33+1, 64, 32, T1, true);
 
     // Fortress, Airbase, and Fortify from CITIES.GIF y=423 row (64×48 city-sized)
     if (citiesCtx) {
@@ -442,6 +449,17 @@ const Civ2Renderer = {
       }
     }
 
+    // ── DEBUG: Check for teal after Pass 1 ──
+    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
+      const [dpx, dpy] = tilePos(dgx, dgy);
+      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
+      let tealCount = 0;
+      for (let i = 0; i < sample.length; i += 4) {
+        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
+      }
+      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass1 (base terrain): ${tealCount} teal pixels`);
+    }
+
     // ────────────────────────────────────────
     // PASS 2: Dither blending between terrain types
     // ────────────────────────────────────────
@@ -476,6 +494,17 @@ const Civ2Renderer = {
       }
     }
     ctx.putImageData(imgData, 0, 0);
+
+    // ── DEBUG: Check for teal after Pass 2 ──
+    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
+      const [dpx, dpy] = tilePos(dgx, dgy);
+      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
+      let tealCount = 0;
+      for (let i = 0; i < sample.length; i += 4) {
+        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
+      }
+      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass2 (dither): ${tealCount} teal pixels`);
+    }
 
     // ────────────────────────────────────────
     // PASS 3: Coastlines, rivers, overlays, resources
@@ -554,11 +583,20 @@ const Civ2Renderer = {
           }
         }
 
-        // ── Resources (seed-based) — drawn first so improvements overlay them ──
-        const res = getResource(gx, gy);
-        if (res > 0 && ter <= 10) {
-          const key = ter * 2 + res;
-          if (resources[key]) ctx.drawImage(resources[key], px, py);
+        // ── Resources / Grassland shield — drawn first so improvements overlay them ──
+        // Grassland uses a separate coordinate-only HasShield() formula, NOT seed-based resources.
+        // All other terrain types use seed-based resource placement.
+        // Source: Civ2-clone MapImage.cs — grassland branch checks HasShield, else branch checks Special
+        if (ter === 2) {
+          if (mapData.hasShield(gx, gy) && sprites.grasslandShield) {
+            ctx.drawImage(sprites.grasslandShield, px, py);
+          }
+        } else {
+          const res = getResource(gx, gy);
+          if (res > 0 && ter <= 10) {
+            const key = ter * 2 + res;
+            if (resources[key]) ctx.drawImage(resources[key], px, py);
+          }
         }
 
         // ── Tile improvements: irrigation/farmland/mining/pollution ──
@@ -569,6 +607,17 @@ const Civ2Renderer = {
           if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
         }
       }
+    }
+
+    // ── DEBUG: Check for teal after Pass 3 ──
+    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
+      const [dpx, dpy] = tilePos(dgx, dgy);
+      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
+      let tealCount = 0;
+      for (let i = 0; i < sample.length; i += 4) {
+        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
+      }
+      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass3 (overlays/resources): ${tealCount} teal pixels`);
     }
 
     // ────────────────────────────────────────
@@ -630,6 +679,17 @@ const Civ2Renderer = {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(sizeStr, ssx, ssy);
+    }
+
+    // ── DEBUG: Check for teal after Pass 4 ──
+    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
+      const [dpx, dpy] = tilePos(dgx, dgy);
+      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
+      let tealCount = 0;
+      for (let i = 0; i < sample.length; i += 4) {
+        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
+      }
+      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass4 (cities): ${tealCount} teal pixels`);
     }
 
     // ────────────────────────────────────────
@@ -774,64 +834,103 @@ const Civ2Renderer = {
       ctx.letterSpacing = '0px';
     }
 
+    // ── DEBUG: Trace teal pixels at problem tiles after each pass ──
+    // Tiles (32,18)→gx=16,gy=18 and (1,27)→gx=0,gy=27 show a mysterious teal "4"
+    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
+      const [dpx, dpy] = tilePos(dgx, dgy);
+      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
+      let tealCount = 0;
+      for (let sy = 0; sy < 32; sy++) {
+        for (let sx = 0; sx < 64; sx++) {
+          const i = (sy * 64 + sx) * 4;
+          const r = sample[i], g = sample[i+1], b = sample[i+2], a = sample[i+3];
+          if (r < 100 && g > 140 && b > 140 && a > 0) {
+            if (tealCount < 20) console.log(`TEAL-DEBUG ${label} after Pass6b pixel(${sx},${sy}): rgba(${r},${g},${b},${a})`);
+            tealCount++;
+          }
+        }
+      }
+      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass6b: ${tealCount} total teal pixels`);
+      else console.log(`TEAL-DEBUG ${label} after Pass6b: NO teal pixels found`);
+    }
+
     // ── Legend ──
     this._drawLegend(ctx, canvasW, canvasH, mapData);
 
     // ────────────────────────────────────────
-    // PASS 7: Fog of War (optional)
+    // PASS 7+8: Shroud — FOW + map edge black fills with dither transitions
     // ────────────────────────────────────────
-    if (options.fowEnabled && options.fowCiv != null) {
-      if (onProgress) onProgress('Applying fog of war...');
-      await this._yield();
+    // Dither is applied on the BLACK (unexplored) side: after filling shrouded
+    // tiles solid black, we "punch holes" at boundaries with explored tiles,
+    // restoring the pre-shroud terrain through the dither mask. This keeps
+    // explored tiles pristine while creating the feathered shroud edge.
+    // Diamond-clipped to prevent bleeding into adjacent tiles.
+    if (onProgress) onProgress('Applying shroud...');
+    await this._yield();
 
-      const fowBit = 1 << options.fowCiv;
+    const fowEnabled = options.fowEnabled && options.fowCiv != null;
+    const fowBit = fowEnabled ? (1 << options.fowCiv) : 0;
+
+    function isShrouded(gx, gy) {
+      if (gy < 0 || gy >= mh) return true;
+      if (fowEnabled && !(mapData.getVisibility(gx, gy) & fowBit)) return true;
+      return false;
+    }
+
+    // Step 1: Fill all shrouded tiles solid black (single batched path = no seam lines)
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    if (fowEnabled) {
       let fogCount = 0, visCount = 0;
-      ctx.fillStyle = '#000';
       for (let gy = 0; gy < mh; gy++) {
         for (let gx = 0; gx < mw; gx++) {
-          if (mapData.getVisibility(gx, gy) & fowBit) { visCount++; continue; } // visible
+          if (mapData.getVisibility(gx, gy) & fowBit) { visCount++; continue; }
           fogCount++;
           const [px, py] = tilePos(gx, gy);
-          // Fill diamond with black
-          ctx.beginPath();
           ctx.moveTo(px + TW / 2, py);
           ctx.lineTo(px + TW, py + TH / 2);
           ctx.lineTo(px + TW / 2, py + TH);
           ctx.lineTo(px, py + TH / 2);
           ctx.closePath();
-          ctx.fill();
         }
       }
       console.log(`FOW: civ=${options.fowCiv}, bit=${fowBit}, fogged=${fogCount}, visible=${visCount}`);
     }
-
-    // ────────────────────────────────────────
-    // PASS 8: Black edges at top and bottom of map
-    // ────────────────────────────────────────
-    // The isometric grid leaves triangular gaps at the north/south map
-    // edges. The real game fills these with black (unexplored).
-    ctx.fillStyle = '#000';
-    // Top edge: draw black diamonds at row -1 (covers upper triangles of row 0)
+    // Map edges (always) — covers triangular gaps at north/south borders
     for (let gx = 0; gx < mw; gx++) {
-      const [px, py] = tilePos(gx, -1);
-      ctx.beginPath();
-      ctx.moveTo(px + TW / 2, py);
-      ctx.lineTo(px + TW, py + TH / 2);
-      ctx.lineTo(px + TW / 2, py + TH);
-      ctx.lineTo(px, py + TH / 2);
+      const [px1, py1] = tilePos(gx, -1);
+      ctx.moveTo(px1 + TW / 2, py1);
+      ctx.lineTo(px1 + TW, py1 + TH / 2);
+      ctx.lineTo(px1 + TW / 2, py1 + TH);
+      ctx.lineTo(px1, py1 + TH / 2);
       ctx.closePath();
-      ctx.fill();
+      const [px2, py2] = tilePos(gx, mh);
+      ctx.moveTo(px2 + TW / 2, py2);
+      ctx.lineTo(px2 + TW, py2 + TH / 2);
+      ctx.lineTo(px2 + TW / 2, py2 + TH);
+      ctx.lineTo(px2, py2 + TH / 2);
+      ctx.closePath();
     }
-    // Bottom edge: draw black diamonds at row mh (covers lower triangles of last row)
-    for (let gx = 0; gx < mw; gx++) {
-      const [px, py] = tilePos(gx, mh);
-      ctx.beginPath();
-      ctx.moveTo(px + TW / 2, py);
-      ctx.lineTo(px + TW, py + TH / 2);
-      ctx.lineTo(px + TW / 2, py + TH);
-      ctx.lineTo(px, py + TH / 2);
-      ctx.closePath();
-      ctx.fill();
+    ctx.fill();
+
+    // Step 2: Apply black dither dots on EXPLORED tiles in quadrants facing shrouded
+    // neighbors. Quadrant-based + diamond-clipped to stay within tile boundaries.
+    {
+      const shroudImg = ctx.getImageData(0, 0, canvasW, canvasH);
+      const shroudPix = shroudImg.data;
+      for (let gy = 0; gy < mh; gy++) {
+        for (let gx = 0; gx < mw; gx++) {
+          if (isShrouded(gx, gy)) continue;
+          const [tpx, tpy] = tilePos(gx, gy);
+          const nb = getNeighbors(gx, gy);
+          for (const dir of ['NE', 'SE', 'SW', 'NW']) {
+            const [nx, ny] = nb[dir];
+            if (!isShrouded(nx, ny)) continue;
+            this._applyShroudDither(shroudPix, canvasW, canvasH, tpx, tpy, ditherMask, dir);
+          }
+        }
+      }
+      ctx.putImageData(shroudImg, 0, 0);
     }
 
     return { canvasW, canvasH };
@@ -878,6 +977,73 @@ const Civ2Renderer = {
         if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
         const di = (cy * cw + cx) * 4;
         pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+      }
+    }
+  },
+
+  // ── Shroud dither: black dots on EXPLORED tiles at boundary with shrouded tiles ──
+  // Quadrant-based (32×16 per direction) + diamond-clipped to prevent bleed.
+  // dir = direction of the SHROUDED neighbor relative to this explored tile.
+  _applyShroudDither(pixels, cw, ch, px, py, mask, dir) {
+    // Diamond x-range [xMin, xMax] inclusive for local row ly (0-31)
+    function diamondX(ly) {
+      const halfW = (ly <= 15 ? ly * 2 + 1 : (31 - ly) * 2 + 1);
+      return [32 - halfW, 31 + halfW];
+    }
+
+    if (dir === 'NE') {
+      // Top-right quadrant: dx=32..63, dy=0..15
+      for (let dy = 0; dy < 16; dy++) {
+        const [dxMin, dxMax] = diamondX(dy);
+        const xStart = Math.max(32, dxMin), xEnd = Math.min(63, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[(15 - dy) * 64 + dx]) continue;
+          const cx = px + dx, cy = py + dy;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = 0; pixels[di+1] = 0; pixels[di+2] = 0;
+        }
+      }
+    } else if (dir === 'SE') {
+      // Bottom-right quadrant: dx=32..63, ly=16..31
+      for (let dy = 0; dy < 16; dy++) {
+        const ly = 16 + dy;
+        const [dxMin, dxMax] = diamondX(ly);
+        const xStart = Math.max(32, dxMin), xEnd = Math.min(63, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[dy * 64 + dx]) continue;
+          const cx = px + dx, cy = py + ly;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = 0; pixels[di+1] = 0; pixels[di+2] = 0;
+        }
+      }
+    } else if (dir === 'SW') {
+      // Bottom-left quadrant: dx=0..31, ly=16..31
+      for (let dy = 0; dy < 16; dy++) {
+        const ly = 16 + dy;
+        const [dxMin, dxMax] = diamondX(ly);
+        const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[dy * 64 + dx]) continue;
+          const cx = px + dx, cy = py + ly;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = 0; pixels[di+1] = 0; pixels[di+2] = 0;
+        }
+      }
+    } else if (dir === 'NW') {
+      // Top-left quadrant: dx=0..31, dy=0..15
+      for (let dy = 0; dy < 16; dy++) {
+        const [dxMin, dxMax] = diamondX(dy);
+        const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[(15 - dy) * 64 + dx]) continue;
+          const cx = px + dx, cy = py + dy;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = 0; pixels[di+1] = 0; pixels[di+2] = 0;
+        }
       }
     }
   },
