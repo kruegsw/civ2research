@@ -605,18 +605,16 @@ const Civ2Renderer = {
       }
 
       // City size box — positioned via orange marker pixel, or fallback centered
+      // Source: Civ2-clone MapControl.cs — TNR Bold 14px, box = text size, no padding
       const sizeStr = String(c.size);
-      ctx.font = 'bold 12px "Times New Roman", serif';
+      ctx.font = 'bold 14px "Times New Roman", serif';
+      ctx.letterSpacing = '0px';
       const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
       const tm = ctx.measureText(sizeStr);
-      const tw = Math.ceil(tm.width);
-      const th = Math.ceil(tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent);
-      const padX = 3, padY = 2;
-      const sw = tw + padX * 2;
-      const sh = th + padY * 2;
+      const sw = Math.ceil(tm.width);
+      const sh = Math.ceil(tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent);
       let ssx, ssy;
       if (sizeLoc) {
-        // sizeLoc is relative to cell including 1px border; sprite drawn at border+1
         ssx = tpx + sizeLoc.x - 1;
         ssy = tpy - 16 + sizeLoc.y - 1;
       } else {
@@ -625,13 +623,13 @@ const Civ2Renderer = {
       }
       ctx.fillStyle = color;
       ctx.fillRect(ssx, ssy, sw, sh);                   // civ color fill
-      ctx.fillStyle = '#000';
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 1;
-      ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);         // black border
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(sizeStr, ssx + sw / 2, ssy + sh / 2 + 1);
+      ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);         // black border (1px wider each side)
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(sizeStr, ssx, ssy);
     }
 
     // ────────────────────────────────────────
