@@ -217,6 +217,9 @@ const Civ2Renderer = {
     // Source: Civ2-clone Civ2GoldInterface.cs "shield" PicSource
     sprites.grasslandShield = this.extractSprite(t1Ctx, 7*65+1, 7*33+1, 64, 32, T1, true);
 
+    // Goody hut: TERRAIN1 col 7, row 8 (x=456, y=265)
+    sprites.goodyHut = this.extractSprite(t1Ctx, 7*65+1, 8*33+1, 64, 32, T1, true);
+
     // Fortress, Airbase, and Fortify from CITIES.GIF y=423 row (64×48 city-sized)
     if (citiesCtx) {
       const CC = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
@@ -433,6 +436,28 @@ const Civ2Renderer = {
       return [gx * TW + ((gy % 2) ? (TW >> 1) : 0), gy * (TH >> 1)];
     }
 
+    // FOW state — computed once, used by Pass 4 (ghost cities) and Pass 7+8 (shroud)
+    const fowEnabled = options.fowEnabled && options.fowCiv != null;
+    const fowBit = fowEnabled ? (1 << options.fowCiv) : 0;
+
+    // Three-state FOW predicates:
+    //   isUnexplored: tile has NEVER been seen by FOW civ → solid black
+    //   isDimmed: tile was previously explored but not currently visible → dimmed
+    function isUnexplored(gx, gy) {
+      if (gy < 0 || gy >= mh) return true;
+      if (!fowEnabled) return false;
+      const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
+      if (currentlySeen) return false;
+      return mapData.getKnownImprovements(gx, gy, options.fowCiv) === 0;
+    }
+    function isDimmed(gx, gy) {
+      if (gy < 0 || gy >= mh) return false;
+      if (!fowEnabled) return false;
+      const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
+      if (currentlySeen) return false;
+      return mapData.getKnownImprovements(gx, gy, options.fowCiv) !== 0;
+    }
+
     // ────────────────────────────────────────
     // PASS 1: Base terrain
     // ────────────────────────────────────────
@@ -584,6 +609,11 @@ const Civ2Renderer = {
           else if (imp & 0x08) ctx.drawImage(sprites.mining, px, py);
           if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
         }
+
+        // ── Goody huts — drawn after improvements, before cities/units ──
+        if (mapData.hasGoodyHut(gx, gy) && sprites.goodyHut) {
+          ctx.drawImage(sprites.goodyHut, px, py);
+        }
       }
     }
 
@@ -646,6 +676,85 @@ const Civ2Renderer = {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(sizeStr, ssx, ssy);
+    }
+
+    // ── Ghost cities: previously seen cities in explored-but-not-visible tiles ──
+    if (fowEnabled) {
+      for (const c of mapData.cities) {
+        const currentlySeen = !!(mapData.getVisibility(c.gx, c.gy) & fowBit);
+        if (currentlySeen) continue;  // already drawn normally above
+        // Check if FOW civ knows about a city here (bit 0x02 in known improvements)
+        const known = mapData.getKnownImprovements(c.gx, c.gy, options.fowCiv);
+        if (!(known & 0x02)) continue;  // civ hasn't seen a city here
+
+        const ghostSize = c.believedSize[options.fowCiv] || c.size;
+        const [tpx, tpy] = tilePos(c.gx, c.gy);
+        const cx = tpx + (TW >> 1);
+        const color = this.CIV_COLORS[c.owner] || '#ccc';
+
+        // Draw ghost city sprite at believed size, with reduced opacity
+        const epoch = mapData.civTechs
+          ? this._getEpoch(mapData.civTechs[c.owner])
+          : 0;
+        const row = this._getCityRow(epoch, c.style || 0);
+        let col = this._getCitySizeCol(ghostSize, epoch);
+        if (c.hasPalace && col < 3) col++;
+        if (c.hasWalls) col += 4;
+
+        ctx.globalAlpha = 0.5;
+        if (citySprites[row] && citySprites[row][col]) {
+          ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
+        } else {
+          const cy = tpy + (TH >> 1);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(cx - 7, cy - 7, 14, 14);
+          ctx.fillStyle = color;
+          ctx.fillRect(cx - 6, cy - 6, 12, 12);
+        }
+
+        // Ghost city size box
+        const sizeStr = String(ghostSize);
+        ctx.font = 'bold 14px "Times New Roman", serif';
+        ctx.letterSpacing = '0px';
+        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+        const tm = ctx.measureText(sizeStr);
+        const sw = Math.ceil(tm.width);
+        const sh = 14;
+        let ssx, ssy;
+        if (sizeLoc) {
+          ssx = tpx + sizeLoc.x - 1;
+          ssy = tpy - 16 + sizeLoc.y - 1;
+        } else {
+          ssx = cx - sw / 2;
+          ssy = tpy - 16;
+        }
+        ctx.fillStyle = color;
+        ctx.fillRect(ssx, ssy, sw, sh);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(sizeStr, ssx, ssy);
+
+        // Ghost city name label
+        const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
+        ctx.font = '20px "Times New Roman", serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.letterSpacing = '1px';
+        const nameY = tpy - 16 + 48;
+        ctx.fillStyle = '#000';
+        for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+          ctx.fillText(c.name, cx + sdx, nameY + sdy);
+        }
+        ctx.fillStyle = textColor;
+        ctx.fillText(c.name, cx, nameY);
+        ctx.letterSpacing = '0px';
+
+        ctx.globalAlpha = 1.0;
+      }
     }
 
     // ────────────────────────────────────────
@@ -774,7 +883,10 @@ const Civ2Renderer = {
     // ────────────────────────────────────────
     // PASS 6b: City name labels (drawn over units)
     // ────────────────────────────────────────
+    // When FOW is enabled, only draw labels for currently visible cities.
+    // Ghost city labels are already drawn in Pass 4 with reduced opacity.
     for (const c of mapData.cities) {
+      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
       const [tpx, tpy] = tilePos(c.gx, c.gy);
       const cx = tpx + (TW >> 1);
       const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
@@ -783,8 +895,11 @@ const Civ2Renderer = {
       ctx.textBaseline = 'middle';
       ctx.letterSpacing = '1px';
       const nameY = tpy - 16 + 48; // bottom of city sprite
+      // 4-direction black outline for better readability (matches original Civ2)
       ctx.fillStyle = '#000';
-      ctx.fillText(c.name, cx + 1, nameY + 1);
+      for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        ctx.fillText(c.name, cx + sdx, nameY + sdy);
+      }
       ctx.fillStyle = textColor;
       ctx.fillText(c.name, cx, nameY);
       ctx.letterSpacing = '0px';
@@ -794,43 +909,42 @@ const Civ2Renderer = {
     this._drawLegend(ctx, canvasW, canvasH, mapData);
 
     // ────────────────────────────────────────
-    // PASS 7+8: Shroud — FOW + map edge black fills with dither transitions
+    // PASS 7+8: Shroud — Three-state FOW + map edge black fills with dither transitions
     // ────────────────────────────────────────
-    // Dither is applied on the BLACK (unexplored) side: after filling shrouded
+    // Three states:
+    //   1. Unexplored — solid black (never seen by FOW civ)
+    //   2. Explored but not visible — terrain shown but dimmed
+    //   3. Currently visible — full brightness
+    // Dither is applied on the BLACK (unexplored) side: after filling unexplored
     // tiles solid black, we "punch holes" at boundaries with explored tiles,
-    // restoring the pre-shroud terrain through the dither mask. This keeps
-    // explored tiles pristine while creating the feathered shroud edge.
+    // restoring the pre-shroud terrain through the dither mask.
     // Diamond-clipped to prevent bleeding into adjacent tiles.
     if (onProgress) onProgress('Applying shroud...');
     await this._yield();
 
-    const fowEnabled = options.fowEnabled && options.fowCiv != null;
-    const fowBit = fowEnabled ? (1 << options.fowCiv) : 0;
-
-    function isShrouded(gx, gy) {
-      if (gy < 0 || gy >= mh) return true;
-      if (fowEnabled && !(mapData.getVisibility(gx, gy) & fowBit)) return true;
-      return false;
-    }
-
-    // Step 1: Fill all shrouded tiles solid black (single batched path = no seam lines)
+    // Step 1: Fill only UNEXPLORED tiles solid black (not explored-but-fogged)
     ctx.fillStyle = '#000';
     ctx.beginPath();
     if (fowEnabled) {
-      let fogCount = 0, visCount = 0;
+      let unexploredCount = 0, dimmedCount = 0, visCount = 0;
       for (let gy = 0; gy < mh; gy++) {
         for (let gx = 0; gx < mw; gx++) {
-          if (mapData.getVisibility(gx, gy) & fowBit) { visCount++; continue; }
-          fogCount++;
-          const [px, py] = tilePos(gx, gy);
-          ctx.moveTo(px + TW / 2, py);
-          ctx.lineTo(px + TW, py + TH / 2);
-          ctx.lineTo(px + TW / 2, py + TH);
-          ctx.lineTo(px, py + TH / 2);
-          ctx.closePath();
+          if (isUnexplored(gx, gy)) {
+            unexploredCount++;
+            const [px, py] = tilePos(gx, gy);
+            ctx.moveTo(px + TW / 2, py);
+            ctx.lineTo(px + TW, py + TH / 2);
+            ctx.lineTo(px + TW / 2, py + TH);
+            ctx.lineTo(px, py + TH / 2);
+            ctx.closePath();
+          } else if (isDimmed(gx, gy)) {
+            dimmedCount++;
+          } else {
+            visCount++;
+          }
         }
       }
-      console.log(`FOW: civ=${options.fowCiv}, bit=${fowBit}, fogged=${fogCount}, visible=${visCount}`);
+      console.log(`FOW: civ=${options.fowCiv}, bit=${fowBit}, unexplored=${unexploredCount}, dimmed=${dimmedCount}, visible=${visCount}`);
     }
     // Map edges (always) — covers triangular gaps at north/south borders
     for (let gx = 0; gx < mw; gx++) {
@@ -849,24 +963,42 @@ const Civ2Renderer = {
     }
     ctx.fill();
 
-    // Step 2: Apply black dither dots on EXPLORED tiles in quadrants facing shrouded
-    // neighbors. Quadrant-based + diamond-clipped to stay within tile boundaries.
+    // Step 2: Apply black dither dots on EXPLORED tiles (visible or dimmed) in quadrants
+    // facing UNEXPLORED neighbors. Dither only at explored/unexplored boundary.
     {
       const shroudImg = ctx.getImageData(0, 0, canvasW, canvasH);
       const shroudPix = shroudImg.data;
       for (let gy = 0; gy < mh; gy++) {
         for (let gx = 0; gx < mw; gx++) {
-          if (isShrouded(gx, gy)) continue;
+          if (isUnexplored(gx, gy)) continue;  // skip unexplored tiles (already black)
           const [tpx, tpy] = tilePos(gx, gy);
           const nb = getNeighbors(gx, gy);
           for (const dir of ['NE', 'SE', 'SW', 'NW']) {
             const [nx, ny] = nb[dir];
-            if (!isShrouded(nx, ny)) continue;
+            if (!isUnexplored(nx, ny)) continue;  // dither only toward unexplored
             this._applyShroudDither(shroudPix, canvasW, canvasH, tpx, tpy, ditherMask, dir);
           }
         }
       }
       ctx.putImageData(shroudImg, 0, 0);
+    }
+
+    // Step 3: Apply semi-transparent dimming overlay on explored-but-not-visible tiles
+    if (fowEnabled) {
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath();
+      for (let gy = 0; gy < mh; gy++) {
+        for (let gx = 0; gx < mw; gx++) {
+          if (!isDimmed(gx, gy)) continue;
+          const [px, py] = tilePos(gx, gy);
+          ctx.moveTo(px + TW / 2, py);
+          ctx.lineTo(px + TW, py + TH / 2);
+          ctx.lineTo(px + TW / 2, py + TH);
+          ctx.lineTo(px, py + TH / 2);
+          ctx.closePath();
+        }
+      }
+      ctx.fill();
     }
 
     return { canvasW, canvasH };
