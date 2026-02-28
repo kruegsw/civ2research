@@ -4,58 +4,9 @@
 
 ---
 
-## Batch 7
+## Batch 7 (APPLIED — displayW fix applied directly by coordinator)
 
-### worker-a: Wrap Seam Fix + Ocean Dither (Items 23, 13)
-
-#### What to do
-
-Two small fixes in `renderer.js`: fix the displayW crop width to eliminate the wrap seam, and re-enable ocean dither with proper pole handling.
-
-#### Files to modify
-- `canvas-test-1/renderer.js`
-
-#### Files NOT to touch
-- `canvas-test-1/parser.js`
-- `canvas-test-1/app.js`
-- `canvas-test-1/index.html`
-
-#### Item 23: Fix displayW Crop Width
-
-**Problem**: The `displayW` formula at line ~425 includes one full extra overlap column for wrapping maps:
-```javascript
-const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);
-```
-
-For a 40-column map this gives `41 * 64 + 32 = 2656px`, which makes the duplicate of column 0 (rendered at `gx = mw`) fully visible. This creates a visible seam where the eastern edge of the map meets the duplicate western edge — including duplicate city labels (e.g., two "Cardiff" cities side by side).
-
-The 4 overlap columns (`xExtra = 4`) provide blending context for dither/overlays. They should be cropped away, not shown.
-
-**Fix**: Change line ~425 from:
-```javascript
-const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // final visible width
-```
-to:
-```javascript
-const displayW = mw * TW + (TW >> 1);  // final visible width — exact mw columns
-```
-
-This crops to exactly `mw` columns (2592px for 40-column map). The `+ (TW >> 1)` accounts for odd-row half-tile stagger. At the right edge, the left half of column `mw`'s diamond (32px) peeks in naturally, connecting seamlessly back to column 0 at the left edge.
-
-#### Item 13: Ocean Dither Blending (with pole guard)
-
-**Problem**: The dither pass skips ocean neighbors (`nter === 10`). Original Civ2 dither-blends land→ocean transitions for smoother coastlines. This skip was previously removed but caused blue artifacts because there was no pole guard. Now the pole guard IS in place (`if (ny < 0 || ny >= mh) continue;` at line ~509), so it's safe to re-enable ocean dither.
-
-**Fix**: Change line ~511 from:
-```javascript
-if (nter === ter || nter === 10) continue;
-```
-to:
-```javascript
-if (nter === ter) continue;
-```
-
-The pole guard at line ~509 prevents out-of-bounds ocean dither at the map edges. In-bounds ocean neighbors will now dither onto adjacent land tiles, creating smoother coast transitions. Since dither (Pass 2) runs before coastlines (Pass 3), coastline sprites will draw on top of any dither artifacts.
+Item 23 displayW crop fix applied. Item 13 closed (ocean dither kept as-is).
 
 ---
 
@@ -185,23 +136,8 @@ Col 7 is intentionally skipped — in default TERRAIN1.GIF, col 7 contains speci
 
 After rendering, check the console for "Discarding terrain[...]" messages to see which variants survived the opacity filter. If any surviving variant has baked-in text (visible as colored letters on the terrain), remove that column from that terrain's entry.
 
-#### Item 13: Dither Blending with Ocean
-
-**Problem**: The dither pass (Pass 2) skips dithering when the neighbor terrain is ocean (`nter === 10`). Original Civ2 DOES dither-blend land→ocean transitions — the land side gets a subtle dither of the ocean color for a smoother coastline.
-
-**Note**: The `nter === 10` skip was previously removed by a worker but has been **restored** in Batch 5c (Item 24 fix) because it caused blue dither artifacts everywhere without proper visual handling.
-
-**Fix**: Remove the `nter === 10` check again. Change:
-
-```javascript
-if (nter === ter || nter === 10) continue;
-```
-to:
-```javascript
-if (nter === ter) continue;
-```
-
-**Potential issue**: Ocean dither might overlap with coastline sprites drawn in Pass 3. Since dither (Pass 2) happens before coastlines (Pass 3), the coastline sprites will draw on top and should cover any dither artifacts. Test and verify — if ocean dither looks wrong at certain coast configurations, you may need to skip dithering only when the current tile already has coastline pieces (check if `ter !== 10` and neighbor `nter === 10`, then let it dither).
+#### ~~Item 13: Dither Blending with Ocean~~
+Closed. Ocean dither skip (`nter === 10`) kept in place — coastlines look good as-is with hard land/ocean edges.
 
 #### Item 15: Unit Rendering Order (Top of Stack)
 
