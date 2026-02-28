@@ -118,7 +118,20 @@ Contains overlay sprites composited on top of base terrain. Uses magenta chroma 
 | 254 | (0,255,0) green | Grid border lines (1px between cells) |
 | 255 | (135,83,135) purplish-gray | Transparent background outside diamond — **differs from TERRAIN GIFs' (135,135,135)** |
 
-**Shield/flag system** (confirmed via Civ2-clone): Each unit cell encodes its shield position using a blue pixel (idx 250) in the 1px green border. The flag X is found by scanning the top border row for the first non-green pixel, flag Y by scanning the left border column. Shield templates are extracted from the right edge of UNITS.GIF (x≈599-611, y=1-20) and recolored per-civ using the idx 251/252 replacement.
+**Shield/flag system** (confirmed via Civ2-clone): Each unit cell encodes its shield position using a blue pixel (idx 250) in the 1px green border. The flag X is found by scanning the top border row for the first non-green pixel, flag Y by scanning the left border column. Shield templates are extracted from the right edge of UNITS.GIF and recolored per-civ using the idx 251/252 replacement.
+
+**Shield templates** in right margin (x=585–639):
+
+| Name | Rectangle (x, y, w, h) | Notes |
+|------|------------------------|-------|
+| backShield1 | (586, 1, 12, 20) | Primary shield template — used for front/back/shadow |
+| backShield2 | (599, 1, 12, 20) | Second variant (unused in Civ2-clone) |
+| HPshield | (597, 30, 12, 20) | HP overlay (unused in Civ2-clone) |
+
+Three images are derived from backShield1 at render time:
+- **ShieldFront**: top 7 rows filled black (HP bar + order letter background), bottom 13 rows recolored to civ color
+- **ShieldBack**: unchanged template recolored to civ color (stacking indicator)
+- **ShieldShadow**: civ-color pixels replaced with dark gray rgb(51,51,51), drawn offset behind shields
 
 **Key modding notes embedded in UNITS.GIF text**:
 - "Units cannot overlap the area below the main diamond"
@@ -166,6 +179,49 @@ Citizen type faces for the city screen, organized by era. Only rows 0–4 contai
 #### ICONS.GIF Layout
 
 Mixed UI elements including wonder thumbnails (C5–C9 rows 0–5), government icons, resource symbols, warning/status icons, and gameplay indicators. Not a simple grid mapping — contains irregularly sized elements.
+
+#### Fonts & Map UI Element Dimensions
+
+Civ2 MGE uses standard Windows system fonts — no custom bitmap fonts. Confirmed via Win32 `CreateFontA` API calls and Civ2-clone issue #55 ("Civ2 uses 2 fonts: Times new roman + Arial"). Sources: Civ2-clone `Helpers.cs`, `Fonts.cs`, `MapControl.cs`, `TextElement.cs`, `Civ2GoldInterface.cs`; CivFanatics forum thread "Help with Fonts" (Mercator).
+
+**Fonts used on the map view:**
+
+| Element | Font | Size | Weight | Color |
+|---------|------|------|--------|-------|
+| Unit shield order letter | Arial | 13px | Normal | Black |
+| City population size number | Times New Roman | 14px | Bold | Black |
+| City name label | Times New Roman | 20px | Normal | Civ text color (with 1px black drop shadow) |
+
+**Unit shield layout** (12×20px, from backShield1):
+
+| Component | Position (relative to shield top-left) | Size | Details |
+|-----------|----------------------------------------|------|---------|
+| Black top area | (0, 0) | 12×7 | Filled black on ShieldFront only |
+| HP bar | (0, 2) | 12×3 | Green rgb(87,171,39) if >8px, yellow rgb(255,223,79) if 4–8px, red rgb(243,0,0) if ≤3px. Width = floor(curHP/maxHP × 12) |
+| Order letter | (6, 7) centered | 13px tall area | Arial normal, black. Letter from orders byte: 1/2/4→F, 3→S, 5→R, 6→I, 7→m, 8→O, 9→p, 10→E, 11→G, else→- |
+| Shadow offset | (±1, 1) | 12×20 | Dark gray rgb(51,51,51). Direction mirrors stacking side |
+| Stacking offset | (±4, 0) | 12×20 | ShieldBack drawn behind ShieldFront. ±4 based on shield X < 32 |
+
+**City size box layout** (dynamic width, 14px tall):
+
+| Component | Details |
+|-----------|---------|
+| Box size | Width = MeasureText(sizeStr).width, Height = 14 (font size). No padding |
+| Box fill | Civ text color (from CITIES.GIF y=423 color strips) |
+| Box border | 1px black outline, extends 1px beyond fill on left and right sides only |
+| Text | Times New Roman Bold 14px, black, top-left aligned with fill rectangle |
+| Position | Orange marker pixel (idx 249, rgb 255,155,0) in CITIES.GIF cell border |
+
+**City name label** (drawn in separate pass, on top of everything):
+
+| Component | Details |
+|-----------|---------|
+| Font | Times New Roman 20px, normal weight, spacing=1 |
+| Shadow | 1px black drop shadow at offset (1, 1) |
+| Foreground | Civ text color |
+| Position | Centered horizontally on city sprite, vertically at bottom of sprite |
+
+**Orange marker pixel system** (city size box positioning): Analogous to the blue marker pixel for unit shields. Orange pixel rgb(255,155,0) (palette idx 249) embedded in the 1px green border around each city sprite cell in CITIES.GIF. X found by scanning top border row, Y by scanning left border column. Gives the top-left corner of the size box relative to the sprite cell.
 
 ### Scenario Files
 

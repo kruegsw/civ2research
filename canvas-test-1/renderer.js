@@ -612,7 +612,7 @@ const Civ2Renderer = {
       const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
       const tm = ctx.measureText(sizeStr);
       const sw = Math.ceil(tm.width);
-      const sh = Math.ceil(tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent);
+      const sh = 14;  // Raylib MeasureTextEx returns fontSize (14) as height for single-line text
       let ssx, ssy;
       if (sizeLoc) {
         ssx = tpx + sizeLoc.x - 1;
