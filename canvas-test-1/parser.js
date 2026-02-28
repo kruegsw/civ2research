@@ -54,6 +54,24 @@ const Civ2Parser = {
     const block1Off = MAP_HEADER + 14;
     const block2Off = block1Off + ms * 7;
 
+    // Block 1: per-civ known improvements (7 sections, one per non-barbarian civ 1-7)
+    // Each byte has same format as improvements byte (Block 2 byte[1]):
+    // bit 0=unit, 1=city, 2=irrigation, 3=mining, 4=road, 5=railroad, 6=fortress, 7=pollution
+    const knownImprovements = new Array(8).fill(null);
+    for (let civ = 1; civ <= 7; civ++) {
+      const sectionOff = block1Off + (civ - 1) * ms;
+      const section = new Uint8Array(ms);
+      for (let i = 0; i < ms; i++) {
+        section[i] = savBuf[sectionOff + i];
+      }
+      knownImprovements[civ] = section;
+    }
+
+    function getKnownImprovements(gx, gy, civSlot) {
+      if (civSlot < 1 || civSlot > 7 || gy < 0 || gy >= mh) return 0;
+      return knownImprovements[civSlot][gy * mw + wrap(gx)];
+    }
+
     // Read all tile records (6 bytes each, interleaved)
     const tileData = new Array(ms);
     for (let i = 0; i < ms; i++) {
@@ -135,9 +153,16 @@ const Civ2Parser = {
       const buildings = this.u32(savBuf, off + 52);
       const hasWalls = (buildings & 0x100) !== 0;
       const hasPalace = (buildings & 0x02) !== 0;
+      const originalOwner = savBuf[off + 10];
+      const turnsSinceCapture = savBuf[off + 11];
+      const isOccupied = (owner !== originalOwner);
+      const believedSize = [];
+      for (let civ = 0; civ < 8; civ++) {
+        believedSize[civ] = savBuf[off + 14 + civ];
+      }
       const style = civStyles[owner] || 0;
       if (name && size > 0) {
-        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, hasPalace, style });
+        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, hasPalace, originalOwner, turnsSinceCapture, isOccupied, believedSize, style });
       }
     }
 
@@ -177,6 +202,11 @@ const Civ2Parser = {
     function getImprovements(gx, gy) {
       if (gy < 0 || gy >= mh) return 0;
       return tileData[gy * mw + wrap(gx)][1];
+    }
+
+    function hasGoodyHut(gx, gy) {
+      if (gy < 0 || gy >= mh) return false;
+      return !!(tileData[gy * mw + wrap(gx)][0] & 0x10);
     }
 
     function getVisibility(gx, gy) {
@@ -239,7 +269,9 @@ const Civ2Parser = {
       playerCiv, civsAlive, civTechCounts, civTechs,
       terrainCounts, oceanPct, citiesOnOcean,
       // Accessor functions
-      getTerrain, isLand, hasRiver, getImprovements, getVisibility, getResource, getNeighbors, wrap
+      getTerrain, isLand, hasRiver, getImprovements, getVisibility, getResource, getNeighbors, wrap,
+      // Block 1 / FOW / occupancy data
+      knownImprovements, getKnownImprovements, hasGoodyHut
     };
   }
 };
