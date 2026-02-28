@@ -872,47 +872,77 @@ const Civ2Renderer = {
     return { canvasW, canvasH };
   },
 
-  // ── Dither pixel manipulation (direction-aware) ──
+  // ── Dither pixel manipulation (direction-aware, quadrant-based, diamond-clipped) ──
+  // Each direction writes to a 32×16 quadrant of the 64×32 tile, clipped to the
+  // isometric diamond boundary to prevent bleed into adjacent tiles.
   _applyDither(pixels, cw, ch, px, py, neighborData, mask, dir) {
-    if (dir === 'SE') {
-      for (let dy = 0; dy < 16; dy++) for (let dx = 0; dx < 64; dx++) {
-        if (!mask[dy * 64 + dx]) continue;
-        const si = ((16 + dy) * 64 + dx) * 4;
-        if (neighborData[si + 3] === 0) continue;
-        const cx = px + dx, cy = py + 16 + dy;
-        if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
-        const di = (cy * cw + cx) * 4;
-        pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+    // Diamond x-range [xMin, xMax] inclusive for local row ly (0-31)
+    function diamondX(ly) {
+      const halfW = (ly <= 15 ? ly * 2 + 1 : (31 - ly) * 2 + 1);
+      return [32 - halfW, 31 + halfW];
+    }
+
+    if (dir === 'NE') {
+      // Top-right quadrant: dx=32..63, dy=0..15
+      for (let dy = 0; dy < 16; dy++) {
+        const [dxMin, dxMax] = diamondX(dy);
+        const xStart = Math.max(32, dxMin), xEnd = Math.min(63, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[(15 - dy) * 64 + dx]) continue;
+          const si = (dy * 64 + dx) * 4;
+          if (neighborData[si + 3] === 0) continue;
+          const cx = px + dx, cy = py + dy;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+        }
+      }
+    } else if (dir === 'SE') {
+      // Bottom-right quadrant: dx=32..63, ly=16..31
+      for (let dy = 0; dy < 16; dy++) {
+        const ly = 16 + dy;
+        const [dxMin, dxMax] = diamondX(ly);
+        const xStart = Math.max(32, dxMin), xEnd = Math.min(63, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[dy * 64 + dx]) continue;
+          const si = (ly * 64 + dx) * 4;
+          if (neighborData[si + 3] === 0) continue;
+          const cx = px + dx, cy = py + ly;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+        }
       }
     } else if (dir === 'SW') {
-      for (let dy = 0; dy < 16; dy++) for (let dx = 0; dx < 64; dx++) {
-        if (!mask[dy * 64 + (63 - dx)]) continue;
-        const si = ((16 + dy) * 64 + dx) * 4;
-        if (neighborData[si + 3] === 0) continue;
-        const cx = px + dx, cy = py + 16 + dy;
-        if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
-        const di = (cy * cw + cx) * 4;
-        pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
-      }
-    } else if (dir === 'NE') {
-      for (let dy = 0; dy < 16; dy++) for (let dx = 0; dx < 64; dx++) {
-        if (!mask[(15 - dy) * 64 + dx]) continue;
-        const si = (dy * 64 + dx) * 4;
-        if (neighborData[si + 3] === 0) continue;
-        const cx = px + dx, cy = py + dy;
-        if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
-        const di = (cy * cw + cx) * 4;
-        pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+      // Bottom-left quadrant: dx=0..31, ly=16..31
+      for (let dy = 0; dy < 16; dy++) {
+        const ly = 16 + dy;
+        const [dxMin, dxMax] = diamondX(ly);
+        const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[dy * 64 + dx]) continue;
+          const si = (ly * 64 + dx) * 4;
+          if (neighborData[si + 3] === 0) continue;
+          const cx = px + dx, cy = py + ly;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+        }
       }
     } else if (dir === 'NW') {
-      for (let dy = 0; dy < 16; dy++) for (let dx = 0; dx < 64; dx++) {
-        if (!mask[(15 - dy) * 64 + (63 - dx)]) continue;
-        const si = (dy * 64 + dx) * 4;
-        if (neighborData[si + 3] === 0) continue;
-        const cx = px + dx, cy = py + dy;
-        if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
-        const di = (cy * cw + cx) * 4;
-        pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+      // Top-left quadrant: dx=0..31, dy=0..15
+      for (let dy = 0; dy < 16; dy++) {
+        const [dxMin, dxMax] = diamondX(dy);
+        const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
+        for (let dx = xStart; dx <= xEnd; dx++) {
+          if (!mask[(15 - dy) * 64 + dx]) continue;
+          const si = (dy * 64 + dx) * 4;
+          if (neighborData[si + 3] === 0) continue;
+          const cx = px + dx, cy = py + dy;
+          if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
+          const di = (cy * cw + cx) * 4;
+          pixels[di] = neighborData[si]; pixels[di+1] = neighborData[si+1]; pixels[di+2] = neighborData[si+2];
+        }
       }
     }
   },
