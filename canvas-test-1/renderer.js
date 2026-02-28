@@ -586,9 +586,14 @@ const Civ2Renderer = {
           }
         }
 
-        // ── Resources / Grassland shield — drawn first so improvements overlay them ──
+        // ── Step 1: Irrigation/farmland beneath resources (ground-level) ──
+        if (imp & 0x04) {
+          if (imp & 0x08) ctx.drawImage(sprites.farmland, px, py);  // farmland = irrigation + mining
+          else ctx.drawImage(sprites.irrigation, px, py);
+        }
+
+        // ── Step 2: Resources / grassland shield on top of irrigation ──
         // Grassland uses a separate coordinate-only HasShield() formula, NOT seed-based resources.
-        // All other terrain types use seed-based resource placement.
         // Source: Civ2-clone MapImage.cs — grassland branch checks HasShield, else branch checks Special
         if (ter === 2) {
           if (mapData.hasShield(gx, gy) && sprites.grasslandShield) {
@@ -602,13 +607,9 @@ const Civ2Renderer = {
           }
         }
 
-        // ── Tile improvements: irrigation/farmland/mining/pollution ──
-        if (imp & 0x8C) { // irrigation(0x04), mining(0x08), pollution(0x80)
-          if ((imp & 0x04) && (imp & 0x08)) ctx.drawImage(sprites.farmland, px, py);
-          else if (imp & 0x04) ctx.drawImage(sprites.irrigation, px, py);
-          else if (imp & 0x08) ctx.drawImage(sprites.mining, px, py);
-          if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
-        }
+        // ── Step 3: Mining/pollution on top of everything ──
+        if (imp & 0x08 && !(imp & 0x04)) ctx.drawImage(sprites.mining, px, py);  // mining only (not farmland)
+        if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
 
         // ── Goody huts — drawn after improvements, before cities/units ──
         if (mapData.hasGoodyHut(gx, gy) && sprites.goodyHut) {
@@ -880,31 +881,6 @@ const Civ2Renderer = {
       }
     }
 
-    // ────────────────────────────────────────
-    // PASS 6b: City name labels (drawn over units)
-    // ────────────────────────────────────────
-    // When FOW is enabled, only draw labels for currently visible cities.
-    // Ghost city labels are already drawn in Pass 4 with reduced opacity.
-    for (const c of mapData.cities) {
-      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
-      const [tpx, tpy] = tilePos(c.gx, c.gy);
-      const cx = tpx + (TW >> 1);
-      const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
-      ctx.font = '20px "Times New Roman", serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.letterSpacing = '1px';
-      const nameY = tpy - 16 + 48; // bottom of city sprite
-      // 4-direction black outline for better readability (matches original Civ2)
-      ctx.fillStyle = '#000';
-      for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
-        ctx.fillText(c.name, cx + sdx, nameY + sdy);
-      }
-      ctx.fillStyle = textColor;
-      ctx.fillText(c.name, cx, nameY);
-      ctx.letterSpacing = '0px';
-    }
-
     // ── Legend ──
     this._drawLegend(ctx, canvasW, canvasH, mapData);
 
@@ -975,6 +951,7 @@ const Civ2Renderer = {
           const nb = getNeighbors(gx, gy);
           for (const dir of ['NE', 'SE', 'SW', 'NW']) {
             const [nx, ny] = nb[dir];
+            if (ny < 0 || ny >= mh) continue;  // no dither at map edges — hard black border
             if (!isUnexplored(nx, ny)) continue;  // dither only toward unexplored
             this._applyShroudDither(shroudPix, canvasW, canvasH, tpx, tpy, ditherMask, dir);
           }
@@ -999,6 +976,31 @@ const Civ2Renderer = {
         }
       }
       ctx.fill();
+    }
+
+    // ────────────────────────────────────────
+    // PASS 9: City name labels (drawn ABOVE shroud so they're always readable)
+    // ────────────────────────────────────────
+    // When FOW is enabled, only draw labels for currently visible cities.
+    // Ghost city labels are already drawn in Pass 4 with reduced opacity (dimmed by shroud).
+    for (const c of mapData.cities) {
+      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
+      const [tpx, tpy] = tilePos(c.gx, c.gy);
+      const cx = tpx + (TW >> 1);
+      const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
+      ctx.font = '20px "Times New Roman", serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '1px';
+      const nameY = tpy - 16 + 48; // bottom of city sprite
+      // 4-direction black outline for better readability (matches original Civ2)
+      ctx.fillStyle = '#000';
+      for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
+        ctx.fillText(c.name, cx + sdx, nameY + sdy);
+      }
+      ctx.fillStyle = textColor;
+      ctx.fillText(c.name, cx, nameY);
+      ctx.letterSpacing = '0px';
     }
 
     return { canvasW, canvasH };

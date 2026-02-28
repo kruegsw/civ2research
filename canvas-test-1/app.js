@@ -103,7 +103,10 @@ document.getElementById('fow-toggle').addEventListener('change', () => { if (cur
 document.getElementById('fow-civ').addEventListener('change', () => { if (currentMapData) doRender(); });
 
 // ── Main render flow ──
+let rendering = false;
 async function doRender() {
+  if (rendering) return;
+  rendering = true;
   const overlay = document.getElementById('loading-overlay');
   const msg = document.getElementById('loading-msg');
   overlay.style.display = 'flex';
@@ -121,6 +124,7 @@ async function doRender() {
 
     // Populate FOW civ selector
     const fowSelect = document.getElementById('fow-civ');
+    const previousValue = fowSelect.value;  // save user's selection BEFORE clearing
     fowSelect.innerHTML = '';
     const civNames = Civ2Renderer._identifyCivs(mapData.cities);
     mapData.civNames = civNames;
@@ -131,7 +135,12 @@ async function doRender() {
       opt.textContent = civNames[i] || `Civ ${i}`;
       fowSelect.appendChild(opt);
     }
-    fowSelect.value = mapData.playerCiv;
+    // Restore previous selection if valid, otherwise default to playerCiv
+    if (previousValue !== '' && [...fowSelect.options].some(o => o.value === previousValue)) {
+      fowSelect.value = previousValue;
+    } else {
+      fowSelect.value = mapData.playerCiv;
+    }
     fowSelect.disabled = false;
 
     // 3. Load sprite sheets
@@ -179,6 +188,8 @@ async function doRender() {
     console.error(err);
     alert('Error: ' + err.message);
     overlay.style.display = 'none';
+  } finally {
+    rendering = false;
   }
 }
 
