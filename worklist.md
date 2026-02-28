@@ -603,3 +603,56 @@ Partially addressed: gray tolerance tightened to ±3, sRGB color space enforced.
 - **File impact**: This will likely touch `index.html` (layout), add CSS, modify `app.js` (panel population), and possibly `parser.js` (new fields). The map canvas rendering in `renderer.js` should ideally stay unchanged — the chrome wraps around it rather than being drawn into it.
 
 **Priority**: High visual impact — this is what makes it look like "the actual game" rather than "a map export tool." But it's also the most complex single item and needs design discussion before implementation begins.
+
+---
+
+#### ~~Item 27: CLEAN_VARIANTS Table Uses Uniform Columns Instead of Per-Terrain Clean Lists~~
+
+RESOLVED. CLEAN_VARIANTS updated to per-terrain clean column lists matching the doc.
+
+**Problem**: `CLEAN_VARIANTS` (renderer.js:44-56) uses the same `[0, 1, 4, 5, 6, 8]` for all 11 terrain types. The binary analysis doc specifies different clean (text-free) columns per terrain:
+
+| Terrain     | Code Uses      | Doc Says Clean   | Contaminated in Code |
+|-------------|---------------|------------------|----------------------|
+| Desert      | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
+| Plains      | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
+| Grassland   | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
+| Forest      | 0,1,4,5,6,8  | 0,1,4,5,6,8      | ✅ Match              |
+| Hills       | 0,1,4,5,6,8  | 0,1,4,5,6,8      | ✅ Match              |
+| Mountains   | 0,1,4,5,6,8  | 0,1,4,5,6        | 8                    |
+| Tundra      | 0,1,4,5,6,8  | 0,4              | 1, 5, 6, 8           |
+| Glacier     | 0,1,4,5,6,8  | 0,4              | 1, 5, 6, 8           |
+| Swamp       | 0,1,4,5,6,8  | 0,4              | 1, 5, 6, 8           |
+| Jungle      | 0,1,4,5,6,8  | 0,1,4,8          | 5, 6                 |
+| Ocean       | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
+
+**Mitigating factor**: The `<50% opaque` post-extraction filter (renderer.js:384-406) discards most contaminated sprites at runtime, so vanilla TERRAIN1.GIF renders acceptably. But a contaminated sprite with >50% opaque pixels would slip through and show text artifacts. Modded sprite sheets are more at risk.
+
+**Fix**: Replace the uniform array with the per-terrain clean column lists from the doc.
+
+**Severity**: Medium
+
+---
+
+#### ~~Item 28: Dither Blending — Missing Horizontal Flip for SW and NW Directions~~
+
+RESOLVED. H-flip added for SW/NW in both `_applyDither` and `_applyShroudDither`. The doc's "full-half" scope description was tested and produces excessive dither — quadrant-based approach kept intentionally (see note below).
+
+**Problem**: The `_applyDither()` function (renderer.js:1098-1171) never horizontally flips the dither mask. The binary analysis doc specifies that the dither mask transformation per direction is:
+
+| Direction | Tile Half           | H-Flip | V-Flip |
+|-----------|---------------------|--------|--------|
+| SE        | Bottom (rows 16-31) | No     | No     |
+| SW        | Bottom (rows 16-31) | Yes    | No     |
+| NE        | Top (rows 0-15)     | No     | Yes    |
+| NW        | Top (rows 0-15)     | Yes    | Yes    |
+
+The code applies V-flip correctly for NE and NW (`mask[(15-dy)*64 + dx]`) but never applies H-flip. SW uses `mask[dy*64 + dx]` (should be `mask[dy*64 + (63-dx)]`) and NW uses `mask[(15-dy)*64 + dx]` (should be `mask[(15-dy)*64 + (63-dx)]`).
+
+The doc explicitly states the dither mask is NOT left-right symmetric — so the missing H-flip means SW and NW dither holes appear at incorrect positions.
+
+Additionally, the code restricts each direction to a 32px-wide quadrant (NE=top-right, SW=bottom-left, etc.) while the doc says each direction covers the full 64px-wide half (top or bottom). The quadrant approach + no H-flip was used as a substitute, but it's not equivalent because (a) the mask is asymmetric and (b) the spatial coverage is halved.
+
+**Fix applied**: Added H-flip (`63-dx`) to the mask lookups for SW and NW while keeping the quadrant clipping. Both `_applyDither()` and `_applyShroudDither()` updated.
+
+**Doc scope discrepancy (intentionally kept)**: The doc says each direction covers the full 64px-wide half of the tile. This was implemented and tested — it causes catastrophic over-dithering because when multiple directions are active (e.g., NE and NW both different terrain), their masks overlap across the full top half, producing 2-4x the intended hole density at the tile equator. The quadrant approach (32px wide per direction) prevents this overlap and produces visually correct results. The doc's full-half description is likely inaccurate — the original game probably also uses quadrant-based partitioning. The binary analysis doc should be updated to note this.

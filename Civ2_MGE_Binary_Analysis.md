@@ -3296,7 +3296,7 @@ dither_mask = (t1_palette_indices[y_dither:y_dither+16, 1:65] == 0)  # 64×16 bo
 - The diamond is left-right symmetric in shape but NOT in dither hole placement
 - TERRAIN1 row 14 col 2 contains the **full diamond mask** (solid black, no dither holes) for reference
 
-**Algorithm**: For each land tile, check the 4 diagonal neighbors. If a neighbor has a different land terrain type (not ocean), draw that neighbor's terrain pixels through the dither mask, applied to the appropriate half of the current tile. The mask is flipped/mirrored for each direction:
+**Algorithm**: For each land tile, check the 4 diagonal neighbors. If a neighbor has a different land terrain type (not ocean), draw that neighbor's terrain pixels through the dither mask, applied to the appropriate **quadrant** of the current tile. Each direction is restricted to a 32×16 pixel quadrant (not the full 64px-wide half), and the mask is flipped/mirrored for each direction:
 
 ```python
 # Dither is applied AFTER base terrain, BEFORE coastline/rivers/overlays.
@@ -3305,44 +3305,50 @@ for direction in ['NE', 'SE', 'SW', 'NW']:
     neighbor_terrain = get_terrain(*neighbors[direction])
     if neighbor_terrain != current_terrain and neighbor_terrain != ocean:
         neighbor_sprite = terrain_sprites[neighbor_terrain]
-        
-        if direction == 'SE':
-            # Bottom half (rows 16-31 of tile), mask as-is
+
+        if direction == 'NE':
+            # Top-right quadrant (dx=32..63, dy=0..15), mask V-flipped
             for dy in range(16):
-                for dx in range(64):
-                    if dither_mask[dy, dx]:
-                        canvas[py+16+dy, px+dx] = neighbor_sprite[16+dy, dx]
-        
-        elif direction == 'SW':
-            # Bottom half, mask flipped horizontally
-            for dy in range(16):
-                for dx in range(64):
-                    if dither_mask[dy, 63-dx]:
-                        canvas[py+16+dy, px+dx] = neighbor_sprite[16+dy, dx]
-        
-        elif direction == 'NE':
-            # Top half (rows 0-15 of tile), mask flipped vertically
-            for dy in range(16):
-                for dx in range(64):
+                for dx in range(32, 64):
+                    if not in_diamond(dx, dy): continue
                     if dither_mask[15-dy, dx]:
                         canvas[py+dy, px+dx] = neighbor_sprite[dy, dx]
-        
-        elif direction == 'NW':
-            # Top half, mask flipped both horizontally and vertically
+
+        elif direction == 'SE':
+            # Bottom-right quadrant (dx=32..63, dy=16..31), mask as-is
             for dy in range(16):
-                for dx in range(64):
+                for dx in range(32, 64):
+                    if not in_diamond(dx, 16+dy): continue
+                    if dither_mask[dy, dx]:
+                        canvas[py+16+dy, px+dx] = neighbor_sprite[16+dy, dx]
+
+        elif direction == 'SW':
+            # Bottom-left quadrant (dx=0..31, dy=16..31), mask H-flipped
+            for dy in range(16):
+                for dx in range(32):
+                    if not in_diamond(dx, 16+dy): continue
+                    if dither_mask[dy, 63-dx]:
+                        canvas[py+16+dy, px+dx] = neighbor_sprite[16+dy, dx]
+
+        elif direction == 'NW':
+            # Top-left quadrant (dx=0..31, dy=0..15), mask H+V-flipped
+            for dy in range(16):
+                for dx in range(32):
+                    if not in_diamond(dx, dy): continue
                     if dither_mask[15-dy, 63-dx]:
                         canvas[py+dy, px+dx] = neighbor_sprite[dy, dx]
 ```
 
 **Direction → mask transformation**:
 
-| Direction | Tile Half | Mask Horizontal | Mask Vertical |
-|-----------|-----------|----------------|---------------|
-| SE | Bottom (rows 16-31) | As-is | As-is |
-| SW | Bottom (rows 16-31) | Flipped | As-is |
-| NE | Top (rows 0-15) | As-is | Flipped |
-| NW | Top (rows 0-15) | Flipped | Flipped |
+| Direction | Tile Quadrant | Mask Horizontal | Mask Vertical |
+|-----------|---------------|----------------|---------------|
+| NE | Top-right (dx=32..63, dy=0..15) | As-is | Flipped |
+| SE | Bottom-right (dx=32..63, dy=16..31) | As-is | As-is |
+| SW | Bottom-left (dx=0..31, dy=16..31) | Flipped | As-is |
+| NW | Top-left (dx=0..31, dy=0..15) | Flipped | Flipped |
+
+**⚠️ CORRECTION — Quadrant-based, NOT full-half**: An earlier version of this document described each direction as covering the full 64px-wide half of the tile (top or bottom). This was implemented and tested — it produces catastrophic over-dithering because when multiple directions are active simultaneously (e.g., NE and NW neighbors are both different terrain types), both directions' masks overlap across the full top half, producing 2–4× the intended hole density at the tile's horizontal midline. The quadrant-based approach (32px wide per direction) prevents this overlap by partitioning the tile into four non-overlapping zones. The horizontal flip on the mask is still critical because the dither hole pattern is NOT left-right symmetric — H-flip ensures holes are oriented toward the correct diamond edge within each quadrant.
 
 **Rendering order**: Dither is composited directly onto the canvas after base terrain is drawn. It modifies pixels in-place by overwriting them with the neighbor's terrain color at dither hole positions. This must happen BEFORE coastlines, rivers, and other overlays so those layers draw on top of the blended terrain.
 

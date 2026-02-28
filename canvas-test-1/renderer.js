@@ -39,20 +39,20 @@ const Civ2Renderer = {
 
   // Clean (text-free) column indices per terrain type in TERRAIN1.GIF
   // Cols 2-3 are resource sprites, col 7 has special sprites (irrigation, etc.)
-  // Cols 0-1, 4-6, 8 are candidate base terrain variants
-  // The <50% opaque filter in extractAllSprites() discards chroma-key placeholders
+  // Per-terrain lists from Civ2_MGE_Binary_Analysis.md verified clean variant table
+  // The <50% opaque filter in extractAllSprites() provides a safety net
   CLEAN_VARIANTS: [
-    [0, 1, 4, 5, 6, 8],  // 0 Desert
-    [0, 1, 4, 5, 6, 8],  // 1 Plains
-    [0, 1, 4, 5, 6, 8],  // 2 Grassland
-    [0, 1, 4, 5, 6, 8],  // 3 Forest
-    [0, 1, 4, 5, 6, 8],  // 4 Hills
-    [0, 1, 4, 5, 6, 8],  // 5 Mountains
-    [0, 1, 4, 5, 6, 8],  // 6 Tundra
-    [0, 1, 4, 5, 6, 8],  // 7 Glacier
-    [0, 1, 4, 5, 6, 8],  // 8 Swamp
-    [0, 1, 4, 5, 6, 8],  // 9 Jungle
-    [0, 1, 4, 5, 6, 8],  // 10 Ocean
+    [0, 1, 4],              // 0 Desert     — cols 5,6,8 have text labels
+    [0, 1, 4],              // 1 Plains     — cols 5,6,8 have text labels
+    [0, 1, 4],              // 2 Grassland  — cols 5,6,8 have text labels
+    [0, 1, 4, 5, 6, 8],     // 3 Forest
+    [0, 1, 4, 5, 6, 8],     // 4 Hills
+    [0, 1, 4, 5, 6],        // 5 Mountains  — col 8 has text label
+    [0, 4],                  // 6 Tundra     — cols 1,5,6,8 have text labels
+    [0, 4],                  // 7 Glacier    — cols 1,5,6,8 have text labels
+    [0, 4],                  // 8 Swamp      — cols 1,5,6,8 have text labels
+    [0, 1, 4, 8],            // 9 Jungle     — cols 5,6 have text labels
+    [0, 1, 4],              // 10 Ocean      — cols 5,6,8 have text labels
   ],
 
   // Standard Civ2 MGE max HP per unit type (RULES.TXT @UNITS field 7)
@@ -1098,6 +1098,12 @@ const Civ2Renderer = {
   // ── Dither pixel manipulation (direction-aware, quadrant-based, diamond-clipped) ──
   // Each direction writes to a 32×16 quadrant of the 64×32 tile, clipped to the
   // isometric diamond boundary to prevent bleed into adjacent tiles.
+  // Mask flips per Binary Analysis doc — H-flip added for SW/NW since the mask
+  // is NOT left-right symmetric:
+  //   NE: top-right quadrant,    mask V-flipped
+  //   SE: bottom-right quadrant, mask as-is
+  //   SW: bottom-left quadrant,  mask H-flipped
+  //   NW: top-left quadrant,     mask H+V-flipped
   _applyDither(pixels, cw, ch, px, py, neighborData, mask, dir) {
     // Diamond x-range [xMin, xMax] inclusive for local row ly (0-31)
     function diamondX(ly) {
@@ -1106,7 +1112,7 @@ const Civ2Renderer = {
     }
 
     if (dir === 'NE') {
-      // Top-right quadrant: dx=32..63, dy=0..15
+      // Top-right quadrant: dx=32..63, dy=0..15, mask V-flipped
       for (let dy = 0; dy < 16; dy++) {
         const [dxMin, dxMax] = diamondX(dy);
         const xStart = Math.max(32, dxMin), xEnd = Math.min(63, dxMax);
@@ -1121,7 +1127,7 @@ const Civ2Renderer = {
         }
       }
     } else if (dir === 'SE') {
-      // Bottom-right quadrant: dx=32..63, ly=16..31
+      // Bottom-right quadrant: dx=32..63, ly=16..31, mask as-is
       for (let dy = 0; dy < 16; dy++) {
         const ly = 16 + dy;
         const [dxMin, dxMax] = diamondX(ly);
@@ -1137,13 +1143,13 @@ const Civ2Renderer = {
         }
       }
     } else if (dir === 'SW') {
-      // Bottom-left quadrant: dx=0..31, ly=16..31
+      // Bottom-left quadrant: dx=0..31, ly=16..31, mask H-flipped
       for (let dy = 0; dy < 16; dy++) {
         const ly = 16 + dy;
         const [dxMin, dxMax] = diamondX(ly);
         const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
         for (let dx = xStart; dx <= xEnd; dx++) {
-          if (!mask[dy * 64 + dx]) continue;
+          if (!mask[dy * 64 + (63 - dx)]) continue;
           const si = (ly * 64 + dx) * 4;
           if (neighborData[si + 3] === 0) continue;
           const cx = px + dx, cy = py + ly;
@@ -1153,12 +1159,12 @@ const Civ2Renderer = {
         }
       }
     } else if (dir === 'NW') {
-      // Top-left quadrant: dx=0..31, dy=0..15
+      // Top-left quadrant: dx=0..31, dy=0..15, mask H+V-flipped
       for (let dy = 0; dy < 16; dy++) {
         const [dxMin, dxMax] = diamondX(dy);
         const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
         for (let dx = xStart; dx <= xEnd; dx++) {
-          if (!mask[(15 - dy) * 64 + dx]) continue;
+          if (!mask[(15 - dy) * 64 + (63 - dx)]) continue;
           const si = (dy * 64 + dx) * 4;
           if (neighborData[si + 3] === 0) continue;
           const cx = px + dx, cy = py + dy;
@@ -1172,6 +1178,7 @@ const Civ2Renderer = {
 
   // ── Shroud dither: black dots on EXPLORED tiles at boundary with shrouded tiles ──
   // Quadrant-based (32×16 per direction) + diamond-clipped to prevent bleed.
+  // Uses same H/V flip logic as _applyDither for consistency.
   // dir = direction of the SHROUDED neighbor relative to this explored tile.
   _applyShroudDither(pixels, cw, ch, px, py, mask, dir) {
     // Diamond x-range [xMin, xMax] inclusive for local row ly (0-31)
@@ -1181,7 +1188,7 @@ const Civ2Renderer = {
     }
 
     if (dir === 'NE') {
-      // Top-right quadrant: dx=32..63, dy=0..15
+      // Top-right quadrant: dx=32..63, dy=0..15, mask V-flipped
       for (let dy = 0; dy < 16; dy++) {
         const [dxMin, dxMax] = diamondX(dy);
         const xStart = Math.max(32, dxMin), xEnd = Math.min(63, dxMax);
@@ -1194,7 +1201,7 @@ const Civ2Renderer = {
         }
       }
     } else if (dir === 'SE') {
-      // Bottom-right quadrant: dx=32..63, ly=16..31
+      // Bottom-right quadrant: dx=32..63, ly=16..31, mask as-is
       for (let dy = 0; dy < 16; dy++) {
         const ly = 16 + dy;
         const [dxMin, dxMax] = diamondX(ly);
@@ -1208,13 +1215,13 @@ const Civ2Renderer = {
         }
       }
     } else if (dir === 'SW') {
-      // Bottom-left quadrant: dx=0..31, ly=16..31
+      // Bottom-left quadrant: dx=0..31, ly=16..31, mask H-flipped
       for (let dy = 0; dy < 16; dy++) {
         const ly = 16 + dy;
         const [dxMin, dxMax] = diamondX(ly);
         const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
         for (let dx = xStart; dx <= xEnd; dx++) {
-          if (!mask[dy * 64 + dx]) continue;
+          if (!mask[dy * 64 + (63 - dx)]) continue;
           const cx = px + dx, cy = py + ly;
           if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
           const di = (cy * cw + cx) * 4;
@@ -1222,12 +1229,12 @@ const Civ2Renderer = {
         }
       }
     } else if (dir === 'NW') {
-      // Top-left quadrant: dx=0..31, dy=0..15
+      // Top-left quadrant: dx=0..31, dy=0..15, mask H+V-flipped
       for (let dy = 0; dy < 16; dy++) {
         const [dxMin, dxMax] = diamondX(dy);
         const xStart = Math.max(0, dxMin), xEnd = Math.min(31, dxMax);
         for (let dx = xStart; dx <= xEnd; dx++) {
-          if (!mask[(15 - dy) * 64 + dx]) continue;
+          if (!mask[(15 - dy) * 64 + (63 - dx)]) continue;
           const cx = px + dx, cy = py + dy;
           if (cx < 0 || cx >= cw || cy < 0 || cy >= ch) continue;
           const di = (cy * cw + cx) * 4;
