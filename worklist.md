@@ -1,6 +1,61 @@
 # Worklist
 
-## Status: READY
+## Status: READY — Batch 7 ready for workers
+
+---
+
+## Batch 7
+
+### worker-a: Wrap Seam Fix + Ocean Dither (Items 23, 13)
+
+#### What to do
+
+Two small fixes in `renderer.js`: fix the displayW crop width to eliminate the wrap seam, and re-enable ocean dither with proper pole handling.
+
+#### Files to modify
+- `canvas-test-1/renderer.js`
+
+#### Files NOT to touch
+- `canvas-test-1/parser.js`
+- `canvas-test-1/app.js`
+- `canvas-test-1/index.html`
+
+#### Item 23: Fix displayW Crop Width
+
+**Problem**: The `displayW` formula at line ~425 includes one full extra overlap column for wrapping maps:
+```javascript
+const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);
+```
+
+For a 40-column map this gives `41 * 64 + 32 = 2656px`, which makes the duplicate of column 0 (rendered at `gx = mw`) fully visible. This creates a visible seam where the eastern edge of the map meets the duplicate western edge — including duplicate city labels (e.g., two "Cardiff" cities side by side).
+
+The 4 overlap columns (`xExtra = 4`) provide blending context for dither/overlays. They should be cropped away, not shown.
+
+**Fix**: Change line ~425 from:
+```javascript
+const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // final visible width
+```
+to:
+```javascript
+const displayW = mw * TW + (TW >> 1);  // final visible width — exact mw columns
+```
+
+This crops to exactly `mw` columns (2592px for 40-column map). The `+ (TW >> 1)` accounts for odd-row half-tile stagger. At the right edge, the left half of column `mw`'s diamond (32px) peeks in naturally, connecting seamlessly back to column 0 at the left edge.
+
+#### Item 13: Ocean Dither Blending (with pole guard)
+
+**Problem**: The dither pass skips ocean neighbors (`nter === 10`). Original Civ2 dither-blends land→ocean transitions for smoother coastlines. This skip was previously removed but caused blue artifacts because there was no pole guard. Now the pole guard IS in place (`if (ny < 0 || ny >= mh) continue;` at line ~509), so it's safe to re-enable ocean dither.
+
+**Fix**: Change line ~511 from:
+```javascript
+if (nter === ter || nter === 10) continue;
+```
+to:
+```javascript
+if (nter === ter) continue;
+```
+
+The pole guard at line ~509 prevents out-of-bounds ocean dither at the map edges. In-bounds ocean neighbors will now dither onto adjacent land tiles, creating smoother coast transitions. Since dither (Pass 2) runs before coastlines (Pass 3), coastline sprites will draw on top of any dither artifacts.
 
 ---
 
@@ -31,20 +86,17 @@ Batch 5b applied structural changes (wide canvas xExtra=4, crop, entity duplicat
 ## Batch 5c (COMPLETED — partial)
 
 - Item 24 (blue ocean dither) — FIXED. Restored `nter === 10` ocean skip in dither pass.
-- Item 23 (wrap seam) — NOT FIXED. Variant hash was changed to use `mapData.wrap(gx)`, which is correct but insufficient. The seam persists — root cause needs further investigation.
-
-**Item 23 investigation notes**: The variant hash fix ensures overlap tiles at `gx >= mw` use the same base terrain sprite as their canonical counterparts. All Pass 3 functions (`getTerrain`, `getNeighbors`, `getImprovements`, `getResource`, `hasShield`, `isLand`, `hasRiver`, `getVisibility`, `getKnownImprovements`) wrap internally via `wrap()`, so overlays/coastlines/roads should be identical on overlap columns. The shroud pass also wraps correctly. Yet the seam remains visible. Possible remaining causes:
-- The dither pass writes dither pixels at the CURRENT tile's physical position based on its neighbor's terrain type (not the neighbor's physical pixels). So at `gx = mw - 1` (last original column), dithering toward its east-side neighbors should work since those neighbors now exist physically at `gx = mw, mw+1, ...`. Need to verify that all 4 dither directions (NE/SE/SW/NW) are being applied correctly at the seam boundary.
-- The issue may be that the ORIGINAL tiles at `gx = 0, 1, 2, 3` are NOT getting dither from THEIR western neighbors (`gx = mw-1, mw-2`). The dither pass only iterates up to `xMax`, and the original `gx = 0` tile's NW/SW neighbors via `getNeighbors(0, gy)` return `wrap(-1) = mw-1`. Tile `gx = mw-1` is drawn at pixel position `(mw-1)*64` — far from `gx = 0`'s pixel position 0. The dither at tile `gx = 0` in direction NW/SW reads the neighbor's TERRAIN TYPE and applies the dither pattern within `gx = 0`'s own quadrant. This should work since it only depends on terrain type, not canvas position. **But** the overlap column `gx = mw` is a duplicate of `gx = 0` — it also gets dithered. The ORIGINAL `gx = 0` however does NOT benefit from the overlap and still uses the same neighbor lookups. So the seam between the ORIGINAL rightmost column and the ORIGINAL leftmost column (which is at position 0 on the canvas) should be seamless... unless something else is wrong.
-- Could be a sub-pixel alignment issue with the crop: `displayW = (mw + 1) * TW + (TW >> 1)` — this includes one full overlap column plus a half-tile for odd-row stagger. The crop might be cutting through a tile at an unexpected position.
+- Item 23 (wrap seam) — Variant hash fixed to use `mapData.wrap(gx)`, but seam persisted. See Batch 5d.
 
 ---
 
-### worker-a: Fix Map Wrap Seam + Pole Dither (Items 23, 24) — SUPERSEDED by Batch 5c
+## Batch 5d
+
+### worker-a: Fix displayW Crop Width (Item 23)
 
 #### What to do
 
-Fix two rendering issues in `renderer.js`: the visible seam at the east-west wrap boundary on round earth maps, and blue ocean dither bleeding at north/south pole edges.
+One-line fix in `renderer.js` to eliminate the wrap seam.
 
 #### Files to modify
 - `canvas-test-1/renderer.js`
@@ -54,93 +106,35 @@ Fix two rendering issues in `renderer.js`: the visible seam at the east-west wra
 - `canvas-test-1/app.js`
 - `canvas-test-1/index.html`
 
-#### Item 24: Blue Ocean Dither on Last Row (Pole Edge)
+#### Item 23: displayW Includes a Full Overlap Column
 
-**Problem**: Land tiles on the south pole row (`gy = mh - 1`) and north pole row (`gy = 0`) show blue ocean-colored dither bleeding into them. This was introduced when the `nter === 10` ocean skip was removed from the terrain dither pass (Pass 2, line 507).
-
-**Root cause**: At line 507, the check is `if (nter === ter) continue;` — it no longer skips ocean neighbors. Out-of-bounds tiles (`gy < 0` or `gy >= mh`) return terrain 10 (ocean) from `getTerrain()`. So south pole tiles dither toward their SE/SW neighbors (which are out-of-bounds → ocean), painting blue pixels into land tiles at the bottom edge. Same issue at the north pole with NE/NW neighbors.
-
-**Fix**: Add an out-of-bounds neighbor guard at line 505, before the `getTerrain` call. Same pattern as the shroud pole fix (Item 17):
-
+**Problem**: The `displayW` formula includes one full extra column for wrapping maps:
 ```javascript
-for (const dir of ['NE', 'SE', 'SW', 'NW']) {
-  const [nx, ny] = nb[dir];
-  if (ny < 0 || ny >= mh) continue;  // no dither at map pole edges
-  const nter = getTerrain(nx, ny);
-  if (nter === ter) continue;
-  // ... rest of dither logic
-}
+const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // = (40+1)*64+32 = 2656
 ```
 
-This prevents dithering toward out-of-bounds tiles at the poles while still allowing ocean dither for in-bounds ocean neighbors.
+This means the crop keeps column `gx = mw` (a duplicate of column 0) fully visible. The seam between column `mw - 1` (eastern map edge) and column `mw` (= column 0, western map edge) is a real geographic discontinuity — different terrains, different overlays. It's visible as a hard vertical line (confirmed in screenshot showing duplicate "Cardiff" cities side by side).
 
-#### Item 23: Seamless Map Wrapping
+The 4 overlap columns (`xExtra = 4`) exist to provide blending context for dithering and overlays. They should be cropped away entirely, not shown.
 
-**Problem**: On round earth maps, there is a visible vertical seam where the map wraps. Dither blending, terrain overlays, roads, and coastlines are visually discontinuous at the boundary. The root cause is that pixel-based operations (Pass 2 dither, Pass 7+8 shroud dither) use `getImageData` to read neighboring tile pixels. At the wrap seam, the logical neighbor tile is physically drawn far away on the canvas, so the pixel reads get wrong data.
-
-**Fix**: Render to a wider canvas so all pixel-based operations have correct neighbor data, then crop the canvas back to the display width after all passes complete.
-
-**Step 1 — Separate render width from display width** (lines 421-425):
-
-Change the canvas setup from:
+**Fix**: Change line ~425 from:
 ```javascript
-const wraps = mapData.mapShape === 0;
-const xMax = wraps ? mw + 2 : mw;
-const canvasW = xMax * TW + (TW >> 1);
+const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // final visible width
 ```
 to:
 ```javascript
-const wraps = mapData.mapShape === 0;
-const xExtra = wraps ? 4 : 0;           // extra columns for blending context
-const xMax = mw + xExtra;               // render this many columns
-const canvasW = xMax * TW + (TW >> 1);  // wide canvas for rendering
-const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // final visible width
+const displayW = mw * TW + (TW >> 1);  // final visible width
 ```
 
-All rendering passes already use `xMax` for their loops, so they'll automatically render the extra columns. The `wrap()` function in the parser handles `gx >= mw` correctly.
-
-**Step 2 — Update city/unit wrap duplication**: Currently cities and units only duplicate at `gx = mw` when `c.gx === 0`. With the wider canvas, also duplicate entities at `gx = mw + 1` when `c.gx === 1`, etc. The general rule: if `wraps && c.gx < xExtra`, add `c.gx + mw` to the draw positions. Apply this to:
-- Pass 4 cities (line ~635): `if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);`
-- Pass 4 ghost cities (line ~698): same pattern
-- Pass 5 units (line ~830): `if (wraps && u.gx < xExtra) unitPositions.push(u.gx + mw);`
-- Pass 9 city name labels (line ~1032): same pattern
-
-**Step 3 — Crop after all passes** (line 1054, just before `return { canvasW, canvasH }`):
-
-After all rendering is complete (including shroud, dimming, and city name labels), crop the canvas to the display width:
-
-```javascript
-// Crop to display width — remove extra blending columns
-if (wraps && canvasW > displayW) {
-  const cropData = ctx.getImageData(0, 0, displayW, canvasH);
-  canvas.width = displayW;
-  ctx.putImageData(cropData, 0, 0);
-}
-
-return { canvasW: wraps ? displayW : canvasW, canvasH };
-```
-
-This resizes the canvas and copies only the visible portion. The extra columns (which had correct blending but are now outside the display area) are discarded.
-
-**Why this works**: With 4 extra columns, tile `gx = mw + 1` (wraps to logical `gx = 1`) is physically adjacent to tile `gx = mw` (wraps to `gx = 0`) on the canvas. The dither pass reads pixel data from these physically adjacent tiles and blends correctly. The seam — where physical adjacency breaks down — is pushed to `gx = mw + 3` or beyond, outside the display area.
+This crops to exactly `mw` columns (2592px for a 40-column map instead of 2656px). The `+ (TW >> 1)` accounts for the odd-row half-tile stagger. The overlap columns still provide blending context but are outside the visible area. At the right edge, the left half of column `mw`'s isometric diamond (32px) naturally peeks in, providing the visual connection back to column 0 at the left edge.
 
 ---
 
-## Batch 6
+## Batch 6 (COMPLETED — applied but uncommitted)
 
-### worker-a: Visual Fidelity Polish
+Items 10 (Modern Alt city row 7), 11 (terrain variant diversity — CLEAN_VARIANTS expanded to cols [0,1,4,5,6,8]), 15 (unit stack priority ordering). Item 13 (ocean dither) NOT re-applied — `nter === 10` skip remains; ocean dither needs the pole guard (`ny` bounds check) to coexist. Item 22 (viewport) applied by worker-b in previous commit.
 
-#### What to do
-
-Implement 4 visual improvements in `renderer.js`: Modern Alt city sprites, more terrain variants, ocean dither blending, and unit stack ordering.
-
-#### Files to modify
-- `canvas-test-1/renderer.js`
-
-#### Files NOT to touch
-- `canvas-test-1/parser.js`
-- `canvas-test-1/app.js` (worker-b owns this)
-- `canvas-test-1/index.html` (worker-b owns this)
+### worker-a: Visual Fidelity Polish (APPLIED)
 
 #### Item 10: CITIES.GIF Row 6 (Modern Alt)
 
@@ -346,25 +340,8 @@ Remaining improvements, ordered by impact.
 
 **Investigation needed**: Determine what sprite or overlay original Civ2 uses. Likely a small flag from the FLAGS section in CITIES.GIF (y≈395-422) or a tinted overlay.
 
-#### Item 23: Map Wrap Seam Visible at East-West Boundary
-
-**Problem**: On round earth maps, there is a visible vertical seam where the map wraps (right edge meets left edge). The terrain on either side of the seam does not blend smoothly — dither transitions, terrain overlays, and roads/railroads are visually discontinuous at the boundary.
-
-**Root cause**: The dither blending pass (Pass 2) works by reading pixel data from already-rendered neighboring tiles using `getImageData`. At the wrap seam, the tile at `gx = mw` was drawn at the right edge of the canvas, but its logical eastern neighbor (`gx = 1`) was drawn at the left edge (pixel x ≈ 64). The dither pass reads pixels at the physical neighbor position, which is off to the left — not adjacent on the canvas. So no blending occurs across the seam. Adding extra overlap columns (currently `mw + 2`) helps slightly but doesn't fully solve it because the pixel-based dither still can't bridge the gap.
-
-The same issue affects:
-- Terrain overlay connectivity (forest/mountain/hill neighbor bitmask) — the overlay variant at the seam may not match its wrapped neighbor
-- Road/railroad segments — roads connecting across the seam won't draw the connecting segment
-- Coastline quadrants — coast pieces at the seam may not match
-
-**Possible fixes**:
-1. **Duplicate more columns**: Render the leftmost N columns again at the right edge AND the rightmost N columns at the left edge (e.g., 3-4 columns overlap on each side). This gives every tile enough physical neighbors for pixel-based blending. The viewport (Item 22) would clip the visible area to hide the duplicated edges.
-2. **Post-render stitch**: After rendering the full map, copy a strip of pixels from the left edge to the right edge's overlap zone (and vice versa), then re-run only the dither pass on the seam tiles.
-3. **Render wider + crop**: Render the map at `mw + 4` or more columns wide, then have the viewport only show `mw` columns worth of content, wrapping the viewport position modulo the logical map width.
-
-**Interaction with Item 22**: The interactive viewport (Item 22) will blit from the offscreen canvas with wrapping. If the offscreen canvas has enough overlap columns on both sides, the viewport can always show a seamless view by choosing the right source coordinates. This makes fix #3 the most natural approach.
-
-**Files**: `canvas-test-1/renderer.js` — canvas width, all pass loops, dither pass.
+#### ~~Item 23: Map Wrap Seam Visible at East-West Boundary~~
+Resolved via Batches 5b/5c/5d: wide canvas (xExtra=4) + variant hash wrapping + displayW crop fix.
 
 ---
 
