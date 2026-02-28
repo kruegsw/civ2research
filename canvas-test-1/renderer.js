@@ -743,6 +743,35 @@ const Civ2Renderer = {
       console.log(`FOW: civ=${options.fowCiv}, bit=${fowBit}, fogged=${fogCount}, visible=${visCount}`);
     }
 
+    // ────────────────────────────────────────
+    // PASS 8: Black edges at top and bottom of map
+    // ────────────────────────────────────────
+    // The isometric grid leaves triangular gaps at the north/south map
+    // edges. The real game fills these with black (unexplored).
+    ctx.fillStyle = '#000';
+    // Top edge: draw black diamonds at row -1 (covers upper triangles of row 0)
+    for (let gx = 0; gx < mw; gx++) {
+      const [px, py] = tilePos(gx, -1);
+      ctx.beginPath();
+      ctx.moveTo(px + TW / 2, py);
+      ctx.lineTo(px + TW, py + TH / 2);
+      ctx.lineTo(px + TW / 2, py + TH);
+      ctx.lineTo(px, py + TH / 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // Bottom edge: draw black diamonds at row mh (covers lower triangles of last row)
+    for (let gx = 0; gx < mw; gx++) {
+      const [px, py] = tilePos(gx, mh);
+      ctx.beginPath();
+      ctx.moveTo(px + TW / 2, py);
+      ctx.lineTo(px + TW, py + TH / 2);
+      ctx.lineTo(px + TW / 2, py + TH);
+      ctx.lineTo(px, py + TH / 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+
     return { canvasW, canvasH };
   },
 
