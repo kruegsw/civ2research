@@ -419,8 +419,10 @@ const Civ2Renderer = {
     const TW = this.TW, TH = this.TH;
 
     const wraps = mapData.mapShape === 0;  // 0 = round/wrapping, 1 = flat
-    const xMax = wraps ? mw + 2 : mw;    // extra tile columns for wrap seam + dither blending
-    const canvasW = xMax * TW + (TW >> 1);
+    const xExtra = wraps ? 4 : 0;           // extra columns for blending context
+    const xMax = mw + xExtra;               // render this many columns
+    const canvasW = xMax * TW + (TW >> 1);  // wide canvas for rendering
+    const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // final visible width
     const canvasH = (mh - 1) * (TH >> 1) + TH;
     canvas.width = canvasW;
     canvas.height = canvasH;
@@ -473,7 +475,8 @@ const Civ2Renderer = {
         const [px, py] = tilePos(gx, gy);
         const ter = getTerrain(gx, gy);
         const variants = terrain[ter];
-        const vi = ((gx * 13 + gy * 7) & 0x7FFFFFFF) % variants.length;
+        const wgx = mapData.wrap(gx);
+        const vi = ((wgx * 13 + gy * 7) & 0x7FFFFFFF) % variants.length;
         ctx.drawImage(variants[vi], px, py);
       }
     }
@@ -503,8 +506,9 @@ const Civ2Renderer = {
 
         for (const dir of ['NE', 'SE', 'SW', 'NW']) {
           const [nx, ny] = nb[dir];
+          if (ny < 0 || ny >= mh) continue;  // no dither at map pole edges
           const nter = getTerrain(nx, ny);
-          if (nter === ter) continue;
+          if (nter === ter || nter === 10) continue;
 
           const nData = terrainPixData[nter];
           this._applyDither(pix, canvasW, canvasH, px, py, nData, ditherMask, dir);
@@ -637,7 +641,7 @@ const Civ2Renderer = {
     for (const c of mapData.cities) {
       // Draw at canonical position, and again at wrap seam if applicable
       const drawPositions = [c.gx];
-      if (wraps && c.gx === 0) drawPositions.push(mw);
+      if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
       for (const drawGx of drawPositions) {
         const [tpx, tpy] = tilePos(drawGx, c.gy);
         const cx = tpx + (TW >> 1);
@@ -716,7 +720,7 @@ const Civ2Renderer = {
         if (c.hasWalls) col += 4;
 
         const ghostPositions = [c.gx];
-        if (wraps && c.gx === 0) ghostPositions.push(mw);
+        if (wraps && c.gx < xExtra) ghostPositions.push(c.gx + mw);
         for (const drawGx of ghostPositions) {
           const [tpx, tpy] = tilePos(drawGx, c.gy);
           const cx = tpx + (TW >> 1);
@@ -834,7 +838,7 @@ const Civ2Renderer = {
 
         // Draw at canonical position, and again at wrap seam if applicable
         const unitPositions = [u.gx];
-        if (wraps && u.gx === 0) unitPositions.push(mw);
+        if (wraps && u.gx < xExtra) unitPositions.push(u.gx + mw);
         for (const drawGx of unitPositions) {
           const [tpx, tpy] = tilePos(drawGx, u.gy);
           ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
@@ -1030,7 +1034,7 @@ const Civ2Renderer = {
     for (const c of mapData.cities) {
       if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
       const namePositions = [c.gx];
-      if (wraps && c.gx === 0) namePositions.push(mw);
+      if (wraps && c.gx < xExtra) namePositions.push(c.gx + mw);
       for (const drawGx of namePositions) {
         const [tpx, tpy] = tilePos(drawGx, c.gy);
         const cx = tpx + (TW >> 1);
@@ -1051,7 +1055,14 @@ const Civ2Renderer = {
       }
     }
 
-    return { canvasW, canvasH };
+    // Crop to display width — remove extra blending columns
+    if (wraps && canvasW > displayW) {
+      const cropData = ctx.getImageData(0, 0, displayW, canvasH);
+      canvas.width = displayW;
+      ctx.putImageData(cropData, 0, 0);
+    }
+
+    return { canvasW: wraps ? displayW : canvasW, canvasH };
   },
 
   // ── Dither pixel manipulation (direction-aware, quadrant-based, diamond-clipped) ──

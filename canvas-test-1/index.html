@@ -26,10 +26,12 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, san
 #render-btn:disabled { background: #555; color: #999; cursor: not-allowed; }
 #render-btn:hover:not(:disabled) { background: #27ae60; }
 #map-container {
-  width: 100vw; height: calc(100vh - 50px); overflow: auto; position: relative;
+  width: 100vw; height: calc(100vh - 50px); overflow: hidden; position: relative;
   background: #0a0a1a;
 }
-canvas { image-rendering: pixelated; }
+#map-canvas { display: none; }
+#viewport-canvas { image-rendering: pixelated; width: 100%; height: 100%; cursor: grab; }
+#viewport-canvas.dragging { cursor: grabbing; }
 #tooltip {
   position: fixed; background: rgba(0,0,0,0.9); color: #fff; padding: 6px 10px;
   border-radius: 4px; font-size: 12px; pointer-events: none; display: none;
@@ -78,6 +80,7 @@ canvas { image-rendering: pixelated; }
 
 <div id="map-container">
   <canvas id="map-canvas"></canvas>
+  <canvas id="viewport-canvas"></canvas>
 </div>
 
 <div id="tooltip"></div>

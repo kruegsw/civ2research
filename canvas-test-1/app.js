@@ -1,9 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════
-// app.js — Glue: file loading, render trigger, tooltip, controls
+// app.js — Glue: file loading, render trigger, tooltip, controls,
+//          interactive scrolling viewport
 // ═══════════════════════════════════════════════════════════════════
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null };
 let currentMapData = null;
+
+// ── Viewport state ──
+let vpX = 0, vpY = 0;         // top-left of viewport in offscreen coords
+let offW = 0, offH = 0;       // offscreen canvas dimensions
+let wraps = false;             // true for round earth maps (east-west wrap)
+const SCROLL_STEP = 64;       // pixels per arrow key press
 
 // ── Auto-detect files in same directory ──
 // Requires serving via HTTP (e.g. python3 -m http.server). Silently skipped on file://.
@@ -166,7 +173,7 @@ async function doRender() {
     const unitsCtx = unitsImg ? Civ2Renderer.imgToCtx(unitsImg) : null;
     const sprites = Civ2Renderer.extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx);
 
-    // 5. Render to canvas
+    // 5. Render to offscreen canvas (#map-canvas, hidden)
     const canvas = document.getElementById('map-canvas');
     const fowEnabled = document.getElementById('fow-toggle').checked;
     const fowCivVal = document.getElementById('fow-civ').value;
@@ -176,7 +183,14 @@ async function doRender() {
     };
     const result = await Civ2Renderer.render(canvas, mapData, sprites, m => { msg.textContent = m; }, renderOptions);
 
-    // 6. Done
+    // 6. Set up viewport
+    offW = canvas.width;
+    offH = canvas.height;
+    wraps = (mapData.mapShape === 0);  // 0 = round earth (wraps), 1 = flat
+    resizeViewport();
+    drawViewport();
+
+    // 7. Done
     document.getElementById('status').textContent =
       `${mapData.mw}×${mapData.mh} tiles | ${mapData.cities.length} cities | ` +
       `${mapData.units.length} units | ${result.canvasW}×${result.canvasH}px | ` +
@@ -194,36 +208,159 @@ async function doRender() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// VIEWPORT — blit a window from the offscreen canvas
+// ═══════════════════════════════════════════════════════════════════
+const viewportCanvas = document.getElementById('viewport-canvas');
+const vCtx = viewportCanvas.getContext('2d', { colorSpace: 'srgb' });
+
+function resizeViewport() {
+  const container = document.getElementById('map-container');
+  const vpW = container.clientWidth;
+  const vpH = container.clientHeight;
+  viewportCanvas.width = vpW;
+  viewportCanvas.height = vpH;
+  clampViewport();
+}
+
+function clampViewport() {
+  const vpW = viewportCanvas.width;
+  const vpH = viewportCanvas.height;
+  // Vertical: always clamp to map bounds
+  vpY = Math.max(0, Math.min(vpY, offH - vpH));
+  // Horizontal: wrap for round earth, clamp for flat
+  if (wraps && offW > 0) {
+    vpX = ((vpX % offW) + offW) % offW;
+  } else {
+    vpX = Math.max(0, Math.min(vpX, offW - vpW));
+  }
+}
+
+function drawViewport() {
+  if (offW === 0 || offH === 0) return;
+  const offscreen = document.getElementById('map-canvas');
+  const vpW = viewportCanvas.width;
+  const vpH = viewportCanvas.height;
+
+  vCtx.clearRect(0, 0, vpW, vpH);
+
+  if (wraps) {
+    const x1 = ((vpX % offW) + offW) % offW;
+    const rightChunk = Math.min(vpW, offW - x1);
+    vCtx.drawImage(offscreen, x1, vpY, rightChunk, vpH, 0, 0, rightChunk, vpH);
+    if (rightChunk < vpW) {
+      vCtx.drawImage(offscreen, 0, vpY, vpW - rightChunk, vpH, rightChunk, 0, vpW - rightChunk, vpH);
+    }
+  } else {
+    vCtx.drawImage(offscreen, vpX, vpY, vpW, vpH, 0, 0, vpW, vpH);
+  }
+}
+
+// ── Mouse drag panning ──
+let dragging = false;
+let dragLastX = 0, dragLastY = 0;
+
+viewportCanvas.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;  // left click only
+  dragging = true;
+  dragLastX = e.clientX;
+  dragLastY = e.clientY;
+  viewportCanvas.classList.add('dragging');
+});
+
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - dragLastX;
+  const dy = e.clientY - dragLastY;
+  dragLastX = e.clientX;
+  dragLastY = e.clientY;
+  vpX -= dx;
+  vpY -= dy;
+  clampViewport();
+  drawViewport();
+});
+
+window.addEventListener('mouseup', () => {
+  if (!dragging) return;
+  dragging = false;
+  viewportCanvas.classList.remove('dragging');
+});
+
+// ── Keyboard panning ──
+const keysDown = new Set();
+let keyScrollRAF = null;
+
+window.addEventListener('keydown', e => {
+  if (offW === 0) return;
+  const key = e.key;
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) {
+    // Don't scroll if user is typing in an input/select
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+    keysDown.add(key);
+    if (!keyScrollRAF) keyScrollLoop();
+  }
+});
+
+window.addEventListener('keyup', e => {
+  keysDown.delete(e.key);
+  if (keysDown.size === 0 && keyScrollRAF) {
+    cancelAnimationFrame(keyScrollRAF);
+    keyScrollRAF = null;
+  }
+});
+
+function keyScrollLoop() {
+  let dx = 0, dy = 0;
+  if (keysDown.has('ArrowLeft')  || keysDown.has('a')) dx -= SCROLL_STEP;
+  if (keysDown.has('ArrowRight') || keysDown.has('d')) dx += SCROLL_STEP;
+  if (keysDown.has('ArrowUp')    || keysDown.has('w')) dy -= SCROLL_STEP;
+  if (keysDown.has('ArrowDown')  || keysDown.has('s')) dy += SCROLL_STEP;
+  if (dx || dy) {
+    vpX += dx;
+    vpY += dy;
+    clampViewport();
+    drawViewport();
+  }
+  keyScrollRAF = requestAnimationFrame(keyScrollLoop);
+}
+
+// ── Window resize ──
+window.addEventListener('resize', () => {
+  resizeViewport();
+  drawViewport();
+});
+
+// ═══════════════════════════════════════════════════════════════════
 // TOOLTIP — hover over map to see tile info
 // ═══════════════════════════════════════════════════════════════════
 const tooltip = document.getElementById('tooltip');
-const mapCanvas = document.getElementById('map-canvas');
 
-mapCanvas.addEventListener('mousemove', e => {
+viewportCanvas.addEventListener('mousemove', e => {
+  if (dragging) { tooltip.style.display = 'none'; return; }
   if (!currentMapData) return;
 
-  const rect = mapCanvas.getBoundingClientRect();
-  const scaleX = mapCanvas.width / rect.width;
-  const scaleY = mapCanvas.height / rect.height;
-  const mx = (e.clientX - rect.left) * scaleX;
-  const my = (e.clientY - rect.top) * scaleY;
+  const rect = viewportCanvas.getBoundingClientRect();
+  // Viewport canvas pixels are 1:1 with CSS size (no scaling)
+  const localX = e.clientX - rect.left;
+  const localY = e.clientY - rect.top;
+  // Translate to offscreen (full map) coordinates
+  let mx = localX + vpX;
+  let my = localY + vpY;
+  // Handle wrapping
+  if (wraps && offW > 0) mx = ((mx % offW) + offW) % offW;
 
   const md = currentMapData;
   const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
 
   // Find which tile the mouse is over
-  // Approximate: gy from py, then gx from px adjusted for stagger
   const approxGy = Math.floor(my / (TH >> 1));
   let found = null;
 
-  // Check a few nearby rows for the best match
   for (let gy = Math.max(0, approxGy - 1); gy <= Math.min(md.mh - 1, approxGy + 1); gy++) {
     for (let gx = 0; gx < md.mw; gx++) {
       const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
       const py = gy * (TH >> 1);
-      // Check if mouse is within this tile's bounding box
       if (mx >= px && mx < px + TW && my >= py && my < py + TH) {
-        // Rough diamond check
         const dx = mx - px - TW / 2;
         const dy = my - py - TH / 2;
         if (Math.abs(dx) / (TW / 2) + Math.abs(dy) / (TH / 2) <= 1) {
@@ -285,6 +422,6 @@ mapCanvas.addEventListener('mousemove', e => {
   }
 });
 
-mapCanvas.addEventListener('mouseleave', () => {
+viewportCanvas.addEventListener('mouseleave', () => {
   tooltip.style.display = 'none';
 });
