@@ -34,6 +34,9 @@ const Civ2Renderer = {
 
   CIV_COLORS: ['#c80000','#ffffff','#00b400','#3250dc','#f0dc00','#00c8c8','#f08c00','#b400c8'],
 
+  // Unit orders byte → shield display letter
+  ORDER_KEYS: { 1:'F', 2:'F', 3:'S', 4:'F', 5:'R', 6:'I', 7:'m', 8:'O', 9:'p', 10:'E', 11:'G' },
+
   // Clean (text-free) column indices per terrain type in TERRAIN1.GIF
   // Only cols 0 and 1 are consistently free of baked-in text labels
   CLEAN_VARIANTS: [
@@ -313,6 +316,47 @@ const Civ2Renderer = {
       // Try extracting from rows 13-14 area or right edge
       sprites.shieldTemplate = this._extractShieldTemplate(unitsCtx);
       sprites.shieldColored = {};
+
+      // Create front shield, back shield, and shadow from template
+      // Source: Civ2-clone GetShieldImages() in Civ2GoldInterface.cs
+      if (sprites.shieldTemplate) {
+        const st = sprites.shieldTemplate;
+
+        // Front: top 7 rows blacked out (HP bar + order area background)
+        const front = document.createElement('canvas');
+        front.width = st.width; front.height = st.height;
+        const fCtx = front.getContext('2d');
+        fCtx.drawImage(st, 0, 0);
+        fCtx.fillStyle = '#000';
+        fCtx.fillRect(0, 0, st.width, Math.min(7, st.height));
+        sprites.shieldFront = front;
+
+        // Back: unchanged template (for stacking indicator)
+        sprites.shieldBack = st;
+
+        // Shadow: civ-color pixels replaced with dark gray (51,51,51)
+        // Drawn offset behind shields to create outline effect
+        const shadow = document.createElement('canvas');
+        shadow.width = st.width; shadow.height = st.height;
+        const sCtx = shadow.getContext('2d');
+        sCtx.drawImage(st, 0, 0);
+        const sData = sCtx.getImageData(0, 0, shadow.width, shadow.height);
+        const sd = sData.data;
+        for (let i = 0; i < sd.length; i += 4) {
+          if (sd[i+3] === 0) continue; // skip transparent
+          // Replace civ-color placeholders (light red 255,0,0 and dark red 127,0,0) with dark gray
+          const r = sd[i], g = sd[i+1], b = sd[i+2];
+          if ((Math.abs(r - 255) < 15 && g < 15 && b < 15) ||
+              (Math.abs(r - 127) < 15 && g < 15 && b < 15)) {
+            sd[i] = 51; sd[i+1] = 51; sd[i+2] = 51;
+          }
+        }
+        sCtx.putImageData(sData, 0, 0);
+        sprites.shieldShadow = shadow;
+
+        sprites.shieldFrontColored = {};
+        sprites.shieldBackColored = {};
+      }
     }
 
     // Dither mask: bottom 16 rows of the 64x32 dither tile at y=447
@@ -628,54 +672,72 @@ const Civ2Renderer = {
         const [tpx, tpy] = tilePos(u.gx, u.gy);
         ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
 
-        // Shield (nationality indicator)
+        // Shield position
         let shieldX = tpx, shieldY = tpy - 16;
-        if (sprites.shieldTemplate && sprites.shieldOffsets[u.type]) {
-          const so = sprites.shieldOffsets[u.type];
-          const shieldKey = 'shield-' + u.owner;
-          if (!sprites.shieldColored[shieldKey]) {
-            const color = this.CIV_COLORS[u.owner] || '#cccccc';
-            sprites.shieldColored[shieldKey] = this._recolorUnit(sprites.shieldTemplate, color);
-          }
+        const so = sprites.shieldOffsets ? sprites.shieldOffsets[u.type] : null;
+        if (so && sprites.shieldFront) {
           shieldX = tpx + so.x - 1;
           shieldY = tpy - 16 + so.y - 1;
-          ctx.drawImage(sprites.shieldColored[shieldKey], shieldX, shieldY);
-        }
 
-        // HP bar — only shown when unit has taken damage
-        if (u.hpLost > 0) {
+          // Shadow offset: mirrors stacking direction
+          // Source: Civ2-clone UnitShield: ShadowOffset=(-1,1) or (1,1)
+          const shadowDX = (so.x < 32) ? -1 : 1;
+          const shadowDY = 1;
+
+          // Stacking indicator: shadow + back shield offset behind main shield
+          const count = unitCounts[tileKey] || 1;
+          if (count > 1) {
+            const backKey = 'shieldBack-' + u.owner;
+            if (!sprites.shieldBackColored[backKey]) {
+              const color = this.CIV_COLORS[u.owner] || '#cccccc';
+              sprites.shieldBackColored[backKey] = this._recolorUnit(sprites.shieldBack, color);
+            }
+            const stackDX = (so.x < 32) ? -4 : 4;
+            // Stacked shield shadow
+            if (sprites.shieldShadow) {
+              ctx.drawImage(sprites.shieldShadow, shieldX + stackDX + shadowDX, shieldY + shadowDY);
+            }
+            ctx.drawImage(sprites.shieldBackColored[backKey], shieldX + stackDX, shieldY);
+          }
+
+          // Front shield shadow
+          if (sprites.shieldShadow) {
+            ctx.drawImage(sprites.shieldShadow, shieldX + shadowDX, shieldY + shadowDY);
+          }
+
+          // Front shield (top 7 rows blacked out)
+          const frontKey = 'shieldFront-' + u.owner;
+          if (!sprites.shieldFrontColored[frontKey]) {
+            const color = this.CIV_COLORS[u.owner] || '#cccccc';
+            sprites.shieldFrontColored[frontKey] = this._recolorUnit(sprites.shieldFront, color);
+          }
+          ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
+
+          // HP bar inside shield — offset (0,2) from shield, 12×3px
+          // Source: Civ2-clone UnitShield: HPbarOffset=(0,2), HPbarSize=(12,3)
           const maxHp = this.UNIT_MAX_HP[u.type] || 10;
           const curHp = Math.max(0, maxHp - u.hpLost);
-          const barW = 15, barH = 3;
-          const barX = shieldX, barY = shieldY + (sprites.shieldTemplate ? sprites.shieldTemplate.height : 20) + 1;
-          const greenW = Math.round((curHp / maxHp) * barW);
-          ctx.fillStyle = '#000';
-          ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
-          ctx.fillStyle = '#00c800';
+          const barW = 12, barH = 3;
+          const barX = shieldX, barY = shieldY + 2;
+          const greenW = Math.floor((curHp / maxHp) * barW);
+          if (greenW > 8) ctx.fillStyle = 'rgb(87,171,39)';
+          else if (greenW > 3) ctx.fillStyle = 'rgb(255,223,79)';
+          else ctx.fillStyle = 'rgb(243,0,0)';
           ctx.fillRect(barX, barY, greenW, barH);
-          ctx.fillStyle = '#c80000';
-          ctx.fillRect(barX + greenW, barY, barW - greenW, barH);
-        }
 
-        // Fortification overlay
-        if (sprites.fortify && (u.orders === 0x01 || u.orders === 0x02)) {
-          ctx.drawImage(sprites.fortify, tpx, tpy - 16);
-        }
-
-        // Stacked unit count badge
-        const count = unitCounts[tileKey] || 1;
-        if (count > 1) {
-          const badgeStr = String(count);
-          ctx.font = 'bold 9px monospace';
-          const bw = ctx.measureText(badgeStr).width + 4;
-          const bh = 11;
-          const bx = tpx + TW - bw - 2, by = tpy - 16 + 48 - bh - 2;
-          ctx.fillStyle = '#000';
-          ctx.fillRect(bx, by, bw, bh);
-          ctx.fillStyle = '#fff';
+          // Order letter — offset (width/2, 7) from shield, 13px tall area
+          // Source: Civ2-clone UnitShield: OrderOffset=(width/2, 7), OrderTextHeight=13
+          const orderLetter = this.ORDER_KEYS[u.orders] || '-';
+          ctx.font = 'bold 13px Arial';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
-          ctx.fillText(badgeStr, bx + bw / 2, by + 1);
+          ctx.fillStyle = '#000';
+          ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
+        }
+
+        // Fortification overlay — only for fully fortified (0x02)
+        if (sprites.fortify && u.orders === 0x02) {
+          ctx.drawImage(sprites.fortify, tpx, tpy - 16);
         }
       }
     }
@@ -928,24 +990,19 @@ const Civ2Renderer = {
   },
 
   // Extract shield/flag template from UNITS.GIF
-  // The shield is stored in the right portion of the sprite sheet, around x≈599, y≈1
-  // It uses civ-color placeholders (idx 251/252: dark red/light red) like unit sprites
+  // backShield1 is at (586, 1, 12, 20) in the right margin of the sprite sheet
+  // (9 unit cols × 65px = 585px, leaving 55px for shields)
+  // Source: Civ2-clone Civ2GoldInterface.cs
   _extractShieldTemplate(unitsCtx) {
-    // The shield template is typically at the very end of the first row,
-    // in the border/margin area after the 10 unit cells
-    // 10 cols × 65px = 650, but image is 640px wide, so look in the rightmost area
-    // Try a 15×20 region at x=600, y=1 (within the border strip of col 9)
     const candidates = [
-      { x: 599, y: 1, w: 15, h: 20 },
-      { x: 601, y: 1, w: 14, h: 20 },
-      { x: 597, y: 1, w: 16, h: 20 },
+      { x: 586, y: 1, w: 12, h: 20 },  // backShield1 (primary)
+      { x: 599, y: 1, w: 12, h: 20 },  // backShield2 (fallback)
     ];
     const UC = [[255, 0, 255], [135, 83, 135]];
 
     for (const c of candidates) {
       if (c.x + c.w > unitsCtx.canvas.width || c.y + c.h > unitsCtx.canvas.height) continue;
       const testData = unitsCtx.getImageData(c.x, c.y, c.w, c.h).data;
-      // Check if this region has any civ-color pixels (red placeholders)
       let hasColor = false;
       for (let i = 0; i < testData.length; i += 4) {
         const r = testData[i], g = testData[i+1], b = testData[i+2];
@@ -959,23 +1016,21 @@ const Civ2Renderer = {
       }
     }
 
-    // Fallback: generate a simple colored rectangle shield (15×20)
+    // Fallback: generate a 12×20 shield with civ-color placeholders
     const c = document.createElement('canvas');
-    c.width = 15; c.height = 20;
+    c.width = 12; c.height = 20;
     const ctx = c.getContext('2d');
-    // Draw a shield shape with civ-color placeholders (pure red)
     ctx.fillStyle = '#ff0000';
-    ctx.fillRect(1, 1, 13, 16);
+    ctx.fillRect(0, 0, 12, 18);
     ctx.fillStyle = '#7f0000';
-    ctx.fillRect(1, 1, 13, 2);
-    ctx.fillRect(1, 1, 2, 16);
-    ctx.fillRect(12, 1, 2, 16);
-    // Bottom triangle
+    ctx.fillRect(0, 0, 12, 2);
+    ctx.fillRect(0, 0, 2, 18);
+    ctx.fillRect(10, 0, 2, 18);
     ctx.fillStyle = '#ff0000';
     ctx.beginPath();
-    ctx.moveTo(1, 17);
-    ctx.lineTo(7, 19);
-    ctx.lineTo(14, 17);
+    ctx.moveTo(0, 18);
+    ctx.lineTo(6, 20);
+    ctx.lineTo(12, 18);
     ctx.closePath();
     ctx.fill();
     return c;
