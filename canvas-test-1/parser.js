@@ -84,6 +84,7 @@ const Civ2Parser = {
 
     // Player civ slot and alive bitmask
     const playerCiv = savBuf[0x0029];
+    const mapRevealed = savBuf[0x002B];
     const civsAlive = savBuf[0x002E];
 
     // Tech discovery: 100 bytes at 0x00A6, one byte per advance
@@ -156,13 +157,14 @@ const Civ2Parser = {
       const originalOwner = savBuf[off + 10];
       const turnsSinceCapture = savBuf[off + 11];
       const isOccupied = (owner !== originalOwner);
+      const knownToTribes = savBuf[off + 12];
       const believedSize = [];
       for (let civ = 0; civ < 8; civ++) {
         believedSize[civ] = savBuf[off + 14 + civ];
       }
       const style = civStyles[owner] || 0;
       if (name && size > 0) {
-        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, hasPalace, originalOwner, turnsSinceCapture, isOccupied, believedSize, style });
+        cities.push({ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, hasPalace, originalOwner, turnsSinceCapture, isOccupied, knownToTribes, believedSize, style });
       }
     }
 
@@ -179,10 +181,16 @@ const Civ2Parser = {
       const orders = savBuf[off + 15];
       const visFlag = savBuf[off + 9];
       const hpLost = savBuf[off + 10];
+      const nextInStack = this.s16(savBuf, off + 22);
+      const prevInStack = this.s16(savBuf, off + 24);
       if (alive === 0 && ux >= 0 && ux < mw2 && uy >= 0 && uy < mh) {
-        units.push({ gx: ux >> 1, gy: uy, type: utype, owner: uowner, orders, hpLost, visFlag });
+        units.push({ gx: ux >> 1, gy: uy, type: utype, owner: uowner, orders, hpLost, visFlag, saveIndex: i, nextInStack, prevInStack });
       }
     }
+
+    // Build save-file index → unit lookup for stacking linked list resolution
+    const unitBySaveIndex = {};
+    for (const u of units) unitBySaveIndex[u.saveIndex] = u;
 
     // ── Build accessor functions ──
     function wrap(x) { return ((x % mw) + mw) % mw; }
@@ -281,12 +289,14 @@ const Civ2Parser = {
     return {
       mw, mh, mw2, ms, mapSeed, qw, qh, mapShape, isScn,
       tileData, cities, units, civStyles,
-      playerCiv, civsAlive, civTechCounts, civTechs,
+      playerCiv, mapRevealed, civsAlive, civTechCounts, civTechs,
       terrainCounts, oceanPct, citiesOnOcean,
       // Accessor functions
       getTerrain, isLand, hasRiver, getImprovements, getVisibility, getResource, getNeighbors, wrap,
       // Block 1 / FOW / occupancy data
-      knownImprovements, getKnownImprovements, hasGoodyHut, hasShield
+      knownImprovements, getKnownImprovements, hasGoodyHut, hasShield,
+      // Unit stacking linked list
+      unitBySaveIndex
     };
   }
 };

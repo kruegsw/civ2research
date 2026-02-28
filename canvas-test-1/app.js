@@ -9,6 +9,7 @@ let currentMapData = null;
 // ── Viewport state ──
 let vpX = 0, vpY = 0;         // top-left of viewport in offscreen coords
 let offW = 0, offH = 0;       // offscreen canvas dimensions
+let wrapW = 0;                 // tile-aligned wrap width (mw * TW, excludes stagger)
 let wraps = false;             // true for round earth maps (east-west wrap)
 const SCROLL_STEP = 64;       // pixels per arrow key press
 
@@ -187,13 +188,14 @@ async function doRender() {
     offW = canvas.width;
     offH = canvas.height;
     wraps = (mapData.mapShape === 0);  // 0 = round earth (wraps), 1 = flat
+    wrapW = result.wrapW || offW;     // tile-aligned wrap width from renderer
     resizeViewport();
     drawViewport();
 
     // 7. Done
     document.getElementById('status').textContent =
       `${mapData.mw}×${mapData.mh} tiles | ${mapData.cities.length} cities | ` +
-      `${mapData.units.length} units | ${result.canvasW}×${result.canvasH}px | ` +
+      `${mapData.units.length} units | ${result.displayW || result.canvasW}×${result.canvasH}px | ` +
       `Ocean: ${mapData.oceanPct}%`;
 
     setTimeout(() => { overlay.style.display = 'none'; }, 200);
@@ -228,8 +230,8 @@ function clampViewport() {
   // Vertical: always clamp to map bounds
   vpY = Math.max(0, Math.min(vpY, offH - vpH));
   // Horizontal: wrap for round earth, clamp for flat
-  if (wraps && offW > 0) {
-    vpX = ((vpX % offW) + offW) % offW;
+  if (wraps && wrapW > 0) {
+    vpX = ((vpX % wrapW) + wrapW) % wrapW;
   } else {
     vpX = Math.max(0, Math.min(vpX, offW - vpW));
   }
@@ -244,11 +246,14 @@ function drawViewport() {
   vCtx.clearRect(0, 0, vpW, vpH);
 
   if (wraps) {
-    const x1 = ((vpX % offW) + offW) % offW;
-    const rightChunk = Math.min(vpW, offW - x1);
+    const x1 = ((vpX % wrapW) + wrapW) % wrapW;
+    const rightChunk = Math.min(vpW, wrapW - x1);
     vCtx.drawImage(offscreen, x1, vpY, rightChunk, vpH, 0, 0, rightChunk, vpH);
-    if (rightChunk < vpW) {
-      vCtx.drawImage(offscreen, 0, vpY, vpW - rightChunk, vpH, rightChunk, 0, vpW - rightChunk, vpH);
+    let drawn = rightChunk;
+    while (drawn < vpW) {
+      const chunk = Math.min(vpW - drawn, wrapW);
+      vCtx.drawImage(offscreen, 0, vpY, chunk, vpH, drawn, 0, chunk, vpH);
+      drawn += chunk;
     }
   } else {
     vCtx.drawImage(offscreen, vpX, vpY, vpW, vpH, 0, 0, vpW, vpH);
@@ -347,10 +352,16 @@ viewportCanvas.addEventListener('mousemove', e => {
   let mx = localX + vpX;
   let my = localY + vpY;
   // Handle wrapping
-  if (wraps && offW > 0) mx = ((mx % offW) + offW) % offW;
+  if (wraps && wrapW > 0) mx = ((mx % wrapW) + wrapW) % wrapW;
 
   const md = currentMapData;
   const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
+
+  // FOW state for tooltip filtering
+  const fowEnabled = document.getElementById('fow-toggle').checked && !md.mapRevealed;
+  const fowCivVal = document.getElementById('fow-civ').value;
+  const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : null;
+  const fowBit = (fowEnabled && fowCiv != null) ? (1 << fowCiv) : 0;
 
   // Find which tile the mouse is over
   const approxGy = Math.floor(my / (TH >> 1));
@@ -372,11 +383,29 @@ viewportCanvas.addEventListener('mousemove', e => {
 
   if (found) {
     const { gx, gy } = found;
+
+    // FOW visibility check — unexplored tiles show minimal info
+    if (fowEnabled && fowBit) {
+      const vis = md.getVisibility(gx, gy);
+      const known = md.getKnownImprovements(gx, gy, fowCiv);
+      if (!vis && !known) {
+        tooltip.textContent = `(${gx * 2 + (gy % 2)}, ${gy})  Unexplored`;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (e.clientX + 14) + 'px';
+        tooltip.style.top = (e.clientY + 14) + 'px';
+        return;
+      }
+    }
+
     const ter = md.getTerrain(gx, gy);
-    const imp = md.getImprovements(gx, gy);
     const vis = md.getVisibility(gx, gy);
     const river = md.hasRiver(gx, gy);
     const res = md.getResource(gx, gy);
+    // Use known improvements on dimmed tiles when FOW is active
+    const tileVisible = !fowBit || (vis & fowBit);
+    const imp = (fowEnabled && fowBit && !tileVisible)
+      ? md.getKnownImprovements(gx, gy, fowCiv)
+      : md.getImprovements(gx, gy);
 
     const terName = Civ2Renderer.TERRAIN_NAMES[ter] || '?';
     let info = `(${gx * 2 + (gy % 2)}, ${gy})  ${terName}`;
@@ -397,17 +426,28 @@ viewportCanvas.addEventListener('mousemove', e => {
     // Check for city at this location
     for (const c of md.cities) {
       if (c.gx === gx && c.gy === gy) {
+        // FOW: skip cities the selected civ doesn't know about
+        if (fowEnabled && fowBit) {
+          const cityKnown = (c.knownToTribes != null) ? !!(c.knownToTribes & fowBit) : !!(imp & 0x02);
+          if (!cityKnown) continue;
+        }
+        const displaySize = (fowEnabled && fowBit && !tileVisible)
+          ? c.believedSize[fowCiv] : c.size;
         const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;
         const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
         const styleNames = ['Bronze','Classical','Far East','Medieval'];
-        info += `\n${c.name} (size ${c.size}, ${epochNames[epoch]}, ${styleNames[c.style] || '?'}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''})`;
+        info += `\n${c.name} (size ${displaySize}, ${epochNames[epoch]}, ${styleNames[c.style] || '?'}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''})`;
         break;
       }
     }
 
-    // Check for units at this location
+    // Check for units at this location — skip invisible units when FOW active
     for (const u of md.units) {
       if (u.gx !== gx || u.gy !== gy) continue;
+      if (fowEnabled && fowBit) {
+        if (!(vis & fowBit)) continue;  // tile not currently visible
+        if (u.visFlag != null && !(u.visFlag & fowBit)) continue;  // unit not visible to civ
+      }
       const name = Civ2Renderer.UNIT_NAMES[u.type] || `Unit#${u.type}`;
       const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
       info += `\n[Unit] ${name} (id ${u.type}, ${owner}, hp-${u.hpLost}, orders ${u.orders})`;

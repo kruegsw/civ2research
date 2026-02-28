@@ -422,7 +422,7 @@ const Civ2Renderer = {
     const xExtra = wraps ? 4 : 0;           // extra columns for blending context
     const xMax = mw + xExtra;               // render this many columns
     const canvasW = xMax * TW + (TW >> 1);  // wide canvas for rendering
-    const displayW = mw * TW + (TW >> 1);  // final visible width — exact mw columns
+    const displayW = mw * TW + (TW >> 1);  // includes odd-row stagger overhang
     const canvasH = (mh - 1) * (TH >> 1) + TH;
     canvas.width = canvasW;
     canvas.height = canvasH;
@@ -440,6 +440,11 @@ const Civ2Renderer = {
     // Helper: pixel position for a tile
     function tilePos(gx, gy) {
       return [gx * TW + ((gy % 2) ? (TW >> 1) : 0), gy * (TH >> 1)];
+    }
+
+    // G8: If map revealed cheat flag is set, disable FOW entirely
+    if (mapData.mapRevealed) {
+      options = { ...options, fowEnabled: false };
     }
 
     // FOW state — computed once, used by Pass 4 (ghost cities) and Pass 7+8 (shroud)
@@ -591,7 +596,11 @@ const Civ2Renderer = {
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
           for (let di = 0; di < 8; di++) {
             const [nx, ny] = nb[DIR_KEYS[di]];
-            const nimp = getImprovements(nx, ny);
+            let nimp = getImprovements(nx, ny);
+            // G4: Use known improvements for neighbor on dimmed tiles
+            if (fowEnabled && isDimmed(nx, ny)) {
+              nimp = mapData.getKnownImprovements(nx, ny, options.fowCiv);
+            }
             const nCity = nimp & 0x02;
             if ((imp & 0x10 || hasCity) && (nimp & 0x10 || nCity)) ctx.drawImage(roads[di], px, py);
             if ((imp & 0x20 || hasCity) && (nimp & 0x20 || nCity)) ctx.drawImage(railroads[di], px, py);
@@ -639,6 +648,8 @@ const Civ2Renderer = {
     ctx.textBaseline = 'top';
 
     for (const c of mapData.cities) {
+      // G1: Skip cities on tiles the selected civ can't currently see
+      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
       // Draw at canonical position, and again at wrap seam if applicable
       const drawPositions = [c.gx];
       if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
@@ -706,6 +717,8 @@ const Civ2Renderer = {
         // Check if FOW civ knows about a city here (bit 0x02 in known improvements)
         const known = mapData.getKnownImprovements(c.gx, c.gy, options.fowCiv);
         if (!(known & 0x02)) continue;  // civ hasn't seen a city here
+        // G2: Skip if civ has never discovered this city (knownToTribes bitmask)
+        if (c.knownToTribes != null && !(c.knownToTribes & fowBit)) continue;
 
         const ghostSize = c.believedSize[options.fowCiv] || c.size;
         const color = this.CIV_COLORS[c.owner] || '#ccc';
@@ -803,24 +816,35 @@ const Civ2Renderer = {
         unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
       }
 
-      // Pick best unit per tile using display priority:
-      // idle (no orders) > ordered, military > civilian, later in array > earlier
+      // Pick top-of-stack unit per tile using the save file's stacking linked list.
+      // The unit with nextInStack === -1 is the top of the stack (what Civ2 displays).
+      // Falls back to a heuristic if linked list data is unavailable.
       const CIVILIANS = new Set([0, 1, 44, 45, 46, 47, 48, 49, 50]);
       function unitPriority(u) {
         let p = 0;
-        if (u.orders === 0) p += 2;         // idle/active units shown first
-        if (!CIVILIANS.has(u.type)) p += 1;  // military over civilian
+        if (u.orders === 0) p += 2;
+        if (!CIVILIANS.has(u.type)) p += 1;
         return p;
       }
       const bestUnit = {};
+      const lookup = mapData.unitBySaveIndex || {};
       for (const u of mapData.units) {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
         if (fowEnabled && u.visFlag != null && !(u.visFlag & fowBit)) continue;
-        const prev = bestUnit[tileKey];
-        if (!prev || unitPriority(u) >= unitPriority(prev)) {
+        // Use stacking linked list: top-of-stack has nextInStack === -1
+        if (u.nextInStack === -1) {
+          // This unit is the top of its stack — use it directly
           bestUnit[tileKey] = u;
+        } else if (!bestUnit[tileKey]) {
+          // No top-of-stack found yet for this tile; use as provisional candidate
+          bestUnit[tileKey] = u;
+        } else if (bestUnit[tileKey].nextInStack !== -1) {
+          // Neither candidate is top-of-stack; fall back to heuristic
+          if (unitPriority(u) >= unitPriority(bestUnit[tileKey])) {
+            bestUnit[tileKey] = u;
+          }
         }
       }
 
@@ -920,7 +944,14 @@ const Civ2Renderer = {
     if (sprites.fortress || sprites.airbase) {
       for (let gy = 0; gy < mh; gy++) {
         for (let gx = 0; gx < xMax; gx++) {
-          const imp = getImprovements(gx, gy);
+          let imp = getImprovements(gx, gy);
+          // G3: Use known improvements for dimmed tiles, skip unexplored
+          if (fowEnabled) {
+            if (isUnexplored(gx, gy)) continue;
+            if (isDimmed(gx, gy)) {
+              imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
+            }
+          }
           if (!(imp & 0x40)) continue;
           const [px, py] = tilePos(gx, gy);
           if ((imp & 0x02) && sprites.airbase) ctx.drawImage(sprites.airbase, px, py - 16);
@@ -1055,14 +1086,13 @@ const Civ2Renderer = {
       }
     }
 
-    // Crop to display width — remove extra blending columns
-    if (wraps && canvasW > displayW) {
-      const cropData = ctx.getImageData(0, 0, displayW, canvasH);
-      canvas.width = displayW;
-      ctx.putImageData(cropData, 0, 0);
+    // Fill odd-row stagger gap: copy the 32px strip at the wrap point back to x=0
+    // so the viewport sees the last column's overhang when wrapping around
+    if (wraps) {
+      ctx.drawImage(canvas, mw * TW, 0, 32, canvasH, 0, 0, 32, canvasH);
     }
 
-    return { canvasW: wraps ? displayW : canvasW, canvasH };
+    return { canvasW: canvas.width, canvasH, displayW, wrapW: wraps ? mw * TW : 0 };
   },
 
   // ── Dither pixel manipulation (direction-aware, quadrant-based, diamond-clipped) ──
