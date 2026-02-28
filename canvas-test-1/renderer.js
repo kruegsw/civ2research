@@ -76,7 +76,7 @@ const Civ2Renderer = {
   imgToCtx(img) {
     const c = document.createElement('canvas');
     c.width = img.width; c.height = img.height;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
     ctx.drawImage(img, 0, 0);
     return ctx;
   },
@@ -88,7 +88,7 @@ const Civ2Renderer = {
   extractSprite(sheetCtx, sx, sy, w, h, chromaColors, killGreen) {
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
 
     // Clamp to source bounds
     const aw = Math.min(w, sheetCtx.canvas.width - sx);
@@ -124,10 +124,10 @@ const Civ2Renderer = {
   // ═══════════════════════════════════════════════════════════
   extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx) {
     // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248 + Gray (135,135,135) idx 255
-    // Gray tolerance tightened to ±5 to avoid stripping muted terrain pixels (plains/tundra/grassland)
-    const T1 = [[255, 0, 255, 15], [0, 255, 255, 15], [135, 135, 135, 5]];
+    // Gray tolerance tightened to ±3 to avoid stripping muted terrain pixels (plains/tundra/grassland)
+    const T1 = [[255, 0, 255, 15], [0, 255, 255, 15], [135, 135, 135, 3]];
     // TERRAIN1 for resources: also remove Magenta text labels
-    const T1R = [[0, 255, 255, 15], [255, 0, 255, 15], [135, 135, 135, 5]];
+    const T1R = [[0, 255, 255, 40], [255, 0, 255, 15], [135, 135, 135, 3]];
     // TERRAIN2 chroma: Magenta (255,0,255) idx 253 + gray corners (~132,132,132) idx 255
     const T2 = [[255, 0, 255], [132, 132, 132]];
 
@@ -325,7 +325,7 @@ const Civ2Renderer = {
         // Front: top 7 rows blacked out (HP bar + order area background)
         const front = document.createElement('canvas');
         front.width = st.width; front.height = st.height;
-        const fCtx = front.getContext('2d');
+        const fCtx = front.getContext('2d', { colorSpace: 'srgb' });
         fCtx.drawImage(st, 0, 0);
         fCtx.fillStyle = '#000';
         fCtx.fillRect(0, 0, st.width, Math.min(7, st.height));
@@ -338,7 +338,7 @@ const Civ2Renderer = {
         // Drawn offset behind shields to create outline effect
         const shadow = document.createElement('canvas');
         shadow.width = st.width; shadow.height = st.height;
-        const sCtx = shadow.getContext('2d');
+        const sCtx = shadow.getContext('2d', { colorSpace: 'srgb' });
         sCtx.drawImage(st, 0, 0);
         const sData = sCtx.getImageData(0, 0, shadow.width, shadow.height);
         const sd = sData.data;
@@ -374,7 +374,7 @@ const Civ2Renderer = {
       const valid = [];
       for (let vi = 0; vi < sprites.terrain[tid].length; vi++) {
         const spr = sprites.terrain[tid][vi];
-        const sctx = spr.getContext('2d');
+        const sctx = spr.getContext('2d', { colorSpace: 'srgb' });
         const sd = sctx.getImageData(0, 0, spr.width, spr.height).data;
         let opaque = 0;
         for (let i = 3; i < sd.length; i += 4) if (sd[i] > 0) opaque++;
@@ -410,7 +410,7 @@ const Civ2Renderer = {
     const canvasH = (mh - 1) * (TH >> 1) + TH;
     canvas.width = canvasW;
     canvas.height = canvasH;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
 
     // Dark ocean background
     ctx.fillStyle = '#142850';
@@ -454,7 +454,7 @@ const Civ2Renderer = {
     // Pre-cache terrain sprite pixel data for dithering (use first variant per type)
     const terrainPixData = [];
     for (let tid = 0; tid < 11; tid++) {
-      const tc = terrain[tid][0].getContext('2d');
+      const tc = terrain[tid][0].getContext('2d', { colorSpace: 'srgb' });
       terrainPixData[tid] = tc.getImageData(0, 0, 64, 32).data;
     }
 
@@ -554,19 +554,19 @@ const Civ2Renderer = {
           }
         }
 
+        // ── Resources (seed-based) — drawn first so improvements overlay them ──
+        const res = getResource(gx, gy);
+        if (res > 0 && ter <= 10) {
+          const key = ter * 2 + res;
+          if (resources[key]) ctx.drawImage(resources[key], px, py);
+        }
+
         // ── Tile improvements: irrigation/farmland/mining/pollution ──
         if (imp & 0x8C) { // irrigation(0x04), mining(0x08), pollution(0x80)
           if ((imp & 0x04) && (imp & 0x08)) ctx.drawImage(sprites.farmland, px, py);
           else if (imp & 0x04) ctx.drawImage(sprites.irrigation, px, py);
           else if (imp & 0x08) ctx.drawImage(sprites.mining, px, py);
           if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
-        }
-
-        // ── Resources (seed-based) ──
-        const res = getResource(gx, gy);
-        if (res > 0 && ter <= 10) {
-          const key = ter * 2 + res;
-          if (resources[key]) ctx.drawImage(resources[key], px, py);
         }
       }
     }
@@ -761,15 +761,17 @@ const Civ2Renderer = {
     for (const c of mapData.cities) {
       const [tpx, tpy] = tilePos(c.gx, c.gy);
       const cx = tpx + (TW >> 1);
-      const textColor = this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
-      ctx.font = '18px "Times New Roman", serif';
+      const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
+      ctx.font = '20px "Times New Roman", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '1px';
       const nameY = tpy - 16 + 48; // bottom of city sprite
       ctx.fillStyle = '#000';
       ctx.fillText(c.name, cx + 1, nameY + 1);
       ctx.fillStyle = textColor;
       ctx.fillText(c.name, cx, nameY);
+      ctx.letterSpacing = '0px';
     }
 
     // ── Legend ──
@@ -960,7 +962,7 @@ const Civ2Renderer = {
     const w = templateCanvas.width, h = templateCanvas.height;
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
     ctx.drawImage(templateCanvas, 0, 0);
     const imgData = ctx.getImageData(0, 0, w, h);
     const d = imgData.data;
@@ -1017,7 +1019,7 @@ const Civ2Renderer = {
     // Fallback: generate a 12×20 shield with civ-color placeholders
     const c = document.createElement('canvas');
     c.width = 12; c.height = 20;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
     ctx.fillStyle = '#ff0000';
     ctx.fillRect(0, 0, 12, 18);
     ctx.fillStyle = '#7f0000';
