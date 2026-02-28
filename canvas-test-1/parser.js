@@ -231,6 +231,20 @@ const Civ2Parser = {
       return (d & a) === (d & b) ? 2 : 1;
     }
 
+    // Grassland production shield — coordinate-only formula (no seed)
+    // Separate from the resource system. In Civ2, grassland tiles never show
+    // seed-based resources; they show either this shield or nothing.
+    // Source: Civ2-clone Tile.cs HasSheild()
+    function hasShield(gx, gy) {
+      if (gy < 0 || gy >= mh) return false;
+      const X = 2 * wrap(gx) + (gy % 2);
+      const Y = gy;
+      const rez4 = (Math.floor(Y / 2) + 2 * (Y % 2)) % 4;
+      const rez3 = 8 - 2 * (rez4 % 4);
+      const rez = (X - (Y % 2) + rez3) % 8;
+      return rez < 4;
+    }
+
     // Neighbor lookup — the critical isometric stagger logic
     // Even rows: NE/SE use same column, NW/SW use column-1
     // Odd rows:  NE/SE use column+1, NW/SW use same column
@@ -271,7 +285,7 @@ const Civ2Parser = {
       // Accessor functions
       getTerrain, isLand, hasRiver, getImprovements, getVisibility, getResource, getNeighbors, wrap,
       // Block 1 / FOW / occupancy data
-      knownImprovements, getKnownImprovements, hasGoodyHut
+      knownImprovements, getKnownImprovements, hasGoodyHut, hasShield
     };
   }
 };

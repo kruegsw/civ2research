@@ -449,17 +449,6 @@ const Civ2Renderer = {
       }
     }
 
-    // ── DEBUG: Check for teal after Pass 1 ──
-    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
-      const [dpx, dpy] = tilePos(dgx, dgy);
-      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
-      let tealCount = 0;
-      for (let i = 0; i < sample.length; i += 4) {
-        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
-      }
-      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass1 (base terrain): ${tealCount} teal pixels`);
-    }
-
     // ────────────────────────────────────────
     // PASS 2: Dither blending between terrain types
     // ────────────────────────────────────────
@@ -494,17 +483,6 @@ const Civ2Renderer = {
       }
     }
     ctx.putImageData(imgData, 0, 0);
-
-    // ── DEBUG: Check for teal after Pass 2 ──
-    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
-      const [dpx, dpy] = tilePos(dgx, dgy);
-      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
-      let tealCount = 0;
-      for (let i = 0; i < sample.length; i += 4) {
-        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
-      }
-      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass2 (dither): ${tealCount} teal pixels`);
-    }
 
     // ────────────────────────────────────────
     // PASS 3: Coastlines, rivers, overlays, resources
@@ -609,17 +587,6 @@ const Civ2Renderer = {
       }
     }
 
-    // ── DEBUG: Check for teal after Pass 3 ──
-    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
-      const [dpx, dpy] = tilePos(dgx, dgy);
-      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
-      let tealCount = 0;
-      for (let i = 0; i < sample.length; i += 4) {
-        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
-      }
-      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass3 (overlays/resources): ${tealCount} teal pixels`);
-    }
-
     // ────────────────────────────────────────
     // PASS 4: Cities
     // ────────────────────────────────────────
@@ -679,17 +646,6 @@ const Civ2Renderer = {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(sizeStr, ssx, ssy);
-    }
-
-    // ── DEBUG: Check for teal after Pass 4 ──
-    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
-      const [dpx, dpy] = tilePos(dgx, dgy);
-      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
-      let tealCount = 0;
-      for (let i = 0; i < sample.length; i += 4) {
-        if (sample[i] < 100 && sample[i+1] > 140 && sample[i+2] > 140 && sample[i+3] > 0) tealCount++;
-      }
-      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass4 (cities): ${tealCount} teal pixels`);
     }
 
     // ────────────────────────────────────────
@@ -832,26 +788,6 @@ const Civ2Renderer = {
       ctx.fillStyle = textColor;
       ctx.fillText(c.name, cx, nameY);
       ctx.letterSpacing = '0px';
-    }
-
-    // ── DEBUG: Trace teal pixels at problem tiles after each pass ──
-    // Tiles (32,18)→gx=16,gy=18 and (1,27)→gx=0,gy=27 show a mysterious teal "4"
-    for (const [dgx, dgy, label] of [[16, 18, '(32,18)'], [0, 27, '(1,27)']]) {
-      const [dpx, dpy] = tilePos(dgx, dgy);
-      const sample = ctx.getImageData(dpx, dpy, 64, 32).data;
-      let tealCount = 0;
-      for (let sy = 0; sy < 32; sy++) {
-        for (let sx = 0; sx < 64; sx++) {
-          const i = (sy * 64 + sx) * 4;
-          const r = sample[i], g = sample[i+1], b = sample[i+2], a = sample[i+3];
-          if (r < 100 && g > 140 && b > 140 && a > 0) {
-            if (tealCount < 20) console.log(`TEAL-DEBUG ${label} after Pass6b pixel(${sx},${sy}): rgba(${r},${g},${b},${a})`);
-            tealCount++;
-          }
-        }
-      }
-      if (tealCount > 0) console.log(`TEAL-DEBUG ${label} after Pass6b: ${tealCount} total teal pixels`);
-      else console.log(`TEAL-DEBUG ${label} after Pass6b: NO teal pixels found`);
     }
 
     // ── Legend ──
