@@ -38,19 +38,21 @@ const Civ2Renderer = {
   ORDER_KEYS: { 1:'F', 2:'F', 3:'S', 4:'F', 5:'R', 6:'I', 7:'m', 8:'O', 9:'p', 10:'E', 11:'G' },
 
   // Clean (text-free) column indices per terrain type in TERRAIN1.GIF
-  // Only cols 0 and 1 are consistently free of baked-in text labels
+  // Cols 2-3 are resource sprites, col 7 has special sprites (irrigation, etc.)
+  // Cols 0-1, 4-6, 8 are candidate base terrain variants
+  // The <50% opaque filter in extractAllSprites() discards chroma-key placeholders
   CLEAN_VARIANTS: [
-    [0, 1],  // 0 Desert
-    [0, 1],  // 1 Plains
-    [0, 1],  // 2 Grassland
-    [0, 1],  // 3 Forest
-    [0, 1],  // 4 Hills
-    [0, 1],  // 5 Mountains
-    [0, 1],  // 6 Tundra
-    [0, 1],  // 7 Glacier
-    [0, 1],  // 8 Swamp
-    [0, 1],  // 9 Jungle
-    [0, 1],  // 10 Ocean
+    [0, 1, 4, 5, 6, 8],  // 0 Desert
+    [0, 1, 4, 5, 6, 8],  // 1 Plains
+    [0, 1, 4, 5, 6, 8],  // 2 Grassland
+    [0, 1, 4, 5, 6, 8],  // 3 Forest
+    [0, 1, 4, 5, 6, 8],  // 4 Hills
+    [0, 1, 4, 5, 6, 8],  // 5 Mountains
+    [0, 1, 4, 5, 6, 8],  // 6 Tundra
+    [0, 1, 4, 5, 6, 8],  // 7 Glacier
+    [0, 1, 4, 5, 6, 8],  // 8 Swamp
+    [0, 1, 4, 5, 6, 8],  // 9 Jungle
+    [0, 1, 4, 5, 6, 8],  // 10 Ocean
   ],
 
   // Standard Civ2 MGE max HP per unit type (RULES.TXT @UNITS field 7)
@@ -249,7 +251,7 @@ const Civ2Renderer = {
         sprites.civTextColors[civ] = `rgb(${px[off]},${px[off+1]},${px[off+2]})`;
       }
 
-      for (let row = 0; row < 6; row++) {
+      for (let row = 0; row < 7; row++) {
         sprites.city[row] = [];
         sprites.citySizeLoc[row] = [];
         for (let sizeIdx = 0; sizeIdx < 4; sizeIdx++) {
@@ -417,7 +419,7 @@ const Civ2Renderer = {
     const TW = this.TW, TH = this.TH;
 
     const wraps = mapData.mapShape === 0;  // 0 = round/wrapping, 1 = flat
-    const xMax = wraps ? mw + 1 : mw;    // extra tile column for wrap seam
+    const xMax = wraps ? mw + 2 : mw;    // extra tile columns for wrap seam + dither blending
     const canvasW = xMax * TW + (TW >> 1);
     const canvasH = (mh - 1) * (TH >> 1) + TH;
     canvas.width = canvasW;
@@ -502,7 +504,7 @@ const Civ2Renderer = {
         for (const dir of ['NE', 'SE', 'SW', 'NW']) {
           const [nx, ny] = nb[dir];
           const nter = getTerrain(nx, ny);
-          if (nter === ter || nter === 10) continue;
+          if (nter === ter) continue;
 
           const nData = terrainPixData[nter];
           this._applyDither(pix, canvasW, canvasH, px, py, nData, ditherMask, dir);
@@ -797,14 +799,29 @@ const Civ2Renderer = {
         unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
       }
 
-      const drawnTiles = new Set();
+      // Pick best unit per tile using display priority:
+      // idle (no orders) > ordered, military > civilian, later in array > earlier
+      const CIVILIANS = new Set([0, 1, 44, 45, 46, 47, 48, 49, 50]);
+      function unitPriority(u) {
+        let p = 0;
+        if (u.orders === 0) p += 2;         // idle/active units shown first
+        if (!CIVILIANS.has(u.type)) p += 1;  // military over civilian
+        return p;
+      }
+      const bestUnit = {};
       for (const u of mapData.units) {
         const tileKey = u.gx + ',' + u.gy;
-        if (drawnTiles.has(tileKey)) continue; // one unit per tile
-        if (cityTiles.has(tileKey)) continue;  // skip garrisoned units
+        if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
         if (fowEnabled && u.visFlag != null && !(u.visFlag & fowBit)) continue;
-        drawnTiles.add(tileKey);
+        const prev = bestUnit[tileKey];
+        if (!prev || unitPriority(u) >= unitPriority(prev)) {
+          bestUnit[tileKey] = u;
+        }
+      }
+
+      for (const u of Object.values(bestUnit)) {
+        const tileKey = u.gx + ',' + u.gy;
 
         const template = sprites.unitTemplates[u.type];
         if (!template) continue;
@@ -1382,8 +1399,9 @@ const Civ2Renderer = {
   // Get city sprite row from epoch and architectural style
   // Ancient/Renaissance (epochs 0-1): use civ's style (rows 0-3)
   // Industrial (epoch 2): all civs use row 4
-  // Modern (epoch 3): all civs use row 5
+  // Modern (epoch 3): row 5, or row 6 (Modern Alt) for Far East/Medieval styles
   _getCityRow(epoch, style) {
+    if (epoch >= 3 && style >= 2) return 6;  // Modern Alt for Far East/Medieval styles
     if (epoch >= 3) return 5;
     if (epoch >= 2) return 4;
     return style;  // 0-3
