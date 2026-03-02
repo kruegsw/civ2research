@@ -208,6 +208,101 @@ static const char* RopName(DWORD rop) {
     }
 }
 
+/* ---- DIB Section tracking for frame dump ---- */
+
+#define MAX_TRACKED_DIBS 32
+typedef struct {
+    HBITMAP hbmp;
+    void   *bits;
+    int     width;
+    int     height;       /* positive = bottom-up (standard BMP order) */
+    int     bpp;
+    HDC     currentDC;    /* DC this bitmap is currently selected into */
+    RGBQUAD palette[256];
+    BOOL    hasPalette;
+} TrackedDIB;
+
+static TrackedDIB g_trackedDibs[MAX_TRACKED_DIBS];
+static int g_trackedDibCount = 0;
+static DWORD g_dumpCounter = 0;
+
+/* Minimum blit width to trigger a dump (filters out button/icon blits) */
+#define DIB_DUMP_MIN_WIDTH 600
+
+static TrackedDIB* FindDIBByBitmap(HBITMAP hbmp) {
+    for (int i = 0; i < g_trackedDibCount; i++)
+        if (g_trackedDibs[i].hbmp == hbmp) return &g_trackedDibs[i];
+    return NULL;
+}
+
+static TrackedDIB* FindDIBByDC(HDC hdc) {
+    for (int i = 0; i < g_trackedDibCount; i++)
+        if (g_trackedDibs[i].currentDC == hdc) return &g_trackedDibs[i];
+    return NULL;
+}
+
+static void DumpDIBToBMP(TrackedDIB *dib, int bltW, int bltH) {
+    if (!dib || !dib->bits || !dib->hasPalette || dib->bpp != 8) return;
+
+    CreateDirectoryA("ddraw_dumps", NULL);
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "ddraw_dumps/frame_%04lu_%dx%d.bmp",
+             g_dumpCounter++, dib->width, dib->height);
+
+    FILE *f = fopen(filename, "wb");
+    if (!f) {
+        LogWrite("DIB_DUMP: FAILED to open %s", filename);
+        return;
+    }
+
+    int absHeight = dib->height < 0 ? -dib->height : dib->height;
+    int stride = ((dib->width + 3) & ~3);   /* 8bpp: row bytes, 4-byte aligned */
+    int paletteSize = 256 * (int)sizeof(RGBQUAD);
+    int pixelDataSize = stride * absHeight;
+    int dataOffset = 14 + 40 + paletteSize;
+    int fileSize = dataOffset + pixelDataSize;
+
+    /* BITMAPFILEHEADER (14 bytes, packed manually to avoid struct padding) */
+    BYTE bfh[14] = {0};
+    bfh[0] = 'B'; bfh[1] = 'M';
+    *(DWORD*)(bfh + 2) = (DWORD)fileSize;
+    *(DWORD*)(bfh + 10) = (DWORD)dataOffset;
+    fwrite(bfh, 1, 14, f);
+
+    /* BITMAPINFOHEADER */
+    BITMAPINFOHEADER bih;
+    memset(&bih, 0, sizeof(bih));
+    bih.biSize = sizeof(BITMAPINFOHEADER);
+    bih.biWidth = dib->width;
+    bih.biHeight = absHeight;  /* positive = bottom-up (standard BMP) */
+    bih.biPlanes = 1;
+    bih.biBitCount = 8;
+    bih.biCompression = BI_RGB;
+    bih.biSizeImage = (DWORD)pixelDataSize;
+    fwrite(&bih, 1, sizeof(bih), f);
+
+    /* Color table (RGBQUAD × 256) */
+    fwrite(dib->palette, 1, (size_t)paletteSize, f);
+
+    /* Pixel data — DIB section memory is already in bottom-up order for
+       positive biHeight, which matches BMP format directly.
+       For negative biHeight (top-down), we need to flip rows. */
+    if (dib->height >= 0) {
+        /* Bottom-up DIB → write directly */
+        fwrite(dib->bits, 1, (size_t)pixelDataSize, f);
+    } else {
+        /* Top-down DIB → reverse row order for BMP */
+        BYTE *src = (BYTE*)dib->bits;
+        for (int row = absHeight - 1; row >= 0; row--)
+            fwrite(src + row * stride, 1, (size_t)stride, f);
+    }
+
+    fclose(f);
+    LogWrite("DIB_DUMP: Saved %s (%dx%d 8bpp, blt=%dx%d)",
+             filename, dib->width, absHeight, bltW, bltH);
+}
+
 /* ---- Counters ---- */
 static DWORD g_bltCount = 0;
 
@@ -223,6 +318,17 @@ static BOOL WINAPI Hook_BitBlt(HDC dst, int dx, int dy, int w, int h,
     else
         LogWrite("GDI::BitBlt #%lu dst=%s(%p) pos=(%d,%d) size=%dx%d src=%s(%p) srcPos=(%d,%d) rop=0x%08lX",
                  g_bltCount, DCTag(dst), dst, dx, dy, w, h, DCTag(src), src, sx, sy, rop);
+
+    /* DIB frame dump: on large SRCCOPY from a tracked DIB to a window/paint DC */
+    if (rop == 0x00CC0020 && w >= DIB_DUMP_MIN_WIDTH) { /* SRCCOPY */
+        const char *dstTag = DCTag(dst);
+        if (strncmp(dstTag, "winDC_", 6) == 0 || strncmp(dstTag, "paintDC_", 8) == 0) {
+            TrackedDIB *dib = FindDIBByDC(src);
+            if (dib && dib->hasPalette)
+                DumpDIBToBMP(dib, w, h);
+        }
+    }
+
     return orig_BitBlt(dst, dx, dy, w, h, src, sx, sy, rop);
 }
 
@@ -273,6 +379,9 @@ static HGDIOBJ WINAPI Hook_SelectObject(HDC hdc, HGDIOBJ obj) {
         } else {
             LogWrite("GDI::SelectObject dc=%s(%p) BITMAP %p", DCTag(hdc), hdc, obj);
         }
+        /* Update DIB tracking: associate this bitmap with the DC */
+        TrackedDIB *dib = FindDIBByBitmap((HBITMAP)obj);
+        if (dib) dib->currentDC = hdc;
     } else if (objType == OBJ_FONT) {
         LOGFONTA lf;
         if (GetObjectA(obj, sizeof(lf), &lf)) {
@@ -304,6 +413,21 @@ static HBITMAP WINAPI Hook_CreateDIBSection(HDC hdc, const BITMAPINFO *bmi,
                  DCTag(hdc), hdc,
                  bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight,
                  bmi->bmiHeader.biBitCount, usage, bmp, bits ? *bits : NULL);
+
+        /* Track DIB sections for frame dumping */
+        if (bmp && bits && *bits && bmi->bmiHeader.biBitCount == 8
+            && g_trackedDibCount < MAX_TRACKED_DIBS) {
+            TrackedDIB *dib = &g_trackedDibs[g_trackedDibCount++];
+            dib->hbmp = bmp;
+            dib->bits = *bits;
+            dib->width = bmi->bmiHeader.biWidth;
+            dib->height = bmi->bmiHeader.biHeight;
+            dib->bpp = bmi->bmiHeader.biBitCount;
+            dib->currentDC = NULL;
+            dib->hasPalette = FALSE;
+            LogWrite("  DIB_TRACK: Registered DIB #%d (%dx%d 8bpp bits=%p)",
+                     g_trackedDibCount - 1, dib->width, dib->height, dib->bits);
+        }
     }
     return bmp;
 }
@@ -342,7 +466,20 @@ static int WINAPI Hook_SetDIBColorTable(HDC hdc, UINT start, UINT count,
                  colors[2].rgbRed, colors[2].rgbGreen, colors[2].rgbBlue,
                  colors[3].rgbRed, colors[3].rgbGreen, colors[3].rgbBlue);
     }
-    return orig_SetDIBColorTable(hdc, start, count, colors);
+    int result = orig_SetDIBColorTable(hdc, start, count, colors);
+
+    /* Capture palette for tracked DIB sections */
+    if (colors && count == 256 && start == 0) {
+        TrackedDIB *dib = FindDIBByDC(hdc);
+        if (dib) {
+            memcpy(dib->palette, colors, 256 * sizeof(RGBQUAD));
+            dib->hasPalette = TRUE;
+            LogWrite("  DIB_TRACK: Captured palette for DIB %dx%d on dc=%p",
+                     dib->width, dib->height, hdc);
+        }
+    }
+
+    return result;
 }
 
 static int WINAPI Hook_GetDIBColorTable(HDC hdc, UINT start, UINT count, RGBQUAD *colors) {

@@ -365,7 +365,7 @@ const Civ2CityDialog = {
     // ── Section labels (centered, gold with dark shadow) ──
     // From CityWindow.cs: Draw.Text centered at (x, y) with shadow (67,67,67) offset (1,1)
     const _label = (text, cx, cy, color, shadow) => {
-      ctx.font = 'bold 13px Arial, sans-serif';
+      ctx.font = '13px Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = shadow || COL.headerShadow;
@@ -544,10 +544,10 @@ const Civ2CityDialog = {
       // Left text: "Food: N", right text: "Surplus: N" (or hunger if negative)
       const foodTotal = city.foodProduction || 0;
       const foodSurplus = foodTotal - (city.size * 2);
-      ctx.font = 'bold 13px Arial, sans-serif';
+      ctx.font = '13px Arial, sans-serif';
       // Left: "Food: N"
       ctx.textAlign = 'left';
-      this._text(ctx, `Food: ${foodTotal}`, 203, 68, 'rgb(87,171,39)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `Food: ${foodTotal}`, 203, 68, 'rgb(87,171,39)', '13px Arial, sans-serif');
       // Right: "Surplus: N"
       ctx.textAlign = 'right';
       this._text(ctx, `Surplus: ${foodSurplus}`, 431, 68, 'rgb(63,139,31)');
@@ -573,7 +573,7 @@ const Civ2CityDialog = {
       // Row 2: TRADE — text at y=102, icons at y=117
       const tradeTotal = city.totalTrade || 0;
       ctx.textAlign = 'left';
-      this._text(ctx, `Trade: ${tradeTotal}`, 203, 109, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `Trade: ${tradeTotal}`, 203, 109, 'rgb(239,159,7)', '13px Arial, sans-serif');
       ctx.textAlign = 'right';
       this._text(ctx, `Corruption: ${corruption}`, 431, 109, 'rgb(227,83,15)');
       ctx.textAlign = 'left';
@@ -595,7 +595,7 @@ const Civ2CityDialog = {
       const tlsSpacing = this._resourceSpacing(tlsTotal);
       // Text: "N% Tax: N" left, "N% Lux: N" center, "N% Sci: N" right
       ctx.textAlign = 'left';
-      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 163, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 163, 'rgb(239,159,7)', '13px Arial, sans-serif');
       ctx.textAlign = 'center';
       this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, 317, 163, 'rgb(255,255,255)');
       ctx.textAlign = 'right';
@@ -616,7 +616,7 @@ const Civ2CityDialog = {
 
       // Row 4: SUPPORT + PRODUCTION — text at y=196, icons at y=181
       ctx.textAlign = 'left';
-      this._text(ctx, `Support: ${support}`, 204, 203, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `Support: ${support}`, 204, 203, 'rgb(63,79,167)', '13px Arial, sans-serif');
       ctx.textAlign = 'right';
       this._text(ctx, `Production: ${production}`, 431, 203, 'rgb(7,11,103)');
       ctx.textAlign = 'left';
@@ -709,7 +709,7 @@ const Civ2CityDialog = {
       } else {
         // Building or wonder — name centered at (97,8) relative to panel, icon at (79,18)
         ctx.textAlign = 'center';
-        this._text(ctx, prodName, panelPX + 97, panelPY + 15, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
+        this._text(ctx, prodName, panelPX + 97, panelPY + 15, 'rgb(63,79,167)', '13px Arial, sans-serif');
         ctx.textAlign = 'left';
         if (!item.type || item.type === 'building') {
           if (item.id >= 1 && item.id <= 38 && cdSprites.improvements[item.id]) {
@@ -809,7 +809,7 @@ const Civ2CityDialog = {
 
     const improvements = this.getCityImprovements(city, cityIndex, mapData);
     if (improvements.length > 0 && cdSprites) {
-      ctx.font = 'bold 9px Arial, sans-serif';
+      ctx.font = '9px Arial, sans-serif';
       for (let i = 0; i < Math.min(9, improvements.length); i++) {
         const imp = improvements[i];
         // Small improvement icon
@@ -844,7 +844,7 @@ const Civ2CityDialog = {
     }
 
     if (mapSprites && mapSprites.unitTemplates && garrison.length > 0) {
-      ctx.font = 'bold 9px Arial, sans-serif';
+      ctx.font = '9px Arial, sans-serif';
       for (let i = 0; i < Math.min(18, garrison.length); i++) {
         const u = garrison[i];
         const template = mapSprites.unitTemplates[u.type];
@@ -872,14 +872,14 @@ const Civ2CityDialog = {
             ? mapData.cities[u.homeCityId] : null;
           const abbr = homeCity ? (homeCity.name.length < 3 ? homeCity.name : homeCity.name.substring(0, 3)) : 'NON';
           ctx.textAlign = 'center';
-          this._text(ctx, abbr, ux + 24, uy + 36, 'rgb(135,135,135)', 'bold 9px Arial, sans-serif');
+          this._text(ctx, abbr, ux + 24, uy + 36, 'rgb(135,135,135)', '9px Arial, sans-serif');
           ctx.textAlign = 'left';
         }
       }
     }
 
     // Trade text at bottom of info panel
-    ctx.font = 'bold 9px Arial, sans-serif';
+    ctx.font = '9px Arial, sans-serif';
     // Supplies
     const suppliedNames = [];
     if (city.tradeCommoditiesSupplied) {
@@ -887,7 +887,7 @@ const Civ2CityDialog = {
         if (cIdx !== undefined && cIdx < 16) suppliedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
-    this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, 203, 358, 'rgb(227,83,15)');
+    this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, 203, 358, 'rgb(227,83,15)', null, COL.headerShadow);
     // Demands
     const demandedNames = [];
     if (city.tradeCommoditiesDemanded) {
@@ -895,7 +895,7 @@ const Civ2CityDialog = {
         if (cIdx !== undefined && cIdx < 16) demandedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
-    this._text(ctx, `Demands: ${demandedNames.join(', ') || 'None'}`, 203, 371, 'rgb(227,83,15)');
+    this._text(ctx, `Demands: ${demandedNames.join(', ') || 'None'}`, 203, 371, 'rgb(227,83,15)', null, COL.headerShadow);
     // Trade routes
     if (city.tradeRouteCount > 0) {
       for (let i = 0; i < Math.min(3, city.tradeRouteCount); i++) {

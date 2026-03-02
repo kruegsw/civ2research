@@ -123,6 +123,98 @@ Each child window receives `WM_PAINT` messages and renders via `BeginPaint`/`End
 
 ---
 
+## City Dialog Architecture (from session 2 — city menu interaction)
+
+The city management dialog reveals a critical architectural pattern: **all non-text rendering is invisible to GDI hooks**.
+
+### DIB Section Rendering Model
+
+The city dialog creates two off-screen DIB sections with direct memory access:
+
+| Surface | Size | Bit Depth | DIB bits pointer | Purpose |
+|---------|------|-----------|-----------------|---------|
+| City dialog canvas | 972×675 | 8bpp | `0x035e0000` | Full dialog content |
+| City panorama view | 640×400 | 8bpp | `0x069c0000` | Isometric city scene |
+
+Both receive the full 256-color palette via `SetDIBColorTable(start=0, count=256)`.
+
+**Key finding:** The game renders all graphical content (wallpaper background, citizen faces, resource icons, unit sprites, improvement thumbnails, food storage wheat, shield grid, panel borders, city panorama) by **writing pixels directly into DIB section memory** — none of this goes through hooked GDI calls. The only GDI operations performed on the city dialog canvas are:
+
+1. `SelectObject(FONT)` → `SetTextColor` → `MoveToEx` → `DrawTextA` — for text labels
+2. `BitBlt SRCCOPY` — to composite the finished frame to the window
+
+No `FillRect`, `LineTo`, `BitBlt`, `SRCAND`, or `SRCINVERT` operations target the city dialog canvas. All panel borders visible in the dialog come from the background bitmap, not from GDI line-drawing calls.
+
+### Compositing Sequence
+
+```
+1. CreateDIBSection 972×675 8bpp → city dialog canvas (direct memory access)
+2. CreateDIBSection 640×400 8bpp → city panorama (direct memory access)
+3. [Direct memory writes — invisible to hooks — render all graphics]
+4. DrawTextA × N — render all text labels with shadow technique
+5. BitBlt 970×36 SRCCOPY → window (title bar strip, shown first)
+6. BitBlt 970×675 SRCCOPY → window (full dialog composite)
+7. BitBlt 970×675 SRCCOPY → window (second blit, flicker prevention)
+```
+
+The window size is 976×680 (including non-client frame), client area is 970×675. At 640×480 base resolution, the dialog would be smaller — these measurements are from a 1920×1080 session.
+
+### Title Bar: 3-Pass Shadow
+
+The city dialog title uses a **3-pass** shadow technique (unique among all text):
+
+```
+Pass 1: position (x+2, y+1), color 0x000000 (black)     — deep shadow
+Pass 2: position (x+1, y+0), color 0x878787 (gray)      — mid shadow
+Pass 3: position (x+0, y+0), color 0x878787 (gray)      — foreground
+```
+
+Title text: `"City of {name}, {year}, Population {pop} (Treasury: {gold} Gold)"`
+Font: Times New Roman h=-24, weight=400 (regular, not bold)
+
+### Complete City Dialog Text Layout (970×675 canvas)
+
+All positions are in the native dialog coordinate space. Font is Arial h=-18 w=400 unless noted.
+
+| Text | Shadow Pos | Shadow Color | FG Pos | FG Color | Notes |
+|------|-----------|-------------|--------|----------|-------|
+| Title (TNR h=-24) | (+2,+1) | 0x000000 | (0,0) | 0x878787 | 3-pass; see above |
+| "Citizens" | (128,106) | 0x434343 | (127,105) | 0x3FBBDF | Section header |
+| "City Resources" | (424,106) | 0x434343 | (423,105) | 0x3FBBDF | Section header |
+| "Resource Map" | (102,320) | 0x003300 | (101,319) | 0x3FBBDF | Dark green shadow |
+| "Food Storage" | (758,37) | 0x000000 | (757,36) | 0x239B4B | Black shadow |
+| "Units Supported" | (91,362) | 0x434343 | (90,361) | 0x3FBBDF | Section header |
+| "City Improvements" | (79,471) | 0x434343 | (78,470) | 0x3FBBDF | Section header |
+| "Units Present" | (426,362) | 0x434343 | (425,361) | 0x3FBBDF | Section header |
+| "Food: N" | (316,129) | 0x000000 | (315,128) | 0x27AB57 | Green |
+| "Surplus: N" | (572,129) | 0x000000 | (571,128) | 0x1F8B3F | Darker green |
+| "Trade: N" | (316,190) | 0x000000 | (315,189) | 0x079FEF | Blue |
+| "Corruption: N" | (549,190) | 0x000000 | (548,189) | 0x0F53E3 | Dark blue |
+| "N% Tax: N" | (316,271) | 0x000000 | (315,270) | 0x079FEF | Blue |
+| "N% Lux: N" | (445,271) | 0x000000 | (444,270) | 0xFFFFFF | White |
+| "N% Sci: N" | (567,271) | 0x000000 | (566,270) | 0xC7BB3F | Cyan (idx 94) |
+| "Support: N" | (316,332) | 0x000000 | (315,331) | 0xA74F3F | Red-brown |
+| "Production: N" | (547,332) | 0x000000 | (546,331) | 0x670B07 | Dark red |
+| "Supplies: ..." | (307,554) | 0x434343 | (306,553) | 0x0F53E3 | Trade commodities |
+| "Demands: ..." | (307,574) | 0x434343 | (306,573) | 0x0F53E3 | Trade commodities |
+| Unit home abbr | — | — | varies | 0x878787 | Arial h=-11; e.g. "Min" |
+
+### Button Rendering
+
+City dialog buttons are separate MSControlClass child windows (85×36, 102×36). They use:
+- `FillRect` with system brush for background
+- `LineTo`/`MoveToEx` for 3D bevel borders (4 lines × 2 depth = 8 lines per button)
+- `DrawTextA` format 0x24 (DT_VCENTER|DT_SINGLELINE) for centered text
+- `FrameRect` double-border for focused state: outer (0,0)-(W-2,H-2), inner (4,4)-(W-6,H-6)
+
+### Implications for Browser Renderer
+
+- **Text positions are resolution-dependent.** The 970×675 positions above are from a 1080p session. The browser renderer's 636×421 canvas uses positions scaled for the base CITY.GIF resolution. Positions cannot be directly copied without scaling.
+- **DIB dump is needed** to capture the non-text rendering. A modified proxy DLL can intercept the final BitBlt and save the DIB section contents as a .bmp file, providing automated frame-perfect screenshots.
+- **All Arial fonts are weight 400** (regular) — the browser should not use CSS `font-weight: bold` for city dialog text.
+
+---
+
 ## Transparent Sprite Blitting
 
 ### The 3-Step GDI Mask Blit
