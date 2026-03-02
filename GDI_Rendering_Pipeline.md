@@ -213,6 +213,28 @@ City dialog buttons are separate MSControlClass child windows (85×36, 102×36).
 - **DIB dump is needed** to capture the non-text rendering. A modified proxy DLL can intercept the final BitBlt and save the DIB section contents as a .bmp file, providing automated frame-perfect screenshots.
 - **All Arial fonts are weight 400** (regular) — the browser should not use CSS `font-weight: bold` for city dialog text.
 
+### BMP Frame Analysis — Panel Layout (from DIB dump session)
+
+Pixel-level analysis of captured `frame_0010_972x675.bmp` (San Francisco city dialog at 1080p) reveals the exact panel geometry. See `City_Dialog_Layout.md` for the full specification. Key findings:
+
+**Three-column layout** (972-space, scale ÷1.528 for 636-space):
+- Left column:   x=[12..305]  — Citizens, Resource Map, Workers, City Improvements
+- Center column: x=[306..662] — City Resources rows (food/trade/tax/support), Units Present, Supplies/Demands
+- Right column:  x=[663..959] — Food Storage (green bg), Production (blue gradient)
+
+**Panel backgrounds**:
+- Food Storage: solid fill `rgb(7,59,0)` — dark green
+- Production: vertical gradient `rgb(0,0,95)` (top) → `rgb(103,127,215)` (bottom)
+- All other panels: black background with stone wallpaper border
+
+**Gold 3D panel borders** around Resource Map, Workers/Garrison, City Improvements:
+- Bright:  `rgb(223,187,63)` — top/left highlight
+- Medium:  `rgb(191,151,47)` — face color
+- Dark:    `rgb(159,115,31)` — bottom/right shadow
+- Deepest: `rgb(43,27,0)` — inner shadow
+
+**Food icon grid** in Food Storage: 15 rows of wheat icons at x=[749..863] (BMP), icon color `rgb(239,159,7)`.
+
 ---
 
 ## Transparent Sprite Blitting

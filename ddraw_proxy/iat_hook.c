@@ -414,8 +414,9 @@ static HBITMAP WINAPI Hook_CreateDIBSection(HDC hdc, const BITMAPINFO *bmi,
                  bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight,
                  bmi->bmiHeader.biBitCount, usage, bmp, bits ? *bits : NULL);
 
-        /* Track DIB sections for frame dumping */
+        /* Track DIB sections for frame dumping — only large ones worth dumping */
         if (bmp && bits && *bits && bmi->bmiHeader.biBitCount == 8
+            && bmi->bmiHeader.biWidth >= DIB_DUMP_MIN_WIDTH
             && g_trackedDibCount < MAX_TRACKED_DIBS) {
             TrackedDIB *dib = &g_trackedDibs[g_trackedDibCount++];
             dib->hbmp = bmp;

@@ -342,7 +342,7 @@ const Civ2CityDialog = {
     const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
     const supported = this.getSupportedUnits(cityIndex, mapData);
 
-    // ── Exact Civ2 colors (from Civ2-clone Draw.CityPanel.cs) ──
+    // ── Exact Civ2 colors (from Civ2-clone Draw.CityPanel.cs + BMP pixel analysis) ──
     const COL = {
       title:    'rgb(135,135,135)',
       header:   'rgb(223,187,63)',
@@ -350,6 +350,7 @@ const Civ2CityDialog = {
       foodDark: 'rgb(0,51,0)',
       prod:     'rgb(83,103,191)',
       prodDark: 'rgb(0,0,95)',
+      prodLight:'rgb(103,127,215)',     // production panel gradient bottom (BMP verified)
       trade:    'rgb(239,159,7)',
       science:  'rgb(63,187,199)',
       luxury:   'rgb(255,255,255)',
@@ -360,7 +361,59 @@ const Civ2CityDialog = {
       headerCyan:       'rgb(63,187,199)',   // 0x3FBBDF — real section header foreground
       headerShadow:     'rgb(67,67,67)',     // 0x434343 — section header shadow
       resourceMapShadow:'rgb(0,51,0)',       // 0x003300 — "Resource Map" shadow
+      // Gold panel border colors (BMP pixel analysis: 3D beveled)
+      goldBright:  'rgb(223,187,63)',   // top/left highlight
+      goldMedium:  'rgb(191,151,47)',   // face
+      goldDark:    'rgb(159,115,31)',   // bottom/right shadow
+      goldShadow:  'rgb(43,27,0)',      // deepest shadow
+      // Panel backgrounds (BMP pixel analysis)
+      foodStorageBg: 'rgb(7,59,0)',     // dark green fill
+      separator:     'rgb(67,67,67)',   // dark line below title bar
     };
+
+    // ── Helper: 3D gold panel border (BMP-verified) ──
+    const _goldBorder = (x, y, w, h) => {
+      // Outer bright edge (top + left)
+      ctx.strokeStyle = COL.goldBright;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+      // Inner medium face
+      ctx.strokeStyle = COL.goldMedium;
+      ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+      // Dark shadow (bottom + right) — overdraw bottom/right edges
+      ctx.strokeStyle = COL.goldDark;
+      ctx.beginPath();
+      ctx.moveTo(x + w - 0.5, y + 0.5);
+      ctx.lineTo(x + w - 0.5, y + h - 0.5);
+      ctx.lineTo(x + 0.5, y + h - 0.5);
+      ctx.stroke();
+      ctx.strokeStyle = COL.goldShadow;
+      ctx.beginPath();
+      ctx.moveTo(x + w - 1.5, y + 1.5);
+      ctx.lineTo(x + w - 1.5, y + h - 1.5);
+      ctx.lineTo(x + 1.5, y + h - 1.5);
+      ctx.stroke();
+    };
+
+    // ── Panel background fills (BMP-verified: drawn before all content) ──
+    // Food Storage: green fill in right column, top half
+    ctx.fillStyle = COL.foodStorageBg;
+    ctx.fillRect(437, 0, 195, 163);
+    // Production: blue gradient in right column, bottom half
+    const prodGrad = ctx.createLinearGradient(437, 165, 437, 356);
+    prodGrad.addColorStop(0, COL.prodDark);
+    prodGrad.addColorStop(1, COL.prodLight);
+    ctx.fillStyle = prodGrad;
+    ctx.fillRect(437, 165, 195, 191);
+    // Dark separator line below title bar
+    ctx.fillStyle = COL.separator;
+    ctx.fillRect(0, 22, 636, 1);
+    // Gold panel border around Resource Map
+    _goldBorder(5, 79, 194, 137);
+    // Gold panel border around City Improvements
+    _goldBorder(3, 288, 192, 130);
+    // Gold panel border around Workers/Garrison
+    _goldBorder(3, 212, 192, 74);
 
     // ── Section labels (centered, gold with dark shadow) ──
     // From CityWindow.cs: Draw.Text centered at (x, y) with shadow (67,67,67) offset (1,1)
