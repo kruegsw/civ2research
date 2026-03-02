@@ -441,6 +441,7 @@ These bytes store game options that the player can toggle in the game menus:
 - [ ] Decode 0x0039: 1 byte between peace turns and total units
 - [ ] Decode 0x0040-0x0041: 2 bytes between tech count and first-discoverer array
 - [ ] Decode 0x014A-0x0158: ~14 bytes between wonder data and per-civ name blocks
+- [ ] **RENDERING**: "Show map grid" toggle (0x000E bit 5) — when set, the game overlays diamond grid lines on the map. No rendering spec exists: grid line color, thickness, opacity, and drawing method (full diamond outlines vs corner marks) are all unknown.
 
 #### Player's Civ Slot vs. LEADERS.TXT Index
 
@@ -1025,6 +1026,8 @@ For ocean tiles, multiple bits are commonly set (e.g., `0b00111111` = 63, meanin
 - [ ] Determine if the 1024-byte padding block contains any meaningful data
 - [ ] Byte[5] high nibble: confirm if values 1–5 are overlay variant indices for TERRAIN2.GIF
 - [ ] Byte[1] bits 0–3: verify exact river direction mapping (NE/SE/SW/NW assignment)
+- [ ] **RENDERING**: Byte[1] bit 0 "unit present" flag — the doc notes this flag gates unit visibility, but the renderer ignores it. Determine whether the game engine uses this flag to control unit sprite rendering and how it interacts with FOW.
+- [ ] **RENDERING**: Byte[5] high nibble "tile ownership" — documented as "used for airbase color display." Determine how airbase sprite color changes per tile owner (recoloring? variant selection? overlay?). Currently renderer draws a single airbase sprite with no per-owner coloring.
 
 ### Isometric Coordinate System
 
@@ -1432,6 +1435,9 @@ All offsets are 0-indexed from the start of each unit record. Höfelt uses 1-ind
 - [ ] Decode +4 bit 6 ("first move") more precisely — confirmed by Höfelt but behavior unclear
 - [ ] Decode +12 low nibble (AI task sub-field)
 - [ ] Decode +14 alive byte non-zero values (what values indicate death?)
+- [ ] **RENDERING**: Unit +5 bit 7 "automate" flag — automated settlers/engineers should display an order letter on their shield (e.g., "A"), but the renderer's ORDER_KEYS table has no automate entry. Determine correct order letter.
+- [ ] **RENDERING**: Unit +12 high nibble (AI task) — the doc says this is "displayed on unit shield when map is fully revealed via cheat." Determine what letter/icon is shown per task value (2=build city, 9=explore, etc.) and rendering position.
+- [ ] **RENDERING**: Unit +13 cargo byte (Caravan commodity) — determine whether the game visually indicates the commodity being carried. The renderer does not use this field visually.
 
 #### Standard Unit Type IDs (default RULES.TXT)
 
@@ -1641,6 +1647,9 @@ Verified by assigning 1 specialist of each type from a size-5 baseline (no speci
 - [ ] Verify +4-7 attribute bits not yet seen (Auto-build, Tech stolen, Disorder, Objective flags)
 - [ ] Decode +6 bit 3 (0x08) — present in 42/43 cities, meaning unknown
 - [ ] Investigate +5 bit 3 (0x08) — present in 32/43 cities, possibly "has river in city radius"
+- [ ] **RENDERING**: City civil disorder (+4 bit 0) — cities in disorder show a visible indicator in the game (fist icon or red highlight on the map). Determine exact visual indicator, sprite source, and rendering position. The renderer currently only shows disorder in the tooltip.
+- [ ] **RENDERING**: City "We Love the King Day" (+4 bit 1) — WLTKD cities may show celebration effects on the map. Determine exact visual representation. Currently tooltip-only.
+- [ ] **RENDERING**: City resistance state (+11 turns since capture) — cities under resistance may display differently on the map (e.g., occupation flag or altered sprite). Determine how resistance vs normal occupation is visually distinguished.
 
 ##### Cross-Reference: Source Documentation
 
@@ -4095,9 +4104,14 @@ sprite_y = 39 + era_row * 49         # Era row
 # Extract 64×48 pixels using magenta + cyan + gray chroma key
 ```
 
-> **NOTE**: The "FAR EAST" row may function as a style-specific variant rather than a chronological era — some civilizations may use this row instead of Ancient/Classical based on their style assignment. The exact tech→era mapping thresholds are defined in RULES.TXT and have not been extracted here. The "MODERN ALT" row may be used for specific city sizes or as an alternate for variety.
-
-> **RENDERER INTERIM**: The current renderer (`canvas-test-1/renderer.js`) uses a fixed era row (row 3 = Medieval) for all cities. The correct era should be determined from per-civ tech advancement data (RULES.TXT `@CIVILIZE` section defines tech→era thresholds). This requires parsing the per-civ technology bitmask from Section 3b of the save file, which is not yet implemented. City style (0-3) is correctly parsed from per-civ name blocks, and City Walls detection uses the building bitmask at city record offset +52 (bit 8). CITIES.GIF is an optional input — the renderer falls back to colored squares when not provided.
+> **City sprite row selection** (implemented in renderer.js `_getCityRow()`):
+> - **Epochs 0–1** (Ancient/Renaissance): Use civ's city style (rows 0–3: Bronze Age, Classical, Far East, Medieval)
+> - **Epoch 2** (Industrial): All civs use row 4
+> - **Epoch 3** (Modern): Styles 0–1 use row 5, styles 2–3 (Far East/Medieval) use row 6 (MODERN ALT)
+>
+> **Epoch determination** (`_getEpoch()`): Based on milestone tech combinations: Ancient=default, Renaissance=Invention(38)+Philosophy(60), Industrial=Industrialization(37), Modern=Automobile(5)+Electronics(24). Per-civ tech bitmask parsed from Section 3b of save file (offset 0x00A6, 12 bytes).
+>
+> City style (0–3) parsed from per-civ name blocks. City Walls detected via building bitmask at city record +52 (bit 8). CITIES.GIF is optional — renderer falls back to colored squares when not provided.
 
 **Bottom section** (y ≈ 395+, confirmed from embedded labels):
 - **FLAGS**: Per-civ flag/pennant sprites. 14×22 pixels each, 9 per row × 2 rows. Row 0 at y=425, row 1 at y=448 (23px row spacing). Horizontal: x = 1 + 15 × col, for col 0–8. 8 civ flags (slots 0–7) + 1 unused brown flag (slot 8) per row. Source: Civ2-clone `Rectangle(1 + 15*(i%9), 425 + 23*(i/9), 14, 22)`. Drawn on cities that contain units; position encoded via `FlagLoc` in the Civ2-clone. **TODO**: Determine exact rendering rules — when flags appear (all cities vs only garrisoned/occupied), exact position on city sprite, and whether row 0 vs row 1 represents light/dark variants or different states.
@@ -4461,6 +4475,36 @@ This script produces a correct map rendering with verified coastlines, rivers, r
 
 ---
 
+## Rendering TODOs — Underspecified Visual Elements
+
+Items below describe visual elements that are implied or partially described elsewhere in this document but lack sufficient rendering instructions for implementation. Each needs further research (game observation, Civ2-clone source, or reverse engineering) to determine the exact rendering rules.
+
+##### Sprite Sheet Gaps
+- [ ] **TERRAIN2 rows 0–1**: "Tile connection masks" — green line segments (palette index 254) on magenta diamonds. Purpose unclear. May be used by the game engine for sub-pixel coastline blending beyond the 4-quadrant system. Need to determine if these have any visible rendering purpose or are engine-internal only.
+- [ ] **TERRAIN2 bottom section**: "Ocean wave textures" and "new 25 grassland variant" are mentioned but have no extraction coordinates, rendering conditions, or usage rules. Are wave textures drawn on ocean tiles? When is the "new 25" grassland variant used instead of the standard grassland sprites?
+- [ ] **UNITS.GIF HPshield template**: At (597, 30, 12, 20), described as "unused in Civ2-clone." Determine what the game engine actually uses this sprite for — possibly an alternative HP display mode or a tooltip sprite.
+- [ ] **CITIES.GIF large city sprites**: "Two large detailed city sprites to the right" in the bottom section (y ≈ 395+). No coordinates, dimensions, or rendering conditions. Possibly capital-city or wonder-city variants. Need to identify their exact position and when the game draws them.
+- [ ] **CITIES.GIF airbase second variant**: The doc mentions "two variants — one with runway, one with X marking" but only one is extracted (x=273, y=423). Need coordinates for the second variant and the selection rule between them (e.g., airbase with planes present vs empty?).
+- [ ] **ICONS.GIF**: Described as "wonder thumbnails, government icons, misc" but no grid layout, cell dimensions, or extraction coordinates are provided. Determine which icons are map-relevant (if any) and provide sprite extraction specs.
+- [x] **Tiles.dll nuke sprite sheet**: ~~CATALOGED~~. Resource #85, 6×2 grid = 12 animation frames, 91×72px cells with 1px magenta borders. Grid area: 553×147px in upper-left of 640×480 image. Frame 0 at (1,1), frame 1 at (93,1), etc., stepping by 92px horizontally and 73px vertically. Sequence: flash → fireball → mushroom cloud → dissipation. Rendering trigger: nuclear missile attack on tile. Animation timing TBD.
+- [x] **Tiles.dll government/diplomacy icons**: ~~CATALOGED~~. Resource #86, 66px grid spacing (64×64 cells + 2px magenta border). Row 0 (y=2): government icons dark/3D style (cols 0-6 = Anarchy through Democracy). Row 1 (y=68): same in gold/bright style. Row 2 (y=134): diplomacy status text labels (Cease Fire, Peace, War, Old Alliance, Modern Alliance). Row 3 (y=200): diplomacy icons 3D. Row 4 (y=266): diplomacy icons flat. Cyan chroma key for transparency.
+
+##### City Sprite Selection
+- [x] **Era/epoch tech thresholds**: ~~RESOLVED~~. City sprite era is determined by milestone tech combinations (not tech count): Ancient=default, Renaissance=Invention+Philosophy, Industrial=Industrialization, Modern=Automobile+Electronics. The `@CIVILIZE` epoch field (0–3) classifies individual techs by era but does not directly control city sprite selection. Tech IDs: Invention=38, Philosophy=60, Industrialization=37, Automobile=5, Electronics=24.
+- [x] **City style per-civ assignment**: ~~RESOLVED~~. See "Civilization Style Assignments (`@LEADERS`)" table in the RULES.TXT Reference Data section. Distribution: Bronze Age (0) = 8 civs, Classical (1) = 4, Far East (2) = 3, Medieval (3) = 6.
+- [ ] **MODERN ALT row (row 6)**: Described as "possibly used for specific city sizes or as an alternate for variety." When does the game select row 6 instead of row 5 (MODERN)? Is it a style-specific override? A size threshold? Random variety?
+- [ ] **FAR EAST row (row 2)**: "May function as a style-specific variant rather than a chronological era." Determine whether this row is selected by era (like rows 0–5) or by city style (certain civs always use this row regardless of era).
+
+##### Base Terrain Rendering
+- [ ] **Variant selection algorithm**: The doc says "The exact algorithm is unknown" with a "BEST GUESS" hash formula. The renderer uses `(gx * 13 + gy * 7) % variants.length`. Need to reverse-engineer the actual game's terrain variant selection — the game may use a seed-based or pre-computed value stored in the map data (byte[5] high nibble?).
+- [ ] **Dither mask asymmetry**: The doc notes "The diamond is left-right symmetric in shape but NOT in dither hole placement" and horizontal flip is critical, but doesn't document the exact asymmetry pattern. Would benefit from a pixel-level reference image showing which side has more/fewer transparent holes.
+
+##### DLL-Based Screens (Non-Map Rendering)
+- [ ] **cv.dll city view**: 16 GIFs total. Improvements (#300, 740×710, 42+ isometric building sprites), wonders (#305, 640×1130, 28+ wonder sprites), surroundings (#310, 640×680, forest/village growth tiles), landscape backgrounds (#340–353, 12 panoramas at 1280×480 each). Exact cell grids, building-ID-to-sprite mappings, and landscape selection rules still needed.
+- [ ] **mk.dll diplomacy**: 56 GIFs + 21 CTABs. Leader portraits (#220–261, 42 at 227×277), meeting room backgrounds (#200–206, 7 at 640×480, one per government type), throne rooms (#10000–10002). CTABs (#1000–1020, 773 bytes each = 5-byte header + 256 RGB triples) for per-civ palette colorization. Civ-to-portrait-ID mapping, government-to-background mapping, and CTAB application rules still needed.
+- [ ] **pv.dll palace view**: 55 GIFs. Base room (#100, 640×480), rock backgrounds (#105–108), 6 component sets (#110–143, groups of 4), decorative elements (#160–166), fine details (#170–184). All 642×482 (1px border). Positioning rules, tier-selection logic, and compositing order still needed.
+- [ ] **ss.dll spaceship**: 46 GIFs. Build stages (#400–440, 24 frames at 640×480), structural components (#441–442, 695×110 strips), propulsion (#455–456, 905×104 strips), habitation (#470–471, 290×85), solar panels (#480–481, 411×78), fuel cells (#489–490, 550×120), earth-from-space (#499, 640×480), build animation (#20000–20007, 8 progressive stages). Component-count-to-view mapping and animation timing still needed.
+
 ## Community References
 
 - **Allard Höfelt's Hex-Editing Guide** (hexedit.rtf, v1.8, April 2005): The original and most comprehensive community documentation. Written for Fantastic Worlds but applicable to all versions. Covers header toggle flags, tribes (7 × 242-byte name blocks), per-civ data (8 × 1,428-byte blocks including treasury, treaties, tech bitmask, unit counts), map data (all 6 tile bytes including body counter, visibility, ownership/fertility), units (all 26 fields), cities (all 84 fields), post-city data (city name counters, cursor position, passwords, kill history), and events (EVNT section with 298-byte records). Contributors: AGRICOLA, Captain Nemo, Paul "Kull" Cullivan, Carl "Gothmog" Fritz, Andrew Livings, Javier "yaroslav" Muñoz Kirschberg, Angelo Scotto, SlowThinker, Harlan Thompson, Xin Yu, Jorrit "Mercator" Vermeiren (editor since v1.7). Confirms MGE city = 88 bytes (vs FW 84 bytes), MGE unit = 32 bytes (vs FW 26 bytes). Available in tek10/civ2mod repository.
@@ -4604,6 +4648,77 @@ Each line: `Name, obsolete_tech, domain, move, range, attack, defense, hp, firep
 
 Unit type IDs in save files (byte +6 of unit records) correspond directly to the 0-indexed line number in `@UNITS`.
 
+### Civilization Style Assignments (`@LEADERS`)
+
+Each civilization in LEADERS.TXT / RULES.TXT `@LEADERS` has a **city style** (0–3) determining which column of CITIES.GIF to use for city sprites. Colors cycle among the 7 civ slots (civs with the same color number share a palette).
+
+| Slot | Civ | Color | City Style | Style Name |
+|------|-----|-------|------------|------------|
+| 0 | Romans | 1 (White) | 1 | Classical |
+| 1 | Babylonians | 2 (Green) | 0 | Bronze Age |
+| 2 | Germans | 3 (Blue) | 3 | Medieval |
+| 3 | Egyptians | 4 (Yellow) | 0 | Bronze Age |
+| 4 | Americans | 5 (Cyan) | 1 | Classical |
+| 5 | Greeks | 6 (Orange) | 1 | Classical |
+| 6 | Indians | 7 (Purple) | 2 | Far East |
+| 7 | Russians | 1 (White) | 3 | Medieval |
+| 8 | Zulus | 2 (Green) | 0 | Bronze Age |
+| 9 | French | 3 (Blue) | 3 | Medieval |
+| 10 | Aztecs | 4 (Yellow) | 0 | Bronze Age |
+| 11 | Chinese | 5 (Cyan) | 2 | Far East |
+| 12 | English | 6 (Orange) | 3 | Medieval |
+| 13 | Mongols | 7 (Purple) | 0 | Bronze Age |
+| 14 | Celts | 1 (White) | 0 | Bronze Age |
+| 15 | Japanese | 2 (Green) | 2 | Far East |
+| 16 | Vikings | 3 (Blue) | 3 | Medieval |
+| 17 | Spanish | 4 (Yellow) | 3 | Medieval |
+| 18 | Persians | 5 (Cyan) | 0 | Bronze Age |
+| 19 | Carthaginians | 6 (Orange) | 1 | Classical |
+| 20 | Sioux | 7 (Purple) | 0 | Bronze Age |
+
+**Style distribution**: Bronze Age (0) = 8 civs, Classical (1) = 4 civs, Far East (2) = 3 civs, Medieval (3) = 6 civs.
+
+### Special Resource Names (`@TERRAIN`)
+
+Each of the 11 base terrain types has 2 special resource variants, placed by the map seed algorithm:
+
+| Terrain | Resource 1 | Resource 2 |
+|---------|-----------|-----------|
+| Desert | Oasis | Desert Oil |
+| Plains | Buffalo | Wheat |
+| Grassland | Grassland Shield | Grassland Shield |
+| Forest | Pheasant | Silk |
+| Hills | Coal | Wine |
+| Mountains | Gold | Iron |
+| Tundra | Game | Furs |
+| Glacier | Ivory | Glacier Oil |
+| Swamp | Peat | Spice |
+| Jungle | Gems | Fruit |
+| Ocean | Fish | Whales |
+
+### Attitude Names (`@ATTITUDES`)
+
+| Value | Attitude |
+|-------|----------|
+| 0 | Worshipful |
+| 1 | Enthusiastic |
+| 2 | Cordial |
+| 3 | Receptive |
+| 4 | Neutral |
+| 5 | Uncooperative |
+| 6 | Icy |
+| 7 | Hostile |
+| 8 | Enraged |
+
+### Trade Commodities (`@CARAVAN`)
+
+| ID | Commodity |
+|----|-----------|
+| 0 | Hides | 1 | Wool | 2 | Beads | 3 | Cloth |
+| 4 | Salt | 5 | Coal | 6 | Copper | 7 | Dye |
+| 8 | Wine | 9 | Silk | 10 | Silver | 11 | Spice |
+| 12 | Gems | 13 | Gold | 14 | Oil | 15 | Uranium |
+
 ### Technology Definition Format (`@CIVILIZE`)
 
 Each line: `Name, AI_value, civilize_modifier, prereq1, prereq2, epoch, category`
@@ -4629,6 +4744,41 @@ Each line: `Name, move_cost, defense, food, shields, trade, irrigate_type, irrig
 Terrain type IDs in save file tile data (byte[0] & 0x0F) correspond to 0-indexed line numbers: 0=Desert, 1=Plains, 2=Grassland, 3=Forest, 4=Hills, 5=Mountains, 6=Tundra, 7=Glacier, 8=Swamp, 9=Jungle, 10=Ocean.
 
 Lines 11-21 define **special resource** variants for each terrain type (Oasis for Desert, Buffalo for Plains, etc.), which appear when byte[0] bit 7 is set.
+
+---
+
+## DLL Embedded Resource Catalog
+
+All Civ2 MGE DLLs use a custom PE resource type `GIFS` (language 1033, English US) to embed GIF images. Total: **243 GIF resources** across 8 DLLs. Resource extraction tested with Python `pefile` module; all GIFs saved to `/tmp/civ2_dll_gifs/`. Cross-referenced against [Civ2-clone](https://github.com/axx0/Civ2-clone) `Civ2GoldInterface.cs` where applicable.
+
+| DLL | Size | GIFs | Other | Content |
+|-----|------|------|-------|---------|
+| Tiles.dll | 1,417 KB | 24 | — | Advisor backgrounds, event illustrations, nuke sprites, govt/diplo icons |
+| cv.dll | 4,980 KB | 16 | — | City View: improvement sprites, wonder sprites, landscape backgrounds |
+| mk.dll | 3,166 KB | 56 | 21 CTAB | Diplomacy: leader portraits (42), throne room backgrounds, color tables |
+| pv.dll | 1,999 KB | 55 | — | Palace View: room backgrounds, building components |
+| ss.dll | 1,456 KB | 46 | — | Spaceship: component sprites, build stages, space backgrounds |
+| Intro.dll | 1,151 KB | 13 | — | Intro cutscene frames (geographic scenes) |
+| Wonder.dll | 186 KB | 28 | — | Wonder movie thumbnails (74×74 each) |
+| Civ2Art.dll | 257 KB | 5 | — | Credits, starfield backgrounds, UI panels |
+
+### Tiles.dll — Map-Relevant Resources
+
+**GIFS/85 — Nuke Explosion** (21,611 bytes, 640×480): 6×2 grid = 12 animation frames, 91×72px cells, 1px magenta borders. Grid area 553×147px. Frame coordinates: (col×92+1, row×73+1). Sequence: flash → fireball → mushroom cloud → dissipation.
+
+**GIFS/86 — Government & Diplomacy Icons** (41,213 bytes, 640×480): 66px grid (64×64 cells + 2px magenta border), cyan transparency fill. Row 0: govt icons dark 3D (Anarchy=col 0 through Democracy=col 6). Row 1: govt icons gold/bright. Row 2: diplomacy labels (Cease Fire, Peace, War, Old Alliance, Modern Alliance). Rows 3-4: diplomacy icons (3D shaded / outlined).
+
+**GIFS/50–59** — Advisor backgrounds (640×480): City Report (#50, Jerusalem), Defense Minister (#51, cavalry), Attitude Advisor (#52, Byzantine), Trade Advisor (#53, classical figure), Science Advisor (#54, freight cart), #55 (seated figure with globe), #56 (Stonehenge), #57 (celebration fireworks), #58 (Egyptian painting), #59 (Greek column).
+
+**GIFS/70–77** — Event illustrations (variable sizes): City capture ancient (#70, 270×189), city capture modern (#71, 145×257), revolution (#72, 261×194), democracy protest (#73, 230×198), medieval/Islamic (#74, 277×148), victory parade (#75, 178×262), city founded ancient (#76, 290×176), city founded modern (#77, 197×294).
+
+### mk.dll — Leader Portraits
+
+42 portraits at 227×277px (GIFS/220–261). 21 CTAB palette resources (GIFS/1000–1020, 773 bytes each: 5-byte header + 256 RGB triples) for per-civ palette colorization. 7 meeting room backgrounds (GIFS/200–206, 640×480) for government-specific diplomacy scenes.
+
+### Wonder.dll — Thumbnails
+
+28 wonder thumbnails at 74×74px (GIFS/20000–20027), 1,607 bytes each. One per wonder in standard build order (Pyramids → Marco Polo's Embassy).
 
 ---
 

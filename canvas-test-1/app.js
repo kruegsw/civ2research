@@ -425,6 +425,9 @@ viewportCanvas.addEventListener('mousemove', e => {
       ['Pheasant','Silk'],['Coal','Wine'],['Gold','Iron'],['Game','Furs'],['Ivory','Oil'],
       ['Peat','Spice'],['Gems','Fruit'],['Fish','Whales']
     ];
+    const GOVERNMENT_NAMES = ['Anarchy','Despotism','Monarchy','Communism','Fundamentalism','Republic','Democracy'];
+    const COMMODITY_NAMES = ['Hides','Wool','Beads','Cloth','Salt','Coal','Copper','Dye',
+      'Wine','Silk','Silver','Spice','Gems','Gold','Oil','Uranium'];
     const terName = Civ2Renderer.TERRAIN_NAMES[ter] || '?';
     let info = `(${gx * 2 + (gy % 2)}, ${gy})  ${terName}`;
     if (river) info += ' + River';
@@ -456,7 +459,8 @@ viewportCanvas.addEventListener('mousemove', e => {
         const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
         const styleNames = ['Bronze','Classical','Far East','Medieval'];
         const cityOwner = (md.civNames && md.civNames[c.owner]) || `Civ ${c.owner}`;
-        info += `\n${c.name} (${cityOwner}, size ${displaySize}, ${epochNames[epoch]}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''}`;
+        const govName = (md.civData && md.civData[c.owner]) ? GOVERNMENT_NAMES[md.civData[c.owner].government] || '' : '';
+        info += `\n${c.name} (${cityOwner}, size ${displaySize}, ${epochNames[epoch]}${govName ? ', ' + govName : ''}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''}`;
         if (c.isOccupied) {
           const origOwner = (md.civNames && md.civNames[c.originalOwner]) || `Civ ${c.originalOwner}`;
           info += `, occupied (was ${origOwner})`;
@@ -483,7 +487,9 @@ viewportCanvas.addEventListener('mousemove', e => {
       const vetStr = u.veteran ? ' Vet' : '';
       const ordStr = ORDER_NAMES[u.orders] || `orders:${u.orders}`;
       const dmgStr = u.hpLost > 0 ? `, dmg ${u.hpLost}` : '';
-      info += `\n[Unit] ${name}${vetStr} (${owner}${dmgStr}${ordStr ? ', ' + ordStr : ''})`;
+      const cargoStr = (u.type === 48 || u.type === 49) && u.cargoWorkFuel >= 0 && u.cargoWorkFuel <= 15
+        ? `, cargo: ${COMMODITY_NAMES[u.cargoWorkFuel]}` : '';
+      info += `\n[Unit] ${name}${vetStr} (${owner}${dmgStr}${cargoStr}${ordStr ? ', ' + ordStr : ''})`;
     }
 
     tooltip.textContent = info;
