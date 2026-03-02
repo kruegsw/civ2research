@@ -134,13 +134,26 @@ async function doRender() {
     const fowSelect = document.getElementById('fow-civ');
     const previousValue = fowSelect.value;  // save user's selection BEFORE clearing
     fowSelect.innerHTML = '';
-    const civNames = Civ2Renderer._identifyCivs(mapData.cities);
+    // Resolve civ names: save-file tribeName > LEADERS.TXT by rulesCivNumber > slot label
+    const LEADERS_TXT_NAMES = [
+      'Romans','Babylonians','Germans','Egyptians','Americans','Greeks','Indians','Russians',
+      'Zulus','French','Aztecs','Chinese','English','Mongols','Celts','Japanese','Vikings',
+      'Spanish','Persians','Carthaginians','Sioux'
+    ];
+    const civNames = {};
+    for (let i = 0; i < 8; i++) {
+      const nb = mapData.civNameBlocks && mapData.civNameBlocks[i];
+      const cd = mapData.civData && mapData.civData[i];
+      const tribeName = nb && nb.tribeName;
+      const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
+      civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
+    }
     mapData.civNames = civNames;
     for (let i = 0; i < 8; i++) {
       if (!(mapData.civsAlive & (1 << i))) continue;
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = civNames[i] || `Civ ${i}`;
+      opt.textContent = civNames[i];
       fowSelect.appendChild(opt);
     }
     // Restore previous selection if valid, otherwise default to playerCiv
@@ -407,19 +420,25 @@ viewportCanvas.addEventListener('mousemove', e => {
       ? md.getKnownImprovements(gx, gy, fowCiv)
       : md.getImprovements(gx, gy);
 
+    const RESOURCE_NAMES = [
+      ['Oasis','Desert Oil'],['Buffalo','Wheat'],['Grassland Shield','Grassland Resource'],
+      ['Pheasant','Silk'],['Coal','Wine'],['Gold','Iron'],['Game','Furs'],['Ivory','Oil'],
+      ['Peat','Spice'],['Gems','Fruit'],['Fish','Whales']
+    ];
     const terName = Civ2Renderer.TERRAIN_NAMES[ter] || '?';
     let info = `(${gx * 2 + (gy % 2)}, ${gy})  ${terName}`;
     if (river) info += ' + River';
-    if (res === 1) info += ' [Resource 1]';
-    if (res === 2) info += ' [Resource 2]';
+    if (res === 1) info += ` [${(RESOURCE_NAMES[ter] || [])[0] || 'Resource 1'}]`;
+    if (res === 2) info += ` [${(RESOURCE_NAMES[ter] || [])[1] || 'Resource 2'}]`;
+    if (md.hasGoodyHut && md.hasGoodyHut(gx, gy)) info += ' [Goody Hut]';
 
     const impParts = [];
-    if (imp & 0x02) impParts.push('City');
-    if (imp & 0x04) impParts.push('Irrigation');
-    if (imp & 0x08) impParts.push('Mining');
+    if ((imp & 0x0C) === 0x0C) impParts.push('Farmland');
+    else { if (imp & 0x04) impParts.push('Irrigation'); if (imp & 0x08) impParts.push('Mining'); }
     if (imp & 0x10) impParts.push('Road');
     if (imp & 0x20) impParts.push('Railroad');
-    if (imp & 0x40) impParts.push('Fortress');
+    if ((imp & 0x42) === 0x42 && !md.cities.some(c => c.gx === gx && c.gy === gy)) impParts.push('Airbase');
+    else if (imp & 0x40) impParts.push('Fortress');
     if (imp & 0x80) impParts.push('Pollution');
     if (impParts.length) info += '\n' + impParts.join(', ');
 
@@ -436,7 +455,15 @@ viewportCanvas.addEventListener('mousemove', e => {
         const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;
         const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
         const styleNames = ['Bronze','Classical','Far East','Medieval'];
-        info += `\n${c.name} (size ${displaySize}, ${epochNames[epoch]}, ${styleNames[c.style] || '?'}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''})`;
+        const cityOwner = (md.civNames && md.civNames[c.owner]) || `Civ ${c.owner}`;
+        info += `\n${c.name} (${cityOwner}, size ${displaySize}, ${epochNames[epoch]}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''}`;
+        if (c.isOccupied) {
+          const origOwner = (md.civNames && md.civNames[c.originalOwner]) || `Civ ${c.originalOwner}`;
+          info += `, occupied (was ${origOwner})`;
+        }
+        if (c.civilDisorder) info += ', DISORDER';
+        if (c.weLoveKingDay) info += ', WLTKD';
+        info += ')';
         break;
       }
     }
@@ -446,11 +473,17 @@ viewportCanvas.addEventListener('mousemove', e => {
       if (u.gx !== gx || u.gy !== gy) continue;
       if (fowEnabled && fowBit) {
         if (!(vis & fowBit)) continue;  // tile not currently visible
-        if (u.visFlag != null && !(u.visFlag & fowBit)) continue;  // unit not visible to civ
+        if (u.owner !== fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;  // unit not visible to civ (own units always visible)
       }
+      const ORDER_NAMES = {0:'',1:'Fortifying',2:'Fortified',3:'Sleep',4:'Build Fortress',
+        5:'Build Road',6:'Build Irrigation',7:'Build Mine',8:'Transform',9:'Clean Pollution',
+        10:'Build Airbase',11:'GoTo',255:''};
       const name = Civ2Renderer.UNIT_NAMES[u.type] || `Unit#${u.type}`;
       const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
-      info += `\n[Unit] ${name} (id ${u.type}, ${owner}, hp-${u.hpLost}, orders ${u.orders})`;
+      const vetStr = u.veteran ? ' Vet' : '';
+      const ordStr = ORDER_NAMES[u.orders] || `orders:${u.orders}`;
+      const dmgStr = u.hpLost > 0 ? `, dmg ${u.hpLost}` : '';
+      info += `\n[Unit] ${name}${vetStr} (${owner}${dmgStr}${ordStr ? ', ' + ordStr : ''})`;
     }
 
     tooltip.textContent = info;

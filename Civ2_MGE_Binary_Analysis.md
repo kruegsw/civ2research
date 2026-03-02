@@ -514,7 +514,7 @@ All offsets below are **1-indexed** to match Höfelt's convention (byte 1 = firs
 
 | Byte(s) | Size | Field | Notes |
 |---------|------|-------|-------|
-| 1 | 1 byte | **State flags** | Bitmask: bit 0 = skip next oedo year (e.g., after falling to anarchy), bit 1 = at war with another civ (peace turns), bit 2 = related to anarchy, bit 3 = recovered from revolution (allow gov change), bit 5 = free advance pending (Philosophy bonus), cleared when received. |
+| 1 | 1 byte | **State flags** | Bitmask: bit 0 = skip next oedo year (e.g., after falling to anarchy), bit 1 = at war with another civ (peace turns), bit 2 = senate override chance (toggled every turn with 1/3 probability; when NOT set, Republic Senate confirms your action — per FoxAhead), bit 3 = recovered from revolution (allow gov change), bit 5 = free advance pending (Philosophy bonus), cleared when received. |
 | 2 | 1 byte | **Gender** | `0x00` = male, `0x02` = female. May not function in MGE. |
 | 3–6 | 4 bytes | **Treasury** (int32 LE) | Gold reserves. Even barbarians can have money. Values above 32,000 are capped to 30,000 by the game engine (Julius Brenzaida's "No Limits" patch removes this cap). |
 | 7 | 1 byte | **RULES.TXT civ number** | Which civilization definition from RULES.TXT/LEADERS.TXT this slot uses. Multiple slots can reference the same civ number, producing duplicate civilizations with the same color, portrait, and flag. |
@@ -523,23 +523,72 @@ All offsets below are **1-indexed** to match Höfelt's convention (byte 1 = firs
 | 11 | 1 byte | **Tech being researched** | Index into RULES.TXT `@CIVILIZE` section. `0xFF` = no research goal / cleared. |
 | 12 | 1 byte | **Tech research helper** | Must be `0xFF` if tech is cleared, otherwise `0x00`. Non-zero with certain tech IDs reads strings from LABELS.TXT. |
 | 13–14 | 2 bytes | **Starting position** (uint16 LE) | Column where this civ's settler(s) initially appeared. May be reused to select reappearance position when a destroyed civ respawns. |
-| 15–16 | 2 bytes | **Unknown** | Changes when building cities, but not consistently. |
+| 15–16 | 2 bytes (int16 LE) | **Turn of city build** | Turn number on which this civ last built/founded a city. Range 1–432+ for active civs. Dead civs retain their last value. Barbarians have values based on camp spawning. Confirmed via FoxAhead's `TCiv.TurnOfCityBuild` (offset 0x0E). |
 | 17 | 1 byte | **Acquired tech count + 1** | Number of technologies discovered (not counting starting techs) plus 1. **Critical**: this value controls the beaker cost of the next discovery AND strongly influences AI attitude ("Supreme", "Mighty", etc. power ranking). |
 | 18 | 1 byte | **Future Tech count + 1** | Number of Future Technologies discovered plus 1. |
-| 21 | 1 byte | **Tax/Science/Luxury rates** | Encoded tax, science, and luxury percentages. |
+| 19 | 1 byte | **Unknown** | Always 0 across all 1856 tested civ slots. FoxAhead labels this `Unknown_12`. Located between Future Tech count and science rate. |
+| 20 | 1 byte | **Science rate** | Science slider setting as a multiplier (0–10). Value × 10 = percentage allocated to science. E.g., `6` = 60% science. Confirmed: `scienceRate + taxRate ≤ 10` in all 1530 tested active/barb slots. Luxury rate = `10 − scienceRate − taxRate`. Source: FoxAhead `TCiv.ScienceRate` (0x13). |
+| 21 | 1 byte | **Tax rate** | Tax slider setting as a multiplier (0–10). Value × 10 = percentage allocated to tax. Previously labeled "Tax/Science/Luxury rates" (combined field). Source: FoxAhead `TCiv.TaxRate` (0x14). |
 | 22 | 1 byte | **Government type** | `0x00`=Anarchy, `0x01`=Despotism, `0x02`=Monarchy, `0x03`=Communism, `0x04`=Fundamentalism, `0x05`=Republic, `0x06`=Democracy. Values ≥ `0x08` cause a crash. Barbarians can be given Democracy (`0x06`) to prevent their cities from being subverted. |
-| 31 | 1 byte | **Reputation** | Diplomatic reputation score. |
-| 32–63 | 32 bytes | **Treaties** | 4 bytes per civ × 8 civs (including barbarians and self). See Treaty Byte Layout below. |
-| 66–72 | 7 bytes | **Attitudes** | One byte per non-barbarian civ. Byte 66 = attitude toward civ 1, byte 67 = toward civ 2, etc. |
+| 23 | 1 byte | **AI random seed** | Near-uniform distribution 0–99 that changes every turn for active AI civs. Always 0 for barbarians and dead civs. FoxAhead labels this `TCiv.SenateChances` (0x16), but empirical data shows no correlation with government type — behaves as a per-turn AI PRNG state or randomizer. |
+| 24–27 | 4 bytes | **Unknown (AI diplomatic counters)** | 4 independent uint8 counters with decreasing frequency. Byte 24: range 0–3, 37.8% non-zero. Byte 25: range 0–5, 19.6% non-zero. Byte 26: range 0–3, 4.2% non-zero. Byte 27: range 0–1, 0.8% non-zero. All zeros for barbarians and dead civs. Monotonically decreasing (byte[0] ≥ byte[1] ≥ byte[2] ≥ byte[3]) 92.3% of the time. Most common patterns: `[0,0,0,0]` (57.7%), `[1,0,0,0]` (20.6%), `[1,1,0,0]` (7.3%). Correlates with government type (Despotism avg byte[0]=0.16, Monarchy/Republic avg=0.71–0.72) and tech count (avg techs per byte[0] value: 0→13.6, 1→20.8, 2→29.0, 3→28.7). Best hypothesis: successive AI diplomatic state transition counters — each byte tracks a different threshold event, with decreasing frequency at higher indices. FoxAhead: `Unknown_17` (0x17–0x1A). |
+| 28 | 1 byte | **Unused** | Always 0 across all 1856 tested civ records (232 saves × 8 slots). Confirmed unused in MGE. FoxAhead: `Unknown_1B` (0x1B). |
+| 29–30 | 2 bytes (uint16 LE) | **Treaty-breaking count** | Cumulative count of treaty violations committed by this civ. Effectively a single byte (byte 30 is always 0). Range 0–4. Always 0 for barbarians and dead civs. 80% of non-zero cases are currently at war. Approximately equals `sum(abs(negative treatyViolations[0..7]))` — 89.9% exact match; the 10.1% mismatch likely reflects timing differences (per-civ entries may reset on civ destruction/re-peace while this field retains the cumulative count, or vice versa). FoxAhead: `Unknown_1C` (0x1C). |
+| 31 | 1 byte | **Reputation (betrayals)** | Global diplomatic reputation / betrayals counter. Range 0–7: `0`=Spotless, `1`=Excellent, `2`=Honorable, `3`=Questionable, `4`=Marginal, `5`=Poor, `6`=Despicable, `7`=Atrocious. Increases when this civ breaks treaties; decays slowly over time. Distinct from the per-civ treaty violations array at bytes 73–80 (which tracks bilateral violations). FoxAhead: `TCiv.Reputation` (0x1E). TOTPP Lua: `tribe.betrayals`. |
+| 32 | 1 byte | **Patience** | AI negotiation patience counter. Range 0–6, mostly 0 (83%). Determines how long an AI civ will entertain diplomatic meetings before terminating negotiations. Depletes when contacted frequently; resets or decays over time. Always 0 for barbarians and dead civs. FoxAhead: `Unknown_1F` (0x1F). Confirmed as "patience" by axx0/Civ2-clone (read at offset 31 as `patience`), Catfish's Cave ToT documentation (ToT offset +39), and TOTPP Lua API (`tribe.patience` get/set property). Previously misread as the first treaty byte due to a 1-byte offset bug. |
+| 33–64 | 32 bytes | **Treaties** | 4 bytes per civ × 8 civs (including barbarians and self). Self-treaty (slot toward self) is always all zeros. See Treaty Byte Layout below. **CORRECTED**: Previously documented at bytes 32–63; confirmed at bytes 33–64 via FoxAhead's `TCiv.Treaties` (offset 0x20) and empirical self-treaty validation across 232 saves. |
+| 65–72 | 8 bytes | **Attitudes** | One byte per civ slot (0–7). Byte 65 = attitude toward barbarians (always 100 for active civs), byte 66 = toward civ 1, ..., byte 72 = toward civ 7. Range 0–100. **CORRECTED**: Previously documented as 7 entries at bytes 66–72 (missing barbarian entry); confirmed as 8 entries at bytes 65–72 via FoxAhead's `TCiv.Attitude[0..7]` (offset 0x40). |
+| 73–80 | 8 bytes | **Treaty violations** | Per-civ treaty-breaking tracker. 8 × signed int8, indexed by target civ slot (0–7). Value 0 = neutral/no violations (98.3% of entries). **Negative** (−1 to −6) = THIS civ broke a treaty with the target; value = negative count of broken treaties. **Positive** (+1 to +2) = the TARGET broke a treaty with this civ; value = count broken by target. Self-slot always 0, position 0 (barbarians) always 0. 100% correlation: negative value → target has vendetta flag toward this civ. **Cross-references**: Catfish's Cave (ToT +80–87) and TOTPP Lua (`tribe.reputation[otherTribe]`) call this "per-tribe reputation" — the underlying concept is the same (bilateral diplomatic standing), but our empirical analysis shows the values specifically track treaty violations. Distinct from the global betrayals counter at byte 31. |
+| 81–88 | 8 bytes | **Diplomatic interaction counters** | Per-civ diplomatic interaction intensity. 8 × uint8, indexed by target civ slot (0–7). Range 0–22. Self-slot always 0. 6× more likely non-zero when at war with target, 9× more likely with contact. Grows with game age (avg sum: 0.08 at turns 0–49, 2.20 at turns 200–249). 84.8% symmetric between civ pairs; 15.2% asymmetric, suggesting per-civ event tracking. Not the mirror of the signed treaty violations array. Best hypothesis: cumulative count of hostile diplomatic interactions or border incidents per target civ. |
 | 89–100 | 12 bytes | **Technology bitmask** | One bit per technology, packed LSB first. `0xFF FF FF FF FF FF FF FF FF FF FF FD` = all standard techs. In MGE, all bits in all bytes count (unlike earlier versions where one bit per byte was skipped). Adding user-defined techs changes the last byte from `0xFD` to `0xFF`. |
-| 103–104 | 2 bytes | **Military power** (uint16 LE) | Military demographics value. |
+| 101–102 | 2 bytes (uint16 LE) | **Tech bitmask overflow** | `max(0, techBitmaskBitsSet − 80)`. Effectively a single byte (byte 102 is always 0). 100% exact match across all 1856 tested records. Zero for civs with ≤ 80 tech bits set (98.4% of records). Non-zero only in late-game saves with near-complete tech trees (e.g., 95 of 96 bits → value 15). Likely an internal engine overflow counter or cached computation for demographics/score/tech-cost scaling. |
+| 103–104 | 2 bytes | **Military power** (uint16 LE) | Military demographics value. **Naming discrepancy**: axx0/Civ2-clone reads this as `numberMilitaryUnits` (a count), Catfish's Cave (ToT) calls it "total number of military units", while Höfelt calls it "military demographics". May be a count of military units rather than a power/strength metric, or a demographics display value that happens to equal the count. Needs further empirical verification. |
 | 105–106 | 2 bytes | **City count** (uint16 LE) | Displayed in multiplayer lobby. No apparent effect in single-player. |
+| 107–108 | 2 bytes | **Naval unit count** (uint16 LE) | Count of sea-domain units (types 32–41: Trireme, Caravel, Galleon, Frigate, Ironclad, Transport, Cruiser, AEGIS Cruiser, Battleship, Carrier). Runtime-maintained counter: incremented when a naval unit is built, decremented when one is lost. 96.4% exact match with snapshot-reconstructed ship count across 232 saves; remaining 3.6% explained by dead unit slot recycling. |
 | 109–110 | 2 bytes | **Sum of city sizes** (uint16 LE) | Total population across all cities (in size units). |
+| 111–112 | 2 bytes | **Total unit atk+def sum** (uint16 LE) | Cumulative sum of `(RULES.TXT attack + defense)` values for all units owned by this civ. Runtime-maintained counter: incremented by `(atk + def)` when a unit is created, decremented when a unit is lost. Pearson r = 0.997 with snapshot-reconstructed atk+def sum. Sequential save analysis confirms exact delta match (du110 = d(atk+def) for each unit gained/lost). Cross-sectional exact match rate is 37.1% due to dead unit slot recycling. |
+| 113–114 | 2 bytes | **Total unit attack sum** (uint16 LE) | Cumulative sum of RULES.TXT attack values for all units owned by this civ. Same runtime-maintained counter mechanism as above but tracking attack only. 81.7% exact match with snapshot-reconstructed attack sum across 232 saves; sequential save analysis confirms 100% exact delta match. |
 | 115–214 | 100 bytes | **First discoverer flags** | One byte per technology. `0x00` = this civ was the first to discover it. `0xFF` (or any non-zero) = not first. |
 | 215–277 | 63 bytes | **Active unit counts** | One byte per unit type (in RULES.TXT `@UNITS` order). Byte 215 = number of settlers, byte 216 = engineers, etc. |
 | 278–340 | 63 bytes | **Unit casualty counts** | One byte per unit type. Number of each unit type lost/destroyed. |
 | 341–403 | 63 bytes | **Units in production** | One byte per unit type. Number of each type currently being produced. Computed at runtime, so hex-editing has no effect. |
+| 404 | 1 byte | **Padding** | Always 0x00. Gap byte between units-in-production and per-continent statistics block. |
+| 405–532 | 128 bytes | **Military power per continent** | 64 entries × 2 bytes (uint16 LE). In practice only the low byte of each entry carries data (high byte always 0x00), so effectively 64 single-byte values at even byte positions. Entry index = continent bodyId − 1. Sum across all entries ≈ the `militaryPower` field at bytes 103–104. See Per-Continent Statistics Block below. |
+| 533–660 | 128 bytes | **Land attack strength per continent** | Same format as above (64 × uint16 LE, low byte only). Each entry = sum of RULES.TXT attack values for all **land military units** on that continent. Naval, air, and non-combat units (Settlers, Diplomat, Caravan, etc.) contribute 0. Sum across all entries ≈ the `totalUnitAtkSum` field at bytes 113–114 (though the summary field includes ALL unit domains, not just land). Note: byte 660 (high byte of last entry) shares position with the first byte of Section C. |
+| 660–723 | 64 bytes | **City count per continent** | 64 single-byte entries. Entry index = continent bodyId − 1. Value = number of cities this civ owns on that continent. Sum across all entries = total city count. |
+| 724–787 | 64 bytes | **Sum of city sizes per continent** | 64 single-byte entries. Same indexing. Value = total population (in city-size units) across cities on that continent. Sum = total population. |
+| 788–851 | 64 bytes | **Per-continent transient flags** | 64 single-byte entries. Almost always zero (< 0.1% non-zero rate across 232 tested saves). When non-zero, values are small (1–4). Most common at position 0. Likely transient AI planning state (combat activity, exploration missions). |
+| 852–914 | 63 bytes | **Per-continent status bitflags** | 63 single-byte entries, one per continent slot (0–62). Observed values: `5` (0b00000101), `10` (0b00001010), `15` (0b00001111), `21` (0b00010101), `31` (0b00011111), `4`, `8`, `13`, `14`, `128`. Player civs tend to show `21` on their primary continent. AI civs typically show `5` or `15`. Zero = no data for this continent. See Per-Continent Status Bitflags below. |
+| 915–978 | 64 bytes | **Unit type "ever built" flags** | 64 single-byte entries indexed by unit type ID (0–62, plus position 63). Value `5` = this unit type has never been built. Value `0` = has been built at least once. Positions 0 and 63 are always `5` (sentinels — Settlers at position 0 are tracked differently since every civ starts with one). Dead civs have all 64 bytes set to `5`. |
+| 979–996 | 18 bytes | **Power graph ranking data** | 9 × int16 LE (signed). H[0] is always ≥ 0 (range 0–47). H[1]–H[4] are always ≤ 0. H[5]–H[7] are signed with potentially large magnitudes. H[8] = −1 (sentinel). Barbarians typically store `[0,0,0,0,0,0,0,10,−1]`. These values likely correspond to power graph category differentials (military, population, food, land, production, commerce, science, gold). |
 | 997–1010 | 14 bytes | **Last contact turns** | 2 bytes per civ (uint16 LE), 7 entries. Bytes 997–998 = last contact with civ 1, etc. `0xFFFF` = no contact yet. (Bytes 995–996 may be barbarian contact, unverified.) |
+| 1010 | 1 byte | **AI persona index** | Formula: `(rulesCivNumber % 7) + 7 × leaderPersonality`. The `leaderPersonality` component ranges 0–5 (6 possible values). Changes when a civ is destroyed and reborn. Barbarians (slot 0) always have value 0. |
+| 1011–1021 | 11 bytes | **Constant padding** | Always `[1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0]` across all 1784 tested civ records (223 saves × 8 slots). Purpose unknown — may be default spaceship component flags or engine constants. |
+| 1022–1023 | 2 bytes | **Spaceship structural** (uint16 LE) | Number of spaceship structural components built. Range observed: 0–30. Only non-zero for AI civs in late-game saves with many technologies. |
+| 1024–1025 | 2 bytes | **Spaceship propulsion** (uint16 LE) | Number of spaceship propulsion components built. Maximum observed: 8. Only non-zero in saves where civs have 100+ technologies. |
+| 1026–1027 | 2 bytes | **Spaceship estimate 1** (int16 LE) | Signed year or score estimate related to spaceship. When non-zero, typically a large negative value (e.g., −1500 to −2000). |
+| 1028–1029 | 2 bytes | **Spaceship estimate 2** (int16 LE) | Signed year or score estimate. Related to estimate 1: typically `estimate1 − estimate2 ≈ 427` (or ≈ 319 with max propulsion of 8). |
+| 1030–1043 | 14 bytes | **Zero padding** | Always zero across all tested saves. May be reserved for additional spaceship fields present in ToT but unused in MGE. |
+| 1044–1427 | 384 bytes | **AI continent goals** | 64 × 6-byte entries, one per continent slot (index = bodyId − 1). See AI Continent Goal Entry below. **Note**: Civ 7 (slot 7) has only 416 bytes total in the tail (2 fewer than civs 0–6), so entry 63 is truncated to 4 bytes (missing goalType and goalExtra). The parser reads 63 entries for civ 7. |
+
+###### AI Continent Goal Entry (6 bytes)
+
+Each of the 64 entries in the AI continent goals block represents the AI's strategic goal for that continent:
+
+| Byte | Type | Field | Notes |
+|------|------|-------|-------|
+| 0–1 | uint16 LE | **x** | Map x-coordinate of the goal target. 0 if no goal. |
+| 2–3 | uint16 LE | **y** | Map y-coordinate of the goal target. 0 if no goal. |
+| 4 | uint8 | **goalType** | Goal type code: `0` = explore, `1` = attack/defend, `5` = city site, `7` = naval(?), `21` = threat(?), `255` = empty/unused. |
+| 5 | int8 | **goalExtra** | Signed priority or target civ. Range observed: −7 to +5. Possibly encodes the target civ slot index (signed). |
+
+> **Notes**: Human-controlled civs and barbarians typically have all-zero goal entries. Dead civs show `goalType = 255` for all entries. Active AI civs have non-zero entries corresponding to continents they have explored or are interested in. The number of active goals correlates with the civ's territorial awareness and military activity.
+
+> **Civ 7 truncation**: The per-civ block size for civ 7 is always 2 bytes shorter than for civs 0–6 (1426 vs 1428 in SAV format). This means the last continent goal entry (index 63) is missing its final 2 bytes (goalType and goalExtra), effectively giving civ 7 only 63 complete entries.
+
+> **FoxAhead validation**: FoxAhead's `TCiv` struct splits the 64 AI goals into two arrays: `Unknown_414[0..47]` (48 entries at offset +0x414 / +1044) and `Unknown_534[0..15]` (16 entries at offset +0x534 / +1332). Total: 48 + 16 = 64 entries × 6 bytes = 384 bytes. The `TCivSub1` record type (X: int16, Y: int16, Unknown_4: byte, Unknown_5: byte) matches our decoded goal entry format exactly. The 48/16 split may reflect different priority tiers (active goals vs reserve/overflow).
+
+> **Methodology**: Decoded by statistical analysis across 223 save files (1784 per-civ records). The 11-byte constant at +1011 was confirmed invariant across all records. Spaceship fields confirmed by correlation with late-game saves (only 3 records with non-zero propulsion, all with 100+ technologies). AI goals confirmed by validating coordinates against map dimensions and observing goal activity patterns for human vs AI vs dead civs. Sequential turn analysis using 9 early-game saves confirmed persona index changes on civ death/rebirth. The entry-per-continent mapping was verified by cross-referencing goal coordinates with tile bodyId values.
 
 ###### Treaty Byte Layout (4 bytes per civ pair)
 
@@ -550,11 +599,16 @@ All offsets below are **1-indexed** to match Höfelt's convention (byte 1 = firs
 | 1st | bit 2 | Peace treaty |
 | 1st | bit 3 | Alliance (always combined with peace) |
 | 1st | bit 4 | Vendetta |
+| 1st | bit 5 | Hatred (FoxAhead: possibly spaceship-related) |
 | 1st | bit 7 | Embassy |
+| 2nd | bit 0 | Nukes discussed (FoxAhead: "They talked about nukes with us") |
+| 2nd | bit 1 | Attacked a unit of the other tribe (CivFanatics) |
 | 2nd | bit 5 | War |
-| 2nd | bit 2 | Unknown (used by game internally) |
-| 3rd | bit 5 | Unknown (used by game internally) |
-| 4th | — | Unknown |
+| 2nd | bit 6 | Recently signed peace treaty / cease fire (FoxAhead) |
+| 3rd | bit 0 | Captured a city of the other tribe (CivFanatics) |
+| 3rd | bit 1 | We nuked them (FoxAhead) |
+| 3rd | bit 2 | Accepted tribute (FoxAhead) |
+| 4th | — | Unknown / reserved |
 
 > **Note**: Treaty flags can be combined to create unusual states (e.g., war + alliance simultaneously: units get repaired when attacking enemy cities, but diplomacy screens show war). The 4-byte pattern repeats for each of the 8 civ slots.
 
@@ -571,28 +625,229 @@ Each entry in the city knowledge list encodes a city this civ knows about:
 
 **Verified**: City coordinates in these entries match actual city positions in the city record section.
 
+##### Per-Continent Statistics Block (bytes 405–997)
+
+This 593-byte region stores per-continent breakdowns of the civ's aggregate statistics. Civ2 assigns each contiguous land or water body a **body ID** (1–63, where 63 = ocean). The statistics are indexed by **slot = bodyId − 1**, so slot 0 = continent with bodyId 1, slot 1 = bodyId 2, etc.
+
+**Structure overview (593 bytes):**
+
+| Sub-section | Byte Offset | Size | Entry Count × Size | Content |
+|-------------|-------------|------|--------------------|---------|
+| A | 405–532 | 128 | 64 × 2 bytes | Military power per continent |
+| B | 533–660 | 128 | 64 × 2 bytes | Land attack strength per continent |
+| C | 660–723 | 64 | 64 × 1 byte | City count per continent |
+| D | 724–787 | 64 | 64 × 1 byte | Sum of city sizes per continent |
+| E | 788–851 | 64 | 64 × 1 byte | Per-continent transient flags |
+| F | 852–914 | 63 | 63 × 1 byte | Per-continent status bitflags |
+| G | 915–978 | 64 | 64 × 1 byte | Unit type "ever built" flags |
+| H | 979–996 | 18 | 9 × 2 bytes | Power graph ranking data |
+
+**Sections A and B** use a uint16 LE format where in practice only the low byte carries data (the high byte is always `0x00`). The effective data is a single byte at every even position (bytes 405, 407, 409, ... for section A; bytes 533, 535, 537, ... for section B). Note: byte 404 is a padding byte (always 0) separating units-in-production from the per-continent block. **CORRECTED**: Previous versions stated the high byte carried data; empirical verification across 232 saves confirmed data is in the low byte.
+
+**Section A — Military power per continent**: The low byte of each entry represents this civ's military power on the corresponding continent. The sum of all low bytes across 64 entries approximately equals the aggregate `militaryPower` field at bytes 103–104. Exact match rate is ~63% across tested saves; discrepancies arise from lazily-updated cached values that may not be refreshed every turn.
+
+**Section B — Land attack strength per continent**: Same format as A. Each entry = the sum of RULES.TXT attack values for all **land military units** this civ has on that continent. Naval units, air units, and non-combat units (Settlers, Engineers, Diplomat, Spy, Caravan, Freight, Explorer) contribute 0 to this metric. Verified per-unit-type contributions:
+
+| Unit Type | Attack Contribution |
+|-----------|-------------------|
+| Warriors (2) | 1 |
+| Phalanx (3) | 1 |
+| Archers (4) | 3 |
+| Legion (5) | 4 |
+| Pikemen (6) | 1 |
+| Musketeers (7) | 3 |
+| Riflemen (11) | 5 |
+| Marines (12) | 8 |
+| Horsemen (15) | 2 |
+| Chariot (16) | 3 |
+| Elephant (17) | 4 |
+| Crusaders (18) | 5 |
+| Cavalry (21) | 8 |
+| Catapult (23) | 6 |
+| Cannon (24) | 8 |
+| All naval units | 0 |
+| Settlers, Diplomat, Caravan, etc. | 0 |
+
+**Section C — City count per continent**: One byte per continent slot. Value = number of cities this civ owns on that continent. Sum across all 64 entries = total city count (88.8% exact match across 232 saves; remainder due to stale caching).
+
+**Section D — Sum of city sizes per continent**: One byte per continent slot. Value = total population in city-size units across this civ's cities on that continent. Sum across all 64 entries = total city population (88.1% exact match).
+
+**Section E — Per-continent transient flags**: Almost always all zeros. In 232 tested saves, only 83 non-zero bytes were found (< 0.1% hit rate). When non-zero, values are small (1–4), most commonly at position 0 (relative offset within section). Likely represents transient AI state such as active combat or exploration missions on a continent.
+
+**Section G — Unit type "ever built" flags**: 64 bytes indexed by unit type ID (0–62, plus position 63). Value `5` = this unit type has never been built by this civ. Value `0` = has been built at least once (may or may not still exist). Positions 0 and 63 are always `5` (sentinels). When a civ is destroyed, all 64 bytes reset to `5`.
+
+##### Per-Continent Status Bitflags (bytes 852–914)
+
+Section F contains 63 bytes, one per continent slot (0–62). Each byte is a bitmask encoding the civ's status on that continent. Observed values and their bit decomposition:
+
+| Value | Binary | Bits Set | Frequency | Notes |
+|-------|--------|----------|-----------|-------|
+| 5 | `00000101` | 0, 2 | Most common | Default for known/explored continents |
+| 10 | `00001010` | 1, 3 | Common | |
+| 15 | `00001111` | 0, 1, 2, 3 | Common | Typical for AI civs with presence |
+| 21 | `00010101` | 0, 2, 4 | Common | Typical for human player's continent |
+| 31 | `00011111` | 0, 1, 2, 3, 4 | Moderate | Combined activity state |
+| 4 | `00000100` | 2 | Moderate | |
+| 8 | `00001000` | 3 | Rare | |
+| 13 | `00001101` | 0, 2, 3 | Rare | |
+| 14 | `00001110` | 1, 2, 3 | Rare | |
+| 128 | `10000000` | 7 | Very rare (1 occurrence) | |
+
+The individual bits likely correspond to statuses such as "has units here", "has cities here", "explored", "is primary continent", or "at war on this continent", but the exact per-bit meanings have not been isolated through controlled experiments.
+
+##### Power Graph Ranking Data (bytes 979–996)
+
+Section H contains 9 signed int16 LE values. The last entry (H[8]) is always −1 (sentinel). The remaining 8 entries likely correspond to the 8 power graph/demographics categories, storing ranking differentials or score deltas.
+
+| Entry | Range | Notes |
+|-------|-------|-------|
+| H[0] | 0 to 47 | Always non-negative. |
+| H[1] | −1306 to 0 | Always non-positive. Largest magnitude. |
+| H[2] | −684 to 0 | Always non-positive. |
+| H[3] | −283 to 0 | Always non-positive. |
+| H[4] | −74 to 0 | Always non-positive. Smallest magnitude of the negative group. |
+| H[5] | −206 to 401 | Signed, both positive and negative. |
+| H[6] | −943 to 699 | Signed, widest range. |
+| H[7] | −922 to 703 | Signed, wide range. For barbarians, commonly `10`. |
+| H[8] | −1 | Always −1 (sentinel). |
+
+Barbarians (civ 0) typically have all values zero except H[7]=10 and H[8]=−1: `[0, 0, 0, 0, 0, 0, 0, 10, −1]`.
+
+> **Methodology**: Decoded by statistical analysis across 232 save files from diverse games (different maps, players, eras). Continent slot mapping confirmed by correlating C[slot] city counts with actual city positions via `getBodyId()`. Section B attack values confirmed against standard RULES.TXT by isolating single-unit-type continents. This region was previously undocumented across all known community sources (Civ2-clone, Allard Höfelt, Catfish's Cave, TOTPP).
+>
+> **Independent validation**: FoxAhead's `Civ2Types.pas` (`TCiv` struct) contains arrays `Unknown_192` through `Unknown_392` that match exactly with our decoded Blocks A–G — confirming the array sizes and types (64 × uint16 LE for A/B, 64 × byte for C–G). FoxAhead labels these as "Unknown" but the structural match provides high confidence in our decode. See https://github.com/FoxAhead/Civ2-UI-Additions/blob/master/src/Civ2Types.pas.
+
 ##### TODO: Per-Civ Block — Remaining Unknowns
 - [x] Locate per-civ government type → byte 22
 - [x] Locate per-civ treasury → bytes 3–6 (int32 LE)
-- [x] Locate per-civ tax/luxury/science rates → byte 21
+- [x] Locate per-civ tax/luxury/science rates → byte 20 = science rate, byte 21 = tax rate (luxury = 10 − sci − tax). **CORRECTED**: previously a single combined field at byte 21; now split per FoxAhead.
 - [x] Identify technology bitmask → bytes 89–100 (12 bytes, 1 bit per tech)
-- [x] Decode treaty structure → bytes 32–63 (4 bytes × 8 civs)
+- [x] Decode treaty structure → bytes 33–64 (4 bytes × 8 civs). **CORRECTED**: was bytes 32–63 (off by 1).
 - [x] Identify active unit counts → bytes 215–277 (63 bytes, 1 per unit type)
 - [x] Identify unit casualty counts → bytes 278–340
 - [x] Locate research progress → bytes 9–10
 - [x] Locate acquired tech count → byte 17 (controls research cost + AI attitude)
 - [x] Locate diplomatic reputation → byte 31
-- [x] Locate attitudes → bytes 66–72
+- [x] Locate attitudes → bytes 65–72 (8 entries including barbarians). **CORRECTED**: was 7 entries at bytes 66–72.
 - [x] Locate first discoverer flags → bytes 115–214
 - [x] Locate last contact turns → bytes 997–1010
-- [ ] Decode bytes 19–20 (between Future Tech count and tax rates)
-- [ ] Decode bytes 23–30 (between government and reputation)
-- [ ] Decode bytes 404–996 (large gap between unit production counts and last contact)
-- [ ] Decode bytes 1011–1428 (tail of per-civ block)
-- [ ] Determine what the city knowledge list at +64 actually represents in the Höfelt layout
+- [x] Decode bytes 19–20 → byte 19 = unknown (always 0), byte 20 = science rate, byte 21 = tax rate. Confirmed via FoxAhead `TCiv` struct and sum validation across 1530 slots.
+- [x] Decode bytes 23–32 → byte 23 = AI random seed (0–99, changes every turn), bytes 24–27 = small counters (FoxAhead `Unknown_17`), byte 28 = unused (always 0), bytes 29–30 = treaty-breaking count (cumulative violations, effectively uint8, byte 30 always 0), byte 31 = reputation, byte 32 = **patience** (AI negotiation patience counter, 0–6). Patience confirmed by axx0/Civ2-clone, Catfish's Cave, and TOTPP Lua `tribe.patience`.
+- [x] Decode bytes 73–88, 101–102 → bytes 73–80 = treaty violations (signed int8[8], per-civ treaty-breaking tracker, 100% vendetta correlation), bytes 81–88 = diplomatic interaction counters (uint8[8], partially decoded — correlates with war/contact/game age), bytes 101–102 = tech bitmask overflow (`max(0, bitsSet − 80)`, 100% match across 1856 records).
+- [x] Decode bytes 405–997 → per-continent statistics block (military power, land attack, city count, city sizes, flags, unit history, power graph data)
+- [x] Decode bytes 1011–1428 → AI persona index (byte 1010), constant padding (1011–1021), spaceship data (1022–1029), zero padding (1030–1043), AI continent goals 64×6 bytes (1044–1427)
+- [x] Determine what the city knowledge list at +64 actually represents → It is the start of the 8-byte attitudes array (bytes 65–72), not a separate city knowledge list. Byte 65 (Höfelt's +64) = attitude toward barbarians (always 100).
+- [x] Decode bytes 107–108, 111–114 → naval unit count (uint16, count of sea-domain types 32–41), total unit atk+def sum (uint16, cumulative RULES.TXT attack+defense), total unit attack sum (uint16, cumulative RULES.TXT attack). All three are runtime-maintained counters. Confirmed via sequential save delta analysis (100% exact deltas) and cross-sectional correlation (r=0.997 for atk+def). Cross-sectional exact match rates (81.7% for attack sum, 96.4% for naval count) limited by dead unit slot recycling in save snapshots.
 - [ ] Determine what the 32 extra bytes per civ in SAV vs SCN contain (likely unit/city ID tracking)
+- [x] Fix treaty/attitude offset bug → treaties shifted from +31 to +32, attitudes from 7@+65 to 8@+64. Confirmed via FoxAhead `TCiv` struct (offsets 0x20 and 0x40) and validated across 232 saves.
 
 > **CORRECTION**: Previous versions of this document described a variable-size "Extended Game Data" section (0 to ~93 KB) between per-civ data and the map header. This was based on an incorrect per-civ block size of 3,833 bytes. The actual per-civ block size is **1,428 bytes** (SAV/NET) or **1,396 bytes** (SCN), and the per-civ data blocks end immediately before the map header with no variable-size gap. The "extended data" observed in some saves was likely the per-civ data itself being misattributed.
+
+##### Dead Unit Slot Recycling
+
+Several per-civ fields (bytes 107–108, 109–110, 111–112, 113–114) are **runtime-maintained counters** — the game engine increments them when a unit is built and decrements them when a unit is lost. These counters are perfectly accurate during gameplay but cannot be exactly reconstructed from a save file snapshot due to **dead unit slot recycling**:
+
+When a unit dies, its 32-byte record in the unit array is marked as dead but retains the original owner and type data. When *any* civ later builds a new unit, the engine reuses the lowest-numbered dead slot, overwriting the previous owner/type with the new unit's data. The save file only records the current occupant of each slot — the original owner's contribution to the per-civ counter is lost.
+
+**Effect on cross-sectional analysis** (computing counters from a single save snapshot):
+
+| Field | Match rate (all saves) | Match rate (no dead slots) | Explanation |
+|-------|----------------------|--------------------------|-------------|
+| `navalUnitCount` (+107–108) | 96.4% | 98.8% | Low noise — few naval units overall |
+| `totalUnitAtkSum` (+113–114) | 81.7% | 87.5% | Moderate noise — each recycled slot adds/subtracts one attack value |
+| `totalUnitAtkDefSum` (+111–112) | 37.1% | 45.8% | Higher noise — accumulates both atk+def per recycled slot |
+
+**Sequential save analysis** (comparing consecutive turns) confirms 100% exact delta matches for all three counters, proving the formulas are correct despite the lower cross-sectional match rates.
+
+##### Power Graph and Demographics Formulas
+
+The Civ2 F-key demographics screen and the power graph use pre-cached per-civ values. Several of these are stored in the per-civ block:
+
+| Demographic | Per-Civ Field | Byte(s) | Notes |
+|-------------|--------------|---------|-------|
+| Population | `sumOfCitySizes` | 109–110 | Direct sum of all city sizes |
+| Military units | `militaryPower` | 103–104 | May be a count of military units (see naming discrepancy) |
+| Cities | `cityCount` | 105–106 | Direct count |
+| Naval forces | `navalUnitCount` | 107–108 | Count of sea-domain units |
+| Military strength | `totalUnitAtkSum` | 113–114 | Sum of RULES.TXT attack values |
+| Military (atk+def) | `totalUnitAtkDefSum` | 111–112 | Sum of RULES.TXT attack+defense |
+
+**Power Graph formula** (confirmed by CivFanatics community testing):
+```
+Power = Population + (Techs / 2.67) + (Gold / 256)
+```
+Military units are NOT included in the power graph rating. Source: https://forums.civfanatics.com/threads/power-rating-vs-power-graph.463/
+
+**Foreign Minister Power Rating** (F3 screen: Pathetic/Weak/Poor/Fair/Good/Excellent/Supreme) uses the **same formula** as the Power Graph. Military units are NOT included. Source: https://civilization.fandom.com/wiki/Diplomacy_(Civ2)
+
+**Military Advisor Weapon Icons** (F3 screen) are a separate assessment from the power rating. The exact Civ2 formula is undocumented; the Civ3 analog is `(3A + 2D) × HP + B`. Community anecdotes suggest Civ2 uses approximately `2A + D` but this is unconfirmed. Source: https://forums.civfanatics.com/threads/military-advisor-relative-strength-assessment-definition.62980/
+
+**Selected Demographics formulas** (confirmed by CivFanatics community testing):
+
+| Demographic | Formula | Source |
+|-------------|---------|--------|
+| Military Service | `10 × (military units) / (total citizens)` | https://forums.civfanatics.com/threads/demographics.42324/ |
+| Disease | `50 × (citizens+1) / (c1 + 2×c2 + 3×c3 + citizens + 1)` where c1/c2/c3 = pop in cities with 1/2/3 of {aqueduct, sewer, granary}. Pyramids count as granary; Medicine halves; Cure for Cancer halves again. | https://forums.civfanatics.com/threads/how-the-demographics-works.37033/ |
+| GNP | Total uncorrupted gold production (1 gold = 1 million) | CivFanatics |
+| Manufacturing Goods | Total unwasted shields (1 shield = 1 megaton) | CivFanatics |
+
+Other demographics (crop yield, pollution, literacy, life expectancy, family size, approval rating) appear to be computed on-the-fly from city data rather than pre-cached in the per-civ block.
+
+##### Cross-Reference Sources
+
+The per-civ block has been cross-referenced against multiple independent sources. Fields confirmed by 2+ sources are marked with high confidence.
+
+| Source | Type | Key Contribution | URL |
+|--------|------|-----------------|-----|
+| FoxAhead / Civ2-UI-Additions | Pascal DLL, TCiv struct | Authoritative in-memory layout; confirmed treaty offset, attitude count, field sizes | https://github.com/FoxAhead/Civ2-UI-Additions (`src/Civ2Types.pas`) |
+| axx0 / Civ2-clone | C# reimplementation | Field names (`patience`, `numberMilitaryUnits`); save file reader | https://github.com/axx0/Civ2-clone |
+| Catfish's Cave (ToT hex guide) | Documentation | ToT per-tribe field names; confirms patience, per-tribe reputation | https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm |
+| TOTPP Lua API | Lua scripting interface | Exposes `tribe.patience`, `tribe.reputation[t]`, `tribe.betrayals` | https://profgarfield.github.io/auto_doc/tribeObject.html |
+| Allard Höfelt hexedit.rtf v1.8 | Documentation (FW/MGE) | Original community reference; uses 1-indexed offsets. Known off-by-one error at treaty start. | Via https://github.com/tek10/civ2mod (`hexedit.rtf`) |
+| CivFanatics forums | Community research | Treaty flag definitions, power graph formula, demographics formulas | https://forums.civfanatics.com/ |
+| This project (statistical analysis) | Empirical analysis (232 saves) | Per-continent statistics, AI continent goals, runtime counters, treaty violations | `/tmp/findings_*.md` analysis scripts |
+
+##### Naming Discrepancies Between Sources
+
+| Byte(s) | This Document | FoxAhead | axx0/Civ2-clone | TOTPP Lua | Catfish's Cave (ToT) |
+|---------|--------------|----------|----------------|-----------|---------------------|
+| +22 | AI random seed | SenateChances | — | — | — |
+| +31 | Reputation (betrayals) | Reputation | reputation (discarded) | tribe.betrayals | Reputation |
+| +32 | Patience | Unknown_1F | patience (discarded) | tribe.patience | Patience |
+| +73–80 | Treaty violations | (in Unknown9) | — | tribe.reputation[t] | Reputation with tribe 0–7 |
+| +103–104 | Military power | (in Unknown9) | numberMilitaryUnits | — | Total number of military units |
+
+**Notes on discrepancies:**
+- **AI random seed / SenateChances** (+22): FoxAhead's name may derive from the memory offset context in the executable. Empirical analysis across 232 saves shows a uniform 0–99 distribution uncorrelated with government type, behaving as an AI PRNG.
+- **Military power / numberMilitaryUnits** (+103–104): Multiple sources call this a "military unit count" rather than a power metric. Empirical verification comparing the stored value against actual military unit counts from the unit records would resolve this. The per-continent section A sums approximately equal this field.
+- **Treaty violations / reputation** (+73–80): Catfish's Cave and TOTPP call these "per-tribe reputation" values. Our signed int8 analysis confirms the underlying mechanism: negative values track treaties this civ broke (100% vendetta correlation), positive values track treaties broken by the target. The concept is the same — bilateral diplomatic standing — but "treaty violations" more precisely describes the observed behavior.
+
+##### Test of Time (ToT) → MGE Offset Mapping
+
+The ToT per-tribe block is 3,348 bytes (vs MGE's 1,428). ToT inserts 8 unknown bytes at the start of each block (ToT offsets +2 to +9), shifting all subsequent fields by 8:
+
+```
+MGE_offset = ToT_offset − 8   (for approximately the first ~120 bytes)
+```
+
+| ToT Offset | MGE Offset | Field |
+|-----------|-----------|-------|
+| +0 | +0 | State flags |
+| +1 | +1 | Gender |
+| +2–9 | *(not present)* | ToT-only: 8 unknown bytes |
+| +10–13 | +2–5 | Gold (int32) |
+| +38 | +30 | Reputation (betrayals) |
+| +39 | +31 | Patience |
+| +40–71 | +32–63 | Treaties (32 bytes) |
+| +72–79 | +64–71 | Attitudes (8 bytes) |
+| +80–87 | +72–79 | Per-tribe reputation |
+| +88–95 | +80–87 | Unknown (8 bytes) |
+| +96–108 | +88–100 | Tech bitmask (13 bytes) |
+| +110–111 | +102–103 | Military power / unit count |
+| +112–113 | +104–105 | City count |
+| +116–117 | +108–109 | Sum of city sizes |
+
+**Warning**: The 8-byte shift applies cleanly to the first ~120 bytes. After that, the ToT format diverges significantly (3,348 vs 1,428 bytes), with ToT having additional fields for multiple maps, extended unit types (80 vs 63), and other expansions. Catfish's Cave labels for ToT offsets +110–123 ("Military Unit Count", "City Count", etc.) do NOT map directly to MGE offsets via the simple −8 formula.
 
 #### Autosave Filename
 
@@ -765,6 +1020,7 @@ For ocean tiles, multiple bits are commonly set (e.g., `0b00111111` = 63, meanin
 - [x] Byte[1] fully decoded: bits 0–3 = river directions, bit 4 = road, bit 6 = railroad (Session 12)
 - [x] Byte[2] formula confirmed: civ_id = (byte >> 5) & 7, low 5 bits always zero (Session 12)
 - [x] Byte[4] per-civ bit mapping verified: bit N = civ N visibility (Session 12)
+- [ ] City flags rendering: document exact rules for when per-civ flag sprites (CITIES.GIF y=425, 14×22px) are drawn on cities. Civ2-clone draws them when cities contain units (`tile.UnitsHere.Count > 0`). Need to verify: (a) flags on all garrisoned cities vs only occupied/resistance cities, (b) exact position on city sprite (Civ2-clone uses per-sprite `FlagLoc`), (c) whether row 0 vs row 1 (y=425 vs y=448) are light/dark variants or represent different states (e.g., normal vs occupied).
 - [ ] Block 3 purpose — verify whether it has any gameplay effect
 - [ ] Determine if the 1024-byte padding block contains any meaningful data
 - [ ] Byte[5] high nibble: confirm if values 1–5 are overlay variant indices for TERRAIN2.GIF
@@ -1425,9 +1681,9 @@ The final section of every save file contains post-city data. The tail size depe
 | `.SCN` | **1,907 bytes** | Always scenario |
 | `.NET` | **2,979 bytes** | Network saves (1,172 extra bytes for network state) |
 
-**Scenario saves** have a 100-byte appendix compared to standard saves, with the extra 100 bytes appended at the end (all zeros in observed saves, likely reserved for additional scenario metadata). The scenario name string (e.g., `"The Rise Of Rome"`) appears at tail offset +1471.
+**Scenario saves** have a 100-byte block inserted at tail offset +1469, between the post-fixed-constants region and the kill history. This block contains a 2-byte prefix, the scenario name string (e.g., `"The Rise Of Rome"` at +1471, up to 64 bytes), and additional scenario metadata. This shifts the kill history from +1469 (standard) to +1569 (scenario).
 
-The fixed constants at tail +1384 (`0xAB 0x05 0x46 0x03 0x01 0x00 0x03`) are **identical** in standard, scenario, and network saves, confirming the extra bytes are appended, not inserted.
+The fixed constants at tail +1385 (`0xAB 0x05 0x46 0x03 0x01 0x00 0x03`) are **identical** in standard, scenario, and network saves. (Note: earlier documentation cited +1384, but empirical testing across multiple files confirms +1385.)
 
 #### Tail Internal Structure
 
@@ -1465,9 +1721,11 @@ Password encryption uses a 3-step algorithm: (1) rotate character bits left by 1
 |--------|------|-------------|-------|
 | ~+82 | ~270 bytes | **Historical power graph data** | 8 bytes per entry, one per ~4 game turns. Data behind the in-game Power Graph (Demographics screen). Per-civ metrics tracking civilization growth over time. Values grow monotonically (cumulative scores). When a civ is destroyed, its value drops to 0. Number of entries ≈ `turn_number / 4`. |
 | ~+350 | ~940 bytes | Zero padding | Reserved for additional history rows in longer games (max ~117 rows for 500-turn game). |
-| +1288 | 96 bytes | Game engine constants | Fixed values across saves: `0x0780` (1920), `0x0438` (1080), etc. Possibly scoring coefficients or display parameters. |
-| +1384 | 8 bytes | Fixed constants | Always `0xAB 0x05 0x46 0x03 0x01 0x00 0x03` — identical across all saves and file types. |
-| +1471 | ~36 bytes | **Scenario name** | String (e.g., `"The Rise Of Rome"`). Only present in scenario saves. |
+| +1288 | 97 bytes | Game engine constants | Fixed values across saves: `0x0780` (1920) at +1289, `0x0438` (1080) at +1291, etc. Includes trailing 0x00 separator at +1384. Possibly scoring coefficients or display parameters. |
+| +1385 | 7 bytes | Fixed constants | Always `0xAB 0x05 0x46 0x03 0x01 0x00 0x03` — identical across all saves and file types. |
+| +1392 | 77 bytes | Per-civ summary values | Repeating pattern of ~10-byte blocks per civ. Purpose unclear. |
+| +1469 | 100 bytes | **Scenario block** (scenario only) | 2-byte prefix + scenario name at +1471 (up to 64 bytes) + metadata. Only present in scenario/NET saves. Shifts kill history to +1569. |
+| +1469 / +1569 | 338 bytes | **Kill history** | At +1469 for standard saves, +1569 for scenario saves (after scenario block). See kill history table above. |
 
 ##### TODO: Tail Data Unknown Fields
 <!-- PRIORITY 5: ~60% of 1807 bytes still unknown. -->
@@ -3842,7 +4100,7 @@ sprite_y = 39 + era_row * 49         # Era row
 > **RENDERER INTERIM**: The current renderer (`canvas-test-1/renderer.js`) uses a fixed era row (row 3 = Medieval) for all cities. The correct era should be determined from per-civ tech advancement data (RULES.TXT `@CIVILIZE` section defines tech→era thresholds). This requires parsing the per-civ technology bitmask from Section 3b of the save file, which is not yet implemented. City style (0-3) is correctly parsed from per-civ name blocks, and City Walls detection uses the building bitmask at city record offset +52 (bit 8). CITIES.GIF is an optional input — the renderer falls back to colored squares when not provided.
 
 **Bottom section** (y ≈ 395+, confirmed from embedded labels):
-- **FLAGS**: Small color flag sprites for each civilization (2 rows of 8 color swatches)
+- **FLAGS**: Per-civ flag/pennant sprites. 14×22 pixels each, 9 per row × 2 rows. Row 0 at y=425, row 1 at y=448 (23px row spacing). Horizontal: x = 1 + 15 × col, for col 0–8. 8 civ flags (slots 0–7) + 1 unused brown flag (slot 8) per row. Source: Civ2-clone `Rectangle(1 + 15*(i%9), 425 + 23*(i/9), 14, 22)`. Drawn on cities that contain units; position encoded via `FlagLoc` in the Civ2-clone. **TODO**: Determine exact rendering rules — when flags appear (all cities vs only garrisoned/occupied), exact position on city sprite, and whether row 0 vs row 1 represents light/dark variants or different states.
 - **FORTIFY**: Fortification icon (tent/barricade sprite) drawn on units with fortify orders
 - **FORTRESS**: Fortress improvement sprite (stone walls)
 - **AIRBASE**: Airbase improvement sprite (two variants — one with runway, one with X marking)
@@ -4208,7 +4466,7 @@ This script produces a correct map rendering with verified coastlines, rivers, r
 - **Allard Höfelt's Hex-Editing Guide** (hexedit.rtf, v1.8, April 2005): The original and most comprehensive community documentation. Written for Fantastic Worlds but applicable to all versions. Covers header toggle flags, tribes (7 × 242-byte name blocks), per-civ data (8 × 1,428-byte blocks including treasury, treaties, tech bitmask, unit counts), map data (all 6 tile bytes including body counter, visibility, ownership/fertility), units (all 26 fields), cities (all 84 fields), post-city data (city name counters, cursor position, passwords, kill history), and events (EVNT section with 298-byte records). Contributors: AGRICOLA, Captain Nemo, Paul "Kull" Cullivan, Carl "Gothmog" Fritz, Andrew Livings, Javier "yaroslav" Muñoz Kirschberg, Angelo Scotto, SlowThinker, Harlan Thompson, Xin Yu, Jorrit "Mercator" Vermeiren (editor since v1.7). Confirms MGE city = 88 bytes (vs FW 84 bytes), MGE unit = 32 bytes (vs FW 26 bytes). Available in tek10/civ2mod repository.
 - **TE Kimball's civ2mod.c**: C program for modifying MGE save files. Provides definitive MGE-specific offset constants (`CITY_ITEM_NAME_OFFSET 32`, `CITY_ITEM_OWNER_OFFSET 8`, `CITY_ITEM_SIZE 88`, `UNIT_ITEM_SIZE 32`, `UNIT_OWNER_OFFSET 7`, `UNIT_TYPE_OFFSET 6`, `UNIT_HOMECITY_OFFSET 16`). Demonstrates complete file navigation from map header through units to cities. Key algorithms confirmed: tile coordinate→offset formula (`(y*mapWidth + x/2) * 6`), map ownership modification (high nibble of byte 5), visibility radius patterns (radius 0/1/2 tile offsets), horizontal wrapping with vertical clipping, unit home city as uint16 array index, and city finding via name string search. Source: https://github.com/tek10/civ2mod
 - **Catfish's Cave** (FoxAhead's ToT format guide): https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm — Documents the save format for Test of Time (92-byte cities). Derived from Höfelt's guide with ToT-specific extensions. Useful cross-reference but requires offset conversion for MGE.
-- **FoxAhead's Civ2Types.pas**: Pascal type definitions from the Civ2-UI-Additions project. Based on Catfish's Cave documentation.
+- **FoxAhead's Civ2Types.pas**: https://github.com/FoxAhead/Civ2-UI-Additions/blob/master/src/Civ2Types.pas — Pascal type definitions from the Civ2-UI-Additions project. The `TCiv` record provides authoritative field offsets for the per-civ data block, including treaty start (0x20), attitude array (0x40), and rate fields (0x13–0x14). Based on Catfish's Cave documentation with additions from runtime memory analysis.
 - **Civ2-clone** (axx0): https://github.com/axx0/Civ2-clone — Open source C# reimplementation of Civilization II. The most authoritative source for sprite extraction coordinates and rendering algorithms. Key files: `Civ2GoldInterface.cs` (sprite sheet Rectangle coordinates), `Draw.Terrain.cs` (terrain overlay rendering with neighbor-connectivity bitmask). Confirmed the 4-bit diagonal neighbor bitmask for forest/mountain/hill overlay variant selection (NE=1, SE=2, SW=4, NW=8).
 - **Scenario League Wiki — The Palette Explained**: https://sleague.civfanatics.com/index.php?title=The_Palette_Explained — Definitive documentation of the Civ2 256-color palette, including reserved indices (253=magenta transparent, 254=green grid, 255=gray transparent) and civ-color substitution indices (251=dark shade, 252=light shade).
 - **Apolyton Forums** and **CivFanatics** — Community hex editing threads provided clues for city record structure and map data locations.
@@ -4433,4 +4691,157 @@ Contains internal debug message format strings that reveal variable names and da
 ### Labels.txt — UI Label Strings
 
 Contains **888+ strings** used for UI labels, button text, menu items, and status bar messages. Numbered sequentially. Cross-referencing with game screenshots helps identify which label IDs correspond to which UI elements.
+
+---
+
+## Appendix A: FoxAhead TCiv Record (In-Memory Layout)
+
+The following is the complete `TCiv` packed record from FoxAhead's Civ2-UI-Additions project (`src/Civ2Types.pas`). This represents the in-memory layout of the per-civ data block, which maps 1:1 to the save file per-civ block (1,428 bytes = 0x594). Memory base address: `0x64C6A0`.
+
+Source: https://github.com/FoxAhead/Civ2-UI-Additions/blob/master/src/Civ2Types.pas
+
+```pascal
+TCiv = packed record                              // Size = 0x594 (1428 bytes)
+  Flags: Word;                                    // +0x00 (2 bytes: state flags + gender)
+  Gold: Integer;                                  // +0x02 (4 bytes, signed)
+  Leader: Word;                                   // +0x06 (rulesCivNumber + civVariant)
+  Beakers: Word;                                  // +0x08
+  ResearchingTech: SmallInt;                      // +0x0A
+  CapitalX: SmallInt;                             // +0x0C
+  TurnOfCityBuild: SmallInt;                      // +0x0E
+  Techs: Byte;                                    // +0x10 (acquired tech count)
+  FutureTechs: Byte;                              // +0x11
+  Unknown_12: ShortInt;                           // +0x12 (always 0 in MGE)
+  ScienceRate: Byte;                              // +0x13 (0-10)
+  TaxRate: Byte;                                  // +0x14 (0-10)
+  Government: Byte;                               // +0x15 (0=Anarchy..6=Democracy)
+  SenateChances: ShortInt;                        // +0x16 (empirically: AI random seed 0-99)
+  Unknown_17: array[$17..$1A] of Byte;            // +0x17 (4 bytes: AI diplomatic counters)
+  Unknown_1B: Byte;                               // +0x1B (always 0)
+  Unknown_1C: Word;                               // +0x1C (treaty-breaking count)
+  Reputation: Byte;                               // +0x1E (0-7: Spotless to Atrocious)
+  Unknown_1F: Byte;                               // +0x1F (patience counter, 0-6)
+  Treaties: array[0..7] of Integer;               // +0x20 (32 bytes: 4 bytes × 8 civs)
+  Attitude: array[0..7] of Byte;                  // +0x40 (8 bytes: attitude per civ)
+  Unknown9: array[$48..$153] of Byte;             // +0x48 (268 bytes: LARGE UNKNOWN BLOCK)
+    // Contains: treaty violations (int8[8] at +0x48), diplomatic counters (uint8[8] at +0x50),
+    // tech bitmask (12 bytes at +0x58), tech overflow (byte at +0x64),
+    // military power (uint16 at +0x66), city count (uint16 at +0x68),
+    // naval unit count (uint16 at +0x6A), sum of city sizes (uint16 at +0x6C),
+    // total unit atk+def sum (uint16 at +0x6E), total unit atk sum (uint16 at +0x70),
+    // first discoverer flags (100 bytes at +0x72), active unit counts (63 bytes at +0xD6),
+    // casualty counts (63 bytes at +0x115), units in production (62 bytes at +0x154)
+  DefMinUnitBuilding: array[0..61] of Byte;       // +0x154 (62 bytes: units in production)
+  Unknown_192: array[0..63] of Word;              // +0x192 (Block A: military power per continent)
+  Unknown_212: array[0..63] of Word;              // +0x212 (Block B: land attack per continent)
+  Unknown_292: array[0..63] of Byte;              // +0x292 (Block C: city count per continent)
+  Unknown_2D2: array[0..63] of ShortInt;          // +0x2D2 (Block D: city sizes per continent)
+  Unknown_312: array[0..63] of ShortInt;          // +0x312 (Block E: transient flags)
+  Unknown_352: array[0..63] of ShortInt;          // +0x352 (Block F: status bitflags)
+  Unknown_392: array[0..63] of ShortInt;          // +0x392 (Block G: unit "ever built" flags)
+  Unknown_3D2: SmallInt;                          // +0x3D2 (Block H: power graph H[0])
+  Unknown_3D4: array[0..6] of SmallInt;           // +0x3D4 (Block H: power graph H[1]-H[7])
+  Unknown_3E2: array[0..7] of SmallInt;           // +0x3E2 (last contact turns, 7 entries + padding)
+  Unknown_3F2: ShortInt;                          // +0x3F2 (AI persona index)
+  Unknown_3F3: array[0..9] of ShortInt;           // +0x3F3 (constant padding [1,1,0,1,0,0,1,0,0,0])
+  Unknown_3FD: ShortInt;                          // +0x3FD (constant padding byte 11: 0)
+  Unknown_3FE: SmallInt;                          // +0x3FE (spaceship structural count)
+  SpaceFlags: Byte;                               // +0x400 (0x01=Started, 0x02=Launched, 0x08=Fusion)
+  Unknown_401: array[0..18] of ShortInt;          // +0x401 (spaceship propulsion, estimates, zero pad)
+  Unknown_414: array[0..47] of TCivSub1;          // +0x414 (AI continent goals, entries 0-47)
+  Unknown_534: array[0..15] of TCivSub1;          // +0x534 (AI continent goals, entries 48-63)
+end;
+
+TCivSub1 = packed record   // 6 bytes
+  X: SmallInt;             // +0: map x-coordinate
+  Y: SmallInt;             // +2: map y-coordinate
+  Unknown_4: Byte;         // +4: goal type (0=explore, 1=attack, 5=city site, 255=empty)
+  Unknown_5: Byte;         // +5: goal extra (signed priority or target civ)
+end;
+```
+
+> **Notes**: FoxAhead's `Flags` (Word, 2 bytes) combines what our parser splits into `stateFlags` (byte 0) and `gender` (byte 1). Similarly, `Leader` (Word) combines `rulesCivNumber` and `civVariant`. The `Unknown9` block (268 bytes) has been substantially decoded by this project through statistical analysis of 232 save files — see the inline annotations above. FoxAhead's `DefMinUnitBuilding` at +0x154 corresponds to our `unitsInProduction` array.
+
+## Appendix B: FoxAhead TUnit and TUnitType Records
+
+These records from `Civ2Types.pas` define the in-memory layout of unit data, validating our unit parser.
+
+```pascal
+TUnit = packed record    // Size = 0x20 (32 bytes)
+  X: Word;               // +0x00
+  Y: Word;               // +0x02
+  Attributes: Word;      // +0x04 (veteran, etc.)
+  UnitType: Byte;        // +0x06
+  CivIndex: ShortInt;    // +0x07 (owner civ slot)
+  MovePoints: ShortInt;  // +0x08
+  Visibility: Byte;      // +0x09 (per-civ visibility bitmask)
+  HPLost: Byte;          // +0x0A
+  MoveDirection: Byte;   // +0x0B
+  DebugSymbol: Char;     // +0x0C
+  Counter: ShortInt;     // +0x0D
+  MoveIteration: Byte;   // +0x0E
+  Orders: ShortInt;      // +0x0F (0=none, 1=fortifying, 2=fortified, etc.)
+  HomeCity: Byte;         // +0x10 (city array index; 0xFF = no home city)
+  byte_11: Byte;          // +0x11
+  GotoX: Word;           // +0x12
+  GotoY: Word;           // +0x14
+  PrevInStack: Word;     // +0x16
+  NextInStack: Word;     // +0x18
+  ID: Integer;           // +0x1A (unique sequence ID)
+  word_1E: Word;         // +0x1E
+end;
+
+TUnitType = packed record  // Size = 0x14 (20 bytes)
+  StringIndex: Cardinal;
+  Abilities: Cardinal;
+  Until_: Byte;
+  Domain: Byte;            // 0=Ground, 1=Air, 2=Sea
+  Move: Byte;
+  Range: Byte;
+  Att: Byte;               // RULES.TXT attack value
+  Def: Byte;               // RULES.TXT defense value
+  HitPoints: Byte;
+  FirePower: Byte;
+  Cost: Byte;
+  Hold: Byte;
+  Role: Byte;              // 0=Attack, 1=Defend, 2=Naval, 3=Air, 4=Transport, 5=Settle, 6=Diplomacy, 7=Trade
+  Preq: Byte;              // prerequisite tech index
+end;
+```
+
+> **Notes**: `HomeCity` is a single byte (max 255), limiting the number of cities to 255 per civ in standard MGE. TOTPP extends this to a word for >255 city support. `TUnitType.Att` and `TUnitType.Def` are the RULES.TXT base values used by the runtime counters at per-civ bytes 111–114.
+
+## Appendix C: Source URLs
+
+### GitHub Repositories
+- **FoxAhead/Civ2-UI-Additions** (Pascal DLL injection, TCiv struct): https://github.com/FoxAhead/Civ2-UI-Additions
+- **axx0/Civ2-clone** (C# reimplementation): https://github.com/axx0/Civ2-clone
+- **Catfish's Cave** (ToT hex format documentation): https://github.com/FoxAhead/Catfish-s-Cave
+- **vinceho/civ2patch** (C++ binary patching): https://github.com/vinceho/civ2patch
+- **tek10/civ2mod** (C save editor, ships hexedit.rtf): https://github.com/tek10/civ2mod
+- **LukeGoodsell/civ2.pm** (Perl module, minimal): https://github.com/LukeGoodsell/civ2.pm
+- **TOTPP Code Library** (Lua scripting library): https://github.com/javiermunozk/TOTPP-Code-Library
+
+### Documentation Pages
+- **Catfish's Cave hex doc** (ToT save format): https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm
+- **TOTPP Lua auto-docs** (tribe object API): https://profgarfield.github.io/auto_doc/tribeObject.html
+- **Allard Höfelt hexedit.rtf v1.8** (original FW/MGE reference, 1-indexed): https://ia800304.us.archive.org/11/items/civ2-hex-editing/Hex%20Editing.pdf
+- **Apolyton SAV/SCN format** (Mercator): https://apolyton.net/forum/civilization-series/civilization-i-and-civilization-ii/130935-civilization-ii-sav-scn-file-format
+- **Freeciv21 Civ2 loading** (limited import): https://longturn.readthedocs.io/en/latest/Manuals/Advanced/civ2.html
+
+### CivFanatics Forum Threads
+- **Civ2 Patch Project**: https://forums.civfanatics.com/threads/mge-civ-2-patch-project.570939/
+- **CIV2UIA**: https://forums.civfanatics.com/threads/civilization-ii-mge-user-interface-additions-civ2uia.697565/
+- **Civ2-clone**: https://forums.civfanatics.com/threads/making-a-clone-of-civ-ii.697563/
+- **TOTPP**: https://forums.civfanatics.com/threads/the-test-of-time-patch-project.517282/
+- **TOTPP Lua Reference**: https://forums.civfanatics.com/threads/totpp-lua-function-reference.557527/
+- **ToT Save Game Format** (treaty flags): https://forums.civfanatics.com/threads/save-game-format.631770/
+- **Demographics**: https://forums.civfanatics.com/threads/demographics.42324/
+- **How Demographics Works**: https://forums.civfanatics.com/threads/how-the-demographics-works.37033/
+- **Power Rating vs Power Graph**: https://forums.civfanatics.com/threads/power-rating-vs-power-graph.463/
+
+### Wiki / Reference
+- **Diplomacy (Civ2)**: https://civilization.fandom.com/wiki/Diplomacy_(Civ2) — reputation scale, power rating
+- **Reputation (Civ2)**: https://civilization.fandom.com/wiki/Reputation_(Civ2) — betrayals, decay mechanics
+- **AI Personalities** (LP Archive): https://lparchive.org/Civilization-2/Update%2030/
 

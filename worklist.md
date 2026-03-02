@@ -1,658 +1,464 @@
-# Worklist
+# Worklist — Full .SAV Parser Plan
 
-## Status: Batch 9 in progress, Batch 10 complete
+## Goal
+
+Parse 100% of the Civ2 MGE .SAV file into structured data. Every documented byte accounted for. The parser should produce a complete JSON-serializable object representing the entire save file state.
+
+## Status: All Batches Complete ✅
+
+| Batch | Phases | Description | Status |
+|-------|--------|-------------|--------|
+| A | (refactor) | Refactor parser into sub-methods | ✅ |
+| B | 1–2 | File header, game state, toggles, tech, wonders | ✅ |
+| C | 3–4 | Per-civ name blocks + data blocks | ✅ |
+| D | 7–9 | Tile byte accessors, Block 3, padding | ✅ |
+| E | 10 | Full unit record parsing (32 bytes, dead units) | ✅ |
+| F | 11 | Full city record parsing (88 bytes) | ✅ |
+| G | 12–14 | Gap record, tail data, events, validation | ✅ |
+
+**All phases complete.** Phase 15 has 11 of 12 cross-validation checks implemented (forward-chain offset check skipped as redundant with tail size validation). 0 regression diffs across both test files.
 
 ---
 
-## Batch 10 (COMPLETED — Item 26: Unit Stack Display Order)
+## Phase 1: File Header (0x0000–0x000D, 14 bytes) ✅ Batch B
 
-Fixed unit stacking display order to use the save file's doubly-linked list instead of a heuristic.
+### 1.1 Magic Signature & Format Detection
+- [x] Read 8 bytes at 0x0000, validate = `"CIVILIZE"` (ASCII). Reject if mismatch.
+- [x] Read null separator at 0x0008, confirm = `0x00`
+- [x] Read format marker at 0x0009, confirm = `0x1A` (ASCII SUB)
 
-1. **parser.js**: Parse `nextInStack` (+22, int16 LE) and `prevInStack` (+24, int16 LE) per unit record. Store `saveIndex` on each unit to preserve save-file array position. Build `unitBySaveIndex` lookup map after dead-unit filtering. Export in return object.
-2. **renderer.js**: Pass 5 `bestUnit` selection now picks the unit with `nextInStack === -1` (top of stack per Civ2's linked list). Falls back to `unitPriority()` heuristic only when no unit on the tile is marked as top-of-stack. Fixes: trireme shown on top of carried crusader at (76,20), legion shown on top of phalanx at (26,40).
+### 1.2 Version / Map Width (dual purpose)
+- [x] Read uint16 LE at 0x000A — version/width indicator
+  - `0x0027` (39) = CiC or lower
+  - `0x0028` (40) = FW
+  - `0x002C` (44) = MGE patch 1.3
+  - `0x0031` (49) = ToT 1.0
+  - `0x0032` (50) = ToT 1.1
+  - Store as `headerVersion`
+
+### 1.3 Map Height (single byte)
+- [x] Read 1 byte at 0x000C — map height from header perspective
+  - Standard = 63, large = 191
+  - Store as `headerMapHeight`
+  - **Do NOT use for tile calculations** (use map data header at 13702 instead)
+
+### 1.4 Flags
+- [x] Read 1 byte at 0x000D — bitmask:
+  - bit 0 = scenario flag (game loaded from .SCN)
+  - bit 7 = large map flag
+  - Observed: `0x00` = standard, `0x81` = scenario + large map
+  - Store as `headerFlags`, extract `isScenarioSave` and `isLargeMap`
 
 ---
 
-## Batch 9: Item 25 — Per-Civ Visibility Fixes (G1, G2, G3, G4, G6, G8)
+## Phase 2: Game State Preamble (0x000E–0x0155, 330 bytes SAV / 316 bytes SCN) ✅ Batch B
 
-Implements gaps G1–G4, G6, G8 from Item 25 investigation. G5 and G7 are acceptable as-is. G9 is deferred.
+### 2.1 Game Toggle Flags (0x000C–0x0017)
 
-### worker-a: Renderer FOW Correctness (G1, G3, G4 + renderer-side G2, G8)
+**NOTE**: 0x000C–0x000D overlap with header bytes (dual purpose).
 
-#### What to do
-Fix renderer.js so that when FOW is enabled, only data the selected civ knows about is drawn.
+- [x] 0x000C bit 7: Bloodlust on/off
+- [x] 0x000C bit 4: Simplified combat
+- [x] 0x000D bit 7: Flat earth (0=round/wrapping, 1=flat)
+- [x] 0x000D bit 0: Don't restart eliminated
+- [x] 0x000E bit 7: Move units without mouse
+- [x] 0x000E bit 6: Enter closes city screen
+- [x] 0x000E bit 5: Show map grid
+- [x] 0x000E bit 4: Sound effects
+- [x] 0x000E bit 3: Music
+- [x] 0x000F bit 7: Cheat menu enabled
+- [x] 0x000F bit 6: Always wait at end of turn
+- [x] 0x000F bit 5: Autosave each turn
+- [x] 0x000F bit 4: Show enemy moves
+- [x] 0x000F bit 3: No pause after enemy moves
+- [x] 0x000F bit 2: Fast piece slide
+- [x] 0x000F bit 1: Instant advice
+- [x] 0x000F bit 0: Tutorial help
+- [x] 0x0010 bit 5: Animated heralds
+- [x] 0x0010 bit 4: High Council
+- [x] 0x0010 bit 3: Civilopedia for advances
+- [x] 0x0010 bit 2: Throne room graphics
+- [x] 0x0010 bit 1: Diplomacy screen graphics
+- [x] 0x0010 bit 0: Wonder movies
+- [x] 0x0014 bit 7: Scenario flag / don't limit researchable techs
+- [x] 0x0014 bit 6: Scenario file (no real effect)
+- [x] 0x0014 bit 4: Cheat penalty/warning
+- [x] 0x0016 bit 7: Announce "We Love the King Day"
+- [x] 0x0016 bit 6: Warn when food dangerously low
+- [x] 0x0016 bit 5: Announce cities in disorder
+- [x] 0x0016 bit 4: Announce order restored in city
+- [x] 0x0016 bit 3: Show non-combat units built
+- [x] 0x0016 bit 2: Show invalid build instructions
+- [x] 0x0016 bit 1: Warn when city growth halted
+- [x] 0x0016 bit 0: Show city improvements built
+- [x] 0x0017 bit 2: Zoom to city not default action
+- [x] 0x0017 bit 1: Warn when new pollution occurs
+- [x] 0x0017 bit 0: Warn when changing production will cost shields
 
-#### Files to modify
-- `canvas-test-1/renderer.js`
+**Store as `gameToggles` object with named boolean properties.**
 
-#### Files NOT to touch
-- `canvas-test-1/parser.js` (worker-b owns)
-- `canvas-test-1/app.js` (worker-b owns)
+### 2.2 Unknown Toggle Bytes
+- [x] 0x0011–0x0013: 3 bytes — read and store as `unknownToggles_0x0011` (raw)
+- [x] 0x0015: 1 byte — read and store as `unknownToggle_0x0015` (raw)
 
-#### G1: Gate normal city rendering on FOW visibility (lines 641-697)
+### 2.3 Core Game State Fields
+- [x] 0x001C: uint16 LE — **turns passed** (`turnsPassed`)
+- [x] 0x001E: uint16 LE — **turns for year calculation** (`turnsForYear`)
+- [x] 0x0020: 2 bytes — unknown, store raw (`unknown_0x0020`)
+- [x] 0x0022: uint16 LE — **selected unit ID** (`selectedUnit`, 0xFFFF = none)
+- [x] 0x0024–0x0026: 3 bytes — unknown, store raw (`unknown_0x0024`)
+- [x] 0x0027: 1 byte — **active human player** (`activeHumanPlayer`)
+- [x] 0x0028: 1 byte — **player's map** (`playerMap`)
+- [x] 0x0029: 1 byte — **player's civ number** (`playerCiv`) — ALREADY PARSED
+- [x] 0x002A: 1 byte — **map-related byte** (`mapRelatedByte`, sometimes 0xFF)
+- [x] 0x002B: 1 byte — **map revealed** (`mapRevealed`) — ALREADY PARSED
+- [x] 0x002C: 1 byte — **difficulty level** (`difficulty`, 0=Chieftain...5=Deity)
+- [x] 0x002D: 1 byte — **barbarian activity** (`barbarianActivity`, 0=villages...3=raging)
+- [x] 0x002E: 1 byte — **civs alive bitmask** (`civsAlive`) — ALREADY PARSED
+- [x] 0x002F: 1 byte — **human players bitmask** (`humanPlayers`)
+- [x] 0x0030–0x0031: 2 bytes — unknown, store raw (`unknown_0x0030`)
+- [x] 0x0032: 1 byte — **current pollution** (`currentPollution`, 0x7F=max→warming)
+- [x] 0x0033: 1 byte — **global warming count** (`globalWarmingCount`)
+- [x] 0x0034–0x0037: 4 bytes — unknown, store raw (`unknown_0x0034`)
+- [x] 0x0038: 1 byte — **turns of peace** (`turnsOfPeace`, only after turn 200)
+- [x] 0x0039: 1 byte — unknown, store raw (`unknown_0x0039`)
+- [x] 0x003A: uint16 LE — **total unit count** (`totalUnits`) — ALREADY PARSED
+- [x] 0x003C: uint16 LE — **total city count** (`totalCities`) — ALREADY PARSED
+- [x] 0x003E: uint16 LE — **technology count** (`techCount`, always 89 for standard)
+- [x] 0x0040–0x0041: 2 bytes — unknown, store raw (`unknown_0x0040`)
 
-The `for (const c of mapData.cities)` loop at line 641 draws ALL cities unconditionally. Fix:
+### 2.4 First Discoverer Per Advance
+- [x] 0x0042: 100 bytes — one byte per advance (0–99)
+  - Value = civ number (1–7) that first discovered it, 0 = not yet discovered
+  - Store as `firstDiscoverer[100]`
+  - Note: only first 89 entries meaningful for standard RULES.TXT
 
-1. At the top of the loop (after line 641), add:
+### 2.5 Tech Discovery Bitmask Per Advance
+- [x] 0x00A6: 100 bytes — one byte per advance — ALREADY PARSED (as `civTechCounts` / `civTechs`)
+  - Each byte: bit per civ that has discovered the tech
+  - Keep existing logic, but also store raw array `techDiscoveryBitmask[100]`
+
+### 2.6 Wonder City IDs
+- [x] 0x010A: 56 bytes — 28 × uint16 LE
+  - Per wonder: 0xFFFF = not built, 0xFFEF = destroyed, else = city sequence ID (0-based)
+  - Store as `wonderCityIds[28]`
+  - Cross-reference: wonder indices match RULES.TXT `@IMPROVE` IDs 32–59
+
+### 2.7 Unknown Gap Before Name Blocks
+- [x] 0x014A–0x0155 (SAV) / 0x014A–0x0147 (SCN): ~12-14 bytes
+  - Unknown purpose, store raw as `unknown_preNameBlocks`
+  - **DOC DISCREPANCY**: SCN vs SAV table says name blocks start at 0x014A/0x0158, but the rest of the doc consistently says 0x0148/0x0156. Parser uses 0x0148/0x0156. Confirm empirically.
+
+---
+
+## Phase 3: Per-Civ Name Blocks (8 × 242 = 1,936 bytes) ✅ Batch C
+
+Starts at 0x0156 (SAV) / 0x0148 (SCN). Parser currently uses these offsets.
+
+### 3.1 For each of 8 civ slots (0=barbarians, 1–7):
+- [x] +0: 1 byte — **city style** (0=Ancient, 1=Renaissance, 2=Industrial, 3=Modern) — PARTIALLY PARSED (style byte only)
+- [x] +1: 1 byte — unknown/padding, store raw
+- [x] +2–24: 23 bytes — **leader name** (null-terminated)
+- [x] +26–48: 23 bytes — **tribe name** plural (e.g., "Romans")
+- [x] +50–72: 23 bytes — **tribe adjective** singular (e.g., "Roman")
+- [x] +74–96: 23 bytes — **title: Anarchy**
+- [x] +98–120: 23 bytes — **title: Despotism**
+- [x] +122–144: 23 bytes — **title: Monarchy**
+- [x] +146–168: 23 bytes — **title: Communism**
+- [x] +170–192: 23 bytes — **title: Fundamentalism**
+- [x] +194–216: 23 bytes — **title: Republic**
+- [x] +218–240: 23 bytes — **title: Democracy**
+- [x] +241: 1 byte — padding (always 0x00)
+
+**Store as `civNameBlocks[8]`, each with named fields. Empty blocks (AI civs) will have all-zero strings.**
+
+---
+
+## Phase 4: Per-Civ Data Blocks (8 × 1,428 = 11,424 bytes SAV; 8 × 1,396 SCN) ✅ Batch C
+
+Starts at 0x08E6 (SAV) / 0x08D8 (SCN). **Last block is truncated by 2 bytes.**
+
+### 4.1 For each of 8 civ slots, parse the full 1,428-byte block (1,396 for SCN):
+
+**All offsets below are 0-indexed within each block.**
+
+#### Known Fields
+- [x] +0: 1 byte — **state flags** bitmask
+- [x] +1: 1 byte — **gender** (0x00=male, 0x02=female)
+- [x] +2–5: int32 LE — **treasury** (gold reserves)
+- [x] +6: 1 byte — **RULES.TXT civ number**
+- [x] +7: 1 byte — **civ variant**
+- [x] +8–9: uint16 LE — **research progress**
+- [x] +10: 1 byte — **tech being researched**
+- [x] +11: 1 byte — **tech research helper**
+- [x] +12–13: uint16 LE — **starting position**
+- [x] +14–15: 2 bytes — **unknown**
+- [x] +16: 1 byte — **acquired tech count + 1**
+- [x] +17: 1 byte — **future tech count + 1**
+- [x] +18–19: 2 bytes — **unknown**
+- [x] +20: 1 byte — **tax/science/luxury rates** (encoded)
+- [x] +21: 1 byte — **government type**
+- [x] +22–29: 8 bytes — **unknown**
+- [x] +30: 1 byte — **diplomatic reputation**
+- [x] +31–62: 32 bytes — **treaties** (4 bytes × 8 civs)
+- [x] +63–64: 2 bytes — **unknown**
+- [x] +65–71: 7 bytes — **attitudes**
+- [x] +72–87: 16 bytes — **unknown**
+- [x] +88–99: 12 bytes — **technology bitmask**
+- [x] +100–101: 2 bytes — **unknown**
+- [x] +102–103: uint16 LE — **military power**
+- [x] +104–105: uint16 LE — **city count**
+- [x] +106–107: 2 bytes — **unknown**
+- [x] +108–109: uint16 LE — **sum of city sizes**
+- [x] +110–113: 4 bytes — **unknown**
+- [x] +114–213: 100 bytes — **first discoverer flags**
+- [x] +214–276: 63 bytes — **active unit counts**
+- [x] +277–339: 63 bytes — **unit casualty counts**
+- [x] +340–402: 63 bytes — **units in production**
+- [x] +403–995: 593 bytes — **large unknown region** (stored raw)
+- [x] +996–1009: 14 bytes — **last contact turns** (7 × uint16 LE)
+- [x] +1010–1427: 418 bytes — **tail of per-civ block** (stored raw)
+
+#### Treaty Byte Layout — all parsed
+- [x] Contact, cease fire, peace, alliance, vendetta, embassy, war, unknowns
+
+**Stored as `civData[8]` array of objects with all named fields + raw bytes for unknowns.**
+
+---
+
+## Phase 5: Map Header (14 bytes at fixed offset)
+
+Offset: 13702 (SAV) / 13432 (SCN). **ALREADY FULLY PARSED.**
+
+- [x] +0: uint16 LE — `map_width2` (doubled width)
+- [x] +2: uint16 LE — `map_height`
+- [x] +4: uint16 LE — `map_size` (total tiles)
+- [x] +6: uint16 LE — `map_shape` (0=round, 1=flat)
+- [x] +8: uint16 LE — `map_seed`
+- [x] +10: uint16 LE — `quarter_width`
+- [x] +12: uint16 LE — `quarter_height`
+- [x] Validation: `map_size == (map_width2/2) * map_height`
+
+---
+
+## Phase 6: Block 1 — Per-Civ Known Improvements (map_size × 7 bytes)
+
+Offset: map_header + 14. **ALREADY FULLY PARSED.**
+
+- [x] 7 sections of `map_size` bytes (civs 1–7)
+- [x] Each byte: bit 0=unit, 1=city, 2=irrigation, 3=mining, 4=road, 5=railroad, 6=fortress, 7=pollution
+- [x] Accessor: `getKnownImprovements(gx, gy, civSlot)`
+
+---
+
+## Phase 7: Block 2 — Terrain Data (map_size × 6 bytes) ✅ Batch D
+
+**All 6 bytes per tile parsed with accessors.**
+
+### 7.1 Byte 0: Terrain Type + Flags
+- [x] Low nibble (& 0x0F): terrain ID (0–10)
+- [x] Bit 7 (0x80): river present
+- [x] Bit 4 (0x10): goody hut
+- [x] Bit 6 (0x40): "no resource" flag (used in getResource)
+- [x] Bit 5 (0x20): terrain resource animation (ToT only, unused in MGE) — documented as unused
+
+### 7.2 Byte 1: Tile Improvements
+- [x] Full byte returned by `getImprovements()`
+- [x] All bits parsed (unit, city, irrigation, mining, road, railroad, fortress, pollution)
+- [x] Derived: farmland = irrigation + mining; airbase = fortress + city present
+
+### 7.3 Byte 2: City Radius Owner
+- [x] `getCityRadiusOwner(gx, gy)`: `(byte >> 5) & 7`
+
+### 7.4 Byte 3: Continent/Body ID
+- [x] `getBodyId(gx, gy)`: contiguous land/water body number
+
+### 7.5 Byte 4: Visibility Bitmask
+- [x] `getVisibility(gx, gy)` returns raw byte
+
+### 7.6 Byte 5: Ownership + Fertility
+- [x] `getTileOwnership(gx, gy)`: high nibble
+- [x] `getTileFertility(gx, gy)`: low nibble
+
+---
+
+## Phase 8: Block 3 — Quarter-Resolution Data (qw × qh × 2 bytes) ✅ Batch D
+
+- [x] Read `quarter_width * quarter_height * 2` bytes at block2 end
+- [x] Store raw as `block3Data`
+- [x] Purpose unclear per Höfelt: "entirely pointless"
+
+---
+
+## Phase 9: 1024-Byte Padding ✅ Batch D
+
+- [x] Read 1024 bytes between Block 3 and unit section
+- [x] Store raw as `paddingBlock`
+- [x] Non-zero bytes logged (40-46 non-zero bytes observed in test files)
+
+---
+
+## Phase 10: Unit Records (totalUnits × 32 bytes SAV / 26 bytes SCN) ✅ Batch E
+
+### 10.1–10.3 All 32 bytes parsed
+- [x] All previously parsed fields preserved (x, y, type, owner, vis, hpLost, alive, orders, stack links)
+- [x] +4: movementFlags, +5: statusFlags (veteran!), +8: movePointsLeft
+- [x] +11: lastDirection, +12: aiTaskRole, +13: cargoWorkFuel
+- [x] +16: homeCityId, +18/+20: gotoX/Y, +26: sequenceId, +28: padding confirmed
+- [x] Dead units stored in `allUnits` array with full data
+
+---
+
+## Phase 11: City Records (totalCities × 88 bytes SAV / 84 bytes SCN) ✅ Batch F
+
+### 11.1–11.2 All 88 bytes parsed
+- [x] All previously parsed fields preserved (x, y, owner, size, name, hasWalls, etc.)
+- [x] +4–7: attributes 1-4 (coastal, auto-build, disorder, WLTKD, etc.)
+- [x] +13: padding byte (non-zero in scenario files — likely has meaning, stored as raw)
+- [x] +22–25: specialist details (16 × 2-bit entries)
+- [x] +26–31: food/shields/trade accumulators
+- [x] +48–50: worker tile assignments (inner, outerA, outerB bitmasks)
+- [x] +51: specialist count (÷4)
+- [x] +52–56: full building decode (all 33+ bits, named building list)
+- [x] +57: item in production (unit vs building/wonder dispatch)
+- [x] +58–73: trade routes, commodities, partner city IDs
+- [x] +74–83: economic output (science, tax, trade, food, shields, happy, unhappy)
+- [x] +84–87: city sequence ID + padding
+
+---
+
+## Phase 12: Gap Record (32 bytes between cities and tail) ✅ Batch G
+
+- [x] Read 32 bytes at `city_block_end`
+- [x] Store raw + parsed sub-fields (coordX, coordY, stateFlags, values)
+
+---
+
+## Phase 13: Tail Data (1,807 / 1,907 / 2,979 bytes) ✅ Batch G
+
+### 13.1 Determine Tail Size
+- [x] Standard SAV: 1,807 bytes
+- [x] Scenario SAV / SCN: 1,907 bytes
+- [x] NET: 2,979 bytes
+
+### 13.2 City Name Counters (first 63 bytes)
+- [x] 21 entries × 3 bytes each, stored as `cityNameCounters[21]`
+
+### 13.3 Cursor Position
+- [x] +63/+65: cursor X/Y as uint16 LE. Values are game-internal coordinates (not map grid coords).
+
+### 13.4–13.5 Historical Power Graph + Zero Padding
+- [x] Raw region +67..+1287 stored as `historyAndPadding`
+
+### 13.6 Passwords
+- [x] 7 × 32 bytes at +720, stored as raw blocks
+
+### 13.7 Civilization Kill History (338 bytes)
+- [x] At +1469 (standard) or +1569 (scenario, after 100-byte scenario block)
+- [x] Count, kill turns, killer civ IDs, unknown bytes, destroyed civ names — all parsed
+- [x] Verified: stubear has 1 kill (Aztecs turn 119 by civ 5), scenario has 0 kills
+
+### 13.8 Game Engine Constants (+1288, 97 bytes)
+- [x] Stored raw. Includes 0x0780 (1920) at +1289, 0x0438 (1080) at +1291, trailing 0x00 at +1384.
+
+### 13.9 Fixed Constants (+1385, 7 bytes)
+- [x] Always `0xAB 0x05 0x46 0x03 0x01 0x00 0x03`
+- [x] Validated as integrity check (both test files pass)
+- [x] **Note**: Doc said +1384 but empirically confirmed at +1385
+
+### 13.10 Scenario Block & Name (scenario only, +1469)
+- [x] 100-byte block inserted at +1469 for scenario saves
+- [x] Scenario name at +1471 (e.g., "The Rise Of Rome")
+- [x] Shifts kill history to +1569
+
+### 13.11 Post-Fixed-Constants Region (+1392, 77 bytes)
+- [x] Per-civ summary values, stored as `postFixedData`
+
+### 13.12 Network-Specific Data (NET only)
+- [x] Extra 1,172 bytes at +1807, stored raw as `networkData`
+
+---
+
+## Phase 14: Events Section (Scenario Files Only) ✅ Batch G
+
+- [x] Search for "EVNT" magic near end of file
+- [x] Parse event header (magic + count)
+- [x] Parse event records (298 bytes each): trigger bitmask, action bitmask, raw parameters
+- [x] Parse string table (null-terminated strings after event records)
+- [x] Neither test file has events (no EVNT magic found)
+
+---
+
+## Phase 15: Cross-Validation Checks ✅ Batch G + follow-up
+
+After parsing everything, run these integrity checks:
+
+- [x] Terrain distribution logged (ocean %, per-terrain counts)
+- [x] All alive cities have `getTerrain(gx, gy) != 10` (not ocean) — `citiesOnOcean`
+- [x] Total unit count from header = number of unit records — `unitCountMatch`
+- [x] Total city count from header = number of city records — `cityCountMatch`
+- [x] Tail fixed constants = `0xAB 0x05 0x46 0x03 0x01 0x00 0x03` — `fixedConstantsValid`
+- [x] City cx/cy parity match (isometric constraint) — `parityErrors`
+- [x] Exactly one Palace per alive civ — `palaceErrors`
+- [x] Wonder city IDs reference valid city array indices — `wonderIdErrors`
+- [x] Unit home city IDs reference valid city array indices — `homeCityErrors` (0xFFFF and 0x00FF both treated as "no home city")
+- [x] Worker counts + specialists = city_size — `workerSizeErrors` (scenario files may have mismatches from editor)
+- [x] `science + tax ≈ trade` (±1) for cities without trade routes — `tradeErrors` (cities WITH routes expected to have sci+tax > trade due to route bonuses)
+- [ ] Forward-chain city offset == backward-chain city offset (from file end) — skipped, redundant with tail size validation
+
+---
+
+## Phase 16: Output Structure ✅ Implemented
+
+The parse result is a backward-compatible object. Top-level scalars and accessor functions are preserved from the original parser; new structured namespaces are additive.
+
 ```
-if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
-```
-This skips cities on tiles the civ can't currently see. Ghost cities on dimmed tiles are already handled separately in the ghost city block (lines 702-783).
+{
+  // ── Backward-compatible top-level fields ──
+  mw, mh, mw2, ms, mapSeed, qw, qh, mapShape, isScn,
+  tileData, cities, units, civStyles,
+  playerCiv, mapRevealed, civsAlive, civTechCounts, civTechs,
+  terrainCounts, oceanPct, citiesOnOcean,
 
-2. The ghost city block (line 702) already checks `knownImprovements & 0x02`. Additionally check `c.knownToTribes` if available (worker-b will parse it as a bitmask at city record +12). Add a guard:
-```
-if (c.knownToTribes != null && !(c.knownToTribes & fowBit)) continue;
-```
-This goes after the `if (!(known & 0x02)) continue;` check at line 708. If `knownToTribes` is not yet available (parser hasn't been updated), the `!= null` guard lets it fall through gracefully.
+  // ── Accessor functions (closures over map data) ──
+  getTerrain, isLand, hasRiver, getImprovements, getVisibility,
+  getResource, getNeighbors, wrap, hasGoodyHut, hasShield,
+  getCityRadiusOwner, getBodyId, getTileOwnership, getTileFertility,
+  getKnownImprovements,
 
-#### G3: Gate fortress/airbase rendering on FOW (lines 918-930)
-
-The Pass 6 loop reads real `getImprovements()`. Fix:
-
-1. Inside the loop, after getting `imp` at line 923, add FOW logic:
-```
-if (fowEnabled) {
-  if (isUnexplored(gx, gy)) continue;
-  if (isDimmed(gx, gy)) {
-    imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
-    if (!(imp & 0x40)) continue;
-  }
+  // ── Structured namespaces (Batches B–G) ──
+  header: { magic, nullSep, formatMarker, headerVersion, headerMapHeight,
+            headerFlags, isScenarioSave, isLargeMap },
+  gameState: { toggles, turnsPassed, turnsForYear, selectedUnit,
+               activeHumanPlayer, playerMap, playerCiv, difficulty, barbarianActivity,
+               civsAlive, humanPlayers, currentPollution, globalWarmingCount, turnsOfPeace,
+               totalUnits, totalCities, techCount,
+               firstDiscoverer[100], techDiscoveryBitmask[100], wonderCityIds[28],
+               unknowns },
+  civNameBlocks: [8 × { style, leaderName, tribeName, tribeAdjective, titles[7] }],
+  civData: [8 × { stateFlags, gender, treasury, rulesCivNumber, government,
+                   treaties[8], attitudes[7], techBitmask, unitCounts, lastContactTurns,
+                   unknowns }],
+  map: { block3Data, paddingBlock, ... },
+  allUnits: [totalUnits × { ...full 32-byte decode including dead units }],
+  gapRecord: { raw, coordX, coordY, stateFlags, values },
+  tail: { tailSize, tailOff, cityNameCounters[21], cursorPosition,
+          historyAndPadding, engineConstants, postFixedData,
+          fixedConstants, fixedConstantsValid,
+          passwords[7], scenarioBlock, scenarioName,
+          killHistory: { count, killTurns, killerCivIds, killUnknown, destroyedCivNames },
+          networkData, rawTail },
+  events: { count, records[], stringTable } | null,
+  validation: { terrainCounts, oceanPct, citiesOnOcean,
+                unitCountMatch, cityCountMatch, fixedConstantsValid }
 }
 ```
-Note: need to change `const imp` to `let imp` since we're reassigning it.
-
-#### G4: Fix road/railroad neighbor leak on dimmed tiles (lines 591-598)
-
-At line 594, `const nimp = getImprovements(nx, ny);` always reads real data. Fix:
-
-After line 594, add:
-```
-if (fowEnabled && isDimmed(nx, ny)) {
-  nimp = mapData.getKnownImprovements(nx, ny, options.fowCiv);
-}
-```
-Change `const nimp` to `let nimp` to allow reassignment.
-
-#### G8 (renderer side): Honor mapRevealed flag
-
-If `mapData.mapRevealed` is truthy, override FOW to treat all tiles as visible. The simplest approach: at the top of the render function (near line 446), add:
-```
-if (mapData.mapRevealed) {
-  options = { ...options, fowEnabled: false };
-}
-```
-This disables FOW entirely when the cheat flag is set, before any FOW predicates are defined.
 
 ---
 
-### worker-b: Parser + Tooltip FOW Fixes (G2, G6, G8 parser-side)
-
-#### What to do
-Parse two missing fields in parser.js. Fix tooltip in app.js to respect FOW.
-
-#### Files to modify
-- `canvas-test-1/parser.js`
-- `canvas-test-1/app.js`
-
-#### Files NOT to touch
-- `canvas-test-1/renderer.js` (worker-a owns)
-
-#### G2: Parse city "known to tribes" bitmask (parser.js, near line 159)
-
-City record offset +12 is a 1-byte bitmask: each bit = one civ that knows this city exists (bit 0 = barbarians, bit 1 = civ 1, etc.). Currently not parsed.
-
-Add after line 162 (after `believedSize` parsing):
-```javascript
-const knownToTribes = savBuf[off + 12];
-```
-
-Add `knownToTribes` to the city object pushed at line 165:
-```javascript
-{ name, cx, cy, gx: cx >> 1, gy: cy, owner, size, hasWalls, hasPalace,
-  originalOwner, turnsSinceCapture, isOccupied, believedSize, knownToTribes, style }
-```
-
-#### G8: Parse map revealed flag (parser.js, near line 86)
-
-Header offset 0x002B is a 1-byte flag: nonzero = map is revealed (cheat mode). Currently not parsed.
-
-Near line 86 (where `playerCiv` and `civsAlive` are read), add:
-```javascript
-const mapRevealed = savBuf[headerOff + 0x002B];
-```
-
-Add `mapRevealed` to the returned object (near line 289 where the return object is built).
-
-#### G6: Filter tooltip by FOW state (app.js, lines 340-425)
-
-The tooltip handler shows all data regardless of FOW. Fix:
-
-1. At the top of the handler (after line 345 `if (!currentMapData) return;`), capture FOW state:
-```javascript
-const fowEnabled = document.getElementById('fow-toggle').checked;
-const fowCivVal = document.getElementById('fow-civ').value;
-const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : null;
-const fowBit = (fowEnabled && fowCiv != null) ? (1 << fowCiv) : 0;
-```
-
-2. After tile hit detection, before building the info string (around line 378), check tile visibility:
-```javascript
-if (fowEnabled && fowBit) {
-  const vis = md.getVisibility(gx, gy);
-  const known = md.getKnownImprovements(gx, gy, fowCiv);
-  if (!vis && !known) {
-    // Unexplored — show nothing
-    tooltip.textContent = `(${gx * 2 + (gy % 2)}, ${gy})  Unexplored`;
-    tooltip.style.display = 'block';
-    tooltip.style.left = (e.clientX + 14) + 'px';
-    tooltip.style.top = (e.clientY + 14) + 'px';
-    return;
-  }
-}
-```
-
-3. For the improvements section (lines 392-400): when FOW is enabled and tile is not currently visible (dimmed), use `md.getKnownImprovements(gx, gy, fowCiv)` instead of `md.getImprovements(gx, gy)`.
-
-4. For the city section (lines 402-410): when FOW is enabled, skip cities where the tile is not currently visible AND the civ's known improvements don't include the city bit (0x02). For dimmed tiles where a city IS known, show `believedSize[fowCiv]` instead of `c.size`.
-
-5. For the units section (lines 413-419): when FOW is enabled, skip units where the tile is not currently visible (`!(vis & fowBit)`) or the unit's visFlag doesn't include the civ (`!(u.visFlag & fowBit)`).
-
----
-
-## Batch 8 (COMPLETED — wrap seam final fix)
-
-Item 23 wrap seam fully resolved. Two changes:
-1. **renderer.js**: Removed crop-to-displayW. Extended canvas (with xExtra=4 overlap columns) is kept. After all render passes, composites the 32px strip at x=wrapW back to x=0 to fill the odd-row stagger gap. Returns `wrapW` to the caller.
-2. **app.js**: Viewport `drawViewport()` wraps at `wrapW` (from renderer) instead of `offW - 32`. Uses `wrapW` as boundary instead of `offW` so the viewport never reads into the stagger overhang area.
-
----
-
-## Batch 7 (APPLIED — displayW fix applied directly by coordinator)
-
-Item 23 displayW crop fix applied. Item 13 closed (ocean dither kept as-is).
-
----
-
-## Batch 3 (COMPLETED)
-
-Items 7 (goody huts), 9 (city name 4-direction shadow), 6 (three-state FOW), 8 (ghost cities) implemented in renderer.js.
-
----
-
-## Batch 4 (COMPLETED)
-
-Items 19 (irrigation beneath resources), 17 (no pole dither), 18 (city names above shroud), 20 (FOW civ selector fix + reentrancy guard).
-
----
-
-## Batch 5 (COMPLETED)
-
-Items 21A (hide invisible units), 21B (last-known improvements on dimmed tiles), 21C (ghost city limitation documented), 21D (unit visibility byte parsed), 14 (east-west map wrapping for round earth). Fixed mapShape polarity (0=round, 1=flat).
-
----
-
-## Batch 5b (COMPLETED — partial)
-
-Batch 5b applied structural changes (wide canvas xExtra=4, crop, entity duplication, pole guard). Item 24 ocean dither regression NOT fixed. See Batch 5c.
-
----
-
-## Batch 5c (COMPLETED — partial)
-
-- Item 24 (blue ocean dither) — FIXED. Restored `nter === 10` ocean skip in dither pass.
-- Item 23 (wrap seam) — Variant hash fixed to use `mapData.wrap(gx)`, but seam persisted. See Batch 5d.
-
----
-
-## Batch 5d
-
-### worker-a: Fix displayW Crop Width (Item 23)
-
-#### What to do
-
-One-line fix in `renderer.js` to eliminate the wrap seam.
-
-#### Files to modify
-- `canvas-test-1/renderer.js`
-
-#### Files NOT to touch
-- `canvas-test-1/parser.js`
-- `canvas-test-1/app.js`
-- `canvas-test-1/index.html`
-
-#### Item 23: displayW Includes a Full Overlap Column
-
-**Problem**: The `displayW` formula includes one full extra column for wrapping maps:
-```javascript
-const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // = (40+1)*64+32 = 2656
-```
-
-This means the crop keeps column `gx = mw` (a duplicate of column 0) fully visible. The seam between column `mw - 1` (eastern map edge) and column `mw` (= column 0, western map edge) is a real geographic discontinuity — different terrains, different overlays. It's visible as a hard vertical line (confirmed in screenshot showing duplicate "Cardiff" cities side by side).
-
-The 4 overlap columns (`xExtra = 4`) exist to provide blending context for dithering and overlays. They should be cropped away entirely, not shown.
-
-**Fix**: Change line ~425 from:
-```javascript
-const displayW = (mw + (wraps ? 1 : 0)) * TW + (TW >> 1);  // final visible width
-```
-to:
-```javascript
-const displayW = mw * TW + (TW >> 1);  // final visible width
-```
-
-This crops to exactly `mw` columns (2592px for a 40-column map instead of 2656px). The `+ (TW >> 1)` accounts for the odd-row half-tile stagger. The overlap columns still provide blending context but are outside the visible area. At the right edge, the left half of column `mw`'s isometric diamond (32px) naturally peeks in, providing the visual connection back to column 0 at the left edge.
-
----
-
-## Batch 6 (COMPLETED — applied but uncommitted)
-
-Items 10 (Modern Alt city row 7), 11 (terrain variant diversity — CLEAN_VARIANTS expanded to cols [0,1,4,5,6,8]), 15 (unit stack priority ordering). Item 13 (ocean dither) NOT re-applied — `nter === 10` skip remains; ocean dither needs the pole guard (`ny` bounds check) to coexist. Item 22 (viewport) applied by worker-b in previous commit.
-
-### worker-a: Visual Fidelity Polish (APPLIED)
-
-#### Item 10: CITIES.GIF Row 6 (Modern Alt)
-
-**Problem**: The city sprite extraction loop (line 252) iterates `row < 6`, extracting only rows 0-5. CITIES.GIF has a 7th row (row 6, y=333) for "Modern Alt" — an alternate modern appearance for very advanced civs.
-
-**Fix**:
-
-1. Change `row < 6` to `row < 7` at line 252 to extract row 6 sprites.
-
-2. Update `_getCityRow()` (lines 1386-1390) to return row 6 for the most advanced civs. In Civ2-clone, row 6 is used when the civ has both Automobile AND Electronics AND has style >= 2 (Far East or Medieval). Check the Civ2-clone source for the exact condition. A reasonable approach:
-
-```javascript
-_getCityRow(epoch, style) {
-  if (epoch >= 3 && style >= 2) return 6;  // Modern Alt for Far East/Medieval styles
-  if (epoch >= 3) return 5;                 // Modern for Bronze/Classical styles
-  if (epoch >= 2) return 4;                 // Industrial
-  return style;                             // Ancient/Renaissance: 0-3
-}
-```
-
-Test by checking if any civ in your save has enough techs to trigger epoch 3 with style 2 or 3.
-
-#### Item 11: Terrain Variant Diversity
-
-**Problem**: `CLEAN_VARIANTS` (lines 42-54) only lists cols `[0, 1]` for all terrain types. Col 1 is discarded for Plains, Ocean, Tundra, Glacier, and Swamp (< 50% opaque), so those terrains only have 1 variant. This creates visible repetitive tiling.
-
-**Fix**: Add more text-free columns to `CLEAN_VARIANTS`. TERRAIN1.GIF has 9 columns (0-8) per terrain row. Cols 2-3 contain resource sprites (not base terrain). Cols 4-8 may contain additional clean base terrain variants or may have baked-in text labels.
-
-The safest approach: add cols 4, 5, 6, and 8 to all terrain types and rely on the existing < 50% opaque filter (line 396) to discard any that are chroma-key placeholders:
-
-```javascript
-CLEAN_VARIANTS: [
-  [0, 1, 4, 5, 6, 8],  // 0 Desert
-  [0, 1, 4, 5, 6, 8],  // 1 Plains
-  [0, 1, 4, 5, 6, 8],  // 2 Grassland
-  [0, 1, 4, 5, 6, 8],  // 3 Forest
-  [0, 1, 4, 5, 6, 8],  // 4 Hills
-  [0, 1, 4, 5, 6, 8],  // 5 Mountains
-  [0, 1, 4, 5, 6, 8],  // 6 Tundra
-  [0, 1, 4, 5, 6, 8],  // 7 Glacier
-  [0, 1, 4, 5, 6, 8],  // 8 Swamp
-  [0, 1, 4, 5, 6, 8],  // 9 Jungle
-  [0, 1, 4, 5, 6, 8],  // 10 Ocean
-],
-```
-
-Col 7 is intentionally skipped — in default TERRAIN1.GIF, col 7 contains special sprites (irrigation, mining, goody hut, grassland shield) for several rows, not base terrain.
-
-After rendering, check the console for "Discarding terrain[...]" messages to see which variants survived the opacity filter. If any surviving variant has baked-in text (visible as colored letters on the terrain), remove that column from that terrain's entry.
-
-#### ~~Item 13: Dither Blending with Ocean~~
-Closed. Ocean dither skip (`nter === 10`) kept in place — coastlines look good as-is with hard land/ocean edges.
-
-#### Item 15: Unit Rendering Order (Top of Stack)
-
-**Problem**: Pass 5 (lines 800-807) draws the first unit found per tile (`drawnTiles` set skips subsequent units). The unit drawn depends on array order from the save file, which may not match Civ2's display priority. Original Civ2 shows the top unit on the stack.
-
-**Fix**: Before drawing, select the best unit per tile. In Civ2, the display priority for stacked units is typically: (1) units with no orders (active/waiting), (2) units that moved most recently, (3) military before civilian. Since move order isn't directly available from the save, use a heuristic:
-
-1. Group units by tile (after FOW/city filtering).
-2. For each tile, pick the unit to display using this priority:
-   - Prefer units with `orders === 0` (no orders / idle) over units with orders (fortified, sleeping, etc.)
-   - Among units with equal order status, prefer military units (combat strength > 0) over civilians (Settlers, Caravans, Diplomats, etc.)
-   - Among equals, prefer the unit that appears last in the array (likely most recently created/moved)
-
-```javascript
-// Build best unit per tile
-const bestUnit = {};
-for (const u of mapData.units) {
-  const tileKey = u.gx + ',' + u.gy;
-  if (cityTiles.has(tileKey)) continue;
-  if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-  if (fowEnabled && u.visFlag != null && !(u.visFlag & fowBit)) continue;
-  const prev = bestUnit[tileKey];
-  if (!prev || unitPriority(u) > unitPriority(prev)) {
-    bestUnit[tileKey] = u;
-  }
-}
-function unitPriority(u) {
-  let p = 0;
-  if (u.orders === 0) p += 2;  // idle/active units shown first
-  // Non-civilian units (not settlers/engineers/caravans/freight/diplomats/spies/explorers)
-  const civilians = [0, 1, 44, 45, 46, 47, 48, 49, 50];
-  if (!civilians.includes(u.type)) p += 1;
-  return p;
-}
-```
-
-Then iterate `Object.values(bestUnit)` instead of `mapData.units` when drawing.
-
----
-
-### worker-b: Interactive Scrolling Viewport
-
-#### What to do
-
-Add mouse drag and keyboard panning to the map. The renderer keeps rendering the full map to an offscreen canvas. App.js blits a viewport-sized region from that offscreen canvas to a visible display canvas, and handles pan/scroll input. On round earth maps, horizontal scrolling wraps endlessly.
-
-#### Files to modify
-- `canvas-test-1/app.js`
-- `canvas-test-1/index.html`
-
-#### Files NOT to touch
-- `canvas-test-1/renderer.js` (worker-a owns this)
-- `canvas-test-1/parser.js`
-
-#### Item 22: Interactive Scrolling Viewport
-
-**Approach**: Offscreen canvas + viewport blitting. The renderer already renders the full map to `#map-canvas`. Change the flow so:
-
-1. The renderer draws to an **offscreen canvas** (not in the DOM).
-2. A new **visible display canvas** (`#viewport-canvas`) fills the `#map-container` area.
-3. App.js maintains a viewport position `(vpX, vpY)` and blits a window from the offscreen canvas to the display canvas using `ctx.drawImage(offscreen, vpX, vpY, vpW, vpH, 0, 0, vpW, vpH)`.
-4. For round earth maps (`mapData.mapShape === 0`), when `vpX + vpW` exceeds the offscreen canvas width, wrap around and blit the remainder from the left side of the offscreen canvas.
-
-**HTML changes** (`index.html`):
-- The existing `#map-canvas` can become the offscreen canvas (created in JS, not in the DOM), or keep it hidden.
-- Add a visible `#viewport-canvas` inside `#map-container` that fills the container.
-- The viewport canvas should have `width`/`height` matching the container's pixel dimensions.
-
-**Panning controls** (`app.js`):
-
-1. **Mouse drag**: On `mousedown` in the viewport canvas, start tracking. On `mousemove`, update `vpX -= dx` and `vpY -= dy` (inverted — dragging right scrolls left). On `mouseup`, stop tracking.
-
-2. **Keyboard arrows**: Listen for arrow keys (or WASD). Scroll by a fixed amount (e.g., 32px per keypress or continuous while held).
-
-3. **Bounds**:
-   - Vertical: clamp `vpY` between 0 and `offscreenHeight - vpH` (stop at poles).
-   - Horizontal (flat map): clamp `vpX` between 0 and `offscreenWidth - vpW`.
-   - Horizontal (round map): wrap `vpX` using modulo — `vpX = ((vpX % offW) + offW) % offW`. This gives endless east-west scrolling.
-
-4. **Initial position**: Center the viewport on the map, or start at (0, 0).
-
-**Viewport rendering loop**:
-```javascript
-function drawViewport() {
-  const vCtx = viewportCanvas.getContext('2d');
-  vCtx.clearRect(0, 0, vpW, vpH);
-  if (wraps) {
-    // May need two draws if viewport wraps around the seam
-    const x1 = ((vpX % offW) + offW) % offW;
-    const rightChunk = Math.min(vpW, offW - x1);
-    vCtx.drawImage(offscreen, x1, vpY, rightChunk, vpH, 0, 0, rightChunk, vpH);
-    if (rightChunk < vpW) {
-      vCtx.drawImage(offscreen, 0, vpY, vpW - rightChunk, vpH, rightChunk, 0, vpW - rightChunk, vpH);
-    }
-  } else {
-    vCtx.drawImage(offscreen, vpX, vpY, vpW, vpH, 0, 0, vpW, vpH);
-  }
-}
-```
-
-Call `drawViewport()` after every pan update (use `requestAnimationFrame` for smooth dragging).
-
-**Tooltip update**: The existing `mousemove` handler (lines 197-281) calculates tile coordinates from mouse position on the canvas. Update it to add `vpX`/`vpY` to the mouse coordinates before calculating tile position:
-```javascript
-const mx = (e.clientX - rect.left) * scaleX + vpX;
-const my = (e.clientY - rect.top) * scaleY + vpY;
-```
-
-**Resize handling**: On window resize, update `vpW`/`vpH` to match the new container size, resize the viewport canvas, and redraw.
-
-**Important**: The `#map-container` currently has `overflow: auto` which provides native scrollbars. With the viewport approach, change this to `overflow: hidden` since panning is handled programmatically. Remove the old scroll behavior.
-
----
-
-## Batch 2 (COMPLETED)
-
-Item 16: Terrain dither bleed fixed — `_applyDither()` rewritten with quadrant-based diamond clipping.
-
----
-
-## Batch 1 (COMPLETED)
-
-Batch 1 summary: worker-a fixed renderer bugs (draw order, teal "4", city text, color vibrancy), worker-b added parser data (Block 1, goody huts, occupied cities), coordinator fixed grassland shield and teal "4" root cause.
-
----
-
-## Visual Fidelity Suggestions (Future)
-
-Remaining improvements, ordered by impact.
-
-### High Impact
-
-#### Item 25: Per-Civ Visibility — Show Only What the Selected Civ Can See
-
-**Problem**: When a player civ is selected (e.g. "Americans"), the rendered map should only show what that civ can actually see, per the visibility data in the save file. Currently FOW is an optional checkbox toggle. The goal is to make the selected civ's perspective the primary viewing mode — hiding terrain details, cities, units, and improvements that the selected civ has no knowledge of, as defined by the binary format's visibility fields.
-
-**Binary format visibility fields** (from `Civ2_MGE_Binary_Analysis.md`):
-
-| # | Field | Location | Per-Civ? | What it stores |
-|---|-------|----------|----------|---------------|
-| 1 | Tile visibility bitmask | Block 2, byte[4] | 1 bit each | Currently has line-of-sight |
-| 2 | Per-civ known improvements | Block 1 (7 sections, civs 1-7) | 1 section each | Last-known improvements per tile |
-| 3 | Unit visibility bitmask | Unit record +9 | 1 bit each | Which civs can see this unit |
-| 4 | City "known to tribes" | City record +12 | 1 bit each | Which civs know city exists |
-| 5 | Believed city size | City record +14 | 1 byte each | Last-known city size |
-| 6 | Map revealed flag | Header 0x002B | Global | Cheat: reveals entire map |
-
-**Investigation complete.** Current implementation uses fields 1, 2, 3, 5. The following gaps were found:
-
-##### G1: Normal cities drawn on ALL tiles (High)
-Pass 4 draws every city at full opacity with real current data before any FOW check. Cities on unexplored tiles get drawn then covered by black shroud (wasted work). Cities on dimmed tiles get drawn at full opacity AND again as ghosts at 0.5 opacity (double rendering). **Fix**: Skip cities not on currently visible tiles in the normal city loop; only draw ghost cities on dimmed tiles.
-
-##### G2: City "known to tribes" bitmask not checked (High)
-City record +12 is never parsed or checked. A city the selected civ has never discovered should not appear at all — not even as a ghost. Currently ghost cities check `knownImprovements & 0x02` (Block 1 city bit) but not the dedicated "known to tribes" field. **Fix**: Parse city +12 in parser.js, check it in the ghost city rendering code.
-
-##### G3: Fortress/Airbase uses real data, not known data (Medium)
-Pass 6 reads real `getImprovements()` with no FOW check. A destroyed fortress still shows; a new fortress the civ hasn't seen also shows. **Fix**: Use `getKnownImprovements` for dimmed tiles, skip for unexplored tiles.
-
-##### G4: Road/railroad neighbor connectivity leaks real state (Low)
-On dimmed tiles, `imp` is swapped to known improvements, but neighbor checks (`getImprovements(nx, ny)`) still use real current data. Road segments could connect to roads that didn't exist when the civ last saw the area. **Fix**: Also use `getKnownImprovements` for neighbor lookups on dimmed tiles.
-
-##### G5: Terrain/coastlines/rivers/overlays always use real data (Acceptable)
-Base terrain, forests, mountains, coastlines, rivers are drawn using true current state even on dimmed tiles. This matches Civ2 behavior — terrain doesn't change, and the game doesn't store "last known terrain." No fix needed.
-
-##### G6: Tooltip shows omniscient data (Medium)
-The hover tooltip in app.js shows real terrain, all improvements, all cities, and ALL units regardless of FOW state. **Fix**: When FOW is enabled, filter tooltip to only show what the selected civ knows — hide units not visible, show known improvements instead of real ones, hide unknown cities.
-
-##### G7: Explored detection heuristic is imperfect (Acceptable)
-Uses `knownImprovements != 0` as proxy for "explored." A tile visited but with zero improvements (empty grassland) shows as unexplored. The tile visibility bitmask (field 1) only shows *current* line-of-sight, not historical exploration. Block 1 is the best available proxy in the save format. No fix available without additional data.
-
-##### G8: Map revealed flag not parsed (Low)
-Header offset 0x002B not checked. If set, all tiles should show as fully visible. **Fix**: Parse in parser.js, pass to renderer, override FOW when set.
-
-##### G9: Barbarians (civ 0) have no Block 1 data (Low)
-Selecting barbarians as FOW civ makes everything unexplored since `getKnownImprovements` returns 0 for civ 0. Block 1 only stores civs 1-7. **Fix**: Either disable barbarian FOW selection or document the limitation.
-
-**Recommended fix order**: G1 → G3 → G6 → G2 (needs parser) → G4 → G8 → G9
-
----
-
-#### ~~Item 26: Unit Stack Display Order — Use Stacking Linked List~~
-
-**Problem**: The renderer's `unitPriority()` heuristic (idle > ordered, military > civilian) does not match Civ2's actual display order. Two confirmed cases:
-
-1. **(76, 20)**: Trireme carrying a Crusader on a water tile. The Crusader renders on top of the Trireme. On water, the ship should always be the visible top unit — Civ2 shows the transport, not the cargo.
-
-2. **(26, 40)**: Phalanx and Legion stacked. Real Civ2 shows the Legion on top, but the renderer shows the Phalanx. Both are idle military (priority 3), so the `>=` tiebreak picks whichever is last in the unit array, which doesn't match Civ2's order.
-
-**Root cause**: The save file stores a **doubly-linked list** per tile that defines the exact display order:
-- **Unit record +22** (int16 LE): link to next unit in stack (drawn on top of this unit). -1 (0xFFFF signed) = this unit is the top of the stack.
-- **Unit record +24** (int16 LE): link to previous unit in stack (drawn under this unit). -1 = bottom of stack.
-
-The unit at the **head** of the list (+22 = -1) is what Civ2 displays. This handles both bugs: ships are linked above carried ground units, and the legion is linked above the phalanx. Neither field is currently parsed.
-
-There is **no explicit "carried by" field** in the unit record — transport loading is purely positional (ground unit on ocean tile at same coords as a ship = loaded). The stacking linked list handles display order for both normal stacks and transport cargo. The `STACK_SHIP` vs `STACK_UNIT` network protocol distinction confirms the game differentiates these internally.
-
-**Implementation details from binary analysis**:
-
-- **+22/+24 are save-file array indices** (0-based position in the unit record array), NOT unit sequence IDs (+26). This matches how home city +16 works (confirmed as array index, not city sequence ID).
-- **Dead unit slots are preserved** in the save file (never compacted). Header field `totalUnits` at 0x003A includes empty slots from destroyed units. So +22/+24 can point at dead unit slots. A linked list walk must handle dead/missing slots gracefully (treat as end-of-chain).
-- **Sentinel value**: -1 (0xFFFF as int16) = end of list. Consistent with all other "no reference" fields in the format (selected unit 0x0022, home city +16, goto +18/+20).
-- **`Unit.cpp`** handles "infinite-stack repair" — MicroProse had to handle linked list corruption, so our walker should be defensive too (cycle detection, bounds checking).
-
-**Fix** (two files):
-
-**parser.js** (lines 171-187):
-1. Parse +22 and +24 as signed int16 LE. Store as `nextInStack` and `prevInStack` on each unit.
-2. **Critical**: The parser currently filters dead units and compacts the array (line 184: `if (alive === 0 ...)`), so save-file index `i` does NOT correspond to `units[i]`. To resolve +22/+24 references:
-   - Store the original save-file index on each unit: add `saveIndex: i` to the pushed object.
-   - After the loop, build a lookup map: `unitBySaveIndex = {}; units.forEach(u => unitBySaveIndex[u.saveIndex] = u);`
-   - Expose `unitBySaveIndex` in the returned mapData object.
-3. The `s16()` helper already exists in the parser (used for coordinates). Use it for +22/+24.
-
-**renderer.js** (Pass 5, lines 808-838):
-1. Replace the `bestUnit` selection logic. For each tile with stacked units:
-   - Find any unit on that tile where `nextInStack === -1` (top of stack). This is the unit Civ2 displays.
-   - Use `mapData.unitBySaveIndex` to validate: check that `nextInStack` resolves to an alive unit on the same tile. If it points to a dead slot or off-tile unit, treat this unit as a candidate for top.
-   - **Cycle detection**: track visited save indices while walking; abort if a cycle is found.
-2. Keep `unitPriority()` as fallback for edge cases (broken linked list, missing data).
-3. **Unit count for stacking badge**: The `unitCounts` accumulation (lines 798-803) should still count all units on the tile, not just the top one. No change needed there.
-
----
-
-### Medium Impact
-
-#### Item 12: Occupied City Visual Indicator
-
-**Problem**: Parser tracks `isOccupied` (owner != originalOwner) but nothing renders differently. Original Civ2 shows a visual indicator on occupied/conquered cities.
-
-**Investigation needed**: Determine what sprite or overlay original Civ2 uses. Likely a small flag from the FLAGS section in CITIES.GIF (y≈395-422) or a tinted overlay.
-
-#### ~~Item 23: Map Wrap Seam Visible at East-West Boundary~~
-Resolved via Batches 5b/5c/5d/8: wide canvas (xExtra=4) + variant hash wrapping + displayW crop fix. Final fix (Batch 8): removed crop-to-displayW entirely — extended canvas kept with overlap columns for blending context. Viewport wraps at `wrapW = mw * TW` (returned from renderer). Odd-row stagger gap fixed by compositing the 32px strip at x=wrapW back to x=0 after all render passes.
-
----
-
-## Resolved
-
-### ~~Task 8: Resource/Mine Draw Order~~
-Fixed by swapping draw order in Pass 3 — resources drawn first, improvements on top.
-
-### ~~Task 9: Teal "4" Rendering Bug~~
-**Root cause**: TERRAIN2.GIF overlay sprites (forest/mountain/hill) had cyan (0,255,255) transparency pixels that were not being removed because the T2 chroma key only included magenta and gray — not cyan. The "4" was a baked-in variant annotation in the sprite sheet, written in the cyan transparency color (palette idx 248).
-**Fix**: Added `[0, 255, 255]` to the T2 chroma key definition.
-
-### ~~Task 10: Grassland Resource / Shield Bug~~
-**Root cause**: Grassland uses a completely separate coordinate-only `hasShield()` formula, NOT the seed-based `getResource()` system. The renderer was incorrectly using `getResource()` for grassland tiles. The shield sprite is at TERRAIN1 col 7 row 7 (separate from resource sprites at cols 2-3).
-**Fix**: Added `hasShield()` to parser.js, extracted grassland shield sprite, branched renderer Pass 3 on `ter === 2`.
-
-### ~~Task 6: City Name Text Fidelity~~
-Fixed: 20px font, 1px letter spacing, per-civ text colors from CITIES.GIF.
-
-### ~~Task 7: Color Brilliance~~
-Partially addressed: gray tolerance tightened to ±3, sRGB color space enforced.
-
-### ~~Veteran Star on Unit Shields~~
-**CONFIRMED: Not shown on main map.** Civ2-clone source proves the `IUnit` rendering interface doesn't expose veteran status. The shield only shows: civ-colored body, HP bar, and order letter. Veteran status is used in combat calculations only (+50% attack/defense). No implementation needed.
-
----
-
-#### Item 22: Full Game Screen Chrome — Panels, Menus, Borders, Minimap
-
-**Problem**: The current renderer only produces the map canvas. The actual Civ2 game screen (see `realCiv2GameScreenshots/20260228_actual civ2 screenshot.png`) has significant UI chrome surrounding the map viewport that gives the game its distinctive look and provides key information at a glance.
-
-**Reference screenshot elements** (all missing from current implementation):
-
-**A. Menu bar** — 9 dropdown menus across the top: Game, Kingdom, View, Orders, Advisors, World, Cheat, Editor, Civilopedia. In the original game these are functional menus; for our renderer they could be decorative or wired to relevant actions (e.g., View → toggle FOW, toggle grid).
-
-**B. Map title / header** — "American Map" (or "[Civ Name] Map") centered above the map viewport. Uses the player civ name. Already have `civNames` data from parser.
-
-**C. Decorative border / frame** — Stone-textured beveled border surrounds the map viewport area, separating it from the side panels and menu bar. Gives the characteristic Civ2 "carved stone" look.
-
-**D. Minimap ("World" panel)** — Small overview map in the top-right showing the full world. Territory colored by civ ownership. Shows explored vs unexplored areas. Already have all the data needed: terrain types, tile visibility (byte[4] highest bit = territory color), city positions. This would be a scaled-down rendering of the full map.
-
-**E. Status panel** — Below the minimap on the right side. Shows:
-- Civilization name and population count
-- Treasury (gold) — would need to parse this from save file if not already
-- Per-turn income/expenses summary
-- Current game year / turn number (offsets `0x001C` and `0x001E` in save file, not currently parsed)
-
-**F. Selected unit info** — Bottom portion of the status panel. Shows the selected unit's sprite, name, civ, terrain type, and movement points. In our static renderer there's no "selected" unit, but this could show summary stats or the first unit on a hovered tile (extending the existing tooltip).
-
-**Implementation considerations — this needs careful architectural thought:**
-
-- **Canvas vs HTML**: Some elements are natural fits for HTML/CSS (menu bar, status panel text, dropdowns) while others may work better drawn on a canvas (minimap, decorative border, map title). A hybrid approach is likely best — HTML layout for the overall page structure with the map canvas embedded inside a bordered container.
-
-- **Responsive layout**: The original Civ2 has a fixed 640×480 (or 800×600 / 1024×768) layout with the side panel always visible. Our renderer currently lets the map canvas fill the page. Adding side panels means establishing a proper layout grid.
-
-- **Data requirements**: Some status panel fields (treasury, population, turn number) are not currently parsed. These would need parser additions.
-
-- **Scope**: This is a large feature that should probably be split into sub-items once the implementation approach is decided. Suggested breakdown:
-  1. Page layout restructure (HTML/CSS grid with map area + side panel)
-  2. Decorative border/frame around map viewport
-  3. Map title header ("[Civ Name] Map")
-  4. Minimap with territory colors
-  5. Status panel (civ info, treasury, turn/year)
-  6. Menu bar (decorative or functional)
-  7. Unit/tile info panel (extending tooltip into side panel)
-
-- **File impact**: This will likely touch `index.html` (layout), add CSS, modify `app.js` (panel population), and possibly `parser.js` (new fields). The map canvas rendering in `renderer.js` should ideally stay unchanged — the chrome wraps around it rather than being drawn into it.
-
-**Priority**: High visual impact — this is what makes it look like "the actual game" rather than "a map export tool." But it's also the most complex single item and needs design discussion before implementation begins.
-
----
-
-#### ~~Item 27: CLEAN_VARIANTS Table Uses Uniform Columns Instead of Per-Terrain Clean Lists~~
-
-RESOLVED. CLEAN_VARIANTS updated to per-terrain clean column lists matching the doc.
-
-**Problem**: `CLEAN_VARIANTS` (renderer.js:44-56) uses the same `[0, 1, 4, 5, 6, 8]` for all 11 terrain types. The binary analysis doc specifies different clean (text-free) columns per terrain:
-
-| Terrain     | Code Uses      | Doc Says Clean   | Contaminated in Code |
-|-------------|---------------|------------------|----------------------|
-| Desert      | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
-| Plains      | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
-| Grassland   | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
-| Forest      | 0,1,4,5,6,8  | 0,1,4,5,6,8      | ✅ Match              |
-| Hills       | 0,1,4,5,6,8  | 0,1,4,5,6,8      | ✅ Match              |
-| Mountains   | 0,1,4,5,6,8  | 0,1,4,5,6        | 8                    |
-| Tundra      | 0,1,4,5,6,8  | 0,4              | 1, 5, 6, 8           |
-| Glacier     | 0,1,4,5,6,8  | 0,4              | 1, 5, 6, 8           |
-| Swamp       | 0,1,4,5,6,8  | 0,4              | 1, 5, 6, 8           |
-| Jungle      | 0,1,4,5,6,8  | 0,1,4,8          | 5, 6                 |
-| Ocean       | 0,1,4,5,6,8  | 0,1,4            | 5, 6, 8              |
-
-**Mitigating factor**: The `<50% opaque` post-extraction filter (renderer.js:384-406) discards most contaminated sprites at runtime, so vanilla TERRAIN1.GIF renders acceptably. But a contaminated sprite with >50% opaque pixels would slip through and show text artifacts. Modded sprite sheets are more at risk.
-
-**Fix**: Replace the uniform array with the per-terrain clean column lists from the doc.
-
-**Severity**: Medium
-
----
-
-#### ~~Item 28: Dither Blending — Missing Horizontal Flip for SW and NW Directions~~
-
-RESOLVED. H-flip added for SW/NW in both `_applyDither` and `_applyShroudDither`. The doc's "full-half" scope description was tested and produces excessive dither — quadrant-based approach kept intentionally (see note below).
-
-**Problem**: The `_applyDither()` function (renderer.js:1098-1171) never horizontally flips the dither mask. The binary analysis doc specifies that the dither mask transformation per direction is:
-
-| Direction | Tile Half           | H-Flip | V-Flip |
-|-----------|---------------------|--------|--------|
-| SE        | Bottom (rows 16-31) | No     | No     |
-| SW        | Bottom (rows 16-31) | Yes    | No     |
-| NE        | Top (rows 0-15)     | No     | Yes    |
-| NW        | Top (rows 0-15)     | Yes    | Yes    |
-
-The code applies V-flip correctly for NE and NW (`mask[(15-dy)*64 + dx]`) but never applies H-flip. SW uses `mask[dy*64 + dx]` (should be `mask[dy*64 + (63-dx)]`) and NW uses `mask[(15-dy)*64 + dx]` (should be `mask[(15-dy)*64 + (63-dx)]`).
-
-The doc explicitly states the dither mask is NOT left-right symmetric — so the missing H-flip means SW and NW dither holes appear at incorrect positions.
-
-Additionally, the code restricts each direction to a 32px-wide quadrant (NE=top-right, SW=bottom-left, etc.) while the doc says each direction covers the full 64px-wide half (top or bottom). The quadrant approach + no H-flip was used as a substitute, but it's not equivalent because (a) the mask is asymmetric and (b) the spatial coverage is halved.
-
-**Fix applied**: Added H-flip (`63-dx`) to the mask lookups for SW and NW while keeping the quadrant clipping. Both `_applyDither()` and `_applyShroudDither()` updated.
-
-**Doc scope discrepancy (intentionally kept)**: The doc says each direction covers the full 64px-wide half of the tile. This was implemented and tested — it causes catastrophic over-dithering because when multiple directions are active (e.g., NE and NW both different terrain), their masks overlap across the full top half, producing 2-4x the intended hole density at the tile equator. The quadrant approach (32px wide per direction) prevents this overlap and produces visually correct results. The doc's full-half description is likely inaccurate — the original game probably also uses quadrant-based partitioning. The binary analysis doc should be updated to note this.
+## Implementation Notes
+
+- **Preserve existing renderer compatibility**: The current `parse()` return object and all accessor functions (`getTerrain`, `getImprovements`, `getVisibility`, `getResource`, `getNeighbors`, `wrap`, `hasRiver`, `hasGoodyHut`, `hasShield`, `getKnownImprovements`) must continue to work. New fields are additive.
+- **Raw bytes for unknowns**: Every undecoded byte range gets stored as a raw Uint8Array so nothing is lost. Future analysis can decode these without re-parsing.
+- **Dead units and destroyed cities**: Store all records including dead/destroyed entries. Add `alive` / `destroyed` flags. The current renderer can continue filtering on `alive === 0`.
+- **File type dispatch**: Consolidate the SAV/SCN/NET detection into a single `fileType` field used throughout: `{type: 'sav'|'scn'|'net', isScenario, recordSizes: {...}, offsets: {...}}`.

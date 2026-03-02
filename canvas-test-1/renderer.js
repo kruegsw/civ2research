@@ -228,6 +228,15 @@ const Civ2Renderer = {
       sprites.fortify  = this.extractSprite(citiesCtx, 143, 423, 64, 48, CC, true);
       sprites.fortress = this.extractSprite(citiesCtx, 208, 423, 64, 48, CC, true);
       sprites.airbase  = this.extractSprite(citiesCtx, 273, 423, 64, 48, CC, true);
+
+      // City flags from CITIES.GIF bottom section: 14×22px per flag, 9 per row × 2 rows
+      // Source: Civ2-clone Rectangle(1 + 15*(i%9), 425 + 23*(i/9), 14, 22)
+      // Row 0 (y=425): 8 civ flags + 1 unused brown flag
+      // Row 1 (y=448): dark/alternate variant of each flag
+      sprites.cityFlags = [];
+      for (let civ = 0; civ < 9; civ++) {
+        sprites.cityFlags[civ] = this.extractSprite(citiesCtx, 1 + civ * 15, 425, 14, 22, CC, true);
+      }
     }
 
     // City sprites from CITIES.GIF: 65×49 grid (64×48 sprite + 1px border)
@@ -678,6 +687,12 @@ const Civ2Renderer = {
           ctx.fillRect(cx - 6, cy - 6, 12, 12);
         }
 
+        // Occupation flag — drawn on cities captured from another civ
+        if (c.isOccupied && sprites.cityFlags && sprites.cityFlags[c.originalOwner]) {
+          // Draw the original owner's flag on the right side of the city sprite
+          ctx.drawImage(sprites.cityFlags[c.originalOwner], tpx + 50, tpy - 16);
+        }
+
         // City size box — positioned via orange marker pixel, or fallback centered
         // Source: Civ2-clone MapControl.cs — TNR Bold 14px, box = text size, no padding
         const sizeStr = String(c.size);
@@ -812,7 +827,7 @@ const Civ2Renderer = {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.visFlag != null && !(u.visFlag & fowBit)) continue;
+        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
         unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
       }
 
@@ -832,7 +847,7 @@ const Civ2Renderer = {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.visFlag != null && !(u.visFlag & fowBit)) continue;
+        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
         // Use stacking linked list: top-of-stack has nextInStack === -1
         if (u.nextInStack === -1) {
           // This unit is the top of its stack — use it directly
@@ -928,6 +943,15 @@ const Civ2Renderer = {
             ctx.textBaseline = 'top';
             ctx.fillStyle = '#000';
             ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
+
+            // Veteran star — small yellow star below order letter
+            if (u.veteran) {
+              ctx.font = 'bold 7px sans-serif';
+              ctx.fillStyle = '#ffd700';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText('\u2605', shieldX + sprites.shieldFront.width / 2, shieldY + sprites.shieldFront.height);
+            }
           }
 
           // Fortification overlay — only for fully fortified (0x02)
@@ -1246,9 +1270,11 @@ const Civ2Renderer = {
 
   // ── Legend overlay ──
   _drawLegend(ctx, canvasW, canvasH, mapData) {
-    // Determine civ names from city names
-    const civNames = this._identifyCivs(mapData.cities);
-    const entries = Object.entries(civNames).sort((a, b) => a[0] - b[0]);
+    // Use authoritative civ names from save file; fall back to city-name heuristic
+    const civNames = mapData.civNames || this._identifyCivs(mapData.cities);
+    const entries = Object.entries(civNames)
+      .filter(([cid]) => !mapData.civsAlive || (mapData.civsAlive & (1 << cid)))
+      .sort((a, b) => a[0] - b[0]);
 
     const lx = 10, ly = canvasH - 20 - entries.length * 15 - 20;
     const lw = 180, lh = entries.length * 15 + 25;
