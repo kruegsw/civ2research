@@ -1,0 +1,4 @@
+*** The Conquest of Britain ver.1.01- Update information ***
+
+In the first version of the scenario the viking longship could only 
+transport 3 units, it has been corrected to 4 units.

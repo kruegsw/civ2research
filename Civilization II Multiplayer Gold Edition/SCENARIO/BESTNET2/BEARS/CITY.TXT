@@ -1,0 +1,245 @@
+;
+;   CIVILIZATION CITY LIST
+;   Copyright (c) 1997 by MicroProse Software
+;
+;   This file can be altered at your own risk to change
+;   the default names for cities.  Keep in mind that
+;   altering the contents of this file may cause your game
+;   to malfunction.
+;
+;   City names may contain no more than 15 characters.
+;
+
+@WHITES
+White Bear
+Afognak
+AKhiok
+Akiachak
+AKiak
+Akutan
+Alakanuk
+Aleknagik
+Alitak
+Allakaket
+Ambler
+Amook
+Anchorage
+Anderson
+Angoon
+Aniak
+Anvik
+Atka
+Atmautluak
+Atqasuk
+Attu
+Auke Bay
+@STOP
+
+@ORANGES
+Orange Bear
+Barampf
+Barrow
+Beaver
+Bell Island
+Beluga
+Bthel
+Big Lake
+Bird Creek
+Border
+Buckland
+Cantwell
+Cape Pole
+Central
+Chatham
+Chefornak
+Chicken
+Chignik
+Chisana
+Chitina
+Chugiak
+Chevak
+Chickaloon
+Circle
+@STOP
+
+@BROWNS
+Brown Bear
+Deep Bay
+Deering
+Denali
+Dillingham
+Dora Bay
+Dot Lake
+Douglas
+Driftwood
+Dutch Harbor
+Eagle
+Eagle River
+Edna Bay
+Eek
+Egegik
+Ekuk
+Elim
+Ellamar
+Emmonak
+English Bay
+Ester
+Fairbanks
+@STOP
+
+@GREENS
+Green Bear
+Farewell
+Fire Cove
+Fortuna
+Gakona
+Galena
+Gambell
+Girdwood
+Glennallen
+Gold Creek
+Graying
+Gulkana
+Haines
+Halibut Cove
+Happy Harbor
+Healy
+Hobart Bay
+Hollis
+Homer
+Holy Cross
+@STOP
+
+@BLUES
+Blue Bear
+Igiugig
+Icy Bay
+Indian
+Ivanoff Bay
+Juneau
+Kake
+Kaktobik
+Kaiskag
+Kaltag
+Karluk
+Kasaan
+Kasigulk
+Kenai
+King Cove
+Kitoi Bay
+Klawock
+Kobuk
+Kodiak
+Kokhonak
+Kotlik
+Lab Bay
+@STOP
+
+@YELLOWS
+Yellow Bear
+Lake Otis
+Larsen Bay
+Levelock
+Lime Village
+Marshall
+May Creek
+Mccarthy
+Mekoryuk
+Mendenahll
+Metlakatla
+Minto
+Moose Pass
+Moser Bay
+Muldoon
+Naknek
+Neets Cove
+Nenana
+Nome
+Noorvik
+Newtok
+Nikiski
+Noatak
+Northway
+@STOP
+
+@GRAYS
+Gray Bear
+Old Harbor
+Olga Bay
+Paxson
+Palmer
+Paxson
+Point Baker
+Port Lions
+Red Devil
+Saicha
+Sitka
+Spenard
+Stebbins
+Tatitlek
+Teller
+Tok
+Tokeen
+Trapper Creek
+Uyak
+Valdez
+Utopia
+View Cove
+Wainwright
+Wales
+Wasilla
+West Point
+Willow
+Zacker Bay
+@STOP
+
+@EXTRA
+Naples
+Issus
+Cunaxa
+Cremona
+Cannae
+Capua
+Turin
+Genoa
+Crete
+Verona
+Salamis
+Lisbon
+Hamburg
+Prague
+Salzburg
+Bergen
+Venice
+Milan
+Ghent
+Pisa
+Dublin
+Toronto
+Melbourne
+Sydney
+@STOP
+
+
+@BARBARIANS
+17
+Huns
+Visigoths
+Ostrogoths
+Sueves
+Angles
+Saxons
+Franks
+Jutes
+Burgundians
+Avars
+Vandals
+Alans
+Bulgars
+Magyars
+Frisians
+Picts
+Langobardi
+
+
+@end

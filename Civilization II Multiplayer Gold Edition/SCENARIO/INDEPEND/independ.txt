@@ -1,0 +1,24 @@
+@SCENARIO
+@width=500
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^I know not what course others may take, but as for me,
+^give me liberty or give me death!
+^      -Patrick Henry, 1775 Virginia Convention, Richmond
+^
+^Recommended: British or Americans
+^
+^Not for play: Indians, French
+^
+^OBJECT: British (protagonists) and Indians, to take as many American
+ cities as possible.
+^Americans (and French), to drive the British off the continent.
+^
+^^SPECIAL NOTES
+^No technologies may be acquired by conquest.
+^Negotiations between the British and Americans are not permitted.
+^The French and British don't talk if both are computer-controlled.  
+^
+@end -- this line must be here!
+

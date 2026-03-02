@@ -1,0 +1,59 @@
+The Cross & the Crescent
+The Rise of Islam and the Crusades
+700 to 1099 A.D.
+Eric Hartzell * hartzell@io.com * Austin, Texas * July 16, 1996
+
+VIEWING IN WINDOWS NOTEPAD?
+PLEASE ACTIVATE WORD WRAP IN EDIT MENU!
+
+You can read the text file croscres.txt for some historical background for this scenario. Before making any changes to your original game files, read the URGENT MESSAGE BELOW:
+
+This scenario includes the scenario file (croscres.scn), a descriptive text file that appears when the scenario is begun (croscres.txt), and the following revised game files: rules file (cc_rules.txt), military unit graphics file (cc_units.gif), city name list (cc_city.txt) and a game file (cc_game.txt) that can be renamed as rules.txt, units.gif, city.txt, and game.txt in your main civ2 game directory.  Using these files instead of the original game files allows you to create new units and learn new technologies unique to this scenario.
+
+IMPORTANT:  If you rename these files to play this scenario, be sure to save your original Civ2 files under another name so you can revert to them when you play other Civ2 games or scenarios.  I usually rename my originals using an ! after the name (rules!.txt or game!.txt) so I can spot them quickly and return them to their original names once I've played the scenario.
+
+CHANGES TO GAME FILES
+
+CC_RULES.TXT file:
+
+Changes to Cosmic Principles:
+(1) City can grow to 15 before lack of Sewer becomes problem.
+(2) Fundamentalism reduces Science loss by only 40% (allows for somewhat historically-accurate flowering of Arab science).
+(3) Fundamentalism can support just 5 units at no cost (originally 10 units).
+
+Three new Techs (mainly to delay advent of gunpowder, metallurgy, magnetism, and other late Renaissance technology)
+(1) Hygeine- requires Literacy and Trade, leads to Medicine with Philosophy
+(2) Captive Labor- requires Warrior Code and Seafaring, leads to Labor Union with Mass Production and allows War Galley (captured slaves from defeated enemies were used as oarsmen historically- not a nice advance, but one of which many civilizations took advantage).
+(3) Advanced Design- requires Engineering and University, leads to Invention (with Chemistry) and allows Cathedral.
+
+Also, many TECHS HAVE BEEN MOVED around in the technology tree -- be sure to check with your Science Advisor to plot a course toward your desired techs, units, or city improvements.
+
+Four new Units
+(1) Mercenary- 3a2d2m, requires Currency, obsolete after Leadership, can penetrate zones of control (like diplomats, air units).
+(2) War Galley- 2a2d4m (2 hit pts), requires Captive Labor, obsolete after Democracy.
+(3) Assassin- 6a0d2m, requires Monarchy, obsolete after Espionage, can penetrate zones of control, has 2-space visibility.  Packs a wallop but is always caught and executed (can only be used one time, like missiles).
+(4) Crossbowmen- 4a2d1m, requires Leadership (which requires Philosophy and Chivalry), obsolete after gunpowder, two hits, doubles defense against horsemen.
+OTHER CHANGE:  Caravel renamed Merchantman, attack capabilities eliminated.  Also, riflemen eliminated to make room for crossbowmen.
+
+New expirations for Wonders (lessens their impact on the Game)
+(1) Great Wall- Mathematics
+(2) Great Library- Monotheism
+(3) Leonardo's Workshop- Gunpowder
+(4) Sun Tzu's War Academy- Chivalry
+(5) Pyramids- Trade
+(6) Colossus- Trade
+(7) Hanging Gardens- Philosophy
+(8) Lighthouse- Navigation
+
+Also some minor changes to ruler titles
+
+CC_UNITS.GIF file:
+New Assassin graphic, new Crossbowman graphic, modified Sea Unit graphic for War Galley (I'm sorta proud of my Assassin graphic, so check it out if you can).
+
+CC_GAME.TXT file:
+"Missile Attack near <City>" changed to "Assassin Strikes near <City>."  Hopfully the scenario will end before anyone develops missiles!
+
+CC_CITY.TXT file:
+Somewhat realistic city names for each Civilization (who wants the Arabs to build "Coventry" and "Manchester?")
+
+IMPORTANT!!!! IMPORTANT!!!! Don't forget to BACK UP ALL YOUR ORIGINAL GAME FILES before downloading this or any scenario because your original files could be overwritten. 

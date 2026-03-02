@@ -1,0 +1,469 @@
+;
+; Events text for American Civil War Scenario
+; Copyright(c) 1996, MicroProse Software Inc.
+;
+;
+
+@BEGINEVENTS
+
+@IF
+SCENARIOLOADED
+@THEN
+PLAYCDTRACK
+11
+DONTPLAYWONDERS
+@ENDIF
+
+@IF
+NOSCHISM
+DEFENDER=anybody 
+@THEN
+ 
+@ENDIF
+
+@IF
+TURN
+turn=1
+@THEN
+MOVEUNIT
+unit=anyunit
+owner=Federals
+maprect
+73,33, 73,33, 73,33, 73,33
+moveto
+71,35
+numbertomove=ALL
+@ENDIF
+
+@IF
+TURN
+turn=1
+@THEN
+MOVEUNIT
+unit=anyunit
+owner=Federals
+maprect
+55,39,55,39,55,39,55,39
+moveto
+60,42
+numbertomove=ALL
+@ENDIF
+
+@IF
+CITYTAKEN
+city=Kansas City
+attacker=Federals
+defender=Confederates
+@THEN
+TEXT
+A strong Union presence in Western Missouri triggers the creation of Rebel raiders.
+ENDTEXT
+CREATEUNIT
+unit=C Raiders
+owner=Confederates
+veteran=no
+homecity=none
+locations
+8,60
+10,70
+14,66
+5,59
+14,68
+13,57
+12,62
+endlocations
+@ENDIF
+
+@IF
+TURN
+turn=1
+@THEN
+MOVEUNIT
+unit=Block. Runner
+owner=Confederates
+maprect
+46,100,46,100,46,100,46,100
+moveto
+88,116
+numbertomove=ALL
+@ENDIF
+
+@IF
+TURN
+turn=1
+@THEN
+MOVEUNIT
+unit=Block. Runner
+owner=Confederates
+maprect
+80,66,80,66,80,66,80,66
+moveto
+91,3
+numbertomove=ALL
+@ENDIF
+
+@IF
+TURN
+turn=20
+@THEN
+TEXT
+^Julia Ward Howe, travelling with a minister and several friends,
+ sings songs with the Union soldiers. She adds the line "John Brown's
+ body lies a-moldering in the ground; His soul is marching on."
+^A soldier replies "Mrs. Howe, why do you not write some good words
+ for that stirring tune?"
+^The next morning's twilight brought the rest of the poem to Mrs. Howe.
+ In February 1862 the Atlantic Monthly publishes "The Battle Hymn of
+ the Republic".
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=25
+@THEN
+TEXT
+^^Draft Riot in New York City
+^^ Monday, July 13th, 1863
+^Citizens, especially angry over provisions in the draft bill
+ allowing substitution and the purchase of exemption, mob the
+ draft headquarters. Buildings are set afire, establishments
+ looted. The riot lasts several days before order is restored.
+ It is estimated that over 1,000 people are killed or wounded.
+ENDTEXT
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Federals
+talkertype=humanorcomputer
+listener=Confederates
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Confederates
+talkertype=humanorcomputer
+listener=Federals
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Confederates
+talkertype=humanorcomputer
+listener=Europeans
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Europeans
+talkertype=humanorcomputer
+listener=Confederates
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Europeans
+talkertype=humanorcomputer
+listener=Federals
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Federals
+talkertype=humanorcomputer
+listener=Europeans
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Europeans
+talkertype=humanorcomputer
+listener=Kentuckians
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Kentuckians
+talkertype=humanorcomputer
+listener=Europeans
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Europeans
+talkertype=humanorcomputer
+listener=Indians
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+NEGOTIATION
+talker=Indians
+talkertype=humanorcomputer
+listener=Europeans
+listenertype=humanorcomputer
+@THEN
+
+@ENDIF
+
+@IF
+TURN
+turn=11
+@THEN
+CREATEUNIT
+owner=Confederates
+unit=J.E.B. Stuart
+veteran=false
+homecity=none
+locations
+76,40
+59,71
+54,80
+40,88
+endlocations
+
+TEXT
+^J. E. B. Stuart vows to ride circles around
+the Union armies.
+^
+^"I had rather die than be whipped," he proclaims.
+ENDTEXT
+
+@ENDIF
+
+@IF
+TURN
+TURN=12
+@THEN
+CREATEUNIT
+owner=Confederates
+unit=R.E. Lee
+veteran=false
+homecity=none
+locations
+76,40
+59,71
+54,80
+40,88
+endlocations
+
+TEXT
+^After Joe Johnston is wounded, Jefferson Davis offers command
+ of the Confederate armies to Robert E. Lee. Lee accepts.
+^
+^"Do your duty in all things. You cannot do more. You should
+ never wish to do less."
+^               -Robert E. Lee.
+ENDTEXT
+
+@ENDIF
+
+@IF
+TURN
+TURN=6
+@THEN
+CREATEUNIT
+owner=Confederates
+unit=N.B. Forrest
+veteran=false
+homecity=none
+locations
+34,74
+45,63
+41,73
+51,69
+endlocations
+
+TEXT
+^Acknowledged military genius Nathan Bedford Forrest plans
+ his first raid into enemy-held territory.
+^
+^"War means fighting," he says, "and fighting means killing."
+ENDTEXT
+
+@ENDIF
+
+@IF
+TURN
+TURN=2
+@THEN
+CREATEUNIT
+owner=Federals
+unit=U.S. Grant
+veteran=false
+homecity=none
+locations
+26,52
+30,40
+27,59
+endlocations
+
+TEXT
+^Ulysses S. Grant prepares for his invasion of Tennessee.
+^
+^"The art of war is simple enough. Find out where your enemy
+ is. Get at him as soon as you can. Strike at him as hard as
+ you can, and keep moving on."
+^                -Ulysses S. Grant
+ENDTEXT
+
+@ENDIF
+
+@IF
+TURN
+TURN=18
+@THEN
+CREATEUNIT
+owner=Federals
+unit=W.T. Sherman
+veteran=false
+homecity=none
+locations
+36,62
+27,59
+26,52
+30,40
+endlocations
+
+TEXT
+^William Tecumseh Sherman takes command.
+^
+^"To be at the head of a strong column of troops, in
+ the execution of some task that requires brain, is
+ the highest pleasure of war."
+^              -William T. Sherman
+ENDTEXT
+
+@ENDIF
+
+@IF
+TURN
+TURN=24
+@THEN
+CREATEUNIT
+owner=Federals
+unit=Geo. Custer
+veteran=false
+homecity=none
+locations
+73,33
+74,30
+79,19
+endlocations
+
+TEXT
+^George Armstrong Custer begins his dashing career in
+ the Union cavalry.
+ENDTEXT
+
+@ENDIF
+
+@IF
+TURN
+TURN=22
+@THEN
+CREATEUNIT
+owner=Federals
+unit=Benj. Grierson
+veteran=false
+homecity=none
+locations
+34,74
+45,63
+36,62
+27,59
+endlocations
+
+TEXT
+^Benjamin Grierson responds to persistent Rebel raids
+ with a magnificent raid of his own.
+ENDTEXT
+
+@ENDIF
+
+@IF
+UNITKILLED
+unit=Ston. Jackson
+attacker=anybody
+defender=anybody
+@THEN
+TEXT 
+^Stonewall Jackson dies in battle.
+^
+^"Let us cross over the river, and rest under the shade of the trees."
+^            -Stonewall Jackson's last words.
+ENDTEXT
+PLAYWAVEFILE
+funeral.wav
+@ENDIF 
+
+@IF
+UNITKILLED
+unit=R.E. Lee 
+attacker=anybody
+defender=anybody
+@THEN
+TEXT 
+^Robert E. Lee dies in battle, however his generals vow to carry on.
+^The Confederates are limited to a Marginal Victory.
+ENDTEXT
+PLAYWAVEFILE
+funeral.wav
+@ENDIF 
+
+@IF
+UNITKILLED
+unit=U.S. Grant 
+attacker=anybody
+defender=anybody
+@THEN
+TEXT 
+^Ulysses S. Grant dies in battle, however his generals vow to carry on.
+^ The Federals are limited to a Marginal Victory.
+ENDTEXT
+PLAYWAVEFILE
+funeral.wav
+@ENDIF
+ 
+@IF
+UNITKILLED
+unit=W.T. Sherman
+attacker=anybody
+defender=anybody
+@THEN
+TEXT
+^William Tecumseh Sherman dies on the battlefield.
+^
+^"A country and government such as ours are worth fighting
+for, and dying for, if need be."
+^               -William T. Sherman.
+ENDTEXT
+
+@ENDEVENTS

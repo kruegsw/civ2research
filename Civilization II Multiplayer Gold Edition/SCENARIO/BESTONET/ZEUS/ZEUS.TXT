@@ -1,0 +1,20 @@
+@SCENARIO
+@width=500
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^The almighty Zeus is in trouble.
+^
+^Mount Olympus is surrounded by the Styx Lake, where Charon's fleet
+ patrols. Zeus' only chance for escape is to send his "angels" to the
+ Earth to convince the Right Men and Goody-goodies to rescue him.
+^
+^The perfidious Mephisto intends to prevent that, though he is imprisoned
+ in Hades (the magic jail). A legion of devils reinforces his servants,
+ the Followers and Believers, both owners of the Book of Dead Names.
+^
+^The Cowards are in the eye of the storm; their only chance is to escape
+ by building a divine craft. Lead one of these races, before the true
+ messiah comes to Earth to restore order with the "Universal Benediction".
+^
+@end -- this line must be here!

@@ -1,0 +1,24 @@
+@SCENARIO
+@width=470
+@title=%STRING0
+^
+^  "They were tough.  Tough to kill and heavily armed.  The last time
+   I saw one go down easy, it had been hit square in the face with a 
+   three-shot burst of heavy plasma."
+^                        -Commander Johnnie Gray, X-COM Captain-
+^
+^^* RECOMMENDED *
+^^Only play as X-COM, the Aliens aren't meant to be played.
+^
+^
+^  OBJECTIVE: To destroy each of the 8 alien bases and to prevent
+^                         your own bases from being destroyed.  
+^
+^^SPECIAL NOTES
+^            No technologies may be acquired by conquest.
+^            Negotiations with the Aliens are not permitted.
+^
+^^Tip: Don't get hurt!
+^
+@end -- this line must be here!
+

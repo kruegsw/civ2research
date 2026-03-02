@@ -1,0 +1,201 @@
+Welcome to Civ II Fantastic Worlds!
+
+----IMPORTANT: Read This----
+
+When you install the scenarios, the files for each are put into separate
+directories. They absolutely MUST stay that way. If you move files around,
+there's no telling what might happen, and Customer Service might not be able
+to fix it.
+
+**** Do not move the scenario files.****
+
+The same goes for any scenario games you save. When you save a scenario game
+(even if you do so using the Autosave function), that save file automatically
+goes into the directory with that scenario. When the time comes to load the file,
+look for it in the scenario directory, not in the normal Civilization II directory.
+
+#For example, if you play the Atlantis scenario halfway through, then save,
+the computer will store the save file in the directory scenario\atlantis. If you
+subsequently move the file elsewhere and then restart the game from that save
+bad things will happen. 
+
+This brings up one more important rule. If you copy a scenario save file to
+use with Civ II on another computer, make sure that you copy the file into
+the correct scenario directory.
+
+----Playing----
+
+Once the set-up is complete, the scenarios are ready to play. 
+To start:
+
+(1) If you want to see and hear the uninstalled video portions 
+    of the game, make sure that the Civ II Fantastic Worlds
+    CD-ROM is in the drive. (Remember, if you did not install
+    the Recommended files when you originally installed 
+    Civilization II, there will be no sound effects regardless
+    of whether the CD is in the drive. There will be some music.)
+    Note: The Fantastic Worlds CD-ROM intentionally excludes the
+    World Wonders and Heralds videos for the sake of scenario
+    continuity.  If these are desired, the original Civilization II
+    disc should be in the drive when the game is loaded. Keep in mind,
+    however, that these videos will no longer accurately describe any
+    of the Heralds and Wonders that have been changed for a scenario.
+  
+
+(2) If it is not already running, start Windows.
+
+(3) Now simply double-click the Civilization II icon (or click
+    Civ2 on the Windows '95 Start menu) to start the game.
+
+----A Quick Review----
+
+Although every Civilization II player has surely read and reread
+the manual several times, your mind might have wandered a little
+over the brief mentions of scenarios. Just in case, let's go through
+a quick rehash of how you load scenarios for play and what it means
+to win one.
+
+----Loading a Scenario----
+
+The first menu you see when the game starts up doesn't have a name.
+
+* Click the radio button next to Begin Scenario.
+* Click on the OK button.
+
+Now you need to choose the scenario you want to play. The selection
+window works exactly like a typical Windows file selection window.
+
+* First, double-click on the directory named scenario.
+* Next, double-click on the directory of the scenario you want.
+* Finally, double-click on the name of the scenario file itself.
+
+The MicroProse scenarios are each in a separate directory:
+
+Scenario			Directory	File
+----------------------------------------------------------
+The Age of Reptiles		Dinosaur	dinosaur.scn
+Atlantis			Atlantis	atlantis.scn
+Ice Planet			Iceplnet	iceplnet.scn
+Mars Now!			Mars		mars.scn
+Master of Magic, Jr.		Momjr		momjr.scn
+Master of Orion, Jr.		Moojr		moojr.scn
+The Mythic History of Midgard	Midgard		midgard.scn
+Thew New World			Newworld	newworld.scn
+Samurai				Samurai		samurai.scn
+The World of Jules Verne	Verne		verne.scn
+X-COM: Assault			Xcom		xcom.scn
+
+The Best of the Net scenarios are all in sub-directories of the
+directory named BestNet2:
+
+Scenario			Directory	File
+-----------------------------------------------------------
+Battle of the Sexes		Battle		battle.scn
+Bears at Play			Bears		bears.scn
+Civ-Life!			Bio		bio.scn
+Hidden				Hidden		hidden.scn
+Mammoth				Mammoth		mammoth.scn
+Paradise			Paradise	paradise.scn
+Santa is Coming			Santa		santa.scn
+USA 2010			USA2010		usa2010.scn
+
+
+Once you've chosen a scenario, you see the introductory text, which
+explains the situation you're getting yourself into. Click OK when
+you've finished reading it. Now, you go through the normal decisions
+for the beginning of a Civilization II game.
+
+(1) Choose the civilization you want to lead. Every scenario includes
+    empires that are interesting to play - and occasionally some that
+    are not. Some tribes are only included to spice things up, and
+    weren't designed to be player-controlled. The recommended tribes
+    are mentioned in the introduction and the manual.
+
+(2) Select a Difficulty Level. The default is generally Deity, since we
+    assume scenario players are already somewhat experienced.
+
+(3) Enter the name under which you rule.
+
+(4) Choose the gender you want other civilizations' emissaries to use
+    when referring to your ruler.
+
+After that, the scenario begins in earnest.
+
+----Objectives and Winning----
+
+In some scenarios, scoring and winning are the same as in any normal game.
+However, some scenarios use the Objectives system instead. In this case,
+success and failure are measured in terms of who has how many objective cities
+(and sometimes wonders) under their control at the end of the game.
+
+One civilization in each Objectives scenario is considered the protagonist
+nation. It's always the same nation (noted in the introductory text), regardless
+of which one you choose to play. The designer of the scenario has marked certain
+cities as objectives. (To tell which cities are objectives, select Find City
+from the Kingdom menu.) Some cities are Major Objectives; these count for 3 times
+as much as normal objectives.
+
+The only object of the scenario is to capture and hold as many objectives as you
+can. This and this alone determines the outcome. If some of the Wonders of the
+World are also considered objectives, each objective wonder you capture also
+counts toward the total.
+
+There are four possible results of any Objective scenario. The number of
+objectives required for each is a pre-set characteristic of the scenario. The
+protagonist nation can:
+
+   Win a Decisive Victory,
+   Win a Marginal Victory,
+   Suffer a Marginal Defeat, or
+   Suffer a Decisive Defeat.
+
+Whatever the outcome for the protagonist, every other civilization gets the
+corresponding, opposite result. Thus, for example, if you're the protagonist
+and you win a Marginal Victory, all your opponents get a Marginal Defeat.
+
+----When You're Done----
+
+When you quit or finish a scenario, you return to that unnamed first menu.
+You can begin another scenario (or a regular game) if you wish. If you prefer
+to leave Civilization II, click Cancel.
+
+----Last Minute Updates----
+
+(1) The advice given to you by the High Council is almost never relevant or
+    correct during a scenario game. Ignore it.
+
+(2) The Civilopedia has been updated to reflect the changes for each MicroProse
+    scenario. The updated Civilopedias, however, are text only.
+
+(3) A complete discussion of the Scenario Macro Language is included in the rules
+    manual.
+
+(4) After you install the scenarios, you might notice a new file in your civ2
+    directory -- 'civ2orig.exe'. This is a backup copy of the original civ2
+    executable. The scenario installation copies an updated version into this
+    directory, but saves the original as a backup.
+
+(5) The new civ2 executable file includes all of the previously posted patches
+    for the original civ2 (and more).
+
+(6) The Jules Verne and Midgard scenarios each have special victory conditions.
+    However, the game program does not recognize them and lets you contimue play 
+    as if nothing has happened. The only announcement of victory is made in a 
+    text message that appears on screen. You should voluntarily stop play at this 
+    point and accept your win or loss.
+     
+(7) We recommend that, if you wish to work with the game macro, you do so via the 
+     Events Editor provided with the game. If you insist on working directly with
+     the events.txt file, be warned. Calling up a saved game after making a change
+     in the events.txt file can cause the game to crash. To fix this, you write the
+     following command from the DOS prompt - 
+     
+     c:\mps\civ2\delevent c:\mps\civ2\scenario\xxxxx\yyyyy.sav
+     xxxxx = name of appropriate scenario, yyyyy.sav = name of guilty saved game file
+     
+     If you have stored your civ2 game somewhere other than the default location 
+     stated above, you will need to substitute the proper path to your civ2 and 
+     scenario directories. Whatever message you see, the saved game should now load
+     properly.
+     
+--END--

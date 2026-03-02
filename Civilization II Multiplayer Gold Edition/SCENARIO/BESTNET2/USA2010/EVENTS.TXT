@@ -1,0 +1,757 @@
+;-------------------------------------------------------------------------------------------------------------
+;  
+;--------------------------------------------------------------------------------------------------------------
+;
+;- EVENTS.TXT	(Latest Rev. - Spetember 1997)
+;
+;
+@BEGINEVENTS 
+
+@IF
+SCENARIOLOADED
+@THEN
+DONTPLAYWONDERS
+@ENDIF
+
+@IF
+NOSCHISM
+DEFENDER=anybody 
+@THEN 
+ 
+@ENDIF
+
+@IF
+TURN
+turn=every
+@THEN
+CREATEUNIT
+unit=Prtcl AtkV 
+owner=Russians
+veteran=false
+homecity=none
+locations
+17,3
+19,3
+15,3
+17,5
+endlocations 
+MAKEAGRESSION
+who=Russians
+whom=Americans 
+@ENDIF
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Prtcl AtkV 
+owner=Mexicans
+veteran=false
+homecity=none
+locations
+21,93
+endlocations 
+MAKEAGRESSION
+who=Mexicans
+whom=Americans 
+@ENDIF 
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Prtcl AtkV
+owner=Turks
+veteran=false
+homecity=none
+locations
+95,119
+endlocations 
+MAKEAGRESSION
+who=Turks
+whom=Americans 
+@ENDIF 
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Prtcl AtkV
+owner=Iraqis
+veteran=false
+homecity=none
+locations
+131,115
+endlocations 
+MAKEAGRESSION
+who=Iraqis
+whom=Americans 
+@ENDIF
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Prtcl AtkV
+owner=Indians
+veteran=false
+homecity=none
+locations
+114,116
+endlocations 
+MAKEAGRESSION
+who=Indians
+whom=Americans 
+@ENDIF
+
+@IF
+TURNINTERVAL
+interval=5
+@THEN
+PLAYWAVEFILE
+flyover.wav
+TEXT
+^^NEWS FLASH : New World Order Deadline for U.S. compliance expires.
+^NWO Recon overflights indicate U.S. not within economic and military
+guidelines.  Russian federation and other NWO states mobilize additional
+resources for Western Hemisphere.  New deadline set, hostilities imminent.
+ENDTEXT 
+@ENDIF 
+
+@IF
+TURNINTERVAL
+interval=5
+@THEN
+PLAYWAVEFILE
+drumcy.wav
+TEXT
+^^New Russian Armor Airlifted into Yukon.
+^New Particle Attack Vehicle Brigades.
+ENDTEXT 
+@ENDIF
+
+@IF
+TURN
+turn=2
+@THEN 
+TEXT
+^Iraqi frustration is heard over most major radio and television frequencies in 
+North America as Saddam Hussein accidently broadcasts his reaction to his 
+general staff meeting over multiple bands at mega wattage.
+ENDTEXT
+PLAYWAVEFILE
+drumbn.wav 
+@ENDIF 
+
+@IF
+TURNINTERVAL
+interval=5
+@THEN 
+PLAYWAVEFILE
+drumcy.wav
+TEXT
+^^New Indian Naval Units arrive in Theater.
+^A Carrier and Battlecruiser group.
+ENDTEXT
+CREATEUNIT
+unit=Battlcruiser
+owner=Indians
+veteran=false
+homecity=none
+locations
+100,104
+99,103
+101,105
+99,104
+endlocations
+@ENDIF
+
+@IF
+TURNINTERVAL
+interval=5
+@THEN
+CREATEUNIT
+unit=Carrier
+owner=Indians
+veteran=false
+homecity=none
+locations
+100,104
+99,103
+101,105
+99,104
+@ENDIF
+
+@IF
+TURNINTERVAL
+interval=5
+@THEN 
+PLAYWAVEFILE
+drumcy.wav
+TEXT
+^^Mexican Military Production Increases
+^New Battlecruiser and Armor enter service.
+ENDTEXT
+CREATEUNIT
+unit=Battlcruiser
+owner=Mexicans
+veteran=false
+homecity=none
+locations
+72,102
+73,103
+39,97
+40,98
+endlocations
+@ENDIF 
+
+@IF
+TURNINTERVAL
+interval=5
+@THEN
+CREATEUNIT
+unit=Prtcl AtkV
+owner=Mexicans
+veteran=false
+homecity=none
+locations
+47,117
+endlocations
+@ENDIF 
+
+@IF
+TURN
+turn=3
+@THEN 
+PLAYWAVEFILE
+rnd.wav
+TEXT
+^^American R and D Breakthrough
+^American aeronautical engineers, in a developmental
+breakthrough, produce two prototype Particle Aircraft
+at Dreamland in Nevada.
+ENDTEXT
+CREATEUNIT
+owner=Americans
+unit=Partcl Craft
+veteran=YES
+homecity=none
+locations
+35,63
+endlocations
+@ENDIF
+@IF
+TURN
+turn=3
+@THEN 
+CREATEUNIT
+owner=Americans
+unit=Partcl Craft
+veteran=YES
+homecity=none
+locations
+35,63
+endlocations
+@ENDIF 
+
+@IF
+TURN
+turn=4
+@THEN 
+TEXT
+^^Russians Airlift More Armor into Yukon.
+ENDTEXT 
+@ENDIF
+
+@IF
+TURN
+turn=7
+@THEN 
+PLAYWAVEFILE
+drumcy.wav 
+TEXT
+^Russians Airdrop Particle Attack Regiment into Yellowstone 
+National Park, claiming the Park under the UN World Heritage 
+Park agreements signed in the 1990's by then President Clinton.
+ENDTEXT 
+CREATEUNIT
+owner=Russians
+unit=Prtcl AtkV
+veteran=True
+homecity=None
+locations
+41,39
+42,40
+41,41
+41,37
+endlocations 
+@ENDIF 
+@IF
+TURN
+turn=7
+@THEN 
+CREATEUNIT
+owner=Russians
+unit=Prtcl AtkV
+veteran=True
+homecity=None
+locations
+41,39
+42,40
+41,41
+41,37
+endlocations 
+@ENDIF
+@IF
+TURN
+turn=7
+@THEN 
+CREATEUNIT
+owner=Russians
+unit=Robotic Eng.
+veteran=True
+homecity=None
+locations
+41,39
+42,40
+41,41
+41,37
+endlocations 
+@ENDIF
+
+@IF
+TURN
+turn=7
+@THEN 
+PLAYWAVEFILE
+drumcy.wav
+TEXT
+^Mexicans Airdrop Particle Attack Regiment into Big Bend 
+National Park, claiming the Park under the UN World Heritage 
+Park agreements signed in the 1990's by then President Clinton.
+ENDTEXT 
+CREATEUNIT
+owner=Mexicans
+unit=Prtcl AtkV
+veteran=True
+homecity=None
+locations
+51,87
+49,87
+50,86
+50,88
+endlocations 
+@ENDIF 
+@IF
+TURN
+turn=7
+@THEN 
+CREATEUNIT
+owner=Mexicans
+unit=Prtcl AtkV
+veteran=True
+homecity=None
+locations
+51,87
+49,87
+50,86
+50,88
+endlocations 
+@ENDIF
+@IF
+TURN
+turn=7
+@THEN 
+CREATEUNIT
+owner=Mexicans
+unit=Robotic Eng.
+veteran=True
+homecity=None
+locations
+51,87
+49,87
+50,86
+50,88
+endlocations 
+@ENDIF
+
+@IF
+TURN
+turn=7
+@THEN 
+PLAYWAVEFILE
+drumcy.wav
+TEXT
+^Indians Airdrop Particle Attack Regiment into Great Smoky 
+National Park, claiming the Park under the UN World Heritage 
+Park agreements signed in the 1990's by then President Clinton.
+ENDTEXT 
+CREATEUNIT
+owner=Indians
+unit=Prtcl AtkV
+veteran=True
+homecity=None
+locations
+82,64
+80,64
+82,66
+82,62
+endlocations 
+@ENDIF 
+@IF
+TURN
+turn=7
+@THEN 
+CREATEUNIT
+owner=Indians
+unit=Prtcl AtkV
+veteran=True
+homecity=None
+locations
+82,64
+80,64
+82,66
+82,62
+endlocations 
+@ENDIF
+@IF
+TURN
+turn=7
+@THEN 
+CREATEUNIT
+owner=Indians
+unit=Robotic Eng.
+veteran=True
+homecity=None
+locations
+82,64
+80,64
+82,66
+82,62
+endlocations 
+@ENDIF 
+
+@IF
+TURN
+turn=9
+@THEN 
+PLAYWAVEFILE
+infantry.wav 
+TEXT
+^Texas veteran armor units raids deep into Russian held
+territory.  Their commander vows. "Y'all Red Commies
+are goin' to find out that war means fightin', and fightin'
+means killin'! Liberty or Death!"
+ENDTEXT 
+CREATEUNIT
+owner=Americans
+unit=MLRS
+veteran=True
+homecity=Dallas
+locations
+37,3
+36,4
+32,2
+35,6
+endlocations 
+@ENDIF
+@IF
+TURN
+turn=9
+@THEN
+CREATEUNIT 
+owner=Americans
+unit=MBT
+veteran=True
+homecity=Dallas
+locations
+37,3
+36,4
+32,2
+35,6
+endlocations 
+@ENDIF 
+
+@IF
+CITYTAKEN
+city=Iraqi NWO Depot
+attacker=Americans
+defender=Iraqis
+@THEN
+TEXT
+^^Major Iraqi NWO Depot falls to Americans
+^Saddam Hussein's frustration is again heard over all frequencies.
+ENDTEXT
+PLAYWAVEFILE
+Drumbn.wav
+@ENDIF
+
+@IF
+CITYTAKEN
+city=Mexico City
+attacker=Americans
+defender=Mexicans
+@THEN
+TEXT
+^^Mexican Capitol falls to U.S.
+^Mexico mobilizes all available 
+brigades to retake and liberate the capitol.
+ENDTEXT
+MOVEUNIT
+unit=ANYUNIT
+owner=Mexicans
+maprect
+35,90, 75,90, 75,120, 35,120
+moveto
+54,110 
+numbertomove=ALL
+@ENDIF 
+
+@IF
+TURN
+turn=16
+@THEN 
+PLAYWAVEFILE
+rnd.wav 
+TEXT
+^^American R and D Breakthrough
+^American engineers, in a developmental breakthrough, produce 
+four prototype FASE military vehicles in Dreamland, Nevada.  A FASE 
+Aircraft and two FASE attack vehicles.
+ENDTEXT
+CREATEUNIT
+owner=Americans
+unit=FASE Craft
+veteran=YES
+homecity=none
+locations
+35,63
+endlocations
+@ENDIF
+@IF
+TURN
+turn=16
+@THEN 
+CREATEUNIT
+owner=Americans
+unit=FASE AtkV
+veteran=YES
+homecity=none
+locations
+35,63
+endlocations
+@ENDIF 
+@IF
+TURN
+turn=16
+@THEN 
+CREATEUNIT
+owner=Americans
+unit=FASE AtkV
+veteran=YES
+homecity=none
+locations
+35,63
+endlocations
+@ENDIF 
+
+@IF
+TURN
+turn=21
+@THEN 
+PLAYWAVEFILE
+drumcy.wav
+TEXT
+^Russians Airdrop FASE Attack Regiment into Yellowstone 
+National Park, reinforcing the UN World Heritage Park under
+bio-diversity agreements of the 1990's by then President Clinton.
+ENDTEXT 
+CREATEUNIT
+owner=Russians
+unit=FASE AtkV
+veteran=True
+homecity=None
+locations
+41,39
+42,40
+41,41
+41,37
+endlocations 
+@ENDIF 
+@IF
+TURN
+turn=21
+@THEN 
+CREATEUNIT
+owner=Russians
+unit=Robotic Eng.
+veteran=True
+homecity=None
+locations
+41,39
+42,40
+41,41
+41,37
+endlocations 
+@ENDIF
+
+@IF
+TURN
+turn=21
+@THEN 
+PLAYWAVEFILE
+drumcy.wav
+TEXT
+^Mexicans Airdrop FASE Attack Regiment into Big Bend 
+National Park, reinforcing the UN World Heritage Park under
+bio-diversity agreements of the 1990's by then President Clinton.
+ENDTEXT 
+CREATEUNIT
+owner=Mexicans
+unit=FASE AtkV
+veteran=True
+homecity=None
+locations
+51,87
+49,87
+50,86
+50,88
+endlocations 
+@ENDIF 
+@IF
+TURN
+turn=21
+@THEN 
+CREATEUNIT
+owner=Mexicans
+unit=Robotic Eng.
+veteran=True
+homecity=None
+locations
+51,87
+49,87
+50,86
+50,88
+endlocations 
+@ENDIF
+
+@IF
+TURN
+turn=21
+@THEN 
+PLAYWAVEFILE
+drumcy.wav 
+TEXT
+^Indians Airdrop FASE Attack Regiment into Great Smoky
+National Park, reinforcing the UN World Heritage Park under
+bio-diversity agreements of the 1990's by then President Clinton.
+ENDTEXT 
+CREATEUNIT
+owner=Indians
+unit=FASE AtkV
+veteran=True
+homecity=None
+locations
+82,64
+80,64
+82,66
+82,62
+endlocations 
+@ENDIF 
+@IF
+TURN
+turn=21
+@THEN 
+CREATEUNIT
+owner=Indians
+unit=Robotic Eng.
+veteran=True
+homecity=None
+locations
+82,64
+80,64
+82,66
+82,62
+endlocations 
+@ENDIF
+
+@IF
+TURN
+turn=27
+@THEN 
+PLAYWAVEFILE
+infantry.wav 
+TEXT
+^1st Montanan Fase Attack Vehicle Regimental Commander
+leads his regiment deep into Yukon in retaliation for Russian
+attacks into Yellowstone.
+ENDTEXT 
+CREATEUNIT
+owner=Americans
+unit=FASE AtkV
+veteran=True
+homecity=None
+locations
+37,3
+37,5
+39,3
+35,3
+endlocations 
+@ENDIF 
+@IF
+TURN
+turn=27
+@THEN 
+CREATEUNIT
+owner=Americans
+unit=FASE AtkV
+veteran=True
+homecity=None
+locations
+37,3
+37,5
+39,3
+35,3
+endlocations 
+@ENDIF
+
+@IF
+TURN
+turn=45
+@THEN 
+PLAYWAVEFILE
+rnd.wav 
+TEXT
+^^American R and D Breakthrough
+^American engineers, in a developmental breakthrough, produce 
+two prototype Mechanized Combatant military vehicles in 
+Dreamland Nevada. 
+ENDTEXT
+CREATEUNIT
+owner=Americans
+unit=Mech Combtnt 
+veteran=YES
+homecity=none
+locations
+35,63
+endlocations
+@ENDIF
+@IF
+TURN
+turn=45
+@THEN 
+CREATEUNIT
+owner=Americans
+unit=Mech Combtnt 
+veteran=YES
+homecity=none
+locations
+35,63
+endlocations
+@ENDIF 
+
+@ENDEVENTS

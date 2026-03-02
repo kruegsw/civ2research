@@ -1,0 +1,13 @@
+@SCENARIO
+@width=470
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^^'The Age of Reptiles'
+
+^^Long ago, when giant reptiles ruled the Earth,
+^
+^^It was nothing like this!
+^
+
+@end -- this line must be here!
+

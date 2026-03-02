@@ -1,0 +1,719 @@
+;
+;   CIVILIZATION CITY LIST
+;   Copyright (c) 1995 by MicroProse Software
+;
+;   This file can be altered at your own risk to change
+;   the default names for cities.  Keep in mind that
+;   altering the contents of this file may cause your game
+;   to malfunction.
+;
+;   City names may contain no more than 15 characters.
+;
+
+@ROMANS
+Rome
+Veii
+Antium
+Cumae
+Neapolis
+Pompeii
+Pisae
+Ravenna
+Hispalis
+Viroconium
+Lugdunum
+Lutetia
+Byzantium
+Brundisium
+Syracuse
+Caesaraugusta
+Palmyra
+Jerusalem
+Caesarea
+Tarentum
+Nicomedia
+Seleucia
+Artaxata
+Aurelianorum
+Hippo Regius
+Nicopolis
+Londinium
+Eburacum
+Arretium
+Gordion
+Agrippina
+Cyrene
+Tyrus
+Verona
+Corfinium
+Mediolanum
+Treveri
+Sirmium
+Augustadorum
+Trapezus
+Bagacum
+Lauriacum
+Teurnia
+Curia
+@STOP
+
+@BABYLONIANS
+Babylon
+Ur
+Nineveh
+Ashur
+Ellipi
+Akkad
+Uruk
+Eridu
+Samarra
+Lagash
+Kish
+Nippur
+Shuruppak
+Zariqum
+Sippar
+Izibia
+Larsa
+Nimrud
+Zamua
+Khorsabad
+Hindana
+Tell Wilaya
+Umma
+Adab
+Telloh
+Nina
+Ebla
+@STOP
+
+@GERMANS
+Berlin
+Leipzig
+Hamburg
+Konigsberg
+Frankfurt
+Munich
+Heidelburg
+Nuremberg
+Cologne
+Hannover
+Bremen
+Stuttgart
+Bonn
+Salzburg
+Dortmund
+Brandenburg
+@STOP
+
+@PEACEMAKERS
+New Order
+Trust In Us!
+Pacific States
+Don't Worry
+Peace Operation
+Nuclear Peace
+Pacification
+Power 'r Us
+Zone of Peace
+Peace Treaty
+Happy Peace
+People's Peace
+Eternal Peace
+We're the Best
+Peaceful Way
+La Paz
+Friendenschaft
+Somos Amigos!
+Peace Now
+More Peace
+Mas Paz
+Paix
+Stay at Peace
+Peace'n Peace
+Pizza Peace
+Peace????
+Not War, please
+Peaceville
+Final Peace
+@STOP
+
+@AMERICANS
+Washington
+New York
+Boston
+Philadelphia
+Atlanta
+Chicago
+San Francisco
+Buffalo
+St. Louis
+Detroit
+New Orleans
+Baltimore
+Denver
+Cincinnati
+Dallas
+Los Angeles
+Kansas City
+San Diego
+Richmond
+Las Vegas
+Phoenix
+Seattle
+Albuquerque
+Portland
+Minneapolis
+@STOP
+
+@HYPNOTISTS
+Mental City
+Good Mind
+Mente
+ESP
+Relaxation
+Superior Mind
+Loto Position
+Zen
+Meditation
+Philosophy
+Medium
+Psyquiatrist
+Psi City
+Buda City
+Psiqueville
+I don't mind
+Cortex
+Encephalus
+Yoga
+Prana
+Tibetan Monk
+Levitation
+Psion
+Wise
+Nirvana
+Karma
+Samsara
+Satori
+@STOP
+
+@INDIANS
+Delhi
+Bombay
+Madras
+Bangalore
+Calcutta
+Lahore
+Karachi
+Kolhapur
+Jaipur
+Hyderabad
+Bengal
+Chittagong
+Punjab
+Dacca
+Indus
+Ganges
+@STOP
+
+@RUSSIANS
+Moscow
+St. Petersburg
+Kiev
+Minsk
+Smolensk
+Odessa
+Sevastopol
+Tblisi
+Sverdlovsk
+Yakutsk
+Vladivostok
+Novgorod
+Krasnoyarsk
+Riga
+Rostov
+Astrakhan
+Kharkov
+Grozny
+Dnepropetrovsk
+Maikop
+Kursk
+Kuibyshev
+Magnitogorsk
+Uralsk
+Kazan
+Vologda
+Murmansk
+Vitebsk
+Batum
+Tiflis
+Bryansk
+Tula
+Kalinin
+Yaroslavl
+Krasnovodsk
+@STOP
+
+@ZULUS
+Zimbabwe
+Ulundi
+Bapedi
+Hlobane
+Isandhlwana
+Intombe
+Mpondo
+Ngome
+Swazi
+Tugela
+Umtata
+Umfolozi
+Ibabanago
+Isipezi
+Amatikulu
+Zunguin
+@STOP
+
+@ULTRARICHES
+Rich City
+Dollars
+Fortune
+Business
+Stockmarket
+Bankers
+Penny
+Sterling
+Pesetas
+Deutsch Mark
+Franc
+Yen
+Bankrupt
+Worl Bank
+I Want Money
+Mehr Geld
+Argent c'est moi
+Money, money
+It's Mine!!
+Quiero pasta!
+@STOP
+
+@AZTECS
+Tenochtitlan
+Teotihuacan
+Tlatelolco
+Texcoco
+Tlaxcala
+Calixtlahuaca
+Xochicalco
+Tlacopan
+Atzcapotzalco
+Tzintzuntzen
+Malinalco
+Tula
+Tamuin
+Teayo
+Cempoala
+Chalco
+Tlalmanalco
+Ixtapaluca
+Huexotla
+Tepexpan
+Tepetlaoxtoc
+Chiconautla
+Zitlaltepec
+Coyotepec
+Tequixquiac
+Jilotzingo
+Tlapanaloya
+Tultitlan
+Ecatepec
+Coatepec
+Chalchihuites
+Chiauhtia
+Chapultepec
+Itzapalapa
+Ayotzinco
+Iztapam
+@STOP
+
+@CHINESE
+Beijing
+Shanghai
+Canton
+Nanking
+Tsingtao
+Xinjian
+Chengdu
+Hangchow
+Tientsin
+Tatung
+Macao
+Anyang
+Shantung
+Chinan
+Kaifeng
+Ningpo
+Paoting
+Yangchow
+@STOP
+
+@ENGLISH
+London
+York
+Nottingham
+Hastings
+Canterbury
+Coventry
+Warwick
+Newcastle
+Oxford
+Liverpool
+Dover
+Brighton
+Norwich
+Leeds
+Reading
+Birmingham
+Richmond
+Exeter
+Cambridge
+Gloucester
+Manchester
+Bristol
+Leicester
+Carlisle
+Ipswich
+Portsmouth
+Berwick
+@STOP
+
+@BLOODYSEEKERS
+Warrior Zeal
+Bones
+Skull
+Masacre
+Genocide
+Smashing Eggs
+Hammer
+Boom Boom
+Blow Up
+Terrorists
+Judgement Day
+Grrrrrr!
+Shut up!
+Here rules me!
+Stop talking!
+I was joking...
+@STOP
+
+@SHAMANS
+Eye Strain
+Miopia
+Headache
+Stomache
+Aspirin
+Vitamins
+Influenza
+Cold
+Rheumatism
+Illnes
+Malaria
+Yellow Fever
+Termal Waters
+Arthritis
+Diarrhea
+Cough
+Obesity
+Scarlatina
+Gonorrhea
+Penicillin
+Parkinson
+Rabies
+Sickness
+Faint
+Shaman
+Sanation
+@STOP
+
+@SMILING FACES
+Raw Fish
+Yakuza
+Jacuzzi
+Banzai!
+Laughing City
+Smile or Die
+Happy People
+Yellow Menace
+Stabbing Smiles
+Yoko Ono
+Samurai
+Sony Records
+He He He!
+Sayonara Baby
+Boiled Rice
+Yamamokoshita
+Happy People
+Suzuki Motors
+Shogun City
+Sepukku
+Harakiri
+Chin Chin
+Kawasaki
+Yokito Lakk
+Yellow Smile
+@STOP
+
+@VIKINGS
+Trondheim
+Kaupang
+Uppsala
+Hladir
+Aarhus
+Viborg
+Roskilde
+The Udal
+Lindholm
+Jorvik
+Westness
+Jarrow
+Skara
+Ravning Enge
+Birka
+Jarlshof
+Sigtuna
+Odense
+Lunde
+Larne
+Hedeby
+Aldeigjuborg
+Holmgard
+Nonnebakken
+Ribblehead
+Thwaite
+Askrigg
+Trelleborg
+Risby
+Jelling
+Vorbasse
+Fyrkat
+Kvivik
+@STOP
+
+@SPANISH
+Madrid
+Seville
+Toledo
+Cordoba
+Valencia
+Salamanca
+Barcelona
+Valladolid
+Saragossa
+Cadiz
+Bilbao
+Granada
+Malaga
+Pamplona
+Vigo
+Avila
+Leon
+Burgos
+Oviedo
+Santander
+Ciudad Rodrigo
+Calatrava
+Cartagena
+@STOP
+
+@ARABS
+Baghdad
+Mecca
+Samarra
+Damascus
+Tiflis
+Tangier
+Raqqa
+Beirut
+Basra
+Medina
+Riyadh
+Mosul
+Beirut
+Algiers
+Tunis
+Fez
+Cordoba
+Palmyra
+Shiraz
+Aden
+Qum
+Qazvin
+Barqa
+Tripoli
+Mahdia
+Rabat
+@STOP
+
+@CARTHAGINIANS
+Carthage
+Utica
+Malaca
+Caralis
+Panormus
+Leptis Parva
+Cartenna
+Rusicade
+Gades
+Rusucurru
+Girba
+Leptis Magna
+Carthago Nova
+Oea
+Tingis
+Rusaddit
+Alalia
+Selinus
+Himera
+Akragas
+Theveste
+Saguntum
+@STOP
+
+@SIOUX
+Little Bighorn
+Wounded Knee
+Cedar Creek
+Slim Buttes
+Three Forks
+Stony Lake
+Killdeer
+Bear Paw
+Big Mound
+Wood Lake
+Dead Buffalo
+Point of Rocks
+Raging Brook
+Running Bear
+Silver Moon
+Wildcat Valley
+Great River
+Seven Brothers
+Snake Canyon
+First Wind
+Yellowtree
+Chief's Crag
+Morning Rock
+@STOP
+
+@INCAS
+Cuzco
+Quito
+Chan Chan
+Chucuito
+Ayaviri
+Vilcashuaman
+Acari
+Tambo Colorado
+Jauja
+Pumpu
+Huanuco Pampa
+Cajamarca
+Cusibamba
+Tumbes
+Tomebamba
+Pucara
+Machu Picchu
+Pisac
+Limatambo
+Raqchi
+Cotopachi
+Ica
+Inkawasi
+Lurin
+Tarma Tambo
+Paramonga
+Ancon
+@STOP
+
+@ECOLOGISTS
+Greenpeace
+Recycling
+Protect Whales
+Nuclear No#?!
+Rainbow Warrior
+Die Grüne
+Los Verdes
+Eco Logic
+Green Grass
+Earthquake
+Greenland
+I like green
+No rubbish
+Toxic Waste
+Solar City
+Sunny People
+Esmerald
+Turquesa
+Hierba verde
+Grünne Leute
+Greenville
+More Green
+Vegetarian
+Green Milk
+Sunflower
+Flower City
+Tree City
+Rose
+Violet
+Ecologia
+@STOP
+
+@EXTRA
+Naples
+Issus
+Cunaxa
+Cremona
+Cannae
+Capua
+Turin
+Genoa
+Crete
+Verona
+Salamis
+Lisbon
+Hamburg
+Prague
+Salzburg
+Bergen
+Venice
+Milan
+Ghent
+Pisa
+Dublin
+Toronto
+Melbourne
+Sydney
+@STOP
+
+
+@BARBARIANS
+17
+Huns
+Visigoths
+Ostrogoths
+Sueves
+Angles
+Saxons
+Franks
+Jutes
+Burgundians
+Avars
+Vandals
+Alans
+Bulgars
+Magyars
+Frisians
+Picts
+Langobardi
+
+
+@end

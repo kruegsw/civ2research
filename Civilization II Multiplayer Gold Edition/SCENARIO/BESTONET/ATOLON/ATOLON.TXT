@@ -1,0 +1,23 @@
+@SCENARIO
+@width=520
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^Try this scenario, in which seven civilizations struggle to survive:
+^  The Hypnotists are a civilization with extrasensory powers.
+^  The Bloodyseekers are a race of warriors.
+^  The Ecologists want this planet to be like a garden.
+^  The Peacemakers bring peace, but back their actions with nuclear weapons.
+^  The Ultrariches are a wealthy nation.
+^  The Shamans want to heal the whole world.
+^  The Smiling Faces believe the rest of the world should smile like them.
+^
+^Don't forget the Barbarians, a genetically-engineered race waiting for
+ "masters" from space. These masters are travelling inside a great meteor
+ that will destroy everything on the planet, unless someone deactivates the
+ radio control in the Barbarian capital. Hypnotist astrologers have predicted
+ that a meteor is due in 1000 A.D. Coincidence?
+^
+^ Unify the world under your rule and stop the Barbarians!
+^
+@end -- this line must be here!

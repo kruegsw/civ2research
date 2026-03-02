@@ -1,0 +1,179 @@
+
+@CREDITS
+
+
+
+
+
+
+
+
+
+
+
+
+
+^CIVILIZATION II ACKNOWLEDGEMENTS
+
+
+
+
+^GAME DESIGN
+Brian Reynolds
+with Douglas Caspian-Kaufman
+and Jeffery L. Briggs
+
+^ORIGINAL DESIGN
+Sid Meier
+with Bruce Shelley
+
+^PRODUCER
+Jeffery L. Briggs
+
+^PROGRAMMERS
+Brian Reynolds,
+Jason S. Coleman, and
+Chris Taormino
+
+^ART DIRECTOR
+Michael Haire
+
+^GRAPHIC ARTISTS
+Barbara Bents Miller
+Stacey Clark Tranter
+Murray Taylor
+Barbara Jeznach
+Nicholas Rusko-Berger
+Bob Kathman
+Michael Bazzell
+Jerome Atherholt
+Frank Vivirito
+Katharine Seman
+Michael Bates
+Betsy Kirk
+Guy Sparger
+Chris Tamburrino
+Mike Reis
+Brian Martel
+Todd Brizzi
+
+^MUSIC BY
+Jeff Briggs
+Roland Rizzo
+
+^SOUND DESIGNERS
+Mark G. Reis
+with Ken Lagace
+
+^RECORDING ENGINEERS
+Mark G. Reis
+Roland Rizzo
+
+^SOUND PROGRAMMER
+David Evans
+
+^CIVILOPEDIA DESIGNER AND WRITER
+David Ellis
+
+^WONDERS OF THE WORLD MOVIES
+Michael Ely
+Timothy Train
+
+^GAME DESIGN ASSISTANCE
+Mick Uhl
+
+^SMEDS SYSTEM PROGRAMMERS
+William F. Denman, Jr.
+Paul L. Rowan
+with
+Lee Baldwin
+Wayne Harvey
+Jason Snyder
+John O'Neill
+
+^QUALITY ASSURANCE
+Jennifer MacLean, Lead Tester
+Steve Moseley
+Mike Barker
+Chris Bowling
+James King
+Tammy Talbott
+Bob Abe
+Russell Clark
+Don Emmel
+David Ginsburg
+Jim Hendry
+Mike Prendergast
+Matt Showalter
+Vaughn Thomas
+Brian Vargo
+Jeff Dinger
+Jim Tricario
+
+^MANUAL WRITERS
+Jonatha Caspian-Kaufman
+with M. Christine Manley
+and John Possidente
+
+^LAYOUT ARTISTS
+Joe Morel
+Cesar Novoa
+
+^MARKETING PRODUCT MANAGER
+Lindsay Riehl
+
+^VIDEO TOWN COUNCIL
+Written and Directed by: Michael Ely
+Assistant Director: Timothy Train
+
+Military Advisor: Brad Howard
+Science Advisor: Thomas Seibert
+Trade Advisor: Spencer Humm
+Foreign Advisor: April Cantor
+Attitude Advisor: Frank Wagner
+
+Hair, Makeup, and Wardrobe by: Ellen Tannen
+Casting by: Steele Casting
+Costumes by: Rutledge Costume Co.
+
+Taped on location at Big Shot Productions,
+Baltimore, Maryland
+
+^Stock footage provided by:
+The WPA Film Library
+Hot Shots Cool Cuts, Inc.
+Archive Films
+Video Tape Library, LTD
+National Archives
+The United States Department of the Interior
+(Bureau of Reclamation)
+
+^Special thanks to
+Photographer Andy Pernick
+
+^Stock photographs provided by:
+Archive Photos
+Reuters/UPI/The Bettman Archive
+The Walters Art Gallery, Baltimore MD
+The Corel Stock Photo Library
+Tony Stone Images
+
+^Henry V monologue in Shakespeare's Theater
+performed by James Gallagher
+
+^Character motions
+created from live actors using
+Adaptive Optics Associates, Inc.'s
+(Cambridge, Massachusetts USA)
+MultiTrax (tm) Optical motion capture system.
+
+^SPECIAL THANKS TO
+Paula Scarfone
+Marcia Foster
+Elizabeth Marquardt
+Jonathon Buckel
+Jill and Ro Reynolds
+and Tony Parks
+
+
+@END

@@ -1,0 +1,6 @@
+@SCENARIO
+@width=540
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+The Hidden Foundation is the most advanced civilization. The UN has forced a blockade against them to prevent their global domination. The G-Philes search the Martian influence in the planet. Meanwhile, the Revolutionaries are gaining more and more adepts to their cause. Maybe the Freaks, with their funny Monster units, and the Paranoids, affected by the Paranoia illness, might agree to wipe out the rest of civs and implant a New Order.
+

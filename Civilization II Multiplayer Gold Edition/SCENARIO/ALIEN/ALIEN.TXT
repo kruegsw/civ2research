@@ -1,0 +1,25 @@
+@SCENARIO
+@width=470
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^"No one would have believed in the last years of the twentieth century
+  that this world was being watched keenly and closely by intelligences
+  greater than man's..."
+^    -H. G. Wells, War Of The Worlds
+^
+^Recommended:  Any human nation
+^
+^Bit Too Easy:     Hodads
+^
+^OBJECT: To conquer the world if Hodads (protagonists), otherwise,
+ to prevent it.
+^
+^^SPECIAL NOTES
+^No technologies may be acquired by conquest.
+^Negotiations with the Hodads are not permitted.
+^This scenario is tough to win.
+^Tip: F.R.A.A.G technology may be the surest way to human victory.
+^
+@end -- this line must be here!
+

@@ -1,0 +1,178 @@
+;
+;   CIVILIZATION CITY LIST
+;   Copyright (c) 1997 by MicroProse Software
+;
+;   This file can be altered at your own risk to change
+;   the default names for cities.  Keep in mind that
+;   altering the contents of this file may cause your game
+;   to malfunction.
+;
+;   City names may contain no more than 15 characters.
+;
+
+@TRIBES OF LIFE
+Solanar
+Norport
+Soest
+Panjang
+Raban
+Lorn
+Blademarsh
+Tombstone
+Thanelorn
+Minnlow
+Dragonfall
+Fangrock
+Ebonsway
+Rockwedge
+Iron Wall
+Crag Keep
+Brunn
+Speger
+Megamoria
+Rostock
+@STOP
+
+@TRIBES OF NATURE
+Stonegate
+Bromburg
+Bantanu
+Turlock
+Amondon
+Rastenford
+Darkhold
+Jet
+Deathford
+Alairium
+Wynd
+Sorin
+Asengard
+Asbraun
+Southold
+Braunweig
+Posen
+Geras
+Saradash
+Fortalle
+@STOP
+
+@TRIBES OF SORCERY
+Farmist
+Konstanz
+Jagan
+Carn Sul
+Nightwath
+Bladewater
+Anamarathor
+High Top
+Icetop
+Pyre
+Axhome
+Hearth
+Nymax
+Jogrin
+Tanquil
+Mijnduin
+Bloodrock
+Fellwood
+Mishran
+Hillfang
+@STOP
+
+@TRIBES OF CHAOS
+Firepeak
+Kufstein
+Tier
+Tyrlinith
+Ashwall
+Arie
+Blade Stone
+Stonehome
+Dortmond
+Vordinax
+Linz
+Durwrath
+Midnight
+Parch
+Abanax
+Stony Peak
+Steyr
+Kempen
+Leer
+Adderax
+@STOP
+
+@TRIBES OF DEATH
+Doomcastle
+Mourndar
+Hellgate
+Straatus
+Finnrock
+Trier
+Tetrehahn
+Blackstone
+Fire Keep
+Ozenwall
+Kraang
+Azurtfall
+Aachen
+Caradas
+Ailearth
+Tiamut
+Darkmoor
+Basel
+Ebony
+Melegok
+@STOP
+
+
+@EXTRA
+Vallis
+Ultigar
+Raug Wall
+Maimz
+Creymona
+Issus
+Cunaxa
+Cremona
+Cannae
+Capua
+Turin
+Genoa
+Crete
+Verona
+Salamis
+Lisbon
+Hamburg
+Prague
+Bergen
+Venice
+Milan
+Ghent
+Pisa
+Dublin
+@STOP
+
+
+@BARBARIANS
+17
+Huns
+Visigoths
+Ostrogoths
+Sueves
+Angles
+Saxons
+Franks
+Jutes
+Burgundians
+Avars
+Vandals
+Alans
+Bulgars
+Magyars
+Frisians
+Picts
+Langobardi
+
+
+@end

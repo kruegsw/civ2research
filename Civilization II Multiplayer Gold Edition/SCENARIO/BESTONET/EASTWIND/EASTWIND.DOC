@@ -1,0 +1,163 @@
+
+		  A Scenario for Microprose Civilization II
+
+			      "East Wind, Rain"
+
+	    (The Pacific War -- December 1941 to September 1945)
+
+			  Version 1.2.0, 1996 May 05
+
+
+EASTWIND.DOC: Table of Contents
+-------------------------------
+1. Description
+2. Installation *** IMPORTANT - Please read about RULES.TXT! ***
+3. Changes from version 1.1.1
+4. Bugs
+5. Proposed enhancements
+6. Feedback
+7. Acknowledgements
+8. Bibliography
+
+1. Description
+--------------
+This scenario covers World War II in the Pacific from December 1941
+to September 1945.  Japan is the protagonist, already involved in
+an ongoing war with China.  To win, Japan must conquer and hold a
+large portion of the Southwest Pacific.  The other civs must prevent
+this.
+
+This version represents a major improvement over version 1.1.1.
+
+2. Installation
+---------------
+The file EWIND120.ZIP contains 4 files:
+1.  EASTWIND.DOC - the file you're reading now.
+2.  EASTWIND.RUL - alternate RULES.TXT file for this scenario
+3.  EASTWIND.SCN - copy to your CIV2 directory
+4.  EASTWIND.TXT - copy to your CIV2 directory
+
+IMPORTANT: I recommend you use the RULES.TXT file provided with this
+	   scenario in place of the RULES.TXT that comes with CIV2.
+	   Backup your original RULES.TXT file and replace it with
+	   EASTWIND.RUL.  See the "Changes from version 1.1.1" section
+	   for details.
+
+Copy the files as instructed, run CIV2, and load the scenario,
+"eastwind.scn."
+
+3. Changes from version 1.1.1
+-----------------------------
+
+->  Fixed the "No Pearl Harbor" bug.  The computer Japan now attacks
+    aggressively on turn 1.
+
+->  EASTWIND.RUL file has been added to replace your RULES.TXT file for
+    just this scenario.  Changes include:
+    - leadership characteristics
+    - carriers have attack=0 to prevent futile attacks by the computer
+    - fighters and bombers emphasise naval superiority (*crucial*)
+
+->  Northwest Borneo is now British.
+
+->  "Charles de Gaulle" is spelled correctly.  My profuse apologies to
+    the people of France.
+
+->  Japan starts with mobile warfare, but still has mostly cavalry and
+    just a couple of tanks so far as in v1.1.1.
+
+->  I have modified the treaties and attitudes between the civs.
+
+->  Los Angeles has a manufacturing plant.  (Duh!)  I also modified the
+    capital builds of some other cities.
+
+4. Bugs
+-------
+->  Plunder bug: all of a civ's money is plundered with the capture of 
+    a single city.  This only happens with my scenario, not the wwii.scn
+    released with the game, nor with random games.  I don't know why but
+    when I find out it will be fixed and starting money altered.
+
+->  Government switching forbidden bug: discovery of a new government 
+    type allows the human player to revolt, even though government 
+    switching is forbidden.  I've never observed the computer taking
+    advantage of this, but I was able to when I played China and acquired
+    Communisim from the Russians.  It should not be allowed to happen.
+
+->  The Allies can win by retiring on turn 1; however, that is not the
+    point.  The point is to see how well you can do in the long haul.
+    Aim for total victory, no matter which country you play.  World War II
+    was a battle for the survival of entire nations and peoples.
+
+5. Proposed enhancements for later verions
+------------------------------------------
+->  I need to determine if any of French Indochina and French cities
+    were Vichy, and have those ones controlled by Japan initially.
+
+->  What ships did the US Navy bring from the Atlantic after Pearl,
+    besides Yorktown?  Have them in the far SE corner of the map at 
+    the start of the game.  (I think the battleship USS Washington came
+    with Yorktown, gotta find out.)
+
+->  I need to change the picture of Sitting Bull to the Abe Lincoln
+    graphic but I don't know how.  The scenario editor has restrictions
+    on what combinations of countries can exist at the start.  Does anyone
+    know how?  Let me know!  (See Feedback.)
+
+->  Needs more research on initial disposition of ground troops by all
+    nations.
+
+->  Add the civilization advance, "Divine Wind," or something.  It
+    would have "Flight" and "Fundamentalism" as prerequisites, and it
+    would allow construction of "Kamikaze Fighter" units.
+
+->  Kamikaze fighters: att=15/def=0/move=10/no air-to-air/sees 2/like 
+    a missile it is used up after one shot.  Could only be built by 
+    fundamentalist gov't.  Anyone want to create a good icon for me?
+
+6. Feedback
+-----------
+e-mail: Don Melsom <don_melsom@mindlink.bc.ca>
+
+All historical innaccuracies are entirely my own fault as I do not
+have time to check everything in detail.  If you e-mail me a known
+innaccuracy, and I can verify it from a published source, I'll add
+the change to a later version.
+
+Write me about things not listed in this file: bugs, historical 
+innaccuracies in the setup, gameplay imbalances you observe, and 
+other helpful comments -- especially useful would be figures on 
+historical troop deployments or references to the same.
+
+Let me know what country you played, what difficulty, the ending
+date, what score you obtained (objectives and %), and briefly what 
+you observed about the initial setup and computer strategy that may
+have seemed odd or wrong.
+
+I'll also be monitoring "comp.sys.ibm.pc.games.strategic" regularly 
+while I'm working on updated versions and I will post new versions 
+to "alt.binaries.games."
+
+Some of you may have helped playtest version 1.1.1 that was posted
+to Usenet and uploaded to CompuServe.  Many thanks!
+
+7. Acknowledgements
+-------------------
+Production, Direction, Programming
+	Don Melsom
+
+Research gophers
+	Don Melsom
+	Kal Skulski
+	Jim Douglas
+	Randy Trinh
+
+Playtesting team
+	Don Melsom
+	Kal Skulski
+
+8. Bibliography
+---------------
+->  Gerhard Weinberg, "A World At Arms," Cambridge University
+    Press, Cambridge, 1994.
+

@@ -1,0 +1,22 @@
+@SCENARIO
+@width=580
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^It took 10 years to recover from the financial crisis of 1999, when the U.S. market 
+collapsed and took the rest of the world with it.  The result was a polarization of  
+political and cultural values around the world.  
+^
+^The U.S., after 12 years of failed political leadership, turned to a fundamental 
+Christian bias to re-establish its values and strength.  Much of the rest of the world, to 
+avoid dependance on a re-emerging U.S., formed the "New World Order" envisioned by 
+Clinton, Gore and their international financial masters.  
+^
+^Within the New World Order, alliances formed to contain the U.S., who found itself 
+surrounded by hostile neighbors which included : (1) The Russians, assisting the Canadians 
+in developing the Yukon. (2) The Indians, assisting Cuba to emerge from Marxist poverty. 
+(3) The Iraqis, also assisting Cuba and the Caribbean.  (4) The Mexicans, who whole-heartedly 
+joined the NWO and built up a respectable military.  (5) The Turks, who assisted the Mexicans 
+and had a strong presence on the Yucatan.  All of these allied together and maintained a tenuous 
+peace with the U.S.  Can the U.S. be contained? Will there be peace?  You decide.
+^
+@end -- this line must be here! 

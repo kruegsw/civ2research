@@ -1,0 +1,25 @@
+@SCENARIO
+@width=540
+@title=%STRING0
+^^Length: %STRING1 to %STRING2	
+Sometime in the far off future, the human race develops the technology to travel
+between the stars.  Not sure of what they will find on their voyage to the unknown,
+the humans assemble the most elite troops on the planet into a single force aptly named the
+Galaxial Troops.  With high hopes they set out to the the closest known planet in another
+galaxy- Jharlei: The Ice Planet.  What they found on this seemingly barren world turned their
+historic mission into a fight for survival.  An ancient alien force called the Kydextrians
+landed before the humans.  They have come to Jharlei in search of a rare
+element, called Tronadium, that is required by the royal egg-layer.  This Royal Kydextrian 
+Hive Empress, named Gila by the native Ventry race, is the key to the survival of these hideous
+xenophages.  The Kydextrians have begun their quest to rid the planet of any other life and claim 
+the planet for their own.  
+As the Ventry Nation, your goal is to simply survive and fend off this alien menace. 
+As the Galaxial Troops, your mission is to stay alive long enough to rebuild another spacecraft to
+return home.  Finally, as the Kydextrians...kill or be killed. 
+^^
+(Contact between the Kydextrians and any other civilization is strictly forbidden!)
+(If playing as the Galaxial Troops, you are the only civ able to get to space flight. . .
+do not give the Ventry any techs for space travel.)
+@end -- this line must be here!
+
+ 

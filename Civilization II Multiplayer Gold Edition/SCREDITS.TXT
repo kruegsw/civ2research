@@ -1,0 +1,114 @@
+
+@CREDITS
+
+
+
+
+
+
+
+
+
+
+
+
+
+^CONFLICTS IN CIVILIZATION
+^Civilization II Scenario Disk
+
+
+
+^PRODUCER
+Kerry Wilkinson
+
+^GAME DESIGN
+Mick Uhl
+
+^ART DIRECTOR
+Michael Haire
+
+^GRAPHIC ARTISTS
+Barbara Bents Miller
+Stacey Clark Tranter
+Barbara Jeznach
+Michael Bazzell
+
+^PROGRAMMING
+Kerry Wilkinson
+
+^MUSIC BY
+Roland Rizzo
+
+^SOUND DESIGNERS
+Mark Cromer
+Mark G. Reis
+
+^RECORDING ENGINEERS
+Mark G. Reis
+Roland Rizzo
+
+^MULTIMEDIA
+Michael Ely
+
+^BEST OF THE NET SCENARIOS
+Kevin Bromer -  GulfWar
+Jeppe Grue - Brit1011
+Eric Hartzell - CrosCres
+Antonio Leal - Atolon, Zeus
+Tim McBride - Kesh
+Don Melsom - EastWind
+Mike Regan - Rebel
+
+^QUALITY ASSURANCE
+Chrispy Bowling, Lead Tester
+Robin Pole, 2nd
+Wm. David Possidente, 2nd
+Bob Abe
+Brad Christman
+Guy LaMarr
+Dan McJilton
+Joe Morel
+Jun Yun
+
+^ADDITIONAL TESTING
+Kathy Abe
+Jim Crawley
+Dave Ellis
+Steve Purdie
+Rick Saffery
+
+^MANUAL WRITERS
+John Possidente
+
+^TECHNICAL SUPPORT
+Tim Goodlet
+
+^MARKETING SERVICES
+Kathryn Lynch
+
+^GRAPHIC SERVICES
+Jerome Paterno
+Rick Rasay
+Reiko Yamamoto
+
+^CUSTOMER SUPPORT AND TESTING
+Gabriel Turk
+Michael Wedderburn
+Calvin Rien
+
+^PUBLIC RELATIONS
+Holly Hartz
+Kathy Sanguinetti
+
+^Special thanks to
+Tom Nichols
+Chris Deyo
+Derek McLeish
+Ken Allen
+Janet Dickerman
+Marisa Ong
+Kip Welch
+Anu Kirk - Desper Technologies
+Murray Taylor
+
+@END

@@ -1,0 +1,643 @@
+;
+;   CIVILIZATION GAME DATA
+;   Copyright (c) 1997 by MicroProse Software
+;
+;   This file can be altered at your own risk to change
+;   the rules of the game.  Keep in mind that altering the
+;   contents of this file may cause your game to malfunction,
+;   particularly if you use values outside the specified
+;   ranges.
+;
+
+;
+;   Cosmic Principles
+;
+;   The following numbers control various key rules
+;   of the game.  GREAT discretion is advised if you
+;   opt to change these.  Values too far out of the
+;   expected range can cause the game to behave strangely.
+;
+@COSMIC
+3       ; Road movement multiplier
+2       ; 1 in x chance Trireme lost (mod. by Seafaring, Navigation)
+2       ; # of food each citizen eats per turn
+10      ; # of rows in food box (rows * city_size+1 = box)
+10      ; # of rows in shield box
+1       ; Settlers eat (govt <= Monarchy)
+2       ; Settlers eat (govt >= Communism)
+7       ; City size for first unhappiness at Chieftain level
+14      ; Riot factor based on # cities (higher factor lessens the effect)
+8       ; Aqueduct needed to exceed this size
+12      ; Sewer System needed to exceed this size
+10      ; Tech paradigm (higher # slows research)
+20      ; Base time for engineers to transform terrain (x2)
+3       ; Monarchy  pays support for all units past this
+3       ; Communism pays support for all units past this
+10      ; Fundamentalism pays support for all units past this
+0       ; Communism is equivalent of this palace distance.
+50      ; Fundamentalism loses this % of science
+50      ; Percent shield penalty for production type change
+10      ; Max paradrop range
+75      ; Mass/Thrust paradigm (increasing slows spaceship time)
+5       ; Max effective science rate in fundamentalism (x10, so 5 = 50%)
+
+;
+;   Civilization Advances
+;
+;   Ai Value, Civilized Modifier, Preq1, Preq2, Epoch, Category
+;
+;     Ai Value = Basic value at which computer players
+;                view this advance (used in determining
+;                which discovery to pursue, which to
+;                acquire during exchanges, and value of
+;                gift during diplomacy).
+;     Modifier = Modifier to value based on the "civilized"
+;                aspect of a leader's personality.  Positive
+;                values increase value for civilized leaders,
+;                decrease it for militaristic.  Negative
+;                values vice versa.
+;     preq1, preq2 = Prerequisites
+;
+;     Epoch = historical period
+;             0 = Ancient
+;             1 = Renaissance
+;             2 = Industrial Revolution
+;             3 = Modern
+;
+;     Category = Knowledge category
+;             0 = Military
+;             1 = Economic
+;             2 = Social
+;             3 = Academic
+;             4 = Applied
+;
+@CIVILIZE
+Alchemy,            4,-2,  Cmp, nil, 0, 3    ; AFl
+Alphabet,           5, 1,  nil, nil, 0, 3    ; Alp
+Animism,            3,-2,  Uni, no,  0, 3    ; Amp
+Astrology,          4, 1,  Mys, Mat, 0, 3    ; Ast
+Eldritch Lore,      4,-1,  Ast, nil, 0, 3    ; Ato
+User Def Tech A,    3, 0,  no,  no,  0, 0    ; Aut
+Banking,            4, 1,  Rep, Tra, 0, 1    ; Ban
+Bridge Building,    4, 0,  Iro, Cst, 0, 4    ; Bri
+Bronze Working,     6,-1,  nil, nil, 0, 4    ; Bro
+Ceremonial Burial,  5, 0,  nil, nil, 0, 2    ; Cer
+Greater Fauna Lore, 5,-1,  X4,  nil, 0, 3    ; Che
+Chivalry,           4,-2,  Feu, nil, 0, 0    ; Chi
+Code of Laws,       4, 1,  Alp, nil, 0, 2    ; CoL
+Healing,            5,-1,  Ast, Phi, 0, 3    ; CA 
+Lesser Enchanments, 5,-1,  no,  nil, 0, 3    ; Cmb
+Extra Advance 4,    3, 0,  no,  no,  0, 0    ; Cmn 
+Metamorphosis,      4, 1,  E1,  Cst, 0, 3    ; Cmp
+Extra Advance 6,    3, 0,  no,  no,  0, 0    ; Csc 
+Construction,       4, 0,  Mas, Cur, 0, 4    ; Cst
+Pantheism,          4, 0,  Cer, Env, 0, 3    ; Cor
+Currency,           4, 1,  Bro, nil, 0, 1    ; Cur
+Extra Advance 5,    3, 0,  no,  no,  0, 0    ; Dem
+Ecognomics,         4, 1,  Uni, Ban, 0, 1    ; Eco
+Rune Lore,          4, 0,  X6,  Lit, 0, 3    ; E1 
+User Def Tech C,    3, 0,  no,  no,  0, 0    ; E2 
+Sea Mastery,        4, 0,  Iro, U3,  0, 3    ; Eng
+Shamanism,          3, 1,  nil, nil, 0, 3    ; Env
+Thaumaturgy,        2,-1,  The, X6,  0, 3    ; Esp
+Tactics,            5, 0,  Tac, Uni, 0, 0    ; Exp
+Feudalism,          4,-1,  War, nil, 0, 0    ; Feu
+Wizardry,           4,-1,  AFl, nil, 0, 3    ; Fli
+Extra Advance 3,    3, 0,  no,  no,  0, 0    ; Fun
+Glyphs,             3, 0,  no,  no,  0, 3    ; FP 
+Life Magic,         100, 2,  NF,  nil,  1, 2    ; Gen
+User Def Tech B,    3, 0,  no,  no,  0, 0    ; Gue
+Chaos Magic,        100,-2,  NF,  nil,  1, 0    ; Gun
+Sorcery,            100,-1,  NF,  nil,  1, 4    ; Hor
+Extra Advance 1,    3, 0,  no,  no,  0, 0    ; Ind
+Life Lore,          6, 0,  Gen,  Ato, 1, 2    ; Inv
+Iron Working,       5,-1,  Bro, War, 0, 4    ; Iro
+Life Adept,         4,-1,  Inv, nil, 1, 2    ; Lab
+Life Mage,          4, 0,  Lab, nil, 1, 2    ; Las
+Holy Warriors,      5,-1,  Chi, The, 0, 0    ; Ldr
+Literacy,           5, 2,  Wri, CoL, 0, 3    ; Lit
+Life Wizard,        4,-2,  Las, nil, 1, 2    ; Too
+Life Master,        4,-1,  Too, nil, 1, 2    ; Mag
+Map Making,         6,-1,  Alp, nil, 0, 1    ; Map
+Masonry,            4, 1,  nil, nil, 0, 4    ; Mas
+Chaos Lore,         5, 0,  Gun,  Ato, 1, 0    ; MP 
+Mathematics,        4,-1,  Alp, Mas, 0, 3    ; Mat
+Chaos Adept,        4, 0,  MP,  nil, 1, 0    ; Med
+Chaos Mage,         6,-2,  Med, nil, 1, 0    ; Met
+Chaos Wizard,       4, 1,  Met, nil, 1, 0    ; Min
+Chaos Master,       8,-1,  Min, nil, 1, 0    ; Mob
+Monarchy,           5, 1,  Cer, CoL, 0, 2    ; Mon
+Theology,           3, 2,  Phi, Feu, 0, 2    ; MT 
+Mysticism,          4, 0,  Cer, nil, 0, 2    ; Mys
+Navigation,         6,-1,  Sea, Ast, 0, 1    ; Nav
+Grand Mastery,      6,-2,  Exp, Fli, 0, 0    ; NF 
+Sorcery Mage,       3, 0,  X2,  nil, 1, 4    ; NP 
+Philosophy,         6, 1,  Mys, Lit, 0, 2    ; Phi
+Sorcery Wizard,     4,-1,  NP,  nil, 1, 4    ; Phy
+Sorcery Master,     4, 1,  Phy, nil, 1, 4    ; Pla
+Nature Lore,        4, 0,  X1,  Ato, 1, 1    ; Plu
+Nature Adept,       4, 0,  Plu, nil, 1, 1    ; PT 
+Pottery,            4, 1,  nil, nil, 0, 1    ; Pot
+Nature Mage,        5,-1,  PT,  nil, 1, 1    ; Rad
+Greater Enchantments,6, 0,  no,  nil, 0, 3    ; RR 
+Nature Wizard,      2, 1,  Rad, nil, 1, 1    ; Rec
+Nature Master,      4, 0,  Rec, nil, 1, 1    ; Ref
+Death Lore,         3, 1,  U2,  Ato, 1, 3    ; Rfg
+The Republic,       5, 1,  Lit, nil, 0, 2    ; Rep
+Death Adept,        5,-2,  Rfg, nil, 1, 3    ; Rob
+Extra Advance 2,    3, 0,  no,  no,  0, 0    ; Roc
+Sanitation,         4, 2,  CA,  nil, 0, 1    ; San
+Seafaring,          4, 1,  Map, Pot, 0, 1    ; Sea
+Death Mage,         4, 1,  Rob, nil, 1, 3    ; SFl
+Death Wizard,       3,-2,  SFl, nil, 1, 3    ; Sth
+Death Master,       4,-1,  Sth, nil, 1, 3    ; SE 
+blah,               4,-1,  no,  no,  0, 4    ; Stl
+blah,               4, 1,  no,  no,  0, 3    ; Sup
+Leadership,         6,-1,  Chi, Uni, 0, 0    ; Tac
+Sorcerous Lore,     5, 1,  Hor, Ato, 1, 4    ; The
+Blah,               4, 0,  no,  no,  0, 3    ; ToG
+Trade,              4, 2,  Cur, CoL, 0, 1    ; Tra
+University,         5, 1,  Mat, Phi, 0, 3    ; Uni
+Warrior Code,       4,-1,  nil, nil, 0, 0    ; War
+blah,               4,-1,  no,  no,  0, 4    ; Whe
+Writing,            4, 2,  Alp, nil, 0, 3    ; Wri
+Future Technology,  1, 0,  Sth, MP,  3, 3    ; ... 
+Forces of Nature,   6,-1,  Amp, nil, 0, 3    ; U1 
+Death Magic,        100, 1,  NF,  nil,  1, 3    ; U2 
+Sea Lore,           4, 1,  Nav, nil, 0, 3    ; U3 
+Nature Magic,       100, 0,  NF,  nil,  1, 1    ; X1 
+Sorcery Adept,      6,-2,  The,  nil, 1, 4    ; X2 
+Artificing,         3,-2,  Esp, nil, 0, 3    ; X3
+Lesser Fauna Lore,  5, 0,  Amp, nil, 0, 3    ; X4
+Pyrotechnics,       5, 1,  Ato, nil, 0, 3    ; X5
+Occult Studies,     7,-1,  Env, nil, 0, 3    ; X6
+Extra Advance 7,    3, 0,  no,  no,  0, 0    ; X7 
+
+
+
+
+
+
+
+;
+; Above 3 tech lots allow you to define your own civilization
+; advances if desired.  Supply the name, the AI value, and
+; the prerequisites.
+;
+; Then use the "U1", "U2", or "U3"
+; identifier to incorporate it into the tech chain as a
+; prerequisite for other techs, units, city improvements.
+;
+
+;
+;  City Improvements
+;
+;   cost(x10), upkeep, preq
+;
+@IMPROVE
+Nothing,                  1,  0,    nil, 
+Wizard's Fortress,        10, 0,    Mas, 
+Barracks,                 4,  1,    nil, 
+Granary,                  6,  1,    Pot, 
+Temple,                   4,  1,    Cer, 
+MarketPlace,              8,  1,    Cur, 
+Library,                  8,  1,    Wri, 
+Courthouse,               8,  1,    CoL, 
+City Walls,               8,  0,    Mas, 
+Aqueduct,                 8,  2,    Cst, 
+Bank,                     12, 3,    Ban, 
+Cathedral,                12, 3,    MT, 
+University,               16, 3,    Uni, 
+xMass Transit,            16, 4,    no,  
+Colosseum,                10, 4,    Cst, 
+Mechanician's Guild,      20, 4,    X3, 
+xManufacturing Plant,     32, 6,    no,
+xSDI Defense,             20, 4,    no,
+xRecycling Center,        20, 2,    no,
+xPower Plant,             16, 4,    no,  
+xHydro Plant,             24, 4,    no,  
+Primal Source,            16, 2,    U1,
+Merchant's Guild,         16, 4,    Eco, 
+Sewer System,             12, 2,    San,  
+xSupermarket,              8, 3,    no,
+xSuperhighways,           20, 5,    no,
+Beacon of Wisdom,         16, 3,    Fli, 
+SAM Missile Battery,      10, 2,    no,
+Coastal Fortress,          8, 1,    no,
+Solar Harness,            32, 4,    Rec, 
+Harbor,                   6,  1,    Sea, 
+Sea Mines,                16, 3,    Eng,  
+Fantastic Stable,         16, 3,    X4, 
+xPolice Station,          6,  2,    no,  
+Port,                     8,  3,    U3, 
+xSS Structural,           8,  0,    no,  
+xSS Component,            16, 0,    no,  
+xSS Module,               32, 0,    no,  
+x(Capitalization),        60, 0,    no,  
+Gaia's Shrine,            20, 0,    PT,  
+Pleasure Dome,            20, 0,    The,  
+Font of Bounty,           20, 0,    Plu, 
+xLighthouse,              20, 0,    no,  
+Great Library,            30, 0,    Lit, 
+Oracle,                   30, 0,    Mys, 
+Wall of Bone,             30, 0,    Rob, 
+Guild of Legends,         30, 0,    Feu, 
+Rune of Rulership,        30, 0,    E1,  
+Bardic College,           20, 0,    Tra, 
+The Parthenon,            40, 0,    MT, 
+Mystic X's Tower,         30, 0,    Ast, 
+Gunthar's Voyage,         40, 0,    Nav, 
+Prospero's Conservatory,  30, 0,    CA,  
+Elixir of Metamorphosis,  40, 0,    Cmp, 
+Enchanted Grotto,         40, 0,    Inv, 
+Eldritch College,         40, 0,    Ato, 
+Gnome Treasury,           40, 0,    Eco, 
+Reywind's Discovery,      40, 0,    RR,  
+xStatue of Liberty,       40, 0,    no,  
+Mesmer's Tower,           30, 0,    Cmb, 
+xWomen's Suffrage,        60, 0,    no,  
+Forge of Chaos,           60, 0,    Min, 
+Entropy Engine,           60, 0,    NF,  
+League of Wizards,        60, 0,    Phy, 
+xApollo Program,          60, 0,    no,  
+Celestial Beacon,         60, 0,    Too, 
+xCure for Cancer,         60, 0,    no,  
+
+;
+; Expiration advancements for Wonders of the World
+;
+@ENDWONDER
+nil,        ; Pyramids
+nil,        ; Hanging Gardens
+nil,        ; Colossus
+nil,        ; Lighthouse
+nil,        ; Great Library
+nil,        ; Oracle
+nil,        ; Great Wall
+nil,        ; Sun Tzu's War Academy
+nil,        ; King Richard's Crusade
+nil,        ; Marco Polo's Embassy
+nil,        ; Michelangelo
+nil,        ; Copernicus
+nil,        ; Magellan
+nil,        ; Shakespeare
+nil,        ; Da Vinci's Workshop
+nil,        ; Bach
+nil,        ; Newton
+nil,        ; Smith's Trading Co.
+nil,        ; Darwin
+nil,        ; Statue of Liberty
+nil,        ; Eiffel Tower
+nil,        ; Women's Suffrage
+nil,        ; Hoover Dam
+nil,        ; Manhattan Project
+nil,        ; United Nations
+nil,        ; Apollo
+nil,        ; SETI
+nil,        ; Cure for Cancer
+
+
+;
+;    Unit Types
+;
+; until, domain,  move,rng,  att,def  hit,firepwr  cost,hold,  role, preq,  flags
+;
+; until       = Civ advance which renders unit obsolete
+; Move        = Movement rate (spaces per turn)
+; Range       = # of turns fuel carried (0 for non-air units)
+;
+; domain      = Movement domain of unit
+:               0 = Ground
+;               1 = Air
+;               2 = Sea
+;
+; att         = Attack factor (chance to score hit attacking)
+; def         = Defense factor (chance to score hit defending)
+; hit         = Hit points (damage x10 which can be taken before elimination)
+; firepwr     = # damage points caused per hit scored on enemy.
+;
+; cost        = Cost (# of shield rows, usually of 10 shields each)
+; hold        = # of holds on ship (for carrying units)
+;
+; role        = AI role (Generally affects the way in
+;               which computer players use the unit, but
+;               roles >= 5 will actually affect abilities
+;               of the unit)
+;               0 = Attack
+;               1 = Defend
+;               2 = Naval Superiority
+;               3 = Air Superiority
+;               4 = Sea Transport
+;               5 = Settle
+;               6 = Diplomacy
+;               7 = Trade
+;
+; preq        = Prerequisite advance
+;
+; "Flags" control special advantages & restrictions.  Not
+; all of these flags "make sense" for all types of units
+; (paradropping ships, for instance).  Nonsensical variations
+; may produce bizarre effects (or worse).  You were warned.
+;
+;   000000000000001 = Two space visibility
+;   000000000000010 = Ignore zones of control
+;   000000000000100 = Can make amphibious assaults
+;   000000000001000 = Submarine advantages/disadvantages
+;   000000000010000 = Can attack air units (fighter)
+;   000000000100000 = Ship must stay near land (trireme)
+;   000000001000000 = Negates city walls (howitzer)
+;   000000010000000 = Can carry air units (carrier)
+;   000000100000000 = Can make paradrops
+;   000001000000000 = Alpine (treats all squares as road)
+;   000010000000000 = x2 on defense versus horse (pikemen)
+;   000100000000000 = Free support for fundamentalism (fanatics)
+;   001000000000000 = Destroyed after attacking (missiles)
+;   010000000000000 = x2 on defense versus air (AEGIS)
+;   100000000000000 = Unit can spot submarines
+;
+;
+@UNITS       
+Peasants,     nil, 0,  1.,0,  0a,1d,  2h,1f,  4,0,  5, nil, 000000000000000
+Zombies,      nil, 0,  1.,0,  2a,2d,  2h,1f,  4,0,  5, Rfg, 000000000000000
+Spearmen,     Bro, 0,  1.,0,  1a,1d,  1h,1f,  1,0,  1, nil, 000000000000000
+Swordsmen,    nil, 0,  1.,0,  2a,2d,  1h,1f,  2,0,  1, Bro, 000000000000000
+Phantom Warriors,nil, 0,  2.,0,  3a,1d,  1h,2f,  3,0,  0, The,  000000000000010
+Hell Hounds,  nil, 0,  1.,0,  4a,2d,  1h,1f,  6,0,  0, MP,  000000000000000
+Warbears,     nil, 0,  1.,0,  3a,3d,  2h,1f,  4,0,  1, Plu, 000000000000000
+Warlock,      nil, 0,  2.,0, 12a,2d,  2h,2f, 12,0,  0, AFl, 000000000000000
+Ariel,        nil, 0,  2.,0,  3a,8d,  2h,2f,  4,0,  1, no,  000000000000000
+Jafar,        nil, 0,  4.,0,  6a,4d,  2h,2f,  6,0,  1, no,  000000000000000
+Rjak,         nil, 0,  2.,0,  6a,6d,  2h,2f,  8,0,  1, no,  000000000000000
+Tauron,       nil, 0,  2.,0,  8a,3d,  2h,3f,  5,0,  1, no,  000000000000000
+Serena,       nil, 0,  2.,0,  3a,4d,  2h,1f,  6,0,  1, no,  000000000000000
+Freya,        nil, 0,  3.,0,  4a,5d,  2h,2f,  4,0,  1, no,  000000000000001
+Alorra,       nil, 0,  2.,0,  6a,2d,  2h,1f, 10,0,  0, no,  000000000000000
+Centaurs,     nil, 0,  2.,0,  2a,1d,  1h,1f,  2,0,  0, Env, 000000000000000
+Elven Archers,nil, 0,  1.,0,  3a,1d,  1h,1f,  3,0,  0, Cor, 000001000000000
+Mage,         nil, 0,  1.,0,  3a,1d,  1h,1f,  4,0,  0, X6,  000000001010000
+Wyvern,       nil, 1,  3.,0,  8a,4d,  2h,2f, 12,0,  3, Che, 000000000010000
+Knights,      nil, 0,  2.,0,  4a,2d,  1h,1f,  4,0,  0, Chi, 000000000000000
+Paladins,     nil, 0,  2.,0,  6a,2d,  2h,1f,  5,0,  0, Ldr, 000000000000000
+Unicorn,      nil, 0,  3.,0,  3a,6d,  2h,1f,  6,0,  1, Lab, 000000010000010
+Iron Golem,   nil, 0,  1.,0,  8a,5d,  4h,1f,  9,0,  0, Esp, 000000001000000
+Catapult,     nil, 0,  1.,0,  6a,1d,  1h,1f,  4,0,  0, Mat, 000000000000000
+Steam Cannon, nil, 0,  1.,0, 10a,2d,  2h,2f, 12,0,  0, X3,  000000001000000
+B6,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+B3,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+B9,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+Efreet,       nil, 0,  1.,0,  7a,3d,  2h,2f,  9,0,  0, Met, 000000000010000
+Wraith,       nil, 0,  2.,0,  4a,3d,  2h,1f,  6,0,  0, Rob, 000001000000010
+Griffin,      nil, 1,  4.,0,  4a,4d,  2h,1f,  6,0,  3, X4,  000000000010000
+Pegasus,      nil, 1,  5.,0,  5a,2d,  2h,2f,  8,1,  3, Las, 000000000010000
+Galley,       nil, 2,  3.,0,  1a,1d,  1h,1f,  4,3,  4, Map, 000000000100000
+Warship,      nil, 2,  4.,0,  7a,3d,  2h,1f,  8,3,  2, Eng, 000000000000000
+Hydra,        nil, 0,  1.,0, 12a,3d,  3h,2f, 12,0,  0, Mob, 000000000000000
+Airship,      nil, 1,  6.,0,  5a,1d,  1h,1f,  4,2,  4, X3,  000000000010001
+Minotaur,     nil, 0,  1.,0,  1a,2d,  2h,1f,  3,0,  1, War, 000000000000000
+War Troll,    nil, 0,  1.,0,  7a,5d,  3h,1f,  7,0,  0, Tac, 000000000000000
+Gargoyle,     nil, 1,  2.,0,  2a,4d,  2h,1f,  6,0,  1, Med, 000000000010000
+Guardian Spirit,nil, 0,  2.,0,  1a,5d,  3h,1f,  4,0,  1, Inv, 000011000000000
+Cockatrice,   nil, 1,  2.,0,  6a,1d,  1h,3f,  6,0,  0, PT,  000000000010000
+B7,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+B8,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+B3,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+Salamander,   nil, 0,  2.,0, 10a,3d,  2h,1f, 10,0,  0, X5,  000001001010000
+Infernal Device,nil, 1, 10.,1, 99a,0d,  1h,1f, 16,0,  0, NF,  001000000000010
+Minion,       nil, 0,  2.,0,  0a,0d,  1h,1f,  3,0,  6, Wri, 000000000000010
+Demon,        nil, 1,  2.,0,  4a,5d,  2h,1f,  7,0,  1, SFl, 000000000010000
+Caravan,      nil, 0,  1.,0,  0a,1d,  1h,1f,  5,0,  7, Tra, 000000000000010
+B5,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+B4,           nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, no,  000000000000000
+War Mammoth,  nil, 0,  2.,0, 10a,5d,  3h,1f,  8,0,  0, Exp, 000000000000000
+Storm Giant,  nil, 0,  2.,0,  8a,4d,  2h,1f,  9,0,  0, NP,  000000000000000
+Air Elemental,nil, 1,  8.,0,  6a,3d,  1h,1f,  5,0,  3, X2,  010000000010011
+Storm Drake,  nil, 1,  5.,0, 12a,6d,  3h,2f, 14,0,  0, Pla, 000000000010001
+Warrax,       nil, 0,  2.,0,  8a,3d,  2h,2f, 12,0,  0, no,  000000000000000
+Undead Dragon,nil, 1,  3.,0, 12a,6d,  4h,2f,  3,0,  0, SE,  000000000010001
+Great Wyrm,   nil, 0,  2.,0, 15a,9d,  6h,2f, 12,0,  0, Ref, 000000000000110
+Behemoth,     nil, 0,  1.,0,  5a,4d,  4h,1f,  9,0,  0, Rad, 000000000000000
+Malleus,      nil, 0,  2.,0,  8a,2d,  2h,1f, 10,0,  0, no,  000000000000000
+Merfolk,      nil, 2,  4.,0,  4a,3d,  2h,1f,  5,0,  2, U3,  000000000000001
+Archangel,    nil, 1,  4.,0, 12a,12d, 2h,2f, 12,0,  0, Mag, 100000100010001
+
+
+    
+
+;
+; Note: the above 3 unit types (extra land, ship, air) are available
+; for user defined unit types.  If these units are given prerequisites
+; other than "no" they will appear in the game when the specified
+; technology is reached.  Use if you want to create your own unit types
+; without sacrificing any of the predefined units.  Be sure to define
+; the "role" field accurately, so that the computer will understand how
+; to make use of the new units in its own civilizations.
+;
+; There is no requirement that the extra units be used to
+; create exactly one of each type; you could create three
+; ground units.  But the icons provided are for one of each.
+; The 3 extra unit types have default icons provided by the game.
+; To actually change the icons is a somewhat more difficult
+; task.  The icons are stored in "UNITS.GIF".
+;
+; Sound effects for these three units may be added by providing
+; CUSTOM1.WAV, CUSTOM2.WAV, and CUSTOM3.WAV.  These should be
+; 8-bit, mono, and sampled at 22050hz.
+;
+; Ideas:
+;
+; Hovercraft,   nil, 2,  8.,0,  0a,1d,  2h,2f,  7,1,  4, MP,  000000000000000
+;
+
+
+;
+;  Terrain
+;
+;  Movecost, defense,   food, shields, trade,
+;        . . .  Irrigate, bonus, #turns, ai-irrigate,
+;        . . .  Mine,     bonus, #turns, ai-mine
+;        . . .  Transform
+;
+;   defense = multiply by 50% to get % of normal combat factor defended at.
+;       (so 3 x 50% = 150%, meaning a strength 2 unit defends at 3).
+;
+;  Irrigate/Mine = yes, no, or type of terrain changed to
+;  Transform     = Terrain type engineers can transform to
+;
+;  bonus = # extra production from that change
+;
+;  turns = # turns for settler to make change
+;
+;  ai    = Minimum govt level necessary for
+;          computer player to want to perform irrigate/mine
+;        0 Never
+;        1 Despotism
+;        2 Monarchy
+;        3 Communism
+;        4 Fundamentalism
+;        5 Republic
+;        6 Democracy
+;
+@TERRAIN
+Desert,     1,2,  0,1,0,   yes, 1, 5, 5,   yes, 1, 5,  3,  Pln,   ; Drt
+Plains,     1,2,  1,1,0,   yes, 1, 5, 1,   For, 0,15,  0,  Grs,   ; Pln
+Grassland,  1,2,  2,1,0,   yes, 1, 5, 2,   For, 0,10,  0,  Hil,   ; Grs
+Forest,     2,3,  1,2,0,   Pln, 0, 5, 5,   no,  0, 5,  0,  Grs,   ; For
+Hills,      2,4,  1,0,0,   yes, 1,10, 0,   yes, 3,10,  1,  Pln,   ; Hil
+Mountains,  3,6,  0,1,0,   no,  1,10, 0,   yes, 1,10,  6,  Hil,   ; Mou
+Tundra,     1,2,  1,0,0,   yes, 1,10, 1,   no,  0, 0,  0,  Drt,   ; Tun
+Glacier,    2,2,  0,0,0,   no,  0, 0, 0,   yes, 1,15,  3,  Tun,   ; Gla
+Swamp,      2,3,  1,0,0,   Grs, 0,15, 6,   For, 0,15,  0,  Pln,   ; Swa
+Jungle,     2,3,  1,0,0,   Grs, 0,15, 6,   For, 0,15,  0,  Pln,   ; Jun
+Ocean,      1,2,  1,0,2,   no,  0, 0, 0,   no,  0, 0,  0,  no,    ; Oce
+Oasis,      1,2,  3,1,0,
+Buffalo,    1,2,  1,3,0,
+Grassland,  1,2,  2,1,0,
+Pheasant,   2,3,  3,2,0,
+Coal,       2,4,  1,2,0,
+Gold,       3,6,  0,1,6,
+Game,       1,2,  3,1,0,
+Ivory,      2,2,  1,1,4,
+Peat,       2,3,  1,4,0,
+Gems,          2,3,  1,0,4,
+Fish,          1,2,  3,0,2,
+Oil,           1,2,  0,4,0,
+Wheat,         1,2,  3,1,0,
+Grassland,     1,2,  2,1,0,
+Nature Node,   2,3,  1,2,5,
+Chaos Node,    2,4,  1,0,5,
+Iron,          3,6,  0,4,0,
+Furs,          1,2,  2,0,3,
+Oil,           2,2,  0,4,0,
+Spice,         2,3,  3,0,4,
+Sorcery Node,  2,3,  1,0,5,
+Whales,        1,2,  2,2,3,
+
+
+
+
+@GOVERNMENTS
+Anarchy,        Mr.,         Ms.
+Despotism,      Emperor,     Empress
+Monarchy,       King,        Queen
+Communism,      Comrade,     Comrade
+Fundamentalism, High Priest, High Priestess
+Republic,       Consul,      Consul
+Democracy,      President,   President
+
+;
+;   Leaders
+;
+;   leader, female, color, style, plural, adjective, ...
+;           ...attack, expand, civilize, ...
+;           ...govt, male, female...<repeat>
+;
+;   female:     0 = male           1 = female
+;
+;   color:  Color set (1 - 7)
+;   style:  City style (0 - 3)
+;           0 = Bronze Age
+;           1 = Classical
+;           2 = Far East
+;           3 = Medieval
+;
+;   attack:     1 = aggressive    -1 = rational
+;   expand:     1 = expansionist  -1 = perfectionist
+;   civilize:   1 = civilized     -1 = militaristic
+;
+;   govt = government type for name replacement (0 = Anarchy, 6 = Democracy)
+;
+;   male, female = titles for leader of government
+;
+@LEADERS
+...,          Ariel,               1, 1, 1, Tribes of Life,     Ariel's,       -1,  -1,  1,     
+...,          Freya,               1, 2, 3, Tribes of Nature,   Freya's,        0,   1,  0,
+Jafar,        ...,       	   0, 3, 3, Tribes of Sorcery,  Jafar's,       -1,   0,  0,
+Rjak,         ...,           	   0, 7, 0, Tribes of Death,    Rjak's,         1,   1, -1,
+Tauron,       ...,                 0, 6, 2, Tribes of Chaos,    Tauron's,       1,   0, -1,
+Alexander,    Hippolyta,           1, 6, 1, Greeks,      Greek,       0,  1, -1,     6, Prime Minister, Prime Minister
+Mohandas Gandhi,Indira Gandhi,     0, 7, 2, Indians,     Indian,     -1, -1,  0,     2, Maharaja, Maharaja,
+Lenin,        Catherine the Great, 1, 1, 3, Russians,    Russian,     1,  1, -1,     2, Czar, Czarina, 4, Patriarch, Matriarch
+Shaka,        Shakala,             0, 2, 0, Zulus,       Zulu,        1,  0,  0,
+Louis XIV,    Joan of Arc,         0, 3, 3, French,      French,      1,  1,  1,     4, Archbishop, Archbishop, 6, Premier, Premier
+Montezuma,    Nazca,               0, 4, 0, Aztecs,      Aztec,       0, -1,  1,
+Mao Tse Tung, Wu Zhao,             0, 5, 2, Chinese,     Chinese,     0,  0,  1,     3, Chairman, Chairperson
+Henry VIII,   Elizabeth I,         1, 6, 3, English,     English,     0,  1,  0,     4, Lord Protector, Lady Protector, 6, Prime Minister, Prime Minister
+Genghis Khan, Bortei,              0, 7, 0, Mongols,     Mongol,      1,  1, -1,
+Cunobelin,    Boadicea,            1, 1, 0, Celts,       Celtic,      1,  1, -1,     4, Druid, Druid
+Tokugawa,     Amaterasu,           0, 2, 2, Japanese,    Japanese,    1, -1, -1,     2, Shogun, Shogun, 6, Prime Minister, Prime Minister
+Canute,       Gunnhild,            1, 3, 3, Vikings,     Viking,      1,  1,  0,     1, Warlord, Warlord
+Philip II,    Isabella,            1, 4, 3, Spanish,     Spanish,    -1,  1, -1,     4, Archbishop, Archbishop
+Xerxes,       Scheherezade,        0, 5, 0, Persians,    Persian,     0, -1,  0,     2, Shah, Shah,  4, Ayatollah, Ayatollah
+Hannibal,     Dido,                0, 6, 1, Carthaginians, Carthaginian, 0,  0, -1,
+Sitting Bull, Sacajawea,           0, 7, 0, Sioux,       Sioux,       0,  0,  0,     1, Chief, Chief, 2, Great Chief, Great Chief
+
+Saladin,    ...,     0, 5, Arabs,       Arab,        1,  0,  1,     4, Ayatollah, Ayatollah, 2, Sultan, Sultana
+Atawallpa,  ...,     0, 1, Incas,       Inca,       -1,  1,  1,
+
+;
+;   Trading Commodities
+;
+@CARAVAN
+Hides,
+Wool,
+Beads,
+Cloth,
+Salt,
+Coal,
+Copper,
+Dye,
+Wine,
+Silk,
+Silver,
+Spice,
+Gems,
+Gold,
+Oil,
+Uranium,
+
+
+@ORDERS
+Fortify,            F
+Fortified,          F
+Sleep,              S
+Build Fortress,     F
+Build Road,         R
+Build Irrigation,   I
+Build Mine,         m
+Transform,          O
+Clean Pollution,    p
+Build Airbase,      E
+Go to,              G
+
+
+@DIFFICULTY
+Chieftain
+Warlord
+Prince
+King
+Emperor
+Deity
+
+@ATTITUDES
+Worshipful
+Enthusiastic
+Cordial
+Receptive
+Neutral
+Uncooperative
+Icy
+Hostile
+Enraged
+
+
+
+
+
+
+
+
+
+
+
+
+

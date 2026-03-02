@@ -1,0 +1,24 @@
+@SCENARIO
+@width=470
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+"Who could enumerate this formidable army of Christ? No one, I think, had
+ ever seen or could ever see a like number of such brilliant knights."
+^      -Anonymi Gesta Francorum (1101)
+^
+^Recommended:  Normans, French, or Germans
+^
+^Challenging:  English
+^
+^Playable (?): Turks, Byzantines, Egyptians
+^
+^OBJECT: Seljuk Turks (protagonists), to take as many objective cities
+ as possible. To prevent this if anyone else.
+^
+^^SPECIAL NOTES
+^ Government switching is not permitted.
+^ When computer controlled, the Turks don't negotiate.
+^
+@end -- this line must be here!
+
