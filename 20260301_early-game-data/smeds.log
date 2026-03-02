@@ -1,0 +1,18 @@
+******************** SMEDS LOG *********************
+File Output to: smeds.log
+SMEDS32 Version: 2.0.0        
+
+(    0) 5.4.0f Multiplayer 26-March-99
+(    0) Patch 3
+(    0) Disconnecting from network:
+(    0)    XD_ResetLibrary();
+(    0) Bottom-up orientation recommended.
+(    0) Not an IGZ Game!!  event = -3
+(    7) Disconnecting from network:
+(    7)    XD_ResetLibrary();
+(   12) Disconnecting from network:
+(   12)    XD_ResetLibrary();
+(   21) Disconnecting from network:
+(   21)    XD_ResetLibrary();
+(  124) SendToConnections: FAILED on send to connection: 255. Return code: -1. Type: 117
+(  298) SendToConnections: FAILED on send to connection: 255. Return code: -1. Type: 117
