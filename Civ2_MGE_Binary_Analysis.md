@@ -165,20 +165,231 @@ City sprites organized by **era** (rows) × **architectural style** (columns) ×
 
 #### PEOPLE.GIF Sprite Layout
 
-Citizen type faces for the city screen, organized by era. Only rows 0–4 contain sprites (92% of the sheet is empty magenta).
+Citizen face sprites for the city management screen, organized by era. Only rows 0–4 contain sprites; rows 5–14 are empty magenta.
 
-| Row | Era | Content |
+**Grid structure**: 11 columns × 5 rows, cell size **27×30 pixels**, with 1px black (idx 192) borders.
+- Cell origin formula: `x = 2 + 28 * col, y = 6 + 31 * row`
+- Horizontal stride: 28px (27px face + 1px border)
+- Vertical stride: 31px (30px face + 1px border)
+- Chroma key: magenta (255,0,255) idx 253
+
+**Row → Era mapping** (same thresholds as city epoch):
+
+| Row | Era | Trigger |
 |-----|-----|---------|
-| 0 | Ancient | ~4 citizen types (entertainer, taxman, scientist, etc.) |
-| 1 | Renaissance | Same citizen types, period-appropriate faces |
-| 2 | Industrial | Same citizen types, industrial-era faces |
-| 3 | Modern | Same citizen types, modern faces |
-| 4 | Additional specialist faces | |
-| 5–14 | Empty (magenta) | |
+| 0 | Ancient | Default |
+| 1 | Renaissance | Invention AND Philosophy |
+| 2 | Industrial | Industrialization |
+| 3 | Modern | Automobile AND Electronics |
+| 4 | Extra specialists | (see below) |
 
-#### ICONS.GIF Layout
+**Column → Citizen type mapping** (source: Civ2-clone `PeopleType` enum):
 
-Mixed UI elements including wonder thumbnails (C5–C9 rows 0–5), government icons, resource symbols, warning/status icons, and gameplay indicators. Not a simple grid mapping — contains irregularly sized elements.
+| Col | Type | Notes |
+|-----|------|-------|
+| 0 | Happy male | Even citizen positions |
+| 1 | Happy female | Odd citizen positions |
+| 2 | Content male | Even positions |
+| 3 | Content female | Odd positions |
+| 4 | Unhappy male | Even positions |
+| 5 | Unhappy female | Odd positions |
+| 6 | Angry male | Anarchy only (even) |
+| 7 | Angry female | Anarchy only (odd) |
+| 8 | Entertainer | Specialist (Elvis) |
+| 9 | Taxman | Specialist |
+| 10 | Scientist | Specialist |
+
+The game alternates male/female faces by citizen slot index (even=male, odd=female) for the first 4 types. Specialists always show their specific face.
+
+Row 4 contains 7 additional specialist-variant faces (cols 0–6 populated, cols 7–10 empty). These appear to be alternate specialist representations.
+
+Source: Civ2-clone `Enums/PeopleType.cs`, `Draw.CityPanel.cs`, `Civ2GoldInterface.cs`
+
+#### ICONS.GIF Sprite Layout
+
+640×480 UI icon sheet containing resource icons, improvement/wonder thumbnails, advance category icons, battle animation frames, and map grid sprites. Chroma key: magenta (255,0,255) idx 253 and light pink (255,159,163) idx 255.
+
+**Resource icons (14×14px)** — used in city screen resource rows:
+
+| Icon | x | y | Purpose |
+|------|---|---|---------|
+| Hunger | 1 | 290 | Food loss (starvation) |
+| Shortage | 16 | 290 | Shield loss (unit support) |
+| Corruption | 31 | 290 | Trade loss (corruption/waste) |
+| Food | 1 | 305 | Food production |
+| Shields | 16 | 305 | Shield/production output |
+| Trade | 31 | 305 | Trade arrows |
+| Luxury | 1 | 320 | Luxury output |
+| Tax/Gold | 16 | 320 | Tax/gold output |
+| Science | 31 | 320 | Science beakers |
+
+**Small resource icons (10×10px)** — used on city radius mini-map tile overlays:
+
+| Icon | x | y |
+|------|---|---|
+| Food (small) | 49 | 334 |
+| Shield (small) | 60 | 334 |
+| Trade (small) | 71 | 334 |
+
+**Research progress indicators (14×14px)**: 4 icons at y=290, x = 49 + 15×i (i=0–3).
+**Global warming indicators (14×14px)**: 4 icons at y=305, x = 49 + 15×i (i=0–3).
+
+**Improvement thumbnail icons (36×20px)** — shown in city improvements list:
+- Grid origin: (343, 1), horizontal stride 37px, vertical stride 21px
+- Layout: 5 rows × 8 columns = 40 slots (indices 1–38 used; slots 39–40 empty)
+- Formula: `x = 343 + 37 * ((index - 1) % 8), y = 1 + 21 * Math.floor((index - 1) / 8)`
+- Index matches RULES.TXT @IMPROVE order (1=Palace through 38=last improvement)
+
+**Wonder thumbnail icons (36×20px)** — shown in city improvements list for wonders:
+- Grid origin: (343, 106), same stride (37×21)
+- Layout: 4 rows × 7 columns = 28 slots (all 28 wonders)
+- Formula: `x = 343 + 37 * (wonderIndex % 7), y = 106 + 21 * Math.floor(wonderIndex / 7)`
+- Index 0–27 matches wonderCityIds order (0=Pyramids through 27=Cure for Cancer)
+
+**Advance category icons (36×20px)** — used in Civilopedia technology display:
+- Grid origin: (343, 211), same stride (37×21)
+- Layout: 5 rows × 4 columns = 20 slots
+
+**Battle animation (32×32px)**: 8 frames at `x = 1 + 33 * i, y = 356` (i=0–7).
+
+**Map grid sprites (64×32px)**:
+
+| Sprite | x | y | Notes |
+|--------|---|---|-------|
+| Grid lines (default) | 183 | 430 | Green diamond outline (palette 254) |
+| Grid lines (visible) | 248 | 430 | Alternate grid rendering |
+| ViewPiece | 199 | 256 | Selection/cursor indicator |
+
+Source: Civ2-clone `Civ2GoldInterface.cs` PicSources, `IconLoader.cs` extraction rects
+
+#### City Management Screen Layout
+
+The city management dialog is a **636×421 pixel** window (at normal zoom, cityZoom=0). It supports three zoom levels: −1 (small), 0 (normal), +1 (large). All coordinates below are for zoom=0. Scaling formula: `value × (2 + cityZoom) / 2`.
+
+Sprite sources: **ICONS.GIF** (resource icons, improvement/wonder thumbnails), **PEOPLE.GIF** (citizen faces), **CITIES.GIF** (unit sprites), **UNITS.GIF** (unit sprites in garrisoned/supported displays).
+
+```
++--------+-------------------+-----------------------------------+-------------------+
+|        |   Citizens Box    |                                   |    Food Storage   |
+| Close  |   (3,2,433,44)    |         City Resources            |  (437,0,195,163)  |
+| ZoomIn |   Citizen faces   |    Food/Trade/Tax+Lux+Sci/Shlds  |   Wheat icons     |
+| ZoomOut|                   |                                   |   (granary line)  |
++--------+-------------------------------------------+-----------+-------------------+
+|        Tile Map / Resource Map                     |           |   Production Box  |
+|        (7,65,188,137)                              |           | (437,165,195,191) |
+|        Isometric mini-map showing                  |           | [Buy] [Change]    |
+|        21 tiles around city                        |           | Item + shield bar |
++----------------------------+-----------------------+-----------+-------------------+
+| Units Supported            | Info Panel                        |                   |
+| (7,215,184,69)             | (193,215,242,198)                 |                   |
+| Up to 8 supported units    | Toggleable:                       |                   |
+|                            |  - Units Present                  |                   |
+|                            |  - Happiness Analysis             |                   |
++----------------------------+-----------------------------------+                   |
+| City Improvements          | Trade routes / Supplies+Demands   |                   |
+| (5,306,170,108)            |                                   |                   |
+| Scrollable list with       +-----------------------------------+                   |
+| 36x20 improvement icons    | [Info] [Map] [Rename]             |                   |
+| and sell buttons            | [Happy] [View] [Exit]             |                   |
++----------------------------+-----------------------------------+-------------------+
+```
+
+##### Citizens Box (3, 2, 433×44)
+
+Row of citizen face sprites drawn from PEOPLE.GIF. Each face is 27×30 pixels. The game draws citizens left-to-right in order: happy, content, unhappy, specialists. Male/female faces alternate by slot index (even=male col, odd=female col).
+
+Face spacing decreases as city size grows (source: `Draw.CityPanel.cs`):
+
+| City Size | Spacing (px) |
+|-----------|-------------|
+| 1–15 | 28 |
+| 16–32 | 14 |
+| 33–63 | 7 |
+| 64–100+ | 3–4 |
+
+Each face is drawn with a 1px black drop shadow (offset +1,+1).
+
+##### City Resources (center area, ~203–431, 61–195)
+
+Four rows of resource icons from ICONS.GIF (14×14px each). Each row shows a count of icons; icon spacing decreases as count increases (15px for 1–15 icons, down to 2px for 66+).
+
+| Row | y (approx) | Left Icons | Right Icons |
+|-----|-----------|-----------|-------------|
+| Food | ~75 | Food icons (green) | Surplus or Hunger (red) |
+| Trade | ~117 | Trade arrows (yellow) | Corruption icons |
+| Tax+Lux+Sci | ~141 | Tax (gold), Luxury (blue), Science (beaker) | Combined on one row |
+| Support/Production | ~181 | Support shields (unit maintenance) | Production shields |
+
+Text labels above each row show names and numeric values (e.g., "Food: 12", "Surplus: 3").
+
+##### Tile Map / City Radius (7, 65, 188×137)
+
+Isometric mini-map showing the 21 tiles in the city's working radius (a "fat cross" diamond pattern from −3 to +3 relative tile offsets). Rendering order:
+
+1. Draw blank/placeholder tiles for all 21 positions
+2. For each position with known terrain, draw actual terrain tile (scaled)
+3. If a city occupies the tile, draw its sprite; else if military units present, draw top unit
+4. On **worked** tiles, overlay small resource icons (10×10px from ICONS.GIF): food, then shields, then trade — centered horizontally, spacing adjusts by total icon count (11px for 1–2, down to 1px for 10+)
+
+The 21-tile diamond shape (relative to city at 0,0):
+```
+        (-2,-3)(-1,-3)
+    (-3,-2)(-2,-2)(-1,-2)(0,-2)
+(-3,-1)(-2,-1)(-1,-1)(0,-1)(1,-1)
+    (-3,0)(-2,0)(-1,0)(0,0)(1,0)
+(-3,1)(-2,1)(-1,1)(0,1)(1,1)
+    (-2,1)(-1,1)(0,1)(1,2)
+        (-1,2)(0,2)
+```
+(Note: actual offsets follow isometric coordinate system with stagger)
+
+##### Food Storage Box (437, 0, 195×163)
+
+Grid of wheat/food icons (14×14px, Food icon from ICONS.GIF) representing food stored toward city growth. Layout:
+- Columns: equal to city size (number needed for growth)
+- Rows: up to 10 (wraps when columns exceed display width)
+- Filled icons: count = `city.foodInBox`
+- **Granary line**: a green horizontal divider at the halfway point if the city has a Granary improvement (food carries over the line on growth)
+
+##### Production Box (437, 165, 195×191)
+
+Shows the item currently being produced:
+- **Unit production**: draws the unit sprite (from UNITS.GIF) with civ coloring
+- **Improvement/Wonder production**: draws the improvement thumbnail (36×20 from ICONS.GIF) plus name text
+- **Shield progress grid**: grid of shield icons (14×14 from ICONS.GIF) showing `shieldsInBox` filled out of the total cost
+- **Buy** and **Change** buttons at top
+
+##### Units Supported (7, 215, 184×69)
+
+Shows up to 8 supported units (those with `homeCityId` = this city's array index) as small unit sprites in a 4×2 grid. Each unit is rendered as its UNITS.GIF sprite (scaled to ~30×23), with civ-color recoloring.
+
+##### Info Panel (193, 215, 242×198)
+
+Toggleable display with multiple modes:
+- **Units Present**: shows units garrisoned in the city (up to ~18 small unit sprites)
+- **Happiness Analysis**: breakdown of happiness modifiers (base, improvements, wonders, luxury, entertainers)
+- **Trade/Supply info**: available and demanded commodities, active trade routes
+
+##### City Improvements List (5, 306, 170×108)
+
+Scrollable list of built improvements and wonders. Each row contains:
+- 36×20 thumbnail icon (from ICONS.GIF improvement/wonder grids)
+- Improvement name text
+- Sell button (for non-wonders; selling returns half the cost)
+
+Improvements use the thumbnail grid at ICONS.GIF (343, 1), wonders use the grid at (343, 106). The list is scrollable if the city has more improvements than fit in the display area (~5 visible rows).
+
+##### Buttons (bottom row)
+
+6 buttons along the bottom of the window:
+- **Info**: toggle info panel mode
+- **Map**: toggle support map (world mini-map)
+- **Rename**: rename city
+- **Happy**: toggle happiness analysis
+- **View**: open panoramic city view (cityview.js)
+- **Exit**: close city window
+
+Source: Civ2-clone `CityWindow.cs`, `Civ2Interface.cs` `GetCityWindowDefinition()`, `Draw.CityPanel.cs`
 
 #### Fonts & Map UI Element Dimensions
 
@@ -3497,6 +3708,8 @@ Grid: **65×49 pixel cells** (64×48 unit + 1px border). 9 columns × 7 rows = 6
 > ⚠️ **ALGORITHM STATUS**: The rendering algorithms below were reverse-engineered from sprite sheet analysis, save file data correlation, pattern matching, and cross-referencing with the [Civ2-clone](https://github.com/axx0/Civ2-clone) open source reimplementation. Algorithms marked ✅ **CONFIRMED** have been verified against the Civ2-clone source code and/or in-game screenshots. Remaining algorithms (especially base terrain variant selection) are well-informed best guesses. **Confirmed algorithms**: Coastline 4-quadrant system (Layer 2), rivers (Layer 3), terrain overlay neighbor-connectivity bitmask (Layer 4), resource placement (Layer 8), dither blending (Layer 1b).
 >
 > **RENDERER IMPLEMENTATION STATUS** (`canvas-test-1/renderer.js`): Layers 1–10 are all implemented. City sprites (Layer 9) use a fixed Medieval era — see Layer 9 note. Unit sprites (Layer 10) use per-civ cyan→color substitution — see Layer 10 note. Gray diamond-corner artifacts were fixed by adding palette index 255 gray (135,135,135) to the TERRAIN1 chroma key set alongside magenta and cyan.
+>
+> **RENDERING PHILOSOPHY**: All rendering in this project is intended to faithfully reproduce the original Civ2 MGE program. The **primary authoritative sources** are the Civ2 program files themselves: the GIF sprite sheets (TERRAIN1/2, CITIES, UNITS, ICONS, PEOPLE, CITY), the `civ2.exe` binary, and observation of the running game via screenshots. Third-party sources — including the [Civ2-clone](https://github.com/axx0/Civ2-clone) (axx0) C# reimplementation, the [FoxAhead UI Additions](https://github.com/FoxAhead/Civ2-UI-Additions) Delphi source, CivFanatics community documentation, and the Scenario League wiki — are used as **aids to decode and understand** the original program files. They are not treated as the template being copied. Where third-party sources disagree with observed Civ2 behavior (via screenshots or binary analysis), the original game takes precedence.
 
 #### Overview: Compositing Order (Back to Front)
 
@@ -4485,7 +4698,7 @@ Items below describe visual elements that are implied or partially described els
 - [ ] **UNITS.GIF HPshield template**: At (597, 30, 12, 20), described as "unused in Civ2-clone." Determine what the game engine actually uses this sprite for — possibly an alternative HP display mode or a tooltip sprite.
 - [ ] **CITIES.GIF large city sprites**: "Two large detailed city sprites to the right" in the bottom section (y ≈ 395+). No coordinates, dimensions, or rendering conditions. Possibly capital-city or wonder-city variants. Need to identify their exact position and when the game draws them.
 - [ ] **CITIES.GIF airbase second variant**: The doc mentions "two variants — one with runway, one with X marking" but only one is extracted (x=273, y=423). Need coordinates for the second variant and the selection rule between them (e.g., airbase with planes present vs empty?).
-- [ ] **ICONS.GIF**: Described as "wonder thumbnails, government icons, misc" but no grid layout, cell dimensions, or extraction coordinates are provided. Determine which icons are map-relevant (if any) and provide sprite extraction specs.
+- [x] **ICONS.GIF**: ~~CATALOGED~~. Full sprite map documented in "ICONS.GIF Sprite Layout" section above. Contains resource icons (14×14 and 10×10), improvement thumbnails (36×20, 5×8 grid at 343,1), wonder thumbnails (36×20, 4×7 grid at 343,106), advance category icons, battle animation frames (8×32×32 at y=356), and map grid sprites (64×32 at y=430). Only grid sprites are map-relevant; all other icons are city screen / advisor UI. Chroma: magenta idx 253 + light pink idx 255.
 - [x] **Tiles.dll nuke sprite sheet**: ~~CATALOGED~~. Resource #85, 6×2 grid = 12 animation frames, 91×72px cells with 1px magenta borders. Grid area: 553×147px in upper-left of 640×480 image. Frame 0 at (1,1), frame 1 at (93,1), etc., stepping by 92px horizontally and 73px vertically. Sequence: flash → fireball → mushroom cloud → dissipation. Rendering trigger: nuclear missile attack on tile. Animation timing TBD.
 - [x] **Tiles.dll government/diplomacy icons**: ~~CATALOGED~~. Resource #86, 66px grid spacing (64×64 cells + 2px magenta border). Row 0 (y=2): government icons dark/3D style (cols 0-6 = Anarchy through Democracy). Row 1 (y=68): same in gold/bright style. Row 2 (y=134): diplomacy status text labels (Cease Fire, Peace, War, Old Alliance, Modern Alliance). Row 3 (y=200): diplomacy icons 3D. Row 4 (y=266): diplomacy icons flat. Cyan chroma key for transparency.
 

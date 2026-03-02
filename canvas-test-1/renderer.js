@@ -2,8 +2,15 @@
 // renderer.js — Civilization II Canvas Map Renderer
 // Sprite extraction and multi-pass rendering pipeline
 //
-// Sources & Acknowledgments:
-//   Civ2-clone (axx0) — https://github.com/axx0/Civ2-clone
+// Primary sources (authoritative — the goal is to match these):
+//   TERRAIN1.GIF, TERRAIN2.GIF — terrain, road, railroad, improvement sprites
+//   CITIES.GIF — city sprites by era × style × size, fortress/airbase
+//   UNITS.GIF — unit sprites (9×7 grid), shield templates, HP bars
+//   civ2.exe — palette indices, chroma key colors, rendering order
+//   Real Civ2 MGE screenshots — visual verification
+//
+// Decoding aids (used to understand the primary sources, not copied):
+//   Civ2-clone (axx0) — github.com/axx0/Civ2-clone
 //     City sprite grid layout, epoch/era tech detection, population
 //     size thresholds, marker pixel system (orange=size box, blue=shield),
 //     per-civ text colors, city name/size label rendering approach
@@ -228,11 +235,15 @@ const Civ2Renderer = {
       sprites.fortify  = this.extractSprite(citiesCtx, 143, 423, 64, 48, CC, true);
       sprites.fortress = this.extractSprite(citiesCtx, 208, 423, 64, 48, CC, true);
       sprites.airbase  = this.extractSprite(citiesCtx, 273, 423, 64, 48, CC, true);
+      // Second airbase variant ("airbase,full") — shown when air units are present
+      // Source: Civ2-clone Civ2GoldInterface.cs at (338, 423, 64, 48)
+      sprites.airbaseFull = this.extractSprite(citiesCtx, 338, 423, 64, 48, CC, true);
+      sprites.airbaseColored = {};  // cache: 'variant-civIndex' → recolored canvas
 
       // City flags from CITIES.GIF bottom section: 14×22px per flag, 9 per row × 2 rows
       // Source: Civ2-clone Rectangle(1 + 15*(i%9), 425 + 23*(i/9), 14, 22)
-      // Row 0 (y=425): 8 civ flags + 1 unused brown flag
-      // Row 1 (y=448): dark/alternate variant of each flag
+      // Row 0 (y=425): 8 civ flags + 1 unused brown flag (displayed on map)
+      // Row 1 (y=448): dark variant for DarkColour sampling only (not displayed)
       sprites.cityFlags = [];
       for (let civ = 0; civ < 9; civ++) {
         sprites.cityFlags[civ] = this.extractSprite(citiesCtx, 1 + civ * 15, 425, 14, 22, CC, true);
@@ -247,6 +258,7 @@ const Civ2Renderer = {
     // sprites.citySizeLoc[row][col] — {x,y} position of size box from orange marker (palette 249)
     sprites.city = [];
     sprites.citySizeLoc = [];
+    sprites.cityFlagLoc = [];
     sprites.civTextColors = [];
     if (citiesCtx) {
       const CC = [[255, 0, 255], [0, 255, 255], [135, 135, 135]];
@@ -263,17 +275,22 @@ const Civ2Renderer = {
       for (let row = 0; row < 7; row++) {
         sprites.city[row] = [];
         sprites.citySizeLoc[row] = [];
+        sprites.cityFlagLoc[row] = [];
         for (let sizeIdx = 0; sizeIdx < 4; sizeIdx++) {
           const cy = 39 + row * 49;
           // Unwalled (cols 0-3)
           const ux = sizeIdx * 65;
           sprites.city[row][sizeIdx] = this.extractSprite(citiesCtx, ux + 1, cy, 64, 48, CC, true);
           sprites.citySizeLoc[row][sizeIdx] = this._findMarkerPixel(px, iw, ux, cy - 1, 65, 49, 255, 155, 0);
+          // Flag position: blue marker pixel (palette 250 = 0,0,255)
+          // Source: Scenario League Wiki — "Palette 250 will show where the nation's flag will appear"
+          sprites.cityFlagLoc[row][sizeIdx] = this._findMarkerPixel(px, iw, ux, cy - 1, 65, 49, 0, 0, 255);
           // Walled (cols 4-7): walled cells lack left-border Y marker,
           // so use X from walled cell's top border and Y from unwalled cell's left border
           const wx = 334 + sizeIdx * 65;
           sprites.city[row][sizeIdx + 4] = this.extractSprite(citiesCtx, wx + 1, cy, 64, 48, CC, true);
           const walledMarker = this._findMarkerPixel(px, iw, wx, cy - 1, 65, 49, 255, 155, 0);
+          const walledFlagMarker = this._findMarkerPixel(px, iw, wx, cy - 1, 65, 49, 0, 0, 255);
           const unwalledMarker = sprites.citySizeLoc[row][sizeIdx];
           if (walledMarker) {
             sprites.citySizeLoc[row][sizeIdx + 4] = walledMarker;
@@ -289,6 +306,15 @@ const Civ2Renderer = {
               : { x: unwalledMarker.x, y: unwalledMarker.y };
           } else {
             sprites.citySizeLoc[row][sizeIdx + 4] = null;
+          }
+          // Walled flag location: use walled marker if available, else unwalled fallback
+          const unwalledFlagLoc = sprites.cityFlagLoc[row][sizeIdx];
+          if (walledFlagMarker) {
+            sprites.cityFlagLoc[row][sizeIdx + 4] = walledFlagMarker;
+          } else if (unwalledFlagLoc) {
+            sprites.cityFlagLoc[row][sizeIdx + 4] = { x: unwalledFlagLoc.x, y: unwalledFlagLoc.y };
+          } else {
+            sprites.cityFlagLoc[row][sizeIdx + 4] = null;
           }
         }
       }
@@ -654,6 +680,11 @@ const Civ2Renderer = {
     if (onProgress) onProgress('Drawing cities...');
     await this._yield();
 
+    // Build set of tiles that have units (for city flag rendering)
+    // Source: Civ2-clone — flags drawn only when units are present at the city tile
+    const garrisonedTiles = new Set();
+    for (const u of mapData.units) garrisonedTiles.add(u.gx + ',' + u.gy);
+
     ctx.textBaseline = 'top';
 
     for (const c of mapData.cities) {
@@ -687,10 +718,15 @@ const Civ2Renderer = {
           ctx.fillRect(cx - 6, cy - 6, 12, 12);
         }
 
-        // Occupation flag — drawn on cities captured from another civ
-        if (c.isOccupied && sprites.cityFlags && sprites.cityFlags[c.originalOwner]) {
-          // Draw the original owner's flag on the right side of the city sprite
-          ctx.drawImage(sprites.cityFlags[c.originalOwner], tpx + 50, tpy - 16);
+        // City flag — drawn on cities with garrisoned units, showing owner's flag
+        // Source: Civ2-clone BaseGameView.cs — flag drawn only when tile.UnitsHere.Count > 0
+        // Position from blue marker pixel (palette 250), offset per Civ2-clone:
+        //   dest.X + (flagLoc.X - 3), dest.Y + (flagLoc.Y - 17)
+        if (sprites.cityFlags && sprites.cityFlags[c.owner] && garrisonedTiles.has(c.gx + ',' + c.gy)) {
+          const flagLoc = sprites.cityFlagLoc[row] && sprites.cityFlagLoc[row][col];
+          const fx = flagLoc ? tpx + flagLoc.x - 3 : tpx + 50;
+          const fy = flagLoc ? tpy - 16 + flagLoc.y - 17 : tpy - 16;
+          ctx.drawImage(sprites.cityFlags[c.owner], fx, fy);
         }
 
         // City size box — positioned via orange marker pixel, or fallback centered
@@ -965,7 +1001,17 @@ const Civ2Renderer = {
     // ────────────────────────────────────────
     // PASS 6: Fortress/Airbase (drawn over units)
     // ────────────────────────────────────────
+    // Airbase per-owner coloring: palette 252 (light red 255,0,0) for civ color
+    // Source: Civ2-clone — airbase sprites contain civ-color placeholder pixels
+    // "airbase,full" variant shown when air units (types 27-31) are present on the tile
     if (sprites.fortress || sprites.airbase) {
+      // Build set of tiles with air units for airbase variant selection
+      const AIR_TYPES = new Set([27, 28, 29, 30, 31]); // Fighter, Bomber, Helicopter, Stealth F., Stealth B.
+      const airUnitTiles = new Set();
+      for (const u of mapData.units) {
+        if (AIR_TYPES.has(u.type)) airUnitTiles.add(u.gx + ',' + u.gy);
+      }
+
       for (let gy = 0; gy < mh; gy++) {
         for (let gx = 0; gx < xMax; gx++) {
           let imp = getImprovements(gx, gy);
@@ -978,8 +1024,44 @@ const Civ2Renderer = {
           }
           if (!(imp & 0x40)) continue;
           const [px, py] = tilePos(gx, gy);
-          if ((imp & 0x02) && sprites.airbase) ctx.drawImage(sprites.airbase, px, py - 16);
+          if ((imp & 0x02) && sprites.airbase) {
+            // Select airbase variant: full (with planes) when air units present
+            const tileKey = gx + ',' + gy;
+            const hasAir = airUnitTiles.has(tileKey);
+            const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
+            // Per-owner recoloring via tile ownership (byte[5] high nibble)
+            const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(gx, gy) : 0;
+            const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
+            const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
+            if (!sprites.airbaseColored[variantKey]) {
+              const color = this.CIV_COLORS[ownerIdx] || '#c80000';
+              sprites.airbaseColored[variantKey] = this._recolorUnit(baseSprite, color);
+            }
+            ctx.drawImage(sprites.airbaseColored[variantKey], px, py - 16);
+          }
           else if (sprites.fortress) ctx.drawImage(sprites.fortress, px, py - 16);
+        }
+      }
+    }
+
+    // ────────────────────────────────────────
+    // PASS 6b: Map Grid (optional, drawn over everything before FOW)
+    // ────────────────────────────────────────
+    // Green diamond outlines per tile — matches ICONS.GIF grid sprite (palette 254 green)
+    // Toggle: UI checkbox. Save file toggle: gameToggles.showMapGrid at 0x000E bit 5
+    if (options.gridEnabled) {
+      ctx.strokeStyle = 'rgb(0,168,0)';  // palette 254 green
+      ctx.lineWidth = 1;
+      for (let gy = 0; gy < mh; gy++) {
+        for (let gx = 0; gx < xMax; gx++) {
+          const [px, py] = tilePos(gx, gy);
+          ctx.beginPath();
+          ctx.moveTo(px + TW / 2, py);
+          ctx.lineTo(px + TW, py + TH / 2);
+          ctx.lineTo(px + TW / 2, py + TH);
+          ctx.lineTo(px, py + TH / 2);
+          ctx.closePath();
+          ctx.stroke();
         }
       }
     }

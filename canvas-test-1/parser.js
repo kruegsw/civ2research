@@ -2,7 +2,11 @@
 // parser.js — Civilization II MGE Save File Binary Parser
 // Algorithms from Civ2_MGE_Binary_Analysis.md
 //
-// Sources & Acknowledgments:
+// Primary source (authoritative):
+//   .SAV/.SCN binary files — all field offsets, record structures,
+//     and data formats reverse-engineered from actual save files
+//
+// Decoding aids (used to understand the binary format, not copied):
 //   Allard Höfelt — Hex-Editing Guide (hexedit.rtf v1.8, 2005)
 //     Binary format offsets, tile data structure, map header fields
 //   TE Kimball — civ2mod.c: https://github.com/tek10/civ2mod
@@ -130,9 +134,10 @@ const Civ2Parser = {
     // ── 2.3 Core Game State Fields ──
     const turnsPassed        = this.u16(savBuf, 0x001C);
     const turnsForYear       = this.u16(savBuf, 0x001E);
-    const unknown_0x0020     = [savBuf[0x0020], savBuf[0x0021]];
+    const sentinel_0x0020    = this.u16(savBuf, 0x0020);    // Always 0xFFFF (confirmed across 196+ saves)
     const selectedUnit       = this.u16(savBuf, 0x0022);  // 0xFFFF = none
-    const unknown_0x0024     = [savBuf[0x0024], savBuf[0x0025], savBuf[0x0026]];
+    const unitCounterRelated = this.u16(savBuf, 0x0024);  // Correlated with totalUnits (r=0.74)
+    const spare_0x0026       = savBuf[0x0026];             // Low correlation, purpose unclear
     const activeHumanPlayer  = savBuf[0x0027];
     const playerMap          = savBuf[0x0028];
     const playerCiv          = savBuf[0x0029];
@@ -142,16 +147,16 @@ const Civ2Parser = {
     const barbarianActivity  = savBuf[0x002D];
     const civsAlive          = savBuf[0x002E];
     const humanPlayers       = savBuf[0x002F];
-    const unknown_0x0030     = [savBuf[0x0030], savBuf[0x0031]];
+    const civsEverExisted    = savBuf[0x0030];              // Bitmask — bits stay set after civ death (byte 0x0031 always 0)
     const currentPollution   = savBuf[0x0032];
     const globalWarmingCount = savBuf[0x0033];
-    const unknown_0x0034     = [savBuf[0x0034], savBuf[0x0035], savBuf[0x0036], savBuf[0x0037]];
+    const padding_0x0034     = [savBuf[0x0034], savBuf[0x0035], savBuf[0x0036], savBuf[0x0037]];  // Always 0 in MGE
     const turnsOfPeace       = savBuf[0x0038];
-    const unknown_0x0039     = savBuf[0x0039];
+    const padding_0x0039     = savBuf[0x0039];              // Always 0 in MGE
     const totalUnits         = this.u16(savBuf, 0x003A);
     const totalCities        = this.u16(savBuf, 0x003C);
     const techCount          = this.u16(savBuf, 0x003E);
-    const unknown_0x0040     = [savBuf[0x0040], savBuf[0x0041]];
+    const padding_0x0040     = [savBuf[0x0040], savBuf[0x0041]];  // Always 0 in MGE
 
     // ── 2.4 First Discoverer Per Advance (100 bytes at 0x0042) ──
     // Value = civ number (1-7) that first discovered, 0 = not yet discovered
@@ -181,14 +186,15 @@ const Civ2Parser = {
     const wonderCityIds = new Array(28);
     for (let i = 0; i < 28; i++) wonderCityIds[i] = this.u16(savBuf, 0x010A + i * 2);
 
-    // ── 2.7 Unknown gap before name blocks ──
+    // ── 2.7 Pre-name blocks: power graph ranking data ──
     // Wonders end at 0x010A + 56 = 0x0142
     // Name blocks start at 0x0156 (SAV) or 0x0148 (SCN)
+    // Agent D analysis: contains globalScoreAccumulator, civCountDuplicated, powerGraphRanking[7]
     const preNameBlocksStart = 0x0142;
     const preNameBlocksEnd = hdr.civNameBlockStart;
-    const unknown_preNameBlocks = new Array(preNameBlocksEnd - preNameBlocksStart);
-    for (let i = 0; i < unknown_preNameBlocks.length; i++) {
-      unknown_preNameBlocks[i] = savBuf[preNameBlocksStart + i];
+    const preNameBlocksData = new Array(preNameBlocksEnd - preNameBlocksStart);
+    for (let i = 0; i < preNameBlocksData.length; i++) {
+      preNameBlocksData[i] = savBuf[preNameBlocksStart + i];
     }
 
     return {
@@ -204,17 +210,19 @@ const Civ2Parser = {
       currentPollution, globalWarmingCount, turnsOfPeace,
       techCount,
       firstDiscoverer, techDiscoveryBitmask, wonderCityIds,
-      // Unknown/raw bytes
+      // Decoded game state fields
+      civsEverExisted,         // Bitmask — bits stay set after civ death
+      unitCounterRelated,      // Correlated with totalUnits (r=0.74)
+      // Remaining unknowns/padding
       unknowns: {
-        toggles_0x0011: unknownToggles_0x0011,
-        toggle_0x0015: unknownToggle_0x0015,
-        field_0x0020: unknown_0x0020,
-        field_0x0024: unknown_0x0024,
-        field_0x0030: unknown_0x0030,
-        field_0x0034: unknown_0x0034,
-        field_0x0039: unknown_0x0039,
-        field_0x0040: unknown_0x0040,
-        preNameBlocks: unknown_preNameBlocks,
+        toggles_0x0011: unknownToggles_0x0011,  // Always 0 in MGE
+        toggle_0x0015: unknownToggle_0x0015,     // Always 0 in MGE
+        sentinel_0x0020,                          // Always 0xFFFF
+        spare_0x0026,
+        padding_0x0034,                           // Always 0 in MGE
+        padding_0x0039,                           // Always 0 in MGE
+        padding_0x0040,                           // Always 0 in MGE
+        preNameBlocks: preNameBlocksData,       // Power graph ranking data (partially decoded)
       }
     };
   },
@@ -312,10 +320,10 @@ const Civ2Parser = {
 
       // +404–996: per-continent statistics block (593 bytes, byte 403 = padding always 0)
       // Slot index = continent bodyId − 1. Sections A/B are uint16 LE but only low byte used.
-      const militaryPowerByContinent = new Array(64);
+      const militaryUnitCountByContinent = new Array(64);
       const landAttackByContinent = new Array(64);
       for (let i = 0; i < 64; i++) {
-        militaryPowerByContinent[i] = savBuf[off + 404 + i * 2];  // low byte of uint16 LE (high byte always 0)
+        militaryUnitCountByContinent[i] = savBuf[off + 404 + i * 2];  // low byte of uint16 LE (high byte always 0)
         landAttackByContinent[i] = savBuf[off + 532 + i * 2];     // low byte of uint16 LE (high byte always 0)
       }
       const cityCountByContinent = new Array(64);
@@ -419,7 +427,7 @@ const Civ2Parser = {
         diplomaticInteractionCounters: new Array(8).fill(0).map((_, i) => savBuf[off + 80 + i]),  // +80-87: per-civ diplomatic interaction intensity (uint8[8])
         techBitmask,
         techBitmaskOverflow:   savBuf[off + 100],  // max(0, techBitmaskBitsSet - 80). Byte 101 always 0.
-        militaryPower:         this.u16(savBuf, off + 102),
+        militaryUnitCount:     this.u16(savBuf, off + 102),  // Renamed from militaryPower. r=0.9941 with counted military units.
         cityCount:             this.u16(savBuf, off + 104),
         navalUnitCount:        this.u16(savBuf, off + 106),
         sumOfCitySizes:        this.u16(savBuf, off + 108),
@@ -429,7 +437,7 @@ const Civ2Parser = {
         activeUnitCounts,
         unitCasualtyCounts,
         unitsInProduction,
-        militaryPowerByContinent,
+        militaryUnitCountByContinent,
         landAttackByContinent,
         cityCountByContinent,
         citySizeByContinent,
@@ -850,8 +858,9 @@ const Civ2Parser = {
     for (let i = 0; i < 12; i++) killTurns[i] = this.u16(savBuf, killHistoryOff + 2 + i * 2);
     const killerCivIds = new Array(12);
     for (let i = 0; i < 12; i++) killerCivIds[i] = savBuf[killHistoryOff + 26 + i];
-    const killUnknown = new Array(12);
-    for (let i = 0; i < 12; i++) killUnknown[i] = savBuf[killHistoryOff + 38 + i];
+    // destroyedCivRulesIds: rulesCivNumber + 21*generation (generation increments on civ death/rebirth)
+    const destroyedCivRulesIds = new Array(12);
+    for (let i = 0; i < 12; i++) destroyedCivRulesIds[i] = savBuf[killHistoryOff + 38 + i];
     const destroyedCivNames = new Array(12);
     for (let i = 0; i < 12; i++) {
       destroyedCivNames[i] = this.nullStr(savBuf, killHistoryOff + 50 + i * 24, 24);
@@ -880,7 +889,7 @@ const Civ2Parser = {
       scenarioBlock, scenarioName,
       killHistory: {
         count: killHistoryCount,
-        killTurns, killerCivIds, killUnknown, destroyedCivNames,
+        killTurns, killerCivIds, destroyedCivRulesIds, destroyedCivNames,
       },
       networkData, rawTail,
     };

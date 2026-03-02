@@ -48,6 +48,55 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, san
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 #loading-overlay .msg { font-size: 14px; color: #ccc; }
+/* City View overlay */
+#cityview-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; justify-content: center; align-items: center;
+  z-index: 300;
+}
+#cityview-backdrop {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+}
+#cityview-container {
+  position: relative; z-index: 1;
+  max-width: 95vw; max-height: 90vh;
+}
+#cityview-canvas {
+  display: block; max-width: 95vw; max-height: 90vh;
+  image-rendering: pixelated; border: 2px solid #555;
+}
+#cityview-close {
+  position: absolute; top: -14px; right: -14px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #333; color: #fff; border: 2px solid #777;
+  font-size: 16px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; line-height: 1;
+}
+#cityview-close:hover { background: #c0392b; border-color: #e74c3c; }
+/* City Dialog overlay */
+#citydialog-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; justify-content: center; align-items: center;
+  z-index: 300;
+}
+#citydialog-backdrop {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+}
+#citydialog-container { position: relative; z-index: 1; }
+#citydialog-canvas {
+  display: block; max-width: 95vw; max-height: 85vh;
+  image-rendering: pixelated; border: 2px solid #555; border-radius: 4px;
+}
+#citydialog-close {
+  position: absolute; top: -14px; right: -14px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #333; color: #fff; border: 2px solid #777;
+  font-size: 16px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; line-height: 1;
+}
+#citydialog-close:hover { background: #c0392b; border-color: #e74c3c; }
 </style>
 </head>
 <body>
@@ -68,7 +117,19 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, san
   <label class="file-btn" id="units-btn">
     UNITS.GIF <input type="file" id="units-input" accept=".gif,.GIF">
   </label>
+  <label class="file-btn" id="icons-btn">
+    ICONS.GIF <input type="file" id="icons-input" accept=".gif,.GIF">
+  </label>
+  <label class="file-btn" id="people-btn">
+    PEOPLE.GIF <input type="file" id="people-input" accept=".gif,.GIF">
+  </label>
+  <label class="file-btn" id="city-btn">
+    CITY.GIF <input type="file" id="city-input" accept=".gif,.GIF">
+  </label>
   <button id="render-btn" disabled>Render Map</button>
+  <label style="display:flex;align-items:center;gap:4px">
+    <input type="checkbox" id="grid-toggle"> Grid
+  </label>
   <label style="display:flex;align-items:center;gap:4px">
     <input type="checkbox" id="fow-toggle"> Fog of War
   </label>
@@ -85,9 +146,25 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, san
 
 <div id="tooltip"></div>
 <div id="loading-overlay"><div class="spinner"></div><div class="msg" id="loading-msg">Rendering...</div></div>
+<div id="cityview-overlay">
+  <div id="cityview-backdrop"></div>
+  <div id="cityview-container">
+    <canvas id="cityview-canvas" width="1280" height="480"></canvas>
+    <button id="cityview-close">&#x2715;</button>
+  </div>
+</div>
+<div id="citydialog-overlay">
+  <div id="citydialog-backdrop"></div>
+  <div id="citydialog-container">
+    <canvas id="citydialog-canvas" width="636" height="421"></canvas>
+    <button id="citydialog-close">&#x2715;</button>
+  </div>
+</div>
 
 <script src="parser.js"></script>
 <script src="renderer.js"></script>
+<script src="cityview.js"></script>
+<script src="citydialog.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

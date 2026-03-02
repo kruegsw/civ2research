@@ -404,7 +404,7 @@ After parsing everything, run these integrity checks:
 - [x] Unit home city IDs reference valid city array indices — `homeCityErrors` (0xFFFF and 0x00FF both treated as "no home city")
 - [x] Worker counts + specialists = city_size — `workerSizeErrors` (scenario files may have mismatches from editor)
 - [x] `science + tax ≈ trade` (±1) for cities without trade routes — `tradeErrors` (cities WITH routes expected to have sci+tax > trade due to route bonuses)
-- [ ] Forward-chain city offset == backward-chain city offset (from file end) — skipped, redundant with tail size validation
+- [x] ~~Forward-chain city offset == backward-chain city offset (from file end)~~ — removed, redundant with tail size validation
 
 ---
 
@@ -462,3 +462,112 @@ The parse result is a backward-compatible object. Top-level scalars and accessor
 - **Raw bytes for unknowns**: Every undecoded byte range gets stored as a raw Uint8Array so nothing is lost. Future analysis can decode these without re-parsing.
 - **Dead units and destroyed cities**: Store all records including dead/destroyed entries. Add `alive` / `destroyed` flags. The current renderer can continue filtering on `alive === 0`.
 - **File type dispatch**: Consolidate the SAV/SCN/NET detection into a single `fileType` field used throughout: `{type: 'sav'|'scn'|'net', isScenario, recordSizes: {...}, offsets: {...}}`.
+
+---
+
+## Rendering Fidelity — Visual Completeness
+
+### Goal
+
+Render every visual element that Civ2 MGE shows on its main map view. Every parsed data field that affects map appearance should be correctly applied.
+
+### Status: Tiers 1-4 Complete ✅
+
+| Tier | Description | Status |
+|------|-------------|--------|
+| 1 | Missing visuals (data parsed, sprites available) | ✅ Complete (1.1 fixed, 1.2-1.5 no map visual) |
+| 2 | Rendering accuracy (visual elements may be wrong) | ✅ Complete (2.3 implemented, 2.1/2.2/2.4 no change needed) |
+| 3 | Missing sprites / research needed | ✅ Complete (3.3/3.4 implemented, rest documented/unused) |
+| 4 | Binary understanding gaps (unknown bytes) | ✅ Complete (field renames, decodings applied) |
+| 5 | Non-map screens (city view, diplomacy, palace, spaceship) | Open |
+
+---
+
+### Tier 1: Missing Visuals (data parsed, sprites available, just not drawn)
+
+- [x] **1.1 City pennant flags on garrisoned cities** — FIXED. Flags now drawn on all cities with garrisoned units (units present at tile), using owner's flag. Position via blue marker pixel (palette 250) in city sprite borders. Source: Civ2-clone BaseGameView.cs confirms flags only when `tile.UnitsHere.Count > 0`, using `OwnerId`. Previously incorrectly drawn only on occupied cities with `originalOwner`.
+
+- [x] **1.2 Automated unit 'A' order letter** — NO CHANGE NEEDED. Research confirms automated units show their current task letter from orders byte, not a separate 'A'. The ORDER_KEYS table is already correct. Source: Civ2-clone `Civ2GoldInterface.cs` PicSources.
+
+- [x] **1.3 Civil disorder visual indicator** — NO MAP VISUAL. Civ2-clone has no disorder rendering in any map drawing code. ICONS.GIF disorder symbols are city screen/advisor icons only. Tooltip already shows disorder status.
+
+- [x] **1.4 WLTKD celebration indicator** — NO MAP VISUAL. No WLTKD rendering code exists in Civ2-clone or any community source. Effect is gameplay-only (advisor messages, city screen). Tooltip already shows WLTKD status.
+
+- [x] **1.5 City resistance visual** — NO MAP VISUAL. No visual distinction between active resistance and pacified occupation on the map in any source. Tooltip shows occupation status.
+
+---
+
+### Tier 2: Rendering Accuracy (visual elements exist but may be wrong)
+
+- [x] **2.1 Terrain variant selection algorithm** — NO CHANGE NEEDED. Civ2-clone uses only column 0 (single variant per terrain type). Real game formula unknown. Current hash approach produces acceptable visual variety. Source: Civ2-clone `TerrainSet.cs` BaseTiles definition.
+
+- [x] **2.2 Dark/alternate city flag row** — NOT A DISPLAYED SPRITE. Row 1 flags at y=448 exist solely for DarkColour sampling (`LoadPlayerColours` samples one pixel at [3*width+5]`). Scenario League Wiki: "The second row of flags is unused." Comment updated in renderer.
+
+- [x] **2.3 Airbase per-owner coloring** — IMPLEMENTED. Airbase sprites recolored per tile ownership via palette 252 (light red). Also added "airbase,full" variant (CITIES.GIF 338,423) shown when air units present. Source: Civ2-clone confirms palette 252 replacement.
+
+- [x] **2.4 Build Fortress order letter** — NO CHANGE NEEDED. Orders 1 (Fortifying), 2 (Fortified), 4 (Build Fortress) all correctly map to 'F'. Confirmed by Civ2-clone PicSources.
+
+---
+
+### Tier 3: Missing Sprites / Research Needed
+
+- [x] **3.1 TERRAIN2 bottom section** — NO CHANGE NEEDED. No ocean wave textures exist. "New 25" grassland variant is unused. Source: Civ2-clone TerrainLoader only extracts rows 0-10 terrain + overlays.
+
+- [x] **3.2 CITIES.GIF large city sprites** — UNUSED MODDER ART. Two "alternative modern" city sprites at ~(403,423) and ~(468,423). CivFanatics confirms "just a little extra graphics with no built-in function." TCRF documents them as unused content. Civ2-clone does not extract them.
+
+- [x] **3.3 Second airbase variant** — IMPLEMENTED. "airbase,full" at CITIES.GIF (338, 423, 64, 48). Shown when air units (types 27-31) are present on the tile. Source: Civ2-clone `Civ2GoldInterface.cs`.
+
+- [x] **3.4 Map grid toggle rendering** — IMPLEMENTED. Green diamond outlines (palette 254 green `rgb(0,168,0)`) drawn per tile as Pass 6b. UI checkbox toggle added. Matches ICONS.GIF grid sprite at (183, 430, 64, 32). Procedural rendering used instead of sprite to avoid ICONS.GIF loading infrastructure.
+
+- [x] **3.5 ICONS.GIF grid layout** — DOCUMENTED. Full grid mapped: 12 regions including viewPiece (199,256,64,32), gridlines (183,430,64,32), gridlines visible (248,430,64,32). NO disorder/celebration/map-relevant icons in ICONS.GIF — all are city screen/advisor icons. Source: Civ2-clone `Civ2GoldInterface.cs` PicSources.
+
+- [x] **3.6 TERRAIN2 rows 0–1 tile connection masks** — ARTIST REFERENCE ONLY. Green line segments are diagram overlays showing connectivity patterns, not used for rendering. Source: Civ2-clone TerrainLoader skips these rows entirely.
+
+- [x] **3.7 UNITS.GIF HPshield template** — UNUSED LEGACY. Sprite at (597, 30, 12, 20) is `backShield2` — a duplicate/fallback shield template. Not used by Civ2-clone or the game engine. Primary shield at (586, 1, 12, 20) already extracted.
+
+---
+
+### Tier 4: Binary Understanding Gaps (parsed as unknown_*)
+
+These bytes are stored raw but not understood. Most don't affect map rendering but may affect game state interpretation.
+
+- [x] **4.1 Game state unknowns** — MOSTLY DECODED via statistical analysis across 196+ saves:
+  - 0x0011, 0x0013, 0x0015: Always zero (unused padding in MGE)
+  - 0x0020-21: Always 0xFFFF (sentinel). Parser renamed to `sentinel_0x0020`.
+  - 0x0024-25: Unit counter correlated with totalUnits (r=0.74). Parser renamed to `unitCounterRelated`.
+  - 0x0030: `civsEverExisted` bitmask — bits stay set after civ death. Parser field added.
+  - 0x0034-37, 0x0039, 0x0040-41: Always zero (unused padding in MGE).
+  - 0x0142-0x0155: Power graph ranking data — globalScoreAccumulator, civCountDuplicated, powerGraphRanking[7]. Comment updated.
+
+- [x] **4.2 Per-civ partially decoded fields** — KEY RENAME:
+  - +102-103: `militaryPower` → `militaryUnitCount` (r=0.9941 with counted military units, confirmed by axx0 `numberMilitaryUnits` and Catfish Cave). Parser renamed.
+  - +23-26: AI diplomatic thresholds remain partially decoded (cascading, government-correlated).
+  - +80-87: Diplomatic interaction counters confirmed (war amplifies most). Renamed to `diplomaticInteractionCounters` in prior session.
+
+- [x] **4.3 Per-civ name block +1** — CONFIRMED PADDING. Always 0 across all 196×8 records. No further action.
+
+- [x] **4.4 Tail data unknowns** — PARTIALLY DECODED:
+  - Kill history +38 bytes: `destroyedCivRulesIds` — formula: `rulesCivNumber + 21*generation`. Parser renamed from `killUnknown`.
+  - Post-fixed data: 10-byte repeating blocks (per-civ summary structure).
+  - Gap record: still partially unknown (coordX, coordY, stateFlags decoded; unknown1/unknown2 remain).
+
+- [x] **4.5 Map data unknowns** — PARTIALLY DECODED:
+  - 1024-byte "padding" block contains structured 16-byte records (continent summary data), NOT simple padding.
+  - Byte[5] high nibble confirmed as tile ownership (used for airbase coloring, now rendered).
+  - Byte[1] river direction bits partially decoded but not yet actionable for rendering.
+
+---
+
+### Tier 5: Non-Map Screens (DLL-based, beyond map rendering)
+
+These are complete game screens backed by DLL-embedded GIF resources. Not part of map rendering but needed for full game visualization.
+
+- [ ] **5.1 City View (cv.dll)** — 16 GIFs. Improvements (#300, 740×710, 42+ isometric buildings), wonders (#305, 640×1130, 28+ wonders), surroundings (#310, 640×680, vegetation growth), landscape backgrounds (#340–353, 12 panoramas at 1280×480). Needs cell grids, building-ID-to-sprite mappings, landscape selection rules.
+
+- [ ] **5.2 Diplomacy (mk.dll)** — 56 GIFs + 21 CTABs. Leader portraits (#220–261, 42 at 227×277), meeting room backgrounds (#200–206, 7 at 640×480, one per government), CTABs (#1000–1020, 773 bytes each) for per-civ palette colorization. Needs civ-to-portrait-ID mapping, government-to-background mapping, CTAB application rules.
+
+- [ ] **5.3 Palace View (pv.dll)** — 55 GIFs. Base room (#100, 640×480), 6 component sets, decorative elements. All 642×482 (1px border). Needs positioning rules, tier-selection logic (which improvements trigger upgrades), compositing order.
+
+- [ ] **5.4 Spaceship (ss.dll)** — 46 GIFs. Build stages (#400–440), component strips, space backgrounds, build animation (#20000–20007, 8 frames). Needs component-count-to-view mapping, frame dimensions, animation timing.
+
+- [ ] **5.5 Wonder thumbnails (Wonder.dll)** — 28 thumbnails at 74×74px (GIFS/20000–20027). One per wonder. Could be used in a wonder info panel or tooltip enhancement.

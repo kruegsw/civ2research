@@ -3,8 +3,13 @@
 //          interactive scrolling viewport
 // ═══════════════════════════════════════════════════════════════════
 
-const files = { sav: null, t1: null, t2: null, cities: null, units: null };
+const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
+const cvFiles = {};   // cv_res*.gif files for city view (keyed by resource ID)
+let cvSprites = null; // lazily extracted city view sprites
+let cvBackgrounds = null; // Map of resourceId → Image
 let currentMapData = null;
+let cdSprites = null;
+let mapSprites = null;
 
 // ── Viewport state ──
 let vpX = 0, vpY = 0;         // top-left of viewport in offscreen coords
@@ -24,6 +29,9 @@ const SCROLL_STEP = 64;       // pixels per arrow key press
     { name: 'TERRAIN2.GIF', key: 't2',     btnId: 't2-btn',     label: 'TERRAIN2 \u2713 ' },
     { name: 'CITIES.GIF',   key: 'cities', btnId: 'cities-btn', label: 'CITIES \u2713 ' },
     { name: 'UNITS.GIF',    key: 'units',  btnId: 'units-btn',  label: 'UNITS \u2713 ' },
+    { name: 'ICONS.GIF',    key: 'icons',  btnId: 'icons-btn',  label: 'ICONS \u2713 ' },
+    { name: 'PEOPLE.GIF',   key: 'people', btnId: 'people-btn', label: 'PEOPLE \u2713 ' },
+    { name: 'CITY.GIF',    key: 'cityGif', btnId: 'city-btn',  label: 'CITY \u2713 ' },
   ];
   await Promise.all(known.map(async ({ name, key, btnId, label }) => {
     try {
@@ -33,6 +41,26 @@ const SCROLL_STEP = 64;       // pixels per arrow key press
       files[key] = new File([blob], name, { type: blob.type });
       document.getElementById(btnId).classList.add('loaded');
       document.getElementById(btnId).childNodes[0].textContent = label;
+    } catch (_) {}
+  }));
+
+  // City view GIFs (optional, silent)
+  const cvKnown = [
+    { name: 'cv_res300.gif', id: 300 }, { name: 'cv_res305.gif', id: 305 },
+    { name: 'cv_res310.gif', id: 310 },
+    { name: 'cv_res340.gif', id: 340 }, { name: 'cv_res341.gif', id: 341 },
+    { name: 'cv_res342.gif', id: 342 }, { name: 'cv_res343.gif', id: 343 },
+    { name: 'cv_res345.gif', id: 345 }, { name: 'cv_res346.gif', id: 346 },
+    { name: 'cv_res347.gif', id: 347 }, { name: 'cv_res348.gif', id: 348 },
+    { name: 'cv_res350.gif', id: 350 }, { name: 'cv_res351.gif', id: 351 },
+    { name: 'cv_res352.gif', id: 352 }, { name: 'cv_res353.gif', id: 353 },
+  ];
+  await Promise.all(cvKnown.map(async ({ name, id }) => {
+    try {
+      const resp = await fetch(name);
+      if (!resp.ok) return;
+      const blob = await resp.blob();
+      cvFiles[id] = new File([blob], name, { type: blob.type });
     } catch (_) {}
   }));
 
@@ -90,6 +118,24 @@ document.getElementById('units-input').addEventListener('change', e => {
   document.getElementById('units-btn').childNodes[0].textContent = 'UNITS ✓ ';
   checkReady();
 });
+document.getElementById('icons-input').addEventListener('change', e => {
+  files.icons = e.target.files[0];
+  document.getElementById('icons-btn').classList.add('loaded');
+  document.getElementById('icons-btn').childNodes[0].textContent = 'ICONS ✓ ';
+  checkReady();
+});
+document.getElementById('people-input').addEventListener('change', e => {
+  files.people = e.target.files[0];
+  document.getElementById('people-btn').classList.add('loaded');
+  document.getElementById('people-btn').childNodes[0].textContent = 'PEOPLE ✓ ';
+  checkReady();
+});
+document.getElementById('city-input').addEventListener('change', e => {
+  files.cityGif = e.target.files[0];
+  document.getElementById('city-btn').classList.add('loaded');
+  document.getElementById('city-btn').childNodes[0].textContent = 'CITY ✓ ';
+  checkReady();
+});
 
 function checkReady() {
   const ready = files.sav && files.t1 && files.t2;
@@ -106,9 +152,10 @@ function checkReady() {
 
 document.getElementById('render-btn').addEventListener('click', doRender);
 
-// FOW toggle/civ change → auto re-render if map already loaded
+// FOW toggle/civ change/grid toggle → auto re-render if map already loaded
 document.getElementById('fow-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
 document.getElementById('fow-civ').addEventListener('change', () => { if (currentMapData) doRender(); });
+document.getElementById('grid-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
 
 // ── Main render flow ──
 let rendering = false;
@@ -164,6 +211,8 @@ async function doRender() {
     }
     fowSelect.disabled = false;
 
+    cdSprites = null;
+
     // 3. Load sprite sheets
     msg.textContent = 'Loading sprite sheets...';
     const imgPromises = [
@@ -186,14 +235,17 @@ async function doRender() {
     const citiesCtx = citiesImg ? Civ2Renderer.imgToCtx(citiesImg) : null;
     const unitsCtx = unitsImg ? Civ2Renderer.imgToCtx(unitsImg) : null;
     const sprites = Civ2Renderer.extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx);
+    mapSprites = sprites;
 
     // 5. Render to offscreen canvas (#map-canvas, hidden)
     const canvas = document.getElementById('map-canvas');
     const fowEnabled = document.getElementById('fow-toggle').checked;
     const fowCivVal = document.getElementById('fow-civ').value;
+    const gridEnabled = document.getElementById('grid-toggle').checked;
     const renderOptions = {
       fowEnabled,
-      fowCiv: fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv
+      fowCiv: fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv,
+      gridEnabled
     };
     const result = await Civ2Renderer.render(canvas, mapData, sprites, m => { msg.textContent = m; }, renderOptions);
 
@@ -276,12 +328,13 @@ function drawViewport() {
 // ── Mouse drag panning ──
 let dragging = false;
 let dragLastX = 0, dragLastY = 0;
+let dragStartX = 0, dragStartY = 0;  // for click vs drag detection
 
 viewportCanvas.addEventListener('mousedown', e => {
   if (e.button !== 0) return;  // left click only
   dragging = true;
-  dragLastX = e.clientX;
-  dragLastY = e.clientY;
+  dragLastX = dragStartX = e.clientX;
+  dragLastY = dragStartY = e.clientY;
   viewportCanvas.classList.add('dragging');
 });
 
@@ -297,10 +350,13 @@ window.addEventListener('mousemove', e => {
   drawViewport();
 });
 
-window.addEventListener('mouseup', () => {
+window.addEventListener('mouseup', e => {
   if (!dragging) return;
   dragging = false;
   viewportCanvas.classList.remove('dragging');
+  // Click detection: if drag distance < 5px, treat as click
+  const dist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
+  if (dist < 5) handleMapClick(e);
 });
 
 // ── Keyboard panning ──
@@ -308,6 +364,14 @@ const keysDown = new Set();
 let keyScrollRAF = null;
 
 window.addEventListener('keydown', e => {
+  // Escape closes city dialog first, then city view overlay
+  if (e.key === 'Escape') {
+    if (document.getElementById('citydialog-overlay').style.display === 'flex')
+      closeCityDialog();
+    else
+      closeCityView();
+    return;
+  }
   if (offW === 0) return;
   const key = e.key;
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) {
@@ -504,3 +568,138 @@ viewportCanvas.addEventListener('mousemove', e => {
 viewportCanvas.addEventListener('mouseleave', () => {
   tooltip.style.display = 'none';
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// CITY VIEW — click on city to open panoramic view overlay
+// ═══════════════════════════════════════════════════════════════════
+
+function findTileAt(clientX, clientY) {
+  if (!currentMapData) return null;
+  const rect = viewportCanvas.getBoundingClientRect();
+  const localX = clientX - rect.left;
+  const localY = clientY - rect.top;
+  let mx = localX + vpX;
+  let my = localY + vpY;
+  if (wraps && wrapW > 0) mx = ((mx % wrapW) + wrapW) % wrapW;
+
+  const md = currentMapData;
+  const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
+  const approxGy = Math.floor(my / (TH >> 1));
+
+  for (let gy = Math.max(0, approxGy - 1); gy <= Math.min(md.mh - 1, approxGy + 1); gy++) {
+    for (let gx = 0; gx < md.mw; gx++) {
+      const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
+      const py = gy * (TH >> 1);
+      if (mx >= px && mx < px + TW && my >= py && my < py + TH) {
+        const dx = mx - px - TW / 2;
+        const dy = my - py - TH / 2;
+        if (Math.abs(dx) / (TW / 2) + Math.abs(dy) / (TH / 2) <= 1) {
+          return { gx, gy };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function findCityAt(gx, gy) {
+  if (!currentMapData) return null;
+  for (let i = 0; i < currentMapData.cities.length; i++) {
+    const c = currentMapData.cities[i];
+    if (c.gx === gx && c.gy === gy) return { city: c, index: i };
+  }
+  return null;
+}
+
+async function ensureCvSprites() {
+  if (cvSprites) return true;
+  // Need all three sprite sheets
+  if (!cvFiles[300] || !cvFiles[305] || !cvFiles[310]) return false;
+
+  const [improvImg, wondersImg, altImg] = await Promise.all([
+    Civ2Renderer.loadImage(cvFiles[300]),
+    Civ2Renderer.loadImage(cvFiles[305]),
+    Civ2Renderer.loadImage(cvFiles[310]),
+  ]);
+  cvSprites = Civ2CityView.extractSprites(
+    Civ2Renderer.imgToCtx(improvImg),
+    Civ2Renderer.imgToCtx(wondersImg),
+    Civ2Renderer.imgToCtx(altImg)
+  );
+
+  // Load backgrounds
+  cvBackgrounds = new Map();
+  const bgIds = [340,341,342,343,345,346,347,348,350,351,352,353];
+  await Promise.all(bgIds.map(async id => {
+    if (!cvFiles[id]) return;
+    const img = await Civ2Renderer.loadImage(cvFiles[id]);
+    cvBackgrounds.set(id, img);
+  }));
+
+  return true;
+}
+
+async function ensureCdSprites() {
+  if (cdSprites) return true;
+  if (!files.icons || !files.people) return false;
+  const imgPromises = [
+    Civ2Renderer.loadImage(files.icons),
+    Civ2Renderer.loadImage(files.people),
+  ];
+  if (files.cityGif) imgPromises.push(Civ2Renderer.loadImage(files.cityGif));
+  const imgs = await Promise.all(imgPromises);
+  const iconsCtx = Civ2Renderer.imgToCtx(imgs[0]);
+  const peopleCtx = Civ2Renderer.imgToCtx(imgs[1]);
+  const cityGifCtx = files.cityGif ? Civ2Renderer.imgToCtx(imgs[2]) : null;
+  cdSprites = Civ2CityDialog.extractSprites(iconsCtx, peopleCtx, cityGifCtx);
+  return true;
+}
+
+async function handleMapClick(e) {
+  const tile = findTileAt(e.clientX, e.clientY);
+  if (!tile) return;
+  const hit = findCityAt(tile.gx, tile.gy);
+  if (!hit) return;
+  openCityDialog(hit.city, hit.index);
+}
+
+async function openCityDialog(city, cityIndex) {
+  const ready = await ensureCdSprites();
+  if (!ready) {
+    alert('City dialog requires ICONS.GIF and PEOPLE.GIF. Load them and try again.');
+    return;
+  }
+  const canvas = document.getElementById('citydialog-canvas');
+  const regions = Civ2CityDialog.render(canvas, city, cityIndex, currentMapData, cdSprites, mapSprites);
+  canvas.onclick = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const sx = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const sy = (e.clientY - rect.top) * (canvas.height / rect.height);
+    const result = Civ2CityDialog.handleClick(sx, sy, regions);
+    if (result && result.action === 'exit') {
+      closeCityDialog();
+    } else if (result && result.action === 'panorama') {
+      closeCityDialog();
+      ensureCvSprites().then(ok => {
+        if (!ok) return;
+        const cvCanvas = document.getElementById('cityview-canvas');
+        Civ2CityView.render(cvCanvas, city, cityIndex, currentMapData, cvSprites, cvBackgrounds);
+        document.getElementById('cityview-overlay').style.display = 'flex';
+      });
+    }
+  };
+  document.getElementById('citydialog-overlay').style.display = 'flex';
+}
+
+function closeCityDialog() {
+  document.getElementById('citydialog-overlay').style.display = 'none';
+}
+
+function closeCityView() {
+  document.getElementById('cityview-overlay').style.display = 'none';
+}
+
+document.getElementById('citydialog-backdrop').addEventListener('click', closeCityDialog);
+document.getElementById('citydialog-close').addEventListener('click', closeCityDialog);
+document.getElementById('cityview-backdrop').addEventListener('click', closeCityView);
+document.getElementById('cityview-close').addEventListener('click', closeCityView);
