@@ -346,14 +346,15 @@ const Civ2CityView = {
     }
 
     // 5. City title: "CityName: GameYear"
+    // GDI pipeline: shadow at (+1,+1) offset, 0x000000 shadow → 0x878787 foreground
     const year = this._getGameYear(mapData);
     const title = year ? `${city.name}: ${year}` : city.name;
     ctx.font = 'bold 26px "Times New Roman", serif';
-    // Shadow
+    // Shadow at (+1,+1)
     ctx.fillStyle = '#000';
     ctx.fillText(title, 791, 36);
-    // Text
-    ctx.fillStyle = '#999';
+    // Foreground (GDI-verified: 0x878787)
+    ctx.fillStyle = 'rgb(135,135,135)';
     ctx.fillText(title, 790, 35);
   },
 };

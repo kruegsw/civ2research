@@ -833,10 +833,9 @@ const Civ2Renderer = {
           ctx.textBaseline = 'middle';
           ctx.letterSpacing = '1px';
           const nameY = tpy - 16 + 48;
+          // Single (+1,+1) black shadow (GDI pipeline: DrawTextA shadow offset)
           ctx.fillStyle = '#000';
-          for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
-            ctx.fillText(c.name, cx + sdx, nameY + sdy);
-          }
+          ctx.fillText(c.name, cx + 1, nameY + 1);
           ctx.fillStyle = textColor;
           ctx.fillText(c.name, cx, nameY);
           ctx.letterSpacing = '0px';
@@ -1181,11 +1180,9 @@ const Civ2Renderer = {
         ctx.textBaseline = 'middle';
         ctx.letterSpacing = '1px';
         const nameY = tpy - 16 + 48; // bottom of city sprite
-        // 4-direction black outline for better readability (matches original Civ2)
+        // Single (+1,+1) black shadow (GDI pipeline: DrawTextA shadow offset)
         ctx.fillStyle = '#000';
-        for (const [sdx, sdy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
-          ctx.fillText(c.name, cx + sdx, nameY + sdy);
-        }
+        ctx.fillText(c.name, cx + 1, nameY + 1);
         ctx.fillStyle = textColor;
         ctx.fillText(c.name, cx, nameY);
         ctx.letterSpacing = '0px';

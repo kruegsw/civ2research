@@ -210,10 +210,10 @@ const Civ2CityDialog = {
     return cdSprites;
   },
 
-  // ── Text drawing with 1px black drop shadow ──
-  _text(ctx, text, x, y, color, font) {
+  // ── Text drawing with 1px drop shadow (GDI pipeline: DrawTextA at +1,+1 offset) ──
+  _text(ctx, text, x, y, color, font, shadowColor) {
     if (font) ctx.font = font;
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = shadowColor || '#000';
     ctx.fillText(text, x + 1, y + 1);
     ctx.fillStyle = color;
     ctx.fillText(text, x, y);
@@ -356,17 +356,21 @@ const Civ2CityDialog = {
       wonder:   'rgb(223,187,63)',
       gray:     'rgb(192,192,192)',
       dimGray:  'rgb(128,128,128)',
+      // GDI-verified colors from DrawTextA hooking (9,338 calls captured)
+      headerCyan:       'rgb(63,187,199)',   // 0x3FBBDF — real section header foreground
+      headerShadow:     'rgb(67,67,67)',     // 0x434343 — section header shadow
+      resourceMapShadow:'rgb(0,51,0)',       // 0x003300 — "Resource Map" shadow
     };
 
     // ── Section labels (centered, gold with dark shadow) ──
     // From CityWindow.cs: Draw.Text centered at (x, y) with shadow (67,67,67) offset (1,1)
-    const _label = (text, cx, cy, color) => {
-      ctx.font = 'bold 9px Arial, sans-serif';
+    const _label = (text, cx, cy, color, shadow) => {
+      ctx.font = 'bold 13px Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'rgb(67,67,67)';
+      ctx.fillStyle = shadow || COL.headerShadow;
       ctx.fillText(text, cx + 1, cy + 1);
-      ctx.fillStyle = color || COL.header;
+      ctx.fillStyle = color || COL.headerCyan;
       ctx.fillText(text, cx, cy);
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
@@ -375,7 +379,7 @@ const Civ2CityDialog = {
     _label('City Resources', 317, 52);
     _label('Food Storage', 535, 7, 'rgb(75,155,35)');
     _label('City Improvements', 96, 296);
-    _label('Resource Map', 101, 195);
+    _label('Resource Map', 101, 195, COL.headerCyan, COL.resourceMapShadow);
 
     // ═══════════════════════════════════════════════════════════
     // CITIZENS PANEL (faces at y=9, spacing table)
@@ -540,10 +544,10 @@ const Civ2CityDialog = {
       // Left text: "Food: N", right text: "Surplus: N" (or hunger if negative)
       const foodTotal = city.foodProduction || 0;
       const foodSurplus = foodTotal - (city.size * 2);
-      ctx.font = 'bold 9px Arial, sans-serif';
+      ctx.font = 'bold 13px Arial, sans-serif';
       // Left: "Food: N"
       ctx.textAlign = 'left';
-      this._text(ctx, `Food: ${foodTotal}`, 203, 68, 'rgb(87,171,39)', 'bold 9px Arial, sans-serif');
+      this._text(ctx, `Food: ${foodTotal}`, 203, 68, 'rgb(87,171,39)', 'bold 13px Arial, sans-serif');
       // Right: "Surplus: N"
       ctx.textAlign = 'right';
       this._text(ctx, `Surplus: ${foodSurplus}`, 431, 68, 'rgb(63,139,31)');
@@ -569,7 +573,7 @@ const Civ2CityDialog = {
       // Row 2: TRADE — text at y=102, icons at y=117
       const tradeTotal = city.totalTrade || 0;
       ctx.textAlign = 'left';
-      this._text(ctx, `Trade: ${tradeTotal}`, 203, 109, 'rgb(239,159,7)', 'bold 9px Arial, sans-serif');
+      this._text(ctx, `Trade: ${tradeTotal}`, 203, 109, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'right';
       this._text(ctx, `Corruption: ${corruption}`, 431, 109, 'rgb(227,83,15)');
       ctx.textAlign = 'left';
@@ -591,7 +595,7 @@ const Civ2CityDialog = {
       const tlsSpacing = this._resourceSpacing(tlsTotal);
       // Text: "N% Tax: N" left, "N% Lux: N" center, "N% Sci: N" right
       ctx.textAlign = 'left';
-      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 163, 'rgb(239,159,7)', 'bold 9px Arial, sans-serif');
+      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 163, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'center';
       this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, 317, 163, 'rgb(255,255,255)');
       ctx.textAlign = 'right';
@@ -612,7 +616,7 @@ const Civ2CityDialog = {
 
       // Row 4: SUPPORT + PRODUCTION — text at y=196, icons at y=181
       ctx.textAlign = 'left';
-      this._text(ctx, `Support: ${support}`, 204, 203, 'rgb(63,79,167)', 'bold 9px Arial, sans-serif');
+      this._text(ctx, `Support: ${support}`, 204, 203, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'right';
       this._text(ctx, `Production: ${production}`, 431, 203, 'rgb(7,11,103)');
       ctx.textAlign = 'left';
@@ -705,7 +709,7 @@ const Civ2CityDialog = {
       } else {
         // Building or wonder — name centered at (97,8) relative to panel, icon at (79,18)
         ctx.textAlign = 'center';
-        this._text(ctx, prodName, panelPX + 97, panelPY + 15, 'rgb(63,79,167)', 'bold 9px Arial, sans-serif');
+        this._text(ctx, prodName, panelPX + 97, panelPY + 15, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
         ctx.textAlign = 'left';
         if (!item.type || item.type === 'building') {
           if (item.id >= 1 && item.id <= 38 && cdSprites.improvements[item.id]) {
