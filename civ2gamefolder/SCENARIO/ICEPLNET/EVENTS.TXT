@@ -1,0 +1,60 @@
+;
+; Events text for Ice Planet Scenario
+; Copyright(c) 1997, MicroProse Studios Inc.
+;
+;
+
+@BEGINEVENTS
+
+@IF 
+NEGOTIATION
+TALKER=KYDEXTRIANS
+TALKERTYPE=HUMANORCOMPUTER
+LISTENER=ANYBODY
+LISTENERTYPE=HUMANORCOMPUTER
+@THEN
+@ENDIF
+
+@IF
+NEGOTIATION
+TALKER=ANYBODY
+TALKERTYPE=HUMANORCOMPUTER
+LISTENER=KYDEXTRIANS
+LISTENERTYPE=HUMANORCOMPUTER
+@THEN
+@ENDIF
+
+@IF
+SCENARIOLOADED
+@THEN
+PLAYCDTRACK
+16
+DONTPLAYWONDERS
+@ENDIF
+
+@IF
+TURN
+turn=EVERY
+@THEN
+PLAYWAVEFILE
+beginturn.wav
+@ENDIF
+
+@IF
+CITYTAKEN
+city=Mother Nest
+attacker=ANYBODY
+defender=Kydextrians
+@THEN
+TEXT
+^You have destroyed the core of the Kydextrian hive and 
+^killed the Hive Empress!  The remaining Kydextrian 
+^drones soon disappear...or have they? 
+ENDTEXT
+DESTROYACIVILIZATION
+whom=Kydextrians
+PLAYWAVEFILE
+custom2.wav
+@ENDIF
+
+@ENDEVENTS

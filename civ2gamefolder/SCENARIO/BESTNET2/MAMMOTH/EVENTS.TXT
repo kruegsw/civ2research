@@ -1,0 +1,181 @@
+;-------------------------------------------------------------------------------------------------------------
+ - EVENTS.TXT	(Latest Rev. - September 1997 )
+;
+
+;
+@BEGINEVENTS 
+
+@IF
+SCENARIOLOADED
+@THEN
+DONTPLAYWONDERS
+@ENDIF
+
+@IF
+NOSCHISM
+DEFENDER=anybody 
+@THEN 
+ 
+@ENDIF
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Transport
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+9,103
+endlocations 
+@ENDIF 
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Laser AtkV
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+6,111
+endlocations 
+@ENDIF 
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Transport
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+2,19
+endlocations 
+@ENDIF 
+
+@IF 
+TURN
+turn=every 
+@THEN
+CREATEUNIT
+unit=Laser AtkV
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+1,20
+endlocations 
+@ENDIF 
+
+@IF
+TURN
+turn=8
+@THEN
+PLAYWAVEFILE
+drums.wav
+TEXT
+^^Rumors of disaffected, disenfranchised Terrorist Hordes persist.
+^Communications being re-established with other industrialized colonies
+on Mammoth indicate that large numbers of disaffected nomads have flocked
+to well organized terrorist organizations over the years.
+ENDTEXT 
+@ENDIF 
+
+@IF
+TURN
+turn=19
+@THEN 
+TEXT
+^An emissary from an organization calling itself the Wind of Ahib,
+has a short message to deliver to you, sir.  We believe that he is a
+representative of the terrorists we've heard about.
+ENDTEXT
+PLAYWAVEFILE
+spit.wav 
+@ENDIF 
+
+@IF
+TURN
+turn=34
+@THEN 
+PLAYWAVEFILE
+drumbn.wav 
+TEXT
+^Sir, intelligence indicates that the Winds of Ahib has made significant 
+progress in their  FASE frequency developments and may be producing 
+technology in this field equal to or greater than our own.
+ENDTEXT 
+CREATEUNIT
+unit=FASE AtkV
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+1,20
+endlocations 
+CREATEUNIT
+unit=FASE Bolt
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+6,111
+endlocations 
+@ENDIF 
+
+@IF
+TURN
+turn=55
+@THEN 
+PLAYWAVEFILE
+rnd.wav 
+TEXT
+^Sir, we MUST quickly locate the Winds of Ahib headquarters and 
+any other base camps immediately and destroy them! Latest indications 
+from our own assets and from friendly intelligence operatives indicate 
+that their organizations technological developments are continuing to keep 
+pace with, or outdistance our own.
+ENDTEXT 
+CREATEUNIT
+unit= Mech Combtnt
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+6,111
+endlocations 
+CREATEUNIT
+unit=FASE MPS
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+9,103
+endlocations 
+CREATEUNIT
+unit= Mech Combtnt
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+1,20
+endlocations 
+CREATEUNIT
+unit=FASE MPS
+owner=Terrorists
+veteran=false
+homecity=none
+locations
+2,19
+endlocations 
+@ENDIF 
+
+
+@ENDEVENTS

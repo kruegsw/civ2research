@@ -1,0 +1,23 @@
+@SCENARIO
+@width=500
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^"Peace is the dream of the wise; war is the history of man." 
+^    -Sir Richard Francis Burton, quoting an old proverb
+^
+^Recommended: Arabs
+^
+^Interesting, not challenging: Byzantines  
+^
+^Long shots: Everyone else
+^
+^OBJECT: The Arabs' goal is to conquer the world.
+^  The Byzantines (protagonist) need to score at least 21 objective points.
+^  Everyone else's goal is to prevent the Byzantines from accomplishing this.
+^
+^^SPECIAL NOTES
+^Government switching is not permitted.
+^
+@end -- this line must be here!
+

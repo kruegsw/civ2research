@@ -1,0 +1,23 @@
+@SCENARIO
+@width=500
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^Play out your frustrations with the opposite sex in this scenario
+that everyone's wished to be in at some point!  The goal is simple:
+lead your gender to conquest over the other, proving once and for all
+who rules.  For extra fun, edit the name of the opposing gender's
+leader to the name of your recently-ex boy/girlfriend.
+^
+^Each sex starts off on its own continent, and each civilization has 
+risen true to its stereotype: the Womyn live in a lush garden island
+filled with malls and money to spend, whereas the Manly Men inhabit a
+rugged terrain filled with lots of guns and big toys.  
+^
+^Will the men succumb to the Womyn's feminine wiles, or will sheer brawn
+ win out over brains and credit cards?  Only you can decide.  
+Since this battle's been going on for a long time, the scenario gives 
+you plenty of time to duke it out.
+
+^
+@end -- this line must be here!

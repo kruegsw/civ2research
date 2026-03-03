@@ -1,0 +1,12 @@
+@HERALDWARNING
+@width=440
+@title=Civ2 Diplomatic Heralds
+Civilization II requires 8 megabytes of RAM in order to run.
+However, it requires 16 megabytes of RAM to show
+the 3D diplomatic heralds correctly. Therefore, if you have at
+least 16 megabytes of RAM, you may safely turn this feature on.
+(This message will appear only once).
+
+Turn OFF heralds. I have less than 16 megabytes of RAM.
+Turn ON heralds. I have at least 16 megabytes of RAM.
+

@@ -1,0 +1,154 @@
+;
+; Events text for Age Of Napoleon Scenario
+; Copyright(c) 1996, MicroProse Studios Inc.
+;
+;
+
+@BEGINEVENTS
+
+@IF
+SCENARIOLOADED
+@THEN
+PLAYCDTRACK
+3
+@ENDIF
+
+@IF
+NOSCHISM
+DEFENDER=anybody 
+@THEN
+ 
+@ENDIF
+
+@IF
+TURN
+turn=1  
+@THEN
+TEXT
+^A soldier in Napoleon's Egyptian army discovers the Rosetta stone.
+ For now, it's importance is unrecognized.
+^
+^Later, this artifact will provide the key for translating the heiroglyphic
+ language of ancient Egypt.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=27 
+@THEN
+TEXT
+^The United States buys the Louisiana Territory from Napoleon.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=33 
+@THEN
+TEXT
+^In order to gauge the extent of his Louisiana Purchase, President
+ Jefferson commissions the Lewis and Clark expedition.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=34 
+@THEN
+TEXT
+^Haiti, under the leadership of former slave Toussaint L'Ouverture,
+ becomes the first Latin state to successfully gain independence from Europe.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=51  
+@THEN
+TEXT
+^Late this year, Fulton makes the first steamboat trip from New York City to Albany.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=80   
+@THEN
+TEXT
+^Jane Austen's first novel, Sense And Sensibility, is published anonymously.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=32
+@THEN
+CREATEUNIT
+unit=Imperial Guard
+owner=French
+veteran=false
+homecity=none
+locations
+44,52
+endlocations
+@ENDIF
+
+@IF
+TURN
+TURN=62 
+@THEN
+CREATEUNIT
+unit=Wellington
+owner=British
+veteran=false
+homecity=none
+locations
+41,53
+endlocations
+@ENDIF
+
+@IF
+UNITKILLED
+unit=Napoleon 
+attacker=anybody
+defender=anybody
+@THEN
+TEXT 
+^Napoleon dies in battle, however his generals vow to carry on.
+^The French are limited to a Marginal Victory.
+ENDTEXT
+PLAYWAVEFILE
+funeral.wav
+@ENDIF
+
+@IF
+UNITKILLED
+unit=Wellington 
+attacker=anybody
+defender=anybody
+@THEN
+TEXT 
+^Wellington dies in battle, however his generals vow to carry on.
+^The English are limited to a Marginal Victory.
+ENDTEXT
+PLAYWAVEFILE
+funeral.wav
+@ENDIF
+
+@IF
+UNITKILLED
+unit=Lord Nelson 
+attacker=anybody
+defender=anybody
+@THEN
+TEXT 
+^Lord Nelson dies on the deck of his flagship, the Victory.
+^The entire British nation goes into mourning.
+ENDTEXT
+PLAYWAVEFILE
+funeral.wav
+@ENDIF   
+
+ 
+@ENDEVENTS

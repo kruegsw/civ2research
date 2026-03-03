@@ -1,0 +1,32 @@
+@SCENARIO
+@width=600
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+After the devastation on Earth in the late 2030's, which resulted in the expanded
+settling of the planet Centauri in the Alpha Centauri system, the various
+nationalities that were represented on Centauri lived in peace for a time. But
+near the turn of the 24th Century, it was apparent that conflict was again going
+to reign on human habitation.  In the early 2300's, new technology developed on
+Centauri, enabled humanity to reach out to the stars through teleportation.  All 
+that was required was for suitable star systems and planets to be located.  The 
+technology did not allow for anything metallic, ceramic or composite to be
+teleported.  This resulted in a one way trip for living humans.  As tensions rose on 
+Centauri, more and more experimental trips were made.  Of course, nothing was ever
+heard of the travelers again.  One of the most promising planetary systems contained 
+a lush planet that appeared to be a veritable paradise.  The planet became known 
+as Paradise.  All of the cultures except the French teleported many colonists there.
+The Germans, it turns out, had discovered Paradise from Earth and got the last
+colony ship off before the earth was destroyed.  As a result of the last minute
+nature of this German colony ship, no equipment to speak of was transported, only
+people.  The Germans arrived near the same time as the Centauri teleporters.  This
+is their story.
+
+The Americans are the intended human player and have 1 city and Literacy.
+The English start in a normal game playing mode.
+The Spanish start in a normal game playing mode.
+The Germans start in a normal game playing mode.
+The Russians start in a normal game playing mode.
+The Indians start in a normal game playing mode.
+The Japanese start in a normal game playing mode.
+
+@end -- this line must be here! 

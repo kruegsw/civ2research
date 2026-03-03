@@ -1,0 +1,645 @@
+;
+;   CIVILIZATION CITY LIST: Mars Scenario
+;   Copyright (c) 1997 by MicroProse Software
+;
+;   This file can be altered at your own risk to change
+;   the default names for cities.  Keep in mind that
+;   altering the contents of this file may cause your game
+;   to malfunction.
+;
+;   City names may contain no more than 15 characters.
+;
+
+@AMERICANS
+Armstrong
+Aldrin
+Collins
+Shepard
+Grissom
+White
+Chaffee
+Scobee
+Smith
+Resnik
+Onizuka
+McNair
+Jarvis
+McAuliffe
+Glenn
+Carpenter
+Cooper
+Young
+McDivitt
+Schirra
+Stafford
+Borman
+Lovell
+Scott
+Bluford
+@STOP
+
+@MARTIANS
+Marsopolis
+Schiaparelli
+Lowell
+Ares
+Madler
+Olympia
+Noctis
+Hesperia
+Arsia
+Tharsis
+Nirgal
+Beer
+Arcadia
+Amazonis
+Vastitas
+Chryse
+Acidalia
+Ceraunius
+Pavonis
+Phlegra
+Utopia
+Elysium
+Isidis
+Syrtis
+Argyre
+@STOP
+
+@JAPANESE
+Soseki
+Ashikaga
+Takauji
+Tadayoshi
+Oda
+Toyotomi
+Ieuasu
+Hosokawa
+Sansai
+Sekai
+Obusuma
+Yoshimi
+Bokkei
+Soga
+Senka
+Sesson
+Kagenaga
+Yamada
+Tomikage
+Kano
+Zhiweng
+Tosa
+Sanraku
+Unkoku
+Yano
+@STOP
+
+@RUSSIANS
+Komarov
+Titov
+Nikolayev
+Popovich
+Bykofsky
+Feoktistov
+Yegorov
+Belyayev
+Leonov
+Shatalov
+Volyanov
+Yeliseyev
+Khrunov
+Shonin
+Kubasov
+Flipchenko
+Gorbatko
+Rukavishnikov
+Dobrovolskiy
+Patsayev
+Romanenko
+Grechko
+Dzanibekov
+Gubarev
+Lyakhov
+@STOP
+
+@AUSTRALIANS
+Got Here
+Still Here
+Faraway
+Gower
+Adelaide
+Nowhere
+West Nowhere
+Kinda Dry
+Henry Town
+Just Here
+Flynn
+Face Rock
+Oasis
+Walkabout
+Botany Bay
+Riverun
+Settledown
+Sniffles
+Occam
+Dyson
+Penrose
+Hawking
+Heisenberg
+Planck
+Hubble
+@STOP
+
+@UKRAINIANS
+Nova Kiev
+Zelene
+Solone
+Synivka
+Dniprovka
+Haysyn
+Kolky
+Borove
+Horodok
+Lokachi
+Ivanivka
+Zlynka
+Bus'k
+Chorna
+Obtove
+Yablychne
+Kirovs'ke
+Valok
+Hrytsiv
+Kulykivka
+Anan'yiv
+Marynivka
+Nikopol
+Tetiyiv
+Kam'yane
+@STOP
+
+@FRENCH
+Adastres
+Labougeotte
+Sansens
+Pas de Jean
+Villeneuve
+Solvide
+Goudeau
+Vueclaire
+Aubain
+Tourbillon
+Terre-en-ciel
+Hirondelle
+Galipette
+Abrisole
+La Fontaine
+Oust
+Allesie
+Vallevaste
+Moucheron
+Belleville
+Pointe Perdue
+Les Tumulus
+Rocailles
+Vent Chantant
+Longchamp
+@STOP
+
+@ENGLISH
+Starbridge
+Castleton
+Kilham
+Settle
+Belper
+Caistor
+Manby
+Friskney
+Kirton
+Butterwick
+Helsby
+Askern
+Guiseley
+Litcham
+Lyminge
+West Meon
+Bruton
+Lelant
+Redruth
+Cerne Abbas
+Yatton
+Bicester
+Cranfield
+Flitwick
+Ombersley
+@STOP
+
+@ITALIANS
+Giordano
+Irsina
+Lucano
+Pergola
+Fermo
+Poppi
+Bisaccia
+Troia
+Savigliano
+Ortisei
+Caorle
+Tolentino
+Eraclea
+Amantea
+Soverato
+Noci
+Urbania
+Arcidosso
+Toano
+Legnago
+Cecina
+Zogno
+Varallo
+Busca
+Terracina
+@STOP
+
+@BRAZILIANS
+Mundo Novo
+Lagarto
+Paulistana
+Brejo
+Roque
+Aveiro
+Jauru
+Itaqui
+Piratini
+Vacaria
+Vidal Ramos
+Turvo
+Rondon
+Caracol
+Faxinal
+Guaramirim
+Cerro Azul
+Duartina
+Adamantina
+Pilar do sul
+Ouro Fino
+Machado
+Baliza
+Mato Verde
+Encruzilhada
+@STOP
+
+@INDIANS
+Tirupati
+Kanigiri
+Gaurela
+Jobat
+Etah
+Naenwa
+Devli
+Pokaran
+Kannod
+Begamganj
+Seoni
+Koppal
+Rajampet
+Jangoon
+Umred
+Manpur
+Anugul
+Bhadra
+Nurpur
+Simdega
+Kota
+Fatehpur
+Panna
+Hatta
+Untari
+@STOP
+
+@CHINESE
+Wuwei
+Tangtou
+Nanchuan
+Lezhi
+Wuzhai
+Guyuan
+Maoba
+Cili
+Taikang
+Yiyang
+Liping
+Xunle
+Daoxian
+Linwu
+Fengxi
+Qilizhen
+Ganquan
+Suiping
+Runan
+Huitong
+Ameng
+Xinzhai
+Pingle
+Beiliu
+Qijing
+@STOP
+
+@CANADIANS
+Hellenback
+Winterbury
+Tickneck
+Dust Devil
+Hooking's Bay
+Woodhurst
+Rocky Bottom
+The Narrows
+Norriston
+Dryzabone
+Deerborne
+Spearing
+Fishkill
+Stanleyville
+Elkbridge
+Patrick's Point
+Moose Ridge
+Feldsport
+Beartrap
+Adamsgate
+Stone
+Echo Scarp
+Hobbes River
+Snowdon
+Why Here
+@STOP
+
+@GERMANS
+Dornburg
+Schneeberg
+Creussen
+Tirschenreuth
+Heppenheim
+Greiz
+Aichach
+Landshut
+Illertissen
+Melsungen
+Preetz
+Buckow
+Erkner
+Cloppenburg
+Wolfach
+Saulgau
+Pfronten
+Bad Honnef
+Peine
+Arolsen
+Zeven
+Wunstorf
+Naila
+Horb
+Nabburg
+@STOP
+
+@SECTOIDS
+Tettigoniidus
+Lygaeus
+Arilus
+Gerridus
+Megacyllene
+Cicindela
+Sphecius
+Mutillidus
+Bespula
+Scoliidus
+Chrysididus
+Halictidus
+Adalia
+Camponotus
+Myrmeleontidus
+Eumorpha
+Archon
+Cisseps
+Enallagma
+Celithemis
+Sympetrum
+Phaenicia
+Exprosopa
+Tolmerus
+Tenodera
+@STOP
+
+@CHRYSSALIDS
+Xylocopa
+Araneus
+Latrodectus
+Peucetia
+Phiddipus
+Ixodidus
+Klakkata
+Sniketik
+Ferackit
+Tistinic
+Luccutoc
+Heirodule
+Akkad
+Vermicula
+Tesserope
+Uctropic
+Qetrang
+Chaumbuk
+K'pit
+Dackapch
+Petricki
+Woonsocket
+Jurucalip
+Hask
+Qatsponge
+@STOP
+
+@MUTONS
+Slug
+Clobber
+Cuff
+Jolt
+Belt
+Punch
+Sock
+Hit
+Pound
+Slam
+Crack
+Smash
+Whomp
+Whack
+Jab
+Drub
+Thump
+Pelt
+Bash
+Bonk
+Wallop
+Pummel
+Stomp
+Crunch
+Hammer
+@STOP
+
+@ETHEREALS
+Huhyeh
+Wyoohi
+Ghiyihi
+Shuiohi
+Ahyuhi
+Hoaru
+Weehi
+Eshaui
+Zhehai
+Louiou
+Oahiau
+Ohihu
+Asuwi
+Oioah
+Erhaii
+Osha
+Wheeze
+Sneeze
+Breathe
+Wahoei
+Aaaah
+Eeeee
+Ooooh
+Sigh
+Whisper
+@STOP
+
+@OLD ONES
+Cameron
+Targyville
+Pints
+Estivate
+Abernathy
+Bowdler
+Qwertyville
+Poltroon
+Kirtenaceous
+Westerling
+Marmelope
+Sebaceous
+Hearsuit
+Gimble
+Gambol
+Defenestrate
+Refenestrate
+Ollie
+Harold
+Vigilant
+Penelope
+Khanate
+Foulmouth
+Yarky
+Spench
+@STOP
+
+@ARES
+War
+Pestilence
+Famine
+Death
+Anger
+Greed
+Sloth
+Envy
+Pride
+Lust
+Gluttony
+Honor
+Glory
+Courage
+Stealth
+Ferocity
+Valor
+Victory
+Bravery
+Arete
+Phobosa
+Deimosa
+Plunder
+Pillage
+Excess
+@STOP
+
+@MONSTERS
+Castle Dread
+London
+Black Lagoon
+Tokyo
+Transylvania
+10,000 Fathoms
+Planet X
+Under the Bed
+Kong Island
+Monster Island
+Andromeda
+Outer Space
+The Id
+Darkest Africa
+Haunted House
+Graveyard
+Atomic Desert
+Middle America
+Dimension X
+Nowhere Zone
+Bad Place
+In Between
+Your Mind
+Earth's Core
+Mars
+@STOP
+
+@EXTRA
+Marineris
+Charitum
+Darwin
+Hellespontus
+Al-Qahira
+Ma'adim
+Suess
+Clarke
+Wells
+Bradbury
+Bova
+Heinlein
+Asimov
+Burroughs
+Euxinus
+Meroe
+Cebrenia
+Ausonia
+Cydonia
+@STOP
+
+
+@BARBARIANS
+19
+Nova Machine
+Wild Boys
+Astrogoths
+Snarks
+Arean Army
+Jobbi
+Writemen
+Snakes
+Spiders
+Lost Boys
+Esthers
+Sinclairs
+Playtesters
+Calvinists
+Grubs
+Dogleg Gang
+Nonesuch
+Aimless
+Semiotic Ticks
+@end

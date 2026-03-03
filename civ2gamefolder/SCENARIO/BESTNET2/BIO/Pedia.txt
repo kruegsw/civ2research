@@ -1,0 +1,641 @@
+;
+;   CIV-LIFE CIVILOPEDIA TEXT
+;   Copyright (c) 1997 by MicroProse Software
+;
+;   Altering the contents of this file may have caused the
+;   game to malfunction.
+;
+
+@PEDIAPICKCIV
+@width=540
+@columns=3
+@listbox
+@title=Civilopedia: Genetic Advances
+
+@PEDIACIV
+@width=480
+@title=Genetic Advance
+^^%STRING0
+^
+
+
+@PEDIACIVFACTS
+^Allows organizational form of same name.
+^Allows settlers to build fortresses.
+^Allows settlers to build hives.
+^Allows settlers to build migration routes.
+^Allows settlers to plant grasses.
+^Increases the effect of Control Chemicals.
+^Increases the effect of Nesting Sites.
+^Worth bonus points in Civilization score.
+^Increases marine movement rates by one.
+^Improves Spaceship thrust by 25%.
+^Free mutation for first to discover.
+^Decreases the effect of Controlled growth.
+^Cancels the effect of
+
+
+@PEDIAPICKUNIT
+@width=540
+@columns=3
+@listbox
+@title=Civilopedia: Unit Types
+
+@PEDIAUNIT
+@width=480
+@title=Unit Type
+^^%STRING0
+^
+
+@PEDIAUNITFACTS
+^Can see units two spaces away.
+^Ignores enemy Zones of Control.
+^Can make "amphibious" landings.
+^Invisible to most enemy units.
+^Can attack air units in flight.
+^May be lost away from shore.
+^Ignores Colony Walls.
+^Can carry friendly air units.
+^Can make spore drops.
+^Treats all squares as path squares.
+^Defense +50% versus units with a movement factor of 2.
+^Only Hive Organisms can build.
+^Destroyed after attacking.
+^Defense +100% versus air units.
+^Can spot enemy units camouflaged in adjacent squares.
+
+
+@PEDIAPICKGOVT
+@width=480
+@listbox
+@title=Civilopedia: Organization
+
+
+@PEDIAPICKIMPROVE
+@width=540
+@columns=3
+@listbox
+@title=Civilopedia: Colony Improvements
+
+@PEDIAIMPROVE
+@width=480
+@title=Colony Improvement
+^^%STRING0
+^
+
+@;Palace
+@PEDIAIMPROVE1
+Eliminates parasites and waste in the colony,
+and decreases it in all nearby colonies.
+
+@;Barracks
+@PEDIAIMPROVE2
+Colony produces Veteran ground units. Ground units can
+be completely healed in a single turn.
+
+@;Granary
+@PEDIAIMPROVE3
+Only half of colony's food store is depleted when
+colony increases in size.
+
+@;Temple
+@PEDIAIMPROVE4
+Up to two cancerous cells are made normal.
+
+@;Marketplace
+@PEDIAIMPROVE5
+Increases glucose and antibody output by 50%.
+
+@;Library
+@PEDIAIMPROVE6
+Increases science output by 50%.
+
+@;Courthouse
+@PEDIAIMPROVE7
+Decreases parasites by 50%. Makes colony more resistant
+to infection by enemy tumors and viruses. Under Endothermy,
+one normal cell becomes T-cell.
+
+@;City Walls
+@PEDIAIMPROVE8
+Units in colony are tripled on defense versus ground attacks.
+
+@;Aqueduct
+@PEDIAIMPROVE9
+Allows colony to increase beyond size 5.
+
+@;Circulatory system
+@PEDIAIMPROVE10
+Increases glucose and antibody output by an
+additional 50% (cumulative w/ Endoplasmic Reticulum).
+
+@;Cathedral
+@PEDIAIMPROVE11
+Makes four cancerous cells normal (Three after Mutualism).
+
+@;Brain
+@PEDIAIMPROVE12
+Increases science output by an additional
+50% (cumulative w/ DNA Coding).
+
+@;Mass Transit
+@PEDIAIMPROVE13
+Eliminates pollution caused by size.
+
+@;Nesting Site
+@PEDIAIMPROVE14
+Three cancerous cells are made normal.
+(four w/ Symbiosis).
+
+@;Lycopod Swamp
+@PEDIAIMPROVE15
+Increases resource production in colony by 50%.
+
+@;Tool Collection
+@PEDIAIMPROVE16
+Increases resource production by an additional 50%
+(cumulative w/ Lycopod Swamp).
+
+@;SDI Defense
+@PEDIAIMPROVE17
+Protects everything within three spaces of
+the colony from nuclear attack.
+
+@;Waste Eating Mushrooms
+@PEDIAIMPROVE18
+Decreases the pollution caused by high production.
+
+@;Draft Animal
+@PEDIAIMPROVE19
+Increases production output by 50%.
+
+@;Hydro Plant
+@PEDIAIMPROVE20
+Increases production output by 50%.  Cleaner
+than Power Plant, and generally safer than
+Nuclear Plant.
+
+@;Upland Forest
+@PEDIAIMPROVE21
+Increases lycopod swamp output by 50%.  Cleaner
+than Draft Animal (same as Rainforest), but
+there is a risk of forest fire unless
+you have discovered The Seed.
+
+@;Stock Exchange
+@PEDIAIMPROVE22
+Increases glucose and antibody output by an additional
+50% (cumulative with Endoplasmic Reticulum and Circulatory System for a grand
+total of 150%).
+
+@;Sewer System
+@PEDIAIMPROVE23
+Allows colony to grow beyond size 12.
+
+@;Supermarket
+@PEDIAIMPROVE24
+Allows squares in the colony's radius with
+the "grasses" improvement (planted twice)
+to produce 50% more food.
+
+@;4 Chamber Heart
+@PEDIAIMPROVE25
+All squares in the colony's radius with paths
+(or migration routes) produce 50% more circulation.
+
+@;Memory cells
+@PEDIAIMPROVE26
+Increases mutation output by an additional 50%
+(cumulative with DNA and The Brain for a
+grand total of 150%).
+
+@;SAM Missile Battery
+@PEDIAIMPROVE27
+Units in colony are doubled on defense against
+air units and non-nuclear missile units.
+
+@;Barrier Reef
+@PEDIAIMPROVE28
+Units in colony are doubled on defense against
+Marine units.
+
+@;C4 Photosynthesis
+@PEDIAIMPROVE29
+Increases production output by 50%. More efficient
+than all other forms of production.
+
+@;Algae
+@PEDIAIMPROVE30
+All ocean squares in the colony's radius
+produce one extra unit of food.
+
+@;Offshore Platform
+@PEDIAIMPROVE31
+All ocean squares in the colony's radius
+produce one extra production unit.
+
+@;Airport
+@PEDIAIMPROVE32
+Colony produces veteran air units.
+Any air unit spending its entire turn in the colony
+is completely repaired.
+
+@;Police Station
+@PEDIAIMPROVE33
+Decreases sickness caused by units away from colony by 1.
+
+@;Port Facility
+@PEDIAIMPROVE34
+Colony produces veteran naval units.
+Any ship spending its entire turn in the colony is
+completely repaired.
+
+@;SS Structural
+@PEDIAIMPROVE35
+
+@;SS Component
+@PEDIAIMPROVE36
+
+@;SS Module
+@PEDIAIMPROVE37
+
+@;Capitalization
+@PEDIAIMPROVE38
+Converts production into glucose.
+
+@;Pyramids
+@PEDIAIMPROVE39
+Counts as a Vacuole in every one of your colonies.
+
+@;Hanging Gardens
+@PEDIAIMPROVE40
+One extra T-cell in every colony.
+
+@;Colossus
+@PEDIAIMPROVE41
+Colony produces one extra circulation arrow in each square that
+already produces one.
+
+@;Lighthouse
+@PEDIAIMPROVE42
+Coastal units can move across oceans w/o danger, and all other
+types of marine units have their movement rate increased by one.
+Also, all new marine units you produce receive veteran status.
+
+@;Great Library
+@PEDIAIMPROVE43
+Organism receives any genetic advance
+already discovered by two other organisms.
+
+@;Oracle
+@PEDIAIMPROVE44
+Doubles the effect of all of your control chemicals.
+
+@;Great Wall
+@PEDIAIMPROVE45
+Enemy organisms must offer cease-fire/peace
+in negotiations.  Combat strength doubled against
+creationists.
+
+@;Tail Stingers
+@PEDIAIMPROVE46
+All new ground units produced gain Veteran status.
+Any unit which wins a combat gains Veteran status.
+
+@;ATP Storehouse
+@PEDIAIMPROVE47
+Every square in the colony's radius produces an extra
+resource "shield".
+
+@;Phermones
+@PEDIAIMPROVE48
+You receive a free embassy with every rival life form (so
+your intelligence report will always be complete and you will
+receive updates when other life forms discover technologies).
+
+@;Steroid Hormones
+@PEDIAIMPROVE49
+Counts as Controlled Growth in each of your colonies.
+
+@;Genetic Diversity
+@PEDIAIMPROVE50
+Increases mutation output of colony by 50%.
+
+@;Streamlining
+@PEDIAIMPROVE51
+Movement rate of all ships is increased by two.
+
+@:Living Fossil
+@PEDIAIMPROVE52
+There are no cancer cells in this colony.
+
+@;Lamarkian Evolution
+@PEDIAIMPROVE53
+Whenever one of your units becomes obsolete because of a new
+gene you have discovered, it is immediately replaced
+by an equivalent modern unit.
+
+@;Lymph System
+@PEDIAIMPROVE54
+Decreases cancer cells on same continent by 2 per colony.
+
+@;Spinal Cord
+@PEDIAIMPROVE55
+Doubles science output of colony.
+
+@;High Metabolic Rate.
+@PEDIAIMPROVE56
+Pays the maintenance for all colony improvements which
+ordinarily cost 1 glucose per turn.  Colony improvements
+requiring more than 1 glucose per turn maintenance are not
+affected.
+
+@;Burgess Shale
+@PEDIAIMPROVE57
+Two free genetic advances.
+
+@;Impriting
+@PEDIAIMPROVE58
+Eliminates the period of disorder between changing organization.
+Also allows any form of organization to be chosen, even if
+the proper advance has not been discovered.
+
+@;Propaganda
+@PEDIAIMPROVE59
+When you first master Propaganda,
+Every organism's attitude toward you is immediately shifted 25 points
+in your favor (on a hundred point scale).  Attitudes continue to improve
+gradually over time.  Other organisms are also quicker to forget your
+past transgressions.
+
+@;Sequoia Trees
+@PEDIAIMPROVE61
+Acts as a rainforest in every colony on every continent.
+
+@;Polar Adaption
+@PEDIAIMPROVE60
+Counts as a winter coat in every one of your colonies.
+(Decreases sickness caused by units away from colony by 1).
+
+@;Manhattan Project
+@PEDIAIMPROVE62
+Allows nuclear weapons to be built.
+
+@;Alpha Beast
+@PEDIAIMPROVE63
+^* Free embassy with every other form of life
+^* Enemy life cannot refuse your peace treaties.
+^* As an endotherm, you can declare war 50% of the time
+^  (asserting dominance).
+
+@;Apollo Program
+@PEDIAIMPROVE64
+Allows construction of spaceship improvements.
+
+@;Learning
+@PEDIAIMPROVE65
+Counts as a memory cell in every one of your colonies; effectively
+doubles your science output.
+
+@;Milk-fed Antibodies
+@PEDIAIMPROVE66
+One extra T-cell in each colony.
+
+@PEDIAGOVT
+@width=600
+@title=Civ-Life: Organization
+The form of organization you choose for your strain of life will
+affect the way resources are distributed in your colonies, the
+rate at which your cells can produce and sustain new units
+and colony improvements, and the extent to which your cells
+can circulate nutrients.
+^
+Some forms of organization, such as Prokaryote, Eukaryote, and
+later Mutualism and Hive Organism, allow you to expand
+rapidly, to produce and sustain large numbers of aggresive
+units, and to control your affairs completely.
+^
+Heat Producer and Endothermy, on the other hand, give your
+cells the freedom to produce vast amounts of circulation and growth, which
+increases your sugar and mutations rapidly. On the other
+hand, your cells may grow unhappy when you send 
+units out into the cold; also, your metabolism balk
+at committing to war.
+^
+To change your for of life's organization, you must have a
+Revolution--select "Revolution" from the Kingdom Menu.  This
+will entail a brief period of disorganized life.
+
+@PEDIAGOVT0
+@width=600
+@title=Organizational State: None
+This is the
+lack of any organization. Anarchy occurs when your
+organization fails, or when you decide to
+have a Revolution. After a few turns of no organization, you will
+be able to reconstitute your organism.
+^
+This is similar to Prokaryote, except that the parasite
+rate is VERY HIGH (see entry for Prokaryote).  However, no
+mutations or glucose is produced, but your colonies don't 
+consume your sugar store either.
+
+@PEDIAGOVT1
+@width=600
+@title=Organizational State: Prokaryote
+^UNIT SUPPORT
+Each unit above the colony size costs one shield per turn.
+Daughter cells eat one food per turn.
+^
+^HEATH
+Up to three units in each colony will institute
+"martial law", each converting a cancer cell into a normal
+one.
+^
+^PARASITES AND WASTE
+A Prokaryote has a HIGH rate of parasitism and waste.  The
+number of parasites in a particular colony is based on its
+distance from your capital.
+^
+^SPECIAL
+In a Prokaryote, none of the mutation/glucose/antibody rates may
+be set higher than 60%.  ALSO, ANY SQUARE WHICH WOULD ORDINARILY
+PRODUCE THREE OR MORE OF A RESOURCE (FOOD, SHIELDS, CIRCULATION) PRODUCES
+ONE LESS.
+^
+^HINTS
+Because of a Prokaryote's high rate of parasitism, it is almost
+always an inferior form of government.  Try to switch to a
+Eukaryote as soon as possible.
+
+
+@PEDIAGOVT2
+@width=600
+@title=Organizational State: Eukaryote
+^UNIT SUPPORT
+Each unit beyond the third costs one shield per turn.
+Daughter Cells eat one food per turn.
+^
+^HEALTH
+Up to three units in each colony will institute
+"martial law", converting an cancer cell into a normal
+cell.
+^
+^PARASITES AND WASTE
+Eukaryote has a MODERATE rate of parasitism and waste.  The
+number of parasites in a particular colony is based on its
+distance from your capital.
+^
+^SPECIAL
+Under a Eukaryote, none of the mutation/glucose/antibody rates may
+be set higher than 70%.
+^
+^HINTS
+Eukaryote is an excellent form of organisation for a young
+form of life.
+
+
+@PEDIAGOVT3
+@width=600
+@title=Organizational State: Mutualism
+^UNIT SUPPORT
+Each unit beyond the third costs one shield per turn.
+Daughter Cells eat two food per turn.
+^
+^HEALTH
+Up to three units in each colony will institute
+"martial law", converting *TWO* cancer cells into
+normal cells (so a total of SIX cancer cells can
+be suppressed).
+^
+^PARASITES AND WASTE
+Under Mutualism, commensal relationships eliminate 
+parasitism.  Your colonies, therefore, experience no
+parasites.
+^
+^SPECIAL
+All Tumor units produced in mutual organisation are
+given VETERAN status.  Under Mutualism, none of the
+mutation/glucose/antibody rates may be set higher than 80%.
+^
+^HINTS
+Mutualism is best for large, far-flung ecosystems which need
+to maintain a large military.  Use your powerful spies to
+steal technology from the warm-blooded pigs.
+
+@PEDIAGOVT4
+@width=600
+@title=Organizational State: Hive Organism
+^UNIT SUPPORT
+Can support up to TEN units for free; additional 
+units cost one shield each.  Daughter Cells eat two
+food per turn.  ONLY Hive Organisms may produce
+wasp units.
+^
+^HAPPINESS
+Under Hive Organism, NO CELL IS EVER CANCEROUS!  They are all deadicated 
+to the betterment of the hive.
+^
+^PARASITES AND WASTE
+Hive Organism has a LOW rate of parasitism.
+However, Hive Organism has the special disadvantage that
+all MUTATIONS are HALVED.
+^
+^SPECIAL
+Improvements which convert cancer cells to
+normal cells (control chemicals, etc.)
+produce "honey" with glucose equal to the number of cells they would
+otherwise convert.  They also require no maintenance.
+The diplomatic penalties for subversive actions committed by
+your tumors and viruses are reduced.
+Under Hive Organism, none of the mutation/glucose/antibody rates may
+be set higher than 80%.
+^
+^HINTS
+The Hive eliminates all sickness problems and provides
+lots of sugar.  Mutations are suppressed.
+
+
+@PEDIAGOVT5
+@width=600
+@title=Organizational State: Heat Producer
+^UNIT SUPPORT
+Each unit costs one shield per turn.  Daughter Cells eat TWO
+food per turn.
+^
+^HAPPINESS
+Each military unit AFTER THE FIRST which is not in a friendly
+colony (or a fortress within 3 spaces of a friendly colony)
+causes one cell in its home colony to become sick due to exposure.
+^
+^PARASITES AND WASTE
+The Heat Producer has a LOW rate of parasites and waste.  The
+level of corruption in a particular colony is based on its
+distance from your capital.
+^
+^SPECIAL
+Under a Heat Producer, each square which ordinarily produces at
+least one unit of circulation produces an extra one.
+None of the mutation/glucose/antibody rates may be set higher
+than 80%.
+^
+^HINTS
+Switching to a Heat Producer can give an astounding boost to your
+mutation and glucose production, although you'll probably have to
+divert some of your circulation to antibodies.  It becomes more
+difficult (and expensive) to keep an army in the field, but
+building the Polar Adaption wonder can help with this
+problem.
+
+@PEDIAGOVT6
+@width=600
+@title=Organizational State: Endotherm
+^UNIT SUPPORT
+Each unit costs one shield per turn.  Daughter Cells eat TWO
+food per turn.
+^
+^HAPPINESS
+Each unit which is not in a friendly
+colony (or a fortress within 3 spaces of a friendly colony)
+causes TWO cells in its home colony to become sick due to exposure.
+^
+^PARASITES AND WASTE
+Endotherms experience NO parasitism or waste.
+^
+^SPECIAL
+In an Endotherm, each square which ordinarily produces at
+least one unit of circulation produces an extra one.
+The units and colonies of a Endotherm are immune to BRIBERY
+of all forms.
+The mutation/glucose/antibody rates may be set to any level
+desired.
+^
+^HINTS
+Democracies can produce spectacular amounts sugar and mutations. 
+ However, because of the severe
+happiness restrictions on military units, this form of
+organization tends to be viable only for large, advanced
+forms of life.  Increasing your antibody rate and building
+Wonders can help alleviate this problem.
+
+@;This line must remain at the end of this file!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

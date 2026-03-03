@@ -1,0 +1,78 @@
+;
+; Events text for Age Of Discovery Scenario
+; Copyright(c) 1996, MicroProse Studios Inc.
+;
+;
+
+@BEGINEVENTS
+ 
+@IF
+SCENARIOLOADED
+@THEN
+PLAYCDTRACK
+17
+@ENDIF
+
+@IF
+NOSCHISM
+DEFENDER=anybody 
+@THEN
+ 
+@ENDIF
+
+@IF
+TURN
+turn=1
+@THEN
+TEXT
+^The Spanish expel the Moors entirely from the Iberian peninsula.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=10 
+@THEN
+TEXT
+^Michaelangelo begins his sculpture of David.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=139 
+@THEN
+TEXT
+^Popcorn is discovered by a frightened Indian squaw.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=16
+@THEN
+TEXT
+^In this year, the name "America" first appears in print referring
+ to the New World.
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=208
+@THEN
+TEXT
+^Captain Kidd is hanged for piracy. 
+ENDTEXT
+@ENDIF
+
+@IF
+TURN
+turn=177
+@THEN
+TEXT
+^William Shakespeare is born.
+ENDTEXT
+@ENDIF
+
+@ENDEVENTS

@@ -1,0 +1,25 @@
+@SCENARIO
+@width=500
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^"Wherever wood can swim, there I am sure to find this flag of England."
+^    -Napoleon I (Bonaparte)
+^
+^Recommended: French, British
+^
+^Interesting: Russians, Austrians                         
+^
+^Long Shots: Turks, Prussians
+^
+^Under No Circumstances: Neutrals
+^
+^OBJECT: The French (protagonist) should take as many objective cities as
+ possible. The rest need to prevent it.
+^
+^^SPECIAL NOTES
+^No technologies may be acquired by conquest.
+^Government switching is not permitted.
+^
+@end -- this line must be here!
+

@@ -1,0 +1,22 @@
+@SCENARIO
+@width=500
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^"Whether you like it or not, history is on our side. We will bury you."
+^        -Nikita Khrushchev
+^
+^Recommended: Soviet Bloc, China, North America, West Europe
+^
+^Challenging: India, Middle East
+^
+^Not For Play: Neutral Alliance                           
+^
+^OBJECT: The Soviet Bloc (protagonist) should take as many objective
+ cities as possible. The rest should try to prevent it.
+^
+^^SPECIAL NOTES
+^No technologies may be acquired by conquest.
+^
+@end -- this line must be here!
+

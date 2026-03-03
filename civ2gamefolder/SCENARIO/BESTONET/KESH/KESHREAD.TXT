@@ -1,0 +1,136 @@
+The Fall Of Great Kesh
+By Tim McBride
+
+This is a scenario I thought up one night I hope you like it cause it took some work.
+
+Here is the background on the Civ's in the scenario.
+
+Province of Medekemia- Your Land has suffered a million dead and is
+on the border of the Empire, You must have your revenge, no matter 
+what the Cost!
+Province of Telis- Allied With Medekimia you have not only have Kesh
+to worry about but also Your old enemy Kyhra to contend with!
+
+Province of Kyhra- Kesh is your main enemy but you also want renvenge
+on the province's of Manikor and Telis!
+
+Province of Manikor- May your enemy's god's have mercy on their souls!
+The Empire Of Great Kesh- Teach the lousy Peasents who's Emperor,
+To Hell or Plunder Dog Brothers!
+
+Empire Of Novindus- You Laugh and the Keshian situation until you 
+realize there is still a great Keshian army on your Lands!
+
+Ancients- A race of misterious wise men with higher intilect your
+goal is to Kill the Barberian Empire's of the land and to make 
+all wimper at your feet.
+
+For a challenge you might try playing the province of Midekemia or the Empire of Great Kesh, doesn't look hard until you realize that you'll be fighting a war with five Civ's All hostile as hell, with vengence on thier minds.
+Contents
+1. How to install this Scenario
+2. New units and their desciption
+3. Misc. stuff
+_______________________________
+How To Install This Scenario
+-----------------------------------------
+Back up your units.gif, rules.txt and terain1.gif!!!!!!!!!!!
+Once thats done unzip the stuff to its place in civII and your done,
+easy wasn't it.
+
+___________________________________________
+New Units And what the hell they do in in the game
+======================================
+Lets see I used graphics from a lot of different mod packs and units.gif that came with
+scenario's manly The facism patch and the conquest of britian, but the only ones I didn't
+edit were some of the great pre-gunpowder units.
+
+Well lets go from top to bottom:
+
+Settlers: Didn't change anything, not a thing (I Think)
+
+Civilian Levy: Attack 1 Defence 2, Armorment: 1 smooth bore matchlock rifle badly pited
+Civilian levy's were used by country that were either too poor for normal troops, Countrys
+that needed a big army quick, Or sick king's that thought it was funny to have half of the
+population fighting with weapons so outdated they should be in a museum. 
+
+Militia: Attack 2 Defence 2, Armorment: 1 smothbore flinklock rifle thrown away when the regular army got rifled weapons.
+Basicly the same as Civilian Levys
+
+Musketeers: Attack 3 Defence 3 Armorment:1 smoothbore Flinklock rifle
+These were the first true rifle men, raised by local lords when gunpowder first came avaible, these troops were like the minute men of the American Revolution.
+
+Infantry:  Attack 4 Defence 3 Armorment: 1 smoothbore percusion rifle
+Well trained and armed with percussion rifles these troops had a much lower percenage of  misfires, could load quiker and could fire in the rain, these troops were like early Confederate troops of the American civil war.Also have better move rate than Musketeers.
+
+Pikemen: Attack 1 Defence 2 Armorment: a 12' pike
+Used  to Protect troops from calvary attacks, but became when rifled arms made the game a lot more dangeres
+
+Rifle Men: Attack 5 Defence 4 Armorment: a bolt action rifle (like the M1 or German Mauser)
+With a high rate of fire and almost never a misfire, these troops walked all over their blackpowder brothers. Much like our troops in WWI and WWII.
+
+Axemen: Attack 3 Defence1 Armorment: A big axe (duh)
+Nuff' said.
+
+Fanatics: Didn't change em a bit
+
+Rifled Cannon: Attack 8 defence 1 Armorment: A cannon that is rifled
+Rilfed cannon were a lot more acurate then smooth bore cannon
+
+12pd Napleon  Attack 10 Defence 2 Armorment A nice cannon that shot 12pd solid shot
+The best cannon for it's lite weight and movabilite. The cannons of this age where much better at protecting themselves thanks to an neat thing called case shot, what it was, was a metal cilyinder filed with thousand of shotgun bb's fired at close ranged it turned troops into mince meat, but it was slow to load.
+
+Siege Gun   Attack 14 Defence 1  - This gun kicks ass
+
+Cannon Attack 6 defence 1 - a smooth bore cannon
+
+Dragoons, Calvary, horsemen and Archers Haven't Changed
+
+Scouts Attack 1 defence 3  Armorment Smooth bore flinklock rifles
+Much like the moutian me of the americian west
+
+Engineers Didn't change
+
+Catapult same as always
+
+Native Warrior    Kind of like the warriors unit
+
+Heavy infantry   Attack5 Defence 4 Armorment 1 rifled perrcusion rifle
+Much like the troops used in the late civil war by Federal troops.
+
+Caravan- Hasn't changed
+
+Guerillia  Attack 4 defence 2 Armorment What evers handy and will make a nasty trap
+Not the animal
+
+Commando Attack 6 Defence 3 Armorment Nasty weapons
+Kickass guys that remind me of the Airborne Rangers
+
+Fighter and bomber are the same sortof
+
+Longboat Like the Triem
+
+Ironclad hasn't changed much
+
+Destroyer- Basiccly the same
+
+The rest of the unit are self ecplanitory
+
+===========================
+Misc. Stuff
+===========================
+I added four techs 
+Rifled arms
+Fossil fuel power
+Balloning
+Armor design( took from the facism patch
+
+You don't need to use the terrian gif I just made it so the train tracks are visable.
+Oh, yeah did I Forget mention the large barbarian host on a unsettled area, oh well you'll find out.(maybe)
+
+I hope you like my scenario, I you find what you think is a flaw in design E-mail me a if I agree I'll change It.
+
+Tim McBride
+aka Milo Morai
+E-mail me at  milo@swlink.net
+My CivII site http://www.swlink.net/~milo/
+

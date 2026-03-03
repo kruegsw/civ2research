@@ -1,0 +1,607 @@
+;
+;   CIVILIZATION GAME DATA
+;   Copyright (c) 1997 by MicroProse Software
+;
+;   This file has been altered  to change
+;   the rules.  Keep in mind that altering the
+;   contents of this file may cause your game to malfunction,
+;   particularly if you use values outside the specified
+;   ranges.
+;
+
+;
+;   Cosmic Principles
+;
+;   The following numbers control various key rules
+;   of the game.  GREAT discretion is advised if you
+;   opt to change these.  Values too far out of the
+;   expected range can cause the game to behave strangely.
+;
+@COSMIC
+3       ; Road movement multiplier
+2       ; 1 in x chance Trireme lost (mod. by Seafaring, Navigation)
+2       ; # of food each citizen eats per turn
+10      ; # of rows in food box (rows * city_size+1 = box)
+10      ; # of rows in shield box
+1       ; Settlers eat (govt <= Monarchy)
+2       ; Settlers eat (govt >= Communism)
+7       ; City size for first unhappiness at Chieftain level
+14      ; Riot factor based on # cities (higher factor lessens the effect)
+5       ; Aqueduct needed to exceed this size
+12      ; Sewer System needed to exceed this size
+10      ; Tech paradigm (higher # slows research)
+20      ; Base time for engineers to transform terrain (x2)
+3       ; Monarchy  pays support for all units past this
+3       ; Communism pays support for all units past this
+10      ; Fundamentalism pays support for all units past this
+0       ; Communism is equivalent of this palace distance.
+50      ; Fundamentalism loses this % of science
+50      ; Percent shield penalty for production type change
+6       ; Max paradrop range
+75      ; Mass/Thrust paradigm (increasing slows spaceship time)
+5       ; Max effective science rate in fundamentalism (x10, so 5 = 50%)
+
+;
+;   Civilization Advances
+;
+;   Ai Value, Civilized Modifier, Preq1, Preq2, Epoch, Category
+;
+;     Ai Value = Basic value at which computer players
+;                view this advance (used in determining
+;                which discovery to pursue, which to
+;                acquire during exchanges, and value of
+;                gift during diplomacy).
+;     Modifier = Modifier to value based on the "civilized"
+;                aspect of a leader's personality.  Positive
+;                values increase value for civilized leaders,
+;                decrease it for militaristic.  Negative
+;                values vice versa.
+;     preq1, preq2 = Prerequisites
+;
+;     Epoch = historical period
+;             0 = Ancient
+;             1 = Renaissance
+;             2 = Industrial Revolution
+;             3 = Modern
+;
+;     Category = Knowledge category
+;             0 = Military
+;             1 = plant/fungi
+;             2 = behaveior
+;             3 = adaption
+;             4 = organ
+;
+@CIVILIZE
+Cell Walls,         4, 0,  nil, nil, 0, 1    ; AFl
+DNA,                5, 1,  nil, nil, 0, 3    ; Alp
+Spores,             3,-2,  Phi, Min, 0, 1    ; Amp
+The Flagellum,      4,-1,  nil, nil, 0, 0    ; Ast
+The Virus,          4,-1,  Min, nil, 0, 0    ; Ato
+Language,           4, 1,  Cmn, PT,  3, 2    ; Aut
+Venom,              4, 1,  Cer, nil, 0, 0    ; Ban
+Land Animals,       6, 0,  Lab, Cmp, 2, 3    ; Bri
+Organelles,         4, 1,  Pot, Alp, 0, 4    ; Bro
+Enzymes,            5, 1,  nil, nil, 0, 3    ; Cer
+Aerobic Respiration,5, 1,  Cmb, nil, 0, 3    ; Che
+Mitochondria,       4, 1,  Bro, Che, 0, 4    ; Chi
+Mitosis,            8, 0,  Alp, nil, 0, 2    ; CoL
+Fungi,              3, 1,  Amp, AFl, 0, 1    ; CA
+The Chloroplast,    5, 1,  AFl, Bro, 0, 1    ; Cmb
+Mutualism,          6, 0,  The, E2,  2, 2    ; Cmn
+Land Plants,        4, 1,  Amp, Cmb, 0, 1    ; Cmp
+The Parasite,       4,-1,  Ato, CoL, 0, 2    ; Csc
+Reef Building,      4, 0,  Chi, AFl, 0, 4    ; Cst
+Predation,          4,-2,  Csc, Mon, 0, 0    ; Cor
+The Nervous System, 5, 0,  Cor, Fli, 1, 4    ; Cur
+Endothermy,         5, 2,  San, Sup, 3, 2    ; Dem
+Controlled Cell Death, 4, 1,  Cer, Ban, 0, 2    ; Eco
+Convergent Evolution,4, 1,  Phi, Ato, 1, 2    ; E1
+Symbiosis,          6, 0,  Phi, Eng, 0, 2    ; E2
+Locomotion,         4, 0,  Cur, Ast, 1, 2    ; Eng
+The Immune System,  5, 1,  Fli, Csc, 1, 4    ; Env
+Vascular Plants,    5, 1,  Fli, Cmp, 1, 1    ; Esp
+Habitat Alteration, 5, 0,  SE,  Gen,  3, 2    ; Exp
+Gills,              4, 1,  Tra, Eng, 1, 4    ; Feu
+Multicellular Life,8, 1,  Phi, Eco, 1, 3    ; Fli
+Hive Organism,      4,-2, Mag, Las, 2, 2    ; Fun
+The Seed,          4, 1,  Esp, Ind, 2, 1    ; FP
+Jaws,              5,-2,  Mob, Ind, 2, 0    ; Gen
+The Digestive System,4, 1, Tra, Cor, 1, 4    ; Gue
+nothing,           5, 0,  no,  no,  1, 4    ; Gun
+Eyes,              4,-1,  Inv, Cur, 1, 4    ; Hor
+Hard Parts,        7, 0,  Cst, Inv, 2, 3    ; Ind
+Segmentation,      4, 1,  Gue, MT, 1,  3    ; Inv
+Pigments,          3, 0,  Hor, E2,  1, 3    ; Iro
+Legs,              5,-1,  NP,  Ind, 2, 3    ; Lab
+The Stinger,       3, 0,  Ind, Ban, 2, 0    ; Las
+Insect Pollination,4, 0,  FP,  Mag, 3, 1    ; Ldr
+Camoflage,         2,-1,  Cor, Iro, 1, 0    ; Lit
+The Brain,         5,-1,  Hor, Env, 1, 4    ; Too
+Wings,             4,-1,  Too, Bri, 1, 3    ; Mag
+The Notochord,     3, 1,  Too, Inv, 1, 4    ; Map
+Directional Sense, 4, 1,  Eng, MT,  1, 2    ; Mas
+Tentacles,         3,-2,  Hor, Mat, 1, 0    ; MP
+Shells,            4,-1,  Feu, Ind, 1, 0    ; Mat
+Slime Molds,       3,-2,  CA,  Eng, 1, 1    ; Med
+Conifers,          3, 2,   FP, CA,  2, 1    ; Met
+Cyst Formation,    4, 1,  nil, nil, 0, 4    ; Min
+Cartilage,         4,-1,  Map, NP, 1, 3    ; Mob
+The Nucleus,       5, 1,  Chi, CoL, 0, 4    ; Mon
+The Endocrine System,4, 2, Cer, Fli, 1, 4    ; MT
+Meiosis,           4, 1,  Mon, nil, 0, 2    ; Mys
+Vertebrae,         4, 0,  Ind, Map,  2, 3   ; Nav
+Bones,             5,-2,  Nav, Gen, 2, 4    ; NF
+Appendages,        5, 0,  Inv, Feu, 1, 3    ; NP
+Sex,               7, 1,  Mys, Cer, 0, 2    ; Phi
+Claws,             3,-1,  Lab, Mat, 2, 0    ; Phy
+Lungs,             5, 0,  Feu, NF,  2, 4    ; Pla
+Hollow Bones,      3, 0,  Pla, NF,  3, 4    ; Plu
+Ears,              3, 2,  Mas, Gen, 1, 4    ; PT
+Vacuoles,          4, 1,  nil, nil, 0, 4    ; Pot
+Nest Building,     4, 1,  Rec, E2,  2, 2    ; Rad
+Migration,         6, 1,  Rad, Mas, 2, 2    ; RR
+Lamarkism,         3, 1,  E1,  nil, 1, 2    ; Rec
+Amniotic Sac,      4, 0,  Pla, Rad, 2, 3    ; Ref
+Ungulates,         4, 2,  SE,  Sth, 3, 4    ; Rfg
+Heat Production,   5, 1,  NF,  FP,  3, 2    ; Rep
+Erect Stance,      5, 0,  RR,  Ref, 3, 2    ; Rob
+Huge Size,          6,-2,  San, Plu, 3, 0    ; Roc
+The 4 Chamber Heart,4, 2,  Rob, Rep, 3, 4    ; San
+Return to the Seas, 4,-2,  Dem, Roc, 3, 0    ; Sea
+Space Flight,       4, 1,  U1,  ToG, 3, 3    ; SFl
+The Hoof,          3,-1,  Phy, Rob, 3, 3    ; Sth
+Parenting,         5, 1,  Ref, Rad, 2, 2    ; SE
+Live Birth,        4, 1,  Ref,  Lit, 2, 3    ; Stl
+Insulation,        4, 1,  SE,  Rep, 3, 3    ; Sup
+Milk,              3, 1,  Dem, Stl, 3, 3    ; Tac
+Memory,            4, 2,  SE,  Too, 3, 2    ; The
+Flexible Wings,    4,-2,  Plu, Dem, 3, 0    ; ToG
+The Circulatory System,4, 2,  Eng, Che, 1, 4   ; Tra
+Tool Use,           4, 1,  The, Exp, 3, 2    ; Uni
+C4 Photosynthesis,  4, 1,  Rfg, Ldr,  3, 1    ; War
+The Opposable Thumb,4,-1,  Tac, Uni, 3, 3    ; Whe
+War,                4,-2,  Cmn, Whe, 3, 0    ; Wri
+Future Technology, 1, 0,  U1,  SFl, 3, 3    ; ...
+Engineering,       3, 0,  Aut, Whe, 3, 2    ; U1
+Mass Destruction,  3,-2,  U1,  Wri, 3, 0    ; U2
+Chemosynthesis,    3, 1,  Bro, CoL, 0, 1    ; U3
+;
+; Above 3 tech lots allow you to define your own civilization
+; advances if desired.  Supply the name, the AI value, and
+; the prerequisites.
+;
+; Then use the "U1", "U2", or "U3"
+; identifier to incorporate it into the tech chain as a
+; prerequisite for other techs, units, city imp.
+;
+
+;
+;  City Improvements
+;
+;   cost(x10), upkeep, preq
+;
+@IMPROVE
+Nothing,                 1,  0,    nil,
+Control Center,          10, 0,    Mon,
+Training Area,           4,  1,    nil,
+Storage Vacuole,         6,  1,    Pot,
+Control Chemicals,       4,  1,    Cer,
+Endoplasmic Reticulum,   8,  1,    Bro,
+DNA Coding,              8,  1,    Alp,
+Macrophanges,            8,  1,    Env,
+Resistant Covering,      8,  1,    Min,
+Multicellular Growth,    5,  1,    Fli,
+Circulatory System,      12, 3,    Tra,
+Controlled Growth,       12, 3,    MT,
+Brain,                   16, 3,    Too,
+Sewage-eating Mushrooms, 16, 4,    CA,
+Nesting Site,            10, 4,    Rad,
+Lycopod Swamp,           20, 4,    Esp,
+Tool Collection,         32, 6,    Uni,
+SDI Defense,             20, 4,    U2,
+Waste-eating Mushrooms,  20, 2,    CA,
+Draft Animal,            16, 2,    Sth,
+Rainforest,              24, 3,    Ldr,
+Upland Forest,           16, 4,    FP,
+Coloration,              16, 4,    Iro,
+Digestive Tract,         12, 2,    Gue,
+Multiple Stomachs,       8, 3,    Rfg,
+Four Chambered Heart,    20, 5,    San,
+Memory Cells,            16, 3,    The,
+SAM Missile Battery,     10, 2,    U2,
+Barrier Reef,            8, 1,    Cst,
+C4 Photosynthesis,       32, 4,    War,
+Algae,                   6,  1,    Cmb,
+Black Smoker Colonies,   16, 3,    U3,
+Rookery,                 16, 3,    SE,
+Winter Coat,             6,  2,    Sup,
+Salt Marsh,              8,  3,    Phy,
+SS Structural,           8,  0,    SFl,
+SS Component,            16, 0,    SFl,
+SS Module,               32, 0,    SFl,
+(Yolk),                  60, 0,    Ref,
+Body Fat,                20, 0,    Gue,
+Moss Gardens,            20, 0,    Cmp,
+Oxygen Atmosphere,       20, 0,    Cmb,
+Cilia Propulsion,        20, 0,    Ast,
+Mimicry,                 30, 0,    E1,
+Thymine Dimer Reduction, 30, 0,    Mys,
+Inert Cell Wall,         50, 0,    AFl,
+Tail Stingers,           30, 0,    Las,
+ATP Storehouse,          30, 0,    Chi,
+Phermones,               20, 0,    E2,
+Steroid Hormones,        40, 0,    MT,
+Genetic Diversity,       30, 0,    Phi,
+Streamlining,            40, 0,    Mob,
+Living Fossil,           30, 0,    Feu,
+Lamarkian Evolution,     40, 0,    Rec,
+Lymph system,            40, 0,    Env,
+Spinal Cord,             40, 0,    Map,
+High Metabolic Rate,      40, 0,    Dem,
+Burgess Shale,            30, 0,    NP,
+Imprinting,               40, 0,    SE,
+Propaganda,               30, 0,    Aut,
+Polar Adaption,           60, 0,    Sup,
+Sequoia Trees,            60, 0,    Met,
+Manhattan Project,        60, 0,    U2,
+Alpha Beast,              60, 0,    Cmn,
+Apollo Program,           60, 0,    SFl,
+Learning,                 60, 0,    Stl,
+Milk-fed Antibodies,      60, 0,    Tac,
+
+;
+; Expiration advancements for Wonders of the World
+;
+@ENDWONDER
+nil,        ; Pyramids
+Ldr,        ; Hanging Gardens
+RR,         ; Colossus
+NP,         ; Lighthouse
+Cmn,        ; Great Library
+Rad,        ; Oracle
+Rfg,        ; Great Wall
+Wri,        ; Sun Tzu's War Academy
+Feu,        ; King Richard's Crusade
+Aut,        ; Marco Polo's Embassy
+nil,        ; Magellan
+nil,        ; Michelangelo
+nil,        ; Copernicus
+nil,        ; Shakespeare
+Ref,        ; Da Vinci's Workshop
+nil,        ; Bach
+nil,        ; Newton
+nil,        ; Smith's Trading Co.
+nil,        ; Darwin
+nil,        ; Statue of Liberty
+nil,        ; Eiffel Tower
+nil,        ; Hoover Dam
+nil,        ; Womens' Suffrage
+nil,        ; Manhattan Project
+nil,        ; United Nations
+nil,        ; Apollo
+nil,        ; SETI
+nil,        ; Cure for Cancer
+
+
+;
+;    Unit Types
+;
+; until, domain,  move,rng,  att,def  hit,firepwr  cost,hold,  role, preq,  flags
+;
+; until       = Civ advance which renders unit obsolete
+; Move        = Movement rate (spaces per turn)
+; Range       = # of turns fuel carried (0 for non-air units)
+;
+; domain      = Movement domain of unit
+:               0 = Ground
+;               1 = Air
+;               2 = Sea
+;
+; att         = Attack factor (chance to score hit attacking)
+; def         = Defense factor (chance to score hit defending)
+; hit         = Hit points (damage x10 which can be taken before elimination)
+; firepwr     = # damage points caused per hit scored on enemy.
+;
+; cost        = Cost (# of shield rows, usually of 10 shields each)
+; hold        = # of holds on ship (for carrying units)
+;
+; role        = AI role (Generally affects the way in
+;               which computer players use the unit, but
+;               roles >= 5 will actually affect abilities
+;               of the unit)
+;               0 = Attack
+;               1 = Defend
+;               2 = Naval Superiority
+;               3 = Air Superiority
+;               4 = Sea Transport
+;               5 = Settle
+;               6 = Diplomacy
+;               7 = Trade
+;
+; preq        = Prerequisite advance
+;
+; "Flags" control special advantages & restrictions.  Not
+; all of these flags "make sense" for all types of units
+; (paradropping ships, for instance).  Nonsensical variations
+; may produce bizarre effects (or worse).  You were warned.
+;
+;   000000000000001 = Two space visibility
+;   000000000000010 = Ignore zones of control
+;   000000000000100 = Can make amphibious assaults
+;   000000000001000 = Submarine advantages/disadvantages
+;   000000000010000 = Can attack air units (fighter)
+;   000000000100000 = Ship must stay near land (trireme)
+;   000000001000000 = Negates city walls (howitzer)
+;   000000010000000 = Can carry air units (carrier)
+;   000000100000000 = Can make paradrops
+;   000001000000000 = Alpine (treats all squares as road)
+;   000010000000000 = x2 on defense versus horse (pikemen)
+;   000100000000000 = Free support for fundamentalism (fanatics)
+;   001000000000000 = Destroyed after attacking (missiles)
+;   010000000000000 = x2 on defense versus air (AEGIS)
+;   100000000000000 = Unit can spot submarines
+;
+;
+@UNITS
+Daughter Cell,Fun, 0,  1.,0,  0a,1d,  1h,1f,  3,0,  5, CoL, 000000000000000
+Beavers,      nil, 0,  2.,0,  0a,3d,  2h,1f,  4,0,  5, Exp, 000000000000010
+Bacteria,     Ldr, 0,  1.,0,  1a,1d,  1h,1f,  1,0,  1, nil, 000000000000000
+Dormant Cyst, Cst, 0,  1.,0,  0a,2d,  1h,1f,  2,0,  1, Min, 000000000000000
+Mycobacterium,Cor, 0,  1.,0,  3a,1d,  1h,1f,  2,0,  0, Ban, 000000000000000
+Amoeba,       Gue, 0,  1.,0,  4a,2d,  1h,1f,  4,0,  0, Cor, 000000000000000
+Cyanobacteria,Bri, 0,  1.,0,  1a,2d,  1h,1f,  2,0,  1, Cst, 000000000000000
+Centipede,    Ref, 0,  2.,0,  4a,3d,  2h,1f,  5,0,  1, Bri, 000000000000000
+Wasp,         ToG, 1,  8.,2,  6a,2d,  2h,2f,  5,0,  0, Fun, 000100000000001
+Nematode Worm,Bri, 0,  1.,0,  4a,1d,  2h,1f,  5,0,  0, Gue, 000010000000000
+Tortiose,     Roc, 0,  2.,0,  2a,5d,  3h,1f,  5,0,  1, Ref, 000000000000000
+Termite,      Exp, 0,  2.,0,  0a,1d,  2h,1f,  3,0,  5, Fun, 000100000000010
+Frog,         nil, 0,  2.,0,  5a,3d,  2h,1f,  6,0,  0, Pla, 000000000010100
+Slime Mold,   nil, 0,  1.,0,  2a,2d,  2h,1f,  5,0,  1, Med, 000000100000000
+Ankylosaurus, nil, 0,  3.,0,  6a,6d,  4h,2f,  8,0,  1, Roc, 000000000000000
+Pseudomonas,  Inv, 0,  2.,0,  2a,1d,  1h,1f,  2,0,  0, Ast, 000000000000000
+Plasmodium,   nil, 0,  1.,0,  2a,1d,  1h,1f,  3,0,  0, Csc, 000001000000010
+Earthworm,    Ref, 0,  1.,0,  3a,2d,  2h,1f,  4,0,  0, Inv, 000001000000000
+Venus Flytrap,nil, 0,  1.,0,  1a,3d,  2h,1f,  6,0,  1, Ldr, 010000000000000
+Smallpox,     nil, 0,  1.,0,  0a,1d,  2h,1f,  4,0,  6,  no, 000000100000010
+Wolf Spider,  Pla, 0,  2.,0,  5a,2d,  2h,1f,  5,0,  0, Bri, 000000000000000
+Snake,        nil, 0,  1.,0,  7a,2d,  2h,2f,  6,0,  0, Ref, 000001000000000
+T. Rex,       nil, 0,  3.,0, 18a,5d,  4h,3f, 16,0,  0, Roc, 000000000000000
+Brachiopod,   Mat, 2,  1.,0,  1a,3d,  2h,1f,  2,0,  1, Ind, 000000000100000
+Clam,         nil, 2,  1.,0,  1a,4d,  2h,1f,  3,0,  1, Mat, 000000000000000
+Antelope,     Wri, 0,  4.,0,  6a,4d,  3h,1f,  7,0,  0, Sth, 000000000000000
+Knight,       nil, 0,  4.,0, 10a,6d,  3h,3f, 10,0,  0, Wri, 000000000000000
+Dragonfly,    ToG, 1, 12.,1,  4a,2d,  2h,1f,  6,0,  3, Mag, 000000000010001
+Germ Agent,   nil, 0,  1.,0, 30a,1d,  1h,3f,  8,0,  0,  U2, 001001101000010
+Jonah's Whale,nil, 2,  4.,0,  5a,9d,  3h,1f,  6,6,  4, Cmn, 000000000000001
+Falcon,       nil, 1, 16.,1,  7a,3d,  2h,2f,  7,0,  3, ToG, 000000000010001
+Pteronadon,   nil, 1, 12.,2, 10a,4d,  2h,2f, 10,0,  0, ToG, 100000000000001
+Host Fish,    Cmn, 2,  3.,0,  0a,1d,  2h,1f,  3,3,  4, E2,  000000000000000
+Jellyfish,    NF,  2,  1.,0,  5a,1d,  2h,1f,  3,1,  2, Cur, 000000000000000
+Shrimp,       Mob, 2,  4.,0,  4a,3d,  2h,1f,  5,0,  2, Lab, 000000000000000
+Flatworm,     Lab, 2,  2.,0,  2a,1d,  2h,1f,  3,1,  2, Eng, 000000000000000
+Octopus,      nil, 2,  3.,0,  7a,4d,  2h,1f,  5,0,  2, MP,  100000000001000
+Trilobite,    Phy, 2,  3.,0,  3a,3d,  2h,1f,  4,0,  2, Ind, 000000000100000
+Shark,        Sea, 2,  5.,0, 10a,4d,  3h,2f,  9,0,  2, Gen, 000000000000000
+Coelocanth,   nil, 2,  4.,0,  7a,5d,  3h,2f,  7,0,  2, NF,  100000000000000
+Plankton,     Eng, 2,  1.,0,  1a,1d,  1h,1f,  1,1,  4, Cmb, 000000000000000
+Flounder,      MP, 2,  3.,0,  5a,2d,  2h,1f,  4,0,  2, Lit, 000000000001000
+Crab,         nil, 2,  3.,0,  6a,4d,  2h,1f,  4,0,  2, Phy, 100000000100000
+Lamprey,      Gen, 2,  4.,0,  5a,3d,  2h,1f,  5,0,  2, Mob, 000000000000000
+Killer Bee,   nil, 1, 10.,1,  6a,2d,  2h,2f,  3,0,  0, Fun, 001100000000001
+Nuclear Msl., nil, 1, 16.,1, 99a,0d,  1h,1f, 16,0,  0, U1,  001000000000000
+Virus,        MT, 0,  2.,0,  0a,0d,  1h,1f,  3,0,  6, Ato,  000000000000010
+Tumor,        nil, 0,  3.,0,  0a,0d,  1h,1f,  3,0,  6, MT,  000000000000010
+Nutrient Sply, RR, 0,  1.,0,  0a,1d,  1h,1f,  5,0,  7, Tra, 000000000000010
+Lemming,      nil, 0,  2.,0,  0a,1d,  1h,1f,  5,0,  7,  RR, 000000000000010
+Explorer,      U2, 0,  1.,0,  0a,1d,  1h,1f,  3,0,  0,  no, 000001000000010
+Orca,         nil, 2,  5.,0, 15a,8d,  4h,3f, 14,0,  2, Sea, 000000000000001
+Boat,         nil, 2,  5.,0,  0a,10d, 4h,1f,  6,8,  4, Whe, 000000000000001
+Spore,        Mag, 1,  2.,0,  0a,1d,  1h,1f,  2,0,  0, Amp, 000000000000000
+
+;
+; Note: the above 3 unit types (extra land, ship, air) are available
+; for user defined unit types.  If these units are given prerequisites
+; other than "no" they will appear in the game when the specified
+; technology is reached.  Use if you want to create your own unit types
+; without sacrificing any of the predefined units.  Be sure to define
+; the "role" field accurately, so that the computer will understand how
+; to make use of the new units in its own civilizations.
+;
+; There is no requirement that the extra units be used to
+; create exactly one of each type; you could create three
+; ground units.  But the icons provided are for one of each.
+; The 3 extra unit types have default icons provided by the game.
+; To actually change the icons is a somewhat more difficult
+; task.  The icons are stored in "UNITS.GIF".
+;
+; Sound effects for these three units may be added by providing
+; CUSTOM1.WAV, CUSTOM2.WAV, and CUSTOM3.WAV.  These should be
+; 8-bit, mono, and sampled at 22050hz.
+;
+; Ideas:
+;
+; Hovercraft,   nil, 2,  8.,0,  0a,1d,  2h,2f,  7,1,  4, MP,  000000000000000
+;
+
+
+;
+;  Terrain
+;
+;  Movecost, defense,   food, shields, trade,
+;        . . .  Irrigate, bonus, #turns, ai-irrigate,
+;        . . .  Mine,     bonus, #turns, ai-mine
+;        . . .  Transform
+;
+;   defense = multiply by 50% to get % of normal combat factor defended at.
+;       (so 3 x 50% = 150%, meaning a strength 2 unit defends at 3).
+;
+;  Irrigate/Mine = yes, no, or type of terrain changed to
+;  Transform     = Terrain type engineers can transform to
+;
+;  bonus = # extra production from that change
+;
+;  turns = # turns for settler to make change
+;
+;  ai    = Minimum govt level necessary for
+;          computer player to want to perform irrigate/mine
+;        0 Never
+;        1 Despotism
+;        2 Monarchy
+;        3 Communism
+;        4 Fundamentalism
+;        5 Republic
+;        6 Democracy
+;
+@TERRAIN
+Desert,     1,2,  0,1,0,   no,  0, 5, 0,   yes, 1, 5,  2,  Pln,   ; Drt
+Plains,     1,2,  0,1,0,   yes, 1, 5, 2,   yes, 1, 3,  3,  For,   ; Pln
+Lowlands,   1,2,  1,1,0,   yes, 1, 5, 1,   Pln, 0, 5,  0,  For,   ; Grs
+Forest,     2,3,  2,2,1,   yes, 1,10, 1,   no,  0, 5,  0,  Grs,   ; For
+Hills,      2,4,  1,0,0,   yes, 1,10, 0,   yes, 3,10,  1,  Pln,   ; Hil
+Mountains,  3,6,  0,1,0,   no,  1,10, 0,   yes, 1,10,  3,  Hil,   ; Mou
+Tundra,     1,2,  1,0,1,   yes, 1,10, 1,   no,  0, 0,  0,  Swa,   ; Tun
+Glacier,    2,2,  0,0,0,   no,  0, 0, 0,   yes, 1,15,  3,  Tun,   ; Gla
+Bog,        2,3,  1,0,1,   Jun, 0,15, 1,   Grs, 0,15,  0,  For,   ; Swa
+Swamp,      2,3,  2,0,1,   yes, 1, 5, 2,   Grs, 0,15,  0,  For,   ; Jun
+Ocean,      1,2,  1,0,2,   no,  0, 0, 0,   no,  0, 0,  0,  no,    ; Oce
+Oasis,      1,2,  4,1,0,
+Evaporites, 1,2,  0,3,0,
+Grassland,  1,2,  2,1,0,
+Pheasant,   2,3,  3,3,1,
+Minerals,   2,4,  1,2,0,
+Waterfall,  3,6,  0,1,6,
+Geyser,     1,2,  3,1,1,
+Red Algae,  2,2,  1,1,4,
+Bog Iron,   2,3,  1,4,1,
+Channels,   2,3,  2,0,4,
+Whirlpool,  1,2,  3,0,2,
+Oil,        1,2,  0,4,0,
+Waterhole,  1,2,  3,1,0,
+Grassland,  1,2,  2,1,0,
+Silk,       2,3,  2,2,4,
+Whitewater, 2,4,  1,0,4,
+Volcano,    3,6,  0,4,0,
+Meltwater,  1,2,  2,0,1,
+Nunatak,    2,2,  0,4,0,
+Spring,     2,3,  3,0,4,
+Spring,     2,3,  3,0,1,
+Upwelling,  1,2,  2,2,3,
+
+
+
+
+@GOVERNMENTS
+None,        Mr.,         Ms.
+Prokaryote,    Emperor,     Empress
+Eukaryote,     King,        Queen
+Mutualist,    Comrade,     Comrade
+Hive Organism,  High Priest, High Priestess
+Heat Producer, President,   President
+Endotherm,    Prime Minister,   Prime Minister
+
+;
+;   Leaders
+;
+;   leader, female, color, style, plural, adj, ...
+;           ...attack, expand, civilize, ...
+;           ...govt, male, female...<repeat>
+;
+;   female:     0 = male           1 = female
+;
+;   color:  Color set (1 - 7)
+;   style:  City style (0 - 3)
+;           0 = Bronze Age
+;           1 = Classical
+;           2 = Far East
+;           3 = Medieval
+;
+;   attack:     1 = aggressive    -1 = rational
+;   expand:     1 = expansionist  -1 = perfectionist
+;   civilize:   1 = civilized     -1 = militaristic
+;
+;   govt = government type for name replacement (0 = Anarchy, 6 = Democracy)
+;
+;   male, female = titles for leader of government
+;
+@LEADERS
+Richard Leakey,Jane Goodall,       0, 1, 0, Rondonians,  Rondonian,   0,  1,  1,     1, Dictator, Dictator, 2, Imperator, Imperatrix
+Charles Darwin,Lucy,               1, 2, 0, Gondwanans,  Gondwanan,  -1, -1,  1,
+Charles Darwin,Lucy,               0, 3, 0, Balticans,   Baltican,    1, -1,  1,     4, Archbishop, Archbishop, 6, Chancellor, Chancellor
+A. Leeuwenhoek,Rachel Carson,      0, 4, 0, Tethians,    Tethian,     0,  0,  1,     1, Pharaoh, Pharaoh, 2, Great Pharaoh, Great Pharaoh
+Thomas Malthus,Thomas Malthus,     0, 5, 0, Laurentians, Laurentian, -1,  0,  1,     4, Reverend, Reverend, 5, Speaker, Speaker
+Hans Krebs,   Hans Krebs,          1, 6, 0, Avalonians,  Avalonian,   0,  1, -1,     6, Prime Minister, Prime Minister
+Camilio Golgi,Camilio Golgi,       0, 7, 0, Pangaeans,   Pangaean,   -1, -1,  0,     2, Maharaja, Maharaja,
+Richard Leakey,Jane Goodall,       1, 1, 0, Rondonians,  Rondonian,   1,  0, -1,     2, Czar, Czarina, 4, Patriarch, Matriarch
+Erwin Chargaff,Erwin Chargaff,     0, 2, 0, Gondwanans,  Gondwanan,   1,  0,  0,
+Herbert Spencer,Herbert Spencer,   0, 3, 0, Balticans,   Baltican,    1,  1,  1,     4, Archbishop, Archbishop, 6, Premier, Premier
+Francis Crick,Nazca,               0, 4, 0, Tethians,    Tethian,     0, -1,  1,
+A. R. Wallace,A. R. Wallace,       0, 5, 0, Laurentians, Laurentian,  0,  0,  1,     3, Chairman, Chairperson
+Steven J. Gould,Steven J. Gould,   0, 6, 0, Avalonians,  Avalonian,   0,  1,  0,     4, Lord Protector, Lady Protector, 6, Prime Minister, Prime Minister
+Charles Marsh,Charles Marsh,       0, 7, 0, Pangaeans,   Pangaean,    1,  1, -1,
+Gregor Mendel,Rosalind Franklin,   1, 1, 0, Rondonians,  Rondonian,  -1,  1,  0,     4, Druid, Druid
+Edward Cope,Edward Cope,           0, 2, 0, Gondwanans,  Gondwanan,   1, -1, -1,     2, Shogun, Shogun, 6, Prime Minister, Prime Minister
+Herbert Spencer,Herbert Spencer,   0, 3, 0, Balticans,   Baltican,    1,  1,  0,     1, Warlord, Warlord
+A. Leeuwenhoek,Rachel Carson,      1, 4, 0, Tethians,    Tethian,    -1,  1, -1,     4, Archbishop, Archbishop
+Carl von Linne,Carl von Linne,     0, 5, 0, Laurentians, Laurentian,  0, -1,  0,     2, Shah, Shah,  4, Ayatollah, Ayatollah
+Gregor Mendel,Rosalind Franklin,   0, 6, 0, Avalonians,  Avalonian   ,0,  0, -1,
+James Watson, James Watson,        0, 7, 0, Pangaeans,   Pangaean,    0,  0,  0,     1, Chief, Chief, 2, Great Chief, Great Chief
+
+Saladin,    ...,     0, 5, Arabs,       Arab,        1,  0,  1,     4, Ayatollah, Ayatollah, 2, Sultan, Sultana
+Atawallpa,  ...,     0, 1, Incas,       Inca,       -1,  1,  1,
+
+
+
+;
+;   Trading Commodities
+;
+@CARAVAN
+Calcium,
+Protein,
+Potassium,
+Phosphorus,
+Salt,
+Magnesium,
+Copper,
+Zinc,
+Nitrogen,
+Vitamins,
+Sulfur,
+Iron,
+Manganese,
+Boron,
+Lysine,
+Iodine,
+
+
+@ORDERS
+Fortify,            F
+Fortified,          F
+Sleep,              S
+Build Fortress,     F
+Build Path,         R
+Build Lichen,       I
+Build Mine,         m
+Transform,          O
+Clean Pollution,    p
+Build Hive,         E
+Go to,              G
+
+
+@DIFFICULTY
+Microbe
+Germ
+Disease
+Plague
+Epidemic
+Pandemic
+
+@ATTITUDES
+Worshipful
+Enthusiastic
+Cordial
+Receptive
+Neutral
+Uncooperative
+Icy
+Hostile
+Enraged

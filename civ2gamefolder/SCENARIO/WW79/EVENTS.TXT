@@ -1,0 +1,24 @@
+;
+; Events text for World War 79 Scenario
+; Copyright(c) 1996, MicroProse Studios Inc.
+;
+;
+
+@BEGINEVENTS
+
+@IF
+SCENARIOLOADED
+@THEN
+PLAYCDTRACK
+18
+@ENDIF
+
+@IF
+NOSCHISM
+DEFENDER=anybody 
+@THEN
+ 
+@ENDIF
+
+
+@ENDEVENTS

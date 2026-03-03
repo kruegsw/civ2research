@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gcc:*)",
+      "Bash(pacman:*)",
+      "Bash(/c/msys64/usr/bin/pacman.exe:*)",
+      "Bash(/c/msys64/mingw32/bin/gcc.exe:*)",
+      "Bash(PATH=\"/c/msys64/mingw32/bin:$PATH\" /c/msys64/mingw32/bin/gcc.exe:*)",
+      "Bash(bash:*)",
+      "Bash(PATH=\"/c/msys64/mingw32/bin:$PATH\" objdump:*)",
+      "Bash(python3:*)",
+      "Bash(xxd)",
+      "Bash(xxd:*)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(pip show:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(dotnet package:*)",
+      "WebFetch(domain:forums.civfanatics.com)",
+      "Bash(ls:*)",
+      "Bash(command:*)",
+      "Bash(objdump:*)",
+      "Bash(pip:*)",
+      "Bash(java:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(echo === Ghidra Decompilation Summary ===:*)",
+      "Bash(find \":*)",
+      "Bash(wc:*)"
+    ]
+  }
+}

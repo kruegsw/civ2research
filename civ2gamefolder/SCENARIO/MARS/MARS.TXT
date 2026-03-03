@@ -1,0 +1,21 @@
+@SCENARIO
+@width=470
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^^'MARS NOW!'
+
+^              "Everything has tended to regenerate them;
+^               new laws, a new mode of living, a new social system;
+^               here they are become men."
+^^                         -Jean de Crevecoeur, 1782
+^
+^^"The choice is the universe or nothing."
+^^                         -H.G. Wells
+^
+^
+^^In 1997, the technology to colonize Mars already exists.
+^^We could be living there as soon as 2007.
+^^What if, once there, we lost contact with the Earth?
+^
+@end -- this line must be here!
+

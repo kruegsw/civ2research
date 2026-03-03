@@ -1,0 +1,803 @@
+;
+;   CIVILIZATION CITY LIST
+;   Copyright (c) 1997 by MicroProse Software
+;
+;   This file can be altered at your own risk to change
+;   the default names for cities.  Keep in mind that
+;   altering the contents of this file may cause your game
+;   to malfunction.
+;
+;   City names may contain no more than 15 characters.
+;
+
+@ROMANS
+Rome
+Veii
+Antium
+Cumae
+Neapolis
+Pompeii
+Pisae
+Ravenna
+Hispalis
+Viroconium
+Lugdunum
+Lutetia
+Byzantium
+Brundisium
+Syracuse
+Caesaraugusta
+Palmyra
+Jerusalem
+Caesarea
+Tarentum
+Nicomedia
+Seleucia
+Artaxata
+Aurelianorum
+Hippo Regius
+Nicopolis
+Londinium
+Eburacum
+Arretium
+Gordion
+Agrippina
+Cyrene
+Tyrus
+Verona
+Corfinium
+Mediolanum
+Treveri
+Sirmium
+Augustadorum
+Trapezus
+Bagacum
+Lauriacum
+Teurnia
+Curia
+@STOP
+
+@BABYLONIANS
+Babylon
+Ur
+Nineveh
+Ashur
+Ellipi
+Akkad
+Uruk
+Eridu
+Samarra
+Lagash
+Kish
+Nippur
+Shuruppak
+Zariqum
+Sippar
+Izibia
+Larsa
+Nimrud
+Zamua
+Khorsabad
+Hindana
+Tell Wilaya
+Umma
+Adab
+Telloh
+Nina
+Ebla
+@STOP
+
+@SECRET EVIL SOCIETY
+Alpha
+Beta
+The Tower
+Old Mill
+Hidden Harbor
+Sign Post
+Lost Tunnel
+Cabin Island
+Twisted Claw
+Disappearing Floor
+Shore Road
+House On Cliff
+Lucky Bottom
+Bayport
+Twisted Candles
+Crumbling Wall
+Secret Panel
+Shadow Ranch
+Yellow Feather
+Skull Mountain
+Haunted Bridge
+Broken Blade
+Crisscross
+Crooked Arrow
+Laughingstock
+Hollow Oak
+Annepierre
+Green Gables
+Flickering Torch
+@STOP
+
+@EXOTICS
+Mu
+Top Of World
+Mong
+Venus
+Nepenthes
+Sarracinia
+Dionea
+Drosera
+Pinguicula
+Thebes
+Memphis
+Heliopolis
+Elephantine
+Alexandria
+Pi-Ramesses
+Giza
+Byblos
+El-Amarna
+Hieraconpolis
+Abydos
+Asyut
+Avaris
+Lisht
+Buto
+Edfu
+Pithom
+Busiris
+Kahun
+Athribis
+Mendes
+El-Ashmunein
+Tanis
+Buhen
+Bubastis
+This
+Oryx
+Sebennytus
+Cairo
+@STOP
+
+@AMERICANS
+@STOP
+
+@GREEKS
+Athens
+Sparta
+Thermopylae
+Corinth
+Delphi
+Pharsalos
+Knossos
+Argos
+Mycenae
+Herakleia
+Ephesos
+Thessalonica
+Rhodes
+Eretria
+Troy
+Marathon
+Halicarnassus
+Pergamon
+Miletos
+Artemisium
+Megara
+Phocaea
+Sicyon
+Gortyn
+Mytilene
+Tegea
+Syracuse
+Apollonia
+@STOP
+
+@INDIANS
+Delhi
+Bombay
+Madras
+Bangalore
+Calcutta
+Lahore
+Karachi
+Kolhapur
+Jaipur
+Hyderabad
+Bengal
+Chittagong
+Punjab
+Dacca
+Indus
+Ganges
+@STOP
+
+@RUSSIANS
+@STOP
+
+@ZULUS
+@STOP
+
+@CONTINENTAL ALLIANCE
+Batavia
+Paris
+Berlin
+Hamburg
+Madrid
+Bordeaux
+Vienna
+Moscow
+St. Petersburg
+Rome
+Atlanta
+Mexico City
+Richmond
+New Orleans
+Orleans
+Lyons
+Rheims
+Tours
+Marseilles
+Leipzig
+Konigsberg
+Chartres
+Barcelona
+Valladolid
+Avignon
+Besancon
+Stuttgart
+Bonn
+Rouen
+Grenoble
+Dijon
+Seville
+Toledo
+Amiens
+Cherbourg
+Poitiers
+Toulouse
+Bayonne
+Strasbourg
+Brest
+Frankfurt
+Munich
+Heidelburg
+Nuremberg
+Cologne
+Hannover
+Bremen
+Salzburg
+Dortmund
+Brandenburg
+Cordoba
+Valencia
+Salamanca
+Saragossa
+Cadiz
+Bilbao
+Granada
+Malaga
+Pamplona
+Vigo
+Avila
+Leon
+Burgos
+Oviedo
+Santander
+Ciudad Rodrigo
+Calatrava
+Cartagena
+@STOP
+
+@AZTECS
+Tenochtitlan
+Teotihuacan
+Tlatelolco
+Texcoco
+Tlaxcala
+Calixtlahuaca
+Xochicalco
+Tlacopan
+Atzcapotzalco
+Tzintzuntzen
+Malinalco
+Tula
+Tamuin
+Teayo
+Cempoala
+Chalco
+Tlalmanalco
+Ixtapaluca
+Huexotla
+Tepexpan
+Tepetlaoxtoc
+Chiconautla
+Zitlaltepec
+Coyotepec
+Tequixquiac
+Jilotzingo
+Tlapanaloya
+Tultitlan
+Ecatepec
+Coatepec
+Chalchihuites
+Chiauhtia
+Chapultepec
+Itzapalapa
+Ayotzinco
+Iztapam
+@STOP
+
+@ASIANS
+Peking
+Shanghai
+Kyoto
+Singapore
+Saigon
+Kabul
+Xi'an
+Canton
+Seoul
+Nanking
+Tsingtao
+Chengdu
+Hangchow
+Tientsin
+Tatung
+Macao
+Anyang
+Shantung
+Chinan
+Kaifeng
+Ningpo
+Paoting
+Yangchow
+Osaka
+Edo
+Satsuma
+Kagoshima
+Nara
+Nagoya
+Izumo
+Nagasaki
+Yokohama
+Shimonoseki
+Matsuyama
+Sapporo
+Hakodate
+Ise
+Toyama
+Fukushima
+Suo
+Bizen
+Echizen
+Izumi
+Omi
+Echigo
+Kozuke
+Sado
+@STOP
+
+@ANGLO ALLIANCE
+Toronto
+Capetown
+Sydney
+Delhi
+Bombay
+Pondicherry
+London
+Liverpool
+Bristol
+New York
+San Francisco
+St. Louis
+York
+Nottingham
+Hastings
+Canterbury
+Dublin
+Coventry
+Warwick
+Newcastle
+Oxford
+Melbourne
+Sydney
+Dover
+Brighton
+Norwich
+Leeds
+Reading
+Birmingham
+Exeter
+Cambridge
+Gloucester
+Manchester
+Leicester
+Carlisle
+Ipswich
+Portsmouth
+Berwick
+Washington
+Boston
+Philadelphia
+Chicago
+Buffalo
+Detroit
+Baltimore
+Denver
+Cincinnati
+Dallas
+Los Angeles
+Kansas City
+San Diego
+Richmond
+Las Vegas
+Phoenix
+Seattle
+Albuquerque
+Portland
+Minneapolis
+@STOP
+
+@MONGOLS
+Karakorum
+Samarkand
+Bokhara
+Nishapur
+Kashgar
+Tabriz
+Aleppo
+Kabul
+Ormuz
+Basra
+Khanbalyk
+Khorasan
+Shangtu
+Kazan
+Quinsay
+Kerman
+@STOP
+
+@CELTS
+Cardiff
+Kells
+Carmarthen
+Armagh
+Caernarfon
+Tintagel
+Caerphilly
+Cork
+Rhymney
+Iona
+Rhondda
+Illauntanig
+Swansea
+Durrow
+Merthyr
+Tara
+Llangollen
+Dinas Powys
+Aberystwyth
+Rhayader
+Abergavenny
+Dinas Emrys
+Cardigan
+Llanelli
+Maesteg
+Neath
+@STOP
+
+@JAPANESE
+@STOP
+
+@VIKINGS
+Trondheim
+Kaupang
+Uppsala
+Hladir
+Aarhus
+Viborg
+Roskilde
+The Udal
+Lindholm
+Jorvik
+Westness
+Jarrow
+Skara
+Ravning Enge
+Birka
+Jarlshof
+Sigtuna
+Odense
+Lunde
+Larne
+Hedeby
+Aldeigjuborg
+Holmgard
+Nonnebakken
+Ribblehead
+Thwaite
+Askrigg
+Trelleborg
+Risby
+Jelling
+Vorbasse
+Fyrkat
+Kvivik
+@STOP
+
+@SPANISH
+@STOP
+
+@MUSLIMS
+Constantinople
+Cairo
+Jerusalem
+Baghdad
+Tripoli
+Mecca
+Ankara
+Teheran
+Khartoum
+Samarra
+Damascus
+Tiflis
+Tangier
+Raqqa
+Beirut
+Basra
+Medina
+Riyadh
+Mosul
+Beirut
+Algiers
+Tunis
+Fez
+Cordoba
+Palmyra
+Shiraz
+Aden
+Qum
+Qazvin
+Barqa
+Mahdia
+Rabat
+Carthage
+Utica
+Malaca
+Herat
+Dakyanus
+Bampur
+Merv
+Behistun
+Kandahar
+@STOP
+
+@CARTHAGINIANS
+Caralis
+Panormus
+Leptis Parva
+Cartenna
+Rusicade
+Gades
+Rusucurru
+Girba
+Leptis Magna
+Carthago Nova
+Oea
+Tingis
+Rusaddit
+Alalia
+Selinus
+Himera
+Akragas
+Theveste
+Saguntum
+@STOP
+
+@ABORIGINES
+Ainu
+Nez Perces
+Apaches
+Assiniboine
+Ute
+Umfolozi
+Zululand
+Zimbabwe
+Ulundi
+Bapedi
+Swazi
+Umtata
+Pitcher Plant
+Shangtu
+Quinsay
+Bokhara
+Cuzco
+Chan Chan
+Machu Pichu
+Ica
+Ayre's Rock
+Chichen Itza
+Moa
+Wewak
+Little Bighorn
+Wounded Knee
+Hlobane
+Isandhlwana
+Intombe
+Big Mound
+Wood Lake
+Mpondo
+Ngome
+Tugela
+Ibabanago
+Isipezi
+Amatikulu
+Zunguin
+Cedar Creek
+Slim Buttes
+Three Forks
+Stony Lake
+Killdeer
+Bear Paw
+Dead Buffalo
+Point of Rocks
+Raging Brook
+Running Bear
+Silver Moon
+Wildcat Valley
+Great River
+Seven Brothers
+Snake Canyon
+First Wind
+Yellowtree
+Chief's Crag
+Morning Rock
+Cuzco
+Quito
+Chan Chan
+Chucuito
+Ayaviri
+Vilcashuaman
+Acari
+Tambo Colorado
+Jauja
+Pumpu
+Huanuco Pampa
+Cajamarca
+Cusibamba
+Tumbes
+Tomebamba
+Pucara
+Machu Picchu
+Pisac
+Limatambo
+Raqchi
+Cotopachi
+Ica
+Inkawasi
+Lurin
+Tarma Tambo
+Paramonga
+Ancon
+@STOP
+
+@INCAS
+@STOP
+
+@PERSIANS
+@STOP
+
+@EXTRA
+Rio de Janiero
+Montevideo
+Caracas
+Lima
+Bogota
+Quito
+Buenos Aires
+Santiago
+Naples
+Issus
+Cunaxa
+Cremona
+Cannae
+Capua
+Turin
+Genoa
+Crete
+Verona
+Salamis
+Lisbon
+Hamburg
+Prague
+Salzburg
+Bergen
+Venice
+Milan
+Ghent
+Pisa
+Kiev
+Minsk
+Smolensk
+Odessa
+Sevastopol
+Tblisi
+Sverdlovsk
+Yakutsk
+Vladivostok
+Novgorod
+Krasnoyarsk
+Riga
+Rostov
+Astrakhan
+Kharkov
+Grozny
+Dnepropetrovsk
+Maikop
+Kursk
+Kuibyshev
+Magnitogorsk
+Uralsk
+Kazan
+Vologda
+Murmansk
+Vitebsk
+Batum
+Tiflis
+Bryansk
+Tula
+Kalinin
+Yaroslavl
+Krasnovodsk
+Persepolis
+Pasargadae
+Susa
+Arbela
+Antioch
+Tarsus
+Gordium
+Bactra
+Sidon
+Tyre
+Sardis
+Samaria
+Hamadan
+Ergili
+Dariush Kabir
+Ghulaman
+Zohak
+Istakhr
+Jinjan
+Borazjan
+Tureng Tepe
+Altin Tepe
+Bunyan
+Charsadda
+Ura Tyube
+@STOP
+
+
+@BARBARIANS
+17
+Huns
+Visigoths
+Ostrogoths
+Sueves
+Angles
+Saxons
+Franks
+Jutes
+Burgundians
+Avars
+Vandals
+Alans
+Bulgars
+Magyars
+Frisians
+Picts
+Langobardi
+
+
+@end

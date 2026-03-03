@@ -1,0 +1,22 @@
+@SCENARIO
+@width=500
+@title=%STRING0
+^^Length: %STRING1 to %STRING2
+^
+^"Armed neutrality is ineffectual enough at best."
+^    -Woodrow Wilson to the U.S. Congress
+^
+^Recommended: Central Powers, British, French, Russians
+^
+^Do not play: Americans
+^
+^OBJECT: The Central Powers (protagonist) should try to take as many
+ objective cities as possible. The rest want to prevent it.
+^
+^^SPECIAL NOTES
+^Pollution never appears. 
+^Negotiation between French and Central Powers is not permitted.
+^Government switching is not permitted.
+^
+@end -- this line must be here!
+

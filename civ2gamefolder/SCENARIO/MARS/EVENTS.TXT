@@ -1,0 +1,461 @@
+;
+; Events text for Mars Colonization Scenario
+; Copyright(c) 1997, MicroProse Studios Inc.
+;
+;
+
+@BEGINEVENTS
+
+@IF
+SCENARIOLOADED
+@THEN
+PLAYCDTRACK
+22
+DONTPLAYWONDERS
+@ENDIF
+
+@IF
+TURN
+Turn=2
+@THEN
+TEXT
+^^=The Situation=
+^
+^Six governments established bases on Mars. Working together, they managed to
+^convert large portions of the Martian polar ice caps into a useable water supply.
+^
+^Just as they were poised to begin the next step, something went wrong back home.
+^Communications ceased without warning; even navigational telemetry from the Mars
+^orbiters stopped. Assuming the worst--a major war, the end of civilization, or
+^both--the colonists succumbed to irrationality. Contact between the six bases
+^was cut off, and attitudes have grown cold.
+^
+^Dissident humans who believe that communications were cut off intentionally have
+^revolted and set up their own base. They refer to themselves as "Martians".
+^
+^As leader of one of the bases, you have a choice. You can seek to conquer your
+^neighbors and unify Mars by force, or you can strive to regain contact with Earth
+^and find out what happened. Good luck!
+ENDTEXT
+@ENDIF
+
+@IF
+RANDOMTURN
+Denominator=375
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+storm.wav
+TEXT
+^^=GLOBAL ALERT=
+^
+^^A massive dust storm has arisen in the Vasitas Borealis,
+^^near Agassiz crater.
+^
+^^Residents there are cautioned not to venture aboveground
+^^until the anomalous conditions have abated.
+^
+^^The data on this storm suggest that topographical changes are likely.
+^
+ENDTEXT
+CHANGETERRAIN
+terraintype=4
+maprect
+112,16,118,16,118,22,112,22
+@ENDIF
+
+@IF
+RANDOMTURN
+Denominator=375
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+storm.wav
+TEXT
+^^=GLOBAL ALERT=
+^
+^^A high-velocity dust storm has arisen north of the Utopia Planitia.
+^
+^^Residents there are cautioned not to venture aboveground
+^^until the anomalous conditions have abated.
+^
+^^The data on this storm suggest that topographical changes are likely.
+^
+ENDTEXT
+CHANGETERRAIN
+terraintype=1
+maprect
+43,19,51,19,51,27,43,27
+@ENDIF
+
+@IF
+RANDOMTURN
+Denominator=375
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+storm.wav
+TEXT
+^^=GLOBAL ALERT=
+^
+^^A moderate dust storm has arisen west of the Hellespontus Montes.
+^
+^^Residents there are cautioned not to venture aboveground
+^^until the dangerous conditions have abated.
+^
+^^The data on this storm suggest that topographical changes are likely.
+^
+ENDTEXT
+CHANGETERRAIN
+terraintype=4
+maprect
+10,82,16,82,16,90,10,90
+@ENDIF
+
+@IF
+RANDOMTURN
+Denominator=375
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+storm.wav
+TEXT
+^^=GLOBAL ALERT=
+^
+^^A lingering dust storm has arisen in the general area of
+^^Kuiper crater.
+^
+^^Residents there are cautioned not to venture aboveground
+^^until the anomalous conditions have abated.
+^
+^^The data on this storm suggest that topographical changes are likely.
+^
+ENDTEXT
+CHANGETERRAIN
+terraintype=4
+maprect
+89,91,107,91,107,99,89,99
+@ENDIF
+
+@IF
+RANDOMTURN
+Denominator=375
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+meteor.wav
+TEXT
+^^=EMERGENCY ALERT=
+^
+^^Seismic instruments have detected a meterorite impact in the
+^^northern reaches of the Amazonis Planitia.
+^
+^^The object was not massive enough to cause global repercussions,
+^^but the local effects have been devastating.
+^
+^^Any equipment or personnel in that area must be assumed lost.
+^
+ENDTEXT
+CHANGETERRAIN
+terraintype=0
+maprect
+85,45,87,45,87,47,85,47
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=anybody
+technology=4
+@THEN
+JUSTONCE
+TEXT
+^
+^^The discovery of Arean Geology allows the training of Geologists.
+^^(This unit functions as a Diplomat.)
+^
+ENDTEXT
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=anybody
+technology=62
+@THEN
+JUSTONCE
+TEXT
+^
+^^The discovery of Self-Repairing Units gives Mechanics lots of
+^^free time to get into trouble.
+^^(This unit functions as a Spy.)
+^
+ENDTEXT
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=French
+technology=93
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+win.wav
+TEXT
+^
+^^The French have landed a functioning, manned ERV on Earth!
+^
+^The Earth Return Vehicle lands in Paris to find that massive volcanic activity has
+^caused long-term turmoil in the ionosphere, preventing any contact with the Martian
+^colonies. With all available resources funneled into the ongoing international
+^relief efforts, spacecraft launches have been out of the question. Everyone is glad
+^the colony has survived, but they still have their own problems.
+^
+^^Meanwhile, back on Mars...
+^
+^The French success in regaining contact with the home planet reminds the leaders of
+^the other colonies that the work of settling Mars was once a cooperative international
+^effort. In hopes that it's not too late to regain that lost glory, they meet and
+^unanimously elect to combine all of their colonies and forces under the superior
+^leadership of the French colony.
+^
+^^(You can continue playing, but the scenario is essentially over.)
+ENDTEXT
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Americans
+technology=93
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+win.wav
+TEXT
+^
+^^The Americans have landed a functioning, manned ERV on Earth!
+^
+^The Earth Return Vehicle lands in Washington to find that massive volcanic activity has
+^caused long-term turmoil in the ionosphere, preventing any contact with the Martian
+^colonies. With all available resources funneled into the ongoing international
+^relief efforts, spacecraft launches have been out of the question. Everyone is glad
+^the colony has survived, but they still have their own problems.
+^
+^^Meanwhile, back on Mars...
+^
+^The American success in regaining contact with the home planet reminds the leaders of
+^the other colonies that the work of settling Mars was once a cooperative international
+^effort. In hopes that it's not too late to regain that lost glory, they meet and
+^unanimously elect to combine all of their colonies and forces under the superior
+^leadership of the American colony.
+^
+^^(You can continue playing, but the scenario is essentially over.)
+ENDTEXT
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Russians
+technology=93
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+win.wav
+TEXT
+^
+^^The Russians have landed a functioning, manned ERV on Earth!
+^
+^The Earth Return Vehicle lands in Moscow to find that massive volcanic activity has
+^caused long-term turmoil in the ionosphere, preventing any contact with the Martian
+^colonies. With all available resources funneled into the ongoing international
+^relief efforts, spacecraft launches have been out of the question. Everyone is glad
+^the colony has survived, but they still have their own problems.
+^
+^^Meanwhile, back on Mars...
+^
+^The Russian success in regaining contact with the home planet reminds the leaders of
+^the other colonies that the work of settling Mars was once a cooperative international
+^effort. In hopes that it's not too late to regain that lost glory, they meet and
+^unanimously elect to combine all of their colonies and forces under the superior
+^leadership of the Russian colony.
+^
+^^(You can continue playing, but the scenario is essentially over.)
+ENDTEXT
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Martians
+technology=93
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+win.wav
+TEXT
+^
+^^The Martians have landed a functioning, manned ERV on Earth!
+^
+^The Earth Return Vehicle lands to find that massive volcanic activity has caused
+^long-term turmoil in the ionosphere, preventing any contact with the Martian
+^colonies. With all available resources funneled into the ongoing international
+^relief efforts, spacecraft launches have been out of the question. The dissident
+^Martians are not satisfied, and they begin the systematic destruction of Earth's
+^surviving population.
+^
+^^Meanwhile, back on Mars...
+^
+^The Martian revolutionaries' return to the home planet and their immediate attack
+^reminds the other colonies that the work of settling Mars was once a cooperative
+^international effort. In hopes that it's not too late to save their home planet,
+^they meet and unanimously elect to combine forces to eradicate the Martians.
+^
+ENDTEXT
+MAKEAGGRESSION
+who=Americans
+whom=Martians
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Martians
+technology=93
+@THEN
+JUSTONCE
+MAKEAGGRESSION
+who=Russians
+whom=Martians
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Martians
+technology=93
+@THEN
+JUSTONCE
+MAKEAGGRESSION
+who=Japanese
+whom=Martians
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Martians
+technology=93
+@THEN
+JUSTONCE
+MAKEAGGRESSION
+who=French
+whom=Martians
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Martians
+technology=93
+@THEN
+JUSTONCE
+MAKEAGGRESSION
+who=Australians
+whom=Martians
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Martians
+technology=93
+@THEN
+JUSTONCE
+MAKEAGGRESSION
+who=Ukrainians
+whom=Martians
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Japanese
+technology=93
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+win.wav
+TEXT
+^
+^^The Japanese have landed a functioning, manned ERV on Earth!
+^
+^The Earth Return Vehicle lands in Tokyo to find that massive volcanic activity has
+^caused long-term turmoil in the ionosphere, preventing any contact with the Martian
+^colonies. With all available resources funneled into the ongoing international
+^relief efforts, spacecraft launches have been out of the question. Everyone is glad
+^the colony has survived, but they still have their own problems.
+^
+^^Meanwhile, back on Mars...
+^
+^The Japanese success in regaining contact with the home planet reminds the leaders of
+^the other colonies that the work of settling Mars was once a cooperative international
+^effort. In hopes that it's not too late to regain that lost glory, they meet and
+^unanimously elect to combine all of their colonies and forces under the superior
+^leadership of the Japanese colony.
+^
+^^(You can continue playing, but the scenario is essentially over.)
+ENDTEXT
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Australians
+technology=93
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+win.wav
+TEXT
+^
+^^The Australians have landed a functioning, manned ERV on Earth!
+^
+^The Earth Return Vehicle lands in Sydney to find that massive volcanic activity has
+^caused long-term turmoil in the ionosphere, preventing any contact with the Martian
+^colonies. With all available resources funneled into the ongoing international
+^relief efforts, spacecraft launches have been out of the question. Everyone is glad
+^the colony has survived, but they still have their own problems.
+^
+^^Meanwhile, back on Mars...
+^
+^The Australian success in regaining contact with the home planet reminds the leaders of
+^the other colonies that the work of settling Mars was once a cooperative international
+^effort. In hopes that it's not too late to regain that lost glory, they meet and
+^unanimously elect to combine all of their colonies and forces under the superior
+^leadership of the Australian colony.
+^
+^^(You can continue playing, but the scenario is essentially over.)
+ENDTEXT
+@ENDIF
+
+@IF
+RECEIVEDTECHNOLOGY
+receiver=Ukrainians
+technology=93
+@THEN
+JUSTONCE
+PLAYWAVEFILE
+win.wav
+TEXT
+^
+^^The Ukrainians have landed a functioning, manned ERV on Earth!
+^
+^The Earth Return Vehicle lands in Kiev to find that massive volcanic activity has
+^caused long-term turmoil in the ionosphere, preventing any contact with the Martian
+^colonies. With all available resources funneled into the ongoing international
+^relief efforts, spacecraft launches have been out of the question. Everyone is glad
+^the colony has survived, but they still have their own problems.
+^
+^^Meanwhile, back on Mars...
+^
+^The Ukrainian success in regaining contact with the home planet reminds the leaders of
+^the other colonies that the work of settling Mars was once a cooperative international
+^effort. In hopes that it's not too late to regain that lost glory, they meet and
+^unanimously elect to combine all of their colonies and forces under the superior
+^leadership of the Ukrainian colony.
+^
+^^(You can continue playing, but the scenario is essentially over.)
+ENDTEXT
+@ENDIF
+
+@ENDEVENTS
