@@ -261,9 +261,82 @@ cp -r reverse_engineering/decompiled_raw/* reverse_engineering/decompiled/
 python reverse_engineering/apply_renames.py
 ```
 
-## Next Steps
+## Current Status (as of 2026-03-03)
 
-1. **Struct recovery** — Map the city (0x58-byte stride at 0x64F348), unit, and civilization data structures
-2. **Module documentation** — Annotate each code region with purpose and call graph
-3. **JS pseudocode** — Convert key modules to JavaScript-portable pseudocode for browser implementation
-4. **Phase 2 renaming** — Use AI agents to analyze function bodies and propose semantic names for remaining `FUN_xxxxxxxx` functions
+- **Phase 1 COMPLETE**: Full binary decompiled via Ghidra, 251 functions renamed
+- **Phase 2 COMPLETE**: Struct recovery, game formula extraction, rendering analysis
+- **Phase 3 IN PROGRESS**: Integration into browser game (city dialog as proof of concept)
+- **5,149 functions** decompiled into readable C pseudocode
+- **~4,900 functions** still have generic `FUN_xxxxxxxx` names (need semantic analysis)
+- The browser game in `canvas-test-1/` has a save file parser and isometric map renderer already working
+- The city dialog (`canvas-test-1/citydialog.js`) renders a functional city screen
+
+## Roadmap — Using Decompiled Data for Browser Game
+
+### Step 1: Struct Recovery (highest priority)
+
+Map the game's core data structures by analyzing field accesses in the decompiled code. These structures are referenced throughout and are essential for validating/extending the save file parser.
+
+| Structure | Base Address | Stride | Priority | Notes |
+|---|---|---|---|---|
+| City | `0x0064F348` | 0x58 (88 bytes) | **Critical** | Most-referenced; needed for city dialog |
+| Civilization | `0x0064C6A2` | 0x594 (1428 bytes) | High | Gold, tech, diplomacy state |
+| Unit type table | `0x0064C488` | 0x08 | High | Attack, defense, move, cost |
+| Building/improvement | `0x0064B1B8` | 0x14 (20 bytes) | Medium | Names, costs, prerequisites |
+| Unit instance | TBD | TBD | Medium | Position, HP, veteran status |
+| Tile/terrain | TBD | TBD | Medium | Terrain type, improvements, visibility |
+
+**Method**: Search decompiled code for base address references, track all offsets used with the stride math (e.g., `*(int *)(base + id * 0x58 + 0x14)` means city field at offset 0x14). Cross-reference with existing save file parser fields.
+
+**Known city struct fields so far**:
+- Offset 0x31 (from `0x0064F379 = 0x0064F348 + 0x31`): production type
+- Offset 0x14 (from `0x0064F35C = 0x0064F348 + 0x14`): shields accumulated
+
+### Step 2: Game Logic Extraction
+
+Convert key game formulas from C pseudocode to documented algorithms:
+
+| Formula | Source Functions | Browser Impact |
+|---|---|---|
+| Production cost / buy price | `city_button_buy` (0x509B48) | City dialog buy button |
+| Resource calculation (food/shields/trade per tile) | Functions in 0x450000-0x4FFFFF | Resource row rendering |
+| Combat resolution | Functions in 0x550000-0x5AFFFF | Future combat system |
+| City growth (food thresholds) | City module functions | Food storage panel |
+| Happiness calculation | City module functions | Citizen face display |
+| Technology costs | Functions referencing civ struct | Future tech tree |
+
+### Step 3: Rendering Coordinate Verification
+
+The GDI rendering layer (0x5B0000-0x5DFFFF) contains exact pixel coordinates for all UI panels. Compare against `citydialog.js` positions to catch any discrepancies.
+
+### Step 4: Phase 2 Function Renaming
+
+Use AI agents to analyze function bodies and propose semantic names for the remaining ~4,900 `FUN_xxxxxxxx` functions. Focus on:
+- Functions called by already-named functions
+- Functions that access known struct fields
+- Functions with distinctive string or API patterns not caught by Phase 1
+
+### Step 5: AI Logic (future)
+
+The AI decision-making functions (0x450000-0x4FFFFF) — diplomacy offers, unit movement priorities, city production choices — can eventually be ported for single-player AI opponents.
+
+## Key Files for Future AI Sessions
+
+| File | Purpose |
+|---|---|
+| `reverse_engineering/reverseEngCiv2EXE.md` | **This file** — start here for RE context |
+| `reverse_engineering/decompiled/` | Working copy with renamed functions (read these) |
+| `reverse_engineering/decompiled_raw/` | Pristine Ghidra output (never modify) |
+| `reverse_engineering/rename_map.json` | Current function name mappings (251 entries) |
+| `reverse_engineering/build_rename_map.py` | Script to rebuild rename map from evidence |
+| `reverse_engineering/apply_renames.py` | Script to apply renames to working copy |
+| `reverse_engineering/Civ2_City_Struct.md` | Complete 88-byte city struct (31 fields) |
+| `reverse_engineering/Data_Structures.md` | Civ (1428B), Unit Type (20B), Building (8B), Unit (32B) structs |
+| `reverse_engineering/Civ2_Game_Formulas.md` | 7 game formulas with JS implementations |
+| `reverse_engineering/Integration_Roadmap.md` | Full plan for integrating RE data into browser app |
+| `reverse_engineering/DecompileAll.java` | Ghidra batch export script |
+| `canvas-test-1/citydialog.js` | Browser city dialog renderer |
+| `canvas-test-1/app.js` | Browser save file parser + map renderer |
+| `GDI_Rendering_Pipeline.md` | DDraw proxy hooking findings |
+| `Civ2_MGE_Binary_Analysis.md` | File format and sprite layout docs |
+| `MEMORY.md` (in .claude project dir) | Cross-session AI memory |

@@ -60,10 +60,54 @@ const Civ2CityDialog = {
     9:'Clean Pollution', 10:'Build Airbase', 11:'GoTo', 255:''
   },
 
-  // ── Production cost tables (RULES.TXT cost × 10 = shields needed) ──
+  // ── Production cost tables (RULES.TXT cost × shield_box_factor) ──
+  // shield_box_factor (COSMIC #4) defaults to 10; cost × factor = total shields needed
   UNIT_COSTS: [1,1,2,3,4,3,4,5,3,4,6,2,3,5,8,12,10,5,6,8,16,2,3,2,3,3,3,4,5,2,3,5,4,6,4,5,12,3,4,3,6,8,3,5,10,16,6,10,12,16,6,4,4,6,8,4,5,12,16,16,16,5,5].map(c => c * 10),
   IMPROVE_COSTS: [0,0,4,6,4,8,8,12,8,12,12,16,6,10,20,32,20,12,16,24,16,22,12,8,16,16,0,0,0,0,0,32,16,8,4,32,32,32,60].map(c => c * 10),
   WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,20,30,40,40,40,40,40,30,40,30,20,15,60,15,60,60,60].map(c => c * 10),
+
+  // ── Game formulas from decompiled civ2.exe (reverse_engineering/Civ2_Game_Formulas.md) ──
+
+  // Rush-buy cost: city_button_buy @ 0x509B48
+  // Units: 2 gold per remaining shield. Buildings: quadratic. Wonders: 4 gold per shield.
+  // Double if zero shields invested.
+  calculateBuyCost(item, shieldsStored) {
+    const totalNeeded = this._getProductionCost(item);
+    if (totalNeeded <= 0) return 0;
+    const remaining = Math.max(0, Math.min(999, totalNeeded - shieldsStored));
+    if (remaining === 0) return 0;
+    let cost;
+    if (item.type === 'unit') {
+      cost = remaining * 2;
+    } else if (item.id >= 39 && item.id <= 66) {
+      // Wonder: 4x
+      cost = remaining * 4;
+    } else {
+      // Building: quadratic formula (remaining^2 / 20 + remaining * 2)
+      cost = Math.floor(remaining * remaining / 20) + remaining * 2;
+    }
+    if (shieldsStored === 0) cost *= 2;
+    return cost;
+  },
+
+  // Food box to grow: FUN_004e7eb1 @ 0x4E7EB1
+  // food_needed = (city_size + 1) × food_box_factor (COSMIC #3, default 10)
+  getFoodToGrow(citySize, foodBoxFactor) {
+    return (citySize + 1) * (foodBoxFactor || 10);
+  },
+
+  // Icon spacing algorithm: FUN_00548b70 @ 0x548B70 (exact decompiled logic)
+  // Computes optimal pixel spacing for a row of overlapping resource icons.
+  _iconSpacing(count, iconSize, availableWidth) {
+    if (iconSize < 2) iconSize = 1;
+    if (count < 2) return { spacing: iconSize, fitCount: Math.min(count, 1), remainder: 0 };
+    const usable = availableWidth - iconSize;  // space for last icon
+    const gap = Math.floor(usable / (count - 1));
+    const remainder = usable % (count - 1);
+    if (gap >= iconSize) return { spacing: iconSize, fitCount: count, remainder: 0 };
+    if (gap < 1) return { spacing: 1, fitCount: usable - iconSize + 1, remainder: 0 };
+    return { spacing: gap, fitCount: count, remainder };
+  },
 
   // ── Layout regions — all coordinates absolute on the 636×421 wallpaper ──
   // Sources: GetCityWindowDefinition() in Civ2-clone Civ2Interface.cs (panel boxes),
@@ -754,13 +798,20 @@ const Civ2CityDialog = {
     }
   },
 
-  _drawFoodStorage(ctx, city, cdSprites) {
+  _drawFoodStorage(ctx, city, cdSprites, mapData) {
     if (!(cdSprites && cdSprites.food)) return;
     const R = this.REGIONS.foodStorage;
     const hasGranary = !!(city.buildings & (1 << 3));
+    const hasPyramids = mapData && mapData.gameState && mapData.gameState.wonderCityIds &&
+      mapData.gameState.wonderCityIds[0] !== 0xFF && mapData.gameState.wonderCityIds[0] !== 0xFFFF;
     const foodStored = city.foodInBox || 0;
     const wheatW = 14, wheatH = 14;
     const wheatSpacing = this._wheatSpacing(city.size);
+
+    // Food to grow: (size + 1) × food_box_factor (from decompiled FUN_004e7eb1 @ 0x4E7EB1)
+    // COSMIC #3 food_box_factor defaults to 10, parsed from save file tail if available
+    const foodBoxFactor = (mapData && mapData.tail && mapData.tail.cosmicFoodRows) || 10;
+    const foodToGrow = this.getFoodToGrow(city.size, foodBoxFactor);
 
     // Centered border rectangle
     const lineWidth = city.size * wheatSpacing + wheatW + 7;
@@ -789,17 +840,32 @@ const Civ2CityDialog = {
       if (count >= foodStored) break;
     }
 
-    // Granary line
-    if (hasGranary) {
+    // Granary line (halfway point — city keeps 50% food after growth with granary or Pyramids)
+    if (hasGranary || hasPyramids) {
       const granLineWidth = lineWidth - 10;
       const granStartX = iconStartX + 2;
       ctx.strokeStyle = 'rgb(75,155,35)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(granStartX, R.granaryY); ctx.lineTo(granStartX + granLineWidth, R.granaryY); ctx.stroke();
     }
+
+    // Food progress text: "X/Y to grow" (from decompiled growth formula)
+    const foodSurplus = (city.foodProduction || 0) - (city.size * 2);
+    const turnsToGrow = foodSurplus > 0 ? Math.ceil((foodToGrow - foodStored) / foodSurplus) : 0;
+    const progressColor = foodSurplus > 0 ? 'rgb(87,171,39)' : foodSurplus < 0 ? 'rgb(227,83,15)' : 'rgb(135,135,135)';
+    const progressText = `${foodStored}/${foodToGrow}`;
+    const turnsText = foodSurplus > 0 && foodStored < foodToGrow
+      ? `(${turnsToGrow} turn${turnsToGrow !== 1 ? 's' : ''})`
+      : foodSurplus < 0 ? '(Starving!)' : '';
+    ctx.textAlign = 'center';
+    this._text(ctx, progressText, panelCenterX, R.bottomY + 3, progressColor, 'bold 10px Arial, sans-serif');
+    if (turnsText) {
+      this._text(ctx, turnsText, panelCenterX, R.bottomY + 14, progressColor, '10px Arial, sans-serif');
+    }
+    ctx.textAlign = 'left';
   },
 
-  _drawProduction(ctx, city, cdSprites, mapSprites, ownerColor) {
+  _drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData) {
     const R = this.REGIONS.production;
     const item = city.itemInProduction;
     const prodName = this.getProductionName(item);
@@ -863,6 +929,35 @@ const Civ2CityDialog = {
           }
           if (count >= stored) break;
         }
+
+        // Production progress text: "X/Y shields" below shield grid
+        // Turns remaining: ceil((cost - stored) / shields_per_turn)
+        const shieldsPerTurn = city.shieldProduction || 0;
+        const turnsLeft = shieldsPerTurn > 0 ? Math.ceil((cost - stored) / shieldsPerTurn) : 999;
+        const progressText = `${stored}/${cost}`;
+        const turnsText = stored >= cost ? 'Complete!' : turnsLeft < 999 ? `${turnsLeft} turn${turnsLeft !== 1 ? 's' : ''}` : '';
+        const progressY = SG.borderY + boxHeight + 12;
+        ctx.textAlign = 'center';
+        this._text(ctx, progressText, (SG.borderX + SG.borderRight) / 2, progressY,
+          'rgb(103,127,215)', '10px Arial, sans-serif');
+        if (turnsText) {
+          this._text(ctx, turnsText, (SG.borderX + SG.borderRight) / 2, progressY + 12,
+            'rgb(135,135,135)', '10px Arial, sans-serif');
+        }
+        ctx.textAlign = 'left';
+      }
+
+      // Buy cost display (from decompiled city_button_buy @ 0x509B48)
+      if (item && cost > 0 && stored < cost) {
+        const buyCost = this.calculateBuyCost(item, stored);
+        const treasury = civData ? civData.treasury : 0;
+        const canAfford = treasury >= buyCost;
+        const buyText = `Buy: ${buyCost} gold`;
+        const buyColor = canAfford ? 'rgb(223,187,63)' : 'rgb(159,115,31)';
+        // Position below Buy button
+        ctx.textAlign = 'center';
+        this._text(ctx, buyText, R.x + 37, R.y + 34, buyColor, '10px Arial, sans-serif');
+        ctx.textAlign = 'left';
       }
     }
   },
@@ -1013,8 +1108,8 @@ const Civ2CityDialog = {
     this._drawCitizens(ctx, city, epoch, cdSprites, specs);
     this._drawResourceMap(ctx, city, mapData, cdSprites, mapSprites);
     this._drawResourceRows(ctx, city, cdSprites, civData, supported);
-    this._drawFoodStorage(ctx, city, cdSprites);
-    this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor);
+    this._drawFoodStorage(ctx, city, cdSprites, mapData);
+    this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);
     this._drawUnitsSupported(ctx, supported, mapSprites);
     this._drawImprovements(ctx, city, cityIndex, mapData, cdSprites);
     this._drawUnitsPresent(ctx, city, mapData, cdSprites, mapSprites);
