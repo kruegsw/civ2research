@@ -418,7 +418,7 @@ const Civ2CityDialog = {
     // ── Section labels (centered, gold with dark shadow) ──
     // From CityWindow.cs: Draw.Text centered at (x, y) with shadow (67,67,67) offset (1,1)
     const _label = (text, cx, cy, color, shadow) => {
-      ctx.font = '13px Arial, sans-serif';
+      ctx.font = 'bold 13px Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = shadow || COL.headerShadow;
@@ -597,10 +597,10 @@ const Civ2CityDialog = {
       // Left text: "Food: N", right text: "Surplus: N" (or hunger if negative)
       const foodTotal = city.foodProduction || 0;
       const foodSurplus = foodTotal - (city.size * 2);
-      ctx.font = '13px Arial, sans-serif';
+      ctx.font = 'bold 13px Arial, sans-serif';
       // Left: "Food: N"
       ctx.textAlign = 'left';
-      this._text(ctx, `Food: ${foodTotal}`, 203, 68, 'rgb(87,171,39)', '13px Arial, sans-serif');
+      this._text(ctx, `Food: ${foodTotal}`, 203, 68, 'rgb(87,171,39)', 'bold 13px Arial, sans-serif');
       // Right: "Surplus: N"
       ctx.textAlign = 'right';
       this._text(ctx, `Surplus: ${foodSurplus}`, 431, 68, 'rgb(63,139,31)');
@@ -626,7 +626,7 @@ const Civ2CityDialog = {
       // Row 2: TRADE — text at y=102, icons at y=117
       const tradeTotal = city.totalTrade || 0;
       ctx.textAlign = 'left';
-      this._text(ctx, `Trade: ${tradeTotal}`, 203, 109, 'rgb(239,159,7)', '13px Arial, sans-serif');
+      this._text(ctx, `Trade: ${tradeTotal}`, 203, 109, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'right';
       this._text(ctx, `Corruption: ${corruption}`, 431, 109, 'rgb(227,83,15)');
       ctx.textAlign = 'left';
@@ -648,7 +648,7 @@ const Civ2CityDialog = {
       const tlsSpacing = this._resourceSpacing(tlsTotal);
       // Text: "N% Tax: N" left, "N% Lux: N" center, "N% Sci: N" right
       ctx.textAlign = 'left';
-      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 163, 'rgb(239,159,7)', '13px Arial, sans-serif');
+      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 163, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'center';
       this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, 317, 163, 'rgb(255,255,255)');
       ctx.textAlign = 'right';
@@ -669,7 +669,7 @@ const Civ2CityDialog = {
 
       // Row 4: SUPPORT + PRODUCTION — text at y=196, icons at y=181
       ctx.textAlign = 'left';
-      this._text(ctx, `Support: ${support}`, 204, 203, 'rgb(63,79,167)', '13px Arial, sans-serif');
+      this._text(ctx, `Support: ${support}`, 204, 203, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'right';
       this._text(ctx, `Production: ${production}`, 431, 203, 'rgb(7,11,103)');
       ctx.textAlign = 'left';
