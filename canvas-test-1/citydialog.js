@@ -65,15 +65,14 @@ const Civ2CityDialog = {
   IMPROVE_COSTS: [0,0,4,6,4,8,8,12,8,12,12,16,6,10,20,32,20,12,16,24,16,22,12,8,16,16,0,0,0,0,0,32,16,8,4,32,32,32,60].map(c => c * 10),
   WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,20,30,40,40,40,40,40,30,40,30,20,15,60,15,60,60,60].map(c => c * 10),
 
-  // ── Layout regions (636×421 coordinate space) ──
-  // Panel boxes from GetCityWindowDefinition() in Civ2-clone Civ2Interface.cs.
-  // Draw origins from EtoFormsUI CityWindow.cs Surface_Paint (where content starts).
-  // Resource icon positions from Draw.CityPanel.cs. BMP-verified where noted.
+  // ── Layout regions — all coordinates absolute on the 636×421 wallpaper ──
+  // Sources: GetCityWindowDefinition() in Civ2-clone Civ2Interface.cs (panel boxes),
+  //   EtoFormsUI CityWindow.cs Surface_Paint (draw origins, label centers),
+  //   Draw.CityPanel.cs (resource row bounds, icon positions). BMP-verified where noted.
   REGIONS: {
-    canvas:       { w: 636, h: 421 },
+    canvas: { x: 0, y: 0, w: 636, h: 421 },
 
-    // Panel boxes — the bounding rectangle of each major panel area
-    // (from GetCityWindowDefinition: CitizensBox, TileMap, FoodStorage, etc.)
+    // ── Panel bounding boxes (GetCityWindowDefinition) ──
     panels: {
       citizens:     { x: 3,   y: 2,   w: 433, h: 44  },
       tileMap:      { x: 7,   y: 65,  w: 188, h: 137 },
@@ -82,18 +81,16 @@ const Civ2CityDialog = {
       infoPanel:    { x: 193, y: 215, w: 242, h: 198 },
       unitSupport:  { x: 7,   y: 215, w: 184, h: 69  },
       improvements: { x: 5,   y: 306, w: 170, h: 108 },
-      unitsPresent: { x: 0,   y: 0,   w: 232, h: 84  },  // relative to infoPanel
+      unitsPresent: { x: 193, y: 215, w: 232, h: 84  },  // resolved from InfoPanel + (0,0)
     },
 
-    // Draw origins — where content rendering starts (from EtoFormsUI CityWindow.cs)
-    // These differ from panel boxes by a small inset (content inside the border)
-    citizens:     { x: 5, y: 9 },
-    resourceMap:  { x: 5, y: 84, gridW: 24, gridH: 12, sprW: 48, sprH: 24 },
+    // ── Citizens row (face draw origin within citizensPanel) ──
+    citizens: { x: 5, y: 9 },
 
-    // Resource icon rows (from Draw.CityPanel.cs ConsumableResourceArea / SharedResourceArea)
-    // Bounds from GetCityWindowDefinition: Food(203,75,230,13) Trade(206,116,224,16)
-    //   TaxLuxSci(206,140,224,16) Shields(199,181,238,16)
-    // Title area: (199,46,238,15)
+    // ── Resource map tile grid ──
+    resourceMap: { x: 5, y: 84, gridW: 24, gridH: 12, sprW: 48, sprH: 24 },
+
+    // ── Resource icon rows ──
     resources: {
       title:       { x: 199, y: 46,  w: 238, h: 15 },
       food:        { x: 203, y: 75,  w: 230, h: 13, textX: 203, textY: 68, iconX: 206, iconY: 76, rightX: 431 },
@@ -102,26 +99,38 @@ const Civ2CityDialog = {
       supportProd: { x: 199, y: 181, w: 238, h: 16, textX: 204, textY: 203, iconX: 206, iconY: 181, rightX: 431 },
     },
 
+    // ── Food storage ──
     foodStorage: {
       x: 437, y: 0, w: 195, h: 163,
       borderY: 15, lineH: 144, bottomY: 160,
-      wheatY: 18,    // borderY + 3
-      granaryY: 87,
+      wheatY: 18, granaryY: 87,
     },
 
+    // ── Production panel (all sub-elements absolute) ──
     production: {
       x: 437, y: 165, w: 195, h: 191,
-      iconCenter:    { dx: 97.5, dy: 18 },   // GetCityWindowDefinition IconLocation
-      unitSprite:    { dx: 72, dy: 3, w: 64, h: 48 },
-      buildingIcon:  { dx: 79, dy: 18, w: 36, h: 20 },
-      buildingName:  { dx: 97, dy: 15 },
-      shieldGrid:    { dx: 6, dy: 45, borderX: 442, borderY: 207, borderRight: 624, cols: 10 },
+      unitSprite:   { x: 509, y: 168, w: 64, h: 48 },    // panel(437,165) + (72, 3)
+      buildingIcon: { x: 516, y: 183, w: 36, h: 20 },    // panel + (79, 18)
+      buildingName: { x: 534, y: 180 },                    // panel + (97, 15), center-aligned
+      iconCenter:   { x: 534.5, y: 183 },                  // panel + (97.5, 18)
+      shieldGrid: {
+        x: 443, y: 210,                                    // panel + (6, 45), icon draw origin
+        borderX: 442, borderY: 207, borderRight: 624,      // border rectangle edges
+        cols: 10,
+      },
     },
 
-    // Draw origins for unit panels (from EtoFormsUI: supUnitPanelPos / unitPanelPos)
+    // ── Units supported (draw origin) ──
     unitsSupported: { x: 3, y: 212, w: 189 },
-    infoPanel:      { x: 193, y: 212, w: 242 },
 
+    // ── Info panel / units present (draw origin + trade text positions) ──
+    infoPanel: {
+      x: 193, y: 212, w: 242,
+      tradeX: 203,                                          // x for Supplies/Demands/routes text
+      suppliesY: 358, demandsY: 371, tradeRoutesY: 384,    // absolute Y for trade text rows
+    },
+
+    // ── Improvements list ──
     improvements: {
       x: 5, y: 306, w: 170, h: 108,
       thumbX: 8, thumbY: 307, thumbW: 20, thumbH: 11,
@@ -130,44 +139,38 @@ const Civ2CityDialog = {
       rowH: 12, maxRows: 9,
     },
 
+    // ── Buttons ──
     buttons: {
-      // Buy/Change are relative to Production panel: (5,16) and (120,16) + panel origin (437,165)
-      buy:      { x: 442, y: 181, w: 68, h: 24 },
-      change:   { x: 557, y: 181, w: 68, h: 24 },
+      buy:      { x: 442, y: 181, w: 68, h: 24 },        // production panel + (5, 16)
+      change:   { x: 557, y: 181, w: 68, h: 24 },        // production panel + (120, 16)
       info:     { x: 459, y: 364, w: 57, h: 24 },
       map:      { x: 517, y: 364, w: 57, h: 24 },
       rename:   { x: 575, y: 364, w: 57, h: 24 },
       happy:    { x: 459, y: 389, w: 57, h: 24 },
       panorama: { x: 517, y: 389, w: 57, h: 24 },
       exit:     { x: 575, y: 389, w: 57, h: 24 },
-      // Navigation buttons (prev/next city) — not yet implemented
-      prevCity: { x: 440, y: 389, w: 21, h: 24 },
-      nextCity: { x: 440, y: 364, w: 21, h: 24 },
+      prevCity: { x: 440, y: 389, w: 21, h: 24 },         // not yet implemented
+      nextCity: { x: 440, y: 364, w: 21, h: 24 },         // not yet implemented
     },
 
-    // Label rectangles from GetCityWindowDefinition Labels.Add()
-    // Some are relative to parent panel: UnitsPresent/Supplies/Demands → InfoPanel,
-    //   ItemInProduction → Production, ResourceMap → TileMap panel area.
-    // The x,y here are the EtoFormsUI draw centers (used by our _label() method).
+    // ── Labels (x,y = absolute draw center for _label(); rect = layout box) ──
     labels: {
-      citizens:        { x: 101, y: 53,  rect: { x: 0, y: 46, w: 189, h: 12 } },   // relative to CityWindow
-      cityResources:   { x: 317, y: 52,  rect: { x: 199, y: 46, w: 238, h: 15 } },  // = resources.title
-      foodStorage:     { x: 535, y: 7,   rect: { x: 437, y: 0, w: 195, h: 12 } },
-      improvements:    { x: 96,  y: 296, rect: { x: 3, y: 291, w: 189, h: 12 } },
-      resourceMap:     { x: 101, y: 195, rect: { x: 0, y: 125, w: 189, h: 12 } },   // relative to TileMap area
-      unitsSupported:  { rect: { x: 3, y: 215, w: 189, h: 12 } },    // draw center computed from unitsSupported panel
-      unitsPresent:    { rect: { x: 0, y: 0, w: 232, h: 12 } },      // relative to InfoPanel
-      itemInProduction:{ rect: { x: 0, y: 4, w: 195, h: 12 } },      // relative to Production panel
-      supplies:        { rect: { x: 0, y: 130, w: 232, h: 12 } },    // relative to InfoPanel
-      demands:         { rect: { x: 0, y: 143, w: 232, h: 12 } },    // relative to InfoPanel
+      citizens:        { x: 101, y: 53,  rect: { x: 3,   y: 48,  w: 189, h: 12 } },
+      cityResources:   { x: 317, y: 52,  rect: { x: 199, y: 46,  w: 238, h: 15 } },
+      foodStorage:     { x: 535, y: 7,   rect: { x: 437, y: 0,   w: 195, h: 12 } },
+      improvements:    { x: 96,  y: 296, rect: { x: 3,   y: 291, w: 189, h: 12 } },
+      resourceMap:     { x: 101, y: 195, rect: { x: 7,   y: 190, w: 189, h: 12 } },
+      unitsSupported:  { x: 97,  y: 227, rect: { x: 3,   y: 215, w: 189, h: 12 } },
+      unitsPresent:    { x: 314, y: 227, rect: { x: 193, y: 215, w: 232, h: 12 } },
+      itemInProduction:{ x: 534, y: 169, rect: { x: 437, y: 169, w: 195, h: 12 } },
+      supplies:        { x: 203, y: 351, rect: { x: 193, y: 345, w: 232, h: 12 } },
+      demands:         { x: 203, y: 364, rect: { x: 193, y: 358, w: 232, h: 12 } },
     },
 
-    // Support map mode (drawn inside InfoPanel when Map button clicked)
-    supportMap: {
-      centerDx: 107, centerDy: 118,  // offset from wallpaper origin at zoom=0
-      squareW: 2, squareH: 1,
-    },
+    // ── Support map mode (inside InfoPanel) ──
+    supportMap: { x: 107, y: 118, squareW: 2, squareH: 1 },
 
+    // ── Gold borders (3D beveled frames drawn on top of wallpaper) ──
     goldBorders: [
       { x: 5, y: 79, w: 194, h: 137 },   // Resource Map
       { x: 3, y: 288, w: 192, h: 130 },   // City Improvements
@@ -807,22 +810,22 @@ const Civ2CityDialog = {
         const template = mapSprites.unitTemplates[item.id];
         if (template) {
           const colored = Civ2Renderer._recolorUnit(template, ownerColor);
-          ctx.drawImage(colored, R.x + R.unitSprite.dx, R.y + R.unitSprite.dy, R.unitSprite.w, R.unitSprite.h);
+          ctx.drawImage(colored, R.unitSprite.x, R.unitSprite.y, R.unitSprite.w, R.unitSprite.h);
         }
       } else {
         // Building or wonder — name centered, icon below
         ctx.textAlign = 'center';
-        this._text(ctx, prodName, R.x + R.buildingName.dx, R.y + R.buildingName.dy, 'rgb(63,79,167)', '13px Arial, sans-serif');
+        this._text(ctx, prodName, R.buildingName.x, R.buildingName.y, 'rgb(63,79,167)', '13px Arial, sans-serif');
         ctx.textAlign = 'left';
         if (!item.type || item.type === 'building') {
           if (item.id >= 1 && item.id <= 38 && cdSprites.improvements[item.id]) {
-            ctx.drawImage(cdSprites.improvements[item.id], R.x + R.buildingIcon.dx, R.y + R.buildingIcon.dy, R.buildingIcon.w, R.buildingIcon.h);
+            ctx.drawImage(cdSprites.improvements[item.id], R.buildingIcon.x, R.buildingIcon.y, R.buildingIcon.w, R.buildingIcon.h);
           }
         }
         if (item.type === 'wonder' || (item.id >= 39 && item.id <= 66)) {
           const wIdx = item.id - 39;
           if (cdSprites.wonders[wIdx]) {
-            ctx.drawImage(cdSprites.wonders[wIdx], R.x + R.buildingIcon.dx, R.y + R.buildingIcon.dy, R.buildingIcon.w, R.buildingIcon.h);
+            ctx.drawImage(cdSprites.wonders[wIdx], R.buildingIcon.x, R.buildingIcon.y, R.buildingIcon.w, R.buildingIcon.h);
           }
         }
       }
@@ -852,8 +855,8 @@ const Civ2CityDialog = {
         let count = 0;
         for (let row = 0; row < numRows; row++) {
           for (let col = 0; col < numCols; col++) {
-            const sx = R.x + SG.dx + Math.round(2 + col * dx);
-            const sy = R.y + SG.dy + dy * row;
+            const sx = SG.x + Math.round(2 + col * dx);
+            const sy = SG.y + dy * row;
             ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
             count++;
             if (count >= stored) break;
@@ -953,7 +956,6 @@ const Civ2CityDialog = {
     }
 
     // Trade text at bottom of info panel
-    const tradeX = R.x + 10;
     ctx.font = '9px Arial, sans-serif';
     // Supplies
     const suppliedNames = [];
@@ -962,7 +964,7 @@ const Civ2CityDialog = {
         if (cIdx !== undefined && cIdx < 16) suppliedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
-    this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, tradeX, R.y + 146, 'rgb(227,83,15)', null, C.headerShadow);
+    this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, R.tradeX, R.suppliesY, 'rgb(227,83,15)', null, C.headerShadow);
     // Demands
     const demandedNames = [];
     if (city.tradeCommoditiesDemanded) {
@@ -970,7 +972,7 @@ const Civ2CityDialog = {
         if (cIdx !== undefined && cIdx < 16) demandedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
-    this._text(ctx, `Demands: ${demandedNames.join(', ') || 'None'}`, tradeX, R.y + 159, 'rgb(227,83,15)', null, C.headerShadow);
+    this._text(ctx, `Demands: ${demandedNames.join(', ') || 'None'}`, R.tradeX, R.demandsY, 'rgb(227,83,15)', null, C.headerShadow);
     // Trade routes
     if (city.tradeRouteCount > 0) {
       for (let i = 0; i < Math.min(3, city.tradeRouteCount); i++) {
@@ -979,7 +981,7 @@ const Civ2CityDialog = {
         const commodity = this.COMMODITY_NAMES[city.tradeCommoditiesInRoute[i]] || '?';
         const partner = this.findCityBySequenceId(mapData, partnerId);
         const partnerName = partner ? partner.name : `City #${partnerId}`;
-        this._text(ctx, `${partnerName} ${commodity}: +1`, tradeX, R.y + 172 + i * 13, 'rgb(227,83,15)');
+        this._text(ctx, `${partnerName} ${commodity}: +1`, R.tradeX, R.tradeRoutesY + i * 13, 'rgb(227,83,15)');
       }
     }
   },
