@@ -395,28 +395,16 @@ const Civ2CityDialog = {
       ctx.stroke();
     };
 
-    // ── Panel background fills (BMP-verified: drawn before all content) ──
-    // Units Present: lighter gray background (BMP verified rgb(159,159,159))
-    ctx.fillStyle = 'rgb(159,159,159)';
-    ctx.fillRect(200, 221, 233, 189);
-    // Food Storage: green fill in right column (BMP: x=663..955, y=36..279)
-    ctx.fillStyle = COL.foodStorageBg;
-    ctx.fillRect(434, 22, 192, 152);
-    // Production: blue gradient in right column (BMP: x=663..955, y=283..569)
-    const prodGrad = ctx.createLinearGradient(434, 176, 434, 355);
-    prodGrad.addColorStop(0, COL.prodDark);
-    prodGrad.addColorStop(1, COL.prodLight);
-    ctx.fillStyle = prodGrad;
-    ctx.fillRect(434, 176, 192, 179);
-    // Dark separator line below title bar (BMP: y=34..35, x=12..960)
+    // ── Overlays on wallpaper ──
+    // CITY.GIF already provides: green/blue gradients (right column), orange/red/blue
+    // bars (center column), gray fills (workers/improvements/units present panels),
+    // and resource map green interior. We only draw the separator and gold borders.
     ctx.fillStyle = COL.separator;
-    ctx.fillRect(8, 21, 620, 2);
-    // Gold panel border around Resource Map (BMP: x=12..305, y=127..344)
-    _goldBorder(8, 79, 192, 136);
-    // Gold panel border around City Improvements (BMP: x=12..290, y=466..657)
-    _goldBorder(8, 291, 183, 120);
-    // Gold panel border around Workers/Garrison (BMP: x=12..305, y=345..464)
-    _goldBorder(8, 215, 192, 75);
+    ctx.fillRect(0, 0, 636, 1);  // dark line at very top edge
+    // Gold panel borders (game draws these on top of wallpaper's decorative borders)
+    _goldBorder(5, 79, 194, 137);  // Resource Map
+    _goldBorder(3, 288, 192, 130); // City Improvements
+    _goldBorder(3, 212, 192, 74);  // Workers/Garrison
 
     // ── Section labels (centered, gold with dark shadow) ──
     // From CityWindow.cs: Draw.Text centered at (x, y) with shadow (67,67,67) offset (1,1)
@@ -431,11 +419,11 @@ const Civ2CityDialog = {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
     };
-    _label('Citizens', 101, 26);
-    _label('City Resources', 319, 72);
-    _label('Food Storage', 531, 28, 'rgb(75,155,35)');
-    _label('City Improvements', 99, 273);
-    _label('Resource Map', 101, 213, COL.headerCyan, COL.resourceMapShadow);
+    _label('Citizens', 101, 53);
+    _label('City Resources', 317, 52);
+    _label('Food Storage', 535, 7, 'rgb(75,155,35)');
+    _label('City Improvements', 96, 296);
+    _label('Resource Map', 101, 195, COL.headerCyan, COL.resourceMapShadow);
 
     // ═══════════════════════════════════════════════════════════
     // CITIZENS PANEL (faces at y=9, spacing table)
@@ -449,8 +437,8 @@ const Civ2CityDialog = {
       const unhappy = city.unhappyCitizens || 0;
       const content = Math.max(0, city.size - happy - unhappy - totalSpecs);
       const faceSpace = this._citizenSpacing(city.size);
-      const faceY = 31;
-      let fx = 10;
+      const faceY = 9;
+      let fx = 5;
 
       // People types: 0/1=happy, 2/3=content, 4/5=unhappy, 6/7=entertainer?, 8=entertainer, 9=taxman, 10=scientist
       // Odd indices alternate appearance (men/women)
@@ -516,16 +504,11 @@ const Civ2CityDialog = {
 
     // Use terrain sprites if available, otherwise fall back to colored diamonds
     const hasTerrain = mapSprites && mapSprites.terrain;
-    // Tile grid scaled to fill gold border content area (12,83,184,128)
-    // Gold border: (8, 79, 192, 136), content inset ~4px each side
-    const gridW = 26, gridH = 14;
-    const sprW = 52, sprH = 28;
-    const mapOffX = 26, mapOffY = 105;
-    // Clip to content area so tiles don't overflow the gold border
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(12, 83, 184, 128);
-    ctx.clip();
+    // Tile grid params from Civ2-clone CityResourcesMap: TileMap=(7,65,188,137)
+    // Grid spacing: 4*(8+zoom)=24 horiz, 2*(8+zoom)=12 vert (zoom=-2 at cityZoom=0)
+    const gridW = 24, gridH = 12;
+    const sprW = 48, sprH = 24;
+    const mapOffX = 5, mapOffY = 84;
 
     for (let i = 0; i < radiusTiles.length; i++) {
       const rt = radiusTiles[i];
@@ -580,11 +563,11 @@ const Civ2CityDialog = {
         ctx.drawImage(cdSprites.foodSmall, cx - 5, cy - 5, 10, 10);
       }
     }
-    ctx.restore();  // end resource map clip
-
     // ═══════════════════════════════════════════════════════════
-    // CITY RESOURCES — 4 rows (BMP-verified positions)
-    // Food bar y=92..107, Trade y=117..130, Tax y=131..145, Support y=191..206
+    // CITY RESOURCES — 4 rows from Civ2-clone Draw.CityPanel.cs
+    // Food(y=76), Trade(y=117), Tax/Lux/Sci(y=141), Support/Prod(y=181)
+    // Text frames at y=61, y=102, y=156, y=196; x=203, width=228
+    // Surplus/loss icons right-aligned from x=431
     // ═══════════════════════════════════════════════════════════
 
     if (cdSprites) {
@@ -598,93 +581,83 @@ const Civ2CityDialog = {
       const taxRate = civData ? (civData.taxRate || 0) * 10 : 0;
       const luxRate = 100 - sciRate - taxRate;
 
-      // Row 1: FOOD — green bar y=92..107 (BMP y=148..171)
+      // Row 1: FOOD — text at y=61, icons at y=76 (Civ2-clone: bounds (203,75,230,13))
       const foodTotal = city.foodProduction || 0;
       const foodSurplus = foodTotal - (city.size * 2);
-      // Green background bar
-      ctx.fillStyle = 'rgb(71,147,31)';
-      ctx.fillRect(200, 92, 233, 15);
       ctx.font = 'bold 13px Arial, sans-serif';
-      // Text above bar
       ctx.textAlign = 'left';
-      this._text(ctx, `Food: ${foodTotal}`, 203, 88, 'rgb(87,171,39)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `Food: ${foodTotal}`, 203, 68, 'rgb(87,171,39)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'right';
-      this._text(ctx, `Surplus: ${foodSurplus}`, 431, 88, 'rgb(63,139,31)');
+      this._text(ctx, `Surplus: ${foodSurplus}`, 431, 68, 'rgb(63,139,31)');
       ctx.textAlign = 'left';
-      // Food icons inside green bar
       const foodIconCount = foodTotal + Math.abs(foodSurplus);
       const foodSpacing = this._resourceSpacing(foodIconCount);
       for (let i = 0; i < foodTotal; i++)
-        ctx.drawImage(cdSprites.food, 206 + i * foodSpacing, 93, 14, 14);
+        ctx.drawImage(cdSprites.food, 206 + i * foodSpacing, 76, 14, 14);
       if (foodSurplus < 0) {
         const hungerCount = Math.abs(foodSurplus);
         const hungerStartX = 431 - (foodSpacing * hungerCount + 14 - foodSpacing);
         for (let i = 0; i < hungerCount; i++)
-          ctx.drawImage(cdSprites.hunger, hungerStartX + i * foodSpacing, 93, 14, 14);
+          ctx.drawImage(cdSprites.hunger, hungerStartX + i * foodSpacing, 76, 14, 14);
       } else if (foodSurplus > 0) {
         const surpStartX = 431 - (foodSpacing * foodSurplus + 14 - foodSpacing);
         for (let i = 0; i < foodSurplus; i++)
-          ctx.drawImage(cdSprites.food, surpStartX + i * foodSpacing, 93, 14, 14);
+          ctx.drawImage(cdSprites.food, surpStartX + i * foodSpacing, 76, 14, 14);
       }
 
-      // Row 2: TRADE — y=117..130 (BMP y=187..209)
+      // Row 2: TRADE — text at y=102, icons at y=117 (Civ2-clone: bounds (206,116,224,16))
       const tradeTotal = city.totalTrade || 0;
       ctx.textAlign = 'left';
-      this._text(ctx, `Trade: ${tradeTotal}`, 203, 114, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `Trade: ${tradeTotal}`, 203, 109, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'right';
-      this._text(ctx, `Corruption: ${corruption}`, 431, 114, 'rgb(227,83,15)');
+      this._text(ctx, `Corruption: ${corruption}`, 431, 109, 'rgb(227,83,15)');
       ctx.textAlign = 'left';
       const tradeIconCount = tradeTotal + corruption;
       const tradeSpacing = this._resourceSpacing(tradeIconCount);
       for (let i = 0; i < tradeTotal; i++)
-        ctx.drawImage(cdSprites.trade, 206 + i * tradeSpacing, 118, 14, 14);
+        ctx.drawImage(cdSprites.trade, 206 + i * tradeSpacing, 117, 14, 14);
       if (corruption > 0) {
         const corrStartX = 431 - (tradeSpacing * corruption + 14 - tradeSpacing);
         for (let i = 0; i < corruption; i++)
-          ctx.drawImage(cdSprites.corruption, corrStartX + i * tradeSpacing, 118, 14, 14);
+          ctx.drawImage(cdSprites.corruption, corrStartX + i * tradeSpacing, 117, 14, 14);
       }
 
-      // Row 3: TAX + LUX + SCI — bar y=131..145 (BMP y=210..233)
+      // Row 3: TAX + LUX + SCI — text at y=156, icons at y=141 (Civ2-clone: bounds (206,140,224,16))
       const taxCount = city.taxOutput || 0;
       const sciCount = city.scienceOutput || 0;
       const tlsTotal = taxCount + luxOutput + sciCount;
       const tlsSpacing = this._resourceSpacing(tlsTotal);
-      // Text above bar
       ctx.textAlign = 'left';
-      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 129, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `${taxRate}% Tax: ${taxCount}`, 204, 163, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'center';
-      this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, 317, 129, 'rgb(255,255,255)');
+      this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, 317, 163, 'rgb(255,255,255)');
       ctx.textAlign = 'right';
-      this._text(ctx, `${sciRate}% Sci: ${sciCount}`, 431, 129, 'rgb(63,187,199)');
+      this._text(ctx, `${sciRate}% Sci: ${sciCount}`, 431, 163, 'rgb(63,187,199)');
       ctx.textAlign = 'left';
-      // Icons in bar area
       for (let i = 0; i < taxCount; i++)
-        ctx.drawImage(cdSprites.tax, 206 + i * tlsSpacing, 132, 14, 14);
+        ctx.drawImage(cdSprites.tax, 206 + i * tlsSpacing, 141, 14, 14);
       for (let i = 0; i < luxOutput; i++)
-        ctx.drawImage(cdSprites.luxury, 290 + i * tlsSpacing, 132, 14, 14);
+        ctx.drawImage(cdSprites.luxury, 290 + i * tlsSpacing, 141, 14, 14);
       if (sciCount > 0) {
         const sciStartX = 431 - (tlsSpacing * sciCount + 14 - tlsSpacing);
         for (let i = 0; i < sciCount; i++)
-          ctx.drawImage(cdSprites.science, sciStartX + i * tlsSpacing, 132, 14, 14);
+          ctx.drawImage(cdSprites.science, sciStartX + i * tlsSpacing, 141, 14, 14);
       }
 
-      // Row 4: SUPPORT + PRODUCTION — blue bar y=191..206 (BMP y=307..330)
-      // Blue background bar
-      ctx.fillStyle = 'rgb(63,79,167)';
-      ctx.fillRect(200, 191, 233, 15);
+      // Row 4: SUPPORT + PRODUCTION — text at y=196, icons at y=181 (Civ2-clone: bounds (199,181,238,16), labelBelow)
       ctx.textAlign = 'left';
-      this._text(ctx, `Support: ${support}`, 204, 188, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
+      this._text(ctx, `Support: ${support}`, 204, 203, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
       ctx.textAlign = 'right';
-      this._text(ctx, `Production: ${production}`, 431, 188, 'rgb(7,11,103)');
+      this._text(ctx, `Production: ${production}`, 431, 203, 'rgb(7,11,103)');
       ctx.textAlign = 'left';
       const spTotal = support + production;
       const spSpacing = this._resourceSpacing(spTotal);
       for (let i = 0; i < support; i++)
-        ctx.drawImage(cdSprites.shields, 206 + i * spSpacing, 192, 14, 14);
+        ctx.drawImage(cdSprites.shields, 206 + i * spSpacing, 181, 14, 14);
       if (production > 0) {
         const prodStartX = 431 - (spSpacing * production + 14 - spSpacing);
         for (let i = 0; i < production; i++)
-          ctx.drawImage(cdSprites.shields, prodStartX + i * spSpacing, 192, 14, 14);
+          ctx.drawImage(cdSprites.shields, prodStartX + i * spSpacing, 181, 14, 14);
       }
     }
 
@@ -701,49 +674,40 @@ const Civ2CityDialog = {
       const wheatW = 14, wheatH = 14;
       const wheatSpacing = this._wheatSpacing(city.size);
 
-      // Centered border rectangle (BMP: dark green top/left, bright green bottom/right)
+      // Centered border rectangle (Civ2-clone: pen1=(75,155,35) top/left, pen2=(0,51,0) bottom/right)
       const lineWidth = city.size * wheatSpacing + wheatW + 7;
-      const panelCenterX = 434 + 192 / 2;  // center of food storage panel
+      const panelCenterX = 437 + 195 / 2;  // center of food storage panel
       const startingX = Math.round(panelCenterX - lineWidth / 2);
-      const startingY = 36;  // below Food Storage header
-      const lineHeight = 130;
+      const startingY = 15;
+      const lineHeight = 144;
 
-      // Border: top/left = dark green, bottom/right = bright green (3D bevel)
-      ctx.strokeStyle = 'rgb(0,51,0)';
-      ctx.lineWidth = 1;
-      // Top horizontal
-      ctx.beginPath(); ctx.moveTo(startingX, startingY); ctx.lineTo(startingX + lineWidth, startingY); ctx.stroke();
-      // Left vertical
-      ctx.beginPath(); ctx.moveTo(startingX, startingY); ctx.lineTo(startingX, startingY + lineHeight); ctx.stroke();
       ctx.strokeStyle = 'rgb(75,155,35)';
-      // Bottom horizontal
-      ctx.beginPath(); ctx.moveTo(startingX, startingY + lineHeight); ctx.lineTo(startingX + lineWidth, startingY + lineHeight); ctx.stroke();
-      // Right vertical
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(startingX, startingY); ctx.lineTo(startingX + lineWidth, startingY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(startingX, startingY); ctx.lineTo(startingX, startingY + lineHeight); ctx.stroke();
+      ctx.strokeStyle = 'rgb(0,51,0)';
+      ctx.beginPath(); ctx.moveTo(startingX, 160); ctx.lineTo(startingX + lineWidth, 160); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(startingX + lineWidth, startingY); ctx.lineTo(startingX + lineWidth, startingY + lineHeight); ctx.stroke();
 
-      // Draw wheat icons — only stored food, Size+1 columns per row
-      // BMP: 9px tall icons, 10px row spacing → scaled ~6px tall, ~7px spacing
+      // Draw wheat icons — only stored food, Size+1 columns per row, 10 rows max
       let count = 0;
       const iconStartX = startingX + 3;
-      const wheatDrawH = 7;     // scaled from 9px BMP
-      const wheatRowStep = 8;   // scaled from 10px BMP (with 1px gap)
-      for (let row = 0; row < 16; row++) {
+      for (let row = 0; row < 10; row++) {
         for (let col = 0; col <= city.size; col++) {
-          ctx.drawImage(cdSprites.food, iconStartX + wheatSpacing * col, startingY + 3 + wheatRowStep * row, wheatW, wheatDrawH);
+          ctx.drawImage(cdSprites.food, iconStartX + wheatSpacing * col, 15 + 3 + wheatH * row, wheatW, wheatH);
           count++;
           if (count >= foodStored) break;
         }
         if (count >= foodStored) break;
       }
 
-      // Granary line at halfway point
+      // Granary line at y=87 (Civ2-clone: fixed position)
       if (hasGranary) {
         const granLineWidth = lineWidth - 10;
         const granStartX = iconStartX + 2;
-        const granY = startingY + Math.round(lineHeight / 2);
         ctx.strokeStyle = 'rgb(75,155,35)';
         ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(granStartX, granY); ctx.lineTo(granStartX + granLineWidth, granY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(granStartX, 87); ctx.lineTo(granStartX + granLineWidth, 87); ctx.stroke();
       }
     }
 
@@ -757,7 +721,7 @@ const Civ2CityDialog = {
 
     const item = city.itemInProduction;
     const prodName = this.getProductionName(item);
-    const panelPX = 434, panelPY = 176;
+    const panelPX = 437, panelPY = 165;
 
     // Draw production item sprite
     if (item && cdSprites) {
@@ -790,32 +754,31 @@ const Civ2CityDialog = {
     if (cdSprites && cdSprites.shields) {
       const cost = this._getProductionCost(item);
       const stored = city.shieldsInBox || 0;
-      // Shield grid: 10 columns, ceil(cost/10) rows (BMP: 25px spacing, 21px row height)
+      // Shield grid: 10 columns, ceil(cost/10) rows (BMP evidence: 10 per row)
+      // Civ2-clone uses max(cost,10) cols but real game shows fixed 10-col grid
       const numCols = 10;
       const numRows = cost > 0 ? Math.ceil(cost / 10) : 0;
 
       if (cost > 0) {
-        // Border rectangle (BMP: x=675..926, y=349..413+ scaled)
-        const boxTop = panelPY + 42;
-        const boxLeft = panelPX + 8;
-        const boxRight = panelPX + 172;
-        const boxBottom = boxTop + 4 + numRows * 13;
+        // Border rectangle at Civ2-clone position: (442,207) to (624, 207+4+rows*14)
+        const boxHeight = 4 + numRows * 14;
         ctx.strokeStyle = 'rgb(83,103,191)';
         ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(boxLeft, boxTop); ctx.lineTo(boxRight, boxTop); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(boxLeft, boxTop); ctx.lineTo(boxLeft, boxBottom); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(442, 207); ctx.lineTo(624, 207); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(442, 207); ctx.lineTo(442, 207 + boxHeight); ctx.stroke();
         ctx.strokeStyle = 'rgb(0,0,95)';
-        ctx.beginPath(); ctx.moveTo(boxLeft, boxBottom); ctx.lineTo(boxRight, boxBottom); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(boxRight, boxTop); ctx.lineTo(boxRight, boxBottom); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(442, 207 + boxHeight); ctx.lineTo(624, 207 + boxHeight); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(624, 207); ctx.lineTo(624, 207 + boxHeight); ctx.stroke();
 
-        const dx = (164 - 14) / (numCols - 1);  // ~16.7px center-to-center
-        const dy = 13;  // scaled from 21px BMP row height
+        // Shield icons: adaptive horizontal spacing, 14px vertical
+        const dx = numCols > 1 ? (182 - 14 - 4) / (numCols - 1) : 0;
+        const dy = 14;
         let count = 0;
         for (let row = 0; row < numRows; row++) {
           for (let col = 0; col < numCols; col++) {
-            const sx = boxLeft + 2 + Math.round(col * dx);
-            const sy = boxTop + 2 + dy * row;
-            ctx.drawImage(cdSprites.shields, sx, sy, 14, 13);
+            const sx = panelPX + 6 + Math.round(2 + col * dx);
+            const sy = panelPY + 45 + dy * row;
+            ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
             count++;
             if (count >= stored) break;
           }
@@ -832,7 +795,7 @@ const Civ2CityDialog = {
     // Label "Units Supported" centered at (189/2, 12) rel to panel, only if <5 units
     // ═══════════════════════════════════════════════════════════
 
-    const supPanelX = 8, supPanelY = 215;
+    const supPanelX = 3, supPanelY = 212;
 
     if (supported.length < 5) {
       _label('Units Supported', supPanelX + 189 / 2, supPanelY + 12);
@@ -870,20 +833,16 @@ const Civ2CityDialog = {
     const improvements = this.getCityImprovements(city, cityIndex, mapData);
     if (improvements.length > 0 && cdSprites) {
       ctx.font = '9px Arial, sans-serif';
-      const impStartY = 284;  // below "City Improvements" header at y=273, inside gold border at y=291
       for (let i = 0; i < Math.min(9, improvements.length); i++) {
         const imp = improvements[i];
-        // Small improvement icon
         let thumb = imp.isWonder ? cdSprites.wonders[imp.id - 39] : cdSprites.improvements[imp.id];
         if (thumb) {
-          ctx.drawImage(thumb, 12, impStartY + 12 * i, 20, 11);
+          ctx.drawImage(thumb, 8, 307 + 12 * i, 20, 11);
         }
-        // Improvement/wonder name
         const nameColor = imp.isWonder ? COL.wonder : '#fff';
-        this._text(ctx, imp.name, 34, impStartY + 12 * i + 9, nameColor);
-        // Sell icon for non-wonder improvements
+        this._text(ctx, imp.name, 30, 305 + 12 * i + 9, nameColor);
         if (!imp.isWonder && cdSprites.sellIcon) {
-          ctx.drawImage(cdSprites.sellIcon, 160, impStartY + 1 + 12 * i, 12, 12);
+          ctx.drawImage(cdSprites.sellIcon, 156, 306 + 12 * i, 12, 12);
         }
       }
     }
@@ -896,7 +855,7 @@ const Civ2CityDialog = {
     // Trade text at bottom: Supplies at (203, 351), Demands at (203, 364)
     // ═══════════════════════════════════════════════════════════
 
-    const unitPanelX = 200, unitPanelY = 221;
+    const unitPanelX = 193, unitPanelY = 212;
     const garrison = this.getGarrisonedUnits(city, mapData);
 
     if (garrison.length < 6) {
@@ -947,7 +906,7 @@ const Civ2CityDialog = {
         if (cIdx !== undefined && cIdx < 16) suppliedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
-    this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, 203, 351, 'rgb(227,83,15)', null, COL.headerShadow);
+    this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, 203, 358, 'rgb(227,83,15)', null, COL.headerShadow);
     // Demands
     const demandedNames = [];
     if (city.tradeCommoditiesDemanded) {
@@ -955,7 +914,7 @@ const Civ2CityDialog = {
         if (cIdx !== undefined && cIdx < 16) demandedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
-    this._text(ctx, `Demands: ${demandedNames.join(', ') || 'None'}`, 203, 364, 'rgb(227,83,15)', null, COL.headerShadow);
+    this._text(ctx, `Demands: ${demandedNames.join(', ') || 'None'}`, 203, 371, 'rgb(227,83,15)', null, COL.headerShadow);
     // Trade routes
     if (city.tradeRouteCount > 0) {
       for (let i = 0; i < Math.min(3, city.tradeRouteCount); i++) {
@@ -964,7 +923,7 @@ const Civ2CityDialog = {
         const commodity = this.COMMODITY_NAMES[city.tradeCommoditiesInRoute[i]] || '?';
         const partner = this.findCityBySequenceId(mapData, partnerId);
         const partnerName = partner ? partner.name : `City #${partnerId}`;
-        this._text(ctx, `${partnerName} ${commodity}: +1`, 203, 377 + i * 13, 'rgb(227,83,15)');
+        this._text(ctx, `${partnerName} ${commodity}: +1`, 203, 384 + i * 13, 'rgb(227,83,15)');
       }
     }
 
