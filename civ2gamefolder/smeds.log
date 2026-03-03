@@ -15,3 +15,8 @@ SMEDS32 Version: 2.0.0
 (  263) SendToConnections: FAILED on send to connection: 255. Return code: -1. Type: 93
 (  263) EXIT WINDOW DRAG
 (  263) SendToConnections: FAILED on send to connection: 255. Return code: -1. Type: 94
+(54348) SMEDS> Terminated Normally.
+******************** LOG CLOSED ********************
+
+(54348) Disconnecting from network:
+(54348)    XD_ResetLibrary();
