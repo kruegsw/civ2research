@@ -65,39 +65,73 @@ const Civ2CityDialog = {
   IMPROVE_COSTS: [0,0,4,6,4,8,8,12,8,12,12,16,6,10,20,32,20,12,16,24,16,22,12,8,16,16,0,0,0,0,0,32,16,8,4,32,32,32,60].map(c => c * 10),
   WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,20,30,40,40,40,40,40,30,40,30,20,15,60,15,60,60,60].map(c => c * 10),
 
-  // ── Layout regions (636×421 coordinate space, values from Civ2-clone + BMP analysis) ──
+  // ── Layout regions (636×421 coordinate space) ──
+  // Panel boxes from GetCityWindowDefinition() in Civ2-clone Civ2Interface.cs.
+  // Draw origins from EtoFormsUI CityWindow.cs Surface_Paint (where content starts).
+  // Resource icon positions from Draw.CityPanel.cs. BMP-verified where noted.
   REGIONS: {
     canvas:       { w: 636, h: 421 },
+
+    // Panel boxes — the bounding rectangle of each major panel area
+    // (from GetCityWindowDefinition: CitizensBox, TileMap, FoodStorage, etc.)
+    panels: {
+      citizens:     { x: 3,   y: 2,   w: 433, h: 44  },
+      tileMap:      { x: 7,   y: 65,  w: 188, h: 137 },
+      foodStorage:  { x: 437, y: 0,   w: 195, h: 163 },
+      production:   { x: 437, y: 165, w: 195, h: 191 },
+      infoPanel:    { x: 193, y: 215, w: 242, h: 198 },
+      unitSupport:  { x: 7,   y: 215, w: 184, h: 69  },
+      improvements: { x: 5,   y: 306, w: 170, h: 108 },
+      unitsPresent: { x: 0,   y: 0,   w: 232, h: 84  },  // relative to infoPanel
+    },
+
+    // Draw origins — where content rendering starts (from EtoFormsUI CityWindow.cs)
+    // These differ from panel boxes by a small inset (content inside the border)
     citizens:     { x: 5, y: 9 },
     resourceMap:  { x: 5, y: 84, gridW: 24, gridH: 12, sprW: 48, sprH: 24 },
+
+    // Resource icon rows (from Draw.CityPanel.cs ConsumableResourceArea / SharedResourceArea)
+    // Bounds from GetCityWindowDefinition: Food(203,75,230,13) Trade(206,116,224,16)
+    //   TaxLuxSci(206,140,224,16) Shields(199,181,238,16)
+    // Title area: (199,46,238,15)
     resources: {
-      food:        { textX: 203, textY: 68, iconX: 206, iconY: 76, rightX: 431 },
-      trade:       { textX: 203, textY: 109, iconX: 206, iconY: 117, rightX: 431 },
-      taxLuxSci:   { textX: 204, textY: 163, iconX: 206, iconY: 141, rightX: 431, luxIconX: 290, centerX: 317 },
-      supportProd: { textX: 204, textY: 203, iconX: 206, iconY: 181, rightX: 431 },
+      title:       { x: 199, y: 46,  w: 238, h: 15 },
+      food:        { x: 203, y: 75,  w: 230, h: 13, textX: 203, textY: 68, iconX: 206, iconY: 76, rightX: 431 },
+      trade:       { x: 206, y: 116, w: 224, h: 16, textX: 203, textY: 109, iconX: 206, iconY: 117, rightX: 431 },
+      taxLuxSci:   { x: 206, y: 140, w: 224, h: 16, textX: 204, textY: 163, iconX: 206, iconY: 141, rightX: 431, luxIconX: 290, centerX: 317 },
+      supportProd: { x: 199, y: 181, w: 238, h: 16, textX: 204, textY: 203, iconX: 206, iconY: 181, rightX: 431 },
     },
+
     foodStorage: {
-      x: 437, w: 195,
+      x: 437, y: 0, w: 195, h: 163,
       borderY: 15, lineH: 144, bottomY: 160,
       wheatY: 18,    // borderY + 3
       granaryY: 87,
     },
+
     production: {
-      x: 437, y: 165,
+      x: 437, y: 165, w: 195, h: 191,
+      iconCenter:    { dx: 97.5, dy: 18 },   // GetCityWindowDefinition IconLocation
       unitSprite:    { dx: 72, dy: 3, w: 64, h: 48 },
       buildingIcon:  { dx: 79, dy: 18, w: 36, h: 20 },
       buildingName:  { dx: 97, dy: 15 },
       shieldGrid:    { dx: 6, dy: 45, borderX: 442, borderY: 207, borderRight: 624, cols: 10 },
     },
+
+    // Draw origins for unit panels (from EtoFormsUI: supUnitPanelPos / unitPanelPos)
     unitsSupported: { x: 3, y: 212, w: 189 },
     infoPanel:      { x: 193, y: 212, w: 242 },
+
     improvements: {
+      x: 5, y: 306, w: 170, h: 108,
       thumbX: 8, thumbY: 307, thumbW: 20, thumbH: 11,
       nameX: 30, nameY: 305,
       sellX: 156, sellY: 306, sellSize: 12,
       rowH: 12, maxRows: 9,
     },
+
     buttons: {
+      // Buy/Change are relative to Production panel: (5,16) and (120,16) + panel origin (437,165)
       buy:      { x: 442, y: 181, w: 68, h: 24 },
       change:   { x: 557, y: 181, w: 68, h: 24 },
       info:     { x: 459, y: 364, w: 57, h: 24 },
@@ -106,14 +140,34 @@ const Civ2CityDialog = {
       happy:    { x: 459, y: 389, w: 57, h: 24 },
       panorama: { x: 517, y: 389, w: 57, h: 24 },
       exit:     { x: 575, y: 389, w: 57, h: 24 },
+      // Navigation buttons (prev/next city) — not yet implemented
+      prevCity: { x: 440, y: 389, w: 21, h: 24 },
+      nextCity: { x: 440, y: 364, w: 21, h: 24 },
     },
+
+    // Label rectangles from GetCityWindowDefinition Labels.Add()
+    // Some are relative to parent panel: UnitsPresent/Supplies/Demands → InfoPanel,
+    //   ItemInProduction → Production, ResourceMap → TileMap panel area.
+    // The x,y here are the EtoFormsUI draw centers (used by our _label() method).
     labels: {
-      citizens:      { x: 101, y: 53 },
-      cityResources: { x: 317, y: 52 },
-      foodStorage:   { x: 535, y: 7 },
-      improvements:  { x: 96, y: 296 },
-      resourceMap:   { x: 101, y: 195 },
+      citizens:        { x: 101, y: 53,  rect: { x: 0, y: 46, w: 189, h: 12 } },   // relative to CityWindow
+      cityResources:   { x: 317, y: 52,  rect: { x: 199, y: 46, w: 238, h: 15 } },  // = resources.title
+      foodStorage:     { x: 535, y: 7,   rect: { x: 437, y: 0, w: 195, h: 12 } },
+      improvements:    { x: 96,  y: 296, rect: { x: 3, y: 291, w: 189, h: 12 } },
+      resourceMap:     { x: 101, y: 195, rect: { x: 0, y: 125, w: 189, h: 12 } },   // relative to TileMap area
+      unitsSupported:  { rect: { x: 3, y: 215, w: 189, h: 12 } },    // draw center computed from unitsSupported panel
+      unitsPresent:    { rect: { x: 0, y: 0, w: 232, h: 12 } },      // relative to InfoPanel
+      itemInProduction:{ rect: { x: 0, y: 4, w: 195, h: 12 } },      // relative to Production panel
+      supplies:        { rect: { x: 0, y: 130, w: 232, h: 12 } },    // relative to InfoPanel
+      demands:         { rect: { x: 0, y: 143, w: 232, h: 12 } },    // relative to InfoPanel
     },
+
+    // Support map mode (drawn inside InfoPanel when Map button clicked)
+    supportMap: {
+      centerDx: 107, centerDy: 118,  // offset from wallpaper origin at zoom=0
+      squareW: 2, squareH: 1,
+    },
+
     goldBorders: [
       { x: 5, y: 79, w: 194, h: 137 },   // Resource Map
       { x: 3, y: 288, w: 192, h: 130 },   // City Improvements
