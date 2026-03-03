@@ -333,6 +333,8 @@ The AI decision-making functions (0x450000-0x4FFFFF) — diplomacy offers, unit 
 | `reverse_engineering/Civ2_City_Struct.md` | Complete 88-byte city struct (31 fields) |
 | `reverse_engineering/Data_Structures.md` | Civ (1428B), Unit Type (20B), Building (8B), Unit (32B) structs |
 | `reverse_engineering/Civ2_Game_Formulas.md` | 7 game formulas with JS implementations |
+| `reverse_engineering/City_Dialog_Rendering_Analysis.md` | All panel coords, colors, fonts, drawing sequences from decompiled code |
+| `reverse_engineering/Browser_Gap_Analysis.md` | Complete feature inventory + gap list for browser integration |
 | `reverse_engineering/Integration_Roadmap.md` | Full plan for integrating RE data into browser app |
 | `reverse_engineering/DecompileAll.java` | Ghidra batch export script |
 | `canvas-test-1/citydialog.js` | Browser city dialog renderer |
