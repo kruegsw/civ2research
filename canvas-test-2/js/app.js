@@ -25,13 +25,13 @@ const SCROLL_STEP = 64;       // pixels per arrow key press
 
   // Known GIF files
   const known = [
-    { name: 'TERRAIN1.GIF', key: 't1',     btnId: 't1-btn',     label: 'TERRAIN1 \u2713 ' },
-    { name: 'TERRAIN2.GIF', key: 't2',     btnId: 't2-btn',     label: 'TERRAIN2 \u2713 ' },
-    { name: 'CITIES.GIF',   key: 'cities', btnId: 'cities-btn', label: 'CITIES \u2713 ' },
-    { name: 'UNITS.GIF',    key: 'units',  btnId: 'units-btn',  label: 'UNITS \u2713 ' },
-    { name: 'ICONS.GIF',    key: 'icons',  btnId: 'icons-btn',  label: 'ICONS \u2713 ' },
-    { name: 'PEOPLE.GIF',   key: 'people', btnId: 'people-btn', label: 'PEOPLE \u2713 ' },
-    { name: 'CITY.GIF',    key: 'cityGif', btnId: 'city-btn',  label: 'CITY \u2713 ' },
+    { name: 'assets/sprites/TERRAIN1.GIF', key: 't1',     btnId: 't1-btn',     label: 'TERRAIN1 \u2713 ' },
+    { name: 'assets/sprites/TERRAIN2.GIF', key: 't2',     btnId: 't2-btn',     label: 'TERRAIN2 \u2713 ' },
+    { name: 'assets/sprites/CITIES.GIF',   key: 'cities', btnId: 'cities-btn', label: 'CITIES \u2713 ' },
+    { name: 'assets/sprites/UNITS.GIF',    key: 'units',  btnId: 'units-btn',  label: 'UNITS \u2713 ' },
+    { name: 'assets/sprites/ICONS.GIF',    key: 'icons',  btnId: 'icons-btn',  label: 'ICONS \u2713 ' },
+    { name: 'assets/sprites/PEOPLE.GIF',   key: 'people', btnId: 'people-btn', label: 'PEOPLE \u2713 ' },
+    { name: 'assets/sprites/CITY.GIF',    key: 'cityGif', btnId: 'city-btn',  label: 'CITY \u2713 ' },
   ];
   await Promise.all(known.map(async ({ name, key, btnId, label }) => {
     try {
@@ -46,14 +46,14 @@ const SCROLL_STEP = 64;       // pixels per arrow key press
 
   // City view GIFs (optional, silent)
   const cvKnown = [
-    { name: 'cv_res300.gif', id: 300 }, { name: 'cv_res305.gif', id: 305 },
-    { name: 'cv_res310.gif', id: 310 },
-    { name: 'cv_res340.gif', id: 340 }, { name: 'cv_res341.gif', id: 341 },
-    { name: 'cv_res342.gif', id: 342 }, { name: 'cv_res343.gif', id: 343 },
-    { name: 'cv_res345.gif', id: 345 }, { name: 'cv_res346.gif', id: 346 },
-    { name: 'cv_res347.gif', id: 347 }, { name: 'cv_res348.gif', id: 348 },
-    { name: 'cv_res350.gif', id: 350 }, { name: 'cv_res351.gif', id: 351 },
-    { name: 'cv_res352.gif', id: 352 }, { name: 'cv_res353.gif', id: 353 },
+    { name: 'assets/cityview/cv_res300.gif', id: 300 }, { name: 'assets/cityview/cv_res305.gif', id: 305 },
+    { name: 'assets/cityview/cv_res310.gif', id: 310 },
+    { name: 'assets/cityview/cv_res340.gif', id: 340 }, { name: 'assets/cityview/cv_res341.gif', id: 341 },
+    { name: 'assets/cityview/cv_res342.gif', id: 342 }, { name: 'assets/cityview/cv_res343.gif', id: 343 },
+    { name: 'assets/cityview/cv_res345.gif', id: 345 }, { name: 'assets/cityview/cv_res346.gif', id: 346 },
+    { name: 'assets/cityview/cv_res347.gif', id: 347 }, { name: 'assets/cityview/cv_res348.gif', id: 348 },
+    { name: 'assets/cityview/cv_res350.gif', id: 350 }, { name: 'assets/cityview/cv_res351.gif', id: 351 },
+    { name: 'assets/cityview/cv_res352.gif', id: 352 }, { name: 'assets/cityview/cv_res353.gif', id: 353 },
   ];
   await Promise.all(cvKnown.map(async ({ name, id }) => {
     try {
@@ -64,15 +64,15 @@ const SCROLL_STEP = 64;       // pixels per arrow key press
     } catch (_) {}
   }));
 
-  // Find first .sav/.scn/.net via directory listing
+  // Find first .sav/.scn/.net via directory listing in saves/
   try {
-    const resp = await fetch('./');
+    const resp = await fetch('saves/');
     if (resp.ok) {
       const html = await resp.text();
       const re = /href="([^"]+\.(?:sav|SAV|scn|SCN|net|NET))"/g;
       const match = re.exec(html);
       if (match) {
-        const savName = match[1];
+        const savName = 'saves/' + match[1];
         const savResp = await fetch(savName);
         if (savResp.ok) {
           const blob = await savResp.blob();

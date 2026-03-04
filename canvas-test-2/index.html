@@ -3,101 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Civ2 Save Viewer — canvas-test-2</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-#controls {
-  padding: 12px 20px; background: #16213e; border-bottom: 2px solid #0f3460;
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-}
-#controls label { font-size: 14px; cursor: pointer; }
-#controls input[type="file"] { display: none; }
-.file-btn {
-  background: #0f3460; color: #e0e0e0; border: 1px solid #1a5276;
-  padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 13px;
-}
-.file-btn:hover { background: #1a5276; }
-.file-btn.loaded { border-color: #2ecc71; color: #2ecc71; }
-#status { font-size: 13px; color: #7f8c8d; flex: 1; }
-#render-btn {
-  background: #2ecc71; color: #000; border: none; padding: 8px 20px;
-  border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;
-}
-#render-btn:disabled { background: #555; color: #999; cursor: not-allowed; }
-#render-btn:hover:not(:disabled) { background: #27ae60; }
-#map-container {
-  width: 100vw; height: calc(100vh - 50px); overflow: hidden; position: relative;
-  background: #0a0a1a;
-}
-#map-canvas { display: none; }
-#viewport-canvas { image-rendering: pixelated; width: 100%; height: 100%; cursor: grab; }
-#viewport-canvas.dragging { cursor: grabbing; }
-#tooltip {
-  position: fixed; background: rgba(0,0,0,0.9); color: #fff; padding: 6px 10px;
-  border-radius: 4px; font-size: 12px; pointer-events: none; display: none;
-  border: 1px solid #555; z-index: 100; font-family: monospace; white-space: pre;
-}
-#loading-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.7); display: none; justify-content: center;
-  align-items: center; z-index: 200; flex-direction: column; gap: 12px;
-}
-#loading-overlay .spinner {
-  width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid #2ecc71;
-  border-radius: 50%; animation: spin 1s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-#loading-overlay .msg { font-size: 14px; color: #ccc; }
-/* City View overlay */
-#cityview-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  display: none; justify-content: center; align-items: center;
-  z-index: 300;
-}
-#cityview-backdrop {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8);
-}
-#cityview-container {
-  position: relative; z-index: 1;
-  max-width: 95vw; max-height: 90vh;
-}
-#cityview-canvas {
-  display: block; max-width: 95vw; max-height: 90vh;
-  image-rendering: pixelated; border: 2px solid #555;
-}
-#cityview-close {
-  position: absolute; top: -14px; right: -14px;
-  width: 28px; height: 28px; border-radius: 50%;
-  background: #333; color: #fff; border: 2px solid #777;
-  font-size: 16px; cursor: pointer; display: flex;
-  align-items: center; justify-content: center; line-height: 1;
-}
-#cityview-close:hover { background: #c0392b; border-color: #e74c3c; }
-/* City Dialog overlay */
-#citydialog-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  display: none; justify-content: center; align-items: center;
-  z-index: 300;
-}
-#citydialog-backdrop {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8);
-}
-#citydialog-container { position: relative; z-index: 1; }
-#citydialog-canvas {
-  display: block; max-width: 95vw; max-height: 85vh;
-  image-rendering: pixelated;
-}
-#citydialog-close {
-  position: absolute; top: -14px; right: -14px;
-  width: 28px; height: 28px; border-radius: 50%;
-  background: #333; color: #fff; border: 2px solid #777;
-  font-size: 16px; cursor: pointer; display: flex;
-  align-items: center; justify-content: center; line-height: 1;
-}
-#citydialog-close:hover { background: #c0392b; border-color: #e74c3c; }
-</style>
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
@@ -161,10 +67,10 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, san
   </div>
 </div>
 
-<script src="parser.js"></script>
-<script src="renderer.js"></script>
-<script src="cityview.js"></script>
-<script src="citydialog.js"></script>
-<script src="app.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/cityview.js"></script>
+<script src="js/citydialog.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
