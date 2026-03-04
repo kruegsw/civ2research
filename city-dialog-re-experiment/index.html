@@ -63,6 +63,7 @@
 //   EXACT (from decompiled code):
 //     - All 12 panel rectangles (x, y, w, h) from citywin_8D24 (0x508D24)
 //     - Button positions from citywin_CF06 (0x50CF06)
+//     - Button fill color: solid Windows gray rgb(192,192,192)
 //     - Palette color indices for every text/frame element
 //     - Font sizes and bold/shadow flags
 //     - Icon spacing algorithm (FUN_00548b70)
@@ -70,24 +71,90 @@
 //     - Production shield grid cell spacing (17x14) and frame colors
 //     - Citizen face start position (panel_left+5, panel_top+9)
 //     - Resource row positions (food at +14, trade at +55, shields at +120)
+//     - Trade sub-distribution: 3 vertical rows (tax→sci→lux), 11px height, 4px gap
 //     - Shadow text algorithm (draw at +1,+1 dark, then 0,0 foreground)
 //     - 3D frame bevel (FUN_005113f0: highlight on top/left, shadow on bottom/right)
+//     - Supported unit tile size: 51x39 (FUN_00472cf0(0x45,-2), (0x34,-2))
+//     - Info panel unit tile size: 48x36 (FUN_00472cf0(0x40,-2), (0x30,-2))
+//     - Improvement row height: 12px (FUN_00511690(0xc)), icons overlap as in game
+//     - City name format: "City of {name}" + "(Treasury: {gold} Gold)"
+//     - 21-tile terrain mini-map: exact radiusTiles offsets from citydialog.js
+//     - Scrollbar position: (175, 291, 17, 129) from FUN_00505ffa + SM_CXVSCROLL
+//     - Info panel 3 modes: Info/Map/Happy (cityobj+0x15b0)
+//     - Happiness panel: 5 rows of (panel_h-4)/5, dividers at 0x7C
+//     - Civ-color recoloring: idx 252 (255,0,0)→light, idx 251 (127,0,0)→dark
 //
-//   APPROXIMATE (reasonable estimates, not from decompiled code):
-//     - City map inner area (placeholder diamond grid, not real terrain)
-//     - Trade row sub-distribution layout (tax/lux/sci icon positioning)
-//     - Button fill color (gray, not extracted from palette)
-//     - Unit tile sizes in supported/present panels (scaled from 64x48)
-//     - Improvement list row height (21px, RE says 12px but icons need more)
+//   APPROXIMATE (reasonable estimates, data not fully available):
+//     - Terrain tiles in mini-map (colored placeholders, need save file data)
+//     - Dark civ colors (light * 0.5 approximation, exact values in mk.dll CTAB)
+//     - Mini-map mode tile content (simplified grid, real game shows world map)
+//     - Happiness row citizen counts (approximate breakdown per modifier)
 //
-//   NOT IMPLEMENTED:
-//     - Terrain mini-map (21 tiles in diamond pattern from offset tables at DAT_00630D38)
-//     - "We Love The King" indicator (sprite 0x2A at center-bottom of food storage)
-//     - Scrollbar for improvements list (FUN_005db0d0)
-//     - Zoom level support (only zoom 2 / default implemented)
-//     - Mode switching for info panel (only mode 0 / Info, not minimap or happy)
-//     - City name format string with year and population (simplified)
-//     - Unit civ-color recoloring (red channel mask replacement)
+//   NOT IMPLEMENTED (with notes for future implementation):
+//
+//     - WLTKD ("We Love The King Day") indicator:
+//         The decompiled code references sprite index 0x2A drawn at center-bottom of food
+//         storage panel (FUN_00504c05, lines 2210-2221). However, testing with the real game
+//         shows this is NOT visually rendered in the city dialog. The WLTKD state IS tracked
+//         in the city struct (offset +4, bit 1 = 0x02) and shown in tooltips, but the
+//         sprite 0x2A pixel coordinates in ICONS.GIF have never been mapped. The decompiled
+//         code path may be dead code or conditional on a state we haven't triggered.
+//         TO IMPLEMENT: Would need to extract sprite 0x2A coordinates from the sprite
+//         indexing function that maps sprite IDs to (sheet, x, y) coordinates. The function
+//         chain is FUN_005cef31 → FUN_005d056c. Alternatively, dump ICONS.GIF sprite index
+//         table from memory at runtime.
+//
+//     - Zoom level support (levels 1 and 3):
+//         The game supports 3 zoom levels stored at cityobj+0x15d4. All coordinates scale
+//         via FUN_00511690: coord = (zoom * base_coord) / 2. At zoom 2 this is identity.
+//         Zoom 1 = 50% (318x210), Zoom 3 = 150% (954x631).
+//         Font scaling: zoom < 2 → font 12px/title 18px; zoom >= 2 → font scale(16)/title scale(24).
+//         Sprite zoom values from citywin_CF06: zoom1=-5, zoom2=-2, zoom3=1.
+//         These feed into FUN_00472cf0: tile_size = ((sprite_zoom + 8) * base) / 8.
+//         Zoom level auto-selection thresholds (citywin_9028):
+//           Level 1: screen below certain width/height thresholds
+//           Level 2: default
+//           Level 3: screen >= ~950px AND DAT_006ab198 > 999
+//         TO IMPLEMENT: Wrap all coordinate constants through a scaleCoord(base) function,
+//         resize canvas to zoom-appropriate dimensions, add UI selector.
+//
+//     - Resource strings from game executable:
+//         The city dialog title uses string resources loaded by ID:
+//           0x1F (31) = city name format string (pattern unknown, loaded via FUN_0040bc10)
+//           0x22 (34) = " of " conjunction (multiplayer only)
+//           0x3F (63) = subtitle format
+//           0x9A (154) = treasury parentheses format "({amount})"
+//           0x193 (403) = main title
+//           0x1BF (447) = "Units Supported" header
+//           0x1C0 (448) = "City Improvements" header
+//           0x1C3 (451) = "Info" tab label
+//           0x1C4 (452) = "Map" tab label
+//           0x1C5 (453) = "Happy" tab label
+//         These strings are stored in the game's resource DLL, not in the decompiled code.
+//         We use reasonable approximations based on known Civ2 behavior.
+//         TO IMPLEMENT: Extract string table from civ2.exe or game resource files using
+//         a PE resource extractor tool. The strings are in the .rsrc section.
+//
+//     - Dark civilization colors:
+//         Unit civ-color recoloring uses two shades: light (replacing RGB 255,0,0 idx 252)
+//         and dark (replacing RGB 127,0,0 idx 251). We have the 8 light civ colors from
+//         canvas-test-1/renderer.js:42:
+//           ['#c80000','#ffffff','#00b400','#3250dc','#f0dc00','#00c8c8','#f08c00','#b400c8']
+//         But the exact dark color pairs are stored in mk.dll as CTAB resources (#1000-#1020).
+//         Each CTAB = 5-byte header + 256 RGB triples (773 bytes). The dark colors are
+//         derived by which palette indices change between CTAB variants.
+//         We approximate dark = light * 0.5 per channel.
+//         TO IMPLEMENT: Extract CTAB resources from mk.dll using PE resource tools, parse
+//         the 256-entry color tables, diff them to find the exact light/dark pairs per civ.
+//
+//     - Actual terrain tile data in city radius mini-map:
+//         The 21-tile diamond positions ARE exact (from citydialog.js radiusTiles array and
+//         decompiled FUN_005025d5). But rendering actual terrain sprites requires save file
+//         data (which tile type is at each map position). In the standalone experiment we
+//         show colored placeholder diamonds at the correct positions.
+//         TO IMPLEMENT: Integrate with parser.js to load a .SAV file and read terrain data
+//         at city.x + offset, city.y + offset for each of the 21 radius tiles. Then use
+//         the TERRAIN1/TERRAIN2.GIF sprite extraction from renderer.js to draw actual tiles.
 //
 // =====================================================================================
 //
@@ -122,7 +189,7 @@
 //   +--[ Improvements ]-----+ Mode 2: Happiness    | Exit   (575,389,57,24) |
 //   | (0,290,192,131)       |                      | Prev < (437,364,21,24) |
 //   | Inner:(6,306,166,108) |                      | Next > (437,389,21,24) |
-//   | Row height: ~12px     |          (436,421)   |              (636,421) |
+//   | Row height: 12px      |          (436,421)   |              (636,421) |
 //   | (0,421)      (192,421)+----------------------+----------------------+
 //
 // =====================================================================================
@@ -280,7 +347,7 @@
 //     Civ-color recoloring: palette indices 251 (dark red 127,0,0) and 252 (bright red
 //     255,0,0) are placeholders replaced with civilization colors at runtime.
 //     Shield position marker: blue pixel (0,0,255) idx 250 in border pixels.
-//     (Not implemented in this experiment — units render with default red coloring.)
+//     Implemented: recolorUnit() replaces red with CIV_COLORS[owner], dark = light*0.5.
 //
 // =====================================================================================
 //
@@ -635,6 +702,19 @@
   ];
 
   // ============================================================
+  // CIV COLORS — for unit sprite recoloring
+  // Source: canvas-test-1/renderer.js:42
+  // Index = civ ID (0=barbarian/red, 1=white, 2=green, etc.)
+  // ============================================================
+  const CIV_COLORS = ['#c80000','#ffffff','#00b400','#3250dc','#f0dc00','#00c8c8','#f08c00','#b400c8'];
+
+  // ============================================================
+  // INFO PANEL MODE STATE
+  // Source: cityobj+0x15b0: 0=Info, 1=MiniMap, 2=Happiness
+  // ============================================================
+  let infoPanelMode = 0; // 0=Info, 1=Map, 2=Happy
+
+  // ============================================================
   // DRAWING HELPERS
   // ============================================================
 
@@ -731,18 +811,59 @@
     ctx.drawImage(spriteCache[key], dx, dy);
   }
 
-  // Draw a unit sprite from UNITS.GIF.
+  // Recolor a unit sprite canvas, replacing red placeholder colors with civ colors.
+  // Source: renderer.js _recolorUnit — palette idx 252 (255,0,0) → light civ color,
+  // idx 251 (127,0,0) → dark civ color (light * 0.5 per channel).
+  // Cached by (typeId, civIndex) pair.
+  function recolorUnit(templateCanvas, hexColor) {
+    const w = templateCanvas.width, h = templateCanvas.height;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const cx = c.getContext('2d');
+    cx.drawImage(templateCanvas, 0, 0);
+    const imgData = cx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+
+    // Parse hex color → light shade; derive dark shade at 50% brightness
+    const cr = parseInt(hexColor.slice(1, 3), 16);
+    const cg = parseInt(hexColor.slice(3, 5), 16);
+    const cb = parseInt(hexColor.slice(5, 7), 16);
+    const dr = cr >> 1, dg = cg >> 1, db = cb >> 1;
+
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] === 0) continue;
+      const r = d[i], g = d[i+1], b = d[i+2];
+      // Light civ-color: idx 252 = (255,0,0) — pure red
+      if (Math.abs(r - 255) < 15 && g < 15 && b < 15) {
+        d[i] = cr; d[i+1] = cg; d[i+2] = cb;
+      }
+      // Dark civ-color: idx 251 = (127,0,0) — dark red
+      else if (Math.abs(r - 127) < 15 && g < 15 && b < 15) {
+        d[i] = dr; d[i+1] = dg; d[i+2] = db;
+      }
+    }
+    cx.putImageData(imgData, 0, 0);
+    return c;
+  }
+
+  // Draw a unit sprite from UNITS.GIF with civ-color recoloring.
   // typeId maps to grid position: col = typeId % 9, row = floor(typeId / 9)
   // Each cell is 65x49 (64x48 sprite + 1px green border on each side).
-  // NOTE: This does NOT implement civ-color recoloring (red→civ color).
-  function drawUnit(typeId, dx, dy, w, h) {
-    const key = `unit_${typeId}`;
-    if (!spriteCache[key]) {
+  // civIndex defaults to city.owner for civ-color recoloring.
+  function drawUnit(typeId, dx, dy, w, h, civIndex) {
+    const civ = civIndex !== undefined ? civIndex : city.owner;
+    const baseKey = `unit_${typeId}`;
+    if (!spriteCache[baseKey]) {
       const col = typeId % 9, row = Math.floor(typeId / 9);
-      spriteCache[key] = extractSprite(unitsCtx,
+      spriteCache[baseKey] = extractSprite(unitsCtx,
         col * 65 + 1, row * 49 + 1, 64, 48, [MAGENTA, PURPLE_GRAY]);
     }
-    ctx.drawImage(spriteCache[key], dx, dy, w||64, h||48);
+    // Get or create recolored version for this civ
+    const colorKey = `unit_${typeId}_civ${civ}`;
+    if (!spriteCache[colorKey]) {
+      spriteCache[colorKey] = recolorUnit(spriteCache[baseKey], CIV_COLORS[civ] || '#cccccc');
+    }
+    ctx.drawImage(spriteCache[colorKey], dx, dy, w||64, h||48);
   }
 
   // ============================================================
@@ -786,13 +907,13 @@
     {
       const [px, py, pw, ph] = PANELS.citizens;
 
-      // Title — RE: string resource 0x193 (403), color 0x7C, font 18, bold
+      // Title — RE: string resource 0x1F (31) + 0x193 (403), color 0x7C, font 18, bold
+      // Format: "City of {name}" from resource 0x1F pattern
       text('City of ' + city.name, px + 2, py + 46, pal(0x7C), 18, true);
 
-      // Subtitle — RE: string resource 0x3F (63), at panel_left+199, width 238
-      // In the actual game this shows population and treasury
-      text(`Pop: ${(city.size * 10000).toLocaleString()}  Treasury: ${city.treasury} Gold`,
-           px + 199, py + 48, pal(0x7C), 10, false);
+      // Subtitle — RE: string resource 0x9A (154) treasury format, at panel_left+199
+      // Format: "(Treasury: {gold} Gold)" from resource 0x9A pattern
+      text(`(Treasury: ${city.treasury} Gold)`, px + 199, py + 48, pal(0x7C), 10, false);
 
       // Citizen faces — RE: start at panel_left+5, panel_top+9
       // Spacing computed via FUN_00548b70(count, 30, 422)
@@ -859,18 +980,21 @@
       drawIconRow('trade', netTrade, rowX, tradeY, rowW * 0.7);
       drawIconRow('corruption', city.corruption, rowX + rowW * 0.75, tradeY, rowW * 0.25);
 
-      // --- Trade distribution sub-row (tax / luxury / science) ---
-      // APPROXIMATE: exact sub-row positioning not fully decompiled
-      const subY = tradeY + 20;
-      let subX = rowX;
-      drawIconRow('gold', city.taxIncome, subX, subY, 80);         // Tax — color 0x76
-      text(city.taxRate + '%', subX + 82, subY, pal(0x76), 10);
-      subX += 100;
-      drawIconRow('luxury', city.luxIncome, subX, subY, 50);       // Luxury — color 0x5E
-      text(city.luxRate + '%', subX + 52, subY, pal(0x5E), 10);
-      subX += 70;
-      drawIconRow('science', city.sciIncome, subX, subY, 60);      // Science — color 0x29
-      text(city.sciRate + '%', subX + 62, subY, pal(0x29), 10);
+      // --- Trade distribution sub-rows (3 vertical rows) ---
+      // EXACT: FUN_005025d5 lines 1925-2117
+      // Order: tax (0x76) → science (0x29) → luxury (0x5E)
+      // Row height: FUN_00511690(0x0b) = 11px at zoom 2
+      // Between-row gap: FUN_00511690(0x04) = 4px at zoom 2
+      const subRowH = 11;  // EXACT: FUN_00511690(0x0b)
+      const subGap = 4;    // EXACT: FUN_00511690(0x04)
+      const subY0 = tradeY + 18;
+
+      // Row 1: Tax (gold icons) — color 0x76
+      drawIconRow('gold', city.taxIncome, rowX, subY0, rowW);
+      // Row 2: Science (beaker icons) — color 0x29
+      drawIconRow('science', city.sciIncome, rowX, subY0 + subRowH + subGap, rowW);
+      // Row 3: Luxury (gem icons) — color 0x5E
+      drawIconRow('luxury', city.luxIncome, rowX, subY0 + 2 * (subRowH + subGap), rowW);
 
       // --- Shield row (RE: panel_top + 120) ---
       const shieldY = py + 120;
@@ -901,25 +1025,66 @@
       ctx.fillRect(px, py, pw, ph);
       ctx.restore();
 
-      // Draw placeholder diamond grid (5x5 city radius)
-      ctx.strokeStyle = 'rgba(0,180,0,0.3)';
-      ctx.lineWidth = 1;
-      const cx = px + pw/2, cy = py + ph/2;
-      for (let dy = -2; dy <= 2; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
-          if (Math.abs(dx) + Math.abs(dy) > 2) continue;
-          const tx = cx + (dx - dy) * 24 - 24;
-          const ty = cy + (dx + dy) * 12 - 12;
-          ctx.beginPath();
-          ctx.moveTo(tx + 24, ty);
-          ctx.lineTo(tx + 48, ty + 12);
-          ctx.lineTo(tx + 24, ty + 24);
-          ctx.lineTo(tx, ty + 12);
-          ctx.closePath();
-          ctx.stroke();
-        }
+      // EXACT: 21-tile diamond from radiusTiles offsets (citydialog.js:635-644)
+      // Tile size at zoom 2: 64x32 from FUN_00472cf0(0x40,-2)=64, (0x20,-2)=32
+      // But inner panel is 188x137, so we use half-size tiles (28x14) to fit
+      // Map origin: panel_left + 5, panel_top + 11 (from RE)
+      const radiusTiles = [
+        { dx: 0, dy: 0 },
+        { dx: 0, dy: -2 }, { dx: 1, dy: -1 }, { dx: 1, dy: 1 },
+        { dx: 0, dy: 2 }, { dx: -1, dy: 1 }, { dx: -1, dy: -1 },
+        { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
+        { dx: -1, dy: -3 }, { dx: 0, dy: -3 }, { dx: 1, dy: -2 },
+        { dx: 2, dy: -1 }, { dx: 2, dy: 1 }, { dx: 1, dy: 2 },
+        { dx: 0, dy: 3 }, { dx: -1, dy: 3 }, { dx: -2, dy: 1 },
+        { dx: -2, dy: -1 }, { dx: -1, dy: -2 }, { dx: 1, dy: -3 },
+      ];
+
+      // Use half-size tiles to fit panel: 28x14 (half of 64x32 minus border)
+      const tileW = 28, tileH = 14;
+      const mapCX = px + pw / 2;
+      const mapCY = py + ph / 2;
+
+      // Placeholder terrain colors by tile index
+      const terrainColors = [
+        '#2a8c2a', // center (city tile) - green
+        '#4a6a2a','#4a6a2a','#6a8a3a','#4a6a2a','#6a8a3a','#4a6a2a', // ring 1
+        '#2a6a8a','#6a8a3a', // extra ring 1
+        '#4a6a2a','#6a8a3a','#4a6a2a','#2a6a8a','#6a8a3a','#4a6a2a', // ring 2
+        '#6a8a3a','#4a6a2a','#2a6a8a','#6a8a3a','#4a6a2a','#4a6a2a', // outer
+      ];
+
+      for (let i = 0; i < radiusTiles.length; i++) {
+        const rt = radiusTiles[i];
+        // Isometric: x = dx * halfW - dy * halfW, y = dx * halfH + dy * halfH
+        // But civ2 uses staggered grid: even/odd row offset
+        const tx = mapCX + rt.dx * tileW - tileW / 2;
+        const ty = mapCY + rt.dy * (tileH / 2) - tileH / 2;
+
+        // Draw diamond tile
+        ctx.fillStyle = terrainColors[i] || '#4a6a2a';
+        ctx.globalAlpha = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(tx + tileW / 2, ty);
+        ctx.lineTo(tx + tileW, ty + tileH / 2);
+        ctx.lineTo(tx + tileW / 2, ty + tileH);
+        ctx.lineTo(tx, ty + tileH / 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Outline
+        ctx.strokeStyle = 'rgba(0,100,0,0.5)';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 1.0;
+        ctx.stroke();
       }
-      text('City Radius', cx, cy - 5, 'rgba(0,180,0,0.5)', 10, false, 'center');
+      ctx.globalAlpha = 1.0;
+
+      // City center marker
+      ctx.fillStyle = pal(0x29); // green, city color
+      ctx.beginPath();
+      ctx.arc(mapCX, mapCY, 3, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     // --------------------------------------------------------
@@ -998,7 +1163,7 @@
 
       // Buy button — RE: absolute position (442, 181, 68, 24) from citywin_CF06
       frame3D(442, 181, 68, 24, '#ccc', '#555');
-      ctx.fillStyle = 'rgba(160,160,160,0.6)';
+      ctx.fillStyle = 'rgb(192,192,192)';
       ctx.fillRect(443, 182, 66, 22);
       text('Buy', 476, 186, '#000', 12, true, 'center');
 
@@ -1054,7 +1219,7 @@
     //   Prev:    citywin_BF72 (0x50BF72) — previous city
     //   Next:    citywin_BD13 (0x50BD13) — next city
     //
-    // APPROXIMATE: button fill color is gray, not extracted from palette
+    // EXACT: button fill color is standard Windows gray rgb(192,192,192)
     // --------------------------------------------------------
     {
       const buttons = [
@@ -1069,7 +1234,7 @@
       ];
       for (const b of buttons) {
         frame3D(b.x, b.y, b.w, b.h, '#ccc', '#555');
-        ctx.fillStyle = 'rgba(160,160,160,0.6)';
+        ctx.fillStyle = 'rgb(192,192,192)';
         ctx.fillRect(b.x+1, b.y+1, b.w-2, b.h-2);
         text(b.label, b.x + b.w/2, b.y + 6, '#000', 11, true, 'center');
       }
@@ -1081,9 +1246,8 @@
     //
     // Shows units this city is supporting (paying upkeep for).
     // - Title: string resource 0x1BF (447), color 0x7C, font 18px
-    // - Unit tile size: computed via FUN_00472cf0(0x45, zoom) for width
-    //   and FUN_00472cf0(0x34, zoom) for height. At zoom 2: ~69x52.
-    //   (We use 48x36 as a scaled approximation.)
+    // - Unit tile size: EXACT via FUN_00472cf0(0x45, -2) = 51 width,
+    //   FUN_00472cf0(0x34, -2) = 39 height at zoom 2.
     // - Units per row: panel_width / tile_width
     // - Upkeep icons: food/shield icons drawn per-unit below the sprite
     //   (food for Settlers/Engineers, shields for military)
@@ -1095,7 +1259,7 @@
       const [px, py, pw, ph] = PANELS.units;
       text('Units Supported', px + 4, py + 2, pal(0x7C), 12, true);
 
-      const tileW = 48, tileH = 36; // APPROXIMATE: scaled from 64x48
+      const tileW = 51, tileH = 39; // EXACT: FUN_00472cf0(0x45,-2)=51, (0x34,-2)=39
       const uy = py + 18;
       city.unitsSupported.forEach((unitId, i) => {
         const dx = px + 8 + i * (tileW + 8);
@@ -1112,92 +1276,215 @@
     // Scrollable list of city improvements with thumbnail icons.
     // - Title: string resource 0x1C0 (448), color 0x7C, font 18px
     // - List start: panel_left+2, panel_top+1
-    // - Row height: 12px (RE exact), but we use 21px to fit 36x20 thumbnails
+    // - Row height: 12px EXACT (FUN_00511690(0xc)), icons overlap as in game
     // - Visible rows: (panel_height - 0.5) / 12
     // - Entry icon: drawn via FUN_005cef31 at (x, y)
     // - Entry text: at x+24, y-1, color 0x29, font 10, NO shadow
     //   (one of the few places where shadow text is disabled)
     // - Gold upkeep icon: positioned at panel_right - 14 - 4
-    // - Scrollbar: via FUN_005db0d0 (NOT IMPLEMENTED)
+    // - Scrollbar: EXACT position (175, 291, 17, 129) from FUN_00505ffa
     // --------------------------------------------------------
     {
       const [px, py] = PANELS.improvements;
       text('City Improvements', px + 4, py + 2, pal(0x7C), 12, true);
 
       const [ix, iy, iw, ih] = PANELS.improvInner;
-      const rowH = 21; // APPROXIMATE: RE says 12px but icons need more vertical space
+      const rowH = 12; // EXACT: FUN_00505ffa: FUN_00511690(0xc) = 12
 
       city.improvements.forEach((impId, i) => {
         const y = iy + i * rowH;
-        if (y + rowH > iy + ih) return; // clip to inner panel
+        if (y > iy + ih) return; // clip to inner panel
 
-        // Improvement thumbnail icon — RE: via FUN_005cef31
-        drawImprovIcon(impId, ix + 2, y);
+        // Improvement thumbnail icon — RE: drawn via FUN_005cef31 at (x, y)
+        // 36x20 thumbnails overlap at 12px row spacing, as the game does
+        drawImprovIcon(impId, ix, y);
 
         // Improvement name — RE: x+24, y-1, color 0x29, font 10, NO shadow
         ctx.font = '10px "Times New Roman", serif';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.fillStyle = pal(0x29);  // palette 0x29 (41) = green/science text
-        ctx.fillText(IMPROV_NAMES[impId], ix + 40, y + 4);
+        ctx.fillText(IMPROV_NAMES[impId], ix + 24, y - 1);
 
         // Gold upkeep icon — RE: panel_right - 14 - 4
         if (IMPROV_UPKEEP[impId] > 0) {
-          ctx.drawImage(getIcon('gold'), ix + iw - 16, y + 3, 12, 12);
+          ctx.drawImage(getIcon('gold'), ix + iw - 14 - 4, y, 14, 14);
         }
       });
+
+      // Scrollbar — EXACT position: (175, 291, 17, 129) from FUN_00505ffa + SM_CXVSCROLL=17
+      // Visual-only 3D frame scrollbar (up arrow, track, thumb, down arrow)
+      const sbX = 175, sbY = 291, sbW = 17, sbH = 129;
+      const arrowH = 17; // standard Windows scrollbar arrow height
+
+      // Scrollbar track background
+      ctx.fillStyle = 'rgb(192,192,192)';
+      ctx.fillRect(sbX, sbY, sbW, sbH);
+      frame3D(sbX, sbY, sbW, sbH, '#888', '#fff');
+
+      // Up arrow button
+      frame3D(sbX, sbY, sbW, arrowH, '#fff', '#888');
+      ctx.fillStyle = 'rgb(192,192,192)';
+      ctx.fillRect(sbX + 1, sbY + 1, sbW - 2, arrowH - 2);
+      // Up arrow triangle
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.moveTo(sbX + sbW / 2, sbY + 4);
+      ctx.lineTo(sbX + sbW / 2 + 4, sbY + arrowH - 5);
+      ctx.lineTo(sbX + sbW / 2 - 4, sbY + arrowH - 5);
+      ctx.closePath();
+      ctx.fill();
+
+      // Down arrow button
+      const downY = sbY + sbH - arrowH;
+      frame3D(sbX, downY, sbW, arrowH, '#fff', '#888');
+      ctx.fillStyle = 'rgb(192,192,192)';
+      ctx.fillRect(sbX + 1, downY + 1, sbW - 2, arrowH - 2);
+      // Down arrow triangle
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.moveTo(sbX + sbW / 2, downY + arrowH - 4);
+      ctx.lineTo(sbX + sbW / 2 + 4, downY + 5);
+      ctx.lineTo(sbX + sbW / 2 - 4, downY + 5);
+      ctx.closePath();
+      ctx.fill();
+
+      // Thumb (positioned proportionally)
+      const trackH = sbH - 2 * arrowH;
+      const thumbH = Math.max(16, Math.floor(trackH * 0.4));
+      const thumbY = sbY + arrowH;
+      frame3D(sbX, thumbY, sbW, thumbH, '#fff', '#888');
+      ctx.fillStyle = 'rgb(192,192,192)';
+      ctx.fillRect(sbX + 1, thumbY + 1, sbW - 2, thumbH - 2);
     }
 
     // --------------------------------------------------------
-    // STEP 8: INFO PANEL (Mode 0: Info View)
-    // Source: citywin_70E5 @ 0x5070E5 (2,692 bytes)
+    // STEP 8: INFO PANEL (3 modes: Info / Map / Happy)
+    // Source: citywin_70E5 @ 0x5070E5, citywin_7B69, citywin_8552
     //
-    // This panel has 3 modes selected by cityobj+0x15b0:
-    //   Mode 0: Info — units present, food stored, trade routes (shown here)
-    //   Mode 1: Mini-map — citywin_7B69, city/unit markers on minimap
-    //   Mode 2: Happiness — citywin_8552, 5 horizontal rows showing
-    //           before/after effects on happiness
-    //
-    // Info mode layout:
-    //   - Title: string 0x1C3 (451), color 0x7C, font 18
-    //   - Unit grid: tile_w from FUN_00472cf0(0x40,zoom)=64, tile_h=48
-    //     Cols = 244px / tile_w, centered
-    //     4 rows max (2 normal + 2 half-tile offset)
-    //   - Unit name labels: color 10, font 26px (first 2 rows)
-    //   - Food stored display: at panel+(7,100), grid width 64, icon size 30
-    //   - Trade route info: at panel+(0,133), color 0x79, font 18
-    //
-    // NOTE: Only Info mode implemented. Map and Happy modes not shown.
+    // Mode stored at cityobj+0x15b0: 0=Info, 1=MiniMap, 2=Happiness
+    // Title strings: 0x1C3 "Info", 0x1C4 "Map", 0x1C5 "Happy"
     // --------------------------------------------------------
     {
       const [px, py] = PANELS.info;
-      text('Info', px + 4, py + 2, pal(0x7C), 12, true);
-
       const [ix, iy, iw, ih] = PANELS.infoInner;
+      const modeLabels = ['Info', 'Map', 'Happy'];
+      text(modeLabels[infoPanelMode], px + 4, py + 2, pal(0x7C), 12, true);
 
-      // Units present grid — APPROXIMATE tile size (scaled from 64x48)
-      const tileW = 48, tileH = 36;
-      const cols = Math.floor(iw / (tileW + 4));
+      if (infoPanelMode === 0) {
+        // MODE 0: INFO — units present, food stored, trade routes
+        // Source: citywin_70E5 @ 0x5070E5
+        const tileW = 48, tileH = 36; // EXACT: FUN_00472cf0(0x40,-2)=48, (0x30,-2)=36
+        const cols = Math.floor(iw / (tileW + 4));
 
-      text('Units Present:', ix + 2, iy + 2, pal(0x29), 10, true);
+        text('Units Present:', ix + 2, iy + 2, pal(0x29), 10, true);
 
-      city.unitsPresent.forEach((unitId, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        const ux = ix + 2 + col * (tileW + 4);
-        const uy = iy + 18 + row * (tileH + 16);
-        drawUnit(unitId, ux, uy, tileW, tileH);
-        // Unit name — RE: color palette index 10, font 26 (we use 8px scaled down)
-        text(UNIT_NAMES[unitId], ux + tileW/2, uy + tileH + 1, pal(0x0A), 8, false, 'center');
-      });
+        city.unitsPresent.forEach((unitId, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const ux = ix + 2 + col * (tileW + 4);
+          const uy = iy + 18 + row * (tileH + 16);
+          drawUnit(unitId, ux, uy, tileW, tileH);
+          text(UNIT_NAMES[unitId], ux + tileW/2, uy + tileH + 1, pal(0x0A), 8, false, 'center');
+        });
 
-      // Food stored display — RE: at panel + (7, 100)
-      text('Food Stored: ' + city.foodStored + ' / ' + city.foodBox,
-           ix + 7, iy + 120, pal(0x2C), 10, true);
+        // Food stored display — RE: at panel + (7, 100)
+        text('Food Stored: ' + city.foodStored + ' / ' + city.foodBox,
+             ix + 7, iy + 120, pal(0x2C), 10, true);
 
-      // Trade route info — RE: at panel + (0, 133), color 0x79 (121), font 18
-      text('Trade Routes:', ix, iy + 140, pal(0x79), 10, true);
-      text('None established', ix + 10, iy + 155, pal(0x79), 10);
+        // Trade route info — RE: at panel + (0, 133), color 0x79 (121)
+        text('Trade Routes:', ix, iy + 140, pal(0x79), 10, true);
+        text('None established', ix + 10, iy + 155, pal(0x79), 10);
+
+      } else if (infoPanelMode === 1) {
+        // MODE 1: MINI-MAP — citywin_7B69
+        // Tile-sized colored rects: 0x5D/0x30 terrain, 0x29 city, 0x1D unit
+        const mapCX = ix + iw / 2;
+        const mapCY = iy + ih / 2;
+        const miniTW = 8, miniTH = 4; // mini-map tile size
+
+        // Draw simple overview map grid
+        for (let my = -12; my <= 12; my++) {
+          for (let mx = -14; mx <= 14; mx++) {
+            // Staggered grid parity check
+            if ((mx + my) % 2 !== 0) continue;
+            const tx = mapCX + mx * (miniTW / 2) - miniTW / 2;
+            const ty = mapCY + my * (miniTH / 2) - miniTH / 2;
+            if (tx < ix || tx + miniTW > ix + iw || ty < iy || ty + miniTH > iy + ih) continue;
+            // Terrain color — palette 0x5D (93) base / 0x30 (48) for land
+            ctx.fillStyle = pal(0x30);
+            ctx.fillRect(tx, ty, miniTW, miniTH);
+          }
+        }
+
+        // City marker — palette 0x29 (41) green
+        ctx.fillStyle = pal(0x29);
+        ctx.fillRect(mapCX - 3, mapCY - 2, 6, 4);
+
+        // Unit marker — palette 0x1D (29)
+        ctx.fillStyle = pal(0x1D);
+        ctx.fillRect(mapCX + 5, mapCY - 2, 4, 4);
+
+        text('City Location', mapCX, iy + 4, pal(0x7C), 10, false, 'center');
+
+      } else if (infoPanelMode === 2) {
+        // MODE 2: HAPPINESS — citywin_8552
+        // 5 rows of (panel_h - 4) / 5, dividers at color 0x7C
+        const rowH = Math.floor((ih - 4) / 5);
+        const happyLabels = ['Base', 'Luxury', 'Improvements', 'Wonders', 'Final'];
+        const happyCounts = [
+          { happy: 2, content: city.size - 4, unhappy: 2 },  // base
+          { happy: 2 + city.luxIncome, content: city.size - 4 - city.luxIncome, unhappy: 2 }, // luxury
+          { happy: 3 + city.luxIncome, content: city.size - 5 - city.luxIncome, unhappy: 2 }, // improvements
+          { happy: 3 + city.luxIncome, content: city.size - 5 - city.luxIncome, unhappy: 2 }, // wonders
+          { happy: city.happy, content: city.content, unhappy: city.unhappy }, // final
+        ];
+
+        for (let r = 0; r < 5; r++) {
+          const ry = iy + 2 + r * rowH;
+
+          // Row label
+          text(happyLabels[r], ix + 2, ry + 1, pal(0x7C), 9, true);
+
+          // Draw citizen faces in this row (compact)
+          const hc = happyCounts[r];
+          let fx = ix + 55;
+          const faceW = 12;
+          // Happy (green dots)
+          for (let f = 0; f < Math.max(0, hc.happy); f++) {
+            ctx.fillStyle = pal(0x29);
+            ctx.beginPath();
+            ctx.arc(fx + f * faceW + 5, ry + rowH / 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Content (yellow dots)
+          fx += Math.max(0, hc.happy) * faceW;
+          for (let f = 0; f < Math.max(0, hc.content); f++) {
+            ctx.fillStyle = pal(0x76);
+            ctx.beginPath();
+            ctx.arc(fx + f * faceW + 5, ry + rowH / 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Unhappy (red dots)
+          fx += Math.max(0, hc.content) * faceW;
+          for (let f = 0; f < Math.max(0, hc.unhappy); f++) {
+            ctx.fillStyle = pal(0x2A);
+            ctx.beginPath();
+            ctx.arc(fx + f * faceW + 5, ry + rowH / 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Row divider — palette 0x7C
+          if (r < 4) {
+            ctx.strokeStyle = pal(0x7C);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(ix, ry + rowH);
+            ctx.lineTo(ix + iw, ry + rowH);
+            ctx.stroke();
+          }
+        }
+      }
     }
 
     // --------------------------------------------------------
@@ -1231,6 +1518,26 @@
   // Re-render when debug toggles change
   document.getElementById('showPanels').addEventListener('change', render);
   document.getElementById('showCoords').addEventListener('change', render);
+
+  // Click handler for Info/Map/Happy button and panel mode cycling
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const scaleY = H / rect.height;
+    const x = Math.round((e.clientX - rect.left) * scaleX);
+    const y = Math.round((e.clientY - rect.top) * scaleY);
+
+    // Info button: (517, 364, 57, 24) — cycles info panel mode
+    if (x >= 517 && x <= 574 && y >= 364 && y <= 388) {
+      infoPanelMode = (infoPanelMode + 1) % 3;
+      render();
+    }
+    // Happy button: (459, 389, 57, 24) — jumps to happiness mode
+    if (x >= 459 && x <= 516 && y >= 389 && y <= 413) {
+      infoPanelMode = 2;
+      render();
+    }
+  });
 
   // Coordinate display — shows (x, y) and panel name when hovering over canvas
   canvas.addEventListener('mousemove', (e) => {
