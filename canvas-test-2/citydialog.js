@@ -111,7 +111,7 @@ const Civ2CityDialog = {
 
   // ── Outer frame (border + title bar) wrapping the 636×421 content area ──
   FRAME: {
-    borderW: 4, titleBarH: 24, separatorH: 1,
+    borderW: 10, titleBarH: 24, separatorH: 1,
     contentW: 636, contentH: 421,
     get totalW() { return this.contentW + this.borderW * 2; },       // 644
     get totalH() { return this.contentH + this.borderW * 2 + this.titleBarH + this.separatorH; }, // 454
@@ -582,11 +582,43 @@ const Civ2CityDialog = {
   // DRAW METHODS — each renders one panel region
   // ═══════════════════════════════════════════════════════════════════
 
-  // 4-layer 3D beveled outer border (drawn in absolute canvas coordinates)
-  _drawOuterBorder(ctx) {
+  // Outer border: stone-textured fill + 3D bevel lines (absolute canvas coordinates)
+  _drawOuterBorder(ctx, cdSprites) {
     const F = this.FRAME;
     const C = this.COL;
     const w = F.totalW, h = F.totalH;
+    const bw = F.borderW;
+
+    // Fill entire border area with stone texture
+    if (cdSprites && cdSprites.titleBarTile) {
+      const tile = cdSprites.titleBarTile;
+      const tw = tile.width, th = tile.height;
+      // Top border
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, w, bw);
+      // Bottom border
+      ctx.rect(0, h - bw, w, bw);
+      // Left border
+      ctx.rect(0, bw, bw, h - bw * 2);
+      // Right border
+      ctx.rect(w - bw, bw, bw, h - bw * 2);
+      ctx.clip();
+      for (let ty = 0; ty < h; ty += th) {
+        for (let tx = 0; tx < w; tx += tw) {
+          ctx.drawImage(tile, tx, ty);
+        }
+      }
+      ctx.restore();
+    } else {
+      ctx.fillStyle = C.borderLight;
+      ctx.fillRect(0, 0, w, bw);
+      ctx.fillRect(0, h - bw, w, bw);
+      ctx.fillRect(0, bw, bw, h - bw * 2);
+      ctx.fillRect(w - bw, bw, bw, h - bw * 2);
+    }
+
+    // 3D bevel lines on top of stone
     // Layer 0: 1px black outermost edge
     ctx.strokeStyle = C.borderBlack;
     ctx.lineWidth = 1;
@@ -600,23 +632,15 @@ const Civ2CityDialog = {
     ctx.beginPath();
     ctx.moveTo(w - 1.5, 1.5); ctx.lineTo(w - 1.5, h - 1.5); ctx.lineTo(1.5, h - 1.5);
     ctx.stroke();
-    // Layer 2: light top/left, shadow bottom/right
-    ctx.strokeStyle = C.borderLight;
-    ctx.beginPath();
-    ctx.moveTo(2.5, h - 2.5); ctx.lineTo(2.5, 2.5); ctx.lineTo(w - 2.5, 2.5);
-    ctx.stroke();
+    // Inner bevel (at content edge)
+    const ix = bw - 1;
     ctx.strokeStyle = C.borderShadow;
     ctx.beginPath();
-    ctx.moveTo(w - 2.5, 2.5); ctx.lineTo(w - 2.5, h - 2.5); ctx.lineTo(2.5, h - 2.5);
+    ctx.moveTo(ix + 0.5, h - ix - 0.5); ctx.lineTo(ix + 0.5, ix + 0.5); ctx.lineTo(w - ix - 0.5, ix + 0.5);
     ctx.stroke();
-    // Layer 3: innermost bevel
-    ctx.strokeStyle = C.borderLight;
+    ctx.strokeStyle = C.borderHighlight;
     ctx.beginPath();
-    ctx.moveTo(3.5, h - 3.5); ctx.lineTo(3.5, 3.5); ctx.lineTo(w - 3.5, 3.5);
-    ctx.stroke();
-    ctx.strokeStyle = C.borderShadow;
-    ctx.beginPath();
-    ctx.moveTo(w - 3.5, 3.5); ctx.lineTo(w - 3.5, h - 3.5); ctx.lineTo(3.5, h - 3.5);
+    ctx.moveTo(w - ix - 0.5, ix + 0.5); ctx.lineTo(w - ix - 0.5, h - ix - 0.5); ctx.lineTo(ix + 0.5, h - ix - 0.5);
     ctx.stroke();
   },
 
@@ -642,11 +666,11 @@ const Civ2CityDialog = {
       }
       ctx.restore();
 
-      // Also tile the left/right border walls with stone
+      // Also tile the border walls flanking the title bar with stone
       ctx.save();
       ctx.beginPath();
-      ctx.rect(0, tbY, F.borderW, tbH);
-      ctx.rect(F.totalW - F.borderW, tbY, F.borderW, tbH);
+      ctx.rect(1, tbY, F.borderW - 1, tbH);
+      ctx.rect(F.totalW - F.borderW, tbY, F.borderW - 1, tbH);
       ctx.clip();
       for (let ty = tbY; ty < tbY + tbH; ty += th) {
         for (let tx = 0; tx < F.totalW; tx += tw) {
@@ -927,37 +951,45 @@ const Civ2CityDialog = {
         ctx.drawImage(cdSprites.corruption, corrStartX + i * tradeSpacing, tradeR.iconY, 14, 14);
     }
 
-    // Row 3: TAX / SCI / LUX — 3 stacked sub-rows
+    // Row 3: TAX / LUX / SCI — single horizontal row (matching real Civ2 layout)
     const tlsR = RES.taxLuxSci;
     const taxCount = city.taxOutput || 0;
     const sciCount = city.scienceOutput || 0;
-    const subRowH = 15; // 11px row + 4px gap
 
-    // Sub-row 1: Tax (gold icons)
+    // Text line: "30% Tax: X" left, "0% Lux: X" center, "70% Sci: X" right
+    const textY = tlsR.iconY - 2;
+    ctx.font = 'bold 11px Arial, sans-serif';
     ctx.textAlign = 'left';
-    this._text(ctx, `${taxRate}% Tax: ${taxCount}`, tlsR.textX, tlsR.iconY - 2, 'rgb(239,159,7)', 'bold 11px Arial, sans-serif');
+    this._text(ctx, `${taxRate}% Tax: ${taxCount}`, tlsR.textX, textY, 'rgb(239,159,7)', 'bold 11px Arial, sans-serif');
+    ctx.textAlign = 'center';
+    this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, tlsR.centerX, textY, 'rgb(255,255,255)', 'bold 11px Arial, sans-serif');
+    ctx.textAlign = 'right';
+    this._text(ctx, `${sciRate}% Sci: ${sciCount}`, tlsR.rightX, textY, 'rgb(63,187,199)', 'bold 11px Arial, sans-serif');
+    ctx.textAlign = 'left';
+
+    // Icons row below text: tax from left, lux from center, sci from right
+    const iconY = tlsR.iconY + 1;
+    // Tax icons (left-aligned)
     if (taxCount > 0) {
-      const taxSpacing = this._iconSpacing(taxCount, 14, tlsR.rightX - tlsR.iconX);
+      const sectionW = tlsR.luxIconX - tlsR.iconX - 4;
+      const taxSp = this._iconSpacing(taxCount, 14, sectionW);
       for (let i = 0; i < taxCount; i++)
-        ctx.drawImage(cdSprites.tax, tlsR.iconX + i * taxSpacing.spacing, tlsR.iconY, 14, 14);
+        ctx.drawImage(cdSprites.tax, tlsR.iconX + i * taxSp.spacing, iconY, 14, 14);
     }
-
-    // Sub-row 2: Science (beaker icons)
-    const sciY = tlsR.iconY + subRowH;
-    this._text(ctx, `${sciRate}% Sci: ${sciCount}`, tlsR.textX, sciY - 2, 'rgb(63,187,199)', 'bold 11px Arial, sans-serif');
-    if (sciCount > 0) {
-      const sciSpacing = this._iconSpacing(sciCount, 14, tlsR.rightX - tlsR.iconX);
-      for (let i = 0; i < sciCount; i++)
-        ctx.drawImage(cdSprites.science, tlsR.iconX + i * sciSpacing.spacing, sciY, 14, 14);
-    }
-
-    // Sub-row 3: Luxury (gem icons)
-    const luxY = tlsR.iconY + subRowH * 2;
-    this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, tlsR.textX, luxY - 2, 'rgb(255,255,255)', 'bold 11px Arial, sans-serif');
+    // Luxury icons (center section)
     if (luxOutput > 0) {
-      const luxSpacing = this._iconSpacing(luxOutput, 14, tlsR.rightX - tlsR.iconX);
+      const luxStartX = tlsR.luxIconX;
+      const luxEndX = tlsR.centerX + (tlsR.centerX - tlsR.luxIconX);
+      const luxSp = this._iconSpacing(luxOutput, 14, luxEndX - luxStartX);
       for (let i = 0; i < luxOutput; i++)
-        ctx.drawImage(cdSprites.luxury, tlsR.iconX + i * luxSpacing.spacing, luxY, 14, 14);
+        ctx.drawImage(cdSprites.luxury, luxStartX + i * luxSp.spacing, iconY, 14, 14);
+    }
+    // Science icons (right-aligned)
+    if (sciCount > 0) {
+      const sciStartX = tlsR.centerX + (tlsR.centerX - tlsR.luxIconX);
+      const sciSp = this._iconSpacing(sciCount, 14, tlsR.rightX - sciStartX);
+      for (let i = 0; i < sciCount; i++)
+        ctx.drawImage(cdSprites.science, sciStartX + i * sciSp.spacing, iconY, 14, 14);
     }
 
     // Row 4: SUPPORT + PRODUCTION
@@ -1077,7 +1109,7 @@ const Civ2CityDialog = {
       }
     }
 
-    // Shield grid with colored border rectangle
+    // Shield grid with dark background (like food storage)
     if (cdSprites && cdSprites.shields) {
       const SG = R.shieldGrid;
       const cost = this._getProductionCost(item);
@@ -1087,31 +1119,41 @@ const Civ2CityDialog = {
 
       if (cost > 0) {
         const boxHeight = 4 + numRows * 14;
+        // Dark blue background fill (like food storage green bg)
+        ctx.fillStyle = 'rgb(0,0,95)';
+        ctx.fillRect(SG.borderX + 1, SG.borderY + 1, SG.borderRight - SG.borderX - 1, boxHeight - 1);
+        // 3D border
         ctx.strokeStyle = 'rgb(83,103,191)';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(SG.borderX, SG.borderY); ctx.lineTo(SG.borderRight, SG.borderY); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(SG.borderX, SG.borderY); ctx.lineTo(SG.borderX, SG.borderY + boxHeight); ctx.stroke();
-        ctx.strokeStyle = 'rgb(0,0,95)';
+        ctx.strokeStyle = 'rgb(0,0,63)';
         ctx.beginPath(); ctx.moveTo(SG.borderX, SG.borderY + boxHeight); ctx.lineTo(SG.borderRight, SG.borderY + boxHeight); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(SG.borderRight, SG.borderY); ctx.lineTo(SG.borderRight, SG.borderY + boxHeight); ctx.stroke();
 
-        // Shield icons: adaptive horizontal spacing, 14px vertical
+        // Draw ALL shield positions up to cost; produced shields full, remaining dark
         const dx = numCols > 1 ? (SG.borderRight - SG.borderX - 14 - 4) / (numCols - 1) : 0;
         const dy = 14;
         let count = 0;
         for (let row = 0; row < numRows; row++) {
           for (let col = 0; col < numCols; col++) {
+            if (count >= cost) break;
             const sx = SG.x + Math.round(2 + col * dx);
             const sy = SG.y + dy * row;
-            ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
+            if (count < stored) {
+              // Produced: full bright shield
+              ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
+            } else {
+              // Remaining: dim shield (draw at reduced opacity)
+              ctx.globalAlpha = 0.25;
+              ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
+              ctx.globalAlpha = 1.0;
+            }
             count++;
-            if (count >= stored) break;
           }
-          if (count >= stored) break;
         }
 
-        // Production progress text: "X/Y shields" below shield grid
-        // Turns remaining: ceil((cost - stored) / shields_per_turn)
+        // Production progress text below shield grid
         const shieldsPerTurn = city.shieldProduction || 0;
         const turnsLeft = shieldsPerTurn > 0 ? Math.ceil((cost - stored) / shieldsPerTurn) : 999;
         const progressText = `${stored}/${cost}`;
@@ -1134,7 +1176,6 @@ const Civ2CityDialog = {
         const canAfford = treasury >= buyCost;
         const buyText = `Buy: ${buyCost} gold`;
         const buyColor = canAfford ? 'rgb(223,187,63)' : 'rgb(159,115,31)';
-        // Position below Buy button
         ctx.textAlign = 'center';
         this._text(ctx, buyText, R.x + 37, R.y + 34, buyColor, '10px Arial, sans-serif');
         ctx.textAlign = 'left';
@@ -1447,19 +1488,27 @@ const Civ2CityDialog = {
     const infoLabels = ['Info', 'Map', 'Happy'];
     ctx.font = 'bold 11px Arial, sans-serif';
     for (const [action, r] of Object.entries(B)) {
-      // Arrow buttons: draw sprite clipped to button rect
-      if (action === 'nextCity' && cdSprites && cdSprites.arrowNext) {
-        ctx.save();
-        ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
-        ctx.drawImage(cdSprites.arrowNext, r.x, r.y, r.w, r.h);
-        ctx.restore();
-        continue;
-      }
-      if (action === 'prevCity' && cdSprites && cdSprites.arrowPrev) {
-        ctx.save();
-        ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
-        ctx.drawImage(cdSprites.arrowPrev, r.x, r.y, r.w, r.h);
-        ctx.restore();
+      // Arrow buttons: gray button with small filled triangle
+      if (action === 'nextCity' || action === 'prevCity') {
+        ctx.fillStyle = 'rgb(192,192,192)';
+        ctx.fillRect(r.x, r.y, r.w, r.h);
+        // 3D button edges
+        ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(r.x+0.5,r.y+r.h-0.5); ctx.lineTo(r.x+0.5,r.y+0.5); ctx.lineTo(r.x+r.w-0.5,r.y+0.5); ctx.stroke();
+        ctx.strokeStyle = '#555';
+        ctx.beginPath(); ctx.moveTo(r.x+r.w-0.5,r.y+0.5); ctx.lineTo(r.x+r.w-0.5,r.y+r.h-0.5); ctx.lineTo(r.x+0.5,r.y+r.h-0.5); ctx.stroke();
+        // Triangle centered in button
+        const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        if (action === 'nextCity') {
+          // Up arrow ▲
+          ctx.moveTo(cx, cy - 5); ctx.lineTo(cx + 5, cy + 4); ctx.lineTo(cx - 5, cy + 4);
+        } else {
+          // Down arrow ▼
+          ctx.moveTo(cx, cy + 5); ctx.lineTo(cx + 5, cy - 4); ctx.lineTo(cx - 5, cy - 4);
+        }
+        ctx.closePath(); ctx.fill();
         continue;
       }
       // Gray fill
@@ -1500,7 +1549,9 @@ const Civ2CityDialog = {
     const B = this.REGIONS.buttons;
     const regions = Object.entries(B).map(([action, r]) => ({ x: r.x, y: r.y, w: r.w, h: r.h, action }));
     // Title bar close icon (in content-offset coordinates, so negative Y)
-    regions.push({ x: 1, y: -25, w: 16, h: 16, action: 'exit' });
+    // Icon drawn at tbX+1, tbY+4 in canvas coords; content origin is at (borderW, borderW+24+1)
+    // So in content coords: x=1, y = -(titleBarH + separatorH - 4) = -(24+1-4) = -21
+    regions.push({ x: 1, y: -21, w: 16, h: 16, action: 'exit' });
     return regions;
   },
 
@@ -1515,7 +1566,7 @@ const Civ2CityDialog = {
     const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
 
     // Phase 1: draw border + title bar in absolute canvas coordinates
-    this._drawOuterBorder(ctx);
+    this._drawOuterBorder(ctx, cdSprites);
     this._drawTitleBar(ctx, city, mapData, cdSprites);
 
     // Phase 2: translate to content area, draw everything else unchanged
