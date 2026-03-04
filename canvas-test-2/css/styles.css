@@ -92,7 +92,7 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, san
 }
 #citydialog-container { position: relative; z-index: 1; }
 #citydialog-canvas {
-  display: block; max-width: 95vw; max-height: 85vh;
+  display: block;
   image-rendering: pixelated;
 }
 #citydialog-close {

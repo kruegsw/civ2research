@@ -200,11 +200,11 @@ const Civ2CityDialog = {
       info:     { x: 459, y: 364, w: 57, h: 24 },
       map:      { x: 517, y: 364, w: 57, h: 24 },
       rename:   { x: 575, y: 364, w: 57, h: 24 },
-      happy:    { x: 459, y: 389, w: 57, h: 24 },
-      panorama: { x: 517, y: 389, w: 57, h: 24 },
-      exit:     { x: 575, y: 389, w: 57, h: 24 },
-      prevCity: { x: 440, y: 389, w: 21, h: 24 },         // not yet implemented
-      nextCity: { x: 440, y: 364, w: 21, h: 24 },         // not yet implemented
+      happy:    { x: 459, y: 388, w: 57, h: 24 },
+      panorama: { x: 517, y: 388, w: 57, h: 24 },
+      exit:     { x: 575, y: 388, w: 57, h: 24 },
+      prevCity: { x: 436, y: 388, w: 21, h: 24 },
+      nextCity: { x: 436, y: 364, w: 21, h: 24 },
     },
 
     // ── Labels (x,y = absolute draw center for _label(); rect = layout box) ──
@@ -264,7 +264,7 @@ const Civ2CityDialog = {
     borderLight:     'rgb(192,192,192)',
     borderShadow:    'rgb(67,67,67)',
     // Title bar text
-    titleFg:      'rgb(135,135,135)',
+    titleFg:      'rgb(180,180,180)',
     titleShadow1: 'rgb(0,0,0)',
     titleShadow2: 'rgb(67,67,67)',
   },
@@ -704,7 +704,7 @@ const Civ2CityDialog = {
       const titleStr = `City of ${city.name}, ${year}, Population ${pop.toLocaleString()} (Treasury: ${gold} Gold)`;
       const textX = tbX + 59;  // after 3 icons + gap
       const textY = tbY + Math.floor(tbH / 2);
-      ctx.font = '18px "Times New Roman", serif';
+      ctx.font = '500 18px "Times New Roman", serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       // 3-pass shadow: black at (+2,+1), gray at (+1,0), foreground at (0,0)
@@ -1238,7 +1238,7 @@ const Civ2CityDialog = {
     if (!(improvements.length > 0 && cdSprites)) return;
     const R = this.REGIONS.improvements;
     const C = this.COL;
-    ctx.font = '9px Arial, sans-serif';
+    ctx.font = '500 9px Arial, sans-serif';
     for (let i = 0; i < Math.min(R.maxRows, improvements.length); i++) {
       const imp = improvements[i];
       const thumb = imp.isWonder ? cdSprites.wonders[imp.id - 39] : cdSprites.improvements[imp.id];
@@ -1325,7 +1325,7 @@ const Civ2CityDialog = {
     }
 
     if (mapSprites && mapSprites.unitTemplates && garrison.length > 0) {
-      ctx.font = '9px Arial, sans-serif';
+      ctx.font = '500 9px Arial, sans-serif';
       for (let i = 0; i < Math.min(18, garrison.length); i++) {
         const u = garrison[i];
         const template = mapSprites.unitTemplates[u.type];
@@ -1359,7 +1359,7 @@ const Civ2CityDialog = {
     }
 
     // Trade text at bottom of info panel
-    ctx.font = '9px Arial, sans-serif';
+    ctx.font = '500 9px Arial, sans-serif';
     const suppliedNames = [];
     if (city.tradeCommoditiesSupplied) {
       for (const cIdx of city.tradeCommoditiesSupplied) {
@@ -1486,27 +1486,35 @@ const Civ2CityDialog = {
     const B = this.REGIONS.buttons;
     const labels = this.BUTTON_LABELS;
     const infoLabels = ['Info', 'Map', 'Happy'];
-    ctx.font = 'bold 11px Arial, sans-serif';
+    ctx.font = '500 12px Arial, sans-serif';
     for (const [action, r] of Object.entries(B)) {
-      // Arrow buttons: gray button with small filled triangle
+      // Arrow buttons: no fill (background shows through), 1px black outline + 2-depth dark bevel
       if (action === 'nextCity' || action === 'prevCity') {
-        ctx.fillStyle = 'rgb(192,192,192)';
-        ctx.fillRect(r.x, r.y, r.w, r.h);
-        // 3D button edges
-        ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(r.x+0.5,r.y+r.h-0.5); ctx.lineTo(r.x+0.5,r.y+0.5); ctx.lineTo(r.x+r.w-0.5,r.y+0.5); ctx.stroke();
-        ctx.strokeStyle = '#555';
-        ctx.beginPath(); ctx.moveTo(r.x+r.w-0.5,r.y+0.5); ctx.lineTo(r.x+r.w-0.5,r.y+r.h-0.5); ctx.lineTo(r.x+0.5,r.y+r.h-0.5); ctx.stroke();
-        // Triangle centered in button
+        // Thin black outline (drawn inside the button rect)
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 0.5;
+        ctx.strokeRect(r.x + 0.25, r.y + 0.25, r.w - 0.5, r.h - 0.5);
+        // Outer highlight (top + left, inset by 1 for outline)
+        ctx.strokeStyle = '#b0b0b0'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(r.x+1.5,r.y+r.h-1.5); ctx.lineTo(r.x+1.5,r.y+1.5); ctx.lineTo(r.x+r.w-1.5,r.y+1.5); ctx.stroke();
+        // Outer shadow (bottom + right, inset by 1)
+        ctx.strokeStyle = '#000';
+        ctx.beginPath(); ctx.moveTo(r.x+r.w-1.5,r.y+1.5); ctx.lineTo(r.x+r.w-1.5,r.y+r.h-1.5); ctx.lineTo(r.x+1.5,r.y+r.h-1.5); ctx.stroke();
+        // Inner highlight (top + left, inset by 2)
+        ctx.strokeStyle = '#808080';
+        ctx.beginPath(); ctx.moveTo(r.x+2.5,r.y+r.h-2.5); ctx.lineTo(r.x+2.5,r.y+2.5); ctx.lineTo(r.x+r.w-2.5,r.y+2.5); ctx.stroke();
+        // Inner shadow (bottom + right, inset by 2)
+        ctx.strokeStyle = '#202020';
+        ctx.beginPath(); ctx.moveTo(r.x+r.w-2.5,r.y+2.5); ctx.lineTo(r.x+r.w-2.5,r.y+r.h-2.5); ctx.lineTo(r.x+2.5,r.y+r.h-2.5); ctx.stroke();
+        // Triangle centered in button (larger)
         const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
         ctx.fillStyle = '#000';
         ctx.beginPath();
         if (action === 'nextCity') {
           // Up arrow ▲
-          ctx.moveTo(cx, cy - 5); ctx.lineTo(cx + 5, cy + 4); ctx.lineTo(cx - 5, cy + 4);
+          ctx.moveTo(cx, cy - 6); ctx.lineTo(cx + 6, cy + 5); ctx.lineTo(cx - 6, cy + 5);
         } else {
           // Down arrow ▼
-          ctx.moveTo(cx, cy + 5); ctx.lineTo(cx + 5, cy - 4); ctx.lineTo(cx - 5, cy - 4);
+          ctx.moveTo(cx, cy + 6); ctx.lineTo(cx + 6, cy - 5); ctx.lineTo(cx - 6, cy - 5);
         }
         ctx.closePath(); ctx.fill();
         continue;
@@ -1514,20 +1522,35 @@ const Civ2CityDialog = {
       // Gray fill
       ctx.fillStyle = 'rgb(192,192,192)';
       ctx.fillRect(r.x, r.y, r.w, r.h);
-      // 3D highlight (top + left)
-      ctx.strokeStyle = '#ccc';
+      // 2-depth 3D bevel (8 lines: outer + inner)
+      // Outer highlight (top + left)
+      ctx.strokeStyle = '#fff';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(r.x + 0.5, r.y + r.h - 0.5);
       ctx.lineTo(r.x + 0.5, r.y + 0.5);
       ctx.lineTo(r.x + r.w - 0.5, r.y + 0.5);
       ctx.stroke();
-      // 3D shadow (bottom + right)
-      ctx.strokeStyle = '#555';
+      // Outer shadow (bottom + right)
+      ctx.strokeStyle = '#808080';
       ctx.beginPath();
       ctx.moveTo(r.x + r.w - 0.5, r.y + 0.5);
       ctx.lineTo(r.x + r.w - 0.5, r.y + r.h - 0.5);
       ctx.lineTo(r.x + 0.5, r.y + r.h - 0.5);
+      ctx.stroke();
+      // Inner highlight (top + left, inset by 1)
+      ctx.strokeStyle = '#dfdfdf';
+      ctx.beginPath();
+      ctx.moveTo(r.x + 1.5, r.y + r.h - 1.5);
+      ctx.lineTo(r.x + 1.5, r.y + 1.5);
+      ctx.lineTo(r.x + r.w - 1.5, r.y + 1.5);
+      ctx.stroke();
+      // Inner shadow (bottom + right, inset by 1)
+      ctx.strokeStyle = '#404040';
+      ctx.beginPath();
+      ctx.moveTo(r.x + r.w - 1.5, r.y + 1.5);
+      ctx.lineTo(r.x + r.w - 1.5, r.y + r.h - 1.5);
+      ctx.lineTo(r.x + 1.5, r.y + r.h - 1.5);
       ctx.stroke();
       // Center-aligned label text (Info button shows mode-dependent label)
       let label;
@@ -1538,8 +1561,8 @@ const Civ2CityDialog = {
       }
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#000';
-      ctx.fillText(label, r.x + r.w / 2, r.y + r.h / 2);
+      ctx.fillStyle = 'rgb(0,0,0)';
+      ctx.fillText(label, Math.round(r.x + r.w / 2), Math.round(r.y + r.h / 2));
     }
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
@@ -1561,9 +1584,14 @@ const Civ2CityDialog = {
 
   render(canvas, city, cityIndex, mapData, cdSprites, mapSprites) {
     const F = this.FRAME;
-    canvas.width = F.totalW;
-    canvas.height = F.totalH;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = F.totalW * dpr;
+    canvas.height = F.totalH * dpr;
+    canvas.style.width = F.totalW + 'px';
+    canvas.style.height = F.totalH + 'px';
     const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+    ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = false;
 
     // Phase 1: draw border + title bar in absolute canvas coordinates
     this._drawOuterBorder(ctx, cdSprites);
