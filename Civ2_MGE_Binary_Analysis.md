@@ -252,6 +252,43 @@ Source: Civ2-clone `Enums/PeopleType.cs`, `Draw.CityPanel.cs`, `Civ2GoldInterfac
 
 **Battle animation (32×32px)**: 8 frames at `x = 1 + 33 * i, y = 356` (i=0–7).
 
+**Status/event icons (32×32px)** — used in game event notifications:
+
+| Icon | x | y | Purpose |
+|------|---|---|---------|
+| Toxic triangle | 67 | 223 | Global warming / pollution warning |
+| Revolt fist | 166 | 223 | Civil disorder indicator |
+| Bomb | 199 | 223 | Espionage / sabotage |
+| Scythe | 232 | 223 | Famine / starvation |
+
+**Stone background tiles (32×32px)** — used for dialog/panel textures:
+
+| Tile | x | y | Notes |
+|------|---|---|-------|
+| Stone variant 1 | 265 | 223 | |
+| Stone variant 2 | 298 | 223 | |
+| Stone variant 3 | 298 | 190 | |
+
+**Title bar wallpaper tile (64×32px)**: (199, 322) — tiled across city dialog title bar background. Distinct stone texture from the main CITY.GIF wallpaper.
+
+**Window control icons (16×16px)** — city dialog title bar buttons:
+
+| Icon | x | y | Purpose |
+|------|---|---|---------|
+| Close window | 1 | 389 | Closes the city dialog |
+| Zoom out | 18 | 389 | Decrease city dialog zoom level |
+| Zoom in | 35 | 389 | Increase city dialog zoom level |
+| Unknown (gray) | 52 | 389 | Unused / placeholder |
+
+**Blank button templates (16×16px)**: 7 gray squares with concentric gray/black outlines starting at (69, 389), stride 17px. Generic button background sprites.
+
+**City navigation arrows (18×24px)** — prev/next city buttons in city dialog bottom-right:
+
+| Icon | x | y | Purpose |
+|------|---|---|---------|
+| Next city (▲) | 227 | 389 | Navigate to next city |
+| Prev city (▼) | 246 | 389 | Navigate to previous city |
+
 **Map grid sprites (64×32px)**:
 
 | Sprite | x | y | Notes |
@@ -260,7 +297,7 @@ Source: Civ2-clone `Enums/PeopleType.cs`, `Draw.CityPanel.cs`, `Civ2GoldInterfac
 | Grid lines (visible) | 248 | 430 | Alternate grid rendering |
 | ViewPiece | 199 | 256 | Selection/cursor indicator |
 
-Source: Civ2-clone `Civ2GoldInterface.cs` PicSources, `IconLoader.cs` extraction rects
+Source: Civ2-clone `Civ2GoldInterface.cs` PicSources, `IconLoader.cs` extraction rects, manual ICONS.GIF inspection
 
 #### City Management Screen Layout
 

@@ -422,11 +422,67 @@ When the dialog is centered with extra space:
 - Left/right: `FUN_00408780(offsetX, offsetY, paddingX, height, 10)`
 - Top/bottom: `FUN_00408780(offsetX, offsetY, width, paddingY, 10)`
 
+### Outer Border (4px 3D Bevel)
+
+The entire city dialog window is surrounded by a 4-pixel 3D beveled border drawn
+outside the 636x421 content area. The bevel layers from outermost to innermost:
+
+| Layer | Offset | Color | RGB |
+|---|---|---|---|
+| 1 (outermost) | 0 | Black | rgb(0,0,0) |
+| 2 | 1 | Highlight | rgb(223,223,223) |
+| 3 | 2 | Light fill | rgb(192,192,192) |
+| 4 (innermost) | 3 | Shadow | rgb(67,67,67) |
+
+This expands the total canvas from **636x421** (content only) to **644x454**
+(content + 4px border on each side + 25px title bar + 4px top border).
+The browser implementation uses `ctx.translate(4, 29)` so that all existing
+panel coordinates (which assume 0,0 = content origin) remain unchanged.
+
+### Separator Line
+
+A 1px horizontal line in rgb(67,67,67) is drawn immediately below the title bar,
+separating it from the content area.
+
 ---
 
 ## R. City Name and Title Bar (`citywin_92AF` at 0x5092AF)
 
-Title composition:
+### Title Bar Dimensions
+- **Height**: 24px (between the top inner border edge and the separator line)
+- **Background**: stone texture tiled from `ICONS.GIF` at sprite origin **(199, 322)**, tile size **64x32**
+- The stone tile is repeated horizontally across the full title bar width
+
+### Window Control Icons (from ICONS.GIF)
+
+All window icons are **16x16** pixels:
+
+| Icon | Position in ICONS.GIF | Purpose |
+|---|---|---|
+| Close (X) | (1, 389) | Close the city dialog |
+| Zoom Out (-) | (18, 389) | Decrease zoom level |
+| Zoom In (+) | (35, 389) | Increase zoom level |
+
+### City Navigation Arrows (from ICONS.GIF)
+
+Navigation arrows are **18x24** pixels:
+
+| Arrow | Position in ICONS.GIF | Purpose |
+|---|---|---|
+| Next City | (227, 389) | Navigate to next city |
+| Prev City | (246, 389) | Navigate to previous city |
+
+### Title Text
+
+- **Format**: `"City of {name}, {year}, Population {pop} (Treasury: {gold} Gold)"`
+- **Font**: Times New Roman, h=-24 (18px logical height)
+- **Rendering**: 3-pass shadow text:
+  1. Pass 1 (shadow): offset (+1, +1), dark color
+  2. Pass 2 (shadow): offset (+1, +0) or (+0, +1), mid-dark color
+  3. Pass 3 (foreground): offset (0, 0), fg color rgb(135, 135, 135)
+- **Alignment**: Centered horizontally within the title bar
+
+### Title Composition (from decompiled code)
 1. Load city name format string (resource 0x1F)
 2. Append city name from `&DAT_0064f360 + city_idx * 0x58`
 3. If multiplayer: append player name + "of" + civ name

@@ -109,6 +109,16 @@ const Civ2CityDialog = {
     return { spacing: gap, fitCount: count, remainder };
   },
 
+  // ── Outer frame (border + title bar) wrapping the 636×421 content area ──
+  FRAME: {
+    borderW: 4, titleBarH: 24, separatorH: 1,
+    contentW: 636, contentH: 421,
+    get totalW() { return this.contentW + this.borderW * 2; },       // 644
+    get totalH() { return this.contentH + this.borderW * 2 + this.titleBarH + this.separatorH; }, // 454
+    get contentX() { return this.borderW; },                          // 4
+    get contentY() { return this.borderW + this.titleBarH + this.separatorH; }, // 29
+  },
+
   // ── Layout regions — all coordinates absolute on the 636×421 wallpaper ──
   // Sources: GetCityWindowDefinition() in Civ2-clone Civ2Interface.cs (panel boxes),
   //   EtoFormsUI CityWindow.cs Surface_Paint (draw origins, label centers),
@@ -249,6 +259,15 @@ const Civ2CityDialog = {
     // Panel backgrounds (BMP pixel analysis)
     foodStorageBg: 'rgb(7,59,0)',     // dark green fill
     separator:     'rgb(67,67,67)',   // dark line below title bar
+    // Outer 3D beveled border colors
+    borderBlack:     'rgb(0,0,0)',
+    borderHighlight: 'rgb(223,223,223)',
+    borderLight:     'rgb(192,192,192)',
+    borderShadow:    'rgb(67,67,67)',
+    // Title bar text
+    titleFg:      'rgb(135,135,135)',
+    titleShadow1: 'rgb(0,0,0)',
+    titleShadow2: 'rgb(67,67,67)',
   },
 
   // ── Data lookup helpers ──
@@ -352,6 +371,18 @@ const Civ2CityDialog = {
 
     // Sell icon 14x14 from ICONS.GIF at (16, 320) — used in improvements list
     cdSprites.sellIcon = Civ2Renderer.extractSprite(iconsCtx, 16, 320, 14, 14, CK, false);
+
+    // Title bar stone texture tile 64x32 from ICONS.GIF
+    cdSprites.titleBarTile = Civ2Renderer.extractSprite(iconsCtx, 199, 322, 64, 32, [], false);
+
+    // Window control icons 16x16 from ICONS.GIF
+    cdSprites.iconClose   = Civ2Renderer.extractSprite(iconsCtx, 1,  389, 16, 16, CK, false);
+    cdSprites.iconZoomOut = Civ2Renderer.extractSprite(iconsCtx, 18, 389, 16, 16, CK, false);
+    cdSprites.iconZoomIn  = Civ2Renderer.extractSprite(iconsCtx, 35, 389, 16, 16, CK, false);
+
+    // City nav arrows 18x24 from ICONS.GIF
+    cdSprites.arrowNext = Civ2Renderer.extractSprite(iconsCtx, 227, 389, 18, 24, CK, false);
+    cdSprites.arrowPrev = Civ2Renderer.extractSprite(iconsCtx, 246, 389, 18, 24, CK, false);
 
     // Improvement thumbnails 36x20, 5 rows x 8 cols, origin (343,1), stride 37x21
     cdSprites.improvements = {};
@@ -552,6 +583,146 @@ const Civ2CityDialog = {
   // DRAW METHODS — each renders one panel region
   // ═══════════════════════════════════════════════════════════════════
 
+  // 4-layer 3D beveled outer border (drawn in absolute canvas coordinates)
+  _drawOuterBorder(ctx) {
+    const F = this.FRAME;
+    const C = this.COL;
+    const w = F.totalW, h = F.totalH;
+    // Layer 0: 1px black outermost edge
+    ctx.strokeStyle = C.borderBlack;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+    // Layer 1: highlight top/left, shadow bottom/right
+    ctx.strokeStyle = C.borderHighlight;
+    ctx.beginPath();
+    ctx.moveTo(1.5, h - 1.5); ctx.lineTo(1.5, 1.5); ctx.lineTo(w - 1.5, 1.5);
+    ctx.stroke();
+    ctx.strokeStyle = C.borderShadow;
+    ctx.beginPath();
+    ctx.moveTo(w - 1.5, 1.5); ctx.lineTo(w - 1.5, h - 1.5); ctx.lineTo(1.5, h - 1.5);
+    ctx.stroke();
+    // Layer 2: light top/left, shadow bottom/right
+    ctx.strokeStyle = C.borderLight;
+    ctx.beginPath();
+    ctx.moveTo(2.5, h - 2.5); ctx.lineTo(2.5, 2.5); ctx.lineTo(w - 2.5, 2.5);
+    ctx.stroke();
+    ctx.strokeStyle = C.borderShadow;
+    ctx.beginPath();
+    ctx.moveTo(w - 2.5, 2.5); ctx.lineTo(w - 2.5, h - 2.5); ctx.lineTo(2.5, h - 2.5);
+    ctx.stroke();
+    // Layer 3: innermost bevel
+    ctx.strokeStyle = C.borderLight;
+    ctx.beginPath();
+    ctx.moveTo(3.5, h - 3.5); ctx.lineTo(3.5, 3.5); ctx.lineTo(w - 3.5, 3.5);
+    ctx.stroke();
+    ctx.strokeStyle = C.borderShadow;
+    ctx.beginPath();
+    ctx.moveTo(w - 3.5, 3.5); ctx.lineTo(w - 3.5, h - 3.5); ctx.lineTo(3.5, h - 3.5);
+    ctx.stroke();
+  },
+
+  // Title bar: stone texture, window icons, city title text (absolute canvas coords)
+  _drawTitleBar(ctx, city, mapData, cdSprites) {
+    const F = this.FRAME;
+    const C = this.COL;
+    const tbX = F.borderW, tbY = F.borderW;
+    const tbW = F.contentW, tbH = F.titleBarH;
+
+    // Tile stone texture across title bar
+    if (cdSprites && cdSprites.titleBarTile) {
+      const tile = cdSprites.titleBarTile;
+      const tw = tile.width, th = tile.height;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(tbX, tbY, tbW, tbH);
+      ctx.clip();
+      for (let ty = tbY; ty < tbY + tbH; ty += th) {
+        for (let tx = tbX; tx < tbX + tbW; tx += tw) {
+          ctx.drawImage(tile, tx, ty);
+        }
+      }
+      ctx.restore();
+
+      // Also tile the left/right border walls with stone
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, tbY, F.borderW, tbH);
+      ctx.rect(F.totalW - F.borderW, tbY, F.borderW, tbH);
+      ctx.clip();
+      for (let ty = tbY; ty < tbY + tbH; ty += th) {
+        for (let tx = 0; tx < F.totalW; tx += tw) {
+          ctx.drawImage(tile, tx, ty);
+        }
+      }
+      ctx.restore();
+    } else {
+      ctx.fillStyle = C.borderLight;
+      ctx.fillRect(tbX, tbY, tbW, tbH);
+    }
+
+    // Window control icons (vertically centered in title bar)
+    const iconY = tbY + Math.floor((tbH - 16) / 2);
+    if (cdSprites && cdSprites.iconClose)
+      ctx.drawImage(cdSprites.iconClose, tbX + 1, iconY);
+    if (cdSprites && cdSprites.iconZoomOut)
+      ctx.drawImage(cdSprites.iconZoomOut, tbX + 18, iconY);
+    if (cdSprites && cdSprites.iconZoomIn)
+      ctx.drawImage(cdSprites.iconZoomIn, tbX + 35, iconY);
+
+    // Dark separator line below title bar
+    ctx.fillStyle = C.separator;
+    ctx.fillRect(tbX, tbY + tbH, tbW, F.separatorH);
+
+    // Title text: "City of {name}, {year}, Population {pop} (Treasury: {gold} Gold)"
+    if (city) {
+      const year = this._getGameYear(mapData);
+      const pop = city.size * 10000;  // approximate Civ2 population display
+      const gold = (mapData.civData && mapData.civData[city.owner]) ? mapData.civData[city.owner].treasury || 0 : 0;
+      const titleStr = `City of ${city.name}, ${year}, Population ${pop.toLocaleString()} (Treasury: ${gold} Gold)`;
+      const textX = tbX + 59;  // after 3 icons + gap
+      const textY = tbY + Math.floor(tbH / 2);
+      ctx.font = '18px "Times New Roman", serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      // 3-pass shadow: black at (+2,+1), gray at (+1,0), foreground at (0,0)
+      ctx.fillStyle = C.titleShadow1;
+      ctx.fillText(titleStr, textX + 2, textY + 1);
+      ctx.fillStyle = C.titleShadow2;
+      ctx.fillText(titleStr, textX + 1, textY);
+      ctx.fillStyle = C.titleFg;
+      ctx.fillText(titleStr, textX, textY);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+  },
+
+  // Game year from turn number (copied from cityview.js, with period formatting)
+  _getGameYear(mapData) {
+    const gs = mapData && mapData.gameState;
+    if (!gs) return '';
+    const turn = gs.turnsPassed || 0;
+    const schedule = [
+      { until: 250, perTurn: 20 },
+      { until: 300, perTurn: 10 },
+      { until: 350, perTurn: 5 },
+      { until: 400, perTurn: 2 },
+      { until: 450, perTurn: 1 },
+      { until: Infinity, perTurn: 1 },
+    ];
+    let year = -4000;
+    let t = 0;
+    for (const seg of schedule) {
+      const turnsInSeg = Math.min(turn, seg.until) - t;
+      if (turnsInSeg <= 0) break;
+      year += turnsInSeg * seg.perTurn;
+      t += turnsInSeg;
+      if (t >= turn) break;
+    }
+    if (year < 0) return `${-year} B.C.`;
+    if (year === 0) return 'A.D. 1';
+    return `A.D. ${year}`;
+  },
+
   _drawBackground(ctx, cdSprites) {
     const R = this.REGIONS;
     const C = this.COL;
@@ -570,18 +741,10 @@ const Civ2CityDialog = {
     }
   },
 
-  _drawLabels(ctx, city, mapData) {
+  _drawLabels(ctx) {
     const L = this.REGIONS.labels;
     const C = this.COL;
-    // City name title (replaces static 'Citizens' label)
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    this._text(ctx, 'City of ' + (city ? city.name : '???'), 5, 46, C.headerCyan, 'bold 18px Arial, sans-serif', C.headerShadow);
-    // Treasury
-    if (city && mapData && mapData.civData && mapData.civData[city.owner]) {
-      const gold = mapData.civData[city.owner].treasury || 0;
-      this._text(ctx, '(Treasury: ' + gold + ' Gold)', 199, 48, 'rgb(223,187,63)', '10px Arial, sans-serif', C.headerShadow);
-    }
+    this._label(ctx, 'Citizens', L.citizens.x, L.citizens.y);
     this._label(ctx, 'City Resources', L.cityResources.x, L.cityResources.y);
     this._label(ctx, 'Food Storage', L.foodStorage.x, L.foodStorage.y, 'rgb(75,155,35)');
     this._label(ctx, 'City Improvements', L.improvements.x, L.improvements.y);
@@ -1255,12 +1418,21 @@ const Civ2CityDialog = {
     happy: 'Happy', panorama: 'View', exit: 'Exit', prevCity: '<', nextCity: '>'
   },
 
-  _drawButtons(ctx) {
+  _drawButtons(ctx, cdSprites) {
     const B = this.REGIONS.buttons;
     const labels = this.BUTTON_LABELS;
     const infoLabels = ['Info', 'Map', 'Happy'];
     ctx.font = 'bold 11px Arial, sans-serif';
     for (const [action, r] of Object.entries(B)) {
+      // Arrow buttons: draw sprite instead of gray button
+      if (action === 'nextCity' && cdSprites && cdSprites.arrowNext) {
+        ctx.drawImage(cdSprites.arrowNext, r.x, r.y, r.w, r.h);
+        continue;
+      }
+      if (action === 'prevCity' && cdSprites && cdSprites.arrowPrev) {
+        ctx.drawImage(cdSprites.arrowPrev, r.x, r.y, r.w, r.h);
+        continue;
+      }
       // Gray fill
       ctx.fillStyle = 'rgb(192,192,192)';
       ctx.fillRect(r.x, r.y, r.w, r.h);
@@ -1297,7 +1469,10 @@ const Civ2CityDialog = {
 
   _registerButtons() {
     const B = this.REGIONS.buttons;
-    return Object.entries(B).map(([action, r]) => ({ x: r.x, y: r.y, w: r.w, h: r.h, action }));
+    const regions = Object.entries(B).map(([action, r]) => ({ x: r.x, y: r.y, w: r.w, h: r.h, action }));
+    // Title bar close icon (in content-offset coordinates, so negative Y)
+    regions.push({ x: 1, y: -25, w: 16, h: 16, action: 'exit' });
+    return regions;
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -1305,12 +1480,19 @@ const Civ2CityDialog = {
   // ═══════════════════════════════════════════════════════════════════
 
   render(canvas, city, cityIndex, mapData, cdSprites, mapSprites) {
-    const R = this.REGIONS;
-    canvas.width = R.canvas.w;
-    canvas.height = R.canvas.h;
+    const F = this.FRAME;
+    canvas.width = F.totalW;
+    canvas.height = F.totalH;
     const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
 
-    // Computed data shared across draw methods
+    // Phase 1: draw border + title bar in absolute canvas coordinates
+    this._drawOuterBorder(ctx);
+    this._drawTitleBar(ctx, city, mapData, cdSprites);
+
+    // Phase 2: translate to content area, draw everything else unchanged
+    ctx.save();
+    ctx.translate(F.contentX, F.contentY);
+
     const epoch = mapData.civTechs ? Civ2Renderer._getEpoch(mapData.civTechs[city.owner]) : 0;
     const civData = mapData.civData && mapData.civData[city.owner];
     const ownerColor = Civ2Renderer.CIV_COLORS[city.owner] || '#fff';
@@ -1318,7 +1500,7 @@ const Civ2CityDialog = {
     const supported = this.getSupportedUnits(cityIndex, mapData);
 
     this._drawBackground(ctx, cdSprites);
-    this._drawLabels(ctx, city, mapData);
+    this._drawLabels(ctx);
     this._drawCitizens(ctx, city, epoch, cdSprites, specs);
     this._drawResourceMap(ctx, city, mapData, cdSprites, mapSprites);
     this._drawResourceRows(ctx, city, cdSprites, civData, supported);
@@ -1327,7 +1509,9 @@ const Civ2CityDialog = {
     this._drawUnitsSupported(ctx, supported, mapSprites);
     this._drawImprovements(ctx, city, cityIndex, mapData, cdSprites);
     this._drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites);
-    this._drawButtons(ctx);
+    this._drawButtons(ctx, cdSprites);
+
+    ctx.restore();
     return this._registerButtons();
   },
 

@@ -135,18 +135,20 @@ continent goals[64].
 
 ## City Dialog (citydialog.js): ~75% Complete
 
-### What EXISTS (10 panels)
-1. Background — CITY.GIF wallpaper with gold 3D beveled borders
-2. Section labels — Citizens, City Resources, Food Storage, City Improvements, Resource Map
-3. Citizens row — Face sprites by era from PEOPLE.GIF
-4. Resource map — Isometric mini-map of 21 tiles with worked tile indicators
-5. Resource rows — 4 rows: Food, Trade, Tax/Lux/Sci, Support/Production
-6. Food storage — Wheat grid with granary line + growth progress (NEW)
-7. Production panel — Item preview + shield grid + buy cost + turns (NEW)
-8. Units supported — Up to 8 in 4x2 grid
-9. City improvements — Scrollable list with thumbnails and sell icons
-10. Units present / Info panel — Garrisoned units + trade route info
-11. Buttons — Buy, Change, Info, Map, Rename, Happy, Panorama, Exit
+### What EXISTS (10 panels + chrome)
+1. **Outer border** — 4px 3D bevel (black/highlight/light/shadow), expands canvas to 644x454
+2. **Title bar** — 24px stone-tiled bar from ICONS.GIF (199,322), 3-pass shadow text, window icons (close/zoom in/zoom out), city nav arrows, separator line
+3. Background — CITY.GIF wallpaper with gold 3D beveled borders
+4. Section labels — Citizens, City Resources, Food Storage, City Improvements, Resource Map
+5. Citizens row — Face sprites by era from PEOPLE.GIF
+6. Resource map — Isometric mini-map of 21 tiles with worked tile indicators
+7. Resource rows — 4 rows: Food, Trade, Tax/Lux/Sci, Support/Production
+8. Food storage — Wheat grid with granary line + growth progress
+9. Production panel — Item preview + shield grid + buy cost + turns
+10. Units supported — Up to 8 in 4x2 grid
+11. City improvements — Scrollable list with thumbnails and sell icons
+12. Units present / Info panel — Garrisoned units + trade route info
+13. Buttons — Buy, Change, Info, Map, Rename, Happy, Panorama, Exit
 
 ### What is MISSING
 

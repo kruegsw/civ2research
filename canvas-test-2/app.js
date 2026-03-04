@@ -675,7 +675,10 @@ async function openCityDialog(city, cityIndex) {
     const rect = canvas.getBoundingClientRect();
     const sx = (e.clientX - rect.left) * (canvas.width / rect.width);
     const sy = (e.clientY - rect.top) * (canvas.height / rect.height);
-    const result = Civ2CityDialog.handleClick(sx, sy, regions);
+    const F = Civ2CityDialog.FRAME;
+    const cx = sx - F.contentX;
+    const cy = sy - F.contentY;
+    const result = Civ2CityDialog.handleClick(cx, cy, regions);
     if (result && result.action === 'exit') {
       closeCityDialog();
     } else if (result && result.action === 'info') {
