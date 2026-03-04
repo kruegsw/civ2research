@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Civ2 City Dialog — RE Experiment</title>
+<style>
+  body { background:#111; display:flex; justify-content:center; align-items:center;
+         min-height:100vh; margin:0; flex-direction:column; gap:8px; font-family:monospace; }
+  canvas { image-rendering:pixelated; border:2px solid #444; cursor:crosshair; }
+  h3 { color:#aaa; margin:0; }
+  #info { color:#666; font-size:11px; }
+  #coords { color:#0f0; font-size:13px; font-weight:bold; min-height:1.4em; }
+  label { color:#888; font-size:12px; }
+</style>
+</head>
+<body>
+<h3>City Dialog — Rendered Purely from RE Data (0x508D24)</h3>
+<div id="info">Panels from decompiled citywin_8D24 | Colors from GIF palette indices | Sprites from ICONS/PEOPLE/UNITS.GIF</div>
+<div>
+  <label><input type="checkbox" id="showPanels"> Show panel outlines</label>
+  <label><input type="checkbox" id="showCoords"> Show coordinates</label>
+</div>
+<canvas id="city" width="636" height="421"></canvas>
+<div id="coords">&nbsp;</div>
+<script>
+// =====================================================================================
+// CIV2 CITY DIALOG RENDERER — BUILT PURELY FROM REVERSE ENGINEERING DATA
+// =====================================================================================
+//
+// PURPOSE:
+//   This is a standalone experiment to render the Civ2 MGE city management dialog
+//   using ONLY data extracted from reverse engineering the civ2.exe binary via Ghidra.
+//   It exists to test whether the RE data alone is sufficient to produce an accurate
+//   rendering — as opposed to the main canvas-test-1/citydialog.js which was built
+//   iteratively with manual coordinate tweaking and screenshot comparison.
+//
+// METHODOLOGY:
+//   Every coordinate, color, font size, and layout parameter in this file comes from
+//   one of these RE sources:
+//     1. Ghidra decompilation of civ2.exe (5,149 functions, 225K lines of C pseudocode)
+//        - Decompiled output in: reverse_engineering/decompiled/
+//        - City window module: block_00500000.c (197KB, 103 functions)
+//     2. GIF palette extraction (runtime palette indices → RGB via GIF color table)
+//     3. Sprite sheet analysis documented in Civ2_MGE_Binary_Analysis.md (5,210 lines)
+//     4. DDraw proxy DLL hooking of GDI calls (ddraw_proxy/ folder)
+//
+// KEY RE DOCUMENTS (in reverse_engineering/):
+//   - reverseEngCiv2EXE.md          — master RE document, start here
+//   - City_Dialog_Rendering_Analysis.md — complete decompiled city window coordinates
+//   - Civ2_City_Struct.md           — 88-byte city struct (31 fields)
+//   - Data_Structures.md            — civ (1428B), unit type (20B), building (8B)
+//   - Civ2_Game_Formulas.md         — 7 game formulas with JS implementations
+//   - GDI_Rendering_Pipeline.md     — text rendering, color system, font creation
+//   - Integration_Roadmap.md        — plan for integrating RE data into browser app
+//
+// HOW TO RUN:
+//   Serve via HTTP from the repo root (needed for fetch() to load GIF palette):
+//     cd C:\Users\stuar\Documents\Stu\Code\civ2research
+//     python -m http.server 8000
+//   Then open: http://localhost:8000/city-dialog-re-experiment/
+//
+// WHAT'S EXACT vs APPROXIMATE:
+//   EXACT (from decompiled code):
+//     - All 12 panel rectangles (x, y, w, h) from citywin_8D24 (0x508D24)
+//     - Button positions from citywin_CF06 (0x50CF06)
+//     - Palette color indices for every text/frame element
+//     - Font sizes and bold/shadow flags
+//     - Icon spacing algorithm (FUN_00548b70)
+//     - Food storage grid cell spacing (17x14) and frame colors
+//     - Production shield grid cell spacing (17x14) and frame colors
+//     - Citizen face start position (panel_left+5, panel_top+9)
+//     - Resource row positions (food at +14, trade at +55, shields at +120)
+//     - Shadow text algorithm (draw at +1,+1 dark, then 0,0 foreground)
+//     - 3D frame bevel (FUN_005113f0: highlight on top/left, shadow on bottom/right)
+//
+//   APPROXIMATE (reasonable estimates, not from decompiled code):
+//     - City map inner area (placeholder diamond grid, not real terrain)
+//     - Trade row sub-distribution layout (tax/lux/sci icon positioning)
+//     - Button fill color (gray, not extracted from palette)
+//     - Unit tile sizes in supported/present panels (scaled from 64x48)
+//     - Improvement list row height (21px, RE says 12px but icons need more)
+//
+//   NOT IMPLEMENTED:
+//     - Terrain mini-map (21 tiles in diamond pattern from offset tables at DAT_00630D38)
+//     - "We Love The King" indicator (sprite 0x2A at center-bottom of food storage)
+//     - Scrollbar for improvements list (FUN_005db0d0)
+//     - Zoom level support (only zoom 2 / default implemented)
+//     - Mode switching for info panel (only mode 0 / Info, not minimap or happy)
+//     - City name format string with year and population (simplified)
+//     - Unit civ-color recoloring (red channel mask replacement)
+//
+// =====================================================================================
+//
+// CITY DIALOG LAYOUT (636 x 421 pixels at zoom level 2):
+//
+//   The game computes panel rectangles in citywin_8D24 (address 0x508D24).
+//   All coordinates below are at zoom level 2 (the default). For zoom 1 or 3,
+//   the game scales via FUN_00511690: coord = (zoom * base_coord) / 2.
+//
+//   +---[ Citizens Row (436x61) ]----------+---[ Food Storage (200x167) ]--+
+//   | (0,0)                         (436,0)| (436,0)              (636,0)  |
+//   | Citizen faces at +5,+9               | Grid at +6,+15 (17x14 cells) |
+//   | Title at +2,+46                      | Frame colors: 0x2C / 0x39    |
+//   | Subtitle at +199,+46                 | Granary divider at row/2      |
+//   +--------------------------------------+ (436,167)            (636,167)|
+//   | City Map (436x153)                   +-------------------------------+
+//   | (0,61)                       (436,61)| Production (200x189)          |
+//   | Inner map: (7,65,188,137)            | (436,167)            (636,167)|
+//   |   21 tiles diamond pattern           | Buy btn at abs (442,181,68,24)|
+//   | Resource rows at +205 from left:     | Shield grid at +8,+75         |
+//   |   Food:    +14  (color 0x2A)         | Grid spacing: 17x14           |
+//   |   Trade:   +55  (color 0x76)         | Frame colors: 0x51 / 0x5D    |
+//   |   Shields: +120 (color 0x54)         |                               |
+//   | Available row width: 226px           |                     (636,356) |
+//   | (0,214)                      (436,214)+-----[ Button Bar (200x65) ]--+
+//   +--[ Units Supported ]--+--[ Info/Map/Happy ]-+ (436,356)     (636,356)|
+//   | (0,212,192,78)        | (192,212,244,209)   | Change (459,364,57,24) |
+//   | Inner: (7,216,181,69) | Inner:(197,216,233,  | Info   (517,364,57,24) |
+//   | Title: color 0x7C     |        198)          | Rename (575,364,57,24) |
+//   | Unit tiles: 48x36     | Mode 0: Info view    | Happy  (459,389,57,24) |
+//   | (0,290)               | Mode 1: Mini-map     | View   (517,389,57,24) |
+//   +--[ Improvements ]-----+ Mode 2: Happiness    | Exit   (575,389,57,24) |
+//   | (0,290,192,131)       |                      | Prev < (437,364,21,24) |
+//   | Inner:(6,306,166,108) |                      | Next > (437,389,21,24) |
+//   | Row height: ~12px     |          (436,421)   |              (636,421) |
+//   | (0,421)      (192,421)+----------------------+----------------------+
+//
+// =====================================================================================
+//
+// RENDERING PIPELINE (from decompiled master refresh citywin_8BC5 @ 0x508BC5):
+//
+//   The game draws panels in this exact order:
+//     1. FUN_0050207f — Citizens Row (faces + titles) — 9761 bytes
+//     2. FUN_005025d5 — Resource Rows (terrain map + food/trade/shields) — 9761 bytes (largest fn)
+//     3. FUN_00504c05 — Food Storage (granary wheat grid)
+//     4. FUN_0050503e — Production (shield grid + item preview)
+//     5. FUN_005055dd — Buy Panel (simple redraw)
+//     6. FUN_00505666 — Units Supported (unit sprites + upkeep icons)
+//     7. FUN_00505ffa — Improvements (scrollable building list)
+//     8. citywin_8ADC — Info/Map/Happy (mode-dependent content)
+//
+//   Full init sequence (citywin_9429):
+//     1. FUN_004eb4ed — calculate city production/resources
+//     2. citywin_9028 — determine zoom level, set fonts
+//     3. citywin_92AF — set window title text
+//     4. FUN_005a9780 — prepare rendering surface (DIB section)
+//     5. FUN_00552112 — begin paint
+//     6. citywin_8EC6 — draw border/margins
+//     7. citywin_8D24 — compute all panel rectangles
+//     8. citywin_8BC5(0) — draw all panels (the render function above)
+//     9. FUN_00408460 — end paint / flush
+//
+//   IMPORTANT: The game renders all graphical content (wallpaper, faces, icons, sprites,
+//   grids, borders) by writing pixels directly into a DIB section in memory. The ONLY
+//   GDI operations are:
+//     - SelectObject(FONT) + SetTextColor + DrawTextA — for text labels
+//     - BitBlt SRCCOPY — to composite the finished frame to the window DC
+//   This means hooked GDI calls only capture text, not graphical rendering.
+//
+// =====================================================================================
+//
+// FONT SYSTEM (from create_font_8200 @ 0x5C8200):
+//
+//   The game creates Windows LOGFONT structures:
+//     lfHeight = -pointSize (negative = point size)
+//     lfWeight = 400 (normal) or 700 (bold)
+//     lfCharSet = DEFAULT_CHARSET (0x01)
+//     lfOutPrecision = OUT_TT_PRECIS (0x04)
+//
+//   Font face names by ID:
+//     0 = "Times New Roman" (FF_ROMAN, 0x10)  — used for most city dialog text
+//     1 = "Arial" (FF_SWISS, 0x20)
+//     2 = "System" (0x00)
+//     3 = "Courier" (FF_MODERN, 0x30)
+//
+//   Font sizes at zoom level 2:
+//     - Panel titles: 18px, bold
+//     - Standard labels: 10px
+//     - Info unit names: 26px
+//     - Warning/deficit text: 29px
+//
+// =====================================================================================
+//
+// TEXT RENDERING (from FUN_005BAEE0 @ 0x5BAEE0):
+//
+//   void FUN_005baee0(color_index, font_size, shadow_flag, bold_flag) {
+//       DAT_006366b0 = color_index;   // palette color index (0-255)
+//       DAT_006366b4 = font_size;     // font size in pixels
+//       if (shadow_flag >= 0) DAT_006366b8 = shadow_flag;  // 1 = draw shadow
+//       if (bold_flag >= 0) DAT_006366bc = bold_flag;       // 1 = bold weight
+//   }
+//
+//   Shadow text algorithm: every text string is drawn TWICE:
+//     Pass 1: offset (+1, +1), shadow color (dark)
+//     Pass 2: offset (0, 0), foreground color
+//   This produces the distinctive Civ2 drop-shadow text effect.
+//
+// =====================================================================================
+//
+// COLOR SYSTEM — PALETTE INDEX TO RGB MAPPING:
+//
+//   The game uses an 8-bit indexed palette. Colors in decompiled code are palette indices
+//   (e.g., 0x7C, 0x2D). The actual RGB values come from the GIF file's Global Color Table.
+//   At runtime, the game loads the GIF palette via SetDIBColorTable().
+//
+//   This renderer extracts the palette from CITY.GIF's GIF header at load time,
+//   giving us the exact RGB for each palette index. Key mappings:
+//
+//   Index | Hex  | Usage in city dialog
+//   ------|------|--------------------------------------------------
+//     11  | 0x0B | Shield support cost text, corruption label
+//     41  | 0x29 | Science icons, improvement names, green text
+//     42  | 0x2A | Food label text, "We Love" indicator
+//     44  | 0x2C | Food storage frame, food text
+//     45  | 0x2D | Food surplus bar fill color
+//     46  | 0x2E | Food surplus label text
+//     48  | 0x30 | Food deficit bar fill, owned terrain
+//     57  | 0x39 | Food storage inner frame (shadow side)
+//     81  | 0x51 | Production shield grid frame highlight
+//     84  | 0x54 | Shield production bar, shield label text
+//     92  | 0x5C | Shield surplus bar color
+//     93  | 0x5D | Production shield grid frame shadow
+//     94  | 0x5E | Luxury icon color
+//    118  | 0x76 | Gold/tax icons, happiness modifier text
+//    121  | 0x79 | Corruption/trade route info text
+//    124  | 0x7C | Title/header text, divider lines (most common)
+//
+// =====================================================================================
+//
+// SPRITE SHEETS:
+//
+//   CITY.GIF (640x480):
+//     The city dialog background wallpaper. Contains pre-drawn panel backgrounds:
+//     green gradient for food storage, blue gradient for production, gray for other panels,
+//     and gold 3D beveled borders around each panel region. The game draws this first,
+//     then overlays dynamic content (text, icons, grids) on top.
+//     Content area is cropped to 636x421 at zoom level 2.
+//
+//   ICONS.GIF (640x480):
+//     Chroma key: Magenta (255,0,255) idx 253, Light pink (255,159,163) idx 255
+//
+//     Resource icons (14x14 pixels each):
+//       Row at y=290: hunger(1,290), shortage(16,290), corruption(31,290)
+//       Row at y=305: food(1,305), shields(16,305), trade(31,305)
+//       Row at y=320: luxury(1,320), gold/tax(16,320), science(31,320)
+//       Small icons (10x10) at y=334: food(49,334), shields(60,334), trade(71,334)
+//
+//     Improvement thumbnails (36x20 each, 8 cols x 5 rows):
+//       Origin: (343, 1), stride: 37px horiz, 21px vert
+//       Index formula (1-based): x = 343 + 37*((id-1)%8), y = 1 + 21*floor((id-1)/8)
+//       IDs: 1=Palace, 2=Barracks, 3=Granary, 4=Temple, 5=Marketplace, 6=Library, ...
+//
+//     Wonder thumbnails (36x20 each, 7 cols x 4 rows):
+//       Origin: (343, 106), stride: 37px horiz, 21px vert
+//       Index formula (0-based): x = 343 + 37*(idx%7), y = 106 + 21*floor(idx/7)
+//
+//   PEOPLE.GIF (640x480):
+//     Chroma key: Magenta (255,0,255) idx 253
+//     Citizen face sprites: 27x30 pixels, stride 28x31
+//     Origin: (2, 6)
+//
+//     Columns (citizen types):
+//       0=happy male, 1=happy female, 2=content male, 3=content female,
+//       4=unhappy male, 5=unhappy female, 6=angry male, 7=angry female,
+//       8=entertainer, 9=taxman, 10=scientist
+//     Rows (eras):
+//       0=Ancient, 1=Renaissance, 2=Industrial, 3=Modern, 4=extra specialists
+//     Gender alternates by citizen index: even=male, odd=female.
+//     Era triggers: Renaissance=Invention+Philosophy, Industrial=Industrialization,
+//                   Modern=Automobile+Electronics
+//
+//   UNITS.GIF (640x480):
+//     Chroma key: Magenta (255,0,255) idx 253 + Purplish-gray (135,83,135) idx 255
+//     Unit sprites: 64x48 pixels in 65x49 grid (1px border), 9 cols x 7 rows
+//     Type ID = row * 9 + col
+//     Row 0: Settlers(0) Engineers(1) Warriors(2) Phalanx(3) Archers(4) Legion(5) ...
+//     Row 1: Partisans(9) Alpine(10) Riflemen(11) Marines(12) ...
+//     ...through Row 5: Nuke(45) Diplomat(46) Spy(47) Caravan(48) Freight(49) Explorer(50)
+//
+//     Civ-color recoloring: palette indices 251 (dark red 127,0,0) and 252 (bright red
+//     255,0,0) are placeholders replaced with civilization colors at runtime.
+//     Shield position marker: blue pixel (0,0,255) idx 250 in border pixels.
+//     (Not implemented in this experiment — units render with default red coloring.)
+//
+// =====================================================================================
+//
+// CITY STRUCT (from 0x0064F340, stride 0x58 = 88 bytes):
+//
+//   The city dialog reads data from the city struct. Key fields feeding the display:
+//     Offset 0x00-0x03: x, y (map position)
+//     Offset 0x08:      owner (civ index, 1 byte)
+//     Offset 0x09:      size (citizens count, determines food box rows)
+//     Offset 0x20-0x2F: name (16 chars, null-terminated)
+//     Offset 0x39:      current_production (what's being built)
+//     Offset 0x1A:      food_box (accumulated food, 2 bytes)
+//     Offset 0x1C:      shield_box (accumulated shields, 2 bytes)
+//     Offset 0x4A:      food_output (2 bytes)
+//     Offset 0x4C:      shield_output (2 bytes)
+//     Offset 0x4E:      trade_output (2 bytes)
+//     Offset 0x50:      total_food_surplus (1 byte, signed)
+//     Offset 0x51:      total_shield_surplus (1 byte, signed)
+//     Offset 0x52:      happy_citizens (1 byte)
+//     Offset 0x53:      unhappy_citizens (1 byte)
+//     Offset 0x30:      improvements bitmask (4 bytes, bit N = has improvement N)
+//   Full struct documented in: reverse_engineering/Civ2_City_Struct.md
+//
+// =====================================================================================
+//
+// ICON SPACING ALGORITHM (from FUN_00548b70 @ 0x548B70):
+//
+//   This function computes how to space N icons across a fixed pixel width.
+//   Used for citizen faces, resource icons, wheat grid, shield grid, etc.
+//
+//   int FUN_00548b70(int count, int icon_size, int available_width,
+//                    int *out_fit_count, int *out_remainder) {
+//       if (icon_size < 2) icon_size = 1;
+//       if (count < 2) count = 1;
+//       int spacing = icon_size;
+//       if (count == 1) {
+//           *out_remainder = 0;
+//           *out_fit_count = 1;
+//       } else {
+//           available_width -= icon_size;  // reserve space for last full icon
+//           int gap = available_width / (count - 1);
+//           *out_remainder = available_width % (count - 1);
+//           *out_fit_count = count;
+//           if (gap < icon_size) {
+//               spacing = gap;            // overlap icons if needed
+//               if (gap < 1) {
+//                   *out_fit_count = (available_width - icon_size) + 1;
+//                   spacing = 1;           // minimum 1px spacing
+//               }
+//           }
+//       }
+//       return spacing;
+//   }
+//
+// =====================================================================================
+
+(async function() {
+  const canvas = document.getElementById('city');
+  const ctx = canvas.getContext('2d');
+
+  // Dialog content area dimensions at zoom level 2 (the default).
+  // From RE: citywin_8D24 computes rects for a 636x421 content area.
+  // At zoom 1: 318x210, at zoom 3: 954x631 (scaled via FUN_00511690).
+  const W = 636, H = 421;
+
+  // ============================================================
+  // PANEL RECTANGLES
+  // Source: decompiled citywin_8D24 @ address 0x508D24
+  // These are stored as RECT structs at offsets from the city window object.
+  // Format: [x, y, width, height] — all in pixels at zoom level 2.
+  //
+  // The offsets (e.g., +0x15dc) are byte offsets from the city dialog object
+  // pointer, where the game stores each panel's bounding rectangle.
+  // ============================================================
+  const PANELS = {
+    // Top-left: citizen faces row and city name
+    citizens:      [0, 0, 436, 61],       // cityobj+0x15dc
+
+    // Left-center: contains terrain mini-map + 3 resource icon rows
+    cityMap:       [0, 61, 436, 153],      // cityobj+0x15ec
+    cityMapInner:  [7, 65, 188, 137],      // cityobj+0x165c (terrain tiles only)
+
+    // Top-right: green gradient background, granary wheat grid
+    foodStorage:   [436, 0, 200, 167],     // cityobj+0x15fc
+
+    // Right-center: blue gradient background, item being built + shield grid
+    production:    [436, 167, 200, 189],   // cityobj+0x160c
+
+    // Bottom-right: navigation and action buttons
+    buyPanel:      [436, 356, 200, 65],    // cityobj+0x161c
+
+    // Bottom-left upper: units this city supports (with upkeep icons)
+    units:         [0, 212, 192, 78],      // cityobj+0x162c
+    unitsInner:    [7, 216, 181, 69],      // cityobj+0x167c
+
+    // Bottom-left lower: scrollable list of city improvements
+    improvements:  [0, 290, 192, 131],     // cityobj+0x163c
+    improvInner:   [6, 306, 166, 108],     // cityobj+0x166c
+
+    // Bottom-center: switchable panel (Info / Mini-Map / Happiness view)
+    // Mode stored at cityobj+0x15b0: 0=Info, 1=MiniMap, 2=Happiness
+    info:          [192, 212, 244, 209],   // cityobj+0x164c
+    infoInner:     [197, 216, 233, 198],   // cityobj+0x168c
+  };
+
+  // ============================================================
+  // SPRITE COORDINATES IN GIF SHEETS
+  // Source: Civ2_MGE_Binary_Analysis.md and canvas-test-1/renderer.js
+  // ============================================================
+
+  // Resource icons in ICONS.GIF — each is 14x14 pixels
+  // Three rows at y=290 (loss/deficit), y=305 (production), y=320 (distribution)
+  const ICO = {
+    food:       [1, 305],   // green wheat sheaf
+    shields:    [16, 305],  // blue shield
+    trade:      [31, 305],  // yellow trade arrow
+    luxury:     [1, 320],   // white/pink gem
+    gold:       [16, 320],  // gold coin
+    science:    [31, 320],  // blue beaker
+    hunger:     [1, 290],   // red wheat (starvation)
+    shortage:   [16, 290],  // red shield (unit support cost)
+    corruption: [31, 290],  // red arrow (corruption/waste)
+  };
+  const ICO_SZ = 14; // all resource icons are 14x14
+
+  // Citizen faces in PEOPLE.GIF
+  // Grid of 27x30px faces with 28x31 stride (1px border between cells)
+  // Origin at pixel (2, 6) in the GIF
+  const PPL = { ox:2, oy:6, sx:28, sy:31, w:27, h:30 };
+
+  // Improvement thumbnails in ICONS.GIF — 36x20px, 8 columns
+  // 1-based indexing: improvement ID 1 = grid position (0,0)
+  const IMP = { ox:343, oy:1, sx:37, sy:21, w:36, h:20, cols:8 };
+
+  // Wonder thumbnails in ICONS.GIF — 36x20px, 7 columns
+  // 0-based indexing: wonder 0 = grid position (0,0)
+  const WDR = { ox:343, oy:106, sx:37, sy:21, w:36, h:20, cols:7 };
+
+  // ============================================================
+  // IMAGE LOADING + GIF PALETTE EXTRACTION
+  //
+  // We load the GIF files as both Image objects (for canvas drawing)
+  // and as raw binary (CITY.GIF only, for palette extraction).
+  //
+  // The GIF87a/89a format stores a Global Color Table right after
+  // the 13-byte header. We parse it to get the 256-entry RGB palette
+  // that maps palette indices (used in decompiled code) to actual colors.
+  // ============================================================
+  const BASE = '../assets/images/';
+
+  function loadImg(name) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.onerror = () => rej(new Error('Failed to load ' + name));
+      img.src = BASE + name;
+    });
+  }
+
+  // Parse the GIF Global Color Table to extract the 256-color palette.
+  // GIF header layout:
+  //   Bytes 0-5:  Signature ("GIF87a" or "GIF89a")
+  //   Bytes 6-7:  Width (little-endian)
+  //   Bytes 8-9:  Height (little-endian)
+  //   Byte 10:    Packed field:
+  //               Bit 7:   Global Color Table flag (1 = present)
+  //               Bits 4-6: Color resolution (bits per primary color - 1)
+  //               Bit 3:   Sort flag
+  //               Bits 0-2: Size of GCT = 2^(N+1) entries
+  //   Byte 11:    Background color index
+  //   Byte 12:    Pixel aspect ratio
+  //   Bytes 13+:  Global Color Table (3 bytes per entry: R, G, B)
+  async function extractGifPalette(name) {
+    const resp = await fetch(BASE + name);
+    const buf = await resp.arrayBuffer();
+    const b = new Uint8Array(buf);
+    const packed = b[10];
+    const hasGCT = (packed >> 7) & 1;
+    if (!hasGCT) return [];
+    const numEntries = 2 ** ((packed & 7) + 1); // typically 256 for 8-bit
+    const pal = [];
+    for (let i = 0; i < numEntries; i++) {
+      const o = 13 + i * 3;
+      pal.push([b[o], b[o+1], b[o+2]]);
+    }
+    return pal;
+  }
+
+  // Convert an Image to a canvas 2D context for pixel-level sprite extraction
+  function imgToCtx(img) {
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const cx = c.getContext('2d');
+    cx.drawImage(img, 0, 0);
+    return cx;
+  }
+
+  // Extract a sprite from a sheet, replacing chroma-key colors with transparency.
+  // Civ2 GIFs use specific palette entries as "transparent" markers:
+  //   - Magenta (255,0,255) idx 253: transparent inside sprite diamond
+  //   - Light pink (255,159,163) idx 255: additional transparent (ICONS/PEOPLE)
+  //   - Purplish-gray (135,83,135) idx 255: transparent outside diamond (UNITS)
+  // The tolerance parameter handles slight color variations from GIF compression.
+  function extractSprite(srcCtx, sx, sy, sw, sh, chromaColors) {
+    const c = document.createElement('canvas');
+    c.width = sw; c.height = sh;
+    const cx = c.getContext('2d');
+    const src = srcCtx.getImageData(sx, sy, sw, sh);
+    const d = src.data;
+    for (let i = 0; i < d.length; i += 4) {
+      for (const [cr, cg, cb, tol] of chromaColors) {
+        const t = tol || 15;
+        if (Math.abs(d[i]-cr)<=t && Math.abs(d[i+1]-cg)<=t && Math.abs(d[i+2]-cb)<=t) {
+          d[i+3] = 0; // set alpha to 0 = transparent
+          break;
+        }
+      }
+    }
+    cx.putImageData(src, 0, 0);
+    return c;
+  }
+
+  // ============================================================
+  // LOAD ALL ASSETS IN PARALLEL
+  // ============================================================
+  const [cityImg, iconsImg, peopleImg, unitsImg, palette] = await Promise.all([
+    loadImg('CITY.GIF'),    // background wallpaper
+    loadImg('ICONS.GIF'),   // resource icons + improvement/wonder thumbnails
+    loadImg('PEOPLE.GIF'),  // citizen face sprites
+    loadImg('UNITS.GIF'),   // unit sprites
+    extractGifPalette('CITY.GIF'),  // 256-entry RGB palette
+  ]);
+
+  // Create canvas contexts for pixel-level sprite extraction
+  const iconsCtx = imgToCtx(iconsImg);
+  const peopleCtx = imgToCtx(peopleImg);
+  const unitsCtx = imgToCtx(unitsImg);
+
+  // Chroma key color definitions [R, G, B, tolerance]
+  const MAGENTA = [255,0,255,15];       // primary transparent color (idx 253)
+  const PINK = [255,159,163,15];        // secondary transparent (ICONS/PEOPLE idx 255)
+  const PURPLE_GRAY = [135,83,135,15];  // outside-diamond transparent (UNITS idx 255)
+
+  // ============================================================
+  // PALETTE COLOR HELPER
+  //
+  // The decompiled code references colors by palette index (e.g., 0x7C for titles).
+  // This function maps those indices to actual RGB strings using the palette
+  // extracted from CITY.GIF's Global Color Table.
+  //
+  // At runtime, the game calls GetDIBColorTable(index, 1) to resolve palette
+  // indices to RGB for GDI text rendering (SetTextColor, etc.).
+  // ============================================================
+  function pal(idx) {
+    const c = palette[idx] || [128,128,128];
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+
+  // Debug: log the actual RGB values for key palette indices
+  console.log('=== GIF Palette Colors (from CITY.GIF Global Color Table) ===');
+  const KEY_PAL = [
+    [0x0B,'shield support/corruption text'],
+    [0x29,'science/improvement names/green'],
+    [0x2A,'food label'], [0x2C,'food storage frame'],
+    [0x2D,'food surplus bar'], [0x30,'food deficit'],
+    [0x51,'production frame hi'], [0x54,'shield production'],
+    [0x5C,'shield surplus'], [0x5E,'luxury'],
+    [0x76,'gold/tax'], [0x79,'corruption/trade'],
+    [0x7C,'title/header text'],
+  ];
+  for (const [idx, desc] of KEY_PAL) {
+    const c = palette[idx];
+    console.log(`  0x${idx.toString(16).toUpperCase().padStart(2,'0')} (${idx}): rgb(${c}) — ${desc}`);
+  }
+
+  // ============================================================
+  // MOCK CITY DATA
+  //
+  // Since this is a standalone experiment without a save file parser,
+  // we use hardcoded data representing a plausible mid-game city.
+  // Field names correspond to city struct offsets documented above.
+  // In the real app (canvas-test-1/), these come from parser.js
+  // which reads the binary .SAV file format.
+  // ============================================================
+  const city = {
+    name: 'Washington',
+    size: 12,           // struct offset 0x09 — determines citizen count and food box
+    era: 0,             // 0=ancient, 1=renaissance, 2=industrial, 3=modern
+    owner: 1,           // struct offset 0x08 — civilization index
+
+    // Citizen breakdown (struct offsets 0x52, 0x53 + specialist calculation)
+    happy: 4,
+    content: 5,
+    unhappy: 2,
+    specialists: [8],   // PEOPLE.GIF column indices: 8=entertainer, 9=taxman, 10=scientist
+
+    // Resource outputs (struct offsets 0x4A-0x51)
+    foodOutput: 24, foodSurplus: 4,
+    shieldOutput: 18, shieldSupport: 6, shieldWaste: 1, shieldSurplus: 11,
+    tradeOutput: 20, corruption: 3,
+
+    // Trade distribution (from civ struct: tax_rate * 10, luxury_rate * 10, remainder = sci)
+    taxRate: 30, luxRate: 20, sciRate: 50,
+    taxIncome: 5, luxIncome: 3, sciIncome: 9,
+
+    // Food storage (struct offsets 0x1A food_box)
+    foodStored: 30, foodBox: 80, hasGranary: true,
+
+    // Production (struct offsets 0x39 current_production, 0x1C shield_box)
+    producing: { name:'Temple', id:4, cost:40 },
+    shieldsStored: 25,
+
+    // Improvements bitmask (struct offset 0x30, 4 bytes)
+    // Listed as 1-based IDs for convenience
+    improvements: [1, 3, 5, 6, 8], // Palace, Granary, Marketplace, Library, City Walls
+
+    // Units associated with this city
+    unitsSupported: [2, 2, 11],  // unit type IDs: Warriors(2) x2, Riflemen(11)
+    unitsPresent: [3, 11, 46],   // Phalanx(3), Riflemen(11), Diplomat(46)
+
+    treasury: 342, // civ-level, shown in title bar
+  };
+
+  // Improvement names — index matches improvement ID (0 = unused, 1-based)
+  // From RULES.TXT and binary analysis
+  const IMPROV_NAMES = [
+    '','Palace','Barracks','Granary','Temple','Marketplace',
+    'Library','Courthouse','City Walls','Aqueduct','Bank',
+    'Cathedral','University','Mass Transit','Colosseum','Factory',
+    'Mfg. Plant','SDI Defense','Recycling Ctr','Power Plant',
+    'Hydro Plant','Nuclear Plant','Stock Exchange','Sewer System',
+    'Superhighways','Research Lab','SAM Battery','Coastal Fort',
+    'Solar Plant','Harbor','Offshore Plat.','Airport','Police Station',
+  ];
+
+  // Gold upkeep per turn for each improvement (from RULES.TXT)
+  const IMPROV_UPKEEP = [
+    0,0,1,1,1,1,1,1,0,2,2,3,3,1,2,2,3,4,2,3,2,2,3,2,3,3,2,1,3,1,3,3,2,
+  ];
+
+  // Unit type names — index matches unit type ID (UNITS.GIF grid: row*9 + col)
+  const UNIT_NAMES = [
+    'Settlers','Engineers','Warriors','Phalanx','Archers','Legion',
+    'Pikemen','Musketeers','Fanatics','Partisans','Alpine Troops',
+    'Riflemen','Marines','Paratroopers','Mech. Inf.','Horsemen',
+    'Chariot','Elephant','Crusaders','Knights','Dragoons','Cavalry',
+    'Armor','Catapult','Cannon','Artillery','Howitzer','Fighter',
+    'Bomber','Helicopter','Stealth F.','Stealth B.','Trireme',
+    'Caravel','Galleon','Frigate','Ironclad','Destroyer','Cruiser',
+    'AEGIS Cruiser','Battleship','Submarine','Carrier','Transport',
+    'Cruise Msl.','Nuclear Msl.','Diplomat','Spy','Caravan','Freight','Explorer',
+  ];
+
+  // ============================================================
+  // DRAWING HELPERS
+  // ============================================================
+
+  // Shadow text — implements the algorithm from FUN_005BAEE0 @ 0x5BAEE0
+  // The game sets text state via DAT_006366b0 (color), DAT_006366b4 (size),
+  // DAT_006366b8 (shadow flag), DAT_006366bc (bold flag).
+  // When shadow is enabled, text is drawn twice: dark at (+1,+1), then color at (0,0).
+  // The game uses "Times New Roman" (font ID 0, FF_ROMAN) for city dialog text.
+  function text(str, x, y, color, fontSize, bold, align) {
+    ctx.font = `${bold?'bold ':''} ${fontSize||10}px "Times New Roman", serif`;
+    ctx.textAlign = align || 'left';
+    ctx.textBaseline = 'top';
+    // Shadow pass (offset +1, +1)
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.fillText(str, x+1, y+1);
+    // Foreground pass (offset 0, 0)
+    ctx.fillStyle = color;
+    ctx.fillText(str, x, y);
+  }
+
+  // 3D beveled frame — implements FUN_005113f0 @ 0x5113F0
+  // Draws a highlight color on top + left edges, shadow color on bottom + right.
+  // Used for food storage frame (0x2C/0x39), production grid (0x51/0x5D),
+  // and various button borders throughout the dialog.
+  function frame3D(x, y, w, h, hi, lo) {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = hi;
+    ctx.beginPath();
+    ctx.moveTo(x, y+h); ctx.lineTo(x, y); ctx.lineTo(x+w, y);
+    ctx.stroke();
+    ctx.strokeStyle = lo;
+    ctx.beginPath();
+    ctx.moveTo(x+w, y); ctx.lineTo(x+w, y+h); ctx.lineTo(x, y+h);
+    ctx.stroke();
+  }
+
+  // Icon spacing — simplified version of FUN_00548b70 @ 0x548B70
+  // Given N icons of iconSize pixels to fit in availWidth pixels,
+  // returns the pixel spacing between icon left edges.
+  // If icons don't fit at full size, they overlap (spacing < iconSize).
+  // Minimum spacing is 1px (icons stacked nearly on top of each other).
+  function iconSpacing(count, iconSize, availWidth) {
+    if (count <= 1) return iconSize;
+    const gap = Math.floor((availWidth - iconSize) / (count - 1));
+    return Math.max(Math.min(gap, iconSize), 1);
+  }
+
+  // Sprite cache — avoids re-extracting the same sprite every frame.
+  // extractSprite() is expensive (getImageData + pixel iteration), so we cache results.
+  const spriteCache = {};
+
+  function getIcon(key) {
+    if (!spriteCache[key]) {
+      const [sx, sy] = ICO[key];
+      spriteCache[key] = extractSprite(iconsCtx, sx, sy, ICO_SZ, ICO_SZ, [MAGENTA, PINK]);
+    }
+    return spriteCache[key];
+  }
+
+  // Draw a horizontal row of resource icons with automatic spacing.
+  // The game uses this pattern for food, shields, trade, tax, luxury, science rows.
+  // Icon effective size is 14px + 1px gap = 15px (RE: "14px + 1px = 15px effective").
+  function drawIconRow(iconKey, count, x, y, availW) {
+    if (count <= 0) return;
+    const icon = getIcon(iconKey);
+    const spacing = iconSpacing(count, ICO_SZ + 1, availW);
+    for (let i = 0; i < count; i++) ctx.drawImage(icon, x + i * spacing, y);
+  }
+
+  // Draw a citizen face from PEOPLE.GIF.
+  // col = citizen type (0-10), row = era (0-3)
+  // See PEOPLE.GIF column/row mapping in the header comments.
+  function drawFace(col, row, dx, dy) {
+    const key = `face_${col}_${row}`;
+    if (!spriteCache[key]) {
+      spriteCache[key] = extractSprite(peopleCtx,
+        PPL.ox + PPL.sx * col, PPL.oy + PPL.sy * row,
+        PPL.w, PPL.h, [MAGENTA, PINK]);
+    }
+    ctx.drawImage(spriteCache[key], dx, dy);
+  }
+
+  // Draw an improvement thumbnail from ICONS.GIF.
+  // id is 1-based (1=Palace, 2=Barracks, ...) matching game improvement IDs.
+  function drawImprovIcon(id, dx, dy) {
+    const idx = id - 1; // convert to 0-based grid index
+    const key = `imp_${id}`;
+    if (!spriteCache[key]) {
+      spriteCache[key] = extractSprite(iconsCtx,
+        IMP.ox + IMP.sx * (idx % IMP.cols),
+        IMP.oy + IMP.sy * Math.floor(idx / IMP.cols),
+        IMP.w, IMP.h, [MAGENTA, PINK]);
+    }
+    ctx.drawImage(spriteCache[key], dx, dy);
+  }
+
+  // Draw a unit sprite from UNITS.GIF.
+  // typeId maps to grid position: col = typeId % 9, row = floor(typeId / 9)
+  // Each cell is 65x49 (64x48 sprite + 1px green border on each side).
+  // NOTE: This does NOT implement civ-color recoloring (red→civ color).
+  function drawUnit(typeId, dx, dy, w, h) {
+    const key = `unit_${typeId}`;
+    if (!spriteCache[key]) {
+      const col = typeId % 9, row = Math.floor(typeId / 9);
+      spriteCache[key] = extractSprite(unitsCtx,
+        col * 65 + 1, row * 49 + 1, 64, 48, [MAGENTA, PURPLE_GRAY]);
+    }
+    ctx.drawImage(spriteCache[key], dx, dy, w||64, h||48);
+  }
+
+  // ============================================================
+  // MAIN RENDER FUNCTION
+  //
+  // Draws all panels in the order specified by the decompiled
+  // master refresh function citywin_8BC5 @ 0x508BC5.
+  // ============================================================
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+
+    // --------------------------------------------------------
+    // STEP 0: BACKGROUND — CITY.GIF wallpaper
+    // The game tiles CITY.GIF as the background. Since CITY.GIF is 640x480
+    // and the dialog content area is 636x421, we crop to fit.
+    // CITY.GIF already contains the pre-drawn panel backgrounds:
+    //   - Green gradient for food storage
+    //   - Blue gradient for production
+    //   - Gray for other panels
+    //   - Gold 3D beveled borders around each panel region
+    // All dynamic content (text, icons, grids) is drawn ON TOP of this.
+    // --------------------------------------------------------
+    ctx.drawImage(cityImg, 0, 0, W, H, 0, 0, W, H);
+
+    // --------------------------------------------------------
+    // STEP 1: CITIZENS ROW
+    // Source: FUN_0050207f @ 0x50207F (9,761 bytes of decompiled code)
+    //
+    // Layout:
+    //   - Citizen face icons start at panel_left+5, panel_top+9
+    //   - Available width for faces: 422px
+    //   - Each face is 27x30px (from PEOPLE.GIF)
+    //   - Face click region: 30px wide per citizen
+    //   - Title text at panel_left+2, panel_top+46
+    //   - Title color: palette 0x7C (124), font: 18px bold
+    //   - Subtitle at panel_left+199, same Y, width 238px
+    //
+    // Citizen ordering: happy → content → unhappy → specialists
+    // Gender alternation: even index = male (cols 0,2,4), odd = female (cols 1,3,5)
+    // --------------------------------------------------------
+    {
+      const [px, py, pw, ph] = PANELS.citizens;
+
+      // Title — RE: string resource 0x193 (403), color 0x7C, font 18, bold
+      text('City of ' + city.name, px + 2, py + 46, pal(0x7C), 18, true);
+
+      // Subtitle — RE: string resource 0x3F (63), at panel_left+199, width 238
+      // In the actual game this shows population and treasury
+      text(`Pop: ${(city.size * 10000).toLocaleString()}  Treasury: ${city.treasury} Gold`,
+           px + 199, py + 48, pal(0x7C), 10, false);
+
+      // Citizen faces — RE: start at panel_left+5, panel_top+9
+      // Spacing computed via FUN_00548b70(count, 30, 422)
+      const totalCitz = city.happy + city.content + city.unhappy + city.specialists.length;
+      const faceSpacing = iconSpacing(totalCitz, 30, 422);
+      let fi = 0;
+
+      // Happy citizens (PEOPLE.GIF cols 0/1 = happy male/female)
+      for (let i = 0; i < city.happy; i++, fi++)
+        drawFace(fi % 2 === 0 ? 0 : 1, city.era, px + 5 + fi * faceSpacing, py + 9);
+      // Content citizens (cols 2/3)
+      for (let i = 0; i < city.content; i++, fi++)
+        drawFace(fi % 2 === 0 ? 2 : 3, city.era, px + 5 + fi * faceSpacing, py + 9);
+      // Unhappy citizens (cols 4/5)
+      for (let i = 0; i < city.unhappy; i++, fi++)
+        drawFace(fi % 2 === 0 ? 4 : 5, city.era, px + 5 + fi * faceSpacing, py + 9);
+      // Specialists (col 8=entertainer, 9=taxman, 10=scientist)
+      for (const specCol of city.specialists) {
+        drawFace(specCol, city.era, px + 5 + fi * faceSpacing, py + 9);
+        fi++;
+      }
+    }
+
+    // --------------------------------------------------------
+    // STEP 2: RESOURCE ROWS
+    // Source: FUN_005025d5 @ 0x5025D5 (9,761 bytes — largest city function)
+    //
+    // This function renders the terrain mini-map AND three resource icon rows.
+    // The rows sit to the right of the terrain map within the cityMap panel.
+    //
+    // Row positions (relative to cityMap panel top):
+    //   Food row:    panel_top + 14   (color 0x2A for label)
+    //   Trade row:   panel_top + 55   (color 0x76 for label)
+    //   Shield row:  panel_top + 120  (color 0x54 for label)
+    //
+    // Resource row X start: panel_left + 205
+    // Available width: 226px
+    // Icon effective size: 14px + 1px gap = 15px
+    //
+    // Each row shows: [label] [icons...] [surplus indicator]
+    //   - Surplus icons use different colors (e.g., food surplus = 0x2D, deficit = 0x30)
+    //   - A 4px separator gap between surplus and deficit icons
+    //
+    // Trade row has sub-distribution: tax / luxury / science split
+    //   Tax color: 0x76, Luxury color: 0x5E, Science color: 0x29
+    //   Rate percentages from civ struct: tax_rate*10, luxury_rate*10, remainder=sci
+    // --------------------------------------------------------
+    {
+      const [px, py] = PANELS.cityMap;
+      const rowX = px + 205;  // RE: panel_left + 205
+      const rowW = 226;       // RE: available width 226px
+
+      // --- Food row (RE: panel_top + 14) ---
+      const foodY = py + 14;
+      text('Food', rowX - 45, foodY, pal(0x2A), 10, true);   // label color 0x2A (42)
+      drawIconRow('food', city.foodOutput, rowX, foodY, rowW);
+      if (city.foodSurplus > 0)
+        text('+' + city.foodSurplus, rowX + rowW + 4, foodY, pal(0x2D), 10, true); // surplus color 0x2D (45)
+
+      // --- Trade row (RE: panel_top + 55) ---
+      const tradeY = py + 55;
+      text('Trade', rowX - 45, tradeY, pal(0x76), 10, true);  // label color 0x76 (118)
+      const netTrade = city.tradeOutput - city.corruption;
+      drawIconRow('trade', netTrade, rowX, tradeY, rowW * 0.7);
+      drawIconRow('corruption', city.corruption, rowX + rowW * 0.75, tradeY, rowW * 0.25);
+
+      // --- Trade distribution sub-row (tax / luxury / science) ---
+      // APPROXIMATE: exact sub-row positioning not fully decompiled
+      const subY = tradeY + 20;
+      let subX = rowX;
+      drawIconRow('gold', city.taxIncome, subX, subY, 80);         // Tax — color 0x76
+      text(city.taxRate + '%', subX + 82, subY, pal(0x76), 10);
+      subX += 100;
+      drawIconRow('luxury', city.luxIncome, subX, subY, 50);       // Luxury — color 0x5E
+      text(city.luxRate + '%', subX + 52, subY, pal(0x5E), 10);
+      subX += 70;
+      drawIconRow('science', city.sciIncome, subX, subY, 60);      // Science — color 0x29
+      text(city.sciRate + '%', subX + 62, subY, pal(0x29), 10);
+
+      // --- Shield row (RE: panel_top + 120) ---
+      const shieldY = py + 120;
+      text('Shields', rowX - 52, shieldY, pal(0x54), 10, true);   // label color 0x54 (84)
+      const prodShields = city.shieldOutput - city.shieldWaste;
+      drawIconRow('shields', prodShields, rowX, shieldY, rowW * 0.85);          // production color 0x54
+      drawIconRow('shortage', city.shieldWaste, rowX + rowW * 0.88, shieldY, rowW * 0.12); // waste color 0x0B
+      text('+' + city.shieldSurplus, rowX + rowW + 4, shieldY, pal(0x5C), 10, true); // surplus color 0x5C (92)
+    }
+
+    // --------------------------------------------------------
+    // STEP 2b: CITY MAP (PLACEHOLDER)
+    // Source: Part of FUN_005025d5 — terrain rendering
+    //
+    // The real game draws 21 terrain tiles in a diamond pattern using
+    // offset tables at DAT_00630D38 (X offsets) and DAT_00630D50 (Y offsets).
+    // Tile dimensions: 64x32 at zoom 2 (via FUN_00472cf0(0x40, zoom)).
+    // Each tile shows: base terrain → resource icons → improvements.
+    //
+    // NOT IMPLEMENTED: requires save file terrain data + full sprite extraction.
+    // Shown here as a placeholder diamond outline grid.
+    // --------------------------------------------------------
+    {
+      const [px, py, pw, ph] = PANELS.cityMapInner;
+      ctx.save();
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = '#0a0';
+      ctx.fillRect(px, py, pw, ph);
+      ctx.restore();
+
+      // Draw placeholder diamond grid (5x5 city radius)
+      ctx.strokeStyle = 'rgba(0,180,0,0.3)';
+      ctx.lineWidth = 1;
+      const cx = px + pw/2, cy = py + ph/2;
+      for (let dy = -2; dy <= 2; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          if (Math.abs(dx) + Math.abs(dy) > 2) continue;
+          const tx = cx + (dx - dy) * 24 - 24;
+          const ty = cy + (dx + dy) * 12 - 12;
+          ctx.beginPath();
+          ctx.moveTo(tx + 24, ty);
+          ctx.lineTo(tx + 48, ty + 12);
+          ctx.lineTo(tx + 24, ty + 24);
+          ctx.lineTo(tx, ty + 12);
+          ctx.closePath();
+          ctx.stroke();
+        }
+      }
+      text('City Radius', cx, cy - 5, 'rgba(0,180,0,0.5)', 10, false, 'center');
+    }
+
+    // --------------------------------------------------------
+    // STEP 3: FOOD STORAGE
+    // Source: FUN_00504c05 @ 0x504C05
+    //
+    // Renders a grid of wheat (food) icons showing accumulated food.
+    // - Grid origin: panel_left+6, panel_top+15, with 3px inset padding
+    // - Cell spacing: 17px horizontal, 14px vertical
+    // - Columns: city_size + 1 (from city struct offset 0x09)
+    // - Rows: ceil(foodBox / cols) — based on granary size (DAT_006a6560)
+    // - Frame: 3D bevel via FUN_005113f0, colors 0x2C (highlight) and 0x39 (shadow)
+    // - Granary divider line: drawn at row/2 if city has Granary improvement
+    //   (Granary halves the food needed for growth)
+    // - "We Love" indicator: sprite 0x2A at center-bottom (NOT IMPLEMENTED)
+    //
+    // Text color: palette 0x2C (44), font 10px
+    // --------------------------------------------------------
+    {
+      const [px, py, pw, ph] = PANELS.foodStorage;
+      text('Food Storage', px + 6, py + 2, pal(0x2C), 10, true);
+
+      const gx = px + 6 + 3, gy = py + 15 + 3; // grid origin with inset
+      const cellW = 17, cellH = 14;              // RE: exact cell spacing
+      const cols = Math.min(city.size + 1, 10);  // RE: city_size + 1
+      const totalCells = city.foodBox;
+      const rows = Math.ceil(totalCells / cols);
+      const granaryRow = city.hasGranary ? Math.floor(rows / 2) : rows;
+
+      // Frame — RE: FUN_005113f0, highlight 0x2C, shadow 0x39
+      const gridW = cols * cellW + 6, gridH = rows * cellH + 6;
+      frame3D(px + 6, py + 15, gridW, gridH, pal(0x2C), pal(0x39));
+
+      // Wheat icons — filled cells up to foodStored
+      const wheatIcon = getIcon('food');
+      let filled = 0;
+      for (let r = 0; r < rows && filled < totalCells; r++) {
+        for (let c = 0; c < cols && filled < totalCells; c++, filled++) {
+          if (filled < city.foodStored) {
+            ctx.drawImage(wheatIcon, gx + c * cellW, gy + r * cellH, 14, 12);
+          }
+        }
+        // Granary divider line (drawn after the granary row)
+        if (r === granaryRow - 1) {
+          ctx.strokeStyle = pal(0x2C);
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(gx - 2, gy + (r+1) * cellH);
+          ctx.lineTo(gx + cols * cellW, gy + (r+1) * cellH);
+          ctx.stroke();
+        }
+      }
+
+      // Progress text
+      text(city.foodStored + ' / ' + city.foodBox, px + pw/2, py + ph - 16, pal(0x2C), 10, false, 'center');
+    }
+
+    // --------------------------------------------------------
+    // STEP 4: PRODUCTION
+    // Source: FUN_0050503e @ 0x50503E
+    //
+    // Shows what the city is currently building with a shield progress grid.
+    // - Buy button: absolute position (442, 181, 68, 24) from citywin_CF06
+    //   (sits at top of production panel, 6px from left edge, 14px from top)
+    // - Item preview: panel+(73,1) for units, panel+(80,16) for wonders/improvements
+    // - Shield grid: cell spacing 17x14 (same as food storage)
+    //   - Columns: from DAT_006a657c (varies, we use 10)
+    //   - Max 10 rows
+    //   - Frame highlight: 0x51 (81), frame shadow: 0x5D (93)
+    // - Filled shields = shieldsStored from city struct offset 0x1C
+    //
+    // Production text color: palette 0x54 (84)
+    // --------------------------------------------------------
+    {
+      const [px, py, pw, ph] = PANELS.production;
+
+      // Buy button — RE: absolute position (442, 181, 68, 24) from citywin_CF06
+      frame3D(442, 181, 68, 24, '#ccc', '#555');
+      ctx.fillStyle = 'rgba(160,160,160,0.6)';
+      ctx.fillRect(443, 182, 66, 22);
+      text('Buy', 476, 186, '#000', 12, true, 'center');
+
+      // Item name
+      text(city.producing.name, px + pw/2, py + 28, pal(0x7C), 14, true, 'center');
+
+      // Preview thumbnail — RE: panel+(80,16) for improvements
+      drawImprovIcon(city.producing.id, px + 80, py + 48);
+
+      // Shield progress grid
+      const sgx = px + 8, sgy = py + 75;
+      const cellW = 17, cellH = 14;           // RE: exact from decompiled code
+      const sgCols = 10;                       // RE: from DAT_006a657c
+      const sgRows = Math.ceil(city.producing.cost / sgCols);
+
+      // Grid frame — RE: FUN_005113f0, highlight 0x51, shadow 0x5D
+      frame3D(sgx - 2, sgy - 2, sgCols * cellW + 4, sgRows * cellH + 4, pal(0x51), pal(0x5D));
+
+      // Shield icons (filled up to shieldsStored)
+      const shieldIcon = getIcon('shields');
+      let drawn = 0;
+      for (let r = 0; r < sgRows && drawn < city.producing.cost; r++) {
+        for (let c = 0; c < sgCols && drawn < city.producing.cost; c++, drawn++) {
+          if (drawn < city.shieldsStored) {
+            ctx.drawImage(shieldIcon, sgx + c * cellW, sgy + r * cellH, 14, 12);
+          }
+        }
+      }
+
+      // Progress text — palette 0x54 (84)
+      text(city.shieldsStored + ' / ' + city.producing.cost,
+           px + pw/2, sgy + sgRows * cellH + 8, pal(0x54), 10, false, 'center');
+
+      // Turns remaining estimate
+      const turnsLeft = Math.ceil((city.producing.cost - city.shieldsStored) / city.shieldSurplus);
+      text(turnsLeft + ' turns', px + pw/2, sgy + sgRows * cellH + 22, pal(0x54), 10, false, 'center');
+    }
+
+    // --------------------------------------------------------
+    // STEP 5: BUTTON BAR
+    // Source: citywin_CF06 @ 0x50CF06
+    //
+    // All button positions are absolute coordinates within the 636x421
+    // content area, extracted from the decompiled button setup function.
+    //
+    // Button handlers in the decompiled code:
+    //   Change:  citywin_B9A4 (0x50B9A4)
+    //   Info:    citywin_BA07 (0x50BA07)
+    //   Rename:  city_button_rename (0x50B74E)
+    //   Happy:   citywin_BA6A (0x50BA6A)
+    //   View:    city_button_view (0x50BACD)
+    //   Exit:    citywin_BC4F (0x50BC4F) — calls FUN_0046ac89(2)
+    //   Prev:    citywin_BF72 (0x50BF72) — previous city
+    //   Next:    citywin_BD13 (0x50BD13) — next city
+    //
+    // APPROXIMATE: button fill color is gray, not extracted from palette
+    // --------------------------------------------------------
+    {
+      const buttons = [
+        { label:'Change',  x:459, y:364, w:57, h:24 },
+        { label:'Info',    x:517, y:364, w:57, h:24 },
+        { label:'Rename',  x:575, y:364, w:57, h:24 },
+        { label:'Happy',   x:459, y:389, w:57, h:24 },
+        { label:'View',    x:517, y:389, w:57, h:24 },
+        { label:'Exit',    x:575, y:389, w:57, h:24 },
+        { label:'<',       x:437, y:364, w:21, h:24 },  // Prev city
+        { label:'>',       x:437, y:389, w:21, h:24 },  // Next city
+      ];
+      for (const b of buttons) {
+        frame3D(b.x, b.y, b.w, b.h, '#ccc', '#555');
+        ctx.fillStyle = 'rgba(160,160,160,0.6)';
+        ctx.fillRect(b.x+1, b.y+1, b.w-2, b.h-2);
+        text(b.label, b.x + b.w/2, b.y + 6, '#000', 11, true, 'center');
+      }
+    }
+
+    // --------------------------------------------------------
+    // STEP 6: UNITS SUPPORTED
+    // Source: FUN_00505666 @ 0x505666
+    //
+    // Shows units this city is supporting (paying upkeep for).
+    // - Title: string resource 0x1BF (447), color 0x7C, font 18px
+    // - Unit tile size: computed via FUN_00472cf0(0x45, zoom) for width
+    //   and FUN_00472cf0(0x34, zoom) for height. At zoom 2: ~69x52.
+    //   (We use 48x36 as a scaled approximation.)
+    // - Units per row: panel_width / tile_width
+    // - Upkeep icons: food/shield icons drawn per-unit below the sprite
+    //   (food for Settlers/Engineers, shields for military)
+    // - Unit rendering: via FUN_0056baff (general unit draw function)
+    //
+    // NOTE: Unit sprites shown without civ-color recoloring.
+    // --------------------------------------------------------
+    {
+      const [px, py, pw, ph] = PANELS.units;
+      text('Units Supported', px + 4, py + 2, pal(0x7C), 12, true);
+
+      const tileW = 48, tileH = 36; // APPROXIMATE: scaled from 64x48
+      const uy = py + 18;
+      city.unitsSupported.forEach((unitId, i) => {
+        const dx = px + 8 + i * (tileW + 8);
+        drawUnit(unitId, dx, uy, tileW, tileH);
+        // Upkeep icon below unit — RE: food/shield icons per unit
+        ctx.drawImage(getIcon('shields'), dx + tileW/2 - 7, uy + tileH + 2, 12, 12);
+      });
+    }
+
+    // --------------------------------------------------------
+    // STEP 7: IMPROVEMENTS LIST
+    // Source: FUN_00505ffa @ 0x505FFA
+    //
+    // Scrollable list of city improvements with thumbnail icons.
+    // - Title: string resource 0x1C0 (448), color 0x7C, font 18px
+    // - List start: panel_left+2, panel_top+1
+    // - Row height: 12px (RE exact), but we use 21px to fit 36x20 thumbnails
+    // - Visible rows: (panel_height - 0.5) / 12
+    // - Entry icon: drawn via FUN_005cef31 at (x, y)
+    // - Entry text: at x+24, y-1, color 0x29, font 10, NO shadow
+    //   (one of the few places where shadow text is disabled)
+    // - Gold upkeep icon: positioned at panel_right - 14 - 4
+    // - Scrollbar: via FUN_005db0d0 (NOT IMPLEMENTED)
+    // --------------------------------------------------------
+    {
+      const [px, py] = PANELS.improvements;
+      text('City Improvements', px + 4, py + 2, pal(0x7C), 12, true);
+
+      const [ix, iy, iw, ih] = PANELS.improvInner;
+      const rowH = 21; // APPROXIMATE: RE says 12px but icons need more vertical space
+
+      city.improvements.forEach((impId, i) => {
+        const y = iy + i * rowH;
+        if (y + rowH > iy + ih) return; // clip to inner panel
+
+        // Improvement thumbnail icon — RE: via FUN_005cef31
+        drawImprovIcon(impId, ix + 2, y);
+
+        // Improvement name — RE: x+24, y-1, color 0x29, font 10, NO shadow
+        ctx.font = '10px "Times New Roman", serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = pal(0x29);  // palette 0x29 (41) = green/science text
+        ctx.fillText(IMPROV_NAMES[impId], ix + 40, y + 4);
+
+        // Gold upkeep icon — RE: panel_right - 14 - 4
+        if (IMPROV_UPKEEP[impId] > 0) {
+          ctx.drawImage(getIcon('gold'), ix + iw - 16, y + 3, 12, 12);
+        }
+      });
+    }
+
+    // --------------------------------------------------------
+    // STEP 8: INFO PANEL (Mode 0: Info View)
+    // Source: citywin_70E5 @ 0x5070E5 (2,692 bytes)
+    //
+    // This panel has 3 modes selected by cityobj+0x15b0:
+    //   Mode 0: Info — units present, food stored, trade routes (shown here)
+    //   Mode 1: Mini-map — citywin_7B69, city/unit markers on minimap
+    //   Mode 2: Happiness — citywin_8552, 5 horizontal rows showing
+    //           before/after effects on happiness
+    //
+    // Info mode layout:
+    //   - Title: string 0x1C3 (451), color 0x7C, font 18
+    //   - Unit grid: tile_w from FUN_00472cf0(0x40,zoom)=64, tile_h=48
+    //     Cols = 244px / tile_w, centered
+    //     4 rows max (2 normal + 2 half-tile offset)
+    //   - Unit name labels: color 10, font 26px (first 2 rows)
+    //   - Food stored display: at panel+(7,100), grid width 64, icon size 30
+    //   - Trade route info: at panel+(0,133), color 0x79, font 18
+    //
+    // NOTE: Only Info mode implemented. Map and Happy modes not shown.
+    // --------------------------------------------------------
+    {
+      const [px, py] = PANELS.info;
+      text('Info', px + 4, py + 2, pal(0x7C), 12, true);
+
+      const [ix, iy, iw, ih] = PANELS.infoInner;
+
+      // Units present grid — APPROXIMATE tile size (scaled from 64x48)
+      const tileW = 48, tileH = 36;
+      const cols = Math.floor(iw / (tileW + 4));
+
+      text('Units Present:', ix + 2, iy + 2, pal(0x29), 10, true);
+
+      city.unitsPresent.forEach((unitId, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const ux = ix + 2 + col * (tileW + 4);
+        const uy = iy + 18 + row * (tileH + 16);
+        drawUnit(unitId, ux, uy, tileW, tileH);
+        // Unit name — RE: color palette index 10, font 26 (we use 8px scaled down)
+        text(UNIT_NAMES[unitId], ux + tileW/2, uy + tileH + 1, pal(0x0A), 8, false, 'center');
+      });
+
+      // Food stored display — RE: at panel + (7, 100)
+      text('Food Stored: ' + city.foodStored + ' / ' + city.foodBox,
+           ix + 7, iy + 120, pal(0x2C), 10, true);
+
+      // Trade route info — RE: at panel + (0, 133), color 0x79 (121), font 18
+      text('Trade Routes:', ix, iy + 140, pal(0x79), 10, true);
+      text('None established', ix + 10, iy + 155, pal(0x79), 10);
+    }
+
+    // --------------------------------------------------------
+    // DEBUG: PANEL OUTLINES
+    // When enabled, draws colored dashed rectangles for all 12 panel
+    // regions so you can verify they match the RE coordinates.
+    // --------------------------------------------------------
+    if (document.getElementById('showPanels').checked) {
+      const colors = [
+        '#f00','#0f0','#00f','#ff0','#f0f','#0ff',
+        '#f80','#8f0','#08f','#f08','#80f','#0f8',
+      ];
+      let ci = 0;
+      for (const [name, rect] of Object.entries(PANELS)) {
+        ctx.strokeStyle = colors[ci++ % colors.length];
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3,3]);
+        ctx.strokeRect(rect[0]+0.5, rect[1]+0.5, rect[2]-1, rect[3]-1);
+        ctx.setLineDash([]);
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(name, rect[0]+2, rect[1]+8);
+      }
+    }
+  }
+
+  // Initial render
+  render();
+
+  // Re-render when debug toggles change
+  document.getElementById('showPanels').addEventListener('change', render);
+  document.getElementById('showCoords').addEventListener('change', render);
+
+  // Coordinate display — shows (x, y) and panel name when hovering over canvas
+  canvas.addEventListener('mousemove', (e) => {
+    const coordsDiv = document.getElementById('coords');
+    if (!document.getElementById('showCoords').checked) {
+      coordsDiv.textContent = '\u00a0'; // non-breaking space to maintain height
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const scaleY = H / rect.height;
+    const x = Math.round((e.clientX - rect.left) * scaleX);
+    const y = Math.round((e.clientY - rect.top) * scaleY);
+
+    // Find which panel(s) the cursor is in (innermost match wins)
+    let panel = '';
+    for (const [name, r] of Object.entries(PANELS)) {
+      if (x >= r[0] && x < r[0]+r[2] && y >= r[1] && y < r[1]+r[3])
+        panel = name;
+    }
+    coordsDiv.textContent = `(${x}, ${y}) ${panel ? '\u2014 ' + panel : ''}`;
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    document.getElementById('coords').textContent = '\u00a0';
+  });
+
+  console.log('City dialog rendered from RE data. Panel rects from 0x508D24, colors from GIF palette.');
+})();
+</script>
+</body>
+</html>
