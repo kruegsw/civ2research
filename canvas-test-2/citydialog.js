@@ -226,7 +226,6 @@ const Civ2CityDialog = {
 
     // ── Gold borders (3D beveled frames drawn on top of wallpaper) ──
     goldBorders: [
-      { x: 5, y: 79, w: 194, h: 137 },   // Resource Map
       { x: 3, y: 288, w: 192, h: 130 },   // City Improvements
       { x: 3, y: 212, w: 192, h: 74 },    // Workers/Garrison
     ],
@@ -493,7 +492,7 @@ const Civ2CityDialog = {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = shadow || C.headerShadow;
     ctx.fillText(text, cx + 1, cy + 1);
-    ctx.fillStyle = color || C.headerCyan;
+    ctx.fillStyle = color || C.header;
     ctx.fillText(text, cx, cy);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
@@ -748,7 +747,7 @@ const Civ2CityDialog = {
     this._label(ctx, 'City Resources', L.cityResources.x, L.cityResources.y);
     this._label(ctx, 'Food Storage', L.foodStorage.x, L.foodStorage.y, 'rgb(75,155,35)');
     this._label(ctx, 'City Improvements', L.improvements.x, L.improvements.y);
-    this._label(ctx, 'Resource Map', L.resourceMap.x, L.resourceMap.y, C.headerCyan, C.resourceMapShadow);
+    this._label(ctx, 'Resource Map', L.resourceMap.x, L.resourceMap.y);
   },
 
   _drawCitizens(ctx, city, epoch, cdSprites, specs) {
@@ -1145,6 +1144,7 @@ const Civ2CityDialog = {
 
   _drawUnitsSupported(ctx, supported, mapSprites) {
     const R = this.REGIONS.unitsSupported;
+    const P = this.REGIONS.panels.unitSupport;  // { x:7, y:215, w:184, h:69 }
 
     if (supported.length < 5) {
       this._label(ctx, 'Units Supported', R.x + R.w / 2, R.y + 12);
@@ -1152,21 +1152,44 @@ const Civ2CityDialog = {
 
     if (!(mapSprites && mapSprites.unitTemplates && supported.length > 0)) return;
 
-    const maxSupported = Math.min(6, supported.length);
-    const perRow = 3;
-    for (let i = 0; i < maxSupported; i++) {
-      const u = supported[i];
-      const template = mapSprites.unitTemplates[u.type];
-      if (!template) continue;
-      const cacheKey = `${u.type}-${u.owner}`;
-      let colored = mapSprites.unitColored && mapSprites.unitColored[cacheKey];
-      if (!colored) {
-        colored = Civ2Renderer._recolorUnit(template, Civ2Renderer.CIV_COLORS[u.owner] || '#ccc');
+    const unitW = 51, unitH = 39;
+    const maxShow = Math.min(12, supported.length);
+    const drawY = supported.length <= 3 ? R.y + 20 : R.y + 6;
+    const rows = maxShow <= 3 ? 1 : 2;
+    const perRow = Math.ceil(maxShow / rows);
+
+    // Clip to the panel box to prevent overflow
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(P.x, P.y, P.w, P.h);
+    ctx.clip();
+
+    for (let row = 0; row < rows; row++) {
+      const rowStart = row * perRow;
+      const rowCount = Math.min(perRow, maxShow - rowStart);
+      if (rowCount <= 0) break;
+
+      // Compute horizontal spacing — overlap if too many to fit
+      const availW = R.w - 8;
+      const totalNeeded = rowCount * unitW;
+      const spacing = totalNeeded <= availW ? unitW + 4 : Math.floor((availW - unitW) / Math.max(1, rowCount - 1));
+      const uy = rows === 1 ? drawY : R.y + 6 + row * 35;
+
+      for (let i = 0; i < rowCount; i++) {
+        const idx = rowStart + i;
+        const u = supported[idx];
+        const template = mapSprites.unitTemplates[u.type];
+        if (!template) continue;
+        const cacheKey = `${u.type}-${u.owner}`;
+        let colored = mapSprites.unitColored && mapSprites.unitColored[cacheKey];
+        if (!colored) {
+          colored = Civ2Renderer._recolorUnit(template, Civ2Renderer.CIV_COLORS[u.owner] || '#ccc');
+        }
+        const ux = R.x + 8 + i * spacing;
+        ctx.drawImage(colored, ux, uy, unitW, unitH);
       }
-      const ux = R.x + 8 + 55 * (i % perRow);
-      const uy = maxSupported <= perRow ? R.y + 20 : R.y + 6 + 41 * Math.floor(i / perRow);
-      ctx.drawImage(colored, ux, uy, 51, 39);
     }
+    ctx.restore();
   },
 
   _drawImprovements(ctx, city, cityIndex, mapData, cdSprites) {
@@ -1424,13 +1447,19 @@ const Civ2CityDialog = {
     const infoLabels = ['Info', 'Map', 'Happy'];
     ctx.font = 'bold 11px Arial, sans-serif';
     for (const [action, r] of Object.entries(B)) {
-      // Arrow buttons: draw sprite instead of gray button
+      // Arrow buttons: draw sprite clipped to button rect
       if (action === 'nextCity' && cdSprites && cdSprites.arrowNext) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
         ctx.drawImage(cdSprites.arrowNext, r.x, r.y, r.w, r.h);
+        ctx.restore();
         continue;
       }
       if (action === 'prevCity' && cdSprites && cdSprites.arrowPrev) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
         ctx.drawImage(cdSprites.arrowPrev, r.x, r.y, r.w, r.h);
+        ctx.restore();
         continue;
       }
       // Gray fill
