@@ -147,10 +147,10 @@ const Civ2CityDialog = {
     // ── Resource icon rows ──
     resources: {
       title:       { x: 199, y: 46,  w: 238, h: 15 },
-      food:        { x: 203, y: 75,  w: 230, h: 13, textX: 203, textY: 68, iconX: 206, iconY: 76, rightX: 431 },
-      trade:       { x: 206, y: 116, w: 224, h: 16, textX: 203, textY: 109, iconX: 206, iconY: 117, rightX: 431 },
-      taxLuxSci:   { x: 206, y: 140, w: 224, h: 16, textX: 204, textY: 163, iconX: 206, iconY: 141, rightX: 431, luxIconX: 290, centerX: 317 },
-      supportProd: { x: 199, y: 181, w: 238, h: 16, textX: 204, textY: 203, iconX: 206, iconY: 181, rightX: 431 },
+      food:        { x: 203, y: 75,  w: 230, h: 13, textX: 203, textY: 72, iconX: 206, iconY: 76, rightX: 431 },
+      trade:       { x: 206, y: 116, w: 224, h: 16, textX: 203, textY: 113, iconX: 206, iconY: 118, rightX: 431 },
+      taxLuxSci:   { x: 206, y: 140, w: 224, h: 16, textX: 204, textY: 163, iconX: 206, iconY: 140, rightX: 431, luxIconX: 290, centerX: 317 },
+      supportProd: { x: 199, y: 181, w: 238, h: 16, textX: 204, textY: 203, iconX: 206, iconY: 182, rightX: 431 },
     },
 
     // ── Food storage ──
@@ -487,7 +487,7 @@ const Civ2CityDialog = {
   // Centered section label with shadow
   _label(ctx, text, cx, cy, color, shadow) {
     const C = this.COL;
-    ctx.font = '500 12px Arial, sans-serif';
+    ctx.font = '600 12px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = shadow || C.headerShadow;
@@ -744,10 +744,6 @@ const Civ2CityDialog = {
     // Separator line at very top edge
     ctx.fillStyle = C.separator;
     ctx.fillRect(0, 0, R.canvas.w, 1);
-    // Gold panel borders (game draws these on top of wallpaper's decorative borders)
-    for (const b of R.goldBorders) {
-      this._goldBorder(ctx, b.x, b.y, b.w, b.h);
-    }
   },
 
   _drawLabels(ctx) {
@@ -898,9 +894,9 @@ const Civ2CityDialog = {
     const foodR = RES.food;
     const foodTotal = city.foodProduction || 0;
     const foodSurplus = foodTotal - (city.size * 2);
-    ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.font = '600 12px Arial, sans-serif';
     ctx.textAlign = 'left';
-    this._text(ctx, `Food: ${foodTotal}`, foodR.textX, foodR.textY, 'rgb(87,171,39)', 'bold 13px Arial, sans-serif');
+    this._text(ctx, `Food: ${foodTotal}`, foodR.textX, foodR.textY, 'rgb(87,171,39)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
     this._text(ctx, `Surplus: ${foodSurplus}`, foodR.rightX, foodR.textY, 'rgb(63,139,31)');
     ctx.textAlign = 'left';
@@ -923,7 +919,7 @@ const Civ2CityDialog = {
     const tradeR = RES.trade;
     const tradeTotal = city.totalTrade || 0;
     ctx.textAlign = 'left';
-    this._text(ctx, `Trade: ${tradeTotal}`, tradeR.textX, tradeR.textY, 'rgb(239,159,7)', 'bold 13px Arial, sans-serif');
+    this._text(ctx, `Trade: ${tradeTotal}`, tradeR.textX, tradeR.textY, 'rgb(239,159,7)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
     this._text(ctx, `Corruption: ${corruption}`, tradeR.rightX, tradeR.textY, 'rgb(227,83,15)');
     ctx.textAlign = 'left';
@@ -943,15 +939,17 @@ const Civ2CityDialog = {
     const sciCount = city.scienceOutput || 0;
 
     // Text line: "30% Tax: X" left, "0% Lux: X" center, "70% Sci: X" right
-    const textY = tlsR.iconY - 2;
-    ctx.font = 'bold 11px Arial, sans-serif';
+    const textY = tlsR.iconY + 1 + 14 + 2;  // 2px below bottom of icon row (iconY+1 offset)
+    ctx.font = '600 12px Arial, sans-serif';
+    ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
-    this._text(ctx, `${taxRate}% Tax: ${taxCount}`, tlsR.textX, textY, 'rgb(239,159,7)', 'bold 11px Arial, sans-serif');
+    this._text(ctx, `${taxRate}% Tax: ${taxCount}`, tlsR.textX, textY, 'rgb(239,159,7)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'center';
-    this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, tlsR.centerX, textY, 'rgb(255,255,255)', 'bold 11px Arial, sans-serif');
+    this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, tlsR.centerX, textY, 'rgb(255,255,255)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
-    this._text(ctx, `${sciRate}% Sci: ${sciCount}`, tlsR.rightX, textY, 'rgb(63,187,199)', 'bold 11px Arial, sans-serif');
+    this._text(ctx, `${sciRate}% Sci: ${sciCount}`, tlsR.rightX, textY, 'rgb(63,187,199)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
 
     // Icons row below text: tax from left, lux from center, sci from right
     const iconY = tlsR.iconY + 1;
@@ -980,11 +978,14 @@ const Civ2CityDialog = {
 
     // Row 4: SUPPORT + PRODUCTION
     const spR = RES.supportProd;
+    const spTextY = spR.iconY + 14 + 3;  // 3px below bottom of icon row
+    ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
-    this._text(ctx, `Support: ${support}`, spR.textX, spR.textY, 'rgb(63,79,167)', 'bold 13px Arial, sans-serif');
+    this._text(ctx, `Support: ${support}`, spR.textX, spTextY, 'rgb(63,79,167)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
-    this._text(ctx, `Production: ${production}`, spR.rightX, spR.textY, 'rgb(7,11,103)');
+    this._text(ctx, `Production: ${production}`, spR.rightX, spTextY, 'rgb(7,11,103)');
     ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
     const spTotal = support + production;
     const spSpacing = this._resourceSpacing(spTotal);
     for (let i = 0; i < support; i++)
@@ -1225,7 +1226,7 @@ const Civ2CityDialog = {
     if (!(improvements.length > 0 && cdSprites)) return;
     const R = this.REGIONS.improvements;
     const C = this.COL;
-    ctx.font = '500 9px Arial, sans-serif';
+    ctx.font = '600 9px Arial, sans-serif';
     for (let i = 0; i < Math.min(R.maxRows, improvements.length); i++) {
       const imp = improvements[i];
       const thumb = imp.isWonder ? cdSprites.wonders[imp.id - 39] : cdSprites.improvements[imp.id];
@@ -1312,7 +1313,7 @@ const Civ2CityDialog = {
     }
 
     if (mapSprites && mapSprites.unitTemplates && garrison.length > 0) {
-      ctx.font = '500 9px Arial, sans-serif';
+      ctx.font = '600 9px Arial, sans-serif';
       for (let i = 0; i < Math.min(18, garrison.length); i++) {
         const u = garrison[i];
         const template = mapSprites.unitTemplates[u.type];
@@ -1346,7 +1347,7 @@ const Civ2CityDialog = {
     }
 
     // Trade text at bottom of info panel
-    ctx.font = '500 9px Arial, sans-serif';
+    ctx.font = '400 12px Arial, sans-serif';
     const suppliedNames = [];
     if (city.tradeCommoditiesSupplied) {
       for (const cIdx of city.tradeCommoditiesSupplied) {
@@ -1473,7 +1474,7 @@ const Civ2CityDialog = {
     const B = this.REGIONS.buttons;
     const labels = this.BUTTON_LABELS;
     const infoLabels = ['Info', 'Map', 'Happy'];
-    ctx.font = '500 12px Arial, sans-serif';
+    ctx.font = '600 12px Arial, sans-serif';
     for (const [action, r] of Object.entries(B)) {
       // Arrow buttons: no fill (background shows through), 1px black outline + 2-depth dark bevel
       if (action === 'nextCity' || action === 'prevCity') {
