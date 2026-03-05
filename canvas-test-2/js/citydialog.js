@@ -1181,8 +1181,10 @@ const Civ2CityDialog = {
         const totalIcons = food + shields + trade;
         if (totalIcons === 0) continue;
 
-        // Spacing: 11px for 1-2 icons, decreasing for more (per reference)
-        const spacing = totalIcons <= 2 ? 11 : Math.min(11, Math.max(1, Math.floor((sprW - iconSize) / (totalIcons - 1))));
+        // Binary: available_width = tileWidth - 2 * FUN_00511690(8) = 64 - 16 = 48 (75% of tile)
+        // Icon size: FUN_00511690(10) + 1 = 11 at zoom 2. We use 10px icons on 47px tiles.
+        const availW = Math.round(sprW * 0.75);
+        const { spacing } = this._iconSpacing(totalIcons, iconSize, availW);
         const totalW = (totalIcons - 1) * spacing + iconSize;
 
         const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
