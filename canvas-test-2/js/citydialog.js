@@ -1543,15 +1543,18 @@ const Civ2CityDialog = {
     }
 
     // Shield grid with dark background (like food storage)
+    // Real game: max 10 rows, dynamic columns = ceil(cost/10), DAT_006a657c
     if (cdSprites && cdSprites.shields) {
       const SG = R.shieldGrid;
       const cost = this._getProductionCost(item);
       const stored = city.shieldsInBox || 0;
-      const numCols = SG.cols;
-      const numRows = cost > 0 ? Math.ceil(cost / numCols) : 0;
+      const maxRows = 10;
+      const numRows = cost > 0 ? Math.min(maxRows, cost) : 0;
+      const numCols = cost > 0 ? Math.ceil(cost / maxRows) : 0;
 
       if (cost > 0) {
         const boxHeight = 4 + numRows * 14;
+        const availW = SG.borderRight - SG.borderX - 4;
         // Dark blue background fill (like food storage green bg)
         ctx.fillStyle = 'rgb(0,0,95)';
         ctx.fillRect(SG.borderX + 1, SG.borderY + 1, SG.borderRight - SG.borderX - 1, boxHeight - 1);
@@ -1565,13 +1568,14 @@ const Civ2CityDialog = {
         ctx.beginPath(); ctx.moveTo(SG.borderRight, SG.borderY); ctx.lineTo(SG.borderRight, SG.borderY + boxHeight); ctx.stroke();
 
         // Draw ALL shield positions up to cost; produced shields full, remaining dark
-        const dx = numCols > 1 ? (SG.borderRight - SG.borderX - 14 - 4) / (numCols - 1) : 0;
+        // Use _iconSpacing to fit numCols shields within available width
+        const { spacing: dx } = this._iconSpacing(numCols, 14, availW);
         const dy = 14;
         let count = 0;
         for (let row = 0; row < numRows; row++) {
           for (let col = 0; col < numCols; col++) {
             if (count >= cost) break;
-            const sx = SG.x + Math.round(2 + col * dx);
+            const sx = SG.borderX + 2 + Math.round(col * dx);
             const sy = SG.y + dy * row;
             if (count < stored) {
               // Produced: full bright shield
