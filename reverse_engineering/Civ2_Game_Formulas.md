@@ -98,6 +98,8 @@ From `FUN_00419d23` (COSMIC rules loading at `block_00410000.c`):
 | `DAT_00655b16` | Max number of units |
 | `DAT_006d1da0` | **Current player civ index** |
 | `DAT_00655af8` | **Current turn number** |
+| `DAT_00628370` | **CitySpiralDX**: signed byte[45] — city radius X offsets (doubled-X coords). First 21 = city radius tiles, entries 21–44 = extended AI search area. |
+| `DAT_006283a0` | **CitySpiralDY**: signed byte[45] — city radius Y offsets. Same indexing as DX. |
 
 ### Building Improvement IDs (param_2 to `FUN_0043d20a`)
 
@@ -380,9 +382,12 @@ function calculateAIFoodBox(difficultyLevel, foodBoxFactor = 10) {
 int get_tile_resource(int city_idx, int tile_offset, int resource_type) {
     int civ_idx = city[city_idx].owner;
 
-    // Calculate actual tile coordinates
-    int tile_x = city[city_idx].x + city_offset_x[tile_offset];  // DAT_00628370
-    int tile_y = city[city_idx].y + city_offset_y[tile_offset];  // DAT_006283a0
+    // Calculate actual tile coordinates using city radius spiral offsets
+    // city_offset_x/y = CitySpiralDX/DY: signed byte arrays, 21 entries for city radius
+    // tile_offset range: 0-20 (see City Radius Spiral in Civ2_MGE_Binary_Analysis.md)
+    // city.x is in doubled-X coordinates (native save format)
+    int tile_x = city[city_idx].x + city_offset_x[tile_offset];  // DAT_00628370 (CitySpiralDX)
+    int tile_y = city[city_idx].y + city_offset_y[tile_offset];  // DAT_006283a0 (CitySpiralDY)
 
     int terrain_type = get_terrain_type(tile_x, tile_y);  // 0-10 (ocean=10, grassland=2, etc.)
     int special = get_special_resource(tile_x, tile_y);   // 0 or 1-10 (special resource)

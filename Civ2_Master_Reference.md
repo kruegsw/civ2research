@@ -260,6 +260,8 @@ All interactive functions share a common guard pattern checking 17+ flags at `0x
 | `0x0064B1B8` | 0x14 | Building/improvement data |
 | `0x0064C488` | 0x08 | Unit type data |
 | `0x0064BCCC` | — | Base production cost multiplier |
+| `0x00628370` | 1 (byte) | CitySpiralDX: signed byte[45] city radius X offsets (doubled-X coords) |
+| `0x006283A0` | 1 (byte) | CitySpiralDY: signed byte[45] city radius Y offsets |
 | `0x006AD8BC`-`0x6AD904` | 0x04 | Multiplayer action stacking flags |
 
 ### Code Region Map
@@ -2243,10 +2245,60 @@ Cross-referenced and confirmed against four independent sources: (1) Allard Höf
 | +28 | 2 bytes | **Shields in shield box** (short LE) | ✅ Confirmed (Höfelt) | Accumulated shields toward current production item. |
 | +30 | 2 bytes | **Net base trade** (short LE) | ✅ Hex-verified | Base trade arrows (excluding trade routes). Identical to +78 when no trade routes active (verified 43/43 cities). |
 | +32 | 16 bytes | **City name** | ✅ Confirmed (civ2mod.c) | `CITY_ITEM_NAME_OFFSET 32`. 15 chars max + null terminator. |
-| +48 | 1 byte | **Workers inner circle** | ✅ Hex-verified | Bitmask: each bit = 1 of 8 inner-ring tiles being worked. Verification: `popcount(+48) + popcount(+49) + popcount(+50 & 0x0F) + specialists = city_size` holds for ALL 43 cities. |
-| +49 | 1 byte | **Workers outer circle A** | ✅ Hex-verified | 8 of the 12 outer-ring tile positions. |
-| +50 | 1 byte | **Workers outer circle B** | ✅ Hex-verified | Low 4 bits = remaining 4 outer-ring positions. **Bit 4 (0x10) = center tile, ALWAYS set** (43/43 cities). Center tile is free — not counted in population. |
+| +48 | 1 byte | **Workers inner circle** | ✅ Hex-verified | Bitmask: each bit = 1 of 8 inner-ring tiles being worked. See City Radius Spiral below for bit-to-tile mapping. Verification: `popcount(+48) + popcount(+49) + popcount(+50 & 0x0F) + specialists = city_size` holds for ALL 43 cities. |
+| +49 | 1 byte | **Workers outer circle A** | ✅ Hex-verified | 8 of the 12 outer-ring tile positions. See City Radius Spiral below. |
+| +50 | 1 byte | **Workers outer circle B** | ✅ Hex-verified | Low 4 bits = remaining 4 outer-ring positions. **Bit 4 (0x10) = center tile, ALWAYS set** (43/43 cities). Center tile is free — not counted in population. See City Radius Spiral below. |
 | +51 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type. Specialist count = value ÷ 4. All 0 in main save (no specialists). |
+
+##### City Radius Spiral — Worker Bit-to-Tile Mapping
+
+The city's 21 workable tiles (20 radius + 1 center) are indexed by a spiral pattern stored in two static arrays in the binary:
+
+- **`DAT_00628370`** — CitySpiralDX: signed byte[45] — X offsets (doubled-X coordinate system)
+- **`DAT_006283a0`** — CitySpiralDY: signed byte[45] — Y offsets
+
+The first 21 entries (indices 0–20) define the city radius tiles. Entries 21–44 extend to a larger search area used by the AI and tile ownership functions (loop bound `0x2d` = 45 in the decompiled code; tiles within the city radius checked with `index < 0x15` = 21).
+
+**Complete bit-to-tile mapping (verified against axx0/Civ2-clone and 82 cities across 2 saves):**
+
+The save file stores worker assignments as 3 bytes at offsets +48, +49, +50. Each bit indicates whether a citizen is working that tile. The mapping uses the **LSB-first** convention (bit 0 = index 0 of that byte's range):
+
+```
+Byte +48 (inner ring, 8 tiles):
+  Bit 0 → NE   [+1, -1]     Bit 4 → SW  [-1, +1]
+  Bit 1 → E    [+2,  0]     Bit 5 → W   [-2,  0]
+  Bit 2 → SE   [+1, +1]     Bit 6 → NW  [-1, -1]
+  Bit 3 → S    [ 0, +2]     Bit 7 → N   [ 0, -2]
+
+Byte +49 (outer ring A, 8 tiles):
+  Bit 0 → NE diagonal   [+2, -2]     Bit 4 → outer N-NE  [+1, -3]
+  Bit 1 → SE diagonal   [+2, +2]     Bit 5 → outer E-NE  [+3, -1]
+  Bit 2 → SW diagonal   [-2, +2]     Bit 6 → outer E-SE  [+3, +1]
+  Bit 3 → NW diagonal   [-2, -2]     Bit 7 → outer S-SE  [+1, +3]
+
+Byte +50 (outer ring B + center, 5 tiles):
+  Bit 0 → outer S-SW  [-1, +3]     Bit 3 → outer N-NW  [-1, -3]
+  Bit 1 → outer W-SW  [-3, +1]     Bit 4 → CENTER      [ 0,  0]  (always set)
+  Bit 2 → outer W-NW  [-3, -1]
+```
+
+All offsets are in doubled-X coordinates (where X is doubled, matching the save file's native coordinate system). To convert to standard game (gx, gy) coordinates: `gx = (parCenter + ddx - parTarget) >> 1` where `parCenter = city.gy & 1` and `parTarget = (city.gy + ddy) & 1`.
+
+**Tile layout diagram** (doubled-X offsets from city center, isometric grid):
+
+```
+y=-3:          (-1,-3)          (+1,-3)
+y=-2:    (-2,-2)     ( 0,-2)          (+2,-2)
+y=-1: (-3,-1)   (-1,-1)     (+1,-1)      (+3,-1)
+y= 0:    (-2, 0)     CENTER          (+2, 0)
+y=+1: (-3,+1)   (-1,+1)     (+1,+1)      (+3,+1)
+y=+2:    (-2,+2)     ( 0,+2)          (+2,+2)
+y=+3:          (-1,+3)          (+1,+3)
+```
+
+**Equivalence with axx0/Civ2-clone**: The axx0 reimplementation (`MapNavigationFunctions.CityRadius()`) uses MSB-first bit reading with the reverse index ordering — N first (index 0), NE last (index 7) for the inner ring. This is mathematically equivalent: both map the same physical bit to the same physical tile. Verified with zero mismatches across all 82 cities in two test saves.
+
+**Sources**: Decompiled binary (`DAT_00628370`/`DAT_006283a0` references in `block_004E0000.c`, `block_004A0000.c`, et al.), axx0/Civ2-clone `Engine/src/MapObjects/MapNavigationFunctions.cs`, FoxAhead naming convention (CitySpiralDX/CitySpiralDY).
 | +52 | 4 bytes | **Building bitmask I-IV** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, **1-indexed**, RULES.TXT order. **Palace validation**: exactly 1 Palace per active civ — Zimbabwe(civ2), Trondheim(civ3), Washington(civ5), Cardiff(civ1). See full mapping below. |
 | +56 | 1 byte | **Building bitmask V** | Catfish | Buildings 32+. Bit 0=Airport, Bit 1=Police Station, Bit 2=Port Facility, etc. All 0 in main save. |
 | +57 | 1 byte | **Item in production** | ✅ Hex-verified | Units: 0x00-0x3F (direct type ID). Improvements/Wonders: `building_id = 256 - byte_value`. E.g., 0xCA=J.S. Bach's Cathedral (#54), 0xFD=Granary (#3), 0xF8=City Walls (#8). Production includes wonders (#39+ in RULES.TXT). |
@@ -2377,7 +2429,7 @@ Verified by assigning 1 specialist of each type from a size-5 baseline (no speci
 - [x] All major fields mapped via civ2mod.c, hexedit.rtf, Catfish cross-reference, and controlled experiments
 - [x] Layout correction: XY coords at +0, name at +32 (confirmed by civ2mod.c and hex verification)
 - [x] Verify +57 as item in production — **confirmed**: units 0x00-0x3F, buildings/wonders via `256 - byte_value`. Washington building J.S. Bach's Cathedral (0xCA=#54), Philadelphia building Great Library (0xD5=#43).
-- [x] Verify +48-50 as worker tile assignments — **confirmed**: workers + specialists = city_size for ALL 43 cities. Bit 4 of +50 = center tile, always set.
+- [x] Verify +48-50 as worker tile assignments — **confirmed**: workers + specialists = city_size for ALL 43 cities. Bit 4 of +50 = center tile, always set. Full bit-to-tile spiral mapping documented and verified against axx0/Civ2-clone (82 cities, 0 mismatches).
 - [x] Verify building bitmask 1-indexed — **confirmed**: Palace (bit 1) present in exactly 1 city per active civ (Zimbabwe, Trondheim, Washington, Cardiff).
 - [x] Verify +84 as city sequence ID — **confirmed**: 43 unique values (1-46), gaps at 4/13/27 = destroyed cities.
 - [x] Verify +30 vs +78 relationship — **confirmed**: identical when no trade routes (43/43 cities).
@@ -5815,7 +5867,9 @@ All offsets relative to struct base (`&DAT_0064f340 + idx * 0x58`).
 
 | Offset | Size | Type | DAT Address | Field Name | Description |
 |--------|------|------|-------------|------------|-------------|
-| `0x16` | 4 | `uint32` | `DAT_0064f356` | **worker_tiles** | 2-bit field per tile slot (16 slots, 32 bits total). Each 2-bit value encodes what the citizen on that tile produces. Accessed via `(value >> (slot * 2)) & 3`. Set via `value = (value & ~(3 << shift)) | (new << shift)`. Initialized to 0 on city creation. |
+| `0x16` | 4 | `uint32` | `DAT_0064f356` | **worker_tiles** | 2-bit field per tile slot (16 slots, 32 bits total). Each 2-bit value encodes what the citizen on that tile produces. Accessed via `(value >> (slot * 2)) & 3`. Set via `value = (value & ~(3 << shift)) | (new << shift)`. Initialized to 0 on city creation. Tile slot indices follow the city radius spiral (`DAT_00628370`/`DAT_006283a0`). |
+
+> **Note: Runtime vs Save Format**: The internal struct uses a 2-bit-per-slot encoding (32 bits / 16 slots at offset 0x16) for what each citizen produces. The save file format uses a simpler 1-bit-per-tile encoding across 3 bytes (offsets +48/+49/+50) indicating only whether each tile is worked. Both use the same spiral index ordering defined by `DAT_00628370`/`DAT_006283a0`. See the City Radius Spiral documentation in the save file City Record section for the full bit-to-tile mapping.
 
 ### Food and Production Stockpile (offsets 0x1A - 0x1F)
 
@@ -6871,9 +6925,12 @@ function calculateAIFoodBox(difficultyLevel, foodBoxFactor = 10) {
 int get_tile_resource(int city_idx, int tile_offset, int resource_type) {
     int civ_idx = city[city_idx].owner;
 
-    // Calculate actual tile coordinates
-    int tile_x = city[city_idx].x + city_offset_x[tile_offset];  // DAT_00628370
-    int tile_y = city[city_idx].y + city_offset_y[tile_offset];  // DAT_006283a0
+    // Calculate actual tile coordinates using city radius spiral offsets
+    // city_offset_x/y = CitySpiralDX/DY: signed byte arrays, 21 entries for city radius
+    // tile_offset range: 0-20 (see "City Radius Spiral" in the City Record section)
+    // city.x is in doubled-X coordinates (native save format)
+    int tile_x = city[city_idx].x + city_offset_x[tile_offset];  // DAT_00628370 (CitySpiralDX)
+    int tile_y = city[city_idx].y + city_offset_y[tile_offset];  // DAT_006283a0 (CitySpiralDY)
 
     int terrain_type = get_terrain_type(tile_x, tile_y);  // 0-10 (ocean=10, grassland=2, etc.)
     int special = get_special_resource(tile_x, tile_y);   // 0 or 1-10 (special resource)
