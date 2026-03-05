@@ -408,10 +408,12 @@ const Civ2CityDialog = {
     let food = hasSpecial ? this.SPECIAL_TOTAL[ter][specialIdx - 1][0] : this.TERRAIN_BASE[ter][0];
 
     // Irrigation / Farmland (non-ocean)
-    if (ter !== 10 && (imp & 0x04)) {
+    // Binary: (bVar1 & 6) != 0 — city-present bit (0x02) implies irrigation
+    if (ter !== 10 && ((imp & 0x04) || isCenter)) {
       food += this.IRRIGATION_BONUS[ter];
       // Supermarket + Farmland: +50%
-      if ((imp & 0x08) && this._cityHasBuilding(city, 24))
+      // Binary: (bVar1 & 0x0A) != 0 — city-present bit (0x02) implies farmland
+      if (((imp & 0x08) || isCenter) && this._cityHasBuilding(city, 24))
         food = food + Math.floor(food / 2);
     }
 
@@ -445,7 +447,12 @@ const Civ2CityDialog = {
     if (this._cityHasWonder(cityIndex, 8, mapData)) shields += 1;
 
     // Railroad: +50%
-    if (imp & 0x20) shields = shields + Math.floor(shields / 2);
+    // Binary: (bVar1 & 0x20) for explicit railroad, OR (bVar1 & 0x02) city-present
+    // + FUN_004bd9f0(civ, 0x43) = civ has Railroad tech (ID 67)
+    const hasRailroad = !!(imp & 0x20) ||
+      (isCenter && mapData.civTechs && mapData.civTechs[city.owner] &&
+       mapData.civTechs[city.owner].has(67));
+    if (hasRailroad) shields = shields + Math.floor(shields / 2);
 
     // Despotism/Anarchy penalty: -1 if shields > 2 (unless WLTKD)
     const gov = this._getCityGovernment(city, mapData);
@@ -458,14 +465,16 @@ const Civ2CityDialog = {
   },
 
   // Calculate trade yield for a tile
-  _calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver, city, cityIndex, mapData) {
+  _calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver, isCenter, city, cityIndex, mapData) {
     let trade = hasSpecial ? this.SPECIAL_TOTAL[ter][specialIdx - 1][2] : this.TERRAIN_BASE[ter][2];
 
     // River: +1 trade
     if (hasRiver) trade += 1;
 
     // Road/Railroad: +1 trade if terrain < 3 OR trade > 0
-    if (imp & 0x30) {
+    // Binary: (bVar1 & 0x12) != 0 — city-present bit (0x02) implies road
+    const hasRoad = !!(imp & 0x30) || isCenter;
+    if (hasRoad) {
       if (ter < 3 || trade > 0) trade += 1;
     }
 
@@ -480,7 +489,7 @@ const Civ2CityDialog = {
     if (gov >= 5 && trade > 0) trade += 1;
 
     // Superhighways + road/railroad: +50%
-    if ((imp & 0x30) && this._cityHasBuilding(city, 25))
+    if (hasRoad && this._cityHasBuilding(city, 25))
       trade = trade + Math.floor(trade / 2);
 
     // Pollution: halve (applied last)
@@ -510,7 +519,7 @@ const Civ2CityDialog = {
 
     const food = this._calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, cityIndex, mapData);
     const shields = this._calcTileShields(gx, gy, ter, imp, hasSpecial, specialIdx, isCenter, city, cityIndex, mapData);
-    const trade = this._calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver, city, cityIndex, mapData);
+    const trade = this._calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver, isCenter, city, cityIndex, mapData);
 
     return [food, shields, trade];
   },
