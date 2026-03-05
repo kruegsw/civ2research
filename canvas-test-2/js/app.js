@@ -673,8 +673,9 @@ async function openCityDialog(city, cityIndex) {
   const regions = Civ2CityDialog.render(canvas, city, cityIndex, currentMapData, cdSprites, mapSprites);
   canvas.onclick = (e) => {
     const rect = canvas.getBoundingClientRect();
-    const sx = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const sy = (e.clientY - rect.top) * (canvas.height / rect.height);
+    const dpr = window.devicePixelRatio || 1;
+    const sx = (e.clientX - rect.left) * (canvas.width / rect.width) / dpr;
+    const sy = (e.clientY - rect.top) * (canvas.height / rect.height) / dpr;
     const F = Civ2CityDialog.FRAME;
     const cx = sx - F.contentX;
     const cy = sy - F.contentY;

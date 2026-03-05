@@ -111,12 +111,12 @@ const Civ2CityDialog = {
 
   // ── Outer frame (border + title bar) wrapping the 636×421 content area ──
   FRAME: {
-    borderW: 10, titleBarH: 24, separatorH: 1,
+    borderW: 10, titleBarH: 24, bevelW: 2, separatorH: 0,
     contentW: 636, contentH: 421,
-    get totalW() { return this.contentW + this.borderW * 2; },       // 644
-    get totalH() { return this.contentH + this.borderW * 2 + this.titleBarH + this.separatorH; }, // 454
-    get contentX() { return this.borderW; },                          // 4
-    get contentY() { return this.borderW + this.titleBarH + this.separatorH; }, // 29
+    get totalW() { return this.contentW + this.borderW * 2; },       // 656
+    get totalH() { return this.contentH + this.borderW + this.titleBarH + this.bevelW; }, // 457
+    get contentX() { return this.borderW; },                          // 10
+    get contentY() { return this.titleBarH + this.bevelW; },          // 26 (bevel + title bar above content)
   },
 
   // ── Layout regions — all coordinates absolute on the 636×421 wallpaper ──
@@ -487,7 +487,7 @@ const Civ2CityDialog = {
   // Centered section label with shadow
   _label(ctx, text, cx, cy, color, shadow) {
     const C = this.COL;
-    ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.font = '500 12px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = shadow || C.headerShadow;
@@ -589,20 +589,20 @@ const Civ2CityDialog = {
     const w = F.totalW, h = F.totalH;
     const bw = F.borderW;
 
-    // Fill entire border area with stone texture
+    // Fill border area with stone texture (left, right, bottom — title bar covers top stone)
+    const bvW = F.bevelW;
+    const tbTop = bvW;  // title bar starts after bevel
     if (cdSprites && cdSprites.titleBarTile) {
       const tile = cdSprites.titleBarTile;
       const tw = tile.width, th = tile.height;
-      // Top border
       ctx.save();
       ctx.beginPath();
-      ctx.rect(0, 0, w, bw);
       // Bottom border
       ctx.rect(0, h - bw, w, bw);
-      // Left border
-      ctx.rect(0, bw, bw, h - bw * 2);
-      // Right border
-      ctx.rect(w - bw, bw, bw, h - bw * 2);
+      // Left border (below title bar)
+      ctx.rect(0, tbTop + F.titleBarH, bw, h - tbTop - F.titleBarH - bw);
+      // Right border (below title bar)
+      ctx.rect(w - bw, tbTop + F.titleBarH, bw, h - tbTop - F.titleBarH - bw);
       ctx.clip();
       for (let ty = 0; ty < h; ty += th) {
         for (let tx = 0; tx < w; tx += tw) {
@@ -612,35 +612,21 @@ const Civ2CityDialog = {
       ctx.restore();
     } else {
       ctx.fillStyle = C.borderLight;
-      ctx.fillRect(0, 0, w, bw);
       ctx.fillRect(0, h - bw, w, bw);
-      ctx.fillRect(0, bw, bw, h - bw * 2);
-      ctx.fillRect(w - bw, bw, bw, h - bw * 2);
+      ctx.fillRect(0, tbTop + F.titleBarH, bw, h - tbTop - F.titleBarH - bw);
+      ctx.fillRect(w - bw, tbTop + F.titleBarH, bw, h - tbTop - F.titleBarH - bw);
     }
 
-    // 3D bevel lines on top of stone
-    // Layer 0: 1px black outermost edge
-    ctx.strokeStyle = C.borderBlack;
+    // 2px white outline around entire frame
+    ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
-    // Layer 1: highlight top/left, shadow bottom/right
-    ctx.strokeStyle = C.borderHighlight;
+    ctx.strokeRect(1.5, 1.5, w - 3, h - 3);
+    // 1px black on inner line of bottom + right only
+    ctx.strokeStyle = C.borderBlack;
     ctx.beginPath();
-    ctx.moveTo(1.5, h - 1.5); ctx.lineTo(1.5, 1.5); ctx.lineTo(w - 1.5, 1.5);
-    ctx.stroke();
-    ctx.strokeStyle = C.borderShadow;
-    ctx.beginPath();
-    ctx.moveTo(w - 1.5, 1.5); ctx.lineTo(w - 1.5, h - 1.5); ctx.lineTo(1.5, h - 1.5);
-    ctx.stroke();
-    // Inner bevel (at content edge)
-    const ix = bw - 1;
-    ctx.strokeStyle = C.borderShadow;
-    ctx.beginPath();
-    ctx.moveTo(ix + 0.5, h - ix - 0.5); ctx.lineTo(ix + 0.5, ix + 0.5); ctx.lineTo(w - ix - 0.5, ix + 0.5);
-    ctx.stroke();
-    ctx.strokeStyle = C.borderHighlight;
-    ctx.beginPath();
-    ctx.moveTo(w - ix - 0.5, ix + 0.5); ctx.lineTo(w - ix - 0.5, h - ix - 0.5); ctx.lineTo(ix + 0.5, h - ix - 0.5);
+    ctx.moveTo(1.5, h - 1.5); ctx.lineTo(w - 1.5, h - 1.5); // bottom
+    ctx.moveTo(w - 1.5, 1.5); ctx.lineTo(w - 1.5, h - 1.5); // right
     ctx.stroke();
   },
 
@@ -648,7 +634,7 @@ const Civ2CityDialog = {
   _drawTitleBar(ctx, city, mapData, cdSprites) {
     const F = this.FRAME;
     const C = this.COL;
-    const tbX = F.borderW, tbY = F.borderW;
+    const tbX = F.borderW, tbY = F.bevelW;
     const tbW = F.contentW, tbH = F.titleBarH;
 
     // Tile stone texture across title bar
@@ -1193,7 +1179,8 @@ const Civ2CityDialog = {
 
     if (!(mapSprites && mapSprites.unitTemplates && supported.length > 0)) return;
 
-    const unitW = 51, unitH = 39;
+    const unitH = Math.floor((P.h - 4) / 2);  // sized to fit 2 rows in full panel
+    const unitW = Math.round(unitH * 64 / 48);
     const maxShow = Math.min(12, supported.length);
     const drawY = supported.length <= 3 ? R.y + 20 : R.y + 6;
     const rows = maxShow <= 3 ? 1 : 2;
@@ -1569,12 +1556,13 @@ const Civ2CityDialog = {
   },
 
   _registerButtons() {
+    const F = this.FRAME;
     const B = this.REGIONS.buttons;
     const regions = Object.entries(B).map(([action, r]) => ({ x: r.x, y: r.y, w: r.w, h: r.h, action }));
     // Title bar close icon (in content-offset coordinates, so negative Y)
-    // Icon drawn at tbX+1, tbY+4 in canvas coords; content origin is at (borderW, borderW+24+1)
-    // So in content coords: x=1, y = -(titleBarH + separatorH - 4) = -(24+1-4) = -21
-    regions.push({ x: 1, y: -21, w: 16, h: 16, action: 'exit' });
+    // Icon drawn at tbX+1, iconY in canvas coords; contentOrigin is at (borderW, bevelW+titleBarH)
+    // tbX=borderW, iconY=bevelW+(24-16)/2=6; content coords: x=1, y=6-26=-20
+    regions.push({ x: 1, y: -20, w: 16, h: 16, action: 'exit' });
     return regions;
   },
 
@@ -1593,9 +1581,9 @@ const Civ2CityDialog = {
     ctx.scale(dpr, dpr);
     ctx.imageSmoothingEnabled = false;
 
-    // Phase 1: draw border + title bar in absolute canvas coordinates
-    this._drawOuterBorder(ctx, cdSprites);
+    // Phase 1: draw title bar first, then border on top
     this._drawTitleBar(ctx, city, mapData, cdSprites);
+    this._drawOuterBorder(ctx, cdSprites);
 
     // Phase 2: translate to content area, draw everything else unchanged
     ctx.save();
