@@ -1034,6 +1034,35 @@ const Civ2CityDialog = {
         // Overlays — same logic as main renderer Pass 3, scaled to minimap
         const tileNb = mapData.getNeighbors(tileGx, tileGy);
 
+        // Coastlines (ocean tiles) — 4-quadrant system, same as main renderer
+        if (ter === 10 && mapSprites.coast) {
+          const L = {};
+          for (const d of ['N','NE','E','SE','S','SW','W','NW'])
+            L[d] = mapData.isLand(tileNb[d][0], tileNb[d][1]);
+          const topG   = (L.NW?1:0) | (L.N?2:0)  | (L.NE?4:0);
+          const rightG = (L.NE?1:0) | (L.E?2:0)  | (L.SE?4:0);
+          const botG   = (L.SE?1:0) | (L.S?2:0)  | (L.SW?4:0);
+          const leftG  = (L.SW?1:0) | (L.W?2:0)  | (L.NW?4:0);
+          // Scale offsets and piece sizes from 64×32 tile to sprW×sprH
+          const xS = sprW / 64, yS = sprH / 32;
+          const pw = 32 * xS, ph = 16 * yS;
+          const cox = [16*xS, 16*xS, 0, 32*xS];
+          const coy = [0, 16*yS, 8*yS, 8*yS];
+          ctx.drawImage(mapSprites.coast[topG   * 4 + 0], sx + cox[0], sy + coy[0], pw, ph);
+          ctx.drawImage(mapSprites.coast[botG   * 4 + 1], sx + cox[1], sy + coy[1], pw, ph);
+          ctx.drawImage(mapSprites.coast[leftG  * 4 + 2], sx + cox[2], sy + coy[2], pw, ph);
+          ctx.drawImage(mapSprites.coast[rightG * 4 + 3], sx + cox[3], sy + coy[3], pw, ph);
+          // River mouths on ocean tiles
+          if (mapSprites.mouths) {
+            for (let mi = 0; mi < 4; mi++) {
+              const md = ['NE','SE','SW','NW'][mi];
+              const [mx, my] = tileNb[md];
+              if (mapData.isLand(mx, my) && mapData.hasRiver(mx, my))
+                ctx.drawImage(mapSprites.mouths[mi], sx, sy, sprW, sprH);
+            }
+          }
+        }
+
         // Rivers
         if (mapData.hasRiver(tileGx, tileGy) && mapSprites.rivers) {
           let rm = 0;
