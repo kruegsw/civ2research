@@ -60,6 +60,21 @@ const Civ2CityDialog = {
     9:'Clean Pollution', 10:'Build Airbase', 11:'GoTo', 255:''
   },
 
+  // ── Unit type properties for support calculations (standard MGE RULES.TXT) ──
+  // Settler types (role 5): consume food, count toward support
+  SETTLER_TYPES: new Set([0, 1]),
+  // Non-combat unit types (attack = 0): do NOT cause abroad unhappiness
+  NON_COMBAT_TYPES: new Set([0, 1, 27, 28, 29, 30, 31]),
+  // Support-exempt types (role >= 6: diplomat/trade): no shield cost, no abroad check
+  SUPPORT_EXEMPT_TYPES: new Set([28, 29, 30, 31]),
+  // Fanatic types (flag 0x08): free shield support under Fundamentalism
+  FANATIC_TYPES: new Set([8]),
+  // Settler food cost per turn by government index [Anarchy..Democracy]
+  // Gov 0-2: 1 food (DAT_0064bccd). Gov 3-6: 2 food (DAT_0064bcce)
+  SETTLER_FOOD_COST: [1, 1, 1, 2, 2, 2, 2],
+  // Standard COSMIC free support limits per city
+  COSMIC_FREE_SUPPORT: { monarchy: 3, communism: 3, fundamentalism: 10 },
+
   // ── Production cost tables (RULES.TXT cost × shield_box_factor) ──
   // shield_box_factor (COSMIC #4) defaults to 10; cost × factor = total shields needed
   UNIT_COSTS: [1,1,2,3,4,3,4,5,3,4,6,2,3,5,8,12,10,5,6,8,16,2,3,2,3,3,3,4,5,2,3,5,4,6,4,5,12,3,4,3,6,8,3,5,10,16,6,10,12,16,6,4,4,6,8,4,5,12,16,16,16,5,5].map(c => c * 10),
@@ -403,6 +418,86 @@ const Civ2CityDialog = {
     return 1; // default Despotism
   },
 
+  // Check if a civ owns a specific wonder (wonder still in their city)
+  _civHasWonder(mapData, civIndex, wonderIndex) {
+    const wIds = mapData.gameState && mapData.gameState.wonderCityIds;
+    if (!wIds) return false;
+    const cityId = wIds[wonderIndex];
+    if (cityId == null || cityId === 0xFFFF || cityId >= mapData.cities.length) return false;
+    const city = mapData.cities[cityId];
+    return city && city.owner === civIndex;
+  },
+
+  // Calculate support overlays per unit (from FUN_004e7eb1 + FUN_00505666)
+  // Returns array of { food, shield, unhappy, unhappyType } per supported unit
+  _calcUnitSupportOverlays(supported, city, government, mapData) {
+    const overlays = [];
+    let unitCounter = 0;
+    let abroadCounter = 0;
+
+    for (const unit of supported) {
+      const ov = { food: 0, shield: false, unhappy: 0, unhappyType: 0 };
+
+      // Diplomats/traders (role >= 6) are exempt from support — no overlays
+      if (this.SUPPORT_EXEMPT_TYPES.has(unit.type)) {
+        overlays.push(ov);
+        continue;
+      }
+
+      // Settler food cost (role 5)
+      if (this.SETTLER_TYPES.has(unit.type)) {
+        ov.food = this.SETTLER_FOOD_COST[government] || 1;
+      }
+
+      // Shield support cost (FUN_004e7d7f logic)
+      unitCounter++;
+      switch (government) {
+        case 0: case 1: // Anarchy/Despotism: free = city size
+          if (unitCounter > city.size) ov.shield = true;
+          break;
+        case 2: // Monarchy
+          if (unitCounter > this.COSMIC_FREE_SUPPORT.monarchy) ov.shield = true;
+          break;
+        case 3: // Communism
+          if (unitCounter > this.COSMIC_FREE_SUPPORT.communism) ov.shield = true;
+          break;
+        case 4: // Fundamentalism: fanatics always free
+          if (!this.FANATIC_TYPES.has(unit.type) &&
+              unitCounter > this.COSMIC_FREE_SUPPORT.fundamentalism) ov.shield = true;
+          break;
+        default: // Republic (5), Democracy (6): every unit costs
+          ov.shield = true;
+          break;
+      }
+
+      // Military abroad unhappiness — Republic/Democracy only (FUN_00505666 lines 2524-2548)
+      if (government > 4 && !this.NON_COMBAT_TYPES.has(unit.type)) {
+        const hasWS = this._civHasWonder(mapData, city.owner, 21); // Women's Suffrage
+        const hasPS = this._cityHasBuilding(city, 33); // Police Station
+        let baseUnhappy = (!hasWS && !hasPS) ? 1 : 0;
+
+        if (government === 6) { // Democracy: always +1
+          baseUnhappy += 1;
+        } else if (baseUnhappy > 0 && abroadCounter === 0) {
+          // Republic: first military unit is free
+          baseUnhappy = 0;
+        }
+
+        if (baseUnhappy === 0) {
+          ov.unhappy = 1;
+          ov.unhappyType = 2; // content face (mitigated)
+        } else {
+          ov.unhappy = baseUnhappy;
+          ov.unhappyType = 1; // unhappy face
+        }
+        abroadCounter++;
+      }
+
+      overlays.push(ov);
+    }
+    return overlays;
+  },
+
   // Calculate food yield for a tile
   _calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, cityIndex, mapData) {
     let food = hasSpecial ? this.SPECIAL_TOTAL[ter][specialIdx - 1][0] : this.TERRAIN_BASE[ter][0];
@@ -524,6 +619,16 @@ const Civ2CityDialog = {
     return [food, shields, trade];
   },
 
+  // Scale a sprite canvas to a target size
+  _scaleSprite(source, w, h) {
+    if (!source) return null;
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    c.getContext('2d').drawImage(source, 0, 0, w, h);
+    return c;
+  },
+
   // ── Extract city dialog sprites from ICONS.GIF, PEOPLE.GIF, and optionally CITY.GIF ──
   extractSprites(iconsCtx, peopleCtx, cityGifCtx) {
     const CK = [[255, 0, 255, 15], [255, 159, 163, 15]];
@@ -588,6 +693,17 @@ const Civ2CityDialog = {
         cdSprites.citizens[row][col] = Civ2Renderer.extractSprite(
           peopleCtx, 2 + 28 * col, 6 + 31 * row, 27, 30, PKC, false
         );
+      }
+    }
+
+    // Small citizen faces for unit support overlays (10×10, scaled from 27×30)
+    // unhappy = col 4, content = col 2 in PEOPLE.GIF grid
+    cdSprites.unhappySmall = [];
+    cdSprites.contentSmall = [];
+    for (let era = 0; era < 4; era++) {
+      if (cdSprites.citizens[era]) {
+        cdSprites.unhappySmall[era] = this._scaleSprite(cdSprites.citizens[era][4], 10, 10);
+        cdSprites.contentSmall[era] = this._scaleSprite(cdSprites.citizens[era][2], 10, 10);
       }
     }
 
@@ -1497,7 +1613,7 @@ const Civ2CityDialog = {
     }
   },
 
-  _drawUnitsSupported(ctx, supported, mapSprites) {
+  _drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites) {
     const R = this.REGIONS.unitsSupported;
     const P = this.REGIONS.panels.unitSupport;  // { x:7, y:215, w:184, h:69 }
 
@@ -1507,8 +1623,14 @@ const Civ2CityDialog = {
 
     if (!(mapSprites && mapSprites.unitTemplates && supported.length > 0)) return;
 
+    const government = this._getCityGovernment(city, mapData);
+    const overlays = this._calcUnitSupportOverlays(supported, city, government, mapData);
+    const epoch = mapData.civTechs ? Civ2Renderer._getEpoch(mapData.civTechs[city.owner]) : 0;
+    const eraRow = Math.min(epoch, 3);
+
     const unitH = Math.floor((P.h - 4) / 2);  // sized to fit 2 rows in full panel
     const unitW = Math.round(unitH * 64 / 48);
+    const iconSize = 10;
     const maxShow = Math.min(12, supported.length);
     const drawY = supported.length <= 3 ? R.y + 20 : R.y + 6;
     const rows = maxShow <= 3 ? 1 : 2;
@@ -1543,6 +1665,36 @@ const Civ2CityDialog = {
         }
         const ux = R.x + 8 + i * spacing;
         ctx.drawImage(colored, ux, uy, unitW, unitH);
+
+        // Draw support overlay icons below unit sprite
+        const ov = overlays[idx];
+        if (!ov || !cdSprites) continue;
+        const totalIcons = ov.food + (ov.shield ? 1 : 0) + ov.unhappy;
+        if (totalIcons === 0) continue;
+
+        const { spacing: iconSpacing } = this._iconSpacing(totalIcons, iconSize, unitW);
+        const totalW = (totalIcons - 1) * iconSpacing + iconSize;
+        let ix = ux + Math.round((unitW - totalW) / 2);
+        const iy = uy + unitH - iconSize;
+
+        // Food icons (settlers)
+        for (let f = 0; f < ov.food; f++) {
+          if (cdSprites.foodSmall) ctx.drawImage(cdSprites.foodSmall, ix, iy, iconSize, iconSize);
+          ix += iconSpacing;
+        }
+        // Shield icon (support cost)
+        if (ov.shield) {
+          if (cdSprites.shieldSmall) ctx.drawImage(cdSprites.shieldSmall, ix, iy, iconSize, iconSize);
+          ix += iconSpacing;
+        }
+        // Unhappy/content faces (military abroad under Republic/Democracy)
+        for (let h = 0; h < ov.unhappy; h++) {
+          const faceSprite = ov.unhappyType === 2
+            ? (cdSprites.contentSmall && cdSprites.contentSmall[eraRow])
+            : (cdSprites.unhappySmall && cdSprites.unhappySmall[eraRow]);
+          if (faceSprite) ctx.drawImage(faceSprite, ix, iy, iconSize, iconSize);
+          ix += iconSpacing;
+        }
       }
     }
     ctx.restore();
@@ -1930,7 +2082,7 @@ const Civ2CityDialog = {
     this._drawResourceRows(ctx, city, cdSprites, civData, supported);
     this._drawFoodStorage(ctx, city, cdSprites, mapData);
     this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);
-    this._drawUnitsSupported(ctx, supported, mapSprites);
+    this._drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites);
     this._drawImprovements(ctx, city, cityIndex, mapData, cdSprites);
     this._drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites);
     this._drawButtons(ctx, cdSprites);
