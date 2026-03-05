@@ -33,7 +33,7 @@ The save file parser covers every byte of every record type. No changes needed.
 | cx, cy | +0, +2 | uint16 x 2 | Map coordinates |
 | attribs1-4 | +4..+7 | byte x 4 | Decoded into flags below |
 | canBuildCoastal | +4 bit 7 | flag | |
-| autoBuild | +4 bit 5 | flag | |
+| autoBuild | +4 bit 4 | flag | |
 | techStolen | +4 bit 3 | flag | |
 | improvementSold | +4 bit 2 | flag | |
 | weLoveKingDay | +4 bit 1 | flag | |

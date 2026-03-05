@@ -142,7 +142,7 @@ Parse 100% of the Civ2 MGE .SAV file into structured data. Every documented byte
 - [x] 0x010A: 56 bytes — 28 × uint16 LE
   - Per wonder: 0xFFFF = not built, 0xFFEF = destroyed, else = city sequence ID (0-based)
   - Store as `wonderCityIds[28]`
-  - Cross-reference: wonder indices match RULES.TXT `@IMPROVE` IDs 32–59
+  - Cross-reference: wonder indices match RULES.TXT `@IMPROVE` IDs 39–66
 
 ### 2.7 Unknown Gap Before Name Blocks
 - [x] 0x014A–0x0155 (SAV) / 0x014A–0x0147 (SCN): ~12-14 bytes

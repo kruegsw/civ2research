@@ -42,10 +42,10 @@ const Civ2CityDialog = {
     'Pyramids', 'Hanging Gardens', 'Colossus', 'Lighthouse', 'Great Library',
     'Oracle', 'Great Wall', "Sun Tzu's War Academy", "King Richard's Crusade",
     "Marco Polo's Embassy", "Michelangelo's Chapel", "Copernicus' Observatory",
-    "Shakespeare's Theatre", "Magellan's Expedition", "Da Vinci's Workshop",
+    "Magellan's Expedition", "Shakespeare's Theatre", "Leonardo's Workshop",
     "J.S. Bach's Cathedral", "Isaac Newton's College", "Adam Smith's Trading Co.",
-    "Darwin's Voyage", 'Statue of Liberty', 'Eiffel Tower', 'Hoover Dam',
-    "Women's Suffrage", 'Manhattan Project', 'United Nations', 'Apollo Program',
+    "Darwin's Voyage", 'Statue of Liberty', 'Eiffel Tower', "Women's Suffrage",
+    'Hoover Dam', 'Manhattan Project', 'United Nations', 'Apollo Program',
     'SETI Program', 'Cure for Cancer'
   ],
 
@@ -64,7 +64,7 @@ const Civ2CityDialog = {
   // shield_box_factor (COSMIC #4) defaults to 10; cost × factor = total shields needed
   UNIT_COSTS: [1,1,2,3,4,3,4,5,3,4,6,2,3,5,8,12,10,5,6,8,16,2,3,2,3,3,3,4,5,2,3,5,4,6,4,5,12,3,4,3,6,8,3,5,10,16,6,10,12,16,6,4,4,6,8,4,5,12,16,16,16,5,5].map(c => c * 10),
   IMPROVE_COSTS: [0,0,4,6,4,8,8,12,8,12,12,16,6,10,20,32,20,12,16,24,16,22,12,8,16,16,0,0,0,0,0,32,16,8,4,32,32,32,60].map(c => c * 10),
-  WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,20,30,40,40,40,40,40,30,40,30,20,15,60,15,60,60,60].map(c => c * 10),
+  WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,20,40,30,40,40,40,40,30,40,30,15,20,60,15,60,60,60].map(c => c * 10),
 
   // ── Game formulas from decompiled civ2.exe (reverse_engineering/Civ2_Game_Formulas.md) ──
 
@@ -142,7 +142,7 @@ const Civ2CityDialog = {
     citizens: { x: 5, y: 9 },
 
     // ── Resource map tile grid ──
-    resourceMap: { x: 5, y: 84, gridW: 24, gridH: 12, sprW: 48, sprH: 24 },
+    resourceMap: { x: 5, y: 76, sprW: 47, sprH: 24 },
 
     // ── Resource icon rows ──
     resources: {
@@ -348,6 +348,173 @@ const Civ2CityDialog = {
     '#646464', '#b4b4b4', '#e0e0ff', '#647832', '#008c00', '#0046b4'
   ],
 
+  // ── Standard Civ2 MGE terrain yields: [food, shields, trade] ──
+  // Index = terrain ID (0=Desert .. 10=Ocean). Lines 11-21 are special resources.
+  //                         food shd trd   irr_bonus  mine_bonus  road_trade
+  TERRAIN_BASE: [
+    /*  0 Desert    */ [0, 1, 0],
+    /*  1 Plains    */ [1, 1, 0],
+    /*  2 Grassland */ [2, 0, 0],
+    /*  3 Forest    */ [1, 2, 0],
+    /*  4 Hills     */ [1, 0, 0],
+    /*  5 Mountains */ [0, 1, 0],
+    /*  6 Tundra    */ [1, 0, 0],
+    /*  7 Glacier   */ [0, 0, 0],
+    /*  8 Swamp     */ [1, 0, 0],
+    /*  9 Jungle    */ [1, 0, 0],
+    /* 10 Ocean     */ [1, 0, 2],
+  ],
+  // Special resource total yields (replaces base, not added to it)
+  SPECIAL_TOTAL: [
+    [[3, 1, 0], [0, 4, 0]],   // 0 Desert: Oasis(3/1/0), Oil(0/4/0)
+    [[1, 3, 0], [3, 1, 0]],   // 1 Plains: Buffalo(1/3/0), Wheat(3/1/0)
+    [null,      [2, 1, 0]],   // 2 Grassland: shield handled separately, Resources
+    [[3, 2, 0], [1, 2, 3]],   // 3 Forest: Pheasant(3/2/0), Silk(1/2/3)
+    [[1, 2, 0], [1, 0, 4]],   // 4 Hills: Coal(1/2/0), Wine(1/0/4)
+    [[0, 1, 6], [0, 4, 0]],   // 5 Mountains: Gold(0/1/6), Iron(0/4/0)
+    [[3, 1, 0], [2, 0, 3]],   // 6 Tundra: Game(3/1/0), Furs(2/0/3)
+    [[1, 1, 4], [0, 4, 0]],   // 7 Glacier: Ivory(1/1/4), Oil(0/4/0)
+    [[1, 4, 0], [3, 0, 4]],   // 8 Swamp: Peat(1/4/0), Spice(3/0/4)
+    [[1, 0, 4], [4, 0, 1]],   // 9 Jungle: Gems(1/0/4), Fruit(4/0/1)
+    [[3, 0, 2], [2, 2, 3]],   // 10 Ocean: Fish(3/0/2), Whales(2/2/3)
+  ],
+  IRRIGATION_BONUS: [1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0],
+  MINING_BONUS:     [1, 0, 0, 0, 3, 1, 0, 1, 0, 0, 0],
+
+  // Check if city has a building by ID (1-31 in buildings, 32-38 in buildingsV)
+  _cityHasBuilding(city, buildingId) {
+    if (buildingId <= 31) return !!(city.buildings & (1 << buildingId));
+    if (buildingId <= 38) return !!(city.buildingsV & (1 << (buildingId - 32)));
+    return false;
+  },
+
+  // Check if a wonder is active and belongs to this city
+  _cityHasWonder(cityIndex, wonderIndex, mapData) {
+    const wIds = mapData.gameState && mapData.gameState.wonderCityIds;
+    if (!wIds) return false;
+    return wIds[wonderIndex] === cityIndex;
+  },
+
+  // Get government type for city's owner (0=Anarchy..6=Democracy)
+  _getCityGovernment(city, mapData) {
+    if (mapData.civData && mapData.civData[city.owner] != null) {
+      return mapData.civData[city.owner].government;
+    }
+    return 1; // default Despotism
+  },
+
+  // Calculate food yield for a tile
+  _calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, cityIndex, mapData) {
+    let food = hasSpecial ? this.SPECIAL_TOTAL[ter][specialIdx - 1][0] : this.TERRAIN_BASE[ter][0];
+
+    // Irrigation / Farmland (non-ocean)
+    if (ter !== 10 && (imp & 0x04)) {
+      food += this.IRRIGATION_BONUS[ter];
+      // Supermarket + Farmland: +50%
+      if ((imp & 0x08) && this._cityHasBuilding(city, 24))
+        food = food + Math.floor(food / 2);
+    }
+
+    // Harbor (building 30): +1 food on ocean
+    if (ter === 10 && this._cityHasBuilding(city, 30)) food += 1;
+
+    // Despotism/Anarchy penalty: -1 if food > 2 (unless WLTKD)
+    const gov = this._getCityGovernment(city, mapData);
+    if (gov < 2 && food > 2 && !city.weLoveKingDay) food -= 1;
+
+    // Pollution: halve (applied last)
+    if (imp & 0x80) food = (food + 1) >> 1;
+
+    return food;
+  },
+
+  // Calculate shield yield for a tile
+  _calcTileShields(gx, gy, ter, imp, hasSpecial, specialIdx, isCenter, city, cityIndex, mapData) {
+    let shields = hasSpecial ? this.SPECIAL_TOTAL[ter][specialIdx - 1][1] : this.TERRAIN_BASE[ter][1];
+
+    // Grassland shield (+1 shield based on coordinate formula, not a special resource)
+    if (ter === 2 && !hasSpecial && mapData.hasShield && mapData.hasShield(gx, gy)) shields += 1;
+
+    // Mining (without irrigation)
+    if ((imp & 0x08) && !(imp & 0x04)) shields += this.MINING_BONUS[ter];
+
+    // City center: minimum 1 shield
+    if (isCenter && shields === 0) shields = 1;
+
+    // King Richard's Crusade (wonder index 8): +1 shield
+    if (this._cityHasWonder(cityIndex, 8, mapData)) shields += 1;
+
+    // Railroad: +50%
+    if (imp & 0x20) shields = shields + Math.floor(shields / 2);
+
+    // Despotism/Anarchy penalty: -1 if shields > 2 (unless WLTKD)
+    const gov = this._getCityGovernment(city, mapData);
+    if (gov < 2 && shields > 2 && !city.weLoveKingDay) shields -= 1;
+
+    // Pollution: halve (applied last)
+    if (imp & 0x80) shields = (shields + 1) >> 1;
+
+    return shields;
+  },
+
+  // Calculate trade yield for a tile
+  _calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver, city, cityIndex, mapData) {
+    let trade = hasSpecial ? this.SPECIAL_TOTAL[ter][specialIdx - 1][2] : this.TERRAIN_BASE[ter][2];
+
+    // River: +1 trade
+    if (hasRiver) trade += 1;
+
+    // Road/Railroad: +1 trade if terrain < 3 OR trade > 0
+    if (imp & 0x30) {
+      if (ter < 3 || trade > 0) trade += 1;
+    }
+
+    // Colossus (wonder index 2): +1 trade if trade > 0
+    if (trade > 0 && this._cityHasWonder(cityIndex, 2, mapData)) trade += 1;
+
+    // Despotism/Anarchy penalty: -1 if trade > 2 (unless WLTKD)
+    const gov = this._getCityGovernment(city, mapData);
+    if (gov < 2 && trade > 2 && !city.weLoveKingDay) trade -= 1;
+
+    // Republic/Democracy (gov >= 5): +1 trade if trade > 0
+    if (gov >= 5 && trade > 0) trade += 1;
+
+    // Superhighways + road/railroad: +50%
+    if ((imp & 0x30) && this._cityHasBuilding(city, 25))
+      trade = trade + Math.floor(trade / 2);
+
+    // Pollution: halve (applied last)
+    if (imp & 0x80) trade = (trade + 1) >> 1;
+
+    return trade;
+  },
+
+  // Calculate full yields [food, shields, trade] for a specific tile in a city's radius
+  _getTileYields(gx, gy, isCenter, city, cityIndex, mapData) {
+    const ter = mapData.getTerrain(gx, gy);
+    if (ter < 0 || ter > 10) return [0, 0, 0];
+
+    const imp = mapData.getImprovements(gx, gy);
+    const res = mapData.getResource(gx, gy);
+    const hasRiver = mapData.hasRiver && mapData.hasRiver(gx, gy);
+
+    // Determine if special resource is present
+    let hasSpecial = false, specialIdx = 0;
+    if (ter === 2 && mapData.hasShield && mapData.hasShield(gx, gy)) {
+      // Grassland shield: add +1 shield to base (not a "special resource" per se)
+      hasSpecial = false;
+    } else if (res > 0 && res <= 2 && this.SPECIAL_TOTAL[ter]) {
+      hasSpecial = true;
+      specialIdx = res;
+    }
+
+    const food = this._calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, cityIndex, mapData);
+    const shields = this._calcTileShields(gx, gy, ter, imp, hasSpecial, specialIdx, isCenter, city, cityIndex, mapData);
+    const trade = this._calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver, city, cityIndex, mapData);
+
+    return [food, shields, trade];
+  },
+
   // ── Extract city dialog sprites from ICONS.GIF, PEOPLE.GIF, and optionally CITY.GIF ──
   extractSprites(iconsCtx, peopleCtx, cityGifCtx) {
     const CK = [[255, 0, 255, 15], [255, 159, 163, 15]];
@@ -499,17 +666,20 @@ const Civ2CityDialog = {
   },
 
   // ── Worked tile set from worker bitmaps ──
+  // Game's canonical tile indices: inner ring 0-7, outer ring 8-19, center=20.
+  // Save file bytes: +48 bits 0-7 → indices 0-7, +49 bits 0-7 → indices 8-15,
+  // +50 bits 0-3 → indices 16-19, +50 bit 4 → index 20 (center, always set).
   _getWorkedTiles(city) {
     const worked = new Set();
-    worked.add(0);
+    worked.add(20); // center tile is always worked (index 20)
     for (let b = 0; b < 8; b++) {
-      if (city.workersInner & (1 << b)) worked.add(1 + b);
+      if (city.workersInner & (1 << b)) worked.add(b);      // indices 0-7
     }
     for (let b = 0; b < 8; b++) {
-      if (city.workersOuterA & (1 << b)) worked.add(9 + b);
+      if (city.workersOuterA & (1 << b)) worked.add(8 + b); // indices 8-15
     }
     for (let b = 0; b < 4; b++) {
-      if (city.workersOuterB & (1 << b)) worked.add(17 + b);
+      if (city.workersOuterB & (1 << b)) worked.add(16 + b); // indices 16-19
     }
     return worked;
   },
@@ -806,23 +976,41 @@ const Civ2CityDialog = {
     }
   },
 
-  _drawResourceMap(ctx, city, mapData, cdSprites, mapSprites) {
+  // Canonical city radius tile offsets in doubled-X coordinates (from decompiled DAT_00628370/DAT_006283A0).
+  // Inner ring 0-7 (NE,E,SE,S,SW,W,NW,N), outer diagonals 8-11, outer edges 12-19, center 20.
+  CITY_RADIUS_DOUBLED: [
+    [+1,-1],[+2,0],[+1,+1],[0,+2],[-1,+1],[-2,0],[-1,-1],[0,-2],   // 0-7: inner ring
+    [+2,-2],[+2,+2],[-2,+2],[-2,-2],                                // 8-11: outer diagonals
+    [+1,-3],[+3,-1],[+3,+1],[+1,+3],[-1,+3],[-3,+1],[-3,-1],[-1,-3], // 12-19: outer edges
+    [0,0]                                                            // 20: center
+  ],
+
+  _drawResourceMap(ctx, city, cityIndex, mapData, cdSprites, mapSprites) {
     const R = this.REGIONS.resourceMap;
-    const radiusTiles = [
-      { dx: 0, dy: 0 },
-      { dx: 0, dy: -2 }, { dx: 1, dy: -1 }, { dx: 1, dy: 1 },
-      { dx: 0, dy: 2 }, { dx: -1, dy: 1 }, { dx: -1, dy: -1 },
-      { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
-      { dx: -1, dy: -3 }, { dx: 0, dy: -3 }, { dx: 1, dy: -2 },
-      { dx: 2, dy: -1 }, { dx: 2, dy: 1 }, { dx: 1, dy: 2 },
-      { dx: 0, dy: 3 }, { dx: -1, dy: 3 }, { dx: -2, dy: 1 },
-      { dx: -2, dy: -1 }, { dx: -1, dy: -2 }, { dx: -1, dy: 2 },
-    ];
+    const cx = city.gx, cy = city.gy;
+    const parC = cy & 1; // parity of center row
+    // Convert canonical doubled-X offsets to parser (gx,gy) offsets
+    const radiusTiles = this.CITY_RADIUS_DOUBLED.map(([ddx, ddy]) => {
+      const parT = ((cy + ddy) % 2 + 2) % 2; // parity of target row (safe mod)
+      return { dx: (parC + ddx - parT) >> 1, dy: ddy };
+    });
 
     const worked = this._getWorkedTiles(city);
     const hasTerrain = mapSprites && mapSprites.terrain;
-    const { gridW, gridH, sprW, sprH } = R;
-    const mapOffX = R.x, mapOffY = R.y;
+    const { sprW, sprH } = R;
+    const TW = sprW, TH = sprH;  // tile dimensions (same as main map algorithm)
+
+    // Use same tilePos formula as main map renderer:
+    //   px = gx * TW + ((gy % 2) ? (TW >> 1) : 0)
+    //   py = gy * (TH >> 1)
+    // Compute city center pixel position, then offset so it lands in panel center
+    const cityPx = city.gx * TW + ((city.gy % 2) ? (TW >> 1) : 0);
+    const cityPy = city.gy * (TH >> 1);
+    const panel = this.REGIONS.panels.tileMap;
+    const centerX = R.x + panel.w / 2 + 2;
+    const centerY = R.y + panel.h / 2 - (TH >> 2) - 10;
+    const offX = centerX - cityPx - (TW >> 1);  // offset so city tile top-left centers in panel
+    const offY = centerY - cityPy - (TH >> 1);
 
     for (let i = 0; i < radiusTiles.length; i++) {
       const rt = radiusTiles[i];
@@ -831,10 +1019,9 @@ const Civ2CityDialog = {
       const wgx = mapData.wrap ? mapData.wrap(tileGx) : tileGx;
       const inBounds = tileGy >= 0 && tileGy < mapData.mh && wgx >= 0 && wgx < mapData.mw;
 
-      // Screen position: convert game grid offsets to pixel position
-      const adjustX = (rt.dy % 2 !== 0) ? ((city.gy % 2 === 0) ? gridW / 2 : -gridW / 2) : 0;
-      const sx = mapOffX + (rt.dx * gridW) + adjustX + (3 * gridW) - sprW / 2;
-      const sy = mapOffY + (rt.dy * gridH) + (3 * gridH) - sprH / 2;
+      // Same formula as main map renderer
+      const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
+      const sy = tileGy * (TH >> 1) + offY;
 
       if (hasTerrain && inBounds && mapData.getTerrain) {
         const ter = mapData.getTerrain(tileGx, tileGy);
@@ -843,37 +1030,135 @@ const Civ2CityDialog = {
           const vi = ((wgx * 13 + tileGy * 7) & 0x7FFFFFFF) % variants.length;
           ctx.drawImage(variants[vi], sx, sy, sprW, sprH);
         }
+
+        // Overlays — same logic as main renderer Pass 3, scaled to minimap
+        const tileNb = mapData.getNeighbors(tileGx, tileGy);
+
+        // Rivers
+        if (mapData.hasRiver(tileGx, tileGy) && mapSprites.rivers) {
+          let rm = 0;
+          if (mapData.hasRiver(tileNb.NE[0], tileNb.NE[1]) || mapData.getTerrain(tileNb.NE[0], tileNb.NE[1]) === 10) rm |= 1;
+          if (mapData.hasRiver(tileNb.SE[0], tileNb.SE[1]) || mapData.getTerrain(tileNb.SE[0], tileNb.SE[1]) === 10) rm |= 2;
+          if (mapData.hasRiver(tileNb.SW[0], tileNb.SW[1]) || mapData.getTerrain(tileNb.SW[0], tileNb.SW[1]) === 10) rm |= 4;
+          if (mapData.hasRiver(tileNb.NW[0], tileNb.NW[1]) || mapData.getTerrain(tileNb.NW[0], tileNb.NW[1]) === 10) rm |= 8;
+          ctx.drawImage(mapSprites.rivers[rm], sx, sy, sprW, sprH);
+        }
+
+        // Forest/mountain/hill overlays with neighbor connectivity
+        if ((ter === 3 || ter === 4 || ter === 5) && mapSprites.forest) {
+          let ovi = 0;
+          if (mapData.getTerrain(tileNb.NE[0], tileNb.NE[1]) === ter) ovi |= 1;
+          if (mapData.getTerrain(tileNb.SE[0], tileNb.SE[1]) === ter) ovi |= 2;
+          if (mapData.getTerrain(tileNb.SW[0], tileNb.SW[1]) === ter) ovi |= 4;
+          if (mapData.getTerrain(tileNb.NW[0], tileNb.NW[1]) === ter) ovi |= 8;
+          if (ter === 3) ctx.drawImage(mapSprites.forest[ovi], sx, sy, sprW, sprH);
+          else if (ter === 5) ctx.drawImage(mapSprites.mountains[ovi], sx, sy, sprW, sprH);
+          else ctx.drawImage(mapSprites.hills[ovi], sx, sy, sprW, sprH);
+        }
+
+        // Roads & Railroads
+        const imp = mapData.getImprovements(tileGx, tileGy);
+        const hasCity = imp & 0x02;
+        if ((imp & 0x30 || hasCity) && mapSprites.roads) {
+          const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
+          for (let di = 0; di < 8; di++) {
+            const [nx, ny] = tileNb[DIR_KEYS[di]];
+            const nimp = mapData.getImprovements(nx, ny);
+            const nCity = nimp & 0x02;
+            if ((imp & 0x10 || hasCity) && (nimp & 0x10 || nCity)) ctx.drawImage(mapSprites.roads[di], sx, sy, sprW, sprH);
+            if ((imp & 0x20 || hasCity) && (nimp & 0x20 || nCity)) ctx.drawImage(mapSprites.railroads[di], sx, sy, sprW, sprH);
+          }
+        }
+
+        // Irrigation / Farmland
+        if (imp & 0x04) {
+          if (imp & 0x08 && mapSprites.farmland) ctx.drawImage(mapSprites.farmland, sx, sy, sprW, sprH);
+          else if (mapSprites.irrigation) ctx.drawImage(mapSprites.irrigation, sx, sy, sprW, sprH);
+        }
+
+        // Resources
+        if (ter === 2) {
+          if (mapData.hasShield && mapData.hasShield(tileGx, tileGy) && mapSprites.grasslandShield)
+            ctx.drawImage(mapSprites.grasslandShield, sx, sy, sprW, sprH);
+        } else {
+          const res = mapData.getResource(tileGx, tileGy);
+          if (res > 0 && ter <= 10 && mapSprites.resources[ter * 2 + res])
+            ctx.drawImage(mapSprites.resources[ter * 2 + res], sx, sy, sprW, sprH);
+        }
+
+        // Mining (without irrigation) / Pollution
+        if (imp & 0x08 && !(imp & 0x04) && mapSprites.mining) ctx.drawImage(mapSprites.mining, sx, sy, sprW, sprH);
+        if (imp & 0x80 && mapSprites.pollution) ctx.drawImage(mapSprites.pollution, sx, sy, sprW, sprH);
+
       } else if (inBounds && mapData.getTerrain) {
         // Fallback: colored diamonds
         const ter = mapData.getTerrain(tileGx, tileGy);
         const fillColor = this.TERRAIN_COLORS[ter] || 'rgb(0,0,0)';
-        const cx = sx + sprW / 2, cy = sy + sprH / 2;
-        this._diamond(ctx, cx, cy, gridW / 2, gridH / 2, fillColor, 'rgb(32,32,32)');
+        const cx = sx + (TW >> 1), cy = sy + (TH >> 1);
+        this._diamond(ctx, cx, cy, TW >> 2, TH >> 2, fillColor, 'rgb(32,32,32)');
       }
 
       // Worker dot on worked tiles
       if (worked.has(i)) {
-        const cx = sx + sprW / 2, cy = sy + sprH / 2;
+        const cx = sx + (TW >> 1), cy = sy + (TH >> 1);
         ctx.fillStyle = 'rgb(240,220,0)';
         ctx.fillRect(cx - 1, cy - 1, 3, 3);
       }
 
-      // White outline on center tile
-      if (i === 0) {
-        const cx = sx + sprW / 2, cy = sy + sprH / 2;
-        this._diamond(ctx, cx, cy, gridW / 2, gridH / 2, null, '#fff');
+    }
+
+    // City sprite — drawn after all terrain tiles (same as main renderer Pass 4)
+    if (mapSprites && mapSprites.city) {
+      const epoch = mapData.civTechs
+        ? Civ2Renderer._getEpoch(mapData.civTechs[city.owner])
+        : 0;
+      const row = Civ2Renderer._getCityRow(epoch, city.style || 0);
+      let col = Civ2Renderer._getCitySizeCol(city.size, epoch);
+      if (city.hasPalace && col < 3) col++;
+      if (city.hasWalls) col += 4;
+      if (mapSprites.city[row] && mapSprites.city[row][col]) {
+        const citySx = city.gx * TW + ((city.gy % 2) ? (TW >> 1) : 0) + offX;
+        const citySy = city.gy * (TH >> 1) + offY;
+        // City sprites are 64×48 at full scale; scale proportionally
+        const citySprH = Math.round(48 * sprH / 32);
+        const cityOffY = Math.round(16 * sprH / 32);
+        ctx.drawImage(mapSprites.city[row][col], citySx, citySy - cityOffY, sprW, citySprH);
       }
     }
 
-    // Draw small food/shield/trade icons on worked tiles
-    if (cdSprites && cdSprites.foodSmall) {
+    // Draw small resource icons on worked tiles (food, then shields, then trade)
+    // Reference: 10×10px icons centered horizontally, spacing adjusts by total count
+    if (cdSprites && cdSprites.foodSmall && cdSprites.shieldSmall && cdSprites.tradeSmall) {
+      const iconSize = 10;
       for (let i = 0; i < radiusTiles.length; i++) {
         if (!worked.has(i)) continue;
         const rt = radiusTiles[i];
-        const adjustX = (rt.dy % 2 !== 0) ? ((city.gy % 2 === 0) ? gridW / 2 : -gridW / 2) : 0;
-        const cx = mapOffX + (rt.dx * gridW) + adjustX + (3 * gridW);
-        const cy = mapOffY + (rt.dy * gridH) + (3 * gridH);
-        ctx.drawImage(cdSprites.foodSmall, cx - 5, cy - 5, 10, 10);
+        const tileGx = city.gx + rt.dx;
+        const tileGy = city.gy + rt.dy;
+        const wgx = mapData.wrap ? mapData.wrap(tileGx) : tileGx;
+        if (tileGy < 0 || tileGy >= mapData.mh || wgx < 0 || wgx >= mapData.mw) continue;
+
+        const isCenter = (i === 20);
+        const [food, shields, trade] = this._getTileYields(tileGx, tileGy, isCenter, city, cityIndex, mapData);
+        const totalIcons = food + shields + trade;
+        if (totalIcons === 0) continue;
+
+        // Spacing: 11px for 1-2 icons, decreasing for more (per reference)
+        const spacing = totalIcons <= 2 ? 11 : Math.min(11, Math.max(1, Math.floor((sprW - iconSize) / (totalIcons - 1))));
+        const totalW = (totalIcons - 1) * spacing + iconSize;
+
+        const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
+        const sy = tileGy * (TH >> 1) + offY;
+        const startX = sx + (TW >> 1) - (totalW >> 1);
+        const iconY = sy + (TH >> 1) - (iconSize >> 1);
+
+        let idx = 0;
+        for (let f = 0; f < food; f++, idx++)
+          ctx.drawImage(cdSprites.foodSmall, startX + idx * spacing, iconY, iconSize, iconSize);
+        for (let s = 0; s < shields; s++, idx++)
+          ctx.drawImage(cdSprites.shieldSmall, startX + idx * spacing, iconY, iconSize, iconSize);
+        for (let t = 0; t < trade; t++, idx++)
+          ctx.drawImage(cdSprites.tradeSmall, startX + idx * spacing, iconY, iconSize, iconSize);
       }
     }
   },
@@ -1001,8 +1286,10 @@ const Civ2CityDialog = {
     if (!(cdSprites && cdSprites.food)) return;
     const R = this.REGIONS.foodStorage;
     const hasGranary = !!(city.buildings & (1 << 3));
-    const hasPyramids = mapData && mapData.gameState && mapData.gameState.wonderCityIds &&
-      mapData.gameState.wonderCityIds[0] !== 0xFF && mapData.gameState.wonderCityIds[0] !== 0xFFFF;
+    const pyramidsCityId = mapData && mapData.gameState && mapData.gameState.wonderCityIds &&
+      mapData.gameState.wonderCityIds[0];
+    const hasPyramids = pyramidsCityId != null && pyramidsCityId !== 0xFFFF && pyramidsCityId !== 0xFFEF &&
+      mapData.cities[pyramidsCityId] && mapData.cities[pyramidsCityId].owner === city.owner;
     const foodStored = city.foodInBox || 0;
     const wheatW = 14, wheatH = 14;
     const wheatSpacing = this._wheatSpacing(city.size);
@@ -1599,7 +1886,7 @@ const Civ2CityDialog = {
     this._drawBackground(ctx, cdSprites);
     this._drawLabels(ctx);
     this._drawCitizens(ctx, city, epoch, cdSprites, specs);
-    this._drawResourceMap(ctx, city, mapData, cdSprites, mapSprites);
+    this._drawResourceMap(ctx, city, cityIndex, mapData, cdSprites, mapSprites);
     this._drawResourceRows(ctx, city, cdSprites, civData, supported);
     this._drawFoodStorage(ctx, city, cdSprites, mapData);
     this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);

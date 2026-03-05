@@ -215,11 +215,11 @@ These 22 constants control core game mechanics. The decompiled code shows exactl
 | 7 | 4 | Content citizens base | Happiness calc |
 | 8 | 10 | Unhappiness offset | Happiness calc |
 | 11 | 3 | Tech cost multiplier (tenths) | Research cost |
-| 13 | 0 | Free support: Republic/Democracy | Unit support |
-| 14 | 0 | Free support: Monarchy/Communism | Unit support |
+| 13 | 0 | Free support: Monarchy (case 2) | Unit support |
+| 14 | 0 | Free support: Communism (case 3) | Unit support |
 | 15 | 0 | Free support: Fundamentalism | Unit support |
 | 16 | 1 | Communism equiv. distance | Corruption |
-| 21 | 0 | Max luxury under Communism | Rate slider |
+| 21 | 0 | Max luxury under Fundamentalism | Rate slider |
 
 The browser parser currently reads these from the save file tail section. They can be used directly in formula calculations.
 

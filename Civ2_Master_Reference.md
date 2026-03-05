@@ -2248,8 +2248,8 @@ Cross-referenced and confirmed against four independent sources: (1) Allard Höf
 | +50 | 1 byte | **Workers outer circle B** | ✅ Hex-verified | Low 4 bits = remaining 4 outer-ring positions. **Bit 4 (0x10) = center tile, ALWAYS set** (43/43 cities). Center tile is free — not counted in population. |
 | +51 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type. Specialist count = value ÷ 4. All 0 in main save (no specialists). |
 | +52 | 4 bytes | **Building bitmask I-IV** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, **1-indexed**, RULES.TXT order. **Palace validation**: exactly 1 Palace per active civ — Zimbabwe(civ2), Trondheim(civ3), Washington(civ5), Cardiff(civ1). See full mapping below. |
-| +56 | 1 byte | **Building bitmask V** | Catfish | Buildings 33+. Bit 0=Police Station, Bit 1=Port Facility, etc. All 0 in main save. |
-| +57 | 1 byte | **Item in production** | ✅ Hex-verified | Units: 0x00-0x3F (direct type ID). Improvements/Wonders: `building_id = 256 - byte_value`. E.g., 0xCA=Hoover Dam (#54), 0xFD=Granary (#3), 0xF8=City Walls (#8). Production includes wonders (#33+ in RULES.TXT). |
+| +56 | 1 byte | **Building bitmask V** | Catfish | Buildings 32+. Bit 0=Airport, Bit 1=Police Station, Bit 2=Port Facility, etc. All 0 in main save. |
+| +57 | 1 byte | **Item in production** | ✅ Hex-verified | Units: 0x00-0x3F (direct type ID). Improvements/Wonders: `building_id = 256 - byte_value`. E.g., 0xCA=J.S. Bach's Cathedral (#54), 0xFD=Granary (#3), 0xF8=City Walls (#8). Production includes wonders (#39+ in RULES.TXT). |
 | +58 | 1 byte | **Number of active trade routes** | Höfelt | 0-3 (can be >3 via hex edit). |
 | +59 | 3 bytes | **Trade commodities available/supplied** | Höfelt | 0x00-0x0F = available (RULES.TXT order). Supplied goods use 0xFF complement (e.g., 0xF3 = commodity 13 supplied). |
 | +62 | 3 bytes | **Trade commodities demanded** | Höfelt | 0x00-0x0F. |
@@ -2290,15 +2290,27 @@ The bit numbering is **1-indexed**, matching the RULES.TXT improvement order:
 | 4 | Temple | 20 | Hydro Plant |
 | 5 | Marketplace | 21 | Nuclear Plant |
 | 6 | Library | 22 | Stock Exchange |
-| 7 | Courthouse | 23 | Superhighways |
-| 8 | City Walls | 24 | Research Lab |
-| 9 | Aqueduct | 25 | SAM Missile Battery |
-| 10 | Bank | 26 | Coastal Fortress |
-| 11 | Cathedral | 27 | Solar Plant |
-| 12 | University | 28 | Harbor |
-| 13 | Mass Transit | 29 | Offshore Platform |
-| 14 | Colosseum | 30 | Airport |
-| 15 | Factory | 31 | Police Station |
+| 7 | Courthouse | 23 | Sewer System |
+| 8 | City Walls | 24 | Supermarket |
+| 9 | Aqueduct | 25 | Superhighways |
+| 10 | Bank | 26 | Research Lab |
+| 11 | Cathedral | 27 | SAM Missile Battery |
+| 12 | University | 28 | Coastal Fortress |
+| 13 | Mass Transit | 29 | Solar Plant |
+| 14 | Colosseum | 30 | Harbor |
+| 15 | Factory | 31 | Offshore Platform |
+
+Additional improvements in **buildingsV** (+56, uint8 bitmask):
+
+| Bit | Improvement |
+|-----|-------------|
+| 0 (ID 32) | Airport |
+| 1 (ID 33) | Police Station |
+| 2 (ID 34) | Port Facility |
+| 3 (ID 35) | SS Structural |
+| 4 (ID 36) | SS Component |
+| 5 (ID 37) | SS Module |
+| 6 (ID 38) | Capitalization |
 
 Bits 1–6 are confirmed by a controlled experiment. Bits 7–31 are inferred from RULES.TXT order and validated against scenario saves (e.g., cities with City Walls, Aqueduct, Cathedral, SDI Defense all have the expected bits set). Bit 0 appears in some scenario cities but no standard-game cities; its meaning is unknown (possibly a scenario flag or the "Nothing" entry in RULES.TXT).
 
@@ -2309,7 +2321,7 @@ Bits 1–6 are confirmed by a controlled experiment. Bits 7–31 are inferred fr
 The production item byte encodes both units and improvements/wonders in a single byte:
 
 - **Units**: Direct type ID (0x00-0x3F). E.g., 0x00=Settlers, 0x05=Legion, 0x06=Pikemen, 0x12=Crusaders.
-- **Improvements/Wonders**: Inverted encoding: `building_id = 256 - byte_value`. E.g., 0xFF=Palace(#1), 0xFD=Granary(#3), 0xF8=City Walls(#8), 0xD5=Michelangelo's Chapel(#43), 0xCA=Hoover Dam(#54).
+- **Improvements/Wonders**: Inverted encoding: `building_id = 256 - byte_value`. E.g., 0xFF=Palace(#1), 0xFD=Granary(#3), 0xF8=City Walls(#8), 0xD5=Great Library(#43), 0xCA=J.S. Bach's Cathedral(#54).
 
 **Hex-verified production summary** (43 cities in main save):
 - 16 cities building Settlers (rapid expansion phase)
@@ -2317,7 +2329,7 @@ The production item byte encodes both units and improvements/wonders in a single
 - 5 cities building Pikemen (defense)
 - 3 cities building Legion
 - 2 cities building Granary, 2 building City Walls
-- 1 city each: Hoover Dam (#54), Michelangelo's Chapel (#43), Temple, Warriors, Elephant, Light Artillery, Horsemen, Ironclad
+- 1 city each: J.S. Bach's Cathedral (#54), Great Library (#43), Temple, Warriors, Elephant, Light Artillery, Horsemen, Ironclad
 
 ##### Resource Field Relationship
 
@@ -2364,7 +2376,7 @@ Verified by assigning 1 specialist of each type from a size-5 baseline (no speci
 ##### TODO: City Record Remaining Unknowns
 - [x] All major fields mapped via civ2mod.c, hexedit.rtf, Catfish cross-reference, and controlled experiments
 - [x] Layout correction: XY coords at +0, name at +32 (confirmed by civ2mod.c and hex verification)
-- [x] Verify +57 as item in production — **confirmed**: units 0x00-0x3F, buildings/wonders via `256 - byte_value`. Washington building Hoover Dam (0xCA=#54), Philadelphia building Michelangelo's Chapel (0xD5=#43).
+- [x] Verify +57 as item in production — **confirmed**: units 0x00-0x3F, buildings/wonders via `256 - byte_value`. Washington building J.S. Bach's Cathedral (0xCA=#54), Philadelphia building Great Library (0xD5=#43).
 - [x] Verify +48-50 as worker tile assignments — **confirmed**: workers + specialists = city_size for ALL 43 cities. Bit 4 of +50 = center tile, always set.
 - [x] Verify building bitmask 1-indexed — **confirmed**: Palace (bit 1) present in exactly 1 city per active civ (Zimbabwe, Trondheim, Washington, Cardiff).
 - [x] Verify +84 as city sequence ID — **confirmed**: 43 unique values (1-46), gaps at 4/13/27 = destroyed cities.
@@ -5356,7 +5368,7 @@ Each tile is stored as a 6-byte interleaved record, in the same row-major order 
 |---------|---------|---------|
 | `@COSMIC` | Global game constants | 21 numeric values (road multiplier, food per citizen, tech paradigm, etc.) |
 | `@CIVILIZE` | Technology definitions | 93 entries (89 standard + Future Tech + 3 user-defined + 7 extra slots) |
-| `@IMPROVE` | City improvements & wonders | 59 entries (improvements 0-31, wonders 32-59) |
+| `@IMPROVE` | City improvements & wonders | 67 entries (improvements 0-38, wonders 39-66) |
 | `@ENDWONDER` | Wonder expiration advances | 28 entries (one per wonder) |
 | `@UNITS` | Unit type definitions | 62 entries (52 standard + 11 user-defined slots) |
 | `@TERRAIN` | Terrain properties | 11 base types + 11 special resource variants |
@@ -5462,8 +5474,8 @@ Technology IDs in save files (byte arrays at 0x0042 and 0x00A6) correspond to 0-
 
 Each line: `Name, cost_x10, upkeep, prerequisite_tech`
 
-- IDs 0-31 are city improvements (Palace=1, Barracks=2, ...)
-- IDs 32-59 are Wonders of the World (Pyramids=32, Hanging Gardens=33, ...)
+- IDs 0-38 are city improvements/special (Nothing=0, Palace=1, Barracks=2, ..., Offshore Platform=31, Airport=32, Police Station=33, Port Facility=34, SS Structural=35, SS Component=36, SS Module=37, Capitalization=38)
+- IDs 39-66 are Wonders of the World (28 wonders, matching wonderCityIds[0-27] order)
 - The building bitmask in city records (+52-55) uses 1-indexed bits matching these IDs
 
 ### Terrain Definition Format (`@TERRAIN`)
@@ -6139,9 +6151,9 @@ All offsets relative to start of a single Civilization instance (`0x0064C6A0` fo
 | 0x00E  | `0064c6ae`        |      |         | *(gap / more core fields)* |
 | 0x010  | `0064c6b0`        | 1    | byte    | **rank / power_rating** -- compared between civs for diplomacy. Incremented on various events (wonders, techs). Used as a "strength" metric. |
 | 0x011  | `0064c6b1`        | 1    | byte    | **unknown_counter_b1** -- incremented in some game logic |
-| 0x013  | `0064c6b3`        | 1    | byte    | **tax_rate** -- 0-10 scale. `tax + luxury + science = 10`. Written to/from UI slider (in_ECX + 0x2e8). Stored to DAT_0064bc1a for human player early game. |
-| 0x014  | `0064c6b4`        | 1    | byte    | **luxury_rate** -- 0-10 scale. Written to/from UI slider (in_ECX + 0x2e0). Stored to DAT_0064bc1c for human player early game. |
-| 0x015  | `0064c6b5`        | 1    | byte    | **government_type** -- 0=Anarchy, 1=Despotism, 2=Monarchy, 3=Communism, 4=Republic, 5=Democracy, 6=Fundamentalism. Checked `< 2` for primitive govts, `== 6` for Fundie, etc. Indexes into government name table (DAT_0064b9a0, stride 4). |
+| 0x013  | `0064c6b3`        | 1    | byte    | **science_rate** -- 0-10 scale. `science + tax + luxury = 10` (luxury implicit). Used directly to compute science output in FUN_004ea1f6. Capped by COSMIC #21 under Fundamentalism. |
+| 0x014  | `0064c6b4`        | 1    | byte    | **tax_rate** -- 0-10 scale. Combined with science_rate to derive luxury_rate = 10 - science - tax. |
+| 0x015  | `0064c6b5`        | 1    | byte    | **government_type** -- 0=Anarchy, 1=Despotism, 2=Monarchy, 3=Communism, 4=Fundamentalism, 5=Republic, 6=Democracy. Checked `< 2` for primitive govts, `== 4` for Fundie, etc. Indexes into government name table (DAT_0064b9a0, stride 4). |
 | 0x016  | `0064c6b6`        |      |         | *(within core block)* |
 | 0x01E  | `0064c6be`        | 1    | byte    | **reputation** -- diplomatic reputation value, shifted right by 1 in some contexts. Incremented when treaties formed/broken. |
 | 0x01F  | `0064c6bf`        | 1    | byte    | **patience / anger_counter** -- incremented/decremented during diplomatic negotiations. Added +1 for accepted deals, -1 for broken deals. |
@@ -6506,15 +6518,15 @@ From `FUN_00419d23` (COSMIC rules loading at `block_00410000.c`):
 | `DAT_0064bcd2` | 10 | 4 | 4-50 | (related to city radius) |
 | `DAT_0064bcd3` | 11 | 3 | 3-10 | **Tech cost multiplier** (tenths) |
 | `DAT_0064bcd4` | 12 | 5 | 5-100 | (future tech cost?) |
-| `DAT_0064bcd5` | 13 | 0 | 0-8 | **Free support: Republic/Democracy** |
-| `DAT_0064bcd6` | 14 | 0 | 0-8 | **Free support: Monarchy/Communism** |
+| `DAT_0064bcd5` | 13 | 0 | 0-8 | **Free support: Monarchy** (case 2) |
+| `DAT_0064bcd6` | 14 | 0 | 0-8 | **Free support: Communism** (case 3) |
 | `DAT_0064bcd7` | 15 | 0 | 0-8 | **Free support: Fundamentalism** |
 | `DAT_0064bcd8` | 16 | 1 | 1-20 | **Communism corruption equiv. distance** |
-| `DAT_0064bcd9` | 17 | 0 | 0-100 | **Communism shield waste percent** |
+| `DAT_0064bcd9` | 17 | 0 | 0-100 | **Fundamentalism science penalty percent** |
 | `DAT_0064bcda` | 18 | 0 | 0-100 | (related to combat) |
 | `DAT_0064bcdb` | 19 | 4 | 4-100 | (city related) |
 | `DAT_0064bcdc` | 20 | 25 | 25-200 | (movement related) |
-| `DAT_0064bcdd` | 21 | 0 | 0-10 | **Max luxury rate under Communism** |
+| `DAT_0064bcdd` | 21 | 0 | 0-10 | **Max science rate under Fundamentalism** |
 
 ### City Struct Layout (stride = 0x58 = 88 bytes, base = `DAT_0064f340`)
 
@@ -6551,8 +6563,8 @@ From `FUN_00419d23` (COSMIC rules loading at `block_00410000.c`):
 | +0x0A | `DAT_0064c6aa` | short | **Current research target** (-1=none) |
 | +0x10 | `DAT_0064c6b0` | byte | **Techs known (count A)** |
 | +0x12 | `DAT_0064c6b2` | byte | **Techs known (count B)** |
-| +0x13 | `DAT_0064c6b3` | byte | **Luxury rate** (tenths) |
-| +0x14 | `DAT_0064c6b4` | byte | **Science rate** (tenths) |
+| +0x13 | `DAT_0064c6b3` | byte | **Science rate** (tenths, 0-10) |
+| +0x14 | `DAT_0064c6b4` | byte | **Tax rate** (tenths, 0-10); luxury = 10 - science - tax |
 | +0x15 | `DAT_0064c6b5` | byte | **Government type** |
 
 ### Government Type Values
@@ -6590,24 +6602,25 @@ From `FUN_00419d23` (COSMIC rules loading at `block_00410000.c`):
 | 0x0A (10) | Bank |
 | 0x0B (11) | Cathedral |
 | 0x0C (12) | University |
-| 0x0D (13) | City Walls |
+| 0x0D (13) | Mass Transit |
 | 0x0E (14) | Colosseum |
 | 0x0F (15) | Factory |
 | 0x10 (16) | Manufacturing Plant |
-| 0x12 (18) | SDI Defense |
-| 0x13 (19) | Recycling Center |
-| 0x14 (20) | Power Plant |
-| 0x15 (21) | Hydro Plant |
-| 0x16 (22) | Nuclear Plant |
+| 0x11 (17) | SDI Defense |
+| 0x12 (18) | Recycling Center |
+| 0x13 (19) | Power Plant |
+| 0x14 (20) | Hydro Plant |
+| 0x15 (21) | Nuclear Plant |
+| 0x16 (22) | Stock Exchange |
 | 0x18 (24) | Supermarket |
 | 0x19 (25) | Superhighways |
 | 0x1A (26) | Research Lab |
-| 0x1D (29) | SS Component? / Police Station |
-| 0x1E (30) | Offshore Platform (food+1 ocean) |
-| 0x1F (31) | (shield bonus ocean?) |
+| 0x1D (29) | Solar Plant |
+| 0x1E (30) | Harbor (food+1 ocean) |
+| 0x1F (31) | Offshore Platform (shield+1 ocean) |
 | 0x20 (32) | Airport |
-| 0x21 (33) | Port Facility |
-| 0x22 (34) | Capitalization |
+| 0x21 (33) | Police Station |
+| 0x22 (34) | Port Facility |
 
 ---
 
@@ -6862,7 +6875,7 @@ int get_tile_resource(int city_idx, int tile_offset, int resource_type) {
     int tile_x = city[city_idx].x + city_offset_x[tile_offset];  // DAT_00628370
     int tile_y = city[city_idx].y + city_offset_y[tile_offset];  // DAT_006283a0
 
-    int terrain_type = get_terrain_type(tile_x, tile_y);  // 0-10 (ocean=2, etc.)
+    int terrain_type = get_terrain_type(tile_x, tile_y);  // 0-10 (ocean=10, grassland=2, etc.)
     int special = get_special_resource(tile_x, tile_y);   // 0 or 1-10 (special resource)
     byte improvements = get_tile_improvements(tile_x, tile_y);
 
@@ -6878,7 +6891,7 @@ int get_tile_resource(int city_idx, int tile_offset, int resource_type) {
     // ---- FOOD (resource_type == 0) ----
     if (resource_type == 0) {
         if (terrain_type == 10) {  // Ocean
-            if (has_building(city_idx, 0x1E)) {  // Offshore Platform
+            if (has_building(city_idx, 0x1E)) {  // Harbor
                 output += 1;
             }
         } else {
@@ -6899,7 +6912,7 @@ int get_tile_resource(int city_idx, int tile_offset, int resource_type) {
             output += mining_bonus[terrain_type];  // DAT_00627cd1[type*0x18]
         }
         if (terrain_type == 2 && !has_ocean_shields(tile_x, tile_y)) {
-            output = 0;  // Ocean with no platform
+            output = 0;  // Grassland without bonus shield resource
         }
         if (tile_offset == 20 && output == 0) {
             output = 1;  // City center always produces at least 1 shield
@@ -7000,12 +7013,13 @@ local_10 = local_10 + 1 >> 1;  // (output+1)/2 rounds up
 ### Plain English
 
 1. Look up base food/shields/trade from the terrain table (11 terrain types x special resources)
-2. Apply improvement bonuses (irrigation adds food, mining adds shields, roads add trade)
-3. Apply building bonuses (Supermarket +50% food with farmland, Superhighways +50% trade)
-4. Apply government effects (Despotism -1 penalty on tiles producing 3+, Republic/Democracy +1 trade)
-5. Apply wonder effects (Colossus +1 trade, King Richard's +1 shield, etc.)
-6. Railroad gives +50% to shield production
-7. Pollution halves all output (rounded up)
+2. Apply improvement bonuses: irrigation adds food (+ Supermarket +50% with farmland), mining adds shields, roads/rivers add trade
+3. Apply wonder effects: Colossus +1 trade, King Richard's +1 shield
+4. Railroad gives +50% to shield production
+5. Despotism/Anarchy penalty: -1 on tiles producing 3+ (unless WLTKD)
+6. Republic/Democracy: +1 trade on tiles producing trade
+7. Superhighways +50% trade (with road/railroad)
+8. Pollution halves all output (rounded up)
 
 ### JavaScript Implementation
 
@@ -7072,7 +7086,7 @@ function getTileResource(city, tileOffset, resourceType, gameState) {
     }
 
     // Republic/Democracy trade bonus
-    if (output > 0 && resourceType === 2 && govType >= 4) {
+    if (output > 0 && resourceType === 2 && govType >= 5) {
         output += 1;
     }
 
@@ -7110,7 +7124,6 @@ int calculate_happiness(int city_idx) {
     // STEP 1: Calculate initial unhappy citizens
     // ============================================
     int unhappy;
-    int content_base;
 
     if (!is_human(civ_idx)) {
         // AI: simpler calculation
@@ -7118,32 +7131,31 @@ int calculate_happiness(int city_idx) {
         // DAT_0064bccf default 7 => content_base-5 = 2
     } else {
         // Human player
-        int base_content = COSMIC_content_base - difficulty;  // e.g. 7-5=2 on Deity
-
-        // Raging hordes option adds 2
-        if (raging_hordes_flag) {
-            base_content += 2;
+        // Empire-size spread (raging hordes adds 2 to spread, NOT to content base)
+        int spread = COSMIC_unhappy_offset + difficulty * -2;   // DAT_0064bcd0
+        if (DAT_00655af0 & 4) {  // raging hordes flag
+            spread += 2;
         }
+        int divisor = ((gov_type >> 1) + 2) * spread / 2;
+        if (divisor < 2) divisor = 1;
 
+        // Content citizens base
+        int content_base = COSMIC_content_base - difficulty;   // DAT_0064bccf
         // Special case: Palace bonus for peaceful civs
-        if (base_content < 3 && has_building(city_idx, PALACE) &&
-            no_military_outside && no_garrisons) {
-            base_content = 2;
+        if (content_base < 3 && has_building(city_idx, PALACE) &&
+            military_abroad == 0 && garrison_count == 0) {
+            content_base = 2;
         }
 
-        unhappy = (population - 1) - (base_content - 2);
+        unhappy = (population - 1) - (content_base - 2);
 
-        // Government-type difficulty scaling
-        if (gov_type != COMMUNISM) {
-            int spread = COSMIC_unhappy_offset + difficulty * -2;
-            if (raging_hordes) spread += 2;
-            int divisor = ((gov_type >> 1) + 2) * spread / 2;
-            if (divisor < 2) divisor = 1;
+        // Empire size penalty (Communism exempt)
+        if (gov_type != COMMUNISM) {  // != 0x03
             unhappy += (civ[civ_idx].city_count - divisor + city_idx % divisor) / divisor;
         }
     }
 
-    // Number of unhappy that must be made content
+    // Clamp: if unhappy > population, track surplus
     int surplus_unhappy = 0;
     if (population < unhappy) {
         surplus_unhappy = unhappy - population;
@@ -7151,78 +7163,118 @@ int calculate_happiness(int city_idx) {
     }
 
     // ============================================
-    // STEP 2: Luxury effect (each 2 luxury = 1 content -> happy)
+    // STEP 2: Luxury effect (each 2 luxury = 1 happy)
     // ============================================
-    happy = luxury_output / 2;
+    happy = luxury_output / 2;   // DAT_006a65fc >> 1
     // FUN_004ea031 adjusts happy/unhappy balance
 
     // ============================================
-    // STEP 3: Temple effect (makes unhappy -> content)
+    // STEP 3: Colosseum (building 0x0e = 14)
     // ============================================
     if (has_building(city_idx, COLOSSEUM)) {
         unhappy -= 3;
-        if (has_tech(civ_idx, ELECTRONICS)) {  // 0x18
+        if (has_tech(civ_idx, ELECTRONICS)) {  // tech 0x18 = 24
             unhappy -= 1;  // Colosseum + Electronics = 4 unhappy -> content
         }
     }
 
     // ============================================
-    // STEP 4: Cathedral effect
+    // STEP 4: Cathedral (building 0x0b = 11) or Michelangelo's (wonder 10)
+    //   Prerequisite: Monotheism (tech 0x37 = 55), NOT Theology
+    //   Effect: 2-4 depending on Theology and Communism techs
     // ============================================
-    if (has_tech(civ_idx, THEOLOGY) &&
+    if (has_tech(civ_idx, MONOTHEISM) &&                           // tech 0x37 = 55
         (has_building(city_idx, CATHEDRAL) || has_wonder_effect(civ_idx, MICHELANGELOS))) {
-        // Cathedral: makes 3-4 unhappy content
-        int effect = (has_tech(civ_idx, COMMUNISM_TECH) ? 0 : 1) + (3 - (has_tech(civ_idx, ?) ? 0 : 1));
+        int effect = (has_tech(civ_idx, COMMUNISM_TECH) ? 0 : 1)  // tech 0x0f = 15: -1 if has
+                   + (has_tech(civ_idx, THEOLOGY) ? 3 : 2);       // tech 0x52 = 82: +1 if has
+        // Range: 2 (Communism, no Theology) to 4 (no Communism, has Theology)
         unhappy -= effect;
     }
 
     // ============================================
-    // STEP 5: Temple effect
+    // STEP 5: Temple (building 4)
+    //   Base effect 0. +1 for Ceremonial Burial, +1 for Mysticism.
+    //   Oracle doubles. In practice always >= 1 since Ceremonial Burial
+    //   is a prerequisite for Temple.
     // ============================================
     if (has_building(city_idx, TEMPLE)) {
-        int temple_effect = 1;
-        if (has_tech(civ_idx, MYSTICISM)) temple_effect++;
-        if (has_wonder_effect(civ_idx, ORACLE)) temple_effect *= 2;
+        int temple_effect = 0;
+        if (has_tech(civ_idx, MYSTICISM)) temple_effect++;           // tech 0x38 = 56
+        if (has_tech(civ_idx, CEREMONIAL_BURIAL)) temple_effect++;   // tech 9
+        if (has_wonder_effect(civ_idx, ORACLE)) temple_effect *= 2;  // wonder 5
         unhappy -= temple_effect;
     }
 
     // ============================================
-    // STEP 6: Courthouse + Police Station martial law
+    // STEP 5b: City Walls / Palace bonus under Democracy
     // ============================================
-    // Under Despotism/Monarchy/Communism: military units in city make citizens content
-    if (gov_type < 5) {  // Not Republic/Democracy
-        int garrison = count_military_in_city(city_idx);
+    if ((has_building(city_idx, CITY_WALLS) || has_building(city_idx, PALACE)) &&
+        gov_type == DEMOCRACY) {  // gov 0x06
+        happy += 1;
+    }
+
+    // ============================================
+    // STEP 6: Fundamentalism / Martial law / Military unhappiness
+    // ============================================
+    if (gov_type == FUNDAMENTALISM) {  // gov 0x04
+        // Fundamentalism: no unhappy citizens at all
+        surplus_unhappy = 0;
+        unhappy = 0;
+    }
+    else if (gov_type < REPUBLIC) {  // gov < 5: Anarchy/Despotism/Monarchy/Communism
+        // Martial law: military units in city suppress unhappiness
+        int garrison = 0;
+        for each military unit in city:
+            garrison += 1;
+            if (gov_type == COMMUNISM) garrison = prev + 2;  // each unit counts double
         int max_martial = 3;
-        if (gov_type == COMMUNISM) max_martial = 6;
-        garrison = Math.min(garrison, max_martial);
+        if (gov_type == COMMUNISM) max_martial = 6;  // effectively 3 units × 2
+        garrison = min(garrison, max_martial);
+        garrison = clamp(garrison, 0, unhappy);  // can't reduce below 0
         unhappy -= garrison;
     }
-    // Under Republic/Democracy: military units OUTSIDE city make citizens unhappy
-    else {
-        int abroad = military_units_abroad;
-        if (!has_wonder(STATUE_OF_LIBERTY) && !has_building(city_idx, POLICE_STATION)) {
-            abroad_penalty = 1;
+    else {  // Republic (0x05) / Democracy (0x06)
+        int penalty;
+        if (has_wonder_effect(civ_idx, WOMENS_SUFFRAGE) ||   // wonder 0x15 = 21
+            has_building(city_idx, POLICE_STATION)) {         // building 0x21 = 33
+            penalty = 0;
         } else {
-            abroad_penalty = 0;
+            penalty = 1;
         }
-        if (gov_type == DEMOCRACY) abroad_penalty++;
-        unhappy += abroad_penalty * abroad;
+        if (gov_type == DEMOCRACY) penalty++;  // Democracy: +1 per unit abroad
+
+        if (penalty != 0) {
+            int abroad = military_units_abroad;
+            if (abroad != 0 && gov_type == REPUBLIC) {  // 0x05
+                abroad -= 1;  // Republic: one free unit abroad
+            }
+            unhappy += penalty * abroad;
+        }
     }
 
     // ============================================
     // STEP 7: Wonder effects
     // ============================================
-    if (has_wonder_effect(civ_idx, SHAKESPEARES)) {  // Wonder 1
+    // Hanging Gardens (wonder 1): +1 happy empire-wide, +3 in wonder city
+    if (has_wonder_effect(civ_idx, HANGING_GARDENS)) {  // wonder 1
         happy += 1;
-        if (wonder_city == city_idx) happy += 2;  // +3 total in wonder city
+        if (wonder_city(HANGING_GARDENS) == city_idx) {
+            happy += 2;  // +3 total in wonder city
+        }
     }
-    if (has_wonder_effect(civ_idx, JS_BACHS)) {  // Wonder 0x1b
+
+    // Cure for Cancer (wonder 0x1b = 27): +1 happy empire-wide
+    if (has_wonder_effect(civ_idx, CURE_FOR_CANCER)) {  // wonder 27
         happy += 1;
     }
-    if (wonder_city(CURE_FOR_CANCER) == city_idx) {
-        unhappy = 0;  // Cure for Cancer: no unhappy in that city
+
+    // Shakespeare's Theatre (wonder 0x0d = 13): all unhappy -> content in wonder city
+    if (wonder_city(SHAKESPEARES_THEATRE) == city_idx) {  // wonder 13
+        unhappy = 0;
     }
-    if (has_wonder_effect(civ_idx, HANGING_GARDENS)) {
+
+    // J.S. Bach's Cathedral (wonder 0x0f = 15): -2 unhappy empire-wide
+    if (has_wonder_effect(civ_idx, JS_BACHS_CATHEDRAL)) {  // wonder 15
         unhappy -= 2;
     }
 
@@ -7243,34 +7295,58 @@ DAT_006a65a8 = ((char)(&DAT_0064f349)[param_1 * 0x58] + -1) - (DAT_0064bccf - 5)
 // Initial unhappy for human (line 4093):
 DAT_006a65a8 = (population - 1) - (content_base - 2);
 
-// Government spread (line 4084):
+// Raging hordes → adds to SPREAD, not content base (lines 4080-4083):
+local_1c = DAT_0064bcd0 + DAT_00655b08 * -2;  // spread = unhappy_offset - 2*difficulty
+if (DAT_00655af0 & 4) local_1c += 2;           // raging hordes adds to spread
+
+// Government spread divisor (line 4084):
 iVar5 = (int)((((int)(uint)(byte)government_type >> 1) + 2) * local_1c) / 2;
 
 // Colosseum effect (line 4110):
 DAT_006a65a8 = DAT_006a65a8 + -3;  // -3 unhappy
 if (has_ELECTRONICS) DAT_006a65a8 -= 1;  // extra -1
 
-// Temple effect (lines 4124-4136):
-temple_happy = has_MYSTICISM + has_THEOLOGY + has_ORACLE_doubles;
+// Cathedral effect (lines 4116-4122):
+// Prerequisite: Monotheism (0x37 = 55), NOT Theology
+// Effect = (no_Communism ? 1 : 0) + (has_Theology ? 3 : 2)  // range 2-4
+DAT_006a65a8 -= ((uint)(iVar5 == 0) + (3 - (uint)(iVar6 == 0)));
 
-// Martial law under despotism (lines 4158-4163):
+// Temple effect (lines 4124-4136):
+// Base 0. +1 for Mysticism (0x38=56), +1 for Ceremonial Burial (9). Oracle (wonder 5) doubles.
+temple_happy = has_MYSTICISM + has_CEREMONIAL_BURIAL;
+if (ORACLE) temple_happy *= 2;
+
+// City Walls/Palace + Democracy = +1 happy (lines 4138-4142):
+if ((CITY_WALLS || PALACE) && gov == DEMOCRACY) happy += 1;
+
+// Fundamentalism: zeroes all unhappiness (lines 4144-4147):
+if (gov == FUNDAMENTALISM) { surplus = 0; unhappy = 0; }
+
+// Martial law (lines 4148-4167):
+// Each military unit: +1 content (Communism: +2 per unit, max 6; others: max 3)
+// Garrison clamped to [0, unhappy] via thunk_FUN_005adfa0
 local_1c = 3;  // max 3 content from garrison
 if (gov == COMMUNISM) local_1c = 6;  // Communism allows 6
 
-// Military unhappiness under Rep/Demo (lines 4176-4184):
+// Military unhappiness under Rep/Demo (lines 4168-4186):
+// Women's Suffrage (wonder 0x15 = 21) or Police Station (0x21 = 33): penalty = 0
+// Democracy: penalty += 1. Republic: one free unit abroad.
 if (gov >= REPUBLIC) {
     unhappy += abroad_modifier * military_units_abroad;
 }
 
-// Shakespeare's Theater (lines 4190-4194):
+// Hanging Gardens (wonder 1, lines 4188-4195):
 DAT_006a6550 += 1;  // +1 happy
-if (wonder_city == city_idx) DAT_006a6550 += 2;  // +3 total
+if (wonder_city(1) == city_idx) DAT_006a6550 += 2;  // +3 total in wonder city
 
-// Cure for Cancer (line 4202):
-if (CURE_FOR_CANCER_city == city_idx) unhappy = 0;
+// Cure for Cancer (wonder 0x1b = 27, line 4198):
+DAT_006a6550 += 1;  // +1 happy empire-wide
 
-// Hanging Gardens (line 4206):
-unhappy -= 2;
+// Shakespeare's Theatre (wonder 0x0d = 13, line 4202):
+if (wonder_city(0x0d) == city_idx) DAT_006a65a8 = 0;  // all unhappy -> content
+
+// J.S. Bach's Cathedral (wonder 0x0f = 15, line 4206):
+DAT_006a65a8 -= 2;  // -2 unhappy empire-wide
 ```
 
 ### We Love The King Day Conditions
@@ -7312,15 +7388,29 @@ function calculateHappiness(city, gameState) {
     if (!isHuman) {
         unhappy = (pop - 1) - (COSMIC.contentBase - 5);
     } else {
-        const contentBase = COSMIC.contentBase - diff;
+        // Empire-size spread (raging hordes adds 2 to spread, not content base)
+        let spread = COSMIC.unhappyOffset + diff * -2;
+        if (gameState.ragingHordes) spread += 2;
+        const divisor = Math.max(1, Math.floor(((gov >> 1) + 2) * spread / 2));
+
+        // Content base
+        let contentBase = COSMIC.contentBase - diff;
+        if (contentBase < 3 && cityHasBuilding(city, PALACE) &&
+            city.militaryAbroad === 0 && city.garrisonCount === 0) {
+            contentBase = 2;
+        }
+
         unhappy = (pop - 1) - (contentBase - 2);
-        // Government spread penalty (more cities = more unhappy)
+
+        // Empire size penalty (Communism exempt)
         if (gov !== GOV.COMMUNISM) {
-            const spread = COSMIC.unhappyOffset + diff * -2;
-            const divisor = Math.max(1, Math.floor(((gov >> 1) + 2) * spread / 2));
             unhappy += Math.floor((civ.cityCount - divisor + city.index % divisor) / divisor);
         }
     }
+
+    // Clamp surplus
+    let surplus = 0;
+    if (pop < unhappy) { surplus = unhappy - pop; unhappy = pop; }
 
     // Step 2: Luxury
     happy = Math.floor(city.luxuryOutput / 2);
@@ -7331,43 +7421,61 @@ function calculateHappiness(city, gameState) {
         if (civHasTech(civ, ELECTRONICS)) unhappy -= 1;
     }
 
-    // Step 4: Cathedral
-    if (civHasTech(civ, THEOLOGY) &&
+    // Step 4: Cathedral (requires Monotheism, NOT Theology)
+    if (civHasTech(civ, MONOTHEISM) &&
         (cityHasBuilding(city, CATHEDRAL) || hasWonderEffect(civ, MICHELANGELOS))) {
-        let effect = 3;
-        if (!civHasTech(civ, COMMUNISM_TECH)) effect += 1;
-        unhappy -= effect;
+        let effect = (civHasTech(civ, COMMUNISM_TECH) ? 0 : 1)   // -1 with Communism
+                   + (civHasTech(civ, THEOLOGY) ? 3 : 2);         // +1 with Theology
+        unhappy -= effect;  // range 2-4
     }
 
-    // Step 5: Temple
+    // Step 5: Temple (base 0, +1 Ceremonial Burial, +1 Mysticism, Oracle doubles)
     if (cityHasBuilding(city, TEMPLE)) {
-        let effect = 1;
+        let effect = 0;
         if (civHasTech(civ, MYSTICISM)) effect++;
+        if (civHasTech(civ, CEREMONIAL_BURIAL)) effect++;
         if (hasWonderEffect(civ, ORACLE)) effect *= 2;
         unhappy -= effect;
     }
 
-    // Step 6: Martial law / Military unhappiness
-    if (gov < GOV.REPUBLIC) {
+    // Step 5b: City Walls/Palace under Democracy → +1 happy
+    if ((cityHasBuilding(city, CITY_WALLS) || cityHasBuilding(city, PALACE)) &&
+        gov === GOV.DEMOCRACY) {
+        happy += 1;
+    }
+
+    // Step 6: Fundamentalism / Martial law / Military unhappiness
+    if (gov === GOV.FUNDAMENTALISM) {
+        surplus = 0;
+        unhappy = 0;
+    } else if (gov < GOV.REPUBLIC) {
         const maxGarrison = (gov === GOV.COMMUNISM) ? 6 : 3;
-        const garrison = Math.min(countMilitaryInCity(city), maxGarrison);
+        let garrison = Math.min(countMilitaryInCity(city, gov === GOV.COMMUNISM), maxGarrison);
+        garrison = clamp(garrison, 0, unhappy);
         unhappy -= garrison;
     } else {
-        let penalty = 1;
-        if (hasWonderEffect(civ, STATUE_OF_LIBERTY) ||
-            cityHasBuilding(city, POLICE_STATION)) penalty = 0;
+        let penalty = (hasWonderEffect(civ, WOMENS_SUFFRAGE) ||
+                       cityHasBuilding(city, POLICE_STATION)) ? 0 : 1;
         if (gov === GOV.DEMOCRACY) penalty++;
-        unhappy += penalty * city.militaryAbroad;
+        if (penalty !== 0) {
+            let abroad = city.militaryAbroad;
+            if (abroad > 0 && gov === GOV.REPUBLIC) abroad--;  // one free unit
+            unhappy += penalty * abroad;
+        }
     }
 
     // Step 7: Wonders
-    if (hasWonderEffect(civ, SHAKESPEARES_THEATRE)) {
+    // Hanging Gardens (wonder 1): +1 happy, +3 in wonder city
+    if (hasWonderEffect(civ, HANGING_GARDENS)) {
         happy += 1;
-        if (getWonderCity(SHAKESPEARES_THEATRE) === city.index) happy += 2;
+        if (getWonderCity(HANGING_GARDENS) === city.index) happy += 2;
     }
-    if (hasWonderEffect(civ, JS_BACHS_CATHEDRAL)) happy += 1;
-    if (getWonderCity(CURE_FOR_CANCER) === city.index) unhappy = 0;
-    if (hasWonderEffect(civ, HANGING_GARDENS)) unhappy -= 2;
+    // Cure for Cancer (wonder 27): +1 happy empire-wide
+    if (hasWonderEffect(civ, CURE_FOR_CANCER)) happy += 1;
+    // Shakespeare's Theatre (wonder 13): unhappy = 0 in wonder city
+    if (getWonderCity(SHAKESPEARES_THEATRE) === city.index) unhappy = 0;
+    // J.S. Bach's Cathedral (wonder 15): -2 unhappy empire-wide
+    if (hasWonderEffect(civ, JS_BACHS_CATHEDRAL)) unhappy -= 2;
 
     // Clamp
     happy = clamp(happy, 0, pop);
@@ -7473,13 +7581,13 @@ if (has_courthouse || has_palace) {
 // gov 5+ (republic/demo):8
 ```
 
-### Communism Shield Waste
+### Fundamentalism Science Penalty
 
 From `FUN_004ea1f6` (line 3900):
 ```c
-// Fundamentalism shield waste:
+// Fundamentalism science penalty:
 if (gov_type == FUNDAMENTALISM) {
-    shield_output -= (COSMIC_communism_waste_pct * shield_output) / 100;
+    science_output -= (COSMIC_fundamentalism_penalty_pct * science_output) / 100;
     // DAT_0064bcd9, default 0 (but modifiable in rules.txt)
 }
 ```
@@ -7765,17 +7873,17 @@ int check_unit_support(int city_idx, int unit_idx, int gov_type) {
             }
             break;
 
-        case 2:  // Republic
-            // Free support = COSMIC_republic_free (DAT_0064bcd5, default 0)
-            if (COSMIC_republic_free < unit_counter) {
+        case 2:  // Monarchy
+            // Free support = COSMIC #13 (DAT_0064bcd5, default 0)
+            if (COSMIC_monarchy_free < unit_counter) {
                 shield_cost++;
                 return shield_cost;
             }
             break;
 
-        case 3:  // Monarchy / Communism
-            // Free support = COSMIC_monarchy_free (DAT_0064bcd6, default 0)
-            if (COSMIC_monarchy_free < unit_counter) {
+        case 3:  // Communism
+            // Free support = COSMIC #14 (DAT_0064bcd6, default 0)
+            if (COSMIC_communism_free < unit_counter) {
                 shield_cost++;
                 return shield_cost;
             }
@@ -7789,7 +7897,7 @@ int check_unit_support(int city_idx, int unit_idx, int gov_type) {
             }
             break;
 
-        default:  // Democracy (5+)
+        default:  // Republic/Democracy (5+)
             // Every unit costs a shield
             shield_cost++;
             return shield_cost;
@@ -7893,62 +8001,82 @@ function calculateUnitSupport(city, gameState) {
 
 ```c
 // FUN_004ea1f6 @ 0x4EA1F6 - Distribute trade to luxury/science/gold
+// Output variables (traced from binary):
+//   DAT_006a65fc = luxury  (confirmed: entertainer ×2, luxury/2 → happy citizens)
+//   DAT_006a6578 = science (confirmed: scientist ×3, Fund. penalty, stored to city+74, fed to research accum.)
+//   DAT_006a6554 = gold    (confirmed: taxman ×3, tithe, stored to city+76, added to treasury)
 void distribute_trade(int city_idx, int net_trade, int mode, int extra) {
     int civ_idx = city[city_idx].owner;
-    int luxury_rate = civ[civ_idx].luxury_rate;      // DAT_0064c6b3, tenths
-    int science_rate = civ[civ_idx].science_rate;     // DAT_0064c6b4, tenths
-    // tax_rate = 10 - luxury_rate - science_rate (implicit)
+    int science_rate = civ[civ_idx].science_rate;    // DAT_0064c6b3 (+0x13), tenths
+    int tax_rate = civ[civ_idx].tax_rate;            // DAT_0064c6b4 (+0x14), tenths
+    // luxury_rate = 10 - science_rate - tax_rate (implicit)
 
-    // Under Fundamentalism, cap luxury rate
-    if (gov_type == FUNDAMENTALISM && COSMIC_max_luxury_fund < luxury_rate) {
-        luxury_rate = COSMIC_max_luxury_fund;
+    // Under Fundamentalism, cap science rate (COSMIC #21, default 0)
+    if (gov_type == FUNDAMENTALISM && COSMIC_max_science_fund < science_rate) {
+        science_rate = COSMIC_max_science_fund;
     }
 
-    // Calculate raw splits (tenths)
-    luxury_output = clamp((net_trade * (10 - luxury_rate - science_rate) + 4) / 10, 0, net_trade);
-    science_output = clamp((net_trade * luxury_rate + 4) / 10, 0, net_trade - luxury_output);
+    // Calculate raw splits (tenths, with rounding)
+    luxury_output = clamp((net_trade * (10 - science_rate - tax_rate) + 4) / 10, 0, net_trade);
+    science_output = clamp((net_trade * science_rate + 4) / 10, 0, net_trade - luxury_output);
     gold_output = net_trade - (science_output + luxury_output);
 
+    // AI Fundamentalism: redirect all luxury to science (line 3888-3891)
+    if (!is_human(civ_idx) && gov_type == FUNDAMENTALISM) {
+        science_output += luxury_output;
+        luxury_output = 0;
+    }
+
     // Specialist bonuses (Entertainers: +2 luxury, Scientists: +3 science, Taxmen: +3 gold)
-    int entertainers = count_specialists(city_idx, ENTERTAINER);
+    int entertainers = count_specialists(city_idx, ENTERTAINER);  // type 1
     luxury_output += entertainers * 2;
-    int scientists = count_specialists(city_idx, SCIENTIST);
-    science_output += scientists * 3;
-    int taxmen = count_specialists(city_idx, TAXMAN);
+    int taxmen = count_specialists(city_idx, TAXMAN);             // type 2
     gold_output += taxmen * 3;
+    int scientists = count_specialists(city_idx, SCIENTIST);      // type 3
+    science_output += scientists * 3;
+
+    // Fundamentalism: science penalty (COSMIC #17, default 0, typically 50 in RULES.TXT)
+    if (gov_type == FUNDAMENTALISM) {
+        science_output -= (COSMIC_fund_science_penalty * science_output) / 100;
+    }
 
     // Fundamentalism: tithe (gold bonus) from happiness buildings
+    // DAT_006a6618 accumulates Temple/Colosseum/Cathedral/J.S.Bach effects as gold
     if (gov_type == FUNDAMENTALISM) {
         gold_output += tithe_bonus;  // DAT_006a6618
     }
 
-    // Building multipliers for science
+    // Building multipliers for luxury AND gold (lines 3941-3952)
+    int lux_gold_mult = 0;
+    if (has_building(city_idx, MARKETPLACE)) lux_gold_mult++;      // 0x05
+    if (has_building(city_idx, BANK)) lux_gold_mult++;             // 0x0A
+    if (has_building(city_idx, STOCK_EXCHANGE)) lux_gold_mult++;   // 0x16
+    luxury_output += (luxury_output * lux_gold_mult) >> 1;         // Each adds +50% luxury
+    gold_output += (gold_output * lux_gold_mult) >> 1;             // Each adds +50% gold
+
+    // Building multipliers for science (lines 3958-3977)
     int science_mult = 0;
-    if (has_building(city_idx, LIBRARY)) science_mult++;      // 0x06
-    if (has_building(city_idx, UNIVERSITY)) science_mult++;    // 0x0C
-    if (has_building(city_idx, RESEARCH_LAB)) science_mult++;  // 0x1A or wonder
-    science_output += (science_output * science_mult) / 2;     // Each adds +50%
+    if (has_building(city_idx, LIBRARY)) science_mult++;                              // 0x06
+    if (has_building(city_idx, UNIVERSITY)) science_mult++;                           // 0x0C
+    if (has_building(city_idx, RESEARCH_LAB) || has_wonder_effect(civ_idx, SETI))     // 0x1A
+        science_mult++;                                                               // SETI = Research Lab in all cities
 
-    // Building multipliers for gold
-    int gold_mult = 0;
-    if (has_building(city_idx, MARKETPLACE)) gold_mult++;   // 0x05
-    if (has_building(city_idx, BANK)) gold_mult++;          // 0x0A
-    // Wall Street wonder
-    int wall_street_bonus = gold_output * gold_mult;
-    if (wonder_city(WALL_STREET) != city_idx) {
-        wall_street_bonus = wall_street_bonus / 2;
-    }
-    gold_output += wall_street_bonus;
+    // Isaac Newton's College (wonder 16): doubles science building effect in wonder city
+    int science_bonus = science_output * science_mult;
+    if (wonder_city(ISAAC_NEWTONS) != city_idx) {
+        science_bonus = science_bonus >> 1;            // Normal: +50% per building
+    }                                                  // Newton's city: +100% per building
+    science_output += science_bonus;
 
-    // Colossus doubles gold in wonder city
-    if (wonder_city(COLOSSUS) == city_idx) {
-        gold_output *= 2;
+    // Copernicus' Observatory (wonder 11): doubles science output in wonder city
+    if (wonder_city(COPERNICUS) == city_idx) {
+        science_output <<= 1;                          // science *= 2
     }
 
-    // Store results
-    city.luxury = luxury_output;
-    city.science = science_output;
-    city.gold = gold_output;
+    // Store results (luxury is not stored — used directly for happiness)
+    city.science = science_output;                     // city+74 (scienceOutput)
+    city.gold = gold_output;                           // city+76 (taxOutput)
+    city.total_trade = net_trade;                      // city+78 (totalTrade)
 }
 ```
 
@@ -7957,39 +8085,51 @@ void distribute_trade(int city_idx, int net_trade, int mode, int extra) {
 ```javascript
 function distributeTrade(city, netTrade, gameState) {
     const civ = gameState.civs[city.owner];
-    let luxRate = civ.luxuryRate;
-    const sciRate = civ.scienceRate;
-    const taxRate = 10 - luxRate - sciRate;
+    let sciRate = civ.scienceRate;                    // +0x13 (DAT_0064c6b3)
+    const taxRate = civ.taxRate;                      // +0x14 (DAT_0064c6b4)
+    const luxRate = 10 - sciRate - taxRate;            // implicit
 
-    // Fundamentalism luxury cap
+    // Fundamentalism: cap science rate (COSMIC #21, default 0)
     if (civ.government === GOV.FUNDAMENTALISM) {
-        luxRate = Math.min(luxRate, COSMIC.maxLuxuryFund);
+        sciRate = Math.min(sciRate, COSMIC.maxScienceFund);
     }
 
-    // Base distribution
-    let luxury = clamp(Math.floor((netTrade * taxRate + 4) / 10), 0, netTrade);
-    let science = clamp(Math.floor((netTrade * luxRate + 4) / 10), 0, netTrade - luxury);
+    // Base distribution (tenths, with rounding)
+    let luxury = clamp(Math.floor((netTrade * luxRate + 4) / 10), 0, netTrade);
+    let science = clamp(Math.floor((netTrade * sciRate + 4) / 10), 0, netTrade - luxury);
     let gold = netTrade - (science + luxury);
 
     // Specialists
     luxury += city.entertainers * 2;
-    science += city.scientists * 3;
     gold += city.taxmen * 3;
+    science += city.scientists * 3;
 
-    // Science multipliers (+50% each)
+    // Fundamentalism: science penalty (COSMIC #17)
+    if (civ.government === GOV.FUNDAMENTALISM) {
+        science -= Math.floor(COSMIC.fundSciencePenalty * science / 100);
+    }
+
+    // Luxury AND gold multipliers: Marketplace/Bank/Stock Exchange (+50% each)
+    let lgMult = 0;
+    if (cityHasBuilding(city, MARKETPLACE)) lgMult++;
+    if (cityHasBuilding(city, BANK)) lgMult++;
+    if (cityHasBuilding(city, STOCK_EXCHANGE)) lgMult++;
+    luxury += (luxury * lgMult) >> 1;
+    gold += (gold * lgMult) >> 1;
+
+    // Science multipliers: Library/University/Research Lab (+50% each, or SETI)
     let sciMult = 0;
     if (cityHasBuilding(city, LIBRARY)) sciMult++;
     if (cityHasBuilding(city, UNIVERSITY)) sciMult++;
-    if (cityHasBuilding(city, RESEARCH_LAB)) sciMult++;
-    science += Math.floor(science * sciMult / 2);
+    if (cityHasBuilding(city, RESEARCH_LAB) || hasWonderEffect(civ, SETI)) sciMult++;
 
-    // Gold multipliers (+50% each)
-    let goldMult = 0;
-    if (cityHasBuilding(city, MARKETPLACE)) goldMult++;
-    if (cityHasBuilding(city, BANK)) goldMult++;
-    let goldBonus = gold * goldMult;
-    if (getWonderCity(WALL_STREET) !== city.index) goldBonus = Math.floor(goldBonus / 2);
-    gold += goldBonus;
+    // Isaac Newton's College (wonder 16): doubles science building effect in wonder city
+    let sciBonus = science * sciMult;
+    if (getWonderCity(ISAAC_NEWTONS) !== city.index) sciBonus >>= 1;  // Normal: +50%
+    science += sciBonus;                                               // Newton's: +100%
+
+    // Copernicus' Observatory (wonder 11): doubles science in wonder city
+    if (getWonderCity(COPERNICUS) === city.index) science <<= 1;
 
     return { luxury, science, gold };
 }
@@ -9180,7 +9320,7 @@ The save file parser covers every byte of every record type. No changes needed.
 | cx, cy | +0, +2 | uint16 x 2 | Map coordinates |
 | attribs1-4 | +4..+7 | byte x 4 | Decoded into flags below |
 | canBuildCoastal | +4 bit 7 | flag | |
-| autoBuild | +4 bit 5 | flag | |
+| autoBuild | +4 bit 4 | flag | |
 | techStolen | +4 bit 3 | flag | |
 | improvementSold | +4 bit 2 | flag | |
 | weLoveKingDay | +4 bit 1 | flag | |
@@ -9486,8 +9626,10 @@ To map these to RGB: need to extract the actual palette from the game's 8-bit co
 - **Target**: `citydialog.js` → `_drawResourceRows()`
 - **Impact**: Currently reads cached values from save file; can now verify/compute from scratch
 - **Formula**:
-  - Luxury → excess gold via Marketplace (×1.5), Bank (×1.5), Stock Exchange (×1.5)
-  - Science → Library (×1.5), University (×1.5), Research Lab (×1.5), Copernicus (×1.5)
+  - Luxury AND Gold → Marketplace (×1.5), Bank (×1.5), Stock Exchange (×1.5)
+  - Science → Library (×1.5), University (×1.5), Research Lab or SETI (×1.5)
+  - Science → Isaac Newton's College doubles building effect in wonder city
+  - Science → Copernicus' Observatory doubles total in wonder city
 
 ### 2.2 Happiness Calculation
 - **Source**: `FUN_004ea8e4` (2627 bytes) → `Civ2_Game_Formulas.md` Section 4
@@ -9593,11 +9735,11 @@ These 22 constants control core game mechanics. The decompiled code shows exactl
 | 7 | 4 | Content citizens base | Happiness calc |
 | 8 | 10 | Unhappiness offset | Happiness calc |
 | 11 | 3 | Tech cost multiplier (tenths) | Research cost |
-| 13 | 0 | Free support: Republic/Democracy | Unit support |
-| 14 | 0 | Free support: Monarchy/Communism | Unit support |
+| 13 | 0 | Free support: Monarchy (case 2) | Unit support |
+| 14 | 0 | Free support: Communism (case 3) | Unit support |
 | 15 | 0 | Free support: Fundamentalism | Unit support |
 | 16 | 1 | Communism equiv. distance | Corruption |
-| 21 | 0 | Max luxury under Communism | Rate slider |
+| 21 | 0 | Max luxury under Fundamentalism | Rate slider |
 
 The browser parser currently reads these from the save file tail section. They can be used directly in formula calculations.
 

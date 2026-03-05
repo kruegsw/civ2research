@@ -687,7 +687,7 @@ const Civ2Parser = {
         itemInProduction = { type: 'unit', id: prodRaw };
       } else {
         const buildId = 256 - prodRaw;
-        itemInProduction = { type: buildId >= 32 ? 'wonder' : 'building', id: buildId };
+        itemInProduction = { type: buildId >= 39 ? 'wonder' : 'building', id: buildId };
       }
 
       // Trade routes (+58–+73)

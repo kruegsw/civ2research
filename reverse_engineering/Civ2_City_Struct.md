@@ -205,7 +205,7 @@ The `current_production` field uses signed byte encoding:
 | Value Range | Meaning |
 |-------------|---------|
 | `0` | Nothing / Capitalization |
-| `1` to `61` (0x3D) | Improvement or Wonder ID (indexes into improvement table at `DAT_0064b1b8`, stride 0x14) |
+| `1` to `61` (0x3D) | Improvement or Wonder ID (indexes into improvement table at `DAT_0064C488`, stride 0x08) |
 | `-1` (0xFF) | Capitalization (gold conversion) |
 | `-2` to `-38` (-0x26) | Near-zero unit range (rare units or placeholder) |
 | `< -38` (< -0x26) | Unit production. Unit type = `-(value + 0x27)` approximately. These index into `DAT_0064c488` (unit table, stride 8). |

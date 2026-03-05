@@ -1769,8 +1769,8 @@ Cross-referenced and confirmed against four independent sources: (1) Allard Höf
 | +50 | 1 byte | **Workers outer circle B** | ✅ Hex-verified | Low 4 bits = remaining 4 outer-ring positions. **Bit 4 (0x10) = center tile, ALWAYS set** (43/43 cities). Center tile is free — not counted in population. |
 | +51 | 1 byte | **Total specialist count × 4** | ✅ Confirmed | Increments by 4 per specialist of ANY type. Specialist count = value ÷ 4. All 0 in main save (no specialists). |
 | +52 | 4 bytes | **Building bitmask I-IV** (uint32 LE) | ✅ Confirmed | 32-bit bitmask, **1-indexed**, RULES.TXT order. **Palace validation**: exactly 1 Palace per active civ — Zimbabwe(civ2), Trondheim(civ3), Washington(civ5), Cardiff(civ1). See full mapping below. |
-| +56 | 1 byte | **Building bitmask V** | Catfish | Buildings 33+. Bit 0=Police Station, Bit 1=Port Facility, etc. All 0 in main save. |
-| +57 | 1 byte | **Item in production** | ✅ Hex-verified | Units: 0x00-0x3F (direct type ID). Improvements/Wonders: `building_id = 256 - byte_value`. E.g., 0xCA=Hoover Dam (#54), 0xFD=Granary (#3), 0xF8=City Walls (#8). Production includes wonders (#33+ in RULES.TXT). |
+| +56 | 1 byte | **Building bitmask V** | Catfish | Buildings 32+. Bit 0=Airport, Bit 1=Police Station, Bit 2=Port Facility, etc. All 0 in main save. |
+| +57 | 1 byte | **Item in production** | ✅ Hex-verified | Units: 0x00-0x3F (direct type ID). Improvements/Wonders: `building_id = 256 - byte_value`. E.g., 0xCA=J.S. Bach's Cathedral (#54), 0xFD=Granary (#3), 0xF8=City Walls (#8). Production includes wonders (#39+ in RULES.TXT). |
 | +58 | 1 byte | **Number of active trade routes** | Höfelt | 0-3 (can be >3 via hex edit). |
 | +59 | 3 bytes | **Trade commodities available/supplied** | Höfelt | 0x00-0x0F = available (RULES.TXT order). Supplied goods use 0xFF complement (e.g., 0xF3 = commodity 13 supplied). |
 | +62 | 3 bytes | **Trade commodities demanded** | Höfelt | 0x00-0x0F. |
@@ -1811,15 +1811,27 @@ The bit numbering is **1-indexed**, matching the RULES.TXT improvement order:
 | 4 | Temple | 20 | Hydro Plant |
 | 5 | Marketplace | 21 | Nuclear Plant |
 | 6 | Library | 22 | Stock Exchange |
-| 7 | Courthouse | 23 | Superhighways |
-| 8 | City Walls | 24 | Research Lab |
-| 9 | Aqueduct | 25 | SAM Missile Battery |
-| 10 | Bank | 26 | Coastal Fortress |
-| 11 | Cathedral | 27 | Solar Plant |
-| 12 | University | 28 | Harbor |
-| 13 | Mass Transit | 29 | Offshore Platform |
-| 14 | Colosseum | 30 | Airport |
-| 15 | Factory | 31 | Police Station |
+| 7 | Courthouse | 23 | Sewer System |
+| 8 | City Walls | 24 | Supermarket |
+| 9 | Aqueduct | 25 | Superhighways |
+| 10 | Bank | 26 | Research Lab |
+| 11 | Cathedral | 27 | SAM Missile Battery |
+| 12 | University | 28 | Coastal Fortress |
+| 13 | Mass Transit | 29 | Solar Plant |
+| 14 | Colosseum | 30 | Harbor |
+| 15 | Factory | 31 | Offshore Platform |
+
+Additional improvements in **buildingsV** (+56, uint8 bitmask):
+
+| Bit | Improvement |
+|-----|-------------|
+| 0 (ID 32) | Airport |
+| 1 (ID 33) | Police Station |
+| 2 (ID 34) | Port Facility |
+| 3 (ID 35) | SS Structural |
+| 4 (ID 36) | SS Component |
+| 5 (ID 37) | SS Module |
+| 6 (ID 38) | Capitalization |
 
 Bits 1–6 are confirmed by a controlled experiment. Bits 7–31 are inferred from RULES.TXT order and validated against scenario saves (e.g., cities with City Walls, Aqueduct, Cathedral, SDI Defense all have the expected bits set). Bit 0 appears in some scenario cities but no standard-game cities; its meaning is unknown (possibly a scenario flag or the "Nothing" entry in RULES.TXT).
 
@@ -1830,7 +1842,7 @@ Bits 1–6 are confirmed by a controlled experiment. Bits 7–31 are inferred fr
 The production item byte encodes both units and improvements/wonders in a single byte:
 
 - **Units**: Direct type ID (0x00-0x3F). E.g., 0x00=Settlers, 0x05=Legion, 0x06=Pikemen, 0x12=Crusaders.
-- **Improvements/Wonders**: Inverted encoding: `building_id = 256 - byte_value`. E.g., 0xFF=Palace(#1), 0xFD=Granary(#3), 0xF8=City Walls(#8), 0xD5=Michelangelo's Chapel(#43), 0xCA=Hoover Dam(#54).
+- **Improvements/Wonders**: Inverted encoding: `building_id = 256 - byte_value`. E.g., 0xFF=Palace(#1), 0xFD=Granary(#3), 0xF8=City Walls(#8), 0xD5=Great Library(#43), 0xCA=J.S. Bach's Cathedral(#54).
 
 **Hex-verified production summary** (43 cities in main save):
 - 16 cities building Settlers (rapid expansion phase)
@@ -1838,7 +1850,7 @@ The production item byte encodes both units and improvements/wonders in a single
 - 5 cities building Pikemen (defense)
 - 3 cities building Legion
 - 2 cities building Granary, 2 building City Walls
-- 1 city each: Hoover Dam (#54), Michelangelo's Chapel (#43), Temple, Warriors, Elephant, Light Artillery, Horsemen, Ironclad
+- 1 city each: J.S. Bach's Cathedral (#54), Great Library (#43), Temple, Warriors, Elephant, Light Artillery, Horsemen, Ironclad
 
 ##### Resource Field Relationship
 
@@ -1885,7 +1897,7 @@ Verified by assigning 1 specialist of each type from a size-5 baseline (no speci
 ##### TODO: City Record Remaining Unknowns
 - [x] All major fields mapped via civ2mod.c, hexedit.rtf, Catfish cross-reference, and controlled experiments
 - [x] Layout correction: XY coords at +0, name at +32 (confirmed by civ2mod.c and hex verification)
-- [x] Verify +57 as item in production — **confirmed**: units 0x00-0x3F, buildings/wonders via `256 - byte_value`. Washington building Hoover Dam (0xCA=#54), Philadelphia building Michelangelo's Chapel (0xD5=#43).
+- [x] Verify +57 as item in production — **confirmed**: units 0x00-0x3F, buildings/wonders via `256 - byte_value`. Washington building J.S. Bach's Cathedral (0xCA=#54), Philadelphia building Great Library (0xD5=#43).
 - [x] Verify +48-50 as worker tile assignments — **confirmed**: workers + specialists = city_size for ALL 43 cities. Bit 4 of +50 = center tile, always set.
 - [x] Verify building bitmask 1-indexed — **confirmed**: Palace (bit 1) present in exactly 1 city per active civ (Zimbabwe, Trondheim, Washington, Cardiff).
 - [x] Verify +84 as city sequence ID — **confirmed**: 43 unique values (1-46), gaps at 4/13/27 = destroyed cities.
@@ -4877,7 +4889,7 @@ Each tile is stored as a 6-byte interleaved record, in the same row-major order 
 |---------|---------|---------|
 | `@COSMIC` | Global game constants | 21 numeric values (road multiplier, food per citizen, tech paradigm, etc.) |
 | `@CIVILIZE` | Technology definitions | 93 entries (89 standard + Future Tech + 3 user-defined + 7 extra slots) |
-| `@IMPROVE` | City improvements & wonders | 59 entries (improvements 0-31, wonders 32-59) |
+| `@IMPROVE` | City improvements & wonders | 67 entries (improvements 0-38, wonders 39-66) |
 | `@ENDWONDER` | Wonder expiration advances | 28 entries (one per wonder) |
 | `@UNITS` | Unit type definitions | 62 entries (52 standard + 11 user-defined slots) |
 | `@TERRAIN` | Terrain properties | 11 base types + 11 special resource variants |
@@ -4983,8 +4995,8 @@ Technology IDs in save files (byte arrays at 0x0042 and 0x00A6) correspond to 0-
 
 Each line: `Name, cost_x10, upkeep, prerequisite_tech`
 
-- IDs 0-31 are city improvements (Palace=1, Barracks=2, ...)
-- IDs 32-59 are Wonders of the World (Pyramids=32, Hanging Gardens=33, ...)
+- IDs 0-38 are city improvements/special (Nothing=0, Palace=1, Barracks=2, ..., Offshore Platform=31, Airport=32, Police Station=33, Port Facility=34, SS Structural=35, SS Component=36, SS Module=37, Capitalization=38)
+- IDs 39-66 are Wonders of the World (28 wonders, matching wonderCityIds[0-27] order)
 - The building bitmask in city records (+52-55) uses 1-indexed bits matching these IDs
 
 ### Terrain Definition Format (`@TERRAIN`)

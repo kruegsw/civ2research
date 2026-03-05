@@ -90,7 +90,7 @@ const Civ2CityView = {
     { id:21, type:21, sheet:'i', src:{x:249,y:84, w:123,h:82},  dx:960,  dy:114, alt:15 },  // Nuclear Plant
     { id:22, type:66, sheet:'w', src:{x:478,y:576,w:158,h:114}, dx:1062, dy:105, alt:14 },  // Cure for Cancer
     { id:23, type:40, sheet:'w', src:{x:1,  y:116,w:158,h:114}, dx:1162, dy:100, alt:12 },  // Hanging Gardens
-    { id:24, type:53, sheet:'w', src:{x:1,  y:461,w:158,h:114}, dx:95,   dy:150, alt:15 },  // Da Vinci's Workshop
+    { id:24, type:53, sheet:'w', src:{x:1,  y:461,w:158,h:114}, dx:95,   dy:150, alt:15 },  // Leonardo's Workshop
     { id:25, type:57, sheet:'w', src:{x:1,  y:346,w:158,h:114}, dx:192,  dy:150, alt:15 },  // Darwin's Voyage
     { id:26, type:10, sheet:'i', src:{x:125,y:167,w:123,h:82},  dx:290,  dy:150, alt:14 },  // Bank
     { id:27, type:2,  sheet:'i', src:{x:249,y:250,w:123,h:82},  dx:537,  dy:153, alt:19 },  // Barracks

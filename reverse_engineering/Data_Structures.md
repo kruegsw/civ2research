@@ -47,9 +47,9 @@ All offsets relative to start of a single Civilization instance (`0x0064C6A0` fo
 | 0x00E  | `0064c6ae`        |      |         | *(gap / more core fields)* |
 | 0x010  | `0064c6b0`        | 1    | byte    | **rank / power_rating** -- compared between civs for diplomacy. Incremented on various events (wonders, techs). Used as a "strength" metric. |
 | 0x011  | `0064c6b1`        | 1    | byte    | **unknown_counter_b1** -- incremented in some game logic |
-| 0x013  | `0064c6b3`        | 1    | byte    | **tax_rate** -- 0-10 scale. `tax + luxury + science = 10`. Written to/from UI slider (in_ECX + 0x2e8). Stored to DAT_0064bc1a for human player early game. |
-| 0x014  | `0064c6b4`        | 1    | byte    | **luxury_rate** -- 0-10 scale. Written to/from UI slider (in_ECX + 0x2e0). Stored to DAT_0064bc1c for human player early game. |
-| 0x015  | `0064c6b5`        | 1    | byte    | **government_type** -- 0=Anarchy, 1=Despotism, 2=Monarchy, 3=Communism, 4=Republic, 5=Democracy, 6=Fundamentalism. Checked `< 2` for primitive govts, `== 6` for Fundie, etc. Indexes into government name table (DAT_0064b9a0, stride 4). |
+| 0x013  | `0064c6b3`        | 1    | byte    | **science_rate** -- 0-10 scale. `science + tax + luxury = 10` (luxury implicit). Used directly to compute science output in FUN_004ea1f6. Capped by COSMIC #21 under Fundamentalism. |
+| 0x014  | `0064c6b4`        | 1    | byte    | **tax_rate** -- 0-10 scale. Combined with science_rate to derive luxury_rate = 10 - science - tax. |
+| 0x015  | `0064c6b5`        | 1    | byte    | **government_type** -- 0=Anarchy, 1=Despotism, 2=Monarchy, 3=Communism, 4=Fundamentalism, 5=Republic, 6=Democracy. Checked `< 2` for primitive govts, `== 4` for Fundie, etc. Indexes into government name table (DAT_0064b9a0, stride 4). |
 | 0x016  | `0064c6b6`        |      |         | *(within core block)* |
 | 0x01E  | `0064c6be`        | 1    | byte    | **reputation** -- diplomatic reputation value, shifted right by 1 in some contexts. Incremented when treaties formed/broken. |
 | 0x01F  | `0064c6bf`        | 1    | byte    | **patience / anger_counter** -- incremented/decremented during diplomatic negotiations. Added +1 for accepted deals, -1 for broken deals. |
