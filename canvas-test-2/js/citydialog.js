@@ -1319,13 +1319,16 @@ const Civ2CityDialog = {
     }
   },
 
-  _drawResourceRows(ctx, city, cdSprites, civData, supported) {
+  _drawResourceRows(ctx, city, cdSprites, civData, supported, mapData) {
     if (!cdSprites) return;
     const RES = this.REGIONS.resources;
 
     const corruption = Math.max(0, city.totalTrade - city.scienceOutput - city.taxOutput);
     const luxOutput = Math.max(0, city.totalTrade - city.taxOutput - city.scienceOutput - corruption);
-    const support = supported.length;
+    // Support cost: only units exceeding free support limit (government-dependent)
+    const government = this._getCityGovernment(city, mapData);
+    const overlays = this._calcUnitSupportOverlays(supported, city, government, mapData);
+    const support = overlays.filter(ov => ov.shield).length;
     const production = city.shieldProduction || 0;
     const sciRate = civData ? (civData.scienceRate || 0) * 10 : 0;
     const taxRate = civData ? (civData.taxRate || 0) * 10 : 0;
@@ -1430,7 +1433,7 @@ const Civ2CityDialog = {
     const spTotal = support + production;
     const spSpacing = this._resourceSpacing(spTotal);
     for (let i = 0; i < support; i++)
-      ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY, 14, 14);
+      ctx.drawImage(cdSprites.shortage, spR.iconX + i * spSpacing, spR.iconY, 14, 14);
     if (production > 0) {
       const prodStartX = spR.rightX - (spSpacing * production + 14 - spSpacing);
       for (let i = 0; i < production; i++)
@@ -2079,7 +2082,7 @@ const Civ2CityDialog = {
     this._drawLabels(ctx);
     this._drawCitizens(ctx, city, epoch, cdSprites, specs);
     this._drawResourceMap(ctx, city, cityIndex, mapData, cdSprites, mapSprites);
-    this._drawResourceRows(ctx, city, cdSprites, civData, supported);
+    this._drawResourceRows(ctx, city, cdSprites, civData, supported, mapData);
     this._drawFoodStorage(ctx, city, cdSprites, mapData);
     this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);
     this._drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites);
