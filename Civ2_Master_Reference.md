@@ -8427,6 +8427,7 @@ Font: Times New Roman h=-24, weight=400 (regular, not bold)
 ### Complete City Dialog Text Layout (970×675 canvas)
 
 All positions are in the native dialog coordinate space. Font is Arial h=-18 w=400 unless noted.
+**Note:** FG Color values are Windows COLORREF format (0x00BBGGRR), not RGB hex. To convert: `R = byte0, G = byte1, B = byte2`. Example: 0xA74F3F → R=0x3F(63), G=0x4F(79), B=0xA7(167) → rgb(63,79,167) = palette 0x54.
 
 | Text | Shadow Pos | Shadow Color | FG Pos | FG Color | Notes |
 |------|-----------|-------------|--------|----------|-------|
@@ -8633,11 +8634,13 @@ The game reads single palette entries via `GetDIBColorTable(index, 1)` to determ
 | 26 | 91 | (135,135,135) | Dialog title foreground |
 | 18 | 14 | (67,67,67) | City dialog label shadow |
 | 124 | 12 | (63,187,199)* | City dialog section headers (cyan) |
-| 121 | 6 | — | Blue text |
-| 85 | 4 | — | Dark blue |
-| 118 | 4 | — | Link/highlight |
+| 121 | 6 | (239,159,7) | Trade/corruption text — orange/gold |
+| 85 | 4 | (55,71,159) | Dark blue text |
+| 118 | 4 | — (not captured) | Link/highlight |
 
 \* Approximate — actual RGB depends on the active palette.
+
+**Cross-validation:** The GDI-captured text colors (SetTextColor COLORREF values in the text layout table above) independently confirm the game palette RGB mappings. For example, "Support: N" text uses COLORREF 0xA74F3F = rgb(63,79,167) = palette 84 (0x54), matching the palette dump entry [84]=(63,79,167).
 
 ### Text Content Captured
 
@@ -8745,7 +8748,29 @@ Full 256-entry palette (captured from game):
 - **[58–73]:** Yellow-green ramp (terrain: plains, hills)
 - **[74–93]:** Blue ramp (water, sky)
 - **[94–103]:** Cyan ramp (shallow water, coast)
-- **[104+]:** Additional terrain, unit, and UI colors
+- **[104+]:** Additional terrain, unit, and UI colors (not yet captured)
+
+**Key city dialog palette indices (with confirmed RGB values):**
+| Index | Hex | RGB | Use |
+|-------|-----|-----|-----|
+| 0x0B | 11 | (11,11,11) | Shield waste bar, deficit labels |
+| 0x29 | 41 | (255,255,255) | Science text |
+| 0x2A | 42 | (87,171,39) | Food label text |
+| 0x2C | 44 | (75,155,35) | Food storage text |
+| 0x2D | 45 | (71,147,31) | Food surplus bar |
+| 0x30 | 48 | (55,123,23) | Food deficit bar |
+| 0x54 | 84 | (63,79,167) | Shield support bar — light blue |
+| 0x5C | 92 | (7,11,103) | Shield surplus bar — dark blue |
+| 0x76 | 118 | (not captured) | Trade bar, tax text |
+| 0x79 | 121 | (239,159,7) | Corruption bar, tax/lux/sci background — orange/gold |
+| 0x7C | 124 | (not captured) | Panel title text |
+
+**WARNING: GIF palette ≠ Game runtime palette.** The palette embedded in GIF sprite sheets
+(TERRAIN1.GIF, CITIES.GIF, UNITS.GIF, etc.) maps the SAME indices to DIFFERENT RGB values
+than the game's runtime palette (set via `SetDIBColorTable`). For example, GIF palette index
+0x54 = rgb(60,186,199) cyan, but game palette 0x54 = rgb(63,79,167) blue. When rendering
+UI elements that reference palette indices from decompiled code (bar fills, text colors),
+always use the game runtime palette values above, NOT the GIF file palette.
 
 ---
 
@@ -8787,7 +8812,8 @@ From an 88-second play session (168K log lines):
 ### Should Update
 - **Text rendering**: Must use the shadow text algorithm — draw every string twice with (+1,+1) offset shadow, using the correct color pair per context
 - **Font matching**: Use "Times New Roman" (bold 700 for status bar, normal 400 for dialogs) and "Arial" (400 for city dialog labels) with specific pixel sizes
-- **Text colors from palette**: Text colors should be derived from the game palette, not hardcoded — the game does `GetDIBColorTable(index, 1)` to get text RGB values
+- **Text colors from palette**: Use game runtime palette RGB values, NOT GIF palette values. See palette index table in Color System section. The game does `GetDIBColorTable(index, 1)` to get text RGB values
+- **Bar fill colors from palette**: Resource row bars must use game palette colors (e.g., 0x54=rgb(63,79,167) for support, 0x5C=rgb(7,11,103) for surplus, 0x79=rgb(239,159,7) for corruption). GIF palettes map the same indices to completely different RGB values
 - **Tile cell size**: Rendering cell is 80×60, not just 64×32 — accounts for sprite overlap
 - **Button rendering**: 3D beveled borders with white/gray pen lines, text centered with DT_VCENTER|DT_SINGLELINE
 
@@ -8874,6 +8900,33 @@ int FUN_00511690(int base_coord) {
 
 This sprite_zoom is passed to `FUN_00472cf0` to get actual tile pixel dimensions.
 
+### Sprite Zoom Scaler: `FUN_00472cf0` at 0x472CF0
+
+Converts base sprite dimensions to zoomed pixel sizes:
+
+```c
+int FUN_00472cf0(int base, int zoom) {
+    // zoom values: -5 (smallest), -2 (normal), 1 (largest)
+    return floor((zoom + 8) * base / 8);  // signed integer division with floor rounding
+}
+```
+
+Example values at normal zoom (sprite_zoom = -2):
+| Call | Result | Use |
+|------|--------|-----|
+| `FUN_00472cf0(0x40, -2)` | 48 | Resource map tile width |
+| `FUN_00472cf0(0x20, -2)` | 24 | Resource map tile half-height |
+| `FUN_00472cf0(0x45, -2)` | 51 | Unit tile width (info panel) |
+| `FUN_00472cf0(0x34, -2)` | 39 | Unit tile height (info panel) |
+
+At city dialog zoom = -3 (Units Supported panel uses -3, not -2):
+| Call | Result | Use |
+|------|--------|-----|
+| `FUN_00472cf0(0x45, -3)` | 43 | Supported unit tile width |
+| `FUN_00472cf0(0x34, -3)` | 32 | Supported unit tile height |
+| `FUN_00472cf0(0x40, -3)` | 40 | Available width for upkeep icons |
+| `FUN_00472cf0(0x20, -3)` | 20 | Icon Y offset from unit top |
+
 ---
 
 ## B. Window Dimensions
@@ -8950,34 +9003,51 @@ Defined in `citywin_8D24` at 0x508D24, using `citywin_8C84` to compute scaled RE
 This is the largest function in the city module. Draws terrain map + 3 resource rows.
 
 ### Terrain Map Drawing
-- Tile width: 64px at normal zoom (via `FUN_00472cf0(0x40, zoom)`)
-- Tile height: 32px half-height (via `FUN_00472cf0(0x20, zoom)`)
+- Tile width: `FUN_00472cf0(0x40, zoom)` = 48px at zoom -2
+- Tile height: `FUN_00472cf0(0x20, zoom)` = 24px half-height at zoom -2
 - Map origin: panel_left + 5, panel_top + 11
 - 21 tiles drawn in diamond pattern using offset tables at DAT_00630D38 / DAT_00630D50
 - Each tile: terrain base, then resource icons (food/shield/trade), then improvements
+- **Resource icons on tiles** (from FUN_00502798):
+  - Icon size: `FUN_00511690(10)` = 10px in mode 2
+  - Icon padding: `FUN_00511690(8)` = 8px left/right from tile edge
+  - Available width for icons: tile_width - 2×padding = 48 - 16 = 32px
+  - Spacing: `FUN_00548b70(count, iconSize+1, availW)` — uses iconSize+1=11 for 1px gap
+  - Icons left-aligned at tile_x + padding, vertically centered at tile_y + halfH - iconSize/2
+  - Order: food icons, then shield icons, then trade icons
 
 ### Food Row (1st resource row)
 - Position: panel_left + 205, panel_top + 14
 - Available width: 226px
 - Icon size: 14px + 1 = 15px effective
 - Separator gap: 4px between surplus and deficit
-- **Food surplus bar**: palette color 0x2D (45)
-- **Food deficit bar**: palette color 0x30 (48)
-- Label style: color 0x2A (42), font 10px
-- Deficit label: color 0x0B (11), font 29px or color 0x2E (46), font 10px
+- **Food surplus bar**: palette color 0x2D (45) = rgb(71,147,31) — green
+- **Food deficit bar**: palette color 0x30 (48) = rgb(55,123,23) — darker green
+- Label style: color 0x2A (42) = rgb(87,171,39), font 10px
+- Deficit label: color 0x0B (11) = rgb(11,11,11), font 29px or color 0x2E (46) = rgb(63,139,31), font 10px
 
 ### Shield Row (2nd resource row)
 - Y offset: panel_top + 120
 - Width: 226px
-- **Shield production bar**: color 0x54 (84)
-- **Shield support bar**: color 0x0B (11)
-- **Shield surplus bar**: color 0x5C (92)
-- Labels: production color 0x54, corruption 0x0B, surplus 0x5C or 0x0B
+- Layout order (left to right): Support | Waste | Surplus
+- **Shield support bar**: color 0x54 (84) = rgb(63,79,167) — light blue
+- **Shield waste bar**: color 0x0B (11) = rgb(11,11,11) — near-black
+- **Shield surplus bar**: color 0x5C (92) = rgb(7,11,103) — dark blue
+- When surplus ≤ 0, surplus bar merges into support bar (lines 1742-1744 in decompiled)
+- Waste bar only appears when waste > 0 (DAT_006a656c != 0)
+- Labels: support color 0x54, waste/deficit color 0x0B, surplus color 0x5C
 
-### Trade Row (3rd resource row — gold/luxury/science)
+### Trade Row (3rd resource row)
 - Y offset: panel_top + 55
-- **Gold icons**: color 0x76 (118)
-- **Corruption icons**: color 0x79 (121)
+- Layout order (left to right): Trade | Corruption
+- **Trade bar**: color 0x76 (118) — behind trade arrow icons
+- **Corruption bar**: color 0x79 (121) = rgb(239,159,7) — orange/gold, behind corruption icons
+- When corruption ≤ 0, corruption bar merges into trade bar (lines 1889-1891 in decompiled)
+
+### Tax/Luxury/Science Row (4th resource row)
+- Y offset: panel_top + 79
+- **Full-width background bar**: color 0x79 (121) = rgb(239,159,7) — same orange/gold as corruption bar
+- Tax icons left-aligned, science right-aligned, luxury centered in gap
 - Sub-rows for distribution:
   - Tax (gold): color 0x76, font 10px
   - Science: color 0x29 (41), font 10px
@@ -9021,11 +9091,21 @@ This is the largest function in the city module. Draws terrain map + 3 resource 
 
 - Panel: (0, 212, 192, 78)
 - Unit tile: width from `FUN_00472cf0(0x45, zoom)`, height from `FUN_00472cf0(0x34, zoom)`
-- Units per row: 192px / tile_width
-- Rows: 78px / tile_height
+  - At zoom -3: width=43, height=32
+- Units per row: `floor(192 / tile_width)` = 4
+- Max rows: `floor(78 / tile_height)` = 2 (max 8 units visible)
 - Each unit drawn via `FUN_0056baff`
-- Food/shield upkeep icons drawn per-unit below sprite
-- Title: color 0x7C, font 18px, string 0x1BF (447)
+- Title: color 0x7C, font 18px, string 0x1BF (447) — hidden when ≥5 units (no room)
+- **Centering** (from decompiled):
+  - X start: `panel_x + ((panel_w - tile_w * perRow + 3) >> 1)` = 11
+  - Y start (single row): `panel_y + ((panel_h - 30) >> 1)` = 236
+  - Y start (two rows): `panel_y + ((panel_h - tile_h * maxRows + 2) >> 1)` = 220
+- **Upkeep icons**: drawn per-unit at (unit_x, unit_y + icon_y_offset)
+  - Icon Y offset: `FUN_00472cf0(0x20, zoom)` = 20 at zoom -3
+  - Available width: `FUN_00472cf0(0x40, zoom)` = 40 at zoom -3
+  - Icon size: `FUN_00511690(10)` = 10 in mode 2
+  - Icons left-aligned: food icons, then shield icon (if support cost), then unhappy faces
+- Clip to panel bounds (0, 212, 192, 78) to prevent overflow
 
 ---
 
@@ -9814,9 +9894,23 @@ The browser parser currently reads these from the save file tail section. They c
 | AI (0x450-0x4FF) | Future `ai.js` | Phase 2 renaming needed |
 | Combat (0x550-0x5AF) | Future `combat.js` | Partially analyzed |
 
-## Priority Order
+## Priority Order / Status
 
-1. **NOW**: Rush-buy cost + food growth display (proves the pipeline works)
-2. **Next**: Happiness panel, icon spacing algorithm, panel coordinate corrections
-3. **Soon**: Trade distribution formulas, unit support display, mini-map panel
-4. **Later**: Turn engine, combat, AI, multiplayer
+### Completed
+- Rush-buy cost formula (Section 1) + food growth display (Section 2)
+- Icon spacing algorithm (Section O — FUN_00548b70)
+- Trade distribution formulas (Section 8 — luxury/science/gold split)
+- Unit support display (Section H + Section 7 — per-government free unit rules)
+- Happiness calculation (Section 4 — 13 discrepancies fixed)
+- Corruption/waste formulas (Section 5)
+- Resource row bar colors: support(0x54), surplus(0x5C), corruption(0x79) — confirmed via game palette + screenshots
+- Units Supported panel layout (decoded from FUN_00505666, zoom -3 dimensions)
+- Resource map icon spacing (tile width=48, padding=8, iconSize+1=11)
+- Game palette vs GIF palette distinction documented
+
+### Remaining
+- **Shield waste bar**: game palette 0x0B = rgb(11,11,11). Not yet rendered — requires computing raw shield total from tile yields to derive waste = raw − shieldProduction. The corruption/waste formula (Section 5) can be used but needs tile yield summation in the city dialog
+- **Trade bar color**: palette 0x76 (118) — RGB not yet captured (beyond palette dump range 0-103). Need to extend ddraw proxy palette capture or sample from game screenshot
+- **Tax/Lux/Sci background bar**: game palette 0x79 full-width bar. Binary confirmed (line 2031-2034). Not yet rendered
+- **Panel title text color**: palette 0x7C (124) — RGB not yet captured
+- **Later**: Turn engine, combat, AI, multiplayer

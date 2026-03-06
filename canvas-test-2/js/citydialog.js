@@ -65,6 +65,10 @@ const Civ2CityDialog = {
   SETTLER_TYPES: new Set([0, 1]),
   // Non-combat unit types (attack = 0): do NOT cause abroad unhappiness
   NON_COMBAT_TYPES: new Set([0, 1, 27, 28, 29, 30, 31]),
+  // Sea combat unit types (domain=1, role!=3): always abroad regardless of location
+  SEA_COMBAT_TYPES: new Set([35, 36, 37, 38, 39, 40, 41]),
+  // Sea transport types (domain=1, role=3): never abroad
+  SEA_TRANSPORT_TYPES: new Set([32, 33, 34]),
   // Support-exempt types (role >= 6: diplomat/trade): no shield cost, no abroad check
   SUPPORT_EXEMPT_TYPES: new Set([28, 29, 30, 31]),
   // Fanatic types (flag 0x08): free shield support under Fundamentalism
@@ -157,7 +161,7 @@ const Civ2CityDialog = {
     citizens: { x: 5, y: 9 },
 
     // ── Resource map tile grid ──
-    resourceMap: { x: 5, y: 76, sprW: 47, sprH: 24 },
+    resourceMap: { x: 5, y: 76, sprW: 48, sprH: 24 },
 
     // ── Resource icon rows ──
     resources: {
@@ -418,6 +422,40 @@ const Civ2CityDialog = {
     return 1; // default Despotism
   },
 
+  // Game tile distance (FUN_005ae1b0): uses doubled X coordinates from save file format
+  // Parser stores gx = savedX >> 1, so we convert back: X = 2*gx + (gy & 1)
+  _tileDistance(gx1, gy1, gx2, gy2, mapWidth) {
+    const x1 = 2 * gx1 + (gy1 & 1), x2 = 2 * gx2 + (gy2 & 1);
+    let dx = Math.abs(x1 - x2);
+    if (mapWidth && dx > mapWidth) dx = 2 * mapWidth - dx; // horizontal wrapping
+    const dy = Math.abs(gy1 - gy2);
+    return (dx + dy) >> 1;
+  },
+
+  // Check if a land/air unit is "abroad" (FUN_004e7eb1 lines 3009-3054)
+  // NOT abroad if: at any friendly city, or in a fortress within distance 3 of a friendly city
+  _isUnitAbroad(unit, city, mapData) {
+    // At home city
+    if (unit.gx === city.gx && unit.gy === city.gy) return false;
+    // At any other friendly city
+    const owner = city.owner;
+    for (const c of mapData.cities) {
+      if (c && c.owner === owner && unit.gx === c.gx && unit.gy === c.gy) return false;
+    }
+    // In a fortress near a friendly city (distance < 4)
+    if (mapData.getImprovements) {
+      const imp = mapData.getImprovements(unit.gx, unit.gy);
+      if ((imp & 0x40) && !(imp & 0x02)) { // fortress but not city (binary: bVar2 & 0x42 == 0x40)
+        for (const c of mapData.cities) {
+          if (c && c.owner === owner) {
+            if (this._tileDistance(unit.gx, unit.gy, c.gx, c.gy, mapData.mw) < 4) return false;
+          }
+        }
+      }
+    }
+    return true;
+  },
+
   // Check if a civ owns a specific wonder (wonder still in their city)
   _civHasWonder(mapData, civIndex, wonderIndex) {
     const wIds = mapData.gameState && mapData.gameState.wonderCityIds;
@@ -470,27 +508,32 @@ const Civ2CityDialog = {
           break;
       }
 
-      // Military abroad unhappiness — Republic/Democracy only (FUN_00505666 lines 2524-2548)
+      // Military abroad unhappiness — Republic/Democracy only (FUN_004e7eb1 lines 3009-3054)
+      // Sea combat units are always abroad; land/air check location vs friendly cities/fortresses
       if (government > 4 && !this.NON_COMBAT_TYPES.has(unit.type)) {
-        const hasWS = this._civHasWonder(mapData, city.owner, 21); // Women's Suffrage
-        const hasPS = this._cityHasBuilding(city, 33); // Police Station
-        let baseUnhappy = (!hasWS && !hasPS) ? 1 : 0;
+        const isSeaCombat = this.SEA_COMBAT_TYPES.has(unit.type);
+        const isAbroad = isSeaCombat || this._isUnitAbroad(unit, city, mapData);
+        if (isAbroad) {
+          const hasWS = this._civHasWonder(mapData, city.owner, 21); // Women's Suffrage
+          const hasPS = this._cityHasBuilding(city, 33); // Police Station
+          let baseUnhappy = (!hasWS && !hasPS) ? 1 : 0;
 
-        if (government === 6) { // Democracy: always +1
-          baseUnhappy += 1;
-        } else if (baseUnhappy > 0 && abroadCounter === 0) {
-          // Republic: first military unit is free
-          baseUnhappy = 0;
-        }
+          if (government === 6) { // Democracy: always +1
+            baseUnhappy += 1;
+          } else if (baseUnhappy > 0 && abroadCounter === 0) {
+            // Republic: first military unit is free
+            baseUnhappy = 0;
+          }
 
-        if (baseUnhappy === 0) {
-          ov.unhappy = 1;
-          ov.unhappyType = 2; // content face (mitigated)
-        } else {
-          ov.unhappy = baseUnhappy;
-          ov.unhappyType = 1; // unhappy face
+          if (baseUnhappy === 0) {
+            ov.unhappy = 1;
+            ov.unhappyType = 2; // gray face (mitigated)
+          } else {
+            ov.unhappy = baseUnhappy;
+            ov.unhappyType = 1; // red face (unmitigated)
+          }
+          abroadCounter++;
         }
-        abroadCounter++;
       }
 
       overlays.push(ov);
@@ -696,16 +739,9 @@ const Civ2CityDialog = {
       }
     }
 
-    // Small citizen faces for unit support overlays (10×10, scaled from 27×30)
-    // unhappy = col 4, content = col 2 in PEOPLE.GIF grid
-    cdSprites.unhappySmall = [];
-    cdSprites.contentSmall = [];
-    for (let era = 0; era < 4; era++) {
-      if (cdSprites.citizens[era]) {
-        cdSprites.unhappySmall[era] = this._scaleSprite(cdSprites.citizens[era][4], 10, 10);
-        cdSprites.contentSmall[era] = this._scaleSprite(cdSprites.citizens[era][2], 10, 10);
-      }
-    }
+    // Mad face icons 10x10 from ICONS.GIF for unit support overlays (military abroad)
+    cdSprites.madFaceRed = Civ2Renderer.extractSprite(iconsCtx, 82, 334, 10, 10, CK, false);
+    cdSprites.madFaceGray = Civ2Renderer.extractSprite(iconsCtx, 82, 345, 10, 10, CK, false);
 
     // Wallpaper from CITY.GIF (636x421 crop from 640x480)
     if (cityGifCtx) {
@@ -1281,9 +1317,12 @@ const Civ2CityDialog = {
     }
 
     // Draw small resource icons on worked tiles (food, then shields, then trade)
-    // Reference: 10×10px icons centered horizontally, spacing adjusts by total count
+    // From decompiled FUN_00502798: icons left-aligned at tileX + padding(8),
+    // spacing via FUN_00548b70(count, iconSize+1, availW), iconY = tileY + halfH - 5
     if (cdSprites && cdSprites.foodSmall && cdSprites.shieldSmall && cdSprites.tradeSmall) {
-      const iconSize = 10;
+      const iconSize = 10;   // FUN_00511690(10) = 10 in mode 2
+      const iconPad = 8;     // FUN_00511690(8) = 8 — left/right padding
+      const availW = sprW - iconPad * 2;  // 48 - 16 = 32
       for (let i = 0; i < radiusTiles.length; i++) {
         if (!worked.has(i)) continue;
         const rt = radiusTiles[i];
@@ -1297,15 +1336,12 @@ const Civ2CityDialog = {
         const totalIcons = food + shields + trade;
         if (totalIcons === 0) continue;
 
-        // Binary: available_width = tileWidth - 2 * FUN_00511690(8) = 64 - 16 = 48 (75% of tile)
-        // Icon size: FUN_00511690(10) + 1 = 11 at zoom 2. We use 10px icons on 47px tiles.
-        const availW = Math.round(sprW * 0.75);
-        const { spacing } = this._iconSpacing(totalIcons, iconSize, availW);
-        const totalW = (totalIcons - 1) * spacing + iconSize;
+        // Game uses iconSize+1 for spacing (1px gap at natural spacing)
+        const { spacing } = this._iconSpacing(totalIcons, iconSize + 1, availW);
 
         const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
         const sy = tileGy * (TH >> 1) + offY;
-        const startX = sx + (TW >> 1) - (totalW >> 1);
+        const startX = sx + iconPad;  // left-aligned at tile + padding
         const iconY = sy + (TH >> 1) - (iconSize >> 1);
 
         let idx = 0;
@@ -1370,9 +1406,12 @@ const Civ2CityDialog = {
     const tradeIconCount = tradeTotal + corruption;
     const tradeSpacing = this._resourceSpacing(tradeIconCount);
     for (let i = 0; i < tradeTotal; i++)
-      ctx.drawImage(cdSprites.trade, tradeR.iconX + i * tradeSpacing, tradeR.iconY, 14, 14);
+      ctx.drawImage(cdSprites.trade, tradeR.iconX + 1 + i * tradeSpacing, tradeR.iconY, 14, 14);
     if (corruption > 0) {
-      const corrStartX = tradeR.rightX - (tradeSpacing * corruption + 14 - tradeSpacing);
+      const corrStartX = tradeR.rightX - 2 - (tradeSpacing * corruption + 14 - tradeSpacing);
+      // Corruption background bar — game palette 0x79
+      ctx.fillStyle = 'rgb(239,159,7)';
+      ctx.fillRect(corrStartX, tradeR.iconY, (corruption - 1) * tradeSpacing + 14, 14);
       for (let i = 0; i < corruption; i++)
         ctx.drawImage(cdSprites.corruption, corrStartX + i * tradeSpacing, tradeR.iconY, 14, 14);
     }
@@ -1395,29 +1434,27 @@ const Civ2CityDialog = {
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
 
-    // Icons row below text: tax from left, lux from center, sci from right
+    // Icons: tax left, lux centered, sci right — one shared spacing (matching binary FUN_005025d5)
     const iconY = tlsR.iconY + 1;
-    // Tax icons (left-aligned)
-    if (taxCount > 0) {
-      const sectionW = tlsR.luxIconX - tlsR.iconX - 4;
-      const taxSp = this._iconSpacing(taxCount, 14, sectionW);
+    const totalIcons = taxCount + luxOutput + sciCount;
+    if (totalIcons > 0) {
+      const availW = tlsR.rightX - tlsR.iconX;
+      const { spacing } = this._iconSpacing(totalIcons, 14, availW);
+      // Tax: left-aligned
       for (let i = 0; i < taxCount; i++)
-        ctx.drawImage(cdSprites.tax, tlsR.iconX + i * taxSp.spacing, iconY, 14, 14);
-    }
-    // Luxury icons (center section)
-    if (luxOutput > 0) {
-      const luxStartX = tlsR.luxIconX;
-      const luxEndX = tlsR.centerX + (tlsR.centerX - tlsR.luxIconX);
-      const luxSp = this._iconSpacing(luxOutput, 14, luxEndX - luxStartX);
-      for (let i = 0; i < luxOutput; i++)
-        ctx.drawImage(cdSprites.luxury, luxStartX + i * luxSp.spacing, iconY, 14, 14);
-    }
-    // Science icons (right-aligned)
-    if (sciCount > 0) {
-      const sciStartX = tlsR.centerX + (tlsR.centerX - tlsR.luxIconX);
-      const sciSp = this._iconSpacing(sciCount, 14, tlsR.rightX - sciStartX);
+        ctx.drawImage(cdSprites.tax, tlsR.iconX + i * spacing, iconY, 14, 14);
+      // Science: right-aligned
+      const sciStartX = sciCount > 0 ? tlsR.rightX - 2 - ((sciCount - 1) * spacing + 14) : tlsR.rightX;
       for (let i = 0; i < sciCount; i++)
-        ctx.drawImage(cdSprites.science, sciStartX + i * sciSp.spacing, iconY, 14, 14);
+        ctx.drawImage(cdSprites.science, sciStartX + i * spacing, iconY, 14, 14);
+      // Luxury: centered in gap between tax and science
+      if (luxOutput > 0) {
+        const taxEndX = taxCount > 0 ? tlsR.iconX + (taxCount - 1) * spacing + 14 : tlsR.iconX;
+        const luxW = (luxOutput - 1) * spacing + 14;
+        const luxStartX = taxEndX + Math.round((sciStartX - taxEndX - luxW) / 2);
+        for (let i = 0; i < luxOutput; i++)
+          ctx.drawImage(cdSprites.luxury, luxStartX + i * spacing, iconY, 14, 14);
+      }
     }
 
     // Row 4: SUPPORT + PRODUCTION
@@ -1432,17 +1469,17 @@ const Civ2CityDialog = {
     ctx.textBaseline = 'alphabetic';
     const spTotal = support + production;
     const spSpacing = this._resourceSpacing(spTotal);
-    // Support bar + icons (left-aligned) — bar color 0x0B from game palette
+    // Support bar + icons (left-aligned) — game palette 0x54
     if (support > 0) {
-      ctx.fillStyle = 'rgb(90,90,90)';
+      ctx.fillStyle = 'rgb(63,79,167)';
       ctx.fillRect(spR.iconX, spR.iconY, (support - 1) * spSpacing + 14, 14);
       for (let i = 0; i < support; i++)
         ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY, 14, 14);
     }
-    // Production bar + icons (right-aligned) — bar color 0x54 from game palette
+    // Production/surplus bar + icons (right-aligned) — game palette 0x5C
     if (production > 0) {
       const prodStartX = spR.rightX - (spSpacing * production + 14 - spSpacing);
-      ctx.fillStyle = 'rgb(60,186,199)';
+      ctx.fillStyle = 'rgb(7,11,103)';
       ctx.fillRect(prodStartX, spR.iconY, (production - 1) * spSpacing + 14, 14);
       for (let i = 0; i < production; i++)
         ctx.drawImage(cdSprites.shields, prodStartX + i * spSpacing, spR.iconY, 14, 14);
@@ -1630,7 +1667,8 @@ const Civ2CityDialog = {
 
   _drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites) {
     const R = this.REGIONS.unitsSupported;
-    const P = this.REGIONS.panels.unitSupport;  // { x:7, y:215, w:184, h:69 }
+    // Panel outer bounds from decompiled citywin_8C84: (0, 0xD4, 0xC0, 0x4E)
+    const PX = 0, PY = 212, PW = 192, PH = 78;
 
     if (supported.length < 5) {
       this._label(ctx, 'Units Supported', R.x + R.w / 2, R.y + 12);
@@ -1643,73 +1681,74 @@ const Civ2CityDialog = {
     const epoch = mapData.civTechs ? Civ2Renderer._getEpoch(mapData.civTechs[city.owner]) : 0;
     const eraRow = Math.min(epoch, 3);
 
-    const unitH = Math.floor((P.h - 4) / 2);  // sized to fit 2 rows in full panel
-    const unitW = Math.round(unitH * 64 / 48);
-    const iconSize = 10;
-    const maxShow = Math.min(12, supported.length);
-    const drawY = supported.length <= 3 ? R.y + 20 : R.y + 6;
-    const rows = maxShow <= 3 ? 1 : 2;
-    const perRow = Math.ceil(maxShow / rows);
+    // All dimensions from FUN_00472cf0(base, -3) = floor(5 * base / 8)
+    const unitW = 43;       // FUN_00472cf0(0x45, -3)
+    const unitH = 32;       // FUN_00472cf0(0x34, -3)
+    const iconYOff = 20;    // FUN_00472cf0(0x20, -3) — icon Y offset from unit top
+    const iconAvailW = 40;  // FUN_00472cf0(0x40, -3) — available width for icons
+    const iconSize = 10;    // FUN_00511690(10) in mode 2
 
-    // Clip to the panel box to prevent overflow
+    const perRow = Math.floor(PW / unitW);   // 192/43 = 4
+    const maxRows = Math.floor(PH / unitH);  // 78/32 = 2
+    const maxShow = Math.min(perRow * maxRows, supported.length);
+    const singleRow = supported.length <= perRow;
+
+    // Centering offsets (from decompiled FUN_00505666)
+    const xStart = PX + ((PW - unitW * perRow + 3) >> 1);  // 0 + 11 = 11
+    const yStart = singleRow
+      ? PY + ((PH - 30) >> 1)                              // 212 + 24 = 236
+      : PY + ((PH - unitH * maxRows + 2) >> 1);            // 212 + 8 = 220
+
+    // Clip to panel bounds
     ctx.save();
     ctx.beginPath();
-    ctx.rect(P.x, P.y, P.w, P.h);
+    ctx.rect(PX, PY, PW, PH);
     ctx.clip();
 
-    for (let row = 0; row < rows; row++) {
-      const rowStart = row * perRow;
-      const rowCount = Math.min(perRow, maxShow - rowStart);
-      if (rowCount <= 0) break;
+    let col = 0, row = 0;
+    for (let idx = 0; idx < maxShow; idx++) {
+      const u = supported[idx];
+      const template = mapSprites.unitTemplates[u.type];
+      if (!template) continue;
+      const cacheKey = `${u.type}-${u.owner}`;
+      let colored = mapSprites.unitColored && mapSprites.unitColored[cacheKey];
+      if (!colored) {
+        colored = Civ2Renderer._recolorUnit(template, Civ2Renderer.CIV_COLORS[u.owner] || '#ccc');
+      }
+      const ux = xStart + col * unitW;
+      const uy = yStart + row * unitH;
+      ctx.drawImage(colored, ux, uy, unitW, unitH);
 
-      // Compute horizontal spacing — overlap if too many to fit
-      const availW = R.w - 8;
-      const totalNeeded = rowCount * unitW;
-      const spacing = totalNeeded <= availW ? unitW + 4 : Math.floor((availW - unitW) / Math.max(1, rowCount - 1));
-      const uy = rows === 1 ? drawY : R.y + 6 + row * 35;
+      // Draw support overlay icons (left-aligned at unit X, Y offset from top)
+      const ov = overlays[idx];
+      if (ov && cdSprites) {
+        const numIcons = ov.food + (ov.shield ? 1 : 0) + ov.unhappy;
+        if (numIcons > 0) {
+          const { spacing } = this._iconSpacing(numIcons, iconSize, iconAvailW);
+          let ix = ux;
+          const iy = uy + iconYOff;
 
-      for (let i = 0; i < rowCount; i++) {
-        const idx = rowStart + i;
-        const u = supported[idx];
-        const template = mapSprites.unitTemplates[u.type];
-        if (!template) continue;
-        const cacheKey = `${u.type}-${u.owner}`;
-        let colored = mapSprites.unitColored && mapSprites.unitColored[cacheKey];
-        if (!colored) {
-          colored = Civ2Renderer._recolorUnit(template, Civ2Renderer.CIV_COLORS[u.owner] || '#ccc');
+          for (let f = 0; f < ov.food; f++) {
+            if (cdSprites.foodSmall) ctx.drawImage(cdSprites.foodSmall, ix, iy, iconSize, iconSize);
+            ix += spacing;
+          }
+          if (ov.shield) {
+            if (cdSprites.shieldSmall) ctx.drawImage(cdSprites.shieldSmall, ix, iy, iconSize, iconSize);
+            ix += spacing;
+          }
+          for (let h = 0; h < ov.unhappy; h++) {
+            const faceSprite = ov.unhappyType === 2 ? cdSprites.madFaceGray : cdSprites.madFaceRed;
+            if (faceSprite) ctx.drawImage(faceSprite, ix, iy, iconSize, iconSize);
+            ix += spacing;
+          }
         }
-        const ux = R.x + 8 + i * spacing;
-        ctx.drawImage(colored, ux, uy, unitW, unitH);
+      }
 
-        // Draw support overlay icons below unit sprite
-        const ov = overlays[idx];
-        if (!ov || !cdSprites) continue;
-        const totalIcons = ov.food + (ov.shield ? 1 : 0) + ov.unhappy;
-        if (totalIcons === 0) continue;
-
-        const { spacing: iconSpacing } = this._iconSpacing(totalIcons, iconSize, unitW);
-        const totalW = (totalIcons - 1) * iconSpacing + iconSize;
-        let ix = ux + Math.round((unitW - totalW) / 2);
-        const iy = uy + unitH - iconSize;
-
-        // Food icons (settlers)
-        for (let f = 0; f < ov.food; f++) {
-          if (cdSprites.foodSmall) ctx.drawImage(cdSprites.foodSmall, ix, iy, iconSize, iconSize);
-          ix += iconSpacing;
-        }
-        // Shield icon (support cost)
-        if (ov.shield) {
-          if (cdSprites.shieldSmall) ctx.drawImage(cdSprites.shieldSmall, ix, iy, iconSize, iconSize);
-          ix += iconSpacing;
-        }
-        // Unhappy/content faces (military abroad under Republic/Democracy)
-        for (let h = 0; h < ov.unhappy; h++) {
-          const faceSprite = ov.unhappyType === 2
-            ? (cdSprites.contentSmall && cdSprites.contentSmall[eraRow])
-            : (cdSprites.unhappySmall && cdSprites.unhappySmall[eraRow]);
-          if (faceSprite) ctx.drawImage(faceSprite, ix, iy, iconSize, iconSize);
-          ix += iconSpacing;
-        }
+      col++;
+      if (col >= perRow) {
+        col = 0;
+        row++;
+        if (row >= maxRows) break;
       }
     }
     ctx.restore();
