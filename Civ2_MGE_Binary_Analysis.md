@@ -454,10 +454,10 @@ Civ2 MGE uses standard Windows system fonts — no custom bitmap fonts. Confirme
 
 | Component | Details |
 |-----------|---------|
-| Box size | Width = MeasureText(sizeStr).width, Height = 14 (font size). No padding |
+| Box size | Width = MeasureText(sizeStr).width + 3px padding (1px left, 2px right), Height = 14 (font size) |
 | Box fill | Civ text color (from CITIES.GIF y=423 color strips) |
-| Box border | 1px black outline, extends 1px beyond fill on left and right sides only |
-| Text | Times New Roman Bold 14px, black, top-left aligned with fill rectangle |
+| Box border | 1px black outline on all 4 sides, extends 1px beyond fill |
+| Text | Times New Roman Bold 14px, black, left-aligned with 1px left offset inside fill rectangle |
 | Position | Orange marker pixel (idx 249, rgb 255,155,0) in CITIES.GIF cell border |
 
 **City name label** (drawn in separate pass, on top of everything):

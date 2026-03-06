@@ -729,32 +729,7 @@ const Civ2Renderer = {
           ctx.drawImage(sprites.cityFlags[c.owner], fx, fy);
         }
 
-        // City size box — positioned via orange marker pixel, or fallback centered
-        // Source: Civ2-clone MapControl.cs — TNR Bold 14px, box = text size, no padding
-        const sizeStr = String(c.size);
-        ctx.font = 'bold 14px "Times New Roman", serif';
-        ctx.letterSpacing = '0px';
-        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
-        const tm = ctx.measureText(sizeStr);
-        const sw = Math.ceil(tm.width);
-        const sh = 14;  // Raylib MeasureTextEx returns fontSize (14) as height for single-line text
-        let ssx, ssy;
-        if (sizeLoc) {
-          ssx = tpx + sizeLoc.x - 1;
-          ssy = tpy - 16 + sizeLoc.y - 1;
-        } else {
-          ssx = cx - sw / 2;
-          ssy = tpy - 16;
-        }
-        ctx.fillStyle = color;
-        ctx.fillRect(ssx, ssy, sw, sh);                   // civ color fill
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);         // black border (1px wider each side)
-        ctx.fillStyle = '#000';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText(sizeStr, ssx, ssy);
+        // City size box drawing deferred to after units (Pass 6c)
       }
     }
 
@@ -806,7 +781,8 @@ const Civ2Renderer = {
           ctx.letterSpacing = '0px';
           const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
           const tm = ctx.measureText(sizeStr);
-          const sw = Math.ceil(tm.width);
+          const padL = 1, padR = 2;
+          const sw = Math.ceil(tm.width) + padL + padR;
           const sh = 14;
           let ssx, ssy;
           if (sizeLoc) {
@@ -818,13 +794,15 @@ const Civ2Renderer = {
           }
           ctx.fillStyle = color;
           ctx.fillRect(ssx, ssy, sw, sh);
-          ctx.strokeStyle = '#000';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(ssx - 1, ssy, sw + 2, sh);
+          // Black border (1px around fill)
           ctx.fillStyle = '#000';
+          ctx.fillRect(ssx - 1, ssy, 1, sh);
+          ctx.fillRect(ssx + sw, ssy, 1, sh);
+          ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1); // top
+          ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1); // bottom
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
-          ctx.fillText(sizeStr, ssx, ssy);
+          ctx.fillText(sizeStr, ssx + padL, ssy);
 
           // Ghost city name label
           const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
@@ -846,8 +824,51 @@ const Civ2Renderer = {
     }
 
     // ────────────────────────────────────────
-    // PASS 5: Units
+    // PASS 5: Fortress/Airbase (drawn under units)
     // ────────────────────────────────────────
+    // Airbase per-owner coloring: palette 252 (light red 255,0,0) for civ color
+    // Source: Civ2-clone — airbase sprites contain civ-color placeholder pixels
+    // "airbase,full" variant shown when air units (types 27-31) are present on the tile
+    // Build set of tiles with air units for airbase variant selection (used in Pass 5 + 6b)
+    const AIR_TYPES = new Set([27, 28, 29, 30, 31]); // Fighter, Bomber, Helicopter, Stealth F., Stealth B.
+    const airUnitTiles = new Set();
+    for (const u of mapData.units) {
+      if (AIR_TYPES.has(u.type)) airUnitTiles.add(u.gx + ',' + u.gy);
+    }
+    if (sprites.fortress || sprites.airbase) {
+      for (let gy = 0; gy < mh; gy++) {
+        for (let gx = 0; gx < xMax; gx++) {
+          let imp = getImprovements(gx, gy);
+          if (fowEnabled) {
+            if (isUnexplored(gx, gy)) continue;
+            if (isDimmed(gx, gy)) {
+              imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
+            }
+          }
+          if (!(imp & 0x40)) continue;
+          const [px, py] = tilePos(gx, gy);
+          if ((imp & 0x02) && sprites.airbase) {
+            const tileKey = gx + ',' + gy;
+            const hasAir = airUnitTiles.has(tileKey);
+            const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
+            const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(gx, gy) : 0;
+            const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
+            const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
+            if (!sprites.airbaseColored[variantKey]) {
+              const color = this.CIV_COLORS[ownerIdx] || '#c80000';
+              sprites.airbaseColored[variantKey] = this._recolorUnit(baseSprite, color);
+            }
+            ctx.drawImage(sprites.airbaseColored[variantKey], px, py - 16);
+          }
+          else if (sprites.fortress) ctx.drawImage(sprites.fortress, px, py - 16);
+        }
+      }
+    }
+
+    // ────────────────────────────────────────
+    // PASS 6: Units
+    // ────────────────────────────────────────
+    let bestUnit = {};  // hoisted for Pass 6b fortress redraw
     if (sprites.unitTemplates.length > 0) {
       if (onProgress) onProgress('Drawing units...');
       await this._yield();
@@ -876,7 +897,7 @@ const Civ2Renderer = {
         if (!CIVILIANS.has(u.type)) p += 1;
         return p;
       }
-      const bestUnit = {};
+      bestUnit = {};
       const lookup = mapData.unitBySaveIndex || {};
       for (const u of mapData.units) {
         const tileKey = u.gx + ',' + u.gy;
@@ -898,7 +919,10 @@ const Civ2Renderer = {
         }
       }
 
-      for (const u of Object.values(bestUnit)) {
+      // Sort units by row (top-to-bottom) so southern units draw over northern fortress overhang
+      const sortedUnits = Object.values(bestUnit).sort((a, b) => a.gy - b.gy);
+
+      for (const u of sortedUnits) {
         const tileKey = u.gx + ',' + u.gy;
 
         const template = sprites.unitTemplates[u.type];
@@ -910,12 +934,24 @@ const Civ2Renderer = {
           sprites.unitColored[cacheKey] = this._recolorUnit(template, color);
         }
 
+        // Sentry/sleep dimming: orders 0x03 → dark gray silhouette (palette 0x1a)
+        // Binary: FUN_0056baff lines 3925-3941
+        const isDimmed = (u.orders === 0x03);
+        let unitSprite = sprites.unitColored[cacheKey];
+        if (isDimmed) {
+          const dimKey = u.type + '-dimmed';
+          if (!sprites.unitColored[dimKey]) {
+            sprites.unitColored[dimKey] = this._dimUnit(sprites.unitColored[cacheKey]);
+          }
+          unitSprite = sprites.unitColored[dimKey];
+        }
+
         // Draw at canonical position, and again at wrap seam if applicable
         const unitPositions = [u.gx];
         if (wraps && u.gx < xExtra) unitPositions.push(u.gx + mw);
         for (const drawGx of unitPositions) {
           const [tpx, tpy] = tilePos(drawGx, u.gy);
-          ctx.drawImage(sprites.unitColored[cacheKey], tpx, tpy - 16);
+          ctx.drawImage(unitSprite, tpx, tpy - 16);
 
           // Shield position
           let shieldX = tpx, shieldY = tpy - 16;
@@ -985,58 +1021,82 @@ const Civ2Renderer = {
           if (sprites.fortify && u.orders === 0x02) {
             ctx.drawImage(sprites.fortify, tpx, tpy - 16);
           }
+
+          // Fortress/airbase on same tile: redraw over unit so walls surround it.
+          // Since units are sorted top-to-bottom, southern units drawn later
+          // will naturally cover this fortress's overhang.
+          let fortImp = getImprovements(u.gx, u.gy);
+          if (fowEnabled && isDimmed(u.gx, u.gy)) {
+            fortImp = mapData.getKnownImprovements(u.gx, u.gy, options.fowCiv);
+          }
+          if (fortImp & 0x40) {
+            if ((fortImp & 0x02) && sprites.airbase) {
+              const hasAir = airUnitTiles.has(tileKey);
+              const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
+              const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(u.gx, u.gy) : 0;
+              const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
+              const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
+              if (sprites.airbaseColored[variantKey]) {
+                ctx.drawImage(sprites.airbaseColored[variantKey], tpx, tpy - 16);
+              }
+            } else if (sprites.fortress) {
+              ctx.drawImage(sprites.fortress, tpx, tpy - 16);
+            }
+          }
         }
       }
     }
 
     // ────────────────────────────────────────
-    // PASS 6: Fortress/Airbase (drawn over units)
+    // PASS 6c: City size boxes (drawn over units so population number is visible)
     // ────────────────────────────────────────
-    // Airbase per-owner coloring: palette 252 (light red 255,0,0) for civ color
-    // Source: Civ2-clone — airbase sprites contain civ-color placeholder pixels
-    // "airbase,full" variant shown when air units (types 27-31) are present on the tile
-    if (sprites.fortress || sprites.airbase) {
-      // Build set of tiles with air units for airbase variant selection
-      const AIR_TYPES = new Set([27, 28, 29, 30, 31]); // Fighter, Bomber, Helicopter, Stealth F., Stealth B.
-      const airUnitTiles = new Set();
-      for (const u of mapData.units) {
-        if (AIR_TYPES.has(u.type)) airUnitTiles.add(u.gx + ',' + u.gy);
-      }
-
-      for (let gy = 0; gy < mh; gy++) {
-        for (let gx = 0; gx < xMax; gx++) {
-          let imp = getImprovements(gx, gy);
-          // G3: Use known improvements for dimmed tiles, skip unexplored
-          if (fowEnabled) {
-            if (isUnexplored(gx, gy)) continue;
-            if (isDimmed(gx, gy)) {
-              imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
-            }
-          }
-          if (!(imp & 0x40)) continue;
-          const [px, py] = tilePos(gx, gy);
-          if ((imp & 0x02) && sprites.airbase) {
-            // Select airbase variant: full (with planes) when air units present
-            const tileKey = gx + ',' + gy;
-            const hasAir = airUnitTiles.has(tileKey);
-            const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
-            // Per-owner recoloring via tile ownership (byte[5] high nibble)
-            const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(gx, gy) : 0;
-            const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
-            const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
-            if (!sprites.airbaseColored[variantKey]) {
-              const color = this.CIV_COLORS[ownerIdx] || '#c80000';
-              sprites.airbaseColored[variantKey] = this._recolorUnit(baseSprite, color);
-            }
-            ctx.drawImage(sprites.airbaseColored[variantKey], px, py - 16);
-          }
-          else if (sprites.fortress) ctx.drawImage(sprites.fortress, px, py - 16);
+    ctx.font = 'bold 14px "Times New Roman", serif';
+    ctx.letterSpacing = '0px';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    for (const c of mapData.cities) {
+      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
+      const drawPositions = [c.gx];
+      if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
+      for (const drawGx of drawPositions) {
+        const [tpx, tpy] = tilePos(drawGx, c.gy);
+        const cx = tpx + (TW >> 1);
+        const color = this.CIV_COLORS[c.owner] || '#ccc';
+        const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
+        const row = this._getCityRow(epoch, c.style || 0);
+        let col = this._getCitySizeCol(c.size, epoch);
+        if (c.hasPalace && col < 3) col++;
+        if (c.hasWalls) col += 4;
+        const sizeStr = String(c.size);
+        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+        const tm = ctx.measureText(sizeStr);
+        const padL = 1, padR = 2;
+        const sw = Math.ceil(tm.width) + padL + padR;
+        const sh = 14;
+        let ssx, ssy;
+        if (sizeLoc) {
+          ssx = tpx + sizeLoc.x - 1;
+          ssy = tpy - 16 + sizeLoc.y - 1;
+        } else {
+          ssx = cx - sw / 2;
+          ssy = tpy - 16;
         }
+        // Civ color fill
+        ctx.fillStyle = color;
+        ctx.fillRect(ssx, ssy, sw, sh);
+        // Black border (1px around fill)
+        ctx.fillStyle = '#000';
+        ctx.fillRect(ssx - 1, ssy, 1, sh);       // left
+        ctx.fillRect(ssx + sw, ssy, 1, sh);       // right
+        ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1); // top
+        ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1); // bottom
+        // Population number
+        ctx.fillText(sizeStr, ssx + padL, ssy);
       }
     }
 
     // ────────────────────────────────────────
-    // PASS 6b: Map Grid (optional, drawn over everything before FOW)
+    // PASS 7: Map Grid (optional, drawn over everything before FOW)
     // ────────────────────────────────────────
     // Green diamond outlines per tile — matches ICONS.GIF grid sprite (palette 254 green)
     // Toggle: UI checkbox. Save file toggle: gameToggles.showMapGrid at 0x000E bit 5
@@ -1061,7 +1121,7 @@ const Civ2Renderer = {
     this._drawLegend(ctx, canvasW, canvasH, mapData);
 
     // ────────────────────────────────────────
-    // PASS 7+8: Shroud — Three-state FOW + map edge black fills with dither transitions
+    // PASS 8+9: Shroud — Three-state FOW + map edge black fills with dither transitions
     // ────────────────────────────────────────
     // Three states:
     //   1. Unexplored — solid black (never seen by FOW civ)
@@ -1155,7 +1215,7 @@ const Civ2Renderer = {
     }
 
     // ────────────────────────────────────────
-    // PASS 9: City name labels (drawn ABOVE shroud so they're always readable)
+    // PASS 10: City name labels (drawn ABOVE shroud so they're always readable)
     // ────────────────────────────────────────
     // When FOW is enabled, only draw labels for currently visible cities.
     // Ghost city labels are already drawn in Pass 4 with reduced opacity (dimmed by shroud).
@@ -1445,6 +1505,24 @@ const Civ2Renderer = {
       else if (Math.abs(r - 127) < 3 && g < 3 && b < 3) {
         d[i] = dr; d[i+1] = dg; d[i+2] = db;
       }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return c;
+  },
+
+  // Create a sentry-dimmed silhouette: all non-transparent pixels → rgb(135,135,135)
+  // Binary: FUN_005cf126 with palette_index 0x1a (26) = game palette (135,135,135)
+  _dimUnit(spriteCanvas) {
+    const w = spriteCanvas.width, h = spriteCanvas.height;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
+    ctx.drawImage(spriteCanvas, 0, 0);
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] === 0) continue;
+      d[i] = 135; d[i+1] = 135; d[i+2] = 135;
     }
     ctx.putImageData(imgData, 0, 0);
     return c;

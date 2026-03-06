@@ -939,10 +939,10 @@ Civ2 MGE uses standard Windows system fonts — no custom bitmap fonts. Confirme
 
 | Component | Details |
 |-----------|---------|
-| Box size | Width = MeasureText(sizeStr).width, Height = 14 (font size). No padding |
+| Box size | Width = MeasureText(sizeStr).width + 3px padding (1px left, 2px right), Height = 14 (font size) |
 | Box fill | Civ text color (from CITIES.GIF y=423 color strips) |
-| Box border | 1px black outline, extends 1px beyond fill on left and right sides only |
-| Text | Times New Roman Bold 14px, black, top-left aligned with fill rectangle |
+| Box border | 1px black outline on all 4 sides, extends 1px beyond fill |
+| Text | Times New Roman Bold 14px, black, left-aligned with 1px left offset inside fill rectangle |
 | Position | Orange marker pixel (idx 249, rgb 255,155,0) in CITIES.GIF cell border |
 
 **City name label** (drawn in separate pass, on top of everything):
@@ -5445,6 +5445,31 @@ Each line: `Name, obsolete_tech, domain, move, range, attack, defense, hp, firep
 
 Unit type IDs in save files (byte +6 of unit records) correspond directly to the 0-indexed line number in `@UNITS`.
 
+#### Standard Unit Shield Costs (RULES.TXT `cost` field)
+
+| ID | Unit | Cost | ID | Unit | Cost | ID | Unit | Cost |
+|----|------|------|----|------|------|----|------|------|
+| 0 | Settlers | 4 | 18 | Crusaders | 4 | 36 | Ironclad | 6 |
+| 1 | Engineers | 4 | 19 | Knights | 4 | 37 | Destroyer | 6 |
+| 2 | Warriors | 1 | 20 | Dragoons | 5 | 38 | Cruiser | 8 |
+| 3 | Phalanx | 2 | 21 | Cavalry | 6 | 39 | AEGIS Cruiser | 10 |
+| 4 | Archers | 3 | 22 | Armor | 8 | 40 | Battleship | 16 |
+| 5 | Legion | 4 | 23 | Catapult | 4 | 41 | Submarine | 6 |
+| 6 | Pikemen | 2 | 24 | Cannon | 4 | 42 | Carrier | 16 |
+| 7 | Musketeers | 3 | 25 | Artillery | 5 | 43 | Transport | 5 |
+| 8 | Fanatics | 2 | 26 | Howitzer | 7 | 44 | Cruise Msl. | 6 |
+| 9 | Partisans | 5 | 27 | Fighter | 6 | 45 | Nuclear Msl. | 16 |
+| 10 | Alpine Troops | 5 | 28 | Bomber | 12 | 46 | Diplomat | 3 |
+| 11 | Riflemen | 4 | 29 | Helicopter | 10 | 47 | Spy | 3 |
+| 12 | Marines | 6 | 30 | Stlth Ftr. | 8 | 48 | Caravan | 5 |
+| 13 | Paratroopers | 6 | 31 | Stlth Bmbr. | 16 | 49 | Freight | 5 |
+| 14 | Mech. Inf. | 5 | 32 | Trireme | 4 | 50 | Explorer | 3 |
+| 15 | Horsemen | 2 | 33 | Caravel | 4 | 51-62 | User slots | 4-5 |
+| 16 | Chariot | 3 | 34 | Galleon | 4 | | | |
+| 17 | Elephant | 4 | 35 | Frigate | 5 | | | |
+
+Total shields = cost × shield_box_factor (COSMIC #4, default 10). E.g., Settlers cost 4 → 40 shields.
+
 ### Civilization Style Assignments (`@LEADERS`)
 
 Each civilization in LEADERS.TXT / RULES.TXT `@LEADERS` has a **city style** (0–3) determining which column of CITIES.GIF to use for city sprites. Colors cycle among the 7 civ slots (civs with the same color number share a palette).
@@ -5533,6 +5558,52 @@ Each line: `Name, cost_x10, upkeep, prerequisite_tech`
 - IDs 0-38 are city improvements/special (Nothing=0, Palace=1, Barracks=2, ..., Offshore Platform=31, Airport=32, Police Station=33, Port Facility=34, SS Structural=35, SS Component=36, SS Module=37, Capitalization=38)
 - IDs 39-66 are Wonders of the World (28 wonders, matching wonderCityIds[0-27] order)
 - The building bitmask in city records (+52-55) uses 1-indexed bits matching these IDs
+
+#### Standard Improvement Shield Costs
+
+| ID | Improvement | Cost | ID | Improvement | Cost |
+|----|-------------|------|----|-------------|------|
+| 0 | Nothing | 1 | 20 | Hydro Plant | 24 |
+| 1 | Palace | 10 | 21 | Nuclear Plant | 16 |
+| 2 | Barracks | 4 | 22 | Stock Exchange | 16 |
+| 3 | Granary | 6 | 23 | Sewer System | 12 |
+| 4 | Temple | 4 | 24 | Supermarket | 8 |
+| 5 | Marketplace | 8 | 25 | Superhighways | 20 |
+| 6 | Library | 8 | 26 | Research Lab | 16 |
+| 7 | Courthouse | 8 | 27 | SAM Battery | 10 |
+| 8 | City Walls | 8 | 28 | Coastal Fortress | 8 |
+| 9 | Aqueduct | 8 | 29 | Solar Plant | 32 |
+| 10 | Bank | 12 | 30 | Harbour | 6 |
+| 11 | Cathedral | 12 | 31 | Offshore Platform | 16 |
+| 12 | University | 16 | 32 | Airport | 16 |
+| 13 | Mass Transit | 16 | 33 | Police Station | 6 |
+| 14 | Colosseum | 10 | 34 | Port Facility | 8 |
+| 15 | Factory | 20 | 35 | SS Structural | 8 |
+| 16 | Mfg. Plant | 32 | 36 | SS Component | 16 |
+| 17 | SDI Defense | 20 | 37 | SS Module | 32 |
+| 18 | Recycling Center | 20 | 38 | Capitalization | 60 |
+| 19 | Power Plant | 16 | | | |
+
+#### Standard Wonder Shield Costs
+
+| ID | Wonder | Cost | ID | Wonder | Cost |
+|----|--------|------|----|--------|------|
+| 39 | Pyramids | 20 | 53 | Leonardo's Workshop | 40 |
+| 40 | Hanging Gardens | 20 | 54 | J.S. Bach's Cathedral | 40 |
+| 41 | Colossus | 20 | 55 | Isaac Newton's College | 40 |
+| 42 | Lighthouse | 20 | 56 | Adam Smith's Trading Co. | 40 |
+| 43 | Great Library | 30 | 57 | Darwin's Voyage | 40 |
+| 44 | Oracle | 30 | 58 | Statue of Liberty | 40 |
+| 45 | Great Wall | 30 | 59 | Eiffel Tower | 30 |
+| 46 | Sun Tzu's War Academy | 30 | 60 | Women's Suffrage | 60 |
+| 47 | King Richard's Crusade | 30 | 61 | Hoover Dam | 60 |
+| 48 | Marco Polo's Embassy | 20 | 62 | Manhattan Project | 60 |
+| 49 | Michelangelo's Chapel | 40 | 63 | United Nations | 60 |
+| 50 | Copernicus' Observatory | 30 | 64 | Apollo Program | 60 |
+| 51 | Magellan's Expedition | 40 | 65 | SETI Program | 60 |
+| 52 | Shakespeare's Theatre | 30 | 66 | Cure for Cancer | 60 |
+
+Total shields = cost × shield_box_factor (COSMIC #4, default 10). Source: standard Civ2 MGE RULES.TXT.
 
 ### Terrain Definition Format (`@TERRAIN`)
 
@@ -8544,9 +8615,10 @@ The mask bitmap is 1bpp (monochrome): white = opaque pixel, black = transparent 
 
 **Note:** The 3-step GDI mask blit described above is for the DDraw proxy capture session.
 Internally, the game's 8-bit paletted sprite engine uses direct pixel-copy loops, not GDI
-ROPs. The normal blit (`FUN_005e518e`) copies source pixels; the dimmed/silhouette blit
-(`FUN_005e52bf`) replaces all non-transparent pixels with a fixed palette index. See
-[Part VI §P](#p-spriterectangle-drawing-primitives) for details.
+ROPs. The normal blit (`FUN_005e518e`, 16 params) copies source pixels; the dimmed/silhouette
+blit (`FUN_005e52bf`, 17 params) replaces all non-transparent pixels with a fixed palette
+index. See [Part VI §P](#p-spriterectangle-drawing-primitives) for the complete call chain,
+corrected Ghidra MFC misidentification analysis, and full 16/17-parameter reconstruction.
 
 ---
 
@@ -9181,7 +9253,12 @@ For AI: `shields_per_row = 13 - difficulty_level` (8 on Deity, 13 on Chieftain),
   - Icon at (x, y) via FUN_005cef31
   - Text at x + 24, y - 1, color 0x29, font 10px, no shadow
   - Gold upkeep icon: panel_right - 14 - 4
-- Scrollbar via `FUN_005db0d0` and `FUN_0040fd40`
+- Scrollbar: native Windows `MSScrollBarClass` control (not custom-rendered by game)
+  - Created via `CreateWindowExA("MSScrollBarClass", ..., style=0x8b)` with `SB_VERT`
+  - State: `SetScrollRange(hwnd, SB_VERT, 0, max, 1)`, `FUN_005db0d0` sets thumb position
+  - Position: X = panel_right - SM_CXVSCROLL, Y = 291, width = 17px (SM_CXVSCROLL), height = 129px
+  - Arrow buttons: 17×17px, drawn by Windows (not from ICONS.GIF)
+  - JS renders as Windows 95 classic style: 4-color bevel (white/face/shadow/black), dithered checkerboard track, small pixel-art triangle arrows
 
 ---
 
@@ -9377,28 +9454,229 @@ Used for all resource icon rows. When many icons, they overlap (spacing < icon_s
 ### FUN_005cef31 — Primary sprite blit (normal)
 ```c
 FUN_005cef31(result_rect, surface, x, y)
-    → FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)   // 673 bytes
-        → FUN_005e518e(...)  // pixel copy: *dst = src_pixel
+    → FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)   // 673 bytes, COleClientItem
+    → FUN_005d080d(result_rect, surface, 0xFFFFFFFF, x, y)   // 671 bytes, _Timevec
+        → FUN_005e518e(16 params)  // pixel copy: *dst = src_pixel
 ```
 
 ### FUN_005cf126 — Dimmed sprite blit (silhouette)
 ```c
 FUN_005cf126(result_rect, surface, x, y, palette_index)
     → FUN_005d10cd(result_rect, surface, 0xFFFFFFFF, x, y, palette_index)  // 677 bytes
-        → FUN_005e52bf(...)  // silhouette: *dst = fixed_color
+    → FUN_005d1372(result_rect, surface, 0xFFFFFFFF, x, y, palette_index)  // 672 bytes
+        → FUN_005e52bf(17 params)  // silhouette: *dst = fixed_color
 ```
 Replaces ALL non-transparent pixels with a single fixed palette index, creating a
 solid-color silhouette. The sprite shape is preserved but all color detail is lost.
 
+### Ghidra MFC Misidentification
+
+Ghidra's Function ID (FID) signature matching misidentifies several custom surface
+accessor functions as MFC library functions. These are all 28-30 byte `__thiscall`
+functions of the form `mov eax, [ecx+offset]; ret` whose byte patterns happen to
+match MFC42 library functions from Visual Studio 1998 Debug builds:
+
+| Ghidra Label | Address | Actual Purpose | Returns |
+|---|---|---|---|
+| `COleClientItem::GetActiveView` | 0x0043C560 | Surface accessor | `this->0x08` |
+| `COleClientItem::GetActiveView` | 0x0043C590 | Surface accessor | `this->0x04` |
+| `CCheckListBox::GetCheckStyle` | 0x005C55F0 | Surface accessor: format descriptor | `this->0x40` |
+
+This creates cascading decompilation errors where stack pushes intended for the
+16/17-parameter pixel loop function are misattributed as parameters to the accessor
+calls. The _Timevec surface variants do NOT have this problem and decompile cleanly,
+enabling cross-referencing to reconstruct the true parameter flow.
+
+### Two Surface Class Types
+
+The game engine has two parallel surface implementations:
+
+**Type A: "COleClientItem" surface** (Ghidra misidentification)
+```
++0x04: field (returned by GetActiveView@0x0043C590)
++0x08: field (returned by GetActiveView@0x0043C560) — dest bitmap height
++0x0c: stride (returned by FUN_005c55d0)
++0x14: RECT clip_rect
++0x34: pixel buffer pointer (returned by FUN_005c5640)
++0x40: format descriptor pointer (returned by GetCheckStyle@0x005C55F0)
+       Format descriptor +0x14: 1=top-down, 0=bottom-up (checked by FUN_005e395a)
+```
+
+**Type B: "_Timevec" surface** (cleaner decompilation)
+```
++0x00: lock/resource handle (used by FUN_005e6188 to lock+get buffer)
++0x04: field — dest bitmap height (returned by FUN_005c5660)
++0x0c: stride (returned by FUN_005c56a0)
++0x10: RECT clip_rect
+```
+
+Both provide the same data (pixel buffer, stride, clip rect, format info) through
+different accessor patterns. The COleClientItem type requires an explicit format check
+via `FUN_005e395a` to determine stride sign; _Timevec stores stride pre-signed.
+
+### 8 Blit Dispatcher Variants
+
+| Function | Surface | Mode | Scale | Extra Param |
+|---|---|---|---|---|
+| `FUN_005d056c` (673 bytes) | COleClientItem | Normal | Isometric | — |
+| `FUN_005d080d` (671 bytes) | _Timevec | Normal | Isometric | — |
+| `FUN_005d0aac` (787 bytes) | COleClientItem | Normal | Anisotropic | — |
+| `FUN_005d0dbf` (782 bytes) | _Timevec | Normal | Anisotropic | — |
+| `FUN_005d10cd` (677 bytes) | COleClientItem | Dimmed | Isometric | param_6=fill_color |
+| `FUN_005d1372` (672 bytes) | _Timevec | Dimmed | Isometric | param_6=fill_color |
+| (aniso dimmed COleClientItem) | COleClientItem | Dimmed | Anisotropic | fill_color |
+| (aniso dimmed _Timevec) | _Timevec | Dimmed | Anisotropic | fill_color |
+
+Size difference: normal COleClientItem (673) vs dimmed COleClientItem (677) = 4 bytes,
+corresponding to one extra `push` instruction for the fill color parameter.
+
+### Wrapper Functions
+
+| Wrapper | Dispatches to | Extra params | Purpose |
+|---|---|---|---|
+| `FUN_005cef31` | `FUN_005d056c` | transp=-1 | Normal blit, default transp color |
+| `FUN_005cef66` | `FUN_005d056c` | explicit transp | Normal blit, custom transp color |
+| `FUN_005cef9f` | `FUN_005d080d` | transp=-1 | Normal blit (_Timevec), default |
+| `FUN_005cefd4` | `FUN_005d080d` | explicit transp | Normal blit (_Timevec), custom |
+| `FUN_005cf00d` | `FUN_005d0aac` | transp=-1 | Anisotropic normal, default |
+| `FUN_005cf042` | `FUN_005d0aac` | explicit transp | Anisotropic normal, custom |
+| `FUN_005cf07b` | `FUN_005d0dbf` | transp=-1 | Anisotropic normal (_Timevec) |
+| `FUN_005cf0b0` | `FUN_005d0dbf` | explicit transp | Anisotropic normal (_Timevec) |
+| `FUN_005cf0e9` | `FUN_005d10cd` | explicit all | Dimmed blit, explicit transp+fill |
+| `FUN_005cf126` | `FUN_005d10cd` | transp=-1 | Dimmed blit, default transp |
+
+### Pixel Loop Functions
+
 **Pixel-level difference** (decompiled):
 ```c
-// Normal (FUN_005e518e, 305 bytes):
+// Normal (FUN_005e518e, 305 bytes, 16 params):
 src_pixel = *(source + offset);
 if (src_pixel != transparent) *dst = src_pixel;     // copy source color
 
-// Dimmed (FUN_005e52bf, 308 bytes):
+// Dimmed (FUN_005e52bf, 308 bytes, 17 params):
 if (*(source + offset) != transparent) *dst = param_17;  // write FIXED color
 ```
+
+### FUN_005e518e — True 16-Parameter Signature
+
+```c
+void FUN_005e518e(
+    int param_1,          // RLE-encoded pixel data pointer (+8 skips header)
+    int param_2,          // Destination pixel buffer base address
+    int param_3,          // Scale lookup table (DAT_006e47c8, int[])
+    char param_4,         // Transparent color index (skip this palette index)
+    int param_5,          // Dest X offset within pixel buffer
+    int param_6,          // Dest Y offset (row) within pixel buffer
+    int param_7,          // Stride (bytes per row; negative = bottom-up)
+    int param_8,          // Dest surface height (for Y-flip when bottom-up)
+    int param_9,          // Visible width in pixels (after clipping)
+    int param_10,         // Visible height in rows (after clipping)
+    int param_11,         // X clip start index in scale table
+    int param_12,         // Y clip start offset (source rows to skip)
+    undefined4 param_13,  // Source sprite width (unscaled)
+    int param_14,         // Source sprite height (unscaled)
+    int param_15,         // Scaled width
+    int param_16          // Scaled height
+);
+```
+
+FUN_005e52bf has the same 16 params plus `undefined1 param_17` (fill color palette
+index, e.g. 0x1a = dark gray for sentry dimming).
+
+### Parameter Flow Reconstruction
+
+In x86 `__cdecl`, parameters are pushed right-to-left. The compiler interleaves
+`__thiscall` accessor calls (which pass `this` via ECX and don't consume stack space)
+with stack pushes for the final 16/17-param pixel loop call. Ghidra can't correctly
+partition which pushes belong to which call.
+
+**What Ghidra shows** (COleClientItem variant, FUN_005d056c):
+```c
+pCVar9 = COleClientItem::GetActiveView(param_2);
+uVar10 = CCheckListBox::GetCheckStyle((CCheckListBox *)param_2);
+iVar1 = FUN_005e395a(uVar10, pCVar9, uVar5, uVar8, local_30, iVar4, iVar6, iVar1, iVar2, iVar3);
+iVar2 = FUN_005c55d0();
+uVar5 = FUN_005c5640(DAT_006e47c8, (undefined1)param_3, local_28, local_2c, stride_expr);
+FUN_005e518e(in_ECX[0xe], uVar5);
+```
+
+**Reality:**
+- `GetActiveView(param_2)` = `__thiscall` surface accessor, returns bitmap height → param_8
+- `GetCheckStyle(param_2)` = `__thiscall` surface accessor, returns format descriptor → input for FUN_005e395a only
+- `FUN_005e395a` takes **1 param** (format ptr, returns `*(ptr+0x14)==1`); the other 9 "params" are FUN_005e518e params 8-16
+- `FUN_005c55d0` = `__thiscall` accessor, returns raw stride → used in `stride = format_is_topdown ? +stride : -stride`
+- `FUN_005c5640` takes **0 params** (returns `this->0x34`); the 5 "params" are FUN_005e518e params 3-7
+- `FUN_005e518e` takes **16 params**; the 2 "params" shown are just params 1-2
+
+**Equivalent _Timevec variant** (FUN_005d080d, decompiles cleanly):
+```c
+iVar5 = FUN_005e6188();       // lock surface, get pixel buffer → param_2
+uVar6 = FUN_005c5660(uVar6, uVar8, local_34, local_c, local_8, iVar1-iVar2, iVar3, iVar4);
+                              // 0 real params (returns surface->0x04); 8 "params" → params 9-16
+uVar6 = FUN_005c56a0(uVar6); // 0 real params (returns surface->0x0c = stride); 1 "param" → param_8
+FUN_005e518e(in_ECX[0xe], iVar5, DAT_006e47c8, param_3, local_28, local_2c, uVar6);
+                              // 7 "params" shown → params 1-7
+```
+Total fake+real: 8 + 1 + 7 = 16 params. The _Timevec variant confirms the parameter
+mapping because its accessors are not misidentified by Ghidra.
+
+**Dimmed variant difference**: The dispatcher's `param_6` (fill color) is pushed first
+onto the stack, becoming `param_17` of FUN_005e52bf. This shows as an extra "param"
+appended to the first accessor call's fake parameter list.
+
+### Complete Parameter Mapping
+
+| FUN_005e518e param | Meaning | COleClientItem source | _Timevec source |
+|---|---|---|---|
+| 1 | RLE sprite data | `in_ECX[0xe]` | `in_ECX[0xe]` |
+| 2 | Dest pixel buffer | `FUN_005c5640()` = surface->0x34 | `FUN_005e6188()` lock |
+| 3 | Scale lookup table | `DAT_006e47c8` | `DAT_006e47c8` |
+| 4 | Transparent color idx | `(byte)param_3` (-1 → default) | `(byte)param_3` |
+| 5 | Dest X | `local_28` | `local_28` |
+| 6 | Dest Y | `local_2c` | `local_2c` |
+| 7 | Signed stride | `±FUN_005c55d0()` (sign from format) | `FUN_005c56a0()` |
+| 8 | Dest surface height | `GetActiveView()` = surface->0x04/08 | `FUN_005c5660()` |
+| 9 | Visible width (clipped) | rect width | rect width |
+| 10 | Visible height (clipped) | rect height | rect height |
+| 11 | X clip start (scale idx) | `local_30` | `local_34` |
+| 12 | Y clip offset | `local_c` | `local_c` |
+| 13 | Source sprite width | `local_8` (in_ECX[4]-*in_ECX) | `local_8` |
+| 14 | Source sprite height | `iVar1` (in_ECX[5]-in_ECX[1]) | `iVar1-iVar2` |
+| 15 | Scaled width | `iVar2` (FUN_005d1d00 ret) | `iVar3` |
+| 16 | Scaled height | `iVar3` (FUN_005d1d00 ret) | `iVar4` |
+| 17* | Fill color (dimmed only) | dispatcher's `param_6` | dispatcher's `param_6` |
+
+### Sprite Object Layout (in_ECX)
+
+The source sprite object (`in_ECX` in blit dispatchers, `int*` indexed):
+```
+[0x00]: left boundary (source rect)
+[0x04]: right boundary → width = [0x04] - [0x00]
+[0x01]: top boundary (int* index, byte offset = index*4)
+[0x05]: bottom boundary → height = [0x05] - [0x01]
+[0x08]: x_offset (positioning within destination)
+[0x09]: y_offset
+[0x0c]: default transparent color index
+[0x0e]: RLE-encoded pixel data pointer
+```
+
+### Scale Lookup Table: DAT_006e47c8
+
+`FUN_005d1d00` uses `DAT_006e47c8` as a monotonically increasing `int[]` lookup table
+for coordinate scaling between zoom levels. Maps pixel positions at one zoom level to
+positions at another, enabling the sprite blit to correctly sample/skip pixels when
+zoom != 1:1. Used when `DAT_00637f98 < DAT_00637f9c` (zoom out).
+
+### Stride Sign Computation
+
+COleClientItem surfaces store a positive stride. The format check determines sign:
+```c
+int format_topdown = FUN_005e395a(surface->0x40);  // *(format+0x14) == 1
+int stride = FUN_005c55d0();                        // surface->0x0c (always positive)
+int signed_stride = format_topdown ? +stride : -stride;
+// Equivalent Ghidra expression: ((-(uint)(iVar1 == 0) & 0xfffffffe) + 1) * iVar2
+```
+_Timevec surfaces store stride pre-signed (no format check needed).
 
 Used for sentry units (`palette_index = 0x1a` = 26 = dark gray) and sea-domain units
 in cities with harbors. See Section S for the unit drawing function.
@@ -10057,11 +10335,10 @@ The browser parser currently reads these from the save file tail section. They c
 - Production panel unit sprite: 56×42 (zoom -1: `FUN_00472cf0(base, -1) = 7×base/8`) at panel+(73,1). Buildings/wonders: 36×20 native at panel+(80,16)
 - Veteran star removed from shield — not present in the real game's map or city dialog rendering
 - Unit civ-color recoloring tolerance: tightened from ±15 to ±3 in `_recolorUnit()`. Fixes 33 unit types (Legion, Archers, Knights, etc.) where legitimate dark-red art pixels (idx 103 = 135,0,0, idx 96 = 243,0,0) were false-matching civ-color placeholders (idx 251 = 127,0,0, idx 252 = 255,0,0). GIF decodes to exact RGB — no interpolation — so ±3 is safe (nearest false positive at distance 8)
+- Production cost tables corrected: all three lookup tables (UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS) had incorrect values. Verified against standard Civ2 MGE RULES.TXT `@UNITS` and `@IMPROVE` sections. Key corrections: Settlers 10→40, Warriors 20→10, Musketeers 50→30, Courthouse 120→80, Aqueduct 120→80, Copernicus 200→300, Women's Suffrage 150→600. Source: [rein4ce/civ2-web RULES.TXT](https://github.com/rein4ce/civ2-web/blob/master/RULES.TXT)
+- Sentry unit dimming: units with orders == 0x03 (sleep/sentry) rendered as dark gray silhouettes — all non-transparent pixels replaced with rgb(135,135,135) (game palette 0x1a = 26). Also applies to sea-domain units (types 32-43) in cities with harbors (building 30). Implemented in both map renderer (`renderer.js` `_dimUnit()`) and city dialog (`citydialog.js` `_drawUnitWithState()`). Cached per unit type. Binary: FUN_0056baff lines 3925-3941 → FUN_005cf126.
+- City size box z-order and styling: box drawn after units (Pass 6c) so population number is always visible. Box border changed from left/right-only to all 4 sides. Added 1px left / 2px right padding so number is not squished. Both main and FOW ghost city size boxes updated.
 
 ### Remaining
-- **Unit state decorations in city dialog**: Both unit panels (Supported + Present) draw bare sprites without shields, HP bars, order letters, fortification overlays, or sentry dimming. Real game uses `FUN_0056baff(param_3=4)` which draws full decorations. See Section S.
-- **Sentry unit dimming**: Sentry/sleeping units (orders == 0x03) should be rendered as dark gray silhouettes (palette index 0x1a = 26). Current code only shows 'S' on shield. The dimmed blit (`FUN_005cf126`) replaces all non-transparent pixels with a single palette color. Also applies to sea-domain units in cities with harbors. Applies to both map renderer and city dialog.
 - **Shield waste bar**: game palette 0x0B = rgb(11,11,11). Not yet rendered — requires computing raw shield total from tile yields to derive waste = raw − shieldProduction. The corruption/waste formula (Section 5) can be used but needs tile yield summation in the city dialog
-- **Trade bar color**: palette 0x76 (118) — RGB not yet captured (beyond palette dump range 0-103). Need to extend ddraw proxy palette capture or sample from game screenshot
-- **Panel title text color**: palette 0x7C (124) — RGB not yet captured
 - **Later**: Turn engine, combat, AI, multiplayer

@@ -279,49 +279,52 @@ async function doRender() {
 // ═══════════════════════════════════════════════════════════════════
 const viewportCanvas = document.getElementById('viewport-canvas');
 const vCtx = viewportCanvas.getContext('2d', { colorSpace: 'srgb' });
+let vpLogicalW = 0, vpLogicalH = 0;  // CSS/logical dimensions (for viewport math)
 
 function resizeViewport() {
   const container = document.getElementById('map-container');
-  const vpW = container.clientWidth;
-  const vpH = container.clientHeight;
-  viewportCanvas.width = vpW;
-  viewportCanvas.height = vpH;
+  const dpr = window.devicePixelRatio || 1;
+  vpLogicalW = container.clientWidth;
+  vpLogicalH = container.clientHeight;
+  viewportCanvas.width = vpLogicalW * dpr;
+  viewportCanvas.height = vpLogicalH * dpr;
+  viewportCanvas.style.width = vpLogicalW + 'px';
+  viewportCanvas.style.height = vpLogicalH + 'px';
+  vCtx.imageSmoothingEnabled = false;
   clampViewport();
 }
 
 function clampViewport() {
-  const vpW = viewportCanvas.width;
-  const vpH = viewportCanvas.height;
   // Vertical: always clamp to map bounds
-  vpY = Math.max(0, Math.min(vpY, offH - vpH));
+  vpY = Math.max(0, Math.min(vpY, offH - vpLogicalH));
   // Horizontal: wrap for round earth, clamp for flat
   if (wraps && wrapW > 0) {
     vpX = ((vpX % wrapW) + wrapW) % wrapW;
   } else {
-    vpX = Math.max(0, Math.min(vpX, offW - vpW));
+    vpX = Math.max(0, Math.min(vpX, offW - vpLogicalW));
   }
 }
 
 function drawViewport() {
   if (offW === 0 || offH === 0) return;
   const offscreen = document.getElementById('map-canvas');
-  const vpW = viewportCanvas.width;
-  const vpH = viewportCanvas.height;
+  const dpr = window.devicePixelRatio || 1;
+  const bw = viewportCanvas.width, bh = viewportCanvas.height;
 
-  vCtx.clearRect(0, 0, vpW, vpH);
+  vCtx.clearRect(0, 0, bw, bh);
 
   if (wraps) {
     const x1 = ((vpX % wrapW) + wrapW) % wrapW;
-    const rightChunk = Math.min(vpW, wrapW - x1);
-    vCtx.drawImage(offscreen, x1, vpY, rightChunk, vpH, 0, 0, rightChunk, vpH);
+    const rightChunk = Math.min(vpLogicalW, wrapW - x1);
+    vCtx.drawImage(offscreen, x1, vpY, rightChunk, vpLogicalH, 0, 0, rightChunk * dpr, vpLogicalH * dpr);
     let drawn = rightChunk;
-    while (drawn < vpW) {
-      const chunk = Math.min(vpW - drawn, wrapW);
-      vCtx.drawImage(offscreen, 0, vpY, chunk, vpH, drawn, 0, chunk, vpH);
+    while (drawn < vpLogicalW) {
+      const chunk = Math.min(vpLogicalW - drawn, wrapW);
+      vCtx.drawImage(offscreen, 0, vpY, chunk, vpLogicalH, drawn * dpr, 0, chunk * dpr, vpLogicalH * dpr);
       drawn += chunk;
     }
   } else {
-    vCtx.drawImage(offscreen, vpX, vpY, vpW, vpH, 0, 0, vpW, vpH);
+    vCtx.drawImage(offscreen, vpX, vpY, vpLogicalW, vpLogicalH, 0, 0, bw, bh);
   }
 }
 
@@ -422,7 +425,7 @@ viewportCanvas.addEventListener('mousemove', e => {
   if (!currentMapData) return;
 
   const rect = viewportCanvas.getBoundingClientRect();
-  // Viewport canvas pixels are 1:1 with CSS size (no scaling)
+  // clientX/clientY and getBoundingClientRect are in CSS pixels (logical), matching vpX/vpY
   const localX = e.clientX - rect.left;
   const localY = e.clientY - rect.top;
   // Translate to offscreen (full map) coordinates

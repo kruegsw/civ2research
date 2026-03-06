@@ -81,9 +81,9 @@ const Civ2CityDialog = {
 
   // ── Production cost tables (RULES.TXT cost × shield_box_factor) ──
   // shield_box_factor (COSMIC #4) defaults to 10; cost × factor = total shields needed
-  UNIT_COSTS: [1,1,2,3,4,3,4,5,3,4,6,2,3,5,8,12,10,5,6,8,16,2,3,2,3,3,3,4,5,2,3,5,4,6,4,5,12,3,4,3,6,8,3,5,10,16,6,10,12,16,6,4,4,6,8,4,5,12,16,16,16,5,5].map(c => c * 10),
-  IMPROVE_COSTS: [0,0,4,6,4,8,8,12,8,12,12,16,6,10,20,32,20,12,16,24,16,22,12,8,16,16,0,0,0,0,0,32,16,8,4,32,32,32,60].map(c => c * 10),
-  WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,20,40,30,40,40,40,40,30,40,30,15,20,60,15,60,60,60].map(c => c * 10),
+  UNIT_COSTS: [4,4,1,2,3,4,2,3,2,5,5,4,6,6,5,2,3,4,4,4,5,6,8,4,4,5,7,6,12,10,8,16,4,4,4,5,6,6,8,10,16,6,16,5,6,16,3,3,5,5,3,5,5,10,4,4,4,4,4,4,4,4,4].map(c => c * 10),
+  IMPROVE_COSTS: [1,10,4,6,4,8,8,8,8,8,12,12,16,16,10,20,32,20,20,16,24,16,16,12,8,20,16,10,8,32,6,16,16,6,8,8,16,32,60].map(c => c * 10),
+  WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,30,40,30,40,40,40,40,40,40,30,60,60,60,60,60,60,60].map(c => c * 10),
 
   // ── Game formulas from decompiled civ2.exe (reverse_engineering/Civ2_Game_Formulas.md) ──
 
@@ -1763,10 +1763,12 @@ const Civ2CityDialog = {
       const numRows = baseCost < 10 ? baseCost : 10;
 
       if (cost > 0) {
-        // 3D bevel frame — 3px inset from outer grid (binary: FUN_004bb800 ×2 then FUN_005113f0)
+        // 3D bevel frame — scaled to numRows (not always full 10-row height)
         // Palette 0x51=rgb(83,103,191) highlight (top/left), 0x5D=rgb(0,0,95) shadow (bottom/right)
         const fX = SG.gridX + 3, fY = SG.gridY + 3;
-        const fW = SG.gridW - 6, fH = SG.gridH - 6;
+        const fW = SG.gridW - 6;
+        const rowSpacing = 14;
+        const fH = numRows * rowSpacing + 6;  // rows × 14px + padding
         ctx.strokeStyle = 'rgb(83,103,191)';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(fX, fY); ctx.lineTo(fX + fW, fY); ctx.stroke();
@@ -1774,9 +1776,6 @@ const Civ2CityDialog = {
         ctx.strokeStyle = 'rgb(0,0,63)';
         ctx.beginPath(); ctx.moveTo(fX, fY + fH); ctx.lineTo(fX + fW, fY + fH); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(fX + fW, fY); ctx.lineTo(fX + fW, fY + fH); ctx.stroke();
-
-        // Row spacing: always 10 rows of 14px icons in frame height (binary: FUN_00548b70(10, 0x0E, height))
-        const rowSpacing = this._iconSpacing(10, 14, fH).spacing;
         // Col spacing: shieldsPerRow icons of 17px width (binary: FUN_00548b70(DAT_006a657c, 0x11, width))
         const colSpacing = this._iconSpacing(shieldsPerRow, 17, fW).spacing;
 
@@ -1819,9 +1818,26 @@ const Civ2CityDialog = {
 
   // Draw a unit sprite with shield, HP bar, order letter, and fortification overlay.
   // Scaled from full-res (64×48 unit, 12×20 shield) to the given drawW × drawH.
-  _drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, drawW, drawH) {
+  // city: optional, used for harbor dimming of sea units
+  _drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, drawW, drawH, city) {
     const scale = drawW / 64;  // scale factor from full-res
-    ctx.drawImage(colored, ux, uy, drawW, drawH);
+
+    // Sentry/sleep dimming: orders 0x03 → dark gray silhouette (palette 0x1a = rgb(135,135,135))
+    // Also sea-domain units (types 32-43) in cities with harbor (building 30)
+    // Binary: FUN_0056baff lines 3925-3941
+    const isSeaDomain = (u.type >= 32 && u.type <= 43);
+    const hasHarbor = city && (city.buildings & (1 << 30));
+    const isDimmed = (u.orders === 0x03) || (isSeaDomain && hasHarbor);
+
+    let sprite = colored;
+    if (isDimmed) {
+      const dimKey = u.type + '-dimmed';
+      if (mapSprites.unitColored && !mapSprites.unitColored[dimKey]) {
+        mapSprites.unitColored[dimKey] = Civ2Renderer._dimUnit(colored);
+      }
+      sprite = (mapSprites.unitColored && mapSprites.unitColored[dimKey]) || Civ2Renderer._dimUnit(colored);
+    }
+    ctx.drawImage(sprite, ux, uy, drawW, drawH);
 
     // Shield with HP bar and order letter
     const so = mapSprites.shieldOffsets ? mapSprites.shieldOffsets[u.type] : null;
@@ -1929,7 +1945,7 @@ const Civ2CityDialog = {
       }
       const ux = xStart + col * unitW;
       const uy = yStart + row * unitH;
-      this._drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, unitW, unitH);
+      this._drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, unitW, unitH, city);
 
       // Draw support overlay icons (left-aligned at unit X, Y offset from top)
       const ov = overlays[idx];
@@ -1987,48 +2003,64 @@ const Civ2CityDialog = {
       }
     }
 
-    // Scrollbar (visual-only) — position from FUN_00505ffa + SM_CXVSCROLL=17
+    // Scrollbar (visual-only, Windows 95 classic style) — MSScrollBarClass, SM_CXVSCROLL=17
     const sbX = 175, sbY = 291, sbW = 17, sbH = 129;
     const btnH = 17;
-    // Track
-    ctx.fillStyle = 'rgb(192,192,192)';
-    ctx.fillRect(sbX, sbY, sbW, sbH);
-    // 3D frame around whole scrollbar
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(sbX + 0.5, sbY + 0.5, sbW - 1, sbH - 1);
-    // Up button
-    ctx.fillStyle = 'rgb(192,192,192)';
-    ctx.fillRect(sbX, sbY, sbW, btnH);
-    ctx.strokeStyle = '#ccc';
-    ctx.beginPath(); ctx.moveTo(sbX + 0.5, sbY + btnH - 0.5); ctx.lineTo(sbX + 0.5, sbY + 0.5); ctx.lineTo(sbX + sbW - 0.5, sbY + 0.5); ctx.stroke();
-    ctx.strokeStyle = '#555';
-    ctx.beginPath(); ctx.moveTo(sbX + sbW - 0.5, sbY + 0.5); ctx.lineTo(sbX + sbW - 0.5, sbY + btnH - 0.5); ctx.lineTo(sbX + 0.5, sbY + btnH - 0.5); ctx.stroke();
-    // Up arrow
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.moveTo(sbX + sbW / 2, sbY + 4); ctx.lineTo(sbX + sbW / 2 + 4, sbY + btnH - 4); ctx.lineTo(sbX + sbW / 2 - 4, sbY + btnH - 4); ctx.closePath(); ctx.fill();
-    // Down button
-    const dbY = sbY + sbH - btnH;
-    ctx.fillStyle = 'rgb(192,192,192)';
-    ctx.fillRect(sbX, dbY, sbW, btnH);
-    ctx.strokeStyle = '#ccc';
-    ctx.beginPath(); ctx.moveTo(sbX + 0.5, dbY + btnH - 0.5); ctx.lineTo(sbX + 0.5, dbY + 0.5); ctx.lineTo(sbX + sbW - 0.5, dbY + 0.5); ctx.stroke();
-    ctx.strokeStyle = '#555';
-    ctx.beginPath(); ctx.moveTo(sbX + sbW - 0.5, dbY + 0.5); ctx.lineTo(sbX + sbW - 0.5, dbY + btnH - 0.5); ctx.lineTo(sbX + 0.5, dbY + btnH - 0.5); ctx.stroke();
-    // Down arrow
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.moveTo(sbX + sbW / 2, dbY + btnH - 4); ctx.lineTo(sbX + sbW / 2 + 4, dbY + 4); ctx.lineTo(sbX + sbW / 2 - 4, dbY + 4); ctx.closePath(); ctx.fill();
-    // Proportional thumb
+    const face = 'rgb(192,192,192)', hi = 'rgb(255,255,255)', shadow = 'rgb(128,128,128)', dark = 'rgb(0,0,0)';
+
+    // Helper: Win95 4-color bevel (white highlight, face, shadow, dark)
+    const bevel = (x, y, w, h) => {
+      ctx.fillStyle = face;
+      ctx.fillRect(x, y, w, h);
+      // Outer highlight (white) — top & left
+      ctx.fillStyle = hi;
+      ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y, 1, h);
+      // Inner shadow (gray) — bottom & right inner edge
+      ctx.fillStyle = shadow;
+      ctx.fillRect(x + 1, y + h - 2, w - 2, 1); ctx.fillRect(x + w - 2, y + 1, 1, h - 2);
+      // Outer dark (black) — bottom & right outer edge
+      ctx.fillStyle = dark;
+      ctx.fillRect(x, y + h - 1, w, 1); ctx.fillRect(x + w - 1, y, 1, h);
+    };
+
+    // Track — Win95 dithered checkerboard pattern
     const trackTop = sbY + btnH;
     const trackH = sbH - btnH * 2;
+    ctx.fillStyle = face;
+    ctx.fillRect(sbX, sbY, sbW, sbH);
+    // Dither pattern on track area
+    for (let py = trackTop; py < trackTop + trackH; py++) {
+      for (let px = sbX; px < sbX + sbW; px++) {
+        if ((px + py) % 2 === 0) {
+          ctx.fillStyle = hi;
+          ctx.fillRect(px, py, 1, 1);
+        }
+      }
+    }
+
+    // Up button
+    bevel(sbX, sbY, sbW, btnH);
+    // Up arrow — Win95 style: small 5×3 triangle
+    ctx.fillStyle = dark;
+    const uCx = sbX + 8, uCy = sbY + 6;
+    for (let row = 0; row < 4; row++) {
+      ctx.fillRect(uCx - row, uCy + row, 1 + row * 2, 1);
+    }
+
+    // Down button
+    const dbY = sbY + sbH - btnH;
+    bevel(sbX, dbY, sbW, btnH);
+    // Down arrow — inverted
+    ctx.fillStyle = dark;
+    const dCx = sbX + 8, dCy = dbY + btnH - 7;
+    for (let row = 0; row < 4; row++) {
+      ctx.fillRect(dCx - row, dCy - row, 1 + row * 2, 1);
+    }
+
+    // Proportional thumb
     const totalItems = improvements.length;
     const thumbH = Math.max(12, Math.round(trackH * Math.min(R.maxRows, totalItems) / Math.max(totalItems, 1)));
-    ctx.fillStyle = 'rgb(192,192,192)';
-    ctx.fillRect(sbX + 1, trackTop, sbW - 2, thumbH);
-    ctx.strokeStyle = '#ccc';
-    ctx.beginPath(); ctx.moveTo(sbX + 1.5, trackTop + thumbH - 0.5); ctx.lineTo(sbX + 1.5, trackTop + 0.5); ctx.lineTo(sbX + sbW - 1.5, trackTop + 0.5); ctx.stroke();
-    ctx.strokeStyle = '#555';
-    ctx.beginPath(); ctx.moveTo(sbX + sbW - 1.5, trackTop + 0.5); ctx.lineTo(sbX + sbW - 1.5, trackTop + thumbH - 0.5); ctx.lineTo(sbX + 1.5, trackTop + thumbH - 0.5); ctx.stroke();
+    bevel(sbX, trackTop, sbW, thumbH);
   },
 
   infoPanelMode: 0,
@@ -2081,7 +2113,7 @@ const Civ2CityDialog = {
           ux = R.x + 25 + 48 * ((i - 10) % 4);
           uy = R.y + 22 + 39 * Math.floor((i - 10) / 4);
         }
-        this._drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, 48, 36);
+        this._drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, 48, 36, city);
         if (i < 10) {
           const homeCity = u.homeCityId !== 0xFFFF && u.homeCityId !== 0x00FF
             ? mapData.cities[u.homeCityId] : null;

@@ -399,30 +399,37 @@ Used for all resource icon rows. When many icons, they overlap (spacing < icon_s
 ### FUN_005cef31 — Primary sprite blit (normal)
 ```c
 FUN_005cef31(result_rect, surface, x, y)
-    → FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)
-        → FUN_005e518e(...)  // pixel copy loop: *dst = src_pixel
+    → FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)   // COleClientItem surface
+    → FUN_005d080d(result_rect, surface, 0xFFFFFFFF, x, y)   // _Timevec surface
+        → FUN_005e518e(16 params)  // pixel copy loop: *dst = src_pixel
 ```
 The normal blit copies each non-transparent source pixel to the destination.
 
 ### FUN_005cf126 — Dimmed sprite blit (silhouette)
 ```c
 FUN_005cf126(result_rect, surface, x, y, palette_index)
-    → FUN_005d10cd(result_rect, surface, 0xFFFFFFFF, x, y, palette_index)
-        → FUN_005e52bf(...)  // silhouette loop: *dst = fixed_color
+    → FUN_005d10cd(result_rect, surface, 0xFFFFFFFF, x, y, palette_index)  // COleClientItem
+    → FUN_005d1372(result_rect, surface, 0xFFFFFFFF, x, y, palette_index)  // _Timevec
+        → FUN_005e52bf(17 params)  // silhouette loop: *dst = fixed_color
 ```
 The dimmed blit replaces ALL non-transparent pixels with a single fixed palette index.
 This creates a solid-color silhouette — the sprite's shape is preserved but all color
 detail is lost.
 
+**8 dispatcher variants**: 2 surface types × 2 modes × 2 scale modes. The COleClientItem
+dispatchers contain Ghidra FID misidentifications (`GetActiveView`, `GetCheckStyle`) that
+are actually `__thiscall` surface accessors. The _Timevec dispatchers decompile cleaner.
+See `Civ2_Master_Reference.md` Part VI §P for the full corrected parameter flow.
+
 **Pixel-level difference** (from decompiled code):
 ```c
-// Normal (FUN_005e518e, 305 bytes):
+// Normal (FUN_005e518e, 305 bytes, 16 params):
 cVar1 = *(char *)(offset + source);    // read source pixel
 if (cVar1 != transparent_color) {
     *dst = cVar1;                       // write source pixel
 }
 
-// Dimmed (FUN_005e52bf, 308 bytes):
+// Dimmed (FUN_005e52bf, 308 bytes, 17 params):
 if (*(char *)(offset + source) != transparent_color) {
     *dst = param_17;                    // write FIXED palette index
 }
