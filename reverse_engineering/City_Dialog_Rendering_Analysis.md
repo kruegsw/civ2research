@@ -169,7 +169,10 @@ This is the largest function in the city module. Draws terrain map + 3 resource 
 
 - Panel: (436, 167, 200, 189)
 - Preview rect: 183px wide, 146px tall
-- Production item sprite: at panel + (73, 1) for units, or panel + (80, 16) for wonders
+- Production item sprite:
+  - **Units**: drawn via `FUN_0056baff` at panel + (73, 1), zoom -1, param_3=0 (bare sprite).
+    Zoom -1 scaling: `7 × base / 8` → 56×42 pixels (NOT native 64×48)
+  - **Buildings/Wonders**: drawn via `FUN_005cef31` at panel + (80, 16), native 36×20
 - Shield grid frame: colors 0x51 (81) highlight, 0x5D (93) shadow
 - Shield icon spacing: 17px wide, 14px tall
 - Shields per row: from `DAT_006a657c`
@@ -183,7 +186,8 @@ This is the largest function in the city module. Draws terrain map + 3 resource 
 - Unit tile: width from `FUN_00472cf0(0x45, zoom)`, height from `FUN_00472cf0(0x34, zoom)`
 - Units per row: 192px / tile_width
 - Rows: 78px / tile_height
-- Each unit drawn via `FUN_0056baff`
+- Each unit drawn via `FUN_0056baff` with **param_3=4** (full decorations:
+  shield, HP bar, order letter, fortify overlay, sentry dimming). See Section S.
 - Food/shield upkeep icons drawn per-unit below sprite
 - Title: color 0x7C, font 18px, string 0x1BF (447)
 
@@ -213,6 +217,7 @@ Three modes selected by `cityobj + 0x15b0`:
 - Unit grid: tile_w from FUN_00472cf0(0x40, zoom), tile_h from FUN_00472cf0(0x30, zoom)
 - Cols = 244px / tile_w, centered with remaining space
 - 4 rows max (2 normal + 2 offset half-tile)
+- Each unit drawn via `FUN_0056baff` with **param_3=4** (full decorations). See Section S.
 - Unit name labels (first 2 rows): color 10, font 26px
 - Food stored display: at panel + (7, 100), grid width 64, icon size 30
 - Trade route info: at panel + (0, 133), style color 0x79, font 18px
@@ -391,11 +396,41 @@ Used for all resource icon rows. When many icons, they overlap (spacing < icon_s
 
 ## P. Sprite/Rectangle Drawing Primitives
 
-### FUN_005cef31 — Primary sprite blit
+### FUN_005cef31 — Primary sprite blit (normal)
 ```c
 FUN_005cef31(result_rect, surface, x, y)
-    → calls FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)
+    → FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)
+        → FUN_005e518e(...)  // pixel copy loop: *dst = src_pixel
 ```
+The normal blit copies each non-transparent source pixel to the destination.
+
+### FUN_005cf126 — Dimmed sprite blit (silhouette)
+```c
+FUN_005cf126(result_rect, surface, x, y, palette_index)
+    → FUN_005d10cd(result_rect, surface, 0xFFFFFFFF, x, y, palette_index)
+        → FUN_005e52bf(...)  // silhouette loop: *dst = fixed_color
+```
+The dimmed blit replaces ALL non-transparent pixels with a single fixed palette index.
+This creates a solid-color silhouette — the sprite's shape is preserved but all color
+detail is lost.
+
+**Pixel-level difference** (from decompiled code):
+```c
+// Normal (FUN_005e518e, 305 bytes):
+cVar1 = *(char *)(offset + source);    // read source pixel
+if (cVar1 != transparent_color) {
+    *dst = cVar1;                       // write source pixel
+}
+
+// Dimmed (FUN_005e52bf, 308 bytes):
+if (*(char *)(offset + source) != transparent_color) {
+    *dst = param_17;                    // write FIXED palette index
+}
+```
+
+**Usage**: Sentry/sleeping units (orders == 0x03) are drawn with `palette_index = 0x1a` (26),
+producing a dark gray silhouette. Sea-domain units in cities with harbors also get this
+treatment. See Section S below for the full unit drawing function.
 
 ### FUN_00408780 — Filled rectangle with palette color
 ```c
@@ -488,3 +523,74 @@ Navigation arrows are **18x24** pixels:
 3. If multiplayer: append player name + "of" + civ name
 4. Append treasury in parentheses (format string 0x9A)
 5. Render via `FUN_0055324c`
+
+---
+
+## S. Unit Drawing Function (`FUN_0056baff` at 0x56BAFF, 2803 bytes)
+
+This is the universal unit sprite renderer used by both the map view and city dialog.
+It draws the unit sprite with optional shield, HP bar, order letter, fortification
+overlay, and sentry dimming.
+
+### Parameters
+```c
+FUN_0056baff(surface, unit_ptr, zoom, x, y, param_3)
+```
+- `param_3` controls what decorations are drawn:
+  - `0` = bare sprite only (no shield, no decorations) — used for production preview
+  - `4` = full unit with shield, HP bar, order letter, fortify overlay — used for
+    Units Supported (`FUN_00505666`) and Units Present (`citywin_70E5`)
+
+### Order Letter Determination (lines 3874-3901)
+```c
+int order_val = unit->orders & 0xF;
+if (order_val != 0 && order_val != 0xFF) {
+    char letter = order_string_table[order_val];  // at 0x655494 + order*8
+    // Draw letter on shield
+}
+```
+Order string table loaded from RULES.TXT `@ORDERS` section (12 entries, stride 8).
+Values: 1='F', 2='F', 3='S', 4='F', 5='R', 6='I', 7='m', 8='O', 9='p', 10='E', 11='G'.
+
+### Sentry/Sleep Dimming (lines 3925-3941)
+```c
+bool dimmed = (unit->orders == 0x03);  // sleep/sentry
+
+// Also dim sea units in cities with harbors
+if (unit->domain == SEA && city_has_harbor) {
+    dimmed = true;
+}
+
+if (dimmed) {
+    FUN_005cf126(sprite, surface, x, y, 0x1a);  // silhouette blit, palette index 26
+} else {
+    FUN_005cef31(sprite, surface, x, y);          // normal blit
+}
+```
+
+The dimmed blit (`FUN_005cf126`) replaces every non-transparent pixel with palette
+index `0x1a` (26), creating a **dark gray silhouette**. The unit shape is preserved
+but all color detail is lost. This is NOT a proportional darkening — it is a flat
+solid-color fill. See Section P for the pixel-level implementation.
+
+### Fortification Overlay (lines 3940-3941)
+```c
+if (unit->orders == 0x02) {  // fully fortified (not 0x01 = fortifying)
+    // Draw fortification sprite overlay
+}
+```
+
+### What param_3=4 Enables
+When `param_3 & 4`:
+- Shield background drawn (civ-colored)
+- HP bar inside shield (3-color: green/yellow/red)
+- Order letter on shield (from order string table)
+- Veteran star (if unit is veteran)
+- Fortification overlay (if orders == 0x02)
+- Sentry dimming (if orders == 0x03)
+
+### Production Preview (param_3=0)
+When `param_3 = 0` (production box):
+- Only the bare unit sprite is drawn
+- Zoom is -1, producing 56x42 pixels (`7 * base / 8` scaling)
+- No shield, no decorations

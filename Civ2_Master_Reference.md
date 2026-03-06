@@ -57,6 +57,8 @@
   - Font system and text/color system
   - Drawing sequence and border rendering
   - Icon spacing algorithm (decompiled)
+  - Sprite blit primitives (normal vs dimmed/silhouette)
+  - Unit drawing function (FUN_0056baff — shields, orders, dimming)
 - [Part VII: Browser Implementation Status](#part-vii-browser-implementation-status)
   - Parser status (complete)
   - Map renderer (~90% complete)
@@ -104,6 +106,8 @@
 | Building improvement IDs | Part IV (§ Building IDs) | Part III-A (improvements bitfield), Part VI (improvements list) |
 | COSMIC constants | Part IV (§ Global Variable Map) | Part VIII (constants reference table) |
 | Chroma key colors | Part II (per-GIF tables) | Part V (0x808000 olive via SetBkColor) |
+| Unit drawing function | Part VI §S | Part VI §H (Units Supported), §J (Units Present), §G (Production), Part VII (missing features) |
+| Sprite blit (normal vs dimmed) | Part VI §P | Part VI §S (sentry dimming), Part V (GDI mask blit) |
 
 
 
@@ -8538,6 +8542,12 @@ The mask bitmap is 1bpp (monochrome): white = opaque pixel, black = transparent 
 
 **Browser equivalent:** This is exactly what canvas `globalCompositeOperation` or pre-computed alpha channels achieve. The existing browser renderer's color-key approach (checking for magenta/cyan chroma key pixels) is correct and simpler.
 
+**Note:** The 3-step GDI mask blit described above is for the DDraw proxy capture session.
+Internally, the game's 8-bit paletted sprite engine uses direct pixel-copy loops, not GDI
+ROPs. The normal blit (`FUN_005e518e`) copies source pixels; the dimmed/silhouette blit
+(`FUN_005e52bf`) replaces all non-transparent pixels with a fixed palette index. See
+[Part VI §P](#p-spriterectangle-drawing-primitives) for details.
+
 ---
 
 ## ROP Code Reference
@@ -9100,11 +9110,35 @@ This is the largest function in the city module. Draws terrain map + 3 resource 
 
 - Panel: (436, 167, 200, 189)
 - Preview rect: 183px wide, 146px tall
-- Production item sprite: at panel + (73, 1) for units, or panel + (80, 16) for wonders
+- Production item sprite:
+  - **Units**: drawn via `FUN_0056baff` at panel + (73, 1), zoom -1, param_3=0 (bare sprite).
+    Zoom -1 scaling: `7 × base / 8` → 56×42 pixels (NOT native 64×48)
+  - **Buildings/Wonders**: drawn via `FUN_005cef31` at panel + (80, 16), native 36×20
 - Shield grid frame: colors 0x51 (81) highlight, 0x5D (93) shadow
-- Shield icon spacing: 17px wide, 14px tall
-- Shields per row: from `DAT_006a657c`
+- Shield icon spacing: 17px horizontal, 14px vertical (via `FUN_00511690(0x11)` and `FUN_00511690(0x0E)`)
+- Grid outer rect: panel + (6, 40), 183×146. 3px inset for bevel frame, then 1px + centering + 2px padding
 - Max 10 rows of shields
+
+### Shield Grid Algorithm (lines 2327-2376)
+
+`DAT_006a657c` = shields per row. For human player with standard COSMIC #4 (default 10): always 10.
+`baseCost` = RULES.TXT raw cost (before ×10 shield_box_factor). `totalCost = baseCost × 10`.
+
+| Condition | Rows | Shields/Row | Example |
+|-----------|------|-------------|---------|
+| baseCost < 10 | baseCost | 10 | Settler (cost 4): 4 rows × 10 = 40 shields |
+| baseCost >= 10 | 10 | baseCost | Wonder (cost 20): 10 rows × 20 = 200 shields |
+
+- Row spacing: `_iconSpacing(10, 14, frameHeight)` — always computed for 10 rows
+- Col spacing: `_iconSpacing(shieldsPerRow, 17, frameWidth)` — compresses when >10/row
+- Only **filled** shields are drawn (no dimmed/empty placeholders)
+- Shields fill top-down, row by row: each row gets `min(shieldsPerRow, remaining)`
+- Capitalization (item == -0x26) skips shield grid entirely
+
+### DAT_006a657c Computation (FUN_004e80b1, lines 2957-2986)
+
+For human players: `shields_per_row = COSMIC #4` (default 10).
+For AI: `shields_per_row = 13 - difficulty_level` (8 on Deity, 13 on Chieftain), with adjustments for early difficulty and late-game war conditions, scaled by shield_box_factor if non-default.
 
 ---
 
@@ -9115,7 +9149,13 @@ This is the largest function in the city module. Draws terrain map + 3 resource 
   - At zoom -3: width=43, height=32
 - Units per row: `floor(192 / tile_width)` = 4
 - Max rows: `floor(78 / tile_height)` = 2 (max 8 units visible)
-- Each unit drawn via `FUN_0056baff`
+- Each unit drawn via `FUN_0056baff` with **param_3=4** (full decorations):
+  - Civ-colored shield background
+  - HP bar (green/yellow/red) inside shield
+  - Order letter on shield (F/S/R/I/m/O/p/E/G from RULES.TXT `@ORDERS`)
+  - Fortification overlay (orders == 0x02)
+  - **Sentry dimming** (orders == 0x03): entire sprite replaced with dark gray
+    silhouette (palette index 0x1a). See Section S for details.
 - Title: color 0x7C, font 18px, string 0x1BF (447) — hidden when ≥5 units (no room)
 - **Centering** (from decompiled):
   - X start: `panel_x + ((panel_w - tile_w * perRow + 3) >> 1)` = 11
@@ -9154,7 +9194,9 @@ Three modes selected by `cityobj + 0x15b0`:
 - Unit grid: tile_w from FUN_00472cf0(0x40, zoom), tile_h from FUN_00472cf0(0x30, zoom)
 - Cols = 244px / tile_w, centered with remaining space
 - 4 rows max (2 normal + 2 offset half-tile)
-- Unit name labels (first 2 rows): color 10, font 26px
+- Each unit drawn via `FUN_0056baff` with **param_3=4** (full decorations — same as
+  Units Supported: shield, HP bar, order letter, fortification, sentry dimming)
+- Unit home city abbreviation (first 2 rows only, `local_38 < 2`): color 10 (palette black), font 26 (GDI logical height), bold, shadow. `DAT_00679643 = 0` truncates to 3 chars. Text Y = unit_y + `FUN_00472cf0(0x30, zoom)` (sprite height = 48 native). "NON" (string resource 0x0E) for units with no home city (homeCityId == -1). Row height = `FUN_00472cf0(0x34, zoom)` = 52 native (4px gap below 48px sprite)
 - Food stored display: at panel + (7, 100), grid width 64, icon size 30
 - Trade route info: at panel + (0, 133), style color 0x79, font 18px
 
@@ -9332,11 +9374,34 @@ Used for all resource icon rows. When many icons, they overlap (spacing < icon_s
 
 ## P. Sprite/Rectangle Drawing Primitives
 
-### FUN_005cef31 — Primary sprite blit
+### FUN_005cef31 — Primary sprite blit (normal)
 ```c
 FUN_005cef31(result_rect, surface, x, y)
-    → calls FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)
+    → FUN_005d056c(result_rect, surface, 0xFFFFFFFF, x, y)   // 673 bytes
+        → FUN_005e518e(...)  // pixel copy: *dst = src_pixel
 ```
+
+### FUN_005cf126 — Dimmed sprite blit (silhouette)
+```c
+FUN_005cf126(result_rect, surface, x, y, palette_index)
+    → FUN_005d10cd(result_rect, surface, 0xFFFFFFFF, x, y, palette_index)  // 677 bytes
+        → FUN_005e52bf(...)  // silhouette: *dst = fixed_color
+```
+Replaces ALL non-transparent pixels with a single fixed palette index, creating a
+solid-color silhouette. The sprite shape is preserved but all color detail is lost.
+
+**Pixel-level difference** (decompiled):
+```c
+// Normal (FUN_005e518e, 305 bytes):
+src_pixel = *(source + offset);
+if (src_pixel != transparent) *dst = src_pixel;     // copy source color
+
+// Dimmed (FUN_005e52bf, 308 bytes):
+if (*(source + offset) != transparent) *dst = param_17;  // write FIXED color
+```
+
+Used for sentry units (`palette_index = 0x1a` = 26 = dark gray) and sea-domain units
+in cities with harbors. See Section S for the unit drawing function.
 
 ### FUN_00408780 — Filled rectangle with palette color
 ```c
@@ -9429,6 +9494,56 @@ Navigation arrows are **18x24** pixels:
 3. If multiplayer: append player name + "of" + civ name
 4. Append treasury in parentheses (format string 0x9A)
 5. Render via `FUN_0055324c`
+
+---
+
+## S. Unit Drawing Function (`FUN_0056baff` at 0x56BAFF, 2803 bytes)
+
+Universal unit sprite renderer used by both the map view and city dialog. Draws the
+unit sprite with optional shield, HP bar, order letter, fortification overlay, and
+sentry dimming.
+
+### Parameters
+```c
+FUN_0056baff(surface, unit_ptr, zoom, x, y, param_3)
+```
+- `param_3` controls decoration level:
+  - `0` = bare sprite only (no shield) — used for production preview
+  - `4` = full decorations (shield, HP bar, order letter, fortify, dimming) — used
+    for Units Supported and Units Present panels
+
+### Order Letter (lines 3874-3901)
+```c
+int order_val = unit->orders & 0xF;
+if (order_val != 0 && order_val != 0xFF) {
+    char letter = order_string_table[order_val];  // 0x655494 + order*8
+    // Draw letter on shield
+}
+```
+Order values: 1='F', 2='F', 3='S', 4='F', 5='R', 6='I', 7='m', 8='O', 9='p', 10='E', 11='G'.
+
+### Sentry/Sleep Dimming (lines 3925-3941)
+```c
+bool dimmed = (unit->orders == 0x03);       // sleep/sentry
+if (unit->domain == SEA && city_has_harbor)  // ships in port
+    dimmed = true;
+
+if (dimmed)
+    FUN_005cf126(sprite, surface, x, y, 0x1a);  // silhouette (palette 26)
+else
+    FUN_005cef31(sprite, surface, x, y);          // normal blit
+```
+Creates a **dark gray silhouette**: every non-transparent pixel is replaced with
+palette index `0x1a` (26). Shape preserved, all color lost. NOT proportional
+darkening. See Section P for the pixel-level blit functions.
+
+### Fortification Overlay (lines 3940-3941)
+Only for `orders == 0x02` (fully fortified), NOT `0x01` (fortifying in progress).
+
+### Production Preview (param_3=0)
+Bare sprite only, zoom -1 producing 56x42 pixels (`7 * base / 8`). Position:
+panel + (73, 1). Buildings/wonders drawn separately at panel + (80, 16) at native
+36x20 size.
 
 
 ---
@@ -9575,6 +9690,8 @@ continent goals[64].
 | Full unit stacking render | Only top unit shown | Medium | nextInStack/prevInStack linked list |
 | Pollution/global warming overlay | Parsed but not visualized | Low | gameState fields |
 | City style 4+ extras | CITIES.GIF has 7 rows, code uses 6 | Low | Era calculation |
+| Sentry unit dimming | Sentry/sleeping units should be dark gray silhouette (palette 0x1a), not just 'S' on shield | Low | FUN_0056baff → FUN_005cf126 |
+| Harbor ship dimming | Sea-domain units in cities with harbors should also be dimmed | Low | FUN_0056baff lines 3926-3932 |
 
 ---
 
@@ -9611,6 +9728,7 @@ continent goals[64].
 | Trade route revenue | Hardcoded "+1" instead of actual calc | Medium | Trade formulas |
 | Resource map terrain overlays | No forest/mountain/hill on mini-map | Low | Terrain compositing |
 | Resource map city/unit sprites | Spec says draw on mini-map, not done | Low | citywin_70E5 |
+| Unit state decorations | Both unit panels missing: shields, HP bars, order letters, fortify overlays, sentry dimming. Real game uses FUN_0056baff with param_3=4 | Medium | FUN_0056baff, Section S |
 
 ---
 
@@ -9933,8 +10051,16 @@ The browser parser currently reads these from the save file tail section. They c
 - Luxury calculation fixed: no early returns (entertainers always apply), Fundamentalism science cap, AI luxury→science redirect
 - Corruption display: derived as `grossTileTrade - netBaseTrade` (city+30), no distance formula needed
 - Supplies/Demands display: parser field names `tradeCommoditiesAvail`/`tradeCommoditiesDemand` (not Supplied/Demanded)
+- Production shield grid: correct baseCost algorithm (baseCost < 10 → rows=baseCost, cols=10; baseCost ≥ 10 → rows=10, cols=baseCost). Only filled shields drawn, no dimmed placeholders. 17px horizontal / 14px vertical icon spacing. No background fill (draws on CITY.GIF wallpaper).
+- Units Present: home city abbreviation (3-char) with `textBaseline='top'` at sprite bottom (binary: text_y = unit_y + sprite_height). Font: 500 weight, 12px, black, no shadow.
+- Improvements list: font 600 weight 11px, vertically centered on sprite (`textBaseline='middle'`)
+- Production panel unit sprite: 56×42 (zoom -1: `FUN_00472cf0(base, -1) = 7×base/8`) at panel+(73,1). Buildings/wonders: 36×20 native at panel+(80,16)
+- Veteran star removed from shield — not present in the real game's map or city dialog rendering
+- Unit civ-color recoloring tolerance: tightened from ±15 to ±3 in `_recolorUnit()`. Fixes 33 unit types (Legion, Archers, Knights, etc.) where legitimate dark-red art pixels (idx 103 = 135,0,0, idx 96 = 243,0,0) were false-matching civ-color placeholders (idx 251 = 127,0,0, idx 252 = 255,0,0). GIF decodes to exact RGB — no interpolation — so ±3 is safe (nearest false positive at distance 8)
 
 ### Remaining
+- **Unit state decorations in city dialog**: Both unit panels (Supported + Present) draw bare sprites without shields, HP bars, order letters, fortification overlays, or sentry dimming. Real game uses `FUN_0056baff(param_3=4)` which draws full decorations. See Section S.
+- **Sentry unit dimming**: Sentry/sleeping units (orders == 0x03) should be rendered as dark gray silhouettes (palette index 0x1a = 26). Current code only shows 'S' on shield. The dimmed blit (`FUN_005cf126`) replaces all non-transparent pixels with a single palette color. Also applies to sea-domain units in cities with harbors. Applies to both map renderer and city dialog.
 - **Shield waste bar**: game palette 0x0B = rgb(11,11,11). Not yet rendered — requires computing raw shield total from tile yields to derive waste = raw − shieldProduction. The corruption/waste formula (Section 5) can be used but needs tile yield summation in the city dialog
 - **Trade bar color**: palette 0x76 (118) — RGB not yet captured (beyond palette dump range 0-103). Need to extend ddraw proxy palette capture or sample from game screenshot
 - **Panel title text color**: palette 0x7C (124) — RGB not yet captured
