@@ -1432,10 +1432,18 @@ const Civ2CityDialog = {
     ctx.textBaseline = 'alphabetic';
     const spTotal = support + production;
     const spSpacing = this._resourceSpacing(spTotal);
-    for (let i = 0; i < support; i++)
-      ctx.drawImage(cdSprites.shortage, spR.iconX + i * spSpacing, spR.iconY, 14, 14);
+    // Support bar + icons (left-aligned) — bar color 0x0B from game palette
+    if (support > 0) {
+      ctx.fillStyle = 'rgb(90,90,90)';
+      ctx.fillRect(spR.iconX, spR.iconY, (support - 1) * spSpacing + 14, 14);
+      for (let i = 0; i < support; i++)
+        ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY, 14, 14);
+    }
+    // Production bar + icons (right-aligned) — bar color 0x54 from game palette
     if (production > 0) {
       const prodStartX = spR.rightX - (spSpacing * production + 14 - spSpacing);
+      ctx.fillStyle = 'rgb(60,186,199)';
+      ctx.fillRect(prodStartX, spR.iconY, (production - 1) * spSpacing + 14, 14);
       for (let i = 0; i < production; i++)
         ctx.drawImage(cdSprites.shields, prodStartX + i * spSpacing, spR.iconY, 14, 14);
     }
