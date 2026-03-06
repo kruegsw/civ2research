@@ -2309,7 +2309,7 @@ y=+3:          (-1,+3)          (+1,+3)
 | +68 | 6 bytes | **Trade partner city IDs** | Catfish | 3 × uint16 LE. City sequence ID of each trade partner. |
 | +74 | 2 bytes | **Science output** (short LE) | ✅ Hex-verified | Beakers generated. Verified: sci + tax = trade (±1 rounding) for all 43 cities. |
 | +76 | 2 bytes | **Tax output** (short LE) | ✅ Hex-verified | Gold generated. Tax collectors add +3 each. |
-| +78 | 2 bytes | **Total trade** (short LE) | ✅ Hex-verified | Total trade arrows including trade routes. = +30 when no routes. |
+| +78 | 2 bytes | **Total trade (NET)** (short LE) | ✅ Hex-verified | Net trade after corruption — this is the value passed to `FUN_004ea1f6` for rate splitting. NOT gross trade. The game stores `net_trade` (after corruption) to this field (see line 8136 in trade distribution pseudocode). |
 | +80 | 1 byte | **Total food production** | ✅ Hex-verified | Food from worked tiles. Range 3-21 across 43 cities. Correlates strongly with size (r=0.93). |
 | +81 | 1 byte | **Total shield production** | ✅ Hex-verified | Shields from worked tiles. Range 1-10 across 43 cities. |
 | +82 | 1 byte | **Happy citizens** | ✅ Confirmed (Catfish, experiment) | Entertainers generate happy citizens (+1 each). In main save: 1 for all human cities (baseline happy), 0 for AI, 3 for WLTK capital. |
@@ -5924,7 +5924,7 @@ All offsets relative to struct base (`&DAT_0064f340 + idx * 0x58`).
 |--------|------|------|-------------|------------|-------------|
 | `0x4A` | 2 | `short` | `DAT_0064f38a` | **food_output** | Total food production (after improvements, terrain, government). Cached from `DAT_006a6578` during city processing. Summed across all cities for civ totals. |
 | `0x4C` | 2 | `short` | `DAT_0064f38c` | **shield_output** | Total shield production. Cached from `DAT_006a6554`. Used for rush-buy cost calculations and production speed display. |
-| `0x4E` | 2 | `short` | `DAT_0064f38e` | **trade_output** | Total trade arrows. Cached from the trade calculation. Used in revenue split (science/tax/luxury) and trade route displays. Passed to `thunk_FUN_004ea1f6` for processing. |
+| `0x4E` | 2 | `short` | `DAT_0064f38e` | **trade_output (NET)** | Net trade (after corruption). Passed to `thunk_FUN_004ea1f6` as `net_trade` parameter and stored back to this field. NOT gross trade — corruption is computed and subtracted before this function is called. |
 | `0x50` | 1 | `byte` | `DAT_0064f390` | **total_food_surplus** | Net food surplus/deficit after population consumption. Cached from `DAT_006a65c8`. Displayed in city screen. |
 | `0x51` | 1 | `byte` | `DAT_0064f391` | **total_shield_surplus** | Net shield surplus after unit support. Cached from `DAT_006a65cc`. Used in AI to compare city productivity. Compared between cities for governor decisions. |
 | `0x52` | 1 | `byte` (signed) | `DAT_0064f392` | **happy_citizens** | Number of happy citizens. Cached from `DAT_006a6550`. Compared with `unhappy_citizens` for civil disorder/WeLoveDay checks. `size - happy - unhappy = content`. |
@@ -8192,6 +8192,24 @@ function distributeTrade(city, netTrade, gameState) {
 }
 ```
 
+### City Dialog Luxury Implementation (`_computeLuxury`)
+
+The city dialog computes luxury on-the-fly since it is never persisted to the save file (line 8133: "luxury is not stored — used directly for happiness"). Critical implementation notes:
+
+1. **No early returns before entertainers** — entertainers contribute +2 luxury each unconditionally, even when net trade = 0 or luxury rate = 0%. Early returns skip this.
+2. **Fundamentalism science cap** — government index 4 caps `sciRate` at 5 (50%), which increases the implicit luxury rate. COSMIC #21 default is 0 (which means 0% max science under Fundamentalism in default RULES.TXT — but MGE standard sets it to 5).
+3. **AI Fundamentalism redirect** — AI civs under Fundamentalism redirect all luxury to science (`luxury = 0`). Check via `city.owner !== mapData.playerCiv`.
+4. **Luxury is NOT stored** — no save file field to validate against. The calculation must be exact.
+
+### Corruption Derivation (for Trade Row display)
+
+Corruption is not stored in the save file either. Derived as:
+```
+grossTileTrade = sum of _calcTileTrade() across all worked tiles
+corruption = max(0, grossTileTrade - city.netBaseTrade)
+```
+Where `city.netBaseTrade` (city+30) = gross base tile trade minus corruption (excluding trade routes). For cities with trade routes, `city.totalTrade` (city+78) = `netBaseTrade + tradeRouteBonus`.
+
 ---
 
 ## Utility Function: clamp
@@ -8762,7 +8780,7 @@ Full 256-entry palette (captured from game):
 | 0x54 | 84 | (63,79,167) | Shield support bar — light blue |
 | 0x5C | 92 | (7,11,103) | Shield surplus bar — dark blue |
 | 0x76 | 118 | (not captured) | Trade bar, tax text |
-| 0x79 | 121 | (239,159,7) | Corruption bar, tax/lux/sci background — orange/gold |
+| 0x79 | 121 | (239,159,7) | Game palette corruption/trade bar — orange/gold. Note: actual corruption background in city dialog uses CITY.GIF wallpaper color rgb(226,82,13) (dark orange, GIF palette 0x6F) |
 | 0x7C | 124 | (not captured) | Panel title text |
 
 **WARNING: GIF palette ≠ Game runtime palette.** The palette embedded in GIF sprite sheets
@@ -9040,9 +9058,12 @@ This is the largest function in the city module. Draws terrain map + 3 resource 
 ### Trade Row (3rd resource row)
 - Y offset: panel_top + 55
 - Layout order (left to right): Trade | Corruption
-- **Trade bar**: color 0x76 (118) — behind trade arrow icons
-- **Corruption bar**: color 0x79 (121) = rgb(239,159,7) — orange/gold, behind corruption icons
+- **Trade bar**: color 0x76 (118) — behind trade arrow icons (RGB not yet captured from game palette)
+- **Corruption bar**: dark orange rgb(226,82,13) — sampled from CITY.GIF wallpaper at tax/lux/sci row (palette idx 0x6F). Covers full row height (16px) to hide the bright orange CITY.GIF wallpaper underneath. Extends 2px left and 1px right beyond corruption sprites
+- **Bar height**: 16px for all resource row bars = `FUN_00511690(0x0E) + FUN_00511690(0x02)` = 14 + 2
 - When corruption ≤ 0, corruption bar merges into trade bar (lines 1889-1891 in decompiled)
+- **Corruption derivation**: `corruption = grossTileTrade - city.netBaseTrade` where grossTileTrade = sum of per-tile trade yields across worked tiles, and netBaseTrade (city+30) = base tile trade after corruption. No need to implement the distance-based formula — simple subtraction
+- **Icon Y offsets** (pixel-perfect tweaks): food icons +1px down, trade/corruption icons -1px up, shield icons +1px down, tax/lux/sci icons +1px (already had +1)
 
 ### Tax/Luxury/Science Row (4th resource row)
 - Y offset: panel_top + 79
@@ -9903,14 +9924,18 @@ The browser parser currently reads these from the save file tail section. They c
 - Unit support display (Section H + Section 7 — per-government free unit rules)
 - Happiness calculation (Section 4 — 13 discrepancies fixed)
 - Corruption/waste formulas (Section 5)
-- Resource row bar colors: support(0x54), surplus(0x5C), corruption(0x79) — confirmed via game palette + screenshots
+- Resource row bar colors: support(0x54), surplus(0x5C), corruption dark orange rgb(226,82,13) from CITY.GIF wallpaper
+- Bar height 16px for all resource rows (FUN_00511690(0x0E) + FUN_00511690(0x02) = 14 + 2)
 - Units Supported panel layout (decoded from FUN_00505666, zoom -3 dimensions)
 - Resource map icon spacing (tile width=48, padding=8, iconSize+1=11)
+- Resource map dither blending — offscreen full-res rendering (64×32) with `_applyDither`, then scaled to panel
 - Game palette vs GIF palette distinction documented
+- Luxury calculation fixed: no early returns (entertainers always apply), Fundamentalism science cap, AI luxury→science redirect
+- Corruption display: derived as `grossTileTrade - netBaseTrade` (city+30), no distance formula needed
+- Supplies/Demands display: parser field names `tradeCommoditiesAvail`/`tradeCommoditiesDemand` (not Supplied/Demanded)
 
 ### Remaining
 - **Shield waste bar**: game palette 0x0B = rgb(11,11,11). Not yet rendered — requires computing raw shield total from tile yields to derive waste = raw − shieldProduction. The corruption/waste formula (Section 5) can be used but needs tile yield summation in the city dialog
 - **Trade bar color**: palette 0x76 (118) — RGB not yet captured (beyond palette dump range 0-103). Need to extend ddraw proxy palette capture or sample from game screenshot
-- **Tax/Lux/Sci background bar**: game palette 0x79 full-width bar. Binary confirmed (line 2031-2034). Not yet rendered
 - **Panel title text color**: palette 0x7C (124) — RGB not yet captured
 - **Later**: Turn engine, combat, AI, multiplayer

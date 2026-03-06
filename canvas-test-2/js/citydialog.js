@@ -337,6 +337,43 @@ const Civ2CityDialog = {
     return specs;
   },
 
+  // Compute luxury from trade distribution (FUN_004ea1f6).
+  // city.totalTrade is NET trade (after corruption), stored at city+78.
+  _computeLuxury(city, civData, mapData) {
+    const netTrade = city.totalTrade || 0;
+    let sciRate = civData ? (civData.scienceRate || 0) : 0;   // 0-10 tenths
+    const taxRate = civData ? (civData.taxRate || 0) : 0;     // 0-10 tenths
+    const govt = this._getCityGovernment(city, mapData);
+
+    // Fundamentalism caps science rate at 5 (binary lines 1528-1530)
+    if (govt === 4 && sciRate > 5) sciRate = 5;
+
+    const luxRate = 10 - sciRate - taxRate;
+
+    // Rate-based luxury (no early return — entertainers must always be applied)
+    let baseLux = 0;
+    if (netTrade > 0 && luxRate > 0) {
+      baseLux = Math.min(netTrade, Math.floor((netTrade * luxRate + 4) / 10));
+    }
+
+    // Entertainer specialist bonus (+2 each, added unconditionally before building multiplier)
+    const specs = this.getSpecialists(city);
+    baseLux += specs.entertainer * 2;
+
+    // AI Fundamentalism redirects all luxury to science (binary lines 1537-1541)
+    if (govt === 4 && mapData && mapData.playerCiv !== undefined && city.owner !== mapData.playerCiv) {
+      baseLux = 0;
+    }
+
+    // Building multiplier: Marketplace(5)/Bank(10)/Stock Exchange(22) each +50%
+    const b = city.buildings || 0;
+    let mult = 0;
+    if (b & (1 << 5)) mult++;    // Marketplace
+    if (b & (1 << 10)) mult++;   // Bank
+    if (b & (1 << 22)) mult++;   // Stock Exchange
+    return baseLux + ((baseLux * mult) >> 1);
+  },
+
   findCityBySequenceId(mapData, seqId) {
     if (seqId === 0xFFFF) return null;
     for (const c of mapData.cities) {
@@ -1159,43 +1196,110 @@ const Civ2CityDialog = {
     const worked = this._getWorkedTiles(city);
     const hasTerrain = mapSprites && mapSprites.terrain;
     const { sprW, sprH } = R;
-    const TW = sprW, TH = sprH;  // tile dimensions (same as main map algorithm)
+    const TW = sprW, TH = sprH;  // scaled tile dimensions for final positioning
+    const FULL_TW = 64, FULL_TH = 32;  // full-res tile dimensions for offscreen rendering
 
-    // Use same tilePos formula as main map renderer:
-    //   px = gx * TW + ((gy % 2) ? (TW >> 1) : 0)
-    //   py = gy * (TH >> 1)
-    // Compute city center pixel position, then offset so it lands in panel center
+    // Compute scaled tile positions for final ctx output (worker dots, icons, city sprite)
+    const panel = this.REGIONS.panels.tileMap;
     const cityPx = city.gx * TW + ((city.gy % 2) ? (TW >> 1) : 0);
     const cityPy = city.gy * (TH >> 1);
-    const panel = this.REGIONS.panels.tileMap;
     const centerX = R.x + panel.w / 2 + 2;
     const centerY = R.y + panel.h / 2 - (TH >> 2) - 10;
-    const offX = centerX - cityPx - (TW >> 1);  // offset so city tile top-left centers in panel
+    const offX = centerX - cityPx - (TW >> 1);
     const offY = centerY - cityPy - (TH >> 1);
 
-    for (let i = 0; i < radiusTiles.length; i++) {
-      const rt = radiusTiles[i];
-      const tileGx = city.gx + rt.dx;
-      const tileGy = city.gy + rt.dy;
-      const wgx = mapData.wrap ? mapData.wrap(tileGx) : tileGx;
-      const inBounds = tileGy >= 0 && tileGy < mapData.mh && wgx >= 0 && wgx < mapData.mw;
+    if (hasTerrain && mapData.getTerrain) {
+      // ── Offscreen full-res rendering with dither blending ──
+      // Compute full-res pixel positions for all 21 radius tiles
+      const fullPositions = radiusTiles.map(rt => {
+        const tgx = city.gx + rt.dx, tgy = city.gy + rt.dy;
+        return {
+          px: tgx * FULL_TW + ((tgy % 2) ? (FULL_TW >> 1) : 0),
+          py: tgy * (FULL_TH >> 1),
+          gx: tgx, gy: tgy
+        };
+      });
 
-      // Same formula as main map renderer
-      const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
-      const sy = tileGy * (TH >> 1) + offY;
+      // Bounding box of all tiles at full resolution
+      let minPx = Infinity, maxPx = -Infinity, minPy = Infinity, maxPy = -Infinity;
+      for (const fp of fullPositions) {
+        if (fp.px < minPx) minPx = fp.px;
+        if (fp.px + FULL_TW > maxPx) maxPx = fp.px + FULL_TW;
+        if (fp.py < minPy) minPy = fp.py;
+        if (fp.py + FULL_TH > maxPy) maxPy = fp.py + FULL_TH;
+      }
+      const offW = maxPx - minPx;
+      const offH = maxPy - minPy;
 
-      if (hasTerrain && inBounds && mapData.getTerrain) {
-        const ter = mapData.getTerrain(tileGx, tileGy);
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = offW;
+      offCanvas.height = offH;
+      const offCtx = offCanvas.getContext('2d', { colorSpace: 'srgb' });
+
+      // Pass 1: Draw base terrain at full 64×32 resolution
+      for (let i = 0; i < radiusTiles.length; i++) {
+        const fp = fullPositions[i];
+        const wgx = mapData.wrap ? mapData.wrap(fp.gx) : fp.gx;
+        const inBounds = fp.gy >= 0 && fp.gy < mapData.mh && wgx >= 0 && wgx < mapData.mw;
+        if (!inBounds) continue;
+
+        const ter = mapData.getTerrain(fp.gx, fp.gy);
         const variants = mapSprites.terrain[ter];
         if (variants && variants.length > 0) {
-          const vi = ((wgx * 13 + tileGy * 7) & 0x7FFFFFFF) % variants.length;
-          ctx.drawImage(variants[vi], sx, sy, sprW, sprH);
+          const vi = ((wgx * 13 + fp.gy * 7) & 0x7FFFFFFF) % variants.length;
+          offCtx.drawImage(variants[vi], fp.px - minPx, fp.py - minPy);
+        }
+      }
+
+      // Pass 2: Dither blending — pixel manipulation at full resolution
+      if (mapSprites.ditherMask) {
+        const offImg = offCtx.getImageData(0, 0, offW, offH);
+        const offPix = offImg.data;
+
+        // Pre-cache terrain sprite pixel data (first variant per type)
+        const terrainPixData = [];
+        for (let tid = 0; tid < 11; tid++) {
+          if (mapSprites.terrain[tid] && mapSprites.terrain[tid][0]) {
+            const tc = mapSprites.terrain[tid][0].getContext('2d', { colorSpace: 'srgb' });
+            terrainPixData[tid] = tc.getImageData(0, 0, 64, 32).data;
+          }
         }
 
-        // Overlays — same logic as main renderer Pass 3, scaled to minimap
-        const tileNb = mapData.getNeighbors(tileGx, tileGy);
+        for (let i = 0; i < radiusTiles.length; i++) {
+          const fp = fullPositions[i];
+          const wgx = mapData.wrap ? mapData.wrap(fp.gx) : fp.gx;
+          const inBounds = fp.gy >= 0 && fp.gy < mapData.mh && wgx >= 0 && wgx < mapData.mw;
+          if (!inBounds) continue;
 
-        // Coastlines (ocean tiles) — 4-quadrant system, same as main renderer
+          const ter = mapData.getTerrain(fp.gx, fp.gy);
+          if (ter === 10) continue; // skip ocean
+          const px = fp.px - minPx, py = fp.py - minPy;
+          const nb = mapData.getNeighbors(fp.gx, fp.gy);
+
+          for (const dir of ['NE', 'SE', 'SW', 'NW']) {
+            const [nx, ny] = nb[dir];
+            if (ny < 0 || ny >= mapData.mh) continue;
+            const nter = mapData.getTerrain(nx, ny);
+            if (nter === ter || nter === 10) continue;
+            if (!terrainPixData[nter]) continue;
+            Civ2Renderer._applyDither(offPix, offW, offH, px, py, terrainPixData[nter], mapSprites.ditherMask, dir);
+          }
+        }
+        offCtx.putImageData(offImg, 0, 0);
+      }
+
+      // Pass 3: Overlays at full resolution (coastlines, rivers, terrain overlays, roads, improvements)
+      for (let i = 0; i < radiusTiles.length; i++) {
+        const fp = fullPositions[i];
+        const wgx = mapData.wrap ? mapData.wrap(fp.gx) : fp.gx;
+        const inBounds = fp.gy >= 0 && fp.gy < mapData.mh && wgx >= 0 && wgx < mapData.mw;
+        if (!inBounds) continue;
+
+        const ter = mapData.getTerrain(fp.gx, fp.gy);
+        const sx = fp.px - minPx, sy = fp.py - minPy;
+        const tileNb = mapData.getNeighbors(fp.gx, fp.gy);
+
+        // Coastlines
         if (ter === 10 && mapSprites.coast) {
           const L = {};
           for (const d of ['N','NE','E','SE','S','SW','W','NW'])
@@ -1204,50 +1308,47 @@ const Civ2CityDialog = {
           const rightG = (L.NE?1:0) | (L.E?2:0)  | (L.SE?4:0);
           const botG   = (L.SE?1:0) | (L.S?2:0)  | (L.SW?4:0);
           const leftG  = (L.SW?1:0) | (L.W?2:0)  | (L.NW?4:0);
-          // Scale offsets and piece sizes from 64×32 tile to sprW×sprH
-          const xS = sprW / 64, yS = sprH / 32;
-          const pw = 32 * xS, ph = 16 * yS;
-          const cox = [16*xS, 16*xS, 0, 32*xS];
-          const coy = [0, 16*yS, 8*yS, 8*yS];
-          ctx.drawImage(mapSprites.coast[topG   * 4 + 0], sx + cox[0], sy + coy[0], pw, ph);
-          ctx.drawImage(mapSprites.coast[botG   * 4 + 1], sx + cox[1], sy + coy[1], pw, ph);
-          ctx.drawImage(mapSprites.coast[leftG  * 4 + 2], sx + cox[2], sy + coy[2], pw, ph);
-          ctx.drawImage(mapSprites.coast[rightG * 4 + 3], sx + cox[3], sy + coy[3], pw, ph);
-          // River mouths on ocean tiles
+          // Full-res coast quadrant offsets
+          const cox = [16, 16, 0, 32];
+          const coy = [0, 16, 8, 8];
+          offCtx.drawImage(mapSprites.coast[topG   * 4 + 0], sx + cox[0], sy + coy[0]);
+          offCtx.drawImage(mapSprites.coast[botG   * 4 + 1], sx + cox[1], sy + coy[1]);
+          offCtx.drawImage(mapSprites.coast[leftG  * 4 + 2], sx + cox[2], sy + coy[2]);
+          offCtx.drawImage(mapSprites.coast[rightG * 4 + 3], sx + cox[3], sy + coy[3]);
           if (mapSprites.mouths) {
             for (let mi = 0; mi < 4; mi++) {
               const md = ['NE','SE','SW','NW'][mi];
               const [mx, my] = tileNb[md];
               if (mapData.isLand(mx, my) && mapData.hasRiver(mx, my))
-                ctx.drawImage(mapSprites.mouths[mi], sx, sy, sprW, sprH);
+                offCtx.drawImage(mapSprites.mouths[mi], sx, sy);
             }
           }
         }
 
         // Rivers
-        if (mapData.hasRiver(tileGx, tileGy) && mapSprites.rivers) {
+        if (mapData.hasRiver(fp.gx, fp.gy) && mapSprites.rivers) {
           let rm = 0;
           if (mapData.hasRiver(tileNb.NE[0], tileNb.NE[1]) || mapData.getTerrain(tileNb.NE[0], tileNb.NE[1]) === 10) rm |= 1;
           if (mapData.hasRiver(tileNb.SE[0], tileNb.SE[1]) || mapData.getTerrain(tileNb.SE[0], tileNb.SE[1]) === 10) rm |= 2;
           if (mapData.hasRiver(tileNb.SW[0], tileNb.SW[1]) || mapData.getTerrain(tileNb.SW[0], tileNb.SW[1]) === 10) rm |= 4;
           if (mapData.hasRiver(tileNb.NW[0], tileNb.NW[1]) || mapData.getTerrain(tileNb.NW[0], tileNb.NW[1]) === 10) rm |= 8;
-          ctx.drawImage(mapSprites.rivers[rm], sx, sy, sprW, sprH);
+          offCtx.drawImage(mapSprites.rivers[rm], sx, sy);
         }
 
-        // Forest/mountain/hill overlays with neighbor connectivity
+        // Forest/mountain/hill overlays
         if ((ter === 3 || ter === 4 || ter === 5) && mapSprites.forest) {
           let ovi = 0;
           if (mapData.getTerrain(tileNb.NE[0], tileNb.NE[1]) === ter) ovi |= 1;
           if (mapData.getTerrain(tileNb.SE[0], tileNb.SE[1]) === ter) ovi |= 2;
           if (mapData.getTerrain(tileNb.SW[0], tileNb.SW[1]) === ter) ovi |= 4;
           if (mapData.getTerrain(tileNb.NW[0], tileNb.NW[1]) === ter) ovi |= 8;
-          if (ter === 3) ctx.drawImage(mapSprites.forest[ovi], sx, sy, sprW, sprH);
-          else if (ter === 5) ctx.drawImage(mapSprites.mountains[ovi], sx, sy, sprW, sprH);
-          else ctx.drawImage(mapSprites.hills[ovi], sx, sy, sprW, sprH);
+          if (ter === 3) offCtx.drawImage(mapSprites.forest[ovi], sx, sy);
+          else if (ter === 5) offCtx.drawImage(mapSprites.mountains[ovi], sx, sy);
+          else offCtx.drawImage(mapSprites.hills[ovi], sx, sy);
         }
 
         // Roads & Railroads
-        const imp = mapData.getImprovements(tileGx, tileGy);
+        const imp = mapData.getImprovements(fp.gx, fp.gy);
         const hasCity = imp & 0x02;
         if ((imp & 0x30 || hasCity) && mapSprites.roads) {
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
@@ -1255,46 +1356,68 @@ const Civ2CityDialog = {
             const [nx, ny] = tileNb[DIR_KEYS[di]];
             const nimp = mapData.getImprovements(nx, ny);
             const nCity = nimp & 0x02;
-            if ((imp & 0x10 || hasCity) && (nimp & 0x10 || nCity)) ctx.drawImage(mapSprites.roads[di], sx, sy, sprW, sprH);
-            if ((imp & 0x20 || hasCity) && (nimp & 0x20 || nCity)) ctx.drawImage(mapSprites.railroads[di], sx, sy, sprW, sprH);
+            if ((imp & 0x10 || hasCity) && (nimp & 0x10 || nCity)) offCtx.drawImage(mapSprites.roads[di], sx, sy);
+            if ((imp & 0x20 || hasCity) && (nimp & 0x20 || nCity)) offCtx.drawImage(mapSprites.railroads[di], sx, sy);
           }
         }
 
         // Irrigation / Farmland
         if (imp & 0x04) {
-          if (imp & 0x08 && mapSprites.farmland) ctx.drawImage(mapSprites.farmland, sx, sy, sprW, sprH);
-          else if (mapSprites.irrigation) ctx.drawImage(mapSprites.irrigation, sx, sy, sprW, sprH);
+          if (imp & 0x08 && mapSprites.farmland) offCtx.drawImage(mapSprites.farmland, sx, sy);
+          else if (mapSprites.irrigation) offCtx.drawImage(mapSprites.irrigation, sx, sy);
         }
 
         // Resources
         if (ter === 2) {
-          if (mapData.hasShield && mapData.hasShield(tileGx, tileGy) && mapSprites.grasslandShield)
-            ctx.drawImage(mapSprites.grasslandShield, sx, sy, sprW, sprH);
+          if (mapData.hasShield && mapData.hasShield(fp.gx, fp.gy) && mapSprites.grasslandShield)
+            offCtx.drawImage(mapSprites.grasslandShield, sx, sy);
         } else {
-          const res = mapData.getResource(tileGx, tileGy);
+          const res = mapData.getResource(fp.gx, fp.gy);
           if (res > 0 && ter <= 10 && mapSprites.resources[ter * 2 + res])
-            ctx.drawImage(mapSprites.resources[ter * 2 + res], sx, sy, sprW, sprH);
+            offCtx.drawImage(mapSprites.resources[ter * 2 + res], sx, sy);
         }
 
         // Mining (without irrigation) / Pollution
-        if (imp & 0x08 && !(imp & 0x04) && mapSprites.mining) ctx.drawImage(mapSprites.mining, sx, sy, sprW, sprH);
-        if (imp & 0x80 && mapSprites.pollution) ctx.drawImage(mapSprites.pollution, sx, sy, sprW, sprH);
+        if (imp & 0x08 && !(imp & 0x04) && mapSprites.mining) offCtx.drawImage(mapSprites.mining, sx, sy);
+        if (imp & 0x80 && mapSprites.pollution) offCtx.drawImage(mapSprites.pollution, sx, sy);
+      }
 
-      } else if (inBounds && mapData.getTerrain) {
-        // Fallback: colored diamonds
+      // Scale full-res offscreen canvas down to panel
+      // fullPos.px * scale = tileGx * TW + parityOff, so destX = minPx * scale + offX
+      const scale = sprW / FULL_TW;  // 48/64 = 0.75
+      const destX = minPx * scale + offX;
+      const destY = minPy * scale + offY;
+      ctx.drawImage(offCanvas, 0, 0, offW, offH, destX, destY, offW * scale, offH * scale);
+
+    } else if (mapData.getTerrain) {
+      // Fallback: colored diamonds (no terrain sprites available)
+      for (let i = 0; i < radiusTiles.length; i++) {
+        const rt = radiusTiles[i];
+        const tileGx = city.gx + rt.dx;
+        const tileGy = city.gy + rt.dy;
+        const wgx = mapData.wrap ? mapData.wrap(tileGx) : tileGx;
+        const inBounds = tileGy >= 0 && tileGy < mapData.mh && wgx >= 0 && wgx < mapData.mw;
+        if (!inBounds) continue;
         const ter = mapData.getTerrain(tileGx, tileGy);
         const fillColor = this.TERRAIN_COLORS[ter] || 'rgb(0,0,0)';
-        const cx = sx + (TW >> 1), cy = sy + (TH >> 1);
-        this._diamond(ctx, cx, cy, TW >> 2, TH >> 2, fillColor, 'rgb(32,32,32)');
+        const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
+        const sy = tileGy * (TH >> 1) + offY;
+        const dcx = sx + (TW >> 1), dcy = sy + (TH >> 1);
+        this._diamond(ctx, dcx, dcy, TW >> 2, TH >> 2, fillColor, 'rgb(32,32,32)');
       }
+    }
 
-      // Worker dot on worked tiles
-      if (worked.has(i)) {
-        const cx = sx + (TW >> 1), cy = sy + (TH >> 1);
-        ctx.fillStyle = 'rgb(240,220,0)';
-        ctx.fillRect(cx - 1, cy - 1, 3, 3);
-      }
-
+    // Worker dots on worked tiles (drawn on main ctx at scaled positions)
+    for (let i = 0; i < radiusTiles.length; i++) {
+      if (!worked.has(i)) continue;
+      const rt = radiusTiles[i];
+      const tileGx = city.gx + rt.dx;
+      const tileGy = city.gy + rt.dy;
+      const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
+      const sy = tileGy * (TH >> 1) + offY;
+      const dcx = sx + (TW >> 1), dcy = sy + (TH >> 1);
+      ctx.fillStyle = 'rgb(240,220,0)';
+      ctx.fillRect(dcx - 1, dcy - 1, 3, 3);
     }
 
     // City sprite — drawn after all terrain tiles (same as main renderer Pass 4)
@@ -1309,7 +1432,6 @@ const Civ2CityDialog = {
       if (mapSprites.city[row] && mapSprites.city[row][col]) {
         const citySx = city.gx * TW + ((city.gy % 2) ? (TW >> 1) : 0) + offX;
         const citySy = city.gy * (TH >> 1) + offY;
-        // City sprites are 64×48 at full scale; scale proportionally
         const citySprH = Math.round(48 * sprH / 32);
         const cityOffY = Math.round(16 * sprH / 32);
         ctx.drawImage(mapSprites.city[row][col], citySx, citySy - cityOffY, sprW, citySprH);
@@ -1355,12 +1477,36 @@ const Civ2CityDialog = {
     }
   },
 
-  _drawResourceRows(ctx, city, cdSprites, civData, supported, mapData) {
+  // Compute gross tile trade by summing per-tile yields across all worked tiles.
+  // Used to derive corruption = grossTileTrade - netBaseTrade (city+30).
+  _calcGrossTileTrade(city, cityIndex, mapData) {
+    const worked = this._getWorkedTiles(city);
+    const cx = city.gx, cy = city.gy;
+    const parC = cy & 1;
+    let gross = 0;
+    for (let i = 0; i < this.CITY_RADIUS_DOUBLED.length; i++) {
+      if (!worked.has(i)) continue;
+      const [ddx, ddy] = this.CITY_RADIUS_DOUBLED[i];
+      const parT = ((cy + ddy) % 2 + 2) % 2;
+      const tileGx = cx + ((parC + ddx - parT) >> 1);
+      const tileGy = cy + ddy;
+      const isCenter = (i === 20);
+      const [, , trade] = this._getTileYields(tileGx, tileGy, isCenter, city, cityIndex, mapData);
+      gross += trade;
+    }
+    return gross;
+  },
+
+  _drawResourceRows(ctx, city, cityIndex, cdSprites, civData, supported, mapData) {
     if (!cdSprites) return;
     const RES = this.REGIONS.resources;
 
-    const corruption = Math.max(0, city.totalTrade - city.scienceOutput - city.taxOutput);
-    const luxOutput = Math.max(0, city.totalTrade - city.taxOutput - city.scienceOutput - corruption);
+    // Luxury computed from trade distribution formula (FUN_004ea1f6)
+    // city.totalTrade is NET trade (after corruption, before rate split)
+    const luxOutput = this._computeLuxury(city, civData, mapData);
+    // Corruption = gross tile trade - netBaseTrade (city+30, base trade after corruption)
+    const grossTileTrade = this._calcGrossTileTrade(city, cityIndex, mapData);
+    const corruption = Math.max(0, grossTileTrade - (city.netBaseTrade || 0));
     // Support cost: only units exceeding free support limit (government-dependent)
     const government = this._getCityGovernment(city, mapData);
     const overlays = this._calcUnitSupportOverlays(supported, city, government, mapData);
@@ -1383,16 +1529,16 @@ const Civ2CityDialog = {
     const foodIconCount = foodTotal + Math.abs(foodSurplus);
     const foodSpacing = this._resourceSpacing(foodIconCount);
     for (let i = 0; i < foodTotal; i++)
-      ctx.drawImage(cdSprites.food, foodR.iconX + i * foodSpacing, foodR.iconY, 14, 14);
+      ctx.drawImage(cdSprites.food, foodR.iconX + i * foodSpacing, foodR.iconY + 1, 14, 14);
     if (foodSurplus < 0) {
       const hungerCount = Math.abs(foodSurplus);
       const hungerStartX = foodR.rightX - (foodSpacing * hungerCount + 14 - foodSpacing);
       for (let i = 0; i < hungerCount; i++)
-        ctx.drawImage(cdSprites.hunger, hungerStartX + i * foodSpacing, foodR.iconY, 14, 14);
+        ctx.drawImage(cdSprites.hunger, hungerStartX + i * foodSpacing, foodR.iconY + 1, 14, 14);
     } else if (foodSurplus > 0) {
       const surpStartX = foodR.rightX - (foodSpacing * foodSurplus + 14 - foodSpacing);
       for (let i = 0; i < foodSurplus; i++)
-        ctx.drawImage(cdSprites.food, surpStartX + i * foodSpacing, foodR.iconY, 14, 14);
+        ctx.drawImage(cdSprites.food, surpStartX + i * foodSpacing, foodR.iconY + 1, 14, 14);
     }
 
     // Row 2: TRADE
@@ -1406,53 +1552,79 @@ const Civ2CityDialog = {
     const tradeIconCount = tradeTotal + corruption;
     const tradeSpacing = this._resourceSpacing(tradeIconCount);
     for (let i = 0; i < tradeTotal; i++)
-      ctx.drawImage(cdSprites.trade, tradeR.iconX + 1 + i * tradeSpacing, tradeR.iconY, 14, 14);
+      ctx.drawImage(cdSprites.trade, tradeR.iconX + 1 + i * tradeSpacing, tradeR.iconY - 1, 14, 14);
     if (corruption > 0) {
       const corrStartX = tradeR.rightX - 2 - (tradeSpacing * corruption + 14 - tradeSpacing);
-      // Corruption background bar — game palette 0x79
-      ctx.fillStyle = 'rgb(239,159,7)';
-      ctx.fillRect(corrStartX, tradeR.iconY, (corruption - 1) * tradeSpacing + 14, 14);
+      // Corruption background bar — dark orange, matching CITY.GIF tax/lux/sci wallpaper
+      // Bar covers full row height, extends 2px left and 1px right of sprites
+      ctx.fillStyle = 'rgb(226,82,13)';
+      ctx.fillRect(corrStartX - 2, tradeR.y, (corruption - 1) * tradeSpacing + 14 + 3, tradeR.h);
       for (let i = 0; i < corruption; i++)
-        ctx.drawImage(cdSprites.corruption, corrStartX + i * tradeSpacing, tradeR.iconY, 14, 14);
+        ctx.drawImage(cdSprites.corruption, corrStartX + i * tradeSpacing, tradeR.iconY - 1, 14, 14);
     }
 
-    // Row 3: TAX / LUX / SCI — single horizontal row (matching real Civ2 layout)
+    // Row 3: TAX / LUX / SCI — matching binary FUN_005025d5 lines 1949-2117
     const tlsR = RES.taxLuxSci;
     const taxCount = city.taxOutput || 0;
     const sciCount = city.scienceOutput || 0;
+    const luxCount = luxOutput;
 
-    // Text line: "30% Tax: X" left, "0% Lux: X" center, "70% Sci: X" right
-    const textY = tlsR.iconY + 1 + 14 + 2;  // 2px below bottom of icon row (iconY+1 offset)
+    // Text labels: tax left, lux center, sci right (normal case)
+    const textY = tlsR.iconY + 1 + 14 + 2;
     ctx.font = '600 12px Arial, sans-serif';
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
     this._text(ctx, `${taxRate}% Tax: ${taxCount}`, tlsR.textX, textY, 'rgb(239,159,7)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'center';
-    this._text(ctx, `${luxRate}% Lux: ${luxOutput}`, tlsR.centerX, textY, 'rgb(255,255,255)', '600 12px Arial, sans-serif');
+    this._text(ctx, `${luxRate}% Lux: ${luxCount}`, tlsR.centerX, textY, 'rgb(255,255,255)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
     this._text(ctx, `${sciRate}% Sci: ${sciCount}`, tlsR.rightX, textY, 'rgb(63,187,199)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
 
-    // Icons: tax left, lux centered, sci right — one shared spacing (matching binary FUN_005025d5)
+    // CITY.GIF wallpaper already provides the correct background for this row
     const iconY = tlsR.iconY + 1;
-    const totalIcons = taxCount + luxOutput + sciCount;
+
+    // Icon layout: shared spacing with group separator gaps (binary lines 1949-2057)
+    const totalIcons = taxCount + luxCount + sciCount;
     if (totalIcons > 0) {
-      const availW = tlsR.rightX - tlsR.iconX;
-      const { spacing } = this._iconSpacing(totalIcons, 14, availW);
-      // Tax: left-aligned
+      const iconEffSize = 15;  // FUN_00511690(0xe) + 1 = 14 + 1 (icon + 1px gap)
+      const groupGap = 4;      // FUN_00511690(4)
+      const fullAvailW = tlsR.rightX - tlsR.iconX - 2;  // binary: 0xe2 - 2
+
+      // Count non-zero groups and subtract separator gaps
+      const groups = (taxCount > 0 ? 1 : 0) + (luxCount > 0 ? 1 : 0) + (sciCount > 0 ? 1 : 0);
+      const numSeps = Math.max(0, groups - 1);
+      const adjTotal = totalIcons - numSeps;
+      const adjAvailW = fullAvailW - numSeps * (iconEffSize + groupGap);
+
+      const { spacing } = this._iconSpacing(adjTotal, iconEffSize, adjAvailW);
+
+      // Tax group width and science group width
+      const taxGW = taxCount > 0 ? 1 + (taxCount - 1) * spacing + iconEffSize : 0;
+      const sciGW = sciCount > 0 ? 1 + (sciCount - 1) * spacing + iconEffSize : 0;
+
+      // Tax: left-aligned at left edge + 1
+      const taxStartX = tlsR.iconX + 1;
       for (let i = 0; i < taxCount; i++)
-        ctx.drawImage(cdSprites.tax, tlsR.iconX + i * spacing, iconY, 14, 14);
+        ctx.drawImage(cdSprites.tax, taxStartX + i * spacing, iconY, 14, 14);
+
       // Science: right-aligned
-      const sciStartX = sciCount > 0 ? tlsR.rightX - 2 - ((sciCount - 1) * spacing + 14) : tlsR.rightX;
+      const sciStartX = tlsR.iconX + (tlsR.rightX - tlsR.iconX) - sciGW;
       for (let i = 0; i < sciCount; i++)
         ctx.drawImage(cdSprites.science, sciStartX + i * spacing, iconY, 14, 14);
-      // Luxury: centered in gap between tax and science
-      if (luxOutput > 0) {
-        const taxEndX = taxCount > 0 ? tlsR.iconX + (taxCount - 1) * spacing + 14 : tlsR.iconX;
-        const luxW = (luxOutput - 1) * spacing + 14;
-        const luxStartX = taxEndX + Math.round((sciStartX - taxEndX - luxW) / 2);
-        for (let i = 0; i < luxOutput; i++)
+
+      // Luxury: centered in remaining middle space
+      if (luxCount > 0) {
+        const luxGW = 1 + (luxCount - 1) * spacing + iconEffSize;
+        // Middle space = full width minus tax, sci, and gaps
+        let midLeft = tlsR.iconX;
+        let midRight = tlsR.rightX;
+        if (taxCount > 0) midLeft = tlsR.iconX + taxGW + groupGap;
+        if (sciCount > 0) midRight = sciStartX - groupGap;
+        const midSpace = midRight - midLeft;
+        const luxStartX = midLeft + Math.floor((midSpace - luxGW) / 2);
+        for (let i = 0; i < luxCount; i++)
           ctx.drawImage(cdSprites.luxury, luxStartX + i * spacing, iconY, 14, 14);
       }
     }
@@ -1470,19 +1642,20 @@ const Civ2CityDialog = {
     const spTotal = support + production;
     const spSpacing = this._resourceSpacing(spTotal);
     // Support bar + icons (left-aligned) — game palette 0x54
+    // Bar height = FUN_00511690(0x0E) + FUN_00511690(0x02) = 14 + 2 = 16
     if (support > 0) {
       ctx.fillStyle = 'rgb(63,79,167)';
-      ctx.fillRect(spR.iconX, spR.iconY, (support - 1) * spSpacing + 14, 14);
+      ctx.fillRect(spR.iconX, spR.iconY, (support - 1) * spSpacing + 14, 16);
       for (let i = 0; i < support; i++)
-        ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY, 14, 14);
+        ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY + 1, 14, 14);
     }
     // Production/surplus bar + icons (right-aligned) — game palette 0x5C
     if (production > 0) {
       const prodStartX = spR.rightX - (spSpacing * production + 14 - spSpacing);
       ctx.fillStyle = 'rgb(7,11,103)';
-      ctx.fillRect(prodStartX, spR.iconY, (production - 1) * spSpacing + 14, 14);
+      ctx.fillRect(prodStartX, spR.iconY, (production - 1) * spSpacing + 14, 16);
       for (let i = 0; i < production; i++)
-        ctx.drawImage(cdSprites.shields, prodStartX + i * spSpacing, spR.iconY, 14, 14);
+        ctx.drawImage(cdSprites.shields, prodStartX + i * spSpacing, spR.iconY + 1, 14, 14);
     }
   },
 
@@ -1882,15 +2055,15 @@ const Civ2CityDialog = {
     // Trade text at bottom of info panel
     ctx.font = '400 12px Arial, sans-serif';
     const suppliedNames = [];
-    if (city.tradeCommoditiesSupplied) {
-      for (const cIdx of city.tradeCommoditiesSupplied) {
+    if (city.tradeCommoditiesAvail) {
+      for (const cIdx of city.tradeCommoditiesAvail) {
         if (cIdx !== undefined && cIdx < 16) suppliedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
     this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, R.tradeX, R.suppliesY, 'rgb(227,83,15)', null, C.headerShadow);
     const demandedNames = [];
-    if (city.tradeCommoditiesDemanded) {
-      for (const cIdx of city.tradeCommoditiesDemanded) {
+    if (city.tradeCommoditiesDemand) {
+      for (const cIdx of city.tradeCommoditiesDemand) {
         if (cIdx !== undefined && cIdx < 16) demandedNames.push(this.COMMODITY_NAMES[cIdx]);
       }
     }
@@ -2133,7 +2306,7 @@ const Civ2CityDialog = {
     this._drawLabels(ctx);
     this._drawCitizens(ctx, city, epoch, cdSprites, specs);
     this._drawResourceMap(ctx, city, cityIndex, mapData, cdSprites, mapSprites);
-    this._drawResourceRows(ctx, city, cdSprites, civData, supported, mapData);
+    this._drawResourceRows(ctx, city, cityIndex, cdSprites, civData, supported, mapData);
     this._drawFoodStorage(ctx, city, cdSprites, mapData);
     this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);
     this._drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites);
