@@ -870,9 +870,9 @@ Four rows of resource icons from ICONS.GIF (14×14px each). Each row shows a cou
 | Food | ~75 | Food icons (green) | Surplus or Hunger (red) |
 | Trade | ~117 | Trade arrows (yellow) | Corruption icons |
 | Tax+Lux+Sci | ~141 | Tax (gold), Luxury (blue), Science (beaker) | Combined on one row |
-| Support/Production | ~181 | Support shields (unit maintenance) | Production shields |
+| Support/Waste/Production | ~181 | Support shields (unit maintenance) | Waste (dark shields, centered) then Production shields (right) |
 
-Text labels above each row show names and numeric values (e.g., "Food: 12", "Surplus: 3").
+Text labels above each row show names and numeric values (e.g., "Food: 12", "Surplus: 3"). Shield row has three groups left-to-right: Support (light blue bar, palette 0x54), Waste (near-black bar rgb(11,11,11), palette 0x0B, dark shield icons from ICONS.GIF shortage sprite at (16,290), centered in bar, only shown when waste > 0), Production (dark blue bar, palette 0x5C, right-aligned). Waste = grossShields − netShields (city.shieldProduction). The waste bar extends from the waste icons to the left edge of the production bar.
 
 ##### Tile Map / City Radius (7, 65, 188×137)
 
@@ -882,10 +882,11 @@ Isometric mini-map showing the 21 tiles in the city's working radius (a "fat cro
 2. For each position with known terrain, draw actual terrain tile (scaled) with dither blending, coastlines, rivers, forest/mountain/hill overlays, roads/railroads, improvements (irrigation/farmland/mining/pollution)
 3. Fortress/airbase sprites (64×48, drawn at sy−16 for height). Airbase recolored per tile owner
 4. Enemy units (different owner than city) drawn on radius tiles, with fortress/airbase redrawn over unit (same layering as main map: fortress → unit → fortress redraw so walls surround unit)
-5. City sprite on center tile
-6. **White diamond outlines** on tiles worked by other cities (computed by iterating all cities' worker bitmaps and checking for coordinate overlap with this city's radius)
-7. Yellow worker dots on worked tiles (3×3px centered on tile)
-8. On **worked** tiles, overlay small resource icons (10×10px from ICONS.GIF): food, then shields, then trade — centered horizontally, spacing adjusts by total icon count (11px for 1–2, down to 1px for 10+)
+5. **Black shroud dither** at outer edges of radius: for each radius tile, diagonal neighbors (NE/SE/SW/NW) outside the 21-tile radius get `_applyShroudDither` applied — same dither mask as main map fog of war. Creates a fade-to-black border around the mini-map
+6. City sprite on center tile
+7. **White diamond outlines** on tiles worked by other cities (computed by iterating all cities' worker bitmaps and checking for coordinate overlap with this city's radius)
+8. Yellow worker dots on worked tiles (3×3px centered on tile)
+9. On **worked** tiles, overlay small resource icons (10×10px from ICONS.GIF): food, then shields, then trade — centered horizontally, spacing adjusts by total icon count (11px for 1–2, down to 1px for 10+)
 
 The 21-tile diamond shape (relative to city at 0,0):
 ```

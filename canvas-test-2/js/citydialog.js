@@ -1474,6 +1474,26 @@ const Civ2CityDialog = {
         }
       }
 
+      // Black dither at outer edges of radius (unexplored-style shroud)
+      // For each radius tile, if a diagonal neighbor is NOT in the radius, dither toward it
+      if (mapSprites.ditherMask) {
+        const radiusSet = new Set();
+        for (const fp of fullPositions) radiusSet.add(`${fp.gx},${fp.gy}`);
+        const offImg = offCtx.getImageData(0, 0, offW, offH);
+        const offPix = offImg.data;
+        for (let i = 0; i < radiusTiles.length; i++) {
+          const fp = fullPositions[i];
+          const px = fp.px - minPx, py = fp.py - minPy;
+          const nb = mapData.getNeighbors(fp.gx, fp.gy);
+          for (const dir of ['NE', 'SE', 'SW', 'NW']) {
+            const [nx, ny] = nb[dir];
+            if (radiusSet.has(`${nx},${ny}`)) continue;
+            Civ2Renderer._applyShroudDither(offPix, offW, offH, px, py, mapSprites.ditherMask, dir);
+          }
+        }
+        offCtx.putImageData(offImg, 0, 0);
+      }
+
       // Scale full-res offscreen canvas down to panel
       // fullPos.px * scale = tileGx * TW + parityOff, so destX = minPx * scale + offX
       const scale = sprW / FULL_TW;  // 48/64 = 0.75
@@ -1813,7 +1833,9 @@ const Civ2CityDialog = {
       }
     }
 
-    // Row 4: SUPPORT + PRODUCTION
+    // Row 4: SUPPORT + WASTE + PRODUCTION
+    // Binary FUN_005025d5 lines 1746-1850: three groups left-to-right
+    // Support (palette 0x54), Waste (palette 0x0B), Production (palette 0x5C)
     const spR = RES.supportProd;
     const spTextY = spR.iconY + 14 + 3;  // 3px below bottom of icon row
     ctx.textBaseline = 'top';
@@ -1821,27 +1843,44 @@ const Civ2CityDialog = {
     this._text(ctx, `Support: ${support}`, spR.textX, spTextY, 'rgb(63,79,167)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
     this._text(ctx, `Production: ${surplus}`, spR.rightX, spTextY, 'rgb(7,11,103)');
+    if (waste > 0) {
+      ctx.textAlign = 'center';
+      ctx.font = '600 12px Arial, sans-serif';
+      ctx.fillStyle = 'rgb(11,11,11)';
+      ctx.fillText(`Waste: ${waste}`, (spR.textX + spR.rightX) / 2, spTextY);
+    }
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    const spTotal = support + surplus;
+    const spTotal = support + waste + surplus;
     const spSpacing = this._resourceSpacing(spTotal);
-    // Support bar fills the full row, then production bar overlays on the right.
-    // This covers the dark blue CITY.GIF wallpaper when surplus is 0.
     // Bar height = FUN_00511690(0x0E) + FUN_00511690(0x02) = 14 + 2 = 16
-    // Support bar (full width) — CITY.GIF wallpaper color rgb(94,103,170)
     // Snap bar coords to device pixels to avoid sub-pixel seam at non-integer DPR
     const barY = Math.round(181 * dpr) / dpr;
     const barB = Math.round(197 * dpr) / dpr;
     const barH = barB - barY;
+    // Support bar (full width) — CITY.GIF wallpaper color rgb(94,103,170)
     ctx.fillStyle = 'rgb(94,103,170)';
     ctx.fillRect(spR.x, barY, spR.rightX - spR.x, barH);
-    if (support > 0) {
-      for (let i = 0; i < support; i++)
-        ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY + 1, 14, 14);
+    // Support icons (left-aligned)
+    for (let i = 0; i < support; i++)
+      ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY + 1, 14, 14);
+    // Production/surplus start X (needed by waste bar to know where to extend to)
+    const prodStartX = surplus > 0 ? spR.rightX - (spSpacing * surplus + 14 - spSpacing) : spR.rightX;
+    // Waste bar + icons (after support) — game palette 0x0B = rgb(11,11,11)
+    // Bar extends from waste icons all the way to the left edge of the production bar
+    if (waste > 0) {
+      const wasteBarLeft = spR.iconX + support * spSpacing - 1;
+      const wasteBarRight = prodStartX - 2;
+      const wasteBarW = wasteBarRight - wasteBarLeft;
+      ctx.fillStyle = 'rgb(11,11,11)';
+      ctx.fillRect(wasteBarLeft, barY, wasteBarW, barH);
+      const wasteIconsW = (waste - 1) * spSpacing + 14;
+      const wasteCenterX = wasteBarLeft + (wasteBarW - wasteIconsW) / 2;
+      for (let i = 0; i < waste; i++)
+        ctx.drawImage(cdSprites.shortage, wasteCenterX + i * spSpacing, spR.iconY + 1, 14, 14);
     }
     // Production/surplus bar + icons (right-aligned) — game palette 0x5C
     if (surplus > 0) {
-      const prodStartX = spR.rightX - (spSpacing * surplus + 14 - spSpacing);
       ctx.fillStyle = 'rgb(10,11,102)';
       ctx.fillRect(prodStartX - 2, barY, (surplus - 1) * spSpacing + 14 + 2, barH);
       for (let i = 0; i < surplus; i++)
