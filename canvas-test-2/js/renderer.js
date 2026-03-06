@@ -979,14 +979,6 @@ const Civ2Renderer = {
             ctx.fillStyle = '#000';
             ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
 
-            // Veteran star — small yellow star below order letter
-            if (u.veteran) {
-              ctx.font = 'bold 7px sans-serif';
-              ctx.fillStyle = '#ffd700';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'bottom';
-              ctx.fillText('\u2605', shieldX + sprites.shieldFront.width / 2, shieldY + sprites.shieldFront.height);
-            }
           }
 
           // Fortification overlay — only for fully fortified (0x02)
@@ -1444,11 +1436,13 @@ const Civ2Renderer = {
       if (d[i + 3] === 0) continue; // skip transparent
       const r = d[i], g = d[i+1], b = d[i+2];
       // Light civ-color: idx 252 = (255,0,0) — pure red
-      if (Math.abs(r - 255) < 15 && g < 15 && b < 15) {
+      // Tolerance 3 (not 15): GIF decodes to exact RGB; nearest non-placeholder red is idx 96 (243,0,0) at distance 12
+      if (Math.abs(r - 255) < 3 && g < 3 && b < 3) {
         d[i] = cr; d[i+1] = cg; d[i+2] = cb;
       }
       // Dark civ-color: idx 251 = (127,0,0) — dark red
-      else if (Math.abs(r - 127) < 15 && g < 15 && b < 15) {
+      // Nearest false positive: idx 103 (135,0,0) at distance 8
+      else if (Math.abs(r - 127) < 3 && g < 3 && b < 3) {
         d[i] = dr; d[i+1] = dg; d[i+2] = db;
       }
     }

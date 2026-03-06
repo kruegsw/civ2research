@@ -182,14 +182,13 @@ const Civ2CityDialog = {
     // ── Production panel (all sub-elements absolute) ──
     production: {
       x: 437, y: 165, w: 195, h: 191,
-      unitSprite:   { x: 509, y: 168, w: 64, h: 48 },    // panel(437,165) + (72, 3)
+      unitSprite:   { x: 510, y: 168, w: 46, h: 35 },    // centered in Buy-Change gap (510..557=47px), zoom -1 scaled
       buildingIcon: { x: 516, y: 183, w: 36, h: 20 },    // panel + (79, 18)
       buildingName: { x: 534, y: 180 },                    // panel + (97, 15), center-aligned
       iconCenter:   { x: 534.5, y: 183 },                  // panel + (97.5, 18)
       shieldGrid: {
-        x: 443, y: 210,                                    // panel + (6, 45), icon draw origin
-        borderX: 442, borderY: 207, borderRight: 624,      // border rectangle edges
-        cols: 10,
+        // Binary: FUN_0050503e — outer rect at panel + (6, 40), 183×146
+        gridX: 443, gridY: 205, gridW: 183, gridH: 146,
       },
     },
 
@@ -1715,17 +1714,7 @@ const Civ2CityDialog = {
     // Food progress text: "X/Y to grow" (from decompiled growth formula)
     const foodSurplus = (city.foodProduction || 0) - (city.size * 2);
     const turnsToGrow = foodSurplus > 0 ? Math.ceil((foodToGrow - foodStored) / foodSurplus) : 0;
-    const progressColor = foodSurplus > 0 ? 'rgb(87,171,39)' : foodSurplus < 0 ? 'rgb(227,83,15)' : 'rgb(135,135,135)';
-    const progressText = `${foodStored}/${foodToGrow}`;
-    const turnsText = foodSurplus > 0 && foodStored < foodToGrow
-      ? `(${turnsToGrow} turn${turnsToGrow !== 1 ? 's' : ''})`
-      : foodSurplus < 0 ? '(Starving!)' : '';
-    ctx.textAlign = 'center';
-    this._text(ctx, progressText, panelCenterX, R.bottomY + 3, progressColor, 'bold 10px Arial, sans-serif');
-    if (turnsText) {
-      this._text(ctx, turnsText, panelCenterX, R.bottomY + 14, progressColor, '10px Arial, sans-serif');
-    }
-    ctx.textAlign = 'left';
+    // No progress text — the real game doesn't show numeric text here
   },
 
   _drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData) {
@@ -1760,68 +1749,58 @@ const Civ2CityDialog = {
       }
     }
 
-    // Shield grid with dark background (like food storage)
-    // Real game: max 10 rows, dynamic columns = ceil(cost/10), DAT_006a657c
+    // Shield grid — production progress display
+    // Binary: FUN_0050503e lines 2327-2376. DAT_006a657c = shields_per_row (10 for human, standard COSMIC)
+    // baseCost = RULES.TXT raw cost (before ×10 shield_box_factor)
+    // baseCost < 10: rows=baseCost, cols=10. baseCost >= 10: rows=10, cols=baseCost
+    // Only filled shields drawn; short items bottom-aligned in fixed 10-row frame
     if (cdSprites && cdSprites.shields) {
       const SG = R.shieldGrid;
       const cost = this._getProductionCost(item);
       const stored = city.shieldsInBox || 0;
-      const maxRows = 10;
-      const numRows = cost > 0 ? Math.min(maxRows, cost) : 0;
-      const numCols = cost > 0 ? Math.ceil(cost / maxRows) : 0;
+      const baseCost = Math.round(cost / 10);
+      const shieldsPerRow = baseCost < 10 ? 10 : baseCost;
+      const numRows = baseCost < 10 ? baseCost : 10;
 
       if (cost > 0) {
-        const boxHeight = 4 + numRows * 14;
-        const availW = SG.borderRight - SG.borderX - 4;
-        // Dark blue background fill (like food storage green bg)
-        ctx.fillStyle = 'rgb(0,0,95)';
-        ctx.fillRect(SG.borderX + 1, SG.borderY + 1, SG.borderRight - SG.borderX - 1, boxHeight - 1);
-        // 3D border
+        // 3D bevel frame — 3px inset from outer grid (binary: FUN_004bb800 ×2 then FUN_005113f0)
+        // Palette 0x51=rgb(83,103,191) highlight (top/left), 0x5D=rgb(0,0,95) shadow (bottom/right)
+        const fX = SG.gridX + 3, fY = SG.gridY + 3;
+        const fW = SG.gridW - 6, fH = SG.gridH - 6;
         ctx.strokeStyle = 'rgb(83,103,191)';
         ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(SG.borderX, SG.borderY); ctx.lineTo(SG.borderRight, SG.borderY); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(SG.borderX, SG.borderY); ctx.lineTo(SG.borderX, SG.borderY + boxHeight); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(fX, fY); ctx.lineTo(fX + fW, fY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(fX, fY); ctx.lineTo(fX, fY + fH); ctx.stroke();
         ctx.strokeStyle = 'rgb(0,0,63)';
-        ctx.beginPath(); ctx.moveTo(SG.borderX, SG.borderY + boxHeight); ctx.lineTo(SG.borderRight, SG.borderY + boxHeight); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(SG.borderRight, SG.borderY); ctx.lineTo(SG.borderRight, SG.borderY + boxHeight); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(fX, fY + fH); ctx.lineTo(fX + fW, fY + fH); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(fX + fW, fY); ctx.lineTo(fX + fW, fY + fH); ctx.stroke();
 
-        // Draw ALL shield positions up to cost; produced shields full, remaining dark
-        // Use _iconSpacing to fit numCols shields within available width
-        const { spacing: dx } = this._iconSpacing(numCols, 14, availW);
-        const dy = 14;
-        let count = 0;
-        for (let row = 0; row < numRows; row++) {
-          for (let col = 0; col < numCols; col++) {
-            if (count >= cost) break;
-            const sx = SG.borderX + 2 + Math.round(col * dx);
-            const sy = SG.y + dy * row;
-            if (count < stored) {
-              // Produced: full bright shield
-              ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
-            } else {
-              // Remaining: dim shield (draw at reduced opacity)
-              ctx.globalAlpha = 0.25;
-              ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
-              ctx.globalAlpha = 1.0;
-            }
-            count++;
+        // Row spacing: always 10 rows of 14px icons in frame height (binary: FUN_00548b70(10, 0x0E, height))
+        const rowSpacing = this._iconSpacing(10, 14, fH).spacing;
+        // Col spacing: shieldsPerRow icons of 17px width (binary: FUN_00548b70(DAT_006a657c, 0x11, width))
+        const colSpacing = this._iconSpacing(shieldsPerRow, 17, fW).spacing;
+
+        // Center horizontally if icons don't fill the width
+        const totalIconW = colSpacing * (shieldsPerRow - 1) + 17;
+        const centerOffset = totalIconW < fW ? Math.floor((fW - totalIconW) / 2) : 0;
+
+        // Inner draw origin: frame + 1px + centering + 2px padding (binary lines 2358-2359)
+        const drawX = fX + 1 + centerOffset + 2;
+        const drawY = fY + 1 + 2;
+
+        // Draw only filled shields — no dimmed placeholders (binary loop: lines 2365-2375)
+        let remaining = stored;
+        for (let row = 0; row < numRows && remaining > 0; row++) {
+          const thisRow = Math.min(shieldsPerRow, remaining);
+          for (let col = 0; col < thisRow; col++) {
+            const sx = drawX + col * colSpacing;
+            const sy = drawY + row * rowSpacing;
+            ctx.drawImage(cdSprites.shields, sx, sy, 14, 14);
           }
+          remaining -= thisRow;
         }
 
-        // Production progress text below shield grid
-        const shieldsPerTurn = city.shieldProduction || 0;
-        const turnsLeft = shieldsPerTurn > 0 ? Math.ceil((cost - stored) / shieldsPerTurn) : 999;
-        const progressText = `${stored}/${cost}`;
-        const turnsText = stored >= cost ? 'Complete!' : turnsLeft < 999 ? `${turnsLeft} turn${turnsLeft !== 1 ? 's' : ''}` : '';
-        const progressY = SG.borderY + boxHeight + 12;
-        ctx.textAlign = 'center';
-        this._text(ctx, progressText, (SG.borderX + SG.borderRight) / 2, progressY,
-          'rgb(103,127,215)', '10px Arial, sans-serif');
-        if (turnsText) {
-          this._text(ctx, turnsText, (SG.borderX + SG.borderRight) / 2, progressY + 12,
-            'rgb(135,135,135)', '10px Arial, sans-serif');
-        }
-        ctx.textAlign = 'left';
+        // No progress text — the real game doesn't show numeric text here
       }
 
       // Buy cost display (from decompiled city_button_buy @ 0x509B48)
@@ -1836,6 +1815,66 @@ const Civ2CityDialog = {
         ctx.textAlign = 'left';
       }
     }
+  },
+
+  // Draw a unit sprite with shield, HP bar, order letter, and fortification overlay.
+  // Scaled from full-res (64×48 unit, 12×20 shield) to the given drawW × drawH.
+  _drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, drawW, drawH) {
+    const scale = drawW / 64;  // scale factor from full-res
+    ctx.drawImage(colored, ux, uy, drawW, drawH);
+
+    // Shield with HP bar and order letter
+    const so = mapSprites.shieldOffsets ? mapSprites.shieldOffsets[u.type] : null;
+    if (so && mapSprites.shieldFront) {
+      const shieldX = ux + (so.x - 1) * scale;
+      const shieldY = uy + (so.y - 1) * scale;
+      const shW = mapSprites.shieldFront.width * scale;
+      const shH = mapSprites.shieldFront.height * scale;
+
+      // Shadow
+      if (mapSprites.shieldShadow) {
+        const sdx = (so.x < 32) ? -1 : 1;
+        ctx.drawImage(mapSprites.shieldShadow, shieldX + sdx * scale, shieldY + scale, shW, shH);
+      }
+
+      // Front shield (civ-colored with blacked-out top)
+      const frontKey = 'shieldFront-' + u.owner;
+      if (!mapSprites.shieldFrontColored[frontKey]) {
+        const color = Civ2Renderer.CIV_COLORS[u.owner] || '#cccccc';
+        mapSprites.shieldFrontColored[frontKey] = Civ2Renderer._recolorUnit(mapSprites.shieldFront, color);
+      }
+      ctx.drawImage(mapSprites.shieldFrontColored[frontKey], shieldX, shieldY, shW, shH);
+
+      // HP bar — offset (0,2) from shield, 12×3px at full res
+      const maxHp = Civ2Renderer.UNIT_MAX_HP[u.type] || 10;
+      const curHp = Math.max(0, maxHp - u.hpLost);
+      const barW = 12 * scale, barH = Math.max(1, 3 * scale);
+      const barX = shieldX, barY = shieldY + 2 * scale;
+      const greenW = Math.floor((curHp / maxHp) * barW);
+      if (greenW > barW * 2/3) ctx.fillStyle = 'rgb(87,171,39)';
+      else if (greenW > barW / 3) ctx.fillStyle = 'rgb(255,223,79)';
+      else ctx.fillStyle = 'rgb(243,0,0)';
+      ctx.fillRect(barX, barY, greenW, barH);
+
+      // Order letter
+      const orderLetter = Civ2Renderer.ORDER_KEYS[u.orders] || '-';
+      const fontSize = Math.max(7, Math.round(13 * scale));
+      ctx.font = `${fontSize}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#000';
+      ctx.fillText(orderLetter, shieldX + shW / 2, shieldY + 7 * scale);
+
+    }
+
+    // Fortification overlay — only for fully fortified (0x02)
+    if (mapSprites.fortify && u.orders === 0x02) {
+      ctx.drawImage(mapSprites.fortify, ux, uy, drawW, drawH);
+    }
+
+    // Reset text state
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
   },
 
   _drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites) {
@@ -1890,7 +1929,7 @@ const Civ2CityDialog = {
       }
       const ux = xStart + col * unitW;
       const uy = yStart + row * unitH;
-      ctx.drawImage(colored, ux, uy, unitW, unitH);
+      this._drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, unitW, unitH);
 
       // Draw support overlay icons (left-aligned at unit X, Y offset from top)
       const ov = overlays[idx];
@@ -1932,7 +1971,7 @@ const Civ2CityDialog = {
     if (!(improvements.length > 0 && cdSprites)) return;
     const R = this.REGIONS.improvements;
     const C = this.COL;
-    ctx.font = '600 9px Arial, sans-serif';
+    ctx.font = '600 11px Arial, sans-serif';
     for (let i = 0; i < Math.min(R.maxRows, improvements.length); i++) {
       const imp = improvements[i];
       const thumb = imp.isWonder ? cdSprites.wonders[imp.id - 39] : cdSprites.improvements[imp.id];
@@ -1940,7 +1979,9 @@ const Civ2CityDialog = {
         ctx.drawImage(thumb, R.thumbX, R.thumbY + R.rowH * i, R.thumbW, R.thumbH);
       }
       const nameColor = imp.isWonder ? C.wonder : '#fff';
-      this._text(ctx, imp.name, R.nameX, R.nameY + R.rowH * i + 9, nameColor);
+      ctx.textBaseline = 'middle';
+      this._text(ctx, imp.name, R.nameX, R.thumbY + R.rowH * i + R.thumbH / 2, nameColor);
+      ctx.textBaseline = 'alphabetic';
       if (!imp.isWonder && cdSprites.sellIcon) {
         ctx.drawImage(cdSprites.sellIcon, R.sellX, R.sellY + R.rowH * i, R.sellSize, R.sellSize);
       }
@@ -2040,13 +2081,17 @@ const Civ2CityDialog = {
           ux = R.x + 25 + 48 * ((i - 10) % 4);
           uy = R.y + 22 + 39 * Math.floor((i - 10) / 4);
         }
-        ctx.drawImage(colored, ux, uy, 48, 36);
+        this._drawUnitWithState(ctx, u, colored, mapSprites, ux, uy, 48, 36);
         if (i < 10) {
           const homeCity = u.homeCityId !== 0xFFFF && u.homeCityId !== 0x00FF
             ? mapData.cities[u.homeCityId] : null;
           const abbr = homeCity ? (homeCity.name.length < 3 ? homeCity.name : homeCity.name.substring(0, 3)) : 'NON';
           ctx.textAlign = 'center';
-          this._text(ctx, abbr, ux + 24, uy + 36, 'rgb(135,135,135)', '9px Arial, sans-serif');
+          ctx.textBaseline = 'top';
+          ctx.font = '500 12px Arial, sans-serif';
+          ctx.fillStyle = 'rgb(0,0,0)';
+          ctx.fillText(abbr, ux + 24, uy + 36);
+          ctx.textBaseline = 'alphabetic';
           ctx.textAlign = 'left';
         }
       }
