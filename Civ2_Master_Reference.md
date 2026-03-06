@@ -447,6 +447,36 @@ Use AI agents to analyze function bodies and propose semantic names for the rema
 
 The AI decision-making functions (0x450000-0x4FFFFF) — diplomacy offers, unit movement priorities, city production choices — can eventually be ported for single-player AI opponents.
 
+## External Reference: axx0/Civ2-clone (C# Reimplementation)
+
+Repository: `github.com/axx0/Civ2-clone` — local copy at `/tmp/Civ2-clone`. A C# reimplementation of Civ2 using Raylib (modern) and Eto.Forms (legacy) UIs. ~60-65% complete as a playable game.
+
+**Reliable reference for** (fully implemented in Civ2-clone):
+- Sprite extraction and rendering (unit/city/terrain drawing, shield positioning, chroma key)
+- Combat resolution (terrain/veteran/fortification bonuses, multi-round HP, city walls/SAM/SDI)
+- City management (production, food growth, happiness, corruption distance formula, building effects)
+- Unit movement (domain-specific costs, ZoC, transport carry)
+- Technology (full tech tree, research accumulation, era thresholds, prerequisite checking)
+- Map generation (continents, terrain, fertility, resource seeding)
+- Turn engine (city production/food/science, unit activation, power ratings)
+- Save file loading (2,043-line .SAV parser), RULES.TXT parsing (616 lines)
+
+**Must use binary analysis / Function Catalog instead** (missing or stub in Civ2-clone):
+- Diplomacy (entirely missing — no treaties, negotiation, tribute, attitudes)
+- AI strategy (Lua-scriptable but basic — no strategic city production, no diplomacy AI)
+- Trade routes (partially stubbed, TODO in code)
+- Multiplayer (zero networking)
+- Air unit fuel mechanics (TODO)
+
+**Key binary functions for missing systems** (from `reverse_engineering/Function_Catalog.md`):
+- `ai_choose_city_production` (0x00498E8B, 29KB) — master AI production decisions
+- `ai_unit_turn_master` (0x00538A29, 45KB) — master AI unit dispatcher, largest function in binary
+- `ai_diplomacy_negotiate` (0x00460129, 16KB) — complete AI negotiation engine
+- `ai_evaluate_diplomacy` (0x0045705E, 7KB) — AI foreign policy evaluation
+- `process_diplomatic_contact` (0x0055D8D8, 7KB) — all civ-to-civ contact handling
+- `calc_trade_route_income` (0x004EB327) — trade route income calculation
+- `calc_city_trade_desirability` (0x0043D400, 8KB) — commodity supply/demand scoring
+
 ## Key Files for Future AI Sessions
 
 | File | Purpose |
@@ -849,9 +879,13 @@ Text labels above each row show names and numeric values (e.g., "Food: 12", "Sur
 Isometric mini-map showing the 21 tiles in the city's working radius (a "fat cross" diamond pattern from −3 to +3 relative tile offsets). Rendering order:
 
 1. Draw blank/placeholder tiles for all 21 positions
-2. For each position with known terrain, draw actual terrain tile (scaled)
-3. If a city occupies the tile, draw its sprite; else if military units present, draw top unit
-4. On **worked** tiles, overlay small resource icons (10×10px from ICONS.GIF): food, then shields, then trade — centered horizontally, spacing adjusts by total icon count (11px for 1–2, down to 1px for 10+)
+2. For each position with known terrain, draw actual terrain tile (scaled) with dither blending, coastlines, rivers, forest/mountain/hill overlays, roads/railroads, improvements (irrigation/farmland/mining/pollution)
+3. Fortress/airbase sprites (64×48, drawn at sy−16 for height). Airbase recolored per tile owner
+4. Enemy units (different owner than city) drawn on radius tiles, with fortress/airbase redrawn over unit (same layering as main map: fortress → unit → fortress redraw so walls surround unit)
+5. City sprite on center tile
+6. **White diamond outlines** on tiles worked by other cities (computed by iterating all cities' worker bitmaps and checking for coordinate overlap with this city's radius)
+7. Yellow worker dots on worked tiles (3×3px centered on tile)
+8. On **worked** tiles, overlay small resource icons (10×10px from ICONS.GIF): food, then shields, then trade — centered horizontally, spacing adjusts by total icon count (11px for 1–2, down to 1px for 10+)
 
 The 21-tile diamond shape (relative to city at 0,0):
 ```
@@ -875,8 +909,8 @@ Grid of wheat/food icons (14×14px, Food icon from ICONS.GIF) representing food 
 
 ##### Production Box (437, 165, 195×191)
 
-Shows the item currently being produced:
-- **Unit production**: draws the unit sprite (from UNITS.GIF) with civ coloring
+Production item display rect initialized via `citywin_8C84(rect, 0x1B4, 0xA7, 200, 0xBD)` → (436, 167, 200×189). Shows the item currently being produced:
+- **Unit production**: draws the unit sprite (from UNITS.GIF) at native 64×48 size, horizontally centered in the 200px-wide rect via `FUN_005bb024` which computes `x + (width/2 - bitmapWidth/2)`. Includes civ-colored shield with full HP bar and no-orders dash
 - **Improvement/Wonder production**: draws the improvement thumbnail (36×20 from ICONS.GIF) plus name text
 - **Shield progress grid**: grid of shield icons (14×14 from ICONS.GIF) showing `shieldsInBox` filled out of the total cost
 - **Buy** and **Change** buttons at top
@@ -2125,8 +2159,8 @@ All offsets are 0-indexed from the start of each unit record. Höfelt uses 1-ind
 | +16 | 2 bytes | **Home city ID** (uint16 LE) | Höfelt byte 17-18. civ2mod.c: `UNIT_HOMECITY_OFFSET 16`, read via `getLocationAsShort()`. This is the city's **array index** in the city list (0-based), NOT the city sequence ID. `0xFFFF` = no home city. The high byte (+17) is `0x00` for saves with fewer than 256 cities, which is why Höfelt describes byte 18 as "not used (0 always)" — it is actually the high byte of a uint16. |
 | +18 | 2 bytes | **Goto X** (int16 LE) | Höfelt bytes 19-20. Destination X coordinate for goto command. `0xFFFF` = no goto. |
 | +20 | 2 bytes | **Goto Y** (int16 LE) | Höfelt bytes 21-22. Destination Y coordinate for goto command. `0xFFFF` = no goto. |
-| +22 | 2 bytes | **Link to next unit in stack** (int16 LE) | Höfelt bytes 23-24. ID of the unit drawn **on top** of this unit in the same tile. Part of a doubly-linked list for unit stacking. **CAUTION**: modifying can produce strange effects. |
-| +24 | 2 bytes | **Link to previous unit in stack** (int16 LE) | Höfelt bytes 25-26. ID of the unit drawn **under** this unit in the same tile. Part of the stacking linked list. **CAUTION**: modifying can produce strange effects. |
+| +22 | 2 bytes | **prevInStack** (int16 LE) | Link to previous unit in tile stack. Head of stack has prevInStack = -1 (0xFFFF). Runtime struct offset +0x16, walked by FUN_005b2d39 to find stack head. **Note**: Höfelt docs label this "next" but decompilation confirms it is the prev pointer. |
+| +24 | 2 bytes | **nextInStack** (int16 LE) | Link to next unit in tile stack. Tail of stack has nextInStack = -1 (0xFFFF). Runtime struct offset +0x18, walked by FUN_005b2c82 for forward traversal. **Note**: Höfelt docs label this "prev" but decompilation confirms it is the next pointer. |
 | +26 | 2 bytes | **Unit sequence ID** (uint16 LE) | **SAV/NET only** (not present in SCN). Global unique creation counter. Lower = older unit. Gaps represent destroyed units. |
 | +28 | 4 bytes | **Always `0x00000000`** | **SAV/NET only** (not present in SCN). Structural padding. |
 
@@ -9927,7 +9961,7 @@ The save file parser covers every byte of every record type. No changes needed.
 | orders | +15 | uint8 |
 | homeCityId | +16 | uint16 |
 | gotoX, gotoY | +18, +20 | int16 x 2 |
-| nextInStack, prevInStack | +22, +24 | int16 x 2 |
+| prevInStack, nextInStack | +22, +24 | int16 x 2 |
 | sequenceId | +26 | uint16 |
 
 ### Civ Fields Parsed (all 1428 bytes)
@@ -10342,3 +10376,44 @@ The browser parser currently reads these from the save file tail section. They c
 ### Remaining
 - **Shield waste bar**: game palette 0x0B = rgb(11,11,11). Not yet rendered — requires computing raw shield total from tile yields to derive waste = raw − shieldProduction. The corruption/waste formula (Section 5) can be used but needs tile yield summation in the city dialog
 - **Later**: Turn engine, combat, AI, multiplayer
+
+---
+
+## Complete Function Catalog
+
+A systematic audit of all 4,822 decompiled functions across 34 block files has been completed. Results are in:
+
+- **`reverse_engineering/Function_Catalog.md`** — Consolidated catalog with:
+  - Master function table (4,822 entries sorted by address)
+  - Statistics: 45.9% HIGH confidence, 31.2% MEDIUM, 22.9% LOW
+  - Categories: 27.2% framework, 18.5% rendering, 16.3% UI, 10.6% game logic, 5.8% network, 1.5% AI
+  - 653 cross-referenced DAT_ globals with proposed names
+  - Top 20 most important discoveries (largest/most critical functions)
+  - 2,516 proposed rename_map additions
+
+- **`reverse_engineering/rename_map.json`** — Updated from 251 → 2,612 entries (2,361 new HIGH/MEDIUM confidence names added)
+
+### Top 20 Key Functions Identified
+
+| Address | Name | Size | Description |
+|---------|------|------|-------------|
+| 00538a29 | ai_unit_turn_master | 44,777B | Largest function in binary. Master AI unit decision dispatcher |
+| 00498e8b | ai_choose_city_production | 29,400B | Master AI production decision with dozens of heuristics |
+| 00526ca0 | parley_add_dialog_panel | 26,152B | Diplomacy window panel construction for 21 action types |
+| 0059062c | move_unit | ~18KB | Master unit movement handler incl. combat, transport, diplomat |
+| 00460129 | ai_diplomacy_negotiate | ~16KB | Complete AI diplomacy negotiation engine |
+| 00580341 | resolve_combat | ~15KB | Master combat resolution with all modifiers |
+| 004fc516 | parse_events_file | 12,813B | Complete EVENTS.TXT scenario scripting parser |
+| 004ec3fe | process_city_production | 10,931B | Master city production completion handler |
+| 0043d400 | calc_city_trade_desirability | 8,227B | Trade commodity supply/demand scoring |
+| 0055d8d8 | process_diplomatic_contact | 7,326B | Core civ-to-civ contact handler |
+| 0045705e | ai_evaluate_diplomacy | 6,616B | AI foreign policy evaluation |
+| 00408d33 | generate_world_map | ~6KB | Master map generator |
+| 0047a8c9 | render_tile | 4,431B | Master terrain tile renderer |
+| 004274a6 | process_unit_move_visibility | 4,250B | Unit movement visibility/fog/combat triggers |
+| 00440750 | process_caravan_arrival | 3,144B | Trade revenue calculation |
+| 0041f8d9 | multiplayer_game_entry | 2,326B | Multiplayer game loop with XDaemon protocol |
+| 004dd285 | parley_execute_transaction | xlarge | Diplomatic transaction execution dispatcher |
+| 00560084 | ai_diplomacy_turn_processing | large | Per-turn AI diplomacy entry point |
+| 005b3d06 | create_unit | large | Complete unit creation with slot allocation |
+| 0041eeeb | singleplayer_main_menu | 1,891B | Single-player menu and game launch flow |

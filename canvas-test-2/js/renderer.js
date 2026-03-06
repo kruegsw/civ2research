@@ -888,7 +888,7 @@ const Civ2Renderer = {
       }
 
       // Pick top-of-stack unit per tile using the save file's stacking linked list.
-      // The unit with nextInStack === -1 is the top of the stack (what Civ2 displays).
+      // The unit with prevInStack === -1 is the head of the stack (what Civ2 displays).
       // Falls back to a heuristic if linked list data is unavailable.
       const CIVILIANS = new Set([0, 1, 44, 45, 46, 47, 48, 49, 50]);
       function unitPriority(u) {
@@ -904,14 +904,14 @@ const Civ2Renderer = {
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
         if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
-        // Use stacking linked list: top-of-stack has nextInStack === -1
-        if (u.nextInStack === -1) {
-          // This unit is the top of its stack — use it directly
+        // Use stacking linked list: head of stack has prevInStack === -1
+        if (u.prevInStack === -1) {
+          // This unit is the head of its stack — use it directly
           bestUnit[tileKey] = u;
         } else if (!bestUnit[tileKey]) {
-          // No top-of-stack found yet for this tile; use as provisional candidate
+          // No head found yet for this tile; use as provisional candidate
           bestUnit[tileKey] = u;
-        } else if (bestUnit[tileKey].nextInStack !== -1) {
+        } else if (bestUnit[tileKey].prevInStack !== -1) {
           // Neither candidate is top-of-stack; fall back to heuristic
           if (unitPriority(u) >= unitPriority(bestUnit[tileKey])) {
             bestUnit[tileKey] = u;

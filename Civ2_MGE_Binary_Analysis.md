@@ -1640,8 +1640,8 @@ All offsets are 0-indexed from the start of each unit record. Höfelt uses 1-ind
 | +16 | 2 bytes | **Home city ID** (uint16 LE) | Höfelt byte 17-18. civ2mod.c: `UNIT_HOMECITY_OFFSET 16`, read via `getLocationAsShort()`. This is the city's **array index** in the city list (0-based), NOT the city sequence ID. `0xFFFF` = no home city. The high byte (+17) is `0x00` for saves with fewer than 256 cities, which is why Höfelt describes byte 18 as "not used (0 always)" — it is actually the high byte of a uint16. |
 | +18 | 2 bytes | **Goto X** (int16 LE) | Höfelt bytes 19-20. Destination X coordinate for goto command. `0xFFFF` = no goto. |
 | +20 | 2 bytes | **Goto Y** (int16 LE) | Höfelt bytes 21-22. Destination Y coordinate for goto command. `0xFFFF` = no goto. |
-| +22 | 2 bytes | **Link to next unit in stack** (int16 LE) | Höfelt bytes 23-24. ID of the unit drawn **on top** of this unit in the same tile. Part of a doubly-linked list for unit stacking. **CAUTION**: modifying can produce strange effects. |
-| +24 | 2 bytes | **Link to previous unit in stack** (int16 LE) | Höfelt bytes 25-26. ID of the unit drawn **under** this unit in the same tile. Part of the stacking linked list. **CAUTION**: modifying can produce strange effects. |
+| +22 | 2 bytes | **prevInStack** (int16 LE) | Link to previous unit in tile stack. Head of stack has prevInStack = -1 (0xFFFF). Runtime struct offset +0x16, walked by FUN_005b2d39 to find stack head. **Note**: Höfelt docs label this "next" but decompilation confirms it is the prev pointer. |
+| +24 | 2 bytes | **nextInStack** (int16 LE) | Link to next unit in tile stack. Tail of stack has nextInStack = -1 (0xFFFF). Runtime struct offset +0x18, walked by FUN_005b2c82 for forward traversal. **Note**: Höfelt docs label this "prev" but decompilation confirms it is the next pointer. |
 | +26 | 2 bytes | **Unit sequence ID** (uint16 LE) | **SAV/NET only** (not present in SCN). Global unique creation counter. Lower = older unit. Gaps represent destroyed units. |
 | +28 | 4 bytes | **Always `0x00000000`** | **SAV/NET only** (not present in SCN). Structural padding. |
 

@@ -570,8 +570,8 @@ const Civ2Parser = {
       const homeCityId     = this.u16(savBuf, off + 16);
       const gotoX          = this.s16(savBuf, off + 18);
       const gotoY          = this.s16(savBuf, off + 20);
-      const nextInStack    = this.s16(savBuf, off + 22);
-      const prevInStack    = this.s16(savBuf, off + 24);
+      const prevInStack    = this.s16(savBuf, off + 22);
+      const nextInStack    = this.s16(savBuf, off + 24);
 
       // SAV/NET-only fields (+26..+31)
       const sequenceId     = isSav ? this.u16(savBuf, off + 26) : null;

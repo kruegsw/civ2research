@@ -182,7 +182,7 @@ const Civ2CityDialog = {
     // ── Production panel (all sub-elements absolute) ──
     production: {
       x: 437, y: 165, w: 195, h: 191,
-      unitSprite:   { x: 510, y: 168, w: 46, h: 35 },    // centered in Buy-Change gap (510..557=47px), zoom -1 scaled
+      unitSprite:   { x: 508, y: 167, w: 52, h: 39 },    // centered in Buy-Change gap (510..557), top-aligned
       buildingIcon: { x: 516, y: 183, w: 36, h: 20 },    // panel + (79, 18)
       buildingName: { x: 534, y: 180 },                    // panel + (97, 15), center-aligned
       iconCenter:   { x: 534.5, y: 183 },                  // panel + (97.5, 18)
@@ -382,7 +382,37 @@ const Civ2CityDialog = {
   },
 
   getGarrisonedUnits(city, mapData) {
-    return mapData.units.filter(u => u.gx === city.gx && u.gy === city.gy);
+    // Binary: citywin_draw_units_present (0x005070E5) iterates via nextInStack linked list,
+    // not slot order. FUN_005b2e69 finds any unit at tile, FUN_005b2d39 walks prevInStack
+    // to head, then loop follows nextInStack forward.
+    const atTile = mapData.units.filter(u => u.gx === city.gx && u.gy === city.gy);
+    if (atTile.length === 0) return atTile;
+    const lookup = mapData.unitBySaveIndex || {};
+
+    // Find head of linked list: walk prevInStack from first unit found
+    let head = atTile[0];
+    while (head.prevInStack >= 0 && head.prevInStack !== head.saveIndex && lookup[head.prevInStack]) {
+      head = lookup[head.prevInStack];
+    }
+
+    // Walk forward via nextInStack
+    const result = [];
+    const visited = new Set();
+    let cur = head;
+    while (cur && !visited.has(cur.saveIndex)) {
+      visited.add(cur.saveIndex);
+      if (cur.gx === city.gx && cur.gy === city.gy) result.push(cur);
+      if (cur.nextInStack < 0 || !lookup[cur.nextInStack]) break;
+      cur = lookup[cur.nextInStack];
+    }
+
+    // Fallback: if linked list missed any units (broken chain), append remainder
+    if (result.length < atTile.length) {
+      for (const u of atTile) {
+        if (!visited.has(u.saveIndex)) result.push(u);
+      }
+    }
+    return result;
   },
 
   getSupportedUnits(cityIndex, mapData) {
@@ -1379,6 +1409,69 @@ const Civ2CityDialog = {
         // Mining (without irrigation) / Pollution
         if (imp & 0x08 && !(imp & 0x04) && mapSprites.mining) offCtx.drawImage(mapSprites.mining, sx, sy);
         if (imp & 0x80 && mapSprites.pollution) offCtx.drawImage(mapSprites.pollution, sx, sy);
+
+        // Fortress / Airbase (64×48 sprites, 16px taller than terrain)
+        if (imp & 0x40) {
+          if ((imp & 0x02) && mapSprites.airbase) {
+            // Airbase on city tile — recolor per tile owner
+            const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(fp.gx, fp.gy) : 0;
+            const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
+            const hasAir = mapData.units.some(u => u.gx === fp.gx && u.gy === fp.gy && u.type >= 27 && u.type <= 31);
+            const baseSprite = (hasAir && mapSprites.airbaseFull) ? mapSprites.airbaseFull : mapSprites.airbase;
+            const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
+            if (!mapSprites.airbaseColored[variantKey]) {
+              const color = Civ2Renderer.CIV_COLORS[ownerIdx] || '#c80000';
+              mapSprites.airbaseColored[variantKey] = Civ2Renderer._recolorUnit(baseSprite, color);
+            }
+            offCtx.drawImage(mapSprites.airbaseColored[variantKey], sx, sy - 16);
+          } else if (mapSprites.fortress) {
+            offCtx.drawImage(mapSprites.fortress, sx, sy - 16);
+          }
+        }
+      }
+
+      // Enemy units on radius tiles, with fortress/airbase redraw (same layering as main map)
+      // Main renderer order: fortress → unit → fortress redraw (so walls surround unit)
+      if (mapSprites.unitTemplates && mapSprites.unitColored) {
+        for (let i = 0; i < radiusTiles.length; i++) {
+          const fp = fullPositions[i];
+          const wgx = mapData.wrap ? mapData.wrap(fp.gx) : fp.gx;
+          if (fp.gy < 0 || fp.gy >= mapData.mh || wgx < 0 || wgx >= mapData.mw) continue;
+          // Find the top unit on this tile that belongs to an enemy
+          let drawnUnit = false;
+          for (const u of mapData.units) {
+            if (u.gx !== wgx || u.gy !== fp.gy) continue;
+            if (u.owner === city.owner) continue;
+            const template = mapSprites.unitTemplates[u.type];
+            if (!template) continue;
+            const cacheKey = u.type + '-' + u.owner;
+            if (!mapSprites.unitColored[cacheKey]) {
+              const color = Civ2Renderer.CIV_COLORS[u.owner] || '#cccccc';
+              mapSprites.unitColored[cacheKey] = Civ2Renderer._recolorUnit(template, color);
+            }
+            offCtx.drawImage(mapSprites.unitColored[cacheKey], fp.px - minPx, fp.py - minPy - 16);
+            drawnUnit = true;
+            break; // only draw top enemy unit per tile
+          }
+          // Redraw fortress/airbase over unit so walls surround it
+          if (drawnUnit) {
+            const imp = mapData.getImprovements(fp.gx, fp.gy);
+            if (imp & 0x40) {
+              const sx = fp.px - minPx, sy = fp.py - minPy;
+              if ((imp & 0x02) && mapSprites.airbase) {
+                const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(fp.gx, fp.gy) : 0;
+                const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
+                const hasAir = mapData.units.some(u => u.gx === fp.gx && u.gy === fp.gy && u.type >= 27 && u.type <= 31);
+                const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
+                if (mapSprites.airbaseColored[variantKey]) {
+                  offCtx.drawImage(mapSprites.airbaseColored[variantKey], sx, sy - 16);
+                }
+              } else if (mapSprites.fortress) {
+                offCtx.drawImage(mapSprites.fortress, sx, sy - 16);
+              }
+            }
+          }
+        }
       }
 
       // Scale full-res offscreen canvas down to panel
@@ -1404,6 +1497,35 @@ const Civ2CityDialog = {
         const dcx = sx + (TW >> 1), dcy = sy + (TH >> 1);
         this._diamond(ctx, dcx, dcy, TW >> 2, TH >> 2, fillColor, 'rgb(32,32,32)');
       }
+    }
+
+    // Build set of tiles worked by OTHER cities (for white outline)
+    const otherWorkedSet = new Set();
+    for (let ci = 0; ci < mapData.cities.length; ci++) {
+      if (ci === cityIndex) continue;
+      const oc = mapData.cities[ci];
+      if (!oc || oc.size === 0) continue;
+      const ocWorked = this._getWorkedTiles(oc);
+      const ocParC = oc.gy & 1;
+      for (const wi of ocWorked) {
+        const [ddx, ddy] = this.CITY_RADIUS_DOUBLED[wi];
+        const parT = ((oc.gy + ddy) % 2 + 2) % 2;
+        const tgx = oc.gx + ((ocParC + ddx - parT) >> 1);
+        const tgy = oc.gy + ddy;
+        otherWorkedSet.add(`${tgx},${tgy}`);
+      }
+    }
+
+    // White diamond outlines on tiles worked by other cities
+    for (let i = 0; i < radiusTiles.length; i++) {
+      const rt = radiusTiles[i];
+      const tileGx = city.gx + rt.dx;
+      const tileGy = city.gy + rt.dy;
+      if (!otherWorkedSet.has(`${tileGx},${tileGy}`)) continue;
+      const sx = tileGx * TW + ((tileGy % 2) ? (TW >> 1) : 0) + offX;
+      const sy = tileGy * (TH >> 1) + offY;
+      const dcx = sx + (TW >> 1), dcy = sy + (TH >> 1);
+      this._diamond(ctx, dcx, dcy, TW >> 1, TH >> 1, null, 'rgb(255,255,255)');
     }
 
     // Worker dots on worked tiles (drawn on main ctx at scaled positions)
@@ -1496,10 +1618,51 @@ const Civ2CityDialog = {
     return gross;
   },
 
+  // Compute gross shields (after factory/mfg/power multipliers, before waste).
+  // Binary: FUN_004e9c14 lines 3693-3737, DAT_006a65cc after multiplier application.
+  _calcGrossShields(city, cityIndex, mapData) {
+    const worked = this._getWorkedTiles(city);
+    const cx = city.gx, cy = city.gy;
+    const parC = cy & 1;
+    let base = 0;
+    for (let i = 0; i < this.CITY_RADIUS_DOUBLED.length; i++) {
+      if (!worked.has(i)) continue;
+      const [ddx, ddy] = this.CITY_RADIUS_DOUBLED[i];
+      const parT = ((cy + ddy) % 2 + 2) % 2;
+      const tileGx = cx + ((parC + ddx - parT) >> 1);
+      const tileGy = cy + ddy;
+      const isCenter = (i === 20);
+      const [, shields] = this._getTileYields(tileGx, tileGy, isCenter, city, cityIndex, mapData);
+      base += shields;
+    }
+
+    // Factory (building 15) and Mfg. Plant (building 16): each +2 to factoryMult
+    let factoryMult = 0;
+    if (this._cityHasBuilding(city, 15)) factoryMult += 2;
+    if (this._cityHasBuilding(city, 16)) factoryMult += 2;
+
+    // Power sources: Power Plant (19), Hydro Plant (20), Nuclear Plant (21),
+    // Solar Plant (29), or Hoover Dam wonder (22) for all civ cities
+    let powerMult = 0;
+    if (this._cityHasBuilding(city, 19) || this._cityHasBuilding(city, 20) ||
+        this._cityHasBuilding(city, 21) || this._cityHasBuilding(city, 29)) {
+      powerMult = 2;
+    } else if (this._civHasWonder(mapData, city.owner, 22)) {
+      powerMult = 2;  // Hoover Dam acts as hydro for all owner's cities
+    }
+
+    // Power capped by factory (binary line 3733-3734)
+    if (powerMult > factoryMult) powerMult = factoryMult;
+
+    // Apply multipliers (binary line 3736-3737)
+    return base + ((base * factoryMult) >> 2) + ((base * powerMult) >> 2);
+  },
+
   _drawResourceRows(ctx, city, cityIndex, cdSprites, civData, supported, mapData) {
     if (!cdSprites) return;
     const RES = this.REGIONS.resources;
 
+    const dpr = window.devicePixelRatio || 1;
     // Luxury computed from trade distribution formula (FUN_004ea1f6)
     // city.totalTrade is NET trade (after corruption, before rate split)
     const luxOutput = this._computeLuxury(city, civData, mapData);
@@ -1510,25 +1673,45 @@ const Civ2CityDialog = {
     const government = this._getCityGovernment(city, mapData);
     const overlays = this._calcUnitSupportOverlays(supported, city, government, mapData);
     const support = overlays.filter(ov => ov.shield).length;
-    const production = city.shieldProduction || 0;
+    const netShields = city.shieldProduction || 0;  // net = gross - waste
+    const grossShields = this._calcGrossShields(city, cityIndex, mapData);
+    const waste = Math.max(0, grossShields - netShields);
+    const surplus = Math.max(0, netShields - support);
     const sciRate = civData ? (civData.scienceRate || 0) * 10 : 0;
     const taxRate = civData ? (civData.taxRate || 0) * 10 : 0;
     const luxRate = 100 - sciRate - taxRate;
 
     // Row 1: FOOD
+    // Binary FUN_004e7eb1: consumption = city.size * food_per_citizen + settlers * settler_food_cost
+    // city.foodProduction (save +80) = gross food from tiles (before unit support deduction)
     const foodR = RES.food;
     const foodTotal = city.foodProduction || 0;
-    const foodSurplus = foodTotal - (city.size * 2);
+    const settlerFoodSupport = overlays.reduce((sum, ov) => sum + ov.food, 0);
+    const foodConsumption = city.size * 2 + settlerFoodSupport;
+    const foodSurplus = foodTotal - foodConsumption;
+    // Binary FUN_005025d5 line 1609: "Food:" label shows consumption (not production)
+    const foodEaten = foodSurplus >= 0 ? foodConsumption : foodTotal;
     ctx.font = '600 12px Arial, sans-serif';
     ctx.textAlign = 'left';
-    this._text(ctx, `Food: ${foodTotal}`, foodR.textX, foodR.textY, 'rgb(87,171,39)', '600 12px Arial, sans-serif');
+    this._text(ctx, `Food: ${foodEaten}`, foodR.textX, foodR.textY, 'rgb(87,171,39)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
     this._text(ctx, `Surplus: ${foodSurplus}`, foodR.rightX, foodR.textY, 'rgb(63,139,31)');
     ctx.textAlign = 'left';
-    const foodIconCount = foodTotal + Math.abs(foodSurplus);
+    // Binary FUN_005025d5 lines 1481-1489: left icons = consumed, right = surplus/hunger
+    // Total icons = max(foodTotal, foodConsumption)
+    const foodIconCount = Math.max(foodTotal, foodConsumption);
     const foodSpacing = this._resourceSpacing(foodIconCount);
-    for (let i = 0; i < foodTotal; i++)
+    // Light green fill covers full row — CITY.GIF wallpaper color rgb(59,142,25)
+    // Snap to device pixels to avoid sub-pixel seams (same as shield row)
+    const foodBarY = Math.round(75 * dpr) / dpr;
+    const foodBarB = Math.round(91 * dpr) / dpr;
+    const foodBarH = foodBarB - foodBarY;
+    ctx.fillStyle = 'rgb(59,142,25)';
+    ctx.fillRect(199, foodBarY, foodR.rightX - 199, foodBarH);
+    // Left: food consumed icons (population + settlers)
+    for (let i = 0; i < foodEaten; i++)
       ctx.drawImage(cdSprites.food, foodR.iconX + i * foodSpacing, foodR.iconY + 1, 14, 14);
+    // Right: surplus food or hunger icons
     if (foodSurplus < 0) {
       const hungerCount = Math.abs(foodSurplus);
       const hungerStartX = foodR.rightX - (foodSpacing * hungerCount + 14 - foodSpacing);
@@ -1536,6 +1719,8 @@ const Civ2CityDialog = {
         ctx.drawImage(cdSprites.hunger, hungerStartX + i * foodSpacing, foodR.iconY + 1, 14, 14);
     } else if (foodSurplus > 0) {
       const surpStartX = foodR.rightX - (foodSpacing * foodSurplus + 14 - foodSpacing);
+      ctx.fillStyle = 'rgb(44,119,19)';
+      ctx.fillRect(surpStartX - 2, foodBarY, (foodSurplus - 1) * foodSpacing + 14 + 2, foodBarH);
       for (let i = 0; i < foodSurplus; i++)
         ctx.drawImage(cdSprites.food, surpStartX + i * foodSpacing, foodR.iconY + 1, 14, 14);
     }
@@ -1635,25 +1820,31 @@ const Civ2CityDialog = {
     ctx.textAlign = 'left';
     this._text(ctx, `Support: ${support}`, spR.textX, spTextY, 'rgb(63,79,167)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
-    this._text(ctx, `Production: ${production}`, spR.rightX, spTextY, 'rgb(7,11,103)');
+    this._text(ctx, `Production: ${surplus}`, spR.rightX, spTextY, 'rgb(7,11,103)');
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    const spTotal = support + production;
+    const spTotal = support + surplus;
     const spSpacing = this._resourceSpacing(spTotal);
-    // Support bar + icons (left-aligned) — game palette 0x54
+    // Support bar fills the full row, then production bar overlays on the right.
+    // This covers the dark blue CITY.GIF wallpaper when surplus is 0.
     // Bar height = FUN_00511690(0x0E) + FUN_00511690(0x02) = 14 + 2 = 16
+    // Support bar (full width) — CITY.GIF wallpaper color rgb(94,103,170)
+    // Snap bar coords to device pixels to avoid sub-pixel seam at non-integer DPR
+    const barY = Math.round(181 * dpr) / dpr;
+    const barB = Math.round(197 * dpr) / dpr;
+    const barH = barB - barY;
+    ctx.fillStyle = 'rgb(94,103,170)';
+    ctx.fillRect(spR.x, barY, spR.rightX - spR.x, barH);
     if (support > 0) {
-      ctx.fillStyle = 'rgb(63,79,167)';
-      ctx.fillRect(spR.iconX, spR.iconY, (support - 1) * spSpacing + 14, 16);
       for (let i = 0; i < support; i++)
         ctx.drawImage(cdSprites.shields, spR.iconX + i * spSpacing, spR.iconY + 1, 14, 14);
     }
     // Production/surplus bar + icons (right-aligned) — game palette 0x5C
-    if (production > 0) {
-      const prodStartX = spR.rightX - (spSpacing * production + 14 - spSpacing);
-      ctx.fillStyle = 'rgb(7,11,103)';
-      ctx.fillRect(prodStartX, spR.iconY, (production - 1) * spSpacing + 14, 16);
-      for (let i = 0; i < production; i++)
+    if (surplus > 0) {
+      const prodStartX = spR.rightX - (spSpacing * surplus + 14 - spSpacing);
+      ctx.fillStyle = 'rgb(10,11,102)';
+      ctx.fillRect(prodStartX - 2, barY, (surplus - 1) * spSpacing + 14 + 2, barH);
+      for (let i = 0; i < surplus; i++)
         ctx.drawImage(cdSprites.shields, prodStartX + i * spSpacing, spR.iconY + 1, 14, 14);
     }
   },
@@ -1728,7 +1919,41 @@ const Civ2CityDialog = {
         const template = mapSprites.unitTemplates[item.id];
         if (template) {
           const colored = Civ2Renderer._recolorUnit(template, ownerColor);
-          ctx.drawImage(colored, R.unitSprite.x, R.unitSprite.y, R.unitSprite.w, R.unitSprite.h);
+          const ux = R.unitSprite.x, uy = R.unitSprite.y;
+          const dw = R.unitSprite.w, dh = R.unitSprite.h;
+          ctx.drawImage(colored, ux, uy, dw, dh);
+          // Shield
+          const so = mapSprites.shieldOffsets ? mapSprites.shieldOffsets[item.id] : null;
+          if (so && mapSprites.shieldFront) {
+            const scale = dw / 64;
+            const shieldX = ux + (so.x - 1) * scale;
+            const shieldY = uy + (so.y - 1) * scale;
+            const shW = mapSprites.shieldFront.width * scale;
+            const shH = mapSprites.shieldFront.height * scale;
+            if (mapSprites.shieldShadow) {
+              const sdx = (so.x < 32) ? -1 : 1;
+              ctx.drawImage(mapSprites.shieldShadow, shieldX + sdx * scale, shieldY + scale, shW, shH);
+            }
+            const frontKey = 'shieldFront-' + city.owner;
+            if (!mapSprites.shieldFrontColored[frontKey]) {
+              mapSprites.shieldFrontColored[frontKey] = Civ2Renderer._recolorUnit(mapSprites.shieldFront, ownerColor);
+            }
+            ctx.drawImage(mapSprites.shieldFrontColored[frontKey], shieldX, shieldY, shW, shH);
+            // Full health bar — green, 12×3px at full res
+            const barW = 12 * scale, barH = Math.max(1, 3 * scale);
+            const barX = shieldX, barY = shieldY + 2 * scale;
+            ctx.fillStyle = 'rgb(87,171,39)';
+            ctx.fillRect(barX, barY, barW, barH);
+            // Order letter: dash (no orders)
+            const fontSize = Math.max(7, Math.round(13 * scale));
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#000';
+            ctx.fillText('-', shieldX + shW / 2, shieldY + 7 * scale);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          }
         }
       } else {
         // Building or wonder — name centered, icon below
