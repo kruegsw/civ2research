@@ -251,8 +251,7 @@ export function initEvents(canvas, vp, fns) {
 
       if (fowEnabled && fowBit) {
         const vis = md.getVisibility(gx, gy);
-        const known = md.getKnownImprovements(gx, gy, fowCiv);
-        if (!vis && !known) {
+        if (!(vis & fowBit)) {
           tooltip.textContent = `(${gx * 2 + (gy % 2)}, ${gy})  Unexplored`;
           tooltip.style.display = 'block';
           tooltip.style.left = (e.clientX + 14) + 'px';
@@ -297,10 +296,7 @@ export function initEvents(canvas, vp, fns) {
 
       for (const c of md.cities) {
         if (c.gx === gx && c.gy === gy) {
-          if (fowEnabled && fowBit) {
-            const cityKnown = (c.knownToTribes != null) ? !!(c.knownToTribes & fowBit) : !!(imp & 0x02);
-            if (!cityKnown) continue;
-          }
+          if (fowEnabled && fowBit && !(md.getVisibility(c.gx, c.gy) & fowBit)) continue;
           const displaySize = (fowEnabled && fowBit && !tileVisible)
             ? c.believedSize[fowCiv] : c.size;
           const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;

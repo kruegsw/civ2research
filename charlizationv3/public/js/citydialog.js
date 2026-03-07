@@ -602,10 +602,13 @@ const Civ2CityDialog = {
     if (city.hasPalace) return 0;
     if (grossTrade <= 0) return 0;
     const capital = mapData.cities.find(c => c.owner === city.owner && c.hasPalace);
-    if (!capital) return 0;
-    const mw2 = mapData.mw2 || 0;
-    const mapShape = mapData.mapShape || 0;
-    const distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+    // No capital: game uses distance 32 (0x20) as default (FUN_004eb4ed line 2769)
+    let distance = 32;
+    if (capital) {
+      const mw2 = mapData.mw2 || 0;
+      const mapShape = mapData.mapShape || 0;
+      distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+    }
     // WLTKD bumps effective government for govtFactor (FUN_004e989a line 3619)
     let effGovt = govt;
     if (city.weLoveKingDay) effGovt++;

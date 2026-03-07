@@ -7,14 +7,62 @@ import { Civ2Renderer } from './renderer.js';
 import { Civ2CityView } from './cityview.js';
 import { Civ2CityDialog } from './citydialog.js';
 import { initEvents } from './events.js';
+import { Civ2Minimap } from './minimap.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
+let minimapCanvas = null;  // offscreen canvas for simplified 2D map
 const cvFiles = {};   // cv_res*.gif files for city view (keyed by resource ID)
 let cvSprites = null; // lazily extracted city view sprites
 let cvBackgrounds = null; // Map of resourceId → Image
 let currentMapData = null;
 let cdSprites = null;
 let mapSprites = null;
+
+// ── Line of Sight computation ──
+// Recomputes current LOS from unit/city positions for a specific civ.
+// Returns Uint8Array[mw*mh]: 1 = in LOS, 0 = not in LOS.
+// Visibility radii from civ2mod.c addToVisibilityMap() (doubled-X offsets):
+//   Units: radius 1 (9 tiles), Cities: radius 2 (21 tiles)
+function computeLOS(mapData, civSlot) {
+  const { mw, mh, cities, units } = mapData;
+  const mw2 = mw * 2;
+  const wraps = mapData.mapShape === 0;
+  const los = new Uint8Array(mw * mh);
+
+  const RADIUS_1 = [
+    [0,0], [-1,-1], [1,-1], [1,1], [-1,1], [0,-2], [0,2], [2,0], [-2,0]
+  ];
+  const RADIUS_2 = [
+    ...RADIUS_1,
+    [-1,-3], [1,-3], [-2,-2], [2,-2], [-3,-1], [3,-1],
+    [-3,1], [3,1], [-2,2], [2,2], [-1,3], [1,3]
+  ];
+
+  function mark(dx, dy, offsets) {
+    for (const [odx, ody] of offsets) {
+      let ndx = dx + odx;
+      const ndy = dy + ody;
+      if (ndy < 0 || ndy >= mh) continue;
+      if (wraps) {
+        ndx = ((ndx % mw2) + mw2) % mw2;
+      } else if (ndx < 0 || ndx >= mw2) {
+        continue;
+      }
+      los[ndy * mw + (ndx >> 1)] = 1;
+    }
+  }
+
+  for (const u of units) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    mark(u.x, u.y, RADIUS_1);
+  }
+  for (const c of cities) {
+    if (c.owner !== civSlot) continue;
+    mark(c.cx, c.cy, RADIUS_2);
+  }
+
+  return los;
+}
 
 // ── Viewport state (shared with events.js via reference) ──
 const vp = {
@@ -123,6 +171,8 @@ document.getElementById('render-btn').addEventListener('click', doRender);
 document.getElementById('fow-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
 document.getElementById('fow-civ').addEventListener('change', () => { if (currentMapData) doRender(); });
 document.getElementById('grid-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
+document.getElementById('minimap-toggle').addEventListener('change', () => { if (currentMapData) drawViewport(); });
+document.getElementById('los-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
 
 // ── Main render flow ──
 let rendering = false;
@@ -186,11 +236,13 @@ async function doRender() {
     ];
     if (files.cities) imgPromises.push(Civ2Renderer.loadImage(files.cities));
     if (files.units) imgPromises.push(Civ2Renderer.loadImage(files.units));
+    if (files.icons) imgPromises.push(Civ2Renderer.loadImage(files.icons));
     const imgs = await Promise.all(imgPromises);
     const t1Img = imgs[0], t2Img = imgs[1];
     let idx = 2;
     const citiesImg = files.cities ? imgs[idx++] : null;
     const unitsImg = files.units ? imgs[idx++] : null;
+    const iconsImg = files.icons ? imgs[idx++] : null;
 
     // 4. Extract sprites
     msg.textContent = 'Extracting sprites...';
@@ -199,7 +251,8 @@ async function doRender() {
     const t2Ctx = Civ2Renderer.imgToCtx(t2Img);
     const citiesCtx = citiesImg ? Civ2Renderer.imgToCtx(citiesImg) : null;
     const unitsCtx = unitsImg ? Civ2Renderer.imgToCtx(unitsImg) : null;
-    const sprites = Civ2Renderer.extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx);
+    const iconsCtx = iconsImg ? Civ2Renderer.imgToCtx(iconsImg) : null;
+    const sprites = Civ2Renderer.extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx, iconsCtx);
     mapSprites = sprites;
 
     // 5. Render to offscreen canvas (#map-canvas, hidden)
@@ -207,12 +260,20 @@ async function doRender() {
     const fowEnabled = document.getElementById('fow-toggle').checked;
     const fowCivVal = document.getElementById('fow-civ').value;
     const gridEnabled = document.getElementById('grid-toggle').checked;
+    const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv;
+    const losEnabled = document.getElementById('los-toggle').checked;
+    const losData = (fowEnabled && losEnabled) ? computeLOS(mapData, fowCiv) : null;
     const renderOptions = {
       fowEnabled,
-      fowCiv: fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv,
-      gridEnabled
+      fowCiv,
+      gridEnabled,
+      losData
     };
     const result = await Civ2Renderer.render(canvas, mapData, sprites, m => { msg.textContent = m; }, renderOptions);
+
+    // 5b. Render minimap offscreen canvas
+    minimapCanvas = document.createElement('canvas');
+    Civ2Minimap.render(minimapCanvas, mapData, renderOptions);
 
     // 6. Set up viewport
     vp.offW = canvas.width;
@@ -276,7 +337,10 @@ function clampViewport() {
 
 function drawViewport() {
   if (vp.offW === 0 || vp.offH === 0) return;
-  const offscreen = document.getElementById('map-canvas');
+  const minimapOn = document.getElementById('minimap-toggle').checked;
+  const offscreen = (minimapOn && minimapCanvas)
+    ? minimapCanvas
+    : document.getElementById('map-canvas');
   const dpr = window.devicePixelRatio || 1;
   const bw = viewportCanvas.width, bh = viewportCanvas.height;
   const visW = vp.logicalW / vp.scale;

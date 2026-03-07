@@ -131,7 +131,7 @@ const Civ2Renderer = {
   // ═══════════════════════════════════════════════════════════
   // Extract all sprites from the two terrain sheets
   // ═══════════════════════════════════════════════════════════
-  extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx) {
+  extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx, iconsCtx) {
     // TERRAIN1 chroma: Magenta (255,0,255) idx 253 + Cyan (0,255,255) idx 248 + Gray (135,135,135) idx 255
     // Gray tolerance tightened to ±3 to avoid stripping muted terrain pixels (plains/tundra/grassland)
     const T1 = [[255, 0, 255, 15], [0, 255, 255, 15], [135, 135, 135, 3]];
@@ -440,6 +440,15 @@ const Civ2Renderer = {
       sprites.terrain[tid] = valid;
     }
 
+    // Revolt fist icon from ICONS.GIF at (166, 223), 30×30px
+    // Source: decompiled load_icon_sprites FUN_00449a0e, line 6330: extract at (0xa6, 0xdf, 0x1e, 0x1e)
+    // Drawn on map in place of city size box when city is in civil disorder
+    // Chroma: magenta idx 253 + light pink (255,159,163) idx 255 (ICONS.GIF background)
+    if (iconsCtx) {
+      const CK = [[255, 0, 255], [255, 159, 163]];
+      sprites.revoltFist = this.extractSprite(iconsCtx, 166, 223, 30, 30, CK, false);
+    }
+
     return sprites;
   },
 
@@ -486,24 +495,23 @@ const Civ2Renderer = {
     const fowEnabled = options.fowEnabled && options.fowCiv != null;
     const fowBit = fowEnabled ? (1 << options.fowCiv) : 0;
 
-    // Three-state FOW predicates:
-    //   isUnexplored: tile has NEVER been seen by FOW civ → solid black
-    //   isDimmed: tile was previously explored but not currently visible → dimmed
-    // Note: Block 1 auto-fills city+unit bits (0x03) for ALL civs even if they
-    // haven't explored the tile. Mask them out when determining exploration status.
+    // FOW predicates:
+    //   Byte 4 (visibility) = persistent "has explored" flag per civ.
+    //   isUnexplored: tile has NEVER been explored by FOW civ → solid black
+    //   isDimmed: tile was explored but NOT in current line of sight → dimmed
+    //     (requires losData from computeLOS(); without it, no dimming occurs)
+    const losData = options.losData || null;
     function isUnexplored(gx, gy) {
       if (gy < 0 || gy >= mh) return true;
       if (!fowEnabled) return false;
-      const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
-      if (currentlySeen) return false;
-      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x03) === 0;
+      return !(mapData.getVisibility(gx, gy) & fowBit);
     }
     function isDimmed(gx, gy) {
       if (gy < 0 || gy >= mh) return false;
-      if (!fowEnabled) return false;
-      const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
-      if (currentlySeen) return false;
-      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x03) !== 0;
+      if (!fowEnabled || !losData) return false;
+      if (!(mapData.getVisibility(gx, gy) & fowBit)) return false; // unexplored, not dimmed
+      const gxW = wraps ? ((gx % mw) + mw) % mw : gx;
+      return !losData[gy * mw + gxW];
     }
 
     // ────────────────────────────────────────
@@ -865,13 +873,16 @@ const Civ2Renderer = {
             if (!isUnexplored(c.gx, c.gy)) {
               const known = mapData.getKnownImprovements(c.gx, c.gy, options.fowCiv);
               if ((known & 0x02) && (c.knownToTribes == null || (c.knownToTribes & fowBit))) {
-                const ghostSize = c.believedSize[options.fowCiv] || c.size;
+                // Use per-civ believed size; skip if 0 (never observed on map)
+                const ghostSize = c.believedSize[options.fowCiv];
+                if (!ghostSize) continue;
+                // Save format doesn't store last-known owner/walls/name per civ,
+                // so we use current state as best approximation
                 const color = this.CIV_COLORS[c.owner] || '#ccc';
                 const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
                 const row = this._getCityRow(epoch, c.style || 0);
                 let col = this._getCitySizeCol(ghostSize, epoch);
                 if (c.hasPalace && col < 3) col++;
-                if (c.hasWalls) col += 4;
 
                 const ghostPositions = [c.gx];
                 if (wraps && c.gx < xExtra) ghostPositions.push(c.gx + mw);
@@ -1105,7 +1116,12 @@ const Civ2Renderer = {
 
     // ────────────────────────────────────────
     // PASS 6c: City size boxes (drawn over units so population number is visible)
+    // When a city is in civil disorder, the fist icon replaces the size number
     // ────────────────────────────────────────
+    // Recolor fist icon per-civ (red → civ color), cached
+    if (sprites.revoltFist && !sprites.revoltFistColored) {
+      sprites.revoltFistColored = {};
+    }
     ctx.font = 'bold 14px "Times New Roman", serif';
     ctx.letterSpacing = '0px';
     ctx.textAlign = 'left';
@@ -1123,28 +1139,42 @@ const Civ2Renderer = {
         let col = this._getCitySizeCol(c.size, epoch);
         if (c.hasPalace && col < 3) col++;
         if (c.hasWalls) col += 4;
-        const sizeStr = String(c.size);
-        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
-        const tm = ctx.measureText(sizeStr);
-        const padL = 1, padR = 2;
-        const sw = Math.ceil(tm.width) + padL + padR;
-        const sh = 14;
-        let ssx, ssy;
-        if (sizeLoc) {
-          ssx = tpx + sizeLoc.x - 1;
-          ssy = tpy - 16 + sizeLoc.y - 1;
+
+        if (c.civilDisorder && sprites.revoltFist) {
+          // Disorder: draw civ-colored fist at fixed position on city sprite
+          // Binary (FUN_0056d289) draws fist at city sprite origin with sprite-object
+          // internal offsets — same for ALL city styles/sizes (not per-sprite sizeLoc).
+          const fistKey = 'fist-' + c.owner;
+          if (!sprites.revoltFistColored[fistKey]) {
+            sprites.revoltFistColored[fistKey] = this._recolorUnit(sprites.revoltFist, color);
+          }
+          const fist = sprites.revoltFistColored[fistKey];
+          ctx.drawImage(fist, tpx + 2, tpy - 16);
         } else {
-          ssx = cx - sw / 2;
-          ssy = tpy - 16;
+          // Normal: draw city size box
+          const sizeStr = String(c.size);
+          const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+          const tm = ctx.measureText(sizeStr);
+          const padL = 1, padR = 2;
+          const sw = Math.ceil(tm.width) + padL + padR;
+          const sh = 14;
+          let ssx, ssy;
+          if (sizeLoc) {
+            ssx = tpx + sizeLoc.x - 1;
+            ssy = tpy - 16 + sizeLoc.y - 1;
+          } else {
+            ssx = cx - sw / 2;
+            ssy = tpy - 16;
+          }
+          ctx.fillStyle = color;
+          ctx.fillRect(ssx, ssy, sw, sh);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(ssx - 1, ssy, 1, sh);
+          ctx.fillRect(ssx + sw, ssy, 1, sh);
+          ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1);
+          ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1);
+          ctx.fillText(sizeStr, ssx + padL, ssy);
         }
-        ctx.fillStyle = color;
-        ctx.fillRect(ssx, ssy, sw, sh);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(ssx - 1, ssy, 1, sh);
-        ctx.fillRect(ssx + sw, ssy, 1, sh);
-        ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1);
-        ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1);
-        ctx.fillText(sizeStr, ssx + padL, ssy);
       }
     }
 
