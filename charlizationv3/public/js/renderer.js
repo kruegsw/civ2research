@@ -1120,8 +1120,8 @@ const Civ2Renderer = {
       }
     }
 
-    // ── Legend ──
-    this._drawLegend(ctx, canvasW, canvasH, mapData);
+    // ── Legend (disabled) ──
+    // this._drawLegend(ctx, canvasW, canvasH, mapData);
 
     // ────────────────────────────────────────
     // PASS 8+9: Shroud — Three-state FOW + map edge black fills with dither transitions
