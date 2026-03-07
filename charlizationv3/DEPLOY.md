@@ -1,4 +1,4 @@
-# Civ2 Viewer Deployment Guide
+# Civ2 Deployment Guide
 
 Target: Ubuntu server with Apache2 + HTTPS (Let's Encrypt) already configured.
 Domain: charlization.com
@@ -14,14 +14,17 @@ sudo a2enmod proxy proxy_http proxy_wstunnel
 
 ## Step 2: Add proxy rules to Apache
 
-Edit your HTTPS virtual host config:
+Edit the HTTPS virtual host config:
 ```bash
-sudo nano /etc/apache2/sites-available/YOUR-SSL-CONFIG.conf
+sudo nano /etc/apache2/sites-available/charlization-le-ssl.conf
 ```
 
 Add these lines INSIDE the `<VirtualHost *:443>` block, before `</VirtualHost>`:
 ```apache
-    # ── Civ2 Viewer (port 8788) ──
+    # Redirect /civ2 to /civ2/ (trailing slash required)
+    RedirectMatch ^/civ2$ /civ2/
+
+    # ── Civ2 (port 8788) ──
     # WebSocket proxy (MUST come before the HTTP proxy)
     ProxyPass /civ2/ws ws://127.0.0.1:8788/ws
     ProxyPassReverse /civ2/ws ws://127.0.0.1:8788/ws
@@ -41,11 +44,8 @@ sudo systemctl restart apache2
 
 ```bash
 cd /opt
-sudo mkdir -p civ2
-sudo chown $USER:$USER civ2
-git clone https://github.com/kruegsw/civ2research.git civ2-repo
-ln -s /opt/civ2-repo/charlizationv3 /opt/civ2
-cd /opt/civ2
+git clone https://github.com/kruegsw/civ2research.git civ2research
+cd /opt/civ2research/charlizationv3
 npm install
 ```
 
@@ -74,7 +74,7 @@ pm2 stop civ2       # Stop the server
 ## Updating after code changes
 
 ```bash
-cd /opt/civ2
+cd /opt/civ2research/charlizationv3
 git pull
 npm install
 pm2 restart civ2

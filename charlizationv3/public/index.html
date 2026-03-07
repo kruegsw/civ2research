@@ -12,38 +12,13 @@
   <label class="file-btn" id="sav-btn">
     Load .SAV <input type="file" id="sav-input" accept=".sav,.SAV,.net,.NET,.scn,.SCN">
   </label>
-  <label class="file-btn" id="t1-btn">
-    TERRAIN1.GIF <input type="file" id="t1-input" accept=".gif,.GIF">
-  </label>
-  <label class="file-btn" id="t2-btn">
-    TERRAIN2.GIF <input type="file" id="t2-input" accept=".gif,.GIF">
-  </label>
-  <label class="file-btn" id="cities-btn">
-    CITIES.GIF <input type="file" id="cities-input" accept=".gif,.GIF">
-  </label>
-  <label class="file-btn" id="units-btn">
-    UNITS.GIF <input type="file" id="units-input" accept=".gif,.GIF">
-  </label>
-  <label class="file-btn" id="icons-btn">
-    ICONS.GIF <input type="file" id="icons-input" accept=".gif,.GIF">
-  </label>
-  <label class="file-btn" id="people-btn">
-    PEOPLE.GIF <input type="file" id="people-input" accept=".gif,.GIF">
-  </label>
-  <label class="file-btn" id="city-btn">
-    CITY.GIF <input type="file" id="city-input" accept=".gif,.GIF">
-  </label>
-  <button id="render-btn" disabled>Render Map</button>
-  <label style="display:flex;align-items:center;gap:4px">
-    <input type="checkbox" id="grid-toggle"> Grid
-  </label>
-  <label style="display:flex;align-items:center;gap:4px">
-    <input type="checkbox" id="fow-toggle"> Fog of War
-  </label>
-  <select id="fow-civ" style="background:#0f3460;color:#e0e0e0;border:1px solid #1a5276;padding:4px 8px;border-radius:4px;font-size:13px" disabled>
-    <option value="">— select civ —</option>
+  <button id="render-btn" disabled>Render</button>
+  <label class="ctl-option"><input type="checkbox" id="grid-toggle"> Grid</label>
+  <label class="ctl-option"><input type="checkbox" id="fow-toggle"> FoW</label>
+  <select id="fow-civ" disabled>
+    <option value="">— civ —</option>
   </select>
-  <span id="status">Load a .SAV file and both TERRAIN GIFs to begin.</span>
+  <span id="status">Load a .SAV file to begin.</span>
 </div>
 
 <div id="map-container">

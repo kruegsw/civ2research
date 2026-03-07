@@ -32,24 +32,22 @@ const VP_MAX_SCALE = 4;
 (async function autoDetect() {
   if (location.protocol === 'file:') return;
 
-  // Known GIF files
+  // Known GIF files (always co-located with app)
   const known = [
-    { name: 'assets/sprites/TERRAIN1.GIF', key: 't1',     btnId: 't1-btn',     label: 'TERRAIN1 \u2713 ' },
-    { name: 'assets/sprites/TERRAIN2.GIF', key: 't2',     btnId: 't2-btn',     label: 'TERRAIN2 \u2713 ' },
-    { name: 'assets/sprites/CITIES.GIF',   key: 'cities', btnId: 'cities-btn', label: 'CITIES \u2713 ' },
-    { name: 'assets/sprites/UNITS.GIF',    key: 'units',  btnId: 'units-btn',  label: 'UNITS \u2713 ' },
-    { name: 'assets/sprites/ICONS.GIF',    key: 'icons',  btnId: 'icons-btn',  label: 'ICONS \u2713 ' },
-    { name: 'assets/sprites/PEOPLE.GIF',   key: 'people', btnId: 'people-btn', label: 'PEOPLE \u2713 ' },
-    { name: 'assets/sprites/CITY.GIF',    key: 'cityGif', btnId: 'city-btn',  label: 'CITY \u2713 ' },
+    { name: 'assets/sprites/TERRAIN1.GIF', key: 't1' },
+    { name: 'assets/sprites/TERRAIN2.GIF', key: 't2' },
+    { name: 'assets/sprites/CITIES.GIF',   key: 'cities' },
+    { name: 'assets/sprites/UNITS.GIF',    key: 'units' },
+    { name: 'assets/sprites/ICONS.GIF',    key: 'icons' },
+    { name: 'assets/sprites/PEOPLE.GIF',   key: 'people' },
+    { name: 'assets/sprites/CITY.GIF',     key: 'cityGif' },
   ];
-  await Promise.all(known.map(async ({ name, key, btnId, label }) => {
+  await Promise.all(known.map(async ({ name, key }) => {
     try {
       const resp = await fetch(name);
       if (!resp.ok) return;
       const blob = await resp.blob();
       files[key] = new File([blob], name, { type: blob.type });
-      document.getElementById(btnId).classList.add('loaded');
-      document.getElementById(btnId).childNodes[0].textContent = label;
     } catch (_) {}
   }));
 
@@ -111,59 +109,11 @@ document.getElementById('sav-input').addEventListener('change', e => {
   document.getElementById('sav-btn').childNodes[0].textContent = files.sav.name + ' ';
   checkReady();
 });
-document.getElementById('t1-input').addEventListener('change', e => {
-  files.t1 = e.target.files[0];
-  document.getElementById('t1-btn').classList.add('loaded');
-  document.getElementById('t1-btn').childNodes[0].textContent = 'TERRAIN1 \u2713 ';
-  checkReady();
-});
-document.getElementById('t2-input').addEventListener('change', e => {
-  files.t2 = e.target.files[0];
-  document.getElementById('t2-btn').classList.add('loaded');
-  document.getElementById('t2-btn').childNodes[0].textContent = 'TERRAIN2 \u2713 ';
-  checkReady();
-});
-document.getElementById('cities-input').addEventListener('change', e => {
-  files.cities = e.target.files[0];
-  document.getElementById('cities-btn').classList.add('loaded');
-  document.getElementById('cities-btn').childNodes[0].textContent = 'CITIES \u2713 ';
-  checkReady();
-});
-document.getElementById('units-input').addEventListener('change', e => {
-  files.units = e.target.files[0];
-  document.getElementById('units-btn').classList.add('loaded');
-  document.getElementById('units-btn').childNodes[0].textContent = 'UNITS \u2713 ';
-  checkReady();
-});
-document.getElementById('icons-input').addEventListener('change', e => {
-  files.icons = e.target.files[0];
-  document.getElementById('icons-btn').classList.add('loaded');
-  document.getElementById('icons-btn').childNodes[0].textContent = 'ICONS \u2713 ';
-  checkReady();
-});
-document.getElementById('people-input').addEventListener('change', e => {
-  files.people = e.target.files[0];
-  document.getElementById('people-btn').classList.add('loaded');
-  document.getElementById('people-btn').childNodes[0].textContent = 'PEOPLE \u2713 ';
-  checkReady();
-});
-document.getElementById('city-input').addEventListener('change', e => {
-  files.cityGif = e.target.files[0];
-  document.getElementById('city-btn').classList.add('loaded');
-  document.getElementById('city-btn').childNodes[0].textContent = 'CITY \u2713 ';
-  checkReady();
-});
-
 function checkReady() {
   const ready = files.sav && files.t1 && files.t2;
   document.getElementById('render-btn').disabled = !ready;
   if (ready) {
-    const optionalNote = [
-      !files.cities && 'CITIES.GIF',
-      !files.units && 'UNITS.GIF'
-    ].filter(Boolean).join(', ');
-    const suffix = optionalNote ? ` (${optionalNote} optional)` : '';
-    document.getElementById('status').textContent = 'Ready \u2014 click Render Map.' + suffix;
+    document.getElementById('status').textContent = 'Ready \u2014 click Render.';
   }
 }
 
