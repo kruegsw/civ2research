@@ -1,3 +1,5 @@
+import { Civ2Renderer } from './renderer.js';
+
 // ═══════════════════════════════════════════════════════════════════
 // cityview.js — Civilization II City View Panoramic Renderer
 // Static visualization of the city screen (buildings on landscape)
@@ -358,3 +360,5 @@ const Civ2CityView = {
     ctx.fillText(title, 790, 35);
   },
 };
+
+export { Civ2CityView };

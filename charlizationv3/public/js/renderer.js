@@ -1656,3 +1656,5 @@ const Civ2Renderer = {
   // Yield to event loop for UI updates
   _yield() { return new Promise(r => setTimeout(r, 5)); }
 };
+
+export { Civ2Renderer };

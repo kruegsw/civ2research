@@ -1,7 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════
-// app.js — Glue: file loading, render trigger, tooltip, controls,
+// app.js — Entry point: file loading, render trigger, controls,
 //          interactive scrolling viewport
 // ═══════════════════════════════════════════════════════════════════
+import { Civ2Parser } from './parser.js';
+import { Civ2Renderer } from './renderer.js';
+import { Civ2CityView } from './cityview.js';
+import { Civ2CityDialog } from './citydialog.js';
+import { initEvents } from './events.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 const cvFiles = {};   // cv_res*.gif files for city view (keyed by resource ID)
@@ -11,18 +16,19 @@ let currentMapData = null;
 let cdSprites = null;
 let mapSprites = null;
 
-// ── Viewport state ──
-let vpX = 0, vpY = 0;         // top-left of viewport in offscreen coords
-let offW = 0, offH = 0;       // offscreen canvas dimensions
-let wrapW = 0;                 // tile-aligned wrap width (mw * TW, excludes stagger)
-let wraps = false;             // true for round earth maps (east-west wrap)
-const SCROLL_STEP = 64;       // pixels per arrow key press
-let vpScale = 1;              // zoom factor (1 = 1:1, >1 = zoomed in)
+// ── Viewport state (shared with events.js via reference) ──
+const vp = {
+  x: 0, y: 0,            // top-left of viewport in offscreen coords
+  scale: 1,               // zoom factor (1 = 1:1, >1 = zoomed in)
+  offW: 0, offH: 0,       // offscreen canvas dimensions
+  wrapW: 0, wraps: false,  // wrapping state
+  logicalW: 0, logicalH: 0, // CSS/logical viewport dimensions
+};
+const SCROLL_STEP = 64;
 const VP_MIN_SCALE = 0.25;
 const VP_MAX_SCALE = 4;
 
 // ── Auto-detect files in same directory ──
-// Requires serving via HTTP (e.g. python3 -m http.server). Silently skipped on file://.
 (async function autoDetect() {
   if (location.protocol === 'file:') return;
 
@@ -67,15 +73,23 @@ const VP_MAX_SCALE = 4;
     } catch (_) {}
   }));
 
-  // Find first .sav/.scn/.net via directory listing in saves/
+  // Find save files via JSON API (Node server) or HTML directory listing (fallback)
   try {
     const resp = await fetch('saves/');
     if (resp.ok) {
-      const html = await resp.text();
-      const re = /href="([^"]+\.(?:sav|SAV|scn|SCN|net|NET))"/g;
-      const match = re.exec(html);
-      if (match) {
-        const savName = 'saves/' + match[1];
+      const contentType = resp.headers.get('content-type') || '';
+      let savFiles;
+      if (contentType.includes('application/json')) {
+        savFiles = await resp.json();
+      } else {
+        const html = await resp.text();
+        const re = /href="([^"]+\.(?:sav|SAV|scn|SCN|net|NET))"/g;
+        savFiles = [];
+        let m;
+        while ((m = re.exec(html))) savFiles.push(m[1]);
+      }
+      if (savFiles.length > 0) {
+        const savName = 'saves/' + savFiles[0];
         const savResp = await fetch(savName);
         if (savResp.ok) {
           const blob = await savResp.blob();
@@ -100,43 +114,43 @@ document.getElementById('sav-input').addEventListener('change', e => {
 document.getElementById('t1-input').addEventListener('change', e => {
   files.t1 = e.target.files[0];
   document.getElementById('t1-btn').classList.add('loaded');
-  document.getElementById('t1-btn').childNodes[0].textContent = 'TERRAIN1 ✓ ';
+  document.getElementById('t1-btn').childNodes[0].textContent = 'TERRAIN1 \u2713 ';
   checkReady();
 });
 document.getElementById('t2-input').addEventListener('change', e => {
   files.t2 = e.target.files[0];
   document.getElementById('t2-btn').classList.add('loaded');
-  document.getElementById('t2-btn').childNodes[0].textContent = 'TERRAIN2 ✓ ';
+  document.getElementById('t2-btn').childNodes[0].textContent = 'TERRAIN2 \u2713 ';
   checkReady();
 });
 document.getElementById('cities-input').addEventListener('change', e => {
   files.cities = e.target.files[0];
   document.getElementById('cities-btn').classList.add('loaded');
-  document.getElementById('cities-btn').childNodes[0].textContent = 'CITIES ✓ ';
+  document.getElementById('cities-btn').childNodes[0].textContent = 'CITIES \u2713 ';
   checkReady();
 });
 document.getElementById('units-input').addEventListener('change', e => {
   files.units = e.target.files[0];
   document.getElementById('units-btn').classList.add('loaded');
-  document.getElementById('units-btn').childNodes[0].textContent = 'UNITS ✓ ';
+  document.getElementById('units-btn').childNodes[0].textContent = 'UNITS \u2713 ';
   checkReady();
 });
 document.getElementById('icons-input').addEventListener('change', e => {
   files.icons = e.target.files[0];
   document.getElementById('icons-btn').classList.add('loaded');
-  document.getElementById('icons-btn').childNodes[0].textContent = 'ICONS ✓ ';
+  document.getElementById('icons-btn').childNodes[0].textContent = 'ICONS \u2713 ';
   checkReady();
 });
 document.getElementById('people-input').addEventListener('change', e => {
   files.people = e.target.files[0];
   document.getElementById('people-btn').classList.add('loaded');
-  document.getElementById('people-btn').childNodes[0].textContent = 'PEOPLE ✓ ';
+  document.getElementById('people-btn').childNodes[0].textContent = 'PEOPLE \u2713 ';
   checkReady();
 });
 document.getElementById('city-input').addEventListener('change', e => {
   files.cityGif = e.target.files[0];
   document.getElementById('city-btn').classList.add('loaded');
-  document.getElementById('city-btn').childNodes[0].textContent = 'CITY ✓ ';
+  document.getElementById('city-btn').childNodes[0].textContent = 'CITY \u2713 ';
   checkReady();
 });
 
@@ -149,7 +163,7 @@ function checkReady() {
       !files.units && 'UNITS.GIF'
     ].filter(Boolean).join(', ');
     const suffix = optionalNote ? ` (${optionalNote} optional)` : '';
-    document.getElementById('status').textContent = 'Ready — click Render Map.' + suffix;
+    document.getElementById('status').textContent = 'Ready \u2014 click Render Map.' + suffix;
   }
 }
 
@@ -182,9 +196,8 @@ async function doRender() {
 
     // Populate FOW civ selector
     const fowSelect = document.getElementById('fow-civ');
-    const previousValue = fowSelect.value;  // save user's selection BEFORE clearing
+    const previousValue = fowSelect.value;
     fowSelect.innerHTML = '';
-    // Resolve civ names: save-file tribeName > LEADERS.TXT by rulesCivNumber > slot label
     const LEADERS_TXT_NAMES = [
       'Romans','Babylonians','Germans','Egyptians','Americans','Greeks','Indians','Russians',
       'Zulus','French','Aztecs','Chinese','English','Mongols','Celts','Japanese','Vikings',
@@ -206,7 +219,6 @@ async function doRender() {
       opt.textContent = civNames[i];
       fowSelect.appendChild(opt);
     }
-    // Restore previous selection if valid, otherwise default to playerCiv
     if (previousValue !== '' && [...fowSelect.options].some(o => o.value === previousValue)) {
       fowSelect.value = previousValue;
     } else {
@@ -253,17 +265,17 @@ async function doRender() {
     const result = await Civ2Renderer.render(canvas, mapData, sprites, m => { msg.textContent = m; }, renderOptions);
 
     // 6. Set up viewport
-    offW = canvas.width;
-    offH = canvas.height;
-    wraps = (mapData.mapShape === 0);  // 0 = round earth (wraps), 1 = flat
-    wrapW = result.wrapW || offW;     // tile-aligned wrap width from renderer
+    vp.offW = canvas.width;
+    vp.offH = canvas.height;
+    vp.wraps = (mapData.mapShape === 0);
+    vp.wrapW = result.wrapW || vp.offW;
     resizeViewport();
     drawViewport();
 
     // 7. Done
     document.getElementById('status').textContent =
-      `${mapData.mw}×${mapData.mh} tiles | ${mapData.cities.length} cities | ` +
-      `${mapData.units.length} units | ${result.displayW || result.canvasW}×${result.canvasH}px | ` +
+      `${mapData.mw}\u00d7${mapData.mh} tiles | ${mapData.cities.length} cities | ` +
+      `${mapData.units.length} units | ${result.displayW || result.canvasW}\u00d7${result.canvasH}px | ` +
       `Ocean: ${mapData.oceanPct}%`;
 
     setTimeout(() => { overlay.style.display = 'none'; }, 200);
@@ -282,59 +294,61 @@ async function doRender() {
 // ═══════════════════════════════════════════════════════════════════
 const viewportCanvas = document.getElementById('viewport-canvas');
 const vCtx = viewportCanvas.getContext('2d', { colorSpace: 'srgb' });
-let vpLogicalW = 0, vpLogicalH = 0;  // CSS/logical dimensions (for viewport math)
 
 function resizeViewport() {
-  const container = document.getElementById('map-container');
   const dpr = window.devicePixelRatio || 1;
-  vpLogicalW = container.clientWidth;
-  vpLogicalH = container.clientHeight;
-  viewportCanvas.width = vpLogicalW * dpr;
-  viewportCanvas.height = vpLogicalH * dpr;
-  viewportCanvas.style.width = vpLogicalW + 'px';
-  viewportCanvas.style.height = vpLogicalH + 'px';
+  vp.logicalW = window.innerWidth;
+  vp.logicalH = window.innerHeight;
+  viewportCanvas.width = vp.logicalW * dpr;
+  viewportCanvas.height = vp.logicalH * dpr;
+  viewportCanvas.style.width = vp.logicalW + 'px';
+  viewportCanvas.style.height = vp.logicalH + 'px';
   vCtx.imageSmoothingEnabled = false;
   clampViewport();
 }
 
 function clampViewport() {
-  const visW = vpLogicalW / vpScale;
-  const visH = vpLogicalH / vpScale;
-  // Vertical: always clamp to map bounds
-  vpY = Math.max(0, Math.min(vpY, offH - visH));
-  // Horizontal: wrap for round earth, clamp for flat
-  if (wraps && wrapW > 0) {
-    vpX = ((vpX % wrapW) + wrapW) % wrapW;
+  const visW = vp.logicalW / vp.scale;
+  const visH = vp.logicalH / vp.scale;
+  // Allow over-scroll so any map edge can be scrolled into view
+  // (when viewport is larger than map, both edges are reachable)
+  const yMin = Math.min(0, vp.offH - visH);
+  const yMax = Math.max(0, vp.offH - visH);
+  vp.y = Math.max(yMin, Math.min(vp.y, yMax));
+  if (vp.wraps && vp.wrapW > 0) {
+    vp.x = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
   } else {
-    vpX = Math.max(0, Math.min(vpX, offW - visW));
+    const xMin = Math.min(0, vp.offW - visW);
+    const xMax = Math.max(0, vp.offW - visW);
+    vp.x = Math.max(xMin, Math.min(vp.x, xMax));
   }
 }
 
 function drawViewport() {
-  if (offW === 0 || offH === 0) return;
+  if (vp.offW === 0 || vp.offH === 0) return;
   const offscreen = document.getElementById('map-canvas');
   const dpr = window.devicePixelRatio || 1;
   const bw = viewportCanvas.width, bh = viewportCanvas.height;
-  const visW = vpLogicalW / vpScale;   // visible map width in map pixels
-  const visH = vpLogicalH / vpScale;   // visible map height in map pixels
-  const pxPerMap = vpScale * dpr;       // dest pixels per map pixel
+  const visW = vp.logicalW / vp.scale;
+  const visH = vp.logicalH / vp.scale;
+  const pxPerMap = vp.scale * dpr;
 
   vCtx.clearRect(0, 0, bw, bh);
 
-  if (wraps) {
-    const x1 = ((vpX % wrapW) + wrapW) % wrapW;
-    const rightChunk = Math.min(visW, wrapW - x1);
-    vCtx.drawImage(offscreen, x1, vpY, rightChunk, visH,
+  if (vp.wraps) {
+    const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
+    const rightChunk = Math.min(visW, vp.wrapW - x1);
+    vCtx.drawImage(offscreen, x1, vp.y, rightChunk, visH,
                    0, 0, rightChunk * pxPerMap, bh);
     let drawn = rightChunk;
     while (drawn < visW) {
-      const chunk = Math.min(visW - drawn, wrapW);
-      vCtx.drawImage(offscreen, 0, vpY, chunk, visH,
+      const chunk = Math.min(visW - drawn, vp.wrapW);
+      vCtx.drawImage(offscreen, 0, vp.y, chunk, visH,
                      drawn * pxPerMap, 0, chunk * pxPerMap, bh);
       drawn += chunk;
     }
   } else {
-    vCtx.drawImage(offscreen, vpX, vpY, visW, visH, 0, 0, bw, bh);
+    vCtx.drawImage(offscreen, vp.x, vp.y, visW, visH, 0, 0, bw, bh);
   }
 }
 
@@ -347,9 +361,9 @@ function findTileAt(clientX, clientY) {
   const rect = viewportCanvas.getBoundingClientRect();
   const localX = clientX - rect.left;
   const localY = clientY - rect.top;
-  let mx = localX / vpScale + vpX;
-  let my = localY / vpScale + vpY;
-  if (wraps && wrapW > 0) mx = ((mx % wrapW) + wrapW) % wrapW;
+  let mx = localX / vp.scale + vp.x;
+  let my = localY / vp.scale + vp.y;
+  if (vp.wraps && vp.wrapW > 0) mx = ((mx % vp.wrapW) + vp.wrapW) % vp.wrapW;
 
   const md = currentMapData;
   const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
@@ -382,7 +396,6 @@ function findCityAt(gx, gy) {
 
 async function ensureCvSprites() {
   if (cvSprites) return true;
-  // Need all three sprite sheets
   if (!cvFiles[300] || !cvFiles[305] || !cvFiles[310]) return false;
 
   const [improvImg, wondersImg, altImg] = await Promise.all([
@@ -396,7 +409,6 @@ async function ensureCvSprites() {
     Civ2Renderer.imgToCtx(altImg)
   );
 
-  // Load backgrounds
   cvBackgrounds = new Map();
   const bgIds = [340,341,342,343,345,346,347,348,350,351,352,353];
   await Promise.all(bgIds.map(async id => {
@@ -428,9 +440,207 @@ async function handleMapClick(e) {
   const tile = findTileAt(e.clientX, e.clientY);
   if (!tile) return;
   const hit = findCityAt(tile.gx, tile.gy);
-  if (!hit) return;
-  openCityDialog(hit.city, hit.index);
+  if (hit) {
+    openCityDialog(hit.city, hit.index);
+  }
 }
+
+// ── City dialog viewport state ──
+const cdVp = { x: 0, y: 0, scale: 1 };
+const cdViewport = document.getElementById('citydialog-viewport');
+const cdVpCtx = cdViewport.getContext('2d', { colorSpace: 'srgb' });
+let cdCity = null, cdCityIndex = 0, cdRegions = null;
+
+function cdResizeViewport() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  cdViewport.width = w * dpr;
+  cdViewport.height = h * dpr;
+  cdViewport.style.width = w + 'px';
+  cdViewport.style.height = h + 'px';
+  cdVpCtx.imageSmoothingEnabled = false;
+}
+
+function cdClampViewport() {
+  const src = document.getElementById('citydialog-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  const srcW = src.width / dpr, srcH = src.height / dpr;
+  const visW = cdViewport.width / dpr / cdVp.scale;
+  const visH = cdViewport.height / dpr / cdVp.scale;
+  const yMin = Math.min(0, srcH - visH);
+  const yMax = Math.max(0, srcH - visH);
+  cdVp.y = Math.max(yMin, Math.min(cdVp.y, yMax));
+  const xMin = Math.min(0, srcW - visW);
+  const xMax = Math.max(0, srcW - visW);
+  cdVp.x = Math.max(xMin, Math.min(cdVp.x, xMax));
+}
+
+function cdDrawViewport() {
+  const src = document.getElementById('citydialog-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  const bw = cdViewport.width, bh = cdViewport.height;
+  const visW = bw / dpr / cdVp.scale;
+  const visH = bh / dpr / cdVp.scale;
+
+  cdVpCtx.clearRect(0, 0, bw, bh);
+  cdVpCtx.drawImage(src, cdVp.x * dpr, cdVp.y * dpr, visW * dpr, visH * dpr, 0, 0, bw, bh);
+}
+
+function cdCenterDialog() {
+  const src = document.getElementById('citydialog-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  const srcW = src.width / dpr, srcH = src.height / dpr;
+  const screenW = window.innerWidth, screenH = window.innerHeight;
+  // Scale to fit screen with some padding
+  const fitScale = Math.min(screenW / srcW, screenH / srcH, 2);
+  cdVp.scale = fitScale;
+  // Center
+  const visW = screenW / cdVp.scale;
+  const visH = screenH / cdVp.scale;
+  cdVp.x = (srcW - visW) / 2;
+  cdVp.y = (srcH - visH) / 2;
+}
+
+function cdScreenToSrc(clientX, clientY) {
+  const rect = cdViewport.getBoundingClientRect();
+  const localX = clientX - rect.left;
+  const localY = clientY - rect.top;
+  return {
+    x: localX / cdVp.scale + cdVp.x,
+    y: localY / cdVp.scale + cdVp.y,
+  };
+}
+
+function cdHandleClick(clientX, clientY) {
+  if (!cdRegions) return;
+  const pt = cdScreenToSrc(clientX, clientY);
+  const sx = pt.x;
+  const sy = pt.y;
+  const F = Civ2CityDialog.FRAME;
+  const cx = sx - F.contentX;
+  const cy = sy - F.contentY;
+  const result = Civ2CityDialog.handleClick(cx, cy, cdRegions);
+  if (result && result.action === 'exit') {
+    closeCityDialog();
+  } else if (result && result.action === 'info') {
+    cdRerender();
+  } else if (result && result.action === 'panorama') {
+    closeCityDialog();
+    ensureCvSprites().then(ok => {
+      if (!ok) return;
+      const cvCanvas = document.getElementById('cityview-canvas');
+      Civ2CityView.render(cvCanvas, cdCity, cdCityIndex, currentMapData, cvSprites, cvBackgrounds);
+      document.getElementById('cityview-overlay').style.display = 'flex';
+    });
+  }
+}
+
+function cdRerender() {
+  if (!cdCity) return;
+  const canvas = document.getElementById('citydialog-canvas');
+  cdRegions = Civ2CityDialog.render(canvas, cdCity, cdCityIndex, currentMapData, cdSprites, mapSprites);
+  cdDrawViewport();
+}
+
+// City dialog pan/zoom events
+(function initCdEvents() {
+  let dragging = false;
+  let dragLastX = 0, dragLastY = 0;
+  let dragStartX = 0, dragStartY = 0;
+  let touchMode = 'none';
+  let pinchStartDist = 0, pinchStartScale = 1;
+  let pinchLastCX = 0, pinchLastCY = 0;
+  const MIN_SCALE = 0.25, MAX_SCALE = 4;
+
+  cdViewport.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    dragging = true;
+    dragLastX = dragStartX = e.clientX;
+    dragLastY = dragStartY = e.clientY;
+    cdViewport.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', e => {
+    if (!dragging || document.getElementById('citydialog-overlay').style.display !== 'flex') return;
+    cdVp.x -= (e.clientX - dragLastX) / cdVp.scale;
+    cdVp.y -= (e.clientY - dragLastY) / cdVp.scale;
+    dragLastX = e.clientX; dragLastY = e.clientY;
+    cdClampViewport(); cdDrawViewport();
+  });
+  window.addEventListener('mouseup', e => {
+    if (!dragging) return;
+    dragging = false;
+    cdViewport.classList.remove('dragging');
+    if (Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY) < 5) {
+      cdHandleClick(e.clientX, e.clientY);
+    }
+  });
+
+  cdViewport.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      touchMode = 'pinch'; dragging = false;
+      const t0 = e.touches[0], t1 = e.touches[1];
+      pinchStartDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      pinchStartScale = cdVp.scale;
+      pinchLastCX = (t0.clientX + t1.clientX) / 2;
+      pinchLastCY = (t0.clientY + t1.clientY) / 2;
+    } else if (e.touches.length === 1 && touchMode !== 'pinch') {
+      touchMode = 'drag'; dragging = true;
+      dragLastX = dragStartX = e.touches[0].clientX;
+      dragLastY = dragStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  cdViewport.addEventListener('touchmove', e => {
+    if (touchMode === 'pinch' && e.touches.length === 2) {
+      const t0 = e.touches[0], t1 = e.touches[1];
+      const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      const cx = (t0.clientX + t1.clientX) / 2;
+      const cy = (t0.clientY + t1.clientY) / 2;
+      const rect = cdViewport.getBoundingClientRect();
+      const prevLX = pinchLastCX - rect.left, prevLY = pinchLastCY - rect.top;
+      const mapX = cdVp.x + prevLX / cdVp.scale;
+      const mapY = cdVp.y + prevLY / cdVp.scale;
+      cdVp.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, pinchStartScale * dist / pinchStartDist));
+      cdVp.x = mapX - (cx - rect.left) / cdVp.scale;
+      cdVp.y = mapY - (cy - rect.top) / cdVp.scale;
+      pinchLastCX = cx; pinchLastCY = cy;
+      cdClampViewport(); cdDrawViewport();
+    } else if (touchMode === 'drag' && e.touches.length === 1) {
+      cdVp.x -= (e.touches[0].clientX - dragLastX) / cdVp.scale;
+      cdVp.y -= (e.touches[0].clientY - dragLastY) / cdVp.scale;
+      dragLastX = e.touches[0].clientX; dragLastY = e.touches[0].clientY;
+      cdClampViewport(); cdDrawViewport();
+    }
+  }, { passive: true });
+
+  cdViewport.addEventListener('touchend', e => {
+    if (e.touches.length === 0) {
+      if (touchMode === 'drag') {
+        dragging = false;
+        if (Math.hypot(dragLastX - dragStartX, dragLastY - dragStartY) < 10) {
+          cdHandleClick(dragLastX, dragLastY);
+        }
+      }
+      touchMode = 'none';
+    } else if (e.touches.length === 1 && touchMode === 'pinch') {
+      touchMode = 'none';
+    }
+  }, { passive: true });
+
+  cdViewport.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = cdViewport.getBoundingClientRect();
+    const localX = e.clientX - rect.left, localY = e.clientY - rect.top;
+    const mapX = cdVp.x + localX / cdVp.scale;
+    const mapY = cdVp.y + localY / cdVp.scale;
+    const factor = e.ctrlKey ? (1 - e.deltaY * 0.01) : (1 - e.deltaY * 0.002);
+    cdVp.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, cdVp.scale * factor));
+    cdVp.x = mapX - localX / cdVp.scale;
+    cdVp.y = mapY - localY / cdVp.scale;
+    cdClampViewport(); cdDrawViewport();
+  }, { passive: false });
+})();
 
 async function openCityDialog(city, cityIndex) {
   const ready = await ensureCdSprites();
@@ -438,32 +648,14 @@ async function openCityDialog(city, cityIndex) {
     alert('City dialog requires ICONS.GIF and PEOPLE.GIF. Load them and try again.');
     return;
   }
+  cdCity = city;
+  cdCityIndex = cityIndex;
   const canvas = document.getElementById('citydialog-canvas');
-  const regions = Civ2CityDialog.render(canvas, city, cityIndex, currentMapData, cdSprites, mapSprites);
-  canvas.onclick = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const sx = (e.clientX - rect.left) * (canvas.width / rect.width) / dpr;
-    const sy = (e.clientY - rect.top) * (canvas.height / rect.height) / dpr;
-    const F = Civ2CityDialog.FRAME;
-    const cx = sx - F.contentX;
-    const cy = sy - F.contentY;
-    const result = Civ2CityDialog.handleClick(cx, cy, regions);
-    if (result && result.action === 'exit') {
-      closeCityDialog();
-    } else if (result && result.action === 'info') {
-      // Re-render to show new info panel mode
-      Civ2CityDialog.render(canvas, city, cityIndex, currentMapData, cdSprites, mapSprites);
-    } else if (result && result.action === 'panorama') {
-      closeCityDialog();
-      ensureCvSprites().then(ok => {
-        if (!ok) return;
-        const cvCanvas = document.getElementById('cityview-canvas');
-        Civ2CityView.render(cvCanvas, city, cityIndex, currentMapData, cvSprites, cvBackgrounds);
-        document.getElementById('cityview-overlay').style.display = 'flex';
-      });
-    }
-  };
+  cdRegions = Civ2CityDialog.render(canvas, city, cityIndex, currentMapData, cdSprites, mapSprites);
+  cdResizeViewport();
+  cdCenterDialog();
+  cdClampViewport();
+  cdDrawViewport();
   document.getElementById('citydialog-overlay').style.display = 'flex';
 }
 
@@ -479,3 +671,11 @@ document.getElementById('citydialog-backdrop').addEventListener('click', closeCi
 document.getElementById('citydialog-close').addEventListener('click', closeCityDialog);
 document.getElementById('cityview-backdrop').addEventListener('click', closeCityView);
 document.getElementById('cityview-close').addEventListener('click', closeCityView);
+
+// ── Initialize event handlers ──
+initEvents(viewportCanvas, vp, {
+  clampViewport, drawViewport, resizeViewport,
+  handleMapClick, closeCityDialog, closeCityView,
+  getMapData: () => currentMapData,
+  SCROLL_STEP, VP_MIN_SCALE, VP_MAX_SCALE,
+});

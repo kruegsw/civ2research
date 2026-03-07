@@ -1,0 +1,12 @@
+{
+  "name": "civ2-viewer",
+  "version": "1.0.0",
+  "description": "Civ2 MGE save file viewer — interactive HTML5 Canvas map renderer",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "ws": "^8.19.0"
+  }
+}

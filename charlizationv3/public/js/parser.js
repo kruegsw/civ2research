@@ -1254,3 +1254,5 @@ const Civ2Parser = {
     };
   }
 };
+
+export { Civ2Parser };

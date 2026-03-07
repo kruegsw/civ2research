@@ -1,3 +1,5 @@
+import { Civ2Renderer } from './renderer.js';
+
 // ═══════════════════════════════════════════════════════════════════
 // citydialog.js — City Management Dialog (Canvas-based renderer)
 // Reproduction of the Civ2 MGE city management screen.
@@ -3588,3 +3590,5 @@ const Civ2CityDialog = {
     return null;
   },
 };
+
+export { Civ2CityDialog };

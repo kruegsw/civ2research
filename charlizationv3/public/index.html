@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Civ2 Save Viewer — canvas-test-2</title>
+<title>Civ2 Save Viewer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -62,17 +62,11 @@
 </div>
 <div id="citydialog-overlay">
   <div id="citydialog-backdrop"></div>
-  <div id="citydialog-container">
-    <canvas id="citydialog-canvas" width="656" height="466"></canvas>
-    <button id="citydialog-close">&#x2715;</button>
-  </div>
+  <canvas id="citydialog-canvas" width="656" height="466" style="display:none"></canvas>
+  <canvas id="citydialog-viewport"></canvas>
+  <button id="citydialog-close">&#x2715;</button>
 </div>
 
-<script src="js/parser.js"></script>
-<script src="js/renderer.js"></script>
-<script src="js/cityview.js"></script>
-<script src="js/citydialog.js"></script>
-<script src="js/app.js"></script>
-<script src="js/events.js"></script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>
