@@ -489,19 +489,21 @@ const Civ2Renderer = {
     // Three-state FOW predicates:
     //   isUnexplored: tile has NEVER been seen by FOW civ → solid black
     //   isDimmed: tile was previously explored but not currently visible → dimmed
+    // Note: Block 1 auto-fills city-present bit (0x02) for ALL civs even if they
+    // haven't explored the tile. Mask it out when determining exploration status.
     function isUnexplored(gx, gy) {
       if (gy < 0 || gy >= mh) return true;
       if (!fowEnabled) return false;
       const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
       if (currentlySeen) return false;
-      return mapData.getKnownImprovements(gx, gy, options.fowCiv) === 0;
+      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x02) === 0;
     }
     function isDimmed(gx, gy) {
       if (gy < 0 || gy >= mh) return false;
       if (!fowEnabled) return false;
       const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
       if (currentlySeen) return false;
-      return mapData.getKnownImprovements(gx, gy, options.fowCiv) !== 0;
+      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x02) !== 0;
     }
 
     // ────────────────────────────────────────
@@ -740,6 +742,7 @@ const Civ2Renderer = {
       for (const c of mapData.cities) {
         const currentlySeen = !!(mapData.getVisibility(c.gx, c.gy) & fowBit);
         if (currentlySeen) continue;  // already drawn normally above
+        if (isUnexplored(c.gx, c.gy)) continue;  // tile never explored — no ghost
         // Check if FOW civ knows about a city here (bit 0x02 in known improvements)
         const known = mapData.getKnownImprovements(c.gx, c.gy, options.fowCiv);
         if (!(known & 0x02)) continue;  // civ hasn't seen a city here
