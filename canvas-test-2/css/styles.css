@@ -1,7 +1,7 @@
 /* Civ2 Save Viewer — Main Styles */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; height: 100%; }
 
 /* ── Controls bar ── */
 #controls {
@@ -30,7 +30,7 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, san
   background: #0a0a1a;
 }
 #map-canvas { display: none; }
-#viewport-canvas { image-rendering: pixelated; width: 100%; height: 100%; cursor: grab; }
+#viewport-canvas { image-rendering: pixelated; width: 100%; height: 100%; cursor: grab; touch-action: none; }
 #viewport-canvas.dragging { cursor: grabbing; }
 
 /* ── Tooltip ── */

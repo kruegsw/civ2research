@@ -17,6 +17,9 @@ let offW = 0, offH = 0;       // offscreen canvas dimensions
 let wrapW = 0;                 // tile-aligned wrap width (mw * TW, excludes stagger)
 let wraps = false;             // true for round earth maps (east-west wrap)
 const SCROLL_STEP = 64;       // pixels per arrow key press
+let vpScale = 1;              // zoom factor (1 = 1:1, >1 = zoomed in)
+const VP_MIN_SCALE = 0.25;
+const VP_MAX_SCALE = 4;
 
 // ── Auto-detect files in same directory ──
 // Requires serving via HTTP (e.g. python3 -m http.server). Silently skipped on file://.
@@ -295,13 +298,15 @@ function resizeViewport() {
 }
 
 function clampViewport() {
+  const visW = vpLogicalW / vpScale;
+  const visH = vpLogicalH / vpScale;
   // Vertical: always clamp to map bounds
-  vpY = Math.max(0, Math.min(vpY, offH - vpLogicalH));
+  vpY = Math.max(0, Math.min(vpY, offH - visH));
   // Horizontal: wrap for round earth, clamp for flat
   if (wraps && wrapW > 0) {
     vpX = ((vpX % wrapW) + wrapW) % wrapW;
   } else {
-    vpX = Math.max(0, Math.min(vpX, offW - vpLogicalW));
+    vpX = Math.max(0, Math.min(vpX, offW - visW));
   }
 }
 
@@ -310,267 +315,28 @@ function drawViewport() {
   const offscreen = document.getElementById('map-canvas');
   const dpr = window.devicePixelRatio || 1;
   const bw = viewportCanvas.width, bh = viewportCanvas.height;
+  const visW = vpLogicalW / vpScale;   // visible map width in map pixels
+  const visH = vpLogicalH / vpScale;   // visible map height in map pixels
+  const pxPerMap = vpScale * dpr;       // dest pixels per map pixel
 
   vCtx.clearRect(0, 0, bw, bh);
 
   if (wraps) {
     const x1 = ((vpX % wrapW) + wrapW) % wrapW;
-    const rightChunk = Math.min(vpLogicalW, wrapW - x1);
-    vCtx.drawImage(offscreen, x1, vpY, rightChunk, vpLogicalH, 0, 0, rightChunk * dpr, vpLogicalH * dpr);
+    const rightChunk = Math.min(visW, wrapW - x1);
+    vCtx.drawImage(offscreen, x1, vpY, rightChunk, visH,
+                   0, 0, rightChunk * pxPerMap, bh);
     let drawn = rightChunk;
-    while (drawn < vpLogicalW) {
-      const chunk = Math.min(vpLogicalW - drawn, wrapW);
-      vCtx.drawImage(offscreen, 0, vpY, chunk, vpLogicalH, drawn * dpr, 0, chunk * dpr, vpLogicalH * dpr);
+    while (drawn < visW) {
+      const chunk = Math.min(visW - drawn, wrapW);
+      vCtx.drawImage(offscreen, 0, vpY, chunk, visH,
+                     drawn * pxPerMap, 0, chunk * pxPerMap, bh);
       drawn += chunk;
     }
   } else {
-    vCtx.drawImage(offscreen, vpX, vpY, vpLogicalW, vpLogicalH, 0, 0, bw, bh);
+    vCtx.drawImage(offscreen, vpX, vpY, visW, visH, 0, 0, bw, bh);
   }
 }
-
-// ── Mouse drag panning ──
-let dragging = false;
-let dragLastX = 0, dragLastY = 0;
-let dragStartX = 0, dragStartY = 0;  // for click vs drag detection
-
-viewportCanvas.addEventListener('mousedown', e => {
-  if (e.button !== 0) return;  // left click only
-  dragging = true;
-  dragLastX = dragStartX = e.clientX;
-  dragLastY = dragStartY = e.clientY;
-  viewportCanvas.classList.add('dragging');
-});
-
-window.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const dx = e.clientX - dragLastX;
-  const dy = e.clientY - dragLastY;
-  dragLastX = e.clientX;
-  dragLastY = e.clientY;
-  vpX -= dx;
-  vpY -= dy;
-  clampViewport();
-  drawViewport();
-});
-
-window.addEventListener('mouseup', e => {
-  if (!dragging) return;
-  dragging = false;
-  viewportCanvas.classList.remove('dragging');
-  // Click detection: if drag distance < 5px, treat as click
-  const dist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
-  if (dist < 5) handleMapClick(e);
-});
-
-// ── Keyboard panning ──
-const keysDown = new Set();
-let keyScrollRAF = null;
-
-window.addEventListener('keydown', e => {
-  // Escape closes city dialog first, then city view overlay
-  if (e.key === 'Escape') {
-    if (document.getElementById('citydialog-overlay').style.display === 'flex')
-      closeCityDialog();
-    else
-      closeCityView();
-    return;
-  }
-  if (offW === 0) return;
-  const key = e.key;
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) {
-    // Don't scroll if user is typing in an input/select
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-    e.preventDefault();
-    keysDown.add(key);
-    if (!keyScrollRAF) keyScrollLoop();
-  }
-});
-
-window.addEventListener('keyup', e => {
-  keysDown.delete(e.key);
-  if (keysDown.size === 0 && keyScrollRAF) {
-    cancelAnimationFrame(keyScrollRAF);
-    keyScrollRAF = null;
-  }
-});
-
-function keyScrollLoop() {
-  let dx = 0, dy = 0;
-  if (keysDown.has('ArrowLeft')  || keysDown.has('a')) dx -= SCROLL_STEP;
-  if (keysDown.has('ArrowRight') || keysDown.has('d')) dx += SCROLL_STEP;
-  if (keysDown.has('ArrowUp')    || keysDown.has('w')) dy -= SCROLL_STEP;
-  if (keysDown.has('ArrowDown')  || keysDown.has('s')) dy += SCROLL_STEP;
-  if (dx || dy) {
-    vpX += dx;
-    vpY += dy;
-    clampViewport();
-    drawViewport();
-  }
-  keyScrollRAF = requestAnimationFrame(keyScrollLoop);
-}
-
-// ── Window resize ──
-window.addEventListener('resize', () => {
-  resizeViewport();
-  drawViewport();
-});
-
-// ═══════════════════════════════════════════════════════════════════
-// TOOLTIP — hover over map to see tile info
-// ═══════════════════════════════════════════════════════════════════
-const tooltip = document.getElementById('tooltip');
-
-viewportCanvas.addEventListener('mousemove', e => {
-  if (dragging) { tooltip.style.display = 'none'; return; }
-  if (!currentMapData) return;
-
-  const rect = viewportCanvas.getBoundingClientRect();
-  // clientX/clientY and getBoundingClientRect are in CSS pixels (logical), matching vpX/vpY
-  const localX = e.clientX - rect.left;
-  const localY = e.clientY - rect.top;
-  // Translate to offscreen (full map) coordinates
-  let mx = localX + vpX;
-  let my = localY + vpY;
-  // Handle wrapping
-  if (wraps && wrapW > 0) mx = ((mx % wrapW) + wrapW) % wrapW;
-
-  const md = currentMapData;
-  const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
-
-  // FOW state for tooltip filtering
-  const fowEnabled = document.getElementById('fow-toggle').checked && !md.mapRevealed;
-  const fowCivVal = document.getElementById('fow-civ').value;
-  const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : null;
-  const fowBit = (fowEnabled && fowCiv != null) ? (1 << fowCiv) : 0;
-
-  // Find which tile the mouse is over
-  const approxGy = Math.floor(my / (TH >> 1));
-  let found = null;
-
-  for (let gy = Math.max(0, approxGy - 1); gy <= Math.min(md.mh - 1, approxGy + 1); gy++) {
-    for (let gx = 0; gx < md.mw; gx++) {
-      const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
-      const py = gy * (TH >> 1);
-      if (mx >= px && mx < px + TW && my >= py && my < py + TH) {
-        const dx = mx - px - TW / 2;
-        const dy = my - py - TH / 2;
-        if (Math.abs(dx) / (TW / 2) + Math.abs(dy) / (TH / 2) <= 1) {
-          found = { gx, gy };
-        }
-      }
-    }
-  }
-
-  if (found) {
-    const { gx, gy } = found;
-
-    // FOW visibility check — unexplored tiles show minimal info
-    if (fowEnabled && fowBit) {
-      const vis = md.getVisibility(gx, gy);
-      const known = md.getKnownImprovements(gx, gy, fowCiv);
-      if (!vis && !known) {
-        tooltip.textContent = `(${gx * 2 + (gy % 2)}, ${gy})  Unexplored`;
-        tooltip.style.display = 'block';
-        tooltip.style.left = (e.clientX + 14) + 'px';
-        tooltip.style.top = (e.clientY + 14) + 'px';
-        return;
-      }
-    }
-
-    const ter = md.getTerrain(gx, gy);
-    const vis = md.getVisibility(gx, gy);
-    const river = md.hasRiver(gx, gy);
-    const res = md.getResource(gx, gy);
-    // Use known improvements on dimmed tiles when FOW is active
-    const tileVisible = !fowBit || (vis & fowBit);
-    const imp = (fowEnabled && fowBit && !tileVisible)
-      ? md.getKnownImprovements(gx, gy, fowCiv)
-      : md.getImprovements(gx, gy);
-
-    const RESOURCE_NAMES = [
-      ['Oasis','Desert Oil'],['Buffalo','Wheat'],['Grassland Shield','Grassland Resource'],
-      ['Pheasant','Silk'],['Coal','Wine'],['Gold','Iron'],['Game','Furs'],['Ivory','Oil'],
-      ['Peat','Spice'],['Gems','Fruit'],['Fish','Whales']
-    ];
-    const GOVERNMENT_NAMES = ['Anarchy','Despotism','Monarchy','Communism','Fundamentalism','Republic','Democracy'];
-    const COMMODITY_NAMES = ['Hides','Wool','Beads','Cloth','Salt','Coal','Copper','Dye',
-      'Wine','Silk','Silver','Spice','Gems','Gold','Oil','Uranium'];
-    const terName = Civ2Renderer.TERRAIN_NAMES[ter] || '?';
-    let info = `(${gx * 2 + (gy % 2)}, ${gy})  ${terName}`;
-    if (river) info += ' + River';
-    if (res === 1) info += ` [${(RESOURCE_NAMES[ter] || [])[0] || 'Resource 1'}]`;
-    if (res === 2) info += ` [${(RESOURCE_NAMES[ter] || [])[1] || 'Resource 2'}]`;
-    if (md.hasGoodyHut && md.hasGoodyHut(gx, gy)) info += ' [Goody Hut]';
-
-    const impParts = [];
-    if ((imp & 0x0C) === 0x0C) impParts.push('Farmland');
-    else { if (imp & 0x04) impParts.push('Irrigation'); if (imp & 0x08) impParts.push('Mining'); }
-    if (imp & 0x10) impParts.push('Road');
-    if (imp & 0x20) impParts.push('Railroad');
-    if ((imp & 0x42) === 0x42 && !md.cities.some(c => c.gx === gx && c.gy === gy)) impParts.push('Airbase');
-    else if (imp & 0x40) impParts.push('Fortress');
-    if (imp & 0x80) impParts.push('Pollution');
-    if (impParts.length) info += '\n' + impParts.join(', ');
-
-    // Check for city at this location
-    for (const c of md.cities) {
-      if (c.gx === gx && c.gy === gy) {
-        // FOW: skip cities the selected civ doesn't know about
-        if (fowEnabled && fowBit) {
-          const cityKnown = (c.knownToTribes != null) ? !!(c.knownToTribes & fowBit) : !!(imp & 0x02);
-          if (!cityKnown) continue;
-        }
-        const displaySize = (fowEnabled && fowBit && !tileVisible)
-          ? c.believedSize[fowCiv] : c.size;
-        const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;
-        const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
-        const styleNames = ['Bronze','Classical','Far East','Medieval'];
-        const cityOwner = (md.civNames && md.civNames[c.owner]) || `Civ ${c.owner}`;
-        const govName = (md.civData && md.civData[c.owner]) ? GOVERNMENT_NAMES[md.civData[c.owner].government] || '' : '';
-        info += `\n${c.name} (${cityOwner}, size ${displaySize}, ${epochNames[epoch]}${govName ? ', ' + govName : ''}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''}`;
-        if (c.isOccupied) {
-          const origOwner = (md.civNames && md.civNames[c.originalOwner]) || `Civ ${c.originalOwner}`;
-          info += `, occupied (was ${origOwner})`;
-        }
-        if (c.civilDisorder) info += ', DISORDER';
-        if (c.weLoveKingDay) info += ', WLTKD';
-        info += ')';
-        break;
-      }
-    }
-
-    // Check for units at this location — skip invisible units when FOW active
-    for (const u of md.units) {
-      if (u.gx !== gx || u.gy !== gy) continue;
-      if (fowEnabled && fowBit) {
-        if (!(vis & fowBit)) continue;  // tile not currently visible
-        if (u.owner !== fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;  // unit not visible to civ (own units always visible)
-      }
-      const ORDER_NAMES = {0:'',1:'Fortifying',2:'Fortified',3:'Sleep',4:'Build Fortress',
-        5:'Build Road',6:'Build Irrigation',7:'Build Mine',8:'Transform',9:'Clean Pollution',
-        10:'Build Airbase',11:'GoTo',255:''};
-      const name = Civ2Renderer.UNIT_NAMES[u.type] || `Unit#${u.type}`;
-      const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
-      const vetStr = u.veteran ? ' Vet' : '';
-      const ordStr = ORDER_NAMES[u.orders] || `orders:${u.orders}`;
-      const dmgStr = u.hpLost > 0 ? `, dmg ${u.hpLost}` : '';
-      const cargoStr = (u.type === 48 || u.type === 49) && u.cargoWorkFuel >= 0 && u.cargoWorkFuel <= 15
-        ? `, cargo: ${COMMODITY_NAMES[u.cargoWorkFuel]}` : '';
-      info += `\n[Unit] ${name}${vetStr} (${owner}${dmgStr}${cargoStr}${ordStr ? ', ' + ordStr : ''})`;
-    }
-
-    tooltip.textContent = info;
-    tooltip.style.display = 'block';
-    tooltip.style.left = (e.clientX + 14) + 'px';
-    tooltip.style.top = (e.clientY + 14) + 'px';
-  } else {
-    tooltip.style.display = 'none';
-  }
-});
-
-viewportCanvas.addEventListener('mouseleave', () => {
-  tooltip.style.display = 'none';
-});
 
 // ═══════════════════════════════════════════════════════════════════
 // CITY VIEW — click on city to open panoramic view overlay
@@ -581,8 +347,8 @@ function findTileAt(clientX, clientY) {
   const rect = viewportCanvas.getBoundingClientRect();
   const localX = clientX - rect.left;
   const localY = clientY - rect.top;
-  let mx = localX + vpX;
-  let my = localY + vpY;
+  let mx = localX / vpScale + vpX;
+  let my = localY / vpScale + vpY;
   if (wraps && wrapW > 0) mx = ((mx % wrapW) + wrapW) % wrapW;
 
   const md = currentMapData;

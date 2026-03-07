@@ -64,18 +64,35 @@ const Civ2CityDialog = {
   // Settler types (role 5): consume food, count toward support
   SETTLER_TYPES: new Set([0, 1]),
   // Non-combat unit types (attack = 0): do NOT cause abroad unhappiness
-  NON_COMBAT_TYPES: new Set([0, 1, 27, 28, 29, 30, 31]),
+  NON_COMBAT_TYPES: new Set([0, 1, 46, 47, 48, 49, 50]),
   // Sea combat unit types (domain=1, role!=3): always abroad regardless of location
   SEA_COMBAT_TYPES: new Set([35, 36, 37, 38, 39, 40, 41]),
   // Sea transport types (domain=1, role=3): never abroad
   SEA_TRANSPORT_TYPES: new Set([32, 33, 34]),
   // Support-exempt types (role >= 6: diplomat/trade): no shield cost, no abroad check
-  SUPPORT_EXEMPT_TYPES: new Set([28, 29, 30, 31]),
+  SUPPORT_EXEMPT_TYPES: new Set([46, 47, 48, 49]),
   // Fanatic types (flag 0x08): free shield support under Fundamentalism
   FANATIC_TYPES: new Set([8]),
   // Settler food cost per turn by government index [Anarchy..Democracy]
   // Gov 0-2: 1 food (DAT_0064bccd). Gov 3-6: 2 food (DAT_0064bcce)
   SETTLER_FOOD_COST: [1, 1, 1, 2, 2, 2, 2],
+  // Standard RULES.TXT wonder obsolescence tech IDs (wonder index → tech ID that obsoletes it)
+  // Only populated for wonders that CAN become obsolete. Absent = never obsolete.
+  // Obsolescence check: if ANY civ has the tech, the wonder is inactive (FUN_00453da0)
+  WONDER_OBSOLETE_TECH: {
+    0: 15,   // Pyramids → Communism
+    1: 65,   // Hanging Gardens → Railroad
+    2: 22,   // Colossus → Electricity
+    3: 48,   // Lighthouse → Magnetism
+    4: 22,   // Great Library → Electricity
+    5: 82,   // Oracle → Theology
+    6: 53,   // Great Wall → Metallurgy
+    8: 40,   // King Richard's Crusade → Industrialization
+    9: 15,   // Marco Polo's Embassy → Communism
+    14: 6,   // Leonardo's Workshop → Automobile
+    16: 59,  // Isaac Newton's College → Nuclear Fission
+  },
+
   // Standard COSMIC free support limits per city
   COSMIC_FREE_SUPPORT: { monarchy: 3, communism: 3, fundamentalism: 10 },
 
@@ -336,10 +353,9 @@ const Civ2CityDialog = {
     return specs;
   },
 
-  // Compute luxury from trade distribution (FUN_004ea1f6).
-  // city.totalTrade is NET trade (after corruption), stored at city+78.
-  _computeLuxury(city, civData, mapData) {
-    const netTrade = city.totalTrade || 0;
+  // Full trade distribution (FUN_004ea1f6) — returns {lux, tax, sci}.
+  // netTrade must be computed fresh (grossTileTrade - corruption), NOT from city.totalTrade (stale).
+  _computeTradeDistribution(netTrade, city, cityIndex, civData, mapData) {
     let sciRate = civData ? (civData.scienceRate || 0) : 0;   // 0-10 tenths
     const taxRate = civData ? (civData.taxRate || 0) : 0;     // 0-10 tenths
     const govt = this._getCityGovernment(city, mapData);
@@ -349,28 +365,49 @@ const Civ2CityDialog = {
 
     const luxRate = 10 - sciRate - taxRate;
 
-    // Rate-based luxury (no early return — entertainers must always be applied)
-    let baseLux = 0;
-    if (netTrade > 0 && luxRate > 0) {
-      baseLux = Math.min(netTrade, Math.floor((netTrade * luxRate + 4) / 10));
-    }
-
-    // Entertainer specialist bonus (+2 each, added unconditionally before building multiplier)
-    const specs = this.getSpecialists(city);
-    baseLux += specs.entertainer * 2;
+    // Base distribution (tenths, with rounding)
+    let lux = netTrade > 0 && luxRate > 0
+      ? Math.min(netTrade, Math.floor((netTrade * luxRate + 4) / 10)) : 0;
+    let sci = netTrade > 0 && sciRate > 0
+      ? Math.min(netTrade - lux, Math.floor((netTrade * sciRate + 4) / 10)) : 0;
+    let tax = netTrade - (sci + lux);
 
     // AI Fundamentalism redirects all luxury to science (binary lines 1537-1541)
     if (govt === 4 && mapData && mapData.playerCiv !== undefined && city.owner !== mapData.playerCiv) {
-      baseLux = 0;
+      sci += lux;
+      lux = 0;
     }
 
-    // Building multiplier: Marketplace(5)/Bank(10)/Stock Exchange(22) each +50%
+    // Specialist bonuses (before building multipliers)
+    const specs = this.getSpecialists(city);
+    lux += specs.entertainer * 2;
+    tax += specs.taxman * 3;
+    sci += specs.scientist * 3;
+
+    // Luxury AND gold multiplier: Marketplace(5)/Bank(10)/Stock Exchange(22) each +50%
     const b = city.buildings || 0;
-    let mult = 0;
-    if (b & (1 << 5)) mult++;    // Marketplace
-    if (b & (1 << 10)) mult++;   // Bank
-    if (b & (1 << 22)) mult++;   // Stock Exchange
-    return baseLux + ((baseLux * mult) >> 1);
+    let lgMult = 0;
+    if (b & (1 << 5)) lgMult++;    // Marketplace
+    if (b & (1 << 10)) lgMult++;   // Bank
+    if (b & (1 << 22)) lgMult++;   // Stock Exchange
+    lux += (lux * lgMult) >> 1;
+    tax += (tax * lgMult) >> 1;
+
+    // Science multiplier: Library(6)/University(12)/Research Lab(26) or SETI(wonder 18)
+    let sciMult = 0;
+    if (b & (1 << 6)) sciMult++;    // Library
+    if (b & (1 << 12)) sciMult++;   // University
+    if ((b & (1 << 26)) || this._civHasWonder(mapData, city.owner, 18)) sciMult++; // Research Lab or SETI
+
+    // Isaac Newton's College (wonder 16): doubles science building effect in wonder city
+    let sciBonus = sci * sciMult;
+    if (!this._cityHasWonder(cityIndex, 16, mapData)) sciBonus >>= 1; // Normal: +50%/bldg
+    sci += sciBonus;
+
+    // Copernicus' Observatory (wonder 11): doubles total science in wonder city
+    if (this._cityHasWonder(cityIndex, 11, mapData)) sci <<= 1;
+
+    return { lux, tax, sci };
   },
 
   findCityBySequenceId(mapData, seqId) {
@@ -498,6 +535,93 @@ const Civ2CityDialog = {
     return (dx + dy) >> 1;
   },
 
+  // Capital distance (FUN_005ae31d + FUN_005ae296): used for waste calculation
+  // Uses doubled cx/cy coordinates directly from city record
+  _capitalDistance(cx1, cy1, cx2, cy2, mw2, mapShape) {
+    // FUN_005ae10e: dx with horizontal wrapping
+    let dx = Math.abs(cx1 - cx2);
+    if (!(mapShape & 0x8000) && mw2 > 0 && dx > (mw2 >> 1)) dx = mw2 - dx;
+    // dy: absolute difference
+    const dy = Math.abs(cy1 - cy2);
+    // FUN_005ae296: Civ2 isometric distance metric
+    const adx = dx, ady = dy;
+    const avg = (adx + ady) >> 1;
+    if (ady < adx) return adx - ((avg - ady + 1) >> 1);
+    return ady - ((avg - adx + 1) >> 1);
+  },
+
+  // Shield waste (FUN_004e9c14 lines 3782-3797 + FUN_004e989a)
+  // city.shieldProduction stores gross shields (after factory, before waste)
+  // Waste must be computed independently from distance to capital
+  _calcShieldWaste(city, grossShields, support, mapData) {
+    const govt = this._getCityGovernment(city, mapData);
+    // Government exemptions: Fundamentalism (4), Democracy (6), Barbarians
+    if (govt === 4 || govt === 6 || city.owner === 0) return 0;
+    if (city.hasPalace) return 0;
+    const capital = mapData.cities.find(c => c.owner === city.owner && c.hasPalace);
+    if (!capital) return 0;
+    const mw2 = mapData.mw2 || 0;
+    const mapShape = mapData.mapShape || 0;
+    const distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+    // WLTKD bumps effective government for govtFactor (FUN_004e989a line 3619)
+    let effGovt = govt;
+    if (city.weLoveKingDay) effGovt++;
+    let gf = 4;
+    if (effGovt > 0) gf = 5;
+    if (effGovt > 1) gf++;
+    if (effGovt > 2) gf++;
+    if (effGovt > 4) gf++;
+    // Base waste from distance formula
+    const available = grossShields - support;
+    if (available <= 0) return 0;
+    const isCommunism = (govt === 3);
+    const distVal = isCommunism ? 3 : Math.min(distance, 16); // Communism uses COSMIC #8 (default 3) for flat waste
+    let baseWaste = Math.trunc((distVal * available * 3) / (gf * 20));
+    baseWaste = Math.max(0, Math.min(baseWaste, available));
+    // Courthouse (7) or Palace (1) halves waste
+    if (this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) baseWaste >>= 1;
+    // Government divisor: govt >> 1 + 1
+    const govtDiv = (govt >> 1) + 1;
+    // Modified waste: binary applies ((3 - courthouseFactor) * base) / 3 / govtDiv
+    // courthouseFactor requires pathfinding to capital (FUN_00488a45); approximated as 0
+    let waste = Math.trunc(baseWaste / govtDiv);
+    // Cap: ensure at least 1 shield after support + waste
+    const cap = grossShields - support - 1;
+    if (waste > cap) waste = cap;
+    if (waste < 0) waste = 0;
+    return waste;
+  },
+
+  // Trade corruption (FUN_004ea8e4 line 4027 → FUN_004e989a)
+  // Same base formula as shield waste but: no distance cap, no road factor, no govtDiv
+  _calcTradeCorruption(city, grossTrade, mapData) {
+    const govt = this._getCityGovernment(city, mapData);
+    if (govt === 4 || govt === 6) return 0; // Fundamentalism / Democracy: zero corruption
+    if (city.hasPalace) return 0;
+    if (grossTrade <= 0) return 0;
+    const capital = mapData.cities.find(c => c.owner === city.owner && c.hasPalace);
+    if (!capital) return 0;
+    const mw2 = mapData.mw2 || 0;
+    const mapShape = mapData.mapShape || 0;
+    const distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+    // WLTKD bumps effective government for govtFactor (FUN_004e989a line 3619)
+    let effGovt = govt;
+    if (city.weLoveKingDay) effGovt++;
+    let gf = 4;
+    if (effGovt > 0) gf = 5;
+    if (effGovt > 1) gf++;
+    if (effGovt > 2) gf++;
+    if (effGovt > 4) gf++;
+    // Communism (govt==3) uses COSMIC #8 (default 3) as flat distance
+    const isCommunism = (govt === 3); // checked on original govt, before WLTKD
+    const distVal = isCommunism ? 3 : distance; // NO cap at 16 (unlike shield waste)
+    let corruption = Math.trunc((distVal * grossTrade * 3) / (gf * 20));
+    corruption = Math.max(0, Math.min(corruption, grossTrade));
+    // Courthouse (7) or City Hall (1) halves corruption
+    if (this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) corruption >>= 1;
+    return corruption;
+  },
+
   // Check if a land/air unit is "abroad" (FUN_004e7eb1 lines 3009-3054)
   // NOT abroad if: at any friendly city, or in a fortress within distance 3 of a friendly city
   _isUnitAbroad(unit, city, mapData) {
@@ -530,6 +654,203 @@ const Civ2CityDialog = {
     if (cityId == null || cityId === 0xFFFF || cityId >= mapData.cities.length) return false;
     const city = mapData.cities[cityId];
     return city && city.owner === civIndex;
+  },
+
+  // Check if a wonder is active for a civ (owned AND not obsolete)
+  // Obsolescence: if ANY civ has the obsoleting tech, the wonder is inactive (FUN_00453da0)
+  _hasWonderEffect(mapData, civIndex, wonderIndex) {
+    if (!this._civHasWonder(mapData, civIndex, wonderIndex)) return false;
+    const obsTech = this.WONDER_OBSOLETE_TECH[wonderIndex];
+    if (obsTech != null && mapData.civTechs) {
+      for (let i = 0; i < mapData.civTechs.length; i++) {
+        if (mapData.civTechs[i] && mapData.civTechs[i].has(obsTech)) return false;
+      }
+    }
+    return true;
+  },
+
+  // Happiness calculation (FUN_004ea8e4 port)
+  // Computes happy/unhappy citizens from first principles instead of using stale save file values.
+  // Returns { happy, unhappy }
+  _calcHappiness(city, cityIndex, mapData, civData, supported) {
+    const gs = mapData.gameState;
+    const govt = this._getCityGovernment(city, mapData);
+    const pop = city.size;
+    const ownerSlot = city.owner;
+    const difficulty = gs ? gs.difficulty : 0;
+    const humanPlayers = gs ? gs.humanPlayers : 0;
+    const isHuman = !!((1 << ownerSlot) & humanPlayers);
+
+    const civTechs = mapData.civTechs && mapData.civTechs[ownerSlot];
+    const hasTech = (id) => civTechs ? civTechs.has(id) : false;
+
+    const specs = this.getSpecialists(city);
+    const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
+
+    // COSMIC defaults from standard RULES.TXT
+    const CONTENT_BASE = 7;     // DAT_0064bccf — content citizens base
+    const UNHAPPY_OFFSET = 14;  // DAT_0064bcd0 — unhappy citizens offset
+
+    // Mutable state matching binary globals: DAT_006a6550, DAT_006a65a8, DAT_006a659c
+    const st = { happy: 0, unhappy: 0, surplus: 0 };
+
+    // FUN_004ea031 — balance happy/unhappy ensuring total doesn't exceed pop - specialists
+    const adjust = () => {
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      st.happy = clamp(st.happy, 0, pop);
+      // Transfer surplus → unhappy while unhappy < surplus
+      while (st.surplus > 0 && st.unhappy < st.surplus) { st.surplus--; st.unhappy++; }
+      st.unhappy = clamp(st.unhappy, 0, pop);
+      // Ensure happy + unhappy <= pop - specialists
+      const cap = clamp(pop - totalSpecs, 0, 99);
+      while (st.unhappy + st.happy > cap) {
+        if (st.surplus === 0) { st.happy--; st.happy = clamp(st.happy, 0, pop); }
+        else { st.surplus--; }
+        st.unhappy--;
+        st.unhappy = clamp(st.unhappy, 0, pop);
+      }
+      // Re-add surplus as unhappy if room
+      while (st.surplus > 0 && st.unhappy + st.happy < cap) { st.surplus--; st.unhappy++; }
+    };
+
+    // ── Step 1: Initial unhappy citizens ──
+    if (!isHuman) {
+      // AI: simpler formula (line 4077)
+      st.unhappy = (pop - 1) - (CONTENT_BASE - 5);
+    } else {
+      // Human player: empire-size spread
+      let spread = UNHAPPY_OFFSET + difficulty * -2;
+      if (gs && gs.barbarianActivity === 3) spread += 2;  // raging hordes
+      let divisor = Math.floor(((govt >> 1) + 2) * spread / 2);
+      if (divisor < 2) divisor = 1;
+
+      const contentBase = CONTENT_BASE - difficulty;
+      st.unhappy = (pop - 1) - (contentBase - 2);
+
+      // Empire size penalty (Communism exempt) — line 4094-4098
+      if (govt !== 3) {
+        const cityCount = civData ? civData.cityCount : 1;
+        st.unhappy += Math.floor((cityCount - divisor + cityIndex % divisor) / divisor);
+      }
+    }
+
+    // Clamp: if unhappy > population, track surplus (lines 4100-4103)
+    st.surplus = 0;
+    if (pop < st.unhappy) {
+      st.surplus = st.unhappy - pop;
+      st.unhappy = pop;
+    }
+
+    adjust(); // Phase 0
+
+    // ── Step 2: Luxury effect (line 4106: happy = luxury_output >> 1) ──
+    const grossTileTrade = this._calcGrossTileTrade(city, cityIndex, mapData);
+    const corruption = this._calcTradeCorruption(city, grossTileTrade, mapData);
+    const netTileTrade = Math.max(0, grossTileTrade - corruption);
+    const dist = this._computeTradeDistribution(netTileTrade, city, cityIndex, civData, mapData);
+    st.happy = dist.lux >> 1;
+
+    adjust(); // Phase 1
+
+    // ── Step 3: Colosseum (building 14) — line 4108 ──
+    if (this._cityHasBuilding(city, 14)) {
+      st.unhappy -= 3;
+      if (hasTech(24)) st.unhappy -= 1;  // Electronics: extra -1
+    }
+
+    // ── Step 4: Cathedral (building 11) or Michelangelo's (wonder 10) — line 4116 ──
+    // Prerequisite: Monotheism (tech 55)
+    if (hasTech(55) &&
+        (this._cityHasBuilding(city, 11) || this._hasWonderEffect(mapData, ownerSlot, 10))) {
+      const effect = (hasTech(15) ? 0 : 1)    // Communism tech: -1
+                   + (hasTech(82) ? 3 : 2);    // Theology: +1
+      st.unhappy -= effect;  // Range 2-4
+    }
+
+    // ── Step 5: Temple (building 4) — line 4124 ──
+    if (this._cityHasBuilding(city, 4)) {
+      let templeEffect = 0;
+      if (hasTech(56)) templeEffect++;  // Mysticism
+      if (hasTech(9)) templeEffect++;   // Ceremonial Burial
+      if (this._hasWonderEffect(mapData, ownerSlot, 5)) templeEffect <<= 1;  // Oracle doubles
+      st.unhappy -= templeEffect;
+    }
+
+    // ── Step 5b: Courthouse/Palace + Democracy = +1 happy (line 4138) ──
+    // Binary checks building 7 (Courthouse) OR building 1 (Palace), NOT City Walls
+    if ((this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) && govt === 6) {
+      st.happy += 1;
+    }
+
+    adjust(); // Phase 2
+
+    // ── Step 6: Fundamentalism / Martial law / Military unhappiness ──
+    if (govt === 4) {  // Fundamentalism: zero all unhappiness (line 4144)
+      st.surplus = 0;
+      st.unhappy = 0;
+    } else if (govt < 5) {  // Anarchy/Despotism/Monarchy/Communism: martial law (line 4148)
+      let garrison = 0;
+      for (const u of mapData.units) {
+        if (u.gx === city.gx && u.gy === city.gy && u.owner === ownerSlot &&
+            !this.NON_COMBAT_TYPES.has(u.type)) {
+          garrison += (govt === 3) ? 2 : 1;  // Communism: each unit counts double
+        }
+      }
+      const maxMartial = (govt === 3) ? 6 : 3;
+      if (garrison > maxMartial) garrison = maxMartial;
+      garrison = Math.max(0, Math.min(garrison, st.unhappy));  // clamp to [0, unhappy]
+      st.unhappy -= garrison;
+    } else {  // Republic(5) / Democracy(6): military unhappiness (line 4168)
+      let penalty;
+      if (this._hasWonderEffect(mapData, ownerSlot, 21) ||  // Women's Suffrage
+          this._cityHasBuilding(city, 33)) {                 // Police Station
+        penalty = 0;
+      } else {
+        penalty = 1;
+      }
+      if (govt === 6) penalty++;  // Democracy: +1 per unit abroad
+
+      if (penalty !== 0) {
+        let abroad = 0;
+        for (const u of supported) {
+          if (this.SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
+          if (this.NON_COMBAT_TYPES.has(u.type)) continue;
+          if (this.SEA_TRANSPORT_TYPES.has(u.type)) continue;
+          if (this.SEA_COMBAT_TYPES.has(u.type)) { abroad++; continue; }
+          if (this._isUnitAbroad(u, city, mapData)) abroad++;
+        }
+        if (abroad > 0 && govt === 5) abroad--;  // Republic: one free unit abroad
+        st.unhappy += penalty * abroad;
+      }
+    }
+
+    adjust(); // Phase 3
+
+    // ── Step 7: Wonder effects ──
+    // Hanging Gardens (wonder 1): +1 happy empire-wide, +3 in wonder city (line 4188)
+    if (this._hasWonderEffect(mapData, ownerSlot, 1)) {
+      st.happy += 1;
+      if (this._cityHasWonder(cityIndex, 1, mapData)) st.happy += 2;
+    }
+
+    // Cure for Cancer (wonder 27): +1 happy empire-wide (line 4196)
+    if (this._hasWonderEffect(mapData, ownerSlot, 27)) {
+      st.happy += 1;
+    }
+
+    // Shakespeare's Theatre (wonder 13): all unhappy -> content in wonder city (line 4200)
+    if (this._cityHasWonder(cityIndex, 13, mapData)) {
+      st.unhappy = 0;
+    }
+
+    // J.S. Bach's Cathedral (wonder 15): -2 unhappy empire-wide (line 4204)
+    if (this._hasWonderEffect(mapData, ownerSlot, 15)) {
+      st.unhappy -= 2;
+    }
+
+    adjust(); // Phase 4
+
+    return { happy: st.happy, unhappy: st.unhappy };
   },
 
   // Calculate support overlays per unit (from FUN_004e7eb1 + FUN_00505666)
@@ -726,6 +1047,573 @@ const Civ2CityDialog = {
     const trade = this._calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver, isCenter, city, cityIndex, mapData);
 
     return [food, shields, trade];
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Supply/Demand commodity scoring — port of FUN_0043d400 @ 0x0043D400
+  // (8,227-byte function from decompiled civ2.exe block_00430000.c:4748-5440)
+  //
+  // Computes 3 supply and 3 demand commodities for a city based on:
+  //   - Terrain types in the 21-tile city radius
+  //   - City size, tech level, buildings, wonders
+  //   - Geographic position (latitude, longitude, continent size)
+  //   - Civ identity (French→Wine, Chinese→Silk, Spanish→Spice)
+  //   - Active trade routes and en-route caravans
+  //
+  // Commodity IDs: 0=Hides,1=Wool,2=Beads,3=Cloth,4=Salt,5=Coal,6=Copper,
+  //   7=Dye,8=Wine,9=Silk,10=Silver,11=Spice,12=Gems,13=Gold,14=Oil,15=Uranium
+  //
+  // Returns { supply: [id, id, id], demand: [id, id, id] }
+  //   Negative values = commodity is actively traded (in parentheses in UI)
+  // ═══════════════════════════════════════════════════════════════════
+  _calcSupplyDemand(city, cityIndex, mapData) {
+    if (!mapData.getTerrain || !mapData.getBodyId || !mapData.wrap) return null;
+
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(v, hi));
+    const shiftBySigned = (v, s) => s > 0 ? v << s : s < 0 ? (v >> -s) : v;
+
+    // ── City location and identity ──
+    // Binary uses doubled-x coordinates (city.cx) and raw y (city.cy = city.gy)
+    const gx = city.gx, gy = city.gy;
+    const rawX = city.cx;  // local_90 in binary (doubled-x coordinate)
+    const rawY = city.cy;  // local_98 in binary (= gy)
+    const ownerSlot = city.owner;  // 0-7
+    const civData = mapData.civData && mapData.civData[ownerSlot];
+    const bodyId = mapData.getBodyId(gx, gy);
+
+    // Tech count (local_8c in binary = number of techs known by this civ)
+    const techCount = (mapData.civTechCounts && mapData.civTechCounts[ownerSlot]) || 0;
+
+    // City size tier: (size + 2) / 5, integer division (local_b0)
+    const sizeTier = Math.floor((city.size + 2) / 5);
+
+    // Civ identity for trade bonuses (French=9→Wine, Chinese=11→Silk, Spanish=17→Spice)
+    const rulesCivNum = civData ? civData.rulesCivNumber : 0;
+
+    // civHasTech helper — checks if ownerSlot has a specific tech
+    const civTechs = mapData.civTechs && mapData.civTechs[ownerSlot];
+    const hasTech = (techId) => civTechs ? civTechs.has(techId) : false;
+    // anyCivHasTech — checks if ANY civ knows a tech (for DAT_00655b90-style checks)
+    const anyCivHasTech = (techId) => {
+      if (!mapData.civTechs) return false;
+      for (let i = 0; i < mapData.civTechs.length; i++) {
+        if (mapData.civTechs[i] && mapData.civTechs[i].has(techId)) return true;
+      }
+      return false;
+    };
+
+    // ── Geographic metrics ──
+    // Binary uses DAT_006d1160 (map width in doubled-x) and DAT_006d1162 (map height)
+    const mw = mapData.mw || 1;
+    const mh = mapData.mh || 1;
+    const mw2 = mapData.mw2 || (mw * 2);  // doubled map width = DAT_006d1160
+    // Distance from equator: local_14 = abs(rawY - mh/2)
+    const yDistFromEquator = Math.abs(rawY - (mh >> 1));
+    // Distance from prime meridian: local_6c = abs(rawX - mw2/2)
+    const xDistFromCenter = Math.abs(rawX - (mw2 >> 1));
+    // Directional offsets for body-id scoring (local_94, local_64, local_a0, local_ac)
+    const southOffset = Math.max(0, rawY - (mh >> 1));   // positive if south of equator
+    const eastOffset = Math.max(0, rawX - (mw2 >> 1));   // positive if east of center
+
+    // ── Count terrain types in the 21-tile city radius ──
+    const terrCount = new Array(11).fill(0);
+    let riverCount = 0;      // local_b4
+    let roadCount = 0;   // local_12c — BUG: uninitialized in binary (stack garbage). Affects Copper & Dye demand.
+    const RADIUS = this.CITY_RADIUS_DOUBLED;
+    const parC = gy & 1;
+    for (let i = 0; i < 21; i++) {
+      const [ddx, ddy] = RADIUS[i];
+      const parT = ((gy + ddy) % 2 + 2) % 2;
+      const tgx = gx + ((parC + ddx - parT) >> 1);
+      const tgy = gy + ddy;
+      // Bounds check (thunk_FUN_004087c0)
+      const wgx = mapData.wrap(tgx);
+      if (tgy < 0 || tgy >= mh || wgx < 0 || wgx >= mw) continue;
+      const ter = mapData.getTerrain(tgx, tgy);
+      if (ter >= 0 && ter <= 10) terrCount[ter]++;
+      // Resource bonus: +3 to terrain count (line 4855-4858, FUN_005b8ee1 = check_tile_resource)
+      // FUN_005b8ee1 returns 0 for grassland (terrain 2) — grassland never gets resource bonus
+      if (mapData.getResource && ter !== 2) {
+        const res = mapData.getResource(tgx, tgy);
+        if (res > 0) terrCount[ter >= 0 && ter <= 10 ? ter : 0] += 3;
+      }
+      // River count (line 4859-4862, byte[0] bit 0x80)
+      if (mapData.hasRiver && mapData.hasRiver(tgx, tgy)) riverCount++;
+      // Road count (line 4863-4866, FUN_005b94d5 = get_tile_improvements, bit 0x10)
+      if (mapData.getImprovements) {
+        const imp = mapData.getImprovements(tgx, tgy);
+        if (imp & 0x10) roadCount++;  // road bit
+      }
+    }
+
+    // Merge glacier into tundra, then zero glacier (lines 4869-4870)
+    terrCount[6] += terrCount[7];
+    terrCount[7] = 0;
+
+    // ── Compute continent land tile count for this city's continent ──
+    // (DAT_00666130 + bodyId * 0x10 = continent_land_tile_count)
+    // Compute from map data since this is runtime-only data
+    let continentLandArea = 0;
+    if (bodyId > 0 && mapData.getBodyId) {
+      // Count all land tiles with same bodyId
+      for (let y = 0; y < mh; y++) {
+        for (let x = 0; x < mw; x++) {
+          if (mapData.getTerrain(x, y) !== 10 && mapData.getBodyId(x, y) === bodyId) {
+            continentLandArea++;
+          }
+        }
+      }
+    }
+
+    // ── 16 Supply scores (DAT_0063f668 array, offsets [0]-[15]) ──
+    const supply = new Array(16).fill(0);
+
+    // [0] Hides supply (line 4871-4888)
+    supply[0] = terrCount[9] * 3 + terrCount[6] * 6 + terrCount[3] * 4 + riverCount * 3;
+    if (techCount < 16) supply[0] *= 2;
+    if (techCount < 24) supply[0] <<= 1;
+    if (techCount < 49) {
+      if (city.size < 3) supply[0] <<= 1;
+    } else {
+      supply[0] = Math.trunc(supply[0] / 2);
+    }
+    if (city.size > 7) supply[0] = Math.trunc(supply[0] / 2);
+
+    // [1] Wool supply (line 4889-4893)
+    let woolMult = terrCount[6] + 2;
+    if (yDistFromEquator > Math.trunc(mh / 3)) woolMult = terrCount[6] + 3;
+    supply[1] = (Math.trunc(riverCount / 2) + terrCount[4] * 2 + terrCount[2]) * woolMult;
+
+    // [2] Beads supply (line 4894-4900)
+    supply[2] = terrCount[10] * 8 - yDistFromEquator;
+    if (city.size > 9) supply[2] >>= 1;
+    if (techCount > 32) supply[2] >>= 1;
+
+    // [3] Cloth supply (line 4901-4913)
+    let clothBase = (terrCount[1] * 3 + terrCount[0]) - riverCount;
+    const clothTechMult = clamp(Math.trunc(techCount / 10), 1, 2);
+    supply[3] = clothBase * clothTechMult;
+    if (hasTech(37)) supply[3] = Math.trunc(supply[3] * 3 / 2);  // Industrialization (0x25)
+    if (techCount < 8) supply[3] >>= 1;
+    if (techCount < 16) supply[3] >>= 1;
+
+    // [4] Salt supply (line 4914-4925)
+    supply[4] = (terrCount[10] * 3 + terrCount[0] * 4 + terrCount[8] * 2) - Math.trunc(techCount / 6);
+    if (!hasTech(65)) supply[4] = Math.trunc(supply[4] / 3);  // Radio (0x41)
+    if (this._cityHasBuilding(city, 9)) supply[4] += supply[4] >> 1;  // Aqueduct
+    if ((bodyId & 1) !== 0 && bodyId < 6) supply[4] += supply[4] >> 1;
+
+    // [5] Coal supply (line 4926-4938)
+    supply[5] = (terrCount[9] + terrCount[1] + terrCount[3] + terrCount[8] + 1) * terrCount[4] * 5;
+    let coalShift = Math.trunc(sizeTier / 2);
+    if (coalShift > 2) coalShift = 2;
+    supply[5] = shiftBySigned(supply[5], coalShift - 1);
+    if ((bodyId & 1) !== 0 && bodyId > 1) supply[5] += supply[5] >> 1;
+    if (techCount < 20) supply[5] >>= 1;
+
+    // [6] Copper supply (line 4939-4942)
+    supply[6] = terrCount[5] * 5 + terrCount[4] * 5;
+    if (bodyId !== 0 && (bodyId & 1) === 0) supply[6] *= 2;
+
+    // [7] Dye supply (line 4943-4947)
+    const dyeBase = (terrCount[2] * 5 - terrCount[1]) + riverCount;
+    supply[7] = dyeBase * 2;
+    if (bodyId !== 0 && (bodyId & 3) === 0) supply[7] = dyeBase * 4;
+
+    // [8] Wine supply (line 4948-4966)
+    // local_8 = clamp(riv*5 - tc[2], 0, tc[1]*4), local_1c = clamp(tc[1]*4, 0, local_8)
+    // Since local_8 ≤ tc[1]*4 from first clamp, local_1c = local_8 always
+    const wineA = clamp(riverCount * 5 - terrCount[2], 0, terrCount[1] * 4);
+    const wineB = clamp(terrCount[1] * 4, 0, wineA);  // = wineA (see analysis above)
+    supply[8] = wineB + Math.trunc(((mw2 >> 1) - xDistFromCenter) / 2) + wineA;
+    if (southOffset !== 0) supply[8] >>= 1;
+    supply[8] = shiftBySigned(supply[8], clamp(sizeTier - 1, -2, 1));
+    if (((bodyId - 2) & 3) === 0) supply[8] += supply[8] >> 1;  // bodyId ≡ 2 (mod 4)
+    if (rulesCivNum === 9) supply[8] <<= 1;  // French bonus
+    if (city.size > 10) supply[8] >>= 1;
+
+    // [9] Silk supply (line 4967-4974 + 4989-4991)
+    supply[9] = (terrCount[3] * 2 + terrCount[9] + 1) * (terrCount[4] + 1);
+    if (supply[9] !== 0) {
+      supply[9] += eastOffset * 2;
+      if (bodyId !== 0 && bodyId % 5 === 0) supply[9] *= 2;
+    }
+    if (rulesCivNum === 11) supply[9] <<= 1;  // Chinese bonus
+
+    // [10] Silver/Iron supply (line 4975-4988)
+    supply[10] = terrCount[5] * 8;
+    if (supply[10] !== 0) {
+      supply[10] += terrCount[4] + xDistFromCenter;
+      if (!hasTech(39)) supply[10] >>= 1;  // Iron Working (0x27)
+      if (bodyId > 8) supply[10] += supply[10] >> 1;
+      if (city.size < 5) supply[10] >>= 1;
+    }
+    // Line 4989: rulesCivNum == 10 → double supply[9] (Silk)
+    // rulesCivNum 10 = Indian. Actually, checking RULES.TXT civ order:
+    // 0=Roman,1=Babylonian,2=German,3=Egyptian,4=American,5=Greek,6=Indian,7=Russian,
+    // 8=Zulu,9=French,10=Aztec,11=Chinese,12=English,13=Celts,14=Japanese,15=Viking,
+    // 16=Spanish,17=Persian,18=Carthaginian,19=Arab,20=Sioux
+    // So rulesCivNum 10 = Aztec. Interesting — Aztecs get a silk bonus too.
+    if (rulesCivNum === 10) supply[9] <<= 1;  // Aztec bonus to silk
+
+    // [11] Spice supply (line 4992-5008)
+    supply[11] = (terrCount[9] * 3 + terrCount[8] * 2 + terrCount[0] * 2) *
+                 Math.trunc((terrCount[10] + riverCount) / 2);
+    if (supply[11] !== 0) {
+      if (yDistFromEquator < 10) supply[11] *= 2;
+      supply[11] -= yDistFromEquator;
+      // Continent land area check (line 4999-5004)
+      if (continentLandArea < 26) supply[11] += supply[11] >> 1;
+      if (continentLandArea > 300) supply[11] >>= 1;
+      if (bodyId === 1) supply[11] >>= 1;
+    }
+
+    // [12] Gems supply (line 5009-5016)
+    supply[12] = (terrCount[5] + 1) * (terrCount[8] + 1) * (terrCount[0] + 1) + terrCount[1];
+    if (supply[12] !== 0) {
+      const gemsSizeMult = clamp(sizeTier, 1, 4);
+      supply[12] = Math.trunc(gemsSizeMult * supply[12] / 2);
+      if (bodyId === 7) supply[12] += supply[12] >> 1;
+    }
+
+    // [13] Gold supply (line 5017-5026)
+    supply[13] = (terrCount[5] + Math.trunc(terrCount[4] / 2) + 1) * (riverCount + 2);
+    if (terrCount[5] > 2) supply[13] *= 2;
+    if (city.size > 4) supply[13] <<= 1;
+    if (city.size > 9) supply[13] <<= 1;
+
+    // [14] Oil/Spice supply (line 5027-5043)
+    supply[14] = terrCount[6] * 8 + terrCount[0] * 10 + terrCount[8] * 6 + terrCount[7] * 12;
+    // DAT_00655b90 = tech_known_bitmask[14] = whether anyone knows Navigation (tech 14)
+    if (!anyCivHasTech(14)) supply[14] >>= 3;  // Navigation
+    if (supply[14] === 0) {
+      supply[14] = -1;  // disabled
+    } else {
+      if (bodyId === 17) supply[14] *= 3;  // specific continent
+      else if (bodyId > 1 && ((bodyId - 1) & 7) === 0) supply[14] += supply[14] >> 1;
+      const oilSizeMult = clamp(Math.trunc(sizeTier / 2) - 2, 1, 2);
+      supply[14] = oilSizeMult * supply[14];
+    }
+
+    // [15] Uranium supply (line 5044-5062)
+    supply[15] = (terrCount[6] + terrCount[0] + 1) * (terrCount[4] + riverCount + 1) * (terrCount[5] + 1);
+    if (!hasTech(58)) supply[15] = 0;  // Nuclear Fission (0x3a) required
+    if (supply[15] === 0) {
+      supply[15] = -1;  // disabled
+    } else {
+      if (bodyId !== 0 && bodyId % 10 === 0) supply[15] += supply[15] >> 1;
+      let uraniumSize = sizeTier;
+      if (uraniumSize > 5) uraniumSize = 6;
+      supply[15] = Math.trunc(supply[15] * uraniumSize / 6);
+    }
+
+    // ── 16 Demand scores (DAT_0063f540 array, offsets [0]-[15]) ──
+    const demand = new Array(16).fill(0);
+
+    // [0] Hides demand (line 5063-5087)
+    demand[0] = (terrCount[6] + terrCount[7]) * 5 + Math.trunc(yDistFromEquator * 3 / 2) +
+                terrCount[5] * 2 + terrCount[3];
+    const hidesTechScore = Math.trunc(Math.trunc(techCount / 10) * demand[0]);
+    demand[3] = terrCount[4] * 4 + terrCount[3] * 4 + ((hidesTechScore + (hidesTechScore < 0 ? 7 : 0)) >> 3);
+    // demand[3] is set here (Cloth demand, line 5066-5067: _DAT_0063f54c)
+    if (city.size < 3) demand[0] *= 2;
+    if (hasTech(37)) demand[0] = Math.trunc(demand[0] / 3);  // Industrialization
+    if (hasTech(48)) demand[0] = 1;  // Mass Production (0x30)
+    if (techCount < 10) demand[0] <<= 1;
+    if (techCount < 20) demand[0] <<= 1;
+    if (techCount > 47) demand[0] = Math.trunc(demand[0] / 2);
+
+    // [1] Wool demand (line 5088-5093)
+    // abs(mh/4 - yDistFromEquator)
+    const quartDist = Math.abs((mh >> 2) - yDistFromEquator);
+    demand[1] = quartDist * 2 + terrCount[1] * 2 + terrCount[3];
+    if (hasTech(37)) demand[1] <<= 1;  // Industrialization
+
+    // [2] Beads demand (line 5099-5108)
+    demand[2] = yDistFromEquator + Math.trunc((21 - terrCount[10]) * 3 / 2);
+    if (city.size < 4) demand[2] += demand[2] >> 1;
+    if (city.size > 11) demand[2] = Math.trunc(demand[2] / 2);
+    if (techCount > 47) demand[2] = Math.trunc(demand[2] / 2);
+
+    // [3] Cloth demand — already set above (line 5066-5067)
+    // demand[3] was set during Hides demand computation
+
+    // [4] Salt demand (line 5109-5116)
+    // Loop: distributes size across decreasing multipliers
+    let saltDemand = 0;
+    let saltMult = 8;
+    let sizeRemaining = city.size;
+    while (saltMult !== 0 && sizeRemaining > 0) {
+      const chunk = clamp(sizeRemaining, 0, 5);
+      saltDemand += chunk * saltMult;
+      saltMult = Math.trunc(saltMult / 2);
+      sizeRemaining -= chunk;
+    }
+    demand[4] = saltDemand - Math.trunc(techCount / 2);
+
+    // [5] Coal demand (line 5117-5131)
+    demand[5] = (yDistFromEquator + 10) * sizeTier + techCount;
+    if (city.size < 5) demand[5] = 0;
+    if (city.size < 8) demand[5] >>= 1;
+    if (hasTech(37)) demand[5] <<= 1;  // Industrialization
+    if (hasTech(23)) demand[5] <<= 1;  // Electricity (0x17)
+    if (this._cityHasBuilding(city, 19)) demand[5] <<= 1;  // Power Plant (building 19 = 0x13)
+    // Hydro Plant (20=0x14), Nuclear Plant (21=0x15), or Solar Plant (29=0x1d)
+    if (this._cityHasBuilding(city, 20) || this._cityHasBuilding(city, 21) ||
+        this._cityHasBuilding(city, 29)) {
+      demand[5] >>= 3;
+    }
+
+    // [6] Copper demand (line 5141-5163)
+    demand[6] = (riverCount + roadCount + 1) * sizeTier;
+    if (demand[6] <= supply[6]) demand[6] >>= 1;
+    if (this._cityHasBuilding(city, 5)) demand[6] += demand[6] >> 1;  // Marketplace (wonder 5)
+    // Actually building 5 = Marketplace. Let me re-check: thunk_FUN_0043d20a is city-has-building.
+    // Line 5145: iVar5 = thunk_FUN_0043d20a(param_1, 5) → cityHasBuilding(city, 5) = Marketplace
+    if (this._cityHasBuilding(city, 10)) demand[6] += demand[6] >> 1;  // Bank
+    if (hasTech(23)) demand[6] += demand[6] >> 1;  // Electricity (0x17)
+    if (hasTech(16)) demand[6] = (demand[6] + (demand[6] < 0 ? 3 : 0)) >> 2;  // Computers (0x10)
+    if (city.size < 5) demand[6] >>= 1;
+
+    // [7] Dye demand (line 5164-5172)
+    demand[7] = supply[3] + roadCount;
+    if (hasTech(10)) demand[7] = Math.trunc(demand[7] / 2);  // Chemistry (0x0a)
+    if (hasTech(48)) demand[7] = Math.trunc(demand[7] / 2);  // Mass Production (0x30)
+
+    // [8] Wine demand (line 5173-5194)
+    // abs(rawX - rawY) — absolute difference of doubled-x and y coordinates
+    const coordDiff = Math.abs(rawX - rawY);
+    demand[8] = sizeTier * 4 + 4 + coordDiff;
+
+    // [9] Silk demand (line 5185-5194)
+    demand[9] = ((mh >> 1) - yDistFromEquator) * 2 - xDistFromCenter + (mw2 >> 1) +
+                terrCount[9] * 4 + Math.trunc(terrCount[1] / 2) + terrCount[8] * 2 + terrCount[0] * 4;
+    demand[9] = shiftBySigned(demand[9], clamp(sizeTier - 1, -1, 1));
+    if (bodyId === 1 && (cityIndex & 2) !== 0) demand[9] += demand[9] >> 1;
+    if (city.size < 7) demand[9] >>= 1;
+
+    // [10] Silver demand — city.size * 8 (line 5195)
+    demand[10] = city.size << 3;
+
+    // [11] Spice demand — 0 (line 5196)
+    demand[11] = 0;
+
+    // [12] Gems demand — 0 (line 5197)
+    // Actually line 5197: _DAT_0063f570 = 0, line 5198-5208 set it conditionally
+    demand[12] = 0;
+
+    // Special commodity assignment based on (rawX + rawY) % 3 (lines 5198-5208)
+    // Determines which slot (10=Silver, 12=Gems, 13=Gold) gets the "population demand"
+    let specialSlot = 10;  // default: Silver gets demand[10] = size*8
+    const coordMod3 = (rawX + rawY) % 3;
+    if (coordMod3 === 1) {
+      specialSlot = 12;  // Gems
+      demand[12] = demand[10];  // copy size*8 to Gems
+      demand[10] = 0;
+    } else if (coordMod3 === 2) {
+      specialSlot = 13;  // Gold
+      demand[13] = demand[10];  // copy size*8 to Gold
+      demand[10] = 0;
+    }
+
+    // Apply modifiers to the special slot (lines 5209-5227)
+    // Copernicus (11) or Marco Polo wonder (10) → ×1.5
+    if (this._cityHasBuilding(city, 11) || this._civHasWonder(mapData, ownerSlot, 10)) {
+      demand[specialSlot] = Math.trunc(demand[specialSlot] * 3 / 2);
+    }
+    // Bank (building 10)
+    if (this._cityHasBuilding(city, 10)) {
+      demand[specialSlot] = Math.trunc(demand[specialSlot] * 3 / 2);
+    }
+    // Economics tech (0x16 = 22)
+    if (hasTech(22)) demand[specialSlot] >>= 1;
+    // Computers tech (0x10 = 16)
+    if (hasTech(16)) demand[specialSlot] >>= 1;
+    // Spanish (rulesCivNum == 17) → double
+    if (rulesCivNum === 17) demand[specialSlot] <<= 1;
+
+    // [11] Spice demand (continued, lines 5228-5248)
+    // Wait — let me re-check. Line 5195 sets DAT_0063f568 = size*8.
+    // DAT_0063f568 = 0x568 - 0x540 = 0x28 = 40, /4 = 10. Yes that's demand[10].
+    // Lines 5209-5227 apply modifiers to demand[specialSlot].
+    // Now line 5228-5248: DAT_0063f56c = Spice demand (offset 0x56c - 0x540 = 0x2c = 44, /4 = 11)
+    const continentLandDiv10 = Math.trunc(continentLandArea / 10);  // *(short*)(DAT_00666130 + bodyId*0x10) / 10
+    const techMinus12 = Math.max(techCount - 12, 0);
+    demand[11] = continentLandDiv10 - techMinus12;
+    if (city.size < 4) demand[11] = Math.trunc(demand[11] / 2);
+    if (continentLandArea > 400) {
+      if (city.size > 7) demand[11] <<= 1;
+      // (-(rawX) - rawY) & 3 == 0 → zero demand
+      if (((-rawX - rawY) & 3) === 0) demand[11] = 0;
+    }
+    if (hasTech(70)) demand[11] >>= 1;  // Republic (0x46)
+
+    // [14] Oil demand (line 5249-5289)
+    if (!hasTech(37)) {
+      demand[14] = -1;  // No Industrialization → Oil not demanded
+    } else {
+      demand[14] = Math.trunc(techCount / 3) * (sizeTier + 2);
+      if (demand[14] <= supply[14]) demand[14] >>= 1;
+      if (this._cityHasBuilding(city, 15)) {  // Factory (building 15 = 0x0f)
+        demand[14] = Math.trunc(demand[14] * 3 / 2);
+      } else {
+        if (city.size < 5) demand[14] >>= 1;
+        if (city.size < 10) demand[14] >>= 1;
+        if (city.size < 20) demand[14] >>= 1;
+      }
+      if (hasTech(5)) demand[14] *= 3;  // Automobile (tech 5)
+      if (this._cityHasBuilding(city, 25)) demand[14] <<= 1;  // Superhighways (building 25 = 0x19)
+      if (this._cityHasBuilding(city, 13)) demand[14] >>= 1;  // Mass Transit (building 13 = 0x0d)
+      if (this._cityHasBuilding(city, 18)) demand[14] >>= 1;  // Recycling Center (building 18 = 0x12)
+    }
+
+    // [15] Uranium demand (line 5290-5302)
+    if (!hasTech(58)) {
+      demand[15] = -1;  // No Nuclear Fission → not demanded
+    } else {
+      demand[15] = techCount * techCount;
+      demand[15] = shiftBySigned(demand[15], clamp(sizeTier - 3, -3, 0));
+      // Nuclear Plant (21 = 0x15) or SDI (17 = 0x11)
+      if (this._cityHasBuilding(city, 21) || this._cityHasBuilding(city, 17)) {
+        demand[15] <<= 1;
+      }
+    }
+
+    // ── Zero the lesser of supply vs demand for each commodity (lines 5303-5312) ──
+    const preZeroSupply = [...supply];
+    const preZeroDemand = [...demand];
+    for (let i = 0; i < 16; i++) {
+      if (supply[i] < demand[i]) {
+        if (supply[i] > 0) supply[i] = 0;
+      } else {
+        if (demand[i] > 0) demand[i] = 0;
+      }
+    }
+
+    // ── Sort and pick top 3 for each (lines 5313-5338) ──
+    // Create index arrays and sort by score (descending)
+    const supplyIdx = Array.from({length: 16}, (_, i) => i);
+    const demandIdx = Array.from({length: 16}, (_, i) => i);
+    // Bubble sort by score (ascending — then pick from end)
+    supplyIdx.sort((a, b) => supply[a] - supply[b]);
+    demandIdx.sort((a, b) => demand[a] - demand[b]);
+
+    // Pick top 3 supply (from end, skipping negative scores)
+    const supplyResult = [];
+    let si = 15;
+    for (let i = 0; i < 3; i++) {
+      while (si >= 0 && supply[supplyIdx[si]] < 0) si--;
+      if (si >= 0) { supplyResult.push(supplyIdx[si]); si--; }
+      else supplyResult.push(0);
+    }
+
+    // Pick top 3 demand (from end, skipping negative scores)
+    const demandResult = [];
+    let di = 15;
+    for (let i = 0; i < 3; i++) {
+      while (di >= 0 && demand[demandIdx[di]] < 0) di--;
+      if (di >= 0) { demandResult.push(demandIdx[di]); di--; }
+      else demandResult.push(0);
+    }
+
+    const finalSupply = [...supplyResult];
+    const finalDemand = [...demandResult];
+
+    // ── Special commodity overwrite (lines 5339-5397) ──
+    // Binary variables: local_60 → overwrites demand[1], local_c → overwrites supply[1]
+    // Coordinate-based hashing assigns Oil (14) or Uranium (15) to specific cities
+    let specDemandHash, specSupplyHash;
+    if (techCount < 32) {
+      specDemandHash = ((rawY * 5 + rawX * 3) % 14);
+      specSupplyHash = ((rawY * 7 + rawX * 13) % 14);
+    } else {
+      specDemandHash = ((rawY * 5 + rawX * 3) % 9) + 5;
+      specSupplyHash = ((rawY * 7 + rawX * 13) % 9) + 5;
+    }
+    if (specSupplyHash === specDemandHash) specSupplyHash = -2;
+
+    // Check overlap with existing results
+    let specFlags = 0;  // bit 1 = demand already has >13, bit 2 = supply already has >13
+    for (let i = 0; i < 3; i++) {
+      if (finalDemand[i] > 13) specFlags |= 1;
+      if (finalSupply[i] > 13) specFlags |= 2;
+      if (finalSupply[i] === specDemandHash || finalDemand[i] === specDemandHash) specDemandHash = -2;
+      if (finalSupply[i] === specSupplyHash || finalDemand[i] === specSupplyHash) specSupplyHash = -2;
+    }
+
+    // Resolve special demand (local_60 → overwrites finalDemand[1])
+    // Binary logic (lines 5371-5382): Industrialization + odd hash → Oil; Nuc Fission + even → Uranium
+    if (specDemandHash < 0 && (specFlags & 1) === 0) {
+      if (hasTech(37) && (specDemandHash & 1) !== 0) {
+        specDemandHash = 14;  // Oil (Industrialization + odd hash)
+      } else if (hasTech(58) && (specDemandHash & 1) === 0) {
+        specDemandHash = 15;  // Uranium (Nuclear Fission + even hash)
+      }
+    }
+    if (specDemandHash >= 0) finalDemand[1] = specDemandHash;
+
+    // Resolve special supply (local_c → overwrites finalSupply[1])
+    if (specSupplyHash < 0 && (specFlags & 2) === 0) {
+      specSupplyHash = (specSupplyHash & 1) + 14;  // Oil (14) or Uranium (15)
+      if (specSupplyHash === 14 && !hasTech(37)) specSupplyHash = -1;
+      if (specSupplyHash === 15 && !hasTech(58)) specSupplyHash = -1;
+    }
+    if (specSupplyHash >= 0) finalSupply[1] = specSupplyHash;
+
+    // ── Negate actively-traded commodities (lines 5398-5437) ──
+    // Trade routes: negate supply commodities that are being exported
+    if (city.tradeRouteCount > 0) {
+      for (let r = 0; r < city.tradeRouteCount; r++) {
+        const routeCommodity = city.tradeCommoditiesInRoute[r];
+        if (routeCommodity < 0) continue;  // -1 = no commodity
+        // Negate matching supply
+        for (let j = 0; j < 3; j++) {
+          if (finalSupply[j] === routeCommodity) finalSupply[j] = -finalSupply[j];
+        }
+        // Also negate demand in partner city's supply (we check partner's route back to us)
+        const partnerId = city.tradePartnerCityIds[r];
+        if (partnerId === 0xFFFF || !mapData.cities) continue;
+        const partner = mapData.cities[partnerId];
+        if (!partner) continue;
+        // Find what commodity the partner is sending to us
+        let partnerCommodity = -1;
+        if (partner.tradeRouteCount > 0) {
+          for (let pr = 0; pr < partner.tradeRouteCount; pr++) {
+            if (partner.tradePartnerCityIds[pr] === cityIndex) {
+              partnerCommodity = partner.tradeCommoditiesInRoute[pr];
+              break;
+            }
+          }
+        }
+        if (partnerCommodity >= 0) {
+          for (let j = 0; j < 3; j++) {
+            if (finalDemand[j] === partnerCommodity) finalDemand[j] = -finalDemand[j];
+          }
+        }
+      }
+    }
+
+    // Negate supply for commodities carried by en-route caravans/freight from this city
+    // (lines 5425-5437: scan unit array for trade units homed to this city)
+    // Binary checks: alive, unit[+0x10] == cityIndex (home city), type role == 7, unit[+0x0D] >= 0
+    // In save file: homeCityId is at +16 (uint16), cargoWorkFuel at +13 holds commodity for trade units
+    if (mapData.units) {
+      for (const unit of mapData.units) {
+        if (unit.homeCityId !== cityIndex) continue;
+        // Trade unit types: 48 (Caravan) and 49 (Freight), role 7
+        if (unit.type !== 48 && unit.type !== 49) continue;
+        const commodity = unit.cargoWorkFuel;
+        if (commodity == null || commodity < 0) continue;
+        for (let j = 0; j < 3; j++) {
+          if (finalSupply[j] === commodity) finalSupply[j] = -finalSupply[j];
+        }
+      }
+    }
+
+    return { supply: finalSupply, demand: finalDemand, supplyScores: supply, demandScores: demand,
+             preZeroSupply, preZeroDemand,
+             terrCount, riverCount, roadCount, bodyId, techCount, sizeTier, citySize: city.size,
+             continentLandArea, rawX, rawY, yDistFromEquator, xDistFromCenter, rulesCivNum };
   },
 
   // Scale a sprite canvas to a target size
@@ -1153,12 +2041,12 @@ const Civ2CityDialog = {
     this._label(ctx, 'Resource Map', L.resourceMap.x, L.resourceMap.y);
   },
 
-  _drawCitizens(ctx, city, epoch, cdSprites, specs) {
+  _drawCitizens(ctx, city, epoch, cdSprites, specs, computed) {
     if (!(cdSprites && cdSprites.citizens)) return;
     const R = this.REGIONS.citizens;
     const eraRow = Math.min(epoch, 3);
-    const happy = city.happyCitizens || 0;
-    const unhappy = city.unhappyCitizens || 0;
+    const happy = computed ? computed.happy : (city.happyCitizens || 0);
+    const unhappy = computed ? computed.unhappy : (city.unhappyCitizens || 0);
     const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
     const content = Math.max(0, city.size - happy - unhappy - totalSpecs);
     const faceSpace = this._citizenSpacing(city.size);
@@ -1683,20 +2571,20 @@ const Civ2CityDialog = {
     const RES = this.REGIONS.resources;
 
     const dpr = window.devicePixelRatio || 1;
-    // Luxury computed from trade distribution formula (FUN_004ea1f6)
-    // city.totalTrade is NET trade (after corruption, before rate split)
-    const luxOutput = this._computeLuxury(city, civData, mapData);
-    // Corruption = gross tile trade - netBaseTrade (city+30, base trade after corruption)
+    // Trade/corruption computed fresh from tiles + distance formula (FUN_004ea8e4 lines 4027-4034)
+    // Stored values (city.netBaseTrade, city.totalTrade) may be stale from previous government
     const grossTileTrade = this._calcGrossTileTrade(city, cityIndex, mapData);
-    const corruption = Math.max(0, grossTileTrade - (city.netBaseTrade || 0));
+    const corruption = this._calcTradeCorruption(city, grossTileTrade, mapData);
+    const netTileTrade = Math.max(0, grossTileTrade - corruption);
+    // Full trade distribution from fresh net trade (FUN_004ea1f6)
+    const dist = this._computeTradeDistribution(netTileTrade, city, cityIndex, civData, mapData);
     // Support cost: only units exceeding free support limit (government-dependent)
     const government = this._getCityGovernment(city, mapData);
     const overlays = this._calcUnitSupportOverlays(supported, city, government, mapData);
     const support = overlays.filter(ov => ov.shield).length;
-    const netShields = city.shieldProduction || 0;  // net = gross - waste
     const grossShields = this._calcGrossShields(city, cityIndex, mapData);
-    const waste = Math.max(0, grossShields - netShields);
-    const surplus = Math.max(0, netShields - support);
+    const waste = this._calcShieldWaste(city, grossShields, support, mapData);
+    const surplus = Math.max(0, grossShields - support - waste);
     const sciRate = civData ? (civData.scienceRate || 0) * 10 : 0;
     const taxRate = civData ? (civData.taxRate || 0) * 10 : 0;
     const luxRate = 100 - sciRate - taxRate;
@@ -1747,7 +2635,7 @@ const Civ2CityDialog = {
 
     // Row 2: TRADE
     const tradeR = RES.trade;
-    const tradeTotal = city.totalTrade || 0;
+    const tradeTotal = netTileTrade;
     ctx.textAlign = 'left';
     this._text(ctx, `Trade: ${tradeTotal}`, tradeR.textX, tradeR.textY, 'rgb(239,159,7)', '600 12px Arial, sans-serif');
     ctx.textAlign = 'right';
@@ -1769,9 +2657,9 @@ const Civ2CityDialog = {
 
     // Row 3: TAX / LUX / SCI — matching binary FUN_005025d5 lines 1949-2117
     const tlsR = RES.taxLuxSci;
-    const taxCount = city.taxOutput || 0;
-    const sciCount = city.scienceOutput || 0;
-    const luxCount = luxOutput;
+    const taxCount = dist.tax;
+    const sciCount = dist.sci;
+    const luxCount = dist.lux;
 
     // Text labels: tax left, lux center, sci right (normal case)
     const textY = tlsR.iconY + 1 + 14 + 2;
@@ -2258,7 +3146,7 @@ const Civ2CityDialog = {
       if (thumb) {
         ctx.drawImage(thumb, R.thumbX, R.thumbY + R.rowH * i, R.thumbW, R.thumbH);
       }
-      const nameColor = imp.isWonder ? C.wonder : '#fff';
+      const nameColor = '#fff';
       ctx.textBaseline = 'middle';
       this._text(ctx, imp.name, R.nameX, R.thumbY + R.rowH * i + R.thumbH / 2, nameColor);
       ctx.textBaseline = 'alphabetic';
@@ -2329,24 +3217,24 @@ const Civ2CityDialog = {
 
   infoPanelMode: 0,
 
-  _drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites) {
+  _drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites, computed, happiness) {
     const R = this.REGIONS.infoPanel;
     const C = this.COL;
     const mode = this.infoPanelMode || 0;
 
     if (mode === 0) {
       // Mode 0: Units Present + trade text
-      this._drawInfoPanelUnits(ctx, city, mapData, cdSprites, mapSprites);
+      this._drawInfoPanelUnits(ctx, city, mapData, cdSprites, mapSprites, computed);
     } else if (mode === 1) {
       // Mode 1: Mini-map
       this._drawInfoPanelMap(ctx, city, mapData);
     } else if (mode === 2) {
       // Mode 2: Happiness
-      this._drawInfoPanelHappy(ctx, city);
+      this._drawInfoPanelHappy(ctx, city, happiness);
     }
   },
 
-  _drawInfoPanelUnits(ctx, city, mapData, cdSprites, mapSprites) {
+  _drawInfoPanelUnits(ctx, city, mapData, cdSprites, mapSprites, computed) {
     const R = this.REGIONS.infoPanel;
     const C = this.COL;
     const garrison = this.getGarrisonedUnits(city, mapData);
@@ -2394,20 +3282,25 @@ const Civ2CityDialog = {
     }
 
     // Trade text at bottom of info panel
+    // Use freshly computed supply/demand (FUN_0043d400 port) when available, fall back to save file values
     ctx.font = '400 12px Arial, sans-serif';
-    const suppliedNames = [];
-    if (city.tradeCommoditiesAvail) {
-      for (const cIdx of city.tradeCommoditiesAvail) {
-        if (cIdx !== undefined && cIdx < 16) suppliedNames.push(this.COMMODITY_NAMES[cIdx]);
-      }
-    }
+    const formatCommodity = (val) => {
+      if (val < 0) return `(${this.COMMODITY_NAMES[-val]})`;
+      return this.COMMODITY_NAMES[val];
+    };
+    const formatSavedByte = (raw) => {
+      const signed = raw > 127 ? raw - 256 : raw;
+      if (signed < 0) return `(${this.COMMODITY_NAMES[-signed]})`;
+      return this.COMMODITY_NAMES[signed];
+    };
+
+    // Use save-file values for display. The game's FUN_0043d400 has an uninitialized stack
+    // variable (local_12c) making exact reproduction impossible from save data alone.
+    // Additionally, saved values may be stale (recalculated every 16 turns per city).
+    // Computed values are logged to console for research/diagnostic comparison.
+    const suppliedNames = (city.tradeCommoditiesAvail || []).filter(r => r !== undefined).map(formatSavedByte);
+    const demandedNames = (city.tradeCommoditiesDemand || []).filter(r => r !== undefined).map(formatSavedByte);
     this._text(ctx, `Supplies: ${suppliedNames.join(', ') || 'None'}`, R.tradeX, R.suppliesY, 'rgb(227,83,15)', null, C.headerShadow);
-    const demandedNames = [];
-    if (city.tradeCommoditiesDemand) {
-      for (const cIdx of city.tradeCommoditiesDemand) {
-        if (cIdx !== undefined && cIdx < 16) demandedNames.push(this.COMMODITY_NAMES[cIdx]);
-      }
-    }
     this._text(ctx, `Demands: ${demandedNames.join(', ') || 'None'}`, R.tradeX, R.demandsY, 'rgb(227,83,15)', null, C.headerShadow);
     if (city.tradeRouteCount > 0) {
       for (let i = 0; i < Math.min(3, city.tradeRouteCount); i++) {
@@ -2473,7 +3366,7 @@ const Civ2CityDialog = {
     ctx.fillRect(cx - 2, cy - 2, 5, 5);
   },
 
-  _drawInfoPanelHappy(ctx, city) {
+  _drawInfoPanelHappy(ctx, city, happiness) {
     const R = this.REGIONS.infoPanel;
     this._label(ctx, 'Happy', R.x + R.w / 2, R.y + 12);
 
@@ -2486,8 +3379,8 @@ const Civ2CityDialog = {
     const rowLabels = ['Happy', 'Content', 'Unhappy', 'Entertainers', 'Taxmen'];
     const rowColors = ['rgb(0,200,0)', 'rgb(200,200,0)', 'rgb(200,0,0)', 'rgb(200,100,200)', 'rgb(200,200,100)'];
 
-    const happy = city.happyCitizens || 0;
-    const unhappy = city.unhappyCitizens || 0;
+    const happy = happiness ? happiness.happy : (city.happyCitizens || 0);
+    const unhappy = happiness ? happiness.unhappy : (city.unhappyCitizens || 0);
     const specs = this.getSpecialists(city);
     const content = Math.max(0, city.size - happy - unhappy - specs.entertainer - specs.taxman - specs.scientist);
     const rowCounts = [happy, content, unhappy, specs.entertainer, specs.taxman];
@@ -2643,16 +3536,39 @@ const Civ2CityDialog = {
     const specs = this.getSpecialists(city);
     const supported = this.getSupportedUnits(cityIndex, mapData);
 
+    // Compute fresh supply/demand (FUN_0043d400 port) and log comparison with save file values
+    const computed = this._calcSupplyDemand(city, cityIndex, mapData);
+    if (computed) {
+      const N = this.COMMODITY_NAMES;
+      const fmt = arr => arr.map(v => v < 0 ? `(${N[-v]})` : N[v]).join(', ');
+      const saved = {
+        supply: (city.tradeCommoditiesAvail || []).map(r => { const s = r > 127 ? r - 256 : r; return s; }),
+        demand: (city.tradeCommoditiesDemand || []).map(r => { const s = r > 127 ? r - 256 : r; return s; }),
+      };
+      const match = fmt(computed.supply) === fmt(saved.supply) && fmt(computed.demand) === fmt(saved.demand);
+      console.log(`[SupplyDemand] ${city.name}: ${match ? '✓ MATCH vs saved' : '✗ DIFFERS from saved (stale save or local_12c bug)'} computed=[${fmt(computed.supply)}] / [${fmt(computed.demand)}] | saved=[${fmt(saved.supply)}] / [${fmt(saved.demand)}]`);
+      const T = ['Dsr','Pln','Grs','For','Hil','Mtn','Tun','Glc','Swp','Jng','Ocn'];
+      console.log(`  terrain=[${computed.terrCount.map((v,i)=>T[i]+':'+v).join(' ')}] river=${computed.riverCount} road=${computed.roadCount} body=${computed.bodyId} tc=${computed.techCount} sz=${computed.sizeTier} citySize=${computed.citySize} area=${computed.continentLandArea} cx=${computed.rawX} cy=${computed.rawY} yDE=${computed.yDistFromEquator} xDC=${computed.xDistFromCenter} civ#=${computed.rulesCivNum}`);
+      console.log(`  preZeroSupply=[${computed.preZeroSupply.map((v,i)=>N[i]+':'+v).join(' ')}]`);
+      console.log(`  preZeroDemand=[${computed.preZeroDemand.map((v,i)=>N[i]+':'+v).join(' ')}]`);
+      console.log(`  postZeroSupply=[${computed.supplyScores.map((v,i)=>N[i]+':'+v).join(' ')}]`);
+      console.log(`  postZeroDemand=[${computed.demandScores.map((v,i)=>N[i]+':'+v).join(' ')}]`);
+    }
+
+    // Compute happiness from first principles (FUN_004ea8e4 port)
+    const happiness = this._calcHappiness(city, cityIndex, mapData, civData, supported);
+    console.log(`[Happiness] ${city.name}: computed happy=${happiness.happy} unhappy=${happiness.unhappy} | saved happy=${city.happyCitizens||0} unhappy=${city.unhappyCitizens||0}`);
+
     this._drawBackground(ctx, cdSprites);
     this._drawLabels(ctx);
-    this._drawCitizens(ctx, city, epoch, cdSprites, specs);
+    this._drawCitizens(ctx, city, epoch, cdSprites, specs, happiness);
     this._drawResourceMap(ctx, city, cityIndex, mapData, cdSprites, mapSprites);
     this._drawResourceRows(ctx, city, cityIndex, cdSprites, civData, supported, mapData);
     this._drawFoodStorage(ctx, city, cdSprites, mapData);
     this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);
     this._drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites);
     this._drawImprovements(ctx, city, cityIndex, mapData, cdSprites);
-    this._drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites);
+    this._drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites, computed, happiness);
     this._drawButtons(ctx, cdSprites);
 
     ctx.restore();

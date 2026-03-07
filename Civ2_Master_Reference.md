@@ -872,7 +872,7 @@ Four rows of resource icons from ICONS.GIF (14×14px each). Each row shows a cou
 | Tax+Lux+Sci | ~141 | Tax (gold), Luxury (blue), Science (beaker) | Combined on one row |
 | Support/Waste/Production | ~181 | Support shields (unit maintenance) | Waste (dark shields, centered) then Production shields (right) |
 
-Text labels above each row show names and numeric values (e.g., "Food: 12", "Surplus: 3"). Shield row has three groups left-to-right: Support (light blue bar, palette 0x54), Waste (near-black bar rgb(11,11,11), palette 0x0B, dark shield icons from ICONS.GIF shortage sprite at (16,290), centered in bar, only shown when waste > 0), Production (dark blue bar, palette 0x5C, right-aligned). Waste = grossShields − netShields (city.shieldProduction). The waste bar extends from the waste icons to the left edge of the production bar.
+Text labels above each row show names and numeric values (e.g., "Food: 12", "Surplus: 3"). Shield row has three groups left-to-right: Support (light blue bar, palette 0x54), Waste (near-black bar rgb(11,11,11), palette 0x0B, dark shield icons from ICONS.GIF shortage sprite at (16,290), centered in bar, only shown when waste > 0), Production (dark blue bar, palette 0x5C, right-aligned). The waste bar extends from the waste icons to the left edge of the production bar. Shield waste is computed independently from the distance-to-capital formula (FUN_004e989a), NOT from `grossShields − city.shieldProduction`. The `city.shieldProduction` field (byte +81) stores the value after factory multipliers and waste deduction at save time, but the game recomputes waste fresh when displaying the city dialog.
 
 ##### Tile Map / City Radius (7, 65, 188×137)
 
@@ -2342,8 +2342,8 @@ y=+3:          (-1,+3)          (+1,+3)
 | +56 | 1 byte | **Building bitmask V** | Catfish | Buildings 32+. Bit 0=Airport, Bit 1=Police Station, Bit 2=Port Facility, etc. All 0 in main save. |
 | +57 | 1 byte | **Item in production** | ✅ Hex-verified | Units: 0x00-0x3F (direct type ID). Improvements/Wonders: `building_id = 256 - byte_value`. E.g., 0xCA=J.S. Bach's Cathedral (#54), 0xFD=Granary (#3), 0xF8=City Walls (#8). Production includes wonders (#39+ in RULES.TXT). |
 | +58 | 1 byte | **Number of active trade routes** | Höfelt | 0-3 (can be >3 via hex edit). |
-| +59 | 3 bytes | **Trade commodities available/supplied** | Höfelt | 0x00-0x0F = available (RULES.TXT order). Supplied goods use 0xFF complement (e.g., 0xF3 = commodity 13 supplied). |
-| +62 | 3 bytes | **Trade commodities demanded** | Höfelt | 0x00-0x0F. |
+| +59 | 3 bytes | **Trade commodities available/supplied** | Höfelt | **Signed bytes.** Positive (0x00-0x0F) = available commodity ID (RULES.TXT order). **Negative** = commodity being actively traded; negate to get ID (e.g., 0xFB = signed -5 = commodity 5 = Coal, shown in parentheses). Game displays as "(Coal)". **DERIVED** — recomputed by `FUN_0043d400` on dirty-flag trigger. |
+| +62 | 3 bytes | **Trade commodities demanded** | Höfelt | **Signed bytes.** Same encoding as +59. **DERIVED** — recomputed by `FUN_0043d400`. |
 | +65 | 3 bytes | **Commodities in trade route** | Catfish | With partners 1-3. 0x00-0x0F = @CARAVAN item, 0xFF = food supplies. |
 | +68 | 6 bytes | **Trade partner city IDs** | Catfish | 3 × uint16 LE. City sequence ID of each trade partner. |
 | +74 | 2 bytes | **Science output** (short LE) | ✅ Hex-verified | Beakers generated. Verified: sci + tax = trade (±1 rounding) for all 43 cities. |
@@ -2355,6 +2355,64 @@ y=+3:          (-1,+3)          (+1,+3)
 | +83 | 1 byte | **Unhappy citizens** | Catfish, Höfelt | In main save: only San Francisco and Kansas City have value 1 (mildly unhappy). |
 | +84 | 2 bytes | **City sequence ID** (short LE) | **SAV/NET only** (not present in SCN). 1-indexed unique ID. Gaps indicate destroyed/disbanded cities. Referenced by trade partner fields and wonder assignments. |
 | +86 | 2 bytes | Padding | **SAV/NET only** (not present in SCN). Always 0x0000. |
+
+##### City Record: Authoritative vs Derived Fields
+
+**IMPORTANT — .SAV ARCHITECTURE NOTE**: Many city record fields are **derived/cached** values that the Civ2 engine recomputes at runtime. The save file captures a snapshot at write time, but these values become stale when game state changes (government switch, tech discovery, building completion, city growth, tile improvement, worker reassignment, etc.). Any code that reads .sav files and displays city data must be aware of which fields can be trusted and which may need recomputation.
+
+The classification below documents which fields represent ground-truth state vs which are runtime-computed caches. This understanding is essential for correctly interpreting .sav data.
+
+| Offset | Field | Classification | Notes |
+|--------|-------|---------------|-------|
+| +0,+2 | cx, cy | **Authoritative** | City location — never changes |
+| +4-7 | attribs1-4 (flags) | **Authoritative** | canBuildCoastal, weLoveKingDay, civilDisorder, autoBuild, etc. |
+| +8 | owner | **Authoritative** | Owning civ |
+| +9 | size | **Authoritative** | City population |
+| +10 | originalOwner | **Authoritative** | Pre-capture owner |
+| +11 | turnsSinceCapture | **Authoritative** | Occupation counter |
+| +12 | knownToTribes | **Authoritative** | Fog-of-war contact bitmask |
+| +14-21 | believedSize[8] | **Authoritative** | Per-civ fog-of-war believed size |
+| +22-25 | specialistBytes[4] | **Authoritative** | Player's specialist assignments |
+| +26 | foodInBox | **Authoritative** | Accumulated food toward growth |
+| +28 | shieldsInBox | **Authoritative** | Accumulated shields toward production |
+| +30 | netBaseTrade | **DERIVED** | Net trade after first-pass corruption. Recompute from tile yields + corruption formula. Stale after government/improvement changes. |
+| +32-47 | name | **Authoritative** | City name string |
+| +48-50 | workers (3 bytes) | **Authoritative** | Tile worker assignment bitmask |
+| +51 | specialistCountRaw | **Authoritative** | Total specialist count |
+| +52-56 | buildings (5 bytes) | **Authoritative** | Building/improvement bitmask |
+| +57 | prodRaw | **Authoritative** | Current production item |
+| +58 | tradeRouteCount | **Authoritative** | Number of active trade routes |
+| +59-61 | tradeCommoditiesAvail[3] | **DERIVED** | Supply commodities — recomputed by `FUN_0043d400` (8KB function) based on terrain, size, techs, buildings, wonders, location, continent. Dirty-flag triggered. |
+| +62-64 | tradeCommoditiesDemand[3] | **DERIVED** | Demand commodities — same recomputation as supply. |
+| +65-67 | tradeCommoditiesInRoute[3] | **Authoritative** | Commodity carried in each active trade route |
+| +68-73 | tradePartnerCityIds[3] | **Authoritative** | Trade route partner city IDs |
+| +74 | scienceOutput | **DERIVED** | Beakers per turn. Recompute from net trade, rates, specialists, building multipliers. |
+| +76 | taxOutput | **DERIVED** | Gold per turn. Same recomputation as science. |
+| +78 | totalTrade | **DERIVED** | Net trade after corruption. Recompute from gross tile trade - corruption. |
+| +80 | foodProduction | **DERIVED** | Gross food from worked tiles. Recompute from worker assignments + terrain + improvements. |
+| +81 | shieldProduction | **DERIVED** | Gross shields from worked tiles. Same recomputation as food. |
+| +82 | happyCitizens | **DERIVED** | Happy citizen count. Recompute from luxury, buildings, wonders, government. `FUN_004ea8e4` happiness section. |
+| +83 | unhappyCitizens | **DERIVED** | Unhappy citizen count. Same recomputation as happy. |
+| +84 | sequenceId | **Authoritative** | Unique city ID (SAV/NET only) |
+
+**Summary**: 14 of 28 distinct fields (50%) are derived. The authoritative fields define WHAT the city IS (location, owner, size, buildings, workers, production queue, trade routes). The derived fields describe WHAT THE CITY PRODUCES (trade, science, tax, food, shields, happiness, supply/demand) — all computable from authoritative state plus global game state (government, techs, map terrain).
+
+**Recomputation dependencies** (what each derived field needs, for reference when porting game logic):
+
+| Derived Field | Depends On |
+|--------------|------------|
+| netBaseTrade, totalTrade | Worker tiles, terrain, improvements, government, distance to capital, buildings (Courthouse/City Hall), WLTKD |
+| scienceOutput, taxOutput | totalTrade, civ science/tax rates, specialists, buildings (Library/University/etc.), wonders (Newton's/Copernicus'/SETI) |
+| foodProduction | Worker tiles, terrain, improvements, government (despotism penalty) |
+| shieldProduction | Worker tiles, terrain, improvements, government (despotism penalty) |
+| happyCitizens, unhappyCitizens | City size, luxury output, government, buildings (Temple/Cathedral/etc.), wonders, military units abroad, difficulty level |
+| tradeCommoditiesAvail/Demand | 21-tile terrain analysis, city size, tech count, buildings, wonders, coordinates, continent ID — `FUN_0043d400` (8,227 bytes) |
+
+**`FUN_0043d400` supply/demand recomputation trigger** (line 4803 in block_00430000.c):
+```c
+if ((cityFlags_byte6 & 2) || debugMode || ((DAT_00655af8 + cityIndex) & 0xF) == 0)
+```
+The primary trigger is a dirty flag (bit 1 of city flags byte +6 = bit 17 of uint32 at +4). This flag is set by game events that change the city's trade profile (tech discovery, building completion, city growth, etc.). The function clears the flag after recalculation. The `& 0xF` condition provides periodic background refresh (every 16 turns per city, staggered by slot index). Saved supply/demand values can be stale by up to 15 turns between recalculations.
 
 ##### Building Bitmask (+52-55, uint32 LE) — CONFIRMED
 
@@ -5331,6 +5389,9 @@ Items below describe visual elements that are implied or partially described els
 - [ ] **Variant selection algorithm**: The doc says "The exact algorithm is unknown" with a "BEST GUESS" hash formula. The renderer uses `(gx * 13 + gy * 7) % variants.length`. Need to reverse-engineer the actual game's terrain variant selection — the game may use a seed-based or pre-computed value stored in the map data (byte[5] high nibble?).
 - [ ] **Dither mask asymmetry**: The doc notes "The diamond is left-right symmetric in shape but NOT in dither hole placement" and horizontal flip is critical, but doesn't document the exact asymmetry pattern. Would benefit from a pixel-level reference image showing which side has more/fewer transparent holes.
 
+##### AI / City Management
+- [ ] **Auto-assign worker tiles** (`FUN_004e8f42`, 2002 bytes at `0x004E8F42`): The game's AI citizen tile assignment algorithm. Called by `recalc_city_all` (`FUN_004eb4a1`) whenever the city dialog opens or the city is processed. For AI cities, full reassignment occurs every 4 turns per city (`(turn + cityIndex) & 3 == 0`); on other turns, only new citizens (from growth) are placed greedily. Human cities always keep current assignments. The greedy algorithm: (1) always work center tile, (2) fill food deficit first — pick tile with highest food, tiebreak by `shields*2 + trade`, (3) after food is met, assign remaining citizens using a weighted score based on food/shield/trade deficit ratios. Helper functions: `FUN_004e868f` (get tile yield by type: 0=food, 1=shields, 2=trade), `FUN_004e8e4d` (set/clear tile work status), `FUN_004e8ecf` (check if reassignment needed). **Impact**: AI city worked tiles in the save file may differ from what the game shows when opening the city dialog, because the game recalculates. This affects all derived values (food, shields, trade, luxury, happiness). Currently the JS city dialog uses save-file tile assignments.
+
 ##### DLL-Based Screens (Non-Map Rendering)
 - [ ] **cv.dll city view**: 16 GIFs total. Improvements (#300, 740×710, 42+ isometric building sprites), wonders (#305, 640×1130, 28+ wonder sprites), surroundings (#310, 640×680, forest/village growth tiles), landscape backgrounds (#340–353, 12 panoramas at 1280×480 each). Exact cell grids, building-ID-to-sprite mappings, and landscape selection rules still needed.
 - [ ] **mk.dll diplomacy**: 56 GIFs + 21 CTABs. Leader portraits (#220–261, 42 at 227×277), meeting room backgrounds (#200–206, 7 at 640×480, one per government type), throne rooms (#10000–10002). CTABs (#1000–1020, 773 bytes each = 5-byte header + 256 RGB triples) for per-civ palette colorization. Civ-to-portrait-ID mapping, government-to-background mapping, and CTAB application rules still needed.
@@ -6027,6 +6088,53 @@ All offsets relative to struct base (`&DAT_0064f340 + idx * 0x58`).
 | `0x3E` | 3 | `byte[3]` | `DAT_0064f37e` | **demand_commodities[3]** | City's 3 demand commodity IDs (signed byte). Populated from commodity tables during city setup. Values > 13 indicate special commodities. A trade route matches when one city supplies what the other demands. |
 | `0x41` | 3 | `byte[3]` | `DAT_0064f381` | **trade_route_type[3]** | Trade route connection type/status (signed byte). Negative values indicate foreign-owned partner. Used in trade revenue calculations. Accessed alongside partner arrays. Cleared with `_memset(ptr, 0, 3)`. |
 | `0x44` | 6 | `short[3]` | `DAT_0064f384` | **trade_route_partner[3]** | City index of the trade partner for each route. `short` values (2 bytes each, 3 routes). Used to look up the partner city's coordinates, owner, and stats for revenue calculation. Cleared with `_memset(ptr, 0, 3)` (partial clear of first 3 bytes). |
+
+### Supply/Demand Algorithm — FUN_0043d400 (8,227 bytes, fully decoded)
+
+This function computes the 3 supply and 3 demand commodity IDs for a city. Ported to JavaScript as `_calcSupplyDemand()` in `citydialog.js`. The algorithm has 6 phases:
+
+**Phase 1: Terrain Census** — Count terrain types in the 21-tile city radius. Resources add +3 to their terrain type count. Count river tiles and road tiles separately. Merge glacier into tundra (`terrCount[6] += terrCount[7]`).
+
+**Phase 2: Score 16 Supply Commodities** — Each commodity gets a score based on terrain composition, geographic factors, and tech/building modifiers:
+
+| ID | Commodity | Key Factors | Civ Bonus |
+|----|-----------|-------------|-----------|
+| 0 | Hides | Jungle×3 + Tundra×6 + Forest×4 + Rivers×3. ×2 if <16 techs, ×2 if <24 techs. Small city bonus. /2 if >48 techs or size>7 | — |
+| 1 | Wool | (Rivers/2 + Hills×2 + Grassland) × (Tundra+2 or +3 if polar) | — |
+| 2 | Beads | Ocean×8 − yDist. /2 if size>9 or >32 techs | — |
+| 3 | Cloth | (Plains×3 + Desert − Rivers) × clamp(techs/10, 1, 2). ×1.5 with Industrialization | — |
+| 4 | Salt | Ocean×3 + Desert×4 + Swamp×2 − techs/6. /3 without Radio. Aqueduct +50%. Odd bodyId<6 +50% | — |
+| 5 | Coal | (Jungle+Plains+Forest+Swamp+1) × Hills × 5. Shift by sizeTier/2−1. Odd bodyId>1 +50% | — |
+| 6 | Copper | Mountain×5 + Hills×5. Even bodyId ×2 | — |
+| 7 | Dye | (Grassland×5 − Plains + Rivers) × 2 (or ×4 if bodyId%4==0) | — |
+| 8 | Wine | clamp(Rivers×5−Grassland, 0, Plains×4) × 2 + mapCenter offset. Shift by sizeTier−1. bodyId≡2 mod4 +50% | French(9) ×2 |
+| 9 | Silk | (Forest×2 + Jungle + 1) × (Hills+1). If nonzero: +eastOffset×2. bodyId%5==0 ×2 | Chinese(11) ×2, Aztec(10) ×2 |
+| 10 | Silver | Mountain×8 + Hills + xDist. /2 without Iron Working. bodyId>8 +50%. /2 if size<5 | — |
+| 11 | Spice | (Jungle×3+Swamp×2+Desert×2) × (Ocean+Rivers)/2. Near equator ×2. −yDist. Small continent +50%. bodyId==1 /2 | — |
+| 12 | Gems | (Mountain+1)(Swamp+1)(Desert+1) + Plains. × clamp(sizeTier,1,4)/2. bodyId==7 +50% | — |
+| 13 | Gold | (Mountain + Hills/2 + 1) × (Rivers+2). ×2 if Mountain>2. ×2 if size>4, ×2 again if size>9 | — |
+| 14 | Oil | Tundra×8 + Desert×10 + Swamp×6 + Glacier×12. /8 if no civ knows Navigation. −1 if zero. bodyId==17 ×3. × clamp(sizeTier/2−2, 1, 2) | — |
+| 15 | Uranium | (Tundra+Desert+1)(Hills+Rivers+1)(Mountain+1). Requires Nuclear Fission; 0→−1 if not. bodyId%10==0 +50%. × min(sizeTier,6)/6 | — |
+
+**Phase 3: Score 16 Demand Commodities** — Similar scoring with different formulas, many depending on city size and buildings. Notable: Cloth demand is set during Hides demand computation. Salt demand uses a diminishing-returns loop. Coal demand scales with Power Plant and shrinks with Hydro/Nuclear/Solar. The Silver/Gems/Gold demand slot rotates based on `(cx+cy)%3` — only one of the three is demanded per city.
+
+**Phase 4: Zero Lesser** — For each commodity, if supply < demand, zero supply (if positive); else zero demand (if positive). This ensures each commodity appears in only one list.
+
+**Phase 5: Sort & Pick Top 3** — Sort both arrays by score, pick top 3 non-negative entries for supply and demand.
+
+**Phase 6: Special Commodities** — Coordinate-based hash assigns Oil (14) or Uranium (15) to specific cities, overwriting supply[1] or demand[1]. The hash uses `(cy×5+cx×3)%14` and `(cy×7+cx×13)%14` (or `%9+5` if >32 techs). Requires matching tech (Industrialization for Oil, Nuclear Fission for Uranium). Active trade routes and en-route caravans negate their commodity in the output (displayed in parentheses).
+
+**Coordinate system**: All geographic calculations use doubled-x coordinates (city.cx) and map width in doubled-x (mw2 = DAT_006d1160). The continent land area is read from the runtime table `DAT_00666130 + bodyId × 16` (16-byte continent records).
+
+**Civ identity trade bonuses**: French (rulesCivNum=9) → ×2 Wine supply. Chinese (11) → ×2 Silk supply. Aztec (10) → ×2 Silk supply. Spanish (17) → ×2 Silver/Gems/Gold demand.
+
+**Sort function** (`FUN_00414f02`): Bubble sort that sorts BOTH the score array (supply/demand) AND the index array in-place, ascending. After sorting, score[15] = highest score, index[15] = commodity ID of highest scorer.
+
+**BUG — Uninitialized `local_12c` (roadCount)**: Stack variable at offset −0x12C is declared but never initialized. `local_b4` (riverCount) is zeroed at line 4837, and `local_128[0-10]` (terrCount) is zeroed in the loop at lines 4838-4840, but `local_12c` is not. It accumulates road-tile counts starting from whatever garbage was left on the stack by the previous function call. This variable is used in two demand formulas:
+- **Copper demand** (index 6): `(riverCount + local_12c + 1) × sizeTier` — line 5141
+- **Dye demand** (index 7): `supply[3] + local_12c` — line 5164
+
+This means supply/demand results are **non-reproducible from save file data alone**. The JS port initializes `roadCount = 0` and uses saved values from the city record for display, with computed values logged to console for diagnostic comparison.
 
 ### Cached Resource Output (offsets 0x4A - 0x53)
 
@@ -7774,6 +7882,21 @@ Where:
 - Difficulty penalty: human players under Despotism get extra corruption (distance + difficulty_level)
 - We Love The King Day: government treated as one level higher (better corruption rate)
 
+**Trade corruption vs shield waste — key differences (FUN_004ea8e4 line 4027 vs FUN_004e9c14 line 3782):**
+- Trade corruption: NO distance cap (shield waste caps at 16)
+- Trade corruption: NO road/railroad factor `((3-factor)*base)/3` applied
+- Trade corruption: NO government divisor `(govt >> 1) + 1` applied
+- Trade corruption: clamped to `[0, grossTrade]`; shield waste clamped to `[0, available - 1]`
+- Trade corruption exemptions: Fundamentalism (govt 4), Democracy (govt 6) → zero
+- Shield waste exemptions: Fundamentalism (govt 4), Democracy (govt 6), Barbarians (civ 0) → zero
+
+**Two-pass corruption in FUN_004ea8e4:**
+1. First pass (line 4027): `FUN_004e989a(city, grossTileTrade, 0, 0)` → stores `netBaseTrade = gross - corruption` at city+30
+2. Trade route revenue added to running total (lines 4036-4064)
+3. Second pass (line 4066): `FUN_004e989a(city, totalTrade, 0, 1)` → net for tax/lux/sci distribution
+
+**IMPORTANT: Stored values at city+30 and city+78 may be stale.** The game recomputes trade, corruption, and the tax/lux/sci split fresh during turn processing. The stored values reflect the state at the time the save was written. Government changes, tile improvement changes, or worker reassignments between computation and save will cause discrepancies. The JS city dialog must compute these values from first principles, not rely on stored fields. **See "City Record: Authoritative vs Derived Fields" in Section 6 for the complete classification of which city fields are safe to trust vs which are runtime-computed caches.** This applies broadly: ~50% of city record fields are derived/cached runtime values.
+
 ### JavaScript Implementation
 
 ```javascript
@@ -9179,7 +9302,7 @@ This is the largest function in the city module. Draws terrain map + 3 resource 
 - **Corruption bar**: dark orange rgb(226,82,13) — sampled from CITY.GIF wallpaper at tax/lux/sci row (palette idx 0x6F). Covers full row height (16px) to hide the bright orange CITY.GIF wallpaper underneath. Extends 2px left and 1px right beyond corruption sprites
 - **Bar height**: 16px for all resource row bars = `FUN_00511690(0x0E) + FUN_00511690(0x02)` = 14 + 2
 - When corruption ≤ 0, corruption bar merges into trade bar (lines 1889-1891 in decompiled)
-- **Corruption derivation**: `corruption = grossTileTrade - city.netBaseTrade` where grossTileTrade = sum of per-tile trade yields across worked tiles, and netBaseTrade (city+30) = base tile trade after corruption. No need to implement the distance-based formula — simple subtraction
+- **Corruption derivation**: computed fresh via `_calcTradeCorruption(city, grossTileTrade, mapData)` using distance-based formula. Stored `city.netBaseTrade` (city+30) may be stale from previous government — cannot use subtraction approach
 - **Icon Y offsets** (pixel-perfect tweaks): food icons +1px down, trade/corruption icons -1px up, shield icons +1px down, tax/lux/sci icons +1px (already had +1)
 
 ### Tax/Luxury/Science Row (4th resource row)
@@ -10362,7 +10485,7 @@ The browser parser currently reads these from the save file tail section. They c
 - Resource map dither blending — offscreen full-res rendering (64×32) with `_applyDither`, then scaled to panel
 - Game palette vs GIF palette distinction documented
 - Luxury calculation fixed: no early returns (entertainers always apply), Fundamentalism science cap, AI luxury→science redirect
-- Corruption display: derived as `grossTileTrade - netBaseTrade` (city+30), no distance formula needed
+- Corruption display: computed fresh via distance-based formula `_calcTradeCorruption()` (stored city+30 netBaseTrade may be stale from previous government)
 - Supplies/Demands display: parser field names `tradeCommoditiesAvail`/`tradeCommoditiesDemand` (not Supplied/Demanded)
 - Production shield grid: correct baseCost algorithm (baseCost < 10 → rows=baseCost, cols=10; baseCost ≥ 10 → rows=10, cols=baseCost). Only filled shields drawn, no dimmed placeholders. 17px horizontal / 14px vertical icon spacing. No background fill (draws on CITY.GIF wallpaper).
 - Units Present: home city abbreviation (3-char) with `textBaseline='top'` at sprite bottom (binary: text_y = unit_y + sprite_height). Font: 500 weight, 12px, black, no shadow.
@@ -10375,7 +10498,8 @@ The browser parser currently reads these from the save file tail section. They c
 - City size box z-order and styling: box drawn after units (Pass 6c) so population number is always visible. Box border changed from left/right-only to all 4 sides. Added 1px left / 2px right padding so number is not squished. Both main and FOW ghost city size boxes updated.
 
 ### Remaining
-- **Shield waste bar**: game palette 0x0B = rgb(11,11,11). Not yet rendered — requires computing raw shield total from tile yields to derive waste = raw − shieldProduction. The corruption/waste formula (Section 5) can be used but needs tile yield summation in the city dialog
+- **Shield waste bar**: DONE. Computed fresh via `_calcShieldWaste()` distance formula and `_calcGrossShields()` tile yield summation. Color: game palette 0x0B = rgb(11,11,11)
+- **Trade corruption**: DONE. Computed fresh via `_calcTradeCorruption()` distance formula and `_calcGrossTileTrade()`. Stored values (city+30, city+78) are stale — game recomputes on dialog open
 - **Later**: Turn engine, combat, AI, multiplayer
 
 ---

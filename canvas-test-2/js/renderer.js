@@ -936,9 +936,9 @@ const Civ2Renderer = {
 
         // Sentry/sleep dimming: orders 0x03 → dark gray silhouette (palette 0x1a)
         // Binary: FUN_0056baff lines 3925-3941
-        const isDimmed = (u.orders === 0x03);
+        const unitSentry = (u.orders === 0x03);
         let unitSprite = sprites.unitColored[cacheKey];
-        if (isDimmed) {
+        if (unitSentry) {
           const dimKey = u.type + '-dimmed';
           if (!sprites.unitColored[dimKey]) {
             sprites.unitColored[dimKey] = this._dimUnit(sprites.unitColored[cacheKey]);
