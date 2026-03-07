@@ -489,21 +489,21 @@ const Civ2Renderer = {
     // Three-state FOW predicates:
     //   isUnexplored: tile has NEVER been seen by FOW civ → solid black
     //   isDimmed: tile was previously explored but not currently visible → dimmed
-    // Note: Block 1 auto-fills city-present bit (0x02) for ALL civs even if they
-    // haven't explored the tile. Mask it out when determining exploration status.
+    // Note: Block 1 auto-fills city+unit bits (0x03) for ALL civs even if they
+    // haven't explored the tile. Mask them out when determining exploration status.
     function isUnexplored(gx, gy) {
       if (gy < 0 || gy >= mh) return true;
       if (!fowEnabled) return false;
       const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
       if (currentlySeen) return false;
-      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x02) === 0;
+      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x03) === 0;
     }
     function isDimmed(gx, gy) {
       if (gy < 0 || gy >= mh) return false;
       if (!fowEnabled) return false;
       const currentlySeen = !!(mapData.getVisibility(gx, gy) & fowBit);
       if (currentlySeen) return false;
-      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x02) !== 0;
+      return (mapData.getKnownImprovements(gx, gy, options.fowCiv) & ~0x03) !== 0;
     }
 
     // ────────────────────────────────────────
@@ -689,417 +689,8 @@ const Civ2Renderer = {
 
     ctx.textBaseline = 'top';
 
-    for (const c of mapData.cities) {
-      // G1: Skip cities on tiles the selected civ can't currently see
-      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
-      // Draw at canonical position, and again at wrap seam if applicable
-      const drawPositions = [c.gx];
-      if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
-      for (const drawGx of drawPositions) {
-        const [tpx, tpy] = tilePos(drawGx, c.gy);
-        const cx = tpx + (TW >> 1);
-        const cy = tpy + (TH >> 1);
-        const color = this.CIV_COLORS[c.owner] || '#ccc';
-
-        // City sprite — epoch from civ's techs, row from epoch+style, col from size
-        const epoch = mapData.civTechs
-          ? this._getEpoch(mapData.civTechs[c.owner])
-          : 0;
-        const row = this._getCityRow(epoch, c.style || 0);
-        let col = this._getCitySizeCol(c.size, epoch);
-        if (c.hasPalace && col < 3) col++;       // capital bonus
-        if (c.hasWalls) col += 4;                 // walled offset
-        if (citySprites[row] && citySprites[row][col]) {
-          // Sprites are 64×48: 16px taller than a tile, so draw 16px above tile top
-          ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
-        } else {
-          // Fallback: colored square if CITIES.GIF not loaded
-          ctx.fillStyle = '#000';
-          ctx.fillRect(cx - 7, cy - 7, 14, 14);
-          ctx.fillStyle = color;
-          ctx.fillRect(cx - 6, cy - 6, 12, 12);
-        }
-
-        // City flag — drawn on cities with garrisoned units, showing owner's flag
-        // Source: Civ2-clone BaseGameView.cs — flag drawn only when tile.UnitsHere.Count > 0
-        // Position from blue marker pixel (palette 250), offset per Civ2-clone:
-        //   dest.X + (flagLoc.X - 3), dest.Y + (flagLoc.Y - 17)
-        if (sprites.cityFlags && sprites.cityFlags[c.owner] && garrisonedTiles.has(c.gx + ',' + c.gy)) {
-          const flagLoc = sprites.cityFlagLoc[row] && sprites.cityFlagLoc[row][col];
-          const fx = flagLoc ? tpx + flagLoc.x - 3 : tpx + 50;
-          const fy = flagLoc ? tpy - 16 + flagLoc.y - 17 : tpy - 16;
-          ctx.drawImage(sprites.cityFlags[c.owner], fx, fy);
-        }
-
-        // City size box drawing deferred to after units (Pass 6c)
-      }
-    }
-
-    // ── Ghost cities: previously seen cities in explored-but-not-visible tiles ──
-    // Known limitation: owner/name/walls use current true state because the save
-    // format only stores believedSize per civ, not last-known owner/name/walls.
-    if (fowEnabled) {
-      for (const c of mapData.cities) {
-        const currentlySeen = !!(mapData.getVisibility(c.gx, c.gy) & fowBit);
-        if (currentlySeen) continue;  // already drawn normally above
-        if (isUnexplored(c.gx, c.gy)) continue;  // tile never explored — no ghost
-        // Check if FOW civ knows about a city here (bit 0x02 in known improvements)
-        const known = mapData.getKnownImprovements(c.gx, c.gy, options.fowCiv);
-        if (!(known & 0x02)) continue;  // civ hasn't seen a city here
-        // G2: Skip if civ has never discovered this city (knownToTribes bitmask)
-        if (c.knownToTribes != null && !(c.knownToTribes & fowBit)) continue;
-
-        const ghostSize = c.believedSize[options.fowCiv] || c.size;
-        const color = this.CIV_COLORS[c.owner] || '#ccc';
-
-        // Draw ghost city sprite at believed size, with reduced opacity
-        const epoch = mapData.civTechs
-          ? this._getEpoch(mapData.civTechs[c.owner])
-          : 0;
-        const row = this._getCityRow(epoch, c.style || 0);
-        let col = this._getCitySizeCol(ghostSize, epoch);
-        if (c.hasPalace && col < 3) col++;
-        if (c.hasWalls) col += 4;
-
-        const ghostPositions = [c.gx];
-        if (wraps && c.gx < xExtra) ghostPositions.push(c.gx + mw);
-        for (const drawGx of ghostPositions) {
-          const [tpx, tpy] = tilePos(drawGx, c.gy);
-          const cx = tpx + (TW >> 1);
-
-          ctx.globalAlpha = 0.5;
-          if (citySprites[row] && citySprites[row][col]) {
-            ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
-          } else {
-            const cy = tpy + (TH >> 1);
-            ctx.fillStyle = '#000';
-            ctx.fillRect(cx - 7, cy - 7, 14, 14);
-            ctx.fillStyle = color;
-            ctx.fillRect(cx - 6, cy - 6, 12, 12);
-          }
-
-          // Ghost city size box
-          const sizeStr = String(ghostSize);
-          ctx.font = 'bold 14px "Times New Roman", serif';
-          ctx.letterSpacing = '0px';
-          const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
-          const tm = ctx.measureText(sizeStr);
-          const padL = 1, padR = 2;
-          const sw = Math.ceil(tm.width) + padL + padR;
-          const sh = 14;
-          let ssx, ssy;
-          if (sizeLoc) {
-            ssx = tpx + sizeLoc.x - 1;
-            ssy = tpy - 16 + sizeLoc.y - 1;
-          } else {
-            ssx = cx - sw / 2;
-            ssy = tpy - 16;
-          }
-          ctx.fillStyle = color;
-          ctx.fillRect(ssx, ssy, sw, sh);
-          // Black border (1px around fill)
-          ctx.fillStyle = '#000';
-          ctx.fillRect(ssx - 1, ssy, 1, sh);
-          ctx.fillRect(ssx + sw, ssy, 1, sh);
-          ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1); // top
-          ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1); // bottom
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
-          ctx.fillText(sizeStr, ssx + padL, ssy);
-
-          // Ghost city name label
-          const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
-          ctx.font = '20px "Times New Roman", serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.letterSpacing = '1px';
-          const nameY = tpy - 16 + 48;
-          // Single (+1,+1) black shadow (GDI pipeline: DrawTextA shadow offset)
-          ctx.fillStyle = '#000';
-          ctx.fillText(c.name, cx + 1, nameY + 1);
-          ctx.fillStyle = textColor;
-          ctx.fillText(c.name, cx, nameY);
-          ctx.letterSpacing = '0px';
-
-          ctx.globalAlpha = 1.0;
-        }
-      }
-    }
-
     // ────────────────────────────────────────
-    // PASS 5: Fortress/Airbase (drawn under units)
-    // ────────────────────────────────────────
-    // Airbase per-owner coloring: palette 252 (light red 255,0,0) for civ color
-    // Source: Civ2-clone — airbase sprites contain civ-color placeholder pixels
-    // "airbase,full" variant shown when air units (types 27-31) are present on the tile
-    // Build set of tiles with air units for airbase variant selection (used in Pass 5 + 6b)
-    const AIR_TYPES = new Set([27, 28, 29, 30, 31]); // Fighter, Bomber, Helicopter, Stealth F., Stealth B.
-    const airUnitTiles = new Set();
-    for (const u of mapData.units) {
-      if (AIR_TYPES.has(u.type)) airUnitTiles.add(u.gx + ',' + u.gy);
-    }
-    if (sprites.fortress || sprites.airbase) {
-      for (let gy = 0; gy < mh; gy++) {
-        for (let gx = 0; gx < xMax; gx++) {
-          let imp = getImprovements(gx, gy);
-          if (fowEnabled) {
-            if (isUnexplored(gx, gy)) continue;
-            if (isDimmed(gx, gy)) {
-              imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
-            }
-          }
-          if (!(imp & 0x40)) continue;
-          const [px, py] = tilePos(gx, gy);
-          if ((imp & 0x02) && sprites.airbase) {
-            const tileKey = gx + ',' + gy;
-            const hasAir = airUnitTiles.has(tileKey);
-            const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
-            const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(gx, gy) : 0;
-            const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
-            const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
-            if (!sprites.airbaseColored[variantKey]) {
-              const color = this.CIV_COLORS[ownerIdx] || '#c80000';
-              sprites.airbaseColored[variantKey] = this._recolorUnit(baseSprite, color);
-            }
-            ctx.drawImage(sprites.airbaseColored[variantKey], px, py - 16);
-          }
-          else if (sprites.fortress) ctx.drawImage(sprites.fortress, px, py - 16);
-        }
-      }
-    }
-
-    // ────────────────────────────────────────
-    // PASS 6: Units
-    // ────────────────────────────────────────
-    let bestUnit = {};  // hoisted for Pass 6b fortress redraw
-    if (sprites.unitTemplates.length > 0) {
-      if (onProgress) onProgress('Drawing units...');
-      await this._yield();
-
-      // Build set of city tiles so we don't draw garrisoned units over cities
-      const cityTiles = new Set();
-      for (const c of mapData.cities) cityTiles.add(c.gx + ',' + c.gy);
-
-      // Pre-build unit counts per tile (for stacked unit badge)
-      const unitCounts = {};
-      for (const u of mapData.units) {
-        const tileKey = u.gx + ',' + u.gy;
-        if (cityTiles.has(tileKey)) continue;
-        if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
-        unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
-      }
-
-      // Pick top-of-stack unit per tile using the save file's stacking linked list.
-      // The unit with prevInStack === -1 is the head of the stack (what Civ2 displays).
-      // Falls back to a heuristic if linked list data is unavailable.
-      const CIVILIANS = new Set([0, 1, 44, 45, 46, 47, 48, 49, 50]);
-      function unitPriority(u) {
-        let p = 0;
-        if (u.orders === 0) p += 2;
-        if (!CIVILIANS.has(u.type)) p += 1;
-        return p;
-      }
-      bestUnit = {};
-      const lookup = mapData.unitBySaveIndex || {};
-      for (const u of mapData.units) {
-        const tileKey = u.gx + ',' + u.gy;
-        if (cityTiles.has(tileKey)) continue;
-        if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
-        // Use stacking linked list: head of stack has prevInStack === -1
-        if (u.prevInStack === -1) {
-          // This unit is the head of its stack — use it directly
-          bestUnit[tileKey] = u;
-        } else if (!bestUnit[tileKey]) {
-          // No head found yet for this tile; use as provisional candidate
-          bestUnit[tileKey] = u;
-        } else if (bestUnit[tileKey].prevInStack !== -1) {
-          // Neither candidate is top-of-stack; fall back to heuristic
-          if (unitPriority(u) >= unitPriority(bestUnit[tileKey])) {
-            bestUnit[tileKey] = u;
-          }
-        }
-      }
-
-      // Sort units by row (top-to-bottom) so southern units draw over northern fortress overhang
-      const sortedUnits = Object.values(bestUnit).sort((a, b) => a.gy - b.gy);
-
-      for (const u of sortedUnits) {
-        const tileKey = u.gx + ',' + u.gy;
-
-        const template = sprites.unitTemplates[u.type];
-        if (!template) continue;
-
-        const cacheKey = u.type + '-' + u.owner;
-        if (!sprites.unitColored[cacheKey]) {
-          const color = this.CIV_COLORS[u.owner] || '#cccccc';
-          sprites.unitColored[cacheKey] = this._recolorUnit(template, color);
-        }
-
-        // Sentry/sleep dimming: orders 0x03 → dark gray silhouette (palette 0x1a)
-        // Binary: FUN_0056baff lines 3925-3941
-        const unitSentry = (u.orders === 0x03);
-        let unitSprite = sprites.unitColored[cacheKey];
-        if (unitSentry) {
-          const dimKey = u.type + '-dimmed';
-          if (!sprites.unitColored[dimKey]) {
-            sprites.unitColored[dimKey] = this._dimUnit(sprites.unitColored[cacheKey]);
-          }
-          unitSprite = sprites.unitColored[dimKey];
-        }
-
-        // Draw at canonical position, and again at wrap seam if applicable
-        const unitPositions = [u.gx];
-        if (wraps && u.gx < xExtra) unitPositions.push(u.gx + mw);
-        for (const drawGx of unitPositions) {
-          const [tpx, tpy] = tilePos(drawGx, u.gy);
-          ctx.drawImage(unitSprite, tpx, tpy - 16);
-
-          // Shield position
-          let shieldX = tpx, shieldY = tpy - 16;
-          const so = sprites.shieldOffsets ? sprites.shieldOffsets[u.type] : null;
-          if (so && sprites.shieldFront) {
-            shieldX = tpx + so.x - 1;
-            shieldY = tpy - 16 + so.y - 1;
-
-            // Shadow offset: mirrors stacking direction
-            // Source: Civ2-clone UnitShield: ShadowOffset=(-1,1) or (1,1)
-            const shadowDX = (so.x < 32) ? -1 : 1;
-            const shadowDY = 1;
-
-            // Stacking indicator: shadow + back shield offset behind main shield
-            const count = unitCounts[tileKey] || 1;
-            if (count > 1) {
-              const backKey = 'shieldBack-' + u.owner;
-              if (!sprites.shieldBackColored[backKey]) {
-                const color = this.CIV_COLORS[u.owner] || '#cccccc';
-                sprites.shieldBackColored[backKey] = this._recolorUnit(sprites.shieldBack, color);
-              }
-              const stackDX = (so.x < 32) ? -4 : 4;
-              // Stacked shield shadow
-              if (sprites.shieldShadow) {
-                ctx.drawImage(sprites.shieldShadow, shieldX + stackDX + shadowDX, shieldY + shadowDY);
-              }
-              ctx.drawImage(sprites.shieldBackColored[backKey], shieldX + stackDX, shieldY);
-            }
-
-            // Front shield shadow
-            if (sprites.shieldShadow) {
-              ctx.drawImage(sprites.shieldShadow, shieldX + shadowDX, shieldY + shadowDY);
-            }
-
-            // Front shield (top 7 rows blacked out)
-            const frontKey = 'shieldFront-' + u.owner;
-            if (!sprites.shieldFrontColored[frontKey]) {
-              const color = this.CIV_COLORS[u.owner] || '#cccccc';
-              sprites.shieldFrontColored[frontKey] = this._recolorUnit(sprites.shieldFront, color);
-            }
-            ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
-
-            // HP bar inside shield — offset (0,2) from shield, 12×3px
-            // Source: Civ2-clone UnitShield: HPbarOffset=(0,2), HPbarSize=(12,3)
-            const maxHp = this.UNIT_MAX_HP[u.type] || 10;
-            const curHp = Math.max(0, maxHp - u.hpLost);
-            const barW = 12, barH = 3;
-            const barX = shieldX, barY = shieldY + 2;
-            const greenW = Math.floor((curHp / maxHp) * barW);
-            if (greenW > 8) ctx.fillStyle = 'rgb(87,171,39)';
-            else if (greenW > 3) ctx.fillStyle = 'rgb(255,223,79)';
-            else ctx.fillStyle = 'rgb(243,0,0)';
-            ctx.fillRect(barX, barY, greenW, barH);
-
-            // Order letter — offset (width/2, 7) from shield, 13px tall area
-            // Source: Civ2-clone UnitShield: OrderOffset=(width/2, 7), OrderTextHeight=13
-            const orderLetter = this.ORDER_KEYS[u.orders] || '-';
-            ctx.font = '13px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillStyle = '#000';
-            ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
-
-          }
-
-          // Fortification overlay — only for fully fortified (0x02)
-          if (sprites.fortify && u.orders === 0x02) {
-            ctx.drawImage(sprites.fortify, tpx, tpy - 16);
-          }
-
-          // Fortress/airbase on same tile: redraw over unit so walls surround it.
-          // Since units are sorted top-to-bottom, southern units drawn later
-          // will naturally cover this fortress's overhang.
-          let fortImp = getImprovements(u.gx, u.gy);
-          if (fowEnabled && isDimmed(u.gx, u.gy)) {
-            fortImp = mapData.getKnownImprovements(u.gx, u.gy, options.fowCiv);
-          }
-          if (fortImp & 0x40) {
-            if ((fortImp & 0x02) && sprites.airbase) {
-              const hasAir = airUnitTiles.has(tileKey);
-              const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
-              const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(u.gx, u.gy) : 0;
-              const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
-              const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
-              if (sprites.airbaseColored[variantKey]) {
-                ctx.drawImage(sprites.airbaseColored[variantKey], tpx, tpy - 16);
-              }
-            } else if (sprites.fortress) {
-              ctx.drawImage(sprites.fortress, tpx, tpy - 16);
-            }
-          }
-        }
-      }
-    }
-
-    // ────────────────────────────────────────
-    // PASS 6c: City size boxes (drawn over units so population number is visible)
-    // ────────────────────────────────────────
-    ctx.font = 'bold 14px "Times New Roman", serif';
-    ctx.letterSpacing = '0px';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    for (const c of mapData.cities) {
-      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
-      const drawPositions = [c.gx];
-      if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
-      for (const drawGx of drawPositions) {
-        const [tpx, tpy] = tilePos(drawGx, c.gy);
-        const cx = tpx + (TW >> 1);
-        const color = this.CIV_COLORS[c.owner] || '#ccc';
-        const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
-        const row = this._getCityRow(epoch, c.style || 0);
-        let col = this._getCitySizeCol(c.size, epoch);
-        if (c.hasPalace && col < 3) col++;
-        if (c.hasWalls) col += 4;
-        const sizeStr = String(c.size);
-        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
-        const tm = ctx.measureText(sizeStr);
-        const padL = 1, padR = 2;
-        const sw = Math.ceil(tm.width) + padL + padR;
-        const sh = 14;
-        let ssx, ssy;
-        if (sizeLoc) {
-          ssx = tpx + sizeLoc.x - 1;
-          ssy = tpy - 16 + sizeLoc.y - 1;
-        } else {
-          ssx = cx - sw / 2;
-          ssy = tpy - 16;
-        }
-        // Civ color fill
-        ctx.fillStyle = color;
-        ctx.fillRect(ssx, ssy, sw, sh);
-        // Black border (1px around fill)
-        ctx.fillStyle = '#000';
-        ctx.fillRect(ssx - 1, ssy, 1, sh);       // left
-        ctx.fillRect(ssx + sw, ssy, 1, sh);       // right
-        ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1); // top
-        ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1); // bottom
-        // Population number
-        ctx.fillText(sizeStr, ssx + padL, ssy);
-      }
-    }
-
-    // ────────────────────────────────────────
-    // PASS 7: Map Grid (optional, drawn over everything before FOW)
+    // PASS 7: Map Grid (optional, drawn before FOW)
     // ────────────────────────────────────────
     // Green diamond outlines per tile — matches ICONS.GIF grid sprite (palette 254 green)
     // Toggle: UI checkbox. Save file toggle: gameToggles.showMapGrid at 0x000E bit 5
@@ -1215,6 +806,346 @@ const Civ2Renderer = {
         }
       }
       ctx.fill();
+    }
+
+    // ────────────────────────────────────────
+    // PASS 4+5: Cities + Fortress/Airbase (drawn AFTER shroud, row-by-row for z-order)
+    // ────────────────────────────────────────
+    if (onProgress) onProgress('Drawing cities...');
+    await this._yield();
+
+    const citiesByRow = {};
+    for (const c of mapData.cities) {
+      if (!citiesByRow[c.gy]) citiesByRow[c.gy] = [];
+      citiesByRow[c.gy].push(c);
+    }
+
+    const AIR_TYPES = new Set([27, 28, 29, 30, 31]);
+    const airUnitTiles = new Set();
+    for (const u of mapData.units) {
+      if (AIR_TYPES.has(u.type)) airUnitTiles.add(u.gx + ',' + u.gy);
+    }
+
+    for (let gy = 0; gy < mh; gy++) {
+      // Fortress/airbase tiles for this row
+      if (sprites.fortress || sprites.airbase) {
+        for (let gx = 0; gx < xMax; gx++) {
+          let imp = getImprovements(gx, gy);
+          if (fowEnabled) {
+            if (isUnexplored(gx, gy)) continue;
+            if (isDimmed(gx, gy)) {
+              imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
+            }
+          }
+          if (!(imp & 0x40)) continue;
+          const [px, py] = tilePos(gx, gy);
+          if ((imp & 0x02) && sprites.airbase) {
+            const tileKey = gx + ',' + gy;
+            const hasAir = airUnitTiles.has(tileKey);
+            const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
+            const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(gx, gy) : 0;
+            const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
+            const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
+            if (!sprites.airbaseColored[variantKey]) {
+              const color = this.CIV_COLORS[ownerIdx] || '#c80000';
+              sprites.airbaseColored[variantKey] = this._recolorUnit(baseSprite, color);
+            }
+            ctx.drawImage(sprites.airbaseColored[variantKey], px, py - 16);
+          }
+          else if (sprites.fortress) ctx.drawImage(sprites.fortress, px, py - 16);
+        }
+      }
+
+      // Cities for this row
+      const rowCities = citiesByRow[gy];
+      if (rowCities) {
+        for (const c of rowCities) {
+          if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) {
+            // Ghost city: explored but not currently visible
+            if (!isUnexplored(c.gx, c.gy)) {
+              const known = mapData.getKnownImprovements(c.gx, c.gy, options.fowCiv);
+              if ((known & 0x02) && (c.knownToTribes == null || (c.knownToTribes & fowBit))) {
+                const ghostSize = c.believedSize[options.fowCiv] || c.size;
+                const color = this.CIV_COLORS[c.owner] || '#ccc';
+                const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
+                const row = this._getCityRow(epoch, c.style || 0);
+                let col = this._getCitySizeCol(ghostSize, epoch);
+                if (c.hasPalace && col < 3) col++;
+                if (c.hasWalls) col += 4;
+
+                const ghostPositions = [c.gx];
+                if (wraps && c.gx < xExtra) ghostPositions.push(c.gx + mw);
+                for (const drawGx of ghostPositions) {
+                  const [tpx, tpy] = tilePos(drawGx, c.gy);
+                  const cx = tpx + (TW >> 1);
+                  ctx.globalAlpha = 0.5;
+                  if (citySprites[row] && citySprites[row][col]) {
+                    ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
+                  } else {
+                    const cy = tpy + (TH >> 1);
+                    ctx.fillStyle = '#000'; ctx.fillRect(cx - 7, cy - 7, 14, 14);
+                    ctx.fillStyle = color; ctx.fillRect(cx - 6, cy - 6, 12, 12);
+                  }
+                  const sizeStr = String(ghostSize);
+                  ctx.font = 'bold 14px "Times New Roman", serif';
+                  ctx.letterSpacing = '0px';
+                  const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+                  const tm = ctx.measureText(sizeStr);
+                  const padL = 1, padR = 2;
+                  const sw = Math.ceil(tm.width) + padL + padR;
+                  const sh = 14;
+                  let ssx, ssy;
+                  if (sizeLoc) { ssx = tpx + sizeLoc.x - 1; ssy = tpy - 16 + sizeLoc.y - 1; }
+                  else { ssx = cx - sw / 2; ssy = tpy - 16; }
+                  ctx.fillStyle = color; ctx.fillRect(ssx, ssy, sw, sh);
+                  ctx.fillStyle = '#000';
+                  ctx.fillRect(ssx - 1, ssy, 1, sh); ctx.fillRect(ssx + sw, ssy, 1, sh);
+                  ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1); ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1);
+                  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                  ctx.fillText(sizeStr, ssx + padL, ssy);
+                  const textColor = (sprites.civTextColors && sprites.civTextColors[c.owner]) || this._brighten(this.CIV_COLORS[c.owner] || '#fff', 0.4);
+                  ctx.font = '20px "Times New Roman", serif';
+                  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.letterSpacing = '1px';
+                  const nameY = tpy - 16 + 48;
+                  ctx.fillStyle = '#000'; ctx.fillText(c.name, cx + 1, nameY + 1);
+                  ctx.fillStyle = textColor; ctx.fillText(c.name, cx, nameY);
+                  ctx.letterSpacing = '0px';
+                  ctx.globalAlpha = 1.0;
+                }
+              }
+            }
+            continue;
+          }
+
+          // Visible city
+          const drawPositions = [c.gx];
+          if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
+          for (const drawGx of drawPositions) {
+            const [tpx, tpy] = tilePos(drawGx, c.gy);
+            const cx = tpx + (TW >> 1);
+            const cy = tpy + (TH >> 1);
+            const color = this.CIV_COLORS[c.owner] || '#ccc';
+            const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
+            const row = this._getCityRow(epoch, c.style || 0);
+            let col = this._getCitySizeCol(c.size, epoch);
+            if (c.hasPalace && col < 3) col++;
+            if (c.hasWalls) col += 4;
+            if (citySprites[row] && citySprites[row][col]) {
+              ctx.drawImage(citySprites[row][col], tpx, tpy - 16);
+            } else {
+              ctx.fillStyle = '#000'; ctx.fillRect(cx - 7, cy - 7, 14, 14);
+              ctx.fillStyle = color; ctx.fillRect(cx - 6, cy - 6, 12, 12);
+            }
+            if (sprites.cityFlags && sprites.cityFlags[c.owner] && garrisonedTiles.has(c.gx + ',' + c.gy)) {
+              const flagLoc = sprites.cityFlagLoc[row] && sprites.cityFlagLoc[row][col];
+              const fx = flagLoc ? tpx + flagLoc.x - 3 : tpx + 50;
+              const fy = flagLoc ? tpy - 16 + flagLoc.y - 17 : tpy - 16;
+              ctx.drawImage(sprites.cityFlags[c.owner], fx, fy);
+            }
+          }
+        }
+      }
+    }
+
+    // ────────────────────────────────────────
+    // PASS 6: Units (drawn AFTER shroud so they appear on top of FOW)
+    // ────────────────────────────────────────
+    let bestUnit = {};
+    if (sprites.unitTemplates.length > 0) {
+      if (onProgress) onProgress('Drawing units...');
+      await this._yield();
+
+      // Build set of city tiles so we don't draw garrisoned units over cities
+      const cityTiles = new Set();
+      for (const c of mapData.cities) cityTiles.add(c.gx + ',' + c.gy);
+
+      // Pre-build unit counts per tile (for stacked unit badge)
+      const unitCounts = {};
+      for (const u of mapData.units) {
+        const tileKey = u.gx + ',' + u.gy;
+        if (cityTiles.has(tileKey)) continue;
+        if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
+        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
+        unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
+      }
+
+      // Pick top-of-stack unit per tile using the save file's stacking linked list.
+      const CIVILIANS = new Set([0, 1, 44, 45, 46, 47, 48, 49, 50]);
+      function unitPriority(u) {
+        let p = 0;
+        if (u.orders === 0) p += 2;
+        if (!CIVILIANS.has(u.type)) p += 1;
+        return p;
+      }
+      bestUnit = {};
+      const lookup = mapData.unitBySaveIndex || {};
+      for (const u of mapData.units) {
+        const tileKey = u.gx + ',' + u.gy;
+        if (cityTiles.has(tileKey)) continue;
+        if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
+        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
+        if (u.prevInStack === -1) {
+          bestUnit[tileKey] = u;
+        } else if (!bestUnit[tileKey]) {
+          bestUnit[tileKey] = u;
+        } else if (bestUnit[tileKey].prevInStack !== -1) {
+          if (unitPriority(u) >= unitPriority(bestUnit[tileKey])) {
+            bestUnit[tileKey] = u;
+          }
+        }
+      }
+
+      const sortedUnits = Object.values(bestUnit).sort((a, b) => a.gy - b.gy);
+
+      for (const u of sortedUnits) {
+        const tileKey = u.gx + ',' + u.gy;
+
+        const template = sprites.unitTemplates[u.type];
+        if (!template) continue;
+
+        const cacheKey = u.type + '-' + u.owner;
+        if (!sprites.unitColored[cacheKey]) {
+          const color = this.CIV_COLORS[u.owner] || '#cccccc';
+          sprites.unitColored[cacheKey] = this._recolorUnit(template, color);
+        }
+
+        const unitSentry = (u.orders === 0x03);
+        let unitSprite = sprites.unitColored[cacheKey];
+        if (unitSentry) {
+          const dimKey = u.type + '-dimmed';
+          if (!sprites.unitColored[dimKey]) {
+            sprites.unitColored[dimKey] = this._dimUnit(sprites.unitColored[cacheKey]);
+          }
+          unitSprite = sprites.unitColored[dimKey];
+        }
+
+        const unitPositions = [u.gx];
+        if (wraps && u.gx < xExtra) unitPositions.push(u.gx + mw);
+        for (const drawGx of unitPositions) {
+          const [tpx, tpy] = tilePos(drawGx, u.gy);
+          ctx.drawImage(unitSprite, tpx, tpy - 16);
+
+          let shieldX = tpx, shieldY = tpy - 16;
+          const so = sprites.shieldOffsets ? sprites.shieldOffsets[u.type] : null;
+          if (so && sprites.shieldFront) {
+            shieldX = tpx + so.x - 1;
+            shieldY = tpy - 16 + so.y - 1;
+
+            const shadowDX = (so.x < 32) ? -1 : 1;
+            const shadowDY = 1;
+
+            const count = unitCounts[tileKey] || 1;
+            if (count > 1) {
+              const backKey = 'shieldBack-' + u.owner;
+              if (!sprites.shieldBackColored[backKey]) {
+                const color = this.CIV_COLORS[u.owner] || '#cccccc';
+                sprites.shieldBackColored[backKey] = this._recolorUnit(sprites.shieldBack, color);
+              }
+              const stackDX = (so.x < 32) ? -4 : 4;
+              if (sprites.shieldShadow) {
+                ctx.drawImage(sprites.shieldShadow, shieldX + stackDX + shadowDX, shieldY + shadowDY);
+              }
+              ctx.drawImage(sprites.shieldBackColored[backKey], shieldX + stackDX, shieldY);
+            }
+
+            if (sprites.shieldShadow) {
+              ctx.drawImage(sprites.shieldShadow, shieldX + shadowDX, shieldY + shadowDY);
+            }
+
+            const frontKey = 'shieldFront-' + u.owner;
+            if (!sprites.shieldFrontColored[frontKey]) {
+              const color = this.CIV_COLORS[u.owner] || '#cccccc';
+              sprites.shieldFrontColored[frontKey] = this._recolorUnit(sprites.shieldFront, color);
+            }
+            ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
+
+            const maxHp = this.UNIT_MAX_HP[u.type] || 10;
+            const curHp = Math.max(0, maxHp - u.hpLost);
+            const barW = 12, barH = 3;
+            const barX = shieldX, barY = shieldY + 2;
+            const greenW = Math.floor((curHp / maxHp) * barW);
+            if (greenW > 8) ctx.fillStyle = 'rgb(87,171,39)';
+            else if (greenW > 3) ctx.fillStyle = 'rgb(255,223,79)';
+            else ctx.fillStyle = 'rgb(243,0,0)';
+            ctx.fillRect(barX, barY, greenW, barH);
+
+            const orderLetter = this.ORDER_KEYS[u.orders] || '-';
+            ctx.font = '13px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#000';
+            ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
+          }
+
+          if (sprites.fortify && u.orders === 0x02) {
+            ctx.drawImage(sprites.fortify, tpx, tpy - 16);
+          }
+
+          let fortImp = getImprovements(u.gx, u.gy);
+          if (fowEnabled && isDimmed(u.gx, u.gy)) {
+            fortImp = mapData.getKnownImprovements(u.gx, u.gy, options.fowCiv);
+          }
+          if (fortImp & 0x40) {
+            if ((fortImp & 0x02) && sprites.airbase) {
+              const hasAir = airUnitTiles.has(tileKey);
+              const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
+              const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(u.gx, u.gy) : 0;
+              const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
+              const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
+              if (sprites.airbaseColored[variantKey]) {
+                ctx.drawImage(sprites.airbaseColored[variantKey], tpx, tpy - 16);
+              }
+            } else if (sprites.fortress) {
+              ctx.drawImage(sprites.fortress, tpx, tpy - 16);
+            }
+          }
+        }
+      }
+    }
+
+    // ────────────────────────────────────────
+    // PASS 6c: City size boxes (drawn over units so population number is visible)
+    // ────────────────────────────────────────
+    ctx.font = 'bold 14px "Times New Roman", serif';
+    ctx.letterSpacing = '0px';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    for (const c of mapData.cities) {
+      if (fowEnabled && !(mapData.getVisibility(c.gx, c.gy) & fowBit)) continue;
+      const drawPositions = [c.gx];
+      if (wraps && c.gx < xExtra) drawPositions.push(c.gx + mw);
+      for (const drawGx of drawPositions) {
+        const [tpx, tpy] = tilePos(drawGx, c.gy);
+        const cx = tpx + (TW >> 1);
+        const color = this.CIV_COLORS[c.owner] || '#ccc';
+        const epoch = mapData.civTechs ? this._getEpoch(mapData.civTechs[c.owner]) : 0;
+        const row = this._getCityRow(epoch, c.style || 0);
+        let col = this._getCitySizeCol(c.size, epoch);
+        if (c.hasPalace && col < 3) col++;
+        if (c.hasWalls) col += 4;
+        const sizeStr = String(c.size);
+        const sizeLoc = sprites.citySizeLoc[row] && sprites.citySizeLoc[row][col];
+        const tm = ctx.measureText(sizeStr);
+        const padL = 1, padR = 2;
+        const sw = Math.ceil(tm.width) + padL + padR;
+        const sh = 14;
+        let ssx, ssy;
+        if (sizeLoc) {
+          ssx = tpx + sizeLoc.x - 1;
+          ssy = tpy - 16 + sizeLoc.y - 1;
+        } else {
+          ssx = cx - sw / 2;
+          ssy = tpy - 16;
+        }
+        ctx.fillStyle = color;
+        ctx.fillRect(ssx, ssy, sw, sh);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(ssx - 1, ssy, 1, sh);
+        ctx.fillRect(ssx + sw, ssy, 1, sh);
+        ctx.fillRect(ssx - 1, ssy - 1, sw + 2, 1);
+        ctx.fillRect(ssx - 1, ssy + sh, sw + 2, 1);
+        ctx.fillText(sizeStr, ssx + padL, ssy);
+      }
     }
 
     // ────────────────────────────────────────
