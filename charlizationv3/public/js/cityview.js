@@ -1,5 +1,5 @@
 import { Civ2Renderer } from './renderer.js';
-import { getGameYearFromMap } from '/engine/year.js';
+import { getGameYearFromMap } from '../../engine/year.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // cityview.js — Civilization II City View Panoramic Renderer

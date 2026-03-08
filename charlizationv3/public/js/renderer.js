@@ -20,7 +20,7 @@
 //     Binary format offsets, tile data structure
 // ═══════════════════════════════════════════════════════════════════
 
-import { TERRAIN_NAMES, UNIT_NAMES, CIV_COLORS, ORDER_KEYS } from '/engine/defs.js';
+import { TERRAIN_NAMES, UNIT_NAMES, CIV_COLORS, ORDER_KEYS } from '../../engine/defs.js';
 
 const Civ2Renderer = {
 
