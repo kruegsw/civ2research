@@ -3507,19 +3507,12 @@ const Civ2CityDialog = {
         supply: (city.tradeCommoditiesAvail || []).map(r => { const s = r > 127 ? r - 256 : r; return s; }),
         demand: (city.tradeCommoditiesDemand || []).map(r => { const s = r > 127 ? r - 256 : r; return s; }),
       };
-      const match = fmt(computed.supply) === fmt(saved.supply) && fmt(computed.demand) === fmt(saved.demand);
-      console.log(`[SupplyDemand] ${city.name}: ${match ? '✓ MATCH vs saved' : '✗ DIFFERS from saved (stale save or local_12c bug)'} computed=[${fmt(computed.supply)}] / [${fmt(computed.demand)}] | saved=[${fmt(saved.supply)}] / [${fmt(saved.demand)}]`);
-      const T = ['Dsr','Pln','Grs','For','Hil','Mtn','Tun','Glc','Swp','Jng','Ocn'];
-      console.log(`  terrain=[${computed.terrCount.map((v,i)=>T[i]+':'+v).join(' ')}] river=${computed.riverCount} road=${computed.roadCount} body=${computed.bodyId} tc=${computed.techCount} sz=${computed.sizeTier} citySize=${computed.citySize} area=${computed.continentLandArea} cx=${computed.rawX} cy=${computed.rawY} yDE=${computed.yDistFromEquator} xDC=${computed.xDistFromCenter} civ#=${computed.rulesCivNum}`);
-      console.log(`  preZeroSupply=[${computed.preZeroSupply.map((v,i)=>N[i]+':'+v).join(' ')}]`);
-      console.log(`  preZeroDemand=[${computed.preZeroDemand.map((v,i)=>N[i]+':'+v).join(' ')}]`);
-      console.log(`  postZeroSupply=[${computed.supplyScores.map((v,i)=>N[i]+':'+v).join(' ')}]`);
-      console.log(`  postZeroDemand=[${computed.demandScores.map((v,i)=>N[i]+':'+v).join(' ')}]`);
+      // Supply/demand comparison available via computed vs saved but not logged
+      // (expected to differ due to local_12c uninitialized variable in original game)
     }
 
     // Compute happiness from first principles (FUN_004ea8e4 port)
     const happiness = this._calcHappiness(city, cityIndex, mapData, civData, supported);
-    console.log(`[Happiness] ${city.name}: computed happy=${happiness.happy} unhappy=${happiness.unhappy} | saved happy=${city.happyCitizens||0} unhappy=${city.unhappyCitizens||0}`);
 
     this._drawBackground(ctx, cdSprites);
     this._drawLabels(ctx);

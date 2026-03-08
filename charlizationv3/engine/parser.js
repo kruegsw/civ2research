@@ -530,9 +530,7 @@ const Civ2Parser = {
       paddingBlock[i] = savBuf[paddingOff + i];
       if (paddingBlock[i] !== 0) paddingNonZero++;
     }
-    if (paddingNonZero > 0) {
-      console.log(`Padding block: ${paddingNonZero} non-zero bytes out of ${paddingSize}`);
-    }
+    // paddingNonZero tracked but not logged (expected in some saves)
 
     return {
       mw, mh, mw2, ms, mapShape, mapSeed, qw, qh,
@@ -817,7 +815,7 @@ const Civ2Parser = {
       if (fixedConstants[i] !== EXPECTED_FIXED[i]) { fixedConstantsValid = false; break; }
     }
     if (!fixedConstantsValid) {
-      console.warn('WARNING: Tail fixed constants mismatch at +1385');
+      console.warn('[parser] Tail fixed constants mismatch at +1385');
     }
 
     // Post-fixed-constants region (+1392..+1468): per-civ summary values
@@ -1041,17 +1039,14 @@ const Civ2Parser = {
       if (c.tradeRouteCount === 0 && Math.abs(c.scienceOutput + c.taxOutput - c.totalTrade) > 1) tradeErrors++;
     }
 
-    console.log(`Map: ${map.mw}×${map.mh} = ${map.ms} tiles, Ocean: ${oceanPct}%`);
-    console.log(`Cities: ${cities.length}, Units: ${units.length}, Cities on ocean: ${citiesOnOcean}`);
-    if (citiesOnOcean > 0) console.warn('WARNING: Some cities are on ocean tiles!');
-    if (!unitCountMatch) console.warn(`WARNING: Header says ${gs.totalUnits} units but parsed ${allUnits.length}`);
-    if (!cityCountMatch) console.warn(`WARNING: Header says ${gs.totalCities} cities but parsed ${cities.length}`);
-    if (parityErrors > 0) console.warn(`WARNING: ${parityErrors} cities with mismatched cx/cy parity`);
-    if (palaceErrors > 0) console.warn(`WARNING: ${palaceErrors} civs with wrong palace count`);
-    if (wonderIdErrors > 0) console.warn(`WARNING: ${wonderIdErrors} wonders referencing invalid city indices`);
-    if (homeCityErrors > 0) console.warn(`WARNING: ${homeCityErrors} units with invalid home city IDs`);
-    if (workerSizeErrors > 0) console.warn(`WARNING: ${workerSizeErrors} cities where workers+specialists != size`);
-    if (tradeErrors > 0) console.warn(`WARNING: ${tradeErrors} cities where science+tax != trade (no routes)`);
+    // Only warn on actual data integrity problems (not expected quirks)
+    if (citiesOnOcean > 0) console.warn(`[parser] ${citiesOnOcean} cities on ocean tiles`);
+    if (!unitCountMatch) console.warn(`[parser] Header says ${gs.totalUnits} units but parsed ${allUnits.length}`);
+    if (!cityCountMatch) console.warn(`[parser] Header says ${gs.totalCities} cities but parsed ${cities.length}`);
+    if (parityErrors > 0) console.warn(`[parser] ${parityErrors} cities with mismatched cx/cy parity`);
+    if (palaceErrors > 0) console.warn(`[parser] ${palaceErrors} civs with wrong palace count`);
+    if (wonderIdErrors > 0) console.warn(`[parser] ${wonderIdErrors} wonders referencing invalid city indices`);
+    if (homeCityErrors > 0) console.warn(`[parser] ${homeCityErrors} units with invalid home city IDs`);
 
     return {
       terrainCounts, oceanPct, citiesOnOcean, unitCountMatch, cityCountMatch, fixedConstantsValid,

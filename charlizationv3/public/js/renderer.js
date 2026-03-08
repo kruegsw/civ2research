@@ -419,7 +419,7 @@ const Civ2Renderer = {
         if (opaque >= total * 0.5) {
           valid.push(spr);
         } else {
-          console.warn(`Discarding terrain[${tid}][${vi}] (${this.TERRAIN_NAMES[tid]}): only ${pct}% opaque — chroma-key placeholder`);
+          // Expected: chroma-key placeholder sprites are mostly transparent
         }
       }
       if (valid.length === 0) {
@@ -513,7 +513,8 @@ const Civ2Renderer = {
     const canvasH = (mh - 1) * (TH >> 1) + TH;
     canvas.width = canvasW;
     canvas.height = canvasH;
-    const ctx = canvas.getContext('2d', { colorSpace: 'srgb' });
+    const needsReadback = !!(options.fowEnabled || options.losData);
+    const ctx = canvas.getContext('2d', { colorSpace: 'srgb', willReadFrequently: needsReadback });
 
     // Dark ocean background
     ctx.fillStyle = '#142850';
@@ -801,7 +802,7 @@ const Civ2Renderer = {
           }
         }
       }
-      console.log(`FOW: civ=${options.fowCiv}, bit=${fowBit}, unexplored=${unexploredCount}, dimmed=${dimmedCount}, visible=${visCount}`);
+      // FOW stats available: unexplored=${unexploredCount}, dimmed=${dimmedCount}, visible=${visCount}
     }
     // Map edges (always) — covers triangular gaps at north/south borders
     for (let gx = 0; gx < xMax; gx++) {
