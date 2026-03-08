@@ -1,7 +1,366 @@
-/* Civ2 Save Viewer — Main Styles */
+/* Charlization — Main Styles */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; height: 100%; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Scene system — only one scene visible at a time
+   ═══════════════════════════════════════════════════════════════════ */
+.scene { width: 100vw; height: 100vh; height: 100dvh; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Scene: Main Menu — Civ2 Gold Multiplayer inspired
+   ═══════════════════════════════════════════════════════════════════ */
+#menu-scene {
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  background: radial-gradient(ellipse at 50% 40%, #1e1e30 0%, #0a0a15 100%);
+  position: relative;
+}
+
+#menu-dialog {
+  position: relative;
+  animation: menuFadeIn 0.4s ease-out;
+}
+@keyframes menuFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Outer frame — stone/marble wallpaper approximation */
+#menu-frame {
+  background:
+    repeating-linear-gradient(45deg,
+      transparent, transparent 10px,
+      rgba(120,100,70,0.04) 10px, rgba(120,100,70,0.04) 20px),
+    linear-gradient(160deg, #55473a 0%, #3e3028 40%, #4a3c2e 60%, #3a2c1e 100%);
+  padding: 14px;
+  border: 2px solid #6a5a44;
+  box-shadow:
+    inset 1px 1px 0 #8a7a64,
+    inset -1px -1px 0 #2a1a0e,
+    3px 3px 0 #1a0a04,
+    -1px -1px 0 #5a4a34,
+    6px 6px 24px rgba(0,0,0,0.7);
+}
+
+/* Inner panel — recessed area */
+#menu-panel {
+  background: linear-gradient(150deg, #38302a 0%, #2c2418 100%);
+  border: 2px solid;
+  border-color: #2a1a0e #5a4a34 #5a4a34 #2a1a0e;
+  box-shadow:
+    inset 1px 1px 0 #1a0a04,
+    inset -1px -1px 0 #6a5a44;
+  padding: 32px 48px;
+  min-width: 320px;
+  text-align: center;
+}
+
+#menu-title {
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #d4c4a0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.6), 0 0 12px rgba(200,180,140,0.15);
+  margin-bottom: 2px;
+  letter-spacing: 2px;
+}
+
+#menu-subtitle {
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 15px;
+  color: #8a7a64;
+  margin-bottom: 28px;
+  letter-spacing: 1px;
+}
+
+#menu-buttons {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+/* Win95/Civ2-style 3D button */
+.civ2-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 20px;
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 17px;
+  color: #000;
+  background: #c0c0c0;
+  border: none;
+  box-shadow:
+    inset 1px 1px 0 #fff,
+    inset 2px 2px 0 #dfdfdf,
+    inset -1px -1px 0 #404040,
+    inset -2px -2px 0 #808080;
+  cursor: pointer;
+  text-align: center;
+  outline: none;
+}
+.civ2-btn:hover:not(:disabled) {
+  background: #cccccc;
+}
+.civ2-btn:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #404040,
+    inset 2px 2px 0 #808080,
+    inset -1px -1px 0 #fff,
+    inset -2px -2px 0 #dfdfdf;
+  padding: 9px 19px 7px 21px;
+}
+.civ2-btn:disabled {
+  color: #808080;
+  text-shadow: 1px 1px 0 #dfdfdf;
+  cursor: default;
+}
+
+#menu-footer {
+  position: absolute;
+  bottom: 20px;
+  font-size: 11px;
+  color: #3a3a4a;
+  font-family: 'Times New Roman', serif;
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Scene: Lobby — full-page room browser
+   ═══════════════════════════════════════════════════════════════════ */
+#lobby-scene {
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #12121e 0%, #0a0a15 100%);
+}
+
+/* ── Lobby header bar ── */
+#lobby-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px;
+  background: rgba(22, 33, 62, 0.95);
+  border-bottom: 1px solid #0f3460;
+  flex-shrink: 0;
+}
+.lobby-nav-btn {
+  background: #0f3460; color: #c0c0c0; border: 1px solid #1a5276;
+  padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px;
+  flex-shrink: 0;
+}
+.lobby-nav-btn:hover { background: #1a5276; color: #fff; }
+.lobby-leave-btn { background: #5a1a1a; border-color: #7a2a2a; }
+.lobby-leave-btn:hover { background: #7a2a2a; }
+
+#lobby-heading {
+  font-family: 'Times New Roman', serif;
+  font-size: 20px; font-weight: 700;
+  color: #d4c4a0;
+  margin: 0; flex: 1;
+}
+
+#lobby-right {
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+
+#lobby-name-label {
+  font-size: 12px; color: #888;
+}
+#lobby-name-input {
+  background: transparent; border: none; border-bottom: 1px solid #444;
+  color: #e0e0e0; font-size: 13px; font-family: inherit;
+  padding: 2px 4px; width: 100px; outline: none;
+}
+#lobby-name-input:focus { border-bottom-color: #2ecc71; }
+
+/* ── WS status indicator ── */
+#ws-status {
+  display: flex; align-items: center; gap: 4px; font-size: 11px;
+  flex-shrink: 0; cursor: default;
+}
+.ws-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+}
+.ws-off .ws-dot { background: #e74c3c; }
+.ws-off .ws-label { color: #e74c3c; }
+.ws-on .ws-dot { background: #2ecc71; }
+.ws-on .ws-label { color: #2ecc71; }
+.ws-connecting .ws-dot { background: #f39c12; animation: pulse 1s ease-in-out infinite; }
+.ws-connecting .ws-label { color: #f39c12; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ── Lobby room list ── */
+#lobby-rooms-view {
+  flex: 1; overflow-y: auto; padding: 20px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+#lobby-rooms-view::-webkit-scrollbar { width: 6px; }
+#lobby-rooms-view::-webkit-scrollbar-track { background: transparent; }
+#lobby-rooms-view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+#lobby-room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* ── Create game tile ── */
+.lobby-create-tile {
+  border: 2px dashed #3a3a5a;
+  border-radius: 6px;
+  background: transparent;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 110px;
+  color: #555;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.lobby-create-tile:hover {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+.lobby-create-tile .create-plus {
+  font-size: 36px; line-height: 1; font-weight: 300;
+}
+.lobby-create-tile .create-label {
+  font-size: 13px; margin-top: 4px;
+}
+
+/* ── Room tile ── */
+.lobby-room-tile {
+  background: rgba(25, 25, 45, 0.85);
+  border: 1px solid #2a2a4a;
+  border-left: 3px solid #4caf50;
+  border-radius: 6px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.lobby-room-tile:hover {
+  background: rgba(35, 35, 60, 0.95);
+  border-color: #3a3a6a;
+  border-left-color: #66bb6a;
+}
+.lobby-room-tile.started { border-left-color: #5c8dd6; }
+.lobby-room-tile.started:hover { border-left-color: #7aa3e8; }
+
+.tile-top {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tile-name {
+  font-size: 14px; font-weight: 600; color: #e0e0e0;
+}
+.tile-status {
+  font-size: 11px; padding: 2px 6px; border-radius: 3px;
+  background: rgba(76,175,80,0.15); color: #4caf50;
+}
+.tile-status.in-progress {
+  background: rgba(92,141,214,0.15); color: #5c8dd6;
+}
+.tile-info {
+  font-size: 12px; color: #777;
+}
+.tile-join-btn {
+  align-self: flex-end;
+  background: #0f3460; color: #c0c0c0; border: 1px solid #1a5276;
+  padding: 4px 14px; border-radius: 3px; cursor: pointer; font-size: 12px;
+}
+.tile-join-btn:hover { background: #1a5276; color: #fff; }
+
+/* ── Room detail view ── */
+#lobby-room-view {
+  flex: 1; overflow-y: auto; padding: 20px 16px;
+}
+#room-detail-header {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 500px; margin: 0 auto 16px;
+}
+#room-name {
+  font-family: 'Times New Roman', serif;
+  font-size: 22px; font-weight: 700; color: #d4c4a0;
+  margin: 0;
+}
+#room-seats {
+  max-width: 500px; margin: 0 auto;
+}
+.room-seat {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 4px; margin-bottom: 4px;
+  font-size: 13px;
+}
+.room-seat.occupied {
+  background: rgba(46,204,113,0.08);
+  color: #e0e0e0;
+}
+.room-seat.empty {
+  background: rgba(255,255,255,0.03);
+  color: #555;
+}
+.seat-num {
+  width: 24px; font-weight: 700; color: #666;
+  text-align: center; flex-shrink: 0;
+}
+.seat-name { flex: 1; }
+.seat-status {
+  font-size: 11px; padding: 1px 6px; border-radius: 3px;
+}
+.seat-status.online { background: rgba(46,204,113,0.15); color: #2ecc71; }
+.seat-status.offline { background: rgba(231,76,60,0.15); color: #e74c3c; }
+.room-spectators {
+  margin-top: 12px; padding: 8px 12px;
+  font-size: 11px; color: #666;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── Active game banner ── */
+#lobby-banner {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 8px 16px;
+  background: rgba(76,175,80,0.12);
+  border-bottom: 1px solid rgba(76,175,80,0.25);
+  flex-shrink: 0;
+  font-size: 13px; color: #4caf50;
+}
+#lobby-banner-resume {
+  background: #4caf50; color: #000; border-color: #66bb6a;
+  font-weight: 600;
+}
+#lobby-banner-resume:hover { background: #66bb6a; }
+
+/* ── Room actions (ready, status) ── */
+#room-actions {
+  max-width: 500px; margin: 16px auto 0;
+  display: flex; align-items: center; gap: 12px;
+}
+#room-status-text {
+  flex: 1; font-size: 13px; color: #888;
+}
+#room-status-text.started {
+  color: #4caf50; font-weight: 600;
+}
+.room-ready-btn {
+  width: auto; padding: 6px 24px; font-size: 15px;
+}
+.room-ready-btn.is-ready {
+  background: #a0a0a0;
+}
+
+/* ── Activity dot (inline colored circle) ── */
+.activity-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; flex-shrink: 0; margin-right: 6px;
+}
+
+/* ── Lobby status bar ── */
+#lobby-status-bar {
+  padding: 6px 16px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-size: 11px; color: #555;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Scene: Game — map viewer
+   ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Controls bar (floating overlay, single-line, scrollable) ── */
 #controls {
@@ -11,7 +370,14 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   overflow-x: auto; overflow-y: hidden; white-space: nowrap;
   backdrop-filter: blur(4px);
 }
-#controls input[type="file"] { display: none; }
+.ctrl-back-btn {
+  flex-shrink: 0;
+  background: #0f3460; color: #c0c0c0; border: 1px solid #1a5276;
+  padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 13px;
+  font-weight: 700;
+}
+.ctrl-back-btn:hover { background: #1a5276; color: #fff; }
+
 .file-btn {
   flex-shrink: 0;
   background: #0f3460; color: #e0e0e0; border: 1px solid #1a5276;
@@ -54,6 +420,10 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 #map-canvas { display: none; }
 #viewport-canvas { image-rendering: pixelated; cursor: grab; touch-action: none; }
 #viewport-canvas.dragging { cursor: grabbing; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Global overlays
+   ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Tooltip ── */
 #tooltip {
@@ -125,3 +495,12 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   align-items: center; justify-content: center; line-height: 1;
 }
 #citydialog-close:hover { background: #c0392b; border-color: #e74c3c; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 520px) {
+  #lobby-room-grid { grid-template-columns: 1fr; }
+  #menu-panel { padding: 24px 28px; min-width: 0; }
+  #menu-title { font-size: 28px; }
+}

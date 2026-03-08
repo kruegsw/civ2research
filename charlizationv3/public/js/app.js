@@ -11,6 +11,7 @@ import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYearFromMap } from '../engine/year.js';
 import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS } from '../engine/defs.js';
+import { createTransport } from '../net/transport.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -49,6 +50,19 @@ function getMinScale() {
   if (vp.offW === 0 || vp.offH === 0) return 0.25;
   if (vp.wraps) return vp.logicalW / vp.wrapW;
   return Math.max(vp.logicalW / vp.offW, vp.logicalH / vp.offH);
+}
+
+// ── Scene management ──
+let currentScene = 'menu';
+function setScene(scene) {
+  document.getElementById('menu-scene').style.display = scene === 'menu' ? 'flex' : 'none';
+  document.getElementById('lobby-scene').style.display = scene === 'lobby' ? 'flex' : 'none';
+  document.getElementById('game-scene').style.display = scene === 'game' ? '' : 'none';
+  currentScene = scene;
+  if (scene === 'game' && vp.offW > 0) {
+    resizeViewport();
+    drawViewport();
+  }
 }
 
 // ── Status bar game info ──
@@ -144,7 +158,7 @@ function updateGameInfo(mapData, civOverride) {
           const blob = await savResp.blob();
           files.sav = new File([blob], savName, { type: 'application/octet-stream' });
           document.getElementById('sav-btn').classList.add('loaded');
-          document.getElementById('sav-btn').childNodes[0].textContent = savName + ' ';
+          document.getElementById('sav-btn').textContent = savName;
         }
       }
     }
@@ -155,10 +169,16 @@ function updateGameInfo(mapData, civOverride) {
 
 // ── File input handlers ──
 document.getElementById('sav-input').addEventListener('change', e => {
+  if (!e.target.files[0]) return;
   files.sav = e.target.files[0];
   document.getElementById('sav-btn').classList.add('loaded');
-  document.getElementById('sav-btn').childNodes[0].textContent = files.sav.name + ' ';
+  document.getElementById('sav-btn').textContent = files.sav.name;
   checkReady();
+  // Auto-switch to game scene and render if sprites are ready
+  if (files.t1 && files.t2) {
+    setScene('game');
+    doRender();
+  }
 });
 function checkReady() {
   const ready = files.sav && files.t1 && files.t2;
@@ -840,6 +860,382 @@ document.getElementById('citydialog-backdrop').addEventListener('click', closeCi
 document.getElementById('citydialog-close').addEventListener('click', closeCityDialog);
 document.getElementById('cityview-backdrop').addEventListener('click', closeCityView);
 document.getElementById('cityview-close').addEventListener('click', closeCityView);
+
+// ═══════════════════════════════════════════════════════════════════
+// MAIN MENU — button handlers
+// ═══════════════════════════════════════════════════════════════════
+
+document.getElementById('menu-load-game').addEventListener('click', () => {
+  if (files.sav && files.t1 && files.t2) {
+    setScene('game');
+    if (!currentMapData) doRender();
+  } else {
+    document.getElementById('sav-input').click();
+  }
+});
+
+document.getElementById('menu-multiplayer').addEventListener('click', () => {
+  setScene('lobby');
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// WEBSOCKET — connection, lobby, room management
+// ═══════════════════════════════════════════════════════════════════
+
+const wsStatusEl = document.getElementById('ws-status');
+const wsLabelEl = wsStatusEl.querySelector('.ws-label');
+
+let wsClientId = null;
+let wsSessionId = localStorage.getItem('civ2.sessionId') || null;
+let wsRoomId = null;
+let wsPlayerIndex = null;
+let wsRooms = [];
+let wsLastRoom = null;     // last ROOM message for this room (for refresh)
+let wsGameStarted = false; // has this room's game started?
+let wsRoomName = '';       // name of current room (for banner)
+const savedActiveRoom = localStorage.getItem('civ2.activeRoomId') || null;
+
+function saveActiveGame() {
+  if (wsRoomId && wsSessionId) {
+    localStorage.setItem('civ2.activeRoomId', wsRoomId);
+    localStorage.setItem('civ2.sessionId', wsSessionId);
+  }
+}
+function clearActiveGame() {
+  localStorage.removeItem('civ2.activeRoomId');
+  localStorage.removeItem('civ2.sessionId');
+}
+
+function updateGameBackBtn() {
+  const btn = document.getElementById('game-back-btn');
+  if (wsRoomId && wsGameStarted) {
+    btn.textContent = 'Resume';
+  } else {
+    btn.innerHTML = '&larr; Lobby';
+  }
+}
+
+function setWsStatus(state, label) {
+  wsStatusEl.className = state;
+  wsLabelEl.textContent = label;
+  wsStatusEl.title = `WebSocket ${label}`;
+}
+
+function getWsUrl() {
+  const loc = window.location;
+  if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
+    return `ws://${loc.hostname}:8788`;
+  }
+  const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${loc.host}`;
+}
+
+// Player name persistence
+const lobbyNameInput = document.getElementById('lobby-name-input');
+const savedName = localStorage.getItem('civ2.playerName') || '';
+if (savedName) lobbyNameInput.value = savedName;
+lobbyNameInput.addEventListener('input', () => {
+  const name = lobbyNameInput.value.trim();
+  localStorage.setItem('civ2.playerName', name);
+  transport.setName(name || 'Player');
+  transport.send('IDENTIFY', { name: name || 'Player' });
+});
+
+// ── Activity PING heartbeat ──
+const IDLE_THRESHOLD = 60000;  // 60s → gold dot
+const PING_INTERVAL = 15000;   // throttle pings to 15s
+let lastPingSent = 0;
+
+function reportActivity() {
+  const now = Date.now();
+  const elapsed = now - lastPingSent;
+  const throttle = elapsed > IDLE_THRESHOLD ? 0 : PING_INTERVAL;
+  if (elapsed > throttle) {
+    lastPingSent = now;
+    transport.send('PING');
+  }
+}
+document.addEventListener('mousemove', reportActivity);
+document.addEventListener('click', reportActivity);
+document.addEventListener('touchstart', reportActivity);
+
+// ── Activity dot color ──
+function activityColor(slot) {
+  if (!slot.occupied) return '#444';
+  if (!slot.wsOpen) return '#e53935';
+  const age = slot.lastActivity ? (Date.now() - slot.lastActivity) : 0;
+  return age > IDLE_THRESHOLD ? '#ffd700' : '#4caf50';
+}
+
+const transport = createTransport({
+  url: getWsUrl(),
+  name: savedName || 'Player',
+  sessionId: wsSessionId,
+  onOpen() {
+    setWsStatus('ws-on', 'Online');
+    const playerName = lobbyNameInput.value.trim() || 'Player';
+    transport.send('IDENTIFY', { name: playerName });
+    console.log('[ws] Connected');
+  },
+  onClose() {
+    setWsStatus('ws-connecting', 'Reconnecting...');
+    console.log('[ws] Disconnected, reconnecting...');
+  },
+  onError() {
+    setWsStatus('ws-off', 'Error');
+  },
+  onMessage(msg) {
+    if (!msg || !msg.type) return;
+    switch (msg.type) {
+      case 'ROOM_LIST':
+        wsRooms = msg.rooms || [];
+        if (msg.yourClientId) wsClientId = msg.yourClientId;
+        if (msg.sessionId) {
+          wsSessionId = msg.sessionId;
+          transport.setSessionId(msg.sessionId);
+          localStorage.setItem('civ2.sessionId', msg.sessionId);
+        }
+        // If saved active room no longer exists, clear it
+        if (savedActiveRoom && !wsRoomId && !wsRooms.some(r => r.roomId === savedActiveRoom)) {
+          clearActiveGame();
+        }
+        renderRoomList();
+        updateBanner();
+        break;
+
+      case 'WELCOME':
+        wsRoomId = msg.roomId;
+        wsClientId = msg.clientId;
+        wsPlayerIndex = msg.playerIndex;
+        transport.setRoomId(msg.roomId);
+        if (msg.sessionId) {
+          wsSessionId = msg.sessionId;
+          transport.setSessionId(msg.sessionId);
+          localStorage.setItem('civ2.sessionId', msg.sessionId);
+        }
+        console.log(`[ws] Joined room ${msg.roomId} as seat ${msg.playerIndex ?? 'spectator'}`);
+        break;
+
+      case 'ROOM':
+        wsLastRoom = msg;
+        wsRoomName = msg.name || msg.roomId;
+        wsGameStarted = msg.started;
+        if (msg.started) saveActiveGame();
+        updateGameBackBtn();
+        renderRoomDetail(msg);
+        updateBanner();
+        break;
+
+      case 'ERROR':
+        console.warn(`[ws] Server error: ${msg.message}`);
+        break;
+
+      case 'REJECTED':
+        console.warn(`[ws] Rejected: ${msg.reason}`);
+        break;
+
+      default:
+        console.log(`[ws] ${msg.type}`, msg);
+    }
+  },
+});
+
+setWsStatus('ws-connecting', 'Connecting...');
+// If player had an active game, seed transport so it auto-rejoins on connect
+if (savedActiveRoom) {
+  transport.setRoomId(savedActiveRoom);
+  setScene('lobby');  // skip menu, go straight to lobby
+}
+transport.connect();
+
+// ═══════════════════════════════════════════════════════════════════
+// LOBBY — room list + room detail rendering
+// ═══════════════════════════════════════════════════════════════════
+
+function renderRoomList() {
+  const grid = document.getElementById('lobby-room-grid');
+  let html = `<div class="lobby-create-tile" id="lobby-create-tile">
+    <span class="create-plus">+</span>
+    <span class="create-label">New Game</span>
+  </div>`;
+
+  for (const r of wsRooms) {
+    const seats = r.seatCount || 0;
+    const specs = r.spectatorCount || 0;
+    const cls = r.started ? 'lobby-room-tile started' : 'lobby-room-tile';
+    const statusCls = r.started ? 'tile-status in-progress' : 'tile-status';
+    const statusText = r.started ? 'In Progress' : `${seats}/8 Players`;
+    html += `<div class="${cls}" data-room-id="${r.roomId}">
+      <div class="tile-top">
+        <span class="tile-name">${r.name}</span>
+        <span class="${statusCls}">${statusText}</span>
+      </div>
+      <div class="tile-info">${seats} seated${specs ? ` · ${specs} watching` : ''}</div>
+      <button class="tile-join-btn">Join</button>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // Create game handler
+  document.getElementById('lobby-create-tile').addEventListener('click', () => {
+    const name = lobbyNameInput.value.trim() || 'Player';
+    transport.send('CREATE_ROOM', { name: `${name}'s Game`, playerName: name });
+  });
+
+  // Join handlers
+  grid.querySelectorAll('.lobby-room-tile').forEach(el => {
+    const join = () => transport.joinRoom(el.dataset.roomId);
+    el.querySelector('.tile-join-btn').addEventListener('click', e => { e.stopPropagation(); join(); });
+    el.addEventListener('click', join);
+  });
+}
+
+function renderRoomDetail(msg) {
+  wsRoomId = msg.roomId;
+
+  // Only render detail view if lobby scene is showing room view (not browsing rooms)
+  const roomView = document.getElementById('lobby-room-view');
+  const roomsView = document.getElementById('lobby-rooms-view');
+  if (currentScene === 'lobby' && roomView.style.display !== 'none') {
+    // We're viewing this room — update it
+  } else if (currentScene === 'lobby' && roomsView.style.display !== 'none' && !wsGameStarted) {
+    // First ROOM message after joining — switch to detail view
+    roomsView.style.display = 'none';
+    roomView.style.display = 'block';
+  } else if (currentScene === 'lobby' && roomsView.style.display !== 'none' && wsGameStarted) {
+    // Game started, player is browsing rooms — just update banner, don't switch view
+    return;
+  }
+
+  // Show room detail
+  document.getElementById('lobby-rooms-view').style.display = 'none';
+  document.getElementById('lobby-room-view').style.display = 'block';
+  document.getElementById('room-name').textContent = msg.name || msg.roomId;
+
+  // Seats with activity dots
+  const seatsEl = document.getElementById('room-seats');
+  let html = '';
+  for (const s of msg.clients) {
+    const cls = s.occupied ? 'occupied' : 'empty';
+    const label = s.occupied ? (s.name || 'Player') : 'Open';
+    const you = s.clientId === wsClientId ? ' (you)' : '';
+    const dotColor = activityColor(s);
+    const readyMark = (s.occupied && msg.ready && msg.ready[s.seat]) ? ' <span style="color:#4caf50">&#10003;</span>' : '';
+    html += `<div class="room-seat ${cls}">
+      <span class="activity-dot" style="background:${dotColor}"></span>
+      <span class="seat-num">${s.seat}</span>
+      <span class="seat-name">${label}${you}${readyMark}</span>
+    </div>`;
+  }
+  if (msg.spectators && msg.spectators.length) {
+    html += `<div class="room-spectators">Spectators: ${msg.spectators.map(s => s.name).join(', ')}</div>`;
+  }
+  seatsEl.innerHTML = html;
+
+  // Ready button + status text
+  const readyBtn = document.getElementById('room-ready-btn');
+  const statusText = document.getElementById('room-status-text');
+  const backBtn = document.getElementById('room-back-btn');
+  const leaveBtn = document.getElementById('room-leave-btn');
+
+  if (msg.started) {
+    // Game started
+    statusText.textContent = 'Game has started';
+    statusText.className = 'started';
+    readyBtn.style.display = 'none';
+    leaveBtn.style.display = 'none';
+    backBtn.style.display = '';
+  } else {
+    // Pre-game: show ready state
+    const occupied = msg.clients.filter(s => s.occupied);
+    const readyCount = occupied.filter((s, i) => msg.ready && msg.ready[s.seat]).length;
+    if (occupied.length < 2) {
+      statusText.textContent = `Waiting for players... (need at least 2)`;
+    } else {
+      statusText.textContent = `${readyCount} / ${occupied.length} ready`;
+    }
+    statusText.className = '';
+
+    // Show ready button only if seated
+    if (wsPlayerIndex != null) {
+      const amReady = msg.ready && msg.ready[wsPlayerIndex];
+      readyBtn.textContent = amReady ? 'Not Ready' : 'Ready';
+      readyBtn.className = amReady ? 'civ2-btn room-ready-btn is-ready' : 'civ2-btn room-ready-btn';
+      readyBtn.style.display = '';
+    } else {
+      readyBtn.style.display = 'none';
+    }
+
+    leaveBtn.style.display = '';
+    backBtn.style.display = 'none';
+  }
+}
+
+// ── Active game banner ──
+function updateBanner() {
+  const banner = document.getElementById('lobby-banner');
+  const bannerText = document.getElementById('lobby-banner-text');
+  if (wsRoomId && wsGameStarted) {
+    bannerText.textContent = `You are in "${wsRoomName}"`;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// Resume: go back to room detail from room list
+document.getElementById('lobby-banner-resume').addEventListener('click', () => {
+  document.getElementById('lobby-rooms-view').style.display = 'none';
+  document.getElementById('lobby-room-view').style.display = 'block';
+  if (wsLastRoom) renderRoomDetail(wsLastRoom);
+});
+
+// Leave room (pre-game only) → back to room list
+document.getElementById('room-leave-btn').addEventListener('click', () => {
+  transport.leaveRoom();
+  wsRoomId = null;
+  wsPlayerIndex = null;
+  wsGameStarted = false;
+  wsLastRoom = null;
+  transport.setRoomId(null);
+  clearActiveGame();
+  updateGameBackBtn();
+  document.getElementById('lobby-room-view').style.display = 'none';
+  document.getElementById('lobby-rooms-view').style.display = 'block';
+  updateBanner();
+});
+
+// Back to rooms (started game) → show room list with banner
+document.getElementById('room-back-btn').addEventListener('click', () => {
+  document.getElementById('lobby-room-view').style.display = 'none';
+  document.getElementById('lobby-rooms-view').style.display = 'block';
+  updateBanner();
+});
+
+// Ready button
+document.getElementById('room-ready-btn').addEventListener('click', () => {
+  transport.send('READY');
+});
+
+// Lobby ← → Menu navigation
+document.getElementById('lobby-back-btn').addEventListener('click', () => setScene('menu'));
+document.getElementById('game-back-btn').addEventListener('click', () => {
+  setScene('lobby');
+  // If in an active game, show room detail directly
+  if (wsRoomId && wsGameStarted && wsLastRoom) {
+    document.getElementById('lobby-rooms-view').style.display = 'none';
+    document.getElementById('lobby-room-view').style.display = 'block';
+    renderRoomDetail(wsLastRoom);
+  }
+});
+
+// ── Periodic refresh for activity dot transitions (idle → gold) ──
+setInterval(() => {
+  if (currentScene === 'lobby' && wsLastRoom && document.getElementById('lobby-room-view').style.display !== 'none') {
+    renderRoomDetail(wsLastRoom);
+  }
+}, 15000);
 
 // ── Initialize event handlers ──
 initEvents(viewportCanvas, vp, {

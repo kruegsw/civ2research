@@ -2,33 +2,112 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Civ2 Save Viewer</title>
+<title>Charlization</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<div id="controls">
-  <label class="file-btn" id="sav-btn">
-    Load .SAV <input type="file" id="sav-input" accept=".sav,.SAV,.net,.NET,.scn,.SCN">
-  </label>
-  <button id="render-btn" disabled>Render</button>
-  <label class="ctl-option"><input type="checkbox" id="grid-toggle"> Grid</label>
-  <label class="ctl-option"><input type="checkbox" id="minimap-toggle"> Minimap</label>
-  <label class="ctl-option"><input type="checkbox" id="fow-toggle"> FoW</label>
-  <label class="ctl-option"><input type="checkbox" id="los-toggle"> LOS</label>
-  <select id="fow-civ" disabled>
-    <option value="">— civ —</option>
-  </select>
-  <span id="status">Load a .SAV file to begin.</span>
-  <span id="game-info"></span>
+<!-- Global hidden file input (shared by menu + controls bar) -->
+<input type="file" id="sav-input" accept=".sav,.SAV,.net,.NET,.scn,.SCN"
+       style="position:fixed;left:-9999px;opacity:0">
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Scene: Main Menu                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="menu-scene" class="scene">
+  <div id="menu-dialog">
+    <div id="menu-frame">
+      <div id="menu-panel">
+        <h1 id="menu-title">Charlization</h1>
+        <p id="menu-subtitle">Multiplayer Gold</p>
+        <div id="menu-buttons">
+          <button class="civ2-btn" id="menu-new-game" disabled>Start a New Game</button>
+          <button class="civ2-btn" id="menu-load-game">Load a Game</button>
+          <button class="civ2-btn" id="menu-multiplayer">Multiplayer Game</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="menu-footer">Based on Sid Meier's Civilization II</div>
 </div>
 
-<div id="map-container">
-  <canvas id="map-canvas"></canvas>
-  <canvas id="viewport-canvas"></canvas>
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Scene: Lobby                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="lobby-scene" class="scene" style="display:none">
+  <div id="lobby-header">
+    <button class="lobby-nav-btn" id="lobby-back-btn">&larr; Menu</button>
+    <h1 id="lobby-heading">Game Lobby</h1>
+    <div id="lobby-right">
+      <span id="ws-status" class="ws-off">
+        <span class="ws-dot"></span>
+        <span class="ws-label">Offline</span>
+      </span>
+      <label id="lobby-name-label">
+        as <input id="lobby-name-input" placeholder="your name" maxlength="20" spellcheck="false">
+      </label>
+    </div>
+  </div>
+
+  <!-- Active game banner (shown when player has a started game) -->
+  <div id="lobby-banner" style="display:none">
+    <span id="lobby-banner-text"></span>
+    <button id="lobby-banner-resume" class="lobby-nav-btn">Resume</button>
+  </div>
+
+  <!-- Room list view -->
+  <div id="lobby-rooms-view">
+    <div id="lobby-room-grid"></div>
+  </div>
+
+  <!-- Room detail view (hidden until joined) -->
+  <div id="lobby-room-view" style="display:none">
+    <div id="room-detail-header">
+      <h2 id="room-name">Room</h2>
+      <button class="lobby-nav-btn lobby-leave-btn" id="room-leave-btn">Leave Room</button>
+    </div>
+    <div id="room-seats"></div>
+    <div id="room-actions">
+      <div id="room-status-text"></div>
+      <button id="room-ready-btn" class="civ2-btn room-ready-btn">Ready</button>
+      <button id="room-back-btn" class="lobby-nav-btn" style="display:none">&larr; Rooms</button>
+    </div>
+  </div>
+
+  <div id="lobby-status-bar">
+    <span id="lobby-online-count"></span>
+  </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Scene: Game (existing viewer)                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="game-scene" class="scene" style="display:none">
+  <div id="controls">
+    <button id="game-back-btn" class="ctrl-back-btn">&larr; Lobby</button>
+    <label class="file-btn" id="sav-btn" for="sav-input">Load .SAV</label>
+    <button id="render-btn" disabled>Render</button>
+    <label class="ctl-option"><input type="checkbox" id="grid-toggle"> Grid</label>
+    <label class="ctl-option"><input type="checkbox" id="minimap-toggle"> Minimap</label>
+    <label class="ctl-option"><input type="checkbox" id="fow-toggle"> FoW</label>
+    <label class="ctl-option"><input type="checkbox" id="los-toggle"> LOS</label>
+    <select id="fow-civ" disabled>
+      <option value="">— civ —</option>
+    </select>
+    <span id="status">Load a .SAV file to begin.</span>
+    <span id="game-info"></span>
+  </div>
+
+  <div id="map-container">
+    <canvas id="map-canvas"></canvas>
+    <canvas id="viewport-canvas"></canvas>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Global overlays                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <div id="tooltip"></div>
 <div id="loading-overlay"><div class="spinner"></div><div class="msg" id="loading-msg">Rendering...</div></div>
 <div id="cityview-overlay">
