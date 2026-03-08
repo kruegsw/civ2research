@@ -279,7 +279,18 @@ wss.on("connection", (ws) => {
     switch (msg.type) {
 
       case "IDENTIFY": {
-        if (msg.name) info.name = msg.name;
+        if (msg.name) {
+          info.name = msg.name;
+          // Update seat name and broadcast so other clients see the change
+          if (info.roomId && info.playerIndex != null) {
+            const room = rooms.get(info.roomId);
+            if (room && room.seats[info.playerIndex]) {
+              room.seats[info.playerIndex].name = msg.name;
+              broadcastToRoom(info.roomId, roomRoster(info.roomId));
+            }
+          }
+          broadcastRoomList();
+        }
         break;
       }
 

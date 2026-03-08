@@ -1066,13 +1066,15 @@ function renderRoomList() {
     const cls = r.started ? 'lobby-room-tile started' : 'lobby-room-tile';
     const statusCls = r.started ? 'tile-status in-progress' : 'tile-status';
     const statusText = r.started ? 'In Progress' : `${seats}/8 Players`;
+    const isMyRoom = r.roomId === wsRoomId || r.roomId === savedActiveRoom;
+    const btnText = r.started ? (isMyRoom && wsPlayerIndex != null ? 'Resume' : 'Watch') : 'Join';
     html += `<div class="${cls}" data-room-id="${r.roomId}">
       <div class="tile-top">
         <span class="tile-name">${r.name}</span>
         <span class="${statusCls}">${statusText}</span>
       </div>
       <div class="tile-info">${seats} seated${specs ? ` · ${specs} watching` : ''}</div>
-      <button class="tile-join-btn">Join</button>
+      <button class="tile-join-btn">${btnText}</button>
     </div>`;
   }
 
