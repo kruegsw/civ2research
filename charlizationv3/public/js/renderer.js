@@ -562,8 +562,8 @@ const Civ2Renderer = {
     }
     function isDimmed(gx, gy) {
       if (gy < 0 || gy >= mh) return false;
-      if (!fowEnabled || !losData) return false;
-      if (!(mapData.getVisibility(gx, gy) & fowBit)) return false; // unexplored, not dimmed
+      if (!losData) return false;
+      if (fowEnabled && !(mapData.getVisibility(gx, gy) & fowBit)) return false; // unexplored, not dimmed
       const gxW = wraps ? ((gx % mw) + mw) % mw : gx;
       return !losData[gy * mw + gxW];
     }
@@ -831,27 +831,28 @@ const Civ2Renderer = {
     }
     ctx.fill();
 
-    // Steps 2+3 only needed when FOW is enabled (skip entirely otherwise)
+    // Step 2: FOW dither at explored/unexplored boundaries (FOW only)
     if (fowEnabled) {
-      // Step 2: Apply black dither dots on EXPLORED tiles in quadrants facing UNEXPLORED neighbors
       const shroudImg = ctx.getImageData(0, 0, canvasW, canvasH);
       const shroudPix = shroudImg.data;
       for (let gy = 0; gy < mh; gy++) {
         for (let gx = 0; gx < xMax; gx++) {
-          if (isUnexplored(gx, gy)) continue;  // skip unexplored tiles (already black)
+          if (isUnexplored(gx, gy)) continue;
           const [tpx, tpy] = tilePos(gx, gy);
           const nb = getNeighbors(gx, gy);
           for (const dir of ['NE', 'SE', 'SW', 'NW']) {
             const [nx, ny] = nb[dir];
-            if (ny < 0 || ny >= mh) continue;  // no dither at map edges — hard black border
-            if (!isUnexplored(nx, ny)) continue;  // dither only toward unexplored
+            if (ny < 0 || ny >= mh) continue;
+            if (!isUnexplored(nx, ny)) continue;
             this._applyShroudDither(shroudPix, canvasW, canvasH, tpx, tpy, ditherMask, dir);
           }
         }
       }
       ctx.putImageData(shroudImg, 0, 0);
+    }
 
-      // Step 3: Apply semi-transparent dimming overlay on explored-but-not-visible tiles
+    // Step 3: LOS dimming overlay (works with or without FOW)
+    if (losData) {
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
       ctx.beginPath();
       for (let gy = 0; gy < mh; gy++) {

@@ -50,8 +50,8 @@ export const Civ2Minimap = {
       return !(mapData.getVisibility(gx, gy) & fowBit);
     }
     function isDimmed(gx, gy) {
-      if (!fowEnabled || !losData) return false;
-      if (!(mapData.getVisibility(gx, gy) & fowBit)) return false;
+      if (!losData) return false;
+      if (fowEnabled && !(mapData.getVisibility(gx, gy) & fowBit)) return false;
       return !losData[gy * mw + gx];
     }
 

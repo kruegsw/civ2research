@@ -11,11 +11,13 @@ import { Civ2Minimap } from './minimap.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
-let mapCanvasBase = null;     // iso map: no FOW
+let mapCanvasBase = null;     // iso map: no FOW, no LOS
+let mapCanvasLos = null;      // iso map: LOS only (no FOW)
 let mapCanvasFow = null;      // iso map: FOW on, no LOS
 let mapCanvasFowLos = null;   // iso map: FOW on + LOS
 let gridCanvas = null;        // transparent overlay: grid diamonds only
 let minimapCanvas = null;     // simplified 2D map
+let minimapCanvasLos = null;  // simplified 2D map with LOS only
 let minimapCanvasFow = null;  // simplified 2D map with FOW
 let minimapCanvasFowLos = null; // simplified 2D map with FOW + LOS
 const cvFiles = {};   // cv_res*.gif files for city view (keyed by resource ID)
@@ -187,8 +189,10 @@ document.getElementById('fow-civ').addEventListener('change', () => {
   const val = document.getElementById('fow-civ').value;
   cachedFowCiv = val !== '' ? parseInt(val) : currentMapData.playerCiv;
   cachedLosData = null;
+  mapCanvasLos = null;
   mapCanvasFow = null;
   mapCanvasFowLos = null;
+  minimapCanvasLos = null;
   minimapCanvasFow = null;
   minimapCanvasFowLos = null;
   drawViewport();
@@ -281,10 +285,12 @@ async function doRender() {
     const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv;
 
     // Clear deferred canvases (will be rendered lazily)
+    mapCanvasLos = null;
     mapCanvasFow = null;
     mapCanvasFowLos = null;
     gridCanvas = null;
     minimapCanvas = null;
+    minimapCanvasLos = null;
     minimapCanvasFow = null;
     minimapCanvasFowLos = null;
     cachedFowCiv = fowCiv;
@@ -401,18 +407,33 @@ function ensureMinimapCanvas(mapData) {
   Civ2Minimap.render(minimapCanvas, mapData, { fowEnabled: false });
 }
 
-function ensureFowCanvas(mapData, sprites) {
+async function ensureLosCanvas(mapData, sprites) {
+  if (mapCanvasLos) return;
+  const losData = ensureLosData(mapData, cachedFowCiv);
+  mapCanvasLos = document.createElement('canvas');
+  await Civ2Renderer.render(mapCanvasLos, mapData, sprites, null,
+    { fowEnabled: false, gridEnabled: false, losData });
+}
+
+function ensureMinimapLosCanvas(mapData) {
+  if (minimapCanvasLos) return;
+  const losData = ensureLosData(mapData, cachedFowCiv);
+  minimapCanvasLos = document.createElement('canvas');
+  Civ2Minimap.render(minimapCanvasLos, mapData, { fowEnabled: false, losData });
+}
+
+async function ensureFowCanvas(mapData, sprites) {
   if (mapCanvasFow) return;
   mapCanvasFow = document.createElement('canvas');
-  Civ2Renderer.render(mapCanvasFow, mapData, sprites, null,
+  await Civ2Renderer.render(mapCanvasFow, mapData, sprites, null,
     { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false });
 }
 
-function ensureFowLosCanvas(mapData, sprites) {
+async function ensureFowLosCanvas(mapData, sprites) {
   if (mapCanvasFowLos) return;
   const losData = ensureLosData(mapData, cachedFowCiv);
   mapCanvasFowLos = document.createElement('canvas');
-  Civ2Renderer.render(mapCanvasFowLos, mapData, sprites, null,
+  await Civ2Renderer.render(mapCanvasFowLos, mapData, sprites, null,
     { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false, losData });
 }
 
@@ -434,15 +455,17 @@ function deferredRenderQueue(mapData, sprites, fowCiv) {
   const steps = [
     () => ensureGridCanvas(mapData),
     () => ensureMinimapCanvas(mapData),
-    () => ensureFowCanvas(mapData, sprites),
+    async () => ensureLosCanvas(mapData, sprites),
+    () => ensureMinimapLosCanvas(mapData),
+    async () => ensureFowCanvas(mapData, sprites),
     () => ensureMinimapFowCanvas(mapData),
-    () => ensureFowLosCanvas(mapData, sprites),
+    async () => ensureFowLosCanvas(mapData, sprites),
     () => ensureMinimapFowLosCanvas(mapData),
   ];
   let i = 0;
-  function next() {
+  async function next() {
     if (i >= steps.length) return;
-    steps[i++]();
+    await steps[i++]();
     setTimeout(next, 0);
   }
   setTimeout(next, 0);
@@ -474,7 +497,7 @@ function blitToViewport(source) {
   }
 }
 
-function drawViewport() {
+async function drawViewport() {
   if (vp.offW === 0 || vp.offH === 0) return;
   const md = currentMapData;
   if (!md) return;
@@ -488,10 +511,12 @@ function drawViewport() {
   if (minimapOn) {
     if (fowOn && losOn) { ensureMinimapFowLosCanvas(md); source = minimapCanvasFowLos; }
     else if (fowOn) { ensureMinimapFowCanvas(md); source = minimapCanvasFow; }
+    else if (losOn) { ensureMinimapLosCanvas(md); source = minimapCanvasLos; }
     else { ensureMinimapCanvas(md); source = minimapCanvas; }
   } else {
-    if (fowOn && losOn) { ensureFowLosCanvas(md, mapSprites); source = mapCanvasFowLos; }
-    else if (fowOn) { ensureFowCanvas(md, mapSprites); source = mapCanvasFow; }
+    if (fowOn && losOn) { await ensureFowLosCanvas(md, mapSprites); source = mapCanvasFowLos; }
+    else if (fowOn) { await ensureFowCanvas(md, mapSprites); source = mapCanvasFow; }
+    else if (losOn) { await ensureLosCanvas(md, mapSprites); source = mapCanvasLos; }
     else { source = mapCanvasBase; }
   }
   if (!source) return;
