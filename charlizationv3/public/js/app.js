@@ -927,7 +927,8 @@ function getWsUrl() {
     return `ws://${loc.hostname}:8788`;
   }
   const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${proto}//${loc.host}`;
+  const base = loc.pathname.replace(/\/$/, '');  // "/civ2" from "/civ2/"
+  return `${proto}//${loc.host}${base}/ws`;
 }
 
 // Player name persistence
