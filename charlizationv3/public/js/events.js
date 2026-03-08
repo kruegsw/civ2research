@@ -11,7 +11,7 @@ export function initEvents(canvas, vp, fns) {
     clampViewport, drawViewport, resizeViewport,
     handleMapClick, closeCityDialog, closeCityView,
     getMapData,
-    SCROLL_STEP, VP_MIN_SCALE, VP_MAX_SCALE,
+    SCROLL_STEP, getMinScale, VP_MAX_SCALE,
   } = fns;
 
   // ── Shared drag state ──
@@ -86,7 +86,7 @@ export function initEvents(canvas, vp, fns) {
       const mapX = vp.x + prevLocalX / vp.scale;
       const mapY = vp.y + prevLocalY / vp.scale;
 
-      vp.scale = Math.max(VP_MIN_SCALE, Math.min(VP_MAX_SCALE,
+      vp.scale = Math.max(getMinScale(), Math.min(VP_MAX_SCALE,
         pinchStartScale * dist / pinchStartDist));
 
       const newLocalX = cx - rect.left;
@@ -141,7 +141,7 @@ export function initEvents(canvas, vp, fns) {
       const mapY = vp.y + localY / vp.scale;
 
       const zoomFactor = e.ctrlKey ? (1 - e.deltaY * 0.01) : (1 - e.deltaY * 0.002);
-      vp.scale = Math.max(VP_MIN_SCALE, Math.min(VP_MAX_SCALE, vp.scale * zoomFactor));
+      vp.scale = Math.max(getMinScale(), Math.min(VP_MAX_SCALE, vp.scale * zoomFactor));
 
       vp.x = mapX - localX / vp.scale;
       vp.y = mapY - localY / vp.scale;

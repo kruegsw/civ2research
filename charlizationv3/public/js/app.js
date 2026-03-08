@@ -84,8 +84,15 @@ const vp = {
   logicalW: 0, logicalH: 0, // CSS/logical viewport dimensions
 };
 const SCROLL_STEP = 64;
-const VP_MIN_SCALE = 0.25;
 const VP_MAX_SCALE = 4;
+// Dynamic min scale: don't zoom out further than the full map is visible.
+// Wrapping maps: fit the full globe width (height may extend off-screen).
+// Non-wrapping maps: fit both axes so no empty space is shown.
+function getMinScale() {
+  if (vp.offW === 0 || vp.offH === 0) return 0.25;
+  if (vp.wraps) return vp.logicalW / vp.wrapW;
+  return Math.max(vp.logicalW / vp.offW, vp.logicalH / vp.offH);
+}
 
 // ── Auto-detect files in same directory ──
 (async function autoDetect() {
@@ -344,6 +351,7 @@ function resizeViewport() {
   viewportCanvas.style.width = vp.logicalW + 'px';
   viewportCanvas.style.height = vp.logicalH + 'px';
   vCtx.imageSmoothingEnabled = false;
+  vp.scale = Math.max(getMinScale(), Math.min(VP_MAX_SCALE, vp.scale));
   clampViewport();
 }
 
@@ -856,5 +864,5 @@ initEvents(viewportCanvas, vp, {
   clampViewport, drawViewport, resizeViewport,
   handleMapClick, closeCityDialog, closeCityView,
   getMapData: () => currentMapData,
-  SCROLL_STEP, VP_MIN_SCALE, VP_MAX_SCALE,
+  SCROLL_STEP, getMinScale, VP_MAX_SCALE,
 });
