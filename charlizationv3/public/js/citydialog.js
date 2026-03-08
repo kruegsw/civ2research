@@ -3,8 +3,8 @@ import {
   GOVERNMENT_NAMES, COMMODITY_NAMES, ORDER_NAMES, WONDER_NAMES,
   UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
   SETTLER_TYPES, NON_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
-} from '../../engine/defs.js';
-import { getGameYearFromMap } from '../../engine/year.js';
+} from '../engine/defs.js';
+import { getGameYearFromMap } from '../engine/year.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // citydialog.js — City Management Dialog (Canvas-based renderer)

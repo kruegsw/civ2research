@@ -2,15 +2,15 @@
 // app.js — Entry point: file loading, render trigger, controls,
 //          interactive scrolling viewport
 // ═══════════════════════════════════════════════════════════════════
-import { Civ2Parser } from '../../engine/parser.js';
+import { Civ2Parser } from '../engine/parser.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2CityView } from './cityview.js';
 import { Civ2CityDialog } from './citydialog.js';
 import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
-import { computeLOS } from '../../engine/visibility.js';
-import { getGameYearFromMap } from '../../engine/year.js';
-import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS } from '../../engine/defs.js';
+import { computeLOS } from '../engine/visibility.js';
+import { getGameYearFromMap } from '../engine/year.js';
+import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS } from '../engine/defs.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching

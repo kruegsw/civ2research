@@ -5,7 +5,7 @@
 // Called from app.js via initEvents(). No circular imports.
 // ═══════════════════════════════════════════════════════════════════
 import { Civ2Renderer } from './renderer.js';
-import { RESOURCE_NAMES, GOVERNMENT_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES } from '../../engine/defs.js';
+import { RESOURCE_NAMES, GOVERNMENT_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES } from '../engine/defs.js';
 
 export function initEvents(canvas, vp, fns) {
   const {
