@@ -2,12 +2,15 @@
 // app.js — Entry point: file loading, render trigger, controls,
 //          interactive scrolling viewport
 // ═══════════════════════════════════════════════════════════════════
-import { Civ2Parser } from './parser.js';
+import { Civ2Parser } from '/engine/parser.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2CityView } from './cityview.js';
 import { Civ2CityDialog } from './citydialog.js';
 import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
+import { computeLOS } from '/engine/visibility.js';
+import { getGameYearFromMap } from '/engine/year.js';
+import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS } from '/engine/defs.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -29,52 +32,6 @@ let mapSprites = null;
 let cachedFowCiv = 0;
 let cachedLosData = null;
 
-// ── Line of Sight computation ──
-// Recomputes current LOS from unit/city positions for a specific civ.
-// Returns Uint8Array[mw*mh]: 1 = in LOS, 0 = not in LOS.
-// Visibility radii from civ2mod.c addToVisibilityMap() (doubled-X offsets):
-//   Units: radius 1 (9 tiles), Cities: radius 2 (21 tiles)
-function computeLOS(mapData, civSlot) {
-  const { mw, mh, cities, units } = mapData;
-  const mw2 = mw * 2;
-  const wraps = mapData.mapShape === 0;
-  const los = new Uint8Array(mw * mh);
-
-  const RADIUS_1 = [
-    [0,0], [-1,-1], [1,-1], [1,1], [-1,1], [0,-2], [0,2], [2,0], [-2,0]
-  ];
-  const RADIUS_2 = [
-    ...RADIUS_1,
-    [-1,-3], [1,-3], [-2,-2], [2,-2], [-3,-1], [3,-1],
-    [-3,1], [3,1], [-2,2], [2,2], [-1,3], [1,3]
-  ];
-
-  function mark(dx, dy, offsets) {
-    for (const [odx, ody] of offsets) {
-      let ndx = dx + odx;
-      const ndy = dy + ody;
-      if (ndy < 0 || ndy >= mh) continue;
-      if (wraps) {
-        ndx = ((ndx % mw2) + mw2) % mw2;
-      } else if (ndx < 0 || ndx >= mw2) {
-        continue;
-      }
-      los[ndy * mw + (ndx >> 1)] = 1;
-    }
-  }
-
-  for (const u of units) {
-    if (u.owner !== civSlot || u.gx < 0) continue;
-    mark(u.x, u.y, RADIUS_1);
-  }
-  for (const c of cities) {
-    if (c.owner !== civSlot) continue;
-    mark(c.cx, c.cy, RADIUS_2);
-  }
-
-  return los;
-}
-
 // ── Viewport state (shared with events.js via reference) ──
 const vp = {
   x: 0, y: 0,            // top-left of viewport in offscreen coords
@@ -92,6 +49,34 @@ function getMinScale() {
   if (vp.offW === 0 || vp.offH === 0) return 0.25;
   if (vp.wraps) return vp.logicalW / vp.wrapW;
   return Math.max(vp.logicalW / vp.offW, vp.logicalH / vp.offH);
+}
+
+// ── Status bar game info ──
+function updateGameInfo(mapData, civOverride) {
+  const el = document.getElementById('game-info');
+  if (!mapData || !mapData.gameState) { el.innerHTML = ''; return; }
+  const gs = mapData.gameState;
+  const pc = civOverride != null ? civOverride : gs.playerCiv;
+  const civName = mapData.civNames ? mapData.civNames[pc] : `Civ ${pc}`;
+  const civColor = CIV_COLORS[pc] || '#e0e0e0';
+  const cd = mapData.civData && mapData.civData[pc];
+  const year = getGameYearFromMap(mapData);
+  const gold = cd ? cd.treasury : 0;
+  const govt = cd ? (GOVERNMENT_NAMES[cd.government] || '?') : '';
+  let pop = 0;
+  if (mapData.cities) {
+    for (const c of mapData.cities) {
+      if (c.owner === pc) pop += c.size;
+    }
+  }
+  pop *= 10000;
+  const sep = '<span class="gi-sep">│</span>';
+  el.innerHTML =
+    `<span class="gi-player" style="color:${civColor}">${civName}</span> ${sep} ` +
+    `<span class="gi-govt">${govt}</span> ${sep} ` +
+    `<span class="gi-year">${year}</span> ${sep} ` +
+    `<span class="gi-gold">${gold.toLocaleString()} Gold</span> ${sep} ` +
+    `<span class="gi-pop">${pop.toLocaleString()} People</span>`;
 }
 
 // ── Auto-detect files in same directory ──
@@ -202,6 +187,7 @@ document.getElementById('fow-civ').addEventListener('change', () => {
   minimapCanvasLos = null;
   minimapCanvasFow = null;
   minimapCanvasFowLos = null;
+  updateGameInfo(currentMapData, cachedFowCiv);
   drawViewport();
 });
 
@@ -229,11 +215,7 @@ async function doRender() {
     const fowSelect = document.getElementById('fow-civ');
     const previousValue = fowSelect.value;
     fowSelect.innerHTML = '';
-    const LEADERS_TXT_NAMES = [
-      'Romans','Babylonians','Germans','Egyptians','Americans','Greeks','Indians','Russians',
-      'Zulus','French','Aztecs','Chinese','English','Mongols','Celts','Japanese','Vikings',
-      'Spanish','Persians','Carthaginians','Sioux'
-    ];
+    // Resolve civ display names (uses LEADERS_TXT_NAMES from engine/defs.js)
     const civNames = {};
     for (let i = 0; i < 8; i++) {
       const nb = mapData.civNameBlocks && mapData.civNameBlocks[i];
@@ -318,9 +300,9 @@ async function doRender() {
     drawViewport();
 
     document.getElementById('status').textContent =
-      `${mapData.mw}\u00d7${mapData.mh} tiles | ${mapData.cities.length} cities | ` +
-      `${mapData.units.length} units | ${result.displayW || result.canvasW}\u00d7${result.canvasH}px | ` +
-      `Ocean: ${mapData.oceanPct}%`;
+      `${mapData.mw}\u00d7${mapData.mh} | ${mapData.cities.length} cities | ` +
+      `${mapData.units.length} units`;
+    updateGameInfo(mapData);
 
     overlay.style.display = 'none';
 

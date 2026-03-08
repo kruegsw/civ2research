@@ -1,4 +1,10 @@
 import { Civ2Renderer } from './renderer.js';
+import {
+  GOVERNMENT_NAMES, COMMODITY_NAMES, ORDER_NAMES, WONDER_NAMES,
+  UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
+  SETTLER_TYPES, NON_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
+} from '/engine/defs.js';
+import { getGameYearFromMap } from '/engine/year.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // citydialog.js — City Management Dialog (Canvas-based renderer)
@@ -40,39 +46,18 @@ const Civ2CityDialog = {
     35: 'SS Structural', 36: 'SS Component', 37: 'SS Module', 38: 'Capitalization'
   },
 
-  WONDER_NAMES: [
-    'Pyramids', 'Hanging Gardens', 'Colossus', 'Lighthouse', 'Great Library',
-    'Oracle', 'Great Wall', "Sun Tzu's War Academy", "King Richard's Crusade",
-    "Marco Polo's Embassy", "Michelangelo's Chapel", "Copernicus' Observatory",
-    "Magellan's Expedition", "Shakespeare's Theatre", "Leonardo's Workshop",
-    "J.S. Bach's Cathedral", "Isaac Newton's College", "Adam Smith's Trading Co.",
-    "Darwin's Voyage", 'Statue of Liberty', 'Eiffel Tower', "Women's Suffrage",
-    'Hoover Dam', 'Manhattan Project', 'United Nations', 'Apollo Program',
-    'SETI Program', 'Cure for Cancer'
-  ],
-
-  GOVERNMENT_NAMES: ['Anarchy','Despotism','Monarchy','Communism','Fundamentalism','Republic','Democracy'],
-
-  COMMODITY_NAMES: ['Hides','Wool','Beads','Cloth','Salt','Coal','Copper','Dye',
-    'Wine','Silk','Silver','Spice','Gems','Gold','Oil','Uranium'],
-
-  ORDER_NAMES: {
-    0:'', 1:'Fortifying', 2:'Fortified', 3:'Sleep', 4:'Build Fortress',
-    5:'Build Road', 6:'Build Irrigation', 7:'Build Mine', 8:'Transform',
-    9:'Clean Pollution', 10:'Build Airbase', 11:'GoTo', 255:''
-  },
-
-  // ── Unit type properties for support calculations (standard MGE RULES.TXT) ──
-  // Settler types (role 5): consume food, count toward support
-  SETTLER_TYPES: new Set([0, 1]),
-  // Non-combat unit types (attack = 0): do NOT cause abroad unhappiness
-  NON_COMBAT_TYPES: new Set([0, 1, 46, 47, 48, 49, 50]),
+  // Shared constants from engine/defs.js (re-exported for internal this.* references)
+  WONDER_NAMES,
+  GOVERNMENT_NAMES,
+  COMMODITY_NAMES,
+  ORDER_NAMES,
+  SETTLER_TYPES,
+  NON_COMBAT_TYPES,
   // Sea combat unit types (domain=1, role!=3): always abroad regardless of location
   SEA_COMBAT_TYPES: new Set([35, 36, 37, 38, 39, 40, 41]),
   // Sea transport types (domain=1, role=3): never abroad
   SEA_TRANSPORT_TYPES: new Set([32, 33, 34]),
-  // Support-exempt types (role >= 6: diplomat/trade): no shield cost, no abroad check
-  SUPPORT_EXEMPT_TYPES: new Set([46, 47, 48, 49]),
+  SUPPORT_EXEMPT_TYPES,
   // Fanatic types (flag 0x08): free shield support under Fundamentalism
   FANATIC_TYPES: new Set([8]),
   // Settler food cost per turn by government index [Anarchy..Democracy]
@@ -98,11 +83,10 @@ const Civ2CityDialog = {
   // Standard COSMIC free support limits per city
   COSMIC_FREE_SUPPORT: { monarchy: 3, communism: 3, fundamentalism: 10 },
 
-  // ── Production cost tables (RULES.TXT cost × shield_box_factor) ──
-  // shield_box_factor (COSMIC #4) defaults to 10; cost × factor = total shields needed
-  UNIT_COSTS: [4,4,1,2,3,4,2,3,2,5,5,4,6,6,5,2,3,4,4,4,5,6,8,4,4,5,7,6,12,10,8,16,4,4,4,5,6,6,8,10,16,6,16,5,6,16,3,3,5,5,3,5,5,10,4,4,4,4,4,4,4,4,4].map(c => c * 10),
-  IMPROVE_COSTS: [1,10,4,6,4,8,8,8,8,8,12,12,16,16,10,20,32,20,20,16,24,16,16,12,8,20,16,10,8,32,6,16,16,6,8,8,16,32,60].map(c => c * 10),
-  WONDER_COSTS: [20,20,20,20,30,30,30,30,30,20,40,30,40,30,40,40,40,40,40,40,30,60,60,60,60,60,60,60].map(c => c * 10),
+  // Production cost tables from engine/defs.js
+  UNIT_COSTS,
+  IMPROVE_COSTS,
+  WONDER_COSTS,
 
   // ── Game formulas from decompiled civ2.exe (reverse_engineering/Civ2_Game_Formulas.md) ──
 
@@ -1974,7 +1958,7 @@ const Civ2CityDialog = {
 
     // Title text: "City of {name}, {year}, Population {pop} (Treasury: {gold} Gold)"
     if (city) {
-      const year = this._getGameYear(mapData);
+      const year = getGameYearFromMap(mapData);
       const pop = city.size * 10000;  // approximate Civ2 population display
       const gold = (mapData.civData && mapData.civData[city.owner]) ? mapData.civData[city.owner].treasury || 0 : 0;
       const titleStr = `City of ${city.name}, ${year}, Population ${pop.toLocaleString()} (Treasury: ${gold} Gold)`;
@@ -1993,33 +1977,6 @@ const Civ2CityDialog = {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
     }
-  },
-
-  // Game year from turn number (copied from cityview.js, with period formatting)
-  _getGameYear(mapData) {
-    const gs = mapData && mapData.gameState;
-    if (!gs) return '';
-    const turn = gs.turnsPassed || 0;
-    const schedule = [
-      { until: 250, perTurn: 20 },
-      { until: 300, perTurn: 10 },
-      { until: 350, perTurn: 5 },
-      { until: 400, perTurn: 2 },
-      { until: 450, perTurn: 1 },
-      { until: Infinity, perTurn: 1 },
-    ];
-    let year = -4000;
-    let t = 0;
-    for (const seg of schedule) {
-      const turnsInSeg = Math.min(turn, seg.until) - t;
-      if (turnsInSeg <= 0) break;
-      year += turnsInSeg * seg.perTurn;
-      t += turnsInSeg;
-      if (t >= turn) break;
-    }
-    if (year < 0) return `${-year} B.C.`;
-    if (year === 0) return 'A.D. 1';
-    return `A.D. ${year}`;
   },
 
   _drawBackground(ctx, cdSprites) {

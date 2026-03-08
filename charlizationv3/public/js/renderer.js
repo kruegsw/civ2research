@@ -20,29 +20,18 @@
 //     Binary format offsets, tile data structure
 // ═══════════════════════════════════════════════════════════════════
 
+import { TERRAIN_NAMES, UNIT_NAMES, CIV_COLORS, ORDER_KEYS } from '/engine/defs.js';
+
 const Civ2Renderer = {
 
   TW: 64,  // Tile width in pixels
   TH: 32,  // Tile height in pixels
 
-  TERRAIN_NAMES: ['Desert','Plains','Grassland','Forest','Hills','Mountains',
-                  'Tundra','Glacier','Swamp','Jungle','Ocean'],
-
-  UNIT_NAMES: [
-    'Settlers','Engineers','Warriors','Phalanx','Archers','Legion','Pikemen','Musketeers',   // 0-7
-    'Fanatics','Partisans','Alpine Troops','Riflemen','Marines','Paratroopers','Mech. Inf.', // 8-14
-    'Horsemen','Chariot','Elephant','Crusaders','Knights','Dragoons','Cavalry','Armor',       // 15-22
-    'Catapult','Cannon','Artillery','Howitzer','Fighter','Bomber','Helicopter',               // 23-29
-    'Stealth Fighter','Stealth Bomber','Trireme','Caravel','Galleon','Frigate','Ironclad',    // 30-36
-    'Destroyer','Cruiser','AEGIS Cruiser','Battleship','Submarine','Carrier','Transport',     // 37-43
-    'Cruise Msl.','Nuclear Msl.','Diplomat','Spy','Caravan','Freight','Explorer',             // 44-50
-    'Extra Land',                                                                             // 51
-  ],
-
-  CIV_COLORS: ['#c80000','#ffffff','#00b400','#3250dc','#f0dc00','#00c8c8','#f08c00','#b400c8'],
-
-  // Unit orders byte → shield display letter
-  ORDER_KEYS: { 1:'F', 2:'F', 3:'S', 4:'F', 5:'R', 6:'I', 7:'m', 8:'O', 9:'p', 10:'E', 11:'G' },
+  // Re-export from engine/defs.js for backward compat (other modules reference Civ2Renderer.*)
+  TERRAIN_NAMES,
+  UNIT_NAMES,
+  CIV_COLORS,
+  ORDER_KEYS,
 
   // Clean (text-free) column indices per terrain type in TERRAIN1.GIF
   // Cols 2-3 are resource sprites, col 7 has special sprites (irrigation, etc.)

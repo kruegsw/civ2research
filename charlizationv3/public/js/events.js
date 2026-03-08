@@ -5,6 +5,7 @@
 // Called from app.js via initEvents(). No circular imports.
 // ═══════════════════════════════════════════════════════════════════
 import { Civ2Renderer } from './renderer.js';
+import { RESOURCE_NAMES, GOVERNMENT_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES } from '/engine/defs.js';
 
 export function initEvents(canvas, vp, fns) {
   const {
@@ -269,14 +270,6 @@ export function initEvents(canvas, vp, fns) {
         ? md.getKnownImprovements(gx, gy, fowCiv)
         : md.getImprovements(gx, gy);
 
-      const RESOURCE_NAMES = [
-        ['Oasis','Desert Oil'],['Buffalo','Wheat'],['Grassland Shield','Grassland Resource'],
-        ['Pheasant','Silk'],['Coal','Wine'],['Gold','Iron'],['Game','Furs'],['Ivory','Oil'],
-        ['Peat','Spice'],['Gems','Fruit'],['Fish','Whales']
-      ];
-      const GOVERNMENT_NAMES = ['Anarchy','Despotism','Monarchy','Communism','Fundamentalism','Republic','Democracy'];
-      const COMMODITY_NAMES = ['Hides','Wool','Beads','Cloth','Salt','Coal','Copper','Dye',
-        'Wine','Silk','Silver','Spice','Gems','Gold','Oil','Uranium'];
       const terName = Civ2Renderer.TERRAIN_NAMES[ter] || '?';
       let info = `(${gx * 2 + (gy % 2)}, ${gy})  ${terName}`;
       if (river) info += ' + River';
@@ -321,10 +314,7 @@ export function initEvents(canvas, vp, fns) {
           if (!(vis & fowBit)) continue;
           if (u.owner !== fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
         }
-        const ORDER_NAMES = {0:'',1:'Fortifying',2:'Fortified',3:'Sleep',4:'Build Fortress',
-          5:'Build Road',6:'Build Irrigation',7:'Build Mine',8:'Transform',9:'Clean Pollution',
-          10:'Build Airbase',11:'GoTo',255:''};
-        const name = Civ2Renderer.UNIT_NAMES[u.type] || `Unit#${u.type}`;
+        const name = UNIT_NAMES[u.type] || `Unit#${u.type}`;
         const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
         const vetStr = u.veteran ? ' Vet' : '';
         const ordStr = ORDER_NAMES[u.orders] || `orders:${u.orders}`;

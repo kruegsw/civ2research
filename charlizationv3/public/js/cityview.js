@@ -1,4 +1,5 @@
 import { Civ2Renderer } from './renderer.js';
+import { getGameYearFromMap } from '/engine/year.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // cityview.js — Civilization II City View Panoramic Renderer
@@ -206,36 +207,6 @@ const Civ2CityView = {
   },
 
   // ── Calculate game year from turnsPassed + turnsForYear ──
-  _getGameYear(mapData) {
-    const gs = mapData.gameState;
-    if (!gs) return '';
-    // Civ2 standard: start at 4000 BC, variable turns per year
-    // turnsForYear is the number of turns per calendar increment
-    // The game uses a lookup table but we can approximate from turnsPassed
-    const turn = gs.turnsPassed || 0;
-    // Standard turn→year schedule
-    const schedule = [
-      { until: 250, perTurn: 20 },   // 4000 BC to 1000 BC: 20 years/turn
-      { until: 300, perTurn: 10 },   // 1000 BC to 500 BC
-      { until: 350, perTurn: 5 },    // 500 BC to 250 BC (approx)
-      { until: 400, perTurn: 2 },    // ...
-      { until: 450, perTurn: 1 },    // 1750 AD onward
-      { until: Infinity, perTurn: 1 },
-    ];
-    let year = -4000;
-    let t = 0;
-    for (const seg of schedule) {
-      const turnsInSeg = Math.min(turn, seg.until) - t;
-      if (turnsInSeg <= 0) break;
-      year += turnsInSeg * seg.perTurn;
-      t += turnsInSeg;
-      if (t >= turn) break;
-    }
-    if (year < 0) return `${-year} BC`;
-    if (year === 0) return '1 AD';
-    return `${year} AD`;
-  },
-
   // ── Main render function ──
   // canvas: target canvas element (will be set to 1280×480)
   // city: city object from parser
@@ -349,7 +320,7 @@ const Civ2CityView = {
 
     // 5. City title: "CityName: GameYear"
     // GDI pipeline: shadow at (+1,+1) offset, 0x000000 shadow → 0x878787 foreground
-    const year = this._getGameYear(mapData);
+    const year = getGameYearFromMap(mapData);
     const title = year ? `${city.name}: ${year}` : city.name;
     ctx.font = 'bold 26px "Times New Roman", serif';
     // Shadow at (+1,+1)
