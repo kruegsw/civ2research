@@ -10,13 +10,22 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
-let minimapCanvas = null;  // offscreen canvas for simplified 2D map
+// Pre-rendered offscreen canvases for instant toggle switching
+let mapCanvasBase = null;     // iso map: no FOW
+let mapCanvasFow = null;      // iso map: FOW on, no LOS
+let mapCanvasFowLos = null;   // iso map: FOW on + LOS
+let gridCanvas = null;        // transparent overlay: grid diamonds only
+let minimapCanvas = null;     // simplified 2D map
+let minimapCanvasFow = null;  // simplified 2D map with FOW
+let minimapCanvasFowLos = null; // simplified 2D map with FOW + LOS
 const cvFiles = {};   // cv_res*.gif files for city view (keyed by resource ID)
 let cvSprites = null; // lazily extracted city view sprites
 let cvBackgrounds = null; // Map of resourceId → Image
 let currentMapData = null;
 let cdSprites = null;
 let mapSprites = null;
+let cachedFowCiv = 0;
+let cachedLosData = null;
 
 // ── Line of Sight computation ──
 // Recomputes current LOS from unit/city positions for a specific civ.
@@ -167,12 +176,23 @@ function checkReady() {
 
 document.getElementById('render-btn').addEventListener('click', doRender);
 
-// FOW toggle/civ change/grid toggle → auto re-render if map already loaded
-document.getElementById('fow-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
-document.getElementById('fow-civ').addEventListener('change', () => { if (currentMapData) doRender(); });
-document.getElementById('grid-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
+// Toggle controls → instant viewport swap (no re-render needed)
+document.getElementById('fow-toggle').addEventListener('change', () => { if (currentMapData) drawViewport(); });
+document.getElementById('grid-toggle').addEventListener('change', () => { if (currentMapData) drawViewport(); });
 document.getElementById('minimap-toggle').addEventListener('change', () => { if (currentMapData) drawViewport(); });
-document.getElementById('los-toggle').addEventListener('change', () => { if (currentMapData) doRender(); });
+document.getElementById('los-toggle').addEventListener('change', () => { if (currentMapData) drawViewport(); });
+// Civ selector changes which civ's FOW/LOS data → invalidate FOW canvases and redraw
+document.getElementById('fow-civ').addEventListener('change', () => {
+  if (!currentMapData) return;
+  const val = document.getElementById('fow-civ').value;
+  cachedFowCiv = val !== '' ? parseInt(val) : currentMapData.playerCiv;
+  cachedLosData = null;
+  mapCanvasFow = null;
+  mapCanvasFowLos = null;
+  minimapCanvasFow = null;
+  minimapCanvasFowLos = null;
+  drawViewport();
+});
 
 // ── Main render flow ──
 let rendering = false;
@@ -253,43 +273,46 @@ async function doRender() {
     const unitsCtx = unitsImg ? Civ2Renderer.imgToCtx(unitsImg) : null;
     const iconsCtx = iconsImg ? Civ2Renderer.imgToCtx(iconsImg) : null;
     const sprites = Civ2Renderer.extractAllSprites(t1Ctx, t2Ctx, citiesCtx, unitsCtx, iconsCtx);
+    Civ2Renderer.prerecolorUnits(sprites, mapData.units);
     mapSprites = sprites;
 
-    // 5. Render to offscreen canvas (#map-canvas, hidden)
-    const canvas = document.getElementById('map-canvas');
-    const fowEnabled = document.getElementById('fow-toggle').checked;
+    // 5. Render base map only — show immediately, defer the rest
     const fowCivVal = document.getElementById('fow-civ').value;
-    const gridEnabled = document.getElementById('grid-toggle').checked;
     const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv;
-    const losEnabled = document.getElementById('los-toggle').checked;
-    const losData = (fowEnabled && losEnabled) ? computeLOS(mapData, fowCiv) : null;
-    const renderOptions = {
-      fowEnabled,
-      fowCiv,
-      gridEnabled,
-      losData
-    };
-    const result = await Civ2Renderer.render(canvas, mapData, sprites, m => { msg.textContent = m; }, renderOptions);
 
-    // 5b. Render minimap offscreen canvas
-    minimapCanvas = document.createElement('canvas');
-    Civ2Minimap.render(minimapCanvas, mapData, renderOptions);
+    // Clear deferred canvases (will be rendered lazily)
+    mapCanvasFow = null;
+    mapCanvasFowLos = null;
+    gridCanvas = null;
+    minimapCanvas = null;
+    minimapCanvasFow = null;
+    minimapCanvasFowLos = null;
+    cachedFowCiv = fowCiv;
+    cachedLosData = null;
 
-    // 6. Set up viewport
-    vp.offW = canvas.width;
-    vp.offH = canvas.height;
+    msg.textContent = 'Rendering map...';
+    await new Promise(r => setTimeout(r, 10));
+    mapCanvasBase = document.createElement('canvas');
+    const result = await Civ2Renderer.render(mapCanvasBase, mapData, sprites, null,
+      { fowEnabled: false, gridEnabled: false });
+
+    // 6. Set up viewport and show map immediately
+    vp.offW = mapCanvasBase.width;
+    vp.offH = mapCanvasBase.height;
     vp.wraps = (mapData.mapShape === 0);
     vp.wrapW = result.wrapW || vp.offW;
     resizeViewport();
     drawViewport();
 
-    // 7. Done
     document.getElementById('status').textContent =
       `${mapData.mw}\u00d7${mapData.mh} tiles | ${mapData.cities.length} cities | ` +
       `${mapData.units.length} units | ${result.displayW || result.canvasW}\u00d7${result.canvasH}px | ` +
       `Ocean: ${mapData.oceanPct}%`;
 
-    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+    overlay.style.display = 'none';
+
+    // 7. Pre-render remaining canvases in background
+    deferredRenderQueue(mapData, sprites, fowCiv);
 
   } catch (err) {
     console.error(err);
@@ -335,34 +358,151 @@ function clampViewport() {
   }
 }
 
-function drawViewport() {
-  if (vp.offW === 0 || vp.offH === 0) return;
-  const minimapOn = document.getElementById('minimap-toggle').checked;
-  const offscreen = (minimapOn && minimapCanvas)
-    ? minimapCanvas
-    : document.getElementById('map-canvas');
+// ── Deferred canvas rendering ──
+// Renders remaining canvas variants in background after initial map is shown.
+// If a toggle is clicked before background rendering completes, the needed
+// canvas is rendered on-demand (one-time cost).
+
+function ensureLosData(mapData, fowCiv) {
+  if (!cachedLosData) cachedLosData = computeLOS(mapData, fowCiv);
+  return cachedLosData;
+}
+
+function ensureGridCanvas(mapData) {
+  if (gridCanvas) return;
+  gridCanvas = document.createElement('canvas');
+  gridCanvas.width = mapCanvasBase.width;
+  gridCanvas.height = mapCanvasBase.height;
+  const ctx = gridCanvas.getContext('2d', { colorSpace: 'srgb' });
+  const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
+  const wraps = mapData.mapShape === 0;
+  const xExtra = wraps ? 4 : 0;
+  const xMax = mapData.mw + xExtra;
+  ctx.strokeStyle = 'rgb(0,168,0)';
+  ctx.lineWidth = 1;
+  for (let gy = 0; gy < mapData.mh; gy++) {
+    for (let gx = 0; gx < xMax; gx++) {
+      const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
+      const py = gy * (TH >> 1);
+      ctx.beginPath();
+      ctx.moveTo(px + TW / 2, py);
+      ctx.lineTo(px + TW, py + TH / 2);
+      ctx.lineTo(px + TW / 2, py + TH);
+      ctx.lineTo(px, py + TH / 2);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+}
+
+function ensureMinimapCanvas(mapData) {
+  if (minimapCanvas) return;
+  minimapCanvas = document.createElement('canvas');
+  Civ2Minimap.render(minimapCanvas, mapData, { fowEnabled: false });
+}
+
+function ensureFowCanvas(mapData, sprites) {
+  if (mapCanvasFow) return;
+  mapCanvasFow = document.createElement('canvas');
+  Civ2Renderer.render(mapCanvasFow, mapData, sprites, null,
+    { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false });
+}
+
+function ensureFowLosCanvas(mapData, sprites) {
+  if (mapCanvasFowLos) return;
+  const losData = ensureLosData(mapData, cachedFowCiv);
+  mapCanvasFowLos = document.createElement('canvas');
+  Civ2Renderer.render(mapCanvasFowLos, mapData, sprites, null,
+    { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false, losData });
+}
+
+function ensureMinimapFowCanvas(mapData) {
+  if (minimapCanvasFow) return;
+  minimapCanvasFow = document.createElement('canvas');
+  Civ2Minimap.render(minimapCanvasFow, mapData, { fowEnabled: true, fowCiv: cachedFowCiv });
+}
+
+function ensureMinimapFowLosCanvas(mapData) {
+  if (minimapCanvasFowLos) return;
+  const losData = ensureLosData(mapData, cachedFowCiv);
+  minimapCanvasFowLos = document.createElement('canvas');
+  Civ2Minimap.render(minimapCanvasFowLos, mapData, { fowEnabled: true, fowCiv: cachedFowCiv, losData });
+}
+
+// Queue background rendering of deferred canvases
+function deferredRenderQueue(mapData, sprites, fowCiv) {
+  const steps = [
+    () => ensureGridCanvas(mapData),
+    () => ensureMinimapCanvas(mapData),
+    () => ensureFowCanvas(mapData, sprites),
+    () => ensureMinimapFowCanvas(mapData),
+    () => ensureFowLosCanvas(mapData, sprites),
+    () => ensureMinimapFowLosCanvas(mapData),
+  ];
+  let i = 0;
+  function next() {
+    if (i >= steps.length) return;
+    steps[i++]();
+    setTimeout(next, 0);
+  }
+  setTimeout(next, 0);
+}
+
+// Blit a source canvas to the viewport, handling wrapping
+function blitToViewport(source) {
   const dpr = window.devicePixelRatio || 1;
   const bw = viewportCanvas.width, bh = viewportCanvas.height;
   const visW = vp.logicalW / vp.scale;
   const visH = vp.logicalH / vp.scale;
   const pxPerMap = vp.scale * dpr;
 
-  vCtx.clearRect(0, 0, bw, bh);
-
   if (vp.wraps) {
     const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
     const rightChunk = Math.min(visW, vp.wrapW - x1);
-    vCtx.drawImage(offscreen, x1, vp.y, rightChunk, visH,
+    vCtx.drawImage(source, x1, vp.y, rightChunk, visH,
                    0, 0, rightChunk * pxPerMap, bh);
     let drawn = rightChunk;
     while (drawn < visW) {
       const chunk = Math.min(visW - drawn, vp.wrapW);
-      vCtx.drawImage(offscreen, 0, vp.y, chunk, visH,
+      vCtx.drawImage(source, 0, vp.y, chunk, visH,
                      drawn * pxPerMap, 0, chunk * pxPerMap, bh);
       drawn += chunk;
     }
   } else {
-    vCtx.drawImage(offscreen, vp.x, vp.y, visW, visH, 0, 0, bw, bh);
+    vCtx.drawImage(source, vp.x, vp.y, visW, visH,
+                   0, 0, viewportCanvas.width, viewportCanvas.height);
+  }
+}
+
+function drawViewport() {
+  if (vp.offW === 0 || vp.offH === 0) return;
+  const md = currentMapData;
+  if (!md) return;
+  const minimapOn = document.getElementById('minimap-toggle').checked;
+  const fowOn = document.getElementById('fow-toggle').checked;
+  const losOn = document.getElementById('los-toggle').checked;
+  const gridOn = document.getElementById('grid-toggle').checked;
+
+  // Ensure needed canvases exist (renders on-demand if background hasn't finished)
+  let source;
+  if (minimapOn) {
+    if (fowOn && losOn) { ensureMinimapFowLosCanvas(md); source = minimapCanvasFowLos; }
+    else if (fowOn) { ensureMinimapFowCanvas(md); source = minimapCanvasFow; }
+    else { ensureMinimapCanvas(md); source = minimapCanvas; }
+  } else {
+    if (fowOn && losOn) { ensureFowLosCanvas(md, mapSprites); source = mapCanvasFowLos; }
+    else if (fowOn) { ensureFowCanvas(md, mapSprites); source = mapCanvasFow; }
+    else { source = mapCanvasBase; }
+  }
+  if (!source) return;
+
+  vCtx.clearRect(0, 0, viewportCanvas.width, viewportCanvas.height);
+  blitToViewport(source);
+
+  // Composite grid overlay on top (if enabled and not minimap)
+  if (gridOn && !minimapOn) {
+    ensureGridCanvas(md);
+    blitToViewport(gridCanvas);
   }
 }
 

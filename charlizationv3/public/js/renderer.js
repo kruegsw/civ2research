@@ -85,7 +85,7 @@ const Civ2Renderer = {
   imgToCtx(img) {
     const c = document.createElement('canvas');
     c.width = img.width; c.height = img.height;
-    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
+    const ctx = c.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
     ctx.drawImage(img, 0, 0);
     return ctx;
   },
@@ -97,7 +97,7 @@ const Civ2Renderer = {
   extractSprite(sheetCtx, sx, sy, w, h, chromaColors, killGreen) {
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
+    const ctx = c.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
 
     // Clamp to source bounds
     const aw = Math.min(w, sheetCtx.canvas.width - sx);
@@ -385,7 +385,7 @@ const Civ2Renderer = {
         // Drawn offset behind shields to create outline effect
         const shadow = document.createElement('canvas');
         shadow.width = st.width; shadow.height = st.height;
-        const sCtx = shadow.getContext('2d', { colorSpace: 'srgb' });
+        const sCtx = shadow.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
         sCtx.drawImage(st, 0, 0);
         const sData = sCtx.getImageData(0, 0, shadow.width, shadow.height);
         const sd = sData.data;
@@ -421,7 +421,7 @@ const Civ2Renderer = {
       const valid = [];
       for (let vi = 0; vi < sprites.terrain[tid].length; vi++) {
         const spr = sprites.terrain[tid][vi];
-        const sctx = spr.getContext('2d', { colorSpace: 'srgb' });
+        const sctx = spr.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
         const sd = sctx.getImageData(0, 0, spr.width, spr.height).data;
         let opaque = 0;
         for (let i = 3; i < sd.length; i += 4) if (sd[i] > 0) opaque++;
@@ -450,6 +450,60 @@ const Civ2Renderer = {
     }
 
     return sprites;
+  },
+
+  // Pre-recolor unit + shield sprites for all (type, owner) combos found in the save.
+  // Called once after extraction so the render pass only does fast drawImage calls.
+  prerecolorUnits(sprites, units) {
+    const combos = new Set();
+    const sentryTypes = new Set();
+    const owners = new Set();
+    for (const u of units) {
+      if (u.gx < 0) continue; // dead unit
+      combos.add(u.type + '-' + u.owner);
+      owners.add(u.owner);
+      if (u.orders === 0x03) sentryTypes.add(u.type);
+    }
+
+    // Recolor unit sprites per (type, owner)
+    for (const key of combos) {
+      if (sprites.unitColored[key]) continue;
+      const [typeStr, ownerStr] = key.split('-');
+      const type = parseInt(typeStr), owner = parseInt(ownerStr);
+      const template = sprites.unitTemplates[type];
+      if (!template) continue;
+      const color = this.CIV_COLORS[owner] || '#cccccc';
+      sprites.unitColored[key] = this._recolorUnit(template, color);
+    }
+
+    // Pre-dim sentry unit types (owner-independent)
+    for (const type of sentryTypes) {
+      const dimKey = type + '-dimmed';
+      if (sprites.unitColored[dimKey]) continue;
+      // Use any existing colored version as source (pick first owner that has it)
+      for (const key of combos) {
+        if (key.startsWith(type + '-') && sprites.unitColored[key]) {
+          sprites.unitColored[dimKey] = this._dimUnit(sprites.unitColored[key]);
+          break;
+        }
+      }
+    }
+
+    // Recolor shields per owner
+    if (sprites.shieldFront && sprites.shieldBack) {
+      for (const owner of owners) {
+        const color = this.CIV_COLORS[owner] || '#cccccc';
+        const frontKey = 'shieldFront-' + owner;
+        const backKey = 'shieldBack-' + owner;
+        if (!sprites.shieldFrontColored[frontKey]) {
+          sprites.shieldFrontColored[frontKey] = this._recolorUnit(sprites.shieldFront, color);
+        }
+        if (!sprites.shieldBackColored[backKey]) {
+          sprites.shieldBackColored[backKey] = this._recolorUnit(sprites.shieldBack, color);
+        }
+      }
+    }
+
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -543,7 +597,7 @@ const Civ2Renderer = {
     // Pre-cache terrain sprite pixel data for dithering (use first variant per type)
     const terrainPixData = [];
     for (let tid = 0; tid < 11; tid++) {
-      const tc = terrain[tid][0].getContext('2d', { colorSpace: 'srgb' });
+      const tc = terrain[tid][0].getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
       terrainPixData[tid] = tc.getImageData(0, 0, 64, 32).data;
     }
 
@@ -777,9 +831,9 @@ const Civ2Renderer = {
     }
     ctx.fill();
 
-    // Step 2: Apply black dither dots on EXPLORED tiles (visible or dimmed) in quadrants
-    // facing UNEXPLORED neighbors. Dither only at explored/unexplored boundary.
-    {
+    // Steps 2+3 only needed when FOW is enabled (skip entirely otherwise)
+    if (fowEnabled) {
+      // Step 2: Apply black dither dots on EXPLORED tiles in quadrants facing UNEXPLORED neighbors
       const shroudImg = ctx.getImageData(0, 0, canvasW, canvasH);
       const shroudPix = shroudImg.data;
       for (let gy = 0; gy < mh; gy++) {
@@ -796,10 +850,8 @@ const Civ2Renderer = {
         }
       }
       ctx.putImageData(shroudImg, 0, 0);
-    }
 
-    // Step 3: Apply semi-transparent dimming overlay on explored-but-not-visible tiles
-    if (fowEnabled) {
+      // Step 3: Apply semi-transparent dimming overlay on explored-but-not-visible tiles
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
       ctx.beginPath();
       for (let gy = 0; gy < mh; gy++) {
@@ -1445,7 +1497,7 @@ const Civ2Renderer = {
     const w = templateCanvas.width, h = templateCanvas.height;
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
+    const ctx = c.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
     ctx.drawImage(templateCanvas, 0, 0);
     const imgData = ctx.getImageData(0, 0, w, h);
     const d = imgData.data;
@@ -1480,7 +1532,7 @@ const Civ2Renderer = {
     const w = spriteCanvas.width, h = spriteCanvas.height;
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    const ctx = c.getContext('2d', { colorSpace: 'srgb' });
+    const ctx = c.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
     ctx.drawImage(spriteCanvas, 0, 0);
     const imgData = ctx.getImageData(0, 0, w, h);
     const d = imgData.data;

@@ -2156,7 +2156,7 @@ const Civ2CityDialog = {
       const offCanvas = document.createElement('canvas');
       offCanvas.width = offW;
       offCanvas.height = offH;
-      const offCtx = offCanvas.getContext('2d', { colorSpace: 'srgb' });
+      const offCtx = offCanvas.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
 
       // Pass 1: Draw base terrain at full 64×32 resolution
       for (let i = 0; i < radiusTiles.length; i++) {
@@ -2182,7 +2182,7 @@ const Civ2CityDialog = {
         const terrainPixData = [];
         for (let tid = 0; tid < 11; tid++) {
           if (mapSprites.terrain[tid] && mapSprites.terrain[tid][0]) {
-            const tc = mapSprites.terrain[tid][0].getContext('2d', { colorSpace: 'srgb' });
+            const tc = mapSprites.terrain[tid][0].getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
             terrainPixData[tid] = tc.getImageData(0, 0, 64, 32).data;
           }
         }
