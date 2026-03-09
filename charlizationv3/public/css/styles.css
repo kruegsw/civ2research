@@ -48,25 +48,29 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 
 /* Medallion seal — fills screen initially, shrinks when dialog appears */
 #menu-seal {
-  max-width: 90vw;
-  max-height: 90vh;
-  max-height: 90dvh;
+  width: 340px;
   height: auto;
   image-rendering: pixelated;
   flex-shrink: 1;
   min-height: 0;
   object-fit: contain;
-  transition: max-width 0.4s ease, max-height 0.4s ease;
 }
-#menu-layout.menu-open #menu-seal {
-  max-width: 340px;
-  max-height: 50vh;
-  max-height: 50dvh;
+#menu-layout:not(.menu-open) #menu-seal {
+  width: 90vmin;
 }
 
 #menu-dialog {
   position: relative;
   flex-shrink: 0;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+#menu-layout.menu-open #menu-dialog {
+  opacity: 1;
+  max-height: 600px;
+  pointer-events: auto;
 }
 
 /* Outer frame — city-dialog-style stone texture border with 3D bevel */

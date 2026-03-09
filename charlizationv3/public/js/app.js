@@ -885,18 +885,44 @@ const menuOk = new Audio('assets/sounds/MENUOK.WAV');
 menuLoop.loop = true;
 let menuMuted = false;
 
-// First click: reveal menu dialog, start music, shrink seal
+// First click: reveal menu dialog, start music, shrink seal (FLIP animation)
 function revealMenu() {
   const layout = document.getElementById('menu-layout');
+  const seal = document.getElementById('menu-seal');
   const dialog = document.getElementById('menu-dialog');
   if (layout.classList.contains('menu-open')) return;
+  document.removeEventListener('click', revealMenu);
+  document.removeEventListener('keydown', revealMenu);
+
+  // FLIP: capture seal's current position/size
+  const first = seal.getBoundingClientRect();
+
+  // Apply final state
   layout.classList.add('menu-open');
-  dialog.style.display = '';
+
+  // Force layout so we can read final position
+  const last = seal.getBoundingClientRect();
+
+  // Calculate the transform to go from final → first (invert)
+  const dx = first.left + first.width / 2 - (last.left + last.width / 2);
+  const dy = first.top + first.height / 2 - (last.top + last.height / 2);
+  const s = Math.max(first.width / last.width, first.height / last.height);
+
+  // Animate seal from old position/size to new (uniform scale to preserve aspect ratio)
+  seal.animate([
+    { transform: `translate(${dx}px, ${dy}px) scale(${s})` },
+    { transform: 'translate(0, 0) scale(1)' }
+  ], { duration: 700, easing: 'ease-in-out' });
+
+  // Fade in dialog after seal animation completes
+  dialog.animate([
+    { opacity: 0, transform: 'translateY(15px)' },
+    { opacity: 1, transform: 'translateY(0)' }
+  ], { duration: 400, delay: 700, easing: 'ease-out', fill: 'backwards' });
+
   if (currentScene === 'menu' && menuLoop.paused) {
     menuLoop.play().catch(() => {});
   }
-  document.removeEventListener('click', revealMenu);
-  document.removeEventListener('keydown', revealMenu);
 }
 
 // Try autoplay immediately; if blocked, music starts on first click along with menu reveal
