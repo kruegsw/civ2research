@@ -65,6 +65,15 @@ function setScene(scene) {
     resizeViewport();
     drawViewport();
   }
+  // Menu music: play when on menu (if unmuted), stop when leaving
+  if (typeof menuLoop !== 'undefined') {
+    if (scene === 'menu' && !menuMuted) {
+      menuLoop.play().catch(() => {});
+    } else if (!menuLoop.paused) {
+      menuLoop.pause();
+      menuLoop.currentTime = 0;
+    }
+  }
 }
 
 // ── Status bar game info ──
@@ -870,7 +879,41 @@ document.getElementById('cityview-close').addEventListener('click', closeCityVie
 // MAIN MENU — radio-button + OK pattern
 // ═══════════════════════════════════════════════════════════════════
 
+// Menu audio
+const menuLoop = new Audio('assets/sounds/MENULOOP.WAV');
+const menuOk = new Audio('assets/sounds/MENUOK.WAV');
+menuLoop.loop = true;
+let menuMuted = false;
+
+// First click: reveal menu dialog, start music, shrink seal
+function revealMenu() {
+  const layout = document.getElementById('menu-layout');
+  const dialog = document.getElementById('menu-dialog');
+  if (layout.classList.contains('menu-open')) return;
+  layout.classList.add('menu-open');
+  dialog.style.display = '';
+  if (currentScene === 'menu' && menuLoop.paused) {
+    menuLoop.play().catch(() => {});
+  }
+  document.removeEventListener('click', revealMenu);
+  document.removeEventListener('keydown', revealMenu);
+}
+
+// Try autoplay immediately; if blocked, music starts on first click along with menu reveal
+menuLoop.play().then(() => {
+  // Autoplay worked — still need click to reveal menu
+  document.addEventListener('click', revealMenu);
+  document.addEventListener('keydown', revealMenu);
+}).catch(() => {
+  // Both music and menu reveal on first interaction
+  document.addEventListener('click', revealMenu);
+  document.addEventListener('keydown', revealMenu);
+});
+
 document.getElementById('menu-ok-btn').addEventListener('click', () => {
+  menuLoop.pause();
+  menuLoop.currentTime = 0;
+  if (!menuMuted) menuOk.play().catch(() => {});
   const selected = document.querySelector('input[name="menu-choice"]:checked');
   if (!selected) return;
   switch (selected.value) {

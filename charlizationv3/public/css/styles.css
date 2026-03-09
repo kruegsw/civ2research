@@ -14,10 +14,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 #menu-scene {
   display: flex; flex-direction: column;
   justify-content: center; align-items: center;
-  background: #c0a878;
-  background-image:
-    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(160,140,100,0.15) 8px, rgba(160,140,100,0.15) 16px),
-    linear-gradient(180deg, #d4bc8e 0%, #b89c6c 50%, #a08858 100%);
+  background: #8f7b63;
   position: relative;
   overflow-y: auto;
 }
@@ -25,6 +22,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 #menu-layout {
   display: flex; flex-direction: column; align-items: center;
   gap: 12px; padding: 16px 16px 40px;
+  max-height: 100vh; max-height: 100dvh;
   animation: menuFadeIn 0.4s ease-out;
 }
 @keyframes menuFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -48,89 +46,133 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   image-rendering: pixelated;
 }
 
-/* Medallion seal */
+/* Medallion seal — fills screen initially, shrinks when dialog appears */
 #menu-seal {
-  width: 200px;
+  max-width: 90vw;
+  max-height: 90vh;
+  max-height: 90dvh;
   height: auto;
   image-rendering: pixelated;
-  filter: drop-shadow(2px 2px 6px rgba(0,0,0,0.4));
+  flex-shrink: 1;
+  min-height: 0;
+  object-fit: contain;
+  transition: max-width 0.4s ease, max-height 0.4s ease;
+}
+#menu-layout.menu-open #menu-seal {
+  max-width: 340px;
+  max-height: 50vh;
+  max-height: 50dvh;
 }
 
 #menu-dialog {
   position: relative;
+  flex-shrink: 0;
 }
 
-/* Outer frame — stone/marble wallpaper approximation */
+/* Outer frame — city-dialog-style stone texture border with 3D bevel */
 #menu-frame {
-  background:
-    repeating-linear-gradient(45deg,
-      transparent, transparent 10px,
-      rgba(120,100,70,0.08) 10px, rgba(120,100,70,0.08) 20px),
-    linear-gradient(160deg, #8a7a64 0%, #6a5a44 40%, #7a6a54 60%, #5a4a34 100%);
-  padding: 10px;
-  border: 2px solid #9a8a74;
-  box-shadow:
-    inset 1px 1px 0 #b0a088,
-    inset -1px -1px 0 #3a2a1e,
-    3px 3px 8px rgba(0,0,0,0.5);
-}
-
-/* Inner panel — tan recessed area */
-#menu-panel {
-  background: linear-gradient(150deg, #c8b88c 0%, #b8a478 100%);
+  position: relative;
+  background: url('../assets/menu/stone-border.png') repeat;
   border: 2px solid;
-  border-color: #8a7a60 #d4c4a0 #d4c4a0 #8a7a60;
-  box-shadow:
-    inset 1px 1px 0 #6a5a44,
-    inset -1px -1px 0 #e0d0b0;
-  padding: 20px 32px;
-  min-width: 300px;
-  text-align: center;
+  border-color: #fff #dfdfdf #dfdfdf #fff;
+  box-shadow: 3px 3px 8px rgba(0,0,0,0.5);
+  padding: 10px;
+}
+#menu-frame::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  box-shadow: inset -1px -1px 0 #000;
+  pointer-events: none;
 }
 
+/* Title bar — stone texture, matches city dialog */
+#menu-titlebar {
+  background: url('../assets/menu/stone-border.png') repeat;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -10px -10px 0;
+}
 #menu-title {
   font-family: 'Times New Roman', 'Georgia', serif;
   font-size: 28px;
   font-weight: 700;
-  color: #333333;
-  text-shadow: 1px 1px 0 #BFBFBF;
-  margin-bottom: 16px;
-  letter-spacing: 1px;
+  color: rgb(140,140,140);
+  text-shadow: 2px 1px 0 rgb(0,0,0), 1px 0 0 rgb(67,67,67);
+  letter-spacing: 3px;
+}
+
+/* Inner panel — pebbly texture background */
+#menu-panel {
+  background: url('../assets/menu/pebbly-bg.png') repeat;
+  padding: 6px 8px;
+  text-align: left;
+  margin-bottom: 0;
+  border: 2px solid;
+  border-color: #404040 #fff #fff #404040;
 }
 
 /* Radio-button menu items */
 #menu-items {
-  display: flex; flex-direction: column; gap: 2px;
-  text-align: left;
-  margin-bottom: 16px;
+  display: flex; flex-direction: column; gap: 1px;
+  margin-bottom: 0;
 }
 .menu-radio {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 8px;
   font-family: 'Times New Roman', 'Georgia', serif;
-  font-size: 17px;
+  font-size: 24px;
   color: #333333;
-  text-shadow: 1px 1px 0 rgba(191,191,191,0.5);
-  padding: 3px 4px;
+  text-shadow: 1px 1px 0 rgba(191,191,191,0.4);
+  padding: 3px 4px 3px 0;
   cursor: pointer;
   border-radius: 2px;
 }
 .menu-radio:hover:not(.disabled) {
-  background: rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.08);
 }
 .menu-radio.disabled {
-  color: #888888;
+  color: #666666;
   cursor: default;
 }
 .menu-radio input[type="radio"] {
-  accent-color: #333;
+  appearance: none;
+  -webkit-appearance: none;
   margin: 0;
   width: 14px; height: 14px;
   flex-shrink: 0;
+  border: 2px solid #b0b0b0;
+  border-radius: 50%;
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.menu-radio input[type="radio"]::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #b0b0b0;
+  box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+.menu-radio input[type="radio"]:checked::after {
+  background: #000;
+}
+.menu-radio.disabled input[type="radio"]::after {
+  background: #555;
 }
 
-/* Quit / OK button row */
+/* OK / Cancel button row — stone footer */
 #menu-btn-row {
-  display: flex; gap: 8px; justify-content: center;
+  display: flex; gap: 4px;
+  margin: 0 -10px -10px;
+  padding: 6px 10px;
+}
+#menu-btn-row .civ2-btn {
+  flex: 1;
 }
 
 /* Win95/Civ2-style 3D button */
@@ -173,7 +215,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   position: absolute;
   bottom: 20px;
   font-size: 11px;
-  color: #6a5a44;
+  color: #b0a088;
   font-family: 'Times New Roman', serif;
   letter-spacing: 0.5px;
 }
@@ -591,7 +633,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 @media (max-width: 520px) {
   #lobby-room-grid { grid-template-columns: 1fr; }
   #menu-panel { padding: 16px 20px; min-width: 0; }
-  #menu-title { font-size: 22px; }
-  #menu-seal { width: 140px; }
+  #menu-title { font-size: 16px; }
+  #menu-seal { width: 240px; }
   #menu-map-img { max-width: 200px; }
 }
