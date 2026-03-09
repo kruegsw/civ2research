@@ -90,3 +90,35 @@ export const ORDER_KEYS = { 1:'F', 2:'F', 3:'S', 4:'F', 5:'R', 6:'I', 7:'m', 8:'
 export const SETTLER_TYPES = new Set([0, 1]);
 export const NON_COMBAT_TYPES = new Set([0, 1, 46, 47, 48, 49, 50]);
 export const SUPPORT_EXEMPT_TYPES = new Set([46, 47, 48, 49]);
+
+// Movement constants (from RULES.TXT)
+export const MOVEMENT_MULTIPLIER = 3; // each movement point = 3 movement "thirds"
+
+// Terrain movement costs (indexed by terrain type 0-10)
+// Desert=1, Plains=1, Grassland=1, Forest=2, Hills=2, Mountains=3,
+// Tundra=1, Glacier=2, Swamp=2, Jungle=2, Ocean=1
+export const TERRAIN_MOVE_COST = [1, 1, 1, 2, 2, 3, 1, 2, 2, 2, 1];
+
+// Unit movement points (indexed by unit type 0-51, from RULES.TXT)
+export const UNIT_MOVE_POINTS = [
+  1, 2, 1, 1, 1, 1, 1, 1,   // 0-7:  Settlers..Musketeers
+  1, 1, 1, 1, 1, 1, 3,       // 8-14: Fanatics..Mech.Inf.
+  2, 2, 2, 2, 2, 2, 2, 3,    // 15-22: Horsemen..Armor
+  1, 1, 1, 2, 10, 8, 6,      // 23-29: Catapult..Helicopter
+  14, 12, 3, 3, 4, 4, 4,     // 30-36: StealthF..Ironclad
+  6, 6, 8, 4, 3, 5, 5,       // 37-43: Destroyer..Transport
+  12, 16, 2, 3, 1, 1, 1,     // 44-50: CruiseMsl..Explorer
+  1,                          // 51:   Extra Land
+];
+
+// Unit domain: 0=land, 1=sea, 2=air (indexed by unit type 0-51)
+export const UNIT_DOMAIN = [
+  0, 0, 0, 0, 0, 0, 0, 0,   // 0-7
+  0, 0, 0, 0, 0, 0, 0,       // 8-14
+  0, 0, 0, 0, 0, 0, 0, 0,    // 15-22
+  0, 0, 0, 0, 2, 2, 2,       // 23-29
+  2, 2, 1, 1, 1, 1, 1,       // 30-36
+  1, 1, 1, 1, 1, 1, 1,       // 37-43
+  2, 2, 0, 0, 0, 0, 0,       // 44-50
+  0,                          // 51
+];

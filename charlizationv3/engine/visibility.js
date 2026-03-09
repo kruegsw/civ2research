@@ -55,54 +55,86 @@ export function computeLOS(mapData, civSlot) {
   return los;
 }
 
-// ─────────────────────────────────────────────────────────────────
-// TODO: filterStateForCiv(fullState, civSlot)
-// ─────────────────────────────────────────────────────────────────
-// When the game becomes interactive over WebSocket, the server must
-// send each player only what they can see.  This function will:
-//
-//   1. Compute LOS for civSlot (units + cities, radius 1/2)
-//   2. Read the persistent exploration mask (tile byte[4] bitmask)
-//   3. For each tile:
-//      - Unexplored → omit terrain, units, cities entirely
-//      - Explored but not in LOS → send terrain + last-known improvements,
-//        but hide current units and city size changes
-//      - In LOS → send full tile data (terrain, units, cities, improvements)
-//   4. Strip other civs' private data (treasury, tech research, diplomacy)
-//   5. Return the filtered state for transmission
-//
-// Pseudocode:
-//   export function filterStateForCiv(state, civSlot) {
-//     const los = computeLOS(state, civSlot);
-//     const fowBit = 1 << civSlot;
-//     const filtered = { ...state, tiles: [], units: [], cities: [] };
-//     for (let gy = 0; gy < state.mh; gy++) {
-//       for (let gx = 0; gx < state.mw; gx++) {
-//         const vis = state.getVisibility(gx, gy);
-//         if (!(vis & fowBit)) continue;           // unexplored: omit
-//         const inLOS = los[gy * state.mw + gx];
-//         filtered.tiles.push({
-//           gx, gy,
-//           terrain: state.getTerrain(gx, gy),
-//           improvements: inLOS ? state.getImprovements(gx, gy)
-//                                : state.getKnownImprovements(gx, gy, civSlot),
-//         });
-//       }
-//     }
-//     // Units: only those in LOS tiles
-//     for (const u of state.units) {
-//       if (u.owner === civSlot || los[u.gy * state.mw + u.gx]) {
-//         filtered.units.push(u);
-//       }
-//     }
-//     // Cities: explored cities visible, but size/production hidden if not in LOS
-//     for (const c of state.cities) {
-//       if (!(state.getVisibility(c.gx, c.gy) & fowBit)) continue;
-//       if (los[c.gy * state.mw + c.gx]) {
-//         filtered.cities.push(c);
-//       } else {
-//         filtered.cities.push({ ...c, size: c.believedSize[civSlot] });
-//       }
-//     }
-//     return filtered;
-//   }
+/**
+ * Update persistent visibility (tile byte[4]) around a position.
+ * Sets the exploration bit for the given civ on all tiles within radius 1.
+ *
+ * @param {Array} tileData - mw*mh array of byte arrays
+ * @param {number} mw - map width
+ * @param {number} mh - map height
+ * @param {number} civSlot - civ index (0-7)
+ * @param {number} gx - center tile gx (half-column)
+ * @param {number} gy - center tile gy (row)
+ * @param {boolean} wraps - whether map wraps horizontally
+ */
+export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps) {
+  const bit = 1 << civSlot;
+  const mw2 = mw * 2;
+  const dx = gx * 2 + (gy % 2); // doubled-X coordinate
+
+  for (const [odx, ody] of RADIUS_1) {
+    let ndx = dx + odx;
+    const ndy = gy + ody;
+    if (ndy < 0 || ndy >= mh) continue;
+    if (wraps) {
+      ndx = ((ndx % mw2) + mw2) % mw2;
+    } else if (ndx < 0 || ndx >= mw2) {
+      continue;
+    }
+    const idx = ndy * mw + (ndx >> 1);
+    tileData[idx][4] |= bit;
+  }
+}
+
+/**
+ * Filter game state for a specific civ's visibility.
+ * Returns a copy with only visible units/cities.
+ *
+ * @param {object} mapBase - accessor functions (mw, mh, tileData, etc.)
+ * @param {object} gameState - full game state (units, cities, etc.)
+ * @param {number} civSlot - civ index (0-7)
+ * @returns {object} filtered state safe to send to this player
+ */
+export function filterStateForCiv(mapBase, gameState, civSlot) {
+  const { mw, mh } = mapBase;
+  const fowBit = 1 << civSlot;
+
+  // Compute current LOS from this civ's units + cities
+  const los = computeLOS({ mw, mh, mapShape: mapBase.mapShape, cities: gameState.cities, units: gameState.units }, civSlot);
+
+  // Filter units: own units always visible, others only in LOS
+  const units = gameState.units.filter(u => {
+    if (u.owner === civSlot) return true;
+    if (u.gx < 0) return false;
+    const idx = u.gy * mw + ((u.gx % mw + mw) % mw);
+    return los[idx] === 1;
+  });
+
+  // Filter cities: visible if tile has been explored
+  const cities = [];
+  for (const c of gameState.cities) {
+    const gx = (c.gx != null) ? c.gx : c.cx; // parser uses gx; some might use cx
+    const gy = (c.gy != null) ? c.gy : c.cy;
+    const idx = gy * mw + ((gx % mw + mw) % mw);
+    const vis = mapBase.tileData[idx][4];
+    if (!(vis & fowBit)) continue; // unexplored, omit
+    if (los[idx]) {
+      cities.push(c); // in LOS: full info
+    } else {
+      // Explored but not in LOS: hide current details
+      cities.push({ ...c, size: c.size }); // send as-is for now (future: last-known)
+    }
+  }
+
+  // Clone state with filtered arrays, strip other civs' private data
+  return {
+    ...gameState,
+    units,
+    cities,
+    // Don't send civData for other civs (strip treasury, rates, etc.)
+    civData: gameState.civData ? gameState.civData.map((cd, i) => {
+      if (i === civSlot || i === 0) return cd;
+      return { government: cd.government, rulesCivNumber: cd.rulesCivNumber };
+    }) : null,
+  };
+}

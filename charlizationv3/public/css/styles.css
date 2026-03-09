@@ -9,71 +9,128 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 .scene { width: 100vw; height: 100vh; height: 100dvh; }
 
 /* ═══════════════════════════════════════════════════════════════════
-   Scene: Main Menu — Civ2 Gold Multiplayer inspired
+   Scene: Main Menu — Civ2 Startup Screen
    ═══════════════════════════════════════════════════════════════════ */
 #menu-scene {
   display: flex; flex-direction: column;
   justify-content: center; align-items: center;
-  background: radial-gradient(ellipse at 50% 40%, #1e1e30 0%, #0a0a15 100%);
+  background: #c0a878;
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(160,140,100,0.15) 8px, rgba(160,140,100,0.15) 16px),
+    linear-gradient(180deg, #d4bc8e 0%, #b89c6c 50%, #a08858 100%);
   position: relative;
+  overflow-y: auto;
+}
+
+#menu-layout {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; padding: 16px 16px 40px;
+  animation: menuFadeIn 0.4s ease-out;
+}
+@keyframes menuFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Map preview in gold picture frame */
+#menu-map-frame {
+  border: 6px solid;
+  border-color: #d4a840 #8a6820 #8a6820 #d4a840;
+  box-shadow:
+    inset 2px 2px 0 #e8c860,
+    inset -2px -2px 0 #6a5018,
+    3px 3px 8px rgba(0,0,0,0.4);
+  background: #2a2a2a;
+  line-height: 0;
+}
+#menu-map-img {
+  display: block;
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* Medallion seal */
+#menu-seal {
+  width: 200px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 2px 6px rgba(0,0,0,0.4));
 }
 
 #menu-dialog {
   position: relative;
-  animation: menuFadeIn 0.4s ease-out;
 }
-@keyframes menuFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Outer frame — stone/marble wallpaper approximation */
 #menu-frame {
   background:
     repeating-linear-gradient(45deg,
       transparent, transparent 10px,
-      rgba(120,100,70,0.04) 10px, rgba(120,100,70,0.04) 20px),
-    linear-gradient(160deg, #55473a 0%, #3e3028 40%, #4a3c2e 60%, #3a2c1e 100%);
-  padding: 14px;
-  border: 2px solid #6a5a44;
+      rgba(120,100,70,0.08) 10px, rgba(120,100,70,0.08) 20px),
+    linear-gradient(160deg, #8a7a64 0%, #6a5a44 40%, #7a6a54 60%, #5a4a34 100%);
+  padding: 10px;
+  border: 2px solid #9a8a74;
   box-shadow:
-    inset 1px 1px 0 #8a7a64,
-    inset -1px -1px 0 #2a1a0e,
-    3px 3px 0 #1a0a04,
-    -1px -1px 0 #5a4a34,
-    6px 6px 24px rgba(0,0,0,0.7);
+    inset 1px 1px 0 #b0a088,
+    inset -1px -1px 0 #3a2a1e,
+    3px 3px 8px rgba(0,0,0,0.5);
 }
 
-/* Inner panel — recessed area */
+/* Inner panel — tan recessed area */
 #menu-panel {
-  background: linear-gradient(150deg, #38302a 0%, #2c2418 100%);
+  background: linear-gradient(150deg, #c8b88c 0%, #b8a478 100%);
   border: 2px solid;
-  border-color: #2a1a0e #5a4a34 #5a4a34 #2a1a0e;
+  border-color: #8a7a60 #d4c4a0 #d4c4a0 #8a7a60;
   box-shadow:
-    inset 1px 1px 0 #1a0a04,
-    inset -1px -1px 0 #6a5a44;
-  padding: 32px 48px;
-  min-width: 320px;
+    inset 1px 1px 0 #6a5a44,
+    inset -1px -1px 0 #e0d0b0;
+  padding: 20px 32px;
+  min-width: 300px;
   text-align: center;
 }
 
 #menu-title {
   font-family: 'Times New Roman', 'Georgia', serif;
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 700;
-  color: #d4c4a0;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.6), 0 0 12px rgba(200,180,140,0.15);
-  margin-bottom: 2px;
-  letter-spacing: 2px;
-}
-
-#menu-subtitle {
-  font-family: 'Times New Roman', 'Georgia', serif;
-  font-size: 15px;
-  color: #8a7a64;
-  margin-bottom: 28px;
+  color: #333333;
+  text-shadow: 1px 1px 0 #BFBFBF;
+  margin-bottom: 16px;
   letter-spacing: 1px;
 }
 
-#menu-buttons {
-  display: flex; flex-direction: column; gap: 6px;
+/* Radio-button menu items */
+#menu-items {
+  display: flex; flex-direction: column; gap: 2px;
+  text-align: left;
+  margin-bottom: 16px;
+}
+.menu-radio {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 17px;
+  color: #333333;
+  text-shadow: 1px 1px 0 rgba(191,191,191,0.5);
+  padding: 3px 4px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.menu-radio:hover:not(.disabled) {
+  background: rgba(0,0,0,0.06);
+}
+.menu-radio.disabled {
+  color: #888888;
+  cursor: default;
+}
+.menu-radio input[type="radio"] {
+  accent-color: #333;
+  margin: 0;
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+}
+
+/* Quit / OK button row */
+#menu-btn-row {
+  display: flex; gap: 8px; justify-content: center;
 }
 
 /* Win95/Civ2-style 3D button */
@@ -116,7 +173,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   position: absolute;
   bottom: 20px;
   font-size: 11px;
-  color: #3a3a4a;
+  color: #6a5a44;
   font-family: 'Times New Roman', serif;
   letter-spacing: 0.5px;
 }
@@ -497,10 +554,44 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 #citydialog-close:hover { background: #c0392b; border-color: #e74c3c; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   Turn UI (multiplayer game)
+   ═══════════════════════════════════════════════════════════════════ */
+#turn-ui {
+  position: fixed; bottom: 16px; right: 16px; z-index: 60;
+  background: rgba(22, 33, 62, 0.95);
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  align-items: center;
+  backdrop-filter: blur(4px);
+  min-width: 160px;
+}
+#turn-info {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-family: 'Times New Roman', serif;
+}
+#turn-civ-name {
+  font-size: 16px; font-weight: 700;
+}
+#turn-number {
+  font-size: 12px; color: #999;
+}
+#end-turn-btn {
+  width: 100%; padding: 6px 16px; font-size: 14px;
+}
+#turn-waiting {
+  font-size: 12px; color: #f39c12;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 520px) {
   #lobby-room-grid { grid-template-columns: 1fr; }
-  #menu-panel { padding: 24px 28px; min-width: 0; }
-  #menu-title { font-size: 28px; }
+  #menu-panel { padding: 16px 20px; min-width: 0; }
+  #menu-title { font-size: 22px; }
+  #menu-seal { width: 140px; }
+  #menu-map-img { max-width: 200px; }
 }

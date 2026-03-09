@@ -4,61 +4,57 @@
 // Pure functions that check whether an action is legal given the
 // current state. Used by:
 //   - Server (reducer.js): reject invalid actions before applying
-//   - Client: disable UI for illegal actions, prevent wasted round-trips
+//   - Client: disable UI for illegal actions
 //
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
+import { MOVE_UNIT, END_TURN } from './actions.js';
+import { UNIT_DOMAIN } from './defs.js';
+import { resolveDirection } from './movement.js';
+
 /**
  * Validate whether an action is legal in the current state.
  *
- * @param {object} state - current game state
+ * @param {object} gameState - current game state
+ * @param {object} mapBase - map accessor functions
  * @param {object} action - { type, ...params }
+ * @param {number} civSlot - the civ slot of the acting player
  * @returns {string|null} error message if invalid, null if valid
  */
-export function validateAction(state, action) {
-  // if (!action || !action.type) return 'Missing action type';
+export function validateAction(gameState, mapBase, action, civSlot) {
+  if (!action || !action.type) return 'Missing action type';
 
-  // Common checks for all actions:
-  // - Is it this civ's turn?  (action.civSlot === state.activeCiv)
-  // - Is the game still in progress?
+  // Must be this civ's turn
+  if (civSlot !== gameState.activeCiv) return 'Not your turn';
 
-  // switch (action.type) {
-  //   case 'MOVE_UNIT': {
-  //     // - Does the unit exist and belong to the acting civ?
-  //     // - Does the unit have movement points remaining?
-  //     // - Is the target tile adjacent (or within goto path)?
-  //     // - Can this unit type enter that terrain?
-  //     //   (land units can't enter ocean without transport, etc.)
-  //     // - Zone of Control: is the unit moving between two enemy ZOC tiles?
-  //     // - Is the unit currently fortified/sleeping? (auto-wake)
-  //     break;
-  //   }
-  //   case 'BUILD_CITY': {
-  //     // - Is the unit a settler type? (type 0 or 1)
-  //     // - Is the tile land (not ocean)?
-  //     // - Is there already a city on this tile?
-  //     // - Is there a city within minimum distance? (1 tile gap)
-  //     break;
-  //   }
-  //   case 'CHANGE_PRODUCTION': {
-  //     // - Does the city belong to the acting civ?
-  //     // - Is the item buildable? (tech prereqs met, not duplicate wonder)
-  //     // - Penalty: changing production loses accumulated shields
-  //     //   (unless same category or Pyramids/Suffrage allow granary switch)
-  //     break;
-  //   }
-  //   case 'SET_RATES': {
-  //     // - Do tax + lux + sci rates sum to 10?
-  //     // - Government rate limits: Democracy allows 0-10 each,
-  //     //   Despotism caps science at 6, etc.
-  //     break;
-  //   }
-  //   case 'END_TURN':
-  //     return null; // always valid if it's your turn
-  //   default:
-  //     return `Unknown action type: ${action.type}`;
-  // }
+  switch (action.type) {
+    case MOVE_UNIT: {
+      const { unitIndex, dir } = action;
+      if (unitIndex == null || !dir) return 'Missing unitIndex or dir';
 
-  return null; // stub: all actions valid until implemented
+      const unit = gameState.units[unitIndex];
+      if (!unit) return 'Unit not found';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if (unit.movesLeft <= 0) return 'No movement points remaining';
+
+      // Resolve destination
+      const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
+      if (!dest) return 'Cannot move off map';
+
+      // Domain check: land units can't enter ocean (no transport yet)
+      const domain = UNIT_DOMAIN[unit.type] ?? 0;
+      const terrain = mapBase.getTerrain(dest.gx, dest.gy);
+      if (domain === 0 && terrain === 10) return 'Land unit cannot enter ocean';
+      if (domain === 1 && terrain !== 10) return 'Sea unit cannot enter land';
+
+      return null;
+    }
+
+    case END_TURN:
+      return null; // always valid if it's your turn
+
+    default:
+      return `Unknown action type: ${action.type}`;
+  }
 }

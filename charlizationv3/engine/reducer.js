@@ -2,56 +2,101 @@
 // reducer.js — Authoritative state transitions (shared: server + client)
 //
 // The ONLY code that mutates game state. The server calls
-// applyAction(state, action) for every validated player action.
-// Returns a new state reference if the action was valid,
-// or the same reference if rejected.
+// applyAction(gameState, mapBase, action) for every validated action.
+// Returns a new state object if valid, or the same reference if rejected.
 //
-// Pattern from Trevdor: validate first (rules.js), then clone
-// and mutate. Never mutate the input state directly.
+// Never mutates the input state directly — clones first.
 // ═══════════════════════════════════════════════════════════════════
 
-// import { validateAction } from './rules.js';
+import { validateAction } from './rules.js';
+import { MOVE_UNIT, END_TURN } from './actions.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS } from './defs.js';
+import { resolveDirection, moveCost } from './movement.js';
+import { updateVisibility } from './visibility.js';
 
 /**
  * Apply an action to the game state.
  *
- * @param {object} prev - current authoritative state (never mutated)
+ * @param {object} prev - current authoritative game state (never mutated)
+ * @param {object} mapBase - immutable map data + accessor functions
  * @param {object} action - { type, ...params }
+ * @param {number} civSlot - civ slot of the acting player
  * @returns {object} new state if valid, same reference if rejected
  */
-export function applyAction(prev, action) {
-  // 1. Validate — reject early if action is illegal
-  // const error = validateAction(prev, action);
-  // if (error) return prev;
+export function applyAction(prev, mapBase, action, civSlot) {
+  // Validate
+  const error = validateAction(prev, mapBase, action, civSlot);
+  if (error) return prev;
 
-  // 2. Clone — never mutate authoritative state
-  // const state = structuredClone(prev);
+  // Clone mutable state (shallow clone units array, deep clone moved unit)
+  const state = { ...prev, units: [...prev.units] };
 
-  // 3. Apply — switch on action.type
-  // switch (action.type) {
-  //   case 'MOVE_UNIT': {
-  //     // Find unit, check movement points, compute path cost,
-  //     // check ZOC, handle combat if enemy present,
-  //     // update unit position, decrement moves, update visibility
-  //     break;
-  //   }
-  //   case 'END_TURN': {
-  //     // Process end-of-turn for active civ:
-  //     //   1. City production (shields → build queue)
-  //     //   2. City growth (food → population)
-  //     //   3. Tech research (beakers → discovery)
-  //     //   4. Unit support costs
-  //     //   5. Advance activeCiv to next alive civ
-  //     //   6. Increment version
-  //     break;
-  //   }
-  //   default:
-  //     return prev; // unknown action type
-  // }
+  switch (action.type) {
+    case MOVE_UNIT: {
+      const { unitIndex, dir } = action;
+      const unit = { ...state.units[unitIndex] };
+      const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
 
-  // 4. Bump version
-  // state.version = (prev.version || 0) + 1;
-  // return state;
+      // Calculate cost
+      const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
 
-  return prev; // stub: no-op until game logic is implemented
+      // Update position
+      unit.gx = dest.gx;
+      unit.gy = dest.gy;
+      unit.x = dest.gx * 2 + (dest.gy % 2);
+      unit.y = dest.gy;
+
+      // Deduct movement (minimum 1 third spent, even on railroad)
+      unit.movesLeft = Math.max(0, unit.movesLeft - Math.max(cost, 1));
+
+      // Wake from sleep/fortify
+      if (unit.orders === 2 || unit.orders === 3) unit.orders = 0;
+
+      state.units[unitIndex] = unit;
+
+      // Update visibility for this civ around new position
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, dest.gx, dest.gy, mapBase.wraps);
+
+      break;
+    }
+
+    case END_TURN: {
+      // Find next alive civ
+      let next = state.activeCiv;
+      let turnNumber = state.turnNumber;
+      for (let i = 0; i < 7; i++) {
+        next = (next % 7) + 1; // cycle 1→2→3→...→7→1
+        if (state.civsAlive & (1 << next)) break;
+      }
+      // If we wrapped back to first alive civ, increment turn
+      const firstAlive = findFirstAliveCiv(state.civsAlive);
+      if (next <= state.activeCiv || next === firstAlive) {
+        turnNumber++;
+      }
+
+      state.activeCiv = next;
+      state.turnNumber = turnNumber;
+
+      // Reset movement for the next civ's units
+      state.units = state.units.map(u => {
+        if (u.owner !== next) return u;
+        return { ...u, movesLeft: UNIT_MOVE_POINTS[u.type] * MOVEMENT_MULTIPLIER };
+      });
+
+      break;
+    }
+
+    default:
+      return prev;
+  }
+
+  state.version = (prev.version || 0) + 1;
+  return state;
+}
+
+function findFirstAliveCiv(civsAlive) {
+  for (let i = 1; i < 8; i++) {
+    if (civsAlive & (1 << i)) return i;
+  }
+  return 1;
 }

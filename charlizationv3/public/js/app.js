@@ -12,6 +12,8 @@ import { computeLOS } from '../engine/visibility.js';
 import { getGameYearFromMap } from '../engine/year.js';
 import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
+import { createAccessors, reconstructMapData } from '../engine/state.js';
+import { NUMPAD_DIR } from '../engine/movement.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -221,35 +223,38 @@ async function doRender() {
   overlay.style.display = 'flex';
 
   try {
-    // 1. Load binary save data
-    msg.textContent = 'Loading save file...';
-    const savBuf = new Uint8Array(await files.sav.arrayBuffer());
-
-    // 2. Parse it
-    msg.textContent = 'Parsing save file...';
-    await new Promise(r => setTimeout(r, 10));
-    const mapData = Civ2Parser.parse(savBuf, files.sav.name);
-    currentMapData = mapData;
+    // 1. Load and parse save data (skip if currentMapData already set from server)
+    const mapData = currentMapData || await (async () => {
+      msg.textContent = 'Loading save file...';
+      const savBuf = new Uint8Array(await files.sav.arrayBuffer());
+      msg.textContent = 'Parsing save file...';
+      await new Promise(r => setTimeout(r, 10));
+      const md = Civ2Parser.parse(savBuf, files.sav.name);
+      currentMapData = md;
+      return md;
+    })();
 
     // Populate FOW civ selector
     const fowSelect = document.getElementById('fow-civ');
     const previousValue = fowSelect.value;
     fowSelect.innerHTML = '';
-    // Resolve civ display names (uses LEADERS_TXT_NAMES from engine/defs.js)
-    const civNames = {};
-    for (let i = 0; i < 8; i++) {
-      const nb = mapData.civNameBlocks && mapData.civNameBlocks[i];
-      const cd = mapData.civData && mapData.civData[i];
-      const tribeName = nb && nb.tribeName;
-      const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
-      civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
+    // Resolve civ display names if not already set
+    if (!mapData.civNames) {
+      const civNames = {};
+      for (let i = 0; i < 8; i++) {
+        const nb = mapData.civNameBlocks && mapData.civNameBlocks[i];
+        const cd = mapData.civData && mapData.civData[i];
+        const tribeName = nb && nb.tribeName;
+        const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
+        civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
+      }
+      mapData.civNames = civNames;
     }
-    mapData.civNames = civNames;
     for (let i = 0; i < 8; i++) {
       if (!(mapData.civsAlive & (1 << i))) continue;
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = civNames[i];
+      opt.textContent = mapData.civNames[i] || `Civ ${i}`;
       fowSelect.appendChild(opt);
     }
     if (previousValue !== '' && [...fowSelect.options].some(o => o.value === previousValue)) {
@@ -862,20 +867,32 @@ document.getElementById('cityview-backdrop').addEventListener('click', closeCity
 document.getElementById('cityview-close').addEventListener('click', closeCityView);
 
 // ═══════════════════════════════════════════════════════════════════
-// MAIN MENU — button handlers
+// MAIN MENU — radio-button + OK pattern
 // ═══════════════════════════════════════════════════════════════════
 
-document.getElementById('menu-load-game').addEventListener('click', () => {
-  if (files.sav && files.t1 && files.t2) {
-    setScene('game');
-    if (!currentMapData) doRender();
-  } else {
-    document.getElementById('sav-input').click();
+document.getElementById('menu-ok-btn').addEventListener('click', () => {
+  const selected = document.querySelector('input[name="menu-choice"]:checked');
+  if (!selected) return;
+  switch (selected.value) {
+    case 'load':
+      if (files.sav && files.t1 && files.t2) {
+        setScene('game');
+        if (!currentMapData) doRender();
+      } else {
+        document.getElementById('sav-input').click();
+      }
+      break;
+    case 'multiplayer':
+      setScene('lobby');
+      break;
   }
 });
 
-document.getElementById('menu-multiplayer').addEventListener('click', () => {
-  setScene('lobby');
+// Double-click a radio item to activate immediately
+document.querySelectorAll('.menu-radio:not(.disabled)').forEach(label => {
+  label.addEventListener('dblclick', () => {
+    document.getElementById('menu-ok-btn').click();
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -894,6 +911,13 @@ let wsLastRoom = null;     // last ROOM message for this room (for refresh)
 let wsGameStarted = false; // has this room's game started?
 let wsRoomName = '';       // name of current room (for banner)
 const savedActiveRoom = localStorage.getItem('civ2.activeRoomId') || null;
+
+// Multiplayer game state
+let mpCivSlot = null;      // my civ slot in the current game
+let mpSeatCivMap = null;   // seat index → civ slot mapping
+let mpMapBase = null;      // reconstructed map accessors (from server data)
+let mpGameState = null;    // latest game state from server
+let mpSelectedUnit = null; // index of currently selected unit
 
 function saveActiveGame() {
   if (wsRoomId && wsSessionId) {
@@ -1027,6 +1051,33 @@ const transport = createTransport({
         updateBanner();
         break;
 
+      case 'GAME_START': {
+        console.log('[ws] GAME_START received', msg.myCivSlot);
+        mpCivSlot = msg.myCivSlot;
+        mpSeatCivMap = msg.seatCivMap;
+        wsGameStarted = true;
+        saveActiveGame();
+
+        // Reconstruct map accessors from serialized data
+        mpMapBase = createAccessors(
+          msg.mapBase.mw, msg.mapBase.mh, msg.mapBase.mapShape, msg.mapBase.mapSeed,
+          msg.mapBase.tileData, msg.mapBase.knownImprovements,
+        );
+        mpGameState = msg.state;
+
+        // Build mapData object compatible with existing renderer
+        doRenderFromState();
+        setScene('game');
+        break;
+      }
+
+      case 'STATE': {
+        mpGameState = msg.state;
+        // Re-render with updated state
+        doRenderFromState();
+        break;
+      }
+
       case 'ERROR':
         console.warn(`[ws] Server error: ${msg.message}`);
         break;
@@ -1086,11 +1137,21 @@ function renderRoomList() {
     transport.send('CREATE_ROOM', { name: `${name}'s Game`, playerName: name });
   });
 
-  // Join handlers
+  // Join/Resume/Watch handlers
   grid.querySelectorAll('.lobby-room-tile').forEach(el => {
-    const join = () => transport.joinRoom(el.dataset.roomId);
-    el.querySelector('.tile-join-btn').addEventListener('click', e => { e.stopPropagation(); join(); });
-    el.addEventListener('click', join);
+    const roomId = el.dataset.roomId;
+    const go = () => {
+      if (roomId === wsRoomId && wsLastRoom) {
+        // Already in this room — just switch to detail view
+        document.getElementById('lobby-rooms-view').style.display = 'none';
+        document.getElementById('lobby-room-view').style.display = 'block';
+        renderRoomDetail(wsLastRoom);
+      } else {
+        transport.joinRoom(roomId);
+      }
+    };
+    el.querySelector('.tile-join-btn').addEventListener('click', e => { e.stopPropagation(); go(); });
+    el.addEventListener('click', go);
   });
 }
 
@@ -1239,6 +1300,167 @@ setInterval(() => {
     renderRoomDetail(wsLastRoom);
   }
 }, 15000);
+
+// ═══════════════════════════════════════════════════════════════════
+// MULTIPLAYER GAME — render from server state, turn UI, input
+// ═══════════════════════════════════════════════════════════════════
+
+function buildMapDataFromState() {
+  if (!mpMapBase || !mpGameState) return null;
+  const state = mpGameState;
+  return {
+    mw: mpMapBase.mw, mh: mpMapBase.mh,
+    mw2: mpMapBase.mw * 2,
+    ms: mpMapBase.mapShape,
+    mapSeed: mpMapBase.mapSeed,
+    mapShape: mpMapBase.mapShape,
+    tileData: mpMapBase.tileData,
+    getTerrain: mpMapBase.getTerrain,
+    isLand: mpMapBase.isLand,
+    hasRiver: mpMapBase.hasRiver,
+    getImprovements: mpMapBase.getImprovements,
+    getVisibility: mpMapBase.getVisibility,
+    getResource: mpMapBase.getResource,
+    getNeighbors: mpMapBase.getNeighbors,
+    wrap: mpMapBase.wrap,
+    hasGoodyHut: mpMapBase.hasGoodyHut,
+    hasShield: mpMapBase.hasShield,
+    getCityRadiusOwner: mpMapBase.getCityRadiusOwner,
+    getBodyId: mpMapBase.getBodyId,
+    getTileOwnership: mpMapBase.getTileOwnership,
+    getTileFertility: mpMapBase.getTileFertility,
+    getKnownImprovements: mpMapBase.getKnownImprovements,
+    knownImprovements: mpMapBase.knownImprovements,
+    units: state.units || [],
+    cities: state.cities || [],
+    civData: state.civData,
+    civNameBlocks: state.civNameBlocks,
+    civStyles: state.civStyles,
+    civTechCounts: state.civTechCounts || new Array(8).fill(0),
+    civTechs: state.civTechs,
+    civsAlive: state.civsAlive ?? 0xFF,
+    playerCiv: mpCivSlot ?? state.playerCiv ?? 1,
+    mapRevealed: state.mapRevealed ?? false,
+    unitBySaveIndex: state.unitBySaveIndex,
+    allUnits: state.allUnits,
+    tail: state.tail,
+    header: state.header,
+    gameState: state.gameState || { turnsPassed: state.turnNumber || 0, playerCiv: mpCivSlot ?? 1 },
+    validation: state.validation,
+    civNames: state.civNames,
+  };
+}
+
+function doRenderFromState() {
+  const mapData = buildMapDataFromState();
+  if (!mapData) return;
+  currentMapData = mapData;
+
+  // Re-render if sprites are loaded
+  if (files.t1 && files.t2) {
+    doRender();
+  }
+
+  updateTurnUI();
+
+  // Auto-select first movable unit and center on it
+  if (mpGameState.activeCiv === mpCivSlot) {
+    mpSelectedUnit = findNextMovableUnit(-1);
+    if (mpSelectedUnit != null) centerOnUnit(mpGameState.units[mpSelectedUnit]);
+  }
+}
+
+// ── Turn UI ──
+function updateTurnUI() {
+  const turnUI = document.getElementById('turn-ui');
+  if (!mpGameState || !mpCivSlot) {
+    turnUI.style.display = 'none';
+    return;
+  }
+  turnUI.style.display = '';
+
+  const isMyTurn = mpGameState.activeCiv === mpCivSlot;
+  const civName = mpGameState.civNames?.[mpGameState.activeCiv] || `Civ ${mpGameState.activeCiv}`;
+  const civColor = CIV_COLORS[mpGameState.activeCiv] || '#e0e0e0';
+
+  document.getElementById('turn-civ-name').textContent = civName;
+  document.getElementById('turn-civ-name').style.color = civColor;
+  document.getElementById('turn-number').textContent = `Turn ${mpGameState.turnNumber || 0}`;
+
+  const endBtn = document.getElementById('end-turn-btn');
+  const waitMsg = document.getElementById('turn-waiting');
+  if (isMyTurn) {
+    endBtn.style.display = '';
+    waitMsg.style.display = 'none';
+  } else {
+    endBtn.style.display = 'none';
+    waitMsg.style.display = '';
+  }
+}
+
+// End Turn button
+document.getElementById('end-turn-btn').addEventListener('click', () => {
+  if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
+  transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
+});
+
+// ── Numpad movement ──
+window.addEventListener('keydown', e => {
+  if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+  const dir = NUMPAD_DIR[e.key];
+  if (!dir) return;
+  e.preventDefault();
+
+  // Auto-select first movable unit if none selected
+  if (mpSelectedUnit == null) {
+    mpSelectedUnit = findNextMovableUnit(-1);
+  }
+  if (mpSelectedUnit == null) return;
+
+  transport.sendRaw({
+    type: 'ACTION',
+    action: { type: 'MOVE_UNIT', unitIndex: mpSelectedUnit, dir },
+  });
+});
+
+// Tab key: cycle to next movable unit
+window.addEventListener('keydown', e => {
+  if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key !== 'Tab') return;
+  e.preventDefault();
+
+  const next = findNextMovableUnit(mpSelectedUnit ?? -1);
+  if (next != null) {
+    mpSelectedUnit = next;
+    // Center viewport on selected unit
+    centerOnUnit(mpGameState.units[next]);
+  }
+});
+
+function findNextMovableUnit(afterIndex) {
+  if (!mpGameState) return null;
+  const units = mpGameState.units;
+  for (let i = 0; i < units.length; i++) {
+    const idx = (afterIndex + 1 + i) % units.length;
+    const u = units[idx];
+    if (u.owner === mpCivSlot && u.movesLeft > 0 && u.gx >= 0) return idx;
+  }
+  return null;
+}
+
+function centerOnUnit(unit) {
+  if (!unit || !currentMapData) return;
+  const TW = 64, TH = 32;
+  const px = unit.gx * TW + ((unit.gy % 2) ? (TW >> 1) : 0) + TW / 2;
+  const py = unit.gy * (TH >> 1) + TH / 2;
+  vp.x = px - vp.offW / vp.scale / 2;
+  vp.y = py - vp.offH / vp.scale / 2;
+  clampViewport();
+  drawViewport();
+}
 
 // ── Initialize event handlers ──
 initEvents(viewportCanvas, vp, {

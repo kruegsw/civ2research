@@ -13,18 +13,37 @@
        style="position:fixed;left:-9999px;opacity:0">
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- Scene: Main Menu                                               -->
+<!-- Scene: Main Menu — Civ2 Startup Screen                         -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div id="menu-scene" class="scene">
-  <div id="menu-dialog">
-    <div id="menu-frame">
-      <div id="menu-panel">
-        <h1 id="menu-title">Charlization</h1>
-        <p id="menu-subtitle">Multiplayer Gold</p>
-        <div id="menu-buttons">
-          <button class="civ2-btn" id="menu-new-game" disabled>Start a New Game</button>
-          <button class="civ2-btn" id="menu-load-game">Load a Game</button>
-          <button class="civ2-btn" id="menu-multiplayer">Multiplayer Game</button>
+  <div id="menu-layout">
+    <!-- Map preview in gold picture frame -->
+    <div id="menu-map-frame">
+      <img id="menu-map-img" src="assets/menu/map-preview.gif" alt="Map Preview" draggable="false">
+    </div>
+
+    <!-- Medallion seal -->
+    <img id="menu-seal" src="assets/menu/seal.gif" alt="Civilization II" draggable="false">
+
+    <!-- Menu dialog -->
+    <div id="menu-dialog">
+      <div id="menu-frame">
+        <div id="menu-panel">
+          <h1 id="menu-title">Civilization II</h1>
+          <div id="menu-items">
+            <label class="menu-radio disabled"><input type="radio" name="menu-choice" value="new" disabled><span>Start a New Game</span></label>
+            <label class="menu-radio disabled"><input type="radio" name="menu-choice" value="premade" disabled><span>Start on Premade World</span></label>
+            <label class="menu-radio disabled"><input type="radio" name="menu-choice" value="customize" disabled><span>Customize World</span></label>
+            <label class="menu-radio disabled"><input type="radio" name="menu-choice" value="scenario" disabled><span>Begin Scenario</span></label>
+            <label class="menu-radio"><input type="radio" name="menu-choice" value="load"><span>Load a Game</span></label>
+            <label class="menu-radio"><input type="radio" name="menu-choice" value="multiplayer" checked><span>Multiplayer Game</span></label>
+            <label class="menu-radio disabled"><input type="radio" name="menu-choice" value="hall" disabled><span>View Hall of Fame</span></label>
+            <label class="menu-radio disabled"><input type="radio" name="menu-choice" value="credits" disabled><span>View Credits</span></label>
+          </div>
+          <div id="menu-btn-row">
+            <button class="civ2-btn" id="menu-quit-btn" disabled>Quit</button>
+            <button class="civ2-btn" id="menu-ok-btn">OK</button>
+          </div>
         </div>
       </div>
     </div>
@@ -102,6 +121,16 @@
   <div id="map-container">
     <canvas id="map-canvas"></canvas>
     <canvas id="viewport-canvas"></canvas>
+  </div>
+
+  <!-- Turn UI (multiplayer) -->
+  <div id="turn-ui" style="display:none">
+    <div id="turn-info">
+      <span id="turn-civ-name"></span>
+      <span id="turn-number"></span>
+    </div>
+    <button id="end-turn-btn" class="civ2-btn">End Turn</button>
+    <div id="turn-waiting" style="display:none">Waiting for opponent...</div>
   </div>
 </div>
 

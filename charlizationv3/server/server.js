@@ -38,6 +38,13 @@ import { WebSocketServer } from "ws";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Civ2Parser } from "../engine/parser.js";
+import { initFromSav, initNewGame } from "../engine/init.js";
+import { generateMap } from "../engine/mapgen.js";
+import { applyAction } from "../engine/reducer.js";
+import { filterStateForCiv } from "../engine/visibility.js";
+import { createAccessors } from "../engine/state.js";
+import { LEADERS_TXT_NAMES } from "../engine/defs.js";
 
 const PORT = Number(process.env.PORT || 8788);
 const DEBUG = process.env.DEBUG === "1";
@@ -371,6 +378,27 @@ wss.on("connection", (ws) => {
         }));
         broadcastToRoom(roomId, roomRoster(roomId));
         broadcastRoomList();
+
+        // If game already started, send current state to reconnecting player
+        if (room.started && room.gameState && room.mapBase) {
+          const civSlot = room.gameState.seatCivMap?.[info.playerIndex] ?? null;
+          const statePayload = buildStatePayload(room, civSlot);
+          ws.send(JSON.stringify({
+            type: "GAME_START",
+            roomId,
+            myCivSlot: civSlot,
+            seatCivMap: room.gameState.seatCivMap,
+            mapBase: {
+              mw: room.mapBase.mw,
+              mh: room.mapBase.mh,
+              mapShape: room.mapBase.mapShape,
+              mapSeed: room.mapBase.mapSeed,
+              tileData: room.mapBase.tileData,
+              knownImprovements: room.mapBase.knownImprovements,
+            },
+            state: statePayload,
+          }));
+        }
         break;
       }
 
@@ -430,6 +458,9 @@ wss.on("connection", (ws) => {
               sessions.set(ci.sessionId, { roomId, seatIndex: i, name: ci.name });
             }
           }
+
+          // Initialize game
+          startGame(roomId, room, occupied);
         }
 
         broadcastToRoom(roomId, roomRoster(roomId));
@@ -446,25 +477,39 @@ wss.on("connection", (ws) => {
         break;
       }
 
-      // TODO: ACTION handler
-      // case "ACTION": {
-      //   const room = rooms.get(msg.roomId);
-      //   if (!room || !room.state) break;
-      //   if (info.playerIndex == null) {
-      //     ws.send(JSON.stringify({ type: "REJECTED", roomId: msg.roomId, reason: "Spectators cannot act" }));
-      //     break;
-      //   }
-      //   // Validate: is it this player's turn?
-      //   // if (room.state.activeCiv !== info.playerIndex) { reject }
-      //   // const next = applyAction(room.state, msg.action);
-      //   // if (next === room.state) { reject — invalid action }
-      //   // room.state = next;
-      //   // room.version++;
-      //   // For each client in room:
-      //   //   const filtered = filterStateForCiv(room.state, clientPlayerIndex);
-      //   //   client.send({ type: "STATE", roomId, version, state: filtered });
-      //   break;
-      // }
+      case "ACTION": {
+        const actionRoomId = info.roomId;
+        if (!actionRoomId) break;
+        const room = rooms.get(actionRoomId);
+        if (!room || !room.gameState || !room.mapBase) {
+          ws.send(JSON.stringify({ type: "REJECTED", roomId: actionRoomId, reason: "Game not started" }));
+          break;
+        }
+        if (info.playerIndex == null) {
+          ws.send(JSON.stringify({ type: "REJECTED", roomId: actionRoomId, reason: "Spectators cannot act" }));
+          break;
+        }
+
+        // Map seat to civ slot
+        const civSlot = room.gameState.seatCivMap?.[info.playerIndex];
+        if (civSlot == null) {
+          ws.send(JSON.stringify({ type: "REJECTED", roomId: actionRoomId, reason: "No civ assigned" }));
+          break;
+        }
+
+        // Apply action through reducer (validates internally)
+        const next = applyAction(room.gameState, room.mapBase, msg.action, civSlot);
+        if (next === room.gameState) {
+          ws.send(JSON.stringify({ type: "REJECTED", roomId: actionRoomId, reason: "Invalid action" }));
+          break;
+        }
+
+        room.gameState = next;
+
+        // Broadcast filtered state to each client
+        sendGameStateToAll(actionRoomId, room);
+        break;
+      }
 
       default:
         ws.send(JSON.stringify({ type: "ERROR", message: `Unknown type: ${msg.type}` }));
@@ -500,6 +545,140 @@ wss.on("connection", (ws) => {
     broadcastRoomList();
   });
 });
+
+// -----------------------------------------------------------------------------
+// Game initialization
+// -----------------------------------------------------------------------------
+
+function startGame(roomId, room, occupiedSeats) {
+  const seatList = occupiedSeats.map(i => ({
+    seatIndex: i,
+    name: room.seats[i]?.name || `Player ${i}`,
+  }));
+
+  // Try to load a .sav file first; fall back to generated map
+  const savesDir = path.join(PUBLIC_DIR, "saves");
+  let savFiles = [];
+  try {
+    savFiles = fs.readdirSync(savesDir).filter(f => /\.sav$/i.test(f));
+  } catch {}
+
+  if (savFiles.length > 0) {
+    // Path A: Load .sav
+    const savPath = path.join(savesDir, savFiles[0]);
+    try {
+      const savBuf = new Uint8Array(fs.readFileSync(savPath));
+      const parsed = Civ2Parser.parse(savBuf, savFiles[0]);
+      const { mapBase, gameState } = initFromSav(parsed, seatList);
+      room.mapBase = mapBase;
+      room.gameState = gameState;
+      console.log(`[game] Room ${roomId}: loaded ${savFiles[0]} (${parsed.mw}×${parsed.mh})`);
+    } catch (err) {
+      console.error(`[game] Failed to load .sav: ${err.message}`);
+      // Fall through to generated map
+      startNewGame(roomId, room, seatList);
+      return;
+    }
+  } else {
+    // Path B: Generate map
+    startNewGame(roomId, room, seatList);
+  }
+
+  // Resolve civ names for the game state
+  const civNames = {};
+  for (let i = 0; i < 8; i++) {
+    const nb = room.gameState.civNameBlocks?.[i];
+    const cd = room.gameState.civData?.[i];
+    const tribeName = nb && nb.tribeName;
+    const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
+    civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
+  }
+  room.gameState.civNames = civNames;
+
+  // Send GAME_START to each client with their filtered state
+  sendGameStartToAll(roomId, room);
+}
+
+function startNewGame(roomId, room, seatList) {
+  const mapResult = generateMap({ width: 40, height: 50 });
+  const { mapBase, gameState } = initNewGame(mapResult, seatList);
+  room.mapBase = mapBase;
+  room.gameState = gameState;
+  console.log(`[game] Room ${roomId}: generated new map (${mapResult.mw}×${mapResult.mh})`);
+}
+
+function sendGameStartToAll(roomId, room) {
+  for (const ws of room.clients) {
+    if (ws.readyState !== 1) continue;
+    const ci = clientInfo.get(ws);
+    if (!ci) continue;
+
+    const civSlot = room.gameState.seatCivMap?.[ci.playerIndex] ?? null;
+    // Build the state payload
+    const statePayload = buildStatePayload(room, civSlot);
+    ws.send(JSON.stringify({
+      type: "GAME_START",
+      roomId,
+      myCivSlot: civSlot,
+      seatCivMap: room.gameState.seatCivMap,
+      mapBase: {
+        mw: room.mapBase.mw,
+        mh: room.mapBase.mh,
+        mapShape: room.mapBase.mapShape,
+        mapSeed: room.mapBase.mapSeed,
+        tileData: room.mapBase.tileData,
+        knownImprovements: room.mapBase.knownImprovements,
+      },
+      state: statePayload,
+    }));
+  }
+}
+
+function sendGameStateToAll(roomId, room) {
+  for (const ws of room.clients) {
+    if (ws.readyState !== 1) continue;
+    const ci = clientInfo.get(ws);
+    if (!ci) continue;
+
+    const civSlot = room.gameState.seatCivMap?.[ci.playerIndex] ?? null;
+    const statePayload = buildStatePayload(room, civSlot);
+    ws.send(JSON.stringify({
+      type: "STATE",
+      roomId,
+      version: room.gameState.version,
+      state: statePayload,
+    }));
+  }
+}
+
+function buildStatePayload(room, civSlot) {
+  // For now, send full state (FOW filtering can be enabled later)
+  // Strip non-serializable fields
+  const gs = room.gameState;
+  return {
+    units: gs.units,
+    cities: gs.cities,
+    civData: gs.civData,
+    civNameBlocks: gs.civNameBlocks,
+    civStyles: gs.civStyles,
+    civTechCounts: gs.civTechCounts,
+    civTechs: gs.civTechs,
+    civsAlive: gs.civsAlive,
+    playerCiv: gs.playerCiv,
+    mapRevealed: gs.mapRevealed,
+    turnNumber: gs.turnNumber,
+    activeCiv: gs.activeCiv,
+    version: gs.version,
+    seatCivMap: gs.seatCivMap,
+    civNames: gs.civNames,
+    unitBySaveIndex: gs.unitBySaveIndex,
+    allUnits: gs.allUnits,
+    tail: gs.tail,
+    header: gs.header,
+    gameState: gs.gameState,
+    validation: gs.validation,
+  };
+}
 
 // -----------------------------------------------------------------------------
 // Start
