@@ -10,10 +10,12 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYearFromMap } from '../engine/year.js';
-import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS } from '../engine/defs.js';
+import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS, UNIT_NAMES } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
+import { getValidActions } from '../engine/rules.js';
+import { MOVE_UNIT, BUILD_CITY } from '../engine/actions.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -61,9 +63,9 @@ function setScene(scene) {
   document.getElementById('lobby-scene').style.display = scene === 'lobby' ? 'flex' : 'none';
   document.getElementById('game-scene').style.display = scene === 'game' ? '' : 'none';
   currentScene = scene;
-  if (scene === 'game' && vp.offW > 0) {
+  if (scene === 'game') {
     resizeViewport();
-    drawViewport();
+    if (vp.offW > 0) drawViewport();
   }
   // Menu music: play when on menu (if unmuted), stop when leaving
   if (typeof menuLoop !== 'undefined') {
@@ -212,24 +214,19 @@ document.getElementById('fow-civ').addEventListener('change', () => {
   const val = document.getElementById('fow-civ').value;
   cachedFowCiv = val !== '' ? parseInt(val) : currentMapData.playerCiv;
   cachedLosData = null;
-  mapCanvasLos = null;
-  mapCanvasFow = null;
-  mapCanvasFowLos = null;
-  minimapCanvasLos = null;
-  minimapCanvasFow = null;
-  minimapCanvasFowLos = null;
+  invalidateFowCanvases();
   updateGameInfo(currentMapData, cachedFowCiv);
   drawViewport();
 });
 
 // ── Main render flow ──
 let rendering = false;
-async function doRender() {
+async function doRender(options = {}) {
   if (rendering) return;
   rendering = true;
   const overlay = document.getElementById('loading-overlay');
   const msg = document.getElementById('loading-msg');
-  overlay.style.display = 'flex';
+  if (!options.silent) overlay.style.display = 'flex';
 
   try {
     // 1. Load and parse save data (skip if currentMapData already set from server)
@@ -308,20 +305,15 @@ async function doRender() {
     const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : mapData.playerCiv;
 
     // Clear deferred canvases (will be rendered lazily)
-    mapCanvasLos = null;
-    mapCanvasFow = null;
-    mapCanvasFowLos = null;
+    invalidateFowCanvases();
     gridCanvas = null;
     minimapCanvas = null;
-    minimapCanvasLos = null;
-    minimapCanvasFow = null;
-    minimapCanvasFowLos = null;
     cachedFowCiv = fowCiv;
     cachedLosData = null;
 
     msg.textContent = 'Rendering map...';
     await new Promise(r => setTimeout(r, 10));
-    mapCanvasBase = document.createElement('canvas');
+    const newBase = document.createElement('canvas');
 
     // Collect player unit positions for terrain patch capture (blink animation)
     const blinkUnitTiles = [];
@@ -333,11 +325,13 @@ async function doRender() {
       }
     }
 
-    const result = await Civ2Renderer.render(mapCanvasBase, mapData, sprites, null,
-      { fowEnabled: false, gridEnabled: false, blinkUnitTiles });
+    const result = await Civ2Renderer.render(newBase, mapData, sprites, null,
+      { fowEnabled: false, gridEnabled: false, blinkUnitTiles, selectedUnitIndex: mpSelectedUnit });
+    mapCanvasBase = newBase;
 
-    // Store terrain patches for unit blink animation
+    // Store blink data: terrain patches + unit overlay
     blinkPatches = result.terrainPatches;
+    blinkUnitOverlay = result.blinkUnitOverlay;
 
     // 6. Set up viewport and show map immediately
     vp.offW = mapCanvasBase.width;
@@ -352,15 +346,17 @@ async function doRender() {
       `${mapData.units.length} units`;
     updateGameInfo(mapData);
 
-    overlay.style.display = 'none';
+    if (!options.silent) overlay.style.display = 'none';
 
     // 7. Pre-render remaining canvases in background
     deferredRenderQueue(mapData, sprites, fowCiv);
 
   } catch (err) {
     console.error(err);
-    alert('Error: ' + err.message);
-    overlay.style.display = 'none';
+    if (!options.silent) {
+      alert('Error: ' + err.message);
+      overlay.style.display = 'none';
+    }
   } finally {
     rendering = false;
   }
@@ -445,12 +441,31 @@ function ensureMinimapCanvas(mapData) {
   Civ2Minimap.render(minimapCanvas, mapData, { fowEnabled: false });
 }
 
+function invalidateFowCanvases() {
+  mapCanvasLos = null;
+  mapCanvasFow = null;
+  mapCanvasFowLos = null;
+  minimapCanvasLos = null;
+  minimapCanvasFow = null;
+  minimapCanvasFowLos = null;
+  _losRendering = null;
+  _fowRendering = null;
+  _fowLosRendering = null;
+}
+
+let _losRendering = null;
 async function ensureLosCanvas(mapData, sprites) {
   if (mapCanvasLos) return;
-  const losData = ensureLosData(mapData, cachedFowCiv);
-  mapCanvasLos = document.createElement('canvas');
-  await Civ2Renderer.render(mapCanvasLos, mapData, sprites, null,
-    { fowEnabled: false, gridEnabled: false, losData });
+  if (_losRendering) return _losRendering;
+  _losRendering = (async () => {
+    const losData = ensureLosData(mapData, cachedFowCiv);
+    const c = document.createElement('canvas');
+    await Civ2Renderer.render(c, mapData, sprites, null,
+      { fowEnabled: false, gridEnabled: false, losData, selectedUnitIndex: mpSelectedUnit });
+    mapCanvasLos = c;
+    _losRendering = null;
+  })();
+  return _losRendering;
 }
 
 function ensureMinimapLosCanvas(mapData) {
@@ -460,19 +475,33 @@ function ensureMinimapLosCanvas(mapData) {
   Civ2Minimap.render(minimapCanvasLos, mapData, { fowEnabled: false, losData });
 }
 
+let _fowRendering = null;
 async function ensureFowCanvas(mapData, sprites) {
   if (mapCanvasFow) return;
-  mapCanvasFow = document.createElement('canvas');
-  await Civ2Renderer.render(mapCanvasFow, mapData, sprites, null,
-    { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false });
+  if (_fowRendering) return _fowRendering;
+  _fowRendering = (async () => {
+    const c = document.createElement('canvas');
+    await Civ2Renderer.render(c, mapData, sprites, null,
+      { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false, selectedUnitIndex: mpSelectedUnit });
+    mapCanvasFow = c;
+    _fowRendering = null;
+  })();
+  return _fowRendering;
 }
 
+let _fowLosRendering = null;
 async function ensureFowLosCanvas(mapData, sprites) {
   if (mapCanvasFowLos) return;
-  const losData = ensureLosData(mapData, cachedFowCiv);
-  mapCanvasFowLos = document.createElement('canvas');
-  await Civ2Renderer.render(mapCanvasFowLos, mapData, sprites, null,
-    { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false, losData });
+  if (_fowLosRendering) return _fowLosRendering;
+  _fowLosRendering = (async () => {
+    const losData = ensureLosData(mapData, cachedFowCiv);
+    const c = document.createElement('canvas');
+    await Civ2Renderer.render(c, mapData, sprites, null,
+      { fowEnabled: true, fowCiv: cachedFowCiv, gridEnabled: false, losData, selectedUnitIndex: mpSelectedUnit });
+    mapCanvasFowLos = c;
+    _fowLosRendering = null;
+  })();
+  return _fowLosRendering;
 }
 
 function ensureMinimapFowCanvas(mapData) {
@@ -535,7 +564,10 @@ function blitToViewport(source) {
   }
 }
 
-async function drawViewport() {
+// Cached region under unit overlay (for restoring during blink-off)
+let blinkUnderlay = null; // { imageData, vpX, vpY } — viewport-space coords
+
+function drawViewport() {
   if (vp.offW === 0 || vp.offH === 0) return;
   const md = currentMapData;
   if (!md) return;
@@ -544,7 +576,9 @@ async function drawViewport() {
   const losOn = document.getElementById('los-toggle').checked;
   const gridOn = document.getElementById('grid-toggle').checked;
 
-  // Ensure needed canvases exist (renders on-demand if background hasn't finished)
+  // Pick the correct canvas for current toggle state.
+  // If the ideal canvas isn't ready yet, keep the current viewport (don't redraw)
+  // and schedule a redraw once the async render completes.
   let source;
   if (minimapOn) {
     if (fowOn && losOn) { ensureMinimapFowLosCanvas(md); source = minimapCanvasFowLos; }
@@ -552,14 +586,21 @@ async function drawViewport() {
     else if (losOn) { ensureMinimapLosCanvas(md); source = minimapCanvasLos; }
     else { ensureMinimapCanvas(md); source = minimapCanvas; }
   } else {
-    if (fowOn && losOn) { await ensureFowLosCanvas(md, mapSprites); source = mapCanvasFowLos; }
-    else if (fowOn) { await ensureFowCanvas(md, mapSprites); source = mapCanvasFow; }
-    else if (losOn) { await ensureLosCanvas(md, mapSprites); source = mapCanvasLos; }
-    else { source = mapCanvasBase; }
+    if (fowOn && losOn) {
+      source = mapCanvasFowLos;
+      if (!source) { ensureFowLosCanvas(md, mapSprites).then(() => drawViewport()); return; }
+    } else if (fowOn) {
+      source = mapCanvasFow;
+      if (!source) { ensureFowCanvas(md, mapSprites).then(() => drawViewport()); return; }
+    } else if (losOn) {
+      source = mapCanvasLos;
+      if (!source) { ensureLosCanvas(md, mapSprites).then(() => drawViewport()); return; }
+    } else {
+      source = mapCanvasBase;
+    }
   }
   if (!source) return;
 
-  vCtx.clearRect(0, 0, viewportCanvas.width, viewportCanvas.height);
   blitToViewport(source);
 
   // Composite grid overlay on top (if enabled and not minimap)
@@ -568,17 +609,54 @@ async function drawViewport() {
     blitToViewport(gridCanvas);
   }
 
-  // Blink overlay: hide selected unit by drawing terrain patch over it
-  if (mpSelectedUnit != null && !blinkOn && blinkPatches && !minimapOn) {
-    const u = mpGameState?.units?.[mpSelectedUnit];
-    if (u) {
-      const key = u.gx + ',' + u.gy;
-      const patch = blinkPatches[key];
-      if (patch) {
-        blitPatchToViewport(patch.canvas, patch.x, patch.y);
-      }
+  // Save the region under the unit overlay (small area, not full viewport)
+  blinkUnderlay = null;
+  if (mpSelectedUnit != null && blinkUnitOverlay && !minimapOn) {
+    const region = getOverlayViewportRect(blinkUnitOverlay);
+    if (region) {
+      blinkUnderlay = {
+        imageData: vCtx.getImageData(region.x, region.y, region.w, region.h),
+        vpX: region.x, vpY: region.y,
+      };
+    }
+    // Draw unit overlay if blink is on
+    if (blinkOn) {
+      blitPatchToViewport(blinkUnitOverlay.canvas, blinkUnitOverlay.x, blinkUnitOverlay.y);
     }
   }
+}
+
+// Get the viewport-pixel rectangle for a map-space overlay patch
+function getOverlayViewportRect(overlay) {
+  const dpr = window.devicePixelRatio || 1;
+  const pxPerMap = vp.scale * dpr;
+  let vpX, vpY;
+  if (vp.wraps) {
+    const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
+    vpX = (overlay.x - x1) * pxPerMap;
+    // Handle wrapping — find the visible copy
+    const visW = vp.logicalW / vp.scale;
+    for (let wrap = -1; wrap <= 1; wrap++) {
+      const px = overlay.x + wrap * vp.wrapW;
+      const rx = (px - x1) * pxPerMap;
+      if (rx + overlay.canvas.width * pxPerMap >= 0 && rx < viewportCanvas.width) {
+        vpX = rx;
+        break;
+      }
+    }
+  } else {
+    vpX = (overlay.x - vp.x) * pxPerMap;
+  }
+  vpY = (overlay.y - vp.y) * pxPerMap;
+  const w = Math.ceil(overlay.canvas.width * pxPerMap);
+  const h = Math.ceil(overlay.canvas.height * pxPerMap);
+  // Clamp to viewport bounds
+  const x0 = Math.max(0, Math.floor(vpX));
+  const y0 = Math.max(0, Math.floor(vpY));
+  const x1 = Math.min(viewportCanvas.width, Math.ceil(vpX + w));
+  const y1 = Math.min(viewportCanvas.height, Math.ceil(vpY + h));
+  if (x1 <= x0 || y1 <= y0) return null;
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
 // Blit a small patch canvas to the viewport at the correct offscreen position
@@ -690,41 +768,85 @@ async function ensureCdSprites() {
   return true;
 }
 
-async function handleMapClick(e) {
+async function handleMapClick(e, isLongPress = false) {
   const tile = findTileAt(e.clientX, e.clientY);
   if (!tile) return;
 
-  // Multiplayer: click-to-select and click-to-move
-  if (mpGameState && mpCivSlot != null && mpGameState.activeCiv === mpCivSlot) {
-    // Check if clicked tile has our own unit → select it
-    const clickedUnitIdx = mpGameState.units.findIndex(
-      u => u.gx === tile.gx && u.gy === tile.gy && u.owner === mpCivSlot && u.movesLeft > 0
-    );
-    if (clickedUnitIdx >= 0 && clickedUnitIdx !== mpSelectedUnit) {
-      selectUnit(clickedUnitIdx);
-      return;
-    }
+  const isMyTurn = mpGameState && mpCivSlot != null && mpGameState.activeCiv === mpCivSlot;
+  const activeUnit = mpSelectedUnit != null ? mpGameState?.units[mpSelectedUnit] : null;
+  const activeUnitOnTile = activeUnit && activeUnit.gx === tile.gx && activeUnit.gy === tile.gy;
+  const cityHit = findCityAt(tile.gx, tile.gy);
 
-    // Check if we have a selected unit and clicked tile is adjacent → move
-    if (mpSelectedUnit != null) {
-      const u = mpGameState.units[mpSelectedUnit];
-      if (u) {
-        const dir = getDirection(u.gx, u.gy, tile.gx, tile.gy, mpMapBase);
-        if (dir) {
-          transport.sendRaw({
-            type: 'ACTION',
-            action: { type: 'MOVE_UNIT', unitIndex: mpSelectedUnit, dir },
-          });
-          return;
-        }
-      }
-    }
+  // City tile without our active unit on it — open city dialog
+  if (cityHit && !activeUnitOnTile) {
+    openCityDialog(cityHit.city, cityHit.index);
+    return;
   }
 
-  // Fallback: open city dialog
-  const hit = findCityAt(tile.gx, tile.gy);
-  if (hit) {
-    openCityDialog(hit.city, hit.index);
+  if (isMyTurn) {
+    // Gather own movable units on this tile
+    const tileUnits = [];
+    mpGameState.units.forEach((u, idx) => {
+      if (u.gx === tile.gx && u.gy === tile.gy && u.owner === mpCivSlot && u.movesLeft > 0) {
+        tileUnits.push(idx);
+      }
+    });
+
+    // Long press with active unit on a DIFFERENT tile — show move action only
+    if (isLongPress && mpSelectedUnit != null) {
+      const validActions = getValidActions(mpGameState, mpMapBase, mpSelectedUnit, tile);
+      if (validActions.length > 0) {
+        const menuItems = validActions.map(va => actionToMenuItem(va, mpSelectedUnit));
+        showUnitMenu(e.clientX, e.clientY, menuItems);
+        return;
+      }
+    }
+
+    // Click on tile with own movable units — build unified menu
+    if (tileUnits.length > 0) {
+      const menuItems = [];
+
+      // Section header + unit selection entries (with sprite thumbnails)
+      menuItems.push({ header: 'Select Unit' });
+      for (const idx of tileUnits) {
+        const u = mpGameState.units[idx];
+        const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+        const sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
+        const selected = idx === mpSelectedUnit;
+        menuItems.push({
+          label: name,
+          sprite,
+          selected,
+          action: () => selectUnit(idx),
+        });
+      }
+
+      // Valid actions for the active unit only
+      const actionItems = [];
+      if (mpSelectedUnit != null && tileUnits.includes(mpSelectedUnit)) {
+        const actions = getValidActions(mpGameState, mpMapBase, mpSelectedUnit, tile);
+        for (const va of actions) {
+          const item = actionToMenuItem(va, mpSelectedUnit);
+          const u = mpGameState.units[mpSelectedUnit];
+          item.sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
+          actionItems.push(item);
+        }
+      }
+      if (actionItems.length > 0) {
+        menuItems.push({ separator: true });
+        menuItems.push({ header: 'Select Order' });
+        menuItems.push(...actionItems);
+      }
+
+      // Single unit, no extra actions — just select directly
+      if (tileUnits.length === 1 && menuItems.length === 1) {
+        selectUnit(tileUnits[0]);
+        return;
+      }
+
+      showUnitMenu(e.clientX, e.clientY, menuItems);
+      return;
+    }
   }
 }
 
@@ -962,6 +1084,8 @@ document.getElementById('cityview-close').addEventListener('click', closeCityVie
 // Menu audio
 const menuLoop = new Audio('assets/sounds/MENULOOP.WAV');
 const menuOk = new Audio('assets/sounds/MENUOK.WAV');
+const menuEnd = new Audio('assets/sounds/MENUEND.WAV');
+const sfxBuildCity = new Audio('assets/sounds/BLDCITY.WAV');
 menuLoop.loop = true;
 let menuMuted = false;
 
@@ -1090,9 +1214,12 @@ let mpGameState = null;    // latest game state from server
 let mpSelectedUnit = null; // index of currently selected unit
 
 // Unit blink state
-let blinkOn = true;        // true = unit visible, false = hidden (terrain patch shown)
+let blinkOn = true;        // true = unit visible, false = hidden
 let blinkInterval = null;  // setInterval handle
 let blinkPatches = null;   // { 'gx,gy': { canvas, x, y } } terrain patches from renderer
+let blinkUnitOverlay = null; // { canvas, x, y } selected unit + terrain composite for blink-on
+let pendingSlide = null;   // { unitIndex, oldGx, oldGy } — set before sending MOVE_UNIT
+let slideAnimating = false; // true during slide animation
 
 function saveActiveGame() {
   if (!wsRoomId || !wsSessionId) return;
@@ -1235,8 +1362,14 @@ const transport = createTransport({
         wsGameStarted = msg.started;
         if (msg.started) saveActiveGame();
         updateGameBackBtn();
-        renderRoomDetail(msg);
-        updateBanner();
+        updateGamePlayers();
+        // Skip room detail view for started games — GAME_START will switch to game scene
+        if (msg.started && wsPlayerIndex != null) {
+          updateBanner();
+        } else {
+          renderRoomDetail(msg);
+          updateBanner();
+        }
         break;
 
       case 'GAME_START': {
@@ -1253,21 +1386,77 @@ const transport = createTransport({
         );
         mpGameState = msg.state;
 
-        // Build mapData object compatible with existing renderer
-        doRenderFromState();
+        // Play transition sound and stop menu music
+        menuLoop.pause();
+        menuLoop.currentTime = 0;
+        menuEnd.play().catch(() => {});
+
+        // Enable FOW + LOS for multiplayer, set civ selector to player's civ
+        document.getElementById('fow-toggle').checked = true;
+        document.getElementById('los-toggle').checked = true;
+        const fowCivSel = document.getElementById('fow-civ');
+        fowCivSel.value = String(mpCivSlot);
+        cachedFowCiv = mpCivSlot;
+        cachedLosData = null;
+
+        // Switch to game scene first so viewport has real dimensions for centering
         setScene('game');
+
+        // Hide single-player controls in multiplayer
+        document.getElementById('sav-btn').style.display = 'none';
+        document.getElementById('render-btn').style.display = 'none';
+        document.getElementById('status').style.display = 'none';
+
+        // Build mapData object compatible with existing renderer
+        doRenderFromState({ silent: false });
         break;
       }
 
       case 'STATE': {
+        const prevUnits = mpGameState?.units;
         mpGameState = msg.state;
-        // Re-render with updated state
-        doRenderFromState();
+
+        // Stash visibility update — applied after slide animation (or immediately if no slide)
+        const pendingVisibility = (msg.tileVisibility && mpMapBase?.tileData) ? msg.tileVisibility : null;
+
+        // Check if a unit we moved has slid to a new position
+        if (pendingSlide && prevUnits) {
+          const { unitIndex, oldGx, oldGy } = pendingSlide;
+          const newUnit = msg.state.units[unitIndex];
+          if (newUnit && (newUnit.gx !== oldGx || newUnit.gy !== oldGy) && newUnit.gx >= 0) {
+            pendingSlide = null;
+            // Slide first, then apply visibility + full re-render when done
+            animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility);
+            return;
+          }
+        }
+        pendingSlide = null;
+
+        // No slide — apply visibility immediately
+        applyVisibilityUpdate(pendingVisibility);
+        doRenderFromState({ skipCenter: true });
         break;
       }
 
       case 'ERROR':
         console.warn(`[ws] Server error: ${msg.message}`);
+        // Room gone (server restart) — clean up and return to lobby
+        if (msg.message && msg.message.includes('not found')) {
+          const match = msg.message.match(/Room (\S+)/);
+          const deadRoom = match ? match[1] : wsRoomId;
+          if (deadRoom) removeActiveGame(deadRoom);
+          if (deadRoom === wsRoomId || deadRoom === transport.getRoomId()) {
+            transport.setRoomId(null);
+            wsRoomId = null;
+            wsPlayerIndex = null;
+            wsGameStarted = false;
+            mpGameState = null;
+            mpMapBase = null;
+            mpCivSlot = null;
+            setScene('lobby');
+            updateBanner();
+          }
+        }
         break;
 
       case 'REJECTED':
@@ -1328,8 +1517,14 @@ function renderRoomList() {
   grid.querySelectorAll('.lobby-room-tile').forEach(el => {
     const roomId = el.dataset.roomId;
     const go = () => {
-      if (roomId === wsRoomId && wsLastRoom) {
-        // Already in this room — just switch to detail view
+      if (roomId === wsRoomId && wsGameStarted && mpGameState && mpMapBase) {
+        // Already connected with game state — go straight to map, refresh turn UI
+        setScene('game');
+        doRenderFromState({ skipCenter: false, silent: true });
+        return;
+      }
+      if (roomId === wsRoomId && wsLastRoom && !wsGameStarted) {
+        // Pre-game room — show detail view
         document.getElementById('lobby-rooms-view').style.display = 'none';
         document.getElementById('lobby-room-view').style.display = 'block';
         renderRoomDetail(wsLastRoom);
@@ -1441,10 +1636,16 @@ function updateBanner() {
   }
 }
 
-// Resume: rejoin the most recent active game (or current game if in one)
+// Resume: go directly to game if we have state, otherwise rejoin
 document.getElementById('lobby-banner-resume').addEventListener('click', () => {
+  if (wsRoomId && wsGameStarted && mpGameState && mpMapBase) {
+    // We have game state — go straight to the map, refresh turn UI
+    setScene('game');
+    doRenderFromState({ skipCenter: false, silent: true });
+    return;
+  }
   if (wsRoomId && wsGameStarted && wsLastRoom) {
-    // Currently connected to an active game — show its detail
+    // Connected but no game state yet — room detail will transition via GAME_START
     document.getElementById('lobby-rooms-view').style.display = 'none';
     document.getElementById('lobby-room-view').style.display = 'block';
     renderRoomDetail(wsLastRoom);
@@ -1551,31 +1752,106 @@ function buildMapDataFromState() {
   };
 }
 
-async function doRenderFromState() {
+async function doRenderFromState(opts = {}) {
   const mapData = buildMapDataFromState();
   if (!mapData) return;
   currentMapData = mapData;
 
   updateTurnUI();
 
-  // Auto-select first movable unit and center on it
+  // Auto-select first movable unit (only on our turn)
   if (mpGameState.activeCiv === mpCivSlot) {
     const next = findNextMovableUnit(-1);
-    // Set selection before render so blinkUnitTiles includes correct positions
     mpSelectedUnit = next;
   } else {
     mpSelectedUnit = null;
   }
 
-  // Re-render if sprites are loaded (await so terrain patches are ready before blink starts)
-  if (files.t1 && files.t2) {
-    await doRender();
+  // Render new frame atomically — build everything offscreen, then swap
+  if (mapSprites) {
+    stopBlink();
+    await renderAtomicSwap(mapData, opts);
+  } else if (files.t1 && files.t2) {
+    // First render (no sprites yet) — use full doRender with loading overlay
+    await doRender({ silent: opts.silent !== false });
+    if (mpSelectedUnit != null) startBlink(); else stopBlink();
   }
 
-  // Start/stop blink after render (terrain patches are now available)
+  // Center on active unit (or first own unit) when loading/resuming
+  if (!opts.skipCenter) {
+    const centerUnit = mpSelectedUnit != null
+      ? mpGameState.units[mpSelectedUnit]
+      : findFirstOwnUnit();
+    if (centerUnit) centerOnUnit(centerUnit);
+  }
+}
+
+// Double-buffered render: build base + FOW canvas offscreen, then swap all at once.
+// The viewport keeps showing the old frame until the new one is fully ready.
+async function renderAtomicSwap(mapData, opts = {}) {
+  const fowOn = document.getElementById('fow-toggle').checked;
+  const losOn = document.getElementById('los-toggle').checked;
+  const fowCiv = cachedFowCiv;
+
+  // 1. Render base canvas (all tiles, units, cities — no FOW)
+  const blinkUnitTiles = [];
+  if (mpCivSlot != null && mpGameState) {
+    for (const u of (mpGameState.units || [])) {
+      if (u.owner === mpCivSlot && u.gx >= 0) {
+        blinkUnitTiles.push({ gx: u.gx, gy: u.gy });
+      }
+    }
+  }
+  const newBase = document.createElement('canvas');
+  const result = await Civ2Renderer.render(newBase, mapData, mapSprites, null,
+    { fowEnabled: false, gridEnabled: false, blinkUnitTiles, selectedUnitIndex: mpSelectedUnit });
+
+  // 2. Render FOW/LOS canvas if needed (still all offscreen)
+  let newFow = null, newFowLos = null, newLos = null;
+  if (fowOn && losOn) {
+    const losData = computeLOS(mapData, fowCiv);
+    newFowLos = document.createElement('canvas');
+    await Civ2Renderer.render(newFowLos, mapData, mapSprites, null,
+      { fowEnabled: true, fowCiv, gridEnabled: false, losData, selectedUnitIndex: mpSelectedUnit });
+    cachedLosData = losData;
+  } else if (fowOn) {
+    newFow = document.createElement('canvas');
+    await Civ2Renderer.render(newFow, mapData, mapSprites, null,
+      { fowEnabled: true, fowCiv, gridEnabled: false, selectedUnitIndex: mpSelectedUnit });
+  } else if (losOn) {
+    const losData = computeLOS(mapData, fowCiv);
+    newLos = document.createElement('canvas');
+    await Civ2Renderer.render(newLos, mapData, mapSprites, null,
+      { fowEnabled: false, gridEnabled: false, losData, selectedUnitIndex: mpSelectedUnit });
+    cachedLosData = losData;
+  }
+
+  // 3. Atomic swap — assign all canvases at once, then draw
+  mapCanvasBase = newBase;
+  blinkPatches = result.terrainPatches;
+  blinkUnitOverlay = result.blinkUnitOverlay;
+  vp.offW = newBase.width;
+  vp.offH = newBase.height;
+  vp.wraps = (mapData.mapShape === 0);
+  vp.wrapW = result.wrapW || vp.offW;
+
+  // Swap FOW canvases (null out the ones we didn't render — they'll be lazy-built if toggled)
+  mapCanvasFow = newFow;
+  mapCanvasFowLos = newFowLos;
+  mapCanvasLos = newLos;
+  minimapCanvasLos = null;
+  minimapCanvasFow = null;
+  minimapCanvasFowLos = null;
+  _losRendering = null;
+  _fowRendering = null;
+  _fowLosRendering = null;
+
+  // 4. Single drawViewport — frame is complete, no flash
+  drawViewport();
+
+  // Start blink after the new frame is on screen
   if (mpSelectedUnit != null) {
     startBlink();
-    centerOnUnit(mpGameState.units[mpSelectedUnit]);
   } else {
     stopBlink();
   }
@@ -1609,17 +1885,76 @@ function updateTurnUI() {
   }
 }
 
+// Show connected players/spectators in the controls bar
+function updateGamePlayers() {
+  const el = document.getElementById('game-players');
+  if (!wsLastRoom) { el.textContent = ''; return; }
+  const parts = [];
+  for (const c of wsLastRoom.clients) {
+    if (!c.occupied) continue;
+    const name = c.name || `Seat ${c.seat}`;
+    const cls = c.wsOpen ? 'gp-player' : 'gp-offline';
+    const status = c.wsOpen ? '' : ' (off)';
+    parts.push(`<span class="${cls}">${name}[S${c.seat}]${status}</span>`);
+  }
+  for (const s of (wsLastRoom.spectators || [])) {
+    const name = s.name || 'Spectator';
+    const cls = s.wsOpen ? 'gp-spectator' : 'gp-offline';
+    parts.push(`<span class="${cls}">${name}[watch]</span>`);
+  }
+  el.innerHTML = parts.join('<span class="gp-sep"> · </span>');
+}
+
 // End Turn button
 document.getElementById('end-turn-btn').addEventListener('click', () => {
   if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
   transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
 });
 
-// ── Numpad movement ──
+// ── Multiplayer keyboard input ──
 window.addEventListener('keydown', e => {
   if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (currentScene !== 'game') return;
 
+  // Tab: cycle to next movable unit
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const next = findNextMovableUnit(mpSelectedUnit ?? -1);
+    if (next != null) {
+      selectUnit(next);
+      centerOnUnit(mpGameState.units[next]);
+    }
+    return;
+  }
+
+  // Enter: end turn if no movable units remain
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (findNextMovableUnit(-1) == null) {
+      transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
+    }
+    return;
+  }
+
+  // B: build city (settler only)
+  if (e.key === 'b' || e.key === 'B') {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u && u.type === 0) { // Settlers
+        sfxBuildCity.currentTime = 0;
+        sfxBuildCity.play().catch(() => {});
+        transport.sendRaw({
+          type: 'ACTION',
+          action: { type: 'BUILD_CITY', unitIndex: mpSelectedUnit },
+        });
+      }
+    }
+    return;
+  }
+
+  // Numpad movement
   const dir = NUMPAD_DIR[e.key];
   if (!dir) return;
   e.preventDefault();
@@ -1630,25 +1965,25 @@ window.addEventListener('keydown', e => {
   }
   if (mpSelectedUnit == null) return;
 
+  // Set pending slide for animation
+  const u = mpGameState.units[mpSelectedUnit];
+  if (u) {
+    pendingSlide = { unitIndex: mpSelectedUnit, oldGx: u.gx, oldGy: u.gy };
+  }
+
   transport.sendRaw({
     type: 'ACTION',
     action: { type: 'MOVE_UNIT', unitIndex: mpSelectedUnit, dir },
   });
 });
 
-// Tab key: cycle to next movable unit
-window.addEventListener('keydown', e => {
-  if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key !== 'Tab') return;
-  e.preventDefault();
-
-  const next = findNextMovableUnit(mpSelectedUnit ?? -1);
-  if (next != null) {
-    selectUnit(next);
-    centerOnUnit(mpGameState.units[next]);
+function findFirstOwnUnit() {
+  if (!mpGameState) return null;
+  for (const u of mpGameState.units) {
+    if (u.owner === mpCivSlot && u.gx >= 0) return u;
   }
-});
+  return null;
+}
 
 function findNextMovableUnit(afterIndex) {
   if (!mpGameState) return null;
@@ -1666,19 +2001,23 @@ function centerOnUnit(unit) {
   const TW = 64, TH = 32;
   const px = unit.gx * TW + ((unit.gy % 2) ? (TW >> 1) : 0) + TW / 2;
   const py = unit.gy * (TH >> 1) + TH / 2;
-  vp.x = px - vp.offW / vp.scale / 2;
-  vp.y = py - vp.offH / vp.scale / 2;
+  vp.x = px - vp.logicalW / vp.scale / 2;
+  vp.y = py - vp.logicalH / vp.scale / 2;
   clampViewport();
   drawViewport();
 }
 
 function selectUnit(idx) {
   mpSelectedUnit = idx;
-  if (idx != null) {
-    startBlink();
-  } else {
-    stopBlink();
-  }
+  stopBlink();
+  // Re-render map atomically — blink starts after swap completes
+  quickRerender();
+}
+
+// Lightweight re-render: atomic swap (no sprite re-extraction)
+async function quickRerender() {
+  if (!mapSprites || !currentMapData) return;
+  await renderAtomicSwap(currentMapData);
 }
 
 function startBlink() {
@@ -1686,7 +2025,7 @@ function startBlink() {
   blinkOn = true;
   blinkInterval = setInterval(() => {
     blinkOn = !blinkOn;
-    drawViewport();
+    toggleBlinkOverlay();
   }, 400);
 }
 
@@ -1697,6 +2036,217 @@ function stopBlink() {
   }
   blinkOn = true;
 }
+
+// Lightweight blink toggle: restore small region, then optionally overlay unit
+function toggleBlinkOverlay() {
+  if (!blinkUnderlay || !blinkUnitOverlay) return;
+  if (document.getElementById('minimap-toggle').checked) return;
+  // Restore base viewport region (no unit)
+  vCtx.putImageData(blinkUnderlay.imageData, blinkUnderlay.vpX, blinkUnderlay.vpY);
+  // If blink-on, composite unit overlay on top
+  if (blinkOn) {
+    blitPatchToViewport(blinkUnitOverlay.canvas, blinkUnitOverlay.x, blinkUnitOverlay.y);
+  }
+}
+
+function applyVisibilityUpdate(tileVisibility) {
+  if (!tileVisibility || !mpMapBase?.tileData) return;
+  for (let i = 0; i < tileVisibility.length; i++) {
+    mpMapBase.tileData[i][4] = tileVisibility[i];
+  }
+  cachedLosData = null;
+  invalidateFowCanvases();
+}
+
+// ── Unit slide animation ──
+function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibility) {
+  const TW = 64, TH = 32;
+  const fromX = oldGx * TW + ((oldGy % 2) ? (TW >> 1) : 0);
+  const fromY = oldGy * (TH >> 1) - 16;
+  const toX = newGx * TW + ((newGy % 2) ? (TW >> 1) : 0);
+  const toY = newGy * (TH >> 1) - 16;
+
+  // Handle wrapping: pick shortest path
+  let dx = toX - fromX;
+  if (vp.wraps && vp.wrapW > 0) {
+    if (dx > vp.wrapW / 2) dx -= vp.wrapW;
+    if (dx < -vp.wrapW / 2) dx += vp.wrapW;
+  }
+  const dy = toY - fromY;
+
+  const u = mpGameState.units[unitIndex];
+  if (!u || !mapSprites) {
+    applyVisibilityUpdate(deferredVisibility);
+    doRenderFromState({ skipCenter: true });
+    return;
+  }
+  const cacheKey = u.type + '-' + u.owner;
+  const unitSprite = mapSprites.unitColored[cacheKey];
+  if (!unitSprite) {
+    applyVisibilityUpdate(deferredVisibility);
+    doRenderFromState({ skipCenter: true });
+    return;
+  }
+
+  // Stop blink during slide
+  stopBlink();
+  slideAnimating = true;
+
+  // Snapshot current viewport as static background for the animation
+  // (unit is already excluded from all canvases via selectedUnitIndex)
+  const bgSnapshot = vCtx.getImageData(0, 0, viewportCanvas.width, viewportCanvas.height);
+
+  const duration = 150;
+  const startTime = performance.now();
+  const dpr = window.devicePixelRatio || 1;
+  const pxPerMap = vp.scale * dpr;
+
+  function frame(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    const ease = t * (2 - t); // ease-out quadratic
+
+    // Restore frozen background (no clearRect + async re-render)
+    vCtx.putImageData(bgSnapshot, 0, 0);
+
+    // Draw unit at interpolated position
+    const curX = fromX + dx * ease;
+    const curY = fromY + dy * ease;
+
+    if (vp.wraps) {
+      const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
+      const relX = ((curX - x1) % vp.wrapW + vp.wrapW) % vp.wrapW;
+      vCtx.drawImage(unitSprite, relX * pxPerMap, (curY - vp.y) * pxPerMap,
+        unitSprite.width * pxPerMap, unitSprite.height * pxPerMap);
+    } else {
+      vCtx.drawImage(unitSprite, (curX - vp.x) * pxPerMap, (curY - vp.y) * pxPerMap,
+        unitSprite.width * pxPerMap, unitSprite.height * pxPerMap);
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      slideAnimating = false;
+      applyVisibilityUpdate(deferredVisibility);
+      doRenderFromState({ skipCenter: true });
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+// ── Unit context menu ──
+const unitMenu = document.getElementById('unit-menu');
+
+let unitMenuShowTime = 0; // timestamp when menu was last shown
+
+// Convert a validated action from getValidActions() into a menu item { label, action }
+function actionToMenuItem(va, unitIdx) {
+  const u = mpGameState.units[unitIdx];
+  const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+
+  switch (va.type) {
+    case MOVE_UNIT:
+      return {
+        label: `Move ${name}`,
+        action: () => {
+          pendingSlide = { unitIndex: unitIdx, oldGx: u.gx, oldGy: u.gy };
+          transport.sendRaw({
+            type: 'ACTION',
+            action: { type: MOVE_UNIT, unitIndex: unitIdx, dir: va.dir },
+          });
+        },
+      };
+    case BUILD_CITY:
+      return {
+        label: 'Build City',
+        action: () => {
+          sfxBuildCity.currentTime = 0;
+          sfxBuildCity.play().catch(() => {});
+          transport.sendRaw({
+            type: 'ACTION',
+            action: { type: BUILD_CITY, unitIndex: unitIdx },
+          });
+        },
+      };
+    default:
+      return { label: va.type, action: () => {} };
+  }
+}
+
+function showUnitMenu(clientX, clientY, items) {
+  unitMenu.innerHTML = '';
+  unitMenu.classList.remove('visible');
+  if (items.length === 0) return;
+
+  for (const item of items) {
+    if (item.separator) {
+      const hr = document.createElement('div');
+      hr.className = 'unit-menu-separator';
+      unitMenu.appendChild(hr);
+      continue;
+    }
+    if (item.header) {
+      const hdr = document.createElement('div');
+      hdr.className = 'unit-menu-header';
+      hdr.textContent = item.header;
+      unitMenu.appendChild(hdr);
+      continue;
+    }
+    const btn = document.createElement('button');
+    btn.className = 'unit-menu-item' + (item.selected ? ' unit-menu-selected' : '');
+    if (item.sprite) {
+      const img = document.createElement('canvas');
+      const scale = 2;
+      img.width = item.sprite.width * scale;
+      img.height = item.sprite.height * scale;
+      img.className = 'unit-menu-sprite';
+      const ctx = img.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(item.sprite, 0, 0, img.width, img.height);
+      btn.appendChild(img);
+    }
+    const span = document.createElement('span');
+    span.textContent = item.label;
+    btn.appendChild(span);
+    btn.addEventListener('pointerup', e => {
+      e.stopPropagation();
+      hideUnitMenu();
+      item.action();
+    });
+    unitMenu.appendChild(btn);
+  }
+
+  // Position: keep menu within viewport bounds
+  unitMenu.style.left = '0px';
+  unitMenu.style.top = '0px';
+  unitMenu.classList.add('visible');
+  unitMenuShowTime = Date.now();
+  const rect = unitMenu.getBoundingClientRect();
+  const mx = Math.min(clientX, window.innerWidth - rect.width - 4);
+  const my = Math.min(clientY, window.innerHeight - rect.height - 4);
+  unitMenu.style.left = Math.max(0, mx) + 'px';
+  unitMenu.style.top = Math.max(0, my) + 'px';
+}
+
+function hideUnitMenu() {
+  unitMenu.classList.remove('visible');
+  unitMenu.innerHTML = '';
+}
+
+// Dismiss on click/touch outside or Escape
+// Guard against synthesized mouse events on mobile by ignoring dismissal
+// within 300ms of showing the menu.
+window.addEventListener('pointerdown', e => {
+  if (!unitMenu.classList.contains('visible')) return;
+  if (unitMenu.contains(e.target)) return;
+  if (Date.now() - unitMenuShowTime < 300) return;
+  hideUnitMenu();
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && unitMenu.classList.contains('visible')) {
+    hideUnitMenu();
+  }
+});
 
 // ── Initialize event handlers ──
 initEvents(viewportCanvas, vp, {

@@ -1001,24 +1001,12 @@ const Civ2Renderer = {
       }
     }
 
-    // ── Capture terrain patches for unit blinking (before units are drawn) ──
-    let terrainPatches = null;
-    if (options.blinkUnitTiles && options.blinkUnitTiles.length > 0) {
-      terrainPatches = {};
-      for (const { gx, gy } of options.blinkUnitTiles) {
-        const [px, py] = tilePos(gx, gy);
-        const sx = px, sy = py - 16, sw = TW, sh = 48;
-        const pc = document.createElement('canvas');
-        pc.width = sw; pc.height = sh;
-        pc.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
-        terrainPatches[gx + ',' + gy] = { canvas: pc, x: sx, y: sy };
-      }
-    }
-
     // ────────────────────────────────────────
     // PASS 6: Units (drawn AFTER shroud so they appear on top of FOW)
     // ────────────────────────────────────────
     let bestUnit = {};
+    let deferredBlinkUnit = null; // selected unit drawn AFTER blink patch capture
+    let drawOneUnit = null;       // hoisted so blink patch code can call it
     if (sprites.unitTemplates.length > 0) {
       if (onProgress) onProgress('Drawing units...');
       await this._yield();
@@ -1063,18 +1051,27 @@ const Civ2Renderer = {
         }
       }
 
-      const sortedUnits = Object.values(bestUnit).sort((a, b) => a.gy - b.gy);
+      // Force the selected unit as bestUnit at its tile (so it renders on top of stack)
+      // Allows rendering even on city tiles (active unit flashes over city)
+      if (options.selectedUnitIndex != null) {
+        const selUnit = mapData.units[options.selectedUnitIndex];
+        if (selUnit && selUnit.gx >= 0) {
+          const selKey = selUnit.gx + ',' + selUnit.gy;
+          bestUnit[selKey] = selUnit;
+        }
+      }
 
-      for (const u of sortedUnits) {
+      // Helper: draw a single unit with full decorations (shield, HP, order, fortify)
+      const renderer = this;
+      drawOneUnit = (u) => {
         const tileKey = u.gx + ',' + u.gy;
-
         const template = sprites.unitTemplates[u.type];
-        if (!template) continue;
+        if (!template) return;
 
         const cacheKey = u.type + '-' + u.owner;
         if (!sprites.unitColored[cacheKey]) {
-          const color = this.CIV_COLORS[u.owner] || '#cccccc';
-          sprites.unitColored[cacheKey] = this._recolorUnit(template, color);
+          const color = renderer.CIV_COLORS[u.owner] || '#cccccc';
+          sprites.unitColored[cacheKey] = renderer._recolorUnit(template, color);
         }
 
         const unitSentry = (u.orders === 0x03);
@@ -1082,7 +1079,7 @@ const Civ2Renderer = {
         if (unitSentry) {
           const dimKey = u.type + '-dimmed';
           if (!sprites.unitColored[dimKey]) {
-            sprites.unitColored[dimKey] = this._dimUnit(sprites.unitColored[cacheKey]);
+            sprites.unitColored[dimKey] = renderer._dimUnit(sprites.unitColored[cacheKey]);
           }
           unitSprite = sprites.unitColored[dimKey];
         }
@@ -1106,8 +1103,8 @@ const Civ2Renderer = {
             if (count > 1) {
               const backKey = 'shieldBack-' + u.owner;
               if (!sprites.shieldBackColored[backKey]) {
-                const color = this.CIV_COLORS[u.owner] || '#cccccc';
-                sprites.shieldBackColored[backKey] = this._recolorUnit(sprites.shieldBack, color);
+                const color = renderer.CIV_COLORS[u.owner] || '#cccccc';
+                sprites.shieldBackColored[backKey] = renderer._recolorUnit(sprites.shieldBack, color);
               }
               const stackDX = (so.x < 32) ? -4 : 4;
               if (sprites.shieldShadow) {
@@ -1122,12 +1119,12 @@ const Civ2Renderer = {
 
             const frontKey = 'shieldFront-' + u.owner;
             if (!sprites.shieldFrontColored[frontKey]) {
-              const color = this.CIV_COLORS[u.owner] || '#cccccc';
-              sprites.shieldFrontColored[frontKey] = this._recolorUnit(sprites.shieldFront, color);
+              const color = renderer.CIV_COLORS[u.owner] || '#cccccc';
+              sprites.shieldFrontColored[frontKey] = renderer._recolorUnit(sprites.shieldFront, color);
             }
             ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
 
-            const maxHp = this.UNIT_MAX_HP[u.type] || 10;
+            const maxHp = renderer.UNIT_MAX_HP[u.type] || 10;
             const curHp = Math.max(0, maxHp - u.hpLost);
             const barW = 12, barH = 3;
             const barX = shieldX, barY = shieldY + 2;
@@ -1137,7 +1134,7 @@ const Civ2Renderer = {
             else ctx.fillStyle = 'rgb(243,0,0)';
             ctx.fillRect(barX, barY, greenW, barH);
 
-            const orderLetter = this.ORDER_KEYS[u.orders] || '-';
+            const orderLetter = renderer.ORDER_KEYS[u.orders] || '-';
             ctx.font = '13px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
@@ -1168,6 +1165,19 @@ const Civ2Renderer = {
             }
           }
         }
+      };
+
+      const sortedUnits = Object.values(bestUnit).sort((a, b) => a.gy - b.gy);
+
+      // Identify the selected unit to defer drawing until after blink patch capture
+      const selUnit = (options.selectedUnitIndex != null) ? mapData.units[options.selectedUnitIndex] : null;
+
+      for (const u of sortedUnits) {
+        if (selUnit && u === selUnit) {
+          deferredBlinkUnit = u;
+          continue; // skip — drawn after blink patch capture
+        }
+        drawOneUnit(u);
       }
     }
 
@@ -1262,13 +1272,66 @@ const Civ2Renderer = {
       }
     }
 
+    // ── Blink unit handling ──
+    // The selected unit is excluded from all canvases (base, FOW, LOS) so that
+    // blink-off simply shows the canvas as-is (no patch needed, no FOW mismatch).
+    // During blink-on, the unit is drawn as a separate overlay on the viewport.
+    let terrainPatches = null;
+    let blinkUnitOverlay = null;
+    if (options.blinkUnitTiles && options.blinkUnitTiles.length > 0) {
+      // Capture terrain patches (scene without selected unit)
+      terrainPatches = {};
+      const PAD_L = 12, PAD_R = 16, PAD_T = 4, PAD_B = 8;
+      for (const { gx, gy } of options.blinkUnitTiles) {
+        const [px, py] = tilePos(gx, gy);
+        const sx = Math.max(0, px - PAD_L);
+        const sy = Math.max(0, py - 16 - PAD_T);
+        const sw = Math.min(canvas.width - sx, TW + PAD_L + PAD_R);
+        const sh = Math.min(canvas.height - sy, 48 + PAD_T + PAD_B);
+        const pc = document.createElement('canvas');
+        pc.width = sw; pc.height = sh;
+        pc.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+        terrainPatches[gx + ',' + gy] = { canvas: pc, x: sx, y: sy };
+      }
+
+      // Draw the deferred unit, extract only its pixels (transparent bg), then erase
+      if (deferredBlinkUnit && drawOneUnit) {
+        drawOneUnit(deferredBlinkUnit);
+        const key = deferredBlinkUnit.gx + ',' + deferredBlinkUnit.gy;
+        const tPatch = terrainPatches[key];
+        if (tPatch) {
+          const w = tPatch.canvas.width, h = tPatch.canvas.height;
+          // Compare pixels WITH unit vs WITHOUT unit — keep only the diff
+          const withUnit = ctx.getImageData(tPatch.x, tPatch.y, w, h);
+          const tpCtx = tPatch.canvas.getContext('2d', { willReadFrequently: true });
+          const withoutUnit = tpCtx.getImageData(0, 0, w, h);
+          const uc = document.createElement('canvas');
+          uc.width = w; uc.height = h;
+          const ucCtx = uc.getContext('2d');
+          const oData = ucCtx.createImageData(w, h);
+          const wd = withUnit.data, wod = withoutUnit.data, od = oData.data;
+          for (let i = 0; i < wd.length; i += 4) {
+            if (wd[i] !== wod[i] || wd[i+1] !== wod[i+1] || wd[i+2] !== wod[i+2]) {
+              od[i] = wd[i]; od[i+1] = wd[i+1]; od[i+2] = wd[i+2]; od[i+3] = 255;
+            }
+          }
+          ucCtx.putImageData(oData, 0, 0);
+          blinkUnitOverlay = { canvas: uc, x: tPatch.x, y: tPatch.y };
+          // Erase unit from canvas by restoring terrain patch
+          ctx.drawImage(tPatch.canvas, tPatch.x, tPatch.y);
+        }
+      }
+    }
+    // If selectedUnitIndex set but no blinkUnitTiles (e.g. FOW/LOS render),
+    // the deferred unit is simply not drawn — canvas excludes it.
+
     // Fill odd-row stagger gap: copy the 32px strip at the wrap point back to x=0
     // so the viewport sees the last column's overhang when wrapping around
     if (wraps) {
       ctx.drawImage(canvas, mw * TW, 0, 32, canvasH, 0, 0, 32, canvasH);
     }
 
-    return { canvasW: canvas.width, canvasH, displayW, wrapW: wraps ? mw * TW : 0, terrainPatches };
+    return { canvasW: canvas.width, canvasH, displayW, wrapW: wraps ? mw * TW : 0, terrainPatches, blinkUnitOverlay };
   },
 
   // ── Dither pixel manipulation (direction-aware, quadrant-based, diamond-clipped) ──

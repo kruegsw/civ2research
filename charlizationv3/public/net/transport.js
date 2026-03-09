@@ -119,18 +119,33 @@ export function createTransport({
     try { ws?.close(); } catch {}
   }
 
-  // Mobile recovery: reconnect on tab switch, bfcache restore, focus
+  // Mobile recovery: reconnect on tab switch, bfcache restore, focus.
+  // Always force a fresh reconnect when returning to foreground —
+  // the WS may be in a zombie state (readyState=1 but connection is dead)
+  // and the client may have missed STATE messages while backgrounded.
   if (typeof document !== "undefined") {
-    function ensureConnected() {
-      if (!closedByUser && (!ws || ws.readyState > 1)) {
+    let lastVisible = Date.now();
+    function ensureConnected(force) {
+      if (closedByUser) return;
+      if (force || !ws || ws.readyState > 1) {
         connect();
       }
     }
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") ensureConnected();
+      if (document.visibilityState === "visible") {
+        const away = Date.now() - lastVisible;
+        // Force reconnect if backgrounded for more than 3 seconds
+        ensureConnected(away > 3000);
+      } else {
+        lastVisible = Date.now();
+      }
     });
-    window.addEventListener("pageshow", ensureConnected);
-    window.addEventListener("focus", ensureConnected);
+    window.addEventListener("pageshow", (e) => {
+      // bfcache restore — always force
+      if (e.persisted) ensureConnected(true);
+      else ensureConnected(false);
+    });
+    window.addEventListener("focus", () => ensureConnected(false));
   }
 
   function setSessionId(id) { sessionId = id; }

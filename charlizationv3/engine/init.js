@@ -84,30 +84,33 @@ export function initNewGame(mapResult, seatList) {
     mapResult.tileData, null,
   );
 
-  // Create one settler per seated player (civ slots 1..N)
+  // Create settler + warrior per seated player (civ slots 1..N)
   const units = [];
   const civCount = seatList.length;
   const placements = findSettlerPlacements(mapBase, civCount);
+  const STARTING_UNITS = [0, 2]; // Settlers, Warriors
 
   for (let i = 0; i < civCount; i++) {
     const civSlot = i + 1; // civs 1-7 (0 = barbarians)
     const pos = placements[i];
-    units.push({
-      type: 0, // Settlers
-      owner: civSlot,
-      gx: pos.gx, gy: pos.gy,
-      x: pos.gx * 2 + (pos.gy % 2), y: pos.gy, // doubled-X coords
-      veteran: 0,
-      hpLost: 0,
-      orders: 0,
-      movesMade: 0,
-      movesLeft: UNIT_MOVE_POINTS[0] * MOVEMENT_MULTIPLIER,
-      homeCityId: 0xFFFF,
-      goToX: -1, goToY: -1,
-      visFlag: 0xFF,
-      cargoWorkFuel: -1,
-      prevInStack: -1, nextInStack: -1,
-    });
+    for (const unitType of STARTING_UNITS) {
+      units.push({
+        type: unitType,
+        owner: civSlot,
+        gx: pos.gx, gy: pos.gy,
+        x: pos.gx * 2 + (pos.gy % 2), y: pos.gy,
+        veteran: 0,
+        hpLost: 0,
+        orders: 0,
+        movesMade: 0,
+        movesLeft: UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER,
+        homeCityId: 0xFFFF,
+        goToX: -1, goToY: -1,
+        visFlag: 0xFF,
+        cargoWorkFuel: -1,
+        prevInStack: -1, nextInStack: -1,
+      });
+    }
     // Mark visibility for initial position
     updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, pos.gx, pos.gy, mapBase.wraps);
   }

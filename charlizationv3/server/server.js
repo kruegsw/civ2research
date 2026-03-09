@@ -376,17 +376,29 @@ wss.on("connection", (ws) => {
           const sess = sessions.get(sessId);
           if (sess.roomId === roomId && typeof sess.seatIndex === "number") {
             const occupant = room.seats[sess.seatIndex];
-            // Reclaim if seat exists and original ws is closed/gone
-            if (occupant && (!occupant.ws || occupant.ws.readyState !== 1)) {
-              room.seats[sess.seatIndex] = { ws, clientId: info.clientId, name: info.name, lastActivity: Date.now() };
+            if (occupant) {
+              // Close stale ws if it's a different connection still lingering
+              if (occupant.ws && occupant.ws !== ws && occupant.ws.readyState === 1) {
+                console.log(`[session] Closing stale ws for seat ${sess.seatIndex} (client ${occupant.clientId})`);
+                try { occupant.ws.close(); } catch {}
+              }
+              // Reclaim the seat
+              console.log(`[session] Reclaiming seat ${sess.seatIndex} for client ${info.clientId} (session ${sessId})`);
+              room.seats[sess.seatIndex] = { ws, clientId: info.clientId, name: info.name || sess.name, lastActivity: Date.now() };
               info.playerIndex = sess.seatIndex;
               // Re-register session under new sessionId so future reconnects work
               if (info.sessionId !== sessId) {
                 sessions.delete(sessId);
-                sessions.set(info.sessionId, { roomId, seatIndex: sess.seatIndex, name: info.name });
+                sessions.set(info.sessionId, { roomId, seatIndex: sess.seatIndex, name: info.name || sess.name });
               }
+            } else {
+              console.log(`[session] Seat ${sess.seatIndex} is empty, cannot reclaim (session ${sessId})`);
             }
+          } else {
+            console.log(`[session] Session ${sessId} not for room ${roomId} (sess.roomId=${sess?.roomId})`);
           }
+        } else if (sessId) {
+          console.log(`[session] Unknown session ${sessId} — no reclaim`);
         }
 
         // Find first open seat (if not reclaimed above) — only during pre-game
@@ -612,6 +624,8 @@ function sendGameStateToAll(roomId, room) {
       roomId,
       version: room.gameState.version,
       state: statePayload,
+      // Send updated visibility data (tileData byte[4] mutated by reducer)
+      tileVisibility: room.mapBase.tileData.map(t => t[4]),
     }));
   }
 }

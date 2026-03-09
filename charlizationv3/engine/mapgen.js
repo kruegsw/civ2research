@@ -33,7 +33,7 @@ export function generateMap(settings = {}) {
       const isEdge = gy <= 1 || gy >= mh - 2 || (!mapShape && false) || (mapShape && (gx <= 0 || gx >= mw - 1));
       // Ocean border on top 2 rows, bottom 2 rows, and edges if flat map
       const terrain = isEdge ? 10 : 2; // 10=ocean, 2=grassland
-      tileData[idx] = [terrain, 0, 0, 0, 0xFF, 0]; // visibility 0xFF = all civs explored
+      tileData[idx] = [terrain, 0, 0, 0, 0, 0]; // visibility 0 = unexplored (FOW)
     }
   }
 

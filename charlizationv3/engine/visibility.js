@@ -57,7 +57,7 @@ export function computeLOS(mapData, civSlot) {
 
 /**
  * Update persistent visibility (tile byte[4]) around a position.
- * Sets the exploration bit for the given civ on all tiles within radius 1.
+ * Sets the exploration bit for the given civ on all tiles within the specified radius.
  *
  * @param {Array} tileData - mw*mh array of byte arrays
  * @param {number} mw - map width
@@ -66,13 +66,15 @@ export function computeLOS(mapData, civSlot) {
  * @param {number} gx - center tile gx (half-column)
  * @param {number} gy - center tile gy (row)
  * @param {boolean} wraps - whether map wraps horizontally
+ * @param {number} [radius=1] - visibility radius: 1 for units, 2 for cities
  */
-export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps) {
+export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radius) {
   const bit = 1 << civSlot;
   const mw2 = mw * 2;
   const dx = gx * 2 + (gy % 2); // doubled-X coordinate
+  const offsets = (radius === 2) ? RADIUS_2 : RADIUS_1;
 
-  for (const [odx, ody] of RADIUS_1) {
+  for (const [odx, ody] of offsets) {
     let ndx = dx + odx;
     const ndy = gy + ody;
     if (ndy < 0 || ndy >= mh) continue;

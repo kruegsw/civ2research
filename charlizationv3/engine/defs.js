@@ -122,3 +122,30 @@ export const UNIT_DOMAIN = [
   2, 2, 0, 0, 0, 0, 0,       // 44-50
   0,                          // 51
 ];
+
+// City radius tile offsets in doubled-X coordinates (21 tiles)
+// Indices 0-7: inner ring, 8-19: outer ring, 20: center
+export const CITY_RADIUS_DOUBLED = [
+  [+1,-1],[+2,0],[+1,+1],[0,+2],[-1,+1],[-2,0],[-1,-1],[0,-2],
+  [+2,-2],[+2,+2],[-2,+2],[-2,-2],
+  [+1,-3],[+3,-1],[+3,+1],[+1,+3],[-1,+3],[-3,+1],[-3,-1],[-1,-3],
+  [0,0]
+];
+
+// Base terrain yields [food, shields, trade] (indexed by terrain type 0-10)
+export const TERRAIN_BASE = [
+  [0, 1, 0], // 0 Desert
+  [1, 1, 0], // 1 Plains
+  [2, 0, 0], // 2 Grassland
+  [1, 2, 0], // 3 Forest
+  [1, 0, 0], // 4 Hills
+  [0, 1, 0], // 5 Mountains
+  [1, 0, 0], // 6 Tundra
+  [0, 0, 0], // 7 Glacier
+  [1, 0, 0], // 8 Swamp
+  [1, 0, 0], // 9 Jungle
+  [1, 0, 2], // 10 Ocean
+];
+
+// Irrigation bonus per terrain (city center counts as irrigated)
+export const IRRIGATION_BONUS = [1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0];

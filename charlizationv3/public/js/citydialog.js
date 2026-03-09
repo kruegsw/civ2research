@@ -1026,7 +1026,7 @@ const Civ2CityDialog = {
     if (ter === 2 && mapData.hasShield && mapData.hasShield(gx, gy)) {
       // Grassland shield: add +1 shield to base (not a "special resource" per se)
       hasSpecial = false;
-    } else if (res > 0 && res <= 2 && this.SPECIAL_TOTAL[ter]) {
+    } else if (res > 0 && res <= 2 && this.SPECIAL_TOTAL[ter] && this.SPECIAL_TOTAL[ter][res - 1]) {
       hasSpecial = true;
       specialIdx = res;
     }
@@ -2488,6 +2488,25 @@ const Civ2CityDialog = {
     return gross;
   },
 
+  // Compute gross food by summing per-tile food yields across all worked tiles.
+  _calcGrossFood(city, cityIndex, mapData) {
+    const worked = this._getWorkedTiles(city);
+    const cx = city.gx, cy = city.gy;
+    const parC = cy & 1;
+    let gross = 0;
+    for (let i = 0; i < this.CITY_RADIUS_DOUBLED.length; i++) {
+      if (!worked.has(i)) continue;
+      const [ddx, ddy] = this.CITY_RADIUS_DOUBLED[i];
+      const parT = ((cy + ddy) % 2 + 2) % 2;
+      const tileGx = cx + ((parC + ddx - parT) >> 1);
+      const tileGy = cy + ddy;
+      const isCenter = (i === 20);
+      const [food] = this._getTileYields(tileGx, tileGy, isCenter, city, cityIndex, mapData);
+      gross += food;
+    }
+    return gross;
+  },
+
   // Compute gross shields (after factory/mfg/power multipliers, before waste).
   // Binary: FUN_004e9c14 lines 3693-3737, DAT_006a65cc after multiplier application.
   _calcGrossShields(city, cityIndex, mapData) {
@@ -2553,9 +2572,9 @@ const Civ2CityDialog = {
 
     // Row 1: FOOD
     // Binary FUN_004e7eb1: consumption = city.size * food_per_citizen + settlers * settler_food_cost
-    // city.foodProduction (save +80) = gross food from tiles (before unit support deduction)
+    // Compute food from worked tiles (city.foodProduction from .sav is a stale cached value)
     const foodR = RES.food;
-    const foodTotal = city.foodProduction || 0;
+    const foodTotal = this._calcGrossFood(city, cityIndex, mapData);
     const settlerFoodSupport = overlays.reduce((sum, ov) => sum + ov.food, 0);
     const foodConsumption = city.size * 2 + settlerFoodSupport;
     const foodSurplus = foodTotal - foodConsumption;
@@ -2738,7 +2757,7 @@ const Civ2CityDialog = {
     }
   },
 
-  _drawFoodStorage(ctx, city, cdSprites, mapData) {
+  _drawFoodStorage(ctx, city, cityIndex, cdSprites, mapData) {
     if (!(cdSprites && cdSprites.food)) return;
     const R = this.REGIONS.foodStorage;
     const hasGranary = !!(city.buildings & (1 << 3));
@@ -2792,7 +2811,7 @@ const Civ2CityDialog = {
     }
 
     // Food progress text: "X/Y to grow" (from decompiled growth formula)
-    const foodSurplus = (city.foodProduction || 0) - (city.size * 2);
+    const foodSurplus = this._calcGrossFood(city, cityIndex, mapData) - (city.size * 2);
     const turnsToGrow = foodSurplus > 0 ? Math.ceil((foodToGrow - foodStored) / foodSurplus) : 0;
     // No progress text — the real game doesn't show numeric text here
   },
@@ -3519,7 +3538,7 @@ const Civ2CityDialog = {
     this._drawCitizens(ctx, city, epoch, cdSprites, specs, happiness);
     this._drawResourceMap(ctx, city, cityIndex, mapData, cdSprites, mapSprites);
     this._drawResourceRows(ctx, city, cityIndex, cdSprites, civData, supported, mapData);
-    this._drawFoodStorage(ctx, city, cdSprites, mapData);
+    this._drawFoodStorage(ctx, city, cityIndex, cdSprites, mapData);
     this._drawProduction(ctx, city, cdSprites, mapSprites, ownerColor, civData);
     this._drawUnitsSupported(ctx, supported, mapSprites, city, mapData, cdSprites);
     this._drawImprovements(ctx, city, cityIndex, mapData, cdSprites);

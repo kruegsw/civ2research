@@ -19,6 +19,8 @@ export function initEvents(canvas, vp, fns) {
   let dragging = false;
   let dragLastX = 0, dragLastY = 0;
   let dragStartX = 0, dragStartY = 0;
+  let dragStartTime = 0;
+  const LONG_PRESS_MS = 300;
 
   // ── Mouse drag panning ──
   canvas.addEventListener('mousedown', e => {
@@ -26,6 +28,7 @@ export function initEvents(canvas, vp, fns) {
     dragging = true;
     dragLastX = dragStartX = e.clientX;
     dragLastY = dragStartY = e.clientY;
+    dragStartTime = Date.now();
     canvas.classList.add('dragging');
   });
 
@@ -46,7 +49,10 @@ export function initEvents(canvas, vp, fns) {
     dragging = false;
     canvas.classList.remove('dragging');
     const dist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
-    if (dist < 5) handleMapClick(e);
+    if (dist < 5) {
+      const isLongPress = (Date.now() - dragStartTime) >= LONG_PRESS_MS;
+      handleMapClick(e, isLongPress);
+    }
   });
 
   // ── Touch drag panning + pinch-to-zoom ──
@@ -118,7 +124,8 @@ export function initEvents(canvas, vp, fns) {
         canvas.classList.remove('dragging');
         const dist = Math.hypot(dragLastX - dragStartX, dragLastY - dragStartY);
         if (dist < 10) {
-          handleMapClick({ clientX: dragLastX, clientY: dragLastY, target: canvas });
+          const isLongPress = (Date.now() - dragStartTime) >= LONG_PRESS_MS;
+          handleMapClick({ clientX: dragLastX, clientY: dragLastY, target: canvas }, isLongPress);
         }
       }
       touchMode = 'none';

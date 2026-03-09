@@ -15,10 +15,13 @@ export const END_TURN = 'END_TURN';
 //   { type: 'END_TURN' }
 //   Advance to next civ's turn. Resets movement for next civ's units.
 
+export const BUILD_CITY = 'BUILD_CITY';
+//   { type: 'BUILD_CITY', unitIndex }
+//   Settler builds a city at its current position. Settler is consumed.
+
 // ── Future action types (not yet implemented) ──
 // export const FORTIFY_UNIT    = 'FORTIFY_UNIT';
 // export const DISBAND_UNIT    = 'DISBAND_UNIT';
-// export const BUILD_CITY      = 'BUILD_CITY';
 // export const CHANGE_PRODUCTION = 'CHANGE_PRODUCTION';
 // export const BUY_PRODUCTION  = 'BUY_PRODUCTION';
 // export const SET_WORKERS     = 'SET_WORKERS';

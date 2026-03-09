@@ -501,6 +501,12 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   font-family: 'Times New Roman', serif;
 }
 #game-info:empty { display: none; }
+#game-players { font-size: 11px; color: #999; flex-shrink: 0; }
+#game-players:empty { display: none; }
+#game-players .gp-player { color: #2ecc71; }
+#game-players .gp-spectator { color: #f39c12; }
+#game-players .gp-offline { color: #e74c3c; opacity: 0.6; }
+#game-players .gp-sep { color: #555; }
 #game-info .gi-player { font-weight: 700; }
 #game-info .gi-year { color: #e0e0e0; }
 #game-info .gi-gold { color: #ffd700; }
@@ -598,6 +604,65 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   align-items: center; justify-content: center; line-height: 1;
 }
 #citydialog-close:hover { background: #c0392b; border-color: #e74c3c; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Unit context menu (tap/hold on map tile)
+   ═══════════════════════════════════════════════════════════════════ */
+#unit-menu {
+  position: fixed; z-index: 150;
+  display: none;
+  background: url('../assets/menu/pebbly-bg.png') repeat;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 3px 3px 8px rgba(0,0,0,0.6);
+  padding: 2px;
+  min-width: 160px;
+  font-family: 'Times New Roman', 'Georgia', serif;
+}
+#unit-menu.visible { display: block; }
+
+.unit-menu-item {
+  display: flex; align-items: center; width: 100%;
+  padding: 4px 10px;
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 16px;
+  color: #333;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  gap: 6px;
+}
+.unit-menu-item:hover {
+  background: #0a246a;
+  color: #fff;
+}
+.unit-menu-selected {
+  background: rgba(10, 36, 106, 0.15);
+  font-weight: bold;
+}
+.unit-menu-sprite {
+  image-rendering: pixelated;
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
+}
+.unit-menu-separator {
+  height: 1px;
+  margin: 2px 6px;
+  background: #888;
+  border: none;
+}
+.unit-menu-header {
+  padding: 4px 10px 2px;
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    Turn UI (multiplayer game)
