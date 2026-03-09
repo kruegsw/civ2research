@@ -91,3 +91,31 @@ export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   const terrain = mapBase.getTerrain(toGx, toGy);
   return (TERRAIN_MOVE_COST[terrain] ?? 1) * MOVEMENT_MULTIPLIER;
 }
+
+/**
+ * Get direction from one tile to an adjacent tile.
+ * Returns null if tiles are not adjacent.
+ *
+ * @param {number} fromGx
+ * @param {number} fromGy
+ * @param {number} toGx
+ * @param {number} toGy
+ * @param {object} [mapBase] - optional, for wrapping support { mw, wraps }
+ * @returns {string|null} direction name or null
+ */
+export function getDirection(fromGx, fromGy, toGx, toGy, mapBase) {
+  const offsets = (fromGy % 2 === 0) ? DIR_OFFSETS_EVEN : DIR_OFFSETS_ODD;
+  const dgx = toGx - fromGx;
+  const dgy = toGy - fromGy;
+  for (const [dir, [ox, oy]] of Object.entries(offsets)) {
+    if (ox === dgx && oy === dgy) return dir;
+  }
+  // Check wrap-around adjacency
+  if (mapBase?.wraps && mapBase.mw) {
+    for (const [dir, [ox, oy]] of Object.entries(offsets)) {
+      if (oy !== dgy) continue;
+      if (((dgx % mapBase.mw) + mapBase.mw) % mapBase.mw === ((ox % mapBase.mw) + mapBase.mw) % mapBase.mw) return dir;
+    }
+  }
+  return null;
+}

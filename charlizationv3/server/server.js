@@ -170,6 +170,32 @@ function makeSessionId() {
   return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// Remove a client from their current room (preserves seat in started games)
+function leaveCurrentRoom(ws, info) {
+  if (!info.roomId) return;
+  const room = rooms.get(info.roomId);
+  if (!room) { info.roomId = null; info.playerIndex = null; return; }
+
+  room.clients.delete(ws);
+  if (room.started && info.playerIndex != null) {
+    // Active game: preserve seat for reconnect (session already saved)
+    broadcastToRoom(info.roomId, roomRoster(info.roomId));
+  } else {
+    // Pre-game: free seat
+    if (info.playerIndex != null && room.seats[info.playerIndex]?.clientId === info.clientId) {
+      room.seats[info.playerIndex] = null;
+      room.ready = room.ready.map(() => false);
+    }
+    if (room.clients.size === 0) {
+      rooms.delete(info.roomId);
+    } else {
+      broadcastToRoom(info.roomId, roomRoster(info.roomId));
+    }
+  }
+  info.roomId = null;
+  info.playerIndex = null;
+}
+
 function broadcastToRoom(roomId, msg) {
   const room = rooms.get(roomId);
   if (!room) return;
@@ -303,6 +329,7 @@ wss.on("connection", (ws) => {
 
       case "CREATE_ROOM": {
         if (msg.playerName) info.name = msg.playerName;
+        leaveCurrentRoom(ws, info);
         const roomId = `room_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
         const room = {
           clients: new Set([ws]),
@@ -329,6 +356,11 @@ wss.on("connection", (ws) => {
       case "JOIN": {
         const { roomId, name, sessionId: msgSessionId } = msg;
         if (name) info.name = name;
+
+        // Leave current room if switching (preserves seat in started games)
+        if (info.roomId && info.roomId !== roomId) {
+          leaveCurrentRoom(ws, info);
+        }
 
         const room = rooms.get(roomId);
         if (!room) {
@@ -403,30 +435,8 @@ wss.on("connection", (ws) => {
       }
 
       case "LEAVE_ROOM": {
-        const roomId = info.roomId;
-        if (!roomId) break;
-        const room = rooms.get(roomId);
-        if (room) {
-          room.clients.delete(ws);
-          if (room.started && info.playerIndex != null) {
-            // During active game: preserve seat (allow reconnect via session)
-            // Seat stays occupied, ws is removed from clients → wsOpen=false (red dot)
-            broadcastToRoom(roomId, roomRoster(roomId));
-          } else {
-            // Pre-game: free seat and reset ready flags
-            if (info.playerIndex != null && room.seats[info.playerIndex]?.clientId === info.clientId) {
-              room.seats[info.playerIndex] = null;
-              room.ready = room.ready.map(() => false);
-            }
-            if (room.clients.size === 0) {
-              rooms.delete(roomId);
-            } else {
-              broadcastToRoom(roomId, roomRoster(roomId));
-            }
-          }
-        }
-        info.roomId = null;
-        info.playerIndex = null;
+        if (!info.roomId) break;
+        leaveCurrentRoom(ws, info);
         broadcastRoomList();
         break;
       }
@@ -518,28 +528,8 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     const info = clientInfo.get(ws);
-    if (info && info.roomId) {
-      const room = rooms.get(info.roomId);
-      if (room) {
-        room.clients.delete(ws);
-        if (room.started && info.playerIndex != null) {
-          // During active game: preserve seat for reconnect.
-          // The seat's ws reference stays (now readyState=CLOSED),
-          // so other clients see wsOpen=false → red dot.
-          broadcastToRoom(info.roomId, roomRoster(info.roomId));
-        } else {
-          // Pre-game: free seat and reset ready
-          if (info.playerIndex != null && room.seats[info.playerIndex]?.clientId === info.clientId) {
-            room.seats[info.playerIndex] = null;
-            room.ready = room.ready.map(() => false);
-          }
-          if (room.clients.size === 0 && !room.started) {
-            rooms.delete(info.roomId);
-          } else {
-            broadcastToRoom(info.roomId, roomRoster(info.roomId));
-          }
-        }
-      }
+    if (info) {
+      leaveCurrentRoom(ws, info);
     }
     clientInfo.delete(ws);
     broadcastRoomList();
@@ -556,33 +546,8 @@ function startGame(roomId, room, occupiedSeats) {
     name: room.seats[i]?.name || `Player ${i}`,
   }));
 
-  // Try to load a .sav file first; fall back to generated map
-  const savesDir = path.join(PUBLIC_DIR, "saves");
-  let savFiles = [];
-  try {
-    savFiles = fs.readdirSync(savesDir).filter(f => /\.sav$/i.test(f));
-  } catch {}
-
-  if (savFiles.length > 0) {
-    // Path A: Load .sav
-    const savPath = path.join(savesDir, savFiles[0]);
-    try {
-      const savBuf = new Uint8Array(fs.readFileSync(savPath));
-      const parsed = Civ2Parser.parse(savBuf, savFiles[0]);
-      const { mapBase, gameState } = initFromSav(parsed, seatList);
-      room.mapBase = mapBase;
-      room.gameState = gameState;
-      console.log(`[game] Room ${roomId}: loaded ${savFiles[0]} (${parsed.mw}×${parsed.mh})`);
-    } catch (err) {
-      console.error(`[game] Failed to load .sav: ${err.message}`);
-      // Fall through to generated map
-      startNewGame(roomId, room, seatList);
-      return;
-    }
-  } else {
-    // Path B: Generate map
-    startNewGame(roomId, room, seatList);
-  }
+  // Generate a new map for multiplayer
+  startNewGame(roomId, room, seatList);
 
   // Resolve civ names for the game state
   const civNames = {};
@@ -662,7 +627,7 @@ function buildStatePayload(room, civSlot) {
     civNameBlocks: gs.civNameBlocks,
     civStyles: gs.civStyles,
     civTechCounts: gs.civTechCounts,
-    civTechs: gs.civTechs,
+    civTechs: gs.civTechs ? gs.civTechs.map(s => s instanceof Set ? [...s] : s) : null,
     civsAlive: gs.civsAlive,
     playerCiv: gs.playerCiv,
     mapRevealed: gs.mapRevealed,

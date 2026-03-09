@@ -13,7 +13,7 @@ import { getGameYearFromMap } from '../engine/year.js';
 import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
-import { NUMPAD_DIR } from '../engine/movement.js';
+import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -322,8 +322,22 @@ async function doRender() {
     msg.textContent = 'Rendering map...';
     await new Promise(r => setTimeout(r, 10));
     mapCanvasBase = document.createElement('canvas');
+
+    // Collect player unit positions for terrain patch capture (blink animation)
+    const blinkUnitTiles = [];
+    if (mpCivSlot != null && mpGameState) {
+      for (const u of (mpGameState.units || [])) {
+        if (u.owner === mpCivSlot && u.gx >= 0) {
+          blinkUnitTiles.push({ gx: u.gx, gy: u.gy });
+        }
+      }
+    }
+
     const result = await Civ2Renderer.render(mapCanvasBase, mapData, sprites, null,
-      { fowEnabled: false, gridEnabled: false });
+      { fowEnabled: false, gridEnabled: false, blinkUnitTiles });
+
+    // Store terrain patches for unit blink animation
+    blinkPatches = result.terrainPatches;
 
     // 6. Set up viewport and show map immediately
     vp.offW = mapCanvasBase.width;
@@ -553,6 +567,43 @@ async function drawViewport() {
     ensureGridCanvas(md);
     blitToViewport(gridCanvas);
   }
+
+  // Blink overlay: hide selected unit by drawing terrain patch over it
+  if (mpSelectedUnit != null && !blinkOn && blinkPatches && !minimapOn) {
+    const u = mpGameState?.units?.[mpSelectedUnit];
+    if (u) {
+      const key = u.gx + ',' + u.gy;
+      const patch = blinkPatches[key];
+      if (patch) {
+        blitPatchToViewport(patch.canvas, patch.x, patch.y);
+      }
+    }
+  }
+}
+
+// Blit a small patch canvas to the viewport at the correct offscreen position
+function blitPatchToViewport(patchCanvas, offX, offY) {
+  const dpr = window.devicePixelRatio || 1;
+  const pxPerMap = vp.scale * dpr;
+  const pw = patchCanvas.width, ph = patchCanvas.height;
+
+  if (vp.wraps) {
+    const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
+    const visW = vp.logicalW / vp.scale;
+    // The patch might appear at one or two positions (wrapping)
+    for (let wrap = -1; wrap <= 1; wrap++) {
+      const patchX = offX + wrap * vp.wrapW;
+      const relX = patchX - x1;
+      if (relX + pw < 0 || relX > visW) continue;
+      const vpX = relX * pxPerMap;
+      const vpY = (offY - vp.y) * pxPerMap;
+      vCtx.drawImage(patchCanvas, 0, 0, pw, ph, vpX, vpY, pw * pxPerMap, ph * pxPerMap);
+    }
+  } else {
+    const vpX = (offX - vp.x) * pxPerMap;
+    const vpY = (offY - vp.y) * pxPerMap;
+    vCtx.drawImage(patchCanvas, 0, 0, pw, ph, vpX, vpY, pw * pxPerMap, ph * pxPerMap);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -642,6 +693,35 @@ async function ensureCdSprites() {
 async function handleMapClick(e) {
   const tile = findTileAt(e.clientX, e.clientY);
   if (!tile) return;
+
+  // Multiplayer: click-to-select and click-to-move
+  if (mpGameState && mpCivSlot != null && mpGameState.activeCiv === mpCivSlot) {
+    // Check if clicked tile has our own unit → select it
+    const clickedUnitIdx = mpGameState.units.findIndex(
+      u => u.gx === tile.gx && u.gy === tile.gy && u.owner === mpCivSlot && u.movesLeft > 0
+    );
+    if (clickedUnitIdx >= 0 && clickedUnitIdx !== mpSelectedUnit) {
+      selectUnit(clickedUnitIdx);
+      return;
+    }
+
+    // Check if we have a selected unit and clicked tile is adjacent → move
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u) {
+        const dir = getDirection(u.gx, u.gy, tile.gx, tile.gy, mpMapBase);
+        if (dir) {
+          transport.sendRaw({
+            type: 'ACTION',
+            action: { type: 'MOVE_UNIT', unitIndex: mpSelectedUnit, dir },
+          });
+          return;
+        }
+      }
+    }
+  }
+
+  // Fallback: open city dialog
   const hit = findCityAt(tile.gx, tile.gy);
   if (hit) {
     openCityDialog(hit.city, hit.index);
@@ -906,13 +986,15 @@ function revealMenu() {
   // Calculate the transform to go from final → first (invert)
   const dx = first.left + first.width / 2 - (last.left + last.width / 2);
   const dy = first.top + first.height / 2 - (last.top + last.height / 2);
-  const s = Math.max(first.width / last.width, first.height / last.height);
+  const s = last.width > 0 ? Math.max(first.width / last.width, first.height / last.height) : 1;
 
   // Animate seal from old position/size to new (uniform scale to preserve aspect ratio)
-  seal.animate([
-    { transform: `translate(${dx}px, ${dy}px) scale(${s})` },
-    { transform: 'translate(0, 0) scale(1)' }
-  ], { duration: 700, easing: 'ease-in-out' });
+  if (isFinite(s) && isFinite(dx) && isFinite(dy)) {
+    seal.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${s})` },
+      { transform: 'translate(0, 0) scale(1)' }
+    ], { duration: 700, easing: 'ease-in-out' });
+  }
 
   // Fade in dialog after seal animation completes
   dialog.animate([
@@ -964,6 +1046,13 @@ document.querySelectorAll('.menu-radio:not(.disabled)').forEach(label => {
   });
 });
 
+// Enter key triggers OK
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && currentScene === 'menu' && document.getElementById('menu-layout').classList.contains('menu-open')) {
+    document.getElementById('menu-ok-btn').click();
+  }
+});
+
 // ═══════════════════════════════════════════════════════════════════
 // WEBSOCKET — connection, lobby, room management
 // ═══════════════════════════════════════════════════════════════════
@@ -979,7 +1068,19 @@ let wsRooms = [];
 let wsLastRoom = null;     // last ROOM message for this room (for refresh)
 let wsGameStarted = false; // has this room's game started?
 let wsRoomName = '';       // name of current room (for banner)
-const savedActiveRoom = localStorage.getItem('civ2.activeRoomId') || null;
+
+// Active games: array of { roomId, sessionId, name }
+// Migrate from old single-room storage
+let activeGames = JSON.parse(localStorage.getItem('civ2.activeGames') || '[]');
+if (!activeGames.length) {
+  const oldRoom = localStorage.getItem('civ2.activeRoomId');
+  const oldSess = localStorage.getItem('civ2.sessionId');
+  if (oldRoom && oldSess) {
+    activeGames = [{ roomId: oldRoom, sessionId: oldSess, name: 'Game' }];
+    localStorage.setItem('civ2.activeGames', JSON.stringify(activeGames));
+  }
+}
+localStorage.removeItem('civ2.activeRoomId');
 
 // Multiplayer game state
 let mpCivSlot = null;      // my civ slot in the current game
@@ -988,24 +1089,34 @@ let mpMapBase = null;      // reconstructed map accessors (from server data)
 let mpGameState = null;    // latest game state from server
 let mpSelectedUnit = null; // index of currently selected unit
 
+// Unit blink state
+let blinkOn = true;        // true = unit visible, false = hidden (terrain patch shown)
+let blinkInterval = null;  // setInterval handle
+let blinkPatches = null;   // { 'gx,gy': { canvas, x, y } } terrain patches from renderer
+
 function saveActiveGame() {
-  if (wsRoomId && wsSessionId) {
-    localStorage.setItem('civ2.activeRoomId', wsRoomId);
-    localStorage.setItem('civ2.sessionId', wsSessionId);
+  if (!wsRoomId || !wsSessionId) return;
+  const existing = activeGames.find(g => g.roomId === wsRoomId);
+  if (existing) {
+    existing.sessionId = wsSessionId;
+    existing.name = wsRoomName || existing.name;
+  } else {
+    activeGames.push({ roomId: wsRoomId, sessionId: wsSessionId, name: wsRoomName });
   }
+  localStorage.setItem('civ2.activeGames', JSON.stringify(activeGames));
 }
-function clearActiveGame() {
-  localStorage.removeItem('civ2.activeRoomId');
-  localStorage.removeItem('civ2.sessionId');
+function removeActiveGame(roomId) {
+  activeGames = activeGames.filter(g => g.roomId !== roomId);
+  localStorage.setItem('civ2.activeGames', JSON.stringify(activeGames));
+}
+function getActiveGameSession(roomId) {
+  const g = activeGames.find(g => g.roomId === roomId);
+  return g ? g.sessionId : null;
 }
 
 function updateGameBackBtn() {
   const btn = document.getElementById('game-back-btn');
-  if (wsRoomId && wsGameStarted) {
-    btn.textContent = 'Resume';
-  } else {
-    btn.innerHTML = '&larr; Lobby';
-  }
+  btn.innerHTML = '&larr; Lobby';
 }
 
 function setWsStatus(state, label) {
@@ -1089,9 +1200,11 @@ const transport = createTransport({
           transport.setSessionId(msg.sessionId);
           localStorage.setItem('civ2.sessionId', msg.sessionId);
         }
-        // If saved active room no longer exists, clear it
-        if (savedActiveRoom && !wsRoomId && !wsRooms.some(r => r.roomId === savedActiveRoom)) {
-          clearActiveGame();
+        // Clean up active games that no longer exist on server
+        const serverRoomIds = new Set(wsRooms.map(r => r.roomId));
+        const stale = activeGames.filter(g => !serverRoomIds.has(g.roomId));
+        if (stale.length) {
+          stale.forEach(g => removeActiveGame(g.roomId));
         }
         renderRoomList();
         updateBanner();
@@ -1106,6 +1219,12 @@ const transport = createTransport({
           wsSessionId = msg.sessionId;
           transport.setSessionId(msg.sessionId);
           localStorage.setItem('civ2.sessionId', msg.sessionId);
+          // Update active game entry with new sessionId
+          const ag = activeGames.find(g => g.roomId === msg.roomId);
+          if (ag) {
+            ag.sessionId = msg.sessionId;
+            localStorage.setItem('civ2.activeGames', JSON.stringify(activeGames));
+          }
         }
         console.log(`[ws] Joined room ${msg.roomId} as seat ${msg.playerIndex ?? 'spectator'}`);
         break;
@@ -1162,10 +1281,9 @@ const transport = createTransport({
 });
 
 setWsStatus('ws-connecting', 'Connecting...');
-// If player had an active game, seed transport so it auto-rejoins on connect
-if (savedActiveRoom) {
-  transport.setRoomId(savedActiveRoom);
-  setScene('lobby');  // skip menu, go straight to lobby
+// If player has active games, go straight to lobby
+if (activeGames.length > 0) {
+  setScene('lobby');
 }
 transport.connect();
 
@@ -1186,8 +1304,8 @@ function renderRoomList() {
     const cls = r.started ? 'lobby-room-tile started' : 'lobby-room-tile';
     const statusCls = r.started ? 'tile-status in-progress' : 'tile-status';
     const statusText = r.started ? 'In Progress' : `${seats}/8 Players`;
-    const isMyRoom = r.roomId === wsRoomId || r.roomId === savedActiveRoom;
-    const btnText = r.started ? (isMyRoom && wsPlayerIndex != null ? 'Resume' : 'Watch') : 'Join';
+    const isMyRoom = r.roomId === wsRoomId || activeGames.some(g => g.roomId === r.roomId);
+    const btnText = r.started ? (isMyRoom ? 'Resume' : 'Watch') : 'Join';
     html += `<div class="${cls}" data-room-id="${r.roomId}">
       <div class="tile-top">
         <span class="tile-name">${r.name}</span>
@@ -1216,6 +1334,12 @@ function renderRoomList() {
         document.getElementById('lobby-room-view').style.display = 'block';
         renderRoomDetail(wsLastRoom);
       } else {
+        // Use saved sessionId if resuming an active game
+        const savedSession = getActiveGameSession(roomId);
+        if (savedSession) {
+          transport.setSessionId(savedSession);
+          wsSessionId = savedSession;
+        }
         transport.joinRoom(roomId);
       }
     };
@@ -1232,13 +1356,10 @@ function renderRoomDetail(msg) {
   const roomsView = document.getElementById('lobby-rooms-view');
   if (currentScene === 'lobby' && roomView.style.display !== 'none') {
     // We're viewing this room — update it
-  } else if (currentScene === 'lobby' && roomsView.style.display !== 'none' && !wsGameStarted) {
+  } else if (currentScene === 'lobby' && roomsView.style.display !== 'none') {
     // First ROOM message after joining — switch to detail view
     roomsView.style.display = 'none';
     roomView.style.display = 'block';
-  } else if (currentScene === 'lobby' && roomsView.style.display !== 'none' && wsGameStarted) {
-    // Game started, player is browsing rooms — just update banner, don't switch view
-    return;
   }
 
   // Show room detail
@@ -1309,30 +1430,42 @@ function renderRoomDetail(msg) {
 function updateBanner() {
   const banner = document.getElementById('lobby-banner');
   const bannerText = document.getElementById('lobby-banner-text');
-  if (wsRoomId && wsGameStarted) {
-    bannerText.textContent = `You are in "${wsRoomName}"`;
+  if (activeGames.length > 0) {
+    const names = activeGames.map(g => `"${g.name}"`).join(', ');
+    bannerText.textContent = activeGames.length === 1
+      ? `Active game: ${names}`
+      : `Active games: ${names}`;
     banner.style.display = 'flex';
   } else {
     banner.style.display = 'none';
   }
 }
 
-// Resume: go back to room detail from room list
+// Resume: rejoin the most recent active game (or current game if in one)
 document.getElementById('lobby-banner-resume').addEventListener('click', () => {
-  document.getElementById('lobby-rooms-view').style.display = 'none';
-  document.getElementById('lobby-room-view').style.display = 'block';
-  if (wsLastRoom) renderRoomDetail(wsLastRoom);
+  if (wsRoomId && wsGameStarted && wsLastRoom) {
+    // Currently connected to an active game — show its detail
+    document.getElementById('lobby-rooms-view').style.display = 'none';
+    document.getElementById('lobby-room-view').style.display = 'block';
+    renderRoomDetail(wsLastRoom);
+  } else if (activeGames.length > 0) {
+    // Rejoin most recent active game
+    const game = activeGames[activeGames.length - 1];
+    transport.setSessionId(game.sessionId);
+    wsSessionId = game.sessionId;
+    transport.joinRoom(game.roomId);
+  }
 });
 
 // Leave room (pre-game only) → back to room list
 document.getElementById('room-leave-btn').addEventListener('click', () => {
+  if (wsRoomId) removeActiveGame(wsRoomId);
   transport.leaveRoom();
   wsRoomId = null;
   wsPlayerIndex = null;
   wsGameStarted = false;
   wsLastRoom = null;
   transport.setRoomId(null);
-  clearActiveGame();
   updateGameBackBtn();
   document.getElementById('lobby-room-view').style.display = 'none';
   document.getElementById('lobby-rooms-view').style.display = 'block';
@@ -1355,12 +1488,10 @@ document.getElementById('room-ready-btn').addEventListener('click', () => {
 document.getElementById('lobby-back-btn').addEventListener('click', () => setScene('menu'));
 document.getElementById('game-back-btn').addEventListener('click', () => {
   setScene('lobby');
-  // If in an active game, show room detail directly
-  if (wsRoomId && wsGameStarted && wsLastRoom) {
-    document.getElementById('lobby-rooms-view').style.display = 'none';
-    document.getElementById('lobby-room-view').style.display = 'block';
-    renderRoomDetail(wsLastRoom);
-  }
+  // Always show room list so player can browse/join other games
+  document.getElementById('lobby-room-view').style.display = 'none';
+  document.getElementById('lobby-rooms-view').style.display = 'block';
+  updateBanner();
 });
 
 // ── Periodic refresh for activity dot transitions (idle → gold) ──
@@ -1406,7 +1537,7 @@ function buildMapDataFromState() {
     civNameBlocks: state.civNameBlocks,
     civStyles: state.civStyles,
     civTechCounts: state.civTechCounts || new Array(8).fill(0),
-    civTechs: state.civTechs,
+    civTechs: state.civTechs ? state.civTechs.map(t => Array.isArray(t) ? new Set(t) : t) : null,
     civsAlive: state.civsAlive ?? 0xFF,
     playerCiv: mpCivSlot ?? state.playerCiv ?? 1,
     mapRevealed: state.mapRevealed ?? false,
@@ -1420,22 +1551,33 @@ function buildMapDataFromState() {
   };
 }
 
-function doRenderFromState() {
+async function doRenderFromState() {
   const mapData = buildMapDataFromState();
   if (!mapData) return;
   currentMapData = mapData;
-
-  // Re-render if sprites are loaded
-  if (files.t1 && files.t2) {
-    doRender();
-  }
 
   updateTurnUI();
 
   // Auto-select first movable unit and center on it
   if (mpGameState.activeCiv === mpCivSlot) {
-    mpSelectedUnit = findNextMovableUnit(-1);
-    if (mpSelectedUnit != null) centerOnUnit(mpGameState.units[mpSelectedUnit]);
+    const next = findNextMovableUnit(-1);
+    // Set selection before render so blinkUnitTiles includes correct positions
+    mpSelectedUnit = next;
+  } else {
+    mpSelectedUnit = null;
+  }
+
+  // Re-render if sprites are loaded (await so terrain patches are ready before blink starts)
+  if (files.t1 && files.t2) {
+    await doRender();
+  }
+
+  // Start/stop blink after render (terrain patches are now available)
+  if (mpSelectedUnit != null) {
+    startBlink();
+    centerOnUnit(mpGameState.units[mpSelectedUnit]);
+  } else {
+    stopBlink();
   }
 }
 
@@ -1484,7 +1626,7 @@ window.addEventListener('keydown', e => {
 
   // Auto-select first movable unit if none selected
   if (mpSelectedUnit == null) {
-    mpSelectedUnit = findNextMovableUnit(-1);
+    selectUnit(findNextMovableUnit(-1));
   }
   if (mpSelectedUnit == null) return;
 
@@ -1503,8 +1645,7 @@ window.addEventListener('keydown', e => {
 
   const next = findNextMovableUnit(mpSelectedUnit ?? -1);
   if (next != null) {
-    mpSelectedUnit = next;
-    // Center viewport on selected unit
+    selectUnit(next);
     centerOnUnit(mpGameState.units[next]);
   }
 });
@@ -1529,6 +1670,32 @@ function centerOnUnit(unit) {
   vp.y = py - vp.offH / vp.scale / 2;
   clampViewport();
   drawViewport();
+}
+
+function selectUnit(idx) {
+  mpSelectedUnit = idx;
+  if (idx != null) {
+    startBlink();
+  } else {
+    stopBlink();
+  }
+}
+
+function startBlink() {
+  stopBlink();
+  blinkOn = true;
+  blinkInterval = setInterval(() => {
+    blinkOn = !blinkOn;
+    drawViewport();
+  }, 400);
+}
+
+function stopBlink() {
+  if (blinkInterval) {
+    clearInterval(blinkInterval);
+    blinkInterval = null;
+  }
+  blinkOn = true;
 }
 
 // ── Initialize event handlers ──

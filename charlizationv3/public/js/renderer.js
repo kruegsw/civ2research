@@ -1001,6 +1001,20 @@ const Civ2Renderer = {
       }
     }
 
+    // ── Capture terrain patches for unit blinking (before units are drawn) ──
+    let terrainPatches = null;
+    if (options.blinkUnitTiles && options.blinkUnitTiles.length > 0) {
+      terrainPatches = {};
+      for (const { gx, gy } of options.blinkUnitTiles) {
+        const [px, py] = tilePos(gx, gy);
+        const sx = px, sy = py - 16, sw = TW, sh = 48;
+        const pc = document.createElement('canvas');
+        pc.width = sw; pc.height = sh;
+        pc.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+        terrainPatches[gx + ',' + gy] = { canvas: pc, x: sx, y: sy };
+      }
+    }
+
     // ────────────────────────────────────────
     // PASS 6: Units (drawn AFTER shroud so they appear on top of FOW)
     // ────────────────────────────────────────
@@ -1254,7 +1268,7 @@ const Civ2Renderer = {
       ctx.drawImage(canvas, mw * TW, 0, 32, canvasH, 0, 0, 32, canvasH);
     }
 
-    return { canvasW: canvas.width, canvasH, displayW, wrapW: wraps ? mw * TW : 0 };
+    return { canvasW: canvas.width, canvasH, displayW, wrapW: wraps ? mw * TW : 0, terrainPatches };
   },
 
   // ── Dither pixel manipulation (direction-aware, quadrant-based, diamond-clipped) ──
