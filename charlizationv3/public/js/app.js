@@ -601,6 +601,7 @@ function drawViewport() {
   }
   if (!source) return;
 
+  vCtx.clearRect(0, 0, viewportCanvas.width, viewportCanvas.height);
   blitToViewport(source);
 
   // Composite grid overlay on top (if enabled and not minimap)
