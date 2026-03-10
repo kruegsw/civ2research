@@ -41,11 +41,11 @@ const CIV_CITY_NAMES = [
 ];
 const BARBARIAN_CITY_NAMES = ['Camp'];
 
-function getCityName(owner, cities, civData) {
+function getCityName(owner, cities, civs) {
   if (owner === 0) {
     return BARBARIAN_CITY_NAMES[0];
   }
-  const rulesNum = civData?.[owner]?.rulesCivNumber ?? 0;
+  const rulesNum = civs?.[owner]?.rulesCivNumber ?? 0;
   const nameList = CIV_CITY_NAMES[rulesNum] || CIV_CITY_NAMES[0];
   const ownedNames = new Set(cities.filter(c => c.owner === owner).map(c => c.name));
   for (const name of nameList) {
@@ -140,7 +140,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const buildings = new Set();
       if (isFirstCity) buildings.add(1); // Palace
       const newCity = {
-        name: getCityName(unit.owner, prev.cities, prev.civData),
+        name: getCityName(unit.owner, prev.cities, prev.civs),
         owner: unit.owner,
         originalOwner: unit.owner,
         size: 1,

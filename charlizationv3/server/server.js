@@ -44,7 +44,6 @@ import { generateMap } from "../engine/mapgen.js";
 import { applyAction } from "../engine/reducer.js";
 import { filterStateForCiv } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
-import { LEADERS_TXT_NAMES } from "../engine/defs.js";
 
 const PORT = Number(process.env.PORT || 8788);
 const DEBUG = process.env.DEBUG === "1";
@@ -561,14 +560,10 @@ function startGame(roomId, room, occupiedSeats) {
   // Generate a new map for multiplayer
   startNewGame(roomId, room, seatList);
 
-  // Resolve civ names for the game state
+  // Build civNames lookup from merged civs array
   const civNames = {};
-  for (let i = 0; i < 8; i++) {
-    const nb = room.gameState.civNameBlocks?.[i];
-    const cd = room.gameState.civData?.[i];
-    const tribeName = nb && nb.tribeName;
-    const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
-    civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
+  if (room.gameState.civs) {
+    for (let i = 0; i < 8; i++) civNames[i] = room.gameState.civs[i]?.name || `Civ ${i}`;
   }
   room.gameState.civNames = civNames;
 
@@ -641,9 +636,7 @@ function buildStatePayload(room, civSlot) {
   return {
     units: gs.units,
     cities,
-    civData: gs.civData,
-    civNameBlocks: gs.civNameBlocks,
-    civStyles: gs.civStyles,
+    civs: gs.civs,
     civTechCounts: gs.civTechCounts,
     civTechs: gs.civTechs ? gs.civTechs.map(s => s instanceof Set ? [...s] : s) : null,
     civsAlive: gs.civsAlive,

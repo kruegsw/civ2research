@@ -302,7 +302,7 @@ export function initEvents(canvas, vp, fns) {
           const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;
           const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
           const cityOwner = (md.civNames && md.civNames[c.owner]) || `Civ ${c.owner}`;
-          const govName = (md.civData && md.civData[c.owner]) ? GOVERNMENT_NAMES[md.civData[c.owner].government] || '' : '';
+          const govName = (md.civs && md.civs[c.owner]) ? GOVERNMENT_NAMES[md.civs[c.owner].government] || '' : '';
           info += `\n${c.name} (${cityOwner}, size ${displaySize}, ${epochNames[epoch]}${govName ? ', ' + govName : ''}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''}`;
           if (c.isOccupied) {
             const origOwner = (md.civNames && md.civNames[c.originalOwner]) || `Civ ${c.originalOwner}`;

@@ -493,8 +493,8 @@ const Civ2CityDialog = {
 
   // Get government type for city's owner (0=Anarchy..6=Democracy)
   _getCityGovernment(city, mapData) {
-    if (mapData.civData && mapData.civData[city.owner] != null) {
-      return mapData.civData[city.owner].government;
+    if (mapData.civs && mapData.civs[city.owner] != null) {
+      return mapData.civs[city.owner].government;
     }
     return 1; // default Despotism
   },
@@ -1054,7 +1054,7 @@ const Civ2CityDialog = {
     const rawX = city.cx;  // local_90 in binary (doubled-x coordinate)
     const rawY = city.cy;  // local_98 in binary (= gy)
     const ownerSlot = city.owner;  // 0-7
-    const civData = mapData.civData && mapData.civData[ownerSlot];
+    const civData = mapData.civs && mapData.civs[ownerSlot];
     const bodyId = mapData.getBodyId(gx, gy);
 
     // Tech count (local_8c in binary = number of techs known by this civ)
@@ -1937,7 +1937,7 @@ const Civ2CityDialog = {
     if (city) {
       const year = getGameYearFromMap(mapData);
       const pop = city.size * 10000;  // approximate Civ2 population display
-      const gold = (mapData.civData && mapData.civData[city.owner]) ? mapData.civData[city.owner].treasury || 0 : 0;
+      const gold = (mapData.civs && mapData.civs[city.owner]) ? mapData.civs[city.owner].treasury || 0 : 0;
       const titleStr = `City of ${city.name}, ${year}, Population ${pop.toLocaleString()} (Treasury: ${gold} Gold)`;
       const textX = tbX + 59;  // after 3 icons + gap
       const textY = tbY + Math.floor(tbH / 2);
@@ -3487,7 +3487,7 @@ const Civ2CityDialog = {
     ctx.translate(F.contentX, F.contentY);
 
     const epoch = mapData.civTechs ? Civ2Renderer._getEpoch(mapData.civTechs[city.owner]) : 0;
-    const civData = mapData.civData && mapData.civData[city.owner];
+    const civData = mapData.civs && mapData.civs[city.owner];
     const ownerColor = Civ2Renderer.CIV_COLORS[city.owner] || '#fff';
     const specs = this.getSpecialists(city);
     const supported = this.getSupportedUnits(cityIndex, mapData);

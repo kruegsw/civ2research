@@ -20,7 +20,7 @@
 //     https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm
 // ═══════════════════════════════════════════════════════════════════
 
-import { improvementFromByte } from './defs.js';
+import { improvementFromByte, LEADERS_TXT_NAMES } from './defs.js';
 import { createAccessors, tileFromBytes } from './state.js';
 
 const Civ2Parser = {
@@ -467,20 +467,40 @@ const Civ2Parser = {
   },
 
   // ═══════════════════════════════════════════════════════════════
-  // Section 3c: Derive city styles (backward-compatible)
+  // Section 3c: Merge name blocks + data blocks into unified civs array
   // ═══════════════════════════════════════════════════════════════
-  _deriveCivStyles(civNameBlocks, civData) {
+  _mergeCivs(civNameBlocks, civData) {
     const RULES_STYLES = [1,0,3,0,1,1,2,3,0,3,0,2,3,0,0,2,3,3,0,1,0];
-    const civStyles = new Array(8).fill(0);
+    const civs = new Array(8);
     for (let slot = 0; slot < 8; slot++) {
-      if (civNameBlocks[slot].leaderName) {
-        civStyles[slot] = civNameBlocks[slot].style;
-      } else {
-        const rulesIdx = civData[slot].rulesCivNumber;
-        civStyles[slot] = (rulesIdx < RULES_STYLES.length) ? RULES_STYLES[rulesIdx] : 0;
-      }
+      const nb = civNameBlocks[slot];
+      const cd = civData[slot];
+      // Derive city style: use name block style if leader exists, else RULES.TXT default
+      const style = nb.leaderName
+        ? nb.style
+        : (cd.rulesCivNumber < RULES_STYLES.length ? RULES_STYLES[cd.rulesCivNumber] : 0);
+      // Resolve display name: tribeName → LEADERS_TXT_NAMES → fallback
+      const rulesName = cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
+      const name = slot === 0 ? 'Barbarians' : (nb.tribeName || rulesName || `Civ ${slot}`);
+      civs[slot] = {
+        // Identity (from name blocks)
+        name,
+        style,
+        leaderName: nb.leaderName,
+        tribeName: nb.tribeName,
+        tribeAdjective: nb.tribeAdjective,
+        titleAnarchy: nb.titleAnarchy,
+        titleDespotism: nb.titleDespotism,
+        titleMonarchy: nb.titleMonarchy,
+        titleCommunism: nb.titleCommunism,
+        titleFundamentalism: nb.titleFundamentalism,
+        titleRepublic: nb.titleRepublic,
+        titleDemocracy: nb.titleDemocracy,
+        // All data fields
+        ...cd,
+      };
     }
-    return civStyles;
+    return civs;
   },
 
   // ═══════════════════════════════════════════════════════════════
@@ -641,7 +661,7 @@ const Civ2Parser = {
   // ═══════════════════════════════════════════════════════════════
   // Section 6: City Records
   // ═══════════════════════════════════════════════════════════════
-  _parseCities(savBuf, cityOff, totalCities, cityRecSize, civStyles) {
+  _parseCities(savBuf, cityOff, totalCities, cityRecSize, civs) {
     const isSav = cityRecSize === 88;
     const cities = [];
 
@@ -743,7 +763,7 @@ const Civ2Parser = {
       const sequenceId = isSav ? this.u16(savBuf, off + 84) : null;
       const padding_86 = isSav ? [savBuf[off + 86], savBuf[off + 87]] : null;
 
-      const style = civStyles[owner] || 0;
+      const style = (civs && civs[owner] && civs[owner].style) || 0;
 
       if (name && size > 0) {
         cities.push({
@@ -1097,10 +1117,10 @@ const Civ2Parser = {
     // ── Section 2: Game state ──
     const gs = this._parseGameState(savBuf, hdr);
 
-    // ── Section 3: Per-civ name blocks + data blocks ──
+    // ── Section 3: Per-civ blocks → unified civs array ──
     const civNameBlocks = this._parseCivNameBlocks(savBuf, hdr);
-    const civData = this._parseCivDataBlocks(savBuf, hdr);
-    const civStyles = this._deriveCivStyles(civNameBlocks, civData);
+    const civDataRaw = this._parseCivDataBlocks(savBuf, hdr);
+    const civs = this._mergeCivs(civNameBlocks, civDataRaw);
 
     // ── Section 4: Map data ──
     const map = this._parseMapData(savBuf, hdr.MAP_HEADER);
@@ -1113,7 +1133,7 @@ const Civ2Parser = {
     const unitResult = this._parseUnits(savBuf, unitOff, gs.totalUnits, hdr.unitRecSize, map.mw2, map.mh);
 
     // ── Section 6: Cities ──
-    const cityResult = this._parseCities(savBuf, cityOff, gs.totalCities, hdr.cityRecSize, civStyles);
+    const cityResult = this._parseCities(savBuf, cityOff, gs.totalCities, hdr.cityRecSize, civs);
 
     // ── Accessor functions (via shared createAccessors factory) ──
     const { mw, mh, mw2, ms, mapSeed, tileData, knownImprovements } = map;
@@ -1140,7 +1160,7 @@ const Civ2Parser = {
     // ── Assemble return object (backward-compatible) ──
     return {
       mw, mh, mw2, ms, mapSeed, qw: map.qw, qh: map.qh, mapShape: map.mapShape, isScn: hdr.isScn,
-      tileData, cities: cityResult.cities, units: unitResult.units, civStyles,
+      tileData, cities: cityResult.cities, units: unitResult.units, civs,
       playerCiv: gs.playerCiv, mapRevealed: gs.mapRevealed, civsAlive: gs.civsAlive,
       civTechCounts: gs.civTechCounts, civTechs: gs.civTechs,
       terrainCounts: validation.terrainCounts, oceanPct: validation.oceanPct, citiesOnOcean: validation.citiesOnOcean,
@@ -1156,8 +1176,7 @@ const Civ2Parser = {
       unitBySaveIndex: unitResult.unitBySaveIndex,
       // Batch E: all unit records (including dead)
       allUnits: unitResult.allUnits,
-      // ── Batch C: Full per-civ blocks ──
-      civNameBlocks, civData,
+      // civs already included above (merged civNameBlocks + civData + derived style)
       // ── Batch G: Gap, tail, events ──
       gapRecord, tail, events,
       // ── Batch B: Full header & game state ──

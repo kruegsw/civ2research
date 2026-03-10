@@ -133,10 +133,10 @@ export function filterStateForCiv(mapBase, gameState, civSlot) {
     ...gameState,
     units,
     cities,
-    // Don't send civData for other civs (strip treasury, rates, etc.)
-    civData: gameState.civData ? gameState.civData.map((cd, i) => {
-      if (i === civSlot || i === 0) return cd;
-      return { government: cd.government, rulesCivNumber: cd.rulesCivNumber };
+    // Don't send private civ data for other civs (strip treasury, rates, etc.)
+    civs: gameState.civs ? gameState.civs.map((civ, i) => {
+      if (i === civSlot || i === 0) return civ;
+      return { name: civ.name, style: civ.style, government: civ.government, rulesCivNumber: civ.rulesCivNumber };
     }) : null,
   };
 }

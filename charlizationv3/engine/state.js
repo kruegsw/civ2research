@@ -8,7 +8,7 @@
 //   reconstructMapData() — client-side: rebuilds accessors from serialized state
 // ═══════════════════════════════════════════════════════════════════
 
-import { LEADERS_TXT_NAMES, improvementFromByte, EMPTY_IMP } from './defs.js';
+import { improvementFromByte, EMPTY_IMP } from './defs.js';
 
 /**
  * Convert a 6-byte tile record to a named tile object.
@@ -186,13 +186,10 @@ export function createAccessors(mw, mh, mapShape, mapSeed, tileData, knownImprov
  * @returns {object} canonical game state
  */
 export function initialStateFromSav(parsed) {
+  // Build civNames lookup from merged civs array
   const civNames = {};
-  for (let i = 0; i < 8; i++) {
-    const nb = parsed.civNameBlocks && parsed.civNameBlocks[i];
-    const cd = parsed.civData && parsed.civData[i];
-    const tribeName = nb && nb.tribeName;
-    const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
-    civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
+  if (parsed.civs) {
+    for (let i = 0; i < 8; i++) civNames[i] = parsed.civs[i]?.name || `Civ ${i}`;
   }
 
   return {

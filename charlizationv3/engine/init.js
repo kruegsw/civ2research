@@ -3,11 +3,11 @@
 //
 // Two paths to start a game:
 //   initFromSav()  — load a parsed .sav file, assign players to civs
-//   initNewGame()  — generate map, place settlers, init civData
+//   initNewGame()  — generate map, place settlers, init civs
 // ═══════════════════════════════════════════════════════════════════
 
 import { createAccessors } from './state.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES } from './defs.js';
 import { updateVisibility } from './visibility.js';
 
 /**
@@ -44,9 +44,7 @@ export function initFromSav(parsed, seatList) {
   const gameState = {
     units,
     cities: parsed.cities,
-    civData: parsed.civData,
-    civNameBlocks: parsed.civNameBlocks,
-    civStyles: parsed.civStyles,
+    civs: parsed.civs,
     civTechCounts: parsed.civTechCounts,
     civTechs: parsed.civTechs,
     civsAlive,
@@ -127,9 +125,7 @@ export function initNewGame(mapResult, seatList) {
   const gameState = {
     units,
     cities: [],
-    civData: buildInitialCivData(seatList),
-    civNameBlocks: null,
-    civStyles: null,
+    civs: buildInitialCivs(seatList),
     civTechCounts: new Array(8).fill(0),
     civTechs: null,
     civsAlive,
@@ -199,19 +195,22 @@ function findSettlerPlacements(mapBase, count) {
 }
 
 /**
- * Build initial civData array for a new game.
+ * Build initial civs array for a new game.
  * Default slot→civ: slot 1=Romans(0), slot 2=Babylonians(1), slot 3=Germans(2), etc.
  * This matches Civ2's default game setup (LEADERS.TXT order).
  */
-function buildInitialCivData(seatList) {
-  const civData = [];
+function buildInitialCivs(seatList) {
+  const civs = [];
   for (let i = 0; i < 8; i++) {
-    civData.push({
+    const rulesCivNumber = i === 0 ? 0 : i - 1;
+    civs.push({
+      name: i === 0 ? 'Barbarians' : (LEADERS_TXT_NAMES[rulesCivNumber] || `Civ ${i}`),
+      style: 0,
       government: i === 0 ? 0 : 1, // barbs=anarchy, others=despotism
       treasury: i === 0 ? 0 : 50,
       scienceRate: 5, taxRate: 5, luxuryRate: 0,
-      rulesCivNumber: i === 0 ? 0 : i - 1, // slot 1→0(Romans), slot 2→1(Babylonians), etc.
+      rulesCivNumber,
     });
   }
-  return civData;
+  return civs;
 }

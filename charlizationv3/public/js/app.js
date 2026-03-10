@@ -10,7 +10,7 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYearFromMap } from '../engine/year.js';
-import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS, UNIT_NAMES, TERRAIN_BASE } from '../engine/defs.js';
+import { GOVERNMENT_NAMES, CIV_COLORS, UNIT_NAMES, TERRAIN_BASE } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
@@ -88,7 +88,7 @@ function updateGameInfo(mapData, civOverride) {
   const pc = civOverride != null ? civOverride : gs.playerCiv;
   const civName = mapData.civNames ? mapData.civNames[pc] : `Civ ${pc}`;
   const civColor = CIV_COLORS[pc] || '#e0e0e0';
-  const cd = mapData.civData && mapData.civData[pc];
+  const cd = mapData.civs && mapData.civs[pc];
   const year = getGameYearFromMap(mapData);
   const gold = cd ? cd.treasury : 0;
   const govt = cd ? (GOVERNMENT_NAMES[cd.government] || '?') : '';
@@ -233,15 +233,9 @@ function populateFowCivSelector(mapData, forceCiv) {
   const previousValue = fowSelect.value;
   fowSelect.innerHTML = '';
   // Resolve civ display names if not already set
-  if (!mapData.civNames) {
+  if (!mapData.civNames && mapData.civs) {
     const civNames = {};
-    for (let i = 0; i < 8; i++) {
-      const nb = mapData.civNameBlocks && mapData.civNameBlocks[i];
-      const cd = mapData.civData && mapData.civData[i];
-      const tribeName = nb && nb.tribeName;
-      const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
-      civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
-    }
+    for (let i = 0; i < 8; i++) civNames[i] = mapData.civs[i]?.name || `Civ ${i}`;
     mapData.civNames = civNames;
   }
   for (let i = 0; i < 8; i++) {
@@ -1903,9 +1897,7 @@ function buildMapDataFromState() {
     knownImprovements: mpMapBase.knownImprovements,
     units: state.units || [],
     cities: state.cities || [],
-    civData: state.civData,
-    civNameBlocks: state.civNameBlocks,
-    civStyles: state.civStyles,
+    civs: state.civs,
     civTechCounts: state.civTechCounts || new Array(8).fill(0),
     civTechs: state.civTechs ? state.civTechs.map(t => Array.isArray(t) ? new Set(t) : t) : null,
     civsAlive: state.civsAlive ?? 0xFF,
