@@ -43,7 +43,7 @@ import { initFromSav, initNewGame } from "../engine/init.js";
 import { generateMap } from "../engine/mapgen.js";
 import { applyAction } from "../engine/reducer.js";
 import { filterStateForCiv } from "../engine/visibility.js";
-import { createAccessors } from "../engine/state.js";
+import { createAccessors, tileToBytes } from "../engine/state.js";
 import { LEADERS_TXT_NAMES } from "../engine/defs.js";
 
 const PORT = Number(process.env.PORT || 8788);
@@ -437,7 +437,7 @@ wss.on("connection", (ws) => {
               mh: room.mapBase.mh,
               mapShape: room.mapBase.mapShape,
               mapSeed: room.mapBase.mapSeed,
-              tileData: room.mapBase.tileData,
+              tileData: room.mapBase.tileData.map(tileToBytes),
               knownImprovements: room.mapBase.knownImprovements,
             },
             state: statePayload,
@@ -625,7 +625,7 @@ function sendGameStateToAll(roomId, room) {
       version: room.gameState.version,
       state: statePayload,
       // Send updated visibility data (tileData byte[4] mutated by reducer)
-      tileVisibility: room.mapBase.tileData.map(t => t[4]),
+      tileVisibility: room.mapBase.tileData.map(t => t.visibility),
     }));
   }
 }

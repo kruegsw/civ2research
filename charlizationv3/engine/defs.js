@@ -95,7 +95,7 @@ export const ORDER_KEYS = {
 // Improvement byte → object converter
 // Bits: 0x02=city/airbase marker, 0x04=irrigation, 0x08=mining,
 //       0x10=road, 0x20=railroad, 0x40=fortress, 0x80=pollution
-const EMPTY_IMP = Object.freeze({
+export const EMPTY_IMP = Object.freeze({
   city: false, irrigation: false, mining: false,
   road: false, railroad: false, fortress: false, pollution: false,
   farmland: false, airbase: false,

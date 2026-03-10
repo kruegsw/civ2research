@@ -2222,7 +2222,7 @@ function toggleBlinkOverlay() {
 function applyVisibilityUpdate(tileVisibility) {
   if (!tileVisibility || !mpMapBase?.tileData) return;
   for (let i = 0; i < tileVisibility.length; i++) {
-    mpMapBase.tileData[i][4] = tileVisibility[i];
+    mpMapBase.tileData[i].visibility = tileVisibility[i];
   }
   cachedLosData = null;
   invalidateFowCanvases();

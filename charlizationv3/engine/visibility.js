@@ -84,7 +84,7 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
       continue;
     }
     const idx = ndy * mw + (ndx >> 1);
-    tileData[idx][4] |= bit;
+    tileData[idx].visibility |= bit;
   }
 }
 
@@ -118,7 +118,7 @@ export function filterStateForCiv(mapBase, gameState, civSlot) {
     const gx = (c.gx != null) ? c.gx : c.cx; // parser uses gx; some might use cx
     const gy = (c.gy != null) ? c.gy : c.cy;
     const idx = gy * mw + ((gx % mw + mw) % mw);
-    const vis = mapBase.tileData[idx][4];
+    const vis = mapBase.tileData[idx].visibility;
     if (!(vis & fowBit)) continue; // unexplored, omit
     if (los[idx]) {
       cities.push(c); // in LOS: full info

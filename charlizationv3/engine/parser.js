@@ -21,6 +21,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { improvementFromByte } from './defs.js';
+import { createAccessors, tileFromBytes } from './state.js';
 
 const Civ2Parser = {
 
@@ -513,12 +514,12 @@ const Civ2Parser = {
       knownImprovements[civ] = section;
     }
 
-    // Block 2: tile records (6 bytes each)
+    // Block 2: tile records (6 bytes each) → named tile objects
     const tileData = new Array(ms);
     for (let i = 0; i < ms; i++) {
       const off = block2Off + i * 6;
-      tileData[i] = [savBuf[off], savBuf[off+1], savBuf[off+2],
-                     savBuf[off+3], savBuf[off+4], savBuf[off+5]];
+      tileData[i] = tileFromBytes(savBuf[off], savBuf[off+1], savBuf[off+2],
+                                  savBuf[off+3], savBuf[off+4], savBuf[off+5]);
     }
 
     // Block 3: quarter-resolution data (qw × qh × 2 bytes)
@@ -1003,7 +1004,7 @@ const Civ2Parser = {
   _validate(map, cities, units, allUnits, getTerrain, gs, tail) {
     // Terrain distribution
     const terrainCounts = new Array(11).fill(0);
-    for (let i = 0; i < map.ms; i++) terrainCounts[map.tileData[i][0] & 0x0F]++;
+    for (let i = 0; i < map.ms; i++) terrainCounts[map.tileData[i].terrain]++;
     const oceanPct = (terrainCounts[10] / map.ms * 100).toFixed(1);
 
     // City-on-land
@@ -1109,107 +1110,13 @@ const Civ2Parser = {
     // ── Section 6: Cities ──
     const cityResult = this._parseCities(savBuf, cityOff, gs.totalCities, hdr.cityRecSize, civStyles);
 
-    // ── Accessor functions (closures over parsed map data) ──
+    // ── Accessor functions (via shared createAccessors factory) ──
     const { mw, mh, mw2, ms, mapSeed, tileData, knownImprovements } = map;
-
-    function wrap(x) { return ((x % mw) + mw) % mw; }
-
-    function getTerrain(gx, gy) {
-      if (gy < 0 || gy >= mh) return 10;
-      const ter = tileData[gy * mw + wrap(gx)][0] & 0x0F;
-      return ter > 10 ? 10 : ter;
-    }
-
-    function isLand(gx, gy) { return getTerrain(gx, gy) !== 10; }
-
-    function hasRiver(gx, gy) {
-      if (gy < 0 || gy >= mh) return false;
-      return !!(tileData[gy * mw + wrap(gx)][0] & 0x80);
-    }
-
-    function getImprovements(gx, gy) {
-      if (gy < 0 || gy >= mh) return improvementFromByte(0);
-      return improvementFromByte(tileData[gy * mw + wrap(gx)][1]);
-    }
-
-    function hasGoodyHut(gx, gy) {
-      if (gy < 0 || gy >= mh) return false;
-      return !!(tileData[gy * mw + wrap(gx)][0] & 0x10);
-    }
-
-    function getVisibility(gx, gy) {
-      if (gy < 0 || gy >= mh) return 0;
-      return tileData[gy * mw + wrap(gx)][4];
-    }
-
-    // Byte 2: city radius owner (high 3 bits = civ ID, 0=unclaimed)
-    function getCityRadiusOwner(gx, gy) {
-      if (gy < 0 || gy >= mh) return 0;
-      return (tileData[gy * mw + wrap(gx)][2] >> 5) & 7;
-    }
-
-    // Byte 3: continent/body ID (contiguous land/water body number)
-    function getBodyId(gx, gy) {
-      if (gy < 0 || gy >= mh) return 0;
-      return tileData[gy * mw + wrap(gx)][3];
-    }
-
-    // Byte 5 high nibble: tile ownership (0=barb/none, 1-7=civs, 0xF=no owner)
-    function getTileOwnership(gx, gy) {
-      if (gy < 0 || gy >= mh) return 0x0F;
-      return (tileData[gy * mw + wrap(gx)][5] >> 4) & 0x0F;
-    }
-
-    // Byte 5 low nibble: AI fertility score (0=infertile, 15=most fertile)
-    function getTileFertility(gx, gy) {
-      if (gy < 0 || gy >= mh) return 0;
-      return tileData[gy * mw + wrap(gx)][5] & 0x0F;
-    }
-
-    function getKnownImprovements(gx, gy, civSlot) {
-      if (civSlot < 1 || civSlot > 7 || gy < 0 || gy >= mh) return improvementFromByte(0);
-      return improvementFromByte(knownImprovements[civSlot][gy * mw + wrap(gx)]);
-    }
-
-    // Resource placement algorithm by TheNamelessOne (CivFanatics)
-    function getResource(gx, gy) {
-      if (gy < 0 || gy >= mh) return 0;
-      if (tileData[gy * mw + wrap(gx)][0] & 0x40) return 0;
-      const X = 2 * wrap(gx) + (gy % 2);
-      const Y = gy;
-      const a = (X + Y) >> 1;
-      const b = X - a;
-      const c = 13 * (b >> 2) + 11 * ((X + Y) >> 3) + mapSeed;
-      if ((a & 3) + 4 * (b & 3) !== (c & 15)) return 0;
-      const d = 1 << ((mapSeed >> 4) & 3);
-      return (d & a) === (d & b) ? 2 : 1;
-    }
-
-    // Grassland production shield — coordinate-only formula (no seed)
-    function hasShield(gx, gy) {
-      if (gy < 0 || gy >= mh) return false;
-      const X = 2 * wrap(gx) + (gy % 2);
-      const Y = gy;
-      const rez4 = (Math.floor(Y / 2) + 2 * (Y % 2)) % 4;
-      const rez3 = 8 - 2 * (rez4 % 4);
-      const rez = (X - (Y % 2) + rez3) % 8;
-      return rez < 4;
-    }
-
-    // Neighbor lookup — isometric stagger logic
-    function getNeighbors(gx, gy) {
-      if (gy % 2 === 0) {
-        return {
-          N:[gx,gy-2], NE:[wrap(gx),gy-1], E:[wrap(gx+1),gy], SE:[wrap(gx),gy+1],
-          S:[gx,gy+2], SW:[wrap(gx-1),gy+1], W:[wrap(gx-1),gy], NW:[wrap(gx-1),gy-1]
-        };
-      } else {
-        return {
-          N:[gx,gy-2], NE:[wrap(gx+1),gy-1], E:[wrap(gx+1),gy], SE:[wrap(gx+1),gy+1],
-          S:[gx,gy+2], SW:[wrap(gx),gy+1], W:[wrap(gx-1),gy], NW:[wrap(gx),gy-1]
-        };
-      }
-    }
+    const acc = createAccessors(mw, mh, map.mapShape, mapSeed, tileData, knownImprovements);
+    const { wrap, getTerrain, isLand, hasRiver, getImprovements, getVisibility,
+            getResource, getNeighbors, hasGoodyHut, hasShield,
+            getCityRadiusOwner, getBodyId, getTileOwnership, getTileFertility,
+            getKnownImprovements } = acc;
 
     // ── Section 7: Gap record (32 bytes after cities) ──
     const gapOff = cityOff + gs.totalCities * hdr.cityRecSize;
