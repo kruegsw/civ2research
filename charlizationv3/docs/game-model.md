@@ -8,9 +8,12 @@ The canonical JavaScript representation for all game data. The parser converts `
 
 1. **No byte-level encoding in JS** — bitmasks become Sets, arrays, or objects
 2. **No derived/stale fields** — if it can be computed, compute it on demand via functions
-3. **Immutable map vs mutable state** — the reducer only clones mutable state
+3. **Data-driven defaults with overrides** — engine rules live in code (`engine/defs.js`); the model only stores overrides (null = use engine default)
 4. **JSON-serializable** — the model must survive `JSON.stringify` / `JSON.parse` for WebSocket transport (Sets become arrays in transit, reconstructed on receipt)
 5. **Parser is the only converter** — `.sav` → model happens once at load time
+6. **Excluded .sav fields are documented in parser** — comments explain what was skipped and why
+7. **Append-only arrays for entities** — units and cities arrays never reorder or compact. Dead/destroyed entries remain as slots (`alive: false` or equivalent). This guarantees index stability for cross-references (`homeCity`, `partnerCityIndex`, `unitIndex` in actions, `wonders[i].cityIndex`). Array index = entity ID throughout the model.
+8. **Strings for small enums, numbers for large catalogs** — Small fixed sets (≤~12 values) used in display and conditionals become strings for readability (`government: 'democracy'`, `gender: 'male'`). Large catalogs (unit types, buildings, techs, wonders — 28-89 values) stay numeric IDs for performance; display names live in `defs.js` lookup arrays (`UNIT_NAMES[type]`, `BUILDING_NAMES[id]`, etc.). When in doubt, prefer numbers — they're faster and mod-safe.
 
 ---
 
@@ -18,20 +21,46 @@ The canonical JavaScript representation for all game data. The parser converts `
 
 ```js
 {
-  meta,       // file/session metadata
-  settings,   // game rules, difficulty, toggles
-  map,        // terrain, rivers, improvements — IMMUTABLE after load
-  civs,       // per-civ state (8 slots, index 0 = barbarians)
-  cities,     // all city records
-  units,      // all unit records
-  diplomacy,  // treaties, attitudes — separated for clarity
-  wonders,    // wonder ownership
-  technology, // tech discovery tracking
-  turn,       // turn counter, active civ
-  tail,       // miscellaneous data (kill history, passwords, etc.)
-  events,     // scenario events (null if none)
+  meta,        // file/session metadata, cursor position
+  settings,    // difficulty, barbarian activity, COSMIC overrides, city name overrides
+  map,         // terrain, rivers, improvements (mutable — terraforming changes it)
+  civs,        // per-civ state (8 slots, index 0 = barbarians)
+  cities,      // all city records
+  units,       // all unit records
+  diplomacy,   // treaties, attitudes (separate from civs — civ×civ matrix)
+  wonders,     // wonder ownership
+  technology,  // tech discovery tracking
+  turn,        // turn counter, active civ
+  history,     // kill history, power graph, game replay data
+  events,      // scenario events + scenario metadata (null if none)
 }
 ```
+
+### Decisions Made
+
+- **`diplomacy`** stays separate from `civs` — it's a civ×civ matrix, awkward to nest inside a single civ
+- **`wonders`** and **`technology`** stay separate — wonders are about city ownership, technology is about discovery tracking
+- **`events`** stays top-level — scenario events actively affect gameplay
+- **`map`** is mutable (terraforming, pollution, global warming change terrain) but kept as a separate section
+- **`rules`** merged into **`settings`** — all configuration/customization in one place
+- **`tail`** eliminated — all data redistributed to appropriate sections or excluded
+- **`history`** added — kill history, power graph, game replay (new top-level section)
+
+### Tail Data Redistribution
+
+All `.sav` tail data has been redistributed or excluded:
+
+| # | Tail Data | Origin | Destination | Notes |
+|---|-----------|--------|-------------|-------|
+| 1 | City name counters (21 entries) | Counter is runtime state in .sav tail; name lists from RULES.TXT | `civs[i].cityNameCounter` + `settings.cityNameOverrides` | Engine defaults in `defs.js`, overrides in settings (null = default) |
+| 2 | Cursor/viewport position | Runtime UI state in .sav tail | `meta.cursorPosition` | Useful for restoring viewport on .sav load; ignored in multiplayer |
+| 3 | Passwords (7 × 32 bytes) | Entered by players in hotseat mode, stored in .sav tail | **Excluded** | Hotseat feature — our auth is WebSocket sessions. Documented in parser |
+| 4 | Kill history (up to 12 entries) | Runtime state accumulated during gameplay, stored in .sav tail | `history.kills` | Who eliminated whom and when — displayed in Hall of Fame / replay |
+| 5 | Scenario block (100 bytes) | .scn file metadata, copied into .sav tail on save | `events.scenario` | Scenario name, objective flags — lives with scenario events |
+| 6 | COSMIC constants (22 values, 97 bytes) | RULES.TXT `@COSMIC` section, copied into .sav tail at game creation | `settings.cosmic` | Null override pattern — engine defaults in code, overrides in model |
+| 7 | Fixed constants (7 bytes) | Hardcoded in Civ2.exe, always `[0xAB,0x05,0x46,0x03,0x01,0x00,0x03]` | **Excluded** | Validation sentinel only — not game data. Documented in parser |
+| 8 | Power graph / history data (~1221 bytes) | Runtime state accumulated each turn by engine, stored in .sav tail | `history.powerGraphRaw` | Demographics and power rankings over time — for replay/graphs |
+| 9 | Network data (1172 bytes, .net only) | Original Civ2 LAN multiplayer protocol state in .net file tail | **Excluded** | Irrelevant to our WebSocket multiplayer. Documented in parser |
 
 ---
 
@@ -42,6 +71,7 @@ meta: {
   sourceFormat: 'sav' | 'scn' | 'net' | 'new',  // how the game was created
   formatVersion: number,       // from header, e.g. 39
   isScenario: boolean,         // scenario flag from header
+  cursorPosition: { x: number, y: number },  // viewport restore position (from .sav tail)
 
   // Multiplayer session fields (not from .sav — added by server)
   roomId: string | null,       // multiplayer room identifier
@@ -51,26 +81,23 @@ meta: {
 }
 ```
 
-**From .sav**: `sourceFormat`, `formatVersion`, `isScenario`
+**From .sav**: `sourceFormat`, `formatVersion`, `isScenario`, `cursorPosition`
 **Not from .sav**: multiplayer fields — injected by server at game start
 **Excluded from .sav**: `magic`, `nullSep`, `formatMarker` — file format plumbing, not game data
 
 ---
 
-## `settings` — Game Rules & Configuration
+## `settings` — Game Configuration & Rule Overrides
+
+All configuration in one place. Null override pattern: engine defaults live in `engine/defs.js`, settings only stores what differs from defaults.
 
 ```js
 settings: {
-  difficulty: number,          // 0-5 (Chieftain → Deity)
-  barbarianActivity: number,   // 0-3
+  difficulty: 'chieftain' | 'warlord' | 'prince' | 'king' | 'emperor' | 'deity',
+  barbarianActivity: 'none' | 'roaming' | 'restless' | 'raging',
   mapRevealed: boolean,        // full map revealed (cheat/debug)
 
-  // QUESTION: Do we need all 35 toggle flags in the JS game?
-  // Most are UI preferences (sound, music, animation speed, grid display).
-  // Some affect gameplay (bloodlust, flatEarth, simplifiedCombat).
-  // Proposal: Keep gameplay-affecting ones as named fields,
-  // store the rest in a `uiPreferences` sub-object for .sav fidelity.
-
+  // Gameplay-affecting flags
   bloodlust: boolean,          // no diplomacy, conquest only
   simplifiedCombat: boolean,   // simplified combat resolution
   flatEarth: boolean,          // no horizontal wrapping
@@ -78,93 +105,63 @@ settings: {
   // Scenario-specific
   scenarioNoTechLimits: boolean,
 
-  // UI preferences — needed for faithful rendering but not game logic
-  // QUESTION: Include these? They're per-player preferences, not shared state.
-  // In multiplayer, each client would have their own. Store client-side only?
-  uiPreferences: {
-    showMapGrid: boolean,
-    soundEffects: boolean,
-    music: boolean,
-    fastPieceSlide: boolean,
-    showEnemyMoves: boolean,
-    // ... remaining ~25 toggle flags
+  // UI preferences (showMapGrid, soundEffects, music, fastPieceSlide, etc.)
+  // are EXCLUDED from the shared game model. In multiplayer, each player has
+  // their own preferences — these are per-client state stored in localStorage,
+  // not shared game state. The .sav toggle flags (~25 UI preferences) are
+  // parsed by the parser but not carried into the model. Only gameplay-affecting
+  // flags (bloodlust, simplifiedCombat, flatEarth, scenarioNoTechLimits) are
+  // stored above.
+
+  // COSMIC rule overrides — null = use engine default from defs.js
+  cosmic: {
+    foodBoxMultiplier: number | null,      // default: 2
+    shieldBoxMultiplier: number | null,    // default: 2
+    contentCitizensBase: number | null,    // default: 7
+    unhappyOffset: number | null,          // default: 14
+    techCostMultiplier: number | null,     // default: varies by difficulty
+    movementMultiplier: number | null,     // default: 3
+    // ... remaining COSMIC constants (22 total)
   },
 
-  // COSMIC constants from RULES.TXT (affect game mechanics)
-  // QUESTION: Should these be stored in the model or loaded from RULES.TXT?
-  // For multiplayer, all players must agree on the same rules.
-  // Proposal: Store them in the model so the server is authoritative.
-  cosmic: {
-    foodRows: number,            // food box rows (default 2 in MGE)
-    shieldRows: number,          // shield box rows
-    contentCitizensBase: number, // base content citizens (default 7)
-    unhappyOffset: number,       // unhappy offset (default 14)
-    techCostMultiplier: number,  // base tech cost factor
-    movementMultiplier: number,  // movement thirds (always 3)
-    // ... full 22 COSMIC constants from RULES.TXT
-  },
+  // City name overrides — null = use engine default lists from defs.js
+  cityNameOverrides: {
+    [rulesCivNumber: number]: string[] | null
+  } | null,
 }
 ```
 
-**From .sav**: difficulty, barbarianActivity, mapRevealed, all toggles, COSMIC constants (from tail engine constants)
-**Excluded**: `cheatMenu`, `cheatPenalty` — don't want cheats in multiplayer
-**QUESTION**: The 97-byte `engineConstants` in the tail encode COSMIC values — should we parse them into named fields? Currently stored as raw bytes. The RULES.TXT values are the canonical source but the .sav may override them.
+**From .sav**: difficulty, barbarianActivity, mapRevealed, gameplay toggles, COSMIC constants (parsed from tail engine constants)
+**Excluded**: `cheatMenu`, `cheatPenalty` — don't want cheats in multiplayer. Documented in parser.
 
 ---
 
-## `map` — Terrain & Geography (IMMUTABLE)
+## `map` — Terrain & Geography
+
+Mutable — terrain changes via terraforming, pollution, global warming, nukes, scenario events. Kept as a separate section because it's conceptually distinct from units/cities.
 
 ```js
 map: {
   width: number,              // tile columns (gx range: 0 to width-1)
   height: number,             // tile rows (gy range: 0 to height-1)
-  wraps: boolean,             // horizontal wrapping (derived from mapShape)
-  shape: number,              // 0=flat, 1=round (raw value preserved)
+  wraps: boolean,             // horizontal wrapping (derived from settings.flatEarth)
   seed: number,               // resource placement seed
 
-  // QUESTION: Store tiles as array-of-objects or parallel typed arrays?
-  //
-  // Option A: Array of objects (readable, easy to serialize)
-  //   tiles: [{ terrain, river, improvements, ... }, ...]
-  //
-  // Option B: Parallel typed arrays (compact, fast iteration)
-  //   terrain: Uint8Array, rivers: Uint8Array, ...
-  //
-  // Proposal: Option A for the model definition. If performance is an issue
-  // with large maps (150×300 = 45,000 tiles), we can optimize later.
-  // JSON serialization of Option A is ~2-3× larger but still <1MB for huge maps.
-
+  // Array of objects (readable, easy to serialize). If performance is an issue
+  // with large maps (150×300 = 45,000 tiles), we can optimize to parallel typed
+  // arrays later. JSON serialization is ~2-3× larger but still <1MB for huge maps.
+  // (See Open Question #2)
   tiles: [
     {
       terrain: number,         // 0-10: desert/plains/grass/forest/hills/mountains/tundra/glacier/swamp/jungle/ocean
       river: boolean,
-      goodyHut: boolean,
+      goodyHut: boolean,        // consumed when a unit enters the tile
+      resourceSuppressed: boolean, // if true, no special resource even if seed formula says so
 
-      // QUESTION: Improvements — object vs Set vs array?
-      //
-      // Current binary: single byte, bits = road|railroad|irrigation|mining|fortress|pollution|farmland|airbase
-      // Note: farmland = irrigation AND mining bits both set (special case)
-      //
-      // Option A: Object with boolean flags
-      //   improvements: { road: true, railroad: false, irrigation: true, ... }
-      //   Pro: readable, fast individual lookups
-      //   Con: 8 fields, farmland is derived (irrigation && mining)
-      //
-      // Option B: Set of strings
-      //   improvements: new Set(['road', 'irrigation'])
-      //   Pro: compact when sparse (most tiles have 0-2 improvements)
-      //   Con: Set not JSON-serializable (needs toJSON/fromJSON)
-      //
-      // Option C: Array of strings
-      //   improvements: ['road', 'irrigation']
-      //   Pro: JSON-serializable, compact
-      //   Con: O(n) lookups, need .includes()
-      //
-      // Proposal: Option A (object). Tiles are read far more often than
-      // written, and individual flag checks (if tile.road) are the most
-      // common operation. Farmland stored as its own flag, separate from
-      // irrigation/mining.
-
+      // Improvement flags — object with booleans (Resolved Q1).
+      // Tiles are read far more often than written; `if (tile.improvements.road)`
+      // is the most common operation. Farmland is its own flag (not derived from
+      // irrigation+mining like in .sav).
       improvements: {
         road: boolean,
         railroad: boolean,
@@ -176,79 +173,55 @@ map: {
         farmland: boolean,     // NOTE: in .sav this is irrigation+mining both set
       },
 
-      // Per-civ exploration (persistent "has explored" flag)
-      // QUESTION: Keep as a Set of civ slots, or an array of booleans?
-      // This is mutated every time a unit moves (updateVisibility).
-      // Currently: single byte, bit N = civ N has explored.
-      //
-      // Proposal: Set<number> — e.g. new Set([1, 3, 5]) means civs 1, 3, 5
-      // have explored this tile. Easy to check: tile.exploredBy.has(civSlot).
-      // Mutate: tile.exploredBy.add(civSlot).
-      //
-      // CONCERN: This is the one field that's mutated during gameplay on the
-      // "immutable" map. In Civ2, exploration is persistent (once seen, always
-      // on the minimap). We could move it to mutable state, but it's really
-      // per-tile data. Keeping it on the tile but acknowledging it's mutable
-      // seems pragmatic.
-      //
-      // PERFORMANCE: 45,000 tiles × Set overhead vs 45,000 bytes.
-      // For multiplayer state updates, we'd send delta visibility anyway.
-      // Sets become arrays in JSON: [1, 3, 5].
-
-      exploredBy: Set<number>,   // civ slots that have explored this tile
-
       // Tile ownership & metadata
       owner: number | null,      // civ slot (1-7) or null if unowned
       fertility: number,         // AI fertility score 0-15
       bodyId: number,            // continent/body ID
       cityRadiusOwner: number | null,  // civ that claims this in a city radius, or null
 
-      // QUESTION: What about the per-civ "known improvements" (Block 1)?
-      // Each civ has its own view of what improvements exist on each tile
-      // (fog of war for improvements). This is 7 × mapSize bytes.
-      // Needed for: showing correct improvements under fog.
-      //
-      // Option A: Store on tile as knownImprovements: { [civSlot]: {...} }
-      //   Con: 7 copies of improvement data per tile = huge
-      // Option B: Separate sparse structure, only for tiles that differ
-      //   Con: complex
-      // Option C: Keep as parallel arrays (like current knownImprovements[civ][tileIdx])
-      //   Pro: matches current implementation, compact
-      //
-      // Proposal: Keep as a separate top-level structure (not per-tile).
-      // See map.knownImprovements below.
+      // Per-civ known improvements stored separately — see map.knownImprovements below.
     },
     // ... one per tile (width × height entries)
   ],
 
-  // Per-civ known improvements — what each civ last saw on each tile
-  // Indexed as knownImprovements[civSlot][tileIndex]
-  // QUESTION: Convert each byte to an improvements object like above?
-  // That would be 7 × 45,000 objects for a large map. Might be excessive.
-  // Proposal: Keep as raw byte arrays for now. Only the renderer reads them,
-  // and only for fogged tiles. Convert to improvement objects lazily on read.
+  // Per-civ known improvements — what each civ last saw on each tile.
+  // This is fog-of-war memory: when civ 3 last saw tile (5,12), it had a road.
+  // If civ 1 later builds irrigation there, civ 3 still sees just a road until
+  // they re-explore. Converted up front from raw bytes to improvement objects
+  // at parse time (consistent with "no byte logic in JS" principle).
+  // 7 civs × mapSize objects — ~315K objects for a large map, <100ms to create.
   knownImprovements: {
-    [civSlot: number]: Uint8Array  // one byte per tile, same bitmask as .sav
+    [civSlot: number]: [      // civ slots 1-7 (barbarians have no fog memory)
+      // indexed by tile index (width × height entries)
+      { road: boolean, railroad: boolean, irrigation: boolean, mining: boolean,
+        fortress: boolean, airbase: boolean, pollution: boolean, farmland: boolean },
+    ]
   },
 
-  // Quarter-resolution data (Block 3)
-  // QUESTION: Is this needed for gameplay? It seems to be AI pathfinding data.
-  // If we implement our own AI, we'd compute this ourselves.
-  // Proposal: Store for .sav fidelity, mark as opaque/unused by JS engine.
-  quarterData: Uint8Array | null,
+  // Per-civ exploration state — which tiles each civ has ever seen.
+  // Persistent (once explored, stays explored). Distinct from transient LOS
+  // which is a server-side cache (see Visibility Architecture section).
+  explored: {
+    [civSlot: number]: Set<tileIndex>,  // civ slots 1-7
+  },
 
-  // Padding block (1024 bytes between Block 3 and units)
-  // QUESTION: Exclude? It's always zeros in standard saves.
-  // Proposal: Exclude from model. Only relevant for binary round-trip.
+  // Quarter-resolution data (Block 3) — EXCLUDED
+  // Opaque AI pathfinding data from the .sav. If we implement AI, we'd compute
+  // our own. Excluded from model; documented in parser why it's skipped.
 }
 ```
 
-**From .sav**: All fields above. `wraps` derived from `mapShape !== 0`.
-**Excluded**: `mw2` (doubled-X width) — internal coordinate system detail, derive as `width * 2`
-**Excluded**: `ms` (mapSize) — derive as `width * height`
-**Excluded**: `qw`, `qh` (quarter dims) — derive from quarterData length if needed
+**From .sav**: All fields above. `wraps` derived from `!settings.flatEarth`. `mapShape` from .sav is consumed by settings.flatEarth and not stored separately.
+**Excluded**: `mw2` (doubled-X width) — derive as `width * 2`. Documented in parser.
+**Excluded**: `ms` (mapSize) — derive as `width * height`. Documented in parser.
+**Excluded**: `qw`, `qh` (quarter dims) — derive from quarterData length if needed. Documented in parser.
+**Excluded**: 1024-byte padding block — always zeros, only relevant for binary round-trip. Documented in parser.
 
-**Accessor functions** are NOT part of the model. They're created by `createAccessors(model.map)` and provide convenience lookups like `getTerrain(gx, gy)`, `getNeighbors(gx, gy)`, `wrap(x)`, etc. The model stores the data; the accessors compute from it.
+**Exploration**: stored per-civ as `map.explored[civSlot]: Set<tileIndex>`, restructured from the .sav's per-tile visibility byte (which packed all 7 civs into one byte). Per-civ Sets are cleaner and faster for fog-of-war filtering.
+
+**Resources** are NOT stored per-tile. They're computed on demand from `map.seed` via a deterministic formula (`getResource(gx, gy)`). The seed is fixed at map generation, so resources never change. The `resourceSuppressed` flag on tiles overrides the formula to suppress a resource.
+
+**Accessor functions** are NOT part of the model. They're created by `createAccessors(model.map)` and provide convenience lookups like `getTerrain(gx, gy)`, `getNeighbors(gx, gy)`, `getResource(gx, gy)`, `wrap(x)`, etc. The model stores the data; the accessors compute from it.
 
 ---
 
@@ -258,24 +231,21 @@ map: {
 civs: [
   // Index 0 = Barbarians, 1-7 = player civs
   {
-    alive: boolean,            // derived from civsAlive bitmask
-    isHuman: boolean,          // derived from humanPlayers bitmask
-    everExisted: boolean,      // derived from civsEverExisted bitmask
+    alive: boolean,
+    isHuman: boolean,
+    everExisted: boolean,
 
     // Identity
-    rulesCivNumber: number,    // 0-20, index into RULES.TXT/LEADERS.TXT
+    rulesCivNumber: number,    // 0-20, index into RULES.TXT/LEADERS.TXT (numeric — large catalog)
     civVariant: number,        // variant when multiple civs share rulesCivNumber
-    style: number,             // city style 0-3 (European/Classical/Far Eastern/Middle Eastern)
+    style: 'european' | 'classical' | 'farEastern' | 'middleEastern',
     name: string,              // resolved display name (from LEADERS_TXT_NAMES or tribeName)
     leaderName: string,        // from civNameBlock
-    gender: number,            // 0=male, 1=female
+    gender: 'male' | 'female',
     tribeName: string,         // e.g. "Romans"
     tribeAdjective: string,    // e.g. "Roman"
 
-    // Government titles (per government type)
-    // QUESTION: Store all 7 titles? They're from the civ name block.
-    // Only needed if we display "King Caesar" style titles.
-    // Proposal: Store them — they're small and part of the civ identity.
+    // Government titles (per government type) — small, part of civ identity
     titles: {
       anarchy: string,
       despotism: string,
@@ -288,17 +258,21 @@ civs: [
 
     // Economy & government
     treasury: number,          // gold (signed int32, can go negative)
-    government: number,        // 0-6: Anarchy/Despotism/Monarchy/Communism/Fundamentalism/Republic/Democracy
+    government: 'anarchy' | 'despotism' | 'monarchy' | 'communism' | 'fundamentalism' | 'republic' | 'democracy',
     scienceRate: number,       // 0-10 (each unit = 10%)
     taxRate: number,           // 0-10
-    // QUESTION: luxuryRate is derived (10 - scienceRate - taxRate). Store it?
-    // Proposal: Don't store — compute on read.
+    // luxuryRate is derived (10 - scienceRate - taxRate) — not stored
 
     // Research
     researchProgress: number,  // beakers accumulated toward current research
     techBeingResearched: number | null, // advance ID, or null if none (0xFF in .sav)
-    acquiredTechCount: number, // total techs acquired
+    acquiredTechCount: number, // total techs acquired (derivable from technology.advances
+                               // but kept — used frequently for era calculation, tech cost,
+                               // AI decisions. Kept in sync by reducer on tech change.)
     futureTechCount: number,   // future tech count
+
+    // City naming (from tail redistribution)
+    cityNameCounter: number,   // next city gets name at this index from the civ's name list
 
     // AI personality
     aiRandomSeed: number,
@@ -307,10 +281,14 @@ civs: [
     treatyBreakingCount: number,
     personaIndex: number,      // AI persona: (rulesCivNumber % 7) + 7 * personality
 
-    // State flags
-    // QUESTION: Keep as individual booleans or group into a flags object?
-    // These are from the stateFlags byte (+0 of civ data block).
-    // Proposal: Individual booleans — there are only 5 decoded ones.
+    // State flags (from .sav bitfield — individual booleans for readability)
+    // skipNextOedoYear:       prevents exploit of toggling luxury for repeated WLTKD
+    // atWar:                  civ is currently at war (derivable from diplomacy.relations,
+    //                         but kept as authoritative flag — .sav stores it, and it may
+    //                         capture edge cases not reflected in individual treaty booleans)
+    // senateOverride:         senate overridden this turn (Republic/Democracy war blocking)
+    // recoveredFromRevolution: just finished revolution (government transition timing)
+    // freeAdvancePending:     free tech to pick (from hut, wonder, or scenario event)
     skipNextOedoYear: boolean,
     atWar: boolean,
     senateOverride: boolean,
@@ -323,11 +301,7 @@ civs: [
 
     // Unit statistics (AUTHORITATIVE — cumulative, not runtime cache)
     unitCasualtyCounts: number[],  // losses per unit type (63 entries)
-
-    // QUESTION: unitTypeEverBuilt — keep or derive?
-    // It's a boolean[64] of whether each unit type was ever built.
-    // Proposal: Keep — it's authoritative historical data, not derivable from current state.
-    unitTypeEverBuilt: boolean[],  // per unit type
+    unitTypeEverBuilt: boolean[],  // per unit type — authoritative historical data
 
     // Spaceship
     spaceship: {
@@ -337,46 +311,45 @@ civs: [
       estimate2: number,       // typically estimate1 - 427
     },
 
-    // AI continent goals (64 entries)
-    // QUESTION: Needed for JS game? Only relevant if we implement AI.
-    // Proposal: Store for .sav fidelity. Skip in new-game initialization.
+    // AI fields — imported from .sav for fidelity, not yet used by JS AI logic.
+    // When we implement Civ2-faithful AI, these provide the starting state for
+    // loaded games. For initNewGame(), initialized to sensible defaults (empty
+    // goals, zero seeds, etc.).
     continentGoals: [
       { x: number, y: number, goalType: number, priority: number },
       // ... 64 entries
     ] | null,
-
-    // Per-continent statistics
-    // QUESTION: These are mostly DERIVED (runtime counters). Exclude?
-    // The authoritative ones are: continentStatusFlags, unitTypeEverBuilt.
-    // Proposal: Exclude derived per-continent stats. Keep continentStatusFlags.
-    continentStatusFlags: number[] | null,  // 63 entries, per-continent
-
-    // Last contact turns (7 entries, one per other civ)
-    lastContactTurns: number[],
+    continentStatusFlags: number[] | null,  // 63 entries
+    lastContactTurns: number[],             // 7 entries, one per other civ
 
     // ── DERIVED FIELDS — EXCLUDED ──
-    // These are runtime caches in the .sav, recomputable from current state:
-    //   militaryUnitCount, cityCount, navalUnitCount, sumOfCitySizes,
-    //   totalUnitAtkDefSum, totalUnitAtkSum, activeUnitCounts,
-    //   unitsInProduction, all per-continent military/city/size counters,
-    //   powerGraphData
-    //
-    // If the JS game needs these, compute them on demand from units/cities arrays.
+    // Runtime caches recomputable from current state. Wherever Civ2.exe
+    // looked these up directly, the JS equivalent must derive them from
+    // the units/cities arrays instead (e.g. count units where owner===civSlot).
+    //   militaryUnitCount    — count units with military domain
+    //   cityCount            — cities.filter(c => c.owner === slot).length
+    //   navalUnitCount       — count units with sea domain
+    //   sumOfCitySizes       — sum city.size for owned cities
+    //   totalUnitAtkDefSum   — sum (atk+def) for owned units
+    //   totalUnitAtkSum      — sum atk for owned units
+    //   activeUnitCounts[63] — count per unit type
+    //   unitsInProduction[63]— count cities producing each unit type
+    //   per-continent military/city/size counters — derive from position + bodyId
+    //   powerGraphData[9]    — moved to history.powerGraphRaw
 
-    // ── UNKNOWN FIELDS — STORED AS RAW FOR .SAV FIDELITY ──
-    // QUESTION: Include unknown bytes for round-trip? We said no .sav export.
-    // Proposal: Exclude unknown bytes entirely. If we discover their purpose
-    // later, we add named fields then.
+    // ── UNKNOWN FIELDS — EXCLUDED ──
+    // No known purpose; add as named fields when decoded:
     //   unknown_18, unknown_23_26, diplomaticInteractionCounters_80_87
   },
   // ... 8 entries (indices 0-7)
 ]
 ```
 
-**From .sav**: All authoritative fields listed above
-**Excluded — Derived**: militaryUnitCount, cityCount, navalUnitCount, sumOfCitySizes, totalUnitAtkDefSum, totalUnitAtkSum, activeUnitCounts, unitsInProduction, per-continent military stats, powerGraphData
+**From .sav**: All authoritative fields listed above. AI fields (continentGoals, continentStatusFlags, lastContactTurns, personaIndex, aiRandomSeed) imported for fidelity — not yet used by JS logic.
+**Excluded — Derived**: militaryUnitCount, cityCount, navalUnitCount, sumOfCitySizes, totalUnitAtkDefSum, totalUnitAtkSum, activeUnitCounts, unitsInProduction, per-continent military/city/size counters, powerGraphData. JS code must derive these from units/cities arrays rather than looking them up.
 **Excluded — Unknown**: bytes +18, +23-26, +80-87 (purpose unclear)
 **Excluded — Padding**: all known-zero padding bytes
+**Spaceship**: 4 basic fields stored now (structural, propulsion, estimate1, estimate2). Expand with fuel/habitation/solar/launch when spaceship victory is implemented.
 
 ---
 
@@ -392,83 +365,52 @@ cities: [
     gx: number,                // grid X
     gy: number,                // grid Y
     size: number,              // population (1-63)
-    style: number,             // city style 0-3 (from civ)
+    // style: EXCLUDED — derive from civs[city.owner].style
 
-    // Worker tile assignments
-    // QUESTION RESOLVED: Use plain array instead of bitmasks.
+    // Worker tile assignments — plain array instead of bitmasks
     // Array of tile indices (0-19) that are actively worked.
     // Center tile (index 20) is ALWAYS worked and not listed here.
-    // Max length = city.size (all citizens working tiles, no specialists).
     workedTiles: number[],     // e.g. [0, 3, 5, 7, 12]
 
-    // Specialists
-    // QUESTION RESOLVED: Use plain array instead of packed 2-bit bytes.
-    // Ordered list of specialist types. Length = city.size - workedTiles.length.
-    // QUESTION: Use strings or numbers for specialist types?
-    //   Strings: ['entertainer', 'taxman', 'scientist'] — readable
-    //   Numbers: [1, 2, 3] — compact, matches .sav encoding
-    // Proposal: Strings. This is the JS model — readability wins.
-    // The enum is tiny (3 values) and unlikely to change.
+    // Specialists — plain array of string types (small enum, 3 values)
     specialists: ('entertainer' | 'taxman' | 'scientist')[],
     // Invariant: workedTiles.length + specialists.length === size
 
-    // Buildings
-    // QUESTION: How to represent the building bitmask (40 bits across 5 bytes)?
-    //
-    // Option A: Set<number> — building IDs (1-indexed, RULES.TXT order)
-    //   buildings: new Set([1, 5, 9, 10])  // Palace, Marketplace, City Walls, Bank
-    //   Pro: fast has() check, easy add/delete
-    //   Con: Set not JSON-serializable without custom handling
-    //
-    // Option B: Set<string> — building names
-    //   buildings: new Set(['palace', 'marketplace', 'city_walls'])
-    //   Pro: very readable
-    //   Con: need name→ID lookup for game formulas, string matching
-    //
-    // Option C: Array<number> — building IDs
-    //   buildings: [1, 5, 9, 10]
-    //   Pro: JSON-serializable, simple
-    //   Con: O(n) lookups with .includes()
-    //
-    // Option D: Object<number, boolean> — sparse map
-    //   buildings: { 1: true, 5: true, 9: true }
-    //   Pro: O(1) lookup, JSON-safe
-    //   Con: keys are strings in JS objects
-    //
-    // Proposal: Set<number> for in-memory use, serialize as Array<number>
-    // for WebSocket. Building IDs are stable (RULES.TXT order) and all game
-    // formulas already use numeric IDs. Names are for display only (look up
-    // from BUILDING_NAMES[id]).
-    buildings: Set<number>,    // building IDs present (1-indexed)
+    // Buildings — Set<number> in memory, serialized as Array<number> for WebSocket.
+    // Building IDs are 1-indexed per RULES.TXT order. Display names via
+    // BUILDING_NAMES[id] in defs.js. Set gives O(1) has() for game formulas.
+    buildings: Set<number>,    // e.g. new Set([1, 5, 9]) = Palace, Marketplace, City Walls
 
     // Storage
     foodInBox: number,         // food accumulated
     shieldsInBox: number,      // shields toward current production
 
-    // Production
-    // QUESTION: How to represent the production item?
-    // In .sav: single byte, units 0x00-0x3F, buildings = 256 - value.
-    // Proposal: Object with type discrimination.
+    // Production — discriminated object for readability
+    // .sav encodes as single byte (units 0x00-0x3F, buildings = 256 - value);
+    // parser converts to this structured form.
     producing: {
       type: 'unit' | 'building' | 'wonder',
       id: number,              // unit type ID or building/wonder ID
     },
 
-    // Trade routes
+    // Trade routes — index-based partner reference. Cities array is append-only
+    // (destroyed cities leave dead slots), so indices are stable within a game.
+    // Trade income is derived each turn from distance, continent, commodity,
+    // government, and building bonuses — not stored.
     tradeRoutes: [
       {
-        partnerCityIndex: number,  // index into cities array
-        commodity: number,         // commodity ID being traded
+        partnerCityIndex: number,  // index into cities array (stable — append-only)
+        commodity: number,         // commodity ID (numeric — large catalog)
       },
       // ... 0-3 entries
     ],
 
-    // City attributes (boolean flags)
+    // City attributes (boolean flags — kept flat, no sub-object)
     weLoveKingDay: boolean,
     civilDisorder: boolean,
-    canBuildCoastal: boolean,
-    canBuildHydro: boolean,
-    canBuildShips: boolean,
+    canBuildCoastal: boolean,   // kept for readability despite being derivable
+    canBuildHydro: boolean,     // kept for readability despite being derivable
+    canBuildShips: boolean,     // kept for readability despite being derivable
     autoBuild: boolean,
     autoBuildDomestic: boolean,
     autoBuildMilitary: boolean,
@@ -480,30 +422,24 @@ cities: [
     objectiveX1: boolean,
     objectiveX3: boolean,
 
-    // Per-civ believed size (fog of war — what each civ thinks the size is)
-    // QUESTION: Needed for multiplayer? The server filters state per-civ anyway.
-    // Proposal: Include for .sav fidelity. In multiplayer, the server sends
-    // each client only the believed size for their civ, not the real one.
+    // Per-civ believed size (fog of war — what each civ thinks the size is).
+    // All 8 stored for .sav import fidelity. Server filters to send only
+    // the requesting civ's believed size in multiplayer.
     believedSize: number[],    // 8 entries (one per civ slot)
 
     // Known to which civs
-    knownTo: Set<number>,      // civ slots that know about this city
+    knownTo: Set<number>,      // civ slots 0-7 that know about this city
 
     // ── DERIVED FIELDS — EXCLUDED ──
-    // Not stored in model. Computed on demand by game functions:
+    // Computed on demand by game functions:
     //   netBaseTrade, totalTrade, scienceOutput, taxOutput,
     //   foodProduction, shieldProduction, happyCitizens, unhappyCitizens,
     //   tradeCommoditiesAvail, tradeCommoditiesDemand
-    //
-    // These are the ~50% of city fields that are runtime caches in .sav.
-    // The city dialog already recomputes trade/corruption/happiness.
 
-    // ── CONVENIENCE FIELDS — COMPUTED, NOT STORED ──
-    // These can be derived but are used so often they might warrant caching:
+    // ── CONVENIENCE FIELDS — NOT STORED ──
     //   hasPalace: buildings.has(1)
     //   hasWalls: buildings.has(8)
     //   isOccupied: owner !== originalOwner
-    // Proposal: Don't store. Use buildings.has() directly. It's O(1) on a Set.
   },
   // ... one per city
 ]
@@ -511,17 +447,24 @@ cities: [
 
 **From .sav**: All authoritative fields. Bitmasks converted at parser boundary.
 **Excluded — Derived**: netBaseTrade, totalTrade, scienceOutput, taxOutput, foodProduction, shieldProduction, happyCitizens, unhappyCitizens, tradeCommoditiesAvail, tradeCommoditiesDemand
-**Excluded — Internal**: sequenceId (save-file internal), specialistCountRaw (redundant with specialists array), raw coordinate cx/cy (use gx/gy)
+**Excluded — Derived but kept**: canBuildCoastal, canBuildHydro, canBuildShips — derivable from position, but kept for code readability (`city.canBuildCoastal` is cleaner than recomputing adjacency)
+**Excluded — Internal**: sequenceId, specialistCountRaw, raw coordinates cx/cy
+**Excluded — Redundant**: style — derive from `civs[city.owner].style`
+**Trade routes**: Index-based partner reference (`partnerCityIndex`) — cities array is append-only (destroyed cities leave dead slots), so indices are stable. O(1) lookup. Trade income is derived each turn, not stored.
 
 ---
 
 ## `units` — Unit Records
 
+Array is append-only — dead units remain as slots with `alive: false`. This preserves
+index stability for `homeCity` references, `unitIndex` in actions, and trade route
+partner lookups (same pattern as cities array).
+
 ```js
 units: [
   {
     // Identity & position
-    type: number,              // 0-62 (indexes UNIT_NAMES)
+    type: number,              // 0-62 (display via UNIT_NAMES[type] in defs.js)
     owner: number,             // civ slot 0-7
     gx: number,                // grid X (-1 if dead)
     gy: number,                // grid Y (-1 if dead)
@@ -530,21 +473,15 @@ units: [
 
     // Movement
     movesLeft: number,         // movement points remaining (in thirds)
-
-    // QUESTION: Movement flags — expand from bitmask to individual booleans?
-    // Only 3 flags decoded: firstMoved, paraLaunched, immobile
-    // Proposal: Individual booleans. Only 3 of them.
     hasMoved: boolean,         // has moved this turn
     paradropLaunched: boolean,
     immobile: boolean,
 
-    // Status & orders
-    // QUESTION: orders — number or string?
-    //   Number: 0-11 (indexes ORDER_NAMES)
-    //   String: 'none' | 'fortifying' | 'fortified' | 'sleep' | 'buildFortress' | ...
-    // Proposal: String. The order set is small (12 values), stable, and
-    // strings make conditionals readable: if (unit.orders === 'fortified')
-    // vs if (unit.orders === 2)
+    // Status & orders — string enum (12 values, small set)
+    // 'none' = idle/default (order byte 0 in .sav)
+    // 'noOrders' = explicitly skipped this turn (order byte 10 in .sav)
+    // Distinction matters: turn cannot end until all units have moved or
+    // been explicitly skipped. 'none' = hasn't acted yet, 'noOrders' = skipped.
     orders: 'none' | 'fortifying' | 'fortified' | 'sleep' |
             'buildFortress' | 'buildRoad' | 'buildIrrigation' |
             'buildMine' | 'buildAirbase' | 'goTo' |
@@ -557,68 +494,40 @@ units: [
     hpLost: number,            // damage taken (subtract from unit type's max HP)
 
     // Navigation & AI
-    lastDirection: number | null,  // 0-7 or null if never moved
-    homeCity: number | null,   // index into cities array, or null
+    lastDirection: number | null,  // 0-7 direction index, used mathematically
+                                   // (pathfinding continuity, offset lookups) — kept numeric
+    homeCity: number | null,   // index into cities array (stable — append-only), or null
     gotoX: number | null,      // goto destination gx, or null
     gotoY: number | null,      // goto destination gy, or null
 
-    // Context-dependent cargo field
-    // QUESTION: This byte means different things for different unit types:
-    //   Caravan/Freight: commodity ID being carried
-    //   Settler/Engineer: work turns accumulated
-    //   Air units: fuel remaining
-    //   Transport/Carrier: cargo count
-    // Proposal: Store as a generic number with a semantic alias function,
-    // or split into named fields based on unit domain/type?
-    //
-    // Option A: Single field, interpret based on type
-    //   cargo: number
-    //
-    // Option B: Named fields, only one populated
-    //   commodity: number | null     // caravans/freight
-    //   workProgress: number | null  // settlers/engineers
-    //   fuel: number | null          // air units
-    //   cargoCount: number | null    // transports/carriers
-    //
-    // Proposal: Option A. The parser already stores it as cargoWorkFuel.
-    // Type-specific interpretation belongs in display/game logic, not the model.
-    // A helper function unitCargo(unit) can return the right interpretation.
-    cargo: number,
+    // Type-specific cargo fields — separate named fields for readability.
+    // Only one is meaningful per unit type; others are null.
+    commodityCarried: number | null,  // Caravan/Freight: commodity ID being carried
+    workTurns: number | null,         // Settler/Engineer: work turns accumulated
+    fuelRemaining: number | null,     // Air units: fuel remaining
+    cargoCount: number | null,        // Transport/Carrier: number of units carried
 
-    // AI
+    // AI — imported from .sav for fidelity, not yet used by JS AI logic
     aiTaskRole: number,        // AI task assignment
 
-    // Visibility
-    // QUESTION: visFlag byte — which civs can see this unit.
-    // Similar to tile exploration but for units.
-    // Proposal: Set<number> like tile.exploredBy.
-    visibleTo: Set<number>,    // civ slots that can see this unit
-
-    // Stack pointers
-    // QUESTION: Keep linked list pointers or derive stacking from position?
-    // In .sav: prevInStack/nextInStack form a linked list of units on same tile.
-    // In JS: we can just filter units by (gx, gy) to find co-located units.
-    // The linked list order only matters for "top unit" display and iteration.
-    //
-    // Proposal: Exclude stack pointers. Derive stacking from position.
-    // The .sav linked list order is not semantically meaningful beyond display.
-    // If we need a "top unit" concept, sort by type or use array order.
+    // ── EXCLUDED FROM MODEL — VISIBILITY ──
+    // visibleTo is NOT stored on units. See "Visibility Architecture" section
+    // below for the design decision and rationale.
 
     // ── EXCLUDED FROM .SAV ──
-    // prevInStack, nextInStack — derive from position
-    // sequenceId — save-file internal
-    // saveIndex — save-file internal (kept in a separate lookup if needed)
-    // raw x/y coordinates — use gx/gy
+    // prevInStack, nextInStack — derive stacking from position (co-located units)
+    // sequenceId — save-file internal indexing
+    // saveIndex — save-file internal indexing
+    // raw x/y coordinates — use gx/gy only
     // padding bytes
   },
   // ... one per unit (including dead units with alive=false)
 ]
 ```
 
-**QUESTION — Dead units**: The .sav keeps dead unit slots for reuse. In the JS model, do we:
-- (A) Keep dead units in the array (preserves indices for homeCity references) — current approach
-- (B) Filter to alive only, use a separate ID system for references
-- Proposal: (A) for .sav imports. For new games, we can use a different allocation strategy. The array indices are used as IDs in homeCity, unitIndex actions, etc.
+**From .sav**: All authoritative fields. Order byte → string enum, cargo byte → named fields, stack pointers excluded.
+**Excluded — Derived**: visibleTo (server-side cache, see Visibility Architecture below), stacking (derive from position)
+**Excluded — Internal**: sequenceId, saveIndex, raw x/y, padding
 
 ---
 
@@ -626,21 +535,23 @@ units: [
 
 ```js
 diplomacy: {
-  // Per civ-pair relationships
-  // Indexed as relations[civA][civB]
-  // QUESTION: Flatten to a single array of pair objects, or keep as 2D?
-  // Proposal: 2D — matches the mental model and the .sav layout.
-  // relations[1][3] = what civ 1 thinks of civ 3.
-  // Note: not symmetric — civ 1's attitude toward 3 ≠ civ 3's attitude toward 1.
-
+  // Per civ-pair relationships — full 8×8 matrix (including self-relations
+  // and barbarians). Self-relations (relations[i][i]) are mostly zeros but
+  // stored for index simplicity — avoids diagonal-skip logic in every loop.
+  //
+  // Indexed as relations[sourceCiv][targetCiv].
+  // NOT symmetric: relations[1][3] is civ 1's view of civ 3.
+  // Some flags are directional (attacked, cityCapture, weNukedThem) —
+  // the source is always the actor. Symmetric flags (war, peace, alliance)
+  // are kept in sync by the engine writing both directions.
   relations: [
     // Index = source civ (0-7)
     [
       // Index = target civ (0-7, including self)
       {
-        // Treaty status — currently active treaties
-        // QUESTION: Set<string> or individual booleans?
-        // There are ~7 treaty flags. Individual booleans are more explicit.
+        // Treaty status — accumulated booleans (alliance implies peace implies contact).
+        // Stored independently rather than as a single level because edge cases
+        // exist (war + contact both true) and the .sav stores them this way.
         contact: boolean,
         ceaseFire: boolean,
         peace: boolean,
@@ -649,7 +560,7 @@ diplomacy: {
         vendetta: boolean,
         embassy: boolean,
 
-        // Historical flags (things that happened)
+        // Historical flags
         hatred: boolean,         // spaceship-related hatred
         nukeTalk: boolean,       // discussed nukes
         attacked: boolean,       // attacked their unit
@@ -675,185 +586,191 @@ diplomacy: {
 ```
 
 **From .sav**: treaties (+32-63), attitudes (+64-71), treatyViolations (+72-79), turnsOfPeace
-**Excluded**: diplomaticInteractionCounters (+80-87) — unknown purpose
-**Excluded**: unknown bytes +23-26 — unclear diplomatic counters
+**Full 8×8 matrix**: includes self-relations (mostly zeros) and barbarian relations — simpler than skipping diagonals
+**Asymmetric by design**: directional flags (attacked, weNukedThem) differ per direction; symmetric flags (war, peace) kept in sync by engine
+**Treaty flags**: accumulated booleans, not a single level — allows edge cases from .sav
+**Excluded**: diplomaticInteractionCounters (+80-87) — unknown purpose. Documented in parser; add as named fields when decoded.
+**Excluded**: unknown bytes +23-26 — unclear diplomatic counters. Documented in parser.
 
 ---
 
 ## `wonders` — World Wonders
 
+Array index = wonder ID (consistent with units, cities, techs — no redundant `.id` field).
+Display names via `WONDER_NAMES[wonderIndex]` in `defs.js`.
+Wonder effects live in engine code, not the model.
+
 ```js
 wonders: [
-  // 28 entries (indexed by wonder ID, 0-27)
+  // 28 entries — array index = wonder ID (0-27)
   {
-    id: number,                // wonder ID (for display name lookup)
     cityIndex: number | null,  // index into cities array, or null if not built
     destroyed: boolean,        // wonder was built but then destroyed
-    // QUESTION: Store owner explicitly or derive from cities[cityIndex].owner?
-    // Proposal: Derive — it's always cities[cityIndex].owner.
-    // If cityIndex is null, there is no owner.
+    // Owner derived from cities[cityIndex].owner — not stored
   },
   // ... 28 entries
 ]
 ```
 
-**From .sav**: wonderCityIds (28 × uint16). 0xFFFF → not built (cityIndex: null, destroyed: false). 0xFFEF → destroyed (cityIndex: null, destroyed: true). Otherwise → cityIndex = value.
+**From .sav**: wonderCityIds (28 × uint16). 0xFFFF → not built. 0xFFEF → destroyed. Otherwise → cityIndex.
+**Convention**: array index = ID throughout the model (units, cities, techs, wonders). No redundant `.id` fields.
 
 ---
 
 ## `technology` — Tech Discovery State
 
+Stores only per-advance data. Per-civ views ("which techs does civ 3 have?") are
+derived via helper functions or cached outside the model — same pattern as the
+visibility cache. Entries 89-99 are unused padding, kept for index alignment with .sav.
+
 ```js
 technology: {
-  // Per-advance tracking
-  // QUESTION: How many advances? Standard Civ2 has 89 + 11 unused = 100 slots.
-  // The parser reads 100 bytes for firstDiscoverer and 100 bits for per-civ masks.
-  // Proposal: Use 100 entries for .sav compat, only 89 are real advances.
-
   advances: [
-    // Index = advance ID (0-99)
+    // 100 entries — array index = advance ID
+    // Only 0-88 are real advances; 89-99 are unused padding (kept for .sav index alignment)
     {
-      firstDiscoveredBy: number | null,  // civ slot (1-7) or null if undiscovered
-      discoveredBy: Set<number>,         // set of civ slots that have this tech
+      firstDiscoveredBy: number | null,  // civ slot 1-7, or null if undiscovered
+      discoveredBy: Set<number>,         // civ slots 1-7 that have this tech
     },
     // ... 100 entries
   ],
 
-  // Per-civ tech sets (convenience view, derived from advances above)
-  // QUESTION: Store per-civ tech sets redundantly, or always derive from advances?
-  // The parser currently provides civTechs[civSlot] = Set<advanceId>.
-  // It's used for era calculation, building prerequisites, etc.
+  // Per-civ tech sets and counts are NOT stored in the model.
+  // Derive via helper functions, cached outside the model after parse/deserialization
+  // (same pattern as visibility cache — computed index, not game state):
   //
-  // Proposal: Don't store redundantly. Provide a helper function:
-  //   getTechsForCiv(technology, civSlot) → Set<number>
-  // This avoids dual bookkeeping. The advances array is the single source of truth.
+  //   techCache = {
+  //     civTechs: { [civSlot]: Set<advanceId> },  // which techs each civ has
+  //     civTechCounts: { [civSlot]: number },      // count per civ
+  //   };
   //
-  // COUNTER-ARGUMENT: civTechs is accessed very frequently (every city render,
-  // every build check). Rebuilding the Set each time is O(100).
-  // Compromise: cache it, invalidate on tech change. But not stored in model.
-
-  // Per-civ tech counts (for era calculation)
-  // Same argument as above — derive from advances, cache if needed.
-  // QUESTION: The parser counts only the first 89 advances (not all 100).
-  // This is correct — advances 89-99 are unused padding.
+  // Rebuilt from advances array after parse and after any tech change.
+  // Provides O(1) lookup: techCache.civTechs[3].has(advanceId)
 }
 ```
 
 **From .sav**: firstDiscoverer[100] at +0x42, techDiscoveryBitmask[100] at +0xA6
-**Excluded — Redundant**: civTechCounts, civTechs — derive from advances array
+**Excluded — Redundant**: civTechCounts, civTechs — derived, cached outside model as computed index
+**Padding entries 89-99**: kept for .sav index alignment, always empty
 
 ---
 
 ## `turn` — Turn State
 
+Kept as its own top-level section — turn advancement is a core game mechanic
+that the reducer touches every END_TURN. Thin by design.
+
 ```js
 turn: {
   number: number,             // current turn number (0-based)
   activeCiv: number,          // civ slot whose turn it is (1-7)
-  year: number | null,        // computed from turn number via year formula, or null
-
-  // QUESTION: Store humanPlayers bitmask here or on each civ?
-  // Currently it's a top-level bitmask. In the model, each civ has isHuman.
-  // For the turn system, we need to know which civs are human to determine
-  // whether to wait for input or auto-play AI turns.
-  // Proposal: Already on civs[i].isHuman. Don't duplicate here.
-
-  // .sav fields related to turn
   selectedUnit: number | null, // currently selected unit index, or null
+                               // Used to center map on initial load for each player.
+                               // In multiplayer, server stores per-civ selected unit.
 
-  // QUESTION: Is playerCiv (the human player's civ slot) per-session or per-game?
-  // In single-player, there's one human. In multiplayer, multiple humans.
-  // Proposal: playerCiv is per-session (the local player's civ), stored in meta.
-  // The model's turn.activeCiv tells whose turn it is globally.
+  // year: EXCLUDED — derive via getYear(turn.number) in engine/year.js.
+  //   Pure function, one-liner. Avoids reducer needing to update it every turn.
+  // humanPlayers: lives on civs[i].isHuman — not duplicated here
+  // playerCiv: per-session — stored in meta.seatCivMap
 }
 ```
 
 **From .sav**: turnsPassed (+0x1C), activeHumanPlayer (+0x27), selectedUnit (+0x22), playerCiv (+0x29)
+**Excluded — Derived**: year — compute via `getYear(turn.number)` from `engine/year.js`
 
 ---
 
-## `tail` — Miscellaneous Persistent Data
+## `history` — Historical & Retrospective Data
 
 ```js
-tail: {
-  // City naming counters (21 entries, one per standard civ rulesCivNumber)
-  cityNameCounters: [
-    { citiesBuilt: number },   // how many cities this civ type has ever built
-    // ... 21 entries
+history: {
+  // Civ eliminations — unlimited entries (not constrained by .sav's 12-entry limit)
+  kills: [
+    {
+      turn: number,
+      killerCiv: number,       // civ slot 1-7
+      destroyedCivRulesId: number,  // rulesCivNumber + 21*generation
+      destroyedCivName: string,
+    },
+    // ... unlimited entries
   ],
 
-  // Cursor/viewport position (for restoring view on load)
-  cursorPosition: { x: number, y: number },
+  // Per-turn snapshots for power graph, top-5 lists, demographics report.
+  // Computed at each turn boundary by processTurnStart() and appended here.
+  // For new/ongoing games, built natively each turn.
+  // For .sav imports, this starts empty — powerGraphRaw is a placeholder
+  // for future decoding. Code should fail gracefully when turnSnapshots
+  // is empty (e.g. power graph UI shows "no data" or is disabled).
+  turnSnapshots: [
+    {
+      turn: number,
+      civSnapshots: [
+        {
+          civSlot: number,
+          population: number,    // sum of city sizes
+          territory: number,     // tiles owned
+          military: number,      // total unit attack+defense
+          gold: number,          // treasury at end of turn
+          techCount: number,     // advances discovered
+          cityCount: number,
+          productionTotal: number, // total shield output across cities
+        },
+        // ... one per alive civ
+      ],
+    },
+    // ... one per completed turn
+  ],
 
-  // Per-civ passwords (multiplayer .sav feature)
-  // QUESTION: Include? Passwords are for the original Civ2 hotseat multiplayer.
-  // Our multiplayer uses WebSocket sessions, not passwords.
-  // Proposal: Store for .sav fidelity. Exclude from new-game initialization.
-  passwords: Uint8Array[] | null,  // 7 entries of 32 bytes each
+  // Raw power graph data from .sav (partially decoded).
+  // Placeholder — future work to decode into turnSnapshots format.
+  // For now, stored as raw bytes for fidelity. Code that reads
+  // turnSnapshots must handle the case where this is the only
+  // history data available (graceful fallback).
+  powerGraphRaw: Uint8Array | null,
 
-  // Kill history
-  killHistory: {
-    count: number,
-    entries: [
-      {
-        turn: number,            // turn the elimination happened
-        killerCiv: number,       // civ slot of the killer
-        destroyedCivRulesId: number, // rulesCivNumber + 21*generation
-        destroyedCivName: string,
-      },
-      // ... up to 12 entries
-    ],
-  },
-
-  // Scenario block (only present in scenario saves)
-  scenario: {
-    name: string,
-    rawBlock: Uint8Array,      // full 100 bytes for fields we haven't decoded
-  } | null,
-
-  // Engine constants (97 bytes — encodes COSMIC values)
-  // QUESTION: Parse into settings.cosmic or keep raw?
-  // Proposal: Parse into settings.cosmic. The raw bytes aren't useful in JS.
-  // If some constants aren't yet mapped, store remainder as raw.
-  engineConstantsRaw: Uint8Array | null,
-
-  // Fixed constants (7 bytes — validation sentinel)
-  fixedConstants: Uint8Array | null,
-  fixedConstantsValid: boolean,
-
-  // Power graph / history data
-  // QUESTION: Large block (~1221 bytes) of partially decoded data.
-  // Contains historical power rankings, demographics over time.
-  // Needed for: replay graphs, demographics screen.
-  // Proposal: Store raw for now. Decode incrementally as we build features.
-  historyData: Uint8Array | null,
-
-  // Network data (NET files only)
-  networkData: Uint8Array | null,
+  // Game replay data (unit/city positions per turn for minimap playback).
+  // NEW — doesn't exist in .sav. Placeholder, define structure when
+  // we implement the feature. Accumulated during gameplay for
+  // post-game review.
+  replay: [] | null,           // TBD structure
 }
 ```
 
+**From .sav**: kills from tail kill history (12-entry limit removed in JS), powerGraphRaw from tail history data
+**New for JS game**: turnSnapshots (built each turn), replay (end-game playback, TBD)
+**Graceful fallback**: .sav imports have powerGraphRaw but empty turnSnapshots — UI must handle both cases
+
 ---
 
-## `events` — Scenario Events
+## `events` — Scenario Events & Metadata
 
 ```js
+// null for non-scenario games. Entire section absent — not an empty object.
 events: {
+  // Scenario metadata (from .sav tail scenario block)
+  scenario: {
+    name: string,
+    // ... other decoded scenario fields (objectives, flags)
+    // Undecoded fields stored as raw bytes until we need them
+    rawBlock: Uint8Array,
+  } | null,
+
   records: [
     {
       triggers: Set<string>,   // e.g. new Set(['turn', 'unitKilled'])
       actions: Set<string>,    // e.g. new Set(['text', 'createUnit', 'justOnce'])
       params: Uint8Array,      // 290 raw parameter bytes (event-type-specific)
-      // QUESTION: Decode params into typed fields per trigger/action combo?
-      // There are dozens of combinations. The event system is complex.
-      // Proposal: Keep params raw for now. Decode when we implement the
-      // scenario event engine. Triggers and actions as string Sets are enough
-      // for filtering and display.
     },
     // ... one per event
   ],
   strings: string[],           // text messages, filenames referenced by events
-} | null  // null if no events section found
+} | null
+
+// TODO: This section is intentionally rough. The scenario event engine is not
+// yet implemented. When we build it, revisit this structure to:
+//   - Decode params bytes into named fields per trigger/action type
+//   - Define the event processing pipeline (when triggers fire, how actions execute)
+//   - Decide whether events mutate the model directly or go through the reducer
 ```
 
 ---
@@ -861,18 +778,17 @@ events: {
 ## `gapRecord` — Inter-Section Data
 
 ```js
-// QUESTION: The 32-byte gap record between cities and tail is poorly understood.
-// It may contain cursor state, last-action metadata, or AI scratch data.
-// Proposal: Store raw for .sav fidelity. Exclude from new-game initialization.
-// If we discover its purpose, promote fields to named properties.
-gapRecord: Uint8Array | null   // 32 bytes, or null for new games
+// The 32-byte gap record between cities and tail in .sav is poorly understood.
+// May contain cursor state, last-action metadata, or AI scratch data.
+// Proposal: Exclude from model. Document in parser why it's skipped.
+// If we discover its purpose, add named fields to the appropriate section.
 ```
 
 ---
 
 ## Serialization for WebSocket
 
-The model must survive JSON round-trip for multiplayer state sync. Fields that need special handling:
+The model must survive JSON round-trip for multiplayer state sync:
 
 | Type | Serialize | Deserialize |
 |------|-----------|-------------|
@@ -880,16 +796,186 @@ The model must survive JSON round-trip for multiplayer state sync. Fields that n
 | `Set<string>` | `[...set]` (array) | `new Set(arr)` |
 | `Uint8Array` | `Array.from(arr)` or base64 | `new Uint8Array(arr)` |
 
-**QUESTION**: Should we use a custom `toJSON`/`fromJSON` on the model, or handle conversion at the transport boundary?
-**Proposal**: Handle at transport boundary. The model uses native JS types (Set, Uint8Array). Two small functions — `serializeState(model)` and `deserializeState(json)` — handle the conversion. This keeps the model clean and the serialization logic centralized.
+Handled at transport boundary via `serializeState(model)` and `deserializeState(json)`. The model uses native JS types; serialization logic is centralized.
 
 **Payload size considerations**:
 - Current GAME_START is ~325KB for a 40×50 map with binary-encoded fields
 - Converting bitmasks to arrays/objects will increase size ~2-3×
 - A 150×300 map (45K tiles) with improvement objects per tile: ~5-10MB
-- QUESTION: Is this acceptable? WebSocket can handle it, but initial load time matters.
-- Mitigation: Send map tiles as compact arrays on initial load, expand on client.
-  Or compress with standard algorithms (the data compresses well).
+- Mitigation: compress with standard algorithms, or send map tiles in compact format on initial load and expand on client
+
+---
+
+## Server-Side Filtering (Fog of War)
+
+The server NEVER sends the full model to a client. Each player receives only what their civ can see. This matches Civ2.exe behavior — you only see what you've explored, and enemy details are hidden unless you have intelligence (embassy, spy).
+
+### Visibility Rules
+
+| Data | What Client Receives | Condition |
+|------|---------------------|-----------|
+| Map terrain | Only explored tiles | `map.explored[myCiv].has(tileIndex)` |
+| Map improvements (current) | Only tiles with current LOS | Unit/city within sight radius |
+| Map improvements (fogged) | Last-seen snapshot | `map.knownImprovements[myCiv][tileIndex]` |
+| My units | Full data | Always |
+| Enemy units | Position, type, owner, HP | Only if on a tile I have LOS on |
+| Enemy unit orders, goto, cargo | Hidden | Never (unless spy) |
+| My cities | Full data | Always |
+| Enemy cities | Name, owner, believed size | Only if in `city.knownTo[myCiv]` |
+| Enemy city internals (production, buildings, workers) | Hidden | Unless embassy/spy |
+| My civ (treasury, research, rates) | Full data | Always |
+| Enemy civ (treasury, research, rates) | Hidden | Unless embassy |
+| My diplomacy | Full relations data | Always |
+| Enemy-to-enemy diplomacy | Hidden | Never |
+| Wonders | Public — all players see when built/destroyed | Always |
+| Technology (my techs) | Full set | Always |
+| Technology (enemy techs) | Hidden | Unless embassy/intelligence |
+| History (kills) | Public | Always |
+
+### Implementation
+
+The server runs `filterStateForCiv(fullModel, civSlot)` before sending to each client. This produces a per-civ view of the model with private data stripped. The function is lightweight — for a typical game (200 units, 2000 tiles, 40 cities) it runs in <1ms per player.
+
+---
+
+## Real-Time Updates & Delta Broadcasting
+
+Instead of sending the full filtered state after every action, the server sends targeted deltas. This is both more efficient (smaller payloads) and better UX (other players see moves as they happen, not batched at end of turn).
+
+### Flow
+
+```
+Player A moves a unit:
+  → Client sends ACTION { type: MOVE_UNIT, unitIndex, dir }
+  → Server validates, applies to authoritative state
+  → Server sends deltas to each client:
+
+  To Player A (the actor):
+    { type: 'MOVE_RESULT', unitIndex, newGx, newGy, movesLeft, visibilityUpdates }
+
+  To Player B (can see the unit):
+    { type: 'UNIT_MOVED', unitIndex, fromGx, fromGy, toGx, toGy }
+
+  To Player C (cannot see the unit):
+    (nothing — no delta sent)
+
+  To Player D (unit moved INTO their LOS):
+    { type: 'UNIT_APPEARED', unit: { type, owner, gx, gy, ... } }
+
+  To Player E (unit moved OUT OF their LOS):
+    { type: 'UNIT_DISAPPEARED', unitIndex, lastGx, lastGy }
+```
+
+### Delta Types
+
+| Delta | When Sent | Payload |
+|-------|-----------|---------|
+| `MOVE_RESULT` | To acting player after move | New position, moves left, new visibility |
+| `UNIT_MOVED` | To players who can see both old and new position | From/to coordinates |
+| `UNIT_APPEARED` | To players who can now see the unit | Full visible unit data |
+| `UNIT_DISAPPEARED` | To players who lost sight of the unit | Last known position |
+| `CITY_FOUNDED` | To players who can see the tile | City name, owner, position |
+| `TURN_START` | To the civ whose turn begins | Updated units (movement reset), city production results |
+| `TURN_CHANGED` | To all players | New activeCiv, turn number |
+
+### Full State Sync
+
+Full filtered state is sent only on:
+- **GAME_START** — initial load
+- **Reconnect** — player rejoins after disconnect
+- **Desync detection** — version mismatch triggers full resync
+
+---
+
+## Visibility Architecture (Server-Side Cache)
+
+### The Design Decision
+
+Unit and city visibility — "which civs can see which units/tiles right now?" — is
+**NOT stored in the game model**. It is maintained as a **server-side cache** that
+lives outside the model, rebuilt after each action.
+
+### Why Not Store It in the Model?
+
+Three options were considered:
+
+| | Store on each unit | Derive on demand | Server-side cache |
+|---|---|---|---|
+| **Where it lives** | `unit.visibleTo: Set<number>` | Computed each time | Server lookup table |
+| **Reducer impact** | Must update on every move | None | None |
+| **Lookup speed** | O(1) | O(units + cities) per query | O(1) |
+| **Correctness risk** | Can drift if reducer has bugs | Always correct | Always correct if rebuilt after each action |
+| **Model purity** | Derived data in the model | Clean model | Clean model |
+
+**Decision: Server-side cache (Option C).** Rationale:
+
+1. **Design principle #2** says "no derived/stale fields" — visibility is fully
+   derivable from unit/city positions + sight radii. Storing it in the model
+   violates this principle and creates a class of sync bugs.
+
+2. **Reducer stays pure** — the reducer applies game rules (movement, combat,
+   production). Tracking "who can see what" is a server concern for filtering
+   and broadcasting, not a game rule.
+
+3. **Performance is fine** — rebuilding visibility after each action is cheap.
+   A typical game has ~200 units and ~40 cities. Scanning all positions to
+   rebuild LOS is <1ms. The cache gives O(1) lookups for broadcasting.
+
+4. **Single source of truth** — positions are the truth. The cache is just an
+   index over positions. No risk of the cache disagreeing with reality because
+   it's rebuilt (or incrementally updated) from positions after every action.
+
+### Cache Structure
+
+```js
+// Server infrastructure — NOT part of the game model.
+// Lives on room object, rebuilt after each reducer call.
+room.visibilityCache = {
+  // Which tiles each civ can currently see (from their units + cities)
+  // Rebuilt from: unit positions (sight radius 1 = 9 tiles) +
+  //               city positions (sight radius 2 = 21 tiles)
+  visibleTiles: {
+    [civSlot: number]: Set<tileIndex>,  // e.g. { 1: Set([204, 205, ...]) }
+  },
+
+  // Reverse index: which civs can see a given tile
+  // Enables O(1) lookup: "who can see tile 204?" → Set([1, 3])
+  tileObservers: {
+    [tileIndex: number]: Set<civSlot>,  // e.g. { 204: Set([1, 3]) }
+  },
+};
+```
+
+### How It's Used
+
+```
+Player moves a unit:
+  1. Reducer applies MOVE_UNIT → returns new game state (pure, no visibility logic)
+  2. Server saves old visibilityCache
+  3. Server rebuilds visibilityCache from new state
+  4. Server diffs old vs new cache to determine deltas:
+     - Unit was in civ 3's visibleTiles before but not after → UNIT_DISAPPEARED to civ 3
+     - Unit is in civ 2's visibleTiles now but wasn't before → UNIT_APPEARED to civ 2
+     - Unit is in civ 4's visibleTiles both before and after → UNIT_MOVED to civ 4
+  5. Server sends appropriate deltas to each client
+```
+
+### What About Exploration (Persistent)?
+
+Exploration ("has this civ ever seen this tile?") is different from LOS ("can this
+civ see this tile right now?"). Exploration IS stored in the model at
+`map.explored[civSlot]: Set<tileIndex>` because it's persistent, authoritative
+game state — once a tile is explored, it stays explored. The visibility cache only
+tracks transient LOS.
+
+### Separation of Concerns
+
+| Concept | Where it lives | Why |
+|---------|---------------|-----|
+| **Exploration** (persistent) | `map.explored[civSlot]` in game model | Authoritative game state — survives save/load |
+| **LOS** (transient) | `room.visibilityCache` on server | Derived from positions — rebuilt after each action |
+| **Known improvements** (fog memory) | `map.knownImprovements[civSlot]` in game model | Authoritative — what civ last saw on each tile |
+| **Believed city size** (fog memory) | `city.believedSize[civSlot]` in game model | Authoritative — what civ last saw as city size |
 
 ---
 
@@ -901,6 +987,7 @@ The model must survive JSON round-trip for multiplayer state sync. Fields that n
 | Unit sequenceId | Save-file internal indexing |
 | City sequenceId | Save-file internal indexing |
 | Unit stack pointers (prev/next) | Derive stacking from position |
+| Unit visibleTo | Server-side cache — see Visibility Architecture section |
 | Derived city fields (50% of city record) | Recompute on demand |
 | Derived civ demographics | Recompute from units/cities |
 | mw2 (doubled width) | Derive as width × 2 |
@@ -908,24 +995,66 @@ The model must survive JSON round-trip for multiplayer state sync. Fields that n
 | File magic, format markers | File plumbing, not game data |
 | All known-zero padding bytes | No information content |
 | Unknown/undecoded bytes | No known purpose; add when decoded |
+| Passwords (hotseat multiplayer) | Auth via WebSocket sessions |
+| Fixed constants (7-byte sentinel) | Validation only, not game data |
+| Network data (.net LAN protocol) | Irrelevant to WebSocket multiplayer |
+| Gap record (32 bytes) | Poorly understood, not needed for gameplay |
+| Game rules (movement costs, terrain yields, etc.) | Engine code in `defs.js`, not game state |
+| COSMIC defaults | Engine code in `defs.js`; model only stores overrides (null = default) |
+| City name lists | Engine code in `defs.js`; model only stores overrides and per-civ counter |
 
 ---
 
 ## Open Questions Summary
 
-1. **Tile improvements representation** — object with boolean flags vs Set vs array? (Proposed: object)
+### Resolved
+
+| # | Question | Decision |
+|---|----------|----------|
+| 1 | Tile improvements representation | Object with boolean flags. Farmland is a separate flag (like railroad vs road) |
+| 6 | UI preferences | Client-only (localStorage). Excluded from shared model — each player has own prefs |
+| 8 | Per-civ knownImprovements | Convert up front at parse time — no byte logic in JS |
+| 10 | exploredBy on tiles | Per-civ Set at `map.explored[civSlot]`, not per-tile |
+| 13 | Quarter-resolution data | Excluded — AI pathfinding data, we'd compute our own |
+| 14 | Gap record | Excluded — document in parser |
+| 15 | Numeric enums vs strings | Strings for small enums (≤12 values): difficulty, barbarian, gender, style, government, orders, specialists. Numbers for large catalogs (unit types, buildings, techs, wonders) with display names in `defs.js`. When in doubt, prefer numbers. |
+| 3 | Building representation | `Set<number>` — building IDs (1-indexed, RULES.TXT order). Display via `BUILDING_NAMES[id]` in defs.js. Serialized as array for WebSocket. |
+| 4 | Unit orders | String enum — small set (12 values), readability wins |
+| 5 | Specialist types | String enum — small set (3 values), readability wins |
+| 16 | City style | Derived from `civs[city.owner].style` — not stored on city |
+| 17 | Trade route partner reference | Index-based (`partnerCityIndex`) — cities array is append-only so indices are stable. O(1) lookup, check alive status directly. |
+| 18 | City attribute booleans | Flat on city object (no sub-object nesting) |
+| 19 | canBuildCoastal/Hydro/Ships | Kept despite being derivable — readability trumps purity |
+| 20 | believedSize | All 8 entries for .sav import; server filters per-civ on send |
+| 21 | Production representation | Discriminated object `{ type, id }` — clear conditionals |
+| 7 | Dead units | Keep in array with `alive: false` — append-only, preserves index stability for homeCity and unitIndex references |
+| 12 | Cargo field semantics | Separate named fields (`commodityCarried`, `workTurns`, `fuelRemaining`, `cargoCount`) — readability over compactness. Unused fields are null. |
+| 22 | Unit visibleTo | NOT in model — server-side cache. Derived from positions + sight radii, rebuilt after each action. See Visibility Architecture section. |
+| 23 | lastDirection type | Numeric (0-7) — used mathematically for offset lookups, not in display conditionals |
+| 24 | AI fields on units | Import `aiTaskRole` from .sav for fidelity, not used by JS yet |
+| 25 | 'none' vs 'noOrders' | Keep distinct — 'none'=idle/default, 'noOrders'=explicitly skipped. Turn cannot end until all units have moved or been skipped. |
+| 26 | Diplomacy matrix shape | Full 8×8 including self-relations and barbarians — simpler indexing, no diagonal-skip logic |
+| 27 | Diplomacy symmetry | Store both directions independently. Directional flags (attacked, weNukedThem) differ per direction; engine keeps symmetric flags (war, peace) in sync. |
+| 28 | Treaty representation | Accumulated booleans (not single level) — allows edge cases, matches .sav |
+| 29 | turnsOfPeace location | Stays in diplomacy — conceptually about diplomatic state, not turn mechanics |
+| 30 | Unknown diplomatic fields | Excluded with parser comment — add as named fields when decoded |
+| 31 | Wonder `.id` field | Removed — array index = ID, consistent with units/cities/techs. No redundant `.id` fields anywhere in the model. |
+| 32 | Wonder effects | Engine code in `defs.js` / game logic, not stored in the model |
+| 11 | Redundant tech views | Per-civ tech sets derived and cached outside the model (computed index, same pattern as visibility cache). Rebuilt after parse and after any tech change. |
+| 33 | Tech padding entries 89-99 | Kept for .sav index alignment — always empty |
+| 34 | Civ slot ranges | Consistent: 0-7 for arrays/matrices (includes barbarians), 1-7 where barbarians can't act (activeCiv, firstDiscoveredBy, discoveredBy, killerCiv). All ranges annotated in model. |
+| 35 | Year in turn | Excluded — derive via `getYear(turn.number)`. Pure function, avoids reducer update. |
+| 36 | selectedUnit in turn | Kept — useful for centering map on initial load. Server stores per-civ. |
+| 37 | Turn as top-level section | Kept separate — turn advancement is core reducer mechanic, conceptually distinct from meta |
+| 38 | kills limit | Unlimited — not constrained by .sav's 12-entry binary limit |
+| 39 | turnSnapshots for .sav imports | Starts empty — powerGraphRaw is placeholder for future decoding. Code must fail gracefully. |
+| 40 | replay | Placeholder (TBD structure) — define when feature is implemented |
+| 41 | Events section | Kept rough/placeholder — null for non-scenarios. Revisit when scenario event engine is built. |
+
+### Still Open
+
 2. **Tile storage** — array of objects vs parallel typed arrays? (Proposed: array of objects)
-3. **Building representation** — Set\<number\> vs Set\<string\> vs array? (Proposed: Set\<number\>)
-4. **Unit orders** — string vs number? (Proposed: string)
-5. **Specialist types** — string vs number? (Proposed: string)
-6. **COSMIC constants** — parse from engine constants or load from RULES.TXT? (Proposed: parse and store in model)
-7. **UI preferences** — in shared model or client-only? (Proposed: client-only for multiplayer, in model for .sav fidelity)
-8. **Dead units** — keep in array or filter out? (Proposed: keep for index stability)
-9. **Per-civ knownImprovements** — convert bytes to objects or keep raw? (Proposed: keep raw, convert lazily)
-10. **Payload size** — acceptable for large maps? (Proposed: compress or use compact initial format)
-11. **exploredBy on tiles** — mutable field on "immutable" map data? (Proposed: acknowledge mutation, keep on tile)
-12. **Redundant tech views** — store civTechs per-civ or derive from advances? (Proposed: derive, cache separately)
-13. **Cargo field semantics** — single generic field or type-specific named fields? (Proposed: single generic field)
+9. **Payload size** — acceptable for large maps? (Proposed: delta broadcasting solves most of this)
 
 ---
 
@@ -945,8 +1074,9 @@ The model must survive JSON round-trip for multiplayer state sync. Fields that n
 ### Phase 3: Unit Fields
 - Convert orders byte → string enum
 - Convert movement/status flag bytes → individual booleans
-- Convert visFlag → `visibleTo: Set<number>`
-- Exclude stack pointers
+- Convert cargo byte → separate named fields (commodityCarried, workTurns, fuelRemaining, cargoCount)
+- Exclude stack pointers (derive stacking from position)
+- Exclude visibleTo (server-side cache, not model — see Visibility Architecture)
 - Update: renderer, tooltip, events, reducer
 
 ### Phase 4: Tile Improvements
@@ -960,14 +1090,18 @@ The model must survive JSON round-trip for multiplayer state sync. Fields that n
 - Convert wonder cityIds → objects
 - Convert tech bitmasks → Set-based structure
 
-### Phase 6: Map Visibility
+### Phase 6: Map Visibility & Tile Data
 - Convert tile visibility byte → `exploredBy: Set<number>`
+- Convert tile data to objects with named fields
 - Update: updateVisibility, FOW rendering, filterStateForCiv
 
-### Phase 7: Settings & Remaining Fields
+### Phase 7: Settings, Meta, History
 - Parse toggle bytes → named boolean fields
-- Parse COSMIC constants from engine constants
-- Structure tail data
-- Clean up meta fields
+- Parse COSMIC constants into settings.cosmic (null override pattern)
+- Move cursor position to meta
+- Structure kill history and power graph into history
+- Move city name counters to civs
+- Move CIV_CITY_NAMES from reducer.js to defs.js
+- Clean up remaining fields
 
 Each phase is independently deployable. Earlier phases don't depend on later ones. The parser gains a conversion layer that can be enabled per-section, allowing gradual migration.
