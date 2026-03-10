@@ -136,6 +136,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const workedTiles = assignInitialWorkers(unit.gx, unit.gy, 1, mapBase);
 
       // Create city at settler's position
+      const isFirstCity = prev.cities.filter(c => c.owner === unit.owner).length === 0;
+      const buildings = new Set();
+      if (isFirstCity) buildings.add(1); // Palace
       const newCity = {
         name: getCityName(unit.owner, prev.cities, prev.civData),
         owner: unit.owner,
@@ -143,11 +146,11 @@ export function applyAction(prev, mapBase, action, civSlot) {
         size: 1,
         gx: unit.gx, gy: unit.gy,
         cx: unit.gx * 2 + (unit.gy % 2), cy: unit.gy,
-        hasWalls: false, hasPalace: prev.cities.filter(c => c.owner === unit.owner).length === 0,
+        hasWalls: false, hasPalace: isFirstCity,
         civilDisorder: false, weLoveKingDay: false, isOccupied: false,
         workedTiles,
         specialists: [],
-        buildings: 0, buildingsV: 0,
+        buildings,
         foodInBox: 0, shieldsInBox: 0,
       };
       state.cities = [...prev.cities, newCity];

@@ -1521,7 +1521,7 @@ const transport = createTransport({
           msg.mapBase.mw, msg.mapBase.mh, msg.mapBase.mapShape, msg.mapBase.mapSeed,
           msg.mapBase.tileData, msg.mapBase.knownImprovements,
         );
-        mpGameState = msg.state;
+        mpGameState = deserializeState(msg.state);
 
         // Play transition sound and stop menu music
         menuLoop.pause();
@@ -1551,7 +1551,7 @@ const transport = createTransport({
 
       case 'STATE': {
         const prevUnits = mpGameState?.units;
-        mpGameState = msg.state;
+        mpGameState = deserializeState(msg.state);
 
         // Stash visibility update — applied after slide animation (or immediately if no slide)
         const pendingVisibility = (msg.tileVisibility && mpMapBase?.tileData) ? msg.tileVisibility : null;
@@ -1858,6 +1858,16 @@ setInterval(() => {
 // ═══════════════════════════════════════════════════════════════════
 // MULTIPLAYER GAME — render from server state, turn UI, input
 // ═══════════════════════════════════════════════════════════════════
+
+// Reconstruct non-JSON types (arrays → Sets) after WebSocket deserialization
+function deserializeState(state) {
+  if (state.cities) {
+    for (const c of state.cities) {
+      if (Array.isArray(c.buildings)) c.buildings = new Set(c.buildings);
+    }
+  }
+  return state;
+}
 
 function buildMapDataFromState() {
   if (!mpMapBase || !mpGameState) return null;

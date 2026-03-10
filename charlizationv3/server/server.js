@@ -632,11 +632,15 @@ function sendGameStateToAll(roomId, room) {
 
 function buildStatePayload(room, civSlot) {
   // For now, send full state (FOW filtering can be enabled later)
-  // Strip non-serializable fields
+  // Convert non-JSON-serializable types (Sets → arrays)
   const gs = room.gameState;
+  const cities = gs.cities.map(c => ({
+    ...c,
+    buildings: c.buildings instanceof Set ? [...c.buildings] : c.buildings,
+  }));
   return {
     units: gs.units,
-    cities: gs.cities,
+    cities,
     civData: gs.civData,
     civNameBlocks: gs.civNameBlocks,
     civStyles: gs.civStyles,

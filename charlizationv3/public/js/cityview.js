@@ -147,9 +147,8 @@ const Civ2CityView = {
   // type: 0=Nothing, 1-38=city improvements, 39-66=wonders
   cityHasImprovement(city, cityIndex, mapData, improvType) {
     if (improvType === 0) return false;
-    // City improvements: bits in buildings (uint32, types 1-31) and buildingsV (uint8, types 32-38)
-    if (improvType <= 31) return !!(city.buildings & (1 << improvType));
-    if (improvType <= 38) return !!(city.buildingsV & (1 << (improvType - 32)));
+    // City improvements: Set<number> of building IDs 1-38
+    if (improvType <= 38) return city.buildings ? city.buildings.has(improvType) : false;
     // Wonders (types 39-66): check wonderCityIds
     const wonderIdx = improvType - 39;
     const wonderCityIds = mapData.gameState && mapData.gameState.wonderCityIds;
@@ -224,8 +223,8 @@ const Civ2CityView = {
       ? Civ2Renderer._getEpoch(mapData.civTechs[city.owner])
       : 0;
 
-    // Check for Superhighways (improvement bit 25)
-    const hasSuperHighways = !!(city.buildings & (1 << 25));
+    // Check for Superhighways (building 25)
+    const hasSuperHighways = city.buildings ? city.buildings.has(25) : false;
 
     // 2. Draw background
     const bgId = this.getBackgroundId(city, epoch, hasSuperHighways);

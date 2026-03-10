@@ -682,13 +682,18 @@ const Civ2Parser = {
       const specialistCountRaw = savBuf[off + 51];
       const specialistCount    = specialistCountRaw >> 2;
 
-      // Building bitmask I-IV (+52–+55)
-      const buildings   = this.u32(savBuf, off + 52);
-      const hasWalls    = !!(buildings & 0x100);
-      const hasPalace   = !!(buildings & 0x02);
-
-      // Building bitmask V (+56)
-      const buildingsV  = savBuf[off + 56];
+      // Building bitmask I-IV (+52–+55) + V (+56) → Set<number>
+      const buildingsRaw  = this.u32(savBuf, off + 52);
+      const buildingsVRaw = savBuf[off + 56];
+      const buildings = new Set();
+      for (let bit = 1; bit <= 31; bit++) {
+        if (buildingsRaw & (1 << bit)) buildings.add(bit);
+      }
+      for (let bit = 0; bit <= 6; bit++) {
+        if (buildingsVRaw & (1 << bit)) buildings.add(32 + bit);
+      }
+      const hasWalls  = buildings.has(8);
+      const hasPalace = buildings.has(1);
 
       // Item in production (+57)
       const prodRaw = savBuf[off + 57];
@@ -747,7 +752,7 @@ const Civ2Parser = {
           specialists, specialistCount,
           foodInBox, shieldsInBox, netBaseTrade,
           workedTiles,
-          buildings, buildingsV,
+          buildings,
           itemInProduction, prodRaw,
           tradeRouteCount, tradeCommoditiesAvail, tradeCommoditiesDemand,
           tradeCommoditiesInRoute, tradePartnerCityIds,

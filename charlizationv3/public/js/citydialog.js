@@ -303,15 +303,11 @@ const Civ2CityDialog = {
 
   getCityImprovements(city, cityIndex, mapData) {
     const result = [];
-    for (let bit = 1; bit <= 31; bit++) {
-      if (city.buildings & (1 << bit))
-        result.push({ id: bit, name: this.BUILDING_NAMES[bit] || `#${bit}`, isWonder: false });
-    }
-    for (let bit = 0; bit <= 6; bit++) {
-      if (city.buildingsV & (1 << bit)) {
-        const type = bit + 32;
-        if (type === 38) continue;  // Capitalization is a production option, not a building
-        result.push({ id: type, name: this.BUILDINGSV_NAMES[type] || `#${type}`, isWonder: false });
+    if (city.buildings) {
+      for (const id of [...city.buildings].sort((a, b) => a - b)) {
+        if (id === 36) continue;  // Capitalization is a production option, not a building
+        const name = (id <= 31 ? this.BUILDING_NAMES[id] : this.BUILDINGSV_NAMES[id]) || `#${id}`;
+        result.push({ id, name, isWonder: false });
       }
     }
     const wonderCityIds = mapData.gameState && mapData.gameState.wonderCityIds;
@@ -365,19 +361,19 @@ const Civ2CityDialog = {
     sci += specs.scientist * 3;
 
     // Luxury AND gold multiplier: Marketplace(5)/Bank(10)/Stock Exchange(22) each +50%
-    const b = city.buildings || 0;
+    const has = city.buildings ? id => city.buildings.has(id) : () => false;
     let lgMult = 0;
-    if (b & (1 << 5)) lgMult++;    // Marketplace
-    if (b & (1 << 10)) lgMult++;   // Bank
-    if (b & (1 << 22)) lgMult++;   // Stock Exchange
+    if (has(5)) lgMult++;    // Marketplace
+    if (has(10)) lgMult++;   // Bank
+    if (has(22)) lgMult++;   // Stock Exchange
     lux += (lux * lgMult) >> 1;
     tax += (tax * lgMult) >> 1;
 
     // Science multiplier: Library(6)/University(12)/Research Lab(26) or SETI(wonder 18)
     let sciMult = 0;
-    if (b & (1 << 6)) sciMult++;    // Library
-    if (b & (1 << 12)) sciMult++;   // University
-    if ((b & (1 << 26)) || this._civHasWonder(mapData, city.owner, 18)) sciMult++; // Research Lab or SETI
+    if (has(6)) sciMult++;    // Library
+    if (has(12)) sciMult++;   // University
+    if (has(26) || this._civHasWonder(mapData, city.owner, 18)) sciMult++; // Research Lab or SETI
 
     // Isaac Newton's College (wonder 16): doubles science building effect in wonder city
     let sciBonus = sci * sciMult;
@@ -483,11 +479,9 @@ const Civ2CityDialog = {
   IRRIGATION_BONUS: [1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0],
   MINING_BONUS:     [1, 0, 0, 0, 3, 1, 0, 1, 0, 0, 0],
 
-  // Check if city has a building by ID (1-31 in buildings, 32-38 in buildingsV)
+  // Check if city has a building by ID (1-38)
   _cityHasBuilding(city, buildingId) {
-    if (buildingId <= 31) return !!(city.buildings & (1 << buildingId));
-    if (buildingId <= 38) return !!(city.buildingsV & (1 << (buildingId - 32)));
-    return false;
+    return city.buildings ? city.buildings.has(buildingId) : false;
   },
 
   // Check if a wonder is active and belongs to this city
@@ -2744,7 +2738,7 @@ const Civ2CityDialog = {
   _drawFoodStorage(ctx, city, cityIndex, cdSprites, mapData) {
     if (!(cdSprites && cdSprites.food)) return;
     const R = this.REGIONS.foodStorage;
-    const hasGranary = !!(city.buildings & (1 << 3));
+    const hasGranary = city.buildings ? city.buildings.has(3) : false;
     const pyramidsCityId = mapData && mapData.gameState && mapData.gameState.wonderCityIds &&
       mapData.gameState.wonderCityIds[0];
     const hasPyramids = pyramidsCityId != null && pyramidsCityId !== 0xFFFF && pyramidsCityId !== 0xFFEF &&
@@ -2943,7 +2937,7 @@ const Civ2CityDialog = {
     // Also sea-domain units (types 32-43) in cities with harbor (building 30)
     // Binary: FUN_0056baff lines 3925-3941
     const isSeaDomain = (u.type >= 32 && u.type <= 43);
-    const hasHarbor = city && (city.buildings & (1 << 30));
+    const hasHarbor = city && city.buildings && city.buildings.has(30);
     const isDimmed = (u.orders === 0x03) || (isSeaDomain && hasHarbor);
 
     let sprite = colored;
@@ -3577,19 +3571,24 @@ const Civ2CityDialog = {
   // ── Click handler ──
   handleClick(x, y, clickRegions) {
     for (const r of clickRegions) {
-      if (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h) {
-        if (r.action === 'info') {
-          this.infoPanelMode = ((this.infoPanelMode || 0) + 1) % 3;
-        }
-        // For tile/citizen actions, return the full region data
-        if (r.action === 'toggleTile') {
-          return { action: r.action, tileIndex: r.tileIndex, tileGx: r.tileGx, tileGy: r.tileGy };
-        }
-        if (r.action === 'citizenToSpec' || r.action === 'cycleSpec') {
-          return { action: r.action, citizenSlot: r.citizenSlot };
-        }
-        return { action: r.action };
+      // Isometric diamond hit-test for tile regions; rectangular for everything else
+      if (r.action === 'toggleTile') {
+        const rx = x - r.x - r.w / 2;  // relative to tile center
+        const ry = y - r.y - r.h / 2;
+        if (Math.abs(rx) / (r.w / 2) + Math.abs(ry) / (r.h / 2) > 1) continue;
+      } else if (!(x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)) {
+        continue;
       }
+      if (r.action === 'info') {
+        this.infoPanelMode = ((this.infoPanelMode || 0) + 1) % 3;
+      }
+      if (r.action === 'toggleTile') {
+        return { action: r.action, tileIndex: r.tileIndex, tileGx: r.tileGx, tileGy: r.tileGy };
+      }
+      if (r.action === 'citizenToSpec' || r.action === 'cycleSpec') {
+        return { action: r.action, citizenSlot: r.citizenSlot };
+      }
+      return { action: r.action };
     }
     return null;
   },
