@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS } from './actions.js';
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS } from './defs.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -153,6 +153,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         workersOuterB: workers.outerB,
         buildings: 0, buildingsV: 0,
         foodInBox: 0, shieldsInBox: 0,
+        specialistBytes: [0, 0, 0, 0],
       };
       state.cities = [...prev.cities, newCity];
 
@@ -162,6 +163,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // Update visibility with city radius (cities have radius 2)
       updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, newCity.gx, newCity.gy, mapBase.wraps, 2);
 
+      break;
+    }
+
+    case SET_WORKERS: {
+      const { cityIndex, workersInner, workersOuterA, workersOuterB, specialistBytes } = action;
+      state.cities = [...prev.cities];
+      state.cities[cityIndex] = {
+        ...state.cities[cityIndex],
+        workersInner,
+        workersOuterA,
+        workersOuterB,
+        specialistBytes: [...specialistBytes],
+      };
       break;
     }
 

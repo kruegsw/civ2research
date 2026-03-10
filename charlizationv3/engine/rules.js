@@ -9,9 +9,26 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS } from './actions.js';
 import { UNIT_DOMAIN, CITY_RADIUS_DOUBLED } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
+
+function popcount(n) {
+  let c = 0;
+  while (n) { c += n & 1; n >>>= 1; }
+  return c;
+}
+
+function countSpecialists(specBytes) {
+  let count = 0;
+  for (let b = 0; b < 4; b++) {
+    for (let s = 0; s < 4; s++) {
+      const val = (specBytes[b] >> (s * 2)) & 0x03;
+      if (val > 0) count++;
+    }
+  }
+  return count;
+}
 
 /**
  * Check if a tile is too close to an existing city.
@@ -88,6 +105,53 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       // Can't build on existing city or within another city's radius
       if (isTooCloseToCity(unit.gx, unit.gy, gameState.cities, mapBase)) {
         return 'Too close to another city';
+      }
+
+      return null;
+    }
+
+    case SET_WORKERS: {
+      const { cityIndex, workersInner, workersOuterA, workersOuterB, specialistBytes } = action;
+      if (cityIndex == null) return 'Missing cityIndex';
+      const city = gameState.cities[cityIndex];
+      if (!city) return 'City not found';
+      if (city.owner !== civSlot) return 'Not your city';
+
+      // Validate bitmask ranges
+      if ((workersInner & ~0xFF) || (workersOuterA & ~0xFF) || (workersOuterB & ~0x0F))
+        return 'Invalid worker bitmask';
+      if (!specialistBytes || specialistBytes.length !== 4)
+        return 'Invalid specialist bytes';
+
+      // Workers + specialists must equal city size (center tile is always worked, not counted)
+      const workerCount = popcount(workersInner) + popcount(workersOuterA) + popcount(workersOuterB);
+      const specCount = countSpecialists(specialistBytes);
+      if (workerCount + specCount !== city.size) {
+        return `Workers (${workerCount}) + specialists (${specCount}) != city size (${city.size})`;
+      }
+
+      // Validate no specialist byte uses invalid values (only 0-3 allowed)
+      for (let b = 0; b < 4; b++) {
+        if (specialistBytes[b] < 0 || specialistBytes[b] > 255)
+          return 'Specialist byte out of range';
+      }
+
+      // Validate workers aren't on ocean or off-map tiles
+      const parC = city.gy & 1;
+      for (let i = 0; i < 20; i++) {
+        const bit = i < 8 ? (workersInner >> i) & 1
+          : i < 16 ? (workersOuterA >> (i - 8)) & 1
+          : (workersOuterB >> (i - 16)) & 1;
+        if (!bit) continue;
+        const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
+        const parT = ((city.gy + ddy) % 2 + 2) % 2;
+        const tgx = city.gx + ((parC + ddx - parT) >> 1);
+        const tgy = city.gy + ddy;
+        const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+        if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw)
+          return `Worker on out-of-bounds tile (${tgx},${tgy})`;
+        const ter = mapBase.getTerrain(wgx, tgy);
+        if (ter === 10) return `Worker on ocean tile (${tgx},${tgy})`;
       }
 
       return null;

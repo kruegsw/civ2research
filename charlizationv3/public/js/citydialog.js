@@ -3546,7 +3546,48 @@ const Civ2CityDialog = {
     this._drawButtons(ctx, cdSprites);
 
     ctx.restore();
-    return this._registerButtons();
+    const regions = this._registerButtons();
+
+    // Add resource map tile click regions (isometric diamond hit-test via bounding box)
+    const RM = this.REGIONS.resourceMap;
+    const panel = this.REGIONS.panels.tileMap;
+    const { sprW, sprH } = RM;
+    const cityPx = city.gx * sprW + ((city.gy % 2) ? (sprW >> 1) : 0);
+    const cityPy = city.gy * (sprH >> 1);
+    const rmCenterX = RM.x + panel.w / 2 + 2;
+    const rmCenterY = RM.y + panel.h / 2 - (sprH >> 2) - 10;
+    const rmOffX = rmCenterX - cityPx - (sprW >> 1);
+    const rmOffY = rmCenterY - cityPy - (sprH >> 1);
+    const parC = city.gy & 1;
+    for (let i = 0; i < 20; i++) { // 0-19 (not center 20)
+      const [ddx, ddy] = this.CITY_RADIUS_DOUBLED[i];
+      const parT = ((city.gy + ddy) % 2 + 2) % 2;
+      const tgx = city.gx + ((parC + ddx - parT) >> 1);
+      const tgy = city.gy + ddy;
+      const sx = tgx * sprW + ((tgy % 2) ? (sprW >> 1) : 0) + rmOffX;
+      const sy = tgy * (sprH >> 1) + rmOffY;
+      regions.push({
+        x: sx, y: sy, w: sprW, h: sprH,
+        action: 'toggleTile', tileIndex: i, tileGx: tgx, tileGy: tgy,
+      });
+    }
+
+    // Add citizen face click regions (specialist cycling)
+    const CR = this.REGIONS.citizens;
+    const faceSpace = this._citizenSpacing(city.size);
+    const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
+    const workerCount = city.size - totalSpecs;
+    // Workers are drawn first (happy + content + unhappy), then specialists
+    for (let i = 0; i < city.size; i++) {
+      const fx = CR.x + i * faceSpace;
+      regions.push({
+        x: fx, y: CR.y, w: 27, h: 30,
+        action: i < workerCount ? 'citizenToSpec' : 'cycleSpec',
+        citizenSlot: i,
+      });
+    }
+
+    return regions;
   },
 
   // ── Click handler ──
@@ -3555,6 +3596,13 @@ const Civ2CityDialog = {
       if (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h) {
         if (r.action === 'info') {
           this.infoPanelMode = ((this.infoPanelMode || 0) + 1) % 3;
+        }
+        // For tile/citizen actions, return the full region data
+        if (r.action === 'toggleTile') {
+          return { action: r.action, tileIndex: r.tileIndex, tileGx: r.tileGx, tileGy: r.tileGy };
+        }
+        if (r.action === 'citizenToSpec' || r.action === 'cycleSpec') {
+          return { action: r.action, citizenSlot: r.citizenSlot };
         }
         return { action: r.action };
       }

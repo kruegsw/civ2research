@@ -10,12 +10,12 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYearFromMap } from '../engine/year.js';
-import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS, UNIT_NAMES } from '../engine/defs.js';
+import { GOVERNMENT_NAMES, LEADERS_TXT_NAMES, CIV_COLORS, UNIT_NAMES, TERRAIN_BASE } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
 import { getValidActions } from '../engine/rules.js';
-import { MOVE_UNIT, BUILD_CITY } from '../engine/actions.js';
+import { MOVE_UNIT, BUILD_CITY, SET_WORKERS } from '../engine/actions.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -939,7 +939,199 @@ function cdHandleClick(clientX, clientY) {
       Civ2CityView.render(cvCanvas, cdCity, cdCityIndex, currentMapData, cvSprites, cvBackgrounds);
       document.getElementById('cityview-overlay').style.display = 'flex';
     });
+  } else if (result && (result.action === 'toggleTile' || result.action === 'citizenToSpec' || result.action === 'cycleSpec')) {
+    if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
+    handleWorkerChange(result);
   }
+}
+
+function handleWorkerChange(result) {
+  const city = cdCity;
+  const cityIndex = cdCityIndex;
+  let inner = city.workersInner;
+  let outerA = city.workersOuterA;
+  let outerB = city.workersOuterB & 0x0F;
+  let specBytes = city.specialistBytes ? [...city.specialistBytes] : [0, 0, 0, 0];
+
+  const specs = Civ2CityDialog.getSpecialists(city);
+  const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
+
+  if (result.action === 'toggleTile') {
+    const i = result.tileIndex;
+    // Check if tile is valid (not ocean, in bounds)
+    const wgx = mpMapBase.wraps
+      ? ((result.tileGx % mpMapBase.mw) + mpMapBase.mw) % mpMapBase.mw
+      : result.tileGx;
+    if (result.tileGy < 0 || result.tileGy >= mpMapBase.mh || wgx < 0 || wgx >= mpMapBase.mw) return;
+    const ter = mpMapBase.getTerrain(wgx, result.tileGy);
+    if (ter === 10) return; // can't work ocean
+
+    // Toggle the bit
+    let isWorked;
+    if (i < 8) { isWorked = (inner >> i) & 1; inner ^= (1 << i); }
+    else if (i < 16) { isWorked = (outerA >> (i - 8)) & 1; outerA ^= (1 << (i - 8)); }
+    else { isWorked = (outerB >> (i - 16)) & 1; outerB ^= (1 << (i - 16)); }
+
+    if (isWorked) {
+      // Removed a worker — add an entertainer specialist
+      addSpecialist(specBytes, 1); // 1 = entertainer
+    } else {
+      // Added a worker — remove one specialist (last one)
+      if (totalSpecs === 0) return; // can't add worker without removing specialist
+      removeLastSpecialist(specBytes);
+    }
+  } else if (result.action === 'citizenToSpec') {
+    // Click on a worker face — remove the worst-scoring worker tile and add an entertainer
+    const workerTiles = getWorkerTileList(inner, outerA, outerB);
+    if (workerTiles.length === 0) return;
+
+    // Find worst tile by yield score
+    let worstIdx = -1, worstScore = Infinity;
+    for (const ti of workerTiles) {
+      const [ddx, ddy] = Civ2CityDialog.CITY_RADIUS_DOUBLED[ti];
+      const parC = city.gy & 1;
+      const parT = ((city.gy + ddy) % 2 + 2) % 2;
+      const tgx = city.gx + ((parC + ddx - parT) >> 1);
+      const tgy = city.gy + ddy;
+      const wgx = mpMapBase.wraps ? ((tgx % mpMapBase.mw) + mpMapBase.mw) % mpMapBase.mw : tgx;
+      if (tgy < 0 || tgy >= mpMapBase.mh) continue;
+      const ter = mpMapBase.getTerrain(wgx, tgy);
+      if (ter < 0 || ter > 10 || ter === 10) continue;
+      const base = TERRAIN_BASE[ter];
+      const score = base[0] * 10 + base[1];
+      if (score < worstScore) { worstScore = score; worstIdx = ti; }
+    }
+    if (worstIdx < 0) return;
+
+    // Remove worst worker
+    if (worstIdx < 8) inner &= ~(1 << worstIdx);
+    else if (worstIdx < 16) outerA &= ~(1 << (worstIdx - 8));
+    else outerB &= ~(1 << (worstIdx - 16));
+
+    // Add entertainer
+    addSpecialist(specBytes, 1);
+  } else if (result.action === 'cycleSpec') {
+    // Click on a specialist face — cycle: entertainer(1) → taxman(2) → scientist(3) → remove (add best worker)
+    const specList = getSpecialistList(specBytes);
+    const workerCount = city.size - totalSpecs;
+    const specIdx = result.citizenSlot - workerCount;
+    if (specIdx < 0 || specIdx >= specList.length) return;
+
+    const currentType = specList[specIdx].type;
+    if (currentType === 1) {
+      // Entertainer → Taxman
+      setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 2);
+    } else if (currentType === 2) {
+      // Taxman → Scientist
+      setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 3);
+    } else {
+      // Scientist → remove specialist, add best available worker tile
+      setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 0);
+      // Find best unworked tile
+      const bestTile = findBestUnworkedTile(city, inner, outerA, outerB);
+      if (bestTile != null) {
+        if (bestTile < 8) inner |= (1 << bestTile);
+        else if (bestTile < 16) outerA |= (1 << (bestTile - 8));
+        else outerB |= (1 << (bestTile - 16));
+      } else {
+        // No valid tile — just cycle back to entertainer instead
+        setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 1);
+        return;
+      }
+    }
+  }
+
+  // Send the action
+  transport.sendRaw({
+    type: 'ACTION',
+    action: {
+      type: SET_WORKERS,
+      cityIndex,
+      workersInner: inner,
+      workersOuterA: outerA,
+      workersOuterB: outerB & 0x0F,
+      specialistBytes: specBytes,
+    },
+  });
+}
+
+// Helper: get list of worked tile indices
+function getWorkerTileList(inner, outerA, outerB) {
+  const tiles = [];
+  for (let i = 0; i < 8; i++) if ((inner >> i) & 1) tiles.push(i);
+  for (let i = 0; i < 8; i++) if ((outerA >> i) & 1) tiles.push(8 + i);
+  for (let i = 0; i < 4; i++) if ((outerB >> i) & 1) tiles.push(16 + i);
+  return tiles;
+}
+
+// Helper: get ordered list of specialists with their byte/bit positions
+function getSpecialistList(specBytes) {
+  const list = [];
+  for (let b = 0; b < 4; b++) {
+    for (let s = 0; s < 4; s++) {
+      const val = (specBytes[b] >> (s * 2)) & 0x03;
+      if (val > 0) list.push({ type: val, byteIdx: b, bitIdx: s });
+    }
+  }
+  return list;
+}
+
+// Helper: add a specialist of given type to the first empty slot
+function addSpecialist(specBytes, type) {
+  for (let b = 0; b < 4; b++) {
+    for (let s = 0; s < 4; s++) {
+      const val = (specBytes[b] >> (s * 2)) & 0x03;
+      if (val === 0) {
+        specBytes[b] |= (type << (s * 2));
+        return;
+      }
+    }
+  }
+}
+
+// Helper: remove the last specialist (any type)
+function removeLastSpecialist(specBytes) {
+  for (let b = 3; b >= 0; b--) {
+    for (let s = 3; s >= 0; s--) {
+      const val = (specBytes[b] >> (s * 2)) & 0x03;
+      if (val > 0) {
+        specBytes[b] &= ~(0x03 << (s * 2));
+        return;
+      }
+    }
+  }
+}
+
+// Helper: set specialist type at a specific byte/bit position
+function setSpecialistAt(specBytes, byteIdx, bitIdx, type) {
+  specBytes[byteIdx] &= ~(0x03 << (bitIdx * 2));
+  specBytes[byteIdx] |= (type << (bitIdx * 2));
+}
+
+// Helper: find best unworked tile (by food*10 + shields)
+function findBestUnworkedTile(city, inner, outerA, outerB) {
+  const parC = city.gy & 1;
+  let bestIdx = -1, bestScore = -1;
+  for (let i = 0; i < 20; i++) {
+    // Check if already worked
+    if (i < 8 && ((inner >> i) & 1)) continue;
+    if (i >= 8 && i < 16 && ((outerA >> (i - 8)) & 1)) continue;
+    if (i >= 16 && ((outerB >> (i - 16)) & 1)) continue;
+
+    const [ddx, ddy] = Civ2CityDialog.CITY_RADIUS_DOUBLED[i];
+    const parT = ((city.gy + ddy) % 2 + 2) % 2;
+    const tgx = city.gx + ((parC + ddx - parT) >> 1);
+    const tgy = city.gy + ddy;
+    const wgx = mpMapBase.wraps ? ((tgx % mpMapBase.mw) + mpMapBase.mw) % mpMapBase.mw : tgx;
+    if (tgy < 0 || tgy >= mpMapBase.mh || wgx < 0 || wgx >= mpMapBase.mw) continue;
+    const ter = mpMapBase.getTerrain(wgx, tgy);
+    if (ter < 0 || ter > 10 || ter === 10) continue; // skip ocean/invalid
+
+    const base = TERRAIN_BASE[ter];
+    const score = base[0] * 10 + base[1];
+    if (score > bestScore) { bestScore = score; bestIdx = i; }
+  }
+  return bestIdx >= 0 ? bestIdx : null;
 }
 
 function cdRerender() {
@@ -1436,6 +1628,13 @@ const transport = createTransport({
         // No slide — apply visibility immediately
         applyVisibilityUpdate(pendingVisibility);
         doRenderFromState({ skipCenter: true });
+
+        // Refresh city dialog if open (e.g. after SET_WORKERS)
+        if (cdCity && mpGameState?.cities?.[cdCityIndex]
+            && document.getElementById('citydialog-overlay').style.display === 'flex') {
+          cdCity = mpGameState.cities[cdCityIndex];
+          cdRerender();
+        }
         break;
       }
 

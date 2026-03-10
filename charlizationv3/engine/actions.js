@@ -19,12 +19,15 @@ export const BUILD_CITY = 'BUILD_CITY';
 //   { type: 'BUILD_CITY', unitIndex }
 //   Settler builds a city at its current position. Settler is consumed.
 
+export const SET_WORKERS = 'SET_WORKERS';
+//   { type: 'SET_WORKERS', cityIndex, workersInner, workersOuterA, workersOuterB, specialistBytes }
+//   Reassign workers and specialists for a city. Total workers + specialists must equal city size.
+
 // ── Future action types (not yet implemented) ──
 // export const FORTIFY_UNIT    = 'FORTIFY_UNIT';
 // export const DISBAND_UNIT    = 'DISBAND_UNIT';
 // export const CHANGE_PRODUCTION = 'CHANGE_PRODUCTION';
 // export const BUY_PRODUCTION  = 'BUY_PRODUCTION';
-// export const SET_WORKERS     = 'SET_WORKERS';
 // export const SET_RATES       = 'SET_RATES';
 // export const SET_RESEARCH    = 'SET_RESEARCH';
 // export const NEGOTIATE       = 'NEGOTIATE';
