@@ -193,6 +193,9 @@ document.getElementById('sav-input').addEventListener('change', e => {
   if (files.t1 && files.t2) {
     gameEnteredFrom = 'menu';
     currentMapData = null; // force re-parse of new .sav
+    mpGameState = null;
+    mpCivSlot = null;
+    updateTurnUI();
     setScene('game');
     doRender();
   }
@@ -1284,6 +1287,9 @@ document.getElementById('menu-ok-btn').addEventListener('click', () => {
       if (files.sav && files.t1 && files.t2) {
         gameEnteredFrom = 'menu';
         currentMapData = null; // clear multiplayer state so doRender() re-parses .sav
+        mpGameState = null;
+        mpCivSlot = null;
+        updateTurnUI();
         // Restore single-player controls (may have been hidden by multiplayer)
         document.getElementById('sav-btn').style.display = '';
         document.getElementById('render-btn').style.display = '';

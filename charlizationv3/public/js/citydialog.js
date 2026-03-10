@@ -1573,13 +1573,13 @@ const Civ2CityDialog = {
     // Negate supply for commodities carried by en-route caravans/freight from this city
     // (lines 5425-5437: scan unit array for trade units homed to this city)
     // Binary checks: alive, unit[+0x10] == cityIndex (home city), type role == 7, unit[+0x0D] >= 0
-    // In save file: homeCityId is at +16 (uint16), cargoWorkFuel at +13 holds commodity for trade units
+    // In save file: homeCityId is at +16 (uint16), commodityCarried holds commodity for trade units
     if (mapData.units) {
       for (const unit of mapData.units) {
         if (unit.homeCityId !== cityIndex) continue;
         // Trade unit types: 48 (Caravan) and 49 (Freight), role 7
         if (unit.type !== 48 && unit.type !== 49) continue;
-        const commodity = unit.cargoWorkFuel;
+        const commodity = unit.commodityCarried;
         if (commodity == null || commodity < 0) continue;
         for (let j = 0; j < 3; j++) {
           if (finalSupply[j] === commodity) finalSupply[j] = -finalSupply[j];
@@ -2938,7 +2938,7 @@ const Civ2CityDialog = {
     // Binary: FUN_0056baff lines 3925-3941
     const isSeaDomain = (u.type >= 32 && u.type <= 43);
     const hasHarbor = city && city.buildings && city.buildings.has(30);
-    const isDimmed = (u.orders === 0x03) || (isSeaDomain && hasHarbor);
+    const isDimmed = (u.orders === 'sleep') || (isSeaDomain && hasHarbor);
 
     let sprite = colored;
     if (isDimmed) {
@@ -2995,7 +2995,7 @@ const Civ2CityDialog = {
     }
 
     // Fortification overlay — only for fully fortified (0x02)
-    if (mapSprites.fortify && u.orders === 0x02) {
+    if (mapSprites.fortify && u.orders === 'fortified') {
       ctx.drawImage(mapSprites.fortify, ux, uy, drawW, drawH);
     }
 

@@ -101,13 +101,13 @@ export function initNewGame(mapResult, seatList) {
         x: pos.gx * 2 + (pos.gy % 2), y: pos.gy,
         veteran: 0,
         hpLost: 0,
-        orders: 0,
+        orders: 'none',
         movesMade: 0,
         movesLeft: UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER,
         homeCityId: 0xFFFF,
         goToX: -1, goToY: -1,
         visFlag: 0xFF,
-        cargoWorkFuel: -1,
+        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
         prevInStack: -1, nextInStack: -1,
       });
     }

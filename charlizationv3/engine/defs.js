@@ -26,9 +26,11 @@ export const COMMODITY_NAMES = [
 ];
 
 export const ORDER_NAMES = {
-  0:'', 1:'Fortifying', 2:'Fortified', 3:'Sleep', 4:'Build Fortress',
-  5:'Build Road', 6:'Build Irrigation', 7:'Build Mine', 8:'Transform',
-  9:'Clean Pollution', 10:'Build Airbase', 11:'GoTo', 255:''
+  none:'', fortifying:'Fortifying', fortified:'Fortified', sleep:'Sleep',
+  buildFortress:'Build Fortress', buildRoad:'Build Road',
+  buildIrrigation:'Build Irrigation', buildMine:'Build Mine',
+  transform:'Transform', cleanPollution:'Clean Pollution',
+  buildAirbase:'Build Airbase', goto:'GoTo',
 };
 
 export const UNIT_NAMES = [
@@ -84,7 +86,11 @@ export const LEADERS_TXT_NAMES = [
 ];
 
 // Unit orders byte → shield display letter (renderer uses these)
-export const ORDER_KEYS = { 1:'F', 2:'F', 3:'S', 4:'F', 5:'R', 6:'I', 7:'m', 8:'O', 9:'p', 10:'E', 11:'G' };
+export const ORDER_KEYS = {
+  fortifying:'F', fortified:'F', sleep:'S', buildFortress:'F',
+  buildRoad:'R', buildIrrigation:'I', buildMine:'m', transform:'O',
+  cleanPollution:'p', buildAirbase:'E', goto:'G',
+};
 
 // Unit type classifications
 export const SETTLER_TYPES = new Set([0, 1]);

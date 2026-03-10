@@ -451,7 +451,7 @@ const Civ2Renderer = {
       if (u.gx < 0) continue; // dead unit
       combos.add(u.type + '-' + u.owner);
       owners.add(u.owner);
-      if (u.orders === 0x03) sentryTypes.add(u.type);
+      if (u.orders === 'sleep') sentryTypes.add(u.type);
     }
 
     // Recolor unit sprites per (type, owner)
@@ -1029,7 +1029,7 @@ const Civ2Renderer = {
       const CIVILIANS = new Set([0, 1, 44, 45, 46, 47, 48, 49, 50]);
       function unitPriority(u) {
         let p = 0;
-        if (u.orders === 0) p += 2;
+        if (u.orders === 'none') p += 2;
         if (!CIVILIANS.has(u.type)) p += 1;
         return p;
       }
@@ -1074,7 +1074,7 @@ const Civ2Renderer = {
           sprites.unitColored[cacheKey] = renderer._recolorUnit(template, color);
         }
 
-        const unitSentry = (u.orders === 0x03);
+        const unitSentry = (u.orders === 'sleep');
         let unitSprite = sprites.unitColored[cacheKey];
         if (unitSentry) {
           const dimKey = u.type + '-dimmed';
@@ -1142,7 +1142,7 @@ const Civ2Renderer = {
             ctx.fillText(orderLetter, shieldX + sprites.shieldFront.width / 2, shieldY + 7);
           }
 
-          if (sprites.fortify && u.orders === 0x02) {
+          if (sprites.fortify && u.orders === 'fortified') {
             ctx.drawImage(sprites.fortify, tpx, tpy - 16);
           }
 

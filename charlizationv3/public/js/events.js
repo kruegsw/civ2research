@@ -324,10 +324,10 @@ export function initEvents(canvas, vp, fns) {
         const name = UNIT_NAMES[u.type] || `Unit#${u.type}`;
         const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
         const vetStr = u.veteran ? ' Vet' : '';
-        const ordStr = ORDER_NAMES[u.orders] || `orders:${u.orders}`;
+        const ordStr = ORDER_NAMES[u.orders] || '';
         const dmgStr = u.hpLost > 0 ? `, dmg ${u.hpLost}` : '';
-        const cargoStr = (u.type === 48 || u.type === 49) && u.cargoWorkFuel >= 0 && u.cargoWorkFuel <= 15
-          ? `, cargo: ${COMMODITY_NAMES[u.cargoWorkFuel]}` : '';
+        const cargoStr = (u.type === 48 || u.type === 49) && u.commodityCarried >= 0 && u.commodityCarried <= 15
+          ? `, cargo: ${COMMODITY_NAMES[u.commodityCarried]}` : '';
         info += `\n[Unit] ${name}${vetStr} (${owner}${dmgStr}${cargoStr}${ordStr ? ', ' + ordStr : ''})`;
       }
 

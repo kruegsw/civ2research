@@ -118,7 +118,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       unit.movesLeft = Math.max(0, unit.movesLeft - Math.max(cost, 1));
 
       // Wake from sleep/fortify
-      if (unit.orders === 2 || unit.orders === 3) unit.orders = 0;
+      if (unit.orders === 'fortified' || unit.orders === 'sleep') unit.orders = 'none';
 
       state.units[unitIndex] = unit;
 

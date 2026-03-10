@@ -562,9 +562,19 @@ const Civ2Parser = {
       const hpLost         = savBuf[off + 10];
       const lastDirection  = savBuf[off + 11];
       const aiTaskRole     = savBuf[off + 12];
-      const cargoWorkFuel  = savBuf[off + 13];
+      const cargoWorkFuelRaw = savBuf[off + 13];
+      // Split byte +13 into named fields based on unit type context
+      // Caravans (48) / Freight (49): commodity carried (0-15)
+      // Settlers (0) / Engineers (1): work turns remaining
+      // Air units (26-31, 44-45): fuel remaining
+      // Transports/carriers: cargo count
+      const commodityCarried = (utype === 48 || utype === 49) ? cargoWorkFuelRaw : -1;
+      const workTurns = (utype === 0 || utype === 1) ? cargoWorkFuelRaw : 0;
+      const fuelRemaining = (utype >= 26 && utype <= 31) || utype === 44 || utype === 45 ? cargoWorkFuelRaw : -1;
       const alive          = savBuf[off + 14];
-      const orders         = savBuf[off + 15];
+      const ordersRaw      = savBuf[off + 15];
+      const ORDERS_MAP = ['none','fortifying','fortified','sleep','buildFortress','buildRoad','buildIrrigation','buildMine','transform','cleanPollution','buildAirbase','goto'];
+      const orders = ORDERS_MAP[ordersRaw] || (ordersRaw === 255 ? 'none' : `unknown_${ordersRaw}`);
       const homeCityId     = this.u16(savBuf, off + 16);
       const gotoX          = this.s16(savBuf, off + 18);
       const gotoY          = this.s16(savBuf, off + 20);
@@ -597,7 +607,7 @@ const Civ2Parser = {
         movePointsLeft,
         lastDirection,
         aiTaskRole,
-        cargoWorkFuel,
+        commodityCarried, workTurns, fuelRemaining,
         dead,
         homeCityId,
         gotoX, gotoY,
