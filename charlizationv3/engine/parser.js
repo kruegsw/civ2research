@@ -20,6 +20,8 @@
 //     https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm
 // ═══════════════════════════════════════════════════════════════════
 
+import { improvementFromByte } from './defs.js';
+
 const Civ2Parser = {
 
   // ── Binary helpers ──
@@ -1126,8 +1128,8 @@ const Civ2Parser = {
     }
 
     function getImprovements(gx, gy) {
-      if (gy < 0 || gy >= mh) return 0;
-      return tileData[gy * mw + wrap(gx)][1];
+      if (gy < 0 || gy >= mh) return improvementFromByte(0);
+      return improvementFromByte(tileData[gy * mw + wrap(gx)][1]);
     }
 
     function hasGoodyHut(gx, gy) {
@@ -1165,8 +1167,8 @@ const Civ2Parser = {
     }
 
     function getKnownImprovements(gx, gy, civSlot) {
-      if (civSlot < 1 || civSlot > 7 || gy < 0 || gy >= mh) return 0;
-      return knownImprovements[civSlot][gy * mw + wrap(gx)];
+      if (civSlot < 1 || civSlot > 7 || gy < 0 || gy >= mh) return improvementFromByte(0);
+      return improvementFromByte(knownImprovements[civSlot][gy * mw + wrap(gx)]);
     }
 
     // Resource placement algorithm by TheNamelessOne (CivFanatics)

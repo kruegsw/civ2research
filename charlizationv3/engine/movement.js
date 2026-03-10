@@ -80,12 +80,10 @@ export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   const toImp = mapBase.getImprovements(toGx, toGy);
 
   // Railroad: both tiles have railroad → 0 cost (free move)
-  if ((fromImp & 0x20) && (toImp & 0x20)) return 0;
+  if (fromImp.railroad && toImp.railroad) return 0;
 
   // Road: both tiles have road (or railroad) → 1/3 MP
-  const fromRoad = fromImp & 0x30; // road OR railroad
-  const toRoad = toImp & 0x30;
-  if (fromRoad && toRoad) return 1; // 1 third
+  if ((fromImp.road || fromImp.railroad) && (toImp.road || toImp.railroad)) return 1;
 
   // Base terrain cost
   const terrain = mapBase.getTerrain(toGx, toGy);

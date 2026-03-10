@@ -7,7 +7,7 @@
 //   reconstructMapData() — client-side: rebuilds accessors from serialized state
 // ═══════════════════════════════════════════════════════════════════
 
-import { LEADERS_TXT_NAMES } from './defs.js';
+import { LEADERS_TXT_NAMES, improvementFromByte } from './defs.js';
 
 /**
  * Create accessor functions (closures) over tile data arrays.
@@ -41,8 +41,8 @@ export function createAccessors(mw, mh, mapShape, mapSeed, tileData, knownImprov
   }
 
   function getImprovements(gx, gy) {
-    if (gy < 0 || gy >= mh) return 0;
-    return tileData[gy * mw + wrap(gx)][1];
+    if (gy < 0 || gy >= mh) return improvementFromByte(0);
+    return improvementFromByte(tileData[gy * mw + wrap(gx)][1]);
   }
 
   function hasGoodyHut(gx, gy) {
@@ -81,8 +81,8 @@ export function createAccessors(mw, mh, mapShape, mapSeed, tileData, knownImprov
   }
 
   function getKnownImprovements(gx, gy, civSlot) {
-    if (!knownImprovements || civSlot < 1 || civSlot > 7 || gy < 0 || gy >= mh) return 0;
-    return knownImprovements[civSlot][gy * mw + wrap(gx)];
+    if (!knownImprovements || civSlot < 1 || civSlot > 7 || gy < 0 || gy >= mh) return improvementFromByte(0);
+    return improvementFromByte(knownImprovements[civSlot][gy * mw + wrap(gx)]);
   }
 
   function getResource(gx, gy) {

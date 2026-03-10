@@ -92,6 +92,33 @@ export const ORDER_KEYS = {
   cleanPollution:'p', buildAirbase:'E', goto:'G',
 };
 
+// Improvement byte → object converter
+// Bits: 0x02=city/airbase marker, 0x04=irrigation, 0x08=mining,
+//       0x10=road, 0x20=railroad, 0x40=fortress, 0x80=pollution
+const EMPTY_IMP = Object.freeze({
+  city: false, irrigation: false, mining: false,
+  road: false, railroad: false, fortress: false, pollution: false,
+  farmland: false, airbase: false,
+});
+export function improvementFromByte(b) {
+  if (b === 0) return EMPTY_IMP;
+  const city    = !!(b & 0x02);
+  const irr     = !!(b & 0x04);
+  const mine    = !!(b & 0x08);
+  const fort    = !!(b & 0x40);
+  return {
+    city,
+    irrigation: irr,
+    mining:     mine,
+    road:       !!(b & 0x10),
+    railroad:   !!(b & 0x20),
+    fortress:   fort,
+    pollution:  !!(b & 0x80),
+    farmland:   irr && mine,
+    airbase:    city && fort,
+  };
+}
+
 // Unit type classifications
 export const SETTLER_TYPES = new Set([0, 1]);
 export const NON_COMBAT_TYPES = new Set([0, 1, 46, 47, 48, 49, 50]);

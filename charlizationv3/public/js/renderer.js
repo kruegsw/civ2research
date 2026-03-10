@@ -680,8 +680,7 @@ const Civ2Renderer = {
         if (fowEnabled && isDimmed(gx, gy)) {
           imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
         }
-        const hasCity = imp & 0x02; // cities act as road/railroad endpoints
-        if (imp & 0x30 || hasCity) { // has road (0x10), railroad (0x20), or city
+        if (imp.road || imp.railroad || imp.city) {
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
           for (let di = 0; di < 8; di++) {
             const [nx, ny] = nb[DIR_KEYS[di]];
@@ -690,15 +689,14 @@ const Civ2Renderer = {
             if (fowEnabled && isDimmed(nx, ny)) {
               nimp = mapData.getKnownImprovements(nx, ny, options.fowCiv);
             }
-            const nCity = nimp & 0x02;
-            if ((imp & 0x10 || hasCity) && (nimp & 0x10 || nCity)) ctx.drawImage(roads[di], px, py);
-            if ((imp & 0x20 || hasCity) && (nimp & 0x20 || nCity)) ctx.drawImage(railroads[di], px, py);
+            if ((imp.road || imp.city) && (nimp.road || nimp.city)) ctx.drawImage(roads[di], px, py);
+            if ((imp.railroad || imp.city) && (nimp.railroad || nimp.city)) ctx.drawImage(railroads[di], px, py);
           }
         }
 
         // ── Step 1: Irrigation/farmland beneath resources (ground-level) ──
-        if (imp & 0x04) {
-          if (imp & 0x08) ctx.drawImage(sprites.farmland, px, py);  // farmland = irrigation + mining
+        if (imp.irrigation) {
+          if (imp.farmland) ctx.drawImage(sprites.farmland, px, py);
           else ctx.drawImage(sprites.irrigation, px, py);
         }
 
@@ -718,8 +716,8 @@ const Civ2Renderer = {
         }
 
         // ── Step 3: Mining/pollution on top of everything ──
-        if (imp & 0x08 && !(imp & 0x04)) ctx.drawImage(sprites.mining, px, py);  // mining only (not farmland)
-        if (imp & 0x80) ctx.drawImage(sprites.pollution, px, py);
+        if (imp.mining && !imp.irrigation) ctx.drawImage(sprites.mining, px, py);  // mining only (not farmland)
+        if (imp.pollution) ctx.drawImage(sprites.pollution, px, py);
 
         // ── Goody huts — drawn after improvements, before cities/units ──
         if (mapData.hasGoodyHut(gx, gy) && sprites.goodyHut) {
@@ -888,9 +886,9 @@ const Civ2Renderer = {
               imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
             }
           }
-          if (!(imp & 0x40)) continue;
+          if (!imp.fortress) continue;
           const [px, py] = tilePos(gx, gy);
-          if ((imp & 0x02) && sprites.airbase) {
+          if (imp.airbase && sprites.airbase) {
             const tileKey = gx + ',' + gy;
             const hasAir = airUnitTiles.has(tileKey);
             const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
@@ -915,7 +913,7 @@ const Civ2Renderer = {
             // Ghost city: explored but not currently visible
             if (!isUnexplored(c.gx, c.gy)) {
               const known = mapData.getKnownImprovements(c.gx, c.gy, options.fowCiv);
-              if ((known & 0x02) && (c.knownToTribes == null || (c.knownToTribes & fowBit))) {
+              if (known.city && (c.knownToTribes == null || (c.knownToTribes & fowBit))) {
                 // Use per-civ believed size; skip if 0 (never observed on map)
                 const ghostSize = c.believedSize[options.fowCiv];
                 if (!ghostSize) continue;
@@ -1150,8 +1148,8 @@ const Civ2Renderer = {
           if (fowEnabled && isDimmed(u.gx, u.gy)) {
             fortImp = mapData.getKnownImprovements(u.gx, u.gy, options.fowCiv);
           }
-          if (fortImp & 0x40) {
-            if ((fortImp & 0x02) && sprites.airbase) {
+          if (fortImp.fortress) {
+            if (fortImp.airbase && sprites.airbase) {
               const hasAir = airUnitTiles.has(tileKey);
               const baseSprite = (hasAir && sprites.airbaseFull) ? sprites.airbaseFull : sprites.airbase;
               const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(u.gx, u.gy) : 0;

@@ -612,7 +612,7 @@ const Civ2CityDialog = {
     // In a fortress near a friendly city (distance < 4)
     if (mapData.getImprovements) {
       const imp = mapData.getImprovements(unit.gx, unit.gy);
-      if ((imp & 0x40) && !(imp & 0x02)) { // fortress but not city (binary: bVar2 & 0x42 == 0x40)
+      if (imp.fortress && !imp.city) { // fortress but not city/airbase
         for (const c of mapData.cities) {
           if (c && c.owner === owner) {
             if (this._tileDistance(unit.gx, unit.gy, c.gx, c.gy, mapData.mw) < 4) return false;
@@ -911,11 +911,11 @@ const Civ2CityDialog = {
 
     // Irrigation / Farmland (non-ocean)
     // Binary: (bVar1 & 6) != 0 — city-present bit (0x02) implies irrigation
-    if (ter !== 10 && ((imp & 0x04) || isCenter)) {
+    if (ter !== 10 && (imp.irrigation || isCenter)) {
       food += this.IRRIGATION_BONUS[ter];
       // Supermarket + Farmland: +50%
       // Binary: (bVar1 & 0x0A) != 0 — city-present bit (0x02) implies farmland
-      if (((imp & 0x08) || isCenter) && this._cityHasBuilding(city, 24))
+      if ((imp.mining || isCenter) && this._cityHasBuilding(city, 24))
         food = food + Math.floor(food / 2);
     }
 
@@ -927,7 +927,7 @@ const Civ2CityDialog = {
     if (gov < 2 && food > 2 && !city.weLoveKingDay) food -= 1;
 
     // Pollution: halve (applied last)
-    if (imp & 0x80) food = (food + 1) >> 1;
+    if (imp.pollution) food = (food + 1) >> 1;
 
     return food;
   },
@@ -940,7 +940,7 @@ const Civ2CityDialog = {
     if (ter === 2 && !hasSpecial && mapData.hasShield && mapData.hasShield(gx, gy)) shields += 1;
 
     // Mining (without irrigation)
-    if ((imp & 0x08) && !(imp & 0x04)) shields += this.MINING_BONUS[ter];
+    if (imp.mining && !imp.irrigation) shields += this.MINING_BONUS[ter];
 
     // City center: minimum 1 shield
     if (isCenter && shields === 0) shields = 1;
@@ -949,9 +949,9 @@ const Civ2CityDialog = {
     if (this._cityHasWonder(cityIndex, 8, mapData)) shields += 1;
 
     // Railroad: +50%
-    // Binary: (bVar1 & 0x20) for explicit railroad, OR (bVar1 & 0x02) city-present
+    // Binary: (bVar1 & 0x20) for explicit railroad, OR city-present
     // + FUN_004bd9f0(civ, 0x43) = civ has Railroad tech (ID 67)
-    const hasRailroad = !!(imp & 0x20) ||
+    const hasRailroad = imp.railroad ||
       (isCenter && mapData.civTechs && mapData.civTechs[city.owner] &&
        mapData.civTechs[city.owner].has(67));
     if (hasRailroad) shields = shields + Math.floor(shields / 2);
@@ -961,7 +961,7 @@ const Civ2CityDialog = {
     if (gov < 2 && shields > 2 && !city.weLoveKingDay) shields -= 1;
 
     // Pollution: halve (applied last)
-    if (imp & 0x80) shields = (shields + 1) >> 1;
+    if (imp.pollution) shields = (shields + 1) >> 1;
 
     return shields;
   },
@@ -974,8 +974,7 @@ const Civ2CityDialog = {
     if (hasRiver) trade += 1;
 
     // Road/Railroad: +1 trade if terrain < 3 OR trade > 0
-    // Binary: (bVar1 & 0x12) != 0 — city-present bit (0x02) implies road
-    const hasRoad = !!(imp & 0x30) || isCenter;
+    const hasRoad = imp.road || imp.railroad || isCenter;
     if (hasRoad) {
       if (ter < 3 || trade > 0) trade += 1;
     }
@@ -995,7 +994,7 @@ const Civ2CityDialog = {
       trade = trade + Math.floor(trade / 2);
 
     // Pollution: halve (applied last)
-    if (imp & 0x80) trade = (trade + 1) >> 1;
+    if (imp.pollution) trade = (trade + 1) >> 1;
 
     return trade;
   },
@@ -1119,7 +1118,7 @@ const Civ2CityDialog = {
       // Road count (line 4863-4866, FUN_005b94d5 = get_tile_improvements, bit 0x10)
       if (mapData.getImprovements) {
         const imp = mapData.getImprovements(tgx, tgy);
-        if (imp & 0x10) roadCount++;  // road bit
+        if (imp.road) roadCount++;
       }
     }
 
@@ -2206,21 +2205,19 @@ const Civ2CityDialog = {
 
         // Roads & Railroads
         const imp = mapData.getImprovements(fp.gx, fp.gy);
-        const hasCity = imp & 0x02;
-        if ((imp & 0x30 || hasCity) && mapSprites.roads) {
+        if ((imp.road || imp.railroad || imp.city) && mapSprites.roads) {
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
           for (let di = 0; di < 8; di++) {
             const [nx, ny] = tileNb[DIR_KEYS[di]];
             const nimp = mapData.getImprovements(nx, ny);
-            const nCity = nimp & 0x02;
-            if ((imp & 0x10 || hasCity) && (nimp & 0x10 || nCity)) offCtx.drawImage(mapSprites.roads[di], sx, sy);
-            if ((imp & 0x20 || hasCity) && (nimp & 0x20 || nCity)) offCtx.drawImage(mapSprites.railroads[di], sx, sy);
+            if ((imp.road || imp.city) && (nimp.road || nimp.city)) offCtx.drawImage(mapSprites.roads[di], sx, sy);
+            if ((imp.railroad || imp.city) && (nimp.railroad || nimp.city)) offCtx.drawImage(mapSprites.railroads[di], sx, sy);
           }
         }
 
         // Irrigation / Farmland
-        if (imp & 0x04) {
-          if (imp & 0x08 && mapSprites.farmland) offCtx.drawImage(mapSprites.farmland, sx, sy);
+        if (imp.irrigation) {
+          if (imp.farmland && mapSprites.farmland) offCtx.drawImage(mapSprites.farmland, sx, sy);
           else if (mapSprites.irrigation) offCtx.drawImage(mapSprites.irrigation, sx, sy);
         }
 
@@ -2235,12 +2232,12 @@ const Civ2CityDialog = {
         }
 
         // Mining (without irrigation) / Pollution
-        if (imp & 0x08 && !(imp & 0x04) && mapSprites.mining) offCtx.drawImage(mapSprites.mining, sx, sy);
-        if (imp & 0x80 && mapSprites.pollution) offCtx.drawImage(mapSprites.pollution, sx, sy);
+        if (imp.mining && !imp.irrigation && mapSprites.mining) offCtx.drawImage(mapSprites.mining, sx, sy);
+        if (imp.pollution && mapSprites.pollution) offCtx.drawImage(mapSprites.pollution, sx, sy);
 
         // Fortress / Airbase (64×48 sprites, 16px taller than terrain)
-        if (imp & 0x40) {
-          if ((imp & 0x02) && mapSprites.airbase) {
+        if (imp.fortress) {
+          if (imp.airbase && mapSprites.airbase) {
             // Airbase on city tile — recolor per tile owner
             const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(fp.gx, fp.gy) : 0;
             const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
@@ -2284,9 +2281,9 @@ const Civ2CityDialog = {
           // Redraw fortress/airbase over unit so walls surround it
           if (drawnUnit) {
             const imp = mapData.getImprovements(fp.gx, fp.gy);
-            if (imp & 0x40) {
+            if (imp.fortress) {
               const sx = fp.px - minPx, sy = fp.py - minPy;
-              if ((imp & 0x02) && mapSprites.airbase) {
+              if (imp.airbase && mapSprites.airbase) {
                 const tileOwner = mapData.getTileOwnership ? mapData.getTileOwnership(fp.gx, fp.gy) : 0;
                 const ownerIdx = tileOwner > 0 && tileOwner <= 7 ? tileOwner : 0;
                 const hasAir = mapData.units.some(u => u.gx === fp.gx && u.gy === fp.gy && u.type >= 27 && u.type <= 31);

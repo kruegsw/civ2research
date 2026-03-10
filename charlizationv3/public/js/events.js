@@ -285,13 +285,13 @@ export function initEvents(canvas, vp, fns) {
       if (md.hasGoodyHut && md.hasGoodyHut(gx, gy)) info += ' [Goody Hut]';
 
       const impParts = [];
-      if ((imp & 0x0C) === 0x0C) impParts.push('Farmland');
-      else { if (imp & 0x04) impParts.push('Irrigation'); if (imp & 0x08) impParts.push('Mining'); }
-      if (imp & 0x10) impParts.push('Road');
-      if (imp & 0x20) impParts.push('Railroad');
-      if ((imp & 0x42) === 0x42 && !md.cities.some(c => c.gx === gx && c.gy === gy)) impParts.push('Airbase');
-      else if (imp & 0x40) impParts.push('Fortress');
-      if (imp & 0x80) impParts.push('Pollution');
+      if (imp.farmland) impParts.push('Farmland');
+      else { if (imp.irrigation) impParts.push('Irrigation'); if (imp.mining) impParts.push('Mining'); }
+      if (imp.road) impParts.push('Road');
+      if (imp.railroad) impParts.push('Railroad');
+      if (imp.airbase && !md.cities.some(c => c.gx === gx && c.gy === gy)) impParts.push('Airbase');
+      else if (imp.fortress) impParts.push('Fortress');
+      if (imp.pollution) impParts.push('Pollution');
       if (impParts.length) info += '\n' + impParts.join(', ');
 
       for (const c of md.cities) {
