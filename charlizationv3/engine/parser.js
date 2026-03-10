@@ -653,18 +653,30 @@ const Civ2Parser = {
       const believedSize = new Array(8);
       for (let civ = 0; civ < 8; civ++) believedSize[civ] = savBuf[off + 14 + civ];
 
-      // Specialists (+22–+25): 16 × 2-bit entries
-      const specialistBytes = [savBuf[off+22], savBuf[off+23], savBuf[off+24], savBuf[off+25]];
+      // Specialists (+22–+25): 16 × 2-bit entries in .sav → string array in model
+      const specialistBytesRaw = [savBuf[off+22], savBuf[off+23], savBuf[off+24], savBuf[off+25]];
+      const SPEC_TYPES = [null, 'entertainer', 'taxman', 'scientist'];
+      const specialists = [];
+      for (let b = 0; b < 4; b++) {
+        for (let s = 0; s < 4; s++) {
+          const val = (specialistBytesRaw[b] >> (s * 2)) & 0x03;
+          if (val > 0) specialists.push(SPEC_TYPES[val]);
+        }
+      }
 
       // Resource accumulators (+26–+31)
       const foodInBox      = this.s16(savBuf, off + 26);
       const shieldsInBox   = this.s16(savBuf, off + 28);
       const netBaseTrade   = this.s16(savBuf, off + 30);
 
-      // Worker tile assignments (+48–+50)
-      const workersInner   = savBuf[off + 48];
-      const workersOuterA  = savBuf[off + 49];
-      const workersOuterB  = savBuf[off + 50];
+      // Worker tile assignments (+48–+50): bitmasks in .sav → index array in model
+      const workersInnerRaw  = savBuf[off + 48];
+      const workersOuterARaw = savBuf[off + 49];
+      const workersOuterBRaw = savBuf[off + 50];
+      const workedTiles = [];
+      for (let b = 0; b < 8; b++) if (workersInnerRaw & (1 << b)) workedTiles.push(b);
+      for (let b = 0; b < 8; b++) if (workersOuterARaw & (1 << b)) workedTiles.push(8 + b);
+      for (let b = 0; b < 4; b++) if (workersOuterBRaw & (1 << b)) workedTiles.push(16 + b);
 
       // Specialist count (+51)
       const specialistCountRaw = savBuf[off + 51];
@@ -732,9 +744,9 @@ const Civ2Parser = {
           autoBuildDomestic:   !!(attribs4 & 0x02),
           autoBuildMilitary:   !!(attribs4 & 0x01),
           padding_13,
-          specialistBytes, specialistCount,
+          specialists, specialistCount,
           foodInBox, shieldsInBox, netBaseTrade,
-          workersInner, workersOuterA, workersOuterB,
+          workedTiles,
           buildings, buildingsV,
           itemInProduction, prodRaw,
           tradeRouteCount, tradeCommoditiesAvail, tradeCommoditiesDemand,
@@ -1026,11 +1038,9 @@ const Civ2Parser = {
     }
 
     // Worker + specialist = city size
-    function popcount(n) { let c = 0; while (n) { c += n & 1; n >>>= 1; } return c; }
     let workerSizeErrors = 0;
     for (const c of cities) {
-      const workers = popcount(c.workersInner) + popcount(c.workersOuterA) + popcount(c.workersOuterB & 0x0F);
-      if (workers + c.specialistCount !== c.size) workerSizeErrors++;
+      if (c.workedTiles.length + c.specialists.length !== c.size) workerSizeErrors++;
     }
 
     // Science + tax vs total trade (only for cities without trade routes)

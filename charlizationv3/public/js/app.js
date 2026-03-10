@@ -58,12 +58,14 @@ function getMinScale() {
 
 // ── Scene management ──
 let currentScene = 'menu';
+let gameEnteredFrom = 'menu'; // 'menu' (Load a Game) or 'lobby' (multiplayer)
 function setScene(scene) {
   document.getElementById('menu-scene').style.display = scene === 'menu' ? 'flex' : 'none';
   document.getElementById('lobby-scene').style.display = scene === 'lobby' ? 'flex' : 'none';
   document.getElementById('game-scene').style.display = scene === 'game' ? '' : 'none';
   currentScene = scene;
   if (scene === 'game') {
+    updateGameBackBtn();
     resizeViewport();
     if (vp.offW > 0) drawViewport();
   }
@@ -189,6 +191,8 @@ document.getElementById('sav-input').addEventListener('change', e => {
   checkReady();
   // Auto-switch to game scene and render if sprites are ready
   if (files.t1 && files.t2) {
+    gameEnteredFrom = 'menu';
+    currentMapData = null; // force re-parse of new .sav
     setScene('game');
     doRender();
   }
@@ -219,6 +223,44 @@ document.getElementById('fow-civ').addEventListener('change', () => {
   drawViewport();
 });
 
+// ── FOW civ selector population ──
+// forceCiv: if set, select this civ slot regardless of previous value
+function populateFowCivSelector(mapData, forceCiv) {
+  const fowSelect = document.getElementById('fow-civ');
+  const previousValue = fowSelect.value;
+  fowSelect.innerHTML = '';
+  // Resolve civ display names if not already set
+  if (!mapData.civNames) {
+    const civNames = {};
+    for (let i = 0; i < 8; i++) {
+      const nb = mapData.civNameBlocks && mapData.civNameBlocks[i];
+      const cd = mapData.civData && mapData.civData[i];
+      const tribeName = nb && nb.tribeName;
+      const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
+      civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
+    }
+    mapData.civNames = civNames;
+  }
+  for (let i = 0; i < 8; i++) {
+    if (!(mapData.civsAlive & (1 << i))) continue;
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = mapData.civNames[i] || `Civ ${i}`;
+    fowSelect.appendChild(opt);
+  }
+  if (forceCiv != null) {
+    fowSelect.value = String(forceCiv);
+  } else if (previousValue !== '' && [...fowSelect.options].some(o => o.value === previousValue)) {
+    fowSelect.value = previousValue;
+  } else {
+    fowSelect.value = mapData.playerCiv;
+  }
+  // Sync cachedFowCiv with the final selected value
+  cachedFowCiv = parseInt(fowSelect.value);
+  cachedLosData = null;
+  fowSelect.disabled = false;
+}
+
 // ── Main render flow ──
 let rendering = false;
 async function doRender(options = {}) {
@@ -241,34 +283,7 @@ async function doRender(options = {}) {
     })();
 
     // Populate FOW civ selector
-    const fowSelect = document.getElementById('fow-civ');
-    const previousValue = fowSelect.value;
-    fowSelect.innerHTML = '';
-    // Resolve civ display names if not already set
-    if (!mapData.civNames) {
-      const civNames = {};
-      for (let i = 0; i < 8; i++) {
-        const nb = mapData.civNameBlocks && mapData.civNameBlocks[i];
-        const cd = mapData.civData && mapData.civData[i];
-        const tribeName = nb && nb.tribeName;
-        const rulesName = cd && cd.rulesCivNumber != null && LEADERS_TXT_NAMES[cd.rulesCivNumber];
-        civNames[i] = i === 0 ? 'Barbarians' : (tribeName || rulesName || `Civ ${i}`);
-      }
-      mapData.civNames = civNames;
-    }
-    for (let i = 0; i < 8; i++) {
-      if (!(mapData.civsAlive & (1 << i))) continue;
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = mapData.civNames[i] || `Civ ${i}`;
-      fowSelect.appendChild(opt);
-    }
-    if (previousValue !== '' && [...fowSelect.options].some(o => o.value === previousValue)) {
-      fowSelect.value = previousValue;
-    } else {
-      fowSelect.value = mapData.playerCiv;
-    }
-    fowSelect.disabled = false;
+    populateFowCivSelector(mapData);
 
     cdSprites = null;
 
@@ -948,13 +963,8 @@ function cdHandleClick(clientX, clientY) {
 function handleWorkerChange(result) {
   const city = cdCity;
   const cityIndex = cdCityIndex;
-  let inner = city.workersInner;
-  let outerA = city.workersOuterA;
-  let outerB = city.workersOuterB & 0x0F;
-  let specBytes = city.specialistBytes ? [...city.specialistBytes] : [0, 0, 0, 0];
-
-  const specs = Civ2CityDialog.getSpecialists(city);
-  const totalSpecs = specs.entertainer + specs.taxman + specs.scientist;
+  let workedTiles = city.workedTiles ? [...city.workedTiles] : [];
+  let specialists = city.specialists ? [...city.specialists] : [];
 
   if (result.action === 'toggleTile') {
     const i = result.tileIndex;
@@ -966,28 +976,24 @@ function handleWorkerChange(result) {
     const ter = mpMapBase.getTerrain(wgx, result.tileGy);
     if (ter === 10) return; // can't work ocean
 
-    // Toggle the bit
-    let isWorked;
-    if (i < 8) { isWorked = (inner >> i) & 1; inner ^= (1 << i); }
-    else if (i < 16) { isWorked = (outerA >> (i - 8)) & 1; outerA ^= (1 << (i - 8)); }
-    else { isWorked = (outerB >> (i - 16)) & 1; outerB ^= (1 << (i - 16)); }
-
-    if (isWorked) {
-      // Removed a worker — add an entertainer specialist
-      addSpecialist(specBytes, 1); // 1 = entertainer
+    const idx = workedTiles.indexOf(i);
+    if (idx >= 0) {
+      // Tile was worked — remove worker, add entertainer
+      workedTiles.splice(idx, 1);
+      specialists.push('entertainer');
     } else {
-      // Added a worker — remove one specialist (last one)
-      if (totalSpecs === 0) return; // can't add worker without removing specialist
-      removeLastSpecialist(specBytes);
+      // Tile was unworked — add worker, remove last specialist
+      if (specialists.length === 0) return; // can't add worker without removing specialist
+      specialists.pop();
+      workedTiles.push(i);
     }
   } else if (result.action === 'citizenToSpec') {
     // Click on a worker face — remove the worst-scoring worker tile and add an entertainer
-    const workerTiles = getWorkerTileList(inner, outerA, outerB);
-    if (workerTiles.length === 0) return;
+    if (workedTiles.length === 0) return;
 
     // Find worst tile by yield score
     let worstIdx = -1, worstScore = Infinity;
-    for (const ti of workerTiles) {
+    for (const ti of workedTiles) {
       const [ddx, ddy] = Civ2CityDialog.CITY_RADIUS_DOUBLED[ti];
       const parC = city.gy & 1;
       const parT = ((city.gy + ddy) % 2 + 2) % 2;
@@ -1003,39 +1009,28 @@ function handleWorkerChange(result) {
     }
     if (worstIdx < 0) return;
 
-    // Remove worst worker
-    if (worstIdx < 8) inner &= ~(1 << worstIdx);
-    else if (worstIdx < 16) outerA &= ~(1 << (worstIdx - 8));
-    else outerB &= ~(1 << (worstIdx - 16));
-
-    // Add entertainer
-    addSpecialist(specBytes, 1);
+    // Remove worst worker, add entertainer
+    workedTiles.splice(workedTiles.indexOf(worstIdx), 1);
+    specialists.push('entertainer');
   } else if (result.action === 'cycleSpec') {
-    // Click on a specialist face — cycle: entertainer(1) → taxman(2) → scientist(3) → remove (add best worker)
-    const specList = getSpecialistList(specBytes);
-    const workerCount = city.size - totalSpecs;
-    const specIdx = result.citizenSlot - workerCount;
-    if (specIdx < 0 || specIdx >= specList.length) return;
+    // Click on a specialist face — cycle: entertainer → taxman → scientist → remove (add best worker)
+    const specIdx = result.citizenSlot - workedTiles.length;
+    if (specIdx < 0 || specIdx >= specialists.length) return;
 
-    const currentType = specList[specIdx].type;
-    if (currentType === 1) {
-      // Entertainer → Taxman
-      setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 2);
-    } else if (currentType === 2) {
-      // Taxman → Scientist
-      setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 3);
+    const current = specialists[specIdx];
+    if (current === 'entertainer') {
+      specialists[specIdx] = 'taxman';
+    } else if (current === 'taxman') {
+      specialists[specIdx] = 'scientist';
     } else {
       // Scientist → remove specialist, add best available worker tile
-      setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 0);
-      // Find best unworked tile
-      const bestTile = findBestUnworkedTile(city, inner, outerA, outerB);
+      const bestTile = findBestUnworkedTile(city, workedTiles);
       if (bestTile != null) {
-        if (bestTile < 8) inner |= (1 << bestTile);
-        else if (bestTile < 16) outerA |= (1 << (bestTile - 8));
-        else outerB |= (1 << (bestTile - 16));
+        specialists.splice(specIdx, 1);
+        workedTiles.push(bestTile);
       } else {
-        // No valid tile — just cycle back to entertainer instead
-        setSpecialistAt(specBytes, specList[specIdx].byteIdx, specList[specIdx].bitIdx, 1);
+        // No valid tile — cycle back to entertainer instead
+        specialists[specIdx] = 'entertainer';
         return;
       }
     }
@@ -1047,76 +1042,19 @@ function handleWorkerChange(result) {
     action: {
       type: SET_WORKERS,
       cityIndex,
-      workersInner: inner,
-      workersOuterA: outerA,
-      workersOuterB: outerB & 0x0F,
-      specialistBytes: specBytes,
+      workedTiles,
+      specialists,
     },
   });
 }
 
-// Helper: get list of worked tile indices
-function getWorkerTileList(inner, outerA, outerB) {
-  const tiles = [];
-  for (let i = 0; i < 8; i++) if ((inner >> i) & 1) tiles.push(i);
-  for (let i = 0; i < 8; i++) if ((outerA >> i) & 1) tiles.push(8 + i);
-  for (let i = 0; i < 4; i++) if ((outerB >> i) & 1) tiles.push(16 + i);
-  return tiles;
-}
-
-// Helper: get ordered list of specialists with their byte/bit positions
-function getSpecialistList(specBytes) {
-  const list = [];
-  for (let b = 0; b < 4; b++) {
-    for (let s = 0; s < 4; s++) {
-      const val = (specBytes[b] >> (s * 2)) & 0x03;
-      if (val > 0) list.push({ type: val, byteIdx: b, bitIdx: s });
-    }
-  }
-  return list;
-}
-
-// Helper: add a specialist of given type to the first empty slot
-function addSpecialist(specBytes, type) {
-  for (let b = 0; b < 4; b++) {
-    for (let s = 0; s < 4; s++) {
-      const val = (specBytes[b] >> (s * 2)) & 0x03;
-      if (val === 0) {
-        specBytes[b] |= (type << (s * 2));
-        return;
-      }
-    }
-  }
-}
-
-// Helper: remove the last specialist (any type)
-function removeLastSpecialist(specBytes) {
-  for (let b = 3; b >= 0; b--) {
-    for (let s = 3; s >= 0; s--) {
-      const val = (specBytes[b] >> (s * 2)) & 0x03;
-      if (val > 0) {
-        specBytes[b] &= ~(0x03 << (s * 2));
-        return;
-      }
-    }
-  }
-}
-
-// Helper: set specialist type at a specific byte/bit position
-function setSpecialistAt(specBytes, byteIdx, bitIdx, type) {
-  specBytes[byteIdx] &= ~(0x03 << (bitIdx * 2));
-  specBytes[byteIdx] |= (type << (bitIdx * 2));
-}
-
 // Helper: find best unworked tile (by food*10 + shields)
-function findBestUnworkedTile(city, inner, outerA, outerB) {
+function findBestUnworkedTile(city, workedTiles) {
+  const worked = new Set(workedTiles);
   const parC = city.gy & 1;
   let bestIdx = -1, bestScore = -1;
   for (let i = 0; i < 20; i++) {
-    // Check if already worked
-    if (i < 8 && ((inner >> i) & 1)) continue;
-    if (i >= 8 && i < 16 && ((outerA >> (i - 8)) & 1)) continue;
-    if (i >= 16 && ((outerB >> (i - 16)) & 1)) continue;
+    if (worked.has(i)) continue;
 
     const [ddx, ddy] = Civ2CityDialog.CITY_RADIUS_DOUBLED[i];
     const parT = ((city.gy + ddy) % 2 + 2) % 2;
@@ -1344,8 +1282,14 @@ document.getElementById('menu-ok-btn').addEventListener('click', () => {
   switch (selected.value) {
     case 'load':
       if (files.sav && files.t1 && files.t2) {
+        gameEnteredFrom = 'menu';
+        currentMapData = null; // clear multiplayer state so doRender() re-parses .sav
+        // Restore single-player controls (may have been hidden by multiplayer)
+        document.getElementById('sav-btn').style.display = '';
+        document.getElementById('render-btn').style.display = '';
+        document.getElementById('status').style.display = '';
         setScene('game');
-        if (!currentMapData) doRender();
+        doRender();
       } else {
         document.getElementById('sav-input').click();
       }
@@ -1436,7 +1380,7 @@ function getActiveGameSession(roomId) {
 
 function updateGameBackBtn() {
   const btn = document.getElementById('game-back-btn');
-  btn.innerHTML = '&larr; Lobby';
+  btn.innerHTML = gameEnteredFrom === 'lobby' ? '&larr; Lobby' : '&larr; Menu';
 }
 
 function setWsStatus(state, label) {
@@ -1584,15 +1528,14 @@ const transport = createTransport({
         menuLoop.currentTime = 0;
         menuEnd.play().catch(() => {});
 
-        // Enable FOW + LOS for multiplayer, set civ selector to player's civ
+        // Enable FOW + LOS for multiplayer
         document.getElementById('fow-toggle').checked = true;
         document.getElementById('los-toggle').checked = true;
-        const fowCivSel = document.getElementById('fow-civ');
-        fowCivSel.value = String(mpCivSlot);
         cachedFowCiv = mpCivSlot;
         cachedLosData = null;
 
         // Switch to game scene first so viewport has real dimensions for centering
+        gameEnteredFrom = 'lobby';
         setScene('game');
 
         // Hide single-player controls in multiplayer
@@ -1601,7 +1544,8 @@ const transport = createTransport({
         document.getElementById('status').style.display = 'none';
 
         // Build mapData object compatible with existing renderer
-        doRenderFromState({ silent: false });
+        // populateFowCivSelector is called inside with forceCiv to ensure correct civ
+        doRenderFromState({ silent: false, forceCiv: mpCivSlot });
         break;
       }
 
@@ -1670,10 +1614,7 @@ const transport = createTransport({
 });
 
 setWsStatus('ws-connecting', 'Connecting...');
-// If player has active games, go straight to lobby
-if (activeGames.length > 0) {
-  setScene('lobby');
-}
+// Always start at the menu — player can choose "Load a Game" or "Multiplayer Game"
 transport.connect();
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1719,8 +1660,12 @@ function renderRoomList() {
     const go = () => {
       if (roomId === wsRoomId && wsGameStarted && mpGameState && mpMapBase) {
         // Already connected with game state — go straight to map, refresh turn UI
+        gameEnteredFrom = 'lobby';
+        document.getElementById('sav-btn').style.display = 'none';
+        document.getElementById('render-btn').style.display = 'none';
+        document.getElementById('status').style.display = 'none';
         setScene('game');
-        doRenderFromState({ skipCenter: false, silent: true });
+        doRenderFromState({ skipCenter: false, silent: true, forceCiv: mpCivSlot });
         return;
       }
       if (roomId === wsRoomId && wsLastRoom && !wsGameStarted) {
@@ -1840,8 +1785,12 @@ function updateBanner() {
 document.getElementById('lobby-banner-resume').addEventListener('click', () => {
   if (wsRoomId && wsGameStarted && mpGameState && mpMapBase) {
     // We have game state — go straight to the map, refresh turn UI
+    gameEnteredFrom = 'lobby';
+    document.getElementById('sav-btn').style.display = 'none';
+    document.getElementById('render-btn').style.display = 'none';
+    document.getElementById('status').style.display = 'none';
     setScene('game');
-    doRenderFromState({ skipCenter: false, silent: true });
+    doRenderFromState({ skipCenter: false, silent: true, forceCiv: mpCivSlot });
     return;
   }
   if (wsRoomId && wsGameStarted && wsLastRoom) {
@@ -1888,11 +1837,15 @@ document.getElementById('room-ready-btn').addEventListener('click', () => {
 // Lobby ← → Menu navigation
 document.getElementById('lobby-back-btn').addEventListener('click', () => setScene('menu'));
 document.getElementById('game-back-btn').addEventListener('click', () => {
-  setScene('lobby');
-  // Always show room list so player can browse/join other games
-  document.getElementById('lobby-room-view').style.display = 'none';
-  document.getElementById('lobby-rooms-view').style.display = 'block';
-  updateBanner();
+  if (gameEnteredFrom === 'lobby') {
+    setScene('lobby');
+    // Always show room list so player can browse/join other games
+    document.getElementById('lobby-room-view').style.display = 'none';
+    document.getElementById('lobby-rooms-view').style.display = 'block';
+    updateBanner();
+  } else {
+    setScene('menu');
+  }
 });
 
 // ── Periodic refresh for activity dot transitions (idle → gold) ──
@@ -1957,6 +1910,7 @@ async function doRenderFromState(opts = {}) {
   if (!mapData) return;
   currentMapData = mapData;
 
+  populateFowCivSelector(mapData, opts.forceCiv);
   updateTurnUI();
 
   // Auto-select first movable unit (only on our turn)

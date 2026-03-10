@@ -200,6 +200,8 @@ function findSettlerPlacements(mapBase, count) {
 
 /**
  * Build initial civData array for a new game.
+ * Default slot→civ: slot 1=Romans(0), slot 2=Babylonians(1), slot 3=Germans(2), etc.
+ * This matches Civ2's default game setup (LEADERS.TXT order).
  */
 function buildInitialCivData(seatList) {
   const civData = [];
@@ -208,7 +210,7 @@ function buildInitialCivData(seatList) {
       government: i === 0 ? 0 : 1, // barbs=anarchy, others=despotism
       treasury: i === 0 ? 0 : 50,
       scienceRate: 5, taxRate: 5, luxuryRate: 0,
-      rulesCivNumber: i < 21 ? i : 0,
+      rulesCivNumber: i === 0 ? 0 : i - 1, // slot 1→0(Romans), slot 2→1(Babylonians), etc.
     });
   }
   return civData;

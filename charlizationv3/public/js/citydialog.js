@@ -326,15 +326,9 @@ const Civ2CityDialog = {
 
   getSpecialists(city) {
     const specs = { entertainer: 0, taxman: 0, scientist: 0 };
-    if (!city.specialistBytes) return specs;
-    for (let b = 0; b < 4; b++) {
-      const byte = city.specialistBytes[b];
-      for (let s = 0; s < 4; s++) {
-        const val = (byte >> (s * 2)) & 0x03;
-        if (val === 1) specs.entertainer++;
-        else if (val === 2) specs.taxman++;
-        else if (val === 3) specs.scientist++;
-      }
+    if (!city.specialists) return specs;
+    for (const s of city.specialists) {
+      if (specs[s] != null) specs[s]++;
     }
     return specs;
   },
@@ -1769,22 +1763,12 @@ const Civ2CityDialog = {
     ctx.textBaseline = 'alphabetic';
   },
 
-  // ── Worked tile set from worker bitmaps ──
+  // ── Worked tile set from workedTiles array ──
   // Game's canonical tile indices: inner ring 0-7, outer ring 8-19, center=20.
-  // Save file bytes: +48 bits 0-7 → indices 0-7, +49 bits 0-7 → indices 8-15,
-  // +50 bits 0-3 → indices 16-19, +50 bit 4 → index 20 (center, always set).
+  // Center tile (index 20) is always worked and not stored in the array.
   _getWorkedTiles(city) {
-    const worked = new Set();
-    worked.add(20); // center tile is always worked (index 20)
-    for (let b = 0; b < 8; b++) {
-      if (city.workersInner & (1 << b)) worked.add(b);      // indices 0-7
-    }
-    for (let b = 0; b < 8; b++) {
-      if (city.workersOuterA & (1 << b)) worked.add(8 + b); // indices 8-15
-    }
-    for (let b = 0; b < 4; b++) {
-      if (city.workersOuterB & (1 << b)) worked.add(16 + b); // indices 16-19
-    }
+    const worked = new Set(city.workedTiles || []);
+    worked.add(20); // center tile is always worked
     return worked;
   },
 

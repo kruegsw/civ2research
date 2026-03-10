@@ -1058,50 +1058,100 @@ tracks transient LOS.
 
 ---
 
-## Migration Plan (High-Level)
+## Migration Plan
 
-### Phase 1: Workers & Specialists (smallest scope)
-- Convert parser output for worker bitmasks → `workedTiles: number[]`
-- Convert specialist packed bytes → `specialists: string[]`
-- Update: reducer, rules, city dialog, app.js handleWorkerChange
+Based on codebase audit (callsite counts, file spread, risk assessment) and
+finalized model decisions. Phases 1-4 change internal representations within
+existing objects — independently deployable, low coupling. Phases 5-7 reshape
+the top-level structure — more coupled, higher risk.
+
+### Phase 1: Workers & Specialists (~31-34 callsites, 5 files)
+*Smallest scope. SET_WORKERS action/reducer/rules code already exists. Proves the full pipeline.*
+
+- Parser: convert worker bitmasks (`workersInner`/`OuterA`/`OuterB`) → `workedTiles: number[]`
+- Parser: convert `specialistBytes` packed 2-bit values → `specialists: string[]`
+- Update: reducer (BUILD_CITY initial workers, SET_WORKERS), rules (validation popcount → .length),
+  city dialog (display + click regions), app.js (handleWorkerChange bit logic → array ops)
 - All downstream code uses arrays/strings instead of bit manipulation
 
-### Phase 2: Buildings
-- Convert parser output for building bitmasks → `buildings: Set<number>`
-- Update: city dialog (building checks), happiness calc, trade calc, production
-- ~30 callsites using `buildings & (1 << N)`
+### Phase 2: Buildings & City Production (~12 callsites, 3 files)
+*Low risk. Clean next step after Phase 1.*
 
-### Phase 3: Unit Fields
-- Convert orders byte → string enum
-- Convert movement/status flag bytes → individual booleans
-- Convert cargo byte → separate named fields (commodityCarried, workTurns, fuelRemaining, cargoCount)
-- Exclude stack pointers (derive stacking from position)
-- Exclude visibleTo (server-side cache, not model — see Visibility Architecture)
-- Update: renderer, tooltip, events, reducer
+- Parser: merge `buildings` (uint32) + `buildingsV` (uint8) bitmasks → `buildings: Set<number>`
+- Parser: production byte → `producing: { type: 'unit'|'building'|'wonder', id }`
+- Remove `city.style` (derive from `civs[city.owner].style`)
+- Add Set ↔ Array serialization at WebSocket boundary (`serializeState`/`deserializeState`)
+- Update: city dialog (`buildings & (1 << bit)` → `buildings.has(id)`),
+  cityview (building checks), happiness calc, trade calc
 
-### Phase 4: Tile Improvements
-- Convert improvement byte → improvement object
-- This is the largest change (~50+ callsites in renderer, city dialog, movement, etc.)
-- Update: renderer, city dialog resource map, movement cost calc, tooltip, all getImprovements() callers
+### Phase 3: Unit Fields (~10 callsites, 4 files)
+*Low complexity. Straightforward field-level changes.*
 
-### Phase 5: Diplomacy, Wonders, Technology
-- Restructure into dedicated top-level objects
-- Convert treaty bitmasks → boolean flags
-- Convert wonder cityIds → objects
-- Convert tech bitmasks → Set-based structure
+- Orders byte → string enum (`'none'`, `'fortified'`, `'sleep'`, etc.)
+- Cargo byte → 4 named fields (`commodityCarried`, `workTurns`, `fuelRemaining`, `cargoCount`)
+- Status flags → individual booleans (`hasMoved`, `paradropLaunched`, `immobile`, `automated`, `waiting`)
+- Add `alive: boolean` (currently derived from `gx === -1`)
+- Exclude: stack pointers (derive stacking from co-located units), sequenceId, saveIndex, raw x/y
+- Note: `visibleTo` is NOT added — server-side cache per Visibility Architecture decision
+- Update: renderer (orders/fortify checks), tooltip (order display), reducer (wake logic), events
 
-### Phase 6: Map Visibility & Tile Data
-- Convert tile visibility byte → `exploredBy: Set<number>`
-- Convert tile data to objects with named fields
-- Update: updateVisibility, FOW rendering, filterStateForCiv
+### Phase 4: Tile Improvements (~22 callsites, 12 files)
+*Highest risk — widest file spread. Most testing needed. Keep as separate phase.*
 
-### Phase 7: Settings, Meta, History
+- `getImprovements(gx, gy)` returns improvement object instead of byte
+- Farmland as its own boolean flag (not irrigation+mining combined)
+- Parser converts improvement byte → `{ road, railroad, irrigation, mining, fortress, airbase, pollution, farmland }`
+- Update: renderer (road/railroad/irrigation/mining/fortress/airbase sprite decisions),
+  city dialog (resource map yield calc, improvement display), movement.js (road/railroad cost),
+  tooltip (improvement labels), events.js, cityview.js
+- All `imp & 0x10` bit-check patterns → `imp.road` boolean checks
+
+### Phase 5: Map & Visibility Restructuring (~9 visibility + tile data callsites, 12 files)
+*High risk — touches core data structure and rendering pipeline.*
+
+- Tile data arrays (`tileData[idx][N]`) → tile objects with named fields
+  (`terrain`, `river`, `goodyHut`, `owner`, `bodyId`, `fertility`, `cityRadiusOwner`)
+- Per-tile visibility byte (`tileData[idx][4]`) → per-civ `map.explored[civSlot]: Set<tileIndex>`
+- `knownImprovements` byte arrays → improvement objects (format from Phase 4)
+- Add `resourceSuppressed` flag per tile
+- `map.wraps` derived from `settings.flatEarth`
+- Update: state.js (accessor factory), visibility.js (updateVisibility, filterStateForCiv),
+  renderer (FOW), parser (tile extraction), app.js (bulk visibility updates)
+
+### Phase 6: Diplomacy, Wonders, Technology (diplomacy ~5, tech ~37, wonders trivial)
+*Diplomacy already mostly structured. Tech already uses Sets. Main work is top-level reshaping.*
+
+- Extract diplomacy from `civData[i].treaties/attitudes/treatyViolations`
+  → top-level `diplomacy.relations[i][j]` 8×8 matrix with boolean flags
+- Wonder `cityIds` uint16 array → `wonders[i]: { cityIndex, destroyed }` objects
+- Tech: restructure from per-civ Sets (`civTechs[civ]`) to per-advance
+  `{ firstDiscoveredBy, discoveredBy: Set }`. Build `techCache` outside model.
+- Keep `acquiredTechCount` on civs, synced by reducer on tech change
+- Update: city dialog (~7 tech callsites), renderer (~4 era checks),
+  server.js (payload building), app.js (deserialization)
+
+### Phase 7: Top-Level Reshape + Enum Conversions
+*Largest structural change — touches server.js payload, client deserialization, all gameState references.*
+
+- Create `meta` (sourceFormat, formatVersion, isScenario, cursorPosition, multiplayer fields)
+- Create `settings` (difficulty→string, barbarianActivity→string, gameplay flags,
+  COSMIC null overrides, cityNameOverrides). Exclude UI prefs with comment.
+- Merge `civData` + `civNameBlocks` → unified `civs` array with all identity,
+  economy, research, AI, spaceship, state flag fields
+- Small enum conversions: `difficulty`, `barbarianActivity`, `government`, `gender`, `style` → strings
+- Create `turn` (number, activeCiv, selectedUnit). Exclude year (derive via getYear()).
+- Create `history` (kills unlimited, powerGraphRaw, turnSnapshots, replay placeholder)
+- Create `events` (scenario data | null)
+- Move `cityNameCounter` from tail to `civs[i]`
+- Move `CIV_CITY_NAMES` from `reducer.js` to `defs.js`
 - Parse toggle bytes → named boolean fields
-- Parse COSMIC constants into settings.cosmic (null override pattern)
-- Move cursor position to meta
-- Structure kill history and power graph into history
-- Move city name counters to civs
-- Move CIV_CITY_NAMES from reducer.js to defs.js
-- Clean up remaining fields
+- Parse COSMIC constants → `settings.cosmic` (null override pattern)
+- Update: server.js (`buildStatePayload` restructured), app.js (deserialization,
+  all `gameState.X` references), init.js, all engine files referencing flat structure
 
-Each phase is independently deployable. Earlier phases don't depend on later ones. The parser gains a conversion layer that can be enabled per-section, allowing gradual migration.
+### Verification per phase
+Each phase must pass before proceeding:
+1. Load a .sav file → renders correctly (renderer, city dialog, tooltip all work)
+2. Multiplayer: create room → start game → move units → end turn
+3. City dialog: open → click workers → cycle specialists → verify state sync
+4. No console errors, no visual regressions

@@ -14,33 +14,38 @@ import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, CITY_RADIUS_DOUBLED, TERRAIN_BAS
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
 
-// City name lists per rulesCivNumber (first 21 civs from LEADERS.TXT)
+// City name lists indexed by rulesCivNumber (LEADERS.TXT order)
+// rulesCivNumber 0 = Romans, 1 = Babylonians, ... (barbarians use slot 0, not rulesCivNumber)
 const CIV_CITY_NAMES = [
-  /* 0 Barbarians */ ['Camp'],
-  /* 1 Romans */ ['Rome','Caesarea','Carthago','Nicopolis','Byzantium','Brundisium','Syracuse','Antioch','Londinium','Tarrentum','Lutetia','Hispalis','Ravenna','Artaxata','Palmyra','Cyrene'],
-  /* 2 Russians */ ['Moscow','St. Petersburg','Kiev','Minsk','Smolensk','Odessa','Sevastopol','Tiflis','Yakutsk','Vladivostok','Novosibirsk','Krasnoyarsk','Irkutsk'],
-  /* 3 Celts */ ['Entremont','Bibracte','Alesia','Numantia','Camulodunum','Gergovia','Lugdunum','Burdigala','Avaricum','Cenabum','Tolosa','Lemonum'],
-  /* 4 Germans */ ['Berlin','Hamburg','Munich','Cologne','Frankfurt','Essen','Dortmund','Stuttgart','Düsseldorf','Bremen','Hannover','Leipzig','Dresden','Bonn','Nuremberg'],
-  /* 5 Egyptians */ ['Thebes','Memphis','Oryx','Heliopolis','Gaza','Alexandria','Byblos','Cairo','Coptos','Edfu','Pithom','Busirus','Athribis','Mendes','Tanis'],
-  /* 6 Americans */ ['Washington','New York','Boston','Philadelphia','Atlanta','Chicago','Buffalo','St. Louis','Detroit','New Orleans','Baltimore','Denver','Cincinnati','Dallas','Los Angeles'],
-  /* 7 Greeks */ ['Athens','Sparta','Corinth','Delphi','Eretria','Pharsalos','Argos','Mycenae','Herakleia','Antioch','Ephesus','Rhodes','Knossos','Troy'],
-  /* 8 Indians */ ['Delhi','Bombay','Madras','Bangalore','Calcutta','Lahore','Karachi','Kolhapur','Jaipur','Hyderabad','Bengal','Chittagong','Punjab','Dacca'],
-  /* 9 Zulus */ ['Zimbabwe','Ulundi','Bapedi','Hlobane','Isandhlwana','Intombe','Mpande','Mgungundlovu','Ondini','Nobamba','Bulawayo','KwaDukuza'],
-  /* 10 French */ ['Paris','Lyon','Marseille','Tours','Chartres','Avignon','Rouen','Grenoble','Dijon','Amiens','Toulouse','Cherbourg','Poitiers','Bordeaux','Strasbourg'],
-  /* 11 Aztecs */ ['Tenochtitlan','Tlatelolco','Texcoco','Tlaxcala','Calixtlahuaca','Xochicalco','Tlacopan','Atzcapotzalco','Tzintzuntzan','Malinalco','Tula','Tamuin'],
-  /* 12 Chinese */ ['Peking','Shanghai','Canton','Nanking','Tsingtao','Hangchow','Tientsin','Tatung','Macao','Anyang','Shantung','Chinan','Kaifeng','Suchow'],
-  /* 13 English */ ['London','Coventry','Birmingham','Dover','Nottingham','York','Liverpool','Brighton','Oxford','Cambridge','Hastings','Canterbury','Newcastle','Warwick'],
-  /* 14 Mongols */ ['Samarkand','Bokhara','Nishapur','Karakorum','Kashgar','Tabriz','Aleppo','Kabul','Ormuz','Basra','Khanbalik','Merv'],
-  /* 15 Spanish */ ['Madrid','Barcelona','Seville','Cordoba','Toledo','Salamanca','Cadiz','Pamplona','Burgos','Murcia','Valencia','Leon','Granada','Bilbao'],
-  /* 16 Persians */ ['Persepolis','Pasargadae','Susa','Ecbatana','Tarsus','Gordium','Bactra','Sardis','Ergili','Dariush-Kabir','Ghulaman','Zohak'],
-  /* 17 Japanese */ ['Tokyo','Kyoto','Osaka','Nagoya','Yokohama','Sapporo','Kobe','Sendai','Nara','Nagasaki','Hiroshima','Fukuoka'],
-  /* 18 Sioux */ ['Oglala','Minneconjou','Brulé','Hunkpapa','Sans Arc','Two Kettle','Blackfeet','Santee','Sisseton','Wahpeton'],
-  /* 19 Vikings */ ['Trondheim','Reykjavik','Bergen','Oslo','Stockholm','Uppsala','Helsinki','Nidaros','Roskilde','Hedeby','Birka','Jorvik'],
-  /* 20 Carthaginians */ ['Carthage','Leptis Magna','Hadrumetum','Thapsus','Cirta','Utica','Hippo Regius','Gades','Panormus','Lilybaeum'],
+  /* 0 Romans */         ['Rome','Caesarea','Carthago','Nicopolis','Byzantium','Brundisium','Syracuse','Antioch','Londinium','Tarrentum','Lutetia','Hispalis','Ravenna','Artaxata','Palmyra','Cyrene'],
+  /* 1 Babylonians */    ['Babylon','Sumer','Ur','Nineveh','Ashur','Ellipi','Akkad','Eridu','Kish','Lagash','Nippur','Shuruppak','Umma','Sippar'],
+  /* 2 Germans */        ['Berlin','Hamburg','Munich','Cologne','Frankfurt','Essen','Dortmund','Stuttgart','Düsseldorf','Bremen','Hannover','Leipzig','Dresden','Bonn','Nuremberg'],
+  /* 3 Egyptians */      ['Thebes','Memphis','Oryx','Heliopolis','Gaza','Alexandria','Byblos','Cairo','Coptos','Edfu','Pithom','Busirus','Athribis','Mendes','Tanis'],
+  /* 4 Americans */      ['Washington','New York','Boston','Philadelphia','Atlanta','Chicago','Buffalo','St. Louis','Detroit','New Orleans','Baltimore','Denver','Cincinnati','Dallas','Los Angeles'],
+  /* 5 Greeks */         ['Athens','Sparta','Corinth','Delphi','Eretria','Pharsalos','Argos','Mycenae','Herakleia','Antioch','Ephesus','Rhodes','Knossos','Troy'],
+  /* 6 Indians */        ['Delhi','Bombay','Madras','Bangalore','Calcutta','Lahore','Karachi','Kolhapur','Jaipur','Hyderabad','Bengal','Chittagong','Punjab','Dacca'],
+  /* 7 Russians */       ['Moscow','St. Petersburg','Kiev','Minsk','Smolensk','Odessa','Sevastopol','Tiflis','Yakutsk','Vladivostok','Novosibirsk','Krasnoyarsk','Irkutsk'],
+  /* 8 Zulus */          ['Zimbabwe','Ulundi','Bapedi','Hlobane','Isandhlwana','Intombe','Mpande','Mgungundlovu','Ondini','Nobamba','Bulawayo','KwaDukuza'],
+  /* 9 French */         ['Paris','Lyon','Marseille','Tours','Chartres','Avignon','Rouen','Grenoble','Dijon','Amiens','Toulouse','Cherbourg','Poitiers','Bordeaux','Strasbourg'],
+  /* 10 Aztecs */        ['Tenochtitlan','Tlatelolco','Texcoco','Tlaxcala','Calixtlahuaca','Xochicalco','Tlacopan','Atzcapotzalco','Tzintzuntzan','Malinalco','Tula','Tamuin'],
+  /* 11 Chinese */       ['Peking','Shanghai','Canton','Nanking','Tsingtao','Hangchow','Tientsin','Tatung','Macao','Anyang','Shantung','Chinan','Kaifeng','Suchow'],
+  /* 12 English */       ['London','Coventry','Birmingham','Dover','Nottingham','York','Liverpool','Brighton','Oxford','Cambridge','Hastings','Canterbury','Newcastle','Warwick'],
+  /* 13 Mongols */       ['Samarkand','Bokhara','Nishapur','Karakorum','Kashgar','Tabriz','Aleppo','Kabul','Ormuz','Basra','Khanbalik','Merv'],
+  /* 14 Celts */         ['Entremont','Bibracte','Alesia','Numantia','Camulodunum','Gergovia','Lugdunum','Burdigala','Avaricum','Cenabum','Tolosa','Lemonum'],
+  /* 15 Japanese */      ['Tokyo','Kyoto','Osaka','Nagoya','Yokohama','Sapporo','Kobe','Sendai','Nara','Nagasaki','Hiroshima','Fukuoka'],
+  /* 16 Vikings */       ['Trondheim','Reykjavik','Bergen','Oslo','Stockholm','Uppsala','Helsinki','Nidaros','Roskilde','Hedeby','Birka','Jorvik'],
+  /* 17 Spanish */       ['Madrid','Barcelona','Seville','Cordoba','Toledo','Salamanca','Cadiz','Pamplona','Burgos','Murcia','Valencia','Leon','Granada','Bilbao'],
+  /* 18 Persians */      ['Persepolis','Pasargadae','Susa','Ecbatana','Tarsus','Gordium','Bactra','Sardis','Ergili','Dariush-Kabir','Ghulaman','Zohak'],
+  /* 19 Carthaginians */ ['Carthage','Leptis Magna','Hadrumetum','Thapsus','Cirta','Utica','Hippo Regius','Gades','Panormus','Lilybaeum'],
+  /* 20 Sioux */         ['Oglala','Minneconjou','Brulé','Hunkpapa','Sans Arc','Two Kettle','Blackfeet','Santee','Sisseton','Wahpeton'],
 ];
+const BARBARIAN_CITY_NAMES = ['Camp'];
 
 function getCityName(owner, cities, civData) {
-  const rulesNum = civData?.[owner]?.rulesCivNumber ?? owner;
+  if (owner === 0) {
+    return BARBARIAN_CITY_NAMES[0];
+  }
+  const rulesNum = civData?.[owner]?.rulesCivNumber ?? 0;
   const nameList = CIV_CITY_NAMES[rulesNum] || CIV_CITY_NAMES[0];
   const ownedNames = new Set(cities.filter(c => c.owner === owner).map(c => c.name));
   for (const name of nameList) {
@@ -52,7 +57,7 @@ function getCityName(owner, cities, civData) {
 /**
  * Assign initial workers for a new city. Evaluates all 21 radius tiles
  * and picks the best N tiles (by food, then shields) for workers.
- * Returns { inner, outerA, outerB } bitmasks.
+ * Returns workedTiles: number[] (tile indices 0-19).
  */
 function assignInitialWorkers(gx, gy, size, mapBase) {
   const parC = gy & 1;
@@ -67,22 +72,14 @@ function assignInitialWorkers(gx, gy, size, mapBase) {
     const ter = mapBase.getTerrain(tgx, tgy);
     if (ter < 0 || ter > 10 || ter === 10) continue; // skip ocean
     const base = TERRAIN_BASE[ter];
-    // City center provides irrigation bonus; adjacent tiles only if actually irrigated
     const food = base[0];
     const shields = base[1];
-    scores.push({ i, food, shields, score: food * 10 + shields });
+    scores.push({ i, score: food * 10 + shields });
   }
   scores.sort((a, b) => b.score - a.score);
 
-  let inner = 0, outerA = 0, outerB = 0;
   const toPlace = Math.min(size, scores.length);
-  for (let w = 0; w < toPlace; w++) {
-    const idx = scores[w].i;
-    if (idx < 8) inner |= (1 << idx);
-    else if (idx < 16) outerA |= (1 << (idx - 8));
-    else outerB |= (1 << (idx - 16));
-  }
-  return { inner, outerA, outerB };
+  return scores.slice(0, toPlace).map(s => s.i);
 }
 
 /**
@@ -136,7 +133,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const unit = state.units[unitIndex];
 
       // Compute initial worker placement for size-1 city
-      const workers = assignInitialWorkers(unit.gx, unit.gy, 1, mapBase);
+      const workedTiles = assignInitialWorkers(unit.gx, unit.gy, 1, mapBase);
 
       // Create city at settler's position
       const newCity = {
@@ -148,12 +145,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
         cx: unit.gx * 2 + (unit.gy % 2), cy: unit.gy,
         hasWalls: false, hasPalace: prev.cities.filter(c => c.owner === unit.owner).length === 0,
         civilDisorder: false, weLoveKingDay: false, isOccupied: false,
-        workersInner: workers.inner,
-        workersOuterA: workers.outerA,
-        workersOuterB: workers.outerB,
+        workedTiles,
+        specialists: [],
         buildings: 0, buildingsV: 0,
         foodInBox: 0, shieldsInBox: 0,
-        specialistBytes: [0, 0, 0, 0],
       };
       state.cities = [...prev.cities, newCity];
 
@@ -167,14 +162,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
     }
 
     case SET_WORKERS: {
-      const { cityIndex, workersInner, workersOuterA, workersOuterB, specialistBytes } = action;
+      const { cityIndex, workedTiles, specialists } = action;
       state.cities = [...prev.cities];
       state.cities[cityIndex] = {
         ...state.cities[cityIndex],
-        workersInner,
-        workersOuterA,
-        workersOuterB,
-        specialistBytes: [...specialistBytes],
+        workedTiles: [...workedTiles],
+        specialists: [...specialists],
       };
       break;
     }

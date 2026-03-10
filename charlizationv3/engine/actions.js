@@ -20,8 +20,10 @@ export const BUILD_CITY = 'BUILD_CITY';
 //   Settler builds a city at its current position. Settler is consumed.
 
 export const SET_WORKERS = 'SET_WORKERS';
-//   { type: 'SET_WORKERS', cityIndex, workersInner, workersOuterA, workersOuterB, specialistBytes }
-//   Reassign workers and specialists for a city. Total workers + specialists must equal city size.
+//   { type: 'SET_WORKERS', cityIndex, workedTiles, specialists }
+//   Reassign workers and specialists for a city.
+//   workedTiles: number[] (tile indices 0-19), specialists: string[] ('entertainer'|'taxman'|'scientist')
+//   Invariant: workedTiles.length + specialists.length === city.size
 
 // ── Future action types (not yet implemented) ──
 // export const FORTIFY_UNIT    = 'FORTIFY_UNIT';

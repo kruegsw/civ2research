@@ -13,22 +13,7 @@ import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS } from './actions.js';
 import { UNIT_DOMAIN, CITY_RADIUS_DOUBLED } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
 
-function popcount(n) {
-  let c = 0;
-  while (n) { c += n & 1; n >>>= 1; }
-  return c;
-}
-
-function countSpecialists(specBytes) {
-  let count = 0;
-  for (let b = 0; b < 4; b++) {
-    for (let s = 0; s < 4; s++) {
-      const val = (specBytes[b] >> (s * 2)) & 0x03;
-      if (val > 0) count++;
-    }
-  }
-  return count;
-}
+const VALID_SPECIALIST_TYPES = new Set(['entertainer', 'taxman', 'scientist']);
 
 /**
  * Check if a tile is too close to an existing city.
@@ -111,38 +96,38 @@ export function validateAction(gameState, mapBase, action, civSlot) {
     }
 
     case SET_WORKERS: {
-      const { cityIndex, workersInner, workersOuterA, workersOuterB, specialistBytes } = action;
+      const { cityIndex, workedTiles, specialists } = action;
       if (cityIndex == null) return 'Missing cityIndex';
       const city = gameState.cities[cityIndex];
       if (!city) return 'City not found';
       if (city.owner !== civSlot) return 'Not your city';
 
-      // Validate bitmask ranges
-      if ((workersInner & ~0xFF) || (workersOuterA & ~0xFF) || (workersOuterB & ~0x0F))
-        return 'Invalid worker bitmask';
-      if (!specialistBytes || specialistBytes.length !== 4)
-        return 'Invalid specialist bytes';
+      // Validate types
+      if (!Array.isArray(workedTiles)) return 'workedTiles must be an array';
+      if (!Array.isArray(specialists)) return 'specialists must be an array';
 
       // Workers + specialists must equal city size (center tile is always worked, not counted)
-      const workerCount = popcount(workersInner) + popcount(workersOuterA) + popcount(workersOuterB);
-      const specCount = countSpecialists(specialistBytes);
-      if (workerCount + specCount !== city.size) {
-        return `Workers (${workerCount}) + specialists (${specCount}) != city size (${city.size})`;
+      if (workedTiles.length + specialists.length !== city.size) {
+        return `Workers (${workedTiles.length}) + specialists (${specialists.length}) != city size (${city.size})`;
       }
 
-      // Validate no specialist byte uses invalid values (only 0-3 allowed)
-      for (let b = 0; b < 4; b++) {
-        if (specialistBytes[b] < 0 || specialistBytes[b] > 255)
-          return 'Specialist byte out of range';
+      // Validate specialist types
+      for (const spec of specialists) {
+        if (!VALID_SPECIALIST_TYPES.has(spec))
+          return `Invalid specialist type: ${spec}`;
+      }
+
+      // Validate tile indices are in range and unique
+      const seen = new Set();
+      for (const ti of workedTiles) {
+        if (ti < 0 || ti > 19) return `Worker tile index out of range: ${ti}`;
+        if (seen.has(ti)) return `Duplicate worker tile index: ${ti}`;
+        seen.add(ti);
       }
 
       // Validate workers aren't on ocean or off-map tiles
       const parC = city.gy & 1;
-      for (let i = 0; i < 20; i++) {
-        const bit = i < 8 ? (workersInner >> i) & 1
-          : i < 16 ? (workersOuterA >> (i - 8)) & 1
-          : (workersOuterB >> (i - 16)) & 1;
-        if (!bit) continue;
+      for (const i of workedTiles) {
         const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
         const parT = ((city.gy + ddy) % 2 + 2) % 2;
         const tgx = city.gx + ((parC + ddx - parT) >> 1);
