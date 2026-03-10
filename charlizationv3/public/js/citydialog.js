@@ -1,8 +1,10 @@
 import { Civ2Renderer } from './renderer.js';
 import {
-  GOVERNMENT_NAMES, COMMODITY_NAMES, ORDER_NAMES, WONDER_NAMES,
+  COMMODITY_NAMES, ORDER_NAMES, WONDER_NAMES,
   UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
   SETTLER_TYPES, NON_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
+  GOVT_CORRUPTION_DIVISOR, GOVT_FACTOR, GOVT_WLTKD_BUMP,
+  DIFFICULTY_KEYS,
 } from '../engine/defs.js';
 import { getGameYearFromMap } from '../engine/year.js';
 
@@ -48,7 +50,6 @@ const Civ2CityDialog = {
 
   // Shared constants from engine/defs.js (re-exported for internal this.* references)
   WONDER_NAMES,
-  GOVERNMENT_NAMES,
   COMMODITY_NAMES,
   ORDER_NAMES,
   SETTLER_TYPES,
@@ -60,9 +61,12 @@ const Civ2CityDialog = {
   SUPPORT_EXEMPT_TYPES,
   // Fanatic types (flag 0x08): free shield support under Fundamentalism
   FANATIC_TYPES: new Set([8]),
-  // Settler food cost per turn by government index [Anarchy..Democracy]
-  // Gov 0-2: 1 food (DAT_0064bccd). Gov 3-6: 2 food (DAT_0064bcce)
-  SETTLER_FOOD_COST: [1, 1, 1, 2, 2, 2, 2],
+  // Settler food cost per turn by government string
+  // Anarchy/Despotism/Monarchy: 1 food (DAT_0064bccd). Communism+: 2 food (DAT_0064bcce)
+  SETTLER_FOOD_COST: {
+    anarchy: 1, despotism: 1, monarchy: 1, communism: 2,
+    fundamentalism: 2, republic: 2, democracy: 2,
+  },
   // Standard RULES.TXT wonder obsolescence tech IDs (wonder index → tech ID that obsoletes it)
   // Only populated for wonders that CAN become obsolete. Absent = never obsolete.
   // Obsolescence check: if ANY civ has the tech, the wonder is inactive (FUN_00453da0)
@@ -337,7 +341,7 @@ const Civ2CityDialog = {
     const govt = this._getCityGovernment(city, mapData);
 
     // Fundamentalism caps science rate at 5 (binary lines 1528-1530)
-    if (govt === 4 && sciRate > 5) sciRate = 5;
+    if (govt === 'fundamentalism' && sciRate > 5) sciRate = 5;
 
     const luxRate = 10 - sciRate - taxRate;
 
@@ -349,7 +353,7 @@ const Civ2CityDialog = {
     let tax = netTrade - (sci + lux);
 
     // AI Fundamentalism redirects all luxury to science (binary lines 1537-1541)
-    if (govt === 4 && mapData && mapData.playerCiv !== undefined && city.owner !== mapData.playerCiv) {
+    if (govt === 'fundamentalism' && mapData && mapData.playerCiv !== undefined && city.owner !== mapData.playerCiv) {
       sci += lux;
       lux = 0;
     }
@@ -491,12 +495,12 @@ const Civ2CityDialog = {
     return wonders[wonderIndex].cityIndex === cityIndex;
   },
 
-  // Get government type for city's owner (0=Anarchy..6=Democracy)
+  // Get government type string for city's owner
   _getCityGovernment(city, mapData) {
     if (mapData.civs && mapData.civs[city.owner] != null) {
       return mapData.civs[city.owner].government;
     }
-    return 1; // default Despotism
+    return 'despotism';
   },
 
   // Game tile distance (FUN_005ae1b0): uses doubled X coordinates from save file format
@@ -529,8 +533,8 @@ const Civ2CityDialog = {
   // Waste must be computed independently from distance to capital
   _calcShieldWaste(city, grossShields, support, mapData) {
     const govt = this._getCityGovernment(city, mapData);
-    // Government exemptions: Fundamentalism (4), Democracy (6), Barbarians
-    if (govt === 4 || govt === 6 || city.owner === 0) return 0;
+    // Government exemptions: Fundamentalism, Democracy, Barbarians
+    if (govt === 'fundamentalism' || govt === 'democracy' || city.owner === 0) return 0;
     if (city.hasPalace) return 0;
     const capital = mapData.cities.find(c => c.owner === city.owner && c.hasPalace);
     if (!capital) return 0;
@@ -538,24 +542,19 @@ const Civ2CityDialog = {
     const mapShape = mapData.mapShape || 0;
     const distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
     // WLTKD bumps effective government for govtFactor (FUN_004e989a line 3619)
-    let effGovt = govt;
-    if (city.weLoveKingDay) effGovt++;
-    let gf = 4;
-    if (effGovt > 0) gf = 5;
-    if (effGovt > 1) gf++;
-    if (effGovt > 2) gf++;
-    if (effGovt > 4) gf++;
+    const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
+    const gf = GOVT_FACTOR[effGovt] || 4;
     // Base waste from distance formula
     const available = grossShields - support;
     if (available <= 0) return 0;
-    const isCommunism = (govt === 3);
+    const isCommunism = (govt === 'communism');
     const distVal = isCommunism ? 3 : Math.min(distance, 16); // Communism uses COSMIC #8 (default 3) for flat waste
     let baseWaste = Math.trunc((distVal * available * 3) / (gf * 20));
     baseWaste = Math.max(0, Math.min(baseWaste, available));
     // Courthouse (7) or Palace (1) halves waste
     if (this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) baseWaste >>= 1;
-    // Government divisor: govt >> 1 + 1
-    const govtDiv = (govt >> 1) + 1;
+    // Government divisor
+    const govtDiv = GOVT_CORRUPTION_DIVISOR[govt] || 1;
     // Modified waste: binary applies ((3 - courthouseFactor) * base) / 3 / govtDiv
     // courthouseFactor requires pathfinding to capital (FUN_00488a45); approximated as 0
     let waste = Math.trunc(baseWaste / govtDiv);
@@ -570,7 +569,7 @@ const Civ2CityDialog = {
   // Same base formula as shield waste but: no distance cap, no road factor, no govtDiv
   _calcTradeCorruption(city, grossTrade, mapData) {
     const govt = this._getCityGovernment(city, mapData);
-    if (govt === 4 || govt === 6) return 0; // Fundamentalism / Democracy: zero corruption
+    if (govt === 'fundamentalism' || govt === 'democracy') return 0;
     if (city.hasPalace) return 0;
     if (grossTrade <= 0) return 0;
     const capital = mapData.cities.find(c => c.owner === city.owner && c.hasPalace);
@@ -582,15 +581,10 @@ const Civ2CityDialog = {
       distance = this._capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
     }
     // WLTKD bumps effective government for govtFactor (FUN_004e989a line 3619)
-    let effGovt = govt;
-    if (city.weLoveKingDay) effGovt++;
-    let gf = 4;
-    if (effGovt > 0) gf = 5;
-    if (effGovt > 1) gf++;
-    if (effGovt > 2) gf++;
-    if (effGovt > 4) gf++;
-    // Communism (govt==3) uses COSMIC #8 (default 3) as flat distance
-    const isCommunism = (govt === 3); // checked on original govt, before WLTKD
+    const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
+    const gf = GOVT_FACTOR[effGovt] || 4;
+    // Communism uses COSMIC #8 (default 3) as flat distance
+    const isCommunism = (govt === 'communism');
     const distVal = isCommunism ? 3 : distance; // NO cap at 16 (unlike shield waste)
     let corruption = Math.trunc((distVal * grossTrade * 3) / (gf * 20));
     corruption = Math.max(0, Math.min(corruption, grossTrade));
@@ -654,7 +648,7 @@ const Civ2CityDialog = {
     const govt = this._getCityGovernment(city, mapData);
     const pop = city.size;
     const ownerSlot = city.owner;
-    const difficulty = gs ? gs.difficulty : 0;
+    const difficulty = gs ? gs.difficulty : 'chieftain';
     const humanPlayers = gs ? gs.humanPlayers : 0;
     const isHuman = !!((1 << ownerSlot) & humanPlayers);
 
@@ -696,16 +690,17 @@ const Civ2CityDialog = {
       st.unhappy = (pop - 1) - (CONTENT_BASE - 5);
     } else {
       // Human player: empire-size spread
-      let spread = UNHAPPY_OFFSET + difficulty * -2;
-      if (gs && gs.barbarianActivity === 3) spread += 2;  // raging hordes
-      let divisor = Math.floor(((govt >> 1) + 2) * spread / 2);
+      const diffIdx = DIFFICULTY_KEYS.indexOf(difficulty);
+      let spread = UNHAPPY_OFFSET + diffIdx * -2;
+      if (gs && gs.barbarianActivity === 'raging') spread += 2;  // raging hordes
+      let divisor = Math.floor(((GOVT_CORRUPTION_DIVISOR[govt] || 1) + 1) * spread / 2);
       if (divisor < 2) divisor = 1;
 
-      const contentBase = CONTENT_BASE - difficulty;
+      const contentBase = CONTENT_BASE - diffIdx;
       st.unhappy = (pop - 1) - (contentBase - 2);
 
       // Empire size penalty (Communism exempt) — line 4094-4098
-      if (govt !== 3) {
+      if (govt !== 'communism') {
         const cityCount = civData ? civData.cityCount : 1;
         st.unhappy += Math.floor((cityCount - divisor + cityIndex % divisor) / divisor);
       }
@@ -755,29 +750,30 @@ const Civ2CityDialog = {
 
     // ── Step 5b: Courthouse/Palace + Democracy = +1 happy (line 4138) ──
     // Binary checks building 7 (Courthouse) OR building 1 (Palace), NOT City Walls
-    if ((this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) && govt === 6) {
+    if ((this._cityHasBuilding(city, 7) || this._cityHasBuilding(city, 1)) && govt === 'democracy') {
       st.happy += 1;
     }
 
     adjust(); // Phase 2
 
     // ── Step 6: Fundamentalism / Martial law / Military unhappiness ──
-    if (govt === 4) {  // Fundamentalism: zero all unhappiness (line 4144)
+    if (govt === 'fundamentalism') {  // zero all unhappiness (line 4144)
       st.surplus = 0;
       st.unhappy = 0;
-    } else if (govt < 5) {  // Anarchy/Despotism/Monarchy/Communism: martial law (line 4148)
+    } else if (govt === 'anarchy' || govt === 'despotism' || govt === 'monarchy' || govt === 'communism') {
+      // Martial law (line 4148)
       let garrison = 0;
       for (const u of mapData.units) {
         if (u.gx === city.gx && u.gy === city.gy && u.owner === ownerSlot &&
             !this.NON_COMBAT_TYPES.has(u.type)) {
-          garrison += (govt === 3) ? 2 : 1;  // Communism: each unit counts double
+          garrison += (govt === 'communism') ? 2 : 1;  // Communism: each unit counts double
         }
       }
-      const maxMartial = (govt === 3) ? 6 : 3;
+      const maxMartial = (govt === 'communism') ? 6 : 3;
       if (garrison > maxMartial) garrison = maxMartial;
       garrison = Math.max(0, Math.min(garrison, st.unhappy));  // clamp to [0, unhappy]
       st.unhappy -= garrison;
-    } else {  // Republic(5) / Democracy(6): military unhappiness (line 4168)
+    } else {  // Republic / Democracy: military unhappiness (line 4168)
       let penalty;
       if (this._hasWonderEffect(mapData, ownerSlot, 21) ||  // Women's Suffrage
           this._cityHasBuilding(city, 33)) {                 // Police Station
@@ -785,7 +781,7 @@ const Civ2CityDialog = {
       } else {
         penalty = 1;
       }
-      if (govt === 6) penalty++;  // Democracy: +1 per unit abroad
+      if (govt === 'democracy') penalty++;  // Democracy: +1 per unit abroad
 
       if (penalty !== 0) {
         let abroad = 0;
@@ -796,7 +792,7 @@ const Civ2CityDialog = {
           if (this.SEA_COMBAT_TYPES.has(u.type)) { abroad++; continue; }
           if (this._isUnitAbroad(u, city, mapData)) abroad++;
         }
-        if (abroad > 0 && govt === 5) abroad--;  // Republic: one free unit abroad
+        if (abroad > 0 && govt === 'republic') abroad--;  // Republic: one free unit abroad
         st.unhappy += penalty * abroad;
       }
     }
@@ -854,27 +850,27 @@ const Civ2CityDialog = {
       // Shield support cost (FUN_004e7d7f logic)
       unitCounter++;
       switch (government) {
-        case 0: case 1: // Anarchy/Despotism: free = city size
+        case 'anarchy': case 'despotism': // free = city size
           if (unitCounter > city.size) ov.shield = true;
           break;
-        case 2: // Monarchy
+        case 'monarchy':
           if (unitCounter > this.COSMIC_FREE_SUPPORT.monarchy) ov.shield = true;
           break;
-        case 3: // Communism
+        case 'communism':
           if (unitCounter > this.COSMIC_FREE_SUPPORT.communism) ov.shield = true;
           break;
-        case 4: // Fundamentalism: fanatics always free
+        case 'fundamentalism': // fanatics always free
           if (!this.FANATIC_TYPES.has(unit.type) &&
               unitCounter > this.COSMIC_FREE_SUPPORT.fundamentalism) ov.shield = true;
           break;
-        default: // Republic (5), Democracy (6): every unit costs
+        default: // republic, democracy: every unit costs
           ov.shield = true;
           break;
       }
 
       // Military abroad unhappiness — Republic/Democracy only (FUN_004e7eb1 lines 3009-3054)
       // Sea combat units are always abroad; land/air check location vs friendly cities/fortresses
-      if (government > 4 && !this.NON_COMBAT_TYPES.has(unit.type)) {
+      if ((government === 'republic' || government === 'democracy') && !this.NON_COMBAT_TYPES.has(unit.type)) {
         const isSeaCombat = this.SEA_COMBAT_TYPES.has(unit.type);
         const isAbroad = isSeaCombat || this._isUnitAbroad(unit, city, mapData);
         if (isAbroad) {
@@ -882,7 +878,7 @@ const Civ2CityDialog = {
           const hasPS = this._cityHasBuilding(city, 33); // Police Station
           let baseUnhappy = (!hasWS && !hasPS) ? 1 : 0;
 
-          if (government === 6) { // Democracy: always +1
+          if (government === 'democracy') { // Democracy: always +1
             baseUnhappy += 1;
           } else if (baseUnhappy > 0 && abroadCounter === 0) {
             // Republic: first military unit is free
@@ -924,7 +920,7 @@ const Civ2CityDialog = {
 
     // Despotism/Anarchy penalty: -1 if food > 2 (unless WLTKD)
     const gov = this._getCityGovernment(city, mapData);
-    if (gov < 2 && food > 2 && !city.weLoveKingDay) food -= 1;
+    if ((gov === 'anarchy' || gov === 'despotism') && food > 2 && !city.weLoveKingDay) food -= 1;
 
     // Pollution: halve (applied last)
     if (imp.pollution) food = (food + 1) >> 1;
@@ -958,7 +954,7 @@ const Civ2CityDialog = {
 
     // Despotism/Anarchy penalty: -1 if shields > 2 (unless WLTKD)
     const gov = this._getCityGovernment(city, mapData);
-    if (gov < 2 && shields > 2 && !city.weLoveKingDay) shields -= 1;
+    if ((gov === 'anarchy' || gov === 'despotism') && shields > 2 && !city.weLoveKingDay) shields -= 1;
 
     // Pollution: halve (applied last)
     if (imp.pollution) shields = (shields + 1) >> 1;
@@ -984,10 +980,10 @@ const Civ2CityDialog = {
 
     // Despotism/Anarchy penalty: -1 if trade > 2 (unless WLTKD)
     const gov = this._getCityGovernment(city, mapData);
-    if (gov < 2 && trade > 2 && !city.weLoveKingDay) trade -= 1;
+    if ((gov === 'anarchy' || gov === 'despotism') && trade > 2 && !city.weLoveKingDay) trade -= 1;
 
-    // Republic/Democracy (gov >= 5): +1 trade if trade > 0
-    if (gov >= 5 && trade > 0) trade += 1;
+    // Republic/Democracy: +1 trade if trade > 0
+    if ((gov === 'republic' || gov === 'democracy') && trade > 0) trade += 1;
 
     // Superhighways + road/railroad: +50%
     if (hasRoad && this._cityHasBuilding(city, 25))

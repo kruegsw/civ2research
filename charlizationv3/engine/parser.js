@@ -20,7 +20,7 @@
 //     https://foxahead.github.io/Catfish-s-Cave/jp_hex.htm
 // ═══════════════════════════════════════════════════════════════════
 
-import { improvementFromByte, LEADERS_TXT_NAMES } from './defs.js';
+import { improvementFromByte, LEADERS_TXT_NAMES, GOVERNMENT_KEYS, DIFFICULTY_KEYS, BARBARIAN_KEYS } from './defs.js';
 import { createAccessors, tileFromBytes } from './state.js';
 
 const Civ2Parser = {
@@ -146,8 +146,8 @@ const Civ2Parser = {
     const playerCiv          = savBuf[0x0029];
     const mapRelatedByte     = savBuf[0x002A];
     const mapRevealed        = savBuf[0x002B];
-    const difficulty         = savBuf[0x002C];
-    const barbarianActivity  = savBuf[0x002D];
+    const difficulty         = DIFFICULTY_KEYS[savBuf[0x002C]] || 'chieftain';
+    const barbarianActivity  = BARBARIAN_KEYS[savBuf[0x002D]] || 'none';
     const civsAlive          = savBuf[0x002E];
     const humanPlayers       = savBuf[0x002F];
     const civsEverExisted    = savBuf[0x0030];              // Bitmask — bits stay set after civ death (byte 0x0031 always 0)
@@ -420,7 +420,7 @@ const Civ2Parser = {
         unknown_18:            savBuf[off + 18],
         scienceRate:           savBuf[off + 19],
         taxRate:               savBuf[off + 20],
-        government:            savBuf[off + 21],
+        government:            GOVERNMENT_KEYS[savBuf[off + 21]] || 'anarchy',
         aiRandomSeed:          savBuf[off + 22],
         unknown_23:            new Array(4).fill(0).map((_, i) => savBuf[off + 23 + i]),
         unused_27:             savBuf[off + 27],   // Always 0 in MGE (confirmed across 1856 records)

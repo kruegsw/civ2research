@@ -5,7 +5,7 @@
 // Called from app.js via initEvents(). No circular imports.
 // ═══════════════════════════════════════════════════════════════════
 import { Civ2Renderer } from './renderer.js';
-import { RESOURCE_NAMES, GOVERNMENT_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES } from '../engine/defs.js';
+import { RESOURCE_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES } from '../engine/defs.js';
 
 export function initEvents(canvas, vp, fns) {
   const {
@@ -302,7 +302,8 @@ export function initEvents(canvas, vp, fns) {
           const epoch = md.civTechs ? Civ2Renderer._getEpoch(md.civTechs[c.owner]) : 0;
           const epochNames = ['Ancient','Renaissance','Industrial','Modern'];
           const cityOwner = (md.civNames && md.civNames[c.owner]) || `Civ ${c.owner}`;
-          const govName = (md.civs && md.civs[c.owner]) ? GOVERNMENT_NAMES[md.civs[c.owner].government] || '' : '';
+          const govStr = (md.civs && md.civs[c.owner]) ? md.civs[c.owner].government : '';
+          const govName = govStr ? govStr.charAt(0).toUpperCase() + govStr.slice(1) : '';
           info += `\n${c.name} (${cityOwner}, size ${displaySize}, ${epochNames[epoch]}${govName ? ', ' + govName : ''}${c.hasWalls ? ', walled' : ''}${c.hasPalace ? ', capital' : ''}`;
           if (c.isOccupied) {
             const origOwner = (md.civNames && md.civNames[c.originalOwner]) || `Civ ${c.originalOwner}`;

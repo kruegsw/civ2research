@@ -50,8 +50,7 @@ export function initFromSav(parsed, seatList) {
     civsAlive,
     playerCiv: parsed.playerCiv,
     mapRevealed: parsed.mapRevealed,
-    turnNumber: parsed.gameState?.turnsPassed ?? 0,
-    activeCiv,
+    turn: { number: parsed.gameState?.turnsPassed ?? 0, activeCiv },
     version: 0,
     // Seat→civ mapping: seat index maps to civ slot
     seatCivMap: buildSeatCivMap(seatList, civsAlive),
@@ -131,8 +130,7 @@ export function initNewGame(mapResult, seatList) {
     civsAlive,
     playerCiv: 1,
     mapRevealed: false,
-    turnNumber: 0,
-    activeCiv: 1,
+    turn: { number: 0, activeCiv: 1 },
     version: 0,
     seatCivMap,
     unitBySaveIndex: null,
@@ -206,7 +204,7 @@ function buildInitialCivs(seatList) {
     civs.push({
       name: i === 0 ? 'Barbarians' : (LEADERS_TXT_NAMES[rulesCivNumber] || `Civ ${i}`),
       style: 0,
-      government: i === 0 ? 0 : 1, // barbs=anarchy, others=despotism
+      government: i === 0 ? 'anarchy' : 'despotism',
       treasury: i === 0 ? 0 : 50,
       scienceRate: 5, taxRate: 5, luxuryRate: 0,
       rulesCivNumber,

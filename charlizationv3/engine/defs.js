@@ -182,3 +182,54 @@ export const TERRAIN_BASE = [
 
 // Irrigation bonus per terrain (city center counts as irrigated)
 export const IRRIGATION_BONUS = [1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0];
+
+// ── Government enum + lookup tables ──
+export const GOVERNMENT_KEYS = ['anarchy','despotism','monarchy','communism','fundamentalism','republic','democracy'];
+// Corruption divisor: (govtIndex >> 1) + 1
+export const GOVT_CORRUPTION_DIVISOR = {
+  anarchy: 1, despotism: 1, monarchy: 2, communism: 2,
+  fundamentalism: 3, republic: 3, democracy: 4,
+};
+// Government factor for waste/corruption formulas (effGovt > 0 → 5, >1 → 6, >2 → 7, >4 → 8)
+export const GOVT_FACTOR = {
+  anarchy: 4, despotism: 5, monarchy: 6, communism: 7,
+  fundamentalism: 7, republic: 8, democracy: 8,
+};
+// WLTKD bumps effective government one tier up for govtFactor calculation
+export const GOVT_WLTKD_BUMP = {
+  anarchy: 'despotism', despotism: 'monarchy', monarchy: 'communism',
+  communism: 'fundamentalism', fundamentalism: 'republic', republic: 'democracy',
+  democracy: 'democracy',
+};
+
+// ── Difficulty enum ──
+export const DIFFICULTY_KEYS = ['chieftain','warlord','prince','king','emperor','deity'];
+
+// ── Barbarian activity enum ──
+export const BARBARIAN_KEYS = ['none','roaming','restless','raging'];
+
+// ── City name lists (indexed by rulesCivNumber, LEADERS.TXT order) ──
+export const CIV_CITY_NAMES = [
+  /* 0 Romans */         ['Rome','Caesarea','Carthago','Nicopolis','Byzantium','Brundisium','Syracuse','Antioch','Londinium','Tarrentum','Lutetia','Hispalis','Ravenna','Artaxata','Palmyra','Cyrene'],
+  /* 1 Babylonians */    ['Babylon','Sumer','Ur','Nineveh','Ashur','Ellipi','Akkad','Eridu','Kish','Lagash','Nippur','Shuruppak','Umma','Sippar'],
+  /* 2 Germans */        ['Berlin','Hamburg','Munich','Cologne','Frankfurt','Essen','Dortmund','Stuttgart','Düsseldorf','Bremen','Hannover','Leipzig','Dresden','Bonn','Nuremberg'],
+  /* 3 Egyptians */      ['Thebes','Memphis','Oryx','Heliopolis','Gaza','Alexandria','Byblos','Cairo','Coptos','Edfu','Pithom','Busirus','Athribis','Mendes','Tanis'],
+  /* 4 Americans */      ['Washington','New York','Boston','Philadelphia','Atlanta','Chicago','Buffalo','St. Louis','Detroit','New Orleans','Baltimore','Denver','Cincinnati','Dallas','Los Angeles'],
+  /* 5 Greeks */         ['Athens','Sparta','Corinth','Delphi','Eretria','Pharsalos','Argos','Mycenae','Herakleia','Antioch','Ephesus','Rhodes','Knossos','Troy'],
+  /* 6 Indians */        ['Delhi','Bombay','Madras','Bangalore','Calcutta','Lahore','Karachi','Kolhapur','Jaipur','Hyderabad','Bengal','Chittagong','Punjab','Dacca'],
+  /* 7 Russians */       ['Moscow','St. Petersburg','Kiev','Minsk','Smolensk','Odessa','Sevastopol','Tiflis','Yakutsk','Vladivostok','Novosibirsk','Krasnoyarsk','Irkutsk'],
+  /* 8 Zulus */          ['Zimbabwe','Ulundi','Bapedi','Hlobane','Isandhlwana','Intombe','Mpande','Mgungundlovu','Ondini','Nobamba','Bulawayo','KwaDukuza'],
+  /* 9 French */         ['Paris','Lyon','Marseille','Tours','Chartres','Avignon','Rouen','Grenoble','Dijon','Amiens','Toulouse','Cherbourg','Poitiers','Bordeaux','Strasbourg'],
+  /* 10 Aztecs */        ['Tenochtitlan','Tlatelolco','Texcoco','Tlaxcala','Calixtlahuaca','Xochicalco','Tlacopan','Atzcapotzalco','Tzintzuntzan','Malinalco','Tula','Tamuin'],
+  /* 11 Chinese */       ['Peking','Shanghai','Canton','Nanking','Tsingtao','Hangchow','Tientsin','Tatung','Macao','Anyang','Shantung','Chinan','Kaifeng','Suchow'],
+  /* 12 English */       ['London','Coventry','Birmingham','Dover','Nottingham','York','Liverpool','Brighton','Oxford','Cambridge','Hastings','Canterbury','Newcastle','Warwick'],
+  /* 13 Mongols */       ['Samarkand','Bokhara','Nishapur','Karakorum','Kashgar','Tabriz','Aleppo','Kabul','Ormuz','Basra','Khanbalik','Merv'],
+  /* 14 Celts */         ['Entremont','Bibracte','Alesia','Numantia','Camulodunum','Gergovia','Lugdunum','Burdigala','Avaricum','Cenabum','Tolosa','Lemonum'],
+  /* 15 Japanese */      ['Tokyo','Kyoto','Osaka','Nagoya','Yokohama','Sapporo','Kobe','Sendai','Nara','Nagasaki','Hiroshima','Fukuoka'],
+  /* 16 Vikings */       ['Trondheim','Reykjavik','Bergen','Oslo','Stockholm','Uppsala','Helsinki','Nidaros','Roskilde','Hedeby','Birka','Jorvik'],
+  /* 17 Spanish */       ['Madrid','Barcelona','Seville','Cordoba','Toledo','Salamanca','Cadiz','Pamplona','Burgos','Murcia','Valencia','Leon','Granada','Bilbao'],
+  /* 18 Persians */      ['Persepolis','Pasargadae','Susa','Ecbatana','Tarsus','Gordium','Bactra','Sardis','Ergili','Dariush-Kabir','Ghulaman','Zohak'],
+  /* 19 Carthaginians */ ['Carthage','Leptis Magna','Hadrumetum','Thapsus','Cirta','Utica','Hippo Regius','Gades','Panormus','Lilybaeum'],
+  /* 20 Sioux */         ['Oglala','Minneconjou','Brulé','Hunkpapa','Sans Arc','Two Kettle','Blackfeet','Santee','Sisseton','Wahpeton'],
+];
+export const BARBARIAN_CITY_NAMES = ['Camp'];

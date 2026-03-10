@@ -10,7 +10,7 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYearFromMap } from '../engine/year.js';
-import { GOVERNMENT_NAMES, CIV_COLORS, UNIT_NAMES, TERRAIN_BASE } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
@@ -91,7 +91,7 @@ function updateGameInfo(mapData, civOverride) {
   const cd = mapData.civs && mapData.civs[pc];
   const year = getGameYearFromMap(mapData);
   const gold = cd ? cd.treasury : 0;
-  const govt = cd ? (GOVERNMENT_NAMES[cd.government] || '?') : '';
+  const govt = cd && cd.government ? cd.government.charAt(0).toUpperCase() + cd.government.slice(1) : '';
   let pop = 0;
   if (mapData.cities) {
     for (const c of mapData.cities) {
@@ -785,7 +785,7 @@ async function handleMapClick(e, isLongPress = false) {
   const tile = findTileAt(e.clientX, e.clientY);
   if (!tile) return;
 
-  const isMyTurn = mpGameState && mpCivSlot != null && mpGameState.activeCiv === mpCivSlot;
+  const isMyTurn = mpGameState && mpCivSlot != null && mpGameState.turn.activeCiv === mpCivSlot;
   const activeUnit = mpSelectedUnit != null ? mpGameState?.units[mpSelectedUnit] : null;
   const activeUnitOnTile = activeUnit && activeUnit.gx === tile.gx && activeUnit.gy === tile.gy;
   const cityHit = findCityAt(tile.gx, tile.gy);
@@ -1907,7 +1907,7 @@ function buildMapDataFromState() {
     allUnits: state.allUnits,
     tail: state.tail,
     header: state.header,
-    gameState: state.gameState || { turnsPassed: state.turnNumber || 0, playerCiv: mpCivSlot ?? 1 },
+    gameState: state.gameState || { turnsPassed: state.turn?.number || 0, playerCiv: mpCivSlot ?? 1 },
     validation: state.validation,
     civNames: state.civNames,
   };
@@ -1922,7 +1922,7 @@ async function doRenderFromState(opts = {}) {
   updateTurnUI();
 
   // Auto-select first movable unit (only on our turn)
-  if (mpGameState.activeCiv === mpCivSlot) {
+  if (mpGameState.turn.activeCiv === mpCivSlot) {
     const next = findNextMovableUnit(-1);
     mpSelectedUnit = next;
   } else {
@@ -2028,13 +2028,13 @@ function updateTurnUI() {
   }
   turnUI.style.display = '';
 
-  const isMyTurn = mpGameState.activeCiv === mpCivSlot;
-  const civName = mpGameState.civNames?.[mpGameState.activeCiv] || `Civ ${mpGameState.activeCiv}`;
-  const civColor = CIV_COLORS[mpGameState.activeCiv] || '#e0e0e0';
+  const isMyTurn = mpGameState.turn.activeCiv === mpCivSlot;
+  const civName = mpGameState.civNames?.[mpGameState.turn.activeCiv] || `Civ ${mpGameState.turn.activeCiv}`;
+  const civColor = CIV_COLORS[mpGameState.turn.activeCiv] || '#e0e0e0';
 
   document.getElementById('turn-civ-name').textContent = civName;
   document.getElementById('turn-civ-name').style.color = civColor;
-  document.getElementById('turn-number').textContent = `Turn ${mpGameState.turnNumber || 0}`;
+  document.getElementById('turn-number').textContent = `Turn ${mpGameState.turn.number || 0}`;
 
   const endBtn = document.getElementById('end-turn-btn');
   const waitMsg = document.getElementById('turn-waiting');
@@ -2069,13 +2069,13 @@ function updateGamePlayers() {
 
 // End Turn button
 document.getElementById('end-turn-btn').addEventListener('click', () => {
-  if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
+  if (!mpGameState || mpGameState.turn.activeCiv !== mpCivSlot) return;
   transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
 });
 
 // ── Multiplayer keyboard input ──
 window.addEventListener('keydown', e => {
-  if (!mpGameState || mpGameState.activeCiv !== mpCivSlot) return;
+  if (!mpGameState || mpGameState.turn.activeCiv !== mpCivSlot) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (currentScene !== 'game') return;
 

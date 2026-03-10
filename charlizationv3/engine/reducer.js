@@ -10,36 +10,10 @@
 
 import { validateAction } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES } from './defs.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
 
-// City name lists indexed by rulesCivNumber (LEADERS.TXT order)
-// rulesCivNumber 0 = Romans, 1 = Babylonians, ... (barbarians use slot 0, not rulesCivNumber)
-const CIV_CITY_NAMES = [
-  /* 0 Romans */         ['Rome','Caesarea','Carthago','Nicopolis','Byzantium','Brundisium','Syracuse','Antioch','Londinium','Tarrentum','Lutetia','Hispalis','Ravenna','Artaxata','Palmyra','Cyrene'],
-  /* 1 Babylonians */    ['Babylon','Sumer','Ur','Nineveh','Ashur','Ellipi','Akkad','Eridu','Kish','Lagash','Nippur','Shuruppak','Umma','Sippar'],
-  /* 2 Germans */        ['Berlin','Hamburg','Munich','Cologne','Frankfurt','Essen','Dortmund','Stuttgart','Düsseldorf','Bremen','Hannover','Leipzig','Dresden','Bonn','Nuremberg'],
-  /* 3 Egyptians */      ['Thebes','Memphis','Oryx','Heliopolis','Gaza','Alexandria','Byblos','Cairo','Coptos','Edfu','Pithom','Busirus','Athribis','Mendes','Tanis'],
-  /* 4 Americans */      ['Washington','New York','Boston','Philadelphia','Atlanta','Chicago','Buffalo','St. Louis','Detroit','New Orleans','Baltimore','Denver','Cincinnati','Dallas','Los Angeles'],
-  /* 5 Greeks */         ['Athens','Sparta','Corinth','Delphi','Eretria','Pharsalos','Argos','Mycenae','Herakleia','Antioch','Ephesus','Rhodes','Knossos','Troy'],
-  /* 6 Indians */        ['Delhi','Bombay','Madras','Bangalore','Calcutta','Lahore','Karachi','Kolhapur','Jaipur','Hyderabad','Bengal','Chittagong','Punjab','Dacca'],
-  /* 7 Russians */       ['Moscow','St. Petersburg','Kiev','Minsk','Smolensk','Odessa','Sevastopol','Tiflis','Yakutsk','Vladivostok','Novosibirsk','Krasnoyarsk','Irkutsk'],
-  /* 8 Zulus */          ['Zimbabwe','Ulundi','Bapedi','Hlobane','Isandhlwana','Intombe','Mpande','Mgungundlovu','Ondini','Nobamba','Bulawayo','KwaDukuza'],
-  /* 9 French */         ['Paris','Lyon','Marseille','Tours','Chartres','Avignon','Rouen','Grenoble','Dijon','Amiens','Toulouse','Cherbourg','Poitiers','Bordeaux','Strasbourg'],
-  /* 10 Aztecs */        ['Tenochtitlan','Tlatelolco','Texcoco','Tlaxcala','Calixtlahuaca','Xochicalco','Tlacopan','Atzcapotzalco','Tzintzuntzan','Malinalco','Tula','Tamuin'],
-  /* 11 Chinese */       ['Peking','Shanghai','Canton','Nanking','Tsingtao','Hangchow','Tientsin','Tatung','Macao','Anyang','Shantung','Chinan','Kaifeng','Suchow'],
-  /* 12 English */       ['London','Coventry','Birmingham','Dover','Nottingham','York','Liverpool','Brighton','Oxford','Cambridge','Hastings','Canterbury','Newcastle','Warwick'],
-  /* 13 Mongols */       ['Samarkand','Bokhara','Nishapur','Karakorum','Kashgar','Tabriz','Aleppo','Kabul','Ormuz','Basra','Khanbalik','Merv'],
-  /* 14 Celts */         ['Entremont','Bibracte','Alesia','Numantia','Camulodunum','Gergovia','Lugdunum','Burdigala','Avaricum','Cenabum','Tolosa','Lemonum'],
-  /* 15 Japanese */      ['Tokyo','Kyoto','Osaka','Nagoya','Yokohama','Sapporo','Kobe','Sendai','Nara','Nagasaki','Hiroshima','Fukuoka'],
-  /* 16 Vikings */       ['Trondheim','Reykjavik','Bergen','Oslo','Stockholm','Uppsala','Helsinki','Nidaros','Roskilde','Hedeby','Birka','Jorvik'],
-  /* 17 Spanish */       ['Madrid','Barcelona','Seville','Cordoba','Toledo','Salamanca','Cadiz','Pamplona','Burgos','Murcia','Valencia','Leon','Granada','Bilbao'],
-  /* 18 Persians */      ['Persepolis','Pasargadae','Susa','Ecbatana','Tarsus','Gordium','Bactra','Sardis','Ergili','Dariush-Kabir','Ghulaman','Zohak'],
-  /* 19 Carthaginians */ ['Carthage','Leptis Magna','Hadrumetum','Thapsus','Cirta','Utica','Hippo Regius','Gades','Panormus','Lilybaeum'],
-  /* 20 Sioux */         ['Oglala','Minneconjou','Brulé','Hunkpapa','Sans Arc','Two Kettle','Blackfeet','Santee','Sisseton','Wahpeton'],
-];
-const BARBARIAN_CITY_NAMES = ['Camp'];
 
 function getCityName(owner, cities, civs) {
   if (owner === 0) {
@@ -177,20 +151,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
     case END_TURN: {
       // Find next alive civ
-      let next = state.activeCiv;
-      let turnNumber = state.turnNumber;
+      let next = state.turn.activeCiv;
+      let turnNumber = state.turn.number;
       for (let i = 0; i < 7; i++) {
         next = (next % 7) + 1; // cycle 1→2→3→...→7→1
         if (state.civsAlive & (1 << next)) break;
       }
       // If we wrapped back to first alive civ, increment turn
       const firstAlive = findFirstAliveCiv(state.civsAlive);
-      if (next <= state.activeCiv || next === firstAlive) {
+      if (next <= state.turn.activeCiv || next === firstAlive) {
         turnNumber++;
       }
 
-      state.activeCiv = next;
-      state.turnNumber = turnNumber;
+      state.turn = { activeCiv: next, number: turnNumber };
 
       // Reset movement for the next civ's units
       state.units = state.units.map(u => {

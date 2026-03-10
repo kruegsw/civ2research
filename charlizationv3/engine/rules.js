@@ -48,7 +48,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
   if (!action || !action.type) return 'Missing action type';
 
   // Must be this civ's turn
-  if (civSlot !== gameState.activeCiv) return 'Not your turn';
+  if (civSlot !== gameState.turn.activeCiv) return 'Not your turn';
 
   switch (action.type) {
     case MOVE_UNIT: {
