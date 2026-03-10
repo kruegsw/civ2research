@@ -149,11 +149,11 @@ const Civ2CityView = {
     if (improvType === 0) return false;
     // City improvements: Set<number> of building IDs 1-38
     if (improvType <= 38) return city.buildings ? city.buildings.has(improvType) : false;
-    // Wonders (types 39-66): check wonderCityIds
+    // Wonders (types 39-66): check wonders array
     const wonderIdx = improvType - 39;
-    const wonderCityIds = mapData.gameState && mapData.gameState.wonderCityIds;
-    if (!wonderCityIds) return false;
-    return wonderCityIds[wonderIdx] === cityIndex;
+    const wonders = mapData.gameState && mapData.gameState.wonders;
+    if (!wonders) return false;
+    return wonders[wonderIdx].cityIndex === cityIndex;
   },
 
   // ── Determine background terrain type ──

@@ -310,10 +310,10 @@ const Civ2CityDialog = {
         result.push({ id, name, isWonder: false });
       }
     }
-    const wonderCityIds = mapData.gameState && mapData.gameState.wonderCityIds;
-    if (wonderCityIds) {
+    const wonders = mapData.gameState && mapData.gameState.wonders;
+    if (wonders) {
       for (let w = 0; w < 28; w++) {
-        if (wonderCityIds[w] === cityIndex)
+        if (wonders[w].cityIndex === cityIndex)
           result.push({ id: w + 39, name: this.WONDER_NAMES[w] || `Wonder #${w}`, isWonder: true });
       }
     }
@@ -486,9 +486,9 @@ const Civ2CityDialog = {
 
   // Check if a wonder is active and belongs to this city
   _cityHasWonder(cityIndex, wonderIndex, mapData) {
-    const wIds = mapData.gameState && mapData.gameState.wonderCityIds;
-    if (!wIds) return false;
-    return wIds[wonderIndex] === cityIndex;
+    const wonders = mapData.gameState && mapData.gameState.wonders;
+    if (!wonders) return false;
+    return wonders[wonderIndex].cityIndex === cityIndex;
   },
 
   // Get government type for city's owner (0=Anarchy..6=Democracy)
@@ -625,11 +625,11 @@ const Civ2CityDialog = {
 
   // Check if a civ owns a specific wonder (wonder still in their city)
   _civHasWonder(mapData, civIndex, wonderIndex) {
-    const wIds = mapData.gameState && mapData.gameState.wonderCityIds;
-    if (!wIds) return false;
-    const cityId = wIds[wonderIndex];
-    if (cityId == null || cityId === 0xFFFF || cityId >= mapData.cities.length) return false;
-    const city = mapData.cities[cityId];
+    const wonders = mapData.gameState && mapData.gameState.wonders;
+    if (!wonders) return false;
+    const w = wonders[wonderIndex];
+    if (w.cityIndex == null || w.destroyed) return false;
+    const city = mapData.cities[w.cityIndex];
     return city && city.owner === civIndex;
   },
 
@@ -2736,10 +2736,10 @@ const Civ2CityDialog = {
     if (!(cdSprites && cdSprites.food)) return;
     const R = this.REGIONS.foodStorage;
     const hasGranary = city.buildings ? city.buildings.has(3) : false;
-    const pyramidsCityId = mapData && mapData.gameState && mapData.gameState.wonderCityIds &&
-      mapData.gameState.wonderCityIds[0];
-    const hasPyramids = pyramidsCityId != null && pyramidsCityId !== 0xFFFF && pyramidsCityId !== 0xFFEF &&
-      mapData.cities[pyramidsCityId] && mapData.cities[pyramidsCityId].owner === city.owner;
+    const pyramids = mapData && mapData.gameState && mapData.gameState.wonders &&
+      mapData.gameState.wonders[0];
+    const hasPyramids = pyramids && pyramids.cityIndex != null && !pyramids.destroyed &&
+      mapData.cities[pyramids.cityIndex] && mapData.cities[pyramids.cityIndex].owner === city.owner;
     const foodStored = city.foodInBox || 0;
     const wheatW = 14, wheatH = 14;
     const wheatSpacing = this._wheatSpacing(city.size);

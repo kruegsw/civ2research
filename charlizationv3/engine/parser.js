@@ -184,10 +184,15 @@ const Civ2Parser = {
       }
     }
 
-    // ── 2.6 Wonder City IDs (28 × uint16 LE at 0x010A) ──
-    // 0xFFFF = not built, 0xFFEF = destroyed, else = city sequence ID
-    const wonderCityIds = new Array(28);
-    for (let i = 0; i < 28; i++) wonderCityIds[i] = this.u16(savBuf, 0x010A + i * 2);
+    // ── 2.6 Wonders (28 × uint16 LE at 0x010A) ──
+    // Raw: 0xFFFF = not built, 0xFFEF = destroyed, else = city array index
+    const wonders = new Array(28);
+    for (let i = 0; i < 28; i++) {
+      const raw = this.u16(savBuf, 0x010A + i * 2);
+      if (raw === 0xFFFF)      wonders[i] = { cityIndex: null, destroyed: false };
+      else if (raw === 0xFFEF) wonders[i] = { cityIndex: null, destroyed: true };
+      else                     wonders[i] = { cityIndex: raw,  destroyed: false };
+    }
 
     // ── 2.7 Pre-name blocks: power graph ranking data ──
     // Wonders end at 0x010A + 56 = 0x0142
@@ -212,7 +217,7 @@ const Civ2Parser = {
       difficulty, barbarianActivity, humanPlayers,
       currentPollution, globalWarmingCount, turnsOfPeace,
       techCount,
-      firstDiscoverer, techDiscoveryBitmask, wonderCityIds,
+      firstDiscoverer, techDiscoveryBitmask, wonders,
       // Decoded game state fields
       civsEverExisted,         // Bitmask — bits stay set after civ death
       unitCounterRelated,      // Correlated with totalUnits (r=0.74)
@@ -1041,11 +1046,11 @@ const Civ2Parser = {
       if (!alive && count > 0) palaceErrors++;
     }
 
-    // Wonder city IDs: must reference valid city array indices
+    // Wonder city indices: must reference valid city array indices
     let wonderIdErrors = 0;
-    for (let i = 0; i < gs.wonderCityIds.length; i++) {
-      const wid = gs.wonderCityIds[i];
-      if (wid !== 0xFFFF && wid !== 0xFFEF && wid >= cities.length) wonderIdErrors++;
+    for (let i = 0; i < gs.wonders.length; i++) {
+      const w = gs.wonders[i];
+      if (w.cityIndex != null && w.cityIndex >= cities.length) wonderIdErrors++;
     }
 
     // Unit home city IDs: must reference valid city array indices
@@ -1176,7 +1181,7 @@ const Civ2Parser = {
         techCount: gs.techCount,
         firstDiscoverer: gs.firstDiscoverer,
         techDiscoveryBitmask: gs.techDiscoveryBitmask,
-        wonderCityIds: gs.wonderCityIds,
+        wonders: gs.wonders,
         unknowns: gs.unknowns,
       },
       validation,
