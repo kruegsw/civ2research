@@ -3515,6 +3515,34 @@ const Civ2CityDialog = {
       });
     }
 
+    // Add units present click regions (only in info panel mode 0)
+    if ((this.infoPanelMode || 0) === 0) {
+      const IPR = this.REGIONS.infoPanel;
+      const garrison = this.getGarrisonedUnits(city, mapData);
+      for (let i = 0; i < Math.min(18, garrison.length); i++) {
+        const u = garrison[i];
+        let ux, uy;
+        if (garrison.length <= 5) {
+          ux = IPR.x + 1 + 48 * i;
+          uy = IPR.y + 22;
+        } else if (i < 10) {
+          ux = IPR.x + 1 + 48 * (i % 5);
+          uy = IPR.y + 3 + 39 * Math.floor(i / 5);
+        } else {
+          ux = IPR.x + 25 + 48 * ((i - 10) % 4);
+          uy = IPR.y + 22 + 39 * Math.floor((i - 10) / 4);
+        }
+        // Find this unit's index in the main units array
+        const unitIndex = mapData.units.indexOf(u);
+        if (unitIndex >= 0) {
+          regions.push({
+            x: ux, y: uy, w: 48, h: 36,
+            action: 'unitPresent', unitIndex,
+          });
+        }
+      }
+    }
+
     // Add improvement sell icon click regions
     const IR = this.REGIONS.improvements;
     const imps = this.getCityImprovements(city, cityIndex, mapData);
@@ -3554,6 +3582,9 @@ const Civ2CityDialog = {
       }
       if (r.action === 'sell') {
         return { action: r.action, buildingId: r.buildingId };
+      }
+      if (r.action === 'unitPresent') {
+        return { action: r.action, unitIndex: r.unitIndex };
       }
       return { action: r.action };
     }

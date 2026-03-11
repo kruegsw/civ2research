@@ -814,10 +814,9 @@ async function handleMapClick(e, isLongPress = false) {
       const topU = mpGameState.units[topUnit];
 
       if (!isLongPress) {
-        // Short click: select top unit + wake it if it has standing orders
-        selectUnit(topUnit);
-        if (topU.orders && topU.orders !== 'none') {
-          transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: topUnit, order: 'wake' } });
+        // Short click: select top unit (only if it has no active orders)
+        if (!topU.orders || topU.orders === 'none') {
+          selectUnit(topUnit);
         }
         return;
       }
@@ -1075,6 +1074,9 @@ function cdHandleClick(clientX, clientY) {
     } else {
       showSellBuildingPicker(cdCity, cdCityIndex);
     }
+  } else if (result && result.action === 'unitPresent') {
+    if (!mpGameState || !mpMapBase || mpCivSlot == null) return;
+    showUnitPresentDialog(result.unitIndex);
   } else if (result && (result.action === 'toggleTile' || result.action === 'citizenToSpec' || result.action === 'cycleSpec')) {
     if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
     handleWorkerChange(result);
@@ -1440,6 +1442,123 @@ function showConfirmDialog(msg, onConfirm) {
   document.body.appendChild(overlay);
 }
 
+function showUnitPresentDialog(unitIndex) {
+  const existing = document.getElementById('unit-present-dialog');
+  if (existing) existing.remove();
+
+  const unit = mpGameState?.units[unitIndex];
+  if (!unit || unit.gx < 0) return;
+  const isOwner = unit.owner === mpCivSlot;
+  const unitName = UNIT_NAMES[unit.type] || `Unit ${unit.type}`;
+  const orderDesc = (unit.orders && unit.orders !== 'none') ? (ORDER_NAMES[unit.orders] || unit.orders) : '';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'unit-present-dialog';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font-family:"Times New Roman",Georgia,serif;color:#333;min-width:260px';
+
+  // Title
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:17px;font-weight:bold;text-align:center;margin-bottom:12px;border-bottom:1px solid #a08060;padding-bottom:8px';
+  title.textContent = unitName + (orderDesc ? ` (${orderDesc})` : '');
+  panel.appendChild(title);
+
+  // Radio options
+  const options = [
+    { id: 'nochange', label: 'No Changes', enabled: true },
+    { id: 'wake', label: 'Clear Orders', enabled: isOwner && unit.orders && unit.orders !== 'none' },
+    { id: 'sentry', label: 'Sleep', enabled: isOwner },
+    { id: 'disband', label: 'Disband', enabled: isOwner },
+    { id: 'activate', label: 'Activate Unit', enabled: isOwner },
+  ];
+
+  let selected = 'nochange';
+  const radioEls = [];
+
+  for (const opt of options) {
+    const row = document.createElement('label');
+    row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:${opt.enabled ? 'pointer' : 'default'};color:${opt.enabled ? '#333' : '#999'}`;
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'unit-present-action';
+    radio.value = opt.id;
+    radio.disabled = !opt.enabled;
+    if (opt.id === 'nochange') radio.checked = true;
+    radio.addEventListener('change', () => { if (radio.checked) selected = opt.id; });
+    radioEls.push(radio);
+
+    const span = document.createElement('span');
+    span.textContent = opt.label;
+    span.style.fontSize = '15px';
+
+    row.appendChild(radio);
+    row.appendChild(span);
+    panel.appendChild(row);
+  }
+
+  // Button row
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:12px;justify-content:center;margin-top:12px;border-top:1px solid #a08060;padding-top:10px';
+
+  const okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.className = 'civ2-btn';
+  okBtn.style.cssText = 'padding:4px 20px;cursor:pointer;font-size:14px';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.className = 'civ2-btn';
+  cancelBtn.style.cssText = 'padding:4px 20px;cursor:pointer;font-size:14px';
+
+  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
+
+  okBtn.addEventListener('click', () => {
+    dismiss();
+    if (selected === 'nochange') return;
+    if (selected === 'wake') {
+      transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'wake' } });
+    } else if (selected === 'sentry') {
+      transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'sentry' } });
+    } else if (selected === 'disband') {
+      showConfirmDialog(`Disband ${unitName}?`, () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'disband' } });
+      });
+    } else if (selected === 'activate') {
+      closeCityDialog();
+      selectUnit(unitIndex);
+      if (unit.orders && unit.orders !== 'none') {
+        transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'wake' } });
+      }
+    }
+  });
+
+  cancelBtn.addEventListener('click', dismiss);
+
+  btnRow.appendChild(okBtn);
+  btnRow.appendChild(cancelBtn);
+  panel.appendChild(btnRow);
+  overlay.appendChild(panel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+
+  const keyHandler = e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      okBtn.click();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      dismiss();
+    }
+  };
+  window.addEventListener('keydown', keyHandler, true);
+
+  document.body.appendChild(overlay);
+}
+
 function showCityFoundedDialog(cityName, year, onDismiss) {
   const existing = document.getElementById('city-founded-dialog');
   if (existing) existing.remove();
@@ -1481,6 +1600,7 @@ function showCityFoundedDialog(cityName, year, onDismiss) {
   const keyHandler = e => {
     if (e.key === 'Enter' || e.key === 'Escape') {
       e.preventDefault();
+      e.stopPropagation();
       dismiss();
       window.removeEventListener('keydown', keyHandler, true);
     }
@@ -2973,7 +3093,7 @@ function startBlink() {
   blinkInterval = setInterval(() => {
     blinkOn = !blinkOn;
     toggleBlinkOverlay();
-  }, 400);
+  }, 200);
 }
 
 function stopBlink() {
