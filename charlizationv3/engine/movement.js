@@ -82,8 +82,11 @@ export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   // Railroad: both tiles have railroad → 0 cost (free move)
   if (fromImp.railroad && toImp.railroad) return 0;
 
-  // Road: both tiles have road (or railroad) → 1/3 MP
-  if ((fromImp.road || fromImp.railroad) && (toImp.road || toImp.railroad)) return 1;
+  // Road or river: both tiles have road/railroad/river → 1/3 MP
+  // In Civ2, rivers act as roads for movement purposes
+  const fromHasRoad = fromImp.road || fromImp.railroad || mapBase.hasRiver(fromGx, fromGy);
+  const toHasRoad = toImp.road || toImp.railroad || mapBase.hasRiver(toGx, toGy);
+  if (fromHasRoad && toHasRoad) return 1;
 
   // Base terrain cost
   const terrain = mapBase.getTerrain(toGx, toGy);

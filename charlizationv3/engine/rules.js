@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS } from './defs.js';
+import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -134,7 +134,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
         seen.add(ti);
       }
 
-      // Validate workers aren't on ocean or off-map tiles
+      // Validate workers aren't on off-map tiles
       const parC = city.gy & 1;
       for (const i of workedTiles) {
         const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
@@ -144,8 +144,6 @@ export function validateAction(gameState, mapBase, action, civSlot) {
         const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
         if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw)
           return `Worker on out-of-bounds tile (${tgx},${tgy})`;
-        const ter = mapBase.getTerrain(wgx, tgy);
-        if (ter === 10) return `Worker on ocean tile (${tgx},${tgy})`;
       }
 
       return null;
@@ -169,6 +167,26 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       // Can't build a building/wonder the city already has
       if (item.type === 'building' && city.buildings && city.buildings.has(item.id))
         return 'City already has this building';
+
+      // Tech prerequisite checks
+      const civTechs = gameState.civTechs?.[civSlot];
+      const hasTech = (id) => id < 0 || (civTechs ? civTechs.has(id) : false);
+      if (item.type === 'unit') {
+        const prereq = UNIT_PREREQS[item.id] ?? -1;
+        if (prereq >= 0 && !hasTech(prereq)) return 'Missing tech prerequisite';
+        const obsolete = UNIT_OBSOLETE[item.id] ?? -1;
+        if (obsolete >= 0 && hasTech(obsolete)) return 'Unit is obsolete';
+      }
+      if (item.type === 'building') {
+        const prereq = IMPROVE_PREREQS[item.id] ?? -1;
+        if (prereq >= 0 && !hasTech(prereq)) return 'Missing tech prerequisite';
+      }
+      if (item.type === 'wonder') {
+        const prereq = WONDER_PREREQS[item.id - 39] ?? -1;
+        if (prereq >= 0 && !hasTech(prereq)) return 'Missing tech prerequisite';
+        const obsolete = WONDER_OBSOLETE[item.id - 39] ?? -1;
+        if (obsolete >= 0 && hasTech(obsolete)) return 'Wonder is obsolete';
+      }
 
       return null;
     }

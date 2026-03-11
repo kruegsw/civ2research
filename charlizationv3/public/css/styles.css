@@ -215,6 +215,100 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   cursor: default;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   Reusable Civ2 popup dialog — same stone/pebbly theme as startup menu
+   Usage: .civ2-dialog-overlay > .civ2-dialog-frame > titlebar + panel + btn-row
+   ═══════════════════════════════════════════════════════════════════ */
+.civ2-dialog-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.5);
+}
+.civ2-dialog-frame {
+  position: relative;
+  background: url('../assets/menu/stone-border.png') repeat;
+  border: 2px solid;
+  border-color: #fff #dfdfdf #dfdfdf #fff;
+  box-shadow: 3px 3px 8px rgba(0,0,0,0.5);
+  padding: 10px;
+}
+.civ2-dialog-frame::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  box-shadow: inset -1px -1px 0 #000;
+  pointer-events: none;
+}
+.civ2-dialog-titlebar {
+  background: url('../assets/menu/stone-border.png') repeat;
+  height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  margin: -10px -10px 0;
+}
+.civ2-dialog-title {
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: rgb(140,140,140);
+  text-shadow: 2px 1px 0 rgb(0,0,0), 1px 0 0 rgb(67,67,67);
+  letter-spacing: 2px;
+}
+.civ2-dialog-panel {
+  background: url('../assets/menu/pebbly-bg.png') repeat;
+  padding: 6px 8px;
+  text-align: left;
+  border: 2px solid;
+  border-color: #404040 #fff #fff #404040;
+}
+.civ2-dialog-items {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.civ2-dialog-radio {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 20px;
+  color: #333333;
+  text-shadow: 1px 1px 0 rgba(191,191,191,0.4);
+  padding: 3px 4px 3px 0;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.civ2-dialog-radio:hover:not(.disabled) {
+  background: rgba(255,255,255,0.08);
+}
+.civ2-dialog-radio.disabled {
+  color: #666666;
+  cursor: default;
+}
+.civ2-dialog-radio input[type="radio"] {
+  appearance: none; -webkit-appearance: none;
+  margin: 0; width: 14px; height: 14px; flex-shrink: 0;
+  border: 2px solid #b0b0b0; border-radius: 50%;
+  background: transparent; position: relative;
+  cursor: pointer;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.civ2-dialog-radio input[type="radio"]::after {
+  content: ''; position: absolute;
+  top: 2px; left: 2px; width: 6px; height: 6px;
+  border-radius: 50%; background: #b0b0b0;
+  box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+.civ2-dialog-radio input[type="radio"]:checked::after {
+  background: #000;
+}
+.civ2-dialog-radio.disabled input[type="radio"] {
+  cursor: default;
+}
+.civ2-dialog-btn-row {
+  display: flex; gap: 4px;
+  margin: 0 -10px -10px;
+  padding: 6px 10px;
+}
+.civ2-dialog-btn-row .civ2-btn {
+  flex: 1;
+}
+
 #menu-footer {
   position: absolute;
   bottom: 20px;

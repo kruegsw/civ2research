@@ -3543,6 +3543,36 @@ const Civ2CityDialog = {
       }
     }
 
+    // Add units supported click regions
+    {
+      const supported = this.getSupportedUnits(cityIndex, mapData);
+      const PX = 0, PY = 212, PW = 192, PH = 78;
+      const unitW = 43, unitH = 32;
+      const perRow = Math.floor(PW / unitW);
+      const maxRows = Math.floor(PH / unitH);
+      const maxShow = Math.min(perRow * maxRows, supported.length);
+      const singleRow = supported.length <= perRow;
+      const xStart = PX + ((PW - unitW * perRow + 3) >> 1);
+      const yStart = singleRow
+        ? PY + ((PH - 30) >> 1)
+        : PY + ((PH - unitH * maxRows + 2) >> 1);
+
+      for (let idx = 0; idx < maxShow; idx++) {
+        const u = supported[idx];
+        const col = idx % perRow;
+        const row = Math.floor(idx / perRow);
+        const ux = xStart + col * unitW;
+        const uy = yStart + row * unitH;
+        const unitIndex = mapData.units.indexOf(u);
+        if (unitIndex >= 0) {
+          regions.push({
+            x: ux, y: uy, w: unitW, h: unitH,
+            action: 'unitSupported', unitIndex,
+          });
+        }
+      }
+    }
+
     // Add improvement sell icon click regions
     const IR = this.REGIONS.improvements;
     const imps = this.getCityImprovements(city, cityIndex, mapData);
@@ -3583,7 +3613,7 @@ const Civ2CityDialog = {
       if (r.action === 'sell') {
         return { action: r.action, buildingId: r.buildingId };
       }
-      if (r.action === 'unitPresent') {
+      if (r.action === 'unitPresent' || r.action === 'unitSupported') {
         return { action: r.action, unitIndex: r.unitIndex };
       }
       return { action: r.action };

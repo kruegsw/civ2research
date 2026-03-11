@@ -129,7 +129,7 @@ export function initNewGame(mapResult, seatList) {
     cities: [],
     civs: buildInitialCivs(seatList),
     civTechCounts: new Array(8).fill(0),
-    civTechs: null,
+    civTechs: Array.from({ length: 8 }, () => new Set()),
     civsAlive,
     playerCiv: 1,
     mapRevealed: false,

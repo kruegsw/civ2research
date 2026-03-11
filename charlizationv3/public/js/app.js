@@ -1094,11 +1094,9 @@ function handleWorkerChange(result) {
 
   if (result.action === 'toggleTile') {
     const i = result.tileIndex;
-    // Check if tile is valid (not ocean, in bounds)
+    // Check if tile is in bounds
     const wgx = mpMapBase.wraps ? wrapGx(result.tileGx, mpMapBase.mw) : result.tileGx;
     if (result.tileGy < 0 || result.tileGy >= mpMapBase.mh || wgx < 0 || wgx >= mpMapBase.mw) return;
-    const ter = mpMapBase.getTerrain(wgx, result.tileGy);
-    if (ter === 10) return; // can't work ocean
 
     const idx = workedTiles.indexOf(i);
     if (idx >= 0) {
@@ -1126,7 +1124,7 @@ function handleWorkerChange(result) {
       const wgx = mpMapBase.wraps ? wrapGx(tgx, mpMapBase.mw) : tgx;
       if (tgy < 0 || tgy >= mpMapBase.mh) continue;
       const ter = mpMapBase.getTerrain(wgx, tgy);
-      if (ter < 0 || ter > 10 || ter === 10) continue;
+      if (ter < 0 || ter > 10) continue;
       const base = TERRAIN_BASE[ter];
       const score = base[0] * 10 + base[1];
       if (score < worstScore) { worstScore = score; worstIdx = ti; }
@@ -1187,7 +1185,7 @@ function findBestUnworkedTile(city, workedTiles) {
     const wgx = mpMapBase.wraps ? wrapGx(tgx, mpMapBase.mw) : tgx;
     if (tgy < 0 || tgy >= mpMapBase.mh || wgx < 0 || wgx >= mpMapBase.mw) continue;
     const ter = mpMapBase.getTerrain(wgx, tgy);
-    if (ter < 0 || ter > 10 || ter === 10) continue; // skip ocean/invalid
+    if (ter < 0 || ter > 10) continue; // skip invalid
 
     const base = TERRAIN_BASE[ter];
     const score = base[0] * 10 + base[1];
@@ -1205,7 +1203,7 @@ function cdRerender() {
 
 // ── Production picker ──
 
-function showProductionPicker(city, cityIndex) {
+function showProductionPicker(city, cityIndex, onDismiss) {
   // Remove any existing picker
   const existing = document.getElementById('production-picker');
   if (existing) existing.remove();
@@ -1225,6 +1223,7 @@ function showProductionPicker(city, cityIndex) {
   const hasBuilding = id => city.buildings && city.buildings.has(id);
   const civTechs = mpGameState.civTechs?.[city.owner];
   const hasTech = (id) => id < 0 || (civTechs ? civTechs.has(id) : id === -1);
+  console.log('[prodpicker] city.owner=', city.owner, 'civTechs=', civTechs, 'isSet=', civTechs instanceof Set, 'techs=', civTechs ? [...civTechs] : null);
 
   // Build list of available items
   const items = [];
@@ -1285,6 +1284,7 @@ function showProductionPicker(city, cityIndex) {
         },
       });
       overlay.remove();
+      if (onDismiss) onDismiss();
     });
     panel.appendChild(row);
   }
@@ -1293,11 +1293,11 @@ function showProductionPicker(city, cityIndex) {
   const cancel = document.createElement('div');
   cancel.textContent = 'Cancel';
   cancel.style.cssText = 'text-align:center;padding:6px;margin-top:6px;cursor:pointer;font-weight:bold;border-top:1px solid #a08060';
-  cancel.addEventListener('click', () => overlay.remove());
+  cancel.addEventListener('click', () => { overlay.remove(); if (onDismiss) onDismiss(); });
   panel.appendChild(cancel);
 
   overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); if (onDismiss) onDismiss(); } });
   document.body.appendChild(overlay);
 }
 
@@ -1839,6 +1839,143 @@ function showCityFoundedDialog(cityName, year, onDismiss) {
   window.addEventListener('keydown', keyHandler, true);
 
   document.body.appendChild(overlay);
+}
+
+/**
+ * Create a reusable Civ2-styled dialog.
+ * @param {string} id - unique DOM id
+ * @param {string} title - titlebar text
+ * @param {function} buildContent - (panel) => void, populates the panel
+ * @param {Array<{label:string, action:function}>} buttons - button definitions
+ * @returns {{ overlay, dismiss }} - DOM element and dismiss function
+ */
+function createCiv2Dialog(id, title, buildContent, buttons) {
+  const existing = document.getElementById(id);
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = id;
+  overlay.className = 'civ2-dialog-overlay';
+
+  const frame = document.createElement('div');
+  frame.className = 'civ2-dialog-frame';
+
+  const titlebar = document.createElement('div');
+  titlebar.className = 'civ2-dialog-titlebar';
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'civ2-dialog-title';
+  titleSpan.textContent = title;
+  titlebar.appendChild(titleSpan);
+  frame.appendChild(titlebar);
+
+  const panel = document.createElement('div');
+  panel.className = 'civ2-dialog-panel';
+  buildContent(panel);
+  frame.appendChild(panel);
+
+  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'civ2-dialog-btn-row';
+  for (const b of buttons) {
+    const btn = document.createElement('button');
+    btn.textContent = b.label;
+    btn.className = 'civ2-btn';
+    btn.addEventListener('click', () => { dismiss(); if (b.action) b.action(); });
+    btnRow.appendChild(btn);
+  }
+  frame.appendChild(btnRow);
+
+  overlay.appendChild(frame);
+  overlay.addEventListener('click', e => { if (e.target === overlay) { dismiss(); if (buttons[0]?.action) buttons[0].action(); } });
+
+  const keyHandler = e => {
+    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); dismiss(); if (buttons[buttons.length - 1]?.action) buttons[buttons.length - 1].action(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); if (buttons[0]?.action) buttons[0].action(); }
+  };
+  window.addEventListener('keydown', keyHandler, true);
+
+  document.body.appendChild(overlay);
+  return { overlay, dismiss };
+}
+
+/**
+ * Show turn events sequentially as Civ2-styled dialogs.
+ * Events: cityGrowth, famine, needsAqueduct, needsSewer, productionComplete
+ */
+function showTurnEvents(events) {
+  let i = 0;
+  function showNext() {
+    if (i >= events.length) return;
+    const ev = events[i++];
+    switch (ev.type) {
+      case 'cityGrowth':
+        createCiv2Dialog('turn-event-dialog', 'City Growth', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${ev.cityName} has grown to size ${ev.newSize}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+
+      case 'famine':
+        createCiv2Dialog('turn-event-dialog', 'Famine!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `Famine in ${ev.cityName}! Population shrinks to ${ev.newSize}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+
+      case 'needsAqueduct':
+        createCiv2Dialog('turn-event-dialog', 'Aqueduct Needed', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${ev.cityName} needs an Aqueduct to grow beyond size 8.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+
+      case 'needsSewer':
+        createCiv2Dialog('turn-event-dialog', 'Sewer System Needed', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${ev.cityName} needs a Sewer System to grow beyond size 12.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+
+      case 'productionComplete': {
+        const item = ev.item;
+        let itemName;
+        if (item.type === 'unit') itemName = UNIT_NAMES[item.id] || 'Unit';
+        else if (item.type === 'building') itemName = IMPROVE_NAMES[item.id] || 'Building';
+        else if (item.type === 'wonder') itemName = WONDER_NAMES[item.id - 39] || 'Wonder';
+        else itemName = 'Item';
+
+        createCiv2Dialog('turn-event-dialog', 'Production Complete', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${ev.cityName} has finished ${itemName}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'Change', action: () => {
+          // Open production picker for this city
+          const city = mpGameState?.cities?.[ev.cityIndex];
+          if (city && city.owner === mpCivSlot) {
+            showProductionPicker(city, ev.cityIndex, showNext);
+          } else {
+            showNext();
+          }
+        }}, { label: 'OK', action: showNext }]);
+        break;
+      }
+
+      default:
+        showNext();
+    }
+  }
+  // Delay slightly so the re-render finishes first
+  setTimeout(showNext, 200);
 }
 
 function showRateSliders() {
@@ -2523,9 +2660,10 @@ const transport = createTransport({
         // Stash visibility update — applied after slide animation (or immediately if no slide)
         const pendingVisibility = (msg.tileVisibility && mpMapBase?.tileData) ? msg.tileVisibility : null;
 
-        // Apply tile updates immediately (improvements, terrain from worker orders)
+        // Apply tile updates immediately (improvements, terrain, goody huts from worker orders)
         applyImprovementsUpdate(msg.tileImprovements);
         applyTerrainUpdate(msg.tileTerrains);
+        applyGoodyHutUpdate(msg.tileGoodyHuts);
 
         // Check if a unit we moved has slid to a new position
         if (pendingSlide && prevUnits) {
@@ -2569,7 +2707,43 @@ const transport = createTransport({
 
         // Tech discovery notification — auto-show research picker
         if (msg.state.discoveredAdvance && msg.state.discoveredAdvance.civSlot === mpCivSlot) {
+          const da = msg.state.discoveredAdvance;
+          const ct = mpGameState.civTechs?.[da.civSlot];
+          console.log('[tech] Discovered advance', da.advanceId, ADVANCE_NAMES[da.advanceId],
+            'civTechs now=', ct ? [...ct] : null, 'has it=', ct?.has(da.advanceId));
           setTimeout(() => showResearchPicker(msg.state.discoveredAdvance.advanceId), 300);
+        }
+
+        // Goody hut result notification
+        if (msg.state.goodyHutResult && msg.state.goodyHutResult.civSlot === mpCivSlot) {
+          const hr = msg.state.goodyHutResult;
+          switch (hr.type) {
+            case 'gold':
+              showOverlayMessage(`You found ${hr.amount} gold in a tribal village!`);
+              break;
+            case 'tech':
+              showOverlayMessage(`Tribal scrolls reveal the secret of ${hr.advanceName}!`);
+              // If civ had no research selected, prompt picker
+              setTimeout(() => {
+                const civ = mpGameState.civs?.[mpCivSlot];
+                if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
+                  showResearchPicker(hr.advanceId);
+                }
+              }, 1500);
+              break;
+            case 'unit':
+              showOverlayMessage(`A tribe of ${hr.unitName} joins you!`);
+              break;
+            case 'nomads':
+              showOverlayMessage('Nomads join your civilization!');
+              break;
+            case 'barbarians':
+              showOverlayMessage('Barbarian ambush!');
+              break;
+            case 'nothing':
+              showOverlayMessage('The village is deserted.');
+              break;
+          }
         }
 
         // City founded notification — show popup, then open city dialog
@@ -2580,6 +2754,14 @@ const transport = createTransport({
             const city = mpGameState.cities[cf.cityIndex];
             if (city) openCityDialog(city, cf.cityIndex);
           });
+        }
+
+        // Turn events: city growth, famine, production complete
+        if (msg.state.turnEvents) {
+          const myEvents = msg.state.turnEvents.filter(e => e.civSlot === mpCivSlot);
+          if (myEvents.length > 0) {
+            showTurnEvents(myEvents);
+          }
         }
 
         // Prompt to pick research at start of turn if nothing selected and science > 0
@@ -3420,6 +3602,13 @@ function applyVisibilityUpdate(tileVisibility) {
   }
   cachedLosData = null;
   invalidateFowCanvases();
+}
+
+function applyGoodyHutUpdate(tileGoodyHuts) {
+  if (!tileGoodyHuts || !mpMapBase?.tileData) return;
+  for (let i = 0; i < tileGoodyHuts.length && i < mpMapBase.tileData.length; i++) {
+    mpMapBase.tileData[i].goodyHut = !!tileGoodyHuts[i];
+  }
 }
 
 function applyTerrainUpdate(tileTerrains) {

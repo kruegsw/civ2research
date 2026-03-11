@@ -534,6 +534,45 @@ wss.on("connection", (ws) => {
         delete room.gameState.discoveredAdvance;
         delete room.gameState.combatResult;
         delete room.gameState.cityFounded;
+        delete room.gameState.goodyHutResult;
+        delete room.gameState.turnEvents;
+        break;
+      }
+
+      case "RESTART_GAME": {
+        const restartRoomId = info.roomId;
+        if (!restartRoomId) break;
+        const restartRoom = rooms.get(restartRoomId);
+        if (!restartRoom) break;
+
+        // Map size presets (matching Civ2)
+        const sizes = {
+          small:  { width: 40, height: 50 },
+          normal: { width: 50, height: 80 },
+          large:  { width: 75, height: 120 },
+        };
+        const sz = sizes[msg.mapSize] || sizes.normal;
+
+        // Re-build seat list from current seats
+        const restartSeats = [];
+        for (let i = 0; i < 8; i++) {
+          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i}` });
+        }
+
+        const mapResult = generateMap(sz);
+        const { mapBase, gameState } = initNewGame(mapResult, restartSeats);
+        restartRoom.mapBase = mapBase;
+        restartRoom.gameState = gameState;
+
+        // Build civNames
+        const restartCivNames = {};
+        if (gameState.civs) {
+          for (let i = 0; i < 8; i++) restartCivNames[i] = gameState.civs[i]?.name || `Civ ${i}`;
+        }
+        restartRoom.gameState.civNames = restartCivNames;
+
+        console.log(`[game] Room ${restartRoomId}: RESTART ${msg.mapSize} (${sz.width}×${sz.height}), ${restartSeats.length} players`);
+        sendGameStartToAll(restartRoomId, restartRoom);
         break;
       }
 
@@ -634,6 +673,7 @@ function sendGameStateToAll(roomId, room) {
                (imp.pollution ? 0x80 : 0);
       }),
       tileTerrains: room.mapBase.tileData.map(t => t.terrain),
+      tileGoodyHuts: room.mapBase.tileData.map(t => t.goodyHut ? 1 : 0),
     }));
   }
 }
@@ -671,6 +711,8 @@ function buildStatePayload(room, civSlot) {
     discoveredAdvance: gs.discoveredAdvance,
     combatResult: gs.combatResult,
     cityFounded: gs.cityFounded,
+    goodyHutResult: gs.goodyHutResult,
+    turnEvents: gs.turnEvents,
   };
 }
 
