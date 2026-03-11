@@ -14,35 +14,7 @@ import {
   IMPROVE_MAINTENANCE,
   GOVT_FACTOR, GOVT_CORRUPTION_DIVISOR, GOVT_WLTKD_BUMP,
 } from './defs.js';
-
-// ── Helpers ──
-
-function cityHasBuilding(city, id) {
-  return city.buildings ? city.buildings.has(id) : false;
-}
-
-function civHasWonder(gameState, civSlot, wonderIndex) {
-  const wonders = gameState.wonders;
-  if (!wonders) return false;
-  const w = wonders[wonderIndex];
-  if (w == null || w.cityIndex == null || w.destroyed) return false;
-  const city = gameState.cities[w.cityIndex];
-  return city && city.owner === civSlot;
-}
-
-function cityHasWonder(gameState, cityIndex, wonderIndex) {
-  const wonders = gameState.wonders;
-  if (!wonders) return false;
-  const w = wonders[wonderIndex];
-  return w && w.cityIndex === cityIndex;
-}
-
-function getGovernment(city, gameState) {
-  if (gameState.civs && gameState.civs[city.owner]) {
-    return gameState.civs[city.owner].government;
-  }
-  return 'despotism';
-}
+import { cityHasBuilding, civHasWonder, cityHasWonder, getGovernment } from './utils.js';
 
 // ── Per-tile yield functions ──
 

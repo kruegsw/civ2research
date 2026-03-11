@@ -10,53 +10,11 @@ import {
   GOVT_CORRUPTION_DIVISOR, DIFFICULTY_KEYS,
 } from './defs.js';
 import { calcCityTrade } from './production.js';
+import { cityHasBuilding, hasWonderEffect, cityHasActiveWonder, getGovernment } from './utils.js';
 
 // COSMIC defaults from standard RULES.TXT
 const CONTENT_BASE = 7;     // DAT_0064bccf
 const RIOT_FACTOR = 14;     // DAT_0064bcd0
-
-function cityHasBuilding(city, id) {
-  return city.buildings ? city.buildings.has(id) : false;
-}
-
-function civHasWonder(gameState, civSlot, wonderIndex) {
-  const w = gameState.wonders?.[wonderIndex];
-  if (!w || w.cityIndex == null || w.destroyed) return false;
-  const city = gameState.cities[w.cityIndex];
-  return city && city.owner === civSlot;
-}
-
-function wonderObsolete(gameState, wonderIndex) {
-  // Import inline to avoid circular dependency
-  const WONDER_OBSOLETE = [
-    -1, 67, 30, 45, 23, 82, 51, 53, 37, 15,
-    -1, -1, -1, -1,  5, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1,
-  ];
-  const obsTech = WONDER_OBSOLETE[wonderIndex];
-  if (obsTech < 0) return false;
-  // Check if ANY civ has the obsoleting tech
-  if (!gameState.civTechs) return false;
-  for (let c = 0; c < 8; c++) {
-    if (gameState.civTechs[c]?.has(obsTech)) return true;
-  }
-  return false;
-}
-
-function hasWonderEffect(gameState, civSlot, wonderIndex) {
-  if (wonderObsolete(gameState, wonderIndex)) return false;
-  return civHasWonder(gameState, civSlot, wonderIndex);
-}
-
-function cityHasWonder(gameState, cityIndex, wonderIndex) {
-  if (wonderObsolete(gameState, wonderIndex)) return false;
-  const w = gameState.wonders?.[wonderIndex];
-  return w && w.cityIndex === cityIndex;
-}
-
-function getGovernment(city, gameState) {
-  return gameState.civs?.[city.owner]?.government || 'despotism';
-}
 
 /**
  * Compute happiness for a city.
@@ -214,7 +172,7 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
   // Hanging Gardens (1): +1 empire, +3 in wonder city
   if (hasWonderEffect(gameState, ownerSlot, 1)) {
     st.happy += 1;
-    if (cityHasWonder(gameState, cityIndex, 1)) st.happy += 2;
+    if (cityHasActiveWonder(gameState, cityIndex, 1)) st.happy += 2;
   }
 
   // Cure for Cancer (27): +1 empire
@@ -223,7 +181,7 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
   }
 
   // Shakespeare's Theatre (13): all unhappy → content in wonder city
-  if (cityHasWonder(gameState, cityIndex, 13)) {
+  if (cityHasActiveWonder(gameState, cityIndex, 13)) {
     st.unhappy = 0;
   }
 

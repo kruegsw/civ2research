@@ -1,6 +1,6 @@
 import { Civ2Renderer } from './renderer.js';
 import {
-  COMMODITY_NAMES, ORDER_NAMES, WONDER_NAMES,
+  COMMODITY_NAMES, ORDER_NAMES, WONDER_NAMES, IMPROVE_NAMES,
   UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
   SETTLER_TYPES, NON_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
   GOVT_CORRUPTION_DIVISOR, GOVT_FACTOR, GOVT_WLTKD_BUMP,
@@ -32,23 +32,8 @@ import { getGameYearFromMap } from '../engine/year.js';
 
 const Civ2CityDialog = {
 
-  BUILDING_NAMES: {
-    1: 'Palace', 2: 'Barracks', 3: 'Granary', 4: 'Temple', 5: 'Marketplace',
-    6: 'Library', 7: 'Courthouse', 8: 'City Walls', 9: 'Aqueduct', 10: 'Bank',
-    11: 'Cathedral', 12: 'University', 13: 'Mass Transit', 14: 'Colosseum',
-    15: 'Factory', 16: 'Mfg. Plant', 17: 'SDI Defense', 18: 'Recycling Center',
-    19: 'Power Plant', 20: 'Hydro Plant', 21: 'Nuclear Plant', 22: 'Stock Exchange',
-    23: 'Sewer System', 24: 'Supermarket', 25: 'Superhighways', 26: 'Research Lab',
-    27: 'SAM Battery', 28: 'Coastal Fortress', 29: 'Solar Plant', 30: 'Harbour',
-    31: 'Offshore Platform'
-  },
-
-  BUILDINGSV_NAMES: {
-    32: 'Airport', 33: 'Police Station', 34: 'Port Facility',
-    35: 'SS Structural', 36: 'SS Component', 37: 'SS Module', 38: 'Capitalization'
-  },
-
   // Shared constants from engine/defs.js (re-exported for internal this.* references)
+  IMPROVE_NAMES,
   WONDER_NAMES,
   COMMODITY_NAMES,
   ORDER_NAMES,
@@ -299,8 +284,7 @@ const Civ2CityDialog = {
   getProductionName(item) {
     if (!item) return '?';
     if (item.type === 'unit') return Civ2Renderer.UNIT_NAMES[item.id] || `Unit #${item.id}`;
-    if (item.id >= 1 && item.id <= 31) return this.BUILDING_NAMES[item.id] || `Improvement #${item.id}`;
-    if (item.id >= 32 && item.id <= 38) return this.BUILDINGSV_NAMES[item.id] || `Improvement #${item.id}`;
+    if (item.id >= 1 && item.id <= 38) return this.IMPROVE_NAMES[item.id] || `Improvement #${item.id}`;
     if (item.id >= 39 && item.id <= 66) return this.WONDER_NAMES[item.id - 39] || `Wonder #${item.id}`;
     return `Item #${item.id}`;
   },
@@ -310,7 +294,7 @@ const Civ2CityDialog = {
     if (city.buildings) {
       for (const id of [...city.buildings].sort((a, b) => a - b)) {
         if (id === 36) continue;  // Capitalization is a production option, not a building
-        const name = (id <= 31 ? this.BUILDING_NAMES[id] : this.BUILDINGSV_NAMES[id]) || `#${id}`;
+        const name = this.IMPROVE_NAMES[id] || `#${id}`;
         result.push({ id, name, isWonder: false });
       }
     }

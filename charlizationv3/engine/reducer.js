@@ -17,11 +17,7 @@ import { updateVisibility } from './visibility.js';
 import { calcFoodSurplus, foodToGrow, calcShieldProduction, getProductionCost, calcCityTrade } from './production.js';
 import { calcHappiness, calcRushBuyCost } from './happiness.js';
 import { resolveCombat } from './combat.js';
-
-
-function cityHasBuilding(city, id) {
-  return city.buildings ? city.buildings.has(id) : false;
-}
+import { cityHasBuilding } from './utils.js';
 
 /**
  * Apply completed worker improvement to the map tile data.
