@@ -2931,7 +2931,7 @@ const Civ2CityDialog = {
     // Binary: FUN_0056baff lines 3925-3941
     const isSeaDomain = (u.type >= 32 && u.type <= 43);
     const hasHarbor = city && city.buildings && city.buildings.has(30);
-    const isDimmed = (u.orders === 'sleep') || (isSeaDomain && hasHarbor);
+    const isDimmed = (u.orders === 'sleep' || u.orders === 'sentry') || (isSeaDomain && hasHarbor);
 
     let sprite = colored;
     if (isDimmed) {
@@ -3558,6 +3558,20 @@ const Civ2CityDialog = {
       });
     }
 
+    // Add improvement sell icon click regions
+    const IR = this.REGIONS.improvements;
+    const imps = this.getCityImprovements(city, cityIndex, mapData);
+    for (let i = 0; i < Math.min(IR.maxRows, imps.length); i++) {
+      const imp = imps[i];
+      if (imp.isWonder) continue; // can't sell wonders
+      if (imp.id === 1) continue; // can't sell Palace
+      regions.push({
+        x: IR.sellX - 2, y: IR.sellY + IR.rowH * i - 1,
+        w: IR.sellSize + 4, h: IR.sellSize + 2,
+        action: 'sell', buildingId: imp.id,
+      });
+    }
+
     return regions;
   },
 
@@ -3580,6 +3594,9 @@ const Civ2CityDialog = {
       }
       if (r.action === 'citizenToSpec' || r.action === 'cycleSpec') {
         return { action: r.action, citizenSlot: r.citizenSlot };
+      }
+      if (r.action === 'sell') {
+        return { action: r.action, buildingId: r.buildingId };
       }
       return { action: r.action };
     }

@@ -193,6 +193,7 @@ export function initEvents(canvas, vp, fns) {
     const key = e.key;
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.defaultPrevented) return; // already handled by game input (e.g. sentry)
       e.preventDefault();
       keysDown.add(key);
       if (!keyScrollRAF) keyScrollLoop();

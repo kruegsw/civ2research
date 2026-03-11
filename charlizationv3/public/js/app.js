@@ -9,13 +9,16 @@ import { Civ2CityDialog } from './citydialog.js';
 import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
-import { getGameYearFromMap } from '../engine/year.js';
-import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE } from '../engine/defs.js';
+import { getGameYear, getGameYearFromMap } from '../engine/year.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
-import { getValidActions } from '../engine/rules.js';
-import { MOVE_UNIT, BUILD_CITY, SET_WORKERS } from '../engine/actions.js';
+import { getValidActions, validateAction } from '../engine/rules.js';
+import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER } from '../engine/actions.js';
+import { calcRushBuyCost } from '../engine/happiness.js';
+import { getProductionCost, calcCityTrade } from '../engine/production.js';
+import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -104,8 +107,13 @@ function updateGameInfo(mapData, civOverride) {
     `<span class="gi-player" style="color:${civColor}">${civName}</span> ${sep} ` +
     `<span class="gi-govt">${govt}</span> ${sep} ` +
     `<span class="gi-year">${year}</span> ${sep} ` +
-    `<span class="gi-gold">${gold.toLocaleString()} Gold</span> ${sep} ` +
+    `<span class="gi-gold" style="cursor:pointer" title="Shift+T: Tax Rates">${gold.toLocaleString()} Gold</span> ${sep} ` +
     `<span class="gi-pop">${pop.toLocaleString()} People</span>`;
+  // Make gold display clickable to open rate sliders
+  const goldEl = el.querySelector('.gi-gold');
+  if (goldEl && mpGameState) {
+    goldEl.addEventListener('click', () => showRateSliders());
+  }
 }
 
 // ── Auto-detect files in same directory ──
@@ -790,23 +798,106 @@ async function handleMapClick(e, isLongPress = false) {
   const activeUnitOnTile = activeUnit && activeUnit.gx === tile.gx && activeUnit.gy === tile.gy;
   const cityHit = findCityAt(tile.gx, tile.gy);
 
-  // City tile without our active unit on it — open city dialog
+  // City tile without our active unit on it
   if (cityHit && !activeUnitOnTile) {
+    // Long press: if active unit can move here, show move menu instead
+    if (isLongPress && isMyTurn && mpSelectedUnit != null) {
+      const validActions = getValidActions(mpGameState, mpMapBase, mpSelectedUnit, tile);
+      if (validActions.length > 0) {
+        const menuItems = validActions.map(va => actionToMenuItem(va, mpSelectedUnit));
+        showUnitMenu(e.clientX, e.clientY, menuItems);
+        return;
+      }
+    }
+    // Short click (or long press with no actions): open city dialog
     openCityDialog(cityHit.city, cityHit.index);
     return;
   }
 
   if (isMyTurn) {
-    // Gather own movable units on this tile
+    // Gather own units on this tile (movable OR with active orders)
     const tileUnits = [];
     mpGameState.units.forEach((u, idx) => {
-      if (u.gx === tile.gx && u.gy === tile.gy && u.owner === mpCivSlot && u.movesLeft > 0) {
+      if (u.gx === tile.gx && u.gy === tile.gy && u.owner === mpCivSlot && u.gx >= 0) {
         tileUnits.push(idx);
       }
     });
 
-    // Long press with active unit on a DIFFERENT tile — show move action only
-    if (isLongPress && mpSelectedUnit != null) {
+    const activeOnThisTile = mpSelectedUnit != null && tileUnits.includes(mpSelectedUnit);
+
+    // ── Clicking a DIFFERENT tile (active unit is elsewhere) ──
+    if (tileUnits.length > 0 && !activeOnThisTile) {
+      const topUnit = tileUnits[0];
+      const topU = mpGameState.units[topUnit];
+
+      if (!isLongPress) {
+        // Short click: select top unit + wake it if it has standing orders
+        selectUnit(topUnit);
+        if (topU.orders && topU.orders !== 'none') {
+          transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: topUnit, order: 'wake' } });
+        }
+        return;
+      }
+
+      // Long press: show combined menu (move active unit here + resident unit orders)
+      const menuItems = [];
+
+      // Move action for the currently active unit (if valid)
+      if (mpSelectedUnit != null) {
+        const moveActions = getValidActions(mpGameState, mpMapBase, mpSelectedUnit, tile);
+        for (const va of moveActions) {
+          menuItems.push(actionToMenuItem(va, mpSelectedUnit));
+        }
+      }
+
+      // "Open City" option if on a city tile
+      if (cityHit) {
+        if (menuItems.length > 0) menuItems.push({ separator: true });
+        menuItems.push({
+          label: 'Open City',
+          action: () => openCityDialog(cityHit.city, cityHit.index),
+        });
+      }
+
+      // Unit selection entries (with sprite thumbnails)
+      if (menuItems.length > 0) menuItems.push({ separator: true });
+      menuItems.push({ header: 'Select Unit' });
+      for (const idx of tileUnits) {
+        const u = mpGameState.units[idx];
+        const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+        const sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
+        menuItems.push({
+          label: name,
+          sprite,
+          selected: false,
+          action: () => selectUnit(idx),
+        });
+      }
+
+      // Orders for top resident unit (wake, fortify, worker orders, etc.)
+      const orderItems = buildOrderMenuItems(topUnit);
+      // Add Wake option at top if unit has active orders
+      if (topU.orders && topU.orders !== 'none') {
+        orderItems.unshift({
+          label: 'Wake Up',
+          action: () => {
+            selectUnit(topUnit);
+            transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: topUnit, order: 'wake' } });
+          },
+        });
+      }
+      if (orderItems.length > 0) {
+        menuItems.push({ separator: true });
+        menuItems.push({ header: 'Orders' });
+        menuItems.push(...orderItems);
+      }
+
+      showUnitMenu(e.clientX, e.clientY, menuItems);
+      return;
+    }
+
+    // ── Clicking on empty neighboring tile with active unit — show move menu (long press) ──
+    if (isLongPress && mpSelectedUnit != null && tileUnits.length === 0) {
       const validActions = getValidActions(mpGameState, mpMapBase, mpSelectedUnit, tile);
       if (validActions.length > 0) {
         const menuItems = validActions.map(va => actionToMenuItem(va, mpSelectedUnit));
@@ -815,44 +906,59 @@ async function handleMapClick(e, isLongPress = false) {
       }
     }
 
-    // Click on tile with own movable units — build unified menu
-    if (tileUnits.length > 0) {
+    // ── Clicking on OWN tile (active unit is here) ──
+    if (tileUnits.length > 0 && activeOnThisTile) {
       const menuItems = [];
 
-      // Section header + unit selection entries (with sprite thumbnails)
-      menuItems.push({ header: 'Select Unit' });
-      for (const idx of tileUnits) {
-        const u = mpGameState.units[idx];
-        const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
-        const sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
-        const selected = idx === mpSelectedUnit;
+      // "Open City" option if on a city tile
+      if (cityHit) {
         menuItems.push({
-          label: name,
-          sprite,
-          selected,
-          action: () => selectUnit(idx),
+          label: 'Open City',
+          action: () => openCityDialog(cityHit.city, cityHit.index),
         });
+        menuItems.push({ separator: true });
       }
 
-      // Valid actions for the active unit only
-      const actionItems = [];
-      if (mpSelectedUnit != null && tileUnits.includes(mpSelectedUnit)) {
-        const actions = getValidActions(mpGameState, mpMapBase, mpSelectedUnit, tile);
-        for (const va of actions) {
-          const item = actionToMenuItem(va, mpSelectedUnit);
-          const u = mpGameState.units[mpSelectedUnit];
-          item.sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
-          actionItems.push(item);
+      // Section header + unit selection entries (with sprite thumbnails)
+      if (tileUnits.length > 1) {
+        menuItems.push({ header: 'Select Unit' });
+        for (const idx of tileUnits) {
+          const u = mpGameState.units[idx];
+          const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+          const sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
+          const selected = idx === mpSelectedUnit;
+          menuItems.push({
+            label: name,
+            sprite,
+            selected,
+            action: () => selectUnit(idx),
+          });
         }
       }
-      if (actionItems.length > 0) {
-        menuItems.push({ separator: true });
-        menuItems.push({ header: 'Select Order' });
-        menuItems.push(...actionItems);
+
+      // Orders for the active unit (same-tile actions + unit/worker orders)
+      const selIdx = mpSelectedUnit;
+      const orderItems = [];
+
+      // Tile actions (Build City) from getValidActions
+      const tileActions = getValidActions(mpGameState, mpMapBase, selIdx, tile);
+      for (const va of tileActions) {
+        orderItems.push(actionToMenuItem(va, selIdx));
       }
 
-      // Single unit, no extra actions — just select directly
-      if (tileUnits.length === 1 && menuItems.length === 1) {
+      // Unit orders + worker orders
+      orderItems.push(...buildOrderMenuItems(selIdx));
+
+      if (orderItems.length > 0) {
+        if (menuItems.length > 0 && !menuItems[menuItems.length - 1].separator) {
+          menuItems.push({ separator: true });
+        }
+        menuItems.push({ header: 'Orders' });
+        menuItems.push(...orderItems);
+      }
+
+      // Single unit on tile, no city, no orders — just select directly
+      if (tileUnits.length === 1 && !cityHit && orderItems.length === 0) {
         selectUnit(tileUnits[0]);
         return;
       }
@@ -951,6 +1057,27 @@ function cdHandleClick(clientX, clientY) {
       Civ2CityView.render(cvCanvas, cdCity, cdCityIndex, currentMapData, cvSprites, cvBackgrounds);
       document.getElementById('cityview-overlay').style.display = 'flex';
     });
+  } else if (result && result.action === 'change') {
+    if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
+    showProductionPicker(cdCity, cdCityIndex);
+  } else if (result && result.action === 'buy') {
+    if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
+    handleRushBuy(cdCity, cdCityIndex);
+  } else if (result && result.action === 'sell') {
+    if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
+    if (result.buildingId != null) {
+      // Direct sell from improvement list sell icon
+      const name = IMPROVE_NAMES[result.buildingId] || 'Building';
+      const refund = IMPROVE_COSTS[result.buildingId] || 0;
+      showConfirmDialog(`Sell ${name} for ${refund} gold?`, () => {
+        transport.sendRaw({
+          type: 'ACTION',
+          action: { type: SELL_BUILDING, cityIndex: cdCityIndex, buildingId: result.buildingId },
+        });
+      });
+    } else {
+      showSellBuildingPicker(cdCity, cdCityIndex);
+    }
   } else if (result && (result.action === 'toggleTile' || result.action === 'citizenToSpec' || result.action === 'cycleSpec')) {
     if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
     handleWorkerChange(result);
@@ -1074,6 +1201,460 @@ function cdRerender() {
   const canvas = document.getElementById('citydialog-canvas');
   cdRegions = Civ2CityDialog.render(canvas, cdCity, cdCityIndex, currentMapData, cdSprites, mapSprites);
   cdDrawViewport();
+}
+
+// ── Production picker ──
+
+function showProductionPicker(city, cityIndex) {
+  // Remove any existing picker
+  const existing = document.getElementById('production-picker');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'production-picker';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;max-height:70vh;overflow-y:auto;padding:8px;min-width:280px;font:14px "Times New Roman",serif;color:#333';
+
+  const title = document.createElement('div');
+  title.textContent = `${city.name} — Change Production`;
+  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:6px;text-align:center';
+  panel.appendChild(title);
+
+  const hasBuilding = id => city.buildings && city.buildings.has(id);
+  const civTechs = mpGameState.civTechs?.[city.owner];
+  const hasTech = (id) => id < 0 || (civTechs ? civTechs.has(id) : id === -1);
+
+  // Build list of available items
+  const items = [];
+
+  // Units — filtered by tech prerequisites and obsolescence
+  for (let id = 0; id < UNIT_NAMES.length; id++) {
+    if (!UNIT_NAMES[id] || UNIT_COSTS[id] == null) continue;
+    const prereq = UNIT_PREREQS[id] ?? -1;
+    const obsolete = UNIT_OBSOLETE[id] ?? -1;
+    if (prereq === -2 || obsolete === -2) continue; // unbuildable
+    if (prereq >= 0 && !hasTech(prereq)) continue;
+    if (obsolete >= 0 && hasTech(obsolete)) continue;
+    items.push({ type: 'unit', id, name: UNIT_NAMES[id], cost: UNIT_COSTS[id] });
+  }
+
+  // Buildings — filtered by prereqs, skip Palace=1, skip already-built
+  for (let id = 2; id <= 38; id++) {
+    if (!IMPROVE_NAMES[id] || IMPROVE_COSTS[id] == null) continue;
+    if (hasBuilding(id)) continue;
+    const prereq = IMPROVE_PREREQS[id] ?? -1;
+    if (prereq >= 0 && !hasTech(prereq)) continue;
+    items.push({ type: 'building', id, name: IMPROVE_NAMES[id], cost: IMPROVE_COSTS[id] });
+  }
+
+  // Wonders — filtered by prereqs, skip already-built globally
+  for (let i = 0; i < WONDER_NAMES.length; i++) {
+    const wid = i + 39;
+    if (!WONDER_NAMES[i] || WONDER_COSTS[i] == null) continue;
+    // Check if wonder already built by anyone
+    if (mpGameState.wonders && mpGameState.wonders[i] &&
+        mpGameState.wonders[i].cityIndex != null) continue;
+    const prereq = WONDER_PREREQS[i] ?? -1;
+    if (prereq >= 0 && !hasTech(prereq)) continue;
+    items.push({ type: 'wonder', id: wid, name: WONDER_NAMES[i], cost: WONDER_COSTS[i] });
+  }
+
+  for (const item of items) {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between';
+    row.onmouseenter = () => row.style.background = '#c0a070';
+    row.onmouseleave = () => row.style.background = '';
+
+    const label = document.createElement('span');
+    label.textContent = item.name;
+    const costLabel = document.createElement('span');
+    costLabel.textContent = `${item.cost / 10} shields`;
+    costLabel.style.color = '#666';
+    row.appendChild(label);
+    row.appendChild(costLabel);
+
+    row.addEventListener('click', () => {
+      transport.sendRaw({
+        type: 'ACTION',
+        action: {
+          type: CHANGE_PRODUCTION,
+          cityIndex,
+          item: { type: item.type, id: item.id },
+        },
+      });
+      overlay.remove();
+    });
+    panel.appendChild(row);
+  }
+
+  // Cancel button
+  const cancel = document.createElement('div');
+  cancel.textContent = 'Cancel';
+  cancel.style.cssText = 'text-align:center;padding:6px;margin-top:6px;cursor:pointer;font-weight:bold;border-top:1px solid #a08060';
+  cancel.addEventListener('click', () => overlay.remove());
+  panel.appendChild(cancel);
+
+  overlay.appendChild(panel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function handleRushBuy(city, cityIndex) {
+  const item = city.itemInProduction;
+  if (!item) return;
+  if (item.type === 'building' && item.id === 38) return; // Can't buy Capitalization
+  const totalCost = getProductionCost(item);
+  const buyCost = calcRushBuyCost(item.type, totalCost, city.shieldsInBox || 0);
+  const treasury = mpGameState.civs?.[mpCivSlot]?.treasury || 0;
+
+  const itemName = item.type === 'unit' ? UNIT_NAMES[item.id]
+    : item.type === 'building' ? IMPROVE_NAMES[item.id]
+    : WONDER_NAMES[item.id - 39] || 'Unknown';
+
+  if (buyCost > treasury) {
+    showOverlayMessage(`Cannot afford ${itemName} — costs ${buyCost} gold (have ${treasury})`);
+    return;
+  }
+  if (city.shieldsInBox >= totalCost) {
+    showOverlayMessage(`${itemName} is already complete`);
+    return;
+  }
+
+  showConfirmDialog(`Buy ${itemName} for ${buyCost} gold?`, () => {
+    transport.sendRaw({ type: 'ACTION', action: { type: RUSH_BUY, cityIndex } });
+  });
+}
+
+function showSellBuildingPicker(city, cityIndex) {
+  if (!city.buildings || city.buildings.size === 0) return;
+
+  const existing = document.getElementById('production-picker');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'production-picker';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;max-height:70vh;overflow-y:auto;padding:8px;min-width:280px;font:14px "Times New Roman",serif;color:#333';
+
+  const title = document.createElement('div');
+  title.textContent = `${city.name} — Sell Building`;
+  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:6px;text-align:center';
+  panel.appendChild(title);
+
+  if (city.soldThisTurn) {
+    const msg = document.createElement('div');
+    msg.textContent = 'Already sold a building this turn.';
+    msg.style.cssText = 'text-align:center;color:#800;padding:8px';
+    panel.appendChild(msg);
+  } else {
+    for (const id of city.buildings) {
+      if (id === 1) continue; // Can't sell Palace
+      if (id >= 35 && id <= 37) continue; // Can't sell SS parts
+      const name = IMPROVE_NAMES[id];
+      if (!name) continue;
+      const refund = IMPROVE_COSTS[id] || 0;
+
+      const row = document.createElement('div');
+      row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between';
+      row.onmouseenter = () => row.style.background = '#c0a070';
+      row.onmouseleave = () => row.style.background = '';
+
+      const label = document.createElement('span');
+      label.textContent = name;
+      const refundLabel = document.createElement('span');
+      refundLabel.textContent = `+${refund} gold`;
+      refundLabel.style.color = '#060';
+      row.appendChild(label);
+      row.appendChild(refundLabel);
+
+      row.addEventListener('click', () => {
+        overlay.remove();
+        showConfirmDialog(`Sell ${name} for ${refund} gold?`, () => {
+          transport.sendRaw({
+            type: 'ACTION',
+            action: { type: SELL_BUILDING, cityIndex, buildingId: id },
+          });
+        });
+      });
+      panel.appendChild(row);
+    }
+  }
+
+  const cancel = document.createElement('div');
+  cancel.textContent = 'Cancel';
+  cancel.style.cssText = 'text-align:center;padding:6px;margin-top:6px;cursor:pointer;font-weight:bold;border-top:1px solid #a08060';
+  cancel.addEventListener('click', () => overlay.remove());
+  panel.appendChild(cancel);
+
+  overlay.appendChild(panel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function showOverlayMessage(msg) {
+  const existing = document.getElementById('overlay-msg');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'overlay-msg';
+  el.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:9999;background:#d4b896;border:3px outset #a08060;padding:12px 24px;font:16px "Times New Roman",serif;color:#333;text-align:center';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+function showConfirmDialog(msg, onConfirm) {
+  const existing = document.getElementById('confirm-dialog');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'confirm-dialog';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font:16px "Times New Roman",serif;color:#333;text-align:center;min-width:200px';
+
+  const text = document.createElement('div');
+  text.textContent = msg;
+  text.style.marginBottom = '12px';
+  panel.appendChild(text);
+
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:12px;justify-content:center';
+
+  const yesBtn = document.createElement('button');
+  yesBtn.textContent = 'Yes';
+  yesBtn.className = 'civ2-btn';
+  yesBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
+  yesBtn.addEventListener('click', () => { overlay.remove(); onConfirm(); });
+
+  const noBtn = document.createElement('button');
+  noBtn.textContent = 'No';
+  noBtn.className = 'civ2-btn';
+  noBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
+  noBtn.addEventListener('click', () => overlay.remove());
+
+  btnRow.appendChild(yesBtn);
+  btnRow.appendChild(noBtn);
+  panel.appendChild(btnRow);
+  overlay.appendChild(panel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function showCityFoundedDialog(cityName, year, onDismiss) {
+  const existing = document.getElementById('city-founded-dialog');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'city-founded-dialog';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:20px 32px;font-family:"Times New Roman",Georgia,serif;color:#333;text-align:center;min-width:280px;max-width:400px';
+
+  // Placeholder for artwork (empty div with border, can be populated later)
+  const artFrame = document.createElement('div');
+  artFrame.id = 'city-founded-art';
+  artFrame.style.cssText = 'width:200px;height:120px;margin:0 auto 16px;border:2px inset #a08060;background:#c4a880';
+  panel.appendChild(artFrame);
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:20px;font-weight:bold;margin-bottom:8px';
+  title.textContent = cityName;
+  panel.appendChild(title);
+
+  const sub = document.createElement('div');
+  sub.style.cssText = 'font-size:15px;margin-bottom:16px';
+  sub.textContent = `Founded in ${year}`;
+  panel.appendChild(sub);
+
+  const btn = document.createElement('button');
+  btn.textContent = 'OK';
+  btn.className = 'civ2-btn';
+  btn.style.cssText = 'padding:4px 24px;cursor:pointer;font-size:14px';
+  const dismiss = () => { overlay.remove(); if (onDismiss) onDismiss(); };
+  btn.addEventListener('click', dismiss);
+  panel.appendChild(btn);
+
+  overlay.appendChild(panel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+  // Enter/Escape also dismiss
+  const keyHandler = e => {
+    if (e.key === 'Enter' || e.key === 'Escape') {
+      e.preventDefault();
+      dismiss();
+      window.removeEventListener('keydown', keyHandler, true);
+    }
+  };
+  window.addEventListener('keydown', keyHandler, true);
+
+  document.body.appendChild(overlay);
+}
+
+function showRateSliders() {
+  const existing = document.getElementById('rate-sliders');
+  if (existing) existing.remove();
+
+  if (!mpGameState || !mpCivSlot) return;
+  const civ = mpGameState.civs?.[mpCivSlot];
+  if (!civ) return;
+
+  let sciRate = civ.scienceRate ?? 5;
+  let taxRate = civ.taxRate ?? 5;
+  let luxRate = 10 - sciRate - taxRate;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'rate-sliders';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font:14px "Times New Roman",serif;color:#333;min-width:300px';
+
+  const title = document.createElement('div');
+  title.textContent = 'Tax Rates';
+  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:8px;text-align:center';
+  panel.appendChild(title);
+
+  const luxLabel = document.createElement('div');
+  const updateLabels = () => {
+    luxRate = 10 - sciRate - taxRate;
+    sciSlider.value = sciRate;
+    taxSlider.value = taxRate;
+    sciLabel.textContent = `Science: ${sciRate * 10}%`;
+    taxLabel.textContent = `Tax: ${taxRate * 10}%`;
+    luxLabel.textContent = `Luxury: ${luxRate * 10}%`;
+  };
+
+  const makeRow = (label, value, onChange) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin:4px 0';
+    const lbl = document.createElement('span');
+    lbl.style.width = '100px';
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = 0; slider.max = 10; slider.step = 1;
+    slider.value = value;
+    slider.style.flex = '1';
+    slider.addEventListener('input', () => onChange(parseInt(slider.value)));
+    row.appendChild(lbl);
+    row.appendChild(slider);
+    panel.appendChild(row);
+    return { label: lbl, slider };
+  };
+
+  const sci = makeRow('Science', sciRate, v => {
+    sciRate = v;
+    if (sciRate + taxRate > 10) taxRate = 10 - sciRate;
+    updateLabels();
+  });
+  const sciLabel = sci.label;
+  const sciSlider = sci.slider;
+
+  const tax = makeRow('Tax', taxRate, v => {
+    taxRate = v;
+    if (sciRate + taxRate > 10) sciRate = 10 - taxRate;
+    updateLabels();
+  });
+  const taxLabel = tax.label;
+  const taxSlider = tax.slider;
+
+  luxLabel.style.cssText = 'text-align:center;margin:6px 0;font-weight:bold';
+  panel.appendChild(luxLabel);
+
+  updateLabels();
+
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:12px;justify-content:center;margin-top:8px';
+
+  const okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.className = 'civ2-btn';
+  okBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
+  okBtn.addEventListener('click', () => {
+    overlay.remove();
+    transport.sendRaw({
+      type: 'ACTION',
+      action: { type: CHANGE_RATES, scienceRate: sciRate, taxRate: taxRate },
+    });
+  });
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.className = 'civ2-btn';
+  cancelBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
+  cancelBtn.addEventListener('click', () => overlay.remove());
+
+  btnRow.appendChild(okBtn);
+  btnRow.appendChild(cancelBtn);
+  panel.appendChild(btnRow);
+  overlay.appendChild(panel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+// ── Research picker ──
+function showResearchPicker(discovered) {
+  const existing = document.getElementById('research-picker');
+  if (existing) existing.remove();
+
+  if (!mpGameState || mpCivSlot == null) return;
+  const available = getAvailableResearch(mpGameState, mpCivSlot);
+  if (available.length === 0) {
+    showOverlayMessage('No technologies available to research');
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'research-picker';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font:14px "Times New Roman",serif;color:#333;min-width:260px;max-width:400px;max-height:70vh;overflow-y:auto';
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:8px;text-align:center';
+  title.textContent = discovered != null
+    ? `Discovered: ${ADVANCE_NAMES[discovered]}!`
+    : 'Choose Research';
+  panel.appendChild(title);
+
+  if (discovered != null) {
+    const sub = document.createElement('div');
+    sub.textContent = 'What shall we research next?';
+    sub.style.cssText = 'text-align:center;margin-bottom:8px;font-style:italic;color:#555';
+    panel.appendChild(sub);
+  }
+
+  const list = document.createElement('div');
+  available.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
+  for (const advId of available) {
+    const btn = document.createElement('div');
+    btn.textContent = ADVANCE_NAMES[advId];
+    btn.style.cssText = 'padding:4px 8px;cursor:pointer;border-bottom:1px solid #c0a070';
+    btn.addEventListener('mouseenter', () => btn.style.background = '#c8a878');
+    btn.addEventListener('mouseleave', () => btn.style.background = '');
+    btn.addEventListener('click', () => {
+      overlay.remove();
+      transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: advId } });
+    });
+    list.appendChild(btn);
+  }
+  panel.appendChild(list);
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.className = 'civ2-btn';
+  cancelBtn.style.cssText = 'display:block;margin:10px auto 0;padding:4px 16px;cursor:pointer';
+  cancelBtn.addEventListener('click', () => overlay.remove());
+  panel.appendChild(cancelBtn);
+
+  overlay.appendChild(panel);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 // City dialog pan/zoom events
@@ -1556,6 +2137,10 @@ const transport = createTransport({
         // Stash visibility update — applied after slide animation (or immediately if no slide)
         const pendingVisibility = (msg.tileVisibility && mpMapBase?.tileData) ? msg.tileVisibility : null;
 
+        // Apply tile updates immediately (improvements, terrain from worker orders)
+        applyImprovementsUpdate(msg.tileImprovements);
+        applyTerrainUpdate(msg.tileTerrains);
+
         // Check if a unit we moved has slid to a new position
         if (pendingSlide && prevUnits) {
           const { unitIndex, oldGx, oldGy } = pendingSlide;
@@ -1578,6 +2163,48 @@ const transport = createTransport({
             && document.getElementById('citydialog-overlay').style.display === 'flex') {
           cdCity = mpGameState.cities[cdCityIndex];
           cdRerender();
+        }
+
+        // Combat result notification
+        if (msg.state.combatResult) {
+          const cr = msg.state.combatResult;
+          if (cr.type === 'capture') {
+            showOverlayMessage(`${cr.cityName} captured!`);
+          } else {
+            const atkName = UNIT_NAMES[cr.attacker] || 'Unit';
+            const defName = UNIT_NAMES[cr.defender] || 'Unit';
+            if (cr.type === 'atkWin') {
+              showOverlayMessage(`${atkName} defeated ${defName}`);
+            } else {
+              showOverlayMessage(`${defName} repelled ${atkName}`);
+            }
+          }
+        }
+
+        // Tech discovery notification — auto-show research picker
+        if (msg.state.discoveredAdvance && msg.state.discoveredAdvance.civSlot === mpCivSlot) {
+          setTimeout(() => showResearchPicker(msg.state.discoveredAdvance.advanceId), 300);
+        }
+
+        // City founded notification — show popup, then open city dialog
+        if (msg.state.cityFounded && msg.state.cityFounded.civSlot === mpCivSlot) {
+          const cf = msg.state.cityFounded;
+          const year = getGameYear(mpGameState.turn?.number || 0);
+          showCityFoundedDialog(cf.name, year, () => {
+            const city = mpGameState.cities[cf.cityIndex];
+            if (city) openCityDialog(city, cf.cityIndex);
+          });
+        }
+
+        // Prompt to pick research at start of turn if nothing selected
+        if (mpGameState.turn.activeCiv === mpCivSlot && !msg.state.discoveredAdvance) {
+          const civ = mpGameState.civs?.[mpCivSlot];
+          if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
+            // Only prompt if we have at least one city
+            if (mpGameState.cities.some(c => c.owner === mpCivSlot && c.size > 0)) {
+              setTimeout(() => showResearchPicker(), 300);
+            }
+          }
         }
         break;
       }
@@ -1910,6 +2537,7 @@ function buildMapDataFromState() {
     gameState: state.gameState || { turnsPassed: state.turn?.number || 0, playerCiv: mpCivSlot ?? 1 },
     validation: state.validation,
     civNames: state.civNames,
+    wonders: state.wonders,
   };
 }
 
@@ -1920,6 +2548,7 @@ async function doRenderFromState(opts = {}) {
 
   populateFowCivSelector(mapData, opts.forceCiv);
   updateTurnUI();
+  updateGameInfo(currentMapData, mpCivSlot);
 
   // Auto-select first movable unit (only on our turn)
   if (mpGameState.turn.activeCiv === mpCivSlot) {
@@ -2036,13 +2665,47 @@ function updateTurnUI() {
   document.getElementById('turn-civ-name').style.color = civColor;
   document.getElementById('turn-number').textContent = `Turn ${mpGameState.turn.number || 0}`;
 
+  // ── Research progress ──
+  const resEl = document.getElementById('research-info');
+  const civ = mpGameState.civs?.[mpCivSlot];
+  if (civ && resEl) {
+    const techId = civ.techBeingResearched;
+    if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
+      const current = civ.researchProgress || 0;
+      const cost = calcResearchCost(mpGameState, mpCivSlot);
+      // Compute science per turn from all owned cities
+      let sciPerTurn = 0;
+      if (mpMapBase) {
+        for (let ci = 0; ci < mpGameState.cities.length; ci++) {
+          const city = mpGameState.cities[ci];
+          if (city.owner === mpCivSlot && city.size > 0) {
+            const { sci } = calcCityTrade(city, ci, mpGameState, mpMapBase);
+            sciPerTurn += sci;
+          }
+        }
+      }
+      const remaining = cost - current;
+      const turnsLeft = sciPerTurn > 0 ? Math.ceil(remaining / sciPerTurn) : '?';
+      resEl.textContent = `${ADVANCE_NAMES[techId]}: ${current}/${cost} (${turnsLeft} Turns)`;
+    } else {
+      resEl.textContent = 'No research';
+    }
+  }
+
   const endBtn = document.getElementById('end-turn-btn');
   const waitMsg = document.getElementById('turn-waiting');
   if (isMyTurn) {
     endBtn.style.display = '';
     waitMsg.style.display = 'none';
+    // Flash End Turn button when no movable units remain
+    if (findNextMovableUnit(-1) == null) {
+      endBtn.classList.add('flash');
+    } else {
+      endBtn.classList.remove('flash');
+    }
   } else {
     endBtn.style.display = 'none';
+    endBtn.classList.remove('flash');
     waitMsg.style.display = '';
   }
 }
@@ -2073,11 +2736,20 @@ document.getElementById('end-turn-btn').addEventListener('click', () => {
   transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
 });
 
+// Research info click → open research picker
+document.getElementById('research-info').addEventListener('click', () => {
+  if (!mpGameState || mpCivSlot == null) return;
+  if (mpGameState.turn.activeCiv !== mpCivSlot) return;
+  showResearchPicker();
+});
+
 // ── Multiplayer keyboard input ──
 window.addEventListener('keydown', e => {
   if (!mpGameState || mpGameState.turn.activeCiv !== mpCivSlot) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (currentScene !== 'game') return;
+  // Don't process game keys when unit menu is open (menu has its own handlers)
+  if (unitMenu.classList.contains('visible')) return;
 
   // Tab: cycle to next movable unit
   if (e.key === 'Tab') {
@@ -2090,9 +2762,14 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  // Enter: end turn if no movable units remain
+  // Enter: end turn if no movable units remain AND no dialogs open
   if (e.key === 'Enter') {
     e.preventDefault();
+    if (document.getElementById('citydialog-overlay')?.style.display === 'flex') return;
+    if (document.getElementById('city-founded-dialog')) return;
+    if (document.getElementById('confirm-dialog')) return;
+    if (document.getElementById('research-picker')) return;
+    if (document.getElementById('rate-sliders')) return;
     if (findNextMovableUnit(-1) == null) {
       transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
     }
@@ -2113,6 +2790,114 @@ window.addEventListener('keydown', e => {
         });
       }
     }
+    return;
+  }
+
+  // F: fortify unit
+  if (e.key === 'f' && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'fortify' } });
+    }
+    return;
+  }
+
+  // S: sentry
+  if (e.key === 's' && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'sentry' } });
+    }
+    return;
+  }
+
+  // Space: skip turn for this unit
+  if (e.key === ' ') {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'skip' } });
+    }
+    return;
+  }
+
+  // Shift+D: disband unit
+  if (e.key === 'D' && e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u) {
+        showConfirmDialog(`Disband ${UNIT_NAMES[u.type]}?`, () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'disband' } });
+        });
+      }
+    }
+    return;
+  }
+
+  // R: build road (settler/engineer)
+  if (e.key === 'r' && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'road' } });
+      }
+    }
+    return;
+  }
+
+  // I: build irrigation (settler/engineer)
+  if (e.key === 'i' && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'irrigation' } });
+      }
+    }
+    return;
+  }
+
+  // M: build mine (settler/engineer)
+  if (e.key === 'm' && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'mine' } });
+      }
+    }
+    return;
+  }
+
+  // O: build fortress (settler/engineer)
+  if (e.key === 'o' && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'fortress' } });
+      }
+    }
+    return;
+  }
+
+  // P: clean pollution (settler/engineer)
+  if (e.key === 'p' && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'pollution' } });
+      }
+    }
+    return;
+  }
+
+  // Shift+T: open tax rate sliders
+  if ((e.key === 't' || e.key === 'T') && e.shiftKey) {
+    e.preventDefault();
+    showRateSliders();
     return;
   }
 
@@ -2147,13 +2932,18 @@ function findFirstOwnUnit() {
   return null;
 }
 
+const BUSY_ORDERS = new Set([
+  'fortifying', 'fortified', 'sentry', 'sleep',
+  'road', 'railroad', 'irrigation', 'mine', 'fortress', 'airbase', 'pollution',
+]);
+
 function findNextMovableUnit(afterIndex) {
   if (!mpGameState) return null;
   const units = mpGameState.units;
   for (let i = 0; i < units.length; i++) {
     const idx = (afterIndex + 1 + i) % units.length;
     const u = units[idx];
-    if (u.owner === mpCivSlot && u.movesLeft > 0 && u.gx >= 0) return idx;
+    if (u.owner === mpCivSlot && u.movesLeft > 0 && u.gx >= 0 && !BUSY_ORDERS.has(u.orders)) return idx;
   }
   return null;
 }
@@ -2218,6 +3008,36 @@ function applyVisibilityUpdate(tileVisibility) {
   }
   cachedLosData = null;
   invalidateFowCanvases();
+}
+
+function applyTerrainUpdate(tileTerrains) {
+  if (!tileTerrains || !mpMapBase?.tileData) return;
+  for (let i = 0; i < tileTerrains.length && i < mpMapBase.tileData.length; i++) {
+    mpMapBase.tileData[i].terrain = tileTerrains[i];
+  }
+}
+
+function applyImprovementsUpdate(tileImprovements) {
+  if (!tileImprovements || !mpMapBase?.tileData) return;
+  // Lazy import — improvementFromByte already available via defs
+  for (let i = 0; i < tileImprovements.length && i < mpMapBase.tileData.length; i++) {
+    const b = tileImprovements[i];
+    const irr = !!(b & 0x04);
+    const mine = !!(b & 0x08);
+    const city = !!(b & 0x02);
+    const fort = !!(b & 0x40);
+    mpMapBase.tileData[i].improvements = {
+      city,
+      irrigation: irr,
+      mining: mine,
+      road: !!(b & 0x10),
+      railroad: !!(b & 0x20),
+      fortress: fort,
+      pollution: !!(b & 0x80),
+      farmland: irr && mine,
+      airbase: city && fort,
+    };
+  }
 }
 
 // ── Unit slide animation ──
@@ -2310,6 +3130,7 @@ function actionToMenuItem(va, unitIdx) {
     case MOVE_UNIT:
       return {
         label: `Move ${name}`,
+        isDefault: true,
         action: () => {
           pendingSlide = { unitIndex: unitIdx, oldGx: u.gx, oldGy: u.gy };
           transport.sendRaw({
@@ -2335,10 +3156,81 @@ function actionToMenuItem(va, unitIdx) {
   }
 }
 
+/**
+ * Build order menu items for a unit on its own tile.
+ * Validates each possible order and only includes valid ones.
+ */
+function buildOrderMenuItems(unitIdx) {
+  const u = mpGameState.units[unitIdx];
+  if (!u || u.gx < 0) return [];
+  const items = [];
+  const civSlot = u.owner;
+
+  // Wake Up (only if unit has active orders)
+  if (u.orders && u.orders !== 'none') {
+    const err = validateAction(mpGameState, mpMapBase, { type: UNIT_ORDER, unitIndex: unitIdx, order: 'wake' }, civSlot);
+    if (!err) items.push({ label: 'Wake Up', action: () => transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: unitIdx, order: 'wake' } }) });
+  }
+
+  // Unit orders
+  const unitOrders = [
+    { order: 'fortify', label: 'Fortify' },
+    { order: 'sentry', label: 'Sentry' },
+    { order: 'skip', label: 'Skip Turn' },
+  ];
+  for (const { order, label } of unitOrders) {
+    const err = validateAction(mpGameState, mpMapBase, { type: UNIT_ORDER, unitIndex: unitIdx, order }, civSlot);
+    if (!err) items.push({ label, action: () => transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: unitIdx, order } }) });
+  }
+
+  // Worker orders (settlers/engineers only)
+  if (u.type === 0 || u.type === 1) {
+    const workerOrders = [
+      { order: 'road', label: 'Build Road' },
+      { order: 'railroad', label: 'Build Railroad' },
+      { order: 'irrigation', label: 'Build Irrigation' },
+      { order: 'mine', label: 'Build Mine' },
+      { order: 'fortress', label: 'Build Fortress' },
+      { order: 'pollution', label: 'Clean Pollution' },
+    ];
+    const validWorker = [];
+    for (const { order, label } of workerOrders) {
+      const err = validateAction(mpGameState, mpMapBase, { type: WORKER_ORDER, unitIndex: unitIdx, order }, civSlot);
+      if (!err) validWorker.push({ label, action: () => transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: unitIdx, order } }) });
+    }
+    if (validWorker.length > 0) {
+      items.push({ separator: true });
+      items.push(...validWorker);
+    }
+  }
+
+  // Disband (always available for live units)
+  items.push({ separator: true });
+  items.push({
+    label: 'Disband',
+    action: () => {
+      showConfirmDialog(`Disband ${UNIT_NAMES[u.type]}?`, () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: unitIdx, order: 'disband' } });
+      });
+    },
+  });
+
+  return items;
+}
+
+let unitMenuDefaultAction = null; // the default action (Enter key triggers this)
+let unitMenuHighlightIdx = -1;   // index of highlighted button (for keyboard nav)
+let unitMenuButtons = [];        // all actionable buttons in current menu
+
 function showUnitMenu(clientX, clientY, items) {
   unitMenu.innerHTML = '';
   unitMenu.classList.remove('visible');
+  unitMenuDefaultAction = null;
+  unitMenuHighlightIdx = -1;
+  unitMenuButtons = [];
   if (items.length === 0) return;
+
+  let firstDefault = null;
 
   for (const item of items) {
     if (item.separator) {
@@ -2376,6 +3268,20 @@ function showUnitMenu(clientX, clientY, items) {
       item.action();
     });
     unitMenu.appendChild(btn);
+    unitMenuButtons.push({ btn, action: item.action });
+
+    // Mark isDefault items (e.g. Move) or use the first actionable item
+    if (item.isDefault && !firstDefault) {
+      firstDefault = { btn, action: item.action, idx: unitMenuButtons.length - 1 };
+    }
+  }
+
+  // Highlight the default item (or first item if none marked)
+  const def = firstDefault || (unitMenuButtons.length > 0 ? { ...unitMenuButtons[0], idx: 0 } : null);
+  if (def) {
+    unitMenuDefaultAction = def.action;
+    unitMenuHighlightIdx = def.idx;
+    def.btn.classList.add('unit-menu-highlight');
   }
 
   // Position: keep menu within viewport bounds
@@ -2393,6 +3299,9 @@ function showUnitMenu(clientX, clientY, items) {
 function hideUnitMenu() {
   unitMenu.classList.remove('visible');
   unitMenu.innerHTML = '';
+  unitMenuDefaultAction = null;
+  unitMenuHighlightIdx = -1;
+  unitMenuButtons = [];
 }
 
 // Dismiss on click/touch outside or Escape
@@ -2405,8 +3314,34 @@ window.addEventListener('pointerdown', e => {
   hideUnitMenu();
 });
 window.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && unitMenu.classList.contains('visible')) {
+  if (!unitMenu.classList.contains('visible')) return;
+  if (e.key === 'Escape') { hideUnitMenu(); e.preventDefault(); return; }
+
+  // Enter: execute highlighted/default item
+  if (e.key === 'Enter' && unitMenuDefaultAction) {
+    e.preventDefault();
+    const action = unitMenuDefaultAction;
     hideUnitMenu();
+    action();
+    return;
+  }
+
+  // Arrow Up/Down: navigate menu items
+  if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && unitMenuButtons.length > 0) {
+    e.preventDefault();
+    // Remove old highlight
+    if (unitMenuHighlightIdx >= 0) unitMenuButtons[unitMenuHighlightIdx].btn.classList.remove('unit-menu-highlight');
+    // Move index
+    if (e.key === 'ArrowDown') {
+      unitMenuHighlightIdx = (unitMenuHighlightIdx + 1) % unitMenuButtons.length;
+    } else {
+      unitMenuHighlightIdx = (unitMenuHighlightIdx - 1 + unitMenuButtons.length) % unitMenuButtons.length;
+    }
+    // Apply new highlight
+    unitMenuButtons[unitMenuHighlightIdx].btn.classList.add('unit-menu-highlight');
+    unitMenuDefaultAction = unitMenuButtons[unitMenuHighlightIdx].action;
+    unitMenuButtons[unitMenuHighlightIdx].btn.scrollIntoView({ block: 'nearest' });
+    return;
   }
 });
 

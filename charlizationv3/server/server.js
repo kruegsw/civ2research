@@ -529,6 +529,11 @@ wss.on("connection", (ws) => {
 
         // Broadcast filtered state to each client
         sendGameStateToAll(actionRoomId, room);
+
+        // Clear one-shot notifications after broadcast
+        delete room.gameState.discoveredAdvance;
+        delete room.gameState.combatResult;
+        delete room.gameState.cityFounded;
         break;
       }
 
@@ -621,6 +626,14 @@ function sendGameStateToAll(roomId, room) {
       state: statePayload,
       // Send updated visibility data (tileData byte[4] mutated by reducer)
       tileVisibility: room.mapBase.tileData.map(t => t.visibility),
+      // Send updated tile data (improvements + terrain, mutated by worker orders)
+      tileImprovements: room.mapBase.tileData.map(t => {
+        const imp = t.improvements;
+        return (imp.city ? 0x02 : 0) | (imp.irrigation ? 0x04 : 0) | (imp.mining ? 0x08 : 0) |
+               (imp.road ? 0x10 : 0) | (imp.railroad ? 0x20 : 0) | (imp.fortress ? 0x40 : 0) |
+               (imp.pollution ? 0x80 : 0);
+      }),
+      tileTerrains: room.mapBase.tileData.map(t => t.terrain),
     }));
   }
 }
@@ -652,6 +665,12 @@ function buildStatePayload(room, civSlot) {
     header: gs.header,
     gameState: gs.gameState,
     validation: gs.validation,
+    wonders: gs.wonders,
+    difficulty: gs.difficulty,
+    barbarianActivity: gs.barbarianActivity,
+    discoveredAdvance: gs.discoveredAdvance,
+    combatResult: gs.combatResult,
+    cityFounded: gs.cityFounded,
   };
 }
 

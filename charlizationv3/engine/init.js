@@ -7,7 +7,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { createAccessors } from './state.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES, WONDER_NAMES } from './defs.js';
 import { updateVisibility } from './visibility.js';
 
 /**
@@ -54,6 +54,9 @@ export function initFromSav(parsed, seatList) {
     version: 0,
     // Seat→civ mapping: seat index maps to civ slot
     seatCivMap: buildSeatCivMap(seatList, civsAlive),
+    wonders: parsed.gameState?.wonders || initWonders(),
+    difficulty: parsed.gameState?.difficulty || 'chieftain',
+    barbarianActivity: parsed.gameState?.barbarianActivity || 'normal',
     // Extra fields renderers need
     unitBySaveIndex: parsed.unitBySaveIndex,
     allUnits: parsed.allUnits,
@@ -131,6 +134,9 @@ export function initNewGame(mapResult, seatList) {
     playerCiv: 1,
     mapRevealed: false,
     turn: { number: 0, activeCiv: 1 },
+    wonders: initWonders(),
+    difficulty: 'chieftain',
+    barbarianActivity: 'normal',
     version: 0,
     seatCivMap,
     unitBySaveIndex: null,
@@ -193,6 +199,13 @@ function findSettlerPlacements(mapBase, count) {
 }
 
 /**
+ * Initialize empty wonders array (28 wonders, all unbuilt).
+ */
+function initWonders() {
+  return Array.from({ length: WONDER_NAMES.length }, () => ({ cityIndex: null, destroyed: false }));
+}
+
+/**
  * Build initial civs array for a new game.
  * Default slot→civ: slot 1=Romans(0), slot 2=Babylonians(1), slot 3=Germans(2), etc.
  * This matches Civ2's default game setup (LEADERS.TXT order).
@@ -207,6 +220,8 @@ function buildInitialCivs(seatList) {
       government: i === 0 ? 'anarchy' : 'despotism',
       treasury: i === 0 ? 0 : 50,
       scienceRate: 5, taxRate: 5, luxuryRate: 0,
+      researchProgress: 0,
+      techBeingResearched: 0xFF, // none selected
       rulesCivNumber,
     });
   }

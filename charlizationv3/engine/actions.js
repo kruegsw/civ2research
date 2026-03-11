@@ -25,11 +25,30 @@ export const SET_WORKERS = 'SET_WORKERS';
 //   workedTiles: number[] (tile indices 0-19), specialists: string[] ('entertainer'|'taxman'|'scientist')
 //   Invariant: workedTiles.length + specialists.length === city.size
 
-// ── Future action types (not yet implemented) ──
-// export const FORTIFY_UNIT    = 'FORTIFY_UNIT';
-// export const DISBAND_UNIT    = 'DISBAND_UNIT';
-// export const CHANGE_PRODUCTION = 'CHANGE_PRODUCTION';
-// export const BUY_PRODUCTION  = 'BUY_PRODUCTION';
-// export const SET_RATES       = 'SET_RATES';
-// export const SET_RESEARCH    = 'SET_RESEARCH';
-// export const NEGOTIATE       = 'NEGOTIATE';
+export const CHANGE_PRODUCTION = 'CHANGE_PRODUCTION';
+//   { type: 'CHANGE_PRODUCTION', cityIndex, item: { type: 'unit'|'building'|'wonder', id } }
+//   Change what a city is producing. Cross-type switch applies 50% shield penalty.
+
+export const RUSH_BUY = 'RUSH_BUY';
+//   { type: 'RUSH_BUY', cityIndex }
+//   Pay gold to instantly complete production in a city.
+
+export const SELL_BUILDING = 'SELL_BUILDING';
+//   { type: 'SELL_BUILDING', cityIndex, buildingId }
+//   Sell a building for gold refund. One sale per city per turn.
+
+export const CHANGE_RATES = 'CHANGE_RATES';
+//   { type: 'CHANGE_RATES', scienceRate, taxRate }
+//   Change civ's tax/luxury/science rate sliders. luxuryRate = 10 - scienceRate - taxRate.
+
+export const SET_RESEARCH = 'SET_RESEARCH';
+//   { type: 'SET_RESEARCH', advanceId }
+//   Choose which tech to research. advanceId = 0-88, or -1 to clear.
+
+export const UNIT_ORDER = 'UNIT_ORDER';
+//   { type: 'UNIT_ORDER', unitIndex, order: 'fortify'|'sentry'|'sleep'|'skip'|'disband' }
+//   Set a unit's standing order.
+
+export const WORKER_ORDER = 'WORKER_ORDER';
+//   { type: 'WORKER_ORDER', unitIndex, order: 'road'|'railroad'|'irrigation'|'mine'|'fortress'|'airbase'|'pollution' }
+//   Settler/Engineer begins building an improvement. Progress tracked in workTurns.

@@ -189,15 +189,17 @@ const Civ2Renderer = {
       sprites.resources[tid * 2 + 2] = this.extractSprite(t1Ctx, 3*65+1, tid*33+1, 64, 32, T1R, false);
     }
 
-    // Roads: TERRAIN1 row 11, cols 1-8 (8 directional segments)
+    // Roads: TERRAIN1 row 11, col 0 = lone/isolated road, cols 1-8 = 8 directional segments
     // Direction: 0=NE, 1=E, 2=SE, 3=S, 4=SW, 5=W, 6=NW, 7=N
     sprites.roads = [];
+    sprites.roadLone = this.extractSprite(t1Ctx, 0*65+1, 11*33+1, 64, 32, T1, true);
     for (let i = 0; i < 8; i++) {
       sprites.roads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 11*33+1, 64, 32, T1, true);
     }
 
-    // Railroads: TERRAIN1 row 12, cols 1-8
+    // Railroads: TERRAIN1 row 12, col 0 = lone railroad, cols 1-8 = 8 directional segments
     sprites.railroads = [];
+    sprites.railroadLone = this.extractSprite(t1Ctx, 0*65+1, 12*33+1, 64, 32, T1, true);
     for (let i = 0; i < 8; i++) {
       sprites.railroads[i] = this.extractSprite(t1Ctx, (i+1)*65+1, 12*33+1, 64, 32, T1, true);
     }
@@ -451,7 +453,7 @@ const Civ2Renderer = {
       if (u.gx < 0) continue; // dead unit
       combos.add(u.type + '-' + u.owner);
       owners.add(u.owner);
-      if (u.orders === 'sleep') sentryTypes.add(u.type);
+      if (u.orders === 'sleep' || u.orders === 'sentry') sentryTypes.add(u.type);
     }
 
     // Recolor unit sprites per (type, owner)
@@ -682,6 +684,7 @@ const Civ2Renderer = {
         }
         if (imp.road || imp.railroad || imp.city) {
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
+          let roadSegs = 0, rrSegs = 0;
           for (let di = 0; di < 8; di++) {
             const [nx, ny] = nb[DIR_KEYS[di]];
             let nimp = getImprovements(nx, ny);
@@ -689,8 +692,13 @@ const Civ2Renderer = {
             if (fowEnabled && isDimmed(nx, ny)) {
               nimp = mapData.getKnownImprovements(nx, ny, options.fowCiv);
             }
-            if ((imp.road || imp.city) && (nimp.road || nimp.city)) ctx.drawImage(roads[di], px, py);
-            if ((imp.railroad || imp.city) && (nimp.railroad || nimp.city)) ctx.drawImage(railroads[di], px, py);
+            if ((imp.road || imp.city) && (nimp.road || nimp.city)) { ctx.drawImage(roads[di], px, py); roadSegs++; }
+            if ((imp.railroad || imp.city) && (nimp.railroad || nimp.city)) { ctx.drawImage(railroads[di], px, py); rrSegs++; }
+          }
+          // Draw lone/isolated sprite when no connected neighbors (skip for cities)
+          if (!imp.city) {
+            if ((imp.road) && roadSegs === 0) ctx.drawImage(sprites.roadLone, px, py);
+            if ((imp.railroad) && rrSegs === 0) ctx.drawImage(sprites.railroadLone, px, py);
           }
         }
 
@@ -1072,7 +1080,7 @@ const Civ2Renderer = {
           sprites.unitColored[cacheKey] = renderer._recolorUnit(template, color);
         }
 
-        const unitSentry = (u.orders === 'sleep');
+        const unitSentry = (u.orders === 'sleep' || u.orders === 'sentry');
         let unitSprite = sprites.unitColored[cacheKey];
         if (unitSentry) {
           const dimKey = u.type + '-dimmed';

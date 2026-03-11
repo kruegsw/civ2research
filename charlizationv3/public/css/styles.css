@@ -663,6 +663,10 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+.unit-menu-highlight {
+  background: #0a246a;
+  color: #fff;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    Turn UI (multiplayer game)
@@ -691,10 +695,24 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 #end-turn-btn {
   width: 100%; padding: 6px 16px; font-size: 14px;
 }
+#end-turn-btn.flash {
+  color: transparent;
+  animation: endTurnFlash 0.8s step-start infinite;
+}
+@keyframes endTurnFlash {
+  0%, 100% { color: inherit; }
+  50% { color: transparent; }
+}
 #turn-waiting {
   font-size: 12px; color: #f39c12;
   animation: pulse 1.5s ease-in-out infinite;
 }
+#research-info {
+  font-size: 11px; color: #aac; text-align: center;
+  font-family: 'Times New Roman', serif;
+  padding: 2px 0;
+}
+#research-info:hover { color: #ddf; }
 
 /* ═══════════════════════════════════════════════════════════════════
    Responsive
