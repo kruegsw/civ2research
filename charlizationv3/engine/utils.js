@@ -54,3 +54,8 @@ export function cityHasActiveWonder(gameState, cityIndex, wonderIndex) {
 export function getGovernment(city, gameState) {
   return gameState.civs?.[city.owner]?.government || 'despotism';
 }
+
+/** Wrap a coordinate for horizontal map wrapping. */
+export function wrapGx(gx, mw) {
+  return ((gx % mw) + mw) % mw;
+}

@@ -231,29 +231,12 @@ export function initEvents(canvas, vp, fns) {
     let my = localY / vp.scale + vp.y;
     if (vp.wraps && vp.wrapW > 0) mx = ((mx % vp.wrapW) + vp.wrapW) % vp.wrapW;
 
-    const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
-
     const fowEnabled = document.getElementById('fow-toggle').checked && !md.mapRevealed;
     const fowCivVal = document.getElementById('fow-civ').value;
     const fowCiv = fowCivVal !== '' ? parseInt(fowCivVal) : null;
     const fowBit = (fowEnabled && fowCiv != null) ? (1 << fowCiv) : 0;
 
-    const approxGy = Math.floor(my / (TH >> 1));
-    let found = null;
-
-    for (let gy = Math.max(0, approxGy - 1); gy <= Math.min(md.mh - 1, approxGy + 1); gy++) {
-      for (let gx = 0; gx < md.mw; gx++) {
-        const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
-        const py = gy * (TH >> 1);
-        if (mx >= px && mx < px + TW && my >= py && my < py + TH) {
-          const dx = mx - px - TW / 2;
-          const dy = my - py - TH / 2;
-          if (Math.abs(dx) / (TW / 2) + Math.abs(dy) / (TH / 2) <= 1) {
-            found = { gx, gy };
-          }
-        }
-      }
-    }
+    const found = Civ2Renderer.findTileAtMap(mx, my, md.mw, md.mh);
 
     if (found) {
       const { gx, gy } = found;

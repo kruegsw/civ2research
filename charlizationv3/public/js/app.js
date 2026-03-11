@@ -19,6 +19,7 @@ import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_B
 import { calcRushBuyCost } from '../engine/happiness.js';
 import { getProductionCost, calcCityTrade } from '../engine/production.js';
 import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
+import { wrapGx } from '../engine/utils.js';
 
 const files = { sav: null, t1: null, t2: null, cities: null, units: null, icons: null, people: null, cityGif: null };
 // Pre-rendered offscreen canvases for instant toggle switching
@@ -717,25 +718,7 @@ function findTileAt(clientX, clientY) {
   let mx = localX / vp.scale + vp.x;
   let my = localY / vp.scale + vp.y;
   if (vp.wraps && vp.wrapW > 0) mx = ((mx % vp.wrapW) + vp.wrapW) % vp.wrapW;
-
-  const md = currentMapData;
-  const TW = Civ2Renderer.TW, TH = Civ2Renderer.TH;
-  const approxGy = Math.floor(my / (TH >> 1));
-
-  for (let gy = Math.max(0, approxGy - 1); gy <= Math.min(md.mh - 1, approxGy + 1); gy++) {
-    for (let gx = 0; gx < md.mw; gx++) {
-      const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
-      const py = gy * (TH >> 1);
-      if (mx >= px && mx < px + TW && my >= py && my < py + TH) {
-        const dx = mx - px - TW / 2;
-        const dy = my - py - TH / 2;
-        if (Math.abs(dx) / (TW / 2) + Math.abs(dy) / (TH / 2) <= 1) {
-          return { gx, gy };
-        }
-      }
-    }
-  }
-  return null;
+  return Civ2Renderer.findTileAtMap(mx, my, currentMapData.mw, currentMapData.mh);
 }
 
 function findCityAt(gx, gy) {
@@ -1107,9 +1090,7 @@ function handleWorkerChange(result) {
   if (result.action === 'toggleTile') {
     const i = result.tileIndex;
     // Check if tile is valid (not ocean, in bounds)
-    const wgx = mpMapBase.wraps
-      ? ((result.tileGx % mpMapBase.mw) + mpMapBase.mw) % mpMapBase.mw
-      : result.tileGx;
+    const wgx = mpMapBase.wraps ? wrapGx(result.tileGx, mpMapBase.mw) : result.tileGx;
     if (result.tileGy < 0 || result.tileGy >= mpMapBase.mh || wgx < 0 || wgx >= mpMapBase.mw) return;
     const ter = mpMapBase.getTerrain(wgx, result.tileGy);
     if (ter === 10) return; // can't work ocean
@@ -1137,7 +1118,7 @@ function handleWorkerChange(result) {
       const parT = ((city.gy + ddy) % 2 + 2) % 2;
       const tgx = city.gx + ((parC + ddx - parT) >> 1);
       const tgy = city.gy + ddy;
-      const wgx = mpMapBase.wraps ? ((tgx % mpMapBase.mw) + mpMapBase.mw) % mpMapBase.mw : tgx;
+      const wgx = mpMapBase.wraps ? wrapGx(tgx, mpMapBase.mw) : tgx;
       if (tgy < 0 || tgy >= mpMapBase.mh) continue;
       const ter = mpMapBase.getTerrain(wgx, tgy);
       if (ter < 0 || ter > 10 || ter === 10) continue;
@@ -1198,7 +1179,7 @@ function findBestUnworkedTile(city, workedTiles) {
     const parT = ((city.gy + ddy) % 2 + 2) % 2;
     const tgx = city.gx + ((parC + ddx - parT) >> 1);
     const tgy = city.gy + ddy;
-    const wgx = mpMapBase.wraps ? ((tgx % mpMapBase.mw) + mpMapBase.mw) % mpMapBase.mw : tgx;
+    const wgx = mpMapBase.wraps ? wrapGx(tgx, mpMapBase.mw) : tgx;
     if (tgy < 0 || tgy >= mpMapBase.mh || wgx < 0 || wgx >= mpMapBase.mw) continue;
     const ter = mpMapBase.getTerrain(wgx, tgy);
     if (ter < 0 || ter > 10 || ter === 10) continue; // skip ocean/invalid

@@ -1743,6 +1743,29 @@ const Civ2Renderer = {
     return 3;
   },
 
+  /**
+   * Find which tile (gx, gy) a map-space point (mx, my) falls on.
+   * Uses isometric diamond hit-test. Returns { gx, gy } or null.
+   */
+  findTileAtMap(mx, my, mw, mh) {
+    const TW = this.TW, TH = this.TH;
+    const approxGy = Math.floor(my / (TH >> 1));
+    for (let gy = Math.max(0, approxGy - 1); gy <= Math.min(mh - 1, approxGy + 1); gy++) {
+      for (let gx = 0; gx < mw; gx++) {
+        const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
+        const py = gy * (TH >> 1);
+        if (mx >= px && mx < px + TW && my >= py && my < py + TH) {
+          const dx = mx - px - TW / 2;
+          const dy = my - py - TH / 2;
+          if (Math.abs(dx) / (TW / 2) + Math.abs(dy) / (TH / 2) <= 1) {
+            return { gx, gy };
+          }
+        }
+      }
+    }
+    return null;
+  },
+
   // Yield to event loop for UI updates
   _yield() { return new Promise(r => setTimeout(r, 5)); }
 };

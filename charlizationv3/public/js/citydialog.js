@@ -1,8 +1,10 @@
 import { Civ2Renderer } from './renderer.js';
 import {
-  COMMODITY_NAMES, ORDER_NAMES, WONDER_NAMES, IMPROVE_NAMES,
+  CIV_COLORS, COMMODITY_NAMES, WONDER_NAMES, IMPROVE_NAMES,
   UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
   SETTLER_TYPES, NON_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
+  SEA_COMBAT_TYPES, SEA_TRANSPORT_TYPES, FANATIC_TYPES,
+  SETTLER_FOOD_COST, COSMIC_FREE_SUPPORT,
   GOVT_CORRUPTION_DIVISOR, GOVT_FACTOR, GOVT_WLTKD_BUMP,
   DIFFICULTY_KEYS,
 } from '../engine/defs.js';
@@ -32,29 +34,8 @@ import { getGameYearFromMap } from '../engine/year.js';
 
 const Civ2CityDialog = {
 
-  // Shared constants from engine/defs.js (re-exported for internal this.* references)
-  IMPROVE_NAMES,
-  WONDER_NAMES,
-  COMMODITY_NAMES,
-  ORDER_NAMES,
-  SETTLER_TYPES,
-  NON_COMBAT_TYPES,
-  // Sea combat unit types (domain=1, role!=3): always abroad regardless of location
-  SEA_COMBAT_TYPES: new Set([35, 36, 37, 38, 39, 40, 41]),
-  // Sea transport types (domain=1, role=3): never abroad
-  SEA_TRANSPORT_TYPES: new Set([32, 33, 34]),
-  SUPPORT_EXEMPT_TYPES,
-  // Fanatic types (flag 0x08): free shield support under Fundamentalism
-  FANATIC_TYPES: new Set([8]),
-  // Settler food cost per turn by government string
-  // Anarchy/Despotism/Monarchy: 1 food (DAT_0064bccd). Communism+: 2 food (DAT_0064bcce)
-  SETTLER_FOOD_COST: {
-    anarchy: 1, despotism: 1, monarchy: 1, communism: 2,
-    fundamentalism: 2, republic: 2, democracy: 2,
-  },
-  // Standard RULES.TXT wonder obsolescence tech IDs (wonder index → tech ID that obsoletes it)
-  // Only populated for wonders that CAN become obsolete. Absent = never obsolete.
-  // Obsolescence check: if ANY civ has the tech, the wonder is inactive (FUN_00453da0)
+  // Wonder obsolescence tech IDs for display (wonder index → tech ID that obsoletes it)
+  // Different format from engine WONDER_OBSOLETE — only populated for wonders that CAN become obsolete
   WONDER_OBSOLETE_TECH: {
     0: 15,   // Pyramids → Communism
     1: 65,   // Hanging Gardens → Railroad
@@ -68,14 +49,6 @@ const Civ2CityDialog = {
     14: 6,   // Leonardo's Workshop → Automobile
     16: 59,  // Isaac Newton's College → Nuclear Fission
   },
-
-  // Standard COSMIC free support limits per city
-  COSMIC_FREE_SUPPORT: { monarchy: 3, communism: 3, fundamentalism: 10 },
-
-  // Production cost tables from engine/defs.js
-  UNIT_COSTS,
-  IMPROVE_COSTS,
-  WONDER_COSTS,
 
   // ── Game formulas from decompiled civ2.exe (reverse_engineering/Civ2_Game_Formulas.md) ──
 
@@ -284,8 +257,8 @@ const Civ2CityDialog = {
   getProductionName(item) {
     if (!item) return '?';
     if (item.type === 'unit') return Civ2Renderer.UNIT_NAMES[item.id] || `Unit #${item.id}`;
-    if (item.id >= 1 && item.id <= 38) return this.IMPROVE_NAMES[item.id] || `Improvement #${item.id}`;
-    if (item.id >= 39 && item.id <= 66) return this.WONDER_NAMES[item.id - 39] || `Wonder #${item.id}`;
+    if (item.id >= 1 && item.id <= 38) return IMPROVE_NAMES[item.id] || `Improvement #${item.id}`;
+    if (item.id >= 39 && item.id <= 66) return WONDER_NAMES[item.id - 39] || `Wonder #${item.id}`;
     return `Item #${item.id}`;
   },
 
@@ -294,7 +267,7 @@ const Civ2CityDialog = {
     if (city.buildings) {
       for (const id of [...city.buildings].sort((a, b) => a - b)) {
         if (id === 36) continue;  // Capitalization is a production option, not a building
-        const name = this.IMPROVE_NAMES[id] || `#${id}`;
+        const name = IMPROVE_NAMES[id] || `#${id}`;
         result.push({ id, name, isWonder: false });
       }
     }
@@ -302,7 +275,7 @@ const Civ2CityDialog = {
     if (wonders) {
       for (let w = 0; w < 28; w++) {
         if (wonders[w].cityIndex === cityIndex)
-          result.push({ id: w + 39, name: this.WONDER_NAMES[w] || `Wonder #${w}`, isWonder: true });
+          result.push({ id: w + 39, name: WONDER_NAMES[w] || `Wonder #${w}`, isWonder: true });
       }
     }
     return result;
@@ -422,9 +395,9 @@ const Civ2CityDialog = {
 
   _getProductionCost(item) {
     if (!item) return 0;
-    if (item.type === 'unit') return this.UNIT_COSTS[item.id] || 0;
-    if (item.id >= 39 && item.id <= 66) return this.WONDER_COSTS[item.id - 39] || 0;
-    if (item.id >= 1 && item.id <= 38) return this.IMPROVE_COSTS[item.id] || 0;
+    if (item.type === 'unit') return UNIT_COSTS[item.id] || 0;
+    if (item.id >= 39 && item.id <= 66) return WONDER_COSTS[item.id - 39] || 0;
+    if (item.id >= 1 && item.id <= 38) return IMPROVE_COSTS[item.id] || 0;
     return 0;
   },
 
@@ -749,7 +722,7 @@ const Civ2CityDialog = {
       let garrison = 0;
       for (const u of mapData.units) {
         if (u.gx === city.gx && u.gy === city.gy && u.owner === ownerSlot &&
-            !this.NON_COMBAT_TYPES.has(u.type)) {
+            !NON_COMBAT_TYPES.has(u.type)) {
           garrison += (govt === 'communism') ? 2 : 1;  // Communism: each unit counts double
         }
       }
@@ -770,10 +743,10 @@ const Civ2CityDialog = {
       if (penalty !== 0) {
         let abroad = 0;
         for (const u of supported) {
-          if (this.SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
-          if (this.NON_COMBAT_TYPES.has(u.type)) continue;
-          if (this.SEA_TRANSPORT_TYPES.has(u.type)) continue;
-          if (this.SEA_COMBAT_TYPES.has(u.type)) { abroad++; continue; }
+          if (SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
+          if (NON_COMBAT_TYPES.has(u.type)) continue;
+          if (SEA_TRANSPORT_TYPES.has(u.type)) continue;
+          if (SEA_COMBAT_TYPES.has(u.type)) { abroad++; continue; }
           if (this._isUnitAbroad(u, city, mapData)) abroad++;
         }
         if (abroad > 0 && govt === 'republic') abroad--;  // Republic: one free unit abroad
@@ -821,14 +794,14 @@ const Civ2CityDialog = {
       const ov = { food: 0, shield: false, unhappy: 0, unhappyType: 0 };
 
       // Diplomats/traders (role >= 6) are exempt from support — no overlays
-      if (this.SUPPORT_EXEMPT_TYPES.has(unit.type)) {
+      if (SUPPORT_EXEMPT_TYPES.has(unit.type)) {
         overlays.push(ov);
         continue;
       }
 
       // Settler food cost (role 5)
-      if (this.SETTLER_TYPES.has(unit.type)) {
-        ov.food = this.SETTLER_FOOD_COST[government] || 1;
+      if (SETTLER_TYPES.has(unit.type)) {
+        ov.food = SETTLER_FOOD_COST[government] || 1;
       }
 
       // Shield support cost (FUN_004e7d7f logic)
@@ -838,14 +811,14 @@ const Civ2CityDialog = {
           if (unitCounter > city.size) ov.shield = true;
           break;
         case 'monarchy':
-          if (unitCounter > this.COSMIC_FREE_SUPPORT.monarchy) ov.shield = true;
+          if (unitCounter > COSMIC_FREE_SUPPORT.monarchy) ov.shield = true;
           break;
         case 'communism':
-          if (unitCounter > this.COSMIC_FREE_SUPPORT.communism) ov.shield = true;
+          if (unitCounter > COSMIC_FREE_SUPPORT.communism) ov.shield = true;
           break;
         case 'fundamentalism': // fanatics always free
-          if (!this.FANATIC_TYPES.has(unit.type) &&
-              unitCounter > this.COSMIC_FREE_SUPPORT.fundamentalism) ov.shield = true;
+          if (!FANATIC_TYPES.has(unit.type) &&
+              unitCounter > COSMIC_FREE_SUPPORT.fundamentalism) ov.shield = true;
           break;
         default: // republic, democracy: every unit costs
           ov.shield = true;
@@ -854,8 +827,8 @@ const Civ2CityDialog = {
 
       // Military abroad unhappiness — Republic/Democracy only (FUN_004e7eb1 lines 3009-3054)
       // Sea combat units are always abroad; land/air check location vs friendly cities/fortresses
-      if ((government === 'republic' || government === 'democracy') && !this.NON_COMBAT_TYPES.has(unit.type)) {
-        const isSeaCombat = this.SEA_COMBAT_TYPES.has(unit.type);
+      if ((government === 'republic' || government === 'democracy') && !NON_COMBAT_TYPES.has(unit.type)) {
+        const isSeaCombat = SEA_COMBAT_TYPES.has(unit.type);
         const isAbroad = isSeaCombat || this._isUnitAbroad(unit, city, mapData);
         if (isAbroad) {
           const hasWS = this._civHasWonder(mapData, city.owner, 21); // Women's Suffrage
@@ -2225,7 +2198,7 @@ const Civ2CityDialog = {
             const baseSprite = (hasAir && mapSprites.airbaseFull) ? mapSprites.airbaseFull : mapSprites.airbase;
             const variantKey = (hasAir ? 'full-' : 'base-') + ownerIdx;
             if (!mapSprites.airbaseColored[variantKey]) {
-              const color = Civ2Renderer.CIV_COLORS[ownerIdx] || '#c80000';
+              const color = CIV_COLORS[ownerIdx] || '#c80000';
               mapSprites.airbaseColored[variantKey] = Civ2Renderer._recolorUnit(baseSprite, color);
             }
             offCtx.drawImage(mapSprites.airbaseColored[variantKey], sx, sy - 16);
@@ -2251,7 +2224,7 @@ const Civ2CityDialog = {
             if (!template) continue;
             const cacheKey = u.type + '-' + u.owner;
             if (!mapSprites.unitColored[cacheKey]) {
-              const color = Civ2Renderer.CIV_COLORS[u.owner] || '#cccccc';
+              const color = CIV_COLORS[u.owner] || '#cccccc';
               mapSprites.unitColored[cacheKey] = Civ2Renderer._recolorUnit(template, color);
             }
             offCtx.drawImage(mapSprites.unitColored[cacheKey], fp.px - minPx, fp.py - minPy - 16);
@@ -2944,7 +2917,7 @@ const Civ2CityDialog = {
       // Front shield (civ-colored with blacked-out top)
       const frontKey = 'shieldFront-' + u.owner;
       if (!mapSprites.shieldFrontColored[frontKey]) {
-        const color = Civ2Renderer.CIV_COLORS[u.owner] || '#cccccc';
+        const color = CIV_COLORS[u.owner] || '#cccccc';
         mapSprites.shieldFrontColored[frontKey] = Civ2Renderer._recolorUnit(mapSprites.shieldFront, color);
       }
       ctx.drawImage(mapSprites.shieldFrontColored[frontKey], shieldX, shieldY, shW, shH);
@@ -3029,7 +3002,7 @@ const Civ2CityDialog = {
       const cacheKey = `${u.type}-${u.owner}`;
       let colored = mapSprites.unitColored && mapSprites.unitColored[cacheKey];
       if (!colored) {
-        colored = Civ2Renderer._recolorUnit(template, Civ2Renderer.CIV_COLORS[u.owner] || '#ccc');
+        colored = Civ2Renderer._recolorUnit(template, CIV_COLORS[u.owner] || '#ccc');
       }
       const ux = xStart + col * unitW;
       const uy = yStart + row * unitH;
@@ -3188,7 +3161,7 @@ const Civ2CityDialog = {
         const cacheKey = `${u.type}-${u.owner}`;
         let colored = mapSprites.unitColored && mapSprites.unitColored[cacheKey];
         if (!colored) {
-          colored = Civ2Renderer._recolorUnit(template, Civ2Renderer.CIV_COLORS[u.owner] || '#ccc');
+          colored = Civ2Renderer._recolorUnit(template, CIV_COLORS[u.owner] || '#ccc');
         }
         let ux, uy;
         if (garrison.length <= 5) {
@@ -3221,13 +3194,13 @@ const Civ2CityDialog = {
     // Use freshly computed supply/demand (FUN_0043d400 port) when available, fall back to save file values
     ctx.font = '400 12px Arial, sans-serif';
     const formatCommodity = (val) => {
-      if (val < 0) return `(${this.COMMODITY_NAMES[-val]})`;
-      return this.COMMODITY_NAMES[val];
+      if (val < 0) return `(${COMMODITY_NAMES[-val]})`;
+      return COMMODITY_NAMES[val];
     };
     const formatSavedByte = (raw) => {
       const signed = raw > 127 ? raw - 256 : raw;
-      if (signed < 0) return `(${this.COMMODITY_NAMES[-signed]})`;
-      return this.COMMODITY_NAMES[signed];
+      if (signed < 0) return `(${COMMODITY_NAMES[-signed]})`;
+      return COMMODITY_NAMES[signed];
     };
 
     // Use save-file values for display. The game's FUN_0043d400 has an uninitialized stack
@@ -3242,7 +3215,7 @@ const Civ2CityDialog = {
       for (let i = 0; i < Math.min(3, city.tradeRouteCount); i++) {
         const partnerId = city.tradePartnerCityIds[i];
         if (partnerId === 0xFFFF) continue;
-        const commodity = this.COMMODITY_NAMES[city.tradeCommoditiesInRoute[i]] || '?';
+        const commodity = COMMODITY_NAMES[city.tradeCommoditiesInRoute[i]] || '?';
         const partner = this.findCityBySequenceId(mapData, partnerId);
         const partnerName = partner ? partner.name : `City #${partnerId}`;
         this._text(ctx, `${partnerName} ${commodity}: +1`, R.tradeX, R.tradeRoutesY + i * 13, 'rgb(227,83,15)');
@@ -3468,14 +3441,14 @@ const Civ2CityDialog = {
 
     const epoch = mapData.civTechs ? Civ2Renderer._getEpoch(mapData.civTechs[city.owner]) : 0;
     const civData = mapData.civs && mapData.civs[city.owner];
-    const ownerColor = Civ2Renderer.CIV_COLORS[city.owner] || '#fff';
+    const ownerColor = CIV_COLORS[city.owner] || '#fff';
     const specs = this.getSpecialists(city);
     const supported = this.getSupportedUnits(cityIndex, mapData);
 
     // Compute fresh supply/demand (FUN_0043d400 port) and log comparison with save file values
     const computed = this._calcSupplyDemand(city, cityIndex, mapData);
     if (computed) {
-      const N = this.COMMODITY_NAMES;
+      const N = COMMODITY_NAMES;
       const fmt = arr => arr.map(v => v < 0 ? `(${N[-v]})` : N[v]).join(', ');
       const saved = {
         supply: (city.tradeCommoditiesAvail || []).map(r => { const s = r > 127 ? r - 256 : r; return s; }),
