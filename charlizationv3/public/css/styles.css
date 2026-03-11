@@ -644,8 +644,8 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 }
 .unit-menu-sprite {
   image-rendering: pixelated;
-  height: 40px;
-  width: auto;
+  height: 48px;
+  width: 64px;
   flex-shrink: 0;
 }
 .unit-menu-separator {
@@ -696,12 +696,11 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   width: 100%; padding: 6px 16px; font-size: 14px;
 }
 #end-turn-btn.flash {
-  color: transparent;
   animation: endTurnFlash 0.8s step-start infinite;
 }
 @keyframes endTurnFlash {
-  0%, 100% { color: inherit; }
-  50% { color: transparent; }
+  0%, 100% { color: #000; }
+  50% { color: #808080; }
 }
 #turn-waiting {
   font-size: 12px; color: #f39c12;

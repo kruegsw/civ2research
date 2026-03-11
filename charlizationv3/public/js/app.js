@@ -10,7 +10,7 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYear, getGameYearFromMap } from '../engine/year.js';
-import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ORDER_KEYS, ORDER_NAMES } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
@@ -859,18 +859,25 @@ async function handleMapClick(e, isLongPress = false) {
         });
       }
 
-      // Unit selection entries (with sprite thumbnails)
+      // Unit selection entries (with full shield thumbnails)
       if (menuItems.length > 0) menuItems.push({ separator: true });
       menuItems.push({ header: 'Select Unit' });
       for (const idx of tileUnits) {
         const u = mpGameState.units[idx];
-        const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
-        const sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
+        const baseName = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+        const orderDesc = (u.orders && u.orders !== 'none') ? ORDER_NAMES[u.orders] || u.orders : '';
+        const label = orderDesc ? `${baseName} (${orderDesc}) — Wake` : baseName;
+        const sprite = renderUnitThumbnail(u);
         menuItems.push({
-          label: name,
+          label,
           sprite,
           selected: false,
-          action: () => selectUnit(idx),
+          action: () => {
+            selectUnit(idx);
+            if (u.orders && u.orders !== 'none') {
+              transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: idx, order: 'wake' } });
+            }
+          },
         });
       }
 
@@ -919,19 +926,26 @@ async function handleMapClick(e, isLongPress = false) {
         menuItems.push({ separator: true });
       }
 
-      // Section header + unit selection entries (with sprite thumbnails)
+      // Section header + unit selection entries (with full shield thumbnails)
       if (tileUnits.length > 1) {
         menuItems.push({ header: 'Select Unit' });
         for (const idx of tileUnits) {
           const u = mpGameState.units[idx];
-          const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
-          const sprite = mapSprites?.unitColored?.[u.type + '-' + u.owner] || null;
+          const baseName = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+          const orderDesc = (u.orders && u.orders !== 'none') ? ORDER_NAMES[u.orders] || u.orders : '';
+          const label = orderDesc ? `${baseName} (${orderDesc}) — Wake` : baseName;
+          const sprite = renderUnitThumbnail(u);
           const selected = idx === mpSelectedUnit;
           menuItems.push({
-            label: name,
+            label,
             sprite,
             selected,
-            action: () => selectUnit(idx),
+            action: () => {
+              selectUnit(idx);
+              if (u.orders && u.orders !== 'none') {
+                transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: idx, order: 'wake' } });
+              }
+            },
           });
         }
       }
@@ -3121,6 +3135,64 @@ const unitMenu = document.getElementById('unit-menu');
 
 let unitMenuShowTime = 0; // timestamp when menu was last shown
 
+/**
+ * Render a unit sprite with its shield (HP bar + order letter) onto a canvas.
+ * Returns the canvas element suitable for use as a menu sprite thumbnail.
+ */
+function renderUnitThumbnail(unit) {
+  if (!mapSprites) return null;
+  const unitSprite = mapSprites.unitColored?.[unit.type + '-' + unit.owner];
+  if (!unitSprite) return null;
+
+  const scale = 2;
+  const w = 64, h = 48;
+  const c = document.createElement('canvas');
+  c.width = w * scale;
+  c.height = h * scale;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.scale(scale, scale);
+
+  // Draw unit sprite
+  ctx.drawImage(unitSprite, 0, 0);
+
+  // Draw shield
+  const so = mapSprites.shieldOffsets?.[unit.type];
+  const shieldFront = mapSprites.shieldFrontColored?.['shieldFront-' + unit.owner];
+  if (so && shieldFront) {
+    const sx = so.x - 1, sy = so.y - 1;
+
+    // Shadow
+    const shadowDX = (so.x < 32) ? -1 : 1;
+    if (mapSprites.shieldShadow) {
+      ctx.drawImage(mapSprites.shieldShadow, sx + shadowDX, sy + 1);
+    }
+
+    // Shield front
+    ctx.drawImage(shieldFront, sx, sy);
+
+    // HP bar
+    const maxHp = Civ2Renderer.UNIT_MAX_HP[unit.type] || 10;
+    const curHp = Math.max(0, maxHp - (unit.hpLost || 0));
+    const barW = 12, barH = 3;
+    const greenW = Math.floor((curHp / maxHp) * barW);
+    if (greenW > 8) ctx.fillStyle = 'rgb(87,171,39)';
+    else if (greenW > 3) ctx.fillStyle = 'rgb(255,223,79)';
+    else ctx.fillStyle = 'rgb(243,0,0)';
+    ctx.fillRect(sx, sy + 2, greenW, barH);
+
+    // Order letter
+    const orderLetter = ORDER_KEYS[unit.orders] || '-';
+    ctx.font = '13px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#000';
+    ctx.fillText(orderLetter, sx + shieldFront.width / 2, sy + 7);
+  }
+
+  return c;
+}
+
 // Convert a validated action from getValidActions() into a menu item { label, action }
 function actionToMenuItem(va, unitIdx) {
   const u = mpGameState.units[unitIdx];
@@ -3249,14 +3321,8 @@ function showUnitMenu(clientX, clientY, items) {
     const btn = document.createElement('button');
     btn.className = 'unit-menu-item' + (item.selected ? ' unit-menu-selected' : '');
     if (item.sprite) {
-      const img = document.createElement('canvas');
-      const scale = 2;
-      img.width = item.sprite.width * scale;
-      img.height = item.sprite.height * scale;
+      const img = item.sprite;
       img.className = 'unit-menu-sprite';
-      const ctx = img.getContext('2d');
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(item.sprite, 0, 0, img.width, img.height);
       btn.appendChild(img);
     }
     const span = document.createElement('span');
