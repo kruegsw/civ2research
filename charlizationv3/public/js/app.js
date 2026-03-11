@@ -1077,6 +1077,9 @@ function cdHandleClick(clientX, clientY) {
   } else if (result && result.action === 'unitPresent') {
     if (!mpGameState || !mpMapBase || mpCivSlot == null) return;
     showUnitPresentDialog(result.unitIndex);
+  } else if (result && result.action === 'unitSupported') {
+    if (!mpGameState || !mpMapBase || mpCivSlot == null) return;
+    showUnitSupportedDialog(result.unitIndex);
   } else if (result && (result.action === 'toggleTile' || result.action === 'citizenToSpec' || result.action === 'cycleSpec')) {
     if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
     handleWorkerChange(result);
@@ -1409,36 +1412,55 @@ function showConfirmDialog(msg, onConfirm) {
 
   const overlay = document.createElement('div');
   overlay.id = 'confirm-dialog';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+  overlay.className = 'civ2-dialog-overlay';
+
+  const frame = document.createElement('div');
+  frame.className = 'civ2-dialog-frame';
+
+  const titlebar = document.createElement('div');
+  titlebar.className = 'civ2-dialog-titlebar';
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'civ2-dialog-title';
+  titleSpan.textContent = 'Confirm';
+  titlebar.appendChild(titleSpan);
+  frame.appendChild(titlebar);
 
   const panel = document.createElement('div');
-  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font:16px "Times New Roman",serif;color:#333;text-align:center;min-width:200px';
+  panel.className = 'civ2-dialog-panel';
+  panel.style.cssText += ';text-align:center;padding:12px 16px;font:16px "Times New Roman",serif;color:#333';
 
   const text = document.createElement('div');
   text.textContent = msg;
-  text.style.marginBottom = '12px';
+  text.style.cssText = 'text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
   panel.appendChild(text);
+  frame.appendChild(panel);
 
   const btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:12px;justify-content:center';
+  btnRow.className = 'civ2-dialog-btn-row';
 
   const yesBtn = document.createElement('button');
   yesBtn.textContent = 'Yes';
   yesBtn.className = 'civ2-btn';
-  yesBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
-  yesBtn.addEventListener('click', () => { overlay.remove(); onConfirm(); });
+  yesBtn.addEventListener('click', () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); onConfirm(); });
 
   const noBtn = document.createElement('button');
   noBtn.textContent = 'No';
   noBtn.className = 'civ2-btn';
-  noBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
-  noBtn.addEventListener('click', () => overlay.remove());
+  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
+  noBtn.addEventListener('click', dismiss);
 
   btnRow.appendChild(yesBtn);
   btnRow.appendChild(noBtn);
-  panel.appendChild(btnRow);
-  overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  frame.appendChild(btnRow);
+  overlay.appendChild(frame);
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+
+  const keyHandler = e => {
+    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); yesBtn.click(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); }
+  };
+  window.addEventListener('keydown', keyHandler, true);
+
   document.body.appendChild(overlay);
 }
 
@@ -1454,18 +1476,54 @@ function showUnitPresentDialog(unitIndex) {
 
   const overlay = document.createElement('div');
   overlay.id = 'unit-present-dialog';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+  overlay.className = 'civ2-dialog-overlay';
 
+  const frame = document.createElement('div');
+  frame.className = 'civ2-dialog-frame';
+
+  // Title bar
+  const titlebar = document.createElement('div');
+  titlebar.className = 'civ2-dialog-titlebar';
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'civ2-dialog-title';
+  titleSpan.textContent = 'Unit Information';
+  titlebar.appendChild(titleSpan);
+  frame.appendChild(titlebar);
+
+  // Panel with unit info header + radio options
   const panel = document.createElement('div');
-  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font-family:"Times New Roman",Georgia,serif;color:#333;min-width:260px';
+  panel.className = 'civ2-dialog-panel';
 
-  // Title
-  const title = document.createElement('div');
-  title.style.cssText = 'font-size:17px;font-weight:bold;text-align:center;margin-bottom:12px;border-bottom:1px solid #a08060;padding-bottom:8px';
-  title.textContent = unitName + (orderDesc ? ` (${orderDesc})` : '');
-  panel.appendChild(title);
+  // Unit header: sprite on left, name on right
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 4px;margin-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.15)';
 
-  // Radio options
+  const thumb = renderUnitThumbnail(unit);
+  if (thumb) {
+    thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated';
+    header.appendChild(thumb);
+  }
+
+  const civName = mpGameState.civNames?.[unit.owner] || `Civ ${unit.owner}`;
+  const homeCity = (unit.homeCityId != null && unit.homeCityId !== 0xFFFF && unit.homeCityId !== 0x00FF)
+    ? mpGameState.cities?.[unit.homeCityId] : null;
+  const infoDiv = document.createElement('div');
+  infoDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+  const line1 = document.createElement('div');
+  line1.style.fontSize = '18px';
+  line1.textContent = `${civName} ${unitName}`;
+  infoDiv.appendChild(line1);
+  const line2 = document.createElement('div');
+  line2.style.cssText = 'font-size:14px;margin-top:2px';
+  line2.textContent = homeCity ? `Home City: ${homeCity.name}` : 'Home City: NONE';
+  infoDiv.appendChild(line2);
+  header.appendChild(infoDiv);
+
+  panel.appendChild(header);
+
+  const items = document.createElement('div');
+  items.className = 'civ2-dialog-items';
+
   const options = [
     { id: 'nochange', label: 'No Changes', enabled: true },
     { id: 'wake', label: 'Clear Orders', enabled: isOwner && unit.orders && unit.orders !== 'none' },
@@ -1475,43 +1533,43 @@ function showUnitPresentDialog(unitIndex) {
   ];
 
   let selected = 'nochange';
-  const radioEls = [];
 
   for (const opt of options) {
     const row = document.createElement('label');
-    row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:${opt.enabled ? 'pointer' : 'default'};color:${opt.enabled ? '#333' : '#999'}`;
+    row.className = 'civ2-dialog-radio' + (opt.enabled ? '' : ' disabled');
 
     const radio = document.createElement('input');
     radio.type = 'radio';
     radio.name = 'unit-present-action';
     radio.value = opt.id;
-    radio.disabled = !opt.enabled;
     if (opt.id === 'nochange') radio.checked = true;
-    radio.addEventListener('change', () => { if (radio.checked) selected = opt.id; });
-    radioEls.push(radio);
+    radio.addEventListener('change', () => {
+      if (!opt.enabled) { radio.checked = false; return; }
+      if (radio.checked) selected = opt.id;
+    });
 
     const span = document.createElement('span');
     span.textContent = opt.label;
-    span.style.fontSize = '15px';
 
     row.appendChild(radio);
     row.appendChild(span);
-    panel.appendChild(row);
+    items.appendChild(row);
   }
+
+  panel.appendChild(items);
+  frame.appendChild(panel);
 
   // Button row
   const btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:12px;justify-content:center;margin-top:12px;border-top:1px solid #a08060;padding-top:10px';
+  btnRow.className = 'civ2-dialog-btn-row';
 
   const okBtn = document.createElement('button');
   okBtn.textContent = 'OK';
   okBtn.className = 'civ2-btn';
-  okBtn.style.cssText = 'padding:4px 20px;cursor:pointer;font-size:14px';
 
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = 'Cancel';
   cancelBtn.className = 'civ2-btn';
-  cancelBtn.style.cssText = 'padding:4px 20px;cursor:pointer;font-size:14px';
 
   const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
 
@@ -1539,8 +1597,8 @@ function showUnitPresentDialog(unitIndex) {
 
   btnRow.appendChild(okBtn);
   btnRow.appendChild(cancelBtn);
-  panel.appendChild(btnRow);
-  overlay.appendChild(panel);
+  frame.appendChild(btnRow);
+  overlay.appendChild(frame);
   overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
 
   const keyHandler = e => {
@@ -1559,50 +1617,223 @@ function showUnitPresentDialog(unitIndex) {
   document.body.appendChild(overlay);
 }
 
+function showUnitSupportedDialog(unitIndex) {
+  const existing = document.getElementById('unit-supported-dialog');
+  if (existing) existing.remove();
+
+  const unit = mpGameState?.units[unitIndex];
+  if (!unit || unit.gx < 0) return;
+  const isOwner = unit.owner === mpCivSlot;
+  const unitName = UNIT_NAMES[unit.type] || `Unit ${unit.type}`;
+  const civName = mpGameState.civNames?.[unit.owner] || `Civ ${unit.owner}`;
+  const displayX = unit.gx * 2 + (unit.gy % 2);
+  const displayY = unit.gy;
+
+  // Find city at unit location, or nearest city
+  let locationStr;
+  const cityAtUnit = mpGameState.cities?.find(c => c.gx === unit.gx && c.gy === unit.gy);
+  if (cityAtUnit) {
+    locationStr = `Location: ${cityAtUnit.name} (${displayX}, ${displayY})`;
+  } else {
+    let nearestCity = null;
+    let nearestDist = Infinity;
+    const mw = currentMapData?.mw || 1;
+    for (const c of (mpGameState.cities || [])) {
+      if (c.gx < 0) continue;
+      let dx = Math.abs(c.gx - unit.gx);
+      if (vp.wraps) dx = Math.min(dx, mw - dx);
+      const dy = Math.abs(c.gy - unit.gy);
+      const dist = dx * dx + dy * dy;
+      if (dist < nearestDist) { nearestDist = dist; nearestCity = c; }
+    }
+    locationStr = nearestCity
+      ? `Location: (${displayX}, ${displayY}) (Near ${nearestCity.name})`
+      : `Location: (${displayX}, ${displayY})`;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'unit-supported-dialog';
+  overlay.className = 'civ2-dialog-overlay';
+
+  const frame = document.createElement('div');
+  frame.className = 'civ2-dialog-frame';
+
+  // Title bar
+  const titlebar = document.createElement('div');
+  titlebar.className = 'civ2-dialog-titlebar';
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'civ2-dialog-title';
+  titleSpan.textContent = 'Unit Information';
+  titlebar.appendChild(titleSpan);
+  frame.appendChild(titlebar);
+
+  // Panel
+  const panel = document.createElement('div');
+  panel.className = 'civ2-dialog-panel';
+
+  // Unit header: sprite on left, info on right
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 4px;margin-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.15)';
+
+  const thumb = renderUnitThumbnail(unit);
+  if (thumb) {
+    thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated';
+    header.appendChild(thumb);
+  }
+
+  const infoDiv = document.createElement('div');
+  infoDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+  const line1 = document.createElement('div');
+  line1.style.fontSize = '18px';
+  line1.textContent = `${civName} ${unitName}`;
+  infoDiv.appendChild(line1);
+  const line2 = document.createElement('div');
+  line2.style.cssText = 'font-size:14px;margin-top:2px';
+  line2.textContent = locationStr;
+  infoDiv.appendChild(line2);
+  header.appendChild(infoDiv);
+  panel.appendChild(header);
+
+  // Radio options
+  const items = document.createElement('div');
+  items.className = 'civ2-dialog-items';
+
+  const options = [
+    { id: 'nochange', label: 'No Changes', enabled: true },
+    { id: 'center', label: 'Center map on unit', enabled: true },
+    { id: 'disband', label: 'Disband Unit', enabled: isOwner },
+  ];
+
+  let selected = 'nochange';
+
+  for (const opt of options) {
+    const row = document.createElement('label');
+    row.className = 'civ2-dialog-radio' + (opt.enabled ? '' : ' disabled');
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'unit-supported-action';
+    radio.value = opt.id;
+    if (opt.id === 'nochange') radio.checked = true;
+    radio.addEventListener('change', () => {
+      if (!opt.enabled) { radio.checked = false; return; }
+      if (radio.checked) selected = opt.id;
+    });
+
+    const span = document.createElement('span');
+    span.textContent = opt.label;
+
+    row.appendChild(radio);
+    row.appendChild(span);
+    items.appendChild(row);
+  }
+
+  panel.appendChild(items);
+  frame.appendChild(panel);
+
+  // Button row
+  const btnRow = document.createElement('div');
+  btnRow.className = 'civ2-dialog-btn-row';
+
+  const okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.className = 'civ2-btn';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.className = 'civ2-btn';
+
+  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
+
+  okBtn.addEventListener('click', () => {
+    dismiss();
+    if (selected === 'nochange') return;
+    if (selected === 'center') {
+      closeCityDialog();
+      centerOnTile(unit.gx, unit.gy);
+    } else if (selected === 'disband') {
+      showConfirmDialog(`Disband ${unitName}?`, () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'disband' } });
+      });
+    }
+  });
+
+  cancelBtn.addEventListener('click', dismiss);
+
+  btnRow.appendChild(okBtn);
+  btnRow.appendChild(cancelBtn);
+  frame.appendChild(btnRow);
+  overlay.appendChild(frame);
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+
+  const keyHandler = e => {
+    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); okBtn.click(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); }
+  };
+  window.addEventListener('keydown', keyHandler, true);
+
+  document.body.appendChild(overlay);
+}
+
 function showCityFoundedDialog(cityName, year, onDismiss) {
   const existing = document.getElementById('city-founded-dialog');
   if (existing) existing.remove();
 
   const overlay = document.createElement('div');
   overlay.id = 'city-founded-dialog';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+  overlay.className = 'civ2-dialog-overlay';
+
+  const frame = document.createElement('div');
+  frame.className = 'civ2-dialog-frame';
+
+  const titlebar = document.createElement('div');
+  titlebar.className = 'civ2-dialog-titlebar';
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'civ2-dialog-title';
+  titleSpan.textContent = 'City Founded';
+  titlebar.appendChild(titleSpan);
+  frame.appendChild(titlebar);
 
   const panel = document.createElement('div');
-  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:20px 32px;font-family:"Times New Roman",Georgia,serif;color:#333;text-align:center;min-width:280px;max-width:400px';
+  panel.className = 'civ2-dialog-panel';
+  panel.style.textAlign = 'center';
 
-  // Placeholder for artwork (empty div with border, can be populated later)
+  // Placeholder for artwork
   const artFrame = document.createElement('div');
   artFrame.id = 'city-founded-art';
-  artFrame.style.cssText = 'width:200px;height:120px;margin:0 auto 16px;border:2px inset #a08060;background:#c4a880';
+  artFrame.style.cssText = 'width:200px;height:120px;margin:8px auto 12px;border:2px inset #a08060;background:#c4a880';
   panel.appendChild(artFrame);
 
-  const title = document.createElement('div');
-  title.style.cssText = 'font-size:20px;font-weight:bold;margin-bottom:8px';
-  title.textContent = cityName;
-  panel.appendChild(title);
+  const name = document.createElement('div');
+  name.style.cssText = 'font-family:"Times New Roman",Georgia,serif;font-size:20px;font-weight:bold;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-bottom:4px';
+  name.textContent = cityName;
+  panel.appendChild(name);
 
   const sub = document.createElement('div');
-  sub.style.cssText = 'font-size:15px;margin-bottom:16px';
+  sub.style.cssText = 'font-family:"Times New Roman",Georgia,serif;font-size:15px;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
   sub.textContent = `Founded in ${year}`;
   panel.appendChild(sub);
 
-  const btn = document.createElement('button');
-  btn.textContent = 'OK';
-  btn.className = 'civ2-btn';
-  btn.style.cssText = 'padding:4px 24px;cursor:pointer;font-size:14px';
-  const dismiss = () => { overlay.remove(); if (onDismiss) onDismiss(); };
-  btn.addEventListener('click', dismiss);
-  panel.appendChild(btn);
+  frame.appendChild(panel);
 
-  overlay.appendChild(panel);
+  const btnRow = document.createElement('div');
+  btnRow.className = 'civ2-dialog-btn-row';
+  const okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.className = 'civ2-btn';
+  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); if (onDismiss) onDismiss(); };
+  okBtn.addEventListener('click', dismiss);
+  btnRow.appendChild(okBtn);
+  frame.appendChild(btnRow);
+
+  overlay.appendChild(frame);
   overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
-  // Enter/Escape also dismiss
+
   const keyHandler = e => {
     if (e.key === 'Enter' || e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
       dismiss();
-      window.removeEventListener('keydown', keyHandler, true);
     }
   };
   window.addEventListener('keydown', keyHandler, true);
@@ -1725,50 +1956,87 @@ function showResearchPicker(discovered) {
 
   const overlay = document.createElement('div');
   overlay.id = 'research-picker';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
+  overlay.className = 'civ2-dialog-overlay';
 
-  const panel = document.createElement('div');
-  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font:14px "Times New Roman",serif;color:#333;min-width:260px;max-width:400px;max-height:70vh;overflow-y:auto';
+  const frame = document.createElement('div');
+  frame.className = 'civ2-dialog-frame';
 
-  const title = document.createElement('div');
-  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:8px;text-align:center';
-  title.textContent = discovered != null
+  // Title bar
+  const titlebar = document.createElement('div');
+  titlebar.className = 'civ2-dialog-titlebar';
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'civ2-dialog-title';
+  titleSpan.textContent = discovered != null
     ? `Discovered: ${ADVANCE_NAMES[discovered]}!`
     : 'Choose Research';
-  panel.appendChild(title);
+  titlebar.appendChild(titleSpan);
+  frame.appendChild(titlebar);
+
+  // Panel with radio options
+  const panel = document.createElement('div');
+  panel.className = 'civ2-dialog-panel';
+  panel.style.maxHeight = '60vh';
+  panel.style.overflowY = 'auto';
 
   if (discovered != null) {
     const sub = document.createElement('div');
     sub.textContent = 'What shall we research next?';
-    sub.style.cssText = 'text-align:center;margin-bottom:8px;font-style:italic;color:#555';
+    sub.style.cssText = 'text-align:center;margin-bottom:6px;font-style:italic;font-family:"Times New Roman",Georgia,serif;font-size:16px;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
     panel.appendChild(sub);
   }
 
-  const list = document.createElement('div');
+  const items = document.createElement('div');
+  items.className = 'civ2-dialog-items';
+
   available.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
+  let selected = available[0];
+
   for (const advId of available) {
-    const btn = document.createElement('div');
-    btn.textContent = ADVANCE_NAMES[advId];
-    btn.style.cssText = 'padding:4px 8px;cursor:pointer;border-bottom:1px solid #c0a070';
-    btn.addEventListener('mouseenter', () => btn.style.background = '#c8a878');
-    btn.addEventListener('mouseleave', () => btn.style.background = '');
-    btn.addEventListener('click', () => {
-      overlay.remove();
-      transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: advId } });
-    });
-    list.appendChild(btn);
+    const row = document.createElement('label');
+    row.className = 'civ2-dialog-radio';
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'research-choice';
+    radio.value = advId;
+    if (advId === selected) radio.checked = true;
+    radio.addEventListener('change', () => { if (radio.checked) selected = advId; });
+
+    const span = document.createElement('span');
+    span.textContent = ADVANCE_NAMES[advId];
+
+    row.appendChild(radio);
+    row.appendChild(span);
+    items.appendChild(row);
   }
-  panel.appendChild(list);
 
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.className = 'civ2-btn';
-  cancelBtn.style.cssText = 'display:block;margin:10px auto 0;padding:4px 16px;cursor:pointer';
-  cancelBtn.addEventListener('click', () => overlay.remove());
-  panel.appendChild(cancelBtn);
+  panel.appendChild(items);
+  frame.appendChild(panel);
 
-  overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  // Single OK button
+  const btnRow = document.createElement('div');
+  btnRow.className = 'civ2-dialog-btn-row';
+  const okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.className = 'civ2-btn';
+
+  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
+
+  okBtn.addEventListener('click', () => {
+    dismiss();
+    transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: selected } });
+  });
+
+  btnRow.appendChild(okBtn);
+  frame.appendChild(btnRow);
+  overlay.appendChild(frame);
+
+  const keyHandler = e => {
+    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); okBtn.click(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); }
+  };
+  window.addEventListener('keydown', keyHandler, true);
+
   document.body.appendChild(overlay);
 }
 
@@ -2219,10 +2487,12 @@ const transport = createTransport({
         );
         mpGameState = deserializeState(msg.state);
 
-        // Play transition sound and stop menu music
-        menuLoop.pause();
-        menuLoop.currentTime = 0;
-        menuEnd.play().catch(() => {});
+        // Play transition sound only on initial game start (not reconnect)
+        if (currentScene === 'lobby') {
+          menuLoop.pause();
+          menuLoop.currentTime = 0;
+          menuEnd.play().catch(() => {});
+        }
 
         // Enable FOW + LOS for multiplayer
         document.getElementById('fow-toggle').checked = true;
@@ -2234,10 +2504,11 @@ const transport = createTransport({
         gameEnteredFrom = 'lobby';
         setScene('game');
 
-        // Hide single-player controls in multiplayer
+        // Hide single-player controls, show restart controls in multiplayer
         document.getElementById('sav-btn').style.display = 'none';
         document.getElementById('render-btn').style.display = 'none';
         document.getElementById('status').style.display = 'none';
+        document.getElementById('restart-controls').style.display = '';
 
         // Build mapData object compatible with existing renderer
         // populateFowCivSelector is called inside with forceCiv to ensure correct civ
@@ -2311,14 +2582,12 @@ const transport = createTransport({
           });
         }
 
-        // Prompt to pick research at start of turn if nothing selected
+        // Prompt to pick research at start of turn if nothing selected and science > 0
         if (mpGameState.turn.activeCiv === mpCivSlot && !msg.state.discoveredAdvance) {
           const civ = mpGameState.civs?.[mpCivSlot];
-          if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
-            // Only prompt if we have at least one city
-            if (mpGameState.cities.some(c => c.owner === mpCivSlot && c.size > 0)) {
-              setTimeout(() => showResearchPicker(), 300);
-            }
+          if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)
+              && civ.researchProgress > 0) {
+            setTimeout(() => showResearchPicker(), 300);
           }
         }
         break;
@@ -2406,6 +2675,7 @@ function renderRoomList() {
         document.getElementById('sav-btn').style.display = 'none';
         document.getElementById('render-btn').style.display = 'none';
         document.getElementById('status').style.display = 'none';
+        document.getElementById('restart-controls').style.display = '';
         setScene('game');
         doRenderFromState({ skipCenter: false, silent: true, forceCiv: mpCivSlot });
         return;
@@ -2531,6 +2801,7 @@ document.getElementById('lobby-banner-resume').addEventListener('click', () => {
     document.getElementById('sav-btn').style.display = 'none';
     document.getElementById('render-btn').style.display = 'none';
     document.getElementById('status').style.display = 'none';
+    document.getElementById('restart-controls').style.display = '';
     setScene('game');
     doRenderFromState({ skipCenter: false, silent: true, forceCiv: mpCivSlot });
     return;
@@ -2607,6 +2878,9 @@ function deserializeState(state) {
     for (const c of state.cities) {
       if (Array.isArray(c.buildings)) c.buildings = new Set(c.buildings);
     }
+  }
+  if (state.civTechs) {
+    state.civTechs = state.civTechs.map(t => Array.isArray(t) ? new Set(t) : t);
   }
   return state;
 }
@@ -2851,6 +3125,12 @@ document.getElementById('end-turn-btn').addEventListener('click', () => {
   transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
 });
 
+// Restart button — regenerate map with selected size
+document.getElementById('restart-btn').addEventListener('click', () => {
+  const mapSize = document.getElementById('map-size-select').value;
+  transport.sendRaw({ type: 'RESTART_GAME', mapSize });
+});
+
 // Research info click → open research picker
 document.getElementById('research-info').addEventListener('click', () => {
   if (!mpGameState || mpCivSlot == null) return;
@@ -2877,7 +3157,7 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  // Enter: end turn if no movable units remain AND no dialogs open
+  // Enter: open city dialog if selected unit is on a city, else end turn if no movable units
   if (e.key === 'Enter') {
     e.preventDefault();
     if (document.getElementById('citydialog-overlay')?.style.display === 'flex') return;
@@ -2885,6 +3165,18 @@ window.addEventListener('keydown', e => {
     if (document.getElementById('confirm-dialog')) return;
     if (document.getElementById('research-picker')) return;
     if (document.getElementById('rate-sliders')) return;
+    // If selected unit is on a city, open city dialog
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u) {
+        const cityIdx = mpGameState.cities.findIndex(c =>
+          c.size > 0 && c.owner === mpCivSlot && c.gx === u.gx && c.gy === u.gy);
+        if (cityIdx >= 0) {
+          openCityDialog(mpGameState.cities[cityIdx], cityIdx);
+          return;
+        }
+      }
+    }
     if (findNextMovableUnit(-1) == null) {
       transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
     }
@@ -3063,15 +3355,20 @@ function findNextMovableUnit(afterIndex) {
   return null;
 }
 
-function centerOnUnit(unit) {
-  if (!unit || !currentMapData) return;
+function centerOnTile(gx, gy) {
+  if (!currentMapData) return;
   const TW = 64, TH = 32;
-  const px = unit.gx * TW + ((unit.gy % 2) ? (TW >> 1) : 0) + TW / 2;
-  const py = unit.gy * (TH >> 1) + TH / 2;
+  const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0) + TW / 2;
+  const py = gy * (TH >> 1) + TH / 2;
   vp.x = px - vp.logicalW / vp.scale / 2;
   vp.y = py - vp.logicalH / vp.scale / 2;
   clampViewport();
   drawViewport();
+}
+
+function centerOnUnit(unit) {
+  if (!unit) return;
+  centerOnTile(unit.gx, unit.gy);
 }
 
 function selectUnit(idx) {
