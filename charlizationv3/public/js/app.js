@@ -3035,16 +3035,27 @@ const transport = createTransport({
           setTimeout(() => showResearchPicker(msg.state.discoveredAdvance.advanceId), 300);
         }
 
-        // Goody hut result notification
+        // Goody hut result notification (exact Civ2 GAME.TXT messages)
         if (msg.state.goodyHutResult && msg.state.goodyHutResult.civSlot === mpCivSlot) {
           const hr = msg.state.goodyHutResult;
           switch (hr.type) {
             case 'gold':
-              showOverlayMessage(`You found ${hr.amount} gold in a tribal village!`);
+              createCiv2Dialog('hut-dialog', 'Village', panel => {
+                const m = document.createElement('div');
+                m.textContent = `You have discovered valuable metal deposits worth ${hr.amount} gold.`;
+                panel.appendChild(m);
+              });
               break;
             case 'tech':
-              showOverlayMessage(`Tribal scrolls reveal the secret of ${hr.advanceName}!`);
-              // If civ had no research selected, prompt picker
+              createCiv2Dialog('hut-dialog', 'Village', panel => {
+                const m = document.createElement('div');
+                m.textContent = 'You have discovered scrolls of ancient wisdom.';
+                panel.appendChild(m);
+                const t = document.createElement('div');
+                t.style.cssText = 'margin-top:8px;font-weight:bold';
+                t.textContent = hr.advanceName;
+                panel.appendChild(t);
+              });
               setTimeout(() => {
                 const civ = mpGameState.civs?.[mpCivSlot];
                 if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
@@ -3053,16 +3064,34 @@ const transport = createTransport({
               }, 1500);
               break;
             case 'unit':
-              showOverlayMessage(`A tribe of ${hr.unitName} joins you!`);
+              createCiv2Dialog('hut-dialog', 'Village', panel => {
+                const m = document.createElement('div');
+                m.textContent = 'You have discovered a friendly tribe of skilled mercenaries.';
+                panel.appendChild(m);
+              });
               break;
             case 'nomads':
-              showOverlayMessage('Nomads join your civilization!');
+              createCiv2Dialog('hut-dialog', 'Village', panel => {
+                const m = document.createElement('div');
+                m.textContent = 'You discover a band of wandering nomads.\nThey agree to join your tribe.';
+                m.style.whiteSpace = 'pre-line';
+                panel.appendChild(m);
+              });
               break;
             case 'barbarians':
-              showOverlayMessage('Barbarian ambush!');
+              createCiv2Dialog('hut-dialog', 'Village', panel => {
+                const m = document.createElement('div');
+                m.textContent = 'You have unleashed a horde of barbarians!';
+                panel.appendChild(m);
+              });
               break;
             case 'nothing':
-              showOverlayMessage('The village is deserted.');
+              createCiv2Dialog('hut-dialog', 'Village', panel => {
+                const m = document.createElement('div');
+                m.textContent = 'Weeds grow in empty ruins. This village has long\nbeen abandoned.';
+                m.style.whiteSpace = 'pre-line';
+                panel.appendChild(m);
+              });
               break;
           }
         }

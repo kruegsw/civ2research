@@ -163,70 +163,107 @@ function assignInitialWorkers(gx, gy, size, mapBase) {
 }
 
 // ── Goody hut (tribal village) outcomes ──
+// Faithful to decompiled FUN_0058f040 (process_goody_hut)
 
-// Units that can be gifted by huts: non-obsolete land military units the civ can build
-function getHutUnitCandidates(state, civSlot) {
-  const civTechs = state.civTechs?.[civSlot];
-  const hasTech = (id) => id < 0 || (civTechs ? civTechs.has(id) : false);
-  const candidates = [];
-  // Land military units only (domain 0, not settlers/diplomats/caravans)
-  const EXCLUDED = new Set([0, 1, 46, 47, 48, 49, 50]); // Settlers, Engineers, Diplomat, Spy, Caravan, Freight, Explorer
-  for (let id = 2; id < UNIT_NAMES.length; id++) {
-    if (!UNIT_NAMES[id]) continue;
-    if (EXCLUDED.has(id)) continue;
-    if (UNIT_DOMAIN[id] !== 0) continue; // land only
-    const prereq = UNIT_PREREQS[id] ?? -1;
-    const obsolete = UNIT_OBSOLETE[id] ?? -1;
-    if (prereq === -2) continue;
-    if (prereq >= 0 && !hasTech(prereq)) continue;
-    if (obsolete >= 0 && hasTech(obsolete)) continue;
-    candidates.push(id);
+/** Check if ANY civ in the game has discovered a tech. */
+function anyoneHasTech(state, techId) {
+  if (techId < 0) return true;
+  if (!state.civTechs) return false;
+  for (let c = 1; c < 8; c++) {
+    if (!(state.civsAlive & (1 << c))) continue;
+    if (state.civTechs[c]?.has(techId)) return true;
   }
-  return candidates;
+  return false;
 }
 
 /**
- * Resolve a goody hut encounter. Called when a non-barbarian unit enters a hut tile.
- * Returns { type, ... } describing the outcome, or null if no hut.
- *
- * Civ2 outcomes:
- *   gold      — 25 or 50 gold
- *   tech      — free advance from available research
- *   unit      — mercenary military unit spawns
- *   nomads    — free settlers unit
- *   barbarians — barbarian warriors spawn nearby
- *   nothing   — empty hut
+ * Pick mercenary unit type per Civ2 algorithm.
+ * Two classes (50/50 coin flip): 2-move cavalry line, 1-move infantry line.
+ * Tech checks use ANY civ's discoveries, not just the triggering civ.
+ */
+function getHutMercType(state) {
+  if (Math.random() < 0.5) {
+    // 2-move class: Horsemen→Elephant→Knights→Crusaders→Dragoons→Riflemen
+    if (anyoneHasTech(state, 17)) return 11; // Conscription → Riflemen
+    if (anyoneHasTech(state, 42)) return 20; // Leadership → Dragoons
+    if (anyoneHasTech(state, 55)) return 18; // Monotheism → Crusaders
+    if (anyoneHasTech(state, 11)) return 19; // Chivalry → Knights
+    if (anyoneHasTech(state, 64) && Math.random() < 0.5) return 17; // Polytheism → 50% Elephant
+    return Math.random() < 0.67 ? 15 : 16; // 2/3 Horsemen, 1/3 Chariot
+  } else {
+    // 1-move class: Archers→Legion→Musketeers→Fanatics
+    if (anyoneHasTech(state, 34)) return 8;  // Guerrilla Warfare → Fanatics
+    if (anyoneHasTech(state, 35)) return 7;  // Gunpowder → Musketeers
+    if (anyoneHasTech(state, 39)) return 5;  // Iron Working → Legion
+    return 4; // Archers
+  }
+}
+
+/** Pick barbarian unit type based on global tech level. */
+function getBarbUnitType(state) {
+  if (anyoneHasTech(state, 34)) return 8;  // Guerrilla Warfare → Fanatics
+  if (anyoneHasTech(state, 35)) return 7;  // Gunpowder → Musketeers
+  if (anyoneHasTech(state, 39)) return 5;  // Iron Working → Legion
+  return 4; // Archers
+}
+
+/** Make a new unit object at the given position. */
+function makeUnit(type, owner, gx, gy, movesLeft) {
+  return {
+    type, owner, gx, gy,
+    x: gx * 2 + (gy % 2), y: gy,
+    veteran: 0, hpLost: 0, orders: 'none',
+    movesMade: 0, movesLeft: movesLeft ?? 0,
+    homeCityId: 0xFFFF,
+    goToX: -1, goToY: -1, visFlag: 0xFF,
+    commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+    prevInStack: -1, nextInStack: -1,
+  };
+}
+
+/**
+ * Resolve a goody hut encounter. Faithful to Civ2 decompiled logic.
+ * Roll rand()%5 → 0:tribe/nomads, 1:mercs, 2:gold, 3:barbarians, 4:scrolls.
+ * Suppression rules redirect outcomes when conditions aren't met.
  */
 function resolveGoodyHut(state, mapBase, unit, civSlot) {
-  // Roll outcome (weighted to approximate Civ2 distribution)
-  const roll = Math.random() * 100;
-  let outcome;
-  if (roll < 30) outcome = 'gold';
-  else if (roll < 50) outcome = 'unit';
-  else if (roll < 65) outcome = 'tech';
-  else if (roll < 72) outcome = 'nomads';
-  else if (roll < 90) outcome = 'barbarians';
-  else outcome = 'nothing';
+  const turnNum = state.turn?.number || 0;
+  const hasCities = state.cities.some(c => c.owner === civSlot && c.size > 0);
+  const earlyNoCities = !hasCities && turnNum < 50;
 
-  // Non-combat units (settlers, diplomats, caravans) never trigger barbarians
+  // Roll outcome (Civ2: rand()%5 → equal 20% each)
+  let outcome = Math.floor(Math.random() * 5); // 0-4
+
+  // Suppression rules
+  // Tribe (0): needs epoch ≥ 4 (approx turn 100+); redirect to mercs
+  if (outcome === 0 && turnNum < 100) outcome = 1;
+  // Barbarians (3): suppressed early game with no cities; redirect to mercs
+  if (outcome === 3 && earlyNoCities) outcome = 1;
+  // Scrolls (4): suppressed once any civ discovers Invention (38); redirect to gold
+  if (outcome === 4 && anyoneHasTech(state, 38)) outcome = 2;
+
+  // Non-combat units never trigger barbarians
   const NONCOMBAT = new Set([0, 1, 46, 47, 48, 49, 50]);
-  if (outcome === 'barbarians' && NONCOMBAT.has(unit.type)) outcome = 'gold';
+  if (outcome === 3 && NONCOMBAT.has(unit.type)) outcome = 2;
 
   switch (outcome) {
-    case 'gold': {
-      const amount = Math.random() < 0.5 ? 25 : 50;
-      if (state.civs && state.civs[civSlot]) {
+    case 2: { // Gold
+      // Base 50, 1/3 chance re-roll: low=25, high=100. After turn 250 (≈1000 AD): doubled
+      let amount = 50;
+      if (Math.random() < 0.33) amount = Math.random() < 0.5 ? 25 : 100;
+      if (turnNum > 250) amount *= 2;
+      if (state.civs?.[civSlot]) {
         state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
       }
       return { type: 'gold', amount };
     }
 
-    case 'tech': {
+    case 4: { // Scrolls (tech)
       const available = getAvailableResearch(state, civSlot);
       if (available.length === 0) {
         // No tech available — give gold instead
-        const amount = 50;
-        if (state.civs && state.civs[civSlot]) {
+        const amount = turnNum > 250 ? 100 : 50;
+        if (state.civs?.[civSlot]) {
           state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
         }
         return { type: 'gold', amount };
@@ -236,51 +273,30 @@ function resolveGoodyHut(state, mapBase, unit, civSlot) {
       return { type: 'tech', advanceId: techId, advanceName: ADVANCE_NAMES[techId] };
     }
 
-    case 'unit': {
-      const candidates = getHutUnitCandidates(state, civSlot);
-      if (candidates.length === 0) {
-        return { type: 'gold', amount: 25 }; // fallback
-      }
-      const unitType = candidates[Math.floor(Math.random() * candidates.length)];
-      const newUnit = {
-        type: unitType,
-        owner: civSlot,
-        gx: unit.gx, gy: unit.gy,
-        x: unit.gx * 2 + (unit.gy % 2), y: unit.gy,
-        veteran: 0, hpLost: 0, orders: 'none',
-        movesMade: 0, movesLeft: 0, // no moves this turn
-        homeCityId: 0xFFFF,
-        goToX: -1, goToY: -1, visFlag: 0xFF,
-        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
-        prevInStack: -1, nextInStack: -1,
-      };
-      state.units = [...state.units, newUnit];
+    case 1: { // Mercenaries
+      const unitType = getHutMercType(state);
+      state.units = [...state.units, makeUnit(unitType, civSlot, unit.gx, unit.gy)];
       return { type: 'unit', unitType, unitName: UNIT_NAMES[unitType] };
     }
 
-    case 'nomads': {
-      const settler = {
-        type: 0, // Settlers
-        owner: civSlot,
-        gx: unit.gx, gy: unit.gy,
-        x: unit.gx * 2 + (unit.gy % 2), y: unit.gy,
-        veteran: 0, hpLost: 0, orders: 'none',
-        movesMade: 0, movesLeft: 0, // no moves this turn
-        homeCityId: 0xFFFF,
-        goToX: -1, goToY: -1, visFlag: 0xFF,
-        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
-        prevInStack: -1, nextInStack: -1,
-      };
-      state.units = [...state.units, settler];
+    case 0: { // Tribe → nomads (simplified: skip advanced tribe/city founding)
+      // Nomads suppressed if any civ has Explosives (28); redirect to gold
+      if (anyoneHasTech(state, 28)) {
+        const amount = turnNum > 250 ? 100 : 50;
+        if (state.civs?.[civSlot]) {
+          state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
+        }
+        return { type: 'gold', amount };
+      }
+      state.units = [...state.units, makeUnit(0, civSlot, unit.gx, unit.gy)];
       return { type: 'nomads' };
     }
 
-    case 'barbarians': {
-      // Spawn 1-3 barbarian warriors adjacent to the hut
+    case 3: { // Barbarians
+      const barbType = getBarbUnitType(state);
       const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const count = 1 + Math.floor(Math.random() * 3); // 1-3
+      const count = 1 + Math.floor(Math.random() * 3);
       let spawned = 0;
-      // Shuffle directions
       for (let i = dirs.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
@@ -289,23 +305,10 @@ function resolveGoodyHut(state, mapBase, unit, civSlot) {
         if (spawned >= count) break;
         const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
         if (!dest) continue;
-        const ter = mapBase.getTerrain(dest.gx, dest.gy);
-        if (ter === 10) continue; // not on ocean
-        // Don't spawn on cities
+        if (mapBase.getTerrain(dest.gx, dest.gy) === 10) continue;
         if (state.cities.some(c => c.gx === dest.gx && c.gy === dest.gy && c.size > 0)) continue;
-        const barb = {
-          type: 2, // Warriors
-          owner: 0, // Barbarians
-          gx: dest.gx, gy: dest.gy,
-          x: dest.gx * 2 + (dest.gy % 2), y: dest.gy,
-          veteran: 0, hpLost: 0, orders: 'none',
-          movesMade: 0, movesLeft: UNIT_MOVE_POINTS[2] * MOVEMENT_MULTIPLIER,
-          homeCityId: 0xFFFF,
-          goToX: -1, goToY: -1, visFlag: 0xFF,
-          commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
-          prevInStack: -1, nextInStack: -1,
-        };
-        state.units = Array.isArray(state.units) ? [...state.units, barb] : [barb];
+        state.units = [...state.units,
+          makeUnit(barbType, 0, dest.gx, dest.gy, UNIT_MOVE_POINTS[barbType] * MOVEMENT_MULTIPLIER)];
         spawned++;
       }
       return { type: 'barbarians', count: spawned };
