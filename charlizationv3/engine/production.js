@@ -14,7 +14,7 @@ import {
   IMPROVE_MAINTENANCE,
   GOVT_FACTOR, GOVT_CORRUPTION_DIVISOR, GOVT_WLTKD_BUMP,
 } from './defs.js';
-import { cityHasBuilding, civHasWonder, cityHasWonder, getGovernment } from './utils.js';
+import { cityHasBuilding, civHasWonder, cityHasWonder, hasWonderEffect, getGovernment } from './utils.js';
 
 // ── Per-tile yield functions ──
 
@@ -478,11 +478,14 @@ function countSpecialists(city) {
 /**
  * Total building maintenance for a city (gold per turn).
  */
-export function calcBuildingMaintenance(city) {
+export function calcBuildingMaintenance(city, gameState) {
   let total = 0;
+  const smithFree = gameState && hasWonderEffect(gameState, city.owner, 17);
   if (city.buildings) {
     for (const id of city.buildings) {
-      total += IMPROVE_MAINTENANCE[id] || 0;
+      const cost = IMPROVE_MAINTENANCE[id] || 0;
+      if (smithFree && cost <= 1) continue;
+      total += cost;
     }
   }
   return total;
@@ -497,6 +500,6 @@ export function calcCityTrade(city, cityIndex, gameState, mapBase) {
   const corruption = calcTradeCorruption(city, grossTrade, gameState, mapBase);
   const netTrade = grossTrade - corruption;
   const { lux, tax, sci } = calcTradeDistribution(netTrade, city, cityIndex, gameState);
-  const maintenance = calcBuildingMaintenance(city);
+  const maintenance = calcBuildingMaintenance(city, gameState);
   return { grossTrade, corruption, netTrade, lux, tax, sci, maintenance };
 }

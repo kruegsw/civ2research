@@ -10,14 +10,14 @@
 
 import { validateAction } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
 import { calcFoodSurplus, foodToGrow, calcShieldProduction, getProductionCost, calcCityTrade } from './production.js';
 import { calcHappiness, calcRushBuyCost } from './happiness.js';
 import { resolveCombat } from './combat.js';
-import { cityHasBuilding } from './utils.js';
+import { cityHasBuilding, hasWonderEffect } from './utils.js';
 
 /**
  * Apply completed worker improvement to the map tile data.
@@ -354,7 +354,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const defTerrain = mapBase.getTerrain(dest.gx, dest.gy);
         const defCity = state.cities.find(c => c.gx === dest.gx && c.gy === dest.gy && c.owner !== unit.owner);
         const defInCity = !!defCity;
-        const defCityHasWalls = defInCity && cityHasBuilding(defCity, 8);
+        const defCityHasWalls = defInCity && (cityHasBuilding(defCity, 8) || hasWonderEffect(state, defender.owner, 6));
         const defImp = mapBase.getImprovements(dest.gx, dest.gy);
         const defHasFortress = !!(defImp && defImp.fortress);
         const defOnRiver = !!(mapBase.hasRiver && mapBase.hasRiver(dest.gx, dest.gy));
@@ -683,10 +683,14 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { government } = action;
       state.civs = [...prev.civs];
       const civ = { ...state.civs[civSlot] };
-      civ.government = 'anarchy';
-      // 1-4 turns of anarchy (random)
-      civ.anarchyTurns = 1 + Math.floor(Math.random() * 4);
-      civ.pendingGovernment = government;
+      if (hasWonderEffect(state, civSlot, 19)) {
+        // Statue of Liberty: instant government switch, no anarchy
+        civ.government = government;
+      } else {
+        civ.government = 'anarchy';
+        civ.anarchyTurns = 1 + Math.floor(Math.random() * 4);
+        civ.pendingGovernment = government;
+      }
       state.civs[civSlot] = civ;
       break;
     }
@@ -712,10 +716,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const activeCiv = next;
 
       // Reset movement for the new active civ's units + promote fortifying→fortified
+      // Lighthouse (+1 MP sea), Magellan (+1 MP sea) — stack
+      const seaBonus = (hasWonderEffect(state, activeCiv, 3) ? 1 : 0)
+        + (hasWonderEffect(state, activeCiv, 12) ? 1 : 0);
       state.units = state.units.map(u => {
         if (u.owner !== activeCiv) return u;
         const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
-        return { ...u, movesLeft: UNIT_MOVE_POINTS[u.type] * MOVEMENT_MULTIPLIER, orders };
+        let mp = UNIT_MOVE_POINTS[u.type];
+        if (seaBonus && UNIT_DOMAIN[u.type] === 1) mp += seaBonus;
+        return { ...u, movesLeft: mp * MOVEMENT_MULTIPLIER, orders };
       });
 
       // ── Anarchy countdown ──
@@ -779,7 +788,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
           // ── Growth ──
           if (newFood >= growthThreshold) {
             newSize++;
-            newFood = cityHasBuilding(city, 3) ? Math.floor(growthThreshold / 2) : 0;
+            const hasGranary = cityHasBuilding(city, 3) || hasWonderEffect(state, activeCiv, 0);
+            newFood = hasGranary ? Math.floor(growthThreshold / 2) : 0;
           } else {
             // WLTKD growth: grow by 1 without consuming food box
             newSize++;
@@ -836,7 +846,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
                 owner: activeCiv,
                 gx: city.gx, gy: city.gy,
                 x: city.gx * 2 + (city.gy % 2), y: city.gy,
-                veteran: 0, hpLost: 0,
+                veteran: (cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)) ? 1 : 0,
+                hpLost: 0,
                 orders: 'none', movesMade: 0, movesLeft: 0,
                 homeCityId: ci,
                 goToX: -1, goToY: -1,
@@ -861,6 +872,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
               if (state.wonders && wi >= 0 && wi < state.wonders.length) {
                 state.wonders = [...prev.wonders];
                 state.wonders[wi] = { cityIndex: ci, destroyed: false };
+              }
+              // Darwin's Voyage: 2 free advances on completion
+              if (wi === 18) {
+                const avail = getAvailableResearch(state, activeCiv);
+                for (let n = 0; n < 2 && avail.length > 0; n++) {
+                  const advId = avail.shift();
+                  grantAdvance(state, activeCiv, advId);
+                  if (!state.turnEvents) state.turnEvents = [];
+                  state.turnEvents.push({ type: 'freeAdvance', civSlot: activeCiv, advanceId: advId, source: "Darwin's Voyage" });
+                  // Refresh available after granting (prereqs may unlock new techs)
+                  avail.length = 0;
+                  avail.push(...getAvailableResearch(state, activeCiv));
+                }
               }
             }
             // Notify: production complete
@@ -932,6 +956,27 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
 
         state.civs[activeCiv] = civ;
+      }
+
+      // ── Leonardo's Workshop: auto-upgrade obsolete units ──
+      if (hasWonderEffect(state, activeCiv, 14)) {
+        const techs = state.civTechs?.[activeCiv];
+        if (techs) {
+          for (let ui = 0; ui < state.units.length; ui++) {
+            const u = state.units[ui];
+            if (u.owner !== activeCiv || u.gx < 0) continue;
+            const obsTech = UNIT_OBSOLETE[u.type];
+            if (obsTech < 0 || !techs.has(obsTech)) continue;
+            // Find replacement: same domain, requires the obsoleting tech, highest cost
+            let best = -1, bestCost = -1;
+            for (let t = 0; t < UNIT_PREREQS.length; t++) {
+              if (t === u.type || UNIT_PREREQS[t] !== obsTech) continue;
+              if (UNIT_DOMAIN[t] !== UNIT_DOMAIN[u.type]) continue;
+              if (UNIT_COSTS[t] > bestCost) { bestCost = UNIT_COSTS[t]; best = t; }
+            }
+            if (best >= 0) state.units[ui] = { ...u, type: best };
+          }
+        }
       }
 
       // ── Process unit orders for active civ (worker progress, HP recovery) ──
