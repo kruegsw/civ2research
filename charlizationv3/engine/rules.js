@@ -9,7 +9,7 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE } from './actions.js';
 import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
 import { getProductionCost } from './production.js';
@@ -331,12 +331,95 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       return null;
     }
 
+    case PILLAGE: {
+      const unit = gameState.units[action.unitIndex];
+      if (!unit) return 'Unit not found';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if (unit.gx < 0) return 'Unit is dead';
+      if (UNIT_DOMAIN[unit.type] !== 0) return 'Only land units can pillage';
+      const pTerrain = mapBase.getTerrain(unit.gx, unit.gy);
+      if (pTerrain === 10) return 'Cannot pillage ocean';
+      if (gameState.cities.some(c => c.gx === unit.gx && c.gy === unit.gy)) return 'Cannot pillage city tile';
+      const pImp = mapBase.getImprovements(unit.gx, unit.gy);
+      if (!pImp || (!pImp.road && !pImp.railroad && !pImp.irrigation && !pImp.mining &&
+          !pImp.fortress && !pImp.airbase && !pImp.farmland)) return 'Nothing to pillage';
+      return null;
+    }
+
+    case DESTROY_CITY: {
+      const city = gameState.cities[action.cityIndex];
+      if (!city) return 'City not found';
+      if (city.owner !== civSlot) return 'Not your city';
+      if (city.size <= 0) return 'City already destroyed';
+      if (city.buildings?.has(1)) return 'Cannot destroy capital';
+      return null;
+    }
+
+    case PROPOSE_TREATY: {
+      const { targetCiv, treaty } = action;
+      if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
+      if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
+      if (!treaty || !['peace', 'ceasefire'].includes(treaty)) return 'Invalid treaty type';
+      const current = getTreaty(gameState, civSlot, targetCiv);
+      if (current === treaty) return `Already at ${treaty}`;
+      if (current !== 'war') return 'Must be at war to propose peace';
+      // Check for duplicate pending proposals
+      if (gameState.treatyProposals?.some(p => p.from === civSlot && p.to === targetCiv && !p.resolved))
+        return 'Proposal already pending';
+      return null;
+    }
+
+    case RESPOND_TREATY: {
+      const { proposalIndex, accept } = action;
+      const proposal = gameState.treatyProposals?.[proposalIndex];
+      if (!proposal) return 'Proposal not found';
+      if (proposal.to !== civSlot) return 'Not addressed to you';
+      if (proposal.resolved) return 'Already resolved';
+      return null;
+    }
+
+    case DECLARE_WAR: {
+      const { targetCiv: warTarget } = action;
+      if (warTarget == null || warTarget === civSlot) return 'Invalid target';
+      if (!(gameState.civsAlive & (1 << warTarget))) return 'Target civ is dead';
+      const curTreaty = getTreaty(gameState, civSlot, warTarget);
+      if (curTreaty === 'war') return 'Already at war';
+      return null;
+    }
+
+    case ESTABLISH_TRADE: {
+      const { unitIndex: tradeUnitIdx, cityIndex: tradeCityIdx } = action;
+      const tradeUnit = gameState.units[tradeUnitIdx];
+      if (!tradeUnit) return 'Unit not found';
+      if (tradeUnit.owner !== civSlot) return 'Not your unit';
+      if (tradeUnit.type !== 48 && tradeUnit.type !== 49) return 'Only Caravans/Freight can trade';
+      if (tradeUnit.gx < 0) return 'Unit is dead';
+      const tradeCity = gameState.cities[tradeCityIdx];
+      if (!tradeCity) return 'City not found';
+      if (tradeCity.gx !== tradeUnit.gx || tradeCity.gy !== tradeUnit.gy) return 'Must be in the city';
+      // Must be different from home city
+      if (tradeCityIdx === tradeUnit.homeCityId) return 'Cannot trade with home city';
+      // Home city must exist
+      const homeCity = gameState.cities[tradeUnit.homeCityId];
+      if (!homeCity || homeCity.size <= 0) return 'Home city not found';
+      // Check max 3 trade routes on home city
+      if ((homeCity.tradeRoutes?.length || 0) >= 3) return 'Home city has max trade routes';
+      return null;
+    }
+
     case END_TURN:
       return null; // always valid if it's your turn
 
     default:
       return `Unknown action type: ${action.type}`;
   }
+}
+
+/** Get treaty status between two civs. */
+function getTreaty(gameState, civA, civB) {
+  if (!gameState.treaties) return 'war';
+  const key = civA < civB ? `${civA}-${civB}` : `${civB}-${civA}`;
+  return gameState.treaties[key] || 'war';
 }
 
 /**

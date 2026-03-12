@@ -713,6 +713,8 @@ function buildStatePayload(room, civSlot) {
     cityFounded: gs.cityFounded,
     goodyHutResult: gs.goodyHutResult,
     turnEvents: gs.turnEvents,
+    treaties: gs.treaties,
+    treatyProposals: gs.treatyProposals,
   };
 }
 

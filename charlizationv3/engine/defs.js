@@ -208,6 +208,16 @@ export const UNIT_MOVE_POINTS = [
   1,                          // 51:   Extra Land
 ];
 
+// Air unit fuel (turns away from city/carrier before crashing, 0=unlimited)
+export const UNIT_FUEL = [];
+UNIT_FUEL[27] = 1;  // Fighter
+UNIT_FUEL[28] = 2;  // Bomber
+UNIT_FUEL[30] = 1;  // Stealth Fighter
+UNIT_FUEL[31] = 2;  // Stealth Bomber
+UNIT_FUEL[44] = 1;  // Cruise Missile
+UNIT_FUEL[45] = 1;  // Nuclear Missile
+// Helicopter (29) has unlimited fuel (no entry)
+
 // Unit domain: 0=land, 1=sea, 2=air (indexed by unit type 0-51)
 export const UNIT_DOMAIN = [
   0, 0, 0, 0, 0, 0, 0, 0,   // 0-7

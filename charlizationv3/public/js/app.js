@@ -15,7 +15,7 @@ import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
 import { getValidActions, validateAction } from '../engine/rules.js';
-import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from '../engine/actions.js';
+import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE } from '../engine/actions.js';
 import { calcRushBuyCost } from '../engine/happiness.js';
 import { getProductionCost, calcCityTrade } from '../engine/production.js';
 import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
@@ -1981,12 +1981,59 @@ function showTurnEvents(events) {
         break;
       }
 
+      case 'unitCrashed': {
+        const uName = UNIT_NAMES[ev.unitType] || 'Unit';
+        createCiv2Dialog('turn-event-dialog', 'Unit Lost', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `Your ${uName} has run out of fuel and crashed!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       case 'freeAdvance': {
         const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
         createCiv2Dialog('turn-event-dialog', ev.source || 'Free Advance', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
           msg.textContent = `You have discovered the secret of ${advName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'warDeclared': {
+        const aggrName = mpGameState?.civNames?.[ev.aggressor] || `Civ ${ev.aggressor}`;
+        const targName = mpGameState?.civNames?.[ev.target] || `Civ ${ev.target}`;
+        createCiv2Dialog('turn-event-dialog', 'War!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${aggrName} has declared war on ${targName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'treatyAccepted': {
+        const civAName = mpGameState?.civNames?.[ev.civA] || `Civ ${ev.civA}`;
+        const civBName = mpGameState?.civNames?.[ev.civB] || `Civ ${ev.civB}`;
+        const treatyName = ev.treaty === 'peace' ? 'Peace Treaty' : 'Ceasefire';
+        createCiv2Dialog('turn-event-dialog', treatyName, panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${civAName} and ${civBName} have signed a ${treatyName}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'tradeEstablished': {
+        createCiv2Dialog('turn-event-dialog', 'Trade Route', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.innerHTML = `Trade route: ${ev.homeCityName} → ${ev.destCityName}<br>` +
+            `Revenue: ${ev.income} gold/turn<br>Bonus: ${ev.bonus} gold`;
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;
@@ -2259,6 +2306,93 @@ function showRevolutionDialog() {
       });
     }},
   ]);
+}
+
+// ── Diplomacy panel ──
+function showDiplomacyPanel() {
+  if (!mpGameState || mpCivSlot == null) return;
+
+  createCiv2Dialog('diplomacy-dialog', 'Foreign Affairs', panel => {
+    panel.style.minWidth = '320px';
+    for (let c = 1; c < 8; c++) {
+      if (c === mpCivSlot || !(mpGameState.civsAlive & (1 << c))) continue;
+      const name = mpGameState.civNames?.[c] || `Civ ${c}`;
+      const key = mpCivSlot < c ? `${mpCivSlot}-${c}` : `${c}-${mpCivSlot}`;
+      const treaty = mpGameState.treaties?.[key] || 'war';
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #c4a876;font:13px "Times New Roman",serif';
+
+      const label = document.createElement('span');
+      label.textContent = `${name}: ${treaty.charAt(0).toUpperCase() + treaty.slice(1)}`;
+      label.style.color = treaty === 'war' ? '#a33' : '#3a3';
+      row.appendChild(label);
+
+      const btnGroup = document.createElement('span');
+      if (treaty === 'war') {
+        const btn = document.createElement('button');
+        btn.textContent = 'Propose Peace';
+        btn.className = 'civ2-btn';
+        btn.style.cssText = 'font-size:11px;padding:2px 8px';
+        btn.onclick = () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: PROPOSE_TREATY, targetCiv: c, treaty: 'peace' } });
+          document.getElementById('diplomacy-dialog')?.remove();
+          showOverlayMessage(`Peace proposal sent to ${name}`);
+        };
+        btnGroup.appendChild(btn);
+      } else {
+        const btn = document.createElement('button');
+        btn.textContent = 'Declare War';
+        btn.className = 'civ2-btn';
+        btn.style.cssText = 'font-size:11px;padding:2px 8px';
+        btn.onclick = () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: DECLARE_WAR, targetCiv: c } });
+          document.getElementById('diplomacy-dialog')?.remove();
+        };
+        btnGroup.appendChild(btn);
+      }
+      row.appendChild(btnGroup);
+      panel.appendChild(row);
+    }
+
+    // Show pending proposals TO us
+    const proposals = mpGameState.treatyProposals || [];
+    const pending = proposals.filter((p, i) => p.to === mpCivSlot && !p.resolved);
+    if (pending.length > 0) {
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'margin-top:12px;font-weight:bold;font-size:14px;color:#333';
+      hdr.textContent = 'Pending Proposals:';
+      panel.appendChild(hdr);
+      for (const p of pending) {
+        const pi = proposals.indexOf(p);
+        const fromName = mpGameState.civNames?.[p.from] || `Civ ${p.from}`;
+        const pRow = document.createElement('div');
+        pRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:4px 0;font:13px "Times New Roman",serif';
+        pRow.innerHTML = `<span>${fromName} offers ${p.treaty}</span>`;
+        const btns = document.createElement('span');
+        const accBtn = document.createElement('button');
+        accBtn.textContent = 'Accept';
+        accBtn.className = 'civ2-btn';
+        accBtn.style.cssText = 'font-size:11px;padding:2px 8px;margin-right:4px';
+        accBtn.onclick = () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: RESPOND_TREATY, proposalIndex: pi, accept: true } });
+          document.getElementById('diplomacy-dialog')?.remove();
+        };
+        const rejBtn = document.createElement('button');
+        rejBtn.textContent = 'Reject';
+        rejBtn.className = 'civ2-btn';
+        rejBtn.style.cssText = 'font-size:11px;padding:2px 8px';
+        rejBtn.onclick = () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: RESPOND_TREATY, proposalIndex: pi, accept: false } });
+          document.getElementById('diplomacy-dialog')?.remove();
+        };
+        btns.appendChild(accBtn);
+        btns.appendChild(rejBtn);
+        pRow.appendChild(btns);
+        panel.appendChild(pRow);
+      }
+    }
+  }, [{ label: 'Close' }]);
 }
 
 // ── Research picker ──
@@ -2946,11 +3080,17 @@ const transport = createTransport({
         // Turn events: city growth, famine, production complete, civ eliminated
         if (msg.state.turnEvents) {
           // Own-civ events + global events (elimination) shown to everyone
+          const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted']);
           const myEvents = msg.state.turnEvents.filter(e =>
-            e.civSlot === mpCivSlot || e.type === 'civEliminated');
+            e.civSlot === mpCivSlot || GLOBAL_EVENTS.has(e.type));
           if (myEvents.length > 0) {
             showTurnEvents(myEvents);
           }
+        }
+
+        // Auto-show diplomacy panel when there are pending treaty proposals for us
+        if (mpGameState.treatyProposals?.some(p => p.to === mpCivSlot && !p.resolved)) {
+          setTimeout(() => showDiplomacyPanel(), 400);
         }
 
         // Prompt to pick research at start of turn if nothing selected and science > 0
@@ -3717,6 +3857,24 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // Shift+D: diplomacy panel
+  if (e.key === 'D' && e.shiftKey) {
+    e.preventDefault();
+    showDiplomacyPanel();
+    return;
+  }
+
+  // Shift+P: pillage
+  if (e.key === 'P' && e.shiftKey && mpSelectedUnit != null) {
+    e.preventDefault();
+    const err = validateAction(mpGameState, mpMapBase, { type: PILLAGE, unitIndex: mpSelectedUnit }, mpCivSlot);
+    if (!err) {
+      pendingAutoAdvanceFrom = mpSelectedUnit;
+      transport.sendRaw({ type: 'ACTION', action: { type: PILLAGE, unitIndex: mpSelectedUnit } });
+    }
+    return;
+  }
+
   // Numpad movement
   const dir = NUMPAD_DIR[e.key];
   if (!dir) return;
@@ -4089,6 +4247,28 @@ function buildOrderMenuItems(unitIdx) {
     if (validWorker.length > 0) {
       items.push({ separator: true });
       items.push(...validWorker);
+    }
+  }
+
+  // Pillage
+  {
+    const err = validateAction(mpGameState, mpMapBase, { type: PILLAGE, unitIndex: unitIdx }, civSlot);
+    if (!err) items.push({ label: 'Pillage', action: () => {
+      showConfirmDialog('Pillage improvement?', () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: PILLAGE, unitIndex: unitIdx } });
+      });
+    }});
+  }
+
+  // Establish Trade Route (Caravan/Freight in a foreign or distant city)
+  if (u.type === 48 || u.type === 49) {
+    // Find city at unit's tile
+    const ci = mpGameState.cities.findIndex(c => c.gx === u.gx && c.gy === u.gy && c.size > 0);
+    if (ci >= 0) {
+      const err = validateAction(mpGameState, mpMapBase, { type: ESTABLISH_TRADE, unitIndex: unitIdx, cityIndex: ci }, civSlot);
+      if (!err) items.push({ label: 'Establish Trade Route', action: () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: ESTABLISH_TRADE, unitIndex: unitIdx, cityIndex: ci } });
+      }});
     }
   }
 

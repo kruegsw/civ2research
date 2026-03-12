@@ -56,3 +56,27 @@ export const WORKER_ORDER = 'WORKER_ORDER';
 export const REVOLUTION = 'REVOLUTION';
 //   { type: 'REVOLUTION', government: 'monarchy'|'republic'|'democracy'|etc. }
 //   Start a revolution. Civ enters anarchy for 1-4 turns, then switches to chosen government.
+
+export const PILLAGE = 'PILLAGE';
+//   { type: 'PILLAGE', unitIndex }
+//   Destroy the highest-value improvement on the unit's tile.
+
+export const DESTROY_CITY = 'DESTROY_CITY';
+//   { type: 'DESTROY_CITY', cityIndex }
+//   Raze a city. Cannot destroy capital.
+
+export const PROPOSE_TREATY = 'PROPOSE_TREATY';
+//   { type: 'PROPOSE_TREATY', targetCiv, treaty: 'peace'|'ceasefire' }
+//   Propose a diplomatic treaty to another civ.
+
+export const RESPOND_TREATY = 'RESPOND_TREATY';
+//   { type: 'RESPOND_TREATY', proposalIndex, accept: boolean }
+//   Accept or reject an incoming treaty proposal.
+
+export const DECLARE_WAR = 'DECLARE_WAR';
+//   { type: 'DECLARE_WAR', targetCiv }
+//   Declare war on a civ you are at peace with.
+
+export const ESTABLISH_TRADE = 'ESTABLISH_TRADE';
+//   { type: 'ESTABLISH_TRADE', unitIndex, cityIndex }
+//   Caravan/Freight establishes a trade route with the target city.

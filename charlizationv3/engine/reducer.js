@@ -9,8 +9,8 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE } from './actions.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -350,11 +350,22 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
       if (enemiesAtDest.length > 0) {
         // ── Combat ──
+        // Auto-declare war if attacking a civ we're at peace with
+        const defCivSlot = state.units[enemiesAtDest[0]].owner;
+        if (state.treaties) {
+          const warKey = civSlot < defCivSlot ? `${civSlot}-${defCivSlot}` : `${defCivSlot}-${civSlot}`;
+          if (state.treaties[warKey] && state.treaties[warKey] !== 'war') {
+            state.treaties = { ...state.treaties, [warKey]: 'war' };
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({ type: 'warDeclared', aggressor: civSlot, target: defCivSlot });
+          }
+        }
+
         // Find best defender (highest effective defense)
         const defTerrain = mapBase.getTerrain(dest.gx, dest.gy);
         const defCity = state.cities.find(c => c.gx === dest.gx && c.gy === dest.gy && c.owner !== unit.owner);
         const defInCity = !!defCity;
-        const defCityHasWalls = defInCity && (cityHasBuilding(defCity, 8) || hasWonderEffect(state, defender.owner, 6));
+        const defCityHasWalls = defInCity && (cityHasBuilding(defCity, 8) || hasWonderEffect(state, defCivSlot, 6));
         const defImp = mapBase.getImprovements(dest.gx, dest.gy);
         const defHasFortress = !!(defImp && defImp.fortress);
         const defOnRiver = !!(mapBase.hasRiver && mapBase.hasRiver(dest.gx, dest.gy));
@@ -710,6 +721,121 @@ export function applyAction(prev, mapBase, action, civSlot) {
       break;
     }
 
+    case PILLAGE: {
+      const { unitIndex: pillUi } = action;
+      const pillUnit = state.units[pillUi];
+      const pillIdx = pillUnit.gy * mapBase.mw + pillUnit.gx;
+      const pillTile = mapBase.tileData[pillIdx];
+      if (pillTile) {
+        const imp = { ...pillTile.improvements };
+        // Destroy highest-value improvement
+        if (imp.railroad) imp.railroad = false;
+        else if (imp.fortress) imp.fortress = false;
+        else if (imp.airbase) imp.airbase = false;
+        else if (imp.farmland) { imp.farmland = false; imp.mining = false; }
+        else if (imp.mining) imp.mining = false;
+        else if (imp.irrigation) imp.irrigation = false;
+        else if (imp.road) imp.road = false;
+        pillTile.improvements = imp;
+      }
+      break;
+    }
+
+    case DESTROY_CITY: {
+      const { cityIndex: razeCi } = action;
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      const razeCity = state.cities[razeCi];
+      // Kill all units homed here
+      rehomeUnits(state, razeCi, civSlot);
+      // Clear city tile
+      const razeTileIdx = razeCity.gy * mapBase.mw + razeCity.gx;
+      if (mapBase.tileData[razeTileIdx]) {
+        mapBase.tileData[razeTileIdx].improvements = {
+          ...mapBase.tileData[razeTileIdx].improvements, city: false,
+        };
+      }
+      state.cities[razeCi] = { ...razeCity, size: 0, owner: -1 };
+      checkCivElimination(state, civSlot);
+      break;
+    }
+
+    case PROPOSE_TREATY: {
+      const { targetCiv: ptTarget, treaty: ptType } = action;
+      if (!state.treatyProposals) state.treatyProposals = [];
+      state.treatyProposals = [...state.treatyProposals, {
+        from: civSlot, to: ptTarget, treaty: ptType, resolved: false,
+        turn: state.turn.number,
+      }];
+      break;
+    }
+
+    case RESPOND_TREATY: {
+      const { proposalIndex: rtIdx, accept: rtAccept } = action;
+      state.treatyProposals = [...(prev.treatyProposals || [])];
+      const proposal = { ...state.treatyProposals[rtIdx], resolved: true, accepted: rtAccept };
+      state.treatyProposals[rtIdx] = proposal;
+      if (rtAccept) {
+        if (!state.treaties) state.treaties = {};
+        const key = proposal.from < proposal.to
+          ? `${proposal.from}-${proposal.to}` : `${proposal.to}-${proposal.from}`;
+        state.treaties = { ...state.treaties, [key]: proposal.treaty };
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'treatyAccepted', civA: proposal.from, civB: proposal.to,
+          treaty: proposal.treaty,
+        });
+      }
+      break;
+    }
+
+    case DECLARE_WAR: {
+      const { targetCiv: dwTarget } = action;
+      if (!state.treaties) state.treaties = {};
+      const dwKey = civSlot < dwTarget ? `${civSlot}-${dwTarget}` : `${dwTarget}-${civSlot}`;
+      state.treaties = { ...state.treaties, [dwKey]: 'war' };
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'warDeclared', aggressor: civSlot, target: dwTarget });
+      break;
+    }
+
+    case ESTABLISH_TRADE: {
+      const { unitIndex: etUi, cityIndex: etCi } = action;
+      const etUnit = state.units[etUi];
+      const homeCity = state.cities[etUnit.homeCityId];
+      const destCity = state.cities[etCi];
+      // Calculate trade income (simplified: based on distance + city sizes)
+      const dx = Math.abs(homeCity.gx - destCity.gx);
+      const dy = Math.abs(homeCity.gy - destCity.gy);
+      const dist = dx + dy;
+      const isForeign = homeCity.owner !== destCity.owner;
+      // Civ2 formula: (dist + 10) × (homeSize + destSize) / 24, ×2 if foreign
+      const baseIncome = Math.floor((dist + 10) * (homeCity.size + destCity.size) / 24);
+      const income = isForeign ? baseIncome * 2 : baseIncome;
+      // Create route
+      const route = { destCityIndex: etCi, income };
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      const updHome = { ...state.cities[etUnit.homeCityId] };
+      updHome.tradeRoutes = [...(updHome.tradeRoutes || []), route];
+      state.cities[etUnit.homeCityId] = updHome;
+      // Consume the caravan/freight
+      killUnit(state, etUi);
+      // One-time trade bonus (gold)
+      if (state.civs?.[civSlot]) {
+        state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+        const civ = { ...state.civs[civSlot] };
+        const bonus = income * 3;
+        civ.treasury = (civ.treasury || 0) + bonus;
+        state.civs[civSlot] = civ;
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'tradeEstablished', civSlot,
+          homeCityName: homeCity.name, destCityName: destCity.name,
+          income, bonus,
+        });
+      }
+      break;
+    }
+
     case END_TURN: {
       const endingCiv = state.turn.activeCiv;
 
@@ -938,6 +1064,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       let civTaxTotal = 0;
       let civSciTotal = 0;
       let civMaintenanceTotal = 0;
+      let tradeRouteIncome = 0;
       for (let ci = 0; ci < state.cities.length; ci++) {
         const city = state.cities[ci];
         if (city.owner !== activeCiv || city.size <= 0) continue;
@@ -945,13 +1072,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
         civTaxTotal += tax;
         civSciTotal += sci;
         civMaintenanceTotal += maintenance;
+        // Trade route income
+        if (city.tradeRoutes) {
+          for (const route of city.tradeRoutes) {
+            const dest = state.cities[route.destCityIndex];
+            if (dest && dest.size > 0) tradeRouteIncome += route.income;
+          }
+        }
       }
 
       // Update civ treasury and research progress
       if (state.civs && state.civs[activeCiv]) {
         state.civs = [...prev.civs];
         const civ = { ...state.civs[activeCiv] };
-        civ.treasury = (civ.treasury || 0) + civTaxTotal - civMaintenanceTotal;
+        civ.treasury = (civ.treasury || 0) + civTaxTotal + tradeRouteIncome - civMaintenanceTotal;
         if (civ.treasury < 0) civ.treasury = 0;
         civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
 
@@ -971,6 +1105,26 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
 
         state.civs[activeCiv] = civ;
+      }
+
+      // ── Great Library: auto-grant techs known by 2+ other civs ──
+      if (hasWonderEffect(state, activeCiv, 4)) {
+        const myTechs = state.civTechs?.[activeCiv];
+        if (myTechs) {
+          for (let advId = 0; advId < ADVANCE_NAMES.length; advId++) {
+            if (myTechs.has(advId)) continue;
+            let count = 0;
+            for (let c = 1; c < 8; c++) {
+              if (c === activeCiv || !(state.civsAlive & (1 << c))) continue;
+              if (state.civTechs[c]?.has(advId)) count++;
+            }
+            if (count >= 2) {
+              grantAdvance(state, activeCiv, advId);
+              if (!state.turnEvents) state.turnEvents = [];
+              state.turnEvents.push({ type: 'freeAdvance', civSlot: activeCiv, advanceId: advId, source: 'Great Library' });
+            }
+          }
+        }
       }
 
       // ── Leonardo's Workshop: auto-upgrade obsolete units ──
@@ -1007,6 +1161,28 @@ export function applyAction(prev, mapBase, action, civSlot) {
           if (newHpLost !== u.hpLost) {
             state.units[ui] = { ...u, hpLost: newHpLost };
           }
+        }
+
+        // Air unit fuel: decrement when away from city/carrier, crash at 0
+        const maxFuel = UNIT_FUEL[u.type];
+        if (maxFuel > 0) {
+          const atBase = state.cities.some(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner)
+            || state.units.some((v, vi) => vi !== ui && v.gx === u.gx && v.gy === u.gy
+              && v.owner === u.owner && UNIT_CARRY_CAP[v.type] && v.gx >= 0);
+          if (atBase) {
+            if ((u.fuelRemaining ?? maxFuel) !== maxFuel)
+              state.units[ui] = { ...state.units[ui], fuelRemaining: maxFuel };
+          } else {
+            const fuel = (state.units[ui].fuelRemaining ?? maxFuel) - 1;
+            if (fuel <= 0) {
+              killUnit(state, ui);
+              if (!state.turnEvents) state.turnEvents = [];
+              state.turnEvents.push({ type: 'unitCrashed', unitType: u.type, civSlot: activeCiv });
+            } else {
+              state.units[ui] = { ...state.units[ui], fuelRemaining: fuel };
+            }
+          }
+          continue; // air units don't do worker orders
         }
 
         // Worker orders: road, irrigation, mine, fortress, airbase, pollution, railroad
