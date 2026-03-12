@@ -724,3 +724,14 @@ export const ADVANCE_PREREQS = [
 
 // COSMIC parameter #11: tech cost multiplier (default 3, applied as baseCost * value / 10)
 export const COSMIC_TECH_MULTIPLIER = 3;
+
+// Tech prerequisite for each government type (advance ID, -1 = always available)
+export const GOVT_TECH_PREREQS = {
+  anarchy: -1,         // always available (fallback during revolution)
+  despotism: -1,       // starting government
+  monarchy: 54,        // Monarchy advance
+  communism: 15,       // Communism advance
+  fundamentalism: 31,  // Fundamentalism advance
+  republic: 71,        // The Republic advance
+  democracy: 21,       // Democracy advance
+};

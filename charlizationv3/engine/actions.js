@@ -52,3 +52,7 @@ export const UNIT_ORDER = 'UNIT_ORDER';
 export const WORKER_ORDER = 'WORKER_ORDER';
 //   { type: 'WORKER_ORDER', unitIndex, order: 'road'|'railroad'|'irrigation'|'mine'|'fortress'|'airbase'|'pollution' }
 //   Settler/Engineer begins building an improvement. Progress tracked in workTurns.
+
+export const REVOLUTION = 'REVOLUTION';
+//   { type: 'REVOLUTION', government: 'monarchy'|'republic'|'democracy'|etc. }
+//   Start a revolution. Civ enters anarchy for 1-4 turns, then switches to chosen government.

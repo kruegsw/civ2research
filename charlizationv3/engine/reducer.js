@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from './actions.js';
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
@@ -372,60 +372,77 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const defender = { ...state.units[bestDefIdx] };
         const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver);
 
+        const defOwner = defender.owner;
+
         if (result.attackerWins) {
           // Defender destroyed
-          state.units[bestDefIdx] = { ...defender, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+          killUnit(state, bestDefIdx);
 
           // Veteran promotion for attacker
           if (result.atkVeteranPromo) unit.veteran = 1;
           unit.hpLost = result.atkHpLost;
 
-          // Move attacker to destination (consumes all movement for this turn)
-          unit.gx = dest.gx;
-          unit.gy = dest.gy;
-          unit.x = dest.gx * 2 + (dest.gy % 2);
-          unit.y = dest.gy;
-          unit.movesLeft = 0;
-          if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
-
-          // City capture: if enemy city at dest and no more enemy units there
-          const remainingEnemies = state.units.some(u =>
-            u.gx === dest.gx && u.gy === dest.gy && u.owner !== unit.owner && u.gx >= 0
-            && state.units.indexOf(u) !== bestDefIdx);
-          if (defCity && !remainingEnemies) {
-            state.cities = [...prev.cities];
-            const ci = state.cities.indexOf(defCity);
-            if (ci >= 0) {
-              const captured = { ...defCity };
-              captured.owner = unit.owner;
-              // City shrinks by 1 on capture (min 1)
-              captured.size = Math.max(1, captured.size - 1);
-              captured.civilDisorder = false;
-              captured.weLoveKingDay = false;
-              captured.soldThisTurn = false;
-              // Reassign workers for smaller size
-              if (captured.workedTiles.length > captured.size) {
-                captured.workedTiles = captured.workedTiles.slice(0, captured.size);
+          // Stack wipe: on open ground (no city/fortress), kill ALL enemies
+          const hasProtection = defInCity || defHasFortress;
+          if (!hasProtection) {
+            for (let i = 0; i < state.units.length; i++) {
+              if (i !== bestDefIdx && state.units[i].gx === dest.gx &&
+                  state.units[i].gy === dest.gy && state.units[i].owner !== unit.owner &&
+                  state.units[i].gx >= 0) {
+                killUnit(state, i);
               }
-              captured.specialists = [];
-              state.cities[ci] = captured;
-              state.combatResult = { type: 'capture', cityName: defCity.name, civSlot };
             }
           }
+
+          // Attacker enters tile only if no more enemies remain
+          const moreEnemies = state.units.some(u =>
+            u.gx === dest.gx && u.gy === dest.gy && u.owner !== unit.owner && u.gx >= 0);
+          if (!moreEnemies) {
+            unit.gx = dest.gx; unit.gy = dest.gy;
+            unit.x = dest.gx * 2 + (dest.gy % 2); unit.y = dest.gy;
+
+            // City capture
+            if (defCity) {
+              state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+              const ci = state.cities.findIndex(c => c === defCity);
+              if (ci >= 0) {
+                const captured = { ...defCity,
+                  owner: unit.owner,
+                  size: Math.max(1, defCity.size - 1),
+                  civilDisorder: false, weLoveKingDay: false, soldThisTurn: false,
+                  specialists: [],
+                };
+                captured.workedTiles = captured.workedTiles.length > captured.size
+                  ? captured.workedTiles.slice(0, captured.size) : captured.workedTiles;
+                state.cities[ci] = captured;
+                // Rehome captured city's units to nearest own city
+                rehomeUnits(state, ci, defOwner);
+                state.combatResult = { type: 'capture', cityName: defCity.name, civSlot };
+              }
+            }
+          }
+
+          // Combat costs 1 MP (not all movement)
+          unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
+          if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
         } else {
           // Attacker destroyed
           unit.gx = -1; unit.gy = -1; unit.x = -1; unit.y = -1; unit.movesLeft = 0;
 
           // Veteran promotion for defender
-          if (result.defVeteranPromo) {
-            state.units[bestDefIdx] = { ...defender, veteran: 1, hpLost: result.defHpLost };
-          } else {
-            state.units[bestDefIdx] = { ...defender, hpLost: result.defHpLost };
-          }
+          state.units[bestDefIdx] = { ...defender,
+            veteran: result.defVeteranPromo ? 1 : defender.veteran,
+            hpLost: result.defHpLost };
         }
 
         state.units[unitIndex] = unit;
-        state.combatResult = state.combatResult || { type: result.attackerWins ? 'atkWin' : 'defWin', attacker: unit.type, defender: defender.type };
+        state.combatResult = state.combatResult || {
+          type: result.attackerWins ? 'atkWin' : 'defWin',
+          attacker: unit.type, defender: defender.type,
+        };
+
+        // Check civ elimination for the losing side
+        checkCivElimination(state, result.attackerWins ? defOwner : unit.owner);
       } else {
         // ── Normal movement (no enemy) ──
         const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
@@ -662,6 +679,18 @@ export function applyAction(prev, mapBase, action, civSlot) {
       break;
     }
 
+    case REVOLUTION: {
+      const { government } = action;
+      state.civs = [...prev.civs];
+      const civ = { ...state.civs[civSlot] };
+      civ.government = 'anarchy';
+      // 1-4 turns of anarchy (random)
+      civ.anarchyTurns = 1 + Math.floor(Math.random() * 4);
+      civ.pendingGovernment = government;
+      state.civs[civSlot] = civ;
+      break;
+    }
+
     case END_TURN: {
       const endingCiv = state.turn.activeCiv;
 
@@ -688,6 +717,27 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
         return { ...u, movesLeft: UNIT_MOVE_POINTS[u.type] * MOVEMENT_MULTIPLIER, orders };
       });
+
+      // ── Anarchy countdown ──
+      if (state.civs?.[activeCiv]) {
+        const civ = state.civs[activeCiv];
+        if (civ.government === 'anarchy' && civ.anarchyTurns > 0) {
+          state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+          const updCiv = { ...state.civs[activeCiv] };
+          updCiv.anarchyTurns = updCiv.anarchyTurns - 1;
+          if (updCiv.anarchyTurns <= 0) {
+            updCiv.government = updCiv.pendingGovernment || 'despotism';
+            delete updCiv.pendingGovernment;
+            delete updCiv.anarchyTurns;
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({
+              type: 'anarchyEnded', civSlot: activeCiv,
+              government: updCiv.government,
+            });
+          }
+          state.civs[activeCiv] = updCiv;
+        }
+      }
 
       // ── Compute happiness for all active civ's cities ──
       state.cities = [...prev.cities];
@@ -947,4 +997,42 @@ function findFirstAliveCiv(civsAlive) {
     if (civsAlive & (1 << i)) return i;
   }
   return 1;
+}
+
+/** Mark a unit dead (gx=-1). */
+function killUnit(state, idx) {
+  const u = state.units[idx];
+  if (u.gx < 0) return;
+  state.units[idx] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+}
+
+/** Check if a civ has no cities and no alive units → eliminate. */
+function checkCivElimination(state, civSlot) {
+  if (civSlot <= 0 || !(state.civsAlive & (1 << civSlot))) return;
+  const hasUnit = state.units.some(u => u.owner === civSlot && u.gx >= 0);
+  const hasCity = state.cities.some(c => c.owner === civSlot && c.size > 0);
+  if (!hasUnit && !hasCity) {
+    state.civsAlive &= ~(1 << civSlot);
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({ type: 'civEliminated', civSlot });
+  }
+}
+
+/** Rehome units whose home city was captured. Assign to nearest own city or -1. */
+function rehomeUnits(state, capturedCityIdx, oldOwner) {
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.homeCityId === capturedCityIdx && u.owner === oldOwner && u.gx >= 0) {
+      let bestCi = -1, bestDist = Infinity;
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (c.owner === oldOwner && c.size > 0 && ci !== capturedCityIdx) {
+          const dx = Math.abs(u.gx - c.gx), dy = Math.abs(u.gy - c.gy);
+          const d = dx + dy;
+          if (d < bestDist) { bestDist = d; bestCi = ci; }
+        }
+      }
+      state.units[i] = { ...u, homeCityId: bestCi };
+    }
+  }
 }

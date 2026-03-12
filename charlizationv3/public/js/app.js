@@ -10,12 +10,12 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYear, getGameYearFromMap } from '../engine/year.js';
-import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ORDER_KEYS, ORDER_NAMES } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
 import { getValidActions, validateAction } from '../engine/rules.js';
-import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER } from '../engine/actions.js';
+import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from '../engine/actions.js';
 import { calcRushBuyCost } from '../engine/happiness.js';
 import { getProductionCost, calcCityTrade } from '../engine/production.js';
 import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
@@ -1970,6 +1970,33 @@ function showTurnEvents(events) {
         break;
       }
 
+      case 'anarchyEnded': {
+        const govtName = (ev.government || 'despotism').charAt(0).toUpperCase() + (ev.government || 'despotism').slice(1);
+        createCiv2Dialog('turn-event-dialog', 'Order Restored', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `Order has been restored. Your government is now ${govtName}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'civEliminated': {
+        const civName = mpGameState?.civNames?.[ev.civSlot] || `Civilization ${ev.civSlot}`;
+        const isMe = ev.civSlot === mpCivSlot;
+        const title = isMe ? 'Defeat!' : 'Civilization Destroyed';
+        const text = isMe
+          ? 'Your civilization has been destroyed!'
+          : `The ${civName} have been destroyed!`;
+        createCiv2Dialog('turn-event-dialog', title, panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = text;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       default:
         showNext();
     }
@@ -2077,6 +2104,150 @@ function showRateSliders() {
   overlay.appendChild(panel);
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
+}
+
+// ── Tech tree viewer (F6) ──
+function showTechTree() {
+  if (!mpGameState || mpCivSlot == null) return;
+  const civTechs = mpGameState.civTechs?.[mpCivSlot] || new Set();
+
+  // Group advances into eras by counting prerequisites depth
+  const eraCache = {};
+  function getEra(id) {
+    if (eraCache[id] != null) return eraCache[id];
+    const [p1, p2] = ADVANCE_PREREQS[id];
+    if (p1 < 0 && p2 < 0) return (eraCache[id] = 0);
+    let d = 0;
+    if (p1 >= 0) d = Math.max(d, getEra(p1) + 1);
+    if (p2 >= 0) d = Math.max(d, getEra(p2) + 1);
+    return (eraCache[id] = d);
+  }
+
+  // Cache era values
+  const eras = [];
+  for (let i = 0; i < ADVANCE_NAMES.length; i++) {
+    const [p1, p2] = ADVANCE_PREREQS[i];
+    if (p1 === -2 || p2 === -2) continue; // unresearchable
+    eras.push({ id: i, name: ADVANCE_NAMES[i], era: getEra(i) });
+  }
+
+  // Group by era
+  const eraGroups = {};
+  for (const a of eras) {
+    if (!eraGroups[a.era]) eraGroups[a.era] = [];
+    eraGroups[a.era].push(a);
+  }
+  const eraNames = ['Ancient', 'Classical', 'Medieval', 'Renaissance', 'Industrial', 'Modern', 'Future'];
+
+  createCiv2Dialog('tech-tree', 'Technology Tree', panel => {
+    panel.style.maxHeight = '60vh';
+    panel.style.overflowY = 'auto';
+    panel.style.minWidth = '320px';
+
+    const sortedEras = Object.keys(eraGroups).map(Number).sort((a, b) => a - b);
+    for (const eraNum of sortedEras) {
+      const group = eraGroups[eraNum];
+      const eraLabel = eraNames[Math.min(eraNum, eraNames.length - 1)] || `Era ${eraNum}`;
+
+      const header = document.createElement('div');
+      header.className = 'tech-tree-era';
+      header.textContent = eraLabel;
+      panel.appendChild(header);
+
+      for (const a of group.sort((x, y) => x.name.localeCompare(y.name))) {
+        const row = document.createElement('div');
+        row.className = 'tech-tree-row';
+        const has = civTechs.has(a.id);
+        if (has) row.classList.add('researched');
+
+        const marker = document.createElement('span');
+        marker.className = 'tech-tree-marker';
+        marker.textContent = has ? '\u2713' : '\u00B7';
+        row.appendChild(marker);
+
+        const name = document.createElement('span');
+        name.className = 'tech-tree-name';
+        name.textContent = a.name;
+        row.appendChild(name);
+
+        // Show prereqs on hover
+        const [p1, p2] = ADVANCE_PREREQS[a.id];
+        const prereqs = [];
+        if (p1 >= 0) prereqs.push(ADVANCE_NAMES[p1]);
+        if (p2 >= 0) prereqs.push(ADVANCE_NAMES[p2]);
+        if (prereqs.length > 0) {
+          row.title = `Requires: ${prereqs.join(', ')}`;
+        }
+
+        panel.appendChild(row);
+      }
+    }
+  }, [{ label: 'Close' }]);
+}
+
+// ── Revolution dialog (Shift+G) ──
+function showRevolutionDialog() {
+  if (!mpGameState || mpCivSlot == null) return;
+  const civ = mpGameState.civs?.[mpCivSlot];
+  if (!civ) return;
+  if (civ.government === 'anarchy') {
+    showOverlayMessage('Revolution already in progress');
+    return;
+  }
+
+  const civTechs = mpGameState.civTechs?.[mpCivSlot] || new Set();
+  const currentGovt = civ.government || 'despotism';
+
+  // Build list of available governments
+  const available = GOVERNMENT_KEYS.filter(g => {
+    if (g === 'anarchy') return false;
+    if (g === currentGovt) return false;
+    const prereq = GOVT_TECH_PREREQS[g] ?? -1;
+    return prereq < 0 || civTechs.has(prereq);
+  });
+
+  if (available.length === 0) {
+    showOverlayMessage('No other government forms available');
+    return;
+  }
+
+  let selectedGovt = available[0];
+
+  createCiv2Dialog('revolution-dialog', 'Revolution!', panel => {
+    panel.style.minWidth = '280px';
+
+    const desc = document.createElement('div');
+    desc.style.cssText = 'margin-bottom: 10px; font-size: 13px;';
+    desc.textContent = `Current: ${currentGovt.charAt(0).toUpperCase() + currentGovt.slice(1)}. Choose new government:`;
+    panel.appendChild(desc);
+
+    for (const g of available) {
+      const row = document.createElement('label');
+      row.style.cssText = 'display: block; padding: 3px 0; cursor: pointer; font-size: 14px;';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'revolution-govt';
+      radio.value = g;
+      if (g === selectedGovt) radio.checked = true;
+      radio.addEventListener('change', () => { selectedGovt = g; });
+      row.appendChild(radio);
+      row.append(' ' + g.charAt(0).toUpperCase() + g.slice(1));
+      panel.appendChild(row);
+    }
+
+    const warn = document.createElement('div');
+    warn.style.cssText = 'margin-top: 10px; font-size: 11px; color: #883;';
+    warn.textContent = 'Your civilization will enter 1-4 turns of anarchy.';
+    panel.appendChild(warn);
+  }, [
+    { label: 'Cancel' },
+    { label: 'Revolt!', action: () => {
+      transport.sendRaw({
+        type: 'ACTION',
+        action: { type: REVOLUTION, government: selectedGovt },
+      });
+    }},
+  ]);
 }
 
 // ── Research picker ──
@@ -2458,6 +2629,7 @@ let blinkPatches = null;   // { 'gx,gy': { canvas, x, y } } terrain patches from
 let blinkUnitOverlay = null; // { canvas, x, y } selected unit + terrain composite for blink-on
 let pendingSlide = null;   // { unitIndex, oldGx, oldGy } — set before sending MOVE_UNIT
 let slideAnimating = false; // true during slide animation
+let pendingAutoAdvanceFrom = null; // unitIndex that triggered the action — consumed in STATE handler
 
 function saveActiveGame() {
   if (!wsRoomId || !wsSessionId) return;
@@ -2657,6 +2829,10 @@ const transport = createTransport({
         const prevUnits = mpGameState?.units;
         mpGameState = deserializeState(msg.state);
 
+        // Capture and consume auto-advance state
+        const autoAdvFrom = pendingAutoAdvanceFrom;
+        pendingAutoAdvanceFrom = null;
+
         // Stash visibility update — applied after slide animation (or immediately if no slide)
         const pendingVisibility = (msg.tileVisibility && mpMapBase?.tileData) ? msg.tileVisibility : null;
 
@@ -2672,7 +2848,7 @@ const transport = createTransport({
           if (newUnit && (newUnit.gx !== oldGx || newUnit.gy !== oldGy) && newUnit.gx >= 0) {
             pendingSlide = null;
             // Slide first, then apply visibility + full re-render when done
-            animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility);
+            animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility, autoAdvFrom);
             return;
           }
         }
@@ -2680,7 +2856,7 @@ const transport = createTransport({
 
         // No slide — apply visibility immediately
         applyVisibilityUpdate(pendingVisibility);
-        doRenderFromState({ skipCenter: true });
+        doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
 
         // Refresh city dialog if open (e.g. after SET_WORKERS)
         if (cdCity && mpGameState?.cities?.[cdCityIndex]
@@ -2756,9 +2932,11 @@ const transport = createTransport({
           });
         }
 
-        // Turn events: city growth, famine, production complete
+        // Turn events: city growth, famine, production complete, civ eliminated
         if (msg.state.turnEvents) {
-          const myEvents = msg.state.turnEvents.filter(e => e.civSlot === mpCivSlot);
+          // Own-civ events + global events (elimination) shown to everyone
+          const myEvents = msg.state.turnEvents.filter(e =>
+            e.civSlot === mpCivSlot || e.type === 'civEliminated');
           if (myEvents.length > 0) {
             showTurnEvents(myEvents);
           }
@@ -3121,10 +3299,22 @@ async function doRenderFromState(opts = {}) {
   updateTurnUI();
   updateGameInfo(currentMapData, mpCivSlot);
 
-  // Auto-select first movable unit (only on our turn)
+  // Auto-select unit (only on our turn)
+  const prevSelected = mpSelectedUnit;
   if (mpGameState.turn.activeCiv === mpCivSlot) {
-    const next = findNextMovableUnit(-1);
-    mpSelectedUnit = next;
+    const advFrom = opts.autoAdvanceFrom;
+    if (advFrom != null) {
+      // After a move/order: stay on same unit if it still has moves, else advance
+      const movedUnit = mpGameState.units[advFrom];
+      if (movedUnit && movedUnit.owner === mpCivSlot && movedUnit.movesLeft > 0
+          && movedUnit.gx >= 0 && !BUSY_ORDERS.has(movedUnit.orders)) {
+        mpSelectedUnit = advFrom;
+      } else {
+        mpSelectedUnit = findNextMovableUnit(advFrom);
+      }
+    } else {
+      mpSelectedUnit = findNextMovableUnit(-1);
+    }
   } else {
     mpSelectedUnit = null;
   }
@@ -3139,8 +3329,10 @@ async function doRenderFromState(opts = {}) {
     if (mpSelectedUnit != null) startBlink(); else stopBlink();
   }
 
-  // Center on active unit (or first own unit) when loading/resuming
-  if (!opts.skipCenter) {
+  // Center on newly selected unit if it changed (auto-advance), or on load
+  if (opts.skipCenter && mpSelectedUnit !== prevSelected && mpSelectedUnit != null) {
+    centerOnUnit(mpGameState.units[mpSelectedUnit]);
+  } else if (!opts.skipCenter) {
     const centerUnit = mpSelectedUnit != null
       ? mpGameState.units[mpSelectedUnit]
       : findFirstOwnUnit();
@@ -3386,6 +3578,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'f' && !e.shiftKey) {
     e.preventDefault();
     if (mpSelectedUnit != null) {
+      pendingAutoAdvanceFrom = mpSelectedUnit;
       transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'fortify' } });
     }
     return;
@@ -3395,6 +3588,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 's' && !e.shiftKey) {
     e.preventDefault();
     if (mpSelectedUnit != null) {
+      pendingAutoAdvanceFrom = mpSelectedUnit;
       transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'sentry' } });
     }
     return;
@@ -3404,6 +3598,7 @@ window.addEventListener('keydown', e => {
   if (e.key === ' ') {
     e.preventDefault();
     if (mpSelectedUnit != null) {
+      pendingAutoAdvanceFrom = mpSelectedUnit;
       transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'skip' } });
     }
     return;
@@ -3415,8 +3610,10 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u) {
+        const idx = mpSelectedUnit;
         showConfirmDialog(`Disband ${UNIT_NAMES[u.type]}?`, () => {
-          transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: mpSelectedUnit, order: 'disband' } });
+          pendingAutoAdvanceFrom = idx;
+          transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: idx, order: 'disband' } });
         });
       }
     }
@@ -3429,6 +3626,7 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u && (u.type === 0 || u.type === 1)) {
+        pendingAutoAdvanceFrom = mpSelectedUnit;
         transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'road' } });
       }
     }
@@ -3441,6 +3639,7 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u && (u.type === 0 || u.type === 1)) {
+        pendingAutoAdvanceFrom = mpSelectedUnit;
         transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'irrigation' } });
       }
     }
@@ -3453,6 +3652,7 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u && (u.type === 0 || u.type === 1)) {
+        pendingAutoAdvanceFrom = mpSelectedUnit;
         transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'mine' } });
       }
     }
@@ -3465,6 +3665,7 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u && (u.type === 0 || u.type === 1)) {
+        pendingAutoAdvanceFrom = mpSelectedUnit;
         transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'fortress' } });
       }
     }
@@ -3477,6 +3678,7 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u && (u.type === 0 || u.type === 1)) {
+        pendingAutoAdvanceFrom = mpSelectedUnit;
         transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'pollution' } });
       }
     }
@@ -3487,6 +3689,20 @@ window.addEventListener('keydown', e => {
   if ((e.key === 't' || e.key === 'T') && e.shiftKey) {
     e.preventDefault();
     showRateSliders();
+    return;
+  }
+
+  // Shift+G: revolution (change government)
+  if (e.key === 'G' && e.shiftKey) {
+    e.preventDefault();
+    showRevolutionDialog();
+    return;
+  }
+
+  // F6: tech tree viewer
+  if (e.key === 'F6') {
+    e.preventDefault();
+    showTechTree();
     return;
   }
 
@@ -3501,11 +3717,12 @@ window.addEventListener('keydown', e => {
   }
   if (mpSelectedUnit == null) return;
 
-  // Set pending slide for animation
+  // Set pending slide for animation + auto-advance tracking
   const u = mpGameState.units[mpSelectedUnit];
   if (u) {
     pendingSlide = { unitIndex: mpSelectedUnit, oldGx: u.gx, oldGy: u.gy };
   }
+  pendingAutoAdvanceFrom = mpSelectedUnit;
 
   transport.sendRaw({
     type: 'ACTION',
@@ -3642,7 +3859,7 @@ function applyImprovementsUpdate(tileImprovements) {
 }
 
 // ── Unit slide animation ──
-function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibility) {
+function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibility, autoAdvFrom) {
   const TW = 64, TH = 32;
   const fromX = oldGx * TW + ((oldGy % 2) ? (TW >> 1) : 0);
   const fromY = oldGy * (TH >> 1) - 16;
@@ -3660,14 +3877,14 @@ function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibil
   const u = mpGameState.units[unitIndex];
   if (!u || !mapSprites) {
     applyVisibilityUpdate(deferredVisibility);
-    doRenderFromState({ skipCenter: true });
+    doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
     return;
   }
   const cacheKey = u.type + '-' + u.owner;
   const unitSprite = mapSprites.unitColored[cacheKey];
   if (!unitSprite) {
     applyVisibilityUpdate(deferredVisibility);
-    doRenderFromState({ skipCenter: true });
+    doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
     return;
   }
 
@@ -3710,7 +3927,7 @@ function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibil
     } else {
       slideAnimating = false;
       applyVisibilityUpdate(deferredVisibility);
-      doRenderFromState({ skipCenter: true });
+      doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
     }
   }
 
@@ -3792,6 +4009,7 @@ function actionToMenuItem(va, unitIdx) {
         isDefault: true,
         action: () => {
           pendingSlide = { unitIndex: unitIdx, oldGx: u.gx, oldGy: u.gy };
+          pendingAutoAdvanceFrom = unitIdx;
           transport.sendRaw({
             type: 'ACTION',
             action: { type: MOVE_UNIT, unitIndex: unitIdx, dir: va.dir },

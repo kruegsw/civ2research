@@ -9,8 +9,8 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS } from './defs.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from './actions.js';
+import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -302,6 +302,24 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (order === 'pollution') {
         const imp = mapBase.getImprovements(unit.gx, unit.gy);
         if (!imp.pollution) return 'No pollution to clean';
+      }
+      return null;
+    }
+
+    case REVOLUTION: {
+      const { government } = action;
+      if (!government) return 'Missing government';
+      if (!GOVERNMENT_KEYS.includes(government)) return 'Invalid government type';
+      if (government === 'anarchy') return 'Cannot choose anarchy';
+      const civ = gameState.civs?.[civSlot];
+      if (!civ) return 'Civ not found';
+      if (civ.government === government) return 'Already that government';
+      if (civ.government === 'anarchy') return 'Revolution already in progress';
+      // Check tech prerequisite
+      const prereq = GOVT_TECH_PREREQS[government] ?? -1;
+      if (prereq >= 0) {
+        const civTechs = gameState.civTechs?.[civSlot];
+        if (!civTechs || !civTechs.has(prereq)) return 'Missing tech prerequisite';
       }
       return null;
     }

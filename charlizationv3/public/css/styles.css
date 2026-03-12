@@ -808,6 +808,27 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 #research-info:hover { color: #ddf; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   Tech Tree Viewer
+   ═══════════════════════════════════════════════════════════════════ */
+.tech-tree-era {
+  font: bold 14px 'Times New Roman', Georgia, serif;
+  color: #654;
+  padding: 8px 0 4px;
+  border-bottom: 1px solid #b8a88c;
+  margin-bottom: 2px;
+}
+.tech-tree-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 2px 8px;
+  font: 13px 'Times New Roman', Georgia, serif;
+  color: #555;
+}
+.tech-tree-row.researched { color: #242; }
+.tech-tree-row.researched .tech-tree-marker { color: #0a0; font-weight: bold; }
+.tech-tree-marker { width: 14px; text-align: center; font-size: 16px; color: #999; }
+.tech-tree-name { flex: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 520px) {
