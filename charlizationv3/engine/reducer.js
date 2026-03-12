@@ -10,7 +10,7 @@
 
 import { validateAction } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -445,6 +445,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         checkCivElimination(state, result.attackerWins ? defOwner : unit.owner);
       } else {
         // ── Normal movement (no enemy) ──
+        const prevGx = unit.gx, prevGy = unit.gy;
         const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
 
         unit.gx = dest.gx;
@@ -464,6 +465,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
             unit.orders === 'railroad') {
           unit.orders = 'none';
           unit.workTurns = 0;
+        }
+
+        // Naval transport: sea unit with carry capacity auto-moves cargo
+        if (UNIT_DOMAIN[unit.type] === 1 && UNIT_CARRY_CAP[unit.type]) {
+          for (let i = 0; i < state.units.length; i++) {
+            const u = state.units[i];
+            if (u.gx === prevGx && u.gy === prevGy && u.owner === unit.owner &&
+                UNIT_DOMAIN[u.type] === 0 && u.gx >= 0) {
+              state.units[i] = { ...u,
+                gx: dest.gx, gy: dest.gy,
+                x: dest.gx * 2 + (dest.gy % 2), y: dest.gy,
+              };
+            }
+          }
         }
 
         state.units[unitIndex] = unit;

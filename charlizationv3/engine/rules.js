@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS } from './defs.js';
+import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -66,16 +66,23 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
       if (!dest) return 'Cannot move off map';
 
-      // Domain check: land units can't enter ocean (no transport yet)
+      // Domain checks with naval transport
       const domain = UNIT_DOMAIN[unit.type] ?? 0;
       const terrain = mapBase.getTerrain(dest.gx, dest.gy);
-      if (domain === 0 && terrain === 10) return 'Land unit cannot enter ocean';
+      if (domain === 0 && terrain === 10) {
+        // Land→ocean: embark only, must have transport with capacity at dest
+        const srcTerrain = mapBase.getTerrain(unit.gx, unit.gy);
+        if (srcTerrain === 10) return 'Use transport to move at sea';
+        const err = checkTransportCapacity(gameState, dest.gx, dest.gy, unit.owner);
+        if (err) return err;
+      }
       if (domain === 1 && terrain !== 10) return 'Sea unit cannot enter land';
 
-      // Check for enemy units at destination — non-combat units (ATK=0) can't attack
+      // Check for enemy units at destination
       const hasEnemy = gameState.units.some(u =>
         u.gx === dest.gx && u.gy === dest.gy && u.owner !== unit.owner && u.gx >= 0);
       if (hasEnemy && (UNIT_ATK[unit.type] || 0) === 0) return 'Non-combat unit cannot attack';
+      if (hasEnemy && domain === 0 && terrain === 10) return 'Cannot attack units at sea';
 
       // Can't move own units onto enemy-occupied tile without attacking (friendly stack check not needed — we allow stacking own units)
 
@@ -370,4 +377,18 @@ export function getValidActions(gameState, mapBase, unitIndex, tile) {
   }
 
   return actions;
+}
+
+/** Check if a friendly transport with spare capacity exists at (gx, gy). */
+function checkTransportCapacity(gameState, gx, gy, owner) {
+  let totalCap = 0;
+  let cargo = 0;
+  for (const u of gameState.units) {
+    if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
+    if (UNIT_CARRY_CAP[u.type]) totalCap += UNIT_CARRY_CAP[u.type];
+    else if (UNIT_DOMAIN[u.type] === 0) cargo++; // land unit = cargo
+  }
+  if (totalCap === 0) return 'No transport available';
+  if (cargo >= totalCap) return 'Transport is full';
+  return null;
 }

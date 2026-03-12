@@ -177,7 +177,13 @@ export const NON_COMBAT_TYPES = new Set([0, 1, 46, 47, 48, 49, 50]);
 export const SUPPORT_EXEMPT_TYPES = new Set([46, 47, 48, 49]);
 export const FANATIC_TYPES = new Set([8]);
 export const SEA_COMBAT_TYPES = new Set([35, 36, 37, 38, 39, 40, 41]);
-export const SEA_TRANSPORT_TYPES = new Set([32, 33, 34]);
+export const SEA_TRANSPORT_TYPES = new Set([32, 33, 34, 43]);
+
+// Transport capacity (only units that can carry others)
+// Trireme=2, Caravel=3, Galleon=4, Carrier=8 (air only), Transport=8
+export const UNIT_CARRY_CAP = [];
+UNIT_CARRY_CAP[32] = 2;  UNIT_CARRY_CAP[33] = 3;
+UNIT_CARRY_CAP[34] = 4;  UNIT_CARRY_CAP[42] = 8;  UNIT_CARRY_CAP[43] = 8;
 
 // Free unit support slots by government (COSMIC defaults)
 export const COSMIC_FREE_SUPPORT = { monarchy: 3, communism: 3, fundamentalism: 10 };
