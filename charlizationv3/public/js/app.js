@@ -1066,6 +1066,7 @@ function cdHandleClick(clientX, clientY) {
       const name = IMPROVE_NAMES[result.buildingId] || 'Building';
       const refund = IMPROVE_COSTS[result.buildingId] || 0;
       showConfirmDialog(`Sell ${name} for ${refund} gold?`, () => {
+        sfx('SELL');
         transport.sendRaw({
           type: 'ACTION',
           action: { type: SELL_BUILDING, cityIndex: cdCityIndex, buildingId: result.buildingId },
@@ -1343,6 +1344,7 @@ function handleRushBuy(city, cityIndex) {
   }
 
   showConfirmDialog(`Buy ${itemName} for ${buyCost} gold?`, () => {
+    sfx('SELL');
     transport.sendRaw({ type: 'ACTION', action: { type: RUSH_BUY, cityIndex } });
   });
 }
@@ -1394,6 +1396,7 @@ function showSellBuildingPicker(city, cityIndex) {
       row.addEventListener('click', () => {
         overlay.remove();
         showConfirmDialog(`Sell ${name} for ${refund} gold?`, () => {
+          sfx('SELL');
           transport.sendRaw({
             type: 'ACTION',
             action: { type: SELL_BUILDING, cityIndex, buildingId: id },
@@ -1930,6 +1933,7 @@ function showTurnEvents(events) {
     const ev = events[i++];
     switch (ev.type) {
       case 'cityGrowth':
+        sfx('CHEERS3');
         createCiv2Dialog('turn-event-dialog', 'City Growth', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -1939,6 +1943,7 @@ function showTurnEvents(events) {
         break;
 
       case 'famine':
+        sfx('CIVDISOR');
         createCiv2Dialog('turn-event-dialog', 'Famine!', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -1948,6 +1953,7 @@ function showTurnEvents(events) {
         break;
 
       case 'needsAqueduct':
+        sfx('AQUEDUCT');
         createCiv2Dialog('turn-event-dialog', 'Aqueduct Needed', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -1957,6 +1963,7 @@ function showTurnEvents(events) {
         break;
 
       case 'needsSewer':
+        sfx('AQUEDUCT');
         createCiv2Dialog('turn-event-dialog', 'Sewer System Needed', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -1968,9 +1975,9 @@ function showTurnEvents(events) {
       case 'productionComplete': {
         const item = ev.item;
         let itemName;
-        if (item.type === 'unit') itemName = UNIT_NAMES[item.id] || 'Unit';
-        else if (item.type === 'building') itemName = IMPROVE_NAMES[item.id] || 'Building';
-        else if (item.type === 'wonder') itemName = WONDER_NAMES[item.id - 39] || 'Wonder';
+        if (item.type === 'unit') { itemName = UNIT_NAMES[item.id] || 'Unit'; sfx('BARRACKS'); }
+        else if (item.type === 'building') { itemName = IMPROVE_NAMES[item.id] || 'Building'; sfx('CATHEDRL'); }
+        else if (item.type === 'wonder') { itemName = WONDER_NAMES[item.id - 39] || 'Wonder'; sfx('NEWONDER'); }
         else itemName = 'Item';
 
         createCiv2Dialog('turn-event-dialog', 'Production Complete', panel => {
@@ -1991,6 +1998,7 @@ function showTurnEvents(events) {
       }
 
       case 'anarchyEnded': {
+        sfx('NEWGOVT');
         const govtName = (ev.government || 'despotism').charAt(0).toUpperCase() + (ev.government || 'despotism').slice(1);
         createCiv2Dialog('turn-event-dialog', 'Order Restored', panel => {
           const msg = document.createElement('div');
@@ -2002,6 +2010,7 @@ function showTurnEvents(events) {
       }
 
       case 'unitCrashed': {
+        sfx(getDeathSfx(ev.unitType));
         const uName = UNIT_NAMES[ev.unitType] || 'Unit';
         createCiv2Dialog('turn-event-dialog', 'Unit Lost', panel => {
           const msg = document.createElement('div');
@@ -2013,6 +2022,7 @@ function showTurnEvents(events) {
       }
 
       case 'freeAdvance': {
+        sfx('FANFARE1');
         const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
         createCiv2Dialog('turn-event-dialog', ev.source || 'Free Advance', panel => {
           const msg = document.createElement('div');
@@ -2024,6 +2034,7 @@ function showTurnEvents(events) {
       }
 
       case 'warDeclared': {
+        sfx('NEG1');
         const aggrName = mpGameState?.civNames?.[ev.aggressor] || `Civ ${ev.aggressor}`;
         const targName = mpGameState?.civNames?.[ev.target] || `Civ ${ev.target}`;
         createCiv2Dialog('turn-event-dialog', 'War!', panel => {
@@ -2036,6 +2047,7 @@ function showTurnEvents(events) {
       }
 
       case 'treatyAccepted': {
+        sfx('POS1');
         const civAName = mpGameState?.civNames?.[ev.civA] || `Civ ${ev.civA}`;
         const civBName = mpGameState?.civNames?.[ev.civB] || `Civ ${ev.civB}`;
         const treatyName = ev.treaty === 'peace' ? 'Peace Treaty' : 'Ceasefire';
@@ -2049,6 +2061,7 @@ function showTurnEvents(events) {
       }
 
       case 'tradeEstablished': {
+        sfx('MRKTPLCE');
         createCiv2Dialog('turn-event-dialog', 'Trade Route', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -2060,6 +2073,7 @@ function showTurnEvents(events) {
       }
 
       case 'civEliminated': {
+        sfx('GUILLOTN');
         const civName = mpGameState?.civNames?.[ev.civSlot] || `Civilization ${ev.civSlot}`;
         const isMe = ev.civSlot === mpCivSlot;
         const title = isMe ? 'Defeat!' : 'Civilization Destroyed';
@@ -2076,6 +2090,7 @@ function showTurnEvents(events) {
       }
 
       case 'unitBribed': {
+        sfx('SPYSOUND');
         const uName = UNIT_NAMES[ev.unitType] || 'Unit';
         createCiv2Dialog('turn-event-dialog', 'Bribery', panel => {
           const msg = document.createElement('div');
@@ -2087,6 +2102,7 @@ function showTurnEvents(events) {
       }
 
       case 'techStolen': {
+        sfx('SPYSOUND');
         const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
         const fromName = mpGameState?.civNames?.[ev.from] || `Civ ${ev.from}`;
         createCiv2Dialog('turn-event-dialog', 'Espionage', panel => {
@@ -2099,6 +2115,7 @@ function showTurnEvents(events) {
       }
 
       case 'citySabotaged': {
+        sfx('SPYSOUND');
         const detail = ev.buildingId != null
           ? `Building destroyed in ${ev.cityName}!`
           : `Production sabotaged in ${ev.cityName}!`;
@@ -2112,6 +2129,7 @@ function showTurnEvents(events) {
       }
 
       case 'cityIncited': {
+        sfx('CIVDISOR');
         const fromName = mpGameState?.civNames?.[ev.from] || `Civ ${ev.from}`;
         createCiv2Dialog('turn-event-dialog', 'Revolt!', panel => {
           const msg = document.createElement('div');
@@ -2123,6 +2141,7 @@ function showTurnEvents(events) {
       }
 
       case 'tributePaid': {
+        sfx('SELL');
         const payerName = mpGameState?.civNames?.[ev.from] || `Civ ${ev.from}`;
         const receiverName = mpGameState?.civNames?.[ev.to] || `Civ ${ev.to}`;
         createCiv2Dialog('turn-event-dialog', 'Tribute', panel => {
@@ -2135,6 +2154,7 @@ function showTurnEvents(events) {
       }
 
       case 'mapShared': {
+        sfx('POS1');
         const shareName = mpGameState?.civNames?.[ev.targetCiv] || `Civ ${ev.targetCiv}`;
         createCiv2Dialog('turn-event-dialog', 'Map Exchange', panel => {
           const msg = document.createElement('div');
@@ -2146,6 +2166,7 @@ function showTurnEvents(events) {
       }
 
       case 'unitDisbanded': {
+        sfx('SMALLEXP');
         const uName = UNIT_NAMES[ev.unitType] || 'Unit';
         createCiv2Dialog('turn-event-dialog', 'Unit Disbanded', panel => {
           const msg = document.createElement('div');
@@ -2452,6 +2473,7 @@ function showRevolutionDialog() {
   }, [
     { label: 'Cancel' },
     { label: 'Revolt!', action: () => {
+      sfx('GUILLOTN');
       transport.sendRaw({
         type: 'ACTION',
         action: { type: REVOLUTION, government: selectedGovt },
@@ -2549,6 +2571,7 @@ function showDiplomacyPanel() {
         accBtn.className = 'civ2-btn';
         accBtn.style.cssText = 'font-size:11px;padding:2px 8px;margin-right:4px';
         accBtn.onclick = () => {
+          sfx('POS1');
           transport.sendRaw({ type: 'ACTION', action: { type: RESPOND_TREATY, proposalIndex: pi, accept: true } });
           document.getElementById('diplomacy-dialog')?.remove();
         };
@@ -2557,6 +2580,7 @@ function showDiplomacyPanel() {
         rejBtn.className = 'civ2-btn';
         rejBtn.style.cssText = 'font-size:11px;padding:2px 8px';
         rejBtn.onclick = () => {
+          sfx('NEG1');
           transport.sendRaw({ type: 'ACTION', action: { type: RESPOND_TREATY, proposalIndex: pi, accept: false } });
           document.getElementById('diplomacy-dialog')?.remove();
         };
@@ -2862,13 +2886,122 @@ document.getElementById('cityview-close').addEventListener('click', closeCityVie
 // MAIN MENU — radio-button + OK pattern
 // ═══════════════════════════════════════════════════════════════════
 
-// Menu audio
-const menuLoop = new Audio('assets/sounds/MENULOOP.WAV');
-const menuOk = new Audio('assets/sounds/MENUOK.WAV');
-const menuEnd = new Audio('assets/sounds/MENUEND.WAV');
-const sfxBuildCity = new Audio('assets/sounds/BLDCITY.WAV');
+// ── Sound system ──
+// Preload all WAV files; play() resets currentTime for overlapping calls
+const SFX = {};
+function sfxLoad(name) {
+  const a = new Audio(`assets/sounds/${name}.WAV`);
+  SFX[name] = a;
+  return a;
+}
+function sfx(name) {
+  const a = SFX[name];
+  if (!a) return;
+  a.currentTime = 0;
+  a.play().catch(() => {});
+}
+
+// Menu sounds
+const menuLoop = sfxLoad('MENULOOP');
+sfxLoad('MENUOK');
+sfxLoad('MENUEND');
 menuLoop.loop = true;
 let menuMuted = false;
+
+// Gameplay sounds
+sfxLoad('MOVPIECE');    // unit move
+sfxLoad('ENDOTURN');    // end turn
+sfxLoad('BLDCITY');     // city founded
+sfxLoad('SELL');         // sell building / rush buy
+sfxLoad('NEWONDER');    // wonder completed
+sfxLoad('NEWGOVT');     // government changed
+sfxLoad('GUILLOTN');    // revolution (anarchy)
+sfxLoad('FANFARE1');    // tech discovered
+sfxLoad('SPYSOUND');    // espionage actions
+sfxLoad('CIVDISOR');    // civil disorder
+sfxLoad('POMPCIRC');    // We Love the King Day
+sfxLoad('AQUEDUCT');    // aqueduct/sewer needed
+sfxLoad('LETTER');       // diplomacy received
+sfxLoad('POS1');         // diplomacy accepted
+sfxLoad('NEG1');         // diplomacy rejected
+sfxLoad('CRWDBUGL');    // city captured
+sfxLoad('NUKEXPLO');    // nuke
+sfxLoad('FEEDBK04');    // UI click feedback
+sfxLoad('CATHEDRL');    // building complete
+sfxLoad('MRKTPLCE');    // trade route
+sfxLoad('CHEERS1');     // goody hut positive
+sfxLoad('CHEERS2');     // goody hut positive alt
+sfxLoad('NEWBANK');     // goody hut gold
+sfxLoad('BARRACKS');    // unit produced
+
+// Combat attack sounds — per-unit-type mapping
+sfxLoad('SWORDFGT');    // Warriors, Phalanx, Legion, Pikemen, Musketeers, Fanatics, Partisans, Riflemen
+sfxLoad('INFANTRY');    // Marines, Paratroopers, Mech. Inf., Alpine Troops
+sfxLoad('CAVALRY');     // Horsemen, Knights, Dragoons, Cavalry
+sfxLoad('ELEPHANT');    // Elephant
+sfxLoad('SWRDHORS');    // Chariot, Crusaders
+sfxLoad('CATAPULT');    // Catapult, Cannon, Artillery
+sfxLoad('BIGGUN');      // Howitzer, Battleship, Cruiser
+sfxLoad('MCHNGUNS');    // Armor
+sfxLoad('FIRE---');     // Frigate
+sfxLoad('AIRCOMBT');    // Fighter, Stealth Fighter
+sfxLoad('DIVEBOMB');    // Bomber, Stealth Bomber
+sfxLoad('JETBOMB');     // Cruise Missile
+sfxLoad('HELISHOT');    // Helicopter
+sfxLoad('NAVBTTLE');    // Ironclad, Destroyer, AEGIS Cruiser
+sfxLoad('TORPEDOS');    // Submarine
+sfxLoad('MISSILE');     // Nuclear Missile
+sfxLoad('MEDGUN');      // Archers, Explorer
+sfxLoad('DIESEL');      // Transport, Carrier
+sfxLoad('ENGNSPUT');    // Trireme, Caravel, Galleon
+// Death/explosion sounds
+sfxLoad('SMALLEXP');    // land unit killed
+sfxLoad('MEDEXPL');     // modern unit killed
+sfxLoad('LARGEXPL');    // artillery/armor killed
+sfxLoad('BOATSINK');    // naval unit killed
+sfxLoad('JETCRASH');    // air unit killed
+sfxLoad('DIVCRASH');    // helicopter killed
+
+// Unit type → attack sound name
+// Indices: 0=Settlers 1=Engineers 2=Warriors 3=Phalanx 4=Archers 5=Legion
+//   6=Pikemen 7=Musketeers 8=Fanatics 9=Partisans 10=Alpine 11=Riflemen
+//   12=Marines 13=Paratroopers 14=Mech.Inf 15=Horsemen 16=Chariot 17=Elephant
+//   18=Crusaders 19=Knights 20=Dragoons 21=Cavalry 22=Armor 23=Catapult
+//   24=Cannon 25=Artillery 26=Howitzer 27=Fighter 28=Bomber 29=Helicopter
+//   30=StealthFighter 31=StealthBomber 32=Trireme 33=Caravel 34=Galleon
+//   35=Frigate 36=Ironclad 37=Destroyer 38=Cruiser 39=AEGIS 40=Battleship
+//   41=Submarine 42=Carrier 43=Transport 44=CruiseMsl 45=NuclearMsl
+//   46=Diplomat 47=Spy 48=Caravan 49=Freight 50=Explorer 51=ExtraLand
+const UNIT_ATK_SFX = [
+  null,       null,       'SWORDFGT','SWORDFGT','MEDGUN',  'SWORDFGT', // 0-5
+  'SWORDFGT','SWORDFGT','SWORDFGT','SWORDFGT','INFANTRY','SWORDFGT', // 6-11
+  'INFANTRY','INFANTRY','INFANTRY','CAVALRY', 'SWRDHORS','ELEPHANT', // 12-17
+  'SWRDHORS','CAVALRY', 'CAVALRY', 'CAVALRY', 'MCHNGUNS','CATAPULT', // 18-23
+  'CATAPULT','CATAPULT','BIGGUN',  'AIRCOMBT','DIVEBOMB','HELISHOT', // 24-29
+  'AIRCOMBT','DIVEBOMB','ENGNSPUT','ENGNSPUT','ENGNSPUT','FIRE---',  // 30-35
+  'NAVBTTLE','NAVBTTLE','BIGGUN',  'NAVBTTLE','BIGGUN',  'TORPEDOS', // 36-41
+  'DIESEL',  'DIESEL',  'JETBOMB', 'MISSILE', 'SPYSOUND','SPYSOUND', // 42-47
+  null,       null,       'MEDGUN',  null,                             // 48-51
+];
+
+// Unit type → death sound (based on domain and era)
+const UNIT_DOMAIN_IMPORTED = [
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   // 0-14 land
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             // 15-26 land
+  2, 2, 2, 2, 2,                                     // 27-31 air
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,               // 32-43 sea
+  2, 2,                                               // 44-45 air (missiles)
+  0, 0, 0, 0, 0, 0,                                   // 46-51 land
+];
+function getDeathSfx(unitType) {
+  const domain = UNIT_DOMAIN_IMPORTED[unitType] ?? 0;
+  if (domain === 1) return 'BOATSINK';
+  if (domain === 2) return unitType === 29 ? 'DIVCRASH' : 'JETCRASH'; // helicopter vs jet
+  // Land: modern units get bigger explosions
+  if (unitType >= 22 && unitType <= 26) return 'LARGEXPL'; // armor, artillery
+  if (unitType >= 10 && unitType <= 14) return 'MEDEXPL';  // modern infantry
+  return 'SMALLEXP';
+}
 
 // First click: reveal menu dialog, start music, shrink seal (FLIP animation)
 function revealMenu() {
@@ -2926,7 +3059,7 @@ menuLoop.play().then(() => {
 document.getElementById('menu-ok-btn').addEventListener('click', () => {
   menuLoop.pause();
   menuLoop.currentTime = 0;
-  if (!menuMuted) menuOk.play().catch(() => {});
+  if (!menuMuted) sfx('MENUOK');
   const selected = document.querySelector('input[name="menu-choice"]:checked');
   if (!selected) return;
   switch (selected.value) {
@@ -3181,7 +3314,7 @@ const transport = createTransport({
         if (currentScene === 'lobby') {
           menuLoop.pause();
           menuLoop.currentTime = 0;
-          menuEnd.play().catch(() => {});
+          sfx('MENUEND');
         }
 
         // Enable FOW + LOS for multiplayer
@@ -3222,15 +3355,161 @@ const transport = createTransport({
         applyTerrainUpdate(msg.tileTerrains);
         applyGoodyHutUpdate(msg.tileGoodyHuts);
 
+        // Process notifications (combat, goody hut, city founded, turn events, etc.)
+        const statePayload = msg.state;
+        const processNotifications = () => {
+          // Refresh city dialog if open (e.g. after SET_WORKERS)
+          if (cdCity && mpGameState?.cities?.[cdCityIndex]
+              && document.getElementById('citydialog-overlay').style.display === 'flex') {
+            cdCity = mpGameState.cities[cdCityIndex];
+            cdRerender();
+          }
+
+          // Combat result notification
+          if (statePayload.combatResult) {
+            const cr = statePayload.combatResult;
+            if (cr.type === 'capture') {
+              sfx('CRWDBUGL');
+              showOverlayMessage(`${cr.cityName} captured!`);
+            } else {
+              // Play attacker's attack sound
+              const atkSfx = UNIT_ATK_SFX[cr.attacker];
+              if (atkSfx) sfx(atkSfx);
+              // Play loser's death sound after a short delay
+              const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
+              setTimeout(() => sfx(getDeathSfx(loser)), 300);
+              const atkName = UNIT_NAMES[cr.attacker] || 'Unit';
+              const defName = UNIT_NAMES[cr.defender] || 'Unit';
+              if (cr.type === 'atkWin') {
+                showOverlayMessage(`${atkName} defeated ${defName}`);
+              } else {
+                showOverlayMessage(`${defName} repelled ${atkName}`);
+              }
+            }
+          }
+
+          // Tech discovery notification — auto-show research picker
+          if (statePayload.discoveredAdvance && statePayload.discoveredAdvance.civSlot === mpCivSlot) {
+            sfx('FANFARE1');
+            const da = statePayload.discoveredAdvance;
+            const ct = mpGameState.civTechs?.[da.civSlot];
+            console.log('[tech] Discovered advance', da.advanceId, ADVANCE_NAMES[da.advanceId],
+              'civTechs now=', ct ? [...ct] : null, 'has it=', ct?.has(da.advanceId));
+            setTimeout(() => showResearchPicker(statePayload.discoveredAdvance.advanceId), 300);
+          }
+
+          // Goody hut result notification (exact Civ2 GAME.TXT messages)
+          if (statePayload.goodyHutResult && statePayload.goodyHutResult.civSlot === mpCivSlot) {
+            const hr = statePayload.goodyHutResult;
+            switch (hr.type) {
+              case 'gold':
+                sfx('NEWBANK');
+                createCiv2Dialog('hut-dialog', 'Village', panel => {
+                  const m = document.createElement('div');
+                  m.textContent = `You have discovered valuable metal deposits worth ${hr.amount} gold.`;
+                  panel.appendChild(m);
+                });
+                break;
+              case 'tech':
+                sfx('FANFARE1');
+                createCiv2Dialog('hut-dialog', 'Village', panel => {
+                  const m = document.createElement('div');
+                  m.textContent = 'You have discovered scrolls of ancient wisdom.';
+                  panel.appendChild(m);
+                  const t = document.createElement('div');
+                  t.style.cssText = 'margin-top:8px;font-weight:bold';
+                  t.textContent = hr.advanceName;
+                  panel.appendChild(t);
+                });
+                setTimeout(() => {
+                  const civ = mpGameState.civs?.[mpCivSlot];
+                  if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
+                    showResearchPicker(hr.advanceId);
+                  }
+                }, 1500);
+                break;
+              case 'unit':
+                sfx('CHEERS1');
+                createCiv2Dialog('hut-dialog', 'Village', panel => {
+                  const m = document.createElement('div');
+                  m.textContent = 'You have discovered a friendly tribe of skilled mercenaries.';
+                  panel.appendChild(m);
+                });
+                break;
+              case 'nomads':
+                sfx('CHEERS2');
+                createCiv2Dialog('hut-dialog', 'Village', panel => {
+                  const m = document.createElement('div');
+                  m.textContent = 'You discover a band of wandering nomads.\nThey agree to join your tribe.';
+                  m.style.whiteSpace = 'pre-line';
+                  panel.appendChild(m);
+                });
+                break;
+              case 'barbarians':
+                sfx('DRUMAY');
+                createCiv2Dialog('hut-dialog', 'Village', panel => {
+                  const m = document.createElement('div');
+                  m.textContent = 'You have unleashed a horde of barbarians!';
+                  panel.appendChild(m);
+                });
+                break;
+              case 'nothing':
+                createCiv2Dialog('hut-dialog', 'Village', panel => {
+                  const m = document.createElement('div');
+                  m.textContent = 'Weeds grow in empty ruins. This village has long\nbeen abandoned.';
+                  m.style.whiteSpace = 'pre-line';
+                  panel.appendChild(m);
+                });
+                break;
+            }
+          }
+
+          // City founded notification — show popup, then open city dialog
+          if (statePayload.cityFounded && statePayload.cityFounded.civSlot === mpCivSlot) {
+            const cf = statePayload.cityFounded;
+            const year = getGameYear(mpGameState.turn?.number || 0);
+            showCityFoundedDialog(cf.name, year, () => {
+              const city = mpGameState.cities[cf.cityIndex];
+              if (city) openCityDialog(city, cf.cityIndex);
+            });
+          }
+
+          // Turn events: city growth, famine, production complete, civ eliminated
+          if (statePayload.turnEvents) {
+            const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited']);
+            const myEvents = statePayload.turnEvents.filter(e =>
+              e.civSlot === mpCivSlot || GLOBAL_EVENTS.has(e.type));
+            if (myEvents.length > 0) {
+              showTurnEvents(myEvents);
+            }
+          }
+
+          // Auto-show diplomacy panel when there are pending proposals/demands for us
+          if (mpGameState.treatyProposals?.some(p => p.to === mpCivSlot && !p.resolved) ||
+              mpGameState.tributeDemands?.some(d => d.to === mpCivSlot && !d.resolved)) {
+            sfx('LETTER');
+            setTimeout(() => showDiplomacyPanel(), 400);
+          }
+
+          // Prompt to pick research at start of turn if nothing selected and science > 0
+          if (mpGameState.turn.activeCiv === mpCivSlot && !statePayload.discoveredAdvance) {
+            const civ = mpGameState.civs?.[mpCivSlot];
+            if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)
+                && civ.researchProgress > 0) {
+              setTimeout(() => showResearchPicker(), 300);
+            }
+          }
+        };
+
         // Check if a unit we moved has slid to a new position
         if (pendingSlide && prevUnits) {
           const { unitIndex, oldGx, oldGy } = pendingSlide;
           const newUnit = msg.state.units[unitIndex];
           if (newUnit && (newUnit.gx !== oldGx || newUnit.gy !== oldGy) && newUnit.gx >= 0) {
             pendingSlide = null;
-            // Slide first, then apply visibility + full re-render when done
-            animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility, autoAdvFrom);
-            return;
+            // Slide first, then apply visibility + re-render + notifications when done
+            animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility, autoAdvFrom, processNotifications);
+            break;
           }
         }
         pendingSlide = null;
@@ -3238,135 +3517,7 @@ const transport = createTransport({
         // No slide — apply visibility immediately
         applyVisibilityUpdate(pendingVisibility);
         doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
-
-        // Refresh city dialog if open (e.g. after SET_WORKERS)
-        if (cdCity && mpGameState?.cities?.[cdCityIndex]
-            && document.getElementById('citydialog-overlay').style.display === 'flex') {
-          cdCity = mpGameState.cities[cdCityIndex];
-          cdRerender();
-        }
-
-        // Combat result notification
-        if (msg.state.combatResult) {
-          const cr = msg.state.combatResult;
-          if (cr.type === 'capture') {
-            showOverlayMessage(`${cr.cityName} captured!`);
-          } else {
-            const atkName = UNIT_NAMES[cr.attacker] || 'Unit';
-            const defName = UNIT_NAMES[cr.defender] || 'Unit';
-            if (cr.type === 'atkWin') {
-              showOverlayMessage(`${atkName} defeated ${defName}`);
-            } else {
-              showOverlayMessage(`${defName} repelled ${atkName}`);
-            }
-          }
-        }
-
-        // Tech discovery notification — auto-show research picker
-        if (msg.state.discoveredAdvance && msg.state.discoveredAdvance.civSlot === mpCivSlot) {
-          const da = msg.state.discoveredAdvance;
-          const ct = mpGameState.civTechs?.[da.civSlot];
-          console.log('[tech] Discovered advance', da.advanceId, ADVANCE_NAMES[da.advanceId],
-            'civTechs now=', ct ? [...ct] : null, 'has it=', ct?.has(da.advanceId));
-          setTimeout(() => showResearchPicker(msg.state.discoveredAdvance.advanceId), 300);
-        }
-
-        // Goody hut result notification (exact Civ2 GAME.TXT messages)
-        if (msg.state.goodyHutResult && msg.state.goodyHutResult.civSlot === mpCivSlot) {
-          const hr = msg.state.goodyHutResult;
-          switch (hr.type) {
-            case 'gold':
-              createCiv2Dialog('hut-dialog', 'Village', panel => {
-                const m = document.createElement('div');
-                m.textContent = `You have discovered valuable metal deposits worth ${hr.amount} gold.`;
-                panel.appendChild(m);
-              });
-              break;
-            case 'tech':
-              createCiv2Dialog('hut-dialog', 'Village', panel => {
-                const m = document.createElement('div');
-                m.textContent = 'You have discovered scrolls of ancient wisdom.';
-                panel.appendChild(m);
-                const t = document.createElement('div');
-                t.style.cssText = 'margin-top:8px;font-weight:bold';
-                t.textContent = hr.advanceName;
-                panel.appendChild(t);
-              });
-              setTimeout(() => {
-                const civ = mpGameState.civs?.[mpCivSlot];
-                if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
-                  showResearchPicker(hr.advanceId);
-                }
-              }, 1500);
-              break;
-            case 'unit':
-              createCiv2Dialog('hut-dialog', 'Village', panel => {
-                const m = document.createElement('div');
-                m.textContent = 'You have discovered a friendly tribe of skilled mercenaries.';
-                panel.appendChild(m);
-              });
-              break;
-            case 'nomads':
-              createCiv2Dialog('hut-dialog', 'Village', panel => {
-                const m = document.createElement('div');
-                m.textContent = 'You discover a band of wandering nomads.\nThey agree to join your tribe.';
-                m.style.whiteSpace = 'pre-line';
-                panel.appendChild(m);
-              });
-              break;
-            case 'barbarians':
-              createCiv2Dialog('hut-dialog', 'Village', panel => {
-                const m = document.createElement('div');
-                m.textContent = 'You have unleashed a horde of barbarians!';
-                panel.appendChild(m);
-              });
-              break;
-            case 'nothing':
-              createCiv2Dialog('hut-dialog', 'Village', panel => {
-                const m = document.createElement('div');
-                m.textContent = 'Weeds grow in empty ruins. This village has long\nbeen abandoned.';
-                m.style.whiteSpace = 'pre-line';
-                panel.appendChild(m);
-              });
-              break;
-          }
-        }
-
-        // City founded notification — show popup, then open city dialog
-        if (msg.state.cityFounded && msg.state.cityFounded.civSlot === mpCivSlot) {
-          const cf = msg.state.cityFounded;
-          const year = getGameYear(mpGameState.turn?.number || 0);
-          showCityFoundedDialog(cf.name, year, () => {
-            const city = mpGameState.cities[cf.cityIndex];
-            if (city) openCityDialog(city, cf.cityIndex);
-          });
-        }
-
-        // Turn events: city growth, famine, production complete, civ eliminated
-        if (msg.state.turnEvents) {
-          // Own-civ events + global events (elimination) shown to everyone
-          const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited']);
-          const myEvents = msg.state.turnEvents.filter(e =>
-            e.civSlot === mpCivSlot || GLOBAL_EVENTS.has(e.type));
-          if (myEvents.length > 0) {
-            showTurnEvents(myEvents);
-          }
-        }
-
-        // Auto-show diplomacy panel when there are pending proposals/demands for us
-        if (mpGameState.treatyProposals?.some(p => p.to === mpCivSlot && !p.resolved) ||
-            mpGameState.tributeDemands?.some(d => d.to === mpCivSlot && !d.resolved)) {
-          setTimeout(() => showDiplomacyPanel(), 400);
-        }
-
-        // Prompt to pick research at start of turn if nothing selected and science > 0
-        if (mpGameState.turn.activeCiv === mpCivSlot && !msg.state.discoveredAdvance) {
-          const civ = mpGameState.civs?.[mpCivSlot];
-          if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)
-              && civ.researchProgress > 0) {
-            setTimeout(() => showResearchPicker(), 300);
-          }
-        }
+        processNotifications();
         break;
       }
 
@@ -3913,6 +4064,7 @@ function updateGamePlayers() {
 // End Turn button
 document.getElementById('end-turn-btn').addEventListener('click', () => {
   if (!mpGameState || mpGameState.turn.activeCiv !== mpCivSlot) return;
+  sfx('ENDOTURN');
   transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
 });
 
@@ -3969,6 +4121,7 @@ window.addEventListener('keydown', e => {
       }
     }
     if (findNextMovableUnit(-1) == null) {
+      sfx('ENDOTURN');
       transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
     }
     return;
@@ -3980,8 +4133,7 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u && u.type === 0) { // Settlers
-        sfxBuildCity.currentTime = 0;
-        sfxBuildCity.play().catch(() => {});
+        sfx('BLDCITY');
         transport.sendRaw({
           type: 'ACTION',
           action: { type: 'BUILD_CITY', unitIndex: mpSelectedUnit },
@@ -4159,6 +4311,7 @@ window.addEventListener('keydown', e => {
   }
   pendingAutoAdvanceFrom = mpSelectedUnit;
 
+  sfx('MOVPIECE');
   transport.sendRaw({
     type: 'ACTION',
     action: { type: 'MOVE_UNIT', unitIndex: mpSelectedUnit, dir },
@@ -4294,7 +4447,7 @@ function applyImprovementsUpdate(tileImprovements) {
 }
 
 // ── Unit slide animation ──
-function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibility, autoAdvFrom) {
+function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibility, autoAdvFrom, onComplete) {
   const TW = 64, TH = 32;
   const fromX = oldGx * TW + ((oldGy % 2) ? (TW >> 1) : 0);
   const fromY = oldGy * (TH >> 1) - 16;
@@ -4313,6 +4466,7 @@ function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibil
   if (!u || !mapSprites) {
     applyVisibilityUpdate(deferredVisibility);
     doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
+    if (onComplete) onComplete();
     return;
   }
   const cacheKey = u.type + '-' + u.owner;
@@ -4320,6 +4474,7 @@ function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibil
   if (!unitSprite) {
     applyVisibilityUpdate(deferredVisibility);
     doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
+    if (onComplete) onComplete();
     return;
   }
 
@@ -4363,6 +4518,7 @@ function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibil
       slideAnimating = false;
       applyVisibilityUpdate(deferredVisibility);
       doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
+      if (onComplete) onComplete();
     }
   }
 
@@ -4445,6 +4601,7 @@ function actionToMenuItem(va, unitIdx) {
         action: () => {
           pendingSlide = { unitIndex: unitIdx, oldGx: u.gx, oldGy: u.gy };
           pendingAutoAdvanceFrom = unitIdx;
+          sfx('MOVPIECE');
           transport.sendRaw({
             type: 'ACTION',
             action: { type: MOVE_UNIT, unitIndex: unitIdx, dir: va.dir },
@@ -4455,8 +4612,7 @@ function actionToMenuItem(va, unitIdx) {
       return {
         label: 'Build City',
         action: () => {
-          sfxBuildCity.currentTime = 0;
-          sfxBuildCity.play().catch(() => {});
+          sfx('BLDCITY');
           transport.sendRaw({
             type: 'ACTION',
             action: { type: BUILD_CITY, unitIndex: unitIdx },
