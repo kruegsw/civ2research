@@ -10,7 +10,7 @@
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -199,12 +199,33 @@ function getHutMercType(state) {
   }
 }
 
-/** Pick barbarian unit type based on global tech level. */
+/** Pick barbarian unit type based on max tech count across alive civs. */
 function getBarbUnitType(state) {
-  if (anyoneHasTech(state, 34)) return 8;  // Guerrilla Warfare → Fanatics
-  if (anyoneHasTech(state, 35)) return 7;  // Gunpowder → Musketeers
-  if (anyoneHasTech(state, 39)) return 5;  // Iron Working → Legion
-  return 4; // Archers
+  let maxTechCount = 0;
+  for (let c = 1; c < 8; c++) {
+    if (!(state.civsAlive & (1 << c))) continue;
+    const tc = state.civTechCounts?.[c] || 0;
+    if (tc > maxTechCount) maxTechCount = tc;
+  }
+  // Walk BARBARIAN_LAND_UNITS backwards to pick highest qualifying type
+  for (let i = BARBARIAN_LAND_UNITS.length - 1; i >= 0; i--) {
+    if (maxTechCount >= BARBARIAN_LAND_UNITS[i][1]) return BARBARIAN_LAND_UNITS[i][0];
+  }
+  return BARBARIAN_LAND_UNITS[0][0]; // fallback: Warriors
+}
+
+/** Pick barbarian sea unit type based on max tech count across alive civs. */
+function getBarbSeaUnitType(state) {
+  let maxTechCount = 0;
+  for (let c = 1; c < 8; c++) {
+    if (!(state.civsAlive & (1 << c))) continue;
+    const tc = state.civTechCounts?.[c] || 0;
+    if (tc > maxTechCount) maxTechCount = tc;
+  }
+  for (let i = BARBARIAN_SEA_UNITS.length - 1; i >= 0; i--) {
+    if (maxTechCount >= BARBARIAN_SEA_UNITS[i][1]) return BARBARIAN_SEA_UNITS[i][0];
+  }
+  return BARBARIAN_SEA_UNITS[0][0]; // fallback: Trireme
 }
 
 /** Make a new unit object at the given position. */
@@ -385,13 +406,32 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
         const defender = { ...state.units[bestDefIdx] };
         const defCityBuildings = defCity ? defCity.buildings : null;
-        const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings);
+        // Build entropy seed from positions, turn, unit indices, and state version
+        // so that repeated same-type combats produce different outcomes
+        const turnNum_ = state.turn?.number || 0;
+        const combatSeed = (unit.gx * 997 + unit.gy * 991 + dest.gx * 983 + dest.gy * 977 +
+          unitIndex * 967 + bestDefIdx * 953 + turnNum_ * 941 + (state.version || 0) * 929);
+        const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, combatSeed, state.difficulty || 'chieftain');
 
         const defOwner = defender.owner;
 
         if (result.attackerWins) {
           // Defender destroyed
           killUnit(state, bestDefIdx);
+
+          // Gold reward for killing barbarian units
+          if (defender.owner === 0 && civSlot > 0) {
+            const killGold = defender.veteran ? 100 : 25;
+            state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+            const killerCiv = { ...state.civs[civSlot] };
+            killerCiv.treasury = (killerCiv.treasury || 0) + killGold;
+            state.civs[civSlot] = killerCiv;
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({
+              type: defender.veteran ? 'barbarianLeaderCaptured' : 'barbarianGold',
+              civSlot, gold: killGold,
+            });
+          }
 
           // Veteran promotion for attacker
           if (result.atkVeteranPromo) unit.veteran = 1;
@@ -457,6 +497,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
         state.combatResult = state.combatResult || {
           type: result.attackerWins ? 'atkWin' : 'defWin',
           attacker: unit.type, defender: defender.type,
+          atkOwner: unit.owner, defOwner: defender.owner,
+          gx: dest.gx, gy: dest.gy,
+          atkHpLost: result.atkHpLost, defHpLost: result.defHpLost,
         };
 
         // Check civ elimination for the losing side
@@ -465,6 +508,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // ── Normal movement (no enemy) ──
         const prevGx = unit.gx, prevGy = unit.gy;
         const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
+
+        // Civ2 movement rule: if cost > movesLeft, probabilistic check
+        // Chance of success = movesLeft / cost. On failure, unit stays put, loses all MP.
+        if (cost > unit.movesLeft && cost > 0) {
+          const chance = unit.movesLeft / cost;
+          if (Math.random() >= chance) {
+            // Movement failed — unit stays, loses all remaining MP
+            unit.movesLeft = 0;
+            state.units[unitIndex] = unit;
+            state.moveFailed = { unitIndex, dir };
+            break;
+          }
+        }
 
         unit.gx = dest.gx;
         unit.gy = dest.gy;
@@ -1248,6 +1304,11 @@ export function applyAction(prev, mapBase, action, civSlot) {
         turnNumber++;
       }
 
+      // ── Barbarian AI movement phase (runs once per full turn cycle) ──
+      if (turnNumber > state.turn.number) {
+        processBarbarianAI(state, prev, mapBase);
+      }
+
       state.turn = { activeCiv: next, number: turnNumber };
 
       // ── Begin-of-turn processing for the NEW active civ ──
@@ -1895,6 +1956,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
+      // ── Barbarian spawning phase (runs once per full turn cycle) ──
+      // turnNumber was incremented above when activeCiv wraps back to firstAlive
+      if (turnNumber > (prev.turn?.number || 0)) {
+        spawnBarbarians(state, mapBase);
+      }
+
       break;
     }
 
@@ -1904,6 +1971,197 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
   state.version = (prev.version || 0) + 1;
   return state;
+}
+
+/**
+ * Barbarian spawning phase: land units, sea units, and camp founding.
+ * Called once per full turn cycle (when turn number increments).
+ */
+function spawnBarbarians(state, mapBase) {
+  const activity = state.barbarianActivity || 'none';
+  const freq = BARBARIAN_SPAWN_FREQUENCY[activity];
+  if (!freq || activity === 'none') return;
+
+  const turnNum = state.turn.number;
+  if (turnNum < BARBARIAN_MIN_TURN) return;
+
+  // Count existing barbarian units on the map
+  let barbCount = 0;
+  for (const u of state.units) {
+    if (u.owner === 0 && u.gx >= 0) barbCount++;
+  }
+
+  // ── Land barbarian spawning ──
+  if (turnNum % freq === 0 && barbCount < BARBARIAN_MAX_UNITS) {
+    const spawnLoc = findBarbSpawnTile(state, mapBase, /* land */ true);
+    if (spawnLoc) {
+      const unitType = getBarbUnitType(state);
+      const spawnCount = 1 + Math.floor(Math.random() * 3); // 1-3
+
+      // Ensure units array is a fresh clone before pushing
+      state.units = [...state.units];
+
+      let actualSpawned = 0;
+      for (let s = 0; s < spawnCount && barbCount + actualSpawned < BARBARIAN_MAX_UNITS; s++) {
+        state.units.push(makeUnit(
+          unitType, 0, spawnLoc.gx, spawnLoc.gy,
+          UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER
+        ));
+        actualSpawned++;
+      }
+
+      if (actualSpawned > 0) {
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'barbarianSpawn', count: actualSpawned, gx: spawnLoc.gx, gy: spawnLoc.gy });
+        barbCount += actualSpawned;
+      }
+    }
+  }
+
+  // ── Sea barbarian spawning (same frequency, separate check) ──
+  if (turnNum % freq === 0 && barbCount < BARBARIAN_MAX_UNITS && !mapBase.wraps) {
+    const seaLoc = findBarbSeaSpawnTile(mapBase);
+    if (seaLoc) {
+      const seaType = getBarbSeaUnitType(state);
+      const seaCount = 1 + Math.floor(Math.random() * 2); // 1-2
+
+      let actualSeaSpawned = 0;
+      for (let s = 0; s < seaCount && barbCount + actualSeaSpawned < BARBARIAN_MAX_UNITS; s++) {
+        state.units.push(makeUnit(
+          seaType, 0, seaLoc.gx, seaLoc.gy,
+          UNIT_MOVE_POINTS[seaType] * MOVEMENT_MULTIPLIER
+        ));
+        actualSeaSpawned++;
+      }
+
+      if (actualSeaSpawned > 0) {
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'barbarianSpawn', count: actualSeaSpawned, gx: seaLoc.gx, gy: seaLoc.gy });
+        barbCount += actualSeaSpawned;
+      }
+    }
+  }
+
+  // ── Camp founding (every 64 turns, 25% chance) ──
+  if (turnNum % 64 === 0 && Math.random() < 0.25) {
+    // Find a barbarian unit far from any city (distance > 3)
+    for (let ui = 0; ui < state.units.length; ui++) {
+      const u = state.units[ui];
+      if (u.owner !== 0 || u.gx < 0) continue;
+      if (UNIT_DOMAIN[u.type] !== 0) continue; // land units only
+
+      // Check no city within 3 tiles
+      let nearCity = false;
+      for (const c of state.cities) {
+        if (c.size <= 0) continue;
+        let dx = Math.abs(u.gx - c.gx);
+        if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+        const dy = Math.abs(u.gy - c.gy);
+        if (dx + dy <= 3) { nearCity = true; break; }
+      }
+      if (nearCity) continue;
+
+      // Found a candidate — create a camp (size-1 barbarian city)
+      const camp = {
+        name: BARBARIAN_CITY_NAMES[0] || 'Camp',
+        owner: 0,
+        gx: u.gx, gy: u.gy,
+        x: u.gx * 2 + (u.gy % 2), y: u.gy,
+        size: 1,
+        foodInBox: 0, shieldsInBox: 0,
+        buildings: new Set(),
+        hasWalls: false, hasPalace: false,
+        workedTiles: [20], // center tile only
+        specialists: [],
+        itemInProduction: null,
+        civilDisorder: false,
+        weLoveKingDay: false,
+        soldThisTurn: false,
+      };
+
+      state.cities = [...state.cities, camp];
+
+      // Remove the unit that founded the camp
+      state.units[ui] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'barbarianCamp', gx: u.gx, gy: u.gy });
+      break; // only one camp per cycle
+    }
+  }
+}
+
+/**
+ * Find a random unexplored land tile for barbarian spawning.
+ * Unexplored = visibility byte has NO bits set for any alive civ (slots 1-7).
+ * Must be land (terrain !== 10), not in/adjacent to a city.
+ * Tries up to 100 random positions.
+ */
+function findBarbSpawnTile(state, mapBase, _land) {
+  const { mw, mh, tileData } = mapBase;
+  if (!tileData) return null;
+
+  // Build alive-civ visibility mask (bits 1-7)
+  let aliveMask = 0;
+  for (let c = 1; c < 8; c++) {
+    if (state.civsAlive & (1 << c)) aliveMask |= (1 << c);
+  }
+
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const gx = Math.floor(Math.random() * mw);
+    const gy = Math.floor(Math.random() * mh);
+    const idx = gy * mw + gx;
+    const tile = tileData[idx];
+    if (!tile) continue;
+
+    // Must be land
+    if (tile.terrain === 10) continue;
+
+    // Must be unexplored by all alive civs
+    if ((tile.visibility & aliveMask) !== 0) continue;
+
+    // Must not be in or adjacent to a city
+    let nearCity = false;
+    for (const c of state.cities) {
+      if (c.size <= 0) continue;
+      let dx = Math.abs(gx - c.gx);
+      if (mapBase.wraps) dx = Math.min(dx, mw - dx);
+      const dy = Math.abs(gy - c.gy);
+      if (dx <= 1 && dy <= 2) { nearCity = true; break; }
+    }
+    if (nearCity) continue;
+
+    return { gx, gy };
+  }
+  return null;
+}
+
+/**
+ * Find a random ocean tile at map edge for sea barbarian spawning.
+ * Only used when mapBase.wraps is false (edge tiles exist).
+ * Tries up to 100 random positions along edges.
+ */
+function findBarbSeaSpawnTile(mapBase) {
+  const { mw, mh, tileData } = mapBase;
+  if (!tileData) return null;
+
+  for (let attempt = 0; attempt < 100; attempt++) {
+    let gx, gy;
+    // Pick a random edge: 0=top, 1=bottom, 2=left, 3=right
+    const edge = Math.floor(Math.random() * 4);
+    switch (edge) {
+      case 0: gx = Math.floor(Math.random() * mw); gy = 0; break;
+      case 1: gx = Math.floor(Math.random() * mw); gy = mh - 1; break;
+      case 2: gx = 0; gy = Math.floor(Math.random() * mh); break;
+      case 3: gx = mw - 1; gy = Math.floor(Math.random() * mh); break;
+    }
+    const idx = gy * mw + gx;
+    const tile = tileData[idx];
+    if (!tile) continue;
+    if (tile.terrain !== 10) continue; // must be ocean
+    return { gx, gy };
+  }
+  return null;
 }
 
 function findFirstAliveCiv(civsAlive) {
@@ -1949,4 +2207,225 @@ function rehomeUnits(state, capturedCityIdx, oldOwner) {
       state.units[i] = { ...u, homeCityId: bestCi };
     }
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Barbarian AI — runs once per full turn cycle
+// ═══════════════════════════════════════════════════════════════════
+
+const BARB_DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+/**
+ * Manhattan distance accounting for horizontal wrapping.
+ */
+function barbDist(gx1, gy1, gx2, gy2, mapBase) {
+  let dx = Math.abs(gx1 - gx2);
+  if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+  return dx + Math.abs(gy1 - gy2);
+}
+
+/**
+ * Process all barbarian (owner === 0) unit movement and combat.
+ * Called once per full turn cycle when turnNumber increments.
+ */
+function processBarbarianAI(state, prev, mapBase) {
+  state.units = state.units !== prev.units ? state.units : [...prev.units];
+
+  const difficulty = state.difficulty || 'chieftain';
+
+  for (let ui = 0; ui < state.units.length; ui++) {
+    const origUnit = state.units[ui];
+    if (origUnit.owner !== 0 || origUnit.gx < 0) continue;
+
+    // Reset movement points
+    const maxMoves = UNIT_MOVE_POINTS[origUnit.type] * MOVEMENT_MULTIPLIER;
+    state.units[ui] = { ...origUnit, movesLeft: maxMoves };
+
+    const maxSteps = UNIT_MOVE_POINTS[origUnit.type] || 1;
+    for (let step = 0; step < maxSteps; step++) {
+      const unit = state.units[ui];
+      if (unit.gx < 0 || unit.movesLeft <= 0) break;
+
+      const domain = UNIT_DOMAIN[unit.type] ?? 0;
+
+      // Find nearest target within 10 tiles
+      let bestTarget = null;
+      let bestDist = Infinity;
+
+      for (const city of state.cities) {
+        if (city.owner === 0 || city.size <= 0) continue;
+        const d = barbDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+        if (d < bestDist) { bestDist = d; bestTarget = { gx: city.gx, gy: city.gy }; }
+      }
+      for (let ti = 0; ti < state.units.length; ti++) {
+        const t = state.units[ti];
+        if (t.owner === 0 || t.gx < 0) continue;
+        const d = barbDist(unit.gx, unit.gy, t.gx, t.gy, mapBase);
+        if (d < bestDist) { bestDist = d; bestTarget = { gx: t.gx, gy: t.gy }; }
+      }
+
+      let chosenDest = null;
+
+      if (!bestTarget || bestDist > 10) {
+        // Random movement
+        const shuffled = [...BARB_DIRS];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        for (const dir of shuffled) {
+          const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
+          if (!dest) continue;
+          if (!barbCanEnter(dest.gx, dest.gy, domain, state, mapBase)) continue;
+          chosenDest = dest;
+          break;
+        }
+      } else {
+        // Move toward target
+        let bestMoveDist = Infinity;
+        for (const dir of BARB_DIRS) {
+          const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
+          if (!dest) continue;
+
+          const hasEnemy = state.units.some(eu =>
+            eu.gx === dest.gx && eu.gy === dest.gy && eu.owner !== 0 && eu.gx >= 0);
+
+          if (hasEnemy) {
+            const d = barbDist(dest.gx, dest.gy, bestTarget.gx, bestTarget.gy, mapBase);
+            if (d < bestMoveDist) { bestMoveDist = d; chosenDest = dest; }
+            continue;
+          }
+
+          if (!barbCanEnter(dest.gx, dest.gy, domain, state, mapBase)) continue;
+          const d = barbDist(dest.gx, dest.gy, bestTarget.gx, bestTarget.gy, mapBase);
+          if (d < bestMoveDist) { bestMoveDist = d; chosenDest = dest; }
+        }
+      }
+
+      if (!chosenDest) break;
+
+      // Check for enemy units → combat
+      const enemiesAtDest = [];
+      for (let ei = 0; ei < state.units.length; ei++) {
+        const eu = state.units[ei];
+        if (eu.gx === chosenDest.gx && eu.gy === chosenDest.gy && eu.owner !== 0 && eu.gx >= 0) {
+          enemiesAtDest.push(ei);
+        }
+      }
+
+      if (enemiesAtDest.length > 0) {
+        // ── Barbarian-initiated combat ──
+        const defTerrain = mapBase.getTerrain(chosenDest.gx, chosenDest.gy);
+        const defCity = state.cities.find(c => c.gx === chosenDest.gx && c.gy === chosenDest.gy && c.owner !== 0);
+        const defInCity = !!defCity;
+        const defCityHasWalls = defInCity && (cityHasBuilding(defCity, 8) || hasWonderEffect(state, defCity.owner, 6));
+        const defImp = mapBase.getImprovements(chosenDest.gx, chosenDest.gy);
+        const defHasFortress = !!(defImp && defImp.fortress);
+        const defOnRiver = !!(mapBase.hasRiver && mapBase.hasRiver(chosenDest.gx, chosenDest.gy));
+
+        let bestDefIdx = enemiesAtDest[0];
+        let bestDefScore = 0;
+        for (const ei of enemiesAtDest) {
+          const eu = state.units[ei];
+          const defVal = (UNIT_HP[eu.type] || 1) - (eu.hpLost || 0);
+          const score = defVal * 100 + (eu.orders === 'fortified' ? 50 : 0);
+          if (score > bestDefScore) { bestDefScore = score; bestDefIdx = ei; }
+        }
+
+        const attacker = state.units[ui];
+        const defender = state.units[bestDefIdx];
+        const defCityBuildings = defCity ? defCity.buildings : null;
+        const barbCombatSeed = (attacker.gx * 997 + attacker.gy * 991 + chosenDest.gx * 983 +
+          chosenDest.gy * 977 + ui * 967 + bestDefIdx * 953 + (state.turn?.number || 0) * 941 +
+          (state.version || 0) * 929);
+        const result = resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls,
+          defHasFortress, defOnRiver, defCityBuildings, barbCombatSeed, difficulty);
+
+        if (result.attackerWins) {
+          killUnit(state, bestDefIdx);
+
+          // Stack wipe on open ground
+          if (!defInCity && !defHasFortress) {
+            for (let si = 0; si < state.units.length; si++) {
+              if (si !== bestDefIdx && state.units[si].gx === chosenDest.gx &&
+                  state.units[si].gy === chosenDest.gy && state.units[si].owner !== 0 &&
+                  state.units[si].gx >= 0) {
+                killUnit(state, si);
+              }
+            }
+          }
+
+          const moreEnemies = state.units.some(eu =>
+            eu.gx === chosenDest.gx && eu.gy === chosenDest.gy && eu.owner !== 0 && eu.gx >= 0);
+          if (!moreEnemies) {
+            state.units[ui] = {
+              ...state.units[ui],
+              gx: chosenDest.gx, gy: chosenDest.gy,
+              x: chosenDest.gx * 2 + (chosenDest.gy % 2), y: chosenDest.gy,
+              hpLost: result.atkHpLost,
+              veteran: result.atkVeteranPromo ? 1 : state.units[ui].veteran,
+              movesLeft: Math.max(0, state.units[ui].movesLeft - MOVEMENT_MULTIPLIER),
+            };
+
+            // City capture by barbarians
+            if (defCity) {
+              state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+              const ci = state.cities.findIndex(c => c === defCity);
+              if (ci >= 0) {
+                const defOwner = defCity.owner;
+                state.cities[ci] = { ...defCity, owner: 0, size: Math.max(1, defCity.size - 1) };
+                rehomeUnits(state, ci, defOwner);
+                if (!state.turnEvents) state.turnEvents = [];
+                state.turnEvents.push({ type: 'barbarianCapture', cityName: defCity.name });
+              }
+            }
+          } else {
+            state.units[ui] = {
+              ...state.units[ui],
+              hpLost: result.atkHpLost,
+              veteran: result.atkVeteranPromo ? 1 : state.units[ui].veteran,
+              movesLeft: Math.max(0, state.units[ui].movesLeft - MOVEMENT_MULTIPLIER),
+            };
+          }
+
+          checkCivElimination(state, defender.owner);
+        } else {
+          killUnit(state, ui);
+          state.units[bestDefIdx] = {
+            ...state.units[bestDefIdx],
+            veteran: result.defVeteranPromo ? 1 : defender.veteran,
+            hpLost: result.defHpLost,
+          };
+        }
+        break; // Combat ends this unit's turn
+      } else {
+        // ── Normal movement ──
+        const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, chosenDest.gx, chosenDest.gy);
+        state.units[ui] = {
+          ...state.units[ui],
+          gx: chosenDest.gx, gy: chosenDest.gy,
+          x: chosenDest.gx * 2 + (chosenDest.gy % 2), y: chosenDest.gy,
+          movesLeft: Math.max(0, state.units[ui].movesLeft - Math.max(cost, 1)),
+        };
+      }
+    }
+
+    // Update visibility around barbarian's final position
+    const finalUnit = state.units[ui];
+    if (finalUnit.gx >= 0) {
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, 0, finalUnit.gx, finalUnit.gy, mapBase.wraps);
+    }
+  }
+}
+
+/**
+ * Check if a barbarian unit can enter a tile (terrain/domain/stacking).
+ */
+function barbCanEnter(gx, gy, domain, state, mapBase) {
+  const terrain = mapBase.getTerrain(gx, gy);
+  if (domain === 0 && terrain === 10) return false;
+  if (domain === 1 && terrain !== 10) return false;
+  if (state.units.some(u => u.gx === gx && u.gy === gy && u.owner === 0 && u.gx >= 0)) return false;
+  if (state.cities.some(c => c.gx === gx && c.gy === gy && c.owner === 0 && c.size > 0)) return false;
+  return true;
 }

@@ -456,6 +456,40 @@ export const CIV_CITY_NAMES = [
 ];
 export const BARBARIAN_CITY_NAMES = ['Camp'];
 
+// Barbarian unit types by era (tech count thresholds)
+// Each entry: [unitType, minTechCount] — pick highest qualifying
+export const BARBARIAN_LAND_UNITS = [
+  [2, 0],    // Warriors (Ancient)
+  [3, 3],    // Archers
+  [16, 8],   // Chariot
+  [4, 10],   // Horsemen
+  [5, 15],   // Legion (Iron Working era)
+  [20, 25],  // Crusaders (Medieval)
+  [22, 35],  // Dragoons (Renaissance)
+  [34, 45],  // Partisan (Industrial)
+  [35, 55],  // Alpine Troops (Modern)
+];
+
+export const BARBARIAN_SEA_UNITS = [
+  [36, 0],   // Trireme
+  [37, 20],  // Caravel
+  [39, 40],  // Frigate
+];
+
+// Spawn frequency by activity level (every N turns)
+export const BARBARIAN_SPAWN_FREQUENCY = {
+  'none': 0,       // no spawning
+  'roaming': 32,   // every 32 turns
+  'restless': 16,  // every 16 turns
+  'raging': 8,     // every 8 turns
+};
+
+// Maximum barbarian units on map at once (prevents runaway)
+export const BARBARIAN_MAX_UNITS = 40;
+
+// Minimum turn before barbarians start spawning
+export const BARBARIAN_MIN_TURN = 10;
+
 // ── Tech prerequisite arrays ──
 // -1 = no prerequisite (always available), -2 = cannot be built
 export const UNIT_PREREQS = [

@@ -1867,15 +1867,20 @@ function showNameCityDialog(unitIndex) {
   }, [
     { label: 'Cancel' },
     { label: 'OK', action: () => {
-      const input = document.getElementById('name-city-input');
-      const cityName = input ? input.value.trim() : defaultName;
       sfx('BLDCITY');
       transport.sendRaw({
         type: 'ACTION',
-        action: { type: BUILD_CITY, unitIndex, name: cityName || defaultName },
+        action: { type: BUILD_CITY, unitIndex, name: chosenName || defaultName },
       });
     }},
   ]);
+
+  // Track input value via closure so it survives dialog dismiss
+  let chosenName = defaultName;
+  const inputEl = document.getElementById('name-city-input');
+  if (inputEl) {
+    inputEl.addEventListener('input', () => { chosenName = inputEl.value.trim(); });
+  }
 }
 
 /**
@@ -3451,67 +3456,60 @@ const transport = createTransport({
           // Goody hut result notification (exact Civ2 GAME.TXT messages)
           if (statePayload.goodyHutResult && statePayload.goodyHutResult.civSlot === mpCivSlot) {
             const hr = statePayload.goodyHutResult;
+            let hutText = '';
+            let hutSfx = null;
+            let hutPostAction = null;
             switch (hr.type) {
               case 'gold':
-                sfx('NEWBANK');
-                createCiv2Dialog('hut-dialog', 'Village', panel => {
-                  const m = document.createElement('div');
-                  m.textContent = `You have discovered valuable metal deposits worth ${hr.amount} gold.`;
-                  panel.appendChild(m);
-                });
+                hutSfx = 'NEWBANK';
+                hutText = `You have discovered valuable metal deposits worth ${hr.amount} gold.`;
                 break;
               case 'tech':
-                sfx('FANFARE1');
-                createCiv2Dialog('hut-dialog', 'Village', panel => {
-                  const m = document.createElement('div');
-                  m.textContent = 'You have discovered scrolls of ancient wisdom.';
-                  panel.appendChild(m);
-                  const t = document.createElement('div');
-                  t.style.cssText = 'margin-top:8px;font-weight:bold';
-                  t.textContent = hr.advanceName;
-                  panel.appendChild(t);
-                });
-                setTimeout(() => {
-                  const civ = mpGameState.civs?.[mpCivSlot];
-                  if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
-                    showResearchPicker(hr.advanceId);
-                  }
-                }, 1500);
+                hutSfx = 'FANFARE1';
+                hutText = `You have discovered scrolls of ancient wisdom.\n\n${hr.advanceName}`;
+                hutPostAction = () => {
+                  setTimeout(() => {
+                    const civ = mpGameState.civs?.[mpCivSlot];
+                    if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
+                      showResearchPicker(hr.advanceId);
+                    }
+                  }, 300);
+                };
                 break;
               case 'unit':
-                sfx('CHEERS1');
-                createCiv2Dialog('hut-dialog', 'Village', panel => {
-                  const m = document.createElement('div');
-                  m.textContent = 'You have discovered a friendly tribe of skilled mercenaries.';
-                  panel.appendChild(m);
-                });
+                hutSfx = 'CHEERS1';
+                hutText = 'You have discovered a friendly tribe of skilled mercenaries.';
                 break;
               case 'nomads':
-                sfx('CHEERS2');
-                createCiv2Dialog('hut-dialog', 'Village', panel => {
-                  const m = document.createElement('div');
-                  m.textContent = 'You discover a band of wandering nomads.\nThey agree to join your tribe.';
-                  m.style.whiteSpace = 'pre-line';
-                  panel.appendChild(m);
-                });
+                hutSfx = 'CHEERS2';
+                hutText = 'You discover a band of wandering nomads.\nThey agree to join your tribe.';
                 break;
               case 'barbarians':
-                sfx('DRUMAY');
-                createCiv2Dialog('hut-dialog', 'Village', panel => {
-                  const m = document.createElement('div');
-                  m.textContent = 'You have unleashed a horde of barbarians!';
-                  panel.appendChild(m);
-                });
+                hutSfx = 'DRUMAY';
+                hutText = 'You have unleashed a horde of barbarians!';
                 break;
               case 'nothing':
-                createCiv2Dialog('hut-dialog', 'Village', panel => {
-                  const m = document.createElement('div');
-                  m.textContent = 'Weeds grow in empty ruins. This village has long\nbeen abandoned.';
-                  m.style.whiteSpace = 'pre-line';
-                  panel.appendChild(m);
-                });
+                hutText = 'Weeds grow in empty ruins. This village has long\nbeen abandoned.';
                 break;
             }
+            if (hutSfx) sfx(hutSfx);
+            createCiv2Dialog('hut-dialog', 'Village', panel => {
+              const content = document.createElement('div');
+              content.style.cssText = 'display:flex;align-items:center;gap:16px;padding:12px 20px';
+
+              const img = document.createElement('img');
+              img.src = 'assets/menu/seal.gif';
+              img.alt = 'Village';
+              img.style.cssText = 'width:120px;height:auto;border:2px inset #a08060;flex-shrink:0';
+              content.appendChild(img);
+
+              const textDiv = document.createElement('div');
+              textDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);font-size:16px;white-space:pre-line';
+              textDiv.textContent = hutText;
+              content.appendChild(textDiv);
+
+              panel.appendChild(content);
+            }, [{ label: 'OK', action: hutPostAction || undefined }]);
           }
 
           // City founded notification — show popup, then open city dialog
@@ -3551,23 +3549,34 @@ const transport = createTransport({
           }
         };
 
-        // Check if a unit we moved has slid to a new position
-        if (pendingSlide && prevUnits) {
-          const { unitIndex, oldGx, oldGy } = pendingSlide;
-          const newUnit = msg.state.units[unitIndex];
-          if (newUnit && (newUnit.gx !== oldGx || newUnit.gy !== oldGy) && newUnit.gx >= 0) {
-            pendingSlide = null;
-            // Slide first, then apply visibility + re-render + notifications when done
-            animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility, autoAdvFrom, processNotifications);
-            break;
+        // Continuation after optional combat animation — handles slide or immediate render
+        const afterCombatAnim = () => {
+          // Check if a unit we moved has slid to a new position
+          if (pendingSlide && prevUnits) {
+            const { unitIndex, oldGx, oldGy } = pendingSlide;
+            const newUnit = msg.state.units[unitIndex];
+            if (newUnit && (newUnit.gx !== oldGx || newUnit.gy !== oldGy) && newUnit.gx >= 0) {
+              pendingSlide = null;
+              // Slide first, then apply visibility + re-render + notifications when done
+              animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility, autoAdvFrom, processNotifications);
+              return;
+            }
           }
-        }
-        pendingSlide = null;
+          pendingSlide = null;
 
-        // No slide — apply visibility immediately
-        applyVisibilityUpdate(pendingVisibility);
-        doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
-        processNotifications();
+          // No slide — apply visibility immediately
+          applyVisibilityUpdate(pendingVisibility);
+          doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
+          processNotifications();
+        };
+
+        // If combat occurred, play flash animation before slide/render
+        const cr = statePayload.combatResult;
+        if (cr && cr.gx != null && cr.type !== 'capture' && mapSprites) {
+          animateCombatFlash(cr, afterCombatAnim);
+        } else {
+          afterCombatAnim();
+        }
         break;
       }
 
@@ -4507,6 +4516,70 @@ function applyImprovementsUpdate(tileImprovements) {
       airbase: city && fort,
     };
   }
+}
+
+// ── Combat flash animation ──
+// Alternately flashes attacker and defender unit sprites at the combat tile,
+// similar to the Civ2 battle flicker. Calls onComplete when finished.
+function animateCombatFlash(cr, onComplete) {
+  const TW = 64, TH = 32;
+  const gx = cr.gx, gy = cr.gy;
+
+  // Map-space position of the combat tile (top-left of unit sprite = tile minus 16px for unit height)
+  const tileX = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
+  const tileY = gy * (TH >> 1) - 16;
+
+  // Get both unit sprites
+  const atkSprite = mapSprites?.unitColored?.[cr.attacker + '-' + cr.atkOwner];
+  const defSprite = mapSprites?.unitColored?.[cr.defender + '-' + cr.defOwner];
+  if (!atkSprite || !defSprite) {
+    if (onComplete) onComplete();
+    return;
+  }
+
+  stopBlink();
+  slideAnimating = true;
+
+  // Snapshot viewport for restoration between frames
+  const bgSnapshot = vCtx.getImageData(0, 0, viewportCanvas.width, viewportCanvas.height);
+
+  const dpr = window.devicePixelRatio || 1;
+  const pxPerMap = vp.scale * dpr;
+  const totalFlashes = 8;   // 4 pairs (atk, def, atk, def, ...)
+  const flashInterval = 80;  // ms per flash frame
+  let flashCount = 0;
+
+  function drawSpriteAt(sprite) {
+    if (vp.wraps && vp.wrapW > 0) {
+      const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
+      const relX = ((tileX - x1) % vp.wrapW + vp.wrapW) % vp.wrapW;
+      vCtx.drawImage(sprite, relX * pxPerMap, (tileY - vp.y) * pxPerMap,
+        sprite.width * pxPerMap, sprite.height * pxPerMap);
+    } else {
+      vCtx.drawImage(sprite, (tileX - vp.x) * pxPerMap, (tileY - vp.y) * pxPerMap,
+        sprite.width * pxPerMap, sprite.height * pxPerMap);
+    }
+  }
+
+  function flashFrame() {
+    if (flashCount >= totalFlashes) {
+      slideAnimating = false;
+      if (onComplete) onComplete();
+      return;
+    }
+
+    // Restore background
+    vCtx.putImageData(bgSnapshot, 0, 0);
+
+    // Alternate between attacker and defender sprite
+    const sprite = (flashCount % 2 === 0) ? atkSprite : defSprite;
+    drawSpriteAt(sprite);
+
+    flashCount++;
+    setTimeout(flashFrame, flashInterval);
+  }
+
+  flashFrame();
 }
 
 // ── Unit slide animation ──

@@ -18,10 +18,12 @@ import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER
  * @param {boolean} defHasFortress - tile has a fortress improvement
  * @param {boolean} defOnRiver - tile has a river
  * @param {object} [defCityBuildings] - Set of building IDs in defending city (optional)
+ * @param {number} [extraSeed=0] - extra entropy for PRNG (e.g. turn number, positions, state version)
+ * @param {string} [difficulty] - game difficulty level ('chieftain'|'warlord'|'prince'|'king'|'emperor'|'deity')
  * @returns {{ attackerWins: boolean, atkHpLost: number, defHpLost: number,
  *             atkVeteranPromo: boolean, defVeteranPromo: boolean }}
  */
-export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings) {
+export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, extraSeed, difficulty) {
   const atkBase = UNIT_ATK[attacker.type] || 1;
   const defBase = UNIT_DEF[defender.type] || 1;
 
@@ -70,6 +72,14 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     if (defCityBuildings.has(17) && UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) effDef *= 2;
   }
 
+  // Difficulty modifier for barbarian attacks
+  if (attacker.owner === 0 && difficulty) {
+    if (difficulty === 'emperor') effAtk = Math.floor(effAtk * 5 / 4);   // +25%
+    if (difficulty === 'deity') effAtk = Math.floor(effAtk * 3 / 2);     // +50%
+    if (difficulty === 'chieftain') effAtk = Math.floor(effAtk / 2);     // -50%
+    if (difficulty === 'warlord') effAtk = Math.floor(effAtk * 3 / 4);   // -25%
+  }
+
   // Ensure minimums
   if (effAtk < 1) effAtk = 1;
   if (effDef < 1) effDef = 1;
@@ -80,9 +90,10 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   if (atkHp <= 0) atkHp = 10;
   if (defHp <= 0) defHp = 10;
 
-  // Round-by-round combat (deterministic using pseudo-random sequence)
-  // Use a simple PRNG seeded from both units' stats for reproducibility
-  let seed = ((attacker.type * 31 + defender.type * 17 + defTerrain * 7 + atkHp + defHp) & 0x7FFFFFFF) || 1;
+  // Round-by-round combat using pseudo-random sequence.
+  // Seed includes unit stats + extraSeed (positions, turn, state version) for varied outcomes.
+  let seed = ((attacker.type * 31 + defender.type * 17 + defTerrain * 7 + atkHp + defHp +
+    (extraSeed || 0)) & 0x7FFFFFFF) || 1;
   const rand = () => {
     seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF;
     return seed;
