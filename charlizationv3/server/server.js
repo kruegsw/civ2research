@@ -545,11 +545,11 @@ wss.on("connection", (ws) => {
         const restartRoom = rooms.get(restartRoomId);
         if (!restartRoom) break;
 
-        // Map size presets (matching Civ2)
+        // Map size presets (doubled-X: display width = mw/2)
         const sizes = {
-          small:  { width: 40, height: 50 },
-          normal: { width: 50, height: 80 },
-          large:  { width: 75, height: 120 },
+          small:  { width: 100, height: 50 },
+          normal: { width: 160, height: 80 },
+          large:  { width: 240, height: 120 },
         };
         const sz = sizes[msg.mapSize] || sizes.normal;
 
@@ -616,7 +616,7 @@ function startGame(roomId, room, occupiedSeats) {
 }
 
 function startNewGame(roomId, room, seatList) {
-  const mapResult = generateMap({ width: 40, height: 50 });
+  const mapResult = generateMap({ width: 100, height: 50 });
   const { mapBase, gameState } = initNewGame(mapResult, seatList);
   room.mapBase = mapBase;
   room.gameState = gameState;
@@ -715,6 +715,7 @@ function buildStatePayload(room, civSlot) {
     turnEvents: gs.turnEvents,
     treaties: gs.treaties,
     treatyProposals: gs.treatyProposals,
+    tributeDemands: gs.tributeDemands,
   };
 }
 

@@ -8,9 +8,9 @@
 // Never mutates the input state directly — clones first.
 // ═══════════════════════════════════════════════════════════════════
 
-import { validateAction } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from './defs.js';
+import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP } from './actions.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -839,6 +839,167 @@ export function applyAction(prev, mapBase, action, civSlot) {
       break;
     }
 
+    case RENAME_CITY: {
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      state.cities[action.cityIndex] = { ...state.cities[action.cityIndex], name: action.name.trim() };
+      break;
+    }
+
+    case BRIBE_UNIT: {
+      const spy = state.units[action.unitIndex];
+      const target = state.units[action.targetIndex];
+      const bCost = calcBribeCost(state, target, mapBase);
+      // Deduct gold
+      state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+      const bCiv = { ...state.civs[civSlot] };
+      bCiv.treasury = (bCiv.treasury || 0) - bCost;
+      state.civs[civSlot] = bCiv;
+      // Transfer unit ownership
+      state.units[action.targetIndex] = { ...target, owner: civSlot, homeCityId: 0xFFFF, orders: 'none' };
+      // Spy survives but loses moves
+      state.units[action.unitIndex] = { ...spy, movesLeft: 0 };
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'unitBribed', civSlot, unitType: target.type, cost: bCost });
+      break;
+    }
+
+    case STEAL_TECH: {
+      const spy = state.units[action.unitIndex];
+      const sCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      const theirTechs = state.civTechs?.[sCity.owner];
+      const myTechs = state.civTechs?.[civSlot];
+      // Collect stealable techs
+      const stealable = [];
+      for (const t of theirTechs) { if (!myTechs.has(t)) stealable.push(t); }
+      const stolenId = stealable[Math.floor(Math.random() * stealable.length)];
+      grantAdvance(state, civSlot, stolenId);
+      // Diplomat (46) always consumed; Spy (47) survives 50%
+      if (spy.type === 46 || Math.random() < 0.5) {
+        killUnit(state, action.unitIndex);
+      } else {
+        state.units[action.unitIndex] = { ...spy, movesLeft: 0 };
+      }
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'techStolen', civSlot, advanceId: stolenId, from: sCity.owner });
+      break;
+    }
+
+    case SABOTAGE_CITY: {
+      const spy = state.units[action.unitIndex];
+      const sCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      const sCityIdx = state.cities.indexOf(sCity);
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      const sabCity = { ...sCity };
+      let sabResult;
+      // 50% destroy random building, 50% reset production
+      const buildings = sabCity.buildings instanceof Set ? [...sabCity.buildings] : [];
+      // Never destroy Palace (1)
+      const destructible = buildings.filter(b => b !== 1);
+      if (destructible.length > 0 && Math.random() < 0.5) {
+        const bid = destructible[Math.floor(Math.random() * destructible.length)];
+        const newBuildings = new Set(sabCity.buildings);
+        newBuildings.delete(bid);
+        sabCity.buildings = newBuildings;
+        sabCity.hasWalls = newBuildings.has(8);
+        sabResult = { type: 'buildingDestroyed', buildingId: bid };
+      } else {
+        sabCity.shieldsInBox = 0;
+        sabResult = { type: 'productionReset' };
+      }
+      state.cities[sCityIdx] = sabCity;
+      // Diplomat consumed; Spy survives 50%
+      if (spy.type === 46 || Math.random() < 0.5) {
+        killUnit(state, action.unitIndex);
+      } else {
+        state.units[action.unitIndex] = { ...spy, movesLeft: 0 };
+      }
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'citySabotaged', civSlot, cityName: sCity.name, ...sabResult });
+      break;
+    }
+
+    case INCITE_REVOLT: {
+      const spy = state.units[action.unitIndex];
+      const iCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      const iCityIdx = state.cities.indexOf(iCity);
+      const iCost = calcInciteCost(state, iCity, mapBase);
+      const oldOwner = iCity.owner;
+      // Deduct gold
+      state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+      const iCiv = { ...state.civs[civSlot] };
+      iCiv.treasury = (iCiv.treasury || 0) - iCost;
+      state.civs[civSlot] = iCiv;
+      // Transfer city ownership
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      state.cities[iCityIdx] = { ...iCity, owner: civSlot, isOccupied: true };
+      // Rehome the old owner's units from this city
+      rehomeUnits(state, iCityIdx, oldOwner);
+      // Kill enemy units in the city
+      for (let ui = 0; ui < state.units.length; ui++) {
+        const u = state.units[ui];
+        if (u.gx === iCity.gx && u.gy === iCity.gy && u.owner === oldOwner && u.gx >= 0) {
+          killUnit(state, ui);
+        }
+      }
+      // Diplomat consumed; Spy survives 50%
+      if (spy.type === 46 || Math.random() < 0.5) {
+        killUnit(state, action.unitIndex);
+      } else {
+        state.units[action.unitIndex] = { ...spy, movesLeft: 0 };
+      }
+      checkCivElimination(state, oldOwner);
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'cityIncited', civSlot, cityName: iCity.name, from: oldOwner, cost: iCost });
+      break;
+    }
+
+    case DEMAND_TRIBUTE: {
+      if (!state.tributeDemands) state.tributeDemands = [];
+      state.tributeDemands = [...state.tributeDemands, {
+        from: civSlot, to: action.targetCiv, amount: action.amount,
+        resolved: false, turn: state.turn.number,
+      }];
+      break;
+    }
+
+    case RESPOND_DEMAND: {
+      state.tributeDemands = [...(prev.tributeDemands || [])];
+      const demand = { ...state.tributeDemands[action.demandIndex], resolved: true, accepted: action.accept };
+      state.tributeDemands[action.demandIndex] = demand;
+      if (action.accept) {
+        state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+        // Deduct from target, add to demander
+        const payer = { ...state.civs[civSlot] };
+        payer.treasury = (payer.treasury || 0) - demand.amount;
+        state.civs[civSlot] = payer;
+        const receiver = { ...state.civs[demand.from] };
+        receiver.treasury = (receiver.treasury || 0) + demand.amount;
+        state.civs[demand.from] = receiver;
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'tributePaid', from: civSlot, to: demand.from, amount: demand.amount });
+      }
+      break;
+    }
+
+    case SHARE_MAP: {
+      // Mutual map exchange: OR exploration bits for both civs
+      if (mapBase.tileData) {
+        const myBit = 1 << civSlot;
+        const theirBit = 1 << action.targetCiv;
+        for (const tile of mapBase.tileData) {
+          if (!tile) continue;
+          const vis = tile.visibility ?? 0;
+          const myExplored = vis & myBit;
+          const theirExplored = vis & theirBit;
+          if (myExplored && !theirExplored) tile.visibility = vis | theirBit;
+          if (theirExplored && !myExplored) tile.visibility = vis | myBit;
+        }
+      }
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'mapShared', civSlot, targetCiv: action.targetCiv });
+      break;
+    }
+
     case END_TURN: {
       const endingCiv = state.turn.activeCiv;
 
@@ -1060,6 +1221,27 @@ export function applyAction(prev, mapBase, action, civSlot) {
             hasPalace: newBuildings.has(1),
             soldThisTurn,
           };
+        }
+      }
+
+      // ── Auto-disband: if city shield production < 0, disband non-garrisoned units ──
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const city = state.cities[ci];
+        if (city.owner !== activeCiv || city.size <= 0) continue;
+        const { grossShields, support } = calcShieldProduction(city, ci, state, mapBase, state.units);
+        if (support <= grossShields) continue;
+        // Disband units homed here that are NOT in the city, by slot order
+        for (let ui = 0; ui < state.units.length; ui++) {
+          const u = state.units[ui];
+          if (u.owner !== activeCiv || u.gx < 0 || u.homeCityId !== ci) continue;
+          if (SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
+          if (u.gx === city.gx && u.gy === city.gy) continue; // garrisoned: skip
+          killUnit(state, ui);
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({ type: 'unitDisbanded', unitType: u.type, civSlot: activeCiv, cityName: city.name });
+          // Recheck: support might now be affordable
+          const recheck = calcShieldProduction(city, ci, state, mapBase, state.units);
+          if (recheck.support <= recheck.grossShields) break;
         }
       }
 

@@ -50,9 +50,10 @@ export function cityHasActiveWonder(gameState, cityIndex, wonderIndex) {
   return cityHasWonder(gameState, cityIndex, wonderIndex);
 }
 
-/** Get government type string for a city's owner civ. */
-export function getGovernment(city, gameState) {
-  return gameState.civs?.[city.owner]?.government || 'despotism';
+/** Get government type string for a city's owner civ (or a specific civSlot). */
+export function getGovernment(city, gameState, civSlot) {
+  const slot = civSlot ?? city?.owner;
+  return gameState.civs?.[slot]?.government || 'despotism';
 }
 
 /** Wrap a coordinate for horizontal map wrapping. */

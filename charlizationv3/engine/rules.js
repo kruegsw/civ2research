@@ -9,11 +9,12 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP } from './actions.js';
 import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
+import { getGovernment } from './utils.js';
 
 const VALID_SPECIALIST_TYPES = new Set(['entertainer', 'taxman', 'scientist']);
 
@@ -407,6 +408,119 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       return null;
     }
 
+    case RENAME_CITY: {
+      const city = gameState.cities[action.cityIndex];
+      if (!city) return 'City not found';
+      if (city.owner !== civSlot) return 'Not your city';
+      if (city.size <= 0) return 'City is destroyed';
+      if (!action.name || typeof action.name !== 'string') return 'Invalid name';
+      if (action.name.trim().length === 0 || action.name.length > 24) return 'Name must be 1-24 characters';
+      return null;
+    }
+
+    case BRIBE_UNIT: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 46 && spy.type !== 47) return 'Only Diplomats/Spies can bribe';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const target = gameState.units[action.targetIndex];
+      if (!target) return 'Target not found';
+      if (target.owner === civSlot) return 'Cannot bribe own unit';
+      if (target.gx < 0) return 'Target is dead';
+      // Must be adjacent
+      const bDir = getDirection(spy.gx, spy.gy, target.gx, target.gy, mapBase);
+      if (!bDir) return 'Target not adjacent';
+      // Democracy immune
+      const tGovt = getGovernment(null, gameState, target.owner);
+      if (tGovt === 'democracy') return 'Democratic units cannot be bribed';
+      // Check cost
+      const bCost = calcBribeCost(gameState, target, mapBase);
+      if ((gameState.civs?.[civSlot]?.treasury || 0) < bCost) return `Costs ${bCost} gold (insufficient)`;
+      return null;
+    }
+
+    case STEAL_TECH: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 46 && spy.type !== 47) return 'Only Diplomats/Spies';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in an enemy city';
+      if (city.owner === civSlot) return 'Cannot steal from own city';
+      // Check there's a tech to steal
+      const theirTechs = gameState.civTechs?.[city.owner];
+      const myTechs = gameState.civTechs?.[civSlot];
+      if (!theirTechs || !myTechs) return 'No techs available';
+      let hasStealable = false;
+      for (const t of theirTechs) { if (!myTechs.has(t)) { hasStealable = true; break; } }
+      if (!hasStealable) return 'Nothing to steal';
+      return null;
+    }
+
+    case SABOTAGE_CITY: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 46 && spy.type !== 47) return 'Only Diplomats/Spies';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in an enemy city';
+      if (city.owner === civSlot) return 'Cannot sabotage own city';
+      return null;
+    }
+
+    case INCITE_REVOLT: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 46 && spy.type !== 47) return 'Only Diplomats/Spies';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in an enemy city';
+      if (city.owner === civSlot) return 'Cannot incite own city';
+      if (city.buildings?.has(1)) return 'Cannot incite capital';
+      const cGovt = getGovernment(null, gameState, city.owner);
+      if (cGovt === 'democracy') return 'Cannot incite democratic city';
+      const iCost = calcInciteCost(gameState, city, mapBase);
+      if ((gameState.civs?.[civSlot]?.treasury || 0) < iCost) return `Costs ${iCost} gold (insufficient)`;
+      return null;
+    }
+
+    case DEMAND_TRIBUTE: {
+      const { targetCiv, amount } = action;
+      if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
+      if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
+      if (!amount || amount < 1 || amount > 1000) return 'Invalid amount';
+      if (gameState.tributeDemands?.some(d => d.from === civSlot && d.to === targetCiv && !d.resolved))
+        return 'Demand already pending';
+      return null;
+    }
+
+    case RESPOND_DEMAND: {
+      const demand = gameState.tributeDemands?.[action.demandIndex];
+      if (!demand) return 'Demand not found';
+      if (demand.to !== civSlot) return 'Not addressed to you';
+      if (demand.resolved) return 'Already resolved';
+      if (action.accept && (gameState.civs?.[civSlot]?.treasury || 0) < demand.amount)
+        return 'Insufficient gold';
+      return null;
+    }
+
+    case SHARE_MAP: {
+      const { targetCiv } = action;
+      if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
+      if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
+      const treaty = getTreaty(gameState, civSlot, targetCiv);
+      if (treaty === 'war') return 'Must be at peace to share maps';
+      return null;
+    }
+
     case END_TURN:
       return null; // always valid if it's your turn
 
@@ -460,6 +574,61 @@ export function getValidActions(gameState, mapBase, unitIndex, tile) {
   }
 
   return actions;
+}
+
+/**
+ * Bribe cost: ((target_treasury + 750) / (distance_to_capital + 2)) * (shield_cost / 10)
+ * Damaged units cost less proportionally. Settlers/Engineers cost double.
+ */
+export function calcBribeCost(gameState, target, mapBase) {
+  const treasury = gameState.civs?.[target.owner]?.treasury || 0;
+  const capital = gameState.cities.find(c => c.owner === target.owner && c.buildings?.has(1) && c.size > 0);
+  let dist = 16;
+  if (capital) {
+    const mw2 = (mapBase.mw || 0) * 2;
+    const ux = target.gx * 2 + (target.gy % 2);
+    const cx = capital.gx * 2 + (capital.gy % 2);
+    let dx = Math.abs(ux - cx);
+    if (mapBase.wraps) dx = Math.min(dx, mw2 - dx);
+    dist = dx + Math.abs(target.gy - capital.gy);
+  }
+  const govt = getGovernment(null, gameState, target.owner);
+  if (govt === 'communism') dist = Math.min(dist, 10);
+  const shieldCost = (UNIT_COSTS[target.type] || 1) * 10;
+  let cost = Math.floor(((treasury + 750) / (dist + 2)) * (shieldCost / 10));
+  // Settlers/Engineers: double
+  if (target.type === 0 || target.type === 1) cost *= 2;
+  // Damaged: proportional reduction
+  const maxHp = 10; // base HP
+  const curHp = Math.max(1, maxHp - (target.hpLost || 0));
+  cost = Math.floor((cost / 2) * (1 + curHp / maxHp));
+  return Math.max(1, cost);
+}
+
+/**
+ * Incite cost: city_size * (target_treasury + 1000) / (distance_to_own_capital + 3)
+ * Courthouse halves distance. Civil disorder, no garrison, originally yours: each halves cost.
+ */
+export function calcInciteCost(gameState, city, mapBase) {
+  const treasury = gameState.civs?.[city.owner]?.treasury || 0;
+  const capital = gameState.cities.find(c => c.owner === city.owner && c.buildings?.has(1) && c.size > 0);
+  let dist = 32;
+  if (capital) {
+    const mw2 = (mapBase.mw || 0) * 2;
+    const cx = city.gx * 2 + (city.gy % 2);
+    const capx = capital.gx * 2 + (capital.gy % 2);
+    let dx = Math.abs(cx - capx);
+    if (mapBase.wraps) dx = Math.min(dx, mw2 - dx);
+    dist = dx + Math.abs(city.gy - capital.gy);
+  }
+  const govt = getGovernment(null, gameState, city.owner);
+  if (govt === 'communism') dist = Math.min(dist, 10);
+  if (city.buildings?.has(7)) dist = Math.max(1, Math.floor(dist / 2)); // Courthouse
+  let cost = Math.floor(city.size * (treasury + 1000) / (dist + 3));
+  if (city.civilDisorder) cost = Math.floor(cost / 2);
+  const hasGarrison = gameState.units.some(u => u.gx === city.gx && u.gy === city.gy && u.owner === city.owner && u.gx >= 0);
+  if (!hasGarrison) cost = Math.floor(cost / 2);
+  return Math.max(1, cost);
 }
 
 /** Check if a friendly transport with spare capacity exists at (gx, gy). */

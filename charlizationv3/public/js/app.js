@@ -14,8 +14,8 @@ import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
-import { getValidActions, validateAction } from '../engine/rules.js';
-import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE } from '../engine/actions.js';
+import { getValidActions, validateAction, calcBribeCost, calcInciteCost } from '../engine/rules.js';
+import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP } from '../engine/actions.js';
 import { calcRushBuyCost } from '../engine/happiness.js';
 import { getProductionCost, calcCityTrade } from '../engine/production.js';
 import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
@@ -1074,6 +1074,26 @@ function cdHandleClick(clientX, clientY) {
     } else {
       showSellBuildingPicker(cdCity, cdCityIndex);
     }
+  } else if (result && result.action === 'rename') {
+    if (!mpGameState || !mpMapBase || mpCivSlot == null || cdCity.owner !== mpCivSlot) return;
+    createCiv2Dialog('rename-dialog', 'Rename City', panel => {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = cdCity.name;
+      input.maxLength = 24;
+      input.style.cssText = 'width:200px;font:14px "Times New Roman",serif;padding:4px';
+      panel.appendChild(input);
+      setTimeout(() => { input.focus(); input.select(); }, 100);
+    }, [
+      { label: 'OK', action: () => {
+        const input = document.querySelector('#rename-dialog input');
+        const newName = input?.value?.trim();
+        if (newName && newName.length > 0 && newName !== cdCity.name) {
+          transport.sendRaw({ type: 'ACTION', action: { type: RENAME_CITY, cityIndex: cdCityIndex, name: newName } });
+        }
+      }},
+      { label: 'Cancel' },
+    ]);
   } else if (result && result.action === 'unitPresent') {
     if (!mpGameState || !mpMapBase || mpCivSlot == null) return;
     showUnitPresentDialog(result.unitIndex);
@@ -1849,7 +1869,7 @@ function showCityFoundedDialog(cityName, year, onDismiss) {
  * @param {Array<{label:string, action:function}>} buttons - button definitions
  * @returns {{ overlay, dismiss }} - DOM element and dismiss function
  */
-function createCiv2Dialog(id, title, buildContent, buttons) {
+function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'OK' }]) {
   const existing = document.getElementById(id);
   if (existing) existing.remove();
 
@@ -2050,6 +2070,87 @@ function showTurnEvents(events) {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
           msg.textContent = text;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'unitBribed': {
+        const uName = UNIT_NAMES[ev.unitType] || 'Unit';
+        createCiv2Dialog('turn-event-dialog', 'Bribery', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `${uName} bribed for ${ev.cost} gold.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'techStolen': {
+        const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
+        const fromName = mpGameState?.civNames?.[ev.from] || `Civ ${ev.from}`;
+        createCiv2Dialog('turn-event-dialog', 'Espionage', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `Stole ${advName} from the ${fromName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'citySabotaged': {
+        const detail = ev.buildingId != null
+          ? `Building destroyed in ${ev.cityName}!`
+          : `Production sabotaged in ${ev.cityName}!`;
+        createCiv2Dialog('turn-event-dialog', 'Sabotage', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = detail;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'cityIncited': {
+        const fromName = mpGameState?.civNames?.[ev.from] || `Civ ${ev.from}`;
+        createCiv2Dialog('turn-event-dialog', 'Revolt!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `${ev.cityName} revolts against the ${fromName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'tributePaid': {
+        const payerName = mpGameState?.civNames?.[ev.from] || `Civ ${ev.from}`;
+        const receiverName = mpGameState?.civNames?.[ev.to] || `Civ ${ev.to}`;
+        createCiv2Dialog('turn-event-dialog', 'Tribute', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `${payerName} paid ${ev.amount} gold in tribute to ${receiverName}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'mapShared': {
+        const shareName = mpGameState?.civNames?.[ev.targetCiv] || `Civ ${ev.targetCiv}`;
+        createCiv2Dialog('turn-event-dialog', 'Map Exchange', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `Maps exchanged with the ${shareName}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'unitDisbanded': {
+        const uName = UNIT_NAMES[ev.unitType] || 'Unit';
+        createCiv2Dialog('turn-event-dialog', 'Unit Disbanded', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `${uName} from ${ev.cityName} disbanded due to insufficient support.`;
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;
@@ -2329,6 +2430,7 @@ function showDiplomacyPanel() {
       row.appendChild(label);
 
       const btnGroup = document.createElement('span');
+      btnGroup.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap';
       if (treaty === 'war') {
         const btn = document.createElement('button');
         btn.textContent = 'Propose Peace';
@@ -2341,16 +2443,37 @@ function showDiplomacyPanel() {
         };
         btnGroup.appendChild(btn);
       } else {
-        const btn = document.createElement('button');
-        btn.textContent = 'Declare War';
-        btn.className = 'civ2-btn';
-        btn.style.cssText = 'font-size:11px;padding:2px 8px';
-        btn.onclick = () => {
+        const warBtn = document.createElement('button');
+        warBtn.textContent = 'Declare War';
+        warBtn.className = 'civ2-btn';
+        warBtn.style.cssText = 'font-size:11px;padding:2px 8px';
+        warBtn.onclick = () => {
           transport.sendRaw({ type: 'ACTION', action: { type: DECLARE_WAR, targetCiv: c } });
           document.getElementById('diplomacy-dialog')?.remove();
         };
-        btnGroup.appendChild(btn);
+        btnGroup.appendChild(warBtn);
+        // Share Map (only at peace)
+        const mapBtn = document.createElement('button');
+        mapBtn.textContent = 'Share Map';
+        mapBtn.className = 'civ2-btn';
+        mapBtn.style.cssText = 'font-size:11px;padding:2px 8px';
+        mapBtn.onclick = () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: SHARE_MAP, targetCiv: c } });
+          document.getElementById('diplomacy-dialog')?.remove();
+          showOverlayMessage(`Maps exchanged with ${name}`);
+        };
+        btnGroup.appendChild(mapBtn);
       }
+      // Demand Tribute (always available)
+      const demandBtn = document.createElement('button');
+      demandBtn.textContent = 'Demand Tribute';
+      demandBtn.className = 'civ2-btn';
+      demandBtn.style.cssText = 'font-size:11px;padding:2px 8px';
+      demandBtn.onclick = () => {
+        document.getElementById('diplomacy-dialog')?.remove();
+        showTributeDemandInput(c, name);
+      };
+      btnGroup.appendChild(demandBtn);
       row.appendChild(btnGroup);
       panel.appendChild(row);
     }
@@ -2392,7 +2515,69 @@ function showDiplomacyPanel() {
         panel.appendChild(pRow);
       }
     }
+
+    // Show pending tribute demands TO us
+    const demands = mpGameState.tributeDemands || [];
+    const pendingDemands = demands.filter(d => d.to === mpCivSlot && !d.resolved);
+    if (pendingDemands.length > 0) {
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'margin-top:12px;font-weight:bold;font-size:14px;color:#333';
+      hdr.textContent = 'Tribute Demands:';
+      panel.appendChild(hdr);
+      for (const d of pendingDemands) {
+        const di = demands.indexOf(d);
+        const fromName = mpGameState.civNames?.[d.from] || `Civ ${d.from}`;
+        const dRow = document.createElement('div');
+        dRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:4px 0;font:13px "Times New Roman",serif';
+        dRow.innerHTML = `<span>${fromName} demands ${d.amount} gold</span>`;
+        const btns = document.createElement('span');
+        const payBtn = document.createElement('button');
+        payBtn.textContent = 'Pay';
+        payBtn.className = 'civ2-btn';
+        payBtn.style.cssText = 'font-size:11px;padding:2px 8px;margin-right:4px';
+        payBtn.onclick = () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: RESPOND_DEMAND, demandIndex: di, accept: true } });
+          document.getElementById('diplomacy-dialog')?.remove();
+        };
+        const refBtn = document.createElement('button');
+        refBtn.textContent = 'Refuse';
+        refBtn.className = 'civ2-btn';
+        refBtn.style.cssText = 'font-size:11px;padding:2px 8px';
+        refBtn.onclick = () => {
+          transport.sendRaw({ type: 'ACTION', action: { type: RESPOND_DEMAND, demandIndex: di, accept: false } });
+          document.getElementById('diplomacy-dialog')?.remove();
+        };
+        btns.appendChild(payBtn);
+        btns.appendChild(refBtn);
+        dRow.appendChild(btns);
+        panel.appendChild(dRow);
+      }
+    }
   }, [{ label: 'Close' }]);
+}
+
+/** Prompt for tribute amount to demand. */
+function showTributeDemandInput(targetCiv, targetName) {
+  createCiv2Dialog('tribute-dialog', 'Demand Tribute', panel => {
+    const msg = document.createElement('div');
+    msg.textContent = `How much gold to demand from ${targetName}?`;
+    panel.appendChild(msg);
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '1';
+    input.max = '1000';
+    input.value = '50';
+    input.style.cssText = 'width:80px;margin:8px 0;font:14px "Times New Roman",serif;padding:4px';
+    panel.appendChild(input);
+  }, [
+    { label: 'Demand', action: () => {
+      const el = document.querySelector('#tribute-dialog input');
+      const amount = parseInt(el?.value) || 50;
+      transport.sendRaw({ type: 'ACTION', action: { type: DEMAND_TRIBUTE, targetCiv, amount: Math.min(1000, Math.max(1, amount)) } });
+      showOverlayMessage(`Tribute demand sent to ${targetName}`);
+    }},
+    { label: 'Cancel' },
+  ]);
 }
 
 // ── Research picker ──
@@ -3109,7 +3294,7 @@ const transport = createTransport({
         // Turn events: city growth, famine, production complete, civ eliminated
         if (msg.state.turnEvents) {
           // Own-civ events + global events (elimination) shown to everyone
-          const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted']);
+          const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited']);
           const myEvents = msg.state.turnEvents.filter(e =>
             e.civSlot === mpCivSlot || GLOBAL_EVENTS.has(e.type));
           if (myEvents.length > 0) {
@@ -3117,8 +3302,9 @@ const transport = createTransport({
           }
         }
 
-        // Auto-show diplomacy panel when there are pending treaty proposals for us
-        if (mpGameState.treatyProposals?.some(p => p.to === mpCivSlot && !p.resolved)) {
+        // Auto-show diplomacy panel when there are pending proposals/demands for us
+        if (mpGameState.treatyProposals?.some(p => p.to === mpCivSlot && !p.resolved) ||
+            mpGameState.tributeDemands?.some(d => d.to === mpCivSlot && !d.resolved)) {
           setTimeout(() => showDiplomacyPanel(), 400);
         }
 
@@ -4298,6 +4484,51 @@ function buildOrderMenuItems(unitIdx) {
       if (!err) items.push({ label: 'Establish Trade Route', action: () => {
         transport.sendRaw({ type: 'ACTION', action: { type: ESTABLISH_TRADE, unitIndex: unitIdx, cityIndex: ci } });
       }});
+    }
+  }
+
+  // Diplomat/Spy actions
+  if (u.type === 46 || u.type === 47) {
+    const spyItems = [];
+    // City actions: steal tech, sabotage, incite revolt (when on enemy city)
+    const spyCity = mpGameState.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.size > 0 && c.owner !== civSlot);
+    if (spyCity) {
+      const stealErr = validateAction(mpGameState, mpMapBase, { type: STEAL_TECH, unitIndex: unitIdx }, civSlot);
+      if (!stealErr) spyItems.push({ label: 'Steal Technology', action: () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: STEAL_TECH, unitIndex: unitIdx } });
+      }});
+      const sabErr = validateAction(mpGameState, mpMapBase, { type: SABOTAGE_CITY, unitIndex: unitIdx }, civSlot);
+      if (!sabErr) spyItems.push({ label: 'Sabotage City', action: () => {
+        transport.sendRaw({ type: 'ACTION', action: { type: SABOTAGE_CITY, unitIndex: unitIdx } });
+      }});
+      const incErr = validateAction(mpGameState, mpMapBase, { type: INCITE_REVOLT, unitIndex: unitIdx }, civSlot);
+      if (!incErr) {
+        const cost = calcInciteCost(mpGameState, spyCity, mpMapBase);
+        spyItems.push({ label: `Incite Revolt (${cost}g)`, action: () => {
+          showConfirmDialog(`Incite revolt in ${spyCity.name} for ${cost} gold?`, () => {
+            transport.sendRaw({ type: 'ACTION', action: { type: INCITE_REVOLT, unitIndex: unitIdx } });
+          });
+        }});
+      }
+    }
+    // Bribe adjacent enemy unit
+    for (let ti = 0; ti < mpGameState.units.length; ti++) {
+      const t = mpGameState.units[ti];
+      if (t.owner === civSlot || t.gx < 0) continue;
+      const bErr = validateAction(mpGameState, mpMapBase, { type: BRIBE_UNIT, unitIndex: unitIdx, targetIndex: ti }, civSlot);
+      if (!bErr) {
+        const cost = calcBribeCost(mpGameState, t, mpMapBase);
+        const tName = UNIT_NAMES[t.type] || 'Unit';
+        spyItems.push({ label: `Bribe ${tName} (${cost}g)`, action: () => {
+          showConfirmDialog(`Bribe ${tName} for ${cost} gold?`, () => {
+            transport.sendRaw({ type: 'ACTION', action: { type: BRIBE_UNIT, unitIndex: unitIdx, targetIndex: ti } });
+          });
+        }});
+      }
+    }
+    if (spyItems.length > 0) {
+      items.push({ separator: true });
+      items.push(...spyItems);
     }
   }
 

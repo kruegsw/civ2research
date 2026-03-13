@@ -80,3 +80,35 @@ export const DECLARE_WAR = 'DECLARE_WAR';
 export const ESTABLISH_TRADE = 'ESTABLISH_TRADE';
 //   { type: 'ESTABLISH_TRADE', unitIndex, cityIndex }
 //   Caravan/Freight establishes a trade route with the target city.
+
+export const RENAME_CITY = 'RENAME_CITY';
+//   { type: 'RENAME_CITY', cityIndex, name }
+//   Rename one of your cities.
+
+export const BRIBE_UNIT = 'BRIBE_UNIT';
+//   { type: 'BRIBE_UNIT', unitIndex, targetIndex }
+//   Diplomat/Spy bribes an enemy unit. Always succeeds (unless Democracy).
+
+export const STEAL_TECH = 'STEAL_TECH';
+//   { type: 'STEAL_TECH', unitIndex }
+//   Diplomat/Spy at an enemy city steals a random technology. Diplomat consumed.
+
+export const SABOTAGE_CITY = 'SABOTAGE_CITY';
+//   { type: 'SABOTAGE_CITY', unitIndex }
+//   Diplomat/Spy at an enemy city resets production or destroys a building. Diplomat consumed.
+
+export const INCITE_REVOLT = 'INCITE_REVOLT';
+//   { type: 'INCITE_REVOLT', unitIndex }
+//   Diplomat/Spy at an enemy city pays gold to flip it. Diplomat consumed.
+
+export const DEMAND_TRIBUTE = 'DEMAND_TRIBUTE';
+//   { type: 'DEMAND_TRIBUTE', targetCiv, amount }
+//   Demand gold from another civ. They can accept or refuse.
+
+export const RESPOND_DEMAND = 'RESPOND_DEMAND';
+//   { type: 'RESPOND_DEMAND', demandIndex, accept: boolean }
+//   Accept or reject a tribute demand.
+
+export const SHARE_MAP = 'SHARE_MAP';
+//   { type: 'SHARE_MAP', targetCiv }
+//   Share your explored map with another civ (mutual exchange).

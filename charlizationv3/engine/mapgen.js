@@ -633,27 +633,25 @@ export function generateMap(settings = {}) {
   }
 
   // ── Phase 7: Polar caps + tundra scatter (lines 2009-2072) ──
-  // Non-wrapping maps only. Binary has two glacier passes:
-  //   1st (lines 2026-2032): unconditional glacier at row 0 (even x) and row mh-1 (odd x)
-  //   2nd (lines 2033-2072): tundra scatter at rows 0,1 and mh-1,mh-2
-  if (!wraps) {
-    // Unconditional glacier: row 0 = even x, row mh-1 = odd x (binary lines 2027-2031)
-    for (let x = 0; x < mw; x += 2) {
-      tiles[0 * mw + x] = T_GLACIER;         // (x, 0) — even x for even row
-      tiles[(mh - 1) * mw + x + 1] = T_GLACIER; // (x+1, mh-1) — odd x for odd row
-    }
-    // Tundra scatter: mw/8 iterations, 4 placements each (binary lines 2034-2071)
-    const polarScatter = Math.floor(mw / 8);
-    for (let i = 0; i < polarScatter; i++) {
-      let rx = rng.nextInt(Math.floor(mw / 2));
-      tiles[0 * mw + rx * 2] = T_TUNDRA;
-      rx = rng.nextInt(Math.floor(mw / 2));
-      tiles[1 * mw + rx * 2 + 1] = T_TUNDRA;
-      rx = rng.nextInt(Math.floor(mw / 2));
-      tiles[(mh - 1) * mw + rx * 2 + 1] = T_TUNDRA;
-      rx = rng.nextInt(Math.floor(mw / 2));
-      tiles[(mh - 2) * mw + rx * 2] = T_TUNDRA;
-    }
+  // Binary only does this for flat maps, but we apply to all maps.
+  // 1st: unconditional glacier at row 0 (even x) and row mh-1 (odd x)
+  // 2nd: tundra scatter at rows 0,1 and mh-1,mh-2
+  // Unconditional glacier
+  for (let x = 0; x < mw; x += 2) {
+    tiles[0 * mw + x] = T_GLACIER;         // (x, 0) — even x for even row
+    tiles[(mh - 1) * mw + x + 1] = T_GLACIER; // (x+1, mh-1) — odd x for odd row
+  }
+  // Tundra scatter: mw/8 iterations, 4 placements each
+  const polarScatter = Math.floor(mw / 8);
+  for (let i = 0; i < polarScatter; i++) {
+    let rx = rng.nextInt(Math.floor(mw / 2));
+    tiles[0 * mw + rx * 2] = T_TUNDRA;
+    rx = rng.nextInt(Math.floor(mw / 2));
+    tiles[1 * mw + rx * 2 + 1] = T_TUNDRA;
+    rx = rng.nextInt(Math.floor(mw / 2));
+    tiles[(mh - 1) * mw + rx * 2 + 1] = T_TUNDRA;
+    rx = rng.nextInt(Math.floor(mw / 2));
+    tiles[(mh - 2) * mw + rx * 2] = T_TUNDRA;
   }
 
   // ── Finalize terrain: strip river high bits, build tile objects ──
