@@ -9,8 +9,8 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS } from './defs.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -384,7 +384,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
 
         const defender = { ...state.units[bestDefIdx] };
-        const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver);
+        const defCityBuildings = defCity ? defCity.buildings : null;
+        const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings);
 
         const defOwner = defender.owner;
 
@@ -420,11 +421,14 @@ export function applyAction(prev, mapBase, action, civSlot) {
               state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
               const ci = state.cities.findIndex(c => c === defCity);
               if (ci >= 0) {
+                const capturedSize = Math.max(1, defCity.size - 1);
+                const resistanceTurns = Math.max(1, Math.floor(defCity.size / 2));
                 const captured = { ...defCity,
                   owner: unit.owner,
-                  size: Math.max(1, defCity.size - 1),
+                  size: capturedSize,
                   civilDisorder: false, weLoveKingDay: false, soldThisTurn: false,
                   specialists: [],
+                  resistanceTurns,
                 };
                 captured.workedTiles = captured.workedTiles.length > captured.size
                   ? captured.workedTiles.slice(0, captured.size) : captured.workedTiles;
@@ -518,11 +522,31 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
+      // ── Sentry wake: enemy units with orders 'sentry' within 2 tiles wake up ──
+      if (unit.gx >= 0) {
+        const wokenUnits = [];
+        for (let si = 0; si < state.units.length; si++) {
+          const su = state.units[si];
+          if (su.owner === civSlot || su.gx < 0 || su.orders !== 'sentry') continue;
+          // Check within 2 tiles (Manhattan distance in gx,gy space)
+          let sDx = Math.abs(su.gx - unit.gx);
+          if (mapBase.wraps) sDx = Math.min(sDx, mapBase.mw - sDx);
+          const sDy = Math.abs(su.gy - unit.gy);
+          if (sDx + sDy <= 2) {
+            state.units[si] = { ...su, orders: 'none' };
+            wokenUnits.push({ unitIndex: si, unitType: su.type, civSlot: su.owner });
+          }
+        }
+        if (wokenUnits.length > 0) {
+          state.unitsWoken = wokenUnits;
+        }
+      }
+
       break;
     }
 
     case BUILD_CITY: {
-      const { unitIndex } = action;
+      const { unitIndex, name: requestedName } = action;
       const unit = state.units[unitIndex];
 
       // Compute initial worker placement for size-1 city
@@ -532,8 +556,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const isFirstCity = prev.cities.filter(c => c.owner === unit.owner).length === 0;
       const buildings = new Set();
       if (isFirstCity) buildings.add(1); // Palace
+      const cityName = (requestedName && requestedName.trim()) || getCityName(unit.owner, prev.cities, prev.civs);
       const newCity = {
-        name: getCityName(unit.owner, prev.cities, prev.civs),
+        name: cityName,
         owner: unit.owner,
         originalOwner: unit.owner,
         size: 1,
@@ -1102,6 +1127,112 @@ export function applyAction(prev, mapBase, action, civSlot) {
       break;
     }
 
+    case NUKE: {
+      const { unitIndex: nukeUi, targetGx: nukeTgx, targetGy: nukeTgy } = action;
+      // Destroy the missile
+      killUnit(state, nukeUi);
+
+      // Kill all units on the target tile
+      for (let i = 0; i < state.units.length; i++) {
+        if (state.units[i].gx === nukeTgx && state.units[i].gy === nukeTgy && state.units[i].gx >= 0) {
+          killUnit(state, i);
+        }
+      }
+
+      // Reduce city population by half if city present
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (c.gx === nukeTgx && c.gy === nukeTgy && c.size > 0) {
+          const newSize = Math.max(1, Math.floor(c.size / 2));
+          const newWorked = c.workedTiles.length > newSize
+            ? c.workedTiles.slice(0, newSize) : c.workedTiles;
+          state.cities[ci] = { ...c, size: newSize, workedTiles: newWorked };
+        }
+      }
+
+      // Set pollution on target tile AND all 8 adjacent tiles; change target terrain to desert (except ocean)
+      const nukeTarget = nukeTgy * mapBase.mw + nukeTgx;
+      if (mapBase.tileData[nukeTarget]) {
+        mapBase.tileData[nukeTarget].improvements = { ...mapBase.tileData[nukeTarget].improvements, pollution: true };
+        if (mapBase.tileData[nukeTarget].terrain !== 10) {
+          mapBase.tileData[nukeTarget].terrain = 0; // desert
+        }
+      }
+      const nukeDirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      for (const nd of nukeDirs) {
+        const nDest = resolveDirection(nukeTgx, nukeTgy, nd, mapBase);
+        if (!nDest) continue;
+        const nIdx = nDest.gy * mapBase.mw + nDest.gx;
+        if (mapBase.tileData[nIdx] && mapBase.tileData[nIdx].terrain !== 10) {
+          mapBase.tileData[nIdx].improvements = { ...mapBase.tileData[nIdx].improvements, pollution: true };
+        }
+      }
+
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'nuclearStrike', civSlot, targetGx: nukeTgx, targetGy: nukeTgy });
+      break;
+    }
+
+    case PARADROP: {
+      const { unitIndex: pdUi, targetGx: pdTgx, targetGy: pdTgy } = action;
+      const pdUnit = { ...state.units[pdUi] };
+      pdUnit.gx = pdTgx;
+      pdUnit.gy = pdTgy;
+      pdUnit.x = pdTgx * 2 + (pdTgy % 2);
+      pdUnit.y = pdTgy;
+      pdUnit.movesLeft = 0;
+      state.units[pdUi] = pdUnit;
+      // Update visibility
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, pdTgx, pdTgy, mapBase.wraps);
+      break;
+    }
+
+    case AIRLIFT: {
+      const { unitIndex: alUi, targetCityIndex: alTci } = action;
+      const alUnit = { ...state.units[alUi] };
+      const alTargetCity = state.cities[alTci];
+      // Mark source city as having airlifted
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      const alSrcCi = state.cities.findIndex(c => c.gx === alUnit.gx && c.gy === alUnit.gy && c.owner === civSlot && c.size > 0);
+      if (alSrcCi >= 0) {
+        state.cities[alSrcCi] = { ...state.cities[alSrcCi], airliftedThisTurn: true };
+      }
+      // Move unit to target city
+      alUnit.gx = alTargetCity.gx;
+      alUnit.gy = alTargetCity.gy;
+      alUnit.x = alTargetCity.gx * 2 + (alTargetCity.gy % 2);
+      alUnit.y = alTargetCity.gy;
+      alUnit.movesLeft = 0;
+      state.units[alUi] = alUnit;
+      // Update visibility
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, alUnit.gx, alUnit.gy, mapBase.wraps);
+      break;
+    }
+
+    case UPGRADE_UNIT: {
+      const { unitIndex: upgUi } = action;
+      const upgUnit = { ...state.units[upgUi] };
+      const upgOldType = upgUnit.type;
+      const upgTarget = UNIT_UPGRADE_TO[upgOldType];
+      const oldCost = UNIT_COSTS[upgOldType] || 0;
+      const newCost = UNIT_COSTS[upgTarget] || 0;
+      const upgCost = Math.max(40, (newCost - oldCost) * 2);
+      // Deduct gold
+      state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+      const upgCiv = { ...state.civs[civSlot] };
+      upgCiv.treasury = (upgCiv.treasury || 0) - upgCost;
+      state.civs[civSlot] = upgCiv;
+      // Upgrade the unit: change type, reset HP, keep veteran status
+      upgUnit.type = upgTarget;
+      upgUnit.hpLost = 0;
+      upgUnit.movesLeft = 0; // uses the turn
+      state.units[upgUi] = upgUnit;
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'unitUpgraded', civSlot, oldType: upgOldType, newType: upgTarget, cost: upgCost });
+      break;
+    }
+
     case END_TURN: {
       const endingCiv = state.turn.activeCiv;
 
@@ -1171,10 +1302,32 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
+      // ── Process city resistance for the active civ ──
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const city = state.cities[ci];
+        if (city.owner !== activeCiv || city.size <= 0) continue;
+        if (city.resistanceTurns > 0) {
+          state.cities[ci] = state.cities[ci] !== city ? state.cities[ci] : { ...city };
+          // Count garrisoned military units (attack > 0)
+          let garrison = 0;
+          for (const u of state.units) {
+            if (u.gx === city.gx && u.gy === city.gy && u.owner === city.owner && u.gx >= 0
+                && (UNIT_ATK[u.type] || 0) > 0) {
+              garrison++;
+            }
+          }
+          // Decrement: 1 base + garrison bonus
+          const resDec = 1 + garrison;
+          state.cities[ci].resistanceTurns = Math.max(0, city.resistanceTurns - resDec);
+        }
+      }
+
       // ── Process cities for the active civ (food, shields, production) ──
       for (let ci = 0; ci < state.cities.length; ci++) {
         const city = state.cities[ci];
         if (city.owner !== activeCiv || city.size <= 0) continue;
+        // Skip production for cities in resistance
+        if (city.resistanceTurns > 0) continue;
 
         // ── Food ──
         const { surplus } = calcFoodSurplus(city, ci, state, mapBase, state.units);
@@ -1253,7 +1406,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
                 owner: activeCiv,
                 gx: city.gx, gy: city.gy,
                 x: city.gx * 2 + (city.gy % 2), y: city.gy,
-                veteran: (cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)) ? 1 : 0,
+                veteran: (cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)
+                  || (UNIT_DOMAIN[item.id] === 2 && cityHasBuilding(city, 32))
+                  || (UNIT_DOMAIN[item.id] === 1 && cityHasBuilding(city, 34))) ? 1 : 0,
                 hpLost: 0,
                 orders: 'none', movesMade: 0, movesLeft: 0,
                 homeCityId: ci,
@@ -1292,6 +1447,21 @@ export function applyAction(prev, mapBase, action, civSlot) {
                   avail.length = 0;
                   avail.push(...getAvailableResearch(state, activeCiv));
                 }
+              }
+              // Manhattan Project (23): enables nuclear weapons for ALL civs
+              if (wi === 23) {
+                state.nuclearEnabled = true;
+                if (!state.turnEvents) state.turnEvents = [];
+                state.turnEvents.push({ type: 'manhattanProject', civSlot: activeCiv });
+              }
+              // Apollo Program (25): reveals entire map for the owner
+              if (wi === 25 && mapBase.tileData) {
+                const bit = 1 << activeCiv;
+                for (const tile of mapBase.tileData) {
+                  if (tile) tile.visibility |= bit;
+                }
+                if (!state.turnEvents) state.turnEvents = [];
+                state.turnEvents.push({ type: 'apolloProgram', civSlot: activeCiv });
               }
             }
             // Notify: production complete
@@ -1347,6 +1517,92 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
+      // ── Pollution generation for the active civ's cities ──
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const city = state.cities[ci];
+        if (city.owner !== activeCiv || city.size <= 0) continue;
+        if (city.resistanceTurns > 0) continue; // no production → no pollution
+        const { netShields } = calcShieldProduction(city, ci, state, mapBase, state.units);
+        let pollScore = Math.max(0, netShields - POLLUTION_THRESHOLD);
+        // Population contribution: (population - 4) if no Mass Transit (building 13)
+        if (!cityHasBuilding(city, 13)) {
+          pollScore += Math.max(0, city.size - 4);
+        }
+        if (pollScore > 0 && Math.random() < pollScore / 100) {
+          // Place pollution on a random land tile within city's 21-tile radius
+          const parC = city.gy & 1;
+          const landTiles = [];
+          for (let ri = 0; ri < 21; ri++) {
+            const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
+            const parT = ((city.gy + ddy) % 2 + 2) % 2;
+            const tgx = city.gx + ((parC + ddx - parT) >> 1);
+            const tgy = city.gy + ddy;
+            const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+            if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
+            const ter = mapBase.getTerrain(wgx, tgy);
+            if (ter === 10) continue; // skip ocean
+            const imp = mapBase.getImprovements(wgx, tgy);
+            if (imp.pollution) continue; // already polluted
+            landTiles.push({ gx: wgx, gy: tgy });
+          }
+          if (landTiles.length > 0) {
+            const pick = landTiles[Math.floor(Math.random() * landTiles.length)];
+            const pollIdx = pick.gy * mapBase.mw + pick.gx;
+            if (mapBase.tileData[pollIdx]) {
+              mapBase.tileData[pollIdx].improvements = { ...mapBase.tileData[pollIdx].improvements, pollution: true };
+            }
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({ type: 'pollution', cityName: city.name, civSlot: activeCiv });
+          }
+        }
+      }
+
+      // ── Global warming check: 8+ pollution tiles → convert random coastal tile ──
+      {
+        let pollCount = 0;
+        for (const tile of mapBase.tileData) {
+          if (tile && tile.improvements && tile.improvements.pollution) pollCount++;
+        }
+        if (pollCount >= 8) {
+          const coastalTiles = [];
+          for (let gy = 0; gy < mapBase.mh; gy++) {
+            for (let gx = 0; gx < mapBase.mw; gx++) {
+              const ter = mapBase.getTerrain(gx, gy);
+              if (ter === 10) continue;
+              const neighbors = mapBase.getNeighbors(gx, gy);
+              let coastal = false;
+              for (const dir in neighbors) {
+                const [nx, ny] = neighbors[dir];
+                if (ny >= 0 && ny < mapBase.mh && mapBase.getTerrain(nx, ny) === 10) {
+                  coastal = true; break;
+                }
+              }
+              if (coastal) coastalTiles.push({ gx, gy, terrain: ter });
+            }
+          }
+          if (coastalTiles.length > 0) {
+            const gwPick = coastalTiles[Math.floor(Math.random() * coastalTiles.length)];
+            const gwIdx = gwPick.gy * mapBase.mw + gwPick.gx;
+            const gwTransform = { 1: 0, 2: 0, 3: 9, 4: 4, 5: 5, 6: 0, 7: 6, 8: 8, 9: 9 };
+            const newTer = gwTransform[gwPick.terrain];
+            if (newTer != null && mapBase.tileData[gwIdx]) {
+              mapBase.tileData[gwIdx].terrain = newTer;
+              if (!state.turnEvents) state.turnEvents = [];
+              state.turnEvents.push({ type: 'globalWarming' });
+            }
+          }
+        }
+      }
+
+      // ── Reset airlift flags for active civ's cities ──
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const city = state.cities[ci];
+        if (city.owner !== activeCiv || city.size <= 0) continue;
+        if (city.airliftedThisTurn) {
+          state.cities[ci] = { ...state.cities[ci], airliftedThisTurn: false };
+        }
+      }
+
       // ── Trade / Treasury / Science for the active civ ──
       let civTaxTotal = 0;
       let civSciTotal = 0;
@@ -1355,6 +1611,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       for (let ci = 0; ci < state.cities.length; ci++) {
         const city = state.cities[ci];
         if (city.owner !== activeCiv || city.size <= 0) continue;
+        if (city.resistanceTurns > 0) continue; // no trade during resistance
         const { tax, sci, maintenance } = calcCityTrade(city, ci, state, mapBase);
         civTaxTotal += tax;
         civSciTotal += sci;
@@ -1373,7 +1630,39 @@ export function applyAction(prev, mapBase, action, civSlot) {
         state.civs = [...prev.civs];
         const civ = { ...state.civs[activeCiv] };
         civ.treasury = (civ.treasury || 0) + civTaxTotal + tradeRouteIncome - civMaintenanceTotal;
-        if (civ.treasury < 0) civ.treasury = 0;
+
+        // If treasury goes negative, sell cheapest-maintenance building to cover deficit
+        while (civ.treasury < 0) {
+          let cheapestId = -1, cheapestCost = Infinity, cheapestCi = -1;
+          for (let sci = 0; sci < state.cities.length; sci++) {
+            const sc = state.cities[sci];
+            if (sc.owner !== activeCiv || sc.size <= 0 || !sc.buildings) continue;
+            for (const bid of sc.buildings) {
+              if (bid === 1) continue; // never sell Palace
+              const maint = IMPROVE_MAINTENANCE[bid] || 0;
+              if (maint > 0 && maint < cheapestCost) {
+                cheapestCost = maint;
+                cheapestId = bid;
+                cheapestCi = sci;
+              }
+            }
+          }
+          if (cheapestId < 0) { civ.treasury = 0; break; }
+          const sellCity = { ...state.cities[cheapestCi] };
+          const sellBuildings = new Set(sellCity.buildings);
+          sellBuildings.delete(cheapestId);
+          sellCity.buildings = sellBuildings;
+          sellCity.hasWalls = sellBuildings.has(8);
+          sellCity.hasPalace = sellBuildings.has(1);
+          state.cities[cheapestCi] = sellCity;
+          civ.treasury += IMPROVE_COSTS[cheapestId] || 0;
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({
+            type: 'buildingSold', cityName: sellCity.name, cityIndex: cheapestCi,
+            civSlot: activeCiv, buildingId: cheapestId,
+          });
+        }
+
         civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
 
         // ── Research completion check ──
@@ -1450,12 +1739,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
           }
         }
 
-        // Air unit fuel: decrement when away from city/carrier, crash at 0
+        // Air unit fuel: decrement when away from city/carrier/airbase, crash at 0
         const maxFuel = UNIT_FUEL[u.type];
         if (maxFuel > 0) {
-          const atBase = state.cities.some(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner)
+          const fuelTileIdx = u.gy * mapBase.mw + u.gx;
+          const fuelTile = mapBase.tileData?.[fuelTileIdx];
+          const onAirbase = fuelTile && fuelTile.improvements && fuelTile.improvements.airbase;
+          const atBase = onAirbase
+            || state.cities.some(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner)
             || state.units.some((v, vi) => vi !== ui && v.gx === u.gx && v.gy === u.gy
-              && v.owner === u.owner && UNIT_CARRY_CAP[v.type] && v.gx >= 0);
+              && v.owner === u.owner && v.type === 42 && v.gx >= 0);
           if (atBase) {
             if ((u.fuelRemaining ?? maxFuel) !== maxFuel)
               state.units[ui] = { ...state.units[ui], fuelRemaining: maxFuel };
@@ -1464,7 +1757,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
             if (fuel <= 0) {
               killUnit(state, ui);
               if (!state.turnEvents) state.turnEvents = [];
-              state.turnEvents.push({ type: 'unitCrashed', unitType: u.type, civSlot: activeCiv });
+              state.turnEvents.push({ type: 'unitLost', unitType: u.type, reason: 'fuel', civSlot: activeCiv });
             } else {
               state.units[ui] = { ...state.units[ui], fuelRemaining: fuel };
             }

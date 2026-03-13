@@ -9,8 +9,8 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM } from './defs.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
+import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO } from './defs.js';
 import { resolveDirection, getDirection, isZOCBlocked } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -589,6 +589,94 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (unit.type !== 1) return 'Only Engineers can transform terrain';
       const tfTerrain = mapBase.getTerrain(unit.gx, unit.gy);
       if (TERRAIN_TRANSFORM[tfTerrain] < 0) return 'Cannot transform this terrain';
+      return null;
+    }
+
+    case NUKE: {
+      const { unitIndex, targetGx, targetGy } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if (unit.type !== 45) return 'Only Nuclear Missiles can nuke';
+      if (unit.movesLeft <= 0) return 'No moves remaining';
+      // Manhattan Project must have been built
+      const mpBuilt = gameState.wonders?.[23]?.cityIndex != null && !gameState.wonders[23].destroyed;
+      if (!mpBuilt) return 'Manhattan Project has not been built';
+      // Target must be within range (unit's move points)
+      const nukeRange = UNIT_MOVE_POINTS[45] || 16;
+      let nukeDx = Math.abs(unit.gx - targetGx);
+      if (mapBase.wraps) nukeDx = Math.min(nukeDx, mapBase.mw - nukeDx);
+      const nukeDy = Math.abs(unit.gy - targetGy);
+      if (nukeDx + nukeDy > nukeRange) return 'Target out of range';
+      return null;
+    }
+
+    case PARADROP: {
+      const { unitIndex, targetGx, targetGy } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if (unit.type !== 13) return 'Only Paratroopers can paradrop';
+      if (unit.movesLeft <= 0) return 'No moves remaining';
+      // Target must be land
+      const pdTerrain = mapBase.getTerrain(targetGx, targetGy);
+      if (pdTerrain === 10) return 'Cannot paradrop onto ocean';
+      // Within range 10
+      let pdDx = Math.abs(unit.gx - targetGx);
+      if (mapBase.wraps) pdDx = Math.min(pdDx, mapBase.mw - pdDx);
+      const pdDy = Math.abs(unit.gy - targetGy);
+      if (pdDx + pdDy > 10) return 'Target out of range';
+      // No enemy units on target
+      const pdHasEnemy = gameState.units.some(u =>
+        u.gx === targetGx && u.gy === targetGy && u.owner !== civSlot && u.gx >= 0);
+      if (pdHasEnemy) return 'Enemy units at target';
+      return null;
+    }
+
+    case AIRLIFT: {
+      const { unitIndex, targetCityIndex } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if (UNIT_DOMAIN[unit.type] !== 0) return 'Only land units can be airlifted';
+      if (unit.movesLeft <= 0) return 'No moves remaining';
+      // Source city: unit must be in a city with airport
+      const srcCity = gameState.cities.find(c => c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+      if (!srcCity) return 'Unit must be in a friendly city';
+      if (!srcCity.buildings?.has(32)) return 'Source city needs an Airport';
+      if (srcCity.airliftedThisTurn) return 'City already airlifted this turn';
+      // Target city
+      const tgtCity = gameState.cities[targetCityIndex];
+      if (!tgtCity || tgtCity.size <= 0) return 'Target city not found';
+      if (tgtCity.owner !== civSlot) return 'Target must be a friendly city';
+      if (!tgtCity.buildings?.has(32)) return 'Target city needs an Airport';
+      // Can't airlift to same city
+      if (tgtCity.gx === unit.gx && tgtCity.gy === unit.gy) return 'Already in this city';
+      return null;
+    }
+
+    case UPGRADE_UNIT: {
+      const { unitIndex } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      // Must be in a friendly city
+      const upgCity = gameState.cities.find(c => c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+      if (!upgCity) return 'Must be in a friendly city';
+      // Must have an upgrade path
+      const upgTarget = UNIT_UPGRADE_TO[unit.type] ?? -1;
+      if (upgTarget < 0) return 'No upgrade available';
+      // Must have the obsolescence tech
+      const obsTech = UNIT_OBSOLETE[unit.type] ?? -1;
+      if (obsTech < 0) return 'Unit has no obsolescence tech';
+      const civTechs = gameState.civTechs?.[civSlot];
+      if (!civTechs || !civTechs.has(obsTech)) return 'Missing required tech';
+      // Must have enough gold (cost = difference × 2, minimum 40)
+      const oldCost = UNIT_COSTS[unit.type] || 0;
+      const newCost = UNIT_COSTS[upgTarget] || 0;
+      const upgCost = Math.max(40, (newCost - oldCost) * 2);
+      const treasury = gameState.civs?.[civSlot]?.treasury || 0;
+      if (treasury < upgCost) return `Costs ${upgCost} gold (insufficient)`;
       return null;
     }
 

@@ -10,7 +10,7 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYear, getGameYearFromMap } from '../engine/year.js';
-import { CIV_COLORS, UNIT_NAMES, TERRAIN_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_MOVE_POINTS, UNIT_HP, TERRAIN_TRANSFORM, TRANSFORM_TURNS } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_MOVE_POINTS, UNIT_HP, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_CARRY_CAP, CIV_CITY_NAMES } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
@@ -18,7 +18,7 @@ import { getValidActions, validateAction, calcBribeCost, calcInciteCost } from '
 import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN } from '../engine/actions.js';
 import { findPath } from '../engine/pathfinding.js';
 import { calcRushBuyCost } from '../engine/happiness.js';
-import { getProductionCost, calcCityTrade } from '../engine/production.js';
+import { getProductionCost, calcCityTrade, calcFoodSurplus, calcShieldProduction } from '../engine/production.js';
 import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
 import { wrapGx } from '../engine/utils.js';
 
@@ -852,7 +852,11 @@ async function handleMapClick(e, isLongPress = false) {
       menuItems.push({ header: 'Select Unit' });
       for (const idx of tileUnits) {
         const u = mpGameState.units[idx];
-        const baseName = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+        let baseName = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+        if (UNIT_CARRY_CAP[u.type]) {
+          const loaded = mpGameState.units.filter(lu => lu.gx === u.gx && lu.gy === u.gy && lu.owner === u.owner && (UNIT_DOMAIN[lu.type] ?? 0) === 0 && lu !== u && lu.gx >= 0).length;
+          baseName += ` (${loaded}/${UNIT_CARRY_CAP[u.type]})`;
+        }
         const orderDesc = (u.orders && u.orders !== 'none') ? ORDER_NAMES[u.orders] || u.orders : '';
         const label = orderDesc ? `${baseName} (${orderDesc}) — Wake` : baseName;
         const sprite = renderUnitThumbnail(u);
@@ -928,7 +932,11 @@ async function handleMapClick(e, isLongPress = false) {
         menuItems.push({ header: 'Select Unit' });
         for (const idx of tileUnits) {
           const u = mpGameState.units[idx];
-          const baseName = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+          let baseName = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+          if (UNIT_CARRY_CAP[u.type]) {
+            const loaded = mpGameState.units.filter(lu => lu.gx === u.gx && lu.gy === u.gy && lu.owner === u.owner && (UNIT_DOMAIN[lu.type] ?? 0) === 0 && lu !== u && lu.gx >= 0).length;
+            baseName += ` (${loaded}/${UNIT_CARRY_CAP[u.type]})`;
+          }
           const orderDesc = (u.orders && u.orders !== 'none') ? ORDER_NAMES[u.orders] || u.orders : '';
           const label = orderDesc ? `${baseName} (${orderDesc}) — Wake` : baseName;
           const sprite = renderUnitThumbnail(u);
@@ -1813,70 +1821,94 @@ function showUnitSupportedDialog(unitIndex) {
   document.body.appendChild(overlay);
 }
 
+/**
+ * Compute the next available city name for a civ (client-side mirror of getCityName in reducer).
+ */
+function getNextCityName(owner) {
+  if (!mpGameState) return 'City';
+  const rulesNum = mpGameState.civs?.[owner]?.rulesCivNumber ?? 0;
+  const nameList = CIV_CITY_NAMES[rulesNum] || CIV_CITY_NAMES[0];
+  const ownedNames = new Set(mpGameState.cities.filter(c => c.owner === owner).map(c => c.name));
+  for (const name of nameList) {
+    if (!ownedNames.has(name)) return name;
+  }
+  return `City ${mpGameState.cities.filter(c => c.owner === owner).length + 1}`;
+}
+
+/**
+ * Show "What Shall We Name This City?" dialog before building.
+ * On OK: sends BUILD_CITY with chosen name, which triggers showCityFoundedDialog via STATE.
+ * On Cancel: does nothing.
+ */
+function showNameCityDialog(unitIndex) {
+  const u = mpGameState.units[unitIndex];
+  const defaultName = getNextCityName(u.owner);
+
+  const { overlay, dismiss } = createCiv2Dialog('name-city-dialog', 'What Shall We Name This City?', panel => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:12px 20px;font:16px "Times New Roman",Georgia,serif;color:#333';
+
+    const label = document.createElement('span');
+    label.textContent = 'City Name:';
+    row.appendChild(label);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = defaultName;
+    input.maxLength = 24;
+    input.id = 'name-city-input';
+    input.style.cssText = 'flex:1;font:16px "Times New Roman",Georgia,serif;padding:4px 6px;background:#fff;border:2px inset #a08060;color:#333';
+    row.appendChild(input);
+
+    panel.appendChild(row);
+
+    // Focus and select input text after dialog is appended
+    setTimeout(() => { input.focus(); input.select(); }, 0);
+  }, [
+    { label: 'Cancel' },
+    { label: 'OK', action: () => {
+      const input = document.getElementById('name-city-input');
+      const cityName = input ? input.value.trim() : defaultName;
+      sfx('BLDCITY');
+      transport.sendRaw({
+        type: 'ACTION',
+        action: { type: BUILD_CITY, unitIndex, name: cityName || defaultName },
+      });
+    }},
+  ]);
+}
+
+/**
+ * Show "Found New City" dialog after city is created (from STATE).
+ * Displays farmer/cow artwork and "<City Name> Founded <Date>".
+ */
 function showCityFoundedDialog(cityName, year, onDismiss) {
-  const existing = document.getElementById('city-founded-dialog');
-  if (existing) existing.remove();
+  createCiv2Dialog('city-founded-dialog', 'Found New City', panel => {
+    const content = document.createElement('div');
+    content.style.cssText = 'display:flex;align-items:center;gap:16px;padding:12px 20px';
 
-  const overlay = document.createElement('div');
-  overlay.id = 'city-founded-dialog';
-  overlay.className = 'civ2-dialog-overlay';
+    // Artwork on the left
+    const img = document.createElement('img');
+    img.src = 'assets/menu/city-founded.gif';
+    img.alt = 'City Founded';
+    img.style.cssText = 'width:200px;height:auto;border:2px inset #a08060;flex-shrink:0';
+    content.appendChild(img);
 
-  const frame = document.createElement('div');
-  frame.className = 'civ2-dialog-frame';
+    // Text on the right
+    const textDiv = document.createElement('div');
+    textDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+    const nameEl = document.createElement('div');
+    nameEl.style.cssText = 'font-size:20px;font-weight:bold;margin-bottom:4px';
+    nameEl.textContent = `${cityName} Founded`;
+    textDiv.appendChild(nameEl);
+    const dateEl = document.createElement('div');
+    dateEl.style.cssText = 'font-size:16px';
+    dateEl.textContent = year;
+    textDiv.appendChild(dateEl);
+    content.appendChild(textDiv);
 
-  const titlebar = document.createElement('div');
-  titlebar.className = 'civ2-dialog-titlebar';
-  const titleSpan = document.createElement('span');
-  titleSpan.className = 'civ2-dialog-title';
-  titleSpan.textContent = 'City Founded';
-  titlebar.appendChild(titleSpan);
-  frame.appendChild(titlebar);
-
-  const panel = document.createElement('div');
-  panel.className = 'civ2-dialog-panel';
-  panel.style.textAlign = 'center';
-
-  // Placeholder for artwork
-  const artFrame = document.createElement('div');
-  artFrame.id = 'city-founded-art';
-  artFrame.style.cssText = 'width:200px;height:120px;margin:8px auto 12px;border:2px inset #a08060;background:#c4a880';
-  panel.appendChild(artFrame);
-
-  const name = document.createElement('div');
-  name.style.cssText = 'font-family:"Times New Roman",Georgia,serif;font-size:20px;font-weight:bold;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-bottom:4px';
-  name.textContent = cityName;
-  panel.appendChild(name);
-
-  const sub = document.createElement('div');
-  sub.style.cssText = 'font-family:"Times New Roman",Georgia,serif;font-size:15px;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-  sub.textContent = `Founded in ${year}`;
-  panel.appendChild(sub);
-
-  frame.appendChild(panel);
-
-  const btnRow = document.createElement('div');
-  btnRow.className = 'civ2-dialog-btn-row';
-  const okBtn = document.createElement('button');
-  okBtn.textContent = 'OK';
-  okBtn.className = 'civ2-btn';
-  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); if (onDismiss) onDismiss(); };
-  okBtn.addEventListener('click', dismiss);
-  btnRow.appendChild(okBtn);
-  frame.appendChild(btnRow);
-
-  overlay.appendChild(frame);
-  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
-
-  const keyHandler = e => {
-    if (e.key === 'Enter' || e.key === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      dismiss();
-    }
-  };
-  window.addEventListener('keydown', keyHandler, true);
-
-  document.body.appendChild(overlay);
+    panel.appendChild(content);
+  }, [{ label: 'OK', action: onDismiss }]);
 }
 
 /**
@@ -4168,11 +4200,7 @@ window.addEventListener('keydown', e => {
     if (mpSelectedUnit != null) {
       const u = mpGameState.units[mpSelectedUnit];
       if (u && u.type === 0) { // Settlers
-        sfx('BLDCITY');
-        transport.sendRaw({
-          type: 'ACTION',
-          action: { type: 'BUILD_CITY', unitIndex: mpSelectedUnit },
-        });
+        showNameCityDialog(mpSelectedUnit);
       }
     }
     return;
@@ -4647,11 +4675,7 @@ function actionToMenuItem(va, unitIdx) {
       return {
         label: 'Build City',
         action: () => {
-          sfx('BLDCITY');
-          transport.sendRaw({
-            type: 'ACTION',
-            action: { type: BUILD_CITY, unitIndex: unitIdx },
-          });
+          showNameCityDialog(unitIdx);
         },
       };
     default:
@@ -5202,6 +5226,328 @@ function showDemographics() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// CITY LIST (F4) — sortable table of all your cities
+// ═══════════════════════════════════════════════════════════════════
+function showCityList() {
+  if (!mpGameState || mpCivSlot == null) return;
+  if (document.getElementById('citylist-dialog')) return;
+
+  const gs = mpGameState;
+  const civSlot = mpCivSlot;
+  const myCities = [];
+  for (let ci = 0; ci < gs.cities.length; ci++) {
+    const c = gs.cities[ci];
+    if (c.owner === civSlot && c.size > 0) myCities.push({ city: c, index: ci });
+  }
+
+  if (myCities.length === 0) {
+    showOverlayMessage('No cities');
+    return;
+  }
+
+  // Compute city data
+  const rows = myCities.map(({ city, index }) => {
+    let foodSurplus = 0, shieldProd = 0, trade = 0;
+    if (mpMapBase) {
+      const fs = calcFoodSurplus(city, index, gs, mpMapBase, gs.units);
+      foodSurplus = fs?.surplus ?? 0;
+      const sp = calcShieldProduction(city, index, gs, mpMapBase, gs.units);
+      shieldProd = sp?.netShields ?? 0;
+      const td = calcCityTrade(city, index, gs, mpMapBase);
+      trade = td?.netTrade ?? 0;
+    }
+    const buildingCount = city.buildings ? (city.buildings.size || 0) : 0;
+    return { city, index, name: city.name, size: city.size, foodSurplus, shieldProd, trade, buildingCount };
+  });
+
+  let sortCol = 'name';
+  let sortAsc = true;
+
+  const { overlay, dismiss } = createCiv2Dialog('citylist-dialog', 'City Advisor', panel => {
+    panel.style.cssText = 'max-height:60vh;overflow:hidden;display:flex;flex-direction:column;min-width:420px';
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'overflow-y:auto;flex:1';
+    panel.appendChild(wrapper);
+
+    function renderTable() {
+      const cols = [
+        { key: 'name', label: 'City' },
+        { key: 'size', label: 'Size', numeric: true },
+        { key: 'foodSurplus', label: 'Food', numeric: true },
+        { key: 'shieldProd', label: 'Shields', numeric: true },
+        { key: 'trade', label: 'Trade', numeric: true },
+        { key: 'buildingCount', label: 'Buildings', numeric: true },
+      ];
+
+      const sorted = [...rows].sort((a, b) => {
+        const av = a[sortCol], bv = b[sortCol];
+        let cmp = 0;
+        if (typeof av === 'string') cmp = av.localeCompare(bv);
+        else cmp = av - bv;
+        return sortAsc ? cmp : -cmp;
+      });
+
+      let html = '<table class="advisor-table"><thead><tr>';
+      for (const col of cols) {
+        const arrow = sortCol === col.key ? (sortAsc ? ' \u25B2' : ' \u25BC') : '';
+        html += `<th data-col="${col.key}">${col.label}<span class="sort-arrow">${arrow}</span></th>`;
+      }
+      html += '</tr></thead><tbody>';
+      for (const r of sorted) {
+        html += `<tr class="clickable" data-ci="${r.index}">`;
+        html += `<td>${r.name}</td>`;
+        html += `<td class="num">${r.size}</td>`;
+        html += `<td class="num">${r.foodSurplus}</td>`;
+        html += `<td class="num">${r.shieldProd}</td>`;
+        html += `<td class="num">${r.trade}</td>`;
+        html += `<td class="num">${r.buildingCount}</td>`;
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      wrapper.innerHTML = html;
+
+      // Attach sort handlers
+      wrapper.querySelectorAll('th[data-col]').forEach(th => {
+        th.addEventListener('click', () => {
+          const col = th.dataset.col;
+          if (sortCol === col) sortAsc = !sortAsc;
+          else { sortCol = col; sortAsc = true; }
+          renderTable();
+        });
+      });
+
+      // Attach row click handlers
+      wrapper.querySelectorAll('tr[data-ci]').forEach(tr => {
+        tr.addEventListener('click', () => {
+          const ci = parseInt(tr.dataset.ci);
+          const city = gs.cities[ci];
+          if (city) { dismiss(); openCityDialog(city, ci); }
+        });
+      });
+    }
+
+    renderTable();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MILITARY ADVISOR (F2) — unit breakdown by type
+// ═══════════════════════════════════════════════════════════════════
+function showMilitaryAdvisor() {
+  if (!mpGameState || mpCivSlot == null) return;
+  if (document.getElementById('military-dialog')) return;
+
+  const gs = mpGameState;
+  const civSlot = mpCivSlot;
+  const myUnits = gs.units.filter(u => u.owner === civSlot && u.gx >= 0);
+
+  // Group by type
+  const byType = {};
+  for (const u of myUnits) {
+    if (!byType[u.type]) byType[u.type] = { count: 0, totalAtk: 0, totalDef: 0 };
+    byType[u.type].count++;
+    byType[u.type].totalAtk += UNIT_ATK[u.type] || 0;
+    byType[u.type].totalDef += UNIT_DEF[u.type] || 0;
+  }
+
+  const typeIds = Object.keys(byType).map(Number).sort((a, b) => a - b);
+  let totalUnits = 0, totalAtk = 0, totalDef = 0;
+  for (const tid of typeIds) {
+    totalUnits += byType[tid].count;
+    totalAtk += byType[tid].totalAtk;
+    totalDef += byType[tid].totalDef;
+  }
+
+  createCiv2Dialog('military-dialog', 'Military Advisor', panel => {
+    panel.style.cssText = 'max-height:60vh;overflow:hidden;display:flex;flex-direction:column;min-width:360px';
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'overflow-y:auto;flex:1';
+
+    let html = '<table class="advisor-table"><thead><tr>';
+    html += '<th>Unit Type</th><th>Count</th><th>Attack</th><th>Defense</th>';
+    html += '</tr></thead><tbody>';
+    for (const tid of typeIds) {
+      const d = byType[tid];
+      const name = UNIT_NAMES[tid] || `Unit ${tid}`;
+      html += `<tr><td>${name}</td><td class="num">${d.count}</td><td class="num">${d.totalAtk}</td><td class="num">${d.totalDef}</td></tr>`;
+    }
+    html += '</tbody></table>';
+    wrapper.innerHTML = html;
+    panel.appendChild(wrapper);
+
+    const summary = document.createElement('div');
+    summary.className = 'advisor-summary';
+    summary.textContent = `Total: ${totalUnits} units, ${totalAtk} attack, ${totalDef} defense`;
+    panel.appendChild(summary);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TRADE ADVISOR (F3) — income, expenses, net income, city breakdown
+// ═══════════════════════════════════════════════════════════════════
+function showTradeAdvisor() {
+  if (!mpGameState || mpCivSlot == null) return;
+  if (document.getElementById('trade-dialog')) return;
+
+  const gs = mpGameState;
+  const civSlot = mpCivSlot;
+  const myCities = [];
+  for (let ci = 0; ci < gs.cities.length; ci++) {
+    const c = gs.cities[ci];
+    if (c.owner === civSlot && c.size > 0) myCities.push({ city: c, index: ci });
+  }
+
+  let totalTax = 0, totalMaintenance = 0;
+  const cityRows = [];
+  for (const { city, index } of myCities) {
+    let tax = 0, maintenance = 0, trade = 0;
+    if (mpMapBase) {
+      const td = calcCityTrade(city, index, gs, mpMapBase);
+      if (td) {
+        tax = td.tax || 0;
+        trade = td.netTrade || 0;
+        maintenance = td.maintenance || 0;
+      }
+    }
+    totalTax += tax;
+    totalMaintenance += maintenance;
+    cityRows.push({ name: city.name, trade, tax, maintenance });
+  }
+
+  // Sort cities by trade descending
+  cityRows.sort((a, b) => b.trade - a.trade);
+  const netIncome = totalTax - totalMaintenance;
+
+  createCiv2Dialog('trade-dialog', 'Trade Advisor', panel => {
+    panel.style.cssText = 'max-height:60vh;overflow:hidden;display:flex;flex-direction:column;min-width:360px';
+
+    // Summary section
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = 'advisor-summary';
+    summaryDiv.style.marginTop = '0';
+    summaryDiv.style.marginBottom = '8px';
+    summaryDiv.innerHTML = `Total Income: ${totalTax} gold &middot; Expenses: ${totalMaintenance} gold &middot; ` +
+      `Net: <span style="color:${netIncome >= 0 ? '#060' : '#a00'}">${netIncome >= 0 ? '+' : ''}${netIncome}</span> gold`;
+    panel.appendChild(summaryDiv);
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'overflow-y:auto;flex:1';
+
+    let html = '<table class="advisor-table"><thead><tr>';
+    html += '<th>City</th><th>Trade</th><th>Tax</th><th>Maint.</th>';
+    html += '</tr></thead><tbody>';
+    for (const r of cityRows) {
+      html += `<tr><td>${r.name}</td><td class="num">${r.trade}</td><td class="num">${r.tax}</td><td class="num">${r.maintenance}</td></tr>`;
+    }
+    html += '</tbody></table>';
+    wrapper.innerHTML = html;
+    panel.appendChild(wrapper);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCIENCE ADVISOR (F5) — research progress, per-turn science, tech list
+// ═══════════════════════════════════════════════════════════════════
+function showScienceAdvisor() {
+  if (!mpGameState || mpCivSlot == null) return;
+  if (document.getElementById('science-dialog')) return;
+
+  const gs = mpGameState;
+  const civSlot = mpCivSlot;
+  const civ = gs.civs?.[civSlot];
+  const civTechs = gs.civTechs?.[civSlot] || new Set();
+
+  // Current research
+  const techId = civ?.techBeingResearched;
+  const hasTarget = techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length;
+  const current = civ?.researchProgress || 0;
+  const cost = calcResearchCost(gs, civSlot);
+
+  // Science per turn
+  let sciPerTurn = 0;
+  if (mpMapBase) {
+    for (let ci = 0; ci < gs.cities.length; ci++) {
+      const city = gs.cities[ci];
+      if (city.owner === civSlot && city.size > 0) {
+        const td = calcCityTrade(city, ci, gs, mpMapBase);
+        if (td) sciPerTurn += td.sci || 0;
+      }
+    }
+  }
+
+  const turnsLeft = hasTarget && sciPerTurn > 0 ? Math.ceil((cost - current) / sciPerTurn) : '?';
+  const available = getAvailableResearch(gs, civSlot);
+  const isMyTurn = gs.turn.activeCiv === civSlot;
+
+  const { overlay, dismiss } = createCiv2Dialog('science-dialog', 'Science Advisor', panel => {
+    panel.style.cssText = 'max-height:60vh;overflow:hidden;display:flex;flex-direction:column;min-width:380px';
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'overflow-y:auto;flex:1';
+
+    // Research status
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'advisor-summary';
+    statusDiv.style.marginTop = '0';
+    statusDiv.style.marginBottom = '8px';
+    if (hasTarget) {
+      statusDiv.innerHTML = `Researching: <strong>${ADVANCE_NAMES[techId]}</strong> &mdash; ${current}/${cost} (${turnsLeft} turns)<br>` +
+        `Science per turn: ${sciPerTurn}`;
+    } else {
+      statusDiv.innerHTML = `No research target<br>Science per turn: ${sciPerTurn}`;
+    }
+    wrapper.appendChild(statusDiv);
+
+    // Researched technologies
+    const researchedLabel = document.createElement('div');
+    researchedLabel.style.cssText = 'font:bold 13px "Times New Roman",Georgia,serif;color:#654;padding:4px 0 2px;border-bottom:1px solid #b8a88c;margin-bottom:4px';
+    researchedLabel.textContent = `Known Technologies (${civTechs.size})`;
+    wrapper.appendChild(researchedLabel);
+
+    const researchedList = document.createElement('div');
+    researchedList.className = 'tech-list';
+    const sortedKnown = [...civTechs].sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+    for (const id of sortedKnown) {
+      const chip = document.createElement('span');
+      chip.className = 'tech-chip';
+      chip.textContent = ADVANCE_NAMES[id] || `Tech ${id}`;
+      researchedList.appendChild(chip);
+    }
+    wrapper.appendChild(researchedList);
+
+    // Available technologies
+    if (available.length > 0) {
+      const availLabel = document.createElement('div');
+      availLabel.style.cssText = 'font:bold 13px "Times New Roman",Georgia,serif;color:#654;padding:8px 0 2px;border-bottom:1px solid #b8a88c;margin-bottom:4px';
+      availLabel.textContent = `Available to Research (${available.length})`;
+      wrapper.appendChild(availLabel);
+
+      const availList = document.createElement('div');
+      availList.className = 'tech-list';
+      const sortedAvail = [...available].sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+      for (const id of sortedAvail) {
+        const chip = document.createElement('span');
+        chip.className = 'tech-chip available';
+        chip.textContent = ADVANCE_NAMES[id] || `Tech ${id}`;
+        chip.title = 'Click to research';
+        if (isMyTurn) {
+          chip.addEventListener('click', () => {
+            dismiss();
+            transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: id } });
+          });
+        }
+        availList.appendChild(chip);
+      }
+      wrapper.appendChild(availList);
+    }
+
+    panel.appendChild(wrapper);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // GO-TO MODE — click to set A* path, auto-move each turn
 // ═══════════════════════════════════════════════════════════════════
 let gotoMode = false;
@@ -5306,6 +5652,14 @@ window.addEventListener('keydown', e => {
 
   // F1: Civilopedia (available anytime)
   if (e.key === 'F1') { e.preventDefault(); showCivpedia(); return; }
+  // F2: Military Advisor
+  if (e.key === 'F2') { e.preventDefault(); showMilitaryAdvisor(); return; }
+  // F3: Trade Advisor
+  if (e.key === 'F3') { e.preventDefault(); showTradeAdvisor(); return; }
+  // F4: City List
+  if (e.key === 'F4') { e.preventDefault(); showCityList(); return; }
+  // F5: Science Advisor
+  if (e.key === 'F5') { e.preventDefault(); showScienceAdvisor(); return; }
   // F11: Demographics (available anytime with game state)
   if (e.key === 'F11') { e.preventDefault(); showDemographics(); return; }
 });

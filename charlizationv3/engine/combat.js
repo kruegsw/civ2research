@@ -5,7 +5,7 @@
 // resolution with terrain/fortification/veteran modifiers.
 // ═══════════════════════════════════════════════════════════════════
 
-import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, TERRAIN_DEFENSE } from './defs.js';
+import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE } from './defs.js';
 
 /**
  * Resolve combat between an attacker and defender.
@@ -17,10 +17,11 @@ import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, TERRAIN_DEFENSE } fr
  * @param {boolean} defCityHasWalls - city has City Walls building
  * @param {boolean} defHasFortress - tile has a fortress improvement
  * @param {boolean} defOnRiver - tile has a river
+ * @param {object} [defCityBuildings] - Set of building IDs in defending city (optional)
  * @returns {{ attackerWins: boolean, atkHpLost: number, defHpLost: number,
  *             atkVeteranPromo: boolean, defVeteranPromo: boolean }}
  */
-export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver) {
+export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings) {
   const atkBase = UNIT_ATK[attacker.type] || 1;
   const defBase = UNIT_DEF[defender.type] || 1;
 
@@ -57,6 +58,16 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // River bonus: +50% defense
   if (defOnRiver && !defInCity) {
     effDef += Math.floor(effDef / 2);
+  }
+
+  // Defensive building bonuses (city buildings)
+  if (defInCity && defCityBuildings) {
+    // Coastal Fortress (28): ×2 defense vs naval attackers
+    if (defCityBuildings.has(28) && atkDomain === 1) effDef *= 2;
+    // SAM Battery (27): ×2 defense vs air attackers (not missiles)
+    if (defCityBuildings.has(27) && atkDomain === 2 && !UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) effDef *= 2;
+    // SDI Defense (17): ×2 defense vs missiles
+    if (defCityBuildings.has(17) && UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) effDef *= 2;
   }
 
   // Ensure minimums

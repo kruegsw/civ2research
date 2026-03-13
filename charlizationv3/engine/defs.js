@@ -797,3 +797,69 @@ export const GOVT_TECH_PREREQS = {
   republic: 71,        // The Republic advance
   democracy: 21,       // Democracy advance
 };
+
+// ── Pollution constants ──
+export const POLLUTION_THRESHOLD = 20; // shields above this contribute to pollution
+
+// ── Submarine stealth ──
+export const UNIT_SUBMARINE = new Set([41]); // Submarine
+export const UNIT_SUB_DETECTOR = new Set([37, 39]); // Destroyer, AEGIS Cruiser
+
+// ── Unit upgrade paths ──
+// Maps each unit type to its upgrade target (-1 = no upgrade).
+// Based on Civ2 obsolescence chain: when unit X is obsoleted by tech T,
+// it upgrades to the unit that requires tech T.
+export const UNIT_UPGRADE_TO = [
+   1,  //  0: Settlers → Engineers
+  -1,  //  1: Engineers
+   6,  //  2: Warriors → Pikemen (Feudalism obsoletes Warriors, Pikemen requires Feudalism)
+   6,  //  3: Phalanx → Pikemen (Feudalism obsoletes Phalanx)
+   7,  //  4: Archers → Musketeers (Gunpowder obsoletes Archers)
+   7,  //  5: Legion → Musketeers (Gunpowder obsoletes Legion)
+   7,  //  6: Pikemen → Musketeers (Gunpowder obsoletes Pikemen)
+  11,  //  7: Musketeers → Riflemen (Conscription obsoletes Musketeers)
+  -1,  //  8: Fanatics
+  -1,  //  9: Partisans
+  -1,  // 10: Alpine Troops
+  -1,  // 11: Riflemen
+  -1,  // 12: Marines
+  -1,  // 13: Paratroopers
+  -1,  // 14: Mech. Inf.
+  19,  // 15: Horsemen → Knights (Chivalry obsoletes Horsemen)
+  17,  // 16: Chariot → Elephant (Polytheism obsoletes Chariot)
+  18,  // 17: Elephant → Crusaders (Monotheism obsoletes Elephant)
+  20,  // 18: Crusaders → Dragoons (Leadership obsoletes Crusaders)
+  20,  // 19: Knights → Dragoons (Leadership obsoletes Knights)
+  21,  // 20: Dragoons → Cavalry (Tactics obsoletes Dragoons)
+  22,  // 21: Cavalry → Armor (Mobile Warfare obsoletes Cavalry)
+  -1,  // 22: Armor
+  24,  // 23: Catapult → Cannon (Metallurgy obsoletes Catapult)
+  25,  // 24: Cannon → Artillery (Machine Tools obsoletes Cannon)
+  26,  // 25: Artillery → Howitzer (Robotics obsoletes Artillery)
+  -1,  // 26: Howitzer
+  30,  // 27: Fighter → Stealth Fighter (Stealth obsoletes Fighter)
+  31,  // 28: Bomber → Stealth Bomber (Stealth obsoletes Bomber)
+  -1,  // 29: Helicopter
+  -1,  // 30: Stealth Fighter
+  -1,  // 31: Stealth Bomber
+  33,  // 32: Trireme → Caravel (Navigation obsoletes Trireme)
+  34,  // 33: Caravel → Galleon (Magnetism obsoletes Caravel)
+  43,  // 34: Galleon → Transport (Industrialization obsoletes Galleon)
+  37,  // 35: Frigate → Destroyer (Electricity obsoletes Frigate)
+  37,  // 36: Ironclad → Destroyer (Electricity obsoletes Ironclad)
+  -1,  // 37: Destroyer
+  39,  // 38: Cruiser → AEGIS Cruiser (Rocketry obsoletes Cruiser)
+  -1,  // 39: AEGIS Cruiser
+  -1,  // 40: Battleship
+  -1,  // 41: Submarine
+  -1,  // 42: Carrier
+  -1,  // 43: Transport
+  -1,  // 44: Cruise Msl.
+  -1,  // 45: Nuclear Msl.
+  47,  // 46: Diplomat → Spy (Espionage obsoletes Diplomat)
+  -1,  // 47: Spy
+  49,  // 48: Caravan → Freight (The Corporation obsoletes Caravan)
+  -1,  // 49: Freight
+   9,  // 50: Explorer → Partisans (Guerrilla Warfare obsoletes Explorer)
+  -1,  // 51: Extra Land
+];

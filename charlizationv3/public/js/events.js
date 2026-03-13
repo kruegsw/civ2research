@@ -5,7 +5,7 @@
 // Called from app.js via initEvents(). No circular imports.
 // ═══════════════════════════════════════════════════════════════════
 import { Civ2Renderer } from './renderer.js';
-import { RESOURCE_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES } from '../engine/defs.js';
+import { RESOURCE_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN } from '../engine/defs.js';
 
 export function initEvents(canvas, vp, fns) {
   const {
@@ -300,13 +300,20 @@ export function initEvents(canvas, vp, fns) {
         }
       }
 
-      for (const u of md.units) {
-        if (u.gx !== gx || u.gy !== gy) continue;
+      // Collect tile units for cargo counting
+      const tileUnits = md.units.filter(u => u.gx === gx && u.gy === gy && u.gx >= 0);
+      for (const u of tileUnits) {
         if (fowEnabled && fowBit) {
           if (!(vis & fowBit)) continue;
           if (u.owner !== fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
         }
-        const name = UNIT_NAMES[u.type] || `Unit#${u.type}`;
+        let name = UNIT_NAMES[u.type] || `Unit#${u.type}`;
+        // Show cargo count for transports/carriers
+        if (UNIT_CARRY_CAP[u.type]) {
+          const carryDomain = (UNIT_DOMAIN[u.type] ?? 0) === 1 ? 0 : 0; // sea transports carry land (domain 0)
+          const loaded = tileUnits.filter(lu => lu.owner === u.owner && (UNIT_DOMAIN[lu.type] ?? 0) === carryDomain && lu !== u).length;
+          name += ` (${loaded}/${UNIT_CARRY_CAP[u.type]} units)`;
+        }
         const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
         const vetStr = u.veteran ? ' Vet' : '';
         const ordStr = ORDER_NAMES[u.orders] || '';

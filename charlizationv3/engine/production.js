@@ -69,6 +69,9 @@ export function calcTileShields(gx, gy, ter, imp, hasSpecial, specialIdx, grassl
   // King Richard's Crusade (wonder 8): +1 shield in wonder city
   if (cityHasWonder(gameState, cityIndex, 8)) shields += 1;
 
+  // Offshore Platform (31): +1 shield on ocean tiles
+  if (ter === 10 && cityHasBuilding(city, 31)) shields += 1;
+
   // Railroad: +50%
   const hasRailroad = imp.railroad ||
     (isCenter && gameState.civTechs && gameState.civTechs[city.owner] &&
@@ -453,7 +456,7 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
   let sciMult = 0;
   if (cityHasBuilding(city, 6)) sciMult++;
   if (cityHasBuilding(city, 12)) sciMult++;
-  if (cityHasBuilding(city, 26) || civHasWonder(gameState, city.owner, 18)) sciMult++;
+  if (cityHasBuilding(city, 26) || civHasWonder(gameState, city.owner, 26)) sciMult++;
 
   // Isaac Newton's College (wonder 16): doubles science building effect in wonder city
   let sciBonus = sci * sciMult;

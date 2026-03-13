@@ -111,8 +111,8 @@ export function initNewGame(mapResult, seatList) {
         prevInStack: -1, nextInStack: -1,
       });
     }
-    // Mark visibility for initial position
-    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, pos.gx, pos.gy, mapBase.wraps);
+    // Mark visibility for initial position (radius 2 = city-level LOS, matching real Civ2)
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, pos.gx, pos.gy, mapBase.wraps, 2);
   }
 
   // Civ alive bitmask: barbs + each seated player's civ

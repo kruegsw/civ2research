@@ -941,6 +941,37 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 .demo-rank { font-size: 11px; color: #886; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   Advisor Tables (City List, Military, Trade, Science advisors)
+   ═══════════════════════════════════════════════════════════════════ */
+.advisor-table { width: 100%; border-collapse: collapse; font: 13px 'Times New Roman', Georgia, serif; }
+.advisor-table th {
+  text-align: left; color: #654; font-weight: bold; padding: 4px 8px;
+  border-bottom: 2px solid #a08060; cursor: pointer; user-select: none;
+}
+.advisor-table th:hover { color: #321; }
+.advisor-table td { padding: 3px 8px; color: #333; border-bottom: 1px solid #c8b494; }
+.advisor-table tr:hover td { background: #e8d8c0; }
+.advisor-table td.num { text-align: right; font-weight: bold; }
+.advisor-table .sort-arrow { font-size: 10px; margin-left: 4px; }
+.advisor-table tr.clickable { cursor: pointer; }
+
+/* Advisor summary row */
+.advisor-summary {
+  margin-top: 8px; padding: 6px 8px; background: #d8c8a8;
+  font: bold 13px 'Times New Roman', Georgia, serif; color: #333;
+  border-top: 2px solid #a08060;
+}
+
+/* Tech list in science advisor */
+.tech-list { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.tech-chip {
+  padding: 2px 6px; background: #c8b494; border-radius: 3px;
+  font-size: 11px; color: #333; cursor: default;
+}
+.tech-chip.available { background: #a0c890; cursor: pointer; }
+.tech-chip.available:hover { background: #80b870; }
+
+/* ═══════════════════════════════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 520px) {

@@ -128,3 +128,19 @@ export const GOTO = 'GOTO';
 export const TRANSFORM_TERRAIN = 'TRANSFORM_TERRAIN';
 //   { type: 'TRANSFORM_TERRAIN', unitIndex }
 //   Engineer begins transforming terrain at current tile.
+
+export const NUKE = 'NUKE';
+//   { type: 'NUKE', unitIndex, targetGx, targetGy }
+//   Nuclear missile detonates at target. Destroys/damages units, creates pollution.
+
+export const PARADROP = 'PARADROP';
+//   { type: 'PARADROP', unitIndex, targetGx, targetGy }
+//   Paratrooper drops to target tile within range 10.
+
+export const AIRLIFT = 'AIRLIFT';
+//   { type: 'AIRLIFT', unitIndex, targetCityIndex }
+//   Transfer unit between cities with airports. One per city per turn.
+
+export const UPGRADE_UNIT = 'UPGRADE_UNIT';
+//   { type: 'UPGRADE_UNIT', unitIndex }
+//   Upgrade unit to its replacement type. Costs gold. Must be in a city.

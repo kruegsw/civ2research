@@ -88,6 +88,30 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
   }
 }
 
+import { UNIT_SUBMARINE, UNIT_SUB_DETECTOR } from './defs.js';
+
+/**
+ * Check if an enemy submarine is detected by the given civ.
+ * A sub is detected if:
+ *   - A friendly unit is on the same tile
+ *   - A friendly destroyer (37) or AEGIS cruiser (39) is within 2 tiles
+ */
+function isSubDetected(sub, civSlot, allUnits, mw, wraps) {
+  for (const u of allUnits) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    // Same tile: detected
+    if (u.gx === sub.gx && u.gy === sub.gy) return true;
+    // Detector within 2 tiles
+    if (UNIT_SUB_DETECTOR.has(u.type)) {
+      let dx = Math.abs(u.gx - sub.gx);
+      if (wraps) dx = Math.min(dx, mw - dx);
+      const dy = Math.abs(u.gy - sub.gy);
+      if (dx + dy <= 2) return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Filter game state for a specific civ's visibility.
  * Returns a copy with only visible units/cities.
@@ -105,11 +129,17 @@ export function filterStateForCiv(mapBase, gameState, civSlot) {
   const los = computeLOS({ mw, mh, mapShape: mapBase.mapShape, cities: gameState.cities, units: gameState.units }, civSlot);
 
   // Filter units: own units always visible, others only in LOS
+  // Also apply submarine stealth: enemy subs invisible unless detected
   const units = gameState.units.filter(u => {
     if (u.owner === civSlot) return true;
     if (u.gx < 0) return false;
     const idx = u.gy * mw + ((u.gx % mw + mw) % mw);
-    return los[idx] === 1;
+    if (los[idx] !== 1) return false;
+    // Submarine stealth check
+    if (UNIT_SUBMARINE.has(u.type)) {
+      return isSubDetected(u, civSlot, gameState.units, mw, mapBase.wraps);
+    }
+    return true;
   });
 
   // Filter cities: visible if tile has been explored
