@@ -10,7 +10,7 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYear, getGameYearFromMap } from '../engine/year.js';
-import { CIV_COLORS, UNIT_NAMES, TERRAIN_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_MOVE_POINTS, UNIT_HP, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_CARRY_CAP, CIV_CITY_NAMES } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_MOVE_POINTS, UNIT_HP, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_CARRY_CAP, CIV_CITY_NAMES, ADVANCE_ICON } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
@@ -2819,6 +2819,21 @@ function showTributeDemandInput(targetCiv, targetName) {
   ]);
 }
 
+// ── Explosion sprites from ICONS.GIF ──
+let _explosionFrames = null;
+async function _ensureExplosionFrames() {
+  if (_explosionFrames) return _explosionFrames;
+  if (!files.icons) return null;
+  const img = await Civ2Renderer.loadImage(files.icons);
+  const ctx = Civ2Renderer.imgToCtx(img);
+  const CK = [[255, 0, 255, 15], [255, 159, 163, 15]];
+  _explosionFrames = [];
+  for (let i = 0; i < 8; i++) {
+    _explosionFrames.push(Civ2Renderer.extractSprite(ctx, 1 + 33 * i, 356, 32, 32, CK, false));
+  }
+  return _explosionFrames;
+}
+
 // ── Research picker ──
 
 // Lazily extract advance category icons and stone tile from ICONS.GIF
@@ -2829,11 +2844,12 @@ async function _ensureResearchIcons() {
   const ctx = Civ2Renderer.imgToCtx(img);
   const CK = [[255, 0, 255, 15], [255, 159, 163, 15]];
 
-  // Extract 20 advance category icons (36x20 each, 5 rows x 4 cols at (343,211))
+  // Extract 20 advance category icons (36x20 each, 4 rows x 5 cols at (343,211))
+  // Grid: columns = category (0-4), rows = epoch (0-3)
   const icons = [];
   for (let idx = 0; idx < 20; idx++) {
-    const sx = 343 + 37 * (idx % 4);
-    const sy = 211 + 21 * Math.floor(idx / 4);
+    const sx = 343 + 37 * (idx % 5);
+    const sy = 211 + 21 * Math.floor(idx / 5);
     icons.push(Civ2Renderer.extractSprite(ctx, sx, sy, 36, 20, CK, false));
   }
 
@@ -2884,7 +2900,7 @@ function showResearchPicker(discovered) {
       const rows = list.querySelectorAll('.rp-row');
       rows.forEach((row, i) => {
         const advId = parseInt(row.dataset.advId);
-        const iconIdx = advId % 20;
+        const iconIdx = ADVANCE_ICON[advId] ?? 0;
         const iconCanvas = cache.icons[iconIdx];
         const img = document.createElement('canvas');
         img.width = 36; img.height = 20;
@@ -2945,7 +2961,7 @@ function showResearchPicker(discovered) {
 
     panel.appendChild(list);
   }, [
-    { label: 'Help', action: () => showTechTree() },
+    { label: 'Help', action: () => showTechAdvisor() },
     { label: 'Goal', action: () => showGoalPicker() },
     { label: 'OK', action: () => {
       transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: selected } });
@@ -3142,7 +3158,7 @@ function showGoalPath(goalId) {
 // ═══════════════════════════════════════════════════════════════════
 // TECH TREE DIALOG — full tech tree with clickable entries
 // ═══════════════════════════════════════════════════════════════════
-function showTechTree() {
+function showTechAdvisor() {
   if (!mpGameState || mpCivSlot == null) return;
   const civTechs = mpGameState.civTechs?.[mpCivSlot] || new Set();
 
@@ -3345,7 +3361,7 @@ function showTechDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings,
       }
     }
   }, [
-    { label: 'Back', action: () => showTechTree() },
+    { label: 'Back', action: () => showTechAdvisor() },
     { label: 'OK' },
   ]);
 }
@@ -3980,19 +3996,13 @@ const transport = createTransport({
             cdRerender();
           }
 
-          // Combat result notification
+          // Combat result notification (sounds handled by animateCombat)
           if (statePayload.combatResult) {
             const cr = statePayload.combatResult;
             if (cr.type === 'capture') {
               sfx('CRWDBUGL');
               showOverlayMessage(`${cr.cityName} captured!`);
             } else {
-              // Play attacker's attack sound
-              const atkSfx = UNIT_ATK_SFX[cr.attacker];
-              if (atkSfx) sfx(atkSfx);
-              // Play loser's death sound after a short delay
-              const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
-              setTimeout(() => sfx(getDeathSfx(loser)), 300);
               const atkName = UNIT_NAMES[cr.attacker] || 'Unit';
               const defName = UNIT_NAMES[cr.defender] || 'Unit';
               if (cr.type === 'atkWin') {
@@ -4129,7 +4139,7 @@ const transport = createTransport({
         // If combat occurred, play flash animation before slide/render
         const cr = statePayload.combatResult;
         if (cr && cr.gx != null && cr.type !== 'capture' && mapSprites) {
-          animateCombatFlash(cr, afterCombatAnim);
+          animateCombat(cr, afterCombatAnim);
         } else {
           afterCombatAnim();
         }
@@ -4701,6 +4711,41 @@ document.getElementById('end-turn-btn').addEventListener('click', () => {
   transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
 });
 
+// Advisors menu button
+(function initAdvisorsMenu() {
+  const btn = document.getElementById('advisors-btn');
+  const popup = document.getElementById('advisors-popup');
+  if (!btn || !popup) return;
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Close popup on outside click
+  document.addEventListener('click', () => { popup.style.display = 'none'; });
+  popup.addEventListener('click', e => e.stopPropagation());
+
+  const handlers = {
+    civilopedia: () => showCivpedia(),
+    military: () => showMilitaryAdvisor(),
+    trade: () => showTradeAdvisor(),
+    city: () => showCityList(),
+    science: () => showScienceAdvisor(),
+    demographics: () => showDemographics(),
+    techtree: () => showTechTree(),
+    taxrates: () => showRateSliders(),
+  };
+
+  popup.querySelectorAll('.advisors-item').forEach(item => {
+    item.addEventListener('click', () => {
+      popup.style.display = 'none';
+      const fn = handlers[item.dataset.advisor];
+      if (fn) fn();
+    });
+  });
+})();
+
 // Restart button — show map size picker dialog
 document.getElementById('restart-btn').addEventListener('click', () => {
   showMapSizePicker();
@@ -5226,14 +5271,13 @@ function applyImprovementsUpdate(tileImprovements) {
   }
 }
 
-// ── Combat flash animation ──
-// Alternately flashes attacker and defender unit sprites at the combat tile,
-// similar to the Civ2 battle flicker. Calls onComplete when finished.
-function animateCombatFlash(cr, onComplete) {
+// ── Combat animation ──
+// Round-by-round animation with HP bars and explosion on death.
+function animateCombat(cr, onComplete) {
   const TW = 64, TH = 32;
   const gx = cr.gx, gy = cr.gy;
 
-  // Map-space position of the combat tile (top-left of unit sprite = tile minus 16px for unit height)
+  // Map-space position of the combat tile
   const tileX = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
   const tileY = gy * (TH >> 1) - 16;
 
@@ -5246,48 +5290,163 @@ function animateCombatFlash(cr, onComplete) {
   }
 
   stopBlink();
-  // combat flash animating
 
   // Snapshot viewport for restoration between frames
   const bgSnapshot = vCtx.getImageData(0, 0, viewportCanvas.width, viewportCanvas.height);
 
   const dpr = window.devicePixelRatio || 1;
   const pxPerMap = vp.scale * dpr;
-  const totalFlashes = 8;   // 4 pairs (atk, def, atk, def, ...)
-  const flashInterval = 80;  // ms per flash frame
-  let flashCount = 0;
 
-  function drawSpriteAt(sprite) {
+  // Map-space to screen-space helper
+  function screenX(mx) {
     if (vp.wraps && vp.wrapW > 0) {
       const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
-      const relX = ((tileX - x1) % vp.wrapW + vp.wrapW) % vp.wrapW;
-      vCtx.drawImage(sprite, relX * pxPerMap, (tileY - vp.y) * pxPerMap,
-        sprite.width * pxPerMap, sprite.height * pxPerMap);
-    } else {
-      vCtx.drawImage(sprite, (tileX - vp.x) * pxPerMap, (tileY - vp.y) * pxPerMap,
-        sprite.width * pxPerMap, sprite.height * pxPerMap);
+      return ((mx - x1) % vp.wrapW + vp.wrapW) % vp.wrapW * pxPerMap;
+    }
+    return (mx - vp.x) * pxPerMap;
+  }
+  function screenY(my) { return (my - vp.y) * pxPerMap; }
+
+  function drawSpriteAt(sprite, mx, my) {
+    vCtx.drawImage(sprite, screenX(mx), screenY(my),
+      sprite.width * pxPerMap, sprite.height * pxPerMap);
+  }
+
+  // HP bar rendering (same 3-color logic as renderUnitThumbnail)
+  function drawHpBar(sx, sy, curHp, maxHp) {
+    const barW = 14 * pxPerMap;
+    const barH = 3 * pxPerMap;
+    const greenW = Math.max(0, Math.floor((curHp / maxHp) * barW));
+    // Background (black)
+    vCtx.fillStyle = '#000';
+    vCtx.fillRect(sx, sy, barW, barH);
+    // HP fill
+    if (greenW > 0) {
+      const pxThresh = barW;
+      if (greenW > pxThresh * 0.67) vCtx.fillStyle = 'rgb(87,171,39)';
+      else if (greenW > pxThresh * 0.25) vCtx.fillStyle = 'rgb(255,223,79)';
+      else vCtx.fillStyle = 'rgb(243,0,0)';
+      vCtx.fillRect(sx, sy, greenW, barH);
     }
   }
 
-  function flashFrame() {
-    if (flashCount >= totalFlashes) {
-      // combat flash done
-      if (onComplete) onComplete();
+  // Round data (fall back to old flash if no rounds)
+  const rounds = cr.rounds;
+  if (!rounds || rounds.length === 0) {
+    // Legacy flash fallback
+    let flashCount = 0;
+    const totalFlashes = 8;
+    function flashFrame() {
+      if (flashCount >= totalFlashes) { if (onComplete) onComplete(); return; }
+      vCtx.putImageData(bgSnapshot, 0, 0);
+      drawSpriteAt(flashCount % 2 === 0 ? atkSprite : defSprite, tileX, tileY);
+      flashCount++;
+      setTimeout(flashFrame, 80);
+    }
+    flashFrame();
+    return;
+  }
+
+  // HP tracking in internal units (×10)
+  let atkHp = cr.atkStartHp;
+  let defHp = cr.defStartHp;
+  const atkMaxHp = cr.atkMaxHp;
+  const defMaxHp = cr.defMaxHp;
+  const atkFp = cr.atkFp;
+  const defFp = cr.defFp;
+
+  // Bar positions: attacker bar on left of tile, defender on right
+  const barY = screenY(tileY) - 6 * pxPerMap;
+  const atkBarX = screenX(tileX) - 2 * pxPerMap;
+  const defBarX = screenX(tileX) + 52 * pxPerMap;
+
+  // Play attack sound on first frame
+  const atkSfx = UNIT_ATK_SFX[cr.attacker];
+  if (atkSfx) sfx(atkSfx);
+
+  let roundIdx = 0;
+
+  // Phase A: combat rounds
+  function roundFrame() {
+    if (roundIdx >= rounds.length) {
+      // Phase B: explosion on loser
+      playExplosion();
       return;
     }
+
+    // Apply this round's damage
+    if (rounds[roundIdx]) {
+      defHp -= atkFp * 10;
+    } else {
+      atkHp -= defFp * 10;
+    }
+    if (atkHp < 0) atkHp = 0;
+    if (defHp < 0) defHp = 0;
 
     // Restore background
     vCtx.putImageData(bgSnapshot, 0, 0);
 
-    // Alternate between attacker and defender sprite
-    const sprite = (flashCount % 2 === 0) ? atkSprite : defSprite;
-    drawSpriteAt(sprite);
+    // Draw alternating sprite (attacker on even rounds, defender on odd)
+    const sprite = (roundIdx % 2 === 0) ? atkSprite : defSprite;
+    drawSpriteAt(sprite, tileX, tileY);
 
-    flashCount++;
-    setTimeout(flashFrame, flashInterval);
+    // Draw HP bars
+    drawHpBar(atkBarX, barY, atkHp, atkMaxHp);
+    drawHpBar(defBarX, barY, defHp, defMaxHp);
+
+    roundIdx++;
+    setTimeout(roundFrame, 100);
   }
 
-  flashFrame();
+  // Phase B: explosion over loser
+  async function playExplosion() {
+    const frames = await _ensureExplosionFrames();
+
+    // Play death sound
+    const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
+    sfx(getDeathSfx(loser));
+
+    if (!frames || frames.length === 0) {
+      if (onComplete) onComplete();
+      return;
+    }
+
+    // Show 4 explosion frames (use frames 0,2,4,6 for variety)
+    const frameIndices = [0, 2, 4, 6];
+    let fi = 0;
+
+    // Center explosion on tile (32×32 sprite centered on 64×32 tile)
+    const expX = tileX + 16; // center of tile minus half explosion width
+    const expY = tileY + 8;  // vertically centered
+
+    function explodeFrame() {
+      if (fi >= frameIndices.length) {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      vCtx.putImageData(bgSnapshot, 0, 0);
+
+      // Draw surviving unit
+      const survivor = cr.type === 'atkWin' ? atkSprite : defSprite;
+      drawSpriteAt(survivor, tileX, tileY);
+
+      // Draw HP bars (final state)
+      drawHpBar(atkBarX, barY, atkHp, atkMaxHp);
+      drawHpBar(defBarX, barY, defHp, defMaxHp);
+
+      // Draw explosion frame
+      const frame = frames[frameIndices[fi]];
+      drawSpriteAt(frame, expX, expY);
+
+      fi++;
+      setTimeout(explodeFrame, 100);
+    }
+
+    explodeFrame();
+  }
+
+  roundFrame();
 }
 
 // ── Unit context menu ──

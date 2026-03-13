@@ -10,7 +10,7 @@
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -18,6 +18,36 @@ import { calcFoodSurplus, foodToGrow, calcShieldProduction, getProductionCost, c
 import { calcHappiness, calcRushBuyCost } from './happiness.js';
 import { resolveCombat } from './combat.js';
 import { cityHasBuilding, hasWonderEffect } from './utils.js';
+
+/**
+ * Compute effective defense score for defender selection (matches FUN_0057e6e2).
+ * Used to pick the best defender when multiple units occupy the same tile.
+ */
+function computeEffectiveDefense(unit, terrain, inCity, hasWalls, hasFortress, onRiver, cityBuildings, attackerType) {
+  const defBase = UNIT_DEF[unit.type] || 1;
+  const maxHp = (UNIT_HP[unit.type] || 1) * 10;
+  const curHp = maxHp - (unit.hpLost || 0) * 10;
+  if (curHp <= 0) return 0;
+
+  const terrainMul = TERRAIN_DEFENSE[terrain] ?? 2;
+  let eff = defBase * terrainMul * 4;
+  if (unit.veteran) eff += Math.floor(eff / 2);
+  if (unit.orders === 'fortified') eff += Math.floor(eff / 2);
+
+  const atkDomain = UNIT_DOMAIN[attackerType] ?? 0;
+  if (hasWalls && atkDomain !== 2) eff *= 3;
+  if (hasFortress && !inCity) eff *= 2;
+  if (onRiver && !inCity) eff += Math.floor(eff / 2);
+
+  if (inCity && cityBuildings) {
+    if (cityBuildings.has(28) && atkDomain === 1) eff *= 2;
+    if (cityBuildings.has(27) && atkDomain === 2 && !UNIT_DESTROYED_AFTER_ATTACK.has(attackerType)) eff *= 2;
+    if (cityBuildings.has(17) && UNIT_DESTROYED_AFTER_ATTACK.has(attackerType)) eff *= 2;
+  }
+
+  // Weight by HP ratio
+  return eff * (curHp / maxHp);
+}
 
 /**
  * Apply completed worker improvement to the map tile data.
@@ -396,18 +426,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const defHasFortress = !!(defImp && defImp.fortress);
         const defOnRiver = !!(mapBase.hasRiver && mapBase.hasRiver(dest.gx, dest.gy));
 
-        // Pick the defender with highest raw defense × HP
+        // Pick the defender with highest effective defense (matches FUN_0057e6e2)
+        const defCityBuildings = defCity ? defCity.buildings : null;
         let bestDefIdx = enemiesAtDest[0];
-        let bestDefScore = 0;
+        let bestDefScore = -1;
         for (const ei of enemiesAtDest) {
-          const eu = state.units[ei];
-          const defVal = (UNIT_HP[eu.type] || 1) - (eu.hpLost || 0);
-          const score = defVal * 100 + (eu.orders === 'fortified' ? 50 : 0);
+          const score = computeEffectiveDefense(state.units[ei], defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, unit.type);
           if (score > bestDefScore) { bestDefScore = score; bestDefIdx = ei; }
         }
 
         const defender = { ...state.units[bestDefIdx] };
-        const defCityBuildings = defCity ? defCity.buildings : null;
         // Build entropy seed from positions, turn, unit indices, and state version
         // so that repeated same-type combats produce different outcomes
         const turnNum_ = state.turn?.number || 0;
@@ -502,6 +530,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
           atkOwner: unit.owner, defOwner: defender.owner,
           gx: dest.gx, gy: dest.gy,
           atkHpLost: result.atkHpLost, defHpLost: result.defHpLost,
+          rounds: result.rounds,
+          atkMaxHp: result.atkMaxHp, defMaxHp: result.defMaxHp,
+          atkFp: result.atkFp, defFp: result.defFp,
+          atkStartHp: result.atkStartHp, defStartHp: result.defStartHp,
         };
 
         // Check civ elimination for the losing side
@@ -2349,18 +2381,16 @@ function processBarbarianAI(state, prev, mapBase) {
         const defHasFortress = !!(defImp && defImp.fortress);
         const defOnRiver = !!(mapBase.hasRiver && mapBase.hasRiver(chosenDest.gx, chosenDest.gy));
 
+        const defCityBuildings = defCity ? defCity.buildings : null;
         let bestDefIdx = enemiesAtDest[0];
-        let bestDefScore = 0;
+        let bestDefScore = -1;
         for (const ei of enemiesAtDest) {
-          const eu = state.units[ei];
-          const defVal = (UNIT_HP[eu.type] || 1) - (eu.hpLost || 0);
-          const score = defVal * 100 + (eu.orders === 'fortified' ? 50 : 0);
+          const score = computeEffectiveDefense(state.units[ei], defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, state.units[ui].type);
           if (score > bestDefScore) { bestDefScore = score; bestDefIdx = ei; }
         }
 
         const attacker = state.units[ui];
         const defender = state.units[bestDefIdx];
-        const defCityBuildings = defCity ? defCity.buildings : null;
         const barbCombatSeed = (attacker.gx * 997 + attacker.gy * 991 + chosenDest.gx * 983 +
           chosenDest.gy * 977 + ui * 967 + bestDefIdx * 953 + (state.turn?.number || 0) * 941 +
           (state.version || 0) * 929);

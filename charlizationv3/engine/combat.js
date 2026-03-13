@@ -21,7 +21,9 @@ import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER
  * @param {number} [extraSeed=0] - extra entropy for PRNG (e.g. turn number, positions, state version)
  * @param {string} [difficulty] - game difficulty level ('chieftain'|'warlord'|'prince'|'king'|'emperor'|'deity')
  * @returns {{ attackerWins: boolean, atkHpLost: number, defHpLost: number,
- *             atkVeteranPromo: boolean, defVeteranPromo: boolean }}
+ *             atkVeteranPromo: boolean, defVeteranPromo: boolean,
+ *             rounds: boolean[], atkMaxHp: number, defMaxHp: number,
+ *             atkFp: number, defFp: number, atkStartHp: number, defStartHp: number }}
  */
 export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, extraSeed, difficulty, atkMovesLeft) {
   const atkBase = UNIT_ATK[attacker.type] || 1;
@@ -96,6 +98,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   if (atkHp <= 0) atkHp = 10;
   if (defHp <= 0) defHp = 10;
 
+  const atkStartHp = atkHp;
+  const defStartHp = defHp;
+
   // Round-by-round combat using pseudo-random sequence.
   // Seed includes unit stats + extraSeed (positions, turn, state version) for varied outcomes.
   let seed = ((attacker.type * 31 + defender.type * 17 + defTerrain * 7 + atkHp + defHp +
@@ -105,9 +110,12 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     return seed;
   };
 
+  const rounds = []; // true = attacker hit defender, false = defender hit attacker
   while (atkHp > 0 && defHp > 0) {
     const roll = rand() % (effAtk + effDef);
-    if (roll < effAtk) {
+    const atkHit = roll < effAtk;
+    rounds.push(atkHit);
+    if (atkHit) {
       // Attacker hits
       defHp -= atkFp * 10;
     } else {
@@ -127,5 +135,6 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const atkVeteranPromo = attackerWins && !attacker.veteran && defBase > 0 && promoRoll === 0;
   const defVeteranPromo = !attackerWins && !defender.veteran && atkBase > 0 && promoRoll === 0;
 
-  return { attackerWins, atkHpLost, defHpLost, atkVeteranPromo, defVeteranPromo };
+  return { attackerWins, atkHpLost, defHpLost, atkVeteranPromo, defVeteranPromo,
+    rounds, atkMaxHp, defMaxHp, atkFp, defFp, atkStartHp, defStartHp };
 }
