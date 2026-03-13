@@ -913,6 +913,31 @@ async function handleMapClick(e, isLongPress = false) {
         showUnitMenu(e.clientX, e.clientY, menuItems);
         return;
       }
+
+      // Non-adjacent tile: offer Go To as a menu option
+      if (selU && selU.movesLeft > 0) {
+        const gotoItems = [];
+        const capturedUnit = mpSelectedUnit;
+        gotoItems.push({
+          label: 'Go To \u2192',
+          action: () => {
+            const u = mpGameState.units[capturedUnit];
+            if (!u || u.gx < 0) return;
+            const path = findPath(u.type, u.gx, u.gy, tile.gx, tile.gy, mpMapBase, u.owner, mpGameState.units, mpGameState.cities);
+            if (path && path.length > 0) {
+              transport.sendRaw({
+                type: 'ACTION',
+                action: { type: GOTO, unitIndex: capturedUnit, targetGx: tile.gx, targetGy: tile.gy, path },
+              });
+              pendingAutoAdvanceFrom = capturedUnit;
+            } else {
+              showOverlayMessage('No path found');
+            }
+          },
+        });
+        showUnitMenu(e.clientX, e.clientY, gotoItems);
+        return;
+      }
     }
 
     // ── Clicking on OWN tile (active unit is here) ──
@@ -1305,11 +1330,12 @@ function showProductionPicker(city, cityIndex, onDismiss) {
     items.push({ type: 'wonder', id: wid, name: WONDER_NAMES[i], cost: WONDER_COSTS[i] });
   }
 
+  const rows = [];
   for (const item of items) {
     const row = document.createElement('div');
     row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between';
-    row.onmouseenter = () => row.style.background = '#c0a070';
-    row.onmouseleave = () => row.style.background = '';
+    row.onmouseenter = () => { if (!row.classList.contains('pp-highlight')) row.style.background = '#c0a070'; };
+    row.onmouseleave = () => { if (!row.classList.contains('pp-highlight')) row.style.background = ''; };
 
     const label = document.createElement('span');
     label.textContent = item.name;
@@ -1320,6 +1346,7 @@ function showProductionPicker(city, cityIndex, onDismiss) {
     row.appendChild(costLabel);
 
     row.addEventListener('click', () => {
+      window.removeEventListener('keydown', ppKeyHandler, true);
       transport.sendRaw({
         type: 'ACTION',
         action: {
@@ -1332,17 +1359,51 @@ function showProductionPicker(city, cityIndex, onDismiss) {
       if (onDismiss) onDismiss();
     });
     panel.appendChild(row);
+    rows.push(row);
   }
 
   // Cancel button
   const cancel = document.createElement('div');
   cancel.textContent = 'Cancel';
   cancel.style.cssText = 'text-align:center;padding:6px;margin-top:6px;cursor:pointer;font-weight:bold;border-top:1px solid #a08060';
-  cancel.addEventListener('click', () => { overlay.remove(); if (onDismiss) onDismiss(); });
+  cancel.addEventListener('click', () => { window.removeEventListener('keydown', ppKeyHandler, true); overlay.remove(); if (onDismiss) onDismiss(); });
   panel.appendChild(cancel);
 
+  // Arrow key navigation
+  let ppHighlight = -1;
+  function ppSetHighlight(idx) {
+    if (ppHighlight >= 0 && ppHighlight < rows.length) {
+      rows[ppHighlight].style.background = '';
+      rows[ppHighlight].classList.remove('pp-highlight');
+    }
+    ppHighlight = idx;
+    if (ppHighlight >= 0 && ppHighlight < rows.length) {
+      rows[ppHighlight].style.background = '#c0a070';
+      rows[ppHighlight].classList.add('pp-highlight');
+      rows[ppHighlight].scrollIntoView({ block: 'nearest' });
+    }
+  }
+  const ppKeyHandler = e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault(); e.stopPropagation();
+      ppSetHighlight(Math.min(rows.length - 1, ppHighlight + 1));
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault(); e.stopPropagation();
+      ppSetHighlight(Math.max(0, ppHighlight - 1));
+    } else if (e.key === 'Enter' && ppHighlight >= 0) {
+      e.preventDefault(); e.stopPropagation();
+      rows[ppHighlight].click();
+    } else if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation();
+      window.removeEventListener('keydown', ppKeyHandler, true);
+      overlay.remove();
+      if (onDismiss) onDismiss();
+    }
+  };
+  window.addEventListener('keydown', ppKeyHandler, true);
+
   overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); if (onDismiss) onDismiss(); } });
+  overlay.addEventListener('click', e => { if (e.target === overlay) { window.removeEventListener('keydown', ppKeyHandler, true); overlay.remove(); if (onDismiss) onDismiss(); } });
   document.body.appendChild(overlay);
 }
 
@@ -1391,6 +1452,7 @@ function showSellBuildingPicker(city, cityIndex) {
   title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:6px;text-align:center';
   panel.appendChild(title);
 
+  const sbRows = [];
   if (city.soldThisTurn) {
     const msg = document.createElement('div');
     msg.textContent = 'Already sold a building this turn.';
@@ -1406,8 +1468,8 @@ function showSellBuildingPicker(city, cityIndex) {
 
       const row = document.createElement('div');
       row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between';
-      row.onmouseenter = () => row.style.background = '#c0a070';
-      row.onmouseleave = () => row.style.background = '';
+      row.onmouseenter = () => { if (!row.classList.contains('pp-highlight')) row.style.background = '#c0a070'; };
+      row.onmouseleave = () => { if (!row.classList.contains('pp-highlight')) row.style.background = ''; };
 
       const label = document.createElement('span');
       label.textContent = name;
@@ -1418,6 +1480,7 @@ function showSellBuildingPicker(city, cityIndex) {
       row.appendChild(refundLabel);
 
       row.addEventListener('click', () => {
+        window.removeEventListener('keydown', sbKeyHandler, true);
         overlay.remove();
         showConfirmDialog(`Sell ${name} for ${refund} gold?`, () => {
           sfx('SELL');
@@ -1428,17 +1491,50 @@ function showSellBuildingPicker(city, cityIndex) {
         });
       });
       panel.appendChild(row);
+      sbRows.push(row);
     }
   }
 
   const cancel = document.createElement('div');
   cancel.textContent = 'Cancel';
   cancel.style.cssText = 'text-align:center;padding:6px;margin-top:6px;cursor:pointer;font-weight:bold;border-top:1px solid #a08060';
-  cancel.addEventListener('click', () => overlay.remove());
+  cancel.addEventListener('click', () => { window.removeEventListener('keydown', sbKeyHandler, true); overlay.remove(); });
   panel.appendChild(cancel);
 
+  // Arrow key navigation
+  let sbHighlight = -1;
+  function sbSetHighlight(idx) {
+    if (sbHighlight >= 0 && sbHighlight < sbRows.length) {
+      sbRows[sbHighlight].style.background = '';
+      sbRows[sbHighlight].classList.remove('pp-highlight');
+    }
+    sbHighlight = idx;
+    if (sbHighlight >= 0 && sbHighlight < sbRows.length) {
+      sbRows[sbHighlight].style.background = '#c0a070';
+      sbRows[sbHighlight].classList.add('pp-highlight');
+      sbRows[sbHighlight].scrollIntoView({ block: 'nearest' });
+    }
+  }
+  const sbKeyHandler = e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault(); e.stopPropagation();
+      sbSetHighlight(Math.min(sbRows.length - 1, sbHighlight + 1));
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault(); e.stopPropagation();
+      sbSetHighlight(Math.max(0, sbHighlight - 1));
+    } else if (e.key === 'Enter' && sbHighlight >= 0) {
+      e.preventDefault(); e.stopPropagation();
+      sbRows[sbHighlight].click();
+    } else if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation();
+      window.removeEventListener('keydown', sbKeyHandler, true);
+      overlay.remove();
+    }
+  };
+  window.addEventListener('keydown', sbKeyHandler, true);
+
   overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.addEventListener('click', e => { if (e.target === overlay) { window.removeEventListener('keydown', sbKeyHandler, true); overlay.remove(); } });
   document.body.appendChild(overlay);
 }
 
@@ -1968,6 +2064,21 @@ function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'OK' }]) 
   const keyHandler = e => {
     if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); dismiss(); if (buttons[buttons.length - 1]?.action) buttons[buttons.length - 1].action(); }
     else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); if (buttons[0]?.action) buttons[0].action(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      const items = panel.querySelectorAll('[data-selectable]');
+      if (items.length === 0) return;
+      e.preventDefault(); e.stopPropagation();
+      const delta = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : -1;
+      let cur = -1;
+      items.forEach((el, i) => { if (el.classList.contains('civ2-selected')) cur = i; });
+      const next = Math.max(0, Math.min(items.length - 1, cur + delta));
+      if (next !== cur) {
+        items.forEach(el => el.classList.remove('civ2-selected'));
+        items[next].classList.add('civ2-selected');
+        items[next].click();
+        items[next].scrollIntoView({ block: 'nearest' });
+      }
+    }
   };
   window.addEventListener('keydown', keyHandler, true);
 
@@ -2751,6 +2862,7 @@ function showResearchPicker(discovered) {
     panel.style.maxHeight = '60vh';
     panel.style.overflowY = 'auto';
     panel.style.minWidth = '340px';
+    panel.style.background = '#c0c0c0';
 
     // Show discovery message if a tech was just discovered
     if (discovered != null) {
@@ -2764,11 +2876,9 @@ function showResearchPicker(discovered) {
     const list = document.createElement('div');
     list.style.cssText = 'display:flex;flex-direction:column;gap:2px';
 
-    // Apply stone background asynchronously if icons available
+    // Load icons asynchronously if available
     _ensureResearchIcons().then(cache => {
       if (!cache) return;
-      panel.style.backgroundImage = `url(${cache.stoneDataUrl})`;
-      panel.style.backgroundRepeat = 'repeat';
 
       // Insert icon canvases into rows
       const rows = list.querySelectorAll('.rp-row');
@@ -2790,6 +2900,7 @@ function showResearchPicker(discovered) {
       const row = document.createElement('div');
       row.className = 'rp-row';
       row.dataset.advId = advId;
+      row.dataset.selectable = '1';
       const isOdd = i % 2 === 1;
       row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;border-radius:2px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
 
@@ -2804,14 +2915,18 @@ function showResearchPicker(discovered) {
       row.appendChild(nameSpan);
 
       // Highlight selected
-      if (advId === selected) row.style.background = 'rgba(0,0,80,0.25)';
+      if (advId === selected) {
+        row.style.background = 'rgba(0,0,80,0.25)';
+        row.classList.add('civ2-selected');
+      }
 
       row.addEventListener('click', () => {
         selected = advId;
         // Update highlights
         list.querySelectorAll('.rp-row').forEach(r => {
-          r.style.background = parseInt(r.dataset.advId) === selected
-            ? 'rgba(0,0,80,0.25)' : '';
+          const isSel = parseInt(r.dataset.advId) === selected;
+          r.style.background = isSel ? 'rgba(0,0,80,0.25)' : '';
+          r.classList.toggle('civ2-selected', isSel);
         });
       });
 
@@ -2830,12 +2945,418 @@ function showResearchPicker(discovered) {
 
     panel.appendChild(list);
   }, [
-    { label: 'Help' },
-    { label: 'Goal' },
+    { label: 'Help', action: () => showTechTree() },
+    { label: 'Goal', action: () => showGoalPicker() },
     { label: 'OK', action: () => {
       transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: selected } });
     }},
   ]);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Tech prerequisite path — BFS from goal back through ADVANCE_PREREQS
+// Returns ordered array of advance IDs the civ still needs to reach goalId
+// ═══════════════════════════════════════════════════════════════════
+function getPrereqPath(goalId, civTechs) {
+  if (civTechs.has(goalId)) return [];
+  // Collect all missing prereqs via DFS
+  const needed = new Set();
+  const visited = new Set();
+  function walk(id) {
+    if (id < 0 || visited.has(id)) return;
+    visited.add(id);
+    if (civTechs.has(id)) return; // already known
+    const [p1, p2] = ADVANCE_PREREQS[id] || [-1, -1];
+    if (p1 === -2 || p2 === -2) return; // unresearchable
+    if (p1 >= 0) walk(p1);
+    if (p2 >= 0) walk(p2);
+    needed.add(id);
+  }
+  walk(goalId);
+  // Topological sort: techs whose prereqs are all met come first
+  const sorted = [];
+  const remaining = new Set(needed);
+  while (remaining.size > 0) {
+    let progress = false;
+    for (const id of remaining) {
+      const [p1, p2] = ADVANCE_PREREQS[id] || [-1, -1];
+      const p1ok = p1 < 0 || civTechs.has(p1) || sorted.includes(p1);
+      const p2ok = p2 < 0 || civTechs.has(p2) || sorted.includes(p2);
+      if (p1ok && p2ok) {
+        sorted.push(id);
+        remaining.delete(id);
+        progress = true;
+      }
+    }
+    if (!progress) { // cycle guard — shouldn't happen with valid data
+      for (const id of remaining) sorted.push(id);
+      break;
+    }
+  }
+  return sorted;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GOAL PICKER — select a goal tech, show prerequisite path
+// ═══════════════════════════════════════════════════════════════════
+function showGoalPicker() {
+  if (!mpGameState || mpCivSlot == null) return;
+  const civTechs = mpGameState.civTechs?.[mpCivSlot] || new Set();
+
+  // All techs that are NOT yet discovered and ARE reachable
+  const allGoals = [];
+  for (let i = 0; i < ADVANCE_NAMES.length; i++) {
+    if (civTechs.has(i)) continue;
+    const [p1, p2] = ADVANCE_PREREQS[i] || [-1, -1];
+    if (p1 === -2 || p2 === -2) continue;
+    allGoals.push(i);
+  }
+  allGoals.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
+
+  let goalSelected = allGoals[0];
+
+  createCiv2Dialog('goal-picker', 'Select a Goal Technology', panel => {
+    panel.style.maxHeight = '60vh';
+    panel.style.overflowY = 'auto';
+    panel.style.minWidth = '340px';
+    panel.style.background = '#c0c0c0';
+
+    const list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:2px';
+
+    allGoals.forEach((advId, i) => {
+      const row = document.createElement('div');
+      row.dataset.selectable = '1';
+      row.dataset.advId = advId;
+      const isOdd = i % 2 === 1;
+      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;border-radius:2px;font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
+
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = ADVANCE_NAMES[advId];
+      row.appendChild(nameSpan);
+
+      // Show step count
+      const path = getPrereqPath(advId, civTechs);
+      const steps = document.createElement('span');
+      steps.style.cssText = 'margin-left:auto;font-size:13px;color:#666';
+      steps.textContent = path.length === 1 ? '(1 step)' : `(${path.length} steps)`;
+      row.appendChild(steps);
+
+      if (advId === goalSelected) {
+        row.style.background = 'rgba(0,0,80,0.25)';
+        row.classList.add('civ2-selected');
+      }
+
+      row.addEventListener('click', () => {
+        goalSelected = advId;
+        list.querySelectorAll('[data-selectable]').forEach(r => {
+          const isSel = parseInt(r.dataset.advId) === goalSelected;
+          r.style.background = isSel ? 'rgba(0,0,80,0.25)' : '';
+          r.classList.toggle('civ2-selected', isSel);
+        });
+      });
+      row.addEventListener('mouseenter', () => {
+        if (parseInt(row.dataset.advId) !== goalSelected)
+          row.style.background = 'rgba(255,255,255,0.12)';
+      });
+      row.addEventListener('mouseleave', () => {
+        row.style.background = parseInt(row.dataset.advId) === goalSelected
+          ? 'rgba(0,0,80,0.25)' : '';
+      });
+
+      list.appendChild(row);
+    });
+
+    panel.appendChild(list);
+  }, [
+    { label: 'Cancel' },
+    { label: 'OK', action: () => showGoalPath(goalSelected) },
+  ]);
+}
+
+function showGoalPath(goalId) {
+  if (!mpGameState || mpCivSlot == null) return;
+  const civTechs = mpGameState.civTechs?.[mpCivSlot] || new Set();
+  const path = getPrereqPath(goalId, civTechs);
+
+  if (path.length === 0) {
+    showOverlayMessage('You already have all prerequisites!');
+    showResearchPicker();
+    return;
+  }
+
+  createCiv2Dialog('goal-path', `Path to ${ADVANCE_NAMES[goalId]}`, panel => {
+    panel.style.maxHeight = '60vh';
+    panel.style.overflowY = 'auto';
+    panel.style.minWidth = '340px';
+    panel.style.background = '#c0c0c0';
+
+    const intro = document.createElement('div');
+    intro.style.cssText = 'text-align:center;padding:6px 12px 8px;font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);border-bottom:1px solid rgba(0,0,0,0.15);margin-bottom:6px';
+    intro.textContent = `${path.length} advance${path.length > 1 ? 's' : ''} needed:`;
+    panel.appendChild(intro);
+
+    const list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:2px';
+
+    path.forEach((advId, i) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 8px;font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+
+      const num = document.createElement('span');
+      num.style.cssText = 'min-width:24px;text-align:right;font-weight:bold;color:#555';
+      num.textContent = `${i + 1}.`;
+      row.appendChild(num);
+
+      const name = document.createElement('span');
+      name.textContent = ADVANCE_NAMES[advId];
+      // Highlight the goal tech
+      if (advId === goalId) name.style.fontWeight = 'bold';
+      row.appendChild(name);
+
+      // Show prereqs in parentheses
+      const [p1, p2] = ADVANCE_PREREQS[advId] || [-1, -1];
+      const prereqNames = [];
+      if (p1 >= 0) prereqNames.push(ADVANCE_NAMES[p1]);
+      if (p2 >= 0) prereqNames.push(ADVANCE_NAMES[p2]);
+      if (prereqNames.length > 0) {
+        const pSpan = document.createElement('span');
+        pSpan.style.cssText = 'margin-left:auto;font-size:12px;color:#666';
+        pSpan.textContent = `(${prereqNames.join(', ')})`;
+        row.appendChild(pSpan);
+      }
+
+      list.appendChild(row);
+    });
+
+    panel.appendChild(list);
+  }, [
+    { label: 'Back', action: () => showGoalPicker() },
+    { label: 'Research', action: () => {
+      // Set research to the first tech in the path
+      transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: path[0] } });
+    }},
+  ]);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TECH TREE DIALOG — full tech tree with clickable entries
+// ═══════════════════════════════════════════════════════════════════
+function showTechTree() {
+  if (!mpGameState || mpCivSlot == null) return;
+  const civTechs = mpGameState.civTechs?.[mpCivSlot] || new Set();
+
+  // Build reverse lookup: tech → what it enables
+  const techEnablesUnits = {};
+  const techEnablesBuildings = {};
+  const techEnablesWonders = {};
+  const techEnablesGovts = {};
+  const techObsoletesUnits = {};
+  const techObsoletesWonders = {};
+
+  for (let i = 0; i < UNIT_PREREQS.length; i++) {
+    const t = UNIT_PREREQS[i];
+    if (t >= 0) { (techEnablesUnits[t] = techEnablesUnits[t] || []).push(i); }
+  }
+  for (let i = 0; i < IMPROVE_PREREQS.length; i++) {
+    const t = IMPROVE_PREREQS[i];
+    if (t >= 0) { (techEnablesBuildings[t] = techEnablesBuildings[t] || []).push(i); }
+  }
+  for (let i = 0; i < WONDER_PREREQS.length; i++) {
+    const t = WONDER_PREREQS[i];
+    if (t >= 0) { (techEnablesWonders[t] = techEnablesWonders[t] || []).push(i); }
+  }
+  for (const [govt, techId] of Object.entries(GOVT_TECH_PREREQS)) {
+    if (techId >= 0) { (techEnablesGovts[techId] = techEnablesGovts[techId] || []).push(govt); }
+  }
+  for (let i = 0; i < (UNIT_OBSOLETE?.length || 0); i++) {
+    const t = UNIT_OBSOLETE[i];
+    if (t >= 0) { (techObsoletesUnits[t] = techObsoletesUnits[t] || []).push(i); }
+  }
+  for (let i = 0; i < (WONDER_OBSOLETE?.length || 0); i++) {
+    const t = WONDER_OBSOLETE[i];
+    if (t >= 0) { (techObsoletesWonders[t] = techObsoletesWonders[t] || []).push(i); }
+  }
+
+  // Sort techs alphabetically
+  const allTechs = [];
+  for (let i = 0; i < ADVANCE_NAMES.length; i++) {
+    const [p1, p2] = ADVANCE_PREREQS[i] || [-1, -1];
+    if (p1 === -2 && p2 === -2) continue; // skip unresearchable
+    allTechs.push(i);
+  }
+  allTechs.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
+
+  createCiv2Dialog('tech-tree', 'Technology Advisor', panel => {
+    panel.style.maxHeight = '70vh';
+    panel.style.overflowY = 'auto';
+    panel.style.minWidth = '420px';
+    panel.style.maxWidth = '600px';
+    panel.style.background = '#c0c0c0';
+
+    const list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:1px';
+
+    allTechs.forEach(advId => {
+      const known = civTechs.has(advId);
+      const row = document.createElement('div');
+      row.dataset.selectable = '1';
+      row.dataset.advId = advId;
+      row.style.cssText = `padding:5px 10px;cursor:pointer;border-radius:2px;font:15px "Times New Roman",Georgia,serif;color:${known ? '#1a5c1a' : '#333'};text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+
+      const nameSpan = document.createElement('span');
+      nameSpan.style.fontWeight = 'bold';
+      nameSpan.textContent = ADVANCE_NAMES[advId];
+      if (known) nameSpan.textContent += ' \u2713';
+      row.appendChild(nameSpan);
+
+      row.addEventListener('click', () => showTechDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings, techEnablesWonders, techEnablesGovts, techObsoletesUnits, techObsoletesWonders));
+      row.addEventListener('mouseenter', () => { row.style.background = 'rgba(0,0,80,0.12)'; });
+      row.addEventListener('mouseleave', () => { row.style.background = ''; });
+
+      list.appendChild(row);
+    });
+
+    panel.appendChild(list);
+  }, [
+    { label: 'OK' },
+  ]);
+}
+
+function showTechDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings, techEnablesWonders, techEnablesGovts, techObsoletesUnits, techObsoletesWonders) {
+  const known = civTechs.has(advId);
+  const [p1, p2] = ADVANCE_PREREQS[advId] || [-1, -1];
+
+  createCiv2Dialog('tech-detail', ADVANCE_NAMES[advId], panel => {
+    panel.style.minWidth = '360px';
+    panel.style.maxWidth = '500px';
+    panel.style.background = '#c0c0c0';
+
+    const style = 'font:15px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);padding:3px 10px';
+
+    // Status
+    const status = document.createElement('div');
+    status.style.cssText = style + ';font-weight:bold;text-align:center;padding-bottom:6px;border-bottom:1px solid rgba(0,0,0,0.15);margin-bottom:6px';
+    status.textContent = known ? 'Discovered' : 'Not yet discovered';
+    status.style.color = known ? '#1a5c1a' : '#8b0000';
+    panel.appendChild(status);
+
+    // Prerequisites
+    if (p1 >= 0 || p2 >= 0) {
+      const sec = document.createElement('div');
+      sec.style.cssText = style;
+      const header = document.createElement('div');
+      header.style.cssText = 'font-weight:bold;margin-bottom:2px';
+      header.textContent = 'Requires:';
+      sec.appendChild(header);
+      if (p1 >= 0) appendTechLine(sec, p1, civTechs);
+      if (p2 >= 0) appendTechLine(sec, p2, civTechs);
+      panel.appendChild(sec);
+    } else {
+      const sec = document.createElement('div');
+      sec.style.cssText = style + ';font-style:italic';
+      sec.textContent = 'No prerequisites (starting technology)';
+      panel.appendChild(sec);
+    }
+
+    // Leads to
+    const leadsTo = [];
+    for (let i = 0; i < ADVANCE_PREREQS.length; i++) {
+      const [a, b] = ADVANCE_PREREQS[i] || [-1, -1];
+      if (a === advId || b === advId) leadsTo.push(i);
+    }
+    if (leadsTo.length > 0) {
+      const sec = document.createElement('div');
+      sec.style.cssText = style + ';margin-top:6px';
+      const header = document.createElement('div');
+      header.style.cssText = 'font-weight:bold;margin-bottom:2px';
+      header.textContent = 'Leads to:';
+      sec.appendChild(header);
+      leadsTo.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
+      for (const tid of leadsTo) appendTechLine(sec, tid, civTechs);
+      panel.appendChild(sec);
+    }
+
+    // Enables section
+    const enables = [];
+    const units = techEnablesUnits[advId] || [];
+    const buildings = techEnablesBuildings[advId] || [];
+    const wonders = techEnablesWonders[advId] || [];
+    const govts = techEnablesGovts[advId] || [];
+
+    if (units.length > 0) enables.push({ header: 'Units', items: units.map(i => UNIT_NAMES[i]) });
+    if (buildings.length > 0) enables.push({ header: 'Buildings', items: buildings.map(i => IMPROVE_NAMES[i]).filter(Boolean) });
+    if (wonders.length > 0) enables.push({ header: 'Wonders', items: wonders.map(i => WONDER_NAMES[i]) });
+    if (govts.length > 0) enables.push({ header: 'Governments', items: govts.map(g => g.charAt(0).toUpperCase() + g.slice(1)) });
+
+    if (enables.length > 0) {
+      const sec = document.createElement('div');
+      sec.style.cssText = style + ';margin-top:6px';
+      const header = document.createElement('div');
+      header.style.cssText = 'font-weight:bold;margin-bottom:2px';
+      header.textContent = 'Enables:';
+      sec.appendChild(header);
+      for (const group of enables) {
+        const line = document.createElement('div');
+        line.style.cssText = 'padding-left:12px;margin-bottom:1px';
+        line.innerHTML = `<span style="color:#555;font-size:13px">${group.header}:</span> ${group.items.join(', ')}`;
+        sec.appendChild(line);
+      }
+      panel.appendChild(sec);
+    }
+
+    // Obsoletes section
+    const obsoletes = [];
+    const obsUnits = techObsoletesUnits[advId] || [];
+    const obsWonders = techObsoletesWonders[advId] || [];
+    if (obsUnits.length > 0) obsoletes.push({ header: 'Obsoletes Units', items: obsUnits.map(i => UNIT_NAMES[i]) });
+    if (obsWonders.length > 0) obsoletes.push({ header: 'Obsoletes Wonders', items: obsWonders.map(i => WONDER_NAMES[i]) });
+
+    if (obsoletes.length > 0) {
+      const sec = document.createElement('div');
+      sec.style.cssText = style + ';margin-top:6px';
+      for (const group of obsoletes) {
+        const line = document.createElement('div');
+        line.style.cssText = 'padding-left:0;margin-bottom:1px';
+        line.innerHTML = `<span style="font-weight:bold;color:#8b0000">${group.header}:</span> ${group.items.join(', ')}`;
+        sec.appendChild(line);
+      }
+      panel.appendChild(sec);
+    }
+
+    // Path to this tech (if not known)
+    if (!known) {
+      const path = getPrereqPath(advId, civTechs);
+      if (path.length > 0) {
+        const sec = document.createElement('div');
+        sec.style.cssText = style + ';margin-top:8px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.15)';
+        const header = document.createElement('div');
+        header.style.cssText = 'font-weight:bold;margin-bottom:2px';
+        header.textContent = `Research path (${path.length} step${path.length > 1 ? 's' : ''}):`;
+        sec.appendChild(header);
+        path.forEach((tid, i) => {
+          const line = document.createElement('div');
+          line.style.cssText = 'padding-left:12px;margin-bottom:1px';
+          line.textContent = `${i + 1}. ${ADVANCE_NAMES[tid]}`;
+          if (tid === advId) line.style.fontWeight = 'bold';
+          sec.appendChild(line);
+        });
+        panel.appendChild(sec);
+      }
+    }
+  }, [
+    { label: 'Back', action: () => showTechTree() },
+    { label: 'OK' },
+  ]);
+}
+
+function appendTechLine(container, techId, civTechs) {
+  const line = document.createElement('div');
+  line.style.cssText = 'padding-left:12px;margin-bottom:1px';
+  const known = civTechs.has(techId);
+  line.textContent = ADVANCE_NAMES[techId] + (known ? ' \u2713' : '');
+  line.style.color = known ? '#1a5c1a' : '#333';
+  container.appendChild(line);
 }
 
 // City dialog pan/zoom events
@@ -3226,8 +3747,7 @@ let blinkOn = true;        // true = unit visible, false = hidden
 let blinkInterval = null;  // setInterval handle
 let blinkPatches = null;   // { 'gx,gy': { canvas, x, y } } terrain patches from renderer
 let blinkUnitOverlay = null; // { canvas, x, y } selected unit + terrain composite for blink-on
-let pendingSlide = null;   // { unitIndex, oldGx, oldGy } — set before sending MOVE_UNIT
-let slideAnimating = false; // true during slide animation
+let pendingMoveUnit = null; // unitIndex that last sent MOVE_UNIT — for detecting successful move
 let pendingAutoAdvanceFrom = null; // unitIndex that triggered the action — consumed in STATE handler
 let mercenaryQueue = []; // unit indices from goody hut mercenaries — selected before findNextMovableUnit
 
@@ -3589,22 +4109,18 @@ const transport = createTransport({
           }
         };
 
-        // Continuation after optional combat animation — handles slide or immediate render
+        // Continuation after optional combat animation — render + notifications
         const afterCombatAnim = () => {
-          // Check if a unit we moved has slid to a new position
-          if (pendingSlide && prevUnits) {
-            const { unitIndex, oldGx, oldGy } = pendingSlide;
-            const newUnit = msg.state.units[unitIndex];
-            if (newUnit && (newUnit.gx !== oldGx || newUnit.gy !== oldGy) && newUnit.gx >= 0) {
-              pendingSlide = null;
-              // Slide first, then apply visibility + re-render + notifications when done
-              animateUnitSlide(unitIndex, oldGx, oldGy, newUnit.gx, newUnit.gy, pendingVisibility, autoAdvFrom, processNotifications);
-              return;
+          // Play move sound if unit successfully moved to a new position
+          if (pendingMoveUnit != null && prevUnits) {
+            const prevU = prevUnits[pendingMoveUnit];
+            const newU = msg.state.units[pendingMoveUnit];
+            if (prevU && newU && (newU.gx !== prevU.gx || newU.gy !== prevU.gy) && newU.gx >= 0) {
+              sfx('MOVPIECE');
             }
+            pendingMoveUnit = null;
           }
-          pendingSlide = null;
 
-          // No slide — apply visibility immediately
           applyVisibilityUpdate(pendingVisibility);
           doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
           processNotifications();
@@ -4185,11 +4701,133 @@ document.getElementById('end-turn-btn').addEventListener('click', () => {
   transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
 });
 
-// Restart button — regenerate map with selected size
+// Restart button — show map size picker dialog
 document.getElementById('restart-btn').addEventListener('click', () => {
-  const mapSize = document.getElementById('map-size-input').value.trim();
-  transport.sendRaw({ type: 'RESTART_GAME', mapSize });
+  showMapSizePicker();
 });
+
+function showMapSizePicker() {
+  const MIN_DIM = 20;
+  const MAX_DIM = 300;
+  const presets = [
+    { label: 'Small (40 × 50)', w: 40, h: 50 },
+    { label: 'Medium (50 × 80)', w: 50, h: 80 },
+    { label: 'Large (75 × 120)', w: 75, h: 120 },
+  ];
+  let selected = 1; // default: Medium
+  let customW = 50, customH = 80;
+  let okBtn = null;
+
+  function validateCustom() {
+    const wOk = customW >= MIN_DIM && customW <= MAX_DIM;
+    const hOk = customH >= MIN_DIM && customH <= MAX_DIM;
+    if (wInput) wInput.style.color = wOk ? '' : '#c00';
+    if (hInput) hInput.style.color = hOk ? '' : '#c00';
+    if (errorMsg) {
+      if (selected === -1 && (!wOk || !hOk)) {
+        errorMsg.textContent = `Minimum ${MIN_DIM} × ${MIN_DIM}, maximum ${MAX_DIM} × ${MAX_DIM}`;
+        errorMsg.style.display = '';
+      } else {
+        errorMsg.style.display = 'none';
+      }
+    }
+    if (okBtn) okBtn.disabled = (selected === -1 && (!wOk || !hOk));
+  }
+
+  let wInput, hInput, errorMsg;
+
+  createCiv2Dialog('mapsize-dialog', 'Select Map Size', panel => {
+    panel.style.minWidth = '280px';
+
+    const list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:2px;margin-bottom:8px';
+
+    const rows = [];
+    presets.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.dataset.selectable = '1';
+      row.style.cssText = 'padding:6px 12px;cursor:pointer;border-radius:2px;font:17px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+      row.textContent = p.label;
+      if (i === selected) {
+        row.style.background = 'rgba(0,0,80,0.25)';
+        row.classList.add('civ2-selected');
+      }
+      row.addEventListener('click', () => {
+        selected = i;
+        rows.forEach((r, j) => {
+          const isSel = j === selected;
+          r.style.background = isSel ? 'rgba(0,0,80,0.25)' : '';
+          r.classList.toggle('civ2-selected', isSel);
+        });
+        customRow.style.background = '';
+        customRow.classList.remove('civ2-selected');
+        validateCustom();
+      });
+      row.addEventListener('mouseenter', () => { if (selected !== i) row.style.background = 'rgba(255,255,255,0.12)'; });
+      row.addEventListener('mouseleave', () => { row.style.background = selected === i ? 'rgba(0,0,80,0.25)' : ''; });
+      list.appendChild(row);
+      rows.push(row);
+    });
+
+    // Custom size row
+    const customRow = document.createElement('div');
+    customRow.dataset.selectable = '1';
+    customRow.style.cssText = 'padding:6px 12px;cursor:pointer;border-radius:2px;font:17px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);display:flex;align-items:center;gap:6px';
+    const customLabel = document.createElement('span');
+    customLabel.textContent = 'Custom:';
+    wInput = document.createElement('input');
+    wInput.type = 'number'; wInput.min = String(MIN_DIM); wInput.max = String(MAX_DIM); wInput.value = customW;
+    wInput.style.cssText = 'width:50px;font:14px "Times New Roman",serif;padding:2px 4px;text-align:center';
+    const xLabel = document.createElement('span');
+    xLabel.textContent = '×';
+    hInput = document.createElement('input');
+    hInput.type = 'number'; hInput.min = String(MIN_DIM); hInput.max = String(MAX_DIM); hInput.value = customH;
+    hInput.style.cssText = 'width:50px;font:14px "Times New Roman",serif;padding:2px 4px;text-align:center';
+    customRow.appendChild(customLabel);
+    customRow.appendChild(wInput);
+    customRow.appendChild(xLabel);
+    customRow.appendChild(hInput);
+
+    const selectCustom = () => {
+      selected = -1;
+      rows.forEach(r => { r.style.background = ''; r.classList.remove('civ2-selected'); });
+      customRow.style.background = 'rgba(0,0,80,0.25)';
+      customRow.classList.add('civ2-selected');
+      validateCustom();
+    };
+    customRow.addEventListener('click', selectCustom);
+    wInput.addEventListener('focus', selectCustom);
+    hInput.addEventListener('focus', selectCustom);
+    wInput.addEventListener('input', () => { customW = parseInt(wInput.value) || 0; validateCustom(); });
+    hInput.addEventListener('input', () => { customH = parseInt(hInput.value) || 0; validateCustom(); });
+
+    list.appendChild(customRow);
+    rows.push(customRow);
+
+    // Error message
+    errorMsg = document.createElement('div');
+    errorMsg.style.cssText = 'color:#c00;font:13px "Times New Roman",serif;text-align:center;padding:2px 0;display:none';
+    list.appendChild(errorMsg);
+
+    panel.appendChild(list);
+  }, [
+    { label: 'Cancel' },
+    { label: 'OK', action: () => {
+      let mapSize;
+      if (selected >= 0) {
+        mapSize = `${presets[selected].w}x${presets[selected].h}`;
+      } else {
+        if (customW < MIN_DIM || customH < MIN_DIM || customW > MAX_DIM || customH > MAX_DIM) return;
+        mapSize = `${customW}x${customH}`;
+      }
+      transport.sendRaw({ type: 'RESTART_GAME', mapSize });
+    }},
+  ]);
+
+  // Grab OK button ref for disabling
+  const btns = document.querySelectorAll('#mapsize-dialog .civ2-btn');
+  okBtn = btns[btns.length - 1];
+}
 
 // Research info click → open research picker
 document.getElementById('research-info').addEventListener('click', () => {
@@ -4213,6 +4851,19 @@ window.addEventListener('keydown', e => {
     if (next != null) {
       selectUnit(next);
       centerOnUnit(mpGameState.units[next]);
+    }
+    return;
+  }
+
+  // W: wait — skip to next unit, come back to this one later
+  if ((e.key === 'w' || e.key === 'W') && !e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const next = findNextMovableUnit(mpSelectedUnit);
+      if (next != null && next !== mpSelectedUnit) {
+        selectUnit(next);
+        centerOnUnit(mpGameState.units[next]);
+      }
     }
     return;
   }
@@ -4406,8 +5057,13 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  // Numpad movement
-  const dir = NUMPAD_DIR[e.key];
+  // Numpad movement (e.key for digits, e.code fallback for Numpad1-9)
+  const NUMPAD_CODE_DIR = {
+    'Numpad1': 'SW', 'Numpad2': 'S', 'Numpad3': 'SE',
+    'Numpad4': 'W',                  'Numpad6': 'E',
+    'Numpad7': 'NW', 'Numpad8': 'N', 'Numpad9': 'NE',
+  };
+  const dir = NUMPAD_DIR[e.key] || NUMPAD_CODE_DIR[e.code];
   if (!dir) return;
   e.preventDefault();
 
@@ -4417,11 +5073,7 @@ window.addEventListener('keydown', e => {
   }
   if (mpSelectedUnit == null) return;
 
-  // Set pending slide for animation + auto-advance tracking
-  const u = mpGameState.units[mpSelectedUnit];
-  if (u) {
-    pendingSlide = { unitIndex: mpSelectedUnit, oldGx: u.gx, oldGy: u.gy };
-  }
+  pendingMoveUnit = mpSelectedUnit;
   pendingAutoAdvanceFrom = mpSelectedUnit;
 
   transport.sendRaw({
@@ -4496,6 +5148,11 @@ async function quickRerender() {
 
 function startBlink() {
   stopBlink();
+  // Don't blink units with no movement points remaining
+  if (mpSelectedUnit != null && mpGameState) {
+    const u = mpGameState.units[mpSelectedUnit];
+    if (u && u.movesLeft <= 0) return;
+  }
   blinkOn = true;
   blinkInterval = setInterval(() => {
     blinkOn = !blinkOn;
@@ -4589,7 +5246,7 @@ function animateCombatFlash(cr, onComplete) {
   }
 
   stopBlink();
-  slideAnimating = true;
+  // combat flash animating
 
   // Snapshot viewport for restoration between frames
   const bgSnapshot = vCtx.getImageData(0, 0, viewportCanvas.width, viewportCanvas.height);
@@ -4614,7 +5271,7 @@ function animateCombatFlash(cr, onComplete) {
 
   function flashFrame() {
     if (flashCount >= totalFlashes) {
-      slideAnimating = false;
+      // combat flash done
       if (onComplete) onComplete();
       return;
     }
@@ -4631,86 +5288,6 @@ function animateCombatFlash(cr, onComplete) {
   }
 
   flashFrame();
-}
-
-// ── Unit slide animation ──
-function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibility, autoAdvFrom, onComplete) {
-  const TW = 64, TH = 32;
-  const fromX = oldGx * TW + ((oldGy % 2) ? (TW >> 1) : 0);
-  const fromY = oldGy * (TH >> 1) - 16;
-  const toX = newGx * TW + ((newGy % 2) ? (TW >> 1) : 0);
-  const toY = newGy * (TH >> 1) - 16;
-
-  // Handle wrapping: pick shortest path
-  let dx = toX - fromX;
-  if (vp.wraps && vp.wrapW > 0) {
-    if (dx > vp.wrapW / 2) dx -= vp.wrapW;
-    if (dx < -vp.wrapW / 2) dx += vp.wrapW;
-  }
-  const dy = toY - fromY;
-
-  const u = mpGameState.units[unitIndex];
-  if (!u || !mapSprites) {
-    applyVisibilityUpdate(deferredVisibility);
-    doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
-    if (onComplete) onComplete();
-    return;
-  }
-  const cacheKey = u.type + '-' + u.owner;
-  const unitSprite = mapSprites.unitColored[cacheKey];
-  if (!unitSprite) {
-    applyVisibilityUpdate(deferredVisibility);
-    doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
-    if (onComplete) onComplete();
-    return;
-  }
-
-  // Stop blink during slide
-  stopBlink();
-  slideAnimating = true;
-  sfx('MOVPIECE');
-
-  // Snapshot current viewport as static background for the animation
-  // (unit is already excluded from all canvases via selectedUnitIndex)
-  const bgSnapshot = vCtx.getImageData(0, 0, viewportCanvas.width, viewportCanvas.height);
-
-  const duration = 150;
-  const startTime = performance.now();
-  const dpr = window.devicePixelRatio || 1;
-  const pxPerMap = vp.scale * dpr;
-
-  function frame(now) {
-    const t = Math.min(1, (now - startTime) / duration);
-    const ease = t * (2 - t); // ease-out quadratic
-
-    // Restore frozen background (no clearRect + async re-render)
-    vCtx.putImageData(bgSnapshot, 0, 0);
-
-    // Draw unit at interpolated position
-    const curX = fromX + dx * ease;
-    const curY = fromY + dy * ease;
-
-    if (vp.wraps) {
-      const x1 = ((vp.x % vp.wrapW) + vp.wrapW) % vp.wrapW;
-      const relX = ((curX - x1) % vp.wrapW + vp.wrapW) % vp.wrapW;
-      vCtx.drawImage(unitSprite, relX * pxPerMap, (curY - vp.y) * pxPerMap,
-        unitSprite.width * pxPerMap, unitSprite.height * pxPerMap);
-    } else {
-      vCtx.drawImage(unitSprite, (curX - vp.x) * pxPerMap, (curY - vp.y) * pxPerMap,
-        unitSprite.width * pxPerMap, unitSprite.height * pxPerMap);
-    }
-
-    if (t < 1) {
-      requestAnimationFrame(frame);
-    } else {
-      slideAnimating = false;
-      applyVisibilityUpdate(deferredVisibility);
-      doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
-      if (onComplete) onComplete();
-    }
-  }
-
-  requestAnimationFrame(frame);
 }
 
 // ── Unit context menu ──
@@ -4787,7 +5364,7 @@ function actionToMenuItem(va, unitIdx) {
         label: `Move ${name}`,
         isDefault: true,
         action: () => {
-          pendingSlide = { unitIndex: unitIdx, oldGx: u.gx, oldGy: u.gy };
+          pendingMoveUnit = unitIdx;
           pendingAutoAdvanceFrom = unitIdx;
           transport.sendRaw({
             type: 'ACTION',

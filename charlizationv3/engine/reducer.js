@@ -294,7 +294,8 @@ function resolveGoodyHut(state, mapBase, unit, civSlot) {
 
     case 1: { // Mercenaries
       const unitType = getHutMercType(state);
-      state.units = [...state.units, makeUnit(unitType, civSlot, unit.gx, unit.gy)];
+      const mercMoves = (UNIT_MOVE_POINTS[unitType] || 1) * MOVEMENT_MULTIPLIER;
+      state.units = [...state.units, makeUnit(unitType, civSlot, unit.gx, unit.gy, mercMoves)];
       const mercIdx = state.units.length - 1;
       return { type: 'unit', unitType, unitName: UNIT_NAMES[unitType], mercenaryIndices: [mercIdx] };
     }
@@ -308,7 +309,8 @@ function resolveGoodyHut(state, mapBase, unit, civSlot) {
         }
         return { type: 'gold', amount };
       }
-      state.units = [...state.units, makeUnit(0, civSlot, unit.gx, unit.gy)];
+      const nomadMoves = (UNIT_MOVE_POINTS[0] || 1) * MOVEMENT_MULTIPLIER;
+      state.units = [...state.units, makeUnit(0, civSlot, unit.gx, unit.gy, nomadMoves)];
       const nomadIdx = state.units.length - 1;
       return { type: 'nomads', mercenaryIndices: [nomadIdx] };
     }
@@ -411,7 +413,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const turnNum_ = state.turn?.number || 0;
         const combatSeed = (unit.gx * 997 + unit.gy * 991 + dest.gx * 983 + dest.gy * 977 +
           unitIndex * 967 + bestDefIdx * 953 + turnNum_ * 941 + (state.version || 0) * 929);
-        const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, combatSeed, state.difficulty || 'chieftain');
+        const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, combatSeed, state.difficulty || 'chieftain', unit.movesLeft);
 
         const defOwner = defender.owner;
 
@@ -508,6 +510,26 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // ── Normal movement (no enemy) ──
         const prevGx = unit.gx, prevGy = unit.gy;
         const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
+        const domain = UNIT_DOMAIN[unit.type] ?? 0;
+
+        // Probabilistic movement check (from Civ2 binary FUN_0059062c lines 712-729):
+        // When a land unit has insufficient MP for terrain cost AND has already spent
+        // some MP this turn, movement succeeds probabilistically: P = movesLeft / cost.
+        // If check fails, all remaining MP are exhausted and unit does not move.
+        if (domain === 0 && cost > 1 && unit.movesLeft < cost) {
+          const totalMP = (UNIT_MOVE_POINTS[unit.type] || 1) * MOVEMENT_MULTIPLIER;
+          if (unit.movesLeft < totalMP) {
+            // Unit has already used some movement — probabilistic check
+            const roll = Math.floor(Math.random() * cost); // 0 to cost-1
+            if (unit.movesLeft <= roll) {
+              // Failed: exhaust all remaining MP, do not move
+              unit.movesLeft = 0;
+              state.units[unitIndex] = unit;
+              break;
+            }
+          }
+          // Else: fresh unit (full MP) or roll succeeded — proceed with move
+        }
 
         unit.gx = dest.gx;
         unit.gy = dest.gy;
@@ -1137,6 +1159,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
         const gtCost = moveCost(gtCur.type, mapBase, gtCur.gx, gtCur.gy, gtDest.gx, gtDest.gy);
         if (gtCost < 0) break;
+
+        // Probabilistic movement check for goto steps (same rule as single-step movement)
+        const gtDomain = UNIT_DOMAIN[gtCur.type] ?? 0;
+        if (gtDomain === 0 && gtCost > 1 && gtCur.movesLeft < gtCost) {
+          const gtTotalMP = (UNIT_MOVE_POINTS[gtCur.type] || 1) * MOVEMENT_MULTIPLIER;
+          if (gtCur.movesLeft < gtTotalMP) {
+            const gtRoll = Math.floor(Math.random() * gtCost);
+            if (gtCur.movesLeft <= gtRoll) {
+              gtCur = { ...gtCur, movesLeft: 0 };
+              state.units[gtUi] = gtCur;
+              break;
+            }
+          }
+        }
 
         const gtActualCost = Math.max(gtCost, 1);
         gtCur = { ...gtCur, gx: gtDest.gx, gy: gtDest.gy, x: gtDest.gx * 2 + (gtDest.gy % 2), y: gtDest.gy, movesLeft: Math.max(0, gtCur.movesLeft - gtActualCost) };
@@ -2329,7 +2365,7 @@ function processBarbarianAI(state, prev, mapBase) {
           chosenDest.gy * 977 + ui * 967 + bestDefIdx * 953 + (state.turn?.number || 0) * 941 +
           (state.version || 0) * 929);
         const result = resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls,
-          defHasFortress, defOnRiver, defCityBuildings, barbCombatSeed, difficulty);
+          defHasFortress, defOnRiver, defCityBuildings, barbCombatSeed, difficulty, attacker.movesLeft);
 
         if (result.attackerWins) {
           killUnit(state, bestDefIdx);

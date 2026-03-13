@@ -5,7 +5,7 @@
 // resolution with terrain/fortification/veteran modifiers.
 // ═══════════════════════════════════════════════════════════════════
 
-import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE } from './defs.js';
+import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER } from './defs.js';
 
 /**
  * Resolve combat between an attacker and defender.
@@ -23,7 +23,7 @@ import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER
  * @returns {{ attackerWins: boolean, atkHpLost: number, defHpLost: number,
  *             atkVeteranPromo: boolean, defVeteranPromo: boolean }}
  */
-export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, extraSeed, difficulty) {
+export function resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, extraSeed, difficulty, atkMovesLeft) {
   const atkBase = UNIT_ATK[attacker.type] || 1;
   const defBase = UNIT_DEF[defender.type] || 1;
 
@@ -35,6 +35,12 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // Effective attack: base × veteran bonus
   let effAtk = atkBase * 8; // ×8 for fixed-point
   if (attacker.veteran) effAtk += Math.floor(effAtk / 2); // +50% veteran
+
+  // Fractional MP penalty: if attacker has less than 1 full MP, attack is reduced proportionally
+  if (atkMovesLeft != null && atkMovesLeft < MOVEMENT_MULTIPLIER && atkMovesLeft > 0) {
+    effAtk = Math.floor(effAtk * atkMovesLeft / MOVEMENT_MULTIPLIER);
+    if (effAtk < 1) effAtk = 1;
+  }
 
   // Effective defense: base × terrain × veteran × fortification × city/walls/fortress
   const terrainMul = TERRAIN_DEFENSE[defTerrain] ?? 2; // ×50% each

@@ -596,23 +596,15 @@ wss.on("connection", (ws) => {
         const restartRoom = rooms.get(restartRoomId);
         if (!restartRoom) break;
 
-        // Parse map size: preset name or "WxH" custom dimensions
-        const sizePresets = {
-          small:  { width: 100, height: 50 },
-          normal: { width: 160, height: 80 },
-          large:  { width: 240, height: 120 },
-        };
-        let sz = sizePresets[msg.mapSize];
-        if (!sz) {
-          // Try parsing "WxH" (display dimensions → doubled-X internal: mw = W*2, mh = H)
-          const m = String(msg.mapSize).match(/^(\d+)\s*[xX×]\s*(\d+)$/);
-          if (m) {
-            const w = Math.max(10, Math.min(300, parseInt(m[1])));
-            const h = Math.max(10, Math.min(300, parseInt(m[2])));
-            sz = { width: w * 2, height: h };
-          } else {
-            sz = sizePresets.normal;
-          }
+        // Parse map size: "WxH" display dimensions → doubled-X internal
+        let sz;
+        const m = String(msg.mapSize).match(/^(\d+)\s*[xX×]\s*(\d+)$/);
+        if (m) {
+          const w = Math.max(10, Math.min(300, parseInt(m[1])));
+          const h = Math.max(10, Math.min(300, parseInt(m[2])));
+          sz = { width: w * 2, height: h };
+        } else {
+          sz = { width: 100, height: 80 }; // default: Medium (50×80)
         }
 
         // Re-build seat list from current seats
