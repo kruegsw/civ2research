@@ -126,7 +126,7 @@ export function calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
 /**
  * Get [food, shields, trade] for a single tile in a city's radius.
  */
-function getTileYields(gx, gy, isCenter, city, cityIndex, gameState, mapBase) {
+export function getTileYields(gx, gy, isCenter, city, cityIndex, gameState, mapBase) {
   const ter = mapBase.getTerrain(gx, gy);
   if (ter < 0 || ter > 10) return [0, 0, 0];
 

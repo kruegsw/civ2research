@@ -10,11 +10,11 @@
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
-import { calcFoodSurplus, foodToGrow, calcShieldProduction, getProductionCost, calcCityTrade } from './production.js';
+import { calcFoodSurplus, foodToGrow, calcShieldProduction, getProductionCost, calcCityTrade, getTileYields } from './production.js';
 import { calcHappiness, calcRushBuyCost } from './happiness.js';
 import { resolveCombat } from './combat.js';
 import { cityHasBuilding, hasWonderEffect } from './utils.js';
@@ -60,36 +60,45 @@ function completeWorkerOrder(order, gx, gy, terrain, mapBase) {
 }
 
 /**
- * Auto-assign one more worker to the best available tile.
- * Returns new workedTiles array (or same reference if no tile available).
+ * Score a tile using the authoritative yield calculation from production.js.
+ * Accounts for terrain, resources, improvements, government penalties, rivers, etc.
+ * Returns a weighted score: food * 3 + shields * 2 + trade * 1.
  */
-function tileScore(ter, imp) {
-  const base = TERRAIN_BASE[ter] || [0, 0, 0];
-  let food = base[0], shields = base[1], trade = base[2];
-  if (imp) {
-    if (imp.road) trade += 1;
-    if (imp.irrigation && IRRIGATION_BONUS[ter]) food += IRRIGATION_BONUS[ter];
-    if (imp.mining) shields += (MINING_BONUS[ter] || 0);
-  }
-  return food * 100 + shields * 10 + trade; // food >> shields >> trade
+function scoreTileYields(gx, gy, isCenter, city, cityIndex, gameState, mapBase) {
+  const [food, shields, trade] = getTileYields(gx, gy, isCenter, city, cityIndex, gameState, mapBase);
+  return food * 3 + shields * 2 + trade;
 }
 
-function autoAssignWorker(city, workedTiles, mapBase) {
+/**
+ * Resolve city radius tile index (0-19) to map coordinates.
+ * Returns { gx, gy } or null if off-map.
+ */
+function radiusTileCoords(cityGx, cityGy, i, mapBase) {
+  const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
+  const parC = cityGy & 1;
+  const parT = ((cityGy + ddy) % 2 + 2) % 2;
+  const tgx = cityGx + ((parC + ddx - parT) >> 1);
+  const tgy = cityGy + ddy;
+  const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+  if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) return null;
+  return { gx: wgx, gy: tgy };
+}
+
+/**
+ * Auto-assign one more worker to the best available tile.
+ * Uses full yield calculation (resources, improvements, government, rivers).
+ * Returns new workedTiles array (or same reference if no tile available).
+ */
+function autoAssignWorker(city, cityIndex, workedTiles, gameState, mapBase) {
   const worked = new Set(workedTiles);
-  const parC = city.gy & 1;
   let bestIdx = -1, bestScore = -1;
   for (let i = 0; i < 20; i++) {
     if (worked.has(i)) continue;
-    const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
-    const parT = ((city.gy + ddy) % 2 + 2) % 2;
-    const tgx = city.gx + ((parC + ddx - parT) >> 1);
-    const tgy = city.gy + ddy;
-    const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
-    if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
-    const ter = mapBase.getTerrain(wgx, tgy);
+    const pos = radiusTileCoords(city.gx, city.gy, i, mapBase);
+    if (!pos) continue;
+    const ter = mapBase.getTerrain(pos.gx, pos.gy);
     if (ter < 0 || ter > 10) continue;
-    const imp = mapBase.getImprovements(wgx, tgy);
-    const score = tileScore(ter, imp);
+    const score = scoreTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
     if (score > bestScore) { bestScore = score; bestIdx = i; }
   }
   if (bestIdx < 0) return workedTiles;
@@ -99,23 +108,16 @@ function autoAssignWorker(city, workedTiles, mapBase) {
 /**
  * Remove the worst worker (lowest yield tile). Returns new workedTiles array.
  */
-function removeWorstWorker(city, workedTiles, mapBase) {
+function removeWorstWorker(city, cityIndex, workedTiles, gameState, mapBase) {
   if (workedTiles.length === 0) return workedTiles;
-  const parC = city.gy & 1;
   let worstIdx = 0, worstScore = Infinity;
   for (let w = 0; w < workedTiles.length; w++) {
     const i = workedTiles[w];
-    const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
-    const parT = ((city.gy + ddy) % 2 + 2) % 2;
-    const tgx = city.gx + ((parC + ddx - parT) >> 1);
-    const tgy = city.gy + ddy;
-    const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
-    if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) {
-      worstIdx = w; break; // off-map tile is definitely worst
-    }
-    const ter = mapBase.getTerrain(wgx, tgy);
-    const imp = mapBase.getImprovements(wgx, tgy);
-    const score = tileScore(ter, imp);
+    const pos = radiusTileCoords(city.gx, city.gy, i, mapBase);
+    if (!pos) { worstIdx = w; break; } // off-map tile is definitely worst
+    const ter = mapBase.getTerrain(pos.gx, pos.gy);
+    if (ter < 0 || ter > 10) { worstIdx = w; break; }
+    const score = scoreTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
     if (score < worstScore) { worstScore = score; worstIdx = w; }
   }
   const result = [...workedTiles];
@@ -137,24 +139,20 @@ function getCityName(owner, cities, civs) {
 }
 
 /**
- * Assign initial workers for a new city. Evaluates all 21 radius tiles
- * and picks the best N tiles (by food, then shields) for workers.
+ * Assign initial workers for a new city. Evaluates all 20 radius tiles
+ * (not 20=center, always worked) and picks the best N tiles.
+ * Uses full yield calculation (resources, improvements, government, rivers).
  * Returns workedTiles: number[] (tile indices 0-19).
  */
-function assignInitialWorkers(gx, gy, size, mapBase) {
-  const parC = gy & 1;
+function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, mapBase) {
   const scores = [];
-  for (let i = 0; i < 20; i++) { // indices 0-19 (not 20=center, always worked)
-    const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
-    const parT = ((gy + ddy) % 2 + 2) % 2;
-    const tgx = gx + ((parC + ddx - parT) >> 1);
-    const tgy = gy + ddy;
-    const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
-    if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
-    const ter = mapBase.getTerrain(wgx, tgy);
-    if (ter < 0 || ter > 10) continue; // skip ocean
-    const imp = mapBase.getImprovements(wgx, tgy);
-    scores.push({ i, score: tileScore(ter, imp) });
+  for (let i = 0; i < 20; i++) {
+    const pos = radiusTileCoords(gx, gy, i, mapBase);
+    if (!pos) continue;
+    const ter = mapBase.getTerrain(pos.gx, pos.gy);
+    if (ter < 0 || ter > 10) continue;
+    const score = scoreTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
+    scores.push({ i, score });
   }
   scores.sort((a, b) => b.score - a.score);
 
@@ -297,7 +295,8 @@ function resolveGoodyHut(state, mapBase, unit, civSlot) {
     case 1: { // Mercenaries
       const unitType = getHutMercType(state);
       state.units = [...state.units, makeUnit(unitType, civSlot, unit.gx, unit.gy)];
-      return { type: 'unit', unitType, unitName: UNIT_NAMES[unitType] };
+      const mercIdx = state.units.length - 1;
+      return { type: 'unit', unitType, unitName: UNIT_NAMES[unitType], mercenaryIndices: [mercIdx] };
     }
 
     case 0: { // Tribe → nomads (simplified: skip advanced tribe/city founding)
@@ -310,7 +309,8 @@ function resolveGoodyHut(state, mapBase, unit, civSlot) {
         return { type: 'gold', amount };
       }
       state.units = [...state.units, makeUnit(0, civSlot, unit.gx, unit.gy)];
-      return { type: 'nomads' };
+      const nomadIdx = state.units.length - 1;
+      return { type: 'nomads', mercenaryIndices: [nomadIdx] };
     }
 
     case 3: { // Barbarians
@@ -605,9 +605,6 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { unitIndex, name: requestedName } = action;
       const unit = state.units[unitIndex];
 
-      // Compute initial worker placement for size-1 city
-      const workedTiles = assignInitialWorkers(unit.gx, unit.gy, 1, mapBase);
-
       // Create city at settler's position
       const isFirstCity = prev.cities.filter(c => c.owner === unit.owner).length === 0;
       const buildings = new Set();
@@ -622,13 +619,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
         cx: unit.gx * 2 + (unit.gy % 2), cy: unit.gy,
         hasWalls: false, hasPalace: isFirstCity,
         civilDisorder: false, weLoveKingDay: false, isOccupied: false,
-        workedTiles,
+        workedTiles: [],
         specialists: [],
         buildings,
         foodInBox: 0, shieldsInBox: 0,
         itemInProduction: { type: 'unit', id: 2 }, // default: Warriors
       };
       state.cities = [...prev.cities, newCity];
+      const newCityIndex = state.cities.length - 1;
+
+      // Compute initial worker placement using full yield calculation
+      newCity.workedTiles = assignInitialWorkers(
+        unit.gx, unit.gy, 1, newCity, newCityIndex, state, mapBase
+      );
 
       // Remove settler (mark as dead)
       state.units[unitIndex] = { ...unit, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
@@ -646,7 +649,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, newCity.gx, newCity.gy, mapBase.wraps, 2);
 
       // Notify client
-      state.cityFounded = { name: newCity.name, cityIndex: state.cities.length - 1, civSlot };
+      state.cityFounded = { name: newCity.name, cityIndex: newCityIndex, civSlot };
 
       break;
     }
@@ -1425,7 +1428,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
             newFood = growthThreshold - 1;
             growthBlocked = 'needsSewer';
           } else {
-            newWorked = autoAssignWorker(city, newWorked, mapBase);
+            newWorked = autoAssignWorker(city, ci, newWorked, state, mapBase);
           }
           // Notify: city growth or blocked
           if (!state.turnEvents) state.turnEvents = [];
@@ -1442,7 +1445,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
             if (newSpecs.length > 0) {
               newSpecs = newSpecs.slice(0, -1);
             } else if (newWorked.length > 0) {
-              newWorked = removeWorstWorker(city, newWorked, mapBase);
+              newWorked = removeWorstWorker(city, ci, newWorked, state, mapBase);
             }
             // Notify: famine
             if (!state.turnEvents) state.turnEvents = [];
@@ -1483,7 +1486,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
                 newSize--;
                 if (newWorked.length > newSize) {
                   newWorked = removeWorstWorker(
-                    { ...city, size: newSize }, newWorked, mapBase);
+                    { ...city, size: newSize }, ci, newWorked, state, mapBase);
                 }
               }
               state.units = [...state.units, newUnit];

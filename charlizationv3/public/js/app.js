@@ -39,6 +39,7 @@ let cvBackgrounds = null; // Map of resourceId → Image
 let currentMapData = null;
 let cdSprites = null;
 let mapSprites = null;
+let _researchIconCache = null; // { icons: canvas[], stoneTile: dataURL }
 let cachedFowCiv = 0;
 let cachedLosData = null;
 
@@ -2708,10 +2709,32 @@ function showTributeDemandInput(targetCiv, targetName) {
 }
 
 // ── Research picker ──
-function showResearchPicker(discovered) {
-  const existing = document.getElementById('research-picker');
-  if (existing) existing.remove();
 
+// Lazily extract advance category icons and stone tile from ICONS.GIF
+async function _ensureResearchIcons() {
+  if (_researchIconCache) return _researchIconCache;
+  if (!files.icons) return null;
+  const img = await Civ2Renderer.loadImage(files.icons);
+  const ctx = Civ2Renderer.imgToCtx(img);
+  const CK = [[255, 0, 255, 15], [255, 159, 163, 15]];
+
+  // Extract 20 advance category icons (36x20 each, 5 rows x 4 cols at (343,211))
+  const icons = [];
+  for (let idx = 0; idx < 20; idx++) {
+    const sx = 343 + 37 * (idx % 4);
+    const sy = 211 + 21 * Math.floor(idx / 4);
+    icons.push(Civ2Renderer.extractSprite(ctx, sx, sy, 36, 20, CK, false));
+  }
+
+  // Extract stone tile (64x32 at (199,322)) and convert to data URL for CSS tiling
+  const stoneTile = Civ2Renderer.extractSprite(ctx, 199, 322, 64, 32, [], false);
+  const stoneDataUrl = stoneTile.toDataURL();
+
+  _researchIconCache = { icons, stoneDataUrl };
+  return _researchIconCache;
+}
+
+function showResearchPicker(discovered) {
   if (!mpGameState || mpCivSlot == null) return;
   const available = getAvailableResearch(mpGameState, mpCivSlot);
   if (available.length === 0) {
@@ -2719,90 +2742,100 @@ function showResearchPicker(discovered) {
     return;
   }
 
-  const overlay = document.createElement('div');
-  overlay.id = 'research-picker';
-  overlay.className = 'civ2-dialog-overlay';
-
-  const frame = document.createElement('div');
-  frame.className = 'civ2-dialog-frame';
-
-  // Title bar
-  const titlebar = document.createElement('div');
-  titlebar.className = 'civ2-dialog-titlebar';
-  const titleSpan = document.createElement('span');
-  titleSpan.className = 'civ2-dialog-title';
-  titleSpan.textContent = discovered != null
-    ? `Discovered: ${ADVANCE_NAMES[discovered]}!`
-    : 'Choose Research';
-  titlebar.appendChild(titleSpan);
-  frame.appendChild(titlebar);
-
-  // Panel with radio options
-  const panel = document.createElement('div');
-  panel.className = 'civ2-dialog-panel';
-  panel.style.maxHeight = '60vh';
-  panel.style.overflowY = 'auto';
-
-  if (discovered != null) {
-    const sub = document.createElement('div');
-    sub.textContent = 'What shall we research next?';
-    sub.style.cssText = 'text-align:center;margin-bottom:6px;font-style:italic;font-family:"Times New Roman",Georgia,serif;font-size:16px;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-    panel.appendChild(sub);
-  }
-
-  const items = document.createElement('div');
-  items.className = 'civ2-dialog-items';
-
   available.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
   let selected = available[0];
 
-  for (const advId of available) {
-    const row = document.createElement('label');
-    row.className = 'civ2-dialog-radio';
+  const title = 'What discovery shall our wise men pursue?';
 
-    const radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.name = 'research-choice';
-    radio.value = advId;
-    if (advId === selected) radio.checked = true;
-    radio.addEventListener('change', () => { if (radio.checked) selected = advId; });
+  createCiv2Dialog('research-picker', title, panel => {
+    panel.style.maxHeight = '60vh';
+    panel.style.overflowY = 'auto';
+    panel.style.minWidth = '340px';
 
-    const span = document.createElement('span');
-    span.textContent = ADVANCE_NAMES[advId];
+    // Show discovery message if a tech was just discovered
+    if (discovered != null) {
+      const disc = document.createElement('div');
+      disc.style.cssText = 'text-align:center;padding:6px 12px 8px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);border-bottom:1px solid rgba(0,0,0,0.15);margin-bottom:6px';
+      disc.textContent = `You have discovered ${ADVANCE_NAMES[discovered]}!`;
+      panel.appendChild(disc);
+    }
 
-    row.appendChild(radio);
-    row.appendChild(span);
-    items.appendChild(row);
-  }
+    // Container for tech rows
+    const list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:2px';
 
-  panel.appendChild(items);
-  frame.appendChild(panel);
+    // Apply stone background asynchronously if icons available
+    _ensureResearchIcons().then(cache => {
+      if (!cache) return;
+      panel.style.backgroundImage = `url(${cache.stoneDataUrl})`;
+      panel.style.backgroundRepeat = 'repeat';
 
-  // Single OK button
-  const btnRow = document.createElement('div');
-  btnRow.className = 'civ2-dialog-btn-row';
-  const okBtn = document.createElement('button');
-  okBtn.textContent = 'OK';
-  okBtn.className = 'civ2-btn';
+      // Insert icon canvases into rows
+      const rows = list.querySelectorAll('.rp-row');
+      rows.forEach((row, i) => {
+        const advId = parseInt(row.dataset.advId);
+        const iconIdx = advId % 20;
+        const iconCanvas = cache.icons[iconIdx];
+        const img = document.createElement('canvas');
+        img.width = 36; img.height = 20;
+        img.getContext('2d').drawImage(iconCanvas, 0, 0);
+        img.style.cssText = 'flex-shrink:0;image-rendering:pixelated';
+        // Insert icon before the text span
+        const placeholder = row.querySelector('.rp-icon-slot');
+        if (placeholder) placeholder.replaceWith(img);
+      });
+    });
 
-  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
+    available.forEach((advId, i) => {
+      const row = document.createElement('div');
+      row.className = 'rp-row';
+      row.dataset.advId = advId;
+      const isOdd = i % 2 === 1;
+      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;border-radius:2px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
 
-  okBtn.addEventListener('click', () => {
-    dismiss();
-    transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: selected } });
-  });
+      // Placeholder for icon (replaced once icons load)
+      const iconSlot = document.createElement('div');
+      iconSlot.className = 'rp-icon-slot';
+      iconSlot.style.cssText = 'width:36px;height:20px;flex-shrink:0';
+      row.appendChild(iconSlot);
 
-  btnRow.appendChild(okBtn);
-  frame.appendChild(btnRow);
-  overlay.appendChild(frame);
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = ADVANCE_NAMES[advId];
+      row.appendChild(nameSpan);
 
-  const keyHandler = e => {
-    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); okBtn.click(); }
-    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); }
-  };
-  window.addEventListener('keydown', keyHandler, true);
+      // Highlight selected
+      if (advId === selected) row.style.background = 'rgba(0,0,80,0.25)';
 
-  document.body.appendChild(overlay);
+      row.addEventListener('click', () => {
+        selected = advId;
+        // Update highlights
+        list.querySelectorAll('.rp-row').forEach(r => {
+          r.style.background = parseInt(r.dataset.advId) === selected
+            ? 'rgba(0,0,80,0.25)' : '';
+        });
+      });
+
+      row.addEventListener('mouseenter', () => {
+        if (parseInt(row.dataset.advId) !== selected) {
+          row.style.background = 'rgba(255,255,255,0.12)';
+        }
+      });
+      row.addEventListener('mouseleave', () => {
+        row.style.background = parseInt(row.dataset.advId) === selected
+          ? 'rgba(0,0,80,0.25)' : '';
+      });
+
+      list.appendChild(row);
+    });
+
+    panel.appendChild(list);
+  }, [
+    { label: 'Help' },
+    { label: 'Goal' },
+    { label: 'OK', action: () => {
+      transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: selected } });
+    }},
+  ]);
 }
 
 // City dialog pan/zoom events
@@ -3196,6 +3229,7 @@ let blinkUnitOverlay = null; // { canvas, x, y } selected unit + terrain composi
 let pendingSlide = null;   // { unitIndex, oldGx, oldGy } — set before sending MOVE_UNIT
 let slideAnimating = false; // true during slide animation
 let pendingAutoAdvanceFrom = null; // unitIndex that triggered the action — consumed in STATE handler
+let mercenaryQueue = []; // unit indices from goody hut mercenaries — selected before findNextMovableUnit
 
 function saveActiveGame() {
   if (!wsRoomId || !wsSessionId) return;
@@ -3409,6 +3443,12 @@ const transport = createTransport({
         applyImprovementsUpdate(msg.tileImprovements);
         applyTerrainUpdate(msg.tileTerrains);
         applyGoodyHutUpdate(msg.tileGoodyHuts);
+
+        // Queue mercenary/nomad units from goody huts so they're selected next
+        const hutRes = msg.state.goodyHutResult;
+        if (hutRes && hutRes.civSlot === mpCivSlot && hutRes.mercenaryIndices) {
+          mercenaryQueue.push(...hutRes.mercenaryIndices);
+        }
 
         // Process notifications (combat, goody hut, city founded, turn events, etc.)
         const statePayload = msg.state;
@@ -3945,10 +3985,11 @@ async function doRenderFromState(opts = {}) {
           && movedUnit.gx >= 0 && !BUSY_ORDERS.has(movedUnit.orders)) {
         mpSelectedUnit = advFrom;
       } else {
-        mpSelectedUnit = findNextMovableUnit(advFrom);
+        // Check mercenary queue before general search
+        mpSelectedUnit = shiftMercenaryQueue() ?? findNextMovableUnit(advFrom);
       }
     } else {
-      mpSelectedUnit = findNextMovableUnit(-1);
+      mpSelectedUnit = shiftMercenaryQueue() ?? findNextMovableUnit(-1);
     }
   } else {
     mpSelectedUnit = null;
@@ -4146,7 +4187,7 @@ document.getElementById('end-turn-btn').addEventListener('click', () => {
 
 // Restart button — regenerate map with selected size
 document.getElementById('restart-btn').addEventListener('click', () => {
-  const mapSize = document.getElementById('map-size-select').value;
+  const mapSize = document.getElementById('map-size-input').value.trim();
   transport.sendRaw({ type: 'RESTART_GAME', mapSize });
 });
 
@@ -4165,10 +4206,10 @@ window.addEventListener('keydown', e => {
   // Don't process game keys when unit menu is open (menu has its own handlers)
   if (unitMenu.classList.contains('visible')) return;
 
-  // Tab: cycle to next movable unit
+  // Tab: cycle to next movable unit (mercenary queue takes priority)
   if (e.key === 'Tab') {
     e.preventDefault();
-    const next = findNextMovableUnit(mpSelectedUnit ?? -1);
+    const next = shiftMercenaryQueue() ?? findNextMovableUnit(mpSelectedUnit ?? -1);
     if (next != null) {
       selectUnit(next);
       centerOnUnit(mpGameState.units[next]);
@@ -4383,7 +4424,6 @@ window.addEventListener('keydown', e => {
   }
   pendingAutoAdvanceFrom = mpSelectedUnit;
 
-  sfx('MOVPIECE');
   transport.sendRaw({
     type: 'ACTION',
     action: { type: 'MOVE_UNIT', unitIndex: mpSelectedUnit, dir },
@@ -4402,6 +4442,17 @@ const BUSY_ORDERS = new Set([
   'fortifying', 'fortified', 'sentry', 'sleep',
   'road', 'railroad', 'irrigation', 'mine', 'fortress', 'airbase', 'pollution',
 ]);
+
+/** Shift the first valid (alive + has moves) unit from the mercenary queue, or return null. */
+function shiftMercenaryQueue() {
+  while (mercenaryQueue.length > 0) {
+    const idx = mercenaryQueue.shift();
+    if (!mpGameState) return null;
+    const u = mpGameState.units[idx];
+    if (u && u.owner === mpCivSlot && u.movesLeft > 0 && u.gx >= 0 && !BUSY_ORDERS.has(u.orders)) return idx;
+  }
+  return null;
+}
 
 function findNextMovableUnit(afterIndex) {
   if (!mpGameState) return null;
@@ -4617,6 +4668,7 @@ function animateUnitSlide(unitIndex, oldGx, oldGy, newGx, newGy, deferredVisibil
   // Stop blink during slide
   stopBlink();
   slideAnimating = true;
+  sfx('MOVPIECE');
 
   // Snapshot current viewport as static background for the animation
   // (unit is already excluded from all canvases via selectedUnitIndex)
@@ -4737,7 +4789,6 @@ function actionToMenuItem(va, unitIdx) {
         action: () => {
           pendingSlide = { unitIndex: unitIdx, oldGx: u.gx, oldGy: u.gy };
           pendingAutoAdvanceFrom = unitIdx;
-          sfx('MOVPIECE');
           transport.sendRaw({
             type: 'ACTION',
             action: { type: MOVE_UNIT, unitIndex: unitIdx, dir: va.dir },
