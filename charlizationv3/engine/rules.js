@@ -9,9 +9,9 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE } from './defs.js';
-import { resolveDirection, getDirection } from './movement.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN } from './actions.js';
+import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM } from './defs.js';
+import { resolveDirection, getDirection, isZOCBlocked } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
 import { getGovernment } from './utils.js';
@@ -86,6 +86,11 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (hasEnemy && domain === 0 && terrain === 10) return 'Cannot attack units at sea';
 
       // Can't move own units onto enemy-occupied tile without attacking (friendly stack check not needed — we allow stacking own units)
+
+      // Zone of Control check
+      if (!hasEnemy && isZOCBlocked(unit.type, civSlot, unit.gx, unit.gy, dest.gx, dest.gy, mapBase, gameState.units)) {
+        return 'Movement blocked by Zone of Control';
+      }
 
       return null;
     }
@@ -526,6 +531,64 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
       const treaty = getTreaty(gameState, civSlot, targetCiv);
       if (treaty === 'war') return 'Must be at peace to share maps';
+      return null;
+    }
+
+    case BOMBARD: {
+      const { unitIndex, targetGx, targetGy } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if ((UNIT_ATK[unit.type] || 0) === 0) return 'Unit cannot attack';
+      // Only air units (domain 2) and some naval can bombard
+      const bDomain = UNIT_DOMAIN[unit.type] ?? 0;
+      if (bDomain !== 2 && bDomain !== 1) return 'Only air and naval units can bombard';
+      // Must have moves left
+      if (unit.movesLeft <= 0) return 'No moves remaining';
+      // Target must have enemy units or city
+      const bHasTarget = gameState.units.some(u => u.gx === targetGx && u.gy === targetGy && u.owner !== civSlot && u.gx >= 0)
+        || gameState.cities.some(c => c.gx === targetGx && c.gy === targetGy && c.owner !== civSlot && c.size > 0);
+      if (!bHasTarget) return 'No valid target at location';
+      return null;
+    }
+
+    case REBASE: {
+      const { unitIndex, targetGx, targetGy } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      const rbDomain = UNIT_DOMAIN[unit.type] ?? 0;
+      if (rbDomain !== 2) return 'Only air units can rebase';
+      if (unit.movesLeft <= 0) return 'No moves remaining';
+      // Target must be a friendly city or carrier
+      const rbHasCity = gameState.cities.some(c => c.gx === targetGx && c.gy === targetGy && c.owner === civSlot && c.size > 0);
+      const rbHasCarrier = gameState.units.some(u => u.gx === targetGx && u.gy === targetGy && u.owner === civSlot && u.type === 42 && u.gx >= 0);
+      // Or airbase
+      const rbTileIdx = targetGy * mapBase.mw + targetGx;
+      const rbTile = mapBase.tileData?.[rbTileIdx];
+      const rbHasAirbase = rbTile && rbTile.improvements && rbTile.improvements.airbase;
+      if (!rbHasCity && !rbHasCarrier && !rbHasAirbase) return 'Must rebase to friendly city, carrier, or airbase';
+      return null;
+    }
+
+    case GOTO: {
+      const { unitIndex, targetGx, targetGy } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if (unit.movesLeft <= 0) return 'No moves remaining';
+      if (targetGx < 0 || targetGx >= mapBase.mw || targetGy < 0 || targetGy >= mapBase.mh) return 'Target out of bounds';
+      return null;
+    }
+
+    case TRANSFORM_TERRAIN: {
+      const { unitIndex } = action;
+      const unit = gameState.units[unitIndex];
+      if (!unit || unit.gx < 0) return 'Unit does not exist';
+      if (unit.owner !== civSlot) return 'Not your unit';
+      if (unit.type !== 1) return 'Only Engineers can transform terrain';
+      const tfTerrain = mapBase.getTerrain(unit.gx, unit.gy);
+      if (TERRAIN_TRANSFORM[tfTerrain] < 0) return 'Cannot transform this terrain';
       return null;
     }
 

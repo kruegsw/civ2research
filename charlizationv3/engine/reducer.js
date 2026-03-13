@@ -9,8 +9,8 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES } from './defs.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN } from './actions.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_TRANSFORM, TRANSFORM_TURNS } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { updateVisibility } from './visibility.js';
@@ -1000,6 +1000,108 @@ export function applyAction(prev, mapBase, action, civSlot) {
       break;
     }
 
+    case BOMBARD: {
+      const { unitIndex: bmbUi, targetGx: bmbTgx, targetGy: bmbTgy } = action;
+      const bmbUnit = state.units[bmbUi];
+      // Find best defender at target
+      const bmbDefenders = state.units.filter(u => u.gx === bmbTgx && u.gy === bmbTgy && u.owner !== civSlot && u.gx >= 0);
+      if (bmbDefenders.length > 0) {
+        // Bombardment does 2 HP damage to strongest defender (no risk to attacker)
+        const bmbBestDef = bmbDefenders.reduce((a, b) => (UNIT_DEF[b.type] || 0) > (UNIT_DEF[a.type] || 0) ? b : a);
+        const bmbDi = state.units.indexOf(bmbBestDef);
+        if (bmbDi >= 0) {
+          state.units[bmbDi] = { ...bmbBestDef };
+          state.units[bmbDi].hp = Math.max(0, (bmbBestDef.hp ?? 10) - 2);
+          if (state.units[bmbDi].hp <= 0) {
+            state.units[bmbDi].gx = -1; // kill
+          }
+        }
+      }
+      // Use all movement (air units expend their turn)
+      state.units[bmbUi] = { ...bmbUnit, movesLeft: 0 };
+      // Missiles: destroyed after attack
+      if (UNIT_DESTROYED_AFTER_ATTACK.has(bmbUnit.type)) {
+        state.units[bmbUi].gx = -1;
+        state.units[bmbUi].gy = -1;
+        state.units[bmbUi].x = -1;
+        state.units[bmbUi].y = -1;
+      }
+      state.combatResult = { type: 'bombard', attacker: bmbUnit.type, targetGx: bmbTgx, targetGy: bmbTgy };
+      break;
+    }
+
+    case REBASE: {
+      const { unitIndex: rbUi, targetGx: rbTgx, targetGy: rbTgy } = action;
+      const rbUnit = state.units[rbUi];
+      const rbNewUnit = { ...rbUnit, gx: rbTgx, gy: rbTgy, x: rbTgx * 2 + (rbTgy % 2), y: rbTgy, movesLeft: 0 };
+      // Refuel at destination
+      const rbMaxFuel = UNIT_FUEL[rbUnit.type];
+      if (rbMaxFuel > 0) {
+        rbNewUnit.fuelRemaining = rbMaxFuel;
+      }
+      state.units[rbUi] = rbNewUnit;
+      break;
+    }
+
+    case GOTO: {
+      const { unitIndex: gtUi, targetGx: gtTgx, targetGy: gtTgy, path: gtPath } = action;
+      const gtUnit = state.units[gtUi];
+      if (!gtPath || gtPath.length === 0) break;
+
+      // Set goto destination on unit
+      state.units[gtUi] = { ...gtUnit, goToX: gtTgx, goToY: gtTgy, orders: 'goto' };
+
+      // Execute as many steps as possible this turn
+      let gtCur = state.units[gtUi];
+      for (const gtDir of gtPath) {
+        if (gtCur.movesLeft <= 0) break;
+        if (gtCur.gx < 0) break; // dead
+
+        const gtDest = resolveDirection(gtCur.gx, gtCur.gy, gtDir, mapBase);
+        if (!gtDest) break;
+
+        // Check for enemies at destination (stop before combat)
+        const gtHasEnemy = state.units.some(u => u.gx === gtDest.gx && u.gy === gtDest.gy && u.owner !== civSlot && u.gx >= 0 && (UNIT_ATK[u.type] || 0) > 0);
+        if (gtHasEnemy) break;
+
+        const gtCost = moveCost(gtCur.type, mapBase, gtCur.gx, gtCur.gy, gtDest.gx, gtDest.gy);
+        if (gtCost < 0) break;
+
+        const gtActualCost = Math.max(gtCost, 1);
+        gtCur = { ...gtCur, gx: gtDest.gx, gy: gtDest.gy, x: gtDest.gx * 2 + (gtDest.gy % 2), y: gtDest.gy, movesLeft: Math.max(0, gtCur.movesLeft - gtActualCost) };
+        state.units[gtUi] = gtCur;
+
+        // Update visibility
+        if (mapBase.tileData) {
+          updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, gtDest.gx, gtDest.gy, mapBase.wraps);
+        }
+
+        // Check goody hut
+        const gtTileIdx = gtDest.gy * mapBase.mw + gtDest.gx;
+        const gtTile = mapBase.tileData?.[gtTileIdx];
+        if (gtTile && gtTile.goodyHut && civSlot > 0) {
+          gtTile.goodyHut = false;
+          const hutResult = resolveGoodyHut(state, mapBase, gtCur, civSlot);
+          if (hutResult) state.goodyHutResult = { ...hutResult, civSlot };
+          break; // stop on goody hut
+        }
+
+        // Reached destination?
+        if (gtDest.gx === gtTgx && gtDest.gy === gtTgy) {
+          state.units[gtUi] = { ...state.units[gtUi], orders: 'none', goToX: undefined, goToY: undefined };
+          break;
+        }
+      }
+      break;
+    }
+
+    case TRANSFORM_TERRAIN: {
+      const { unitIndex: tfUi } = action;
+      const tfUnit = state.units[tfUi];
+      state.units[tfUi] = { ...tfUnit, orders: 'transform', turnsWorked: 0, movesLeft: 0 };
+      break;
+    }
+
     case END_TURN: {
       const endingCiv = state.turn.activeCiv;
 
@@ -1398,6 +1500,104 @@ export function applyAction(prev, mapBase, action, civSlot) {
             state.units[ui] = { ...u, orders: 'none', workTurns: 0 };
           } else {
             state.units[ui] = { ...u, workTurns: newWorkTurns };
+          }
+        }
+
+        // Transform terrain order (Engineers only)
+        if (u.orders === 'transform' && u.type === 1) {
+          const tfTerrain = mapBase.getTerrain(u.gx, u.gy);
+          const tfTarget = TERRAIN_TRANSFORM[tfTerrain];
+          const tfTurnsNeeded = Math.max(1, Math.ceil((TRANSFORM_TURNS[tfTerrain] || 10) / 2)); // Engineers work at 2x speed
+          const tfWorked = (u.turnsWorked || 0) + 1;
+          if (tfWorked >= tfTurnsNeeded && tfTarget >= 0) {
+            // Transform complete
+            const tfTileIdx = u.gy * mapBase.mw + u.gx;
+            if (mapBase.tileData[tfTileIdx]) {
+              mapBase.tileData[tfTileIdx].terrain = tfTarget;
+              // Clear improvements that don't apply to new terrain
+              mapBase.tileData[tfTileIdx].improvements = {
+                ...mapBase.tileData[tfTileIdx].improvements,
+                irrigation: false,
+                mining: false,
+                farmland: false,
+              };
+            }
+            state.units[ui] = { ...u, orders: 'none', turnsWorked: 0 };
+          } else {
+            state.units[ui] = { ...u, turnsWorked: tfWorked, movesLeft: 0 };
+          }
+        }
+
+        // GOTO continuation: units with goto orders continue moving next turn
+        if (u.orders === 'goto' && u.goToX != null && u.goToY != null && u.movesLeft > 0) {
+          const gtTargetGx = u.goToX;
+          const gtTargetGy = u.goToY;
+          // Already at destination?
+          if (u.gx === gtTargetGx && u.gy === gtTargetGy) {
+            state.units[ui] = { ...u, orders: 'none', goToX: undefined, goToY: undefined };
+          } else {
+            // Execute steps toward target using resolveDirection
+            // Simple greedy approach: pick best adjacent direction toward target
+            let gtCurUnit = { ...u };
+            let gtMoved = false;
+            while (gtCurUnit.movesLeft > 0 && gtCurUnit.gx >= 0) {
+              // Find best direction toward target
+              let gtBestDir = null;
+              let gtBestDist = Infinity;
+              const gtDirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+              for (const gtD of gtDirs) {
+                const gtDest = resolveDirection(gtCurUnit.gx, gtCurUnit.gy, gtD, mapBase);
+                if (!gtDest) continue;
+                const gtTerrain = mapBase.getTerrain(gtDest.gx, gtDest.gy);
+                const gtDomain = UNIT_DOMAIN[gtCurUnit.type] ?? 0;
+                if (gtDomain === 0 && gtTerrain === 10) continue;
+                if (gtDomain === 1 && gtTerrain !== 10) continue;
+                // Check for enemies
+                const gtHasEnemy = state.units.some(eu => eu.gx === gtDest.gx && eu.gy === gtDest.gy && eu.owner !== activeCiv && eu.gx >= 0 && (UNIT_ATK[eu.type] || 0) > 0);
+                if (gtHasEnemy) continue;
+                let gtDx = Math.abs(gtDest.gx - gtTargetGx);
+                if (mapBase.wraps) gtDx = Math.min(gtDx, mapBase.mw - gtDx);
+                const gtDy = Math.abs(gtDest.gy - gtTargetGy);
+                const gtDist = gtDx + gtDy;
+                if (gtDist < gtBestDist) { gtBestDist = gtDist; gtBestDir = gtD; }
+              }
+              if (!gtBestDir) break;
+              const gtNextDest = resolveDirection(gtCurUnit.gx, gtCurUnit.gy, gtBestDir, mapBase);
+              if (!gtNextDest) break;
+              const gtMoveCost = moveCost(gtCurUnit.type, mapBase, gtCurUnit.gx, gtCurUnit.gy, gtNextDest.gx, gtNextDest.gy);
+              if (gtMoveCost < 0) break;
+              const gtActual = Math.max(gtMoveCost, 1);
+              gtCurUnit = {
+                ...gtCurUnit,
+                gx: gtNextDest.gx, gy: gtNextDest.gy,
+                x: gtNextDest.gx * 2 + (gtNextDest.gy % 2), y: gtNextDest.gy,
+                movesLeft: Math.max(0, gtCurUnit.movesLeft - gtActual),
+              };
+              gtMoved = true;
+              // Update visibility
+              if (mapBase.tileData) {
+                updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, activeCiv, gtNextDest.gx, gtNextDest.gy, mapBase.wraps);
+              }
+              // Check goody hut
+              const gtHutIdx = gtNextDest.gy * mapBase.mw + gtNextDest.gx;
+              const gtHutTile = mapBase.tileData?.[gtHutIdx];
+              if (gtHutTile && gtHutTile.goodyHut && activeCiv > 0) {
+                gtHutTile.goodyHut = false;
+                const gtHutResult = resolveGoodyHut(state, mapBase, gtCurUnit, activeCiv);
+                if (gtHutResult) state.goodyHutResult = { ...gtHutResult, civSlot: activeCiv };
+                break;
+              }
+              // Reached destination?
+              if (gtNextDest.gx === gtTargetGx && gtNextDest.gy === gtTargetGy) {
+                gtCurUnit.orders = 'none';
+                gtCurUnit.goToX = undefined;
+                gtCurUnit.goToY = undefined;
+                break;
+              }
+            }
+            if (gtMoved) {
+              state.units[ui] = gtCurUnit;
+            }
           }
         }
       }

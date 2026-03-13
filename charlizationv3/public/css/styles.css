@@ -829,6 +829,118 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 .tech-tree-name { flex: 1; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   Chat / Event Log Panel
+   ═══════════════════════════════════════════════════════════════════ */
+#chatPanel {
+  position: fixed; bottom: 12px; right: 12px; z-index: 15;
+  display: flex; flex-direction: column; align-items: flex-end;
+  pointer-events: none;
+}
+#chatPanel > * { pointer-events: auto; }
+#chatPanel.hidden { display: none; }
+
+.chatToggleBtn {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,0.75); color: #fff; font-size: 20px;
+  cursor: pointer; position: relative;
+  transition: background 0.15s;
+}
+.chatToggleBtn:hover { background: rgba(0,0,0,0.9); }
+
+.chatBadge {
+  position: absolute; top: -4px; right: -4px;
+  height: 18px; min-width: 18px; padding: 0 4px;
+  background: #D94A4A; color: #fff;
+  font-size: 11px; font-weight: bold; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+.chatBadge.hidden { display: none; }
+
+.chatToastStack {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: 6px; margin-bottom: 8px;
+}
+.chatToast {
+  max-width: 280px; background: rgba(0,0,0,0.82);
+  font: 13px 'Segoe UI', sans-serif; color: #ddd;
+  padding: 8px 12px; border-radius: 10px;
+  word-break: break-word; cursor: pointer;
+  animation: chatToastIn 0.2s ease-out;
+}
+.chatToast.event { border-left: 3px solid #886; font-style: italic; color: #bba; }
+@keyframes chatToastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.chatBox {
+  width: 320px; max-height: 45vh;
+  background: rgba(20,20,20,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; margin-bottom: 8px;
+  display: flex; flex-direction: column;
+}
+.chatBox.hidden { display: none; }
+
+.chatMessages {
+  flex: 1; overflow-y: auto; padding: 10px 12px;
+  min-height: 120px; font: 13px 'Segoe UI', sans-serif;
+  color: #ddd; line-height: 1.45;
+}
+.chatMsg { margin-bottom: 4px; }
+.chatMsg.event { color: #aa9; font-style: italic; border-left: 2px solid #665; padding-left: 6px; }
+.chatSender { font-weight: 600; }
+
+.chatInputRow {
+  display: flex; border-top: 1px solid rgba(255,255,255,0.1);
+}
+.chatInput {
+  flex: 1; padding: 10px 12px; border: none; background: transparent;
+  color: #fff; font-size: 14px; outline: none;
+}
+.chatInput::placeholder { color: rgba(255,255,255,0.35); }
+.chatSendBtn {
+  padding: 10px 14px; border: none; background: transparent;
+  color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+.chatSendBtn:hover { color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Civilopedia Dialog
+   ═══════════════════════════════════════════════════════════════════ */
+.civpedia-tabs {
+  display: flex; gap: 0; border-bottom: 2px solid #a08060;
+  margin-bottom: 8px; flex-wrap: wrap;
+}
+.civpedia-tab {
+  padding: 4px 12px; font: 13px 'Times New Roman', Georgia, serif;
+  color: #654; background: #c8b494; border: 1px solid #a08060;
+  border-bottom: none; cursor: pointer; margin-bottom: -2px;
+}
+.civpedia-tab.active {
+  background: #d4b896; color: #333; font-weight: bold;
+  border-bottom: 2px solid #d4b896;
+}
+.civpedia-tab:hover:not(.active) { background: #d0b88c; }
+.civpedia-page { display: none; }
+.civpedia-page.active { display: block; }
+.civpedia-entry {
+  padding: 3px 0; font: 13px 'Times New Roman', Georgia, serif;
+  color: #333; border-bottom: 1px solid #c8b494;
+}
+.civpedia-entry:last-child { border-bottom: none; }
+.civpedia-stat { display: flex; justify-content: space-between; padding: 1px 0; }
+.civpedia-stat-label { color: #555; }
+.civpedia-stat-value { font-weight: bold; color: #333; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Demographics Dialog
+   ═══════════════════════════════════════════════════════════════════ */
+.demo-table { width: 100%; border-collapse: collapse; font: 13px 'Times New Roman', Georgia, serif; }
+.demo-table th { text-align: left; color: #654; font-weight: bold; padding: 4px 8px; border-bottom: 2px solid #a08060; }
+.demo-table td { padding: 3px 8px; color: #333; border-bottom: 1px solid #c8b494; }
+.demo-table td:nth-child(2) { text-align: right; font-weight: bold; }
+.demo-rank { font-size: 11px; color: #886; }
+
+/* ═══════════════════════════════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 520px) {

@@ -149,6 +149,23 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Global overlays                                                -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Chat / Event Log Panel (Trevdor-style) -->
+<div id="chatPanel" class="hidden">
+  <div id="chatToastStack" class="chatToastStack"></div>
+  <div id="chatBox" class="chatBox hidden">
+    <div id="chatMessages" class="chatMessages"></div>
+    <div class="chatInputRow">
+      <input id="chatInput" class="chatInput" type="text"
+             placeholder="Type a message…" maxlength="200" autocomplete="off">
+      <button id="chatSendBtn" class="chatSendBtn">Send</button>
+    </div>
+  </div>
+  <button id="chatToggleBtn" class="chatToggleBtn">
+    &#x1F4AC;
+    <span id="chatBadge" class="chatBadge hidden">0</span>
+  </button>
+</div>
+
 <div id="unit-menu"></div>
 <div id="tooltip"></div>
 <div id="loading-overlay"><div class="spinner"></div><div class="msg" id="loading-msg">Rendering...</div></div>

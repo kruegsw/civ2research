@@ -230,6 +230,41 @@ export const UNIT_DOMAIN = [
   0,                          // 51
 ];
 
+// Unit flags (per RULES.TXT specification)
+// Bit flags: [ignoreZOC, negatesCityWalls, destroyedAfterAttack, canCarryAir, alpine, pikemanBonus, aegisBonus, submarine]
+export const UNIT_IGNORE_ZOC = [
+  // Settlers(0) through Explorer(50), ExtraLand(51)
+  // Non-combat, diplomats, spies, caravans, freight = ignore ZOC
+  // All air units (27-31) ignore ZOC
+  // All sea units (32-43) ignore ZOC
+  1, 1, 0, 0, 0, 0, 0, 0,   // 0-7: settlers,engineers ignore; warriors-musketeers don't
+  0, 0, 0, 0, 0, 0, 0,       // 8-14: fanatics-mech.inf don't
+  0, 0, 0, 0, 0, 0, 0, 0,   // 15-22: horsemen-armor don't
+  0, 0, 0, 0,                 // 23-26: catapult-howitzer don't
+  1, 1, 1, 1, 1,             // 27-31: all air ignore ZOC
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 32-43: all sea ignore ZOC
+  1, 1,                       // 44-45: missiles ignore ZOC
+  1, 1,                       // 46-47: diplomat, spy ignore ZOC
+  1, 1, 1, 1,                 // 48-51: caravan, freight, explorer, extra ignore ZOC
+];
+
+// Units destroyed after attacking (missiles)
+export const UNIT_DESTROYED_AFTER_ATTACK = new Set([44, 45]); // Cruise Missile, Nuclear Missile
+
+// Units that negate city walls
+export const UNIT_NEGATES_WALLS = new Set([26]); // Howitzer
+
+// Terrain transformation table for engineers (Transform order)
+// Index by terrain type → result terrain. -1 = cannot transform
+export const TERRAIN_TRANSFORM = [
+//  desert plains grass  forest hills  mount  tundra glacier swamp jungle ocean
+    1,     2,     0,     1,     0,     4,     0,     6,     2,    3,     -1
+];
+// Transform turns (engineer-only, before halving)
+export const TRANSFORM_TURNS = [
+    5,     10,    10,    10,    10,    20,    10,    20,    15,   15,    0
+];
+
 // ── Combat stats (indexed by unit type 0-51, from RULES.TXT @UNITS) ──
 
 // Attack strength

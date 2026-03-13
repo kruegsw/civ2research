@@ -10,12 +10,13 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYear, getGameYearFromMap } from '../engine/year.js';
-import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_MOVE_POINTS, UNIT_HP, TERRAIN_TRANSFORM, TRANSFORM_TURNS } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
 import { getValidActions, validateAction, calcBribeCost, calcInciteCost } from '../engine/rules.js';
-import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP } from '../engine/actions.js';
+import { MOVE_UNIT, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN } from '../engine/actions.js';
+import { findPath } from '../engine/pathfinding.js';
 import { calcRushBuyCost } from '../engine/happiness.js';
 import { getProductionCost, calcCityTrade } from '../engine/production.js';
 import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
@@ -776,6 +777,11 @@ async function handleMapClick(e, isLongPress = false) {
   const tile = findTileAt(e.clientX, e.clientY);
   if (!tile) return;
 
+  // Go-to mode: click sets path target
+  if (gotoMode) { handleGotoClick(tile.gx, tile.gy); return; }
+  // Rebase mode: click sets rebase target
+  if (rebaseMode) { handleRebaseClick(tile.gx, tile.gy); return; }
+
   const isMyTurn = mpGameState && mpCivSlot != null && mpGameState.turn.activeCiv === mpCivSlot;
   const activeUnit = mpSelectedUnit != null ? mpGameState?.units[mpSelectedUnit] : null;
   const activeUnitOnTile = activeUnit && activeUnit.gx === tile.gx && activeUnit.gy === tile.gy;
@@ -888,8 +894,17 @@ async function handleMapClick(e, isLongPress = false) {
     // ── Clicking on empty neighboring tile with active unit — show move menu (long press) ──
     if (isLongPress && mpSelectedUnit != null && tileUnits.length === 0) {
       const validActions = getValidActions(mpGameState, mpMapBase, mpSelectedUnit, tile);
-      if (validActions.length > 0) {
-        const menuItems = validActions.map(va => actionToMenuItem(va, mpSelectedUnit));
+      const menuItems = validActions.map(va => actionToMenuItem(va, mpSelectedUnit));
+      // Bombardment option for air/naval units targeting enemy tiles
+      const selU = mpGameState.units[mpSelectedUnit];
+      if (selU) {
+        const bErr = validateAction(mpGameState, mpMapBase,
+          { type: BOMBARD, unitIndex: mpSelectedUnit, targetGx: tile.gx, targetGy: tile.gy }, mpCivSlot);
+        if (!bErr) {
+          menuItems.push({ label: `Bombard (${UNIT_NAMES[selU.type]})`, action: () => doBombard(mpSelectedUnit, tile.gx, tile.gy) });
+        }
+      }
+      if (menuItems.length > 0) {
         showUnitMenu(e.clientX, e.clientY, menuItems);
         return;
       }
@@ -3333,6 +3348,9 @@ const transport = createTransport({
         document.getElementById('status').style.display = 'none';
         document.getElementById('restart-controls').style.display = '';
 
+        // Show chat panel
+        showChatPanel();
+
         // Build mapData object compatible with existing renderer
         // populateFowCivSelector is called inside with forceCiv to ensure correct civ
         doRenderFromState({ silent: false, forceCiv: mpCivSlot });
@@ -3544,6 +3562,14 @@ const transport = createTransport({
 
       case 'REJECTED':
         console.warn(`[ws] Rejected: ${msg.reason}`);
+        break;
+
+      case 'MSG':
+        handleChatMessage(msg);
+        break;
+
+      case 'CHAT_HISTORY':
+        if (msg.messages) msg.messages.forEach(m => handleChatMessage(m, true));
         break;
 
       default:
@@ -3982,13 +4008,14 @@ async function renderAtomicSwap(mapData, opts = {}) {
 // ── Turn UI ──
 function updateTurnUI() {
   const turnUI = document.getElementById('turn-ui');
-  if (!mpGameState || !mpCivSlot) {
+  if (!mpGameState) {
     turnUI.style.display = 'none';
     return;
   }
   turnUI.style.display = '';
 
-  const isMyTurn = mpGameState.turn.activeCiv === mpCivSlot;
+  const isSpectator = mpCivSlot == null;
+  const isMyTurn = !isSpectator && mpGameState.turn.activeCiv === mpCivSlot;
   const civName = mpGameState.civNames?.[mpGameState.turn.activeCiv] || `Civ ${mpGameState.turn.activeCiv}`;
   const civColor = CIV_COLORS[mpGameState.turn.activeCiv] || '#e0e0e0';
 
@@ -3998,37 +4025,44 @@ function updateTurnUI() {
 
   // ── Research progress ──
   const resEl = document.getElementById('research-info');
-  const civ = mpGameState.civs?.[mpCivSlot];
-  if (civ && resEl) {
-    const techId = civ.techBeingResearched;
-    if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
-      const current = civ.researchProgress || 0;
-      const cost = calcResearchCost(mpGameState, mpCivSlot);
-      // Compute science per turn from all owned cities
-      let sciPerTurn = 0;
-      if (mpMapBase) {
-        for (let ci = 0; ci < mpGameState.cities.length; ci++) {
-          const city = mpGameState.cities[ci];
-          if (city.owner === mpCivSlot && city.size > 0) {
-            const { sci } = calcCityTrade(city, ci, mpGameState, mpMapBase);
-            sciPerTurn += sci;
+  if (isSpectator) {
+    resEl.textContent = 'Spectating';
+  } else {
+    const civ = mpGameState.civs?.[mpCivSlot];
+    if (civ && resEl) {
+      const techId = civ.techBeingResearched;
+      if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
+        const current = civ.researchProgress || 0;
+        const cost = calcResearchCost(mpGameState, mpCivSlot);
+        let sciPerTurn = 0;
+        if (mpMapBase) {
+          for (let ci = 0; ci < mpGameState.cities.length; ci++) {
+            const city = mpGameState.cities[ci];
+            if (city.owner === mpCivSlot && city.size > 0) {
+              const { sci } = calcCityTrade(city, ci, mpGameState, mpMapBase);
+              sciPerTurn += sci;
+            }
           }
         }
+        const remaining = cost - current;
+        const turnsLeft = sciPerTurn > 0 ? Math.ceil(remaining / sciPerTurn) : '?';
+        resEl.textContent = `${ADVANCE_NAMES[techId]}: ${current}/${cost} (${turnsLeft} Turns)`;
+      } else {
+        resEl.textContent = 'No research';
       }
-      const remaining = cost - current;
-      const turnsLeft = sciPerTurn > 0 ? Math.ceil(remaining / sciPerTurn) : '?';
-      resEl.textContent = `${ADVANCE_NAMES[techId]}: ${current}/${cost} (${turnsLeft} Turns)`;
-    } else {
-      resEl.textContent = 'No research';
     }
   }
 
   const endBtn = document.getElementById('end-turn-btn');
   const waitMsg = document.getElementById('turn-waiting');
-  if (isMyTurn) {
+  if (isSpectator) {
+    endBtn.style.display = 'none';
+    endBtn.classList.remove('flash');
+    waitMsg.style.display = '';
+    waitMsg.textContent = `${civName}'s turn`;
+  } else if (isMyTurn) {
     endBtn.style.display = '';
     waitMsg.style.display = 'none';
-    // Flash End Turn button when no movable units remain
     if (findNextMovableUnit(-1) == null) {
       endBtn.classList.add('flash');
     } else {
@@ -4038,6 +4072,7 @@ function updateTurnUI() {
     endBtn.style.display = 'none';
     endBtn.classList.remove('flash');
     waitMsg.style.display = '';
+    waitMsg.textContent = 'Waiting for opponent...';
   }
 }
 
@@ -4739,6 +4774,36 @@ function buildOrderMenuItems(unitIdx) {
     }
   }
 
+  // Go-to (all units with moves)
+  if (u.movesLeft > 0) {
+    items.push({ label: 'Go To (G)', action: () => { selectUnit(unitIdx); enterGotoMode(); } });
+  }
+
+  // Transform terrain (engineers only)
+  if (u.type === 1) {
+    const tfErr = validateAction(mpGameState, mpMapBase, { type: TRANSFORM_TERRAIN, unitIndex: unitIdx }, civSlot);
+    if (!tfErr) {
+      const terrain = mpMapBase.getTerrain(u.gx, u.gy);
+      const targetT = TERRAIN_TRANSFORM[terrain];
+      const label = targetT >= 0 ? `Transform to ${TERRAIN_NAMES[targetT]}` : 'Transform';
+      items.push({ label, action: () => doTransformTerrain() });
+    }
+  }
+
+  // Rebase (air units only)
+  if ((UNIT_DOMAIN[u.type] ?? 0) === 2 && u.movesLeft > 0) {
+    items.push({ label: 'Rebase (L)', action: () => { selectUnit(unitIdx); enterRebaseMode(); } });
+  }
+
+  // Airbase (settler/engineer)
+  if (u.type === 0 || u.type === 1) {
+    const abErr = validateAction(mpGameState, mpMapBase, { type: WORKER_ORDER, unitIndex: unitIdx, order: 'airbase' }, civSlot);
+    if (!abErr) items.push({ label: 'Build Airbase', action: () => {
+      pendingAutoAdvanceFrom = unitIdx;
+      transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: unitIdx, order: 'airbase' } });
+    }});
+  }
+
   // Disband (always available for live units)
   items.push({ separator: true });
   items.push({
@@ -4870,6 +4935,419 @@ window.addEventListener('keydown', e => {
     unitMenuButtons[unitMenuHighlightIdx].btn.classList.add('unit-menu-highlight');
     unitMenuDefaultAction = unitMenuButtons[unitMenuHighlightIdx].action;
     unitMenuButtons[unitMenuHighlightIdx].btn.scrollIntoView({ block: 'nearest' });
+    return;
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// CHAT / EVENT LOG — Trevdor-style toast + message panel
+// ═══════════════════════════════════════════════════════════════════
+const chatPanel = document.getElementById('chatPanel');
+const chatBox = document.getElementById('chatBox');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const chatSendBtn = document.getElementById('chatSendBtn');
+const chatToggleBtn = document.getElementById('chatToggleBtn');
+const chatBadge = document.getElementById('chatBadge');
+const chatToastStack = document.getElementById('chatToastStack');
+let chatOpen = false;
+let chatUnread = 0;
+
+function showChatPanel() {
+  chatPanel.classList.remove('hidden');
+}
+
+function handleChatMessage(msg, isHistory) {
+  // Ensure chat panel is visible in game scene
+  if (currentScene === 'game') showChatPanel();
+
+  // Build message element
+  const el = document.createElement('div');
+  el.className = 'chatMsg' + (msg.isEvent ? ' event' : '');
+  if (msg.name && !msg.isEvent) {
+    const sender = document.createElement('span');
+    sender.className = 'chatSender';
+    sender.textContent = msg.name;
+    if (msg.seat != null) {
+      const civSlot = mpSeatCivMap?.[msg.seat];
+      if (civSlot != null) sender.style.color = CIV_COLORS[civSlot] || '#fff';
+    }
+    el.appendChild(sender);
+    el.appendChild(document.createTextNode(' '));
+  }
+  const textEl = document.createElement('span');
+  textEl.textContent = msg.text;
+  el.appendChild(textEl);
+  chatMessages.appendChild(el);
+
+  // Auto-scroll
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  // Toast + badge (skip for history replay)
+  if (!isHistory) {
+    if (!chatOpen) {
+      chatUnread++;
+      chatBadge.textContent = chatUnread;
+      chatBadge.classList.remove('hidden');
+      // Toast
+      const toast = document.createElement('div');
+      toast.className = 'chatToast' + (msg.isEvent ? ' event' : '');
+      toast.textContent = msg.isEvent ? msg.text : `${msg.name || '?'}: ${msg.text}`;
+      chatToastStack.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+  }
+}
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  chatBox.classList.toggle('hidden', !chatOpen);
+  if (chatOpen) {
+    chatUnread = 0;
+    chatBadge.classList.add('hidden');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatInput.focus();
+  }
+}
+
+function sendChat() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  transport.sendRaw({ type: 'SAY', text });
+  chatInput.value = '';
+}
+
+chatToggleBtn.addEventListener('click', toggleChat);
+chatSendBtn.addEventListener('click', sendChat);
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
+  e.stopPropagation(); // don't trigger game keybinds
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// CIVILOPEDIA — tabbed dialog with unit/building/wonder/tech/terrain/govt pages
+// ═══════════════════════════════════════════════════════════════════
+function showCivpedia(initialTab) {
+  if (document.getElementById('civpedia-dialog')) return;
+
+  const tabs = [
+    { id: 'units', label: 'Units' },
+    { id: 'buildings', label: 'Buildings' },
+    { id: 'wonders', label: 'Wonders' },
+    { id: 'advances', label: 'Advances' },
+    { id: 'terrain', label: 'Terrain' },
+    { id: 'govts', label: 'Governments' },
+  ];
+
+  createCiv2Dialog('civpedia-dialog', 'Civilopedia', panel => {
+    panel.style.cssText = 'max-height:60vh;overflow:hidden;display:flex;flex-direction:column;min-width:380px';
+
+    // Tab bar
+    const tabBar = document.createElement('div');
+    tabBar.className = 'civpedia-tabs';
+    tabs.forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = 'civpedia-tab' + (t.id === (initialTab || 'units') ? ' active' : '');
+      btn.textContent = t.label;
+      btn.dataset.tab = t.id;
+      btn.addEventListener('click', () => {
+        tabBar.querySelectorAll('.civpedia-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        panel.querySelectorAll('.civpedia-page').forEach(p => p.classList.remove('active'));
+        panel.querySelector(`[data-page="${t.id}"]`).classList.add('active');
+      });
+      tabBar.appendChild(btn);
+    });
+    panel.appendChild(tabBar);
+
+    const content = document.createElement('div');
+    content.style.cssText = 'overflow-y:auto;flex:1';
+    panel.appendChild(content);
+
+    // Build pages
+    tabs.forEach(t => {
+      const page = document.createElement('div');
+      page.className = 'civpedia-page' + (t.id === (initialTab || 'units') ? ' active' : '');
+      page.dataset.page = t.id;
+
+      if (t.id === 'units') {
+        UNIT_NAMES.forEach((name, i) => {
+          if (!name) return;
+          const entry = document.createElement('div');
+          entry.className = 'civpedia-entry';
+          entry.innerHTML = `<strong>${name}</strong>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Attack</span><span class="civpedia-stat-value">${UNIT_ATK[i] ?? 0}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Defense</span><span class="civpedia-stat-value">${UNIT_DEF[i] ?? 0}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Moves</span><span class="civpedia-stat-value">${UNIT_MOVE_POINTS[i] ?? 1}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">HP</span><span class="civpedia-stat-value">${UNIT_HP[i] ?? 10}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${UNIT_COSTS[i] / 10}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Domain</span><span class="civpedia-stat-value">${['Land','Sea','Air'][UNIT_DOMAIN[i] ?? 0]}</span></div>`;
+          page.appendChild(entry);
+        });
+      } else if (t.id === 'buildings') {
+        for (let id = 1; id <= 38; id++) {
+          const name = IMPROVE_NAMES[id];
+          if (!name) continue;
+          const entry = document.createElement('div');
+          entry.className = 'civpedia-entry';
+          entry.innerHTML = `<strong>${name}</strong>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${IMPROVE_COSTS[id] / 10}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Maintenance</span><span class="civpedia-stat-value">${IMPROVE_MAINTENANCE[id]} gold/turn</span></div>`;
+          page.appendChild(entry);
+        }
+      } else if (t.id === 'wonders') {
+        WONDER_NAMES.forEach((name, i) => {
+          const entry = document.createElement('div');
+          entry.className = 'civpedia-entry';
+          entry.innerHTML = `<strong>${name}</strong>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${WONDER_COSTS[i] / 10}</span></div>`;
+          page.appendChild(entry);
+        });
+      } else if (t.id === 'advances') {
+        ADVANCE_NAMES.forEach((name, i) => {
+          if (!name) return;
+          const [p1, p2] = ADVANCE_PREREQS[i] || [-1, -1];
+          const prereqs = [];
+          if (p1 >= 0 && ADVANCE_NAMES[p1]) prereqs.push(ADVANCE_NAMES[p1]);
+          if (p2 >= 0 && ADVANCE_NAMES[p2]) prereqs.push(ADVANCE_NAMES[p2]);
+          const entry = document.createElement('div');
+          entry.className = 'civpedia-entry';
+          entry.innerHTML = `<strong>${name}</strong>` +
+            (prereqs.length ? `<div class="civpedia-stat"><span class="civpedia-stat-label">Requires</span><span class="civpedia-stat-value">${prereqs.join(', ')}</span></div>` : '');
+          page.appendChild(entry);
+        });
+      } else if (t.id === 'terrain') {
+        TERRAIN_NAMES.forEach((name, i) => {
+          const base = TERRAIN_BASE[i];
+          if (!base) return;
+          const entry = document.createElement('div');
+          entry.className = 'civpedia-entry';
+          entry.innerHTML = `<strong>${name}</strong>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Food</span><span class="civpedia-stat-value">${base[0]}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Shields</span><span class="civpedia-stat-value">${base[1]}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Trade</span><span class="civpedia-stat-value">${base[2]}</span></div>` +
+            (TERRAIN_TRANSFORM[i] >= 0 ? `<div class="civpedia-stat"><span class="civpedia-stat-label">Transforms to</span><span class="civpedia-stat-value">${TERRAIN_NAMES[TERRAIN_TRANSFORM[i]]}</span></div>` : '');
+          page.appendChild(entry);
+        });
+      } else if (t.id === 'govts') {
+        GOVERNMENT_NAMES.forEach((name, i) => {
+          const entry = document.createElement('div');
+          entry.className = 'civpedia-entry';
+          entry.innerHTML = `<strong>${name}</strong>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Max Rate</span><span class="civpedia-stat-value">${(GOVT_MAX_RATE[name.toLowerCase()] ?? 10) * 10}%</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Max Science</span><span class="civpedia-stat-value">${(GOVT_MAX_SCIENCE[name.toLowerCase()] ?? 10) * 10}%</span></div>`;
+          page.appendChild(entry);
+        });
+      }
+
+      content.appendChild(page);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DEMOGRAPHICS — population, GNP, military, land area
+// ═══════════════════════════════════════════════════════════════════
+function showDemographics() {
+  if (!mpGameState || mpCivSlot == null) return;
+  if (document.getElementById('demographics-dialog')) return;
+
+  const gs = mpGameState;
+  const civSlot = mpCivSlot;
+
+  // Population: sum of city sizes × base (each pop = ~10,000)
+  const myCities = gs.cities.filter(c => c.owner === civSlot && c.size > 0);
+  let pop = 0;
+  for (const c of myCities) pop += c.size * 10000;
+
+  // GNP: sum of trade across cities
+  let gnp = 0;
+  if (mpMapBase) {
+    for (const c of myCities) {
+      const tradeData = calcCityTrade(c, gs, mpMapBase);
+      if (tradeData) gnp += tradeData.totalTrade || 0;
+    }
+  }
+
+  // Military: count live military units
+  const myUnits = gs.units.filter(u => u.owner === civSlot && u.gx >= 0);
+  const militaryUnits = myUnits.filter(u => (UNIT_ATK[u.type] || 0) > 0 || (UNIT_DEF[u.type] || 0) > 0);
+  let milStrength = 0;
+  for (const u of militaryUnits) milStrength += (UNIT_ATK[u.type] || 0) + (UNIT_DEF[u.type] || 0);
+
+  // Land area: count explored tiles owned
+  let landArea = 0;
+  if (mpMapBase?.tileData) {
+    for (const tile of mpMapBase.tileData) {
+      if (tile && tile.tileOwnership === civSlot) landArea++;
+    }
+  }
+
+  // Treasury
+  const treasury = gs.civs?.[civSlot]?.treasury || 0;
+
+  createCiv2Dialog('demographics-dialog', 'Demographics', panel => {
+    panel.innerHTML = `<table class="demo-table">
+      <tr><th>Category</th><th>Value</th></tr>
+      <tr><td>Population</td><td>${pop.toLocaleString()}</td></tr>
+      <tr><td>Cities</td><td>${myCities.length}</td></tr>
+      <tr><td>GNP (trade)</td><td>${gnp}</td></tr>
+      <tr><td>Treasury</td><td>${treasury} gold</td></tr>
+      <tr><td>Military Units</td><td>${militaryUnits.length}</td></tr>
+      <tr><td>Military Strength</td><td>${milStrength}</td></tr>
+      <tr><td>Total Units</td><td>${myUnits.length}</td></tr>
+      <tr><td>Land Area</td><td>${landArea} tiles</td></tr>
+    </table>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GO-TO MODE — click to set A* path, auto-move each turn
+// ═══════════════════════════════════════════════════════════════════
+let gotoMode = false;
+
+function enterGotoMode() {
+  if (mpSelectedUnit == null || !mpGameState || !mpMapBase) return;
+  gotoMode = true;
+  document.getElementById('map-container').style.cursor = 'crosshair';
+}
+
+function exitGotoMode() {
+  gotoMode = false;
+  document.getElementById('map-container').style.cursor = '';
+}
+
+function handleGotoClick(tileGx, tileGy) {
+  if (!gotoMode || mpSelectedUnit == null) { exitGotoMode(); return; }
+  const u = mpGameState.units[mpSelectedUnit];
+  if (!u || u.gx < 0) { exitGotoMode(); return; }
+
+  const path = findPath(u.type, u.gx, u.gy, tileGx, tileGy, mpMapBase, u.owner, mpGameState.units, mpGameState.cities);
+  if (!path || path.length === 0) {
+    showOverlayMessage('No path found');
+    exitGotoMode();
+    return;
+  }
+
+  transport.sendRaw({
+    type: 'ACTION',
+    action: { type: GOTO, unitIndex: mpSelectedUnit, targetGx: tileGx, targetGy: tileGy, path },
+  });
+  pendingAutoAdvanceFrom = mpSelectedUnit;
+  exitGotoMode();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BOMBARDMENT — air/naval ranged attack
+// ═══════════════════════════════════════════════════════════════════
+function doBombard(unitIndex, targetGx, targetGy) {
+  transport.sendRaw({
+    type: 'ACTION',
+    action: { type: BOMBARD, unitIndex, targetGx, targetGy },
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AIR REBASE — transfer air unit to friendly city/carrier/airbase
+// ═══════════════════════════════════════════════════════════════════
+let rebaseMode = false;
+
+function enterRebaseMode() {
+  if (mpSelectedUnit == null || !mpGameState) return;
+  const u = mpGameState.units[mpSelectedUnit];
+  if (!u || (UNIT_DOMAIN[u.type] ?? 0) !== 2) return;
+  rebaseMode = true;
+  document.getElementById('map-container').style.cursor = 'crosshair';
+}
+
+function exitRebaseMode() {
+  rebaseMode = false;
+  document.getElementById('map-container').style.cursor = '';
+}
+
+function handleRebaseClick(tileGx, tileGy) {
+  if (!rebaseMode || mpSelectedUnit == null) { exitRebaseMode(); return; }
+  transport.sendRaw({
+    type: 'ACTION',
+    action: { type: REBASE, unitIndex: mpSelectedUnit, targetGx: tileGx, targetGy: tileGy },
+  });
+  pendingAutoAdvanceFrom = mpSelectedUnit;
+  exitRebaseMode();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TERRAIN TRANSFORM — engineer transforms terrain
+// ═══════════════════════════════════════════════════════════════════
+function doTransformTerrain() {
+  if (mpSelectedUnit == null || !mpGameState) return;
+  const u = mpGameState.units[mpSelectedUnit];
+  if (!u || u.type !== 1) return; // Engineers only
+  transport.sendRaw({
+    type: 'ACTION',
+    action: { type: TRANSFORM_TERRAIN, unitIndex: mpSelectedUnit },
+  });
+  pendingAutoAdvanceFrom = mpSelectedUnit;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ADDITIONAL KEYBINDINGS (game scene, non-turn-restricted)
+// ═══════════════════════════════════════════════════════════════════
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (currentScene !== 'game') return;
+
+  // Escape: cancel goto/rebase mode
+  if (e.key === 'Escape' && (gotoMode || rebaseMode)) {
+    e.preventDefault();
+    exitGotoMode();
+    exitRebaseMode();
+    return;
+  }
+
+  // F1: Civilopedia (available anytime)
+  if (e.key === 'F1') { e.preventDefault(); showCivpedia(); return; }
+  // F11: Demographics (available anytime with game state)
+  if (e.key === 'F11') { e.preventDefault(); showDemographics(); return; }
+});
+
+// Additional turn-restricted keybindings
+window.addEventListener('keydown', e => {
+  if (!mpGameState || mpGameState.turn.activeCiv !== mpCivSlot) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (currentScene !== 'game') return;
+  if (unitMenu.classList.contains('visible')) return;
+
+  // G: enter Go-To mode
+  if (e.key === 'g' && !e.shiftKey) {
+    e.preventDefault();
+    enterGotoMode();
+    return;
+  }
+
+  // L: rebase air unit
+  if (e.key === 'l' && !e.shiftKey) {
+    e.preventDefault();
+    enterRebaseMode();
+    return;
+  }
+
+  // Shift+O: transform terrain (engineers)
+  if (e.key === 'O' && e.shiftKey) {
+    e.preventDefault();
+    doTransformTerrain();
+    return;
+  }
+
+  // Shift+A: airbase (settler/engineer)
+  if (e.key === 'A' && e.shiftKey) {
+    e.preventDefault();
+    if (mpSelectedUnit != null) {
+      const u = mpGameState.units[mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        pendingAutoAdvanceFrom = mpSelectedUnit;
+        transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: mpSelectedUnit, order: 'airbase' } });
+      }
+    }
     return;
   }
 });

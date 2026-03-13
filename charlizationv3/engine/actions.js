@@ -112,3 +112,19 @@ export const RESPOND_DEMAND = 'RESPOND_DEMAND';
 export const SHARE_MAP = 'SHARE_MAP';
 //   { type: 'SHARE_MAP', targetCiv }
 //   Share your explored map with another civ (mutual exchange).
+
+export const BOMBARD = 'BOMBARD';
+//   { type: 'BOMBARD', unitIndex, targetGx, targetGy }
+//   Air or naval unit bombards a target tile. Deals damage without risk to attacker.
+
+export const REBASE = 'REBASE';
+//   { type: 'REBASE', unitIndex, targetGx, targetGy }
+//   Air unit transfers to a friendly city, carrier, or airbase.
+
+export const GOTO = 'GOTO';
+//   { type: 'GOTO', unitIndex, targetGx, targetGy, path }
+//   Automated movement along a computed path. Stops for enemies, goody huts.
+
+export const TRANSFORM_TERRAIN = 'TRANSFORM_TERRAIN';
+//   { type: 'TRANSFORM_TERRAIN', unitIndex }
+//   Engineer begins transforming terrain at current tile.

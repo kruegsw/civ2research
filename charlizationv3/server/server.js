@@ -21,6 +21,7 @@
 //   { type:"CREATE_ROOM", name? }
 //   { type:"READY" }
 //   { type:"PING" }
+//   { type:"SAY", text }
 //   { type:"ACTION", roomId, action:{ type:"MOVE_UNIT"|... } }   // future
 //   { type:"UPLOAD_SAV", roomId, data:<base64> }                  // future
 //
@@ -29,6 +30,8 @@
 //   { type:"ROOM", roomId, clients, spectators, name, started, ready }
 //   { type:"ROOM_LIST", rooms, users, yourClientId, sessionId }
 //   { type:"STATE", roomId, version, state }                      // future: filtered per civ
+//   { type:"MSG", roomId, from, name, seat, text, ts, isEvent? }
+//   { type:"CHAT_HISTORY", roomId, messages }
 //   { type:"REJECTED", roomId, reason }
 //   { type:"ERROR", message }
 // -----------------------------------------------------------------------------
@@ -442,6 +445,15 @@ wss.on("connection", (ws) => {
             state: statePayload,
           }));
         }
+
+        // Send chat history to joining client
+        if (room.chatHistory && room.chatHistory.length > 0) {
+          ws.send(JSON.stringify({
+            type: 'CHAT_HISTORY',
+            roomId,
+            messages: room.chatHistory,
+          }));
+        }
         break;
       }
 
@@ -530,6 +542,45 @@ wss.on("connection", (ws) => {
         // Broadcast filtered state to each client
         sendGameStateToAll(actionRoomId, room);
 
+        // Broadcast combat result as a game event message
+        if (room.gameState.combatResult) {
+          const cr = room.gameState.combatResult;
+          const gs = room.gameState;
+          const atkCiv = gs.civNames?.[cr.attackerCiv] || `Civ ${cr.attackerCiv}`;
+          const defCiv = gs.civNames?.[cr.defenderCiv] || `Civ ${cr.defenderCiv}`;
+          const combatText = cr.attackerWins
+            ? `${atkCiv} ${cr.attackerType || 'unit'} defeated ${defCiv} ${cr.defenderType || 'unit'}`
+            : `${defCiv} ${cr.defenderType || 'unit'} repelled ${atkCiv} ${cr.attackerType || 'unit'}`;
+          const combatMsg = {
+            type: 'MSG', roomId: actionRoomId,
+            from: '__system__', name: 'Game', seat: -1,
+            text: combatText, ts: Date.now(), isEvent: true,
+          };
+          if (!room.chatHistory) room.chatHistory = [];
+          room.chatHistory.push(combatMsg);
+          if (room.chatHistory.length > 100) room.chatHistory.shift();
+          for (const client of room.clients) {
+            if (client.readyState === 1) client.send(JSON.stringify(combatMsg));
+          }
+        }
+
+        // Broadcast turn events as game messages for the event log
+        if (room.gameState.turnEvents) {
+          for (const ev of room.gameState.turnEvents) {
+            const eventMsg = {
+              type: 'MSG', roomId: actionRoomId,
+              from: '__system__', name: 'Game', seat: -1,
+              text: formatTurnEvent(ev, room.gameState), ts: Date.now(), isEvent: true,
+            };
+            if (!room.chatHistory) room.chatHistory = [];
+            room.chatHistory.push(eventMsg);
+            if (room.chatHistory.length > 100) room.chatHistory.shift();
+            for (const client of room.clients) {
+              if (client.readyState === 1) client.send(JSON.stringify(eventMsg));
+            }
+          }
+        }
+
         // Clear one-shot notifications after broadcast
         delete room.gameState.discoveredAdvance;
         delete room.gameState.combatResult;
@@ -576,6 +627,35 @@ wss.on("connection", (ws) => {
         break;
       }
 
+      case "SAY": {
+        const ci = clientInfo.get(ws);
+        if (!ci || !ci.roomId) break;
+        const sayRoom = rooms.get(ci.roomId);
+        if (!sayRoom) break;
+        const text = (msg.text || '').trim().slice(0, 200);
+        if (!text) break;
+
+        const chatMsg = {
+          from: ci.sessionId,
+          name: ci.name || `Player ${ci.playerIndex}`,
+          seat: ci.playerIndex,
+          text,
+          ts: Date.now(),
+        };
+
+        if (!sayRoom.chatHistory) sayRoom.chatHistory = [];
+        sayRoom.chatHistory.push(chatMsg);
+        if (sayRoom.chatHistory.length > 100) sayRoom.chatHistory.shift();
+
+        // Broadcast MSG to all clients in room
+        for (const client of sayRoom.clients) {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({ type: 'MSG', roomId: ci.roomId, ...chatMsg }));
+          }
+        }
+        break;
+      }
+
       default:
         ws.send(JSON.stringify({ type: "ERROR", message: `Unknown type: ${msg.type}` }));
     }
@@ -590,6 +670,47 @@ wss.on("connection", (ws) => {
     broadcastRoomList();
   });
 });
+
+// -----------------------------------------------------------------------------
+// Chat / event formatting
+// -----------------------------------------------------------------------------
+
+function formatTurnEvent(ev, gs) {
+  const civName = (slot) => gs.civNames?.[slot] || `Civ ${slot}`;
+  switch (ev.type) {
+    case 'cityGrowth': return `${ev.cityName} has grown to size ${ev.newSize}`;
+    case 'famine': return `Famine in ${ev.cityName}! Population: ${ev.newSize}`;
+    case 'productionComplete': {
+      const UNIT_NAMES = ['Settlers','Engineers','Warriors','Phalanx','Archers','Legion','Pikemen','Musketeers','Fanatics','Partisans','Alpine Troops','Riflemen','Marines','Paratroopers','Mech. Inf.','Horsemen','Chariot','Elephant','Crusaders','Knights','Dragoons','Cavalry','Armor','Catapult','Cannon','Artillery','Howitzer','Fighter','Bomber','Helicopter','Stealth Fighter','Stealth Bomber','Trireme','Caravel','Galleon','Frigate','Ironclad','Destroyer','Cruiser','AEGIS Cruiser','Battleship','Submarine','Carrier','Transport','Cruise Msl.','Nuclear Msl.','Diplomat','Spy','Caravan','Freight','Explorer'];
+      const IMPROVE_NAMES = ['Nothing','Palace','Barracks','Granary','Temple','Marketplace','Library','Courthouse','City Walls','Aqueduct','Bank','Cathedral','University','Colosseum','Factory','Mfg. Plant','SDI Defense','Recycling Center','Power Plant','Hydro Plant','Nuclear Plant','Stock Exchange','Sewer System','Supermarket','Superhighways','Research Lab','SAM Missile Battery','Coastal Fortress','Solar Plant','Harbor','Offshore Platform','Airport','Police Station','Port Facility','Mass Transit','SS Structural','SS Component','SS Module','Capitalization'];
+      const WONDER_NAMES = ['Pyramids','Hanging Gardens','Colossus','Lighthouse','Great Library','Oracle','Great Wall',"Sun Tzu's War Academy","King Richard's Crusade","Marco Polo's Embassy","Michelangelo's Chapel","Copernicus' Observatory","Magellan's Expedition","Shakespeare's Theatre","Leonardo's Workshop","J.S. Bach's Cathedral","Isaac Newton's College","Adam Smith's Trading Co.","Darwin's Voyage","Statue of Liberty","Apollo Program","United Nations","Hoover Dam","Women's Suffrage","Manhattan Project","SETI Program","Cure for Cancer","Eiffel Tower"];
+      const item = ev.item;
+      let name;
+      if (item.type === 'unit') name = UNIT_NAMES[item.id] || 'Unit';
+      else if (item.type === 'building') name = IMPROVE_NAMES[item.id] || 'Building';
+      else if (item.type === 'wonder') name = WONDER_NAMES[item.id - 39] || 'Wonder';
+      else name = 'Item';
+      return `${ev.cityName} completed ${name}`;
+    }
+    case 'warDeclared': return `${civName(ev.aggressor)} declared war on ${civName(ev.target)}!`;
+    case 'treatyAccepted': return `${civName(ev.civA)} and ${civName(ev.civB)} signed ${ev.treaty}`;
+    case 'civEliminated': return `${civName(ev.civSlot)} has been destroyed!`;
+    case 'unitDisbanded': return `Unit disbanded in ${ev.cityName} (insufficient support)`;
+    case 'anarchyEnded': return `Order restored: ${ev.government}`;
+    case 'needsAqueduct': return `${ev.cityName} needs an Aqueduct to grow`;
+    case 'needsSewer': return `${ev.cityName} needs a Sewer System to grow`;
+    case 'unitCrashed': return `Unit ran out of fuel and crashed!`;
+    case 'tributePaid': return `${civName(ev.from)} paid ${ev.amount} gold tribute to ${civName(ev.to)}`;
+    case 'cityIncited': return `${ev.cityName} revolts!`;
+    case 'techStolen': return `Technology stolen from ${civName(ev.from)}!`;
+    case 'citySabotaged': return `${ev.cityName} sabotaged!`;
+    case 'unitBribed': return `Unit bribed for ${ev.cost} gold`;
+    case 'tradeEstablished': return `Trade: ${ev.homeCityName} → ${ev.destCityName} (${ev.income}g/turn)`;
+    case 'mapShared': return `Maps exchanged with ${civName(ev.targetCiv)}`;
+    case 'freeAdvance': return `Discovered ${ev.source}: new technology!`;
+    default: return `Event: ${ev.type}`;
+  }
+}
 
 // -----------------------------------------------------------------------------
 // Game initialization
