@@ -509,19 +509,6 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const prevGx = unit.gx, prevGy = unit.gy;
         const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
 
-        // Civ2 movement rule: if cost > movesLeft, probabilistic check
-        // Chance of success = movesLeft / cost. On failure, unit stays put, loses all MP.
-        if (cost > unit.movesLeft && cost > 0) {
-          const chance = unit.movesLeft / cost;
-          if (Math.random() >= chance) {
-            // Movement failed — unit stays, loses all remaining MP
-            unit.movesLeft = 0;
-            state.units[unitIndex] = unit;
-            state.moveFailed = { unitIndex, dir };
-            break;
-          }
-        }
-
         unit.gx = dest.gx;
         unit.gy = dest.gy;
         unit.x = dest.gx * 2 + (dest.gy % 2);
