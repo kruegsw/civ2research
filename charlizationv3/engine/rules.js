@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP } from './defs.js';
+import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE } from './defs.js';
 import { resolveDirection, getDirection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -241,6 +241,14 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (scienceRate < 0 || scienceRate > 10) return 'Science rate out of range (0-10)';
       if (taxRate < 0 || taxRate > 10) return 'Tax rate out of range (0-10)';
       if (scienceRate + taxRate > 10) return 'Rates sum exceeds 10';
+      // Government rate limits
+      const govt = getGovernment(null, gameState, civSlot);
+      const maxRate = GOVT_MAX_RATE[govt] ?? 10;
+      const maxSci = GOVT_MAX_SCIENCE[govt] ?? 10;
+      const luxuryRate = 10 - scienceRate - taxRate;
+      if (taxRate > maxRate) return `${govt}: tax max ${maxRate * 10}%`;
+      if (luxuryRate > maxRate) return `${govt}: luxury max ${maxRate * 10}%`;
+      if (scienceRate > maxSci) return `${govt}: science max ${maxSci * 10}%`;
       return null;
     }
 

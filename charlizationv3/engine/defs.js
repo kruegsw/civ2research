@@ -378,6 +378,17 @@ export const GOVT_WLTKD_BUMP = {
   democracy: 'democracy',
 };
 
+// Max rate slider value per government (in tenths: 6=60%, 10=100%)
+// Fundamentalism: general max 8 (80%), but science capped to 5 (50%)
+export const GOVT_MAX_RATE = {
+  anarchy: 6, despotism: 6, monarchy: 7, communism: 8,
+  fundamentalism: 8, republic: 8, democracy: 10,
+};
+export const GOVT_MAX_SCIENCE = {
+  anarchy: 6, despotism: 6, monarchy: 7, communism: 8,
+  fundamentalism: 5, republic: 8, democracy: 10,
+};
+
 // ── Difficulty enum ──
 export const DIFFICULTY_KEYS = ['chieftain','warlord','prince','king','emperor','deity'];
 

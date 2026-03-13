@@ -10,7 +10,7 @@ import { initEvents } from './events.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
 import { getGameYear, getGameYearFromMap } from '../engine/year.js';
-import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, TERRAIN_BASE, IMPROVE_NAMES, WONDER_NAMES, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, ADVANCE_PREREQS, ORDER_KEYS, ORDER_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors, reconstructMapData } from '../engine/state.js';
 import { NUMPAD_DIR, getDirection } from '../engine/movement.js';
@@ -2172,8 +2172,13 @@ function showRateSliders() {
   const civ = mpGameState.civs?.[mpCivSlot];
   if (!civ) return;
 
-  let sciRate = civ.scienceRate ?? 5;
-  let taxRate = civ.taxRate ?? 5;
+  const govt = civ.government || 'despotism';
+  const maxRate = GOVT_MAX_RATE[govt] ?? 10;
+  const maxSci = GOVT_MAX_SCIENCE[govt] ?? 10;
+
+  let sciRate = Math.min(civ.scienceRate ?? 5, maxSci);
+  let taxRate = Math.min(civ.taxRate ?? 5, maxRate);
+  if (sciRate + taxRate > 10) taxRate = 10 - sciRate;
   let luxRate = 10 - sciRate - taxRate;
 
   const overlay = document.createElement('div');
@@ -2188,51 +2193,97 @@ function showRateSliders() {
   title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:8px;text-align:center';
   panel.appendChild(title);
 
-  const luxLabel = document.createElement('div');
   const updateLabels = () => {
-    luxRate = 10 - sciRate - taxRate;
     sciSlider.value = sciRate;
     taxSlider.value = taxRate;
+    luxSlider.value = luxRate;
     sciLabel.textContent = `Science: ${sciRate * 10}%`;
     taxLabel.textContent = `Tax: ${taxRate * 10}%`;
     luxLabel.textContent = `Luxury: ${luxRate * 10}%`;
   };
 
-  const makeRow = (label, value, onChange) => {
+  const makeRow = (label, value, cap, onChange) => {
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:8px;margin:4px 0';
     const lbl = document.createElement('span');
     lbl.style.width = '100px';
+    const sliderWrap = document.createElement('div');
+    sliderWrap.style.cssText = 'flex:1;position:relative';
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.min = 0; slider.max = 10; slider.step = 1;
     slider.value = value;
-    slider.style.flex = '1';
-    slider.addEventListener('input', () => onChange(parseInt(slider.value)));
+    slider.style.cssText = 'width:100%;position:relative;z-index:1';
+    if (cap < 10) {
+      const pct = cap * 10;
+      slider.style.background = `linear-gradient(to right, #b8a070 0%, #b8a070 ${pct}%, #888 ${pct}%, #888 100%)`;
+    }
+    slider.addEventListener('input', () => {
+      let v = parseInt(slider.value);
+      if (v > cap) { v = cap; slider.value = v; }
+      onChange(v);
+    });
+    sliderWrap.appendChild(slider);
     row.appendChild(lbl);
-    row.appendChild(slider);
+    row.appendChild(sliderWrap);
     panel.appendChild(row);
     return { label: lbl, slider };
   };
 
-  const sci = makeRow('Science', sciRate, v => {
+  // When one slider moves, adjust the other two so total = 10.
+  // Priority: shrink the "next" slider first, then the third.
+  // If freeing points (slider lowered), grow the "next" slider first.
+  const reconcile = (moved) => {
+    const total = sciRate + taxRate + luxRate;
+    if (total === 10) return;
+    const diff = total - 10; // positive = over, negative = under
+    // Order of adjustment: cycle sci→tax→lux→sci
+    const order = moved === 'sci' ? ['tax', 'lux'] :
+                  moved === 'tax' ? ['lux', 'sci'] : ['sci', 'tax'];
+    const caps = { sci: maxSci, tax: maxRate, lux: maxRate };
+    const get = k => k === 'sci' ? sciRate : k === 'tax' ? taxRate : luxRate;
+    const set = (k, v) => { if (k === 'sci') sciRate = v; else if (k === 'tax') taxRate = v; else luxRate = v; };
+    let rem = diff;
+    for (const k of order) {
+      if (rem === 0) break;
+      const cur = get(k);
+      if (rem > 0) {
+        // Over 10 — shrink this slider
+        const shrink = Math.min(rem, cur);
+        set(k, cur - shrink);
+        rem -= shrink;
+      } else {
+        // Under 10 — grow this slider (up to its cap)
+        const grow = Math.min(-rem, caps[k] - cur);
+        set(k, cur + grow);
+        rem += grow;
+      }
+    }
+  };
+
+  const sci = makeRow('Science', sciRate, maxSci, v => {
     sciRate = v;
-    if (sciRate + taxRate > 10) taxRate = 10 - sciRate;
+    reconcile('sci');
     updateLabels();
   });
   const sciLabel = sci.label;
   const sciSlider = sci.slider;
 
-  const tax = makeRow('Tax', taxRate, v => {
+  const tax = makeRow('Tax', taxRate, maxRate, v => {
     taxRate = v;
-    if (sciRate + taxRate > 10) sciRate = 10 - taxRate;
+    reconcile('tax');
     updateLabels();
   });
   const taxLabel = tax.label;
   const taxSlider = tax.slider;
 
-  luxLabel.style.cssText = 'text-align:center;margin:6px 0;font-weight:bold';
-  panel.appendChild(luxLabel);
+  const lux = makeRow('Luxury', luxRate, maxRate, v => {
+    luxRate = v;
+    reconcile('lux');
+    updateLabels();
+  });
+  const luxLabel = lux.label;
+  const luxSlider = lux.slider;
 
   updateLabels();
 
