@@ -50,8 +50,11 @@ function isTooCloseToCity(gx, gy, cities, mapBase) {
 export function validateAction(gameState, mapBase, action, civSlot) {
   if (!action || !action.type) return 'Missing action type';
 
-  // Must be this civ's turn
-  if (civSlot !== gameState.turn.activeCiv) return 'Not your turn';
+  // Actions that can be performed even when it's not your turn
+  const ANYTIME_ACTIONS = [RESPOND_TREATY, RESPOND_DEMAND, RENAME_CITY, CHANGE_PRODUCTION, SET_WORKERS, SET_RESEARCH, CHANGE_RATES];
+  if (!ANYTIME_ACTIONS.includes(action.type) && civSlot !== gameState.turn.activeCiv) {
+    return 'Not your turn';
+  }
 
   switch (action.type) {
     case MOVE_UNIT: {

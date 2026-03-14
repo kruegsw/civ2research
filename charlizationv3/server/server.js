@@ -798,6 +798,7 @@ function sendGameStateToAll(roomId, room) {
       }),
       tileTerrains: room.mapBase.tileData.map(t => t.terrain),
       tileGoodyHuts: room.mapBase.tileData.map(t => t.goodyHut ? 1 : 0),
+      tileOwnership: room.mapBase.tileData.map(t => t.tileOwnership),
     }));
   }
 }

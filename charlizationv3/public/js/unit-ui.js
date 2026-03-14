@@ -144,6 +144,13 @@ export function applyTerrainUpdate(tileTerrains) {
   }
 }
 
+export function applyOwnershipUpdate(tileOwnership) {
+  if (!tileOwnership || !S.mpMapBase?.tileData) return;
+  for (let i = 0; i < tileOwnership.length && i < S.mpMapBase.tileData.length; i++) {
+    S.mpMapBase.tileData[i].tileOwnership = tileOwnership[i];
+  }
+}
+
 export function applyImprovementsUpdate(tileImprovements) {
   if (!tileImprovements || !S.mpMapBase?.tileData) return;
   // Lazy import — improvementFromByte already available via defs
@@ -510,7 +517,7 @@ export function buildOrderMenuItems(unitIdx) {
     if (!err) items.push({ label: 'Pillage', action: () => {
       showConfirmDialog('Pillage improvement?', () => {
         S.transport.sendRaw({ type: 'ACTION', action: { type: PILLAGE, unitIndex: unitIdx } });
-      });
+      }, 'Pillage?');
     }});
   }
 
@@ -546,7 +553,7 @@ export function buildOrderMenuItems(unitIdx) {
         spyItems.push({ label: `Incite Revolt (${cost}g)`, action: () => {
           showConfirmDialog(`Incite revolt in ${spyCity.name} for ${cost} gold?`, () => {
             S.transport.sendRaw({ type: 'ACTION', action: { type: INCITE_REVOLT, unitIndex: unitIdx } });
-          });
+          }, 'Incite Revolt?');
         }});
       }
     }
@@ -561,7 +568,7 @@ export function buildOrderMenuItems(unitIdx) {
         spyItems.push({ label: `Bribe ${tName} (${cost}g)`, action: () => {
           showConfirmDialog(`Bribe ${tName} for ${cost} gold?`, () => {
             S.transport.sendRaw({ type: 'ACTION', action: { type: BRIBE_UNIT, unitIndex: unitIdx, targetIndex: ti } });
-          });
+          }, 'Bribe Unit?');
         }});
       }
     }
@@ -608,7 +615,7 @@ export function buildOrderMenuItems(unitIdx) {
     action: () => {
       showConfirmDialog(`Disband ${UNIT_NAMES[u.type]}?`, () => {
         S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: unitIdx, order: 'disband' } });
-      });
+      }, 'Disband Unit?');
     },
   });
 

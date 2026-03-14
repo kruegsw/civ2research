@@ -136,7 +136,7 @@ export function initNewGame(mapResult, seatList) {
     turn: { number: 0, activeCiv: 1 },
     wonders: initWonders(),
     difficulty: 'chieftain',
-    barbarianActivity: 'normal',
+    barbarianActivity: 'roaming',
     version: 0,
     seatCivMap,
     unitBySaveIndex: null,

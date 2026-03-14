@@ -38,125 +38,28 @@ export function showOverlayMessage(msg) {
   setTimeout(() => el.remove(), 2500);
 }
 
-export function showConfirmDialog(msg, onConfirm) {
-  const existing = document.getElementById('confirm-dialog');
-  if (existing) existing.remove();
-
-  const overlay = document.createElement('div');
-  overlay.id = 'confirm-dialog';
-  overlay.className = 'civ2-dialog-overlay';
-
-  const frame = document.createElement('div');
-  frame.className = 'civ2-dialog-frame';
-
-  const titlebar = document.createElement('div');
-  titlebar.className = 'civ2-dialog-titlebar';
-  const titleSpan = document.createElement('span');
-  titleSpan.className = 'civ2-dialog-title';
-  titleSpan.textContent = 'Confirm';
-  titlebar.appendChild(titleSpan);
-  frame.appendChild(titlebar);
-
-  const panel = document.createElement('div');
-  panel.className = 'civ2-dialog-panel';
-  panel.style.cssText += ';text-align:center;padding:12px 16px;font:16px "Times New Roman",serif;color:#333';
-
-  const text = document.createElement('div');
-  text.textContent = msg;
-  text.style.cssText = 'text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-  panel.appendChild(text);
-  frame.appendChild(panel);
-
-  const btnRow = document.createElement('div');
-  btnRow.className = 'civ2-dialog-btn-row';
-
-  const yesBtn = document.createElement('button');
-  yesBtn.textContent = 'Yes';
-  yesBtn.className = 'civ2-btn';
-  yesBtn.addEventListener('click', () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); onConfirm(); });
-
-  const noBtn = document.createElement('button');
-  noBtn.textContent = 'No';
-  noBtn.className = 'civ2-btn';
-  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
-  noBtn.addEventListener('click', dismiss);
-
-  btnRow.appendChild(yesBtn);
-  btnRow.appendChild(noBtn);
-  frame.appendChild(btnRow);
-  overlay.appendChild(frame);
-  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
-
-  const keyHandler = e => {
-    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); yesBtn.click(); }
-    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); }
-  };
-  window.addEventListener('keydown', keyHandler, true);
-
-  document.body.appendChild(overlay);
+export function showConfirmDialog(msg, onConfirm, title = 'Confirm') {
+  createCiv2Dialog('confirm-dialog', title, panel => {
+    panel.style.cssText += ';text-align:center;padding:12px 16px;font:16px "Times New Roman",serif;color:#333';
+    const text = document.createElement('div');
+    text.textContent = msg;
+    text.style.cssText = 'text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+    panel.appendChild(text);
+  }, [
+    { label: 'No' },
+    { label: 'Yes', action: onConfirm },
+  ]);
 }
 
 // ── Unit dialogs ──
 
 export function showUnitPresentDialog(unitIndex) {
-  const existing = document.getElementById('unit-present-dialog');
-  if (existing) existing.remove();
-
   const unit = S.mpGameState?.units[unitIndex];
   if (!unit || unit.gx < 0) return;
   const isOwner = unit.owner === S.mpCivSlot;
   const unitName = UNIT_NAMES[unit.type] || `Unit ${unit.type}`;
-  const orderDesc = (unit.orders && unit.orders !== 'none') ? (ORDER_NAMES[unit.orders] || unit.orders) : '';
 
-  const overlay = document.createElement('div');
-  overlay.id = 'unit-present-dialog';
-  overlay.className = 'civ2-dialog-overlay';
-
-  const frame = document.createElement('div');
-  frame.className = 'civ2-dialog-frame';
-
-  // Title bar
-  const titlebar = document.createElement('div');
-  titlebar.className = 'civ2-dialog-titlebar';
-  const titleSpan = document.createElement('span');
-  titleSpan.className = 'civ2-dialog-title';
-  titleSpan.textContent = 'Unit Information';
-  titlebar.appendChild(titleSpan);
-  frame.appendChild(titlebar);
-
-  // Panel with unit info header + radio options
-  const panel = document.createElement('div');
-  panel.className = 'civ2-dialog-panel';
-
-  // Unit header: sprite on left, name on right
-  const header = document.createElement('div');
-  header.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 4px;margin-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.15)';
-
-  const thumb = _deps.renderUnitThumbnail(unit);
-  if (thumb) {
-    thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated';
-    header.appendChild(thumb);
-  }
-
-  const civName = S.mpGameState.civNames?.[unit.owner] || `Civ ${unit.owner}`;
-  const homeCity = (unit.homeCityId != null && unit.homeCityId !== 0xFFFF && unit.homeCityId !== 0x00FF)
-    ? S.mpGameState.cities?.[unit.homeCityId] : null;
-  const infoDiv = document.createElement('div');
-  infoDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-  const line1 = document.createElement('div');
-  line1.style.fontSize = '18px';
-  line1.textContent = `${civName} ${unitName}`;
-  infoDiv.appendChild(line1);
-  const line2 = document.createElement('div');
-  line2.style.cssText = 'font-size:14px;margin-top:2px';
-  line2.textContent = homeCity ? `Home City: ${homeCity.name}` : 'Home City: NONE';
-  infoDiv.appendChild(line2);
-  header.appendChild(infoDiv);
-
-  panel.appendChild(header);
-
-  const items = document.createElement('div');
-  items.className = 'civ2-dialog-items';
+  let selected = 'nochange';
 
   const options = [
     { id: 'nochange', label: 'No Changes', enabled: true },
@@ -166,95 +69,83 @@ export function showUnitPresentDialog(unitIndex) {
     { id: 'activate', label: 'Activate Unit', enabled: isOwner },
   ];
 
-  let selected = 'nochange';
+  createCiv2Dialog('unit-present-dialog', 'Unit Information', panel => {
+    // Unit header: sprite on left, name on right
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 4px;margin-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.15)';
 
-  for (const opt of options) {
-    const row = document.createElement('label');
-    row.className = 'civ2-dialog-radio' + (opt.enabled ? '' : ' disabled');
+    const thumb = _deps.renderUnitThumbnail(unit);
+    if (thumb) {
+      thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated';
+      header.appendChild(thumb);
+    }
 
-    const radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.name = 'unit-present-action';
-    radio.value = opt.id;
-    if (opt.id === 'nochange') radio.checked = true;
-    radio.addEventListener('change', () => {
-      if (!opt.enabled) { radio.checked = false; return; }
-      if (radio.checked) selected = opt.id;
-    });
+    const civName = S.mpGameState.civNames?.[unit.owner] || `Civ ${unit.owner}`;
+    const homeCity = (unit.homeCityId != null && unit.homeCityId !== 0xFFFF && unit.homeCityId !== 0x00FF)
+      ? S.mpGameState.cities?.[unit.homeCityId] : null;
+    const infoDiv = document.createElement('div');
+    infoDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+    const line1 = document.createElement('div');
+    line1.style.fontSize = '18px';
+    line1.textContent = `${civName} ${unitName}`;
+    infoDiv.appendChild(line1);
+    const line2 = document.createElement('div');
+    line2.style.cssText = 'font-size:14px;margin-top:2px';
+    line2.textContent = homeCity ? `Home City: ${homeCity.name}` : 'Home City: NONE';
+    infoDiv.appendChild(line2);
+    header.appendChild(infoDiv);
+    panel.appendChild(header);
 
-    const span = document.createElement('span');
-    span.textContent = opt.label;
+    const items = document.createElement('div');
+    items.className = 'civ2-dialog-items';
 
-    row.appendChild(radio);
-    row.appendChild(span);
-    items.appendChild(row);
-  }
+    for (const opt of options) {
+      const row = document.createElement('label');
+      row.className = 'civ2-dialog-radio' + (opt.enabled ? '' : ' disabled');
 
-  panel.appendChild(items);
-  frame.appendChild(panel);
-
-  // Button row
-  const btnRow = document.createElement('div');
-  btnRow.className = 'civ2-dialog-btn-row';
-
-  const okBtn = document.createElement('button');
-  okBtn.textContent = 'OK';
-  okBtn.className = 'civ2-btn';
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.className = 'civ2-btn';
-
-  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
-
-  okBtn.addEventListener('click', () => {
-    dismiss();
-    if (selected === 'nochange') return;
-    if (selected === 'wake') {
-      S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'wake' } });
-    } else if (selected === 'sentry') {
-      S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'sentry' } });
-    } else if (selected === 'disband') {
-      showConfirmDialog(`Disband ${unitName}?`, () => {
-        S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'disband' } });
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'unit-present-action';
+      radio.value = opt.id;
+      if (opt.id === 'nochange') radio.checked = true;
+      radio.addEventListener('change', () => {
+        if (!opt.enabled) { radio.checked = false; return; }
+        if (radio.checked) selected = opt.id;
       });
-    } else if (selected === 'activate') {
-      _deps.closeCityDialog();
-      _deps.selectUnit(unitIndex);
-      if (unit.orders && unit.orders !== 'none') {
+
+      const span = document.createElement('span');
+      span.textContent = opt.label;
+
+      row.appendChild(radio);
+      row.appendChild(span);
+      items.appendChild(row);
+    }
+
+    panel.appendChild(items);
+  }, [
+    { label: 'Cancel' },
+    { label: 'OK', action: () => {
+      if (selected === 'nochange') return;
+      if (selected === 'wake') {
         S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'wake' } });
+      } else if (selected === 'sentry') {
+        S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'sentry' } });
+      } else if (selected === 'disband') {
+        showConfirmDialog(`Disband ${unitName}?`, () => {
+          S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'disband' } });
+        }, 'Disband Unit?');
+      } else if (selected === 'activate') {
+        _deps.closeCityDialog();
+        _deps.selectUnit(unitIndex);
+        if (unit.orders && unit.orders !== 'none') {
+          S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'wake' } });
+        }
       }
-    }
-  });
-
-  cancelBtn.addEventListener('click', dismiss);
-
-  btnRow.appendChild(okBtn);
-  btnRow.appendChild(cancelBtn);
-  frame.appendChild(btnRow);
-  overlay.appendChild(frame);
-  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
-
-  const keyHandler = e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      okBtn.click();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      dismiss();
-    }
-  };
-  window.addEventListener('keydown', keyHandler, true);
-
-  document.body.appendChild(overlay);
+    }},
+  ]);
 }
 
 export function showUnitSupportedDialog(unitIndex) {
-  const existing = document.getElementById('unit-supported-dialog');
-  if (existing) existing.remove();
-
   const unit = S.mpGameState?.units[unitIndex];
   if (!unit || unit.gx < 0) return;
   const isOwner = unit.owner === S.mpCivSlot;
@@ -285,52 +176,7 @@ export function showUnitSupportedDialog(unitIndex) {
       : `Location: (${displayX}, ${displayY})`;
   }
 
-  const overlay = document.createElement('div');
-  overlay.id = 'unit-supported-dialog';
-  overlay.className = 'civ2-dialog-overlay';
-
-  const frame = document.createElement('div');
-  frame.className = 'civ2-dialog-frame';
-
-  // Title bar
-  const titlebar = document.createElement('div');
-  titlebar.className = 'civ2-dialog-titlebar';
-  const titleSpan = document.createElement('span');
-  titleSpan.className = 'civ2-dialog-title';
-  titleSpan.textContent = 'Unit Information';
-  titlebar.appendChild(titleSpan);
-  frame.appendChild(titlebar);
-
-  // Panel
-  const panel = document.createElement('div');
-  panel.className = 'civ2-dialog-panel';
-
-  // Unit header: sprite on left, info on right
-  const header = document.createElement('div');
-  header.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 4px;margin-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.15)';
-
-  const thumb = _deps.renderUnitThumbnail(unit);
-  if (thumb) {
-    thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated';
-    header.appendChild(thumb);
-  }
-
-  const infoDiv = document.createElement('div');
-  infoDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-  const line1 = document.createElement('div');
-  line1.style.fontSize = '18px';
-  line1.textContent = `${civName} ${unitName}`;
-  infoDiv.appendChild(line1);
-  const line2 = document.createElement('div');
-  line2.style.cssText = 'font-size:14px;margin-top:2px';
-  line2.textContent = locationStr;
-  infoDiv.appendChild(line2);
-  header.appendChild(infoDiv);
-  panel.appendChild(header);
-
-  // Radio options
-  const items = document.createElement('div');
-  items.className = 'civ2-dialog-items';
+  let selected = 'nochange';
 
   const options = [
     { id: 'nochange', label: 'No Changes', enabled: true },
@@ -338,75 +184,71 @@ export function showUnitSupportedDialog(unitIndex) {
     { id: 'disband', label: 'Disband Unit', enabled: isOwner },
   ];
 
-  let selected = 'nochange';
+  createCiv2Dialog('unit-supported-dialog', 'Unit Information', panel => {
+    // Unit header: sprite on left, info on right
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 4px;margin-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.15)';
 
-  for (const opt of options) {
-    const row = document.createElement('label');
-    row.className = 'civ2-dialog-radio' + (opt.enabled ? '' : ' disabled');
-
-    const radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.name = 'unit-supported-action';
-    radio.value = opt.id;
-    if (opt.id === 'nochange') radio.checked = true;
-    radio.addEventListener('change', () => {
-      if (!opt.enabled) { radio.checked = false; return; }
-      if (radio.checked) selected = opt.id;
-    });
-
-    const span = document.createElement('span');
-    span.textContent = opt.label;
-
-    row.appendChild(radio);
-    row.appendChild(span);
-    items.appendChild(row);
-  }
-
-  panel.appendChild(items);
-  frame.appendChild(panel);
-
-  // Button row
-  const btnRow = document.createElement('div');
-  btnRow.className = 'civ2-dialog-btn-row';
-
-  const okBtn = document.createElement('button');
-  okBtn.textContent = 'OK';
-  okBtn.className = 'civ2-btn';
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.className = 'civ2-btn';
-
-  const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
-
-  okBtn.addEventListener('click', () => {
-    dismiss();
-    if (selected === 'nochange') return;
-    if (selected === 'center') {
-      _deps.closeCityDialog();
-      _deps.centerOnTile(unit.gx, unit.gy);
-    } else if (selected === 'disband') {
-      showConfirmDialog(`Disband ${unitName}?`, () => {
-        S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'disband' } });
-      });
+    const thumb = _deps.renderUnitThumbnail(unit);
+    if (thumb) {
+      thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated';
+      header.appendChild(thumb);
     }
-  });
 
-  cancelBtn.addEventListener('click', dismiss);
+    const infoDiv = document.createElement('div');
+    infoDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+    const line1 = document.createElement('div');
+    line1.style.fontSize = '18px';
+    line1.textContent = `${civName} ${unitName}`;
+    infoDiv.appendChild(line1);
+    const line2 = document.createElement('div');
+    line2.style.cssText = 'font-size:14px;margin-top:2px';
+    line2.textContent = locationStr;
+    infoDiv.appendChild(line2);
+    header.appendChild(infoDiv);
+    panel.appendChild(header);
 
-  btnRow.appendChild(okBtn);
-  btnRow.appendChild(cancelBtn);
-  frame.appendChild(btnRow);
-  overlay.appendChild(frame);
-  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+    // Radio options
+    const items = document.createElement('div');
+    items.className = 'civ2-dialog-items';
 
-  const keyHandler = e => {
-    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); okBtn.click(); }
-    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); }
-  };
-  window.addEventListener('keydown', keyHandler, true);
+    for (const opt of options) {
+      const row = document.createElement('label');
+      row.className = 'civ2-dialog-radio' + (opt.enabled ? '' : ' disabled');
 
-  document.body.appendChild(overlay);
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'unit-supported-action';
+      radio.value = opt.id;
+      if (opt.id === 'nochange') radio.checked = true;
+      radio.addEventListener('change', () => {
+        if (!opt.enabled) { radio.checked = false; return; }
+        if (radio.checked) selected = opt.id;
+      });
+
+      const span = document.createElement('span');
+      span.textContent = opt.label;
+
+      row.appendChild(radio);
+      row.appendChild(span);
+      items.appendChild(row);
+    }
+
+    panel.appendChild(items);
+  }, [
+    { label: 'Cancel' },
+    { label: 'OK', action: () => {
+      if (selected === 'nochange') return;
+      if (selected === 'center') {
+        _deps.closeCityDialog();
+        _deps.centerOnTile(unit.gx, unit.gy);
+      } else if (selected === 'disband') {
+        showConfirmDialog(`Disband ${unitName}?`, () => {
+          S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'disband' } });
+        }, 'Disband Unit?');
+      }
+    }},
+  ]);
 }
 
 // ── City naming ──
@@ -516,7 +358,8 @@ export function showCityFoundedDialog(cityName, year, onDismiss) {
  * @param {Array<{label:string, action:function}>} buttons - button definitions
  * @returns {{ overlay, dismiss }} - DOM element and dismiss function
  */
-export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'OK' }]) {
+export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'OK' }], opts = {}) {
+  const { showClose = true } = opts;
   const existing = document.getElementById(id);
   if (existing) existing.remove();
 
@@ -529,10 +372,12 @@ export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'O
 
   const titlebar = document.createElement('div');
   titlebar.className = 'civ2-dialog-titlebar';
+  titlebar.style.position = 'relative';
   const titleSpan = document.createElement('span');
   titleSpan.className = 'civ2-dialog-title';
   titleSpan.textContent = title;
   titlebar.appendChild(titleSpan);
+
   frame.appendChild(titlebar);
 
   const panel = document.createElement('div');
@@ -541,6 +386,16 @@ export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'O
   frame.appendChild(panel);
 
   const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
+
+  // Close (X) button in title bar
+  if (showClose) {
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'civ2-dialog-close';
+    closeBtn.textContent = '\u2715';
+    closeBtn.title = 'Close';
+    closeBtn.addEventListener('click', () => { dismiss(); if (buttons[0]?.action) buttons[0].action(); });
+    titlebar.appendChild(closeBtn);
+  }
 
   const btnRow = document.createElement('div');
   btnRow.className = 'civ2-dialog-btn-row';
@@ -849,9 +704,6 @@ export function showTurnEvents(events) {
 // ── Rate sliders ──
 
 export function showRateSliders() {
-  const existing = document.getElementById('rate-sliders');
-  if (existing) existing.remove();
-
   if (!S.mpGameState || !S.mpCivSlot) return;
   const civ = S.mpGameState.civs?.[S.mpCivSlot];
   if (!civ) return;
@@ -865,17 +717,7 @@ export function showRateSliders() {
   if (sciRate + taxRate > 10) taxRate = 10 - sciRate;
   let luxRate = 10 - sciRate - taxRate;
 
-  const overlay = document.createElement('div');
-  overlay.id = 'rate-sliders';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
-
-  const panel = document.createElement('div');
-  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;padding:16px 24px;font:14px "Times New Roman",serif;color:#333;min-width:300px';
-
-  const title = document.createElement('div');
-  title.textContent = 'Tax Rates';
-  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:8px;text-align:center';
-  panel.appendChild(title);
+  let sciSlider, taxSlider, luxSlider, sciLabel, taxLabel, luxLabel;
 
   const updateLabels = () => {
     sciSlider.value = sciRate;
@@ -886,42 +728,11 @@ export function showRateSliders() {
     luxLabel.textContent = `Luxury: ${luxRate * 10}%`;
   };
 
-  const makeRow = (label, value, cap, onChange) => {
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin:4px 0';
-    const lbl = document.createElement('span');
-    lbl.style.width = '100px';
-    const sliderWrap = document.createElement('div');
-    sliderWrap.style.cssText = 'flex:1;position:relative';
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.min = 0; slider.max = 10; slider.step = 1;
-    slider.value = value;
-    slider.style.cssText = 'width:100%;position:relative;z-index:1';
-    if (cap < 10) {
-      const pct = cap * 10;
-      slider.style.background = `linear-gradient(to right, #b8a070 0%, #b8a070 ${pct}%, #888 ${pct}%, #888 100%)`;
-    }
-    slider.addEventListener('input', () => {
-      let v = parseInt(slider.value);
-      if (v > cap) { v = cap; slider.value = v; }
-      onChange(v);
-    });
-    sliderWrap.appendChild(slider);
-    row.appendChild(lbl);
-    row.appendChild(sliderWrap);
-    panel.appendChild(row);
-    return { label: lbl, slider };
-  };
-
   // When one slider moves, adjust the other two so total = 10.
-  // Priority: shrink the "next" slider first, then the third.
-  // If freeing points (slider lowered), grow the "next" slider first.
   const reconcile = (moved) => {
     const total = sciRate + taxRate + luxRate;
     if (total === 10) return;
-    const diff = total - 10; // positive = over, negative = under
-    // Order of adjustment: cycle sci->tax->lux->sci
+    const diff = total - 10;
     const order = moved === 'sci' ? ['tax', 'lux'] :
                   moved === 'tax' ? ['lux', 'sci'] : ['sci', 'tax'];
     const caps = { sci: maxSci, tax: maxRate, lux: maxRate };
@@ -932,12 +743,10 @@ export function showRateSliders() {
       if (rem === 0) break;
       const cur = get(k);
       if (rem > 0) {
-        // Over 10 — shrink this slider
         const shrink = Math.min(rem, cur);
         set(k, cur - shrink);
         rem -= shrink;
       } else {
-        // Under 10 — grow this slider (up to its cap)
         const grow = Math.min(-rem, caps[k] - cur);
         set(k, cur + grow);
         rem += grow;
@@ -945,57 +754,74 @@ export function showRateSliders() {
     }
   };
 
-  const sci = makeRow('Science', sciRate, maxSci, v => {
-    sciRate = v;
-    reconcile('sci');
-    updateLabels();
-  });
-  const sciLabel = sci.label;
-  const sciSlider = sci.slider;
-
-  const tax = makeRow('Tax', taxRate, maxRate, v => {
-    taxRate = v;
-    reconcile('tax');
-    updateLabels();
-  });
-  const taxLabel = tax.label;
-  const taxSlider = tax.slider;
-
-  const lux = makeRow('Luxury', luxRate, maxRate, v => {
-    luxRate = v;
-    reconcile('lux');
-    updateLabels();
-  });
-  const luxLabel = lux.label;
-  const luxSlider = lux.slider;
-
-  updateLabels();
-
-  const btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:12px;justify-content:center;margin-top:8px';
-
-  const okBtn = document.createElement('button');
-  okBtn.textContent = 'OK';
-  okBtn.className = 'civ2-btn';
-  okBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
-  okBtn.addEventListener('click', () => {
-    overlay.remove();
-    S.transport.sendRaw({
-      type: 'ACTION',
-      action: { type: CHANGE_RATES, scienceRate: sciRate, taxRate: taxRate },
+  const makeRow = (parentPanel, label, value, cap, onChange) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin:6px 0';
+    const lbl = document.createElement('span');
+    lbl.style.cssText = 'width:100px;font:14px "Times New Roman",serif;color:#333';
+    const sliderWrap = document.createElement('div');
+    sliderWrap.style.cssText = 'flex:1;position:relative';
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = 0; slider.max = 10; slider.step = 1;
+    slider.value = value;
+    slider.className = 'civ2-slider';
+    slider.addEventListener('input', () => {
+      let v = parseInt(slider.value);
+      if (v > cap) { v = cap; slider.value = v; }
+      onChange(v);
     });
-  });
+    // Tick marks
+    const ticks = document.createElement('div');
+    ticks.style.cssText = 'display:flex;justify-content:space-between;margin-top:1px;font-size:9px;color:#666;user-select:none';
+    for (let t = 0; t <= 10; t++) {
+      const tick = document.createElement('span');
+      tick.textContent = (t * 10) + '';
+      ticks.appendChild(tick);
+    }
+    sliderWrap.appendChild(slider);
+    sliderWrap.appendChild(ticks);
+    row.appendChild(lbl);
+    row.appendChild(sliderWrap);
+    parentPanel.appendChild(row);
+    return { label: lbl, slider };
+  };
 
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.className = 'civ2-btn';
-  cancelBtn.style.cssText = 'padding:4px 16px;cursor:pointer';
-  cancelBtn.addEventListener('click', () => overlay.remove());
+  createCiv2Dialog('rate-sliders', 'Tax Rate', panel => {
+    panel.style.cssText += ';min-width:320px;padding:12px 16px';
 
-  btnRow.appendChild(okBtn);
-  btnRow.appendChild(cancelBtn);
-  panel.appendChild(btnRow);
-  overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  document.body.appendChild(overlay);
+    const sci = makeRow(panel, 'Science', sciRate, maxSci, v => {
+      sciRate = v;
+      reconcile('sci');
+      updateLabels();
+    });
+    sciLabel = sci.label;
+    sciSlider = sci.slider;
+
+    const tax = makeRow(panel, 'Tax', taxRate, maxRate, v => {
+      taxRate = v;
+      reconcile('tax');
+      updateLabels();
+    });
+    taxLabel = tax.label;
+    taxSlider = tax.slider;
+
+    const lux = makeRow(panel, 'Luxury', luxRate, maxRate, v => {
+      luxRate = v;
+      reconcile('lux');
+      updateLabels();
+    });
+    luxLabel = lux.label;
+    luxSlider = lux.slider;
+
+    updateLabels();
+  }, [
+    { label: 'Cancel' },
+    { label: 'OK', action: () => {
+      S.transport.sendRaw({
+        type: 'ACTION',
+        action: { type: CHANGE_RATES, scienceRate: sciRate, taxRate: taxRate },
+      });
+    }},
+  ]);
 }

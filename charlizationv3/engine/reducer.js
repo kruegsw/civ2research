@@ -491,20 +491,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
               state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
               const ci = state.cities.findIndex(c => c === defCity);
               if (ci >= 0) {
-                const capturedSize = Math.max(1, defCity.size - 1);
-                const resistanceTurns = Math.max(1, Math.floor(defCity.size / 2));
-                const captured = { ...defCity,
-                  owner: unit.owner,
-                  size: capturedSize,
-                  civilDisorder: false, weLoveKingDay: false, soldThisTurn: false,
-                  specialists: [],
-                  resistanceTurns,
-                };
-                captured.workedTiles = captured.workedTiles.length > captured.size
-                  ? captured.workedTiles.slice(0, captured.size) : captured.workedTiles;
-                state.cities[ci] = captured;
-                // Rehome captured city's units to nearest own city
-                rehomeUnits(state, ci, defOwner);
+                captureCity(state, prev, mapBase, ci, unit.owner, defOwner);
                 state.combatResult = { type: 'capture', cityName: defCity.name, civSlot };
               }
             }
@@ -537,7 +524,14 @@ export function applyAction(prev, mapBase, action, civSlot) {
         };
 
         // Check civ elimination for the losing side
-        checkCivElimination(state, result.attackerWins ? defOwner : unit.owner);
+        const eliminatedCiv = result.attackerWins ? defOwner : unit.owner;
+        checkCivElimination(state, eliminatedCiv);
+
+        // Barbarian uprising when a civ is destroyed via city capture
+        if (result.attackerWins && defCity && eliminatedCiv > 0 &&
+            !(state.civsAlive & (1 << eliminatedCiv))) {
+          spawnBarbarianUprising(state, mapBase, dest.gx, dest.gy);
+        }
       } else {
         // ── Normal movement (no enemy) ──
         const prevGx = unit.gx, prevGy = unit.gy;
@@ -684,6 +678,21 @@ export function applyAction(prev, mapBase, action, civSlot) {
           ...mapBase.tileData[cityTileIdx].improvements,
           city: true, road: true,
         };
+        // Set tile ownership to founding civ
+        mapBase.tileData[cityTileIdx].tileOwnership = unit.owner;
+      }
+
+      // Set tile ownership for city radius tiles
+      for (let ri = 0; ri < 20; ri++) {
+        const rpos = radiusTileCoords(newCity.gx, newCity.gy, ri, mapBase);
+        if (!rpos) continue;
+        const rTileIdx = rpos.gy * mapBase.mw + rpos.gx;
+        const rTile = mapBase.tileData[rTileIdx];
+        if (!rTile) continue;
+        // Only claim unclaimed tiles (tileOwnership 0 or 0x0F means unclaimed)
+        if (rTile.tileOwnership === 0 || rTile.tileOwnership === 0x0F) {
+          rTile.tileOwnership = unit.owner;
+        }
       }
 
       // Update visibility with city radius (cities have radius 2)
@@ -881,6 +890,29 @@ export function applyAction(prev, mapBase, action, civSlot) {
         mapBase.tileData[razeTileIdx].improvements = {
           ...mapBase.tileData[razeTileIdx].improvements, city: false,
         };
+        // Clear tile ownership on city tile
+        mapBase.tileData[razeTileIdx].tileOwnership = 0;
+      }
+      // Clear tile ownership in city radius (only tiles not claimed by another of our cities)
+      for (let ri = 0; ri < 20; ri++) {
+        const rpos = radiusTileCoords(razeCity.gx, razeCity.gy, ri, mapBase);
+        if (!rpos) continue;
+        const rTileIdx = rpos.gy * mapBase.mw + rpos.gx;
+        const rTile = mapBase.tileData[rTileIdx];
+        if (!rTile || rTile.tileOwnership !== razeCity.owner) continue;
+        // Check if any other city of this owner claims this tile
+        const otherClaims = state.cities.some((c, ci) =>
+          ci !== razeCi && c.owner === razeCity.owner && c.size > 0 &&
+          CITY_RADIUS_DOUBLED.some(([ddx, ddy]) => {
+            const parC = c.gy & 1;
+            const parT = ((c.gy + ddy) % 2 + 2) % 2;
+            const tgx = c.gx + ((parC + ddx - parT) >> 1);
+            const tgy = c.gy + ddy;
+            const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+            return wgx === rpos.gx && tgy === rpos.gy;
+          })
+        );
+        if (!otherClaims) rTile.tileOwnership = 0;
       }
       state.cities[razeCi] = { ...razeCity, size: 0, owner: -1 };
       checkCivElimination(state, civSlot);
@@ -1054,11 +1086,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const iCiv = { ...state.civs[civSlot] };
       iCiv.treasury = (iCiv.treasury || 0) - iCost;
       state.civs[civSlot] = iCiv;
-      // Transfer city ownership
+      // Transfer city ownership via captureCity (incite revolt skips random building destruction)
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
-      state.cities[iCityIdx] = { ...iCity, owner: civSlot, isOccupied: true };
-      // Rehome the old owner's units from this city
-      rehomeUnits(state, iCityIdx, oldOwner);
+      captureCity(state, prev, mapBase, iCityIdx, civSlot, oldOwner, { skipBuildingDestruction: true });
       // Kill enemy units in the city
       for (let ui = 0; ui < state.units.length; ui++) {
         const u = state.units[ui];
@@ -1073,6 +1103,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0 };
       }
       checkCivElimination(state, oldOwner);
+      // Barbarian uprising when civ is destroyed via incite revolt
+      if (oldOwner > 0 && !(state.civsAlive & (1 << oldOwner))) {
+        spawnBarbarianUprising(state, mapBase, iCity.gx, iCity.gy);
+      }
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push({ type: 'cityIncited', civSlot, cityName: iCity.name, from: oldOwner, cost: iCost });
       break;
@@ -1365,6 +1399,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // ── Barbarian AI movement phase (runs once per full turn cycle) ──
       if (turnNumber > state.turn.number) {
         processBarbarianAI(state, prev, mapBase);
+        processBarbCampProduction(state, mapBase);
       }
 
       state.turn = { activeCiv: next, number: turnNumber };
@@ -2138,9 +2173,10 @@ function spawnBarbarians(state, mapBase) {
       };
 
       state.cities = [...state.cities, camp];
+      const campIdx = state.cities.length - 1;
 
-      // Remove the unit that founded the camp
-      state.units[ui] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+      // Keep the founding unit alive as the camp's garrison
+      state.units[ui] = { ...u, homeCityId: campIdx };
 
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push({ type: 'barbarianCamp', gx: u.gx, gy: u.gy });
@@ -2227,6 +2263,127 @@ function findFirstAliveCiv(civsAlive) {
     if (civsAlive & (1 << i)) return i;
   }
   return 1;
+}
+
+/**
+ * Buildings always destroyed on city capture (Civ2 rules).
+ * Palace (1), Courthouse (7), City Walls (8) are always lost.
+ */
+const ALWAYS_DESTROYED_ON_CAPTURE = new Set([1, 7, 8]);
+
+/**
+ * Comprehensive city capture: transfers ownership, destroys buildings,
+ * updates tile ownership, resets production, and handles all bookkeeping.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} prev - previous (immutable) state reference for clone guards
+ * @param {object} mapBase - immutable map data + accessors
+ * @param {number} cityIndex - index into state.cities
+ * @param {number} newOwner - civ slot of the conqueror (0 for barbarians)
+ * @param {number} oldOwner - civ slot of the previous owner
+ * @param {object} [opts] - optional overrides
+ * @param {boolean} [opts.skipBuildingDestruction] - skip random building destruction (e.g. incite revolt)
+ */
+function captureCity(state, prev, mapBase, cityIndex, newOwner, oldOwner, opts = {}) {
+  const city = state.cities[cityIndex];
+
+  // ── Size reduction (min 1) ──
+  const capturedSize = Math.max(1, city.size - 1);
+  const resistanceTurns = Math.max(1, Math.floor(city.size / 2));
+
+  // ── Building destruction ──
+  let buildings = new Set(city.buildings);
+  // Always destroy Palace, Courthouse, City Walls
+  for (const bid of ALWAYS_DESTROYED_ON_CAPTURE) {
+    buildings.delete(bid);
+  }
+  // Random destruction of other buildings (~33% chance each, per Civ2 rules)
+  if (!opts.skipBuildingDestruction) {
+    const remaining = [...buildings];
+    for (const bid of remaining) {
+      if (Math.random() < 0.33) buildings.delete(bid);
+    }
+  }
+
+  // ── Create captured city object ──
+  const captured = {
+    ...city,
+    owner: newOwner,
+    size: capturedSize,
+    civilDisorder: false,
+    weLoveKingDay: false,
+    soldThisTurn: false,
+    specialists: [],
+    resistanceTurns,
+    buildings,
+    hasWalls: buildings.has(8), // always false since we deleted 8 above
+    hasPalace: buildings.has(1), // always false since we deleted 1 above
+    shieldsInBox: 0,
+    foodInBox: 0,
+    itemInProduction: { type: 'unit', id: 2 }, // reset to Warriors
+    tradeRoutes: [], // trade routes cancelled on capture
+  };
+
+  // Trim workedTiles to match new (reduced) size
+  if (captured.workedTiles.length > captured.size) {
+    captured.workedTiles = captured.workedTiles.slice(0, captured.size);
+  }
+
+  state.cities[cityIndex] = captured;
+
+  // ── Tile ownership: update city tile ──
+  const cityTileIdx = city.gy * mapBase.mw + city.gx;
+  if (mapBase.tileData[cityTileIdx]) {
+    mapBase.tileData[cityTileIdx].tileOwnership = newOwner;
+  }
+
+  // ── Tile ownership: update city radius tiles ──
+  for (let i = 0; i < 20; i++) {
+    const pos = radiusTileCoords(city.gx, city.gy, i, mapBase);
+    if (!pos) continue;
+    const tIdx = pos.gy * mapBase.mw + pos.gx;
+    const tile = mapBase.tileData[tIdx];
+    if (!tile) continue;
+    // Only update tiles that belonged to the old owner
+    if (tile.tileOwnership === oldOwner) {
+      // Check if any other city of the old owner also claims this tile
+      const otherCityClaims = state.cities.some((c, ci) =>
+        ci !== cityIndex && c.owner === oldOwner && c.size > 0 &&
+        CITY_RADIUS_DOUBLED.some(([ddx, ddy]) => {
+          const parC = c.gy & 1;
+          const parT = ((c.gy + ddy) % 2 + 2) % 2;
+          const tgx = c.gx + ((parC + ddx - parT) >> 1);
+          const tgy = c.gy + ddy;
+          const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+          return wgx === pos.gx && tgy === pos.gy;
+        })
+      );
+      if (!otherCityClaims) {
+        tile.tileOwnership = newOwner;
+      }
+    }
+  }
+
+  // ── Rehome old owner's units that were based here ──
+  rehomeUnits(state, cityIndex, oldOwner);
+
+  // ── If old owner lost their palace, relocate palace to their largest remaining city ──
+  if (city.buildings.has(1)) { // old city had a palace
+    let bestPalaceCi = -1, bestPalaceSize = 0;
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      const c = state.cities[ci];
+      if (c.owner === oldOwner && c.size > 0 && ci !== cityIndex) {
+        if (c.size > bestPalaceSize) { bestPalaceSize = c.size; bestPalaceCi = ci; }
+      }
+    }
+    if (bestPalaceCi >= 0) {
+      const palaceCity = { ...state.cities[bestPalaceCi] };
+      palaceCity.buildings = new Set(palaceCity.buildings);
+      palaceCity.buildings.add(1); // Palace
+      palaceCity.hasPalace = true;
+      state.cities[bestPalaceCi] = palaceCity;
+    }
+  }
 }
 
 /** Mark a unit dead (gx=-1). */
@@ -2429,8 +2586,7 @@ function processBarbarianAI(state, prev, mapBase) {
               const ci = state.cities.findIndex(c => c === defCity);
               if (ci >= 0) {
                 const defOwner = defCity.owner;
-                state.cities[ci] = { ...defCity, owner: 0, size: Math.max(1, defCity.size - 1) };
-                rehomeUnits(state, ci, defOwner);
+                captureCity(state, prev, mapBase, ci, 0, defOwner);
                 if (!state.turnEvents) state.turnEvents = [];
                 state.turnEvents.push({ type: 'barbarianCapture', cityName: defCity.name });
               }
@@ -2445,6 +2601,12 @@ function processBarbarianAI(state, prev, mapBase) {
           }
 
           checkCivElimination(state, defender.owner);
+
+          // Barbarian uprising when barbarian AI kills last city of a civ
+          if (defCity && defender.owner > 0 &&
+              !(state.civsAlive & (1 << defender.owner))) {
+            spawnBarbarianUprising(state, mapBase, defCity.gx, defCity.gy);
+          }
         } else {
           killUnit(state, ui);
           state.units[bestDefIdx] = {
@@ -2475,13 +2637,133 @@ function processBarbarianAI(state, prev, mapBase) {
 }
 
 /**
+ * Spawn barbarian units when a civ is destroyed (last city captured).
+ * 2-4 barbarian units of appropriate era type on random land tiles within
+ * distance 5 of the captured city.
+ */
+function spawnBarbarianUprising(state, mapBase, cityGx, cityGy) {
+  const activity = state.barbarianActivity || 'none';
+  if (activity === 'none') return;
+
+  const unitType = getBarbUnitType(state);
+  const count = 2 + Math.floor(Math.random() * 3); // 2-4
+
+  // Collect candidate land tiles within distance 5
+  const candidates = [];
+  for (let dy = -5; dy <= 5; dy++) {
+    for (let dx = -5; dx <= 5; dx++) {
+      if (Math.abs(dx) + Math.abs(dy) > 5) continue;
+      let gx = cityGx + dx;
+      const gy = cityGy + dy;
+      if (gy < 0 || gy >= mapBase.mh) continue;
+      if (mapBase.wraps) {
+        gx = ((gx % mapBase.mw) + mapBase.mw) % mapBase.mw;
+      } else if (gx < 0 || gx >= mapBase.mw) {
+        continue;
+      }
+      const terrain = mapBase.getTerrain(gx, gy);
+      if (terrain === 10) continue; // skip ocean
+      // Skip tiles with non-barbarian cities
+      if (state.cities.some(c => c.gx === gx && c.gy === gy && c.owner !== 0 && c.size > 0)) continue;
+      candidates.push({ gx, gy });
+    }
+  }
+
+  if (candidates.length === 0) return;
+
+  // Shuffle candidates
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  state.units = [...state.units];
+  let spawned = 0;
+  for (let i = 0; i < count && i < candidates.length; i++) {
+    const loc = candidates[i];
+    state.units.push(makeUnit(
+      unitType, 0, loc.gx, loc.gy,
+      UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER
+    ));
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, 0, loc.gx, loc.gy, mapBase.wraps);
+    spawned++;
+  }
+
+  if (spawned > 0) {
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({ type: 'barbarianUprising', count: spawned, gx: cityGx, gy: cityGy });
+  }
+}
+
+/**
+ * Process barbarian camp production. Each camp accumulates 5 shields/turn
+ * and produces era-appropriate military units when enough shields are banked.
+ * Called once per full turn cycle.
+ */
+function processBarbCampProduction(state, mapBase) {
+  const activity = state.barbarianActivity || 'none';
+  if (activity === 'none') return;
+
+  // Count existing barbarian units
+  let barbCount = 0;
+  for (const u of state.units) {
+    if (u.owner === 0 && u.gx >= 0) barbCount++;
+  }
+
+  const unitType = getBarbUnitType(state);
+  const unitCost = UNIT_COSTS[unitType]; // already in production units (×10)
+
+  let citiesCloned = false;
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    const city = state.cities[ci];
+    if (city.owner !== 0 || city.size <= 0) continue;
+
+    // Ensure cities array is cloned once
+    if (!citiesCloned) {
+      state.cities = [...state.cities];
+      citiesCloned = true;
+    }
+
+    // Clone this city to mutate
+    const camp = { ...city };
+
+    // Set production target
+    camp.production = { type: 'unit', id: unitType };
+
+    // Accumulate shields (flat 5 per turn for barbarian camps)
+    camp.shieldsInBox = (camp.shieldsInBox || 0) + 5;
+
+    // Check if enough shields to produce a unit
+    // unitCost is already base×10; production threshold is unitCost * MOVEMENT_MULTIPLIER
+    if (camp.shieldsInBox >= unitCost * MOVEMENT_MULTIPLIER && barbCount < BARBARIAN_MAX_UNITS) {
+      camp.shieldsInBox = 0;
+
+      // Create the new unit at the camp's location
+      state.units = [...state.units];
+      const newUnit = makeUnit(
+        unitType, 0, camp.gx, camp.gy,
+        UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER
+      );
+      newUnit.homeCityId = ci;
+      state.units.push(newUnit);
+      barbCount++;
+
+      // Update visibility for the new unit
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, 0, camp.gx, camp.gy, mapBase.wraps);
+    }
+
+    state.cities[ci] = camp;
+  }
+}
+
+/**
  * Check if a barbarian unit can enter a tile (terrain/domain/stacking).
  */
 function barbCanEnter(gx, gy, domain, state, mapBase) {
   const terrain = mapBase.getTerrain(gx, gy);
   if (domain === 0 && terrain === 10) return false;
   if (domain === 1 && terrain !== 10) return false;
-  if (state.units.some(u => u.gx === gx && u.gy === gy && u.owner === 0 && u.gx >= 0)) return false;
+  // Barbarian units are allowed to stack on the same tile (no stacking check)
   if (state.cities.some(c => c.gx === gx && c.gy === gy && c.owner === 0 && c.size > 0)) return false;
   return true;
 }

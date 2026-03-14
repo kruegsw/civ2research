@@ -166,9 +166,11 @@ function cdHandleClick(clientX, clientY) {
     showProductionPicker(cdCity, cdCityIndex);
   } else if (result && result.action === 'buy') {
     if (!S.mpGameState || !S.mpMapBase || S.mpCivSlot == null || cdCity.owner !== S.mpCivSlot) return;
+    if (S.mpGameState.turn.activeCiv !== S.mpCivSlot) { showOverlayMessage('Cannot rush-buy — not your turn'); return; }
     handleRushBuy(cdCity, cdCityIndex);
   } else if (result && result.action === 'sell') {
     if (!S.mpGameState || !S.mpMapBase || S.mpCivSlot == null || cdCity.owner !== S.mpCivSlot) return;
+    if (S.mpGameState.turn.activeCiv !== S.mpCivSlot) { showOverlayMessage('Cannot sell buildings — not your turn'); return; }
     if (result.buildingId != null) {
       // Direct sell from improvement list sell icon
       const name = IMPROVE_NAMES[result.buildingId] || 'Building';
@@ -179,7 +181,7 @@ function cdHandleClick(clientX, clientY) {
           type: 'ACTION',
           action: { type: SELL_BUILDING, cityIndex: cdCityIndex, buildingId: result.buildingId },
         });
-      });
+      }, 'Sell Building?');
     } else {
       showSellBuildingPicker(cdCity, cdCityIndex);
     }
@@ -343,115 +345,111 @@ function cdRerender() {
 // ═══════════════════════════════════════════════════════════════════
 
 function showProductionPicker(city, cityIndex, onDismiss) {
-  // Remove any existing picker
-  const existing = document.getElementById('production-picker');
-  if (existing) existing.remove();
-
-  const overlay = document.createElement('div');
-  overlay.id = 'production-picker';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
-
-  const panel = document.createElement('div');
-  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;max-height:70vh;overflow-y:auto;padding:8px;min-width:280px;font:14px "Times New Roman",serif;color:#333';
-
-  const title = document.createElement('div');
-  title.textContent = `${city.name} — Change Production`;
-  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:6px;text-align:center';
-  panel.appendChild(title);
-
   const hasBuilding = id => city.buildings && city.buildings.has(id);
   const civTechs = S.mpGameState.civTechs?.[city.owner];
   const hasTech = (id) => id < 0 || (civTechs ? civTechs.has(id) : id === -1);
   console.log('[prodpicker] city.owner=', city.owner, 'civTechs=', civTechs, 'isSet=', civTechs instanceof Set, 'techs=', civTechs ? [...civTechs] : null);
 
-  // Build list of available items
-  const items = [];
-
-  // Units — filtered by tech prerequisites and obsolescence
+  // Build list of available items by category
+  const unitItems = [];
   for (let id = 0; id < UNIT_NAMES.length; id++) {
     if (!UNIT_NAMES[id] || UNIT_COSTS[id] == null) continue;
     const prereq = UNIT_PREREQS[id] ?? -1;
     const obsolete = UNIT_OBSOLETE[id] ?? -1;
-    if (prereq === -2 || obsolete === -2) continue; // unbuildable
+    if (prereq === -2 || obsolete === -2) continue;
     if (prereq >= 0 && !hasTech(prereq)) continue;
     if (obsolete >= 0 && hasTech(obsolete)) continue;
-    items.push({ type: 'unit', id, name: UNIT_NAMES[id], cost: UNIT_COSTS[id] });
+    unitItems.push({ type: 'unit', id, name: UNIT_NAMES[id], cost: UNIT_COSTS[id] });
   }
 
-  // Buildings — filtered by prereqs, skip Palace=1, skip already-built
+  const buildingItems = [];
   for (let id = 2; id <= 38; id++) {
     if (!IMPROVE_NAMES[id] || IMPROVE_COSTS[id] == null) continue;
     if (hasBuilding(id)) continue;
     const prereq = IMPROVE_PREREQS[id] ?? -1;
     if (prereq >= 0 && !hasTech(prereq)) continue;
-    items.push({ type: 'building', id, name: IMPROVE_NAMES[id], cost: IMPROVE_COSTS[id] });
+    buildingItems.push({ type: 'building', id, name: IMPROVE_NAMES[id], cost: IMPROVE_COSTS[id] });
   }
 
-  // Wonders — filtered by prereqs, skip already-built globally
+  const wonderItems = [];
   for (let i = 0; i < WONDER_NAMES.length; i++) {
     const wid = i + 39;
     if (!WONDER_NAMES[i] || WONDER_COSTS[i] == null) continue;
-    // Check if wonder already built by anyone
     if (S.mpGameState.wonders && S.mpGameState.wonders[i] &&
         S.mpGameState.wonders[i].cityIndex != null) continue;
     const prereq = WONDER_PREREQS[i] ?? -1;
     if (prereq >= 0 && !hasTech(prereq)) continue;
-    items.push({ type: 'wonder', id: wid, name: WONDER_NAMES[i], cost: WONDER_COSTS[i] });
+    wonderItems.push({ type: 'wonder', id: wid, name: WONDER_NAMES[i], cost: WONDER_COSTS[i] });
   }
 
   const rows = [];
-  for (const item of items) {
-    const row = document.createElement('div');
-    row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between';
-    row.onmouseenter = () => { if (!row.classList.contains('pp-highlight')) row.style.background = '#c0a070'; };
-    row.onmouseleave = () => { if (!row.classList.contains('pp-highlight')) row.style.background = ''; };
-
-    const label = document.createElement('span');
-    label.textContent = item.name;
-    const costLabel = document.createElement('span');
-    costLabel.textContent = `${item.cost / 10} shields`;
-    costLabel.style.color = '#666';
-    row.appendChild(label);
-    row.appendChild(costLabel);
-
-    row.addEventListener('click', () => {
-      window.removeEventListener('keydown', ppKeyHandler, true);
-      S.transport.sendRaw({
-        type: 'ACTION',
-        action: {
-          type: CHANGE_PRODUCTION,
-          cityIndex,
-          item: { type: item.type, id: item.id },
-        },
-      });
-      overlay.remove();
-      if (onDismiss) onDismiss();
-    });
-    panel.appendChild(row);
-    rows.push(row);
-  }
-
-  // Cancel button
-  const cancel = document.createElement('div');
-  cancel.textContent = 'Cancel';
-  cancel.style.cssText = 'text-align:center;padding:6px;margin-top:6px;cursor:pointer;font-weight:bold;border-top:1px solid #a08060';
-  cancel.addEventListener('click', () => { window.removeEventListener('keydown', ppKeyHandler, true); overlay.remove(); if (onDismiss) onDismiss(); });
-  panel.appendChild(cancel);
-
-  // Arrow key navigation
   let ppHighlight = -1;
+
   function ppSetHighlight(idx) {
     if (ppHighlight >= 0 && ppHighlight < rows.length) {
       rows[ppHighlight].style.background = '';
+      rows[ppHighlight].style.color = '#333';
       rows[ppHighlight].classList.remove('pp-highlight');
     }
     ppHighlight = idx;
     if (ppHighlight >= 0 && ppHighlight < rows.length) {
-      rows[ppHighlight].style.background = '#c0a070';
+      rows[ppHighlight].style.background = '#0a246a';
+      rows[ppHighlight].style.color = '#fff';
       rows[ppHighlight].classList.add('pp-highlight');
       rows[ppHighlight].scrollIntoView({ block: 'nearest' });
     }
   }
+
+  const { dismiss } = createCiv2Dialog('production-picker', `${city.name} \u2014 Change Production`, panel => {
+    panel.style.cssText += ';max-height:60vh;overflow-y:auto;min-width:280px;font:14px "Times New Roman",serif;color:#333';
+
+    const addCategory = (catLabel, catItems) => {
+      if (catItems.length === 0) return;
+      const header = document.createElement('div');
+      header.className = 'pp-category-header';
+      header.textContent = catLabel;
+      panel.appendChild(header);
+
+      for (const item of catItems) {
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between;color:#333';
+        row.onmouseenter = () => { if (!row.classList.contains('pp-highlight')) { row.style.background = '#0a246a'; row.style.color = '#fff'; } };
+        row.onmouseleave = () => { if (!row.classList.contains('pp-highlight')) { row.style.background = ''; row.style.color = '#333'; } };
+
+        const labelEl = document.createElement('span');
+        labelEl.textContent = item.name;
+        const costLabel = document.createElement('span');
+        costLabel.textContent = `${item.cost / 10} shields`;
+        costLabel.style.cssText = 'opacity:0.7';
+        row.appendChild(labelEl);
+        row.appendChild(costLabel);
+
+        row.addEventListener('click', () => {
+          window.removeEventListener('keydown', ppKeyHandler, true);
+          S.transport.sendRaw({
+            type: 'ACTION',
+            action: {
+              type: CHANGE_PRODUCTION,
+              cityIndex,
+              item: { type: item.type, id: item.id },
+            },
+          });
+          dismiss();
+          if (onDismiss) onDismiss();
+        });
+        panel.appendChild(row);
+        rows.push(row);
+      }
+    };
+
+    addCategory('Units', unitItems);
+    addCategory('Buildings', buildingItems);
+    addCategory('Wonders', wonderItems);
+  }, [
+    { label: 'Cancel', action: onDismiss || undefined },
+  ]);
+
+  // Arrow key navigation
   const ppKeyHandler = e => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
       e.preventDefault(); e.stopPropagation();
@@ -462,18 +460,17 @@ function showProductionPicker(city, cityIndex, onDismiss) {
     } else if (e.key === 'Enter' && ppHighlight >= 0) {
       e.preventDefault(); e.stopPropagation();
       rows[ppHighlight].click();
-    } else if (e.key === 'Escape') {
-      e.preventDefault(); e.stopPropagation();
-      window.removeEventListener('keydown', ppKeyHandler, true);
-      overlay.remove();
-      if (onDismiss) onDismiss();
     }
   };
   window.addEventListener('keydown', ppKeyHandler, true);
-
-  overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) { window.removeEventListener('keydown', ppKeyHandler, true); overlay.remove(); if (onDismiss) onDismiss(); } });
-  document.body.appendChild(overlay);
+  // Clean up key handler when dialog is dismissed
+  const observer = new MutationObserver(() => {
+    if (!document.getElementById('production-picker')) {
+      window.removeEventListener('keydown', ppKeyHandler, true);
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -504,7 +501,7 @@ function handleRushBuy(city, cityIndex) {
   showConfirmDialog(`Buy ${itemName} for ${buyCost} gold?`, () => {
     sfx('SELL');
     S.transport.sendRaw({ type: 'ACTION', action: { type: RUSH_BUY, cityIndex } });
-  });
+  }, 'Rush Buy?');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -514,84 +511,73 @@ function handleRushBuy(city, cityIndex) {
 function showSellBuildingPicker(city, cityIndex) {
   if (!city.buildings || city.buildings.size === 0) return;
 
-  const existing = document.getElementById('production-picker');
-  if (existing) existing.remove();
-
-  const overlay = document.createElement('div');
-  overlay.id = 'production-picker';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)';
-
-  const panel = document.createElement('div');
-  panel.style.cssText = 'background:#d4b896;border:3px outset #a08060;max-height:70vh;overflow-y:auto;padding:8px;min-width:280px;font:14px "Times New Roman",serif;color:#333';
-
-  const title = document.createElement('div');
-  title.textContent = `${city.name} — Sell Building`;
-  title.style.cssText = 'font-weight:bold;font-size:16px;margin-bottom:6px;text-align:center';
-  panel.appendChild(title);
-
   const sbRows = [];
-  if (city.soldThisTurn) {
-    const msg = document.createElement('div');
-    msg.textContent = 'Already sold a building this turn.';
-    msg.style.cssText = 'text-align:center;color:#800;padding:8px';
-    panel.appendChild(msg);
-  } else {
-    for (const id of city.buildings) {
-      if (id === 1) continue; // Can't sell Palace
-      if (id >= 35 && id <= 37) continue; // Can't sell SS parts
-      const name = IMPROVE_NAMES[id];
-      if (!name) continue;
-      const refund = IMPROVE_COSTS[id] || 0;
-
-      const row = document.createElement('div');
-      row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between';
-      row.onmouseenter = () => { if (!row.classList.contains('pp-highlight')) row.style.background = '#c0a070'; };
-      row.onmouseleave = () => { if (!row.classList.contains('pp-highlight')) row.style.background = ''; };
-
-      const label = document.createElement('span');
-      label.textContent = name;
-      const refundLabel = document.createElement('span');
-      refundLabel.textContent = `+${refund} gold`;
-      refundLabel.style.color = '#060';
-      row.appendChild(label);
-      row.appendChild(refundLabel);
-
-      row.addEventListener('click', () => {
-        window.removeEventListener('keydown', sbKeyHandler, true);
-        overlay.remove();
-        showConfirmDialog(`Sell ${name} for ${refund} gold?`, () => {
-          sfx('SELL');
-          S.transport.sendRaw({
-            type: 'ACTION',
-            action: { type: SELL_BUILDING, cityIndex, buildingId: id },
-          });
-        });
-      });
-      panel.appendChild(row);
-      sbRows.push(row);
-    }
-  }
-
-  const cancel = document.createElement('div');
-  cancel.textContent = 'Cancel';
-  cancel.style.cssText = 'text-align:center;padding:6px;margin-top:6px;cursor:pointer;font-weight:bold;border-top:1px solid #a08060';
-  cancel.addEventListener('click', () => { window.removeEventListener('keydown', sbKeyHandler, true); overlay.remove(); });
-  panel.appendChild(cancel);
-
-  // Arrow key navigation
   let sbHighlight = -1;
+
   function sbSetHighlight(idx) {
     if (sbHighlight >= 0 && sbHighlight < sbRows.length) {
       sbRows[sbHighlight].style.background = '';
+      sbRows[sbHighlight].style.color = '#333';
       sbRows[sbHighlight].classList.remove('pp-highlight');
     }
     sbHighlight = idx;
     if (sbHighlight >= 0 && sbHighlight < sbRows.length) {
-      sbRows[sbHighlight].style.background = '#c0a070';
+      sbRows[sbHighlight].style.background = '#0a246a';
+      sbRows[sbHighlight].style.color = '#fff';
       sbRows[sbHighlight].classList.add('pp-highlight');
       sbRows[sbHighlight].scrollIntoView({ block: 'nearest' });
     }
   }
+
+  const { dismiss } = createCiv2Dialog('sell-building-picker', `${city.name} \u2014 Sell Building`, panel => {
+    panel.style.cssText += ';max-height:60vh;overflow-y:auto;min-width:280px;font:14px "Times New Roman",serif;color:#333';
+
+    if (city.soldThisTurn) {
+      const msg = document.createElement('div');
+      msg.textContent = 'Already sold a building this turn.';
+      msg.style.cssText = 'text-align:center;color:#800;padding:8px';
+      panel.appendChild(msg);
+    } else {
+      for (const id of city.buildings) {
+        if (id === 1) continue; // Can't sell Palace
+        if (id >= 35 && id <= 37) continue; // Can't sell SS parts
+        const name = IMPROVE_NAMES[id];
+        if (!name) continue;
+        const refund = IMPROVE_COSTS[id] || 0;
+
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:3px 6px;cursor:pointer;display:flex;justify-content:space-between;color:#333';
+        row.onmouseenter = () => { if (!row.classList.contains('pp-highlight')) { row.style.background = '#0a246a'; row.style.color = '#fff'; } };
+        row.onmouseleave = () => { if (!row.classList.contains('pp-highlight')) { row.style.background = ''; row.style.color = '#333'; } };
+
+        const labelEl = document.createElement('span');
+        labelEl.textContent = name;
+        const refundLabel = document.createElement('span');
+        refundLabel.textContent = `+${refund} gold`;
+        refundLabel.style.cssText = 'color:#060';
+        row.appendChild(labelEl);
+        row.appendChild(refundLabel);
+
+        row.addEventListener('click', () => {
+          window.removeEventListener('keydown', sbKeyHandler, true);
+          dismiss();
+          showConfirmDialog(`Sell ${name} for ${refund} gold?`, () => {
+            sfx('SELL');
+            S.transport.sendRaw({
+              type: 'ACTION',
+              action: { type: SELL_BUILDING, cityIndex, buildingId: id },
+            });
+          }, 'Sell Building?');
+        });
+        panel.appendChild(row);
+        sbRows.push(row);
+      }
+    }
+  }, [
+    { label: 'Cancel' },
+  ]);
+
+  // Arrow key navigation
   const sbKeyHandler = e => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
       e.preventDefault(); e.stopPropagation();
@@ -602,17 +588,17 @@ function showSellBuildingPicker(city, cityIndex) {
     } else if (e.key === 'Enter' && sbHighlight >= 0) {
       e.preventDefault(); e.stopPropagation();
       sbRows[sbHighlight].click();
-    } else if (e.key === 'Escape') {
-      e.preventDefault(); e.stopPropagation();
-      window.removeEventListener('keydown', sbKeyHandler, true);
-      overlay.remove();
     }
   };
   window.addEventListener('keydown', sbKeyHandler, true);
-
-  overlay.appendChild(panel);
-  overlay.addEventListener('click', e => { if (e.target === overlay) { window.removeEventListener('keydown', sbKeyHandler, true); overlay.remove(); } });
-  document.body.appendChild(overlay);
+  // Clean up key handler when dialog is dismissed
+  const observer = new MutationObserver(() => {
+    if (!document.getElementById('sell-building-picker')) {
+      window.removeEventListener('keydown', sbKeyHandler, true);
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true });
 }
 
 // ═══════════════════════════════════════════════════════════════════

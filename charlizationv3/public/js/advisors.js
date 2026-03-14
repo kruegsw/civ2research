@@ -419,7 +419,7 @@ export function showResearchPicker(discovered) {
       row.dataset.advId = advId;
       row.dataset.selectable = '1';
       const isOdd = i % 2 === 1;
-      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;border-radius:2px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
+      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
 
       // Placeholder for icon (replaced once icons load)
       const iconSlot = document.createElement('div');
@@ -433,7 +433,8 @@ export function showResearchPicker(discovered) {
 
       // Highlight selected
       if (advId === selected) {
-        row.style.background = 'rgba(0,0,80,0.25)';
+        row.style.background = '#0a246a';
+        row.style.color = '#fff';
         row.classList.add('civ2-selected');
       }
 
@@ -442,19 +443,22 @@ export function showResearchPicker(discovered) {
         // Update highlights
         list.querySelectorAll('.rp-row').forEach(r => {
           const isSel = parseInt(r.dataset.advId) === selected;
-          r.style.background = isSel ? 'rgba(0,0,80,0.25)' : '';
+          r.style.background = isSel ? '#0a246a' : '';
+          r.style.color = isSel ? '#fff' : '#333';
           r.classList.toggle('civ2-selected', isSel);
         });
       });
 
       row.addEventListener('mouseenter', () => {
         if (parseInt(row.dataset.advId) !== selected) {
-          row.style.background = 'rgba(255,255,255,0.12)';
+          row.style.background = '#0a246a';
+          row.style.color = '#fff';
         }
       });
       row.addEventListener('mouseleave', () => {
-        row.style.background = parseInt(row.dataset.advId) === selected
-          ? 'rgba(0,0,80,0.25)' : '';
+        const isSel = parseInt(row.dataset.advId) === selected;
+        row.style.background = isSel ? '#0a246a' : '';
+        row.style.color = isSel ? '#fff' : '#333';
       });
 
       list.appendChild(row);
@@ -546,7 +550,7 @@ export function showGoalPicker() {
       row.dataset.selectable = '1';
       row.dataset.advId = advId;
       const isOdd = i % 2 === 1;
-      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;border-radius:2px;font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
+      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
 
       const nameSpan = document.createElement('span');
       nameSpan.textContent = ADVANCE_NAMES[advId];
@@ -560,7 +564,8 @@ export function showGoalPicker() {
       row.appendChild(steps);
 
       if (advId === goalSelected) {
-        row.style.background = 'rgba(0,0,80,0.25)';
+        row.style.background = '#0a246a';
+        row.style.color = '#fff';
         row.classList.add('civ2-selected');
       }
 
@@ -568,17 +573,21 @@ export function showGoalPicker() {
         goalSelected = advId;
         list.querySelectorAll('[data-selectable]').forEach(r => {
           const isSel = parseInt(r.dataset.advId) === goalSelected;
-          r.style.background = isSel ? 'rgba(0,0,80,0.25)' : '';
+          r.style.background = isSel ? '#0a246a' : '';
+          r.style.color = isSel ? '#fff' : '#333';
           r.classList.toggle('civ2-selected', isSel);
         });
       });
       row.addEventListener('mouseenter', () => {
-        if (parseInt(row.dataset.advId) !== goalSelected)
-          row.style.background = 'rgba(255,255,255,0.12)';
+        if (parseInt(row.dataset.advId) !== goalSelected) {
+          row.style.background = '#0a246a';
+          row.style.color = '#fff';
+        }
       });
       row.addEventListener('mouseleave', () => {
-        row.style.background = parseInt(row.dataset.advId) === goalSelected
-          ? 'rgba(0,0,80,0.25)' : '';
+        const isSel = parseInt(row.dataset.advId) === goalSelected;
+        row.style.background = isSel ? '#0a246a' : '';
+        row.style.color = isSel ? '#fff' : '#333';
       });
 
       list.appendChild(row);
@@ -719,7 +728,8 @@ export function showTechAdvisor() {
       const row = document.createElement('div');
       row.dataset.selectable = '1';
       row.dataset.advId = advId;
-      row.style.cssText = `padding:5px 10px;cursor:pointer;border-radius:2px;font:15px "Times New Roman",Georgia,serif;color:${known ? '#1a5c1a' : '#333'};text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+      const origColor = known ? '#1a5c1a' : '#333';
+      row.style.cssText = `padding:5px 10px;cursor:pointer;font:15px "Times New Roman",Georgia,serif;color:${origColor};text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
 
       const nameSpan = document.createElement('span');
       nameSpan.style.fontWeight = 'bold';
@@ -728,8 +738,8 @@ export function showTechAdvisor() {
       row.appendChild(nameSpan);
 
       row.addEventListener('click', () => showTechDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings, techEnablesWonders, techEnablesGovts, techObsoletesUnits, techObsoletesWonders));
-      row.addEventListener('mouseenter', () => { row.style.background = 'rgba(0,0,80,0.12)'; });
-      row.addEventListener('mouseleave', () => { row.style.background = ''; });
+      row.addEventListener('mouseenter', () => { row.style.background = '#0a246a'; row.style.color = '#fff'; });
+      row.addEventListener('mouseleave', () => { row.style.background = ''; row.style.color = origColor; });
 
       list.appendChild(row);
     });
@@ -916,25 +926,28 @@ export function showMapSizePicker() {
     presets.forEach((p, i) => {
       const row = document.createElement('div');
       row.dataset.selectable = '1';
-      row.style.cssText = 'padding:6px 12px;cursor:pointer;border-radius:2px;font:17px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+      row.style.cssText = 'padding:6px 12px;cursor:pointer;font:17px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
       row.textContent = p.label;
       if (i === selected) {
-        row.style.background = 'rgba(0,0,80,0.25)';
+        row.style.background = '#0a246a';
+        row.style.color = '#fff';
         row.classList.add('civ2-selected');
       }
       row.addEventListener('click', () => {
         selected = i;
         rows.forEach((r, j) => {
           const isSel = j === selected;
-          r.style.background = isSel ? 'rgba(0,0,80,0.25)' : '';
+          r.style.background = isSel ? '#0a246a' : '';
+          r.style.color = isSel ? '#fff' : '#333';
           r.classList.toggle('civ2-selected', isSel);
         });
         customRow.style.background = '';
+        customRow.style.color = '#333';
         customRow.classList.remove('civ2-selected');
         validateCustom();
       });
-      row.addEventListener('mouseenter', () => { if (selected !== i) row.style.background = 'rgba(255,255,255,0.12)'; });
-      row.addEventListener('mouseleave', () => { row.style.background = selected === i ? 'rgba(0,0,80,0.25)' : ''; });
+      row.addEventListener('mouseenter', () => { if (selected !== i) { row.style.background = '#0a246a'; row.style.color = '#fff'; } });
+      row.addEventListener('mouseleave', () => { row.style.background = selected === i ? '#0a246a' : ''; row.style.color = selected === i ? '#fff' : '#333'; });
       list.appendChild(row);
       rows.push(row);
     });
@@ -942,7 +955,7 @@ export function showMapSizePicker() {
     // Custom size row
     const customRow = document.createElement('div');
     customRow.dataset.selectable = '1';
-    customRow.style.cssText = 'padding:6px 12px;cursor:pointer;border-radius:2px;font:17px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);display:flex;align-items:center;gap:6px';
+    customRow.style.cssText = 'padding:6px 12px;cursor:pointer;font:17px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);display:flex;align-items:center;gap:6px';
     const customLabel = document.createElement('span');
     customLabel.textContent = 'Custom:';
     wInput = document.createElement('input');
@@ -960,8 +973,9 @@ export function showMapSizePicker() {
 
     const selectCustom = () => {
       selected = -1;
-      rows.forEach(r => { r.style.background = ''; r.classList.remove('civ2-selected'); });
-      customRow.style.background = 'rgba(0,0,80,0.25)';
+      rows.forEach(r => { r.style.background = ''; r.style.color = '#333'; r.classList.remove('civ2-selected'); });
+      customRow.style.background = '#0a246a';
+      customRow.style.color = '#fff';
       customRow.classList.add('civ2-selected');
       validateCustom();
     };
@@ -1427,8 +1441,6 @@ export function showScienceAdvisor() {
 
   const turnsLeft = hasTarget && sciPerTurn > 0 ? Math.ceil((cost - current) / sciPerTurn) : '?';
   const available = getAvailableResearch(gs, civSlot);
-  const isMyTurn = gs.turn.activeCiv === civSlot;
-
   const { overlay, dismiss } = createCiv2Dialog('science-dialog', 'Science Advisor', panel => {
     panel.style.cssText = 'max-height:60vh;overflow:hidden;display:flex;flex-direction:column;min-width:380px';
 
@@ -1480,12 +1492,10 @@ export function showScienceAdvisor() {
         chip.className = 'tech-chip available';
         chip.textContent = ADVANCE_NAMES[id] || `Tech ${id}`;
         chip.title = 'Click to research';
-        if (isMyTurn) {
-          chip.addEventListener('click', () => {
-            dismiss();
-            S.transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: id } });
-          });
-        }
+        chip.addEventListener('click', () => {
+          dismiss();
+          S.transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: id } });
+        });
         availList.appendChild(chip);
       }
       wrapper.appendChild(availList);

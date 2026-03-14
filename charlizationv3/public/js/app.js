@@ -11,7 +11,7 @@ import {
   findNextMovableUnit, shiftMercenaryQueue,
   centerOnTile, centerOnUnit, selectUnit,
   renderUnitThumbnail,
-  actionToMenuItem, buildOrderMenuItems, showUnitMenu,
+  actionToMenuItem, buildOrderMenuItems, showUnitMenu, hideUnitMenu,
   enterGotoMode, exitGotoMode, handleGotoClick,
   doBombard, enterRebaseMode, exitRebaseMode, handleRebaseClick,
   doTransformTerrain, registerUnitUiDeps,
@@ -30,7 +30,7 @@ import {
 } from './city-ui.js';
 import {
   renderAtomicSwap, updateTurnUI,
-  initNetwork,
+  initNetwork, toggleChat,
 } from './network.js';
 
 import { Civ2Parser } from '../engine/parser.js';
@@ -691,7 +691,6 @@ document.getElementById('restart-btn').addEventListener('click', () => {
 
 document.getElementById('research-info').addEventListener('click', () => {
   if (!S.mpGameState || S.mpCivSlot == null) return;
-  if (S.mpGameState.turn.activeCiv !== S.mpCivSlot) return;
   showResearchPicker();
 });
 
@@ -763,23 +762,13 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  // Enter: open city dialog if unit on city, else end turn if no movable units
+  // Enter: end turn if no movable units (city dialog part moved to non-restricted handler)
   if (e.key === 'Enter') {
     e.preventDefault();
-    if (S.mpSelectedUnit != null) {
-      const u = S.mpGameState.units[S.mpSelectedUnit];
-      if (u) {
-        const cityIdx = S.mpGameState.cities.findIndex(c =>
-          c.size > 0 && c.owner === S.mpCivSlot && c.gx === u.gx && c.gy === u.gy);
-        if (cityIdx >= 0) {
-          openCityDialog(S.mpGameState.cities[cityIdx], cityIdx);
-          return;
-        }
-      }
-    }
     if (findNextMovableUnit(-1) == null) {
       sfx('ENDOTURN');
       S.transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
+      e.stopImmediatePropagation(); // prevent non-restricted handler from also opening city dialog
     }
     return;
   }
@@ -790,16 +779,6 @@ window.addEventListener('keydown', e => {
     if (S.mpSelectedUnit != null) {
       const u = S.mpGameState.units[S.mpSelectedUnit];
       if (u && u.type === 0) showNameCityDialog(S.mpSelectedUnit);
-    }
-    return;
-  }
-
-  // C: center on active unit
-  if (e.key === 'c' && !e.shiftKey) {
-    e.preventDefault();
-    if (S.mpSelectedUnit != null) {
-      const u = S.mpGameState.units[S.mpSelectedUnit];
-      if (u) centerOnUnit(u);
     }
     return;
   }
@@ -926,7 +905,7 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  // Shift+D: disband unit (with confirm) / diplomacy panel
+  // Shift+D: disband unit (with confirm) — diplomacy panel moved to non-restricted handler
   if (e.key === 'D' && e.shiftKey) {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
@@ -936,12 +915,10 @@ window.addEventListener('keydown', e => {
         showConfirmDialog(`Disband ${UNIT_NAMES[u.type]}?`, () => {
           S.pendingAutoAdvanceFrom = idx;
           S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: idx, order: 'disband' } });
-        });
+        }, 'Disband Unit?');
         return;
       }
     }
-    // No unit selected: open diplomacy panel
-    showDiplomacyPanel();
     return;
   }
 
@@ -969,20 +946,6 @@ window.addEventListener('keydown', e => {
   if (e.key === 'R' && e.shiftKey) {
     e.preventDefault();
     showRevolutionDialog();
-    return;
-  }
-
-  // Shift+T: tax rate sliders
-  if ((e.key === 't' || e.key === 'T') && e.shiftKey) {
-    e.preventDefault();
-    showRateSliders();
-    return;
-  }
-
-  // F6: tech tree viewer
-  if (e.key === 'F6') {
-    e.preventDefault();
-    showTechTree();
     return;
   }
 
@@ -1023,7 +986,57 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // Escape: close chat panel if open
+  if (e.key === 'Escape' && S.chatOpen) {
+    e.preventDefault();
+    toggleChat();
+    return;
+  }
+
+  // Enter: open city dialog if unit is on a city (view-only, no turn check needed)
+  if (e.key === 'Enter' && S.mpGameState && S.mpSelectedUnit != null) {
+    const u = S.mpGameState.units[S.mpSelectedUnit];
+    if (u) {
+      const cityIdx = S.mpGameState.cities.findIndex(c =>
+        c.size > 0 && c.owner === S.mpCivSlot && c.gx === u.gx && c.gy === u.gy);
+      if (cityIdx >= 0) {
+        e.preventDefault();
+        openCityDialog(S.mpGameState.cities[cityIdx], cityIdx);
+        return;
+      }
+    }
+  }
+
   if (isDialogOpen()) return;
+
+  // C: center on active unit (view-only, no turn check needed)
+  if (e.key === 'c' && !e.shiftKey) {
+    if (S.mpSelectedUnit != null && S.mpGameState) {
+      e.preventDefault();
+      const u = S.mpGameState.units[S.mpSelectedUnit];
+      if (u) centerOnUnit(u);
+    }
+    return;
+  }
+
+  // F6: tech tree viewer (view-only)
+  if (e.key === 'F6') { e.preventDefault(); showTechTree(); return; }
+
+  // Shift+D (no unit selected): open diplomacy panel (view-only)
+  if (e.key === 'D' && e.shiftKey) {
+    if (!S.mpSelectedUnit && S.mpGameState) {
+      e.preventDefault();
+      showDiplomacyPanel();
+      return;
+    }
+  }
+
+  // Shift+T: tax rate sliders (allowed anytime)
+  if ((e.key === 't' || e.key === 'T') && e.shiftKey) {
+    e.preventDefault();
+    showRateSliders();
+    return;
+  }
 
   if (e.key === 'F1') { e.preventDefault(); showCivpedia(); return; }
   if (e.key === 'F2') { e.preventDefault(); showMilitaryAdvisor(); return; }

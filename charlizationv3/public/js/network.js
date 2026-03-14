@@ -8,7 +8,7 @@ import { sfx, menuLoop } from './sound.js';
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
-import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, renderUnitThumbnail } from './unit-ui.js';
+import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Parser } from '../engine/parser.js';
 import { Civ2Minimap } from './minimap.js';
@@ -806,10 +806,11 @@ function initNetwork(appCallbacks) {
           // Stash visibility update — applied after slide animation (or immediately if no slide)
           const pendingVisibility = (msg.tileVisibility && S.mpMapBase?.tileData) ? msg.tileVisibility : null;
 
-          // Apply tile updates immediately (improvements, terrain, goody huts from worker orders)
+          // Apply tile updates immediately (improvements, terrain, goody huts, ownership)
           applyImprovementsUpdate(msg.tileImprovements);
           applyTerrainUpdate(msg.tileTerrains);
           applyGoodyHutUpdate(msg.tileGoodyHuts);
+          applyOwnershipUpdate(msg.tileOwnership);
 
           // Queue mercenary/nomad units from goody huts so they're selected next
           const hutRes = msg.state.goodyHutResult;
@@ -897,13 +898,7 @@ function initNetwork(appCallbacks) {
               if (hutSfx) sfx(hutSfx);
               createCiv2Dialog('hut-dialog', 'Village', panel => {
                 const content = document.createElement('div');
-                content.style.cssText = 'display:flex;align-items:center;gap:16px;padding:12px 20px';
-
-                const img = document.createElement('img');
-                img.src = 'assets/menu/seal.gif';
-                img.alt = 'Village';
-                img.style.cssText = 'width:120px;height:auto;border:2px inset #a08060;flex-shrink:0';
-                content.appendChild(img);
+                content.style.cssText = 'padding:12px 20px';
 
                 const textDiv = document.createElement('div');
                 textDiv.style.cssText = 'font-family:"Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);font-size:16px;white-space:pre-line';
@@ -1119,7 +1114,15 @@ function initNetwork(appCallbacks) {
   chatSendBtn.addEventListener('click', sendChat);
   chatInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
+    if (e.key === 'Escape') { e.preventDefault(); toggleChat(); }
     e.stopPropagation(); // don't trigger game keybinds
+  });
+  chatToastStack.addEventListener('click', () => {
+    if (!S.chatOpen) toggleChat();
+  });
+  // Close chat when clicking outside chatPanel
+  document.addEventListener('pointerdown', e => {
+    if (S.chatOpen && !chatPanel.contains(e.target)) toggleChat();
   });
 
   // ── Connect ──
