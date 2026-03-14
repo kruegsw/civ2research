@@ -4,7 +4,7 @@
 
 import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
-import { sfx, menuLoop } from './sound.js';
+import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX } from './sound.js';
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
@@ -1141,7 +1141,7 @@ function initNetwork(appCallbacks) {
               cdRerender();
             }
 
-            // Combat result notification (sounds handled by animateCombat)
+            // Combat result notification (attack/death sounds handled separately)
             if (statePayload.combatResult) {
               const cr = statePayload.combatResult;
               if (cr.type === 'capture') {
@@ -1288,10 +1288,21 @@ function initNetwork(appCallbacks) {
             }
           };
 
-          // If combat occurred, play flash animation before slide/render
+          // If combat occurred, play sounds and animation before slide/render
           const cr = statePayload.combatResult;
-          if (cr && cr.gx != null && cr.type !== 'capture' && S.mapSprites) {
-            animateCombat(cr, afterCombatAnim);
+          if (cr && cr.gx != null && cr.type !== 'capture') {
+            if (S.mapSprites) {
+              // Full sprite animation — animateCombat handles its own sounds
+              animateCombat(cr, afterCombatAnim);
+            } else {
+              // No sprites: play attack + death sounds, brief delay so user
+              // hears sounds before the dead unit vanishes from the re-render
+              const atkSfx = UNIT_ATK_SFX[cr.attacker];
+              if (atkSfx) sfx(atkSfx);
+              const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
+              sfx(getDeathSfx(loser));
+              setTimeout(afterCombatAnim, 400);
+            }
           } else {
             afterCombatAnim();
           }
