@@ -45,7 +45,7 @@ import { Civ2Parser } from "../engine/parser.js";
 import { initFromSav, initNewGame } from "../engine/init.js";
 import { generateMap } from "../engine/mapgen.js";
 import { applyAction } from "../engine/reducer.js";
-import { filterStateForCiv } from "../engine/visibility.js";
+import { filterStateForCiv, computeLOS } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
 import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES } from "../engine/defs.js";
 
@@ -684,9 +684,14 @@ wss.on("connection", (ws) => {
  * Also stores it in chatHistory for reconnect replay.
  */
 function broadcastGameLog(roomId, room, category, text, turn) {
+  sendGameLog(room, category, text, turn);
+}
+
+/** Send a game log to all clients (or a filtered subset). */
+function sendGameLog(room, category, text, turn, civSlots) {
   const msg = {
     type: 'GAME_LOG',
-    category,   // 'combat' | 'city' | 'tech' | 'diplomacy' | 'general'
+    category,
     text,
     turn: turn ?? 0,
     ts: Date.now(),
@@ -694,8 +699,23 @@ function broadcastGameLog(roomId, room, category, text, turn) {
   if (!room.chatHistory) room.chatHistory = [];
   room.chatHistory.push(msg);
   if (room.chatHistory.length > 200) room.chatHistory.shift();
-  for (const client of room.clients) {
-    if (client.readyState === 1) client.send(JSON.stringify(msg));
+  const json = JSON.stringify(msg);
+
+  if (!civSlots) {
+    // Broadcast to all
+    for (const client of room.clients) {
+      if (client.readyState === 1) client.send(json);
+    }
+  } else {
+    // Send only to clients whose civ is in the allowed set
+    const allowedSet = new Set(civSlots);
+    for (const client of room.clients) {
+      const ci = clientInfo.get(client);
+      if (!ci || client.readyState !== 1) continue;
+      if (ci.playerIndex == null) continue; // skip spectators for filtered logs
+      const civSlot = room.gameState.seatCivMap?.[ci.playerIndex];
+      if (civSlot != null && allowedSet.has(civSlot)) client.send(json);
+    }
   }
 }
 
@@ -774,7 +794,24 @@ function formatCombatLog(cr, gs) {
 }
 
 /**
+ * Find which civs can see a specific tile (via LOS).
+ * Returns array of civSlot numbers.
+ */
+function civsWithLOS(room, gx, gy) {
+  const mb = room.mapBase;
+  const gs = room.gameState;
+  const result = [];
+  for (let civ = 1; civ < 8; civ++) {
+    const los = computeLOS({ mw: mb.mw, mh: mb.mh, mapShape: mb.mapShape, cities: gs.cities, units: gs.units }, civ);
+    const idx = gy * mb.mw + ((gx % mb.mw + mb.mw) % mb.mw);
+    if (los[idx]) result.push(civ);
+  }
+  return result;
+}
+
+/**
  * Emit GAME_LOG messages for combat and turn events after reducer applies an action.
+ * Location-specific events are only sent to civs with line of sight.
  */
 function emitGameLogs(roomId, room) {
   const gs = room.gameState;
@@ -782,30 +819,45 @@ function emitGameLogs(roomId, room) {
 
   // ── Combat result ──
   if (gs.combatResult) {
-    const combatText = formatCombatLog(gs.combatResult, gs);
-    broadcastGameLog(roomId, room, 'combat', combatText, turnNum);
+    const cr = gs.combatResult;
+    const combatText = formatCombatLog(cr, gs);
+    // Send to civs that can see the combat location
+    const gx = cr.targetGx ?? cr.defGx ?? cr.gx;
+    const gy = cr.targetGy ?? cr.defGy ?? cr.gy;
+    if (gx != null && gy != null) {
+      const viewers = civsWithLOS(room, gx, gy);
+      sendGameLog(room, 'combat', combatText, turnNum, viewers);
+    } else {
+      sendGameLog(room, 'combat', combatText, turnNum);
+    }
   }
 
   // ── Turn events ──
   if (gs.turnEvents) {
     for (const ev of gs.turnEvents) {
       const { category, text } = formatTurnEventLog(ev, gs);
-      broadcastGameLog(roomId, room, category, text, turnNum);
+      sendGameLog(room, category, text, turnNum);
     }
   }
 
-  // ── Discovered advance ──
+  // ── Discovered advance — only the discovering civ sees this ──
   if (gs.discoveredAdvance) {
     const da = gs.discoveredAdvance;
     const civName = gs.civNames?.[da.civSlot] || `Civ ${da.civSlot}`;
     const advName = ADVANCE_NAMES[da.advanceId] || `Advance ${da.advanceId}`;
-    broadcastGameLog(roomId, room, 'tech', `${civName} discovered ${advName}`, turnNum);
+    sendGameLog(room, 'tech', `${civName} discovered ${advName}`, turnNum, [da.civSlot]);
   }
 
-  // ── City founded ──
+  // ── City founded — only civs with LOS on the tile ──
   if (gs.cityFounded) {
     const cf = gs.cityFounded;
-    broadcastGameLog(roomId, room, 'city', `${cf.name} founded`, turnNum);
+    const city = gs.cities[cf.cityIndex];
+    if (city) {
+      const gx = city.gx ?? city.cx;
+      const gy = city.gy ?? city.cy;
+      const viewers = civsWithLOS(room, gx, gy);
+      sendGameLog(room, 'city', `${cf.name} founded`, turnNum, viewers);
+    }
   }
 }
 

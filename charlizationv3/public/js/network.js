@@ -8,7 +8,7 @@ import { sfx, menuLoop } from './sound.js';
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
-import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
+import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Parser } from '../engine/parser.js';
 import { Civ2Minimap } from './minimap.js';
@@ -389,14 +389,17 @@ async function doRenderFromState(opts = {}) {
     if (S.mpSelectedUnit != null) startBlink(); else stopBlink();
   }
 
-  // Center on newly selected unit if it changed (auto-advance), or on load
-  if (opts.skipCenter && S.mpSelectedUnit !== prevSelected && S.mpSelectedUnit != null) {
-    centerOnUnit(S.mpGameState.units[S.mpSelectedUnit]);
-  } else if (!opts.skipCenter) {
-    const centerUnit = S.mpSelectedUnit != null
+  // Center on newly selected unit only if it's not already visible in the viewport
+  if (opts.skipCenter) {
+    if (S.mpSelectedUnit !== prevSelected && S.mpSelectedUnit != null) {
+      const u = S.mpGameState.units[S.mpSelectedUnit];
+      if (u && !isTileInViewport(u.gx, u.gy)) centerOnUnit(u);
+    }
+  } else {
+    const u = S.mpSelectedUnit != null
       ? S.mpGameState.units[S.mpSelectedUnit]
       : findFirstOwnUnit();
-    if (centerUnit) centerOnUnit(centerUnit);
+    if (u && !isTileInViewport(u.gx, u.gy)) centerOnUnit(u);
   }
 }
 

@@ -66,6 +66,19 @@ export function centerOnUnit(unit) {
   centerOnTile(unit.gx, unit.gy);
 }
 
+/** Check if a tile is currently visible within the viewport. */
+export function isTileInViewport(gx, gy) {
+  const TW = 64, TH = 32;
+  const px = gx * TW + ((gy % 2) ? (TW >> 1) : 0) + TW / 2;
+  const py = gy * (TH >> 1) + TH / 2;
+  const viewW = S.vp.logicalW / S.vp.scale;
+  const viewH = S.vp.logicalH / S.vp.scale;
+  // Add margin so we recenter if the unit is near the edge
+  const margin = TW;
+  return px > S.vp.x + margin && px < S.vp.x + viewW - margin
+      && py > S.vp.y + margin && py < S.vp.y + viewH - margin;
+}
+
 export function selectUnit(idx) {
   S.mpSelectedUnit = idx;
   stopBlink();
