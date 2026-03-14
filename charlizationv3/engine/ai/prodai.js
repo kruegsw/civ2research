@@ -11,7 +11,7 @@ import { validateAction } from '../rules.js';
 import { getProductionCost } from '../production.js';
 import { calcRushBuyCost } from '../happiness.js';
 import {
-  UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN,
+  UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
   UNIT_OBSOLETE, UNIT_COSTS, UNIT_NAMES,
   IMPROVE_PREREQS, IMPROVE_MAINTENANCE, IMPROVE_NAMES,
   IMPROVE_COSTS, WONDER_COSTS, WONDER_NAMES,
@@ -397,22 +397,42 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   // ── Combat units ──
   let score = 0;
 
-  // Base combat power score: weighted combination of ATK, DEF, HP, FP
-  const combatPower = (atk * 3 + def * 2) * hp * fp;
+  // Combined combat score considers both offense AND survivability.
+  // In Civ2, a unit that dies in one hit (Catapult: 6/1/1) is much less
+  // useful than one that can survive and fight again (Knights: 4/2/1).
+  // Score = offense + survivability + HP/FP bonuses.
+  const offense = atk * 3;
+  const survivability = def * 2 + hp * 3;
+  score = offense + survivability;
+  if (fp > 1) score += (atk + def) * 2;
 
-  // Offensive units (ATK > DEF): scored by attack power
+  // Role-based bonus: attackers get ATK emphasis, defenders get DEF emphasis
   if (atk > def) {
-    score = atk * 4;
-    // Bonus for firepower > 1
-    if (fp > 1) score += atk * 2;
-    // HP bonus
-    score += (hp - 1) * 5;
+    score += atk;  // mild extra offense credit
+  } else {
+    score += def;  // mild extra defense credit
   }
-  // Defensive units (DEF >= ATK): scored by defense power
-  else {
-    score = def * 3;
-    if (fp > 1) score += def;
-    score += (hp - 1) * 4;
+
+  // ── Army balance ──
+  // Civ2 AI maintains roughly 2:1 attacker:defender ratio. Penalize
+  // building more of the over-represented role to prevent mono-armies.
+  if (domain === 0) {
+    const role = UNIT_ROLE[unitId] ?? 0;
+    const totalArmy = cityCtx.totalAttackers + cityCtx.totalDefenders;
+    if (totalArmy >= 4) {
+      const atkRatio = cityCtx.totalAttackers / totalArmy;
+      const defRatio = cityCtx.totalDefenders / totalArmy;
+      if (role === 0 && atkRatio > 0.7) {
+        // Too many attackers — penalize building more
+        score -= Math.floor((atkRatio - 0.5) * 20);
+      } else if (role === 1 && defRatio > 0.5) {
+        // Too many defenders — penalize building more
+        score -= Math.floor((defRatio - 0.3) * 15);
+      }
+      // Bonus for the under-represented role
+      if (role === 0 && atkRatio < 0.4) score += 5;
+      if (role === 1 && defRatio < 0.2) score += 8;
+    }
   }
 
   // ── City-specific need adjustments ──
@@ -1121,6 +1141,17 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
   const settlerCount = countSettlers(gameState, civSlot);
   const nearbyMil = countNearbyMilitary(city, gameState, mapBase, civSlot, 20);
 
+  // Army composition: count attackers vs defenders for balance scoring
+  let totalAttackers = 0;
+  let totalDefenders = 0;
+  for (const u of gameState.units) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    if (UNIT_DOMAIN[u.type] !== 0) continue; // land only
+    const role = UNIT_ROLE[u.type] ?? 0;
+    if (role === 0) totalAttackers++;
+    else if (role === 1) totalDefenders++;
+  }
+
   return {
     nearbyEnemies,
     defenders,
@@ -1130,6 +1161,8 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     settlerCount,
     nearbyEnemyMilitary: nearbyEnemies.length,
     nearbyOwnMilitary: nearbyMil,
+    totalAttackers,
+    totalDefenders,
   };
 }
 
@@ -1214,6 +1247,7 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy,
     cityCount: ownCities.length,
     enemyCityCount: new Map(),
   };
+
 
   for (const ci of ownCities) {
     const city = gameState.cities[ci];
