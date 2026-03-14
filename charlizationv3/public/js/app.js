@@ -696,14 +696,26 @@ document.getElementById('research-info').addEventListener('click', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// Keyboard handlers — turn-restricted
+// Keyboard handlers
 // ═══════════════════════════════════════════════════════════════════
+
+// Dialog guard: true if any modal dialog is open (game keys should not fire)
+function isDialogOpen() {
+  return document.querySelector('.civ2-dialog-overlay')
+    || document.getElementById('citydialog-overlay')?.style.display === 'flex'
+    || document.getElementById('rate-sliders')
+    || document.getElementById('production-picker');
+}
+
+// ── Turn-restricted keys ──
 window.addEventListener('keydown', e => {
   if (!S.mpGameState || S.mpGameState.turn.activeCiv !== S.mpCivSlot) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (S.currentScene !== 'game') return;
   if (S.unitMenu.classList.contains('visible')) return;
+  if (isDialogOpen()) return;
 
+  // Tab: cycle to next movable unit
   if (e.key === 'Tab') {
     e.preventDefault();
     const next = shiftMercenaryQueue() ?? findNextMovableUnit(S.mpSelectedUnit ?? -1);
@@ -714,6 +726,7 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // W: wait — skip to next unit, come back later
   if ((e.key === 'w' || e.key === 'W') && !e.shiftKey) {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
@@ -726,13 +739,9 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // Enter: open city dialog if unit on city, else end turn if no movable units
   if (e.key === 'Enter') {
     e.preventDefault();
-    if (document.getElementById('citydialog-overlay')?.style.display === 'flex') return;
-    if (document.getElementById('city-founded-dialog')) return;
-    if (document.getElementById('confirm-dialog')) return;
-    if (document.getElementById('research-picker')) return;
-    if (document.getElementById('rate-sliders')) return;
     if (S.mpSelectedUnit != null) {
       const u = S.mpGameState.units[S.mpSelectedUnit];
       if (u) {
@@ -751,6 +760,7 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // B: build city (settlers)
   if (e.key === 'b' || e.key === 'B') {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
@@ -760,6 +770,30 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // C: center on active unit
+  if (e.key === 'c' && !e.shiftKey) {
+    e.preventDefault();
+    if (S.mpSelectedUnit != null) {
+      const u = S.mpGameState.units[S.mpSelectedUnit];
+      if (u) centerOnUnit(u);
+    }
+    return;
+  }
+
+  // E: build airbase (settlers/engineers)
+  if (e.key === 'e' && !e.shiftKey) {
+    e.preventDefault();
+    if (S.mpSelectedUnit != null) {
+      const u = S.mpGameState.units[S.mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
+        S.transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: S.mpSelectedUnit, order: 'airbase' } });
+      }
+    }
+    return;
+  }
+
+  // F: fortify unit
   if (e.key === 'f' && !e.shiftKey) {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
@@ -769,51 +803,14 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  if (e.key === 's' && !e.shiftKey) {
+  // G: enter go-to mode
+  if (e.key === 'g' && !e.shiftKey) {
     e.preventDefault();
-    if (S.mpSelectedUnit != null) {
-      S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
-      S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: S.mpSelectedUnit, order: 'sentry' } });
-    }
+    enterGotoMode();
     return;
   }
 
-  if (e.key === ' ') {
-    e.preventDefault();
-    if (S.mpSelectedUnit != null) {
-      S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
-      S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: S.mpSelectedUnit, order: 'skip' } });
-    }
-    return;
-  }
-
-  if (e.key === 'D' && e.shiftKey) {
-    e.preventDefault();
-    if (S.mpSelectedUnit != null) {
-      const u = S.mpGameState.units[S.mpSelectedUnit];
-      if (u) {
-        const idx = S.mpSelectedUnit;
-        showConfirmDialog(`Disband ${UNIT_NAMES[u.type]}?`, () => {
-          S.pendingAutoAdvanceFrom = idx;
-          S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: idx, order: 'disband' } });
-        });
-      }
-    }
-    return;
-  }
-
-  if (e.key === 'r' && !e.shiftKey) {
-    e.preventDefault();
-    if (S.mpSelectedUnit != null) {
-      const u = S.mpGameState.units[S.mpSelectedUnit];
-      if (u && (u.type === 0 || u.type === 1)) {
-        S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
-        S.transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: S.mpSelectedUnit, order: 'road' } });
-      }
-    }
-    return;
-  }
-
+  // I: build irrigation (settlers/engineers)
   if (e.key === 'i' && !e.shiftKey) {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
@@ -826,6 +823,14 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // L: rebase air unit
+  if (e.key === 'l' && !e.shiftKey) {
+    e.preventDefault();
+    enterRebaseMode();
+    return;
+  }
+
+  // M: build mine (settlers/engineers)
   if (e.key === 'm' && !e.shiftKey) {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
@@ -838,6 +843,7 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // O: build fortress (settlers/engineers)
   if (e.key === 'o' && !e.shiftKey) {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
@@ -850,7 +856,80 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // P (lowercase): pillage (any unit)
   if (e.key === 'p' && !e.shiftKey) {
+    e.preventDefault();
+    if (S.mpSelectedUnit != null) {
+      const err = validateAction(S.mpGameState, S.mpMapBase, { type: PILLAGE, unitIndex: S.mpSelectedUnit }, S.mpCivSlot);
+      if (!err) {
+        S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
+        S.transport.sendRaw({ type: 'ACTION', action: { type: PILLAGE, unitIndex: S.mpSelectedUnit } });
+      }
+    }
+    return;
+  }
+
+  // R: build road (settlers/engineers)
+  if (e.key === 'r' && !e.shiftKey) {
+    e.preventDefault();
+    if (S.mpSelectedUnit != null) {
+      const u = S.mpGameState.units[S.mpSelectedUnit];
+      if (u && (u.type === 0 || u.type === 1)) {
+        S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
+        S.transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: S.mpSelectedUnit, order: 'road' } });
+      }
+    }
+    return;
+  }
+
+  // S: sentry
+  if (e.key === 's' && !e.shiftKey) {
+    e.preventDefault();
+    if (S.mpSelectedUnit != null) {
+      S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
+      S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: S.mpSelectedUnit, order: 'sentry' } });
+    }
+    return;
+  }
+
+  // Space: skip turn for this unit
+  if (e.key === ' ') {
+    e.preventDefault();
+    if (S.mpSelectedUnit != null) {
+      S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
+      S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: S.mpSelectedUnit, order: 'skip' } });
+    }
+    return;
+  }
+
+  // Shift+D: disband unit (with confirm) / diplomacy panel
+  if (e.key === 'D' && e.shiftKey) {
+    e.preventDefault();
+    if (S.mpSelectedUnit != null) {
+      const u = S.mpGameState.units[S.mpSelectedUnit];
+      if (u) {
+        const idx = S.mpSelectedUnit;
+        showConfirmDialog(`Disband ${UNIT_NAMES[u.type]}?`, () => {
+          S.pendingAutoAdvanceFrom = idx;
+          S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: idx, order: 'disband' } });
+        });
+        return;
+      }
+    }
+    // No unit selected: open diplomacy panel
+    showDiplomacyPanel();
+    return;
+  }
+
+  // Shift+O: transform terrain (engineers)
+  if (e.key === 'O' && e.shiftKey) {
+    e.preventDefault();
+    doTransformTerrain();
+    return;
+  }
+
+  // Shift+P: clean pollution (settlers/engineers)
+  if (e.key === 'P' && e.shiftKey) {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
       const u = S.mpGameState.units[S.mpSelectedUnit];
@@ -862,37 +941,24 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // Shift+R: revolution (change government)
+  if (e.key === 'R' && e.shiftKey) {
+    e.preventDefault();
+    showRevolutionDialog();
+    return;
+  }
+
+  // Shift+T: tax rate sliders
   if ((e.key === 't' || e.key === 'T') && e.shiftKey) {
     e.preventDefault();
     showRateSliders();
     return;
   }
 
-  if (e.key === 'G' && e.shiftKey) {
-    e.preventDefault();
-    showRevolutionDialog();
-    return;
-  }
-
+  // F6: tech tree viewer
   if (e.key === 'F6') {
     e.preventDefault();
     showTechTree();
-    return;
-  }
-
-  if (e.key === 'D' && e.shiftKey) {
-    e.preventDefault();
-    showDiplomacyPanel();
-    return;
-  }
-
-  if (e.key === 'P' && e.shiftKey && S.mpSelectedUnit != null) {
-    e.preventDefault();
-    const err = validateAction(S.mpGameState, S.mpMapBase, { type: PILLAGE, unitIndex: S.mpSelectedUnit }, S.mpCivSlot);
-    if (!err) {
-      S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
-      S.transport.sendRaw({ type: 'ACTION', action: { type: PILLAGE, unitIndex: S.mpSelectedUnit } });
-    }
     return;
   }
 
@@ -920,13 +986,12 @@ window.addEventListener('keydown', e => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════════════
-// Keyboard handlers — non-turn-restricted (advisors, escape, etc.)
-// ═══════════════════════════════════════════════════════════════════
+// ── Non-turn-restricted keys (advisors, escape) ──
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (S.currentScene !== 'game') return;
 
+  // Escape: cancel goto/rebase mode
   if (e.key === 'Escape' && (S.gotoMode || S.rebaseMode)) {
     e.preventDefault();
     exitGotoMode();
@@ -934,50 +999,14 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  if (isDialogOpen()) return;
+
   if (e.key === 'F1') { e.preventDefault(); showCivpedia(); return; }
   if (e.key === 'F2') { e.preventDefault(); showMilitaryAdvisor(); return; }
   if (e.key === 'F3') { e.preventDefault(); showTradeAdvisor(); return; }
   if (e.key === 'F4') { e.preventDefault(); showCityList(); return; }
   if (e.key === 'F5') { e.preventDefault(); showScienceAdvisor(); return; }
   if (e.key === 'F11') { e.preventDefault(); showDemographics(); return; }
-});
-
-// Additional turn-restricted keybindings (goto, rebase, transform, airbase)
-window.addEventListener('keydown', e => {
-  if (!S.mpGameState || S.mpGameState.turn.activeCiv !== S.mpCivSlot) return;
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-  if (S.currentScene !== 'game') return;
-  if (S.unitMenu.classList.contains('visible')) return;
-
-  if (e.key === 'g' && !e.shiftKey) {
-    e.preventDefault();
-    enterGotoMode();
-    return;
-  }
-
-  if (e.key === 'l' && !e.shiftKey) {
-    e.preventDefault();
-    enterRebaseMode();
-    return;
-  }
-
-  if (e.key === 'O' && e.shiftKey) {
-    e.preventDefault();
-    doTransformTerrain();
-    return;
-  }
-
-  if (e.key === 'A' && e.shiftKey) {
-    e.preventDefault();
-    if (S.mpSelectedUnit != null) {
-      const u = S.mpGameState.units[S.mpSelectedUnit];
-      if (u && (u.type === 0 || u.type === 1)) {
-        S.pendingAutoAdvanceFrom = S.mpSelectedUnit;
-        S.transport.sendRaw({ type: 'ACTION', action: { type: WORKER_ORDER, unitIndex: S.mpSelectedUnit, order: 'airbase' } });
-      }
-    }
-    return;
-  }
 });
 
 // ═══════════════════════════════════════════════════════════════════
