@@ -690,7 +690,7 @@ wss.on("connection", (ws) => {
           const h = Math.max(10, Math.min(300, parseInt(m[2])));
           sz = { width: w * 2, height: h };
         } else {
-          sz = { width: 40, height: 20 }; // default: Tiny (20×20)
+          sz = { width: 40, height: 40 }; // default: Tiny (40×40)
         }
 
         // Re-build seat list from current seats
@@ -1158,7 +1158,7 @@ function startGame(roomId, room, occupiedSeats) {
 }
 
 function startNewGame(roomId, room, seatList) {
-  const mapResult = generateMap({ width: 40, height: 20 });
+  const mapResult = generateMap({ width: 40, height: 40 });
   const { mapBase, gameState } = initNewGame(mapResult, seatList);
   room.mapBase = mapBase;
   room.gameState = gameState;
