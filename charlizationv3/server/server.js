@@ -786,11 +786,13 @@ function processAiTurns(roomId, room) {
     if (!(room.gameState.civsAlive & (1 << activeCiv))) break;
 
     // Run AI for this civ
-    console.log(`[ai] Room ${roomId}: running AI turn for civ ${activeCiv} (${room.gameState.civNames?.[activeCiv] || 'unknown'})`);
-
+    const t0 = Date.now();
     const aiActions = runAiTurn(room.gameState, room.mapBase, activeCiv);
+    const t1 = Date.now();
+    console.log(`[ai] Room ${roomId}: civ ${activeCiv} (${room.gameState.civNames?.[activeCiv] || '?'}) — ${aiActions.length} actions planned in ${t1 - t0}ms`);
 
     // Apply each AI action through the reducer
+    const t2 = Date.now();
     for (const action of aiActions) {
       const result = applyAction(room.gameState, room.mapBase, action, activeCiv);
       if (result !== room.gameState) {
@@ -800,6 +802,7 @@ function processAiTurns(roomId, room) {
         clearOneshotNotifications(room);
       }
     }
+    console.log(`[ai]   applied ${aiActions.length} actions in ${Date.now() - t2}ms`);
 
     // End the AI civ's turn
     const endResult = applyAction(room.gameState, room.mapBase, { type: 'END_TURN' }, activeCiv);

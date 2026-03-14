@@ -486,11 +486,8 @@ export function buildOrderMenuItems(unitIdx) {
   const items = [];
   const civSlot = u.owner;
 
-  // Wake Up (only if unit has active orders)
-  if (u.orders && u.orders !== 'none') {
-    const err = validateAction(S.mpGameState, S.mpMapBase, { type: UNIT_ORDER, unitIndex: unitIdx, order: 'wake' }, civSlot);
-    if (!err) items.push({ label: 'Wake Up', action: () => S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: unitIdx, order: 'wake' } }) });
-  }
+  // Note: "Wake Up" is added by the caller (app.js) when contextually appropriate,
+  // so we don't add it here to avoid duplicates.
 
   // Unit orders
   const unitOrders = [

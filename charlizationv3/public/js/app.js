@@ -577,6 +577,12 @@ async function handleMapClick(e, isLongPress = false) {
       for (const va of tileActions) {
         orderItems.push(actionToMenuItem(va, selIdx));
       }
+      const selU = S.mpGameState.units[selIdx];
+      if (selU && selU.orders && selU.orders !== 'none') {
+        orderItems.push({ label: 'Wake Up', action: () => {
+          S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: selIdx, order: 'wake' } });
+        }});
+      }
       orderItems.push(...buildOrderMenuItems(selIdx));
 
       if (orderItems.length > 0) {
@@ -1041,7 +1047,8 @@ window.addEventListener('keydown', e => {
   }
 
   // Enter: open city dialog if unit is on a city (view-only, no turn check needed)
-  if (e.key === 'Enter' && S.mpGameState && S.mpSelectedUnit != null) {
+  // Skip if unit menu is open — Enter should accept the menu action, not open city
+  if (e.key === 'Enter' && S.mpGameState && S.mpSelectedUnit != null && !S.unitMenu.classList.contains('visible')) {
     const u = S.mpGameState.units[S.mpSelectedUnit];
     if (u) {
       const cityIdx = S.mpGameState.cities.findIndex(c =>
