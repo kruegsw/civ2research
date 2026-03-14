@@ -587,12 +587,17 @@ function handleChatMessage(msg, isHistory) {
     if (msg.seat != null) {
       const civSlot = S.mpSeatCivMap?.[msg.seat];
       if (civSlot != null) sender.style.color = CIV_COLORS[civSlot] || '#fff';
+    } else {
+      // Spectator — gray italic
+      sender.style.color = '#999';
+      sender.style.fontStyle = 'italic';
     }
     el.appendChild(sender);
     el.appendChild(document.createTextNode(' '));
   }
   const textEl = document.createElement('span');
   textEl.textContent = msg.text;
+  if (msg.seat == null && !msg.isEvent) textEl.style.fontStyle = 'italic';
   el.appendChild(textEl);
   chatMessages.appendChild(el);
 

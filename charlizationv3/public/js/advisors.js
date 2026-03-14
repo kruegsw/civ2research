@@ -371,7 +371,16 @@ export function showResearchPicker(discovered) {
   }
 
   available.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
-  let selected = available[0];
+
+  // Default to current research if it's in the available list, otherwise first in list
+  const currentResearch = S.mpGameState.civs?.[S.mpCivSlot]?.techBeingResearched;
+  let selected = (currentResearch != null && available.includes(currentResearch))
+    ? currentResearch : available[0];
+
+  // Ensure a research target is always set (close/escape sends the selection)
+  const commitSelection = () => {
+    S.transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: selected } });
+  };
 
   const title = 'What discovery shall our wise men pursue?';
 
@@ -418,8 +427,7 @@ export function showResearchPicker(discovered) {
       row.className = 'rp-row';
       row.dataset.advId = advId;
       row.dataset.selectable = '1';
-      const isOdd = i % 2 === 1;
-      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
+      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
 
       // Placeholder for icon (replaced once icons load)
       const iconSlot = document.createElement('div');
@@ -465,12 +473,15 @@ export function showResearchPicker(discovered) {
     });
 
     panel.appendChild(list);
+
+    // Scroll initially selected row into view
+    const selRow = list.querySelector('.civ2-selected');
+    if (selRow) requestAnimationFrame(() => selRow.scrollIntoView({ block: 'nearest' }));
   }, [
-    { label: 'Help', action: () => showTechAdvisor() },
+    { label: 'Help', action: () => _showGoalDetail(selected, showResearchPicker) },
     { label: 'Goal', action: () => showGoalPicker() },
-    { label: 'OK', action: () => {
-      S.transport.sendRaw({ type: 'ACTION', action: { type: SET_RESEARCH, advanceId: selected } });
-    }},
+    { label: 'OK', action: commitSelection },
+    { label: 'Cancel' },
   ]);
 }
 
@@ -524,7 +535,7 @@ export function showGoalPicker() {
   if (!S.mpGameState || S.mpCivSlot == null) return;
   const civTechs = S.mpGameState.civTechs?.[S.mpCivSlot] || new Set();
 
-  // All techs that are NOT yet discovered and ARE reachable
+  // All techs that are NOT yet discovered and ARE reachable (skip prereq -2)
   const allGoals = [];
   for (let i = 0; i < ADVANCE_NAMES.length; i++) {
     if (civTechs.has(i)) continue;
@@ -534,34 +545,73 @@ export function showGoalPicker() {
   }
   allGoals.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
 
+  if (allGoals.length === 0) {
+    showOverlayMessage('No undiscovered technologies remain');
+    return;
+  }
+
   let goalSelected = allGoals[0];
 
-  createCiv2Dialog('goal-picker', 'Select a Goal Technology', panel => {
+  // Type-to-select state
+  let searchStr = '';
+  let searchTimer = null;
+
+  const selectAdvId = (advId, list, panel) => {
+    goalSelected = advId;
+    list.querySelectorAll('.gp-row').forEach(r => {
+      const isSel = parseInt(r.dataset.advId) === goalSelected;
+      r.style.background = isSel ? '#0a246a' : '';
+      r.style.color = isSel ? '#fff' : '#333';
+      r.classList.toggle('civ2-selected', isSel);
+    });
+    // Scroll selected row into view
+    const selRow = list.querySelector('.civ2-selected');
+    if (selRow) selRow.scrollIntoView({ block: 'nearest' });
+  };
+
+  const { overlay, dismiss } = createCiv2Dialog('goal-picker', 'Which advance are you trying to discover?', panel => {
     panel.style.maxHeight = '60vh';
     panel.style.overflowY = 'auto';
     panel.style.minWidth = '340px';
     panel.style.background = '#c0c0c0';
 
     const list = document.createElement('div');
+    list.id = 'goal-picker-list';
     list.style.cssText = 'display:flex;flex-direction:column;gap:2px';
 
-    allGoals.forEach((advId, i) => {
+    // Load icons asynchronously (same pattern as showResearchPicker)
+    _ensureResearchIcons().then(cache => {
+      if (!cache) return;
+      const rows = list.querySelectorAll('.gp-row');
+      rows.forEach(row => {
+        const advId = parseInt(row.dataset.advId);
+        const iconIdx = ADVANCE_ICON[advId] ?? 0;
+        const iconCanvas = cache.icons[iconIdx];
+        const img = document.createElement('canvas');
+        img.width = 36; img.height = 20;
+        img.getContext('2d').drawImage(iconCanvas, 0, 0);
+        img.style.cssText = 'flex-shrink:0;image-rendering:pixelated';
+        const placeholder = row.querySelector('.gp-icon-slot');
+        if (placeholder) placeholder.replaceWith(img);
+      });
+    });
+
+    allGoals.forEach(advId => {
       const row = document.createElement('div');
+      row.className = 'gp-row';
       row.dataset.selectable = '1';
       row.dataset.advId = advId;
-      const isOdd = i % 2 === 1;
-      row.style.cssText = `display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-left:${isOdd ? '44px' : '0'}`;
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 8px;cursor:pointer;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+
+      // Icon placeholder (replaced once icons load)
+      const iconSlot = document.createElement('div');
+      iconSlot.className = 'gp-icon-slot';
+      iconSlot.style.cssText = 'width:36px;height:20px;flex-shrink:0';
+      row.appendChild(iconSlot);
 
       const nameSpan = document.createElement('span');
       nameSpan.textContent = ADVANCE_NAMES[advId];
       row.appendChild(nameSpan);
-
-      // Show step count
-      const path = getPrereqPath(advId, civTechs);
-      const steps = document.createElement('span');
-      steps.style.cssText = 'margin-left:auto;font-size:13px;color:#666';
-      steps.textContent = path.length === 1 ? '(1 step)' : `(${path.length} steps)`;
-      row.appendChild(steps);
 
       if (advId === goalSelected) {
         row.style.background = '#0a246a';
@@ -569,34 +619,338 @@ export function showGoalPicker() {
         row.classList.add('civ2-selected');
       }
 
-      row.addEventListener('click', () => {
-        goalSelected = advId;
-        list.querySelectorAll('[data-selectable]').forEach(r => {
-          const isSel = parseInt(r.dataset.advId) === goalSelected;
-          r.style.background = isSel ? '#0a246a' : '';
-          r.style.color = isSel ? '#fff' : '#333';
-          r.classList.toggle('civ2-selected', isSel);
-        });
-      });
-      row.addEventListener('mouseenter', () => {
-        if (parseInt(row.dataset.advId) !== goalSelected) {
-          row.style.background = '#0a246a';
-          row.style.color = '#fff';
-        }
-      });
-      row.addEventListener('mouseleave', () => {
-        const isSel = parseInt(row.dataset.advId) === goalSelected;
-        row.style.background = isSel ? '#0a246a' : '';
-        row.style.color = isSel ? '#fff' : '#333';
-      });
+      row.addEventListener('click', () => selectAdvId(advId, list, panel));
 
       list.appendChild(row);
     });
 
     panel.appendChild(list);
   }, [
-    { label: 'Cancel' },
-    { label: 'OK', action: () => showGoalPath(goalSelected) },
+    { label: 'Help', action: () => _showGoalDetail(goalSelected, showGoalPicker) },
+    { label: 'OK', action: () => _showGoalResearch(goalSelected) },
+    { label: 'Cancel', action: () => showResearchPicker() },
+  ]);
+
+  // Type-to-select keydown handler
+  const typeHandler = e => {
+    // Only handle when this dialog is still open
+    if (!document.getElementById('goal-picker')) {
+      window.removeEventListener('keydown', typeHandler, true);
+      return;
+    }
+    // Only handle single printable characters (letters, digits)
+    if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Accumulate search string
+    searchStr += e.key;
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { searchStr = ''; }, 2000);
+
+    // Find first tech whose name starts with the search string
+    const match = allGoals.find(id =>
+      ADVANCE_NAMES[id].toLowerCase().startsWith(searchStr.toLowerCase())
+    );
+    if (match != null) {
+      const list = document.getElementById('goal-picker-list');
+      if (list) selectAdvId(match, list, null);
+    }
+  };
+  window.addEventListener('keydown', typeHandler, true);
+}
+
+/** Show a Civilopedia-style detail dialog for a technology advance. */
+function _showGoalDetail(advId, returnTo) {
+  const techName = ADVANCE_NAMES[advId] || `Advance ${advId}`;
+  const DOMAIN_LABELS = ['Land', 'Sea', 'Air'];
+
+  // ── Build reverse-lookup data ──
+
+  // Prerequisites of this tech
+  const [p1, p2] = ADVANCE_PREREQS[advId] || [-1, -1];
+  const prereqs = [];
+  if (p1 >= 0 && ADVANCE_NAMES[p1]) prereqs.push({ id: p1, name: ADVANCE_NAMES[p1] });
+  if (p2 >= 0 && ADVANCE_NAMES[p2]) prereqs.push({ id: p2, name: ADVANCE_NAMES[p2] });
+
+  // Leads to: techs that require this advance
+  const leadsTo = [];
+  for (let i = 0; i < ADVANCE_PREREQS.length; i++) {
+    if (!ADVANCE_NAMES[i]) continue;
+    const [a, b] = ADVANCE_PREREQS[i] || [-1, -1];
+    if (a === advId || b === advId) leadsTo.push({ id: i, name: ADVANCE_NAMES[i] });
+  }
+
+  // Enables: units
+  const enabledUnits = [];
+  for (let i = 0; i < UNIT_PREREQS.length; i++) {
+    if (UNIT_PREREQS[i] === advId && UNIT_NAMES[i]) {
+      enabledUnits.push(i);
+    }
+  }
+
+  // Enables: buildings (1-indexed)
+  const enabledBuildings = [];
+  for (let id = 1; id < IMPROVE_PREREQS.length; id++) {
+    if (IMPROVE_PREREQS[id] === advId && IMPROVE_NAMES[id]) {
+      enabledBuildings.push(id);
+    }
+  }
+
+  // Enables: wonders
+  const enabledWonders = [];
+  for (let i = 0; i < WONDER_PREREQS.length; i++) {
+    if (WONDER_PREREQS[i] === advId && WONDER_NAMES[i]) {
+      enabledWonders.push(i);
+    }
+  }
+
+  // Enables: governments
+  const enabledGovts = [];
+  for (const [govt, techId] of Object.entries(GOVT_TECH_PREREQS)) {
+    if (techId === advId) {
+      enabledGovts.push(govt.charAt(0).toUpperCase() + govt.slice(1));
+    }
+  }
+
+  // Obsoletes: units
+  const obsoletedUnits = [];
+  for (let i = 0; i < UNIT_OBSOLETE.length; i++) {
+    if (UNIT_OBSOLETE[i] === advId && UNIT_NAMES[i]) {
+      obsoletedUnits.push(i);
+    }
+  }
+
+  // Obsoletes: wonders
+  const obsoletedWonders = [];
+  for (let i = 0; i < WONDER_OBSOLETE.length; i++) {
+    if (WONDER_OBSOLETE[i] === advId && WONDER_NAMES[i]) {
+      obsoletedWonders.push(i);
+    }
+  }
+
+  const hasEnables = enabledUnits.length || enabledBuildings.length || enabledWonders.length || enabledGovts.length;
+  const hasObsoletes = obsoletedUnits.length || obsoletedWonders.length;
+
+  // ── Styling constants ──
+  const FONT = '"Times New Roman", Georgia, serif';
+  const SECTION_HEADER_CSS = `font:bold 16px ${FONT};color:#222;margin:10px 0 4px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+  const ITEM_CSS = `font:15px ${FONT};color:#333;padding:2px 0 2px 12px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+  const STAT_CSS = `font:13px ${FONT};color:#555;margin-left:6px`;
+  const SEPARATOR_CSS = 'border:none;border-top:1px solid rgba(0,0,0,0.12);margin:8px 0';
+
+  createCiv2Dialog('goal-detail', techName, panel => {
+    panel.style.cssText += `;min-width:340px;max-height:70vh;overflow-y:auto;padding:12px 16px;background:#c0c0c0`;
+
+    // ── Tech icon + name header ──
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.15);margin-bottom:6px';
+
+    // Icon placeholder (replaced async)
+    const iconSlot = document.createElement('div');
+    iconSlot.className = 'gd-icon-slot';
+    iconSlot.style.cssText = 'width:72px;height:40px;flex-shrink:0;image-rendering:pixelated';
+    header.appendChild(iconSlot);
+
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = `font:bold 20px ${FONT};color:#222;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+    titleDiv.textContent = techName;
+    header.appendChild(titleDiv);
+    panel.appendChild(header);
+
+    // Load and display tech icon
+    _ensureResearchIcons().then(cache => {
+      if (!cache) return;
+      const iconIdx = ADVANCE_ICON[advId] ?? 0;
+      const iconCanvas = cache.icons[iconIdx];
+      if (!iconCanvas) return;
+      const img = document.createElement('canvas');
+      img.width = 72; img.height = 40;
+      const ctx = img.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(iconCanvas, 0, 0, 36, 20, 0, 0, 72, 40);
+      img.style.cssText = 'flex-shrink:0;image-rendering:pixelated';
+      const slot = panel.querySelector('.gd-icon-slot');
+      if (slot) slot.replaceWith(img);
+    });
+
+    // ── Prerequisites ──
+    if (prereqs.length > 0) {
+      const sec = document.createElement('div');
+      const h = document.createElement('div');
+      h.style.cssText = SECTION_HEADER_CSS;
+      h.textContent = 'Requires:';
+      sec.appendChild(h);
+      for (const p of prereqs) {
+        const item = document.createElement('div');
+        item.style.cssText = ITEM_CSS;
+        item.textContent = p.name;
+        sec.appendChild(item);
+      }
+      panel.appendChild(sec);
+    } else {
+      const sec = document.createElement('div');
+      const h = document.createElement('div');
+      h.style.cssText = SECTION_HEADER_CSS;
+      h.textContent = 'Requires:';
+      sec.appendChild(h);
+      const item = document.createElement('div');
+      item.style.cssText = ITEM_CSS;
+      item.textContent = 'No prerequisites';
+      sec.appendChild(item);
+      panel.appendChild(sec);
+    }
+
+    // ── Leads To ──
+    if (leadsTo.length > 0) {
+      { const hr = document.createElement('hr'); hr.style.cssText = SEPARATOR_CSS; panel.appendChild(hr); }
+      const sec = document.createElement('div');
+      const h = document.createElement('div');
+      h.style.cssText = SECTION_HEADER_CSS;
+      h.textContent = 'Leads To:';
+      sec.appendChild(h);
+      for (const t of leadsTo) {
+        const item = document.createElement('div');
+        item.style.cssText = ITEM_CSS;
+        item.textContent = t.name;
+        sec.appendChild(item);
+      }
+      panel.appendChild(sec);
+    }
+
+    // ── Enables ──
+    if (hasEnables) {
+      { const hr = document.createElement('hr'); hr.style.cssText = SEPARATOR_CSS; panel.appendChild(hr); }
+      const sec = document.createElement('div');
+      const h = document.createElement('div');
+      h.style.cssText = SECTION_HEADER_CSS;
+      h.textContent = 'Enables:';
+      sec.appendChild(h);
+
+      // Units
+      for (const uid of enabledUnits) {
+        const row = document.createElement('div');
+        row.style.cssText = `${ITEM_CSS};display:flex;align-items:center;gap:8px`;
+
+        // Unit thumbnail via late-bound dep
+        if (_deps.renderUnitThumbnail) {
+          const mockUnit = { type: uid, owner: S.mpCivSlot ?? 1, hpLost: 0, orders: 'none' };
+          const thumb = _deps.renderUnitThumbnail(mockUnit);
+          if (thumb) {
+            thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated;flex-shrink:0';
+            row.appendChild(thumb);
+          }
+        }
+
+        const info = document.createElement('div');
+        const nameEl = document.createElement('div');
+        nameEl.style.cssText = `font:15px ${FONT};color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+        nameEl.textContent = UNIT_NAMES[uid];
+        info.appendChild(nameEl);
+
+        const stats = document.createElement('div');
+        stats.style.cssText = STAT_CSS;
+        const domain = DOMAIN_LABELS[UNIT_DOMAIN[uid] ?? 0];
+        stats.textContent = `ATK ${UNIT_ATK[uid] ?? 0} / DEF ${UNIT_DEF[uid] ?? 0} / Move ${UNIT_MOVE_POINTS[uid] ?? 1} / Cost ${UNIT_COSTS[uid] / 10} (${domain})`;
+        info.appendChild(stats);
+
+        row.appendChild(info);
+        sec.appendChild(row);
+      }
+
+      // Buildings
+      for (const bid of enabledBuildings) {
+        const item = document.createElement('div');
+        item.style.cssText = ITEM_CSS;
+        const maint = IMPROVE_MAINTENANCE[bid] ?? 0;
+        item.textContent = `${IMPROVE_NAMES[bid]} — Cost ${IMPROVE_COSTS[bid] / 10}, Maintenance ${maint} gold/turn`;
+        sec.appendChild(item);
+      }
+
+      // Wonders
+      for (const wid of enabledWonders) {
+        const item = document.createElement('div');
+        item.style.cssText = ITEM_CSS;
+        item.textContent = `${WONDER_NAMES[wid]} (Wonder) — Cost ${WONDER_COSTS[wid] / 10}`;
+        sec.appendChild(item);
+      }
+
+      // Governments
+      for (const gname of enabledGovts) {
+        const item = document.createElement('div');
+        item.style.cssText = ITEM_CSS;
+        item.textContent = `${gname} (Government)`;
+        sec.appendChild(item);
+      }
+
+      panel.appendChild(sec);
+    }
+
+    // ── Obsoletes ──
+    if (hasObsoletes) {
+      { const hr = document.createElement('hr'); hr.style.cssText = SEPARATOR_CSS; panel.appendChild(hr); }
+      const sec = document.createElement('div');
+      const h = document.createElement('div');
+      h.style.cssText = SECTION_HEADER_CSS;
+      h.textContent = 'Obsoletes:';
+      sec.appendChild(h);
+
+      for (const uid of obsoletedUnits) {
+        const item = document.createElement('div');
+        item.style.cssText = ITEM_CSS;
+        item.textContent = `${UNIT_NAMES[uid]} (Unit)`;
+        sec.appendChild(item);
+      }
+
+      for (const wid of obsoletedWonders) {
+        const item = document.createElement('div');
+        item.style.cssText = ITEM_CSS;
+        item.textContent = `${WONDER_NAMES[wid]} (Wonder)`;
+        sec.appendChild(item);
+      }
+
+      panel.appendChild(sec);
+    }
+  }, [
+    { label: 'Close', action: returnTo },
+  ]);
+}
+
+/** Show "Science Advisor" dialog listing researchable techs on the path to a goal. */
+function _showGoalResearch(goalId) {
+  if (!S.mpGameState || S.mpCivSlot == null) return;
+  const civTechs = S.mpGameState.civTechs?.[S.mpCivSlot] || new Set();
+  const path = getPrereqPath(goalId, civTechs);
+  const goalName = ADVANCE_NAMES[goalId] || `Advance ${goalId}`;
+
+  // Find techs on the path that are currently researchable
+  const available = getAvailableResearch(S.mpGameState, S.mpCivSlot);
+  const availSet = new Set(available);
+  const pathSet = new Set(path);
+  const researchable = available.filter(id => pathSet.has(id));
+  researchable.sort((a, b) => ADVANCE_NAMES[a].localeCompare(ADVANCE_NAMES[b]));
+
+  createCiv2Dialog('goal-research', 'Science Advisor', panel => {
+    panel.style.minWidth = '340px';
+    panel.style.background = '#c0c0c0';
+    panel.style.padding = '12px 16px';
+
+    const msg = document.createElement('div');
+    msg.style.cssText = 'font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);text-align:center;padding:8px 0';
+
+    if (researchable.length === 0) {
+      msg.textContent = `No discoveries are available that lead to ${goalName}.`;
+    } else {
+      const names = researchable.map(id => ADVANCE_NAMES[id]);
+      const joined = names.length === 1
+        ? names[0]
+        : names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1];
+      msg.textContent = `Then we should research ${joined}.`;
+    }
+    panel.appendChild(msg);
+  }, [
+    { label: 'OK', action: () => showResearchPicker() },
   ]);
 }
 

@@ -1099,7 +1099,7 @@ registerDialogDeps({
 });
 
 registerUnitUiDeps({ renderAtomicSwap });
-registerAdvisorDeps({ openCityDialog, selectUnit, centerOnUnit });
+registerAdvisorDeps({ openCityDialog, selectUnit, centerOnUnit, renderUnitThumbnail });
 registerCityUiDeps({ showUnitPresentDialog, showUnitSupportedDialog });
 
 // ═══════════════════════════════════════════════════════════════════

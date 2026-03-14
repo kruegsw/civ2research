@@ -387,13 +387,17 @@ export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'O
 
   const dismiss = () => { overlay.remove(); window.removeEventListener('keydown', keyHandler, true); };
 
+  // Find the OK/accept button and cancel button by label
+  const okBtn = buttons.find(b => /^(ok|close)$/i.test(b.label)) || buttons[buttons.length - 1];
+  const cancelBtn = buttons.find(b => /^cancel$/i.test(b.label));
+
   // Close (X) button in title bar
   if (showClose) {
     const closeBtn = document.createElement('button');
     closeBtn.className = 'civ2-dialog-close';
     closeBtn.textContent = '\u2715';
     closeBtn.title = 'Close';
-    closeBtn.addEventListener('click', () => { dismiss(); if (buttons[0]?.action) buttons[0].action(); });
+    closeBtn.addEventListener('click', () => { dismiss(); });
     titlebar.appendChild(closeBtn);
   }
 
@@ -409,11 +413,11 @@ export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'O
   frame.appendChild(btnRow);
 
   overlay.appendChild(frame);
-  overlay.addEventListener('click', e => { if (e.target === overlay) { dismiss(); if (buttons[0]?.action) buttons[0].action(); } });
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
 
   const keyHandler = e => {
-    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); dismiss(); if (buttons[buttons.length - 1]?.action) buttons[buttons.length - 1].action(); }
-    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); if (buttons[0]?.action) buttons[0].action(); }
+    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); dismiss(); if (okBtn?.action) okBtn.action(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); if (cancelBtn?.action) cancelBtn.action(); }
     else if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       const items = panel.querySelectorAll('[data-selectable]');
       if (items.length === 0) return;
