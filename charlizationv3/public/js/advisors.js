@@ -844,7 +844,7 @@ export function showResearchPicker(discovered) {
     { label: 'Goal', action: () => showGoalPicker() },
     { label: 'OK', action: commitSelection },
     { label: 'Cancel' },
-  ]);
+  ], { showClose: false });
 }
 
 // ═══════════════════════════════════════════════════════════════════

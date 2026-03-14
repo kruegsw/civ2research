@@ -663,9 +663,6 @@ wss.on("connection", (ws) => {
         // Emit structured GAME_LOG messages for combat, turn events, tech, etc.
         emitGameLogs(actionRoomId, room);
 
-        // Clear one-shot notifications after broadcast
-        clearOneshotNotifications(room);
-
         // ── AI turn loop: auto-process consecutive AI civs after END_TURN ──
         if (msg.action.type === 'END_TURN') {
           processAiTurns(actionRoomId, room);
@@ -673,6 +670,9 @@ wss.on("connection", (ws) => {
 
         // Broadcast filtered state to each client (after all AI turns resolved)
         sendGameStateToAll(actionRoomId, room);
+
+        // Clear one-shot notifications AFTER broadcast so clients receive them
+        clearOneshotNotifications(room);
         break;
       }
 
