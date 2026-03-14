@@ -677,7 +677,7 @@ export function assessTaxRate(civSlot, aiData, gameState) {
  * @param {object} [aiData]  - pre-computed AI analytics (optional, will compute if missing)
  * @returns {object} strategy assessment
  */
-export function assessStrategy(gameState, mapBase, civSlot, aiData) {
+export function assessStrategy(gameState, mapBase, civSlot, aiData, debugLog = null) {
   // Compute AI data if not provided
   if (!aiData) {
     aiData = computeAiData(gameState, mapBase, civSlot);
@@ -748,6 +748,11 @@ export function assessStrategy(gameState, mapBase, civSlot, aiData) {
       enemyMilitary.set(i, aiData.milStrength[i]);
       enemyCityCount.set(i, aiData.cityCount[i]);
     }
+  }
+
+  if (debugLog) {
+    const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+    debugLog.push(`STRAT: ${civName}: threat=${threat} posture=${militaryPosture} economy=${economyScore} diplomacy=${diplomacyScore} focus=${productionFocus}`);
   }
 
   return {

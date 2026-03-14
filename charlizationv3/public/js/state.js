@@ -102,6 +102,7 @@ export const S = {
   chatUnread: 0,
   chatShowGameLog: true,
   chatPinned: false,
+  chatShowDebugLog: false,
 
   // ── Transport ──
   transport: null,

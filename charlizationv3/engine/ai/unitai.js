@@ -12,7 +12,7 @@
 import { resolveDirection, getDirection } from '../movement.js';
 import { validateAction } from '../rules.js';
 import {
-  UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_ROLE,
+  UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_ROLE, UNIT_NAMES,
   BUSY_ORDERS, TERRAIN_DEFENSE, UNIT_NEGATES_WALLS,
 } from '../defs.js';
 
@@ -1031,7 +1031,7 @@ function randomMove(unit, unitIndex, mapBase, domain) {
  * @param {object} strategy - strategic assessment from strategy.js
  * @returns {Array<object>} actions
  */
-export function generateMilitaryActions(gameState, mapBase, civSlot, strategy) {
+export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
   const spatialIdx = buildUnitSpatialIndex(gameState);
   const cityDefense = analyzeCityDefense(gameState, mapBase, civSlot);
@@ -1111,6 +1111,27 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy) {
     const err = validateAction(gameState, mapBase, action, civSlot);
     if (!err) {
       actions.push(action);
+      if (debugLog) {
+        const uName = UNIT_NAMES[unit.type] || `type#${unit.type}`;
+        if (action.type === 'MOVE_UNIT') {
+          // Determine what the unit is doing based on context
+          const dest = resolveDirection(unit.gx, unit.gy, action.dir, mapBase);
+          const destStr = dest ? `(${dest.gx},${dest.gy})` : action.dir;
+          // Check if there's an enemy at destination (attack)
+          const destEntries = dest ? unitsAt(spatialIdx, dest.gx, dest.gy) : [];
+          const enemyAtDest = destEntries.some(e => e.unit.owner !== civSlot);
+          if (enemyAtDest) {
+            const defender = destEntries.find(e => e.unit.owner !== civSlot);
+            const defName = defender ? (UNIT_NAMES[defender.unit.type] || `type#${defender.unit.type}`) : 'enemy';
+            const atkStr = attackStrength(unit);
+            debugLog.push(`UNIT: ${uName} #${i} at (${unit.gx},${unit.gy}): attacking ${defName} at ${destStr}, atk=${atkStr}`);
+          } else {
+            debugLog.push(`UNIT: ${uName} #${i} at (${unit.gx},${unit.gy}): moving ${action.dir} to ${destStr}`);
+          }
+        } else if (action.type === 'UNIT_ORDER') {
+          debugLog.push(`UNIT: ${uName} #${i} at (${unit.gx},${unit.gy}): order=${action.order}`);
+        }
+      }
     }
     // If validation fails, unit will be handled by cleanup
   }
@@ -1129,7 +1150,7 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy) {
  * @param {object} [strategy] - optional strategy (unused, kept for interface compat)
  * @returns {Array<object>} actions
  */
-export function generateCleanupActions(gameState, mapBase, civSlot, strategy) {
+export function generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
 
   for (let i = 0; i < gameState.units.length; i++) {

@@ -12,9 +12,9 @@ import { getProductionCost } from '../production.js';
 import { calcRushBuyCost } from '../happiness.js';
 import {
   UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN,
-  UNIT_OBSOLETE, UNIT_COSTS,
-  IMPROVE_PREREQS, IMPROVE_MAINTENANCE,
-  IMPROVE_COSTS, WONDER_COSTS,
+  UNIT_OBSOLETE, UNIT_COSTS, UNIT_NAMES,
+  IMPROVE_PREREQS, IMPROVE_MAINTENANCE, IMPROVE_NAMES,
+  IMPROVE_COSTS, WONDER_COSTS, WONDER_NAMES,
   WONDER_PREREQS, WONDER_OBSOLETE,
   SETTLER_TYPES, NON_COMBAT_TYPES,
 } from '../defs.js';
@@ -1146,7 +1146,7 @@ function shouldKeepCurrentProduction(city, currentScore, newScore, newItem) {
  * @param {object} strategy - strategic assessment from strategy.js
  * @returns {Array<object>} CHANGE_PRODUCTION actions
  */
-export function generateProductionActions(gameState, mapBase, civSlot, strategy) {
+export function generateProductionActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
   const civTechs = gameState.civTechs?.[civSlot];
   const ownCities = [];
@@ -1248,6 +1248,17 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy)
     const err = validateAction(gameState, mapBase, action, civSlot);
     if (!err) {
       actions.push(action);
+      if (debugLog) {
+        const itemName = bestItem.type === 'unit' ? (UNIT_NAMES[bestItem.id] || `unit#${bestItem.id}`)
+          : bestItem.type === 'building' ? (IMPROVE_NAMES[bestItem.id] || `bldg#${bestItem.id}`)
+          : (WONDER_NAMES[bestItem.id - 39] || `wonder#${bestItem.id}`);
+        const oldName = currentItem
+          ? (currentItem.type === 'unit' ? (UNIT_NAMES[currentItem.id] || `unit#${currentItem.id}`)
+            : currentItem.type === 'building' ? (IMPROVE_NAMES[currentItem.id] || `bldg#${currentItem.id}`)
+            : (WONDER_NAMES[(currentItem.id || 0) - 39] || `wonder#${currentItem.id}`))
+          : 'nothing';
+        debugLog.push(`PROD: ${city.name}: chose ${itemName} (score ${bestScore})${currentItem ? `, switching from ${oldName} (score ${currentScore})` : ''}`);
+      }
     }
   }
 

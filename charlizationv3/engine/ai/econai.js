@@ -1091,20 +1091,44 @@ export function considerRevolution(gameState, mapBase, civSlot) {
  * @param {object} [strategy] — unused currently, reserved for future strategy hints
  * @returns {Array<object>}
  */
-export function generateEconActions(gameState, mapBase, civSlot, strategy) {
+export function generateEconActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
+  const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
 
   // 1. Research selection
   const researchAction = chooseResearch(gameState, mapBase, civSlot);
-  if (researchAction) actions.push(researchAction);
+  if (researchAction) {
+    actions.push(researchAction);
+    if (debugLog) {
+      const techName = ADVANCE_NAMES[researchAction.advanceId] || `tech#${researchAction.advanceId}`;
+      // Compute top 3 for debug
+      const available = getAvailableResearch(gameState, civSlot);
+      const scored = available.map(tid => ({ tid, score: calcTechValue(civSlot, tid, gameState, mapBase) }));
+      scored.sort((a, b) => b.score - a.score);
+      const top3 = scored.slice(0, 3).map(s => `${ADVANCE_NAMES[s.tid] || s.tid}=${s.score}`).join(', ');
+      const chosenScore = scored.find(s => s.tid === researchAction.advanceId)?.score ?? '?';
+      debugLog.push(`ECON: ${civName}: researching ${techName} (score ${chosenScore}). Top 3: ${top3}`);
+    }
+  }
 
   // 2. Rate balancing
   const ratesAction = balanceRates(gameState, mapBase, civSlot);
-  if (ratesAction) actions.push(ratesAction);
+  if (ratesAction) {
+    actions.push(ratesAction);
+    if (debugLog) {
+      const lux = 10 - ratesAction.scienceRate - ratesAction.taxRate;
+      debugLog.push(`ECON: ${civName}: rates sci=${ratesAction.scienceRate} tax=${ratesAction.taxRate} lux=${lux}`);
+    }
+  }
 
   // 3. Government revolution
   const revolAction = considerRevolution(gameState, mapBase, civSlot);
-  if (revolAction) actions.push(revolAction);
+  if (revolAction) {
+    actions.push(revolAction);
+    if (debugLog) {
+      debugLog.push(`ECON: ${civName}: revolution to ${revolAction.government}`);
+    }
+  }
 
   return actions;
 }

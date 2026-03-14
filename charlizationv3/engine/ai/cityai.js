@@ -696,7 +696,7 @@ function moveTowardCity(unit, city, mapBase, gameState, civSlot) {
  * @param {object} [strategy] - strategic assessment (used for expansion desire)
  * @returns {Array<object>} actions
  */
-export function generateSettlerActions(gameState, mapBase, civSlot, strategy) {
+export function generateSettlerActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
   const ownCities = gameState.cities.filter(c => c.owner === civSlot && c.size > 0);
   const numSettlers = gameState.units.filter(u =>
@@ -734,6 +734,7 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy) {
             const err = validateAction(gameState, mapBase, buildAction, civSlot);
             if (!err) {
               actions.push(buildAction);
+              if (debugLog) debugLog.push(`CITY: Settler #${i}: founding city "${cityName}" at (${unit.gx},${unit.gy}), site score=${bestSite.score}`);
               continue;
             }
           }
@@ -758,6 +759,7 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy) {
           const err = validateAction(gameState, mapBase, buildAction, civSlot);
           if (!err) {
             actions.push(buildAction);
+            if (debugLog) debugLog.push(`CITY: Settler #${i}: founding city "${cityName}" at (${unit.gx},${unit.gy}), site score=${currentScore}`);
             continue;
           }
         }
@@ -793,6 +795,7 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy) {
     const workerOrder = getWorkerOrder(unit, i, gameState, mapBase, civSlot);
     if (workerOrder) {
       actions.push(workerOrder);
+      if (debugLog) debugLog.push(`CITY: Worker #${i} at (${unit.gx},${unit.gy}): building ${workerOrder.order}`);
       continue;
     }
 

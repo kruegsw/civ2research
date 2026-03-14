@@ -743,6 +743,46 @@ function toggleGameLog() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Debug Log
+// ═══════════════════════════════════════════════════════════════════
+
+function handleDebugLogMessage(msg) {
+  const el = document.createElement('div');
+  el.className = 'chatMsg debug-log-msg';
+
+  const catSpan = document.createElement('span');
+  catSpan.className = 'debug-log-category';
+  catSpan.textContent = `[${msg.category || 'debug'}]`;
+  el.appendChild(catSpan);
+
+  const textNode = document.createTextNode(' ' + (msg.text || ''));
+  el.appendChild(textNode);
+
+  if (!S.chatShowDebugLog) el.style.display = 'none';
+
+  chatMessages.appendChild(el);
+  if (S.chatShowDebugLog) chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  // Prune: if debug messages exceed 500, remove the oldest 250
+  const debugMsgs = chatMessages.querySelectorAll('.debug-log-msg');
+  if (debugMsgs.length > 500) {
+    for (let i = 0; i < 250; i++) debugMsgs[i].remove();
+  }
+}
+
+function toggleDebugLog() {
+  S.chatShowDebugLog = !S.chatShowDebugLog;
+  const els = chatMessages.querySelectorAll('.debug-log-msg');
+  for (const el of els) {
+    el.style.display = S.chatShowDebugLog ? '' : 'none';
+  }
+  if (transport) {
+    transport.sendRaw({ type: 'SET_DEBUG', enabled: S.chatShowDebugLog });
+  }
+  if (S.chatShowDebugLog) chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Countdown display (all-ready → game start)
 // ═══════════════════════════════════════════════════════════════════
 
@@ -1192,6 +1232,10 @@ function initNetwork(appCallbacks) {
           handleGameLogMessage(msg);
           break;
 
+        case 'DEBUG_LOG':
+          handleDebugLogMessage(msg);
+          break;
+
         case 'CHAT_HISTORY':
           if (msg.messages) {
             msg.messages.forEach(m => {
@@ -1330,6 +1374,9 @@ function initNetwork(appCallbacks) {
   // Game log toggle
   const gameLogToggle = document.getElementById('gameLogToggle');
   if (gameLogToggle) gameLogToggle.addEventListener('change', toggleGameLog);
+  // Debug log toggle
+  const debugLogToggle = document.getElementById('debugLogToggle');
+  if (debugLogToggle) debugLogToggle.addEventListener('change', toggleDebugLog);
   // Pin toggle — keep chat open
   const chatPinToggle = document.getElementById('chatPinToggle');
   if (chatPinToggle) chatPinToggle.addEventListener('change', () => {

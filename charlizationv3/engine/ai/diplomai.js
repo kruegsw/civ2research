@@ -762,7 +762,7 @@ function respondToTributeDemands(gameState, mapBase, civSlot, continentData) {
  * @param {number} civSlot - civ slot (1-7) being played
  * @returns {Array<object>}
  */
-export function generateDiplomacyActions(gameState, mapBase, civSlot) {
+export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog = null) {
   const actions = [];
 
   try {
@@ -796,6 +796,14 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot) {
         if (!err) {
           actions.push(action);
           declaredWar = true;
+          if (debugLog) {
+            const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+            const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
+            const ourStr = calcMilitaryStrength(gameState, civSlot);
+            const theirStr = calcMilitaryStrength(gameState, i);
+            const ratio = (ourStr / Math.max(theirStr, 1)).toFixed(1);
+            debugLog.push(`DIPLO: ${civName} declares war on ${targetName}: military ratio=${ratio}`);
+          }
         }
       }
 
@@ -814,7 +822,14 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot) {
 
           const action = { type: 'PROPOSE_TREATY', targetCiv: i, treaty: treatyType };
           const err = validateAction(gameState, mapBase, action, civSlot);
-          if (!err) actions.push(action);
+          if (!err) {
+            actions.push(action);
+            if (debugLog) {
+              const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+              const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
+              debugLog.push(`DIPLO: ${civName} proposes ${treatyType} to ${targetName}`);
+            }
+          }
         }
       }
 

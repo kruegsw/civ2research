@@ -654,11 +654,25 @@ wss.on("connection", (ws) => {
         // Apply action through reducer (validates internally)
         const next = applyAction(room.gameState, room.mapBase, msg.action, civSlot);
         if (next === room.gameState) {
+          if (roomHasDebugClient(room)) {
+            sendDebugLog(room, 'action', `REJECTED: ${msg.action.type} — invalid`, room.gameState.turn?.number ?? 0, civSlot);
+          }
           ws.send(JSON.stringify({ type: "REJECTED", roomId: actionRoomId, reason: "Invalid action" }));
           break;
         }
 
         room.gameState = next;
+
+        if (roomHasDebugClient(room)) {
+          const actionDesc = `${msg.action.type}` + (msg.action.unitIndex != null ? ` unit #${msg.action.unitIndex}` : '') + (msg.action.dir != null ? ` dir=${msg.action.dir}` : '');
+          sendDebugLog(room, 'action', `Applied: ${actionDesc}`, room.gameState.turn?.number ?? 0, civSlot);
+          // Combat debug
+          if (room.gameState.combatResult) {
+            const cr = room.gameState.combatResult;
+            const detail = `Combat: ${cr.attackerName || 'attacker'} atk=${cr.attackerStrength || '?'} vs ${cr.defenderName || 'defender'} def=${cr.defenderStrength || '?'} → ${cr.type}`;
+            sendDebugLog(room, 'combat', detail, room.gameState.turn?.number ?? 0, civSlot);
+          }
+        }
 
         // Emit structured GAME_LOG messages for combat, turn events, tech, etc.
         emitGameLogs(actionRoomId, room);
@@ -747,6 +761,12 @@ wss.on("connection", (ws) => {
         break;
       }
 
+      case "SET_DEBUG": {
+        const ci = clientInfo.get(ws);
+        if (ci) ci.debugEnabled = !!msg.enabled;
+        break;
+      }
+
       default:
         ws.send(JSON.stringify({ type: "ERROR", message: `Unknown type: ${msg.type}` }));
     }
@@ -761,6 +781,33 @@ wss.on("connection", (ws) => {
     broadcastRoomList();
   });
 });
+
+// -----------------------------------------------------------------------------
+// Debug log helpers
+// -----------------------------------------------------------------------------
+
+/**
+ * Send a DEBUG_LOG message only to clients with debugEnabled.
+ */
+function sendDebugLog(room, category, text, turn, civSlot) {
+  const msg = JSON.stringify({ type: 'DEBUG_LOG', category, text, turn: turn ?? 0, civSlot, ts: Date.now() });
+  for (const client of room.clients) {
+    if (client.readyState !== 1) continue;
+    const ci = clientInfo.get(client);
+    if (ci && ci.debugEnabled) client.send(msg);
+  }
+}
+
+/**
+ * Returns true if any client in the room has debugEnabled.
+ */
+function roomHasDebugClient(room) {
+  for (const client of room.clients) {
+    const ci = clientInfo.get(client);
+    if (ci && ci.debugEnabled) return true;
+  }
+  return false;
+}
 
 // -----------------------------------------------------------------------------
 // AI turn processing
@@ -786,10 +833,21 @@ function processAiTurns(roomId, room) {
     if (!(room.gameState.civsAlive & (1 << activeCiv))) break;
 
     // Run AI for this civ
+    const wantDebug = roomHasDebugClient(room);
+    const debugLog = wantDebug ? [] : null;
     const t0 = Date.now();
-    const aiActions = runAiTurn(room.gameState, room.mapBase, activeCiv);
+    const aiResult = runAiTurn(room.gameState, room.mapBase, activeCiv, debugLog);
+    const aiActions = aiResult.actions;
     const t1 = Date.now();
     console.log(`[ai] Room ${roomId}: civ ${activeCiv} (${room.gameState.civNames?.[activeCiv] || '?'}) — ${aiActions.length} actions planned in ${t1 - t0}ms`);
+
+    // Emit debug log entries if any client wants them
+    if (wantDebug && aiResult.debugLog) {
+      const turnNum = room.gameState.turn?.number ?? 0;
+      for (const line of aiResult.debugLog) {
+        sendDebugLog(room, 'ai', line, turnNum, activeCiv);
+      }
+    }
 
     // Apply each AI action through the reducer
     const t2 = Date.now();
