@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO } from './defs.js';
+import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS } from './defs.js';
 import { resolveDirection, getDirection, isZOCBlocked } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -321,7 +321,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (order === 'railroad') {
         const imp = mapBase.getImprovements(unit.gx, unit.gy);
         if (!imp.road) return 'Needs road first';
-        if (imp.rail) return 'Already has railroad';
+        if (imp.railroad) return 'Already has railroad';
       }
       if (order === 'pollution') {
         const imp = mapBase.getImprovements(unit.gx, unit.gy);
@@ -683,8 +683,13 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       return null;
     }
 
-    case END_TURN:
-      return null; // always valid if it's your turn
+    case END_TURN: {
+      // Reject if any unit still needs orders (has moves left and not busy)
+      const hasUnitNeedingOrders = gameState.units.some(u =>
+        u.owner === civSlot && u.gx >= 0 && u.movesLeft > 0 && !BUSY_ORDERS.has(u.orders));
+      if (hasUnitNeedingOrders) return 'Units still need orders';
+      return null;
+    }
 
     default:
       return `Unknown action type: ${action.type}`;

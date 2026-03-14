@@ -695,6 +695,44 @@ document.getElementById('research-info').addEventListener('click', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
+// Advisors popup menu
+// ═══════════════════════════════════════════════════════════════════
+const advisorsBtn = document.getElementById('advisors-btn');
+const advisorsPopup = document.getElementById('advisors-popup');
+
+advisorsBtn.addEventListener('click', () => {
+  advisorsPopup.style.display = advisorsPopup.style.display === 'none' ? 'block' : 'none';
+});
+
+// Close popup when clicking outside
+document.addEventListener('pointerdown', e => {
+  if (advisorsPopup.style.display !== 'none'
+      && !advisorsPopup.contains(e.target)
+      && e.target !== advisorsBtn) {
+    advisorsPopup.style.display = 'none';
+  }
+});
+
+// Advisor item handlers
+const ADVISOR_MAP = {
+  civilopedia: showCivpedia,
+  military: showMilitaryAdvisor,
+  trade: showTradeAdvisor,
+  city: showCityList,
+  science: showScienceAdvisor,
+  demographics: showDemographics,
+  techtree: showTechTree,
+  taxrates: showRateSliders,
+};
+for (const item of document.querySelectorAll('.advisors-item')) {
+  item.addEventListener('click', () => {
+    advisorsPopup.style.display = 'none';
+    const fn = ADVISOR_MAP[item.dataset.advisor];
+    if (fn) fn();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Keyboard handlers
 // ═══════════════════════════════════════════════════════════════════
 
@@ -708,6 +746,7 @@ function isDialogOpen() {
 
 // ── Turn-restricted keys ──
 window.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) return; // let browser shortcuts (Ctrl+R, Ctrl+Shift+R, etc.) pass through
   if (!S.mpGameState || S.mpGameState.turn.activeCiv !== S.mpCivSlot) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (S.currentScene !== 'game') return;
@@ -975,6 +1014,7 @@ window.addEventListener('keydown', e => {
 
 // ── Non-turn-restricted keys (advisors, escape) ──
 window.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) return; // let browser shortcuts pass through
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (S.currentScene !== 'game') return;
 

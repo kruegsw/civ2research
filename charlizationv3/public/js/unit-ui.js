@@ -94,7 +94,7 @@ export function startBlink() {
   S.blinkInterval = setInterval(() => {
     S.blinkOn = !S.blinkOn;
     toggleBlinkOverlay();
-  }, 200);
+  }, 130);
 }
 
 export function stopBlink() {

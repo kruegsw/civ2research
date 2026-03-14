@@ -358,7 +358,9 @@ async function doRenderFromState(opts = {}) {
 
   // Auto-select unit (only on our turn)
   const prevSelected = S.mpSelectedUnit;
-  if (S.mpGameState.turn.activeCiv === S.mpCivSlot) {
+  if (opts.deferAutoAdvance) {
+    // Keep current selection — auto-advance will happen after delay
+  } else if (S.mpGameState.turn.activeCiv === S.mpCivSlot) {
     const advFrom = opts.autoAdvanceFrom;
     if (advFrom != null) {
       // After a move/order: stay on same unit if it still has moves, else advance
@@ -632,6 +634,115 @@ function sendChat() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Game Log
+// ═══════════════════════════════════════════════════════════════════
+
+const GAME_LOG_COLORS = {
+  combat:    '#e74c3c',
+  city:      '#f39c12',
+  tech:      '#3498db',
+  diplomacy: '#e67e22',
+  general:   '#95a5a6',
+};
+
+function handleGameLogMessage(msg, isHistory) {
+  if (S.currentScene === 'game') showChatPanel();
+
+  const el = document.createElement('div');
+  el.className = 'chatMsg game-log-msg game-log-' + (msg.category || 'general');
+  const color = GAME_LOG_COLORS[msg.category] || GAME_LOG_COLORS.general;
+  el.style.color = color;
+
+  // Hide if game log is toggled off (but still add to DOM)
+  if (!S.chatShowGameLog) el.style.display = 'none';
+
+  const prefix = document.createElement('span');
+  prefix.className = 'game-log-turn';
+  prefix.textContent = `[Turn ${msg.turn || 0}] `;
+  el.appendChild(prefix);
+
+  const textEl = document.createElement('span');
+  textEl.textContent = msg.text;
+  el.appendChild(textEl);
+
+  chatMessages.appendChild(el);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  // Toast + badge (skip for history replay)
+  if (!isHistory) {
+    if (!S.chatOpen && S.chatShowGameLog) {
+      S.chatUnread++;
+      chatBadge.textContent = S.chatUnread;
+      chatBadge.classList.remove('hidden');
+      // Subtler toast for game log (shorter duration)
+      const toast = document.createElement('div');
+      toast.className = 'chatToast event';
+      toast.style.color = color;
+      toast.textContent = msg.text.length > 80 ? msg.text.slice(0, 77) + '...' : msg.text;
+      chatToastStack.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+  }
+}
+
+function toggleGameLog() {
+  S.chatShowGameLog = !S.chatShowGameLog;
+  const els = chatMessages.querySelectorAll('.game-log-msg');
+  for (const el of els) {
+    el.style.display = S.chatShowGameLog ? '' : 'none';
+  }
+  if (S.chatShowGameLog) chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Countdown display (all-ready → game start)
+// ═══════════════════════════════════════════════════════════════════
+
+let countdownSoundPlayed = false;
+
+function handleCountdown(seconds) {
+  const actionsEl = document.getElementById('room-actions');
+  if (!actionsEl) return;
+
+  // Play sound on the first countdown message (seconds=5)
+  if (!countdownSoundPlayed) {
+    sfx('POMPCIRC');
+    countdownSoundPlayed = true;
+  }
+
+  // Find or create countdown display element
+  let cdEl = document.getElementById('room-countdown');
+  if (!cdEl) {
+    cdEl = document.createElement('div');
+    cdEl.id = 'room-countdown';
+    cdEl.style.cssText = 'font-size:28px;font-weight:bold;color:#ffd700;text-align:center;' +
+      'padding:16px 0;font-family:"Times New Roman",Georgia,serif;text-shadow:2px 2px 4px rgba(0,0,0,0.5)';
+    actionsEl.insertBefore(cdEl, actionsEl.firstChild);
+  }
+
+  if (seconds > 0) {
+    cdEl.textContent = `Game starts in ${seconds}...`;
+    cdEl.style.display = '';
+    // Hide the ready button during countdown
+    const readyBtn = document.getElementById('room-ready-btn');
+    if (readyBtn) readyBtn.style.display = 'none';
+    // Update status text
+    const statusText = document.getElementById('room-status-text');
+    if (statusText) statusText.textContent = 'All players ready!';
+  } else {
+    cdEl.textContent = 'Launching game!';
+    // Game start will follow immediately via GAME_START message
+  }
+}
+
+function handleCountdownCancel() {
+  countdownSoundPlayed = false;
+  const cdEl = document.getElementById('room-countdown');
+  if (cdEl) cdEl.remove();
+  // Ready button visibility will be restored by renderRoomDetail on next ROOM message
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // initNetwork — create transport, wire up all lobby/game listeners
 // ═══════════════════════════════════════════════════════════════════
 
@@ -751,6 +862,10 @@ function initNetwork(appCallbacks) {
 
         case 'GAME_START': {
           console.log('[ws] GAME_START received', msg.myCivSlot);
+          // Reset countdown state
+          countdownSoundPlayed = false;
+          const cdEl = document.getElementById('room-countdown');
+          if (cdEl) cdEl.remove();
           S.mpCivSlot = msg.myCivSlot;
           S.mpSeatCivMap = msg.seatCivMap;
           S.wsGameStarted = true;
@@ -949,18 +1064,31 @@ function initNetwork(appCallbacks) {
           // Continuation after optional combat animation — render + notifications
           const afterCombatAnim = () => {
             // Play move sound if unit successfully moved to a new position
+            let unitMoved = false;
             if (S.pendingMoveUnit != null && prevUnits) {
               const prevU = prevUnits[S.pendingMoveUnit];
               const newU = msg.state.units[S.pendingMoveUnit];
               if (prevU && newU && (newU.gx !== prevU.gx || newU.gy !== prevU.gy) && newU.gx >= 0) {
                 sfx('MOVPIECE');
+                unitMoved = true;
               }
               S.pendingMoveUnit = null;
             }
 
             applyVisibilityUpdate(pendingVisibility);
-            doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
-            processNotifications();
+
+            if (unitMoved) {
+              // First render: show unit at new position, keep camera where it is
+              doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+              processNotifications();
+              // Wait so user can see newly revealed terrain, then advance to next unit
+              setTimeout(() => {
+                doRenderFromState({ skipCenter: false, autoAdvanceFrom: autoAdvFrom });
+              }, 500);
+            } else {
+              doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
+              processNotifications();
+            }
           };
 
           // If combat occurred, play flash animation before slide/render
@@ -975,6 +1103,7 @@ function initNetwork(appCallbacks) {
 
         case 'ERROR':
           console.warn(`[ws] Server error: ${msg.message}`);
+          if (msg.message) showOverlayMessage(msg.message);
           // Room gone (server restart) — clean up and return to lobby
           if (msg.message && msg.message.includes('not found')) {
             const match = msg.message.match(/Room (\S+)/);
@@ -998,12 +1127,29 @@ function initNetwork(appCallbacks) {
           console.warn(`[ws] Rejected: ${msg.reason}`);
           break;
 
+        case 'COUNTDOWN':
+          handleCountdown(msg.seconds);
+          break;
+
+        case 'COUNTDOWN_CANCEL':
+          handleCountdownCancel();
+          break;
+
         case 'MSG':
           handleChatMessage(msg);
           break;
 
+        case 'GAME_LOG':
+          handleGameLogMessage(msg);
+          break;
+
         case 'CHAT_HISTORY':
-          if (msg.messages) msg.messages.forEach(m => handleChatMessage(m, true));
+          if (msg.messages) {
+            msg.messages.forEach(m => {
+              if (m.type === 'GAME_LOG') handleGameLogMessage(m, true);
+              else handleChatMessage(m, true);
+            });
+          }
           break;
 
         default:
@@ -1081,6 +1227,18 @@ function initNetwork(appCallbacks) {
     transport.send('READY');
   });
 
+  // ── Enter key toggles Ready in lobby ──
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    if (S.currentScene !== 'lobby') return;
+    if (S.wsPlayerIndex == null) return;  // not seated
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    // Only when room detail view is showing (not browsing room list)
+    if (document.getElementById('lobby-room-view').style.display === 'none') return;
+    e.preventDefault();
+    transport.send('READY');
+  });
+
   // ── Lobby ← → Menu navigation ──
   document.getElementById('lobby-back-btn').addEventListener('click', () => setScene('menu'));
   document.getElementById('game-back-btn').addEventListener('click', () => {
@@ -1120,6 +1278,9 @@ function initNetwork(appCallbacks) {
   chatToastStack.addEventListener('click', () => {
     if (!S.chatOpen) toggleChat();
   });
+  // Game log toggle
+  const gameLogToggle = document.getElementById('gameLogToggle');
+  if (gameLogToggle) gameLogToggle.addEventListener('change', toggleGameLog);
   // Close chat when clicking outside chatPanel
   document.addEventListener('pointerdown', e => {
     if (S.chatOpen && !chatPanel.contains(e.target)) toggleChat();

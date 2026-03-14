@@ -821,7 +821,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
    Turn UI (multiplayer game)
    ═══════════════════════════════════════════════════════════════════ */
 #turn-ui {
-  position: fixed; bottom: 16px; right: 16px; z-index: 60;
+  position: fixed; top: 16px; right: 16px; z-index: 60;
   background: rgba(22, 33, 62, 0.95);
   border: 1px solid #0f3460;
   border-radius: 6px;
@@ -865,7 +865,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 /* Advisors popup menu */
 #advisors-menu-wrap { position: relative; }
 .advisors-popup {
-  position: absolute; bottom: 100%; right: 0; margin-bottom: 4px;
+  position: absolute; top: 100%; right: 0; margin-top: 4px;
   background: #c0c0c0; border: 2px outset #ddd;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
   min-width: 200px; z-index: 100;
@@ -954,9 +954,38 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   min-height: 120px; font: 13px 'Segoe UI', sans-serif;
   color: #ddd; line-height: 1.45;
 }
+.chatHeader {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding: 4px 10px 2px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.gameLogToggleLabel {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: #888; cursor: pointer; user-select: none;
+}
+.gameLogToggleLabel input[type="checkbox"] {
+  margin: 0; cursor: pointer;
+}
+
 .chatMsg { margin-bottom: 4px; }
 .chatMsg.event { color: #aa9; font-style: italic; border-left: 2px solid #665; padding-left: 6px; }
 .chatSender { font-weight: 600; }
+
+/* Game log messages */
+.chatMsg.game-log-msg {
+  font-style: italic; font-size: 12px;
+  border-left: 2px solid currentColor; padding-left: 6px;
+  line-height: 1.35; word-break: break-word;
+}
+.game-log-turn {
+  opacity: 0.65; font-size: 10px;
+}
+.game-log-combat { color: #e74c3c; }
+.game-log-city { color: #f39c12; }
+.game-log-tech { color: #3498db; }
+.game-log-diplomacy { color: #e67e22; }
+.game-log-general { color: #95a5a6; }
 
 .chatInputRow {
   display: flex; border-top: 1px solid rgba(255,255,255,0.1);

@@ -675,13 +675,35 @@ const Civ2Renderer = {
           else ctx.drawImage(hills[ovi], px, py);
         }
 
-        // ── Roads & Railroads — 8 directional segments ──
-        // Direction order: NE=0, E=1, SE=2, S=3, SW=4, W=5, NW=6, N=7
         // When FOW is enabled and tile is dimmed, use last-known improvements (Block 1)
         let imp = getImprovements(gx, gy);
         if (fowEnabled && isDimmed(gx, gy)) {
           imp = mapData.getKnownImprovements(gx, gy, options.fowCiv);
         }
+
+        // ── Step 1: Irrigation/farmland (ground-level, beneath everything) ──
+        if (imp.irrigation) {
+          if (imp.farmland) ctx.drawImage(sprites.farmland, px, py);
+          else ctx.drawImage(sprites.irrigation, px, py);
+        }
+
+        // ── Step 2: Resources / grassland shield ──
+        // Grassland uses a separate coordinate-only HasShield() formula, NOT seed-based resources.
+        // Source: Civ2-clone MapImage.cs — grassland branch checks HasShield, else branch checks Special
+        if (ter === 2) {
+          if (mapData.hasShield(gx, gy) && sprites.grasslandShield) {
+            ctx.drawImage(sprites.grasslandShield, px, py);
+          }
+        } else {
+          const res = getResource(gx, gy);
+          if (res > 0 && ter <= 10) {
+            const key = ter * 2 + res;
+            if (resources[key]) ctx.drawImage(resources[key], px, py);
+          }
+        }
+
+        // ── Step 3: Roads & Railroads on top of resources ──
+        // Direction order: NE=0, E=1, SE=2, S=3, SW=4, W=5, NW=6, N=7
         if (imp.road || imp.railroad || imp.city) {
           const DIR_KEYS = ['NE','E','SE','S','SW','W','NW','N'];
           let roadSegs = 0, rrSegs = 0;
@@ -702,28 +724,7 @@ const Civ2Renderer = {
           }
         }
 
-        // ── Step 1: Irrigation/farmland beneath resources (ground-level) ──
-        if (imp.irrigation) {
-          if (imp.farmland) ctx.drawImage(sprites.farmland, px, py);
-          else ctx.drawImage(sprites.irrigation, px, py);
-        }
-
-        // ── Step 2: Resources / grassland shield on top of irrigation ──
-        // Grassland uses a separate coordinate-only HasShield() formula, NOT seed-based resources.
-        // Source: Civ2-clone MapImage.cs — grassland branch checks HasShield, else branch checks Special
-        if (ter === 2) {
-          if (mapData.hasShield(gx, gy) && sprites.grasslandShield) {
-            ctx.drawImage(sprites.grasslandShield, px, py);
-          }
-        } else {
-          const res = getResource(gx, gy);
-          if (res > 0 && ter <= 10) {
-            const key = ter * 2 + res;
-            if (resources[key]) ctx.drawImage(resources[key], px, py);
-          }
-        }
-
-        // ── Step 3: Mining/pollution on top of everything ──
+        // ── Step 4: Mining/pollution on top of everything ──
         if (imp.mining && !imp.irrigation) ctx.drawImage(sprites.mining, px, py);  // mining only (not farmland)
         if (imp.pollution) ctx.drawImage(sprites.pollution, px, py);
 

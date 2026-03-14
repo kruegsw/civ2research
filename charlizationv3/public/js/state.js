@@ -2,6 +2,8 @@
 // state.js — Shared mutable state container + constants
 // ═══════════════════════════════════════════════════════════════════
 
+export { BUSY_ORDERS } from '../engine/defs.js';
+
 export const SCROLL_STEP = 64;
 export const VP_MAX_SCALE = 4;
 
@@ -10,11 +12,6 @@ export function getMinScale() {
   if (S.vp.wraps) return S.vp.logicalW / S.vp.wrapW;
   return Math.max(S.vp.logicalW / S.vp.offW, S.vp.logicalH / S.vp.offH);
 }
-
-export const BUSY_ORDERS = new Set([
-  'fortifying', 'fortified', 'sentry', 'sleep',
-  'road', 'railroad', 'irrigation', 'mine', 'fortress', 'airbase', 'pollution',
-]);
 
 export const S = {
   // ── Game data ──
@@ -103,6 +100,7 @@ export const S = {
   // ── Chat ──
   chatOpen: false,
   chatUnread: 0,
+  chatShowGameLog: true,
 
   // ── Transport ──
   transport: null,

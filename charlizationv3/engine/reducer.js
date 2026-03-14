@@ -63,7 +63,7 @@ function completeWorkerOrder(order, gx, gy, terrain, mapBase) {
 
   switch (order) {
     case 'road':      imp.road = true; break;
-    case 'railroad':  imp.rail = true; break;
+    case 'railroad':  imp.railroad = true; break;
     case 'irrigation':
       if (CAN_IRRIGATE[terrain]) {
         imp.irrigation = true;
@@ -436,6 +436,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
 
         const defender = { ...state.units[bestDefIdx] };
+        // Capture pre-combat veteran status for combat log
+        const attacker_preCombat_veteran = unit.veteran;
+        const defender_preCombat_veteran = defender.veteran;
         // Build entropy seed from positions, turn, unit indices, and state version
         // so that repeated same-type combats produce different outcomes
         const turnNum_ = state.turn?.number || 0;
@@ -515,12 +518,17 @@ export function applyAction(prev, mapBase, action, civSlot) {
           type: result.attackerWins ? 'atkWin' : 'defWin',
           attacker: unit.type, defender: defender.type,
           atkOwner: unit.owner, defOwner: defender.owner,
+          atkVeteran: !!attacker_preCombat_veteran, defVeteran: !!defender_preCombat_veteran,
           gx: dest.gx, gy: dest.gy,
           atkHpLost: result.atkHpLost, defHpLost: result.defHpLost,
           rounds: result.rounds,
           atkMaxHp: result.atkMaxHp, defMaxHp: result.defMaxHp,
           atkFp: result.atkFp, defFp: result.defFp,
           atkStartHp: result.atkStartHp, defStartHp: result.defStartHp,
+          defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
+          defFortified: defender.orders === 'fortified',
+          atkVeteranPromo: result.atkVeteranPromo,
+          defVeteranPromo: result.defVeteranPromo,
         };
 
         // Check civ elimination for the losing side

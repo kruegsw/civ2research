@@ -47,6 +47,7 @@ import { generateMap } from "../engine/mapgen.js";
 import { applyAction } from "../engine/reducer.js";
 import { filterStateForCiv } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
+import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES } from "../engine/defs.js";
 
 const PORT = Number(process.env.PORT || 8788);
 const DEBUG = process.env.DEBUG === "1";
@@ -187,6 +188,8 @@ function leaveCurrentRoom(ws, info) {
     if (info.playerIndex != null && room.seats[info.playerIndex]?.clientId === info.clientId) {
       room.seats[info.playerIndex] = null;
       room.ready = room.ready.map(() => false);
+      // Cancel countdown if one is active
+      cancelCountdown(info.roomId, room);
     }
     if (room.clients.size === 0) {
       rooms.delete(info.roomId);
@@ -268,6 +271,14 @@ function broadcastRoomList() {
       }));
     }
   }
+}
+
+function cancelCountdown(roomId, room) {
+  if (!room.countdownTimer) return;
+  clearInterval(room.countdownTimer);
+  room.countdownTimer = null;
+  room.countdownSeconds = null;
+  broadcastToRoom(roomId, { type: "COUNTDOWN_CANCEL" });
 }
 
 wss.on("connection", (ws) => {
@@ -480,20 +491,46 @@ wss.on("connection", (ws) => {
         }
         const allReady = occupied.length >= 2 && occupied.every(i => room.ready[i]);
 
-        if (allReady) {
-          room.started = true;
-          // Save sessions for all seated players (for reconnect)
-          for (let i = 0; i < room.seats.length; i++) {
-            const seat = room.seats[i];
-            if (!seat) continue;
-            const ci = clientInfo.get(seat.ws);
-            if (ci && ci.sessionId) {
-              sessions.set(ci.sessionId, { roomId, seatIndex: i, name: ci.name });
-            }
-          }
+        if (allReady && !room.countdownTimer) {
+          // Start countdown instead of immediately starting
+          room.countdownSeconds = 5;
+          broadcastToRoom(roomId, { type: "COUNTDOWN", seconds: 5 });
+          room.countdownTimer = setInterval(() => {
+            room.countdownSeconds--;
+            if (room.countdownSeconds > 0) {
+              broadcastToRoom(roomId, { type: "COUNTDOWN", seconds: room.countdownSeconds });
+            } else {
+              // Countdown reached 0 — start the game
+              clearInterval(room.countdownTimer);
+              room.countdownTimer = null;
+              room.countdownSeconds = null;
+              broadcastToRoom(roomId, { type: "COUNTDOWN", seconds: 0 });
 
-          // Initialize game
-          startGame(roomId, room, occupied);
+              room.started = true;
+              // Save sessions for all seated players (for reconnect)
+              for (let i = 0; i < room.seats.length; i++) {
+                const seat = room.seats[i];
+                if (!seat) continue;
+                const ci = clientInfo.get(seat.ws);
+                if (ci && ci.sessionId) {
+                  sessions.set(ci.sessionId, { roomId, seatIndex: i, name: ci.name });
+                }
+              }
+
+              // Re-gather occupied seats (may have changed)
+              const finalOccupied = [];
+              for (let i = 0; i < room.seats.length; i++) {
+                if (room.seats[i]) finalOccupied.push(i);
+              }
+
+              // Initialize game
+              startGame(roomId, room, finalOccupied);
+              broadcastRoomList();
+            }
+          }, 1000);
+        } else if (!allReady && room.countdownTimer) {
+          // Someone un-readied during countdown — cancel it
+          cancelCountdown(roomId, room);
         }
 
         broadcastToRoom(roomId, roomRoster(roomId));
@@ -542,44 +579,8 @@ wss.on("connection", (ws) => {
         // Broadcast filtered state to each client
         sendGameStateToAll(actionRoomId, room);
 
-        // Broadcast combat result as a game event message
-        if (room.gameState.combatResult) {
-          const cr = room.gameState.combatResult;
-          const gs = room.gameState;
-          const atkCiv = gs.civNames?.[cr.attackerCiv] || `Civ ${cr.attackerCiv}`;
-          const defCiv = gs.civNames?.[cr.defenderCiv] || `Civ ${cr.defenderCiv}`;
-          const combatText = cr.attackerWins
-            ? `${atkCiv} ${cr.attackerType || 'unit'} defeated ${defCiv} ${cr.defenderType || 'unit'}`
-            : `${defCiv} ${cr.defenderType || 'unit'} repelled ${atkCiv} ${cr.attackerType || 'unit'}`;
-          const combatMsg = {
-            type: 'MSG', roomId: actionRoomId,
-            from: '__system__', name: 'Game', seat: -1,
-            text: combatText, ts: Date.now(), isEvent: true,
-          };
-          if (!room.chatHistory) room.chatHistory = [];
-          room.chatHistory.push(combatMsg);
-          if (room.chatHistory.length > 100) room.chatHistory.shift();
-          for (const client of room.clients) {
-            if (client.readyState === 1) client.send(JSON.stringify(combatMsg));
-          }
-        }
-
-        // Broadcast turn events as game messages for the event log
-        if (room.gameState.turnEvents) {
-          for (const ev of room.gameState.turnEvents) {
-            const eventMsg = {
-              type: 'MSG', roomId: actionRoomId,
-              from: '__system__', name: 'Game', seat: -1,
-              text: formatTurnEvent(ev, room.gameState), ts: Date.now(), isEvent: true,
-            };
-            if (!room.chatHistory) room.chatHistory = [];
-            room.chatHistory.push(eventMsg);
-            if (room.chatHistory.length > 100) room.chatHistory.shift();
-            for (const client of room.clients) {
-              if (client.readyState === 1) client.send(JSON.stringify(eventMsg));
-            }
-          }
-        }
+        // Emit structured GAME_LOG messages for combat, turn events, tech, etc.
+        emitGameLogs(actionRoomId, room);
 
         // Clear one-shot notifications after broadcast
         delete room.gameState.discoveredAdvance;
@@ -675,7 +676,217 @@ wss.on("connection", (ws) => {
 });
 
 // -----------------------------------------------------------------------------
-// Chat / event formatting
+// Game Log broadcast
+// -----------------------------------------------------------------------------
+
+/**
+ * Broadcast a GAME_LOG message to all clients in a room.
+ * Also stores it in chatHistory for reconnect replay.
+ */
+function broadcastGameLog(roomId, room, category, text, turn) {
+  const msg = {
+    type: 'GAME_LOG',
+    category,   // 'combat' | 'city' | 'tech' | 'diplomacy' | 'general'
+    text,
+    turn: turn ?? 0,
+    ts: Date.now(),
+  };
+  if (!room.chatHistory) room.chatHistory = [];
+  room.chatHistory.push(msg);
+  if (room.chatHistory.length > 200) room.chatHistory.shift();
+  for (const client of room.clients) {
+    if (client.readyState === 1) client.send(JSON.stringify(msg));
+  }
+}
+
+/**
+ * Build a detailed combat log string from the enriched combatResult.
+ */
+function formatCombatLog(cr, gs) {
+  const atkName = UNIT_NAMES[cr.attacker] || `Unit ${cr.attacker}`;
+  const defName = UNIT_NAMES[cr.defender] || `Unit ${cr.defender}`;
+  const atkCivName = gs.civNames?.[cr.atkOwner] || `Civ ${cr.atkOwner}`;
+  const defCivName = gs.civNames?.[cr.defOwner] || `Civ ${cr.defOwner}`;
+
+  const atkBaseAtk = UNIT_ATK[cr.attacker] || 1;
+  const defBaseDef = UNIT_DEF[cr.defender] || 1;
+  const defMaxHpUnits = UNIT_HP[cr.defender] || 1;
+  const atkMaxHpUnits = UNIT_HP[cr.attacker] || 1;
+
+  // Build modifier descriptions for defender
+  const defMods = [];
+  const terrainMul = TERRAIN_DEFENSE[cr.defTerrain] ?? 2;
+  const terrainName = TERRAIN_NAMES[cr.defTerrain] || 'Unknown';
+  if (terrainMul > 2) defMods.push(`${terrainName} x${terrainMul / 2}`);
+  if (cr.defVeteran) defMods.push('vet +50%');
+  if (cr.defFortified) defMods.push('fort +50%');
+  if (cr.defCityHasWalls) defMods.push('walls x3');
+  if (cr.defHasFortress && !cr.defInCity) defMods.push('fortress x2');
+  if (cr.defOnRiver && !cr.defInCity) defMods.push('river +50%');
+  if (cr.defInCity && defMods.every(m => !m.startsWith('walls'))) defMods.push('in city');
+
+  // Build modifier descriptions for attacker
+  const atkMods = [];
+  if (cr.atkVeteran) atkMods.push('vet +50%');
+
+  const atkModStr = atkMods.length ? ` [${atkMods.join(', ')}]` : '';
+  const defModStr = defMods.length ? ` [${defMods.join(', ')}]` : '';
+
+  // HP info
+  const atkStartHpDisp = cr.atkStartHp / 10;
+  const defStartHpDisp = cr.defStartHp / 10;
+
+  // Rounds summary
+  const roundParts = [];
+  let atkHpTrack = cr.atkStartHp;
+  let defHpTrack = cr.defStartHp;
+  for (let i = 0; i < cr.rounds.length; i++) {
+    if (cr.rounds[i]) {
+      defHpTrack -= cr.atkFp * 10;
+      roundParts.push('A hit');
+    } else {
+      atkHpTrack -= cr.defFp * 10;
+      roundParts.push('D hit');
+    }
+  }
+  const roundsStr = roundParts.length <= 12
+    ? roundParts.join(', ')
+    : roundParts.slice(0, 10).join(', ') + ` ... (${roundParts.length} rounds)`;
+
+  // Result
+  const winner = cr.type === 'atkWin' || cr.type === 'capture';
+  const remainingHp = winner
+    ? Math.max(0, atkHpTrack) / 10
+    : Math.max(0, defHpTrack) / 10;
+  const resultStr = winner
+    ? `${atkName} wins (${remainingHp}/${atkMaxHpUnits} hp)`
+    : `${defName} holds (${remainingHp}/${defMaxHpUnits} hp)`;
+
+  let line = `[Combat] ${atkCivName} ${atkName} (att:${atkBaseAtk}${atkModStr} hp:${atkStartHpDisp}/${atkMaxHpUnits})`;
+  line += ` vs ${defCivName} ${defName} (def:${defBaseDef}${defModStr} hp:${defStartHpDisp}/${defMaxHpUnits})`;
+  line += ` => ${resultStr}. Rounds: ${roundsStr}`;
+
+  if (cr.atkVeteranPromo) line += ` | ${atkName} promoted to veteran!`;
+  if (cr.defVeteranPromo) line += ` | ${defName} promoted to veteran!`;
+  if (cr.type === 'capture') line += ` | ${cr.cityName} captured!`;
+
+  return line;
+}
+
+/**
+ * Emit GAME_LOG messages for combat and turn events after reducer applies an action.
+ */
+function emitGameLogs(roomId, room) {
+  const gs = room.gameState;
+  const turnNum = gs.turn?.number ?? 0;
+
+  // ── Combat result ──
+  if (gs.combatResult) {
+    const combatText = formatCombatLog(gs.combatResult, gs);
+    broadcastGameLog(roomId, room, 'combat', combatText, turnNum);
+  }
+
+  // ── Turn events ──
+  if (gs.turnEvents) {
+    for (const ev of gs.turnEvents) {
+      const { category, text } = formatTurnEventLog(ev, gs);
+      broadcastGameLog(roomId, room, category, text, turnNum);
+    }
+  }
+
+  // ── Discovered advance ──
+  if (gs.discoveredAdvance) {
+    const da = gs.discoveredAdvance;
+    const civName = gs.civNames?.[da.civSlot] || `Civ ${da.civSlot}`;
+    const advName = ADVANCE_NAMES[da.advanceId] || `Advance ${da.advanceId}`;
+    broadcastGameLog(roomId, room, 'tech', `${civName} discovered ${advName}`, turnNum);
+  }
+
+  // ── City founded ──
+  if (gs.cityFounded) {
+    const cf = gs.cityFounded;
+    broadcastGameLog(roomId, room, 'city', `${cf.name} founded`, turnNum);
+  }
+}
+
+/**
+ * Categorize and format a turn event for the game log.
+ * Returns { category, text }.
+ */
+function formatTurnEventLog(ev, gs) {
+  const civName = (slot) => gs.civNames?.[slot] || `Civ ${slot}`;
+  switch (ev.type) {
+    case 'cityGrowth':
+      return { category: 'city', text: `${ev.cityName} has grown to size ${ev.newSize}` };
+    case 'famine':
+      return { category: 'city', text: `Famine in ${ev.cityName}! Population decreased to ${ev.newSize}` };
+    case 'productionComplete': {
+      const item = ev.item;
+      let name;
+      if (item.type === 'unit') name = UNIT_NAMES[item.id] || 'Unit';
+      else if (item.type === 'building') name = IMPROVE_NAMES[item.id] || 'Building';
+      else if (item.type === 'wonder') name = (WONDER_NAMES[item.id - 39] || 'Wonder');
+      else name = 'Item';
+      const cat = item.type === 'wonder' ? 'tech' : 'city';
+      const bang = item.type === 'wonder' ? '!' : '';
+      return { category: cat, text: `${ev.cityName} has built ${name}${bang}` };
+    }
+    case 'needsAqueduct':
+      return { category: 'city', text: `${ev.cityName} needs an Aqueduct to grow beyond size 8` };
+    case 'needsSewer':
+      return { category: 'city', text: `${ev.cityName} needs a Sewer System to grow beyond size 12` };
+    case 'warDeclared':
+      return { category: 'diplomacy', text: `${civName(ev.aggressor)} declared war on ${civName(ev.target)}!` };
+    case 'treatyAccepted': {
+      const treatyName = ev.treaty === 'peace' ? 'Peace Treaty' : 'Ceasefire';
+      return { category: 'diplomacy', text: `${civName(ev.civA)} and ${civName(ev.civB)} signed ${treatyName}` };
+    }
+    case 'civEliminated':
+      return { category: 'diplomacy', text: `The ${civName(ev.civSlot)} civilization has been destroyed!` };
+    case 'unitDisbanded': {
+      const uName = UNIT_NAMES[ev.unitType] || 'Unit';
+      return { category: 'general', text: `${uName} disbanded in ${ev.cityName} (insufficient support)` };
+    }
+    case 'anarchyEnded': {
+      const govtName = (ev.government || 'despotism').charAt(0).toUpperCase() + (ev.government || 'despotism').slice(1);
+      return { category: 'diplomacy', text: `Order restored: government is now ${govtName}` };
+    }
+    case 'unitCrashed': {
+      const uName = UNIT_NAMES[ev.unitType] || 'Unit';
+      return { category: 'general', text: `${uName} ran out of fuel and crashed!` };
+    }
+    case 'freeAdvance': {
+      const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
+      const source = ev.source || 'Free Advance';
+      return { category: 'tech', text: `${source}: ${advName} discovered` };
+    }
+    case 'tradeEstablished':
+      return { category: 'city', text: `Trade route: ${ev.homeCityName} -> ${ev.destCityName} (${ev.income} gold/turn)` };
+    case 'tributePaid':
+      return { category: 'diplomacy', text: `${civName(ev.from)} paid ${ev.amount} gold tribute to ${civName(ev.to)}` };
+    case 'cityIncited':
+      return { category: 'diplomacy', text: `${ev.cityName} revolts!` };
+    case 'techStolen': {
+      const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
+      return { category: 'diplomacy', text: `Technology stolen from ${civName(ev.from)}: ${advName}` };
+    }
+    case 'citySabotaged':
+      return { category: 'diplomacy', text: `${ev.cityName} sabotaged!` };
+    case 'unitBribed':
+      return { category: 'diplomacy', text: `Unit bribed for ${ev.cost} gold` };
+    case 'mapShared':
+      return { category: 'diplomacy', text: `Maps exchanged with ${civName(ev.targetCiv)}` };
+    case 'barbarianGold':
+      return { category: 'general', text: `Barbarian defeated! ${ev.gold} gold recovered` };
+    case 'barbarianLeaderCaptured':
+      return { category: 'general', text: `Barbarian leader captured! ${ev.gold} gold ransom` };
+    default:
+      return { category: 'general', text: `Event: ${ev.type}` };
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Chat / event formatting (legacy — kept for backward compat)
 // -----------------------------------------------------------------------------
 
 function formatTurnEvent(ev, gs) {

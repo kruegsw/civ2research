@@ -771,16 +771,7 @@ export function showRateSliders() {
       if (v > cap) { v = cap; slider.value = v; }
       onChange(v);
     });
-    // Tick marks
-    const ticks = document.createElement('div');
-    ticks.style.cssText = 'display:flex;justify-content:space-between;margin-top:1px;font-size:9px;color:#666;user-select:none';
-    for (let t = 0; t <= 10; t++) {
-      const tick = document.createElement('span');
-      tick.textContent = (t * 10) + '';
-      ticks.appendChild(tick);
-    }
     sliderWrap.appendChild(slider);
-    sliderWrap.appendChild(ticks);
     row.appendChild(lbl);
     row.appendChild(sliderWrap);
     parentPanel.appendChild(row);

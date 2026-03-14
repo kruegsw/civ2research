@@ -5,6 +5,7 @@
 <title>Charlization</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 
@@ -161,6 +162,12 @@
 <div id="chatPanel" class="hidden">
   <div id="chatToastStack" class="chatToastStack"></div>
   <div id="chatBox" class="chatBox hidden">
+    <div class="chatHeader">
+      <label class="gameLogToggleLabel">
+        <input type="checkbox" id="gameLogToggle" checked>
+        Game updates
+      </label>
+    </div>
     <div id="chatMessages" class="chatMessages"></div>
     <div class="chatInputRow">
       <input id="chatInput" class="chatInput" type="text"

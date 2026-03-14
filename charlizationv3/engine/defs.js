@@ -992,3 +992,9 @@ export const UNIT_UPGRADE_TO = [
    9,  // 50: Explorer → Partisans (Guerrilla Warfare obsoletes Explorer)
   -1,  // 51: Extra Land
 ];
+
+/** Orders that mean a unit is "busy" and does not need player input this turn. */
+export const BUSY_ORDERS = new Set([
+  'fortifying', 'fortified', 'sentry', 'sleep',
+  'road', 'railroad', 'irrigation', 'mine', 'fortress', 'airbase', 'pollution',
+]);
