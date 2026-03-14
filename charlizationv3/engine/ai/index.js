@@ -1,18 +1,22 @@
 // ═══════════════════════════════════════════════════════════════════
-// ai/index.js — AI player controller (Phase 4: economy, research, government)
+// ai/index.js — AI player controller (Phase 7: diplomacy)
 //
 // Called by the server during AI civ turns. Returns an array of
 // actions to apply before END_TURN.
 //
 // Phases:
+//   0. Strategic assessment — threat, posture, war/peace targets (advisory)
 //   1. Research & economy — smart tech selection, rate balancing, revolution
-//   2. City management — production selection and rush-buy
-//   3. Settler AI — city founding and worker improvements
-//   4. Military AI — exploration, combat, patrol
-//   5. Cleanup — skip/fortify idle units so END_TURN passes
+//   2. Diplomacy — treaty responses, war declarations, peace proposals, tribute
+//   3. City management — production selection and rush-buy
+//   4. Settler AI — city founding and worker improvements
+//   5. Military AI — exploration, combat, patrol
+//   6. Cleanup — skip/fortify idle units so END_TURN passes
 // ═══════════════════════════════════════════════════════════════════
 
+import { assessStrategy } from './strategy.js';
 import { generateEconActions } from './econai.js';
+import { generateDiplomacyActions } from './diplomai.js';
 import { generateProductionActions, generateRushBuyActions } from './prodai.js';
 import { generateSettlerActions } from './cityai.js';
 import { generateMilitaryActions, generateCleanupActions } from './unitai.js';
@@ -37,34 +41,44 @@ export function runAiTurn(gameState, mapBase, civSlot) {
   const actions = [];
 
   try {
+    // ── 0. Strategic assessment (advisory — no actions) ──
+    // Computes threat level, military posture, war/peace targets,
+    // and production focus. Passed to all phases for future use.
+    const strategy = assessStrategy(gameState, mapBase, civSlot);
+
     // ── 1. Research & economy ──
     // Smart tech selection, tax/science rate balancing, government revolution
-    const econActions = generateEconActions(gameState, mapBase, civSlot);
+    const econActions = generateEconActions(gameState, mapBase, civSlot, strategy);
     actions.push(...econActions);
 
-    // ── 2. City management: production selection + rush-buy ──
+    // ── 2. Diplomacy ──
+    // Respond to treaty proposals/tribute demands, declare war, propose peace
+    const diploActions = generateDiplomacyActions(gameState, mapBase, civSlot);
+    actions.push(...diploActions);
+
+    // ── 3. City management: production selection + rush-buy ──
     // Run before unit AI so newly produced/rushed units can be used
-    const prodActions = generateProductionActions(gameState, mapBase, civSlot);
+    const prodActions = generateProductionActions(gameState, mapBase, civSlot, strategy);
     actions.push(...prodActions);
 
-    const rushActions = generateRushBuyActions(gameState, mapBase, civSlot);
+    const rushActions = generateRushBuyActions(gameState, mapBase, civSlot, strategy);
     actions.push(...rushActions);
 
-    // ── 3. Settler/Worker AI ──
+    // ── 4. Settler/Worker AI ──
     // Settlers found cities; idle settlers/engineers improve tiles
-    const settlerActions = generateSettlerActions(gameState, mapBase, civSlot);
+    const settlerActions = generateSettlerActions(gameState, mapBase, civSlot, strategy);
     actions.push(...settlerActions);
 
-    // ── 4. Military unit AI ──
+    // ── 5. Military unit AI ──
     // Explore unexplored territory, attack adjacent enemies
-    const militaryActions = generateMilitaryActions(gameState, mapBase, civSlot);
+    const militaryActions = generateMilitaryActions(gameState, mapBase, civSlot, strategy);
     actions.push(...militaryActions);
 
-    // ── 5. Cleanup: skip/fortify any unit that still has moves ──
-    // This must come last. After the server applies steps 2-4,
+    // ── 6. Cleanup: skip/fortify any unit that still has moves ──
+    // This must come last. After the server applies steps 3-5,
     // some units will have been moved/ordered. The cleanup pass
     // handles any units that still need orders.
-    const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot);
+    const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot, strategy);
     actions.push(...cleanupActions);
 
   } catch (err) {

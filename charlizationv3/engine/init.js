@@ -44,8 +44,9 @@ export function initFromSav(parsed, seatList) {
   const seatCivMap = buildSeatCivMap(seatList, civsAlive);
 
   // Build humanPlayers bitmask: bit N = 1 means civ N is human-controlled.
-  // Civ 0 (barbarians) is always AI. Any civ with a seat is human.
-  const humanPlayers = buildHumanPlayersBitmask(seatCivMap);
+  // Civ 0 (barbarians) is always AI. Any civ with a seat is human (unless AI seat).
+  const aiSeatIndices = new Set(seatList.filter(s => s.ai).map(s => s.seatIndex));
+  const humanPlayers = buildHumanPlayersBitmask(seatCivMap, aiSeatIndices);
 
   const gameState = {
     units,
@@ -132,8 +133,9 @@ export function initNewGame(mapResult, seatList) {
   }
 
   // Build humanPlayers bitmask: bit N = 1 means civ N is human-controlled.
-  // Civ 0 (barbarians) is always AI. Any civ with a seat is human.
-  const humanPlayers = buildHumanPlayersBitmask(seatCivMap);
+  // Civ 0 (barbarians) is always AI. Any civ with a seat is human (unless AI seat).
+  const aiSeatIndices = new Set(seatList.filter(s => s.ai).map(s => s.seatIndex));
+  const humanPlayers = buildHumanPlayersBitmask(seatCivMap, aiSeatIndices);
 
   const gameState = {
     units,
@@ -244,13 +246,17 @@ function buildInitialCivs(seatList) {
  * Build humanPlayers bitmask from seatCivMap.
  * Bit N = 1 means civ N is human-controlled.
  * Civ 0 (barbarians) is always AI (bit 0 always 0).
+ * AI seats (in aiSeatIndices) are excluded from the bitmask.
  *
  * @param {object} seatCivMap - maps seat index → civ slot
+ * @param {Set<number>} [aiSeatIndices] - seat indices occupied by AI players
  * @returns {number} 8-bit bitmask
  */
-function buildHumanPlayersBitmask(seatCivMap) {
+function buildHumanPlayersBitmask(seatCivMap, aiSeatIndices) {
   let mask = 0;
   for (const seatIdx of Object.keys(seatCivMap)) {
+    // Skip AI seats — they should not be marked as human
+    if (aiSeatIndices && aiSeatIndices.has(Number(seatIdx))) continue;
     const civSlot = seatCivMap[seatIdx];
     if (civSlot != null && civSlot >= 1 && civSlot <= 7) {
       mask |= (1 << civSlot);

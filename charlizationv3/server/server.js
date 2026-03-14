@@ -20,6 +20,8 @@
 //   { type:"LEAVE_ROOM" }
 //   { type:"CREATE_ROOM", name? }
 //   { type:"READY" }
+//   { type:"ADD_AI", seat? }            — room creator adds AI to seat (or first open)
+//   { type:"REMOVE_AI", seat }          — room creator removes AI from seat
 //   { type:"PING" }
 //   { type:"SAY", text }
 //   { type:"ACTION", roomId, action:{ type:"MOVE_UNIT"|... } }   // future
@@ -219,7 +221,8 @@ function roomRoster(roomId) {
     clientId: slot?.clientId ?? null,
     name: slot?.name ?? null,
     occupied: !!slot,
-    wsOpen: slot ? (slot.ws && slot.ws.readyState === 1) : false,
+    ai: slot?.ai ?? false,
+    wsOpen: slot ? (slot.ai || (slot.ws && slot.ws.readyState === 1)) : false,
     lastActivity: slot?.lastActivity ?? null,
     ready: room.ready[i],
   }));
@@ -486,12 +489,18 @@ wss.on("connection", (ws) => {
 
         room.ready[info.playerIndex] = !room.ready[info.playerIndex];
 
-        // Check start condition: ≥2 occupied seats + all ready
+        // Check start condition: ≥2 occupied seats, ≥1 human, all humans ready
+        // AI seats are always considered ready.
         const occupied = [];
+        let humanCount = 0;
         for (let i = 0; i < room.seats.length; i++) {
-          if (room.seats[i]) occupied.push(i);
+          if (room.seats[i]) {
+            occupied.push(i);
+            if (!room.seats[i].ai) humanCount++;
+          }
         }
-        const allReady = occupied.length >= 2 && occupied.every(i => room.ready[i]);
+        const allReady = occupied.length >= 2 && humanCount >= 1 &&
+          occupied.every(i => room.seats[i].ai || room.ready[i]);
 
         if (allReady && !room.countdownTimer) {
           // Start countdown instead of immediately starting
@@ -509,10 +518,10 @@ wss.on("connection", (ws) => {
               broadcastToRoom(roomId, { type: "COUNTDOWN", seconds: 0 });
 
               room.started = true;
-              // Save sessions for all seated players (for reconnect)
+              // Save sessions for all seated human players (for reconnect)
               for (let i = 0; i < room.seats.length; i++) {
                 const seat = room.seats[i];
-                if (!seat) continue;
+                if (!seat || seat.ai) continue;
                 const ci = clientInfo.get(seat.ws);
                 if (ci && ci.sessionId) {
                   sessions.set(ci.sessionId, { roomId, seatIndex: i, name: ci.name });
@@ -534,6 +543,79 @@ wss.on("connection", (ws) => {
           // Someone un-readied during countdown — cancel it
           cancelCountdown(roomId, room);
         }
+
+        broadcastToRoom(roomId, roomRoster(roomId));
+        broadcastRoomList();
+        break;
+      }
+
+      case "ADD_AI": {
+        const roomId = info.roomId;
+        if (!roomId) break;
+        const room = rooms.get(roomId);
+        if (!room || room.started) break;
+
+        // Only room creator (seat 0) can add AI
+        if (info.playerIndex !== 0) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Only the room creator can add AI players" }));
+          break;
+        }
+
+        // Find target seat: specified seat or first open
+        let targetSeat = typeof msg.seat === "number" ? msg.seat : -1;
+        if (targetSeat >= 0 && targetSeat < 8) {
+          if (room.seats[targetSeat]) {
+            ws.send(JSON.stringify({ type: "ERROR", message: `Seat ${targetSeat} is already occupied` }));
+            break;
+          }
+        } else {
+          // Find first open seat
+          targetSeat = -1;
+          for (let i = 0; i < room.seats.length; i++) {
+            if (!room.seats[i]) { targetSeat = i; break; }
+          }
+          if (targetSeat < 0) {
+            ws.send(JSON.stringify({ type: "ERROR", message: "No open seats" }));
+            break;
+          }
+        }
+
+        room.seats[targetSeat] = { ai: true, name: "Computer", clientId: null, ws: null, lastActivity: Date.now() };
+        // AI is always ready
+        room.ready[targetSeat] = true;
+
+        broadcastToRoom(roomId, roomRoster(roomId));
+        broadcastRoomList();
+        break;
+      }
+
+      case "REMOVE_AI": {
+        const roomId = info.roomId;
+        if (!roomId) break;
+        const room = rooms.get(roomId);
+        if (!room || room.started) break;
+
+        // Only room creator (seat 0) can remove AI
+        if (info.playerIndex !== 0) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Only the room creator can remove AI players" }));
+          break;
+        }
+
+        const removeSeat = msg.seat;
+        if (typeof removeSeat !== "number" || removeSeat < 0 || removeSeat >= 8) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Invalid seat number" }));
+          break;
+        }
+
+        if (!room.seats[removeSeat] || !room.seats[removeSeat].ai) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Seat is not an AI player" }));
+          break;
+        }
+
+        room.seats[removeSeat] = null;
+        room.ready[removeSeat] = false;
+        // Cancel countdown if conditions no longer met
+        cancelCountdown(roomId, room);
 
         broadcastToRoom(roomId, roomRoster(roomId));
         broadcastRoomList();
@@ -614,7 +696,7 @@ wss.on("connection", (ws) => {
         // Re-build seat list from current seats
         const restartSeats = [];
         for (let i = 0; i < 8; i++) {
-          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i}` });
+          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i}`, ai: restartRoom.seats[i].ai || false });
         }
 
         const mapResult = generateMap(sz);
@@ -1055,6 +1137,7 @@ function startGame(roomId, room, occupiedSeats) {
   const seatList = occupiedSeats.map(i => ({
     seatIndex: i,
     name: room.seats[i]?.name || `Player ${i}`,
+    ai: room.seats[i]?.ai || false,
   }));
 
   // Generate a new map for multiplayer

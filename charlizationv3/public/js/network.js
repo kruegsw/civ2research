@@ -213,23 +213,59 @@ function renderRoomDetail(msg) {
 
   // Seats with activity dots
   const seatsEl = document.getElementById('room-seats');
+  const isCreator = S.wsPlayerIndex === 0;
+  const isPreGame = !msg.started;
   let html = '';
   for (const s of msg.clients) {
-    const cls = s.occupied ? 'occupied' : 'empty';
-    const label = s.occupied ? (s.name || 'Player') : 'Open';
-    const you = s.clientId === S.wsClientId ? ' (you)' : '';
-    const dotColor = activityColor(s);
-    const readyMark = (s.occupied && msg.ready && msg.ready[s.seat]) ? ' <span style="color:#4caf50">&#10003;</span>' : '';
-    html += `<div class="room-seat ${cls}">
-      <span class="activity-dot" style="background:${dotColor}"></span>
-      <span class="seat-num">${s.seat}</span>
-      <span class="seat-name">${label}${you}${readyMark}</span>
-    </div>`;
+    if (s.ai) {
+      // AI seat
+      const removeBtnHtml = (isCreator && isPreGame)
+        ? ` <button class="seat-remove-ai" data-seat="${s.seat}" title="Remove AI">x</button>`
+        : '';
+      html += `<div class="room-seat ai occupied">
+        <span class="seat-num">${s.seat}</span>
+        <span class="seat-name"><span class="seat-ai-tag">[AI]</span> ${s.name || 'Computer'}${removeBtnHtml}</span>
+      </div>`;
+    } else if (s.occupied) {
+      // Human seat
+      const you = s.clientId === S.wsClientId ? ' (you)' : '';
+      const dotColor = activityColor(s);
+      const readyMark = (msg.ready && msg.ready[s.seat]) ? ' <span style="color:#4caf50">&#10003;</span>' : '';
+      html += `<div class="room-seat occupied">
+        <span class="activity-dot" style="background:${dotColor}"></span>
+        <span class="seat-num">${s.seat}</span>
+        <span class="seat-name">${s.name || 'Player'}${you}${readyMark}</span>
+      </div>`;
+    } else {
+      // Empty seat
+      const addAiBtnHtml = (isCreator && isPreGame)
+        ? ` <button class="seat-add-ai" data-seat="${s.seat}">+ AI</button>`
+        : '';
+      html += `<div class="room-seat empty">
+        <span class="activity-dot" style="background:#444"></span>
+        <span class="seat-num">${s.seat}</span>
+        <span class="seat-name">Open${addAiBtnHtml}</span>
+      </div>`;
+    }
   }
   if (msg.spectators && msg.spectators.length) {
     html += `<div class="room-spectators">Spectators: ${msg.spectators.map(s => s.name).join(', ')}</div>`;
   }
   seatsEl.innerHTML = html;
+
+  // Wire up Add AI / Remove AI buttons
+  seatsEl.querySelectorAll('.seat-add-ai').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      transport.send('ADD_AI', { seat: Number(btn.dataset.seat) });
+    });
+  });
+  seatsEl.querySelectorAll('.seat-remove-ai').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      transport.send('REMOVE_AI', { seat: Number(btn.dataset.seat) });
+    });
+  });
 
   // Ready button + status text
   const readyBtn = document.getElementById('room-ready-btn');
@@ -245,17 +281,20 @@ function renderRoomDetail(msg) {
     leaveBtn.style.display = 'none';
     backBtn.style.display = '';
   } else {
-    // Pre-game: show ready state
+    // Pre-game: show ready state (AI seats are always ready)
     const occupied = msg.clients.filter(s => s.occupied);
-    const readyCount = occupied.filter((s, i) => msg.ready && msg.ready[s.seat]).length;
+    const humanOccupied = occupied.filter(s => !s.ai);
+    const readyCount = occupied.filter(s => s.ai || (msg.ready && msg.ready[s.seat])).length;
     if (occupied.length < 2) {
       statusText.textContent = `Waiting for players... (need at least 2)`;
+    } else if (humanOccupied.length < 1) {
+      statusText.textContent = `Need at least 1 human player`;
     } else {
       statusText.textContent = `${readyCount} / ${occupied.length} ready`;
     }
     statusText.className = '';
 
-    // Show ready button only if seated
+    // Show ready button only if seated (and human)
     if (S.wsPlayerIndex != null) {
       const amReady = msg.ready && msg.ready[S.wsPlayerIndex];
       readyBtn.textContent = amReady ? 'Not Ready' : 'Ready';

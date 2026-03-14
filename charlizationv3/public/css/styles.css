@@ -557,6 +557,30 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 }
 .seat-status.online { background: rgba(46,204,113,0.15); color: #2ecc71; }
 .seat-status.offline { background: rgba(231,76,60,0.15); color: #e74c3c; }
+/* ── AI seat styling ── */
+.room-seat.ai {
+  background: rgba(100, 160, 220, 0.08);
+  color: #99ccff;
+}
+.seat-ai-tag {
+  color: #7ab0e0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.seat-add-ai {
+  background: transparent; border: 1px solid #3a5a7a;
+  color: #7ab0e0; font-size: 11px; padding: 1px 6px;
+  border-radius: 3px; cursor: pointer; margin-left: 8px;
+}
+.seat-add-ai:hover { background: rgba(100, 160, 220, 0.15); border-color: #5a8aba; color: #aad0f0; }
+.seat-remove-ai {
+  background: transparent; border: 1px solid #5a3a3a;
+  color: #cc8888; font-size: 11px; padding: 0 5px; line-height: 1.4;
+  border-radius: 3px; cursor: pointer; margin-left: 8px;
+}
+.seat-remove-ai:hover { background: rgba(220, 100, 100, 0.15); border-color: #8a4a4a; color: #eea0a0; }
+
 .room-spectators {
   margin-top: 12px; padding: 8px 12px;
   font-size: 11px; color: #666;
