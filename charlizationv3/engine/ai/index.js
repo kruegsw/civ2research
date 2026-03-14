@@ -41,45 +41,42 @@ import { generateMilitaryActions, generateCleanupActions } from './unitai.js';
 export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
   const actions = [];
 
+  // Track which unit indices already received an action from earlier phases.
+  // Cleanup must skip these — otherwise it overwrites move/build actions
+  // with sentry/skip (computed from the stale initial snapshot).
+  const handledUnits = new Set();
+
+  /** Collect actions from a phase, recording unit indices. */
+  function collectActions(phaseActions) {
+    for (const a of phaseActions) {
+      actions.push(a);
+      if (a.unitIndex != null) handledUnits.add(a.unitIndex);
+    }
+  }
+
   try {
     // ── 0. Strategic assessment (advisory — no actions) ──
-    // Computes threat level, military posture, war/peace targets,
-    // and production focus. Passed to all phases for future use.
     const strategy = assessStrategy(gameState, mapBase, civSlot, undefined, debugLog);
 
     // ── 1. Research & economy ──
-    // Smart tech selection, tax/science rate balancing, government revolution
-    const econActions = generateEconActions(gameState, mapBase, civSlot, strategy, debugLog);
-    actions.push(...econActions);
+    collectActions(generateEconActions(gameState, mapBase, civSlot, strategy, debugLog));
 
     // ── 2. Diplomacy ──
-    // Respond to treaty proposals/tribute demands, declare war, propose peace
-    const diploActions = generateDiplomacyActions(gameState, mapBase, civSlot, debugLog);
-    actions.push(...diploActions);
+    collectActions(generateDiplomacyActions(gameState, mapBase, civSlot, debugLog));
 
     // ── 3. City management: production selection + rush-buy ──
-    // Run before unit AI so newly produced/rushed units can be used
-    const prodActions = generateProductionActions(gameState, mapBase, civSlot, strategy, debugLog);
-    actions.push(...prodActions);
-
-    const rushActions = generateRushBuyActions(gameState, mapBase, civSlot, strategy);
-    actions.push(...rushActions);
+    collectActions(generateProductionActions(gameState, mapBase, civSlot, strategy, debugLog));
+    collectActions(generateRushBuyActions(gameState, mapBase, civSlot, strategy));
 
     // ── 4. Settler/Worker AI ──
-    // Settlers found cities; idle settlers/engineers improve tiles
-    const settlerActions = generateSettlerActions(gameState, mapBase, civSlot, strategy, debugLog);
-    actions.push(...settlerActions);
+    collectActions(generateSettlerActions(gameState, mapBase, civSlot, strategy, debugLog));
 
     // ── 5. Military unit AI ──
-    // Explore unexplored territory, attack adjacent enemies
-    const militaryActions = generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog);
-    actions.push(...militaryActions);
+    collectActions(generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog));
 
     // ── 6. Cleanup: skip/fortify any unit that still has moves ──
-    // This must come last. After the server applies steps 3-5,
-    // some units will have been moved/ordered. The cleanup pass
-    // handles any units that still need orders.
-    const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog);
+    // Must come last. Skips units already handled by earlier phases.
+    const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog, handledUnits);
     actions.push(...cleanupActions);
 
   } catch (err) {

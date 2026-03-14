@@ -901,7 +901,13 @@ function processAiTurns(roomId, room) {
     if (endResult !== room.gameState) {
       room.gameState = endResult;
       emitGameLogs(roomId, room);
-      clearOneshotNotifications(room);
+      // Don't clear notifications from the END_TURN that transitions to a human —
+      // those (discoveredAdvance, turnEvents) belong to the human's turn start
+      // and must survive to the sendGameStateToAll() broadcast after this loop.
+      const nextCiv = room.gameState.turn.activeCiv;
+      if (!(humanPlayers & (1 << nextCiv))) {
+        clearOneshotNotifications(room);
+      }
     } else {
       // END_TURN was rejected — this shouldn't happen, but break to avoid infinite loop
       console.warn(`[ai] Room ${roomId}: END_TURN rejected for AI civ ${activeCiv}, breaking loop`);

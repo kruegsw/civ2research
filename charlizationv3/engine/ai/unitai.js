@@ -1382,7 +1382,7 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
  * @param {object} [strategy] - optional strategy (unused, kept for interface compat)
  * @returns {Array<object>} actions
  */
-export function generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
+export function generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog = null, handledUnits = null) {
   const actions = [];
 
   for (let i = 0; i < gameState.units.length; i++) {
@@ -1392,6 +1392,9 @@ export function generateCleanupActions(gameState, mapBase, civSlot, strategy, de
     if (unit.gx < 0) continue;
     if (unit.movesLeft <= 0) continue;
     if (BUSY_ORDERS.has(unit.orders)) continue;
+
+    // Skip units already given an action by an earlier phase
+    if (handledUnits && handledUnits.has(i)) continue;
 
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
 

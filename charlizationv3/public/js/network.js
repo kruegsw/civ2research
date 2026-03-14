@@ -1280,7 +1280,7 @@ function initNetwork(appCallbacks) {
               processNotifications();
               // Wait so user can see newly revealed terrain, then advance to next unit
               setTimeout(() => {
-                doRenderFromState({ skipCenter: false, autoAdvanceFrom: autoAdvFrom });
+                doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
               }, 500);
             } else {
               doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
