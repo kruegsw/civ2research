@@ -17,82 +17,349 @@ import { REVOLUTION, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, DEMAND_TRIBUTE
 let _deps = {};
 export function registerAdvisorDeps(deps) { _deps = deps; }
 
-// ── Tech tree viewer (F6) ──
+// ── Tech category row assignments (0=Military, 1=Economic/Naval, 2=Government/Social, 3=Science/Academic) ──
+// Indexed by advance ID (0-88). ID 63 (Plumbing) is unresearchable and excluded.
+const TECH_ROW = [
+  0,  //  0: Advanced Flight     — Military (advanced combat aircraft)
+  3,  //  1: Alphabet            — Science (knowledge)
+  0,  //  2: Amphibious Warfare  — Military (combat doctrine)
+  3,  //  3: Astronomy           — Science (discovery)
+  3,  //  4: Atomic Theory       — Science (physics research)
+  1,  //  5: Automobile          — Economic (infrastructure/industry)
+  1,  //  6: Banking             — Economic (trade/finance)
+  1,  //  7: Bridge Building     — Economic (construction/infrastructure)
+  0,  //  8: Bronze Working      — Military (weapons)
+  2,  //  9: Ceremonial Burial   — Government/Social (religion)
+  3,  // 10: Chemistry           — Science (research)
+  0,  // 11: Chivalry            — Military (combat units)
+  2,  // 12: Code of Laws        — Government/Social (law)
+  0,  // 13: Combined Arms       — Military (combat doctrine)
+  1,  // 14: Combustion          — Economic (industrial tech)
+  2,  // 15: Communism           — Government/Social (government)
+  3,  // 16: Computers           — Science (research)
+  0,  // 17: Conscription        — Military (military doctrine)
+  1,  // 18: Construction        — Economic (infrastructure)
+  1,  // 19: The Corporation     — Economic (trade/industry)
+  1,  // 20: Currency            — Economic (trade/finance)
+  2,  // 21: Democracy           — Government/Social (government)
+  1,  // 22: Economics           — Economic (trade)
+  3,  // 23: Electricity         — Science (discovery)
+  3,  // 24: Electronics         — Science (research)
+  1,  // 25: Engineering         — Economic (construction)
+  2,  // 26: Environmentalism    — Government/Social (social policy)
+  0,  // 27: Espionage           — Military (intelligence)
+  0,  // 28: Explosives          — Military (weapons)
+  2,  // 29: Feudalism           — Government/Social (social structure)
+  0,  // 30: Flight              — Military (combat aircraft)
+  2,  // 31: Fundamentalism      — Government/Social (government)
+  3,  // 32: Fusion Power        — Science (research)
+  3,  // 33: Genetic Engineering  — Science (research)
+  0,  // 34: Guerrilla Warfare   — Military (combat doctrine)
+  0,  // 35: Gunpowder           — Military (weapons)
+  0,  // 36: Horseback Riding    — Military (combat units)
+  1,  // 37: Industrialization   — Economic (industry)
+  3,  // 38: Invention           — Science (discovery)
+  0,  // 39: Iron Working        — Military (weapons)
+  2,  // 40: Labor Union         — Government/Social (social policy)
+  3,  // 41: The Laser           — Science (research)
+  0,  // 42: Leadership          — Military (tactics)
+  3,  // 43: Literacy            — Science (knowledge)
+  0,  // 44: Machine Tools       — Military (weapons/industry)
+  1,  // 45: Magnetism           — Economic/Naval (navigation)
+  1,  // 46: Map Making          — Economic/Naval (naval)
+  1,  // 47: Masonry             — Economic (construction)
+  1,  // 48: Mass Production     — Economic (industry)
+  3,  // 49: Mathematics         — Science (knowledge)
+  3,  // 50: Medicine            — Science (knowledge)
+  0,  // 51: Metallurgy          — Military (weapons)
+  3,  // 52: Miniaturization     — Science (research)
+  0,  // 53: Mobile Warfare      — Military (combat doctrine)
+  2,  // 54: Monarchy            — Government/Social (government)
+  2,  // 55: Monotheism          — Government/Social (religion)
+  2,  // 56: Mysticism           — Government/Social (religion)
+  1,  // 57: Navigation          — Economic/Naval (naval)
+  3,  // 58: Nuclear Fission     — Science (research)
+  3,  // 59: Nuclear Power       — Science (research)
+  3,  // 60: Philosophy          — Science (knowledge)
+  3,  // 61: Physics             — Science (research)
+  1,  // 62: Plastics            — Economic (industry)
+  3,  // 63: Plumbing            — (unresearchable, unused)
+  2,  // 64: Polytheism          — Government/Social (religion)
+  1,  // 65: Pottery             — Economic (trade)
+  0,  // 66: Radio               — Military (communications)
+  1,  // 67: Railroad            — Economic (infrastructure)
+  2,  // 68: Recycling           — Government/Social (social policy)
+  1,  // 69: Refining            — Economic (industry)
+  1,  // 70: Refrigeration       — Economic (infrastructure)
+  2,  // 71: The Republic        — Government/Social (government)
+  0,  // 72: Robotics            — Military (combat units)
+  0,  // 73: Rocketry            — Military (weapons)
+  1,  // 74: Sanitation          — Economic (infrastructure)
+  1,  // 75: Seafaring           — Economic/Naval (naval)
+  3,  // 76: Space Flight        — Science (research)
+  0,  // 77: Stealth             — Military (combat aircraft)
+  1,  // 78: Steam Engine        — Economic (industry)
+  0,  // 79: Steel               — Military (weapons)
+  3,  // 80: Superconductor      — Science (research)
+  0,  // 81: Tactics             — Military (tactics)
+  2,  // 82: Theology            — Government/Social (religion)
+  3,  // 83: Theory of Gravity   — Science (research)
+  1,  // 84: Trade               — Economic (trade)
+  3,  // 85: University          — Science (knowledge)
+  0,  // 86: Warrior Code        — Military (combat)
+  1,  // 87: The Wheel           — Economic (infrastructure)
+  3,  // 88: Writing             — Science (knowledge)
+];
+
+const TECH_ROW_LABELS = ['Military', 'Economic', 'Government', 'Science'];
+const TECH_ROW_COLORS = [
+  'rgba(180,60,60,0.15)',     // Military — red
+  'rgba(60,160,160,0.15)',    // Economic — teal
+  'rgba(180,160,60,0.15)',    // Government — gold
+  'rgba(60,80,180,0.15)',     // Science — blue
+];
+
+// ── Tech tree viewer (F6) — category-banded layout with prerequisite graph ──
 export function showTechTree() {
   if (!S.mpGameState || S.mpCivSlot == null) return;
   const civTechs = S.mpGameState.civTechs?.[S.mpCivSlot] || new Set();
+  const availableSet = new Set(getAvailableResearch(S.mpGameState, S.mpCivSlot));
 
-  // Group advances into eras by counting prerequisites depth
-  const eraCache = {};
-  function getEra(id) {
-    if (eraCache[id] != null) return eraCache[id];
+  // ── 1. Build tech list, compute column = longest path from any root ──
+  const depthCache = {};
+  function getDepth(id) {
+    if (depthCache[id] != null) return depthCache[id];
+    depthCache[id] = -1; // cycle guard
     const [p1, p2] = ADVANCE_PREREQS[id];
-    if (p1 < 0 && p2 < 0) return (eraCache[id] = 0);
+    if (p1 < 0 && p2 < 0) return (depthCache[id] = 0);
     let d = 0;
-    if (p1 >= 0) d = Math.max(d, getEra(p1) + 1);
-    if (p2 >= 0) d = Math.max(d, getEra(p2) + 1);
-    return (eraCache[id] = d);
+    if (p1 >= 0) d = Math.max(d, getDepth(p1) + 1);
+    if (p2 >= 0) d = Math.max(d, getDepth(p2) + 1);
+    return (depthCache[id] = d);
   }
 
-  // Cache era values
-  const eras = [];
+  const techs = [];
   for (let i = 0; i < ADVANCE_NAMES.length; i++) {
     const [p1, p2] = ADVANCE_PREREQS[i];
-    if (p1 === -2 || p2 === -2) continue; // unresearchable
-    eras.push({ id: i, name: ADVANCE_NAMES[i], era: getEra(i) });
+    if (p1 === -2 || p2 === -2) continue; // unresearchable (e.g. Plumbing)
+    techs.push({ id: i, name: ADVANCE_NAMES[i], col: getDepth(i), row: TECH_ROW[i] ?? 3 });
   }
 
-  // Group by era
-  const eraGroups = {};
-  for (const a of eras) {
-    if (!eraGroups[a.era]) eraGroups[a.era] = [];
-    eraGroups[a.era].push(a);
+  let maxCol = 0;
+  for (const t of techs) { if (t.col > maxCol) maxCol = t.col; }
+
+  // ── 2. Group by (column, row) and compute sub-row stacking ──
+  const NODE_W = 130, NODE_H = 34;
+  const COL_SPACING = 150;
+  const ROW_BAND_H = 120;
+  const SUB_ROW_SPACING = 38;
+  const PAD_X = 70;  // leave room for row labels on the left
+  const PAD_Y = 40;  // leave room for era headers at the top
+  const NUM_ROWS = 4;
+
+  // Collect techs per (col, row) cell
+  const cellMap = new Map(); // key "col-row" -> tech[]
+  for (const t of techs) {
+    const key = `${t.col}-${t.row}`;
+    if (!cellMap.has(key)) cellMap.set(key, []);
+    cellMap.get(key).push(t);
   }
-  const eraNames = ['Ancient', 'Classical', 'Medieval', 'Renaissance', 'Industrial', 'Modern', 'Future'];
+  // Sort within each cell alphabetically for determinism
+  for (const [, arr] of cellMap) arr.sort((a, b) => a.name.localeCompare(b.name));
 
-  createCiv2Dialog('tech-tree', 'Technology Tree', panel => {
-    panel.style.maxHeight = '60vh';
-    panel.style.overflowY = 'auto';
-    panel.style.minWidth = '320px';
+  // Compute pixel positions
+  const nodePos = new Map(); // advId -> { x, y }
 
-    const sortedEras = Object.keys(eraGroups).map(Number).sort((a, b) => a - b);
-    for (const eraNum of sortedEras) {
-      const group = eraGroups[eraNum];
-      const eraLabel = eraNames[Math.min(eraNum, eraNames.length - 1)] || `Era ${eraNum}`;
+  for (const [key, arr] of cellMap) {
+    const [colStr, rowStr] = key.split('-');
+    const col = parseInt(colStr), row = parseInt(rowStr);
+    const cellCount = arr.length;
+    // Center the sub-rows vertically within the row band
+    const bandTop = PAD_Y + row * ROW_BAND_H;
+    const bandCenter = bandTop + ROW_BAND_H / 2;
+    const blockH = (cellCount - 1) * SUB_ROW_SPACING;
+    const startY = bandCenter - blockH / 2 - NODE_H / 2;
 
-      const header = document.createElement('div');
-      header.className = 'tech-tree-era';
-      header.textContent = eraLabel;
-      panel.appendChild(header);
+    for (let s = 0; s < arr.length; s++) {
+      const x = PAD_X + col * COL_SPACING;
+      const y = startY + s * SUB_ROW_SPACING;
+      nodePos.set(arr[s].id, { x, y });
+    }
+  }
 
-      for (const a of group.sort((x, y) => x.name.localeCompare(y.name))) {
-        const row = document.createElement('div');
-        row.className = 'tech-tree-row';
-        const has = civTechs.has(a.id);
-        if (has) row.classList.add('researched');
+  const totalW = PAD_X + (maxCol + 1) * COL_SPACING + 30;
+  const totalH = PAD_Y + NUM_ROWS * ROW_BAND_H + 20;
 
-        const marker = document.createElement('span');
-        marker.className = 'tech-tree-marker';
-        marker.textContent = has ? '\u2713' : '\u00B7';
-        row.appendChild(marker);
+  // ── 3. Era headers: group columns into eras ──
+  // Approximate era boundaries based on column depth
+  const ERA_NAMES = ['Ancient', 'Classical', 'Medieval', 'Renaissance', 'Industrial', 'Modern'];
+  function getEra(col) {
+    if (col <= 1) return 0;       // Ancient
+    if (col <= 3) return 1;       // Classical
+    if (col <= 5) return 2;       // Medieval
+    if (col <= 7) return 3;       // Renaissance
+    if (col <= 9) return 4;       // Industrial
+    return 5;                     // Modern
+  }
 
-        const name = document.createElement('span');
-        name.className = 'tech-tree-name';
-        name.textContent = a.name;
-        row.appendChild(name);
+  // Find era spans (first and last column per era)
+  const eraSpans = [];
+  let prevEra = -1;
+  for (let c = 0; c <= maxCol; c++) {
+    const era = getEra(c);
+    if (era !== prevEra) {
+      eraSpans.push({ era, startCol: c, endCol: c });
+      prevEra = era;
+    } else {
+      eraSpans[eraSpans.length - 1].endCol = c;
+    }
+  }
 
-        // Show prereqs on hover
-        const [p1, p2] = ADVANCE_PREREQS[a.id];
-        const prereqs = [];
-        if (p1 >= 0) prereqs.push(ADVANCE_NAMES[p1]);
-        if (p2 >= 0) prereqs.push(ADVANCE_NAMES[p2]);
-        if (prereqs.length > 0) {
-          row.title = `Requires: ${prereqs.join(', ')}`;
-        }
+  // ── 4. Build the dialog ──
+  createCiv2Dialog('tech-tree', 'Civilization Advances', panel => {
+    panel.style.cssText = 'position:relative;overflow:auto;padding:0;background:#2a2a3a';
+    panel.style.width = '90vw';
+    panel.style.maxWidth = '1800px';
+    panel.style.height = '72vh';
 
-        panel.appendChild(row);
+    const container = document.createElement('div');
+    container.className = 'tt-container';
+    container.style.cssText = `position:relative;width:${totalW}px;height:${totalH}px;min-width:100%;min-height:100%`;
+
+    // ── Row band backgrounds ──
+    for (let r = 0; r < NUM_ROWS; r++) {
+      const band = document.createElement('div');
+      band.className = 'tt-row-band';
+      const bandTop = PAD_Y + r * ROW_BAND_H;
+      band.style.cssText = `position:absolute;left:0;top:${bandTop}px;width:${totalW}px;height:${ROW_BAND_H}px;background:${TECH_ROW_COLORS[r]};z-index:0;pointer-events:none`;
+      // Bottom border between bands
+      if (r < NUM_ROWS - 1) band.style.borderBottom = '1px solid rgba(255,255,255,0.08)';
+      container.appendChild(band);
+    }
+
+    // ── Row labels (left side, vertical text) ──
+    for (let r = 0; r < NUM_ROWS; r++) {
+      const lbl = document.createElement('div');
+      lbl.className = 'tt-row-label';
+      const bandTop = PAD_Y + r * ROW_BAND_H;
+      lbl.style.cssText = `position:absolute;left:4px;top:${bandTop}px;width:${PAD_X - 8}px;height:${ROW_BAND_H}px;display:flex;align-items:center;justify-content:center;z-index:3`;
+      const inner = document.createElement('span');
+      inner.textContent = TECH_ROW_LABELS[r];
+      inner.style.cssText = 'writing-mode:vertical-lr;transform:rotate(180deg);font:bold 12px "Times New Roman",Georgia,serif;color:rgba(255,255,255,0.55);letter-spacing:1px;text-transform:uppercase';
+      lbl.appendChild(inner);
+      container.appendChild(lbl);
+    }
+
+    // ── Era headers (top) ──
+    for (const span of eraSpans) {
+      const x1 = PAD_X + span.startCol * COL_SPACING;
+      const x2 = PAD_X + span.endCol * COL_SPACING + NODE_W;
+      const hdr = document.createElement('div');
+      hdr.className = 'tt-era-header';
+      hdr.style.cssText = `position:absolute;left:${x1}px;top:6px;width:${x2 - x1}px;height:${PAD_Y - 10}px;display:flex;align-items:center;justify-content:center;z-index:3;border-bottom:1px solid rgba(255,255,255,0.12)`;
+      hdr.textContent = ERA_NAMES[span.era];
+      container.appendChild(hdr);
+    }
+
+    // ── SVG layer for prerequisite edges ──
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', totalW);
+    svg.setAttribute('height', totalH);
+    svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:1';
+
+    // Draw prerequisite edges as bezier curves
+    for (const t of techs) {
+      const [p1, p2] = ADVANCE_PREREQS[t.id];
+      const dst = nodePos.get(t.id);
+      if (!dst) continue;
+      for (const pid of [p1, p2]) {
+        if (pid < 0 || !nodePos.has(pid)) continue;
+        const src = nodePos.get(pid);
+
+        let color;
+        if (civTechs.has(t.id)) color = 'rgba(40,160,40,0.5)';
+        else if (availableSet.has(t.id)) color = 'rgba(80,140,220,0.6)';
+        else color = 'rgba(140,140,140,0.35)';
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const sx = src.x + NODE_W, sy = src.y + NODE_H / 2;
+        const dx = dst.x, dy = dst.y + NODE_H / 2;
+        const cx = (sx + dx) / 2;
+        path.setAttribute('d', `M${sx},${sy} C${cx},${sy} ${cx},${dy} ${dx},${dy}`);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', color);
+        path.setAttribute('stroke-width', '1.5');
+        svg.appendChild(path);
       }
     }
+    container.appendChild(svg);
+
+    // ── Tech nodes ──
+    const nodeLayer = document.createElement('div');
+    nodeLayer.style.cssText = `position:absolute;top:0;left:0;width:${totalW}px;height:${totalH}px;z-index:2;pointer-events:none`;
+
+    for (const t of techs) {
+      const p = nodePos.get(t.id);
+      if (!p) continue;
+      const has = civTechs.has(t.id);
+      const avail = availableSet.has(t.id);
+
+      const node = document.createElement('div');
+      node.className = 'tt-node' + (has ? ' tt-known' : avail ? ' tt-available' : ' tt-locked');
+      node.style.cssText = `position:absolute;left:${p.x}px;top:${p.y}px;width:${NODE_W}px;height:${NODE_H}px;pointer-events:auto`;
+      node.dataset.advId = t.id;
+
+      // Icon placeholder (replaced async when icons load)
+      const iconSlot = document.createElement('div');
+      iconSlot.className = 'tt-icon-slot';
+      iconSlot.style.cssText = 'width:24px;height:14px;flex-shrink:0';
+      node.appendChild(iconSlot);
+
+      // Name label
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'tt-node-name';
+      nameSpan.textContent = t.name;
+      node.appendChild(nameSpan);
+
+      // Tooltip with prereqs and status
+      const prereqNames = [];
+      const [rp1, rp2] = ADVANCE_PREREQS[t.id];
+      if (rp1 >= 0) prereqNames.push(ADVANCE_NAMES[rp1]);
+      if (rp2 >= 0) prereqNames.push(ADVANCE_NAMES[rp2]);
+      let tip = t.name;
+      if (prereqNames.length) tip += '\nRequires: ' + prereqNames.join(', ');
+      if (has) tip += '\n(Known)';
+      else if (avail) tip += '\n(Available to research)';
+      node.title = tip;
+
+      // Click -> goal detail dialog
+      node.addEventListener('click', () => _showGoalDetail(t.id, showTechTree));
+
+      nodeLayer.appendChild(node);
+    }
+
+    // Load icons asynchronously and insert into nodes
+    _ensureResearchIcons().then(cache => {
+      if (!cache) return;
+      const nodeEls = nodeLayer.querySelectorAll('.tt-node');
+      nodeEls.forEach(el => {
+        const advId = parseInt(el.dataset.advId);
+        const iconIdx = ADVANCE_ICON[advId] ?? 0;
+        const iconCanvas = cache.icons[iconIdx];
+        if (!iconCanvas) return;
+        const ic = document.createElement('canvas');
+        ic.width = 24; ic.height = 14;
+        ic.className = 'tt-node-icon';
+        const ictx = ic.getContext('2d');
+        ictx.imageSmoothingEnabled = false;
+        ictx.drawImage(iconCanvas, 0, 0, 36, 20, 0, 0, 24, 14);
+        const slot = el.querySelector('.tt-icon-slot');
+        if (slot) slot.replaceWith(ic);
+      });
+    });
+
+    container.appendChild(nodeLayer);
+    panel.appendChild(container);
   }, [{ label: 'Close' }]);
 }
 

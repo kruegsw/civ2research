@@ -697,8 +697,22 @@ const Civ2Renderer = {
         } else {
           const res = getResource(gx, gy);
           if (res > 0 && ter <= 10) {
-            const key = ter * 2 + res;
-            if (resources[key]) ctx.drawImage(resources[key], px, py);
+            // Ocean resources only shown within 2 tiles of land (real Civ2 behavior)
+            let showRes = true;
+            if (ter === 10) {
+              showRes = false;
+              outer: for (const [nx, ny] of Object.values(nb)) {
+                if (ny >= 0 && ny < mh && isLand(nx, ny)) { showRes = true; break; }
+                const nb2 = getNeighbors(nx, ny);
+                for (const [nx2, ny2] of Object.values(nb2)) {
+                  if (ny2 >= 0 && ny2 < mh && isLand(nx2, ny2)) { showRes = true; break outer; }
+                }
+              }
+            }
+            if (showRes) {
+              const key = ter * 2 + res;
+              if (resources[key]) ctx.drawImage(resources[key], px, py);
+            }
           }
         }
 

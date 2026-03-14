@@ -41,6 +41,12 @@ export function initFromSav(parsed, seatList) {
     if (civsAlive & (1 << i)) { activeCiv = i; break; }
   }
 
+  const seatCivMap = buildSeatCivMap(seatList, civsAlive);
+
+  // Build humanPlayers bitmask: bit N = 1 means civ N is human-controlled.
+  // Civ 0 (barbarians) is always AI. Any civ with a seat is human.
+  const humanPlayers = buildHumanPlayersBitmask(seatCivMap);
+
   const gameState = {
     units,
     cities: parsed.cities,
@@ -53,7 +59,8 @@ export function initFromSav(parsed, seatList) {
     turn: { number: parsed.gameState?.turnsPassed ?? 0, activeCiv },
     version: 0,
     // Seat→civ mapping: seat index maps to civ slot
-    seatCivMap: buildSeatCivMap(seatList, civsAlive),
+    seatCivMap,
+    humanPlayers,
     wonders: parsed.gameState?.wonders || initWonders(),
     difficulty: parsed.gameState?.difficulty || 'chieftain',
     barbarianActivity: parsed.gameState?.barbarianActivity || 'normal',
@@ -124,6 +131,10 @@ export function initNewGame(mapResult, seatList) {
     seatCivMap[seatList[i].seatIndex] = i + 1;
   }
 
+  // Build humanPlayers bitmask: bit N = 1 means civ N is human-controlled.
+  // Civ 0 (barbarians) is always AI. Any civ with a seat is human.
+  const humanPlayers = buildHumanPlayersBitmask(seatCivMap);
+
   const gameState = {
     units,
     cities: [],
@@ -139,6 +150,7 @@ export function initNewGame(mapResult, seatList) {
     barbarianActivity: 'roaming',
     version: 0,
     seatCivMap,
+    humanPlayers,
     unitBySaveIndex: null,
     allUnits: null,
   };
@@ -226,4 +238,23 @@ function buildInitialCivs(seatList) {
     });
   }
   return civs;
+}
+
+/**
+ * Build humanPlayers bitmask from seatCivMap.
+ * Bit N = 1 means civ N is human-controlled.
+ * Civ 0 (barbarians) is always AI (bit 0 always 0).
+ *
+ * @param {object} seatCivMap - maps seat index → civ slot
+ * @returns {number} 8-bit bitmask
+ */
+function buildHumanPlayersBitmask(seatCivMap) {
+  let mask = 0;
+  for (const seatIdx of Object.keys(seatCivMap)) {
+    const civSlot = seatCivMap[seatIdx];
+    if (civSlot != null && civSlot >= 1 && civSlot <= 7) {
+      mask |= (1 << civSlot);
+    }
+  }
+  return mask;
 }

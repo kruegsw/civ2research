@@ -48,6 +48,7 @@ import { applyAction } from "../engine/reducer.js";
 import { filterStateForCiv, computeLOS } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
 import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES } from "../engine/defs.js";
+import { runAiTurn } from "../engine/ai/index.js";
 
 const PORT = Number(process.env.PORT || 8788);
 const DEBUG = process.env.DEBUG === "1";
@@ -445,6 +446,7 @@ wss.on("connection", (ws) => {
             roomId,
             myCivSlot: civSlot,
             seatCivMap: room.gameState.seatCivMap,
+            humanPlayers: room.gameState.humanPlayers,
             mapBase: {
               mw: room.mapBase.mw,
               mh: room.mapBase.mh,
@@ -576,18 +578,19 @@ wss.on("connection", (ws) => {
 
         room.gameState = next;
 
-        // Broadcast filtered state to each client
-        sendGameStateToAll(actionRoomId, room);
-
         // Emit structured GAME_LOG messages for combat, turn events, tech, etc.
         emitGameLogs(actionRoomId, room);
 
         // Clear one-shot notifications after broadcast
-        delete room.gameState.discoveredAdvance;
-        delete room.gameState.combatResult;
-        delete room.gameState.cityFounded;
-        delete room.gameState.goodyHutResult;
-        delete room.gameState.turnEvents;
+        clearOneshotNotifications(room);
+
+        // ── AI turn loop: auto-process consecutive AI civs after END_TURN ──
+        if (msg.action.type === 'END_TURN') {
+          processAiTurns(actionRoomId, room);
+        }
+
+        // Broadcast filtered state to each client (after all AI turns resolved)
+        sendGameStateToAll(actionRoomId, room);
         break;
       }
 
@@ -627,6 +630,8 @@ wss.on("connection", (ws) => {
         restartRoom.gameState.civNames = restartCivNames;
 
         console.log(`[game] Room ${restartRoomId}: RESTART ${msg.mapSize} (${sz.width}×${sz.height}), ${restartSeats.length} players`);
+        // Process AI turns if the initial activeCiv is AI-controlled
+        processAiTurns(restartRoomId, restartRoom);
         sendGameStartToAll(restartRoomId, restartRoom);
         break;
       }
@@ -674,6 +679,70 @@ wss.on("connection", (ws) => {
     broadcastRoomList();
   });
 });
+
+// -----------------------------------------------------------------------------
+// AI turn processing
+// -----------------------------------------------------------------------------
+
+/**
+ * Process AI turns until the active civ is human (or we've looped all civs).
+ * Called after a human END_TURN advances activeCiv to a potentially AI civ.
+ *
+ * Safety: max 7 iterations (one full cycle through all civ slots).
+ */
+function processAiTurns(roomId, room) {
+  const humanPlayers = room.gameState.humanPlayers || 0;
+  const MAX_ITERATIONS = 7; // prevent infinite loops
+
+  for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+    const activeCiv = room.gameState.turn.activeCiv;
+
+    // If this civ is human, stop — it's their turn now
+    if (humanPlayers & (1 << activeCiv)) break;
+
+    // If civ is not alive, skip (END_TURN should have already skipped, but guard)
+    if (!(room.gameState.civsAlive & (1 << activeCiv))) break;
+
+    // Run AI for this civ
+    console.log(`[ai] Room ${roomId}: running AI turn for civ ${activeCiv} (${room.gameState.civNames?.[activeCiv] || 'unknown'})`);
+
+    const aiActions = runAiTurn(room.gameState, room.mapBase, activeCiv);
+
+    // Apply each AI action through the reducer
+    for (const action of aiActions) {
+      const result = applyAction(room.gameState, room.mapBase, action, activeCiv);
+      if (result !== room.gameState) {
+        room.gameState = result;
+        // Emit logs for AI actions (combat, events, etc.)
+        emitGameLogs(roomId, room);
+        clearOneshotNotifications(room);
+      }
+    }
+
+    // End the AI civ's turn
+    const endResult = applyAction(room.gameState, room.mapBase, { type: 'END_TURN' }, activeCiv);
+    if (endResult !== room.gameState) {
+      room.gameState = endResult;
+      emitGameLogs(roomId, room);
+      clearOneshotNotifications(room);
+    } else {
+      // END_TURN was rejected — this shouldn't happen, but break to avoid infinite loop
+      console.warn(`[ai] Room ${roomId}: END_TURN rejected for AI civ ${activeCiv}, breaking loop`);
+      break;
+    }
+  }
+}
+
+/**
+ * Clear one-shot notification fields from game state after they've been emitted.
+ */
+function clearOneshotNotifications(room) {
+  delete room.gameState.discoveredAdvance;
+  delete room.gameState.combatResult;
+  delete room.gameState.cityFounded;
+  delete room.gameState.goodyHutResult;
+  delete room.gameState.turnEvents;
+}
 
 // -----------------------------------------------------------------------------
 // Game Log broadcast
@@ -998,6 +1067,9 @@ function startGame(roomId, room, occupiedSeats) {
   }
   room.gameState.civNames = civNames;
 
+  // Process AI turns if the initial activeCiv is AI-controlled
+  processAiTurns(roomId, room);
+
   // Send GAME_START to each client with their filtered state
   sendGameStartToAll(roomId, room);
 }
@@ -1024,6 +1096,7 @@ function sendGameStartToAll(roomId, room) {
       roomId,
       myCivSlot: civSlot,
       seatCivMap: room.gameState.seatCivMap,
+      humanPlayers: room.gameState.humanPlayers,
       mapBase: {
         mw: room.mapBase.mw,
         mh: room.mapBase.mh,
@@ -1086,6 +1159,7 @@ function buildStatePayload(room, civSlot) {
     turn: gs.turn,
     version: gs.version,
     seatCivMap: gs.seatCivMap,
+    humanPlayers: gs.humanPlayers,
     civNames: gs.civNames,
     unitBySaveIndex: gs.unitBySaveIndex,
     allUnits: gs.allUnits,

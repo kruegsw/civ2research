@@ -876,6 +876,7 @@ function initNetwork(appCallbacks) {
           if (cdEl) cdEl.remove();
           S.mpCivSlot = msg.myCivSlot;
           S.mpSeatCivMap = msg.seatCivMap;
+          S.mpHumanPlayers = msg.humanPlayers ?? 0xFF;
           S.wsGameStarted = true;
           saveActiveGame();
 
