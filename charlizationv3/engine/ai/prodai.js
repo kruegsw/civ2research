@@ -1300,6 +1300,13 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy,
       }
     }
 
+    // Anti-oscillation: don't switch if the best item scores within 10% of current.
+    // This prevents cities from flipping between close-scored items every turn.
+    if (!forceSwitch && currentItem && currentScore > 0 &&
+        bestScore < currentScore * 1.1) {
+      continue;
+    }
+
     // Check production switch penalty (skip check if force switching from obsolete)
     if (!forceSwitch && shouldKeepCurrentProduction(city, currentScore, bestScore, bestItem)) {
       continue;

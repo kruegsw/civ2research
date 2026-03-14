@@ -797,9 +797,11 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy, de
     // ── Settler (type 0): prioritize city founding ──
     if (unit.type === 0) {
       // Decide if we should be building a city
+      // Only settlers that are genuinely needed for expansion should city-hunt.
+      // Others should do tile improvements. In Civ2, settlers alternate between
+      // city founding and improvement based on strategic need.
       const shouldBuildCity = ownCities.length === 0 ||
-        ownCities.length < numSettlers + 1 ||
-        (strategy?.expansionDesired ?? true);
+        (ownCities.length < 8 && (strategy?.expansionDesired ?? true));
 
       if (shouldBuildCity) {
         const isFirstCity = ownCities.length === 0;
@@ -924,25 +926,8 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy, de
           }
         }
 
-        // No good site found within radius — try random exploration
-        const dirs = [...['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']].sort(() => Math.random() - 0.5);
-        let moved = false;
-        for (const d of dirs) {
-          const dest = resolveDirection(unit.gx, unit.gy, d, mapBase);
-          if (!dest) continue;
-          const terrain = mapBase.getTerrain(dest.gx, dest.gy);
-          if (terrain === 10) continue;
-          // Avoid danger
-          if (isAdjacentToEnemy(dest.gx, dest.gy, mapBase, gameState, civSlot)) continue;
-          const moveAction = { type: 'MOVE_UNIT', unitIndex: i, dir: d };
-          const err = validateAction(gameState, mapBase, moveAction, civSlot);
-          if (!err) {
-            actions.push(moveAction);
-            moved = true;
-            break;
-          }
-        }
-        if (moved) continue;
+        // No good city site found — fall through to worker logic
+        // (improve tiles near existing cities rather than wander aimlessly)
       }
 
       // If settler doesn't need to build a city, fall through to worker logic

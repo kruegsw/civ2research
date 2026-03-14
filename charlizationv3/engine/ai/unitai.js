@@ -1265,17 +1265,39 @@ function randomMove(unit, unitIndex, mapBase, domain) {
  */
 export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
+
+  // ── Pre-compute which units to wake up ─────────────────────────
+  // Units that were sentry'd/fortified by cleanup in previous turns and
+  // are NOT inside our cities should be re-evaluated this turn.
+  // We track them in a Set so the main loop can bypass the BUSY_ORDERS check.
+  const WAKE_ORDERS = new Set(['sentry', 'fortified', 'sleep']);
+  const wakeUpUnits = new Set();
+  for (let i = 0; i < gameState.units.length; i++) {
+    const unit = gameState.units[i];
+    if (unit.owner !== civSlot || unit.gx < 0 || unit.movesLeft <= 0) continue;
+    if (!WAKE_ORDERS.has(unit.orders)) continue;
+
+    // Don't wake units inside our cities — they're intentionally garrisoned
+    const inOwnCity = gameState.cities.some(c =>
+      c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+    if (inOwnCity) continue;
+
+    wakeUpUnits.add(i);
+  }
+
   const spatialIdx = buildUnitSpatialIndex(gameState);
   const cityDefense = analyzeCityDefense(gameState, mapBase, civSlot);
 
   for (let i = 0; i < gameState.units.length; i++) {
     const unit = gameState.units[i];
 
-    // Skip units that aren't ours, are dead, have no moves, or are busy
+    // Skip units that aren't ours, are dead, or have no moves
     if (unit.owner !== civSlot) continue;
     if (unit.gx < 0) continue;
     if (unit.movesLeft <= 0) continue;
-    if (BUSY_ORDERS.has(unit.orders)) continue;
+
+    // Skip busy units UNLESS they're outside cities and need waking up
+    if (BUSY_ORDERS.has(unit.orders) && !wakeUpUnits.has(i)) continue;
 
     // Skip settlers/engineers — handled by cityai
     if (unit.type === 0 || unit.type === 1) continue;
@@ -1412,17 +1434,9 @@ export function generateCleanupActions(gameState, mapBase, civSlot, strategy, de
       }
     }
 
-    // (#22) Non-city idle units: prefer sentry (dimmed on map, wakes on enemy approach)
-    // over skip (which does nothing). Sentry saves the player from re-evaluating
-    // the unit each turn and provides visual feedback that the unit is idle.
-    if (domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
-      const sentryAction = { type: 'UNIT_ORDER', unitIndex: i, order: 'sentry' };
-      const sentryErr = validateAction(gameState, mapBase, sentryAction, civSlot);
-      if (!sentryErr) {
-        actions.push(sentryAction);
-        continue;
-      }
-    }
+    // Non-city idle units: use skip (one-turn) instead of sentry (permanent).
+    // Sentry makes units invisible to future AI turns since BUSY_ORDERS gates
+    // all phases, causing units to get permanently stuck outside cities.
 
     // For everything else, skip
     const skipAction = { type: 'UNIT_ORDER', unitIndex: i, order: 'skip' };
