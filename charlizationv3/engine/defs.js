@@ -998,3 +998,79 @@ export const BUSY_ORDERS = new Set([
   'fortifying', 'fortified', 'sentry', 'sleep',
   'road', 'railroad', 'irrigation', 'mine', 'fortress', 'airbase', 'pollution',
 ]);
+
+// ── AI constants (from RULES.TXT and decompiled AI logic) ──
+
+// Unit combat role classification (from RULES.TXT role field, DAT_0064b1ca)
+// 0=attack, 1=defend, 2=naval superiority, 3=air attack, 4=air defense,
+// 5=naval transport, 6=settle, 7=diplomacy, 8=trade
+export const UNIT_ROLE = [
+  6, 6, 0, 1, 0, 0, 1, 1,   // 0-7:  Settlers,Engineers,Warriors..Musketeers
+  1, 0, 0, 1, 0, 0, 1,       // 8-14: Fanatics..Mech.Inf.
+  0, 0, 0, 0, 0, 0, 0, 0,    // 15-22: Horsemen..Armor
+  0, 0, 0, 0, 4, 3, 3,       // 23-29: Catapult..Helicopter
+  4, 3, 5, 5, 5, 2, 2,       // 30-36: StealthF..Ironclad
+  2, 2, 2, 2, 2, 5, 5,       // 37-43: Destroyer..Transport
+  3, 3, 7, 7, 8, 8, 0,       // 44-50: CruiseMsl..Explorer
+  0,                          // 51: Extra Land
+];
+
+// Advance epoch/era (0=ancient, 1=renaissance, 2=industrial, 3=modern)
+// From RULES.TXT @CIVILIZE epoch field
+export const ADVANCE_EPOCH = [
+  3, 0, 3, 1, 2, 3, 1, 0, 0, 0,  // 0-9
+  1, 1, 0, 3, 2, 2, 3, 2, 0, 2,  // 10-19
+  0, 2, 2, 2, 3, 0, 3, 3, 2, 0,  // 20-29
+  2, 2, 3, 3, 3, 1, 0, 2, 1, 0,  // 30-39
+  3, 3, 1, 0, 2, 1, 0, 0, 3, 0,  // 40-49
+  1, 1, 3, 3, 0, 1, 0, 1, 3, 3,  // 50-59
+  1, 1, 3, 1, 0, 0, 3, 2, 3, 2,  // 60-69
+  3, 0, 3, 3, 2, 0, 3, 3, 2, 2,  // 70-79
+  3, 2, 1, 1, 0, 1, 0, 0, 0,     // 80-88
+];
+
+// Base AI interest value per tech (from RULES.TXT AI_interest field, DAT_0062768b)
+export const ADVANCE_AI_INTEREST = [
+  0, 0, 0, 1, 0, 0, 1, 0, 0, 0,  // 0-9
+  0, 0, 0, 0, 0, 1, 0, 0, 0, 0,  // 10-19
+  0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  // 20-29
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 30-39
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 40-49
+  0, 0, 0, 0, 1, 1, 0, 0, 0, 0,  // 50-59
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 60-69
+  0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  // 70-79
+  0, 0, 0, 0, 0, 0, 0, 0, 0,     // 80-88
+];
+
+// Leader personality traits [expansionism, militarism] per leader
+// Indexed by rulesCivNumber 0-20. Range: -1 to 1 each.
+// From RULES.TXT @LEADERS section (DAT_006554fa, DAT_006554fb)
+export const LEADER_PERSONALITY = [
+  [1, 1],   // 0 Romans (Caesar) - expansionist, militarist
+  [0, -1],  // 1 Babylonians (Hammurabi) - neutral, peaceful
+  [-1, 1],  // 2 Germans (Frederick) - non-expansionist, militarist
+  [1, -1],  // 3 Egyptians (Ramesses) - expansionist, peaceful
+  [1, 0],   // 4 Americans (Lincoln) - expansionist, neutral
+  [0, 0],   // 5 Greeks (Alexander) - neutral
+  [1, -1],  // 6 Indians (Gandhi) - expansionist, peaceful
+  [-1, 1],  // 7 Russians (Stalin) - non-expansionist, militarist
+  [-1, 1],  // 8 Zulus (Shaka) - non-expansionist, militarist
+  [0, 0],   // 9 French (Napoleon) - neutral
+  [0, 1],   // 10 Aztecs (Montezuma) - neutral, militarist
+  [1, 0],   // 11 Chinese (Mao) - expansionist, neutral
+  [0, 0],   // 12 English (Elizabeth) - neutral
+  [-1, 1],  // 13 Mongols (Genghis Khan) - non-expansionist, militarist
+  [0, 0],   // 14 Celts (Brennus) - neutral
+  [0, 1],   // 15 Japanese (Tokugawa) - neutral, militarist
+  [1, 1],   // 16 Vikings (Canute) - expansionist, militarist
+  [1, 0],   // 17 Spanish (Isabella) - expansionist, neutral
+  [0, -1],  // 18 Persians (Scheherazade) - neutral, peaceful
+  [0, 1],   // 19 Carthaginians (Hannibal) - neutral, militarist
+  [-1, 0],  // 20 Sioux (Sitting Bull) - non-expansionist, neutral
+];
+
+// Government name → numeric index for formulas
+export const GOVT_INDEX = {
+  anarchy: 0, despotism: 1, monarchy: 2, communism: 3,
+  fundamentalism: 4, republic: 5, democracy: 6,
+};

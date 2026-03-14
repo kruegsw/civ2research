@@ -2,26 +2,58 @@
 // ai/econai.js — AI economy: research selection, tax/science rates,
 //                government revolution timing
 //
-// Phase 4 of AI player support. Replaces the naive "pick random tech"
-// with scored tech selection, adds rate balancing and revolution logic.
+// Ported from Civ2 decompiled functions:
+//   - FUN_004bdb2c (calcTechValue)
+//   - FUN_004c09b0 (pickResearchGoal)
+//   - FUN_0055f5a3 (chooseGovernment)
+//   - FUN_004bd2a3 (balanceRates / rate assessment)
+//   - FUN_004bdaa5 (isPrereqOf — recursive prereq walk)
+//   - FUN_004bfdbe (canResearch — immediate availability check)
+//   - FUN_0055c277 (canUseGovernment — govt tech prereq check)
 // ═══════════════════════════════════════════════════════════════════
 
 import { getAvailableResearch } from '../research.js';
 import { validateAction } from '../rules.js';
 import {
-  ADVANCE_NAMES, ADVANCE_PREREQS,
-  UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_DOMAIN,
+  ADVANCE_NAMES, ADVANCE_PREREQS, ADVANCE_EPOCH, ADVANCE_AI_INTEREST,
+  UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
   IMPROVE_PREREQS, IMPROVE_NAMES,
-  WONDER_PREREQS,
-  GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE,
-  GOVERNMENT_KEYS,
+  WONDER_PREREQS, WONDER_OBSOLETE,
+  GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, GOVT_INDEX,
+  GOVERNMENT_KEYS, LEADER_PERSONALITY, DIFFICULTY_KEYS,
 } from '../defs.js';
+
+// ── Constants ──────────────────────────────────────────────────
+
+// Aqueduct/Sewer building IDs and their population thresholds
+// (COSMIC defaults: cities need Aqueduct to grow past 8, Sewer past 12)
+const AQUEDUCT_BUILDING_ID = 9;
+const SEWER_BUILDING_ID = 23;
+const AQUEDUCT_THRESHOLD = 8;
+const SEWER_THRESHOLD = 12;
+
+// Space ship part building IDs (SS Structural=35, SS Component=36, SS Module=37)
+const SS_PART_BUILDINGS = [35, 36, 37];
+
+// Number of wonders in standard Civ2
+const NUM_WONDERS = 28;
+
+// Number of advances
+const NUM_ADVANCES = 89;
+
+// Government index mapping (matches GOVERNMENT_KEYS order)
+// 0=anarchy, 1=despotism, 2=monarchy, 3=communism, 4=fundamentalism, 5=republic, 6=democracy
+const GOVT_IDX = Object.fromEntries(
+  GOVERNMENT_KEYS.map((k, i) => [k, i])
+);
+
+// Statue of Liberty wonder index (grants access to all governments)
+const STATUE_OF_LIBERTY = 19;
 
 // ── Helpers ──────────────────────────────────────────────────────
 
 /**
- * Get treaty status between two civs (mirrors rules.js getTreaty,
- * which is not exported).
+ * Get treaty status between two civs.
  */
 function getTreaty(gameState, civA, civB) {
   if (!gameState.treaties) return 'war';
@@ -30,19 +62,104 @@ function getTreaty(gameState, civA, civB) {
 }
 
 /**
- * Check if this civ is at war with any other living civ.
+ * Check if civ has a specific tech.
+ * Port of FUN_004bd9f0 (simplified — we don't need the bitmask walk,
+ * since civTechs is already a Set).
  */
-function isAtWar(gameState, civSlot) {
-  const civs = gameState.civs;
-  if (!civs) return false;
-  for (let i = 1; i < civs.length; i++) {
-    if (i === civSlot) continue;
-    const c = civs[i];
-    if (!c || c.alive === false) continue;
-    // Dead civs have no cities/units — cheap check
-    if (getTreaty(gameState, civSlot, i) === 'war') return true;
-  }
+function civHasTech(gameState, civSlot, techId) {
+  if (techId < 0) return techId !== -2; // -1 = "no prereq" → always true; -2 = never
+  if (techId >= NUM_ADVANCES) return false;
+  const techs = gameState.civTechs?.[civSlot];
+  return techs ? techs.has(techId) : false;
+}
+
+/**
+ * Recursive prerequisite check.
+ * Port of FUN_004bdaa5: returns true if `targetTechId` appears anywhere
+ * in the prerequisite tree of `rootTechId` (or equals it).
+ *
+ * In other words: "is targetTechId needed to eventually research rootTechId?"
+ */
+function isPrereqOf(rootTechId, targetTechId, _visited) {
+  if (rootTechId < 0) return false;
+  if (rootTechId === targetTechId) return true;
+  // Guard against cycles (shouldn't exist, but defensive)
+  if (!_visited) _visited = new Set();
+  if (_visited.has(rootTechId)) return false;
+  _visited.add(rootTechId);
+  const prereqs = ADVANCE_PREREQS[rootTechId];
+  if (!prereqs) return false;
+  return isPrereqOf(prereqs[0], targetTechId, _visited) ||
+         isPrereqOf(prereqs[1], targetTechId, _visited);
+}
+
+/**
+ * Check if a civ owns a specific wonder.
+ * Port of FUN_00453e51: looks up wonder's city index, checks if that
+ * city is owned by civSlot.
+ */
+function civOwnsWonder(gameState, civSlot, wonderIdx) {
+  const w = gameState.wonders?.[wonderIdx];
+  if (!w || w.cityIndex < 0 || w.destroyed) return false;
+  const city = gameState.cities?.[w.cityIndex];
+  return city && city.owner === civSlot;
+}
+
+/**
+ * Get the city index for a wonder, or -1 if not built / destroyed.
+ * Port of FUN_00453e18.
+ */
+function getWonderCityIndex(gameState, wonderIdx) {
+  const w = gameState.wonders?.[wonderIdx];
+  if (!w || w.cityIndex < 0 || w.destroyed) return -1;
+  return w.cityIndex;
+}
+
+/**
+ * Check if a civ can use a given government index.
+ * Port of FUN_0055c277: checks tech prereq OR Statue of Liberty ownership.
+ */
+function canUseGovernment(gameState, civSlot, govtIndex) {
+  // Government index 0 (anarchy) and 1 (despotism) are always available
+  if (govtIndex <= 1) return true;
+  // Statue of Liberty grants all governments
+  const hasStatue = civOwnsWonder(gameState, civSlot, STATUE_OF_LIBERTY);
+  // Check tech prereq for this government
+  const techPrereqs = {
+    2: 54,  // Monarchy → Monarchy tech
+    3: 15,  // Communism → Communism tech
+    4: 31,  // Fundamentalism → Fundamentalism tech
+    5: 71,  // Republic → The Republic tech
+    6: 21,  // Democracy → Democracy tech
+  };
+  const reqTech = techPrereqs[govtIndex];
+  if (reqTech == null) return false;
+  if (civHasTech(gameState, civSlot, reqTech) || hasStatue) return true;
   return false;
+}
+
+/**
+ * Get the government index (0-6) for a civ.
+ */
+function getGovtIndex(gameState, civSlot) {
+  const civ = gameState.civs?.[civSlot];
+  if (!civ) return 1; // default despotism
+  // If GOVT_INDEX is available, use it; otherwise look up from string
+  if (typeof GOVT_INDEX !== 'undefined' && GOVT_INDEX[civ.government] != null) {
+    return GOVT_INDEX[civ.government];
+  }
+  return GOVT_IDX[civ.government] ?? 1;
+}
+
+/**
+ * Get leader personality value (expansionism) for a civ.
+ * This is LEADER_PERSONALITY[rulesCivNumber][0].
+ */
+function getLeaderPersonality(rulesCivNumber) {
+  if (typeof LEADER_PERSONALITY === 'undefined' || !LEADER_PERSONALITY) return 1;
+  const entry = LEADER_PERSONALITY[rulesCivNumber];
+  if (!entry) return 1;
+  return entry[0] ?? 1;
 }
 
 /**
@@ -58,65 +175,512 @@ function countCities(gameState, civSlot) {
 }
 
 /**
- * Check if any city owned by this civ is in civil disorder.
+ * Find the largest city size owned by this civ.
  */
-function hasDisorder(gameState, civSlot) {
-  if (!gameState.cities) return false;
+function largestCitySize(gameState, civSlot) {
+  let maxSize = 0;
+  if (!gameState.cities) return 0;
   for (const c of gameState.cities) {
-    if (c && c.owner === civSlot && c.gx >= 0 && c.civilDisorder) return true;
+    if (c && c.owner === civSlot && c.gx >= 0 && c.size > maxSize) {
+      maxSize = c.size;
+    }
   }
-  return false;
+  return maxSize;
 }
 
 /**
- * Find the best ATK value among units the civ can currently build.
+ * Check if civ is human-controlled (not AI).
+ * In multiplayer, uses civsAlive bitmask interpretation;
+ * for our purposes, seat assignment determines this.
  */
-function bestCurrentAtk(gameState, civSlot) {
-  const civTechs = gameState.civTechs?.[civSlot];
-  if (!civTechs) return 1;
-  let best = 1;
-  for (let u = 0; u < UNIT_PREREQS.length; u++) {
-    const prereq = UNIT_PREREQS[u];
-    if (prereq === -2) continue; // unbuildable
-    if (prereq >= 0 && !civTechs.has(prereq)) continue; // don't have tech
-    if (UNIT_DOMAIN[u] !== 0) continue; // only land units for comparison
-    if (UNIT_ATK[u] > best) best = UNIT_ATK[u];
+function isHumanCiv(gameState, civSlot) {
+  // In multiplayer, all seated civs are human. For AI evaluation,
+  // we treat the evaluated civ as AI (non-human) by convention.
+  // The decompiled code checks `(1 << civSlot) & DAT_00655b0b` where
+  // DAT_00655b0b is the "human players" bitmask.
+  // In our game state, we approximate: if a civ has a seat, it's human.
+  if (gameState.seatCivMap) {
+    for (const seat of Object.values(gameState.seatCivMap)) {
+      if (seat === civSlot) return true;
+    }
+    return false;
   }
-  return best;
+  // Fallback: civ slot 1 is typically human in single-player
+  return civSlot === 1;
 }
 
-// Building IDs considered high-value for the AI
-const KEY_BUILDINGS = new Set([
-  3,  // Granary
-  5,  // Marketplace
-  9,  // Aqueduct
-  10, // Bank
-  15, // Factory
-  16, // Mfg. Plant
-  23, // Sewer System
-  25, // Superhighways
-  26, // Research Lab
-]);
-
-// Government quality ranking (higher = better)
-const GOVT_RANK = {
-  anarchy: 0,
-  despotism: 1,
-  monarchy: 3,
-  communism: 3,
-  fundamentalism: 2,
-  republic: 4,
-  democracy: 5,
-};
+/**
+ * Get the tech count for a civ.
+ */
+function getTechCount(gameState, civSlot) {
+  return gameState.civTechCounts?.[civSlot] ??
+         gameState.civTechs?.[civSlot]?.size ?? 0;
+}
 
 // ═══════════════════════════════════════════════════════════════════
-// 1. Smart Research Selection
+// 1. calcTechValue — Port of FUN_004bdb2c
+//
+// Scores how valuable a tech is for the AI to research.
+// param_1 = civSlot, param_2 = techId
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Score each available tech and pick the best one.
+ * Calculate the AI value of researching a specific tech.
  *
- * Returns a SET_RESEARCH action or null if no research is needed.
+ * Faithful port of FUN_004bdb2c. The score incorporates:
+ *  - Base: ADVANCE_AI_INTEREST * leaderPersonality + ADVANCE_EPOCH
+ *  - Naval capability bonuses (prereq chain to key ship techs)
+ *  - Continent connectivity heuristic
+ *  - Active research goal bonus
+ *  - Fusion Power bonus (prereq of key tech)
+ *  - Space race component bonuses
+ *  - Strategic goal tech bonus
+ *  - Wonder prereq bonus/penalty
+ *  - Aqueduct/Sewer growth bonus
+ *  - Exploration/expansion bonuses
+ *  - Leader-specific civ bonuses (big switch on rulesCivNumber)
+ *  - Tech already-known discount
+ *  - Minimum floor of 1
+ *
+ * @param {number} civSlot
+ * @param {number} techId
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @returns {number} score (minimum 1)
+ */
+function calcTechValue(civSlot, techId, gameState, mapBase) {
+  const civ = gameState.civs?.[civSlot];
+  if (!civ) return 1;
+
+  // ── Leader personality (expansionism value) ──
+  // FUN_004bdb2c line 6071: local_38 = leaderPersonality[rulesCivNumber * 0x30]
+  const rulesCivNum = civ.rulesCivNumber ?? 0;
+  let leaderPers = getLeaderPersonality(rulesCivNum);
+
+  // ── Hostility-based personality damping ──
+  // Lines 6072-6090: If civ is not human and personality >= 0,
+  // check all other civs that are human, have hatred treaty flag (0x20),
+  // and have fewer techs. For each shared continent, reduce personality.
+  // If the human civ has government index > 6, set personality to -1.
+  //
+  // Approximation: we check for war status and tech deficit vs other civs.
+  // If at war with a more advanced civ, dampen personality.
+  if (!isHumanCiv(gameState, civSlot) && leaderPers >= 0) {
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      const otherCiv = gameState.civs?.[i];
+      if (!otherCiv || otherCiv.alive === false) continue;
+      if (!isHumanCiv(gameState, i)) continue;
+      // Check hatred flag (treaty includes hostility)
+      const treaty = getTreaty(gameState, civSlot, i);
+      if (treaty !== 'war') continue;
+      // Check tech deficit
+      const myTechs = getTechCount(gameState, civSlot);
+      const theirTechs = getTechCount(gameState, i);
+      if (theirTechs <= myTechs) continue;
+      // Dampen personality (decompiled: checks shared continents)
+      if (leaderPers >= 0) leaderPers--;
+    }
+  }
+
+  // ── Base score ──
+  // Line 6091-6092: AI_INTEREST * personality + EPOCH
+  const aiInterest = (typeof ADVANCE_AI_INTEREST !== 'undefined' && ADVANCE_AI_INTEREST?.[techId]) ?? 0;
+  const epoch = (typeof ADVANCE_EPOCH !== 'undefined' && ADVANCE_EPOCH?.[techId]) ?? 0;
+  let score = aiInterest * leaderPers + epoch;
+
+  // ── Naval capability scoring ──
+  // Lines 6093-6111: Check if techId is a prerequisite for key naval techs.
+  // The decompiled code checks prereqs of unit types (Trireme, Caravel, Frigate, Transport).
+  // These resolve to: Map Making (46), Navigation (57), Magnetism (45), Industrialization (37).
+  //
+  // Scoring: prereq of MapMaking(46) → 3, prereq of Nav(57) or Mag(45) → 2,
+  //          prereq of Industrialization(37) → 1, else 0
+  let navalScore = 0;
+  if (isPrereqOf(46, techId)) {         // Map Making (Trireme)
+    navalScore = 3;
+  } else if (isPrereqOf(57, techId) || isPrereqOf(45, techId)) {  // Navigation or Magnetism
+    navalScore = 2;
+  } else if (isPrereqOf(37, techId)) {  // Industrialization (Transport)
+    navalScore = 1;
+  }
+
+  // Line 6112-6114: If game has "bloodlust" flag (bit 2 of game flags), double naval score.
+  // We approximate: if no scenario restrictions, don't double.
+  // (DAT_00655af0 & 4) — scenario bloodlust flag; skip for standard games.
+
+  // Lines 6115-6145: If navalScore > 0, check continent connectivity.
+  // Simplified: if the civ has cities on multiple continents OR has no naval tech,
+  // apply the naval bonus. The decompiled code checks per-continent arrays,
+  // which we don't have. We apply a simplified heuristic.
+  if (navalScore > 0) {
+    // Simplified continent check: if civ doesn't have Map Making, naval is important
+    const hasMapMaking = civHasTech(gameState, civSlot, 46);
+    if (!hasMapMaking) {
+      // No basic naval tech → full naval bonus
+      score += navalScore;
+    } else {
+      // Already has basic naval → smaller bonus
+      score += 1;
+    }
+  }
+
+  // ── Current research goal bonus ──
+  // Line 6147-6151: If techId matches a "free tech" goal, add floor(totalUnits / 4)
+  // DAT_0064c59e is a runtime variable (scenario free tech or negotiated tech).
+  // We skip this as it's rarely relevant in standard games.
+
+  // ── AI-only bonuses (non-human civ) ──
+  // Line 6152: if civ is NOT human
+  if (!isHumanCiv(gameState, civSlot)) {
+    // ── Fusion Power / advanced tech bonus ──
+    // Lines 6153-6163: If any human civ is alive, check:
+    //   - isPrereqOf(0x20=32=FusionPower, techId) → +2
+    //   - Space ship parts (buildings 35-37): if their prereq tech matches techId → +3 each
+    let anyHumanAlive = false;
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (isHumanCiv(gameState, i) && gameState.civs?.[i]?.alive !== false) {
+        anyHumanAlive = true;
+        break;
+      }
+    }
+    if (anyHumanAlive) {
+      if (isPrereqOf(32, techId)) {  // Fusion Power
+        score += 2;
+      }
+      for (const ssBuilding of SS_PART_BUILDINGS) {
+        if (IMPROVE_PREREQS[ssBuilding] === techId) {
+          score += 3;
+        }
+      }
+    }
+
+    // ── Strategic goal tech bonus ──
+    // Lines 6164-6170: DAT_0064b3fb is a strategic tech goal.
+    // If it's valid (>= 0), a human civ owns it, and techId is its prereq → +2.
+    // If techId IS that goal → +5.
+    // We approximate: if any human civ has Space Flight, that's the goal tech.
+    // For simplicity, use Space Flight (76) as the AI strategic goal.
+    const strategicGoal = 76; // Space Flight
+    if (strategicGoal >= 0) {
+      // Check if any human civ has this tech (representing competitive pressure)
+      let humanHasGoal = false;
+      for (let i = 1; i < 8; i++) {
+        if (i === civSlot && !isHumanCiv(gameState, i)) continue;
+        if (isHumanCiv(gameState, i) && civHasTech(gameState, i, strategicGoal)) {
+          humanHasGoal = true;
+          break;
+        }
+      }
+      if (humanHasGoal && isPrereqOf(strategicGoal, techId)) {
+        score += 2;
+        if (techId === strategicGoal) {
+          score += 3; // total +5 for the goal tech itself
+        }
+      }
+    }
+
+    // ── Wonder prereq bonus/penalty ──
+    // Lines 6171-6183: For each wonder whose prereq matches techId:
+    //   - If we already own it (and techId != Engineering=0x25=37): score -= 2
+    //   - If another alive civ's city has it (the wonder is built by rival): score += 2
+    for (let w = 0; w < NUM_WONDERS; w++) {
+      if (WONDER_PREREQS[w] === techId) {
+        // Do we already own this wonder?
+        if (civOwnsWonder(gameState, civSlot, w) && techId !== 37) {
+          // Already own it — slight penalty (we don't need the prereq as urgently)
+          // Decompiled: techId != 0x25 = 37 = Industrialization (Engineering in task desc)
+          score -= 2;
+        }
+        // Is this wonder built by a rival alive civ?
+        const wCityIdx = getWonderCityIndex(gameState, w);
+        if (wCityIdx >= 0) {
+          const wCity = gameState.cities?.[wCityIdx];
+          if (wCity && wCity.owner !== civSlot &&
+              (gameState.civsAlive & (1 << wCity.owner)) !== 0) {
+            score += 2;
+          }
+        }
+      }
+    }
+  }
+
+  // ── Aqueduct / Sewer System growth bonus ──
+  // Lines 6185-6205: If techId enables Aqueduct (building 9) or Sewer (building 23),
+  // find the civ's largest city. If it's >= the building's threshold, +2.
+  const aqueductTech = IMPROVE_PREREQS[AQUEDUCT_BUILDING_ID]; // Construction (18)
+  const sewerTech = IMPROVE_PREREQS[SEWER_BUILDING_ID];       // Sanitation (74)
+  if (techId === aqueductTech || techId === sewerTech) {
+    const maxCity = largestCitySize(gameState, civSlot);
+    const threshold = (techId === aqueductTech) ? AQUEDUCT_THRESHOLD : SEWER_THRESHOLD;
+    if (maxCity >= threshold) {
+      score += 2;
+    }
+  }
+
+  // ── Exploration/Expansion bonus ──
+  // Lines 6206-6216: If leaderPersonality >= 0 AND civ has University tech (85=0x55):
+  //   - If techId is prereq of Computers (16=0x10): score += leaderPers + 1
+  //   - If techId IS Computers: score += 2
+  if (leaderPers >= 0 && civHasTech(gameState, civSlot, 85)) { // University
+    if (isPrereqOf(16, techId)) { // Computers
+      score += leaderPers + 1;
+    }
+    if (techId === 16) {
+      score += 2;
+    }
+  }
+
+  // ── Industrialization chain bonus ──
+  // Lines 6217-6225: If civ has Invention (38=0x26) AND techId is prereq of
+  // Industrialization (37=0x25):
+  //   - If civ also has Navigation (57=0x39): score += 2
+  //   - Else: score += 1
+  if (civHasTech(gameState, civSlot, 38)) { // Invention
+    if (isPrereqOf(37, techId)) {           // Industrialization
+      if (civHasTech(gameState, civSlot, 57)) { // Navigation
+        score += 2;
+      } else {
+        score += 1;
+      }
+    }
+  }
+
+  // ── Leader-specific civ bonuses ──
+  // Lines 6227-6420: Big switch on rulesCivNumber (0-20).
+  // Each civ has hardcoded tech preferences/aversions.
+  switch (rulesCivNum) {
+    case 0: // Romans
+      if (techId === 39 || techId === 8 || techId === 86) score += 2; // Iron Working(0x27), Bronze Working, Warrior Code(0x56)
+      if (techId === 55) score -= 1; // Monotheism (0x37)
+      break;
+    case 1: // Babylonians
+      if (techId === 12) score += 1; // Code of Laws (0x0c)
+      break;
+    case 2: // Germans
+      if (techId === 6) score += 1;  // Banking
+      if (techId === 82) score += 1; // Theology (0x52)
+      if (techId === 60) score += 1; // Machine Tools (0x3c)
+      break;
+    case 3: // Egyptians
+      if (techId === 47) score += 2; // Masonry (0x2f)
+      break;
+    case 4: // Americans
+      if (techId === 21) score += 2; // Democracy (0x15)
+      if (techId === 15) score -= 1; // Communism (0x0f)
+      if (techId === 73) score += 1; // Rocketry (0x49)
+      if (techId === 16) score += 1; // Computers (0x10)
+      if (techId === 42) score += 1; // Leadership (0x2a)
+      break;
+    case 5: // Greeks
+      if (techId === 64) score += 1; // Polytheism (0x40)
+      if (techId === 8) score += 1;  // Bronze Working
+      if (techId === 1) score += 1;  // Alphabet
+      if (techId === 46) score += 1; // Map Making (0x2e)
+      if (techId === 55) score -= 1; // Monotheism (0x37)
+      if (techId === 60) score += 2; // Machine Tools (0x3c)
+      break;
+    case 6: // Indians
+      if (techId === 64) score += 2; // Polytheism (0x40)
+      if (techId === 36) score += 1; // Horseback Riding (0x24)
+      if (techId === 56) score += 1; // Mysticism (0x38)
+      if (techId === 9) score += 1;  // Ceremonial Burial
+      if (techId === 55) score -= 1; // Monotheism (0x37)
+      break;
+    case 7: // Russians
+      if (techId === 15) score += 2; // Communism (0x0f)
+      if (techId === 60) score += 1; // Machine Tools (0x3c)
+      if (techId === 34) score += 1; // Guerrilla Warfare (0x22)
+      break;
+    case 8: // Zulus
+      if (techId === 64) score += 2; // Polytheism (0x40)
+      if (techId === 36) score += 1; // Horseback Riding (0x24)
+      if (techId === 56) score += 1; // Mysticism (0x38)
+      if (techId === 9) score += 1;  // Ceremonial Burial
+      if (techId === 8) score -= 1;  // Bronze Working
+      if (techId === 39) score -= 1; // Iron Working (0x27)
+      break;
+    case 9: // French
+      if (techId === 42) score += 1; // Leadership (0x2a)
+      if (techId === 81) score += 1; // Tactics (0x51)
+      if (techId === 17) score += 1; // Conscription (0x11)
+      break;
+    case 10: // Aztecs
+      if (techId === 35) score -= 2; // Gunpowder (0x23)
+      if (techId === 55) score -= 1; // Monotheism (0x37)
+      break;
+    case 11: // Chinese
+      // Decompiled: if no naval access (local_34 != 0), subtract navalScore.
+      // We don't track per-continent data, so approximate: if civ has no
+      // coastal cities, treat as landlocked and penalize naval techs.
+      // Also: +1 for Gunpowder (0x23)
+      if (navalScore > 0) {
+        // Approximate local_34: check if any city is coastal (heuristic)
+        let hasCoastal = false;
+        if (gameState.cities && mapBase) {
+          for (const city of gameState.cities) {
+            if (city && city.owner === civSlot && city.gx >= 0) {
+              // Simple heuristic: assume coastal if mapBase has ocean neighbors
+              // Without per-tile data we can't check; default to has coastal
+              hasCoastal = true;
+              break;
+            }
+          }
+        }
+        if (!hasCoastal) score -= navalScore;
+      }
+      if (techId === 35) score += 1; // Gunpowder (0x23)
+      break;
+    case 12: // English
+      if (techId === 55) score += 1; // Monotheism (0x37)
+      if (navalScore > 0) score += 1; // English favor naval techs
+      break;
+    // cases 13 (Mongols) and 14 (Celts): no special bonuses in decompiled code
+    case 15: // Japanese
+      if (techId === 79) score += 1; // Steel (0x4f)
+      if (techId === 52) score += 1; // Miniaturization (0x34)
+      break;
+    case 16: // Vikings
+      if (techId === 46) score += 1; // Map Making (0x2e)
+      break;
+    case 17: // Spanish
+      if (navalScore > 1) score += 1; // Spanish favor advanced naval
+      if (techId === 55) score += 1;  // Monotheism (0x37)
+      break;
+    case 18: // Persians
+    case 19: // Carthaginians
+      if (techId === 64) score += 2; // Polytheism (0x40)
+      if (techId === 36) score += 1; // Horseback Riding (0x24)
+      if (techId === 56) score += 1; // Mysticism (0x38)
+      if (techId === 9) score += 1;  // Ceremonial Burial
+      if (techId === 55) score -= 1; // Monotheism (0x37)
+      break;
+    case 20: // Sioux
+      if (techId === 36) score += 2; // Horseback Riding (0x24)
+      break;
+    default:
+      break;
+  }
+
+  // ── No-one-has-this-tech bonus ──
+  // Line 6421-6423: If no alive civ has this tech (using DAT_00655b82 lookup),
+  // score += 1. DAT_00655b82[techId] tracks which civs know this tech.
+  // Approximation: check if any other alive civ has this tech.
+  let anyoneHasTech = false;
+  for (let i = 1; i < 8; i++) {
+    if (i === civSlot) continue;
+    if (gameState.civs?.[i]?.alive === false) continue;
+    if (civHasTech(gameState, i, techId)) {
+      anyoneHasTech = true;
+      break;
+    }
+  }
+  if (!anyoneHasTech) {
+    score += 1;
+  }
+
+  // ── Already-known-by-us discount ──
+  // Lines 6424-6430: For each tech that has this techId as a direct prerequisite,
+  // if we already know that child tech → score -= 1.
+  // This penalizes researching techs whose children we already have.
+  for (let t = 0; t < NUM_ADVANCES; t++) {
+    const prereqs = ADVANCE_PREREQS[t];
+    if (!prereqs) continue;
+    if ((prereqs[0] === techId || prereqs[1] === techId) &&
+        civHasTech(gameState, civSlot, t)) {
+      score -= 1;
+    }
+  }
+
+  // ── Floor at 1 ──
+  // Line 6431-6433: if score < 2, score = 1
+  if (score < 2) {
+    score = 1;
+  }
+
+  return score;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 2. pickResearchGoal — Port of FUN_004c09b0
+//
+// Iterates all available techs, scores them, applies weighted
+// randomization, and returns the best tech ID.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Pick a research goal using weighted random selection.
+ *
+ * Port of FUN_004c09b0:
+ * - For AI (non-human) civs: score = calcTechValue(); then weighted random
+ *   selection where rand() % score gives the selection value
+ * - For human civs (multiplayer allies with AI assist):
+ *   score = rand() % 3 + calcTechValue() - 1
+ * - Highest score wins
+ *
+ * @param {number} civSlot
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @returns {number} tech ID or -1 if nothing available
+ */
+function pickResearchGoal(civSlot, gameState, mapBase) {
+  const human = isHumanCiv(gameState, civSlot);
+  let bestScore = -1;
+  let bestTech = -1;
+  let candidateCount = 0;
+
+  // The decompiled code iterates 0..99, checking canResearch (FUN_004bfdbe).
+  // We use getAvailableResearch which does the same prereq check.
+  const available = getAvailableResearch(gameState, civSlot);
+
+  // Decompiled lines 122-128: additional filter for human civs.
+  // If human AND this is not the first candidate AND DAT_00655b08 != 0
+  // AND (techId - techCount) % 3 == 0 → skip (throttle for human display).
+  // We skip this filter as it's a UI concern for the original game's advisor.
+
+  for (const techId of available) {
+    candidateCount++;
+
+    const techVal = calcTechValue(civSlot, techId, gameState, mapBase);
+    let selectionScore;
+
+    if (!human) {
+      // AI: weighted random. If techVal <= 1, score = 0.
+      // Else score = rand() % techVal.
+      // Lines 130-138
+      if (techVal <= 1) {
+        selectionScore = 0;
+      } else {
+        selectionScore = Math.floor(Math.random() * techVal);
+      }
+    } else {
+      // Human (with AI advisor): rand() % 3 + techVal - 1
+      // Lines 142-144
+      selectionScore = Math.floor(Math.random() * 3) + techVal - 1;
+    }
+
+    // Lines 146-149: keep the highest scoring tech
+    if (selectionScore > bestScore) {
+      bestScore = selectionScore;
+      bestTech = techId;
+    }
+  }
+
+  return bestTech;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 3. chooseResearch — Exported wrapper around pickResearchGoal
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Choose a tech to research. Returns a SET_RESEARCH action or null.
+ *
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {number} civSlot
+ * @returns {object|null} SET_RESEARCH action or null
  */
 export function chooseResearch(gameState, mapBase, civSlot) {
   const civ = gameState.civs?.[civSlot];
@@ -134,201 +698,199 @@ export function chooseResearch(gameState, mapBase, civSlot) {
     // Already know this tech (just completed) — fall through to pick new
   }
 
-  const available = getAvailableResearch(gameState, civSlot);
-  if (available.length === 0) return null;
+  const techId = pickResearchGoal(civSlot, gameState, mapBase);
+  if (techId < 0) return null;
 
-  const currentBestAtk = bestCurrentAtk(gameState, civSlot);
-  const cityCount = countCities(gameState, civSlot);
-  const treasury = civ.treasury ?? 0;
-  const atWar = isAtWar(gameState, civSlot);
-
-  // Score each available tech
-  let bestScore = -Infinity;
-  let bestTech = available[0];
-
-  for (const techId of available) {
-    let score = 0;
-
-    // (a) Military value: units enabled by this tech
-    for (let u = 0; u < UNIT_PREREQS.length; u++) {
-      if (UNIT_PREREQS[u] === techId) {
-        score += 10;
-        // Bonus if this unit has higher ATK than current best
-        if (UNIT_ATK[u] != null && UNIT_ATK[u] > currentBestAtk) {
-          score += 15;
-        }
-        // Bonus for high DEF units too
-        if (UNIT_DEF[u] != null && UNIT_DEF[u] > 4) {
-          score += 5;
-        }
-      }
-    }
-
-    // (b) Economic value: buildings enabled by this tech
-    for (let b = 0; b < IMPROVE_PREREQS.length; b++) {
-      if (IMPROVE_PREREQS[b] === techId) {
-        score += 8;
-        if (KEY_BUILDINGS.has(b)) {
-          score += 12; // extra for key buildings
-        }
-      }
-    }
-
-    // (c) Government value: does this tech enable a better government?
-    for (const [govtName, prereqTech] of Object.entries(GOVT_TECH_PREREQS)) {
-      if (prereqTech === techId) {
-        const currentRank = GOVT_RANK[civ.government] ?? 0;
-        const newRank = GOVT_RANK[govtName] ?? 0;
-        if (newRank > currentRank) {
-          score += 20;
-          // Republic and Democracy are especially valuable
-          if (govtName === 'republic' || govtName === 'democracy') {
-            score += 10;
-          }
-        }
-      }
-    }
-
-    // (d) Wonder value
-    for (let w = 0; w < WONDER_PREREQS.length; w++) {
-      if (WONDER_PREREQS[w] === techId) {
-        score += 10;
-      }
-    }
-
-    // (e) Situational bonuses
-    if (atWar) {
-      // At war: boost military techs
-      let enablesMilitary = false;
-      for (let u = 0; u < UNIT_PREREQS.length; u++) {
-        if (UNIT_PREREQS[u] === techId && UNIT_DOMAIN[u] === 0 && UNIT_ATK[u] > 0) {
-          enablesMilitary = true;
-          break;
-        }
-      }
-      if (enablesMilitary) score += 15;
-    }
-
-    if (treasury < 50) {
-      // Economy struggling: boost trade/economic techs
-      // Check if it enables Marketplace (5), Bank (10), Stock Exchange (22), etc.
-      for (const bId of [5, 10, 22, 25]) {
-        if (IMPROVE_PREREQS[bId] === techId) {
-          score += 10;
-          break;
-        }
-      }
-    }
-
-    if (cityCount > 5) {
-      // Many cities: government-improving techs are more valuable
-      for (const [govtName, prereqTech] of Object.entries(GOVT_TECH_PREREQS)) {
-        if (prereqTech === techId) {
-          score += 10;
-          break;
-        }
-      }
-    }
-
-    // Tiebreak: alphabetical by advance name (for consistency)
-    if (score > bestScore ||
-        (score === bestScore && (ADVANCE_NAMES[techId] || '') < (ADVANCE_NAMES[bestTech] || ''))) {
-      bestScore = score;
-      bestTech = techId;
-    }
-  }
-
-  const action = { type: 'SET_RESEARCH', advanceId: bestTech };
+  const action = { type: 'SET_RESEARCH', advanceId: techId };
   const err = validateAction(gameState, mapBase, action, civSlot);
   if (err) return null;
   return action;
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// 2. Tax / Science Rate Balancing
+// 4. balanceRates — Port of FUN_004bd2a3
+//
+// Evaluates city happiness/disorder state and adjusts tax/science/
+// luxury rates accordingly.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Compute optimal tax/science/luxury rates and return a CHANGE_RATES
- * action if the current rates are suboptimal.
+ * Assess the economic/happiness situation and compute optimal rates.
  *
- * Returns a CHANGE_RATES action or null if no change is needed.
+ * Port of FUN_004bd2a3 + rate-setting logic:
+ *
+ * FUN_004bd2a3 scans all cities and returns a "situation code" (1-6):
+ *   1 = disorder with WLTKD cities in democracy → max luxury (panic)
+ *   2 = disorder but rates already tuned → minor tweak
+ *   3 = disorder, not democracy → increase luxury
+ *   4 = no disorder, rates already optimal → no change needed
+ *   5 = no disorder, rates adjustable, no WLTKD → can push science
+ *   6 = no disorder, WLTKD present → can push science more
+ *
+ * We then translate the situation code into concrete rate changes.
+ *
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {number} civSlot
+ * @returns {object|null} CHANGE_RATES action or null
  */
 export function balanceRates(gameState, mapBase, civSlot) {
   const civ = gameState.civs?.[civSlot];
   if (!civ) return null;
 
   const govt = civ.government || 'despotism';
+  const govtIdx = getGovtIndex(gameState, civSlot);
   const maxRate = GOVT_MAX_RATE[govt] ?? 6;
   const maxSci = GOVT_MAX_SCIENCE[govt] ?? 6;
-  const treasury = civ.treasury ?? 0;
-  const disorder = hasDisorder(gameState, civSlot);
+  const currentSciRate = civ.scienceRate ?? 0;
+  const currentTaxRate = civ.taxRate ?? 0;
 
-  // Start with desired rates
-  let tax, luxury, science;
+  // ── Scan cities for disorder/WLTKD state (FUN_004bd2a3 lines 5908-5927) ──
+  let disorderCount = 0;      // local_10: cities where happy < unhappy
+  let wltkdDisorder = 0;      // local_c: disordered cities with WLTKD flag
+  let borderlineCount = 0;    // local_18: cities where happy == unhappy
+  let wltkdCount = 0;         // local_14: cities with WLTKD flag
 
-  if (treasury < 20) {
-    // Bankruptcy prevention: maximize tax
-    tax = Math.min(maxRate, 7);
-    luxury = disorder ? Math.min(2, maxRate) : 0;
-    science = 10 - tax - luxury;
-    // Clamp science to max
-    if (science > maxSci) {
-      const excess = science - maxSci;
-      science = maxSci;
-      tax = Math.min(maxRate, tax + excess);
-    }
-  } else if (treasury < 50) {
-    // Low treasury: shift toward tax
-    tax = Math.min(maxRate, 5);
-    luxury = disorder ? Math.min(2, maxRate) : 0;
-    science = 10 - tax - luxury;
-    if (science > maxSci) {
-      const excess = science - maxSci;
-      science = maxSci;
-      tax = Math.min(maxRate, tax + excess);
-    }
-  } else if (treasury > 300) {
-    // Rich: maximize science
-    science = Math.min(maxSci, 8);
-    luxury = disorder ? Math.min(2, maxRate) : 0;
-    tax = 10 - science - luxury;
-    if (tax > maxRate) {
-      const excess = tax - maxRate;
-      tax = maxRate;
-      luxury = Math.min(maxRate, luxury + excess);
-    }
-    if (tax < 0) {
-      // Can't afford this much science+luxury, reduce science
-      science += tax; // tax is negative, so this reduces science
-      tax = 0;
-    }
-  } else {
-    // Normal: balanced (leaning toward science)
-    science = Math.min(maxSci, 7);
-    luxury = disorder ? Math.min(2, maxRate) : 0;
-    tax = 10 - science - luxury;
-    if (tax > maxRate) {
-      const excess = tax - maxRate;
-      tax = maxRate;
-      luxury = Math.min(maxRate, luxury + excess);
-    }
-    if (tax < 0) {
-      science += tax;
-      tax = 0;
+  if (gameState.cities) {
+    for (const city of gameState.cities) {
+      if (!city || city.owner !== civSlot || city.gx < 0) continue;
+
+      if (city.civilDisorder) {
+        disorderCount++;
+        if (city.weLoveKingDay) {
+          wltkdDisorder++;
+        }
+      } else {
+        // Check borderline (happy == unhappy approximation)
+        // In decompiled code: compares DAT_0064f392 (happy) vs DAT_0064f393 (unhappy)
+        // We use civilDisorder as the proxy — if not in disorder, check if close
+        if (city.happy != null && city.unhappy != null) {
+          if (city.happy === city.unhappy) borderlineCount++;
+        } else {
+          borderlineCount++; // conservative: treat as borderline if unknown
+        }
+      }
+      if (city.weLoveKingDay) {
+        wltkdCount++;
+      }
     }
   }
 
-  // Final sanity clamps
+  // ── Assess whether rates need changing (FUN_004bd2a3 lines 5928-5963) ──
+  // bVar1 = true if rates need adjustment
+  let needsAdjustment;
+  if (govtIdx < 5) {
+    // Government < republic
+    needsAdjustment = true;
+    if (disorderCount === 0 && borderlineCount > 0 && wltkdCount === 0 &&
+        currentSciRate + currentTaxRate === 10) {
+      needsAdjustment = false;
+    }
+  } else {
+    // Republic or Democracy: needs adjustment if science+tax < 9
+    needsAdjustment = (currentSciRate + currentTaxRate) < 9;
+  }
+
+  // ── Compute situation code (lines 5940-5963) ──
+  let situation;
+  if (disorderCount === 0) {
+    if (needsAdjustment) {
+      if (wltkdCount === 0) {
+        situation = 5; // No disorder, adjustable, no WLTKD → push science
+      } else {
+        situation = 6; // No disorder, WLTKD → push science hard
+      }
+    } else {
+      situation = 4; // Everything fine, no change needed
+    }
+  } else {
+    // There IS disorder
+    if (needsAdjustment) {
+      if (wltkdDisorder === 0 || govtIdx !== 6) {
+        // Democracy check: wltkdDisorder > 0 AND democracy → panic mode (1)
+        situation = 3; // Disorder, needs luxury increase
+      } else {
+        situation = 1; // Panic: disorder + WLTKD in democracy
+      }
+    } else {
+      situation = 2; // Disorder but rates already tuned
+    }
+  }
+
+  // ── Translate situation into rate changes ──
+  let science, tax, luxury;
+
+  switch (situation) {
+    case 1:
+      // Panic mode: maximize luxury to quell disorder
+      luxury = Math.min(maxRate, 6);
+      tax = Math.min(maxRate, 2);
+      science = 10 - luxury - tax;
+      break;
+
+    case 2:
+      // Minor disorder, rates okay: bump luxury slightly
+      luxury = 10 - currentSciRate - currentTaxRate;
+      luxury = Math.min(maxRate, luxury + 1);
+      science = Math.min(maxSci, currentSciRate);
+      tax = 10 - science - luxury;
+      if (tax < 0) { science += tax; tax = 0; }
+      break;
+
+    case 3:
+      // Disorder, increase luxury
+      luxury = Math.min(maxRate, 3);
+      science = Math.min(maxSci, 10 - luxury - 2);
+      tax = 10 - science - luxury;
+      if (tax < 0) { science += tax; tax = 0; }
+      if (tax > maxRate) {
+        const excess = tax - maxRate;
+        tax = maxRate;
+        luxury = Math.min(maxRate, luxury + excess);
+      }
+      break;
+
+    case 4:
+      // No change needed
+      return null;
+
+    case 5:
+      // No disorder, push science
+      science = Math.min(maxSci, 8);
+      luxury = 0;
+      tax = 10 - science;
+      if (tax > maxRate) {
+        const excess = tax - maxRate;
+        tax = maxRate;
+        luxury = Math.min(maxRate, excess);
+      }
+      break;
+
+    case 6:
+      // No disorder, WLTKD active — maximize science
+      science = Math.min(maxSci, 9);
+      luxury = Math.min(maxRate, 1);
+      tax = 10 - science - luxury;
+      if (tax < 0) { science += tax; tax = 0; }
+      if (tax > maxRate) {
+        const excess = tax - maxRate;
+        tax = maxRate;
+        luxury = Math.min(maxRate, luxury + excess);
+      }
+      break;
+
+    default:
+      return null;
+  }
+
+  // ── Final sanity clamps ──
   science = Math.max(0, Math.min(maxSci, science));
   tax = Math.max(0, Math.min(maxRate, tax));
   luxury = 10 - science - tax;
 
-  // Luxury might exceed maxRate after adjustment
   if (luxury > maxRate) {
     const excess = luxury - maxRate;
     luxury = maxRate;
-    // Give excess to tax or science
     if (tax + excess <= maxRate) {
       tax += excess;
     } else {
@@ -337,25 +899,22 @@ export function balanceRates(gameState, mapBase, civSlot) {
     }
   }
   if (luxury < 0) {
-    // Shouldn't happen, but guard
     luxury = 0;
     science = Math.min(maxSci, 10 - tax);
-    tax = 10 - science; // absorb remainder
+    tax = 10 - science;
   }
 
-  // Final validation: rates must sum to 10 and be non-negative
+  // Validate sum
   if (tax + luxury + science !== 10 || tax < 0 || luxury < 0 || science < 0) {
-    // Fallback: safe defaults
+    // Fallback safe defaults
     tax = Math.min(maxRate, 3);
-    science = Math.min(maxSci, 7 - tax > 0 ? 10 - tax : maxSci);
+    science = Math.min(maxSci, 10 - tax);
     luxury = 10 - tax - science;
     if (luxury < 0) { science += luxury; luxury = 0; }
   }
 
-  // Only emit action if rates differ from current
-  const currentSci = civ.scienceRate ?? 0;
-  const currentTax = civ.taxRate ?? 0;
-  if (science === currentSci && tax === currentTax) return null;
+  // Only emit if rates actually differ
+  if (science === currentSciRate && tax === currentTaxRate) return null;
 
   const action = { type: 'CHANGE_RATES', scienceRate: science, taxRate: tax };
   const err = validateAction(gameState, mapBase, action, civSlot);
@@ -364,91 +923,155 @@ export function balanceRates(gameState, mapBase, civSlot) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// 3. Government Revolution Timing
+// 5. considerRevolution — Port of FUN_0055f5a3
+//
+// Decides whether the AI should switch governments.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Check if a better government is available and decide whether to revolt.
+ * Evaluate whether a better government is available and revolt if so.
  *
- * Returns a REVOLUTION action or null if no revolution is warranted.
+ * Port of FUN_0055f5a3:
+ * - param_2 = 0: proactive check (consider all governments up to democracy)
+ * - param_2 = 1: reactive check (typically after losing a war; limits range
+ *   and adds randomness: 1/3 chance to consider up to republic, else up to
+ *   fundamentalism only)
+ *
+ * Tech parity check: if the human player is far ahead in tech count,
+ * the AI may be forced to downgrade (to slower but more stable government).
+ *
+ * Government scoring uses a pre-computed "government suitability" value
+ * per civ (stored at DAT_0064ca74 in the original). We approximate this
+ * by ranking governments based on available techs, city count, treasury,
+ * and war status.
+ *
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {number} civSlot
+ * @returns {object|null} REVOLUTION action or null
  */
 export function considerRevolution(gameState, mapBase, civSlot) {
   const civ = gameState.civs?.[civSlot];
   if (!civ) return null;
 
   const currentGovt = civ.government || 'despotism';
+  const currentGovtIdx = getGovtIndex(gameState, civSlot);
 
   // Don't revolt if already in anarchy (revolution in progress)
   if (currentGovt === 'anarchy') return null;
   if (civ.anarchyTurns > 0) return null;
 
-  const cityCount = countCities(gameState, civSlot);
-  const civTechs = gameState.civTechs?.[civSlot];
-  if (!civTechs) return null;
+  // ── Scenario check (decompiled lines 5942-5943) ──
+  // If scenario flags lock government, skip. We don't track scenario flags,
+  // so skip this check.
 
-  // Don't revolt too early
-  if (cityCount < 3) return null;
+  // ── Determine max government index to consider ──
+  // Decompiled lines 5944-5951: proactive → 6, reactive → 5 or 4
+  // We always use proactive (param_2 = 0), so maxGovt = 6
+  let maxGovtIdx = 6;
 
-  const treasury = civ.treasury ?? 0;
-  const atWar = isAtWar(gameState, civSlot);
-  const currentRank = GOVT_RANK[currentGovt] ?? 0;
-
-  // Evaluate each government from best to worst
-  // Priority order: Democracy > Republic > Communism/Monarchy > Fundamentalism > Despotism
-  const candidates = [
-    {
-      name: 'democracy',
-      minCities: 6,
-      condition: !atWar && treasury > 100,
-    },
-    {
-      name: 'republic',
-      minCities: 4,
-      condition: !atWar,
-    },
-    {
-      name: 'communism',
-      minCities: 8,
-      condition: true, // good for large empires with corruption
-    },
-    {
-      name: 'monarchy',
-      minCities: 3,
-      condition: true, // always better than despotism
-    },
-    {
-      name: 'fundamentalism',
-      minCities: 4,
-      condition: atWar, // only during wartime
-    },
-  ];
-
-  for (const candidate of candidates) {
-    const { name, minCities, condition } = candidate;
-
-    // Must be strictly better than current government
-    const candidateRank = GOVT_RANK[name] ?? 0;
-    if (candidateRank <= currentRank) continue;
-
-    // Must meet city count threshold
-    if (cityCount < minCities) continue;
-
-    // Must meet situational condition
-    if (!condition) continue;
-
-    // Must have the required tech
-    const prereq = GOVT_TECH_PREREQS[name] ?? -1;
-    if (prereq >= 0 && !civTechs.has(prereq)) continue;
-
-    // Validate the action
-    const action = { type: 'REVOLUTION', government: name };
-    const err = validateAction(gameState, mapBase, action, civSlot);
-    if (err) continue;
-
-    return action;
+  // ── Tech parity check (decompiled lines 5952-5959) ──
+  // If "peaceful AI" flag is set and human player exists:
+  //   If human is 6+ techs ahead → force reset research goal to far back
+  //   If human is 8+ techs ahead → force set government to despotism equivalent
+  //
+  // We check against the most advanced human civ.
+  const myTechCount = getTechCount(gameState, civSlot);
+  let maxHumanTechCount = 0;
+  for (let i = 1; i < 8; i++) {
+    if (i === civSlot) continue;
+    if (!isHumanCiv(gameState, i)) continue;
+    const tc = getTechCount(gameState, i);
+    if (tc > maxHumanTechCount) maxHumanTechCount = tc;
+  }
+  // Decompiled: if human is 6+ techs ahead, may force research reset.
+  // If 8+ ahead, may force government downgrade.
+  // We don't implement the research reset here (that's chooseResearch's job),
+  // but we limit government options if far behind.
+  if (maxHumanTechCount - myTechCount > 8) {
+    // Force consider only despotism (index 1)
+    maxGovtIdx = 1;
   }
 
-  return null;
+  // ── Attitude/aggressiveness check (decompiled lines 5961-5963) ──
+  // If some attitude score > 0 and government < republic(5):
+  //   limit to despotism (maxGovtIdx = 1) or communism (maxGovtIdx = 3)
+  // We use patience as the proxy for this attitude value.
+  if (civ.patience != null && civ.patience > 3 && currentGovtIdx < 5) {
+    maxGovtIdx = 3; // limit to communism
+  }
+
+  // ── Score each government and pick the best ──
+  // Decompiled lines 5965-5973: iterate governments 1..maxGovtIdx,
+  // check availability (FUN_0055c277), pick the one with highest
+  // pre-computed suitability score (DAT_0064ca74).
+  //
+  // We compute a suitability score on the fly based on game state.
+  let bestGovtIdx = 1; // default to despotism
+  let bestScore = -999;
+
+  const cityCount = countCities(gameState, civSlot);
+  const treasury = civ.treasury ?? 0;
+  let atWar = false;
+  for (let i = 1; i < 8; i++) {
+    if (i === civSlot) continue;
+    if (gameState.civs?.[i]?.alive === false) continue;
+    if (getTreaty(gameState, civSlot, i) === 'war') { atWar = true; break; }
+  }
+
+  for (let g = 1; g <= maxGovtIdx; g++) {
+    if (!canUseGovernment(gameState, civSlot, g)) continue;
+
+    // Compute suitability score for this government
+    let govScore = 0;
+
+    switch (g) {
+      case 1: // Despotism
+        govScore = 0;
+        break;
+      case 2: // Monarchy
+        govScore = 5 + cityCount;
+        if (atWar) govScore += 3;
+        break;
+      case 3: // Communism
+        govScore = 8 + Math.min(cityCount, 20);
+        if (atWar) govScore += 5;
+        if (cityCount > 10) govScore += 5; // great for large empires
+        break;
+      case 4: // Fundamentalism
+        govScore = 6;
+        if (atWar) govScore += 10;
+        if (!atWar) govScore -= 5; // bad for peaceful growth
+        break;
+      case 5: // Republic
+        govScore = 12 + cityCount;
+        if (atWar) govScore -= 4;
+        if (treasury > 200) govScore += 3;
+        break;
+      case 6: // Democracy
+        govScore = 15 + cityCount * 2;
+        if (atWar) govScore -= 8;
+        if (treasury > 200) govScore += 5;
+        break;
+    }
+
+    if (govScore > bestScore) {
+      bestScore = govScore;
+      bestGovtIdx = g;
+    }
+  }
+
+  // ── Only revolt if the best government differs from current ──
+  if (bestGovtIdx === currentGovtIdx) return null;
+
+  // Translate index to government name
+  const targetGovt = GOVERNMENT_KEYS[bestGovtIdx];
+  if (!targetGovt || targetGovt === currentGovt) return null;
+
+  const action = { type: 'REVOLUTION', government: targetGovt };
+  const err = validateAction(gameState, mapBase, action, civSlot);
+  if (err) return null;
+  return action;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -465,9 +1088,10 @@ export function considerRevolution(gameState, mapBase, civSlot) {
  * @param {object} gameState
  * @param {object} mapBase
  * @param {number} civSlot
+ * @param {object} [strategy] — unused currently, reserved for future strategy hints
  * @returns {Array<object>}
  */
-export function generateEconActions(gameState, mapBase, civSlot) {
+export function generateEconActions(gameState, mapBase, civSlot, strategy) {
   const actions = [];
 
   // 1. Research selection
