@@ -12,7 +12,7 @@ import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUni
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Parser } from '../engine/parser.js';
 import { Civ2Minimap } from './minimap.js';
-import { CIV_COLORS, UNIT_NAMES, ADVANCE_NAMES, IMPROVE_NAMES, WONDER_NAMES } from '../engine/defs.js';
+import { CIV_COLORS, UNIT_NAMES, ADVANCE_NAMES, IMPROVE_NAMES, WONDER_NAMES, TERRAIN_NAMES, ORDER_NAMES, UNIT_DOMAIN, DIFFICULTY_KEYS } from '../engine/defs.js';
 import { createTransport } from '../net/transport.js';
 import { createAccessors } from '../engine/state.js';
 import { computeLOS } from '../engine/visibility.js';
@@ -164,10 +164,6 @@ function renderRoomList() {
       if (roomId === S.wsRoomId && S.wsGameStarted && S.mpGameState && S.mpMapBase) {
         // Already connected with game state — go straight to map, refresh turn UI
         S.gameEnteredFrom = 'lobby';
-        document.getElementById('sav-btn').style.display = 'none';
-        document.getElementById('render-btn').style.display = 'none';
-        document.getElementById('status').style.display = 'none';
-        document.getElementById('restart-controls').style.display = '';
         setScene('game');
         doRenderFromState({ skipCenter: false, silent: true, forceCiv: S.mpCivSlot });
         return;
@@ -222,9 +218,20 @@ function renderRoomDetail(msg) {
       const removeBtnHtml = (isCreator && isPreGame)
         ? ` <button class="seat-remove-ai" data-seat="${s.seat}" title="Remove AI">x</button>`
         : '';
+      const currentDiff = s.difficulty || 'prince';
+      let diffHtml = '';
+      if (isCreator && isPreGame) {
+        const opts = DIFFICULTY_KEYS.map(k => {
+          const sel = k === currentDiff ? ' selected' : '';
+          return `<option value="${k}"${sel}>${k.charAt(0).toUpperCase() + k.slice(1)}</option>`;
+        }).join('');
+        diffHtml = ` <select class="seat-difficulty" data-seat="${s.seat}">${opts}</select>`;
+      } else {
+        diffHtml = ` <span class="seat-difficulty-label">${currentDiff.charAt(0).toUpperCase() + currentDiff.slice(1)}</span>`;
+      }
       html += `<div class="room-seat ai occupied">
         <span class="seat-num">${s.seat}</span>
-        <span class="seat-name"><span class="seat-ai-tag">[AI]</span> ${s.name || 'Computer'}${removeBtnHtml}</span>
+        <span class="seat-name"><span class="seat-ai-tag">[AI]</span> ${s.name || 'Computer'}${diffHtml}${removeBtnHtml}</span>
       </div>`;
     } else if (s.occupied) {
       // Human seat
@@ -264,6 +271,12 @@ function renderRoomDetail(msg) {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       transport.send('REMOVE_AI', { seat: Number(btn.dataset.seat) });
+    });
+  });
+  seatsEl.querySelectorAll('.seat-difficulty').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      e.stopPropagation();
+      transport.send('SET_AI_DIFFICULTY', { seatIndex: Number(sel.dataset.seat), difficulty: sel.value });
     });
   });
 
@@ -517,30 +530,60 @@ async function renderAtomicSwap(mapData, opts = {}) {
 // Turn UI
 // ═══════════════════════════════════════════════════════════════════
 
+function updateStatusBarColor(civSlot) {
+  const bar = document.getElementById('status-bar');
+  if (!bar) return;
+  const color = CIV_COLORS[civSlot];
+  if (color) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    bar.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.35)`;
+    bar.style.borderBottomColor = color;
+  } else {
+    bar.style.backgroundColor = 'rgba(22, 33, 62, 0.92)';
+    bar.style.borderBottomColor = 'rgba(255,255,255,0.1)';
+  }
+}
+
 function updateTurnUI() {
-  const turnUI = document.getElementById('turn-ui');
+  const statusBar = document.getElementById('status-bar');
   if (!S.mpGameState) {
-    turnUI.style.display = 'none';
+    statusBar.style.display = 'none';
     return;
   }
-  turnUI.style.display = '';
+  statusBar.style.display = '';
 
   const isSpectator = S.mpCivSlot == null;
   const isMyTurn = !isSpectator && S.mpGameState.turn.activeCiv === S.mpCivSlot;
   const civName = S.mpGameState.civNames?.[S.mpGameState.turn.activeCiv] || `Civ ${S.mpGameState.turn.activeCiv}`;
-  const civColor = CIV_COLORS[S.mpGameState.turn.activeCiv] || '#e0e0e0';
 
-  document.getElementById('turn-civ-name').textContent = civName;
-  document.getElementById('turn-civ-name').style.color = civColor;
-  document.getElementById('turn-number').textContent = `Turn ${S.mpGameState.turn.number || 0}`;
+  // ── Civ-colored status bar tint ──
+  updateStatusBarColor(isSpectator ? S.mpGameState.turn.activeCiv : S.mpCivSlot);
+
+  // ── Gold display ──
+  const goldEl = document.getElementById('status-gold');
+  if (goldEl) {
+    if (isSpectator) {
+      goldEl.textContent = 'Spectating';
+      goldEl.style.color = '#aaa';
+    } else {
+      const civ = S.mpGameState.civs?.[S.mpCivSlot];
+      const gold = civ ? civ.treasury : 0;
+      goldEl.textContent = `${gold}g`;
+      goldEl.style.color = '#ffd700';
+    }
+  }
 
   // ── Research progress ──
-  const resEl = document.getElementById('research-info');
+  const resNameEl = document.getElementById('status-research-name');
+  const resFillEl = document.getElementById('status-research-fill');
   if (isSpectator) {
-    resEl.textContent = 'Spectating';
+    if (resNameEl) resNameEl.textContent = `${civName}'s turn`;
+    if (resFillEl) resFillEl.style.width = '0%';
   } else {
     const civ = S.mpGameState.civs?.[S.mpCivSlot];
-    if (civ && resEl) {
+    if (civ) {
       const techId = civ.techBeingResearched;
       if (techId != null && techId !== 0xFF && techId >= 0 && techId < ADVANCE_NAMES.length) {
         const current = civ.researchProgress || 0;
@@ -557,23 +600,26 @@ function updateTurnUI() {
         }
         const remaining = cost - current;
         const turnsLeft = sciPerTurn > 0 ? Math.ceil(remaining / sciPerTurn) : '?';
-        resEl.textContent = `${ADVANCE_NAMES[techId]}: ${current}/${cost} (${turnsLeft} Turns)`;
+        if (resNameEl) resNameEl.textContent = `${ADVANCE_NAMES[techId]} (${turnsLeft}t)`;
+        if (resFillEl) resFillEl.style.width = cost > 0 ? `${Math.min(100, (current / cost) * 100)}%` : '0%';
       } else {
-        resEl.textContent = 'No research';
+        if (resNameEl) resNameEl.textContent = 'No research';
+        if (resFillEl) resFillEl.style.width = '0%';
       }
     }
   }
 
+  // ── End Turn / Waiting ──
   const endBtn = document.getElementById('end-turn-btn');
-  const waitMsg = document.getElementById('turn-waiting');
+  const waitMsg = document.getElementById('status-waiting');
   if (isSpectator) {
     endBtn.style.display = 'none';
     endBtn.classList.remove('flash');
-    waitMsg.style.display = '';
+    waitMsg.classList.remove('hidden');
     waitMsg.textContent = `${civName}'s turn`;
   } else if (isMyTurn) {
     endBtn.style.display = '';
-    waitMsg.style.display = 'none';
+    waitMsg.classList.add('hidden');
     if (findNextMovableUnit(-1) == null) {
       endBtn.classList.add('flash');
     } else {
@@ -582,9 +628,77 @@ function updateTurnUI() {
   } else {
     endBtn.style.display = 'none';
     endBtn.classList.remove('flash');
-    waitMsg.style.display = '';
-    waitMsg.textContent = 'Waiting for opponent...';
+    waitMsg.classList.remove('hidden');
+    waitMsg.textContent = 'Waiting...';
   }
+
+  // ── Update unit info strip ──
+  updateUnitInfoStrip();
+}
+
+// ── Unit info strip ──
+function updateUnitInfoStrip() {
+  const strip = document.getElementById('unit-info-strip');
+  if (!strip) return;
+
+  if (S.mpSelectedUnit == null || !S.mpGameState) {
+    strip.classList.add('hidden');
+    return;
+  }
+  const u = S.mpGameState.units[S.mpSelectedUnit];
+  if (!u || u.gx < 0) {
+    strip.classList.add('hidden');
+    return;
+  }
+
+  const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
+  const maxHp = Civ2Renderer.UNIT_MAX_HP?.[u.type] || 10;
+  const curHp = Math.max(0, maxHp - (u.hpLost || 0));
+  const hpPct = maxHp > 0 ? (curHp / maxHp) * 100 : 0;
+  let hpColor;
+  if (hpPct > 67) hpColor = 'rgb(87,171,39)';
+  else if (hpPct > 25) hpColor = 'rgb(255,223,79)';
+  else hpColor = 'rgb(243,0,0)';
+
+  // Movement: stored in thirds (MOVEMENT_MULTIPLIER=3)
+  const movesLeft = u.movesLeft || 0;
+  const maxMoves = u.maxMoves || 3;
+  function fmtMoves(v) {
+    const whole = Math.floor(v / 3);
+    const rem = v % 3;
+    if (rem === 0) return `${whole}`;
+    if (rem === 1) return `${whole}\u2153`;  // 1/3
+    return `${whole}\u2154`;  // 2/3
+  }
+  const movesStr = `${fmtMoves(movesLeft)}/${fmtMoves(maxMoves)}`;
+
+  // Terrain
+  const terrain = S.mpMapBase?.getTerrain?.(u.gx, u.gy);
+  const terrainName = terrain != null && TERRAIN_NAMES[terrain] ? TERRAIN_NAMES[terrain] : '';
+
+  // Orders
+  const orderName = u.orders && u.orders !== 'none' ? ORDER_NAMES[u.orders] || u.orders : '';
+
+  // Domain indicator
+  const domain = UNIT_DOMAIN[u.type] ?? 0;
+  const domainIcon = domain === 2 ? ' [Air]' : domain === 1 ? ' [Sea]' : '';
+
+  let html =
+    `<span class="unit-strip-name">${name}${domainIcon}</span>` +
+    `<span class="unit-strip-sep">|</span>` +
+    `<span class="unit-strip-moves">Moves: ${movesStr}</span>` +
+    `<span class="unit-strip-sep">|</span>` +
+    `<span class="unit-strip-hp"><span class="unit-strip-hp-fill" style="width:${hpPct}%;background:${hpColor}"></span></span>`;
+
+  if (terrainName) {
+    html += `<span class="unit-strip-sep">|</span><span class="unit-strip-terrain">${terrainName}</span>`;
+  }
+  if (orderName) {
+    html += `<span class="unit-strip-sep">|</span><span class="unit-strip-orders">${orderName}</span>`;
+  }
+
+  strip.innerHTML = html;
+  strip.classList.remove('hidden');
 }
 
 // Show connected players/spectators in the controls bar
@@ -984,12 +1098,6 @@ function initNetwork(appCallbacks) {
           S.gameEnteredFrom = 'lobby';
           setScene('game');
 
-          // Hide single-player controls, show restart controls in multiplayer
-          document.getElementById('sav-btn').style.display = 'none';
-          document.getElementById('render-btn').style.display = 'none';
-          document.getElementById('status').style.display = 'none';
-          document.getElementById('restart-controls').style.display = '';
-
           // Show chat panel
           showChatPanel();
 
@@ -1271,10 +1379,6 @@ function initNetwork(appCallbacks) {
     if (S.wsRoomId && S.wsGameStarted && S.mpGameState && S.mpMapBase) {
       // We have game state — go straight to the map, refresh turn UI
       S.gameEnteredFrom = 'lobby';
-      document.getElementById('sav-btn').style.display = 'none';
-      document.getElementById('render-btn').style.display = 'none';
-      document.getElementById('status').style.display = 'none';
-      document.getElementById('restart-controls').style.display = '';
       setScene('game');
       doRenderFromState({ skipCenter: false, silent: true, forceCiv: S.mpCivSlot });
       return;
@@ -1403,6 +1507,7 @@ export {
   renderAtomicSwap,
   doRenderFromState,
   updateTurnUI,
+  updateUnitInfoStrip,
   deserializeState,
   buildMapDataFromState,
   updateGamePlayers,

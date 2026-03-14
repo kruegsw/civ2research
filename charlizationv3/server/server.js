@@ -22,6 +22,7 @@
 //   { type:"READY" }
 //   { type:"ADD_AI", seat? }            — room creator adds AI to seat (or first open)
 //   { type:"REMOVE_AI", seat }          — room creator removes AI from seat
+//   { type:"SET_AI_DIFFICULTY", seatIndex, difficulty } — set AI difficulty (pre-game only)
 //   { type:"PING" }
 //   { type:"SAY", text }
 //   { type:"ACTION", roomId, action:{ type:"MOVE_UNIT"|... } }   // future
@@ -49,7 +50,7 @@ import { generateMap } from "../engine/mapgen.js";
 import { applyAction } from "../engine/reducer.js";
 import { filterStateForCiv, computeLOS } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
-import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES } from "../engine/defs.js";
+import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES, DIFFICULTY_KEYS } from "../engine/defs.js";
 import { runAiTurn } from "../engine/ai/index.js";
 
 const PORT = Number(process.env.PORT || 8788);
@@ -222,6 +223,7 @@ function roomRoster(roomId) {
     name: slot?.name ?? null,
     occupied: !!slot,
     ai: slot?.ai ?? false,
+    difficulty: slot?.difficulty ?? null,
     wsOpen: slot ? (slot.ai || (slot.ws && slot.ws.readyState === 1)) : false,
     lastActivity: slot?.lastActivity ?? null,
     ready: room.ready[i],
@@ -580,7 +582,7 @@ wss.on("connection", (ws) => {
           }
         }
 
-        room.seats[targetSeat] = { ai: true, name: "Computer", clientId: null, ws: null, lastActivity: Date.now() };
+        room.seats[targetSeat] = { ai: true, name: "Computer", clientId: null, ws: null, lastActivity: Date.now(), difficulty: 'prince' };
         // AI is always ready
         room.ready[targetSeat] = true;
 
@@ -619,6 +621,38 @@ wss.on("connection", (ws) => {
 
         broadcastToRoom(roomId, roomRoster(roomId));
         broadcastRoomList();
+        break;
+      }
+
+      case "SET_AI_DIFFICULTY": {
+        const roomId = info.roomId;
+        if (!roomId) break;
+        const room = rooms.get(roomId);
+        if (!room || room.started) break;
+
+        // Only room creator (seat 0) can change AI difficulty
+        if (info.playerIndex !== 0) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Only the room creator can change AI difficulty" }));
+          break;
+        }
+
+        const { seatIndex, difficulty } = msg;
+        if (typeof seatIndex !== "number" || seatIndex < 0 || seatIndex >= 8) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Invalid seat number" }));
+          break;
+        }
+        if (!room.seats[seatIndex] || !room.seats[seatIndex].ai) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Seat is not an AI player" }));
+          break;
+        }
+        if (!DIFFICULTY_KEYS.includes(difficulty)) {
+          ws.send(JSON.stringify({ type: "ERROR", message: "Invalid difficulty level" }));
+          break;
+        }
+
+        room.seats[seatIndex].difficulty = difficulty;
+
+        broadcastToRoom(roomId, roomRoster(roomId));
         break;
       }
 
@@ -710,7 +744,7 @@ wss.on("connection", (ws) => {
         // Re-build seat list from current seats
         const restartSeats = [];
         for (let i = 0; i < 8; i++) {
-          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i}`, ai: restartRoom.seats[i].ai || false });
+          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i}`, ai: restartRoom.seats[i].ai || false, difficulty: restartRoom.seats[i].difficulty || null });
         }
 
         const mapResult = generateMap(sz);
@@ -1199,6 +1233,7 @@ function startGame(roomId, room, occupiedSeats) {
     seatIndex: i,
     name: room.seats[i]?.name || `Player ${i}`,
     ai: room.seats[i]?.ai || false,
+    difficulty: room.seats[i]?.difficulty || null,
   }));
 
   // Generate a new map for multiplayer

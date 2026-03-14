@@ -580,6 +580,17 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   border-radius: 3px; cursor: pointer; margin-left: 8px;
 }
 .seat-remove-ai:hover { background: rgba(220, 100, 100, 0.15); border-color: #8a4a4a; color: #eea0a0; }
+.seat-difficulty {
+  background: #1a2a3a; border: 1px solid #3a5a7a;
+  color: #99ccff; font-size: 11px; padding: 1px 4px;
+  border-radius: 3px; cursor: pointer; margin-left: 8px;
+  font-family: inherit;
+}
+.seat-difficulty:hover { border-color: #5a8aba; color: #aad0f0; }
+.seat-difficulty:focus { outline: none; border-color: #5a8aba; }
+.seat-difficulty-label {
+  color: #668faa; font-size: 11px; margin-left: 8px;
+}
 
 .room-spectators {
   margin-top: 12px; padding: 8px 12px;
@@ -842,64 +853,134 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   Turn UI (multiplayer game)
+   Status Bar (multiplayer HUD — replaces old #turn-ui)
    ═══════════════════════════════════════════════════════════════════ */
-#turn-ui {
-  position: fixed; top: 16px; right: 16px; z-index: 60;
-  background: rgba(22, 33, 62, 0.95);
-  border: 1px solid #0f3460;
-  border-radius: 6px;
-  padding: 10px 14px;
-  display: flex; flex-direction: column; gap: 8px;
-  align-items: center;
+#status-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  height: 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 8px;
+  background: rgba(22, 33, 62, 0.92);
+  border-bottom: 2px solid rgba(255,255,255,0.1);
   backdrop-filter: blur(4px);
-  min-width: 160px;
+  font: 13px 'Segoe UI', sans-serif;
+  color: #ddd;
+  transition: background-color 0.5s ease, border-bottom-color 0.5s ease;
 }
-#turn-info {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  font-family: 'Times New Roman', serif;
+
+#status-bar-left, #status-bar-right {
+  display: flex; align-items: center; gap: 12px;
 }
-#turn-civ-name {
-  font-size: 16px; font-weight: 700;
+
+.hamburger-btn {
+  background: none; border: none; color: #fff; font-size: 20px;
+  cursor: pointer; padding: 2px 8px; border-radius: 4px;
 }
-#turn-number {
-  font-size: 12px; color: #999;
+.hamburger-btn:hover { background: rgba(255,255,255,0.15); }
+
+.status-item {
+  cursor: pointer; padding: 2px 8px; border-radius: 4px;
+  white-space: nowrap;
 }
-#end-turn-btn {
-  width: 100%; padding: 6px 16px; font-size: 14px;
+.status-item:hover { background: rgba(255,255,255,0.1); }
+
+#status-gold { color: #ffd700; font-weight: 600; }
+
+#status-research-name { margin-right: 4px; }
+
+.research-progress-bar {
+  display: inline-block; width: 48px; height: 6px;
+  background: rgba(255,255,255,0.15); border-radius: 3px;
+  vertical-align: middle; overflow: hidden;
 }
-#end-turn-btn.flash {
+.research-progress-fill {
+  display: block; height: 100%; background: #3498db;
+  border-radius: 3px; transition: width 0.3s ease;
+  width: 0%;
+}
+
+.end-turn-btn {
+  background: #2a7d2a; color: #fff; border: none;
+  padding: 4px 14px; border-radius: 4px; font-size: 12px;
+  font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.end-turn-btn:hover { background: #339933; }
+.end-turn-btn.flash {
   animation: endTurnFlash 0.8s step-start infinite;
 }
 @keyframes endTurnFlash {
-  0%, 100% { color: #000; }
-  50% { color: #808080; }
+  0%, 100% { color: #fff; }
+  50% { color: #aaa; }
 }
-#turn-waiting {
-  font-size: 12px; color: #f39c12;
+
+.status-waiting {
+  color: #aaa; font-style: italic; font-size: 12px;
   animation: pulse 1.5s ease-in-out infinite;
 }
-#research-info {
-  font-size: 11px; color: #aac; text-align: center;
-  font-family: 'Times New Roman', serif;
-  padding: 2px 0;
-}
-#research-info:hover { color: #ddf; }
+.status-waiting.hidden { display: none; }
 
-/* Advisors popup menu */
-#advisors-menu-wrap { position: relative; }
-.advisors-popup {
-  position: absolute; top: 100%; right: 0; margin-top: 4px;
-  background: #c0c0c0; border: 2px outset #ddd;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-  min-width: 200px; z-index: 100;
+/* Hamburger dropdown */
+#hamburger-menu {
+  position: fixed; top: 34px; left: 8px; z-index: 25;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  min-width: 220px;
+  padding: 4px 0;
+  backdrop-filter: blur(8px);
+  font: 13px 'Segoe UI', sans-serif;
+  color: #ddd;
+  max-height: 80vh;
+  overflow-y: auto;
 }
-.advisors-item {
-  display: block; width: 100%; padding: 6px 12px;
-  font: 14px 'Times New Roman', Georgia, serif; color: #333;
-  background: none; border: none; text-align: left; cursor: pointer;
+#hamburger-menu.hidden { display: none; }
+
+.menu-section { padding: 4px 0; }
+.menu-section + .menu-section { border-top: 1px solid rgba(255,255,255,0.08); }
+
+.menu-section-title {
+  padding: 6px 16px 2px;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  color: #888;
 }
-.advisors-item:hover { background: #0a246a; color: #fff; }
+
+#hamburger-menu .menu-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#hamburger-menu .menu-item:hover { background: rgba(255,255,255,0.08); }
+
+.menu-shortcut { color: #666; font-size: 11px; margin-left: 16px; }
+
+.menu-check::after { content: ''; display: inline-block; width: 14px; }
+.menu-check.checked::after { content: '\2713'; color: #7fba6a; }
+
+/* Unit info strip */
+#unit-info-strip {
+  position: fixed; bottom: 12px; left: 12px; z-index: 15;
+  background: rgba(20, 20, 20, 0.88);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font: 13px 'Segoe UI', sans-serif;
+  color: #ddd;
+  pointer-events: auto;
+  max-width: 50vw;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+#unit-info-strip.hidden { display: none; }
+
+.unit-strip-name { font-weight: 600; }
+.unit-strip-sep { color: #555; margin: 0 6px; }
+.unit-strip-moves { color: #aaa; }
+.unit-strip-hp { display: inline-block; width: 40px; height: 5px; background: rgba(255,255,255,0.15); border-radius: 2px; vertical-align: middle; overflow: hidden; }
+.unit-strip-hp-fill { display: block; height: 100%; border-radius: 2px; }
+.unit-strip-terrain { color: #aaa; }
+.unit-strip-orders { color: #f39c12; }
 
 /* ═══════════════════════════════════════════════════════════════════
    Tech Tree Viewer — category-banded layout with prerequisite graph

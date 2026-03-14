@@ -225,6 +225,15 @@ function initWonders() {
  * This matches Civ2's default game setup (LEADERS.TXT order).
  */
 function buildInitialCivs(seatList) {
+  // Build a map from civ slot (1-based) to seat difficulty
+  const civDifficultyMap = {};
+  for (let i = 0; i < seatList.length; i++) {
+    const civSlot = i + 1;
+    if (seatList[i].ai && seatList[i].difficulty) {
+      civDifficultyMap[civSlot] = seatList[i].difficulty;
+    }
+  }
+
   const civs = [];
   for (let i = 0; i < 8; i++) {
     const rulesCivNumber = i === 0 ? 0 : i - 1;
@@ -237,6 +246,7 @@ function buildInitialCivs(seatList) {
       researchProgress: 0,
       techBeingResearched: 0xFF, // none selected
       rulesCivNumber,
+      difficulty: civDifficultyMap[i] || undefined,
     });
   }
   return civs;
