@@ -701,9 +701,23 @@ export function showUnitMenu(clientX, clientY, items) {
   const my = Math.min(clientY, window.innerHeight - rect.height - 4);
   S.unitMenu.style.left = Math.max(0, mx) + 'px';
   S.unitMenu.style.top = Math.max(0, my) + 'px';
+
+  // Click-away listener: dismiss menu when clicking outside it
+  const clickAway = e => {
+    if (!S.unitMenu.contains(e.target)) {
+      hideUnitMenu();
+    }
+  };
+  // Delay to avoid the same click that opened the menu from closing it
+  requestAnimationFrame(() => window.addEventListener('pointerdown', clickAway, { once: true, capture: true }));
+  S._unitMenuClickAway = clickAway;
 }
 
 export function hideUnitMenu() {
+  if (S._unitMenuClickAway) {
+    window.removeEventListener('pointerdown', S._unitMenuClickAway, { capture: true });
+    S._unitMenuClickAway = null;
+  }
   S.unitMenu.classList.remove('visible');
   S.unitMenu.innerHTML = '';
   S.unitMenuDefaultAction = null;

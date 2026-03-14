@@ -389,7 +389,7 @@ async function doRenderFromState(opts = {}) {
     if (S.mpSelectedUnit != null) startBlink(); else stopBlink();
   }
 
-  // Center on newly selected unit only if it's not already visible in the viewport
+  // Center on selected unit — always on initial load, otherwise only if off-screen
   if (opts.skipCenter) {
     if (S.mpSelectedUnit !== prevSelected && S.mpSelectedUnit != null) {
       const u = S.mpGameState.units[S.mpSelectedUnit];
@@ -399,7 +399,7 @@ async function doRenderFromState(opts = {}) {
     const u = S.mpSelectedUnit != null
       ? S.mpGameState.units[S.mpSelectedUnit]
       : findFirstOwnUnit();
-    if (u && !isTileInViewport(u.gx, u.gy)) centerOnUnit(u);
+    if (u && (prevSelected == null || !isTileInViewport(u.gx, u.gy))) centerOnUnit(u);
   }
 }
 
@@ -666,7 +666,7 @@ function handleGameLogMessage(msg, isHistory) {
 
   const prefix = document.createElement('span');
   prefix.className = 'game-log-turn';
-  prefix.textContent = `[Turn ${msg.turn || 0}] `;
+  prefix.textContent = `[${getGameYear(msg.turn || 0)}] `;
   el.appendChild(prefix);
 
   const textEl = document.createElement('span');

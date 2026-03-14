@@ -1003,7 +1003,7 @@ function startGame(roomId, room, occupiedSeats) {
 }
 
 function startNewGame(roomId, room, seatList) {
-  const mapResult = generateMap({ width: 100, height: 50 });
+  const mapResult = generateMap({ width: 80, height: 50 });
   const { mapBase, gameState } = initNewGame(mapResult, seatList);
   room.mapBase = mapBase;
   room.gameState = gameState;

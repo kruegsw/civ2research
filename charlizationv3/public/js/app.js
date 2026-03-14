@@ -1033,6 +1033,13 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // Enter/Escape: close city dialog if open
+  if ((e.key === 'Enter' || e.key === 'Escape') && document.getElementById('citydialog-overlay')?.style.display === 'flex') {
+    e.preventDefault();
+    closeCityDialog();
+    return;
+  }
+
   // Enter: open city dialog if unit is on a city (view-only, no turn check needed)
   if (e.key === 'Enter' && S.mpGameState && S.mpSelectedUnit != null) {
     const u = S.mpGameState.units[S.mpSelectedUnit];
