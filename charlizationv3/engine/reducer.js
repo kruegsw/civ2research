@@ -1690,6 +1690,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
             // Notify: famine
             if (!state.turnEvents) state.turnEvents = [];
             state.turnEvents.push({ type: 'famine', cityName: city.name, cityIndex: ci, civSlot: activeCiv, newSize });
+          } else {
+            // ── City destroyed by famine (size 1 → 0) ──
+            newSize = 0;
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({ type: 'cityDestroyed', cityName: city.name, cityIndex: ci, civSlot: activeCiv, reason: 'famine' });
+            // Disband all units homed to this city
+            if (!state.units) state.units = [...prev.units];
+            for (let ui = 0; ui < state.units.length; ui++) {
+              const u = state.units[ui];
+              if (u && u.homeCityIndex === ci && u.gx >= 0) {
+                state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
+              }
+            }
           }
         }
 
@@ -1799,6 +1812,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
           };
         }
       }
+
+      // ── Famine elimination check: if a city was destroyed by famine, check if civ is eliminated ──
+      checkCivElimination(state, activeCiv);
 
       // ── Auto-disband: if city shield production < 0, disband non-garrisoned units ──
       for (let ci = 0; ci < state.cities.length; ci++) {

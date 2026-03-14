@@ -346,8 +346,9 @@ for (let turn = 0; turn < NUM_TURNS * NUM_PLAYERS; turn++) {
     // Check for city growth, production, etc. in turn events
     if (endResult.turnEvents) {
       for (const ev of endResult.turnEvents) {
-        if (ev.type === 'cityGrew') log(`    >>> ${ev.cityName} grew to size ${ev.newSize}`);
-        if (ev.type === 'cityShrank') log(`    >>> ${ev.cityName} shrank to size ${ev.newSize} (famine)`);
+        if (ev.type === 'cityGrowth') log(`    >>> ${ev.cityName} grew to size ${ev.newSize}`);
+        if (ev.type === 'famine') log(`    >>> ${ev.cityName} shrank to size ${ev.newSize} (famine)`);
+        if (ev.type === 'cityDestroyed') log(`    >>> ${ev.cityName} destroyed (${ev.reason})`);
         if (ev.type === 'productionComplete') {
           log(`    >>> ${ev.cityName} built ${ev.item ? itemName(ev.item.type, ev.item.id) : '?'}`);
         }

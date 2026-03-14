@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction } from '../rules.js';
-import { getProductionCost } from '../production.js';
+import { getProductionCost, calcFoodSurplus } from '../production.js';
 import { calcRushBuyCost } from '../happiness.js';
 import {
   UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
@@ -265,13 +265,21 @@ function estimateCityShields(city) {
 }
 
 /**
- * Estimate food surplus for a city (very rough).
+ * Compute actual food surplus for a city.
+ * Ported from FUN_0043d07a (called at line 4197 of FUN_00498e8b)
+ * which populates DAT_006a65a8 (food surplus) before all scoring.
+ * The old heuristic returned fake constants (2/1/0) regardless of
+ * actual tile yields, improvements, government, or settler drain.
  */
-function estimateFoodSurplus(city) {
-  // Small cities typically have 1-3 surplus, large cities less
-  if (city.size <= 3) return 2;
-  if (city.size <= 6) return 1;
-  return 0;
+function estimateFoodSurplus(city, cityIndex, gameState, mapBase) {
+  if (!gameState || !mapBase || cityIndex == null) {
+    // Fallback for callers without full context
+    if (city.size <= 3) return 2;
+    if (city.size <= 6) return 1;
+    return 0;
+  }
+  const { surplus } = calcFoodSurplus(city, cityIndex, gameState, mapBase, gameState.units);
+  return surplus;
 }
 
 /**
@@ -658,7 +666,8 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     if (city.size >= 6) score += 3;
     if (city.size >= 10) score += 2;
     // Penalty: small city with low food surplus
-    if (estimateFoodSurplus(city) <= 0) score -= 4;
+    const _ci = gameState.cities.indexOf(city);
+    if (estimateFoodSurplus(city, _ci >= 0 ? _ci : undefined, gameState, mapBase) <= 0) score -= 4;
 
     // Normalize: apply personality-based scaling (decompiled normalization)
     // score = ((coastalMatch ? 10 : 20) * score * 3) / (expansionism + 3)
@@ -1038,7 +1047,7 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
 
   // Approximate total food surplus and total population
   // Decompiled: DAT_006a65a8 = food surplus, DAT_006a6550 = total trade/population
-  const foodSurplus = estimateFoodSurplus(city);
+  const foodSurplus = estimateFoodSurplus(city, cityIndex, gameState, mapBase);
   const totalPop = citySize; // rough proxy
 
   // civsAlive bitmask (from strategy.aiData)
@@ -2224,6 +2233,33 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
   }
 
   // Expansionist bonus to settler scoring is already applied in scoreUnit
+
+  // ── Settler priority override (ported from FUN_00498e8b lines 5695-5707) ──
+  // The binary's DAT_006a6608 gatekeeper ensures settlers compete with wonders
+  // in the early game. Without this, wonders (score 300-500) always beat
+  // settlers (score 25-145), causing zero expansion.
+  const settlerCount = cityCtx.settlerCount;
+  const numCities = cityCtx.numCities;
+  if (numCities < 4 && settlerCount === 0 && city.size > 1) {
+    // Cap wonder scores at settler level when expansion is critical
+    if (bestUnit && SETTLER_TYPES.has(bestUnit.id) && bestUnitScore > 0) {
+      bestWonderScore = Math.min(bestWonderScore, bestUnitScore);
+    }
+  }
+
+  // ── Food crisis: block settlers if city would starve ──
+  // Ported from FUN_00498e8b line 5701: DAT_006a6608 <= local_220
+  // The binary checks that food surplus can sustain a settler before allowing it.
+  if (bestUnit && SETTLER_TYPES.has(bestUnit.id)) {
+    const _fci = gameState.cities.indexOf(city);
+    const actualSurplus = _fci >= 0
+      ? estimateFoodSurplus(city, _fci, gameState, mapBase) : 0;
+    if (actualSurplus <= 0 && city.size <= 3) {
+      // City can't afford to lose pop — block settler, prefer granary
+      bestUnitScore = -1;
+      bestUnit = null;
+    }
+  }
 
   // ── Pick the overall best ──
   let bestItem = null;

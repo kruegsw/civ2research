@@ -635,20 +635,22 @@ function getWorkerOrder(unit, unitIndex, gameState, mapBase, civSlot) {
     if (!err) return action;
   }
 
-  // Priority 2: Build road
-  if (!imp.road) {
-    const action = { type: 'WORKER_ORDER', unitIndex, order: 'road' };
-    const err = validateAction(gameState, mapBase, action, civSlot);
-    if (!err) return action;
-  }
-
-  // Priority 3: Irrigate if possible and beneficial
+  // Priority 2: Irrigate if possible and beneficial
+  // Ported priority from FUN_00498e8b: binary's AI irrigates before roads
+  // because food production is critical for city growth and settler support.
   if (!imp.irrigation && CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0) {
     if (checkWaterSource(unit.gx, unit.gy, mapBase)) {
       const action = { type: 'WORKER_ORDER', unitIndex, order: 'irrigation' };
       const err = validateAction(gameState, mapBase, action, civSlot);
       if (!err) return action;
     }
+  }
+
+  // Priority 3: Build road
+  if (!imp.road) {
+    const action = { type: 'WORKER_ORDER', unitIndex, order: 'road' };
+    const err = validateAction(gameState, mapBase, action, civSlot);
+    if (!err) return action;
   }
 
   // Priority 4: Mine hills/mountains
