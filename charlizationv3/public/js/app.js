@@ -29,7 +29,7 @@ import {
   getCdState, setCdCity, registerCityUiDeps,
 } from './city-ui.js';
 import {
-  renderAtomicSwap, updateTurnUI,
+  renderAtomicSwap, updateTurnUI, updateUnitInfoStrip,
   initNetwork, toggleChat,
 } from './network.js';
 
@@ -59,6 +59,11 @@ function setScene(scene) {
   document.getElementById('game-scene').style.display = scene === 'game' ? '' : 'none';
   S.currentScene = scene;
   if (scene === 'game') {
+    // Multiplayer: hide viewer controls, show status bar.  Viewer: show controls, hide status bar.
+    const isMultiplayer = !!S.mpGameState;
+    document.getElementById('controls').style.display = isMultiplayer ? 'none' : '';
+    document.getElementById('status-bar').style.display = isMultiplayer ? '' : 'none';
+    document.getElementById('hamburger-menu').classList.add('hidden');
     updateGameBackBtn();
     resizeViewport();
     if (S.vp.offW > 0) drawViewport();
@@ -695,46 +700,103 @@ document.getElementById('restart-btn').addEventListener('click', () => {
   showMapSizePicker();
 });
 
-document.getElementById('research-info').addEventListener('click', () => {
+// ═══════════════════════════════════════════════════════════════════
+// Status bar click handlers (gold → tax rates, research → picker)
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('status-gold').addEventListener('click', () => {
+  if (!S.mpGameState || S.mpCivSlot == null) return;
+  showRateSliders();
+});
+
+document.getElementById('status-research').addEventListener('click', () => {
   if (!S.mpGameState || S.mpCivSlot == null) return;
   showResearchPicker();
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// Advisors popup menu
+// Hamburger menu
 // ═══════════════════════════════════════════════════════════════════
-const advisorsBtn = document.getElementById('advisors-btn');
-const advisorsPopup = document.getElementById('advisors-popup');
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const hamburgerMenu = document.getElementById('hamburger-menu');
 
-advisorsBtn.addEventListener('click', () => {
-  advisorsPopup.style.display = advisorsPopup.style.display === 'none' ? 'block' : 'none';
-});
+function closeHamburgerMenu() {
+  hamburgerMenu.classList.add('hidden');
+}
 
-// Close popup when clicking outside
-document.addEventListener('pointerdown', e => {
-  if (advisorsPopup.style.display !== 'none'
-      && !advisorsPopup.contains(e.target)
-      && e.target !== advisorsBtn) {
-    advisorsPopup.style.display = 'none';
+function updateHamburgerChecks() {
+  const gridCk = document.getElementById('menu-grid-check');
+  const fowCk = document.getElementById('menu-fow-check');
+  const losCk = document.getElementById('menu-los-check');
+  if (gridCk) gridCk.classList.toggle('checked', document.getElementById('grid-toggle').checked);
+  if (fowCk) fowCk.classList.toggle('checked', document.getElementById('fow-toggle').checked);
+  if (losCk) losCk.classList.toggle('checked', document.getElementById('los-toggle').checked);
+}
+
+hamburgerBtn.addEventListener('click', () => {
+  const isHidden = hamburgerMenu.classList.contains('hidden');
+  if (isHidden) {
+    updateHamburgerChecks();
+    hamburgerMenu.classList.remove('hidden');
+  } else {
+    closeHamburgerMenu();
   }
 });
 
-// Advisor item handlers
-const ADVISOR_MAP = {
-  civilopedia: showCivpedia,
-  military: showMilitaryAdvisor,
-  trade: showTradeAdvisor,
-  city: showCityList,
-  science: showScienceAdvisor,
-  demographics: showDemographics,
-  techtree: showTechTree,
-  taxrates: showRateSliders,
+// Close menu when clicking outside
+document.addEventListener('pointerdown', e => {
+  if (!hamburgerMenu.classList.contains('hidden')
+      && !hamburgerMenu.contains(e.target)
+      && e.target !== hamburgerBtn) {
+    closeHamburgerMenu();
+  }
+});
+
+// Hamburger menu action dispatcher
+const HAMBURGER_ACTIONS = {
+  'back': () => {
+    document.getElementById('game-back-btn').click();
+  },
+  'new-map': () => showMapSizePicker(),
+  'advisor-civilopedia': () => showCivpedia(),
+  'advisor-military': () => showMilitaryAdvisor(),
+  'advisor-trade': () => showTradeAdvisor(),
+  'advisor-city': () => showCityList(),
+  'advisor-science': () => showScienceAdvisor(),
+  'advisor-demographics': () => showDemographics(),
+  'advisor-taxrates': () => showRateSliders(),
+  'view-techtree': () => showTechTree(),
+  'view-diplomacy': () => showDiplomacyPanel(),
+  'toggle-grid': () => {
+    const el = document.getElementById('grid-toggle');
+    el.checked = !el.checked;
+    el.dispatchEvent(new Event('change'));
+    updateHamburgerChecks();
+    return true; // don't close menu
+  },
+  'toggle-fow': () => {
+    const el = document.getElementById('fow-toggle');
+    el.checked = !el.checked;
+    el.dispatchEvent(new Event('change'));
+    updateHamburgerChecks();
+    return true; // don't close menu
+  },
+  'toggle-los': () => {
+    const el = document.getElementById('los-toggle');
+    el.checked = !el.checked;
+    el.dispatchEvent(new Event('change'));
+    updateHamburgerChecks();
+    return true; // don't close menu
+  },
 };
-for (const item of document.querySelectorAll('.advisors-item')) {
+
+for (const item of hamburgerMenu.querySelectorAll('.menu-item')) {
   item.addEventListener('click', () => {
-    advisorsPopup.style.display = 'none';
-    const fn = ADVISOR_MAP[item.dataset.advisor];
-    if (fn) fn();
+    const action = item.dataset.action;
+    const fn = HAMBURGER_ACTIONS[action];
+    if (fn) {
+      const keepOpen = fn();
+      if (!keepOpen) closeHamburgerMenu();
+    }
   });
 }
 
@@ -763,7 +825,7 @@ function isTextInput(el) {
 }
 
 // Blur buttons/checkboxes in game UI after click so they don't steal keyboard focus
-for (const container of [document.getElementById('controls'), document.getElementById('turn-ui')]) {
+for (const container of [document.getElementById('controls'), document.getElementById('status-bar')]) {
   if (container) {
     container.addEventListener('mouseup', () => {
       const ae = document.activeElement;
@@ -1048,6 +1110,13 @@ window.addEventListener('keydown', e => {
   if (isTextInput(e.target)) return;
   if (S.currentScene !== 'game') return;
 
+  // Escape: close hamburger menu if open
+  if (e.key === 'Escape' && !document.getElementById('hamburger-menu').classList.contains('hidden')) {
+    e.preventDefault();
+    document.getElementById('hamburger-menu').classList.add('hidden');
+    return;
+  }
+
   // Escape: cancel goto/rebase mode
   if (e.key === 'Escape' && (S.gotoMode || S.rebaseMode)) {
     e.preventDefault();
@@ -1136,7 +1205,7 @@ registerDialogDeps({
   showProductionPicker,
 });
 
-registerUnitUiDeps({ renderAtomicSwap });
+registerUnitUiDeps({ renderAtomicSwap, updateUnitInfoStrip });
 registerAdvisorDeps({ openCityDialog, selectUnit, centerOnUnit, renderUnitThumbnail });
 registerCityUiDeps({ showUnitPresentDialog, showUnitSupportedDialog });
 

@@ -106,6 +106,7 @@
 <!-- Scene: Game (existing viewer)                                  -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div id="game-scene" class="scene" style="display:none">
+  <!-- Viewer-only controls bar (hidden in multiplayer) -->
   <div id="controls">
     <button id="game-back-btn" class="ctrl-back-btn">&larr; Lobby</button>
     <label class="file-btn" id="sav-btn" for="sav-input">Load .SAV</label>
@@ -125,34 +126,58 @@
     <span id="game-info"></span>
   </div>
 
+  <!-- Status bar (multiplayer HUD — replaces old #turn-ui) -->
+  <div id="status-bar" style="display:none">
+    <div id="status-bar-left">
+      <button id="hamburger-btn" class="hamburger-btn">&#x2630;</button>
+    </div>
+    <div id="status-bar-right">
+      <span id="status-gold" class="status-item" title="Click to adjust tax rates">0g</span>
+      <span id="status-research" class="status-item" title="Click to change research">
+        <span id="status-research-name">No research</span>
+        <span id="status-research-progress" class="research-progress-bar">
+          <span id="status-research-fill" class="research-progress-fill"></span>
+        </span>
+      </span>
+      <button id="end-turn-btn" class="end-turn-btn">End Turn</button>
+      <span id="status-waiting" class="status-waiting hidden">Waiting...</span>
+    </div>
+  </div>
+
+  <!-- Hamburger dropdown menu -->
+  <div id="hamburger-menu" class="hidden">
+    <div class="menu-section">
+      <div class="menu-section-title">Game</div>
+      <div class="menu-item" data-action="back">Back to Lobby</div>
+      <div class="menu-item" data-action="new-map">New Map</div>
+    </div>
+    <div class="menu-section">
+      <div class="menu-section-title">Advisors</div>
+      <div class="menu-item" data-action="advisor-civilopedia"><span>Civilopedia</span><span class="menu-shortcut">F1</span></div>
+      <div class="menu-item" data-action="advisor-military"><span>Military Advisor</span><span class="menu-shortcut">F2</span></div>
+      <div class="menu-item" data-action="advisor-trade"><span>Trade Advisor</span><span class="menu-shortcut">F3</span></div>
+      <div class="menu-item" data-action="advisor-city"><span>City Advisor</span><span class="menu-shortcut">F4</span></div>
+      <div class="menu-item" data-action="advisor-science"><span>Science Advisor</span><span class="menu-shortcut">F5</span></div>
+      <div class="menu-item" data-action="advisor-demographics"><span>Demographics</span><span class="menu-shortcut">F11</span></div>
+      <div class="menu-item" data-action="advisor-taxrates"><span>Tax Rates</span><span class="menu-shortcut">Shift+T</span></div>
+    </div>
+    <div class="menu-section">
+      <div class="menu-section-title">View</div>
+      <div class="menu-item" data-action="view-techtree"><span>Tech Tree</span><span class="menu-shortcut">F6</span></div>
+      <div class="menu-item" data-action="view-diplomacy"><span>Diplomacy</span><span class="menu-shortcut">Shift+D</span></div>
+      <div class="menu-item toggle" data-action="toggle-grid"><span>Grid</span><span id="menu-grid-check" class="menu-check"></span></div>
+      <div class="menu-item toggle" data-action="toggle-fow"><span>Fog of War</span><span id="menu-fow-check" class="menu-check"></span></div>
+      <div class="menu-item toggle" data-action="toggle-los"><span>Line of Sight</span><span id="menu-los-check" class="menu-check"></span></div>
+    </div>
+  </div>
+
   <div id="map-container">
     <canvas id="map-canvas"></canvas>
     <canvas id="viewport-canvas"></canvas>
   </div>
 
-  <!-- Turn UI (multiplayer) -->
-  <div id="turn-ui" style="display:none">
-    <div id="turn-info">
-      <span id="turn-civ-name"></span>
-      <span id="turn-number"></span>
-    </div>
-    <div id="research-info" style="cursor:pointer" title="Click to change research"></div>
-    <button id="end-turn-btn" class="civ2-btn">End Turn</button>
-    <div id="turn-waiting" style="display:none">Waiting for opponent...</div>
-    <div id="advisors-menu-wrap">
-      <button id="advisors-btn" class="civ2-btn" style="padding:2px 8px;font-size:12px">Advisors</button>
-      <div id="advisors-popup" class="advisors-popup" style="display:none">
-        <button class="advisors-item" data-advisor="civilopedia">Civilopedia (F1)</button>
-        <button class="advisors-item" data-advisor="military">Military Advisor (F2)</button>
-        <button class="advisors-item" data-advisor="trade">Trade Advisor (F3)</button>
-        <button class="advisors-item" data-advisor="city">City Advisor (F4)</button>
-        <button class="advisors-item" data-advisor="science">Science Advisor (F5)</button>
-        <button class="advisors-item" data-advisor="demographics">Demographics (F11)</button>
-        <button class="advisors-item" data-advisor="techtree">Tech Tree</button>
-        <button class="advisors-item" data-advisor="taxrates">Tax Rates</button>
-      </div>
-    </div>
-  </div>
+  <!-- Unit info strip -->
+  <div id="unit-info-strip" class="hidden"></div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->

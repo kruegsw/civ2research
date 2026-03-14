@@ -84,6 +84,8 @@ export function selectUnit(idx) {
   stopBlink();
   // Re-render map atomically — blink starts after swap completes
   quickRerender();
+  // Update unit info strip (if available)
+  if (_deps.updateUnitInfoStrip) _deps.updateUnitInfoStrip();
 }
 
 // Lightweight re-render: atomic swap (no sprite re-extraction)
