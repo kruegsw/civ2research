@@ -819,18 +819,6 @@ export function showResearchPicker(discovered) {
         });
       });
 
-      row.addEventListener('mouseenter', () => {
-        if (parseInt(row.dataset.advId) !== selected) {
-          row.style.background = '#0a246a';
-          row.style.color = '#fff';
-        }
-      });
-      row.addEventListener('mouseleave', () => {
-        const isSel = parseInt(row.dataset.advId) === selected;
-        row.style.background = isSel ? '#0a246a' : '';
-        row.style.color = isSel ? '#fff' : '#333';
-      });
-
       list.appendChild(row);
     });
 
