@@ -48,6 +48,11 @@ export function initFromSav(parsed, seatList) {
   const aiSeatIndices = new Set(seatList.filter(s => s.ai).map(s => s.seatIndex));
   const humanPlayers = buildHumanPlayersBitmask(seatCivMap, aiSeatIndices);
 
+  // Convert per-civ treaty flags from .sav into the game's treaties map.
+  // The parser stores treaties as per-civ arrays with flags (contact, ceaseFire,
+  // peace, alliance). We convert to the reducer's flat map format: "civA-civB" → status.
+  const treaties = buildTreatiesFromSav(parsed.civs, civsAlive);
+
   const gameState = {
     units,
     cities: parsed.cities,
@@ -62,6 +67,7 @@ export function initFromSav(parsed, seatList) {
     // Seat→civ mapping: seat index maps to civ slot
     seatCivMap,
     humanPlayers,
+    treaties,
     wonders: parsed.gameState?.wonders || initWonders(),
     difficulty: parsed.gameState?.difficulty || 'chieftain',
     barbarianActivity: parsed.gameState?.barbarianActivity || 'normal',
@@ -158,6 +164,57 @@ export function initNewGame(mapResult, seatList) {
   };
 
   return { mapBase, gameState };
+}
+
+/**
+ * Convert per-civ treaty data from a parsed .sav into the reducer's flat treaty map.
+ * Each civ pair gets the highest-level treaty status: alliance > peace > ceasefire > war.
+ * If the contact flag is set but no treaty type is active, defaults to 'ceasefire'.
+ *
+ * @param {Array} civs - parsed civs array (each has .treaties[8])
+ * @param {number} civsAlive - alive civs bitmask
+ * @returns {object} treaties map: { "civA-civB": status }
+ */
+function buildTreatiesFromSav(civs, civsAlive) {
+  const treaties = {};
+  if (!civs) return treaties;
+
+  for (let a = 1; a < 8; a++) {
+    if (!(civsAlive & (1 << a))) continue;
+    const civA = civs[a];
+    if (!civA?.treaties) continue;
+
+    for (let b = a + 1; b < 8; b++) {
+      if (!(civsAlive & (1 << b))) continue;
+      const civB = civs[b];
+      if (!civB?.treaties) continue;
+
+      const tAB = civA.treaties[b]; // A's view of B
+      const tBA = civB.treaties[a]; // B's view of A
+
+      // Check if either side has the contact flag
+      const hasContact = (tAB?.contact || tBA?.contact);
+      if (!hasContact) continue; // no contact → no treaty entry
+
+      const key = `${a}-${b}`;
+
+      // Determine the highest treaty level (use the maximum from both sides)
+      if (tAB?.alliance || tBA?.alliance) {
+        treaties[key] = 'alliance';
+      } else if (tAB?.peace || tBA?.peace) {
+        treaties[key] = 'peace';
+      } else if (tAB?.ceaseFire || tBA?.ceaseFire) {
+        treaties[key] = 'ceasefire';
+      } else if (tAB?.war || tBA?.war) {
+        treaties[key] = 'war';
+      } else {
+        // Contact established but no specific status → ceasefire (Civ2 default on first contact)
+        treaties[key] = 'ceasefire';
+      }
+    }
+  }
+
+  return treaties;
 }
 
 /**

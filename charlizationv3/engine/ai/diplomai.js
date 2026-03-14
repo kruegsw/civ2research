@@ -61,6 +61,19 @@ function getTreaty(gameState, civA, civB) {
 }
 
 /**
+ * Check if two civs have made contact (i.e. a treaty entry exists).
+ * When no treaty entry exists, the civs have never met — diplomacy
+ * should not occur between them. This is distinct from being "at war":
+ * getTreaty() returns 'war' by default for uncontacted civs, but
+ * actual war only exists when an explicit 'war' entry is in treaties.
+ */
+function haveContact(gameState, civA, civB) {
+  if (!gameState.treaties) return false;
+  const key = civA < civB ? `${civA}-${civB}` : `${civB}-${civA}`;
+  return gameState.treaties[key] !== undefined;
+}
+
+/**
  * Get leader personality for a civ slot.
  * Returns { expansionism, militarism } where each is -1, 0, or 1.
  */
@@ -106,7 +119,9 @@ function countWars(gameState, civSlot) {
   for (let i = 1; i < civs.length; i++) {
     if (i === civSlot) continue;
     if (!(gameState.civsAlive & (1 << i))) continue;
-    if (getTreaty(gameState, civSlot, i) === 'war') wars++;
+    // Only count as "at war" if there's actual contact — uncontacted civs
+    // default to 'war' via getTreaty() but aren't truly at war
+    if (getTreaty(gameState, civSlot, i) === 'war' && haveContact(gameState, civSlot, i)) wars++;
   }
   return wars;
 }
@@ -787,6 +802,9 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
     for (let i = 1; i < civs.length; i++) {
       if (i === civSlot) continue;
       if (!(gameState.civsAlive & (1 << i))) continue;
+
+      // Skip civs we haven't made contact with — no diplomacy before first meeting
+      if (!haveContact(gameState, civSlot, i)) continue;
 
       // 2a. War declarations (most impactful)
       // Only one war declaration per turn (from FUN_0055d8d8 behavior)

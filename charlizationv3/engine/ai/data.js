@@ -160,20 +160,17 @@ export function computeAiData(gameState, mapBase, civSlot) {
     for (let b = 1; b < 8; b++) {
       if (a === b) continue;
       if (!(civsAlive & (1 << b))) continue;
+      // Check for explicit treaty entry (contact established)
+      const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+      const hasContact = gameState.treaties?.[key] !== undefined;
       const treaty = getTreaty(gameState, a, b);
-      if (treaty === 'war') {
+      if (treaty === 'war' && hasContact) {
+        // Only count as "at war" if there's actual contact — uncontacted civs
+        // default to 'war' via getTreaty() but aren't truly at war
         atWarWith[a].push(b);
       }
-      // contacted = any treaty status other than no-contact
-      // In Civ2, default between unknown civs is no treaty entry at all.
-      // Our system defaults missing treaties to 'war', so we check for
-      // explicit treaty presence OR if civs share contact.
-      if (treaty !== 'war' || gameState.treaties) {
-        // If the treaties map exists at all, the civs are in some state
-        const key = a < b ? `${a}-${b}` : `${b}-${a}`;
-        if (gameState.treaties?.[key]) {
-          contactedCivs[a].push(b);
-        }
+      if (hasContact) {
+        contactedCivs[a].push(b);
       }
     }
   }
