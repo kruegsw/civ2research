@@ -182,6 +182,9 @@ function blitToViewport(source) {
   const visH = S.vp.logicalH / S.vp.scale;
   const pxPerMap = S.vp.scale * dpr;
 
+  // Ensure nearest-neighbor scaling for crisp pixel art (canvas resize resets this)
+  S.vCtx.imageSmoothingEnabled = false;
+
   if (S.vp.wraps) {
     const x1 = ((S.vp.x % S.vp.wrapW) + S.vp.wrapW) % S.vp.wrapW;
     const rightChunk = Math.min(visW, S.vp.wrapW - x1);

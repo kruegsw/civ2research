@@ -230,6 +230,13 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   border-color: #fff #dfdfdf #dfdfdf #fff;
   box-shadow: 3px 3px 8px rgba(0,0,0,0.5);
   padding: 10px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .civ2-dialog-frame::after {
   content: '';
@@ -243,6 +250,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   height: 36px;
   display: flex; align-items: center; justify-content: center;
   margin: -10px -10px 0;
+  flex-shrink: 0;
 }
 .civ2-dialog-title {
   font-family: 'Times New Roman', 'Georgia', serif;
@@ -258,6 +266,11 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   text-align: left;
   border: 2px solid;
   border-color: #404040 #fff #fff #404040;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  flex: 1;
+  max-width: 100%;
 }
 .civ2-dialog-items {
   display: flex; flex-direction: column; gap: 1px;
@@ -302,6 +315,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   display: flex; gap: 4px;
   margin: 0 -10px -10px;
   padding: 6px 10px;
+  flex-shrink: 0;
 }
 .civ2-dialog-btn-row .civ2-btn {
   flex: 1;
@@ -711,7 +725,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   background: #0a0a1a;
 }
 #map-canvas { display: none; }
-#viewport-canvas { image-rendering: pixelated; cursor: grab; touch-action: none; }
+#viewport-canvas { image-rendering: -moz-crisp-edges; image-rendering: pixelated; cursor: grab; touch-action: none; }
 #viewport-canvas.dragging { cursor: grabbing; }
 
 /* ═══════════════════════════════════════════════════════════════════
