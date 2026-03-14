@@ -438,7 +438,7 @@ async function doRenderFromState(opts = {}) {
     const u = S.mpSelectedUnit != null
       ? S.mpGameState.units[S.mpSelectedUnit]
       : findFirstOwnUnit();
-    if (u && (prevSelected == null || !isTileInViewport(u.gx, u.gy))) centerOnUnit(u);
+    if (u && !isTileInViewport(u.gx, u.gy)) centerOnUnit(u);
   }
 }
 

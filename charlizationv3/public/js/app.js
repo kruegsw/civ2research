@@ -9,7 +9,7 @@ import { showOverlayMessage, showConfirmDialog, showNameCityDialog, showRateSlid
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue } from './viewport.js';
 import {
   findNextMovableUnit, shiftMercenaryQueue,
-  centerOnTile, centerOnUnit, selectUnit,
+  centerOnTile, centerOnUnit, isTileInViewport, selectUnit,
   renderUnitThumbnail,
   actionToMenuItem, buildOrderMenuItems, showUnitMenu, hideUnitMenu,
   enterGotoMode, exitGotoMode, handleGotoClick,
@@ -789,7 +789,8 @@ window.addEventListener('keydown', e => {
     const next = shiftMercenaryQueue() ?? findNextMovableUnit(S.mpSelectedUnit ?? -1);
     if (next != null) {
       selectUnit(next);
-      centerOnUnit(S.mpGameState.units[next]);
+      const u = S.mpGameState.units[next];
+      if (u && !isTileInViewport(u.gx, u.gy)) centerOnUnit(u);
     }
     return;
   }
@@ -801,7 +802,8 @@ window.addEventListener('keydown', e => {
       const next = findNextMovableUnit(S.mpSelectedUnit);
       if (next != null && next !== S.mpSelectedUnit) {
         selectUnit(next);
-        centerOnUnit(S.mpGameState.units[next]);
+        const u = S.mpGameState.units[next];
+        if (u && !isTileInViewport(u.gx, u.gy)) centerOnUnit(u);
       }
     }
     return;
