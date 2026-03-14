@@ -215,7 +215,39 @@ export function showTechTree() {
     }
   }
 
-  // ── 4. Build the dialog ──
+  // ── 4. Collect all transitive upstream prereqs for a given tech ──
+  function getUpstreamPrereqs(advId) {
+    const result = new Set();
+    const stack = [advId];
+    while (stack.length) {
+      const cur = stack.pop();
+      const [p1, p2] = ADVANCE_PREREQS[cur] || [-1, -1];
+      for (const pid of [p1, p2]) {
+        if (pid >= 0 && !result.has(pid)) {
+          result.add(pid);
+          stack.push(pid);
+        }
+      }
+    }
+    return result;
+  }
+
+  // ── 5. Collect edges on the upstream path (prereq→child pairs within the chain) ──
+  function getUpstreamEdges(advId) {
+    const prereqSet = getUpstreamPrereqs(advId);
+    prereqSet.add(advId); // include the selected node itself
+    const edges = new Set();
+    for (const id of prereqSet) {
+      const [p1, p2] = ADVANCE_PREREQS[id] || [-1, -1];
+      if (p1 >= 0 && prereqSet.has(p1)) edges.add(`${p1}-${id}`);
+      if (p2 >= 0 && prereqSet.has(p2)) edges.add(`${p2}-${id}`);
+    }
+    return edges;
+  }
+
+  // ── 6. Build the dialog ──
+  let selectedAdvId = null;
+
   createCiv2Dialog('tech-tree', 'Civilization Advances', panel => {
     panel.style.cssText = 'position:relative;overflow:auto;padding:0;background:#2a2a3a';
     panel.style.width = '90vw';
@@ -267,7 +299,7 @@ export function showTechTree() {
     svg.setAttribute('height', totalH);
     svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:1';
 
-    // Draw prerequisite edges as bezier curves
+    // Draw prerequisite edges as bezier curves (with data attrs for selection)
     for (const t of techs) {
       const [p1, p2] = ADVANCE_PREREQS[t.id];
       const dst = nodePos.get(t.id);
@@ -289,6 +321,9 @@ export function showTechTree() {
         path.setAttribute('fill', 'none');
         path.setAttribute('stroke', color);
         path.setAttribute('stroke-width', '1.5');
+        path.dataset.from = pid;
+        path.dataset.to = t.id;
+        path.dataset.baseColor = color;
         svg.appendChild(path);
       }
     }
@@ -297,6 +332,47 @@ export function showTechTree() {
     // ── Tech nodes ──
     const nodeLayer = document.createElement('div');
     nodeLayer.style.cssText = `position:absolute;top:0;left:0;width:${totalW}px;height:${totalH}px;z-index:2;pointer-events:none`;
+
+    // ── Selection highlighting ──
+    function applySelection(advId) {
+      selectedAdvId = advId;
+      const upstreamSet = advId != null ? getUpstreamPrereqs(advId) : new Set();
+      const edgeSet = advId != null ? getUpstreamEdges(advId) : new Set();
+      const hasSelection = advId != null;
+
+      // Update nodes
+      const allNodes = nodeLayer.querySelectorAll('.tt-node');
+      allNodes.forEach(el => {
+        const id = parseInt(el.dataset.advId);
+        el.classList.remove('tt-selected', 'tt-prereq-of-selected', 'tt-dimmed');
+        if (!hasSelection) return;
+        if (id === advId) el.classList.add('tt-selected');
+        else if (upstreamSet.has(id)) el.classList.add('tt-prereq-of-selected');
+        else el.classList.add('tt-dimmed');
+      });
+
+      // Update SVG edges
+      const allPaths = svg.querySelectorAll('path');
+      allPaths.forEach(p => {
+        const edgeKey = `${p.dataset.from}-${p.dataset.to}`;
+        if (!hasSelection) {
+          // Restore default colors
+          p.setAttribute('stroke', p.dataset.baseColor);
+          p.setAttribute('stroke-width', '1.5');
+          p.setAttribute('opacity', '1');
+        } else if (edgeSet.has(edgeKey)) {
+          // Upstream edge: golden highlight
+          p.setAttribute('stroke', '#f0c040');
+          p.setAttribute('stroke-width', '2.5');
+          p.setAttribute('opacity', '1');
+        } else {
+          // Unrelated edge: dim
+          p.setAttribute('stroke', p.dataset.baseColor);
+          p.setAttribute('stroke-width', '1');
+          p.setAttribute('opacity', '0.2');
+        }
+      });
+    }
 
     for (const t of techs) {
       const p = nodePos.get(t.id);
@@ -332,11 +408,30 @@ export function showTechTree() {
       else if (avail) tip += '\n(Available to research)';
       node.title = tip;
 
-      // Click -> goal detail dialog
-      node.addEventListener('click', () => _showGoalDetail(t.id, showTechTree));
+      // Click → select + show detail (tech tree stays open behind)
+      node.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const clickedId = t.id;
+        if (selectedAdvId === clickedId) {
+          // Clicking same node again: deselect
+          applySelection(null);
+        } else {
+          applySelection(clickedId);
+          // Show tech detail dialog on top — tech tree stays visible underneath
+          // Pass null as returnTo so closing detail doesn't destroy the tree
+          _showGoalDetail(clickedId, null);
+        }
+      });
 
       nodeLayer.appendChild(node);
     }
+
+    // Click on empty space in the container → deselect
+    container.addEventListener('click', (e) => {
+      if (e.target === container || e.target.classList.contains('tt-row-band')) {
+        applySelection(null);
+      }
+    });
 
     // Load icons asynchronously and insert into nodes
     _ensureResearchIcons().then(cache => {

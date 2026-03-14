@@ -932,7 +932,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   cursor: pointer;
   box-sizing: border-box;
   overflow: hidden;
-  transition: filter 0.12s, box-shadow 0.12s;
+  transition: filter 0.2s, box-shadow 0.2s, opacity 0.2s, border-color 0.2s;
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 .tt-node:hover {
@@ -969,6 +969,22 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 }
 .tt-locked .tt-node-name { color: #999; }
 .tt-locked .tt-node-icon { opacity: 0.5; }
+/* ── Selection states ── */
+.tt-selected {
+  border-color: #f0c040 !important;
+  box-shadow: 0 0 8px 2px rgba(240,192,64,0.6), 0 0 20px 4px rgba(240,192,64,0.25) !important;
+  z-index: 12 !important;
+  filter: brightness(1.2);
+}
+.tt-prereq-of-selected {
+  border-color: rgba(240,192,64,0.7) !important;
+  box-shadow: 0 0 6px 1px rgba(240,192,64,0.35) !important;
+  z-index: 11 !important;
+}
+.tt-dimmed {
+  opacity: 0.35;
+  filter: saturate(0.3);
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    Chat / Event Log Panel
