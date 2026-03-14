@@ -729,9 +729,11 @@ function updateHamburgerChecks() {
   const gridCk = document.getElementById('menu-grid-check');
   const fowCk = document.getElementById('menu-fow-check');
   const losCk = document.getElementById('menu-los-check');
+  const mmCk = document.getElementById('menu-minimap-check');
   if (gridCk) gridCk.classList.toggle('checked', document.getElementById('grid-toggle').checked);
   if (fowCk) fowCk.classList.toggle('checked', document.getElementById('fow-toggle').checked);
   if (losCk) losCk.classList.toggle('checked', document.getElementById('los-toggle').checked);
+  if (mmCk) mmCk.classList.toggle('checked', document.getElementById('minimap-toggle').checked);
 }
 
 hamburgerBtn.addEventListener('click', () => {
@@ -784,6 +786,13 @@ const HAMBURGER_ACTIONS = {
   },
   'toggle-los': () => {
     const el = document.getElementById('los-toggle');
+    el.checked = !el.checked;
+    el.dispatchEvent(new Event('change'));
+    updateHamburgerChecks();
+    return true; // don't close menu
+  },
+  'toggle-minimap': () => {
+    const el = document.getElementById('minimap-toggle');
     el.checked = !el.checked;
     el.dispatchEvent(new Event('change'));
     updateHamburgerChecks();

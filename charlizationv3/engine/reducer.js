@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE } from './actions.js';
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
@@ -1514,6 +1514,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
       state.units[upgUi] = upgUnit;
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push({ type: 'unitUpgraded', civSlot, oldType: upgOldType, newType: upgTarget, cost: upgCost });
+      break;
+    }
+
+    case ADJUST_ATTITUDE: {
+      // AI diplomacy attitude adjustment — update civ's attitude toward another civ
+      const { civSlot: attCiv, targetCiv: attTarget, delta: attDelta } = action;
+      if (state.civs?.[attCiv]) {
+        state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+        const updCiv = { ...state.civs[attCiv] };
+        const attitudes = [...(updCiv.attitudes || [0, 0, 0, 0, 0, 0, 0, 0])];
+        attitudes[attTarget] = Math.max(-100, Math.min(100, (attitudes[attTarget] || 0) + attDelta));
+        updCiv.attitudes = attitudes;
+        state.civs[attCiv] = updCiv;
+      }
       break;
     }
 

@@ -12,7 +12,7 @@
 //   - FUN_0055c277 (canUseGovernment — govt tech prereq check)
 // ═══════════════════════════════════════════════════════════════════
 
-import { getAvailableResearch } from '../research.js';
+import { getAvailableResearch, calcResearchCost } from '../research.js';
 import { validateAction } from '../rules.js';
 import {
   ADVANCE_NAMES, ADVANCE_PREREQS, ADVANCE_EPOCH, ADVANCE_AI_INTEREST,
@@ -817,6 +817,27 @@ export function balanceRates(gameState, mapBase, civSlot) {
     }
   }
 
+  // ── (#15) Science rate lookahead: push science harder when close to key tech ──
+  let sciencePriority = false;
+  if (disorderCount === 0 && (situation === 5 || situation === 6)) {
+    const researchId = civ.techBeingResearched;
+    if (researchId != null && researchId >= 0 && researchId < NUM_ADVANCES) {
+      // Check if this is a critical tech (enables aqueduct, government, or military)
+      const isAqueductTech = researchId === IMPROVE_PREREQS[AQUEDUCT_BUILDING_ID];
+      const isSewerTech = researchId === IMPROVE_PREREQS[SEWER_BUILDING_ID];
+      const isGovtTech = Object.values({ 2: 54, 3: 15, 4: 31, 5: 71, 6: 21 })
+        .includes(researchId);
+      // Check research progress — if we're > 60% done, push harder
+      const researchProgress = civ.researchBeakers ?? 0;
+      const researchCost = calcResearchCost(gameState, civSlot) || 40;
+      const progressRatio = researchProgress / researchCost;
+
+      if (progressRatio > 0.6 || isAqueductTech || isSewerTech || isGovtTech) {
+        sciencePriority = true;
+      }
+    }
+  }
+
   // ── Translate situation into rate changes ──
   let science, tax, luxury;
 
@@ -855,8 +876,8 @@ export function balanceRates(gameState, mapBase, civSlot) {
       return null;
 
     case 5:
-      // No disorder, push science
-      science = Math.min(maxSci, 8);
+      // No disorder, push science (#15: push harder when close to critical tech)
+      science = Math.min(maxSci, sciencePriority ? 9 : 8);
       luxury = 0;
       tax = 10 - science;
       if (tax > maxRate) {
@@ -960,6 +981,19 @@ export function considerRevolution(gameState, mapBase, civSlot) {
   // Don't revolt if already in anarchy (revolution in progress)
   if (currentGovt === 'anarchy') return null;
   if (civ.anarchyTurns > 0) return null;
+
+  // (#19) Don't revolt during active war — anarchy leaves you defenseless
+  let atWarActive = false;
+  for (let i = 1; i < 8; i++) {
+    if (i === civSlot) continue;
+    if (gameState.civs?.[i]?.alive === false) continue;
+    if (getTreaty(gameState, civSlot, i) === 'war') { atWarActive = true; break; }
+  }
+  if (atWarActive && currentGovtIdx >= 2) return null; // don't revolt from monarchy+ during war
+
+  // (#19) Don't revolt if treasury is critically low — anarchy stops tax income
+  const revolutionTreasury = civ.treasury ?? 0;
+  if (revolutionTreasury < 50 && currentGovtIdx >= 2) return null;
 
   // ── Scenario check (decompiled lines 5942-5943) ──
   // If scenario flags lock government, skip. We don't track scenario flags,

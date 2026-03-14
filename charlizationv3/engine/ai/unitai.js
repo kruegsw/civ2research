@@ -26,8 +26,14 @@ const EXPLORE_RADIUS = 20;
 /** Maximum tiles to search when looking for enemy targets. */
 const TARGET_SEARCH_RADIUS = 8;
 
-/** Minimum attack-to-defense ratio for AI to commit to an attack. */
-const ATTACK_AGGRESSION = 0.8;
+/**
+ * Win probability thresholds for AI attack decisions.
+ * Based on effectiveATK / (effectiveATK + effectiveDEF) formula.
+ * Aggressive AI attacks at lower win probability; cautious at higher.
+ */
+const ATTACK_THRESHOLD_AGGRESSIVE = 0.4;
+const ATTACK_THRESHOLD_CAUTIOUS = 0.6;
+const ATTACK_THRESHOLD_DEFAULT = 0.45;
 
 /** Minimum defenders per city (base). */
 const MIN_DEFENDERS_PER_CITY = 1;
@@ -190,20 +196,80 @@ function bestDefenderOnTile(spatialIdx, gx, gy, attackerOwner, terrain, gameStat
 }
 
 /**
- * Should this attacker attack the defender on that tile?
- * Returns true if odds are favorable enough per ATTACK_AGGRESSION.
+ * Compute approximate win probability for an attacker vs a defender.
+ * Uses the Civ2 combat model: each round, attacker wins with probability
+ * effATK / (effATK + effDEF). Overall win probability is approximated
+ * from the strength ratio.
+ *
+ * Returns a number between 0 and 1.
  */
-function shouldAttack(attacker, defenderInfo, attackerNegatesWalls) {
-  const atkStr = attackStrength(attacker);
-  let defStr = defenderInfo.defStr;
-  // Re-evaluate if attacker negates walls (the defStr was computed with walls)
-  if (attackerNegatesWalls && defStr > 0) {
-    // Rough approximation: reduce by walls factor
-    // More precise: recompute from scratch. But defenderInfo.defStr already includes walls.
-    // We'll just use atkStr vs defStr directly since the ratio is what matters.
-  }
-  if (defStr <= 0) return true; // undefended tile
-  return atkStr >= defStr * ATTACK_AGGRESSION;
+function estimateWinProbability(attacker, defenderUnit, defTerrain, hasCityWalls, attackerNegatesWalls) {
+  // Effective ATK: base * HP ratio * veteran
+  const baseAtk = UNIT_ATK[attacker.type] || 1;
+  const atkMaxHp = UNIT_HP[attacker.type] || 1;
+  const atkCurHp = Math.max(1, atkMaxHp - (attacker.hpLost || 0));
+  const atkFp = UNIT_FP[attacker.type] || 1;
+  let effAtk = baseAtk * 8;
+  if (attacker.veteran) effAtk = Math.floor(effAtk * 1.5);
+
+  // Effective DEF: base * terrain * veteran * fortification * city walls
+  const baseDef = UNIT_DEF[defenderUnit.type] || 1;
+  const defMaxHp = UNIT_HP[defenderUnit.type] || 1;
+  const defCurHp = Math.max(1, defMaxHp - (defenderUnit.hpLost || 0));
+  const defFp = UNIT_FP[defenderUnit.type] || 1;
+  const terrMul = TERRAIN_DEFENSE[defTerrain] ?? 2;
+  let effDef = baseDef * terrMul * 4;
+  if (defenderUnit.veteran) effDef = Math.floor(effDef * 1.5);
+  if (defenderUnit.orders === 'fortified') effDef = Math.floor(effDef * 1.5);
+  if (hasCityWalls && !attackerNegatesWalls) effDef *= 3;
+
+  if (effAtk <= 0) return 0;
+  if (effDef <= 0) return 1;
+
+  // Per-round win probability
+  const pRound = effAtk / (effAtk + effDef);
+
+  // Approximate overall win probability considering HP and firepower.
+  // Attacker needs ceil(defCurHp*10 / (atkFp*10)) = ceil(defCurHp/atkFp) hits to win.
+  // Defender needs ceil(atkCurHp*10 / (defFp*10)) = ceil(atkCurHp/defFp) hits to win.
+  const atkHitsNeeded = Math.ceil(defCurHp / Math.max(1, atkFp));
+  const defHitsNeeded = Math.ceil(atkCurHp / Math.max(1, defFp));
+
+  // Use the negative hypergeometric approximation:
+  // P(attacker wins) ≈ sum of binomial-like terms, but a good approximation is:
+  // P ≈ pRound^atkHitsNeeded / (pRound^atkHitsNeeded + (1-pRound)^defHitsNeeded)
+  // This is the "race" approximation.
+  const pA = Math.pow(pRound, atkHitsNeeded);
+  const pD = Math.pow(1 - pRound, defHitsNeeded);
+  if (pA + pD === 0) return 0.5;
+  return pA / (pA + pD);
+}
+
+/**
+ * Should this attacker attack the defender on that tile?
+ * Computes approximate win probability and compares against threshold.
+ * @param {object} attacker - attacking unit
+ * @param {object} defenderInfo - { unit, index, defStr } from bestDefenderOnTile
+ * @param {boolean} attackerNegatesWalls - does attacker negate city walls
+ * @param {number} defTerrain - terrain at defender tile
+ * @param {boolean} hasCityWalls - does the tile have city walls
+ * @param {string} [posture] - 'attack' for aggressive, 'defend' for cautious
+ */
+function shouldAttack(attacker, defenderInfo, attackerNegatesWalls, defTerrain, hasCityWalls, posture) {
+  if (defenderInfo.defStr <= 0) return true; // undefended tile
+
+  const winProb = estimateWinProbability(
+    attacker, defenderInfo.unit, defTerrain ?? 0,
+    hasCityWalls ?? false, attackerNegatesWalls
+  );
+
+  // Choose threshold based on strategic posture
+  let threshold;
+  if (posture === 'attack') threshold = ATTACK_THRESHOLD_AGGRESSIVE;
+  else if (posture === 'defend' || posture === 'turtle') threshold = ATTACK_THRESHOLD_CAUTIOUS;
+  else threshold = ATTACK_THRESHOLD_DEFAULT;
+
+  return winProb >= threshold;
 }
 
 // ── Pathfinding / target search ───────────────────────────────────
@@ -593,8 +659,14 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
       }
     }
 
-    if (bestTarget && shouldAttack(unit, bestTarget.defender, negatesWalls)) {
-      return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+    if (bestTarget) {
+      const defTerrain = mapBase.getTerrain(bestTarget.gx, bestTarget.gy);
+      const defCity = gameState.cities.find(c => c.gx === bestTarget.gx && c.gy === bestTarget.gy && c.size > 0);
+      const defWalls = defCity ? (defCity.buildings?.has(8) || false) : false;
+      const posture = strategy?.militaryPosture || 'expand';
+      if (shouldAttack(unit, bestTarget.defender, negatesWalls, defTerrain, defWalls, posture)) {
+        return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+      }
     }
   }
 
@@ -618,7 +690,16 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
     if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
   }
 
-  // 4. Explore
+  // 4a. Goody hut priority (#9): move toward nearby goody huts
+  if (domain === 0) {
+    const goody = findNearestGoodyHut(mapBase, unit.gx, unit.gy, civSlot, 8);
+    if (goody) {
+      const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, goody.gx, goody.gy, unit, civSlot);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
+  }
+
+  // 4b. Explore
   const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, domain);
   if (unexplored) {
     const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, unexplored.gx, unexplored.gy, unit, civSlot);
@@ -751,8 +832,13 @@ function aiNavalCombat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot)
       }
     }
 
-    if (bestTarget && bestRatio >= ATTACK_AGGRESSION) {
-      return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+    if (bestTarget) {
+      const defTerrain = mapBase.getTerrain(bestTarget.gx, bestTarget.gy);
+      const defCity = gameState.cities.find(c => c.gx === bestTarget.gx && c.gy === bestTarget.gy && c.size > 0);
+      const defWalls = defCity ? (defCity.buildings?.has(8) || false) : false;
+      if (shouldAttack(unit, bestTarget.defender, false, defTerrain, defWalls, 'attack')) {
+        return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+      }
     }
   }
 
@@ -801,14 +887,122 @@ function aiAirDefense(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) 
 
 /**
  * AI for Role 5 (Sea transport): ferries.
- * TODO: Full transport AI with loading/unloading and cross-ocean ferry.
  *
- * Simplified: skip turn. Requires coordination with land unit AI.
+ * Basic transport coordination:
+ * 1. If carrying units and near land with enemy targets, move toward coast
+ * 2. If carrying units, move toward the destination continent
+ * 3. If empty, move toward a coastal city where land units are waiting
+ * 4. If nothing to do, patrol near coastal cities
  */
 function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
-  // TODO: Implement transport AI — load land units in coastal cities,
-  // ferry to target continent, unload
-  return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  // Check if we're carrying any units (units at same tile with domain 0)
+  const cargoHere = unitsAt(spatialIdx, unit.gx, unit.gy).filter(
+    e => e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 0 && e.index !== unitIndex
+  );
+  const isCarrying = cargoHere.length > 0;
+
+  if (isCarrying) {
+    // We have cargo — find the nearest enemy city or own city on a different landmass
+    // to deliver troops to. Move toward adjacent land tiles near that target.
+    let bestTarget = null;
+    let bestDist = Infinity;
+
+    // Prefer enemy cities for attack delivery
+    for (const city of gameState.cities) {
+      if (!city || city.size <= 0 || city.gx < 0) continue;
+      if (city.owner === civSlot) continue;
+      if (!isAtWar(gameState, civSlot, city.owner)) continue;
+      const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestTarget = { gx: city.gx, gy: city.gy };
+      }
+    }
+
+    // Fallback: own cities on different landmass
+    if (!bestTarget) {
+      for (const city of gameState.cities) {
+        if (!city || city.size <= 0 || city.gx < 0) continue;
+        if (city.owner !== civSlot) continue;
+        const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+        if (dist > 6 && dist < bestDist) {
+          bestDist = dist;
+          bestTarget = { gx: city.gx, gy: city.gy };
+        }
+      }
+    }
+
+    if (bestTarget) {
+      // Move toward target, staying on ocean tiles (domain 1)
+      const dir = directionToward(mapBase, unit.gx, unit.gy, bestTarget.gx, bestTarget.gy, 1);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      // If blocked on sea-only path, try any direction toward target
+      const anyDir = directionToward(mapBase, unit.gx, unit.gy, bestTarget.gx, bestTarget.gy, -1);
+      if (anyDir) return { type: 'MOVE_UNIT', unitIndex, dir: anyDir };
+    }
+  } else {
+    // Empty transport — move toward a coastal city where land units need transport
+    // Look for our land units on coast tiles (adjacent to ocean) that don't have
+    // enemy targets on their same landmass
+    let bestPort = null;
+    let bestPortDist = Infinity;
+
+    for (const city of gameState.cities) {
+      if (!city || city.owner !== civSlot || city.size <= 0) continue;
+      // Check if city is coastal (has adjacent ocean)
+      const neighbors = mapBase.getNeighbors(city.gx, city.gy);
+      let coastal = false;
+      for (const dir in neighbors) {
+        const [nx, ny] = neighbors[dir];
+        if (!inBounds(nx, ny, mapBase)) continue;
+        const wnx = wrapX(nx, mapBase);
+        if (mapBase.getTerrain(wnx, ny) === 10) { coastal = true; break; }
+      }
+      if (!coastal) continue;
+
+      // Check if there are land combat units here that might want transport
+      const unitsHere = unitsAt(spatialIdx, city.gx, city.gy);
+      const landCombat = unitsHere.filter(e =>
+        e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 0 &&
+        (UNIT_ATK[e.unit.type] || 0) > 0
+      );
+      if (landCombat.length === 0) continue;
+
+      const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+      if (dist < bestPortDist) {
+        bestPortDist = dist;
+        bestPort = city;
+      }
+    }
+
+    if (bestPort) {
+      // Move toward port city, preferring ocean path
+      const dir = directionToward(mapBase, unit.gx, unit.gy, bestPort.gx, bestPort.gy, 1);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      // Allow land-adjacent movement to reach port
+      const anyDir = directionToward(mapBase, unit.gx, unit.gy, bestPort.gx, bestPort.gy, -1);
+      if (anyDir) return { type: 'MOVE_UNIT', unitIndex, dir: anyDir };
+    }
+  }
+
+  // Fallback: patrol near own coastal cities
+  let nearestCoastal = null;
+  let nearestCoastalDist = Infinity;
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0) continue;
+    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+    if (dist < nearestCoastalDist) {
+      nearestCoastalDist = dist;
+      nearestCoastal = city;
+    }
+  }
+  if (nearestCoastal && nearestCoastalDist > 4) {
+    const dir = directionToward(mapBase, unit.gx, unit.gy, nearestCoastal.gx, nearestCoastal.gy, 1);
+    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+  }
+
+  // Random sea movement
+  return randomMove(unit, unitIndex, mapBase, 1) || { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
 }
 
 /**
@@ -1212,6 +1406,18 @@ export function generateCleanupActions(gameState, mapBase, civSlot, strategy, de
           actions.push(fortifyAction);
           continue;
         }
+      }
+    }
+
+    // (#22) Non-city idle units: prefer sentry (dimmed on map, wakes on enemy approach)
+    // over skip (which does nothing). Sentry saves the player from re-evaluating
+    // the unit each turn and provides visual feedback that the unit is idle.
+    if (domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
+      const sentryAction = { type: 'UNIT_ORDER', unitIndex: i, order: 'sentry' };
+      const sentryErr = validateAction(gameState, mapBase, sentryAction, civSlot);
+      if (!sentryErr) {
+        actions.push(sentryAction);
+        continue;
       }
     }
 

@@ -144,3 +144,8 @@ export const AIRLIFT = 'AIRLIFT';
 export const UPGRADE_UNIT = 'UPGRADE_UNIT';
 //   { type: 'UPGRADE_UNIT', unitIndex }
 //   Upgrade unit to its replacement type. Costs gold. Must be in a city.
+
+export const ADJUST_ATTITUDE = 'ADJUST_ATTITUDE';
+//   { type: 'ADJUST_ATTITUDE', civSlot, targetCiv, delta }
+//   Adjust a civ's attitude toward another civ by delta. Clamped to [-100, +100].
+//   Used by AI diplomacy to track relationship changes (war declarations, peace proposals, etc.).

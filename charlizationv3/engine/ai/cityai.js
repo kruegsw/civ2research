@@ -332,6 +332,16 @@ function evaluateCitySite(gx, gy, gameState, mapBase, civSlot) {
   if (shieldTiles >= 3) score += 3;
   if (shieldTiles >= 6) score += 3;
 
+  // (#14) Bonus for complementary resource clusters in city radius
+  // A city with BOTH food specials and shield specials is more balanced
+  // and can grow AND produce simultaneously — worth more than the sum of parts
+  if (specialCount >= 2) {
+    // Check if we have diverse resource types (food + production)
+    if (foodTiles >= 4 && shieldTiles >= 2) score += 4; // balanced food+production
+    if (specialCount >= 3) score += 3;  // resource-rich area
+    if (specialCount >= 5) score += 4;  // exceptional resource cluster
+  }
+
   // Coastal bonus (enables harbor, fishing boats)
   if (hasCoast) score += COASTAL_BONUS;
 
@@ -532,23 +542,89 @@ function getWorkerOrder(unit, unitIndex, gameState, mapBase, civSlot) {
 /**
  * Score how much a tile needs improvement (for worker movement targeting).
  * Higher = more needed.
+ * @param {number} gx
+ * @param {number} gy
+ * @param {object} mapBase
+ * @param {object} [gameState] - optional, for city connectivity bonus
+ * @param {number} [civSlot] - optional, for city connectivity bonus
  */
-function tileImprovementNeed(gx, gy, mapBase) {
+function tileImprovementNeed(gx, gy, mapBase, gameState, civSlot) {
   const terrain = mapBase.getTerrain(gx, gy);
   if (terrain === 10) return 0;
 
   const imp = mapBase.getImprovements(gx, gy);
   let score = 0;
 
-  // Pollution is always top priority
-  if (imp.pollution) score += 10;
+  // Pollution is always top priority (#21: weight higher for large/productive cities)
+  if (imp.pollution) {
+    score += 10;
+    // Check if this polluted tile is in the radius of an owned city
+    if (gameState && civSlot != null) {
+      for (const city of gameState.cities) {
+        if (!city || city.owner !== civSlot || city.size <= 0) continue;
+        const dist = tileDist(gx, gy, city.gx, city.gy, mapBase);
+        if (dist <= 4) { // within city radius
+          // Larger/more productive cities make pollution cleanup more urgent
+          if (city.size >= 8) score += 4;
+          else if (city.size >= 5) score += 2;
+          break;
+        }
+      }
+    }
+  }
 
   // Unroaded tiles
-  if (!imp.road) score += 3;
+  if (!imp.road) {
+    score += 3;
+    // Road network priority: boost if tile connects two cities (#8)
+    if (gameState && civSlot != null) {
+      let nearCityCount = 0;
+      for (const city of gameState.cities) {
+        if (!city || city.owner !== civSlot || city.size <= 0) continue;
+        const dist = tileDist(gx, gy, city.gx, city.gy, mapBase);
+        if (dist <= 6) nearCityCount++;
+        if (nearCityCount >= 2) break;
+      }
+      // Tile is between two cities — double road priority
+      if (nearCityCount >= 2) score += 4;
+    }
+    // Also check if adjacent tiles have roads leading toward cities
+    const neighbors = mapBase.getNeighbors(gx, gy);
+    let adjacentRoads = 0;
+    for (const dir in neighbors) {
+      const [nx, ny] = neighbors[dir];
+      if (!inBounds(nx, ny, mapBase)) continue;
+      const wnx = wrapX(nx, mapBase);
+      const nImp = mapBase.getImprovements(wnx, ny);
+      if (nImp.road) adjacentRoads++;
+    }
+    // If adjacent roads exist, this tile is a gap in the network
+    if (adjacentRoads >= 2) score += 2;
+  }
 
-  // Unirrigated irrigable tiles
+  // Unirrigated irrigable tiles — prefer tiles adjacent to existing water (#18)
   if (!imp.irrigation && CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0) {
-    if (checkWaterSource(gx, gy, mapBase)) score += 4;
+    if (checkWaterSource(gx, gy, mapBase)) {
+      score += 4;
+      // Extra bonus if directly adjacent to river or ocean (natural water, not just irrigation chain)
+      if (mapBase.hasRiver(gx, gy)) score += 2;
+      else {
+        const nbrs = mapBase.getNeighbors(gx, gy);
+        for (const d in nbrs) {
+          const [nx2, ny2] = nbrs[d];
+          if (!inBounds(nx2, ny2, mapBase)) continue;
+          const wnx2 = wrapX(nx2, mapBase);
+          if (mapBase.getTerrain(wnx2, ny2) === 10 || mapBase.hasRiver(wnx2, ny2)) {
+            score += 1; // adjacent to natural water source
+            break;
+          }
+        }
+      }
+    } else {
+      // No water source yet — small bonus to encourage building irrigation chains
+      // toward this tile (worker will need to irrigate intermediary tiles first)
+      score += 1;
+    }
   }
 
   // Unmineable hills/mountains
@@ -603,7 +679,7 @@ function findWorkerMoveTarget(unit, gameState, mapBase, civSlot) {
     const terrain = mapBase.getTerrain(wnx, ny);
     if (terrain === 10) continue;
 
-    const score = tileImprovementNeed(wnx, ny, mapBase);
+    const score = tileImprovementNeed(wnx, ny, mapBase, gameState, civSlot);
     if (score > bestScore) {
       bestScore = score;
       bestDir = dir;
@@ -631,7 +707,7 @@ function findWorkerMoveTarget(unit, gameState, mapBase, civSlot) {
       const tgy = city.gy + ddy;
       const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
       if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
-      cityNeed += tileImprovementNeed(wgx, tgy, mapBase);
+      cityNeed += tileImprovementNeed(wgx, tgy, mapBase, gameState, civSlot);
     }
 
     // Prefer closer cities with more improvement need

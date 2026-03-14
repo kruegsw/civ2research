@@ -126,11 +126,12 @@ export function computeAiData(gameState, mapBase, civSlot) {
   const aliveCivCount = popcount(civsAlive);
 
   // ── (b) Power rankings ──────────────────────────────────────
-  // powerRanking = techCount * 3 + treasury/32 + weightedUnitSum
+  // powerRanking = techCount * 5 + treasury/32 + weightedUnitSum + cityCount * 5
+  // (#13) Increased tech weight from 3→5, added city count (each city ≈ 5 power)
   const powerRanking = new Array(8).fill(0);
   for (let c = 0; c < 8; c++) {
     const treasury = civs[c]?.treasury ?? 0;
-    powerRanking[c] = techCount[c] * 3 + Math.floor(treasury / 32) + milStrength[c];
+    powerRanking[c] = techCount[c] * 5 + Math.floor(treasury / 32) + milStrength[c] + cityCount[c] * 5;
   }
 
   // powerRank: 1=weakest, 7=strongest among alive civs (1-7)

@@ -304,6 +304,7 @@ function buildInitialCivs(seatList) {
       techBeingResearched: 0xFF, // none selected
       rulesCivNumber,
       difficulty: civDifficultyMap[i] || undefined,
+      attitudes: [0, 0, 0, 0, 0, 0, 0, 0], // per-civ attitude (-100 to +100)
     });
   }
   return civs;

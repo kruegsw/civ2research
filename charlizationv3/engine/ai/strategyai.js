@@ -215,15 +215,17 @@ export function assessMilitaryPosture(civSlot, aiData, gameState) {
     return 3;
   }
 
+  // No barracks across ALL cities — build some (#10)
+  if (barracksCount === 0 && ourCityCount > 0) {
+    return 4;
+  }
+
   // Check: do we have Masonry(47)? Do we have a palace city?
   // Does palace city have City Walls(8)? Do we have Great Wall(6)?
   if (!hasTech(gameState, civSlot, 47) || palaceCityIdx < 0 ||
       cityHasBuilding(cities[palaceCityIdx], 8) ||
       hasWonderEffect(gameState, civSlot, 6)) {
-    // One of the conditions short-circuits: walls already built or not needed
-    if (barracksCount === 0) {
-      return 4; // no barracks — build some
-    }
+    // Walls already built or not needed
     if (hatredCount === 0 && aiData.powerRank[civSlot] > 4) {
       return 7; // dominant, no enemies
     }

@@ -209,8 +209,10 @@ function estimateCityTrade(city) {
 
 /**
  * Estimate city shield output.
+ * Returns 0 if the city is in civil disorder (no production).
  */
 function estimateCityShields(city) {
+  if (city.civilDisorder) return 0;
   return Math.max(1, Math.floor(city.size * 0.7) + 1);
 }
 
@@ -344,6 +346,15 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
       // Still worth building for improvements (engineers)
       score = unitId === 1 ? 20 : 10;
     }
+
+    // #11: Boost settler score in specific conditions
+    // Early game expansion: fewer than 4 cities
+    if (cityCtx.numCities < 4) score += 15;
+    // Early turns: expansion is critical
+    const turnNum = gameState.turn?.number ?? 0;
+    if (turnNum < 100 && cityCtx.numCities < 8) score += 10;
+    // No settler currently exists
+    if (cityCtx.settlerCount === 0 && cityCtx.numCities < 8) score += 10;
 
     // Bonus for large cities (can spare the pop)
     if (city.size >= 6) score += 10;
@@ -544,10 +555,12 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
       let s = 3;
       if (city.size >= 4) s += 3;
       if (city.size >= 8) s += 2;
-      if (city.civilDisorder) s += 8;
+      if (city.civilDisorder) s += 10;
+      // Near disorder threshold: boost if happy/unhappy are close
+      else if (city.happy != null && city.unhappy != null && city.unhappy >= city.happy) s += 5;
       // Oracle doubles temple effect
       if (hasWonderEffect(gameState, civSlot, 5)) s += 3;
-      score = clamp(s, 1, 14);
+      score = clamp(s, 1, 16);
       break;
     }
 
@@ -624,10 +637,11 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
       let s = 6;
       if (city.size >= 6) s += 3;
       if (city.size >= 10) s += 2;
-      if (city.civilDisorder) s += 6;
+      if (city.civilDisorder) s += 8;
+      else if (city.happy != null && city.unhappy != null && city.unhappy >= city.happy) s += 4;
       // Michelangelo's Chapel makes cathedrals more effective
       if (hasWonderEffect(gameState, civSlot, 10)) s += 3;
-      score = clamp(s, 2, 15);
+      score = clamp(s, 2, 16);
       break;
     }
 
@@ -655,8 +669,9 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
       // Happiness
       let s = 4;
       if (city.size >= 6) s += 2;
-      if (city.civilDisorder) s += 5;
-      score = clamp(s, 1, 10);
+      if (city.civilDisorder) s += 7;
+      else if (city.happy != null && city.unhappy != null && city.unhappy >= city.happy) s += 3;
+      score = clamp(s, 1, 12);
       break;
     }
 
@@ -880,12 +895,27 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
 
   if (score < 0) return -1;
 
+  // ── (#17) Treasury-aware building scoring ──
+  // Boost economic buildings when treasury is low; penalize high-maintenance when broke
+  const treasury = gameState.civs?.[civSlot]?.treasury ?? 100;
+  const lowTreasury = treasury < 100;
+  const veryLowTreasury = treasury < 30;
+
+  // Gold-generating buildings: Marketplace(5), Bank(10), Stock Exchange(22), Superhighways(25)
+  const isGoldGenerator = buildingId === 5 || buildingId === 10 || buildingId === 22 || buildingId === 25;
+  if (isGoldGenerator && lowTreasury) {
+    score += 3;
+    if (veryLowTreasury) score += 3; // urgent when nearly bankrupt
+  }
+
   // ── Maintenance penalty ──
   // Penalize buildings with high maintenance relative to city trade output
   if (maintenance > 0) {
     const maintenanceRatio = maintenance / Math.max(1, trade);
     if (maintenanceRatio > 0.5) score -= 3;
     else if (maintenanceRatio > 0.3) score -= 1;
+    // When treasury is very low, extra penalty for high-maintenance buildings
+    if (veryLowTreasury && maintenance >= 2) score -= 2;
     // Adam Smith's Trading Co. makes maintenance-1 buildings free
     if (hasWonderEffect(gameState, civSlot, 17) && maintenance <= 1) {
       score += 1; // Maintenance is free, slight bonus
@@ -1225,9 +1255,16 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy,
 
     // Score the current production for comparison
     let currentScore = 0;
+    let forceSwitch = false;
     if (currentItem) {
       if (currentItem.type === 'unit') {
-        currentScore = scoreUnit(currentItem.id, city, cityCtx, civTechs, gameState, mapBase, civSlot, strat);
+        // Force switch if building an obsolete unit (#7)
+        if (isUnitObsolete(civTechs, currentItem.id)) {
+          forceSwitch = true;
+          currentScore = 0;
+        } else {
+          currentScore = scoreUnit(currentItem.id, city, cityCtx, civTechs, gameState, mapBase, civSlot, strat);
+        }
       } else if (currentItem.type === 'building') {
         currentScore = scoreBuilding(currentItem.id, city, ci, cityCtx, civTechs, gameState, mapBase, civSlot, strat);
       } else if (currentItem.type === 'wonder') {
@@ -1238,8 +1275,8 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy,
       if (currentScore < 0) currentScore = 0;
     }
 
-    // Check production switch penalty
-    if (shouldKeepCurrentProduction(city, currentScore, bestScore, bestItem)) {
+    // Check production switch penalty (skip check if force switching from obsolete)
+    if (!forceSwitch && shouldKeepCurrentProduction(city, currentScore, bestScore, bestItem)) {
       continue;
     }
 
@@ -1319,8 +1356,42 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
     const item = city.itemInProduction;
     if (!item) continue;
 
-    // Skip wonders — too expensive to rush
-    if (item.type === 'wonder') continue;
+    // Wonders: only rush-buy if another civ is racing for the same wonder
+    if (item.type === 'wonder') {
+      const wonderIdx = item.id - 39;
+      // Check if another civ is building the same wonder
+      let rivalShields = -1;
+      let rivalCost = 0;
+      for (const oc of gameState.cities) {
+        if (!oc || oc.size <= 0 || oc.owner === civSlot) continue;
+        const oi = oc.itemInProduction;
+        if (oi && oi.type === 'wonder' && oi.id === item.id) {
+          rivalShields = oc.shieldsInBox || 0;
+          rivalCost = getProductionCost(oi);
+          break;
+        }
+      }
+      // Only rush if a rival is building it
+      if (rivalShields < 0) continue;
+      // Estimate turns remaining for rival vs us
+      const ourRemaining = totalCost - shieldsStored;
+      const rivalRemaining = rivalCost - rivalShields;
+      const ourShieldsPerTurn = estimateCityShields(city);
+      const ourTurns = ourShieldsPerTurn > 0 ? Math.ceil(ourRemaining / ourShieldsPerTurn) : 999;
+      // Rough estimate: rival produces similar shields
+      const rivalTurns = ourShieldsPerTurn > 0 ? Math.ceil(rivalRemaining / ourShieldsPerTurn) : 999;
+      // Only rush if we're behind by 1-3 turns
+      if (ourTurns <= rivalTurns) continue; // we're already ahead
+      if (ourTurns - rivalTurns > 3) continue; // too far behind, not worth it
+      // Critical wonders get higher rush priority
+      const CRITICAL_WONDERS = new Set([4, 22, 26, 25]); // Great Library, Hoover Dam, SETI, Apollo
+      const rushBuyCost = calcRushBuyCost('wonder', totalCost, shieldsStored);
+      // Must afford it and keep 50+ gold
+      if (rushBuyCost > treasury - 50) continue;
+      const wonderPriority = CRITICAL_WONDERS.has(wonderIdx) ? 9 : 6;
+      candidates.push({ ci, city, item, buyCost: rushBuyCost, priority: wonderPriority });
+      continue;
+    }
 
     const totalCost = getProductionCost(item);
     if (totalCost === Infinity) continue;

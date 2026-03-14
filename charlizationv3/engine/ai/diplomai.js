@@ -85,6 +85,23 @@ function getPersonality(gameState, civSlot) {
 }
 
 /**
+ * Get attitude of civSlot toward targetCiv (-100 to +100).
+ */
+function getAttitude(gameState, civSlot, targetCiv) {
+  const civ = gameState.civs?.[civSlot];
+  if (!civ?.attitudes) return 0;
+  return civ.attitudes[targetCiv] ?? 0;
+}
+
+/**
+ * Modify attitude of civSlot toward targetCiv by delta.
+ * Clamps to [-100, +100]. Returns the ADJUST_ATTITUDE action.
+ */
+function makeAttitudeAction(civSlot, targetCiv, delta) {
+  return { type: 'ADJUST_ATTITUDE', civSlot, targetCiv, delta };
+}
+
+/**
  * Get the difficulty level index (0=chieftain .. 5=deity).
  */
 function getDifficultyIndex(gameState, civSlot) {
@@ -493,6 +510,12 @@ function shouldProposePeace(civSlot, targetCiv, continentData, gameState) {
     shouldPeace = false;
   }
 
+  // Don't propose peace to civs with very negative attitude (< -50)
+  const attitude = getAttitude(gameState, civSlot, targetCiv);
+  if (attitude < -50 && strengthRatio > 0.8) {
+    shouldPeace = false;
+  }
+
   return shouldPeace;
 }
 
@@ -528,7 +551,20 @@ function shouldDemandTribute(civSlot, targetCiv, continentData, gameState) {
   const balance = evaluateMilitaryBalance(civSlot, targetCiv, continentData, gameState);
   const ourStr = calcMilitaryStrength(gameState, civSlot);
   const theirStr = calcMilitaryStrength(gameState, targetCiv);
-  const ratio = ourStr / Math.max(theirStr, 1);
+  let ratio = ourStr / Math.max(theirStr, 1);
+
+  // Tech desire: check what techs the target has that we don't
+  // This increases our motivation to demand tribute
+  let techDesire = 0;
+  const ourTechs = gameState.civTechs?.[civSlot];
+  const theirTechs = gameState.civTechs?.[targetCiv];
+  if (ourTechs && theirTechs) {
+    for (const tid of theirTechs) {
+      if (!ourTechs.has(tid)) techDesire++;
+    }
+  }
+  // If they have desirable techs, lower the effective military threshold
+  if (techDesire > 3) ratio += 0.3;
 
   // Need military advantage — FUN_0045705e uses complex per-continent
   // calculations; we simplify to a 1.5x threshold
@@ -637,7 +673,7 @@ function processFirstContact(civSlot, targetCiv, gameState) {
   // First contact: propose ceasefire
   // In original Civ2, first contact always establishes ceasefire
   // unless scenario flags override this
-  return { type: 'PROPOSE_CEASEFIRE', targetCiv };
+  return { type: 'PROPOSE_TREATY', targetCiv, treaty: 'ceasefire' };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -803,8 +839,34 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
       if (i === civSlot) continue;
       if (!(gameState.civsAlive & (1 << i))) continue;
 
-      // Skip civs we haven't made contact with — no diplomacy before first meeting
-      if (!haveContact(gameState, civSlot, i)) continue;
+      // (#16) First contact: establish ceasefire with personality-based initial attitude
+      if (!haveContact(gameState, civSlot, i)) {
+        const firstContactAction = processFirstContact(civSlot, i, gameState);
+        if (firstContactAction) {
+          const err = validateAction(gameState, mapBase, firstContactAction, civSlot);
+          if (!err) {
+            actions.push(firstContactAction);
+            // Set initial attitude based on leader personalities
+            const ourPers = getPersonality(gameState, civSlot);
+            const theirPers = getPersonality(gameState, i);
+            let initialDelta = 0;
+            if (ourPers.militarism < 0) initialDelta += 10;        // we're peaceful
+            if (theirPers.militarism < 0) initialDelta += 5;       // they're peaceful
+            if (ourPers.militarism > 0 && theirPers.militarism > 0) {
+              initialDelta -= 10; // two aggressive civs start wary
+            }
+            if (initialDelta !== 0) {
+              actions.push(makeAttitudeAction(civSlot, i, initialDelta));
+            }
+            if (debugLog) {
+              const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+              const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
+              debugLog.push(`DIPLO: ${civName} makes first contact with ${targetName}, attitude=${initialDelta}`);
+            }
+          }
+        }
+        continue; // no further diplomacy until next turn
+      }
 
       // 2a. War declarations (most impactful)
       // Only one war declaration per turn (from FUN_0055d8d8 behavior)
@@ -813,6 +875,9 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
         const err = validateAction(gameState, mapBase, action, civSlot);
         if (!err) {
           actions.push(action);
+          // War declaration worsens attitudes
+          actions.push(makeAttitudeAction(civSlot, i, -40));
+          actions.push(makeAttitudeAction(i, civSlot, -40));
           declaredWar = true;
           if (debugLog) {
             const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
@@ -842,6 +907,8 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
           const err = validateAction(gameState, mapBase, action, civSlot);
           if (!err) {
             actions.push(action);
+            // Peace proposal improves attitude
+            actions.push(makeAttitudeAction(civSlot, i, +20));
             if (debugLog) {
               const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
               const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;

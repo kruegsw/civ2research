@@ -281,7 +281,7 @@ function handleWorkerChange(result) {
       specialists[specIdx] = 'scientist';
     } else {
       // Scientist → remove specialist, add best available worker tile
-      const bestTile = findBestUnworkedTile(city, workedTiles);
+      const bestTile = findBestUnworkedTile(city, workedTiles, cityIndex);
       if (bestTile != null) {
         specialists.splice(specIdx, 1);
         workedTiles.push(bestTile);
@@ -306,9 +306,30 @@ function handleWorkerChange(result) {
 }
 
 // Helper: find best unworked tile (by food*10 + shields)
-function findBestUnworkedTile(city, workedTiles) {
+// Skips tiles already worked by other cities
+function findBestUnworkedTile(city, workedTiles, cityIndex) {
   const worked = new Set(workedTiles);
   const parC = city.gy & 1;
+
+  // Build set of world-coordinate tiles worked by other cities
+  const otherWorked = new Set();
+  if (S.mpGameState?.cities) {
+    for (let ci = 0; ci < S.mpGameState.cities.length; ci++) {
+      if (ci === cityIndex) continue;
+      const oc = S.mpGameState.cities[ci];
+      if (!oc || oc.size <= 0 || !oc.workedTiles) continue;
+      const ocParC = oc.gy & 1;
+      for (const oi of oc.workedTiles) {
+        const [oddx, oddy] = Civ2CityDialog.CITY_RADIUS_DOUBLED[oi];
+        const oParT = ((oc.gy + oddy) % 2 + 2) % 2;
+        const otgx = oc.gx + ((ocParC + oddx - oParT) >> 1);
+        const otgy = oc.gy + oddy;
+        const owgx = S.mpMapBase.wraps ? wrapGx(otgx, S.mpMapBase.mw) : otgx;
+        otherWorked.add(`${owgx},${otgy}`);
+      }
+    }
+  }
+
   let bestIdx = -1, bestScore = -1;
   for (let i = 0; i < 20; i++) {
     if (worked.has(i)) continue;
@@ -319,6 +340,7 @@ function findBestUnworkedTile(city, workedTiles) {
     const tgy = city.gy + ddy;
     const wgx = S.mpMapBase.wraps ? wrapGx(tgx, S.mpMapBase.mw) : tgx;
     if (tgy < 0 || tgy >= S.mpMapBase.mh || wgx < 0 || wgx >= S.mpMapBase.mw) continue;
+    if (otherWorked.has(`${wgx},${tgy}`)) continue; // skip tiles worked by other cities
     const ter = S.mpMapBase.getTerrain(wgx, tgy);
     if (ter < 0 || ter > 10) continue; // skip invalid
 

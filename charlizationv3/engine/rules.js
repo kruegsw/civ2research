@@ -160,6 +160,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
 
       // Validate workers aren't on off-map tiles
       const parC = city.gy & 1;
+      const proposedWorldTiles = [];
       for (const i of workedTiles) {
         const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
         const parT = ((city.gy + ddy) % 2 + 2) % 2;
@@ -168,6 +169,25 @@ export function validateAction(gameState, mapBase, action, civSlot) {
         const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
         if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw)
           return `Worker on out-of-bounds tile (${tgx},${tgy})`;
+        proposedWorldTiles.push(`${wgx},${tgy}`);
+      }
+
+      // Validate tiles aren't already worked by another city
+      const proposedSet = new Set(proposedWorldTiles);
+      for (let ci = 0; ci < gameState.cities.length; ci++) {
+        if (ci === cityIndex) continue;
+        const oc = gameState.cities[ci];
+        if (!oc || oc.size <= 0 || !oc.workedTiles) continue;
+        const ocParC = oc.gy & 1;
+        for (const oi of oc.workedTiles) {
+          const [oddx, oddy] = CITY_RADIUS_DOUBLED[oi];
+          const oParT = ((oc.gy + oddy) % 2 + 2) % 2;
+          const otgx = oc.gx + ((ocParC + oddx - oParT) >> 1);
+          const otgy = oc.gy + oddy;
+          const owgx = mapBase.wraps ? ((otgx % mapBase.mw) + mapBase.mw) % mapBase.mw : otgx;
+          if (proposedSet.has(`${owgx},${otgy}`))
+            return `Tile (${owgx},${otgy}) already worked by another city`;
+        }
       }
 
       return null;
@@ -699,6 +719,14 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const hasUnitNeedingOrders = gameState.units.some(u =>
         u.owner === civSlot && u.gx >= 0 && u.movesLeft > 0 && !BUSY_ORDERS.has(u.orders));
       if (hasUnitNeedingOrders) return 'Units still need orders';
+      return null;
+    }
+
+    case 'ADJUST_ATTITUDE': {
+      const { civSlot: attCiv, targetCiv: attTarget, delta } = action;
+      if (attCiv == null || attTarget == null || delta == null) return 'Missing ADJUST_ATTITUDE fields';
+      if (attCiv < 0 || attCiv > 7 || attTarget < 0 || attTarget > 7) return 'Invalid civ slot';
+      if (attCiv === attTarget) return 'Cannot adjust attitude toward self';
       return null;
     }
 
