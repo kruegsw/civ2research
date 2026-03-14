@@ -712,7 +712,31 @@ window.addEventListener('keydown', e => {
   if (!S.mpGameState || S.mpGameState.turn.activeCiv !== S.mpCivSlot) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
   if (S.currentScene !== 'game') return;
-  if (S.unitMenu.classList.contains('visible')) return;
+  // Unit context menu: Enter accepts, Escape cancels, arrows navigate
+  if (S.unitMenu.classList.contains('visible')) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (S.unitMenuDefaultAction) {
+        const action = S.unitMenuDefaultAction;
+        hideUnitMenu();
+        action();
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      hideUnitMenu();
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const btns = S.unitMenuButtons;
+      if (btns.length > 0) {
+        if (S.unitMenuHighlightIdx >= 0) btns[S.unitMenuHighlightIdx].btn.classList.remove('unit-menu-highlight');
+        const delta = e.key === 'ArrowUp' ? -1 : 1;
+        S.unitMenuHighlightIdx = (S.unitMenuHighlightIdx + delta + btns.length) % btns.length;
+        btns[S.unitMenuHighlightIdx].btn.classList.add('unit-menu-highlight');
+        S.unitMenuDefaultAction = btns[S.unitMenuHighlightIdx].action;
+      }
+    }
+    return;
+  }
   if (isDialogOpen()) return;
 
   // Tab: cycle to next movable unit
