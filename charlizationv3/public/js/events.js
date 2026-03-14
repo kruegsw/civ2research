@@ -192,7 +192,8 @@ export function initEvents(canvas, vp, fns) {
     if (vp.offW === 0) return;
     const key = e.key;
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+      { const t = e.target; if (t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable
+        || (t.tagName === 'INPUT' && 'text password search email url tel number'.includes(t.type))) return; }
       if (e.defaultPrevented) return; // already handled by game input (e.g. sentry)
       e.preventDefault();
       keysDown.add(key);

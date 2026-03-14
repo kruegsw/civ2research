@@ -750,11 +750,33 @@ function isDialogOpen() {
     || document.getElementById('production-picker');
 }
 
+// Text-input guard: true only for elements that accept typed text (not checkboxes/radios/buttons)
+function isTextInput(el) {
+  if (el.tagName === 'TEXTAREA' || el.isContentEditable) return true;
+  if (el.tagName === 'SELECT') return true;
+  if (el.tagName === 'INPUT') {
+    const t = el.type;
+    return t === 'text' || t === 'password' || t === 'search' || t === 'email'
+        || t === 'url' || t === 'tel' || t === 'number';
+  }
+  return false;
+}
+
+// Blur buttons/checkboxes in game UI after click so they don't steal keyboard focus
+for (const container of [document.getElementById('controls'), document.getElementById('turn-ui')]) {
+  if (container) {
+    container.addEventListener('mouseup', () => {
+      const ae = document.activeElement;
+      if (ae && ae !== document.body && !isTextInput(ae)) ae.blur();
+    });
+  }
+}
+
 // ── Turn-restricted keys ──
 window.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey) return; // let browser shortcuts (Ctrl+R, Ctrl+Shift+R, etc.) pass through
   if (!S.mpGameState || S.mpGameState.turn.activeCiv !== S.mpCivSlot) return;
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (isTextInput(e.target)) return;
   if (S.currentScene !== 'game') return;
   // Unit context menu: Enter accepts, Escape cancels, arrows navigate
   if (S.unitMenu.classList.contains('visible')) {
@@ -1023,7 +1045,7 @@ window.addEventListener('keydown', e => {
 // ── Non-turn-restricted keys (advisors, escape) ──
 window.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey) return; // let browser shortcuts pass through
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (isTextInput(e.target)) return;
   if (S.currentScene !== 'game') return;
 
   // Escape: cancel goto/rebase mode
