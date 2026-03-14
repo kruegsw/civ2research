@@ -32,6 +32,10 @@ const SWITCH_THRESHOLD = 1.5;
 // Shield penalty fraction for cross-type switch
 const CROSS_TYPE_PENALTY = 0.5;
 
+// Minimum score multiplier to justify switching between items of the SAME type
+// when shields have already been invested (e.g. Settlers→Warriors)
+const SAME_TYPE_SWITCH_THRESHOLD = 1.3;
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 /**
@@ -345,6 +349,12 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     } else {
       // Still worth building for improvements (engineers)
       score = unitId === 1 ? 20 : 10;
+    }
+
+    // Size-2 cities with few cities: settlers are critical for expansion.
+    // Give a large unconditional boost so settlers consistently outscore warriors.
+    if (city.size === 2 && cityCtx.settlerCount === 0 && cityCtx.numCities < 4) {
+      score += 25;
     }
 
     // #11: Boost settler score in specific conditions
@@ -1139,8 +1149,12 @@ function shouldKeepCurrentProduction(city, currentScore, newScore, newItem) {
   const invested = city.shieldsInBox || 0;
   if (invested === 0) return false;
 
-  // Same type → no penalty, switch freely if score is better
-  if (current.type === newItem.type) return false;
+  // Same type → no shield penalty, but still resist switching if we've
+  // invested shields and the new score isn't significantly better.
+  // This prevents flip-flopping between e.g. Settlers and Warriors.
+  if (current.type === newItem.type) {
+    return newScore < currentScore * SAME_TYPE_SWITCH_THRESHOLD;
+  }
 
   // Cross-type switch: 50% shield penalty
   const totalCost = getProductionCost(current);
@@ -1273,6 +1287,17 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy,
       }
       // If current score is negative (invalid), force switch
       if (currentScore < 0) currentScore = 0;
+    }
+
+    // Never switch away from settlers/engineers once shields are invested,
+    // unless the city is under direct military threat (enemies within 4 tiles).
+    // Settlers are too important for expansion to abort mid-build.
+    if (!forceSwitch && currentItem && currentItem.type === 'unit' &&
+        SETTLER_TYPES.has(currentItem.id) && (city.shieldsInBox || 0) > 0) {
+      const closeEnemies = findNearbyEnemies(city.gx, city.gy, gameState, mapBase, civSlot, 4);
+      if (closeEnemies.length === 0) {
+        continue;  // keep building settlers — no nearby threat
+      }
     }
 
     // Check production switch penalty (skip check if force switching from obsolete)

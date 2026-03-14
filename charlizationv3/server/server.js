@@ -50,7 +50,7 @@ import { generateMap } from "../engine/mapgen.js";
 import { applyAction } from "../engine/reducer.js";
 import { filterStateForCiv, computeLOS } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
-import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES, DIFFICULTY_KEYS } from "../engine/defs.js";
+import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES, DIFFICULTY_KEYS, BUSY_ORDERS } from "../engine/defs.js";
 import { runAiTurn } from "../engine/ai/index.js";
 
 const PORT = Number(process.env.PORT || 8788);
@@ -897,7 +897,27 @@ function processAiTurns(roomId, room) {
     console.log(`[ai]   applied ${aiActions.length} actions in ${Date.now() - t2}ms`);
 
     // End the AI civ's turn
-    const endResult = applyAction(room.gameState, room.mapBase, { type: 'END_TURN' }, activeCiv);
+    let endResult = applyAction(room.gameState, room.mapBase, { type: 'END_TURN' }, activeCiv);
+    if (endResult === room.gameState) {
+      // END_TURN rejected — force-skip units that still need orders
+      const unitsNeedingOrders = [];
+      for (let i = 0; i < room.gameState.units.length; i++) {
+        const u = room.gameState.units[i];
+        if (u.owner === activeCiv && u.gx >= 0 && u.movesLeft > 0 && !BUSY_ORDERS.has(u.orders)) {
+          unitsNeedingOrders.push(i);
+        }
+      }
+      console.warn(`[ai] Room ${roomId}: END_TURN rejected for AI civ ${activeCiv}, force-skipping ${unitsNeedingOrders.length} units`);
+      for (const unitIndex of unitsNeedingOrders) {
+        const skipResult = applyAction(room.gameState, room.mapBase, { type: 'UNIT_ORDER', unitIndex, order: 'skip' }, activeCiv);
+        if (skipResult !== room.gameState) {
+          room.gameState = skipResult;
+        }
+      }
+      // Retry END_TURN after force-skipping
+      endResult = applyAction(room.gameState, room.mapBase, { type: 'END_TURN' }, activeCiv);
+    }
+
     if (endResult !== room.gameState) {
       room.gameState = endResult;
       emitGameLogs(roomId, room);
@@ -909,8 +929,8 @@ function processAiTurns(roomId, room) {
         clearOneshotNotifications(room);
       }
     } else {
-      // END_TURN was rejected — this shouldn't happen, but break to avoid infinite loop
-      console.warn(`[ai] Room ${roomId}: END_TURN rejected for AI civ ${activeCiv}, breaking loop`);
+      // END_TURN still rejected even after force-skip — break to avoid infinite loop
+      console.error(`[ai] Room ${roomId}: END_TURN still rejected for AI civ ${activeCiv} after force-skip, breaking loop`);
       break;
     }
   }

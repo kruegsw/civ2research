@@ -431,6 +431,7 @@ function settlerDirectionToward(unit, toGx, toGy, gameState, mapBase, civSlot) {
   const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
   let bestDir = null;
   let bestDist = Infinity;
+  let bestFood = -1;
 
   for (const dir in neighbors) {
     const [nx, ny] = neighbors[dir];
@@ -444,9 +445,13 @@ function settlerDirectionToward(unit, toGx, toGy, gameState, mapBase, civSlot) {
     if (isAdjacentToEnemy(wnx, ny, mapBase, gameState, civSlot)) continue;
 
     const dist = tileDist(wnx, ny, toGx, toGy, mapBase);
-    if (dist < bestDist) {
+    // Tiebreaker: when two tiles are equidistant, prefer better terrain (higher food)
+    // This prevents oscillation when the greedy path is blocked
+    const [food] = tileYield(wnx, ny, mapBase);
+    if (dist < bestDist || (dist === bestDist && food > bestFood)) {
       bestDist = dist;
       bestDir = dir;
+      bestFood = food;
     }
   }
 
@@ -797,46 +802,125 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy, de
         (strategy?.expansionDesired ?? true);
 
       if (shouldBuildCity) {
-        // Find best city site within search radius
-        const bestSite = findBestCitySite(unit.gx, unit.gy, gameState, mapBase, civSlot);
-        const threshold = ownCities.length === 0 ? BUILD_THRESHOLD_FIRST : BUILD_THRESHOLD_NORMAL;
+        const isFirstCity = ownCities.length === 0;
+        const threshold = isFirstCity ? BUILD_THRESHOLD_FIRST : BUILD_THRESHOLD_NORMAL;
 
-        if (bestSite && bestSite.score >= threshold) {
-          // Are we already on the best site?
-          if (bestSite.gx === unit.gx && bestSite.gy === unit.gy) {
-            // Build city here
+        // ── First city: found immediately or within 2 turns ──
+        // In Civ2, the first settler founds within 1-3 turns. Use a tiny
+        // search radius (3) so we don't wander toward a distant "optimal"
+        // site. If the current tile is even halfway decent, just build here.
+        if (isFirstCity) {
+          const currentScore = evaluateCitySite(unit.gx, unit.gy, gameState, mapBase, civSlot);
+          const currentTerrain = mapBase.getTerrain(unit.gx, unit.gy);
+
+          // Build here immediately unless the tile is truly terrible
+          // (ocean, glacier, or very low score)
+          const isTerrible = currentTerrain === 10 || currentTerrain === 7 || currentScore < 5;
+
+          if (!isTerrible && currentScore >= 0) {
+            // Current tile is acceptable — build immediately
             const cityName = getNextCityName(gameState, civSlot);
             const buildAction = { type: 'BUILD_CITY', unitIndex: i, name: cityName };
             const err = validateAction(gameState, mapBase, buildAction, civSlot);
             if (!err) {
               actions.push(buildAction);
-              if (debugLog) debugLog.push(`CITY: Settler #${i}: founding city "${cityName}" at (${unit.gx},${unit.gy}), site score=${bestSite.score}`);
+              if (debugLog) debugLog.push(`CITY: Settler #${i}: founding FIRST city "${cityName}" at (${unit.gx},${unit.gy}), score=${currentScore} (immediate)`);
               continue;
             }
           }
 
-          // Move toward the best site
-          const dir = settlerDirectionToward(unit, bestSite.gx, bestSite.gy, gameState, mapBase, civSlot);
-          if (dir) {
-            const moveAction = { type: 'MOVE_UNIT', unitIndex: i, dir };
-            const err = validateAction(gameState, mapBase, moveAction, civSlot);
+          // Tile is terrible — search nearby (radius 3 only) for something better
+          const bestSite = findBestCitySite(unit.gx, unit.gy, gameState, mapBase, civSlot, 3);
+          if (bestSite && bestSite.score >= 0) {
+            if (bestSite.gx === unit.gx && bestSite.gy === unit.gy) {
+              const cityName = getNextCityName(gameState, civSlot);
+              const buildAction = { type: 'BUILD_CITY', unitIndex: i, name: cityName };
+              const err = validateAction(gameState, mapBase, buildAction, civSlot);
+              if (!err) {
+                actions.push(buildAction);
+                if (debugLog) debugLog.push(`CITY: Settler #${i}: founding FIRST city "${cityName}" at (${unit.gx},${unit.gy}), score=${bestSite.score} (best nearby)`);
+                continue;
+              }
+            }
+            const dir = settlerDirectionToward(unit, bestSite.gx, bestSite.gy, gameState, mapBase, civSlot);
+            if (dir) {
+              const moveAction = { type: 'MOVE_UNIT', unitIndex: i, dir };
+              const err = validateAction(gameState, mapBase, moveAction, civSlot);
+              if (!err) {
+                actions.push(moveAction);
+                if (debugLog) debugLog.push(`CITY: Settler #${i}: moving toward first city site (${bestSite.gx},${bestSite.gy}), score=${bestSite.score}`);
+                continue;
+              }
+            }
+          }
+
+          // Fallback: just build wherever we are if validation passes
+          {
+            const cityName = getNextCityName(gameState, civSlot);
+            const buildAction = { type: 'BUILD_CITY', unitIndex: i, name: cityName };
+            const err = validateAction(gameState, mapBase, buildAction, civSlot);
             if (!err) {
-              actions.push(moveAction);
+              actions.push(buildAction);
+              if (debugLog) debugLog.push(`CITY: Settler #${i}: founding FIRST city "${cityName}" at (${unit.gx},${unit.gy}) (fallback)`);
               continue;
             }
           }
         }
 
-        // Current tile is good enough to build? (even if not the best)
-        const currentScore = evaluateCitySite(unit.gx, unit.gy, gameState, mapBase, civSlot);
-        if (currentScore >= threshold) {
-          const cityName = getNextCityName(gameState, civSlot);
-          const buildAction = { type: 'BUILD_CITY', unitIndex: i, name: cityName };
-          const err = validateAction(gameState, mapBase, buildAction, civSlot);
-          if (!err) {
-            actions.push(buildAction);
-            if (debugLog) debugLog.push(`CITY: Settler #${i}: founding city "${cityName}" at (${unit.gx},${unit.gy}), site score=${currentScore}`);
-            continue;
+        // ── Subsequent settlers: search radius 10 but reduce wandering ──
+        // Accept a "good enough" site (70% of threshold) on the current
+        // tile rather than keep searching. This prevents settlers from
+        // oscillating between distant candidates for 9+ turns.
+        if (!isFirstCity) {
+          const currentScore = evaluateCitySite(unit.gx, unit.gy, gameState, mapBase, civSlot);
+
+          // If current tile is "good enough" (>= 70% of threshold), just build here
+          if (currentScore >= threshold * 0.7) {
+            const cityName = getNextCityName(gameState, civSlot);
+            const buildAction = { type: 'BUILD_CITY', unitIndex: i, name: cityName };
+            const err = validateAction(gameState, mapBase, buildAction, civSlot);
+            if (!err) {
+              actions.push(buildAction);
+              if (debugLog) debugLog.push(`CITY: Settler #${i}: founding city "${cityName}" at (${unit.gx},${unit.gy}), score=${currentScore} (good-enough, threshold*0.7=${Math.round(threshold * 0.7)})`);
+              continue;
+            }
+          }
+
+          // Search full radius for optimal site
+          const bestSite = findBestCitySite(unit.gx, unit.gy, gameState, mapBase, civSlot);
+          if (bestSite && bestSite.score >= threshold) {
+            if (bestSite.gx === unit.gx && bestSite.gy === unit.gy) {
+              const cityName = getNextCityName(gameState, civSlot);
+              const buildAction = { type: 'BUILD_CITY', unitIndex: i, name: cityName };
+              const err = validateAction(gameState, mapBase, buildAction, civSlot);
+              if (!err) {
+                actions.push(buildAction);
+                if (debugLog) debugLog.push(`CITY: Settler #${i}: founding city "${cityName}" at (${unit.gx},${unit.gy}), site score=${bestSite.score}`);
+                continue;
+              }
+            }
+
+            const dir = settlerDirectionToward(unit, bestSite.gx, bestSite.gy, gameState, mapBase, civSlot);
+            if (dir) {
+              const moveAction = { type: 'MOVE_UNIT', unitIndex: i, dir };
+              const err = validateAction(gameState, mapBase, moveAction, civSlot);
+              if (!err) {
+                actions.push(moveAction);
+                continue;
+              }
+            }
+          }
+
+          // Full-threshold check on current tile
+          if (currentScore >= threshold) {
+            const cityName = getNextCityName(gameState, civSlot);
+            const buildAction = { type: 'BUILD_CITY', unitIndex: i, name: cityName };
+            const err = validateAction(gameState, mapBase, buildAction, civSlot);
+            if (!err) {
+              actions.push(buildAction);
+              if (debugLog) debugLog.push(`CITY: Settler #${i}: founding city "${cityName}" at (${unit.gx},${unit.gy}), site score=${currentScore}`);
+              continue;
+            }
           }
         }
 
