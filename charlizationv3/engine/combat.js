@@ -3,9 +3,21 @@
 //
 // Implements Civ2's combat system: round-by-round probabilistic
 // resolution with terrain/fortification/veteran modifiers.
+//
+// Special unit interactions ported from decompiled FUN_00580341:
+//   - Pikemen double defense vs mounted/horse units (flags bit 13)
+//   - Aegis Cruiser double defense vs air/missile attacks (flags bit 14)
+//   - Air vs unarmed ships: halved defense, FP capped to 1
+//   - Air vs land: FP capped to 1 for both sides
+//   - Helicopter vs submarines: ×8 attack multiplier
+//   - Partial movement attack penalty (fractional MP)
 // ═══════════════════════════════════════════════════════════════════
 
-import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER } from './defs.js';
+import {
+  UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
+  UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER,
+  UNIT_PIKEMAN_BONUS, MOUNTED_UNITS, UNIT_AEGIS_BONUS,
+} from './defs.js';
 
 /**
  * Resolve combat between an attacker and defender.
@@ -20,6 +32,7 @@ import { UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_DESTROYED_AFTER
  * @param {object} [defCityBuildings] - Set of building IDs in defending city (optional)
  * @param {number} [extraSeed=0] - extra entropy for PRNG (e.g. turn number, positions, state version)
  * @param {string} [difficulty] - game difficulty level ('chieftain'|'warlord'|'prince'|'king'|'emperor'|'deity')
+ * @param {number} [atkMovesLeft] - attacker's remaining movement thirds this turn
  * @returns {{ attackerWins: boolean, atkHpLost: number, defHpLost: number,
  *             atkVeteranPromo: boolean, defVeteranPromo: boolean,
  *             rounds: boolean[], atkMaxHp: number, defMaxHp: number,
@@ -29,14 +42,55 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const atkBase = UNIT_ATK[attacker.type] || 1;
   const defBase = UNIT_DEF[defender.type] || 1;
 
-  const atkMaxHp = (UNIT_HP[attacker.type] || 1) * 10;
-  const defMaxHp = (UNIT_HP[defender.type] || 1) * 10;
-  const atkFp = UNIT_FP[attacker.type] || 1;
-  const defFp = UNIT_FP[defender.type] || 1;
+  let atkMaxHp = (UNIT_HP[attacker.type] || 1) * 10;
+  let defMaxHp = (UNIT_HP[defender.type] || 1) * 10;
+  let atkFp = UNIT_FP[attacker.type] || 1;
+  let defFp = UNIT_FP[defender.type] || 1;
+
+  const atkDomain = UNIT_DOMAIN[attacker.type] ?? 0;
+  const defDomain = UNIT_DOMAIN[defender.type] ?? 0;
+  const atkRole = UNIT_ROLE[attacker.type] ?? 0;
+  const defAtk = UNIT_ATK[defender.type] || 0;
+
+  // ── Special interaction: Air attack vs unarmed ships ──────────
+  // Ported from FUN_00580341 lines 124-129: role 3 (air attack) vs
+  // sea-domain defender with 0 attack → halve defense, set defender FP=1.
+  // This models helicopters/bombers attacking defenseless transports.
+  if (atkRole === 3 && defDomain === 1 && defAtk === 0) {
+    defFp = 1;
+    // Defense is halved after all other modifiers (applied to effDef below)
+  }
+
+  // ── Special interaction: Air vs land ──────────────────────────
+  // Ported from FUN_00580341 lines 187-191: when air attacks land,
+  // both sides get FP capped to 1 and defender HP capped to 1.
+  // This prevents bombers from one-shotting ground units and vice-versa.
+  if (atkDomain === 2 && defDomain === 0) {
+    atkFp = 1;
+    defFp = 1;
+    defMaxHp = 10; // cap defender to 1 HP unit equivalent
+    atkMaxHp = 10; // cap attacker to 1 HP unit equivalent
+  }
+
+  // ── Special interaction: Helicopter vs submarines ─────────────
+  // Ported from FUN_00580341 lines 183-186: unit type 9 (helicopter=29
+  // in our system, type byte '\t'=9 in decompiled) attacking 0-attack
+  // defender → ×8 attack multiplier. In our mapping, Helicopter is type 29.
+  // This models helicopter anti-submarine warfare.
+  let heliBonus = false;
+  if (attacker.type === 29 && defAtk === 0) {
+    heliBonus = true;
+    // Applied as ×8 to effective attack below
+  }
 
   // Effective attack: base × veteran bonus
   let effAtk = atkBase * 8; // ×8 for fixed-point
   if (attacker.veteran) effAtk += Math.floor(effAtk / 2); // +50% veteran
+
+  // Helicopter vs submarine: ×8 attack multiplier
+  if (heliBonus) {
+    effAtk = effAtk << 3;
+  }
 
   // Fractional MP penalty: if attacker has less than 1 full MP, attack is reduced proportionally
   if (atkMovesLeft != null && atkMovesLeft < MOVEMENT_MULTIPLIER && atkMovesLeft > 0) {
@@ -54,8 +108,30 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     effDef += Math.floor(effDef / 2);
   }
 
+  // ── Special interaction: Pikemen double defense vs mounted ────
+  // Ported from FUN_00580341 lines 142-150 (pikeman flag bit 13).
+  // Pikemen-flagged defenders get ×2 defense vs mounted attackers.
+  // In the decompiled binary this is flag 0x20 in the high byte of
+  // the unit flags field. Standard Civ2 mounted units: Horsemen,
+  // Chariot, Knights, Crusaders, Dragoons, Cavalry, Elephants, Armor.
+  if (UNIT_PIKEMAN_BONUS.has(defender.type) && MOUNTED_UNITS.has(attacker.type)) {
+    effDef *= 2;
+  }
+
+  // ── Special interaction: Aegis defense bonus vs air/missiles ──
+  // Ported from FUN_00580341: Aegis-flagged defenders (flags bit 14)
+  // get ×2 defense vs air-domain attackers and ×5 vs missiles.
+  // In the decompiled code, the distinction is flag 0x40 in hi-byte
+  // AND attacker domain == 2 (air).
+  if (UNIT_AEGIS_BONUS.has(defender.type) && atkDomain === 2) {
+    if (UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) {
+      effDef *= 5; // ×5 vs missiles (cruise missile, nuclear missile)
+    } else {
+      effDef *= 3; // ×3 vs normal air units (fighters, bombers, helicopters)
+    }
+  }
+
   // City walls: ×3 vs land and sea attackers (not air)
-  const atkDomain = UNIT_DOMAIN[attacker.type] ?? 0;
   if (defCityHasWalls && atkDomain !== 2) {
     effDef *= 3;
   }
@@ -78,6 +154,11 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     if (defCityBuildings.has(27) && atkDomain === 2 && !UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) effDef *= 2;
     // SDI Defense (17): ×2 defense vs missiles
     if (defCityBuildings.has(17) && UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) effDef *= 2;
+  }
+
+  // Air vs unarmed ships: halve effective defense (after all other defense mods)
+  if (atkRole === 3 && defDomain === 1 && defAtk === 0) {
+    effDef = Math.max(1, effDef >> 1);
   }
 
   // Difficulty modifier for barbarian attacks

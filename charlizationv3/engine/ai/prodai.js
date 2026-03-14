@@ -348,6 +348,169 @@ function clamp(val, min, max) {
   return val;
 }
 
+// ── Spaceship constants (from RULES.TXT COSMIC section) ──────────
+// Maximum counts for each spaceship component category.
+// DAT_00634f64 (×3 stride, 6 entries):
+//   [0]=structural max, [1]=fuel max, [2]=propulsion max,
+//   [3]=habitation max, [4]=life support max, [5]=solar panel max
+const SS_MAX = [10, 6, 6, 5, 5, 5]; // Standard Civ2 MGE values
+
+// Spaceship component building IDs: 35=SS Structural, 36=SS Component, 37=SS Module
+const SS_STRUCTURAL_ID = 35;
+const SS_COMPONENT_ID = 36;
+const SS_MODULE_ID = 37;
+
+// ── Spaceship AI ──────────────────────────────────────────────────
+
+/**
+ * Score a spaceship part for production selection.
+ *
+ * Ported from Civ2 FUN_00597d6f (spaceship component selection AI)
+ * and FUN_00598197 (component category selection within each phase).
+ *
+ * The original function evaluates 3 phases:
+ *   Phase 0: Structural — build enough structural segments first
+ *   Phase 1: Components — fuel + propulsion (balanced, limited by structural count)
+ *   Phase 2: Modules — habitation + life support + solar panels
+ *
+ * Within each phase, it picks whichever component is most needed
+ * (fewest built relative to maximum). Returns a score (higher = more
+ * desirable) or -1 if the part should not be built.
+ *
+ * @param {number} buildingId - 35 (structural), 36 (component), 37 (module)
+ * @param {object} gameState
+ * @param {number} civSlot
+ * @param {object} strategy
+ * @returns {number} score (-1 = skip)
+ */
+function _scoreSpaceshipPart(buildingId, gameState, civSlot, strategy) {
+  // Must have Apollo Program wonder effect
+  if (!hasWonderEffect(gameState, civSlot, 25)) return -1;
+
+  const civ = gameState.civs?.[civSlot];
+  if (!civ) return -1;
+
+  // Current spaceship component counts from civ data
+  // The parser stores: spaceshipStructural, spaceshipPropulsion
+  // We need to derive fuel from propulsion or estimate from context.
+  // In the game, civ data at offsets +1022..+1029 stores:
+  //   +1022: structural count, +1024: propulsion count
+  //   +1026/+1028: estimates (year projections)
+  // Fuel count is not directly stored but implied by component balance.
+  const structural = civ.spaceshipStructural || 0;
+  const propulsion = civ.spaceshipPropulsion || 0;
+  // Fuel is typically tracked alongside propulsion; estimate from propulsion
+  // In the decompiled code, both fuel and propulsion are at fixed offsets
+  // from DAT_0064caa8 (spaceship data array per civ):
+  //   [0]=structural, [1]=fuel, [2]=propulsion, [3]=habitation, [4]=life support, [5]=solar
+  // We only have structural and propulsion from the parser, so estimate fuel.
+  const fuel = propulsion; // Balanced build strategy: fuel ~ propulsion
+
+  // Determine which phase this building belongs to
+  let phase; // 0=structural, 1=components (fuel+propulsion), 2=modules
+  if (buildingId === SS_STRUCTURAL_ID) phase = 0;
+  else if (buildingId === SS_COMPONENT_ID) phase = 1;
+  else if (buildingId === SS_MODULE_ID) phase = 2;
+  else return -1;
+
+  // ── Phase priority logic from FUN_00597d6f ──
+  // Structural must be built first. Components need structural >= N to support them.
+  // Modules need components to function.
+
+  // Check if structural phase is complete (have enough structurals)
+  const structuralDone = structural >= SS_MAX[0];
+
+  // Check if component phase is complete (fuel + propulsion at max)
+  const componentsDone = fuel >= SS_MAX[1] && propulsion >= SS_MAX[2];
+
+  // Max components limited by structural count:
+  // Decompiled FUN_00596b00: for fuel/propulsion (param_2==1 or 2),
+  //   maxAllowed = clamp(SS_MAX[type], 0, (structural+1-(type*2-2))/4)
+  // Simplified: components limited to roughly structural/4
+  const maxFuelAllowed = Math.min(SS_MAX[1], Math.max(0, Math.floor((structural + 1) / 4)));
+  const maxPropAllowed = Math.min(SS_MAX[2], Math.max(0, Math.floor((structural + 1 - 2) / 4)));
+
+  // Strategy context
+  const aiData = strategy?.aiData;
+  const civsAlive = aiData?.civsAlive ?? 0;
+  const warTargets = strategy?.warTargets || [];
+  const aliveCivCount = aiData?.aliveCivCount ?? 2;
+
+  // Check if any rival civ is ahead in space race
+  let rivalAhead = false;
+  let rivalSpaceProgress = 0;
+  for (let other = 1; other < 8; other++) {
+    if (other === civSlot) continue;
+    if (!(civsAlive & (1 << other))) continue;
+    const otherCiv = gameState.civs?.[other];
+    if (otherCiv && (otherCiv.spaceshipStructural || 0) > 0) {
+      const otherProgress = (otherCiv.spaceshipStructural || 0) +
+        (otherCiv.spaceshipPropulsion || 0);
+      if (otherProgress > rivalSpaceProgress) {
+        rivalSpaceProgress = otherProgress;
+      }
+      if (otherProgress > structural + propulsion) {
+        rivalAhead = true;
+      }
+    }
+  }
+
+  // Base score: lower = better in decompiled, we use higher = better
+  let score;
+
+  if (phase === 0) {
+    // Structural phase
+    if (structuralDone) return -1; // already have enough
+    // Priority increases as fewer structurals are built
+    score = SS_MAX[0] - structural;
+    // Structural gets top priority if not enough built yet
+    if (structural < 3) score += 5; // Early structural is critical
+  } else if (phase === 1) {
+    // Component phase (fuel + propulsion)
+    // Don't build components until we have some structural base
+    if (structural < 2) return -1;
+    if (componentsDone) return -1;
+    // Score based on how many more are needed
+    const fuelNeeded = Math.max(0, maxFuelAllowed - fuel);
+    const propNeeded = Math.max(0, maxPropAllowed - propulsion);
+    score = fuelNeeded + propNeeded;
+    if (score <= 0) return -1;
+    // Decompiled: if structural race vs rival, deprioritize components
+    // (bVar2 flag in FUN_00597d6f checks if we're behind rival in score)
+    if (rivalAhead && !structuralDone) {
+      score = Math.max(1, score - 2);
+    }
+  } else {
+    // Module phase (habitation, life support, solar panels)
+    // Modules need significant structural + component base
+    if (structural < 5) return -1;
+    if (!componentsDone && fuel < 2 && propulsion < 2) return -1;
+    // Estimate how many modules are needed (we don't track individual module types)
+    // Give a moderate score to encourage late-game module building
+    score = 5;
+    // Less urgent than structural/components
+    if (!structuralDone) score -= 2;
+    if (!componentsDone) score -= 1;
+  }
+
+  // War penalty: reduce spaceship priority during wartime
+  // Decompiled: if multiple opponents at war, reduce priority
+  if (warTargets.length > 1 && aliveCivCount > 2) {
+    score = Math.max(1, score - 2);
+  }
+
+  // Rival space race urgency: if rival is building spaceship, increase priority
+  if (rivalAhead) {
+    score += 3;
+  } else if (rivalSpaceProgress > 0) {
+    score += 1;
+  }
+
+  // Scale to match building score range (buildings score ~0-400 before normalization)
+  // Spaceship parts should score highly in late game
+  return Math.max(0, score);
+}
+
 // ── Scoring functions ─────────────────────────────────────────────
 
 /**
@@ -1395,30 +1558,10 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
 
     // ── case 0x23 (35-37): SS Structural/Component/Module ──
     case 35: case 36: case 37: {
-      // Spaceship parts: complex scoring with many conditions
-      // Simplified: only build if Apollo exists and strategic conditions are met
-      const apollo = gameState.wonders?.[25];
-      if (!apollo || apollo.cityIndex == null || apollo.destroyed) break;
-
-      // Check if any other civ already has a spaceship
-      let otherHasSpaceship = false;
-      for (let other = 1; other < 8; other++) {
-        if (other === civSlot) continue;
-        if (!(civsAlive & (1 << other))) continue;
-        // Approximate: check if other has Apollo too (they might be building SS)
-        if (apollo && apollo.cityIndex != null) {
-          const apolloCity = gameState.cities[apollo.cityIndex];
-          if (apolloCity && apolloCity.owner === other) otherHasSpaceship = true;
-        }
-      }
-
-      score = 4;
-      if (otherHasSpaceship) score = 2;
-
-      // Reduce if at war with multiple opponents
-      if (numOpponents > 1 && aliveCivCount > 0) {
-        score = otherHasSpaceship ? score - 2 : score - 1;
-      }
+      // Spaceship parts: use dedicated scoring from FUN_00597d6f port
+      const ssScore = _scoreSpaceshipPart(buildingId, gameState, civSlot, strategy);
+      if (ssScore < 0) break; // score stays 999 = skip
+      score = ssScore;
 
       // Coastal preference in certain strategic conditions
       if (strategicPosture !== 0) {

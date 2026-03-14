@@ -9,12 +9,12 @@
 // Each unit gets at most ONE action per AI turn.
 // ═══════════════════════════════════════════════════════════════════
 
-import { resolveDirection, getDirection } from '../movement.js';
+import { resolveDirection, getDirection, isZOCBlocked } from '../movement.js';
 import { validateAction } from '../rules.js';
 import {
   UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_ROLE, UNIT_NAMES,
   BUSY_ORDERS, TERRAIN_DEFENSE, TERRAIN_MOVE_COST, UNIT_NEGATES_WALLS,
-  UNIT_MOVE_POINTS, GOVT_INDEX,
+  UNIT_MOVE_POINTS, UNIT_COSTS, GOVT_INDEX,
 } from '../defs.js';
 
 // ── Constants ─────────────────────────────────────────────────────
@@ -778,11 +778,14 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
   }
 
   // ── 3. Move toward best target ──
-  // If we have a target city, use 8-direction scoring to pick the best move.
+  // If we have a target city, use the full 8-direction evaluator from the binary.
+  // This evaluates combat opportunities, exploration, terrain, ZOC, etc. all at once.
   if (bestTargetCity) {
-    const moveDir = _scoredDirectionToward(
+    const moveDir = _evaluateDirections(
       unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
-      bestTargetCity.gx, bestTargetCity.gy
+      bestTargetCity.gx, bestTargetCity.gy, {
+        role: 0, explore: true,
+      }
     );
     if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
   }
@@ -790,30 +793,35 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
   // ── 4. No target city — look for nearest enemy unit ──
   const enemyUnit = findNearestEnemyUnit(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, 16);
   if (enemyUnit) {
-    const moveDir = _scoredDirectionToward(
+    const moveDir = _evaluateDirections(
       unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
-      enemyUnit.gx, enemyUnit.gy
+      enemyUnit.gx, enemyUnit.gy, {
+        role: 0, explore: true,
+      }
     );
     if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
   }
 
   // ── 5. Exploration fallbacks ──
-  // 5a. Goody huts
-  if (domain === 0) {
-    const goody = findNearestGoodyHut(mapBase, unit.gx, unit.gy, civSlot, 8);
-    if (goody) {
-      const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, goody.gx, goody.gy, unit, civSlot);
-      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+  // Use the full evaluator with no target — it will score exploration lookahead,
+  // goody huts, and terrain naturally.
+  {
+    // Try with a goody hut target first
+    let exploreTarget = null;
+    if (domain === 0) {
+      exploreTarget = findNearestGoodyHut(mapBase, unit.gx, unit.gy, civSlot, 8);
     }
-  }
+    if (!exploreTarget) {
+      exploreTarget = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, domain);
+    }
 
-  // 5b. Explore toward unexplored tiles
-  const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, domain);
-  if (unexplored) {
-    const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, unexplored.gx, unexplored.gy, unit, civSlot);
-    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-    const directDir = directionToward(mapBase, unit.gx, unit.gy, unexplored.gx, unexplored.gy, domain);
-    if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
+    const moveDir = _evaluateDirections(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+      exploreTarget?.gx ?? null, exploreTarget?.gy ?? null, {
+        role: 0, explore: true,
+      }
+    );
+    if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
   }
 
   // 6. Random patrol
@@ -949,88 +957,840 @@ function _findNearestOwnCity(gameState, mapBase, gx, gy, civSlot, domain, bodyId
   return best;
 }
 
-// ── aiAttacker helper: scored direction toward target ────────────────
-// Ported from FUN_00538a29 movement evaluation loop (lines 4834+).
-// For each of 8 directions, compute a score based on:
-//   - Distance to target (prefer moves that get closer)
-//   - Terrain movement cost (prefer roads/flat terrain)
-//   - Avoid ocean for land units
-//   - Small random factor (0-4) for variety
-// Returns the best valid direction, or null if stuck.
-function _scoredDirectionToward(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
-                                 targetGx, targetGy) {
+// ── Universal 8-direction movement evaluator ─────────────────────────
+// Ported from FUN_00538a29 main movement loop (LAB_005414d7, lines 4798-5434).
+// This is the core "where do I move?" logic used by ALL unit roles in the
+// original Civ2 binary. Each of 8 directions gets scored based on:
+//
+//   1. Role-specific base score (attack→enemy weakness, defend→friendly cities,
+//      explore→unexplored terrain, settle→good sites)
+//   2. Terrain movement cost penalty (prefer roads, avoid mountains for fast units)
+//   3. Exploration lookahead bonus (4× further in same direction + neighbors)
+//   4. Enemy avoidance (non-combat units steer away from hostiles)
+//   5. Friendly/enemy city scoring (by role)
+//   6. Combat evaluation (full FUN_00580341 equivalent with role-specific bonuses)
+//   7. Distance-to-target improvement
+//   8. Direction momentum (penalty for sharp turns from last heading)
+//   9. Polar penalty (reduce score at map edges)
+//  10. Goody hut bonus
+//  11. ZOC blocking filter
+//  12. Enemy territory avoidance with treaty checks
+//  13. Allied territory penalty
+//  14. Post-loop movement-cost-vs-combat check
+//
+// @param {object} unit - the unit to evaluate
+// @param {number} unitIndex - unit's index in gameState.units
+// @param {object} gameState - current game state
+// @param {object} mapBase - immutable map data with accessors
+// @param {Map} spatialIdx - spatial index from buildUnitSpatialIndex
+// @param {number} civSlot - civ slot (1-7)
+// @param {number} domain - unit domain (0=land, 1=sea, 2=air)
+// @param {number|null} targetGx - target tile gx (or null for no target)
+// @param {number|null} targetGy - target tile gy (or null for no target)
+// @param {object} [opts] - options:
+//   role: unit role override (default: UNIT_ROLE[unit.type])
+//   explore: boolean, enable exploration lookahead (default: auto from role)
+//   lastDir: last direction index 0-7 for momentum (default: -1 = no momentum)
+//   avoidEnemies: boolean, penalize tiles near enemies (default: false)
+//   cityDefense: Map from analyzeCityDefense (for defend role)
+// @returns {string|null} best direction name, or null if stuck
+function _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+                              targetGx, targetGy, opts = {}) {
+  let role = opts.role ?? (UNIT_ROLE[unit.type] ?? 0);
+  const lastDirIdx = opts.lastDir ?? -1;
+  const avoidEnemies = opts.avoidEnemies ?? false;
+  const negatesWalls = UNIT_NEGATES_WALLS.has(unit.type);
+
+  // ── Damage level (ported from decompiled local_d8) ──
+  const maxHp = UNIT_HP[unit.type] || 1;
+  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  if (curHp * 4 < maxHp) damageLevel = 3;
+  else if (curHp * 2 < maxHp) damageLevel = 2;
+
+  // ── Current tile terrain (local_80) ──
+  const curTerrain = mapBase.getTerrain(unit.gx, unit.gy);
+
+  // ── Unit movement speed for terrain cost scaling ──
+  // Ported from DAT_0064bcc8: the unit's base move cost, used to scale
+  // terrain penalties — fast units (cavalry, armor) pay more for rough terrain
+  const unitMoveSpeed = UNIT_MOVE_POINTS[unit.type] || 1;
+
+  // ── Pre-loop role promotion (ported from lines 4824-4832) ──
+  // If role is 1 (defend) but DEF < ATK, promote to role 0 (attack)
+  // This makes defensive units with better attack stats act offensively
+  const unitDef = UNIT_DEF[unit.type] || 0;
+  const unitAtk = UNIT_ATK[unit.type] || 0;
+  if (role === 1) {
+    // Ported: if DEF < ATK and continent not under guard flag, promote to attack
+    if (unitDef < unitAtk) {
+      role = 0;
+    }
+    // Also promote if DEF <= ATK and no current target (patrol mode)
+    if (unitDef <= unitAtk && !opts.avoidEnemies) {
+      role = 0;
+    }
+  }
+
+  // ── Exploration flag (ported from local_68) ──
+  // Enabled when: no enemies nearby AND not an air defense unit holding position
+  const enemiesNearby = _anyEnemyNearUnit(gameState, mapBase, unit.gx, unit.gy, civSlot);
+  const autoExplore = opts.explore ?? (!enemiesNearby && role !== 4);
+
+  // ── Distance to target (if any) ──
+  const hasTarget = targetGx != null && targetGy != null;
+  const curDistToTarget = hasTarget ? tileDist(unit.gx, unit.gy, targetGx, targetGy, mapBase) : 0;
+
+  // ── Track whether we're on our own continent (for settler road checks) ──
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
+
+  // ── Evaluate each of 8 directions ──
   const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
   let bestDir = null;
-  let bestScore = -Infinity;
-  const curDist = tileDist(unit.gx, unit.gy, targetGx, targetGy, mapBase);
+  let bestScore = -999;
+  let bestRawScore = -999;  // local_fc: score before enemy-movement reduction
+  let foundEnemyTile = false;  // local_50
+  let enemyEngagementBonus = 0;  // local_64: tracks bonus from engaging enemies
 
-  for (const dir in neighbors) {
-    const [nx, ny] = neighbors[dir];
+  for (const dir of DIRECTIONS) {
+    const pair = neighbors[dir];
+    if (!pair) continue;
+    const [nx, ny] = pair;
     if (!inBounds(nx, ny, mapBase)) continue;
     const wnx = wrapX(nx, mapBase);
 
-    // Domain passability
+    // ── Tile properties ──
     const terrain = mapBase.getTerrain(wnx, ny);
-    if (domain === 0 && terrain === 10) continue;
-    if (domain === 1 && terrain !== 10) continue;
+    const isOcean = (terrain === 10);
 
-    let score = 0;
+    // ── Domain passability (ported from local_6c checks) ──
+    // Land units can't enter ocean (unless air transport flag)
+    // Sea units can't enter land
+    if (domain === 0 && isOcean) continue;
+    if (domain === 1 && !isOcean) continue;
 
-    // Distance improvement toward target (ported from decompiled scoring)
-    const newDist = tileDist(wnx, ny, targetGx, targetGy, mapBase);
-    score += (curDist - newDist) * 4;
-
-    // Terrain cost penalty for land units (ported from decompiled)
-    // Prefer roads (low cost) over mountains (high cost)
-    if (domain === 0) {
-      const terrCost = TERRAIN_MOVE_COST[terrain] ?? 1;
-      score -= terrCost * 2;
-
-      // Terrain defense bonus (attackers prefer defensible positions)
-      const terrDef = TERRAIN_DEFENSE[terrain] ?? 2;
-      score += terrDef;
+    // ── Find first combat-relevant unit at destination (ported from local_54) ──
+    // Walk the stack, skip units with role > 4 (transports, settlers, diplomats, traders)
+    // Ported from the while loop at lines 4845-4849
+    const tileEntries = unitsAt(spatialIdx, wnx, ny);
+    let firstUnitOwner = -1;  // local_78
+    let firstUnitEntry = null;
+    for (const entry of tileEntries) {
+      if (entry.unit.gx < 0) continue;
+      const entryRole = UNIT_ROLE[entry.unit.type] ?? 0;
+      if (entryRole > 4) continue;
+      firstUnitEntry = entry;
+      firstUnitOwner = entry.unit.owner;
+      break;
     }
+    const hasUnitOnTile = firstUnitEntry !== null;
 
-    // Check for enemies at destination
-    const enemiesOnTile = unitsAt(spatialIdx, wnx, ny).filter(
-      e => e.unit.owner !== civSlot && isAtWar(gameState, civSlot, e.unit.owner)
-    );
-
-    if (enemiesOnTile.length > 0) {
-      // There's an enemy here — compute combat odds
-      const bestDef = bestDefenderOnTile(spatialIdx, wnx, ny, civSlot, terrain, gameState, mapBase);
-      if (bestDef) {
-        const city = gameState.cities.find(c =>
-          c.gx === wnx && c.gy === ny && c.size > 0 && c.owner !== civSlot);
-        const walls = city ? (city.buildings?.has(3) || false) : false;
-        const combatScore = _computeCombatScore(unit, bestDef.unit, terrain,
-          walls, UNIT_NEGATES_WALLS.has(unit.type), bestDef.unit.orders === 'fortified');
-        if (combatScore >= 0) {
-          score += 8; // bonus for favorable combat opportunities
-        } else {
-          score -= 8; // penalty for unfavorable combat
+    // ── Complex passability checks (ported from lines 4850-4861) ──
+    // Check domain constraints, stacking, and ZOC before scoring.
+    //
+    // Key binary checks consolidated:
+    // (1) Land units (domain 0): dest must not be ocean (already filtered above)
+    // (2) Sea units (domain 1): dest must be ocean (already filtered above)
+    // (3) If own unit at dest with 2+ units stacked, check for city/fortress
+    //     (binary: thunk_FUN_005b50ad(local_54,2) < 2 OR has city OR has fortress)
+    // (4) If enemy at dest but not at war, skip tile
+    if (hasUnitOnTile && firstUnitOwner === civSlot) {
+      // Check soft stacking limits — Civ2 limits stacking in the field
+      // Ported from lines 4858-4861: allow if < 2 units, or has city/fortress
+      let ownCount = 0;
+      for (const entry of tileEntries) {
+        if (entry.unit.owner === civSlot && entry.unit.gx >= 0) ownCount++;
+      }
+      if (ownCount >= 2) {
+        // Allow if tile has a city or fortress
+        const hasCity = gameState.cities.some(c =>
+          c.gx === wnx && c.gy === ny && c.owner === civSlot && c.size > 0);
+        const tileIdx = ny * mapBase.mw + wnx;
+        const tile = mapBase.tileData[tileIdx];
+        const hasFortress = tile && tile.improvements && tile.improvements.fortress;
+        if (!hasCity && !hasFortress) {
+          // Skip over-stacked field tiles (soft limit = 2 in binary)
+          // Exception: allow if combat unit count < 2
+          const combatCount = tileEntries.filter(e =>
+            e.unit.owner === civSlot && e.unit.gx >= 0 && (UNIT_ATK[e.unit.type] || 0) > 0
+          ).length;
+          if (combatCount >= 2) continue;
         }
       }
-    } else {
-      // Check if own units are at destination (grouping bonus from decompiled)
-      const friendliesOnTile = unitsAt(spatialIdx, wnx, ny).filter(
-        e => e.unit.owner === civSlot && (UNIT_ROLE[e.unit.type] ?? 0) === 0
-      );
-      if (friendliesOnTile.length > 0) {
-        score += 2; // slight preference for stacking with own attackers
+    }
+
+    // ── ZOC blocking check ──
+    // Ported from the ZOC filter — only applies to land units moving to empty tiles
+    if (domain === 0 && !hasUnitOnTile) {
+      const zocBlocked = isZOCBlocked(unit.type, civSlot, unit.gx, unit.gy, wnx, ny,
+        mapBase, gameState.units);
+      if (zocBlocked) continue;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  SCORE COMPUTATION (ported from lines 4862-5377)
+    // ══════════════════════════════════════════════════════════════
+    let score = 0;
+    let isEnemyEngagement = false;  // local_118: true when evaluating enemy combat
+    let localEngagementBonus = 0;   // local_ac: bonus type for this direction
+
+    // ── (A) Base score by tile contents ──
+    if (!hasUnitOnTile) {
+      // No units on destination tile — 3 scoring paths from binary
+
+      if (avoidEnemies) {
+        // ── Path 1: Barbarian/cautious mode (line 4863-4868) ──
+        // Ported from bVar23 path: if current terrain is ocean and enemy nearby, skip
+        if (curTerrain === 10 && _anyEnemyNearUnit(gameState, mapBase, wnx, ny, civSlot)) {
+          continue;  // goto LAB_0054168e
+        }
+        score = Math.floor(Math.random() * 5);
+      } else if (firstUnitOwner < 0 && !isOcean) {
+        // ── Path 2: Empty land tile, no units present (lines 4869-4878) ──
+        if (role === 0) {
+          // Attack role, land: random(0,2) minus terrain move cost × 2
+          // Ported from line 4871-4872
+          score = Math.floor(Math.random() * 3);
+          score += (TERRAIN_MOVE_COST[terrain] ?? 1) * -2;
+        } else {
+          // Non-attack roles: random(0,2) minus terrain defense bonus
+          // Ported from line 4875-4876
+          score = Math.floor(Math.random() * 3);
+          score -= (TERRAIN_DEFENSE[terrain] ?? 2);
+        }
+      } else {
+        // ── Path 3: Has own units or is ocean tile (lines 4879-4991) ──
+        // Ported from the else branch at line 4879
+        score = Math.floor(Math.random() * 5);
+
+        // If no enemy units and no own units (empty tile with our civ's presence)
+        if (firstUnitOwner < 0 || firstUnitOwner === civSlot) {
+          // ── Terrain scoring for combat units heading to field tiles ──
+          // Ported from lines 4882-4910
+          if (role < 6) {
+            // Combat units: terrain defense × 4 (prefer defensible terrain)
+            // Ported from line 4883
+            score += (TERRAIN_DEFENSE[terrain] ?? 2) * 4;
+          } else {
+            // Settlers (role >= 6): penalize by (moveCost - 1) × unitSpeed
+            // Ported from lines 4886-4910
+            const terrCost = TERRAIN_MOVE_COST[terrain] ?? 1;
+            score += 6 - (terrCost - 1) * unitMoveSpeed;
+
+            // ── Settler road-to-home-city check (lines 4889-4910) ──
+            // If we have a target city and distance < 4, check road connectivity
+            if (hasTarget && curDistToTarget < 4) {
+              const fromImp = mapBase.getImprovements(unit.gx, unit.gy);
+              const toImp = mapBase.getImprovements(wnx, ny);
+              const hasRoadConnection = (fromImp.road || fromImp.railroad) &&
+                                        (toImp.road || toImp.railroad);
+              if (hasRoadConnection) {
+                // On road: bonus if terrain is easy, penalty if rough for fast units
+                if (unitMoveSpeed < (TERRAIN_MOVE_COST[terrain] ?? 1)) {
+                  score -= 4;  // line 4897
+                } else {
+                  score += 8;  // line 4900
+                }
+              } else if ((TERRAIN_MOVE_COST[terrain] ?? 1) <= unitMoveSpeed) {
+                // Railroad check: terrain cost within unit speed on railroad
+                const toImpObj = mapBase.getImprovements(wnx, ny);
+                if (toImpObj.railroad) {
+                  score += 4;  // line 4908
+                }
+              }
+            }
+          }
+        }
+      }
+    } else if (hasUnitOnTile && firstUnitOwner === civSlot) {
+      // ── Own units on tile: role-based stacking evaluation ──
+      // Ported from lines 4913-4989
+
+      score = Math.floor(Math.random() * 5);
+
+      // Check if the tile is our city (binary: thunk_FUN_005b94d5 returns city flag)
+      const isFriendlyCity = gameState.cities.some(c =>
+        c.gx === wnx && c.gy === ny && c.owner === civSlot && c.size > 0);
+      // Also check if it's "our territory" city tile (bit 0x43 == 1 means city+owned)
+      const isOwnedCity = isFriendlyCity;
+
+      if (isOwnedCity) {
+        // ── In our city: role-based switch (lines 4917-4963) ──
+        const atkCount = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
+        const defCount = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 1);
+
+        switch (role) {
+          case 0: // Attack: prefer cities with few attackers but some defenders
+            // Ported from lines 4918-4927
+            if (atkCount < 1 && defCount > 0) score += 8;
+            else score += atkCount * -8;
+            break;
+          case 1: // Defend: prefer cities that need more defense
+            // Ported from lines 4928-4935
+            if (defCount < 1) score += 8;
+            else score += defCount * -4;
+            break;
+          case 2: // Naval superiority: bonus if air defense present, penalize extra naval
+            // Ported from lines 4937-4943
+            {
+              const airDefHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 4);
+              if (airDefHere > 0) score += 8;
+              const navalHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 2);
+              score += navalHere * -4;
+            }
+            break;
+          case 4: // Air defense: bonus if naval present, penalize extra air defense
+            // Ported from lines 4945-4951
+            {
+              const navalHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 2);
+              if (navalHere > 0) score += 8;
+              const airDefHere2 = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 4);
+              score += airDefHere2 * -8;
+            }
+            break;
+          case 5: // Transport: slight penalty
+            // Ported from lines 4953-4955
+            score -= 4;
+            break;
+          case 6: // Settle: bonus if combat escort present
+            // Ported from lines 4957-4962
+            {
+              const combatHere = atkCount + defCount;
+              if (combatHere > 0) score += 8;
+            }
+            break;
+          default:
+            break;
+        }
+      } else {
+        // ── Not our city — stacking with own field units ──
+        // Ported from lines 4966-4989
+        switch (role) {
+          case 0: // Attack: group with other attackers, scale by stack size
+            // Ported from lines 4968-4970: (atkCount * 4) / (totalCount + 1)
+            {
+              const atkHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
+              const totalHere = tileEntries.filter(e => e.unit.owner === civSlot && e.unit.gx >= 0).length;
+              score += Math.floor((atkHere * 4) / (totalHere + 1));
+            }
+            break;
+          case 1: // Defend: group with defenders, penalize by attacker count
+            // Ported from lines 4972-4975: (defCount * 2) / (atkCount + 1)
+            {
+              const defHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 1);
+              const atkHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
+              score += Math.floor((defHere * 2) / (atkHere + 1));
+            }
+            break;
+          case 5: // Transport: prefer tiles with own land units + terrain defense
+            // Ported from lines 4977-4980
+            {
+              const defTerr = TERRAIN_DEFENSE[terrain] ?? 2;
+              const ownCount = _countDomainUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
+              score += (defTerr + ownCount) * 2;
+            }
+            break;
+          case 6: // Settle: bonus if combat escorts present
+            // Ported from lines 4982-4988
+            {
+              const atkHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
+              const defHere = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 1);
+              if (atkHere + defHere > 0) score += 8;
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    } else if (hasUnitOnTile && firstUnitOwner !== civSlot) {
+      // ══════════════════════════════════════════════════════════════
+      //  ENEMY UNIT ON TILE — Combat evaluation (lines 5076-5303)
+      // ══════════════════════════════════════════════════════════════
+      if (!isAtWar(gameState, civSlot, firstUnitOwner)) {
+        // Not at war — skip this tile (don't walk through neutral units)
+        continue;
+      }
+
+      isEnemyEngagement = true;  // local_118 = 1
+
+      // ── Subtract our unit's defense rating as base penalty (lines 5301-5303) ──
+      // Ported: local_18 -= our unit's DEF value
+      score -= unitDef;
+
+      // ── Pre-combat checks (ported from lines 5079-5100) ──
+      // Several conditions that cause skipping enemy engagement:
+      // - Barbarian units skip engagement in certain conditions
+      // - Sea domain units entering enemy-occupied land (domain mismatch)
+      // - Non-combat units (ATK=0) trying to enter enemy tile
+      if (unitAtk === 0 && role !== 7) {
+        // Non-combat, non-diplomat: cannot attack
+        continue;
+      }
+
+      // ── Find best defender and compute combat score ──
+      // Ported from: local_54 = thunk_FUN_0057e6e2(local_54, local_168)
+      // then FUN_00580341(local_168, local_60, 0)
+      const bestDef = bestDefenderOnTile(spatialIdx, wnx, ny, civSlot, terrain, gameState, mapBase);
+      if (bestDef) {
+        const defCity = gameState.cities.find(c =>
+          c.gx === wnx && c.gy === ny && c.size > 0 && c.owner !== civSlot);
+        const hasCityWalls = defCity ? (defCity.buildings?.has(3) || false) : false;
+
+        // ── Core combat score (FUN_00580341 equivalent) ──
+        // Ported from line 5124
+        const combatScore = _computeCombatScore(
+          unit, bestDef.unit, terrain, hasCityWalls, negatesWalls,
+          bestDef.unit.orders === 'fortified'
+        );
+
+        // ── Scale by unit count at target + normalize by unit cost ──
+        // Ported from lines 5125-5129:
+        //   local_10 = ((countRole0AtTarget + 1) * combatScore) / (unitCost / 10)
+        const atkUnitsAtTarget = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
+        const unitCostDiv = Math.max(1, Math.floor((UNIT_COSTS[unit.type] ?? 40) / 10));
+        let combatValue = Math.floor(((atkUnitsAtTarget + 1) * combatScore) / unitCostDiv);
+
+        // ── City capture bonus (line 5131-5132) ──
+        // Ported: if target is an enemy city, multiply combat value × 3
+        if (defCity) combatValue *= 3;
+
+        // ── Naval superiority vs air defense bonus (lines 5134-5137) ──
+        // Ported: if our role is 2 (naval) and target's role is 4 (air def), double
+        if (role === 2 && (UNIT_ROLE[bestDef.unit.type] ?? 0) === 4) {
+          combatValue *= 2;
+        }
+
+        // ── Undamaged path (local_48 == 0): role-specific bonuses ──
+        if (damageLevel < 2) {
+          // ── Role 0 (attack) specific bonuses ──
+          if (role === 0) {
+            // Ported from line 5141-5142: if no current target (uVar21==0), double
+            if (!hasTarget) {
+              combatValue *= 2;
+            }
+
+            // Ported from lines 5144-5149: if our ATK × 2 < enemy total DEF, double
+            // (we're outgunned, so attacking is more valuable — focus fire)
+            const enemyDefTotal = _countEnemyDefensePower(spatialIdx, wnx, ny, civSlot, gameState);
+            if (unitAtk * 2 < enemyDefTotal) {
+              combatValue *= 2;
+              localEngagementBonus = 1;
+            }
+
+            // Ported from lines 5151-5154: if own attack-role units at target tile, double
+            // (coordinated stack attack bonus)
+            const atkRoleAtTarget = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
+            if (atkRoleAtTarget > 0) {
+              combatValue *= 2;
+              localEngagementBonus = 1;
+            }
+
+            // Ported from lines 5156-5159: if own units mobilized near starting tile, double
+            // FUN_00492e60 equivalent — check if we have units on rally point
+            const nearbyOwn = _countOwnAttackersNear(gameState, unit.gx, unit.gy, civSlot, mapBase);
+            if (nearbyOwn > 0) {
+              combatValue *= 2;
+            }
+          }
+
+          // Ported from lines 5169-5172: if target is a "stealth" unit (flags & 8),
+          // triple combat value — corresponds to high-value targets like spies/nukes
+          const defenderRole = UNIT_ROLE[bestDef.unit.type] ?? 0;
+          if (defenderRole === 7) {
+            // Diplomat/spy units are high-value targets
+            combatValue *= 3;
+          }
+        } else {
+          // ── Damaged path (local_48 != 0, lines 5174-5181) ──
+          // Halve combat value when damaged
+          combatValue = Math.floor(combatValue / 2);
+          // If defender's ATK >= our DEF, set to 0 (retreat rather than fight)
+          const defAtk = UNIT_ATK[bestDef.unit.type] || 0;
+          if (defAtk >= unitDef) combatValue = 0;
+        }
+
+        // ── Special target role bonuses (lines 5183-5202) ──
+        const defenderRoleCheck = UNIT_ROLE[bestDef.unit.type] ?? 0;
+
+        // Ported from lines 5192-5199: barbarian (owner==0) bonus for role 7 targets
+        if (firstUnitOwner === 0 && defenderRoleCheck === 7) {
+          // Against barbarian diplomats: halve (they're not real threats)
+          combatValue = Math.floor(combatValue / 2);
+        } else if (firstUnitOwner === 0 && defenderRoleCheck > 4) {
+          // Against barbarian transports/settlers: bonus
+          combatValue += 12;
+        } else if (defenderRoleCheck === 6) {
+          // Ported from line 5200-5201: settler target — double value (capture value)
+          combatValue *= 2;
+        }
+
+        // ── Threshold check (lines 5203-5207) ──
+        // Ported: threshold = (barbarian ? 6 : 12)
+        // Binary: ((-(uint)(local_78 == 0) & 6) + 6)
+        //   → if local_78 == 0: (-1 & 6) + 6 = 6 + 6 = 12... wait, that's wrong
+        //   → Actually: -(uint)(true) = 0xFFFFFFFF, & 6 = 6, + 6 = 12 for barbarian
+        //   → -(uint)(false) = 0, & 6 = 0, + 6 = 6 for non-barbarian
+        // Wait, re-reading: local_78 is the OWNER of the first unit. Barbarians are civ 0.
+        // So threshold = 12 if barbarian owner, 6 if normal civ.
+        // This seems inverted but matches the binary: the AI is MORE cautious attacking
+        // barbarians (who tend to be weak but grouped) and LESS cautious attacking civs.
+        // Actually let's re-check: -(uint)(local_78 == 0) when local_78==0 gives -1 (0xFFFFFFFF)
+        // -1 & 6 = 6, so 6 + 6 = 12 for barbarians. For non-barbarian: 0 & 6 = 0, 0 + 6 = 6.
+        // So higher threshold for barbarians = more cautious. This makes sense because
+        // barbarians don't hold territory worth capturing.
+        const threshold = (firstUnitOwner === 0) ? 12 : 6;
+        if (combatValue >= threshold) {
+          score += combatValue * 4;
+          foundEnemyTile = true;
+        } else {
+          score = -999;
+        }
+      } else {
+        // No valid defender found — maybe all are non-combat or dead
+        score += 8;
       }
     }
 
-    // Random factor (0-4) to prevent identical moves (ported from decompiled)
-    score += Math.random() * 4;
+    // ── (B) Direction momentum penalty (ported from lines 4995-5006) ──
+    // Penalize sharp turns from last heading.
+    // Binary: compute abs(lastDir - curDir), clamp via 8-wrap, penalty = diff² × 2
+    if (lastDirIdx >= 0) {
+      const curDirIdx = DIRECTIONS.indexOf(dir);
+      let angularDiff = Math.abs(lastDirIdx - curDirIdx);
+      if (angularDiff > 4) angularDiff = 8 - angularDiff;
+      score -= angularDiff * angularDiff * 2;
+    }
 
+    // ── (C) Enemy territory avoidance (ported from lines 5010-5053) ──
+    // Ported: only applies when no unit on tile AND tile owner is known AND
+    // our unit's role < 5 (combat roles only, not transports/settlers)
+    if (firstUnitEntry === null && firstUnitOwner < 0) {
+      // No units on tile — check territory ownership
+      const tileOwner = _getTileOwnerCiv(mapBase, wnx, ny);
+
+      if (tileOwner > 0 && tileOwner !== civSlot) {
+        // ── Check treaty status with tile owner ──
+        const treatyStatus = getTreaty(gameState, civSlot, tileOwner);
+
+        if (treatyStatus !== 'war') {
+          // ── Allied/neutral territory checks (lines 5014-5053) ──
+          // Ported: check if we have ceasefire/peace with tile owner
+          if (hasTarget && curDistToTarget < 4 && tileOwner !== civSlot) {
+            // Moving through allied territory toward a target: penalty if close
+            // Ported from lines 5023-5033
+            const newDist = tileDist(wnx, ny, targetGx, targetGy, mapBase);
+            if (curDistToTarget < newDist && curDistToTarget < 3) {
+              score += 5;  // Moving away from target through ally = slight bonus (flanking)
+            }
+            if (newDist >= curDistToTarget) {
+              score -= 5;  // Not getting closer through allied territory
+            }
+          }
+
+          // Ported from lines 5036-5052: territory with improvements penalty
+          if (isAtWar(gameState, civSlot, tileOwner)) {
+            score -= 5;
+            const imp = mapBase.getImprovements(wnx, ny);
+            if (imp.road || imp.irrigation || imp.mining) score -= 3;
+          }
+        } else {
+          // At war with tile owner but no unit present
+          // Minor avoidance for non-combat roles
+          if (avoidEnemies && role < 5) {
+            score -= 5;
+            const imp = mapBase.getImprovements(wnx, ny);
+            if (imp.road || imp.irrigation || imp.mining) score -= 3;
+          }
+        }
+      }
+    }
+
+    // ── (D) Allied territory penalty (ported from line 5055-5057) ──
+    // Ported: if tile owner has alliance flag (treaty & 8), penalty -6
+    if (!hasUnitOnTile && firstUnitOwner < 0) {
+      const tileOwner = _getTileOwnerCiv(mapBase, wnx, ny);
+      if (tileOwner > 0 && tileOwner !== civSlot &&
+          !isAtWar(gameState, civSlot, tileOwner)) {
+        score -= 6;
+      }
+    }
+
+    // ── (E) Undefended enemy city / goody hut detection (lines 5058-5073) ──
+    if (!hasUnitOnTile) {
+      // ── Undefended enemy city: huge bonus (line 5066) ──
+      // Ported: if tile has enemy city owned by a civ we're at war with,
+      // and treaty checks pass (no ceasefire, etc.), score = 999
+      const emptyEnemyCity = gameState.cities.find(c =>
+        c.gx === wnx && c.gy === ny && c.size > 0 && c.owner !== civSlot &&
+        isAtWar(gameState, civSlot, c.owner));
+      if (emptyEnemyCity) {
+        // Ported from lines 5061-5068: additional checks before awarding 999
+        // Check if the city owner's treaty has certain flags (ceasefire, etc.)
+        // In our model, isAtWar already filters this, so direct award
+        score = 999;
+      }
+
+      // ── Goody hut bonus (line 5071-5073) ──
+      // Ported: thunk_FUN_005b8ffa returns nonzero if goody hut present → +20
+      const tileIdx = ny * mapBase.mw + wnx;
+      const tile = mapBase.tileData[tileIdx];
+      if (tile && tile.goodyHut) {
+        score += 20;
+      }
+    }
+
+    // ── (F) Distance to target improvement ──
+    // This is not a single block in the decompiled code but interspersed through
+    // the city-target distance checks. We centralize it here.
+    // The binary uses distance comparisons at multiple points; the net effect is
+    // a per-direction bonus/penalty proportional to how much closer we get.
+    if (hasTarget) {
+      const newDist = tileDist(wnx, ny, targetGx, targetGy, mapBase);
+      const distImprovement = curDistToTarget - newDist;
+      // Scale by 4 (ported from multiple score += ±4/±5 patterns)
+      score += distImprovement * 4;
+    }
+
+    // ── (G) Exploration lookahead (ported from lines 5316-5354) ──
+    // Ported: check 4× further in the same direction for unexplored tiles.
+    // Binary: iVar11 = FUN_005ae052(dx[local_60] * 4 + local_d4)
+    //         iVar12 = dy[local_60] * 4 + local_e8
+    // Then checks visibility, enemy presence, and terrain food value.
+    if (autoExplore && !isEnemyEngagement) {
+      // ── Far-ahead check (4× in same direction) ──
+      // Ported from lines 5317-5328
+      const lookDest = resolveDirection(wnx, ny, dir, mapBase);
+      if (lookDest) {
+        // Compute the 4× distant tile from current position
+        // Binary: dx[dir]*4 + curX, dy[dir]*4 + curY
+        // Walk 4 steps in the same direction via repeated resolveDirection
+        const lookPair2 = resolveDirection(lookDest.gx, lookDest.gy, dir, mapBase);
+        const lookPair3 = lookPair2 ? resolveDirection(lookPair2.gx, lookPair2.gy, dir, mapBase) : null;
+        const farTile = lookPair3 ? resolveDirection(lookPair3.gx, lookPair3.gy, dir, mapBase) : null;
+
+        // Check 4× distant tile for unexplored
+        if (farTile && inBounds(farTile.gx, farTile.gy, mapBase)) {
+          const farWgx = wrapX(farTile.gx, mapBase);
+          if (!isExplored(mapBase, farWgx, farTile.gy, civSlot)) {
+            // Ported from line 5323-5324: unexplored → +8
+            score += 8;
+          } else {
+            // Ported from line 5327: explored → +2
+            score += 2;
+          }
+        }
+
+        // ── Check 8 neighbors of the far-ahead point ──
+        // Ported from the inner loop at lines 5330-5354
+        const farCheckTile = lookDest;  // Use the 1-step-ahead as the far check center
+        if (inBounds(farCheckTile.gx, farCheckTile.gy, mapBase)) {
+          const farNeighbors = mapBase.getNeighbors(farCheckTile.gx, farCheckTile.gy);
+          for (const fdir in farNeighbors) {
+            const [fnx, fny] = farNeighbors[fdir];
+            if (!inBounds(fnx, fny, mapBase)) continue;
+            const fwnx = wrapX(fnx, mapBase);
+
+            // Ported from lines 5335-5339: unexplored neighbor → +2
+            if (!isExplored(mapBase, fwnx, fny, civSlot)) {
+              score += 2;
+            }
+
+            // Ported from lines 5341-5343: enemy unit in lookahead → -2
+            const farEntries = unitsAt(spatialIdx, fwnx, fny);
+            for (const fe of farEntries) {
+              if (fe.unit.owner !== civSlot && isAtWar(gameState, civSlot, fe.unit.owner) &&
+                  (UNIT_ATK[fe.unit.type] || 0) > 0) {
+                score -= 2;
+              }
+            }
+
+            // Ported from lines 5345-5351: for barbarian/explorer mode,
+            // add terrain food value bonus (DAT_00627cca = terrain food output)
+            // This makes explorers prefer fertile terrain
+            if (avoidEnemies) {
+              // Terrain food output bonus (approximate DAT_00627cca lookup)
+              // Terrain food values: desert=0, plains=1, grassland=2, forest=1,
+              // hills=1, mountains=0, tundra=1, glacier=0, swamp=1, jungle=1, ocean=1
+              const TERRAIN_FOOD = [0, 1, 2, 1, 1, 0, 1, 0, 1, 1, 1];
+              score += (TERRAIN_FOOD[mapBase.getTerrain(fwnx, fny)] ?? 0);
+            }
+          }
+        }
+      }
+
+      // ── Bonus for destination tile itself being unexplored ──
+      if (!isExplored(mapBase, wnx, ny, civSlot)) {
+        score += 8;
+      }
+    }
+
+    // ── (H) Terrain movement cost for land units ──
+    // Ported from the terrain-cost patterns interspersed in lines 4882-4910.
+    // Only applies to land units on empty tiles (not already scored in path A).
+    // This section handles road/railroad bonuses separately from the base terrain
+    // scoring in section (A), since roads reduce effective movement cost.
+    if (domain === 0 && !hasUnitOnTile && !isEnemyEngagement) {
+      // ── Road/railroad bonus ──
+      const fromImp = mapBase.getImprovements(unit.gx, unit.gy);
+      const toImp = mapBase.getImprovements(wnx, ny);
+      if (fromImp.railroad && toImp.railroad) {
+        score += 8;  // Free movement on railroads
+      } else if ((fromImp.road || fromImp.railroad) && (toImp.road || toImp.railroad)) {
+        score += 4;  // Reduced cost on roads
+      }
+    }
+
+    // ── (I) Polar penalty (ported from lines 5356-5358) ──
+    // Binary: if (local_74 == 0 || local_74 == mapHeight - 1) score /= 3
+    if (ny === 0 || ny === mapBase.mh - 1) {
+      score = Math.floor(score / 3);
+    }
+
+    // ── (J) Movement cost vs combat check (ported from lines 5360-5367) ──
+    // If engaging an enemy, check if our remaining movement is sufficient.
+    // Binary: if local_118 && movesLeft < unitSpeed && no city at dest,
+    //         reduce score by ratio of our attack units vs total units.
+    if (isEnemyEngagement) {
+      const movesLeft = unit.movesLeft || 0;
+      const baseSpeed = unitMoveSpeed * 3;  // in movement thirds
+      if (movesLeft < baseSpeed) {
+        // Check if there's a city at dest (cities don't cost extra to enter)
+        const destHasCity = gameState.cities.some(c =>
+          c.gx === wnx && c.gy === ny && c.size > 0);
+        if (!destHasCity) {
+          // Reduce score proportionally to remaining movement
+          const ownAtkHere = _countRoleUnitsAtTile(spatialIdx, unit.gx, unit.gy, civSlot, 0);
+          const ownTotalHere = tileEntries.filter(e =>
+            e.unit.owner === civSlot && e.unit.gx >= 0).length;
+          if (ownTotalHere > 0) {
+            score = Math.floor((ownAtkHere / Math.max(1, ownTotalHere)) * score);
+          }
+        }
+      }
+    }
+
+    // ── Track best scores ──
+    const rawScore = score;
     if (score > bestScore) {
       bestScore = score;
       bestDir = dir;
+      if (isEnemyEngagement) {
+        foundEnemyTile = true;
+        enemyEngagementBonus = localEngagementBonus;
+      }
+    }
+    if (rawScore > bestRawScore) {
+      bestRawScore = rawScore;
+    }
+  }
+
+  // ── Post-loop checks (ported from lines 5383-5399) ──
+
+  // (1) If engaging enemy but movement cost is too high, cancel
+  // Ported from lines 5383-5387:
+  //   if foundEnemy && movesLeft < (unitSpeed - engagementBonus), cancel
+  if (foundEnemyTile) {
+    const movesLeft = unit.movesLeft || 0;
+    const effectiveSpeed = (unitMoveSpeed - enemyEngagementBonus) * 3;
+    if (movesLeft < effectiveSpeed && effectiveSpeed > 0) {
+      bestDir = null;
+    }
+  }
+
+  // (2) If raw score differs from best score, the movement cost reduction
+  // changed the winner — cancel to avoid suboptimal engagement
+  // Ported from lines 5388-5390
+  if (bestRawScore !== bestScore) {
+    // The score was modified by movement cost check — result is unreliable
+    // Only cancel if we're engaging enemies (don't cancel exploration)
+    if (foundEnemyTile) {
+      bestDir = null;
     }
   }
 
   return bestDir;
+}
+
+// ── _evaluateDirections helpers ───────────────────────────────────────
+
+/**
+ * Count units of a specific role at a tile owned by civSlot.
+ * Ported from FUN_005b53b6(unitIdx, roleFilter).
+ */
+function _countRoleUnitsAtTile(spatialIdx, gx, gy, civSlot, targetRole) {
+  const entries = unitsAt(spatialIdx, gx, gy);
+  let count = 0;
+  for (const { unit } of entries) {
+    if (unit.owner !== civSlot || unit.gx < 0) continue;
+    if ((UNIT_ROLE[unit.type] ?? 0) === targetRole) count++;
+  }
+  return count;
+}
+
+/**
+ * Count units of a specific domain at a tile owned by civSlot.
+ */
+function _countDomainUnitsAtTile(spatialIdx, gx, gy, civSlot, targetDomain) {
+  const entries = unitsAt(spatialIdx, gx, gy);
+  let count = 0;
+  for (const { unit } of entries) {
+    if (unit.owner !== civSlot || unit.gx < 0) continue;
+    if ((UNIT_DOMAIN[unit.type] ?? 0) === targetDomain) count++;
+  }
+  return count;
+}
+
+/**
+ * Sum total defense power of enemy units at a tile.
+ */
+function _countEnemyDefensePower(spatialIdx, gx, gy, civSlot, gameState) {
+  const entries = unitsAt(spatialIdx, gx, gy);
+  let total = 0;
+  for (const { unit } of entries) {
+    if (unit.owner === civSlot || unit.gx < 0) continue;
+    if (!isAtWar(gameState, civSlot, unit.owner)) continue;
+    total += (UNIT_DEF[unit.type] || 0);
+  }
+  return total;
+}
+
+/**
+ * Check if any enemy combat units are within 2 tiles of a unit.
+ * Simplified equivalent for the exploration flag check.
+ */
+function _anyEnemyNearUnit(gameState, mapBase, gx, gy, civSlot) {
+  for (const u of gameState.units) {
+    if (u.gx < 0 || u.owner === civSlot) continue;
+    if ((UNIT_ATK[u.type] || 0) <= 0) continue;
+    if (!isAtWar(gameState, civSlot, u.owner)) continue;
+    const dist = tileDist(gx, gy, u.gx, u.gy, mapBase);
+    if (dist <= 4) return true;
+  }
+  return false;
+}
+
+/**
+ * Get the civ that owns a tile (from city radius ownership).
+ * Returns civ slot or 0 if unclaimed.
+ */
+function _getTileOwnerCiv(mapBase, gx, gy) {
+  if (typeof mapBase.getTileOwnership === 'function') {
+    return mapBase.getTileOwnership(gx, gy) || 0;
+  }
+  // Fallback: check if a city's worked tiles include this one
+  return 0;
+}
+
+// ── Legacy wrapper ────────────────────────────────────────────────────
+// The old _scoredDirectionToward is now a thin wrapper around _evaluateDirections.
+// Callers that used the old signature continue to work.
+function _scoredDirectionToward(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+                                 targetGx, targetGy) {
+  return _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+    targetGx, targetGy, {
+      role: UNIT_ROLE[unit.type] ?? 0,
+      explore: true,
+    });
 }
 
 /**
@@ -1971,74 +2731,263 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
 /**
  * AI for Role 7 (Diplomacy): diplomats/spies.
  *
- * Priority:
- * 1. If in enemy city, attempt espionage (steal tech or sabotage)
- * 2. Move toward nearest enemy city
- * 3. Avoid enemy combat units (diplomats are fragile)
+ * Ported from Civ2 FUN_00538a29 role 6 logic (lines 2808-2928).
+ *
+ * The decompiled logic:
+ * 1. If unit has a goto order toward an enemy city (orders == 0x0B),
+ *    check if that city still belongs to an enemy we're at war with.
+ *    If so, keep going (local_a4 = 1 → proceed to movement evaluator).
+ * 2. Otherwise, if the diplomat is NOT in a city (FUN_005b89e4 == 0):
+ *    Score all cities as potential targets:
+ *    - Must be on the same continent (bodyId match), or reachable via
+ *      adjacent tiles on the same continent
+ *    - Own cities: score = 99 - distance (lower priority)
+ *    - Foreign cities:
+ *      a. If we have treaty (flags & 0xe): complex diplomatic checks
+ *         determine whether to halve the score or skip entirely
+ *      b. If they hate us (treaty & 0x20): score += 100 (high priority)
+ *      c. Otherwise: score += diplomatic_value(us, them)
+ *      d. Score /= (distance + 1)
+ *      e. If city has capital flag (& 8): halve score; if tech gap > 6:
+ *         halve again; if we have embassy: score = 1
+ *      f. Final: score += 100
+ *    Pick the city with the highest score and goto it (order 0x53='S').
+ * 3. If in an enemy city: perform espionage action.
+ * 4. If no valid target found and no goto order: disband.
+ *
+ * Our JS adaptation preserves the scoring structure but uses our
+ * action types (STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT) and
+ * _evaluateDirections() for movement.
  */
 function aiDiplomat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   const domain = UNIT_DOMAIN[unit.type] ?? 0;
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
 
-  // 1. Check if we're in an enemy city — try to steal tech
+  // ── 1. If we're in an enemy city → perform espionage action ──
+  // Ported from the implicit check: when diplomat arrives at target city,
+  // the goto order is cleared and the espionage action fires.
   const enemyCityHere = gameState.cities.find(c =>
     c.gx === unit.gx && c.gy === unit.gy && c.owner !== civSlot && c.size > 0 &&
     isAtWar(gameState, civSlot, c.owner));
 
   if (enemyCityHere) {
-    // Try steal tech first
+    // Try steal tech first (highest value action)
     const stealAction = { type: 'STEAL_TECH', unitIndex };
     const stealErr = validateAction(gameState, mapBase, stealAction, civSlot);
     if (!stealErr) return stealAction;
 
-    // Try sabotage
+    // Try sabotage (always available against enemy cities)
     const sabAction = { type: 'SABOTAGE_CITY', unitIndex };
     const sabErr = validateAction(gameState, mapBase, sabAction, civSlot);
     if (!sabErr) return sabAction;
+
+    // Try incite revolt (costs gold)
+    const inciteAction = { type: 'INCITE_REVOLT', unitIndex };
+    const inciteErr = validateAction(gameState, mapBase, inciteAction, civSlot);
+    if (!inciteErr) return inciteAction;
   }
 
-  // 2. Move toward nearest enemy city, avoiding danger
-  const enemyCity = findNearestEnemyCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, 20);
-  if (enemyCity) {
-    // Use safe pathing — diplomats should avoid enemy combat units
-    const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
-    let bestDir = null;
-    let bestDist = Infinity;
+  // ── 2. Score all cities as potential targets ──
+  // Ported from the city scoring loop at lines 2823-2911.
+  // Key variables:
+  //   local_38 = bestScore (-999 initial)
+  //   local_160 = bestCityIndex (-1 initial)
+  //   local_24 = hasEmbassy (FUN_00598d45) — we approximate as having contact
+  //   local_78 = cityOwner
+  //   local_70 = distance to city
+  let bestScore = -999;
+  let bestTargetCity = null;
 
-    for (const dir in neighbors) {
-      const [nx, ny] = neighbors[dir];
-      if (!inBounds(nx, ny, mapBase)) continue;
-      const wnx = wrapX(nx, mapBase);
-      const terrain = mapBase.getTerrain(wnx, ny);
-      if (domain === 0 && terrain === 10) continue;
+  // Check if we have "embassy" equivalent — do we know about other civs?
+  // In the binary, FUN_00598d45 checks if we've established embassy.
+  // We approximate: true if we have contact with any non-war civ.
+  const hasIntelligence = _diplomatHasIntelligence(gameState, civSlot);
 
-      // Avoid tiles adjacent to enemy combat units
-      if (isAdjacentToEnemy(mapBase, spatialIdx, wnx, ny, civSlot, gameState)) continue;
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    const city = gameState.cities[ci];
+    if (!city || city.size <= 0 || city.gx < 0) continue;
 
-      const dist = tileDist(wnx, ny, enemyCity.gx, enemyCity.gy, mapBase);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestDir = dir;
+    // ── Continent check (ported from iVar11 == iVar10) ──
+    // City must be on the same continent, OR reachable via an adjacent
+    // tile on the same continent (the 8-direction fallback at lines 2894-2907).
+    if (domain === 0 && unitBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      if (cityBodyId > 0 && cityBodyId !== unitBodyId) {
+        // Check if any adjacent tile bridges to our continent
+        if (!_canReachViaAdjacentTile(mapBase, unit.gx, unit.gy, city.gx, city.gy, unitBodyId)) {
+          continue;
+        }
       }
     }
 
-    if (bestDir) return { type: 'MOVE_UNIT', unitIndex, dir: bestDir };
+    // ── Distance computation (FUN_005ae31d) ──
+    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+
+    // ── Distance penalty for far targets with no city at current tile ──
+    // Ported from lines 2837-2840: if homeCity % 3 != cityIndex % 3
+    // and we're not at a city (tile flag 0x10), and distance > threshold (3 or 4),
+    // add 8 to distance penalty (makes far targets less attractive).
+    let adjustedDist = dist;
+    const homeCityId = unit.homeCityId ?? -1;
+    const atCity = gameState.cities.some(c =>
+      c.gx === unit.gx && c.gy === unit.gy && c.size > 0);
+    if (homeCityId >= 0 && (homeCityId % 3 !== ci % 3) && !atCity && dist > 3) {
+      adjustedDist += 8;
+    }
+
+    let score;
+    const cityOwner = city.owner;
+
+    if (cityOwner === civSlot) {
+      // ── Own city: score = 99 - distance (low priority) ──
+      // Ported from line 2843: local_18 = 99 - local_70
+      score = 99 - adjustedDist;
+    } else {
+      // ── Foreign city: complex diplomatic scoring ──
+      // Ported from lines 2846-2886
+      score = 100;
+
+      // Check treaty status
+      const treatyStatus = getTreaty(gameState, civSlot, cityOwner);
+
+      if (treatyStatus !== 'war') {
+        // ── Has treaty (ported from treaty flags & 0xe check at line 2847) ──
+        // Complex conditions determine whether to skip or halve score.
+        // Simplified: if at peace/ceasefire and we have intelligence,
+        // diplomatic units have limited value (halve score).
+        // If the civ is technologically behind us, skip entirely.
+        if (hasIntelligence) {
+          // With intelligence, we generally don't need diplomats in allied cities
+          score = Math.floor(score / 2);
+        }
+
+        // ── Capital check (ported from city flags & 8 at line 2876) ──
+        // Targeting capitals is risky — halve score
+        if (city.buildings?.has(1)) { // palace = building 1
+          score = Math.floor(score / 2);
+          // If large tech gap, halve again (ported from line 2878-2880)
+          // Approximate: skip if target civ is much more advanced
+          if (hasIntelligence) {
+            score = 1; // ported from line 2882-2883
+          }
+        }
+      } else {
+        // ── At war: high-priority target ──
+        // Check if they hate us (treaty & 0x20 equivalent)
+        // In our model, war = hate. Add hatred bonus.
+        score += 100; // ported from line 2873
+      }
+
+      // ── Divide by (distance + 1) — closer targets score higher ──
+      // Ported from line 2875
+      score = Math.floor(score / (adjustedDist + 1));
+
+      // ── Capital penalty for war targets ──
+      // Ported from lines 2876-2885: capitals are harder to infiltrate
+      if (treatyStatus === 'war' && city.buildings?.has(1)) {
+        score = Math.floor(score / 2);
+      }
+
+      // ── Final base offset ──
+      // Ported from line 2886: local_18 += 100
+      score += 100;
+    }
+
+    // ── Wonder bonus (not in original but valuable for AI) ──
+    // Cities building wonders are high-value sabotage targets
+    if (cityOwner !== civSlot && isAtWar(gameState, civSlot, cityOwner)) {
+      const item = city.itemInProduction;
+      if (item && item.type === 'wonder') {
+        score += 50; // Sabotaging wonder production is very valuable
+      }
+      // Cities with many buildings are better sabotage targets
+      if (city.buildings && city.buildings.size > 5) {
+        score += 20;
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestTargetCity = city;
+    }
   }
 
-  // 3. Fallback: skip
+  // ── 3. Move toward best target ──
+  // Ported from lines 2912-2925:
+  // If no target found (local_160 < 0) and no goto order: disband.
+  // Otherwise, set goto order toward best city (FUN_00531607 with 0x53).
+  if (bestTargetCity) {
+    // If adjacent to the target city, move directly in
+    const directDir = getDirection(unit.gx, unit.gy, bestTargetCity.gx, bestTargetCity.gy, mapBase);
+    if (directDir) {
+      return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
+    }
+
+    // Use _evaluateDirections for smart pathing with enemy avoidance
+    const moveDir = _evaluateDirections(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+      bestTargetCity.gx, bestTargetCity.gy, {
+        role: 7, // diplomat role — triggers non-combat scoring in evaluator
+        explore: false,
+        avoidEnemies: true,
+      }
+    );
+    if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+
+    // Fallback: simple safe pathing
+    const safeDir = safeDirectionToward(mapBase, gameState, spatialIdx,
+      unit.gx, unit.gy, bestTargetCity.gx, bestTargetCity.gy, unit, civSlot);
+    if (safeDir) return { type: 'MOVE_UNIT', unitIndex, dir: safeDir };
+  }
+
+  // ── 4. No target: skip (original disbands, but we skip to avoid losing units) ──
+  // Ported from line 2914: thunk_FUN_005b6042(local_168, 1) = disband
+  // We use skip instead — disbanding is too aggressive for our game state
   return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
 }
 
 /**
  * AI for Role 8 (Trade): caravans/freight.
  *
- * Priority:
- * 1. If in a foreign city, establish trade route
- * 2. Move toward nearest foreign city
+ * Ported from Civ2 FUN_00538a29 role 7 logic (lines 2930-3040).
+ *
+ * The decompiled logic has two phases:
+ *
+ * Phase A — Wonder delivery check (lines 2930-2964):
+ *   If the caravan is IN a city (FUN_005b89e4 != 0):
+ *   - Check all 8 adjacent tiles for empty tiles on the same continent
+ *     that have active AI continent goals (DAT_0064c9f2 != 0)
+ *   - Score each direction based on military presence across all civs
+ *     on that continent: for own civ halve the score, for others double it
+ *   - If a good direction found, set order 0x74='t' (trade goto) and move
+ *   This is the "help build wonder" mechanic — caravans move toward
+ *   cities building wonders on active continents.
+ *
+ * Phase B — Trade route selection (lines 2966-3040):
+ *   If not adjacent to a wonder target, score all cities for trade routes:
+ *   - Must be on the same continent (bodyId match)
+ *   - Trade value = (homeCity.totalTrade + targetCity.totalTrade) * distance / 24
+ *     (Civ2 trade routes yield gold/science proportional to combined trade
+ *      output and distance between cities)
+ *   - Own city target: halve the value (domestic trade is less valuable)
+ *   - Foreign city: multiply by diplomatic attitude factor (200 - attitude) / 100
+ *     (friendly civs give better trade, hostile civs worse)
+ *   - If city already has a trade route with this target: halve (diminishing returns)
+ *   - Scale by remaining trade route slots: (5 - tradeRouteCount) / 5
+ *   - Additional penalties for certain diplomatic conditions
+ *   Pick the best city and goto it (order 99 = caravan goto).
+ *
+ * Fallback: if homeCity is known and on same continent, goto homeCity.
  */
 function aiTrader(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   const domain = UNIT_DOMAIN[unit.type] ?? 0;
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
 
-  // 1. Check if we're in a foreign city — establish trade
+  // ── 1. If we're in a city → establish trade route or help wonder ──
+  // Check for cities at our location (can be own city delivering to wonder,
+  // or foreign city establishing trade route).
+
+  // First check: are we in a foreign city? → establish trade route
   for (let ci = 0; ci < gameState.cities.length; ci++) {
     const city = gameState.cities[ci];
     if (!city || city.size <= 0) continue;
@@ -2050,7 +2999,25 @@ function aiTrader(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
     if (!err) return tradeAction;
   }
 
-  // Also check own cities (trade between own cities is valid if different from home)
+  // Check: are we in our own city building a wonder? → deliver shields
+  // (In the original game this is ESTABLISH_TRADE to own wonder-building city.
+  //  Our validation allows own-city trade if it's not the home city.)
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    const city = gameState.cities[ci];
+    if (!city || city.size <= 0) continue;
+    if (city.gx !== unit.gx || city.gy !== unit.gy) continue;
+    if (city.owner !== civSlot) continue;
+
+    // Prioritize wonder delivery: if this city is building a wonder, deliver
+    const item = city.itemInProduction;
+    if (item && item.type === 'wonder') {
+      const tradeAction = { type: 'ESTABLISH_TRADE', unitIndex, cityIndex: ci };
+      const err = validateAction(gameState, mapBase, tradeAction, civSlot);
+      if (!err) return tradeAction;
+    }
+  }
+
+  // Also check own cities for non-wonder trade (valid if different from home)
   for (let ci = 0; ci < gameState.cities.length; ci++) {
     const city = gameState.cities[ci];
     if (!city || city.size <= 0) continue;
@@ -2062,122 +3029,319 @@ function aiTrader(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
     if (!err) return tradeAction;
   }
 
-  // 2. Move toward nearest foreign city (prefer allies, then own)
-  // For land traders, only target cities on the same landmass
-  const traderBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
-  let bestCity = null;
+  // ── 2. Phase A: Check own cities building wonders → deliver shields ──
+  // Ported from lines 2930-2964: if we're in a city, look for adjacent
+  // wonder-building cities to deliver to.
+  // In our adaptation: scan all own cities building wonders and prioritize
+  // the closest one on the same continent.
+  let wonderTarget = _findOwnWonderCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, unitBodyId);
+  if (wonderTarget) {
+    // If adjacent, move directly in
+    const directDir = getDirection(unit.gx, unit.gy, wonderTarget.gx, wonderTarget.gy, mapBase);
+    if (directDir) {
+      return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
+    }
+
+    // Use safe pathing toward wonder city
+    const moveDir = _evaluateDirections(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+      wonderTarget.gx, wonderTarget.gy, {
+        role: 8, // trade role
+        explore: false,
+        avoidEnemies: true,
+      }
+    );
+    if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+
+    const safeDir = safeDirectionToward(mapBase, gameState, spatialIdx,
+      unit.gx, unit.gy, wonderTarget.gx, wonderTarget.gy, unit, civSlot);
+    if (safeDir) return { type: 'MOVE_UNIT', unitIndex, dir: safeDir };
+  }
+
+  // ── 3. Phase B: Score all cities for trade route value ──
+  // Ported from lines 2966-3023.
+  // Key formula: tradeValue = (homeTradeOutput + targetTradeOutput) * distance / 24
+  const homeCityId = unit.homeCityId ?? -1;
+  let homeCity = null;
+  if (homeCityId >= 0 && homeCityId < gameState.cities.length) {
+    homeCity = gameState.cities[homeCityId];
+    if (homeCity && homeCity.size <= 0) homeCity = null;
+  }
+
+  // If no home city, use the nearest own city as a proxy
+  // Ported from lines 2968-2976: fallback to local_40 (nearest own city)
+  if (!homeCity) {
+    const nearest = _findNearestOwnCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, unitBodyId);
+    if (nearest) {
+      // Find its index
+      for (let ci = 0; ci < gameState.cities.length; ci++) {
+        if (gameState.cities[ci] === nearest) { homeCity = nearest; break; }
+      }
+    }
+  }
+
+  // If still no home city, disband (ported from line 2978: FUN_005b6042)
+  // We skip instead of disbanding.
+  if (!homeCity) {
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
+
+  // Get home city's trade output (approximate from size if not available)
+  const homeTradeOutput = _getCityTradeOutput(homeCity);
+
+  let bestTradeScore = 0;
+  let bestTradeCity = null;
+
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    const city = gameState.cities[ci];
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+
+    // ── Same continent check (ported from iVar11 == iVar10) ──
+    if (domain === 0 && unitBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      if (cityBodyId > 0 && cityBodyId !== unitBodyId) continue;
+    }
+
+    // ── Check existing trade routes — skip if already trading with this city ──
+    // Ported from lines 2986-2993: iterate home city's trade route partners
+    let alreadyTrading = false;
+    if (homeCity.tradeRoutes) {
+      for (const route of homeCity.tradeRoutes) {
+        if (route === ci || route?.cityIndex === ci) {
+          alreadyTrading = true;
+          break;
+        }
+      }
+    }
+
+    // ── Distance between the two cities (not from caravan position) ──
+    // Ported from line 2994-2997: FUN_005ae31d(city.x, city.y, homeCity.x, homeCity.y)
+    const routeDistance = tileDist(city.gx, city.gy, homeCity.gx, homeCity.gy, mapBase);
+
+    // ── Trade value formula ──
+    // Ported from lines 2998-2999:
+    // local_70 = ((homeCity.totalTrade + targetCity.totalTrade) * distance) / 0x18
+    // 0x18 = 24
+    const targetTradeOutput = _getCityTradeOutput(city);
+    let tradeValue = Math.floor(((homeTradeOutput + targetTradeOutput) * routeDistance) / 24);
+
+    if (city.owner === civSlot) {
+      // ── Own city: halve value (domestic trade less valuable) ──
+      // Ported from lines 3000-3001
+      tradeValue = Math.floor(tradeValue / 2);
+    } else {
+      // ── Foreign city: apply diplomatic attitude factor ──
+      // Ported from lines 3003-3007:
+      // uVar9 = FUN_00467904(uVar8, cityOwner, 0, 100) → diplomatic score 0-200
+      // local_cc = FUN_005adfa0(uVar9) → absolute value
+      // tradeValue = (200 - abs(diplomaticScore)) * tradeValue / 100
+      const treatyStatus = getTreaty(gameState, civSlot, city.owner);
+      if (treatyStatus === 'war') {
+        // At war: zero trade value (can't establish trade with enemies)
+        continue;
+      }
+      // Approximate diplomatic factor: peace = 150/100, ceasefire = 120/100
+      let diplomaticFactor = 200;
+      if (treatyStatus === 'peace') diplomaticFactor = 150;
+      else if (treatyStatus === 'ceasefire') diplomaticFactor = 120;
+      else diplomaticFactor = 100; // neutral/unknown
+      tradeValue = Math.floor((diplomaticFactor * tradeValue) / 100);
+    }
+
+    // ── Already trading penalty: halve if route exists ──
+    // Ported from lines 3009-3010
+    if (alreadyTrading) {
+      tradeValue = Math.floor(tradeValue / 2);
+    }
+
+    // ── Remaining trade route slots factor ──
+    // Ported from line 3012: ((5 - tradeRouteCount) * tradeValue) / 5
+    // city.tradeRoutes stores the target city's trade route count
+    const cityTradeRouteCount = city.tradeRoutes?.length || 0;
+    tradeValue = Math.floor(((5 - Math.min(cityTradeRouteCount, 4)) * tradeValue) / 5);
+
+    // ── Skip cities with no remaining trade route capacity ──
+    if (cityTradeRouteCount >= 3) continue;
+
+    // ── Same home city penalty: can't trade with self ──
+    if (ci === homeCityId) continue;
+
+    if (tradeValue > bestTradeScore) {
+      bestTradeScore = tradeValue;
+      bestTradeCity = city;
+    }
+  }
+
+  // ── 4. Move toward best trade target ──
+  // Ported from lines 3025-3027: FUN_00531607(unitIdx, 99, city.x, city.y)
+  if (bestTradeCity) {
+    // If adjacent, move directly in
+    const directDir = getDirection(unit.gx, unit.gy, bestTradeCity.gx, bestTradeCity.gy, mapBase);
+    if (directDir) {
+      return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
+    }
+
+    // Use _evaluateDirections for smart pathing with enemy avoidance
+    const moveDir = _evaluateDirections(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+      bestTradeCity.gx, bestTradeCity.gy, {
+        role: 8,
+        explore: false,
+        avoidEnemies: true,
+      }
+    );
+    if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+
+    // Fallback: simple safe pathing
+    const safeDir = safeDirectionToward(mapBase, gameState, spatialIdx,
+      unit.gx, unit.gy, bestTradeCity.gx, bestTradeCity.gy, unit, civSlot);
+    if (safeDir) return { type: 'MOVE_UNIT', unitIndex, dir: safeDir };
+  }
+
+  // ── 5. Fallback: goto home city if on same continent ──
+  // Ported from lines 3030-3038: if homeCity is known and reachable, goto it.
+  if (homeCity && unitBodyId > 0) {
+    const homeCityBodyId = mapBase.getBodyId(homeCity.gx, homeCity.gy);
+    if (homeCityBodyId === unitBodyId) {
+      const dir = safeDirectionToward(mapBase, gameState, spatialIdx,
+        unit.gx, unit.gy, homeCity.gx, homeCity.gy, unit, civSlot);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
+  }
+
+  // ── 6. Fallback: skip ──
+  return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+}
+
+// ── aiDiplomat / aiTrader helpers ─────────────────────────────────────
+
+/**
+ * Check if our civ has "intelligence" about other civs.
+ * Approximation of FUN_00598d45 — checks if we've established embassy
+ * or have any non-war diplomatic contact.
+ */
+function _diplomatHasIntelligence(gameState, civSlot) {
+  if (!gameState.civs) return false;
+  for (let i = 1; i < 8; i++) {
+    if (i === civSlot) continue;
+    if (!(gameState.civsAlive & (1 << i))) continue;
+    const treaty = getTreaty(gameState, civSlot, i);
+    if (treaty !== 'war') return true;
+  }
+  return false;
+}
+
+/**
+ * Check if a city can be reached from the unit's continent via an adjacent tile.
+ * Ported from the 8-direction fallback loop at lines 2894-2907 of the decompiled code.
+ * Used when the city is on a different bodyId — checks if any neighbor tile bridges.
+ */
+function _canReachViaAdjacentTile(mapBase, unitGx, unitGy, cityGx, cityGy, unitBodyId) {
+  const neighbors = mapBase.getNeighbors(unitGx, unitGy);
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (!inBounds(nx, ny, mapBase)) continue;
+    const wnx = wrapX(nx, mapBase);
+    const terrain = mapBase.getTerrain(wnx, ny);
+    if (terrain === 10) continue; // skip ocean
+    const neighborBodyId = mapBase.getBodyId(wnx, ny);
+    if (neighborBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(cityGx, cityGy);
+      if (neighborBodyId === cityBodyId) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Find own city building a wonder, prioritized by distance.
+ * Used by caravan AI (Phase A: wonder delivery).
+ * Returns the closest own wonder-building city on the same continent, or null.
+ */
+function _findOwnWonderCity(gameState, mapBase, fromGx, fromGy, civSlot, domain, bodyId) {
+  let best = null;
   let bestDist = Infinity;
 
   for (const city of gameState.cities) {
     if (!city || city.size <= 0 || city.gx < 0) continue;
-    if (city.owner === civSlot) continue;
-    if (isAtWar(gameState, civSlot, city.owner)) continue; // skip enemy cities
-    // Skip cities on different landmass for land traders
-    if (domain === 0 && traderBodyId > 0) {
+    if (city.owner !== civSlot) continue;
+
+    // Must be building a wonder
+    const item = city.itemInProduction;
+    if (!item || item.type !== 'wonder') continue;
+
+    // Same continent check
+    if (domain === 0 && bodyId > 0) {
       const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
-      if (cityBodyId > 0 && cityBodyId !== traderBodyId) continue;
+      if (cityBodyId > 0 && cityBodyId !== bodyId) continue;
     }
 
-    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+    // Skip if we're already at this city (can't deliver to self)
+    if (city.gx === fromGx && city.gy === fromGy) continue;
+
+    const dist = tileDist(fromGx, fromGy, city.gx, city.gy, mapBase);
     if (dist < bestDist) {
       bestDist = dist;
-      bestCity = city;
+      best = city;
     }
   }
 
-  // If no foreign friendly cities, try own cities further away
-  if (!bestCity) {
-    for (const city of gameState.cities) {
-      if (!city || city.size <= 0 || city.gx < 0) continue;
-      if (city.owner !== civSlot) continue;
-      // Skip cities on different landmass for land traders
-      if (domain === 0 && traderBodyId > 0) {
-        const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
-        if (cityBodyId > 0 && cityBodyId !== traderBodyId) continue;
-      }
-      const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
-      if (dist > 4 && dist < bestDist) { // must be far enough to not be home city
-        bestDist = dist;
-        bestCity = city;
-      }
-    }
-  }
+  return best;
+}
 
-  if (bestCity) {
-    const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
-      bestCity.gx, bestCity.gy, unit, civSlot);
-    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-  }
-
-  // 3. Fallback: skip
-  return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+/**
+ * Get a city's trade output (approximation).
+ * In the decompiled code this is DAT_0064f35e + city*0x58 (totalTrade).
+ * We use city.size as a proxy since totalTrade may not be computed.
+ */
+function _getCityTradeOutput(city) {
+  // If the city has a computed trade value, use it
+  if (city.totalTrade != null && city.totalTrade > 0) return city.totalTrade;
+  // Otherwise approximate: trade roughly scales with city size
+  // Average trade per citizen is ~2-4, so size * 3 is a reasonable proxy
+  return (city.size || 1) * 3;
 }
 
 /**
  * AI for Explorer units (type 50): non-combat exploration.
  *
- * Priority:
- * 1. Move to goody huts if visible
- * 2. Move toward unexplored tiles
- * 3. Avoid tiles adjacent to enemy units
+ * Now uses the ported 8-direction evaluator from the Civ2 binary.
+ * Explorers prioritize:
+ * 1. Goody huts (+20 bonus in evaluator)
+ * 2. Unexplored tiles (exploration lookahead)
+ * 3. Avoidance of enemy combat units
+ * 4. Terrain movement cost (prefer roads, avoid mountains)
  */
 function aiExplorer(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
-  // 1. Check for nearby goody huts
+  // Find the best exploration target: goody hut first, then unexplored
+  let targetGx = null;
+  let targetGy = null;
+
   const goody = findNearestGoodyHut(mapBase, unit.gx, unit.gy, civSlot);
   if (goody) {
-    // Move toward goody hut, avoiding enemies
-    const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
-    let bestDir = null;
-    let bestDist = Infinity;
-
-    for (const dir in neighbors) {
-      const [nx, ny] = neighbors[dir];
-      if (!inBounds(nx, ny, mapBase)) continue;
-      const wnx = wrapX(nx, mapBase);
-      const terrain = mapBase.getTerrain(wnx, ny);
-      if (terrain === 10) continue;
-
-      // Avoid tiles adjacent to enemy combat units
-      if (isAdjacentToEnemy(mapBase, spatialIdx, wnx, ny, civSlot, gameState)) continue;
-
-      const dist = tileDist(wnx, ny, goody.gx, goody.gy, mapBase);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestDir = dir;
-      }
+    targetGx = goody.gx;
+    targetGy = goody.gy;
+  } else {
+    const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, 0);
+    if (unexplored) {
+      targetGx = unexplored.gx;
+      targetGy = unexplored.gy;
     }
-
-    if (bestDir) return { type: 'MOVE_UNIT', unitIndex, dir: bestDir };
   }
 
-  // 2. Explore toward unexplored tiles, avoiding enemies
-  const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, 0);
-  if (unexplored) {
-    const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
-    let bestDir = null;
-    let bestDist = Infinity;
-
-    for (const dir in neighbors) {
-      const [nx, ny] = neighbors[dir];
-      if (!inBounds(nx, ny, mapBase)) continue;
-      const wnx = wrapX(nx, mapBase);
-      const terrain = mapBase.getTerrain(wnx, ny);
-      if (terrain === 10) continue;
-
-      // Avoid tiles adjacent to enemy combat units
-      if (isAdjacentToEnemy(mapBase, spatialIdx, wnx, ny, civSlot, gameState)) continue;
-
-      const dist = tileDist(wnx, ny, unexplored.gx, unexplored.gy, mapBase);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestDir = dir;
-      }
+  // Use the full 8-direction evaluator with exploration + enemy avoidance
+  const moveDir = _evaluateDirections(
+    unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, 0,
+    targetGx, targetGy, {
+      role: 0,
+      explore: true,
+      avoidEnemies: true,
     }
+  );
 
-    if (bestDir) return { type: 'MOVE_UNIT', unitIndex, dir: bestDir };
-  }
+  if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
 
-  // 3. Random safe movement
+  // Fallback: random safe movement (same as before)
   const shuffled = [...DIRECTIONS].sort(() => Math.random() - 0.5);
   for (const dir of shuffled) {
     const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);

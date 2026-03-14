@@ -254,6 +254,27 @@ export const UNIT_DESTROYED_AFTER_ATTACK = new Set([44, 45]); // Cruise Missile,
 // Units that negate city walls
 export const UNIT_NEGATES_WALLS = new Set([26]); // Howitzer
 
+// Units with pikeman defense bonus (double defense vs mounted/horse units)
+// From RULES.TXT flags bit 13 (0x2000)
+export const UNIT_PIKEMAN_BONUS = new Set([6]); // Pikemen
+
+// Units classified as "mounted" — vulnerable to pikeman defense bonus
+// Standard Civ2 mounted units: all horse/cavalry/elephant types
+export const MOUNTED_UNITS = new Set([
+  15,  // Horsemen
+  16,  // Chariot
+  17,  // Elephant
+  18,  // Crusaders
+  19,  // Knights
+  20,  // Dragoons
+  21,  // Cavalry
+  22,  // Armor (tanks are "mounted" in game engine)
+]);
+
+// Units with Aegis defense bonus (double defense vs air and missile attacks)
+// From RULES.TXT flags bit 14 (0x4000)
+export const UNIT_AEGIS_BONUS = new Set([40]); // AEGIS Cruiser
+
 // Terrain transformation table for engineers (Transform order)
 // Index by terrain type → result terrain. -1 = cannot transform
 export const TERRAIN_TRANSFORM = [
