@@ -293,6 +293,9 @@ function findNearestEnemyCity(gameState, mapBase, startGx, startGy, civSlot, dom
   let bestCity = null;
   let bestDist = Infinity;
 
+  // For land units, get our bodyId to filter unreachable targets
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(startGx, startGy) : -1;
+
   for (const city of gameState.cities) {
     if (!city || city.size <= 0 || city.gx < 0) continue;
     if (city.owner === civSlot) continue;
@@ -300,10 +303,13 @@ function findNearestEnemyCity(gameState, mapBase, startGx, startGy, civSlot, dom
 
     const dist = tileDist(startGx, startGy, city.gx, city.gy, mapBase);
     if (dist <= maxRadius * 2 && dist < bestDist) {
-      // For land units, skip cities on islands we can't reach (simple ocean check)
       if (domain === 0) {
+        // Skip cities on ocean tiles
         const cityTerrain = mapBase.getTerrain(city.gx, city.gy);
         if (cityTerrain === 10) continue;
+        // Skip cities on different landmass (unreachable without naval transport)
+        const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+        if (unitBodyId > 0 && cityBodyId > 0 && cityBodyId !== unitBodyId) continue;
       }
       bestDist = dist;
       bestCity = city;
@@ -323,6 +329,9 @@ function findNearestEnemyUnit(gameState, mapBase, startGx, startGy, civSlot, dom
   let best = null;
   let bestDist = Infinity;
 
+  // For land units, get our bodyId to filter unreachable targets
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(startGx, startGy) : -1;
+
   for (let i = 0; i < gameState.units.length; i++) {
     const u = gameState.units[i];
     if (u.gx < 0 || u.owner === civSlot) continue;
@@ -330,6 +339,13 @@ function findNearestEnemyUnit(gameState, mapBase, startGx, startGy, civSlot, dom
 
     const dist = tileDist(startGx, startGy, u.gx, u.gy, mapBase);
     if (dist <= maxRadius * 2 && dist < bestDist) {
+      // For land units, skip targets on different landmass
+      if (domain === 0) {
+        const targetTerrain = mapBase.getTerrain(u.gx, u.gy);
+        if (targetTerrain === 10) continue;
+        const targetBodyId = mapBase.getBodyId(u.gx, u.gy);
+        if (unitBodyId > 0 && targetBodyId > 0 && targetBodyId !== unitBodyId) continue;
+      }
       bestDist = dist;
       best = { unit: u, index: i, gx: u.gx, gy: u.gy, dist: bestDist };
     }
@@ -341,10 +357,28 @@ function findNearestEnemyUnit(gameState, mapBase, startGx, startGy, civSlot, dom
 /**
  * Get the direction from (fromGx, fromGy) toward (toGx, toGy).
  * Picks the adjacent tile closest to the target.
+ *
+ * Optional domain parameter adds terrain passability filtering:
+ *   domain 0 (land): skip ocean tiles (terrain 10)
+ *   domain 1 (sea):  skip land tiles (terrain !== 10)
+ *   domain 2 (air):  no filtering
+ *   domain -1 or omitted: no filtering (legacy behavior)
  */
-function directionToward(mapBase, fromGx, fromGy, toGx, toGy) {
+function directionToward(mapBase, fromGx, fromGy, toGx, toGy, domain = -1) {
+  // Check if target is directly adjacent first
   const direct = getDirection(fromGx, fromGy, toGx, toGy, mapBase);
-  if (direct) return direct;
+  if (direct) {
+    // Even for adjacent tiles, respect domain constraints
+    if (domain >= 0 && domain <= 1) {
+      const dest = resolveDirection(fromGx, fromGy, direct, mapBase);
+      if (dest) {
+        const terrain = mapBase.getTerrain(dest.gx, dest.gy);
+        if (domain === 0 && terrain === 10) return null;
+        if (domain === 1 && terrain !== 10) return null;
+      }
+    }
+    return direct;
+  }
 
   const neighbors = mapBase.getNeighbors(fromGx, fromGy);
   let bestDir = null;
@@ -354,6 +388,14 @@ function directionToward(mapBase, fromGx, fromGy, toGx, toGy) {
     const [nx, ny] = neighbors[dir];
     if (!inBounds(nx, ny, mapBase)) continue;
     const wnx = wrapX(nx, mapBase);
+
+    // Domain passability check
+    if (domain >= 0 && domain <= 1) {
+      const terrain = mapBase.getTerrain(wnx, ny);
+      if (domain === 0 && terrain === 10) continue;
+      if (domain === 1 && terrain !== 10) continue;
+    }
+
     const dist = tileDist(wnx, ny, toGx, toGy, mapBase);
     if (dist < bestDist) {
       bestDist = dist;
@@ -562,16 +604,8 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
     const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, enemyCity.gx, enemyCity.gy, unit, civSlot);
     if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
     // If safe path blocked, try direct path (willing to walk near enemies when attacking)
-    const directDir = directionToward(mapBase, unit.gx, unit.gy, enemyCity.gx, enemyCity.gy);
-    if (directDir) {
-      const dest = resolveDirection(unit.gx, unit.gy, directDir, mapBase);
-      if (dest) {
-        const t = mapBase.getTerrain(dest.gx, dest.gy);
-        if (!(domain === 0 && t === 10)) {
-          return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
-        }
-      }
-    }
+    const directDir = directionToward(mapBase, unit.gx, unit.gy, enemyCity.gx, enemyCity.gy, domain);
+    if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
   }
 
   // 3. Move toward nearest enemy unit
@@ -579,21 +613,19 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
   if (enemyUnit) {
     const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, enemyUnit.gx, enemyUnit.gy, unit, civSlot);
     if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    // Fallback: direct path toward enemy unit (attackers accept risk)
+    const directDir = directionToward(mapBase, unit.gx, unit.gy, enemyUnit.gx, enemyUnit.gy, domain);
+    if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
   }
 
   // 4. Explore
   const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, domain);
   if (unexplored) {
-    const dir = directionToward(mapBase, unit.gx, unit.gy, unexplored.gx, unexplored.gy);
-    if (dir) {
-      const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
-      if (dest) {
-        const t = mapBase.getTerrain(dest.gx, dest.gy);
-        if (!(domain === 0 && t === 10) && !(domain === 1 && t !== 10)) {
-          return { type: 'MOVE_UNIT', unitIndex, dir };
-        }
-      }
-    }
+    const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, unexplored.gx, unexplored.gy, unit, civSlot);
+    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    // Fallback: direct path ignoring enemies (but still respecting domain)
+    const directDir = directionToward(mapBase, unit.gx, unit.gy, unexplored.gx, unexplored.gy, domain);
+    if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
   }
 
   // 5. Random patrol
@@ -665,10 +697,16 @@ function aiDefender(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, ci
   }
 
   // 3. Move toward nearest own city and fortify there
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
   let nearestCity = null;
   let nearestDist = Infinity;
   for (const city of gameState.cities) {
     if (!city || city.owner !== civSlot || city.size <= 0) continue;
+    // For land units, only consider cities on the same landmass
+    if (domain === 0 && unitBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      if (cityBodyId > 0 && cityBodyId !== unitBodyId) continue;
+    }
     const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
     if (dist < nearestDist) {
       nearestDist = dist;
@@ -721,27 +759,15 @@ function aiNavalCombat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot)
   // 2. Move toward nearest enemy ship
   const enemyShip = findNearestEnemyUnit(gameState, mapBase, unit.gx, unit.gy, civSlot, 1, 10);
   if (enemyShip) {
-    const dir = directionToward(mapBase, unit.gx, unit.gy, enemyShip.gx, enemyShip.gy);
-    if (dir) {
-      const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
-      if (dest) {
-        const t = mapBase.getTerrain(dest.gx, dest.gy);
-        if (t === 10) return { type: 'MOVE_UNIT', unitIndex, dir };
-      }
-    }
+    const dir = directionToward(mapBase, unit.gx, unit.gy, enemyShip.gx, enemyShip.gy, 1);
+    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
   }
 
   // 3. Explore sea
   const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, 1, 15);
   if (unexplored) {
-    const dir = directionToward(mapBase, unit.gx, unit.gy, unexplored.gx, unexplored.gy);
-    if (dir) {
-      const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
-      if (dest) {
-        const t = mapBase.getTerrain(dest.gx, dest.gy);
-        if (t === 10) return { type: 'MOVE_UNIT', unitIndex, dir };
-      }
-    }
+    const dir = directionToward(mapBase, unit.gx, unit.gy, unexplored.gx, unexplored.gy, 1);
+    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
   }
 
   // 4. Random sea movement
@@ -880,6 +906,8 @@ function aiTrader(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   }
 
   // 2. Move toward nearest foreign city (prefer allies, then own)
+  // For land traders, only target cities on the same landmass
+  const traderBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
   let bestCity = null;
   let bestDist = Infinity;
 
@@ -887,6 +915,11 @@ function aiTrader(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
     if (!city || city.size <= 0 || city.gx < 0) continue;
     if (city.owner === civSlot) continue;
     if (isAtWar(gameState, civSlot, city.owner)) continue; // skip enemy cities
+    // Skip cities on different landmass for land traders
+    if (domain === 0 && traderBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      if (cityBodyId > 0 && cityBodyId !== traderBodyId) continue;
+    }
 
     const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
     if (dist < bestDist) {
@@ -900,6 +933,11 @@ function aiTrader(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
     for (const city of gameState.cities) {
       if (!city || city.size <= 0 || city.gx < 0) continue;
       if (city.owner !== civSlot) continue;
+      // Skip cities on different landmass for land traders
+      if (domain === 0 && traderBodyId > 0) {
+        const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+        if (cityBodyId > 0 && cityBodyId !== traderBodyId) continue;
+      }
       const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
       if (dist > 4 && dist < bestDist) { // must be far enough to not be home city
         bestDist = dist;
