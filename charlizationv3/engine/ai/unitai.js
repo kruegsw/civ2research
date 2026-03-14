@@ -4,7 +4,8 @@
 // Ported from Civ2 FUN_00538a29 (unit AI master function).
 // Dispatches units based on UNIT_ROLE from defs.js:
 //   0=Attack, 1=Defend, 2=Naval superiority, 3=Air attack,
-//   4=Air defense, 5=Sea transport, 7=Diplomacy, 8=Trade
+//   4=Air defense, 5=Sea transport, 6=Settle (handled by cityai.js),
+//   7=Diplomacy, 8=Trade
 //
 // Each unit gets at most ONE action per AI turn.
 // ═══════════════════════════════════════════════════════════════════
@@ -14,7 +15,7 @@ import { validateAction } from '../rules.js';
 import {
   UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_ROLE, UNIT_NAMES,
   BUSY_ORDERS, TERRAIN_DEFENSE, TERRAIN_MOVE_COST, UNIT_NEGATES_WALLS,
-  UNIT_MOVE_POINTS, UNIT_COSTS, GOVT_INDEX,
+  UNIT_MOVE_POINTS, UNIT_COSTS, GOVT_INDEX, UNIT_FUEL, UNIT_CARRY_CAP,
 } from '../defs.js';
 
 // ── Constants ─────────────────────────────────────────────────────
@@ -26,15 +27,6 @@ const EXPLORE_RADIUS = 20;
 
 /** Maximum tiles to search when looking for enemy targets. */
 const TARGET_SEARCH_RADIUS = 8;
-
-/**
- * Win probability thresholds for AI attack decisions.
- * Based on effectiveATK / (effectiveATK + effectiveDEF) formula.
- * Aggressive AI attacks at lower win probability; cautious at higher.
- */
-const ATTACK_THRESHOLD_AGGRESSIVE = 0.4;
-const ATTACK_THRESHOLD_CAUTIOUS = 0.6;
-const ATTACK_THRESHOLD_DEFAULT = 0.45;
 
 /** Minimum defenders per city (base). */
 const MIN_DEFENDERS_PER_CITY = 1;
@@ -196,83 +188,6 @@ function bestDefenderOnTile(spatialIdx, gx, gy, attackerOwner, terrain, gameStat
   return best;
 }
 
-/**
- * Compute approximate win probability for an attacker vs a defender.
- * Uses the Civ2 combat model: each round, attacker wins with probability
- * effATK / (effATK + effDEF). Overall win probability is approximated
- * from the strength ratio.
- *
- * Returns a number between 0 and 1.
- */
-function estimateWinProbability(attacker, defenderUnit, defTerrain, hasCityWalls, attackerNegatesWalls) {
-  // Effective ATK: base * HP ratio * veteran
-  const baseAtk = UNIT_ATK[attacker.type] || 1;
-  const atkMaxHp = UNIT_HP[attacker.type] || 1;
-  const atkCurHp = Math.max(1, atkMaxHp - (attacker.hpLost || 0));
-  const atkFp = UNIT_FP[attacker.type] || 1;
-  let effAtk = baseAtk * 8;
-  if (attacker.veteran) effAtk = Math.floor(effAtk * 1.5);
-
-  // Effective DEF: base * terrain * veteran * fortification * city walls
-  const baseDef = UNIT_DEF[defenderUnit.type] || 1;
-  const defMaxHp = UNIT_HP[defenderUnit.type] || 1;
-  const defCurHp = Math.max(1, defMaxHp - (defenderUnit.hpLost || 0));
-  const defFp = UNIT_FP[defenderUnit.type] || 1;
-  const terrMul = TERRAIN_DEFENSE[defTerrain] ?? 2;
-  let effDef = baseDef * terrMul * 4;
-  if (defenderUnit.veteran) effDef = Math.floor(effDef * 1.5);
-  if (defenderUnit.orders === 'fortified') effDef = Math.floor(effDef * 1.5);
-  if (hasCityWalls && !attackerNegatesWalls) effDef *= 3;
-
-  if (effAtk <= 0) return 0;
-  if (effDef <= 0) return 1;
-
-  // Per-round win probability
-  const pRound = effAtk / (effAtk + effDef);
-
-  // Approximate overall win probability considering HP and firepower.
-  // Attacker needs ceil(defCurHp*10 / (atkFp*10)) = ceil(defCurHp/atkFp) hits to win.
-  // Defender needs ceil(atkCurHp*10 / (defFp*10)) = ceil(atkCurHp/defFp) hits to win.
-  const atkHitsNeeded = Math.ceil(defCurHp / Math.max(1, atkFp));
-  const defHitsNeeded = Math.ceil(atkCurHp / Math.max(1, defFp));
-
-  // Use the negative hypergeometric approximation:
-  // P(attacker wins) ≈ sum of binomial-like terms, but a good approximation is:
-  // P ≈ pRound^atkHitsNeeded / (pRound^atkHitsNeeded + (1-pRound)^defHitsNeeded)
-  // This is the "race" approximation.
-  const pA = Math.pow(pRound, atkHitsNeeded);
-  const pD = Math.pow(1 - pRound, defHitsNeeded);
-  if (pA + pD === 0) return 0.5;
-  return pA / (pA + pD);
-}
-
-/**
- * Should this attacker attack the defender on that tile?
- * Computes approximate win probability and compares against threshold.
- * @param {object} attacker - attacking unit
- * @param {object} defenderInfo - { unit, index, defStr } from bestDefenderOnTile
- * @param {boolean} attackerNegatesWalls - does attacker negate city walls
- * @param {number} defTerrain - terrain at defender tile
- * @param {boolean} hasCityWalls - does the tile have city walls
- * @param {string} [posture] - 'attack' for aggressive, 'defend' for cautious
- */
-function shouldAttack(attacker, defenderInfo, attackerNegatesWalls, defTerrain, hasCityWalls, posture) {
-  if (defenderInfo.defStr <= 0) return true; // undefended tile
-
-  const winProb = estimateWinProbability(
-    attacker, defenderInfo.unit, defTerrain ?? 0,
-    hasCityWalls ?? false, attackerNegatesWalls
-  );
-
-  // Choose threshold based on strategic posture
-  let threshold;
-  if (posture === 'attack') threshold = ATTACK_THRESHOLD_AGGRESSIVE;
-  else if (posture === 'defend' || posture === 'turtle') threshold = ATTACK_THRESHOLD_CAUTIOUS;
-  else threshold = ATTACK_THRESHOLD_DEFAULT;
-
-  return winProb >= threshold;
-}
-
 // ── Pathfinding / target search ───────────────────────────────────
 
 /**
@@ -349,42 +264,6 @@ function findNearestGoodyHut(mapBase, startGx, startGy, civSlot, maxRadius = 10)
     }
   }
   return null;
-}
-
-/**
- * Find nearest enemy city within search radius using BFS.
- * Only considers civs we are at war with.
- * Returns { city, gx, gy, dist } or null.
- */
-function findNearestEnemyCity(gameState, mapBase, startGx, startGy, civSlot, domain, maxRadius = TARGET_SEARCH_RADIUS) {
-  let bestCity = null;
-  let bestDist = Infinity;
-
-  // For land units, get our bodyId to filter unreachable targets
-  const unitBodyId = (domain === 0) ? mapBase.getBodyId(startGx, startGy) : -1;
-
-  for (const city of gameState.cities) {
-    if (!city || city.size <= 0 || city.gx < 0) continue;
-    if (city.owner === civSlot) continue;
-    if (!isAtWar(gameState, civSlot, city.owner)) continue;
-
-    const dist = tileDist(startGx, startGy, city.gx, city.gy, mapBase);
-    if (dist <= maxRadius * 2 && dist < bestDist) {
-      if (domain === 0) {
-        // Skip cities on ocean tiles
-        const cityTerrain = mapBase.getTerrain(city.gx, city.gy);
-        if (cityTerrain === 10) continue;
-        // Skip cities on different landmass (unreachable without naval transport)
-        const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
-        if (unitBodyId > 0 && cityBodyId > 0 && cityBodyId !== unitBodyId) continue;
-      }
-      bestDist = dist;
-      bestCity = city;
-    }
-  }
-
-  if (!bestCity) return null;
-  return { city: bestCity, gx: bestCity.gx, gy: bestCity.gy, dist: bestDist };
 }
 
 /**
@@ -599,27 +478,6 @@ function analyzeCityDefense(gameState, mapBase, civSlot) {
   }
 
   return result;
-}
-
-/**
- * Find the most underdefended city (city with greatest deficit).
- * Returns { cityIndex, city, deficit } or null.
- */
-function findMostUnderdefendedCity(cityDefense) {
-  let worstIndex = null;
-  let worstDeficit = 0;
-
-  for (const [ci, info] of cityDefense) {
-    const deficit = info.neededDefenders - info.defenderCount;
-    if (deficit > worstDeficit) {
-      worstDeficit = deficit;
-      worstIndex = ci;
-    }
-  }
-
-  if (worstIndex == null) return null;
-  const info = cityDefense.get(worstIndex);
-  return { cityIndex: worstIndex, city: info.city, deficit: worstDeficit };
 }
 
 // ── Role-specific AI logic ────────────────────────────────────────
@@ -2370,70 +2228,676 @@ function _defenderBlockEnemyCity(unit, unitIndex, gameState, mapBase, spatialIdx
 
 /**
  * AI for Role 2 (Naval superiority): sea combat units.
- * TODO: Full naval AI with patrol routes and blockade logic.
+ *
+ * Ported from Civ2 FUN_00538a29 role 2 logic (lines 3041-3115).
+ *
+ * The decompiled logic for naval superiority units:
+ *
+ * 1. Transport escort check (lines 3041-3060):
+ *    - If role is 5 (transport) AND our unit's role is 5 (transport-carried check):
+ *      look for transport with goto order at destination; if found, set local_b4=1.
+ *    - If unit's cargo role is 5 (transport): checks for nearby friendly ports
+ *      and adjacent enemy ships. If no port found and <= 1 friendly unit,
+ *      creates a land unit at the position (garrison).
+ *    - Sets wake/patrol orders (0x70='p', 0x55='U', 0x32='2').
+ *
+ * 2. Sea lane patrol (lines 3062-3115):
+ *    - Checks bodyId (ocean region) at current position.
+ *    - If distance < 4 and same ocean: cap at 8.
+ *    - Scans 8 (or 20 for transports) adjacent+extended tiles for:
+ *      a. Same ocean region (bodyId match)
+ *      b. Enemy units at that tile (FUN_005b8ffa) → set goto order 0x55='U'
+ *      c. Larger body of water → prefer moving to open ocean
+ *    - If bodyId score > threshold (0xf - damage) and no local_158:
+ *      assign patrol/goto to best direction.
+ *
+ * Our JS adaptation:
  *
  * Priority:
- * 1. Attack adjacent enemy ships
- * 2. Patrol near own coastal cities
- * 3. Move toward enemy ships
- * 4. Explore sea
+ * 1. Retreat when heavily damaged (< 25% HP) — head to nearest port
+ * 2. Attack adjacent enemy ships/units with favorable odds
+ * 3. Escort own transports carrying cargo (stay near loaded transports)
+ * 4. Blockade enemy coastal cities (position adjacent to enemy ports)
+ * 5. Hunt enemy ships (move toward nearest enemy sea unit)
+ * 6. Patrol sea lanes near own coastal cities
+ * 7. Explore uncharted ocean
+ * 8. Random sea movement
  */
 function aiNavalCombat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
-  // 1. Attack adjacent enemy ships
+  const domain = 1; // sea
+
+  // ── Damage level (ported from decompiled local_d8) ──
+  const maxHp = UNIT_HP[unit.type] || 1;
+  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  if (curHp * 4 < maxHp) damageLevel = 3;
+  else if (curHp * 2 < maxHp) damageLevel = 2;
+
+  // ── 1. Retreat when heavily damaged ──
+  // Ported from lines 3090-3100: if bodyId score <= threshold and damaged,
+  // naval units return to port for repairs.
+  if (damageLevel >= 3) {
+    const port = _findNearestFriendlyPort(gameState, mapBase, unit.gx, unit.gy, civSlot);
+    if (port) {
+      const dir = _navalDirectionToward(mapBase, unit.gx, unit.gy, port.gx, port.gy);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
+
+  // ── 2. Attack adjacent enemies ──
+  // Ported from the combat evaluation in the main movement loop (lines 5076-5303).
+  // Naval units can attack both ships on ocean and units in coastal cities.
   const adjacentEnemies = findAdjacentEnemies(gameState, mapBase, spatialIdx, unit, civSlot);
   if (adjacentEnemies.length > 0) {
     let bestTarget = null;
-    let bestRatio = -Infinity;
-    const atkStr = attackStrength(unit);
+    let bestScore = -Infinity;
 
     for (const enemy of adjacentEnemies) {
-      // Naval units can attack units on ocean tiles and coastal tiles (bombard cities)
-      const ratio = enemy.defender.defStr > 0 ? atkStr / enemy.defender.defStr : Infinity;
-      if (ratio > bestRatio) {
-        bestRatio = ratio;
+      const defTerrain = mapBase.getTerrain(enemy.gx, enemy.gy);
+      const defCity = gameState.cities.find(c =>
+        c.gx === enemy.gx && c.gy === enemy.gy && c.size > 0 && c.owner !== civSlot);
+      const hasCityWalls = defCity ? (defCity.buildings?.has(3) || false) : false;
+
+      // Compute combat score using the same formula as aiAttacker
+      const score = _computeCombatScore(
+        unit, enemy.defender.unit, defTerrain, hasCityWalls, false,
+        enemy.defender.unit.orders === 'fortified'
+      );
+
+      // Naval superiority bonus vs air defense targets (lines 5134-5137)
+      let adjustedScore = score;
+      if ((UNIT_ROLE[enemy.defender.unit.type] ?? 0) === 4) {
+        adjustedScore *= 2;
+      }
+
+      // Bonus for attacking transports (high-value targets — kill cargo)
+      if ((UNIT_ROLE[enemy.defender.unit.type] ?? 0) === 5) {
+        adjustedScore += 8;
+      }
+
+      // Damaged naval units require higher score to engage
+      const threshold = damageLevel >= 2 ? 4 : 0;
+      if (adjustedScore > threshold && adjustedScore > bestScore) {
+        bestScore = adjustedScore;
         bestTarget = enemy;
       }
     }
 
     if (bestTarget) {
-      const defTerrain = mapBase.getTerrain(bestTarget.gx, bestTarget.gy);
-      const defCity = gameState.cities.find(c => c.gx === bestTarget.gx && c.gy === bestTarget.gy && c.size > 0);
-      const defWalls = defCity ? (defCity.buildings?.has(8) || false) : false;
-      if (shouldAttack(unit, bestTarget.defender, false, defTerrain, defWalls, 'attack')) {
-        return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+      return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+    }
+  }
+
+  // ── 3. Escort own transports carrying cargo ──
+  // Ported from lines 3041-3060: if a friendly transport is nearby with land
+  // units loaded, stay near it for escort duty.
+  {
+    const escort = _findNearestFriendlyTransport(gameState, mapBase, unit.gx, unit.gy, civSlot, spatialIdx);
+    if (escort) {
+      const escortDist = tileDist(unit.gx, unit.gy, escort.gx, escort.gy, mapBase);
+      // Only escort if within reasonable range (8 tiles)
+      if (escortDist > 2 && escortDist <= 16) {
+        const dir = _navalDirectionToward(mapBase, unit.gx, unit.gy, escort.gx, escort.gy);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
+      // If already adjacent to transport, use the direction evaluator to stay nearby
+      // while also looking for threats
+      if (escortDist <= 2) {
+        const moveDir = _evaluateDirections(
+          unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+          escort.gx, escort.gy, { role: 2, explore: true }
+        );
+        if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
       }
     }
   }
 
-  // 2. Move toward nearest enemy ship
-  const enemyShip = findNearestEnemyUnit(gameState, mapBase, unit.gx, unit.gy, civSlot, 1, 10);
-  if (enemyShip) {
-    const dir = directionToward(mapBase, unit.gx, unit.gy, enemyShip.gx, enemyShip.gy, 1);
-    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+  // ── 4. Blockade enemy coastal cities ──
+  // Ported from the decompiled FUN_005b8ffa check at lines 3081-3087:
+  // naval units try to position adjacent to enemy coastal cities.
+  {
+    const blockadeTarget = _findEnemyCoastalCity(gameState, mapBase, unit.gx, unit.gy, civSlot);
+    if (blockadeTarget) {
+      const blockDist = tileDist(unit.gx, unit.gy, blockadeTarget.gx, blockadeTarget.gy, mapBase);
+
+      if (blockDist <= 2) {
+        // Already adjacent to enemy port — hold position (blockade)
+        // Check if there are enemy ships we should fight first
+        const nearbyEnemyShip = _findNearestEnemySeaUnit(gameState, mapBase, unit.gx, unit.gy, civSlot, 4);
+        if (nearbyEnemyShip) {
+          const dir = _navalDirectionToward(mapBase, unit.gx, unit.gy, nearbyEnemyShip.gx, nearbyEnemyShip.gy);
+          if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+        }
+        return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+      }
+
+      if (blockDist <= 20) {
+        const dir = _navalDirectionToward(mapBase, unit.gx, unit.gy, blockadeTarget.gx, blockadeTarget.gy);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
+    }
   }
 
-  // 3. Explore sea
-  const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, 1, 15);
-  if (unexplored) {
-    const dir = directionToward(mapBase, unit.gx, unit.gy, unexplored.gx, unexplored.gy, 1);
-    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+  // ── 5. Hunt enemy ships ──
+  // Ported from lines 3062-3089: scan for enemy sea units within range
+  // and move toward them. Uses bodyId to stay in connected ocean regions.
+  {
+    const enemyShip = _findNearestEnemySeaUnit(gameState, mapBase, unit.gx, unit.gy, civSlot, 16);
+    if (enemyShip) {
+      // Use the full direction evaluator for smart pathing
+      const moveDir = _evaluateDirections(
+        unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+        enemyShip.gx, enemyShip.gy, { role: 2, explore: true }
+      );
+      if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+    }
   }
 
-  // 4. Random sea movement
+  // ── 6. Patrol near own coastal cities ──
+  // Ported from lines 3090-3096: naval units without specific targets
+  // patrol the waters near their own coastal cities.
+  {
+    const patrolTarget = _findCoastalPatrolTarget(gameState, mapBase, unit.gx, unit.gy, civSlot, spatialIdx);
+    if (patrolTarget) {
+      const dir = _navalDirectionToward(mapBase, unit.gx, unit.gy, patrolTarget.gx, patrolTarget.gy);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
+  }
+
+  // ── 7. Explore uncharted ocean ──
+  {
+    const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, 1, 15);
+    if (unexplored) {
+      const moveDir = _evaluateDirections(
+        unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+        unexplored.gx, unexplored.gy, { role: 2, explore: true }
+      );
+      if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+    }
+  }
+
+  // ── 8. Random sea movement ──
   return randomMove(unit, unitIndex, mapBase, 1);
 }
 
+// ── aiNavalCombat helpers ──────────────────────────────────────────
+
 /**
- * AI for Role 3 (Air attack): bombers.
- * TODO: Full air AI with rebase and fuel management.
+ * Find nearest friendly coastal city (port) for naval units to dock at.
+ * Ports are own cities adjacent to ocean tiles.
+ */
+function _findNearestFriendlyPort(gameState, mapBase, fromGx, fromGy, civSlot) {
+  let best = null;
+  let bestDist = Infinity;
+
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+
+    // Check if city is coastal (has adjacent ocean)
+    const neighbors = mapBase.getNeighbors(city.gx, city.gy);
+    let coastal = false;
+    for (const dir in neighbors) {
+      const [nx, ny] = neighbors[dir];
+      if (!inBounds(nx, ny, mapBase)) continue;
+      const wnx = wrapX(nx, mapBase);
+      if (mapBase.getTerrain(wnx, ny) === 10) { coastal = true; break; }
+    }
+    if (!coastal) continue;
+
+    const dist = tileDist(fromGx, fromGy, city.gx, city.gy, mapBase);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = city;
+    }
+  }
+
+  return best;
+}
+
+/**
+ * Direction toward a target for naval units.
+ * Prefers ocean tiles but allows land-adjacent movement to reach ports.
+ */
+function _navalDirectionToward(mapBase, fromGx, fromGy, toGx, toGy) {
+  const neighbors = mapBase.getNeighbors(fromGx, fromGy);
+  let bestDir = null;
+  let bestDist = Infinity;
+  let bestIsOcean = false;
+
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (!inBounds(nx, ny, mapBase)) continue;
+    const wnx = wrapX(nx, mapBase);
+    const terrain = mapBase.getTerrain(wnx, ny);
+    const isOcean = (terrain === 10);
+
+    const dist = tileDist(wnx, ny, toGx, toGy, mapBase);
+
+    // Prefer ocean tiles; allow non-ocean only if it's the target itself
+    if (isOcean) {
+      if (!bestIsOcean || dist < bestDist) {
+        bestDist = dist;
+        bestDir = dir;
+        bestIsOcean = true;
+      }
+    } else if (!bestIsOcean) {
+      // Allow moving to non-ocean if it gets us closer to a coastal target
+      if (dist < bestDist && dist <= 2) {
+        bestDist = dist;
+        bestDir = dir;
+      }
+    }
+  }
+
+  return bestDir;
+}
+
+/**
+ * Find nearest friendly transport that is carrying land units (loaded).
+ * Used for escort duty — naval combat ships protect loaded transports.
+ */
+function _findNearestFriendlyTransport(gameState, mapBase, fromGx, fromGy, civSlot, spatialIdx) {
+  let best = null;
+  let bestDist = Infinity;
+
+  for (let i = 0; i < gameState.units.length; i++) {
+    const u = gameState.units[i];
+    if (u.gx < 0 || u.owner !== civSlot) continue;
+    const uRole = UNIT_ROLE[u.type] ?? 0;
+    if (uRole !== 5) continue; // must be transport role
+    const uDomain = UNIT_DOMAIN[u.type] ?? 0;
+    if (uDomain !== 1) continue; // must be sea domain
+
+    // Check if transport has land units aboard (same tile)
+    const unitsOnTile = unitsAt(spatialIdx, u.gx, u.gy);
+    const hasLandCargo = unitsOnTile.some(e =>
+      e.unit.owner === civSlot && e.index !== i && (UNIT_DOMAIN[e.unit.type] ?? 0) === 0
+    );
+    if (!hasLandCargo) continue;
+
+    const dist = tileDist(fromGx, fromGy, u.gx, u.gy, mapBase);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = u;
+    }
+  }
+
+  return best;
+}
+
+/**
+ * Find nearest enemy coastal city for blockade targeting.
+ * Prioritizes cities that are at war with us and accessible by sea.
+ */
+function _findEnemyCoastalCity(gameState, mapBase, fromGx, fromGy, civSlot) {
+  let best = null;
+  let bestScore = -Infinity;
+
+  for (const city of gameState.cities) {
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    if (city.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, city.owner)) continue;
+
+    // Check if city is coastal
+    const neighbors = mapBase.getNeighbors(city.gx, city.gy);
+    let coastal = false;
+    for (const dir in neighbors) {
+      const [nx, ny] = neighbors[dir];
+      if (!inBounds(nx, ny, mapBase)) continue;
+      const wnx = wrapX(nx, mapBase);
+      if (mapBase.getTerrain(wnx, ny) === 10) { coastal = true; break; }
+    }
+    if (!coastal) continue;
+
+    const dist = tileDist(fromGx, fromGy, city.gx, city.gy, mapBase);
+    if (dist > 30) continue; // too far
+
+    // Score: prefer larger, closer cities
+    const score = city.size * 10 + 50 - dist;
+    if (score > bestScore) {
+      bestScore = score;
+      best = city;
+    }
+  }
+
+  return best;
+}
+
+/**
+ * Find nearest enemy sea unit (ships).
+ * Only finds units on ocean tiles that belong to civs we're at war with.
+ */
+function _findNearestEnemySeaUnit(gameState, mapBase, fromGx, fromGy, civSlot, maxRange) {
+  let best = null;
+  let bestDist = Infinity;
+
+  for (let i = 0; i < gameState.units.length; i++) {
+    const u = gameState.units[i];
+    if (u.gx < 0 || u.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, u.owner)) continue;
+    const uDomain = UNIT_DOMAIN[u.type] ?? 0;
+    if (uDomain !== 1) continue; // sea units only
+
+    const dist = tileDist(fromGx, fromGy, u.gx, u.gy, mapBase);
+    if (dist <= maxRange * 2 && dist < bestDist) {
+      bestDist = dist;
+      best = { unit: u, index: i, gx: u.gx, gy: u.gy, dist };
+    }
+  }
+
+  return best;
+}
+
+/**
+ * Find a good patrol target for naval units — ocean tile near own coastal
+ * cities that doesn't already have naval units.
+ * Ported from the bodyId-based patrol logic in lines 3062-3089.
+ */
+function _findCoastalPatrolTarget(gameState, mapBase, fromGx, fromGy, civSlot, spatialIdx) {
+  let best = null;
+  let bestScore = -Infinity;
+
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+
+    // Check each neighbor of own city for ocean patrol points
+    const neighbors = mapBase.getNeighbors(city.gx, city.gy);
+    for (const dir in neighbors) {
+      const [nx, ny] = neighbors[dir];
+      if (!inBounds(nx, ny, mapBase)) continue;
+      const wnx = wrapX(nx, mapBase);
+      if (mapBase.getTerrain(wnx, ny) !== 10) continue; // must be ocean
+
+      // Skip tiles that already have our naval units
+      const unitsHere = unitsAt(spatialIdx, wnx, ny);
+      const ownNavalHere = unitsHere.filter(e =>
+        e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 1
+      );
+      if (ownNavalHere.length >= 2) continue;
+
+      const dist = tileDist(fromGx, fromGy, wnx, ny, mapBase);
+      // Score: prefer closer, less crowded patrol points near larger cities
+      const score = city.size * 5 - dist - ownNavalHere.length * 10 + Math.random() * 4;
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = { gx: wnx, gy: ny };
+      }
+    }
+  }
+
+  return best;
+}
+
+/**
+ * AI for Role 3 (Air attack): bombers and air attack units.
  *
- * Simplified: stay in city, skip turn. Bombers need fuel management
- * to avoid crashing, so passive is safer for now.
+ * Ported from Civ2 FUN_00538a29 role 3 / air combat logic.
+ *
+ * The decompiled logic for air attack units:
+ *
+ * 1. Fuel check: air units track fuelRemaining. If fuel is low (<=1),
+ *    they MUST return to a friendly city, carrier, or airbase this turn
+ *    or they crash. UNIT_FUEL[type] gives max fuel (turns away from base).
+ *
+ * 2. Target selection for bombers:
+ *    - Scan for enemy cities within bombardment range (unit's move points)
+ *    - Scan for enemy unit stacks within range
+ *    - Score targets: cities get bonus for size, low air defense, wonder production
+ *    - Unit stacks scored by total value (attack strength × count)
+ *    - Pick highest-scoring target and BOMBARD it
+ *
+ * 3. After bombing, return to base:
+ *    - Air units MUST end their turn in a city, on a carrier (type 42),
+ *      or on an airbase tile. If they don't, they crash at turn end.
+ *    - Use REBASE to return to nearest friendly city/carrier/airbase
+ *
+ * 4. Rebase to frontline:
+ *    - If no targets in range from current city, rebase to a frontline city
+ *      (city closest to enemy territory) to extend bombing range next turn
+ *
+ * 5. Cruise missiles (type 44) and nuclear missiles (type 45):
+ *    - These are destroyed after attacking (UNIT_DESTROYED_AFTER_ATTACK)
+ *    - They should target the highest-value target and fire immediately
+ *
+ * Our JS uses the BOMBARD action type which deals damage without risk
+ * to the attacker, then uses REBASE to return to base.
  */
 function aiAirAttack(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
-  // TODO: Implement bomber AI — rebase to frontline cities, bombard enemy
-  // For now, skip to avoid crashing from fuel exhaustion
+  const unitMovePoints = UNIT_MOVE_POINTS[unit.type] || 1;
+  const fuel = UNIT_FUEL[unit.type] || 0;
+
+  // ── Check if we're currently at a base (city/carrier/airbase) ──
+  const atBase = _isAtAirBase(unit, gameState, mapBase, civSlot);
+
+  // ── Fuel management: if fuel is critically low, return to base immediately ──
+  // Air units with fuel=1 remaining MUST return this turn or crash.
+  if (fuel > 0 && (unit.fuelRemaining ?? fuel) <= 1 && !atBase) {
+    return _airReturnToBase(unit, unitIndex, gameState, mapBase, civSlot);
+  }
+
+  // ── If we're at base with fuel, look for targets to bomb ──
+  if (atBase) {
+    // Refueled — scan for targets within range
+    const bombRange = unitMovePoints;
+
+    // ── Score enemy cities for bombardment ──
+    let bestTarget = null;
+    let bestScore = -Infinity;
+
+    for (const city of gameState.cities) {
+      if (!city || city.size <= 0 || city.gx < 0) continue;
+      if (city.owner === civSlot) continue;
+      if (!isAtWar(gameState, civSlot, city.owner)) continue;
+
+      const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+      // Must be within half our range (so we can bomb and return)
+      // Halve range if fuel=1, because we need to get back
+      const effectiveRange = fuel > 0 ? Math.floor(bombRange / 2) * 2 : bombRange * 2;
+      if (dist > effectiveRange) continue;
+
+      // Score: city size × 10, bonus for low air defense
+      let score = city.size * 10 + 50;
+
+      // Count air defense units at the city (SAM battery equivalent)
+      const airDefAtCity = _countAirDefenseAtTile(gameState, spatialIdx, city.gx, city.gy, city.owner);
+      if (airDefAtCity === 0) score += 40; // undefended by air
+      else score -= airDefAtCity * 15; // penalize heavy air defense
+
+      // Bonus for cities building wonders (high-value sabotage)
+      if (city.itemInProduction?.type === 'wonder') score += 30;
+
+      // Distance penalty (prefer closer targets — less fuel wasted)
+      score -= dist;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestTarget = { gx: city.gx, gy: city.gy, type: 'city' };
+      }
+    }
+
+    // ── Score enemy unit stacks for bombardment ──
+    // Group enemy units by tile for efficient scoring
+    const enemyStacks = new Map();
+    for (let i = 0; i < gameState.units.length; i++) {
+      const u = gameState.units[i];
+      if (u.gx < 0 || u.owner === civSlot) continue;
+      if (!isAtWar(gameState, civSlot, u.owner)) continue;
+
+      const dist = tileDist(unit.gx, unit.gy, u.gx, u.gy, mapBase);
+      const effectiveRange = fuel > 0 ? Math.floor(bombRange / 2) * 2 : bombRange * 2;
+      if (dist > effectiveRange) continue;
+
+      const key = `${u.gx},${u.gy}`;
+      if (!enemyStacks.has(key)) {
+        enemyStacks.set(key, { gx: u.gx, gy: u.gy, units: [], totalAtk: 0, dist });
+      }
+      const stack = enemyStacks.get(key);
+      stack.units.push(u);
+      stack.totalAtk += (UNIT_ATK[u.type] || 0);
+    }
+
+    for (const [, stack] of enemyStacks) {
+      // Score: total attack strength × unit count, distance penalty
+      let score = stack.totalAtk * stack.units.length + stack.units.length * 5;
+      score -= stack.dist;
+
+      // Bonus for stacks on open ground (no city defense)
+      const hasCity = gameState.cities.some(c =>
+        c.gx === stack.gx && c.gy === stack.gy && c.size > 0);
+      if (!hasCity) score += 20;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestTarget = { gx: stack.gx, gy: stack.gy, type: 'stack' };
+      }
+    }
+
+    // ── Execute bombardment if target found ──
+    if (bestTarget && bestScore > 10) {
+      const bombardAction = {
+        type: 'BOMBARD', unitIndex,
+        targetGx: bestTarget.gx, targetGy: bestTarget.gy
+      };
+      const err = validateAction(gameState, mapBase, bombardAction, civSlot);
+      if (!err) return bombardAction;
+    }
+
+    // ── No targets in range: rebase to frontline city ──
+    // Find a city closer to the enemy to extend our bombing range next turn
+    const frontlineCity = _findFrontlineAirBase(gameState, mapBase, unit.gx, unit.gy, civSlot);
+    if (frontlineCity && (frontlineCity.gx !== unit.gx || frontlineCity.gy !== unit.gy)) {
+      const rebaseAction = {
+        type: 'REBASE', unitIndex,
+        targetGx: frontlineCity.gx, targetGy: frontlineCity.gy
+      };
+      const err = validateAction(gameState, mapBase, rebaseAction, civSlot);
+      if (!err) return rebaseAction;
+    }
+
+    // Stay at base if nothing to do
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
+
+  // ── Not at base: we must return immediately to avoid crash ──
+  return _airReturnToBase(unit, unitIndex, gameState, mapBase, civSlot);
+}
+
+// ── aiAirAttack helpers ────────────────────────────────────────────
+
+/**
+ * Check if an air unit is currently at a valid base (city, carrier, or airbase).
+ */
+function _isAtAirBase(unit, gameState, mapBase, civSlot) {
+  // Check for own city at this tile
+  const inCity = gameState.cities.some(c =>
+    c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+  if (inCity) return true;
+
+  // Check for carrier (type 42) at this tile
+  const onCarrier = gameState.units.some(u =>
+    u.gx === unit.gx && u.gy === unit.gy && u.owner === civSlot &&
+    u.type === 42 && u.gx >= 0);
+  if (onCarrier) return true;
+
+  // Check for airbase improvement on tile
+  const tileIdx = unit.gy * mapBase.mw + wrapX(unit.gx, mapBase);
+  const tile = mapBase.tileData?.[tileIdx];
+  if (tile && tile.improvements && tile.improvements.airbase) return true;
+
+  return false;
+}
+
+/**
+ * Return an air unit to the nearest valid base.
+ * Uses REBASE action for instant relocation, or movement if in range.
+ */
+function _airReturnToBase(unit, unitIndex, gameState, mapBase, civSlot) {
+  // Find nearest base: own city, carrier, or airbase
+  let bestBase = null;
+  let bestDist = Infinity;
+
+  // Check own cities
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestBase = { gx: city.gx, gy: city.gy };
+    }
+  }
+
+  // Check carriers
+  for (const u of gameState.units) {
+    if (u.gx < 0 || u.owner !== civSlot || u.type !== 42) continue;
+    const dist = tileDist(unit.gx, unit.gy, u.gx, u.gy, mapBase);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestBase = { gx: u.gx, gy: u.gy };
+    }
+  }
+
+  if (bestBase) {
+    const rebaseAction = {
+      type: 'REBASE', unitIndex,
+      targetGx: bestBase.gx, targetGy: bestBase.gy
+    };
+    const err = validateAction(gameState, mapBase, rebaseAction, civSlot);
+    if (!err) return rebaseAction;
+
+    // If REBASE fails, try moving toward it
+    const dir = directionToward(mapBase, unit.gx, unit.gy, bestBase.gx, bestBase.gy, 2);
+    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+  }
+
+  // Emergency: skip and hope for the best
   return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+}
+
+/**
+ * Find the best frontline city/airbase to rebase an air unit to.
+ * Frontline = own city closest to enemy cities, preferring those with airports.
+ */
+function _findFrontlineAirBase(gameState, mapBase, fromGx, fromGy, civSlot) {
+  // First, find the centroid of enemy cities for reference
+  let enemyCenterX = 0, enemyCenterY = 0, enemyCount = 0;
+  for (const city of gameState.cities) {
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    if (city.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, city.owner)) continue;
+    enemyCenterX += city.gx;
+    enemyCenterY += city.gy;
+    enemyCount++;
+  }
+  if (enemyCount === 0) return null;
+  enemyCenterX = Math.floor(enemyCenterX / enemyCount);
+  enemyCenterY = Math.floor(enemyCenterY / enemyCount);
+
+  let bestCity = null;
+  let bestScore = -Infinity;
+
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+
+    // Skip the city we're currently at
+    if (city.gx === fromGx && city.gy === fromGy) continue;
+
+    const distToEnemy = tileDist(city.gx, city.gy, enemyCenterX, enemyCenterY, mapBase);
+    const distFromUs = tileDist(fromGx, fromGy, city.gx, city.gy, mapBase);
+
+    // Score: prefer cities closer to enemy, with airport, not too far from us
+    let score = 100 - distToEnemy;
+    if (city.buildings?.has(32)) score += 30; // airport bonus
+    score -= Math.floor(distFromUs / 4); // slight penalty for distance from current position
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestCity = city;
+    }
+  }
+
+  return bestCity;
 }
 
 /**
@@ -2609,70 +3073,244 @@ function _findCityNeedingAirDefense(gameState, mapBase, spatialIdx, civSlot, fro
 }
 
 /**
- * AI for Role 5 (Sea transport): ferries.
+ * AI for Role 5 (Sea transport): ferries and troop transports.
  *
- * Basic transport coordination:
- * 1. If carrying units and near land with enemy targets, move toward coast
- * 2. If carrying units, move toward the destination continent
- * 3. If empty, move toward a coastal city where land units are waiting
- * 4. If nothing to do, patrol near coastal cities
+ * Ported from Civ2 FUN_00538a29 role 5 logic (lines 4429-4519).
+ *
+ * The decompiled logic for sea transport units:
+ *
+ * 1. Goto destination check (lines 4429-4434):
+ *    - If role == 5 AND orders == 0x0B (goto) AND the goto destination
+ *      has a city belonging to target civ (FUN_005b8ca6 >= 0):
+ *      set local_b4 = 1 (keep going to destination, troops are loaded).
+ *
+ * 2. Transport-specific unloading logic (lines 4435-4477):
+ *    - If cargo role is 5 (transport-carried units) AND not barbarian:
+ *      a. If local_b4 == 0 (no goto destination):
+ *         - Check if we're NOT in a city (FUN_005b89e4 == 0)
+ *         - Check if no city at current tile (FUN_005b8ca6 < 0)
+ *         - Count own land units on board (FUN_005b50ad with domain 2)
+ *         - If <= 1 land unit aboard: scan 8 adjacent tiles for friendly
+ *           city (FUN_005b8d62 >= 0) — if found, set local_c4 = 1
+ *         - If no adjacent city: build a garrison unit (FUN_0049301b)
+ *         - Set AI activity: FUN_00492c15 with flag 0x15
+ *         - Check tile flags (FUN_005b94d5 & 0x80): if set, assign
+ *           orders 9 / order byte 0x70 (patrol)
+ *      b. If conditions for land deployment met (cVar1 == '\x02'):
+ *         - Assign orders 4 / order byte 0x58 ('X' = explore)
+ *
+ * 3. Loading coordination (lines 4488-4519):
+ *    - If transport is in a city (local_3c > 2) or near own territory:
+ *      evaluate whether land units should embark
+ *    - Scan adjacent tiles for friendly port cities and available land units
+ *    - Check if land units on this continent have no enemies to fight
+ *      (FUN_005b4b66 == 0) → those units should board for transport
+ *    - Set goto toward target continent's coast
+ *
+ * Our JS adaptation:
+ *
+ * LOADED state (carrying land units):
+ *   1. If adjacent to enemy coastal city: check if we should unload
+ *   2. If near any land tile on target continent: unload troops
+ *   3. Navigate toward nearest enemy coastal city for invasion
+ *   4. Navigate toward nearest land mass we don't control
+ *
+ * EMPTY state (no cargo):
+ *   1. Move to own coastal city with land units wanting transport
+ *   2. Move to own coastal city with excess attack-role units
+ *   3. Patrol near own coast
+ *
+ * DANGER avoidance:
+ *   - Retreat from adjacent enemy naval combat units when damaged
+ *   - Prefer routes away from enemy warships when loaded
  */
 function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
-  // Check if we're carrying any units (units at same tile with domain 0)
+  const domain = 1; // sea
+  const carryCapacity = UNIT_CARRY_CAP[unit.type] || 2;
+
+  // ── Damage level ──
+  const maxHp = UNIT_HP[unit.type] || 1;
+  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  if (curHp * 4 < maxHp) damageLevel = 3;
+  else if (curHp * 2 < maxHp) damageLevel = 2;
+
+  // ── Count cargo: land units at our tile belonging to us ──
   const cargoHere = unitsAt(spatialIdx, unit.gx, unit.gy).filter(
     e => e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 0 && e.index !== unitIndex
   );
-  const isCarrying = cargoHere.length > 0;
+  const cargoCount = cargoHere.length;
+  const isLoaded = cargoCount > 0;
 
-  if (isCarrying) {
-    // We have cargo — find the nearest enemy city or own city on a different landmass
-    // to deliver troops to. Move toward adjacent land tiles near that target.
-    let bestTarget = null;
-    let bestDist = Infinity;
-
-    // Prefer enemy cities for attack delivery
-    for (const city of gameState.cities) {
-      if (!city || city.size <= 0 || city.gx < 0) continue;
-      if (city.owner === civSlot) continue;
-      if (!isAtWar(gameState, civSlot, city.owner)) continue;
-      const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestTarget = { gx: city.gx, gy: city.gy };
-      }
+  // ── Danger check: retreat when damaged and near enemy warships ──
+  // Ported from the damage-level retreat logic used across all roles.
+  if (damageLevel >= 3) {
+    const port = _findNearestFriendlyPort(gameState, mapBase, unit.gx, unit.gy, civSlot);
+    if (port) {
+      const dir = _transportSafeDirection(mapBase, gameState, spatialIdx,
+        unit.gx, unit.gy, port.gx, port.gy, civSlot);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
     }
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
 
-    // Fallback: own cities on different landmass
-    if (!bestTarget) {
-      for (const city of gameState.cities) {
-        if (!city || city.size <= 0 || city.gx < 0) continue;
-        if (city.owner !== civSlot) continue;
-        const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
-        if (dist > 6 && dist < bestDist) {
-          bestDist = dist;
-          bestTarget = { gx: city.gx, gy: city.gy };
+  // ══════════════════════════════════════════════════════════════
+  //  LOADED: Transport is carrying land units
+  // ══════════════════════════════════════════════════════════════
+  if (isLoaded) {
+    // ── 1. Check if adjacent to enemy coastal city → unload nearby ──
+    // Ported from lines 4435-4438: if transport arrives near target,
+    // check adjacent tiles for unloading positions.
+    {
+      const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
+      for (const dir in neighbors) {
+        const [nx, ny] = neighbors[dir];
+        if (!inBounds(nx, ny, mapBase)) continue;
+        const wnx = wrapX(nx, mapBase);
+        const terrain = mapBase.getTerrain(wnx, ny);
+        if (terrain === 10) continue; // skip ocean — need land to unload
+
+        // Check for enemy city at this land tile
+        const enemyCity = gameState.cities.find(c =>
+          c.gx === wnx && c.gy === ny && c.owner !== civSlot && c.size > 0 &&
+          isAtWar(gameState, civSlot, c.owner));
+
+        // Check for empty land (no enemy units) suitable for landing
+        const enemyUnitsHere = unitsAt(spatialIdx, wnx, ny).filter(
+          e => e.unit.owner !== civSlot && isAtWar(gameState, civSlot, e.unit.owner)
+        );
+
+        // Prefer unloading adjacent to enemy cities (for immediate attack)
+        // or onto empty land tiles (for staging)
+        if (enemyCity || enemyUnitsHere.length === 0) {
+          // Move toward this land tile (which will unload cargo in the game engine)
+          return { type: 'MOVE_UNIT', unitIndex, dir };
         }
       }
     }
 
-    if (bestTarget) {
-      // Move toward target, staying on ocean tiles (domain 1)
-      const dir = directionToward(mapBase, unit.gx, unit.gy, bestTarget.gx, bestTarget.gy, 1);
-      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-      // If blocked on sea-only path, try any direction toward target
-      const anyDir = directionToward(mapBase, unit.gx, unit.gy, bestTarget.gx, bestTarget.gy, -1);
-      if (anyDir) return { type: 'MOVE_UNIT', unitIndex, dir: anyDir };
+    // ── 2. Navigate toward nearest enemy coastal city ──
+    // Ported from lines 4429-4434: transport with goto toward enemy city.
+    // Score all enemy coastal cities for invasion targeting.
+    {
+      let bestInvasionTarget = null;
+      let bestInvasionScore = -Infinity;
+
+      for (const city of gameState.cities) {
+        if (!city || city.size <= 0 || city.gx < 0) continue;
+        if (city.owner === civSlot) continue;
+        if (!isAtWar(gameState, civSlot, city.owner)) continue;
+
+        // Check if city is coastal (reachable by sea)
+        const neighbors = mapBase.getNeighbors(city.gx, city.gy);
+        let coastal = false;
+        for (const dir in neighbors) {
+          const [nx, ny] = neighbors[dir];
+          if (!inBounds(nx, ny, mapBase)) continue;
+          const wnx = wrapX(nx, mapBase);
+          if (mapBase.getTerrain(wnx, ny) === 10) { coastal = true; break; }
+        }
+        if (!coastal) continue;
+
+        const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+        if (dist > 50) continue;
+
+        // Score: prefer closer, larger cities with fewer defenders
+        let score = city.size * 15 + 100 - dist * 2;
+
+        // Count defenders
+        const defenders = unitsAt(spatialIdx, city.gx, city.gy).filter(
+          e => e.unit.owner !== civSlot && (UNIT_DEF[e.unit.type] || 0) > 0
+        );
+        if (defenders.length === 0) score += 50; // undefended = priority
+        else score -= defenders.length * 10;
+
+        if (score > bestInvasionScore) {
+          bestInvasionScore = score;
+          bestInvasionTarget = city;
+        }
+      }
+
+      if (bestInvasionTarget) {
+        // Navigate toward the invasion target, avoiding enemy warships
+        const dir = _transportSafeDirection(mapBase, gameState, spatialIdx,
+          unit.gx, unit.gy, bestInvasionTarget.gx, bestInvasionTarget.gy, civSlot);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+
+        // Fallback: direct sea path
+        const seaDir = directionToward(mapBase, unit.gx, unit.gy,
+          bestInvasionTarget.gx, bestInvasionTarget.gy, 1);
+        if (seaDir) return { type: 'MOVE_UNIT', unitIndex, dir: seaDir };
+      }
     }
-  } else {
-    // Empty transport — move toward a coastal city where land units need transport
-    // Look for our land units on coast tiles (adjacent to ocean) that don't have
-    // enemy targets on their same landmass
-    let bestPort = null;
-    let bestPortDist = Infinity;
+
+    // ── 3. Navigate toward any enemy land (if no coastal cities found) ──
+    // Look for any land tile adjacent to ocean that's near enemy territory
+    {
+      let bestLanding = null;
+      let bestLandingDist = Infinity;
+
+      for (const city of gameState.cities) {
+        if (!city || city.size <= 0 || city.gx < 0) continue;
+        if (city.owner === civSlot) continue;
+        if (!isAtWar(gameState, civSlot, city.owner)) continue;
+
+        const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+        if (dist < bestLandingDist) {
+          bestLandingDist = dist;
+          bestLanding = { gx: city.gx, gy: city.gy };
+        }
+      }
+
+      if (bestLanding) {
+        const dir = directionToward(mapBase, unit.gx, unit.gy,
+          bestLanding.gx, bestLanding.gy, 1);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
+    }
+
+    // ── 4. If loaded but no enemy targets, head to own cities on other continents ──
+    {
+      const curBodyId = mapBase.getBodyId(unit.gx, unit.gy);
+      let bestOwnCity = null;
+      let bestOwnDist = Infinity;
+
+      for (const city of gameState.cities) {
+        if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+        const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+        // Prefer cities on a DIFFERENT continent (cross-ocean transport)
+        if (cityBodyId === curBodyId) continue;
+
+        const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+        if (dist < bestOwnDist) {
+          bestOwnDist = dist;
+          bestOwnCity = city;
+        }
+      }
+
+      if (bestOwnCity) {
+        const dir = directionToward(mapBase, unit.gx, unit.gy,
+          bestOwnCity.gx, bestOwnCity.gy, 1);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  EMPTY: Transport has no cargo — pick up units
+  // ══════════════════════════════════════════════════════════════
+  if (!isLoaded) {
+    // ── 1. Move to coastal city with land units wanting transport ──
+    // Ported from lines 4488-4519: scan own coastal cities for land units
+    // that don't have enemy targets on their continent (FUN_005b4b66 == 0).
+    // These units are "stranded" and need transport to reach the fight.
+    let bestPickup = null;
+    let bestPickupScore = -Infinity;
 
     for (const city of gameState.cities) {
-      if (!city || city.owner !== civSlot || city.size <= 0) continue;
-      // Check if city is coastal (has adjacent ocean)
+      if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+
+      // Check if city is coastal
       const neighbors = mapBase.getNeighbors(city.gx, city.gy);
       let coastal = false;
       for (const dir in neighbors) {
@@ -2683,7 +3321,7 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
       }
       if (!coastal) continue;
 
-      // Check if there are land combat units here that might want transport
+      // Count land combat units at this city
       const unitsHere = unitsAt(spatialIdx, city.gx, city.gy);
       const landCombat = unitsHere.filter(e =>
         e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 0 &&
@@ -2691,41 +3329,162 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
       );
       if (landCombat.length === 0) continue;
 
+      // Check if these units have enemy targets on their continent
+      // If they don't, they're candidates for transport
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      const hasLocalEnemy = _hasContinentEnemy(gameState, mapBase, civSlot, cityBodyId);
+
       const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
-      if (dist < bestPortDist) {
-        bestPortDist = dist;
-        bestPort = city;
+
+      // Score: more units = better pickup, closer = better
+      // Big bonus if no local enemies (these units NEED transport)
+      let score = landCombat.length * 20 - dist;
+      if (!hasLocalEnemy) score += 100;
+
+      // Bonus for cities with excess defenders
+      const defCount = _countDefendersAtTile(gameState, spatialIdx, city.gx, city.gy, civSlot);
+      if (defCount > 2) score += (defCount - 2) * 10;
+
+      if (score > bestPickupScore) {
+        bestPickupScore = score;
+        bestPickup = city;
       }
     }
 
-    if (bestPort) {
-      // Move toward port city, preferring ocean path
-      const dir = directionToward(mapBase, unit.gx, unit.gy, bestPort.gx, bestPort.gy, 1);
+    if (bestPickup) {
+      // Navigate to pickup city
+      const dist = tileDist(unit.gx, unit.gy, bestPickup.gx, bestPickup.gy, mapBase);
+
+      if (dist <= 2) {
+        // Adjacent to or at the city — move in to pick up units
+        const dir = directionToward(mapBase, unit.gx, unit.gy,
+          bestPickup.gx, bestPickup.gy, -1); // allow any direction to enter port
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
+
+      // Navigate via ocean
+      const dir = _transportSafeDirection(mapBase, gameState, spatialIdx,
+        unit.gx, unit.gy, bestPickup.gx, bestPickup.gy, civSlot);
       if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-      // Allow land-adjacent movement to reach port
-      const anyDir = directionToward(mapBase, unit.gx, unit.gy, bestPort.gx, bestPort.gy, -1);
-      if (anyDir) return { type: 'MOVE_UNIT', unitIndex, dir: anyDir };
+
+      const seaDir = directionToward(mapBase, unit.gx, unit.gy,
+        bestPickup.gx, bestPickup.gy, 1);
+      if (seaDir) return { type: 'MOVE_UNIT', unitIndex, dir: seaDir };
+    }
+
+    // ── 2. No cities with waiting units: patrol near own coast ──
+    {
+      const patrolTarget = _findCoastalPatrolTarget(gameState, mapBase, unit.gx, unit.gy, civSlot, spatialIdx);
+      if (patrolTarget) {
+        const dir = _navalDirectionToward(mapBase, unit.gx, unit.gy, patrolTarget.gx, patrolTarget.gy);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
     }
   }
 
-  // Fallback: patrol near own coastal cities
-  let nearestCoastal = null;
-  let nearestCoastalDist = Infinity;
-  for (const city of gameState.cities) {
-    if (!city || city.owner !== civSlot || city.size <= 0) continue;
-    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
-    if (dist < nearestCoastalDist) {
-      nearestCoastalDist = dist;
-      nearestCoastal = city;
+  // ── Fallback: move toward nearest own coastal city ──
+  {
+    const port = _findNearestFriendlyPort(gameState, mapBase, unit.gx, unit.gy, civSlot);
+    if (port) {
+      const dist = tileDist(unit.gx, unit.gy, port.gx, port.gy, mapBase);
+      if (dist > 4) {
+        const dir = directionToward(mapBase, unit.gx, unit.gy, port.gx, port.gy, 1);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
     }
   }
-  if (nearestCoastal && nearestCoastalDist > 4) {
-    const dir = directionToward(mapBase, unit.gx, unit.gy, nearestCoastal.gx, nearestCoastal.gy, 1);
-    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-  }
 
-  // Random sea movement
+  // Random sea movement or skip
   return randomMove(unit, unitIndex, mapBase, 1) || { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+}
+
+// ── aiTransport helpers ────────────────────────────────────────────
+
+/**
+ * Safe direction for transport: avoid tiles with enemy warships.
+ * Transports are vulnerable (low attack) so they should route around hostiles.
+ * Ported from the transport-specific avoidance in the decompiled movement evaluator.
+ */
+function _transportSafeDirection(mapBase, gameState, spatialIdx, fromGx, fromGy, toGx, toGy, civSlot) {
+  const neighbors = mapBase.getNeighbors(fromGx, fromGy);
+  let bestDir = null;
+  let bestDist = Infinity;
+
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (!inBounds(nx, ny, mapBase)) continue;
+    const wnx = wrapX(nx, mapBase);
+    const terrain = mapBase.getTerrain(wnx, ny);
+    if (terrain !== 10) continue; // transports stay on ocean
+
+    // Check for enemy warships on this tile
+    const unitsHere = unitsAt(spatialIdx, wnx, ny);
+    const hasEnemyWarship = unitsHere.some(e =>
+      e.unit.owner !== civSlot && isAtWar(gameState, civSlot, e.unit.owner) &&
+      (UNIT_ATK[e.unit.type] || 0) > 0 && (UNIT_DOMAIN[e.unit.type] ?? 0) === 1
+    );
+    if (hasEnemyWarship) continue; // avoid enemy warships
+
+    // Also check if adjacent tiles have enemy warships (one-tile buffer)
+    let nearbyDanger = false;
+    const nextNeighbors = mapBase.getNeighbors(wnx, ny);
+    for (const ndir in nextNeighbors) {
+      const [nnx, nny] = nextNeighbors[ndir];
+      if (!inBounds(nnx, nny, mapBase)) continue;
+      const wnnx = wrapX(nnx, mapBase);
+      const nearbyUnits = unitsAt(spatialIdx, wnnx, nny);
+      if (nearbyUnits.some(e =>
+        e.unit.owner !== civSlot && isAtWar(gameState, civSlot, e.unit.owner) &&
+        (UNIT_ATK[e.unit.type] || 0) > 3 && (UNIT_DOMAIN[e.unit.type] ?? 0) === 1
+      )) {
+        nearbyDanger = true;
+        break;
+      }
+    }
+
+    const dist = tileDist(wnx, ny, toGx, toGy, mapBase);
+    // Penalize tiles near danger
+    const adjustedDist = nearbyDanger ? dist + 10 : dist;
+
+    if (adjustedDist < bestDist) {
+      bestDist = adjustedDist;
+      bestDir = dir;
+    }
+  }
+
+  return bestDir;
+}
+
+/**
+ * Check if a continent has any enemy combat units or cities on it.
+ * Used to determine if land units on that continent have local targets
+ * or need transport to another continent.
+ * Ported from FUN_005b4b66 logic.
+ */
+function _hasContinentEnemy(gameState, mapBase, civSlot, bodyId) {
+  if (bodyId <= 0) return false;
+
+  // Check for enemy cities on this continent
+  for (const city of gameState.cities) {
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    if (city.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, city.owner)) continue;
+    const cb = mapBase.getBodyId(city.gx, city.gy);
+    if (cb === bodyId) return true;
+  }
+
+  // Check for enemy combat units on this continent
+  for (const u of gameState.units) {
+    if (u.gx < 0 || u.owner === civSlot) continue;
+    if ((UNIT_ATK[u.type] || 0) <= 0) continue;
+    if (!isAtWar(gameState, civSlot, u.owner)) continue;
+    const uDomain = UNIT_DOMAIN[u.type] ?? 0;
+    if (uDomain !== 0) continue; // land units only
+    const ub = mapBase.getBodyId(u.gx, u.gy);
+    if (ub === bodyId) return true;
+  }
+
+  return false;
 }
 
 /**
@@ -3525,13 +4284,23 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
  * but have nothing useful to do. This ensures END_TURN validation
  * passes (all units must have orders or no moves).
  *
- * @param {object} gameState - current game state (post other actions)
+ * Deliberately issues orders for ALL units with movesLeft > 0,
+ * including units that received MOVE_UNIT actions from earlier phases.
+ * Those units may still have remaining movement after their move is
+ * applied; the skip zeros it out. For units that received UNIT_ORDER
+ * or WORKER_ORDER, movesLeft is already 0 after those are applied,
+ * so the redundant skip is a harmless no-op. The 'skip' order does
+ * NOT change unit.orders, so it never overwrites fortify/sentry/worker
+ * orders set by earlier phases.
+ *
+ * @param {object} gameState - current game state (initial snapshot)
  * @param {object} mapBase - immutable map data with accessors
  * @param {number} civSlot - civ slot (1-7)
  * @param {object} [strategy] - optional strategy (unused, kept for interface compat)
+ * @param {Array<string>|null} [debugLog=null] - optional debug log
  * @returns {Array<object>} actions
  */
-export function generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog = null, handledUnits = null) {
+export function generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
 
   for (let i = 0; i < gameState.units.length; i++) {
@@ -3541,9 +4310,6 @@ export function generateCleanupActions(gameState, mapBase, civSlot, strategy, de
     if (unit.gx < 0) continue;
     if (unit.movesLeft <= 0) continue;
     if (BUSY_ORDERS.has(unit.orders)) continue;
-
-    // Skip units already given an action by an earlier phase
-    if (handledUnits && handledUnits.has(i)) continue;
 
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
 

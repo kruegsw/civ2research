@@ -11,7 +11,7 @@
 //   3. City management — production selection and rush-buy
 //   4. Settler AI — city founding and worker improvements
 //   5. Military AI — exploration, combat, patrol
-//   6. Cleanup — skip/fortify idle units so END_TURN passes
+//   6. Cleanup — skip/fortify ALL units that still have moves so END_TURN passes
 // ═══════════════════════════════════════════════════════════════════
 
 import { assessStrategy } from './strategyai.js';
@@ -29,9 +29,21 @@ import { generateBarbarianActions } from './barbarian.js';
  * IMPORTANT: The server applies these actions sequentially through
  * applyAction(), so later actions see a mutated state. However, we
  * compute all actions against the *initial* state snapshot. To stay
- * safe, each unit gets at most one action (one move, one order, etc).
- * The cleanup pass ensures every unit with remaining moves gets a
- * skip or fortify order so END_TURN validation passes.
+ * safe, each unit gets at most one action per phase.
+ *
+ * Cleanup issues skip/fortify for ALL units that have movesLeft > 0
+ * in the initial snapshot (not just unhandled units). This is safe
+ * because:
+ *   - Units given UNIT_ORDER/WORKER_ORDER by earlier phases already
+ *     have movesLeft=0 after those orders are applied, so the
+ *     redundant skip is a harmless no-op (movesLeft already 0).
+ *   - Units given MOVE_UNIT may still have movesLeft > 0 after the
+ *     move is applied; the skip zeros out remaining movement,
+ *     preventing END_TURN rejection.
+ *   - Units consumed by BUILD_CITY or disband are dead (gx < 0)
+ *     when the skip is applied, so the skip is rejected harmlessly.
+ *   - The 'skip' order does NOT change unit.orders, so it never
+ *     overwrites fortify/sentry/worker orders set by earlier phases.
  *
  * @param {object} gameState - current mutable game state
  * @param {object} mapBase - immutable map data with accessors
@@ -48,42 +60,42 @@ export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
 
   const actions = [];
 
-  // Track which unit indices already received an action from earlier phases.
-  // Cleanup must skip these — otherwise it overwrites move/build actions
-  // with sentry/skip (computed from the stale initial snapshot).
-  const handledUnits = new Set();
-
-  /** Collect actions from a phase, recording unit indices. */
-  function collectActions(phaseActions) {
-    for (const a of phaseActions) {
-      actions.push(a);
-      if (a.unitIndex != null) handledUnits.add(a.unitIndex);
-    }
-  }
-
   try {
     // ── 0. Strategic assessment (advisory — no actions) ──
     const strategy = assessStrategy(gameState, mapBase, civSlot, undefined, debugLog);
 
     // ── 1. Research & economy ──
-    collectActions(generateEconActions(gameState, mapBase, civSlot, strategy, debugLog));
+    for (const a of generateEconActions(gameState, mapBase, civSlot, strategy, debugLog)) {
+      actions.push(a);
+    }
 
     // ── 2. Diplomacy ──
-    collectActions(generateDiplomacyActions(gameState, mapBase, civSlot, debugLog));
+    for (const a of generateDiplomacyActions(gameState, mapBase, civSlot, debugLog)) {
+      actions.push(a);
+    }
 
     // ── 3. City management: production selection + rush-buy ──
-    collectActions(generateProductionActions(gameState, mapBase, civSlot, strategy, debugLog));
-    collectActions(generateRushBuyActions(gameState, mapBase, civSlot, strategy));
+    for (const a of generateProductionActions(gameState, mapBase, civSlot, strategy, debugLog)) {
+      actions.push(a);
+    }
+    for (const a of generateRushBuyActions(gameState, mapBase, civSlot, strategy)) {
+      actions.push(a);
+    }
 
     // ── 4. Settler/Worker AI ──
-    collectActions(generateSettlerActions(gameState, mapBase, civSlot, strategy, debugLog));
+    for (const a of generateSettlerActions(gameState, mapBase, civSlot, strategy, debugLog)) {
+      actions.push(a);
+    }
 
     // ── 5. Military unit AI ──
-    collectActions(generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog));
+    for (const a of generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog)) {
+      actions.push(a);
+    }
 
-    // ── 6. Cleanup: skip/fortify any unit that still has moves ──
-    // Must come last. Skips units already handled by earlier phases.
-    const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog, handledUnits);
+    // ── 6. Cleanup: skip/fortify ALL units that still have moves ──
+    // Must come last. Does NOT skip "handled" units — see JSDoc above
+    // for why this is safe and necessary to prevent END_TURN rejection.
+    const cleanupActions = generateCleanupActions(gameState, mapBase, civSlot, strategy, debugLog);
     actions.push(...cleanupActions);
 
   } catch (err) {
