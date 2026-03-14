@@ -371,8 +371,6 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     // Penalty if food surplus is low
     if (estimateFoodSurplus(city) <= 0) score -= 15;
 
-    // Scale by cost-effectiveness
-    score = Math.floor(score * 10 / Math.max(1, cost));
     return Math.max(0, score);
   }
 
@@ -495,8 +493,12 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   }
 
   // ── Cost-effectiveness ──
-  // Normalize by production cost: cheaper units score higher per shield
-  score = Math.floor(score * 30 / Math.max(1, cost));
+  // Mild cost adjustment: expensive units get a small penalty, but combat
+  // power is the primary factor. Civ2 does NOT aggressively normalize by
+  // cost — a Knight at 40 shields is strictly preferred over a Warrior
+  // at 10 shields when the tech is available.
+  if (cost > 30) score -= Math.floor((cost - 30) / 10);
+  if (cost > 60) score -= Math.floor((cost - 60) / 15);
 
   // ── Continent threat ──
   // If there are enemy military units nearby on our continent, prefer military
