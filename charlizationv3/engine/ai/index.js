@@ -20,6 +20,7 @@ import { generateDiplomacyActions } from './diplomai.js';
 import { generateProductionActions, generateRushBuyActions } from './prodai.js';
 import { generateSettlerActions } from './cityai.js';
 import { generateMilitaryActions, generateCleanupActions } from './unitai.js';
+import { generateBarbarianActions } from './barbarian.js';
 
 /**
  * Run one AI turn for the given civ.
@@ -39,6 +40,12 @@ import { generateMilitaryActions, generateCleanupActions } from './unitai.js';
  * @returns {{ actions: Array<object>, debugLog: Array<string>|null }}
  */
 export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
+  // ── Barbarian AI (civ slot 0): separate simpler logic ──
+  if (civSlot === 0) {
+    const barbActions = generateBarbarianActions(gameState, mapBase, debugLog);
+    return { actions: barbActions, debugLog };
+  }
+
   const actions = [];
 
   // Track which unit indices already received an action from earlier phases.

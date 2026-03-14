@@ -17,6 +17,7 @@ import {
   IMPROVE_COSTS, WONDER_COSTS, WONDER_NAMES,
   WONDER_PREREQS, WONDER_OBSOLETE,
   SETTLER_TYPES, NON_COMBAT_TYPES,
+  LEADER_PERSONALITY, GOVT_INDEX,
 } from '../defs.js';
 import { hasWonderEffect } from '../utils.js';
 
@@ -202,6 +203,49 @@ function isCoastalCity(city, mapBase) {
     } catch { /* ignore */ }
   }
   return false;
+}
+
+/**
+ * Count sea tiles (terrain 10) in a city's working radius (20 tiles).
+ * Weighted: tiles being actively worked count as 4, others as 1.
+ */
+function countSeaTiles(city, mapBase) {
+  if (!mapBase.getTerrain) return 0;
+  const offsets = [
+    [-1,-1],[0,-2],[1,-1],[1,1],[0,2],[-1,1],
+    [-2,-2],[-1,-3],[0,-4],[1,-3],[2,-2],[2,0],[2,2],[1,3],[0,4],[-1,3],[-2,2],[-2,0],
+    [0,-1],[0,1],
+  ];
+  let count = 0;
+  for (const [dx, dy] of offsets) {
+    let gx = city.gx + dx;
+    const gy = city.gy + dy;
+    if (gy < 0 || gy >= mapBase.mh) continue;
+    if (mapBase.wraps) gx = ((gx % mapBase.mw) + mapBase.mw) % mapBase.mw;
+    else if (gx < 0 || gx >= mapBase.mw) continue;
+    try {
+      if (mapBase.getTerrain(gx, gy) === 10) count++;
+    } catch { /* ignore */ }
+  }
+  return count;
+}
+
+/**
+ * Count how many of our cities on the same continent have a given building.
+ */
+function countCitiesWithBuilding(gameState, mapBase, city, civSlot, buildingId) {
+  let count = 0;
+  const cityTile = mapBase.tileData?.[city.gy * mapBase.mw + city.gx];
+  const cityBody = cityTile?.bodyId ?? -1;
+  for (const c of gameState.cities) {
+    if (!c || c.size <= 0 || c.owner !== civSlot) continue;
+    if (c === city) continue; // skip self
+    // Same continent check
+    const t = mapBase.tileData?.[c.gy * mapBase.mw + c.gx];
+    if ((t?.bodyId ?? -2) !== cityBody) continue;
+    if (c.buildings && c.buildings.has(buildingId)) count++;
+  }
+  return count;
 }
 
 /**
@@ -532,7 +576,10 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
 /**
  * Score a building for a specific city context.
  *
- * Based on Civ2 FUN_00498e8b building scoring (cases 1-0x26).
+ * Ported from Civ2 FUN_00498e8b building scoring switch (cases 1-0x23).
+ * Faithfully reproduces the decompiled per-building scoring logic including
+ * personality-based normalization.
+ *
  * Returns a numeric score (higher = more desirable). Returns -1 if
  * the building should not be considered.
  */
@@ -540,425 +587,661 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
   if (buildingId <= 0 || buildingId >= NUM_BUILDING_TYPES) return -1;
   if (!canBuildBuilding(civTechs, city, buildingId)) return -1;
 
-  const maintenance = IMPROVE_MAINTENANCE[buildingId] || 0;
-  const cost = IMPROVE_COSTS[buildingId] || 10;
-  const trade = estimateCityTrade(city);
-  const shields = estimateCityShields(city);
-  const focus = strategy.productionFocus;
-  const threat = strategy.threat;
+  // ── Map decompiled locals to JS context ──
+  const citySize = city.size || 1;
+  const numCities = cityCtx.numCities || 1;
+  const numOpponents = cityCtx.numOpponents || 0;
+  const isCoastal = cityCtx.isCoastal ? 1 : 0;
+  const seaTileCount = cityCtx.seaTileCount || 0;
+  const numBuildings = cityCtx.numBuildings || 0;
+  const tradeRouteCount = cityCtx.tradeRouteCount || 0;
+  const totalMilitary = cityCtx.totalMilitary || 0;
+  const sdiCount = cityCtx.sdiCount || 0;
 
-  let score = -1;
+  // Leader personality
+  const leaderIdx = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
+  const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0];
+  const expansionism = personality[0]; // DAT_006554fa
+  const militarism = personality[1];   // DAT_006554f8
+
+  // Government
+  const govtStr = gameState.civs?.[civSlot]?.government || 'despotism';
+  const govtIdx = GOVT_INDEX[govtStr] ?? 1;
+
+  // Happiness pressure: 0=none, 1=some unhappy, 2=disorder/critical
+  // Decompiled: 2 if civil disorder OR production-halted flags; 1 if unhappy==happy; 0 otherwise
+  let happyPressure = 0;
+  if (city.civilDisorder) {
+    happyPressure = 2;
+  } else {
+    const h = city.happyCitizens ?? city.happy ?? 0;
+    const u = city.unhappyCitizens ?? city.unhappy ?? 0;
+    if (u >= h && h + u > 0) happyPressure = 1;
+  }
+
+  // Threat level: number of enemies at war (from strategy.aiData or warTargets)
+  const warTargets = strategy.warTargets || [];
+  const threatLevel = warTargets.length;
+
+  // Shield production estimate (divided by 2 = iVar5 in many formulas)
+  const cityShields = estimateCityShields(city);
+  const halfShields = cityShields >> 1;
+
+  // Strategic posture (0-5): map from strategy assessment
+  // 0=expand, 1=defend, 2=behind naval, 3=behind air, 4=build barracks, 5=build walls
+  const postureScore = strategy.militaryPostureScore ?? 0;
+  let strategicPosture = 0;
+  if (postureScore <= 1) strategicPosture = 1;       // defend
+  else if (postureScore <= 3) strategicPosture = 3;   // standard
+  else if (postureScore === 4) strategicPosture = 4;   // barracks
+  else if (postureScore === 5) strategicPosture = 5;   // walls
+  else strategicPosture = 0;                           // expand/dominant
+
+  // Approximate city pollution count
+  // Decompiled: DAT_006a65e4 = pollution count from city production recalc
+  let pollutionCount = 0;
+  if (city.buildings) {
+    if (city.buildings.has(15)) pollutionCount++; // Factory
+    if (city.buildings.has(16)) pollutionCount++; // Mfg Plant
+    if (city.buildings.has(19)) pollutionCount++; // Power Plant
+  }
+  if (citySize >= 10) pollutionCount++;
+
+  // Approximate total food surplus and total population
+  // Decompiled: DAT_006a65a8 = food surplus, DAT_006a6550 = total trade/population
+  const foodSurplus = estimateFoodSurplus(city);
+  const totalPop = citySize; // rough proxy
+
+  // civsAlive bitmask (from strategy.aiData)
+  const aiData = strategy.aiData;
+  const civsAlive = aiData?.civsAlive ?? 0;
+  const aliveCivCount = aiData?.aliveCivCount ?? 2;
+  const isHuman = (civsAlive & (1 << civSlot)) === 0;
+
+  // Strongest civ info
+  // Approximate: find strongest civ from aiData.powerRanking
+  let strongestCiv = 1;
+  if (aiData?.powerRanking) {
+    let maxPower = -1;
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot) continue;
+      if (!(civsAlive & (1 << c))) continue;
+      if ((aiData.powerRanking[c] || 0) > maxPower) {
+        maxPower = aiData.powerRanking[c] || 0;
+        strongestCiv = c;
+      }
+    }
+  }
+
+  // Number of our cities with Palace (local_234 in decompiled)
+  // Decompiled local_234 = count of own cities with Palace or producing item -1
+  let palaceCityCount = 0;
+  let largestPalaceCity = 0;
+  for (const c of gameState.cities) {
+    if (!c || c.size <= 0 || c.owner !== civSlot) continue;
+    if (c.buildings && (c.buildings.has(1) || c.buildings.has(8))) {
+      palaceCityCount++;
+      if (c.size > largestPalaceCity) largestPalaceCity = c.size;
+    }
+  }
+
+  // Approximate: city waste/corruption (used in courthouse scoring)
+  // Decompiled: DAT_006a656c = waste, DAT_006a6580 = corruption
+  // We estimate based on city distance from palace and government type
+  const waste = Math.max(0, Math.floor(citySize / 3));
+  const corruption = Math.max(0, Math.floor(citySize / 4));
+
+  // Approximate: DAT_006a65cc = city shield production for various formulas
+  const cityShieldProd = cityShields;
+
+  // ── Building scoring switch (ported from decompiled cases 1-0x23) ──
+  let score = 999; // 999 = skip (building not scored)
+  let coastalPref = 0; // local_90: 1 = this building prefers coastal cities
 
   switch (buildingId) {
-    // ── 1: Palace ──
-    case 1:
-      // Only if we don't have one (rebuild after capture)
-      score = 1;
+    // ── case 1: Palace ──
+    case 1: {
+      // Build palace only under specific strategic conditions:
+      // - palaceCityCount==0 (no palace) OR (not alive in civsAlive AND
+      //   (palaceCityCount==0 OR (==1 AND largest palace city < 2*citySize)))
+      // - AND strategic posture is 4, 5, 0, or threatLevel > 3
+      const alive = (civsAlive & (1 << civSlot)) !== 0;
+      const canBuild = (palaceCityCount === 0) ||
+        (!alive && (palaceCityCount === 0 ||
+          (palaceCityCount === 1 && largestPalaceCity * 2 < citySize)));
+      const postureOk = strategicPosture === 4 || strategicPosture === 5 ||
+        strategicPosture === 0 || threatLevel > 3;
+      if (canBuild && postureOk) {
+        score = 2;
+        if (citySize > 9) score = 1;
+        if (citySize > 14) score = score - 1;
+        if (threatLevel > 3) coastalPref = isCoastal;
+      }
       break;
+    }
 
-    // ── 2: Barracks ──
+    // ── case 2: Barracks ──
     case 2: {
-      // Value depends on military production posture
-      let s = 4 + (cityCtx.defenders || 0);
-      if (strategy.productionFocus === 'military') s += 4;
-      if (cityCtx.isFrontier) s += 3;
-      if (hasWonderEffect(gameState, civSlot, 7)) return -1; // Sun Tzu makes barracks free upgrades
-      // Has City Walls? Barracks pair well
-      if (city.buildings && city.buildings.has(8)) s += 2;
-      score = clamp(s, 1, 12);
+      // score = expansionism + threatLevel + 4 - militarism
+      score = expansionism + threatLevel + 4 - militarism;
+      // If militarism < 0 OR expansionism > 0, AND they don't cancel:
+      if ((militarism < 0 || expansionism > 0) && (expansionism + militarism !== 0)) {
+        score = score + threatLevel;
+      }
+      coastalPref = 1;
+      // Scale by alive civ count
+      if (civsAlive & (1 << civSlot)) {
+        if (aliveCivCount === 3) {
+          score = Math.floor(score * 3 / 2);
+        }
+        if (aliveCivCount > 3) {
+          score = score << 1;
+        }
+      }
       break;
     }
 
-    // ── 3: Granary ──
+    // ── case 3: Granary ──
     case 3: {
-      // Very valuable for growth, especially small cities
-      if (hasWonderEffect(gameState, civSlot, 0)) return -1; // Pyramids gives free granary
-      let s = 8;
-      if (city.size < 5) s += 4;
-      if (city.size >= 8) s -= 2;
-      if (focus === 'growth') s += 3;
-      score = clamp(s, 2, 14);
+      // Skip if Pyramids wonder active (provides free granary)
+      if (hasWonderEffect(gameState, civSlot, 0)) break; // score stays 999 = skip
+      if (numCities < 3) {
+        score = 8;
+      } else {
+        score = 4;
+      }
+      // Bonus if food surplus >= total population (good food situation)
+      if (totalPop <= foodSurplus) {
+        score = score + 2;
+      }
+      // Bonus for human player based on alive civ count and city size
+      if ((civsAlive & (1 << civSlot)) !== 0) {
+        const granaryBonus = (aliveCivCount + 4) - citySize;
+        if (granaryBonus > 0) {
+          score = score + granaryBonus;
+        }
+      }
       break;
     }
 
-    // ── 4: Temple ──
+    // ── case 4: Temple ──
     case 4: {
-      // Happiness building — more valuable for larger cities
-      let s = 3;
-      if (city.size >= 4) s += 3;
-      if (city.size >= 8) s += 2;
-      if (city.civilDisorder) s += 10;
-      // Near disorder threshold: boost if happy/unhappy are close
-      else if (city.happy != null && city.unhappy != null && city.unhappy >= city.happy) s += 5;
-      // Oracle doubles temple effect
-      if (hasWonderEffect(gameState, civSlot, 5)) s += 3;
-      score = clamp(s, 1, 16);
+      if (happyPressure === 1) score = 9;
+      if (happyPressure === 2) score = -5; // 0xfffffffb signed
       break;
     }
 
-    // ── 5: Marketplace ──
+    // ── case 5: Marketplace ──
     case 5: {
-      let s = clamp(10 - Math.floor(trade / 3), 1, 10);
-      if (focus === 'economy') s += 2;
-      score = s;
+      // score = clamp(10 - numCities/2, 1, 10)
+      score = clamp(10 - (numCities >> 1), 1, 10);
+      if (happyPressure === 1) score = score - 1;
+      if (happyPressure === 2) score = -4; // 0xfffffffc signed
       break;
     }
 
-    // ── 6: Library ──
+    // ── case 6: Library ──
     case 6: {
-      let s = clamp(10 - Math.floor(trade / 3), 1, 10);
-      if (focus === 'science') s += 3;
-      score = s;
+      // score = clamp(10 - numCities/3, 1, 10)
+      score = clamp(10 - Math.floor(numCities / 3), 1, 10);
       break;
     }
 
-    // ── 7: Courthouse ──
+    // ── case 7: Courthouse ──
     case 7: {
-      // Corruption reduction — more valuable for distant cities
-      let s = 6;
-      if (city.size >= 4) s += 2;
-      score = clamp(s, 2, 10);
+      // score = 14 - (waste*2 + corruption)
+      score = 14 - (waste * 2 + corruption);
+      // Democracy: special handling
+      if (govtIdx === 6) {
+        if (happyPressure === 2) score = -1;
+      } else if (!(civsAlive & (1 << civSlot))) {
+        // Not human: reduce based on strongest civ's power
+        const strongestPower = aiData?.powerRanking?.[strongestCiv] ?? 0;
+        score = score - Math.floor(strongestPower / 2);
+      }
       break;
     }
 
-    // ── 8: City Walls ──
+    // ── case 8: City Walls ──
     case 8: {
-      if (hasWonderEffect(gameState, civSlot, 6)) return -1; // Great Wall
-      let s = 10 - Math.floor(city.size / 2);
-      if (cityCtx.isFrontier) s += 4;
-      if (threat === 'high' || threat === 'critical') s += 3;
-      // Check if enemies have units nearby
+      // Skip if Great Wall wonder active
+      if (hasWonderEffect(gameState, civSlot, 6)) break; // score stays 999
+
+      score = 10 - (citySize >> 1);
+      // Penalty for each enemy with hostile treaty or military presence
       for (let other = 1; other < 8; other++) {
-        if (other === civSlot) continue;
-        if (strategy.warTargets && strategy.warTargets.includes(other)) {
-          s += 2;
+        if (!(civsAlive & (1 << other))) continue;
+        // Check hostile treaties (approximation: at war)
+        if (warTargets.includes(other)) {
+          score = score - 2;
+        }
+        // Enemy has military on same continent (approximation)
+        if (aiData?.continents) {
+          const cont = aiData.continents.get(cityCtx.continentId);
+          if (cont && (cont.militaryCounts.get(other) || 0) > 0) {
+            score = score - 1;
+          }
+        }
+      }
+      // Bonus for known global threats (approximate with warTargets)
+      if (warTargets.length > 0) score = score + 2;
+      if (warTargets.length > 1) score = score + 2;
+      if (threatLevel > 2) score = score + 2;
+      score = clamp(score, 1, 10);
+      // Penalty if city already has Palace (walls less critical there)
+      if (city.buildings && city.buildings.has(1)) {
+        score = score - 4;
+      }
+      coastalPref = 1;
+      break;
+    }
+
+    // ── case 9: Aqueduct ──
+    case 9: {
+      // Aqueduct needed at size threshold (default 8)
+      // Decompiled: if (aqueductThreshold - halfShields <= citySize)
+      // DAT_0064bcd1 = 8 (standard aqueduct threshold)
+      const aqueductThreshold = 8;
+      if (aqueductThreshold - halfShields <= citySize) {
+        score = (aqueductThreshold + 4) - citySize - halfShields;
+        score = clamp(score, 1, 20);
+      }
+      break;
+    }
+
+    // ── case 10: Bank ──
+    case 10: {
+      // Same as Marketplace + happiness tweak
+      score = clamp(10 - Math.floor(numCities / 3), 1, 10);
+      if (happyPressure === 1) score = score - 1;
+      if (happyPressure === 2) score = 0;
+      break;
+    }
+
+    // ── case 0xb (11): Cathedral ──
+    case 11: {
+      // Skip if Michelangelo's Chapel wonder active
+      if (hasWonderEffect(gameState, civSlot, 10)) break; // score stays 999
+      if (happyPressure === 1) score = 8;
+      if (happyPressure === 2) score = -3; // 0xfffffffd signed
+      break;
+    }
+
+    // ── case 0xc (12): University ──
+    case 12: {
+      // Requires Library (building 6) — checked by canBuildBuilding prereq
+      // Additional check: scienceRate > 0 AND (no opponents OR no Espionage tech)
+      const sciRate = gameState.civs?.[civSlot]?.scienceRate ?? 5;
+      const hasEspionage = civTechs ? civTechs.has(0x4c) : false; // tech 76 = Espionage
+      if (sciRate > 0 && (numOpponents === 0 || !hasEspionage)) {
+        score = clamp(10 - (numCities >> 2), 2, 10);
+      }
+      break;
+    }
+
+    // ── case 0xd (13): Mass Transit ──
+    case 13: {
+      // No scoring case in decompiled — skip
+      break;
+    }
+
+    // ── case 0xe (14): Colosseum ──
+    case 14: {
+      if (happyPressure === 2) score = -2; // 0xfffffffe signed
+      break;
+    }
+
+    // ── case 0xf (15): Factory ──
+    // ── case 0x14 (20): Hydro Plant (same scoring as Factory) ──
+    case 15:
+    case 20: {
+      score = clamp(14 - cityShieldProd, 1, 14);
+      break;
+    }
+
+    // ── case 0x11 (17): SDI Defense ──
+    case 17: {
+      if (happyPressure < 2) {
+        let s = clamp(15 - citySize, 1, 15);
+        score = Math.floor((s + 1) / 2);
+        // Manhattan Project check: if no Manhattan → double
+        // DAT_00655c14 == -1 means no MP city
+        const mp = gameState.wonders?.[23];
+        const hasManhattan = mp && mp.cityIndex != null && !mp.destroyed;
+        if (!hasManhattan) {
+          score = score << 1;
+        }
+        // If strongest civ has no SDI → double
+        let strongestHasSdi = false;
+        const strongestCities = gameState.cities.filter(c =>
+          c && c.size > 0 && c.owner === strongestCiv);
+        for (const sc of strongestCities) {
+          if (sc.buildings && sc.buildings.has(17)) {
+            strongestHasSdi = true;
+            break;
+          }
+        }
+        if (!strongestHasSdi) {
+          score = score << 1;
+        }
+        if (citySize > 9) score = score - 1;
+        // If city has Palace → 0
+        if (city.buildings && city.buildings.has(1)) {
+          score = 0;
+        }
+      }
+      coastalPref = 1;
+      break;
+    }
+
+    // ── case 0x13 (19): Power Plant ──
+    case 19: {
+      score = clamp(12 - Math.floor(cityShieldProd / 5), 2, 14);
+      break;
+    }
+
+    // ── case 0x16 (22): Stock Exchange ──
+    case 22: {
+      if (happyPressure !== 0 || numOpponents < 2) {
+        score = clamp(11 - (numCities >> 2), 2, 11);
+        if (happyPressure === 1) score = score - 1;
+        if (happyPressure === 2) score = 0;
+      }
+      break;
+    }
+
+    // ── case 0x17 (23): Sewer System ──
+    case 23: {
+      // Sewer needed at size threshold (default 12)
+      // Only if numOpponents < 2
+      const sewerThreshold = 12;
+      if (numOpponents < 2 && (sewerThreshold - halfShields) <= citySize) {
+        score = (sewerThreshold + 4) - citySize - halfShields;
+        score = clamp(score, 1, 20);
+      }
+      break;
+    }
+
+    // ── case 0x18 (24): Supermarket ──
+    case 24: {
+      // score = 14 - citySize/2 - tradeRoutes*2 + opponents*2 + halfShields
+      score = 14 - (citySize >> 1) + tradeRouteCount * -2 + numOpponents * 2 + halfShields;
+      score = clamp(score, 2, 14);
+      break;
+    }
+
+    // ── case 0x19 (25): Superhighways ──
+    case 25: {
+      // score = 15 - citySize/2 + opponents*6
+      score = 15 - (citySize >> 1) + numOpponents * 6;
+      score = clamp(score, 2, 15);
+      break;
+    }
+
+    // ── case 0x1a (26): Research Lab ──
+    case 26: {
+      // Same conditions as University: scienceRate > 0, no opponents or no Espionage
+      const sciRate2 = gameState.civs?.[civSlot]?.scienceRate ?? 5;
+      const hasEspionage2 = civTechs ? civTechs.has(0x4c) : false;
+      if ((numOpponents === 0 || !hasEspionage2) && sciRate2 > 0) {
+        score = clamp(11 - (numCities >> 2), 2, 10);
+      }
+      break;
+    }
+
+    // ── case 0x1b (27): SAM Battery ──
+    case 27: {
+      // Evaluate air threat from other civs
+      // Decompiled: complex per-civ air unit count assessment
+      // Simplified: compute threat from strongest civ's air/naval units
+      let airThreat = 0;
+      if (civsAlive & (1 << civSlot)) {
+        // Human player: sum air threat from all other civs
+        for (let other = 1; other < 8; other++) {
+          if (other === civSlot) continue;
+          if (!(civsAlive & (1 << other))) continue;
+          let otherThreat = Math.floor((aiData?.milAtkSum?.[other] ?? 0) / 4);
+          // Reduce threat if not at war and no hatred
+          if (!warTargets.includes(other)) {
+            otherThreat = Math.floor(otherThreat / 2);
+          }
+          airThreat += otherThreat;
+        }
+      } else {
+        // AI: use strongest civ's air capability estimate
+        airThreat = Math.floor((aiData?.milAtkSum?.[strongestCiv] ?? 0) / 3);
+      }
+      score = 12 - airThreat;
+      score = clamp(score, 1, 12);
+      // Penalty if city has improvements that suggest inland (decompiled checks city attribs)
+      if (city.buildings && city.buildings.has(15)) { // has Factory
+        score = score - 3;
+      }
+      coastalPref = 1;
+      // Check if any alive civ is republic/democracy or hates us
+      for (let other = 1; other < 8; other++) {
+        if (!(civsAlive & (1 << other))) continue;
+        const otherGovt = gameState.civs?.[other]?.government || 'despotism';
+        const otherGovtIdx = GOVT_INDEX[otherGovt] ?? 1;
+        if (otherGovtIdx > 4 || warTargets.includes(other)) {
+          coastalPref = isCoastal;
           break;
         }
       }
-      if (city.buildings && city.buildings.has(2)) s += 1; // Has barracks
-      score = clamp(s, 1, 14);
       break;
     }
 
-    // ── 9: Aqueduct ──
-    case 9: {
-      // Essential for growth past size 8
-      if (city.size >= 6) {
-        let s = 14 - city.size;
-        if (city.size >= 8) s = 18; // Critical
-        score = clamp(s, 4, 20);
-      } else {
-        score = 2; // Low priority if small
-      }
-      break;
-    }
-
-    // ── 10: Bank ──
-    case 10: {
-      // Requires Marketplace (5)
-      if (!(city.buildings && city.buildings.has(5))) return -1;
-      let s = clamp(10 - Math.floor(trade / 3), 1, 10);
-      if (focus === 'economy') s += 2;
-      score = s;
-      break;
-    }
-
-    // ── 11: Cathedral ──
-    case 11: {
-      // Strong happiness building
-      let s = 6;
-      if (city.size >= 6) s += 3;
-      if (city.size >= 10) s += 2;
-      if (city.civilDisorder) s += 8;
-      else if (city.happy != null && city.unhappy != null && city.unhappy >= city.happy) s += 4;
-      // Michelangelo's Chapel makes cathedrals more effective
-      if (hasWonderEffect(gameState, civSlot, 10)) s += 3;
-      score = clamp(s, 2, 16);
-      break;
-    }
-
-    // ── 12: University ──
-    case 12: {
-      // Requires Library (6)
-      if (!(city.buildings && city.buildings.has(6))) return -1;
-      let s = clamp(10 - Math.floor(trade / 3), 1, 10);
-      if (focus === 'science') s += 3;
-      score = s;
-      break;
-    }
-
-    // ── 13: Mass Transit ──
-    case 13: {
-      // Pollution reduction
-      let s = 6 - Math.floor(city.size / 4);
-      if (city.size >= 10) s += 3;
-      score = clamp(s, 1, 10);
-      break;
-    }
-
-    // ── 14: Colosseum ──
-    case 14: {
-      // Happiness
-      let s = 4;
-      if (city.size >= 6) s += 2;
-      if (city.civilDisorder) s += 7;
-      else if (city.happy != null && city.unhappy != null && city.unhappy >= city.happy) s += 3;
-      score = clamp(s, 1, 12);
-      break;
-    }
-
-    // ── 15: Factory ──
-    case 15: {
-      let s = clamp(14 - shields, 1, 14);
-      if (city.size >= 6) s += 2;
-      score = s;
-      break;
-    }
-
-    // ── 16: Mfg. Plant ──
-    case 16: {
-      // Requires Factory (15)
-      if (!(city.buildings && city.buildings.has(15))) return -1;
-      let s = clamp(12 - Math.floor(shields / 2), 2, 12);
-      score = s;
-      break;
-    }
-
-    // ── 17: SDI Defense ──
-    case 17: {
-      let s = 4;
-      // More valuable if enemy has nukes (Manhattan Project exists)
-      const mp = gameState.wonders?.[23];
-      if (mp && mp.cityIndex != null && !mp.destroyed) s += 4;
-      score = clamp(s, 1, 10);
-      break;
-    }
-
-    // ── 18: Recycling Center ──
-    case 18: {
-      let s = 5;
-      if (city.size >= 8) s += 3;
-      // More valuable with factory
-      if (city.buildings && city.buildings.has(15)) s += 2;
-      score = clamp(s, 2, 10);
-      break;
-    }
-
-    // ── 19: Power Plant ──
-    case 19: {
-      // Requires Factory (15), skip if already have any power plant
-      if (!(city.buildings && city.buildings.has(15))) return -1;
-      if (city.buildings && (city.buildings.has(20) || city.buildings.has(21) || city.buildings.has(29))) return -1;
-      // Hoover Dam gives free hydro
-      if (hasWonderEffect(gameState, civSlot, 22)) return -1;
-      let s = clamp(14 - shields, 2, 14);
-      score = s;
-      break;
-    }
-
-    // ── 20: Hydro Plant ──
-    case 20: {
-      if (!(city.buildings && city.buildings.has(15))) return -1;
-      if (city.buildings && (city.buildings.has(19) || city.buildings.has(21) || city.buildings.has(29))) return -1;
-      if (hasWonderEffect(gameState, civSlot, 22)) return -1;
-      let s = clamp(14 - shields, 2, 14);
-      s += 2; // Prefer over power plant (no pollution)
-      score = s;
-      break;
-    }
-
-    // ── 21: Nuclear Plant ──
-    case 21: {
-      if (!(city.buildings && city.buildings.has(15))) return -1;
-      if (city.buildings && (city.buildings.has(19) || city.buildings.has(20) || city.buildings.has(29))) return -1;
-      if (hasWonderEffect(gameState, civSlot, 22)) return -1;
-      let s = clamp(14 - shields, 2, 14);
-      s += 1; // Slightly better than power plant
-      score = s;
-      break;
-    }
-
-    // ── 22: Stock Exchange ──
-    case 22: {
-      // Requires Bank (10)
-      if (!(city.buildings && city.buildings.has(10))) return -1;
-      let s = clamp(10 - Math.floor(trade / 4), 2, 10);
-      if (focus === 'economy') s += 2;
-      score = s;
-      break;
-    }
-
-    // ── 23: Sewer System ──
-    case 23: {
-      // Essential for growth past size 12
-      if (city.size >= 10) {
-        let s = 14 - city.size;
-        if (city.size >= 12) s = 18;
-        score = clamp(s, 4, 20);
-      } else {
-        score = 1;
-      }
-      break;
-    }
-
-    // ── 24: Supermarket ──
-    case 24: {
-      // Food bonus with farmland
-      let s = 5;
-      if (city.size >= 6) s += 2;
-      score = clamp(s, 2, 10);
-      break;
-    }
-
-    // ── 25: Superhighways ──
-    case 25: {
-      let s = clamp(8 - Math.floor(trade / 3), 2, 8);
-      if (focus === 'economy') s += 2;
-      score = s;
-      break;
-    }
-
-    // ── 26: Research Lab ──
-    case 26: {
-      // Requires University (12)
-      if (!(city.buildings && city.buildings.has(12))) return -1;
-      let s = clamp(12 - Math.floor(trade / 4), 2, 12);
-      if (focus === 'science') s += 3;
-      score = s;
-      break;
-    }
-
-    // ── 27: SAM Battery ──
-    case 27: {
-      let s = 4;
-      if (cityCtx.isFrontier) s += 2;
-      score = clamp(s, 1, 8);
-      break;
-    }
-
-    // ── 28: Coastal Fortress ──
+    // ── case 0x1c (28): Coastal Fortress ──
     case 28: {
-      if (!cityCtx.isCoastal) return -1;
-      let s = 5;
-      if (cityCtx.isFrontier) s += 3;
-      score = clamp(s, 1, 10);
-      break;
-    }
+      // Only for coastal cities (checked via isCoastal, not canBuild prereq)
+      if (!isCoastal) break; // score stays 999
 
-    // ── 29: Solar Plant ──
-    case 29: {
-      if (!(city.buildings && city.buildings.has(15))) return -1;
-      if (city.buildings && (city.buildings.has(19) || city.buildings.has(20) || city.buildings.has(21))) return -1;
-      if (hasWonderEffect(gameState, civSlot, 22)) return -1;
-      let s = clamp(14 - shields, 2, 14);
-      s += 3; // Best power plant (no pollution, no meltdown)
-      score = s;
-      break;
-    }
-
-    // ── 30: Harbour ──
-    case 30: {
-      if (!cityCtx.isCoastal) return -1;
-      let s = 7;
-      if (city.size < 4) s += 2; // food bonus valuable for small coastal cities
-      score = clamp(s, 2, 10);
-      break;
-    }
-
-    // ── 31: Offshore Platform ──
-    case 31: {
-      if (!cityCtx.isCoastal) return -1;
-      let s = 5;
-      if (city.size >= 6) s += 2;
-      score = clamp(s, 2, 8);
-      break;
-    }
-
-    // ── 32: Airport ──
-    case 32: {
-      let s = 5;
-      if (cityCtx.numCities >= 4) s += 2;
-      score = clamp(s, 2, 8);
-      break;
-    }
-
-    // ── 33: Police Station ──
-    case 33: {
-      // Reduces unhappiness from abroad units
-      const govt = gameState.civs?.[civSlot]?.government || 'despotism';
-      if (govt === 'democracy' || govt === 'republic') {
-        let s = 8;
-        if (city.size >= 6) s += 2;
-        score = clamp(s, 3, 12);
+      // Evaluate naval threat from other civs
+      let navalThreat = 0;
+      if (civsAlive & (1 << civSlot)) {
+        for (let other = 1; other < 8; other++) {
+          if (other === civSlot) continue;
+          if (!(civsAlive & (1 << other))) continue;
+          let otherNaval = Math.floor((aiData?.milDefSum?.[other] ?? 0) / 3);
+          if (!warTargets.includes(other)) {
+            otherNaval = Math.floor(otherNaval / 2);
+          }
+          navalThreat += otherNaval;
+        }
       } else {
-        score = 2; // Less useful under non-democratic governments
+        navalThreat = Math.floor((aiData?.milDefSum?.[strongestCiv] ?? 0) / 2);
+      }
+      score = 12 - navalThreat;
+      score = clamp(score, 1, 12);
+      coastalPref = 1;
+      // Same republic/democracy/hatred check as SAM
+      for (let other = 1; other < 8; other++) {
+        if (!(civsAlive & (1 << other))) continue;
+        const otherGovt = gameState.civs?.[other]?.government || 'despotism';
+        const otherGovtIdx = GOVT_INDEX[otherGovt] ?? 1;
+        if (otherGovtIdx > 4 || warTargets.includes(other)) {
+          coastalPref = isCoastal;
+          break;
+        }
       }
       break;
     }
 
-    // ── 34: Port Facility ──
+    // ── case 0x1d (29): Solar Plant — no case in decompiled (falls to default) ──
+    // Handled by default below
+
+    // ── case 0x1e (30): Harbour ──
+    case 30: {
+      if (happyPressure < 2) {
+        score = clamp(16 - numBuildings, 2, 16);
+        if (cityShields < 1) {
+          score = Math.floor(score / 2);
+        }
+      }
+      break;
+    }
+
+    // ── case 0x1f (31): Offshore Platform ──
+    case 31: {
+      if (happyPressure < 2) {
+        score = clamp(16 - numBuildings, 2, 16);
+        if (score > 0) {
+          // Reduce if city already has Factory
+          if (city.buildings && city.buildings.has(15)) {
+            score = Math.floor(score / 2);
+          }
+          // Reduce if city already has Mfg Plant
+          if (city.buildings && city.buildings.has(16)) {
+            score = Math.floor(score / 2);
+          }
+        }
+        // Additional check: if many cities lack support AND city is large,
+        // reduce priority (decompiled checks DAT_006a65cc - DAT_006a6568)
+        const supportRatio = cityShieldProd > 3 ? Math.floor(numBuildings / 4) : 0;
+        if (cityShieldProd > 0 && citySize / 2 <= supportRatio) {
+          score = score - 2;
+        }
+      }
+      break;
+    }
+
+    // ── case 0x20 (32): Airport ──
+    case 32: {
+      // score = (airportCount*4 + 4) - militarism
+      // local_6c = count of own cities on same continent with airport
+      const airportCount = countCitiesWithBuilding(gameState, mapBase, city, civSlot, 32);
+      score = (airportCount * 4 + 4) - militarism;
+      // Reduce if continent goal is 4 (decompiled checks DAT_0064ca32)
+      // Approximate: if frontier posture → halve
+      if (cityCtx.isFrontier && strategicPosture >= 4) {
+        score = Math.floor(score / 2);
+      }
+      // Bonus if civ doesn't have Alphabet tech (tech 0 = advanced flight)
+      if (civTechs && !civTechs.has(0)) {
+        score = score << 1;
+      }
+      // Reduce if only 1 military on continent, or enemies present with no sea
+      const contMilitary = aiData?.continents?.get(cityCtx.continentId)
+        ?.militaryCounts?.get(civSlot) ?? 0;
+      if (contMilitary <= 1 && seaTileCount === 0) {
+        score = Math.min(contMilitary, score);
+      }
+      // Penalty if city has Palace
+      if (city.buildings && city.buildings.has(1) && score >= 0) {
+        score = 0;
+      }
+      coastalPref = isCoastal;
+      break;
+    }
+
+    // ── case 0x21 (33): Police Station ──
+    case 33: {
+      // Skip if Women's Suffrage wonder active (wonder 21)
+      if (hasWonderEffect(gameState, civSlot, 21)) break; // score stays 999
+
+      let pol = pollutionCount;
+      // Double pollution impact for republic/democracy (govtIdx > 4)
+      if (govtIdx > 4) pol = pol << 1;
+      // If republic+ AND pollution exists AND food surplus tight → bonus
+      if (govtIdx > 3 && pol > 0 && totalPop - foodSurplus < 2) {
+        pol = pol + 2;
+      }
+      score = 10 - pol;
+      break;
+    }
+
+    // ── case 0x22 (34): Port Facility ──
     case 34: {
-      if (!cityCtx.isCoastal) return -1;
-      let s = 4;
-      score = clamp(s, 1, 8);
+      // Only for coastal cities
+      if (!isCoastal) break; // score stays 999
+
+      // Decompiled: local_ac = number of units nearby (capped at 40)
+      let nearbyUnits = cityCtx.nearbyOwnMilitary || 0;
+      if (nearbyUnits > 40) nearbyUnits = 40;
+      score = (11 - (nearbyUnits >> 2)) + sdiCount * -5 +
+              (totalMilitary * 2 - militarism) + expansionism;
+      score = clamp(score, 2, 15);
+      if (militarism < 0) {
+        score = score + totalMilitary;
+      }
       break;
     }
 
-    // ── 35-37: SS parts ──
+    // ── case 0x23 (35-37): SS Structural/Component/Module ──
     case 35: case 36: case 37: {
-      // Spaceship: only if Apollo Program exists
+      // Spaceship parts: complex scoring with many conditions
+      // Simplified: only build if Apollo exists and strategic conditions are met
       const apollo = gameState.wonders?.[25];
-      if (!apollo || apollo.cityIndex == null || apollo.destroyed) return -1;
-      score = 6;
+      if (!apollo || apollo.cityIndex == null || apollo.destroyed) break;
+
+      // Check if any other civ already has a spaceship
+      let otherHasSpaceship = false;
+      for (let other = 1; other < 8; other++) {
+        if (other === civSlot) continue;
+        if (!(civsAlive & (1 << other))) continue;
+        // Approximate: check if other has Apollo too (they might be building SS)
+        if (apollo && apollo.cityIndex != null) {
+          const apolloCity = gameState.cities[apollo.cityIndex];
+          if (apolloCity && apolloCity.owner === other) otherHasSpaceship = true;
+        }
+      }
+
+      score = 4;
+      if (otherHasSpaceship) score = 2;
+
+      // Reduce if at war with multiple opponents
+      if (numOpponents > 1 && aliveCivCount > 0) {
+        score = otherHasSpaceship ? score - 2 : score - 1;
+      }
+
+      // Coastal preference in certain strategic conditions
+      if (strategicPosture !== 0) {
+        coastalPref = isCoastal;
+      }
       break;
     }
 
-    // ── 38: Capitalization ──
+    // ── case 38: Capitalization (no case in decompiled switch) ──
     case 38: {
-      // Convert shields to gold — useful when nothing else to build
+      // Capitalization: minimal score, only when nothing better to build
       score = 1;
-      if (focus === 'economy' && city.size >= 8) score = 3;
       break;
     }
 
-    default:
-      return -1;
-  }
-
-  if (score < 0) return -1;
-
-  // ── (#17) Treasury-aware building scoring ──
-  // Boost economic buildings when treasury is low; penalize high-maintenance when broke
-  const treasury = gameState.civs?.[civSlot]?.treasury ?? 100;
-  const lowTreasury = treasury < 100;
-  const veryLowTreasury = treasury < 30;
-
-  // Gold-generating buildings: Marketplace(5), Bank(10), Stock Exchange(22), Superhighways(25)
-  const isGoldGenerator = buildingId === 5 || buildingId === 10 || buildingId === 22 || buildingId === 25;
-  if (isGoldGenerator && lowTreasury) {
-    score += 3;
-    if (veryLowTreasury) score += 3; // urgent when nearly bankrupt
-  }
-
-  // ── Maintenance penalty ──
-  // Penalize buildings with high maintenance relative to city trade output
-  if (maintenance > 0) {
-    const maintenanceRatio = maintenance / Math.max(1, trade);
-    if (maintenanceRatio > 0.5) score -= 3;
-    else if (maintenanceRatio > 0.3) score -= 1;
-    // When treasury is very low, extra penalty for high-maintenance buildings
-    if (veryLowTreasury && maintenance >= 2) score -= 2;
-    // Adam Smith's Trading Co. makes maintenance-1 buildings free
-    if (hasWonderEffect(gameState, civSlot, 17) && maintenance <= 1) {
-      score += 1; // Maintenance is free, slight bonus
+    // ── default: Mfg Plant (16), Recycling (18), Nuclear (21), Solar (29) ──
+    // These use the generic formula: clamp(12 - numCities/4, 2, 12)
+    default: {
+      // Decompiled default: clamp(12 - ((numCities + (numCities >> 31 & 3)) >> 2), 2, 12)
+      // This is integer division of numCities by 4 (with rounding toward zero for negatives)
+      score = clamp(12 - (numCities >> 2), 2, 12);
+      break;
     }
   }
 
-  // ── Normalize by cost ──
-  // Buildings with lower cost are preferred (faster to complete)
-  score = Math.floor(score * 30 / Math.max(1, cost));
+  // ── Score of 999 means building was skipped (no scoring case applied) ──
+  if (score >= 400) return -1;
 
-  return Math.max(0, score);
+  // ── Post-switch normalization (lines 5096-5118 of decompiled) ──
+
+  // Personality scaling:
+  // coastalMultiplier = (isCoastal matches coastalPref) ? 10 : 20
+  // score = coastalMultiplier * score * 3 / (expansionism + 3)
+  const coastalMatch = (isCoastal === coastalPref) ? 1 : 0;
+  const coastalMultiplier = coastalMatch ? 10 : 20;
+  score = Math.floor(coastalMultiplier * score * 3 / (expansionism + 3));
+
+  // Bonus if city has Barracks (building 2): score += score / (threatLevel/2 + 3)
+  if (city.buildings && city.buildings.has(2)) {
+    score = score + Math.floor(score / ((threatLevel >> 1) + 3));
+  }
+
+  // Bonus if this city has Shakespeare's Theatre (wonder 13)
+  const shakespeareWonder = gameState.wonders?.[13];
+  if (shakespeareWonder && shakespeareWonder.cityIndex === cityIndex && !shakespeareWonder.destroyed) {
+    score = score + Math.floor(score / 3);
+  }
+
+  return score < 0 ? -1 : score;
 }
 
 /**
@@ -1144,12 +1427,68 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
   // Army composition: count attackers vs defenders for balance scoring
   let totalAttackers = 0;
   let totalDefenders = 0;
+  let totalMilitary = 0;
   for (const u of gameState.units) {
     if (u.owner !== civSlot || u.gx < 0) continue;
+    totalMilitary++;
     if (UNIT_DOMAIN[u.type] !== 0) continue; // land only
     const role = UNIT_ROLE[u.type] ?? 0;
     if (role === 0) totalAttackers++;
     else if (role === 1) totalDefenders++;
+  }
+
+  // Sea tile count in city radius (for harbour/offshore/port scoring)
+  const seaTileCount = countSeaTiles(city, mapBase);
+
+  // Number of alive opponent civs
+  let numOpponents = 0;
+  for (let c = 1; c < 8; c++) {
+    if (c === civSlot) continue;
+    const alive = (gameState.cities || []).some(ct => ct && ct.owner === c && ct.size > 0) ||
+                  (gameState.units || []).some(u => u.owner === c && u.gx >= 0);
+    if (alive) numOpponents++;
+  }
+
+  // Number of buildings this city has
+  let numBuildings = 0;
+  if (city.buildings) {
+    for (const _ of city.buildings) numBuildings++;
+  }
+
+  // Count trade routes (approximate from city radius tiles with road+railroad)
+  // Decompiled: local_24 counts tiles with both road and railroad bits
+  let tradeRouteCount = 0;
+  // Approximate: count tiles in radius with trade improvements
+  // This is a rough proxy — real game tracks actual trade routes
+  if (mapBase.tileData) {
+    const offsets = [
+      [-1,-1],[0,-2],[1,-1],[1,1],[0,2],[-1,1],
+      [-2,-2],[-1,-3],[0,-4],[1,-3],[2,-2],[2,0],[2,2],[1,3],[0,4],[-1,3],[-2,2],[-2,0],
+      [0,-1],[0,1],
+    ];
+    for (const [dx, dy] of offsets) {
+      let gx = city.gx + dx;
+      const gy = city.gy + dy;
+      if (gy < 0 || gy >= mapBase.mh) continue;
+      if (mapBase.wraps) gx = ((gx % mapBase.mw) + mapBase.mw) % mapBase.mw;
+      else if (gx < 0 || gx >= mapBase.mw) continue;
+      const t = mapBase.tileData[gy * mapBase.mw + gx];
+      if (t && t.road && t.railroad) tradeRouteCount++;
+    }
+  }
+
+  // Continent-level counts for this city
+  const cityTile = mapBase.tileData?.[city.gy * mapBase.mw + city.gx];
+  const continentId = cityTile?.bodyId ?? 0;
+
+  // Count SDI-like defenses: cities on this continent with SDI (building 17)
+  // or Port Facility (34). Plus air units half-counted.
+  // Decompiled: local_22c = FUN_005b53b6(unitStackHead, 2) + FUN_005b53b6(...,4)/2
+  // We approximate: count cities on same continent with SDI
+  let sdiCount = 0;
+  for (const c of gameState.cities) {
+    if (!c || c.size <= 0 || c.owner !== civSlot) continue;
+    if (c.buildings && c.buildings.has(17)) sdiCount++;
   }
 
   return {
@@ -1163,6 +1502,13 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     nearbyOwnMilitary: nearbyMil,
     totalAttackers,
     totalDefenders,
+    totalMilitary,
+    seaTileCount,
+    numOpponents,
+    numBuildings,
+    tradeRouteCount,
+    continentId,
+    sdiCount,
   };
 }
 

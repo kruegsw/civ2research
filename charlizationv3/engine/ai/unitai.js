@@ -13,7 +13,7 @@ import { resolveDirection, getDirection } from '../movement.js';
 import { validateAction } from '../rules.js';
 import {
   UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_ROLE, UNIT_NAMES,
-  BUSY_ORDERS, TERRAIN_DEFENSE, UNIT_NEGATES_WALLS,
+  BUSY_ORDERS, TERRAIN_DEFENSE, TERRAIN_MOVE_COST, UNIT_NEGATES_WALLS,
 } from '../defs.js';
 
 // ── Constants ─────────────────────────────────────────────────────
@@ -636,61 +636,168 @@ function findMostUnderdefendedCity(cityDefense) {
 function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, strategy) {
   const domain = UNIT_DOMAIN[unit.type] ?? 0;
   const negatesWalls = UNIT_NEGATES_WALLS.has(unit.type);
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
 
-  // 1. Check adjacent enemies — attack if favorable
+  // ── Damage level (ported from decompiled local_d8 computation) ──
+  // 0 = full HP, 1 = any damage, 2 = below 50% HP, 3 = below 25% HP
+  const maxHp = UNIT_HP[unit.type] || 1;
+  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  if (curHp * 4 < maxHp) damageLevel = 3;
+  else if (curHp * 2 < maxHp) damageLevel = 2;
+
+  // Heavily damaged attackers (< 25% HP) should retreat or skip, not attack
+  if (damageLevel >= 3) {
+    // Try to retreat to a friendly city
+    const retreatCity = _findNearestOwnCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, unitBodyId);
+    if (retreatCity) {
+      const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
+        retreatCity.gx, retreatCity.gy, unit, civSlot);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
+
+  // ── 1. Evaluate adjacent enemies for attack ──
+  // Ported from FUN_00538a29 combat evaluation at LAB_005414d7.
+  // For each adjacent tile with an enemy unit, compute a combat score.
+  // Attack the best target if our score exceeds the threshold.
   const adjacentEnemies = findAdjacentEnemies(gameState, mapBase, spatialIdx, unit, civSlot);
   if (adjacentEnemies.length > 0) {
-    // Pick the most favorable target (best attack-to-defense ratio)
     let bestTarget = null;
-    let bestRatio = -Infinity;
-    const atkStr = attackStrength(unit);
+    let bestCombatScore = -Infinity;
 
     for (const enemy of adjacentEnemies) {
-      // Also check domain: land units can't attack into ocean
+      // Domain check: land units can't attack into ocean
       if (domain === 0) {
         const terrain = mapBase.getTerrain(enemy.gx, enemy.gy);
         if (terrain === 10) continue;
       }
 
-      const ratio = enemy.defender.defStr > 0 ? atkStr / enemy.defender.defStr : Infinity;
-      if (ratio > bestRatio) {
-        bestRatio = ratio;
+      // Check if this is a city assault
+      const defCity = gameState.cities.find(c =>
+        c.gx === enemy.gx && c.gy === enemy.gy && c.size > 0 && c.owner !== civSlot);
+      const hasCityWalls = defCity ? (defCity.buildings?.has(3) || false) : false;
+
+      // ── City assault evaluation (ported from decompiled) ──
+      // Before attacking a walled city, check if we have enough force.
+      // Count our attack units on this tile vs their defense units in the city.
+      if (defCity) {
+        const cityAssaultOk = _evaluateCityAssault(
+          unit, unitIndex, gameState, mapBase, spatialIdx, civSlot,
+          enemy.gx, enemy.gy, defCity, hasCityWalls, negatesWalls
+        );
+        if (!cityAssaultOk) continue; // not enough force, skip this target
+      }
+
+      // ── Combat scoring (ported from FUN_00580341 logic) ──
+      // Compute effective ATK vs effective DEF using Civ2's fixed-point formula.
+      const defTerrain = mapBase.getTerrain(enemy.gx, enemy.gy);
+      const score = _computeCombatScore(unit, enemy.defender.unit, defTerrain,
+        hasCityWalls, negatesWalls, enemy.defender.unit.orders === 'fortified');
+
+      if (score > bestCombatScore) {
+        bestCombatScore = score;
         bestTarget = enemy;
       }
     }
 
-    if (bestTarget) {
-      const defTerrain = mapBase.getTerrain(bestTarget.gx, bestTarget.gy);
-      const defCity = gameState.cities.find(c => c.gx === bestTarget.gx && c.gy === bestTarget.gy && c.size > 0);
-      const defWalls = defCity ? (defCity.buildings?.has(8) || false) : false;
-      const posture = strategy?.militaryPosture || 'expand';
-      if (shouldAttack(unit, bestTarget.defender, negatesWalls, defTerrain, defWalls, posture)) {
+    // Attack if combat score is favorable.
+    // The decompiled threshold: effATK * 8 > effDEF * terrain * 4
+    // which simplifies to: combat score > 0 means favorable.
+    // For damaged units (damageLevel 2), require a higher score.
+    const attackThreshold = damageLevel >= 2 ? 4 : 0;
+    if (bestTarget && bestCombatScore > attackThreshold) {
+      return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+    }
+
+    // Even with unfavorable odds, attack undefended cities or very weak targets
+    if (bestTarget && bestCombatScore > -4) {
+      const defCity = gameState.cities.find(c =>
+        c.gx === bestTarget.gx && c.gy === bestTarget.gy && c.size > 0);
+      if (defCity) {
+        // Attack cities even at slightly unfavorable odds — capturing matters
         return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
       }
     }
   }
 
-  // 2. Move toward nearest enemy city
-  const enemyCity = findNearestEnemyCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain);
-  if (enemyCity) {
-    const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, enemyCity.gx, enemyCity.gy, unit, civSlot);
-    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-    // If safe path blocked, try direct path (willing to walk near enemies when attacking)
-    const directDir = directionToward(mapBase, unit.gx, unit.gy, enemyCity.gx, enemyCity.gy, domain);
-    if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
+  // ── 2. Score all enemy cities as potential targets ──
+  // Ported from FUN_00538a29 target selection loop (LAB_00539cb3).
+  // Score: (citySize * 25 + 50) / (distance + 1)
+  //   × 2 if same continent (bodyId match)
+  //   + 60 if own attack units already nearby
+  //   Skip cities behind peace/ceasefire treaties
+  let bestTargetScore = -999;
+  let bestTargetCity = null;
+
+  for (const city of gameState.cities) {
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    if (city.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, city.owner)) continue;
+
+    // Distance filtering
+    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+    if (dist > 30) continue; // don't chase targets across the whole map
+
+    // For land units, prefer same-continent targets
+    let sameContinent = true;
+    if (domain === 0 && unitBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      if (cityBodyId > 0 && cityBodyId !== unitBodyId) {
+        sameContinent = false;
+        continue; // land units can't reach different continents without transport
+      }
+    }
+
+    // ── Target score (ported from decompiled) ──
+    let score = ((city.size * 25) + 50) / (dist + 1);
+
+    // Same continent bonus: ×2
+    if (sameContinent) score *= 2;
+
+    // Check for own attack units near the target (stack bonus +60)
+    const nearbyOwnAttackers = _countOwnAttackersNear(gameState, city.gx, city.gy, civSlot, mapBase);
+    if (nearbyOwnAttackers > 0) score += 60;
+
+    // Prefer targets that are closer to our cities (supply line logic)
+    const nearestOwnCity = _findNearestOwnCity(gameState, mapBase, city.gx, city.gy, civSlot, domain, -1);
+    if (nearestOwnCity) {
+      const supplyDist = tileDist(city.gx, city.gy, nearestOwnCity.gx, nearestOwnCity.gy, mapBase);
+      if (supplyDist < 8) score += 20;
+    }
+
+    // Small random factor (0-4) to prevent identical moves across units
+    score += Math.random() * 4;
+
+    if (score > bestTargetScore) {
+      bestTargetScore = score;
+      bestTargetCity = city;
+    }
   }
 
-  // 3. Move toward nearest enemy unit
-  const enemyUnit = findNearestEnemyUnit(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, 12);
+  // ── 3. Move toward best target ──
+  // If we have a target city, use 8-direction scoring to pick the best move.
+  if (bestTargetCity) {
+    const moveDir = _scoredDirectionToward(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+      bestTargetCity.gx, bestTargetCity.gy
+    );
+    if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
+  }
+
+  // ── 4. No target city — look for nearest enemy unit ──
+  const enemyUnit = findNearestEnemyUnit(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, 16);
   if (enemyUnit) {
-    const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, enemyUnit.gx, enemyUnit.gy, unit, civSlot);
-    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-    // Fallback: direct path toward enemy unit (attackers accept risk)
-    const directDir = directionToward(mapBase, unit.gx, unit.gy, enemyUnit.gx, enemyUnit.gy, domain);
-    if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
+    const moveDir = _scoredDirectionToward(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+      enemyUnit.gx, enemyUnit.gy
+    );
+    if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
   }
 
-  // 4a. Goody hut priority (#9): move toward nearby goody huts
+  // ── 5. Exploration fallbacks ──
+  // 5a. Goody huts
   if (domain === 0) {
     const goody = findNearestGoodyHut(mapBase, unit.gx, unit.gy, civSlot, 8);
     if (goody) {
@@ -699,18 +806,230 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
     }
   }
 
-  // 4b. Explore
+  // 5b. Explore toward unexplored tiles
   const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, domain);
   if (unexplored) {
     const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy, unexplored.gx, unexplored.gy, unit, civSlot);
     if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-    // Fallback: direct path ignoring enemies (but still respecting domain)
     const directDir = directionToward(mapBase, unit.gx, unit.gy, unexplored.gx, unexplored.gy, domain);
     if (directDir) return { type: 'MOVE_UNIT', unitIndex, dir: directDir };
   }
 
-  // 5. Random patrol
+  // 6. Random patrol
   return randomMove(unit, unitIndex, mapBase, domain);
+}
+
+// ── aiAttacker helper: compute combat score ─────────────────────────
+// Ported from FUN_00580341 and the combat comparison in FUN_00538a29.
+// Uses Civ2's fixed-point effective-ATK vs effective-DEF.
+// Returns a score: positive = favorable for attacker, negative = unfavorable.
+function _computeCombatScore(attacker, defender, defTerrain, hasCityWalls, negatesWalls, defFortified) {
+  // Effective ATK: base * 8 * veteran
+  const atkBase = UNIT_ATK[attacker.type] || 0;
+  const atkMaxHp = UNIT_HP[attacker.type] || 1;
+  const atkCurHp = Math.max(1, atkMaxHp - (attacker.hpLost || 0));
+  const atkFp = UNIT_FP[attacker.type] || 1;
+  let effAtk = atkBase * 8;
+  if (attacker.veteran) effAtk = Math.floor(effAtk * 1.5);
+
+  // Effective DEF: base * terrain_defense * 4 * veteran * fortification * walls
+  const defBase = UNIT_DEF[defender.type] || 1;
+  const defMaxHp = UNIT_HP[defender.type] || 1;
+  const defCurHp = Math.max(1, defMaxHp - (defender.hpLost || 0));
+  const defFp = UNIT_FP[defender.type] || 1;
+  const terrMul = TERRAIN_DEFENSE[defTerrain] ?? 2;
+  let effDef = defBase * terrMul * 4;
+  if (defender.veteran) effDef = Math.floor(effDef * 1.5);
+  if (defFortified) effDef = Math.floor(effDef * 1.5);
+  if (hasCityWalls && !negatesWalls) {
+    const atkDomain = UNIT_DOMAIN[attacker.type] ?? 0;
+    if (atkDomain !== 2) effDef *= 3; // walls don't help vs air
+  }
+
+  if (effAtk <= 0) return -999;
+  if (effDef <= 0) return 999;
+
+  // Composite combat power: effStat * curHP * firepower
+  // This is the core comparison from the decompiled code
+  const atkPower = effAtk * atkCurHp * atkFp;
+  const defPower = effDef * defCurHp * defFp;
+
+  // Return score as the ratio difference (positive = favorable)
+  // Scale so that equal power = 0, double power = ~8
+  if (defPower === 0) return 999;
+  return Math.floor((atkPower / defPower - 1) * 8);
+}
+
+// ── aiAttacker helper: evaluate city assault feasibility ────────────
+// Ported from FUN_00538a29 city assault check.
+// Counts our units' total attack power vs city's total defense power.
+// For walled cities, requires ATK×2 > DEF to proceed.
+function _evaluateCityAssault(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot,
+                               cityGx, cityGy, defCity, hasCityWalls, negatesWalls) {
+  // Count defending units and total defense power in the city
+  const defenders = unitsAt(spatialIdx, cityGx, cityGy);
+  let totalDefPower = 0;
+  let defenderCount = 0;
+
+  const defTerrain = mapBase.getTerrain(cityGx, cityGy);
+  for (const { unit: dUnit } of defenders) {
+    if (dUnit.owner === civSlot || dUnit.gx < 0) continue;
+    if (!isAtWar(gameState, civSlot, dUnit.owner)) continue;
+    defenderCount++;
+    const dStr = defenseStrength(dUnit, defTerrain,
+      dUnit.orders === 'fortified', hasCityWalls, negatesWalls);
+    totalDefPower += dStr;
+  }
+
+  // Undefended city: always attack
+  if (defenderCount === 0) return true;
+
+  // Count our attack units adjacent to (or on same tile as) this target
+  // Include the current unit + any other attackers nearby
+  let totalAtkPower = attackStrength(unit);
+
+  // Check all 8 adjacent tiles for our attack units
+  const neighbors = mapBase.getNeighbors(cityGx, cityGy);
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (!inBounds(nx, ny, mapBase)) continue;
+    const wnx = wrapX(nx, mapBase);
+    const entries = unitsAt(spatialIdx, wnx, ny);
+    for (const { unit: nearby, index: nIdx } of entries) {
+      if (nIdx === unitIndex) continue; // already counted
+      if (nearby.owner !== civSlot || nearby.gx < 0) continue;
+      if ((UNIT_ATK[nearby.type] || 0) <= 0) continue;
+      const nRole = UNIT_ROLE[nearby.type] ?? 0;
+      if (nRole !== 0) continue; // only count attack-role units
+      totalAtkPower += attackStrength(nearby);
+    }
+  }
+
+  // City assault threshold:
+  // - Without walls: attack if total ATK > DEF * 0.8
+  // - With walls (and we can't negate them): attack if total ATK > DEF * 1.5
+  // Ported from decompiled: attacker composite > 1.5× defender composite for walled
+  if (hasCityWalls && !negatesWalls) {
+    return totalAtkPower * 2 > totalDefPower * 3; // ATK > 1.5 × DEF
+  }
+  return totalAtkPower * 5 > totalDefPower * 4; // ATK > 0.8 × DEF
+}
+
+// ── aiAttacker helper: count own attack-role units near a tile ──────
+function _countOwnAttackersNear(gameState, gx, gy, civSlot, mapBase) {
+  let count = 0;
+  for (const u of gameState.units) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    if ((UNIT_ATK[u.type] || 0) <= 0) continue;
+    const role = UNIT_ROLE[u.type] ?? 0;
+    if (role !== 0) continue;
+    const dist = tileDist(u.gx, u.gy, gx, gy, mapBase);
+    if (dist <= 4) count++;
+  }
+  return count;
+}
+
+// ── aiAttacker helper: find nearest own city ────────────────────────
+function _findNearestOwnCity(gameState, mapBase, gx, gy, civSlot, domain, bodyId) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0) continue;
+    if (domain === 0 && bodyId > 0) {
+      const cb = mapBase.getBodyId(city.gx, city.gy);
+      if (cb > 0 && cb !== bodyId) continue;
+    }
+    const d = tileDist(gx, gy, city.gx, city.gy, mapBase);
+    if (d < bestDist) {
+      bestDist = d;
+      best = city;
+    }
+  }
+  return best;
+}
+
+// ── aiAttacker helper: scored direction toward target ────────────────
+// Ported from FUN_00538a29 movement evaluation loop (lines 4834+).
+// For each of 8 directions, compute a score based on:
+//   - Distance to target (prefer moves that get closer)
+//   - Terrain movement cost (prefer roads/flat terrain)
+//   - Avoid ocean for land units
+//   - Small random factor (0-4) for variety
+// Returns the best valid direction, or null if stuck.
+function _scoredDirectionToward(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+                                 targetGx, targetGy) {
+  const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
+  let bestDir = null;
+  let bestScore = -Infinity;
+  const curDist = tileDist(unit.gx, unit.gy, targetGx, targetGy, mapBase);
+
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (!inBounds(nx, ny, mapBase)) continue;
+    const wnx = wrapX(nx, mapBase);
+
+    // Domain passability
+    const terrain = mapBase.getTerrain(wnx, ny);
+    if (domain === 0 && terrain === 10) continue;
+    if (domain === 1 && terrain !== 10) continue;
+
+    let score = 0;
+
+    // Distance improvement toward target (ported from decompiled scoring)
+    const newDist = tileDist(wnx, ny, targetGx, targetGy, mapBase);
+    score += (curDist - newDist) * 4;
+
+    // Terrain cost penalty for land units (ported from decompiled)
+    // Prefer roads (low cost) over mountains (high cost)
+    if (domain === 0) {
+      const terrCost = TERRAIN_MOVE_COST[terrain] ?? 1;
+      score -= terrCost * 2;
+
+      // Terrain defense bonus (attackers prefer defensible positions)
+      const terrDef = TERRAIN_DEFENSE[terrain] ?? 2;
+      score += terrDef;
+    }
+
+    // Check for enemies at destination
+    const enemiesOnTile = unitsAt(spatialIdx, wnx, ny).filter(
+      e => e.unit.owner !== civSlot && isAtWar(gameState, civSlot, e.unit.owner)
+    );
+
+    if (enemiesOnTile.length > 0) {
+      // There's an enemy here — compute combat odds
+      const bestDef = bestDefenderOnTile(spatialIdx, wnx, ny, civSlot, terrain, gameState, mapBase);
+      if (bestDef) {
+        const city = gameState.cities.find(c =>
+          c.gx === wnx && c.gy === ny && c.size > 0 && c.owner !== civSlot);
+        const walls = city ? (city.buildings?.has(3) || false) : false;
+        const combatScore = _computeCombatScore(unit, bestDef.unit, terrain,
+          walls, UNIT_NEGATES_WALLS.has(unit.type), bestDef.unit.orders === 'fortified');
+        if (combatScore >= 0) {
+          score += 8; // bonus for favorable combat opportunities
+        } else {
+          score -= 8; // penalty for unfavorable combat
+        }
+      }
+    } else {
+      // Check if own units are at destination (grouping bonus from decompiled)
+      const friendliesOnTile = unitsAt(spatialIdx, wnx, ny).filter(
+        e => e.unit.owner === civSlot && (UNIT_ROLE[e.unit.type] ?? 0) === 0
+      );
+      if (friendliesOnTile.length > 0) {
+        score += 2; // slight preference for stacking with own attackers
+      }
+    }
+
+    // Random factor (0-4) to prevent identical moves (ported from decompiled)
+    score += Math.random() * 4;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestDir = dir;
+    }
+  }
+
+  return bestDir;
 }
 
 /**
