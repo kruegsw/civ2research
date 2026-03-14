@@ -88,7 +88,15 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (hasEnemy && (UNIT_ATK[unit.type] || 0) === 0) return 'Non-combat unit cannot attack';
       if (hasEnemy && domain === 0 && terrain === 10) return 'Cannot attack units at sea';
 
-      // Can't move own units onto enemy-occupied tile without attacking (friendly stack check not needed — we allow stacking own units)
+      // Non-combat units (except Diplomats/Spies) cannot enter undefended enemy cities
+      if (!hasEnemy && (UNIT_ATK[unit.type] || 0) === 0) {
+        const hasEnemyCity = gameState.cities.some(c =>
+          c.gx === dest.gx && c.gy === dest.gy && c.owner !== unit.owner && c.owner > 0 && c.size > 0);
+        if (hasEnemyCity) {
+          const isDiplomatic = unit.type === 46 || unit.type === 47; // Diplomat, Spy
+          if (!isDiplomatic) return 'Non-combat unit cannot enter enemy city';
+        }
+      }
 
       // Zone of Control check
       if (!hasEnemy && isZOCBlocked(unit.type, civSlot, unit.gx, unit.gy, dest.gx, dest.gy, mapBase, gameState.units)) {
@@ -376,6 +384,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const { targetCiv, treaty } = action;
       if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
       if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
+      if (!haveContact(gameState, civSlot, targetCiv)) return 'No contact with target civ';
       if (!treaty || !['peace', 'ceasefire'].includes(treaty)) return 'Invalid treaty type';
       const current = getTreaty(gameState, civSlot, targetCiv);
       if (current === treaty) return `Already at ${treaty}`;
@@ -399,6 +408,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const { targetCiv: warTarget } = action;
       if (warTarget == null || warTarget === civSlot) return 'Invalid target';
       if (!(gameState.civsAlive & (1 << warTarget))) return 'Target civ is dead';
+      if (!haveContact(gameState, civSlot, warTarget)) return 'No contact with target civ';
       const curTreaty = getTreaty(gameState, civSlot, warTarget);
       if (curTreaty === 'war') return 'Already at war';
       return null;
@@ -512,6 +522,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const { targetCiv, amount } = action;
       if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
       if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
+      if (!haveContact(gameState, civSlot, targetCiv)) return 'No contact with target civ';
       if (!amount || amount < 1 || amount > 1000) return 'Invalid amount';
       if (gameState.tributeDemands?.some(d => d.from === civSlot && d.to === targetCiv && !d.resolved))
         return 'Demand already pending';
@@ -701,6 +712,17 @@ function getTreaty(gameState, civA, civB) {
   if (!gameState.treaties) return 'war';
   const key = civA < civB ? `${civA}-${civB}` : `${civB}-${civA}`;
   return gameState.treaties[key] || 'war';
+}
+
+/**
+ * Check if two civs have made contact (i.e. an explicit treaty entry exists).
+ * Diplomacy requires prior contact — civs that have never met cannot
+ * propose treaties, declare war, or demand tribute.
+ */
+function haveContact(gameState, civA, civB) {
+  if (!gameState.treaties) return false;
+  const key = civA < civB ? `${civA}-${civB}` : `${civB}-${civA}`;
+  return gameState.treaties[key] !== undefined;
 }
 
 /**

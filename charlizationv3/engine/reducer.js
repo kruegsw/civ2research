@@ -190,6 +190,99 @@ function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, mapBase)
   return scores.slice(0, toPlace).map(s => s.i);
 }
 
+// ── Contact discovery ──
+// When a unit moves (or a city is built), check if any other civ's
+// units or cities are now within this civ's LOS. If so, establish
+// first contact (ceasefire) between the two civs. This prevents the
+// AI from proposing diplomacy to civs that haven't been encountered.
+
+/**
+ * Check for and establish contact between civSlot and any other civ
+ * whose units or cities are visible on tiles within radius of (gx, gy).
+ * Uses the visibility bits already set by updateVisibility().
+ *
+ * @param {object} state - mutable game state (treaties will be updated)
+ * @param {object} mapBase - immutable map data
+ * @param {number} civSlot - the civ whose unit/city just moved/was built
+ * @param {number} gx - center tile gx
+ * @param {number} gy - center tile gy
+ * @param {number} [radius=1] - visibility radius (1=unit, 2=city)
+ */
+function discoverContacts(state, mapBase, civSlot, gx, gy, radius) {
+  if (civSlot === 0) return; // barbarians don't do diplomacy
+
+  const { mw, mh, wraps } = mapBase;
+  const fowBit = 1 << civSlot;
+
+  // Collect tile indices in the visibility radius using doubled-X coordinates
+  // (same offsets as visibility.js RADIUS_1 / RADIUS_2)
+  const RADIUS_1_OFFSETS = [
+    [0,0], [-1,-1], [1,-1], [1,1], [-1,1], [0,-2], [0,2], [2,0], [-2,0]
+  ];
+  const RADIUS_2_EXTRA = [
+    [-1,-3], [1,-3], [-2,-2], [2,-2], [-3,-1], [3,-1],
+    [-3,1], [3,1], [-2,2], [2,2], [-1,3], [1,3]
+  ];
+  const offsets = radius === 2
+    ? [...RADIUS_1_OFFSETS, ...RADIUS_2_EXTRA]
+    : RADIUS_1_OFFSETS;
+
+  const mw2 = mw * 2;
+  const dx = gx * 2 + (gy % 2);
+
+  // Collect visible tile indices
+  const visibleTiles = new Set();
+  for (const [odx, ody] of offsets) {
+    let ndx = dx + odx;
+    const ndy = gy + ody;
+    if (ndy < 0 || ndy >= mh) continue;
+    if (wraps) {
+      ndx = ((ndx % mw2) + mw2) % mw2;
+    } else if (ndx < 0 || ndx >= mw2) {
+      continue;
+    }
+    visibleTiles.add(ndy * mw + (ndx >> 1));
+  }
+
+  // Check all alive civs for units/cities on those tiles
+  const newContacts = new Set();
+
+  for (const u of state.units) {
+    if (!u || u.gx < 0 || u.owner === civSlot || u.owner === 0) continue;
+    if (!(state.civsAlive & (1 << u.owner))) continue;
+    const idx = u.gy * mw + u.gx;
+    if (visibleTiles.has(idx)) {
+      newContacts.add(u.owner);
+    }
+  }
+
+  for (const c of state.cities) {
+    if (!c || c.size <= 0 || c.owner === civSlot || c.owner === 0) continue;
+    if (!(state.civsAlive & (1 << c.owner))) continue;
+    const cgx = c.gx != null ? c.gx : c.cx;
+    const cgy = c.gy != null ? c.gy : c.cy;
+    const idx = cgy * mw + cgx;
+    if (visibleTiles.has(idx)) {
+      newContacts.add(c.owner);
+    }
+  }
+
+  // Establish first contact (ceasefire) for each newly discovered civ
+  for (const otherCiv of newContacts) {
+    if (!state.treaties) state.treaties = {};
+    const key = civSlot < otherCiv
+      ? `${civSlot}-${otherCiv}` : `${otherCiv}-${civSlot}`;
+    if (state.treaties[key] === undefined) {
+      // First contact: establish ceasefire (matching Civ2 FUN_0055d8d8 behavior)
+      state.treaties = { ...state.treaties, [key]: 'ceasefire' };
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'firstContact', civA: civSlot, civB: otherCiv,
+      });
+    }
+  }
+}
+
 // ── Goody hut (tribal village) outcomes ──
 // Faithful to decompiled FUN_0058f040 (process_goody_hut)
 
@@ -406,15 +499,21 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
       if (enemiesAtDest.length > 0) {
         // ── Combat ──
-        // Auto-declare war if attacking a civ we're at peace with
+        // Establish contact if this is the first encounter, then auto-declare war
         const defCivSlot = state.units[enemiesAtDest[0]].owner;
-        if (state.treaties) {
-          const warKey = civSlot < defCivSlot ? `${civSlot}-${defCivSlot}` : `${defCivSlot}-${civSlot}`;
-          if (state.treaties[warKey] && state.treaties[warKey] !== 'war') {
-            state.treaties = { ...state.treaties, [warKey]: 'war' };
-            if (!state.turnEvents) state.turnEvents = [];
-            state.turnEvents.push({ type: 'warDeclared', aggressor: civSlot, target: defCivSlot });
-          }
+        if (!state.treaties) state.treaties = {};
+        const warKey = civSlot < defCivSlot ? `${civSlot}-${defCivSlot}` : `${defCivSlot}-${civSlot}`;
+        if (state.treaties[warKey] === undefined) {
+          // First contact via combat — establish contact then immediately go to war
+          state.treaties = { ...state.treaties, [warKey]: 'war' };
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({ type: 'firstContact', civA: civSlot, civB: defCivSlot });
+          state.turnEvents.push({ type: 'warDeclared', aggressor: civSlot, target: defCivSlot });
+        } else if (state.treaties[warKey] && state.treaties[warKey] !== 'war') {
+          // Already contacted, but at peace — auto-declare war
+          state.treaties = { ...state.treaties, [warKey]: 'war' };
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({ type: 'warDeclared', aggressor: civSlot, target: defCivSlot });
         }
 
         // Find best defender (highest effective defense)
@@ -598,12 +697,36 @@ export function applyAction(prev, mapBase, action, civSlot) {
           }
         }
 
+        // ── Capture undefended enemy city ──
+        const enemyCity = state.cities.find(c =>
+          c.gx === dest.gx && c.gy === dest.gy && c.owner !== civSlot && c.owner > 0 && c.size > 0);
+        if (enemyCity && (UNIT_ATK[unit.type] || 0) > 0) {
+          const defOwner = enemyCity.owner;
+          state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+          const cityIdx = state.cities.indexOf(enemyCity);
+          if (cityIdx >= 0) {
+            captureCity(state, prev, mapBase, cityIdx, civSlot, defOwner);
+            state.combatResult = {
+              type: 'capture', cityName: enemyCity.name, civSlot,
+              gx: dest.gx, gy: dest.gy,
+            };
+            // Check civ elimination for the old owner
+            checkCivElimination(state, defOwner);
+            // Barbarian uprising when a civ is destroyed via city capture
+            if (defOwner > 0 && !(state.civsAlive & (1 << defOwner))) {
+              spawnBarbarianUprising(state, mapBase, dest.gx, dest.gy);
+            }
+          }
+        }
+
         state.units[unitIndex] = unit;
       }
 
       // Update visibility for this civ around new position
       if (unit.gx >= 0) {
         updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+        // Check for first contact with other civs now visible
+        discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
       }
 
       // ── Goody hut check ──
@@ -705,6 +828,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
       // Update visibility with city radius (cities have radius 2)
       updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, newCity.gx, newCity.gy, mapBase.wraps, 2);
+      // Check for first contact with other civs now visible from the new city
+      discoverContacts(state, mapBase, civSlot, newCity.gx, newCity.gy, 2);
 
       // Notify client
       state.cityFounded = { name: newCity.name, cityIndex: newCityIndex, civSlot };
@@ -1255,6 +1380,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // Update visibility
         if (mapBase.tileData) {
           updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, gtDest.gx, gtDest.gy, mapBase.wraps);
+          discoverContacts(state, mapBase, civSlot, gtDest.gx, gtDest.gy, 1);
         }
 
         // Check goody hut
@@ -1341,6 +1467,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       state.units[pdUi] = pdUnit;
       // Update visibility
       updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, pdTgx, pdTgy, mapBase.wraps);
+      discoverContacts(state, mapBase, civSlot, pdTgx, pdTgy, 1);
       break;
     }
 
@@ -1363,6 +1490,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       state.units[alUi] = alUnit;
       // Update visibility
       updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, alUnit.gx, alUnit.gy, mapBase.wraps);
+      discoverContacts(state, mapBase, civSlot, alUnit.gx, alUnit.gy, 1);
       break;
     }
 
@@ -2032,6 +2160,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
               // Update visibility
               if (mapBase.tileData) {
                 updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, activeCiv, gtNextDest.gx, gtNextDest.gy, mapBase.wraps);
+                discoverContacts(state, mapBase, activeCiv, gtNextDest.gx, gtNextDest.gy, 1);
               }
               // Check goody hut
               const gtHutIdx = gtNextDest.gy * mapBase.mw + gtNextDest.gx;
