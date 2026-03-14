@@ -121,13 +121,15 @@ export function generateMap(settings = {}) {
   // ── Phase 2: Continent placement ──
   // Placement bounds (from decompiled FUN_00408d33 lines 1555-1567)
   let yMin = 0, yMax = mh - 1;
-  const xMin = 3, xMax = mw - 3;
+  const xMin = Math.min(3, Math.floor(mw / 4));
+  const xMax = Math.max(xMin, mw - Math.min(3, Math.floor(mw / 4)));
 
   // 50% chance to shift y-bounds for asymmetry (binary: rand() & 1)
   if (rng.next() & 1) {
-    yMax = mh - 5;
+    yMax = Math.max(yMin + 1, mh - Math.min(5, Math.floor(mh / 4)));
   } else {
-    yMin = 4;
+    yMin = Math.min(Math.floor(mh / 4), 4);
+    yMax = Math.max(yMin + 1, yMax);
   }
 
   // Land target formula (line 1572-1573)
@@ -221,13 +223,16 @@ export function generateMap(settings = {}) {
     // Random start position (FUN_0040a572 lines 2162-2190)
     // Key: position check uses landCount (byte[1]), NOT landMark (byte[5])
     let sx, sy;
-    do {
-      sx = rng.nextInt(Math.max(1, mw - 16)) + 8;
-      sy = rng.nextInt(Math.max(1, mh - 8)) + 4;
+    let _placeFound = false;
+    for (let _pt = 0; _pt < 200; _pt++) {
+      sx = rng.nextInt(Math.max(1, mw - xMin * 2)) + xMin;
+      sy = rng.nextInt(Math.max(1, mh - 8)) + Math.min(4, Math.floor(mh / 4));
       if (mode === 0 && continents >= 0) {
-        if (rng.nextInt(continents + 2) !== 0) break;
+        if (rng.nextInt(continents + 2) !== 0) { _placeFound = true; break; }
       }
-    } while (landCount[idx(sx, sy)] !== 0);
+      if (landCount[idx(sx, sy)] === 0) { _placeFound = true; break; }
+    }
+    if (!_placeFound) return;
 
     if (mode === 0) {
       if (continents < 1) {
@@ -566,11 +571,13 @@ export function generateMap(settings = {}) {
     for (let i = 0; i < mw * mh; i++) snapshot[i] = tiles[i];
 
     // Random start on non-mountain, non-ocean tile
-    let sx, sy;
-    do {
+    let sx, sy, startFound = false;
+    for (let tries = 0; tries < 200; tries++) {
       sy = rng.nextInt(mh);
       sx = (sy & 1) + rng.nextInt(Math.max(1, Math.floor(mw / 2))) * 2;
-    } while (tiles[idx(sx, sy)] === T_MOUNTAINS || tiles[idx(sx, sy)] === T_OCEAN);
+      if (tiles[idx(sx, sy)] !== T_MOUNTAINS && tiles[idx(sx, sy)] !== T_OCEAN) { startFound = true; break; }
+    }
+    if (!startFound) break;
 
     let x = sx, y = sy;
     let dir = rng.next() & 3;
