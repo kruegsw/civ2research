@@ -430,8 +430,10 @@ async function handleMapClick(e, isLongPress = false) {
       const topU = S.mpGameState.units[topUnit];
 
       if (!isLongPress) {
-        if (!topU.orders || topU.orders === 'none') {
-          selectUnit(topUnit);
+        selectUnit(topUnit);
+        // If the unit has an active order, clear it so the unit becomes movable
+        if (topU.orders && topU.orders !== 'none') {
+          S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: topUnit, order: 'wake' } });
         }
         return;
       }
@@ -478,7 +480,7 @@ async function handleMapClick(e, isLongPress = false) {
       }
 
       const orderItems = buildOrderMenuItems(topUnit);
-      if (topU.orders && topU.orders !== 'none') {
+      if (topU.orders === 'sentry') {
         orderItems.unshift({
           label: 'Wake Up',
           action: () => {
@@ -583,7 +585,7 @@ async function handleMapClick(e, isLongPress = false) {
         orderItems.push(actionToMenuItem(va, selIdx));
       }
       const selU = S.mpGameState.units[selIdx];
-      if (selU && selU.orders && selU.orders !== 'none') {
+      if (selU && selU.orders === 'sentry') {
         orderItems.push({ label: 'Wake Up', action: () => {
           S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex: selIdx, order: 'wake' } });
         }});
@@ -844,6 +846,7 @@ window.addEventListener('keydown', e => {
   if (S.unitMenu.classList.contains('visible')) {
     if (e.key === 'Enter') {
       e.preventDefault();
+      e.stopImmediatePropagation(); // prevent non-restricted handler from opening city dialog
       if (S.unitMenuDefaultAction) {
         const action = S.unitMenuDefaultAction;
         hideUnitMenu();
