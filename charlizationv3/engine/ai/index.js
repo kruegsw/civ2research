@@ -14,7 +14,7 @@
 //   6. Cleanup — skip/fortify idle units so END_TURN passes
 // ═══════════════════════════════════════════════════════════════════
 
-import { assessStrategy } from './strategy.js';
+import { assessStrategy } from './strategyai.js';
 import { generateEconActions } from './econai.js';
 import { generateDiplomacyActions } from './diplomai.js';
 import { generateProductionActions, generateRushBuyActions } from './prodai.js';
