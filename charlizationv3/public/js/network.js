@@ -662,7 +662,8 @@ function handleChatMessage(msg, isHistory) {
   }
 }
 
-function toggleChat() {
+function toggleChat(forceClose) {
+  if (!forceClose && S.chatPinned && S.chatOpen) return; // pinned — don't close
   S.chatOpen = !S.chatOpen;
   chatBox.classList.toggle('hidden', !S.chatOpen);
   if (S.chatOpen) {
@@ -1320,7 +1321,7 @@ function initNetwork(appCallbacks) {
   chatSendBtn.addEventListener('click', sendChat);
   chatInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
-    if (e.key === 'Escape') { e.preventDefault(); toggleChat(); }
+    if (e.key === 'Escape' && !S.chatPinned) { e.preventDefault(); toggleChat(); }
     e.stopPropagation(); // don't trigger game keybinds
   });
   chatToastStack.addEventListener('click', () => {
@@ -1329,9 +1330,15 @@ function initNetwork(appCallbacks) {
   // Game log toggle
   const gameLogToggle = document.getElementById('gameLogToggle');
   if (gameLogToggle) gameLogToggle.addEventListener('change', toggleGameLog);
-  // Close chat when clicking outside chatPanel
+  // Pin toggle — keep chat open
+  const chatPinToggle = document.getElementById('chatPinToggle');
+  if (chatPinToggle) chatPinToggle.addEventListener('change', () => {
+    S.chatPinned = chatPinToggle.checked;
+    if (S.chatPinned && !S.chatOpen) toggleChat();
+  });
+  // Close chat when clicking outside chatPanel (unless pinned)
   document.addEventListener('pointerdown', e => {
-    if (S.chatOpen && !chatPanel.contains(e.target)) toggleChat();
+    if (S.chatOpen && !S.chatPinned && !chatPanel.contains(e.target)) toggleChat();
   });
 
   // ── Connect ──

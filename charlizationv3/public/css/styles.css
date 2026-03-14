@@ -1043,7 +1043,7 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
   color: #ddd; line-height: 1.45;
 }
 .chatHeader {
-  display: flex; align-items: center; justify-content: flex-end;
+  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
   padding: 4px 10px 2px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   flex-shrink: 0;
