@@ -1042,31 +1042,34 @@ export const ADVANCE_AI_INTEREST = [
   0, 0, 0, 0, 0, 0, 0, 0, 0,     // 80-88
 ];
 
-// Leader personality traits [expansionism, militarism] per leader
+// Leader personality traits [expansionism, militarism, civilized] per leader
 // Indexed by rulesCivNumber 0-20. Range: -1 to 1 each.
-// From RULES.TXT @LEADERS section (DAT_006554fa, DAT_006554fb)
+// From RULES.TXT @LEADERS section:
+//   [0] = expansionism (DAT_006554fa) — city-founding preference
+//   [1] = militarism   (DAT_006554f8) — aggression/warlike preference
+//   [2] = civilized     (DAT_006554f9) — perfectionism/development preference
 export const LEADER_PERSONALITY = [
-  [1, 1],   // 0 Romans (Caesar) - expansionist, militarist
-  [0, -1],  // 1 Babylonians (Hammurabi) - neutral, peaceful
-  [-1, 1],  // 2 Germans (Frederick) - non-expansionist, militarist
-  [1, -1],  // 3 Egyptians (Ramesses) - expansionist, peaceful
-  [1, 0],   // 4 Americans (Lincoln) - expansionist, neutral
-  [0, 0],   // 5 Greeks (Alexander) - neutral
-  [1, -1],  // 6 Indians (Gandhi) - expansionist, peaceful
-  [-1, 1],  // 7 Russians (Stalin) - non-expansionist, militarist
-  [-1, 1],  // 8 Zulus (Shaka) - non-expansionist, militarist
-  [0, 0],   // 9 French (Napoleon) - neutral
-  [0, 1],   // 10 Aztecs (Montezuma) - neutral, militarist
-  [1, 0],   // 11 Chinese (Mao) - expansionist, neutral
-  [0, 0],   // 12 English (Elizabeth) - neutral
-  [-1, 1],  // 13 Mongols (Genghis Khan) - non-expansionist, militarist
-  [0, 0],   // 14 Celts (Brennus) - neutral
-  [0, 1],   // 15 Japanese (Tokugawa) - neutral, militarist
-  [1, 1],   // 16 Vikings (Canute) - expansionist, militarist
-  [1, 0],   // 17 Spanish (Isabella) - expansionist, neutral
-  [0, -1],  // 18 Persians (Scheherazade) - neutral, peaceful
-  [0, 1],   // 19 Carthaginians (Hannibal) - neutral, militarist
-  [-1, 0],  // 20 Sioux (Sitting Bull) - non-expansionist, neutral
+  [1, 1, 1],    // 0 Romans (Caesar) - expansionist, militarist, civilized
+  [0, -1, 0],   // 1 Babylonians (Hammurabi) - neutral, peaceful, neutral
+  [-1, 1, -1],  // 2 Germans (Frederick) - non-expansionist, militarist, uncivilized
+  [1, -1, 1],   // 3 Egyptians (Ramesses) - expansionist, peaceful, civilized
+  [1, 0, 1],    // 4 Americans (Lincoln) - expansionist, neutral, civilized
+  [0, 0, 0],    // 5 Greeks (Alexander) - neutral
+  [1, -1, 1],   // 6 Indians (Gandhi) - expansionist, peaceful, civilized
+  [-1, 1, -1],  // 7 Russians (Stalin) - non-expansionist, militarist, uncivilized
+  [-1, 1, -1],  // 8 Zulus (Shaka) - non-expansionist, militarist, uncivilized
+  [0, 0, 0],    // 9 French (Napoleon) - neutral
+  [0, 1, 0],    // 10 Aztecs (Montezuma) - neutral, militarist, neutral
+  [1, 0, 1],    // 11 Chinese (Mao) - expansionist, neutral, civilized
+  [0, 0, 0],    // 12 English (Elizabeth) - neutral
+  [-1, 1, -1],  // 13 Mongols (Genghis Khan) - non-expansionist, militarist, uncivilized
+  [0, 0, 0],    // 14 Celts (Brennus) - neutral
+  [0, 1, 0],    // 15 Japanese (Tokugawa) - neutral, militarist, neutral
+  [1, 1, 1],    // 16 Vikings (Canute) - expansionist, militarist, civilized
+  [1, 0, 1],    // 17 Spanish (Isabella) - expansionist, neutral, civilized
+  [0, -1, 0],   // 18 Persians (Scheherazade) - neutral, peaceful, neutral
+  [0, 1, 0],    // 19 Carthaginians (Hannibal) - neutral, militarist, neutral
+  [-1, 0, -1],  // 20 Sioux (Sitting Bull) - non-expansionist, neutral, uncivilized
 ];
 
 // Government name → numeric index for formulas

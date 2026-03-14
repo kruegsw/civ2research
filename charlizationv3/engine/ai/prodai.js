@@ -12,7 +12,7 @@ import { getProductionCost } from '../production.js';
 import { calcRushBuyCost } from '../happiness.js';
 import {
   UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
-  UNIT_OBSOLETE, UNIT_COSTS, UNIT_NAMES,
+  UNIT_OBSOLETE, UNIT_COSTS, UNIT_NAMES, UNIT_MOVE_POINTS,
   IMPROVE_PREREQS, IMPROVE_MAINTENANCE, IMPROVE_NAMES,
   IMPROVE_COSTS, WONDER_COSTS, WONDER_NAMES,
   WONDER_PREREQS, WONDER_OBSOLETE,
@@ -353,14 +353,23 @@ function clamp(val, min, max) {
 /**
  * Score a unit type for a specific city context.
  *
- * Based on Civ2 FUN_00498e8b unit scoring section. Returns a numeric
- * score (higher = more desirable). Returns -1 if the unit should not
- * be considered.
+ * Ported from Civ2 FUN_00498e8b unit scoring sections:
+ *   - Combat units (role 0-4): lines 5695-6050 of decompiled
+ *   - Settlers (role 5): lines 5848-5925
+ *   - Diplomats (role 6): lines 5526-5650
+ *   - Trade units (role 7): lines 5652-5668
+ *
+ * Returns a numeric score (higher = more desirable). Returns -1 if the
+ * unit should not be considered.
+ *
+ * NOTE: The decompiled code uses lower=better scoring. We invert at the
+ * normalization step so our convention (higher=better) is preserved.
  */
 function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot, strategy) {
   if (!canBuildUnit(civTechs, unitId)) return -1;
 
   const domain = UNIT_DOMAIN[unitId] ?? 0;
+  const role = UNIT_ROLE[unitId] ?? 0;
   const atk = UNIT_ATK[unitId] || 0;
   const def = UNIT_DEF[unitId] || 0;
   const hp = UNIT_HP[unitId] || 1;
@@ -370,207 +379,424 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   // ── Domain filters ──
   // Landlocked cities skip naval units
   if (domain === 1 && !cityCtx.isCoastal) return -1;
-  // Air units: need airport or just allow from any city (Civ2 allows from any)
-  // No filter on air — game allows building air anywhere
+  // Nuclear missiles (45): skip
+  if (unitId === 42) return -1; // unit 42 = Carrier (0x2a in decompiled skip)
 
-  // ── Settler scoring ──
-  if (SETTLER_TYPES.has(unitId)) {
-    // Don't build if city would drop to size 1
+  // ── Leader personality ──
+  const leaderIdx = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
+  const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0, 0];
+  const expansionism = personality[0]; // DAT_006554fa
+  const militarism = personality[1];   // DAT_006554f8
+  const civilized = personality[2] ?? 0; // DAT_006554f9
+
+  // ── Government ──
+  const govtStr = gameState.civs?.[civSlot]?.government || 'despotism';
+  const govtIdx = GOVT_INDEX[govtStr] ?? 1;
+
+  // ── Strategic context ──
+  const warTargets = strategy.warTargets || [];
+  const threatLevel = warTargets.length;
+  const aiData = strategy.aiData;
+  const civsAlive = aiData?.civsAlive ?? 0;
+  const isHuman = (civsAlive & (1 << civSlot)) !== 0;
+  const aliveCivCount = aiData?.aliveCivCount ?? 2;
+
+  // Continent strategic posture (local_f8 in decompiled)
+  // 0=expand, 1=defend, 4=wartime, 5=build walls
+  const postureScore = strategy.militaryPostureScore ?? 0;
+  let continentPosture = 0;
+  if (postureScore <= 1) continentPosture = 1;
+  else if (postureScore <= 3) continentPosture = 3;
+  else if (postureScore === 4) continentPosture = 4;
+  else if (postureScore === 5) continentPosture = 5;
+
+  // coastal flag (local_b0 in decompiled): 1 if posture is expand/defend or flag set
+  let coastalFlag = (continentPosture === 0 || continentPosture === 1) ? 1 : 0;
+
+  // Strongest civ
+  let strongestCiv = 1;
+  if (aiData?.powerRanking) {
+    let maxPower = -1;
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot) continue;
+      if (!(civsAlive & (1 << c))) continue;
+      if ((aiData.powerRanking[c] || 0) > maxPower) {
+        maxPower = aiData.powerRanking[c] || 0;
+        strongestCiv = c;
+      }
+    }
+  }
+
+  // City's continent unit counts (from cityCtx)
+  const continentId = cityCtx.continentId;
+  const cont = aiData?.continents?.get(continentId);
+  const ourContCities = cont?.cityCounts?.get(civSlot) || 0;
+
+  // Per-type counts on this continent
+  const sameTypeOnCont = cityCtx.unitTypeCountOnCont?.[unitId] || 0;
+  const sameTypeGlobal = countUnitsByType(gameState, civSlot, unitId);
+  const numCities = cityCtx.numCities;
+
+  // ── Per-type maximum checks (decompiled: ATK >= 99 caps at 4 built + 2 globally) ──
+  if (atk >= 99 && sameTypeGlobal >= 4 && sameTypeOnCont >= 2) return -1;
+
+  // ── Settler scoring (role 5) ──
+  // Ported from decompiled lines 5848-5925
+  if (role === 5) {
+    // City size must be > 1 (city.size checks below handle this)
     if (city.size <= 1) return -1;
-    // Don't build if we have enough cities or settlers
-    if (!strategy.expansionDesired && cityCtx.numCities >= 6) return -1;
-    if (cityCtx.settlerCount >= 2) return -1;
-    if (cityCtx.numCities >= 12) return -1;
+
+    // Skip settlers in fundamentalism (govtIdx 4) and various conditions
+    // Decompiled: role==5 requires citySize > 1 AND various food/settler checks
 
     // Engineers (1) vs Settlers (0): prefer engineers if available
     if (unitId === 0 && canBuildUnit(civTechs, 1)) return -1;
+    // Phalanx check: don't build if govtIdx < 2 (anarchy/despotism) AND unitId == 2
+    // (this is actually about Warriors, handled elsewhere)
 
+    // Decompiled settler scoring: base from population surplus analysis
     let score = 0;
-    // High score when expanding
-    if (strategy.expansionDesired) {
-      score = 40;
-      if (cityCtx.numCities <= 2) score = 60;
-    } else {
-      // Still worth building for improvements (engineers)
-      score = unitId === 1 ? 20 : 10;
+    const settlerCount = cityCtx.settlerCount;
+
+    // Check settler need threshold:
+    // hasBarracks = city has Granary (building 3) or has wonder 0 (Pyramids)
+    const hasGranary = (city.buildings && city.buildings.has(3)) ||
+                       hasWonderEffect(gameState, civSlot, 0);
+    const granaryDiv = hasGranary ? 4 : 6;
+
+    // Settler need: below (govtIdx + 1) / 2 settlers on continent
+    const settlerThreshold = Math.floor((govtIdx + 1) / 2);
+    if (sameTypeOnCont < settlerThreshold) {
+      // Base score depends on civilized trait
+      if (sameTypeOnCont < Math.floor(settlerThreshold / 2)) {
+        score = civilized >= 0 ? expansionism : civilized;
+      } else {
+        score = civilized;
+      }
     }
 
-    // Size-2 cities with few cities: settlers are critical for expansion.
-    // Give a large unconditional boost so settlers consistently outscore warriors.
-    if (city.size === 2 && cityCtx.settlerCount === 0 && cityCtx.numCities < 4) {
+    // Expansion need: few cities → high score
+    if (numCities <= 2) score += 8;
+    else if (numCities <= 4) score += 5;
+    else if (numCities <= 8) score += 2;
+
+    // No settlers exists: bonus
+    if (settlerCount === 0 && numCities < 8) score += 5;
+
+    // War penalty: reduce settler desire during wartime
+    if (continentPosture === 4 && aliveCivCount > 2) {
+      score -= 3;
+    }
+
+    // Personality: expansionists build more settlers
+    score += expansionism * 2;
+
+    // City size bonus: large cities can spare pop
+    if (city.size >= 6) score += 3;
+    if (city.size >= 10) score += 2;
+    // Penalty: small city with low food surplus
+    if (estimateFoodSurplus(city) <= 0) score -= 4;
+
+    // Normalize: apply personality-based scaling (decompiled normalization)
+    // score = ((coastalMatch ? 10 : 20) * score * 3) / (expansionism + 3)
+    const coastalMatch = (cityCtx.isCoastal ? 1 : 0) === coastalFlag ? 1 : 0;
+    const coastMul = coastalMatch ? 10 : 20;
+    score = Math.floor(coastMul * Math.max(0, score) * 3 / (expansionism + 3));
+
+    // Size-2 early game critical boost (keep from original for gameplay)
+    if (city.size === 2 && settlerCount === 0 && numCities < 4) {
       score += 25;
     }
-
-    // #11: Boost settler score in specific conditions
-    // Early game expansion: fewer than 4 cities
-    if (cityCtx.numCities < 4) score += 15;
-    // Early turns: expansion is critical
-    const turnNum = gameState.turn?.number ?? 0;
-    if (turnNum < 100 && cityCtx.numCities < 8) score += 10;
-    // No settler currently exists
-    if (cityCtx.settlerCount === 0 && cityCtx.numCities < 8) score += 10;
-
-    // Bonus for large cities (can spare the pop)
-    if (city.size >= 6) score += 10;
-    // Penalty if food surplus is low
-    if (estimateFoodSurplus(city) <= 0) score -= 15;
 
     return Math.max(0, score);
   }
 
-  // ── Non-combat units (diplomats, spies, caravans, freight, explorers) ──
-  if (NON_COMBAT_TYPES.has(unitId)) {
-    // Diplomat/Spy: occasional use
-    if (unitId === 46 || unitId === 47) {
-      if (strategy.warTargets && strategy.warTargets.length > 0) return 3;
-      return 1;
-    }
-    // Caravan/Freight: trade routes
-    if (unitId === 48 || unitId === 49) {
-      if (strategy.productionFocus === 'economy' && cityCtx.numCities >= 3) return 4;
-      return 1;
-    }
-    // Explorer
-    if (unitId === 50) {
-      if (cityCtx.numCities <= 2) return 3;
-      return 0;
-    }
-    return 0;
-  }
+  // ── Diplomat/Spy scoring (role 6) ──
+  // Ported from decompiled lines 5526-5650
+  if (role === 6) {
+    // Decompiled: canExpand check, then diplomat scoring based on target civ
+    let rawScore = 999; // lower = better in decompiled
+    let coastalPref = 0;
 
-  // ── Combat units ──
-  let score = 0;
-
-  // Combined combat score considers both offense AND survivability.
-  // In Civ2, a unit that dies in one hit (Catapult: 6/1/1) is much less
-  // useful than one that can survive and fight again (Knights: 4/2/1).
-  // Score = offense + survivability + HP/FP bonuses.
-  const offense = atk * 3;
-  const survivability = def * 2 + hp * 3;
-  score = offense + survivability;
-  if (fp > 1) score += (atk + def) * 2;
-
-  // Role-based bonus: attackers get ATK emphasis, defenders get DEF emphasis
-  if (atk > def) {
-    score += atk;  // mild extra offense credit
-  } else {
-    score += def;  // mild extra defense credit
-  }
-
-  // ── Army balance ──
-  // Civ2 AI maintains roughly 2:1 attacker:defender ratio. Penalize
-  // building more of the over-represented role to prevent mono-armies.
-  if (domain === 0) {
-    const role = UNIT_ROLE[unitId] ?? 0;
-    const totalArmy = cityCtx.totalAttackers + cityCtx.totalDefenders;
-    if (totalArmy >= 4) {
-      const atkRatio = cityCtx.totalAttackers / totalArmy;
-      const defRatio = cityCtx.totalDefenders / totalArmy;
-      if (role === 0 && atkRatio > 0.7) {
-        // Too many attackers — penalize building more
-        score -= Math.floor((atkRatio - 0.5) * 20);
-      } else if (role === 1 && defRatio > 0.5) {
-        // Too many defenders — penalize building more
-        score -= Math.floor((defRatio - 0.3) * 15);
+    // Check if there's a valid diplomatic target
+    // Decompiled: iterates civs 1-7, checks treaty status, tech advantages
+    let bestTarget = -1;
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot) continue;
+      if (!(civsAlive & (1 << c))) continue;
+      // Check if we're at war or have contact
+      const atWar = warTargets.includes(c);
+      const theirTechs = aiData?.techCount?.[c] ?? 0;
+      const ourTechs = aiData?.techCount?.[civSlot] ?? 0;
+      // Prefer targets with tech advantage or at war
+      if (atWar || theirTechs > ourTechs + 7) {
+        bestTarget = c;
+        break;
       }
-      // Bonus for the under-represented role
-      if (role === 0 && atkRatio < 0.4) score += 5;
-      if (role === 1 && defRatio < 0.2) score += 8;
     }
-  }
 
-  // ── City-specific need adjustments ──
-
-  // Emergency: no defenders and enemies nearby
-  if (cityCtx.defenders === 0 && def > 0 && domain === 0) {
-    score += 30;
-    // Extra bonus if enemies are very close
-    if (cityCtx.nearbyEnemies.length > 0) {
-      score += 20;
-      // Closest enemy distance bonus
-      const closestDist = Math.min(...cityCtx.nearbyEnemies.map(e => e.dist));
-      if (closestDist <= 3) score += 15;
+    if (bestTarget < 0) {
+      // No good target: use strongest civ
+      bestTarget = strongestCiv;
+      // Base score from wartime posture
+      if (continentPosture === 4 && aliveCivCount > 2) {
+        coastalPref = coastalFlag;
+        rawScore = 8;
+        // Adjust by tech count comparison and existing diplomat count
+        const theirTechs = aiData?.techCount?.[bestTarget] ?? 0;
+        const ourTechs = aiData?.techCount?.[civSlot] ?? 0;
+        if (sameTypeGlobal + sameTypeOnCont < Math.floor((numCities + 3) / 4)) {
+          if (theirTechs > ourTechs) rawScore -= (theirTechs - ourTechs);
+          rawScore = clamp(rawScore, sameTypeGlobal + 1, 10);
+        }
+      }
+    } else {
+      // Good target found
+      const theirTechs = aiData?.techCount?.[bestTarget] ?? 0;
+      const ourTechs = aiData?.techCount?.[civSlot] ?? 0;
+      rawScore = clamp(10 - (theirTechs - ourTechs), 2, 10);
+      // At war bonus
+      if (warTargets.includes(bestTarget)) rawScore++;
+      // Already have diplomats: penalize
+      if (sameTypeOnCont > 0) rawScore = 999;
+      // Treasury comparison for bribery potential
+      const ourTreasury = gameState.civs?.[civSlot]?.treasury ?? 0;
+      const theirTreasury = gameState.civs?.[bestTarget]?.treasury ?? 0;
+      if (ourTreasury >= theirTreasury) coastalPref = coastalFlag;
     }
+
+    // Government bonus: communism gives diplomat advantage
+    if (govtIdx === 3) rawScore--;
+
+    // Score inversion: decompiled uses lower=better, we use higher=better
+    if (rawScore >= 400) return -1;
+
+    // Personality normalization (same as buildings)
+    const coastalMatch = (cityCtx.isCoastal ? 1 : 0) === coastalPref ? 1 : 0;
+    const coastMul = coastalMatch ? 10 : 20;
+    rawScore = Math.floor(coastMul * rawScore * 3 / (expansionism + 3));
+
+    // Barracks bonus
+    if (city.buildings && city.buildings.has(2)) {
+      rawScore += Math.floor(rawScore / ((threatLevel >> 1) + 3));
+    }
+
+    // Invert: max plausible raw score ~200, so subtract from 200
+    return Math.max(0, 200 - rawScore);
   }
 
-  // Frontier city: prefer military, especially defenders
-  if (cityCtx.isFrontier) {
-    if (def > atk) score += 10; // Defensive unit bonus on frontier
-    else score += 5; // Still want some offensive capability
+  // ── Trade unit scoring (role 7) ──
+  // Ported from decompiled lines 5652-5668
+  if (role === 7) {
+    // Decompiled: coastal city check, then size-based score
+    if (cityCtx.isCoastal && city.size < 3) return -1;
+
+    let rawScore = 10;
+    // Base: 10 adjusted by city size and personality
+    if (city.size < 3) {
+      rawScore = 10 - ((5 - civilized) * aliveCivCount) / 10;
+    }
+    // Add city trade route count
+    rawScore += (cityCtx.tradeRouteCount || 0) * 2;
+    // Add continent city count proxy for demand
+    rawScore += ourContCities;
+
+    // Coastal check: not on human-controlled island
+    if (!isHuman || !cityCtx.isCoastal) {
+      // Personality normalization
+      const coastalMatch = (cityCtx.isCoastal ? 1 : 0) === coastalFlag ? 1 : 0;
+      const coastMul = coastalMatch ? 10 : 20;
+      rawScore = Math.floor(coastMul * rawScore * 3 / (expansionism + 3));
+      // Barracks bonus
+      if (city.buildings && city.buildings.has(2)) {
+        rawScore += Math.floor(rawScore / ((threatLevel >> 1) + 3));
+      }
+      return Math.max(0, 200 - rawScore);
+    }
+    return -1;
   }
 
-  // Inland safe city: mild penalty for military, prefer infrastructure
-  if (!cityCtx.isFrontier && cityCtx.nearbyEnemies.length === 0 && domain === 0) {
-    // Only light penalty — still need some garrison
-    if (cityCtx.defenders >= 2) score -= 5;
+  // ── Combat units (role 0-4) ──
+  // Ported from decompiled lines 5695-6050
+
+  // Pre-filter: skip Phalanx (2) if government >= monarchy
+  if (unitId === 2 && govtIdx >= 2) return -1;
+
+  // Domain-specific pre-filters
+  if (domain === 0) {
+    // Land: skip units already over-represented
+    const onContinent = sameTypeOnCont;
+    const global = sameTypeGlobal;
+    // Decompiled: local_21c[type]*2 + aiStack_364[type] = existing count metric
+    let existingScore = onContinent * 2 + global;
+    if (isHuman) existingScore = Math.floor(existingScore / 2);
+    // Special bonus for specific unit types when human
+    if (isHuman && (unitId === 12 || unitId === 10 || unitId === 9)) {
+      existingScore += 2;
+    }
+    // Horsemen (4) count includes Chariots (5) and vice-versa
+    if (unitId === 4) {
+      existingScore += countUnitsByType(gameState, civSlot, 5) * 2;
+    }
+
+    // Zero-attack zero-defense units are not combat units
+    if (atk === 0 && def === 0) return -1;
   }
 
-  // ── Strategic posture adjustments ──
-  const focus = strategy.productionFocus;
-  const posture = strategy.militaryPosture;
-  const threat = strategy.threat;
-
-  // At war: offensive units get bonus
-  if (strategy.warTargets && strategy.warTargets.length > 0) {
-    if (atk > def) score += Math.floor(atk * 0.3);
+  // Sea domain: need coastal city AND adequate sea
+  if (domain === 2) {
+    // Air domain checks
+    // Decompiled: check for nearby ocean tile for air domain (approximation)
   }
 
-  // Threat adjustments
-  if (threat === 'high' || threat === 'critical') {
-    if (def > 0 && domain === 0) score += Math.floor(def * 0.5);
-  }
+  // ── Combat power scoring ──
+  // Decompiled formula at lines 5928-5952:
+  // combatPower = (ATK + DEF) * speedFactor
+  // costEfficiency = (movePoints/COSMIC + 1) * combatPower / 2
+  // finalScore = raw * (moveBonus+2) / costEfficiency
+  let rawScore;
 
-  // Military posture bonuses
-  if (posture === 'attack' && atk > def) {
-    score += 8;
-  } else if (posture === 'defend' && def >= atk) {
-    score += 8;
-  } else if (posture === 'turtle' && def >= atk) {
-    score += 12;
-  }
+  // Check: role 0 (attack) or role 1 (defend) with ATK=0 and DEF=0 → score 0
+  if (atk === 0 && def === 0) {
+    rawScore = 0;
+  } else {
+    // Speed factor (decompiled: DAT_00655ae8 & 0x10 check)
+    // We approximate: use move points / 10 + move*FP as speed factor
+    const movePoints = UNIT_MOVE_POINTS?.[unitId] || 1;
+    const speedFactor = clamp(Math.floor(movePoints / 10) + fp, 2, 4);
+    const combatPower = (atk + def) * speedFactor;
 
-  // Production focus
-  if (focus === 'military') {
-    score += 5;
-  } else if (focus === 'economy' || focus === 'science') {
-    score -= 3;
+    // Decompiled: costEfficiency = ((moveCost / COSMIC + 1) * combatPower) / 2
+    const COSMIC_MOVE_MULTIPLIER = 3; // standard value
+    const moveCostNorm = Math.floor(movePoints / COSMIC_MOVE_MULTIPLIER) + 1;
+    const costEfficiency = Math.max(1, Math.floor(moveCostNorm * combatPower / 2));
+
+    // Role-based multiplier (decompiled lines 5823-5826)
+    // role not 1 and not 5 → ×2; if also not matching continent posture → ×4
+    let roleMul = 1;
+    if (role !== 1 && role !== 5) {
+      roleMul = 2;
+      if (continentPosture !== role) roleMul = 4;
+    }
+
+    // Base raw score: existingOnContinent + global counts as priority seed
+    const existingMetric = sameTypeOnCont * 2 + sameTypeGlobal;
+    rawScore = existingMetric * roleMul;
+
+    // Partisans (9) special: only build on continent with certain flags
+    if (unitId === 9 && coastalFlag === 0 && continentPosture !== 4) {
+      return -1;
+    }
+
+    // ── Settle-type special handling ──
+    // role 4 (sea transport): bonus during wartime
+    if (role === 4) {
+      if (continentPosture === 4) {
+        rawScore = Math.floor(rawScore * 3 / 2);
+      } else {
+        if (continentPosture === 1 || sameTypeGlobal > 0) return -1;
+        if (unitId !== 43) { // Not Transport
+          rawScore = rawScore * 2 * (1 << (coastalFlag & 0x1f));
+        }
+      }
+    }
+
+    // ── Settlers/workers (role 5) in combat section ──
+    // Already handled above, skip
+
+    // Movement speed (HP) bonus for combat scoring
+    rawScore = (movePoints + 2) * rawScore;
+
+    // Cost-effectiveness division
+    rawScore = Math.floor(rawScore / costEfficiency);
   }
 
   // ── Domain-specific adjustments ──
 
-  // Naval units: bonus if coastal and have reason to build navy
-  if (domain === 1) {
-    if (cityCtx.isCoastal) {
-      // Transports/carriers get bonus if we have cities to connect
-      if (unitId === 43 || unitId === 34) { // Transport, Galleon
-        score += 5;
-      }
-      // Naval combat: bonus if enemy has navy or coastal cities
-      score += 3;
+  // Naval combat (role 2): sea control bonuses
+  if (role === 2) {
+    // Decompiled: various naval penalty/bonus conditions
+    if (!cityCtx.isCoastal) return -1;
+    if (coastalFlag === 0) rawScore = rawScore << 1;
+    else rawScore = rawScore << 2;
+    // Harbour bonus
+    if (city.buildings && city.buildings.has(34)) { // Port Facility
+      rawScore -= Math.floor(rawScore / 4);
     }
   }
 
-  // Air units: generally useful for offense
-  if (domain === 2) {
-    if (atk > 0) score += 5;
-    // Bombers/fighters scale well
+  // Sea domain: double for sea units
+  if (domain === 1) {
+    rawScore = rawScore << 1;
+    // Airport bonus for sea units
+    if (city.buildings && city.buildings.has(32)) {
+      rawScore -= Math.floor(rawScore / 4);
+    }
   }
 
-  // ── Cost-effectiveness ──
-  // Mild cost adjustment: expensive units get a small penalty, but combat
-  // power is the primary factor. Civ2 does NOT aggressively normalize by
-  // cost — a Knight at 40 shields is strictly preferred over a Warrior
-  // at 10 shields when the tech is available.
-  if (cost > 30) score -= Math.floor((cost - 30) / 10);
-  if (cost > 60) score -= Math.floor((cost - 60) / 15);
-
-  // ── Continent threat ──
-  // If there are enemy military units nearby on our continent, prefer military
-  if (cityCtx.nearbyEnemyMilitary > 0 && domain === 0) {
-    score += 2;
+  // ── Army balance: penalize role 1 (defend) when we have enough ──
+  if (role === 1) {
+    rawScore -= Math.floor((cityCtx.totalDefenders + 1) / 2);
   }
 
-  return Math.max(0, score);
+  // ── Late game: large civ needs more military ──
+  if (cityCtx.numCities > 15) {
+    rawScore = rawScore << 2;
+  }
+
+  // ── Threat-based adjustments ──
+  if (coastalFlag === 0 && role < 6) {
+    // Defensive posture: bonus for nearby threat
+    let threatBonus = 0;
+    if (aliveCivCount > 2 && cityCtx.nearbyEnemyMilitary > 0) {
+      threatBonus = Math.floor((3 - coastalFlag) *
+        (cityCtx.nearbyEnemyMilitary + 1) * rawScore / Math.max(1, aliveCivCount));
+    }
+    if (role === 5) threatBonus = Math.floor(threatBonus / 2);
+    // Non-wartime: double up
+    if (coastalFlag === 0 && aliveCivCount > 2) {
+      rawScore = rawScore << 1;
+    }
+    rawScore += threatBonus;
+  }
+
+  // ── Human player in wartime: role 1 (defend) gets 999 (skip) ──
+  if (role === 1 && isHuman && aliveCivCount > 2) {
+    rawScore = 999;
+  }
+
+  // ── Emergency: no defenders ──
+  if (cityCtx.defenders === 0 && def > 0 && domain === 0) {
+    rawScore += 20;
+    if (cityCtx.nearbyEnemies.length > 0) {
+      rawScore += 15;
+      const closestDist = Math.min(...cityCtx.nearbyEnemies.map(e => e.dist));
+      if (closestDist <= 3) rawScore += 10;
+    }
+  }
+
+  // ── Frontier bonus ──
+  if (cityCtx.isFrontier && domain === 0) {
+    rawScore += 5;
+    if (def > atk) rawScore += 5;
+  }
+
+  // ── Personality normalization (same pattern as buildings) ──
+  if (rawScore >= 400) return -1;
+
+  const coastalPref = (role === 2 || domain === 1) ? 1 : 0;
+  const coastalMatch = (cityCtx.isCoastal ? 1 : 0) === coastalPref ? 1 : 0;
+  const coastMul = coastalMatch ? 10 : 20;
+  rawScore = Math.floor(coastMul * rawScore * 3 / (expansionism + 3));
+
+  // Barracks bonus
+  if (city.buildings && city.buildings.has(2)) {
+    rawScore += Math.floor(rawScore / ((threatLevel >> 1) + 3));
+  }
+
+  // Invert: decompiled uses lower=better, we use higher=better.
+  // Typical raw scores range 0-300; use 300 as ceiling.
+  return Math.max(0, 300 - Math.min(rawScore, 300));
 }
 
 /**
@@ -1247,7 +1473,14 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
 /**
  * Score a wonder for a specific city context.
  *
- * Based on Civ2's wonder scoring section. Returns a numeric score.
+ * Ported from Civ2 FUN_00498e8b wonder scoring section (lines 5140-5525
+ * of decompiled). Each of the 28 wonders (indices 0-27, stored as
+ * local_74 in decompiled) gets a score adjusted by game phase,
+ * leader personality, strategic posture, and city-specific factors.
+ *
+ * The decompiled code uses lower=better. We invert at normalization
+ * so our convention (higher=better) is preserved.
+ *
  * Returns -1 if the wonder should not be considered.
  */
 function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState, mapBase, civSlot, strategy) {
@@ -1255,35 +1488,20 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
 
   // Wonders: item.id = wonderIndex + 39
   const wonderBuildId = wonderIndex + 39;
-  const cost = WONDER_COSTS[wonderIndex] || 10;
 
-  // Skip if another civ is already building it (we can see this for known cities)
-  // Actually check if ANY city is already building it (except our own cities)
+  // Skip if another city (ours or theirs) is already building it
+  let weAreBuilding = false;
   let someoneElseBuilding = false;
   for (const c of gameState.cities) {
     if (!c || c.size <= 0) continue;
-    if (c.owner === civSlot) continue;
     const item = c.itemInProduction;
     if (item && item.type === 'wonder' && item.id === wonderBuildId) {
-      someoneElseBuilding = true;
-      break;
+      if (c.owner === civSlot) weAreBuilding = true;
+      else someoneElseBuilding = true;
     }
   }
-
-  // Are WE already building it in another city?
-  let weAreBuilding = false;
-  for (const c of gameState.cities) {
-    if (!c || c.size <= 0) continue;
-    if (c.owner !== civSlot) continue;
-    const item = c.itemInProduction;
-    if (item && item.type === 'wonder' && item.id === wonderBuildId) {
-      weAreBuilding = true;
-      break;
-    }
-  }
-  // Don't start building in a second city if we're already building it
+  // Don't build if we're already building it in another city
   if (weAreBuilding) {
-    // Unless this city IS the one building it (it will match current production)
     const thisItem = city.itemInProduction;
     if (!(thisItem && thisItem.type === 'wonder' && thisItem.id === wonderBuildId)) {
       return -1;
@@ -1291,122 +1509,369 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
   }
 
   // Small cities can't realistically finish wonders
-  if (city.size < 4 && cityCtx.numCities > 1) return -1;
+  if (city.size < 3 && cityCtx.numCities > 1) return -1;
 
-  // Base score: wonders are generally very valuable
-  let score = 8;
+  // ── Leader personality ──
+  const leaderIdx = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
+  const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0, 0];
+  const expansionism = personality[0]; // DAT_006554fa
+  const militarism = personality[1];   // DAT_006554f8
+  const civilized = personality[2] ?? 0; // DAT_006554f9
 
-  // If someone else is building it, reduce score (race condition)
-  if (someoneElseBuilding) score -= 4;
+  // ── Strategic context ──
+  const govtStr = gameState.civs?.[civSlot]?.government || 'despotism';
+  const govtIdx = GOVT_INDEX[govtStr] ?? 1;
+  const aiData = strategy.aiData;
+  const civsAlive = aiData?.civsAlive ?? 0;
+  const isHuman = (civsAlive & (1 << civSlot)) !== 0;
+  const aliveCivCount = aiData?.aliveCivCount ?? 2;
+  const warTargets = strategy.warTargets || [];
+  const numCities = cityCtx.numCities || 1;
+  const citySize = city.size || 1;
+  const threatLevel = warTargets.length;
 
-  // Specific wonder value adjustments
+  // Continent posture
+  const postureScore = strategy.militaryPostureScore ?? 0;
+  let continentPosture = 0;
+  if (postureScore <= 1) continentPosture = 1;
+  else if (postureScore <= 3) continentPosture = 3;
+  else if (postureScore === 4) continentPosture = 4;
+  else if (postureScore === 5) continentPosture = 5;
+  let coastalFlag = (continentPosture === 0 || continentPosture === 1) ? 1 : 0;
+
+  // Count wonders this city already has (local_8c in decompiled)
+  let wondersInCity = 0;
+  if (gameState.wonders) {
+    for (let w = 0; w < NUM_WONDERS; w++) {
+      const wd = gameState.wonders[w];
+      if (wd && wd.cityIndex === cityIndex && !wd.destroyed) wondersInCity++;
+    }
+  }
+
+  // Count wonders we own (local_18 in decompiled)
+  let wondersOwned = 0;
+  if (gameState.wonders) {
+    for (let w = 0; w < NUM_WONDERS; w++) {
+      if (hasWonderEffect(gameState, civSlot, w)) wondersOwned++;
+    }
+  }
+
+  // Strongest civ
+  let strongestCiv = 1;
+  if (aiData?.powerRanking) {
+    let maxPower = -1;
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot) continue;
+      if (!(civsAlive & (1 << c))) continue;
+      if ((aiData.powerRanking[c] || 0) > maxPower) {
+        maxPower = aiData.powerRanking[c] || 0;
+        strongestCiv = c;
+      }
+    }
+  }
+
+  // ── Base wonder score ──
+  // Decompiled: iVar5 = (local_18 + local_8c + 8) - treasury / 200
+  // where local_18 = wondersOwned, local_8c = wondersInCity
+  const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
+  let baseScore = (wondersOwned + wondersInCity + 8) - Math.floor(treasury / 200);
+  if (baseScore < 2) baseScore = 1;
+
+  // Era-based adjustment: wonder_era = wonderIndex / 7
+  const wonderEra = Math.floor(wonderIndex / 7);
+
+  // Per-continent era comparison
+  const continentId = cityCtx.continentId;
+  // Approximate: check if our era assessment exceeds average
+  // Decompiled: DAT_0064c6b7[civ*0x594 + era] = per-continent era count
+  // We use tech count as a proxy for era
+  const ourTechs = aiData?.techCount?.[civSlot] ?? 0;
+  let eraBonus = 0;
+  // Rough era thresholds: era 0 = 0-15 techs, era 1 = 15-35, era 2 = 35-55, era 3 = 55+
+  const ERA_THRESHOLDS = [0, 15, 35, 55];
+  const ourEra = ERA_THRESHOLDS.findIndex((t, i) =>
+    i === ERA_THRESHOLDS.length - 1 || ourTechs < ERA_THRESHOLDS[i + 1]);
+  // If our era >= wonder era, slight bonus
+  if (ourEra >= wonderEra) eraBonus = 0;
+  else eraBonus = wonderEra - ourEra; // penalty for building era-mismatched wonders
+
+  let rawScore = baseScore + eraBonus;
+
+  let coastalPref = 0;
+  if (continentPosture === 4) coastalPref = coastalFlag;
+
+  // ── Per-wonder switch (decompiled lines 5188-5412) ──
+  // Each case adjusts rawScore. Lower = better in decompiled.
   switch (wonderIndex) {
-    case 0: // Pyramids (free granary)
-      if (cityCtx.numCities >= 3) score += 4;
-      else score += 2;
+    case 0: // Pyramids (wonder 0x27)
+      // Score -= expansionism * 3 + 2
+      rawScore -= (expansionism * 3 + 2);
       break;
-    case 1: // Hanging Gardens (+1 happy each city, +2 in wonder city)
-      if (cityCtx.numCities >= 3) score += 5;
+
+    case 1: // Hanging Gardens (0x28)
+      // Score -= numCities / 3 + 1
+      rawScore -= (Math.floor(numCities / 3) + 1);
       break;
-    case 2: // Colossus (+1 trade per worked land tile in city)
-      score += 3;
+
+    case 2: // Colossus (0x29)
+      // Bonus if city has Palace, bonus if city has Marketplace
+      if (city.buildings && city.buildings.has(1)) rawScore--;
+      if (city.buildings && city.buildings.has(5)) rawScore--;
+      rawScore -= Math.floor(citySize / 3);
       break;
-    case 3: // Lighthouse (+1 move sea units, no Trireme loss)
-      if (cityCtx.isCoastal) score += 3;
-      else score -= 2;
+
+    case 3: // Lighthouse (0x2a)
+      // Decompiled: score -= (navalCount + seaAttack + 2) / 4
+      // Approximate: reduce based on naval unit count
+      {
+        let navalCount = 0;
+        for (const u of gameState.units) {
+          if (u.owner === civSlot && u.gx >= 0 && UNIT_DOMAIN[u.type] === 1) navalCount++;
+        }
+        rawScore -= Math.floor((navalCount + 2) / 4);
+      }
       break;
-    case 4: // Great Library (free techs when 2+ civs know them)
-      score += 5;
+
+    case 4: // Great Library (0x2b)
+      // Decompiled: iterate civs, check tech difference
+      // Score better when behind in tech
+      for (let c = 1; c < 8; c++) {
+        if (c === civSlot) continue;
+        if (!(civsAlive & (1 << c))) continue;
+        const theirTechs = aiData?.techCount?.[c] ?? 0;
+        if (theirTechs < ourTechs) {
+          if (isHuman) rawScore++;
+        } else {
+          rawScore--;
+          // Large tech gap: extra bonus
+          if (isHuman && ourTechs + 5 < theirTechs) rawScore -= 3;
+        }
+      }
       break;
-    case 5: // Oracle (doubles Temple effect)
-      score += 3;
+
+    case 5: // Oracle (0x2c)
+      // Score -= numCities/4 + 1 - numCities/3
+      rawScore -= (Math.floor(numCities / 4) + 1);
       break;
-    case 6: // Great Wall (free city walls)
-      if (strategy.threat === 'high' || strategy.threat === 'critical') score += 4;
-      else score += 2;
+
+    case 6: // Great Wall (0x2d)
+      // Score adjusted by personality: -= expansionism * -2
+      rawScore += expansionism * 2; // expansionism makes walls less desirable
       break;
-    case 7: // Sun Tzu (free barracks, veterans heal)
-      if (strategy.productionFocus === 'military') score += 5;
-      else score += 3;
+
+    case 7: // Sun Tzu's War Academy (0x2e)
+      // Score -= militarism*3 + civilized + expansionism*-2 + 1
+      rawScore -= (militarism * 3 + civilized + expansionism * -2 + 1);
       break;
-    case 8: // King Richard's Crusade
-      score += 2;
+
+    case 8: // King Richard's Crusade (0x2f)
+      // Score adjusted by alive civs count / 3
+      rawScore -= clamp(Math.floor((aliveCivCount * 2) / 3), 0, 3);
       break;
-    case 9: // Marco Polo's Embassy (see all cities)
-      score += 4;
+
+    case 9: // Marco Polo's Embassy (0x30)
+      // Score adjusted by treaty status with alive civs
+      for (let c = 1; c < 8; c++) {
+        if (c === civSlot) continue;
+        if (!(civsAlive & (1 << c))) continue;
+        // Contact/alliance reduces need
+        if (warTargets.includes(c)) rawScore--;
+        // Peace reduces need less
+      }
       break;
-    case 10: // Michelangelo's Chapel (cathedral effect +2)
-      score += 5;
+
+    case 10: // Michelangelo's Chapel (0x31)
+      // Score -= numCities / 4
+      rawScore -= Math.floor(numCities / 4);
       break;
-    case 11: // Copernicus' Observatory (double science in city)
-      if (strategy.productionFocus === 'science') score += 5;
-      else score += 3;
+
+    case 11: // Copernicus' Observatory (0x32)
+      // Score -= citySize / 5
+      // Palace bonus: subtract 1 if city has Palace
+      rawScore -= Math.floor(citySize / 5);
+      if (city.buildings && city.buildings.has(1)) rawScore--;
       break;
-    case 12: // Magellan's Expedition (+2 sea movement)
-      if (cityCtx.isCoastal) score += 3;
-      else score += 1;
+
+    case 12: // Magellan's Expedition (0x33)
+      // Score adjusted by air unit count
+      {
+        let airCount = 0;
+        for (const u of gameState.units) {
+          if (u.owner === civSlot && u.gx >= 0 && UNIT_DOMAIN[u.type] === 2) airCount++;
+        }
+        rawScore -= Math.floor((airCount + 3) / 4);
+      }
       break;
-    case 13: // Shakespeare's Theatre (all unhappy → content in city)
-      if (city.size >= 8) score += 5;
-      else score += 2;
+
+    case 13: // Shakespeare's Theatre (0x34)
+      // Score -= citySize / 6
+      rawScore -= Math.floor(citySize / 6);
+      if (city.buildings && city.buildings.has(1)) rawScore--;
       break;
-    case 14: // Leonardo's Workshop (free unit upgrades)
-      score += 5;
+
+    case 14: // Leonardo's Workshop (0x35)
+      // Score -= numCities >> 4 (small constant)
+      coastalPref = coastalFlag;
+      rawScore -= 4; // strong static bonus (lower = better)
       break;
-    case 15: // J.S. Bach's Cathedral (-2 unhappy all cities)
-      score += 5;
+
+    case 15: // J.S. Bach's Cathedral (0x36)
+      // Score adjusted by continent goals
+      rawScore -= Math.floor(numCities / 4);
+      if (city.buildings && city.buildings.has(1)) rawScore--;
       break;
-    case 16: // Newton's College (double science in city)
-      if (city.buildings && city.buildings.has(12)) score += 5; // Has University
-      else score += 3;
+
+    case 16: // Newton's College (0x37)
+      // Score -= citySize / 6
+      rawScore -= Math.floor(citySize / 6);
+      if (city.buildings && city.buildings.has(1)) rawScore--;
       break;
-    case 17: // Adam Smith's Trading Co. (free maintenance <=1)
-      if (cityCtx.numCities >= 4) score += 5;
-      else score += 2;
+
+    case 17: // Adam Smith's Trading Co (0x38)
+      // Score -= numCities / 4
+      rawScore -= Math.floor(numCities / 4);
       break;
-    case 18: // Darwin's Voyage (2 free techs)
-      score += 6; // Very high value
+
+    case 18: // Darwin's Voyage (0x39)
+      // Score -= 3 (very desirable)
+      rawScore -= 3;
       break;
-    case 19: // Statue of Liberty (instant government switch)
-      score += 4;
+
+    case 19: // Statue of Liberty (0x3a)
+      // Score based on tech 0x0f (Literacy=15) check
+      if (civTechs && civTechs.has(15)) rawScore -= 2;
+      else rawScore -= 1;
       break;
-    case 20: // Eiffel Tower
-      score += 2;
+
+    case 20: // Eiffel Tower (0x3b)
+      // Score adjusted by strongest civ + human check
+      if (isHuman) {
+        rawScore--;
+        if (govtIdx > 3) rawScore -= 2;
+      }
+      {
+        const strongestTechs = aiData?.techCount?.[strongestCiv] ?? 0;
+        if (strongestTechs > 7 + ourTechs) rawScore--;
+        if (aiData?.powerRank?.[civSlot] === 6) rawScore--;
+      }
       break;
-    case 21: // Women's Suffrage (no military unhappiness)
-      score += 5;
+
+    case 21: // Women's Suffrage (0x3c)
+      // Score based on personality: all positive → extra bonus
+      rawScore--;
+      if (civilized >= 0 && expansionism >= 0 && militarism >= 0) rawScore--;
+      // Spaceship bonus
+      if (gameState.civs?.[civSlot]?.spaceshipStructural > 0) rawScore--;
+      // High difficulty
+      if (govtIdx > 4) rawScore--;
+      if (govtIdx > 5) rawScore--;
       break;
-    case 22: // Hoover Dam (free hydro in all cities)
-      if (cityCtx.numCities >= 3) score += 5;
-      else score += 2;
+
+    case 22: // Hoover Dam (0x3d)
+      // Score based on continent city count
+      rawScore -= Math.floor((cityCtx.numCities || 0) / 20);
       break;
-    case 23: // Manhattan Project (enables nukes for all)
-      if (strategy.productionFocus === 'military') score += 3;
-      else score += 1;
+
+    case 23: // Manhattan Project (0x3e)
+      // Decompiled: complex spaceshipcheck + nuclear assessment
+      // Only build early in space race or when military aggressive
+      if (continentPosture !== 4) rawScore += 2; // penalty if not at war
+      // Nuclear check: have we researched Rocketry (76)?
+      if (!civTechs || !civTechs.has(76)) rawScore += 5; // big penalty
       break;
-    case 24: // United Nations
-      score += 3;
+
+    case 24: // United Nations (0x3f)
+      // Score -= expansionism + militarism*-2
+      rawScore -= (expansionism + militarism * -2);
+      if (aiData?.powerRank?.[civSlot] === 7) rawScore--;
       break;
-    case 25: // Apollo Program (reveals map, enables spaceship)
-      score += 5;
+
+    case 25: // Apollo Program (0x40)
+      // Score -= expansionism*3 + militarism*-2
+      rawScore -= (expansionism * 3 + militarism * -2);
       break;
-    case 26: // SETI Program (equivalent to Research Lab in all cities)
-      score += 5;
+
+    case 26: // SETI Program (0x41)
+      // Score -= expansionism*2 + 2
+      rawScore -= (expansionism * 2 + 2);
       break;
-    case 27: // Cure for Cancer (+1 happy all cities)
-      score += 5;
+
+    case 27: // Cure for Cancer (0x42)
+      // Score -= militarism + 2
+      rawScore -= (militarism + 2);
       break;
+
     default:
       break;
   }
 
-  // ── Normalize by cost ──
-  score = Math.floor(score * 30 / Math.max(1, cost));
+  // ── Obsolescence check ──
+  // Decompiled: local_9c = thunk_FUN_00453da0(wonderIndex) — is wonder already obsolete?
+  const obsAny = _isWonderObsoleteForAnyone(gameState, wonderIndex);
+  if (obsAny) {
+    rawScore = rawScore * 3 + aliveCivCount * 50;
+  }
 
-  // Wonders are prestigious — slight global bonus
-  score += 1;
+  // ── Wonder count penalty (decompiled: local_238 * 5) ──
+  // Cities already building wonders get a penalty
+  let otherWonderBuilders = 0;
+  for (const c of gameState.cities) {
+    if (!c || c.size <= 0 || c.owner !== civSlot) continue;
+    const item = c.itemInProduction;
+    if (item && item.type === 'wonder') otherWonderBuilders++;
+  }
+  rawScore += otherWonderBuilders * 5;
 
-  return Math.max(0, score);
+  // ── Someone else building penalty ──
+  if (someoneElseBuilding) rawScore += 10;
+
+  // ── Currently building this wonder: stickiness bonus ──
+  const thisItem = city.itemInProduction;
+  if (thisItem && thisItem.type === 'wonder' && thisItem.id === wonderBuildId) {
+    rawScore = Math.floor(rawScore / 2);
+  }
+
+  // ── Personality normalization ──
+  // Decompiled: score = ((coastalMatch ? 10 : 20) * score * 3) / (expansionism + 3)
+  const coastalMatch = (cityCtx.isCoastal ? 1 : 0) === coastalPref ? 1 : 0;
+  const coastMul = coastalMatch ? 10 : 20;
+  rawScore = Math.floor(coastMul * rawScore * 3 / (expansionism + 3));
+
+  // Barracks bonus
+  if (city.buildings && city.buildings.has(2)) {
+    rawScore += Math.floor(rawScore / ((threatLevel >> 1) + 3));
+  }
+  // Palace bonus: if city has Palace and wonder is Shakespeare's (13)
+  if (city.buildings && city.buildings.has(1)) {
+    rawScore = rawScore - Math.floor(rawScore / 3);
+  }
+
+  // Shield progress: bonus for continuing current wonder build
+  if (thisItem && thisItem.type === 'wonder' && thisItem.id === wonderBuildId) {
+    const shields = city.shieldsInBox || 0;
+    if (shields > 0) {
+      // The more shields invested, the more we want to keep building
+      rawScore = Math.floor(rawScore * (1 - shields / (WONDER_COSTS[wonderIndex] || 200)));
+    }
+  }
+
+  // Invert: decompiled uses lower=better, we use higher=better
+  // Wonder raw scores can range widely. Use 400 as ceiling.
+  return Math.max(0, 400 - clamp(rawScore, 0, 400));
+}
+
+/**
+ * Check if a wonder is obsolete for any alive civ.
+ * Equivalent to decompiled FUN_00453da0.
+ */
+function _isWonderObsoleteForAnyone(gameState, wonderIndex) {
+  const obsTech = WONDER_OBSOLETE[wonderIndex] ?? -1;
+  if (obsTech < 0) return false;
+  if (!gameState.civTechs) return false;
+  for (let c = 0; c < 8; c++) {
+    if (gameState.civTechs[c]?.has(obsTech)) return true;
+  }
+  return false;
 }
 
 // ── City context computation ──────────────────────────────────────
@@ -1491,6 +1956,15 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     if (c.buildings && c.buildings.has(17)) sdiCount++;
   }
 
+  // Per-unit-type count on this continent (for unit scoring)
+  const unitTypeCountOnCont = {};
+  for (const u of gameState.units) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    const ut = mapBase.tileData?.[u.gy * mapBase.mw + u.gx];
+    if ((ut?.bodyId ?? -2) !== continentId) continue;
+    unitTypeCountOnCont[u.type] = (unitTypeCountOnCont[u.type] || 0) + 1;
+  }
+
   return {
     nearbyEnemies,
     defenders,
@@ -1509,7 +1983,183 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     tradeRouteCount,
     continentId,
     sdiCount,
+    unitTypeCountOnCont,
   };
+}
+
+// ── Final production decision ─────────────────────────────────────
+
+/**
+ * Pick the best production item for a city from scored candidates.
+ *
+ * Ported from Civ2 FUN_00498e8b final decision logic (decompiled
+ * lines 6052-6109). Compares the best building score, best unit score,
+ * and best wonder score, applies personality modifiers and current
+ * production stickiness, and returns the final production choice.
+ *
+ * The decompiled code returns a single integer:
+ *   >= 0       → unit type ID
+ *   -1         → Palace (building 1)
+ *   -2         → Barracks (building 2)
+ *   ...
+ *   -38        → Capitalization (building 38)
+ *   -39..-66   → Wonder (negate and subtract 39 for wonder index)
+ *   99         → Capitalize (default/nothing useful)
+ *
+ * We return { type, id, score } compatible with CHANGE_PRODUCTION.
+ *
+ * @param {object} city - the city
+ * @param {number} cityIndex - index in gameState.cities
+ * @param {object} cityCtx - cached city context
+ * @param {object} civTechs - civ's tech set
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {number} civSlot
+ * @param {object} strategy
+ * @returns {{ item: {type, id}, score: number } | null}
+ */
+function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState, mapBase, civSlot, strategy) {
+  // ── Score ALL possible items ──
+  let bestUnit = null;
+  let bestUnitScore = -1;
+  let bestBuilding = null;
+  let bestBuildingScore = -1;
+  let bestWonder = null;
+  let bestWonderScore = -1;
+
+  // Score all unit types
+  for (let uid = 0; uid < NUM_UNIT_TYPES; uid++) {
+    const s = scoreUnit(uid, city, cityCtx, civTechs, gameState, mapBase, civSlot, strategy);
+    if (s > bestUnitScore) {
+      bestUnitScore = s;
+      bestUnit = { type: 'unit', id: uid };
+    }
+  }
+
+  // Score all building types
+  for (let bid = 1; bid < NUM_BUILDING_TYPES; bid++) {
+    const s = scoreBuilding(bid, city, cityIndex, cityCtx, civTechs, gameState, mapBase, civSlot, strategy);
+    if (s > bestBuildingScore) {
+      bestBuildingScore = s;
+      bestBuilding = { type: 'building', id: bid };
+    }
+  }
+
+  // Score all wonders
+  for (let wi = 0; wi < NUM_WONDERS; wi++) {
+    const s = scoreWonder(wi, city, cityIndex, cityCtx, civTechs, gameState, mapBase, civSlot, strategy);
+    if (s > bestWonderScore) {
+      bestWonderScore = s;
+      bestWonder = { type: 'wonder', id: wi + 39 };
+    }
+  }
+
+  // ── Leader personality influences ──
+  const leaderIdx = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
+  const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0, 0];
+  const expansionism = personality[0];
+  const militarism = personality[1];
+  const civilized = personality[2] ?? 0;
+
+  // ── Apply personality-based weighting ──
+  // Militarist leaders prefer units, civilized prefer buildings/wonders
+  // Decompiled: the final decision uses attribs flags and personality
+  // to bias toward one category or another
+
+  // Militarist bonus to unit scores
+  if (militarism > 0) bestUnitScore = Math.floor(bestUnitScore * 1.15);
+  if (militarism < 0) bestUnitScore = Math.floor(bestUnitScore * 0.9);
+
+  // Civilized bonus to building/wonder scores
+  if (civilized > 0) {
+    bestBuildingScore = Math.floor(bestBuildingScore * 1.1);
+    bestWonderScore = Math.floor(bestWonderScore * 1.15);
+  }
+  if (civilized < 0) {
+    bestBuildingScore = Math.floor(bestBuildingScore * 0.9);
+    bestWonderScore = Math.floor(bestWonderScore * 0.85);
+  }
+
+  // Expansionist bonus to settler scoring is already applied in scoreUnit
+
+  // ── Pick the overall best ──
+  let bestItem = null;
+  let bestScore = -1;
+
+  if (bestUnitScore > bestScore) {
+    bestScore = bestUnitScore;
+    bestItem = bestUnit;
+  }
+  if (bestBuildingScore > bestScore) {
+    bestScore = bestBuildingScore;
+    bestItem = bestBuilding;
+  }
+  if (bestWonderScore > bestScore) {
+    bestScore = bestWonderScore;
+    bestItem = bestWonder;
+  }
+
+  // ── Current production stickiness ──
+  // Ported from decompiled lines 6065-6108:
+  // If the city is already building a wonder and has significant shields
+  // invested, heavily bias toward continuing the wonder.
+  const currentItem = city.itemInProduction;
+  if (currentItem && currentItem.type === 'wonder') {
+    const invested = city.shieldsInBox || 0;
+    const totalCost = getProductionCost(currentItem);
+    if (invested > 0 && totalCost > 0 && totalCost !== Infinity) {
+      const progress = invested / totalCost;
+      // Decompiled: if current production is a wonder and shields > 75% of cost,
+      // continue building it unless the best alternative is overwhelmingly better
+      if (progress > 0.25) {
+        // Score the current wonder
+        const wi = currentItem.id - 39;
+        const currentWonderScore = scoreWonder(wi, city, cityIndex, cityCtx,
+          civTechs, gameState, mapBase, civSlot, strategy);
+        if (currentWonderScore > 0) {
+          // Boost current wonder score by progress fraction
+          const stickyScore = Math.floor(currentWonderScore * (1 + progress));
+          if (stickyScore >= bestScore) {
+            bestScore = stickyScore;
+            bestItem = currentItem;
+          }
+        }
+      }
+    }
+  }
+
+  // ── Emergency defense override ──
+  // Decompiled: if no defenders and enemies nearby, force a defensive unit
+  // regardless of other scoring (lines 6019-6026 approximate conditions)
+  if (cityCtx.defenders === 0 && cityCtx.nearbyEnemies.length > 0) {
+    const bestDefId = bestDefensiveUnit(civTechs);
+    if (bestDefId >= 0) {
+      const defScore = scoreUnit(bestDefId, city, cityCtx, civTechs,
+        gameState, mapBase, civSlot, strategy);
+      if (defScore > 0) {
+        // Override: emergency defense gets top priority
+        bestItem = { type: 'unit', id: bestDefId };
+        bestScore = Math.max(bestScore, defScore + 50); // guaranteed override
+      }
+    }
+  }
+
+  // ── Fallback: if nothing scored positively, build best available unit ──
+  // Decompiled: returns 99 (capitalize) when local_30 > 500
+  if (!bestItem || bestScore <= 0) {
+    // Try to find any buildable defensive unit
+    const fallbackId = bestDefensiveUnit(civTechs);
+    if (fallbackId >= 0) {
+      return { item: { type: 'unit', id: fallbackId }, score: 1 };
+    }
+    // Last resort: Warriors
+    if (canBuildUnit(civTechs, 2)) {
+      return { item: { type: 'unit', id: 2 }, score: 1 };
+    }
+    return null;
+  }
+
+  return { item: bestItem, score: bestScore };
 }
 
 // ── Production switch penalty evaluation ──────────────────────────
@@ -1605,39 +2255,13 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy,
     const cityCtx = buildCityContext(city, gameState, mapBase, civSlot, strat,
       ownCities.map(i => gameState.cities[i]));
 
-    // ── Score all possible items ──
-    let bestItem = null;
-    let bestScore = -1;
-
-    // Score all unit types
-    for (let uid = 0; uid < NUM_UNIT_TYPES; uid++) {
-      const s = scoreUnit(uid, city, cityCtx, civTechs, gameState, mapBase, civSlot, strat);
-      if (s > bestScore) {
-        bestScore = s;
-        bestItem = { type: 'unit', id: uid };
-      }
-    }
-
-    // Score all building types
-    for (let bid = 1; bid < NUM_BUILDING_TYPES; bid++) {
-      const s = scoreBuilding(bid, city, ci, cityCtx, civTechs, gameState, mapBase, civSlot, strat);
-      if (s > bestScore) {
-        bestScore = s;
-        bestItem = { type: 'building', id: bid };
-      }
-    }
-
-    // Score all wonders
-    for (let wi = 0; wi < NUM_WONDERS; wi++) {
-      const s = scoreWonder(wi, city, ci, cityCtx, civTechs, gameState, mapBase, civSlot, strat);
-      if (s > bestScore) {
-        bestScore = s;
-        bestItem = { type: 'wonder', id: wi + 39 };
-      }
-    }
+    // ── Use _finalProductionDecision to pick the best item ──
+    const decision = _finalProductionDecision(
+      city, ci, cityCtx, civTechs, gameState, mapBase, civSlot, strat);
 
     // Nothing scored positively — skip
-    if (!bestItem || bestScore <= 0) continue;
+    if (!decision) continue;
+    const { item: bestItem, score: bestScore } = decision;
 
     // ── Compare with current production ──
     const currentItem = city.itemInProduction;

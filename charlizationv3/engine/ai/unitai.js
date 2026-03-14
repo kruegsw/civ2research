@@ -14,6 +14,7 @@ import { validateAction } from '../rules.js';
 import {
   UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_ROLE, UNIT_NAMES,
   BUSY_ORDERS, TERRAIN_DEFENSE, TERRAIN_MOVE_COST, UNIT_NEGATES_WALLS,
+  UNIT_MOVE_POINTS, GOVT_INDEX,
 } from '../defs.js';
 
 // ── Constants ─────────────────────────────────────────────────────
@@ -1033,95 +1034,578 @@ function _scoredDirectionToward(unit, unitIndex, gameState, mapBase, spatialIdx,
 }
 
 /**
- * AI for Role 1 (Defend): defensive units.
+ * AI for Role 1 (Defend): defensive garrison units.
  *
- * Priority:
- * 1. If in an underdefended city, fortify
- * 2. If adjacent to enemy attacking our city, counterattack
- * 3. Move toward most underdefended city
- * 4. Fortify in nearest city
+ * Ported from Civ2 FUN_00538a29 role 1 logic (LAB_0053b8f0, lines 3257-3612).
+ *
+ * Garrison management:
+ * - Computes needed defenders per city from: citySize / divisor + 1
+ *   where divisor = 3 (threat nearby) or 4 (safe), ±1 for barracks/republic
+ * - With barracks: minimum garrison = 1, 2 if size>3, 3 if >7 mil units, 4 if >11
+ * - Excess defenders are released to reinforce underdefended cities
+ * - Deficit cities request production + attract free defenders
+ *
+ * Counterattack:
+ * - Defenders in cities attack adjacent enemies threatening our cities
+ * - Defenders outside cities with hatred-flagged enemies nearby advance to block
+ *
+ * Reinforcement routing:
+ * - Free defenders move toward the most underdefended city on the same continent
+ * - Prioritizes own cities, falls back to nearest city
+ *
+ * Fortification:
+ * - Defenders in adequately-garrisoned cities fortify for defense bonus
+ * - On fortress tiles without cities, fortify if safe
  */
-function aiDefender(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, cityDefense) {
+function aiDefender(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, strategy, cityDefense) {
   const domain = UNIT_DOMAIN[unit.type] ?? 0;
+  const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
 
-  // Check if we're in a city
-  const inCityIdx = gameState.cities.findIndex(c =>
-    c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+  // ── Damage level (ported from decompiled local_d8) ──
+  const maxHp = UNIT_HP[unit.type] || 1;
+  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  if (curHp * 4 < maxHp) damageLevel = 3;
+  else if (curHp * 2 < maxHp) damageLevel = 2;
 
-  if (inCityIdx >= 0) {
-    const defInfo = cityDefense.get(inCityIdx);
+  // ── Find own city at this tile (local_3c == 0 in decompiled) ──
+  const inCityIdx = _findOwnCityAtTile(gameState, unit.gx, unit.gy, civSlot);
+  const inCity = inCityIdx >= 0;
+  const ownCity = inCity ? gameState.cities[inCityIdx] : null;
 
-    // If this city needs defenders and we're here, fortify
-    if (defInfo && defInfo.defenderCount <= defInfo.neededDefenders) {
+  // ── Check for adjacent enemies (counterattack opportunity) ──
+  const adjacentEnemies = findAdjacentEnemies(gameState, mapBase, spatialIdx, unit, civSlot);
+  const enemiesNear = adjacentEnemies.length > 0;
+
+  // ── Counterattack logic: defend cities against adjacent threats ──
+  // Ported from FUN_00538a29 local_158 check + combat evaluation.
+  // If we're in or near a city, attack adjacent enemies threatening it.
+  if (enemiesNear && damageLevel < 3) {
+    const counterattackAction = _defenderCounterattack(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+      adjacentEnemies, inCityIdx, cityDefense
+    );
+    if (counterattackAction) return counterattackAction;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // IN CITY: Garrison management (ported from LAB_0053b8f0)
+  // ══════════════════════════════════════════════════════════════
+  if (inCity) {
+    // ── Count defend-role units at this city (FUN_005b53b6 equivalent) ──
+    const defenderCount = _countDefendersAtTile(gameState, spatialIdx, unit.gx, unit.gy, civSlot);
+
+    // ── Compute needed garrison (ported from lines 3260-3295) ──
+    const neededDefenders = _computeNeededGarrison(
+      ownCity, inCityIdx, gameState, mapBase, spatialIdx, civSlot, strategy
+    );
+
+    // ── If only 1 defender (us), always stay (lines 3297-3299) ──
+    if (defenderCount <= 1) {
       return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
     }
 
-    // If this city has excess defenders, check if another city needs us
-    const underdefended = findMostUnderdefendedCity(cityDefense);
-    if (underdefended && underdefended.deficit > 0) {
+    // ── Check if we are the "best" defender — the strongest stays ──
+    // Ported from FUN_0057e6e2: find the best defender in the stack.
+    // If this unit IS the best, it stays.
+    const bestDefender = _findBestDefenderInCity(gameState, spatialIdx, unit.gx, unit.gy, civSlot, mapBase);
+    if (bestDefender === unitIndex) {
+      // We are the best defender — stay and fortify
+      return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+    }
+
+    // ── Garrison has enough or excess defenders ──
+    if (defenderCount <= neededDefenders) {
+      // Not enough defenders yet — need more, request production
+      // We stay and fortify; production AI handles building more
+      return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+    }
+
+    // ── Excess defenders: release this unit ──
+    // Ported from lines 3310-3328: if defenders > needed, release excess.
+    // Check if releasing this unit would still leave enough defenders.
+    const afterRelease = _countDefendRoleUnitsExcluding(
+      gameState, spatialIdx, unit.gx, unit.gy, civSlot, unitIndex
+    );
+
+    if (afterRelease < neededDefenders) {
+      // Still needed, stay
+      return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+    }
+
+    // ── Find city that needs reinforcements ──
+    // Ported from the underdefended city search (lines 3419-3486 for role 4,
+    // and the general target city search for role 1).
+    const reinforceTarget = _findCityNeedingReinforcement(
+      gameState, mapBase, spatialIdx, civSlot, unit.gx, unit.gy, unitBodyId,
+      cityDefense, strategy
+    );
+
+    if (reinforceTarget) {
       const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
-        underdefended.city.gx, underdefended.city.gy, unit, civSlot);
+        reinforceTarget.gx, reinforceTarget.gy, unit, civSlot);
       if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
     }
 
-    // City is well-defended and no others need help — fortify here
+    // ── Periodic release: every 8th turn, wake up idle garrison defenders ──
+    // Ported from lines 3321-3326: (turn + unitIndex) & 7 == 0 check.
+    const turnNum = gameState.turn?.number || 0;
+    if (((turnNum + unitIndex) & 7) === 0 && afterRelease >= neededDefenders) {
+      // Try to explore or patrol if no city needs help
+      const exploreDir = _defenderExplore(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain);
+      if (exploreDir) return exploreDir;
+    }
+
+    // No city needs help — stay fortified
     return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
   }
 
-  // Not in a city
+  // ══════════════════════════════════════════════════════════════
+  // NOT IN CITY: Route to a city or defend a position
+  // ══════════════════════════════════════════════════════════════
 
-  // 1. If adjacent to enemy near one of our cities, counterattack
-  const adjacentEnemies = findAdjacentEnemies(gameState, mapBase, spatialIdx, unit, civSlot);
-  for (const enemy of adjacentEnemies) {
-    // Check if this enemy is near one of our cities
-    for (const [, info] of cityDefense) {
-      if (tileDist(enemy.gx, enemy.gy, info.city.gx, info.city.gy, mapBase) <= 4) {
-        if (domain === 0) {
-          const terrain = mapBase.getTerrain(enemy.gx, enemy.gy);
-          if (terrain === 10) continue;
-        }
-        const atkStr = attackStrength(unit);
-        if (atkStr >= enemy.defender.defStr * 0.6) {
-          return { type: 'MOVE_UNIT', unitIndex, dir: enemy.dir };
-        }
-      }
+  // ── Check if on a fortress tile (ported from local_bc fortress check) ──
+  const tileIdx = unit.gy * mapBase.mw + wrapX(unit.gx, mapBase);
+  const tile = mapBase.tileData[tileIdx];
+  const onFortress = tile && tile.improvements && tile.improvements.fortress;
+
+  // ── Heavily damaged: retreat to nearest city ──
+  if (damageLevel >= 3) {
+    const retreatCity = _findNearestOwnCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, unitBodyId);
+    if (retreatCity) {
+      const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
+        retreatCity.gx, retreatCity.gy, unit, civSlot);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
     }
+    // Can't retreat — fortify in place
+    return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
   }
 
-  // 2. Move toward most underdefended city
-  const underdefended = findMostUnderdefendedCity(cityDefense);
-  if (underdefended) {
+  // ── Enemy city proximity: block/capture hostile cities ──
+  // Ported from lines 3127-3212: if canMoveToCity flag set,
+  // check nearby enemy cities with hatred flag for blocking positions.
+  if (domain === 0 && damageLevel < 2) {
+    const blockAction = _defenderBlockEnemyCity(
+      unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, unitBodyId, strategy
+    );
+    if (blockAction) return blockAction;
+  }
+
+  // ── Find nearest city on same continent that needs defenders ──
+  // Ported from lines 3226-3248: find nearest own city on same bodyId
+  const reinforceTarget = _findCityNeedingReinforcement(
+    gameState, mapBase, spatialIdx, civSlot, unit.gx, unit.gy, unitBodyId,
+    cityDefense, strategy
+  );
+
+  if (reinforceTarget) {
     const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
-      underdefended.city.gx, underdefended.city.gy, unit, civSlot);
+      reinforceTarget.gx, reinforceTarget.gy, unit, civSlot);
     if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
   }
 
-  // 3. Move toward nearest own city and fortify there
-  const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
-  let nearestCity = null;
-  let nearestDist = Infinity;
-  for (const city of gameState.cities) {
-    if (!city || city.owner !== civSlot || city.size <= 0) continue;
-    // For land units, only consider cities on the same landmass
-    if (domain === 0 && unitBodyId > 0) {
-      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
-      if (cityBodyId > 0 && cityBodyId !== unitBodyId) continue;
-    }
-    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
-    if (dist < nearestDist) {
-      nearestDist = dist;
-      nearestCity = city;
-    }
-  }
+  // ── Move toward nearest own city on same continent ──
+  // Ported from lines 3229-3243: find closest city, prefer own, same continent.
+  const nearestCity = _findNearestOwnCityOnContinent(
+    gameState, mapBase, unit.gx, unit.gy, civSlot, domain, unitBodyId
+  );
 
   if (nearestCity) {
+    // If we're already adjacent or at the city, fortify
+    const cityDist = tileDist(unit.gx, unit.gy, nearestCity.gx, nearestCity.gy, mapBase);
+    if (cityDist <= 2) {
+      // Move into the city first
+      const dir = directionToward(mapBase, unit.gx, unit.gy, nearestCity.gx, nearestCity.gy, domain);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
     const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
       nearestCity.gx, nearestCity.gy, unit, civSlot);
     if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
   }
 
-  // 4. Fallback: fortify in place
+  // ── On fortress: fortify ──
+  if (onFortress) {
+    return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+  }
+
+  // ── Fallback: fortify in place ──
   return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+}
+
+// ── aiDefender helpers ──────────────────────────────────────────────
+
+/**
+ * Find our city at the given tile. Returns city index or -1.
+ */
+function _findOwnCityAtTile(gameState, gx, gy, civSlot) {
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    const c = gameState.cities[ci];
+    if (c && c.gx === gx && c.gy === gy && c.owner === civSlot && c.size > 0) return ci;
+  }
+  return -1;
+}
+
+/**
+ * Count defend-role land units at a tile owned by civSlot.
+ * Ported from FUN_005b53b6(unitIndex, 1) — counts role-1 units at the same tile.
+ */
+function _countDefendersAtTile(gameState, spatialIdx, gx, gy, civSlot) {
+  const entries = unitsAt(spatialIdx, gx, gy);
+  let count = 0;
+  for (const { unit } of entries) {
+    if (unit.owner !== civSlot || unit.gx < 0) continue;
+    const domain = UNIT_DOMAIN[unit.type] ?? 0;
+    if (domain !== 0) continue; // only land units
+    const role = UNIT_ROLE[unit.type] ?? 0;
+    if (role === 1) count++;
+  }
+  return count;
+}
+
+/**
+ * Count defend-role units at tile, excluding one specific unit.
+ */
+function _countDefendRoleUnitsExcluding(gameState, spatialIdx, gx, gy, civSlot, excludeIdx) {
+  const entries = unitsAt(spatialIdx, gx, gy);
+  let count = 0;
+  for (const { unit, index } of entries) {
+    if (index === excludeIdx) continue;
+    if (unit.owner !== civSlot || unit.gx < 0) continue;
+    const domain = UNIT_DOMAIN[unit.type] ?? 0;
+    if (domain !== 0) continue;
+    const role = UNIT_ROLE[unit.type] ?? 0;
+    if (role === 1) count++;
+  }
+  return count;
+}
+
+/**
+ * Compute needed garrison size for a city.
+ *
+ * Ported from FUN_00538a29 lines 3260-3295:
+ *   divisor = 3 if enemies nearby (FUN_005b4c63 != 0), else 4
+ *   barracks (building 1): divisor -= 1
+ *   republic/democracy govt (continent threat = 5): divisor += 1
+ *   neededDefenders = citySize / divisor + 1
+ *
+ *   With barracks: minimum garrison from military units:
+ *     1 normally, 2 if citySize > 3, 3 if civMilUnits > 7, 4 if > 11
+ *     neededDefenders = max(neededDefenders, barracksMinimum)
+ *
+ * @returns {number} needed defender count
+ */
+function _computeNeededGarrison(city, cityIndex, gameState, mapBase, spatialIdx, civSlot, strategy) {
+  if (!city || city.size <= 0) return 1;
+
+  // Check if enemies are near this city (FUN_005b4c63 equivalent)
+  const enemiesNearby = _anyEnemyNearCity(gameState, mapBase, city.gx, city.gy, civSlot);
+
+  // Base divisor: 3 if threatened, 4 if safe
+  let divisor = enemiesNearby ? 3 : 4;
+
+  // Barracks (building 1): -1 divisor (better garrison needed)
+  const hasBarracks = city.buildings ? city.buildings.has(1) : false;
+  if (hasBarracks) {
+    divisor -= 1;
+  }
+
+  // Government: republic (5) or democracy (6) increases divisor
+  // Ported from: if continent_threat == 5, divisor += 1
+  // In our model, check if government is republic-tier
+  const govtStr = gameState.civs?.[civSlot]?.government;
+  const govtIdx = typeof govtStr === 'number' ? govtStr : (GOVT_INDEX[govtStr] ?? 1);
+  if (govtIdx === 5 || govtIdx === 6) { // republic or democracy
+    divisor += 1;
+  }
+
+  // Ensure divisor is at least 1
+  if (divisor < 1) divisor = 1;
+
+  // Base needed: citySize / divisor + 1
+  let needed = Math.floor(city.size / divisor) + 1;
+
+  // With barracks: apply minimum garrison from military strength
+  // Ported from lines 3280-3294
+  if (hasBarracks) {
+    let barracksMin = 1;
+    if (city.size > 3) barracksMin = 2;
+
+    // Check civ's total military unit count from strategy.aiData
+    const totalMilUnits = strategy?.aiData?.unitCount?.[civSlot] ?? 0;
+    if (totalMilUnits > 7) barracksMin = 3;
+    if (totalMilUnits > 11) barracksMin = 4;
+
+    if (barracksMin > needed) needed = barracksMin;
+  }
+
+  return needed;
+}
+
+/**
+ * Check if any enemy combat units are within 2 tiles of a city.
+ * Simplified equivalent of FUN_005b4c63(x, y, civ).
+ */
+function _anyEnemyNearCity(gameState, mapBase, gx, gy, civSlot) {
+  for (const u of gameState.units) {
+    if (u.gx < 0 || u.owner === civSlot) continue;
+    if ((UNIT_ATK[u.type] || 0) <= 0) continue;
+    if (!isAtWar(gameState, civSlot, u.owner)) continue;
+    const dist = tileDist(gx, gy, u.gx, u.gy, mapBase);
+    if (dist <= 4) return true; // within 2 real tiles (doubled-coord distance 4)
+  }
+  return false;
+}
+
+/**
+ * Find the best (strongest) defend-role unit in a city tile.
+ * Returns the unitIndex of the strongest defender.
+ * Equivalent of FUN_0057e6e2 — picks the unit that should stay as garrison.
+ *
+ * The "best" defender is the one with the highest effective defense strength,
+ * considering veteran status, HP, and base defense.
+ */
+function _findBestDefenderInCity(gameState, spatialIdx, gx, gy, civSlot, mapBase) {
+  const entries = unitsAt(spatialIdx, gx, gy);
+  const terrain = mapBase.getTerrain(gx, gy);
+
+  // Check for city walls
+  const city = gameState.cities.find(c =>
+    c.gx === gx && c.gy === gy && c.owner === civSlot && c.size > 0);
+  const hasCityWalls = city ? (city.buildings?.has(3) || false) : false;
+
+  let bestIdx = -1;
+  let bestStr = -1;
+
+  for (const { unit: u, index } of entries) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    const uDomain = UNIT_DOMAIN[u.type] ?? 0;
+    if (uDomain !== 0) continue; // land only
+    const uRole = UNIT_ROLE[u.type] ?? 0;
+    if (uRole !== 1) continue; // defend role only
+
+    const isFortified = (u.orders === 'fortified');
+    const str = defenseStrength(u, terrain, isFortified, hasCityWalls, false);
+    if (str > bestStr) {
+      bestStr = str;
+      bestIdx = index;
+    }
+  }
+  return bestIdx;
+}
+
+/**
+ * Defender counterattack: if we're in or near a city, attack adjacent enemies
+ * threatening that city.
+ *
+ * Ported from FUN_00538a29 local_158 + combat evaluation at LAB_005414d7.
+ * Defenders only counterattack when:
+ * - The enemy is within 2 tiles of one of our cities
+ * - Our attack strength is at least 60% of their defense strength
+ * - We're not the last defender in the city (if in one)
+ */
+function _defenderCounterattack(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain,
+                                 adjacentEnemies, inCityIdx, cityDefense) {
+  // If we're the sole defender of a city, don't counterattack (stay put)
+  if (inCityIdx >= 0) {
+    const defCount = _countDefendersAtTile(
+      gameState, spatialIdx, unit.gx, unit.gy, civSlot
+    );
+    if (defCount <= 1) return null;
+  }
+
+  let bestTarget = null;
+  let bestScore = -Infinity;
+
+  for (const enemy of adjacentEnemies) {
+    // Domain check: land units can't attack into ocean
+    if (domain === 0) {
+      const terrain = mapBase.getTerrain(enemy.gx, enemy.gy);
+      if (terrain === 10) continue;
+    }
+
+    // Check if this enemy is near one of our cities (within 4 doubled-coord tiles)
+    let nearOwnCity = false;
+    for (const [, info] of cityDefense) {
+      if (tileDist(enemy.gx, enemy.gy, info.city.gx, info.city.gy, mapBase) <= 4) {
+        nearOwnCity = true;
+        break;
+      }
+    }
+    // Also count if we're in a city and enemy is adjacent (always defend our own city)
+    if (inCityIdx >= 0) nearOwnCity = true;
+
+    if (!nearOwnCity) continue;
+
+    // Evaluate combat odds
+    const atkStr = attackStrength(unit);
+    const defStr = enemy.defender.defStr;
+
+    // Only attack if our strength is at least 60% of theirs (ported threshold)
+    if (defStr > 0 && atkStr < defStr * 0.6) continue;
+
+    // Score: prefer weaker enemies and undefended tiles
+    const score = defStr > 0 ? atkStr / defStr : 999;
+    if (score > bestScore) {
+      bestScore = score;
+      bestTarget = enemy;
+    }
+  }
+
+  if (bestTarget) {
+    return { type: 'MOVE_UNIT', unitIndex, dir: bestTarget.dir };
+  }
+  return null;
+}
+
+/**
+ * Find a city that needs reinforcement, prioritizing:
+ * 1. Cities with the biggest deficit (needed - actual defenders)
+ * 2. Cities on the same continent
+ * 3. Closer cities (tie-breaking)
+ *
+ * Ported from the underdefended city search logic in FUN_00538a29
+ * (combination of lines 3419-3486 role 4 search and general routing).
+ */
+function _findCityNeedingReinforcement(gameState, mapBase, spatialIdx, civSlot, fromGx, fromGy,
+                                        unitBodyId, cityDefense, strategy) {
+  let bestCity = null;
+  let bestScore = -Infinity;
+
+  for (const [ci, info] of cityDefense) {
+    const city = info.city;
+    if (!city || city.size <= 0) continue;
+
+    // Same continent check for land units
+    if (unitBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      if (cityBodyId > 0 && cityBodyId !== unitBodyId) continue;
+    }
+
+    // Compute deficit: how many more defenders does this city need?
+    const actualDef = _countDefendersAtTile(gameState, spatialIdx, city.gx, city.gy, civSlot);
+    const neededDef = _computeNeededGarrison(
+      city, ci, gameState, mapBase, spatialIdx, civSlot, strategy
+    );
+    const deficit = neededDef - actualDef;
+
+    if (deficit <= 0) continue; // city is adequately defended
+
+    // Distance penalty
+    const dist = tileDist(fromGx, fromGy, city.gx, city.gy, mapBase);
+
+    // Score: deficit × 100 - distance (prefer bigger deficits, closer cities)
+    // Ported from decompiled priority logic: distance used as tie-breaker
+    let score = deficit * 100 - dist;
+
+    // Bonus if city is threatened by nearby enemies
+    if (_anyEnemyNearCity(gameState, mapBase, city.gx, city.gy, civSlot)) {
+      score += 200;
+    }
+
+    // Bonus for larger cities (ported from citySize scoring in decompiled)
+    score += city.size * 5;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestCity = city;
+    }
+  }
+
+  return bestCity;
+}
+
+/**
+ * Find nearest own city on same continent (for defenders heading home).
+ */
+function _findNearestOwnCityOnContinent(gameState, mapBase, gx, gy, civSlot, domain, bodyId) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0) continue;
+    if (domain === 0 && bodyId > 0) {
+      const cb = mapBase.getBodyId(city.gx, city.gy);
+      if (cb > 0 && cb !== bodyId) continue;
+    }
+    const d = tileDist(gx, gy, city.gx, city.gy, mapBase);
+    if (d < bestDist) {
+      bestDist = d;
+      best = city;
+    }
+  }
+  return best;
+}
+
+/**
+ * Defender exploration: when a defender has no city to go to,
+ * try moving toward an unexplored tile or doing a random move.
+ */
+function _defenderExplore(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain) {
+  // Try to move toward unexplored tiles
+  const unexplored = findNearestUnexplored(mapBase, unit.gx, unit.gy, civSlot, domain, 10);
+  if (unexplored) {
+    const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
+      unexplored.gx, unexplored.gy, unit, civSlot);
+    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+  }
+  return null;
+}
+
+/**
+ * Defender blocking enemy cities: when outside a city and not heavily damaged,
+ * check for nearby hostile enemy cities and position near them.
+ *
+ * Ported from lines 3127-3212 of FUN_00538a29:
+ * - Looks for enemy cities with hatred flag (treaty & 0x20)
+ * - If within movement range, evaluates surrounding tiles for defensive positioning
+ * - Picks tile with best defensive terrain that's closest to unit
+ */
+function _defenderBlockEnemyCity(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot,
+                                  unitBodyId, strategy) {
+  // Only if we're not already busy with goto orders
+  if (unit.orders && unit.orders !== 'none' && unit.orders !== 'fortified') return null;
+
+  const moveRange = (UNIT_MOVE_POINTS[unit.type] || 1) * 4; // approximate reach in doubled-coord
+
+  let bestTarget = null;
+  let bestScore = -Infinity;
+
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    const city = gameState.cities[ci];
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    if (city.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, city.owner)) continue;
+
+    // Same continent check
+    if (unitBodyId > 0) {
+      const cityBodyId = mapBase.getBodyId(city.gx, city.gy);
+      if (cityBodyId > 0 && cityBodyId !== unitBodyId) continue;
+    }
+
+    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+    if (dist > moveRange) continue;
+
+    // Score: prefer closer, larger enemy cities
+    const score = city.size * 10 - dist;
+    if (score > bestScore) {
+      bestScore = score;
+      bestTarget = city;
+    }
+  }
+
+  if (!bestTarget) return null;
+
+  // Move toward the enemy city but stop adjacent (don't enter)
+  const dist = tileDist(unit.gx, unit.gy, bestTarget.gx, bestTarget.gy, mapBase);
+  if (dist <= 2) {
+    // Already adjacent — fortify in place for defensive bonus
+    return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+  }
+
+  const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
+    bestTarget.gx, bestTarget.gy, unit, civSlot);
+  if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+
+  return null;
 }
 
 /**
@@ -1194,14 +1678,174 @@ function aiAirAttack(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
 
 /**
  * AI for Role 4 (Air defense): fighters.
- * TODO: Full air AI with interception and patrol.
  *
- * Simplified: stay in city for interception readiness.
+ * Ported from FUN_00538a29 role 4 logic (lines 3041-3115 + 3349-3612).
+ *
+ * Air defense stacking logic:
+ * - Counts air defense units (role 4) in current city
+ * - Determines max air units that should stack here (min(UNIT_CARRY_CAP, 3))
+ * - If city needs more air defense, stay and skip (ready for intercept)
+ * - If city has enough, find a city that needs air cover
+ * - Prioritizes cities with airbase/airport, then threatened frontline cities
+ * - Air units that can't find a useful position skip to conserve fuel
  */
 function aiAirDefense(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
-  // TODO: Implement fighter AI — rebase to threatened cities, intercept
-  // For now, skip to conserve fuel
+  // ── Check if in a city (air units must land in cities/airbases) ──
+  const inCityIdx = _findOwnCityAtTile(gameState, unit.gx, unit.gy, civSlot);
+  const inCity = inCityIdx >= 0;
+
+  if (inCity) {
+    // ── Count air defense units at this city ──
+    // Ported from lines 3349-3383: walk the unit stack, count role 4 + role 5 units
+    const airDefHere = _countAirDefenseAtTile(gameState, spatialIdx, unit.gx, unit.gy, civSlot);
+    const city = gameState.cities[inCityIdx];
+
+    // ── Determine max air defense units for this city ──
+    // Ported from lines 3410-3420: max = min(UNIT_CARRY_CAP equivalent, 3)
+    // If city is threatened (enemies on same continent), allow more
+    const enemiesNearby = _anyEnemyNearCity(gameState, mapBase, city.gx, city.gy, civSlot);
+    let maxAirDef = enemiesNearby ? 3 : 1;
+
+    // If city has no threats at all, only 1 interceptor needed
+    const bodyId = mapBase.getBodyId(city.gx, city.gy);
+    const continentThreat = _getContinentThreatLevel(gameState, mapBase, civSlot, bodyId);
+    if (continentThreat === 0) maxAirDef = 1;
+
+    if (airDefHere <= maxAirDef) {
+      // City needs this air defense unit — stay
+      return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+    }
+
+    // ── Excess air defense: find a city that needs air cover ──
+    // Ported from lines 3419-3486: search own cities for ones needing air defense
+    const targetCity = _findCityNeedingAirDefense(
+      gameState, mapBase, spatialIdx, civSlot, unit.gx, unit.gy, unitIndex
+    );
+
+    if (targetCity) {
+      // Rebase to that city
+      const rebaseAction = { type: 'REBASE', unitIndex, targetGx: targetCity.gx, targetGy: targetCity.gy };
+      const err = validateAction(gameState, mapBase, rebaseAction, civSlot);
+      if (!err) return rebaseAction;
+
+      // If rebase fails (out of range?), try moving toward it
+      const dir = directionToward(mapBase, unit.gx, unit.gy, targetCity.gx, targetCity.gy, 2);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
+
+    // No city needs us — stay here
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
+
+  // ── Not in a city: land at nearest own city (air units crash otherwise) ──
+  const nearestCity = _findNearestOwnCityOnContinent(
+    gameState, mapBase, unit.gx, unit.gy, civSlot, 2, -1
+  );
+  if (nearestCity) {
+    const rebaseAction = { type: 'REBASE', unitIndex, targetGx: nearestCity.gx, targetGy: nearestCity.gy };
+    const err = validateAction(gameState, mapBase, rebaseAction, civSlot);
+    if (!err) return rebaseAction;
+
+    const dir = directionToward(mapBase, unit.gx, unit.gy, nearestCity.gx, nearestCity.gy, 2);
+    if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+  }
+
   return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+}
+
+// ── aiAirDefense helpers ──────────────────────────────────────────
+
+/**
+ * Count air defense (role 4) units at a tile owned by civSlot.
+ */
+function _countAirDefenseAtTile(gameState, spatialIdx, gx, gy, civSlot) {
+  const entries = unitsAt(spatialIdx, gx, gy);
+  let count = 0;
+  for (const { unit } of entries) {
+    if (unit.owner !== civSlot || unit.gx < 0) continue;
+    const role = UNIT_ROLE[unit.type] ?? 0;
+    if (role === 4) count++;
+  }
+  return count;
+}
+
+/**
+ * Get continent threat level: 0 = no enemies, 1 = enemies present, 2 = under attack.
+ * Approximation of DAT_0064ca32 continent threat status.
+ */
+function _getContinentThreatLevel(gameState, mapBase, civSlot, bodyId) {
+  if (bodyId <= 0) return 0;
+  let hasEnemyCity = false;
+  let hasEnemyUnit = false;
+
+  for (const city of gameState.cities) {
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    if (city.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, city.owner)) continue;
+    const cb = mapBase.getBodyId(city.gx, city.gy);
+    if (cb === bodyId) { hasEnemyCity = true; break; }
+  }
+
+  if (!hasEnemyCity) {
+    for (const u of gameState.units) {
+      if (u.gx < 0 || u.owner === civSlot) continue;
+      if ((UNIT_ATK[u.type] || 0) <= 0) continue;
+      if (!isAtWar(gameState, civSlot, u.owner)) continue;
+      const ub = mapBase.getBodyId(u.gx, u.gy);
+      if (ub === bodyId) { hasEnemyUnit = true; break; }
+    }
+  }
+
+  if (hasEnemyCity) return 2;
+  if (hasEnemyUnit) return 1;
+  return 0;
+}
+
+/**
+ * Find a city that needs air defense cover.
+ * Ported from lines 3419-3486: iterate own cities, find ones with no/few air defenders.
+ * Prioritize:
+ * - Cities with airport (building 32) or airbase improvement
+ * - Threatened cities (enemies on continent)
+ * - Closer cities
+ */
+function _findCityNeedingAirDefense(gameState, mapBase, spatialIdx, civSlot, fromGx, fromGy, excludeUnit) {
+  let bestCity = null;
+  let bestScore = -Infinity;
+
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    const city = gameState.cities[ci];
+    if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+
+    // Count existing air defense at this city
+    const airDefHere = _countAirDefenseAtTile(gameState, spatialIdx, city.gx, city.gy, civSlot);
+    if (airDefHere >= 2) continue; // already has enough
+
+    const dist = tileDist(fromGx, fromGy, city.gx, city.gy, mapBase);
+    const bodyId = mapBase.getBodyId(city.gx, city.gy);
+    const threat = _getContinentThreatLevel(gameState, mapBase, civSlot, bodyId);
+
+    // Base score: threat level, minus air defense already there
+    let score = threat * 100 + city.size * 5 - airDefHere * 50 - dist;
+
+    // Bonus for cities with airport
+    if (city.buildings?.has(32)) score += 50;
+
+    // Bonus for frontier cities (enemies nearby)
+    if (_anyEnemyNearCity(gameState, mapBase, city.gx, city.gy, civSlot)) {
+      score += 150;
+    }
+
+    // Only go to cities that have NO air defense yet, or are threatened
+    if (airDefHere === 0 || threat > 0) {
+      if (score > bestScore) {
+        bestScore = score;
+        bestCity = city;
+      }
+    }
+  }
+
+  return bestCity;
 }
 
 /**
@@ -1640,7 +2284,7 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
           break;
 
         case 1: // Defend
-          action = aiDefender(unit, i, gameState, mapBase, spatialIdx, civSlot, cityDefense);
+          action = aiDefender(unit, i, gameState, mapBase, spatialIdx, civSlot, strategy, cityDefense);
           break;
 
         case 2: // Naval superiority

@@ -25,26 +25,12 @@ const MIN_CITY_SPACING = 6;
 /** Absolute minimum (rules enforcement). */
 const MIN_CITY_SPACING_ABSOLUTE = 3;
 
-/** Bonus for placing city in enemy territory (from Civ2 AI). */
+/**
+ * Bonus for neighbor tiles near an enemy city (from Civ2 AI FUN_005312e4).
+ * In the decompiled binary, each neighbor tile adjacent to a hostile city
+ * gets +12 to the candidate score — aggressive expansion into enemy territory.
+ */
 const ENEMY_TERRITORY_BONUS = 12;
-
-/** Bonus for coastal access. */
-const COASTAL_BONUS = 4;
-
-/** Bonus for river at city center. */
-const CENTER_RIVER_BONUS = 5;
-
-/** Penalty for harsh center terrain (desert, tundra, glacier). */
-const HARSH_CENTER_PENALTY = -5;
-
-/** Penalty for mountains at center (no food). */
-const MOUNTAIN_CENTER_PENALTY = -3;
-
-/** Bonus per special resource tile in city radius. */
-const SPECIAL_RESOURCE_BONUS = 3;
-
-/** Bonus per river tile in city radius. */
-const RIVER_TILE_BONUS = 2;
 
 /** Settler search radius for city sites. */
 const SITE_SEARCH_RADIUS = 10;
@@ -141,7 +127,7 @@ function getNextCityName(gameState, civSlot) {
   return `City ${gameState.cities.filter(c => c.owner === civSlot).length + 1}`;
 }
 
-// ── City site evaluation (ported from Civ2 settler AI) ────────────
+// ── City site evaluation (ported from Civ2 FUN_005312e4) ─────────
 
 /**
  * Compute the food/shield/trade yield of a tile, considering terrain,
@@ -226,15 +212,148 @@ function potentialTileYield(gx, gy, mapBase) {
   return [food, shields, trade];
 }
 
+// ── Private helpers for FUN_005312e4 port ─────────────────────────
+
+/**
+ * Check if a tile has an enemy city (owned by a different civ).
+ * Ported from FUN_005b8ca6 (get_city_owner_at): returns civ slot of
+ * the city owner if there's a city on the tile, or -1 if no city.
+ *
+ * @param {number} gx
+ * @param {number} gy
+ * @param {object} gameState
+ * @returns {number} owner civ slot, or -1 if no city
+ */
+function _getCityOwnerAt(gx, gy, gameState) {
+  for (const city of gameState.cities) {
+    if (city.size <= 0) continue;
+    if (city.gx === gx && city.gy === gy) return city.owner;
+  }
+  return -1;
+}
+
+/**
+ * Check if any alive units occupy the given tile.
+ * Ported from FUN_005b8d62 (get_unit_owner_at): returns owner if any
+ * unit is present, or -1 if empty.
+ *
+ * @param {number} gx
+ * @param {number} gy
+ * @param {object} gameState
+ * @returns {number} owner civ slot, or -1 if no units
+ */
+function _getUnitOwnerAt(gx, gy, gameState) {
+  for (const u of gameState.units) {
+    if (u.gx < 0) continue;
+    if (u.gx === gx && u.gy === gy) return u.owner;
+  }
+  return -1;
+}
+
+/**
+ * Get the effective owner of a tile (city radius ownership priority).
+ * Ported from FUN_005b8c42 (get_tile_effective_owner):
+ * - Returns cityRadiusOwner (1-7) if set
+ * - Falls back to tile fertility owner, clamped (1-8 → 8)
+ * - Returns 0 if unowned
+ *
+ * @param {number} gx
+ * @param {number} gy
+ * @param {object} mapBase
+ * @returns {number} owner (0 = unowned, 1-7 = civ, 8 = generic claimed)
+ */
+function _getTileEffectiveOwner(gx, gy, mapBase) {
+  const crOwner = mapBase.getCityRadiusOwner(gx, gy);
+  if (crOwner > 0) return crOwner;
+  // Fertility-based owner fallback
+  const fertOwner = mapBase.getTileFertility
+    ? mapBase.getTileFertility(gx, gy) : 0;
+  if (fertOwner > 0 && fertOwner < 9) return 8;
+  return fertOwner || 0;
+}
+
+/**
+ * Check if the AI should consider a civ hostile (for enemy territory bonus).
+ * Ported from FUN_00467af0 (should_declare_war):
+ * - True if at war (hatred flag / treaty bit 0x20)
+ * - True if only "contact" status and attitude > 49
+ * - False if allied (treaty bit 8)
+ *
+ * In our JS model this simplifies to checking war status.
+ *
+ * @param {object} gameState
+ * @param {number} civA - our civ
+ * @param {number} civB - target civ
+ * @returns {boolean}
+ */
+function _shouldConsiderHostile(gameState, civA, civB) {
+  if (civA === civB) return false;
+  return isAtWar(gameState, civA, civB);
+}
+
+/**
+ * Check if a civ is a "human" player for the purposes of the binary's
+ * ownership filter (DAT_00655b0b = human_civs_bitmask).
+ *
+ * In original Civ2 single-player, only 1 civ is human; AI settlers freely
+ * ignore AI-owned territory but respect human-owned territory if at
+ * ceasefire/peace. In our multiplayer model all non-barbarian civs may be
+ * human, so we treat every civ OTHER than ourselves as potentially human.
+ * Civ 0 (barbarians) is never human.
+ *
+ * @param {number} civId
+ * @param {number} ourCiv
+ * @returns {boolean}
+ */
+function _isHumanPlayer(civId, ourCiv) {
+  if (civId <= 0) return false;  // barbarians are never "human"
+  return civId !== ourCiv;       // any other civ is treated as human
+}
+
 /**
  * Evaluate how good a tile is for founding a city.
  * Higher score = better site.
  *
- * Ported from Civ2 settler site scoring logic:
- * - Scans the 21-tile city radius
- * - Scores food+shield+trade yields (potential with improvements)
- * - Bonuses for specials, rivers, coast, enemy territory
- * - Penalties for harsh terrain, proximity to own cities
+ * Faithfully ported from Civ2 decompiled FUN_005312e4 (ai_find_best_settle_dir).
+ * The original function evaluates 9 candidate tiles around a settler (8
+ * neighbors + center); this function scores a single candidate tile at
+ * (gx, gy), equivalent to one iteration of the outer loop.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * Part 1 — Binary-faithful core (FUN_005312e4 inner loop)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * For each of the 8 neighbor tiles around the candidate:
+ *
+ *   (a) Tile must be in bounds             [FUN_004087c0 != 0]
+ *   (b) Tile must be land (not ocean)      [FUN_005b89e4 == 0]
+ *   (c) Tile must have no units            [FUN_005b8d62 < 0]
+ *   (d) Ownership filter — tile passes if ANY of:
+ *       • effective_owner > 7              [FUN_005b8c42 > 7] (unowned/generic)
+ *       • owner is NOT a human player      [(1<<owner & DAT_00655b0b) == 0]
+ *       • no ceasefire/peace with owner    [(treaty[owner][us] & 6) == 0]
+ *   (e) +1 to score for each passing tile
+ *
+ *   (f) Enemy city bonus (+12) — applied when ALL of:
+ *       • neighbor has a city              [FUN_005b8ca6 >= 0]
+ *       • city owner != our civ
+ *       • neighbor has no units            [FUN_005b8d62 < 0] (re-checked)
+ *       • should_declare_war(us, owner)    [FUN_00467af0 != 0]
+ *       In the binary this bonus only triggers for the center candidate
+ *       (direction index == 8). Since we evaluate single tiles, we apply
+ *       it unconditionally.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * Part 2 — Augmented scoring (beyond binary)
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * The binary's FUN_005312e4 produces very coarse scores (0-8 + enemy
+ * bonuses). We layer additional heuristics on top:
+ *   - 21-tile BFC yield potential (food/shield/trade weighted)
+ *   - Coastal bonus (+4 if adjacent ocean)
+ *   - River/freshwater bonus (+5 if center has river)
+ *   - Continent preference (+3 if same landmass as existing cities)
+ *   - Distance penalty (reject sites too close to own/any cities)
  *
  * @param {number} gx - tile column
  * @param {number} gy - tile row
@@ -246,125 +365,130 @@ function potentialTileYield(gx, gy, mapBase) {
 function evaluateCitySite(gx, gy, gameState, mapBase, civSlot) {
   const terrain = mapBase.getTerrain(gx, gy);
 
-  // Can't build on ocean
+  // Can't build on ocean (outer loop: FUN_005b89e4 land check)
   if (terrain === 10) return -1;
 
-  // Check distance to existing cities
+  // ── Distance penalty (augmentation, not in binary) ──
+  // Minimum spacing enforcement — prevents AI city clumping
   for (const city of gameState.cities) {
     if (city.size <= 0) continue;
     const dist = tileDist(gx, gy, city.gx, city.gy, mapBase);
 
-    // Absolute minimum enforced by rules
+    // Absolute minimum enforced by game rules
     if (dist < MIN_CITY_SPACING_ABSOLUTE) return -1;
 
     // AI prefers wider spacing for own cities
     if (dist < MIN_CITY_SPACING && city.owner === civSlot) return -1;
   }
 
-  // Score the surrounding area (21-tile city radius)
+  // ═════════════════════════════════════════════════════════════
+  // Part 1: Binary-faithful 8-neighbor scan (FUN_005312e4 inner loop)
+  // ═════════════════════════════════════════════════════════════
   let score = 0;
-  let foodTiles = 0;
-  let shieldTiles = 0;
-  let hasCoast = false;
-  let specialCount = 0;
-  let riverCount = 0;
+  const neighbors = mapBase.getNeighbors(gx, gy);
 
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (!inBounds(nx, ny, mapBase)) continue;
+    const wnx = wrapX(nx, mapBase);
+
+    // (b) Neighbor must be land — FUN_005b89e4(x,y) == 0
+    const nTerrain = mapBase.getTerrain(wnx, ny);
+    if (nTerrain === 10) continue;
+
+    // (c) Neighbor must have no units — FUN_005b8d62(x,y) < 0
+    const unitOwner = _getUnitOwnerAt(wnx, ny, gameState);
+    if (unitOwner >= 0) continue;
+
+    // (d) Ownership filter — ported from:
+    //   iVar8 = FUN_005b8c42(x,y);   // get_tile_effective_owner
+    //   pass if: iVar8 > 7
+    //     OR (1 << iVar8 & human_civs_bitmask) == 0
+    //     OR (treaty[iVar8*4 + ourCiv*0x594] & 6) == 0
+    const effOwner = _getTileEffectiveOwner(wnx, ny, mapBase);
+
+    if (effOwner > 0 && effOwner <= 7 && effOwner !== civSlot) {
+      // Tile is owned by a specific civ (1-7) that isn't us.
+      // Binary condition: skip ONLY if owner is human AND we have
+      // ceasefire (bit 2) or peace (bit 4) with them.
+      // In multiplayer we treat all other civs as potentially human.
+      if (_isHumanPlayer(effOwner, civSlot)) {
+        const treaty = getTreaty(gameState, civSlot, effOwner);
+        // treaty & 6: ceasefire=2, peace=4. Skip if either is set.
+        if (treaty === 'ceasefire' || treaty === 'peace') continue;
+      }
+    }
+
+    // (e) +1 per valid usable neighbor
+    score += 1;
+
+    // (f) Enemy city bonus (+12) — FUN_005b8ca6 then FUN_00467af0
+    // Binary re-checks FUN_005b8d62 < 0 here (already passed above).
+    // Binary also gates this on direction == 8 (center candidate only);
+    // since we evaluate arbitrary tiles, we always apply it.
+    const cityOwner = _getCityOwnerAt(wnx, ny, gameState);
+    if (cityOwner >= 0 && cityOwner !== civSlot) {
+      if (_shouldConsiderHostile(gameState, civSlot, cityOwner)) {
+        score += ENEMY_TERRITORY_BONUS;
+      }
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // Part 2: Augmented scoring (beyond binary's coarse neighbor count)
+  // ═════════════════════════════════════════════════════════════
+
+  // ── 21-tile BFC yield potential ──
+  // Scan the full city radius to evaluate terrain quality.
+  // Weight: food (×3) > shields (×2) > trade (×1).
+  let yieldScore = 0;
+  let hasCoast = false;
   const parC = gy & 1;
+
   for (let ri = 0; ri < 21; ri++) {
     const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
     const parT = ((gy + ddy) % 2 + 2) % 2;
     const tgx = gx + ((parC + ddx - parT) >> 1);
     const tgy = gy + ddy;
-    const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+    const wgx = mapBase.wraps
+      ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
     if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
 
     const t = mapBase.getTerrain(wgx, tgy);
+    if (t === 10) { hasCoast = true; continue; }
 
-    // Check for coastal access
-    if (t === 10) {
-      hasCoast = true;
-      continue; // Don't score ocean tiles for a land city's yield
-    }
-
-    // Use potential yields (what we could get after improving)
     const [f, s, tr] = potentialTileYield(wgx, tgy, mapBase);
-
-    // Weight: food is most important early, shields next, trade least
-    score += f * 3 + s * 2 + tr * 1;
-
-    if (f > 0) foodTiles++;
-    if (s > 0) shieldTiles++;
-
-    // Bonus for special resources
-    const res = mapBase.getResource(wgx, tgy);
-    if (res > 0) {
-      score += SPECIAL_RESOURCE_BONUS;
-      specialCount++;
-    }
-
-    // Bonus for rivers
-    if (mapBase.hasRiver(wgx, tgy)) {
-      score += RIVER_TILE_BONUS;
-      riverCount++;
-    }
-
-    // Check for enemy territory — aggressive city placement bonus (from Civ2 AI)
-    // A tile is "enemy territory" if it's near an enemy city
-    for (const city of gameState.cities) {
-      if (city.size <= 0 || city.owner === civSlot) continue;
-      if (isAtWar(gameState, civSlot, city.owner)) {
-        const cityDist = tileDist(wgx, tgy, city.gx, city.gy, mapBase);
-        if (cityDist <= 4) {
-          score += ENEMY_TERRITORY_BONUS;
-          break; // Only count once per tile
-        }
-      }
-    }
+    yieldScore += f * 3 + s * 2 + tr;
   }
 
-  // Center tile yield
-  const [centerF, centerS, centerTr] = potentialTileYield(gx, gy, mapBase);
-  score += centerF * 2 + centerS * 1 + centerTr * 1;
+  // Scale yield so it's secondary to the binary's neighbor-count score.
+  // Max binary score: 8 neighbors + up to 96 (8×12 enemy bonus) = 104.
+  // Max yield for 20 land tiles ~200+. Divide by 10 → tiebreaker range ~20.
+  score += Math.floor(yieldScore / 10);
 
-  // Bonus for mix of food and shields (balanced cities are better)
-  if (foodTiles >= 5) score += 5;
-  if (foodTiles >= 8) score += 3;
-  if (shieldTiles >= 3) score += 3;
-  if (shieldTiles >= 6) score += 3;
+  // ── Coastal bonus ──
+  // Adjacent ocean tile → harbors, naval access
+  if (hasCoast) score += 4;
 
-  // (#14) Bonus for complementary resource clusters in city radius
-  // A city with BOTH food specials and shield specials is more balanced
-  // and can grow AND produce simultaneously — worth more than the sum of parts
-  if (specialCount >= 2) {
-    // Check if we have diverse resource types (food + production)
-    if (foodTiles >= 4 && shieldTiles >= 2) score += 4; // balanced food+production
-    if (specialCount >= 3) score += 3;  // resource-rich area
-    if (specialCount >= 5) score += 4;  // exceptional resource cluster
-  }
+  // ── River / freshwater bonus ──
+  // Center tile on river → unlimited irrigation potential
+  if (mapBase.hasRiver(gx, gy)) score += 5;
 
-  // Coastal bonus (enables harbor, fishing boats)
-  if (hasCoast) score += COASTAL_BONUS;
-
-  // River at center
-  if (mapBase.hasRiver(gx, gy)) score += CENTER_RIVER_BONUS;
-
-  // Penalty for harsh terrain at center
-  if (terrain === 0 || terrain === 6 || terrain === 7) score += HARSH_CENTER_PENALTY;
-
-  // Mountains at center penalty (no food production)
-  if (terrain === 5) score += MOUNTAIN_CENTER_PENALTY;
-
-  // Consider continent: prefer placing cities on continents with existing cities
-  // (crude heuristic: check if any own city is within 20 tiles)
-  let sameContinent = false;
+  // ── Continent preference ──
+  // Ported from the caller's bodyId-based continent logic
+  // (FUN_005b8a81 / get_tile_continent). Prefer tiles on the same
+  // landmass as existing own cities.
+  const candidateBody = mapBase.getBodyId(gx, gy);
+  let hasCityOnContinent = false;
   for (const city of gameState.cities) {
     if (city.owner !== civSlot || city.size <= 0) continue;
-    if (tileDist(gx, gy, city.gx, city.gy, mapBase) <= 20) {
-      sameContinent = true;
+    const cityBody = mapBase.getBodyId(city.gx, city.gy);
+    if (cityBody === candidateBody) {
+      hasCityOnContinent = true;
       break;
     }
   }
-  if (sameContinent) score += 3;
+  if (hasCityOnContinent) score += 3;
 
   return score;
 }
