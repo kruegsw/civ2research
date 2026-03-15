@@ -13,6 +13,7 @@ import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_B
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch } from './research.js';
 import { resolveDirection, moveCost } from './movement.js';
+import { findPath } from './pathfinding.js';
 import { updateVisibility } from './visibility.js';
 import { calcFoodSurplus, foodToGrow, calcShieldProduction, getProductionCost, calcCityTrade, getTileYields } from './production.js';
 import { calcHappiness, calcRushBuyCost } from './happiness.js';
@@ -2149,37 +2150,21 @@ export function applyAction(prev, mapBase, action, civSlot) {
           if (u.gx === gtTargetGx && u.gy === gtTargetGy) {
             state.units[ui] = { ...u, orders: 'none', goToX: undefined, goToY: undefined };
           } else {
-            // Execute steps toward target using resolveDirection
-            // Simple greedy approach: pick best adjacent direction toward target
+            // Use A* pathfinding to compute optimal path each step
             let gtCurUnit = { ...u };
             let gtMoved = false;
             while (gtCurUnit.movesLeft > 0 && gtCurUnit.gx >= 0) {
-              // Find best direction toward target
-              let gtBestDir = null;
-              let gtBestDist = Infinity;
-              const gtDirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-              for (const gtD of gtDirs) {
-                const gtDest = resolveDirection(gtCurUnit.gx, gtCurUnit.gy, gtD, mapBase);
-                if (!gtDest) continue;
-                const gtTerrain = mapBase.getTerrain(gtDest.gx, gtDest.gy);
-                const gtDomain = UNIT_DOMAIN[gtCurUnit.type] ?? 0;
-                if (gtDomain === 0 && gtTerrain === 10) continue;
-                if (gtDomain === 1 && gtTerrain !== 10) continue;
-                // Check for enemies
-                const gtHasEnemy = state.units.some(eu => eu.gx === gtDest.gx && eu.gy === gtDest.gy && eu.owner !== activeCiv && eu.gx >= 0 && (UNIT_ATK[eu.type] || 0) > 0);
-                if (gtHasEnemy) continue;
-                let gtDx = Math.abs(gtDest.gx - gtTargetGx);
-                if (mapBase.wraps) gtDx = Math.min(gtDx, mapBase.mw - gtDx);
-                const gtDy = Math.abs(gtDest.gy - gtTargetGy);
-                const gtDist = gtDx + gtDy;
-                if (gtDist < gtBestDist) { gtBestDist = gtDist; gtBestDir = gtD; }
-              }
-              if (!gtBestDir) break;
-              const gtNextDest = resolveDirection(gtCurUnit.gx, gtCurUnit.gy, gtBestDir, mapBase);
+              // Re-compute path from current position (handles dynamic obstacles)
+              const gtPath = findPath(gtCurUnit.type, gtCurUnit.gx, gtCurUnit.gy, gtTargetGx, gtTargetGy, mapBase, gtCurUnit.owner, state.units, state.cities);
+              if (!gtPath || gtPath.length === 0) break; // no path or already there
+
+              // Take only the first step of the computed path
+              const gtDir = gtPath[0];
+              const gtNextDest = resolveDirection(gtCurUnit.gx, gtCurUnit.gy, gtDir, mapBase);
               if (!gtNextDest) break;
-              const gtMoveCost = moveCost(gtCurUnit.type, mapBase, gtCurUnit.gx, gtCurUnit.gy, gtNextDest.gx, gtNextDest.gy);
-              if (gtMoveCost < 0) break;
-              const gtActual = Math.max(gtMoveCost, 1);
+              const gtMoveCostVal = moveCost(gtCurUnit.type, mapBase, gtCurUnit.gx, gtCurUnit.gy, gtNextDest.gx, gtNextDest.gy);
+              if (gtMoveCostVal < 0) break;
+              const gtActual = Math.max(gtMoveCostVal, 1);
               gtCurUnit = {
                 ...gtCurUnit,
                 gx: gtNextDest.gx, gy: gtNextDest.gy,
@@ -2569,6 +2554,29 @@ function checkCivElimination(state, civSlot) {
     state.civsAlive &= ~(1 << civSlot);
     if (!state.turnEvents) state.turnEvents = [];
     state.turnEvents.push({ type: 'civEliminated', civSlot });
+    // Check if only one non-barbarian civ remains → game over
+    checkGameOver(state);
+  }
+}
+
+/**
+ * Check if the game is over: only one non-barbarian civ (bits 1-7) remains alive.
+ * Sets state.gameOver = { winner: lastAliveCiv } if so.
+ */
+function checkGameOver(state) {
+  if (state.gameOver) return; // already set
+  let aliveCount = 0;
+  let lastAlive = -1;
+  for (let c = 1; c <= 7; c++) {
+    if (state.civsAlive & (1 << c)) {
+      aliveCount++;
+      lastAlive = c;
+    }
+  }
+  if (aliveCount === 1 && lastAlive > 0) {
+    state.gameOver = { winner: lastAlive };
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({ type: 'gameOver', winner: lastAlive });
   }
 }
 

@@ -20,15 +20,24 @@ const VALID_SPECIALIST_TYPES = new Set(['entertainer', 'taxman', 'scientist']);
 
 /**
  * Check if a tile is too close to an existing city.
- * In Civ2, no city can be built if its center falls within another
- * city's 21-tile radius (i.e. cities must be spaced at least 3 apart).
+ * Per decompiled FUN_0058be56, Civ2 only checks the 8 immediately
+ * adjacent tiles (the inner ring). Cities can be built 2 tiles apart.
+ * Also rejects building directly on an existing city tile.
  */
 function isTooCloseToCity(gx, gy, cities, mapBase) {
   const mw2 = mapBase.mw * 2;
   const dx = gx * 2 + (gy % 2);
+  // CITY_RADIUS_DOUBLED[0..7] = 8 adjacent tiles, [20] = center (same tile)
+  const ADJACENT = CITY_RADIUS_DOUBLED.slice(0, 8);
   for (const city of cities) {
+    if (city.size <= 0) continue; // skip destroyed cities
     const cdx = city.gx * 2 + (city.gy % 2);
-    for (const [odx, ody] of CITY_RADIUS_DOUBLED) {
+    // Check same tile
+    let sdx = cdx;
+    if (mapBase.wraps) { sdx = ((sdx % mw2) + mw2) % mw2; }
+    if (sdx === dx && city.gy === gy) return true;
+    // Check 8 adjacent tiles
+    for (const [odx, ody] of ADJACENT) {
       let ndx = cdx + odx;
       const ndy = city.gy + ody;
       if (mapBase.wraps) { ndx = ((ndx % mw2) + mw2) % mw2; }

@@ -1864,8 +1864,9 @@ function _findOwnCityAtTile(gameState, gx, gy, civSlot) {
 }
 
 /**
- * Count defend-role land units at a tile owned by civSlot.
- * Ported from FUN_005b53b6(unitIndex, 1) — counts role-1 units at the same tile.
+ * Count land combat units at a tile that can serve as defenders.
+ * Counts any land unit with DEF > 0 (not just role-1 units), since in real
+ * Civ2 the AI counts any unit with defense as a potential garrison.
  */
 function _countDefendersAtTile(gameState, spatialIdx, gx, gy, civSlot) {
   const entries = unitsAt(spatialIdx, gx, gy);
@@ -1874,14 +1875,14 @@ function _countDefendersAtTile(gameState, spatialIdx, gx, gy, civSlot) {
     if (unit.owner !== civSlot || unit.gx < 0) continue;
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
     if (domain !== 0) continue; // only land units
-    const role = UNIT_ROLE[unit.type] ?? 0;
-    if (role === 1) count++;
+    if ((UNIT_DEF[unit.type] || 0) > 0) count++;
   }
   return count;
 }
 
 /**
- * Count defend-role units at tile, excluding one specific unit.
+ * Count land combat units at tile that can serve as defenders, excluding one
+ * specific unit. Matches _countDefendersAtTile logic (any land unit with DEF > 0).
  */
 function _countDefendRoleUnitsExcluding(gameState, spatialIdx, gx, gy, civSlot, excludeIdx) {
   const entries = unitsAt(spatialIdx, gx, gy);
@@ -1891,8 +1892,7 @@ function _countDefendRoleUnitsExcluding(gameState, spatialIdx, gx, gy, civSlot, 
     if (unit.owner !== civSlot || unit.gx < 0) continue;
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
     if (domain !== 0) continue;
-    const role = UNIT_ROLE[unit.type] ?? 0;
-    if (role === 1) count++;
+    if ((UNIT_DEF[unit.type] || 0) > 0) count++;
   }
   return count;
 }
@@ -4188,11 +4188,25 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
     // Skip settlers/engineers — handled by cityai
     if (unit.type === 0 || unit.type === 1) continue;
 
-    const role = UNIT_ROLE[unit.type] ?? 0;
+    let role = UNIT_ROLE[unit.type] ?? 0;
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
 
     // Skip role 6 (settle) — handled by cityai
     if (role === 6) continue;
+
+    // Fix 6A: Temporary garrison override — if an attack-role land unit is
+    // inside its own city and the city has no other defenders, treat it as a
+    // defender so it garrisons until a real defender is built.
+    if (role === 0 && domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
+      const inCityIdx = _findOwnCityAtTile(gameState, unit.gx, unit.gy, civSlot);
+      if (inCityIdx >= 0) {
+        const otherDefenders = _countDefendRoleUnitsExcluding(
+          gameState, spatialIdx, unit.gx, unit.gy, civSlot, i);
+        if (otherDefenders === 0) {
+          role = 1; // override to defend role for this dispatch
+        }
+      }
+    }
 
     let action = null;
 

@@ -52,6 +52,7 @@ import { filterStateForCiv, computeLOS } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
 import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES, DIFFICULTY_KEYS, BUSY_ORDERS } from "../engine/defs.js";
 import { runAiTurn } from "../engine/ai/index.js";
+import { generateDiplomacyActions } from "../engine/ai/diplomai.js";
 
 const PORT = Number(process.env.PORT || 8788);
 const DEBUG = process.env.DEBUG === "1";
@@ -711,6 +712,9 @@ wss.on("connection", (ws) => {
         // Emit structured GAME_LOG messages for combat, turn events, tech, etc.
         emitGameLogs(actionRoomId, room);
 
+        // ── Immediate AI responses to first contact and tribute demands ──
+        processImmediateAiDiplomacy(actionRoomId, room, msg.action);
+
         // ── AI turn loop: auto-process consecutive AI civs after END_TURN ──
         if (msg.action.type === 'END_TURN') {
           processAiTurns(actionRoomId, room);
@@ -841,6 +845,67 @@ function roomHasDebugClient(room) {
     if (ci && ci.debugEnabled) return true;
   }
   return false;
+}
+
+// -----------------------------------------------------------------------------
+// Immediate AI diplomacy responses (first contact + tribute demands)
+// -----------------------------------------------------------------------------
+
+/**
+ * After applying any player action, check if it triggered first contact with
+ * an AI civ or was a DEMAND_TRIBUTE targeting an AI civ. If so, immediately
+ * run that AI civ's diplomacy phase and apply resulting actions so the human
+ * gets an instant response without waiting for the AI's next turn.
+ */
+function processImmediateAiDiplomacy(roomId, room, action) {
+  const humanPlayers = room.gameState.humanPlayers || 0;
+
+  // ── Fix #7: First contact — trigger immediate AI diplomatic response ──
+  if (room.gameState.turnEvents) {
+    const firstContacts = room.gameState.turnEvents.filter(e => e.type === 'firstContact');
+    for (const fc of firstContacts) {
+      // Determine which of civA/civB is the AI
+      const aiCivs = [];
+      if (!(humanPlayers & (1 << fc.civA)) && (room.gameState.civsAlive & (1 << fc.civA))) aiCivs.push(fc.civA);
+      if (!(humanPlayers & (1 << fc.civB)) && (room.gameState.civsAlive & (1 << fc.civB))) aiCivs.push(fc.civB);
+
+      for (const aiCiv of aiCivs) {
+        const diploActions = generateDiplomacyActions(room.gameState, room.mapBase, aiCiv);
+        for (const da of diploActions) {
+          const result = applyAction(room.gameState, room.mapBase, da, aiCiv);
+          if (result !== room.gameState) {
+            room.gameState = result;
+            emitGameLogs(roomId, room);
+            clearOneshotNotifications(room);
+          }
+        }
+        if (diploActions.length > 0) {
+          console.log(`[ai] Room ${roomId}: first contact — AI civ ${aiCiv} responded with ${diploActions.length} diplomacy actions`);
+        }
+      }
+    }
+  }
+
+  // ── Fix #8: Tribute demand — immediate AI response ──
+  if (action.type === 'DEMAND_TRIBUTE') {
+    const targetCiv = action.targetCiv;
+    if (targetCiv != null && !(humanPlayers & (1 << targetCiv)) && (room.gameState.civsAlive & (1 << targetCiv))) {
+      // Target is an AI civ — run its diplomacy to get RESPOND_DEMAND actions
+      const diploActions = generateDiplomacyActions(room.gameState, room.mapBase, targetCiv);
+      const responses = diploActions.filter(a => a.type === 'RESPOND_DEMAND');
+      for (const ra of responses) {
+        const result = applyAction(room.gameState, room.mapBase, ra, targetCiv);
+        if (result !== room.gameState) {
+          room.gameState = result;
+          emitGameLogs(roomId, room);
+          clearOneshotNotifications(room);
+        }
+      }
+      if (responses.length > 0) {
+        console.log(`[ai] Room ${roomId}: tribute demand — AI civ ${targetCiv} responded with ${responses.length} actions`);
+      }
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -1383,6 +1448,7 @@ function buildStatePayload(room, civSlot) {
     treaties: gs.treaties,
     treatyProposals: gs.treatyProposals,
     tributeDemands: gs.tributeDemands,
+    gameOver: gs.gameOver || null,
   };
 }
 

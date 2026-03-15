@@ -5,8 +5,8 @@
 // (N, NE, E, SE, S, SW, W, NW) from start to goal.
 // ═══════════════════════════════════════════════════════════════════
 
-import { UNIT_DOMAIN, MOVEMENT_MULTIPLIER } from './defs.js';
-import { moveCost, resolveDirection } from './movement.js';
+import { UNIT_DOMAIN, UNIT_ATK, MOVEMENT_MULTIPLIER } from './defs.js';
+import { moveCost, resolveDirection, isZOCBlocked } from './movement.js';
 
 const DIR_NAMES = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
@@ -120,6 +120,22 @@ export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities
       const terrain = mapBase.getTerrain(nx, ny);
       if (domain === 0 && terrain === 10) continue; // land can't enter ocean (simplified)
       if (domain === 1 && terrain !== 10) continue; // sea can't enter land
+
+      // Enemy combat unit check: skip tiles with enemy units that have ATK > 0
+      if (units) {
+        let hasEnemyCombat = false;
+        for (const eu of units) {
+          if (eu.gx === nx && eu.gy === ny && eu.owner !== owner && eu.gx >= 0
+              && (UNIT_ATK[eu.type] || 0) > 0) {
+            hasEnemyCombat = true;
+            break;
+          }
+        }
+        if (hasEnemyCombat) continue;
+      }
+
+      // ZOC blocking check
+      if (units && isZOCBlocked(unitType, owner, cur.x, cur.y, nx, ny, mapBase, units)) continue;
 
       // Movement cost
       const cost = moveCost(unitType, mapBase, cur.x, cur.y, nx, ny);

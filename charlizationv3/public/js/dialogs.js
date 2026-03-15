@@ -11,12 +11,16 @@ import { sfx, getDeathSfx } from './sound.js';
 import {
   UNIT_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES,
   ORDER_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN, CIV_CITY_NAMES,
-  GOVERNMENT_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE,
+  GOVERNMENT_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, CIV_COLORS,
 } from '../engine/defs.js';
 import { getGameYear } from '../engine/year.js';
 import {
   UNIT_ORDER, BUILD_CITY, CHANGE_RATES,
 } from '../engine/actions.js';
+
+// ── Preloaded images ──
+const _cityFoundedImg = new Image();
+_cityFoundedImg.src = 'assets/menu/city-founded.gif';
 
 // ── Late-bound dependencies ──
 const _deps = {};
@@ -324,9 +328,9 @@ export function showCityFoundedDialog(cityName, year, onDismiss) {
     const content = document.createElement('div');
     content.style.cssText = 'display:flex;align-items:center;gap:16px;padding:12px 20px';
 
-    // Artwork on the left
+    // Artwork on the left (uses preloaded image)
     const img = document.createElement('img');
-    img.src = 'assets/menu/city-founded.gif';
+    img.src = _cityFoundedImg.src;
     img.alt = 'City Founded';
     img.style.cssText = 'width:200px;height:auto;border:2px inset #a08060;flex-shrink:0';
     content.appendChild(img);
@@ -819,4 +823,41 @@ export function showRateSliders() {
       });
     }},
   ]);
+}
+
+// ── Game Over dialog ──
+
+/**
+ * Show a victory/defeat dialog when the game ends.
+ * @param {number} winnerCivSlot - civ slot (1-7) of the winner
+ * @param {object} gameState - current game state (for civ names)
+ */
+export function showGameOverDialog(winnerCivSlot, gameState) {
+  const winnerName = gameState.civNames?.[winnerCivSlot] || `Civ ${winnerCivSlot}`;
+  const isWinner = winnerCivSlot === S.mpCivSlot;
+  const title = isWinner ? 'Victory!' : 'Defeat';
+  const color = CIV_COLORS[winnerCivSlot] || '#fff';
+
+  sfx(isWinner ? 'FANFARE1' : 'FUNERAL');
+
+  createCiv2Dialog('game-over-dialog', title, panel => {
+    const content = document.createElement('div');
+    content.style.cssText = 'text-align:center;padding:16px 24px';
+
+    const headline = document.createElement('div');
+    headline.style.cssText = `font:bold 22px "Times New Roman",Georgia,serif;color:${color};text-shadow:1px 1px 2px rgba(0,0,0,0.5);margin-bottom:10px`;
+    headline.textContent = isWinner
+      ? 'Your civilization stands triumphant!'
+      : `The ${winnerName} have conquered the world!`;
+    content.appendChild(headline);
+
+    const detail = document.createElement('div');
+    detail.style.cssText = 'font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+    detail.textContent = isWinner
+      ? 'All rival civilizations have been vanquished. You are the supreme ruler!'
+      : 'Your civilization has fallen. The world belongs to another.';
+    content.appendChild(detail);
+
+    panel.appendChild(content);
+  }, [{ label: 'OK' }]);
 }

@@ -40,7 +40,7 @@ import { CIV_COLORS, UNIT_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN, ORDER_NAMES } from
 import { getGameYearFromMap } from '../engine/year.js';
 import { NUMPAD_DIR } from '../engine/movement.js';
 import { getValidActions, validateAction } from '../engine/rules.js';
-import { UNIT_ORDER, WORKER_ORDER, PILLAGE, GOTO, BOMBARD } from '../engine/actions.js';
+import { UNIT_ORDER, WORKER_ORDER, PILLAGE, GOTO, BOMBARD, BUILD_CITY } from '../engine/actions.js';
 import { findPath } from '../engine/pathfinding.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -921,7 +921,11 @@ window.addEventListener('keydown', e => {
     e.preventDefault();
     if (S.mpSelectedUnit != null) {
       const u = S.mpGameState.units[S.mpSelectedUnit];
-      if (u && u.type === 0) showNameCityDialog(S.mpSelectedUnit);
+      if (u && u.type === 0) {
+        const err = validateAction(S.mpGameState, S.mpMapBase, { type: BUILD_CITY, unitIndex: S.mpSelectedUnit }, S.mpCivSlot);
+        if (err) return;
+        showNameCityDialog(S.mpSelectedUnit);
+      }
     }
     return;
   }

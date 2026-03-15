@@ -2308,9 +2308,9 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
   }
 
   // ── Emergency defense override ──
-  // Decompiled: if no defenders and enemies nearby, force a defensive unit
-  // regardless of other scoring (lines 6019-6026 approximate conditions)
-  if (cityCtx.defenders === 0 && cityCtx.nearbyEnemies.length > 0) {
+  // A city with 0 defenders should always prioritize building a defensive unit,
+  // regardless of whether enemies are nearby (lines 6019-6026 approximate conditions)
+  if (cityCtx.defenders === 0) {
     const bestDefId = bestDefensiveUnit(civTechs);
     if (bestDefId >= 0) {
       const defScore = scoreUnit(bestDefId, city, cityCtx, civTechs,

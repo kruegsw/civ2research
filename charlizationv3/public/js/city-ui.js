@@ -471,6 +471,9 @@ function showProductionPicker(city, cityIndex, onDismiss) {
     { label: 'Cancel', action: onDismiss || undefined },
   ]);
 
+  // Auto-highlight first row so Enter works immediately
+  if (rows.length > 0) ppSetHighlight(0);
+
   // Arrow key navigation
   const ppKeyHandler = e => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {

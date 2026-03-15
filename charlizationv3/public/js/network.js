@@ -5,7 +5,7 @@
 import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
 import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX } from './sound.js';
-import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog } from './dialogs.js';
+import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
 import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
@@ -441,7 +441,7 @@ async function doRenderFromState(opts = {}) {
     if (S.mpSelectedUnit != null) startBlink(); else stopBlink();
   }
 
-  // Center on selected unit — always on initial load, otherwise only if off-screen
+  // Center on selected unit — always on turn start, otherwise only if off-screen
   if (opts.skipCenter) {
     if (S.mpSelectedUnit !== prevSelected && S.mpSelectedUnit != null) {
       const u = S.mpGameState.units[S.mpSelectedUnit];
@@ -451,7 +451,7 @@ async function doRenderFromState(opts = {}) {
     const u = S.mpSelectedUnit != null
       ? S.mpGameState.units[S.mpSelectedUnit]
       : findFirstOwnUnit();
-    if (u && !isTileInViewport(u.gx, u.gy)) centerOnUnit(u);
+    if (u) centerOnUnit(u);
   }
 }
 
@@ -1239,6 +1239,11 @@ function initNetwork(appCallbacks) {
               if (myEvents.length > 0) {
                 showTurnEvents(myEvents);
               }
+            }
+
+            // Game over: show victory/defeat dialog (do NOT close WebSocket)
+            if (statePayload.gameOver) {
+              setTimeout(() => showGameOverDialog(statePayload.gameOver.winner, S.mpGameState), 600);
             }
 
             // Auto-show diplomacy panel when there are pending proposals/demands for us
