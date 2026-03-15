@@ -149,3 +149,27 @@ export const ADJUST_ATTITUDE = 'ADJUST_ATTITUDE';
 //   { type: 'ADJUST_ATTITUDE', civSlot, targetCiv, delta }
 //   Adjust a civ's attitude toward another civ by delta. Clamped to [-100, +100].
 //   Used by AI diplomacy to track relationship changes (war declarations, peace proposals, etc.).
+
+export const SPY_POISON_WATER = 'SPY_POISON_WATER';
+//   { type: 'SPY_POISON_WATER', unitIndex }
+//   Spy poisons water supply: reduce city population by 1. High detection chance.
+
+export const SPY_PLANT_NUKE = 'SPY_PLANT_NUKE';
+//   { type: 'SPY_PLANT_NUKE', unitIndex }
+//   Spy plants nuclear device in city. Requires Manhattan Project. Highest detection chance.
+
+export const SPY_SABOTAGE_PRODUCTION = 'SPY_SABOTAGE_PRODUCTION';
+//   { type: 'SPY_SABOTAGE_PRODUCTION', unitIndex }
+//   Spy resets target city's shieldsInBox to 0.
+
+export const SPY_INVESTIGATE_CITY = 'SPY_INVESTIGATE_CITY';
+//   { type: 'SPY_INVESTIGATE_CITY', unitIndex }
+//   Spy reveals city details (buildings, production, etc.). Low risk.
+
+export const SPY_ESTABLISH_EMBASSY = 'SPY_ESTABLISH_EMBASSY';
+//   { type: 'SPY_ESTABLISH_EMBASSY', unitIndex }
+//   Diplomat/Spy establishes an embassy with the city owner's civ.
+
+export const SPY_SABOTAGE_UNIT = 'SPY_SABOTAGE_UNIT';
+//   { type: 'SPY_SABOTAGE_UNIT', unitIndex, targetIndex }
+//   Spy sabotages enemy unit: deals 50% HP damage. Only Spies (not Diplomats).

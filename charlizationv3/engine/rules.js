@@ -9,12 +9,13 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT } from './actions.js';
 import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS } from './defs.js';
 import { resolveDirection, getDirection, isZOCBlocked } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
 import { getGovernment } from './utils.js';
+import { canBuildUnitType, canBuildImprovement, canBuildWonder } from './buildcheck.js';
 
 const VALID_SPECIALIST_TYPES = new Set(['entertainer', 'taxman', 'scientist']);
 
@@ -217,28 +218,20 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (item.type === 'building' && IMPROVE_COSTS[item.id] == null) return 'Unknown building';
       if (item.type === 'wonder' && WONDER_COSTS[item.id - 39] == null) return 'Unknown wonder';
 
-      // Can't build a building/wonder the city already has
-      if (item.type === 'building' && city.buildings && city.buildings.has(item.id))
-        return 'City already has this building';
-
-      // Tech prerequisite checks
-      const civTechs = gameState.civTechs?.[civSlot];
-      const hasTech = (id) => id < 0 || (civTechs ? civTechs.has(id) : false);
+      // Full prerequisite validation via buildcheck.js
+      // Checks tech prereqs, obsolescence, building chains, coastal,
+      // power plant exclusion, already-built, spaceship, fanatics, etc.
       if (item.type === 'unit') {
-        const prereq = UNIT_PREREQS[item.id] ?? -1;
-        if (prereq >= 0 && !hasTech(prereq)) return 'Missing tech prerequisite';
-        const obsolete = UNIT_OBSOLETE[item.id] ?? -1;
-        if (obsolete >= 0 && hasTech(obsolete)) return 'Unit is obsolete';
+        if (!canBuildUnitType(civSlot, cityIndex, item.id, gameState, mapBase))
+          return 'Cannot build this unit (missing prerequisite, obsolete, or domain restriction)';
       }
       if (item.type === 'building') {
-        const prereq = IMPROVE_PREREQS[item.id] ?? -1;
-        if (prereq >= 0 && !hasTech(prereq)) return 'Missing tech prerequisite';
+        if (!canBuildImprovement(civSlot, cityIndex, item.id, gameState, mapBase))
+          return 'Cannot build this building (missing prerequisite, already built, or restriction)';
       }
       if (item.type === 'wonder') {
-        const prereq = WONDER_PREREQS[item.id - 39] ?? -1;
-        if (prereq >= 0 && !hasTech(prereq)) return 'Missing tech prerequisite';
-        const obsolete = WONDER_OBSOLETE[item.id - 39] ?? -1;
-        if (obsolete >= 0 && hasTech(obsolete)) return 'Wonder is obsolete';
+        if (!canBuildWonder(civSlot, item.id - 39, gameState))
+          return 'Cannot build this wonder (missing prerequisite, already built, or obsolete)';
       }
 
       return null;
@@ -720,6 +713,95 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const upgCost = Math.max(40, (newCost - oldCost) * 2);
       const treasury = gameState.civs?.[civSlot]?.treasury || 0;
       if (treasury < upgCost) return `Costs ${upgCost} gold (insufficient)`;
+      return null;
+    }
+
+    case SPY_POISON_WATER: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 47) return 'Only Spies can poison water';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in an enemy city';
+      if (city.owner === civSlot) return 'Cannot target own city';
+      if (city.size < 2) return 'City too small to poison';
+      return null;
+    }
+
+    case SPY_PLANT_NUKE: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 47) return 'Only Spies can plant nukes';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in an enemy city';
+      if (city.owner === civSlot) return 'Cannot target own city';
+      // Requires Manhattan Project (wonder 23) and Nuclear Fission tech (86)
+      if (!gameState.wonders?.[23] || gameState.wonders[23].destroyed) return 'Manhattan Project not built';
+      const civTechs = gameState.civTechs?.[civSlot];
+      if (!civTechs || !civTechs.has(86)) return 'Missing Nuclear Fission tech';
+      return null;
+    }
+
+    case SPY_SABOTAGE_PRODUCTION: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 46 && spy.type !== 47) return 'Only Diplomats/Spies';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in an enemy city';
+      if (city.owner === civSlot) return 'Cannot target own city';
+      return null;
+    }
+
+    case SPY_INVESTIGATE_CITY: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 46 && spy.type !== 47) return 'Only Diplomats/Spies';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in a city';
+      if (city.owner === civSlot) return 'Cannot investigate own city';
+      return null;
+    }
+
+    case SPY_ESTABLISH_EMBASSY: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 46 && spy.type !== 47) return 'Only Diplomats/Spies';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in a city';
+      if (city.owner === civSlot) return 'Cannot establish embassy with self';
+      // Check if already have embassy
+      const embKey = `${civSlot}-${city.owner}`;
+      if (gameState.diplomacy?.[embKey]?.embassy) return 'Embassy already established';
+      return null;
+    }
+
+    case SPY_SABOTAGE_UNIT: {
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 47) return 'Only Spies can sabotage units';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const target = gameState.units[action.targetIndex];
+      if (!target) return 'Target not found';
+      if (target.owner === civSlot) return 'Cannot sabotage own unit';
+      if (target.gx < 0) return 'Target is dead';
+      const sDir = getDirection(spy.gx, spy.gy, target.gx, target.gy, mapBase);
+      if (!sDir) return 'Target not adjacent';
       return null;
     }
 

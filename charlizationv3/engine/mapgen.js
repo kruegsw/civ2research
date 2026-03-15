@@ -707,7 +707,7 @@ export function generateMap(settings = {}) {
 
 /**
  * Flood-fill body IDs. Each contiguous land mass gets a unique ID (1-62).
- * Ocean bodies get ID 0.
+ * Ocean bodies get ID 0. (Internal, called during generateMap.)
  */
 function assignBodyIds(tileData, mw, mh, wraps) {
   const visited = new Uint8Array(mw * mh);
@@ -748,6 +748,139 @@ function assignBodyIds(tileData, mw, mh, wraps) {
       }
     }
   }
+}
+
+/**
+ * Assign continent/ocean body IDs via flood fill on a mapBase accessor object.
+ * Ported from FUN_004b32fe (continent_assign_body_ids).
+ *
+ * Two passes: land first (IDs 1-62), then ocean (IDs starting at 64+).
+ * Small land bodies (<9 tiles) are merged into body 63 (overflow bucket).
+ * Small ocean bodies (<16 tiles) are merged similarly.
+ * Body IDs are stored in tileData[i].bodyId.
+ *
+ * Also computes continent tile counts:
+ *   mapBase.landBodyCounts[bodyId] = number of tiles in that land body
+ *   mapBase.seaBodyCounts[bodyId]  = number of tiles in that sea body
+ *
+ * @param {object} mapBase - accessor object from createAccessors()
+ */
+export function assignContinentBodyIds(mapBase) {
+  const { mw, mh, tileData, wraps } = mapBase;
+  const totalTiles = mw * mh;
+
+  function wrapX(x) { return wraps ? ((x % mw) + mw) % mw : x; }
+
+  // Direction offsets in doubled-X isometric coords (8 directions)
+  const DX8 = [1, 2, 1, 0, -1, -2, -1, 0];
+  const DY8 = [-1, 0, 1, 2, 1, 0, -1, -2];
+
+  function isOcean(x, y) {
+    if (y < 0 || y >= mh) return true;
+    const gx = wrapX(x);
+    if (gx < 0 || gx >= mw) return true;
+    return tileData[y * mw + gx].terrain === 10; // T_OCEAN
+  }
+
+  // Clear all body IDs
+  for (let i = 0; i < totalTiles; i++) tileData[i].bodyId = 0;
+
+  const landBodyCounts = new Int32Array(64);
+  const seaBodyCounts = new Int32Array(64);
+
+  // Two passes: pass=1 (land), pass=0 (ocean)
+  for (let pass = 1; pass >= 0; pass--) {
+    const visited = new Uint8Array(totalTiles);
+    const bodySizes = new Map(); // bodyId → tile count
+    const tileBody = new Uint16Array(totalTiles); // per-tile body assignment for this pass
+    let nextBodyId = 1;
+
+    // BFS flood fill
+    for (let y = 0; y < mh; y++) {
+      for (let x = (y & 1); x < mw; x += 2) { // only valid-parity tiles
+        const i = y * mw + x;
+        if (visited[i]) continue;
+        const tileIsOcean = tileData[i].terrain === 10;
+        const isTargetType = pass === 1 ? !tileIsOcean : tileIsOcean;
+        if (!isTargetType) { visited[i] = 1; continue; }
+
+        // Start new body
+        const bodyId = nextBodyId++;
+        let count = 0;
+        const queue = [x, y]; // flat pairs
+        visited[i] = 1;
+
+        while (queue.length > 0) {
+          const cy = queue.pop();
+          const cx = queue.pop();
+          const ci = cy * mw + cx;
+          tileBody[ci] = bodyId;
+          count++;
+
+          for (let d = 0; d < 8; d++) {
+            let nx = cx + DX8[d];
+            const ny = cy + DY8[d];
+            if (ny < 0 || ny >= mh) continue;
+            nx = wrapX(nx);
+            if (nx < 0 || nx >= mw) continue;
+            // Snap to valid parity
+            const snx = (nx & ~1) | (ny & 1);
+            const ni = ny * mw + snx;
+            if (visited[ni]) continue;
+            const nIsOcean = tileData[ni].terrain === 10;
+            const nIsTarget = pass === 1 ? !nIsOcean : nIsOcean;
+            if (!nIsTarget) { visited[ni] = 1; continue; }
+            visited[ni] = 1;
+            queue.push(snx, ny);
+          }
+        }
+
+        bodySizes.set(bodyId, count);
+      }
+    }
+
+    // Merge small bodies: land < 9 tiles → bucket 63, ocean < 16 tiles → bucket 63
+    const minSize = pass === 1 ? 9 : 16;
+    const OVERFLOW = 63;
+    const mergedBodies = new Set();
+    for (const [bid, size] of bodySizes) {
+      if (size < minSize) mergedBodies.add(bid);
+    }
+
+    // Remap bodies into slots 1-62, overflow into 63
+    const remapTable = new Map();
+    let nextSlot = 1;
+    // First assign non-merged bodies in order of descending size
+    const sortedBodies = [...bodySizes.entries()]
+      .filter(([bid]) => !mergedBodies.has(bid))
+      .sort((a, b) => b[1] - a[1]); // largest first
+
+    for (const [bid] of sortedBodies) {
+      if (nextSlot < 63) {
+        remapTable.set(bid, nextSlot++);
+      } else {
+        remapTable.set(bid, OVERFLOW);
+      }
+    }
+    // All merged bodies → overflow
+    for (const bid of mergedBodies) {
+      remapTable.set(bid, OVERFLOW);
+    }
+
+    // Write body IDs into tileData and compute counts
+    const counts = pass === 1 ? landBodyCounts : seaBodyCounts;
+    for (let i = 0; i < totalTiles; i++) {
+      const bid = tileBody[i];
+      if (bid === 0) continue;
+      const mapped = remapTable.get(bid) || OVERFLOW;
+      tileData[i].bodyId = mapped;
+      if (mapped < 64) counts[mapped]++;
+    }
+  }
+
+  // Store counts on mapBase for AI use
+  mapBase.landBodyCounts = landBodyCounts;
+  mapBase.seaBodyCounts = seaBodyCounts;
 }
 
 /**

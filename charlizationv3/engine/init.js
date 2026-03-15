@@ -4,11 +4,34 @@
 // Two paths to start a game:
 //   initFromSav()  — load a parsed .sav file, assign players to civs
 //   initNewGame()  — generate map, place settlers, init civs
+//
+// Phase F additions:
+//   createNewCiv()                — proper civ initialization (from FUN_004a7ce9)
+//   assignInitialSettlerPositions() — distance-maximizing placement (from FUN_004a7754)
 // ═══════════════════════════════════════════════════════════════════
 
 import { createAccessors } from './state.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES, WONDER_NAMES } from './defs.js';
+import {
+  MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES, WONDER_NAMES,
+  CIV_COLORS, ADVANCE_PREREQS, ADVANCE_NAMES, TERRAIN_BASE,
+  CITY_RADIUS_DOUBLED,
+} from './defs.js';
 import { updateVisibility } from './visibility.js';
+import { assignContinentBodyIds } from './mapgen.js';
+
+// ── Difficulty name → numeric index (Civ2: 0=Chieftain..5=Deity) ──
+const DIFFICULTY_INDEX = {
+  chieftain: 0, warlord: 1, prince: 2, king: 3, emperor: 4, deity: 5,
+};
+
+// ── Starting techs per difficulty (Civ2: Chieftain gets more free techs) ──
+// These are the "always granted" techs for turn-0 new game (from new_civ pseudocode).
+// At Chieftain, civs get ~5 starting techs; at Deity they get none.
+// Mapping: difficulty index → array of advance IDs to grant.
+// Advances with no prerequisites (-1,-1): Alphabet(1), Bronze Working(8),
+// Ceremonial Burial(9), Horseback Riding(36), Masonry(47), Pottery(65),
+// Warrior Code(86)
+const FREE_STARTING_TECHS = [1, 8, 9, 36, 47, 65, 86];
 
 /**
  * Initialize game from a parsed .sav file.
@@ -87,6 +110,7 @@ export function initFromSav(parsed, seatList) {
 
 /**
  * Initialize a new game from a generated map.
+ * Enhanced orchestrator ported from FUN_004aa9c0 (init_new_game).
  *
  * @param {object} mapResult - output of generateMap() { mw, mh, mapShape, mapSeed, tileData }
  * @param {Array<{ seatIndex: number, name: string }>} seatList - seated players
@@ -98,14 +122,65 @@ export function initNewGame(mapResult, seatList) {
     mapResult.tileData, null,
   );
 
-  // Create settler + warrior per seated player (civ slots 1..N)
-  const units = [];
+  // ── Phase 8 (enhanced): Assign continent body IDs via proper flood fill ──
+  assignContinentBodyIds(mapBase);
+
+  // Determine game difficulty from seatList
+  const difficultyName = seatList[0]?.difficulty || 'chieftain';
+  const difficultyIdx = DIFFICULTY_INDEX[difficultyName] ?? 0;
+
   const civCount = seatList.length;
-  const placements = findSettlerPlacements(mapBase, civCount);
-  const STARTING_UNITS = [0, 2]; // Settlers, Warriors
+
+  // ── Initialize civs with createNewCiv ──
+  const civs = []; // slot 0 = barbarians
+  const civTechCounts = new Array(8).fill(0);
+  const civTechs = Array.from({ length: 8 }, () => new Set());
+
+  // Slot 0: Barbarians
+  civs.push({
+    name: 'Barbarians',
+    style: 0,
+    government: 'anarchy',
+    treasury: 0,
+    scienceRate: 0, taxRate: 10, luxuryRate: 0,
+    researchProgress: 0,
+    techBeingResearched: 0xFF,
+    rulesCivNumber: 0,
+    attitudes: [0, 0, 0, 0, 0, 0, 0, 0],
+  });
+
+  // Slots 1..7: create civs (alive if civSlot <= civCount, otherwise dead placeholder)
+  for (let civSlot = 1; civSlot <= 7; civSlot++) {
+    const rulesCivNumber = civSlot - 1;
+    if (civSlot <= civCount) {
+      const seat = seatList[civSlot - 1];
+      const civ = createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, civTechCounts, seat);
+      civs.push(civ);
+    } else {
+      // Dead civ placeholder
+      civs.push({
+        name: LEADERS_TXT_NAMES[rulesCivNumber] || `Civ ${civSlot}`,
+        style: rulesCivNumber % 4,
+        government: 'despotism',
+        treasury: 0,
+        scienceRate: 5, taxRate: 5, luxuryRate: 0,
+        researchProgress: 0,
+        techBeingResearched: 0xFF,
+        rulesCivNumber,
+        attitudes: [0, 0, 0, 0, 0, 0, 0, 0],
+      });
+    }
+  }
+
+  // ── Place starting settlers using distance-maximization algorithm ──
+  const placements = assignInitialSettlerPositions(mapBase, civCount);
+
+  // ── Create starting units at placements ──
+  const units = [];
+  const STARTING_UNITS = [0, 2]; // Settlers (0), Warriors (2)
 
   for (let i = 0; i < civCount; i++) {
-    const civSlot = i + 1; // civs 1-7 (0 = barbarians)
+    const civSlot = i + 1;
     const pos = placements[i];
     for (const unitType of STARTING_UNITS) {
       units.push({
@@ -125,11 +200,15 @@ export function initNewGame(mapResult, seatList) {
         prevInStack: -1, nextInStack: -1,
       });
     }
+
+    // Remove nearby goody huts (Civ2: clear huts in city radius of starting position)
+    clearNearbyGoodyHuts(mapBase, pos.gx, pos.gy);
+
     // Mark visibility for initial position (radius 2 = city-level LOS, matching real Civ2)
     updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, pos.gx, pos.gy, mapBase.wraps, 2);
   }
 
-  // Civ alive bitmask: barbs + each seated player's civ
+  // ── Civ alive bitmask: each seated player's civ ──
   let civsAlive = 0;
   for (let i = 0; i < civCount; i++) civsAlive |= (1 << (i + 1));
 
@@ -138,33 +217,380 @@ export function initNewGame(mapResult, seatList) {
     seatCivMap[seatList[i].seatIndex] = i + 1;
   }
 
-  // Build humanPlayers bitmask: bit N = 1 means civ N is human-controlled.
-  // Civ 0 (barbarians) is always AI. Any civ with a seat is human (unless AI seat).
+  // Build humanPlayers bitmask
   const aiSeatIndices = new Set(seatList.filter(s => s.ai).map(s => s.seatIndex));
   const humanPlayers = buildHumanPlayersBitmask(seatCivMap, aiSeatIndices);
+
+  // ── Chieftain bonus: 50 gold starting treasury (from init_new_game pseudocode) ──
+  if (difficultyIdx === 0) {
+    for (let c = 1; c <= civCount; c++) {
+      civs[c].treasury = 50;
+    }
+  }
 
   const gameState = {
     units,
     cities: [],
-    civs: buildInitialCivs(seatList),
-    civTechCounts: new Array(8).fill(0),
-    civTechs: Array.from({ length: 8 }, () => new Set()),
+    civs,
+    civTechCounts,
+    civTechs,
     civsAlive,
     playerCiv: 1,
     mapRevealed: false,
     turn: { number: 0, activeCiv: 1 },
     wonders: initWonders(),
-    difficulty: 'chieftain',
+    difficulty: difficultyName,
     barbarianActivity: 'roaming',
     version: 0,
     seatCivMap,
     humanPlayers,
+    treaties: {},
     unitBySaveIndex: null,
     allUnits: null,
   };
 
   return { mapBase, gameState };
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// createNewCiv — Proper civ initialization
+// Ported from FUN_004a7ce9 (new_civ)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Create a new civilization with proper starting state.
+ * Ported from the binary's new_civ function (FUN_004a7ce9).
+ *
+ * @param {number} civSlot - civ slot index (1-7)
+ * @param {number} rulesCivNumber - LEADERS.TXT index (0-20)
+ * @param {number} difficultyIdx - difficulty (0=chieftain..5=deity)
+ * @param {Array<Set>} civTechs - per-civ tech sets (mutated: starting techs added)
+ * @param {Array<number>} civTechCounts - per-civ tech counts (mutated)
+ * @param {object} seat - seat info { seatIndex, name, ai, difficulty }
+ * @returns {object} civ data object
+ */
+export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, civTechCounts, seat) {
+  const name = LEADERS_TXT_NAMES[rulesCivNumber] || `Civ ${civSlot}`;
+
+  // Government: always start with Despotism (index 1)
+  const government = 'despotism';
+
+  // Treasury: 0 at start (Chieftain bonus applied in initNewGame)
+  const treasury = 0;
+
+  // Tax/science rates from pseudocode: scienceRate=4, taxRate=4, luxRate=1
+  // Civ2 uses a 0-10 scale where each unit = 10%. So sci=4 → 40%, tax=4 → 40%, lux=1 → 10%
+  // But our engine uses 0-10 direct. Default: 50/0/50 (sci=5, tax=5, lux=0)
+  const scienceRate = 5;
+  const taxRate = 5;
+  const luxuryRate = 0;
+
+  // City style: based on rulesCivNumber (Civ2: 0-3 cycling through 4 styles)
+  // Romans=0→European, Babylonians=1→Classical, Germans=2→Far-Eastern, Egyptians=3→Middle-Eastern
+  const style = rulesCivNumber % 4;
+
+  // Initialize attitudes toward other civs (from pseudocode: rand() % 80 + 10)
+  const attitudes = new Array(8).fill(0);
+  for (let j = 0; j < 8; j++) {
+    if (j === civSlot) { attitudes[j] = 0; continue; }
+    if (j === 0) { attitudes[j] = 0; continue; } // barbarians
+    // Randomize: rand() % 80 + 10 → range [10, 89]
+    // For human targets: clamp(difficulty*5 + rand()%80 + 10, 10, 75)
+    attitudes[j] = Math.floor(Math.random() * 80) + 10;
+  }
+
+  // Grant starting techs based on difficulty level
+  // Pseudocode: for each advance with no prerequisites, grant with probability
+  // based on difficulty. Chieftain gets more, Deity gets fewer.
+  // Simplified: grant free techs based on difficulty tier
+  const techsToGrant = getStartingTechs(difficultyIdx);
+  for (const advId of techsToGrant) {
+    civTechs[civSlot].add(advId);
+  }
+  civTechCounts[civSlot] = civTechs[civSlot].size;
+
+  return {
+    name,
+    style,
+    government,
+    treasury,
+    scienceRate,
+    taxRate,
+    luxuryRate,
+    researchProgress: 0,
+    techBeingResearched: 0xFF, // none selected
+    rulesCivNumber,
+    difficulty: seat?.difficulty || undefined,
+    attitudes,
+  };
+}
+
+/**
+ * Determine starting techs based on difficulty level.
+ * From pseudocode: at lower difficulties, civs get more free starting techs.
+ * Chieftain(0): all 7 no-prereq techs
+ * Warlord(1): 5-6 techs
+ * Prince(2): 3-4 techs
+ * King(3): 2 techs
+ * Emperor(4): 1 tech
+ * Deity(5): 0 techs
+ */
+function getStartingTechs(difficultyIdx) {
+  // Number of free techs: max(0, 7 - difficultyIdx * 1.2) roughly
+  const counts = [7, 5, 3, 2, 1, 0];
+  const count = counts[Math.min(difficultyIdx, 5)];
+  // Always grant in a consistent order (Alphabet first, then others)
+  return FREE_STARTING_TECHS.slice(0, count);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// assignInitialSettlerPositions — Distance-maximizing placement
+// Ported from FUN_004a7754 (assign_initial_settler_positions)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Place starting settlers for each civ, maximizing distance between them
+ * while preferring high-fertility tiles.
+ * Ported from FUN_004a7754 (assign_initial_settler_positions).
+ *
+ * Algorithm:
+ *   1. Score every eligible land tile by fertility (food+shields in city radius)
+ *   2. First settler: pick the highest-scoring tile
+ *   3. Subsequent settlers: pick the tile that maximizes
+ *      min(distance to all already-placed settlers) among top-fertility candidates
+ *
+ * @param {object} mapBase - accessor object from createAccessors()
+ * @param {number} numCivs - number of civs to place (1-7)
+ * @returns {Array<{gx: number, gy: number}>} array of positions
+ */
+export function assignInitialSettlerPositions(mapBase, numCivs) {
+  const { mw, mh, tileData, wraps } = mapBase;
+
+  // ── Step 1: Score all eligible land tiles ──
+  // A tile is eligible if: land, not ocean/glacier/mountains, not too close to edges
+  const edgeMargin = Math.max(2, Math.floor(mh / 10));
+  const candidates = []; // { gx, gy, score }
+
+  for (let y = edgeMargin; y < mh - edgeMargin; y++) {
+    for (let x = (y & 1); x < mw; x += 2) { // valid parity tiles only
+      const i = y * mw + x;
+      const ter = tileData[i].terrain;
+      // Skip ocean, mountains, glacier, tundra (poor starts)
+      if (ter === 10 || ter === 5 || ter === 7) continue;
+
+      // Score: sum food+shields for city radius (21 tiles), weighted
+      const score = scoreTileForStart(mapBase, x, y);
+      if (score > 0) {
+        candidates.push({ gx: x, gy: y, score });
+      }
+    }
+  }
+
+  if (candidates.length === 0) {
+    // Fallback: use the old simple method
+    return findSettlerPlacementsFallback(mapBase, numCivs);
+  }
+
+  // Sort by score descending
+  candidates.sort((a, b) => b.score - a.score);
+
+  // ── Step 2: Pick positions using distance maximization ──
+  const placements = [];
+
+  // Minimum distance between settlers (scales with map size)
+  const minDist = Math.max(6, Math.floor(Math.min(mw, mh) / (numCivs + 1)));
+
+  // First settler: highest fertility tile
+  placements.push({ gx: candidates[0].gx, gy: candidates[0].gy });
+
+  // Subsequent settlers: maximize minimum distance to all placed settlers,
+  // among the top fertility candidates
+  for (let p = 1; p < numCivs; p++) {
+    let bestIdx = -1;
+    let bestMinDist = -1;
+    let bestScore = -1;
+
+    // Consider top N% of candidates (by fertility) to ensure decent start
+    const searchLimit = Math.min(candidates.length, Math.max(100, Math.floor(candidates.length * 0.3)));
+
+    for (let c = 0; c < searchLimit; c++) {
+      const cand = candidates[c];
+
+      // Compute minimum distance to all already-placed settlers
+      let minDistToPlaced = Infinity;
+      for (const placed of placements) {
+        const dist = chebyshevDist(cand.gx, cand.gy, placed.gx, placed.gy, mw, wraps);
+        minDistToPlaced = Math.min(minDistToPlaced, dist);
+      }
+
+      // Skip if too close to an existing placement
+      if (minDistToPlaced < minDist && bestMinDist >= minDist) continue;
+
+      // Pick the candidate that maximizes minimum distance, with fertility as tiebreaker
+      if (minDistToPlaced > bestMinDist ||
+          (minDistToPlaced === bestMinDist && cand.score > bestScore)) {
+        bestIdx = c;
+        bestMinDist = minDistToPlaced;
+        bestScore = cand.score;
+      }
+    }
+
+    if (bestIdx >= 0) {
+      placements.push({ gx: candidates[bestIdx].gx, gy: candidates[bestIdx].gy });
+    } else {
+      // Fallback: pick the best remaining candidate with any distance
+      for (let c = 0; c < candidates.length; c++) {
+        const cand = candidates[c];
+        let used = false;
+        for (const placed of placements) {
+          if (placed.gx === cand.gx && placed.gy === cand.gy) { used = true; break; }
+        }
+        if (!used) {
+          placements.push({ gx: cand.gx, gy: cand.gy });
+          break;
+        }
+      }
+    }
+
+    // Safety: if we still couldn't place, use map center
+    if (placements.length <= p) {
+      placements.push({ gx: Math.floor(mw / 2), gy: Math.floor(mh / 2) });
+    }
+  }
+
+  return placements;
+}
+
+/**
+ * Score a tile for starting position quality.
+ * From pseudocode: sum food/shields of surrounding tiles in city radius.
+ * Rivers, grassland, and specials boost the score.
+ *
+ * @param {object} mapBase - accessor object
+ * @param {number} gx - tile x
+ * @param {number} gy - tile y
+ * @returns {number} score (higher = better)
+ */
+function scoreTileForStart(mapBase, gx, gy) {
+  const { mw, mh, tileData, wraps } = mapBase;
+  let score = 0;
+  let specials = 0;
+  let rivers = 0;
+
+  function wrapX(x) { return wraps ? ((x % mw) + mw) % mw : x; }
+
+  // Use CITY_RADIUS_DOUBLED offsets (21 tiles including center)
+  for (let r = 0; r < CITY_RADIUS_DOUBLED.length; r++) {
+    const [dx, dy] = CITY_RADIUS_DOUBLED[r];
+    const ny = gy + dy;
+    if (ny < 0 || ny >= mh) continue;
+    const nx = wrapX(gx + dx);
+    if (nx < 0 || nx >= mw) continue;
+
+    const tile = tileData[ny * mw + nx];
+    const ter = tile.terrain;
+    if (ter > 10) continue;
+
+    const [food, shields] = TERRAIN_BASE[ter] || [0, 0];
+    let tileScore = food * 3 + shields * 2; // food weighted more
+
+    if (tile.river) {
+      tileScore += 3; // river: +1 trade in Civ2, but also fertility indicator
+      rivers++;
+    }
+    if (ter === 2) specials++; // grassland
+
+    // Inner ring (indices 0-7) and center (20) are more valuable
+    if (r === 20) {
+      tileScore *= 3; // center tile
+    } else if (r < 8) {
+      tileScore *= 2; // inner ring
+    }
+
+    score += tileScore;
+  }
+
+  // Bonus for rivers (from pseudocode: rivers >= 4 → +4 to score)
+  if (rivers >= 4) score += 20;
+  else if (specials > 3) score += 10;
+
+  // Penalty for center tile being desert or tundra
+  const centerTer = tileData[gy * mw + gx].terrain;
+  if (centerTer === 0) score -= 15; // desert
+  if (centerTer === 6) score -= 10; // tundra
+
+  // Continent size bonus: prefer larger continents
+  const bodyId = tileData[gy * mw + gx].bodyId;
+  if (mapBase.landBodyCounts && bodyId > 0 && bodyId < 64) {
+    const contSize = mapBase.landBodyCounts[bodyId];
+    score += Math.min(15, Math.floor(contSize / 50));
+  }
+
+  return Math.max(0, score);
+}
+
+/**
+ * Chebyshev distance between two tiles, handling X wraparound.
+ */
+function chebyshevDist(x1, y1, x2, y2, mw, wraps) {
+  let dx = Math.abs(x1 - x2);
+  if (wraps) dx = Math.min(dx, mw - dx);
+  const dy = Math.abs(y1 - y2);
+  return Math.max(dx, dy);
+}
+
+/**
+ * Clear goody huts near a starting position (Civ2: clears in city radius).
+ */
+function clearNearbyGoodyHuts(mapBase, gx, gy) {
+  const { mw, mh, tileData, wraps } = mapBase;
+  function wrapX(x) { return wraps ? ((x % mw) + mw) % mw : x; }
+
+  for (const [dx, dy] of CITY_RADIUS_DOUBLED) {
+    const ny = gy + dy;
+    if (ny < 0 || ny >= mh) continue;
+    const nx = wrapX(gx + dx);
+    if (nx < 0 || nx >= mw) continue;
+    tileData[ny * mw + nx].goodyHut = false;
+  }
+}
+
+/**
+ * Fallback placement: simple vertical strip method (original algorithm).
+ */
+function findSettlerPlacementsFallback(mapBase, count) {
+  const { mw, mh } = mapBase;
+  const placements = [];
+  const stripW = Math.floor(mw / count);
+
+  for (let i = 0; i < count; i++) {
+    const centerX = Math.floor(stripW * (i + 0.5));
+    const centerY = Math.floor(mh / 2);
+    let found = false;
+    for (let r = 0; r < Math.max(mw, mh) && !found; r++) {
+      for (let dy = -r; dy <= r && !found; dy++) {
+        for (let dx = -r; dx <= r && !found; dx++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          const gx = ((centerX + dx) % mw + mw) % mw;
+          const gy = centerY + dy;
+          if (gy < 2 || gy >= mh - 2) continue;
+          const ter = mapBase.getTerrain(gx, gy);
+          if (ter !== 10 && ter !== 5 && ter !== 7) {
+            placements.push({ gx, gy });
+            found = true;
+          }
+        }
+      }
+    }
+    if (!found) placements.push({ gx: Math.floor(mw / 2), gy: Math.floor(mh / 2) });
+  }
+
+  return placements;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Helper functions (unchanged from original)
+// ═══════════════════════════════════════════════════════════════════
 
 /**
  * Convert per-civ treaty data from a parsed .sav into the reducer's flat treaty map.
@@ -234,80 +660,10 @@ function buildSeatCivMap(seatList, civsAlive) {
 }
 
 /**
- * Find N placement positions for settlers on land, spread across the map.
- */
-function findSettlerPlacements(mapBase, count) {
-  const { mw, mh } = mapBase;
-  const placements = [];
-
-  // Simple strategy: divide map into vertical strips, pick center land tile
-  const stripW = Math.floor(mw / count);
-  for (let i = 0; i < count; i++) {
-    const centerX = Math.floor(stripW * (i + 0.5));
-    const centerY = Math.floor(mh / 2);
-    // Search outward from center for land
-    let found = false;
-    for (let r = 0; r < Math.max(mw, mh) && !found; r++) {
-      for (let dy = -r; dy <= r && !found; dy++) {
-        for (let dx = -r; dx <= r && !found; dx++) {
-          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue; // only ring
-          const gx = ((centerX + dx) % mw + mw) % mw;
-          const gy = centerY + dy;
-          if (gy < 2 || gy >= mh - 2) continue;
-          const ter = mapBase.getTerrain(gx, gy);
-          // Avoid ocean, mountains, glacier
-          if (ter !== 10 && ter !== 5 && ter !== 7) {
-            placements.push({ gx, gy });
-            found = true;
-          }
-        }
-      }
-    }
-    if (!found) placements.push({ gx: Math.floor(mw / 2), gy: Math.floor(mh / 2) });
-  }
-
-  return placements;
-}
-
-/**
  * Initialize empty wonders array (28 wonders, all unbuilt).
  */
 function initWonders() {
   return Array.from({ length: WONDER_NAMES.length }, () => ({ cityIndex: null, destroyed: false }));
-}
-
-/**
- * Build initial civs array for a new game.
- * Default slot→civ: slot 1=Romans(0), slot 2=Babylonians(1), slot 3=Germans(2), etc.
- * This matches Civ2's default game setup (LEADERS.TXT order).
- */
-function buildInitialCivs(seatList) {
-  // Build a map from civ slot (1-based) to seat difficulty
-  const civDifficultyMap = {};
-  for (let i = 0; i < seatList.length; i++) {
-    const civSlot = i + 1;
-    if (seatList[i].ai && seatList[i].difficulty) {
-      civDifficultyMap[civSlot] = seatList[i].difficulty;
-    }
-  }
-
-  const civs = [];
-  for (let i = 0; i < 8; i++) {
-    const rulesCivNumber = i === 0 ? 0 : i - 1;
-    civs.push({
-      name: i === 0 ? 'Barbarians' : (LEADERS_TXT_NAMES[rulesCivNumber] || `Civ ${i}`),
-      style: 0,
-      government: i === 0 ? 'anarchy' : 'despotism',
-      treasury: i === 0 ? 0 : 50,
-      scienceRate: 5, taxRate: 5, luxuryRate: 0,
-      researchProgress: 0,
-      techBeingResearched: 0xFF, // none selected
-      rulesCivNumber,
-      difficulty: civDifficultyMap[i] || undefined,
-      attitudes: [0, 0, 0, 0, 0, 0, 0, 0], // per-civ attitude (-100 to +100)
-    });
-  }
-  return civs;
 }
 
 /**

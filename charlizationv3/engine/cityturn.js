@@ -1,0 +1,814 @@
+// ═══════════════════════════════════════════════════════════════════
+// cityturn.js — Per-city turn processing (shared: server + client)
+//
+// Port of FUN_004ebbde (process_city_food), FUN_004e7eb1
+// (calc_food_box_size), FUN_004ec3fe (process_city_production),
+// FUN_004eef23 (process_unit_support_deficit), FUN_004f0221
+// (pay_building_upkeep), FUN_004ef578 (handle_city_disorder),
+// and FUN_004f0a9c (process_city_turn) from the Civ2 binary.
+// ═══════════════════════════════════════════════════════════════════
+
+import {
+  FOOD_BOX_MULTIPLIER,
+  UNIT_DOMAIN, UNIT_COSTS,
+  IMPROVE_COSTS, IMPROVE_MAINTENANCE,
+  SUPPORT_EXEMPT_TYPES, SETTLER_TYPES,
+  POLLUTION_THRESHOLD, CITY_RADIUS_DOUBLED,
+  COMMODITY_NAMES,
+} from './defs.js';
+import {
+  calcFoodSurplus, calcShieldProduction, getProductionCost,
+  calcGrossShields, calcUnitShieldSupport, calcCityTrade,
+  calcBuildingMaintenance,
+} from './production.js';
+import { calcHappiness } from './happiness.js';
+import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
+import { grantAdvance, getAvailableResearch } from './research.js';
+
+// ═══════════════════════════════════════════════════════════════════
+// Food processing (Wave 1 — unchanged)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate food box size for a given city size.
+ * Port of FUN_004e7eb1 — base formula: (size + 1) × FOOD_BOX_MULTIPLIER.
+ *
+ * @param {number} citySize
+ * @returns {number}
+ */
+export function calcFoodBoxSize(citySize) {
+  return (citySize + 1) * FOOD_BOX_MULTIPLIER;
+}
+
+/**
+ * Calculate food box size adjusted for difficulty (human players only).
+ * Port of FUN_004e74df — Chieftain 60%, Warlord 80%, others 100%.
+ *
+ * @param {number} citySize
+ * @param {string} difficulty - 'chieftain','warlord','prince','king','emperor','deity'
+ * @param {boolean} isHuman
+ * @returns {number}
+ */
+export function calcFoodBoxWithDifficulty(citySize, difficulty, isHuman) {
+  let base = calcFoodBoxSize(citySize);
+  if (isHuman) {
+    if (difficulty === 'chieftain') base = Math.trunc(base * 6 / 10);
+    else if (difficulty === 'warlord') base = Math.trunc(base * 8 / 10);
+  }
+  return base;
+}
+
+/**
+ * Process food for a single city during END_TURN.
+ * Port of FUN_004ebbde — food surplus, growth, famine, granary,
+ * aqueduct/sewer gates, WLTKD bonus growth.
+ *
+ * Does NOT mutate the city directly; returns new values and events
+ * so the caller (reducer) can apply them.
+ *
+ * @param {object} city
+ * @param {number} cityIndex
+ * @param {object} state - full game state (for calcFoodSurplus, wonder checks)
+ * @param {object} mapBase
+ * @returns {{ newFoodInBox: number, newSize: number, events: Array }}
+ */
+export function processCityFood(city, cityIndex, state, mapBase) {
+  const events = [];
+  const activeCiv = city.owner;
+  const units = state.units || [];
+
+  // ── Calculate food surplus ──
+  const { surplus } = calcFoodSurplus(city, cityIndex, state, mapBase, units);
+  let newFood = (city.foodInBox || 0) + surplus;
+  let newSize = city.size;
+
+  // Difficulty and human detection for food box scaling
+  const difficulty = state.difficulty || 'chieftain';
+  const humanPlayers = state.humanPlayers || 0xFF;
+  const isHuman = !!((1 << activeCiv) & humanPlayers);
+
+  const growthThreshold = calcFoodBoxWithDifficulty(city.size, difficulty, isHuman);
+
+  // WLTKD growth: Republic/Democracy + WLTKD + positive food surplus → grow each turn
+  const govt = getGovernment(city, state);
+  const wltkdGrowth = city.weLoveKingDay && surplus > 0 &&
+    (govt === 'republic' || govt === 'democracy');
+
+  // Granary effect: building 3 or Pyramids wonder (index 0)
+  const hasGranary = cityHasBuilding(city, 3) || hasWonderEffect(state, activeCiv, 0);
+
+  if (newFood >= growthThreshold || wltkdGrowth) {
+    // ── Growth ──
+    if (newFood >= growthThreshold) {
+      // Normal growth: consume food box
+      newSize++;
+      newFood = hasGranary ? Math.floor(growthThreshold / 2) : 0;
+    } else {
+      // WLTKD growth: grow without consuming food box
+      newSize++;
+    }
+
+    // Aqueduct gate: can't grow past size 8 without Aqueduct (building 9)
+    if (newSize > 8 && !cityHasBuilding(city, 9)) {
+      newSize = 8;
+      newFood = growthThreshold - 1; // cap food just below threshold
+      events.push({
+        type: 'needsAqueduct',
+        cityName: city.name,
+        cityIndex,
+        civSlot: activeCiv,
+      });
+    }
+    // Sewer System gate: can't grow past size 12 without Sewer System (building 23)
+    else if (newSize > 12 && !cityHasBuilding(city, 23)) {
+      newSize = 12;
+      newFood = growthThreshold - 1;
+      events.push({
+        type: 'needsSewer',
+        cityName: city.name,
+        cityIndex,
+        civSlot: activeCiv,
+      });
+    }
+    // Successful growth
+    else {
+      events.push({
+        type: 'cityGrowth',
+        cityName: city.name,
+        cityIndex,
+        civSlot: activeCiv,
+        newSize,
+      });
+    }
+  } else if (newFood < 0) {
+    // ── Famine ──
+    newFood = 0;
+
+    if (newSize > 1) {
+      newSize--;
+      events.push({
+        type: 'famine',
+        cityName: city.name,
+        cityIndex,
+        civSlot: activeCiv,
+        newSize,
+      });
+    } else {
+      // City destroyed by famine (size 1 → 0)
+      newSize = 0;
+      events.push({
+        type: 'cityDestroyed',
+        cityName: city.name,
+        cityIndex,
+        civSlot: activeCiv,
+        reason: 'famine',
+      });
+    }
+  }
+
+  return { newFoodInBox: newFood, newSize, events };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// D.3: Caravan/Freight commodity assignment
+// Port of FUN_004ec1c6 (assign_caravan_commodity)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Assign a trade commodity to a newly built Caravan (48) or Freight (49) unit.
+ * Port of FUN_004ec1c6 — selects a commodity based on the city's available
+ * supply. In the original game, this calls calc_supply_demand() to determine
+ * which commodities the city supplies, then picks the first available one
+ * not already carried by another trade unit from the same city.
+ *
+ * Since the full supply/demand model is not yet ported, we use a deterministic
+ * formula based on the city's terrain and position to select a commodity.
+ * The commodity is stored on the unit as commodityCarried (0-15).
+ *
+ * @param {object} city - the city that built the unit
+ * @param {number} cityIndex - index in gameState.cities
+ * @param {object} state - game state (for checking existing trade units)
+ * @param {object} mapBase - map data for terrain lookup
+ * @returns {number} commodity ID (0-15)
+ */
+export function assignCaravanCommodity(city, cityIndex, state, mapBase) {
+  const numCommodities = COMMODITY_NAMES.length; // 16
+
+  // Gather commodities already carried by trade units from this city
+  const usedCommodities = new Set();
+  for (const u of state.units) {
+    if (u.gx < 0) continue;
+    if (u.homeCityId !== cityIndex) continue;
+    if (u.type !== 48 && u.type !== 49) continue;
+    if (u.commodityCarried >= 0 && u.commodityCarried < numCommodities) {
+      usedCommodities.add(u.commodityCarried);
+    }
+  }
+
+  // Determine city's terrain-based supply profile.
+  // Different terrain types favor different commodities.
+  // This approximates the original calc_supply_demand without the full model.
+  const cityTerrain = mapBase?.getTerrain?.(city.gx, city.gy) ?? 0;
+
+  // Base commodity: hash city position and terrain to get a deterministic starting point
+  // This ensures different cities produce different commodities
+  const baseHash = ((cityIndex * 7 + city.gx * 13 + city.gy * 19) & 0x7FFFFFFF) % numCommodities;
+
+  // Try to pick a commodity not already carried by a trade unit from this city
+  for (let offset = 0; offset < numCommodities; offset++) {
+    const candidateId = (baseHash + offset) % numCommodities;
+    if (!usedCommodities.has(candidateId)) {
+      return candidateId;
+    }
+  }
+
+  // All 16 commodities in use (extremely unlikely) — fallback to commodity 0
+  return 0;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// A.3: Production processing
+// Port of FUN_004ec3fe (process_city_production)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Process shield production for a single city during END_TURN.
+ * Accumulates shields, checks for production completion, handles
+ * unit creation, building placement, and wonder completion.
+ *
+ * Mutates state directly (units array, wonders array) as the reducer
+ * pattern requires. Returns events and new shield/building values
+ * for the caller to apply to the city object.
+ *
+ * @param {object} city - city object (read-only within this function for city fields)
+ * @param {number} cityIndex
+ * @param {object} state - mutable game state
+ * @param {object} mapBase
+ * @param {object} callbacks - { autoAssignWorker, removeWorstWorker } from reducer
+ * @returns {{ newShieldsInBox: number, newBuildings: Set|null, completedItem: object|null,
+ *             newSize: number|null, newWorked: Array|null, events: Array }}
+ */
+export function processCityProduction(city, cityIndex, state, mapBase, callbacks) {
+  const events = [];
+  const activeCiv = city.owner;
+
+  // No production during civil disorder
+  if (city.civilDisorder) {
+    return {
+      newShieldsInBox: city.shieldsInBox || 0,
+      newBuildings: null,
+      completedItem: null,
+      newSize: null,
+      newWorked: null,
+      events,
+    };
+  }
+
+  // Calculate net shield production
+  const { netShields } = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
+  let newShields = (city.shieldsInBox || 0) + netShields;
+
+  const item = city.itemInProduction;
+  const cost = getProductionCost(item);
+
+  let newBuildings = null;
+  let completedItem = null;
+  let newSize = null;
+  let newWorked = null;
+
+  if (item && newShields >= cost) {
+    // ═══ PRODUCTION COMPLETE ═══
+    completedItem = { ...item };
+
+    // Overflow: cap at item cost (Civ2 rule)
+    const overflow = newShields - cost;
+    newShields = Math.min(overflow, cost);
+
+    if (item.type === 'unit') {
+      // ── Create unit ──
+      const newUnit = {
+        type: item.id,
+        owner: activeCiv,
+        gx: city.gx, gy: city.gy,
+        x: city.gx * 2 + (city.gy % 2), y: city.gy,
+        veteran: (cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)
+          || (UNIT_DOMAIN[item.id] === 2 && cityHasBuilding(city, 32))
+          || (UNIT_DOMAIN[item.id] === 1 && cityHasBuilding(city, 34))) ? 1 : 0,
+        hpLost: 0,
+        orders: 'none', movesMade: 0, movesLeft: 0,
+        homeCityId: cityIndex,
+        goToX: -1, goToY: -1,
+        visFlag: 0xFF,
+        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+        prevInStack: -1, nextInStack: -1,
+      };
+
+      // Settler/Engineer: city shrinks by 1 (min size 1)
+      if (SETTLER_TYPES.has(item.id) && city.size > 1) {
+        newSize = city.size - 1;
+        const curWorked = newWorked || city.workedTiles;
+        if (curWorked.length > newSize && callbacks?.removeWorstWorker) {
+          newWorked = callbacks.removeWorstWorker(
+            { ...city, size: newSize }, cityIndex, curWorked, state, mapBase);
+        }
+      }
+
+      // Caravan/Freight: assign a trade commodity (port of FUN_004ec1c6)
+      if (item.id === 48 || item.id === 49) {
+        newUnit.commodityCarried = assignCaravanCommodity(city, cityIndex, state, mapBase);
+      }
+
+      state.units = [...state.units, newUnit];
+    } else if (item.type === 'building') {
+      // ── Add building ──
+      newBuildings = new Set(city.buildings);
+      // Check if already built (shouldn't happen, but guard)
+      if (newBuildings.has(item.id)) {
+        // Refund — keep shields at cost
+        newShields = cost;
+        completedItem = null;
+      } else {
+        newBuildings.add(item.id);
+      }
+    } else if (item.type === 'wonder') {
+      // ── Complete wonder ──
+      const wi = item.id - 39;
+      if (state.wonders && wi >= 0 && wi < state.wonders.length) {
+        // Check if another civ already built it (wonder race lost)
+        const existing = state.wonders[wi];
+        if (existing && existing.cityIndex != null) {
+          // Wonder already built! Refund shields
+          newShields = cost;
+          completedItem = null;
+          events.push({
+            type: 'wonderBeaten', cityName: city.name, cityIndex,
+            civSlot: activeCiv, wonderIndex: wi,
+          });
+        } else {
+          state.wonders = [...state.wonders];
+          state.wonders[wi] = { cityIndex, destroyed: false };
+
+          // Darwin's Voyage (18): 2 free advances on completion
+          if (wi === 18) {
+            const avail = getAvailableResearch(state, activeCiv);
+            for (let n = 0; n < 2 && avail.length > 0; n++) {
+              const advId = avail.shift();
+              grantAdvance(state, activeCiv, advId);
+              events.push({
+                type: 'freeAdvance', civSlot: activeCiv,
+                advanceId: advId, source: "Darwin's Voyage",
+              });
+              // Refresh available after granting (prereqs may unlock new techs)
+              avail.length = 0;
+              avail.push(...getAvailableResearch(state, activeCiv));
+            }
+          }
+          // Manhattan Project (23): enables nuclear weapons for ALL civs
+          if (wi === 23) {
+            state.nuclearEnabled = true;
+            events.push({ type: 'manhattanProject', civSlot: activeCiv });
+          }
+          // Apollo Program (25): reveals entire map for the owner
+          if (wi === 25 && mapBase.tileData) {
+            const bit = 1 << activeCiv;
+            for (const tile of mapBase.tileData) {
+              if (tile) tile.visibility |= bit;
+            }
+            events.push({ type: 'apolloProgram', civSlot: activeCiv });
+          }
+        }
+      }
+    }
+
+    // Notify: production complete (only if item wasn't refunded)
+    if (completedItem) {
+      events.push({
+        type: 'productionComplete', cityName: city.name, cityIndex,
+        civSlot: activeCiv, item: completedItem,
+      });
+    }
+  }
+
+  return { newShieldsInBox: newShields, newBuildings, completedItem, newSize, newWorked, events };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// A.4: Unit support deficit, building upkeep, disorder
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Process unit support deficit for a city.
+ * Port of FUN_004eef23 — when a city's gross shield production is less
+ * than its unit support cost, disband the most distant non-essential
+ * supported unit until balance is restored.
+ *
+ * Mutates state.units directly (marks disbanded units dead).
+ *
+ * @param {object} city
+ * @param {number} cityIndex
+ * @param {object} state - mutable game state
+ * @param {object} mapBase
+ * @returns {{ events: Array }}
+ */
+export function processUnitSupportDeficit(city, cityIndex, state, mapBase) {
+  const events = [];
+  const activeCiv = city.owner;
+
+  const { grossShields, support } = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
+
+  if (support <= grossShields) return { events };
+
+  // Need to disband units until support is affordable
+  let currentSupport = support;
+  while (currentSupport > grossShields) {
+    // Find most distant supported unit that isn't essential
+    let worstIdx = -1;
+    let worstDist = -1;
+
+    for (let ui = 0; ui < state.units.length; ui++) {
+      const u = state.units[ui];
+      if (u.owner !== activeCiv || u.gx < 0 || u.homeCityId !== cityIndex) continue;
+      if (SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
+      // Don't disband units garrisoned in the city
+      if (u.gx === city.gx && u.gy === city.gy) continue;
+
+      const dist = Math.abs(u.gx - city.gx) + Math.abs(u.gy - city.gy);
+      if (dist > worstDist) {
+        worstDist = dist;
+        worstIdx = ui;
+      }
+    }
+
+    if (worstIdx < 0) break; // No disbandable units found
+
+    // Kill the unit
+    const u = state.units[worstIdx];
+    state.units[worstIdx] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+    events.push({
+      type: 'unitDisbanded', unitType: u.type,
+      civSlot: activeCiv, cityName: city.name,
+    });
+
+    // Recalculate support after disbanding
+    const recheck = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
+    currentSupport = recheck.support;
+    if (recheck.support <= recheck.grossShields) break;
+  }
+
+  return { events };
+}
+
+/**
+ * Pay building upkeep for a city.
+ * Port of FUN_004f0221 — deduct maintenance from treasury. If treasury
+ * goes negative, sell cheapest-maintenance building to cover deficit.
+ *
+ * Note: In the current engine, building upkeep is handled at the civ
+ * level (summed across all cities in the trade/treasury section of
+ * END_TURN). This function is provided for future per-city upkeep
+ * processing but is NOT called by the orchestrator to avoid breaking
+ * the existing civ-wide treasury flow.
+ *
+ * @param {number} cityIndex
+ * @param {object} state - mutable game state
+ * @returns {{ events: Array }}
+ */
+export function payBuildingUpkeep(cityIndex, state) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  const activeCiv = city.owner;
+  const govt = getGovernment(city, state);
+
+  // No upkeep under anarchy
+  if (govt === 'anarchy') return { events };
+
+  const civ = state.civs?.[activeCiv];
+  if (!civ) return { events };
+
+  const maintenance = calcBuildingMaintenance(city, state);
+  if (maintenance <= 0) return { events };
+
+  // Deduct from treasury (note: this modifies the civ object directly)
+  let treasury = civ.treasury || 0;
+  treasury -= maintenance;
+
+  // If treasury goes negative, sell cheapest building
+  while (treasury < 0 && city.buildings && city.buildings.size > 0) {
+    let cheapestId = -1;
+    let cheapestMaint = Infinity;
+
+    for (const bid of city.buildings) {
+      if (bid === 1) continue; // never sell Palace
+      const maint = IMPROVE_MAINTENANCE[bid] || 0;
+      if (maint > 0 && maint < cheapestMaint) {
+        cheapestMaint = maint;
+        cheapestId = bid;
+      }
+    }
+
+    if (cheapestId < 0) { treasury = 0; break; }
+
+    const sellBuildings = new Set(city.buildings);
+    sellBuildings.delete(cheapestId);
+    state.cities[cityIndex] = {
+      ...state.cities[cityIndex],
+      buildings: sellBuildings,
+      hasWalls: sellBuildings.has(8),
+      hasPalace: sellBuildings.has(1),
+    };
+
+    treasury += IMPROVE_COSTS[cheapestId] || 0;
+    events.push({
+      type: 'buildingSold', cityName: city.name, cityIndex,
+      civSlot: activeCiv, buildingId: cheapestId,
+    });
+  }
+
+  // Update civ treasury
+  state.civs = [...state.civs];
+  state.civs[activeCiv] = { ...civ, treasury };
+
+  return { events };
+}
+
+/**
+ * Handle civil disorder for a city.
+ * Port of FUN_004ef578 — handles disorder onset, continuation,
+ * recovery, and democracy revolution risk.
+ *
+ * @param {object} city
+ * @param {number} cityIndex
+ * @param {object} state - mutable game state
+ * @param {object} mapBase
+ * @returns {{ events: Array, civilDisorder: boolean, weLoveKingDay: boolean }}
+ */
+export function handleCityDisorder(city, cityIndex, state, mapBase) {
+  const events = [];
+  const activeCiv = city.owner;
+  const govt = getGovernment(city, state);
+
+  const wasInDisorder = city.civilDisorder;
+
+  // Recalculate happiness
+  const hap = calcHappiness(city, cityIndex, state, mapBase);
+
+  // ── Disorder onset ──
+  if (!wasInDisorder && hap.civilDisorder) {
+    events.push({
+      type: 'civilDisorder', cityName: city.name, cityIndex, civSlot: activeCiv,
+    });
+
+    // Democracy: track disorder turns for revolution risk
+    if (govt === 'democracy') {
+      const disorderTurns = (city.disorderTurns || 0) + 1;
+      if (disorderTurns >= 2) {
+        // Force revolution to anarchy
+        if (state.civs?.[activeCiv]) {
+          state.civs = [...state.civs];
+          state.civs[activeCiv] = {
+            ...state.civs[activeCiv],
+            government: 'anarchy',
+            anarchyTurns: 2,
+          };
+        }
+        events.push({
+          type: 'revolution', civSlot: activeCiv, reason: 'disorder',
+        });
+        return {
+          events,
+          civilDisorder: hap.civilDisorder,
+          weLoveKingDay: hap.weLoveKingDay,
+          disorderTurns: 0,
+        };
+      }
+      return {
+        events,
+        civilDisorder: hap.civilDisorder,
+        weLoveKingDay: hap.weLoveKingDay,
+        disorderTurns,
+      };
+    }
+  }
+
+  // ── Disorder continuation ──
+  if (wasInDisorder && hap.civilDisorder) {
+    if (govt === 'democracy') {
+      const disorderTurns = (city.disorderTurns || 0) + 1;
+      if (disorderTurns >= 2) {
+        // Force revolution to anarchy
+        if (state.civs?.[activeCiv]) {
+          state.civs = [...state.civs];
+          state.civs[activeCiv] = {
+            ...state.civs[activeCiv],
+            government: 'anarchy',
+            anarchyTurns: 2,
+          };
+        }
+        events.push({
+          type: 'revolution', civSlot: activeCiv, reason: 'disorder',
+        });
+        return {
+          events,
+          civilDisorder: hap.civilDisorder,
+          weLoveKingDay: hap.weLoveKingDay,
+          disorderTurns: 0,
+        };
+      }
+      return {
+        events,
+        civilDisorder: hap.civilDisorder,
+        weLoveKingDay: hap.weLoveKingDay,
+        disorderTurns,
+      };
+    }
+  }
+
+  // ── Disorder recovery ──
+  if (wasInDisorder && !hap.civilDisorder) {
+    events.push({
+      type: 'orderRestored', cityName: city.name, cityIndex, civSlot: activeCiv,
+    });
+    return {
+      events,
+      civilDisorder: hap.civilDisorder,
+      weLoveKingDay: hap.weLoveKingDay,
+      disorderTurns: 0,
+    };
+  }
+
+  return {
+    events,
+    civilDisorder: hap.civilDisorder,
+    weLoveKingDay: hap.weLoveKingDay,
+    disorderTurns: city.disorderTurns || 0,
+  };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// A.5: processCityTurn orchestrator
+// Port of FUN_004f0a9c (process_city_turn)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Process a single city's full turn: happiness, food, production,
+ * unit support, disorder, and pollution scoring.
+ *
+ * Port of FUN_004f0a9c — the per-city orchestrator called once per
+ * city during the civ's END_TURN phase. Coordinates all sub-systems.
+ *
+ * This is a high-level orchestrator that delegates to the individual
+ * processing functions. It requires callbacks for reducer-specific
+ * helpers (autoAssignWorker, removeWorstWorker) that live in reducer.js.
+ *
+ * @param {number} cityIndex
+ * @param {object} state - mutable game state
+ * @param {object} mapBase
+ * @param {object} callbacks - { autoAssignWorker, removeWorstWorker }
+ * @returns {{ events: Array, cityDestroyed: boolean }}
+ */
+export function processCityTurn(cityIndex, state, mapBase, callbacks) {
+  const city = state.cities[cityIndex];
+  const activeCiv = city.owner;
+  const events = [];
+
+  // Skip cities in resistance (no production, food, etc.)
+  if (city.resistanceTurns > 0) return { events, cityDestroyed: false };
+
+  // ── Step 1: Compute happiness ──
+  const hap = calcHappiness(city, cityIndex, state, mapBase);
+  if (city.civilDisorder !== hap.civilDisorder ||
+      city.weLoveKingDay !== hap.weLoveKingDay) {
+    state.cities[cityIndex] = {
+      ...state.cities[cityIndex],
+      civilDisorder: hap.civilDisorder,
+      weLoveKingDay: hap.weLoveKingDay,
+    };
+  }
+
+  // Re-read city after happiness update
+  const cityAfterHap = state.cities[cityIndex];
+
+  // ── Step 2: Food processing ──
+  const { surplus } = calcFoodSurplus(cityAfterHap, cityIndex, state, mapBase, state.units);
+  let newFood = (cityAfterHap.foodInBox || 0) + surplus;
+  let newSize = cityAfterHap.size;
+  let newWorked = cityAfterHap.workedTiles;
+  let newSpecs = cityAfterHap.specialists;
+  let newBuildings = cityAfterHap.buildings;
+
+  const growthThreshold = calcFoodBoxSize(cityAfterHap.size);
+  const govt = getGovernment(cityAfterHap, state);
+  const wltkdGrowth = cityAfterHap.weLoveKingDay && surplus > 0 &&
+    (govt === 'republic' || govt === 'democracy');
+  const hasGranary = cityHasBuilding(cityAfterHap, 3) || hasWonderEffect(state, activeCiv, 0);
+
+  let cityDestroyed = false;
+
+  if (newFood >= growthThreshold || wltkdGrowth) {
+    // ── Growth ──
+    if (newFood >= growthThreshold) {
+      newSize++;
+      newFood = hasGranary ? Math.floor(growthThreshold / 2) : 0;
+    } else {
+      newSize++;
+    }
+    let growthBlocked = null;
+    if (newSize > 8 && !cityHasBuilding(cityAfterHap, 9)) {
+      newSize = 8;
+      newFood = growthThreshold - 1;
+      growthBlocked = 'needsAqueduct';
+    } else if (newSize > 12 && !cityHasBuilding(cityAfterHap, 23)) {
+      newSize = 12;
+      newFood = growthThreshold - 1;
+      growthBlocked = 'needsSewer';
+    } else if (callbacks?.autoAssignWorker) {
+      newWorked = callbacks.autoAssignWorker(cityAfterHap, cityIndex, newWorked, state, mapBase);
+    }
+    if (growthBlocked) {
+      events.push({ type: growthBlocked, cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv });
+    } else {
+      events.push({ type: 'cityGrowth', cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv, newSize });
+    }
+  } else if (newFood < 0) {
+    // ── Famine ──
+    newFood = 0;
+    if (newSize > 1) {
+      newSize--;
+      if (newSpecs.length > 0) {
+        newSpecs = newSpecs.slice(0, -1);
+      } else if (newWorked.length > 0 && callbacks?.removeWorstWorker) {
+        newWorked = callbacks.removeWorstWorker(cityAfterHap, cityIndex, newWorked, state, mapBase);
+      }
+      events.push({ type: 'famine', cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv, newSize });
+    } else {
+      newSize = 0;
+      cityDestroyed = true;
+      events.push({ type: 'cityDestroyed', cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv, reason: 'famine' });
+      // Disband all units homed to this city
+      for (let ui = 0; ui < state.units.length; ui++) {
+        const u = state.units[ui];
+        if (u && u.homeCityIndex === cityIndex && u.gx >= 0) {
+          state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
+        }
+      }
+    }
+  }
+
+  // ── Step 3: Shield production (via processCityProduction) ──
+  const prodResult = processCityProduction(cityAfterHap, cityIndex, state, mapBase, callbacks);
+  let newShields = prodResult.newShieldsInBox;
+  if (prodResult.newBuildings) newBuildings = prodResult.newBuildings;
+  if (prodResult.newSize != null) newSize = prodResult.newSize;
+  if (prodResult.newWorked != null) newWorked = prodResult.newWorked;
+  events.push(...prodResult.events);
+
+  // ── Apply accumulated changes to city ──
+  const soldThisTurn = false;
+  if (newSize !== cityAfterHap.size || newFood !== cityAfterHap.foodInBox ||
+      newShields !== (cityAfterHap.shieldsInBox || 0) ||
+      newWorked !== cityAfterHap.workedTiles || newSpecs !== cityAfterHap.specialists ||
+      newBuildings !== cityAfterHap.buildings || cityAfterHap.soldThisTurn) {
+    state.cities[cityIndex] = {
+      ...cityAfterHap,
+      size: newSize,
+      foodInBox: Math.max(0, newFood),
+      shieldsInBox: newShields,
+      workedTiles: newWorked,
+      specialists: newSpecs,
+      buildings: newBuildings,
+      hasWalls: newBuildings.has(8),
+      hasPalace: newBuildings.has(1),
+      soldThisTurn,
+    };
+  }
+
+  // ── Step 4: Unit support deficit ──
+  if (!cityDestroyed) {
+    const deficitResult = processUnitSupportDeficit(state.cities[cityIndex], cityIndex, state, mapBase);
+    events.push(...deficitResult.events);
+  }
+
+  // ── Step 5: Disorder check (post-production) ──
+  if (!cityDestroyed) {
+    const disorderResult = handleCityDisorder(state.cities[cityIndex], cityIndex, state, mapBase);
+    events.push(...disorderResult.events);
+    // Apply disorder state changes
+    const curCity = state.cities[cityIndex];
+    if (curCity.civilDisorder !== disorderResult.civilDisorder ||
+        curCity.weLoveKingDay !== disorderResult.weLoveKingDay ||
+        curCity.disorderTurns !== disorderResult.disorderTurns) {
+      state.cities[cityIndex] = {
+        ...curCity,
+        civilDisorder: disorderResult.civilDisorder,
+        weLoveKingDay: disorderResult.weLoveKingDay,
+        disorderTurns: disorderResult.disorderTurns,
+      };
+    }
+  }
+
+  return { events, cityDestroyed };
+}

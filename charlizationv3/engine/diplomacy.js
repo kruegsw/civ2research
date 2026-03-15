@@ -1,0 +1,1004 @@
+// ═══════════════════════════════════════════════════════════════════
+// diplomacy.js — Diplomatic transaction functions (shared: server + client)
+//
+// Phase E: Core diplomacy state mutations for treaty changes,
+// war declarations, alliance cascades, and asset transfers.
+//
+// Ported from decompiled Civ2 functions:
+//   FUN_0045ac71 — diplo_declare_war
+//   FUN_0045a7a8 — diplo_sign_ceasefire
+//   FUN_0045a6ab — diplo_sign_peace_treaty
+//   FUN_0045a535 — diplo_form_alliance
+//   FUN_0045a8e3 — diplo_activate_alliance_wars
+//   FUN_004dd285 — parley_execute_transaction
+//   FUN_004de0e2 — parley_transfer_city
+// ═══════════════════════════════════════════════════════════════════
+
+import { CITY_RADIUS_DOUBLED } from './defs.js';
+import { hasWonderEffect } from './utils.js';
+import { grantAdvance } from './research.js';
+import { updateVisibility } from './visibility.js';
+
+// ── Helpers ──────────────────────────────────────────────────────
+
+/** Get the canonical treaty key for a civ pair (lower index first). */
+function treatyKey(civA, civB) {
+  return civA < civB ? `${civA}-${civB}` : `${civB}-${civA}`;
+}
+
+/** Get current treaty status between two civs. */
+function getTreaty(state, civA, civB) {
+  if (!state.treaties) return 'war';
+  return state.treaties[treatyKey(civA, civB)] || 'war';
+}
+
+/** Check if two civs have made contact (treaty entry exists). */
+function haveContact(state, civA, civB) {
+  if (!state.treaties) return false;
+  return state.treaties[treatyKey(civA, civB)] !== undefined;
+}
+
+/** Set treaty status between two civs. */
+function setTreaty(state, civA, civB, status) {
+  if (!state.treaties) state.treaties = {};
+  state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: status };
+}
+
+/** Ensure diplomacy tracking object exists for a civ pair. */
+function ensureDiplomacy(state, civA, civB) {
+  if (!state.diplomacy) state.diplomacy = {};
+  const key = `${civA}-${civB}`;
+  if (!state.diplomacy[key]) {
+    state.diplomacy = { ...state.diplomacy, [key]: {} };
+  }
+  return key;
+}
+
+/** Get attitude of civSlot toward targetCiv. */
+function getAttitude(state, civSlot, targetCiv) {
+  return state.civs?.[civSlot]?.attitudes?.[targetCiv] ?? 0;
+}
+
+/** Modify attitude of civSlot toward targetCiv by delta, clamped [-100, 100]. */
+function adjustAttitude(state, civSlot, targetCiv, delta) {
+  if (!state.civs?.[civSlot]) return;
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[civSlot] };
+  if (!civ.attitudes || !Array.isArray(civ.attitudes)) {
+    const old = civ.attitudes;
+    civ.attitudes = [0, 0, 0, 0, 0, 0, 0, 0];
+    if (old) for (const [k, v] of Object.entries(old)) civ.attitudes[+k] = v;
+  } else {
+    civ.attitudes = [...civ.attitudes];
+  }
+  const cur = civ.attitudes[targetCiv] ?? 0;
+  civ.attitudes[targetCiv] = Math.max(-100, Math.min(100, cur + delta));
+  state.civs[civSlot] = civ;
+}
+
+/** Increment a civ's patience counter (reputation damage tracker). */
+function incrementPatience(state, civSlot) {
+  if (!state.civs?.[civSlot]) return;
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[civSlot] };
+  civ.patience = (civ.patience || 0) + 1;
+  state.civs[civSlot] = civ;
+}
+
+/** Clamp attitude to [min, max]. */
+function clampAttitude(state, civSlot, targetCiv, min, max) {
+  if (!state.civs?.[civSlot]?.attitudes) return;
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[civSlot] };
+  if (!Array.isArray(civ.attitudes)) {
+    const old = civ.attitudes;
+    civ.attitudes = [0, 0, 0, 0, 0, 0, 0, 0];
+    if (old) for (const [k, v] of Object.entries(old)) civ.attitudes[+k] = v;
+  } else {
+    civ.attitudes = [...civ.attitudes];
+  }
+  const cur = civ.attitudes[targetCiv] ?? 0;
+  civ.attitudes[targetCiv] = Math.max(min, Math.min(max, cur));
+  state.civs[civSlot] = civ;
+}
+
+/** Check if civSlot is a human player. */
+function isHuman(state, civSlot) {
+  return !!(state.civs?.[civSlot]?.isHuman);
+}
+
+/** Get difficulty index for a civ (0-5). */
+function getDifficultyIdx(state, civSlot) {
+  const diff = state.civs?.[civSlot]?.difficulty || state.difficulty || 'chieftain';
+  const keys = ['chieftain', 'warlord', 'prince', 'king', 'emperor', 'deity'];
+  const idx = keys.indexOf(diff);
+  return idx >= 0 ? idx : 0;
+}
+
+/** Record the current turn as the last tribute turn for a civ pair. */
+function recordTributeTurn(state, civA, civB) {
+  const key = ensureDiplomacy(state, civA, civB);
+  state.diplomacy = {
+    ...state.diplomacy,
+    [key]: { ...(state.diplomacy[key] || {}), lastTributeTurn: state.turn?.number || 0 },
+  };
+}
+
+/** Resolve city radius tile index to map coordinates. */
+function radiusTileCoords(cityGx, cityGy, i, mapBase) {
+  const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
+  const parC = cityGy & 1;
+  const parT = ((cityGy + ddy) % 2 + 2) % 2;
+  const tgx = cityGx + ((parC + ddx - parT) >> 1);
+  const tgy = cityGy + ddy;
+  const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+  if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) return null;
+  return { gx: wgx, gy: tgy };
+}
+
+/** Manhattan distance with optional horizontal wrapping. */
+function tileDist(ax, ay, bx, by, mw, wraps) {
+  let dx = Math.abs(ax - bx);
+  if (wraps) dx = Math.min(dx, mw - dx);
+  return dx + Math.abs(ay - by);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 1. declareWar — FUN_0045ac71 (diplo_declare_war)
+//
+// Declares war from aggressor on target. Handles reputation damage
+// based on existing treaty level: alliance > peace > ceasefire > none.
+// Triggers allied war activation cascade.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Declare war from aggressor on target civ.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} aggressor - civ slot declaring war
+ * @param {number} target - civ slot being attacked
+ * @param {number} [thirdParty=-1] - civ that provoked the war (-1 = self-initiated)
+ * @returns {{ events: object[] }}
+ */
+export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
+  const events = [];
+  const currentTreaty = getTreaty(state, aggressor, target);
+
+  // Already at war — nothing to do
+  if (currentTreaty === 'war' && haveContact(state, aggressor, target)) {
+    return { events };
+  }
+
+  // Record treaty violation against third party
+  if (thirdParty >= 0) {
+    const dKey = ensureDiplomacy(state, thirdParty, aggressor);
+    const prev = state.diplomacy[dKey] || {};
+    state.diplomacy = {
+      ...state.diplomacy,
+      [dKey]: { ...prev, violations: (prev.violations || 0) + 1 },
+    };
+  }
+
+  const diffIdx = getDifficultyIdx(state, aggressor);
+  // Statue of Liberty wonder index = 19
+  const hasStatueOfLiberty = hasWonderEffect(state, aggressor, 19);
+
+  if (currentTreaty === 'alliance') {
+    // ── Breaking alliance — worst reputation damage ──
+    if (diffIdx > 0 && !hasStatueOfLiberty) {
+      incrementPatience(state, aggressor);
+    }
+    if (thirdParty < 0) {
+      incrementPatience(state, aggressor);
+    }
+
+    // Double penalty if also had peace+ceasefire (shouldn't usually happen but matches pseudocode)
+    if (diffIdx > 0 && !hasStatueOfLiberty) {
+      incrementPatience(state, aggressor);
+    }
+
+    if (thirdParty >= 0) {
+      adjustAttitude(state, thirdParty, aggressor, -15);
+    }
+
+    // Set sneak attack flag
+    const sKey = ensureDiplomacy(state, aggressor, target);
+    state.diplomacy = {
+      ...state.diplomacy,
+      [sKey]: {
+        ...(state.diplomacy[sKey] || {}),
+        sneak: true, sneakTurn: state.turn?.number || 0,
+      },
+    };
+
+    // Break the alliance → set to war
+    setTreaty(state, aggressor, target, 'war');
+
+    // Activate counter-alliance wars (target's allies join against aggressor)
+    const allyResult = activateAllianceWars(state, mapBase, target, aggressor);
+    events.push(...allyResult.events);
+
+    recordTributeTurn(state, target, aggressor);
+
+  } else if (currentTreaty === 'peace' || currentTreaty === 'ceasefire') {
+    // ── Breaking peace/ceasefire — moderate reputation damage ──
+    if (diffIdx > 0 && !hasStatueOfLiberty) {
+      incrementPatience(state, aggressor);
+    }
+    if (thirdParty < 0) {
+      incrementPatience(state, aggressor);
+    }
+
+    if (thirdParty >= 0) {
+      adjustAttitude(state, thirdParty, aggressor, -5);
+    }
+
+    // Set sneak attack flag
+    const sKey = ensureDiplomacy(state, aggressor, target);
+    state.diplomacy = {
+      ...state.diplomacy,
+      [sKey]: {
+        ...(state.diplomacy[sKey] || {}),
+        sneak: true, sneakTurn: state.turn?.number || 0,
+      },
+    };
+
+    setTreaty(state, aggressor, target, 'war');
+
+    // Activate counter-alliance wars
+    const allyResult = activateAllianceWars(state, mapBase, target, aggressor);
+    events.push(...allyResult.events);
+
+    recordTributeTurn(state, target, aggressor);
+
+  } else {
+    // ── No treaty / first-time war — minimal reputation hit ──
+    if (diffIdx > 0 && !hasStatueOfLiberty) {
+      incrementPatience(state, aggressor);
+    }
+    if (thirdParty < 0) {
+      incrementPatience(state, aggressor);
+    }
+
+    if (thirdParty >= 0) {
+      adjustAttitude(state, thirdParty, aggressor, -25);
+    }
+
+    setTreaty(state, aggressor, target, 'war');
+  }
+
+  // Cancel trade routes between the two civs
+  cancelTradeRoutes(state, aggressor, target);
+
+  // Wake sleeping/sentry units near enemy
+  wakeUnitsNearEnemy(state, mapBase, aggressor, target);
+  wakeUnitsNearEnemy(state, mapBase, target, aggressor);
+
+  events.push({
+    type: 'warDeclared',
+    aggressor,
+    target,
+    thirdParty: thirdParty >= 0 ? thirdParty : undefined,
+    previousTreaty: currentTreaty,
+  });
+
+  return { events };
+}
+
+/** Cancel trade routes between two warring civs. */
+function cancelTradeRoutes(state, civA, civB) {
+  if (!state.cities) return;
+  let changed = false;
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    const city = state.cities[ci];
+    if (city.size <= 0 || !city.tradeRoutes || city.tradeRoutes.length === 0) continue;
+    if (city.owner !== civA && city.owner !== civB) continue;
+
+    const enemyCiv = city.owner === civA ? civB : civA;
+    const filtered = city.tradeRoutes.filter(r => {
+      const destCity = state.cities[r.destCityIndex];
+      return !destCity || destCity.owner !== enemyCiv;
+    });
+
+    if (filtered.length < city.tradeRoutes.length) {
+      if (!changed) { state.cities = [...state.cities]; changed = true; }
+      state.cities[ci] = { ...city, tradeRoutes: filtered };
+    }
+  }
+}
+
+/** Wake sleeping/sentry units of one civ that are near another civ's units or cities. */
+function wakeUnitsNearEnemy(state, mapBase, civSlot, enemyCiv) {
+  if (!state.units) return;
+  const WAKE_RANGE = 4;
+
+  // Collect enemy positions
+  const enemyPositions = [];
+  for (const u of state.units) {
+    if (u && u.owner === enemyCiv && u.gx >= 0) {
+      enemyPositions.push({ gx: u.gx, gy: u.gy });
+    }
+  }
+  if (state.cities) {
+    for (const c of state.cities) {
+      if (c && c.owner === enemyCiv && c.size > 0) {
+        enemyPositions.push({ gx: c.gx, gy: c.gy });
+      }
+    }
+  }
+  if (enemyPositions.length === 0) return;
+
+  let mutated = false;
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (!u || u.owner !== civSlot || u.gx < 0) continue;
+    if (u.orders !== 'sleep' && u.orders !== 'sentry' && u.orders !== 'fortified') continue;
+
+    for (const ep of enemyPositions) {
+      const dist = tileDist(u.gx, u.gy, ep.gx, ep.gy, mapBase.mw, mapBase.wraps);
+      if (dist <= WAKE_RANGE) {
+        if (!mutated) { state.units = [...state.units]; mutated = true; }
+        state.units[i] = { ...u, orders: 'none' };
+        break;
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 2. signCeasefire — FUN_0045a7a8 (diplo_sign_ceasefire)
+//
+// Establishes a ceasefire between warring civs.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Sign a ceasefire between two civs.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} civA - proposing civ
+ * @param {number} civB - accepting civ
+ * @returns {{ events: object[] }}
+ */
+export function signCeasefire(state, civA, civB) {
+  const events = [];
+
+  setTreaty(state, civA, civB, 'ceasefire');
+
+  // Clamp attitude to [0, 50] — per pseudocode
+  clampAttitude(state, civB, civA, 0, 50);
+
+  // Record treaty turn
+  recordTributeTurn(state, civA, civB);
+
+  // Clear provoked flags for all civs toward civA
+  // (simplified: clear sneak flag)
+  if (state.diplomacy) {
+    const newDiplo = { ...state.diplomacy };
+    for (let c = 1; c <= 7; c++) {
+      const dKey = `${c}-${civA}`;
+      if (newDiplo[dKey]?.provoked) {
+        newDiplo[dKey] = { ...newDiplo[dKey], provoked: false };
+      }
+    }
+    state.diplomacy = newDiplo;
+  }
+
+  events.push({
+    type: 'treatySigned',
+    treatyType: 'ceasefire',
+    civA,
+    civB,
+  });
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 3. signPeaceTreaty — FUN_0045a6ab (diplo_sign_peace_treaty)
+//
+// Signs a peace treaty (upgrading from ceasefire).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Sign a peace treaty between two civs.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} civA - proposing civ
+ * @param {number} civB - accepting civ
+ * @returns {{ events: object[] }}
+ */
+export function signPeaceTreaty(state, civA, civB) {
+  const events = [];
+
+  setTreaty(state, civA, civB, 'peace');
+
+  // Clamp attitude to [0, 50] — per pseudocode
+  clampAttitude(state, civB, civA, 0, 50);
+
+  // Reset patience
+  if (state.civs?.[civB]) {
+    state.civs = [...state.civs];
+    state.civs[civB] = { ...state.civs[civB], patience: 0 };
+  }
+
+  // Record treaty turn
+  recordTributeTurn(state, civB, civA);
+
+  events.push({
+    type: 'treatySigned',
+    treatyType: 'peace',
+    civA,
+    civB,
+  });
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 4. formAlliance — FUN_0045a535 (diplo_form_alliance)
+//
+// Forms an alliance between civA and civB. Adjusts attitude,
+// sets treaty flags. If either is at war, ally joins via cascade.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Form an alliance between two civs.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} civA - proposing civ
+ * @param {number} civB - accepting civ
+ * @returns {{ events: object[] }}
+ */
+export function formAlliance(state, mapBase, civA, civB) {
+  const events = [];
+
+  // Goodwill from alliance — per pseudocode: adjust_attitude(civB, civA, -25)
+  // Note: in Civ2 negative attitude = friendly (inverted scale),
+  // in our system we use positive = friendly
+  adjustAttitude(state, civB, civA, 25);
+
+  setTreaty(state, civA, civB, 'alliance');
+
+  // Reset patience
+  if (state.civs?.[civB]) {
+    state.civs = [...state.civs];
+    state.civs[civB] = { ...state.civs[civB], patience: 0 };
+  }
+
+  // Record treaty turn
+  recordTributeTurn(state, civA, civB);
+
+  events.push({
+    type: 'treatySigned',
+    treatyType: 'alliance',
+    civA,
+    civB,
+  });
+
+  // Check if either civ is at war — the new ally should join those wars
+  for (let c = 1; c <= 7; c++) {
+    if (c === civA || c === civB) continue;
+    if (!(state.civsAlive & (1 << c))) continue;
+
+    // If civA is at war with c, civB should join
+    if (getTreaty(state, civA, c) === 'war' && haveContact(state, civA, c)) {
+      const bTreaty = getTreaty(state, civB, c);
+      if (bTreaty !== 'war' && haveContact(state, civB, c)) {
+        setTreaty(state, civB, c, 'war');
+        adjustAttitude(state, civB, c, -50);
+        events.push({
+          type: 'warDeclared',
+          aggressor: civB,
+          target: c,
+          reason: 'allianceObligation',
+          alliedWith: civA,
+        });
+      }
+    }
+
+    // If civB is at war with c, civA should join
+    if (getTreaty(state, civB, c) === 'war' && haveContact(state, civB, c)) {
+      const aTreaty = getTreaty(state, civA, c);
+      if (aTreaty !== 'war' && haveContact(state, civA, c)) {
+        setTreaty(state, civA, c, 'war');
+        adjustAttitude(state, civA, c, -50);
+        events.push({
+          type: 'warDeclared',
+          aggressor: civA,
+          target: c,
+          reason: 'allianceObligation',
+          alliedWith: civB,
+        });
+      }
+    }
+  }
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 5. activateAllianceWars — FUN_0045a8e3 (diplo_activate_alliance_wars)
+//
+// When civA goes to war with civB, civA's allies are checked:
+// each ally that has contact with civB and no existing war/ceasefire
+// is dragged into the war. Prevents infinite loops via a processed set.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Activate alliance war cascade: civA's allies join war against civB.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} civA - civ whose allies should join
+ * @param {number} civB - civ being warred against
+ * @param {Set} [processed] - set of already-processed war declarations to prevent loops
+ * @returns {{ events: object[] }}
+ */
+export function activateAllianceWars(state, mapBase, civA, civB, processed) {
+  const events = [];
+  if (!haveContact(state, civA, civB)) return { events };
+
+  // Track which declarations we've already processed to prevent infinite cascades
+  if (!processed) processed = new Set();
+  const pairKey = `${Math.min(civA, civB)}-${Math.max(civA, civB)}`;
+  if (processed.has(pairKey)) return { events };
+  processed.add(pairKey);
+
+  for (let civ = 1; civ <= 7; civ++) {
+    if (civ === civA || civ === civB) continue;
+    if (!(state.civsAlive & (1 << civ))) continue;
+
+    // Must be allied with civA
+    if (getTreaty(state, civA, civ) !== 'alliance') continue;
+
+    // Must have contact with civB
+    if (!haveContact(state, civ, civB)) continue;
+
+    // Must not already be at war or ceasefire with civB
+    const existingTreaty = getTreaty(state, civ, civB);
+    if (existingTreaty === 'war' || existingTreaty === 'ceasefire') continue;
+
+    // This ally joins the war
+    setTreaty(state, civ, civB, 'war');
+
+    // Set provoked + attacked flags (simplified)
+    const dKey = ensureDiplomacy(state, civ, civB);
+    state.diplomacy = {
+      ...state.diplomacy,
+      [dKey]: {
+        ...(state.diplomacy[dKey] || {}),
+        provoked: true,
+        attacked: true,
+        attackedTurn: state.turn?.number || 0,
+      },
+    };
+
+    // Adjust attitude
+    adjustAttitude(state, civ, civB, -50);
+
+    recordTributeTurn(state, civB, civ);
+
+    events.push({
+      type: 'warDeclared',
+      aggressor: civ,
+      target: civB,
+      reason: 'allianceObligation',
+      alliedWith: civA,
+    });
+
+    // Recursively check if this new war triggers more alliance cascades
+    const cascadeKey = `${Math.min(civ, civB)}-${Math.max(civ, civB)}`;
+    if (!processed.has(cascadeKey)) {
+      const cascade = activateAllianceWars(state, mapBase, civ, civB, processed);
+      events.push(...cascade.events);
+    }
+  }
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 6. executeTransaction — FUN_004dd285 (parley_execute_transaction)
+//
+// Master dispatcher for diplomatic transactions. Executes both sides
+// of a trade deal: gold, techs, cities, units, maps.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Execute a diplomatic transaction (trade/gift).
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {object} offer - transaction descriptor
+ * @param {number} offer.from - giving civ
+ * @param {number} offer.to - receiving civ
+ * @param {number} [offer.gold] - gold amount to transfer
+ * @param {number[]} [offer.techs] - tech IDs to transfer
+ * @param {number[]} [offer.cities] - city indices to transfer
+ * @param {number[]} [offer.units] - unit indices to transfer
+ * @param {boolean} [offer.shareMaps] - whether to share map visibility
+ * @param {string} [offer.treaty] - treaty to sign ('ceasefire'|'peace'|'alliance')
+ * @returns {{ events: object[] }}
+ */
+export function executeTransaction(state, mapBase, offer) {
+  const events = [];
+  const { from, to } = offer;
+
+  // ── Gold transfer ──
+  if (offer.gold && offer.gold > 0) {
+    const result = transferGold(state, from, to, offer.gold);
+    events.push(...result.events);
+  }
+
+  // ── Tech transfer ──
+  if (offer.techs && offer.techs.length > 0) {
+    const result = transferTechs(state, from, to, offer.techs);
+    events.push(...result.events);
+  }
+
+  // ── City transfer ──
+  if (offer.cities && offer.cities.length > 0) {
+    for (const cityIndex of offer.cities) {
+      const result = transferCity(state, mapBase, cityIndex, from, to);
+      events.push(...result.events);
+    }
+  }
+
+  // ── Unit transfer ──
+  if (offer.units && offer.units.length > 0) {
+    const result = transferUnits(state, mapBase, from, to, offer.units);
+    events.push(...result.events);
+  }
+
+  // ── Map sharing ──
+  if (offer.shareMaps) {
+    const result = shareMaps(state, mapBase, from, to);
+    events.push(...result.events);
+  }
+
+  // ── Treaty signing ──
+  if (offer.treaty) {
+    let treatyResult;
+    switch (offer.treaty) {
+      case 'ceasefire':
+        treatyResult = signCeasefire(state, from, to);
+        break;
+      case 'peace':
+        treatyResult = signPeaceTreaty(state, from, to);
+        break;
+      case 'alliance':
+        treatyResult = formAlliance(state, mapBase, from, to);
+        break;
+    }
+    if (treatyResult) events.push(...treatyResult.events);
+  }
+
+  // ── Check civ elimination after transfers ──
+  for (const civ of [from, to]) {
+    if (civ <= 0) continue;
+    const hasCity = state.cities.some(c => c.owner === civ && c.size > 0);
+    const hasUnit = state.units.some(u => u.owner === civ && u.gx >= 0);
+    if (!hasCity && !hasUnit) {
+      state.civsAlive &= ~(1 << civ);
+      events.push({ type: 'civEliminated', civSlot: civ });
+    }
+  }
+
+  return { events };
+}
+
+// ── Transaction sub-functions ──
+
+/** Transfer gold from one civ to another. Clamps to available balance. */
+function transferGold(state, fromCiv, toCiv, amount) {
+  const events = [];
+  if (!state.civs) return { events };
+
+  state.civs = [...state.civs];
+  const fromData = { ...state.civs[fromCiv] };
+  const toData = { ...state.civs[toCiv] };
+
+  // Clamp to available
+  const available = fromData.treasury || 0;
+  const actual = Math.min(amount, available);
+  if (actual <= 0) return { events };
+
+  fromData.treasury = available - actual;
+  toData.treasury = (toData.treasury || 0) + actual;
+
+  state.civs[fromCiv] = fromData;
+  state.civs[toCiv] = toData;
+
+  // Diplomacy goodwill from gold gift (from pseudocode: -(amount * 3 / 2))
+  // In our system positive = friendly, so we add goodwill to receiver toward giver
+  const attitudeBonus = Math.min(50, Math.floor(actual / 10));
+  adjustAttitude(state, toCiv, fromCiv, attitudeBonus);
+
+  events.push({
+    type: 'goldTransferred',
+    from: fromCiv,
+    to: toCiv,
+    amount: actual,
+  });
+
+  return { events };
+}
+
+/** Transfer technologies from one civ to another. */
+function transferTechs(state, fromCiv, toCiv, techIds) {
+  const events = [];
+  const fromTechs = state.civTechs?.[fromCiv];
+  const toTechs = state.civTechs?.[toCiv];
+  if (!fromTechs || !toTechs) return { events };
+
+  for (const techId of techIds) {
+    if (fromTechs.has(techId) && !toTechs.has(techId)) {
+      grantAdvance(state, toCiv, techId);
+      events.push({
+        type: 'techTransferred',
+        from: fromCiv,
+        to: toCiv,
+        advanceId: techId,
+      });
+    }
+  }
+
+  return { events };
+}
+
+/** Transfer units from one civ to another. */
+function transferUnits(state, mapBase, fromCiv, toCiv, unitIndices) {
+  const events = [];
+  if (!state.units) return { events };
+
+  state.units = [...state.units];
+
+  for (const ui of unitIndices) {
+    const u = state.units[ui];
+    if (!u || u.gx < 0 || u.owner !== fromCiv) continue;
+
+    // Find nearest city of new owner for rehoming
+    let bestCi = -1, bestDist = Infinity;
+    if (state.cities) {
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (c.owner === toCiv && c.size > 0) {
+          const d = tileDist(u.gx, u.gy, c.gx, c.gy, mapBase.mw, mapBase.wraps);
+          if (d < bestDist) { bestDist = d; bestCi = ci; }
+        }
+      }
+    }
+
+    state.units[ui] = {
+      ...u,
+      owner: toCiv,
+      homeCityId: bestCi >= 0 ? bestCi : 0xFFFF,
+      orders: 'none',
+      goToX: -1,
+      goToY: -1,
+    };
+
+    // Update visibility for new owner
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, u.gx, u.gy, mapBase.wraps);
+
+    events.push({
+      type: 'unitTransferred',
+      unitIndex: ui,
+      unitType: u.type,
+      from: fromCiv,
+      to: toCiv,
+    });
+  }
+
+  return { events };
+}
+
+/** Share map visibility between two civs. */
+function shareMaps(state, mapBase, fromCiv, toCiv) {
+  const events = [];
+  if (!mapBase.tileData) return { events };
+
+  const fromBit = 1 << fromCiv;
+  const toBit = 1 << toCiv;
+
+  // Grant visibility: tiles visible to fromCiv become visible to toCiv
+  for (let i = 0; i < mapBase.tileData.length; i++) {
+    const tile = mapBase.tileData[i];
+    if (!tile) continue;
+    if ((tile.visibility & fromBit) && !(tile.visibility & toBit)) {
+      tile.visibility |= toBit;
+    }
+  }
+
+  events.push({
+    type: 'mapsShared',
+    from: fromCiv,
+    to: toCiv,
+  });
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 7. transferCity — FUN_004de0e2 (parley_transfer_city)
+//
+// Transfers a city from one civ to another. Removes certain buildings,
+// transfers units in the city, updates tile ownership and visibility.
+// ═══════════════════════════════════════════════════════════════════
+
+// Buildings always removed on diplomatic city transfer
+// From pseudocode: Palace=1, Temple=4, Barracks=2, Courthouse=7
+const TRANSFER_REMOVE_BUILDINGS = new Set([1, 2, 4, 7]);
+
+/**
+ * Transfer a city from one civ to another (diplomatic, not capture).
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} cityIndex - index into state.cities
+ * @param {number} fromCiv - current owner
+ * @param {number} toCiv - new owner
+ * @returns {{ events: object[] }}
+ */
+export function transferCity(state, mapBase, cityIndex, fromCiv, toCiv) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0 || city.owner !== fromCiv) return { events };
+
+  const cityGx = city.gx;
+  const cityGy = city.gy;
+
+  // ── Remove specific buildings ──
+  let buildings = new Set(city.buildings);
+  for (const bid of TRANSFER_REMOVE_BUILDINGS) {
+    buildings.delete(bid);
+  }
+
+  // ── Update city ──
+  state.cities = [...state.cities];
+  state.cities[cityIndex] = {
+    ...city,
+    owner: toCiv,
+    buildings,
+    hasWalls: buildings.has(8),
+    hasPalace: buildings.has(1),
+    shieldsInBox: 0,
+    civilDisorder: false,
+    weLoveKingDay: false,
+    soldThisTurn: false,
+    resistanceTurns: 0,
+    originalOwner: fromCiv,
+    turnCaptured: state.turn?.number || 0,
+    tradeRoutes: [], // trade routes cancelled
+  };
+
+  // ── Update tile ownership around city ──
+  // City center tile
+  const centerIdx = cityGy * mapBase.mw + cityGx;
+  if (mapBase.tileData[centerIdx]) {
+    mapBase.tileData[centerIdx].tileOwnership = toCiv;
+  }
+
+  // City radius tiles (21-tile spiral)
+  for (let r = 0; r < 21; r++) {
+    const pos = radiusTileCoords(cityGx, cityGy, r, mapBase);
+    if (!pos) continue;
+    const tIdx = pos.gy * mapBase.mw + pos.gx;
+    const tile = mapBase.tileData[tIdx];
+    if (!tile) continue;
+    if (tile.tileOwnership === fromCiv) {
+      // Only change ownership if no other city of fromCiv claims this tile
+      const otherClaim = state.cities.some((c, ci) =>
+        ci !== cityIndex && c.owner === fromCiv && c.size > 0 &&
+        CITY_RADIUS_DOUBLED.some(([ddx, ddy]) => {
+          const parC = c.gy & 1;
+          const parT = ((c.gy + ddy) % 2 + 2) % 2;
+          const tgx = c.gx + ((parC + ddx - parT) >> 1);
+          const tgy = c.gy + ddy;
+          const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+          return wgx === pos.gx && tgy === pos.gy;
+        })
+      );
+      if (!otherClaim) {
+        tile.tileOwnership = toCiv;
+      }
+    }
+    // Grant visibility to new owner
+    tile.visibility |= (1 << toCiv);
+  }
+
+  // ── Update visibility around city for new owner ──
+  updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, cityGx, cityGy, mapBase.wraps, 2);
+
+  // ── Transfer units at the city tile ──
+  state.units = [...state.units];
+  for (let ui = 0; ui < state.units.length; ui++) {
+    const u = state.units[ui];
+    if (!u || u.gx < 0 || u.owner !== fromCiv) continue;
+
+    if (u.gx === cityGx && u.gy === cityGy) {
+      // Unit is at the city — transfer ownership
+      let bestCi = -1, bestDist = Infinity;
+      // Find nearest city of new owner for rehoming
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (c.owner === toCiv && c.size > 0) {
+          const d = tileDist(u.gx, u.gy, c.gx, c.gy, mapBase.mw, mapBase.wraps);
+          if (d < bestDist) { bestDist = d; bestCi = ci; }
+        }
+      }
+
+      state.units[ui] = {
+        ...u,
+        owner: toCiv,
+        homeCityId: bestCi >= 0 ? bestCi : 0xFFFF,
+        orders: 'none',
+        goToX: -1,
+        goToY: -1,
+      };
+
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, u.gx, u.gy, mapBase.wraps);
+    } else if (u.homeCityId === cityIndex) {
+      // Unit is homed to this city but not physically there — rehome to nearest own city
+      let bestCi = -1, bestDist = Infinity;
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (ci !== cityIndex && c.owner === fromCiv && c.size > 0) {
+          const d = tileDist(u.gx, u.gy, c.gx, c.gy, mapBase.mw, mapBase.wraps);
+          if (d < bestDist) { bestDist = d; bestCi = ci; }
+        }
+      }
+      state.units[ui] = {
+        ...u,
+        homeCityId: bestCi >= 0 ? bestCi : 0xFFFF,
+      };
+    }
+  }
+
+  // ── Wonder ownership: wonders are city-indexed, so they automatically transfer ──
+  // Emit events for any wonders in this city
+  if (state.wonders) {
+    for (let wi = 0; wi < state.wonders.length; wi++) {
+      const w = state.wonders[wi];
+      if (w && w.cityIndex === cityIndex && !w.destroyed) {
+        events.push({
+          type: 'wonderTransferred',
+          wonderIndex: wi,
+          from: fromCiv,
+          to: toCiv,
+          cityIndex,
+        });
+      }
+    }
+  }
+
+  // ── Palace relocation for old owner ──
+  if (city.buildings && city.buildings.has(1)) {
+    // Lost palace — give one to the most-populated remaining city
+    let bestPalaceCi = -1, bestSize = 0;
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      const c = state.cities[ci];
+      if (c.owner === fromCiv && c.size > 0 && ci !== cityIndex) {
+        if (c.size > bestSize) { bestSize = c.size; bestPalaceCi = ci; }
+      }
+    }
+    if (bestPalaceCi >= 0) {
+      const pc = state.cities[bestPalaceCi];
+      const pBuildings = new Set(pc.buildings);
+      pBuildings.add(1);
+      state.cities[bestPalaceCi] = { ...pc, buildings: pBuildings, hasPalace: true };
+    }
+  }
+
+  events.push({
+    type: 'cityTransferred',
+    cityIndex,
+    cityName: city.name,
+    from: fromCiv,
+    to: toCiv,
+  });
+
+  return { events };
+}

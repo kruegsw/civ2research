@@ -273,7 +273,7 @@ export const MOUNTED_UNITS = new Set([
 
 // Units with Aegis defense bonus (double defense vs air and missile attacks)
 // From RULES.TXT flags bit 14 (0x4000)
-export const UNIT_AEGIS_BONUS = new Set([40]); // AEGIS Cruiser
+export const UNIT_AEGIS_BONUS = new Set([39]); // AEGIS Cruiser (type 39)
 
 // Terrain transformation table for engineers (Transform order)
 // Index by terrain type → result terrain. -1 = cannot transform
@@ -1098,3 +1098,26 @@ export const GOVT_INDEX = {
   anarchy: 0, despotism: 1, monarchy: 2, communism: 3,
   fundamentalism: 4, republic: 5, democracy: 6,
 };
+
+// ── Building prerequisite chains ──
+// Maps buildingId → required buildingId (must have the prerequisite building to build)
+export const IMPROVE_REQUIRES_BUILDING = {
+  16: 15,  // Mfg. Plant → Factory
+  22: 10,  // Stock Exchange → Bank
+  26: 12,  // Research Lab → University
+  19: 15,  // Power Plant → Factory
+  20: 15,  // Hydro Plant → Factory
+  21: 15,  // Nuclear Plant → Factory
+  29: 15,  // Solar Plant → Factory
+};
+
+// Buildings that require a coastal city (adjacent ocean)
+export const COASTAL_BUILDINGS = new Set([30, 31, 34, 28]); // Harbour, Offshore Platform, Port Facility, Coastal Fortress
+
+// Power plant buildings — mutually exclusive (only one per city)
+export const POWER_PLANT_BUILDINGS = new Set([19, 20, 21, 29]); // Power Plant, Hydro Plant, Nuclear Plant, Solar Plant
+
+// Spaceship part building IDs
+export const SS_STRUCTURAL = 35;
+export const SS_COMPONENT = 36;
+export const SS_MODULE = 37;

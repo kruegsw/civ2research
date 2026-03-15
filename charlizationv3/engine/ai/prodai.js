@@ -20,6 +20,14 @@ import {
   LEADER_PERSONALITY, GOVT_INDEX,
 } from '../defs.js';
 import { hasWonderEffect } from '../utils.js';
+import {
+  canBuildUnitType, canBuildImprovement, canBuildWonder as canBuildWonderCheck,
+  getAvailableProduction,
+} from '../buildcheck.js';
+import {
+  GOAL_ATTACK_CITY, GOAL_DEFEND_CITY, GOAL_NAVAL_ASSAULT,
+  GOAL_REINFORCE, GOAL_EXPLORE, GOAL_TRANSPORT,
+} from './goals.js';
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -74,8 +82,16 @@ function isUnitObsolete(civTechs, unitId) {
 
 /**
  * Check if a civ can build a given unit type.
+ * Delegates to buildcheck.js for full validation: tech prereqs, obsolescence,
+ * domain (coastal), fanatics (government), etc.
+ * Uses cityIndex=-1 for generic checks (no coastal validation).
  */
-function canBuildUnit(civTechs, unitId) {
+function canBuildUnit(civTechs, unitId, civSlot, cityIndex, gameState, mapBase) {
+  // When called with full context, use the authoritative buildcheck
+  if (civSlot != null && gameState != null) {
+    return canBuildUnitType(civSlot, cityIndex ?? -1, unitId, gameState, mapBase);
+  }
+  // Legacy fallback: tech-only check (used by bestDefensiveUnit/bestOffensiveUnit)
   const prereq = UNIT_PREREQS[unitId] ?? -1;
   if (!hasTechPrereq(civTechs, prereq)) return false;
   if (isUnitObsolete(civTechs, unitId)) return false;
@@ -83,9 +99,17 @@ function canBuildUnit(civTechs, unitId) {
 }
 
 /**
- * Check if a civ can build a given building in a city.
+ * Check if a civ/city can build a given building.
+ * Delegates to buildcheck.js for full validation: tech prereqs, already built,
+ * building chains (e.g. Mfg Plant needs Factory), coastal requirements,
+ * power plant mutual exclusion, palace uniqueness, spaceship parts, etc.
  */
-function canBuildBuilding(civTechs, city, buildingId) {
+function canBuildBuilding(civTechs, city, buildingId, civSlot, cityIndex, gameState, mapBase) {
+  // When called with full context, use the authoritative buildcheck
+  if (civSlot != null && gameState != null) {
+    return canBuildImprovement(civSlot, cityIndex ?? -1, buildingId, gameState, mapBase);
+  }
+  // Legacy fallback: simplified check
   if (city.buildings && city.buildings.has(buildingId)) return false;
   const prereq = IMPROVE_PREREQS[buildingId] ?? -1;
   return hasTechPrereq(civTechs, prereq);
@@ -93,13 +117,19 @@ function canBuildBuilding(civTechs, city, buildingId) {
 
 /**
  * Check if a civ can build a given wonder.
+ * Delegates to buildcheck.js for full validation: tech prereqs, already built,
+ * obsolescence, destroyed status, etc.
  */
-function canBuildWonder(civTechs, gameState, wonderIndex) {
+function canBuildWonder(civTechs, gameState, wonderIndex, civSlot) {
+  // When called with full context, use the authoritative buildcheck
+  if (civSlot != null) {
+    return canBuildWonderCheck(civSlot, wonderIndex, gameState);
+  }
+  // Legacy fallback: simplified check
   const prereq = WONDER_PREREQS[wonderIndex] ?? -1;
   if (!hasTechPrereq(civTechs, prereq)) return false;
   const obsolete = WONDER_OBSOLETE[wonderIndex] ?? -1;
   if (obsolete >= 0 && civTechs && civTechs.has(obsolete)) return false;
-  // Already built by anyone?
   const w = gameState.wonders?.[wonderIndex];
   if (w && w.cityIndex != null && !w.destroyed) return false;
   return true;
@@ -308,12 +338,13 @@ function countUnitsByType(gameState, civSlot, unitType) {
 
 /**
  * Find the best available defensive unit for the civ (highest DEF among land units).
+ * Uses cityIndex for domain checks (coastal) when provided.
  */
-function bestDefensiveUnit(civTechs) {
+function bestDefensiveUnit(civTechs, civSlot, cityIndex, gameState, mapBase) {
   let bestId = -1;
   let bestDef = -1;
   for (let id = 0; id < NUM_UNIT_TYPES; id++) {
-    if (!canBuildUnit(civTechs, id)) continue;
+    if (!canBuildUnit(civTechs, id, civSlot, cityIndex, gameState, mapBase)) continue;
     if (UNIT_DOMAIN[id] !== 0) continue;
     if (SETTLER_TYPES.has(id)) continue;
     const def = UNIT_DEF[id] || 0;
@@ -328,12 +359,13 @@ function bestDefensiveUnit(civTechs) {
 
 /**
  * Find the best available offensive unit for the civ (highest ATK among land units).
+ * Uses cityIndex for domain checks (coastal) when provided.
  */
-function bestOffensiveUnit(civTechs) {
+function bestOffensiveUnit(civTechs, civSlot, cityIndex, gameState, mapBase) {
   let bestId = -1;
   let bestAtk = -1;
   for (let id = 0; id < NUM_UNIT_TYPES; id++) {
-    if (!canBuildUnit(civTechs, id)) continue;
+    if (!canBuildUnit(civTechs, id, civSlot, cityIndex, gameState, mapBase)) continue;
     if (UNIT_DOMAIN[id] !== 0) continue;
     if (SETTLER_TYPES.has(id)) continue;
     if (NON_COMBAT_TYPES.has(id)) continue;
@@ -537,7 +569,8 @@ function _scoreSpaceshipPart(buildingId, gameState, civSlot, strategy) {
  * normalization step so our convention (higher=better) is preserved.
  */
 function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot, strategy) {
-  if (!canBuildUnit(civTechs, unitId)) return -1;
+  const cityIndex = gameState.cities.indexOf(city);
+  if (!canBuildUnit(civTechs, unitId, civSlot, cityIndex, gameState, mapBase)) return -1;
 
   const domain = UNIT_DOMAIN[unitId] ?? 0;
   const role = UNIT_ROLE[unitId] ?? 0;
@@ -621,7 +654,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     // Decompiled: role==5 requires citySize > 1 AND various food/settler checks
 
     // Engineers (1) vs Settlers (0): prefer engineers if available
-    if (unitId === 0 && canBuildUnit(civTechs, 1)) return -1;
+    if (unitId === 0 && canBuildUnit(civTechs, 1, civSlot, cityIndex, gameState, mapBase)) return -1;
     // Phalanx check: don't build if govtIdx < 2 (anarchy/despotism) AND unitId == 2
     // (this is actually about Warriors, handled elsewhere)
 
@@ -983,7 +1016,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
  */
 function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState, mapBase, civSlot, strategy) {
   if (buildingId <= 0 || buildingId >= NUM_BUILDING_TYPES) return -1;
-  if (!canBuildBuilding(civTechs, city, buildingId)) return -1;
+  if (!canBuildBuilding(civTechs, city, buildingId, civSlot, cityIndex, gameState, mapBase)) return -1;
 
   // ── Map decompiled locals to JS context ──
   const citySize = city.size || 1;
@@ -1636,7 +1669,7 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
  * Returns -1 if the wonder should not be considered.
  */
 function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState, mapBase, civSlot, strategy) {
-  if (!canBuildWonder(civTechs, gameState, wonderIndex)) return -1;
+  if (!canBuildWonder(civTechs, gameState, wonderIndex, civSlot)) return -1;
 
   // Wonders: item.id = wonderIndex + 39
   const wonderBuildId = wonderIndex + 39;
@@ -2117,6 +2150,21 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     unitTypeCountOnCont[u.type] = (unitTypeCountOnCont[u.type] || 0) + 1;
   }
 
+  // Per-continent military strength evaluation (H.4b)
+  // Compute our vs enemy military on this continent for production balance
+  let contOurMilStrength = 0;
+  let contEnemyMilStrength = 0;
+  const cont = strategy?.aiData?.continents?.get(continentId);
+  if (cont) {
+    for (const [civ, count] of cont.militaryCounts) {
+      if (civ === civSlot) {
+        contOurMilStrength += count;
+      } else if (civ !== 0) {
+        contEnemyMilStrength += count;
+      }
+    }
+  }
+
   return {
     nearbyEnemies,
     defenders,
@@ -2136,6 +2184,8 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     continentId,
     sdiCount,
     unitTypeCountOnCont,
+    contOurMilStrength,
+    contEnemyMilStrength,
   };
 }
 
@@ -2203,6 +2253,51 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
     if (s > bestWonderScore) {
       bestWonderScore = s;
       bestWonder = { type: 'wonder', id: wi + 39 };
+    }
+  }
+
+  // ── Goal list integration (H.4a): boost unit scores based on active goals ──
+  const goals = strategy?.goals;
+  if (goals && bestUnit && bestUnitScore > 0) {
+    const bestUnitRole = UNIT_ROLE[bestUnit.id] ?? 0;
+    const bestUnitDomain = UNIT_DOMAIN[bestUnit.id] ?? 0;
+
+    // Count unassigned goals by type to determine demand
+    const attackGoals = goals.countType(GOAL_ATTACK_CITY);
+    const defendGoals = goals.countType(GOAL_DEFEND_CITY);
+    const reinforceGoals = goals.countType(GOAL_REINFORCE);
+    const navalGoals = goals.countType(GOAL_NAVAL_ASSAULT);
+    const transportGoals = goals.countType(GOAL_TRANSPORT);
+
+    // Boost attack units when ATTACK_CITY goals exist
+    if (bestUnitRole === 0 && bestUnitDomain === 0 && attackGoals > 0) {
+      bestUnitScore = Math.floor(bestUnitScore * (1.0 + Math.min(attackGoals, 5) * 0.06));
+    }
+
+    // Boost defensive units when DEFEND_CITY or REINFORCE goals exist
+    if (bestUnitRole === 1 && (defendGoals > 0 || reinforceGoals > 0)) {
+      const defNeed = defendGoals + reinforceGoals;
+      bestUnitScore = Math.floor(bestUnitScore * (1.0 + Math.min(defNeed, 5) * 0.08));
+    }
+
+    // Boost naval units when NAVAL_ASSAULT goals exist
+    if (bestUnitDomain === 1 && (navalGoals > 0 || transportGoals > 0)) {
+      bestUnitScore = Math.floor(bestUnitScore * 1.15);
+    }
+
+    // Boost transport when transport goals exist
+    if (bestUnitRole === 5 && bestUnitDomain === 1 && transportGoals > 0) {
+      bestUnitScore = Math.floor(bestUnitScore * 1.2);
+    }
+
+    // Per-continent military balance: if we're outnumbered on this city's
+    // continent, boost military unit scores
+    if ((bestUnitRole === 0 || bestUnitRole === 1) && bestUnitDomain === 0) {
+      const contEnemy = cityCtx.contEnemyMilStrength || 0;
+      const contOurs = cityCtx.contOurMilStrength || 0;
+      if (contEnemy > 0 && contOurs < contEnemy * 1.5) {
+        bestUnitScore = Math.floor(bestUnitScore * 1.1);
+      }
     }
   }
 
@@ -2311,7 +2406,7 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
   // A city with 0 defenders should always prioritize building a defensive unit,
   // regardless of whether enemies are nearby (lines 6019-6026 approximate conditions)
   if (cityCtx.defenders === 0) {
-    const bestDefId = bestDefensiveUnit(civTechs);
+    const bestDefId = bestDefensiveUnit(civTechs, civSlot, cityIndex, gameState, mapBase);
     if (bestDefId >= 0) {
       const defScore = scoreUnit(bestDefId, city, cityCtx, civTechs,
         gameState, mapBase, civSlot, strategy);
@@ -2327,12 +2422,12 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
   // Decompiled: returns 99 (capitalize) when local_30 > 500
   if (!bestItem || bestScore <= 0) {
     // Try to find any buildable defensive unit
-    const fallbackId = bestDefensiveUnit(civTechs);
+    const fallbackId = bestDefensiveUnit(civTechs, civSlot, cityIndex, gameState, mapBase);
     if (fallbackId >= 0) {
       return { item: { type: 'unit', id: fallbackId }, score: 1 };
     }
     // Last resort: Warriors
-    if (canBuildUnit(civTechs, 2)) {
+    if (canBuildUnit(civTechs, 2, civSlot, cityIndex, gameState, mapBase)) {
       return { item: { type: 'unit', id: 2 }, score: 1 };
     }
     return null;
@@ -2573,6 +2668,11 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
     const item = city.itemInProduction;
     if (!item) continue;
 
+    const totalCost = getProductionCost(item);
+    if (totalCost === Infinity) continue;
+
+    const shieldsStored = city.shieldsInBox || 0;
+
     // Wonders: only rush-buy if another civ is racing for the same wonder
     if (item.type === 'wonder') {
       const wonderIdx = item.id - 39;
@@ -2609,11 +2709,6 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
       candidates.push({ ci, city, item, buyCost: rushBuyCost, priority: wonderPriority });
       continue;
     }
-
-    const totalCost = getProductionCost(item);
-    if (totalCost === Infinity) continue;
-
-    const shieldsStored = city.shieldsInBox || 0;
     if (shieldsStored >= totalCost) continue;
 
     const buyCost = calcRushBuyCost(item.type, totalCost, shieldsStored);
@@ -2678,6 +2773,66 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
     if (!err) {
       actions.push(action);
       treasury -= buyCost;
+    }
+  }
+
+  return actions;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// H.4c: Sell obsolete buildings
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Obsolete building replacement table.
+ * Key = old building ID, value = array of replacement building IDs.
+ * When a city has the old building AND at least one replacement, sell the old.
+ *
+ * From Civ2 city processing — buildings that become redundant:
+ *   - Power Plant (19) → obsolete if city has Hydro (20), Nuclear (21), or Solar (29)
+ */
+const OBSOLETE_BUILDING_PAIRS = [
+  [19, [20, 21, 29]], // Power Plant → Hydro/Nuclear/Solar
+];
+
+/**
+ * Generate SELL_BUILDING actions for buildings that are obsolete because
+ * a superior replacement exists in the same city.
+ *
+ * Only sells one building per city per turn (game rule).
+ *
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {number} civSlot
+ * @param {Array<string>|null} [debugLog=null]
+ * @returns {Array<object>} SELL_BUILDING actions
+ */
+export function generateSellObsoleteActions(gameState, mapBase, civSlot, debugLog = null) {
+  const actions = [];
+
+  for (let ci = 0; ci < gameState.cities.length; ci++) {
+    const city = gameState.cities[ci];
+    if (!city || city.size <= 0 || city.owner !== civSlot) continue;
+    if (!city.buildings || city.buildings.size === 0) continue;
+
+    // Check each obsolete pair
+    for (const [oldId, replacements] of OBSOLETE_BUILDING_PAIRS) {
+      if (!city.buildings.has(oldId)) continue;
+
+      // Check if city has any replacement
+      const hasReplacement = replacements.some(rid => city.buildings.has(rid));
+      if (!hasReplacement) continue;
+
+      const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: oldId };
+      const err = validateAction(gameState, mapBase, action, civSlot);
+      if (!err) {
+        actions.push(action);
+        if (debugLog) {
+          const oldName = IMPROVE_NAMES[oldId] || `bldg#${oldId}`;
+          debugLog.push(`SELL: ${city.name}: selling obsolete ${oldName}`);
+        }
+        break; // one sell per city per turn (game rule)
+      }
     }
   }
 

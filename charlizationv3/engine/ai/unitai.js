@@ -2784,6 +2784,98 @@ function aiAirAttack(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   return _airReturnToBase(unit, unitIndex, gameState, mapBase, civSlot);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// H.3b: Nuclear Missile AI (type 45)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * AI for Nuclear Missiles (type 45).
+ *
+ * Targets the most valuable enemy city, considering:
+ *   - City size and number of improvements (more buildings = more damage)
+ *   - SDI Defense (building 17) — cities with SDI are much harder to nuke
+ *   - Distance (must be within movement range of 16)
+ *   - Preference for cities building wonders
+ *
+ * Uses the NUKE action type which destroys units and buildings in a 3x3 area.
+ * Nuclear missiles are destroyed after use (UNIT_DESTROYED_AFTER_ATTACK).
+ *
+ * Requires Manhattan Project (wonder 23) to have been built.
+ */
+function aiNuclearMissile(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
+  // ── Manhattan Project check ──
+  const mpBuilt = gameState.wonders?.[23]?.cityIndex != null && !gameState.wonders[23].destroyed;
+  if (!mpBuilt) {
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
+
+  const nukeRange = UNIT_MOVE_POINTS[45] || 16;
+
+  let bestTarget = null;
+  let bestScore = -Infinity;
+
+  for (const city of gameState.cities) {
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    if (city.owner === civSlot) continue;
+    if (!isAtWar(gameState, civSlot, city.owner)) continue;
+
+    // Range check
+    let dx = Math.abs(unit.gx - city.gx);
+    if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+    const dy = Math.abs(unit.gy - city.gy);
+    if (dx + dy > nukeRange) continue;
+
+    // Score based on city value
+    let score = city.size * 20;
+
+    // Bonus for number of buildings (more to destroy = more valuable target)
+    const numBuildings = city.buildings ? city.buildings.size : 0;
+    score += numBuildings * 5;
+
+    // Bonus for wonder-building cities (very high-value sabotage)
+    if (city.itemInProduction?.type === 'wonder') {
+      score += 100;
+    }
+
+    // SDI Defense (building 17) — dramatically reduces nuke effectiveness
+    // In Civ2, SDI gives 75% chance to intercept nuclear missiles
+    if (city.buildings?.has(17)) {
+      score = Math.floor(score * 0.25); // 75% likely to fail
+    }
+
+    // Distance penalty (prefer closer targets — less time exposed)
+    score -= Math.floor((dx + dy) / 2);
+
+    // Bonus for capitals (building 1 = palace)
+    if (city.buildings?.has(1)) {
+      score += 40;
+    }
+
+    // Bonus for large unit stacks at the city
+    const unitsAtCity = unitsAt(spatialIdx, city.gx, city.gy);
+    const enemyUnits = unitsAtCity.filter(e => e.unit.owner !== civSlot);
+    score += enemyUnits.length * 8;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestTarget = city;
+    }
+  }
+
+  // ── Fire if we have a worthy target ──
+  if (bestTarget && bestScore > 30) {
+    const nukeAction = {
+      type: 'NUKE', unitIndex,
+      targetGx: bestTarget.gx, targetGy: bestTarget.gy,
+    };
+    const err = validateAction(gameState, mapBase, nukeAction, civSlot);
+    if (!err) return nukeAction;
+  }
+
+  // ── No targets: skip (preserve the missile for later) ──
+  return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+}
+
 // ── aiAirAttack helpers ────────────────────────────────────────────
 
 /**
@@ -2919,6 +3011,57 @@ function aiAirDefense(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) 
   const inCity = inCityIdx >= 0;
 
   if (inCity) {
+    // ── H.3c: Air intercept — engage nearby enemy air units ──
+    // Fighters at frontline cities actively intercept enemy air units
+    // (bombers, missiles) that are within attack range. This simulates
+    // Civ2's scramble mechanic where fighters automatically engage.
+    {
+      const fighterRange = UNIT_MOVE_POINTS[unit.type] || 10;
+      const interceptRange = Math.floor(fighterRange / 2); // can engage and return
+      let bestIntercept = null;
+      let bestInterceptScore = -Infinity;
+
+      for (let ui = 0; ui < gameState.units.length; ui++) {
+        const eu = gameState.units[ui];
+        if (eu.gx < 0 || eu.owner === civSlot) continue;
+        if (!isAtWar(gameState, civSlot, eu.owner)) continue;
+        const eDomain = UNIT_DOMAIN[eu.type] ?? 0;
+        if (eDomain !== 2) continue; // only target air units
+        const eRole = UNIT_ROLE[eu.type] ?? 0;
+        // Target bombers (role 3) and missiles — not other fighters (avoid dogfight stalemates)
+        if (eRole === 4) continue;
+
+        const dist = tileDist(unit.gx, unit.gy, eu.gx, eu.gy, mapBase);
+        if (dist > interceptRange * 2) continue;
+
+        // Score: prioritize bombers over missiles, closer is better
+        let score = 100 - dist;
+        const eAtk = UNIT_ATK[eu.type] || 0;
+        score += eAtk * 3; // higher attack = higher priority target
+        // Bonus for enemies near our cities
+        const nearOwnCity = gameState.cities.some(c =>
+          c && c.owner === civSlot && c.size > 0 &&
+          tileDist(eu.gx, eu.gy, c.gx, c.gy, mapBase) <= 6
+        );
+        if (nearOwnCity) score += 50;
+
+        if (score > bestInterceptScore) {
+          bestInterceptScore = score;
+          bestIntercept = eu;
+        }
+      }
+
+      // Attempt intercept via BOMBARD (air-to-air engagement)
+      if (bestIntercept && bestInterceptScore > 60) {
+        const bombardAction = {
+          type: 'BOMBARD', unitIndex,
+          targetGx: bestIntercept.gx, targetGy: bestIntercept.gy,
+        };
+        const err = validateAction(gameState, mapBase, bombardAction, civSlot);
+        if (!err) return bombardAction;
+      }
+    }
+
     // ── Count air defense units at this city ──
     // Ported from lines 3349-3383: walk the unit stack, count role 4 + role 5 units
     const airDefHere = _countAirDefenseAtTile(gameState, spatialIdx, unit.gx, unit.gy, civSlot);
@@ -3341,6 +3484,14 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
       let score = landCombat.length * 20 - dist;
       if (!hasLocalEnemy) score += 100;
 
+      // H.3d: Enhanced transport coordination — prioritize pickup of
+      // attack units (role 0) when at war. These units are more useful
+      // for overseas operations than defenders.
+      const attackUnitsHere = landCombat.filter(e => (UNIT_ROLE[e.unit.type] ?? 0) === 0);
+      if (attackUnitsHere.length > 0) {
+        score += attackUnitsHere.length * 15; // prefer cities with attack units
+      }
+
       // Bonus for cities with excess defenders
       const defCount = _countDefendersAtTile(gameState, spatialIdx, city.gx, city.gy, civSlot);
       if (defCount > 2) score += (defCount - 2) * 10;
@@ -3530,20 +3681,53 @@ function aiDiplomat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
     isAtWar(gameState, civSlot, c.owner));
 
   if (enemyCityHere) {
-    // Try steal tech first (highest value action)
+    // H.3a: Smart spy operation selection based on context.
+    // Spies (type 47) survive espionage; diplomats (type 46) are consumed.
+    // Choose operation based on what's most valuable:
+    //   - Steal tech if enemy has techs we don't
+    //   - Sabotage if city is building a wonder or has many improvements
+    //   - Incite revolt if city is small and we have gold
+    const isSpy = unit.type === 47;
+    const cityBuildingWonder = enemyCityHere.itemInProduction?.type === 'wonder';
+    const cityHasManyBuildings = enemyCityHere.buildings && enemyCityHere.buildings.size > 6;
+    const ourTechs = gameState.civTechs?.[civSlot]?.size ?? 0;
+    const theirTechs = gameState.civTechs?.[enemyCityHere.owner]?.size ?? 0;
+    const theyHaveMoreTech = theirTechs > ourTechs;
+
+    // Priority order depends on context:
+    // 1. If enemy is building a wonder → sabotage first (extremely high value)
+    // 2. If enemy has more techs → steal tech first
+    // 3. Otherwise → steal tech, then sabotage, then incite
+    if (cityBuildingWonder) {
+      // Sabotage the wonder first
+      const sabAction = { type: 'SABOTAGE_CITY', unitIndex };
+      const sabErr = validateAction(gameState, mapBase, sabAction, civSlot);
+      if (!sabErr) return sabAction;
+    }
+
+    if (theyHaveMoreTech) {
+      const stealAction = { type: 'STEAL_TECH', unitIndex };
+      const stealErr = validateAction(gameState, mapBase, stealAction, civSlot);
+      if (!stealErr) return stealAction;
+    }
+
+    // Default order: steal, sabotage, incite
     const stealAction = { type: 'STEAL_TECH', unitIndex };
     const stealErr = validateAction(gameState, mapBase, stealAction, civSlot);
     if (!stealErr) return stealAction;
 
-    // Try sabotage (always available against enemy cities)
     const sabAction = { type: 'SABOTAGE_CITY', unitIndex };
     const sabErr = validateAction(gameState, mapBase, sabAction, civSlot);
     if (!sabErr) return sabAction;
 
-    // Try incite revolt (costs gold)
-    const inciteAction = { type: 'INCITE_REVOLT', unitIndex };
-    const inciteErr = validateAction(gameState, mapBase, inciteAction, civSlot);
-    if (!inciteErr) return inciteAction;
+    // Incite revolt — only if we have enough gold (cost is proportional to city size)
+    const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
+    const estimatedCost = enemyCityHere.size * 50; // rough estimate
+    if (treasury > estimatedCost * 2) {
+      const inciteAction = { type: 'INCITE_REVOLT', unitIndex };
+      const inciteErr = validateAction(gameState, mapBase, inciteAction, civSlot);
+      if (!inciteErr) return inciteAction;
+    }
   }
 
   // ── 2. Score all cities as potential targets ──
@@ -4210,8 +4394,12 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
 
     let action = null;
 
+    // Nuclear missile special case (type 45) — uses NUKE action, not BOMBARD
+    if (unit.type === 45) {
+      action = aiNuclearMissile(unit, i, gameState, mapBase, spatialIdx, civSlot);
+    }
     // Explorer special case (type 50) — non-combat, unique behavior
-    if (unit.type === 50) {
+    else if (unit.type === 50) {
       action = aiExplorer(unit, i, gameState, mapBase, spatialIdx, civSlot);
     } else {
       // Role-based dispatch
