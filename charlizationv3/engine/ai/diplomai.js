@@ -27,6 +27,7 @@ import {
   GOVERNMENT_NAMES,
 } from '../defs.js';
 import { hasWonderEffect } from '../utils.js';
+import { calcAttitudeScore } from '../diplomacy.js';
 
 // ── Leader Personality Table ─────────────────────────────────────
 // Indexed by rulesCivNumber (0-20). Each entry: [expansionism, militarism]
@@ -1802,6 +1803,19 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
     let attDelta = 0;
     const treaty = getTreaty(gameState, civSlot, other);
     const attitude = getAttitude(gameState, civSlot, other);
+
+    // D.4: Binary 15-phase attitude recalibration (every 4 turns)
+    const turnNum = gameState.turn?.number || 0;
+    if ((turnNum & 3) === 0) {
+      const binaryScore = calcAttitudeScore(gameState, civSlot, other);
+      // Map binary score (-10..+10 range) to attitude scale (0-100)
+      const targetAttitude = Math.max(0, Math.min(100, 50 + binaryScore * 5));
+      // Nudge current attitude toward binary target (smooth convergence)
+      const diff = targetAttitude - attitude;
+      if (Math.abs(diff) > 5) {
+        attDelta += Math.sign(diff) * Math.min(Math.abs(diff), 10);
+      }
+    }
 
     // ── O.5: Personality modifiers ──
     // Militarist leaders distrust everyone slightly

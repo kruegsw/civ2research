@@ -17,8 +17,8 @@
 //   FUN_004de0e2 — parley_transfer_city
 // ═══════════════════════════════════════════════════════════════════
 
-import { CITY_RADIUS_DOUBLED } from './defs.js';
-import { hasWonderEffect } from './utils.js';
+import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS } from './defs.js';
+import { hasWonderEffect, civHasWonder } from './utils.js';
 import { grantAdvance } from './research.js';
 import { updateVisibility } from './visibility.js';
 
@@ -1430,4 +1430,141 @@ export function transferCity(state, mapBase, cityIndex, fromCiv, toCiv) {
   });
 
   return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// D.4: Attitude Scoring — 15-phase formula
+// Port of FUN_00560d95 (calc_attitude_score)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate AI attitude toward another civ using the full 15-phase
+ * binary-faithful formula.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ computing attitude
+ * @param {number} targetCiv - civ being evaluated
+ * @returns {number} attitude score (negative=hostile, positive=friendly)
+ */
+export function calcAttitudeScore(state, aiCiv, targetCiv) {
+  if (aiCiv === targetCiv) return 0;
+
+  const aiCivData = state.civs?.[aiCiv];
+  const targetCivData = state.civs?.[targetCiv];
+  if (!aiCivData || !targetCivData) return 0;
+
+  const treaty = getTreaty(state, aiCiv, targetCiv);
+
+  // Leader personality lookup
+  const rulesCivNum = aiCivData.rulesCivNumber ?? 0;
+  const personality = LEADER_PERSONALITY[rulesCivNum] || [0, 0, 0];
+  const [expansionism, militarism, tolerance] = personality;
+
+  const aiTechCount = state.civTechCounts?.[aiCiv] || 0;
+  const targetTechCount = state.civTechCounts?.[targetCiv] || 0;
+  const aiMilPower = aiCivData.militaryPower || 0;
+  const targetMilPower = targetCivData.militaryPower || 0;
+  const aiPowerRank = aiCivData.powerRank ?? 3;
+  const targetPowerRank = targetCivData.powerRank ?? 3;
+  const turnNum = state.turn?.number || 0;
+  const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
+  const isAllied = treaty === 'alliance';
+
+  let score = 0;
+
+  // Phase 2: Pre-scoring data collection
+  let techRankCount = 0;
+  let warCount = 0;
+  let allianceStrength = 0;
+  for (let c = 1; c < 8; c++) {
+    if (c === aiCiv || !(state.civsAlive & (1 << c))) continue;
+    const otherTechs = state.civTechCounts?.[c] || 0;
+    if (otherTechs > targetTechCount) techRankCount++;
+    if (getTreaty(state, aiCiv, c) === 'war') warCount++;
+    if (getTreaty(state, targetCiv, c) === 'alliance') {
+      allianceStrength++;
+      const allyMilPower = state.civs?.[c]?.militaryPower || 0;
+      if (targetMilPower < allyMilPower) allianceStrength++;
+    }
+  }
+
+  // Phase 3: Alliance modifiers
+  if (isAllied) {
+    if (warCount === 0) {
+      if ((aiCivData.treasury || 0) < (targetCivData.treasury || 0)) score += 1;
+      if (aiTechCount < targetTechCount && diffIdx > 0) score += 1;
+      if (targetTechCount < aiTechCount) score -= 1;
+      if (aiMilPower < targetMilPower) score += 1;
+      if (targetMilPower < aiMilPower) score -= 1;
+    } else if (expansionism < 1 || warCount > 1) {
+      let penalty = warCount - expansionism - 1;
+      if (penalty < 2) penalty = 1;
+      score -= penalty;
+    }
+    if (aiTechCount + 8 < targetTechCount) score += 1;
+  }
+
+  // Phase 4: Treaty status modifiers
+  if (treaty === 'ceasefire') score -= 2;
+  if (!isAllied) score -= 1;
+
+  // Phase 5: Late-game power penalties
+  if (targetPowerRank < 7 && turnNum > 200) {
+    let penalty = 7 - targetPowerRank;
+    if (turnNum < 400) penalty = (penalty + 1) >> 1;
+    score -= penalty;
+  }
+  if (targetPowerRank === 7 && (targetCivData.cityCount || 0) > 3 &&
+      turnNum > 200 && diffIdx > 0) {
+    score += Math.floor(diffIdx / 3) + 1;
+  }
+
+  // Phase 6: Spaceship penalties
+  if (targetCivData.spaceshipFlag) {
+    score -= 1;
+    if (!aiCivData.spaceshipFlag && score > 0) score -= 1;
+  }
+
+  // Phase 7+8: Personality + power differential
+  let personalityMod = expansionism * 3 + militarism * 2;
+  if (personalityMod < -1) personalityMod = -2;
+  let powerDiff = targetPowerRank - aiPowerRank;
+  if (powerDiff < 0) powerDiff = Math.floor(powerDiff / 2);
+  else if (!isAllied) powerDiff = Math.floor(powerDiff / 2);
+  score += personalityMod + powerDiff;
+
+  // Phase 9: Military power comparison (stacking penalties)
+  if (aiMilPower * 4 < targetMilPower) score -= 1;
+  if (aiMilPower * 2 < targetMilPower) score -= 1;
+  if (aiMilPower * 3 < targetMilPower * 2) score -= 1;
+
+  // Phase 10: Peaceful strength bonus (NOT allied)
+  if (!isAllied) {
+    if (targetMilPower < aiMilPower) score += 1;
+    if (targetMilPower * 2 < aiMilPower) score += 1;
+  }
+
+  // Phase 11: Wonder effects
+  if (civHasWonder(state, targetCiv, 6) || civHasWonder(state, targetCiv, 24)) {
+    if (score < 1) score -= 1; else score >>= 1;
+  }
+  if (civHasWonder(state, aiCiv, 20)) score += 1;
+  if (civHasWonder(state, targetCiv, 20)) {
+    if (score > 0) score = Math.floor(score / 2);
+    score -= (score >= 1 ? 2 : 1);
+  }
+
+  // Phase 12: Tech leader bonus
+  if (techRankCount === 0) score += 1;
+
+  // Phase 13: Tech count vs tolerance
+  if (aiTechCount < targetTechCount) score += (1 - tolerance);
+
+  // Phase 14: Alliance floor
+  if (isAllied && score < 1) score = 0;
+
+  // Phase 15: No contact reset
+  if (!haveContact(state, aiCiv, targetCiv)) score = 0;
+
+  return score;
 }
