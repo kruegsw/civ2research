@@ -324,6 +324,10 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     const defCityHasPalace = defInCity && defCity.buildings && defCity.buildings.has(1);
     const defCitySize = defCity ? (defCity.size || 0) : 0;
 
+    // Sun Tzu's War Academy (wonder 7): auto-promotes combat winners
+    const attackerSunTzu = hasWonderEffect(state, civSlot, 7);
+    const defenderSunTzu = hasWonderEffect(state, defCivSlot, 7);
+
     // Detect treaty violation: attacking a civ you had peace/ceasefire with
     let isTreatyViolation = false;
     if (state.treaties) {
@@ -346,6 +350,8 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       defCityHasPalace,
       defCitySize,
       treatyViolation: isTreatyViolation,
+      attackerSunTzu,
+      defenderSunTzu,
     };
     const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, combatSeed, state.difficulty || 'chieftain', unit.movesLeft, combatOpts);
 

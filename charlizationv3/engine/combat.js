@@ -10,18 +10,18 @@
 //            violation flags, sneak attack ×2
 //
 // Special unit interactions ported from decompiled FUN_00580341:
-//   - Pikemen double defense vs mounted/horse units (flags bit 13)
+//   - Scramble defense: +50% for flagsB 0x04 units vs ground attackers
 //   - Aegis Cruiser defense bonus vs air/missile attacks (flags bit 14)
 //   - Air vs unarmed ships: halved defense, FP capped to 1
-//   - Air vs land: FP capped to 1 for both sides
 //   - Sea vs land: FP capped to 1 for both sides
 //   - Caught in port: sea unit on land → attacker FP ×2, defender FP = 1
 //   - City Walls: attacker FP = 1 for land attackers (not wall-negating)
 //   - Siege units defending: FP forced to 1 (Catapult/Cannon/Artillery/Howitzer)
 //   - Helicopter vs Fighter: defender (helicopter) FP = 1
-//   - Helicopter vs submarines: ×8 attack multiplier
+//   - Partisans vs unarmed: ×8 attack multiplier
 //   - Partial movement attack penalty (fractional MP)
 //   - Palace / small-city double-roll mechanic for defenders
+//   - Palace: halves barbarian attack (separate from double-roll)
 //   - Great Wall: halves barbarian attack, doubles attack vs barbarians
 //   - Sneak attack: ×2 attack bonus when breaking treaties
 //   - Amphibious attack: ×2 defender FP when attacking from ship
@@ -32,7 +32,7 @@
 import {
   UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
   UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER,
-  UNIT_PIKEMAN_BONUS, MOUNTED_UNITS, UNIT_AEGIS_BONUS,
+  UNIT_PIKEMAN_BONUS, UNIT_AEGIS_BONUS,
   UNIT_SUBMARINE, DIFFICULTY_KEYS, UNIT_FUEL, UNIT_NEGATES_WALLS,
 } from './defs.js';
 import { hasWonderEffect } from './utils.js';
@@ -79,17 +79,17 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   }
 
   // Fortress: ×2 (mult goes to 4) — only if not in a city
+  // Binary: fortress ignored when attacker domain == air (binary 0x01 = JS 2)
   if (hasFortress && !inCity) {
-    // If attacker is unknown (-1) or attacker is not sea domain: apply fortress
-    if (attackerType == null || attackerType < 0 || atkDomain !== 1) {
+    if (attackerType == null || attackerType < 0 || atkDomain !== 2) {
       defense *= 2;
     }
   }
 
-  // City walls / Great Wall: ×3 vs non-air attackers (for land-domain defenders)
-  // Binary: walls apply to ground-domain defenders against non-air attackers
+  // City walls / Great Wall: ×3 for ground-domain defenders vs ground-domain attackers only
+  // Binary: walls multiplier only applied for ground defenders, and only vs ground attackers
   if (inCity && hasWalls && defDomain === 0) {
-    if (attackerType == null || attackerType < 0 || atkDomain !== 2) {
+    if (attackerType == null || attackerType < 0 || atkDomain === 0) {
       defense *= 3;
     }
   }
@@ -180,9 +180,10 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
     if (curHp <= 0) continue;
     score = Math.floor(score * curHp / maxHp);
 
-    // ── Pikeman bonus vs mounted attackers ──
-    if (UNIT_PIKEMAN_BONUS.has(u.type) && MOUNTED_UNITS.has(attackerType)) {
-      score *= 2;
+    // ── Pikeman/scramble bonus in defender selection ──
+    // Binary: flagsB 0x04 gives +1 tiebreaker (not ×2, not limited to mounted)
+    if (UNIT_PIKEMAN_BONUS.has(u.type)) {
+      score += 1;
     }
 
     // ── AEGIS bonus vs air/missile attackers ──
@@ -273,30 +274,21 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     // Defense is halved after all other modifiers (applied to effDef below)
   }
 
-  // ── Special interaction: Air vs land ──────────────────────────
-  // Ported from FUN_00580341 lines 141-144: when air attacks land,
-  // both sides get FP capped to 1. This prevents bombers from
-  // one-shotting ground units and vice-versa.
-  if (atkDomain === 2 && defDomain === 0) {
-    atkFp = 1;
-    defFp = 1;
-  }
-
-  // ── Special interaction: Helicopter vs submarines ─────────────
-  // Ported from FUN_00580341 lines 183-186: Helicopter (type 29)
+  // ── Special interaction: Partisans vs unarmed units ────────────
+  // Ported from FUN_00580341 line 183: type 0x09 (Partisans)
   // attacking 0-attack defender → ×8 attack multiplier.
-  // This models helicopter anti-submarine warfare.
-  let heliBonus = false;
-  if (attacker.type === 29 && defAtk === 0) {
-    heliBonus = true;
+  // Binary checks attacker type == 9 specifically.
+  let partisanBonus = false;
+  if (attacker.type === 9 && defAtk === 0) {
+    partisanBonus = true;
   }
 
   // Effective attack: base × veteran bonus
   let effAtk = atkBase * 8; // ×8 for fixed-point
   if (attacker.veteran) effAtk += Math.floor(effAtk / 2); // +50% veteran
 
-  // Helicopter vs submarine: ×8 attack multiplier
-  if (heliBonus) {
+  // Partisan vs unarmed: ×8 attack multiplier
+  if (partisanBonus) {
     effAtk = effAtk << 3;
   }
 
@@ -312,11 +304,12 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // We do NOT re-apply those multipliers here (binary applies them once).
   let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type);
 
-  // ── Special interaction: Pikemen double defense vs mounted ────
-  // Ported from FUN_00580341 lines 142-150 (pikeman flag bit 13).
-  // Pikemen-flagged defenders get ×2 defense vs mounted attackers.
-  if (UNIT_PIKEMAN_BONUS.has(defender.type) && MOUNTED_UNITS.has(attacker.type)) {
-    effDef *= 2;
+  // ── Scramble defense: +50% when defender has flagsB 0x04 ──────
+  // Binary: flagsB 0x04 (pikeman-type) gives +50% defense when attacker is
+  // ground domain with full movement and standard HP (10). We check domain
+  // and approximate the other conditions.
+  if (UNIT_PIKEMAN_BONUS.has(defender.type) && atkDomain === 0) {
+    effDef = effDef + Math.floor(effDef / 2);
   }
 
   // ── Special interaction: Aegis defense bonus vs air/missiles ──
@@ -391,6 +384,13 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // their attack power is doubled.
   if (sneakAttack) {
     effAtk *= 2;
+  }
+
+  // ── B.2: Palace barbarian attack halving ──────────────────────
+  // From FUN_00580341 lines 225-228: when barbarians attack a city with
+  // Palace, their attack is halved outright (separate from double-roll).
+  if (defCityHasPalace && attacker.owner === 0) {
+    effAtk = effAtk >> 1;
   }
 
   // ── B.2: Great Wall wonder — barbarian-only effects ────────────
@@ -507,9 +507,15 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   //   Attacker wins: rand() % (attack + defense) <= defense → promote attacker
   //   Defender wins: rand() % (attack + defense) <= attack → promote defender
   // Higher enemy strength = higher promotion chance for the winner.
+  // Missile units (flagsB & 0x10 = UNIT_DESTROYED_AFTER_ATTACK) cannot be promoted.
+  // Sun Tzu's War Academy (wonder 7) auto-promotes the winner.
   const promoRoll = (effAtk + effDef > 0) ? (rand() % (effAtk + effDef)) : 0;
-  const atkVeteranPromo = attackerWins && !attacker.veteran && defBase > 0 && promoRoll <= effDef;
-  const defVeteranPromo = !attackerWins && !submarineRetreated && !defender.veteran && atkBase > 0 && promoRoll <= effAtk;
+  const atkCanPromote = !attacker.veteran && !UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type);
+  const defCanPromote = !defender.veteran && !UNIT_DESTROYED_AFTER_ATTACK.has(defender.type);
+  const attackerSunTzu = opts?.attackerSunTzu || false;
+  const defenderSunTzu = opts?.defenderSunTzu || false;
+  const atkVeteranPromo = attackerWins && atkCanPromote && (defBase > 0 && promoRoll <= effDef || attackerSunTzu);
+  const defVeteranPromo = !attackerWins && !submarineRetreated && defCanPromote && (atkBase > 0 && promoRoll <= effAtk || defenderSunTzu);
 
   // ── B.2: Barbarian kill ransom ──────────────────────────────────
   // From FUN_00580341: when killing a barbarian, award gold based on

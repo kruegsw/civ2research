@@ -508,6 +508,7 @@ export function processBarbarianAI(state, prev, mapBase) {
           defenderHasGreatWall: barbDefenderHasGreatWall,
           defCityHasPalace: barbDefCityHasPalace,
           defCitySize: barbDefCitySize,
+          defenderSunTzu: hasWonderEffect(state, defender.owner, 7),
         };
         const result = resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls,
           defHasFortress, defOnRiver, defCityBuildings, barbCombatSeed, difficulty, attacker.movesLeft, barbCombatOpts);

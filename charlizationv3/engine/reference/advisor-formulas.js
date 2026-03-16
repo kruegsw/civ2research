@@ -2687,8 +2687,10 @@ export const ESPIONAGE = {
     missionSurvivalModifier: [0, 0, 0, 0, 1, 2, 2, 3, 4],  // additional risk by mission type
 
     // --- Detailed spy survival formula ---
-    // C: local_8 = (param_2 < 0) + 2;  // base = 2 for spy (type 0x2F), 3 for diplomat
-    baseSurvival: { spy: 2, diplomat: 3 },
+    // C: local_8 = (param_2 < 0) + 2;  // base depends on context, NOT unit type
+    // param_2 >= 0 (mission survival): base = 2; param_2 < 0 (detection evasion): base = 3
+    // Diplomats do not have survival — they are consumed. Both values are spy-only.
+    baseSurvival: { mission: 2, detection: 3 },
     // C: if (*(ushort *)(&DAT_006560f4 + param_1 * 0x20) & 0x2000) local_8 *= 2
     veteranBonus: { flag: 0x2000, effect: 'survival *= 2', meaning: 'Veteran status doubles survival odds' },
     // C: if (0 < param_2) local_8 /= 2
@@ -2701,7 +2703,7 @@ export const ESPIONAGE = {
     escapeAction: 'Spy teleports to nearest friendly city (FUN_0043d07a)',
     deathAction: 'Spy unit is killed (FUN_005b6042)',
     veteranFlagAddr: 'DAT_006560F4 + unitIndex * 0x20 (bit 0x2000)',
-    postSurvivalFlag: 'unit.statusFlags |= 0x2000 (mark as veteran if survived)',
+    postSurvivalFlag: 'unit.statusFlags |= 0x2000 (mark as veteran if survived, mission context only — NOT during detection checks where param_2=-1)',
     sourceAddr: '0x004c5fae',
   },
 
@@ -4575,8 +4577,8 @@ export const TRADE_DISTRIBUTION = {
     // C line 3893: DAT_006a65fc (gold) += count_status1 * 2
     // C line 3895: DAT_006a6554 (luxury) += count_status2 * 3
     // C line 3897: DAT_006a6578 (science) += count_status3 * 3
-    taxman:    { status: 1, bonus: 2, yields: 'gold' },
-    elvis:     { status: 2, bonus: 3, yields: 'luxury' },
+    taxman:    { status: 1, bonus: 3, yields: 'gold' },
+    elvis:     { status: 2, bonus: 2, yields: 'luxury' },
     scientist: { status: 3, bonus: 3, yields: 'science' },
   },
 
@@ -6777,7 +6779,7 @@ export const POLLUTION_AND_WARMING = {
     addr: 'DAT_00655b0e',         // char: pollution counter                   // 0x00486c2e
     formula: 'DAT_00655b12 - DAT_00655b10 + DAT_00655b10 / 2',
     multiCivDivisor: 'numAliveCivs',  // divided by alive civ count            // 0x00486c2e
-    netFormula: '(pollutionScore * 2 - DAT_00655b0f * 4) - nuclearPlantCities',
+    netFormula: '(pollutionScore * 2 - DAT_00655b0f * 4) - recyclingCenterCities',
     solarPlantBuildingId: 0x1D,  // building 29: Solar Plant (Nuclear Plant = 0x15) // 0x00486c2e
     clampRange: { min: 0, max: 99 },  // clamped to 0..99                     // 0x00486c2e
   },
