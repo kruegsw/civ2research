@@ -64,7 +64,7 @@ export const PACKET_FORMAT = {
 //
 // Categories:
 //   0x00–0x0B: Connection lifecycle & session management
-//   0x0E–0x16: Player join/leave/disconnect
+//   0x0B–0x16: Player join/leave/disconnect (incl. NOP/reserved 0x0B-0x14)
 //   0x17–0x24: Bulk data sync (rules, techs, units, etc.)
 //   0x25–0x32: Game state, events, seat management
 //   0x33–0x36: Position & config sync
@@ -93,10 +93,17 @@ export const MESSAGE_TYPES = {
   PARSE_BLOCK:         { id: 0x0A, payload: 'extract and parse save data', sourceAddr: '0x0047E94E case 0x0A' },
   SESSION_CANCEL:      { id: 0x0B, payload: 'none (session cancelled by host)', sourceAddr: '0x0056E2E9' },
 
-  // === Player Join/Leave (0x0E–0x16) ===
-  SERVER_QUIT_NOTIFY:  { id: 0x0E, payload: 'server quitting, all players notified', sourceAddr: '0x004824E3' },
-  HOST_TRANSFER:       { id: 0x0F, payload: 'new host assignment', sourceAddr: '0x004824E3' },
-  CLIENT_QUIT:         { id: 0x10, payload: 'client requesting disconnect', sourceAddr: '0x004828A5' },
+  // === Player Join/Leave (0x0B–0x16) ===
+  SESSION_CANCEL_NOP:  { id: 0x0B, payload: 'none (NOP in network_poll)', sourceAddr: '0x0047E94E case 0x0B' },
+  JOIN_REJECT:         { id: 0x0C, payload: 'none (sent to failed join client; NOP in receiver)', sourceAddr: '0x0047E94E case 0x2E reject path, case 0x0C' },
+  RESERVED_0D:         { id: 0x0D, payload: 'none (NOP — reserved/unused)', sourceAddr: '0x0047E94E case 0x0D' },
+  SERVER_QUIT_NOTIFY:  { id: 0x0E, payload: 'server quitting, all players notified; increments quit counter', sourceAddr: '0x004824E3, 0x0047E94E case 0x0E' },
+  HOST_TRANSFER:       { id: 0x0F, payload: 'new host assignment; increments quit counter', sourceAddr: '0x004824E3, 0x0047E94E case 0x0F' },
+  CLIENT_QUIT:         { id: 0x10, payload: 'client requesting disconnect; decrements DAT_006ad664', sourceAddr: '0x004828A5, 0x0047E94E case 0x10' },
+  RESERVED_11:         { id: 0x11, payload: 'none (NOP — reserved/unused)', sourceAddr: '0x0047E94E case 0x11' },
+  SESSION_INFO_REQ:    { id: 0x12, payload: 'request session info from host; server responds with 0x13', sourceAddr: '0x0047E94E case 0x12' },
+  SESSION_INFO_RESP:   { id: 0x13, payload: 'session info response: copies host name, game name, session name, scenario name into DAT_006ad57c..DAT_006ad5fc and dialog object fields', sourceAddr: '0x0047E94E case 0x13' },
+  RESERVED_14:         { id: 0x14, payload: 'none (NOP — reserved/unused)', sourceAddr: '0x0047E94E case 0x14' },
   FULL_STATE_SYNC:     { id: 0x15, payload: 'delta-compressed game state blocks', sourceAddr: '0x0047E94E case 0x15' },
   SEAT_FINALIZE:       { id: 0x16, payload: 'seat assignment finalized', sourceAddr: '0x004824E3, 0x0047E94E case 0x2E' },
 
@@ -119,17 +126,23 @@ export const MESSAGE_TYPES = {
 
   // === Game State & Events (0x25–0x32) ===
   SYNC_EVENTS:         { id: 0x25, payload: 'event count + event records', sourceAddr: '0x0047E94E case 0x25' },
+  RESERVED_26:         { id: 0x26, payload: 'none (NOP — reserved/unused)', sourceAddr: '0x0047E94E case 0x26' },
+  RESERVED_27:         { id: 0x27, payload: 'none (NOP — reserved/unused)', sourceAddr: '0x0047E94E case 0x27' },
   GAME_STARTED:        { id: 0x28, payload: 'game state counter (1=starting, 2=all ready, 3=running)', sourceAddr: '0x0056E2E9, 0x0047E94E case 0x28' },
   ALIVE_BITMASK:       { id: 0x2A, payload: 'alive civ bitmask + player mask', sourceAddr: '0x0048DAB9, 0x0047E94E case 0x2A' },
-  TURN_SIGNAL:         { id: 0x2B, payload: 'player slot ID (turn ready signal)', sourceAddr: '0x0048D9AD' },
+  TURN_SIGNAL:         { id: 0x2B, payload: 'player slot ID (turn ready signal); server echoes 0x2C', sourceAddr: '0x0048D9AD, 0x0047E94E case 0x2B' },
+  TURN_SIGNAL_ACK:     { id: 0x2C, payload: 'none (NOP — turn signal acknowledgement from server)', sourceAddr: '0x0047E94E case 0x2C' },
+  TURN_DONE:           { id: 0x2D, payload: 'player civ ID; client signals turn processing complete; server sets DAT_006c3188[civ]=1 and calls process_disconnected_players', sourceAddr: '0x0048BFEC line 3809, 0x0047E94E case 0x2D' },
   PLAYER_JOIN:         { id: 0x2E, payload: 'full resync handshake (server side)', sourceAddr: '0x0047E94E case 0x2E' },
-  PLAYER_WAITING:      { id: 0x2F, payload: 'client waiting for join', sourceAddr: '0x0047E94E case 0x2F' },
+  PLAYER_WAITING:      { id: 0x2F, payload: 'client waiting for join', sourceAddr: '0x0047E94E case 0x2F, 0x0059BFE5' },
   SEAT_CLAIM:          { id: 0x30, payload: 'civ slot claimed by player', sourceAddr: '0x0047E94E case 0x30' },
   SEAT_RELEASE:        { id: 0x31, payload: 'civ slot released', sourceAddr: '0x0047E94E case 0x31' },
   DISCONNECT:          { id: 0x32, payload: 'player disconnect notification', sourceAddr: '0x0047E94E case 0x32, 0x0056E2E9' },
 
   // === Position & Config (0x33–0x36) ===
   POSITION_SYNC:       { id: 0x33, payload: 'viewport_x, viewport_y, current_turn', sourceAddr: '0x00410000 block' },
+  CITY_PROCESS:        { id: 0x34, response: 0x35, payload: 'city index; server calls FUN_004e1763(cityIdx,0,0) then responds with 0x35', sourceAddr: '0x0047E94E case 0x34' },
+  CITY_PROCESS_ACK:    { id: 0x35, payload: 'city process ack; sets DAT_006c90b4 = 1', sourceAddr: '0x0047E94E case 0x35' },
 
   // === Unit Operations (0x37–0x5B) — Request→Response pairs ===
   // Server processes request, sends back response with same ID+1
@@ -167,8 +180,9 @@ export const MESSAGE_TYPES = {
   DEC_COUNTER_A:       { id: 0x56, payload: 'counter decrement; result=2 sets flag=-1', sourceAddr: '0x0047E94E case 0x56' },
   DEC_COUNTER_B:       { id: 0x57, payload: 'counter decrement variant', sourceAddr: '0x0047E94E case 0x57' },
   MAP_DATA:            { id: 0x59, payload: 'DAT_006D1190, size=DAT_006365F4*4', sourceAddr: '0x0046B14D case 0x59' },
+  MAP_VISIBILITY_RESET:{ id: 0x58, payload: 'none; resets all tile visibility and city ownership fields, rebuilds per-civ vis layers via FUN_004f1220', sourceAddr: '0x0047E94E case 0x58' },
   BRIBE_CAPTURE:       { id: 0x5A, response: 0x5B, payload: 'complex unit bribe/capture', sourceAddr: '0x0047E94E case 0x5A' },
-  BRIBE_CAPTURE_ACK:   { id: 0x5B, payload: 'bribe ack', sourceAddr: '0x0047E94E' },
+  BRIBE_CAPTURE_ACK:   { id: 0x5B, payload: 'bribe ack; sets DAT_006c914c = 1', sourceAddr: '0x0047E94E case 0x5B' },
 
   // === State Diff (0x5C) ===
   STATE_DIFF:          { id: 0x5C, payload: 'delta-compressed state diff blocks (same handler as 0x15)', sourceAddr: '0x004B0B53, 0x0047E94E case 0x5C' },
@@ -232,6 +246,9 @@ export const MESSAGE_TYPES = {
   CITY_RENAME:         { id: 0x89, payload: 'city index + new name', sourceAddr: '0x0047E94E case 0x89' },
   CITY_REFRESH:        { id: 0x8A, payload: 'refresh city window if not open', sourceAddr: '0x0047E94E case 0x8A' },
 
+  // === Reserved (0x8B) ===
+  RESERVED_8B:         { id: 0x8B, payload: 'none (NOP — reserved/unused)', sourceAddr: '0x0047E94E case 0x8B' },
+
   // === Civ Elimination (0x8C–0x8F) ===
   CIV_ELIMINATE_A:     { id: 0x8C, payload: 'civ elimination operation A', sourceAddr: '0x0047E94E case 0x8C' },
   CIV_ELIMINATE_B:     { id: 0x8D, payload: 'civ elimination operation B', sourceAddr: '0x0047E94E case 0x8D' },
@@ -239,7 +256,16 @@ export const MESSAGE_TYPES = {
   UNIT_PURGE_B:        { id: 0x8F, payload: 'unit purge operation B', sourceAddr: '0x0047E94E case 0x8F' },
 
   // === Map/Tile Operations (0x90–0x98) ===
-  TILE_FLAG_OP:        { id: 0x90, payload: 'tile flag set/clear', note: 'ops 0x90-0x97 are individual tile flag operations', sourceAddr: '0x0047E94E case 0x90-0x97' },
+  // Each opcode modifies a specific field of the 6-byte tile record.
+  // See MAP_TILE_OPS below for full details of each function.
+  TILE_IMPROVEMENTS:   { id: 0x90, payload: 'x, y, bitmask, set_or_clear', params: 5, note: 'tile byte 1 — set/clear improvement bits (irrigation, mine, road, railroad, fortress, airbase, pollution, farmland)', sourceAddr: '0x005B94FC' },
+  TILE_TERRAIN:        { id: 0x91, payload: 'x, y, terrain_type', params: 4, note: 'tile byte 0 — set low nibble (terrain type 0-10)', sourceAddr: '0x005B9646' },
+  TILE_VISIBILITY:     { id: 0x92, payload: 'x, y, bitmask, set_or_clear', params: 5, note: 'tile byte 4 — set/clear per-civ visibility bits', sourceAddr: '0x005B976D' },
+  TILE_CONTINENT_EXT:  { id: 0x93, payload: 'x, y, continent_id', params: 4, note: 'tile byte 5 low nibble — continent ID extension', sourceAddr: '0x005B98B7' },
+  TILE_UNIT_OWNER:     { id: 0x94, payload: 'x, y, owner_id', params: 4, note: 'tile byte 5 high nibble — unit owner (0-8, 0xF=none)', sourceAddr: '0x005B99E8' },
+  TILE_CITY_ID:        { id: 0x95, payload: 'x, y, city_index', params: 4, note: 'tile byte 3 — city index (0xFF = none)', sourceAddr: '0x005B9B35' },
+  TILE_RIVER_FLAG:     { id: 0x96, payload: 'x, y, river_bits', params: 4, note: 'tile byte 2 bits 5-7 — river/special flags', sourceAddr: '0x005B9C49' },
+  TILE_CIV_VISIBILITY: { id: 0x97, payload: 'x, y, value, civ_id, set_mode', params: 6, note: 'per-civ visibility layer via FUN_005b898b (uses 3-param tile lookup)', sourceAddr: '0x005B9D81' },
   PER_CIV_CONTINENT:   { id: 0x98, payload: 'set per-civ per-continent flag', sourceAddr: '0x0047E94E case 0x98' },
 
   // === Embassy & Misc (0x99–0xA3) ===
@@ -404,7 +430,7 @@ export const SECTION_NODE_SIZE = 0x14;
 // This is the authoritative mapping of runtime memory layout for save/load and network sync.
 export const DIFF_SECTIONS = [
   { index:  0, name: 'gameFlags',       dataAddr: 'DAT_0062D0B8', size: 4,       note: 'Global game flags (4 bytes)' },
-  { index:  1, name: 'gameState',       dataAddr: 'DAT_00655AE8', size: 0x14C,   note: 'Core game state (332 bytes)' },
+  { index:  1, name: 'gameState',       dataAddr: 'DAT_00655AE8', size: 0x14C,   note: 'Core game state (332 bytes). NOTE: save file writes 0x14A (330 bytes) at SAVE_FORMAT.gameStateSize; diff engine registers 0x14C (332 bytes). The 2-byte difference is padding/alignment added for the runtime diff engine.' },
   { index:  2, name: 'cosmicRules',     dataAddr: 'DAT_0064BCF8', size: 0x790,   note: 'COSMIC rules block (1936 bytes)' },
   { index:  3, name: 'civData',         dataAddr: 'DAT_0064C6A0', size: 0x2CA0,  note: '8 civ records × 0x594 = 11424 bytes' },
   { index:  4, name: 'randomSeeds',     dataAddr: 'DAT_00666130', size: 0x400,   note: 'Random seed table (1024 bytes)' },
@@ -413,7 +439,7 @@ export const DIFF_SECTIONS = [
   { index:  7, name: 'leaderPortraits', dataAddr: 'DAT_006554F8', size: 0x3F0,   note: 'Leader portrait data (1008 bytes)' },
   { index:  8, name: 'tailData',        dataAddr: 'DAT_00655C38', size: 0x4B0,   note: 'Tail data block (1200 bytes)' },
   { index:  9, name: 'scenarioBlock',   dataAddr: 'DAT_0064BC60', size: 100,     note: 'Scenario block (100 bytes)' },
-  { index: 10, name: 'engineConstants', dataAddr: 'DAT_00655128', size: 0x154,   note: 'Engine constants (340 bytes)' },
+  { index: 10, name: 'engineConstants', dataAddr: 'DAT_00655128', size: 0x154,   note: 'Engine constants (340 bytes). NOTE: save file writes 0x152 (338 bytes); diff engine registers 0x154 (340 bytes). Same 2-byte padding/alignment difference as gameState (0x14A save vs 0x14C diff).' },
   { index: 11, name: 'mpTimingBlock',   dataAddr: 'DAT_00654B40', size: 0x494,   note: 'MP timing data (1172 bytes)' },
   { index: 12, name: 'mapHeader',       dataAddr: 'DAT_006D1160', size: 0x10,    note: 'Map header (16 bytes)' },
   { index: 13, name: 'mapTerrainA',     dataAddr: 'DAT_006365E0', sizeFormula: 'mapWidth × mapHeight', note: 'Map terrain layer A' },
@@ -480,7 +506,7 @@ export const INI_SETTINGS = {
   keys: {
     NetTimeOut: { default: 30, global: 'DAT_006AD8B8', note: 'seconds' },
     Adapter:    { default: 0,  global: 'DAT_006AD2FC', note: 'network adapter index' },
-    MaxPlayers: { default: 7,  global: 'DAT_006C3164', note: 'clamped 4-7' },
+    MaxPlayers: { default: 7,  global: 'DAT_006C3164', note: 'clamped 5-7 (binary check: 4 < local_308)' },
   },
   // sourceAddr: '0x0051D9A0'
 };
@@ -504,6 +530,47 @@ export const TURN_SYNC = {
   // 3. Process received turn, play human turn
   // 4. Send updated state back, loop
 
+  // Client loop polling (@ 0x0048BFEC, inner while loop):
+  // Condition: DAT_006c9038==0 && DAT_006ad698=='\0' && DAT_006c918c==0
+  //            && DAT_006ad685=='\0' && DAT_00628044!='\0'
+  // Calls: thunk_FUN_0047e94e(1,0) then thunk_FUN_0048da51(slotId)
+  CLIENT_POLL_FLAGS: {
+    turnDataReady:   'DAT_006c9038',  // nonzero = server sent turn data              // 0x0048BFEC
+    hostMigration:   'DAT_006ad698',  // nonzero = host migration in progress         // 0x0048BFEC
+    gameEnding:      'DAT_006c918c',  // nonzero = game ending                        // 0x0048BFEC
+    forceQuit:       'DAT_006ad685',  // nonzero = forced quit                        // 0x0048BFEC
+    connected:       'DAT_00628044',  // '\0' = disconnected                          // 0x0048BFEC
+  },
+
+  // Client timeout check (FUN_0048da51 @ 0x0048DA51, 104 bytes):
+  // Polls elapsed time; if > 0xE0F ticks, either resends turn signal or
+  // increments timeout counter (DAT_006c3168[player]) / stale counter (DAT_006c8fb4)
+  CLIENT_POLL_TIMEOUT_TICKS: 0xE0F,    // 3599 ticks before timeout action            // 0x0048DA51
+  CLIENT_TIMEOUT_COUNTER: 'DAT_006c3168',  // per-player timeout counter (stride 4)   // 0x0048DA51
+  CLIENT_STALE_COUNTER: 'DAT_006c8fb4',   // global stale connection counter          // 0x0048DA51
+
+  // Turn timer conversion (@ 0x0048BFEC, 0x0048C9F3):
+  // DAT_00654b70 (milliseconds) is converted to seconds for the countdown display
+  // DAT_00633a78 = DAT_00654b70 / 1000 (turn timer in seconds)
+  TURN_TIMER_CONVERSION: {
+    timerMs:  'DAT_00654b70',      // turn timer in milliseconds (from game setup)    // 0x0048BFEC
+    timerSec: 'DAT_00633a78',      // turn timer in seconds (= timerMs / 1000)        // 0x0048BFEC
+    sentinel: 0xFFFFFFFF,          // _DAT_0066c990 set to -1 when timer resets       // 0x0048BFEC
+  },
+
+  // Client turn-end sequence (@ 0x0048BFEC, lines 3793-3810):
+  // After human turn processing completes:
+  // 1. diff_engine_scan_and_send(0xFF, 2, 0, 0, 0)
+  // 2. net_send(0xA2, 0, DAT_006d1da0, ...)       — counter operation
+  // 3. XD_FlushSendBuffer(60000)                   — 60s flush timeout
+  // 4. If disconnected: net_send(0x2D, 0, DAT_006d1da0, ...) — turn done signal
+  //    XD_FlushSendBuffer(60000)
+  CLIENT_TURN_END: {
+    counterMsg:     0xA2,         // counter operation message                         // 0x0048BFEC
+    turnDoneMsg:    0x2D,         // turn done signal (only if disconnected)           // 0x0048BFEC
+    flushTimeout:   60000,        // 60 second flush timeout for turn-end sync         // 0x0048BFEC
+  },
+
   // Host migration: if server drops, clients negotiate new host
   // via mp_client_transfer_server @ 0x004828A5
   HOST_MIGRATION: {
@@ -512,8 +579,40 @@ export const TURN_SYNC = {
     // sourceAddr: '0x004828A5'
   },
 
+  // Dialog strings used in MP turn loops
+  DIALOG_STRINGS: {
+    OURTURNTOMOVE: 'OURTURNTOMOVE',     // client: "Your turn to move" (no casualties)  // 0x0048BFEC
+    CASUALTY: 'CASUALTY',               // client/server: 1 combat casualty report      // 0x0048BFEC, 0x0048C9F3
+    CASUALTIES: 'CASUALTIES',           // client/server: multiple combat casualties     // 0x0048BFEC, 0x0048C9F3
+    CLIENTHOTWAIT: 'CLIENTHOTWAIT',     // client: waiting for server when not our turn  // 0x0048BFEC
+    LOSTCLIENT: 'LOSTCLIENT',          // server: player disconnected during turn        // 0x0048C9F3
+    NEWPLAYER: 'NEWPLAYER',            // server: new player joined mid-game             // 0x0048C9F3
+  },
+
+  // Server game loop timing (@ 0x0048C9F3):
+  // Between each human player's turn:
+  //   1. diff_engine_scan_and_send(0xFF, 2, 0, 0, 0)
+  //   2. XD_FlushSendBuffer(60000)    — 60s flush timeout
+  //   3. Drain queues: while (DAT_006c8fac != 0 || DAT_006c8fa0 != 0) poll(1,0)
+  //   4. Process AI turn if turn==0
+  //   5. Per human civ: send 0x69 (NEW_TURN), send 0x16 (SEAT_FINALIZE), then wait
+  SERVER_LOOP_FLUSH_TIMEOUT: 60000,    // XD_FlushSendBuffer(60000) between turns      // 0x0048C9F3
+  SERVER_LOOP_DRAIN_ADDRS: ['DAT_006c8fac', 'DAT_006c8fa0'], // queue drain loop       // 0x0048C9F3
+
+  // Process disconnected players (FUN_0048de75 @ 0x0048DE75, 376 bytes):
+  // Called from server turn loop and from 0x2D handler.
+  // Scans player slots 1..6, finds players with DAT_006c3188[civ] != 0 (ready flag),
+  // removes them from alive bitmask, sends 0x2A (ALIVE_BITMASK) + 0x04 (GAME_SETTINGS).
+  PROCESS_DISCONNECTED: {
+    readyFlagArray: 'DAT_006c3188',    // per-civ ready flag (stride 4)                // 0x0048DE75
+    slotScanRange:  [1, 6],            // scan player slots 1 through 6                // 0x0048DE75
+    messages: [0x2A, 0x04],            // ALIVE_BITMASK then GAME_SETTINGS              // 0x0048DE75
+    sourceAddr: '0x0048DE75',
+  },
+
   // sourceAddr: '0x0048D9AD' (send_turn_signal), '0x0048C9F3' (server loop),
-  //             '0x0048BFEC' (client loop)
+  //             '0x0048BFEC' (client loop), '0x0048DA51' (client timeout),
+  //             '0x0048DE75' (process disconnected)
 };
 
 // =============================================================================
@@ -612,8 +711,12 @@ export const MP_EVENT_TYPES = {
   0x4A: 'BUILDAIRBASE',       0x4B: 'POLLUTION',
   0x4C: 'CHOPPEDFOREST',      0x4D: 'CLEARSWAMP',
   0x4E: 'CLEARJUNGLE',        0x4F: 'BUILDRAILROAD',
-  0x50: 'BUILDTRANSFORMATION', 0x51: 'GOODYHUT',
-  0x52: 'GOODYHUT2',          0x53: 'SPACEMISSION',
+  0x50: 'BUILDTRANSFORMATION', 0x51: 'MILITARYAID1',
+  0x52: 'MILITARYAID2',       0x53: 'SPACEMISSION',
+  // NOTE: 0x51/0x52 were previously misidentified as GOODYHUT/GOODYHUT2.
+  // Binary confirms: s_MILITARYAID1_00633c2c @ block_00550000.c:6093
+  //                  s_MILITARYAID2_00633c3c @ block_00550000.c:6113
+  // These are allied military aid notifications, not goody hut events.
   0x54: 'SPACEMISSION2',      0x55: 'SPACEMISSION3',
   0x56: 'BRIBEUNIT',          0x57: 'INCITECITY',
   0x58: 'CITYACQUIRED',       0x59: 'CITYDESTROYED',
@@ -862,6 +965,18 @@ export const PARLEY_WINDOW = {
   // High-resolution mode threshold
   HIGH_RES_THRESHOLD: 999,  // DAT_006ab198 > 999 → high-res mode (@ 0x004B4C81)
 
+  // Parley window dimensions (FUN_004b4cf0 @ 0x004B4CF0, 410 bytes)
+  // Selected based on in_ECX+0x154 (high-res flag)
+  windowDimensions: {
+    lowRes:  { width: 0x208, height: 0x14f },  // 520 x 335 pixels
+    highRes: { width: 800,   height: 0x1cc },   // 800 x 460 pixels
+    // Final size adjusted by border/margin globals:
+    //   width  += (DAT_0062d860 + DAT_0062d858) * 2 + 6
+    //   height += DAT_0062d85c * 2 + in_ECX[300] * 2 + 0xe
+    //   in_ECX[300] = DAT_0062d85c * 2 + DAT_0062d864 * 2 + fontHeight
+    sourceAddr: '0x004B4CF0',
+  },
+
   // Window modes (param passed to FUN_004b4735)
   modes: {
     1: 'diplomacy (single/hotseat AI negotiation)',
@@ -929,8 +1044,78 @@ export const PARLEY_WINDOW = {
     NOFOREIGNHUMAN:     'NOFOREIGNHUMAN',       // @ 0x004B7EB6: no foreign civs to talk to
   },
 
-  // Music track formula (played when entering diplomacy)
-  musicTrackFormula: '((turnNumber + civId) & 7) + 0x53',  // @ 0x004B7EB6
+  // Parley chat/advisor geometry (FUN_004b5c93 @ 0x004B5C93, 5967 bytes)
+  chatGeometry: {
+    // 3 advisor panels arranged left-to-right (loop local_2c = 0..2)
+    advisorPanels: 3,
+    // Panel data addresses: panel0 → DAT_00645120, panel1 → DAT_00648820, panel2 → DAT_00647788
+    // Panel size scaled by: (panelWidth * in_ECX[300]) / 0x18
+    // Chat area (mode == 4 / network chat):
+    //   9-line display: yTop = in_ECX[0x14c] + (DAT_0062d85c + fontHeight) * -9
+    //   height = fontHeight * 9 + DAT_0062d85c * 8
+    // Non-chat diplomacy area:
+    //   6-line display: yTop = in_ECX[0x14c] + (DAT_0062d85c + fontHeight) * -6
+    //   height = DAT_0062d85c * 5 + fontHeight * 6
+    // Font scaling: fontHeight obtained via thunk_FUN_0040ef70() (hi-res and lo-res both call it)
+    chatLines: 9,       // network chat mode (mode == 4)
+    diplomacyLines: 6,  // diplomacy mode (non-chat)
+
+    // --- Widget IDs (thunk_FUN_0040f680 / thunk_FUN_004bb620 calls) ---
+    // @ FUN_004b5c93: each widget is created with a numeric button/control ID
+    widgetIds: {
+      advisorImage:  1000,  // 1001, 1002, 1003 — per-panel (local_2c + 1 + 1000) via thunk_FUN_004519b0
+      chatButton:    0x3ed, // @ line 3076: thunk_FUN_0040f680(parent, 0x3ed, rect, sprite)
+      chatListbox:   0x3ee, // @ line 3137: thunk_FUN_004bb620(parent, 0x3ee, rect, ..., 0x122, 0)
+      inputListbox:  0x3ef, // @ line 3205: thunk_FUN_004bb620(parent, 0x3ef, rect, ..., style, 0)
+      scrollUp:      0x3f0, // @ line 3231: thunk_FUN_0040f680(parent, 0x3f0, rect, sprite)
+      scrollDown:    0x41e, // @ line 3252: thunk_FUN_0040f680(parent, 0x41e, rect, sprite)
+      mapButton:     0x431, // @ line 3288: thunk_FUN_0040f680(parent, 0x431, rect, sprite) — non-chat only
+      proposalBtn:   0x432, // @ line 3311: thunk_FUN_0040f680(parent, 0x432, rect, sprite) — non-chat only
+      demandBtn:     0x428, // @ line 3336: thunk_FUN_0040f680(parent, 0x428, rect, sprite) — non-chat only
+      giftBtn:       0x3f1, // @ line 3357: thunk_FUN_0040f680(parent, 0x3f1, rect, sprite) — non-chat only
+      endTurnBtn:    0x427, // @ line 3377: thunk_FUN_0040f680(parent, 0x427, rect, sprite) — non-chat only
+      actionBtn1:    0x3f2, // @ line 3399: thunk_FUN_0040f680(parent, 0x3f2, rect, sprite) — non-chat only
+      actionBtn2:    0x3f2, // @ line 3422: reused ID, different position
+      actionBtn3:    0x3f2, // @ line 3443: reused ID, different position
+      actionBtn4:    0x3f2, // @ line 3464: reused ID, different position
+    },
+
+    // --- Sprite Resource Table Offsets (DAT_00628420 + offset) ---
+    // @ FUN_004b5c93: each button uses a sprite from the resource table
+    spriteOffsets: {
+      chatBtnNet:   0xb2c,  // @ line 3065: chat button sprite (mode == 4, network)
+      chatBtnDiplo: 0xb30,  // @ line 3068: chat button sprite (non-network mode)
+      scrollUp:     0xb34,  // @ line 3230: scroll up button
+      scrollDown:   0xb38,  // @ line 3251: scroll down button
+      mapButton:    0xdb4,  // @ line 3287: map view button (non-chat only)
+      proposalBtn:  0xdb8,  // @ line 3310: proposal button (non-chat only)
+      demandBtn:    0x1a0,  // @ line 3335: demand button (non-chat only)
+      giftBtn:      0xb3c,  // @ line 3356: gift button (non-chat only)
+      endTurnBtn:   0xd10,  // @ line 3376: end turn / pass button (non-chat only)
+      actionBtn1:   0xb40,  // @ line 3398: action row button 1
+      actionBtn2:   0xb44,  // @ line 3421: action row button 2
+      actionBtn3:   0xb48,  // @ line 3442: action row button 3
+      actionBtn4:   0xb4c,  // @ line 3463: action row button 4
+    },
+
+    // --- Listbox Styles ---
+    chatListboxStyle:  0x122, // @ line 3137: chat log listbox style
+    inputListboxChat:  0x200, // @ line 3194: input listbox style (chat mode == 4)
+    inputListboxDiplo: 0x220, // @ line 3197: input listbox style (diplomacy mode)
+    chatListboxMemory: 0x2000, // @ line 3138: thunk_FUN_004189c0(0x2000) — chat buffer
+    inputListboxMemory: 0x100, // @ line 3206: thunk_FUN_004189c0(0x100) — input buffer
+
+    // --- Layout Constants ---
+    buttonRowThirds: 3,       // @ line 3327: action buttons arranged in width/3 columns
+    scrollAreaFraction: 9,    // @ line 3221: scroll button width = chatArea / 9
+
+    sourceAddr: '0x004B5C93',
+  },
+
+  // Diplomat meeting sound (played when entering diplomacy — drum roll variant)
+  // Formula: ((DAT_006d1168 + param_1) & 7) + 0x53 → sound IDs 0x53-0x5A
+  // param_1 = target civ ID, DAT_006d1168 = turn counter
+  musicTrackFormula: '((DAT_006d1168 + param_1) & 7) + 0x53',  // @ 0x004B7EB6 line 3879
 
   // Network diplomacy proposal message type
   PROPOSAL_MSG_TYPE: 0x86,  // @ 0x004B81DD: DAT_0067a9dc + 4 = 0x86
@@ -1164,14 +1349,14 @@ export const MAP_TILE_OPS = {
   // Message format: (opcode, 0/0xFF, x, y, value, set_or_clear, flush_flag, ...)
   // 0 in slot 1 = from client, 0xFF = from server
   ops: {
-    0x90: { field: 'improvements', byteOffset: 1, note: 'tile byte 1 — set/clear bits (irrigation, mine, road, etc.)', sourceAddr: '0x005B94FC' },
-    0x91: { field: 'terrain',      byteOffset: 0, note: 'tile byte 0 — set low nibble (terrain type)', sourceAddr: '0x005B9646' },
-    0x92: { field: 'visibility',   byteOffset: 4, note: 'tile byte 4 — set/clear per-civ visibility bits', sourceAddr: '0x005B976D' },
-    0x93: { field: 'continentExt', byteOffset: 5, note: 'tile byte 5 — set low nibble (continent ID extension)', sourceAddr: '0x005B98B7' },
-    0x94: { field: 'ownerUnit',    byteOffset: 5, note: 'tile byte 5 — set high nibble (unit owner, 0xF = none)', sourceAddr: '0x005B99E8' },
-    0x95: { field: 'cityId',       byteOffset: 3, note: 'tile byte 3 — set city index (0xFF = none)', sourceAddr: '0x005B9B35' },
-    0x96: { field: 'landmass',     byteOffset: 2, note: 'tile byte 2 — set top 3 bits (continent/ocean ID)', sourceAddr: '0x005B9C49' },
-    0x97: { field: 'civVisLayer',  byteOffset: 'variable', note: 'per-civ visibility layer byte — set/OR value at (x,y,civId)', sourceAddr: '0x005B9D81' },
+    0x90: { field: 'improvements', byteOffset: 1, params: 5, note: 'tile byte 1 — set/clear bits (irrigation=0x01, mine=0x02, road=0x04, railroad=0x08, fortress=0x20, airbase=0x40, pollution=0x80, farmland via bit combos)', sourceAddr: '0x005B94FC' },
+    0x91: { field: 'terrain',      byteOffset: 0, params: 4, note: 'tile byte 0 — set low nibble (terrain type 0-10)', sourceAddr: '0x005B9646' },
+    0x92: { field: 'visibility',   byteOffset: 4, params: 5, note: 'tile byte 4 — set/clear per-civ visibility bits', sourceAddr: '0x005B976D' },
+    0x93: { field: 'continentExt', byteOffset: 5, params: 4, note: 'tile byte 5 low nibble — continent ID extension (masked & 0x0F)', sourceAddr: '0x005B98B7' },
+    0x94: { field: 'ownerUnit',    byteOffset: 5, params: 4, note: 'tile byte 5 high nibble — unit owner (shifted <<4, 0-8 valid, 0xF = none)', sourceAddr: '0x005B99E8' },
+    0x95: { field: 'cityId',       byteOffset: 3, params: 4, note: 'tile byte 3 — city index (0xFF = none)', sourceAddr: '0x005B9B35' },
+    0x96: { field: 'landmass',     byteOffset: 2, params: 4, note: 'tile byte 2 bits 5-7 — river/special flags (shifted <<5, masked & 0x07)', sourceAddr: '0x005B9C49' },
+    0x97: { field: 'civVisLayer',  byteOffset: 'variable', params: 6, note: 'per-civ visibility layer byte — set/OR value at (x,y,civId) via FUN_005b898b 3-param tile lookup', sourceAddr: '0x005B9D81' },
   },
   // sourceAddr: '0x005B94FC'–'0x005B9D81'
 };
@@ -1647,4 +1832,122 @@ export const HOTSEAT_SETUP_FLOW = {
   },
 
   sourceAddr: '0x005218CB, 0x00521FE0, 0x005227E3, 0x0052263C, 0x005226FA',
+};
+
+// =============================================================================
+// === Demographics Display ===
+// =============================================================================
+// Source: FUN_00433434 (6486 bytes) @ block_00430000.c
+// Renders the demographics advisor screen with per-civ statistics.
+// =============================================================================
+
+export const DEMOGRAPHICS_DISPLAY = {
+  sourceAddr: '0x00433434',
+  functionSize: 6486,
+
+  // Disease formula denominator guard (line 1591):
+  // DAT_006a65f8 is used as a divisor in the disease calculation.
+  // If DAT_006a65f8 < 2, it is clamped to 1 to prevent divide-by-zero.
+  diseaseDenominatorGuard: {
+    global: 'DAT_006a65f8',
+    check: 'if (DAT_006a65f8 < 2) DAT_006a65f8 = 1',
+    note: 'Prevents divide-by-zero in disease rate = DAT_006a65cc / DAT_006a65f8 - 0x14 + ...',
+    sourceAddr: '0x00433434 line ~1591',
+  },
+
+  // Family size display format (lines 1844-1854):
+  // Family size is stored as integer tenths (e.g., 32 = 3.2).
+  // Displayed as: value/10 . value%10 (decimal point inserted manually)
+  familySizeDisplay: {
+    formula: 'familySize = (aiStack_174[civ] * 0x28) / aiStack_6c[civ] + 0x14',
+    displayFormat: 'value/10 + "." + value%10',   // e.g., 32 → "3.2"
+    decimalSeparator: 'DAT_0062607c',              // locale-dependent decimal point character
+    stringId: 0x187,                                // label string for "Family Size"
+    note: 'After display, value is divided by 10 again for ranking: local_e4[civ] = value / 10',
+    sourceAddr: '0x00433434 lines ~1844-1854',
+  },
+
+  // Demographics column layout (3 columns for ranking display)
+  columnWidths: {
+    left:   'DAT_0063ec34 + 2',      // left column x-offset
+    middle: 'DAT_0063ec34 + 0xb4',   // middle column x-offset (180px from base)
+    right:  'DAT_0063ec34 + 0x142',  // right column x-offset (322px from base)
+    rightEdge: 'DAT_0063ec3c + DAT_0063ec34 - 4',  // right edge boundary
+    sourceAddr: '0x00433434 lines ~1647-1650',
+  },
+};
+
+// =============================================================================
+// === Military Advisor — Spaceship Sub-Panel ===
+// =============================================================================
+// Source: FUN_00434e39 (3769 bytes) @ block_00430000.c
+// Renders the military advisor screen including the spaceship progress panel.
+// =============================================================================
+
+export const MILITARY_ADVISOR_DISPLAY = {
+  sourceAddr: '0x00434E39',
+  functionSize: 3769,
+
+  // Spaceship sub-panel (lines 2209-2345):
+  // Shown when DAT_00655af0 & 0x80 and DAT_0064bc60 & 2 (spaceship active)
+  spaceshipPanel: {
+    // 4 spaceship components with progress bars
+    components: {
+      0: { stringId: 0x1B3, note: 'Component type 0 (e.g., Structural)' },
+      1: { stringId: 0x1B4, note: 'Component type 1 (e.g., Component)' },
+      2: { stringId: 0x1B6, note: 'Component type 2 (e.g., Module)' },
+      3: { stringId: 0x1B7, note: 'Component type 3 (e.g., Fuel)' },
+    },
+    // Progress count per component: (short)(&DAT_0064bcbc)[componentIndex]
+    progressData: 'DAT_0064bcbc',
+    // Current spaceship owner: DAT_0064bcba (0 = no owner; otherwise civ ID)
+    ownerGlobal: 'DAT_0064bcba',
+    // Active component label: stringId = DAT_00673f54 + 0x1B3
+    activeComponentStringId: 'DAT_00673f54 + 0x1B3',
+    // Panel font: 0x5e size, 0x12 weight, bold (1,1)
+    fontSetup: { size: 0x5E, weight: 0x12, bold: true },
+    // Panel vertical gap: 6px between component list and progress bar area
+    verticalGap: 6,
+    sourceAddr: '0x00434E39 lines ~2209-2283',
+  },
+
+  // Unit display section (when no spaceship — normal military advisor)
+  unitDisplay: {
+    leftColumn: 'DAT_0063ec34 + 2',    // same as demographics base + 2
+    sourceAddr: '0x00434E39 line ~2028',
+  },
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_00434e39 render_attitude_advisor
+  spriteOffsets: {
+    attitudeHeader: 0x55c,  // attitude advisor section header/title text
+    govtTypeLabel:  0x670,  // government type label for attitude display
+  },
+};
+
+// =============================================================================
+// === Diplomacy Request Event (MP) ===
+// =============================================================================
+// Source: FUN_004308ae (3218 bytes) @ block_00430000.c
+// Handles diplomacy initiation between players.
+// =============================================================================
+
+export const DIPLOMACY_REQUEST_EVENT = {
+  sourceAddr: '0x004308AE',
+  functionSize: 3218,
+
+  // Network event 0x3d: diplomacy request sound/notification
+  // Sent via FUN_00511880(0x3d, targetPlayer, 0, 0, civId, 0)
+  // Only triggered when BOTH players are human AND MP mode > 2:
+  //   condition1: (1 << param_1) & DAT_00655b0b != 0  (requesting civ is human)
+  //   condition2: (1 << target)  & DAT_00655b0b != 0  (target civ is human)
+  //   condition3: DAT_00655b02 > 2                     (network MP mode)
+  networkEvent: {
+    eventId: 0x3D,
+    dispatchFunction: 'FUN_00511880',
+    networkMsgType: 0x6A,       // FUN_00511880 wraps this as net_send_message(0x6a, ...)
+    condition: 'Both civs human (DAT_00655b0b bits) AND DAT_00655b02 > 2 (network MP)',
+    payload: 'diplomacy request with PARLEYWAITING dialog',
+    sourceAddr: '0x004308AE line ~464',
+  },
 };

@@ -34,24 +34,112 @@ export const CIV_STRUCT = {
                      notes: 'Gold treasury' },
     rulesCivNumber:{ offset: 0x06, size: 2, type: 'short',     // @ DAT_0064c6a6
                      notes: 'Index into LEADERS.TXT (0-20), used to look up personality' },
+    researchBeakers:{ offset: 0x08, size: 2, type: 'short',    // @ DAT_0064c6a8
+                     notes: 'Accumulated research beakers toward current tech. ' +
+                            'sourceAddr: block_004A0000.c:2642 (init=0), block_00560000.c:2818' },
+    currentResearch:{ offset: 0x0A, size: 2, type: 'short',    // @ DAT_0064c6aa
+                     notes: 'Tech index currently being researched (-1 = none). ' +
+                            'Init to 0xFFFF (-1). Set when player/AI selects research. ' +
+                            'Used with DAT_00627684 (tech name pointers) for display. ' +
+                            'Checked against 0x59 (89 = max tech count) for validity. ' +
+                            'sourceAddr: block_004A0000.c:3580 (init), block_00420000.c:4410-4416 (display)' },
+    capitalX:      { offset: 0x0C, size: 2, type: 'short',     // @ DAT_0064c6ac
+                     notes: 'X coordinate of capital city / first settler placement. ' +
+                            'sourceAddr: block_004A0000.c:2953' },
+    foundingTurn:  { offset: 0x0E, size: 2, type: 'short',     // @ DAT_0064c6ae
+                     notes: 'Turn number when civ was founded. Init = max(turnNumber, 10). ' +
+                            'Used in score calculations: turnNumber - foundingTurn < 25 means "new civ". ' +
+                            'sourceAddr: block_004A0000.c:2645-2649, block_00480000.c:2699' },
     techCount:     { offset: 0x10, size: 1, type: 'byte',      // @ DAT_0064c6b0
                      notes: 'Number of techs discovered' },
+    leaderTolerance:{ offset: 0x13, size: 1, type: 'byte',     // @ DAT_0064c6b3
+                     notes: 'Leader-derived tolerance: leader.tolerance + 3 (range 2-4). ' +
+                            'Init = 4 for first civ, then set from leader personality. ' +
+                            'sourceAddr: block_004A0000.c:2652,2928-2929' },
+    leaderAggression:{ offset: 0x14, size: 1, type: 'byte',    // @ DAT_0064c6b4
+                     notes: 'Leader-derived aggression: 9 - leaderTolerance (range 5-7). ' +
+                            'Init = 4, then set to 9 - tolerance value. Higher = more aggressive. ' +
+                            'Used in AI war/peace decisions and military build priority. ' +
+                            'sourceAddr: block_004A0000.c:2651,2930' },
     government:    { offset: 0x15, size: 1, type: 'byte',      // @ DAT_0064c6b5
                      notes: '0=Anarchy,1=Despot,2=Monarchy,3=Commun,4=Fundam,5=Republic,6=Democracy' },
     aiRandomSeed:  { offset: 0x16, size: 1, type: 'byte',      // @ DAT_0064c6b6
                      notes: 'rand()%100 rolled each turn for AI randomization' },
+    spaceshipParts:{ offset: 0x17, size: 4, type: 'byte[4]',   // @ DAT_0064c6b7
+                     notes: 'Spaceship component counts, 4 slots (one per SS component type). ' +
+                            'Zeroed on civ init. Compared against global min/max arrays: ' +
+                            'DAT_00673af8[4] = min across human civs (init 99), ' +
+                            'DAT_00673afc[4] = max across human civs (init 0). ' +
+                            'If civParts < minHuman: AI invests treasury/64 in spaceship. ' +
+                            'If civParts > maxHuman+1: AI invests treasury/256. ' +
+                            'sourceAddr: block_004A0000.c:2709, block_00480000.c:3003-3018, ' +
+                            'block_004E0000.c:5527-5535' },
     tolerance:     { offset: 0x1E, size: 1, type: 'byte',      // @ DAT_0064c6be
                      notes: 'Per-civ tolerance value (derived from leader personality)' },
     patience:      { offset: 0x1F, size: 1, type: 'byte',      // @ DAT_0064c6bf
                      notes: 'Patience counter, decremented every 3 turns' },
     treatyFlags:   { offset: 0x20, size: 32, type: 'uint[8]',  // @ DAT_0064c6c0
                      notes: '4-byte treaty flags for each of 8 civs' },
+    reputation:    { offset: 0x40, size: 8,  type: 'char[8]',  // @ DAT_0064c6e0
+                     notes: 'Per-civ reputation score (0-100). Passed to FUN_004679ab (attitude_level converter) ' +
+                            'to determine displayed reputation level (Enraged..Worshipful). ' +
+                            'Init: self=100 (barbarian slot gets 100); AI civs = rand()%80+10 (range 10-89); ' +
+                            'human civs = clamp(difficulty*5 + rand()%80 + 10, 10, 75). ' +
+                            'Set by: FUN_0046791a (block_00460000.c:1497-1509) — clamped to 0-100. ' +
+                            'Modified by: diplomat actions (block_004C0000.c:2669), foreign advisor slider ' +
+                            '(block_00430000.c:450), scenario editor (block_00550000.c:2920-2923). ' +
+                            'Read by: diplomacy greeting (block_004B0000.c:3778,3782), ' +
+                            'intelligence report (block_00510000.c:784,788), ' +
+                            'war declaration check (block_00450000.c:3638). ' +
+                            'sourceAddr: block_004A0000.c:2671-2687 (init), block_00460000.c:1489 (getter)' },
     attitudes:     { offset: 0x48, size: 8,  type: 'char[8]',  // @ DAT_0064c6e8
                      notes: 'Signed byte: attitude toward each civ (-100..+100)' },
+    combatCounter: { offset: 0x50, size: 8,  type: 'char[8]',  // @ DAT_0064c6f0
+                     notes: 'Per-civ combat encounter counter. Incremented (+1) each time defender wins ' +
+                            'combat (attacker unit destroyed) in FUN_00585480 (block_00580000.c:953). ' +
+                            'Reset to 0 when attacker wins (block_00580000.c:966), ' +
+                            'when unit moves without combat (block_00580000.c:727, block_00590000.c:658), ' +
+                            'or when counter exceeds 9 (block_00450000.c:3753-3754). ' +
+                            'At >9 the AI clears its war interest flag (DAT_0064b0f8=0), ' +
+                            'preventing war declaration after 10+ consecutive combat losses against a civ. ' +
+                            'Init: zeroed per civ pair (block_004A0000.c:2668-2669). ' +
+                            'sourceAddr: block_00580000.c:953,966,727, block_00590000.c:658, block_00450000.c:3753' },
+    unitCount:     { offset: 0x66, size: 2, type: 'short',     // @ DAT_0064c706
+                     notes: 'Total number of units owned. Zeroed at init and start of AI turn. ' +
+                            'Incremented per alive unit during AI unit scanning (block_00530000.c). ' +
+                            'Checked in city production and power calculations. ' +
+                            'sourceAddr: block_004A0000.c:2702 (init), block_00530000.c:541 (reset)' },
     cityCount:     { offset: 0x68, size: 2, type: 'short',     // @ DAT_0064c708
                      notes: 'Number of cities owned' },
+    seaUnitCount:  { offset: 0x6A, size: 2, type: 'short',     // @ DAT_0064c70a
+                     notes: 'Number of sea-domain units (domain==2). Incremented per unit when ' +
+                            'unit_type.domain == 2 (block_00530000.c:707-709). Zeroed at AI turn start. ' +
+                            'Used in tech evaluation scoring: seaUnitCount/4 added to tech score when ' +
+                            'tech matches current research goal (block_004B0000.c:6148-6149). ' +
+                            'sourceAddr: block_00530000.c:708-709, block_004B0000.c:6148' },
+    totalPopulation: { offset: 0x6C, size: 2, type: 'short',   // @ DAT_0064c70c
+                     notes: 'Sum of all city sizes (total population units). Accumulated per city ' +
+                            'in AI turn processing: += city.size (block_00530000.c:759-761). ' +
+                            'Used in power ranking formula: techCount*3 + totalPop*8 + treasury/32 ' +
+                            '(block_00480000.c:1013-1016). Also used in rush-buy cost scaling: ' +
+                            'treasury / (totalPop + 1) (block_00570000.c:3914-3916). ' +
+                            'Checked for tutorial: cityCount==1 && totalPop>2 && turn==35 triggers hint ' +
+                            '(block_00480000.c:3099-3100). ' +
+                            'sourceAddr: block_00530000.c:759-761, block_00480000.c:1015' },
     militaryPower: { offset: 0x6E, size: 2, type: 'ushort',    // @ DAT_0064c70e
-                     notes: 'Aggregate military power score' },
+                     notes: 'Aggregate military power score: sum of (attack + defense) for all units. ' +
+                            'Accumulated per unit in AI turn processing (block_00530000.c:714-717). ' +
+                            'Used extensively in diplomacy for military strength comparisons.' },
+    totalAttack:   { offset: 0x70, size: 2, type: 'short',     // @ DAT_0064c710
+                     notes: 'Sum of attack values for all units. Accumulated per unit: ' +
+                            '+= unit_type.attack (block_00530000.c:711-713). Zeroed at AI turn start. ' +
+                            'Distinct from militaryPower which sums (attack + defense). ' +
+                            'sourceAddr: block_00530000.c:711-713, block_004A0000.c:2704' },
+    populationMilestone: { offset: 0x72, size: 2, type: 'short', // @ DAT_0064c712
+                     notes: 'Population milestone tracker for "Your empire now spans N people" messages. ' +
+                            'If pop < 100: milestone = pop/10; if pop >= 100: milestone = pop/100 + 9. ' +
+                            'When milestone increases, triggers notification for human players. ' +
+                            'sourceAddr: block_00480000.c:2417-2431' },
     spaceshipFlag: { offset: 0x105, size: 1, type: 'byte',     // @ DAT_0064c7a5
                      notes: 'Non-zero if spaceship launched/active' },
     contactTurns:  { offset: 0x3E2, size: 16, type: 'short[8]',// @ DAT_0064ca82
@@ -160,7 +248,17 @@ export const TREATY_FLAGS = {
                                //   EDITTREATIES: checkbox 6
 
   // === Byte 1 (bits 8-15) ===
-  // 0x0100:  (bit 8)
+  SPACESHIP_LAUNCHED:  0x0100, // bit 8:  set on treaty[spaceCiv][otherCiv] when spaceCiv has
+                               //   launched a spaceship (civ+0x105 spaceshipFlag != 0).
+                               //   Set by: war declaration evaluation (block_00450000.c:3660-3661)
+                               //     treaty[spaceCiv][otherCiv] |= 0x100
+                               //   Checked by: AI unit targeting (block_00530000.c:1971,1983)
+                               //     (treaty & 0x104) == 0x100 means "has spaceship, NOT at peace"
+                               //     — makes this civ a high-priority target for AI attack.
+                               //   NOTE: 0x0100 is ALSO used on CIV_STRUCT.flags (civ+0x00) as
+                               //     ALLIANCE_ACTIVE (set by FUN_0045a535, block_00450000.c:4731-4736)
+                               //     — different field, same bit value.
+                               //   sourceAddr: block_00450000.c:3661 (treaty), block_00450000.c:4732 (civ flags)
   // 0x0200:  (bit 9)  "attacked" flag, cleared by alliance proposal loop
   PERIODIC_FLAG_10:    0x0400, // bit 10: set on first contact (0x401 = CONTACT + this)
                                //   cleared every 16 turns
@@ -176,29 +274,56 @@ export const TREATY_FLAGS = {
                                //   FUN_0055d8d8 line 5914: thunk_FUN_00467825(p1,p2,0x2000)
   RECENT_CONTACT:      0x4000, // bit 14: transient, cleared each turn @ 0xFF5FBFFF
                                //   set on first-contact if not previously contacted
-  // 0x8000:  (bit 15)
+  // 0x8000:  (bit 15) unused / reserved
 
-  // === Bytes 2-3 (bits 16-23+) ===
+  // === Bytes 2-3 (bits 16-31) ===
   CAPTURE_NOTIFY:      0x10000, // bit 16: set when city captured (FUN_0057b5df)
                                 //   thunk_FUN_00467825(attacker, defender, 0x10000)
   NUCLEAR_ATTACK:      0x20000, // bit 17: set on nuke attacker's treaty toward victim
                                 //   (FUN_0057f9e3: treaty[attacker][victim] |= 0x20000)
   PERIODIC_FLAG_18:    0x40000,  // bit 18: periodic, cleared for AI-AI each turn
   PERIODIC_FLAG_19:    0x80000,  // bit 19: cleared every 32 turns
+  // 0x100000: (bit 20) unused / unobserved in binary
   WAR_TRACKING:        0x200000, // bit 21: auto-set when WAR (0x2000) is set via cascade
                                  //   FUN_00467825: if setting 0x2000, param_3 |= 0x200000
   MULTI_CAPTURE_VENDETTA: 0x400000, // bit 22: set when even number of units captured > 1
                                     //   from city (FUN_0057b5df) — or democracy+max power
   DIPLOMACY_ACTIVE:    0x800000, // bit 23: set when diplomacy encounter starts
                                  //   FUN_00460129 line 163: thunk_FUN_00467825(p1,p2,0x800000)
+  SPY_MISSION_ACTIVE:  0x1000000, // bit 24: spy/diplomat mission is active against this civ
+                                  //   Set by: FUN_004c8a78 (spy mission start, "CHATSPYSTART" dialog)
+                                  //     block_004C0000.c:2676: treaty[target][spy_owner] |= 0x1000000
+                                  //   Cleared by: FUN_00486c27 (turn processing) when spy unit's
+                                  //     counter2 expires to 0 — block_00480000.c:1780: treaty &= 0xfeffffff
+                                  //   Also cleared by: block_004A0000.c:3444, block_004E0000.c:786
+                                  //     (same context — spy mission resolution path)
+                                  //   Purpose: tracks active espionage; prevents overlapping spy missions
+                                  //     against the same civ and triggers counter-intelligence checks
+                                  //   sourceAddr: block_004C0000.c:2676 (set), block_00480000.c:1780 (clear)
 
   // === Compound masks used in code ===
   TREATY_BITS:         0x0E,       // CEASEFIRE(0x02) | PEACE(0x04) | ALLIANCE(0x08)
   WAR_OR_ALLIANCE:     0x2008,     // WAR(0x2000) | ALLIANCE(0x08)
+                                    //   Checked in attitude scoring (block_00560000.c:250):
+                                    //   if (treaty & 0x2008) == 0 → not at war and not allied
+  SPACESHIP_NO_PEACE:  0x0104,     // SPACESHIP_LAUNCHED(0x100) | PEACE(0x04)
+                                    //   Checked as (treaty & 0x104) == 0x100 in AI unit targeting
+                                    //   (block_00530000.c:1971,1983): "has spaceship, no peace treaty"
+                                    //   — triggers AI to prioritize attacking this civ
   ALLIANCE_CHECK:      0x08,       // alliance bit only
   WAR_CHECK:           0x2000,     // war bit only
   CLEAR_TRANSIENT:     0xFF5FBFFF, // ~(RECENT_CONTACT | NUCLEAR_ATTACK | DIPLOMACY_ACTIVE)
                                     //   clear bits 14, 17, 23 each turn
+  CLEAR_DEAD_CIV:      0xFFFFFFD9, // ~(CEASEFIRE(0x02) | INTRUDER_FLAG(0x20))
+                                    //   Applied when civ is dead (block_00560000.c:80)
+
+  // === Periodic clearing schedule (FUN_00560084, block_00560000.c) ===
+  // Each AI turn: clear 0xFF5FBFFF (transient each turn)
+  // Each AI turn (AI-to-AI): clear 0xFFFBFFFF (PERIODIC_FLAG_18, bit 18)
+  // Every 16 turns (turnNum & 0x0F == 0): clear 0xFFFFFBFF (PERIODIC_FLAG_10, bit 10)
+  // Every 32 turns (turnNum & 0x1F == 0): clear 0xFFFFF7FF (WAR_STARTED, bit 11)
+  //                                  AND clear 0xFFF7FFFF (PERIODIC_FLAG_19, bit 19)
+  // sourceAddr: block_00560000.c lines 63-108
 
   // Civ schism initial treaties (FUN_0057a904):
   CHILD_TO_PARENT:     0x2001,     // CONTACT(0x01) + WAR(0x2000) — rebel starts at war
@@ -989,6 +1114,20 @@ export const ALLIANCE_PROPOSALS = {
         'contactTurn[aiCiv][humanCiv] = turn + 16',
         'Transfer gold: aiCiv.treasury -= goldOffer*50, humanCiv.treasury += goldOffer*50',
       ],
+      compoundTreatySet: {
+        flags: 0x0C,                 // PEACE(0x04) + ALLIANCE(0x08) set simultaneously
+        rawC: 'thunk_FUN_00467825(aiCiv, humanCiv, 0x0C)',
+        note: 'Sets PEACE and ALLIANCE in a single cascade call',
+      },
+      warFlags: {
+        onTarget: 0x80800,           // WAR_STARTED(0x800) + PERIODIC_FLAG_19(0x80000)
+        rawC: 'DAT_0064c6c0[param_2*0x594 + target*4] |= 0x80800',
+        note: 'Raw bitwise OR on target treaty toward human — not via cascade',
+      },
+      goldTransfer: {
+        formula: 'aiCiv.treasury -= goldOffer * 50; humanCiv.treasury += goldOffer * 50',
+        rawC: 'DAT_0064c6a2[aiCiv*0x594] -= goldOffer*0x32; DAT_0064c6a2[humanCiv*0x594] += goldOffer*0x32',
+      },
     },
 
     // On rejection
@@ -1039,19 +1178,27 @@ export const ALLIANCE_PROPOSALS = {
   // --- Contact cooldown mechanics ---
   contactCooldown: {
     onAcceptance: {
-      aiToHuman: { value: 'turn + 16', address: '0x00562264 / 0x0056231E' },
+      aiToHuman: { value: 'turn + 16', address: '0x00562264 / 0x0056231E',
+                   note: '+16 turns into the future — longest cooldown, prevents re-proposing for 16 turns' },
       targetToHuman: { value: 'turn', address: '0x00562268 / 0x00562322' },
       notes: '+16 turns cooldown for aiCiv after accepted proposal',
     },
     onRejection: {
       value: 'max(currentContactTurn, turn - 14)',
       address: '0x00562206 / 0x00562300',
+      turns: 14,
       notes: 'Sets cooldown to at most 14 turns ago (prevents re-proposing for ~14 turns)',
     },
     onCannotReach: {
       value: 'max(currentContactTurn, turn - 15)',
       address: '0x005620E8 / 0x005622C6',
+      turns: 15,
       notes: 'If check_near_city fails (cannot reach human), 15-turn backoff',
+    },
+    summary: {
+      cannotReach: '15-turn cooldown',
+      rejection: '14-turn cooldown',
+      acceptance: '+16 turns into future (longest)',
     },
   },
 
@@ -1189,13 +1336,23 @@ export const BORDER_SCORING = {
   perUnitScoring: {
     base: '+1 per enemy unit near our city',
     tileImprovements: {
-      road:     { flag: 0x10, bonus: +1 },
-      railroad: { flag: 0x20, bonus: +1 },
-      fortress: { flag: 0x08, bonus: +1 },
-      cityTile: { flag: 0x04, bonus: +1 },
-      airbase:  { flag: 0x40, bonus: +2 },
+      // Binary ref: block_00550000.c lines 4817-4831
+      // uVar4 is the tile improvement byte (offset +1 in tile record)
+      // Flag values match MAP_STRUCTURE.tileFields.improvements encoding
+      road:       { flag: 0x10, bonus: '+1 (replaces base: total 2)',
+                    note: 'line 4817: borderScore = savedScore + 2 (overwrites +1 base)' },
+      railroad:   { flag: 0x20, bonus: '+1 (additive)',
+                    note: 'line 4820: borderScore += 1' },
+      mine:       { flag: 0x08, bonus: '+1 (additive)',
+                    note: 'line 4823: borderScore += 1' },
+      irrigation: { flag: 0x04, bonus: '+1 (additive)',
+                    note: 'line 4826: borderScore += 1' },
+      fortress:   { flag: 0x40, bonus: '+2 (additive)',
+                    note: 'line 4829: borderScore += 2' },
     },
-    notes: 'Only counts units with role < 5 (military) and not already mobilized (flag & 0x04)',
+    maxPerUnit: 'base(1) + road_replace(+1) + railroad(+1) + mine(+1) + irrigation(+1) + fortress(+2) = 7',
+    notes: 'Only counts units with role < 5 (military) and not already counted (unit flag & 0x04 == 0). ' +
+           'Unit flag 0x04 (BORDER_CHECKED) is set after counting to prevent double-counting.',
   },
 
   cityBonus: {
@@ -1376,6 +1533,47 @@ export const MILITARY_AID = {
     'Unit must be on a continent with attack(4) or defend(5) AI goal',
   ],
   action: 'Pick up unit from AI, place at ally city, change ownership',
+
+  // --- Unit scoring formula ---
+  unitScoring: {
+    formula: 'score = (defense + attack * 2) * hitpoints',
+    rawC: `cVar1 = DAT_0064b1c4[(byte)DAT_006560f6[unit*0x20] * 0x14];  // attack
+      cVar2 = DAT_0064b1c5[(byte)DAT_006560f6[unit*0x20] * 0x14];       // defense
+      iVar3 = thunk_FUN_005b29aa(unit);                                  // hitpoints
+      iVar3 = ((int)cVar2 + cVar1 * 2) * iVar3`,
+    fields: {
+      attack: 'unit_type.attack (DAT_0064b1c4, offset 0x04 in unit type record)',
+      defense: 'unit_type.defense (DAT_0064b1c5, offset 0x05 in unit type record)',
+      hitpoints: 'FUN_005b29aa(unitIdx) — current hitpoints of the unit',
+    },
+    selection: 'Best-scoring unit across all valid candidates (local_34 tracks index, local_c tracks best score)',
+    sourceAddr: '0x0055F7D1 ~line 6040-6047',
+  },
+
+  // --- MP message types ---
+  mpMessages: {
+    MILITARYAID1: {
+      msgType: 0x51,
+      dialogString: 'MILITARYAID1',
+      addr: 's_MILITARYAID1_00633c2c',
+      desc: 'Shown to ally (human): AI civ gifts a unit to the ally',
+      params: 'slot 0: AI civ name, slot 1: unit name, slot 2: ally civ name',
+      rawC: 'if (DAT_006d1da0 == local_2c) thunk_FUN_004442e0(s_MILITARYAID1, local_34); ' +
+            'else if (2 < DAT_00655b02) thunk_FUN_00511880(0x51, ...)',
+      sourceAddr: '0x0055F7D1 ~line 6093-6100',
+    },
+    MILITARYAID2: {
+      msgType: 0x52,
+      dialogString: 'MILITARYAID2',
+      addr: 's_MILITARYAID2_00633c3c',
+      desc: 'Shown to receiving civ (human): ally receives a gifted unit at one of their cities',
+      params: 'slot 0: AI civ name, slot 1: unit name, slot 2: city name, slot 3: enemy civ name',
+      rawC: 'if (DAT_006d1da0 == local_10) thunk_FUN_004442e0(s_MILITARYAID2, local_34); ' +
+            'else if (2 < DAT_00655b02) thunk_FUN_00511880(0x52, ...)',
+      sourceAddr: '0x0055F7D1 ~line 6112-6120',
+    },
+  },
+
   notes: 'Not ported in JS engine; no unit gifting mechanism exists',
 };
 
@@ -1429,6 +1627,32 @@ export const ATTITUDE_LEVEL = {
     ],
     attitudeThreshold: 0x31,  // 49: ceasefire with attitude > 49 = considered peaceful
   },
+};
+
+// ============================================================================
+// === FOREIGN ADVISOR ATTITUDE DISPLAY THRESHOLDS ===
+// Binary ref: block_00430000.c lines 432-452 (foreign advisor dialog)
+// Different from the attitude-level thresholds in FUN_004679ab (ATTITUDE_LEVEL above).
+// These 9 entries map the foreign advisor's slider position (0-8) to a raw attitude
+// value that gets written when the human player adjusts the attitude slider.
+// The dialog presents a 9-position slider; selecting position N sets the raw
+// attitude to THRESHOLDS[N]. Used only in the foreign advisor UI, not in AI logic.
+// ============================================================================
+
+export const FOREIGN_ADVISOR_ATTITUDE_DISPLAY = {
+  sourceAddr: 'block_00430000.c lines 441-449',
+  // 9-entry threshold table: slider position → raw attitude value
+  // local_32c[0..8] = { 0, 5, 0x11, 0x1f, 0x32, 0x44, 0x52, 0x5f, 100 }
+  thresholds: [0, 5, 17, 31, 50, 68, 82, 95, 100],
+  //            0  1   2   3   4   5   6   7    8   ← slider position index
+  // After the player selects a position, the raw attitude is set:
+  //   attitude[aiCiv][humanCiv] = thresholds[selectedPosition]
+  // and an event is dispatched: FUN_0046b14d(0x98, 0xFF, aiCiv, humanCiv, value, ...)
+  // This allows the human player to manually override the AI's attitude in
+  // scenarios or cheat mode via the foreign advisor screen.
+  note: 'These differ from ATTITUDE_LEVEL thresholds — ATTITUDE_LEVEL converts a raw ' +
+        'score to a discrete level (0-8), while these map a slider position BACK to a ' +
+        'raw score for manual attitude setting.',
 };
 
 // ============================================================================

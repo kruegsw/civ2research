@@ -144,6 +144,30 @@ export const POPUP_LIMITS = {
   maxAlphaSearch:      2000,  // max items searched in alpha-key handler   // 0x005A49C1
 };
 
+// --- Popup Keyboard Navigation ---
+// FUN_005a407f (popup_keyboard_handler), 2181 bytes
+// Handles both tab-mode (flags_3E & 2) and grid-mode (flags & 0x41000 == 0x1000) navigation.
+// Virtual key codes mapped to popup actions:
+export const POPUP_KEYBOARD = {
+  // Tab-mode keys (flags_3E & 2):
+  tabNext:       [0xA2, 0xC1],   // Down / Numpad 2 — next tab item           // 0x005A407F
+  tabPrev:       [0xA8, 0xC0],   // Up / Numpad 8 — previous tab item         // 0x005A407F
+  tabSelect:     0xD1,           // Enter — select current tab item            // 0x005A407F
+  // Grid/icon-mode keys (flags & 0x41000 == 0x1000):
+  gridEnd:       [0xA1, 199],    // End / Numpad 1 — jump to last item         // 0x005A407F
+  gridDown:      [0xA2, 0xC1],   // Down / Numpad 2 — move down by column     // 0x005A407F
+  gridPageDown:  [0xA3, 0xC6],   // PgDn / Numpad 3 — page down               // 0x005A407F
+  gridUp:        [0xA4, 0xC2],   // Up / Numpad 8 — move up by column         // 0x005A407F
+  gridRight:     [0xA6, 0xC3],   // Right / Numpad 6 — move right by 1        // 0x005A407F
+  gridLeft:      [0xA7, 0xC4],   // Left / Numpad 4 — move left by 1          // 0x005A407F
+  gridHome:      [0xA8, 0xC0],   // Home / Numpad 7 — jump to first item      // 0x005A407F
+  gridPageUp:    [0xA9, 0xC5],   // PgUp / Numpad 9 — page up                 // 0x005A407F
+  gridSelect:    0xD1,           // Enter — confirm selection                  // 0x005A407F
+  // Multi-column mode: Left/Right switch columns (param remapped to C0/C1)
+  // In 2-column layout: gridRight → param=0xC3, gridLeft → param=0xC0
+  sourceAddr: '0x005A407F',
+};
+
 // --- Popup Control ID Ranges ---
 // Control IDs assigned by popup_init_controls (FUN_005a211c)
 export const POPUP_CONTROL_IDS = {
@@ -383,6 +407,31 @@ export const COUNCIL_RENDER = {
   contextSize: { width: 297, height: 173 },                                // 0x005151F4
   contextOffset: 0x600,    // render context at this+0x600                  // 0x005151F4
   civStyleLookup: 'DAT_00655142',  // civ style for matching civId         // 0x005151F4
+
+  // --- Council Window Layout (FUN_00517158, 1307 bytes) ---
+  // Draws border decorations, button grid, title text for council window
+  windowLayout: {
+    borderWidth: 'DAT_00633588',     // border thickness (used throughout)  // 0x00517158
+    panelHeight: 'DAT_00633598',     // main panel height                   // 0x00517158
+    panelWidth:  'DAT_0063359c',     // main panel width                    // 0x00517158
+    borderColorOuter: 'DAT_00633594',// outer border palette color          // 0x00517158
+    borderColorInner: 'DAT_00633590',// inner border palette color          // 0x00517158
+    buttonGridColumns: 5,            // 5 advisor columns (loop < 5)        // 0x00517158
+    buttonGridRows:    4,            // 4 button rows (loop < 4)            // 0x00517158
+    buttonColumnStride: 0x5A,        // 90px column stride (+ panelWidth)   // 0x00517158
+    buttonRowStride:    0x7A,        // 122px row stride (borderW*2 + 0x7A) // 0x00517158
+    panelMargin:        0x1E,        // 30px margin from edge               // 0x00517158
+    panelFillColor:     10,          // palette index 10 for panel fill     // 0x00517158
+    textPanelFillColor: 0x1D,        // palette index 29 for text panel     // 0x00517158
+    textPanelInset:     -2,          // InflateRect(-2,-2) for text area    // 0x00517158
+    spriteResource:     0x4AC,       // DAT_00628420 + 0x4AC — title sprite // 0x00517158
+    textShadowColor:    10,          // title text shadow (FUN_005c19ad)    // 0x00517158
+    textForeColor:      0x1A,        // title text foreground color         // 0x00517158
+    textShadowOffset:   { x: 1, y: 2 }, // shadow rendered at (+1,+2)      // 0x00517158
+    textForeOffset:     { x: 0, y: 1 }, // foreground rendered at (+0,+1)  // 0x00517158
+    eraSwitch:          'DAT_00628064',  // 1=ancient, 2=modern (layout order) // 0x00517158
+    advisorTextAddr:    'DAT_00631b58',  // modern era advisor label text   // 0x00517158
+  },
 };
 
 // --- Council Label Colors ---
@@ -399,6 +448,11 @@ export const COUNCIL_LABEL_COLORS = {
 export const COUNCIL_ADVISOR_BG = {
   renderSize: { width: 42, height: 64 },                                   // 0x00515C15
   paletteOffset: 'DAT_0065514e',                                           // 0x00515C15
+  // Advisor sound formula: sound = (byte)(DAT_0065514e[advisorIdx]) + 0xDC // 0x00515C15
+  // Called via FUN_005bf5e1(sound, 10, 0xEC, buffer) at line 2019
+  soundBase:     0xDC,           // 220 decimal — per-advisor sound base    // 0x00515C15
+  soundVolume:   10,             // volume param                            // 0x00515C15
+  soundParam:    0xEC,           // 3rd param to play_sound                 // 0x00515C15
 };
 
 // --- Council Scroll Animation ---
@@ -420,8 +474,36 @@ export const COUNCIL_SCROLL_ANIM = {
 // council_play_video (FUN_00515516), 1122 bytes
 export const COUNCIL_VIDEO_PLAYBACK = {
   advisorSlots:   12,       // 12 advisor slots iterated                    // 0x00515516
-  musicBase:      0x53,     // music index = 0x53 + offset                  // 0x00515516
+  // Music formula: musicIdx = ((advisorLetterCode + DAT_006d1168) & 7) + 0x53
+  musicBase:      0x53,     // base music index                             // 0x00515516
+  musicMask:      7,        // & 7 — wraps offset to 0-7 range             // 0x00515516
+  musicCivOffset: 'DAT_006d1168',  // per-civ music offset                 // 0x00515516
   waitDurationMs: 7000,     // ms wait between advisor segments             // 0x00515516
+
+  // --- Additional constants from FUN_00515516 ---
+  advisorStyleTable: 'DAT_00655142',  // civ style lookup per advisor       // 0x00515516
+  advisorLetterTable:'DAT_0065514e',  // per-advisor letter code for music  // 0x00515516
+  viewportRect: { left: 0, top: 0, right: 0x280, bottom: 0x1E0 },
+                        // SetRect(0, 0, 640, 480) — council viewport      // 0x00515516
+  blitParams:   { first: [4, 4], second: [4, 3] },
+                        // thunk_FUN_005683c5 blit mode params              // 0x00515516
+  closingSound: { id: 0x2712, volume: 10, param: 0xEC },
+                        // FUN_005bf5e1(0x2712, 10, 0xEC, buffer)           // 0x00515516
+  textColors:   { fg: 0x7C, bg: 0x81 },
+                        // thunk_FUN_005baee0(0x7C, 0x81, 1, 1)            // 0x00515516
+  stringId:     0x1C8,  // thunk_FUN_0040bc10(0x1C8) — label string        // 0x00515516
+  fontParams:   { style: 0, size: 0x10, weight: 3 },
+                        // thunk_FUN_0043c6c0(0, 16, 3)                     // 0x00515516
+  bodyTextY:    0x48,   // Y offset for advisor body text                   // 0x00515516
+  bodyTextWidth:0x280,  // width for body text (640px)                      // 0x00515516
+  labelTextY:   0x1DC,  // Y position for bottom label                     // 0x00515516
+  timerConstant:0x3C,   // thunk_FUN_0046e287(0x3C) — 60ms timer interval  // 0x00515516
+  advisorTextFile: 'DAT_006558e8',  // advisor script file reference        // 0x00515516
+  advisorTextKey:  'DAT_00631ab4',  // advisor text lookup key              // 0x00515516
+  helpContextIds: {
+    primary: 0x401A1E,  // SetDlgCtrlID help context                        // 0x00515516
+    mpHelp:  0x403585,  // MP-specific help context (if DAT_00655b02 > 2)   // 0x00515516
+  },
 };
 
 // --- Government Council Video System ---
@@ -437,6 +519,9 @@ export const GOVT_COUNCIL_VIDEO = {
   globalPointer:   'DAT_00631acc', // this pointer stored here             // 0x0051661A
   fieldInit:       { offset: 0x46B, value: 0xB0 },                        // 0x0051661A
   buttonCheckIds:  [0xCF, 0xD3],   // button IDs that trigger invalidate   // 0x00516063
+  // FUN_00516063: redraw range (0xCF < param_1) && (param_1 < 0xD3) — IDs 0xD0-0xD2
+  redrawButtonRange: { min: 0xD0, max: 0xD2 },  // buttons that trigger redraw // 0x00516063
+  comboBoxTriggers:  [0xCF, 0xD3],  // combo-box change triggers invalidate   // 0x00516063
 };
 
 // --- Council Speech Rendering ---
@@ -458,6 +543,31 @@ export const COUNCIL_VIDEO_POSITION = {
   xOffset:     1,          // +1 pixel offset                               // 0x00518342
   yOffset:     1,          // +1 pixel below panel top                      // 0x00518342
   maxPanels:   5,          // panels 0-4                                    // 0x00518342
+};
+
+// --- Council Cheat Ranges ---
+// council_video_init (FUN_00516947) cheat dialog — overrides advisor recommendations
+export const COUNCIL_CHEAT = {
+  // COUNCILCHEAT0: select category (1-5), option 6 = change government style
+  // COUNCILCHEAT1: advisor override values 1-7, category 5 limited to max 6  // 0x00516947
+  advisorOverride: {
+    min: 1,                      // minimum valid advisor override value       // 0x00516947
+    max: 7,                      // maximum valid advisor override value       // 0x00516947
+    category5Max: 6,             // category 5 (attitude) capped at 6         // 0x00516947
+    // if ((0 < local_8c) && (local_8c < 8) && (iVar4 != 5 || local_8c < 7))
+  },
+  // COUNCILCHEAT2: government style override values 0-2                      // 0x00516947
+  govtStyleOverride: {
+    min: 0,                      // minimum valid government style            // 0x00516947
+    max: 2,                      // maximum valid government style            // 0x00516947
+    // if ((-1 < local_8c) && (local_8c < 3))
+  },
+  forceGovtFlag:     { offset: 0xE70, value: 1 },  // set when category 6 chosen // 0x00516947
+  cheatDialogs: {
+    selectCategory: 'COUNCILCHEAT0',  // pick advisor category or govt change // 0x00516947
+    setOverride:    'COUNCILCHEAT1',  // set advisor recommendation override  // 0x00516947
+    setGovtStyle:   'COUNCILCHEAT2',  // set government style override        // 0x00516947
+  },
 };
 
 // --- Government Types & Tech Prerequisites ---
@@ -585,6 +695,22 @@ export const HOURGLASS_UI = {
   updateFn:       '0x0056AC67',    // update_hourglass_ui(pct, icon)        // 0x0055AE80
   resetPct:       100,             // reset to 100% on stop                  // 0x0055AE80
   resetIcon:      -1,              // hidden icon on stop                    // 0x0055AE80
+};
+
+// --- Turn Timer Display Refresh ---
+// timer_display_refresh (FUN_0051ea0c), 130 bytes — controls HUD timer redraw
+export const TURN_TIMER_REFRESH = {
+  // Cooldown between timer display refreshes: 0x961 = 2401ms
+  // if (getTickCount() - DAT_006cec80 < 0x961) skip repaint                   // 0x0051EA0C
+  cooldownMs:       0x961,       // 2401ms between display refreshes            // 0x0051EA0C
+  redrawFlag:       0x400,       // DAT_006ad678[0xf] |= 0x400 to trigger redraw // 0x0051EA0C
+  lastRefreshTime:  'DAT_006cec80',  // stored tick of last refresh             // 0x0051EA0C
+  gameObjectArray:  'DAT_006ad678',  // game object — [0xf] = redraw flags      // 0x0051EA0C
+  skipConditions: {
+    noTimer:       'DAT_006ad698 == 0',   // timer disabled                     // 0x0051EA0C
+    noActiveGame:  'DAT_006ad66c == 0',   // no active game                     // 0x0051EA0C
+    invalidPlayer: 'DAT_006ad670 == -1',  // no valid current player            // 0x0051EA0C
+  },
 };
 
 // --- Drag Timer ---
@@ -858,6 +984,151 @@ export const NETMSG_QUEUE = {
   maxAlphaWatermark:  'DAT_006ad694',                                       // 0x0051438F
   maxPrimaryWatermark:'DAT_006ad690',                                       // 0x0051438F
   devPath:       'D:\\Ss\\Franklinton\\NetMessageQueu',                     // 0x0051438F
+};
+
+// --- Message Options Bitmask ---
+// DAT_00655af2 — controls which city/event notifications are shown
+// Source: block_004E0000.c, message_options dialog + city processing checks
+export const MESSAGE_OPTIONS = {
+  globalAddr: 'DAT_00655af2',                                                // 0x004E0000
+  savedCopy:  'DAT_0064bc22',    // DAT_0064bc22 = DAT_00655af2 on save     // 0x004E0000
+  dialogKey:  'MESSAGEOPTIONS',  // GAME.TXT dialog key                      // 0x004E0000
+  bits: {
+    CITY_GROWTH:        0x001,   // bit 0 — suppress city growth message     // DAT_00655af2
+    BUILDING_COMPLETE:  0x002,   // bit 1 — suppress building complete       // DAT_00655af2
+    UNIT_BUILT:         0x004,   // bit 2 — suppress unit built              // DAT_00655af2
+    PRODUCTION_COMPLETE:0x008,   // bit 3 — suppress production complete     // DAT_00655af2
+    DISORDER:           0x010,   // bit 4 — suppress disorder notification   // DAT_00655af2
+    WLTKD_START:        0x020,   // bit 5 — suppress WLtKD start            // DAT_00655af2
+    WLTKD_END:          0x040,   // bit 6 — suppress WLtKD end              // DAT_00655af2
+    // bit 7 (0x80): unused in message options dialog but checked in city processing
+    POLLUTION:          0x100,   // bit 8 — suppress pollution notification  // DAT_00655af2
+    UNKNOWN_200:        0x200,   // bit 9 — unknown / reserved               // DAT_00655af2
+    SOUND_TOGGLE:       0x400,   // bit 10 — sound on/off toggle             // DAT_00655af2
+  },
+  // Dialog checkbox indices map 0-10 to bits 0-10
+  // Note: when bit is SET, the notification is SUPPRESSED
+  // In dialog: checked = notification ON → bit clear; unchecked → bit set
+  // FUN_004e1452 (785 bytes): init uses thunk_FUN_0051d7d6 with inverted logic:
+  //   checkbox 0 value = ~DAT_00655af2 & 1 (inverted: checked = suppression OFF)
+  //   checkbox N value = (DAT_00655af2 & bit) == 0 (checked when bit clear)
+  // On confirm: DAT_00655af2 = 0, then ORs each bit where checkbox is UNCHECKED
+  functionAddr:    '0x004E1452',       // message_options_dialog function          // 0x004E1452
+  checkboxInitFn:  'thunk_FUN_0051d7d6', // init checkbox (inverted logic)        // 0x004E1452
+  checkboxReadFn:  'thunk_FUN_0051d817', // read checkbox result                  // 0x004E1452
+};
+
+// --- Game Options Dialog ---
+// FUN_004e0ab0 (game_options_dialog), 386 bytes @ block_004E0000.c
+// Presents 11 checkboxes controlling DAT_00655aea (master game options bitmask).
+// Dialog key: GAMEOPTIONS. On confirm, clears bits with mask 0xFFFF8027,
+// then re-sets each checked bit individually.
+export const GAME_OPTIONS_DIALOG = {
+  sourceAddr:    '0x004E0AB0',
+  dialogKey:     'GAMEOPTIONS',                                                 // 0x004E0AB0
+  globalAddr:    'DAT_00655aea',       // master game options bitmask            // 0x004E0AB0
+  savedCopy:     'DAT_0064bc1e',       // DAT_0064bc1e = DAT_00655aea on apply  // 0x004E0AB0
+  clearMask:     0xFFFF8027,           // bits cleared before re-applying        // 0x004E0AB0
+  // 11 checkbox items, in dialog order (index 0-10):
+  // thunk_FUN_004e0a8c(index, DAT_00655aea & flagBit) to init each checkbox
+  // thunk_FUN_0051d817(index) to read back each checkbox after OK
+  checkboxBits: {
+    0:  { bit: 0x0010, desc: 'sound effects' },                                 // 0x004E0AB0
+    1:  { bit: 0x0008, desc: 'music' },                                         // 0x004E0AB0
+    2:  { bit: 0x4000, desc: 'always wait at end of turn' },                    // 0x004E0AB0
+    3:  { bit: 0x2000, desc: 'move units with mouse' },                         // 0x004E0AB0
+    4:  { bit: 0x1000, desc: 'enter closest city on keypress' },                // 0x004E0AB0
+    5:  { bit: 0x0800, desc: 'popup caravan actions' },                         // 0x004E0AB0
+    6:  { bit: 0x0400, desc: 'no pause after enemy moves' },                    // 0x004E0AB0
+    7:  { bit: 0x0200, desc: 'fast piece slide' },                              // 0x004E0AB0
+    8:  { bit: 0x0100, desc: 'instant advice' },                                // 0x004E0AB0
+    9:  { bit: 0x0080, desc: 'tutorial help' },                                 // 0x004E0AB0
+    10: { bit: 0x0040, desc: 'show enemy moves' },                              // 0x004E0AB0
+  },
+  // checkbox 1 (music) special: toggling on triggers FUN_005dde9d/5dde57/5ddd4e/FUN_0046e4a9
+  // toggling off triggers thunk_FUN_0046e6a9
+  // Version string shown in dialog via thunk_FUN_0040ff60(0, PTR_s_5_4_0f_...):
+  versionStringAddr: 'PTR_s_5_4_0f_Multiplayer_26_March_99_0062765c',          // 0x004E0AB0
+  patchStringAddr:   'PTR_s_Patch_3_00627660',                                  // 0x004E0AB0
+};
+
+// --- Graphic Options Dialog ---
+// FUN_004e0d71 (graphic_options_dialog), 423 bytes @ block_004E0000.c
+// Presents 6 checkboxes controlling bits 16-21 of DAT_00655aea.
+// Dialog key: GRAPHICOPTIONS. On confirm, clears bits with mask 0xFFC0FFFF.
+export const GRAPHIC_OPTIONS_DIALOG = {
+  sourceAddr:    '0x004E0D71',
+  dialogKey:     'GRAPHICOPTIONS',                                              // 0x004E0D71
+  globalAddr:    'DAT_00655aea',       // same master bitmask                   // 0x004E0D71
+  savedCopy:     'DAT_0064bc1e',       // DAT_0064bc1e = DAT_00655aea on apply  // 0x004E0D71
+  clearMask:     0xFFC0FFFF,           // bits cleared before re-applying        // 0x004E0D71
+  // 6 checkbox items, in dialog order (index 0-5):
+  checkboxBits: {
+    0: { bit: 0x020000, desc: 'throne room' },                                  // 0x004E0D71
+    1: { bit: 0x040000, desc: 'diplomacy screen' },                             // 0x004E0D71
+    2: { bit: 0x200000, desc: 'animated heralds' },                             // 0x004E0D71
+    3: { bit: 0x080000, desc: 'civilopedia for advances' },                     // 0x004E0D71
+    4: { bit: 0x100000, desc: 'high council' },                                 // 0x004E0D71
+    5: { bit: 0x010000, desc: 'wonder movies' },                                // 0x004E0D71
+  },
+  // checkbox 2 (animated heralds) has low-memory check:
+  // thunk_FUN_00568176(0x800000) — checks if 8MB available
+  // if not, shows LOWMEMORY dialog instead of enabling
+  lowMemoryCheckBytes: 0x800000,       // 8MB threshold for heralds             // 0x004E0D71
+  lowMemoryDialog:     'LOWMEMORY',    // @ s_LOWMEMORY_0062eb54               // 0x004E0D71
+};
+
+// --- Multiplayer Options Dialog ---
+// FUN_004e0f18 (multiplayer_options_dialog), 1020 bytes @ block_004E0000.c
+// Presents 2-4 checkboxes for MP game options (depending on game state).
+// Uses two different GAME.TXT dialog keys depending on protocol level.
+export const MULTIPLAYER_OPTIONS_DIALOG = {
+  sourceAddr:    '0x004E0F18',
+  // Dialog key selection: if (DAT_00655b02 >= 3 && DAT_006ad2f7 != 0) → MULTIPLAYEROPTIONS
+  //                       else → MULTIPLAYEROPTIONS2 (fewer options)
+  dialogKeys: {
+    full:     'MULTIPLAYEROPTIONS',    // @ s_MULTIPLAYEROPTIONS_0062eb60       // 0x004E0F18
+    limited:  'MULTIPLAYEROPTIONS2',   // @ s_MULTIPLAYEROPTIONS2_0062eb74      // 0x004E0F18
+  },
+  protocolVersionVar: 'DAT_00655b02',  // save format version                   // 0x004E0F18
+  isHostVar:          'DAT_006ad2f7',  // nonzero = host player                 // 0x004E0F18
+  // Checkbox state variables (ushort, not bitmask — each is 0/1):
+  checkboxVars: {
+    0: 'DAT_006665fa',                 // checkbox 0 value                      // 0x004E0F18
+    1: 'DAT_006665fc',                 // checkbox 1 value                      // 0x004E0F18
+    2: 'DAT_006665fe',                 // checkbox 2 (full dialog only)         // 0x004E0F18
+    3: 'DAT_00666600',                 // checkbox 3 (full dialog only)         // 0x004E0F18
+  },
+  // Master copies (checkboxes 2-3 only apply when host, versioned):
+  masterVars: {
+    lockWhiteArea: 'DAT_00654fac',     // master copy of checkbox 2             // 0x004E0F18
+    chatSound:     'DAT_00654fae',     // master copy of checkbox 3             // 0x004E0F18
+  },
+  // When checkboxes 2-3 change, server broadcasts change to clients:
+  pmChange: {
+    // Net messages: 0x350 - (checkbox2==0), 0x352 - (checkbox3==0)
+    netMsgLockWhiteArea: { base: 0x350, formula: '0x350 - (val==0)' },         // 0x004E0F18
+    netMsgChatSound:     { base: 0x352, formula: '0x352 - (val==0)' },         // 0x004E0F18
+    // Server-side proposal dialog:
+    serverDialog:        'PMCHANGESERVER',  // @ s_PMCHANGESERVER_0062eb8c      // 0x004E0F18
+    rejectedDialog:      'PMCHANGENO',      // @ s_PMCHANGENO_0062eb9c          // 0x004E0F18
+    acceptedDialog:      'PMCHANGEYES',     // @ s_PMCHANGEYES_0062eba8         // 0x004E0F18
+    // Target player count: DAT_006ad308 - 1 (wait for all other clients)
+    targetCountVar:      'DAT_006ad66c',    // set to DAT_006ad308 - 1          // 0x004E0F18
+    responseCountVar:    'DAT_006ad670',    // incremented as clients respond    // 0x004E0F18
+  },
+  // MP events dispatched during PM change:
+  mpEvents: {
+    proposal: 0x43,                    // FUN_00511880(0x43, 0xff, 2, 0, 0, 0)  // 0x004E0F18
+    rejected: 0x44,                    // FUN_00511880(0x44, 0xff, 0, 0, 0, 0)  // 0x004E0F18
+    accepted: 0x45,                    // FUN_00511880(0x45, 0xff, 0, 0, 0, 0)  // 0x004E0F18
+  },
+  // Net messages sent to inform all clients:
+  netMessages: {
+    announceSettings: 0x1B,            // thunk_FUN_0046b14d(0x1b, ...)         // 0x004E0F18
+    sendValues:       0x33,            // thunk_FUN_0046b14d(0x33, lockWhite, chatSound, retireAfterN, ...) // 0x004E0F18
+    retireAfterNVar:  'DAT_00654c7c',  // retire after N turns setting          // 0x004E0F18
+  },
 };
 
 
@@ -1805,7 +2076,7 @@ export const MENU_COMMAND_IDS = {
   TAX_RATE:         0x201,    // FUN_0040ddc6 — tax rate dialog
   FIND_CITY:        0x205,    // FUN_0044cd9b — find city
   PALACE:           0x210,    // FUN_0040e017 — palace view
-  WONDERS:          0x220,    // FUN_0040e3b1 — wonders of the world
+  REVOLUTION_KINGDOM: 0x220,  // FUN_0040e3b1 — revolution (Kingdom menu, confirms + sets anarchy)
 
   // --- View menu (continued) ---
   ZOOM_IN:          0x310,    // increment zoom level (DAT_0066CA8C + 1, max 8)
@@ -1886,18 +2157,151 @@ export const MENU_COMMAND_IDS = {
   CHEAT_EDIT_UNIT:  0x768,    // FUN_005582ad — edit unit
   CHEAT_EDIT_CITY:  0x770,    // FUN_0055891d — edit city
 
-  // --- Help menu ---
+  // --- Help / Editor menu ---
   HELP_CONTENTS:    0x801,    // FUN_00553ff6 — help contents
   HELP_SEARCH:      0x802,    // FUN_00417566 — help search
   HELP_HOW:         0x803,    // FUN_00429e77 — how to play
   HELP_STRATEGY:    0x804,    // FUN_0058760d — strategy tips
   HELP_ABOUT:       0x805,    // FUN_004da9e2 — about dialog
+  MP_ADMIN:         0x806,    // FUN_0051c635 — multiplayer admin panel
+  DIPLOMACY_DEBUG:  0x807,    // FUN_004a5d92 — diplomacy debug dialog
+  VIEW_REPLAY:      0x808,    // FUN_005b1a29 — view replay
+  EVENT_EDITOR:     0x809,    // FUN_0054ffc8 — scenario event editor
 
-  // --- Multiplayer menu ---
-  MP_COUNCIL:       0x901,    // FUN_004f7bd1(1,1) — multiplayer council
-  MP_SCENARIO_EDIT: 0x9F0,    // FUN_005792e1 — scenario editor (MP context)
+  // --- Pedia / Advisor pages ---
+  MP_COUNCIL:       0x901,    // FUN_004f7bd1(1,1) — advisor page 1 (council)
+  ADVISOR_PAGE_2:   0x903,    // FUN_004f7bd1(2,1) — advisor page 2
+  ADVISOR_PAGE_3:   0x905,    // FUN_004f7bd1(3,1) — advisor page 3
+  ADVISOR_PAGE_4:   0x907,    // FUN_004f7bd1(4,1) — advisor page 4
+  ADVISOR_PAGE_6:   0x909,    // FUN_004f7bd1(6,1) — advisor page 6
+  ADVISOR_PAGE_5:   0x90B,    // FUN_004f7bd1(5,1) — advisor page 5
+  ADVISOR_PAGE_7:   0x90D,    // FUN_004f7bd1(7,1) — advisor page 7 (shift+0x905 → FUN_004e01b0 cheat)
+  CREDITS:          0x9F0,    // s_NEWCREDITS_0062ed20 — credits dialog (guard: DAT_00655b02 < 3)
+
+  // --- Menu bar build function (FUN_004e3a86) ---
+  // Menus are built in order: 1=Game, 2=Kingdom, 3=View, 4=Orders, 5=Advisors, 6=World, 7=Cheat, 8=Editor, 9=Pedia
+  // Section string refs: s_KINGDOM_0062ed3c, s_ORDERS_0062ed4c, s_ADVISORS_0062ed54,
+  //   s_WORLD_0062ed60, s_CHEAT_0062ed68, s_EDITOR_0062ed70, s_PEDIA_0062ed78
+  // Accelerator key 0x3c (Ctrl) on: 0x401, 0x410, 0x411, 0x412, 0x413, 0x445
+  // CheckState for 0x327 (grid toggle) from (DAT_00655aea & 0x20) >> 5
+  // Cheat menu visible: (DAT_00655aea & 0x8000) != 0 AND DAT_00655b02 == 0
+  // Editor enable check: DAT_00655af0 & 0x80 AND strcmp(DAT_0064bb08, DAT_00655020) != 0
+  // 0x801 enable: DAT_00655b02 != 0 (scenario/MP context)
+  // Timer 0x1BBC dispatched at top of FUN_004e3a86
+
+  // --- Shift+cheat alternate handlers (World menu items) ---
+  // 0x601 + shift+cheat → FUN_004e01b0 (edit city list cheat)
+  // 0x602 + shift+cheat → FUN_004702e0 (defense edit cheat)
+  // 0x603 + shift+cheat → FUN_00514e7b (production edit cheat)
+  // 0x605 + shift+cheat → FUN_004710d0(-(DAT_006d1da0+1 & 7)) (trade route cheat)
+  // 0x606 + shift+cheat → FUN_004710d0(DAT_006d1da0) (spaceship cheat)
+
+  // --- Quit hotseat ---
+  // 0x1F2 guarded by DAT_00655b02 == 1 (hotseat mode)
+  // Dialog key: s_REALLYQUIT_0062ed14 → confirms, then FUN_0046e6a9 + FUN_00484d3b
 
   sourceAddr: '0x004E2803',
+  menuBuildAddr: '0x004E3A86',
+};
+
+// --- Menu Enable/Disable State Machine ---
+// FUN_004e4ceb (3761 bytes): called at turn start to enable/disable menu items
+// based on game mode (SP/MP), unit state, terrain, and scenario flags.
+// Uses thunk_FUN_005792e1(menuId, enabled) and thunk_FUN_005794cf(menuPos, enabled).
+export const MENU_ENABLE_STATE = {
+  sourceAddr: '0x004E4CEB',
+
+  // --- Spaceship report: DAT_00655ae8 & 0x80 (scenario flag) ---
+  spaceshipEnable: { menuId: 0x606, condition: 'DAT_00655ae8 & 0x80' },
+
+  // --- Single-player enables (DAT_00655b02 == 0) ---
+  singlePlayer: {
+    enables: [0x130, 0x132, 0x507, 0x104, 0x105],  // set password, revolution, score, city report, MP options
+    disables: [0x120, 0x9F0],                        // load game, credits
+  },
+
+  // --- Multiplayer enables (DAT_00655b02 != 0) ---
+  multiplayer: {
+    credits:  { menuId: 0x9F0, enabled: true },
+    cityReport: { menuId: 0x104, enabled: false },
+    mpOptions:  { menuId: 0x105, enabled: false },
+    cheatMoney: { menuId: 0x701, condition: 'DAT_0062eb30 == 0' },
+    loadGame:   { menuId: 0x120, enabled: true },
+    password:   { menuId: 0x130, condition: 'DAT_00654c74 == 0 || DAT_00655b02 != 1' },
+    findCity:   { menuId: 0x205, condition: 'DAT_00655b02 == 1 (hotseat only)' },
+    score:      { menuId: 0x507, condition: 'DAT_00655b02 < 3 (not internet MP)' },
+    revolution: { menuId: 0x132, condition: 'DAT_00655b02==2 OR DAT_006ad2f7==0' },
+    saveGame:   { menuId: 0x110, condition: 'DAT_00655b02 == 2 (only PBEM)' },
+    quitNoSave: { menuId: 0x1F1, enabled: false },
+    saveAndQuit:{ menuId: 0x1F0, enabled: false },
+  },
+
+  // --- Advisor enables ---
+  defenseMinister: { menuId: 0x302, condition: 'DAT_006d1da8 == 0 (no active unit)' },
+  cityStatus:      { menuId: 0x301, condition: 'DAT_006d1da8 == 1 (unit active)' },
+
+  // --- Revolution (Kingdom menu) enable: scenario mode + tech paradigm flag + government type ---
+  revolutionKingdom: { menuId: 0x220, condition: '(DAT_00655af0 & 0x80)==0 || (DAT_0064bc60 & 0x10)==0 or govt!=0' },
+
+  // --- Orders menu: disabled when no active unit or no units alive ---
+  ordersMenu: {
+    disableCondition: 'DAT_006d1da8==0 || DAT_00655b16==0 || DAT_00655afe<0 || no alive unit',
+    affectedMenuPos: 4,  // thunk_FUN_005794cf(4, 1) = disable Orders menu
+    scienceAdvisor: { menuId: 0x460, enabled: false },
+    historians:     { menuId: 0x468, enabled: false },
+  },
+
+  // --- Unit-type dependent enables (when active unit exists) ---
+  unitTypeEnables: {
+    // Unit domain check: DAT_0064b1ca[unitType*0x14] == 5 (settler domain)
+    settlerDomainId: 5,
+    settlerMenuIds: {
+      civilopedia:    { menuId: 0x401, condition: 'domain != settler' },
+      pediaAdvances:  { menuId: 0x410, greyed: 'terrain-dependent' },
+      pedaImprovements: { menuId: 0x411, greyed: 'improvement-dependent' },
+      pediaWonders:   { menuId: 0x412, greyed: 'railroad-dependent' },
+    },
+    attitudeAdvisor: { menuId: 0x450, condition: 'domain == settler (settlers only)' },
+    pediaTerrain:    { menuId: 0x418, techReq: 0x12 },  // requires Invention (0x12) tech
+    pedaGovernments: { menuId: 0x417, techReq: 0x42 },  // requires tech 0x42
+    demographics:    { menuId: 0x430, condition: 'domain == settler' },
+    pediaGame:       { menuId: 0x41B, condition: 'domain != settler' },
+
+    // --- Spaceship enable ---
+    spaceship: { menuId: 0x441, condition: 'has tech 0xd AND unit flag bit 0x100 clear' },
+
+    // --- Top 5 Cities ---
+    top5Cities: { menuId: 0x442, condition: 'no city on tile (thunk_FUN_005b8ca6 < 0)' },
+
+    // --- Embassy report (requires city on tile) ---
+    embassy: { menuId: 0x445, condition: 'city exists at unit position' },
+
+    // --- Build unit (requires available build type) ---
+    pediaUnits: { menuId: 0x413, condition: 'thunk_FUN_004bfe5a returns 0 (can build)' },
+
+    // --- Pedia search ---
+    pediaSearch: { menuId: 0x421, condition: 'domain == settler; also if no moves or no road tech' },
+  },
+
+  // --- Cheat menu visibility ---
+  cheatMenu: {
+    menuPos: 7,
+    visibleCondition: 'DAT_00655aea bit 15 (0x80 in byte 1) set AND DAT_00655b02 == 0',
+    moneyEnable: { menuId: 0x701, condition: 'DAT_00655b02 != 0 AND DAT_0062eb30 == 0' },
+  },
+
+  // --- Editor menu ---
+  editorMenu: {
+    menuPos: 8,
+    visibleCondition: 'DAT_00655aea bit 15 set AND DAT_00655b02==0 AND DAT_00655af0 & 0x80 AND strcmp(DAT_0064bb08, DAT_00655020) != 0',
+    helpEnable: { menuId: 0x801, condition: 'DAT_00655b02 != 0' },
+  },
+
+  // --- Remote MP: orders menu disabled for other players ---
+  remoteMpDisable: {
+    condition: 'DAT_00655b02 > 2 AND DAT_006ad578 != DAT_006d1da0',
+    affectedMenuPos: 4,  // Orders menu disabled
+  },
 };
 
 
@@ -2940,6 +3344,113 @@ export const EDITOR_LABEL_IDS = {
 
 
 // ============================================================================
+// 24b. RULES EDITOR MAIN — DIALOG FRAME & BUTTONS
+// ============================================================================
+// Binary ref: FUN_00416c9e create_rules_editor @ 0x00416C9E (block_00410000.c:3174)
+
+export const RULES_EDITOR_DIALOG = {
+  // Dialog frame background sprite (via thunk_FUN_005534bc)
+  dialogFrame: 0x734,                  // rules editor dialog frame background          // 0x00416c9e
+
+  // Bottom toolbar buttons — same pattern as scenario editor
+  buttons: {
+    navA:    { id: 0x65, spriteOffset: 0x3f8, callback: 'LAB_00401e51' },            // 0x00416c9e
+    navB:    { id: 0x65, spriteOffset: 0xa8,  callback: 'LAB_00402054' },            // 0x00416c9e
+    actionA: { id: 0x66, spriteOffset: 0x8ec, callback: 'LAB_00403bb1' },            // 0x00416c9e
+    actionB: { id: 0x66, spriteOffset: 0x3fc, callback: 'LAB_0040394a' },            // 0x00416c9e
+    sideNav: { id: 0x65, spriteOffset: 0x7cc, callback: 'LAB_004019d3' },            // 0x00416c9e
+  },
+
+  // Window dimensions: 0x230 x 0x17c (560 x 380)
+  windowSize: { width: 0x230, height: 0x17c },                                       // 0x00416c9e
+  backgroundGif: 'EDITORPT_GIF',       // @ s_EDITORPT_GIF_00625258                    // 0x00416c9e
+  initialButtonId: 0xc9,               // DAT_006a1d80 = 0xc9                           // 0x00416c9e
+
+  sourceAddr: '0x00416C9E',
+};
+
+
+// ============================================================================
+// 24c. TECH PREREQ LIST SPRITES
+// ============================================================================
+// Binary ref: FUN_00415b52 populate_tech_prereq_list @ 0x00415B52 (block_00410000.c:2730)
+
+export const TECH_PREREQ_LIST_SPRITES = {
+  // Section header sprites loaded when displaying tech prerequisite trees
+  leadsToHeader:       0x808,          // "Leads to:" section header (improvements)     // 0x00415b52
+  alsoLeadsToHeader:   0x80c,          // "Also leads to:" section header (other techs) // 0x00415b52
+  prereqChainFormat:   0x1ec,          // prerequisite chain display format string       // 0x00415b52
+
+  // Maximum entries per list: 0x3e (62) improvements, 100 advances
+  improvementsMax: 0x3e,               // loop bound for improvement scan               // 0x00415b52
+  advancesMax: 100,                    // loop bound for advance scan                   // 0x00415b52
+
+  sourceAddr: '0x00415B52',
+};
+
+
+// ============================================================================
+// 24d. CIVILOPEDIA EDIT & MAP LOAD DIALOG SPRITES
+// ============================================================================
+// Binary ref: FUN_004161b5 edit_civilopedia_entry @ 0x004161B5 (block_00410000.c:2914)
+//             FUN_0041dd0e load_scenario_map @ 0x0041DD0E (block_00410000.c:6805)
+
+export const EDITOR_MISC_DIALOG_SPRITES = {
+  // Civilopedia edit window resource
+  // @ FUN_004161b5: thunk_FUN_00428b0c(DAT_00628420 + 0x7d8, 0, &LAB_00401d8e)
+  civilopediaEditWindow: 0x7d8,        // civilopedia entry edit window sprite          // 0x004161b5
+
+  // Scenario map load dialog title
+  // @ FUN_0041dd0e: thunk_FUN_00428b0c(DAT_00628420 + 0x40c, filename, ...)
+  mapLoadDialogTitle: 0x40c,           // file open dialog title for scenario map load  // 0x0041dd0e
+
+  // Custom city style icons (new_game_setup_wizard)
+  // @ FUN_0041ba52: loop 0..3, DAT_00628420 + 0x3d8 + i*4
+  cityStyleIconBase: 0x3d8,            // base offset for 4 city style icon sprites     // 0x0041ba52
+  cityStyleIconStride: 4,              // 4 bytes between each style icon offset        // 0x0041ba52
+  cityStyleIconCount: 4,               // 4 city styles                                 // 0x0041ba52
+
+  sourceAddr: '0x004161B5, 0x0041DD0E, 0x0041BA52',
+};
+
+
+// ============================================================================
+// 24e. CITY NAME EDITOR SPRITES
+// ============================================================================
+// Binary ref: FUN_0042903e city_name_editor_create_buttons @ 0x0042903E (block_00420000.c:3150)
+//             FUN_004293a8 city_name_editor_paint @ 0x004293A8 (block_00420000.c:3213)
+//             FUN_00429671 city_name_editor_open @ 0x00429671 (block_00420000.c:3276)
+
+export const CITY_NAME_EDITOR_SPRITES = {
+  // Dialog frame for city name editor (via thunk_FUN_005534bc)
+  // @ FUN_00429671: DAT_00628420 + 0x738 — already documented as mapEditorTitle
+  dialogFrame: 0x738,                  // city name editor dialog frame                 // 0x00429671
+
+  // Additional button sprite unique to city name editor
+  // @ FUN_00429671: DAT_00628420 + 0x8f0
+  additionalButton: 0x8f0,            // extra editor navigation button sprite          // 0x00429671
+
+  // Name set buttons — 3 sets of different sizes
+  // @ FUN_0042903e: param_1 == 0 → set 0 (6 items), param_1 == 1 → set 1 (4 items), param_1 == 2 → set 2 (2 items)
+  nameSetButtons: {
+    set0: [0x834, 0x838, 0x83c, 0x840, 0x844, 0x848],  // 6 button sprites for name set 0    // 0x0042903e
+    set1: [0x84c, 0x850, 0x854, 0x858],                 // 4 button sprites for name set 1    // 0x0042903e
+    set2: [0x85c, 0x860],                                // 2 button sprites for name set 2    // 0x0042903e
+  },
+
+  // Column header labels in paint handler
+  // @ FUN_004293a8: thunk_FUN_0040bc10(offset) for column headers
+  columnHeaders: {
+    column0: 0x864,                    // first column header label text                // 0x004293a8
+    column1: 0x868,                    // second column header label text               // 0x004293a8
+    column2: 0x86c,                    // third column header label text                // 0x004293a8
+  },
+
+  sourceAddr: '0x0042903E, 0x004293A8, 0x00429671',
+};
+
+
+// ============================================================================
 // 25. PARITY CHECK (Tile Coordinate Validity)
 // ============================================================================
 // Binary ref: FUN_0040bcb0 @ 0x0040BCB0 (block_00400000.c:2705-2709)
@@ -3051,4 +3562,294 @@ export const GAME_INIT = {
   chatLogFile: 'chatlog.txt',          // @ s_chatlog_txt_00625888                     // 0x0041F69F
 
   sourceAddr: '0x0041B4C0, 0x0041B8B0, 0x0041F69F',
+};
+
+
+// ============================================================================
+// 27. MULTIPLAYER LOBBY (block_00420000)
+// ============================================================================
+// Binary ref: block_00420000.c — DirectPlay lobby, session management, game profile
+
+// --- Menu Enable/Disable Flag Matrix ---
+// Timer callbacks that conditionally enable menu redraw based on network state globals.
+// Each function checks specific global flags; if any are nonzero, sets
+// DAT_006ad678[0xf] |= 0x400 to trigger UI invalidation.
+export const MP_MENU_FLAGS = {
+  redrawFlag: 0x400,             // ORed into DAT_006ad678[0xf] to force repaint  // 0x0042417A
+
+  // FUN_0042417a: enables if any of these are nonzero                          // 0x0042417A
+  networkEventGroup1: {
+    fn: '0x0042417A',
+    flags: ['DAT_006c8ff0', 'DAT_006c900c', 'DAT_006c8ff4', 'DAT_006c9024'],
+    desc: 'general network error/state: data received, connection lost, data sent, timeout',
+  },
+
+  // FUN_0042433c: enables if any of these are nonzero                          // 0x0042433C
+  networkEventGroup2: {
+    fn: '0x0042433C',
+    flags: ['DAT_006c8ff0', 'DAT_006c900c', 'DAT_006c9010'],
+    desc: 'data received, connection lost, session lost',
+  },
+
+  // FUN_0042439c: enables if any of these are nonzero                          // 0x0042439C
+  networkEventGroup3: {
+    fn: '0x0042439C',
+    flags: ['DAT_006c9038', 'DAT_006c900c'],
+    desc: 'player joined/left, connection lost',
+  },
+
+  // FUN_004243ef: enables if any of these are nonzero                          // 0x004243EF
+  networkEventGroup4: {
+    fn: '0x004243EF',
+    flags: ['DAT_006c902c', 'DAT_006c900c', 'DAT_006c8ff4'],
+    desc: 'lobby message received, connection lost, data sent',
+  },
+
+  // Global addresses as network event codes:
+  // DAT_006c8ff0 = data received event
+  // DAT_006c8ff4 = data sent event
+  // DAT_006c900c = connection lost event
+  // DAT_006c9010 = session lost event
+  // DAT_006c9024 = timeout event
+  // DAT_006c902c = lobby message received event
+  // DAT_006c9038 = player joined/left event
+};
+
+// --- Lobby Refresh Timer ---
+// FUN_0042444f (called as FUN_00424446 thunk): periodic lobby UI refresh
+export const LOBBY_REFRESH_TIMER = {
+  // Timer condition: if DAT_006ad300 == -1, use timing threshold
+  // threshold: 0x4d8 (1240ms) since last DAT_006ad674 timestamp               // 0x0042444F
+  timingThresholdMs: 0x4D8,      // 1240ms — minimum interval between refreshes // 0x0042444F
+  lastRefreshTime:   'DAT_006ad674',  // stored tick of last refresh            // 0x0042444F
+  activeSessionVar:  'DAT_006ad300',  // -1 = no active session                 // 0x0042444F
+  // When DAT_006ad300 != -1, always trigger redraw (active session mode)
+  redrawFlag:        0x400,       // DAT_006ad678[0xf] |= 0x400                 // 0x0042444F
+};
+
+// --- Session Node Structure ---
+// FUN_0042570c: session_cleanup — linked-list traversal with timeout expiry
+// Session node layout (allocated on heap, linked list):
+export const SESSION_NODE = {
+  // Linked-list offsets within each session node:                               // 0x0042570C
+  offsets: {
+    next:        0x20,    // +0x20: pointer to next node                        // 0x0042570C
+    prev:        0x24,    // +0x24: pointer to previous node                    // 0x0042570C
+    timestamp:   0x28,    // +0x28: creation/update timestamp (tick count)      // 0x0042570C
+    id:          0x2C,    // +0x2C: session ID (assigned from DAT_006ad108[1])  // 0x004257FE
+    name:        0x70,    // +0x70: session/game name string                    // 0x004257FE
+    host:        0x90,    // +0x90: host name string                            // 0x004257FE
+    settings_b0: 0xB0,    // +0xB0: game settings field (short)                // 0x004257FE
+    settings_b4: 0xB4,    // +0xB4: player bitmask                             // 0x004257FE
+    settings_b5: 0xB5,    // +0xB5: additional settings                        // 0x004257FE
+    timer:       0xB8,    // +0xB8: turn timer setting                         // 0x004257FE
+    scenario:    0xBC,    // +0xBC: scenario flag                              // 0x004257FE
+    // +0x110-0x120: various status flags                                      // 0x004257FE
+  },
+  // Timeout: DAT_006ad8b8 * 0x3c (timeout_seconds * 60) in ticks              // 0x0042570C
+  timeoutFormula: 'DAT_006ad8b8 * 0x3C',  // timeout * 60 ticks               // 0x0042570C
+  timeoutVar:     'DAT_006ad8b8',          // base timeout value in seconds    // 0x0042570C
+  listHead:       'DAT_006c31d4',          // linked list head pointer          // 0x0042570C
+};
+
+// --- DirectPlay Lobby Opcodes ---
+// XD_LobbySendMessage calls during lobby connection (block_00420000.c lines 1170-1178)
+export const LOBBY_OPCODES = {
+  announce: 1,          // XD_LobbySendMessage(1) — announce presence to lobby  // 0x00422228
+  gameInfo: 3,          // XD_LobbySendMessage(3) — send game info to lobby     // 0x00422228
+  // Called after XD_OpenConnection succeeds and DAT_006ad228 != -1
+  connectionTimeout: 'DAT_006ad8b8 * 1000',  // ms — connection timeout        // 0x00422228
+  connectionTimeoutVar: 'DAT_006ad8b8',       // base timeout in seconds       // 0x00422228
+  waitDialogKey:     'WAITINGFORSERVER',       // shown during connection wait  // 0x00422228
+};
+
+// --- Game Profile Dialog Fields ---
+// FUN_004259a6 (1423 bytes): game profile dialog — shows game settings summary
+export const GAME_PROFILE_DIALOG = {
+  dialogKey: 'GAMEPROFILE',                                                     // 0x004259A6
+  // String IDs used for field labels
+  stringIds: {
+    password:   0x277,   // password field (0x277 if no password, 0x278 if set) // 0x004259A6
+    difficulty: { base: 0x279, offset: 'DAT_00655b08' },  // 0x279 + difficulty level // 0x004259A6
+    enemies:    { base: 0x27F, offset: 'DAT_00655b09' },  // 0x27F + enemy count // 0x004259A6
+    noTimer:    0x285,   // displayed when DAT_00654b70 == 0 (no timer)         // 0x004259A6
+    scenario:   0x34C,   // scenario name (fallback)                            // 0x004259A6
+  },
+  // Bitmask-to-count table: maps a bitmask to number of set bits
+  // Used to count players from player bitmask                                  // 0x004259A6
+  bitmaskToCount: [0, 1, 3, 7, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF],
+  // Timer display: DAT_00654b70 / 1000 → minutes:seconds
+  timerVar: 'DAT_00654b70',      // timer duration in milliseconds              // 0x004259A6
+  maxPlayers: 8,                  // player count loop (8 bits checked)          // 0x004259A6
+};
+
+
+// ============================================================================
+// 29. DIPLOMACY DIALOG
+// ============================================================================
+// Binary ref: FUN_004548a9 (diplomacy_init) @ block_00450000.c (1506 bytes)
+//             FUN_00454f83 (diplomacy_calc_state) @ block_00450000.c (414 bytes)
+//             FUN_00455183 (diplomacy_load_map) @ block_00450000.c (401 bytes)
+//             FUN_00455314 (diplomacy_populate_items) @ block_00450000.c (1694 bytes)
+
+/**
+ * The diplomacy dialog presents a multi-panel negotiation interface
+ * with animated leader portraits, a world map background, and
+ * trade/treaty item grids arranged in 4 rows of 4 columns.
+ */
+export const DIPLOMACY_DIALOG = {
+  sourceAddr: '0x004548A9',
+
+  // --- DLL and Resource Loading ---
+  dllFile:         'cv_dll',           // @ s_cv_dll_00626a08 — leader video DLL  // 0x004548A9
+  maxViewportWidth: 0x500,             // 1280px — clamped screen width            // 0x004548A9
+  viewportHeight:   0x1E0,             // 480px — fixed viewport height            // 0x004548A9
+
+  // --- Sound Resources ---
+  // Three music tracks loaded via FUN_005bf5e1(id, volume, param, buffer)
+  sounds: {
+    intro:    { id: 300,   volume: 10, param: 0xEC },                             // 0x004548A9
+    midTheme: { id: 0x131, volume: 10, param: 0xEC },   // 305 decimal            // 0x004548A9
+    altTheme: { id: 0x136, volume: 10, param: 0xEC },   // 310 decimal            // 0x004548A9
+  },
+
+  // --- Button Grid Layout (4 rows of 4 columns each) ---
+  // Rows are negotiation item categories. Each button is a clickable
+  // trade/treaty option. Created via FUN_005cedad(buf, 9, x, y, w, h).
+  buttonGrid: {
+    columns: 4,                        // 4 buttons per row                        // 0x004548A9
+    // Row 1 (top treaties): large buttons
+    row1: { x: 1, y: 1, w: 0x9E, h: 0x72, xStride: 0x9F },                      // 0x004548A9
+    // Row 2 (reciprocal): same size, y shifts +0x73 if > 1 era
+    row2: { x: 1, y: 0x74, w: 0x9E, h: 0x72, xStride: 0x9F,
+            eraShift: 0x73 },                                                      // 0x004548A9
+    // Row 3 (small items): smaller buttons
+    row3: { x: 1, y: 0x15A, w: 0x7B, h: 0x52, xStride: 0x7C },                  // 0x004548A9
+    // Row 4 (small reciprocal): same small size, y shifts +0x53 if > 1 era
+    row4: { x: 1, y: 0x1AD, w: 0x7B, h: 0x52, xStride: 0x7C,
+            eraShift: 0x53 },                                                      // 0x004548A9
+    // Button cell fill params: FUN_005cf467(7, 9) — colors 7 (bg) and 9 (border)
+    fillColors: { background: 7, border: 9 },                                     // 0x004548A9
+  },
+
+  // --- City Record Access ---
+  cityRecordStride: 0x58,              // 88 bytes per city record                 // 0x004548A9
+  cityXOffset:      'DAT_0064f340',    // city X coordinate (short)                // 0x004548A9
+  cityYOffset:      'DAT_0064f342',    // city Y coordinate (short)                // 0x004548A9
+  cityOwnerOffset:  'DAT_0064f348',    // city owner byte                          // 0x004548A9
+  civStyleFn:       'thunk_FUN_00568861', // maps civ index to city style          // 0x004548A9
+
+  // --- Era/State Detection (FUN_00454f83) ---
+  // Determines diplomacy era based on city's coastal access and capital flag.
+  // Checks 9 neighbor tiles (DAT_00628350/DAT_00628360 direction tables).
+  eraDetection: {
+    neighborDirs:    9,                // scan 9 adjacent tiles                    // 0x00454F83
+    dirTableX:       'DAT_00628350',   // dx table for neighbor scan               // 0x00454F83
+    dirTableY:       'DAT_00628360',   // dy table for neighbor scan               // 0x00454F83
+    capitalFlag:     0x80,             // city flags bit 7 = capital               // 0x00454F83
+    // State 0 (capital): backdrop ID 0x3C, string IDs 0x18/0x1B
+    // State 1 (coastal):  backdrop ID 0x39, string IDs 0x18/0x1B
+    // State 2 (inland):   backdrop ID 0x3C, string IDs 0x18/0x1F
+    states: {
+      capital: { era: 0, backdrop: 0x3C, stringA: 0x18, stringB: 0x1B },          // 0x00454F83
+      coastal: { era: 1, backdrop: 0x39, stringA: 0x18, stringB: 0x1B },          // 0x00454F83
+      inland:  { era: 2, backdrop: 0x3C, stringA: 0x18, stringB: 0x1F },          // 0x00454F83
+    },
+  },
+
+  // --- Map Background Loading (FUN_00455183) ---
+  mapBackground: {
+    mapDll:          's_00626a10',      // map background DLL resource              // 0x00455183
+    mapOverlay:      's_00626a14',      // map overlay DLL resource                 // 0x00455183
+    loadFlags:       0x800,            // DLL load flags                           // 0x00455183
+    mapHeight:       0x1E0,            // 480px — map background height            // 0x00455183
+    coastCheckItem:  0x19,             // improvement index for coast check        // 0x00455183
+    defaultCityStyle: 3,               // fallback city style if coastal           // 0x00455183
+    // Leader portrait sound: era * 5 + cityStyle + 0x154
+    soundFormula:    'era * 5 + cityStyle + 0x154',                               // 0x00455183
+    soundBase:       0x154,            // 340 decimal — base sound index           // 0x00455183
+    helpContextId:   0x40271B,         // diplomacy help context                   // 0x00455183
+  },
+
+  // --- Negotiation Item Population (FUN_00455314) ---
+  // Iterates 0x23 (35) city improvements, then 0x1C (28) wonders.
+  itemPopulation: {
+    improvementCount: 0x23,            // 35 improvement items iterated            // 0x00455314
+    wonderCount:      0x1C,            // 28 wonder items (indexed 0..0x1B)        // 0x00455314
+    wonderTable:      'DAT_00655be6',  // wonder ownership table (short[28])       // 0x00455314
+    // Special case item indices in improvement loop:
+    specialItems: {
+      8:    { id: 0x35, hasFlag: true, desc: 'specific improvement item' },       // 0x00455314
+      0x1C: { id: 0x23, desc: 'technology item' },                                // 0x00455314
+      0x1E: { id: 0x36, hasFlag: true, desc: 'treaty item' },                    // 0x00455314
+      0x1F: { id: 0x39, hasFlag: true, desc: 'pact item' },                      // 0x00455314
+      0x22: { id: 0x37, hasFlag: true, desc: 'alliance item' },                  // 0x00455314
+    },
+    // Era 2 overrides:
+    era2Overrides: {
+      8:    { id: 0x34, hasFlag: true },                                          // 0x00455314
+    },
+    // Wonder loop special indices:
+    wonderSpecialItems: {
+      2:    { id1: 0x36, id2: 0x3A, desc: 'era-dependent wonder category' },     // 0x00455314
+      3:    { id1: 4, id2: 3, id3: 0x3B, desc: 'era-dependent trade item' },     // 0x00455314
+      6:    { id1: 1, id2: 0, desc: 'era-dependent diplomatic item' },            // 0x00455314
+      0x13: { id1: 0x37, id2: 0x39, id3: 0x38, desc: 'era-dependent pact' },    // 0x00455314
+    },
+  },
+};
+
+
+// ============================================================================
+// 30. FIND CITY DIALOG
+// ============================================================================
+// Binary ref: FUN_0040e017 @ block_00400000.c (886 bytes)
+
+/**
+ * The Find City dialog (menu command 0x205) presents a scrollable list
+ * of all visible cities and navigates to the selected one.
+ */
+export const FIND_CITY_DIALOG = {
+  sourceAddr: '0x0040E017',
+
+  dialogKey:       'FINDCITY',         // @ s_FINDCITY_00624f24                   // 0x0040E017
+  dialogFlags:     0x800001,           // thunk_FUN_0040ffa0 dialog mode flags    // 0x0040E017
+  memoryAlloc:     0x4000,             // thunk_FUN_0059db08(0x4000) — 16KB       // 0x0040E017
+
+  // --- City Iteration ---
+  cityCountVar:    'DAT_00655b18',     // total city count                        // 0x0040E017
+  cityRecordStride: 0x58,             // 88 bytes per city record                 // 0x0040E017
+  cityPopulationOffset: 'DAT_0064f394',// +0x54: population (nonzero = active)    // 0x0040E017
+  cityOwnerOffset: 'DAT_0064f348',    // +0x08: owner civ byte                    // 0x0040E017
+  cityVisibilityOffset: 'DAT_0064f34c',// +0x0C: visibility bitmask per civ       // 0x0040E017
+  cityNameOffset:  'DAT_0064f360',    // +0x20: city name string                  // 0x0040E017
+  cityXOffset:     'DAT_0064f340',    // +0x00: city X coordinate (short)         // 0x0040E017
+  cityYOffset:     'DAT_0064f342',    // +0x02: city Y coordinate (short)         // 0x0040E017
+
+  // --- Visibility Conditions ---
+  // A city is visible if:
+  //   1. God mode (DAT_00655b07 != 0), OR
+  //   2. Scenario mode with cheat flag: (DAT_00655af0 & 0x80) && (DAT_0064bc60 & 8), OR
+  //   3. City is owned by current player (DAT_006d1da0), OR
+  //   4. City's visibility bitmask includes current player bit
+  cheatModeVar:    'DAT_00655b07',     // god mode flag                           // 0x0040E017
+  scenarioModeFlag: 0x80,             // DAT_00655af0 & 0x80                      // 0x0040E017
+  scenarioCheatBit: 0x08,             // DAT_0064bc60 & 0x08                      // 0x0040E017
+  currentPlayerVar:'DAT_006d1da0',    // current player civ index                 // 0x0040E017
+
+  // --- Foreign City Annotation ---
+  // When a city belongs to a foreign civ, the civ name is appended
+  foreignCivNameFn:'thunk_FUN_00493d13', // get civ name by index                 // 0x0040E017
+  // Trade presence: string ID 0x1B0 shown if FUN_0043cef9(cityIdx) returns nonzero
+  tradePresenceStringId: 0x1B0,       // thunk_FUN_0040bc10(0x1B0) — trade icon   // 0x0040E017
+  tradePresenceFn: 'thunk_FUN_0043cef9', // check trade routes for city           // 0x0040E017
+  // If trade count > 1, appends DAT_00624f30 + count label
+  tradeCountLabel: 'DAT_00624f30',    // trade route count prefix string          // 0x0040E017
+
+  // --- Result Handling ---
+  // Selected city navigates viewport: thunk_FUN_00410402(cityX, cityY)
+  navigateFn:      'thunk_FUN_00410402', // center map on city coordinates         // 0x0040E017
+  // If the city has disorder and belongs to current player:
+  disorderHandler: 'thunk_handle_city_disorder_00509590', // open city disorder    // 0x0040E017
+  listContainer:   'DAT_00679640',     // listbox container                        // 0x0040E017
 };

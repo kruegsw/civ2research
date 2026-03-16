@@ -470,14 +470,35 @@ export const ICONS_GIF = {
     spriteBase: 0x00647168,   // DAT_00647168 + idx*0x3c
   },
 
-  // Civ2-clone additional ICONS.GIF sources:
+  // === Additional ICONS.GIF sprites (binary-confirmed in FUN_00449a0e) ===
+  // Full details in ICONS_GIF_EXTRA export below.
+
+  // Wonder/research progress: 3 sets x 2 rows, 14x14 each @ y=290
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00644f00 + set*0x78, x, 0x122, 14)
+  // See ICONS_GIF_EXTRA.researchProgress
+
+  // HP bar sprites: 4 pairs at y=290 (0x122) and y=305 (0x131), 14x14 each
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00648118 + i*0x3c, x, 0x122, 14)
+  //               FUN_0044aba9(DAT_00648208 + i*0x3c, x, 0x131, 14)
+  // See ICONS_GIF_EXTRA.hpBarSprites
+
+  // Grid/resource overlay: (199, 322, 64, 32)
+  // @ 0x00449A0E: thunk_FUN_005a9afe(DAT_0063fe08, DAT_00647f18, 199, 0x142, 0, 0, 0x40, 0x20)
+  // See ICONS_GIF_EXTRA.resourceOverlayExtra
+
+  // Score/map viewport icon: (298, 190, 32, 32)
+  // @ 0x00449A0E: thunk_FUN_005a9afe(DAT_0063fe08, DAT_00640990, 0x12a, 0xbe, 0, 0, 0x20, 0x20)
+  // See ICONS_GIF_EXTRA.mapViewportIcon
+
+  // Advance category icons: 4 rows x 5 cols, 36x20 each @ (343, 211)
+  // @ 0x00449A0E: FUN_004499d3(DAT_00646cb8, 0x157, y, 0x24, 0x14) in 4-row x 5-col loop
+  // See ICONS_GIF_EXTRA.advanceCategories
+
+  // Civ2-clone additional cross-references:
   // viewPiece:     (199, 256, 64, 32) -- viewing rectangle overlay
   // gridlines:     (183, 430, 64, 32)
   // gridVisible:   (248, 430, 64, 32)
   // battleAnim:    (1+33*col, 356, 32, 32) for 8 frames
-  // researchProg:  (49+15*col, 290, 14, 14) for 4 stages
-  // globalWarming: (49+15*col, 305, 14, 14) for 4 stages
-  // advCategories: (343+37*(i%5), 211+21*(i/5), 36, 20) for 20 sprites
   // close button:  (1, 389, 16, 16)
   // zoomIn:        (18, 389, 16, 16)
   // zoomOut:       (35, 389, 16, 16)
@@ -525,6 +546,7 @@ export const DLL_SPRITES = {
 
   // Advisor sprites from DLL resource 0x56 (86)
   // @ 0x00449A0E: FUN_005bf5e1(0x56, 10, 0xc0, local_45c)
+  // Full advisor portrait positions documented in ADVISOR_SPRITES export below.
   advisor: {
     resourceId: 0x56,         // 86
 
@@ -541,6 +563,12 @@ export const DLL_SPRITES = {
       rowStep: 73,            // 0x49
       spriteBase: 0x00644B70, // DAT_00644b70 + idx*0x3c
     },
+
+    // Advisor portrait positions from resource 0x56 (see ADVISOR_SPRITES for full details):
+    // Small portraits (34x34): 7 positions starting at (2, 68) spaced 0x42 apart
+    //   @ 0x00449A0E: FUN_004499d3(DAT_00646878, 2, 0x44, 0x22, 0x22) etc.
+    // Large portraits (64x64): 5 positions starting at (2, 200) spaced 0x42 apart
+    //   @ 0x00449A0E: FUN_004499d3(DAT_00647748, 2, 200, 0x40, 0x40) etc.
   },
 
   // civ2art.dll — loaded via FUN_005681c9 (load_civ2_art)
@@ -983,6 +1011,29 @@ export const TRADE_ROUTES = {
   // @ FUN_00440325: city_flags |= 0x20000
   cityChangedTradeFlag: 0x20000,  // @ 0x00440325 + 0x004403ec
 
+  // === Worst-Route Replacement (FUN_00440453) ===
+  // When a city already has 3 trade routes, the worst one is replaced.
+  // @ FUN_00440453 line ~78: local_1c = 9999 (sentinel for worst-route search)
+  worstRouteSentinel: 9999,       // @ 0x00440453: initial comparison value
+
+  // @ FUN_00440453 line ~84: city field offset 0x1E = trade value
+  //   local_8 = *(short*)(DAT_0064f35e + partner * 0x58) — partner city trade output
+  tradeValueCityOffset: 0x1E,     // 0x0064f35e - 0x0064f340 = 0x1E within city record
+
+  // @ FUN_00440453 lines ~91-94: Airport (0x20) distance floor
+  //   if both cities have Airport AND distance < 2, set distance = 1
+  airportDistanceFloor: {
+    buildingId: 0x20,             // 32 = Airport
+    minDistance: 2,               // if distance < 2...
+    floorValue: 1,                // ...set distance = 1
+    check: 'thunk_FUN_0043d20a(city1, 0x20) != 0 AND thunk_FUN_0043d20a(city2, 0x20) != 0 AND distance < 2',
+  },
+
+  // @ FUN_00440453 line ~96: distance-weighted revenue estimate
+  //   local_8 = local_8 + (local_14 * local_8 >> 1)
+  //   i.e. revenue += (distance * revenue) / 2
+  distanceWeightedFormula: 'revenue + (distance * revenue >> 1)',
+
   // === Trade Revenue Formula (FUN_00440750) ===
   // revenue = ((city1_trade + city2_trade) * (distance + 10)) / 24
   distanceBonus: 10,            // @ FUN_00440750: (local_1c + 10)
@@ -993,6 +1044,22 @@ export const TRADE_ROUTES = {
   // @ FUN_00440750: if (unit_owner == city_owner) local_1c >>= 1
   // Demanded commodity bonus: double + supply bonus
   // @ FUN_00440750: loop over 3 demand slots
+
+  // === Revenue Post-Processing (FUN_00440750 lines ~256-259) ===
+  // After all multipliers/bonuses, revenue is capped and scaled:
+  // @ line ~258: revenue = thunk_FUN_004c2788(civ, rand()%10 + 200, 30000)
+  //   Meaning: revenue = min(rand()%10 + 200, 30000) [capped at 30000]
+  revenuePostProcessing: {
+    randomBase: 200,              // @ FUN_00440750: iVar6 % 10 + 200
+    randomRange: 10,              // @ FUN_00440750: rand() % 10
+    revenueCap: 30000,            // @ FUN_00440750: uVar13 = 30000 (max revenue)
+  },
+  // @ line ~259: final revenue = (revenue * 2) / 3
+  revenueFinalScaling: {
+    numerator: 2,                 // @ FUN_00440750: (iVar6 * 2)
+    denominator: 3,               // @ FUN_00440750: / 3
+    formula: '(revenue * 2) / 3',
+  },
 
   // === Commodity Supply/Demand Revenue Multipliers ===
   // @ FUN_00440750 switch on commodity type (uVar8):
@@ -1051,6 +1118,21 @@ export const TRADE_ROUTES = {
     caravanReturnAlt:'s_CARAVANOTHER_00626320', // @ FUN_00440750: alt return notification
   },
 
+  // === Commodity Replacement Scoring (FUN_00440750 lines ~346-369) ===
+  // After delivering a commodity, the receiving city picks a replacement commodity.
+  // Each of the 3 supply slots is scored and the highest-scoring one replaces.
+  // @ lines ~344-346: base score = rand() & 7 (0-7 random)
+  // @ line ~354: +10 if supply value >= 0 (non-negative supply)
+  // @ line ~360: +10 if commodity matches a demand slot of the source city
+  // @ line ~364: highest-scoring slot wins (ties: last one wins)
+  commodityReplacement: {
+    baseScoreRandom: 7,           // @ FUN_00440750: (rand() ^ ...) & 7  (mask = 0x7)
+    nonNegativeSupplyBonus: 10,   // @ FUN_00440750: if supply >= 0: local_8 += 10
+    demandMatchBonus: 10,         // @ FUN_00440750: if commodity matches demand: local_8 += 10
+    slotsScanned: 3,              // @ FUN_00440750: for local_18 = 0..2
+    demandSlotsChecked: 3,        // @ FUN_00440750: for local_24 = 0..2 (demand slots of source)
+  },
+
   // === Diplomacy Effect of Trade ===
   // @ FUN_00440750: thunk_FUN_00456f20(civ1, civ2, -10)
   tradeAttiudeBonus: -10,       // 0xFFFFFFF6 = -10 -- improves attitude by 10
@@ -1075,34 +1157,89 @@ export const TRADE_ROUTES = {
   aiMsgCaravan: 0x0F,           // 15
   aiMsgFoodCaravan: 0x10,       // 16
   aiMsgCaravanReturn: 0x11,     // 17
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_00440750
+  spriteOffsets: {
+    unknownCommodity: 0x100,  // fallback commodity icon when commodity type < 0 (food delivery)
+  },
 };
 
 
 // ═══════════════════════════════════════════════════════════════════
-// City Epoch Tech Checks (City Sprite Selection)
-// Binary ref: FUN_00448f92 @ block_00440000.c
+// City Epoch Tech Classifier (used by city sprite / advisor view)
+// Binary ref: FUN_00448f92 @ block_00440000.c lines 5955-5977
 // Cross-ref: FUN_0056d289 @ block_00560000.c (draw_city_sprite)
 // ═══════════════════════════════════════════════════════════════════
 
 export const CITY_EPOCH_TECH_CHECKS = {
-  // FUN_00448f92 determines which city epoch upgrade building to auto-queue
-  // Returns building ID if city is large enough and doesn't have the building
+  // FUN_00448f92 is a tech epoch classifier returning 0-3.
+  // It determines which visual epoch a civ has reached based on techs.
+  //
+  // @ FUN_00448f92: thunk_FUN_004bd9f0 = hasTech(civ, techId)
+  //   if hasTech(0x18) AND hasTech(0x05) → return 3  (Modern)
+  //   if hasTech(0x25)                   → return 2  (Industrial)
+  //   if hasTech(0x26) AND hasTech(0x3c) → return 1  (Renaissance)
+  //   else                               → return 0  (Ancient)
+  sourceAddr: '0x00448F92',
+  sizeBytes: 158,
 
-  // @ FUN_00448f92: if (city_size >= DAT_0064bcd1 AND !has_building(9))
+  epoch3: {
+    value: 3,
+    name: 'Modern',
+    requiredTechs: [0x18, 0x05],     // Electronics (24) AND Automobile (5)
+    logic: 'hasTech(0x18) AND hasTech(0x05)',
+  },
+  epoch2: {
+    value: 2,
+    name: 'Industrial',
+    requiredTechs: [0x25],           // Industrialization (37)
+    logic: 'hasTech(0x25)',
+  },
+  epoch1: {
+    value: 1,
+    name: 'Renaissance',
+    requiredTechs: [0x26, 0x3C],     // Invention (38) AND Philosophy (60)
+    logic: 'hasTech(0x26) AND hasTech(0x3c)',
+  },
+  epoch0: {
+    value: 0,
+    name: 'Ancient',
+    requiredTechs: [],               // default / fallback
+    logic: 'else',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Aqueduct / Sewer Auto-Queue Check
+// Binary ref: FUN_00441a79 @ block_00440000.c lines 560-574
+// (Previously misattributed to FUN_00448f92)
+// ═══════════════════════════════════════════════════════════════════
+
+export const CITY_GROWTH_BUILDING_CHECK = {
+  // FUN_00441a79 determines which growth-cap building to auto-queue.
+  // Returns building ID if city is large enough and doesn't have it.
+  sourceAddr: '0x00441A79',
+  sizeBytes: 152,
+
+  // @ FUN_00441a79: if (city_size >= DAT_0064bcd1 AND !has_building(9))
   //   return 9 -- Aqueduct
   aqueduct: {
     buildingId: 9,
     sizeThresholdAddr: 0x0064BCD1,  // rules-defined size threshold
-    sourceAddr: '0x00448F92',
+    check: '(char)(DAT_0064f349[city*0x58]) >= DAT_0064bcd1 AND thunk_FUN_0043d20a(city, 9) == 0',
   },
 
-  // @ FUN_00448f92: if (city_size >= DAT_0064bcd2 AND !has_building(0x17))
+  // @ FUN_00441a79: if (city_size >= DAT_0064bcd2 AND !has_building(0x17))
   //   return 0x17 -- Sewer System (23)
   sewerSystem: {
     buildingId: 0x17,               // 23
     sizeThresholdAddr: 0x0064BCD2,  // rules-defined size threshold
-    sourceAddr: '0x00448F92',
+    check: '(char)(DAT_0064f349[city*0x58]) >= DAT_0064bcd2 AND thunk_FUN_0043d20a(city, 0x17) == 0',
   },
+
+  // Returns 0 if neither applies
+  defaultReturn: 0,
 };
 
 
@@ -1128,6 +1265,26 @@ export const DELETE_CITY = {
   // @ delete_city: number of wonders = 0x1c (28)
   wonderCount: 0x1C,            // 28 wonders checked at DAT_00655be6
 
+  // @ delete_city line ~460-463: destroyed wonder city IDs set to 0xFFFE (-2)
+  //   for (i = 0; i < 0x1c; i++) {
+  //     if (*(short*)(DAT_00655be6 + i*2) == cityId) { *(DAT_00655be6 + i*2) = 0xFFFE; }
+  //   }
+  destroyedWonderSentinel: 0xFFFE,  // -2 as unsigned short: marks wonder's city as destroyed
+
+  // @ delete_city line ~517: unit order 0x09 (Sentry) check for trade units
+  //   if (unit.type == '\t') { unit.owner = 0xff; } — sentry trade units get orphaned
+  sentryOrderId: 0x09,            // 9 = Sentry order; trade units with this are orphaned on city delete
+
+  // @ delete_city line ~524: unit type domain 0x01 (sea) stride 0x14
+  //   if (DAT_0064b1ca[unit_type * 0x14] != '\x01') — checks if unit is NOT sea domain
+  //   Sea domain units are handled differently (attempted reassignment via thunk_FUN_005b53b6)
+  seaDomainId: 0x01,              // domain 1 = sea
+  unitTypeStride: 0x14,           // 20 bytes per unit type in rules table
+
+  // @ delete_city line ~529: city.flags |= 0x20 on receiving city during unit reassignment
+  //   *(uint*)(DAT_0064f344 + receivingCity * 0x58) |= 0x20
+  cityReassignmentFlag: 0x20,     // bit set on city receiving reassigned units from deleted city
+
   // @ delete_city: network message IDs
   netMsgDeleteCity: 0x89,       // @ 0x004413D1: thunk_FUN_0046b14d(0x89, ...)
   netMsgCityDeleted: 0x8A,      // @ 0x004413D1: thunk_FUN_0046b14d(0x8a, ...)
@@ -1150,6 +1307,31 @@ export const WONDER_PRODUCTION = {
   wonderIdOffset: 0x27,         // 39 -- production item = wonderIndex + 0x27
   maxProductionItem: 0x62,      // 98 -- max valid production item (> 0x62 triggers auto-select)
   maxWonderIndex: 0x3E,         // 62 -- wonder production items < 0x3E
+
+  // @ FUN_00441b11 line ~653: shields halved when switching from non-wonder to wonder
+  //   if (oldProduction > -0x27) { city.shields /= 2; }
+  //   i.e. switching from a regular item to a wonder cuts accumulated shields in half
+  shieldPenaltyOnWonderSwitch: {
+    divisor: 2,                   // @ FUN_00441b11: shields / 2
+    condition: 'oldProductionItem > -0x27 (was not already building a wonder)',
+  },
+
+  // @ FUN_00441b11 line ~627: DAT_0062c5b8 guard flag
+  //   if ((humanCivBitmask & civ) != 0 AND DAT_0062c5b8 == 0) { show production dialog }
+  //   DAT_0062c5b8 suppresses the production-change UI dialog when non-zero
+  productionDialogGuardAddr: 'DAT_0062C5B8',  // @ FUN_00441b11: checked before showing UI
+
+  // @ FUN_00441b11 line ~714: wonder era completion counter
+  //   era = (wonderIndex - 0x27) / 7
+  //   DAT_0064c6b7 + civ*0x594 + era = per-civ per-era wonder completion byte
+  wonderEra: {
+    formula: '(wonderIndex - 0x27) / 7',       // @ FUN_00441b11: local_18 = (local_328 - 0x27) / 7
+    wonderIdOffset: 0x27,                       // 39 — subtracted before dividing by 7
+    erasPerSet: 7,                              // 7 wonders per era
+    completionCounterBase: 'DAT_0064C6B7',     // @ FUN_00441b11: per-civ per-era byte
+    completionCounterCivStride: 0x594,          // civ record stride
+    note: 'When all active civs have completed an era, a special era-completion check triggers',
+  },
 
   // Wonder completed tracking per civ
   // @ FUN_00441b11: DAT_0063f580 + civ*0x1c + wonderSlot
@@ -1413,6 +1595,126 @@ export const ICONS_GIF_EXTRA = {
   resourceOverlayExtra: { x: 199, y: 322, w: 64, h: 32, addr: 0x00647F18 },
 
   sourceAddr: '0x00449A0E',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// City Advisor Sprite Selection (3D city view base sprite)
+// Binary ref: FUN_00454f83 @ block_00450000.c lines 2706-2747
+// ═══════════════════════════════════════════════════════════════════
+
+export const CITY_ADVISOR_SPRITE = {
+  // FUN_00454f83 selects the base city sprite for the city advisor view.
+  // Checks whether city tile is coastal (map flag & 0x80), then picks sprite.
+  sourceAddr: '0x00454F83',
+  sizeBytes: 414,
+
+  // City tile flags field: DAT_0064f344[city * 0x58] & 0x80 — coastal detection
+  coastalFlag: 0x80,              // @ FUN_00454f83: if ((flags & 0x80) == 0) → not coastal
+
+  // Ocean/coastal city (map flag & 0x80 set on any adjacent tile)
+  // @ lines 2728-2732: sprite=0x39, type=1, w=0x18, h=0x1b
+  oceanCity: {
+    spriteId: 0x39,               // 57
+    typeId: 1,
+    width: 0x18,                  // 24
+    height: 0x1B,                 // 27
+    note: 'Used when any of 8 adjacent tiles has ocean (pbVar6 & 0x80)',
+  },
+
+  // Land city (no adjacent ocean, normal terrain)
+  // @ lines 2735-2738: sprite=0x3c, type=2, w=0x18, h=0x1f
+  landCity: {
+    spriteId: 0x3C,               // 60
+    typeId: 2,
+    width: 0x18,                  // 24
+    height: 0x1F,                 // 31
+    note: 'Default land city when not coastal and city tile flag & 0x80 == 0',
+  },
+
+  // Flat city (city tile itself has flag & 0x80 set — on coast/river)
+  // @ lines 2741-2744: sprite=0x3c, type=0, w=0x18, h=0x1b
+  flatCity: {
+    spriteId: 0x3C,               // 60
+    typeId: 0,
+    width: 0x18,                  // 24
+    height: 0x1B,                 // 27
+    note: 'Used when city tile flag & 0x80 is set (coastal tile)',
+  },
+
+  // The 9 adjacent tiles are checked via DAT_00628350 (dx) and DAT_00628360 (dy)
+  adjacentOffsetsX: 0x00628350,
+  adjacentOffsetsY: 0x00628360,
+  adjacentCount: 9,               // @ FUN_00454f83: for (local_8 = 0; local_8 < 9; ...)
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Advisor Building Sprite Remapping
+// Binary ref: FUN_00455314 @ block_00450000.c lines 2810-2910
+// ═══════════════════════════════════════════════════════════════════
+
+export const ADVISOR_BUILDING_REMAP = {
+  // FUN_00455314 remaps certain building IDs to special sprite IDs for
+  // the city advisor 3D building view. The mapping depends on the city
+  // type (0=flat, 1=ocean, 2=land from FUN_00454f83).
+  sourceAddr: '0x00455314',
+  sizeBytes: 1694,
+
+  // City population → building slot count: city_size + 2
+  // @ line 2818: in_ECX + 0x19f4 = city_size + 2
+  buildingSlotFormula: 'city_size + 2',
+
+  // Type 0 (flat) and type 1 (ocean) share the same remapping:
+  // @ lines 2826-2850 (iVar1 == 0, type 0/flat):
+  //   building 8  → sprite 0x35 (53), flagged as special (0x1c8c = 1)
+  //   building 0x1c (28) → sprite 0x23 (35)
+  //   building 0x1e (30) → sprite 0x36 (54), flagged as special
+  //   building 0x1f (31) → sprite 0x39 (57), flagged as special
+  //   building 0x22 (34) → sprite 0x37 (55), flagged as special
+  type0Remap: {
+    0x08: { sprite: 0x35, special: true },   // 8 → 53
+    0x1C: { sprite: 0x23, special: false },  // 28 → 35
+    0x1E: { sprite: 0x36, special: true },   // 30 → 54
+    0x1F: { sprite: 0x39, special: true },   // 31 → 57
+    0x22: { sprite: 0x37, special: true },   // 34 → 55
+  },
+
+  // Type 1 (ocean) uses same mapping as type 0
+  // @ lines 2886-2899 (iVar1 == 1):
+  //   building 8  → sprite 0x35 (same as type 0)
+  //   buildings 0x1c, 0x1e, 0x1f, 0x22 → skipped (goto LAB_0045539c)
+  type1Remap: {
+    0x08: { sprite: 0x35, special: true },   // 8 → 53
+    0x1C: 'skip',                             // not rendered in ocean view
+    0x1E: 'skip',
+    0x1F: 'skip',
+    0x22: 'skip',
+  },
+
+  // Type 2 (land) has a different mapping for building 8:
+  // @ lines 2868-2882 (iVar1 == 2):
+  //   building 8  → sprite 0x34 (52), flagged as special
+  //   buildings 0x1c, 0x1e, 0x1f, 0x22 → skipped (goto LAB_0045539c)
+  type2Remap: {
+    0x08: { sprite: 0x34, special: true },   // 8 → 52 (different from type 0/1!)
+    0x1C: 'skip',
+    0x1E: 'skip',
+    0x1F: 'skip',
+    0x22: 'skip',
+  },
+
+  // All other buildings use thunk_FUN_00455c5d() for sprite lookup (default mapping)
+  defaultSpriteFn: 'thunk_FUN_00455c5d',
+
+  // Advisor art DLL resource calculation:
+  // @ FUN_00455183 line ~2792: resource = type * 5 + epochStyle + 0x154 (340)
+  //   epochStyle from thunk_FUN_00568861 (0-2), or 3 if city has Superhighways (0x19)
+  advisorArtResource: {
+    base: 0x154,                  // 340 = resource ID offset
+    formula: 'type * 5 + epochStyle + 0x154',
+    paletteHeight: 0xEC,          // 236 = height param to FUN_005bf5e1
+  },
 };
 
 

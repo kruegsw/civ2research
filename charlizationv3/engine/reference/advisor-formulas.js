@@ -27,9 +27,12 @@ export const DEMOGRAPHICS = {
 
   approvalRating: {
     // @ FUN_00433434+0x200 approx
-    formula: '(sum_of(city.size - foodSurplus - foodConsumed) * 50) / total_population',
+    // Per-city: happy = citizens with status happy, unhappy = citizens with status unhappy
+    // C: local_c += city.size + happyCitizens - unhappyCitizens  (per city loop)
+    // C: result = (local_c * 50) / total_population
+    formula: '(sum_of(city.size + happyCitizens - unhappyCitizens) * 50) / total_population',
     unit: '%',
-    notes: 'Per-city: city.size minus food surplus and consumed. Summed, then * 50 / pop.',
+    notes: 'Per-city: city.size plus happy citizens minus unhappy citizens. Summed across all cities, then * 50 / pop.',
     lowerIsBetter: false,
   },
 
@@ -181,6 +184,12 @@ export const TOP_5_CITIES = {
   sortOrder: 'descending (insertion sort into 5-slot array)',
   wonderCityIds: '@ DAT_00655be6',  // int16 per wonder, -1 = not built
   display: 'City sprite, happiness bars (happy/unhappy citizens), wonder icons, civ-colored border',
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_00432c1c render_top5_cities
+  spriteOffsets: {
+    titleHeader: 0x554,  // title/header text string for top 5 cities display
+  },
 };
 
 // ============================================================================
@@ -208,6 +217,12 @@ export const POWER_GRAPH = {
   civVisibility: 'Shows civs that are alive OR have ever been alive',
   legendVisibility: 'civ is contacted OR is self OR FOW disabled',
   scenarioFlagsAddress: '@ DAT_00655af0',
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_00431d22 render_power_graph
+  spriteOffsets: {
+    dialogFrame: 0x358,  // power graph dialog background (via thunk_FUN_005534bc, 600x0x1a9)
+  },
 };
 
 // ============================================================================
@@ -230,6 +245,12 @@ export const WONDERS_SCREEN = {
     eraHeaders: 'From WONDERS section of game.txt',
     wonderNameSource: 'advance index 0x27 + wonderIdx',
     pagination: 'scrollbar from 0 to totalEntries-1',
+  },
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_00431573 render_wonders_screen
+  spriteOffsets: {
+    titleHeader: 0x550,  // title/header text string for wonders list display
   },
 };
 
@@ -283,6 +304,19 @@ export const FOREIGN_ADVISOR = {
   },
 
   noForeignCivsMessage: 'NOFOREIGN',
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_004308ae show_foreign_advisor
+  spriteOffsets: {
+    // Civ portrait icon, gender-conditional: 0x1a8 + (isFemale ? -4 : 0)
+    leaderPortrait: 0x1a8,  // base offset for leader portrait icon (used with thunk_FUN_004271e8)
+    // Government icon per civ attitude: indexed by random(0,7)
+    govIconTable: 0x370,    // DAT_00628420 + 0x370 + randomIdx * 4 — attitude civ icon set
+    // Era-based icon per civ: indexed by random(1,7)
+    eraIconTable: 0x38c,    // DAT_00628420 + 0x38c + randomIdx * 4 — era/style civ icon set
+    // @ FUN_0042f293 advisor_foreign_paint — title label at top of panel
+    foreignPaintTitle: 0x540,  // foreign intelligence report header text        // 0x0042f293
+  },
 };
 
 // ============================================================================
@@ -408,6 +442,16 @@ export const MILITARY_ADVISOR = {
       clickAction: 'center map on battle location',
     },
   },
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_00437cea render_combat_log
+  spriteOffsets: {
+    combatLogLabel: 0x53c,  // combat log section header text                   // 0x00437cea
+    combatLogDate:  0xda0,  // date/era label text for combat log entries        // 0x00437cea
+    // @ FUN_0042e220 advisor_military_paint — sort toggle buttons
+    sortByActive:   0x560,  // "Active Units" column sort button (when DAT_0063efac == 0)  // 0x0042e220
+    sortByCasualty:  0x564,  // "Casualties" column sort button (when DAT_0063efac != 0)   // 0x0042e220
+  },
 };
 
 // ============================================================================
@@ -471,6 +515,12 @@ export const SCORE = {
       atomicLoad: true,  // partial read -> discard all
     },
     sortOrder: 'descending by score (insertion at correct position)',
+  },
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  spriteOffsets: {
+    retirementTitle: 0x6e8,   // @ FUN_00435dc4: retirement score screen title text
+    hofCloseButton:  0x6f8,   // @ FUN_004362e2: hall of fame close/OK button sprite (btnId 0x65)
   },
 };
 
@@ -650,6 +700,45 @@ export const SCIENCE_ADVISOR = {
     singularLabel: 'string 0x2d ("turn")',
     pluralLabel: 'string 0x2c ("turns")',
   },
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  spriteOffsets: {
+    // @ FUN_0042ad8f advisor_science_paint — title label at top of panel
+    sciencePaintTitle: 0x54c,  // science advisor report header text              // 0x0042ad8f
+    // @ FUN_0042b67d advisor_science_open — navigation buttons
+    scienceDetailBtn:  0x5cc,  // "Change Research" button sprite                 // 0x0042b67d
+  },
+};
+
+// ============================================================================
+// === ADVISOR DIALOG SPRITES ===
+// Binary ref: FUN_0042acb0 advisor_create_close_button @ block_00420000.c
+//             FUN_0042ced6 advisor_city_status_paint @ block_00420000.c
+//             FUN_0042da1d advisor_happiness_paint @ block_00420000.c
+//             FUN_0042cd2f advisor_trade_open @ block_00420000.c
+//             FUN_0042b824 trade_supply_demand_show @ block_00420000.c
+// Sprite resource table offsets shared across advisor dialog UIs.
+// ============================================================================
+
+export const ADVISOR_DIALOG_SPRITES = {
+  // Shared close button for all advisor dialogs
+  // @ FUN_0042acb0 advisor_create_close_button — used by science, trade, happiness, military
+  closeButton: 0x51c,                // advisor dialog close/exit button sprite    // 0x0042acb0
+
+  // City Status advisor (FUN_0042ced6 advisor_city_status_paint)
+  cityStatusTitle: 0x538,            // city status advisor title label             // 0x0042ced6
+
+  // Happiness advisor (FUN_0042da1d advisor_happiness_paint)
+  happinessTitle: 0x544,             // happiness advisor title label               // 0x0042da1d
+
+  // Trade advisor (FUN_0042cd2f advisor_trade_open)
+  tradeSortBtn: 0x5bc,               // trade advisor sort/filter button            // 0x0042cd2f
+
+  // Trade supply/demand detail (FUN_0042b824 trade_supply_demand_show)
+  // @ FUN_0042bd8f advisor_trade_paint — title and column headers
+  tradeDetailTitle: 0x548,           // trade route supply/demand header text       // 0x0042bd8f
+  supplyColumnHeader: 0x5b0,         // "Supply" column header text                 // 0x0042bd8f
+  demandColumnHeader: 0x5b4,         // "Demand" column header text                 // 0x0042bd8f
 };
 
 // ============================================================================
@@ -1901,45 +1990,66 @@ export const COMBAT_RESOLUTION = {
     // local_64 = base defense (from FUN_0057e33a)
     // Terrain and building modifiers applied to defense
 
-    // Submarine vs non-submarine: defender loses half defense, firepower = 1
-    submarineRule: {
-      defenderFlag: 0x04,   // unit flags & 0x04 = submarine
-      condition: 'defender has sub flag AND attacker domain == sea AND attacker has no bombard',
-      effect: 'defense -= defense/2; defender firepower = 1',
-      sourceAddr: '0x00580341+line127',
+    // Attack-role (role 3) vs non-ranged air: defense halved, firepower = 1
+    // C (lines 124-128): attacker role (DAT_0064b1ca) == 3 AND
+    //   defender domain (DAT_0064b1c1) == 1 (air) AND
+    //   defender range (DAT_0064b1c3) == 0
+    // Role 3 units: Helicopter, Stealth Fighter, Stealth Bomber, Cruise Missile
+    attackRoleVsAir: {
+      attackerRole: 3,        // role 3 = attack/strike role
+      defenderDomain: 1,      // air domain
+      defenderRange: 0,       // non-ranged (range == 0)
+      effect: 'defense -= defense/2 (halved); defender firepower = 1',
+      note: 'Previously mislabeled as "submarine rule" — has nothing to do with submarines',
+      sourceAddr: '0x00580341+line124',
     },
-    // Air defense bonus: defender gets 150% defense when full movement AND land domain AND max_direction == 10
-    airDefenseBonus: {
-      multiplier: 1.5,      // defense += defense/2
-      condition: 'defender has flag 0x04 AND attacker moves == maxMoves*2 AND attacker domain == land AND closest_dir == 10',
-      sourceAddr: '0x00580341+line136',
+    // Scramble defense: 150% defense when defender has flag 0x04 and conditions met
+    // C (lines 130-140): defender flagsB & 0x04 AND
+    //   attacker moves == maxMoves*2 (full movement, hasn't moved) AND
+    //   attacker domain == 0 (ground) AND closest_dir == 10
+    scrambleDefenseBonus: {
+      defenderFlag: 0x04,     // flagsB & 0x04
+      multiplier: 1.5,        // defense += defense/2
+      attackerFullMoves: 'moves == DAT_0064bcc8 * 2 (maxMoves * 2)',
+      attackerDomain: 0,      // ground domain
+      directionCheck: 10,     // closest_dir result == 10
+      fuelAdjustment: 'if DAT_00654fae != 0: subtract DAT_0064b1c2[type]/2 from moves before check',
+      sourceAddr: '0x00580341+line130',
     },
-    // Anti-air vs sea: defense *= 3 (without air flag) or *= 5 (with air flag)
-    antiAirVsSea: {
-      noAirFlag: 3,          // defense *= 3
-      withAirFlag: 5,        // defense *= 5
-      condition: 'defender flag 0x20 AND attacker domain == sea',
+    // Anti-air unit bonus: defense *= 3 (without missile flag) or *= 5 (with missile flag)
+    // C (line 142-149): defender flagsB & 0x20 (anti-air) AND attacker domain == 0x01 (air)
+    //   attacker flagsB & 0x10 == 0: defense *= 3
+    //   attacker flagsB & 0x10 != 0: defense *= 5 (missile units get stronger response)
+    antiAirBonus: {
+      defenderFlag: 0x20,      // flagsB & 0x20 = anti-air capability
+      attackerDomain: 0x01,    // air domain (NOT sea — previous label was wrong)
+      noMissileFlag: 3,        // defense *= 3 when attacker lacks flagsB 0x10
+      withMissileFlag: 5,      // defense *= 5 when attacker has flagsB 0x10 (missile)
+      condition: 'defender flagsB & 0x20 AND attacker domain == air(0x01)',
       sourceAddr: '0x00580341+line142',
     },
-    // SAM Missile Battery (building 0x1C): defense *= 2
-    samBatteryBonus: {
-      buildingId: 0x1C,      // SAM Missile Battery
+    // Coastal Fortress (building 0x1C = 28): defense <<= 1 (doubled)
+    // C: attacker domain == sea(0x02) AND defender domain != sea AND has_building(city, 0x1C)
+    coastalFortressBonus: {
+      buildingId: 0x1C,      // building 28 = Coastal Fortress
       multiplier: 2,
-      condition: 'attacker domain == air AND defender domain != air AND city has SAM Battery',
+      condition: 'attacker domain == sea AND defender domain != sea AND city has Coastal Fortress',
       sourceAddr: '0x00580341+line151',
     },
-    // Coastal Fortress (building 0x11): defense *= 2
-    coastalFortressBonus: {
-      buildingId: 0x11,
+    // SDI Defense (building 0x11 = 17): defense <<= 1 (doubled)
+    // C: attacker domain == air(0x01) AND has_building(city, 0x11) AND attacker flagsB & 0x10 AND attack < 99
+    sdiDefenseBonus: {
+      buildingId: 0x11,      // building 17 = SDI Defense
       multiplier: 2,
-      condition: 'attacker domain == sea AND city has Coastal Fortress AND attacker has air flag AND attacker attack < 99',
+      condition: 'attacker domain == air AND city has SDI Defense AND attacker has flagsB 0x10 AND attacker attack < 99',
       sourceAddr: '0x00580341+line164',
     },
-    // City Walls (building 0x1B): defense *= 2
-    cityWallsBonus: {
-      buildingId: 0x1B,
+    // SAM Battery (building 0x1B = 27): defense <<= 1 (doubled)
+    // C: attacker domain == air(0x01) AND has_building(city, 0x1B)
+    samBatteryBonus: {
+      buildingId: 0x1B,      // building 27 = SAM Battery
       multiplier: 2,
-      condition: 'attacker domain == sea AND city has City Walls',
+      condition: 'attacker domain == air AND city has SAM Battery',
       sourceAddr: '0x00580341+line174',
     },
     // Great Wall wonder: attack /= 2, city considered walled
@@ -1979,16 +2089,57 @@ export const COMBAT_RESOLUTION = {
     // When param_3 != 0 (actual combat):
     // Round-by-round resolution with HP damage
     hpBarAnimThreshold: {
-      formula: '10 >> local_cc',  // local_cc = loop counter for display frequency
+      // C (line 740-747): if both units' DAT_0064b1c6 (firepower) < 30, local_cc=1 else 0
+      //   local_2c = 10 >> local_cc (so 5 for low-FP units, 10 for high-FP)
+      formula: '10 >> local_cc',
       note: 'Controls how often HP bar updates are shown during combat animation',
-      sourceAddr: '0x00580341+line700 approx',
+      lowFirepowerThreshold: 0x1E,  // 30: if both attacker and defender firepower < 30
+      sourceAddr: '0x00580341+line740',
     },
     roundFormula: {
-      attackerWinChance: 'attack / (attack + defense)',
-      damage: 'firepower points of HP removed per round',
+      // CRITICAL: The actual formula is NOT attack/(attack+defense).
+      // C (lines 771-785): Two INDEPENDENT random rolls per round:
+      //   attackRoll = rand() % attack  (or 0 if attack <= 1)
+      //   defenseRoll = rand() % defense  (or 0 if defense <= 1)
+      //   attackerWins = (defenseRoll < attackRoll)
+      // This means the attacker wins a round when their random roll exceeds the defender's.
+      attackerWinCondition: 'rand() % defense < rand() % attack',
+      note: 'Two independent rolls, NOT a combined probability fraction',
+      sourceAddr: '0x00580341+line771',
+
+      // --- Palace / small-city double-roll mechanic (bVar18) ---
+      // C (lines 225-232): bVar18 is set when:
+      //   1. City has Palace (building 1): thunk_FUN_0043d20a(city, 1) != 0
+      //   2. OR city size < 8: DAT_0064c708[defenderCiv * 0x594] < 8
+      // C (lines 786-804): When bVar18 is true and attacker wins a round,
+      //   a SECOND pair of rolls is made. If attacker LOSES the second roll,
+      //   the round result is reversed (defender wins instead).
+      // Effect: Defenders in cities with Palace or small cities (<8 pop) get
+      //   a "second chance" each round — effectively halving attacker's win rate.
+      palaceDoubleRoll: {
+        palaceBuildingId: 1,           // has_building(city, 1) = Palace
+        smallCityThreshold: 8,         // city.size < 8 triggers same effect
+        cityPopAddr: 'DAT_0064C708',   // city population @ civ record offset
+        condition: 'bVar18 = (city has Palace) OR (city size < 8)',
+        effect: 'When attacker wins a round, re-roll; if attacker loses re-roll, reverse result',
+        sourceAddr: '0x00580341+line225,786',
+      },
+
+      damage: 'firepower points of HP removed per round (local_78 for defender damage, local_34 for attacker damage)',
       veteranBonus: {
         multiplier: 1.5,  // 50% bonus to attack/defense for veteran units
+        flag: 0x2000,     // unit.statusFlags & 0x2000
         sourceAddr: '0x00580341 — applied via FUN_0057e2c3/FUN_0057e33a',
+      },
+      // --- Second attack-only bonus: flag 0x10 in unit status ---
+      // C (FUN_0057e2c3): if (*(ushort *)(&DAT_006560f4 + param_1 * 0x20) & 0x10) != 0)
+      //      local_8 = local_8 + (local_8 >> 1)   // another 50% attack bonus
+      // NOTE: Only in attack calc (FUN_0057e2c3), NOT in defense calc (FUN_0057e33a)
+      attackOnlyBonus: {
+        flag: 0x10,
+        multiplier: 1.5,  // additional 50% bonus to ATTACK only, stacks with veteran
+        meaning: 'Unit status flag 0x10 grants 50% attack bonus only (stacks with veteran for 2.25x attack)',
+        sourceAddr: '0x0057E2C3+line5310',
       },
     },
     ransomFormula: {
@@ -1997,6 +2148,146 @@ export const COMBAT_RESOLUTION = {
       condition: 'defender role == 5 (settler/worker)',
       sourceAddr: '0x00580341+line900 approx',
     },
+  },
+
+  // --- Additional combat details extracted from FUN_00580341 ---
+
+  // Peaceful turns reset: when both civs are non-zero, reset peaceful-turns counter
+  // C (line 277): DAT_00655b14 = 0
+  peacefulTurnsReset: {
+    addr: 'DAT_00655B14',
+    condition: 'both attacker civ and defender civ are non-zero (non-barbarian)',
+    effect: 'peaceful turns counter reset to 0',
+    sourceAddr: '0x00580341+line277',
+  },
+
+  // Has-attacked treaty flag: set 0x200 between attacker and defender
+  // C (line 279): thunk_FUN_00467825(uVar7, uVar12, 0x200)
+  hasAttackedTreatyFlag: {
+    flag: 0x200,
+    meaning: 'Set "has attacked" flag in treaty between attacker and defender civs',
+    sourceAddr: '0x00580341+line279',
+  },
+
+  // Alliance arrays: initialized to 0 at start of combat
+  // C (lines 89-93): DAT_006acae8[0..7] = 0; DAT_006acb10[0..7] = 0
+  allianceArrays: {
+    attackerAllies: 'DAT_006ACAE8',  // 8-element array
+    defenderAllies: 'DAT_006ACB10',  // 8-element array
+    size: 8,
+    meaning: 'Tracks which civs are allied with attacker/defender for combat notifications',
+    sourceAddr: '0x00580341+line89',
+  },
+
+  // Senate override for Republic/Democracy
+  // C (lines 345-356): if govt > 4, rand()%100 check
+  //   Republic (5) or UN wonder (0x18) applies -50 modifier
+  //   tolerance * -10 added to threshold
+  senateOverride: {
+    governmentThreshold: 4,       // govt > 4 triggers senate check
+    randomRange: 100,             // rand() % 100
+    republicModifier: -0x32,      // -50 for Republic (govt 5)
+    unWonderId: 0x18,             // United Nations wonder also applies -50
+    toleranceFormula: 'tolerance * -10',
+    meaning: 'Senate may override attack order for Republic/Democracy governments',
+    sourceAddr: '0x00580341+line345',
+  },
+
+  // Nuclear attack threshold
+  // C: if nuclear attack (param_3 type check), special handling for global nuclear count
+  nuclearThreshold: {
+    meaning: 'Nuclear attacks tracked separately; triggers global pollution and diplomatic penalties',
+    sourceAddr: '0x00580341 — scattered through nuclear handling blocks',
+  },
+
+  // Veteran promotion after combat
+  // C (lines 952-976): Depends on who won (local_c0 = attacker HP remaining)
+  //   local_c0 == 0: attacker died (defender won)
+  //     rand() % (attack + defense) <= attack → promote DEFENDER to veteran
+  //     OR has_wonder_effect(defenderCiv, 7) (Sun Tzu) → auto-promote
+  //   local_c0 != 0: defender died (attacker won)
+  //     rand() % (attack + defense) <= defense → promote ATTACKER to veteran
+  //     OR has_wonder_effect(attackerCiv, 7) (Sun Tzu) → auto-promote
+  // NOTE: The threshold is the LOSER's combat stat, not the winner's.
+  //   Higher enemy strength = higher promotion chance for the winner.
+  veteranPromotion: {
+    defenderWins: {
+      formula: 'rand() % (attack + defense) <= attack',
+      note: 'Promotion chance based on attacker strength — stronger attacker = more likely defender promoted',
+      sourceAddr: '0x00580341+line954',
+    },
+    attackerWins: {
+      formula: 'rand() % (attack + defense) <= defense',
+      note: 'Promotion chance based on defender strength — stronger defender = more likely attacker promoted',
+      sourceAddr: '0x00580341+line967',
+    },
+    sunTzuWonder: {
+      wonderCheckFn: 'FUN_00453e51', wonderParam: 7,
+      meaning: 'Sun Tzu\'s War Academy auto-promotes winning units regardless of roll',
+    },
+    veteranFlag: 0x2000,
+    sourceAddr: '0x00580341+line952',
+  },
+
+  // City size reduction on defender loss (no City Walls / Great Wall)
+  // C (lines 999-1029): When attacker wins AND city exists at defender tile:
+  //   city.flags |= 0x20 (attacked flag)
+  //   if NOT (ocean tile) AND NOT has_building(city, 8=CityWalls) AND
+  //      NOT has_wonder_effect(defenderCiv, 6=GreatWall) AND
+  //      (difficulty != 0 OR defender is not human):
+  //        city.size -= 1
+  //        if city.size == 0: delete_city, kill_civ check
+  //        else: reassign citizens, check for unit displacement
+  citySizeReduction: {
+    cityAttackedFlag: 0x20,        // city.flags |= 0x20 @ line 1001
+    cityWallsBuildingId: 8,        // has_building(city, 8) = City Walls
+    greatWallWonderId: 6,          // has_wonder_effect(civ, 6) = Great Wall
+    difficultyExemption: {
+      condition: 'difficulty == 0 (Chieftain) AND defender is human',
+      effect: 'No size reduction on Chieftain for human player cities',
+      sourceAddr: '0x00580341+line1005',
+    },
+    cityDestroyedAt: 0,            // city.size reaches 0 → delete_city
+    effect: 'city.size -= 1 if no City Walls, no Great Wall, and not Chieftain-human',
+    sourceAddr: '0x00580341+line999',
+  },
+
+  // Barbarian attack vs tiny city: auto-fail
+  // C (line 222-223): if city.size < 2 AND attacker is barbarian (civ 0): attack = 0
+  barbarianTinyCityAutoFail: {
+    citySizeThreshold: 2,
+    condition: 'attacker civ == 0 (barbarian) AND city.size < 2',
+    effect: 'attack power set to 0 — barbarians cannot destroy size-1 cities',
+    cityPopAddr: 'DAT_0064C708',
+    sourceAddr: '0x00580341+line222',
+  },
+
+  // Combat counter: tracks attacks between civs
+  // C (line 953): DAT_0064c6f0[attacker*0x594 + defender]++ on attacker win
+  // C (lines 727, 966): DAT_0064c6f0[attacker*0x594 + defender] = 0 on attacker loss
+  combatCounter: {
+    addr: 'DAT_0064C6F0',
+    stride: '0x594 (civ record stride)',
+    onWin: 'counter++ (increment attack count against defender)',
+    onLoss: 'counter = 0 (reset attack count against defender)',
+    sourceAddr: '0x00580341+line953',
+  },
+
+  // SAM defense used flag: set on city when SAM Battery participates
+  // C (line 158): city.flags |= 0x8000000
+  samDefenseUsedFlag: {
+    flag: 0x8000000,
+    meaning: 'City flag set when SAM Missile Battery bonus was applied in combat',
+    sourceAddr: '0x00580341+line158',
+  },
+
+  // Movement carry-over after combat
+  // C (lines 266-267): DAT_006ad0cc & 2 determines if attacker retains movement
+  movementCarryOver: {
+    flagAddr: 'DAT_006AD0CC',
+    flagMask: 2,
+    meaning: 'When flag bit 2 is set, attacker retains remaining movement points after winning combat',
+    sourceAddr: '0x00580341+line266',
   },
 };
 
@@ -2156,11 +2447,42 @@ export const ESPIONAGE = {
       specificStealDialog: 'STEALSPECIFIC',
       hardStealDialog: 'STEALHARD',
       alreadyStolenFlag: 0x08,  // city.flags & 0x08 means already stolen from
+      // C (line 2379-2380): after successful steal, city.flags |= 8 (mark as stolen from)
+      postStealEffect: 'city.flags |= 0x08 — prevents further random steals (must use STEALHARD dialog)',
+      // C (line 2377): thunk_FUN_0057a27a(spyCiv, targetCiv) — tech transfer function
+      techTransferFn: 'FUN_0057a27a',
+      // C (line 2404-2405): if no tech found and human, spy gets movement refund
+      noTechRefund: 'unit.movesLeft += DAT_0064bcc8 (one movement point restored)',
+      noStealDialog: 'NOSTEAL',
+      detectionChecks: 1,  // 1 check for random steal, 2+ for specific steal with walls
       sourceAddr: '0x004c6bf5+case2',
     },
     3: {
       name: 'Sabotage (Industrial)',
       conditionFlags: 'city.flags & 0x08 must be 0 (no walls) OR spy is Spy type',
+      // C (line 2432-2433): random building selection: rand() % 0x27 (39 buildings)
+      buildingScanRange: 0x27,  // 39 building IDs scanned
+      // C (lines 2706-2713): specific sabotage: spy (not diplomat) can pick specific building
+      //    scans buildings 1..0x26, shows list excluding Palace (id 1)
+      specificSabotageDialog: 'SABOTAGESPECIFIC',
+      sabotageHardDialog: 'SABOTAGEHARD',
+      sabotageNoDialog: 'SABOTAGENO',       // shown when Palace (0x11) is selected but blocked
+      sabotageTwoDialog: 'SABOTAGETWO',     // shown when production reset instead of building
+      // C (line 2727-2738): extra detection checks for City Walls (building 1) or specific buildings
+      //    City Walls or building 8: requires SABOTAGEHARD confirmation + extra detection roll
+      //    Building 0x11: 2 extra detection checks
+      detectionChecks: {
+        base: 1,
+        withWalls: 2,       // city has walls → extra check
+        building8: 2,       // City Walls target → extra check + SABOTAGEHARD dialog
+        building0x11: 3,    // 2 extra checks for this building type
+      },
+      // C (line 2787): thunk_FUN_0043d289(param_2, local_74, 0) — destroy selected building
+      destroyBuildingFn: 'FUN_0043d289(cityIndex, buildingId, 0)',
+      // C (line 2772-2773): if random sabotage (local_74 == 0): reset production shields to 0
+      productionResetEffect: 'city.shields = 0 via DAT_0064f35c + param_2 * 0x58',
+      mpMessage: 0x5A,  // sent to target for random sabotage
+      soundEffect: { withStealth: 0x27, normal: 0x44 },  // tech 0x23 (Stealth) → sound 0x27
       sourceAddr: '0x004c6bf5+case3',
     },
     4: {
@@ -2181,7 +2503,21 @@ export const ESPIONAGE = {
     6: {
       name: 'Poison Water Supply',
       condition: 'city must NOT have City Walls (building 1)',
-      sourceAddr: '0x004c6bf5+case6',
+      // C (case 4, lines 2436-2466):
+      // if (city.size < 2) → destroy city (zero population)
+      // else → city.size -= 1
+      effect: {
+        smallCity: 'If city size < 2: population zeroed (city destroyed)',
+        normalCity: 'city.size -= 1 (lose one population)',
+        sizeThreshold: 2,
+      },
+      // C: thunk_FUN_0043cc00(param_2, local_3b0) — rebuild city after size change
+      // C: thunk_FUN_0047cea6(cityX, cityY) — refresh city display
+      mpMessage: 0x5B,  // sent to target player
+      dialog: 's_WATERSUPPLY_0062de50',
+      // Spy survival: random param passed to FUN_004c5fae (50% chance of hostile/friendly)
+      spySurvivalParam: 'rand() & 1 → 0 or 1 (50/50 hostile/friendly)',
+      sourceAddr: '0x004c6bf5+case4',
     },
     7: {
       name: 'Subvert Unit / Sabotage (MP only)',
@@ -2215,17 +2551,113 @@ export const ESPIONAGE = {
   },
 
   inciteRevoltCost: {
-    // Binary ref: FUN_004c5fae @ block_004C0000.c
-    // This is the separate spy survival + incite cost function
+    // Binary ref: FUN_004c6bf5 case 6 @ block_004C0000.c lines 2523-2634
+    // Full incite revolt cost formula with all modifiers
+
+    // Step 1: Democracy check — cannot incite revolt against Democracy
+    // C: if ((&DAT_0064c6b5)[local_80 * 0x594] == '\x06') → show NOREVOLT dialog, break
+    democracyImmune: { govtId: 6, meaning: 'Cannot incite revolt in Democracy cities' },
+
+    // Step 2: Distance to nearest walled city of the target civ
+    // C: local_7c = thunk_FUN_004c65d2(local_80, spyX, spyY)
+    distanceToWalledCity: {
+      helperFn: 'FUN_004c65d2',
+      meaning: 'Manhattan distance to nearest city with Walls (building 1) owned by target civ',
+      maxDefault: 0x10,  // 16 — returned if no walled city found
+    },
+
+    // Step 3: Communism distance cap
+    // C: if ((&DAT_0064c6b5)[local_80 * 0x594] == '\x03') && (9 < local_7c)) local_7c = 10
+    communismDistanceCap: { govtId: 3, threshold: 9, cap: 10,
+      meaning: 'Under Communism, distance to walled city is capped at 10 (if > 9)' },
+
+    // Step 4: Courthouse halves distance
+    // C: iVar3 = thunk_FUN_0043d20a(param_2, 7); if (iVar3 != 0) local_7c /= 2
+    courthouseEffect: { buildingId: 7, effect: 'distance /= 2',
+      meaning: 'Courthouse halves the effective distance to nearest walled city' },
+
+    // Step 5: Core formula
+    // C: local_388 = (int)(char)(&DAT_0064f349)[param_2 * 0x58] *
+    //               ((*(int *)(&DAT_0064c6a2 + local_80 * 0x594) + 1000) / (local_7c + 3))
+    coreFormula: 'cost = citySize * ((targetTreasury + 1000) / (distance + 3))',
+    citySizeAddr: 'DAT_0064F349 + cityIndex * 0x58',
+    treasuryAddr: 'DAT_0064C6A2 + civId * 0x594',
+    treasuryOffset: 1000,
+    distanceDivisorOffset: 3,
+
+    // Step 6: Overflow protection
+    // C: if (local_388 < 0) local_388 = 30000
+    overflowProtection: 30000,
+
+    // Step 7: Disorder halving
+    // C: if (((&DAT_0064f344)[param_2 * 0x58] & 1) != 0) local_388 /= 2
+    disorderHalving: { flag: 0x01, addr: 'DAT_0064F344 + cityIndex * 0x58',
+      meaning: 'City in civil disorder halves incite cost' },
+
+    // Step 8: No garrison halving
+    // C: iVar3 = thunk_FUN_005b8d62(cityX, cityY); if (iVar3 < 0) local_388 /= 2
+    noGarrisonHalving: { fn: 'FUN_005b8d62', condition: 'returns < 0 (no military unit in city)',
+      meaning: 'No military garrison halves incite cost' },
+
+    // Step 9: Original founder discount
+    // C: if ((char)(&DAT_0064f34a)[param_2 * 0x58] == local_3b0) local_388 /= 2
+    founderDiscount: { addr: 'DAT_0064F34A + cityIndex * 0x58',
+      meaning: 'If spy civ originally founded the city, cost is halved' },
+
+    // Step 10: Spy type discount
+    // C: if (local_38c != 0) {  // is spy (not diplomat)
+    //      if (veteran) local_388 -= local_388 / 3; else local_388 -= local_388 / 6; }
+    spyDiscount: {
+      veteranFormula: 'cost -= cost / 3 (33% discount)',
+      nonVeteranFormula: 'cost -= cost / 6 (17% discount)',
+      meaning: 'Spy units get a cost reduction; veterans get double the discount',
+    },
+
+    // Step 11: Treaty check for subversion option
+    // C: bVar6 = ((&DAT_0064c6c0)[local_80 * 4 + local_3b0 * 0x594] & 0xe) == 0
+    treatyCheckMask: 0x0E,  // contact/ceasefire/peace/alliance bits
+    subversionRequiresTreaty: true,
+    subversionDoubleCost: 'cost * 2 must be <= target treasury AND cost < 0x3A99 (15001)',
+
     maxCost: 0x3A99,  // 15001 gold — maximum incite revolt cost
-    sourceAddr: '0x004c5fae',
+
+    // Post-incite effects
+    // C: *(int *)(&DAT_0064c6a2 + local_3b0 * 0x594) -= local_388 * local_3ac  // deduct gold
+    // C: *(short *)(&DAT_0064c6bc + local_3b0 * 0x594) += 2  // reputation penalty
+    reputationPenalty: 2,
+    reputationAddr: 'DAT_0064C6BC + civId * 0x594',
+
+    // Subversion (option 2): also sets counter-intelligence flag + changes city founder
+    // C: *(uint *)(&DAT_0064c6c0 + local_80 * 0x594 + local_3b0 * 4) |= 0x10
+    // C: (&DAT_0064f34a)[param_2 * 0x58] = (byte)local_3b0
+    subversionFlag: 0x10,
+    subversionChangesFounder: true,
+
+    sourceAddr: '0x004c6bf5+line2523',
   },
 
   spySurvival: {
-    // Binary ref: FUN_004c5fae @ block_004C0000.c
+    // Binary ref: FUN_004c5fae @ block_004C0000.c lines 1818-1930
     // Spy survival after mission — probability varies by mission and counter-espionage level
     counterEspionageTable: [5, 4, 3, 2, 1, 0],  // base survival odds by difficulty (higher = better)
     missionSurvivalModifier: [0, 0, 0, 0, 1, 2, 2, 3, 4],  // additional risk by mission type
+
+    // --- Detailed spy survival formula ---
+    // C: local_8 = (param_2 < 0) + 2;  // base = 2 for spy (type 0x2F), 3 for diplomat
+    baseSurvival: { spy: 2, diplomat: 3 },
+    // C: if (*(ushort *)(&DAT_006560f4 + param_1 * 0x20) & 0x2000) local_8 *= 2
+    veteranBonus: { flag: 0x2000, effect: 'survival *= 2', meaning: 'Veteran status doubles survival odds' },
+    // C: if (0 < param_2) local_8 /= 2
+    missionPenalty: { condition: 'param_2 > 0 (hostile mission)', effect: 'survival /= 2' },
+    // C: if (local_8 < 2) { if (rand() & 1 == 0) local_8 += 1 }
+    lowOddsRandomBoost: { threshold: 2, chance: '50% (rand() & 1 == 0)', effect: 'survival += 1' },
+    // C: if (local_8 == 1 || local_8-1 < 0) { local_1c = 0 } else { local_1c = rand() % local_8 }
+    // C: if (local_1c != 0) { ... spy escapes to nearby friendly city ... } else { spy is killed }
+    survivalCheck: 'rand() % survival != 0 means spy escapes; 0 means spy dies',
+    escapeAction: 'Spy teleports to nearest friendly city (FUN_0043d07a)',
+    deathAction: 'Spy unit is killed (FUN_005b6042)',
+    veteranFlagAddr: 'DAT_006560F4 + unitIndex * 0x20 (bit 0x2000)',
+    postSurvivalFlag: 'unit.statusFlags |= 0x2000 (mark as veteran if survived)',
     sourceAddr: '0x004c5fae',
   },
 
@@ -2237,6 +2669,255 @@ export const ESPIONAGE = {
     visibilityUpdate: 'sets visibility bit (1 << newCivId) for all tiles in city radius',
     sourceAddr: '0x004c66ba',
   },
+
+  // --- Spy detection check ---
+  // Binary ref: FUN_004c64aa @ block_004C0000.c (163 bytes), lines 1934-1959
+  // Called repeatedly during espionage missions; each call = one detection attempt
+  spyDetectionCheck: {
+    // C: iVar3 = thunk_FUN_004c5fae(param_1, 0xffffffff, param_2)
+    // Calls spy survival with param_2 = -1 (indicating failure/caught scenario)
+    // If survival returns 0: spy caught → function returns 1 (detected)
+    // If survival returns nonzero: spy evades → function returns 0 (undetected)
+    survivalParam: -1,  // 0xFFFFFFFF — indicates hostile detection
+    caughtDialog: 's_NAILED_0062dd70',
+    returnValue: { detected: 1, undetected: 0 },
+    meaning: 'Each call is one spy detection roll; missions call this 1-4 times depending on difficulty',
+    sourceAddr: '0x004c64aa',
+  },
+
+  // --- Diplomatic incident check ---
+  // Binary ref: FUN_004c654d @ block_004C0000.c (133 bytes), lines 1964-1985
+  // Checks whether espionage action triggers a diplomatic incident
+  diplomaticIncidentCheck: {
+    // C: if (spy civ is human) AND (treaty & 0xe != 0) → show INCIDENT dialog
+    treatyMask: 0x0E,   // ceasefire/peace/alliance bits
+    condition: 'spy civ is human AND has some treaty with target',
+    dialog: 's_INCIDENT_0062dd78',
+    returnValue: { cancelled: true, proceed: false },
+    meaning: 'Player is warned about diplomatic incident if they have a treaty; can cancel the mission',
+    sourceAddr: '0x004c654d',
+  },
+
+  // --- Gap 13: Sabotage production reset probability ---
+  // Binary ref: block_004C0000.c lines 2742-2760 (within FUN_004c6bf5)
+  // C: local_1c = 2; if (local_38c != 0) local_1c = 3;
+  //    if (*(ushort *)(&DAT_006560f4 + param_1 * 0x20) & 0x2000) local_1c += 1;
+  //    if (local_1c - 1 < 1) { local_3f4 = 0; } else { local_3f4 = rand() % local_1c; }
+  //    if (local_3f4 == 0) local_74 = 0;  // reset production
+  sabotageReset: {
+    baseChanceDiplomat: 2,
+    baseChanceSpy: 3,
+    meaning: 'Diplomat has 1/2 (50%) chance, Spy has 1/3 (33%) chance of resetting city production on sabotage',
+    // C: if (veteran flag 0x2000 set) local_1c += 1
+    veteranBonus: { flag: 0x2000, effect: 'denominator += 1' },
+    veteranChances: { diplomat: '1/3 (33%)', spy: '1/4 (25%)' },
+    formula: 'rand() % denominator == 0 → reset production to item 0',
+    condition: 'sabotage not already blocked (local_88 == 0) AND city has shields stored',
+    sourceAddr: '0x004C6BF5+line2742',
+  },
+
+  // --- Gap 14: Counter-espionage survival formula ---
+  // Binary ref: block_004C0000.c lines 2640-2677 (case 7 in FUN_004c6bf5)
+  counterEspionage: {
+    // C: local_3f0[9..14] = {5, 4, 3, 2, 1, 0}  // difficulty table (index = difficulty level + 9)
+    difficultyTable: [5, 4, 3, 2, 1, 0],
+    difficultyTableMeaning: 'Counter-espionage base by difficulty: Chieftain=5, Warlord=4, Prince=3, King=2, Emperor=1, Deity=0',
+
+    // C: local_3f0[0..8] = {0, 0, 0, 0, 1, 2, 2, 3, 4}  // mission risk table
+    missionRiskTable: [0, 0, 0, 0, 1, 2, 2, 3, 4],
+    missionRiskMeaning: 'Additional counter-espionage risk per mission type (0=embassy through 8)',
+
+    // C: if (local_38c == 0) base = 5; else base = 10;  // spy vs diplomat
+    baseSurvivalDiplomat: 5,
+    baseSurvivalSpy: 10,
+
+    // C: base += difficultyTable[DAT_00655b08 + 9]  (difficulty level)
+    difficultyAdjust: 'base += difficultyTable[difficulty]',
+
+    // C: if (veteran flag 0x2000) base += 2
+    veteranBonus: 2,
+
+    // C: base -= missionRiskTable[espionageExperience]
+    // espionageExperience = (&DAT_0064c6e0)[targetCiv * 0x594 + spyCiv]
+    experienceAdjust: 'base -= missionRiskTable[espionageExperience between civs]',
+    experienceAddr: 'DAT_0064C6E0 + targetCiv * 0x594 + spyCiv',
+
+    // C: base += rand() % 6
+    randomComponent: 'base += rand() % 6',
+    randomRange: 6,
+
+    // Final value stored in unit field: (&DAT_006560fe)[param_1 * 0x20] = base
+    // Higher = better survival odds for the spy
+    meaning: 'Counter-espionage score determines how well the spy hides; stored in unit counterEspionage field',
+    sourceAddr: '0x004C6BF5+line2640',
+  },
+};
+
+// ============================================================================
+// === DISTANCE TO NEAREST WALLED CITY (Helper) ===
+// Binary ref: FUN_004c65d2 @ block_004C0000.c (232 bytes), lines 1990-2013
+// ============================================================================
+
+export const DISTANCE_TO_WALLED_CITY = {
+  // Used by incite revolt cost formula (case 6) and AI espionage evaluation
+  // Scans all cities belonging to param_1 (civ) for Walls (building 1)
+  // Returns Manhattan distance to nearest walled city, or 0x10 (16) if none found
+
+  // C: local_8 = 0x10;  // default max distance
+  defaultDistance: 0x10,  // 16
+
+  // Loop: for each city slot (0..DAT_00655b18):
+  //   C: if (city.active != 0) AND (city.owner == param_1) AND (has_building(city, 1))
+  //      distance = FUN_005ae31d(cityX, cityY, spyX, spyY)
+  //      if (distance < local_8) local_8 = distance
+  wallsBuildingId: 1,
+  cityOwnerAddr: 'DAT_0064F348 + cityIndex * 0x58',
+  cityActiveAddr: 'DAT_0064F394 + cityIndex * 0x58',
+  distanceFn: 'FUN_005ae31d (Manhattan distance on wrapped map)',
+  maxCities: 'DAT_00655B18',
+
+  sourceAddr: '0x004c65d2',
+};
+
+// ============================================================================
+// === UNIT BRIBERY ===
+// Binary ref: FUN_004c9528 @ block_004C0000.c lines 2912-3093
+// Diplomat/Spy bribes an enemy unit in the field
+// ============================================================================
+
+export const UNIT_BRIBERY = {
+  // Prerequisite: unit must be alone (stack count <= 1)
+  // C: iVar3 = thunk_FUN_005b50ad(param_1, 2); if (1 < iVar3) return;
+  loneUnitRequired: { stackQueryType: 2, maxStackSize: 1,
+    meaning: 'Can only bribe lone units (no stacked units)' },
+
+  // Democracy check: target civ with Democracy government is immune to bribery
+  // C: if ((&DAT_0064c6b5)[iVar2 * 0x594] == '\x06') show INCORRUPTIBLE dialog, return
+  democracyImmune: { govtId: 6, dialogKey: 'INCORRUPTIBLE',
+    meaning: 'Cannot bribe units belonging to a Democracy' },
+
+  // AI tech requirement: AI must have a specific tech to use bribery
+  // C: if (civ is AI && !hasTech(civId, DAT_0064b563)) return
+  aiTechRequirement: { techAddr: 'DAT_0064b563',
+    meaning: 'AI needs the bribery prerequisite tech from rules.txt' },
+
+  // Cost formula:
+  // C: local_14 = (short)(&DAT_0064b1c2)[local_2c * 0x14]  // unit type cost (shield cost)
+  // C: local_14 = local_14 * ((*(int *)(&DAT_0064c6a2 + local_24 * 0x594) + 750) / (local_7c + 2))
+  //    where local_7c = distance to nearest walled city (FUN_004c65d2)
+  coreFormula: 'cost = unitShieldCost * ((targetTreasury + 750) / (distanceToWalledCity + 2))',
+  unitCostAddr: 'DAT_0064B1C8 + unitType * 0x14',  // unit type shield cost field (was incorrectly 0xC2)
+  treasuryAddr: 'DAT_0064C6A2 + civId * 0x594',
+  treasuryOffset: 750,
+  distanceDivisorOffset: 2,
+
+  // Communism distance cap (same as incite revolt)
+  // C: if ((&DAT_0064c6b5)[local_24 * 0x594] == '\x03') && (9 < local_7c)) local_7c = 10
+  communismDistanceCap: { govtId: 3, threshold: 9, cap: 10,
+    meaning: 'Under Communism, distance to nearest walled city capped at 10 if > 9' },
+
+  // Role discount: non-settler roles get half cost
+  // C: if ((&DAT_0064b1ca)[unitType * 0x14] != '\x05') local_18 /= 2
+  roleDiscount: { exemptRole: 5, roleFieldAddr: 'DAT_0064b1ca + unitType * 0x14', effect: 'cost /= 2',
+    meaning: 'Units with role != 5 (settler) get bribery cost halved' },
+
+  // Role 7 block for AI: AI cannot bribe units with role 7 (caravan/freight)
+  // C: if ((&DAT_0064b1ca)[unitType * 0x14] == '\x07' && civ is AI)
+  aiRole7Block: { role: 7, meaning: 'AI players cannot bribe caravan/freight units (role 7)' },
+
+  // Overflow protection
+  // C: if (local_14 < 0) local_14 = 30000
+  overflowProtection: 30000,
+
+  // AI acceptance check: AI accepts bribe if treasury/2 >= cost
+  // C: if (!(DAT_00655b0b & (1 << spyCiv)))
+  //    if (*(int *)(&DAT_0064c6a2 + spyCiv * 0x594) / 2 >= local_14) → accept
+  aiAcceptance: { formula: 'spyTreasury / 2 >= bribeCost', meaning: 'AI auto-accepts if it can afford half treasury' },
+
+  // Sound effect on successful bribe
+  soundEffect: 0x1E,
+
+  // MP opcode and timeout
+  mpOpcode: 99,
+  mpTimeout: 0xE10,  // 3600 ticks
+
+  // Post-bribe unit state changes
+  // C: unit.order = 0xFF (no order)
+  // C: unit.movesRemaining = 0
+  // C: unit.gotoDestination = 0xFF (no goto)
+  postBribe: {
+    order: 0xFF,
+    movesRemaining: 0,
+    gotoDestination: 0xFF,
+    meaning: 'Bribed unit has orders cleared, no movement remaining, goto cancelled',
+  },
+
+  // Dialog keys
+  dialogKeys: {
+    bribePrompt: 'BRIBE',
+    noBribe: 'NOBRIBE',
+  },
+
+  sourceAddr: '0x004C9528',
+};
+
+// ============================================================================
+// === PLANT NUCLEAR DEVICE (Espionage Case 5) ===
+// Binary ref: FUN_004c6bf5 case 5 @ block_004C0000.c lines 2467-2522
+// ============================================================================
+
+export const PLANT_NUCLEAR_DEVICE = {
+  // Requires MAJORINCIDENT confirmation dialog
+  // C: thunk_FUN_00410030(s_MAJORINCIDENT_0062de5c, &DAT_00641848 + local_398 * 0x3c, 8)
+  requiresIncidentConfirm: true,
+
+  // Must pass 3 base detection checks + 1 additional if city has defenders (4 total max)
+  // C (lines 2470-2474): 3 consecutive FUN_004c64aa calls, then:
+  //   if city has defenders (FUN_0043d20a != 0) → 4th detection check required
+  //   if city has NO defenders → 4th check skipped (only 3 checks needed)
+  detectionChecks: { base: 3, withDefenders: 4 },
+  defenderCheck: 'FUN_0043d20a(param_2, 1) — city has military unit → extra detection roll',
+
+  // Nuclear detonation at city coordinates
+  // C: thunk_FUN_0057f9e3(local_3b0, cityX, cityY, 0)
+  detonationFn: 'FUN_0057f9e3',
+
+  // Government check: Fundamentalism (govt 4) prevents nuclear meltdown
+  // C: if ((&DAT_0064c6b5)[local_3b0 * 0x594] != '\x04') { ... meltdown check ... }
+  // NOTE: govt 4 = Fundamentalism (NOT Communism as previously mislabeled)
+  fundamentalismImmune: { govtId: 4, meaning: 'Fundamentalism prevents nuclear plant meltdown from spy nuke' },
+
+  // Meltdown survival check (non-Fundamentalism only)
+  // C: local_1c = 2; if (veteran) local_1c = 4;
+  //    rand() % local_1c == 0 → meltdown occurs
+  meltdownChance: {
+    base: 2,          // 1/2 (50%) for non-veteran
+    veteran: 4,       // 1/4 (25%) for veteran
+    veteranFlag: 0x2000,
+    formula: 'rand() % denominator == 0 → triggers nuclear meltdown (PLANTEDNUKE)',
+  },
+
+  // Meltdown diplomatic penalty: -100 attitude from ALL civs
+  // C (lines 2500-2505): for (civ=1; civ<8; civ++) if (civ != spyCiv):
+  //   thunk_FUN_00456f20(civ, spyCiv, 100)    // attitude -= 100
+  //   thunk_FUN_00467825(spyCiv, civ, 0x2000)  // set war flag
+  meltdownPenalty: {
+    attitudeChange: 100,
+    treatyFlag: 0x2000,
+    civLoop: { start: 1, end: 7, skipSelf: true },
+    meaning: 'Meltdown causes -100 attitude from ALL civs (1-7, excluding self) and sets war flag with each',
+  },
+
+  // Dialog keys
+  dialogKeys: {
+    majorIncident: 'MAJORINCIDENT',
+    plantedNuke: 'PLANTEDNUKE',
+  },
+
+  // MP messages: 0x5c (nuke without meltdown), 0x5d (nuke with meltdown)
+  mpMessages: { noMeltdown: 0x5C, withMeltdown: 0x5D },
+
+  sourceAddr: '0x004c6bf5+line2467',
 };
 
 // ============================================================================
@@ -2429,6 +3110,101 @@ export const UNIT_CREATION = {
   // Network: message 0x3D for create request; 0xE10 tick timeout
   networkMessage: 0x3D,
   networkTimeout: 0xE10,       // 3600 ticks
+
+  // --- Veteran status at creation (FUN_004ec3fe production processing) ---
+  // Binary ref: block_004E0000.c lines 5215-5242
+  // After unit is created (thunk_FUN_005b3d06), check for veteran training facilities:
+  veteranAtCreation: {
+    veteranFlag: 0x2000,       // unit.statusFlags |= 0x2000
+    noVeteranTypeFlag: 0x10,   // DAT_0064b1bd[type*0x14] & 0x10 = can't be veteran
+    roleFieldAddr: 'DAT_0064b1ca + type * 0x14',  // unit role
+    domainFieldAddr: 'DAT_0064b1c1 + type * 0x14', // unit domain (0=ground, 1=air, 2=sea)
+
+    // Case 1: Communism government (govt == 3) + settler/worker role (role == 6)
+    // C: if (role == '\x06' && govt == '\x03') unit.flags |= 0x2000
+    // NOTE: govt 3 = Communism (NOT Fundamentalism as previously mislabeled)
+    //   role 6 = settler/engineer (units 0,1) — NOT fanatic as previously mislabeled
+    communismSettlerVeteran: {
+      govtId: 3,               // Communism
+      role: 6,                 // role 6 = settler/engineer
+      condition: 'government == Communism AND unit role == 6 (settler/engineer)',
+      meaning: 'Settlers/Engineers produced under Communism are always veteran',
+      sourceAddr: '0x004EC3FE+line5215',
+    },
+
+    // Case 2: Ground units (domain == 0) OR scenario flag 0x10 unset
+    // C: if (domain == 0 || (DAT_00655ae8 & 0x10) == 0)
+    //      if (has_building(city, 2) || has_wonder_effect(civ, 7))
+    //        if (role < 6 && !(flagsB & 0x10)) -> veteran
+    ground: {
+      domain: 0,               // ground units
+      buildingId: 2,           // Barracks (building 2)
+      wonderId: 7,             // Sun Tzu's War Academy (wonder 7)
+      maxRole: 5,              // role must be < 6
+      scenarioBypassFlag: 0x10, // DAT_00655ae8 & 0x10 -- when unset, applies to all domains
+      condition: 'has_building(city, Barracks) OR has_wonder_effect(civ, Sun_Tzu)',
+      meaning: 'Barracks or Sun Tzu gives veteran to ground military units (role < 6, not no-vet flagged)',
+      sourceAddr: '0x004EC3FE+line5220',
+    },
+
+    // Case 3: Sea units (domain == 2)
+    // C: if (domain == '\x02')
+    //      if (has_building(city, 0x22) || has_wonder_effect(civ, 3))
+    //        if (!(flagsB & 0x10)) -> veteran
+    sea: {
+      domain: 2,               // sea units
+      buildingId: 0x22,        // Port Facility (building 34)
+      wonderId: 3,             // Lighthouse (wonder 3)
+      condition: 'has_building(city, Port_Facility) OR has_wonder_effect(civ, Lighthouse)',
+      meaning: 'Port Facility or Lighthouse gives veteran to sea units (not no-vet flagged)',
+      sourceAddr: '0x004EC3FE+line5229',
+    },
+
+    // Case 4: Air units (domain == 1)
+    // C: if (domain == '\x01') if (has_building(city, 0x20)) if (!(flagsB & 0x10)) -> veteran
+    air: {
+      domain: 1,               // air units
+      buildingId: 0x20,        // Airport (building 32)
+      wonderId: null,          // no wonder equivalent for air veteran
+      condition: 'has_building(city, Airport)',
+      meaning: 'Airport gives veteran to air units (not no-vet flagged)',
+      sourceAddr: '0x004EC3FE+line5237',
+    },
+  },
+
+  // --- Diplomat/spy home city assignment ---
+  // C: if (role == '\x04') unit.homeCity = ~(param_1 & 0x3F) (line 5243-5244)
+  diplomatHomeCity: {
+    role: 4,                   // diplomat/spy
+    formula: 'unit.homeCity = -(1 + (citySlot & 0x3F))',
+    meaning: 'Diplomats/spies get their home city encoded as negative (complement) of city slot index',
+    sourceAddr: '0x004EC3FE+line5243',
+  },
+
+  // --- Settler/Engineer city size reduction ---
+  // C: if (role == '\x05') city.size -= 1 (line 5247-5283)
+  settlerCitySizeReduction: {
+    role: 5,                   // settler/engineer
+    effect: 'city.size -= 1',
+    // If city.size == 1 AND it's the civ's last city AND difficulty == 0 -> abort
+    lastCityProtection: {
+      condition: 'city.size == 1 AND civ.cityCount == 1 AND difficulty == 0',
+      effect: 'production aborted, unit not created',
+      sourceAddr: '0x004EC3FE+line5248',
+    },
+    // If city.size == 1 for human -> show GHOSTTOWN dialog
+    humanGhostTownCheck: {
+      condition: 'city.size == 1 AND civ is human',
+      effect: 'show GHOSTTOWN dialog; if declined, delete unit',
+      sourceAddr: '0x004EC3FE+line5253',
+    },
+    // If city.size reaches 0 -> city is destroyed, settler placed on tile
+    cityDestruction: {
+      condition: 'city.size < 1 after decrement',
+      effect: 'thunk_delete_city(citySlot, 0); thunk_kill_civ(civId, 0); create new unit on tile',
+      sourceAddr: '0x004EC3FE+line5266',
+    },
+  },
 
   // sourceAddr: '0x005B3D06'
 };
@@ -2691,6 +3467,17 @@ export const CITY_CAPTURE = {
       destructionMask: 0xAA,         // 10101010 binary — targets even-numbered buildings
       // Shift amount: rand() & 1 (0 or 1), determines which half of AA gets cleared
       randomShiftBits: 1,            // (abs(rand()) & 1) used as shift amount
+
+      // Deterministic building destruction: always destroyed on capture
+      // C (lines 4796-4799): thunk_FUN_0043d289(param_1, buildingId, 0)
+      alwaysDestroyed: {
+        palace: { buildingId: 1, fn: 'FUN_0043d289(city, 1, 0)' },
+        temple: { buildingId: 4, fn: 'FUN_0043d289(city, 4, 0)' },
+        cathedral: { buildingId: 0x0B, fn: 'FUN_0043d289(city, 0x0B, 0)' },
+        courthouse: { buildingId: 7, fn: 'FUN_0043d289(city, 7, 0)' },
+        meaning: 'Palace(1), Temple(4), Cathedral(11), and Courthouse(7) are always destroyed on capture (in addition to random destruction)',
+        sourceAddr: '0x0057B5DF+line4796',
+      },
     },
 
     // Population loss mechanics
@@ -2790,17 +3577,28 @@ export const CITY_CAPTURE = {
 
     // Capture notification treaty flag
     captureNotifyFlag: 0x10000,      // thunk_FUN_00467825(attacker, defender, 0x10000)
+
     // Multiple captures vendetta: 0x400000 flag
-    multiCaptureVendettaFlag: 0x400000,  // set when even number of captured units > 1
+    // C (lines 4549-4551): if (capturedCityCount > 1 AND capturedCityCount is even) → set 0x400000
+    // C (lines 4556-4558): else branch also sets 0x400000 unconditionally (vendetta auto-set)
+    multiCaptureVendettaFlag: {
+      flag: 0x400000,
+      conditionA: 'capturedCityCount > 1 AND (capturedCityCount & 1) == 0 (even count > 1)',
+      conditionB: 'else branch: unconditionally set when vendetta conditions met',
+      treatyAddr: 'DAT_0064C6C0 + defenderCiv * 4 + attackerCiv * 0x594',
+      sourceAddr: '0x0057B5DF+line4549',
+    },
 
     // Condition for vendetta: democracy (govt 6) + highest power rank (7)
     //   OR attacker power rank > defender power rank
     vendettaDemocracyGovt: 6,
     vendettaMaxPowerRank: 7,         // powerRanking[param_2] == 7
 
-    // Trespass flag on large AI city capture (size > 14)
+    // Trespass/vendetta flag on large AI city capture (size > 14)
+    // C (line 4562): 0x0E < city.size AND defender is AI (not in DAT_00655b0b) AND local_7c == 0
     aiLargeCitySizeThreshold: 14,    // 0x0E: city size > 14 triggers trespass
     trespassFlag: 0x10,
+    trespassCondition: 'defender is AI AND city.size > 14 AND local_7c == 0 (no prior vendetta)',
 
     // War started flag
     warStartedFlag: 0x800,           // thunk_FUN_00467750(attacker, defender, 0x800)
@@ -2900,8 +3698,8 @@ export const COMBAT_DEFENSE = {
   // Position multiplier (DAT_006acb34):
   defenseMultiplierAddr: 'DAT_006acb34',
   multiplierValues: {
-    DEFAULT: 2,                        // open field, or sea domain units
-    NON_COMBAT_IN_CITY: 3,            // order == 2 (fortify) AND unit role == 0 (non-combat)
+    DEFAULT: 2,                        // open field, or non-ground domain units
+    FORTIFIED_GROUND: 3,              // order == 2 (fortify) AND unit domain == 0 (ground)
     FORTRESS: 4,                       // tile has fortress (0x40) without city bit (0x02)
     CITY_WALLS: 6,                     // city with walls (building 8) or Great Wall (wonder 6)
   },
@@ -2909,19 +3707,29 @@ export const COMBAT_DEFENSE = {
   // Fortress detection: tile_improvements & 0x42 == 0x40 (fortress without city)
   fortressMask: 0x42,
   fortressValue: 0x40,
+  // C (line 5354): Fortress ignored if attacker domain == air (0x01) or attacker flagsA & 0x40
+  fortressIgnoredBy: 'attacker domain air(0x01) OR attacker flagsA & 0x40',
 
-  // City walls / Great Wall: only for ground units (role == 0)
+  // City walls / Great Wall: only for ground domain units (domain == 0, NOT role)
   cityWallsBuildingId: 8,
   greatWallWonderId: 6,
 
-  // Attacker flag modifiers for city wall multiplier:
-  //   If attacker is sea unit (role==1) with flag 0x10, and defender is also sea with flag 0x10:
-  //     Both have 0x10 → multiply by 2 (<<1)
-  //     Attacker has 0x10, defender doesn't → multiply by 4 (<<2)
-  seaUnitWallModifier: {
-    bothHaveFlag: 'DAT_006acb34 <<= 1',
-    onlyAttackerFlag: 'DAT_006acb34 <<= 2',
+  // Air stealth detection modifier (BEFORE city walls check):
+  // C (lines 5360-5372): defender domain == air AND flagsA & 0x10 AND
+  //   attacker is air AND attacker flagsB & 0x10 == 0 (non-missile):
+  //     if attacker flagsA & 0x10 == 0: multiplier <<= 2 (quadrupled)
+  //     if attacker flagsA & 0x10 != 0: multiplier <<= 1 (doubled)
+  airStealthModifier: {
+    condition: 'defender domain==air AND flagsA&0x10 AND attacker domain==air AND attacker flagsB&0x10==0',
+    noStealthAttacker: 'multiplier <<= 2 (4x)',    // attacker flagsA & 0x10 == 0
+    stealthAttacker: 'multiplier <<= 1 (2x)',       // attacker flagsA & 0x10 != 0
+    note: 'Previously mislabeled as seaUnitWallModifier — actually air stealth detection',
+    sourceAddr: '0x0057E33A+line5360',
   },
+
+  // Non-ground domain override: after all calculations, if domain != 0: multiplier = 2
+  // C (line 5387-5388): ensures sea/air units never get fortress/walls bonus
+  nonGroundDomainOverride: 2,
 
   // Multiplier application: if multiplier != 2: defense = defense * multiplier >> 1
   //   (effectively: defense * multiplier / 2)
@@ -2957,27 +3765,38 @@ export const COMBAT_BEST_DEFENDER = {
     pikeBonusFlag: 0x04,
     pikeBonus: 1,
 
-    // flagsB & 0x20: anti-air/anti-sea bonus
+    // flagsB & 0x20: anti-air bonus
+    // C (line 5440-5451): triggered when attacker domain == 0x01 (air), NOT sea
     antiFlag: 0x20,
     antiVsUnknown: 1,                  // if attacker == -1 (unknown): +1
-    antiVsSea: {
-      // if attacker is sea (role==1) and attacker has flag 0x10: *5
-      // if attacker is sea (role==1) and no flag 0x10: *3
-      withFlag: 5,
-      withoutFlag: 3,
+    antiVsAir: {
+      // C (line 5444): attacker domain == 0x01 (air domain)
+      // C (line 5445): attacker flagsB & 0x10 == 0: defense *= 3
+      // C (line 5448): attacker flagsB & 0x10 != 0: defense *= 5 (missile units)
+      withMissileFlag: 5,              // attacker flagsB & 0x10 set (missile)
+      withoutMissileFlag: 3,           // attacker flagsB & 0x10 clear
+      note: 'Previously mislabeled as antiVsSea — domain 0x01 is air, not sea',
     },
 
-    // flagsA & 0x10: submarine/stealth bonus vs sea
-    subFlag: 0x10,                     // DAT_0064b1bc
-    subVsSea: 2,                       // defense <<= 1 (double)
+    // flagsA & 0x10: stealth detection vs air stealth
+    // C (line 5453-5457): defender flagsA & 0x10 AND attacker domain == air (0x01)
+    //   AND attacker flagsA & 0x10 → defense <<= 1 (doubled)
+    stealthDetectionFlag: 0x10,        // DAT_0064b1bc & 0x10
+    stealthDetectionVsAir: {
+      multiplier: 2,                   // defense <<= 1
+      condition: 'defender flagsA & 0x10 AND attacker domain == air AND attacker flagsA & 0x10',
+      note: 'Previously mislabeled as subVsSea — checks air domain, not sea',
+    },
 
-    // Air units (role==2) in city with no SAM (wonder 0x1B):
-    airInCity: {
+    // Sea domain units (domain==2) defending in city:
+    // C (line 5459-5470): defender domain == 0x02 (sea) AND city exists (DAT_006acb08 >= 0)
+    seaUnitInCity: {
       cityRequired: true,              // DAT_006acb08 >= 0
-      samWonderId: 0x1B,
-      vsUnknown: '/ 2',               // attacker == -1: halved
-      vsSea: '*2',                     // attacker is sea + no SAM: doubled
-      default: '/ 2',                  // everything else: halved
+      samBatteryBuildingId: 0x1B,      // building 27 = SAM Battery (not a wonder!)
+      vsUnknown: '/ 2',               // attacker == -1: defense halved
+      vsAirNoSam: '*2',               // attacker domain == air AND no SAM Battery: defense doubled
+      default: '/ 2',                  // all other cases: defense halved
+      note: 'Previously labeled samWonderId — 0x1B is building SAM Battery, not a wonder',
     },
   },
 
@@ -3115,6 +3934,133 @@ export const NUCLEAR_ATTACK = {
 };
 
 // ============================================================================
+// === MANHATTAN PROJECT NUCLEAR HALVING ===
+// Binary ref: FUN_004ec3fe @ block_004E0000.c lines 4957-4961
+// Triggered when Manhattan Project wonder (0x17) is completed during production
+// ============================================================================
+
+export const MANHATTAN_PROJECT_EFFECT = {
+  // C: if (local_3c == 0x17) {
+  //      for (local_30 = 1; (int)local_30 < 8; local_30++) {
+  //        uVar2 = thunk_FUN_005adfa0(((byte)(&DAT_0064c6be)[local_30 * 0x594] + 1) / 2, 0, 6);
+  //        (&DAT_0064c6be)[local_30 * 0x594] = uVar2;
+  //      }
+  wonderId: 0x17,
+  meaning: 'When Manhattan Project is built, halve nuclear stockpile (nuke byte) for all civs',
+
+  halvingFormula: 'clamp((nukeByte + 1) / 2, 0, 6)',
+  nukeByteAddr: 'DAT_0064C6BE + civId * 0x594',
+  clampMax: 6,
+  affectedCivs: 'all civs 1-7 (loop 1..7)',
+
+  // After halving, notification sent to human players who can see the wonder city
+  notificationCondition: 'civ is alive AND human AND (owns wonder city OR has embassy)',
+  sourceAddr: '0x004EC3FE+line4957',
+};
+
+// ============================================================================
+// === WONDER COMPLETION TRIGGERS (non-Manhattan) ===
+// Binary ref: FUN_004ec3fe @ block_004E0000.c lines 5009-5163
+// On-completion side effects triggered by specific wonder IDs (local_3c = wonderSlot)
+// ============================================================================
+
+export const WONDER_COMPLETION_TRIGGERS = {
+  // --- Palace completion (building 1, not a wonder but uses same production path) ---
+  // C: if (local_24 == 1) { remove Palace from all other cities; update capital }
+  palace: {
+    buildingId: 1,
+    effect: 'remove Palace from all other cities of this civ, then set Palace in this city',
+    capitalUpdate: 'civ.capitalX/Y set to this city position (DAT_0064c6ac + civ * 0x594)',
+    dialogKey: 'MOVECAPITAL',
+    sourceAddr: '0x004EC3FE+line5117',
+  },
+
+  // --- Darwin Voyage (wonder slot 0x12 = wonder 18) ---
+  // C: if (local_3c == 0x12) { thunk_FUN_004c21d5(civId, 0); thunk_FUN_004c21d5(civId, 0); }
+  darwinsVoyage: {
+    wonderSlot: 0x12,          // wonder 18 = Darwin Voyage
+    effect: 'grants 2 free techs (calls tech acquisition function twice)',
+    functionCalled: 'thunk_FUN_004c21d5(civId, 0) x2',
+    sourceAddr: '0x004EC3FE+line5137',
+  },
+
+  // --- Leonardo Workshop (wonder slot 0x0E = wonder 14) ---
+  // C: if (local_3c == 0x0e) { thunk_FUN_004be6ba(civId); }
+  leonardosWorkshop: {
+    wonderSlot: 0x0E,          // wonder 14 = Leonardo Workshop
+    effect: 'triggers unit upgrade for all owned units (see LEONARDOS_WORKSHOP export)',
+    functionCalled: 'thunk_FUN_004be6ba(civId)',
+    sourceAddr: '0x004EC3FE+line5141',
+  },
+
+  // --- Eiffel Tower (wonder slot 0x14 = wonder 20) ---
+  // C: if (local_3c == 0x14) { thunk_FUN_004ec312(civId); }
+  eiffelTower: {
+    wonderSlot: 0x14,          // wonder 20 = Eiffel Tower
+    effect: 'triggers AI reputation/attitude recalculation',
+    functionCalled: 'thunk_FUN_004ec312(civId)',
+    sourceAddr: '0x004EC3FE+line5144',
+  },
+
+  // --- Apollo Program (wonder slot 0x19 = wonder 25) ---
+  // C: if (local_3c == 0x19) { thunk_FUN_004f1220(); }
+  apolloProgram: {
+    wonderSlot: 0x19,          // wonder 25 = Apollo Program
+    effect: 'reveals all cities on map (calls global city visibility update)',
+    functionCalled: 'thunk_FUN_004f1220()',
+    sourceAddr: '0x004EC3FE+line5147',
+  },
+
+  // --- Sound effects per wonder category ---
+  soundEffects: {
+    default: 0xBB,
+    cureForCancer: { wonderSlot: 0x1B, sound: 0xB8 },
+    militaryWonders: { wonderSlots: [9, 7, 8, 0x0E], sound: 0xBA },
+    scienceWonders: { wonderSlots: [0x12, 0x0C], sound: 0xBA },
+    womensSuffrage: { wonderSlot: 0x15, sound: 0xB9 },
+    sourceAddr: '0x004EC3FE+line5009',
+  },
+
+  // --- Other cities building same wonder: force reassign ---
+  forceReassign: {
+    effect: 'all other cities building the same wonder get production reset (choose new item)',
+    functionCalled: 'thunk_FUN_00441b11(citySlot, 99)',
+    sourceAddr: '0x004EC3FE+line5156',
+  },
+
+  sourceAddr: '0x004EC3FE',
+};
+
+// ============================================================================
+// === UNIT AUTO-UPGRADE AT PRODUCTION ===
+// Binary ref: FUN_004ec3fe @ block_004E0000.c lines 5173-5194
+// When producing a unit, if the civ has the obsolete tech, auto-upgrade to replacement
+// ============================================================================
+
+export const UNIT_AUTO_UPGRADE = {
+  obsoleteTechFieldAddr: 'DAT_0064b1c0 + type * 0x14',   // signed byte, -1 = no obsolete tech
+  prereqTechFieldAddr: 'DAT_0064b1cb + type * 0x14',     // prereq tech of candidate
+  roleFieldAddr: 'DAT_0064b1ca + type * 0x14',           // unit role (must match)
+  maxUnitTypes: 0x3E,          // 62 unit types scanned
+
+  upgradeCondition: {
+    formula: 'candidate.prereqTech == current.obsoleteTech AND candidate.role == current.role',
+    meaning: 'Find a unit whose tech prereq matches the obsoleted tech, with same role',
+  },
+
+  effect: 'city.buildItem = newType; show UPGRADED dialog (human only)',
+  dialogKey: 'UPGRADED',
+  productionFieldAddr: 'DAT_0064f379 + citySlot * 0x58',
+
+  // Shield cost recalculated with new type
+  shieldCostFormula: 'unitType.shieldCost * shieldCostMultiplier',
+  shieldCostFieldAddr: 'DAT_0064b1c8 + type * 0x14',
+  shieldMultiplierAddr: 'DAT_006a657c',
+
+  sourceAddr: '0x004EC3FE+line5173',
+};
+
+// ============================================================================
 // === NUCLEAR RESPONSE / RETALIATION ===
 // Binary ref: FUN_0057febc @ block_00570000.c (1084 bytes)
 // ============================================================================
@@ -3199,6 +4145,127 @@ export const CITY_CALC_PIPELINE = {
   // 7. FUN_004efd44 — pollution and nuclear meltdown
   // 8. FUN_004f0221 — building maintenance
   // 9. FUN_004f080d — settler/worker auto-improvement
+
+  // --- Gap 2: City turn sync formula ---
+  // Binary ref: FUN_004f0a9c @ block_004F0000.c line 278
+  // C: if ((((byte)(&DAT_0064f34b)[param_1*0x58] - 1 ^ (int)DAT_00655af8 & 0x3fU) & 0x3f) == 0)
+  cityTurnSync: {
+    formula: '((city.turnAge - 1) ^ (turnNumber & 0x3F)) & 0x3F) == 0',
+    meaning: 'Determines when city founder-civ is updated; fires once every 64 turns per city, staggered by turnAge',
+    // When true: (&DAT_0064f34a)[param_1*0x58] = bVar1 (sets foundedBy = current owner)
+    effect: 'city.foundedBy = city.owner (adoption)',
+    turnMask: 0x3F,
+    sourceAddr: '0x004F0A9C+line278',
+  },
+
+  // --- Gap 3: Food surplus formula ---
+  // Binary ref: FUN_004f0a9c @ block_004F0000.c lines 306-307
+  // C: DAT_006a661c = (DAT_006a65c8 - (int)(char)(&DAT_0064f349)[param_1*0x58] * (uint)DAT_0064bcca) - DAT_006a65d8 * DAT_006a6608
+  foodSurplus: {
+    formula: 'DAT_006a65c8 - city.size * DAT_0064bcca - DAT_006a65d8 * DAT_006a6608',
+    meaning: 'Food surplus per turn = total food produced - (city size * food per citizen) - (settlers * settler food cost)',
+    variables: {
+      DAT_006a65c8: 'total food produced by city tiles',
+      DAT_0064bcca: 'food consumed per population point (cosmic rule)',
+      DAT_006a65d8: 'number of settlers/engineers supported by city',
+      DAT_006a6608: 'food cost per settler (cosmic rule)',
+    },
+    storedAt: 'DAT_006a661c',
+    sourceAddr: '0x004F0A9C+line306',
+  },
+
+  // --- Gap 4: Food shortage 3-turn lookahead ---
+  // Binary ref: FUN_004f0a9c @ block_004F0000.c lines 310-312
+  // C: if (0 < sVar3 && *(short*)food_stored < sVar3 && (int)*(short*)food_stored + DAT_006a661c * 3 < 0)
+  foodShortageWarning: {
+    formula: 'food_stored_prev > 0 AND food_stored_now < food_stored_prev AND food_stored_now + foodSurplus * 3 < 0',
+    meaning: '3-turn lookahead: warn player if city will starve within 3 turns (food declining and projected to go negative)',
+    lookaheadTurns: 3,
+    additionalConditions: ['scenario flag 0x80 not set', 'not in auto-play mode'],
+    warningString: 's_FOODSHORTAGE_0062ef90',
+    sourceAddr: '0x004F0A9C+line310',
+  },
+
+  // --- Gap 5: Science overflow to civ research pool ---
+  // Binary ref: FUN_004f0a9c @ block_004F0000.c lines 323-326
+  // C: if (DAT_006a65cc < DAT_006a6568) { civ.researchPool += ((short)DAT_006a6568 - (short)DAT_006a65cc) * 5; }
+  scienceOverflow: {
+    condition: 'DAT_006a6568 (science produced) > DAT_006a65cc (science needed for maintenance)',
+    formula: 'civ.researchPool += (scienceProduced - scienceNeeded) * 5',
+    multiplier: 5,
+    meaning: 'Excess science output beyond unit/building maintenance is multiplied by 5 and added to civ research pool',
+    poolAddr: 'DAT_0064CA74 + civId * 0x594',
+    sourceAddr: '0x004F0A9C+line323',
+  },
+
+  // --- Shield overflow → research conversion ---
+  // Binary ref: FUN_004f0a9c @ block_004F0000.c lines 328-330
+  // C: sVar3 = clamp(DAT_006a660c - DAT_0064bcd5, 0, citySize)
+  // C: civ.researchPool += sVar3
+  shieldOverflowToResearch: {
+    formula: 'civ.researchPool += clamp(shieldSurplus - freeUnitSupport, 0, citySize)',
+    shieldSurplusAddr: 'DAT_006a660c',
+    freeUnitSupportAddr: 'DAT_0064BCD5',
+    meaning: 'Excess shields beyond free unit support are converted to research, capped at city size',
+    sourceAddr: '0x004F0A9C+line328',
+  },
+
+  // --- Unit support cost distribution across categories ---
+  // Binary ref: FUN_004f0a9c @ block_004F0000.c lines 331-351
+  // Iterates categories 1-6, deducting shield cost from each civ category pool
+  // C: for (local_24 = 1; local_24 < 7; local_24++) {
+  //      switch(local_24) { case 1: local_1c = citySize; case 2: DAT_0064bcd5;
+  //                          case 3: DAT_0064bcd6; case 4: DAT_0064bcd7; }
+  //      if (local_1c < DAT_006a660c) civ.pool[local_24] -= (shieldSurplus - local_1c)
+  unitSupportCategories: {
+    categories: 6,
+    thresholds: {
+      1: { source: 'citySize', meaning: 'Category 1 threshold = city size' },
+      2: { source: 'DAT_0064BCD5', meaning: 'Category 2 threshold = free unit support (cosmic)' },
+      3: { source: 'DAT_0064BCD6', meaning: 'Category 3 threshold = cosmic param' },
+      4: { source: 'DAT_0064BCD7', meaning: 'Category 4 threshold = cosmic param' },
+    },
+    formula: 'civ.pool[category] -= (shieldSurplus - threshold) when shieldSurplus > threshold',
+    poolAddr: 'DAT_0064CA74 + civId * 0x594 + category * 2',
+    sourceAddr: '0x004F0A9C+line331',
+  },
+
+  // --- Gap 6: Unhappiness content/happy calculation ---
+  // Binary ref: FUN_004f0a9c @ block_004F0000.c lines 359-384
+  cityTurnHappiness: {
+    // C lines 359-360: cVar2 = (&DAT_006554fa)[govtType * 0x30]; local_c = -cVar2 + 7
+    baseContentFormula: '-(govtHappinessModifier) + 7',
+    meaning: 'Base content citizen threshold from government type table, subtracted from 7',
+    govtTableAddr: 'DAT_006554FA + govtType * 0x30',
+
+    // C lines 361-364: if has_building(param_1, 5) { local_c = -cVar2 + 5 }
+    templeEffect: { buildingId: 5, formula: '-(govtHappinessMod) + 5', meaning: 'Temple reduces content threshold' },
+    // C lines 365-368: if has_building(param_1, 10) { local_c -= 1 }
+    cathedralEffect: { buildingId: 10, effect: 'threshold -= 1', meaning: 'Cathedral reduces threshold by 1' },
+    // C lines 369-374: if has_building(param_1, 4) && (has_building(param_1, 0xb) || has_wonder(iVar3, 10))
+    marketplaceLibraryCombo: {
+      marketplaceBuildingId: 4,
+      libraryBuildingId: 0x0B,
+      wonderId: 10,
+      effect: 'threshold -= 1',
+      meaning: 'Marketplace + (Library OR Wonder 10) reduces threshold by 1',
+    },
+
+    // C lines 375-384: Hanging Gardens wonder 0x0D happiness effect
+    // if wonder owner (FUN_00453e18(0xd)) != param_1 city
+    hangingGardensEffect: {
+      wonderId: 0x0D,
+      condition: 'Wonder 0x0D owner is NOT this city',
+      // C: iVar6 = govtMilitaryMod + DAT_006a65e4
+      // sVar4 = clamp((2 - local_8) * (iVar6 + 1), 0, 99)
+      // civ.contentScore -= sVar4 * local_c
+      formula: 'civ.contentScore -= clamp((2 - wonderBonus) * (govtMilitaryMod + militaryUnits + 1), 0, 99) * threshold',
+      sourceAddr: '0x004F0A9C+line375',
+    },
+
+    sourceAddr: '0x004F0A9C+line359',
+  },
+
   sourceAddr: '0x004F0A9C',
 };
 
@@ -3424,19 +4491,59 @@ export const TRADE_DISTRIBUTION = {
   roundingOffset: 4,          // +4 before /10
 
   specialistBonuses: {
-    taxman:    { status: 1, bonus: 2 },
-    scientist: { status: 2, bonus: 3 },
-    elvis:     { status: 3, bonus: 3 },
+    // C: FUN_004e75ea(param_1, statusType) returns count of specialists with that status
+    // C line 3893: DAT_006a65fc (gold) += count_status1 * 2
+    // C line 3895: DAT_006a6554 (luxury) += count_status2 * 3
+    // C line 3897: DAT_006a6578 (science) += count_status3 * 3
+    taxman:    { status: 1, bonus: 2, yields: 'gold' },
+    elvis:     { status: 2, bonus: 3, yields: 'luxury' },
+    scientist: { status: 3, bonus: 3, yields: 'science' },
   },
 
-  communistSciencePenalty: 'DAT_0064BCD9',
-  communistGovtId: 4,
+  // --- Fundamentalism happiness → luxury conversion ---
+  // C: if (govt == Fundamentalism(4)) DAT_006a6554 (luxury) += DAT_006a6618 (happiness from buildings)
+  // Under Fundamentalism, content citizens from temples/cathedrals/wonders are converted to luxury gold
+  fundamentalismHappinessToLuxury: {
+    govtId: 4,
+    happinessAddr: 'DAT_006a6618',
+    luxuryAddr: 'DAT_006a6554',
+    meaning: 'Fundamentalism converts building happiness bonuses into luxury output instead of content citizens',
+    sourceAddr: '0x004EA1F6+line3938',
+  },
+
+  // --- Fundamentalism science rate cap ---
+  // C: if (govt == Fundamentalism(4) AND DAT_0064bcdd < luxuryRate) luxuryRate = DAT_0064bcdd
+  fundamentalismScienceCap: {
+    govtId: 4,
+    capAddr: 'DAT_0064BCDD',
+    meaning: 'Fundamentalism caps the science slider rate (luxury allocation) to a cosmic parameter value',
+    sourceAddr: '0x004EA1F6+line3870',
+  },
+
+  // --- AI Fundamentalism gold-to-science conversion ---
+  // C: if (civ is AI AND govt == 0x04 (Fundamentalism)):
+  //      science += gold; gold = 0
+  // Applied BEFORE specialist bonuses and building multipliers
+  // NOTE: govt 4 = Fundamentalism (NOT Communism as previously mislabeled)
+  aiFundamentalismGoldToScience: {
+    condition: 'civ NOT in DAT_00655b0b (AI only) AND govt == 4 (Fundamentalism)',
+    effect: 'science += gold; gold = 0',
+    meaning: 'AI Fundamentalism civs convert ALL gold output to science',
+    sourceAddr: '0x004EA1F6+line3888',
+  },
+
+  // --- Fundamentalism science penalty ---
+  // C: if (govt == 0x04): science -= (DAT_0064bcd9 * science) / 100
+  // NOTE: govt 4 = Fundamentalism (NOT Communism)
+  fundamentalismSciencePenalty: 'DAT_0064BCD9',
+  fundamentalismSciencePenaltyFormula: 'science -= (penaltyPercent * science) / 100',
+  fundamentalismGovtId: 4,
   capitulationAttitude: -0x26,
 
   goldMultiplierBuildings: {
-    marketplace:   { buildingId: 0x04 },
-    bank:          { buildingId: 0x0E },
-    stockExchange: { buildingId: 0x16 },
+    marketplace:   { buildingId: 0x05 },  // C: thunk_FUN_0043d20a(param_1, 5)
+    bank:          { buildingId: 0x0A },  // C: thunk_FUN_0043d20a(param_1, 10)
+    stockExchange: { buildingId: 0x16 },  // C: thunk_FUN_0043d20a(param_1, 0x16)
   },
   goldMultiplierFormula: 'gold += (gold * count) >> 1',
 
@@ -3447,21 +4554,373 @@ export const TRADE_DISTRIBUTION = {
   },
   scienceMultiplierFormula: 'science += (science * count) >> 1',
 
-  copernicusWonderId: 0x10,
-  setiWonderId: 0x0B,
+  // --- Science wonder effects (applied AFTER building multipliers) ---
+  // C: local_14 = DAT_006a6578 * local_8;  // science * building_count
+  // Isaac Newton check: FUN_00453e18(0x10)
+  // C: if (iVar2 != param_1) local_14 >>= 1;  // non-Newton city gets HALF bonus
+  // C: DAT_006a6578 += local_14;
+  isaacNewtonWonderId: 0x10,  // wonder 16 = Isaac Newton's College
+  isaacNewtonEffect: {
+    formula: 'science += science * buildingCount (if Newton city) OR science += (science * buildingCount) >> 1 (other cities)',
+    meaning: 'Isaac Newton city gets FULL science*buildingCount bonus; other cities get HALF — effectively Newton doubles the building bonus',
+    note: 'buildingCount = number of science buildings (library + university + research lab/wonder 0x1a)',
+  },
+
+  // Copernicus check: FUN_00453e18(0x0b)
+  // C: if (iVar2 == param_1) DAT_006a6578 <<= 1;  // Copernicus city DOUBLES total science
+  copernicusWonderId: 0x0B,  // wonder 11 = Copernicus' Observatory
+  copernicusEffect: {
+    formula: 'science <<= 1 (left shift by 1 = double)',
+    meaning: 'Copernicus city doubles its TOTAL science output after ALL other modifiers (buildings, Newton, specialists)',
+    note: 'Applied last in the science calculation chain — multiplicative with everything else',
+  },
+
+  // --- Science building multiplier details ---
+  // C: local_8 = 0;
+  // C: if (has_building(city, 6)) local_8++;       // library
+  // C: if (has_building(city, 0xc)) local_8++;     // university
+  // C: if (has_building(city, 0x1a) || has_wonder_effect(civ, 0x1a)) local_8++; // research lab or SETI Program
+  scienceBuildingStack: {
+    library: { buildingId: 0x06, increment: 1 },
+    university: { buildingId: 0x0C, increment: 1 },
+    researchLab: { buildingId: 0x1A, increment: 1 },
+    setiProgramWonder: { wonderId: 0x1A,
+      note: 'SETI Program (wonder 26) acts as Research Lab for ALL cities — previously mislabeled as Isaac Newton' },
+    maxCount: 3,
+    formula: 'science += (science * count) >> 1 [before Copernicus/SETI adjustments]',
+  },
+
+  // --- Gold building multiplier details ---
+  // C: local_8 = 0;
+  // C: if (has_building(city, 5)) local_8++;        // marketplace
+  // C: if (has_building(city, 10)) local_8++;       // bank
+  // C: if (has_building(city, 0x16)) local_8++;     // stock exchange
+  // C: DAT_006a65fc += (DAT_006a65fc * local_8) >> 1
+  // C: DAT_006a6554 += (DAT_006a6554 * local_8) >> 1  // ALSO applies to luxury
+  goldBuildingStack: {
+    marketplace: { buildingId: 0x05, increment: 1 },
+    bank: { buildingId: 0x0A, increment: 1 },
+    stockExchange: { buildingId: 0x16, increment: 1 },
+    maxCount: 3,
+    formula: 'gold += (gold * count) >> 1; luxury += (luxury * count) >> 1',
+    note: 'Same buildings multiply BOTH gold and luxury',
+  },
 
   happinessBuildings: {
-    temple: 0x04,
-    mysticismTech: 0x38,
-    oracleWonder: 0x09,
-    shakespeareWonder: 0x05,
-    cathedral: 0x0E,
-    michelangeloWonder: 0x18,
-    jsBachWonder: 0x37,
-    cureForCancerWonder: 0x0F,
+    temple: 0x04,                // building 4
+    mysticismTech: 0x38,         // tech 56
+    oracleWonder: 0x05,          // wonder 5 (doubles temple effect)
+    shakespeareWonder: 0x0D,     // wonder 13 (zeroes unhappy in wonder city)
+    cathedral: 0x0E,             // building 14
+    michelangeloWonder: 0x0A,    // wonder 10 (acts as cathedral in all cities)
+    jsBachWonder: 0x0F,          // wonder 15 (J.S. Bach's Cathedral, -2 unhappy everywhere)
+    cureForCancerWonder: 0x1B,   // wonder 27
   },
 
   sourceAddr: '0x004EA1F6',
+};
+
+// ============================================================================
+// === SETI PROGRAM WONDER EFFECT ===
+// Binary ref: FUN_004ec312 @ block_004E0000.c (236 bytes), lines 4753-4771
+// ============================================================================
+
+export const SETI_PROGRAM_EFFECT = {
+  // C: if ((*(ushort *)(&DAT_0064c6a0 + param_1 * 0x594) & 0x10) == 0)
+  guardFlag: 0x10,
+  guardFlagAddr: 'DAT_0064C6A0 + civId * 0x594',
+  meaning: 'SETI Program effect fires once per civ, guarded by flag 0x10 in civ record word',
+
+  // C: (&DAT_0064c6be)[param_1 * 0x594] = (byte)(&DAT_0064c6be)[param_1 * 0x594] >> 1
+  researchHalving: {
+    formula: 'civ.researchCost >>= 1',
+    addr: 'DAT_0064C6BE + civId * 0x594',
+    meaning: 'Halves the remaining research cost for the current tech (right shift by 1)',
+  },
+
+  // C: *(ushort *)(&DAT_0064c6a0 + param_1 * 0x594) |= 0x10
+  flagSet: {
+    formula: 'civ.flags |= 0x10',
+    meaning: 'Sets guard flag to prevent re-triggering',
+  },
+
+  // C: thunk_FUN_00456f20(local_8, param_1, 0xffffffe7)
+  attitudePenalty: {
+    formula: 'attitude_adjust(allCivs, ownerCiv, -25)',
+    value: -25,    // 0xFFFFFFE7 = -25 signed
+    meaning: 'All other civs get -25 attitude toward the SETI owner',
+  },
+
+  // C: *(uint *)(&DAT_0064c6c0 + param_1 * 4 + local_8 * 0x594) &= 0xffffffef
+  treatyClear: {
+    formula: 'treaty[otherCiv][setiOwner] &= ~0x10',
+    meaning: 'Clears counter-intelligence flag (0x10) from all other civs toward SETI owner',
+  },
+
+  sourceAddr: '0x004EC312',
+};
+
+// ============================================================================
+// === COLOSSEUM TECH MODIFIER (Happiness) ===
+// Binary ref: block_004E0000.c line 4122 (within happiness calc FUN_004eb4ed)
+// ============================================================================
+
+export const COLOSSEUM_TECH_MODIFIER = {
+  // NOTE: Despite the export name, this block governs Cathedral/Michelangelo scaling, NOT the Colosseum.
+  // C: iVar5 = thunk_FUN_004bd9f0(iVar3, 0xf);     // hasTech(Communism, 0x0F=15)
+  // C: iVar6 = thunk_FUN_004bd9f0(iVar3, 0x52);     // hasTech(Theology, 0x52=82)
+  // C: DAT_006a65a8 -= ((uint)(iVar5 == 0) + (3 - (uint)(iVar6 == 0)))
+  // Prerequisite: civ has tech 0x37=55 (Monotheism) AND city has Cathedral(0xb=11) or wonder 10 (Michelangelo)
+  prerequisiteTech: 0x37,           // tech 55 = Monotheism
+  prerequisiteBuilding: 0x0B,       // building 11 = Cathedral
+  alternativeWonder: 10,            // wonder 10 = Michelangelo's Chapel
+
+  communismTechId: 0x0F,            // tech 15 = Communism (previously mislabeled as Electronics)
+  theologyTechId: 0x52,             // tech 82 = Theology (previously mislabeled as Refrigeration)
+
+  // C: (uint)(iVar5 == 0) + (3 - (uint)(iVar6 == 0))
+  //    iVar5 = hasTech(Communism): (iVar5==0) = 1 when NO Communism, 0 when HAS Communism
+  //    iVar6 = hasTech(Theology): (iVar6==0) = 1 when NO Theology, 0 when HAS Theology
+  formula: 'unhappyReduction = (!hasCommunism ? 1 : 0) + (3 - (!hasTheology ? 1 : 0))',
+  range: { min: 2, max: 4 },
+  breakdown: {
+    noTechs: 3,             // (1 + (3 - 1)) = 3: neither Communism nor Theology
+    communismOnly: 2,       // (0 + (3 - 1)) = 2
+    theologyOnly: 4,        // (1 + (3 - 0)) = 4: Theology INCREASES reduction
+    bothTechs: 3,           // (0 + (3 - 0)) = 3
+  },
+  meaning: 'Cathedral/Michelangelo extra unhappy reduction (1-4) based on Communism and Theology techs',
+  sourceAddr: '0x004EB4ED+line4122',
+};
+
+// ============================================================================
+// === HAPPINESS CALCULATION (Master) ===
+// Binary ref: FUN_004ea8e4 @ block_004E0000.c (2627 bytes), lines 4004-4217
+// Called from city calc orchestrator FUN_004eb4a1 as the 5th and final step
+// ============================================================================
+
+export const HAPPINESS_CALC = {
+  // --- Phase 1: Trade route revenue + corruption (lines 4025-4074) ---
+  // Calculates trade route income, applies corruption, then calls trade distribution
+  tradeRouteRevenue: {
+    // C: local_18 = (city1.tradeAmount + city2.tradeAmount + 4) >> 3
+    baseFormula: '(city1.tradeRevenue + city2.tradeRevenue + 4) >> 3',
+    // C: if (has_building(city, 0x20) AND has_building(partner, 0x20) AND distance < 2) local_14 = 1
+    airportEffect: { buildingId: 0x20, minDistance: 2, multiplier: 1,
+      meaning: 'If both cities have Airport and distance < 2, trade route multiplier set to 1' },
+    // C: if (has_building(city, 0x19)) local_14 += 1
+    superHighwayEffect: { buildingId: 0x19, increment: 1 },
+    // C: if (local_14 != 0) local_18 += (local_14 * local_18) >> 1
+    multiplierFormula: 'revenue += (multiplier * revenue) >> 1',
+    // C: if (partner.owner == city.owner) local_18 >>= 1
+    domesticRoutePenalty: 'revenue >>= 1 (halved for same-civ routes)',
+  },
+
+  // Corruption applied to total trade (before distribution)
+  // C: DAT_006a6580 = thunk_FUN_004e989a(param_1, DAT_006a65d0, 0, 1)
+  // Fundamentalism (4) and Democracy (6) zero corruption
+  // NOTE: Previously mislabeled as "Communism (4) and Fundamentalism (6)"
+  //   govt 4 = Fundamentalism, govt 6 = Democracy
+  corruptionZeroGovts: [4, 6],
+
+  // --- Phase 2: Initial unhappy citizens (lines 4075-4098) ---
+  // For AI (non-human) civs:
+  // C: DAT_006a65a8 = (citySize - 1) - (DAT_0064bccf - 5)
+  aiUnhappyFormula: {
+    formula: 'unhappy = (citySize - 1) - (contentBase - 5)',
+    contentBaseAddr: 'DAT_0064BCCF',
+    meaning: 'AI gets a simplified happiness: contentBase is rules.txt value minus difficulty offset',
+  },
+
+  // For human civs:
+  // C: local_1c = DAT_0064bcd0 + DAT_00655b08 * -2
+  // C: if (DAT_00655af0 & 4) local_1c += 2  // Restless Tribes scenario flag
+  // C: iVar5 = ((govtType >> 1) + 2) * local_1c / 2  // content citizens
+  // C: if (iVar5 < 2) iVar5 = 1
+  humanContentFormula: {
+    baseContentAddr: 'DAT_0064BCD0',
+    difficultyAddr: 'DAT_00655B08',
+    scenarioFlagAddr: 'DAT_00655AF0',
+    restlessTribesBit: 0x04,
+    restlessTribesBonus: 2,
+    formula: 'contentBase = rulesContentCitizens + difficulty * -2 [+ 2 if Restless Tribes]',
+    govtScaling: 'contentCitizens = ((govtType >> 1) + 2) * contentBase / 2',
+    govtScalingBreakdown: {
+      anarchy_despotism: '(0 + 2) * base / 2 = base',         // govt 0,1: >>1 = 0
+      monarchy_communism: '(1 + 2) * base / 2 = base * 1.5',  // govt 2,3: >>1 = 1
+      fundamentalism_republic: '(2 + 2) * base / 2 = base * 2', // govt 4,5: >>1 = 2
+      democracy: '(3 + 2) * base / 2 = base * 2.5',            // govt 6: >>1 = 3
+    },
+    minimum: 1,  // C: if (iVar5 < 2) iVar5 = 1
+  },
+
+  // Martial law (human only):
+  // C: local_20 = DAT_0064bccf - DAT_00655b08
+  // C: if (local_20 < 3 AND city has Palace(building 1) AND no corruption AND no waste) local_20 = 2
+  martialLaw: {
+    formula: 'maxMartialLaw = martialLawBase - difficulty',
+    martialLawBaseAddr: 'DAT_0064BCCF',
+    palaceBuildingId: 1,
+    palaceGuarantee: 2,  // palace city always allows at least 2 martial law
+    palaceCondition: 'no corruption AND no waste in city',
+  },
+
+  // Distance-based unhappiness (not Communism):
+  // C: if (govt != Communism(3)):
+  //    unhappy += (numCities - contentCitizens + cityIndex % contentCitizens) / contentCitizens
+  distanceUnhappy: {
+    formula: 'unhappy += (civTotalCities - contentCitizens + (cityIndex % contentCitizens)) / contentCitizens',
+    civCitiesAddr: 'DAT_0064C708 + civId * 0x594',
+    exemptGovt: 3,  // Communism exempt
+    meaning: 'Additional unhappiness based on empire size relative to content citizens',
+  },
+
+  // --- Phase 3: Luxury conversion (line 4106) ---
+  // C: DAT_006a6550 = DAT_006a65fc >> 1  // luxury / 2 = content from luxury
+  luxuryConversion: {
+    formula: 'contentFromLuxury = totalLuxury >> 1',
+    meaning: 'Each 2 luxury points converts 1 unhappy citizen to content',
+  },
+
+  // --- Phase 4: Colosseum effect (lines 4108-4114) ---
+  // C: if (has_building(city, 0x0E)) unhappy -= 3
+  // C: if (hasTech(civ, 0x18)) unhappy -= 1  // extra with Electronics tech
+  // NOTE: building 0x0E = 14 = Colosseum (NOT Cathedral as previously mislabeled)
+  colosseumEffect: {
+    buildingId: 0x0E,              // 14 = Colosseum (was mislabeled as Cathedral)
+    baseReduction: 3,
+    electronicsTechId: 0x18,       // tech 24 = Electronics
+    electronicsBonus: 1,
+    meaning: 'Colosseum makes 3 unhappy citizens content; Electronics tech adds 1 more',
+    sourceAddr: '0x004EA8E4+line4108',
+  },
+
+  // --- Phase 4b: Cathedral / Michelangelo effect (lines 4116-4122) ---
+  // C: hasTech(civ, 0x37=Monotheism) AND (has_building(city, 0x0B=Cathedral) OR
+  //    has_wonder_effect(civ, 10=Michelangelo's Chapel))
+  // Reduction formula:
+  //   (!hasCommunismTech ? 1 : 0) + (3 - (!hasTheologyTech ? 1 : 0))
+  //   = no Communism & no Theology: 1+2=3; +Theology: 1+3=4; +Communism: 0+2=2; both: 0+3=3
+  cathedralEffect: {
+    buildingId: 0x0B,              // 11 = Cathedral
+    michelangeloWonderId: 10,      // Michelangelo's Chapel acts as Cathedral everywhere
+    monotheismTechId: 0x37,        // tech 55 = Monotheism (required prereq)
+    communismTechId: 0x0F,         // tech 15 = Communism — having it reduces bonus by 1
+    theologyTechId: 0x52,          // tech 82 = Theology — having it increases bonus by 1
+    reductionTable: {
+      neitherTech: 3,              // 1 + (3-1) = 3
+      theologyOnly: 4,             // 1 + (3-0) = 4
+      communismOnly: 2,            // 0 + (3-1) = 2
+      bothTechs: 3,                // 0 + (3-0) = 3
+    },
+    meaning: 'Cathedral (or Michelangelo) reduces 2-4 unhappy, requires Monotheism, modified by Communism/Theology techs',
+    sourceAddr: '0x004EA8E4+line4116',
+  },
+
+  // --- Phase 5: Temple effect (lines 4124-4137) ---
+  // C: if (has_building(city, 4)):
+  //    local_1c = hasTech(Mysticism=0x38) ? 1 : 0
+  //    if hasTech(Ceremonial Burial=9) local_1c += 1
+  //    if has_wonder_effect(civ, Oracle=5) local_1c <<= 1
+  //    unhappy -= local_1c
+  templeEffect: {
+    buildingId: 0x04,
+    mysticismTechId: 0x38,         // tech 56 = Mysticism
+    ceremonialBurialTechId: 9,     // tech 9 = Ceremonial Burial
+    oracleWonderId: 5,             // wonder 5 = Oracle (NOT Shakespeare as previous comment said)
+    formula: 'reduction = (hasMysticism ? 1 : 0) + (hasCeremonialBurial ? 1 : 0); if Oracle: reduction <<= 1',
+    range: { min: 0, max: 4 },
+    meaning: 'Temple reduces unhappy by 0-2, doubled by Oracle Wonder',
+  },
+
+  // --- Phase 6: Courthouse / Palace Democracy bonus (lines 4138-4142) ---
+  // C: if ((has_building(city, 7) OR has_building(city, 1)) AND govt == Democracy(6))
+  //    content += 1
+  courthouseOrPalaceDemocracy: {
+    buildingIds: [0x07, 0x01],  // Courthouse (7) or Palace (1)
+    govtId: 6,  // Democracy only
+    bonus: 1,
+    meaning: 'Courthouse or Palace adds 1 content citizen under Democracy',
+  },
+
+  // --- Phase 7: Fundamentalism override (lines 4144-4147) ---
+  // C: if (govt == 0x04) { waste = 0; unhappy = 0; }
+  // NOTE: govt 4 = Fundamentalism (NOT Communism as previously mislabeled)
+  // Communism is govt 3, which has separate handling below (martial law doubling)
+  fundamentalismOverride: { govtId: 4, meaning: 'Fundamentalism zeroes both waste and unhappy' },
+
+  // --- Phase 8: Military unhappiness for govts >= Republic (lines 4148-4186) ---
+  // For govts < Fundamentalism (< 5): count military units abroad
+  // C: for each unit at city: if (unit.attack > 0) DAT_006a6564++
+  //    if (govt == Communism(3)) DAT_006a6564 = count + count  // double
+  // C: cap at 3 (or 6 for Communism)
+  // C: unhappy = min(DAT_006a6564, 3 or 6)
+  // C: unhappy -= by martial law allowance
+  martialLawEffect: {
+    // For govts < 5 (Anarchy through Fundamentalism): military units in city REDUCE unhappiness
+    // C: for each unit in city stack: if (unit.attack > 0) count++
+    //    if (govt == Communism(3)) count += count  (double)
+    //    cap at 3 (or 6 for Communism)
+    //    unhappy -= clamp(count, 0, unhappy)
+    attackThreshold: 0,  // unit.attack must be > 0 (non-zero attack = military)
+    communismGovtId: 3,
+    communismDoubling: true,
+    capNormal: 3,
+    capCommunism: 6,
+    govtMax: 4,  // only for govts < 5
+    meaning: 'Military units in city REDUCE unhappiness (martial law); Communism counts double but caps at 6',
+  },
+
+  // For govts >= Republic (>= 5): war weariness
+  // C: if (has_wonder_effect(civ, Women_Suffrage=0x15) OR has_building(city, Police_Station=0x21))
+  //    local_10 = 0; else local_10 = 1
+  // C: if (govt == Democracy(6)) local_10 += 1
+  // C: if (local_10 != 0) unhappy += local_10 * warWeariness
+  warWeariness: {
+    womensSuffrageWonderId: 0x15,
+    policeStationBuildingId: 0x21,
+    basePenalty: { republic: 1, democracy: 2 },
+    republicGovtId: 5,
+    democracyGovtId: 6,
+    // C: if (govt == Republic AND warWeariness > 0) warWeariness -= 1
+    republicReduction: 1,
+    formula: 'unhappy += penalty * (unitsAbroad - 1 if Republic)',
+    meaning: 'Each military unit abroad adds 1 unhappy (Republic) or 2 (Democracy); Women Suffrage/Police Station negates',
+  },
+
+  // --- Phase 9: Wonder effects (lines 4188-4207) ---
+  // Hanging Gardens (wonder 1): +1 content, +3 if wonder city
+  // C: if (has_wonder_effect(civ, 1)) content += 1
+  //    if (wonder_city(1) == param_1) content += 2  // total +3 for wonder city
+  hangingGardens: { wonderId: 1, normalBonus: 1, wonderCityBonus: 3,
+    meaning: 'Hanging Gardens: +1 content everywhere, +3 total in wonder city' },
+
+  // Cure for Cancer (wonder 0x1b = 27): +1 content
+  // C: if (has_wonder_effect(civ, 0x1b)) content += 1
+  cureForCancer: { wonderId: 0x1B, bonus: 1, meaning: '+1 content citizen in all cities' },
+
+  // Shakespeare's Theatre (wonder 0x0d = 13): all unhappy = 0 in wonder city
+  // C: if (wonder_city(0xd) == param_1) unhappy = 0
+  shakespeareTheatre: { wonderId: 0x0D, effect: 'unhappy = 0 in wonder city' },
+
+  // J.S. Bach's Cathedral (wonder 0x0f = 15): -2 unhappy everywhere
+  // C: if (has_wonder_effect(civ, 0xf)) unhappy -= 2
+  jsBachCathedral: { wonderId: 0x0F, bonus: -2, meaning: '-2 unhappy in all cities' },
+
+  // --- Phase 10: Store results (lines 4209-4216) ---
+  // C: city.science = DAT_006a6578; city.luxury = DAT_006a6554
+  // C: city.tradeRouteCount = DAT_006a65c8; city.foodSurplus = DAT_006a65cc
+  // C: city.contentCitizens = DAT_006a6550; city.unhappyCitizens = DAT_006a65a8
+  resultAddrs: {
+    science: 'DAT_0064F38A + cityIndex * 0x58',
+    luxury: 'DAT_0064F38C + cityIndex * 0x58',
+    tradeRoutes: 'DAT_0064F38E + cityIndex * 0x58',
+    foodSurplus: 'DAT_0064F390 + cityIndex * 0x58',
+    contentCitizens: 'DAT_0064F392 + cityIndex * 0x58',
+    unhappyCitizens: 'DAT_0064F393 + cityIndex * 0x58',
+  },
+
+  sourceAddr: '0x004EA8E4',
 };
 
 // ============================================================================
@@ -3481,9 +4940,28 @@ export const CORRUPTION_CALC = {
   communismGovtId: 3,
   communismCorruptionRate: 'DAT_0064BCD8',
 
-  // Palace/Courthouse: corruption >> 1
-  palaceBuildingId: 0x07,
-  courthouseBuildingId: 0x01,
+  // Courthouse OR Palace: corruption >> 1 (halved)
+  // C: if (has_building(city, 7) || has_building(city, 1)) corruption >>= 1
+  courthouseBuildingId: 0x07,  // building 7 = Courthouse (checked first)
+  palaceBuildingId: 0x01,      // building 1 = Palace (checked second)
+
+  // WLtKD bonus: if city.flags & 2 (WLtKD active), government effective level +1 for corruption
+  // C: if ((city.flags & 2) != 0) govtLevel += 1 (line 3619-3621)
+  wltkdGovtBonus: {
+    flagBit: 2,
+    effect: 'government corruption level treated as +1 (less corrupt)',
+    meaning: 'WLtKD celebration reduces corruption by improving effective government tier',
+  },
+
+  // AI distance adjustment: on low difficulty, AI gets larger distance for corruption
+  // C: if (govtLevel < 2 && distance != 0 && civ is AI)
+  //      distance = clamp(difficulty + distance, 0, 0x20)
+  aiDistanceBonus: {
+    condition: 'govtLevel < 2 AND distance != 0 AND civ is AI',
+    formula: 'distance = clamp(difficulty + distance, 0, 0x20)',
+    maxAdjustedDistance: 0x20,
+    meaning: 'AI civs with low government get extra corruption distance scaled by difficulty',
+  },
 
   sourceAddr: '0x004E989A',
 };
@@ -3494,22 +4972,52 @@ export const CORRUPTION_CALC = {
 // ============================================================================
 
 export const TRADE_SCIENCE_INTEGRATION = {
-  // Building multiplier pattern (each adds +2 to accumulator):
-  powerPlantTypes: {
-    marketplace: 0x0F,
-    bank: 0x10,
-    superhighways: 0x13,
-    nuclearPlant: 0x14,
-    powerPlant: 0x15,
-    hooverDamWonder: 0x16,
-    recyclingCenter: 0x12,
-    solarPlant: 0x1D,
+  // Shield production multiplier buildings (each adds +2 to local_8 or local_c accumulator):
+  // local_8 = factory chain multiplier, local_c = power plant multiplier
+  productionBuildings: {
+    factory: 0x0F,             // building 15 = Factory → local_8 += 2
+    mfgPlant: 0x10,            // building 16 = Mfg. Plant → local_8 += 2
+    powerPlant: 0x13,          // building 19 = Power Plant → local_c = 2
+    hydroPlant: 0x14,          // building 20 = Hydro Plant → local_c = 2, DAT_006a65f8 = 2
+    nuclearPlant: 0x15,        // building 21 = Nuclear Plant → local_c = 2, DAT_006a65f8 = 2
+    hooverDamWonder: 0x16,     // wonder 22 = Hoover Dam → local_c = 2, DAT_006a65f8 = 2
+    recyclingCenter: 0x12,     // building 18 = Recycling Center → DAT_006a65f8 = 3
+    solarPlant: 0x1D,          // building 29 = Solar Plant → local_c = 2, DAT_006a65f8 = 3
   },
-  powerLevels: { 1: 'no power', 2: 'power/nuclear/hoover', 3: 'recycling/solar' },
+  // DAT_006a65f8 = pollution power level: 1=no power, 2=dirty power, 3=clean power
+  powerLevels: { 1: 'no power', 2: 'power/nuclear/hoover/hydro', 3: 'recycling/solar' },
 
-  pollutionBaseOffset: 0x14,
+  // Shield formula: shields += (shields * factoryMult) >> 2 + (shields * min(factoryMult, powerMult)) >> 2
+  // C: DAT_006a65cc += (DAT_006a65cc * local_8) >> 2 + (DAT_006a65cc * min(local_8, local_c)) >> 2
+  shieldFormula: 'shields += (shields * factoryBonus) / 4 + (shields * min(factoryBonus, powerBonus)) / 4',
 
+  // Pollution calculation: base = shields / powerLevel - 0x14
+  // C: DAT_006a6584 = DAT_006a65cc / DAT_006a65f8 - 0x14
+  pollutionBaseOffset: 0x14,   // subtract 20 from base
+  // Solar Plant zeroes pollution: if has_building(city, 0x1D) → pollution = 0
+  solarPlantZeroesPollution: true,
+  // Pollution += (citySize * pollutionTechCount) >> 2
+  pollutionTechFormula: 'pollution += (citySize * DAT_006a65c4) >> 2',
+
+  // Pollution tech counting (when city does NOT have Mass Transit building 0x0D):
+  // Each of these techs the civ has adds 1 to pollution counter:
+  // C: hasTech(civ, 0x25=37=Industrialization) → +1
+  // C: hasTech(civ, 5=Automobile) → +1
+  // C: hasTech(civ, 0x30=48=Mass Production) → +1
+  // C: hasTech(civ, 0x3E=62=Plastics) → +1
+  pollutionTechs: [0x25, 0x05, 0x30, 0x3E],
+  pollutionTechNames: ['Industrialization(37)', 'Automobile(5)', 'Mass Production(48)', 'Plastics(62)'],
+  // hasTech(civ, 0x4A=74=Recycling) → counter +1 ONLY if counter is currently 0
+  // (inverted: recycling reduces, but code adds 1 when civ does NOT have Recycling)
+  recyclingTechId: 0x4A,       // tech 74 = Recycling
+  // hasTech(civ, 0x1A=26=Environmentalism) → counter -= 1
+  environmentalismTechId: 0x1A, // tech 26 = Environmentalism
+  // has_building(city, 0x1D=Solar Plant) → counter -= 1
+  massTransitBuildingId: 0x0D, // building 13 = Mass Transit (if present, skip all pollution tech checks)
+
+  // Trade waste: corruption applied to shield surplus
   tradeCapabilityDivisor: 3,
+  // Govts where luxury (waste) is zeroed: Barbarian(0), Fundamentalism(4), Democracy(6)
   luxuryZeroGovts: [0, 4, 6],
 
   sourceAddr: '0x004E9C14',
@@ -3545,6 +5053,27 @@ export const DISORDER_WLTK = {
 
   disorderSoundId: 0x0E,
   wltkdSoundId: 0x03,
+
+  // --- WLtKD auto-growth (rapture growth) ---
+  // Binary ref: handle_city_disorder_004ef578 @ block_004E0000.c lines 5910-5914
+  // C: else if (4 < (byte)(&DAT_0064c6b5)[iVar2 * 0x594] &&
+  //            (int)(city.size * DAT_0064bcca + DAT_006a65d8 * DAT_006a6608) < DAT_006a65c8 &&
+  //            thunk_FUN_00441a79(param_1) == 0)
+  //   { (&DAT_0064f349)[param_1 * 0x58] += 1; }
+  wltkdAutoGrowth: {
+    govtMinForGrowth: 5,   // government > 4 (Republic=5, Democracy=6)
+    condition: 'govt > 4 AND city.size * foodPerPop + settlers * settlerFoodCost < totalFoodProduced AND aqueductCheck == 0',
+    formula: 'city.size += 1',
+    meaning: 'During WLtKD, cities under Republic/Democracy grow by 1 pop per turn if they have food surplus and no aqueduct limit',
+    variables: {
+      DAT_0064bcca: 'food consumed per population point (cosmic rule)',
+      DAT_006a65d8: 'settlers supported by city',
+      DAT_006a6608: 'food cost per settler (cosmic rule)',
+      DAT_006a65c8: 'total food produced by city tiles',
+    },
+    aqueductCheckFn: 'FUN_00441a79 — returns nonzero if growth is blocked (needs Aqueduct/Sewer)',
+    sourceAddr: '0x004EF578+line5910',
+  },
 
   sourceAddr: '0x004EF578',
 };
@@ -3611,6 +5140,32 @@ export const UNIT_DISBANDING = {
   shieldRecoveryFormula: '(hitPoints * freeShieldSupport) / 2',
   postDisbandFlagClear: 0xFFEFDFFE,
 
+  // --- AI auto-disband trigger conditions (FUN_004eef23) ---
+  // Binary ref: FUN_004eef23 @ block_004E0000.c lines 5693-5810
+  aiAutoDisbandTrigger: {
+    // C: ((&DAT_0064f344)[param_1*0x58] & 1) != 0 && ((DAT_00655af8 + local_28 & 7U) == 0) &&
+    //    ((1 << (bVar1 & 0x1f) & (uint)DAT_00655b0b) == 0 && (4 < bVar2))
+    disorderFlag: 0x01,
+    turnMaskFormula: '(turnNumber + unitIndex) & 7 == 0',
+    turnMask: 7,
+    meaning: 'AI disbands excess units every 8 turns per unit, only when city is in disorder, civ is AI, and govt > 4',
+    govtMin: 5,   // bVar2 > 4 means govt >= 5 (Republic/Democracy)
+    humanCheck: 'civ NOT in DAT_00655b0b bitmask (AI only)',
+  },
+
+  // --- Half-shield recovery on disband ---
+  // Binary ref: FUN_004eef23 @ block_004E0000.c lines 5781-5783
+  // C: *(short*)(&DAT_0064f35c + iVar8 * 0x58) += (short)(((char)(&DAT_0064b1c8)[unitType * 0x14] * DAT_006a657c) / 2)
+  halfShieldRecovery: {
+    formula: '(unitTypeCost * costMultiplier) / 2',
+    meaning: 'When AI disbands a unit, half its shield cost (adjusted by cost multiplier) is returned to the nearest city',
+    unitTypeCostAddr: 'DAT_0064B1C8 + unitType * 0x14',
+    costMultiplierAddr: 'DAT_006A657C',
+    targetField: 'city.shieldStored (offset 0x1C)',
+    nearestCityFn: 'FUN_0043cf76 — finds nearest friendly city to unit position',
+    sourceAddr: '0x004EEF23+line5781',
+  },
+
   sourceAddr: '0x004EEF23',
 };
 
@@ -3625,11 +5180,60 @@ export const BUILDING_MAINTENANCE = {
   maintenanceCostStride: 8,
 
   chieftainReduction: { difficultyMax: 2, buildingType: 2, reduction: 1 },
-  shakespeareWonderId: 0x11,
-  communismFreeBuildingIds: [0x04, 0x0E, 0x0B],
+  adamSmithWonderId: 0x11,    // wonder 17 = Adam Smith's Trading Co. (NOT Shakespeare)
+  fundamentalismFreeBuildingIds: [0x04, 0x0E, 0x0B],  // Temple(4), Colosseum(14), Cathedral(11)
 
-  sellRecoveryFormula: 'DAT_0064C48C[buildingId * 8] * freeShieldSupport',
+  // When treasury < 0 after paying upkeep: sell building, recover shields as gold
+  // C: treasury = 0; remove_building(city, id); treasury += buildingCost * shieldMultiplier
+  sellRecoveryFormula: 'DAT_0064C48C[buildingId * 8] * DAT_006a657c (shieldCostMultiplier)',
   sellNotification: 's_INHOCK_0062ef7c',
+  // Also: FUN_00421da0(0, buildingCost * shieldMultiplier) shown in sell dialog
+
+  // --- Per-building upkeep formula (FUN_004f00f0) ---
+  // Binary ref: FUN_004f00f0 @ block_004F0000.c lines 10-45
+  // C: local_8 = (uint)(byte)(&DAT_0064c48d)[param_2 * 8]
+  perBuildingUpkeep: {
+    baseCostFormula: 'DAT_0064C48D[buildingId * 8]',
+    meaning: 'Read base maintenance cost from building table at stride 8',
+
+    // Special handling for building type 2 (Barracks)
+    // NOTE: param_1 to FUN_004f00f0 is the CIV ID (not city slot)
+    barracksSpecial: {
+      buildingId: 2,           // Barracks
+      // C: if (DAT_00655b08 < 2 && local_8 != 0) local_8 = local_8 - 1
+      chieftainReduction: 'if difficulty < 2 and cost != 0: cost -= 1',
+      // C: iVar1 = thunk_FUN_004bd9f0(param_1, 0x23); if (iVar1 != 0) local_8 = local_8 + 1
+      // NOTE: this is hasTech(civId, 0x23), NOT has_building. Tech 0x23 = 35 = Gunpowder
+      gunpowderUpkeepIncrease: { techId: 0x23, effect: 'cost += 1 if civ has Gunpowder tech' },
+      // C: for (local_c = 0x35; ...; local_c = (int)(char)(&DAT_0062768e)[local_c * 0x10])
+      // Walks tech prerequisite chain from tech 0x35 (53 = Mobile Warfare)
+      // Finds the first tech in the chain with DAT_00627689[tech*0x10] != 0
+      // If civ has that tech: cost += 1
+      techChainStart: 0x35,    // tech 53 = Mobile Warfare
+      techChainWalkField: 'DAT_0062768e[tech * 0x10] (tech prerequisite byte)',
+      techChainCheckField: 'DAT_00627689[tech * 0x10] (nonzero = stop walking)',
+      techChainEffect: 'cost += 1 if civ has the tech found by walking prerequisite chain from Mobile Warfare',
+      meaning: 'Barracks upkeep increases with military techs (Gunpowder, plus the first "epoch" tech in chain)',
+    },
+
+    // C: if (local_8 == 1) { iVar1 = thunk_FUN_00453e51(param_1, 0x11); if (iVar1 != 0) local_8 = 0; }
+    adamSmithsElimination: {
+      wonderId: 0x11,
+      meaning: "Adam Smith's Trading Co. eliminates upkeep for buildings with cost == 1",
+      condition: 'cost == 1 AND civ owns wonder 0x11',
+      effect: 'cost = 0',
+    },
+
+    // C: if (local_8 != 0 && govt == 4 && (param_2 == 4 || param_2 == 0xe || param_2 == 0xb)) local_8 = 0
+    fundamentalismFreeBuildings: {
+      govtId: 4,
+      meaning: 'Fundamentalism: Temple(4), Colosseum(14), Cathedral(11) are maintenance-free',
+      freeBuildingIds: [0x04, 0x0E, 0x0B],
+      effect: 'cost = 0 if government is Fundamentalism and building is in free list',
+    },
+
+    sourceAddr: '0x004F00F0',
+  },
 
   sourceAddr: '0x004F0221',
 };
@@ -4074,6 +5678,37 @@ export const TRIBE_EDITOR = {
   // File I/O: writes GOVERNMENTS, LEADERS, CARAVAN sections to RULES.TXT
   rulesSections: ['GOVERNMENTS', 'LEADERS', 'CARAVAN'],
 
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_004a4a58 (panel draw) — government icon sprites per city style
+  govPanelSprites: {
+    // case 0: iterates 0x15 tribes from DAT_006a1d88 + (tribe * 5 + 0xd2) * 8
+    // case 1 (European): 4 government icons
+    european: [0x834, 0x838, 0x83c, 0x840],
+    // case 2 (Classical): 3 government icons
+    classical: [0x904, 0x908, 0x90c],
+    // case 3 (Far Eastern): 3 government icons
+    farEastern: [0x910, 0x914, 0x918],
+    // case 4 (Middle Eastern): 3 government icons (shares 0x914 with Far Eastern)
+    middleEastern: [0x91c, 0x914, 0x920],
+  },
+
+  // @ FUN_004a54d9 (editor init) — dialog setup sprites and buttons
+  editorInitSprites: {
+    dialogFrame:     0x930,  // main editor dialog background (via thunk_FUN_005534bc)
+    okButton:        0x940,  // OK/confirm button sprite (btnId 0x65 at x+0x69)
+    nextButton:      0x944,  // next-tribe button sprite (btnId 0x65 at x+0xe1)
+    prevButton:      0x948,  // prev-tribe button sprite (btnId 0x65 at x+0x159)
+    saveButton:      0x3f8,  // save/write button sprite (btnId 0x65 at bottom row)
+    cancelButton:    0x3fc,  // cancel button sprite (btnId 0x66 at bottom row)
+    deleteButton:    0x8ec,  // delete/reset button sprite (btnId 0x66 at bottom row mid)
+  },
+
+  // @ show_title_screen (0x004A468B) — title screen tribe name display
+  titleScreenSprites: {
+    tribeNameEven: 0x8fc,  // tribe name text for even-indexed entries
+    tribeNameOdd:  0x900,  // tribe name text for odd-indexed entries
+  },
+
   // sourceAddr: '0x004A54D9' (editor init), '0x004A4A58' (panels), '0x004A4F89' (paint)
 };
 
@@ -4328,11 +5963,13 @@ export const DEMOGRAPHICS_BINARY = {
       { buildingId: 6,  name: 'Aqueduct',     effect: '+city.size to diseaseCityScore' },
       { buildingId: 12, name: 'Sewer System',  effect: '+city.size to diseaseCityScore' },
     ],
-    techHalvings: [
-      { techId: 0x32, name: 'Medicine' },
-      { techId: 0x1b, name: 'Sanitation' },
+    halvings: [
+      { type: 'tech', id: 0x32, name: 'Medicine (50)', fn: 'hasTech(civ, 0x32)' },
+      { type: 'wonder', id: 0x1B, name: 'Cure for Cancer (27)', fn: 'has_wonder_effect(civ, 0x1B)',
+        note: 'Previously mislabeled as techId Sanitation — actually a wonder check' },
     ],
-    formula: '1800 / (diseaseCityScore + 20), then halved per tech',
+    formula: '1800 / (diseaseCityScore + 20), then halved for Medicine tech, halved again for Cure for Cancer wonder',
+    sourceAddr: '0x00433434+line1781',
   },
 
   // --- Family Size ---
@@ -4347,32 +5984,36 @@ export const DEMOGRAPHICS_BINARY = {
   },
 
   // --- Literacy Rate ---
-  // literacyCityScore = sum of city.size for cities with Granary(3), Library(9), or University(23)
+  // literacyCityScore = sum of city.size for cities with Granary(3), Aqueduct(9), or Sewer System(23)
+  // C (lines 1601-1611): has_building checks for 3, 9, 0x17 + wonder 0 (Pyramids)
   // base = (pop * 2 + literacyCityScore) * 2 / pop
   // Then doubled for each of 4 techs the civ has
   literacyRate: {
     buildingChecks: [
-      { buildingId: 0x03, name: 'Granary (or Pottery tech)' },
-      { buildingId: 0x09, name: 'Library' },
-      { buildingId: 0x17, name: 'University' },
+      { buildingId: 0x03, name: 'Granary (3)', wonderAlt: 'Pyramids (wonder 0)' },
+      { buildingId: 0x09, name: 'Aqueduct (9) — previously mislabeled as Library' },
+      { buildingId: 0x17, name: 'Sewer System (23) — previously mislabeled as University' },
     ],
     techDoublings: [
-      { techId: 0x01, name: 'Alphabet' },
-      { techId: 0x58, name: 'Feudalism' },
-      { techId: 0x2B, name: 'Physics' },
-      { techId: 0x55, name: 'Radio' },
+      { techId: 0x01, name: 'Alphabet (1)' },
+      { techId: 0x58, name: 'Writing (88) — previously mislabeled as Feudalism' },
+      { techId: 0x2B, name: 'Literacy (43) — previously mislabeled as Physics' },
+      { techId: 0x55, name: 'University (85) — previously mislabeled as Radio' },
     ],
     clamp: { min: 0, max: 100 },
+    sourceAddr: '0x00433434+line1601',
   },
 
   // --- Military Service ---
-  // Per-city: building checks for Barracks(6) and an unidentified building(12)
+  // C (lines 1613-1619): per-city building checks for 6 (Library) and 0xC (University)
+  // NOTE: These building IDs are verified against raw C — the previous labels were wrong
   militaryService: {
     buildingChecks: [
-      { buildingId: 0x06, name: 'Barracks', effect: '+city.size to militaryCityScore' },
-      { buildingId: 0x0C, name: 'Building 12', effect: '+city.size to militaryCityScore' },
+      { buildingId: 0x06, name: 'Library (6) — previously mislabeled as Barracks', effect: '+city.size to militaryCityScore' },
+      { buildingId: 0x0C, name: 'University (12)', effect: '+city.size to militaryCityScore' },
     ],
-    note: 'Building IDs 0x06 and 0x0C may be Barracks and SAM Battery or similar military buildings',
+    note: 'Demographics "Military Service" metric uses Library and University building IDs per raw C',
+    sourceAddr: '0x00433434+line1613',
   },
 
   // --- Ranking display ---
@@ -4385,6 +6026,27 @@ export const DEMOGRAPHICS_BINARY = {
       wonderIds: [0x18, 9],       // United Nations (24), Great Library (9)
       globalReveal: 'DAT_00655b07',
     },
+  },
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  // @ FUN_00433434 render_demographics — text format strings per metric row
+  spriteOffsets: {
+    headerLabel:     0x558,  // demographics screen header/title text
+    approvalRating:  0x5d4,  // "%s Approval Rating: %d%%"  (row 1)
+    population:      0x5d8,  // "%s Population: %s"          (row 2)
+    gnp:             0x5dc,  // "%s GNP: %d M tons"          (row 3)
+    mfgGoods:        0x5e0,  // "%s Mfg. Goods: %d M tons"   (row 4)
+    landArea:        0x5e4,  // "%s Land Area: %d sq. mi."    (row 5)
+    literacyRate:    0x5e8,  // "%s Literacy Rate: %d%%"      (row 6)
+    diseaseRate:     0x5ec,  // "%s Disease: %d years"        (row 7)
+    pollution:       0x5f0,  // "%s Pollution: %d tons"       (row 8)
+    lifeExpectancy:  0x5f4,  // "%s Life Expectancy: %d"      (row 9)
+    familySize:      0x5f8,  // "%s Family Size: %d.%d"       (row 10)
+    militaryService: 0x5fc,  // "%s Military Service: %d"     (row 11)
+    annualIncome:    0x600,  // "%s Annual Income: %d"        (row 12)
+    productivity:    0x604,  // "%s Productivity: %d"         (row 13)
+    // Each offset loads a format string via thunk_FUN_00428b0c, then
+    // rendered via thunk_FUN_0043c8d0 with (formatString, playerValue, yPos)
   },
 };
 
@@ -4743,6 +6405,12 @@ export const INTELLIGENCE_ADVISOR = {
   // Gender: 0x15 (21) entries per civ/government for female portrait offset
   femalePortraitOffset: 0x15,     // added to tile index for female leaders    // 0x00496ecf
 
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_004966c4 (render)
+  spriteOffsets: {
+    leaderDllResource: 0x4a8,  // MK.DLL portrait resource (loaded before FUN_005bf5e1)
+  },
+
   // sourceAddr: '0x00493F0F' (init), '0x004966C4' (render), '0x0049488E' (portrait)
 };
 
@@ -4996,6 +6664,17 @@ export const BARBARIAN_SPAWNING = {
 
   // Veteran flag: 50% chance of veteran status on spawned unit
   veteranChance: '50% (rand() % 2 == 0 → set bit 0x2000 on unit flags)',      // 0x00485c15
+
+  // Sprite resource table offsets for city-based barbarian spawning
+  // These are loaded via thunk_FUN_00428b0c(DAT_00628420 + offset) during unit placement
+  spriteOffsets: {
+    baseLandUnit:    0x188,       // always loaded — base barbarian land unit icon            // 0x00485c15
+    eliteLandUnit:   0x18c,       // if unitCount > 10 AND > city.size/2 — elite unit icon    // 0x00485c15
+    mountedUnit:     0x190,       // if DAT_00655ba5 (expansion flag) — mounted barbarian     // 0x00485c15
+    navalUnit:       0x194,       // if DAT_00655ba7 (naval expansion) — naval barbarian      // 0x00485c15
+    coastalUnit:     0x198,       // if naval + coastal presence (DAT_00655b82[player])        // 0x00485c15
+    advancedUnit:    0x19c,       // advanced era: economy >= 5 AND city same-continent check  // 0x00485c15
+  },
 
   // Notification
   alertDialogKey: 'BARBARIANS',   // s_BARBARIANS_0062c5d0                     // 0x00485c15
@@ -5441,4 +7120,567 @@ export const UNIT_COMBAT_FLAGS = {
     ],
     sourceAddr: '0x005335EA, 0x00590790, 0x00570000+6012',
   },
+};
+
+// ============================================================================
+// === SETTLER PATHFINDING (AI auto-improvement target selection) ===
+// Binary ref: FUN_004f03b7 @ block_004F0000.c lines 88-176 (1095 bytes)
+// Binary ref: FUN_004f080d @ block_004F0000.c lines 180-252 (650 bytes)
+// ============================================================================
+
+export const SETTLER_PATHFINDING = {
+  // --- Path search to nearest same-continent city (FUN_004f03b7) ---
+  // C: iVar6 = thunk_FUN_005ae1b0(iVar4, iVar5, local_18, local_24); if (iVar6 < 0x17)
+  maxDistance: 0x17,   // 23 — maximum straight-line distance to consider
+  // C: while (iVar6 = thunk_FUN_004abfe5(...); -1 < iVar6 && iVar6 != 8) { ... local_34++ if (0x32 < local_34 || !bVar1) break; }
+  maxPathSteps: 0x32,  // 50 — maximum path steps before giving up
+  pathBlockedResult: 8,
+
+  // Two-pass city search: pass 0 = own cities, pass 1 = allied cities (treaty & 0x0C != 0)
+  passes: 2,
+  allianceTreatyMask: 0x0C,
+
+  // Continent check: pathfinder only considers cities on the same continent
+  continentCheck: 'FUN_005b8aa8 — returns continent ID; source and target must match',
+
+  // Path validation per step:
+  // C: if (uVar7 & 0x10 == 0) { ... check if tile has land (0x80) or has tech 7 (Bridge Building) ... }
+  // C: else if ((uVar7 & 0x20 == 0) && hasTech(iVar3, 0x43)) { bVar1 = false }
+  oceanCheckTile: 0x10,
+  landCheckBit: 0x80,
+  bridgeBuildingTechId: 7,
+  railroadTechId: 0x43,
+  terrainBlockBit: 0x20,
+
+  // On success: DAT_006a65e0 = targetX, DAT_006a65e8 = targetY, DAT_0062ee0c = 1
+  successFlag: 'DAT_0062EE0C = 1',
+  targetXAddr: 'DAT_006A65E0',
+  targetYAddr: 'DAT_006A65E8',
+
+  sourceAddr: '0x004F03B7',
+};
+
+// ============================================================================
+// === SETTLER PRIORITY SCORING (AI auto-improvement priority) ===
+// Binary ref: FUN_004f080d @ block_004F0000.c lines 185-252 (650 bytes)
+// ============================================================================
+
+export const SETTLER_PRIORITY = {
+  // First: check for pollution in 20-tile city radius
+  // C: for (local_8 = 0; local_8 < 0x14; local_8++) { ... if (uVar7 & 0x80 != 0) ... }
+  pollutionScanTiles: 0x14,   // 20 tiles in city radius
+  pollutionBit: 0x80,
+  pollutionCleanOrder: 0x15,  // order type for cleanup, priority 6
+  pollutionPriority: 6,
+  pollutionCityFlag: 0x80000, // city.statusFlags |= 0x80000
+
+  // Second: if civ has tech 0x43 (Railroad) and (AI or human with no pending settler order)
+  railroadTechId: 0x43,
+  // C: if (DAT_006a65d4 < 4) DAT_006a65d4 = 3;
+  basePriorityMinimum: 3,
+  basePriorityMinCheck: 4,
+  // Then call FUN_004f03b7 (pathfinding) to find target
+
+  // C: DAT_006a65d4 = DAT_006a65d4 + 2;
+  priorityBoostAfterRailroad: 2,
+
+  // Fallback: DAT_006a65d4 = 2, try pathfinding again for general improvement
+  fallbackPriority: 2,
+
+  // If target found and priority > 2:
+  // C: if (city.size > 4) DAT_006a65d4 += 1
+  sizeThreshold: 4,
+  sizePriorityBonus: 1,
+  // C: if has_building(param_1, 1) DAT_006a65d4 += 1
+  barracksBuildingId: 1,
+  barracksPriorityBonus: 1,
+
+  // C: if (city.size < 4) DAT_006a65d4 -= 1
+  smallCityThreshold: 4,
+  smallCityPenalty: -1,
+
+  // Final: issue settler order 0x15 (build improvement) with computed priority
+  orderType: 0x15,
+  priorityAddr: 'DAT_006A65D4',
+
+  sourceAddr: '0x004F080D',
+};
+
+// ============================================================================
+// === AIRDROP / PARADROP MECHANICS ===
+// Binary ref: FUN_004ca39e @ block_004C0000.c lines 3220-3423 (523 bytes)
+// ============================================================================
+
+export const AIRDROP_PARADROP = {
+  // C: thunk_FUN_004c4210(0, CONCAT31(..., DAT_0064bcdb))
+  rangeAddr: 'DAT_0064BCDB',
+  meaning: 'Paradrop range from cosmic rules, checked via FUN_005ae1b0 distance',
+
+  // C: if (iVar5 = thunk_FUN_005ae1b0(...); (int)(uint)DAT_0064bcdb < iVar5) → out of range
+  rangeCheck: 'distance(source, target) <= DAT_0064bcdb',
+  outOfRangeMsg: 's_PARADROPTARGET1_0062df74',
+
+  // Landing tile scatter selection (8 adjacent tiles):
+  // C: for (local_14 = 0; local_14 < 8; local_14++) {
+  //      local_8 = rand() % 6;
+  //      if (DX[local_14] != 0 && DY[local_14] != 0) local_8 += 3;  // diagonal bonus
+  //      if (no city on tile) local_8 += 200;
+  //      if (local_c < local_8) { local_c = local_8; best = local_14 ^ 4 }
+  scatter: {
+    adjacentTiles: 8,
+    baseScore: 'rand() % 6',
+    diagonalBonus: 3,
+    diagonalCondition: 'DX != 0 AND DY != 0 (both offsets nonzero)',
+    emptyCityBonus: 200,
+    meaning: 'Prefers empty tiles (no city) and diagonal tiles; picks highest scoring adjacent tile',
+    directionFlip: 'bestDirection ^= 4 (opposite direction for landing)',
+  },
+
+  // Landing target conditions:
+  targetConditions: [
+    'Tile must be valid (FUN_005b89e4 returns 0 — land tile)',
+    'No enemy unit on tile, or owned by same civ / unowned',
+    'If enemy city present: check peace treaty before paradrop',
+  ],
+
+  // Treaty check before paradrop near enemy city
+  peaceTreatyMask: 0x0E,
+  peaceTreatyCheckFn: 'FUN_00579ed0 — prompts player if violating peace',
+
+  // Notification to other civs visible to the paradrop
+  visibilityNotification: 'All human civs who can see source/target tile get airdrop notification',
+
+  // Post-drop: unit.order = 0xFF, unit moved to target tile
+  postDropFlag: 0x10,  // unit.statusFlags |= 0x10 (paradropped this turn)
+
+  sourceAddr: '0x004CA39E',
+};
+
+// ============================================================================
+// === MAPGEN: LAND VALUE SCORING ===
+// Binary ref: FUN_0040897f @ block_00400000.c lines 1355-1459 (948 bytes)
+// ============================================================================
+
+export const MAPGEN_LAND_VALUE = {
+  // Initializes continent counter array (64 entries, 16-byte stride)
+  continentCounterStride: 0x10,
+  continentCounterMax: 0x40,
+
+  // Terrain value lookup table (22 terrain types, stride 0x18)
+  terrainValueStride: 0x18,
+  terrainCount: 0x16,    // 22 terrain types (11 base + 11 with special resource)
+  // C: aiStack_80[local_1c] = food*3 + trade + (shields*2 if not ocean)
+  valueFormula: 'food * 3 + trade + (shields * 2 if terrain % 11 != 2)',
+  // C: if (&DAT_00627ccf)[iVar3*0x18] == -2 { ... +3 for terrain 4, +1 otherwise }
+  defenseBonusTerrain4: 3,
+  defenseBonusOther: 1,
+  // C: else if (&DAT_00627cce)[iVar3*0x18] == -2 { ... +2 }
+  movementBonusTerrain: 2,
+
+  // Radius-2 scan (21 tiles) for each land/plains tile
+  scanRadius: 0x15,    // 21 tiles
+  validTerrainTypes: [1, 2],  // 1=plains, 2=grassland (only these are scored)
+
+  // Per-neighbor tile scoring:
+  // C: if (local_84 == 2 && FUN_0040bcb0() != 0) local_8 += 2
+  irrigationBonus: 2,
+  // C: if (river && local_10 != 0x14) local_84 += 0xb (maps to special resource terrain)
+  riverBonusShift: 0x0B,
+  // C: if (tile.flags & 0x80 != 0) local_8 += 1  (river on neighbor)
+  riverNeighborBonus: 1,
+
+  // Tile weighting by distance:
+  // C: if (local_10 < 8 || local_10 == 0x14) → weight *2; if (local_10 == 0x14) → weight *4
+  innerRingMultiplier: 2,  // tiles 0-7 (close ring) doubled
+  centerTileMultiplier: 4, // tile 0x14 (center) quadrupled
+  // C: if center tile has river: iVar3 = local_8 + local_8 / 2  (1.5x river bonus on center)
+  centerRiverMultiplier: 1.5,
+
+  // Non-irrigatable grassland penalty
+  // C: if (local_1c != 1 && FUN_0040bcb0() == 0) local_c -= 0x10
+  noIrrigationPenalty: -0x10,
+
+  // Final score clamping
+  // C: iVar3 = thunk_FUN_005adfa0(local_c - 0x78 >> 3, 1, 0xf)
+  // C: local_8 = (iVar3 >> 1) + 8
+  // C: *(char*)(iVar3 + 5) = (char)local_8 - 0x10
+  scoreOffset: 0x78,      // subtract 120
+  scoreShift: 3,           // right shift by 3
+  clampMin: 1,
+  clampMax: 0x0F,          // 15
+  finalFormula: 'tile_byte5 = clamp((rawScore - 0x78) >> 3, 1, 15) >> 1 + 8 - 0x10',
+  meaning: 'Land value written to tile record byte 5; used for city placement scoring',
+
+  // Continent counting: increments per-continent counter for each scored tile
+  continentCounterAddr: 'DAT_00666132',
+
+  sourceAddr: '0x0040897F',
+};
+
+// ============================================================================
+// === MAPGEN: SPECIAL RESOURCE PLACEMENT ===
+// Binary ref: FUN_0040a572 @ block_00400000.c lines 2146-2221 (497 bytes)
+// ============================================================================
+
+export const MAPGEN_SPECIAL_RESOURCES = {
+  // X margin: rand() % (mapWidth - 0x10) + 8
+  // C: if (DAT_006d1160 == 0x11 || DAT_006d1160 - 0x11 < 0) local_20 = 0; else local_20 = rand() % (DAT_006d1160 - 0x10)
+  // C: local_20 = local_20 + 8
+  xMarginOffset: 8,
+  xMarginSubtract: 0x10,   // 16
+  xFormula: 'x = rand() % max(0, mapWidth - 16) + 8',
+
+  // Y margin: rand() % (mapHeight - 8) + 4
+  // C: if (DAT_006d1162 == 9 || DAT_006d1162 - 9 < 0) local_24 = 0; else local_24 = rand() % (DAT_006d1162 - 8)
+  // C: local_24 = local_24 + 4
+  yMarginOffset: 4,
+  yMarginSubtract: 8,
+  yFormula: 'y = rand() % max(0, mapHeight - 8) + 4',
+
+  // Richness branching (param_1 == 0 case):
+  // C: local_28 = rand() % (DAT_00624eec + 2); if (local_28 != 0) break;
+  richnessAddr: 'DAT_00624EEC',
+  richnessFormula: 'rand() % (richness + 2) != 0 → stop placing, else continue',
+  // C: if (DAT_00624eec < 1) FUN_0040a763(...) else FUN_0040a92f(...)
+  lowRichnessThreshold: 1,
+  lowRichnessFn: 'FUN_0040a763 — sparse resource placement',
+  highRichnessFn: 'FUN_0040a92f — dense resource placement',
+
+  // Hut placement (param_1 != 0):
+  // C: iVar1 = rand(); FUN_0040aaa4(x, y); if (6 < iVar1 % 10) FUN_0040aaa4 again; if (8 < iVar1 % 10) third time
+  hutPlacement: {
+    baseChance: '100% — always place at least one hut',
+    doubleChance: '30% (rand() % 10 > 6)',
+    tripleChance: '10% (rand() % 10 > 8)',
+    placementFn: 'FUN_0040aaa4',
+  },
+
+  // Post-placement: increment special resource counter per tile
+  counterStride: 6,
+  counterAddr: 'DAT_00636598',
+  globalCounter: 'DAT_0063CBA4',
+
+  sourceAddr: '0x0040A572',
+};
+
+// ============================================================================
+// === MAPGEN: OCEAN/LAKE CONVERSION ===
+// Binary ref: FUN_0040ab41 @ block_00400000.c lines 2422-2471 (281 bytes)
+// ============================================================================
+
+export const MAPGEN_OCEAN_LAKE = {
+  // Converts inland water tiles to ocean (terrain type 10) if surrounded by water
+  // C: 4-cardinal checks at (x-2,y), (x+2,y), (x,y-2), (x,y+2)
+  cardinalOffsets: [
+    { dx: -2, dy: 0 },
+    { dx: 2, dy: 0 },
+    { dx: 0, dy: -2 },
+    { dx: 0, dy: 2 },
+  ],
+  checkFn: 'FUN_005b89e4 — returns 0 if water/ocean, nonzero if land',
+  conversionCondition: 'All 4 cardinal neighbors (distance 2) must be water (all return 0)',
+  resultTerrainType: 10,  // ocean
+
+  // Edge exclusion: tiles too close to map edge are excluded
+  // C: if (param_1 < 2 || param_2 < 2 || DAT_006d1160 - 2 <= param_1 || DAT_006d1162 - 2 <= param_2) return 0
+  edgeMargin: 2,
+
+  // C: puVar3 = thunk_FUN_005b8931(param_1, param_2); *puVar3 = 10
+  meaning: 'Sets tile terrain byte to 10 (ocean) — converts lake tiles to full ocean for coastline smoothing',
+
+  sourceAddr: '0x0040AB41',
+};
+
+// ============================================================================
+// === MAPGEN: TERRAIN SMOOTHING ===
+// Binary ref: FUN_00408d33 @ block_00400000.c lines 1464-1544+ (6004 bytes)
+// ============================================================================
+
+export const MAPGEN_TERRAIN_SMOOTHING = {
+  functionSize: 6004,
+  meaning: 'Large multi-pass terrain smoothing function that runs during map generation',
+
+  // Initial setup:
+  // C: thunk_FUN_0059db08(0x4000) — allocate 16KB working buffer
+  workingBufferSize: 0x4000,
+  // C: thunk_FUN_0040bc40(8) — init with parameter 8
+  initParam: 8,
+
+  // Large-scale terrain adjustment based on map size:
+  // C: -(((int)(DAT_006ab198 - 0x280 + ...) >> 3) + 1), -(((int)(DAT_006ab19c - 0x1e0 + ...) >> 3) + 1)
+  sizeAdjustX: 0x280,   // 640
+  sizeAdjustY: 0x1e0,   // 480
+  sizeShift: 3,
+
+  // Multiple smoothing passes with different parameters
+  // C: thunk_FUN_00408010(0x200) — called twice, 512 iterations of terrain smoothing
+  smoothingIterations: 0x200,  // 512 per pass
+  smoothingPasses: 2,
+
+  // Post-smoothing: barbarian camp setup
+  // C: thunk_FUN_00484d52()
+  barbarianSetupFn: 'FUN_00484D52',
+
+  // Optional: starting location setup (param_1 == 0 branch)
+  // Initializes 21 starting location slots to 0xFFFF
+  startingLocationSlots: 0x15,    // 21
+  startingLocationSentinel: 0xFFFF,
+
+  // Flat map doubling: if DAT_00655ae8 & 0x8000 set
+  flatMapFlag: 0x8000,
+  flatMapEffect: 'DAT_00624ef4 <<= 1; DAT_00624ef0 <<= 1 (double horizontal dimensions)',
+
+  sourceAddr: '0x00408D33',
+};
+
+// ============================================================================
+// === AI TAX/SCIENCE RATE ADJUSTMENT (Per-Civ Turn) ===
+// Binary ref: FUN_00487a41 @ block_00480000.c lines 1937-2063
+// ============================================================================
+
+export const AI_TAX_SCIENCE = {
+  // --- Science rate cap by government type ---
+  // C: local_10 = 6;
+  //    if (1 < govt) local_10 = 7;     // govt > 1 (Monarchy+)
+  //    if (4 < govt) local_10 = 8;     // govt > 4 (Republic+)
+  //    if (5 < govt) local_10 = 10;    // govt > 5 (Democracy)
+  scienceCapByGovt: {
+    0: 6,   // Anarchy
+    1: 6,   // Despotism
+    2: 7,   // Monarchy
+    3: 7,   // Communism
+    4: 7,   // Fundamentalism
+    5: 8,   // Republic
+    6: 10,  // Democracy
+  },
+  meaning: 'Maximum science slider position (out of 10) varies by government type',
+
+  // --- Base luxury rate from government happiness table ---
+  // C: (&DAT_0064c6b3)[param_1 * 0x594] = govtHappinessTable[govtType * 0x30] + (char)(10 - iVar4 >> 1)
+  luxuryBaseFormula: 'govtTable[govtType * 0x30] + (10 - scienceRate) / 2',
+
+  // --- Treasury thresholds for science adjustments ---
+  // C: if ((short)DAT_00655af8 + 100 < *(int *)treasury) science += 1
+  treasuryThreshold1: {
+    formula: 'treasury > turnNumber + 100',
+    effect: 'science += 1',
+    meaning: 'Wealthy AI increases science by 1 if treasury exceeds turn+100',
+  },
+  // C: if (2000 < treasury) science += 1
+  treasuryThreshold2: {
+    value: 2000,
+    effect: 'science += 1',
+    meaning: 'AI increases science by 1 if treasury exceeds 2000',
+  },
+  // C: if (8000 < treasury) science = 10 - iVar4  (i.e., maxes out science)
+  treasuryThreshold3: {
+    value: 8000,
+    formula: 'science = 10 - taxRate',
+    meaning: 'Very wealthy AI (>8000 gold) sets science to maximum possible',
+  },
+
+  // --- All techs discovered → science = 0 ---
+  // C: bVar2 = false; for (local_20=1; local_20<0x40; local_20++) { check tech availability }
+  //    if (!bVar2 && science < 7) science += 1
+  //    ... if all 5 prerequisite techs known: science = 0
+  allTechsCheck: {
+    techRange: { start: 1, end: 0x40 },  // techs 1-63
+    prerequisiteTechs: ['0x20', '0x29', 'DAT_0064c5a6', 'DAT_0064c5ae', 'DAT_0064c5b6'],
+    effect: 'science = 0 (no more research needed)',
+    meaning: 'AI sets science to 0 when all techs discovered (checks 5 specific future/endgame techs)',
+  },
+
+  // --- Disorder-based adjustment ---
+  // C: if ((local_1c & 2) != 0 && local_18 < 4) local_18 = luxBase + 1
+  disorderAdjust: {
+    disorderFlag: 2,
+    threshold: 4,
+    effect: 'luxury rate increased by 1 to quell disorder',
+  },
+
+  // --- Periodic luxury decrease ---
+  // C: if ((DAT_00655af8 & 3) == 0 && local_1c == 0 && 2 < local_18) local_18 -= 1
+  periodicDecrease: {
+    turnMask: 3,
+    condition: 'every 4 turns AND no disorder/content issues AND luxury > 2',
+    effect: 'luxury -= 1',
+  },
+
+  // --- Tax rate = remainder ---
+  // C: (&DAT_0064c6b4)[param_1 * 0x594] = 10 - (science + luxury)
+  taxFormula: 'tax = 10 - science - luxury',
+
+  sourceAddr: '0x00487A41',
+};
+
+// ============================================================================
+// === CIVILIZATION SCORING (9 sub-components) ===
+// Binary ref: FUN_004a28b0 @ block_004A0000.c lines 329-460
+// ============================================================================
+
+export const CIV_SCORING = {
+  // 9 scoring components stored in global DAT addresses, summed for final score
+
+  // Component 1: Content citizens
+  // C: DAT_00673f78 += (city.size + city.happy - city.unhappy) for each city owned
+  contentCitizens: {
+    addr: 'DAT_00673F78',
+    formula: 'sum(city.size + city.happyCitizens - city.unhappyCitizens) for all cities',
+    happyOffset: 0x52,    // DAT_0064F392 relative to city base
+    unhappyOffset: 0x53,  // DAT_0064F393 relative to city base
+    sourceAddr: '0x004A28B0+line338',
+  },
+
+  // Component 2: Wonders owned
+  // C: DAT_00673f5c += 0x14 for each wonder where city.owner == param_1
+  wonderScore: {
+    addr: 'DAT_00673F5C',
+    perWonder: 0x14,   // 20 points per wonder
+    wonderCount: 0x1C, // 28 wonder slots
+    wonderListAddr: 'DAT_00655BE6',
+    formula: '+20 per wonder owned',
+    sourceAddr: '0x004A28B0+line348',
+  },
+
+  // Component 3: Spaceship revenue (pre-launch)
+  // C: if (DAT_006ad0ec != 0 && civ.spaceshipPop != 0) DAT_00673f84 = civ.spaceshipPop * DAT_006ad0ec
+  spaceshipRevenuePre: {
+    addr: 'DAT_00673F84',
+    formula: 'civ.spaceshipPopulation * DAT_006AD0EC',
+    condition: 'spaceship data exists AND civ has spaceship population > 0',
+    spaceshipPopAddr: 'DAT_0064CAA6 + civId * 0x594',
+    sourceAddr: '0x004A28B0+line358',
+  },
+
+  // Component 4: Spaceship revenue (post-launch, flag 0x10 set)
+  // C: if (civ.spaceshipFlags & 0x10) { DAT_00673f84 = 0; DAT_00673f60 = spaceshipPop * revenue }
+  spaceshipRevenuePost: {
+    addr: 'DAT_00673F60',
+    flag: 0x10,
+    flagAddr: 'DAT_0064CAA0 + civId * 0x594',
+    formula: 'civ.spaceshipPopulation * DAT_006AD0EC (moved from pre to post)',
+    meaning: 'Once launched (flag 0x10), revenue moves from component 3 to component 4',
+    sourceAddr: '0x004A28B0+line360',
+  },
+
+  // Component 5: Pollution offset
+  // C: DAT_00673f58 = ((int)DAT_00655b12 - (int)DAT_00655b10) * -10
+  pollutionOffset: {
+    addr: 'DAT_00673F58',
+    formula: '(DAT_00655B12 - DAT_00655B10) * -10',
+    meaning: 'Negative score for excess pollution (global warming events minus cooling events)',
+    warmingAddr: 'DAT_00655B10',
+    coolingAddr: 'DAT_00655B12',
+    multiplier: -10,
+    sourceAddr: '0x004A28B0+line364',
+  },
+
+  // Component 6: Turn bonus
+  // C: if (199 < DAT_00655af8) DAT_00673f8c = clamp(DAT_00655b14 * 3, 0, 100)
+  turnBonus: {
+    addr: 'DAT_00673F8C',
+    condition: 'turnNumber > 199',
+    formula: 'clamp(DAT_00655B14 * 3, 0, 100)',
+    multiplier: 3,
+    clampMin: 0,
+    clampMax: 100,
+    meaning: 'Late-game bonus based on peaceful turns counter, capped at 100',
+    peacefulTurnsAddr: 'DAT_00655B14',
+    sourceAddr: '0x004A28B0+line366',
+  },
+
+  // Component 7: Future tech count * 5
+  // C: DAT_00673f6c = (uint)(byte)(&DAT_0064c6b1)[param_1 * 0x594] * 5
+  futureTech: {
+    addr: 'DAT_00673F6C',
+    formula: 'futureTechCount * 5',
+    multiplier: 5,
+    futureTechCountAddr: 'DAT_0064C6B1 + civId * 0x594',
+    meaning: 'Each future tech researched adds 5 points',
+    sourceAddr: '0x004A28B0+line369',
+  },
+
+  // Component 8: Difficulty bonus
+  // C: DAT_00673f74 = (uint)DAT_00655b09 * 0x19 - 0x32
+  difficultyBonus: {
+    addr: 'DAT_00673F74',
+    formula: 'difficulty * 25 - 50',
+    multiplier: 0x19,  // 25
+    offset: -0x32,     // -50
+    difficultyAddr: 'DAT_00655B0D',  // corrected: 0x655B0D is the difficulty level byte used in scoring
+    breakdown: {
+      chieftain: -50,   // 0 * 25 - 50
+      warlord: -25,     // 1 * 25 - 50
+      prince: 0,        // 2 * 25 - 50
+      king: 25,         // 3 * 25 - 50
+      emperor: 50,      // 4 * 25 - 50
+      deity: 75,        // 5 * 25 - 50
+    },
+    sourceAddr: '0x004A28B0+line370',
+  },
+
+  // Component 9: Total (sum of all above)
+  // C: DAT_00673f88 = DAT_00673f8c + DAT_00673f58 + DAT_00673f60 + DAT_00673f5c + DAT_00673f78 + DAT_00673f74 + DAT_00673f6c
+  totalScore: {
+    addr: 'DAT_00673F88',
+    formula: 'contentCitizens + wonderScore + spaceshipPost + pollutionOffset + turnBonus + futureTech + difficultyBonus',
+    clampMin: 0,
+    note: 'spaceshipRevenuePre is NOT included in total if flag 0x10 is set (it is replaced by spaceshipRevenuePost)',
+    sourceAddr: '0x004A28B0+line371',
+  },
+
+  // --- Retirement/victory scoring (separate) ---
+  // C: DAT_00673f7c = difficulty * 100 + (0x23a - turn) * 2 + 400
+  retirementScore: {
+    addr: 'DAT_00673F7C',
+    condition: 'Only surviving solo civ (aliveBitmask & ~1 == 1 << civId)',
+    formula: 'difficulty * 100 + (570 - turnNumber) * 2 + 400',
+    turnBase: 0x23A,  // 570
+    // C: if (DAT_00655ae8 & 0x100 && turn < 0xfb) local_18 = 0xfa
+    acceleratedGameFlag: 0x100,
+    acceleratedTurnCap: 0xFA,  // 250
+    // C: if (DAT_00655af0 & 4) score = score * 5 / 4 (rounded)
+    bonusFlag4: { mask: 4, formula: 'score = (score * 5 + (score * 5 >> 31 & 3)) >> 2' },
+    // C: if (DAT_00655af0 & 8) score = (score << 2) / 5
+    bonusFlag8: { mask: 8, formula: 'score = (score * 4) / 5' },
+    sourceAddr: '0x004A28B0+line378',
+  },
+
+  // --- Scenario scoring (separate from retirement) ---
+  // Binary ref: FUN_004a28b0 lines 390-461 (block_004A0000.c)
+  // Only used when scenario flag is set (DAT_00655af0 & 0x80)
+  scenarioScoring: {
+    // C: population-based scoring with 5 tier multipliers
+    // C: switch on DAT_0064bc60[targetCiv] tier value:
+    //    case 0: multiplier = 1000 (0x3E8)
+    //    case 1: multiplier = 750  (0x2EE)
+    //    case 2: multiplier = 500  (0x1F4)
+    //    case 3: multiplier = 250  (0xFA)
+    //    case 4: multiplier = 0
+    tierMultipliers: {
+      0: 1000,  // 0x3E8 — highest priority target
+      1: 750,   // 0x2EE
+      2: 500,   // 0x1F4
+      3: 250,   // 0xFA
+      4: 0,     // no points for this tier
+    },
+    // C: targetCiv comparison: DAT_0064bcba determines which civ is the scenario target
+    targetCivAddr: 'DAT_0064BCBA',
+    scenarioFlagMask: 0x80,   // DAT_00655af0 & 0x80 enables scenario scoring
+    scenarioFlagAddr: 'DAT_00655AF0',
+
+    // C: score = sum over civs of (civ_population * tierMultiplier)
+    formula: 'score = sum_of(civ_population(civId) * tierMultiplier[tier[civId]])',
+
+    // C: if (DAT_00673f7c > 0) score *= 2  — victory doubling
+    victoryDoubling: {
+      condition: 'DAT_00673F7C > 0 (retirement/victory score is positive)',
+      effect: 'scenario score *= 2',
+      addr: 'DAT_00673F7C',
+    },
+
+    sourceAddr: '0x004A28B0+line390',
+  },
+
+  sourceAddr: '0x004A28B0',
 };

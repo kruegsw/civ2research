@@ -257,24 +257,74 @@ export const BEATEN_SEQUENCE = {
 //   - GIF resource ID = wonderNumber + 20000
 //   - 10 animation frames per wonder
 export const WONDER_MOVIES = {
-  // Video playback
+  // Video playback — FUN_004bbdfb (wonder_view_play_video, 699 bytes)
   videoPlayer: {
     entryAddr:   '0x004BBDFB',
-    sizeBytes:   704,
+    sizeBytes:   699,
     pathPrefix:  'civ2_video_wonder',
     pathPrefixAddr: '0x0062DAB8',
     pathSuffix:  '.avi',
     pathSuffixAddr: '0x0062DACC',
     // Path format: "civ2_video_wonder" + (pad0 if <10) + wonderNumber + ".avi"
     // Examples: "civ2_video_wonder01.avi", "civ2_video_wonder27.avi"
+
+    // @ FUN_004bbdfb line ~5327: video filename base string
+    //   thunk_FUN_0043c840(local_88, s_civ2_video_wonder_0062dab8)
+    filenameBase: 'civ2_video_wonder',  // @ 0x0062DAB8
+
+    // @ FUN_004bbdfb line ~5337: video buffer size
+    //   FUN_005dd2e3(DAT_0062dad4, 0x200, ...)  — 512-byte buffer for video init
+    videoBufferSize: 0x200,         // 512 bytes
+
+    // @ FUN_004bbdfb line ~5351: multiplayer video skip
+    //   if (2 < DAT_00655b02) { ... } — skip video completion handling in MP
+    //   DAT_00655b02 > 2 means multiplayer mode (LAN=3, hotseat=4, internet=5, direct=6)
+    mpVideoSkip: {
+      conditionAddr: 'DAT_00655B02',
+      threshold: 2,                 // > 2 = multiplayer
+      note: 'Wonder video completion effects skipped in multiplayer',
+    },
+
+    // @ FUN_004bbdfb line ~5364: VFW error code handling
+    //   if (local_8 == -0x7ffbfeac) { ... } — 0x80040154 = VFW_NOT_REGISTERED
+    //   Shows VFWNOTREGISTERED dialog when codec is missing
+    vfwErrorCode: 0x80040154,       // HRESULT for VFW not registered (-0x7ffbfeac signed)
+    vfwDialogKey: 'VFWNOTREGISTERED', // @ 0x0062DAD8: dialog string key
   },
 
-  // Wonder art DLL
+  // Wonder art DLL — FUN_004bbb3f (load_civ2_art_wonder, 638 bytes)
   artDll: {
     dllFile:     'civ2.wonder.dll',
     resourceBase: 20000,            // GIF resource ID = wonderNumber + 20000
     frameCount:  10,                // 10 animation frames per wonder
     sourceAddr:  '0x004BBB3F',
+    sizeBytes:   638,
+
+    // @ FUN_004bbb3f line ~5188: wonder video window dimensions
+    //   local_14 = 0x140, local_d8 = 0xf0  (320 x 240 pixels)
+    windowWidth:  0x140,            // 320px
+    windowHeight: 0xF0,             // 240px
+
+    // @ FUN_004bbb3f line ~5199: palette surface dimensions
+    //   FUN_005bd65c(0x40, 0x20)  (64 x 32 pixels)
+    paletteSurfaceWidth:  0x40,     // 64px
+    paletteSurfaceHeight: 0x20,     // 32px
+
+    // @ FUN_004bbb3f line ~5205: wonder art resource loading
+    //   FUN_005bf5e1(param_1 + 20000, 10, 0xec, surface)
+    //   resource offset = wonderNumber + 20000, stride = 10, height = 0xec (236)
+    resourceOffset: 20000,          // added to wonderNumber for GIF resource ID
+    resourceStride: 10,             // bpp/palette param
+    resourceHeight: 0xEC,           // 236px — art frame height
+
+    // @ FUN_004bbb3f line ~5229: wonder-to-civ-style mapping
+    //   DAT_0064c5c0[wonderNumber * 2] — maps wonder to civ architectural style
+    //   Used for thunk_FUN_00428b0c() call to select style-appropriate rendering
+    wonderStyleMapping: {
+      addr:   'DAT_0064C5C0',
+      stride: 2,                    // 2 bytes per entry (short)
+      usage:  'DAT_0064c5c0[wonderNumber * 2] → civ style index for rendering',
+    },
   },
 
   // Entry point dispatcher
@@ -298,12 +348,15 @@ export const WONDER_MOVIES = {
     },
   },
 
-  // Scenario prevention
+  // Scenario prevention — FUN_004bbdfb lines ~5325
+  // @ FUN_004bbdfb: if ((DAT_00655af0 & 0x40) == 0 AND (DAT_00655af0 & 0x80) == 0)
+  //   Both flags must be clear for wonder video to play
   scenarioFlags: {
-    preventVideo1: 0x40,            // DAT_00655AF0 bit 6
-    preventVideo2: 0x80,            // DAT_00655AF0 bit 7
+    preventVideo1: 0x40,            // DAT_00655AF0 bit 6 — disables wonder video if set
+    preventVideo2: 0x80,            // DAT_00655AF0 bit 7 — disables wonder video if set
     flagAddr:      'DAT_00655AF0',
-    sourceAddr:    '0x004BBE08',
+    sourceAddr:    '0x004BBDFB',    // checked at start of FUN_004bbdfb
+    logic:         'video plays only if (DAT_00655af0 & 0x40) == 0 AND (DAT_00655af0 & 0x80) == 0',
   },
 
   // Starfield animation (wonder mode background)

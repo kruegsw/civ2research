@@ -696,17 +696,24 @@ export const THRONE_UPGRADE_SELECTOR = {
   ],
 
   // === DLL Resource IDs for Category Highlight Overlays ===
-  // Standard mode: 0xAA + category (when upgrade level < 4)
+  // FUN_0044e790 @ block_00440000.c lines 8327-8363 initializes the
+  // 8 decoration placement rectangles (categoryRects above) and
+  // 7 special upgrade rectangles (specialUpgradeRects above), then
+  // loads DLL resources for each:
+  //
+  // Standard mode: resourceId = 0xAA + category (when upgrade level < 4)
   //   @ line 8569: FUN_005bf5e1(local_364 + 0xAA, ...)
   //   Resources 0xAA-0xB1 for categories 0-7
   standardHighlightBase: 0xAA,
 
-  // Special mode: 0xB2 + category (when special bitmask bit not set)
+  // Special/wonder mode: resourceId = 0xB2 + slot (when special bitmask bit not set)
   //   @ line 8592: FUN_005bf5e1(local_364 + 0xB2, ...)
   //   Resources 0xB2-0xB8 for slots 0-6
   specialHighlightBase: 0xB2,
 
-  // Base scene resource: 100 (same as renderer)
+  // Background resource ID: 100 (0x64) — base throne room scene
+  //   @ line 8563: FUN_005bf5e1(100, ...)
+  //   Same as THRONE_RENDERER.baseSceneResource
   baseSceneResource: 100,
 
   // === Special Upgrade Coordinates (7 entries) ===

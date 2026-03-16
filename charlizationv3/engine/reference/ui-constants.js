@@ -118,6 +118,42 @@ export const CITY_DIALOG = {
   // --- City modal name ---
   // @ FUN_005013bc citywin_modal_setup
   modalName: 'CITYMODAL',   // @ s_CITYMODAL_00630d78
+
+  // --- Toolbar button sprites ---
+  // @ FUN_00501551 citywin_constructor — button sprites from DAT_00628420
+  buttonSprites: {
+    buy:        { id: 1, spriteOffset: 0x8c,  callback: 'thunk_city_button_buy' },   // 0x00501551
+    nextCity:   { id: 3, spriteOffset: 0x9c,  callback: 'thunk_citywin_B9A4' },      // 0x00501551
+    prevCity:   { id: 4, spriteOffset: 0xa4,  callback: 'thunk_citywin_BA07' },      // 0x00501551
+    rename:     { id: 5, spriteOffset: 0xa8,  callback: 'thunk_city_button_rename' }, // 0x00501551
+    happiness:  { id: 6, spriteOffset: 0xa0,  callback: 'thunk_citywin_BA6A' },      // 0x00501551
+    view:       { id: 7, spriteOffset: 0x98,  callback: 'thunk_city_button_view' },   // 0x00501551
+    close:      { id: 0, spriteOffset: 0xac,  callback: 'city window close' },        // 0x00504c05
+  },
+
+  // --- Unit popup menu sprites ---
+  // @ FUN_00506a42 citywin_unit_popup_present — menu items with sequential item IDs
+  unitPopupMenuItems: {
+    activate:    { itemId: 0, spriteOffset: 0x144 },  // "Activate"                    // 0x00506a42
+    fortify:     { itemId: 1, spriteOffset: 0x148 },  // "Fortify"                     // 0x00506a42
+    sleep:       { itemId: 2, spriteOffset: 0x14c },  // "Sleep"                        // 0x00506a42
+    disband:     { itemId: 3, spriteOffset: 0x150 },  // "Disband"                      // 0x00506a42
+    upgrade:     { itemId: 5, spriteOffset: 0x2cc },  // "Upgrade" (if owner matches)   // 0x00506a42
+    upgradeB:    { itemId: 6, spriteOffset: 0x2f4 },  // "Upgrade" alt (specific unit)  // 0x00506a42
+    homeCity:    { itemId: 7, spriteOffset: 0x2d0 },  // "Home City"                    // 0x00506a42
+    airlift:     { itemId: 8, spriteOffset: 0x2f8 },  // "Airlift" (if airport + civ)   // 0x00506a42
+    airbase:     { itemId: 9, spriteOffset: 0x2fc },  // "Airbase" (if airport + civ)   // 0x00506a42
+  },
+
+  // --- City info panel buttons ---
+  // @ FUN_00505ffa: change production button
+  changeProductionSprite: 0x4c8,         // "Change" production button sprite            // 0x00505ffa
+  // @ FUN_00501780: minimap sprite
+  minimapSprite: 0x160,                  // city dialog minimap sprite resource           // 0x00501780
+
+  // --- Production list sprites ---
+  // @ FUN_00506637 citywin_unit_popup_supported: production sprite index
+  productionSpriteBase: 0x510,           // base for production list unit icon sprites    // 0x00506637
 };
 
 // ============================================================================
@@ -1830,6 +1866,58 @@ export const CIVILOPEDIA_CATEGORIES = {
     spriteScaleDivisor: 0x18, // 24: icon dimensions = (imageWidth * viewHeight) / 0x18
   },
 
+  // --- Widget/Button IDs (FUN_004f4b9f) ---
+  // Each button created via thunk_FUN_0040f680(parent, buttonId, rect, spriteResource)
+  // Grouped by navigation mode (2-button, 3-button, 4-button grids):
+  widgetIds: {
+    window:     0xe02,   // @ FUN_004f4b9f: FUN_005bb4ae(0, 0xe02, ...) — main pedia window
+    imageView:  4000,    // @ FUN_004f4b9f: thunk_FUN_004519b0(parent, 4000, rect) — sprite display
+    listbox:    0xfaa,   // @ FUN_004f4b9f: thunk_FUN_004bb620(parent, 0xfaa, rect, ..., 0x122, 0)
+    scrollbar:  0xfa8,   // @ FUN_004f4b9f: thunk_FUN_0040fc50(parent, 0xfa8, rect, 0)
+    // Navigation buttons (each set is a horizontal row of buttons):
+    // 2-button layout:
+    btn2_left:  0xfa1,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0x9c  (page nav)
+    btn2_right: 0xfa2,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0x51c (close/ok)
+    btn2_back:  0xfb2,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xd58 (back)
+    // 3-button layout:
+    btn3_left:  0xfab,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0x9c  (page nav)
+    btn3_mid:   0xfac,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xd80 (extra)
+    btn3_right: 0xfad,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0x51c (close/ok)
+    btn3_back:  0xfa3,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xd58 (back)
+    btn3_nav:   0xfa4,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xb04 (category nav)
+    btn3_close: 0xfa5,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0x51c (close/ok)
+    // 4-button layout:
+    btn4_a:     0xfae,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xd58 (back)
+    btn4_b:     0xfaf,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xd80 (extra)
+    btn4_c:     0xfb0,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xb04 (category nav)
+    btn4_d:     0xfb1,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0x51c (close/ok)
+    // 2-button fallback:
+    btn2f_back: 0xfa6,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0xd58 (back)
+    btn2f_close:0xfa7,   // @ FUN_004f4b9f: spriteResource DAT_00628420+0x51c (close/ok)
+  },
+
+  // --- Sprite resource table offsets (offsets into DAT_00628420) ---
+  spriteTableOffsets: {
+    pageNav:    0x9c,    // @ FUN_004f4b9f: navigation arrows
+    closeOk:    0x51c,   // @ FUN_004f4b9f: close/OK button
+    backButton: 0xd58,   // @ FUN_004f4b9f: back button
+    extraButton:0xd80,   // @ FUN_004f4b9f: extra action button
+    categoryNav:0xb04,   // @ FUN_004f4b9f: category navigation button
+  },
+
+  // --- Button layout modes ---
+  // FUN_004f4b9f creates up to 6 different button row configurations depending on
+  // the navigation state (root category, subcategory, detail view).
+  // Row width is computed from dialog width minus padding:
+  //   rowWidth = *(in_ECX+0x5dc) - (DAT_0062d858*2 + DAT_0062d864*2 + 5)
+  // Column counts per layout: /2, /2, /3, /3, /4, /3, /2
+
+  // --- Miscellaneous constants ---
+  // DAT_006a6784: navigation level (2 = subcategory for governments/concepts)
+  // DAT_006a678c: invalidation flag (1 = needs refresh)
+  // DAT_006a6790: selection state (cleared on close)
+  // listboxStyle: 0x122 — @ FUN_004f4b9f: thunk_FUN_004bb620(..., 0x122, 0)
+
   sourceAddr: '0x004F5F23, 0x004F7AC7, 0x004F4B9F, 0x004F7C99',
 };
 
@@ -2143,6 +2231,14 @@ export const TAX_RATE_DIALOG = {
   aiTaxHint: {
     turnThreshold: 0x0B,           // @ block_00400000.c:3413 — turn < 11
     govtThreshold: 2,              // @ block_00400000.c:3413 — govt < 2 (Anarchy or Despotism)
+  },
+
+  // Sprite resource table offsets (DAT_00628420 + offset)
+  // @ FUN_0040cd64 open_tax_rate_dialog
+  spriteOffsets: {
+    dialogFrame:  0x404,           // dialog frame background for tax dialog     // 0x0040cd64
+    sliderIcon:   0x408,           // slider icon sprite (used for width calc)   // 0x0040cd64
+    navButton:    0x3f8,           // navigation button sprite (buttonId 0xc9)   // 0x0040cd64
   },
 
   sourceAddr: '0x0040DDC6, 0x0040CD64, 0x0040BD10',

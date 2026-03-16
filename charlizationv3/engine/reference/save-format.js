@@ -216,7 +216,14 @@ export const CITY_FLAGS = {
                                   //   block_004E0000.c:5312 (AI unit targeting — clamps threat to 3)
   AUTOBUILD_MILITARY:   0x10,     // auto-build military units (governor rule)
   // bit 0x20:                    // (unknown / unused in attribs1)
-  // bit 0x40:                    // (unknown / unused in attribs1)
+  AI_SETTLER_NEARBY:    0x40,     // AI flag: friendly settler is within 5 tiles of this city
+                                  //   Set by: FUN_00530253 (AI start-of-turn) block_00530000.c:589,703
+                                  //     when a settler (unit with AI_SETTLER_ROLE flag 0x200) is found
+                                  //     within distance < 5 of the city AND few settlers exist.
+                                  //   Cleared by: CLEAR_TURN_START mask 0xffbfffbb (block_004F0000.c:291)
+                                  //   Purpose: tells AI city processing that a settler is en route,
+                                  //     suppressing duplicate settler production.
+                                  //   sourceAddr: block_00530000.c:589,703
   CAN_BUILD_COASTAL:    0x80,     // city is coastal — can build coastal improvements/ships
 
   // --- Byte +5 (attribs2) — bits 0x100..0x8000 ---
@@ -227,7 +234,7 @@ export const CITY_FLAGS = {
                                   //   FUN_004ec312 (city turn processing) at lines 4892, 5197.
                                   // Also set at line 4924 when wonder is reassigned after
                                   //   another city completes the same wonder type.
-  // bit 0x200:                   // (unknown)
+  // bit 0x200:                   // (unobserved in binary — possibly unused)
   CAN_BUILD_HYDRO:      0x800,    // city can build hydroelectric plant (byte+5 bit 3)
   CONTENT_SURPLUS:      0x4000,   // city content with surplus — enables rapture growth (byte+5 bit 6)
                                   // Set when: happy == unhappy AND (netShields > 0) AND
@@ -247,17 +254,66 @@ export const CITY_FLAGS = {
 
   // --- Byte +6 (attribs3) — bits 0x10000..0x800000 ---
   NEEDS_RECALC:         0x20000,  // city needs full recalculation (byte+6 bit 1, set on creation)
+  NEEDS_NEW_SETTLER_SITE: 0x80000, // city needs new settler site (byte+6 bit 3)
+                                   // Set by: FUN_004f080d (settler automation pathfinding) when
+                                   //   either an adjacent ocean tile with 0x80 terrain byte is found
+                                   //   (line 208) or when distant settlement target is located (line 247).
+                                   // Cleared by: FUN_004f03b7 when pathfinding fails and no valid
+                                   //   destination found (line 230: & 0xfff7ffff).
+                                   // sourceAddr: block_004F0000.c lines 208, 230, 247
+  WAS_CELEBRATING:      0x100000, // WLtKD was active before disorder began (byte+6 bit 4)
+                                  // Set by: FUN_004ee3c0 disorder handler when city enters disorder
+                                  //   AND previously had WLtKD (attribs2 & 0x20 != 0) — line 5851.
+                                  // Also set in auto-build context when celebrating specialist can
+                                  //   be assigned (line 3420: local_7c | 0x100000, assigns slot 0x14).
+                                  // Cleared by: disorder resolution via mask 0xffefdffe (line 5787, 5879).
+                                  // sourceAddr: block_004E0000.c lines 3420, 5851
   CAN_BUILD_SHIPS:      0x200000, // city has ocean access — can build naval units (byte+6 bit 5)
+  INVESTIGATED:         0x400000, // city has been investigated by a diplomat (byte+6 bit 6)
+                                  //   Set by: FUN_004c6a9c (diplomat investigate city) block_004C0000.c:2327
+                                  //     case 1 of the diplomat action switch: city flags |= 0x400000.
+                                  //   Effect: marks the city as previously investigated; may affect
+                                  //     future diplomatic actions or AI espionage priority.
+                                  //   sourceAddr: block_004C0000.c:2327
 
   // --- Byte +7 (attribs4) — bits 0x1000000..0x80000000 ---
   AUTOBUILD_MILITARY_ADV: 0x1000000,  // auto-build military (advisor recommendation)
   AUTOBUILD_DOMESTIC_ADV: 0x2000000,  // auto-build domestic (advisor recommendation)
   OBJECTIVE_X1:         0x4000000,    // scenario objective value x1
+                                      //   Toggled by: FUN_0055d3db (scenario editor) block_00550000.c:2724
+                                      //     city_flags ^= 0x4000000 (toggle on click)
+                                      //   Read by: block_00550000.c:2651: (flags & 0x4000000) >> 26
+                                      //     extracts 0 or 1 for scenario objective scoring
+  // bit 0x8000000:                   // (unobserved in binary — gap between objective bits)
   OBJECTIVE_X3:         0x10000000,   // scenario objective value x3
   // sourceAddr: various city processing functions, FUN_004e7270, FUN_004ec312, FUN_004ee3c0, FUN_004e91ea
 
   // City info from write_save_file @ 0x004741BE:
   // When saving scenario: building_counts[civ][city.building]++ for alive cities
+};
+
+// --- Compound clear masks used on city flags ---
+// These bitmasks are applied to the 32-bit city flags word during specific events.
+export const CITY_FLAG_MASKS = {
+  CLEAR_DISORDER:       0xffefdffe,
+    // Clears: CIVIL_DISORDER(0x01), WE_LOVE_KING_DAY(0x02), RAPTURE_GROWTH(0x8000),
+    //         WAS_CELEBRATING(0x100000), and bit 0x2000 (disorder-continuation).
+    // Applied when: disorder resolves (happiness >= unhappiness after re-evaluation).
+    // sourceAddr: block_004E0000.c lines 5787, 5879
+
+  CLEAR_AUTOBUILD:      0xfcffffef,
+    // Clears: AUTOBUILD_MILITARY(0x10), AUTOBUILD_MILITARY_ADV(0x1000000),
+    //         AUTOBUILD_DOMESTIC_ADV(0x2000000).
+    // Applied when: AI city has auto-build enabled AND production queue is empty AND
+    //   the city's production item resolves to 'c' (capitalization) — clears all
+    //   auto-build modes so the AI can re-evaluate.
+    // sourceAddr: block_004E0000.c line 5486
+
+  CLEAR_TURN_START:     0xffbfffbb,
+    // Clears: bits 0x04 (IMPROVEMENT_SOLD) + 0x40 (AI_SETTLER_NEARBY) + 0x4000 (CONTENT_SURPLUS).
+    //   Equivalent to clearing bits at positions 2, 6, and 14.
+    // Applied at: start of city turn processing for each city.
+    // sourceAddr: block_004F0000.c line 291 (FUN_004f0eab)
 };
 
 // =============================================================================
@@ -321,29 +377,31 @@ export const COSMIC_EDITOR = {
 
   // --- 22 cosmic parameters (byte addresses within cosmic rules block) ---
   // FUN_005866d3 copies DAT_0064bcc8..DAT_0064bcdd (22 bytes) to two int32 arrays
+  // RULES.TXT @COSMIC section, 22 parameters, read sequentially by FUN_00419cbb
+  // at block_00410000.c:5064-5088. Each param has min/max from the validation tables.
   parameters: {
-    0:  { addr: 'DAT_0064bcc8', note: 'Cosmic param 0 — road movement multiplier' },
-    1:  { addr: 'DAT_0064bcc9', note: 'Cosmic param 1 — trade bonus base' },
-    2:  { addr: 'DAT_0064bcca', note: 'Cosmic param 2 — food per citizen' },
-    3:  { addr: 'DAT_0064bccb', note: 'Cosmic param 3 — settler food cost' },
-    4:  { addr: 'DAT_0064bccc', note: 'Cosmic param 4 — shields per row (default 10)' },
-    5:  { addr: 'DAT_0064bccd', note: 'Cosmic param 5 — pollution multiplier' },
-    6:  { addr: 'DAT_0064bcce', note: 'Cosmic param 6' },
-    7:  { addr: 'DAT_0064bccf', note: 'Cosmic param 7' },
-    8:  { addr: 'DAT_0064bcd0', note: 'Cosmic param 8' },
-    9:  { addr: 'DAT_0064bcd1', note: 'Cosmic param 9' },
-    10: { addr: 'DAT_0064bcd2', note: 'Cosmic param 10' },
-    11: { addr: 'DAT_0064bcd3', note: 'Cosmic param 11' },
-    12: { addr: 'DAT_0064bcd4', note: 'Cosmic param 12' },
-    13: { addr: 'DAT_0064bcd5', note: 'Cosmic param 13' },
-    14: { addr: 'DAT_0064bcd6', note: 'Cosmic param 14' },
-    15: { addr: 'DAT_0064bcd7', note: 'Cosmic param 15' },
-    16: { addr: 'DAT_0064bcd8', note: 'Cosmic param 16' },
-    17: { addr: 'DAT_0064bcd9', note: 'Cosmic param 17' },
-    18: { addr: 'DAT_0064bcda', note: 'Cosmic param 18 — lost shields threshold (ref by production change)' },
-    19: { addr: 'DAT_0064bcdb', note: 'Cosmic param 19' },
-    20: { addr: 'DAT_0064bcdc', note: 'Cosmic param 20' },
-    21: { addr: 'DAT_0064bcdd', note: 'Cosmic param 21' },
+    0:  { addr: 'DAT_0064bcc8', min: 1, max: 100, note: 'Road movement multiplier (default 3). Unit MP *= this on road/railroad. sourceAddr: 0x00419D30' },
+    1:  { addr: 'DAT_0064bcc9', min: 1, max: 100, note: 'Trade bonus base (default 1). Affects baseline trade arrow calculation. sourceAddr: 0x00419D30' },
+    2:  { addr: 'DAT_0064bcca', min: 0, max: 10, note: 'Food consumed per citizen per turn (default 2). sourceAddr: 0x00419D30' },
+    3:  { addr: 'DAT_0064bccb', min: 4, max: 20, note: 'Settler food cost — food rows per settler (default 2, forced even). If odd, rounded up +1. sourceAddr: 0x00419D30' },
+    4:  { addr: 'DAT_0064bccc', min: 4, max: 20, note: 'Shield rows multiplier (default 10). Unit/improvement cost = rules_cost * this. sourceAddr: 0x00419D30' },
+    5:  { addr: 'DAT_0064bccd', min: 0, max: 10, note: 'Pollution multiplier (default 1). Scales shield-based pollution. sourceAddr: 0x00419D30' },
+    6:  { addr: 'DAT_0064bcce', min: 0, max: 10, note: 'Base unhappy citizens before content (default 4). Used in happiness evaluation (block_004E0000.c:2896). Per-difficulty adjusted. sourceAddr: 0x00419D30' },
+    7:  { addr: 'DAT_0064bccf', min: 4, max: 12, note: 'Riot factor / content citizens base (default 7). Controls city size threshold for unhappiness: base_content = param7 - difficulty. If city.size > base_content, extra citizens are unhappy. Used at block_004E0000.c:4077,4088. sourceAddr: 0x00419D30' },
+    8:  { addr: 'DAT_0064bcd0', min: 10, max: 100, note: 'Tech paradigm / cost multiplier (default 32). Controls research cost formula: base cost scaled by this value. Used at block_004E0000.c:4080: local_1c = param8 + difficulty * -2. sourceAddr: 0x00419D30' },
+    9:  { addr: 'DAT_0064bcd1', min: 4, max: 50, note: 'City size for aqueduct requirement (default 8). Cities need aqueduct to grow past this. Checked at block_00580000.c:3786 and block_00490000.c:4779. sourceAddr: 0x00419D30' },
+    10: { addr: 'DAT_0064bcd2', min: 4, max: 50, note: 'City size for sewer system requirement (default 12). Cities need sewer to grow past this. Checked at block_00490000.c:4861. sourceAddr: 0x00419D30' },
+    11: { addr: 'DAT_0064bcd3', min: 3, max: 10, note: 'Tech cost multiplier / paradigm scale (default 3). Used as tech_cost = baseCost * param11 / 10. Checked at block_004C0000.c:997-998: if param11 != 10, scale cost. sourceAddr: 0x00419D30' },
+    12: { addr: 'DAT_0064bcd4', min: 5, max: 100, note: 'Trade route bonus multiplier (default 30). Scales caravan/freight trade route income. Used at block_004C0000.c:1166: income = distance_factor * param12. sourceAddr: 0x00419D30' },
+    13: { addr: 'DAT_0064bcd5', min: 0, max: 8, note: 'Food trade route threshold (default 3). Min city food surplus to establish food supply route. Used at block_004F0000.c:328,338 and block_004E0000.c:2854. sourceAddr: 0x00419D30' },
+    14: { addr: 'DAT_0064bcd6', min: 0, max: 8, note: 'Shield trade route threshold (default 3). Min city shield surplus for trade route. Used at block_004F0000.c:341 and block_004E0000.c:2860. sourceAddr: 0x00419D30' },
+    15: { addr: 'DAT_0064bcd7', min: 0, max: 8, note: 'Trade trade route threshold (default 3). Min city trade surplus for trade route. Used at block_004F0000.c:344 and block_004E0000.c:2867. sourceAddr: 0x00419D30' },
+    16: { addr: 'DAT_0064bcd8', min: 1, max: 20, note: 'Citizens per tax/lux/sci specialist (default 1). How many citizens each specialist represents in resource conversion. Used at block_004E0000.c:3636. sourceAddr: 0x00419D30' },
+    17: { addr: 'DAT_0064bcd9', min: 0, max: 100, note: 'Government corruption percentage (default 0). Percentage of trade lost to corruption. Used at block_004E0000.c:3900: trade -= (param17 * trade) / 100. sourceAddr: 0x00419D30' },
+    18: { addr: 'DAT_0064bcda', min: 0, max: 100, note: 'Lost shields penalty threshold (default 50). When changing production, shields lost if remaining < this %. Already referenced by production change logic. sourceAddr: 0x00419D30' },
+    19: { addr: 'DAT_0064bcdb', min: 4, max: 100, note: 'Max effective city distance for trade routes (default 16). Caps the distance component of trade income calculation. Checked at block_004C0000.c:881,3249,3256; block_00530000.c:474,494; block_00570000.c:6016; block_00410000.c:422. sourceAddr: 0x00419D30' },
+    20: { addr: 'DAT_0064bcdc', min: 25, max: 200, note: 'Science cost base (default 32). Base science cost per tech, scaled by number of known techs. Used at block_00590000.c:1676: local_c = param20. sourceAddr: 0x00419D30' },
+    21: { addr: 'DAT_0064bcdd', min: 0, max: 10, note: 'Fundamentalism max science rate (default 2). Caps science rate under Fundamentalism government. Used at block_004E0000.c:3870-3871: if govt == 4 && param21 < rate, rate = param21. sourceAddr: 0x00419D30' },
   },
 
   // --- Editor buffer arrays (22 int32 entries each) ---
@@ -723,7 +781,14 @@ export const UNIT_RECORD_FIELDS = {
   fields: {
     x:             { offset: 0x00, size: 2, type: 'int16',  addr: 'DAT_006560F0', note: 'map x coordinate' },
     y:             { offset: 0x02, size: 2, type: 'int16',  addr: 'DAT_006560F2', note: 'map y coordinate' },
-    flags:         { offset: 0x04, size: 2, type: 'uint16', addr: 'DAT_006560F4', note: 'unit status flags (bitfield)' },
+    flags:         { offset: 0x04, size: 2, type: 'uint16', addr: 'DAT_006560F4',
+                     note: 'unit status flags bitfield — bit 0x2000 = veteran status.' +
+                           ' In espionage context (FUN_004c5fae, spy unit type 0x2F):' +
+                           ' 0x2000 means "successful spy mission" and doubles survival odds.' +
+                           ' Base survival = (failedMission ? 2 : 3), doubled to (4 or 6) if 0x2000 set,' +
+                           ' halved to (1 or 1.5) if mission was positive outcome.' +
+                           ' After surviving, 0x2000 is set on the spy (line 1907: flags |= 0x2000).' +
+                           ' sourceAddr: block_004C0000.c FUN_004c5fae lines 1842-1907' },
     type:          { offset: 0x06, size: 1, type: 'uint8',  addr: 'DAT_006560F6', note: 'unit type index (0..61)' },
     owner:         { offset: 0x07, size: 1, type: 'int8',   addr: 'DAT_006560F7', note: 'owning civ (0..7, -1 = none)' },
     moveSpent:     { offset: 0x08, size: 1, type: 'uint8',  addr: 'DAT_006560F8', note: 'movement points spent this turn' },
@@ -745,6 +810,119 @@ export const UNIT_RECORD_FIELDS = {
   },
   // sourceAddr: '0x005B3D06' (create), '0x005B4391' (delete), '0x005B2590' (validate),
   //             '0x005B319E' (pick_up), '0x005B345F' (put_down)
+};
+
+// =============================================================================
+// === Unit Status Flags (uint16 at unit record offset +0x04) ===
+// =============================================================================
+// Binary-extracted from all blocks referencing DAT_006560F4.
+// The flag word is split in save files as two bytes: byte +4 (low) and byte +5 (high).
+// Master Reference calls these "movement flags" (byte +4) and "status flags" (byte +5).
+export const UNIT_STATUS_FLAGS = {
+  // --- Byte +4 (low byte, bits 0-7) ---
+  IMMOBILE:            0x0002,  // bit 1: unit is immobile / spy mission in progress
+                                //   Set by: FUN_004c8a78 (diplomat/spy action start) line 2674: flags |= 2
+                                //   Cleared by: FUN_00486c27 (turn start) when counter2 expires (& 0xfffd)
+                                //   Also cleared on espionage resolution (block_004A0000.c:3440)
+                                //   While set, unit.counter2 counts down; at 0 the mission resolves
+                                //   and treaty flag 0x1000000 is cleared
+                                //   sourceAddr: block_004C0000.c:2674, block_00480000.c:1777, block_004A0000.c:3440
+  BORDER_CHECKED:      0x0004,  // bit 2: unit has been counted in border intrusion check this pass
+                                //   Set by: FUN_0055bbc0 (calc_war_readiness) line 4812: flags |= 4
+                                //   Cleared by: FUN_00560084 (diplomacy turn start) line 347: flags &= 0xfffb
+                                //   Also cleared at turn start: block_00480000.c:1771
+                                //   Prevents double-counting units in the border threat scoring loop
+                                //   sourceAddr: block_00550000.c:4812, block_00560000.c:347
+  PARADROP_USED:       0x0010,  // bit 4: paratrooper has launched this turn (cannot paradrop again)
+                                //   Set by: FUN_004c7fb3 (paradrop execution) line 3398: flags |= 0x10
+                                //   Checked by: FUN_0058d60a (paradrop UI) line 4439: prevents re-paradrop
+                                //   Also checked in combat (block_00570000.c:5310): affects combat calcs
+                                //   Cleared at turn start with the 0xffaf mask (block_00480000.c:2299)
+                                //   sourceAddr: block_004C0000.c:3398, block_00580000.c:4439
+  BORDER_SEEN:         0x0020,  // bit 5: unit has been seen by foreign civ (border intrusion tracking)
+                                //   Set by: FUN_0055bbc0 (calc_war_readiness) line 4806: first sighting
+                                //   If already set on next scan: increments intruderCount (DAT_006ab5ec)
+                                //   Cleared at turn start conditionally (block_00480000.c:1768: & 0xffdf)
+                                //   only if bit 2 (BORDER_CHECKED) is not set and turn alignment matches
+                                //   sourceAddr: block_00550000.c:4806, block_00480000.c:1764-1768
+  FIRST_MOVE:          0x0040,  // bit 6: unit has moved at least once (remains set permanently)
+                                //   Set by: FUN_00593b28 (movement execution) line 192: flags |= 0x40
+                                //   Cleared after healing (block_00590000.c:270: & 0xffbf) on allied repair
+                                //   Cleared at turn start with 0xffaf mask (block_00480000.c:2299)
+                                //   sourceAddr: block_00590000.c:192, block_00480000.c:2299
+  GOTO_ARRIVED:        0x0080,  // bit 7: unit reached its goto destination
+                                //   Set by: FUN_004c5036 (goto resolution) line 1446: flags |= 0x80
+                                //   Set by: AI unit assignment (block_00530000.c:1205,5466)
+                                //   Cleared by: FUN_004c5036 (goto start) line 1440: flags &= 0xff7f
+                                //   sourceAddr: block_004C0000.c:1440,1446, block_00530000.c:1205
+
+  // --- Byte +5 (high byte, bits 8-15) ---
+  AI_FORTIFIED:        0x0100,  // bit 8: AI unit is fortified/sleeping and should stay put
+                                //   Set by: FUN_00530253 (AI start-of-turn) line 609: flags |= 0x100
+                                //     when unit has order fortify(0x01) or sleep(0x02) and attack < 99
+                                //   Checked by: FUN_00593b28 (movement) line 1261: if set, re-apply sleep
+                                //   Cleared by: FUN_004c7fb3 (paradrop) line 3411: flags &= 0xfeff
+                                //   Cleared by: FUN_00593b28 (movement) line 570: flags &= 0xfeff
+                                //   sourceAddr: block_00530000.c:609, block_00590000.c:1261,570
+  AI_SETTLER_ROLE:     0x0200,  // bit 9: AI settler — assigned to settler automation role
+                                //   Set by: FUN_00530253 (AI start-of-turn) line 573: flags |= 0x200
+                                //     when unit role == 5 (settler) and is human-controlled
+                                //   Also set at line 581,685 for homeless settlers on ocean
+                                //   Checked by: FUN_00560d95 (attitude scoring) lines 3113,3147
+                                //   Checked by: FUN_00490530 (unit info display) line 4366
+                                //   sourceAddr: block_00530000.c:573,581,685, block_00560000.c:3113
+  AI_ATTACK_PATH:      0x0400,  // bit 10: AI unit has a valid attack path to an enemy target
+                                //   Set by: FUN_004e7d7f (AI city unit evaluation) line 3054: flags |= 0x400
+                                //     when the unit's attack evaluation changes (DAT_006a65e4 modified)
+                                //   Checked by: FUN_00500000 city view (line 2524) for attack display
+                                //     with additional check for wonder 0x15 (Leonardo's Workshop)
+                                //   sourceAddr: block_004E0000.c:3054, block_00500000.c:2524
+  AI_MOBILIZED:        0x0800,  // bit 11: AI unit is mobilized for city defense / production allocation
+                                //   Set by: FUN_004e7d7f (AI city unit evaluation) line 3007: flags |= 0x800
+                                //     when unit passes production eligibility check
+                                //   Checked by: FUN_00500000 city view (line 2521) for support display
+                                //   Both 0x800 and 0x400 cleared together at start of evaluation:
+                                //     flags &= 0xf3ff (line 3002)
+                                //   sourceAddr: block_004E0000.c:3002,3007, block_00500000.c:2521
+  GOTO_NUCLEAR_TARGET: 0x1000,  // bit 12: unit is on a goto path for nuclear strike
+                                //   Set by: FUN_005b4f8d (nuclear goto assignment) line 2283: flags |= 0x1000
+                                //     when param_2 == 0 (direct nuclear targeting, not standard goto)
+                                //   sourceAddr: block_005B0000.c:2283
+  VETERAN:             0x2000,  // bit 13: veteran status — +50% combat bonus
+                                //   Set by: combat victory, barracks, spy survival, wonder effects
+                                //   Checked in: combat (block_00570000.c:5307,5394,5552),
+                                //     espionage (block_004C0000.c:1842,1883,2487,2561,2664,2747,2818),
+                                //     AI unit evaluation (block_00560000.c:2952,3119,3170),
+                                //     production (block_004E0000.c:5217-5241,5363),
+                                //     city view display (block_00580000.c:4860),
+                                //     settler work (block_004F0000.c:3886)
+                                //   sourceAddr: many — central to combat, espionage, production
+  SHIP_WAKE_SENTRIES:  0x4000,  // bit 14: ship movement — wake sentried land units when ship moves
+                                //   Set by: FUN_0058bdfd (ship key handler) line 3708: flags |= 0x4000
+                                //   Set by: FUN_0058de67 (ship move) line 4664: flags |= 0x4000
+                                //     when unit domain == sea (domain check at line 4663)
+                                //   Cleared at turn start: flags &= 0xbfff (block_00480000.c:1763)
+                                //   sourceAddr: block_00580000.c:3708,4664, block_00480000.c:1763
+  SETTLER_AUTOMATE:    0x8000,  // bit 15: settler/engineer automation active
+                                //   Set by: FUN_0058df14 (automate settler) line 4701: flags |= 0x8000
+                                //     only for unit role == 5 (settler type)
+                                //   Checked by: FUN_005b6787 (unit display/refresh) — triggers automation
+                                //   Cleared by: FUN_00580000 (various) line 4414: flags &= 0x7fff
+                                //   Cleared by: block_00590000.c:1225, block_004A0000.c:4676,4686
+                                //   Used extensively in unit movement (block_00590000.c:158,167,207,283,337,350,1254)
+                                //     and AI settler logic (block_00560000.c:2936,3124,3881,3916)
+                                //   sourceAddr: block_00580000.c:4701 (set), block_00580000.c:4414 (clear)
+
+  // --- Turn-start clear masks ---
+  TURN_START_CLEAR_MASK: 0xFFAF,
+    // Applied at FUN_00486c27 start-of-turn (block_00480000.c:2299): clears FIRST_MOVE(0x40) + PARADROP_USED(0x10)
+    // Does NOT clear other flags; those are cleared conditionally
+
+  AI_EVAL_CLEAR_MASK: 0xF3FF,
+    // Applied at FUN_004e7d7f AI city eval start (block_004E0000.c:3002):
+    // clears AI_ATTACK_PATH(0x400) + AI_MOBILIZED(0x800) before re-evaluation
+
+  // sourceAddr: multiple blocks — see individual flag entries above
 };
 
 // =============================================================================
@@ -817,8 +995,8 @@ export const MAP_STRUCTURE = {
   BYTES_PER_TILE: 6,           // @ FUN_005b7fe0: DAT_006d1164 * 6
   TILE_BASE_ADDR: 'DAT_00636598',
   tileFields: {
-    terrain:     { offset: 0, size: 1, note: 'byte 0: terrain type. Low nibble = base terrain (0..15), bit 0x40 = grassland bonus' },
-    improvements:{ offset: 1, size: 1, note: 'byte 1: improvements bitfield. bit 0x01 = unit present, 0x02 = city, 0x04 = irrigation, 0x08 = mine, 0x20 = road, 0x40 = railroad, 0x42 = fortress, 0x80 = pollution' },
+    terrain:     { offset: 0, size: 1, note: 'byte 0: terrain type. Low nibble = base terrain (0..15), bit 0x40 = grassland bonus, bit 0x80 = impassable/mountain flag used in pathfinding (FUN_004f03b7 line 144: if (*tile & 0x80) == 0 and unit cannot cross mountains, path is blocked)' },
+    improvements:{ offset: 1, size: 1, note: 'byte 1: improvements bitfield. bit 0x01 = unit present, 0x02 = city, 0x04 = irrigation, 0x08 = mine, 0x10 = road, 0x20 = railroad, 0x40 = fortress, 0x80 = pollution. Farmland = irrigation+mine (0x0C). Airbase = fortress+city (0x42).' },
     landmass:    { offset: 2, size: 1, note: 'byte 2: bits 5-7 = continent/ocean ID (top 3 bits), low 5 bits = other flags' },
     cityId:      { offset: 3, size: 1, note: 'byte 3: city index on tile (-1 / 0xFF = no city)' },
     visibility:  { offset: 4, size: 1, note: 'byte 4: per-civ visibility bitmask (1 bit per civ, up to 8)' },
@@ -831,8 +1009,17 @@ export const MAP_STRUCTURE = {
 
   // --- Visibility layers (per-civ, 1 byte per tile, 7 layers for civs 1..7) ---
   VISIBILITY_LAYERS: 7,        // @ FUN_005b7fe0: for local_18 = 1; local_18 < 8
-  visibilityBaseAddr: 'DAT_006365C0', // array of 8 pointers (index 0 unused)
-  visibilityHandles: 'DAT_006365A0',  // memory handles for deallocation
+  visibilityHandles: 'DAT_006365A0',  // primary per-civ visibility map handles (memory alloc handles)
+                                      //   DAT_006365A0[civ*4] = memory handle for civ's visibility layer
+                                      //   Allocated by FUN_004bb870, locked by FUN_0046aad0.
+  visibilityBaseAddr: 'DAT_006365C0', // secondary per-civ visibility map pointers (locked addresses)
+                                      //   DAT_006365C0[civ*4] = pointer to civ's visibility byte array
+                                      //   Accessed by FUN_005b898b: addr = DAT_006365C0[civ*4]
+                                      //     + (mapWidth/2) * y + (x/2)
+                                      //   Each byte represents visibility state for one tile for that civ.
+                                      //   Written during map save (FUN_005b8635 line 3123: fwrite per civ),
+                                      //   read during map load (FUN_005b8783 line 3186: fread per civ).
+                                      //   sourceAddr: block_005B0000.c lines 2979, 3123, 3186, 3232
 
   // --- Quadrant layers (4 layers, quadWidth * quadHeight each) ---
   QUADRANT_LAYERS: 4,          // @ FUN_005b7fe0: DAT_006365E0..DAT_006365EC
@@ -943,4 +1130,42 @@ export const MESSAGE_OPTIONS_FLAGS = {
   },
 
   sourceAddr: '0x004E1452',
+};
+
+// =============================================================================
+// === Tutorial / First-Time Event Flags (DAT_00655AF4) ===
+// =============================================================================
+// Binary ref: initialized to 0 at game start (block_004A0000.c:3551),
+//             set bits prevent tutorial popups from showing again.
+// Each bit tracks whether a specific "first time" tutorial event has been shown.
+// Only triggers when Tutorial Help is enabled (DAT_00655AEA byte+1 bit 0 set).
+export const TUTORIAL_FLAGS = {
+  RUNTIME_ADDR: 'DAT_00655AF4',
+
+  flags: {
+    CITY_STUFF:       0x01,   // bit 0: city management tutorial shown
+                              //   Triggers when: tutorial enabled AND city.size > 3 AND city not owned by human
+                              //   Shows: TUTORIAL / CITYSTUFF dialog
+                              //   sourceAddr: block_00500000.c:4313-4316
+    AIR_UNIT:         0x02,   // bit 1: air unit tutorial shown
+                              //   Triggers when: first air-domain unit built (domain == 1)
+                              //   Shows: TUTORIAL / AIRUNIT dialog
+                              //   sourceAddr: block_005B0000.c:1503-1508
+    SHIPS:            0x04,   // bit 2: sea unit tutorial shown
+                              //   Triggers when: first sea-domain unit built (domain == 2)
+                              //   Shows: TUTORIAL / SHIPS dialog
+                              //   sourceAddr: block_005B0000.c:1495-1500
+    CARAVAN:          0x10,   // bit 4: caravan/trade unit tutorial shown
+                              //   Triggers when: first trade unit built (role == 7)
+                              //   Shows: TUTORIAL / CARAVAN dialog
+                              //   sourceAddr: block_005B0000.c:1511-1516
+    DEMOCRACY:        0x20,   // bit 5: democracy government tutorial shown
+                              //   Triggers when: government > 4 (Republic or Democracy adopted)
+                              //   Shows: TUTORIAL / DEMOCRATS dialog
+                              //   sourceAddr: block_00550000.c:5053-5056
+  },
+
+  // NOTE: bits 0x08 (3) and other gaps are not observed in the binary
+  sourceAddr: 'block_004A0000.c:3551 (init), block_005B0000.c:1494-1517 (unit creation), ' +
+              'block_00500000.c:4312-4316 (city view), block_00550000.c:5053-5056 (government)',
 };

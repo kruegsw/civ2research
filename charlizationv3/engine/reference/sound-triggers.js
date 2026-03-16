@@ -131,7 +131,11 @@ export const SOUND_NAMES = {
   0x61: { name: 'CUSTOM3',  sourceAddr: '0x0062B2DF' },
   0x62: { name: 'EXTRA1',   sourceAddr: '0x0062B2E8' },
   0x63: { name: 'EXTRA2',   sourceAddr: '0x0062B2F1' },
-  // IDs 0x64..0x6E are additional extras (EXTRA3-EXTRA8, etc.)
+  0x64: { name: 'EXTRA3',   sourceAddr: '0x0062B2FA' },
+  0x65: { name: 'EXTRA4',   sourceAddr: '0x0062B303' },  // also overloaded as MISSILE1
+  0x66: { name: 'EXTRA5',   sourceAddr: '0x0062B30C' },  // also overloaded as MISSILE2
+  0x67: { name: 'EXTRA6',   sourceAddr: '0x0062B315' },  // also overloaded as MISSILE3
+  0x68: { name: 'EXTRA7',   sourceAddr: '0x0062B31E' },  // used for spaceship + allied repair
 
   // -- Special system sounds --
   0x69: { name: 'MOVPIECE', sourceAddr: '(dup)' },       // unit movement (re-mapped)
@@ -431,6 +435,14 @@ export const SOUND_TRIGGERS = {
     channel: 0, loop: true,
     sourceAddr: '0x00460000:4110-4126, 0x00440000:1773',
   },
+  parleyDiplomatMeeting: {
+    soundId: '0x53-0x5A',
+    wav: 'DRUMxx.WAV (drum roll variant)',
+    condition: 'Diplomat meeting initiated (parley window open). Formula: ((DAT_006d1168 + param_1) & 7) + 0x53. DAT_006d1168 = turn counter, param_1 = target civ ID. Range: 0x53 (DRUMAL) to 0x5A (DRUMBL).',
+    channel: 1, loop: false,
+    sourceAddr: '0x004B7EB6:3879 (FUN_004b7eb6)',
+    note: 'Same drum roll table as combat, but formula uses target civId instead of unitByte. Played at end of parley open function for all diplomacy modes.',
+  },
 
   // -- UI / Menu --
   menuConfirm: {
@@ -589,6 +601,135 @@ export const SOUND_TRIGGERS = {
     channel: 0, loop: false,
     sourceAddr: '0x00570000:5794',
   },
+
+  // -- City Capture Events (dispatch_mp_event cases 0x1B-0x1E) --
+  cityCaptureEvent: {
+    soundId: 0x05,
+    wav: 'MCHNGUNS.WAV',
+    condition: 'City captured (CITYCAPTURE): player captures enemy city',
+    channel: 0, loop: false,
+    sourceAddr: '0x00510000:650',
+    note: 'Same sound ID 0x05 used for all 4 city capture variants in dispatch_mp_event',
+  },
+  cityWinAllyEvent: {
+    soundId: 0x05,
+    wav: 'MCHNGUNS.WAV',
+    condition: 'City captured by ally (CITYWINALLY)',
+    channel: 0, loop: false,
+    sourceAddr: '0x00510000:654',
+  },
+  cityLoseAllyEvent: {
+    soundId: 0x05,
+    wav: 'MCHNGUNS.WAV',
+    condition: 'City lost to ally (CITYLOSEALLY)',
+    channel: 0, loop: false,
+    sourceAddr: '0x00510000:658',
+  },
+  cityCapture2Event: {
+    soundId: 0x05,
+    wav: 'MCHNGUNS.WAV',
+    condition: 'City captured variant 2 (CITYCAPTURE2)',
+    channel: 0, loop: false,
+    sourceAddr: '0x00510000:662',
+  },
+
+  // -- Government Change --
+  governmentChanged: {
+    soundId: 0x14,
+    wav: 'JETPLANE.WAV',
+    condition: 'New government adopted from PICKGOVT dialog (FUN_0055c69d). Plays after player selects new government type.',
+    channel: 1, loop: false,
+    sourceAddr: '0x00550000:5044',
+    note: 'Sound 0x14 (JETPLANE) reused for government change event. Dialog shown: NEWGOVT.',
+  },
+
+  // -- MP Turn Notification --
+  mpTurnToMove: {
+    soundId: 0x30,
+    wav: 'MENUOK.WAV',
+    condition: 'Multiplayer: "Our turn to move" notification at start of human turn (client and server loops). Plays for both OURTURNTOMOVE and CASUALTIES dialogs.',
+    channel: 0, loop: false,
+    sourceAddr: '0x0048BFEC:3732-3748, 0x0048C9F3:4040-4051',
+  },
+
+  // -- Trireme Lost at Sea --
+  triremeLost: {
+    soundId: 0x09,
+    wav: 'MEDGUN.WAV',
+    condition: 'Trireme lost at sea: unit fails random survival check (no adjacent land tile found). Dialog: TRIREME.',
+    channel: 1, loop: false,
+    sourceAddr: '0x00590000:1139',
+    note: 'Same sound ID 0x09 as MEDGUN in sound name table. Played when move_unit detects trireme sinking.',
+  },
+
+  // -- Noncombat Move Attempt --
+  noncombatMoveBlocked: {
+    soundId: 0x69,
+    wav: 'MOVPIECE.WAV (dup)',
+    condition: 'Non-combat unit attempts to move into occupied tile. Dialog: NONCOMBAT.',
+    channel: 0, loop: false,
+    sourceAddr: '0x00590000:333',
+    note: 'Played when a non-combat unit (domain byte == 0) cannot enter a tile with enemy units.',
+  },
+
+  // -- Allied Repair in City --
+  alliedRepair: {
+    soundId: 0x68,
+    wav: 'specific',
+    condition: 'Unit repaired in allied city (ALLIEDREPAIR). Played when a unit enters an allied city and is healed.',
+    channel: 1, loop: false,
+    sourceAddr: '0x00590000:273',
+    note: 'Sound ID 0x68 indexes into the AIRCOMBT string table. Condition: DAT_00654fa8==0 AND player is human AND DAT_006d1da0 matches civ.',
+  },
+
+  // -- Spaceship Move Animation --
+  spaceshipMoveSound: {
+    soundId: 0x69,
+    wav: 'MOVPIECE.WAV (dup)',
+    condition: 'Spaceship component move/repair event in move_unit. Played when unit is on spaceship-related tile.',
+    channel: 1, loop: false,
+    sourceAddr: '0x00590000:200',
+    note: 'Distinct from the spaceship dialog event; this is the move animation variant.',
+  },
+
+  // -- Nuclear Unit Type Sound Branch --
+  nukeMissileTypeSound: {
+    soundId: 0x1A,
+    wav: 'SMALLEXP.WAV',
+    condition: 'Nuclear/missile unit destroyed: unit type byte < 0x1E (early-era unit) plays 0x1A; otherwise plays 0x4E (NUKEXPLO dup).',
+    channel: 0, loop: false,
+    sourceAddr: '0x00590000:1088-1091',
+    note: 'Branch in move_unit: if unit_type_byte < 0x1E then soundId=0x1A else soundId=0x4E. Both play before unit deletion.',
+  },
+
+  // -- Bribe/Capture Map View Sound --
+  bribeCaptureViewSound: {
+    soundId: 99,
+    wav: '(index 99 in table)',
+    condition: 'Map view update after unit bribe/capture in move_unit (DAT_006d1da0 visible)',
+    channel: 1, loop: false,
+    sourceAddr: '0x00590000:886-909',
+    note: 'Plays when the current player can see the bribe/capture action. Both local and remote paths.',
+  },
+
+  // -- Menu WM_COMMAND Loop Sound --
+  viewMenuCommandLoop: {
+    soundId: 0x6B,
+    wav: 'MENULOOP.WAV (dup)',
+    condition: 'View menu command (WM_COMMAND IDs 0xD0-0xD2): triggers background music loop restart. FUN_0046de25 handles commands in range (0xCF < param_1 < 0xD3).',
+    channel: 0, loop: true,
+    sourceAddr: '0x0046DE25',
+    note: 'Also sets DAT_0062af10 = 1 and invalidates object cache if DAT_0062af14 != 0.',
+  },
+
+  // -- Advisor Panel Music Restart --
+  advisorPanelMusic: {
+    soundId: 0x6B,
+    wav: 'MENULOOP.WAV (dup)',
+    condition: 'Advisor/intelligence panel opened (FUN_0046dde0). Restarts background music loop.',
+    channel: 0, loop: true,
+    sourceAddr: '0x0046DDE0',
+  },
 };
 
 // === CHEERS Special Handling ===
@@ -645,6 +786,11 @@ export const MUSIC_SELECTION = {
     name: 'trigger_music_change',
     sourceAddr: '0x0046E2F4',
     behavior: 'music_stopped = 1; if music_loaded: resume_music()',
+  },
+  civDestroyedMusic: {
+    name: 'civ_destroyed_music_trigger',
+    sourceAddr: '0x00510000:590',
+    behavior: 'play_music_track(2, 1) — plays CD track 2 (forced) when a civilization is destroyed (dispatch_mp_event case 0x0E: DESTROYED)',
   },
   pickMusicDialog: {
     sourceAddr: '0x004E25EF',
@@ -927,6 +1073,14 @@ export const TURN_PROCESSING_SOUND_EVENTS = {
          sourceAddr: '0x0048AEDC', dialog: 'PLANRETIRE' },
     10: { name: 'FORCE_RETIREMENT',    trigger: 'Year 2020 reached (forced retirement)',
           sourceAddr: '0x0048AEDC', dialog: 'DORETIRE' },
+  },
+
+  // Event 0x3D: Diplomacy request (human-to-human in network MP)
+  events_0x3D: {
+    0x3D: { name: 'DIPLOMACY_REQUEST',  trigger: 'Human player requests diplomacy with another human player',
+            sourceAddr: '0x004308AE line ~464',
+            condition: 'Both players human (DAT_00655b0b bits set) AND DAT_00655b02 > 2 (network MP)',
+            note: 'Sent to specific target player (not broadcast). Triggers PARLEYWAITING dialog on receiver.' },
   },
 
   // Call signature: FUN_00511880(eventId, targetPlayer, param3, param4, param5, param6)

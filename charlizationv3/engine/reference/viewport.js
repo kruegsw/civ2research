@@ -446,6 +446,25 @@ export const RENDER_DETAIL = {
 
 export const MINIMAP_LAYOUT = {
   /**
+   * Minimap panel dimensions (FUN_0040785b @ 0x0040785B, 255 bytes):
+   *
+   * The minimap panel size is determined at startup based on screen resolution.
+   * @ block_00400000.c line 555:
+   *   base dimensions: 160x100 (0xA0 x 0x64)
+   *   if (screenWidth + thunk_FUN_004080c0() > 1000 AND DAT_00628060 != 0):
+   *     large dimensions: 240x150 (0xF0 x 0x96)
+   *
+   * The 1000-pixel threshold determines when the game switches to the larger
+   * minimap panel to take advantage of higher-resolution displays.
+   */
+  panelDimensions: {
+    resolutionThreshold: 1000,    // @ FUN_0040785b: if (1000 < DAT_006acbb0 + iVar1)
+    base:  { width: 0xA0, height: 100 },   // 160x100 — default for low-res (<=1000px)
+    large: { width: 0xF0, height: 0x96 },  // 240x150 — used for high-res (>1000px)
+    sourceAddr: '0x0040785B',
+  },
+
+  /**
    * Minimap scale computation (FUN_00406b4c @ 0x00406B4C, 620 bytes):
    *
    * The minimap fits the full map into a fixed-size panel. Scale is computed:

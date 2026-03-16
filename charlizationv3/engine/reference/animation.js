@@ -358,3 +358,247 @@ export const NETWORK_DISCONNECT_DELAY = {
   ticks: 0x78,    // @ 0x0059b293 — 120 ticks delay after network disconnection
                   // C: thunk_FUN_0046e287(0x78) — "Disconnection delay: 2 seconds"
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// COMBAT ATTACK SOUNDS — Full dispatch table from FUN_00580341
+// Binary ref: block_00580000.c lines 584-679
+// Source: FUN_00580341 — combat initiation sound selection
+//
+// bVar6 = unit type byte from DAT_006560f6[attacker * 0x20]
+// DAT_0064b1c1[type * 0x14] = domain (0=ground, 1=sea, 2=air)
+// DAT_0064b1bc[type * 0x14] bit 3 = stealth flag
+// DAT_0064b1bd[type * 0x14] bit 4 (0x10) = "can carry aircraft" flag
+// DAT_0064b1c3[type * 0x14] = bombard range (0 = no bombard)
+// DAT_0064b1c4[type * 0x14] = attack range (< 0x63 = short-range)
+// DAT_0064b1c6[type * 0x14] = movement points (< 0x1E = ancient era)
+//
+// The function also sets local_ac (animation offset) for certain branches,
+// which is used later for combat movement animation frame selection.
+//
+// Network: After sound selection, opcode 0x9A is sent to all remote
+// players in the game (DAT_00655b02 > 2) to synchronize the combat
+// sound. See "COMBAT_SOUND_NETWORK_SYNC" below.
+// ═══════════════════════════════════════════════════════════════════
+
+export const COMBAT_ATTACK_SOUNDS = {
+  // --- Priority 1: Unit-specific sounds (checked first via if/else chain) ---
+  // Missile/nuke unit types with dedicated sound IDs
+  unitSpecific: {
+    0x36: { soundId: 0x7D, channel: 1, note: 'Nuke variant 1' },
+    0x37: { soundId: 0x7E, channel: 1, note: 'Nuke variant 2' },
+    0x38: { soundId: 0x7F, channel: 1, note: 'Nuke variant 3' },
+    0x39: { soundId: 0x80, channel: 1, note: 'Nuke variant 4' },
+    0x3A: { soundId: 0x81, channel: 1, note: 'Nuke variant 5' },
+    0x3B: { soundId: 0x82, channel: 1, note: 'Nuke variant 6' },
+    0x3C: { soundId: 0x83, channel: 1, note: 'Nuke variant 7' },
+    0x3D: { soundId: 0x84, channel: 1, note: 'Nuke variant 8' },
+    0x33: { soundId: 0x65, channel: 1, note: 'Cruise Missile variant 1' },
+    0x34: { soundId: 0x66, channel: 1, note: 'Cruise Missile variant 2' },
+    0x35: { soundId: 0x67, channel: 1, note: 'Cruise Missile variant 3' },
+    sourceAddr: '0x00580341 lines 584-615',
+  },
+
+  // --- Priority 2: Carrier aircraft flag (flagsB bit 0x10) ---
+  // If attacker has "can carry aircraft" flag, skip normal sound dispatch entirely.
+  // Instead, check attack range: if range < 99 (0x63), play short-range bombardment sound.
+  carrierAircraft: {
+    flag: 0x10,                        // DAT_0064b1bd[type * 0x14] & 0x10
+    shortRangeSoundId: 0x29,           // @ line 678 — CIVDISOR.WAV (range < 0x63)
+    shortRangeThreshold: 0x63,         // 99 decimal — DAT_0064b1c4 < 'c'
+    note: 'Units with carrier flag skip normal combat animation sound path',
+    sourceAddr: '0x00580341 lines 617, 677-679',
+  },
+
+  // --- Priority 3: Domain-based dispatch ---
+
+  // Sea domain (domain == 1)
+  sea: {
+    // Sea vs sea (defender also sea domain)
+    vsSeaAncient:   { soundId: 0x00, channel: 0, note: 'AIRCOMBT — ancient sea unit (type < 0x1E) vs sea' },
+    vsSeaModern:    { soundId: 0x52, channel: 0, note: 'BOATSINK dup — modern sea unit (type >= 0x1E) vs sea' },
+    // Sea vs land (defender is not sea domain)
+    noBombard:      { soundId: 0x21, channel: 1, note: 'CATHEDRL — sea unit with bombard range == 0 (immobile naval)' },
+    bombardAncient: { soundId: 0x18, channel: 1, note: 'AIRPLANE — ranged sea unit, ancient (type < 0x1E)' },
+    bombardModern:  { soundId: 0x50, channel: 1, note: 'AIRPLANE dup — ranged sea unit, modern (type >= 0x1E)' },
+    eraThreshold: 0x1E,                // @ lines 620, 630 — unit type index boundary
+    sourceAddr: '0x00580341 lines 618-635',
+  },
+
+  // Air domain (domain == 2)
+  air: {
+    // Stealth aircraft (flagsA bit 3 set: DAT_0064b1bc & 8)
+    stealth:     { soundId: 0x4D, channel: 1, note: 'FEEDBK08 — submarine/stealth sound' },
+    // Non-stealth aircraft
+    defaultAnimOffset: 6,              // @ line 639 — local_ac = 6 for standard air units
+    jetFighters: {
+      types: [0x25, 0x26, 0x27, 0x28],// @ line 640 — Jet Fighter era aircraft
+      animOffset: 0x2E,                // @ line 641 — local_ac = 0x2E for jets
+      note: 'Jet fighters use extended animation offset (46 frames)',
+    },
+    sourceAddr: '0x00580341 lines 637-646',
+  },
+
+  // Ground domain (domain == 0, no carrier flag)
+  ground: {
+    // Specific ground unit type mappings (checked in if/else order)
+    cannon:       { types: [0x11],                        soundId: 0x19, channel: 1, note: 'MISSILE — Cannon' },
+    horseback:    { types: [0x0F, 0x10, 0x13, 0x12],     soundId: 0x4A, channel: 1, note: 'FEEDBK05 — mounted units (Horsemen, Knights, Dragoons, Cavalry)' },
+    submarine:    { types: [0x14, 0x15],                  soundId: 0x0C, channel: 1, note: 'SUBMRINE — Carrier class naval (Carrier, Submarine)' },
+    chariotKnight:{ types: [0x07, 0x0B, 0x0A, 0x09],     soundId: 0x22, channel: 1, note: 'MRKTPLCE — Chariot, Knight, Armor, Mech Inf era' },
+    artillery:    { types: [0x08, 0x0D, 0x0C, 0x0E],     soundId: 0x26, channel: 1, note: 'BLDSPCSH — Catapult, Artillery, Howitzer' },
+    // Tank-era range check (0x16 <= type <= 0x1A)
+    tankEra: {
+      typeRange: [0x16, 0x1A],         // @ line 663 — bVar6 >= 0x16 AND bVar6 <= 0x1A
+      spy: { type: 0x17, soundId: 0x0A, channel: 1, note: 'TANKMOTR — type 0x17 (Alpine Troops / Spy era)' },
+      heavyTank: {
+        condition: 'type > 0x17',      // @ line 671 — types 0x18, 0x19, 0x1A
+        soundId: 0x1C,                 // LARGEXPL
+        postDelay: 0x14,               // @ line 673 — thunk_FUN_0046e287(0x14) = 20 ticks
+        note: 'Heavy tank types play LARGEXPL + 20-tick delay',
+      },
+      animOffset: 0x28,                // @ line 670 — local_ac = 0x28 for all tank-era
+    },
+    // Default fallback for unclassified ground units
+    defaultInfantry: { soundId: 0x49, channel: 1, note: 'FEEDBK04 — default infantry/misc' },
+    sourceAddr: '0x00580341 lines 648-675',
+  },
+
+  // --- Post-combat resolution sounds (lines 880-903) ---
+  // Played after combat rounds resolve, based on outcome and unit era.
+  // Condition tree:
+  //   if (local_ac != 0): naval/aircraft explosion → 0x23
+  //   else if (dead unit type < 0x1E): ancient death → 0x17
+  //   else: modern death → 0x4F
+  postCombat: {
+    navalAircraftExplosion: { soundId: 0x23, channel: 1, note: 'NEWBANK — when local_ac != 0 (naval/air unit fought)' },
+    ancientUnitDeath:       { soundId: 0x17, channel: 1, note: 'JETSPUTR — dead unit type < 0x1E (ancient era)' },
+    modernUnitDeath:        { soundId: 0x4F, channel: 1, note: 'JETSPUTR dup — dead unit type >= 0x1E (modern era)' },
+    eraThreshold: 0x1E,
+    sourceAddr: '0x00580341 lines 886-903',
+    note: 'local_c0 == 0 means attacker died; != 0 means defender died. The dead unit type determines ancient vs modern sound.',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// COMBAT NOTIFICATION STRINGS — Dialog keys and AI message IDs
+// Binary ref: FUN_00580341 @ block_00580000.c lines 357-577
+//
+// These are the 8 combat event notification strings displayed to
+// players during combat resolution. Each has:
+//   - A dialog key string (looked up in GAME.TXT / labels.txt)
+//   - An AI message ID sent via thunk_FUN_00511880 for remote players
+//   - A display function for the local player
+//
+// Local display: thunk_FUN_004442e0(stringKey, unitId) or
+//                thunk_FUN_004cc870(stringKey, param, 8) for BATTERY variants
+// Remote notify: thunk_FUN_00511880(msgId, targetSocket, viewType, 0, unitParam, 0)
+// ═══════════════════════════════════════════════════════════════════
+
+export const COMBAT_NOTIFICATION_STRINGS = {
+  SNEAK: {
+    dialogKey: 'SNEAK',
+    stringAddr: 's_SNEAK_00634454',
+    aiMessageId: 0x2E,
+    viewType: 1,                       // thunk_FUN_00511880 param3
+    condition: 'Attacker breaks peace (no ceasefire treaty with defender) — sneak attack',
+    localDisplay: 'thunk_FUN_004442e0(s_SNEAK_00634454, param_1)',
+    sourceAddr: '0x00580341 lines 359-369',
+  },
+  BREAKCEASE: {
+    dialogKey: 'BREAKCEASE',
+    stringAddr: 's_BREAKCEASE_00634448',
+    aiMessageId: 0x2D,
+    viewType: 1,
+    condition: 'Attacker breaks ceasefire treaty with defender (diplomacy bits 2+4 in contact flags)',
+    localDisplay: 'thunk_FUN_004442e0(s_BREAKCEASE_00634448, param_1)',
+    sourceAddr: '0x00580341 lines 372-382',
+  },
+  MISSILEATTACK: {
+    dialogKey: 'MISSILEATTACK',
+    stringAddr: 's_MISSILEATTACK_0063445c',
+    aiMessageId: 0x2F,
+    viewType: 1,
+    condition: 'Carrier aircraft (flagsB & 0x10) with short range (< 0x63) attacks city; city found on target tile',
+    localDisplay: 'thunk_FUN_004442e0(s_MISSILEATTACK_0063445c, param_1)',
+    sourceAddr: '0x00580341 lines 456-472',
+  },
+  PEARLHARBOR: {
+    dialogKey: 'PEARLHARBOR',
+    stringAddr: 's_PEARLHARBOR_0063446c',
+    aiMessageId: 0x30,
+    viewType: 3,
+    condition: 'Surprise naval/air attack on a city (local_10 != 0): attacker and defender city info shown',
+    localDisplay: 'thunk_FUN_004442e0(s_PEARLHARBOR_0063446c, param_1)',
+    sourceAddr: '0x00580341 lines 474-495',
+  },
+  BATTERY: {
+    dialogKey: 'BATTERY',
+    stringAddr: 's_BATTERY_00634484',
+    aiMessageId: 0x32,
+    viewType: 3,
+    condition: 'Coastal bombardment with no land attacker (local_24 == 0) OR bombarding unit is Cannon (0x11)',
+    localDisplay: 'thunk_FUN_004cc870(s_BATTERY_00634484, local_b8, 8)',
+    sourceAddr: '0x00580341 lines 500-514',
+  },
+  BATTERY2: {
+    dialogKey: 'BATTERY2',
+    stringAddr: 's_BATTERY2_00634478',
+    aiMessageId: 0x31,
+    viewType: 4,
+    condition: 'Coastal bombardment with land attacker present (local_24 != 0 AND unit != Cannon)',
+    localDisplay: 'thunk_FUN_004cc870(s_BATTERY2_00634478, local_b8, 8)',
+    sourceAddr: '0x00580341 lines 517-533',
+    note: 'BATTERY2 adds a third text substitution (city name via DAT_0064c510) vs plain BATTERY',
+  },
+  SCRAMBLE: {
+    dialogKey: 'SCRAMBLE',
+    stringAddr: 's_SCRAMBLE_0063448c',
+    aiMessageId: 0x33,
+    viewType: 3,
+    condition: 'Air defense scramble: defender aircraft launches to intercept (local_28 != 0)',
+    localDisplay: 'thunk_FUN_004442e0(s_SCRAMBLE_0063448c, local_c)',
+    sourceAddr: '0x00580341 lines 536-556',
+  },
+  AMPHIBMOTIZE: {
+    dialogKey: 'AMPHIBMOTIZE',
+    stringAddr: 's_AMPHIBMOTIZE_00634498',
+    aiMessageId: 0x34,
+    viewType: 3,
+    condition: 'Amphibious assault: ground unit (domain == 0) attacks from sea (thunk_FUN_005b89e4 returns nonzero)',
+    localDisplay: 'thunk_FUN_004442e0(s_AMPHIBMOTIZE_00634498, param_1)',
+    sourceAddr: '0x00580341 lines 558-578',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// COMBAT SOUND NETWORK SYNC — Opcode 0x9A
+// Binary ref: FUN_00580341 @ block_00580000.c lines 683-693
+//
+// In multiplayer (DAT_00655b02 > 2), after the attacking player selects
+// the combat sound locally, opcode 0x9A is broadcast to all other
+// players who can see the combat (aiStack_58[player] != 0 and
+// player != DAT_006d1da0).
+//
+// The opcode carries:
+//   thunk_FUN_0046b14d(0x9A, targetSocket,
+//       DAT_0066bfc4,  -- soundId selected by local dispatch (-1 if none)
+//       DAT_0066bfc0,  -- secondary sound param (0xFFFFFFFF default)
+//       0, 0, 0, 0, 0, 0)
+//
+// This is immediately followed by opcode 0x70 (UNIT_MOVE) which sends
+// the actual combat movement data to the remote player.
+//
+// Post-combat: opcode 0x7A is sent (lines 904-911) to sync the
+// post-combat resolution sound (explosion/death) to remote players,
+// carrying the same DAT_0066bfc4/DAT_0066bfc0 pair.
+// ═══════════════════════════════════════════════════════════════════
+
+export const COMBAT_SOUND_NETWORK_SYNC = {
+  attackSoundOpcode: 0x9A,             // @ line 686 — pre-combat sound sync
+  resolutionSoundOpcode: 0x7A,         // @ line 907 — post-combat sound sync
+  soundIdGlobal: 'DAT_0066bfc4',       // initialized to -1 (0xFFFFFFFF), set by play_sound_effect
+  soundParamGlobal: 'DAT_0066bfc0',    // initialized to 0xFFFFFFFF
+  condition: 'DAT_00655b02 > 2 (network multiplayer with 3+ connection slots)',
+  broadcastFilter: 'DAT_006d1da0 != player AND aiStack_58[player] != 0 (player can see combat)',
+  sourceAddr: '0x00580341 lines 683-693 (attack), lines 904-911 (resolution)',
+};
