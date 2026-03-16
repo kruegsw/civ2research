@@ -685,11 +685,10 @@ const Civ2Parser = {
       const turnsSinceCapture  = savBuf[off + 11];
       const isOccupied         = (owner !== originalOwner);
       const knownToTribes      = savBuf[off + 12];
-      const padding_13         = savBuf[off + 13];
 
-      // Believed sizes (+14–+21)
+      // Believed sizes (+13–+20): one byte per civ, stores last-known city size
       const believedSize = new Array(8);
-      for (let civ = 0; civ < 8; civ++) believedSize[civ] = savBuf[off + 14 + civ];
+      for (let civ = 0; civ < 8; civ++) believedSize[civ] = savBuf[off + 13 + civ];
 
       // Specialists (+22–+25): 16 × 2-bit entries in .sav → string array in model
       const specialistBytesRaw = [savBuf[off+22], savBuf[off+23], savBuf[off+24], savBuf[off+25]];
@@ -780,13 +779,12 @@ const Civ2Parser = {
           improvementSold:     !!(attribs1 & 0x04),
           weLoveKingDay:       !!(attribs1 & 0x02),
           civilDisorder:       !!(attribs1 & 0x01),
-          canBuildHydro:       !!(attribs2 & 0x04),
+          canBuildHydro:       !!(attribs2 & 0x08),
           canBuildShips:       !!(attribs3 & 0x20),
           objectiveX3:         !!(attribs4 & 0x10),
           objectiveX1:         !!(attribs4 & 0x04),
           autoBuildDomestic:   !!(attribs4 & 0x02),
           autoBuildMilitary:   !!(attribs4 & 0x01),
-          padding_13,
           specialists, specialistCount,
           foodInBox, shieldsInBox, netBaseTrade,
           workedTiles,
