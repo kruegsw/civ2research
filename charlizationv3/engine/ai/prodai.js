@@ -640,9 +640,9 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   // ── Per-type maximum checks (decompiled: ATK >= 99 caps at 4 built + 2 globally) ──
   if (atk >= 99 && sameTypeGlobal >= 4 && sameTypeOnCont >= 2) return -1;
 
-  // ── Settler scoring (role 5) ──
+  // ── Settler scoring (role 6 in defs.js, binary role 5) ──
   // Ported from decompiled lines 5848-5925
-  if (role === 5) {
+  if (role === 6) {
     // City size must be > 1 (city.size checks below handle this)
     if (city.size <= 1) return -1;
 
@@ -712,9 +712,9 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     return Math.max(0, score);
   }
 
-  // ── Diplomat/Spy scoring (role 6) ──
+  // ── Diplomat/Spy scoring (role 7 in defs.js, binary role 6) ──
   // Ported from decompiled lines 5526-5650
-  if (role === 6) {
+  if (role === 7) {
     // Decompiled: canExpand check, then diplomat scoring based on target civ
     let rawScore = 999; // lower = better in decompiled
     let coastalPref = 0;
@@ -786,9 +786,9 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     return Math.max(0, 200 - rawScore);
   }
 
-  // ── Trade unit scoring (role 7) ──
+  // ── Trade unit scoring (role 8 in defs.js, binary role 7) ──
   // Ported from decompiled lines 5652-5668
-  if (role === 7) {
+  if (role === 8) {
     // Decompiled: coastal city check, then size-based score
     if (cityCtx.isCoastal && city.size < 3) return -1;
 
@@ -873,9 +873,9 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     const costEfficiency = Math.max(1, Math.floor(moveCostNorm * combatPower / 2));
 
     // Role-based multiplier (decompiled lines 5823-5826)
-    // role not 1 and not 5 → ×2; if also not matching continent posture → ×4
+    // role not 1(defend) and not 6(settle) → ×2; if also not matching continent posture → ×4
     let roleMul = 1;
-    if (role !== 1 && role !== 5) {
+    if (role !== 1 && role !== 6) {
       roleMul = 2;
       if (continentPosture !== role) roleMul = 4;
     }
@@ -953,7 +953,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
       threatBonus = Math.floor((3 - coastalFlag) *
         (cityCtx.nearbyEnemyMilitary + 1) * rawScore / Math.max(1, aliveCivCount));
     }
-    if (role === 5) threatBonus = Math.floor(threatBonus / 2);
+    if (role === 6) threatBonus = Math.floor(threatBonus / 2);  // settle role halves threat bonus
     // Non-wartime: double up
     if (coastalFlag === 0 && aliveCivCount > 2) {
       rawScore = rawScore << 1;

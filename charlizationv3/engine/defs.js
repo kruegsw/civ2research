@@ -1031,7 +1031,9 @@ export const BUSY_ORDERS = new Set([
 
 // ── AI constants (from RULES.TXT and decompiled AI logic) ──
 
-// Unit combat role classification (from RULES.TXT role field, DAT_0064b1ca)
+// Unit combat role classification (custom JS numbering, NOT binary RULES.TXT)
+// Binary RULES.TXT: 0=attack, 1=defend, 2=naval, 3=air, 4=sea transport, 5=settle, 6=diplomacy, 7=trade
+// JS engine splits binary role 3 into 3=air attack + 4=air defense, shifting all subsequent:
 // 0=attack, 1=defend, 2=naval superiority, 3=air attack, 4=air defense,
 // 5=naval transport, 6=settle, 7=diplomacy, 8=trade
 export const UNIT_ROLE = [
@@ -1111,8 +1113,11 @@ export const GOVT_INDEX = {
 // ── Building prerequisite chains ──
 // Maps buildingId → required buildingId (must have the prerequisite building to build)
 export const IMPROVE_REQUIRES_BUILDING = {
+  10: 5,   // Bank → Marketplace
+  12: 6,   // University → Library
   16: 15,  // Mfg. Plant → Factory
   22: 10,  // Stock Exchange → Bank
+  23: 9,   // Sewer System → Aqueduct
   26: 12,  // Research Lab → University
   19: 15,  // Power Plant → Factory
   20: 15,  // Hydro Plant → Factory
