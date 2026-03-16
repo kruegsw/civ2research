@@ -767,6 +767,7 @@ export const MP_EVENT_TYPES = {
 
   // ── Barbarians ──
   0x02: { key: 'BARBARIANS',       desc: 'barbarian event (animated)' },   // 0x00511BA2
+  0x4E: { key: 'BARBARIANSLAND',   desc: 'barbarians land (animated)' },   // 0x00511BA2
 
   // ── Global Events ──
   0x03: { key: 'GLOBALWARMING',    desc: 'global warming occurred' },      // 0x00511BA2
@@ -777,117 +778,118 @@ export const MP_EVENT_TYPES = {
   0x0B: { key: 'LAUNCHED',         desc: 'spaceship launched' },           // 0x00511BA2
   0x0C: { key: 'SPACERETURNS',     desc: 'spaceship returns' },            // 0x00511BA2
   0x0D: { key: 'SPACEDESTROYED',   desc: 'spaceship destroyed' },          // 0x00511BA2
-  0x53: { key: 'SPACEMISSION',     desc: 'space mission event' },          // 0x00511BA2
-  0x54: { key: 'SPACEMISSION2',    desc: 'space mission variant 2' },      // 0x00511BA2
-  0x55: { key: 'SPACEMISSION3',    desc: 'space mission variant 3' },      // 0x00511BA2
+  0x49: { key: 'ASTRONAUTS',       desc: 'astronauts event' },             // 0x00511BA2
+  0x53: { key: 'LOSTCLIENT',       desc: 'lost client notification' },     // 0x00511BA2
 
-  // ── City Capture / Destruction ──
+  // ── Civ Destroyed ──
   0x0E: { key: 'DESTROYED',        desc: 'civ destroyed' },                // 0x00511BA2
-  0x16: { key: 'CITYCAPTURE',      desc: 'city captured (dialog)' },       // 0x00511BA2
-  0x17: { key: 'CITYCAPTUREDBY',   desc: 'city captured by (dialog)' },    // 0x00511BA2
-  0x18: { key: 'CAPITALCAPTURE',   desc: 'capital captured (dialog)' },    // 0x00511BA2
-  0x19: { key: 'CAPITALCAPTUREDBY',desc: 'capital captured by (dialog)' }, // 0x00511BA2
-  0x2E: { key: 'TOOKOVER',         desc: 'took over city + state change' },// 0x00511BA2
-  0x2F: { key: 'CITYFLIPS',        desc: 'city flips to another civ' },    // 0x00511BA2
-  0x58: { key: 'CITYACQUIRED',     desc: 'city acquired' },                // 0x00511BA2
-  0x59: { key: 'CITYDESTROYED',    desc: 'city destroyed' },               // 0x00511BA2
-  0x5A: { key: 'CITYRAZEDBY',      desc: 'city razed by' },                // 0x00511BA2
-  0x5B: { key: 'CITYDESTROYEDBY',  desc: 'city destroyed by' },            // 0x00511BA2
-  0x5E: { key: 'CIVILWAR',         desc: 'civil war (animated)' },         // 0x00511BA2
-  0x62: { key: 'MERCDECLARE',      desc: 'mercenary declaration' },         // 0x00511BA2
-  0x63: { key: 'TOOKCIV',          desc: 'took over entire civilization' }, // 0x00511BA2
 
   // ── Trade / Caravans ──
   0x0F: { key: 'CARAVAN',          desc: 'caravan event (animated + sound)' }, // 0x00511BA2
   0x10: { key: 'FOODCARAVAN',      desc: 'food caravan (animated + sound)' }, // 0x00511BA2
-  0x2A: { key: 'TRADEROUTE',       desc: 'trade route established' },       // 0x00511BA2
-  0x2B: { key: 'TRADEROUTEONLY',   desc: 'trade route only' },              // 0x00511BA2
-  0x2C: { key: 'CARAVANYIELDS',    desc: 'caravan yields' },                // 0x00511BA2
+  0x11: { key: 'CARAVANOTHER',     desc: 'caravan other city (animated)' }, // 0x00511BA2
 
   // ── Wonders ──
-  0x11: { key: 'STARTWONDER',      desc: 'wonder construction started' },   // 0x00511BA2
-  0x12: { key: 'WONWONDER',        desc: 'wonder completed' },              // 0x00511BA2
-  0x13: { key: 'WONDEROBSOLETE',   desc: 'wonder made obsolete' },          // 0x00511BA2
-  0x14: { key: 'WONDERCAPTURED',   desc: 'wonder captured' },               // 0x00511BA2
-  0x15: { key: 'WONDERDESTROYED',  desc: 'wonder destroyed' },              // 0x00511BA2
+  0x12: { key: 'STARTWONDER',      desc: 'wonder construction started' },   // 0x00511BA2
+  0x13: { key: 'SWITCHWONDER',     desc: 'switched wonder construction' },  // 0x00511BA2
+  0x14: { key: 'ABANDONWONDER',    desc: 'wonder construction abandoned' }, // 0x00511BA2
+  0x19: { key: 'CAPTUREWONDER',    desc: 'wonder captured' },               // 0x00511BA2
+  0x1A: { key: 'LOSTWONDER',       desc: 'wonder lost' },                   // 0x00511BA2
+  0x47: { key: 'BUILT2',           desc: 'building/wonder completed' },     // 0x00511BA2
+  0x4A: { key: 'ALMOSTWONDER',     desc: 'wonder almost complete' },        // 0x00511BA2
+  0x4B: { key: 'STILLWONDER1',     desc: 'wonder still under construction' }, // 0x00511BA2
+  0x4C: { key: 'STILLWONDER2',     desc: 'wonder still under construction 2' }, // 0x00511BA2
+  0x4D: { key: 'ENDWONDER',        desc: 'wonder completed by rival' },     // 0x00511BA2
 
   // ── Military Operations ──
-  0x1A: { key: 'PARADROP',         desc: 'paradrop (animated + sound 0x3D)' }, // 0x00511BA2
-  0x26: { key: 'AIRLIFT',          desc: 'airlift (animated + sound 0x3D)' },  // 0x00511BA2
-  0x29: { key: 'PIRACY',           desc: 'piracy (animated)' },              // 0x00511BA2
+  0x15: { key: 'PARADROP',         desc: 'paradrop (animated)' },           // 0x00511BA2
+  0x29: { key: 'USEWEAPONS',       desc: 'use weapons (animated)' },        // 0x00511BA2
+  0x2D: { key: 'BREAKCEASE',       desc: 'break ceasefire' },               // 0x00511BA2
+  0x2E: { key: 'SNEAK',            desc: 'sneak attack' },                  // 0x00511BA2
+  0x2F: { key: 'MISSILEATTACK',    desc: 'missile attack' },                // 0x00511BA2
+  0x30: { key: 'PEARLHARBOR',      desc: 'pearl harbor attack' },           // 0x00511BA2
+  0x31: { key: 'BATTERY2',         desc: 'shore battery attack 2' },        // 0x00511BA2
+  0x32: { key: 'BATTERY',          desc: 'shore battery attack' },          // 0x00511BA2
+  0x33: { key: 'SCRAMBLE',         desc: 'aircraft scramble' },             // 0x00511BA2
+  0x34: { key: 'AMPHIBMOTIZE',     desc: 'amphibious assault' },            // 0x00511BA2
+  0x35: { key: 'MULTIPLELOSE',     desc: 'lost multiple units' },           // 0x00511BA2
+  0x36: { key: 'MULTIPLEWIN',      desc: 'won multiple combats' },          // 0x00511BA2
+  0x46: { key: 'MANHATTAN',        desc: 'manhattan project (+ sound 0x23)' }, // 0x00511BA2
 
-  // ── Diplomacy ──
-  0x1B: { key: 'FIRSTCONTACT',     desc: 'first contact + init embassy' },  // 0x00511BA2
-  0x1C: { key: 'PARLEYREQUEST',    desc: 'parley request + diplomacy' },    // 0x00511BA2
-  0x34: { key: 'AMBASSADOREXPELLED', desc: 'ambassador expelled' },         // 0x00511BA2
-  0x35: { key: 'LEAVETREATY',      desc: 'leave treaty + treaty change' },  // 0x00511BA2
-  0x36: { key: 'DECLAREWAR',       desc: 'declare war' },                   // 0x00511BA2
-  0x37: { key: 'DECLAREWAR2',      desc: 'declare war variant' },           // 0x00511BA2
-  0x38: { key: 'NUKEPACT',         desc: 'nuclear non-proliferation pact' },// 0x00511BA2
-  0x39: { key: 'NUKEPACT2',        desc: 'nuclear pact variant' },          // 0x00511BA2
+  // ── City Capture / Destruction ──
+  0x16: { key: 'SCHISM',           desc: 'city schism' },                   // 0x00511BA2
+  0x1B: { key: 'CITYCAPTURE',      desc: 'city captured (+ sound 5)' },     // 0x00511BA2
+  0x1C: { key: 'CITYWINALLY',      desc: 'city won by ally (+ sound 5)' },  // 0x00511BA2
+  0x1D: { key: 'CITYLOSEALLY',     desc: 'city lost by ally (+ sound 5)' }, // 0x00511BA2
+  0x1E: { key: 'CITYCAPTURE2',     desc: 'city captured variant (+ sound 5)' }, // 0x00511BA2
+  0x48: { key: 'MOVECAPITAL',      desc: 'capital moved' },                 // 0x00511BA2
+  0x5E: { key: 'CIVILWAR',         desc: 'civil war (animated)' },          // 0x00511BA2
+  0x62: { key: 'MERCDECLARE',      desc: 'mercenary declaration' },         // 0x00511BA2
+  0x63: { key: 'TOOKCIV',          desc: 'took over entire civilization' }, // 0x00511BA2
 
-  // ── Espionage ──
-  0x1D: { key: 'SPYTECHSTOLEN',    desc: 'tech stolen (+ sound 0x21)' },    // 0x00511BA2
-  0x1E: { key: 'SABOTAGEPRODUCTION', desc: 'sabotage production' },         // 0x00511BA2
-  0x1F: { key: 'MPSABOTAGEPRODUCTION', desc: 'MP sabotage production' },    // 0x00511BA2
-  0x20: { key: 'SUBVERTED',        desc: 'city subverted' },                // 0x00511BA2
-  0x21: { key: 'EMBASSYESTABLISHED', desc: 'embassy established' },         // 0x00511BA2
-  0x22: { key: 'MPEMBASSYESTABLISHED', desc: 'MP embassy established' },    // 0x00511BA2
-  0x23: { key: 'INVESTIGATE',      desc: 'investigation' },                 // 0x00511BA2
-  0x27: { key: 'MBRIBEDUNIT',      desc: 'bribed unit message' },           // 0x00511BA2
-  0x40: { key: 'STEALTECH',        desc: 'steal tech (animated)' },         // 0x00511BA2
-  0x42: { key: 'SPYPOISONED',      desc: 'spy poisoned' },                  // 0x00511BA2
-  0x56: { key: 'BRIBEUNIT',        desc: 'bribe unit (animated)' },         // 0x00511BA2
-  0x57: { key: 'INCITECITY',       desc: 'incite city revolt (animated)' }, // 0x00511BA2
+  // ── Unit Events ──
+  0x17: { key: 'CANESCAPE',        desc: 'unit can escape (+ net 0x77)' },  // 0x00511BA2
+  0x18: { key: 'ESCAPE',           desc: 'unit escaped' },                  // 0x00511BA2
+  0x1F: { key: 'PARTISANS',        desc: 'partisans appear' },              // 0x00511BA2
+  0x20: { key: 'PROMOTED',         desc: 'unit promoted' },                 // 0x00511BA2
+  0x22: { key: 'DESERTED',         desc: 'unit deserted' },                 // 0x00511BA2
+  0x23: { key: 'DESERT',           desc: 'desert event (+ net 0x7B)' },     // 0x00511BA2
+  0x24: { key: 'DESERT2',          desc: 'desert event 2 (+ net 0x7B)' },   // 0x00511BA2
+  0x37: { key: 'RANSOM',           desc: 'ransom demand' },                  // 0x00511BA2
+
+  // ── Nuclear Events ──
+  0x25: { key: 'BLEWITUP',         desc: 'blew it up (explosion)' },        // 0x00511BA2
   0x5C: { key: 'PLANTEDNUKE',      desc: 'nuclear device planted' },        // 0x00511BA2
   0x5D: { key: 'PLANTEDNUKE2',     desc: 'nuclear device variant' },        // 0x00511BA2
+
+  // ── Corruption ──
+  0x21: { key: 'INCORRUPTIBLE',    desc: 'incorruptible message' },         // 0x00511BA2
+
+  // ── Espionage ──
+  0x26: { key: 'BOND007',          desc: 'spy mission (James Bond ref)' },  // 0x00511BA2
+  0x27: { key: null,               desc: 'spy mission variant (DAT)' },     // 0x00511BA2
+  0x28: { key: 'BONDGLORY',        desc: 'spy mission glory' },             // 0x00511BA2
+  0x55: { key: 'ENEMYEMBASSY',     desc: 'enemy embassy (+ sound 0x44)' },  // 0x00511BA2
+  0x56: { key: 'ENEMYINVESTIGATE', desc: 'enemy investigate (+ sound 0x44)' }, // 0x00511BA2
+  0x57: { key: 'STEAL',            desc: 'steal tech (+ sound 0x44/0x27)' }, // 0x00511BA2
+  0x58: { key: 'FOILEDAGAIN',      desc: 'espionage foiled (+ sound 0x44)' }, // 0x00511BA2
+  0x59: { key: 'SABOTAGEONE',      desc: 'sabotage production (+ sound)' }, // 0x00511BA2
+  0x5A: { key: 'SABOTAGETWO',      desc: 'sabotage improvement (+ sound)' }, // 0x00511BA2
+  0x5B: { key: 'WATERSUPPLY',      desc: 'poison water supply (+ sound 0x44)' }, // 0x00511BA2
   0x64: { key: 'REVEALUNITORIGINS', desc: 'intel: reveal unit origins' },   // 0x00511BA2
   0x65: { key: 'REVEALCITYINFO',   desc: 'intel: reveal city info' },       // 0x00511BA2
 
-  // ── Nuclear Events ──
-  0x24: { key: 'NUCLEARPLANT',     desc: 'nuclear plant meltdown (+ sound 0x57)' }, // 0x00511BA2
-  0x25: { key: 'NUKEEXPLODED',     desc: 'nuclear explosion' },             // 0x00511BA2
+  // ── Diplomacy / Treaties ──
+  0x2A: { key: null,               desc: 'diplomacy event (DAT, animated)' }, // 0x00511BA2
+  0x2B: { key: 'CHANGED',          desc: 'treaty changed' },                // 0x00511BA2
+  0x2C: { key: 'OVERTHROWN',       desc: 'government overthrown' },         // 0x00511BA2
+  0x38: { key: 'ACTIVATEALLY',     desc: 'activate ally' },                 // 0x00511BA2
+  0x39: { key: 'ALLYHELPS',        desc: 'ally helps' },                    // 0x00511BA2
+  0x3A: { key: 'CANCELPEACE',      desc: 'cancel peace treaty' },           // 0x00511BA2
+  0x3B: { key: 'ALLYUNDERATTACK',  desc: 'ally under attack' },             // 0x00511BA2
+  0x3C: { key: 'ALLYATTACKING',    desc: 'ally is attacking' },             // 0x00511BA2
+  0x3D: { key: 'PARLEYREQUEST',    desc: 'parley request + diplomacy' },    // 0x00511BA2
+  0x50: { key: 'WARENDS',          desc: 'war ends' },                      // 0x00511BA2
+  0x51: { key: 'MILITARYAID1',     desc: 'military aid request' },          // 0x00511BA2
+  0x52: { key: 'MILITARYAID2',     desc: 'military aid variant' },          // 0x00511BA2
 
-  // ── Government Changes ──
-  0x30: { key: 'GOVTOVERTHROWN',   desc: 'government overthrown' },         // 0x00511BA2
-  0x31: { key: 'GOVTOVERTHROWN2',  desc: 'government overthrown variant' }, // 0x00511BA2
-  0x32: { key: 'MPREVOLUTION',     desc: 'MP revolution' },                 // 0x00511BA2
-  0x33: { key: 'MPREVOLUTION2',    desc: 'MP revolution + UI' },            // 0x00511BA2
-  0x3A: { key: 'HEADSTAX',         desc: 'heads tax event' },               // 0x00511BA2
-  0x3B: { key: 'NEWGOVT',          desc: 'new government + set change' },   // 0x00511BA2
-  0x3C: { key: null,               desc: 'show_council(civId)' },           // 0x00511BA2
+  // ── MP Turn Timer / Player Management ──
+  0x3E: { key: 'UPGRADE',          desc: 'unit upgrade dialog' },           // 0x00511BA2
+  0x3F: { key: 'NEWPLAYER',        desc: 'new player joined' },             // 0x00511BA2
+  0x40: { key: 'NEWTURNTIMERCLIENT', desc: 'turn timer client dialog' },    // 0x00511BA2
+  0x41: { key: 'NEWTURNTIMERNO',   desc: 'turn timer declined' },           // 0x00511BA2
+  0x42: { key: 'NEWTURNTIMERYES',  desc: 'turn timer accepted' },           // 0x00511BA2
+  0x43: { key: 'PMCHANGECLIENT',   desc: 'PM change client dialog' },       // 0x00511BA2
+  0x44: { key: 'PMCHANGENO',       desc: 'PM change declined' },            // 0x00511BA2
+  0x45: { key: 'PMCHANGEYES',      desc: 'PM change accepted' },            // 0x00511BA2
 
-  // ── Research ──
-  0x2D: { key: 'SCIENCEADVANCE',   desc: 'science advance + tech unlock' }, // 0x00511BA2
-  0x3D: { key: null,               desc: 'select_next_advance("ADVANCE")' },// 0x00511BA2
-  0x3E: { key: 'RESEARCHGOAL',     desc: 'research goal notification' },    // 0x00511BA2
+  // ── Golden Age ──
+  0x54: { key: 'GOLDENAGE',        desc: 'golden age (+ sound 0x3C)' },     // 0x00511BA2
 
-  // ── City Growth / Events ──
-  0x28: { key: 'MAQUEDUCT',        desc: 'aqueduct needed' },               // 0x00511BA2
-  0x41: { key: 'CITYSIZE',         desc: 'city size change + growth UI' },  // 0x00511BA2
-  0x43: { key: 'ANARCHY',          desc: 'anarchy message' },               // 0x00511BA2
-
-  // ── Worker / Settler Actions ──
-  0x44: { key: 'SETTINGUP',        desc: 'settler setting up' },            // 0x00511BA2
-  0x45: { key: 'SETTINGUP2',       desc: 'settler setting up variant' },    // 0x00511BA2
-  0x46: { key: 'BUILDFORT',        desc: 'build fortress' },                // 0x00511BA2
-  0x47: { key: 'BUILDROAD',        desc: 'build road' },                    // 0x00511BA2
-  0x48: { key: 'BUILDIRRIG',       desc: 'build irrigation' },              // 0x00511BA2
-  0x49: { key: 'BUILDMINE',        desc: 'build mine' },                    // 0x00511BA2
-  0x4A: { key: 'BUILDAIRBASE',     desc: 'build airbase' },                 // 0x00511BA2
-  0x4B: { key: 'POLLUTION',        desc: 'clean pollution' },               // 0x00511BA2
-  0x4C: { key: 'CHOPPEDFOREST',    desc: 'chopped forest' },                // 0x00511BA2
-  0x4D: { key: 'CLEARSWAMP',       desc: 'clear swamp' },                   // 0x00511BA2
-  0x4E: { key: 'CLEARJUNGLE',      desc: 'clear jungle' },                  // 0x00511BA2
-  0x4F: { key: 'BUILDRAILROAD',    desc: 'build railroad' },                // 0x00511BA2
-  0x50: { key: 'BUILDTRANSFORMATION', desc: 'terrain transformation' },     // 0x00511BA2
-
-  // ── Goody Huts ──
-  0x51: { key: 'GOODYHUT',         desc: 'goody hut discovery' },           // 0x00511BA2
-  0x52: { key: 'GOODYHUT2',        desc: 'goody hut barbarian variant' },   // 0x00511BA2
+  // ── Scenario Events ──
+  0x4F: { key: null,               desc: 'scenario text display (no key)' }, // 0x00511BA2
 
   // ── Miscellaneous ──
-  0x3F: { key: null,               desc: 'blank/nop case' },                // 0x00511BA2
   0x5F: { key: 'UPMINE',           desc: 'upgrade mine (animated)' },       // 0x00511BA2
   0x60: { key: 'UPYOURS',          desc: 'diplomatic insult (animated)' },  // 0x00511BA2
   0x61: { key: 'UPYOURSTOO',       desc: 'diplomatic retort (animated)' },  // 0x00511BA2
