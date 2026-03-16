@@ -593,6 +593,20 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       c.gx === dest.gx && c.gy === dest.gy && c.owner !== civSlot && c.owner > 0 && c.size > 0);
     if (enemyCity && (UNIT_ATK[unit.type] || 0) > 0) {
       const defOwner = enemyCity.owner;
+
+      // D.3: Apply treaty-breaking flags when entering undefended enemy city
+      if (state.treaties) {
+        const capWarKey = civSlot < defOwner ? `${civSlot}-${defOwner}` : `${defOwner}-${civSlot}`;
+        const capPrevTreaty = prev.treaties?.[capWarKey];
+        if (capPrevTreaty && capPrevTreaty !== 'war' && capPrevTreaty !== undefined) {
+          if (!state.diplomacy) state.diplomacy = {};
+          const dKey = `${civSlot}-${defOwner}`;
+          state.diplomacy = { ...state.diplomacy, [dKey]: { ...(state.diplomacy[dKey] || {}), sneak: true, sneakTurn: state.turn?.number || 0 } };
+          // Break the treaty
+          state.treaties = { ...state.treaties, [capWarKey]: 'war' };
+        }
+      }
+
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const cityIdx = state.cities.indexOf(enemyCity);
       if (cityIdx >= 0) {

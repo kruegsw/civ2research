@@ -22,6 +22,74 @@ import { hasWonderEffect } from './utils.js';
 import { grantAdvance } from './research.js';
 import { updateVisibility } from './visibility.js';
 
+// ── D.1: Treaty Flag Constants (binary convention) ────────────────
+// These match the 32-bit treaty flag word from the decompiled binary.
+// Each civ pair has a directional flag word: treatyFlags[A][B] !== treatyFlags[B][A]
+export const TF = {
+  CONTACT:           0x01,     // Civs have met
+  CEASEFIRE:         0x02,     // Ceasefire active
+  PEACE:             0x04,     // Peace treaty active
+  ALLIANCE:          0x08,     // Alliance active
+  VENDETTA:          0x10,     // War grudge / embassy expelled
+  INTRUDER:          0x20,     // Shared intelligence flag
+  HOSTILITY:         0x40,     // Transient hostility
+  EMBASSY:           0x80,     // Embassy established
+  NUKE_AWARENESS:    0x100,    // Aware of nuclear weapons
+  PERIODIC_10:       0x400,    // Set on first contact
+  WAR_STARTED:       0x800,    // War just started / betrayal
+  CAPTURE_VENDETTA:  0x1000,   // City capture vendetta
+  WAR:               0x2000,   // Formally at war
+  RECENT_CONTACT:    0x4000,   // Recent contact
+  CAPTURE_NOTIFY:    0x10000,  // City captured notification
+  NUCLEAR_ATTACK:    0x20000,  // Nuclear attack perpetrated
+  TRIBUTE_DEMANDED:  0x40000,  // Tribute demanded
+};
+
+/** Convert string treaty status to flag bits. */
+export function statusToFlags(status) {
+  switch (status) {
+    case 'alliance':  return TF.CONTACT | TF.ALLIANCE;
+    case 'peace':     return TF.CONTACT | TF.PEACE;
+    case 'ceasefire': return TF.CONTACT | TF.CEASEFIRE;
+    case 'war':       return TF.CONTACT | TF.WAR;
+    default:          return 0;
+  }
+}
+
+/** Convert treaty flags to string status (highest treaty wins). */
+export function flagsToStatus(flags) {
+  if (flags & TF.ALLIANCE) return 'alliance';
+  if (flags & TF.PEACE) return 'peace';
+  if (flags & TF.CEASEFIRE) return 'ceasefire';
+  if (flags & TF.CONTACT) return 'war';
+  return 'war';
+}
+
+/** Get treaty flags for a civ pair. */
+export function getTreatyFlags(state, civA, civB) {
+  if (!state.treatyFlags) return 0;
+  const key = `${civA}-${civB}`;
+  return state.treatyFlags[key] || 0;
+}
+
+/** Set treaty flags for a civ pair (directional). */
+export function setTreatyFlags(state, civA, civB, flags) {
+  if (!state.treatyFlags) state.treatyFlags = {};
+  state.treatyFlags = { ...state.treatyFlags, [`${civA}-${civB}`]: flags };
+}
+
+/** Add flag bits to a civ pair's treaty. */
+export function addTreatyFlag(state, civA, civB, flag) {
+  const current = getTreatyFlags(state, civA, civB);
+  setTreatyFlags(state, civA, civB, current | flag);
+}
+
+/** Clear flag bits from a civ pair's treaty. */
+export function clearTreatyFlag(state, civA, civB, flag) {
+  const current = getTreatyFlags(state, civA, civB);
+  setTreatyFlags(state, civA, civB, current & ~flag);
+}
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 /** Get the canonical treaty key for a civ pair (lower index first). */
