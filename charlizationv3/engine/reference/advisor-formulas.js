@@ -59,6 +59,9 @@ export const DEMOGRAPHICS = {
     formula: 'sum_of(tradeRevenue * 2 + scienceOutput) per city',
     unit: 'M tons',
     lowerIsBetter: false,
+    // Overflow guard: GNP must be < 30000 / (techLevel + 1) to use normal formula
+    // C (line 1880): if (aiStack_12c[civ] < 30000 / (DAT_0064c6b0[civ*0x594] + 1))
+    overflowGuard: 30000,           // numerator for overflow check              // 0x00433434+line1880
   },
 
   mfgGoods: {
@@ -681,6 +684,108 @@ export const DIPLOMACY = {
     },
     sourceAddr: '0x0045B4DA',
   },
+
+  // --- Additional constants from FUN_0045705e (raw C audit) ---
+
+  difficultyMultiplier: {
+    // @ block_00450000.c:3587 — used in tech demand accumulation loop
+    // (-(uint)(DAT_00655b08 == 0) & 2) + 2
+    formula: 'difficulty == 0 ? 2 : 4',
+    effect: 'Multiplier applied to each tech superiority term in demand sum',
+    note: 'When difficulty is Chieftain (0), multiplier is 2; all others get 4',
+  },
+
+  warDeclarationPatience: {
+    // @ block_00450000.c:3614-3616 — conditions gating aggressive evaluation
+    rankThreshold: 7,           // rank == 7 (max rank)
+    cityThreshold: 4,           // cities > 4 (i.e. *(short *)(&DAT_0064c708 + param_1*0x594) > 4)
+    turnThreshold: 200,         // @ line 3635/3789: DAT_00655af8 > 200
+    patienceFormula: {
+      // @ block_00450000.c:3615: local_c * -0x32 + 200
+      formula: '-50 * vendettaCount + 200',
+      note: 'Turn must exceed this value for war patience to expire; vendettaCount = number of civs with vendetta flag (0x20)',
+    },
+  },
+
+  nukeTechDemandBoost: {
+    // @ block_00450000.c:3664 — when enemy has nukes (peaceKeeper != 0)
+    floor: 100,                 // techDemand = clamp(techDemand, 100, 9999)
+    flag: 0x100,                // treaty flag set for nuke awareness (line 3661)
+    note: 'Sets wantsMore=1 and forces tech demand to at least 100',
+  },
+
+  techDemandCap: {
+    // @ block_00450000.c:3646-3648 — caps tech demand by treasury when no shared tech
+    formula: 'treasury / 50 / (8 - rank)',
+    note: 'Only applied when wantsMore==0 (no shared tech); clamp(techDemand, 0, treasury/(50*(8-rank)))',
+    treasuryDivisor: 0x32,      // 50
+    rankSubtractedFrom: 8,
+  },
+
+  tributeMinimum: {
+    // @ block_00450000.c:3670-3672 — tribute floor when AI is peacekeeper
+    formula: '(patience >> 1) + 1',
+    floor: 4,                   // if tribute < 5, set to 4
+    condition: 'AI is peacekeeper and enemy is not',
+  },
+
+  warInitiationAttitudeClamp: {
+    // @ block_00450000.c:3880-3882 — when AI decides to initiate war
+    clampValue: 0x1e,           // 30 — if attitudeScore > 29, clamp to 30
+    note: 'Forces hostile attitude when wantsToInitiate is set (DAT_0064b0e8)',
+  },
+
+  territoryDistanceThreshold: {
+    // @ block_00450000.c:3943 — DAT_006ced50 < 3
+    threshold: 3,
+    effect: 'If unit distance to enemy territory < 3, doubles tech demand and increments border violations',
+    address: 'DAT_006ced50',
+  },
+
+  treatyMasks: {
+    // @ block_00450000.c:3848 — checked to prevent random demand suppression
+    noRandomSuppress: 0x808,    // if (treaty & 0x808) != 0, skip random demand suppression
+    // @ block_00450000.c:3909 — checked before AI considers war declaration
+    noWarDeclaration: 0x400008, // if (treaty & 0x400008) != 0, skip war declaration
+    // Individual flags:
+    warFlag:       0x10,        // at war (used throughout, e.g. line 3727, 3767, 3872)
+    allianceFlag:  0x08,        // alliance (line 3680, 3784)
+    contactFlag:   0x01,        // contact/embassy (line 3790, 3819)
+    vendettaFlag:  0x20,        // vendetta (byte1 & 0x20, line 3683, 3863)
+  },
+
+  treatyActionFlags: {
+    // @ block_00450000.c:3721 — Great Wall/UN sets this treaty flag
+    greatWallFlag: 0x10000,     // thunk_FUN_00467750(param_2, param_1, 0x10000)
+    // @ block_00450000.c:3838 — set when no third-party enemies found
+    noEnemiesFlag: 0x100000,    // thunk_FUN_00467750(param_2, param_1, 0x100000)
+  },
+
+  ww2ScenarioOverrides: {
+    // @ block_00450000.c:3884-3904 — hardcoded WW2 scenario logic
+    scenarioFlag: 0x80,         // DAT_00655af0 & 0x80
+    scenarioDataFlag: 0x8000,   // DAT_0064bc60 & 0x8000
+    hardcodedCivLogic: [
+      { civB: 6, civA: 7, condition: 'bRam0064e854 & 8', effect: 'wantsMore = 1' },
+      { civB: 6, civA: 1, effect: 'wantsMore = 0' },
+      { civB: 6, civA: 3, effect: 'wantsMore = 1' },
+      { civB: 6, civAOther: true, effect: 'wantsMore = 0' },
+      { civB: 3, civA: [6, 1], effect: 'wantsMore = 1' },
+    ],
+  },
+
+  warScoreInitial: {
+    // @ block_00450000.c:3768 — initial war score when at war
+    value: -2,                  // DAT_0064b140 = -2
+    note: 'War score starts at -2 when already at war with target',
+  },
+
+  wantsNothingStates: {
+    // @ block_00450000.c:3579, 3763
+    initial: 1,                 // DAT_0064b148 = 1 at start
+    wantsNothing: 2,            // DAT_0064b148 = 2 when wantsMore is set (line 3763)
+    forcedOpen: 0,              // DAT_0064b148 = 0 when tribute demanded (line 3713) or alliance/open (line 3759)
+  },
 };
 
 // ============================================================================
@@ -793,25 +898,375 @@ export const TRADE_DESIRABILITY = {
 
   terrainCounting: {
     // 11 terrain types counted in city radius (21 tiles)
-    riverBonus: 3,  // terrainCount[type] += 3 for river tiles
-    jungleMerge: 'terrainCount[6] += terrainCount[7]; terrainCount[7] = 0',
+    riverBit: 0x80,             // @ line 4860: (*pbVar6 & 0x80) river flag on terrain overlay byte
+    riverBonus: 3,              // terrainCount[type] += 3 for river tiles (line 4857)
+    roadBit: 0x10,              // @ line 4864: (uVar7 & 0x10) road flag on improvements byte
+    roadCountNote: 'local_12c incremented per road tile; used in supply[6]/demand[6] formulas',
+    jungleMerge: 'terrainCount[6] += terrainCount[7]; terrainCount[7] = 0',  // @ line 4869-4870
+  },
+
+  sizeThresholds: {
+    // @ block_00430000.c:4878-4884
+    sizeLt3Doubling: {
+      threshold: 3,             // city.size < 3 (line 4879)
+      condition: 'scienceRate < 49 (0x31)',
+      effect: 'Doubles supply[0] (Hides)',
+    },
+    sizeThreshold49: {
+      value: 0x31,              // 49
+      effect: 'When scienceRate >= 49: supply[0] halved instead of size<3 doubling',
+    },
+  },
+
+  coastalTerrainBonus: {
+    // @ block_00430000.c:4889-4892
+    baseBonus: 2,               // terrainCount[6] + 2 (line 4889)
+    farFromEquator: 3,          // terrainCount[6] + 3 when distY > mapHeight/3 (line 4891)
+    note: 'Multiplier for supply[1] = (riverCount/2 + terrainCount[4]*2 + terrainCount[2]) * coastalBonus',
+  },
+
+  techIdsPerCommodity: {
+    // Tech IDs checked via thunk_FUN_004bd9f0 (civ_has_tech)
+    0x25: { decimal: 37, name: 'Railroad', commodities: 'supply[2]/demand[0]/demand[1]/demand[5]/demand[14]', lines: '4904,5071,5095,5124,5249' },
+    0x41: { decimal: 65, name: 'Miniaturization', commodities: 'supply[3](Gems)', line: '4915' },
+    0x27: { decimal: 39, name: 'Refrigeration', commodities: 'supply[9](Spice)', line: '4978' },
+    0x30: { decimal: 48, name: 'Automobile', commodities: 'demand[0](Hides)', line: '5075', effect: 'set to 1' },
+    0x17: { decimal: 23, name: 'Explosives', commodities: 'demand[5](Coal)/demand[6](Wine)', lines: '5128,5153' },
+    0x3a: { decimal: 58, name: 'Electronics', commodities: 'supply[13]/supply[15]/demand[15]', lines: '5046,5290,5374' },
+    0x16: { decimal: 22, name: 'Electricity', commodities: 'demand[10](special)', line: '5217' },
+    0x10: { decimal: 16, name: 'Navigation', commodities: 'demand[6](Wine)/demand[10]', lines: '5157,5221' },
+    0x46: { decimal: 70, name: 'Recycling', commodities: 'demand[11](Spice)', line: '5245' },
+    0x05: { decimal: 5, name: 'Masonry', commodities: 'demand[14](Oil)', line: '5273', effect: '*3' },
+  },
+
+  buildingIdsPerCommodity: {
+    // Building IDs checked via thunk_FUN_0043d20a (city_has_building)
+    9:    { name: 'MarcoPolosEmbassy', commodities: 'supply[3](Gems)', line: '4919', effect: '+50%' },
+    10:   { name: 'Colosseum', commodities: 'demand[10]/demand[11]', lines: '5149,5213', effect: '+50%' },
+    0x0b: { decimal: 11, name: 'Marketplace', commodities: 'demand[10](special)', line: '5209', effect: '+50%' },
+    0x0f: { decimal: 15, name: 'SuperMarket', commodities: 'demand[14](Oil)', line: '5258', effect: '+50%' },
+    0x13: { decimal: 19, name: 'Factory', commodities: 'demand[5](Coal)', line: '5132', effect: 'doubles' },
+    0x14: { decimal: 20, name: 'MfgPlant', commodities: 'demand[5](Coal)', line: '5137', effect: '/8' },
+    0x15: { decimal: 21, name: 'PowerPlant', commodities: 'demand[5]/supply[15]', lines: '5137,5298', effect: '/8 or *2' },
+    0x19: { decimal: 25, name: 'ResearchLab', commodities: 'demand[14](Oil)', line: '5277', effect: 'doubles' },
+    0x1d: { decimal: 29, name: 'HydroPlant', commodities: 'demand[5](Coal)', line: '5138', effect: '/8' },
+    5:    { name: 'Granary', commodities: 'demand[6](Wine)', line: '5145', effect: '+50%' },
+    0x0d: { decimal: 13, name: 'Bank', commodities: 'demand[14](Oil)', line: '5281', effect: '/2' },
+    0x12: { decimal: 18, name: 'SolarPlant', commodities: 'demand[14]/supply[15]', lines: '5285,5299', effect: '/2 or *2' },
+    0x11: { decimal: 17, name: 'NuclearPlant', commodities: 'supply[15](Uranium-II)', line: '5299', effect: 'doubles' },
+  },
+
+  governmentTypeBonuses: {
+    // Government type via *(short *)(&DAT_0064c6a6 + iVar4*0x594)
+    9:  { name: 'Fundamentalism', commodities: 'supply[7](Dye)', line: '4961', effect: 'doubles' },
+    10: { name: 'Democracy', commodities: 'supply[9](Gold)/supply[8]', lines: '4989,4972', effect: 'doubles' },
+    11: { name: 'Communism', commodities: 'supply[8](Wine)', line: '4972', effect: 'doubles' },
+    0x11: { decimal: 17, name: 'LeaderStyle17', commodities: 'demand[10](special)', line: '5225', effect: 'doubles' },
+  },
+
+  continentThresholds: {
+    // Continent population checks
+    300: { line: '5002', effect: 'supply[12] (Silver/Ivory) halved if continent pop > 300' },
+    400: { line: '5236', effect: 'demand[11] (Spice): size>7 doubles; coordinate-based zeroing' },
+  },
+
+  leaderStyleDoubling: {
+    // @ block_00430000.c:5035
+    value: 0x11,                // 17 decimal
+    effect: 'continent leader == 0x11: supply[14] tripled; (leader-1)&7==0: +50%',
+    line: '5035-5039',
+  },
+
+  pseudoRandomSeedFormulas: {
+    // @ block_00430000.c:5339-5349 deterministic pseudo-random commodity assignment
+    lowScienceRate: {
+      condition: 'scienceRate < 32 (0x20)',  // @ line 5339
+      formula1: '(y*5 + x*3) % 14',        // % 0x0E (line 5341)
+      formula2: '(y*7 + x*13) % 14',       // % 0x0E (line 5343)
+    },
+    highScienceRate: {
+      condition: 'scienceRate >= 32 (0x20)',
+      formula1: '(y*5 + x*3) % 9 + 5',     // line 5347
+      formula2: '(y*7 + x*13) % 9 + 5',    // line 5349
+      note: 'Restricts to commodities 5-13 (Coal through Gold)',
+    },
+  },
+
+  scienceRateThresholds: {
+    // scienceRate (local_8c) thresholds used across formulas
+    0x08: { decimal: 8, commodities: 'supply[2](Beads)', effect: 'halved', line: '4908' },
+    0x0c: { decimal: 12, commodities: 'demand[11](Spice)', effect: 'baseline subtraction', line: '5228' },
+    0x10: { decimal: 16, commodities: 'supply[0]/supply[2]', effect: 'doubled', lines: '4872,4912' },
+    0x14: { decimal: 20, commodities: 'supply[4]/demand[0]', effect: 'halved', lines: '4936,5082' },
+    0x18: { decimal: 24, commodities: 'supply[0](Hides)', effect: 'doubled again', line: '4876' },
+    0x20: { decimal: 32, commodities: 'supply[12]/pseudo-random seed', effect: 'halved/formula switch', lines: '4898,5339' },
+    0x2f: { decimal: 47, commodities: 'demand[0]/demand[2]', effect: 'halved', lines: '5085,5106' },
+    0x31: { decimal: 49, commodities: 'supply[0](Hides)', effect: 'size<3 doubling vs /2', line: '4878' },
+  },
+
+  specialCommodityIds: {
+    oil: { id: 14, supplyAddr: 'DAT_0063f6a0', note: 'Uses nuclear flag check and leader style logic' },
+    uranium: { id: 15, supplyAddr: 'DAT_0063f6a4', requiresTech: 0x3a, note: 'Set to -1 if no Electronics' },
+    uraniumDemand: { id: 15, demandAddr: 'DAT_0063f57c', requiresTech: 0x3a, note: 'scienceRate^2, shifted by sizeTier-3' },
   },
 
   supplyFormulas: {
-    // Just the key examples - full formulas in block_00430000.md pseudocode
-    hides: 'terrainCount[9]*3 + terrainCount[6]*6 + terrainCount[3]*4 + riverCount*3, doubled if scienceRate < 16/24, halved if city.size > 7',
-    coal: '(terrainCount[9]+[1]+[3]+[8]+1) * terrainCount[4] * 5, modified by sizeTier and continent',
-    gold: '(terrainCount[3]*2 + terrainCount[9] + 1) * (terrainCount[4] + 1) + distX*2, doubled by specific continent',
-    uranium: 'terrainCount[6]*8 + [0]*10 + [8]*6 + [7]*12, divided by 8 if no nuclear flag',
+    // Full formulas from block_00430000.c FUN_0043d400
+    hides: {
+      // @ line 4871: DAT_0063f668
+      formula: 'terrainCount[9]*3 + terrainCount[6]*6 + terrainCount[3]*4 + riverCount*3',
+      modifiers: [
+        { condition: 'scienceRate < 16', effect: 'doubled', line: '4872' },
+        { condition: 'scienceRate < 24', effect: 'doubled again', line: '4876' },
+        { condition: 'scienceRate < 49 && city.size < 3', effect: 'doubled', line: '4879' },
+        { condition: 'scienceRate >= 49', effect: 'halved', line: '4884' },
+        { condition: 'city.size > 7', effect: 'halved', line: '4887' },
+      ],
+    },
+    wool: {
+      // @ line 4893: _DAT_0063f66c
+      formula: '(riverCount/2 + terrainCount[4]*2 + terrainCount[2]) * coastalBonus',
+      coastalBonus: 'terrainCount[6] + 2; or +3 if far from equator',
+    },
+    beads: {
+      // @ line 4894: DAT_0063f670
+      formula: 'terrainCount[10]*8 - distY',
+      modifiers: [
+        { condition: 'city.size > 9', effect: 'halved', line: '4896' },
+        { condition: 'scienceRate > 32', effect: 'halved', line: '4899' },
+      ],
+    },
+    cloth: {
+      // @ line 4901: DAT_0063f674
+      formula: '(terrainCount[1]*3 + terrainCount[0] - riverCount) * clamp(scienceRate/10, 1, 2)',
+      modifiers: [
+        { condition: 'has Railroad (0x25)', effect: '*3/2', line: '4906' },
+        { condition: 'scienceRate < 8', effect: 'halved', line: '4909' },
+        { condition: 'scienceRate < 16', effect: 'halved', line: '4912' },
+      ],
+    },
+    salt: {
+      // @ line 4926: DAT_0063f67c
+      formula: '(t[9]+t[1]+t[3]+t[8]+1) * t[4] * 5',
+      modifiers: [
+        { condition: 'sizeTier/2 clamped 1..2 then shifted', line: '4929-4932' },
+        { condition: 'continent odd & > 1', effect: '+50%', line: '4934' },
+        { condition: 'scienceRate < 20', effect: 'halved', line: '4937' },
+      ],
+    },
+    coal: {
+      // @ line 4939: DAT_0063f680
+      formula: 'terrainCount[5]*5 + terrainCount[4]*5',
+      modifiers: [
+        { condition: 'continent != 0 && even', effect: 'doubled', line: '4941' },
+      ],
+    },
+    copperWine: {
+      // @ line 4943: DAT_0063f684
+      formula: '(terrainCount[2]*5 - terrainCount[1] + riverCount) * 2',
+      modifiers: [
+        { condition: 'continent != 0 && (continent & 3) == 0', effect: '*4', line: '4946' },
+      ],
+    },
+    dyeSpice: {
+      // @ line 4948: DAT_0063f688
+      formula: 'riverCount*5 vs terrainCount[2] cross-clamped + (mapWidth/2 - distX)/2',
+      modifiers: [
+        { condition: 'southern hemisphere', effect: 'halved', line: '4954' },
+        { condition: '(continent-2) & 3 == 0', effect: '+50%', line: '4959' },
+        { condition: 'govt == Fundamentalism (9)', effect: 'doubled', line: '4962' },
+        { condition: 'city.size > 10', effect: 'halved', line: '4965' },
+      ],
+    },
+    gold: {
+      // @ line 4967: DAT_0063f68c
+      formula: '(terrainCount[3]*2 + terrainCount[9] + 1) * (terrainCount[4] + 1)',
+      modifiers: [
+        { condition: 'nonzero: add distX*2', line: '4968' },
+        { condition: 'continent % 5 == 0', effect: 'doubled', line: '4970' },
+        { condition: 'govt == Communism (11)', effect: 'doubled', line: '4973' },
+      ],
+    },
+    spice: {
+      // @ line 4975: DAT_0063f690
+      formula: 'terrainCount[5]*8',
+      modifiers: [
+        { condition: 'nonzero: += terrainCount[4] + distX', line: '4977' },
+        { condition: 'no Refrigeration (0x27)', effect: 'halved', line: '4980' },
+        { condition: 'continent > 8', effect: '+50%', line: '4983' },
+        { condition: 'city.size < 5', effect: 'halved', line: '4986' },
+        { condition: 'govt == Democracy (10)', effect: 'doubled', line: '4989' },
+      ],
+    },
+    silverIvory: {
+      // @ line 4992: DAT_0063f694
+      formula: '(t[9]*3+t[8]*2+t[0]*2) * ((t[10]+riverCount)/2)',
+      modifiers: [
+        { condition: 'nonzero && distY < 10', effect: 'doubled', line: '4996' },
+        { condition: 'continent pop < 26', effect: '+50%', line: '5000' },
+        { condition: 'continent pop > 300', effect: 'halved', line: '5003' },
+        { condition: 'continent == 1', effect: 'halved', line: '5006' },
+      ],
+    },
+    silkGold: {
+      // @ line 5009: DAT_0063f698
+      formula: '(t[5]+1)*(t[8]+1)*(t[0]+1) + t[1]',
+      modifiers: [
+        { condition: 'nonzero: clamp(sizeTier,1,4) * value / 2', line: '5012' },
+        { condition: 'continent == 7', effect: '+50%', line: '5014' },
+      ],
+    },
+    gemsDye: {
+      // @ line 5017: DAT_0063f69c
+      formula: '(t[5] + t[4]/2 + 1) * (riverCount + 2)',
+      modifiers: [
+        { condition: 'terrainCount[5] > 2', effect: 'doubled', line: '5019' },
+        { condition: 'city.size > 4', effect: 'doubled', line: '5022' },
+        { condition: 'city.size > 9', effect: 'doubled again', line: '5025' },
+      ],
+    },
+    oilUranium: {
+      // @ line 5027: DAT_0063f6a0 (commodity 14)
+      formula: 't[6]*8 + t[0]*10 + t[8]*6 + t[7]*12',
+      modifiers: [
+        { condition: 'no nuclear flag (DAT_00655b90)', effect: '/8', line: '5029' },
+        { condition: 'value == 0', effect: 'set to -1', line: '5032' },
+        { condition: 'continent leader == 0x11', effect: '*3', line: '5036' },
+        { condition: '(continent-1) & 7 == 0', effect: '+50%', line: '5039' },
+      ],
+    },
+    uraniumII: {
+      // @ line 5044: DAT_0063f6a4 (commodity 15)
+      formula: '(t[6]+t[0]+1) * (t[4]+riverCount+1) * (t[5]+1)',
+      requiresTech: { id: 0x3a, name: 'Electronics', line: '5046' },
+      modifiers: [
+        { condition: 'no Electronics', effect: 'set to -1', line: '5048' },
+        { condition: 'continent % 10 == 0', effect: '+50%', line: '5054' },
+        { condition: 'sizeTier capped at 6, *value/6', line: '5058' },
+      ],
+    },
   },
 
   demandFormulas: {
-    salt: 'Decaying weight loop: weight=8, portion=clamp(remainingSize,0,5), demand += portion*weight, weight/=2',
-    coal: '(distY+10)*sizeTier+scienceRate, boosted by Factory(19), reduced by MfgPlant/PowerPlant/HydroPlant',
+    hides: {
+      // @ line 5063: DAT_0063f540
+      formula: '(t[6]+t[7])*5 + distY*3/2 + t[5]*2 + t[3]',
+      modifiers: [
+        { condition: 'city.size < 3', effect: 'doubled', line: '5069' },
+        { condition: 'has Railroad (0x25)', effect: '/3', line: '5073' },
+        { condition: 'has Automobile (0x30)', effect: 'set to 1', line: '5077' },
+        { condition: 'scienceRate < 10', effect: 'doubled', line: '5080' },
+        { condition: 'scienceRate < 20', effect: 'doubled', line: '5083' },
+        { condition: 'scienceRate > 47', effect: 'halved', line: '5086' },
+      ],
+    },
+    wool: {
+      // @ line 5094: DAT_0063f544
+      formula: 'abs(mapHeight/4 - distY)*2 + t[1]*2 + t[3]',
+      modifiers: [
+        { condition: 'has Railroad (0x25)', effect: 'doubled', line: '5097' },
+      ],
+    },
+    beads: {
+      // @ line 5099: DAT_0063f548
+      formula: 'distY + (21 - t[10])*3/2',
+      modifiers: [
+        { condition: 'city.size < 4', effect: '+50%', line: '5101' },
+        { condition: 'city.size > 11', effect: 'halved', line: '5104' },
+        { condition: 'scienceRate > 47', effect: 'halved', line: '5107' },
+      ],
+    },
+    salt: {
+      // @ line 5109: _DAT_0063f550
+      formula: 'Decaying weight loop: weight=8, portion=clamp(remaining,0,5), demand += portion*weight, weight/=2',
+      finalAdjust: 'subtract scienceRate/2',
+      line: '5116',
+    },
+    coal: {
+      // @ line 5117: DAT_0063f554
+      formula: '(distY + 10) * sizeTier + scienceRate',
+      modifiers: [
+        { condition: 'city.size < 5', effect: 'set to 0', line: '5119' },
+        { condition: 'city.size < 8', effect: 'halved', line: '5122' },
+        { condition: 'has Railroad (0x25)', effect: 'doubled', line: '5126' },
+        { condition: 'has Explosives (0x17)', effect: 'doubled', line: '5130' },
+        { condition: 'has Factory (0x13)', effect: 'doubled', line: '5133' },
+        { condition: 'has MfgPlant/PowerPlant/HydroPlant', effect: '/8', line: '5138' },
+      ],
+    },
+    wine: {
+      // @ line 5141: DAT_0063f558
+      formula: '(riverCount + roadCount + 1) * sizeTier',
+      modifiers: [
+        { condition: 'value <= supply[5]', effect: 'halved', line: '5143' },
+        { condition: 'has Granary (5)', effect: '+50%', line: '5146' },
+        { condition: 'has Colosseum (10)', effect: '+50%', line: '5150' },
+        { condition: 'has Explosives (0x17)', effect: '+50%', line: '5154' },
+        { condition: 'has Navigation (0x10)', effect: '/4', line: '5159' },
+        { condition: 'city.size < 5', effect: 'halved', line: '5162' },
+      ],
+    },
+    cloth: {
+      // @ line 5164: DAT_0063f55c
+      formula: 'supply[2] + roadCount',
+      modifiers: [
+        { condition: 'has tech 10', effect: 'halved', line: '5167' },
+        { condition: 'has Automobile (0x30)', effect: 'halved', line: '5171' },
+      ],
+    },
+    specialCommodity: {
+      // @ line 5195: demand[10]..demand[12] selected by (x+y) % 3
+      selection: '(x+y) % 3 picks slot 10, 12, or 13',
+      baseDemand: 'city.size * 8',
+      modifiers: [
+        { condition: 'has Marketplace (0x0b) or tech 10 wonder', effect: '+50%', line: '5210' },
+        { condition: 'has Colosseum (10)', effect: '+50%', line: '5214' },
+        { condition: 'has Electricity (0x16)', effect: 'halved', line: '5219' },
+        { condition: 'has Navigation (0x10)', effect: 'halved', line: '5222' },
+        { condition: 'govt == 0x11', effect: 'doubled', line: '5226' },
+      ],
+    },
+    spice: {
+      // @ line 5228: DAT_0063f56c
+      formula: 'continent_pop / 10 - max(scienceRate - 12, 0)',
+      modifiers: [
+        { condition: 'city.size < 4', effect: 'halved', line: '5234' },
+        { condition: 'continent_pop > 400 && size > 7', effect: 'doubled', line: '5238' },
+        { condition: 'continent_pop > 400 && (-(x-y)&3)==0', effect: 'set to 0', line: '5242' },
+        { condition: 'has Recycling (0x46)', effect: 'halved', line: '5247' },
+      ],
+    },
+    oil: {
+      // @ line 5249: DAT_0063f578
+      requiresTech: { id: 0x25, name: 'Railroad', line: '5249' },
+      unavailable: 'set to -1 if no Railroad',
+      formula: '(scienceRate / 3) * (sizeTier + 2)',
+      modifiers: [
+        { condition: 'value <= supply[14]', effect: 'halved', line: '5256' },
+        { condition: 'has SuperMarket (0x0f)', effect: '+50%', line: '5258' },
+        { condition: 'no SuperMarket && size<5', effect: 'halved', line: '5261' },
+        { condition: 'no SuperMarket && size<10', effect: 'halved', line: '5264' },
+        { condition: 'no SuperMarket && size<20', effect: 'halved', line: '5267' },
+        { condition: 'has Masonry (0x05)', effect: '*3', line: '5275' },
+        { condition: 'has ResearchLab (0x19)', effect: 'doubled', line: '5278' },
+        { condition: 'has Bank (0x0d)', effect: 'halved', line: '5282' },
+        { condition: 'has SolarPlant (0x12)', effect: 'halved', line: '5286' },
+      ],
+    },
+    uranium: {
+      // @ line 5290: DAT_0063f57c
+      requiresTech: { id: 0x3a, name: 'Electronics', line: '5290' },
+      unavailable: 'set to -1 if no Electronics',
+      formula: 'scienceRate^2',
+      modifiers: [
+        { condition: 'shifted by clamp(sizeTier-3, -3, 0)', line: '5297' },
+        { condition: 'has PowerPlant/NuclearPlant', effect: 'doubled', line: '5299' },
+      ],
+    },
   },
 
   knownBugs: {
-    uninitializedRoadCount: 'Local variable roadCount may be uninitialized (stack garbage). Used in Demand[6] (Wine/Copper).',
+    uninitializedRoadCount: 'local_12c (roadBit 0x10 counter) may be uninitialized (stack garbage). Used in demand[6] (Wine) and demand[7] (Cloth).',
     silkModifiesGold: 'Supply[11] calculation at leader==10 modifies supply[9] (Gold) instead of supply[11].',
   },
 
@@ -1226,8 +1681,13 @@ export const AI_FOREIGN_ADVISOR_ASSESSMENT = {
     highMilitarismThreshold: 3,  // militarism >= 3 → always result 4
     civAttribsOffset: '@ DAT_0064c6a0[civ * 0x594] (uint16)',
     attribsWarFlag: 0x0100,
-    eraThreshold: 6,  // era > 6 triggers aggressive path
-    result2: { value: 2, condition: 'Has diplomacy tech but low contacts, no alliances, peaceful, early era' },
+    // NOTE: This is a RANK threshold using DAT_00655c22 (power rank array), NOT an era threshold.
+    // DAT_00655c22[civId] holds the civ's power ranking (0=highest, 7=lowest).
+    // The check is rank > 6, meaning the civ is ranked very low (near last).
+    rankThreshold: 6,  // DAT_00655c22[civId] > 6 triggers aggressive path (was mislabeled as eraThreshold)
+    rankLookupAddr: 'DAT_00655c22', // byte[8]: power rank per civ (same array as POWER_GRAPH_BINARY.ranking)
+    contactsThreshold: 2,  // must have contacts with >= 2 civs for peaceful assessment (result 2)
+    result2: { value: 2, condition: 'Has diplomacy tech but low contacts (<2), no alliances, peaceful, low rank' },
     result4: { value: 4, condition: 'High militarism (>= 3) OR all contacts are hateful and militarism > 1' },
   },
 
@@ -1371,6 +1831,18 @@ export const AI_TECH_VALUATION = {
 
   aiCivBonuses: {
     // Only applied if civ is NOT in DAT_00655b0b human bitmask (i.e., AI civ)
+
+    // Spaceship gate condition: DAT_00655bce gates access to spaceship/wonder tech bonuses
+    // C (line 6153): if ((DAT_00655b0b & DAT_00655bce) != 0)
+    // DAT_00655bce is a bitmask of civs that have started spaceship construction.
+    // Only when at least one alive civ has started a spaceship do AI civs get the
+    // eraCheckTech bonus (+2 for Fusion Power prereqs) and futureWonderRange bonus (+3).
+    spaceshipGate: {
+      addr: 'DAT_00655bce',          // bitmask of civs with spaceship progress  // 0x004BDB2C+line6153
+      condition: '(DAT_00655b0b & DAT_00655bce) != 0 — at least one alive civ building spaceship',
+      note: 'Gates eraCheckTech and futureWonderRange bonuses below',
+    },
+
     wonderObsolescenceCheck: {
       // If wonder obsolescence tech matches this tech and civ already has the wonder: -2
       // But if tech is "Industrialization" (0x25): skip the -2 penalty
@@ -1383,7 +1855,7 @@ export const AI_TECH_VALUATION = {
     },
     eraCheckTech: {
       techId: 0x20,  // Fusion Power
-      // If prerequisite: +2 bonus
+      // If prerequisite: +2 bonus (only when spaceshipGate condition is met)
       bonus: 2,
     },
     futureWonderRange: {
@@ -1703,6 +2175,18 @@ export const TECH_GOVERNMENT_REVOLUTION = {
   revolutionDialog: 'AUTOREV',
   governmentNames: '@ DAT_0064b9a0[govtType * 4]',
   techNames: '@ DAT_00627684[techId * 0x10]',
+
+  // Dialog index values for revolution prompt: each government maps to a dialog index
+  // C (line 6573): thunk_FUN_00410030(s_AUTOREV_..., &DAT_00646878 + local_8 * 0x3C, 0)
+  // local_8 is set based on which tech triggered the revolution
+  dialogIndices: {
+    communism: 3,                    // param_2 == 0x0F → local_8 = 3          // 0x004BEA84+line6548
+    fundamentalism: 4,               // param_2 == 0x1F → local_8 = 4          // 0x004BEA84+line6550
+    republic: 5,                     // param_2 == 0x47 → local_8 = 5          // 0x004BEA84+line6553
+    democracy: 6,                    // param_2 == 0x15 → local_8 = 6          // 0x004BEA84+line6557
+  },
+  dialogStride: 0x3C,               // 60 bytes between dialog entries         // 0x004BEA84+line6573
+  dialogBaseAddr: 'DAT_00646878',    // base address for revolution dialogs     // 0x004BEA84+line6573
 
   tutorialTriggers: {
     // Tutorial popups triggered by specific tech discoveries
@@ -2319,6 +2803,44 @@ export const COMBAT_RESOLUTION = {
     flagMask: 2,
     meaning: 'When flag bit 2 is set, attacker retains remaining movement points after winning combat',
     sourceAddr: '0x00580341+line266',
+  },
+
+  // --- MP notification message IDs (post-combat) ---
+  // C (lines 1061-1157): sent via thunk_FUN_00511880 to notify other players
+  mpNotifications: {
+    MULTIPLELOSE: 0x35,   // sent to allies of defeated civ (line 1067)          // 0x00580341+line1067
+    MULTIPLEWIN: 0x36,    // sent to allies of winning civ (line 1061)           // 0x00580341+line1061
+    RANSOM: 0x37,         // sent to all allied players on ransom capture (line 1084) // 0x00580341+line1084
+    CANCELPEACE: 0x3A,    // sent to MP players when peace treaty violated       // 0x00580341+line1123
+    ALLYUNDERATTACK: 0x3B, // sent to MP allied civs when ally is attacked       // 0x00580341+line1139
+    ALLYATTACKING: 0x3C,  // sent to MP allied civs when ally is attacking       // 0x00580341+line1150
+    sourceAddr: '0x00580341+line1061',
+  },
+
+  // Network opcode 0xA3: post-combat MP state sync
+  // C (line 1200): thunk_FUN_0046b14d(0xa3, ...) sent to all connected non-local players
+  postCombatMpSync: {
+    opcode: 0xA3,                                                                // 0x00580341+line1200
+    condition: 'DAT_00655b02 > 2 (multiplayer mode)',
+    note: 'Sent after combat resolution to synchronize game state across MP clients',
+    sourceAddr: '0x00580341+line1200',
+  },
+
+  // RANSOM dialog sprite and war dialog param
+  // C (line 1077): thunk_FUN_004442a0(s_RANSOM_006344c4, 0x3e, 0) — local ransom dialog
+  ransomDialog: {
+    dialogKey: 'RANSOM',
+    spriteId: 0x3E,       // sprite resource for ransom dialog                   // 0x00580341+line1077
+    warDialogParam: 0x0D, // param for war declaration dialog                    // 0x00580341
+  },
+
+  // Stealth + unknown bitmask for animation delay
+  // C (line 452): if (DAT_0064b1bc[type*0x14] & 0x1008) != 0 → thunk_FUN_0046e287(10)
+  stealthAnimationDelay: {
+    flagsMask: 0x1008,    // stealth (0x1000) + unknown (0x08) combined check    // 0x00580341+line452
+    delayMs: 10,          // FUN_0046e287(10) — 10ms animation delay             // 0x00580341+line454
+    condition: 'Unit type flagsA & 0x1008 != 0 (stealth or invisible transport)',
+    sourceAddr: '0x00580341+line452',
   },
 };
 
@@ -3065,6 +3587,27 @@ export const SHIP_CARGO = {
   limboCoordUnit: '(owner * 4 + 4) * -0x19',  // individual units picked up
   limboCoordStack: '(owner * 5 + 5) * -0x28', // stack unloading
 
+  // Unit ID validation bounds
+  // C (line 2133): if ((param_1 < -1) || (0x801 < param_1)) → assertion failure
+  unitIdBounds: {
+    minUnitId: -1,                   // valid minimum unit index                // 0x005B542E+line2133
+    maxUnitBound: 0x801,             // valid maximum unit index (2049)         // 0x005B542E+line2133
+    assertMessage: 's_ship_>___1____ship_<_MAX_UNITS___0063638c',
+  },
+
+  // Network flush timeout for MP stack-ship operations
+  // C (line 2205): XD_FlushSendBuffer(5000)
+  networkFlushTimeout: 5000,         // 5000ms flush timeout after MP cargo ops // 0x005B542E+line2205
+
+  // MP stack-ship message: sent when client defers cargo loading to server
+  // C (line 2212): thunk_FUN_0046b14d(0x49, 0, param_1, param_2, ...)
+  mpStackShipMessage: {
+    messageId: 0x49,                 // network opcode for stack-ship request   // 0x005B542E+line2212
+    condition: 'DAT_00655b02 >= 3 AND client is not host (FUN_00421f40 returns 0)',
+    note: 'Client sends 0x49 to server and waits for response (DAT_006c9108 != -2)',
+    timeoutMs: 0xE10,               // 3600 ticks wait limit before disconnect  // 0x005B542E+line2214
+  },
+
   // sourceAddr: '0x005B542E', '0x005B3B78', '0x005B319E'
 };
 
@@ -3091,6 +3634,14 @@ export const NUCLEAR_FALLOUT = {
   fortressBit: 0x40,
   destroyChance: '50%',
   globalPollutionChance: '2/3',  // rand() % 3 != 0
+
+  // Fortress+city combined bitmask for standalone fortress detection
+  // C (block_005B0000.c line 3470): if ((bVar1 & 0x42) == 2) — fortress without city
+  // C (block_005B0000.c line 3494): if ((bVar1 & 0x42) == 0x42) — fortress WITH city
+  // 0x42 = fortressBit(0x40) | cityBit(0x02); checking == 2 means fortress present but no city
+  fortressCityCombinedMask: 0x42,   // 0x40 (fortress) | 0x02 (city)           // 0x005B8CC0+line3470
+  standaloneFortressValue: 0x02,    // (flags & 0x42) == 0x02 → fortress only  // 0x005B8CC0+line3470
+  fortressInCityValue: 0x42,        // (flags & 0x42) == 0x42 → both present   // 0x005B8D15+line3494
 
   // City effects: population halved
   cityPopulationFormula: 'city.size -= city.size >> 1',
@@ -4165,6 +4716,11 @@ export const NUCLEAR_RESPONSE = {
     // Path check: FUN_004abfe5 must return > 0 and != 8
     pathBlockedResult: 8,
     movementMultiplier: 2,             // pass currentMP * 2 to pathfinder
+
+    // War treaty check: unit owner must be at war with nuker (alliance flag & 8)
+    // C (line 5973): (DAT_0064c6c0[owner*4 + nukerCiv*0x594] & 8) != 0
+    warTreatyBitmask: 8,               // diplomacy array & 8 = at-war/alliance check // 0x0057FEBC+line5973
+    note: 'Non-owned units only rally if their civ has treaty flag 0x08 with the nuker (at-war check)',
   },
 
   sourceAddr: '0x0057FEBC',
@@ -5422,6 +5978,21 @@ export const GAME_INIT = {
   disableIfNoMem: 0xFFDFFFFF,          // & mask if allocation < 10M fails (bit 21 off)
   memCheckThreshold: 10000000,         // 10M bytes memory check
 
+  // Per-civ array stride for DAT_00655364 init loop
+  // C line 3535: *(undefined4 *)(&DAT_00655364 + local_8 * 0x10) = 0
+  perCivArrayStride: 0x10,             // 16 bytes per civ in DAT_00655364 array
+
+  // Game options flag manipulation on new game
+  // C line 3544: DAT_00655aea = DAT_0064bc1e & 0xffff7fff | 0x300
+  // C line 3547: DAT_00655aea = DAT_0064bc1e & 0xffff7eff
+  gameOptionsClearBit15: 0xFFFF7FFF,   // mask to clear bit 15 (difficulty == 0 path)
+  gameOptionsSetBits: 0x300,           // set bits 8+9 (difficulty == 0 path)
+  scenarioModeMask: 0xFFFF7EFF,        // mask for scenario mode (difficulty != 0 path)
+
+  // Observer bitmask init
+  // C line 3559: DAT_00655b06 = 0xff
+  observerBitmaskInit: 0xFF,           // DAT_00655B06 = 0xFF (all civs observable)
+
   // sourceAddr: '0x004AA9C0' (new_game), '0x004A70B0' (init game options)
 };
 
@@ -5639,7 +6210,60 @@ export const SCENARIO_STARTUP = {
   roadConnectMaxDist: 0x17,            // 23 tiles max city-to-city road
 
   // Second city placement: search 8 directions * distance 5 for best site
-  secondCitySearchRadius: 5,
+  // C line 3256: (char)(&DAT_00628350)[local_14] * 5 + iVar11
+  secondCitySearchRadius: 5,           // direction * 5 tiles from first city
+
+  // Unit types placed during scenario start
+  // C lines 3230-3238: FUN_004bd9f0(local_a0, unitType, ...)
+  scenarioUnitTypes: {
+    diplomat: 0x57,                    // C line 3230: FUN_004bd9f0(civ, 0x57, ...)
+    caravan: 0x40,                     // C line 3233: FUN_004bd9f0(civ, 0x40, ...)
+    explorer: 0x41,                    // C line 3238: FUN_004bd9f0(civ, 0x41, ...)
+  },
+
+  // Unit type IDs for military units placed via FUN_005b3d06
+  // C lines 3231, 3234: conditional placement based on era
+  scenarioMilitaryUnits: {
+    settler: 0x10,                     // C line 3231: 0x10 - (iVar6 == 0) → settler or settler-1
+    settler2: 0x11,                    // C line 3234: 0x11 - (iVar6 == 0) → era>0 settler variant
+    defender: 0x0F,                    // C line 3327: FUN_005b3d06(0xf, civ, ...) — defender unit
+  },
+
+  // Tech prerequisite checks for building placement
+  // C line 3242: FUN_004bd9f0(civ, 0x14) — has Currency?
+  // C line 3361: FUN_004bd9f0(civ, 0x36) — has Monarchy?
+  techPrereqs: {
+    currency: 0x14,                    // tech 20 = Currency (determines marketplace vs granary)
+    monarchy: 0x36,                    // tech 54 = Monarchy (enables government upgrade)
+  },
+
+  // Population threshold for second unit (continent pop check)
+  // C line 3217: iVar7 = thunk_FUN_005b50ad(iVar6, 2); if (1 < iVar7)
+  populationThreshold: 2,              // FUN_005b50ad param: continent pop >= 2 for extra unit
+
+  // Unit domain choices for military placement
+  // C lines 3223-3225: if (local_84 != 6) local_84 = 4
+  unitDomainChoices: {
+    naval: 6,                          // city style 6 → naval unit type
+    fallbackAttacker: 4,               // otherwise use type 4 (attacker)
+    defender: 3,                       // C line 3228: FUN_005b3d06(3, ...) — defender
+  },
+
+  // Building placed in cities during scenario start
+  // C line 3306: thunk_FUN_0043d289(iVar5, 0xe, 1) — place building 14
+  scenarioBuildingId: 0x0E,            // building 14 (Colosseum) placed when no 2nd city found
+
+  // Fallback city size when no second city site found
+  // C line 3305: (&DAT_0064f349)[iVar5 * 0x58] = 7
+  fallbackCitySize: 7,                 // city size set to 7 on solo-city path
+
+  // Treasury bonus when no second city found
+  // C line 3308: treasury += 0x19
+  treasuryBonus: 0x19,                 // +25 gold added to civ treasury
+
+  // Government set to Monarchy if civ has Monarchy tech
+  // C lines 3361-3363: if (FUN_004bd9f0(civ, 0x36) != 0) DAT_0064c6b5[civ * 0x594] = 2
+  monarchyGovernmentId: 2,             // government index 2 = Monarchy
 
   // sourceAddr: '0x004A9785' (scenario_startup_civs)
 };
@@ -5679,8 +6303,40 @@ export const PATHFINDING = {
   },
 
   // Special path cost modifiers
-  ztocPenalty: 0x10,                   // zone-of-control: +16 to path cost
+  ztocPenalty: 0x10,                   // zone-of-control: +16 to path cost (forward search)
+  // C line 3841: local_30 = iVar16 + iVar10 * 0x10  (forward ZOC penalty)
+  ztocPenaltyReverse: 8,              // zone-of-control: +8 in reverse search
+  // C line 4019: local_58 = local_58 + iVar17 * 8    (reverse ZOC penalty)
   cityFortPenalty: 4,                  // entering enemy fort/city: +4 cost
+
+  // Grid row stride for cost lookup
+  // C line 4062: DAT_006ced60 + local_60 * 4 + local_54 * 0xc0
+  // C line 4098: (param_1 - DAT_00673fb0) * 0xc0
+  gridRowStride: 0xC0,                // 48 * 4 = 192 bytes per row (DWORD per cell)
+
+  // Initial best-path sentinel value
+  // C line 3915-3916: local_10 = 19999; local_20 = 19999
+  bestPathSentinel: 19999,             // initial worst-case path cost before comparison
+
+  // Tile improvement bitmask for fortress/city ZOC check
+  // C line 4015: (bVar7 & 0x43) == 1 — checks fortress/city bits
+  // C line 3836: (bVar6 & 0x43) == 1
+  fortressCityZocMask: 0x43,           // improvement bits: fortress(0x40) + city(0x02) + road(0x01)
+
+  // Road improvement bit in pathfinder context
+  // C line 3927: (uVar11 & 0x20) == 0 — checks for road
+  // C line 3970: (uVar11 & 0x20) != 0
+  roadImprovementBit: 0x20,            // tile improvement bit for road
+
+  // Railroad improvement bit in pathfinder context
+  // C line 3918: (uVar11 & 0x10) == 0 — checks for railroad
+  // C line 3976: (uVar11 & 0x10) != 0
+  railroadImprovementBit: 0x10,        // tile improvement bit for railroad
+
+  // Ground role threshold for ZOC penalty application
+  // C line 4022: (char)(&DAT_0064b1ca)[DAT_0062d03c * 0x14] < '\x05'
+  // C line 3844: same check in forward search
+  groundRoleThreshold: 5,             // role < 5 → apply ZOC movement penalty
 
   // Long-range path uses 4x4 super-tile grid
   longRangeGridScale: 4,              // each super-tile = 4x4 real tiles
@@ -6048,6 +6704,24 @@ export const AI_TURN_PROCESSING = {
 export const DEMOGRAPHICS_BINARY = {
   sourceAddr: '0x00433434',
   size: 6486,
+
+  // --- GNP overflow guard ---
+  // C (line 1880): if (aiStack_12c[civ] < 30000 / (DAT_0064c6b0[civ*0x594] + 1))
+  // Prevents GNP calculation from overflowing for advanced civs with high trade
+  gnpOverflowGuard: {
+    constant: 30000,                  // numerator threshold                    // 0x00433434+line1880
+    divisor: 'techLevel + 1',        // DAT_0064c6b0[civ*0x594] + 1           // 0x00433434+line1880
+    formula: 'if (gnpSum < 30000 / (techLevel + 1)): use normal GNP formula; else: use overflow-safe version',
+  },
+
+  // --- Per-city pollution offset ---
+  // C (line 1594): local_134 = DAT_006a65cc / DAT_006a65f8 + -0x14 + ...
+  // Per-city pollution base subtracts 20 before adding tech-based modifiers
+  perCityPollutionOffset: {
+    offset: -0x14,                    // -20 subtracted from base pollution     // 0x00433434+line1594
+    formula: 'pollution = shields / powerLevel - 20 + (citySize * pollutionTechCount) / 4',
+    note: 'Same offset documented in CITY_PRODUCTION_CALC.pollutionBaseOffset; included here for demographics cross-reference',
+  },
 
   // --- Approval Rating ---
   // Per-city: happy = city.size + happyCitizens - unhappyCitizens
@@ -6755,6 +7429,9 @@ export const BARBARIAN_SPAWNING = {
     minCitySize: 2,               // clamp unit count to min 2                 // 0x00485c15
     maxCitySize: 99,              // clamp unit count to max 99                // 0x00485c15
     ragingBonusTurnThreshold: 0x95, // 149 turns for raging bonus              // 0x00485c15
+    // Terrain adjacency threshold: DAT_0063f660 < 5 required for valid spawn tile
+    // C (line 1350): (iVar2 == 0) || (DAT_0063f660 < 5) — skip tile if distance to nearest city < 5
+    terrainAdjacencyThreshold: 5, // min distance to nearest city for spawn    // 0x00485c15+line1350
   },
 
   // Advanced unit types for city-based spawning
@@ -6886,34 +7563,171 @@ export const POWER_GRAPH_BINARY = {
 
   // Power score composition (non-scenario)
   scoring: {
-    techWeight: 3,                // numTechs * 3                              // 0x004853e7
-    militaryWeight: 8,            // research * 8 (accumulated beakers)         // 0x004853e7
-    treasuryWeight: '>> 5',       // treasury / 32                             // 0x004853e7
-    unitStrengthFormula: 'sum over all unit types: unitCount * (attack+defense+1)/2 * movePoints/2',
-    unitTypeStride: 0x14,         // 20 bytes per unit type definition         // 0x004853e7
-    maxUnitTypes: 0x3E,           // 62 unit types                             // 0x004853e7
+    techWeight: 3,                // numTechs * 3                              // line 1014
+    militaryWeight: 8,            // research * 8 (accumulated beakers)         // line 1015
+    treasuryWeight: '>> 5',       // treasury / 32                             // line 1016
+
+    // --- Unit strength sub-formula (local_c) ---
+    // C: local_c = 0; for (local_20 = 0; local_20 < 0x3e; local_20++) { ... }
+    // Iterates all 62 unit types, accumulates unitCount[civ][type] * unitStrength
+    unitStrength: {
+      maxUnitTypes: 0x3E,           // 62 unit types                           // line 1018
+      unitTypeStride: 0x14,         // 20 bytes per unit type definition       // line 1019
+
+      // Role threshold: role < 5 separates non-air from air units
+      // C: if ((char)(&DAT_0064b1ca)[local_20 * 0x14] < '\x05')
+      roleThreshold: 5,            // role < 5 = ground/sea/military; >= 5 = settler/air/trade  // line 1019
+
+      // Non-air path (role < 5):
+      //   Ground domain check: domain == 0 selects move-based multiplier
+      //   C: if ((&DAT_0064b1c1)[local_20 * 0x14] == '\0')
+      groundDomainId: 0,            // domain == 0 (ground) uses movePoints multiplier          // line 1020
+
+      // Ground: local_18 = (movePoints + 1 + firepower) / 2
+      // C: local_18 = ((char)(&DAT_0064b1c6)[local_20 * 0x14] + 1 +
+      //               (int)(char)(&DAT_0064b1c7)[local_20 * 0x14]) / 2
+      groundMoveMultiplierFormula: '(movePoints + 1 + firepower) / 2',                         // lines 1021-1022
+
+      // Non-ground (domain != 0): local_18 = 1
+      nonGroundMoveMultiplier: 1,   // sea/air domains use flat multiplier of 1                 // line 1025
+
+      // Strength = (attack * moveMultiplier + defense) >> 1
+      // C: local_4c = (char)(&DAT_0064b1c4)[..] * local_18 +
+      //              (int)(char)(&DAT_0064b1c5)[..] >> 1
+      nonAirFormula: '(attack * moveMultiplier + defense) >> 1',                                // lines 1027-1028
+
+      // Air path (role >= 5):
+      //   local_4c = (hitPoints + 1) / 2
+      //   C: local_4c = ((char)(&DAT_0064b1c8)[local_20 * 0x14] + 1) / 2
+      airFormula: '(hitPoints + 1) / 2',                                                        // line 1031
+
+      // Accumulation: local_c += unitCount[civ][unitType] * unitStrength
+      // C: local_c = local_c + (uint)(byte)(&DAT_0064c778)[local_50 * 0x594 + local_20] * local_4c
+      unitCountAddr: 'DAT_0064c778 + civId * 0x594 + unitType',                                // line 1033
+    },
+
+    // BUG: local_c (unitStrength) is computed but NEVER added to aiStack_48[civId].
+    // The non-scenario score at lines 1013-1016 sets:
+    //   aiStack_48[civ] = numTechs*3 + research*8 + treasury/32
+    // Then local_c is computed (lines 1017-1034) but the closing brace at line 1035
+    // ends the else-if block WITHOUT adding local_c to aiStack_48[civ].
+    // This means power graph scores in normal (non-scenario) mode do NOT include
+    // military unit strength -- only tech count, accumulated research, and treasury.
+    unitStrengthBug: {
+      computed: true,               // local_c IS computed in the loop            // lines 1017-1034
+      addedToScore: false,          // local_c is NEVER added to aiStack_48[]     // line 1035
+      note: 'Apparent original game bug: unit strength is calculated but discarded. '
+          + 'The score only reflects techs, research beakers, and treasury.',
+    },
+  },
+
+  // Score compression and byte storage
+  scoreStorage: {
+    // Normal mode: score >> 3 (/8) before byte storage
+    // C: thunk_FUN_005adfa0(aiStack_48[local_50] >> 3, 0, 0xff)
+    normalCompression: '>> 3',      // divide by 8 before clamping               // line 1048
+    normalDivisor: 8,               // score /= 8 for normal games               // line 1048
+
+    // Scenario mode: no compression (raw score stored directly)
+    // C: thunk_FUN_005adfa0(aiStack_48[local_50], 0, 0xff)
+    scenarioCompression: 'none',    // no shift for scenario mode                 // line 1055
+
+    // Byte clamp: [0, 0xFF] (255)
+    clampMin: 0,                    // min score byte                             // line 1048
+    clampMax: 0xFF,                 // 255 max score byte                         // line 1048
+  },
+
+  // Scenario mode scoring (DAT_00655af0 & 0x80 AND DAT_0064bc60 & 2)
+  scenarioScoring: {
+    // C: aiStack_48[local_50] = 0;
+    //    for each city: if alive AND owned by civ:
+    //      aiStack_48[civ] += thunk_FUN_0043cef9(cityId) * 2
+    scenarioFlag: 0x80,             // DAT_00655af0 & 0x80                        // line 1012
+    scenarioFlag2: 0x02,            // DAT_0064bc60 & 2                           // line 1012
+    cityScoreMultiplier: 2,         // city scores * 2 instead of tech/research/treasury // line 1042
+    cityScoreFn: 'thunk_FUN_0043cef9',  // returns individual city score          // line 1041
+    note: 'In scenario mode with flag 2, power = sum of (cityScore * 2) for all cities owned',
   },
 
   // Ranking array
   ranking: {
-    addr: 'DAT_00655c22',         // byte[8]: rank per civ (0=first)           // 0x004853e7
-    formula: 'rank = 8 - sortPosition',  // 0x08 - local_28                    // 0x004853e7
-    inverseAddr: 'DAT_00655c2a',  // byte[8]: civId per rank position          // 0x004853e7
+    addr: 'DAT_00655c22',         // byte[8]: rank per civ (0=first)           // line 1070
+    formula: 'rank = 8 - sortPosition',  // 0x08 - local_28                    // line 1070
+    inverseAddr: 'DAT_00655c2a',  // byte[8]: civId per rank position          // line 1079
   },
 
   // Leader civ tracking
   leaderCiv: {
-    bestHumanAddr: 'DAT_00655c20', // best human civ rank index                // 0x004853e7
-    worstHumanAddr: 'DAT_00655c21', // worst human civ rank index              // 0x004853e7
-    topAiAddr: 'DAT_00655c31',    // top-ranked AI civ                         // 0x004853e7
+    bestHumanAddr: 'DAT_00655c20', // best human civ rank index                // line 1086
+    worstHumanAddr: 'DAT_00655c21', // worst human civ rank index              // line 1158
+    topAiAddr: 'DAT_00655c31',    // top-ranked AI civ                         // line 1095
   },
 
   // AI domination check: triggers alpha-strike diplomacy
   dominationCheck: {
-    minCities: 4,                 // top AI must have > 4 cities               // 0x004853e7
-    minTurns: 200,                // must be past turn 200                     // 0x004853e7
-    minDifficulty: 1,             // difficulty must be > 0                    // 0x004853e7
-    vendettaFlag: 0x20,           // treaty flag for vendetta/hatred           // 0x004853e7
+    // C (lines 1096-1099): top AI civ must be alive, have > 4 cities, no peace treaty,
+    //   turn > 200, and difficulty > 0
+    minCities: 4,                 // top AI must have > 4 cities               // line 1097
+    peaceCheckAddr: 'DAT_0064c7a5', // must be '\0' (no peace treaty active)   // line 1098
+    minTurns: 200,                // must be past turn 200                     // line 1099
+    minDifficulty: 1,             // difficulty must be > 0 (DAT_00655b08)     // line 1099
+    // Difficulty > 3 also enables alternative domination via FUN_004a7577
+    // C (line 1102): if (3 < DAT_00655b08) -- checks all AI civs for domination
+    difficultyThresholdForAllAiCheck: 3,  // difficulty > 3 scans all AIs      // line 1102
+    dominationCheckFn: 'thunk_FUN_004a7577',  // returns nonzero if civ qualifies // line 1105
+  },
+
+  // Alpha-strike diplomacy section: when domination is detected, the leading AI
+  // declares war or sets vendetta against weaker civs
+  // C: lines 1094-1155
+  alphaStrikeDiplomacy: {
+    // War flag set on game state
+    // C: DAT_00655af0 = DAT_00655af0 | 1
+    warFlag: 0x01,                  // bit 0 of DAT_00655af0 = alpha-strike active  // line 1113
+
+    // Count existing vendettas against target (vendetta flag 0x20)
+    // C: for each civ: if (treaty[civ][target] & 0x20) vendettaCount++
+    vendettaCountFormula: 'count of civs with treaty & 0x20 set against target',    // lines 1116-1120
+    vendettaMask: 0x20,             // treaty flag for vendetta/hatred               // line 1117
+
+    // Target selection criteria: alive, not AI, has > 1 city
+    // C: (1 << civ & aliveBitmask) != 0 AND (1 << civ & aiMask) == 0 AND cities > 1
+    targetAliveCheck: '1 << civId & DAT_00655b0a',                                  // line 1122
+    targetNotAiCheck: '1 << civId & DAT_00655b0b == 0',                             // line 1123
+    targetMinCities: 1,             // cities > 1 (must have more than 1)            // line 1124
+
+    // Militarism formula: vendettaCount*3 + 3 < militarism triggers war
+    // C: local_14 * 3 + 3 < (int)(uint)(byte)(&DAT_0064c6be)[local_10 * 0x594]
+    militarismFormula: 'vendettaCount * 3 + 3 < attacker.militarism',               // line 1125
+    militarismAddr: 'DAT_0064c6be + civId * 0x594',                                 // line 1125
+
+    // Provocation check: treaty & 0x10 (provocation/vendetta trigger)
+    // C: ((&DAT_0064c6c0)[target * 0x594 + attacker * 4] & 0x10) != 0
+    provocationMask: 0x10,          // treaty flag for provocation                   // line 1126
+
+    // War declaration (no existing treaty): treaty & 8 == 0 AND treaty & 6 == 0
+    // C: thunk_FUN_00456f20(target, attacker, 1); treaty |= 1 (contact)
+    warDeclarationFn: 'thunk_FUN_00456f20',                                         // line 1130
+    contactFlag: 0x01,              // treaty |= 1 (initial contact)                 // line 1132
+
+    // Ceasefire/peace check: treaty & 6 (bits 1+2 = ceasefire|peace)
+    // C: if ((treaty & 6) == 0) -> no ceasefire/peace -> declare war
+    //    else -> random check to break treaty
+    ceasefirePeaceMask: 0x06,       // treaty bits: ceasefire (2) | peace (4)        // line 1129
+
+    // At-war check: treaty & 8 (already at war)
+    atWarMask: 0x08,                // treaty bit for existing war                   // line 1128
+
+    // Random treaty-break check (when ceasefire/peace exists):
+    // C: abs(rand()) & 0x1f <= difficulty
+    // If random 0..31 <= difficulty, break treaty and set vendetta
+    randomBreakFormula: 'abs(rand()) & 0x1f <= difficulty',                          // line 1137
+    randomMask: 0x1F,               // mask for random value (0..31)                 // line 1137
+    vendettaSetFlag: 0x20,          // treaty |= 0x20 (vendetta flag set)            // line 1141
+
+    // At-war + domination override: if already at war AND domination detected AND difficulty > 3
+    // C: if (iVar2 != 0 && 3 < DAT_00655b08) treaty |= 0x20
+    atWarDominationDiffThreshold: 3, // difficulty > 3 for at-war vendetta override  // line 1147
   },
 
   // sourceAddr: '0x004853E7'
@@ -6987,7 +7801,25 @@ export const COUNCIL_MEETING = {
     oneCityTurn: 0x23,            // turn 35: suggest building city             // 0x0048aa24
     expandInterval: 0x18,         // 24 turns without new city → EXPAND0       // 0x0048aa24
     maxCitiesForExpand: 6,        // only suggest if < 6 cities                // 0x0048aa24
+
+    // One-city tutorial: turn offset 0x19 for setting "last expansion" turn
+    // C (line 3108): *(short*)(&DAT_0064c6ae + DAT_006d1da0 * 0x594) = (short)DAT_00655af8 - 0x19
+    oneCityTurnOffset: 0x19,      // 25 turns subtracted from current turn     // 0x0048aa24+line3108
+    // One-city tutorial prerequisites:
+    // C (line 3099): cityCount == 1 AND unitCount > 2 AND turn == 0x23
+    oneCityMinUnits: 2,           // must have > 2 units (DAT_0064c70c > 2)    // 0x0048aa24+line3100
+    oneCityCondition: 'cityCount == 1 AND unitCount > 2 AND no research AND no fortifications',
   },
+
+  // Sound ID fallback when no city found for council meeting
+  // C (line 3076): thunk_FUN_0040bc10(0xe) — played when local_10 < 0 (no valid city)
+  noCitySoundId: 0x0E,            // fallback sound event when no city found   // 0x0048aa24+line3076
+
+  // Research count threshold for one-city tutorial check
+  // C (line 3101): DAT_0064c778[civ*0x594] == 0 AND DAT_0064c7f4[civ*0x594] == 0
+  // Both research byte fields must be 0 (threshold effectively 0, checked as == 0, not < 2)
+  // However, the unitCount check is > 2 (line 3100): 2 < DAT_0064c70c
+  researchCountThreshold: 2,      // unit count must exceed 2 for ONECITY      // 0x0048aa24+line3100
 
   // sourceAddr: '0x0048AA24'
 };
@@ -7072,10 +7904,19 @@ export const ROAD_CONNECTIVITY = {
   // Pathfinding setup
   pathfinderConfig: {
     goalTrackingAddr: 'DAT_0062d040', // 1 = active, 0 = done                 // 0x00488a45
+    ownerAddr: 'DAT_0062d044',    // set to -1 (0xFFFFFFFF) — no owner filter  // 0x00488a45+line2214
     goalXAddr: 'DAT_00673fa0',    // target X coordinate                       // 0x00488a45
     goalYAddr: 'DAT_00673fa4',    // target Y coordinate                       // 0x00488a45
     modeAddr: 'DAT_0062d03c',     // pathfinding mode (2 = road check)         // 0x00488a45
+    stepDirectionAddr: 'DAT_0062d048', // set to 1 — forward pathfinding       // 0x00488a45+line2218
+    ownerInitValue: -1,           // DAT_0062d044 = 0xFFFFFFFF (no civ filter) // 0x00488a45+line2214
+    stepDirectionValue: 1,        // DAT_0062d048 = 1 (search forward)         // 0x00488a45+line2218
   },
+
+  // Diplomacy mask: check for alliance/treaty with city owner along path
+  // C (line 2233): (DAT_0064c6c0[param_1 * 0x594 + iVar3 * 4] & 8) == 0
+  // If city on tile is NOT allied (no flag 8), path is blocked
+  diplomacyMask: 8,                 // treaty byte & 8 — alliance check          // 0x00488a45+line2233
 
   // Return values
   returnValues: {
@@ -7359,6 +8200,23 @@ export const AIRDROP_PARADROP = {
   // Notification to other civs visible to the paradrop
   visibilityNotification: 'All human civs who can see source/target tile get airdrop notification',
 
+  // Visibility determination: 9-tile scan around target for each human civ
+  // C (lines 3290-3297): for (local_14 = 0; local_14 < 9; local_14++)
+  //   check if any civ owns a unit visible on neighbor tile via FUN_005b8da4
+  visibilityScan: {
+    tileCount: 9,                    // 8 neighbors + center tile               // 0x004CA39E+line3290
+    embassyVisibilityBit: 0x80,      // DAT_0064c6c0 & 0x80 — embassy check    // 0x004CA39E+line3286
+    note: 'Civ can see paradrop if: owns unit, has embassy with dropper/target owner, or global reveal active',
+  },
+
+  // MP sound event: sent to other MP players who can see the paradrop
+  // C (line 3322): thunk_FUN_00511880(0x15, ..., 3, 0, param_1, 0)
+  mpSoundEvent: {
+    messageId: 0x15,                 // MP notification for airdrop/paradrop    // 0x004CA39E+line3322
+    soundParam: 3,                   // param_3 = 3 (sound type)                // 0x004CA39E+line3322
+    condition: 'DAT_00655b02 > 2 (multiplayer) AND civ can see AND is not dropper AND not in replay',
+  },
+
   // Post-drop: unit.order = 0xFF, unit moved to target tile
   postDropFlag: 0x10,  // unit.statusFlags |= 0x10 (paradropped this turn)
 
@@ -7422,6 +8280,11 @@ export const MAPGEN_LAND_VALUE = {
 
   // Continent counting: increments per-continent counter for each scored tile
   continentCounterAddr: 'DAT_00666132',
+
+  // Non-land fertility sentinel: tiles that are not valid land get byte5 set to 0xF0
+  // C (block_00400000.c line 1454): *(undefined1 *)(iVar3 + 5) = 0xf0
+  // This marks non-scoreable tiles (ocean, invalid) so they are excluded from city site evaluation
+  nonLandFertilitySentinel: 0xF0,   // sentinel value for non-land tiles         // 0x0040897F+line1454
 
   sourceAddr: '0x0040897F',
 };
@@ -7621,6 +8484,115 @@ export const AI_TAX_SCIENCE = {
   // --- Tax rate = remainder ---
   // C: (&DAT_0064c6b4)[param_1 * 0x594] = 10 - (science + luxury)
   taxFormula: 'tax = 10 - science - luxury',
+
+  // --- Income categories initialization ---
+  // C: for (local_38 = 0; local_38 < 7; local_38++) { income[param_1 * 0x594 + local_38 * 2] = 0; }
+  incomeCategories: {
+    count: 7,                       // 7 income categories cleared to 0              // line 1957
+    addr: 'DAT_0064ca74 + civId * 0x594 + category * 2',                             // line 1958
+    totalAddr: 'DAT_0064ca72 + civId * 0x594',  // total income counter              // line 1956
+  },
+
+  // --- Research priorities array ---
+  // C: for (local_14 = 0; local_14 < 0x1c; local_14++) { (&DAT_0063f580)[param_1 * 0x1c + local_14] = 0; }
+  researchPriorities: {
+    count: 0x1C,                    // 28 research priority entries                  // line 1960
+    count_dec: 28,                  // 28 decimal
+    addr: 'DAT_0063f580 + civId * 0x1c + index',                                     // line 1961
+    note: 'Zeroed at start, then zeroed again at end of function (lines 2141-2143)',
+  },
+
+  // --- City processing return value sentinel ---
+  // C: iVar4 = thunk_FUN_004f0a9c(local_24); if (iVar4 != -999) { ... }
+  cityProcessReturnSentinel: -999,  // -999 = city was destroyed/captured, skip it   // line 1977
+
+  // --- City size threshold for disorder flag ---
+  // C: if ((iVar4 == 0) && ('\x05' < (char)(&DAT_0064f349)[local_24 * 0x58]))
+  //    local_1c = local_1c | 1
+  disorderCitySizeThreshold: 5,     // city size > 5 AND food surplus == 0 -> disorder flag // line 1978
+
+  // --- Luxury adjustment constant 0x0B (11) ---
+  // C: local_18 = -(science + luxury) + 0xb    (when disorder flag & 2 set AND local_18 < 4)
+  luxuryAdjustDisorder: 0x0B,       // 11 decimal; replaces base 10 with 11 to boost luxury // line 2006
+  luxuryAdjustBase: 10,             // normal: local_18 = 10 - (science + luxury)            // line 2003
+
+  // --- War/tribute assessment section ---
+  // C: lines 2065-2143. After tax/science sliders are set, the AI evaluates whether
+  // to demand tribute or go to war based on tech advantages and relative power.
+  warTributeAssessment: {
+    // Tech checks for war eligibility
+    // C: iVar4 = thunk_FUN_004bd9f0(param_1, 0x15);  // has tech 0x15 (21 = Gunpowder)
+    //    if (iVar4 != 0 || FUN_00453e51(param_1, 0x13) != 0)  // or can research 0x13 (19 = Navigation)
+    //    && topCiv.govt == 4 (Fundamentalism)
+    techCheckGunpowder: 0x15,       // tech 21: Gunpowder                            // line 2066
+    techCheckNavigation: 0x13,      // tech 19: Navigation (via FUN_00453e51)         // line 2067
+    govtComparison: 4,              // government type 4: Fundamentalism              // line 2068
+    govtAddr: 'DAT_0064c6b5 + civId * 0x594',                                        // line 2068
+
+    // Tribute formula: (topCiv.unitSupport + topCiv.unitCount + topCiv.numCities) * (numCities + 1 + local_c)
+    // local_c = topCiv.numCities + 1 (only when tech/govt conditions met)
+    // C: local_c = *(short *)(&DAT_0064c6bc + DAT_00655c20 * 0x594) + 1
+    tributeCitiesBase: 'topCiv.numCities + 1',                                        // line 2069
+
+    // Treasury +10 bonus: if own treasury < topCiv treasury, add 10 to tribute
+    // C: if (ownTreasury < topCivTreasury) tribute += 10
+    treasuryBonus: 10,              // +10 when AI treasury < top civ treasury        // line 2079
+
+    // Second tech gate for zeroing tribute (defensive posture):
+    // C: if (local_c == 0 && (hasTech(0xF) || hasTech(0x1F) || canResearch(0x13)))
+    //    && rank condition && fewer techs than top civ -> zero tribute
+    techCheckConstruction: 0x0F,    // tech 15: Construction                          // line 2082
+    techCheckFlight: 0x1F,          // tech 31: Flight                                // line 2083
+    note_techCheckNavigation: 'also rechecked via FUN_00453e51(param_1, 0x13)',       // line 2084
+
+    // Rank/tech comparison for zeroing tribute
+    // C: (int)(uint)(byte)(&DAT_00655c22)[param_1] <= (int)(cVar1 + (4 - (uint)(iVar4 == 0)))
+    //    && ownTechs < topCivTechs -> zero tribute AND war demand
+    rankComparisonNote: 'own rank position <= govtTable value + 3 or 4 (depends on random)',
+    techComparisonNote: 'own numTechs < topCiv numTechs -> zero tribute',            // line 2088
+
+    // 75% multiplier (3/4): applied to tribute values when conditions match
+    // C: tribute = (short)((int)(tribute * 3 + (tribute * 3 >> 0x1f & 3U)) >> 2)
+    //    This is signed division: (tribute * 3) / 4, i.e. 75%
+    multiplier75pct: { numerator: 3, denominator: 4 },                               // lines 2098-2103
+    multiplier75pctCondition: 'topAI is dead AND (govtAggression == 1 OR (aggression == 0 AND govtMinMil < 0))',
+
+    // Comparison multipliers: iVar4*4 and iVar4*8 for military strength thresholds
+    // C: if (ownTechs + iVar4 * 4 < topCivTechs) -> zero tribute
+    //    if (topCivTechs <= ownTechs + iVar4 * 8) -> halve tribute
+    strengthMultiplier4x: 4,        // iVar4 * 4 threshold for zeroing tribute        // line 2114
+    strengthMultiplier8x: 8,        // iVar4 * 8 threshold for halving tribute        // line 2117
+    strengthFormula: 'iVar4 = govtAggression * 2 - govtMinMilitarism',               // lines 2108-2109
+
+    // Difficulty > 3 halving: additional 50% reduction for high difficulty
+    // C: iVar4 = thunk_FUN_004a7577(param_1);
+    //    if (iVar4 != 0 && 3 < DAT_00655b08) { tribute /= 2; warDemand /= 2; }
+    difficultyHalvingThreshold: 3,  // difficulty > 3 halves tribute & war demand     // line 2132
+    dominationCheckFn: 'thunk_FUN_004a7577',                                          // line 2131
+
+    // Scenario flag 0x80: if scenario flag set AND science == 0 -> zero tribute
+    // C: if ((DAT_00655ae8 & 0x80) != 0 && science == 0)
+    //    { tribute = 0; if (govtAggression >= 0) warDemand = 0; }
+    scenarioFlag: 0x80,             // DAT_00655ae8 & 0x80                            // line 2136
+    scenarioZeroCondition: 'science rate == 0 in scenario mode -> zero tribute',
+
+    // Tribe record stride 0x30: used for government type table lookups
+    // C: (&DAT_006554f8)[govtType * 0x30] and (&DAT_006554fa)[govtType * 0x30]
+    tribeRecordStride: 0x30,        // 48 bytes per government type record            // lines 2085, 2093
+    govtAggressionAddr: 'DAT_006554f8 + govtType * 0x30',  // signed byte, aggression level
+    govtMinMilitarismAddr: 'DAT_006554fa + govtType * 0x30', // signed byte, min militarism
+
+    // Output addresses
+    tributeAddr: 'DAT_0064ca80 + civId * 0x594',   // war/tribute demand value        // line 2071
+    warDemandAddr: 'DAT_0064ca7e + civId * 0x594',  // war demand value               // line 2091
+  },
+
+  // --- Final research priorities reset ---
+  // C: for (local_14 = 0; local_14 < 0x1c; local_14++) { priorities[civId * 0x1c + local_14] = 0; }
+  finalPrioritiesReset: {
+    count: 0x1C,                    // 28 entries zeroed at end                       // line 2141
+    addr: 'DAT_0063f580 + civId * 0x1c + index',                                     // line 2142
+  },
 
   sourceAddr: '0x00487A41',
 };
