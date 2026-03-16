@@ -1082,27 +1082,28 @@ export const ADVANCE_AI_INTEREST = [
 //   [1] = militarism   (DAT_006554f8) — aggression/warlike preference
 //   [2] = tolerance     (DAT_006554f9) — perfectionism/development preference
 export const LEADER_PERSONALITY = [
-  [1, 1, 0],    // 0 Romans (Caesar) - expansionist, militarist
-  [0, -1, 1],   // 1 Babylonians (Hammurabi) - peaceful, tolerant
-  [1, 1, -1],   // 2 Germans (Frederick) - expansionist, militarist, intolerant
-  [0, 0, 0],    // 3 Egyptians (Ramesses) - neutral
-  [1, 0, 1],    // 4 Americans (Lincoln) - expansionist, tolerant
-  [0, -1, 1],   // 5 Greeks (Alexander) - peaceful, tolerant
-  [-1, -1, 1],  // 6 Indians (Gandhi) - non-expansionist, peaceful, tolerant
-  [1, 1, -1],   // 7 Russians (Stalin) - expansionist, militarist, intolerant
-  [1, 1, -1],   // 8 Zulus (Shaka) - expansionist, militarist, intolerant
-  [0, 0, 0],    // 9 French (Napoleon) - neutral
-  [1, 1, -1],   // 10 Aztecs (Montezuma) - expansionist, militarist, intolerant
-  [1, 0, 0],    // 11 Chinese (Mao) - expansionist
-  [0, 0, 0],    // 12 English (Elizabeth) - neutral
-  [1, 1, -1],   // 13 Mongols (Genghis Khan) - expansionist, militarist, intolerant
-  [0, 0, 0],    // 14 Celts (Brennus) - neutral
-  [1, 1, -1],   // 15 Japanese (Tokugawa) - expansionist, militarist, intolerant
-  [1, 1, -1],   // 16 Vikings (Canute) - expansionist, militarist, intolerant
-  [1, 0, 0],    // 17 Spanish (Isabella) - expansionist
-  [0, 0, 0],    // 18 Persians (Scheherazade) - neutral
-  [1, 0, 0],    // 19 Carthaginians (Hannibal) - expansionist
-  [0, 1, -1],   // 20 Sioux (Sitting Bull) - militarist, intolerant
+  // [expand, attack, civilize] — from RULES.TXT @LEADERS (attack,expand,civilize)
+  [1, 0, 1],    // 0 Romans (Caesar) — RULES: atk=0, exp=1, civ=1
+  [-1, -1, 1],  // 1 Babylonians (Hammurabi) — RULES: atk=-1, exp=-1, civ=1
+  [-1, 1, 1],   // 2 Germans (Frederick) — RULES: atk=1, exp=-1, civ=1
+  [0, 0, 1],    // 3 Egyptians (Ramesses) — RULES: atk=0, exp=0, civ=1
+  [0, -1, 1],   // 4 Americans (Lincoln) — RULES: atk=-1, exp=0, civ=1
+  [1, 0, -1],   // 5 Greeks (Alexander) — RULES: atk=0, exp=1, civ=-1
+  [-1, -1, 0],  // 6 Indians (Gandhi) — RULES: atk=-1, exp=-1, civ=0
+  [0, 1, -1],   // 7 Russians (Stalin) — RULES: atk=1, exp=0, civ=-1
+  [0, 1, 0],    // 8 Zulus (Shaka) — RULES: atk=1, exp=0, civ=0
+  [1, 1, 1],    // 9 French (Napoleon) — RULES: atk=1, exp=1, civ=1
+  [-1, 0, 1],   // 10 Aztecs (Montezuma) — RULES: atk=0, exp=-1, civ=1
+  [0, 0, 1],    // 11 Chinese (Mao) — RULES: atk=0, exp=0, civ=1
+  [1, 0, 0],    // 12 English (Elizabeth) — RULES: atk=0, exp=1, civ=0
+  [1, 1, -1],   // 13 Mongols (Genghis Khan) — RULES: atk=1, exp=1, civ=-1
+  [1, -1, 0],   // 14 Celts (Brennus) — RULES: atk=-1, exp=1, civ=0
+  [-1, 1, -1],  // 15 Japanese (Tokugawa) — RULES: atk=1, exp=-1, civ=-1
+  [1, 1, 0],    // 16 Vikings (Canute) — RULES: atk=1, exp=1, civ=0
+  [1, -1, -1],  // 17 Spanish (Isabella) — RULES: atk=-1, exp=1, civ=-1
+  [-1, 0, 0],   // 18 Persians (Scheherazade) — RULES: atk=0, exp=-1, civ=0
+  [0, 0, -1],   // 19 Carthaginians (Hannibal) — RULES: atk=0, exp=0, civ=-1
+  [0, 0, 0],    // 20 Sioux (Sitting Bull) — RULES: atk=0, exp=0, civ=0
 ];
 
 // Government name → numeric index for formulas
