@@ -1990,8 +1990,9 @@ export const COMBAT_RESOLUTION = {
     // Sneak attack bonus: attack *= 2
     sneakAttackBonus: {
       multiplier: 2,
-      condition: 'no peace/ceasefire/alliance treaty between attacker and defender',
+      condition: 'attacker is BREAKING a treaty (peace/ceasefire/alliance exists between attacker and defender)',
       turnTracker: '@ DAT_0064ca82[defender*0x594 + attacker*2] = current turn',
+      note: 'Previously reversed: condition triggers in the ELSE branch (treaty bits set), not when no treaty exists. Shows "SNEAK" or "BREAKCEASE" popup depending on treaty type.',
       sourceAddr: '0x00580341+line384',
     },
     // Difficulty-based adjustments
@@ -2030,8 +2031,9 @@ export const COMBAT_RESOLUTION = {
       multiplier: 1.5,        // defense += defense/2
       attackerFullMoves: 'moves == DAT_0064bcc8 * 2 (maxMoves * 2)',
       attackerDomain: 0,      // ground domain
-      directionCheck: 10,     // closest_dir result == 10
+      attackerMaxHpCheck: 10, // FUN_005b29aa(attacker) == 10 (attacker has standard max HP of 10)
       fuelAdjustment: 'if DAT_00654fae != 0: subtract DAT_0064b1c2[type]/2 from moves before check',
+      note: 'Previously mislabeled as "directionCheck: 10 (closest_dir)" — actually checks attacker max hit points via FUN_005b29aa',
       sourceAddr: '0x00580341+line130',
     },
     // Anti-air unit bonus: defense *= 3 (without missile flag) or *= 5 (with missile flag)
@@ -2070,12 +2072,20 @@ export const COMBAT_RESOLUTION = {
       condition: 'attacker domain == air AND city has SAM Battery',
       sourceAddr: '0x00580341+line174',
     },
-    // Great Wall wonder: attack /= 2, city considered walled
+    // Great Wall wonder: effects are barbarian-only
     greatWallEffect: {
       wonderId: 6,
-      effect: 'attack /= 2; city.has_walls = true',
-      condition: 'defender has Great Wall wonder AND defender city count < 8',
-      sourceAddr: '0x00580341+line222',
+      attackerIsBarbarian: {
+        effect: 'attack /= 2',
+        condition: 'attacker civId == 0 (barbarian) AND defender has Great Wall wonder',
+        sourceAddr: '0x00580341+line234',
+      },
+      defenderIsBarbarian: {
+        effect: 'attack *= 2',
+        condition: 'defender civId == 0 (barbarian) AND attacker has Great Wall wonder',
+        sourceAddr: '0x00580341+line245',
+      },
+      note: 'Previously described as general effect — Great Wall attack/2 only applies when attacker is barbarian. Also has reciprocal: attack*2 when attacking barbarians with Great Wall.',
     },
     // Barbarian defender (civId == 0): special handling
     barbarianDefender: {
@@ -2188,13 +2198,14 @@ export const COMBAT_RESOLUTION = {
   },
 
   // Alliance arrays: initialized to 0 at start of combat
-  // C (lines 89-93): DAT_006acae8[0..7] = 0; DAT_006acb10[0..7] = 0
+  // C (lines 91-94): for (local_18 = 1; local_18 < 8; local_18++) { DAT_006acae8[local_18] = 0; DAT_006acb10[local_18] = 0; }
   allianceArrays: {
-    attackerAllies: 'DAT_006ACAE8',  // 8-element array
-    defenderAllies: 'DAT_006ACB10',  // 8-element array
+    attackerAllies: 'DAT_006ACAE8',  // 8-element array (indices 1..7 initialized)
+    defenderAllies: 'DAT_006ACB10',  // 8-element array (indices 1..7 initialized)
+    initRange: '[1..7]',             // index 0 (barbarians) is NOT initialized
     size: 8,
     meaning: 'Tracks which civs are allied with attacker/defender for combat notifications',
-    sourceAddr: '0x00580341+line89',
+    sourceAddr: '0x00580341+line91',
   },
 
   // Senate override for Republic/Democracy
@@ -2286,16 +2297,18 @@ export const COMBAT_RESOLUTION = {
   combatCounter: {
     addr: 'DAT_0064C6F0',
     stride: '0x594 (civ record stride)',
-    onWin: 'counter++ (increment attack count against defender)',
-    onLoss: 'counter = 0 (reset attack count against defender)',
+    onLoss: 'counter++ (increment consecutive failed attacks against defender)',
+    onWin: 'counter = 0 (reset consecutive failed attacks against defender)',
+    note: 'Tracks consecutive LOSSES, not wins. local_c0 == 0 (defender wins) → counter++; local_c0 != 0 (attacker wins) → counter = 0',
     sourceAddr: '0x00580341+line953',
   },
 
-  // SAM defense used flag: set on city when SAM Battery participates
-  // C (line 158): city.flags |= 0x8000000
-  samDefenseUsedFlag: {
+  // Coastal Fortress defense used flag: set on city when Coastal Fortress participates
+  // C (line 158): city.flags |= 0x8000000 (inside the building 0x1C / Coastal Fortress check block)
+  coastalFortressDefenseUsedFlag: {
     flag: 0x8000000,
-    meaning: 'City flag set when SAM Missile Battery bonus was applied in combat',
+    meaning: 'City flag set when Coastal Fortress bonus was applied in combat',
+    note: 'Previously mislabeled as SAM Battery flag — the 0x8000000 set at line 158 is inside the Coastal Fortress (building 0x1C) defense block, not SAM Battery',
     sourceAddr: '0x00580341+line158',
   },
 
@@ -3796,12 +3809,16 @@ export const COMBAT_DEFENSE = {
 
 export const COMBAT_BEST_DEFENDER = {
   // Iterates all units in defender stack, picks highest effective defense
-  // Skips ocean terrain (terrain==10) unless unit is sea domain (role != 0)
+  // Skips ocean terrain (terrain==10) unless unit domain != 0 (non-land)
+  // C: if (DAT_006acb30 != 10 || DAT_0064b1c1[unit_type*0x14] != 0) — checks DOMAIN (offset 0x09), not role
   oceanTerrainId: 10,
+  oceanSkipField: 'domain (DAT_0064b1c1, offset 0x09)',  // NOT role — skips land-domain units on ocean
 
-  // Simplified combat: defense scaled by remaining/base MP
+  // Simplified combat: defense scaled by remaining/base HP (hit points, not movement)
+  // C: iVar4 = FUN_005b29d7(unit) [current HP]; iVar5 = FUN_005b29aa(unit) [max HP]; score = (currentHP * score) / maxHP
   simplifiedCombatFlag: 0x10,          // DAT_00655ae8 & 0x10
-  simplifiedFormula: '(remainingMP * defense) / baseMP',
+  simplifiedFormula: '(currentHP * defense) / maxHP',
+  note: 'Previously described as MP (movement points) — actually uses HP via FUN_005b29d7 (current HP) and FUN_005b29aa (max HP)',
 
   // Unit type modifiers (from flagsB = DAT_0064b1bd):
   modifiers: {
@@ -4993,7 +5010,9 @@ export const HAPPINESS_CALC = {
 
 export const CORRUPTION_CALC = {
   // Government factor (FUN_004e9849): divisor based on govt type
-  govtFactorTable: { 0: 4, 1: 5, 2: 6, 3: 7, 4: 8, 5: 8 },
+  // C: local_8=4; if(0<p)local_8=5; if(1<p)local_8++; if(2<p)local_8++; if(4<p)local_8++
+  // Note: condition is strict `4 < param_2`, so govt 4 gets 7 (same as govt 3), not 8
+  govtFactorTable: { 0: 4, 1: 5, 2: 6, 3: 7, 4: 7, 5: 8 },
 
   // Formula: corruption = clamp((distance * trade * 3) / (govtFactor * 20), 0, trade)
   distanceCap: 0x10,          // 16 max

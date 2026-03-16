@@ -293,7 +293,10 @@ export const CITY_FLAGS = {
                                       //     city_flags ^= 0x4000000 (toggle on click)
                                       //   Read by: block_00550000.c:2651: (flags & 0x4000000) >> 26
                                       //     extracts 0 or 1 for scenario objective scoring
-  // bit 0x8000000:                   // (unobserved in binary — gap between objective bits)
+  COASTAL_FORTRESS_USED: 0x8000000,   // city flag set when Coastal Fortress defense bonus was applied in combat
+                                      //   Set by: FUN_00580341 combat function line 158: city.flags |= 0x8000000
+                                      //   when attacker domain == sea AND has_building(city, 0x1C = Coastal Fortress)
+                                      //   Previously labeled "unobserved" — found in combat defense code block_00580000.c
   OBJECTIVE_X3:         0x10000000,   // scenario objective value x3
   // sourceAddr: various city processing functions, FUN_004e7270, FUN_004ec312, FUN_004ee3c0, FUN_004e91ea
 
@@ -319,8 +322,10 @@ export const CITY_FLAG_MASKS = {
     // sourceAddr: block_004E0000.c line 5486
 
   CLEAR_TURN_START:     0xffbfffbb,
-    // Clears: bits 0x04 (IMPROVEMENT_SOLD) + 0x40 (AI_SETTLER_NEARBY) + 0x4000 (CONTENT_SURPLUS).
-    //   Equivalent to clearing bits at positions 2, 6, and 14.
+    // Clears: bits 0x04 (IMPROVEMENT_SOLD) + 0x40 (AI_SETTLER_NEARBY) + 0x400000 (INVESTIGATED).
+    //   Equivalent to clearing bits at positions 2, 6, and 22.
+    //   ~0xffbfffbb = 0x00400044. Previously mislabeled as clearing 0x4000 (CONTENT_SURPLUS, bit 14)
+    //   — actually clears 0x400000 (INVESTIGATED, bit 22).
     // Applied at: start of city turn processing for each city.
     // sourceAddr: block_004F0000.c line 291 (FUN_004f0eab)
 };
