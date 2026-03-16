@@ -355,7 +355,7 @@ export const ATTITUDE_ADVISOR = {
       pollutionOffset: '@ DAT_00673f58',                  // scoring component 5: (warming-cooling)*-10 (NOT weLoveKingCount)
       spaceshipRevenuePre: '@ DAT_00673f84',              // scoring component 3: display-only (NOT revoltCount)
       futureTechScore: '@ DAT_00673f6c',                  // scoring component 7: futureTechCount*5 (NOT pollutionCount)
-      difficultyBonus: '@ DAT_00673f74',                  // scoring component 8: difficulty*25-50
+      barbarianLevelBonus: '@ DAT_00673f74',               // scoring component 8: barbarianLevel*25-50
       turnBonus: 'shown if turnNumber > 199 AND DAT_00673f8c != 0',  // scoring component 6: peaceTurns*3 capped at 100
     },
   },
@@ -7689,21 +7689,20 @@ export const CIV_SCORING = {
     sourceAddr: '0x004A28B0+line369',
   },
 
-  // Component 8: Difficulty bonus
-  // C: DAT_00673f74 = (uint)DAT_00655b08 * 0x19 - 0x32  // NOTE: Ghidra shows 0x655b09 but context is difficulty (0..5), not barbarian level
-  difficultyBonus: {
+  // Component 8: Barbarian level bonus
+  // C: DAT_00673f74 = (uint)DAT_00655b09 * 0x19 - 0x32
+  // Raw C verified: DAT_00655b09 = barbarian level (0..3), NOT difficulty (DAT_00655b08)
+  barbarianLevelBonus: {
     addr: 'DAT_00673F74',
-    formula: 'difficulty * 25 - 50',
+    formula: 'barbarianLevel * 25 - 50',
     multiplier: 0x19,  // 25
     offset: -0x32,     // -50
-    difficultyAddr: 'DAT_00655B08',  // difficulty level (0..5); NOTE: C line 370 shows DAT_00655b09 (barbarian level) — likely a Ghidra decompile alias; DAT_00655b08 is the difficulty byte used everywhere else
+    barbarianLevelAddr: 'DAT_00655B09',  // barbarian level (0=none, 1=minor, 2=normal, 3=raging)
     breakdown: {
-      chieftain: -50,   // 0 * 25 - 50
-      warlord: -25,     // 1 * 25 - 50
-      prince: 0,        // 2 * 25 - 50
-      king: 25,         // 3 * 25 - 50
-      emperor: 50,      // 4 * 25 - 50
-      deity: 75,        // 5 * 25 - 50
+      none: -50,        // 0 * 25 - 50
+      minor: -25,       // 1 * 25 - 50
+      normal: 0,        // 2 * 25 - 50
+      raging: 25,       // 3 * 25 - 50
     },
     sourceAddr: '0x004A28B0+line370',
   },
@@ -7712,19 +7711,20 @@ export const CIV_SCORING = {
   // C: DAT_00673f88 = DAT_00673f8c + DAT_00673f58 + DAT_00673f60 + DAT_00673f5c + DAT_00673f78 + DAT_00673f74 + DAT_00673f6c
   totalScore: {
     addr: 'DAT_00673F88',
-    formula: 'contentCitizens + wonderScore + spaceshipPost + pollutionOffset + turnBonus + futureTech + difficultyBonus',
+    formula: 'contentCitizens + wonderScore + spaceshipPost + pollutionOffset + turnBonus + futureTech + barbarianLevelBonus',
     clampMin: 0,
     note: 'spaceshipRevenuePre (DAT_00673f84) is NEVER included in this sum — only spaceshipPost (DAT_00673f60) contributes. Pre-launch revenue is display-only.',
     sourceAddr: '0x004A28B0+line371',
   },
 
   // --- Retirement/victory scoring (separate) ---
-  // C: DAT_00673f7c = difficulty * 100 + (0x23a - turn) * 2 + 400
-  // NOTE: Pseudocode says first term is spaceshipMult, not difficulty. Needs raw binary re-verification.
+  // C: DAT_00673f7c = (uint)DAT_00655b0d * 100 + (0x23a - turn) * 2 + 400
+  // Raw C verified: DAT_00655b0d = number of AI opponents, NOT difficulty
   retirementScore: {
     addr: 'DAT_00673F7C',
     condition: 'Only surviving solo civ (aliveBitmask & ~1 == 1 << civId)',
-    formula: 'difficulty * 100 + (570 - turnNumber) * 2 + 400',
+    formula: 'aiOpponentCount * 100 + (570 - turnNumber) * 2 + 400',
+    aiOpponentCountAddr: 'DAT_00655B0D',
     turnBase: 0x23A,  // 570
     // C: if (DAT_00655ae8 & 0x100 && turn < 0xfb) local_18 = 0xfa
     acceleratedGameFlag: 0x100,

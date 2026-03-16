@@ -322,7 +322,7 @@ export const VIEWPORT_REDRAW = {
   /**
    * Redraw pipeline (FUN_0047c9d4 — redraw_full_viewport):
    *   for row in 0..(rows + rowsWide + 1):
-   *     cols = colsWide if (row & 1) else colsNarrow
+   *     cols = colsNarrow if (row & 1) else colsWide
    *     for col in 0..cols:
    *       tileX = wrap(col*2 + viewportLeftX + (row & 1))
    *       tileY = viewportTopY + row
