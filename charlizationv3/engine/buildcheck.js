@@ -118,15 +118,6 @@ export function canBuildImprovement(civSlot, cityIndex, buildingId, gameState, m
     }
   }
 
-  // ── Police Station: unique per civ ──
-  if (buildingId === 33) {
-    for (let i = 0; i < gameState.cities.length; i++) {
-      if (i === cityIndex) continue;
-      const c = gameState.cities[i];
-      if (c && c.owner === civSlot && c.size > 0 && cityHasBuilding(c, 33)) return false;
-    }
-  }
-
   // ── Power plant mutual exclusion ──
   if (POWER_PLANT_BUILDINGS.has(buildingId)) {
     // Must have Factory or Mfg. Plant (already checked via IMPROVE_REQUIRES_BUILDING for Factory)

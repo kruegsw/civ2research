@@ -103,15 +103,15 @@ function _shuffleDirs(gameState) {
  *
  * Ported from decompiled local_d8 computation in FUN_00538a29.
  *
- * @param {object} unit - unit object with type and hpLost fields
+ * @param {object} unit - unit object with type and movesRemain fields
  * @returns {number} damage level 0-3
  */
 export function getDamageLevel(unit) {
   const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  const curHp = Math.max(1, maxHp - (unit.movesRemain || 0));
   if (curHp * 4 <= maxHp) return DAMAGE_CRITICAL;   // <25% HP
   if (curHp * 2 <= maxHp) return DAMAGE_WOUNDED;     // 25-50% HP
-  if ((unit.hpLost || 0) > 0) return DAMAGE_SCRATCHED; // 50-75% HP
+  if ((unit.movesRemain || 0) > 0) return DAMAGE_SCRATCHED; // 50-75% HP
   return DAMAGE_HEALTHY;                              // >75% HP (full)
 }
 
@@ -280,7 +280,7 @@ function unitsAt(spatialIdx, gx, gy) {
 function attackStrength(unit) {
   const baseAtk = UNIT_ATK[unit.type] || 0;
   const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  const curHp = Math.max(1, maxHp - (unit.movesRemain || 0));
   const fp = UNIT_FP[unit.type] || 1;
   let str = baseAtk * curHp * fp;
   if (unit.veteran) str = Math.floor(str * 1.5);
@@ -297,7 +297,7 @@ function attackStrength(unit) {
 function defenseStrength(unit, terrain, isFortified, hasCityWalls, attackerNegatesWalls) {
   const baseDef = UNIT_DEF[unit.type] || 0;
   const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  const curHp = Math.max(1, maxHp - (unit.movesRemain || 0));
   const fp = UNIT_FP[unit.type] || 1;
   const terrMul = TERRAIN_DEFENSE[terrain] ?? 2;
   let str = baseDef * curHp * fp * (terrMul / 2);
@@ -318,7 +318,7 @@ function bestDefenderOnTile(spatialIdx, gx, gy, attackerOwner, terrain, gameStat
   // Check for city walls at the tile
   const city = gameState.cities.find(c =>
     c.gx === gx && c.gy === gy && c.size > 0);
-  const hasCityWalls = city ? (city.buildings?.has(3) || false) : false;
+  const hasCityWalls = city ? (city.buildings?.has(8) || false) : false; // building 8 = City Walls
 
   let best = null;
   let bestStr = -1;
@@ -678,7 +678,7 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
       // Check if this is a city assault
       const defCity = gameState.cities.find(c =>
         c.gx === enemy.gx && c.gy === enemy.gy && c.size > 0 && c.owner !== civSlot);
-      const hasCityWalls = defCity ? (defCity.buildings?.has(3) || false) : false;
+      const hasCityWalls = defCity ? (defCity.buildings?.has(8) || false) : false; // building 8 = City Walls
 
       // ── City assault evaluation (ported from decompiled) ──
       // Before attacking a walled city, check if we have enough force.
@@ -836,7 +836,7 @@ function _computeCombatScore(attacker, defender, defTerrain, hasCityWalls, negat
   // Effective ATK: base * 8 * veteran
   const atkBase = UNIT_ATK[attacker.type] || 0;
   const atkMaxHp = UNIT_HP[attacker.type] || 1;
-  const atkCurHp = Math.max(1, atkMaxHp - (attacker.hpLost || 0));
+  const atkCurHp = Math.max(1, atkMaxHp - (attacker.movesRemain || 0));
   const atkFp = UNIT_FP[attacker.type] || 1;
   let effAtk = atkBase * 8;
   if (attacker.veteran) effAtk = Math.floor(effAtk * 1.5);
@@ -844,7 +844,7 @@ function _computeCombatScore(attacker, defender, defTerrain, hasCityWalls, negat
   // Effective DEF: base * terrain_defense * 4 * veteran * fortification * walls
   const defBase = UNIT_DEF[defender.type] || 1;
   const defMaxHp = UNIT_HP[defender.type] || 1;
-  const defCurHp = Math.max(1, defMaxHp - (defender.hpLost || 0));
+  const defCurHp = Math.max(1, defMaxHp - (defender.movesRemain || 0));
   const defFp = UNIT_FP[defender.type] || 1;
   const terrMul = TERRAIN_DEFENSE[defTerrain] ?? 2;
   let effDef = defBase * terrMul * 4;
@@ -1003,8 +1003,8 @@ function _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, ci
 
   // ── Damage level (ported from decompiled local_d8) ──
   const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
-  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  const curHp = Math.max(1, maxHp - (unit.movesRemain || 0));
+  let damageLevel = (unit.movesRemain || 0) > 0 ? 1 : 0;
   if (curHp * 4 < maxHp) damageLevel = 3;
   else if (curHp * 2 < maxHp) damageLevel = 2;
 
@@ -1334,7 +1334,7 @@ function _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, ci
       if (bestDef) {
         const defCity = gameState.cities.find(c =>
           c.gx === wnx && c.gy === ny && c.size > 0 && c.owner !== civSlot);
-        const hasCityWalls = defCity ? (defCity.buildings?.has(3) || false) : false;
+        const hasCityWalls = defCity ? (defCity.buildings?.has(8) || false) : false; // building 8 = City Walls
 
         // ── Core combat score (FUN_00580341 equivalent) ──
         // Ported from line 5124
@@ -1823,8 +1823,8 @@ function aiDefender(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
 
   // ── Damage level (ported from decompiled local_d8) ──
   const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
-  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  const curHp = Math.max(1, maxHp - (unit.movesRemain || 0));
+  let damageLevel = (unit.movesRemain || 0) > 0 ? 1 : 0;
   if (curHp * 4 < maxHp) damageLevel = 3;
   else if (curHp * 2 < maxHp) damageLevel = 2;
 
@@ -2063,8 +2063,8 @@ function _computeNeededGarrison(city, cityIndex, gameState, mapBase, spatialIdx,
   // Base divisor: 3 if threatened, 4 if safe
   let divisor = enemiesNearby ? 3 : 4;
 
-  // Barracks (building 1): -1 divisor (better garrison needed)
-  const hasBarracks = city.buildings ? city.buildings.has(1) : false;
+  // Barracks (building 2): -1 divisor (better garrison needed)
+  const hasBarracks = city.buildings ? city.buildings.has(2) : false;
   if (hasBarracks) {
     divisor -= 1;
   }
@@ -2131,7 +2131,7 @@ function _findBestDefenderInCity(gameState, spatialIdx, gx, gy, civSlot, mapBase
   // Check for city walls
   const city = gameState.cities.find(c =>
     c.gx === gx && c.gy === gy && c.owner === civSlot && c.size > 0);
-  const hasCityWalls = city ? (city.buildings?.has(3) || false) : false;
+  const hasCityWalls = city ? (city.buildings?.has(8) || false) : false; // building 8 = City Walls
 
   let bestIdx = -1;
   let bestStr = -1;
@@ -2410,8 +2410,8 @@ function aiNavalCombat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot)
 
   // ── Damage level (ported from decompiled local_d8) ──
   const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
-  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
+  const curHp = Math.max(1, maxHp - (unit.movesRemain || 0));
+  let damageLevel = (unit.movesRemain || 0) > 0 ? 1 : 0;
   if (curHp * 4 < maxHp) damageLevel = 3;
   else if (curHp * 2 < maxHp) damageLevel = 2;
 
@@ -2439,7 +2439,7 @@ function aiNavalCombat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot)
       const defTerrain = mapBase.getTerrain(enemy.gx, enemy.gy);
       const defCity = gameState.cities.find(c =>
         c.gx === enemy.gx && c.gy === enemy.gy && c.size > 0 && c.owner !== civSlot);
-      const hasCityWalls = defCity ? (defCity.buildings?.has(3) || false) : false;
+      const hasCityWalls = defCity ? (defCity.buildings?.has(8) || false) : false; // building 8 = City Walls
 
       // Compute combat score using the same formula as aiAttacker
       const score = _computeCombatScore(

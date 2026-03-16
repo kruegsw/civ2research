@@ -1185,7 +1185,7 @@ function _showGoalDetail(advId, returnTo) {
 
         // Unit thumbnail via late-bound dep
         if (_deps.renderUnitThumbnail) {
-          const mockUnit = { type: uid, owner: S.mpCivSlot ?? 1, hpLost: 0, orders: 'none' };
+          const mockUnit = { type: uid, owner: S.mpCivSlot ?? 1, movesRemain: 0, orders: 'none' };
           const thumb = _deps.renderUnitThumbnail(mockUnit);
           if (thumb) {
             thumb.style.cssText = 'width:64px;height:48px;image-rendering:pixelated;flex-shrink:0';

@@ -491,7 +491,7 @@ units: [
     waiting: boolean,
 
     // Combat
-    hpLost: number,            // damage taken (subtract from unit type's max HP)
+    movesRemain: number,       // damage taken (subtract from unit type's max HP)
 
     // Navigation & AI
     lastDirection: number | null,  // 0-7 direction index, used mathematically
@@ -508,7 +508,7 @@ units: [
     cargoCount: number | null,        // Transport/Carrier: number of units carried
 
     // AI — imported from .sav for fidelity, not yet used by JS AI logic
-    aiTaskRole: number,        // AI task assignment
+    shieldCharge: number,      // shield cost charged on creation
 
     // ── EXCLUDED FROM MODEL — VISIBILITY ──
     // visibleTo is NOT stored on units. See "Visibility Architecture" section
@@ -1031,7 +1031,7 @@ tracks transient LOS.
 | 12 | Cargo field semantics | Separate named fields (`commodityCarried`, `workTurns`, `fuelRemaining`, `cargoCount`) — readability over compactness. Unused fields are null. |
 | 22 | Unit visibleTo | NOT in model — server-side cache. Derived from positions + sight radii, rebuilt after each action. See Visibility Architecture section. |
 | 23 | lastDirection type | Numeric (0-7) — used mathematically for offset lookups, not in display conditionals |
-| 24 | AI fields on units | Import `aiTaskRole` from .sav for fidelity, not used by JS yet |
+| 24 | AI fields on units | Import `shieldCharge` from .sav for fidelity, not used by JS yet |
 | 25 | 'none' vs 'noOrders' | Keep distinct — 'none'=idle/default, 'noOrders'=explicitly skipped. Turn cannot end until all units have moved or been skipped. |
 | 26 | Diplomacy matrix shape | Full 8×8 including self-relations and barbarians — simpler indexing, no diagonal-skip logic |
 | 27 | Diplomacy symmetry | Store both directions independently. Directional flags (attacked, weNukedThem) differ per direction; engine keeps symmetric flags (war, peace) in sync. |

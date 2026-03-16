@@ -461,7 +461,7 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
     case 2: // Germans
       if (techId === 6) score += 1;  // Banking
       if (techId === 82) score += 1; // Theology (0x52)
-      if (techId === 60) score += 1; // Machine Tools (0x3c)
+      if (techId === 44) score += 1; // Machine Tools (0x2C)
       break;
     case 3: // Egyptians
       if (techId === 47) score += 2; // Masonry (0x2f)
@@ -479,7 +479,7 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
       if (techId === 1) score += 1;  // Alphabet
       if (techId === 46) score += 1; // Map Making (0x2e)
       if (techId === 55) score -= 1; // Monotheism (0x37)
-      if (techId === 60) score += 2; // Machine Tools (0x3c)
+      if (techId === 44) score += 2; // Machine Tools (0x2C)
       break;
     case 6: // Indians
       if (techId === 64) score += 2; // Polytheism (0x40)
@@ -490,7 +490,7 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
       break;
     case 7: // Russians
       if (techId === 15) score += 2; // Communism (0x0f)
-      if (techId === 60) score += 1; // Machine Tools (0x3c)
+      if (techId === 44) score += 1; // Machine Tools (0x2C)
       if (techId === 34) score += 1; // Guerrilla Warfare (0x22)
       break;
     case 8: // Zulus

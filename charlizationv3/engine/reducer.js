@@ -189,8 +189,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const newBuildings = new Set(city.buildings);
       newBuildings.delete(buildingId);
 
-      // Refund: full shield cost in gold
-      const refund = (IMPROVE_COSTS[buildingId] || 0);
+      // Refund: half shield cost in gold (binary returns cost / 2)
+      const refund = Math.floor((IMPROVE_COSTS[buildingId] || 0) / 2);
       state.civs = [...prev.civs];
       const civ = { ...state.civs[civSlot] };
       civ.treasury = (civ.treasury || 0) + refund;
@@ -278,6 +278,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         civ.government = government;
       } else {
         civ.government = 'anarchy';
+        // Binary: 1-4 random turns of anarchy (matches Civ2 MGE behavior)
         civ.anarchyTurns = 1 + state.rng.nextInt(4);
         civ.pendingGovernment = government;
       }
@@ -421,7 +422,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
       // D.8: If destination city is own city building a wonder, deliver shields instead
       if (destCity.owner === civSlot && destCity.itemInProduction?.type === 'wonder') {
-        const helpShields = 50;
+        // Binary uses the unit's actual shield cost, not a fixed 50
+        const helpShields = UNIT_COSTS[etUnit.type] || 50;
         state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
         const updDest = { ...state.cities[etCi] };
         updDest.shieldsInBox = (updDest.shieldsInBox || 0) + helpShields;
@@ -653,8 +655,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const bmbDi = state.units.indexOf(bmbBestDef);
         if (bmbDi >= 0) {
           const bmbMaxHp = (UNIT_HP[bmbBestDef.type] || 1);
-          const bmbNewHpLost = Math.min(bmbMaxHp, (bmbBestDef.hpLost || 0) + 2);
-          state.units[bmbDi] = { ...bmbBestDef, hpLost: bmbNewHpLost };
+          const bmbNewHpLost = Math.min(bmbMaxHp, (bmbBestDef.movesRemain || 0) + 2);
+          state.units[bmbDi] = { ...bmbBestDef, movesRemain: bmbNewHpLost };
           if (bmbNewHpLost >= bmbMaxHp) {
             state.units[bmbDi].gx = -1; // kill
           }
@@ -934,7 +936,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       state.civs[civSlot] = upgCiv;
       // Upgrade the unit: change type, reset HP, keep veteran status
       upgUnit.type = upgTarget;
-      upgUnit.hpLost = 0;
+      upgUnit.movesRemain = 0;
       upgUnit.movesLeft = 0; // uses the turn
       state.units[upgUi] = upgUnit;
       if (!state.turnEvents) state.turnEvents = [];
@@ -982,9 +984,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
     }
 
     case CARAVAN_HELP_WONDER: {
-      // D.8: Caravan/Freight at a city building a wonder donates 50 shields
+      // D.8: Caravan/Freight at a city building a wonder donates shields equal to unit's build cost
       const { unitIndex: helpUi, cityIndex: helpCi } = action;
-      const helpShields = 50;
+      const helpShields = UNIT_COSTS[state.units[helpUi].type] || 50;
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const helpCity = { ...state.cities[helpCi] };
       helpCity.shieldsInBox = (helpCity.shieldsInBox || 0) + helpShields;

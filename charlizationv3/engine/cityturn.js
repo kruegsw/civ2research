@@ -13,7 +13,7 @@ import {
   UNIT_DOMAIN, UNIT_COSTS,
   IMPROVE_COSTS, IMPROVE_MAINTENANCE,
   SUPPORT_EXEMPT_TYPES, SETTLER_TYPES,
-  POLLUTION_THRESHOLD, CITY_RADIUS_DOUBLED,
+  CITY_RADIUS_DOUBLED,
   COMMODITY_NAMES,
 } from './defs.js';
 import {
@@ -292,11 +292,11 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         veteran: (cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)
           || (UNIT_DOMAIN[item.id] === 2 && cityHasBuilding(city, 32))
           || (UNIT_DOMAIN[item.id] === 1 && cityHasBuilding(city, 34))) ? 1 : 0,
-        hpLost: 0,
+        movesRemain: 0,
         orders: 'none', movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
         goToX: -1, goToY: -1,
-        visFlag: 0xFF,
+        hpLost: 0xFF,
         commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
         prevInStack: -1, nextInStack: -1,
       };
@@ -680,10 +680,14 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
   const { netShields } = calcShieldProduction(city, cityIndex, state, mapBase, state.units || []);
 
   // ── Nuclear Meltdown check ──
-  // Nuclear Plant (21) without Solar Plant (29): small meltdown chance
-  if (cityHasBuilding(city, 21) && !cityHasBuilding(city, 29)) {
-    // Meltdown chance: ~1/200 per turn (ported from binary)
-    const meltdownRoll = state.rng ? state.rng.nextInt(200) : Math.floor(Math.random() * 200);
+  // Binary: Nuclear Plant (21) + civil disorder + no Fusion Power tech (0x20=32)
+  // Meltdown chance: rand() % max(1, 6 - difficulty)
+  const civTechs = state.civTechs?.[activeCiv];
+  const hasFusionPower = civTechs ? civTechs.has(32) : false;
+  if (cityHasBuilding(city, 21) && city.civilDisorder && !hasFusionPower) {
+    const diffIdx = Math.max(0, (state.difficulty ? ['chieftain','warlord','prince','king','emperor','deity'].indexOf(state.difficulty) : 0));
+    const meltdownDenom = Math.max(1, 6 - diffIdx);
+    const meltdownRoll = state.rng ? state.rng.nextInt(meltdownDenom) : Math.floor(Math.random() * meltdownDenom);
     if (meltdownRoll === 0) {
       // ── MELTDOWN ──
       const newSize = Math.max(1, Math.floor(city.size / 2));
@@ -719,34 +723,60 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
     }
   }
 
-  // ── Pollution chance calculation ──
-  // Population component (eliminated by Mass Transit)
-  let popComponent = cityHasBuilding(city, 13) ? 0 : city.size;
+  // ── Pollution chance calculation (binary: FUN_004e9c14 + FUN_004efd44) ──
+  // Step 1: Determine power level (1=none, 2=dirty power, 3=clean/recycling/solar)
+  let powerLevel = 1;
+  if (cityHasBuilding(city, 19) || cityHasBuilding(city, 20) ||
+      cityHasBuilding(city, 21)) {
+    powerLevel = 2; // Power Plant, Hydro, Nuclear = dirty (for pollution divisor)
+  }
+  if (hasWonderEffect(state, activeCiv, 22)) {
+    powerLevel = 2; // Hoover Dam
+  }
+  // Hydro (20) is actually classified same as Nuclear/Power in the binary for powerLevel
+  // but Recycling Center and Solar Plant upgrade to level 3
+  if (cityHasBuilding(city, 18)) powerLevel = 3; // Recycling Center
+  if (cityHasBuilding(city, 29)) powerLevel = 3; // Solar Plant
 
-  // Industrial pollution: Factory (15) and Mfg. Plant (16) each add shields/2
-  let industrialPollution = 0;
-  if (cityHasBuilding(city, 15)) industrialPollution += Math.floor(netShields / 2);
-  if (cityHasBuilding(city, 16)) industrialPollution += Math.floor(netShields / 2);
+  // Step 2: Industrial pollution = shields / powerLevel - 20
+  // Binary: DAT_006a6584 = DAT_006a65cc / DAT_006a65f8 - 0x14
+  let industrialPollution = Math.trunc(netShields / powerLevel) - 20;
 
-  // Power plant pollution: Power Plant (19) and Nuclear Plant (21) add shields/2
-  // Hydro (20) and Solar (29) are clean — no pollution
-  let powerPollution = 0;
-  if (cityHasBuilding(city, 19) || cityHasBuilding(city, 21)) {
-    powerPollution += Math.floor(netShields / 2);
+  // Solar Plant zeroes industrial pollution entirely
+  if (cityHasBuilding(city, 29)) industrialPollution = 0;
+
+  if (industrialPollution < 0) industrialPollution = 0;
+
+  // Step 3: Population pollution from tech count (only if no Mass Transit, building 13)
+  let popPollution = 0;
+  if (!cityHasBuilding(city, 13)) {
+    const ownerTechs = state.civTechs?.[activeCiv];
+    const hasTech = (id) => ownerTechs ? ownerTechs.has(id) : false;
+    let techCount = 0;
+    // Binary: Industrialization(37), Automobile(5), Mass Production(48), Plastics(62)
+    if (hasTech(37)) techCount++;
+    if (hasTech(5)) techCount++;
+    if (hasTech(48)) techCount++;
+    if (hasTech(62)) techCount++;
+    // Sanitation(74): +1 only if counter is currently 0 (i.e., if no polluting techs)
+    if (!hasTech(74) && techCount === 0) techCount++;
+    // Environmentalism(26): -1
+    if (hasTech(26)) techCount--;
+    // Solar Plant(29): -1
+    if (cityHasBuilding(city, 29)) techCount--;
+    if (techCount < 0) techCount = 0;
+    popPollution = (city.size * techCount) >> 2;
   }
 
-  let pollutionChance = popComponent + industrialPollution + powerPollution;
-
-  // Recycling Center (18): reduces total by 2/3
-  if (cityHasBuilding(city, 18)) {
-    pollutionChance = Math.floor(pollutionChance / 3);
-  }
-
+  let pollutionChance = industrialPollution + popPollution;
   if (pollutionChance <= 0) return { events, newSize: null, newBuildings: null };
 
-  // Random roll: pollution triggers if roll < pollutionChance / 100
-  const rollVal = state.rng ? state.rng.random() : Math.random();
-  if (rollVal >= pollutionChance / 100) return { events, newSize: null, newBuildings: null };
+  // Cap at 255 (binary: 0xFF)
+  if (pollutionChance > 255) pollutionChance = 255;
+
+  // Binary: rand() % 256 < pollutionChance → pollution occurs
+  const rollVal = state.rng ? state.rng.nextInt(256) : Math.floor(Math.random() * 256);
+  if (rollVal >= pollutionChance) return { events, newSize: null, newBuildings: null };
 
   // ── Place pollution on a random non-ocean, non-polluted tile in city radius ──
   const parC = city.gy & 1;

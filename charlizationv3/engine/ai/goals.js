@@ -320,45 +320,51 @@ export class GoalList {
   // ── Age / decay ───────────────────────────────────────────────
 
   /**
-   * Age all goals by 1 turn. Goals older than MAX_AGE are removed.
-   * During decay, strategic (List B) goals that have aged out are merged
-   * into the tactical (List A) list — promoting long-term strategic goals
-   * into tactical execution. This mirrors the binary's behavior where
-   * continent-level goals get pushed to the tactical queue.
-   * Call once at the start of each AI turn.
+   * Decay goals using the binary's 3-step negate/remove/merge cycle.
+   * Port of FUN_00493602 ai_decay_and_merge_goals, called once per turn.
+   *
+   * The reference describes 3 steps:
+   *   Step 1: Negate all List A priorities (positive → negative)
+   *   Step 2: Remove entries with priority < 0 (marked last turn)
+   *   Step 3: Merge List B entries into List A
+   *
+   * For the 2-turn decay window to work ("goals not refreshed within 2
+   * turns are automatically removed"), the remove step must run BEFORE
+   * the negate step within each call:
+   *   - First, remove entries still negative from last turn's negate
+   *   - Then negate all remaining entries (giving them 1 turn to be refreshed)
+   *   - Finally merge List B into List A and clear List B
+   *
+   * Between decayGoals() calls, the AI processing loop re-adds (refreshes)
+   * still-relevant goals with positive priority, rescuing them from removal.
    */
   decayGoals() {
-    // First: age and collect strategic goals that are expiring (for merge into tactical)
-    const expiring = [];
-    for (let i = 0; i < this.strategic.length; i++) {
-      if (this.strategic[i].goalType === GOAL_NONE) continue;
-      this.strategic[i].age++;
-      if (this.strategic[i].age > MAX_AGE) {
-        // Merge into tactical before removing: carry the goal forward
-        // with reduced priority (decay penalty) so it doesn't dominate
-        const g = this.strategic[i];
-        expiring.push({
-          goalType: g.goalType,
-          priority: Math.max(1, g.priority - 20), // decay penalty
-          targetGx: g.targetGx,
-          targetGy: g.targetGy,
-        });
-        this.strategic[i] = emptyGoal();
-      }
-    }
-
-    // Merge expiring strategic goals into tactical list
-    for (const eg of expiring) {
-      this._addGoal(this.tactical, eg.goalType, eg.priority, eg.targetGx, eg.targetGy);
-    }
-
-    // Then: age tactical goals normally
+    // Step 1 (logically step 2): Remove List A entries with priority < 0
+    // These were negated in the previous turn and NOT refreshed since
     for (let i = 0; i < this.tactical.length; i++) {
       if (this.tactical[i].goalType === GOAL_NONE) continue;
-      this.tactical[i].age++;
-      if (this.tactical[i].age > MAX_AGE) {
+      if (this.tactical[i].priority < 0) {
         this.tactical[i] = emptyGoal();
       }
+    }
+
+    // Step 2 (logically step 1): Negate priorities of all remaining List A entries
+    // Marks them for removal — they survive until next turn's remove step
+    for (let i = 0; i < this.tactical.length; i++) {
+      if (this.tactical[i].goalType === GOAL_NONE) continue;
+      this.tactical[i].priority = -Math.abs(this.tactical[i].priority);
+    }
+
+    // Step 3: Merge all List B (strategic) entries into List A (tactical)
+    for (let i = 0; i < this.strategic.length; i++) {
+      const g = this.strategic[i];
+      if (g.goalType === GOAL_NONE) continue;
+      this._addGoal(this.tactical, g.goalType, g.priority, g.targetGx, g.targetGy);
+    }
+
+    // Clear List B after merge (FUN_0049376f ai_clear_goals_b)
+    for (let i = 0; i < this.strategic.length; i++) {
+      this.strategic[i] = emptyGoal();
     }
   }
 

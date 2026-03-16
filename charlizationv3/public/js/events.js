@@ -306,7 +306,7 @@ export function initEvents(canvas, vp, fns) {
       for (const u of tileUnits) {
         if (fowEnabled && fowBit) {
           if (!(vis & fowBit)) continue;
-          if (u.owner !== fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
+          if (u.owner !== fowCiv && u.hpLost != null && !(u.hpLost & fowBit)) continue;
         }
         let name = UNIT_NAMES[u.type] || `Unit#${u.type}`;
         // Show cargo count for transports/carriers
@@ -318,7 +318,7 @@ export function initEvents(canvas, vp, fns) {
         const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
         const vetStr = u.veteran ? ' Vet' : '';
         const ordStr = ORDER_NAMES[u.orders] || '';
-        const dmgStr = u.hpLost > 0 ? `, dmg ${u.hpLost}` : '';
+        const dmgStr = u.movesRemain > 0 ? `, dmg ${u.movesRemain}` : '';
         const cargoStr = (u.type === 48 || u.type === 49) && u.commodityCarried >= 0 && u.commodityCarried <= 15
           ? `, cargo: ${COMMODITY_NAMES[u.commodityCarried]}` : '';
         info += `\n[Unit] ${name}${vetStr} (${owner}${dmgStr}${cargoStr}${ordStr ? ', ' + ordStr : ''})`;

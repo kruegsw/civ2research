@@ -7,7 +7,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
+  UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE, UNIT_MOVE_POINTS,
   WONDER_OBSOLETE, SETTLER_TYPES, ADVANCE_EPOCH,
 } from '../defs.js';
 import { calcCityTrade, calcFoodSurplus } from '../production.js';
@@ -222,12 +222,23 @@ export function computeAiData(gameState, mapBase, civSlot) {
   const aliveCivCount = popcount(civsAlive);
 
   // ── (b) Power rankings ──────────────────────────────────────
-  // powerRanking = techCount * 5 + treasury/32 + weightedUnitSum + cityCount * 5
-  // (#13) Increased tech weight from 3→5, added city count (each city ≈ 5 power)
+  // Binary formula (FUN_004853e7, POWER_GRAPH_BINARY):
+  //   techCount * 3 + cityCount * 8 + treasury / 32
+  //   + sum over all unit types: unitTypeCount * (attack+defense+1)/2 * movePoints/2
   const powerRanking = new Array(8).fill(0);
   for (let c = 0; c < 8; c++) {
     const treasury = civs[c]?.treasury ?? 0;
-    powerRanking[c] = techCount[c] * 5 + Math.floor(treasury / 32) + milStrength[c] + cityCount[c] * 5;
+    // Unit strength: per unit type, count * (atk+def+1)/2 * mp/2
+    let unitStrength = 0;
+    for (let ut = 0; ut < 62; ut++) {
+      const count = unitTypeCounts[c][ut];
+      if (count === 0) continue;
+      const atk = UNIT_ATK[ut] || 0;
+      const def = UNIT_DEF[ut] || 0;
+      const mp  = UNIT_MOVE_POINTS[ut] || 1;
+      unitStrength += count * Math.floor((atk + def + 1) / 2) * Math.floor(mp / 2);
+    }
+    powerRanking[c] = techCount[c] * 3 + cityCount[c] * 8 + Math.floor(treasury / 32) + unitStrength;
   }
 
   // powerRank: 1=weakest, 7=strongest among alive civs (1-7)

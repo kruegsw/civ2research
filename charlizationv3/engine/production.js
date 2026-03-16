@@ -442,9 +442,10 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
   let tax = netTrade - (sci + lux);
 
   // Specialist bonuses (before building multipliers)
+  // Binary ref: taxman=2 gold, entertainer(elvis)=3 luxury, scientist=3 science
   const specs = countSpecialists(city);
-  lux += specs.entertainer * 2;
-  tax += specs.taxman * 3;
+  lux += specs.entertainer * 3;
+  tax += specs.taxman * 2;
   sci += specs.scientist * 3;
 
   // Marketplace(5)/Bank(10)/Stock Exchange(22): each +50% to lux and tax
@@ -527,13 +528,9 @@ export function calcTradeRouteIncome(city, cityIndex, gameState, mapBase) {
 
     const destGross = calcGrossTrade(dest, route.destCityIndex, gameState, mapBase);
 
-    // Distance (Manhattan distance on grid)
-    let dx = Math.abs(city.gx - dest.gx);
-    if (mapBase.wraps && dx > mapBase.mw / 2) dx = mapBase.mw - dx;
-    const dy = Math.abs(city.gy - dest.gy);
-    const distance = dx + dy;
-
-    let income = Math.floor((myGross + destGross + distance) / 8);
+    // Binary ref: base = (city1.tradeRevenue + city2.tradeRevenue + 4) >> 3
+    // Uses constant 4, not distance between cities
+    let income = (myGross + destGross + 4) >> 3;
 
     // Same continent: halved
     if (mapBase.getBodyId) {

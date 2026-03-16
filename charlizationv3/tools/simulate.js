@@ -73,7 +73,7 @@ function govtName(gs, slot) {
 function unitSummary(unit, idx) {
   const name = UNIT_NAMES[unit.type] || `Type${unit.type}`;
   const role = ['Atk', 'Def', 'NavSup', 'AirAtk', 'AirDef', 'NavTrans', 'Settle', 'Diplo', 'Trade'][UNIT_ROLE[unit.type]] || '?';
-  return `#${idx} ${name}(${role}) @(${unit.gx},${unit.gy}) mv=${unit.movesLeft} ord=${unit.orders} hp=${unit.hpLost ? '-' + unit.hpLost : 'full'}`;
+  return `#${idx} ${name}(${role}) @(${unit.gx},${unit.gy}) mv=${unit.movesLeft} ord=${unit.orders} hp=${unit.movesRemain ? '-' + unit.movesRemain : 'full'}`;
 }
 
 function itemName(type, id) {

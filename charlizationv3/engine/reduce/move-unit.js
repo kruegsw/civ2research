@@ -316,8 +316,13 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     const atkTerrain = mapBase.getTerrain(unit.gx, unit.gy);
     const isAmphibious = atkDomainCheck === 0 && atkTerrain === 10; // land unit on ocean = on a ship
 
-    // Check if defender's civ has Great Wall wonder (separate from city walls effect)
+    // Check if defender's/attacker's civ has Great Wall wonder
     const defenderHasGreatWall = defInCity && hasWonderEffect(state, defCivSlot, 6);
+    const attackerHasGreatWall = hasWonderEffect(state, civSlot, 6);
+
+    // Palace / small-city double-roll: check if defending city has Palace (building 1) or size < 8
+    const defCityHasPalace = defInCity && defCity.buildings && defCity.buildings.has(1);
+    const defCitySize = defCity ? (defCity.size || 0) : 0;
 
     // Detect treaty violation: attacking a civ you had peace/ceasefire with
     let isTreatyViolation = false;
@@ -336,6 +341,10 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     const combatOpts = {
       amphibious: isAmphibious,
       defenderHasGreatWall,
+      attackerHasGreatWall,
+      sneakAttack: isTreatyViolation,
+      defCityHasPalace,
+      defCitySize,
       treatyViolation: isTreatyViolation,
     };
     const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, combatSeed, state.difficulty || 'chieftain', unit.movesLeft, combatOpts);
@@ -352,10 +361,10 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     // ── Submarine retreat handling ──
     if (result.submarineRetreated) {
       // Submarine retreats with damage — neither side destroyed
-      unit.hpLost = result.atkHpLost;
+      unit.movesRemain = result.atkHpLost;
       unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
       if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
-      state.units[bestDefIdx] = { ...defender, hpLost: result.defHpLost };
+      state.units[bestDefIdx] = { ...defender, movesRemain: result.defHpLost };
       state.units[unitIndex] = unit;
       state.combatResult = {
         type: 'subRetreat',
@@ -400,7 +409,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
 
       // Veteran promotion for attacker
       if (result.atkVeteranPromo) unit.veteran = 1;
-      unit.hpLost = result.atkHpLost;
+      unit.movesRemain = result.atkHpLost;
 
       // Stack wipe: on open ground (no city/fortress), kill ALL enemies
       const hasProtection = defInCity || defHasFortress;
@@ -442,7 +451,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       // Veteran promotion for defender
       state.units[bestDefIdx] = { ...defender,
         veteran: result.defVeteranPromo ? 1 : defender.veteran,
-        hpLost: result.defHpLost };
+        movesRemain: result.defHpLost };
     }
 
     state.units[unitIndex] = unit;

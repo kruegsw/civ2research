@@ -83,10 +83,10 @@ function makeUnit(type, owner, gx, gy, movesLeft) {
   return {
     type, owner, gx, gy,
     x: gx * 2 + (gy % 2), y: gy,
-    veteran: 0, hpLost: 0, orders: 'none',
+    veteran: 0, movesRemain: 0, orders: 'none',
     movesMade: 0, movesLeft: movesLeft ?? 0,
     homeCityId: 0xFFFF,
-    goToX: -1, goToY: -1, visFlag: 0xFF,
+    goToX: -1, goToY: -1, hpLost: 0xFF,
     commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
     prevInStack: -1, nextInStack: -1,
   };

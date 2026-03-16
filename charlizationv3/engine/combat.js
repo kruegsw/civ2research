@@ -5,8 +5,9 @@
 // resolution with terrain/fortification/veteran modifiers.
 //
 // Phase B.1: calcUnitDefenseStrength, calcStackBestDefender
-// Phase B.2: Great Wall double-roll, amphibious attack, submarine
-//            retreat, barbarian kill ransom, treaty violation flags
+// Phase B.2: Palace/small-city double-roll, amphibious attack,
+//            submarine retreat, barbarian kill ransom, treaty
+//            violation flags, sneak attack ×2
 //
 // Special unit interactions ported from decompiled FUN_00580341:
 //   - Pikemen double defense vs mounted/horse units (flags bit 13)
@@ -20,7 +21,9 @@
 //   - Helicopter vs Fighter: defender (helicopter) FP = 1
 //   - Helicopter vs submarines: ×8 attack multiplier
 //   - Partial movement attack penalty (fractional MP)
-//   - Great Wall wonder: double-roll mechanic for defenders
+//   - Palace / small-city double-roll mechanic for defenders
+//   - Great Wall: halves barbarian attack, doubles attack vs barbarians
+//   - Sneak attack: ×2 attack bonus when breaking treaties
 //   - Amphibious attack: ×2 defender FP when attacking from ship
 //   - Submarine retreat: 50% chance to disengage when losing a round
 //   - Barbarian kill ransom: difficultyLevel × 50 gold
@@ -45,7 +48,7 @@ const SIEGE_DEFENDING_FP1 = new Set([23, 24, 25, 26]);
  * Calculate full defense strength for a unit with all modifiers.
  * Ported from decompiled FUN_0057e33a (calc_unit_defense_strength).
  *
- * @param {object} unit - { type, veteran, hpLost, owner, orders }
+ * @param {object} unit - { type, veteran, movesRemain, owner, orders }
  * @param {number} terrain - terrain type at defender's tile (0-10)
  * @param {boolean} inCity - unit is in a city
  * @param {boolean} hasWalls - city has City Walls (building 8) or Great Wall wonder
@@ -83,31 +86,32 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
     }
   }
 
-  // City walls / Great Wall: ×3 vs land attackers (for land-domain defenders)
+  // City walls / Great Wall: ×3 vs non-air attackers (for land-domain defenders)
+  // Binary: walls apply to ground-domain defenders against non-air attackers
   if (inCity && hasWalls && defDomain === 0) {
-    if (attackerType == null || attackerType < 0 || atkDomain === 0) {
+    if (attackerType == null || attackerType < 0 || atkDomain !== 2) {
       defense *= 3;
     }
   }
 
-  // Great Wall wonder: ×2 vs land attackers (if defender's civ owns Great Wall)
-  // This is SEPARATE from city walls — Great Wall gives both the wall bonus (above,
-  // passed in via hasWalls) AND a separate ×2 multiplier applied in resolveCombat.
-  // The defense strength function itself does NOT apply the Great Wall ×2;
-  // that is handled in resolveCombat via the double-roll mechanic.
+  // Great Wall wonder: acts as City Walls for defense (passed in via hasWalls param).
+  // Great Wall's barbarian-specific effects (halve/double attack) are in resolveCombat.
 
   // Defensive building bonuses (city buildings)
   if (inCity && cityBuildings) {
-    // Coastal Fortress (building 28): ×2 defense vs naval attackers
-    if (cityBuildings.has(28) && atkDomain === 1) defense *= 2;
-    // SAM Battery (building 27): ×2 defense vs air attackers (not missiles)
-    if (cityBuildings.has(27) && atkDomain === 2 &&
-        (attackerType == null || attackerType < 0 || !UNIT_DESTROYED_AFTER_ATTACK.has(attackerType))) {
+    // Coastal Fortress (building 28): ×2 defense vs naval attackers when defender is NOT sea domain
+    // Binary: attacker domain == sea AND defender domain != sea AND city has Coastal Fortress
+    if (cityBuildings.has(28) && atkDomain === 1 && defDomain !== 1) defense *= 2;
+    // SAM Battery (building 27): ×2 defense vs ALL air domain attackers (no missile exclusion)
+    // Binary: attacker domain == air AND city has SAM Battery
+    if (cityBuildings.has(27) && atkDomain === 2) {
       defense *= 2;
     }
-    // SDI Defense (building 17): ×2 defense vs missiles
+    // SDI Defense (building 17): ×2 defense vs missiles with attack < 99
+    // Binary: attacker domain == air AND flagsB 0x10 (missile) AND attacker attack < 99
+    // Nuclear missiles (attack=99) bypass SDI
     if (cityBuildings.has(17) && attackerType != null && attackerType >= 0 &&
-        UNIT_DESTROYED_AFTER_ATTACK.has(attackerType)) {
+        UNIT_DESTROYED_AFTER_ATTACK.has(attackerType) && (UNIT_ATK[attackerType] || 0) < 99) {
       defense *= 2;
     }
   }
@@ -172,7 +176,7 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
 
     // ── HP ratio weighting (from pseudocode: game_flags & 0x10) ──
     const maxHp = (UNIT_HP[u.type] || 1) * 10;
-    const curHp = maxHp - (u.hpLost || 0) * 10;
+    const curHp = maxHp - (u.movesRemain || 0) * 10;
     if (curHp <= 0) continue;
     score = Math.floor(score * curHp / maxHp);
 
@@ -211,8 +215,8 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
 /**
  * Resolve combat between an attacker and defender.
  *
- * @param {object} attacker - { type, veteran, hpLost, owner, gx, gy }
- * @param {object} defender - { type, veteran, hpLost, owner, orders }
+ * @param {object} attacker - { type, veteran, movesRemain, owner, gx, gy }
+ * @param {object} defender - { type, veteran, movesRemain, owner, orders }
  * @param {number} defTerrain - terrain type at defender's tile (0-10)
  * @param {boolean} defInCity - defender is in a city
  * @param {boolean} defCityHasWalls - city has City Walls building
@@ -225,7 +229,10 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
  * @param {object} [opts] - additional options:
  *   @param {boolean} [opts.amphibious] - true if attacker is attacking from a ship (amphibious assault)
  *   @param {boolean} [opts.defenderHasGreatWall] - true if defender's civ has active Great Wall wonder
- *   @param {number}  [opts.barbarianRansom] - gold awarded for killing barbarian (difficultyLevel × 50)
+ *   @param {boolean} [opts.attackerHasGreatWall] - true if attacker's civ has active Great Wall wonder
+ *   @param {boolean} [opts.sneakAttack] - true if attacker is breaking a treaty (×2 attack bonus)
+ *   @param {boolean} [opts.defCityHasPalace] - true if defending city has Palace (building 1)
+ *   @param {number}  [opts.defCitySize] - size of defending city (for double-roll: size < 8)
  *   @param {boolean} [opts.treatyViolation] - true if this combat violates a peace treaty/ceasefire
  * @returns {{ attackerWins: boolean, atkHpLost: number, defHpLost: number,
  *             atkVeteranPromo: boolean, defVeteranPromo: boolean,
@@ -251,6 +258,10 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // Extract options
   const amphibious = opts?.amphibious || false;
   const defenderHasGreatWall = opts?.defenderHasGreatWall || false;
+  const attackerHasGreatWall = opts?.attackerHasGreatWall || false;
+  const sneakAttack = opts?.sneakAttack || false;
+  const defCityHasPalace = opts?.defCityHasPalace || false;
+  const defCitySize = opts?.defCitySize ?? 0;
   const treatyViolation = opts?.treatyViolation || false;
 
   // ── Special interaction: Air attack vs unarmed ships ──────────
@@ -295,18 +306,11 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     if (effAtk < 1) effAtk = 1;
   }
 
-  // Effective defense: base × (terrain + river) × veteran × fortification × city/walls/fortress
-  // River bonus is additive to terrain defense multiplier per the binary
-  // (matches calcUnitDefenseStrength — FUN_0057e6e2 analysis)
-  const terrainMul = TERRAIN_DEFENSE[defTerrain] ?? 2;
-  const riverBonus = (defOnRiver && !defInCity) ? 1 : 0;
-  let effDef = defBase * (terrainMul + riverBonus) * 4; // ×4 for fixed-point
-  if (defender.veteran) effDef += Math.floor(effDef / 2); // +50% veteran
-
-  // Fortification bonus: +50%
-  if (defender.orders === 'fortified') {
-    effDef += Math.floor(effDef / 2);
-  }
+  // ── Effective defense: use calcUnitDefenseStrength (FUN_0057e33a) ──
+  // This includes terrain, river, fortification, fortress, walls,
+  // Coastal Fortress, SAM Battery, SDI, and veteran bonus.
+  // We do NOT re-apply those multipliers here (binary applies them once).
+  let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type);
 
   // ── Special interaction: Pikemen double defense vs mounted ────
   // Ported from FUN_00580341 lines 142-150 (pikeman flag bit 13).
@@ -324,26 +328,6 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     } else {
       effDef *= 3; // ×3 vs normal air units (fighters, bombers, helicopters)
     }
-  }
-
-  // City walls: ×3 vs land and sea attackers (not air)
-  if (defCityHasWalls && atkDomain !== 2) {
-    effDef *= 3;
-  }
-
-  // Fortress: ×2
-  if (defHasFortress && !defInCity) {
-    effDef *= 2;
-  }
-
-  // Defensive building bonuses (city buildings)
-  if (defInCity && defCityBuildings) {
-    // Coastal Fortress (28): ×2 defense vs naval attackers
-    if (defCityBuildings.has(28) && atkDomain === 1) effDef *= 2;
-    // SAM Battery (27): ×2 defense vs air attackers (not missiles)
-    if (defCityBuildings.has(27) && atkDomain === 2 && !UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) effDef *= 2;
-    // SDI Defense (17): ×2 defense vs missiles
-    if (defCityBuildings.has(17) && UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) effDef *= 2;
   }
 
   // Air vs unarmed ships: halve effective defense (after all other defense mods)
@@ -402,16 +386,32 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     defFp = 1;
   }
 
-  // ── B.2: Great Wall wonder — applied to attack power ────────────
-  // From FUN_00580341 lines 179-185: if defender's civ owns Great Wall,
-  // barbarian attacker's power is halved; if attacker's civ owns it,
-  // attack is doubled vs barbarians. Additionally, Great Wall enables
-  // a double-roll mechanic during combat (handled in combat loop below).
-  // The defense-doubling effect vs land attackers is already handled
-  // through the hasWalls parameter (Great Wall acts as City Walls).
-  let greatWallDoubleRoll = false;
-  if (defenderHasGreatWall && defInCity && atkDomain === 0) {
-    greatWallDoubleRoll = true;
+  // ── B.2: Sneak attack bonus — ×2 attack when breaking treaties ───
+  // From FUN_00580341 line 384: when attacker breaks a peace/ceasefire,
+  // their attack power is doubled.
+  if (sneakAttack) {
+    effAtk *= 2;
+  }
+
+  // ── B.2: Great Wall wonder — barbarian-only effects ────────────
+  // From FUN_00580341 lines 234-245: Great Wall halves barbarian
+  // attacker's attack power; doubles attack when attacking barbarians.
+  // NOT a double-roll trigger — Palace/small city handle that.
+  if (defenderHasGreatWall && attacker.owner === 0) {
+    effAtk = Math.floor(effAtk / 2);
+  }
+  if (attackerHasGreatWall && defender.owner === 0) {
+    effAtk *= 2;
+  }
+
+  // ── B.2: Palace / small-city double-roll mechanic ─────────────
+  // From FUN_00580341 lines 225-232, 786-804: bVar18 is set when
+  // defending city has Palace (building 1) OR city size < 8.
+  // When active, attacker wins a round, a second pair of rolls is made.
+  // If attacker loses the re-roll, the round is reversed.
+  let doubleRoll = false;
+  if (defInCity && (defCityHasPalace || (defCitySize > 0 && defCitySize < 8))) {
+    doubleRoll = true;
   }
 
   // Difficulty modifier for barbarian attacks
@@ -427,8 +427,8 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   if (effDef < 1) effDef = 1;
 
   // Current HP
-  let atkHp = atkMaxHp - (attacker.hpLost || 0) * 10;
-  let defHp = defMaxHp - (defender.hpLost || 0) * 10;
+  let atkHp = atkMaxHp - (attacker.movesRemain || 0) * 10;
+  let defHp = defMaxHp - (defender.movesRemain || 0) * 10;
   if (atkHp <= 0) atkHp = 10;
   if (defHp <= 0) defHp = 10;
 
@@ -452,18 +452,23 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
 
   const rounds = []; // true = attacker hit defender, false = defender hit attacker
   while (atkHp > 0 && defHp > 0) {
-    const roll = rand() % (effAtk + effDef);
-    let atkHit = roll < effAtk;
+    // ── Two independent rolls (FUN_00580341 lines 771-785) ────────
+    // Binary uses two SEPARATE random rolls, not a single combined roll.
+    // attackRoll = rand() % attack; defenseRoll = rand() % defense;
+    // attackerWins round when defenseRoll < attackRoll.
+    const attackRoll = effAtk > 1 ? (rand() % effAtk) : 0;
+    const defenseRoll = effDef > 1 ? (rand() % effDef) : 0;
+    let atkHit = defenseRoll < attackRoll;
 
-    // ── B.2: Great Wall double-roll mechanic ──────────────────────
-    // From FUN_00580341 lines 280-286: when Great Wall is active and
-    // attacker wins the first roll, a second roll is made. If the
-    // defender wins the second roll, the attacker's hit is negated.
-    // This effectively gives the defender a "second chance" each round.
-    if (greatWallDoubleRoll && atkHit) {
-      const roll2 = rand() % (effAtk + effDef);
-      if (roll2 >= effAtk) {
-        atkHit = false; // defender wins the re-roll, override
+    // ── B.2: Palace / small-city double-roll mechanic ─────────────
+    // From FUN_00580341 lines 786-804: when bVar18 is true (Palace or
+    // city size < 8) and attacker wins a round, a second pair of rolls
+    // is made. If attacker LOSES the re-roll, the round is reversed.
+    if (doubleRoll && atkHit) {
+      const attackRoll2 = effAtk > 1 ? (rand() % effAtk) : 0;
+      const defenseRoll2 = effDef > 1 ? (rand() % effDef) : 0;
+      if (!(defenseRoll2 < attackRoll2)) {
+        atkHit = false; // attacker lost re-roll, reverse result
       }
     }
 
@@ -493,14 +498,18 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // so the reducer knows NOT to kill the attacker.
   const attackerWins = !submarineRetreated && atkHp > 0;
 
-  // HP lost in units of hpLost field (each = 1 HP out of UNIT_HP max)
+  // HP lost in units of movesRemain field (each = 1 HP out of UNIT_HP max)
   const atkHpLost = Math.max(0, Math.ceil((atkMaxHp - Math.max(0, atkHp)) / 10));
   const defHpLost = Math.max(0, Math.ceil((defMaxHp - Math.max(0, defHp)) / 10));
 
-  // Veteran promotion: 50% chance for winner if not already veteran, and combat vs non-zero defense/attack
-  const promoRoll = rand() % 2;
-  const atkVeteranPromo = attackerWins && !attacker.veteran && defBase > 0 && promoRoll === 0;
-  const defVeteranPromo = !attackerWins && !submarineRetreated && !defender.veteran && atkBase > 0 && promoRoll === 0;
+  // ── Veteran promotion: strength-weighted probability ─────────────
+  // From FUN_00580341 lines 952-976:
+  //   Attacker wins: rand() % (attack + defense) <= defense → promote attacker
+  //   Defender wins: rand() % (attack + defense) <= attack → promote defender
+  // Higher enemy strength = higher promotion chance for the winner.
+  const promoRoll = (effAtk + effDef > 0) ? (rand() % (effAtk + effDef)) : 0;
+  const atkVeteranPromo = attackerWins && !attacker.veteran && defBase > 0 && promoRoll <= effDef;
+  const defVeteranPromo = !attackerWins && !submarineRetreated && !defender.veteran && atkBase > 0 && promoRoll <= effAtk;
 
   // ── B.2: Barbarian kill ransom ──────────────────────────────────
   // From FUN_00580341: when killing a barbarian, award gold based on

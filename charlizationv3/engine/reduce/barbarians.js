@@ -217,7 +217,7 @@ export function processBarbNavalMaintenance(state, mapBase, turnNum) {
 
     // Scuttle weak ships: calculate HP remaining and stack size on tile
     const maxHp = (UNIT_HP[u.type] || 1) * 10;
-    const currentHp = maxHp - (u.hpLost || 0);
+    const currentHp = maxHp - (u.movesRemain || 0);
     let stackSize = 0;
     for (let j = 0; j < state.units.length; j++) {
       const su = state.units[j];
@@ -497,11 +497,17 @@ export function processBarbarianAI(state, prev, mapBase) {
         // Check if defender's civ has Great Wall wonder
         const barbDefenderHasGreatWall = defInCity && hasWonderEffect(state, defender.owner, 6);
 
+        // Palace / small-city double-roll
+        const barbDefCityHasPalace = defInCity && defCity && defCity.buildings && defCity.buildings.has(1);
+        const barbDefCitySize = defCity ? (defCity.size || 0) : 0;
+
         const barbCombatSeed = (attacker.gx * 997 + attacker.gy * 991 + chosenDest.gx * 983 +
           chosenDest.gy * 977 + ui * 967 + bestDefIdx * 953 + (state.turn?.number || 0) * 941 +
           (state.version || 0) * 929);
         const barbCombatOpts = {
           defenderHasGreatWall: barbDefenderHasGreatWall,
+          defCityHasPalace: barbDefCityHasPalace,
+          defCitySize: barbDefCitySize,
         };
         const result = resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls,
           defHasFortress, defOnRiver, defCityBuildings, barbCombatSeed, difficulty, attacker.movesLeft, barbCombatOpts);
@@ -527,7 +533,7 @@ export function processBarbarianAI(state, prev, mapBase) {
               ...state.units[ui],
               gx: chosenDest.gx, gy: chosenDest.gy,
               x: chosenDest.gx * 2 + (chosenDest.gy % 2), y: chosenDest.gy,
-              hpLost: result.atkHpLost,
+              movesRemain: result.atkHpLost,
               veteran: result.atkVeteranPromo ? 1 : state.units[ui].veteran,
               movesLeft: Math.max(0, state.units[ui].movesLeft - MOVEMENT_MULTIPLIER),
             };
@@ -546,7 +552,7 @@ export function processBarbarianAI(state, prev, mapBase) {
           } else {
             state.units[ui] = {
               ...state.units[ui],
-              hpLost: result.atkHpLost,
+              movesRemain: result.atkHpLost,
               veteran: result.atkVeteranPromo ? 1 : state.units[ui].veteran,
               movesLeft: Math.max(0, state.units[ui].movesLeft - MOVEMENT_MULTIPLIER),
             };
@@ -564,7 +570,7 @@ export function processBarbarianAI(state, prev, mapBase) {
           state.units[bestDefIdx] = {
             ...state.units[bestDefIdx],
             veteran: result.defVeteranPromo ? 1 : defender.veteran,
-            hpLost: result.defHpLost,
+            movesRemain: result.defHpLost,
           };
         }
         break; // Combat ends this unit's turn
@@ -686,8 +692,8 @@ export function processBarbCampProduction(state, mapBase) {
     camp.shieldsInBox = (camp.shieldsInBox || 0) + 5;
 
     // Check if enough shields to produce a unit
-    // unitCost is already base×10; production threshold is unitCost * MOVEMENT_MULTIPLIER
-    if (camp.shieldsInBox >= unitCost * MOVEMENT_MULTIPLIER && barbCount < BARBARIAN_MAX_UNITS) {
+    // Binary uses straight shield cost without movement multiplier
+    if (camp.shieldsInBox >= unitCost && barbCount < BARBARIAN_MAX_UNITS) {
       camp.shieldsInBox = 0;
 
       // Create the new unit at the camp's location

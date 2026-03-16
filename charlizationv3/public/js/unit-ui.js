@@ -457,7 +457,7 @@ export function renderUnitThumbnail(unit) {
 
     // HP bar
     const maxHp = Civ2Renderer.UNIT_MAX_HP[unit.type] || 10;
-    const curHp = Math.max(0, maxHp - (unit.hpLost || 0));
+    const curHp = Math.max(0, maxHp - (unit.movesRemain || 0));
     const barW = 12, barH = 3;
     const greenW = Math.floor((curHp / maxHp) * barW);
     if (greenW > 8) ctx.fillStyle = 'rgb(87,171,39)';
@@ -605,7 +605,7 @@ export function buildOrderMenuItems(unitIdx) {
       if (t.owner === civSlot || t.gx < 0) continue;
       const bErr = validateAction(S.mpGameState, S.mpMapBase, { type: BRIBE_UNIT, unitIndex: unitIdx, targetIndex: ti }, civSlot);
       if (!bErr) {
-        const cost = calcBribeCost(S.mpGameState, t, S.mpMapBase);
+        const cost = calcBribeCost(S.mpGameState, t, S.mpMapBase, civSlot);
         const tName = UNIT_NAMES[t.type] || 'Unit';
         spyItems.push({ label: `Bribe ${tName} (${cost}g)`, action: () => {
           showConfirmDialog(`Bribe ${tName} for ${cost} gold?`, () => {

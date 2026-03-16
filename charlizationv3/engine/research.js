@@ -65,8 +65,35 @@ export function calcResearchCost(gameState, civSlot) {
   // Base cost: human player formula
   let baseCost = diffIdx * 2 + 6;
 
-  // Late-game penalty (totalTechs > 19)
+  // ── Leading-civ tech cost adjustment (FUN_004c2788, line 971) ──
+  // Compare this civ's tech count to the leading civ's tech count.
+  // Behind: cost -= 1 (catch-up bonus); Ahead: cost += (ahead / 3) (penalty).
   const turnNum = gameState.turn?.number || 0;
+  {
+    // Find leading civ's tech count (max tech count across all alive civs)
+    let leaderTechCount = 0;
+    for (let c = 1; c < 8; c++) {
+      if (!(gameState.civsAlive & (1 << c))) continue;
+      const tc = gameState.civTechCounts?.[c] || (gameState.civTechs?.[c]?.size || 0);
+      if (tc > leaderTechCount) leaderTechCount = tc;
+    }
+
+    if (totalTechs < leaderTechCount) {
+      // Behind the leader: catch-up bonus
+      if (diffIdx !== 0) {
+        baseCost -= 1;
+      }
+      // Deity super-behind: additional -1 if techCount + 4 < leader AND turn > 150
+      if (diffIdx === 5 && totalTechs + 4 < leaderTechCount && turnNum > 150) {
+        baseCost -= 1;
+      }
+    } else if (totalTechs >= leaderTechCount) {
+      // Ahead of or tied with leader: penalty
+      baseCost += Math.floor((totalTechs - leaderTechCount) / 3);
+    }
+  }
+
+  // Late-game penalty (totalTechs > 19)
   if (totalTechs > 19) {
     const latePenalty = Math.max(0, Math.min(6, totalTechs - Math.floor(turnNum / 8)));
     baseCost += latePenalty;
@@ -83,6 +110,20 @@ export function calcResearchCost(gameState, civSlot) {
     modifier = Math.floor((totalTechs * modifier) / 20);
   }
   baseCost += modifier;
+
+  // ── City count scaling (FUN_004c2788, line 1004) ──
+  // If civ has more than 67 cities, scale cost down: cost = cost * 67 / numCities
+  {
+    let numCities = 0;
+    if (gameState.cities) {
+      for (const c of gameState.cities) {
+        if (c.owner === civSlot && c.size > 0) numCities++;
+      }
+    }
+    if (numCities > 67) {
+      baseCost = Math.floor(baseCost * 67 / numCities);
+    }
+  }
 
   // Raging hordes penalty
   if (gameState.barbarianActivity === 'raging') {

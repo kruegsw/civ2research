@@ -505,7 +505,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const tGovt = getGovernment(null, gameState, target.owner);
       if (tGovt === 'democracy') return 'Democratic units cannot be bribed';
       // Check cost
-      const bCost = calcBribeCost(gameState, target, mapBase);
+      const bCost = calcBribeCost(gameState, target, mapBase, civSlot);
       if ((gameState.civs?.[civSlot]?.treasury || 0) < bCost) return `Costs ${bCost} gold (insufficient)`;
       return null;
     }
@@ -761,10 +761,10 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
       if (!city) return 'Must be in an enemy city';
       if (city.owner === civSlot) return 'Cannot target own city';
-      // Requires Manhattan Project (wonder 23) and Nuclear Fission tech (86)
+      // Requires Manhattan Project (wonder 23) and Nuclear Fission tech (58)
       if (!gameState.wonders?.[23] || gameState.wonders[23].destroyed) return 'Manhattan Project not built';
       const civTechs = gameState.civTechs?.[civSlot];
-      if (!civTechs || !civTechs.has(86)) return 'Missing Nuclear Fission tech';
+      if (!civTechs || !civTechs.has(58)) return 'Missing Nuclear Fission tech';
       return null;
     }
 
@@ -933,8 +933,8 @@ export function getValidActions(gameState, mapBase, unitIndex, tile) {
  * Bribe cost — delegates to the enhanced version from espionage.js.
  * Kept for API compatibility (same signature, returns a number).
  */
-export function calcBribeCost(gameState, target, mapBase) {
-  return calcBribeCostEnhanced(gameState, target, mapBase);
+export function calcBribeCost(gameState, target, mapBase, spyCiv) {
+  return calcBribeCostEnhanced(gameState, target, mapBase, spyCiv);
 }
 
 /**

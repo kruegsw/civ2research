@@ -653,7 +653,7 @@ function updateUnitInfoStrip() {
 
   const name = UNIT_NAMES[u.type] || `Unit ${u.type}`;
   const maxHp = Civ2Renderer.UNIT_MAX_HP?.[u.type] || 10;
-  const curHp = Math.max(0, maxHp - (u.hpLost || 0));
+  const curHp = Math.max(0, maxHp - (u.movesRemain || 0));
   const hpPct = maxHp > 0 ? (curHp / maxHp) * 100 : 0;
   let hpColor;
   if (hpPct > 67) hpColor = 'rgb(87,171,39)';

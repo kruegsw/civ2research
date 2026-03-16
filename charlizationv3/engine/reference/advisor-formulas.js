@@ -351,12 +351,12 @@ export const ATTITUDE_ADVISOR = {
 
     wonderDisplay: 'Lists all wonders owned by playerCiv',
     summaryStats: {
-      contentCitizens: '@ DAT_00673f78',
-      weLoveKingCount: '@ DAT_00673f58',
-      revoltCount: '@ DAT_00673f84',
-      pollutionCount: '@ DAT_00673f6c',
-      globalWarmingCooling: '@ DAT_00673f74',  // positive=warming, negative=cooling
-      spaceshipProgress: 'shown if turnNumber > 199 AND DAT_00673f8c != 0',
+      contentCitizens: '@ DAT_00673f78',                  // scoring component 1: sum(size+happy-unhappy)
+      pollutionOffset: '@ DAT_00673f58',                  // scoring component 5: (warming-cooling)*-10 (NOT weLoveKingCount)
+      spaceshipRevenuePre: '@ DAT_00673f84',              // scoring component 3: display-only (NOT revoltCount)
+      futureTechScore: '@ DAT_00673f6c',                  // scoring component 7: futureTechCount*5 (NOT pollutionCount)
+      difficultyBonus: '@ DAT_00673f74',                  // scoring component 8: difficulty*25-50
+      turnBonus: 'shown if turnNumber > 199 AND DAT_00673f8c != 0',  // scoring component 6: peaceTurns*3 capped at 100
     },
   },
 
@@ -405,7 +405,7 @@ export const INTELLIGENCE_REPORT = {
 
   militaryPanel: {
     // @ FUN_00494b5f intel_init_military
-    eraSource: '@ DAT_00655c22[civId]',  // civ era from tech count
+    rankSource: '@ DAT_00655c22[civId]',  // civ rank (0=most advanced); same array as scoring ranking
     iconPosition: { x: 0x2D, y: 0x82, spacing: 0x1F },
   },
 
@@ -1003,9 +1003,9 @@ export const AI_MILITARY_ADVISOR = {
   unitToPopRatio: {
     // (cityCount - 1 + unitCount) / cityCount < threshold
     formula: '(cities - 1 + units) / max(cities, 1)',
-    threshold: '(era < 5 ? 2 : 2) + 1 if era < 5',  // 2 + (era < 5 ? 1 : 0) = 3 early, 2 late
-    eraOffset: '@ DAT_0064c6b5[civ * 0x594]',
-    earlyEraThreshold: 5,  // era < 5 adds 1 to threshold
+    threshold: '(govt < 5 ? 2 : 2) + 1 if govt < 5',  // 2 + (govt < 5 ? 1 : 0) = 3 early, 2 late
+    governmentOffset: '@ DAT_0064c6b5[civ * 0x594]',  // government type (0..6), NOT era
+    earlyGovtThreshold: 5,  // govt < 5 adds 1 to threshold
     result1: { value: 1, condition: 'Too few units relative to cities' },
   },
 
@@ -1046,7 +1046,7 @@ export const AI_MILITARY_ADVISOR = {
   },
 
   hatredFlag: 0x20,  // @ DAT_0064c6c1[civ * 0x594 + otherCiv * 4] & 0x20
-  eraLookup: '@ DAT_00655c22[civId]',  // byte, civ era from tech progress
+  rankLookup: '@ DAT_00655c22[civId]',  // byte, civ rank (0=most advanced); same array as scoring ranking
   eraAdvancedThreshold: 4,  // era > 4 for "at peace" assessment
 };
 
@@ -1253,9 +1253,9 @@ export const AI_HAPPINESS_ADVISOR = {
   // param_1 = civId
 
   recalcTrigger: {
-    // If DAT_00655aee has bit 0x04, clears it and recalculates city production for late-era civs
+    // If DAT_00655aee has bit 0x04, clears it and recalculates city production for advanced-govt civs
     flag: 'DAT_00655aee & 0x04',
-    eraThreshold: 4,  // only recalc if DAT_0064c6b5[civ] > 4
+    governmentThreshold: 4,  // only recalc if DAT_0064c6b5[civ] > 4 (government type, NOT era)
     recalcFunction: 'FUN_004eb4ed(citySlot, 1)',
   },
 
@@ -1621,14 +1621,14 @@ export const DA_VINCIS_WORKSHOP = {
     stride: 0x14,        // 20 bytes per unit type entry
     maxTypes: 0x3E,      // 62 unit types
     obsoleteTechOffset: '@ DAT_0064b1c0[type * 0x14] (signed byte, tech that obsoletes)',
-    domainOffset: '@ DAT_0064b1ca[type * 0x14]',   // NOTE: this is actually the ROLE field (offset 0x12), not domain. Domain is at DAT_0064b1c1 (offset 0x09).
-    attackOffset: '@ DAT_0064b1c5[type * 0x14]',
-    defenseOffset: '@ DAT_0064b1c9[type * 0x14]',
+    roleOffset: '@ DAT_0064b1ca[type * 0x14]',     // offset 0x12 in unit type record = role field
+    attackOffset: '@ DAT_0064b1c4[type * 0x14]',   // offset 0x0C = attack strength
+    defenseOffset: '@ DAT_0064b1c5[type * 0x14]',  // offset 0x0D = defense strength
     prereqTechOffset: '@ DAT_0064b1cb[type * 0x14]',
   },
 
   advancedUpgrade: {
-    // If unit role == 1 (sea domain) and attack < threshold and has Gunpowder: upgrade to land unit 0x23
+    // If unit role == 1 (defend) and attack < threshold and has Gunpowder: upgrade to land unit 0x23
     techId: 0x23,        // Gunpowder prerequisite for advanced upgrade
     attackThreshold: '@ DAT_0064b251 (global attack threshold)',
     condition: 'role == 1 AND attack < threshold AND civ_has_tech(civId, 0x23)',
@@ -1883,7 +1883,7 @@ export const UNIT_BUILDABILITY = {
   },
 
   gunpowderCheck: {
-    // If role == 1 (sea-capable) and defense < threshold and civ has Gunpowder (0x23):
+    // If role == 1 (defend) and defense < threshold and civ has Gunpowder (0x23):
     // Then the obsolete version of this sea unit exists, so it can't be built
     techId: 0x23,
     attackThreshold: '@ DAT_0064b251',
@@ -7685,13 +7685,13 @@ export const CIV_SCORING = {
   },
 
   // Component 8: Difficulty bonus
-  // C: DAT_00673f74 = (uint)DAT_00655b09 * 0x19 - 0x32
+  // C: DAT_00673f74 = (uint)DAT_00655b08 * 0x19 - 0x32  // NOTE: Ghidra shows 0x655b09 but context is difficulty (0..5), not barbarian level
   difficultyBonus: {
     addr: 'DAT_00673F74',
     formula: 'difficulty * 25 - 50',
     multiplier: 0x19,  // 25
     offset: -0x32,     // -50
-    difficultyAddr: 'DAT_00655B09',  // binary line 370: (uint)DAT_00655b09 * 0x19 — barbarian level byte, doubles as difficulty in scoring
+    difficultyAddr: 'DAT_00655B08',  // difficulty level (0..5); NOTE: C line 370 shows DAT_00655b09 (barbarian level) — likely a Ghidra decompile alias; DAT_00655b08 is the difficulty byte used everywhere else
     breakdown: {
       chieftain: -50,   // 0 * 25 - 50
       warlord: -25,     // 1 * 25 - 50

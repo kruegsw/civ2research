@@ -2,12 +2,12 @@
 // reduce/end-turn.js — END_TURN action handler
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, checkTriremeSinking } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
 import { calcCityTrade } from '../production.js';
-import { hasWonderEffect } from '../utils.js';
+import { cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech } from '../research.js';
 import { checkGameEndConditions, recalcSpaceshipStats } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
@@ -145,40 +145,87 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // inside processCityTurn() (D.1), including nuclear meltdown. Only the global
   // warming check remains here.
 
-  // ── Global warming check: 8+ pollution tiles → convert random coastal tile ──
+  // ── Global warming: cumulative counter system (FUN_00486c2e + FUN_004868fb) ──
+  // Binary uses a pollution pressure counter (0-99) that drifts toward a net
+  // pressure value each turn. When counter exceeds 16, a warming event fires
+  // and degrades terrain across the map.
   {
+    // Count pollution tiles and recycling centers across all cities
     let pollCount = 0;
     for (const tile of mapBase.tileData) {
       if (tile && tile.improvements && tile.improvements.pollution) pollCount++;
     }
-    if (pollCount >= 8) {
-      const coastalTiles = [];
+    let recyclingCount = 0;
+    for (const c of state.cities) {
+      if (c.size > 0 && cityHasBuilding(c, 29)) recyclingCount++; // Recycling Center = 29
+    }
+
+    // Count alive civs for multi-civ divisor
+    let aliveCivCount = 0;
+    for (let c = 1; c < 8; c++) {
+      if (state.civsAlive & (1 << c)) aliveCivCount++;
+    }
+    aliveCivCount = Math.max(1, aliveCivCount);
+
+    // Pollution level: number of pollution tiles, divided by alive civ count
+    let pollLevel = pollCount;
+    if (aliveCivCount > 1) {
+      pollLevel = Math.floor((aliveCivCount - 1 + pollLevel) / aliveCivCount);
+    }
+
+    // Net pressure: pollution × 2 - warmingEvents × 4 - recyclingCenters
+    const warmingCount = state.globalWarmingCount || 0;
+    const netPressure = pollLevel * 2 - warmingCount * 4 - recyclingCount;
+
+    // Drift counter toward net pressure (±1 per turn)
+    let counter = state.pollutionCounter || 0;
+    if (netPressure > counter) counter++;
+    else if (netPressure < counter) counter--;
+    counter = Math.max(0, Math.min(99, counter));
+    state.pollutionCounter = counter;
+
+    // Warning at counter == 12 if pollution > 6
+    if (counter === 12 && pollCount > 6) {
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'pollutionWarning' });
+    }
+
+    // Trigger global warming at counter > 16
+    if (counter > 16) {
+      state.globalWarmingCount = warmingCount + 1;
+      state.pollutionCounter = 0; // reset after event
+
+      // Apply terrain degradation across the map (FUN_004868fb)
+      // Binary iterates all tiles: terrain < 4 → degrade based on position hash vs severity
+      const severity = warmingCount; // use pre-increment count as severity
       for (let gy = 0; gy < mapBase.mh; gy++) {
         for (let gx = 0; gx < mapBase.mw; gx++) {
-          const ter = mapBase.getTerrain(gx, gy);
-          if (ter === 10) continue;
-          const neighbors = mapBase.getNeighbors(gx, gy);
-          let coastal = false;
-          for (const dir in neighbors) {
-            const [nx, ny] = neighbors[dir];
-            if (ny >= 0 && ny < mapBase.mh && mapBase.getTerrain(nx, ny) === 10) {
-              coastal = true; break;
-            }
+          const tileIdx = gy * mapBase.mw + gx;
+          const tile = mapBase.tileData[tileIdx];
+          if (!tile) continue;
+          const ter = tile.terrain;
+          if (ter >= 4) continue; // only desert(0), plains(1), grassland(2), forest(3)
+
+          // Hash-based selection: (x*3 - y*3) & 7 == severity
+          if (((gx * 3 - gy * 3) & 7) !== (severity & 7)) continue;
+
+          // Degrade terrain
+          if (ter === 3) {
+            // Forest → Jungle
+            tile.terrain = 9;
+            tile.improvements = { ...tile.improvements, irrigation: false, mining: false };
+          } else if (ter === 2) {
+            // Grassland → Plains
+            tile.terrain = 1;
+          } else {
+            // Desert/Plains → Desert
+            tile.terrain = 0;
           }
-          if (coastal) coastalTiles.push({ gx, gy, terrain: ter });
         }
       }
-      if (coastalTiles.length > 0) {
-        const gwPick = coastalTiles[state.rng.nextInt(coastalTiles.length)];
-        const gwIdx = gwPick.gy * mapBase.mw + gwPick.gx;
-        const gwTransform = { 1: 0, 2: 0, 3: 9, 4: 4, 5: 5, 6: 0, 7: 6, 8: 8, 9: 9 };
-        const newTer = gwTransform[gwPick.terrain];
-        if (newTer != null && mapBase.tileData[gwIdx]) {
-          mapBase.tileData[gwIdx].terrain = newTer;
-          if (!state.turnEvents) state.turnEvents = [];
-          state.turnEvents.push({ type: 'globalWarming' });
-        }
-      }
+
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'globalWarming' });
     }
   }
 
@@ -356,13 +403,64 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const u = state.units[ui];
     if (u.owner !== activeCiv || u.gx < 0) continue;
 
-    // HP recovery: units not in combat heal 1 HP per turn (in city: 2 HP)
-    if (u.hpLost > 0) {
-      const inCity = state.cities.some(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner);
-      const healAmt = inCity ? 2 : 1;
-      const newHpLost = Math.max(0, u.hpLost - healAmt);
-      if (newHpLost !== u.hpLost) {
-        state.units[ui] = { ...u, hpLost: newHpLost };
+    // HP recovery — ported from FUN_00488cef (heal_units)
+    // Own city + Barracks/Port Facility/Airport = full heal
+    // Own city (no matching building) = 2 HP bars
+    // Allied city = 1 HP bar
+    // Fortress = 1 HP bar
+    // Field = 1 HP bar every other turn (even turns only)
+    if (u.movesRemain > 0) {
+      const domain = UNIT_DOMAIN[u.type] ?? 0;
+      const ownCity = state.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner && c.size > 0);
+      let healAmt = 0;
+
+      if (ownCity) {
+        // Domain-specific building: Barracks(2) for land, Port Facility(34) for sea, Airport(32) for air
+        const matchingBuildingId = domain === 0 ? 2 : domain === 1 ? 34 : 32;
+        if (cityHasBuilding(ownCity, matchingBuildingId)) {
+          // Full heal: matching building in own city
+          healAmt = u.movesRemain;
+        } else {
+          // Own city without matching building: 2 HP bars
+          healAmt = 2;
+        }
+      } else {
+        // Check allied city (different owner, alliance treaty)
+        const alliedCity = state.cities.find(c => {
+          if (c.gx !== u.gx || c.gy !== u.gy || c.size <= 0) return false;
+          if (c.owner === u.owner) return false;
+          // Check for alliance treaty
+          const a = Math.min(u.owner, c.owner);
+          const b = Math.max(u.owner, c.owner);
+          return state.treaties?.[`${a}-${b}`] === 'alliance';
+        });
+
+        if (alliedCity) {
+          // Allied city: 1 HP bar
+          healAmt = 1;
+        } else {
+          // Check fortress
+          const tileIdx = u.gy * mapBase.mw + u.gx;
+          const tile = mapBase.tileData?.[tileIdx];
+          const onFortress = tile && tile.improvements && tile.improvements.fortress;
+
+          if (onFortress) {
+            // Fortress: 1 HP bar
+            healAmt = 1;
+          } else {
+            // Field: 1 HP bar every other turn (heal on even turns only)
+            if (turnNumber % 2 === 0) {
+              healAmt = 1;
+            }
+          }
+        }
+      }
+
+      if (healAmt > 0) {
+        const newHpLost = Math.max(0, u.movesRemain - healAmt);
+        if (newHpLost !== u.movesRemain) {
+          state.units[ui] = { ...u, movesRemain: newHpLost };
+        }
       }
     }
 

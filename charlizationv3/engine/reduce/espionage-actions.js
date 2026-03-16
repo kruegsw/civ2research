@@ -14,7 +14,7 @@ import { spawnBarbarianUprising } from './barbarians.js';
 export function handleBribeUnit(state, prev, mapBase, action, civSlot) {
   const spy = state.units[action.unitIndex];
   const target = state.units[action.targetIndex];
-  const bCost = calcBribeCost(state, target, mapBase);
+  const bCost = calcBribeCost(state, target, mapBase, civSlot);
   // Deduct gold
   state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
   const bCiv = { ...state.civs[civSlot] };
@@ -418,7 +418,7 @@ export function handleSpySabotageUnit(state, prev, mapBase, action, civSlot) {
   const damage = Math.floor(maxHp / 2);
   state.units[action.targetIndex] = {
     ...sabTarget,
-    hpLost: Math.min(maxHp - 1, (sabTarget.hpLost || 0) + damage),
+    movesRemain: Math.min(maxHp - 1, (sabTarget.movesRemain || 0) + damage),
   };
   // Spy survival
   const sabUnitSurvival = checkSpySurvival(spy, 0, state.rng);

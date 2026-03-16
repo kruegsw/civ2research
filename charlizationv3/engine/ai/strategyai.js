@@ -111,8 +111,8 @@ function getBuildingMaintenance(gameState, civ, buildingId) {
 //   2 = behind on naval tech (build navy)
 //   3 = behind on air/naval tech (research/build)
 //   4 = no barracks anywhere (build barracks)
-//   5 = has masonry, has palace city, palace city lacks city walls,
-//       and no Great Wall wonder (build city walls)
+//   5 = has Gunpowder, has a walled city without Coastal Fortress,
+//       and no Great Wall wonder (build coastal fortress)
 //   6 = has enemies but mid-ranked (standard posture)
 //   7 = no enemies AND high power rank (dominant — can be aggressive)
 // ═══════════════════════════════════════════════════════════════════
@@ -148,9 +148,10 @@ export function assessMilitaryPosture(civSlot, aiData, gameState) {
 
   // Check: too few units per city?
   // Formula: (cityCount - 1 + unitCount) / cityCount < threshold
-  // Threshold: difficulty < 5 (not deity) → 3, deity → 2
-  const diff = getDifficultyIndex(gameState, civSlot);
-  const threshold = (diff < 5) ? 3 : 2;
+  // Binary: threshold = 2 + (powerRank < 5 ? 1 : 0) — powerRank from DAT_00655c22
+  // Power rank < 5 (weaker civs) get threshold 3, rank >= 5 (stronger) get 2
+  const civPowerRank = aiData.powerRank[civSlot];
+  const threshold = 2 + (civPowerRank < 5 ? 1 : 0);
   if (Math.floor((ourCityCount - 1 + ourUnitCount) / ourCityCount) < threshold) {
     return 1;
   }
@@ -220,20 +221,30 @@ export function assessMilitaryPosture(civSlot, aiData, gameState) {
     return 4;
   }
 
-  // Check: do we have Masonry(47)? Do we have a palace city?
-  // Does palace city have City Walls(8)? Do we have Great Wall(6)?
-  if (!hasTech(gameState, civSlot, 47) || palaceCityIdx < 0 ||
-      cityHasBuilding(cities[palaceCityIdx], 8) ||
-      hasWonderEffect(gameState, civSlot, 6)) {
-    // Walls already built or not needed
-    if (hatredCount === 0 && aiData.powerRank[civSlot] > 4) {
-      return 7; // dominant, no enemies
+  // Check: do we have Gunpowder(35)? Is there a walled city without
+  // Coastal Fortress(28)? And we don't have Great Wall(6)?
+  // Binary result 5: Has Gunpowder + walled city without Coastal Fortress and no Great Wall
+  if (hasTech(gameState, civSlot, 35) && !hasWonderEffect(gameState, civSlot, 6)) {
+    // Look for a city that has City Walls(8) but lacks Coastal Fortress(28)
+    let walledCityLacksCoastal = false;
+    for (let i = 0; i < cities.length; i++) {
+      const c = cities[i];
+      if (!c || c.size <= 0 || c.gx < 0 || c.owner !== civSlot) continue;
+      if (cityHasBuilding(c, 8) && !cityHasBuilding(c, 28)) {
+        walledCityLacksCoastal = true;
+        break;
+      }
     }
-    return 6; // standard posture
+    if (walledCityLacksCoastal) {
+      return 5; // build coastal fortress at a walled city
+    }
   }
 
-  // Has masonry, has palace, palace lacks walls, no Great Wall
-  return 5; // build city walls at capital
+  // Standard or dominant posture
+  if (hatredCount === 0 && aiData.powerRank[civSlot] > 4) {
+    return 7; // dominant, no enemies
+  }
+  return 6; // standard posture
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -241,7 +252,7 @@ export function assessMilitaryPosture(civSlot, aiData, gameState) {
 //
 // Returns 1-7 indicating city defense priority:
 //   1 = behind on tech, not enough in top half of civs
-//   2 = need to focus on science (rates too low)
+//   2 = government type too low for current power rank era
 //   3 = need more defense buildings in cities
 //   4 = need Trade tech for trade routes
 //   5 = ahead on tech, top half of civs
@@ -264,16 +275,19 @@ export function assessCityDefense(civSlot, threatLevel, aiData, gameState) {
   // If no one has more or equal tech, we're the leader → 7
   if (techBehind === 0) return 7;
 
-  // Check science rate threshold: if too low, return 2 (focus on science)
-  const diff = getDifficultyIndex(gameState, civSlot);
-  const sciRate = gameState.civs?.[civSlot]?.scienceRate ?? 5;
+  // Check government type: if too low for era, return 2 (need better government)
+  // Binary: DAT_0064c6b5 = government type, checked against power rank threshold
+  // Power rank < 5 (early): if govt != 4 (Fundamentalism) && govt < 6, return 2
+  // Power rank >= 5 (late): if govt < 4, return 2
+  const govtIdx = getGovtIndex(gameState, civSlot);
+  const civPwrRank = aiData.powerRank[civSlot];
 
-  if (diff < 5) {
-    // Not deity: emperor(4) gets a pass, others need sciRate >= 6
-    if (diff !== 4 && sciRate < 6) return 2;
+  if (civPwrRank < 5) {
+    // Early era: need Republic(5) or Democracy(6), or Fundamentalism(4) is OK
+    if (govtIdx !== 4 && govtIdx < 6) return 2;
   } else {
-    // Deity: need sciRate >= 4
-    if (sciRate < 4) return 2;
+    // Late era: need at least Fundamentalism(4)
+    if (govtIdx < 4) return 2;
   }
 
   // Count our cities and check for defense building
@@ -343,13 +357,13 @@ export function assessCityDefense(civSlot, threatLevel, aiData, gameState) {
 // Assessment 3: Economy (FUN_004bcb9b)
 //
 // Returns 1-7 indicating economic priority:
-//   1 = food surplus < building maintenance AND treasury < 100
+//   1 = shield production < building maintenance AND treasury < 100
 //   2 = doesn't have key economic tech
 //   3 = too few cities have the target improvement
 //   4 = doesn't have Trade tech
 //   5 = trade surplus below city count / 4
-//   6 = food surplus - maintenance < 6 (tight economy)
-//   7 = healthy economy (surplus well above maintenance)
+//   6 = shield production - maintenance < 6 (tight economy)
+//   7 = healthy economy (production well above maintenance)
 //
 // param_2 (threatLevel): 0=low, 1=medium, 2=high
 // ═══════════════════════════════════════════════════════════════════
@@ -383,10 +397,10 @@ export function assessEconomy(civSlot, threatLevel, aiData, gameState) {
     tradeSurplus += (cont.militaryCounts.get(civSlot) || 0);
   }
 
-  // Iterate our cities: count buildings, compute food surplus and maintenance
+  // Iterate our cities: count buildings, compute shield production and maintenance
   let ourCityCount = 0;
   let citiesWithTarget = 0;
-  let totalFoodSurplus = 0;
+  let totalShieldProduction = 0;
   let totalMaintenance = 0;
 
   // Track building counts across all 39 buildings (0-38)
@@ -409,10 +423,10 @@ export function assessEconomy(civSlot, threatLevel, aiData, gameState) {
     // Check target building
     if (cityHasBuilding(city, targetBuilding)) citiesWithTarget++;
 
-    // L.2: Use actual net food surplus computed by computeAiData (calcFoodSurplus)
-    // Cities NOT in civil disorder contribute food
+    // Binary uses shield production (DAT_0064f38c), not food surplus.
+    // Cities NOT in civil disorder contribute shields.
     if (!city.civilDisorder) {
-      totalFoodSurplus += city.netFoodSurplus != null ? city.netFoodSurplus : Math.max(0, city.size);
+      totalShieldProduction += city.shieldProduction != null ? city.shieldProduction : Math.max(0, city.size);
     }
   }
 
@@ -426,9 +440,10 @@ export function assessEconomy(civSlot, threatLevel, aiData, gameState) {
     }
   }
 
-  // Decision 1: food surplus < maintenance AND treasury < 100 → 1 (economy in trouble)
+  // Decision 1: shield production < maintenance AND treasury < 100 → 1 (economy in trouble)
+  // Binary: total shield production (DAT_0064f38c) vs building maintenance
   const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
-  if (totalFoodSurplus < totalMaintenance && treasury < 100) {
+  if (totalShieldProduction < totalMaintenance && treasury < 100) {
     return 1;
   }
 
@@ -453,12 +468,12 @@ export function assessEconomy(civSlot, threatLevel, aiData, gameState) {
     return 5;
   }
 
-  // Decision 6: tight economy — surplus minus maintenance < 6
-  if (totalFoodSurplus - totalMaintenance < 6) {
+  // Decision 6: tight economy — production surplus less than 6 shields
+  if (totalShieldProduction - totalMaintenance < 6) {
     return 6;
   }
 
-  // Decision 7: healthy economy
+  // Decision 7: healthy economy — production surplus >= 6 shields
   return 7;
 }
 
@@ -579,7 +594,7 @@ export function assessDiplomacy(civSlot, threatLevel, aiData, gameState) {
 // Assessment 5: Tax Rate (FUN_004bd2a3)
 //
 // Returns 1-6 indicating tax rate adjustment:
-//   1 = unhappy cities with civil disorder AND difficulty=deity → revolt crisis
+//   1 = unhappy cities with civil disorder AND government=Democracy → revolt crisis
 //   2 = unhappy cities exist but rates can't be raised further
 //   3 = unhappy cities exist AND rates should be raised
 //   4 = no unhappy cities, rates already at max → optimal
@@ -655,15 +670,13 @@ export function assessTaxRate(civSlot, aiData, gameState) {
   // Has unhappy cities
   if (needsAdjust) {
     // Can we afford to address it?
-    if (disorderCities === 0 || diff !== 6) {
-      // No actual disorder, or not democracy (deity index=6 but diff=5 is deity...
-      // Original: difficulty != '\x06' which is the byte value 6 = democracy difficulty?
-      // Actually DAT_0064c6b5 is difficulty (0-5), value 6 would be out of range.
-      // This is likely checking if difficulty is democracy government index.
-      // Reinterpreting: if no civil disorder, or government is not democracy → 3
+    // Binary: check government type == 6 (Democracy) — DAT_0064c6b5 is govt type
+    const govtType = getGovtIndex(gameState, civSlot);
+    if (disorderCities === 0 || govtType !== 6) {
+      // No actual civil disorder, or government is not democracy → 3
       return 3;
     }
-    // Civil disorder in democracy → crisis
+    // Civil disorder in democracy → crisis (revolution risk)
     return 1;
   }
 

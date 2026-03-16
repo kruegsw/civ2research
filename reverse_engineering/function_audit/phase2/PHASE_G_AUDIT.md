@@ -411,7 +411,7 @@ The JS only handles barbarian-as-attacker difficulty scaling. Missing:
 | Line | Magic Number | Should Be |
 |------|-------------|-----------|
 | 51 | `32` (Trireme type) | `UNIT_TYPE_TRIREME = 32` |
-| 56 | `3` (Astronomy tech) | `TECH_ASTRONOMY = 3` |
+| 56 | `3` (Astronomy tech) | **BUG**: should be `TECH_NAVIGATION = 57` (Navigation obsoletes Trireme, not Astronomy). Binary uses Navigation at this check point. |
 | 59-60 | `3, 12` (Lighthouse, Magellan wonders) | `WONDER_LIGHTHOUSE = 3`, `WONDER_MAGELLANS = 12` |
 | 102 | `42` (Carrier type) | `UNIT_TYPE_CARRIER = 42` |
 | 240 | `10` (Alpine Troops), `4,5` (Hills, Mountains) | `UNIT_TYPE_ALPINE = 10`, `TERRAIN_HILLS = 4`, `TERRAIN_MOUNTAINS = 5` |

@@ -7,7 +7,7 @@
 
 import {
   NON_COMBAT_TYPES, SEA_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
-  GOVT_CORRUPTION_DIVISOR, DIFFICULTY_KEYS,
+  GOVT_CORRUPTION_DIVISOR, DIFFICULTY_KEYS, GOVT_INDEX,
 } from './defs.js';
 import { calcCityTrade } from './production.js';
 import { cityHasBuilding, hasWonderEffect, cityHasActiveWonder, getGovernment } from './utils.js';
@@ -63,17 +63,22 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
     st.unhappy = (pop - 1) - (CONTENT_BASE - 5);
   } else {
     const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(difficulty));
+    // Binary: contentBase = RIOT_FACTOR + difficulty * -2 [+ 2 if Restless Tribes]
     let spread = RIOT_FACTOR + diffIdx * -2;
     if (gameState.barbarianActivity === 'raging') spread += 2;
-    let divisor = Math.floor(((GOVT_CORRUPTION_DIVISOR[govt] || 1) + 1) * spread / 2);
-    if (divisor < 2) divisor = 1;
 
-    const contentBase = CONTENT_BASE - diffIdx;
-    st.unhappy = (pop - 1) - (contentBase - 2);
+    // Binary: contentCitizens = ((govtType >> 1) + 2) * contentBase / 2
+    // govtType is the numeric government index (0=anarchy, 1=despotism, etc.)
+    const govtIdx = GOVT_INDEX[govt] ?? 1;
+    let contentCitizens = Math.trunc(((govtIdx >> 1) + 2) * spread / 2);
+    if (contentCitizens < 2) contentCitizens = 1;
+
+    st.unhappy = (pop - 1) - contentCitizens;
 
     // Empire size penalty (Communism exempt)
     if (govt !== 'communism') {
       const cityCount = gameState.cities.filter(c => c.owner === ownerSlot && c.size > 0).length;
+      const divisor = Math.max(1, contentCitizens);
       st.unhappy += Math.floor((cityCount - divisor + cityIndex % divisor) / divisor);
     }
   }
@@ -127,6 +132,8 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
     st.unhappy = 0;
   } else if (govt === 'anarchy' || govt === 'despotism' || govt === 'monarchy' || govt === 'communism') {
     // Martial law
+    // Binary: maxMartialLaw = CONTENT_BASE(7) - difficulty
+    const diffIdx2 = Math.max(0, DIFFICULTY_KEYS.indexOf(difficulty));
     let garrison = 0;
     for (const u of gameState.units) {
       if (u.gx === city.gx && u.gy === city.gy && u.owner === ownerSlot &&
@@ -134,7 +141,9 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
         garrison += (govt === 'communism') ? 2 : 1;
       }
     }
-    const maxMartial = (govt === 'communism') ? 6 : 3;
+    const maxMartial = (govt === 'communism')
+      ? (CONTENT_BASE - diffIdx2) * 2
+      : (CONTENT_BASE - diffIdx2);
     if (garrison > maxMartial) garrison = maxMartial;
     garrison = Math.max(0, Math.min(garrison, st.unhappy));
     st.unhappy -= garrison;
@@ -198,7 +207,9 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
   const content = pop - happy - unhappy - totalSpecs;
 
   const civilDisorder = unhappy > happy;
-  const weLoveKingDay = !civilDisorder && unhappy === 0 && happy >= content;
+  // Binary: WLtKD requires unhappy==0, size>2, govt!=anarchy(0)
+  const weLoveKingDay = !civilDisorder && unhappy === 0 && happy >= content
+    && pop > 2 && govt !== 'anarchy';
 
   return { happy, unhappy, civilDisorder, weLoveKingDay };
 }

@@ -1042,7 +1042,7 @@ const Civ2Renderer = {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
+        if (fowEnabled && u.owner !== options.fowCiv && u.hpLost != null && !(u.hpLost & fowBit)) continue;
         unitCounts[tileKey] = (unitCounts[tileKey] || 0) + 1;
       }
 
@@ -1060,7 +1060,7 @@ const Civ2Renderer = {
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
-        if (fowEnabled && u.owner !== options.fowCiv && u.visFlag != null && !(u.visFlag & fowBit)) continue;
+        if (fowEnabled && u.owner !== options.fowCiv && u.hpLost != null && !(u.hpLost & fowBit)) continue;
         if (u.prevInStack === -1) {
           bestUnit[tileKey] = u;
         } else if (!bestUnit[tileKey]) {
@@ -1146,7 +1146,7 @@ const Civ2Renderer = {
             ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
 
             const maxHp = renderer.UNIT_MAX_HP[u.type] || 10;
-            const curHp = Math.max(0, maxHp - u.hpLost);
+            const curHp = Math.max(0, maxHp - u.movesRemain);
             const barW = 12, barH = 3;
             const barX = shieldX, barY = shieldY + 2;
             const greenW = Math.floor((curHp / maxHp) * barW);

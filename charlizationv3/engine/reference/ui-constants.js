@@ -1779,10 +1779,10 @@ export const RESEARCH_GOAL_DIALOG = {
 
 export const COSMIC_EDITOR_WINDOW = {
   // --- Window dimensions ---
-  // @ constructor: *(in_ECX + 0x2d8) = 0x230; *(in_ECX + 0x2dc) = 0x1c6
+  // @ constructor: *(in_ECX + 0x2d8) = 0x230; *(in_ECX + 0x2dc) = 0x17c
   windowSize: {
     width: 0x230,              // 560 pixels
-    height: 0x1C6,             // 454 pixels
+    height: 0x17C,             // 380 pixels
   },
 
   // --- Window style ---

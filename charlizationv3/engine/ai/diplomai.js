@@ -164,12 +164,14 @@ function countWars(gameState, civSlot) {
  *   attitude < 50 → neutral
  *   attitude < 74 → friendly
  *   attitude >= 74 → enthusiastic
+ *
+ * Binary attitude is on a 0-100 scale (not -100 to +100).
  */
 function getGreetingTone(attitude) {
-  if (attitude < -25) return 'hostile';
-  if (attitude < 0)   return 'guarded';
-  if (attitude < 25)  return 'neutral';
-  if (attitude < 50)  return 'friendly';
+  if (attitude < 4)  return 'hostile';
+  if (attitude < 26) return 'guarded';
+  if (attitude < 50) return 'neutral';
+  if (attitude < 74) return 'friendly';
   return 'enthusiastic';
 }
 
@@ -1699,11 +1701,8 @@ function chooseBestGovernment(civSlot, gameState) {
   const personality = getPersonality(gameState, civSlot);
 
   for (const govt of govts) {
-    // Check tech prereq
+    // Check tech prereq — Statue of Liberty (wonder 19) grants all governments
     const prereq = GOVT_TECH_PREREQS[govt];
-    if (prereq >= 0 && !civTechs.has(prereq)) continue;
-
-    // Statue of Liberty (wonder 19) grants all governments
     if (prereq >= 0 && !civTechs.has(prereq) && !hasWonderEffect(gameState, civSlot, 19)) continue;
 
     const gIdx = GOVT_INDEX[govt] ?? 0;

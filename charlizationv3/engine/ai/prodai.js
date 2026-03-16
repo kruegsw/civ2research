@@ -587,7 +587,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0, 0];
   const expansionism = personality[0]; // DAT_006554fa
   const militarism = personality[1];   // DAT_006554f8
-  const civilized = personality[2] ?? 0; // DAT_006554f9
+  const tolerance = personality[2] ?? 0; // DAT_006554f9
 
   // ── Government ──
   const govtStr = gameState.civs?.[civSlot]?.government || 'despotism';
@@ -667,11 +667,11 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     // Settler need: below (govtIdx + 1) / 2 settlers on continent
     const settlerThreshold = Math.floor((govtIdx + 1) / 2);
     if (sameTypeOnCont < settlerThreshold) {
-      // Base score depends on civilized trait
+      // Base score depends on tolerance trait
       if (sameTypeOnCont < Math.floor(settlerThreshold / 2)) {
-        score = civilized >= 0 ? expansionism : civilized;
+        score = tolerance >= 0 ? expansionism : tolerance;
       } else {
-        score = civilized;
+        score = tolerance;
       }
     }
 
@@ -795,7 +795,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     let rawScore = 10;
     // Base: 10 adjusted by city size and personality
     if (city.size < 3) {
-      rawScore = 10 - ((5 - civilized) * aliveCivCount) / 10;
+      rawScore = 10 - ((5 - tolerance) * aliveCivCount) / 10;
     }
     // Add city trade route count
     rawScore += (cityCtx.tradeRouteCount || 0) * 2;
@@ -835,9 +835,9 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     if (isHuman && (unitId === 12 || unitId === 10 || unitId === 9)) {
       existingScore += 2;
     }
-    // Horsemen (4) count includes Chariots (5) and vice-versa
-    if (unitId === 4) {
-      existingScore += countUnitsByType(gameState, civSlot, 5) * 2;
+    // Horsemen (15) count includes Chariots (16) and vice-versa
+    if (unitId === 15) {
+      existingScore += countUnitsByType(gameState, civSlot, 16) * 2;
     }
 
     // Zero-attack zero-defense units are not combat units
@@ -1106,7 +1106,7 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
   let largestPalaceCity = 0;
   for (const c of gameState.cities) {
     if (!c || c.size <= 0 || c.owner !== civSlot) continue;
-    if (c.buildings && (c.buildings.has(1) || c.buildings.has(8))) {
+    if (c.buildings && c.buildings.has(1)) { // building 1 = Palace
       palaceCityCount++;
       if (c.size > largestPalaceCity) largestPalaceCity = c.size;
     }
@@ -1299,7 +1299,7 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
       // Requires Library (building 6) — checked by canBuildBuilding prereq
       // Additional check: scienceRate > 0 AND (no opponents OR no Espionage tech)
       const sciRate = gameState.civs?.[civSlot]?.scienceRate ?? 5;
-      const hasEspionage = civTechs ? civTechs.has(0x4c) : false; // tech 76 = Espionage
+      const hasEspionage = civTechs ? civTechs.has(27) : false; // tech 27 = Espionage (0x1B)
       if (sciRate > 0 && (numOpponents === 0 || !hasEspionage)) {
         score = clamp(10 - (numCities >> 2), 2, 10);
       }
@@ -1409,7 +1409,7 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
     case 26: {
       // Same conditions as University: scienceRate > 0, no opponents or no Espionage
       const sciRate2 = gameState.civs?.[civSlot]?.scienceRate ?? 5;
-      const hasEspionage2 = civTechs ? civTechs.has(0x4c) : false;
+      const hasEspionage2 = civTechs ? civTechs.has(27) : false; // tech 27 = Espionage (0x1B)
       if ((numOpponents === 0 || !hasEspionage2) && sciRate2 > 0) {
         score = clamp(11 - (numCities >> 2), 2, 10);
       }
@@ -1697,7 +1697,7 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
   const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0, 0];
   const expansionism = personality[0]; // DAT_006554fa
   const militarism = personality[1];   // DAT_006554f8
-  const civilized = personality[2] ?? 0; // DAT_006554f9
+  const tolerance = personality[2] ?? 0; // DAT_006554f9
 
   // ── Strategic context ──
   const govtStr = gameState.civs?.[civSlot]?.government || 'despotism';
@@ -1841,8 +1841,8 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
       break;
 
     case 7: // Sun Tzu's War Academy (0x2e)
-      // Score -= militarism*3 + civilized + expansionism*-2 + 1
-      rawScore -= (militarism * 3 + civilized + expansionism * -2 + 1);
+      // Score -= militarism*3 + tolerance + expansionism*-2 + 1
+      rawScore -= (militarism * 3 + tolerance + expansionism * -2 + 1);
       break;
 
     case 8: // King Richard's Crusade (0x2f)
@@ -1919,8 +1919,8 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
       break;
 
     case 19: // Statue of Liberty (0x3a)
-      // Score based on tech 0x0f (Literacy=15) check
-      if (civTechs && civTechs.has(15)) rawScore -= 2;
+      // Score based on tech 43 = Literacy (0x2B)
+      if (civTechs && civTechs.has(43)) rawScore -= 2;
       else rawScore -= 1;
       break;
 
@@ -1940,7 +1940,7 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
     case 21: // Women's Suffrage (0x3c)
       // Score based on personality: all positive → extra bonus
       rawScore--;
-      if (civilized >= 0 && expansionism >= 0 && militarism >= 0) rawScore--;
+      if (tolerance >= 0 && expansionism >= 0 && militarism >= 0) rawScore--;
       // Spaceship bonus
       if (gameState.civs?.[civSlot]?.spaceshipStructural > 0) rawScore--;
       // High difficulty
@@ -1957,8 +1957,8 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
       // Decompiled: complex spaceshipcheck + nuclear assessment
       // Only build early in space race or when military aggressive
       if (continentPosture !== 4) rawScore += 2; // penalty if not at war
-      // Nuclear check: have we researched Rocketry (76)?
-      if (!civTechs || !civTechs.has(76)) rawScore += 5; // big penalty
+      // Nuclear check: have we researched Rocketry (73)?
+      if (!civTechs || !civTechs.has(73)) rawScore += 5; // big penalty
       break;
 
     case 24: // United Nations (0x3f)
@@ -2332,10 +2332,10 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
   const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0, 0];
   const expansionism = personality[0];
   const militarism = personality[1];
-  const civilized = personality[2] ?? 0;
+  const tolerance = personality[2] ?? 0;
 
   // ── Apply personality-based weighting ──
-  // Militarist leaders prefer units, civilized prefer buildings/wonders
+  // Militarist leaders prefer units, tolerant leaders prefer buildings/wonders
   // Decompiled: the final decision uses attribs flags and personality
   // to bias toward one category or another
 
@@ -2344,11 +2344,11 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
   if (militarism < 0) bestUnitScore = Math.floor(bestUnitScore * 0.9);
 
   // Civilized bonus to building/wonder scores
-  if (civilized > 0) {
+  if (tolerance > 0) {
     bestBuildingScore = Math.floor(bestBuildingScore * 1.1);
     bestWonderScore = Math.floor(bestWonderScore * 1.15);
   }
-  if (civilized < 0) {
+  if (tolerance < 0) {
     bestBuildingScore = Math.floor(bestBuildingScore * 0.9);
     bestWonderScore = Math.floor(bestWonderScore * 0.85);
   }
@@ -2928,12 +2928,12 @@ export function generateSellObsoleteActions(gameState, mapBase, civSlot, debugLo
     }
 
     // ── N.5: Check zero-benefit buildings (maintenance > 0 with no effect) ──
-    // Sell buildings whose benefit is zero: Coastal Fortress (11) if no sea tiles,
+    // Sell buildings whose benefit is zero: Coastal Fortress (28) if no sea tiles,
     // Harbor (14) if not coastal, SAM Battery (12) if no air threat.
     // Keep this conservative — only sell clearly useless buildings.
     if (!sold) {
-      // Coastal Fortress (11): useless for landlocked cities
-      if (city.buildings.has(11)) {
+      // Coastal Fortress (28): useless for landlocked cities
+      if (city.buildings.has(28)) {
         const tile = mapBase.tileData?.[city.gy * mapBase.mw + city.gx];
         const isCoastal = tile?.flags?.river || false; // approximate; check adjacent sea
         let hasAdjacentSea = false;
@@ -2943,13 +2943,13 @@ export function generateSellObsoleteActions(gameState, mapBase, civSlot, debugLo
           const ny = city.gy + ddy;
           if (ny < 0 || ny >= mapBase.mh) continue;
           const nt = mapBase.tileData?.[ny * mapBase.mw + nx];
-          if (nt && (nt.terrain === 10 || nt.terrain === 11)) { // ocean/coast terrain IDs
+          if (nt && nt.terrain === 10) { // terrain 10 = Ocean
             hasAdjacentSea = true;
             break;
           }
         }
         if (!hasAdjacentSea) {
-          const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: 11 };
+          const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: 28 };
           const err = validateAction(gameState, mapBase, action, civSlot);
           if (!err) {
             actions.push(action);

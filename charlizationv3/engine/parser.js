@@ -581,50 +581,51 @@ const Civ2Parser = {
 
       const ux = this.s16(savBuf, off);
       const uy = this.s16(savBuf, off + 2);
-      const movementFlags  = savBuf[off + 4];
-      const statusFlags    = savBuf[off + 5];
+      const flags          = this.u16(savBuf, off + 4);  // save-format: uint16 status flags bitfield
+      const movementFlags  = flags & 0xFF;               // low byte — backward compat
+      const statusFlags    = (flags >> 8) & 0xFF;         // high byte — backward compat
       const utype          = savBuf[off + 6];
       const uowner         = savBuf[off + 7];
-      const movePointsLeft = savBuf[off + 8];
-      const visFlag        = savBuf[off + 9];
-      const hpLost         = savBuf[off + 10];
+      const moveSpent      = savBuf[off + 8];
+      const hpLost         = savBuf[off + 9];   // save-format: "visibility/seen bitmask" (name/note swapped in binary docs)
+      const movesRemain    = savBuf[off + 10];  // save-format: "damage taken" (name/note swapped in binary docs)
       const lastDirection  = savBuf[off + 11];
-      const aiTaskRole     = savBuf[off + 12];
-      const cargoWorkFuelRaw = savBuf[off + 13];
+      const shieldCharge   = savBuf[off + 12];
+      const caravanDest    = savBuf[off + 13];
       // Split byte +13 into named fields based on unit type context
       // Caravans (48) / Freight (49): commodity carried (0-15)
       // Settlers (0) / Engineers (1): work turns remaining
       // Air units (26-31, 44-45): fuel remaining
       // Transports/carriers: cargo count
-      const commodityCarried = (utype === 48 || utype === 49) ? cargoWorkFuelRaw : -1;
-      const workTurns = (utype === 0 || utype === 1) ? cargoWorkFuelRaw : 0;
-      const fuelRemaining = (utype >= 26 && utype <= 31) || utype === 44 || utype === 45 ? cargoWorkFuelRaw : -1;
-      const alive          = savBuf[off + 14];
-      const ordersRaw      = savBuf[off + 15];
+      const commodityCarried = (utype === 48 || utype === 49) ? caravanDest : -1;
+      const workTurns = (utype === 0 || utype === 1) ? caravanDest : 0;
+      const fuelRemaining = (utype >= 26 && utype <= 31) || utype === 44 || utype === 45 ? caravanDest : -1;
+      const counter2       = savBuf[off + 14];
+      const orderRaw       = savBuf[off + 15];
       const ORDERS_MAP = ['none','fortifying','fortified','sleep','buildFortress','buildRoad','buildIrrigation','buildMine','transform','cleanPollution','buildAirbase','goto'];
-      const orders = ORDERS_MAP[ordersRaw] || (ordersRaw === 255 ? 'none' : `unknown_${ordersRaw}`);
-      const homeCityId     = this.u16(savBuf, off + 16);
-      const gotoX          = this.s16(savBuf, off + 18);
-      const gotoY          = this.s16(savBuf, off + 20);
+      const orders = ORDERS_MAP[orderRaw] || (orderRaw === 255 ? 'none' : `unknown_${orderRaw}`);
+      const homeCity        = this.u16(savBuf, off + 16);  // save-format: int8 at +0x10, +0x11 is padding; u16 read for backward compat
+      const goToX          = this.s16(savBuf, off + 18);
+      const goToY          = this.s16(savBuf, off + 20);
       const prevInStack    = this.s16(savBuf, off + 22);
       const nextInStack    = this.s16(savBuf, off + 24);
 
       // SAV/NET-only fields (+26..+31)
-      const sequenceId     = isSav ? this.u16(savBuf, off + 26) : null;
-      const padding_28     = isSav ? [savBuf[off+28], savBuf[off+29], savBuf[off+30], savBuf[off+31]] : null;
+      const id             = isSav ? this.u32(savBuf, off + 26) : null;  // save-format: uint32 unique sequential ID (0 = dead/empty)
+      const padding_30     = isSav ? [savBuf[off+30], savBuf[off+31]] : null;  // padding to 0x20 boundary
 
-      const dead = alive !== 0;
+      const dead = counter2 !== 0;
       const inBounds = ux >= 0 && ux < mw2 && uy >= 0 && uy < mh;
 
       const record = {
         // Backward-compatible fields
         gx: inBounds ? ux >> 1 : -1,
         gy: inBounds ? uy : -1,
-        type: utype, owner: uowner, orders, hpLost, visFlag,
+        type: utype, owner: uowner, order: orderRaw, orders, hpLost, movesRemain,
         saveIndex: i, nextInStack, prevInStack,
         // New fields
         x: ux, y: uy,    // raw doubled-X coordinates
-        movementFlags,
+        flags, movementFlags,
         firstMoved:      !!(movementFlags & 0x40),
         paraLaunched:    !!(movementFlags & 0x10),
         immobile:        !!(movementFlags & 0x02),
@@ -632,15 +633,15 @@ const Civ2Parser = {
         automated:       !!(statusFlags & 0x80),
         waiting:         !!(statusFlags & 0x40),
         veteran:         !!(statusFlags & 0x20),
-        movePointsLeft,
+        moveSpent,
         lastDirection,
-        aiTaskRole,
-        commodityCarried, workTurns, fuelRemaining,
-        dead,
-        homeCityId,
-        gotoX, gotoY,
-        sequenceId,
-        padding_28,
+        shieldCharge,
+        caravanDest, commodityCarried, workTurns, fuelRemaining,
+        counter2, dead,
+        homeCity, homeCityId: homeCity,  // homeCityId is backward-compat alias
+        goToX, goToY, gotoX: goToX, gotoY: goToY,  // gotoX/gotoY are backward-compat aliases
+        id, sequenceId: id,  // sequenceId is backward-compat alias
+        padding_30,
       };
 
       allUnits.push(record);

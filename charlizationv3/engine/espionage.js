@@ -19,13 +19,17 @@ import { getGovernment, cityHasBuilding, hasWonderEffect } from './utils.js';
 // ═══════════════════════════════════════════════════════════════════
 // calc_city_revolt_distance — FUN_004c65d2 (232B)
 //
-// Distance to nearest city with barracks (building 2) owned by
+// Distance to nearest city with Palace (building 1) owned by
 // the same civ. Used in both bribe cost and incite revolt cost.
 // Capped at 16. Under Communism, capped at 10.
+//
+// Binary ref: Scans all cities belonging to civSlot for Palace
+// (building 1). Returns Manhattan distance to nearest palace city
+// (capital), or 16 if none found.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Calculate distance from (gx, gy) to the nearest city with barracks (building 2)
+ * Calculate distance from (gx, gy) to the nearest city with Palace (building 1)
  * owned by civSlot. Capped at 16.
  *
  * @param {object} state - game state
@@ -42,7 +46,7 @@ export function calcCityRevoltDistance(state, mapBase, civSlot, gx, gy) {
 
   for (const city of state.cities) {
     if (city.size <= 0 || city.owner !== civSlot) continue;
-    if (!city.buildings || !city.buildings.has(2)) continue; // barracks = building 2
+    if (!city.buildings || !city.buildings.has(1)) continue; // Palace = building 1
 
     const dist = tileDist(gx, gy, city.gx, city.gy, mapBase.mw, mapBase.wraps);
     if (dist < minDist) {
@@ -134,8 +138,9 @@ export function spyCaughtCheck(unit, rng) {
 // Enhanced bribe cost — FUN_004c9528 (pick_up_unit)
 //
 // From pseudocode:
-//   distToBarracks = calc_city_revolt_distance(targetOwner, unit.x, unit.y)
-//   if republic AND dist > 9: dist = 10
+//   distToPalace = calc_city_revolt_distance(targetOwner, unit.x, unit.y)
+//   if BRIBER's govt == communism AND dist > 9: dist = 10
+//   if BRIBER's govt == republic AND dist > 9: dist = 10
 //   cost = unit_cost * (treasury + 750) / (dist + 2)
 //   if cost < 0: cost = 30000
 //   if role != settler: cost /= 2
@@ -143,22 +148,28 @@ export function spyCaughtCheck(unit, rng) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Calculate bribe cost for a unit, accounting for barracks distance.
+ * Calculate bribe cost for a unit, accounting for palace distance.
  * This is the enhanced version from the decompiled binary.
+ *
+ * Binary ref: FUN_004c9528 — Communism distance cap checks the
+ * BRIBER's (spy's) government, not the target's. Republic check
+ * is also on the briber's government.
  *
  * @param {object} state - game state
  * @param {object} target - target unit
  * @param {object} mapBase - map accessor
+ * @param {number} [spyCiv] - the spy's civ slot (for government checks)
  * @returns {number} bribe cost in gold
  */
-export function calcBribeCostEnhanced(state, target, mapBase) {
+export function calcBribeCostEnhanced(state, target, mapBase, spyCiv) {
   const treasury = state.civs?.[target.owner]?.treasury || 0;
 
-  // Distance to nearest barracks of target civ
+  // Distance to nearest Palace of target civ
   let dist = calcCityRevoltDistance(state, mapBase, target.owner, target.gx, target.gy);
 
-  // Communism and Republic cap at 10
-  const govt = getGovernment(null, state, target.owner);
+  // Communism and Republic cap — checks the BRIBER's (spy's) government per binary
+  const govtCiv = spyCiv != null ? spyCiv : target.owner; // fallback for backward compat
+  const govt = getGovernment(null, state, govtCiv);
   if (govt === 'communism') dist = Math.min(dist, 10);
   if (govt === 'republic' && dist > 9) dist = 10;
 
@@ -173,7 +184,7 @@ export function calcBribeCostEnhanced(state, target, mapBase) {
 
   // Damaged units cost less
   const maxHp = (UNIT_HP && UNIT_HP[target.type]) || 10;
-  const curHp = Math.max(1, maxHp - (target.hpLost || 0));
+  const curHp = Math.max(1, maxHp - (target.movesRemain || 0));
   cost = Math.floor(cost * curHp / maxHp);
 
   return Math.max(1, cost);
@@ -183,9 +194,10 @@ export function calcBribeCostEnhanced(state, target, mapBase) {
 // Enhanced incite revolt cost — FUN_004c6bf5 (spy_enters_city case 6)
 //
 // From pseudocode:
-//   distToBarracks = calc_city_revolt_distance(cityOwner, x, y)
-//   if dist < 2: revolt impossible (barracks too close)
-//   if republic AND dist > 9: dist = 10
+//   distToPalace = calc_city_revolt_distance(cityOwner, x, y)
+//   if dist < 2: revolt impossible (palace too close)
+//   if TARGET's govt == communism AND dist > 9: dist = 10
+//   if TARGET's govt == republic AND dist > 9: dist = 10
 //   if courthouse: dist /= 2
 //   cost = citySize * (treasury + 1000) / (dist + 3)
 //   if cost < 0: cost = 30000
@@ -196,26 +208,30 @@ export function calcBribeCostEnhanced(state, target, mapBase) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Calculate incite revolt cost for a city, accounting for barracks distance.
+ * Calculate incite revolt cost for a city, accounting for palace distance.
  * This is the enhanced version from the decompiled binary.
+ *
+ * Binary ref: FUN_004c6bf5 case 6 — Communism distance cap checks the
+ * TARGET civ's government (unlike bribery which checks the briber).
  *
  * @param {object} state - game state
  * @param {object} city - target city
  * @param {object} mapBase - map accessor
  * @param {object} [spy] - the spy/diplomat unit (optional, for spy discount)
- * @returns {{ cost: number, blocked: boolean }} cost in gold, or blocked if barracks too close
+ * @returns {{ cost: number, blocked: boolean }} cost in gold, or blocked if palace too close
  */
 export function calcInciteCostEnhanced(state, city, mapBase, spy) {
   const treasury = state.civs?.[city.owner]?.treasury || 0;
 
-  // Distance to nearest barracks of city owner
+  // Distance to nearest Palace of city owner
   let dist = calcCityRevoltDistance(state, mapBase, city.owner, city.gx, city.gy);
 
-  // Barracks within 2 tiles blocks revolt
+  // Palace within 2 tiles blocks revolt for human players
   if (dist < 2) {
     return { cost: Infinity, blocked: true };
   }
 
+  // Communism/Republic cap — checks TARGET civ's government per binary
   const govt = getGovernment(null, state, city.owner);
   if (govt === 'republic' && dist > 9) dist = 10;
   if (govt === 'communism') dist = Math.min(dist, 10);
@@ -259,66 +275,81 @@ export function calcInciteCostEnhanced(state, city, mapBase, spy) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Spy success chance calculator
+// Spy detection roll — FUN_004c64aa (spy_caught_check)
 //
-// Factors: operation type, spy veteran status, courthouse,
-// police station, city size, distance from capital.
+// Binary uses a discrete detection roll system: for each mission,
+// the spy must pass 1-N detection checks. Each check calls
+// checkSpySurvival(unit, -1, rng). If any check fails, the spy
+// is caught.
+//
+// Detection check counts per mission (from reference):
+//   embassy (0):           0 checks (spy always survives)
+//   investigate (1):       0 checks (no detection in binary)
+//   steal (2):             1 check (2 if specific steal + city has walls)
+//   sabotage (3):          1 check (2 if Palace or City Walls target,
+//                                   3 if SDI Defense target)
+//   incite (4):            0 checks (cost-based, not detection)
+//   nuke (5):              3 checks (+1 if defenders) — handled separately
+//   poison (6):            1 check
+//   sabotageProduction:    1 check
+//   subvert:               0 checks (cost-based, not detection)
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Calculate spy success chance for an operation.
+ * Perform spy detection rolls for an operation.
+ *
+ * Binary mechanic: each mission requires passing N discrete detection
+ * checks (FUN_004c64aa). Each check calls checkSpySurvival with
+ * param_2=-1 (caught scenario). Failure on any check = spy is caught.
+ *
+ * Returns 1.0 if the spy evades all detection checks, 0.0 if caught.
+ * Callers use `if (state.rng.random() >= result)` so:
+ *   1.0 → rng.random() >= 1.0 is always false → spy NOT caught
+ *   0.0 → rng.random() >= 0.0 is always true  → spy IS caught
+ *
+ * Note: The actual detection rolls happen inside this function using
+ * state.rng. The caller's subsequent rng.random() call is vestigial
+ * but harmless (just consumes one random number).
  *
  * @param {object} spy - spy unit
  * @param {object} city - target city
- * @param {string} operation - operation type ('steal', 'sabotage', 'poison', 'nuke', 'investigate')
+ * @param {string} operation - operation type
  * @param {object} state - game state
- * @returns {number} success probability 0.0-1.0
+ * @returns {number} 1.0 if spy evades detection, 0.0 if caught
  */
 export function calcSpySuccessChance(spy, city, operation, state) {
-  // Base chance depends on operation type
-  const baseChances = {
-    investigate: 0.95,
-    steal: 0.65,
-    sabotage: 0.60,
-    poison: 0.50,
-    nuke: 0.25,
-    embassy: 0.95,
-    sabotageProduction: 0.65,
+  // Number of detection checks per mission type (from binary reference)
+  const detectionCounts = {
+    embassy: 0,            // case 0: no detection checks
+    investigate: 0,        // case 1: no detection checks
+    steal: 1,              // case 2: 1 base check
+    sabotage: 1,           // case 3: 1 base check
+    poison: 1,             // case 6: 1 check
+    nuke: 3,               // case 5: handled in handleSpyPlantNuke, but 3 base if called here
+    sabotageProduction: 1, // sabotage variant: 1 check
   };
 
-  let chance = baseChances[operation] || 0.50;
+  let numChecks = detectionCounts[operation] ?? 1;
 
-  // Spy veteran bonus: +50% relative
-  if (spy.veteran) {
-    chance = Math.min(1.0, chance * 1.5);
-  }
+  // Sabotage: extra detection checks if targeting protected buildings
+  // Binary ref: Palace (building 1) or City Walls (building 8) → +1 check
+  //             SDI Defense (building 17) → +2 checks
+  // TODO: These extra checks apply when targeting *specific* buildings
+  // (spy-only specific sabotage). The current action system doesn't pass
+  // the targeted building ID through to this function. For now, apply
+  // the base check count. When specific sabotage targeting is wired up,
+  // pass the target building ID and add the extra checks here.
 
-  // Courthouse reduces chance by 25% relative (building 7)
-  if (city.buildings && city.buildings.has(7)) {
-    chance *= 0.75;
-  }
+  const rng = state.rng;
 
-  // Police Station reduces chance by 25% relative (building 33)
-  if (city.buildings && city.buildings.has(33)) {
-    chance *= 0.75;
-  }
-
-  // Counterspy units in city increase detection
-  if (state.units) {
-    const counterspies = state.units.filter(u =>
-      u.gx === city.gx && u.gy === city.gy && u.owner === city.owner &&
-      u.gx >= 0 && (u.type === 46 || u.type === 47)
-    );
-    for (const cs of counterspies) {
-      // Each counterspy increases detection:
-      // diplomat: +20%, spy: +40%, veteran spy: +60%
-      const interceptChance = cs.type === 46 ? 0.20
-        : (cs.veteran ? 0.60 : 0.40);
-      chance *= (1.0 - interceptChance);
+  // Perform each detection check using the binary's spyCaughtCheck mechanic
+  for (let i = 0; i < numChecks; i++) {
+    if (spyCaughtCheck(spy, rng)) {
+      return 0.0; // caught
     }
   }
 
-  return Math.max(0.0, Math.min(1.0, chance));
+  return 1.0; // evaded all detection
 }
 
 // ═══════════════════════════════════════════════════════════════════

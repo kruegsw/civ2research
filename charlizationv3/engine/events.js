@@ -737,10 +737,10 @@ export function executeEventAction(state, mapBase, action, ctx) {
       const newUnit = {
         type: action.unitType, owner, gx: wgx, gy,
         x: wgx * 2 + (gy % 2), y: gy,
-        veteran: action.veteran ? 1 : 0, hpLost: 0, orders: 'none',
+        veteran: action.veteran ? 1 : 0, movesRemain: 0, orders: 'none',
         movesMade: 0, movesLeft: 0,
         homeCityId: 0xFFFF,
-        goToX: -1, goToY: -1, visFlag: 0xFF,
+        goToX: -1, goToY: -1, hpLost: 0xFF,
         commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
         prevInStack: -1, nextInStack: -1,
       };

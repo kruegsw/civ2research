@@ -2924,7 +2924,7 @@ const Civ2CityDialog = {
 
       // HP bar — offset (0,2) from shield, 12×3px at full res
       const maxHp = Civ2Renderer.UNIT_MAX_HP[u.type] || 10;
-      const curHp = Math.max(0, maxHp - u.hpLost);
+      const curHp = Math.max(0, maxHp - u.movesRemain);
       const barW = 12 * scale, barH = Math.max(1, 3 * scale);
       const barX = shieldX, barY = shieldY + 2 * scale;
       const greenW = Math.floor((curHp / maxHp) * barW);

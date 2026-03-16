@@ -16,13 +16,13 @@ import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, U
  * Damaged units have reduced MP: baseMP * currentHP / maxHP, rounded up.
  * Minimum floor: MOVEMENT_MULTIPLIER (1 full MP = 3 thirds).
  *
- * @param {object} unit - unit object { type, hpLost }
+ * @param {object} unit - unit object { type, movesRemain }
  * @returns {number} effective movement points in movement thirds
  */
 export function calcEffectiveMovementPoints(unit) {
   const baseMP = (UNIT_MOVE_POINTS[unit.type] || 1) * MOVEMENT_MULTIPLIER;
   const maxHP = UNIT_HP[unit.type] || 1;
-  const currentHP = maxHP - (unit.hpLost || 0);
+  const currentHP = maxHP - (unit.movesRemain || 0);
   if (currentHP >= maxHP) return baseMP;
   // Damaged: scale proportionally, round up, floor at 1 full MP
   const effectiveMP = Math.ceil(baseMP * currentHP / maxHP);
