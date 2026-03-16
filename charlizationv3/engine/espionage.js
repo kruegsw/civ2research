@@ -459,3 +459,79 @@ function adjustAttitudeHelper(state, civSlot, targetCiv, delta) {
   civ.attitudes[targetCiv] = Math.max(-100, Math.min(100, cur + delta));
   state.civs[civSlot] = civ;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// J.1: Spy escape teleport — surviving spy teleports to nearest
+//      friendly city instead of remaining at hostile location
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Teleport a surviving spy to the nearest friendly city after an operation.
+ * Binary ref: when spy survives (checkSpySurvival returns true), the spy
+ * is moved to the nearest own city rather than staying at the target.
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map accessor
+ * @param {number} unitIndex - index of the spy in state.units
+ * @returns {boolean} true if teleported, false if no city found
+ */
+export function spyEscapeTeleport(state, mapBase, unitIndex) {
+  const spy = state.units[unitIndex];
+  if (!spy || spy.gx < 0) return false;
+
+  let bestCi = -1, bestDist = Infinity;
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    const c = state.cities[ci];
+    if (c.owner !== spy.owner || c.size <= 0) continue;
+    const d = tileDist(spy.gx, spy.gy, c.gx, c.gy, mapBase.mw, mapBase.wraps);
+    if (d < bestDist) { bestDist = d; bestCi = ci; }
+  }
+
+  if (bestCi < 0) return false;
+
+  const dest = state.cities[bestCi];
+  state.units = [...state.units];
+  state.units[unitIndex] = {
+    ...spy,
+    gx: dest.gx, gy: dest.gy,
+    x: dest.gx * 2 + (dest.gy % 2), y: dest.gy,
+    orders: 'none', movesLeft: 0,
+  };
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// J.2: Lone unit bribery validation — cannot bribe a unit if it's
+//      the only unit on the tile AND there's a city there
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Validate whether a unit can be bribed. In Civ2, you cannot bribe:
+ * - Units in a city if they're the only defender (would capture city for free)
+ * - Units belonging to your own civ
+ * - Units that are already at coordinates < 0 (dead)
+ *
+ * @param {object} state - game state
+ * @param {number} targetIndex - index of unit to bribe
+ * @param {number} spyCiv - civ attempting the bribe
+ * @returns {{ valid: boolean, reason: string }}
+ */
+export function validateBribery(state, targetIndex, spyCiv) {
+  const target = state.units[targetIndex];
+  if (!target || target.gx < 0) return { valid: false, reason: 'Invalid target' };
+  if (target.owner === spyCiv) return { valid: false, reason: 'Cannot bribe own unit' };
+  if (target.owner === 0) return { valid: false, reason: 'Cannot bribe barbarian units' };
+
+  // Check if target is the only unit on a city tile (lone defender)
+  const onCity = state.cities.some(c =>
+    c.gx === target.gx && c.gy === target.gy && c.owner === target.owner && c.size > 0);
+  if (onCity) {
+    const unitsOnTile = state.units.filter(u =>
+      u.gx === target.gx && u.gy === target.gy && u.owner === target.owner && u.gx >= 0);
+    if (unitsOnTile.length <= 1) {
+      return { valid: false, reason: 'Cannot bribe sole city defender' };
+    }
+  }
+
+  return { valid: true, reason: '' };
+}
