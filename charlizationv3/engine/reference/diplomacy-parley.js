@@ -897,7 +897,7 @@ export const AI_VS_AI_DIPLOMACY = {
     sourceAddr: '0x0055D8D8',
   },
   firstContact: {
-    initialTreaty: 'set_treaty_flag(civA, civB, 0x401) — contact + ceasefire',
+    initialTreaty: 'set_treaty_flag(civA, civB, 0x401) — CONTACT(0x01) + PERIODIC_FLAG_10(0x400)',
     recentContactFlag: 'set_treaty_flag(civA, civB, 0x4000)',
     sourceAddr: '0x0055D8D8',
   },
@@ -1172,8 +1172,8 @@ export const DIPLO_WONDER_EFFECTS = {
     effects: ['techDemand += techDemand / 4 (25% bonus to tech demand value)'],
     sourceAddr: '0x0045705E',
   },
-  STATUE_OF_LIBERTY: {
-    wonderId: 0x13, // 19
+  EIFFEL_TOWER: {
+    wonderId: 0x14, // 20 — raw C FUN_00456f8b/FUN_0045ac71 both check wonder 0x14
     effects: [
       'patience threshold += 1',                                  // @ 0x00456F8B
       'War declaration: patience penalty skipped',                 // @ 0x0045AC71
@@ -1438,9 +1438,9 @@ export const SENATE_WAR_CHECK = {
   appliesToGovt: 'government >= 5 (Republic and Democracy)',
   betrayalThreshold: {
     base: 0,
-    embassy: 'if treaty & 0x10 (embassy): threshold = 25',
+    captureVendetta: 'if treaty_byte1 & 0x10 (CAPTURE_VENDETTA / word 0x1000): threshold = 25',
     unitedNations: 'if has_wonder(United Nations, 0x18): threshold = 50',
-    patienceModifier: 'threshold = clamp(threshold + patience * 15, 0, 75)',
+    toleranceModifier: 'threshold = clamp(threshold + tolerance * 15, 0, 75)',  // DAT_0064c6be = tolerance, NOT patience
   },
   democracyRequires: 'senate override flag (civ.flags & 0x04)',
   higherGovt: 'government >= 6: always allowed',

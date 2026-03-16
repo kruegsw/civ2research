@@ -384,7 +384,7 @@ export const INTELLIGENCE_REPORT = {
     columns: 3,            // 3-column layout for city list
     perCityDisplay: {
       name: true,
-      wallsIcon: 0x99,     // @ FUN_0043039d: has_building(slot, CITY_WALLS=1)
+      wallsIcon: 0x99,     // @ FUN_0043039d: has_building(slot, PALACE=1)  // building 1 = Palace, NOT City Walls(8)
       tradeInfo: {
         threshold: -0x26,  // city.supply_demand_byte > -0x26 shows trade
         commodityIconId: 0xF4,
@@ -1497,12 +1497,12 @@ export const AI_MILITARY_ADVISOR = {
   remainingAssessments: {
     result4: { value: 4, condition: 'No cities with barracks' },
     result6: { value: 6, condition: 'Has barracks, has enemies or is not advanced era' },
-    result7: { value: 7, condition: 'Has barracks, no hatred flags (0x20), era > 4' },
+    result7: { value: 7, condition: 'Has barracks, no hatred flags (0x20), rank > 4' },
   },
 
   hatredFlag: 0x20,  // @ DAT_0064c6c1[civ * 0x594 + otherCiv * 4] & 0x20
   rankLookup: '@ DAT_00655c22[civId]',  // byte, civ rank (0=most advanced); same array as scoring ranking
-  eraAdvancedThreshold: 4,  // era > 4 for "at peace" assessment
+  rankAdvancedThreshold: 4,  // rank > 4 for "at peace" assessment (DAT_00655c22 = power rank, not era)
 };
 
 // ============================================================================
@@ -2100,16 +2100,17 @@ export const DA_VINCIS_WORKSHOP = {
   },
 
   advancedUpgrade: {
-    // If unit role == 1 (defend) and attack < threshold and has Gunpowder: upgrade to land unit 0x23
+    // If unit role == 1 (defend) and defense < threshold and has Gunpowder: upgrade to land unit 0x23
+    // Raw C: DAT_0064b1c5 = defense field (offset 0x0D), NOT attack (0x0C)
     techId: 0x23,        // Gunpowder prerequisite for advanced upgrade
-    attackThreshold: '@ DAT_0064b251 (global attack threshold)',
-    condition: 'role == 1 AND attack < threshold AND civ_has_tech(civId, 0x23)',
+    defenseThreshold: '@ DAT_0064b251 (global defense threshold)',
+    condition: 'role == 1 AND defense < threshold AND civ_has_tech(civId, 0x23)',
     upgradeTo: 0x23,     // land unit type for advanced upgrade
   },
 
   upgradeSearch: {
     // For each unit: find highest-tier replacement with same role, matching prereq tech, higher stats
-    algorithm: 'Iterate all 0x3E unit types, find best match where prereqTech == obsoleteTech AND same role AND attack >= current AND defense >= current',
+    algorithm: 'Iterate all 0x3E unit types, find best match where prereqTech == obsoleteTech AND same role AND hold >= current (single field DAT_0064b1c9, offset 0x11)',
     notification: {
       singlePlayer: 'dialog "UPGRADE" with old/new unit names',
       multiplayer: 'network message 0x3E via FUN_00511880',
@@ -3841,7 +3842,7 @@ export const UNIT_STACK_QUERIES = {
     1:  'sum of defense',
     2:  'unit count (also 0xB)',
     3:  'sum of attack',
-    4:  'airborne count (air with prev link)',
+    4:  'loaded unit count (role==1 with prev stack link)',  // raw C checks role field, not domain
     5:  'sea unit count',
     6:  'cargo balance (+holdCapacity for ships, -1 for ground)',
     7:  'multi-range air count (range > 1)',
@@ -4987,7 +4988,7 @@ export const GARRISON_PROXIMITY = {
   tileClaimFlag: 0x10,
 
   tradeCapabilityAddr: 'DAT_006A6574',
-  superhighwaysBuildingId: 0x43,
+  railroadTechCheck: 0x43,  // raw C: hasTech(civ, 0x43) — tech check, NOT building ID
   harborCheckBuildingId: 0x20,
 
   sourceAddr: '0x004E7967',
