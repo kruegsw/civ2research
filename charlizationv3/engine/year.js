@@ -19,7 +19,8 @@ const SCHEDULE = [
  * @returns {string} e.g. "4000 B.C.", "A.D. 1", "A.D. 1994"
  */
 export function getGameYear(turnsPassed) {
-  const turn = turnsPassed || 0;
+  // Binary: if (param_1 != 0) param_1-- before walking table
+  const turn = Math.max(0, (turnsPassed || 0) - 1);
   let year = -4000, t = 0;
   for (const seg of SCHEDULE) {
     const turnsInSeg = Math.min(turn, seg.until) - t;
