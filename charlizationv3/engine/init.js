@@ -18,6 +18,8 @@ import {
 } from './defs.js';
 import { updateVisibility } from './visibility.js';
 import { assignContinentBodyIds } from './mapgen.js';
+import { SeededRNG } from './rng.js';
+import { parseEvents, dispatchEvents, EVENT_SCENARIO_LOADED } from './events.js';
 
 // ── Difficulty name → numeric index (Civ2: 0=Chieftain..5=Deity) ──
 const DIFFICULTY_INDEX = {
@@ -76,6 +78,45 @@ export function initFromSav(parsed, seatList) {
   // peace, alliance). We convert to the reducer's flat map format: "civA-civB" → status.
   const treaties = buildTreatiesFromSav(parsed.civs, civsAlive);
 
+  // ── Seeded RNG: derive seed from map seed + turn number for determinism ──
+  const rngSeed = (parsed.mapSeed ?? 42) ^ ((parsed.gameState?.turnsPassed ?? 0) * 997);
+  const rng = new SeededRNG(rngSeed);
+
+  // ── Parse scenario events if present ──
+  const scenarioEvents = parsed.events?.text
+    ? parseEvents(parsed.events.text, parsed.civs?.map(c => c?.name))
+    : [];
+
+  // ── Q.4: Detect scenario and parse scenario-specific data ──
+  const isScenario = !!(parsed.header?.isScn || parsed.header?.isScenarioSave);
+  let scenarioRules = null;
+  let scenarioTechRestrictions = null;
+
+  if (isScenario) {
+    // Parse custom RULES.TXT overrides if the scenario embeds them
+    // The scenarioBlock (100 bytes) contains scenario flags and metadata
+    const scenBlock = parsed.tail?.scenarioBlock;
+    if (scenBlock && scenBlock.length >= 100) {
+      // Scenario flags byte at offset 0-1 of scenarioBlock:
+      //   bit 0: don't allow tech advances beyond start
+      //   bit 1: don't allow conquest victory
+      //   bit 2: fixed map (no exploration)
+      //   bit 3: fixed civs (no civ destruction)
+      const scenFlags = scenBlock[0] | (scenBlock[1] << 8);
+      scenarioRules = {
+        noTechAdvance: !!(scenFlags & 0x01),
+        noConquestVictory: !!(scenFlags & 0x02),
+        fixedMap: !!(scenFlags & 0x04),
+        fixedCivs: !!(scenFlags & 0x08),
+      };
+
+      // Tech restrictions: if noTechAdvance flag is set, civs cannot research
+      if (scenarioRules.noTechAdvance) {
+        scenarioTechRestrictions = { noResearch: true };
+      }
+    }
+  }
+
   const gameState = {
     units,
     cities: parsed.cities,
@@ -87,6 +128,8 @@ export function initFromSav(parsed, seatList) {
     mapRevealed: parsed.mapRevealed,
     turn: { number: parsed.gameState?.turnsPassed ?? 0, activeCiv },
     version: 0,
+    rng,
+    scenarioEvents,
     // Seat→civ mapping: seat index maps to civ slot
     seatCivMap,
     humanPlayers,
@@ -94,6 +137,11 @@ export function initFromSav(parsed, seatList) {
     wonders: parsed.gameState?.wonders || initWonders(),
     difficulty: parsed.gameState?.difficulty || 'chieftain',
     barbarianActivity: parsed.gameState?.barbarianActivity || 'normal',
+    // Q.4: Scenario-specific state
+    isScenario,
+    scenarioRules,
+    scenarioTechRestrictions,
+    scenarioName: parsed.tail?.scenarioName || null,
     // Extra fields renderers need
     unitBySaveIndex: parsed.unitBySaveIndex,
     allUnits: parsed.allUnits,
@@ -104,6 +152,11 @@ export function initFromSav(parsed, seatList) {
     gameState: parsed.gameState,
     validation: parsed.validation,
   };
+
+  // ── Q.4: Fire SCENARIO_LOADED events if applicable ──
+  if (isScenario && scenarioEvents.length > 0) {
+    dispatchEvents(gameState, mapBase, EVENT_SCENARIO_LOADED, {});
+  }
 
   return { mapBase, gameState };
 }
@@ -131,6 +184,9 @@ export function initNewGame(mapResult, seatList) {
 
   const civCount = seatList.length;
 
+  // ── Seeded RNG: create early so createNewCiv can use it ──
+  const rng = new SeededRNG(mapResult.mapSeed ?? 42);
+
   // ── Initialize civs with createNewCiv ──
   const civs = []; // slot 0 = barbarians
   const civTechCounts = new Array(8).fill(0);
@@ -147,6 +203,7 @@ export function initNewGame(mapResult, seatList) {
     techBeingResearched: 0xFF,
     rulesCivNumber: 0,
     attitudes: [0, 0, 0, 0, 0, 0, 0, 0],
+    reputation: 100,
   });
 
   // Slots 1..7: create civs (alive if civSlot <= civCount, otherwise dead placeholder)
@@ -154,7 +211,7 @@ export function initNewGame(mapResult, seatList) {
     const rulesCivNumber = civSlot - 1;
     if (civSlot <= civCount) {
       const seat = seatList[civSlot - 1];
-      const civ = createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, civTechCounts, seat);
+      const civ = createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, civTechCounts, seat, rng);
       civs.push(civ);
     } else {
       // Dead civ placeholder
@@ -168,6 +225,7 @@ export function initNewGame(mapResult, seatList) {
         techBeingResearched: 0xFF,
         rulesCivNumber,
         attitudes: [0, 0, 0, 0, 0, 0, 0, 0],
+        reputation: 100,
       });
     }
   }
@@ -242,6 +300,8 @@ export function initNewGame(mapResult, seatList) {
     difficulty: difficultyName,
     barbarianActivity: 'roaming',
     version: 0,
+    rng,
+    scenarioEvents: [],
     seatCivMap,
     humanPlayers,
     treaties: {},
@@ -267,9 +327,10 @@ export function initNewGame(mapResult, seatList) {
  * @param {Array<Set>} civTechs - per-civ tech sets (mutated: starting techs added)
  * @param {Array<number>} civTechCounts - per-civ tech counts (mutated)
  * @param {object} seat - seat info { seatIndex, name, ai, difficulty }
+ * @param {object} [rng] - SeededRNG instance (if null, falls back to Math.random)
  * @returns {object} civ data object
  */
-export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, civTechCounts, seat) {
+export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, civTechCounts, seat, rng) {
   const name = LEADERS_TXT_NAMES[rulesCivNumber] || `Civ ${civSlot}`;
 
   // Government: always start with Despotism (index 1)
@@ -296,14 +357,14 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
     if (j === 0) { attitudes[j] = 0; continue; } // barbarians
     // Randomize: rand() % 80 + 10 → range [10, 89]
     // For human targets: clamp(difficulty*5 + rand()%80 + 10, 10, 75)
-    attitudes[j] = Math.floor(Math.random() * 80) + 10;
+    attitudes[j] = (rng ? rng.nextInt(80) : Math.floor(Math.random() * 80)) + 10;
   }
 
-  // Grant starting techs based on difficulty level
-  // Pseudocode: for each advance with no prerequisites, grant with probability
-  // based on difficulty. Chieftain gets more, Deity gets fewer.
-  // Simplified: grant free techs based on difficulty tier
-  const techsToGrant = getStartingTechs(difficultyIdx);
+  // Q.3: Grant starting techs using seeded PRNG random selection from
+  // the no-prereq tech pool. Higher difficulty = fewer starting techs for
+  // human, more for AI on easier difficulties.
+  const isHuman = seat && !seat.ai;
+  const techsToGrant = getStartingTechs(difficultyIdx, isHuman, rng);
   for (const advId of techsToGrant) {
     civTechs[civSlot].add(advId);
   }
@@ -322,25 +383,60 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
     rulesCivNumber,
     difficulty: seat?.difficulty || undefined,
     attitudes,
+    reputation: 100, // G.5: perfect reputation at start
   };
 }
 
 /**
- * Determine starting techs based on difficulty level.
- * From pseudocode: at lower difficulties, civs get more free starting techs.
- * Chieftain(0): all 7 no-prereq techs
- * Warlord(1): 5-6 techs
- * Prince(2): 3-4 techs
- * King(3): 2 techs
- * Emperor(4): 1 tech
- * Deity(5): 0 techs
+ * Q.3: Determine starting techs using random selection from the no-prereq pool.
+ *
+ * Instead of a fixed list, randomly selects from all techs with no prerequisites
+ * (ADVANCE_PREREQS[i] === [-1,-1]). The count depends on difficulty:
+ *   Chieftain(0): 7 techs (all no-prereq)
+ *   Warlord(1):   5 techs
+ *   Prince(2):    3 techs
+ *   King(3):      2 techs
+ *   Emperor(4):   1 tech
+ *   Deity(5):     0 techs
+ *
+ * Human civs get the count for their difficulty. AI civs on easier
+ * difficulties get the same count as humans (the difficulty represents
+ * the game setting, not per-civ difficulty).
+ *
+ * Uses seeded PRNG for determinism so all civs in a game draw from
+ * the same RNG stream (ensuring reproducibility, not identical sets).
+ *
+ * @param {number} difficultyIdx - 0=chieftain..5=deity
+ * @param {boolean} isHuman - whether this civ is human-controlled
+ * @param {object} [rng] - SeededRNG instance
+ * @returns {number[]} array of advance IDs to grant
  */
-function getStartingTechs(difficultyIdx) {
-  // Number of free techs: max(0, 7 - difficultyIdx * 1.2) roughly
+function getStartingTechs(difficultyIdx, isHuman, rng) {
+  // Build pool of all no-prereq techs dynamically
+  const pool = [];
+  for (let i = 0; i < ADVANCE_PREREQS.length; i++) {
+    const [p1, p2] = ADVANCE_PREREQS[i];
+    if (p1 === -1 && p2 === -1) pool.push(i);
+  }
+
+  // Number of free techs per difficulty level
   const counts = [7, 5, 3, 2, 1, 0];
-  const count = counts[Math.min(difficultyIdx, 5)];
-  // Always grant in a consistent order (Alphabet first, then others)
-  return FREE_STARTING_TECHS.slice(0, count);
+  const count = Math.min(counts[Math.min(difficultyIdx, 5)], pool.length);
+
+  if (count === 0) return [];
+  if (count >= pool.length) return [...pool]; // grant all
+
+  // Fisher-Yates shuffle the pool using seeded RNG, then take first `count`
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = rng ? rng.nextInt(i + 1) : Math.floor(Math.random() * (i + 1));
+    const tmp = shuffled[i];
+    shuffled[i] = shuffled[j];
+    shuffled[j] = tmp;
+  }
+
+  // Return the first `count` techs, sorted by ID for consistency
+  return shuffled.slice(0, count).sort((a, b) => a - b);
 }
 
 // ═══════════════════════════════════════════════════════════════════

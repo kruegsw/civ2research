@@ -4,6 +4,9 @@
 // Phase E: Core diplomacy state mutations for treaty changes,
 // war declarations, alliance cascades, and asset transfers.
 //
+// Phase G.1-G.5: Treaty expiration timers, military withdrawal,
+// alliance shared visibility, full executeTransaction, reputation system.
+//
 // Ported from decompiled Civ2 functions:
 //   FUN_0045ac71 — diplo_declare_war
 //   FUN_0045a7a8 — diplo_sign_ceasefire
@@ -38,10 +41,13 @@ function haveContact(state, civA, civB) {
   return state.treaties[treatyKey(civA, civB)] !== undefined;
 }
 
-/** Set treaty status between two civs. */
+/** Set treaty status between two civs. Records treatyTurn for expiration tracking. */
 function setTreaty(state, civA, civB, status) {
   if (!state.treaties) state.treaties = {};
   state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: status };
+  // G.1: Record turn when treaty was signed (for ceasefire expiration)
+  if (!state.treatyTurns) state.treatyTurns = {};
+  state.treatyTurns = { ...state.treatyTurns, [treatyKey(civA, civB)]: state.turn?.number || 0 };
 }
 
 /** Ensure diplomacy tracking object exists for a civ pair. */
@@ -105,6 +111,205 @@ function clampAttitude(state, civSlot, targetCiv, min, max) {
 /** Check if civSlot is a human player. */
 function isHuman(state, civSlot) {
   return !!(state.civs?.[civSlot]?.isHuman);
+}
+
+// ── G.5: Reputation helpers ──
+
+/** Ceasefire expiration threshold in turns. */
+export const CEASEFIRE_EXPIRE_TURNS = 16;
+/** Withdrawal deadline after peace treaty (turns). */
+export const WITHDRAWAL_DEADLINE_TURNS = 2;
+/** Reputation decay interval (turns between +1 recovery). */
+export const REPUTATION_DECAY_INTERVAL = 16;
+
+/**
+ * Adjust a civ's reputation by delta, clamped to [0, 100].
+ * Lower reputation = less trustworthy.
+ */
+function adjustReputation(state, civSlot, delta) {
+  if (!state.civs?.[civSlot]) return;
+  state.civs = [...state.civs];
+  const civ = { ...state.civs[civSlot] };
+  const cur = civ.reputation ?? 100;
+  civ.reputation = Math.max(0, Math.min(100, cur + delta));
+  state.civs[civSlot] = civ;
+}
+
+/**
+ * Get a civ's current reputation score.
+ * @param {object} state
+ * @param {number} civSlot
+ * @returns {number} reputation 0-100 (100 = perfect)
+ */
+export function getReputation(state, civSlot) {
+  return state.civs?.[civSlot]?.reputation ?? 100;
+}
+
+/**
+ * Check if a civ's reputation is too low for treaty acceptance.
+ * Threshold: reputation < 40 means other civs refuse treaties.
+ * @param {object} state
+ * @param {number} civSlot
+ * @returns {boolean} true if reputation is too low
+ */
+export function isReputationTooLow(state, civSlot) {
+  return getReputation(state, civSlot) < 40;
+}
+
+/**
+ * Process diplomacy timers for END_TURN. Called from reducer.js.
+ *
+ * Handles:
+ *   G.1: Ceasefire expiration (16 turns)
+ *   G.2: Military withdrawal deadline enforcement
+ *   G.3: Alliance shared visibility per-turn update
+ *   G.5: Reputation decay (+1 per 16 turns toward 100)
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} turnNumber - current turn number
+ * @returns {object[]} events generated
+ */
+export function processDiplomacyTimers(state, mapBase, turnNumber) {
+  const events = [];
+
+  if (!state.treaties) return events;
+
+  const keys = Object.keys(state.treaties);
+
+  for (const key of keys) {
+    const treaty = state.treaties[key];
+    const [aStr, bStr] = key.split('-');
+    const civA = +aStr;
+    const civB = +bStr;
+
+    // Skip dead civs
+    if (!(state.civsAlive & (1 << civA)) || !(state.civsAlive & (1 << civB))) continue;
+
+    // G.1: Ceasefire expiration after 16 turns
+    if (treaty === 'ceasefire') {
+      const signedTurn = state.treatyTurns?.[key] ?? 0;
+      if (turnNumber - signedTurn >= CEASEFIRE_EXPIRE_TURNS) {
+        // Expire ceasefire → revert to no-treaty (war)
+        state.treaties = { ...state.treaties };
+        delete state.treaties[key];
+        // Clean up treatyTurns too
+        if (state.treatyTurns) {
+          state.treatyTurns = { ...state.treatyTurns };
+          delete state.treatyTurns[key];
+        }
+        events.push({
+          type: 'ceasefireExpired',
+          civA,
+          civB,
+          turn: turnNumber,
+        });
+      }
+    }
+
+    // G.2: Military withdrawal enforcement
+    if (treaty === 'peace' && state.withdrawalDeadlines?.[key] != null) {
+      const deadline = state.withdrawalDeadlines[key];
+      if (turnNumber >= deadline) {
+        // Check if either civ has units in the other's territory
+        const aInB = hasUnitsInTerritory(state, mapBase, civA, civB);
+        const bInA = hasUnitsInTerritory(state, mapBase, civB, civA);
+
+        if (aInB || bInA) {
+          // Treaty auto-breaks — declare war
+          setTreaty(state, civA, civB, 'war');
+          // Clear the withdrawal deadline
+          state.withdrawalDeadlines = { ...state.withdrawalDeadlines };
+          delete state.withdrawalDeadlines[key];
+          // Wake units
+          wakeUnitsNearEnemy(state, mapBase, civA, civB);
+          wakeUnitsNearEnemy(state, mapBase, civB, civA);
+          // Cancel trade routes
+          cancelTradeRoutes(state, civA, civB);
+          events.push({
+            type: 'peaceBrokenWithdrawal',
+            civA,
+            civB,
+            turn: turnNumber,
+            violator: aInB ? civA : civB,
+          });
+        } else {
+          // Withdrawal complete — remove deadline
+          state.withdrawalDeadlines = { ...state.withdrawalDeadlines };
+          delete state.withdrawalDeadlines[key];
+        }
+      }
+    }
+
+    // G.3: Alliance shared visibility per-turn update
+    if (treaty === 'alliance' && mapBase?.tileData) {
+      shareAllianceVisibility(state, mapBase, civA, civB);
+    }
+  }
+
+  // G.5: Reputation decay — every 16 turns, each civ recovers +1 reputation (toward 100)
+  if (turnNumber > 0 && (turnNumber % REPUTATION_DECAY_INTERVAL) === 0) {
+    if (state.civs) {
+      state.civs = [...state.civs];
+      for (let c = 1; c <= 7; c++) {
+        if (!(state.civsAlive & (1 << c))) continue;
+        const civ = state.civs[c];
+        if (!civ) continue;
+        const rep = civ.reputation ?? 100;
+        if (rep < 100) {
+          state.civs[c] = { ...civ, reputation: Math.min(100, rep + 1) };
+        }
+      }
+    }
+  }
+
+  return events;
+}
+
+/**
+ * Check if civSlot has any units on tiles owned by territoryCiv.
+ */
+function hasUnitsInTerritory(state, mapBase, civSlot, territoryCiv) {
+  if (!state.units || !mapBase.tileData) return false;
+  for (const u of state.units) {
+    if (!u || u.owner !== civSlot || u.gx < 0) continue;
+    const idx = u.gy * mapBase.mw + u.gx;
+    const tile = mapBase.tileData[idx];
+    if (tile && tile.tileOwnership === territoryCiv) return true;
+  }
+  return false;
+}
+
+/**
+ * G.3: Share current visibility between allied civs (per-turn update).
+ * Each civ sees what the other sees from their units and cities.
+ */
+function shareAllianceVisibility(state, mapBase, civA, civB) {
+  const bitA = 1 << civA;
+  const bitB = 1 << civB;
+
+  // Share visibility from units and cities of each allied civ
+  // Update tile visibility: if A can see it, B can too (and vice versa)
+  if (state.units) {
+    for (const u of state.units) {
+      if (!u || u.gx < 0) continue;
+      if (u.owner === civA) {
+        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civB, u.gx, u.gy, mapBase.wraps);
+      } else if (u.owner === civB) {
+        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civA, u.gx, u.gy, mapBase.wraps);
+      }
+    }
+  }
+  if (state.cities) {
+    for (const c of state.cities) {
+      if (!c || c.size <= 0) continue;
+      if (c.owner === civA) {
+        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civB, c.gx, c.gy, mapBase.wraps, 2);
+      } else if (c.owner === civB) {
+        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civA, c.gx, c.gy, mapBase.wraps, 2);
+      }
+    }
+  }
 }
 
 /** Get difficulty index for a civ (0-5). */
@@ -202,6 +407,9 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
       adjustAttitude(state, thirdParty, aggressor, -15);
     }
 
+    // G.5: Reputation penalty for breaking alliance (-60)
+    adjustReputation(state, aggressor, -60);
+
     // Set sneak attack flag
     const sKey = ensureDiplomacy(state, aggressor, target);
     state.diplomacy = {
@@ -221,8 +429,8 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
 
     recordTributeTurn(state, target, aggressor);
 
-  } else if (currentTreaty === 'peace' || currentTreaty === 'ceasefire') {
-    // ── Breaking peace/ceasefire — moderate reputation damage ──
+  } else if (currentTreaty === 'peace') {
+    // ── Breaking peace — significant reputation damage ──
     if (diffIdx > 0 && !hasStatueOfLiberty) {
       incrementPatience(state, aggressor);
     }
@@ -233,6 +441,43 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     if (thirdParty >= 0) {
       adjustAttitude(state, thirdParty, aggressor, -5);
     }
+
+    // G.5: Reputation penalty for breaking peace (-40)
+    adjustReputation(state, aggressor, -40);
+
+    // Set sneak attack flag
+    const sKey = ensureDiplomacy(state, aggressor, target);
+    state.diplomacy = {
+      ...state.diplomacy,
+      [sKey]: {
+        ...(state.diplomacy[sKey] || {}),
+        sneak: true, sneakTurn: state.turn?.number || 0,
+      },
+    };
+
+    setTreaty(state, aggressor, target, 'war');
+
+    // Activate counter-alliance wars
+    const allyResult = activateAllianceWars(state, mapBase, target, aggressor);
+    events.push(...allyResult.events);
+
+    recordTributeTurn(state, target, aggressor);
+
+  } else if (currentTreaty === 'ceasefire') {
+    // ── Breaking ceasefire — moderate reputation damage ──
+    if (diffIdx > 0 && !hasStatueOfLiberty) {
+      incrementPatience(state, aggressor);
+    }
+    if (thirdParty < 0) {
+      incrementPatience(state, aggressor);
+    }
+
+    if (thirdParty >= 0) {
+      adjustAttitude(state, thirdParty, aggressor, -5);
+    }
+
+    // G.5: Reputation penalty for breaking ceasefire (-20)
+    adjustReputation(state, aggressor, -20);
 
     // Set sneak attack flag
     const sKey = ensureDiplomacy(state, aggressor, target);
@@ -253,7 +498,7 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     recordTributeTurn(state, target, aggressor);
 
   } else {
-    // ── No treaty / first-time war — minimal reputation hit ──
+    // ── No treaty / first-time war (sneak attack if had contact) — reputation hit ──
     if (diffIdx > 0 && !hasStatueOfLiberty) {
       incrementPatience(state, aggressor);
     }
@@ -263,6 +508,11 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
 
     if (thirdParty >= 0) {
       adjustAttitude(state, thirdParty, aggressor, -25);
+    }
+
+    // G.5: Sneak attack reputation penalty (-80) if had contact but no treaty
+    if (haveContact(state, aggressor, target)) {
+      adjustReputation(state, aggressor, -80);
     }
 
     setTreaty(state, aggressor, target, 'war');
@@ -425,11 +675,20 @@ export function signPeaceTreaty(state, civA, civB) {
   // Record treaty turn
   recordTributeTurn(state, civB, civA);
 
+  // G.2: Military withdrawal clause — units in enemy territory must withdraw within 2 turns
+  const currentTurn = state.turn?.number || 0;
+  if (!state.withdrawalDeadlines) state.withdrawalDeadlines = {};
+  state.withdrawalDeadlines = {
+    ...state.withdrawalDeadlines,
+    [treatyKey(civA, civB)]: currentTurn + 2,
+  };
+
   events.push({
     type: 'treatySigned',
     treatyType: 'peace',
     civA,
     civB,
+    withdrawalDeadline: currentTurn + 2,
   });
 
   return { events };
@@ -469,6 +728,22 @@ export function formAlliance(state, mapBase, civA, civB) {
 
   // Record treaty turn
   recordTributeTurn(state, civA, civB);
+
+  // G.3: Alliance shared visibility — share full map both ways + auto-embassy
+  if (mapBase?.tileData) {
+    shareMaps(state, mapBase, civA, civB);
+    shareMaps(state, mapBase, civB, civA);
+  }
+
+  // G.3: Auto-establish embassy both ways
+  if (!state.diplomacy) state.diplomacy = {};
+  const embKeyAB = `${civA}-${civB}`;
+  const embKeyBA = `${civB}-${civA}`;
+  state.diplomacy = {
+    ...state.diplomacy,
+    [embKeyAB]: { ...(state.diplomacy[embKeyAB] || {}), embassy: true },
+    [embKeyBA]: { ...(state.diplomacy[embKeyBA] || {}), embassy: true },
+  };
 
   events.push({
     type: 'treatySigned',
@@ -626,6 +901,13 @@ export function executeTransaction(state, mapBase, offer) {
   const events = [];
   const { from, to } = offer;
 
+  // G.4: Validation — reject invalid transactions early
+  const validationError = validateTransaction(state, offer);
+  if (validationError) {
+    events.push({ type: 'transactionRejected', reason: validationError, from, to });
+    return { events };
+  }
+
   // ── Gold transfer ──
   if (offer.gold && offer.gold > 0) {
     const result = transferGold(state, from, to, offer.gold);
@@ -675,6 +957,12 @@ export function executeTransaction(state, mapBase, offer) {
     if (treatyResult) events.push(...treatyResult.events);
   }
 
+  // G.4: Demand withdraw troops — order enemy units out of your territory
+  if (offer.demandWithdraw) {
+    const withdrawResult = demandWithdrawTroops(state, mapBase, from, to);
+    events.push(...withdrawResult.events);
+  }
+
   // ── Check civ elimination after transfers ──
   for (const civ of [from, to]) {
     if (civ <= 0) continue;
@@ -685,6 +973,79 @@ export function executeTransaction(state, mapBase, offer) {
       events.push({ type: 'civEliminated', civSlot: civ });
     }
   }
+
+  return { events };
+}
+
+// ── G.4: Transaction validation ──
+
+/** Validate a diplomatic transaction before execution. Returns error string or null. */
+function validateTransaction(state, offer) {
+  const { from, to } = offer;
+
+  // Validate gold: can't give more than you have
+  if (offer.gold && offer.gold > 0) {
+    const available = state.civs?.[from]?.treasury || 0;
+    if (offer.gold > available) return 'Insufficient gold';
+  }
+
+  // Validate techs: can't give tech you don't have
+  if (offer.techs && offer.techs.length > 0) {
+    const fromTechs = state.civTechs?.[from];
+    if (!fromTechs) return 'No tech data for giver';
+    for (const techId of offer.techs) {
+      if (!fromTechs.has(techId)) return `Does not have tech ${techId}`;
+    }
+  }
+
+  // Validate cities: must own the city
+  if (offer.cities && offer.cities.length > 0) {
+    for (const ci of offer.cities) {
+      const city = state.cities?.[ci];
+      if (!city || city.owner !== from || city.size <= 0) return `Does not own city ${ci}`;
+    }
+  }
+
+  // Validate units: must own the unit
+  if (offer.units && offer.units.length > 0) {
+    for (const ui of offer.units) {
+      const unit = state.units?.[ui];
+      if (!unit || unit.owner !== from || unit.gx < 0) return `Does not own unit ${ui}`;
+    }
+  }
+
+  return null;
+}
+
+// ── G.4: Demand withdraw troops ──
+
+/**
+ * Demand that a civ withdraw its troops from your territory.
+ * Sets a withdrawal deadline; if not met, treaty auto-breaks in END_TURN.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} demander - civ demanding withdrawal
+ * @param {number} target - civ whose troops must withdraw
+ * @returns {{ events: object[] }}
+ */
+function demandWithdrawTroops(state, mapBase, demander, target) {
+  const events = [];
+  const currentTurn = state.turn?.number || 0;
+
+  // Set withdrawal deadline (2 turns to comply)
+  if (!state.withdrawalDeadlines) state.withdrawalDeadlines = {};
+  state.withdrawalDeadlines = {
+    ...state.withdrawalDeadlines,
+    [treatyKey(demander, target)]: currentTurn + 2,
+  };
+
+  events.push({
+    type: 'withdrawalDemanded',
+    demander,
+    target,
+    deadline: currentTurn + 2,
+  });
 
   return { events };
 }

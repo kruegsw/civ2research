@@ -72,7 +72,7 @@ export function calcFoodBoxWithDifficulty(citySize, difficulty, isHuman) {
  * @param {object} mapBase
  * @returns {{ newFoodInBox: number, newSize: number, events: Array }}
  */
-export function processCityFood(city, cityIndex, state, mapBase) {
+export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
   const events = [];
   const activeCiv = city.owner;
   const units = state.units || [];
@@ -81,6 +81,9 @@ export function processCityFood(city, cityIndex, state, mapBase) {
   const { surplus } = calcFoodSurplus(city, cityIndex, state, mapBase, units);
   let newFood = (city.foodInBox || 0) + surplus;
   let newSize = city.size;
+  let newWorked = city.workedTiles;
+  let newSpecs = city.specialists;
+  let cityDestroyed = false;
 
   // Difficulty and human detection for food box scaling
   const difficulty = state.difficulty || 'chieftain';
@@ -109,36 +112,27 @@ export function processCityFood(city, cityIndex, state, mapBase) {
     }
 
     // Aqueduct gate: can't grow past size 8 without Aqueduct (building 9)
+    let growthBlocked = null;
     if (newSize > 8 && !cityHasBuilding(city, 9)) {
       newSize = 8;
       newFood = growthThreshold - 1; // cap food just below threshold
-      events.push({
-        type: 'needsAqueduct',
-        cityName: city.name,
-        cityIndex,
-        civSlot: activeCiv,
-      });
+      growthBlocked = 'needsAqueduct';
     }
     // Sewer System gate: can't grow past size 12 without Sewer System (building 23)
     else if (newSize > 12 && !cityHasBuilding(city, 23)) {
       newSize = 12;
       newFood = growthThreshold - 1;
-      events.push({
-        type: 'needsSewer',
-        cityName: city.name,
-        cityIndex,
-        civSlot: activeCiv,
-      });
+      growthBlocked = 'needsSewer';
     }
-    // Successful growth
-    else {
-      events.push({
-        type: 'cityGrowth',
-        cityName: city.name,
-        cityIndex,
-        civSlot: activeCiv,
-        newSize,
-      });
+    // Successful growth — auto-assign new worker if callback provided
+    else if (callbacks?.autoAssignWorker) {
+      newWorked = callbacks.autoAssignWorker(city, cityIndex, newWorked, state, mapBase);
+    }
+
+    if (growthBlocked) {
+      events.push({ type: growthBlocked, cityName: city.name, cityIndex, civSlot: activeCiv });
+    } else {
+      events.push({ type: 'cityGrowth', cityName: city.name, cityIndex, civSlot: activeCiv, newSize });
     }
   } else if (newFood < 0) {
     // ── Famine ──
@@ -146,27 +140,29 @@ export function processCityFood(city, cityIndex, state, mapBase) {
 
     if (newSize > 1) {
       newSize--;
-      events.push({
-        type: 'famine',
-        cityName: city.name,
-        cityIndex,
-        civSlot: activeCiv,
-        newSize,
-      });
+      // Remove a specialist first, then worst worker
+      if (newSpecs.length > 0) {
+        newSpecs = newSpecs.slice(0, -1);
+      } else if (newWorked.length > 0 && callbacks?.removeWorstWorker) {
+        newWorked = callbacks.removeWorstWorker(city, cityIndex, newWorked, state, mapBase);
+      }
+      events.push({ type: 'famine', cityName: city.name, cityIndex, civSlot: activeCiv, newSize });
     } else {
       // City destroyed by famine (size 1 → 0)
       newSize = 0;
-      events.push({
-        type: 'cityDestroyed',
-        cityName: city.name,
-        cityIndex,
-        civSlot: activeCiv,
-        reason: 'famine',
-      });
+      cityDestroyed = true;
+      events.push({ type: 'cityDestroyed', cityName: city.name, cityIndex, civSlot: activeCiv, reason: 'famine' });
+      // Disband all units homed to this city
+      for (let ui = 0; ui < state.units.length; ui++) {
+        const u = state.units[ui];
+        if (u && u.homeCityIndex === cityIndex && u.gx >= 0) {
+          state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
+        }
+      }
     }
   }
 
-  return { newFoodInBox: newFood, newSize, events };
+  return { newFoodInBox: newFood, newSize, newWorked, newSpecs, cityDestroyed, events };
 }
 
 
@@ -649,6 +645,147 @@ export function handleCityDisorder(city, cityIndex, state, mapBase) {
 
 
 // ═══════════════════════════════════════════════════════════════════
+// D.1: Pollution and Nuclear Meltdown
+// Port of FUN_004f04dd (process_city_pollution)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate pollution chance and potentially place pollution or trigger
+ * nuclear meltdown for a city.
+ *
+ * Pollution chance formula:
+ *   pollutionChance = (citySize + factoryPollution + powerPlantPollution) - thresholdReductions
+ *
+ * Factory/Mfg. Plant each add shields/2 to pollution.
+ * Power Plant (19) / Nuclear Plant (21) add shields/2 to pollution.
+ * Hydro Plant (20) / Solar Plant (29) are clean — no pollution contribution.
+ * Recycling Center (18) reduces pollution by 2/3.
+ * Mass Transit (13) eliminates the population (citySize) component.
+ *
+ * Nuclear Meltdown: if city has Nuclear Plant (21) and NO Solar Plant (29),
+ * there is a small chance of meltdown each turn. On meltdown:
+ *   - City size halved
+ *   - Pollution placed on ALL tiles in city radius
+ *   - Nuclear Plant destroyed
+ *
+ * @param {object} city
+ * @param {number} cityIndex
+ * @param {object} state - mutable game state
+ * @param {object} mapBase
+ * @returns {{ events: Array, newSize: number|null, newBuildings: Set|null }}
+ */
+export function processCityPollution(city, cityIndex, state, mapBase) {
+  const events = [];
+  const activeCiv = city.owner;
+  const { netShields } = calcShieldProduction(city, cityIndex, state, mapBase, state.units || []);
+
+  // ── Nuclear Meltdown check ──
+  // Nuclear Plant (21) without Solar Plant (29): small meltdown chance
+  if (cityHasBuilding(city, 21) && !cityHasBuilding(city, 29)) {
+    // Meltdown chance: ~1/200 per turn (ported from binary)
+    const meltdownRoll = state.rng ? state.rng.nextInt(200) : Math.floor(Math.random() * 200);
+    if (meltdownRoll === 0) {
+      // ── MELTDOWN ──
+      const newSize = Math.max(1, Math.floor(city.size / 2));
+      const newBuildings = new Set(city.buildings);
+      newBuildings.delete(21); // Destroy Nuclear Plant
+
+      // Place pollution on ALL tiles in city radius
+      const parC = city.gy & 1;
+      for (let ri = 0; ri < 21; ri++) {
+        const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
+        const parT = ((city.gy + ddy) % 2 + 2) % 2;
+        const tgx = city.gx + ((parC + ddx - parT) >> 1);
+        const tgy = city.gy + ddy;
+        const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+        if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
+        const ter = mapBase.getTerrain(wgx, tgy);
+        if (ter === 10) continue; // skip ocean
+        const tileIdx = tgy * mapBase.mw + wgx;
+        if (mapBase.tileData[tileIdx]) {
+          mapBase.tileData[tileIdx].improvements = {
+            ...mapBase.tileData[tileIdx].improvements,
+            pollution: true,
+          };
+        }
+      }
+
+      events.push({
+        type: 'nuclearMeltdown', cityName: city.name, cityIndex,
+        civSlot: activeCiv, newSize,
+      });
+
+      return { events, newSize, newBuildings };
+    }
+  }
+
+  // ── Pollution chance calculation ──
+  // Population component (eliminated by Mass Transit)
+  let popComponent = cityHasBuilding(city, 13) ? 0 : city.size;
+
+  // Industrial pollution: Factory (15) and Mfg. Plant (16) each add shields/2
+  let industrialPollution = 0;
+  if (cityHasBuilding(city, 15)) industrialPollution += Math.floor(netShields / 2);
+  if (cityHasBuilding(city, 16)) industrialPollution += Math.floor(netShields / 2);
+
+  // Power plant pollution: Power Plant (19) and Nuclear Plant (21) add shields/2
+  // Hydro (20) and Solar (29) are clean — no pollution
+  let powerPollution = 0;
+  if (cityHasBuilding(city, 19) || cityHasBuilding(city, 21)) {
+    powerPollution += Math.floor(netShields / 2);
+  }
+
+  let pollutionChance = popComponent + industrialPollution + powerPollution;
+
+  // Recycling Center (18): reduces total by 2/3
+  if (cityHasBuilding(city, 18)) {
+    pollutionChance = Math.floor(pollutionChance / 3);
+  }
+
+  if (pollutionChance <= 0) return { events, newSize: null, newBuildings: null };
+
+  // Random roll: pollution triggers if roll < pollutionChance / 100
+  const rollVal = state.rng ? state.rng.random() : Math.random();
+  if (rollVal >= pollutionChance / 100) return { events, newSize: null, newBuildings: null };
+
+  // ── Place pollution on a random non-ocean, non-polluted tile in city radius ──
+  const parC = city.gy & 1;
+  const landTiles = [];
+  for (let ri = 0; ri < 21; ri++) {
+    const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
+    const parT = ((city.gy + ddy) % 2 + 2) % 2;
+    const tgx = city.gx + ((parC + ddx - parT) >> 1);
+    const tgy = city.gy + ddy;
+    const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+    if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
+    const ter = mapBase.getTerrain(wgx, tgy);
+    if (ter === 10) continue; // skip ocean
+    const imp = mapBase.getImprovements(wgx, tgy);
+    if (imp.pollution) continue; // already polluted
+    landTiles.push({ gx: wgx, gy: tgy });
+  }
+
+  if (landTiles.length > 0) {
+    const pickIdx = state.rng ? state.rng.nextInt(landTiles.length) : Math.floor(Math.random() * landTiles.length);
+    const pick = landTiles[pickIdx];
+    const pollIdx = pick.gy * mapBase.mw + pick.gx;
+    if (mapBase.tileData[pollIdx]) {
+      mapBase.tileData[pollIdx].improvements = {
+        ...mapBase.tileData[pollIdx].improvements,
+        pollution: true,
+      };
+    }
+    events.push({
+      type: 'pollution', cityName: city.name, cityIndex,
+      civSlot: activeCiv,
+    });
+  }
+
+  return { events, newSize: null, newBuildings: null };
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
 // A.5: processCityTurn orchestrator
 // Port of FUN_004f0a9c (process_city_turn)
 // ═══════════════════════════════════════════════════════════════════
@@ -692,71 +829,15 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
   // Re-read city after happiness update
   const cityAfterHap = state.cities[cityIndex];
 
-  // ── Step 2: Food processing ──
-  const { surplus } = calcFoodSurplus(cityAfterHap, cityIndex, state, mapBase, state.units);
-  let newFood = (cityAfterHap.foodInBox || 0) + surplus;
-  let newSize = cityAfterHap.size;
-  let newWorked = cityAfterHap.workedTiles;
-  let newSpecs = cityAfterHap.specialists;
+  // ── Step 2: Food processing (delegates to processCityFood) ──
+  const foodResult = processCityFood(cityAfterHap, cityIndex, state, mapBase, callbacks);
+  let newFood = foodResult.newFoodInBox;
+  let newSize = foodResult.newSize;
+  let newWorked = foodResult.newWorked;
+  let newSpecs = foodResult.newSpecs;
   let newBuildings = cityAfterHap.buildings;
-
-  const growthThreshold = calcFoodBoxSize(cityAfterHap.size);
-  const govt = getGovernment(cityAfterHap, state);
-  const wltkdGrowth = cityAfterHap.weLoveKingDay && surplus > 0 &&
-    (govt === 'republic' || govt === 'democracy');
-  const hasGranary = cityHasBuilding(cityAfterHap, 3) || hasWonderEffect(state, activeCiv, 0);
-
-  let cityDestroyed = false;
-
-  if (newFood >= growthThreshold || wltkdGrowth) {
-    // ── Growth ──
-    if (newFood >= growthThreshold) {
-      newSize++;
-      newFood = hasGranary ? Math.floor(growthThreshold / 2) : 0;
-    } else {
-      newSize++;
-    }
-    let growthBlocked = null;
-    if (newSize > 8 && !cityHasBuilding(cityAfterHap, 9)) {
-      newSize = 8;
-      newFood = growthThreshold - 1;
-      growthBlocked = 'needsAqueduct';
-    } else if (newSize > 12 && !cityHasBuilding(cityAfterHap, 23)) {
-      newSize = 12;
-      newFood = growthThreshold - 1;
-      growthBlocked = 'needsSewer';
-    } else if (callbacks?.autoAssignWorker) {
-      newWorked = callbacks.autoAssignWorker(cityAfterHap, cityIndex, newWorked, state, mapBase);
-    }
-    if (growthBlocked) {
-      events.push({ type: growthBlocked, cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv });
-    } else {
-      events.push({ type: 'cityGrowth', cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv, newSize });
-    }
-  } else if (newFood < 0) {
-    // ── Famine ──
-    newFood = 0;
-    if (newSize > 1) {
-      newSize--;
-      if (newSpecs.length > 0) {
-        newSpecs = newSpecs.slice(0, -1);
-      } else if (newWorked.length > 0 && callbacks?.removeWorstWorker) {
-        newWorked = callbacks.removeWorstWorker(cityAfterHap, cityIndex, newWorked, state, mapBase);
-      }
-      events.push({ type: 'famine', cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv, newSize });
-    } else {
-      newSize = 0;
-      cityDestroyed = true;
-      events.push({ type: 'cityDestroyed', cityName: cityAfterHap.name, cityIndex, civSlot: activeCiv, reason: 'famine' });
-      // Disband all units homed to this city
-      for (let ui = 0; ui < state.units.length; ui++) {
-        const u = state.units[ui];
-        if (u && u.homeCityIndex === cityIndex && u.gx >= 0) {
-          state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
-        }
-      }
-    }
-  }
+  let cityDestroyed = foodResult.cityDestroyed;
+  events.push(...foodResult.events);
 
   // ── Step 3: Shield production (via processCityProduction) ──
   const prodResult = processCityProduction(cityAfterHap, cityIndex, state, mapBase, callbacks);
@@ -790,6 +871,27 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
   if (!cityDestroyed) {
     const deficitResult = processUnitSupportDeficit(state.cities[cityIndex], cityIndex, state, mapBase);
     events.push(...deficitResult.events);
+  }
+
+  // NOTE: Building upkeep is handled at the civ level in END_TURN's
+  // trade/treasury section (reducer.js), NOT per-city here. This avoids
+  // double-counting maintenance. The payBuildingUpkeep() function is
+  // retained for potential future use but is not called by the orchestrator.
+
+  // ── Step 4b: Pollution and Nuclear Meltdown (D.1) ──
+  if (!cityDestroyed) {
+    const pollResult = processCityPollution(state.cities[cityIndex], cityIndex, state, mapBase);
+    events.push(...pollResult.events);
+    if (pollResult.newSize != null || pollResult.newBuildings != null) {
+      const curCity = state.cities[cityIndex];
+      state.cities[cityIndex] = {
+        ...curCity,
+        size: pollResult.newSize ?? curCity.size,
+        buildings: pollResult.newBuildings ?? curCity.buildings,
+        hasWalls: (pollResult.newBuildings ?? curCity.buildings).has(8),
+        hasPalace: (pollResult.newBuildings ?? curCity.buildings).has(1),
+      };
+    }
   }
 
   // ── Step 5: Disorder check (post-production) ──

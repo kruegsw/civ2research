@@ -72,7 +72,7 @@ const T_SWAMP = 8, T_JUNGLE = 9, T_OCEAN = 10;
 export function generateMap(settings = {}) {
   const mw = settings.width || 50;
   const mh = settings.height || 80;
-  const mapSeed = settings.seed ?? Math.floor(Math.random() * 65536);
+  const mapSeed = settings.seed ?? (settings.rng ? settings.rng.nextInt(65536) : Math.floor(Math.random() * 65536));
   const rng = new MsvcRng(mapSeed);
   const mapShape = settings.mapShape ?? 0;
   const wraps = mapShape === 0;
@@ -700,7 +700,7 @@ export function generateMap(settings = {}) {
   calculateFertility(tileData, mw, mh, wraps);
 
   // ── Goody huts: place on land tiles, sparse ──
-  placeGoodyHuts(tileData, mw, mh);
+  placeGoodyHuts(tileData, mw, mh, rng);
 
   return { mw, mh, mapShape, mapSeed, tileData };
 }
@@ -945,11 +945,11 @@ function calculateFertility(tileData, mw, mh, wraps) {
 /**
  * Place goody huts on ~2% of eligible land tiles.
  */
-function placeGoodyHuts(tileData, mw, mh) {
+function placeGoodyHuts(tileData, mw, mh, rng) {
   for (let i = 0; i < tileData.length; i++) {
     const t = tileData[i];
     if (t.terrain !== T_OCEAN && t.terrain !== T_GLACIER && t.terrain !== T_MOUNTAINS) {
-      if (Math.random() < 0.02) {
+      if (rng.random() < 0.02) {
         t.goodyHut = true;
       }
     }

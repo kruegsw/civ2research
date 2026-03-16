@@ -111,6 +111,9 @@ export function calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
   // Republic/Democracy: +1 trade if trade > 0
   if ((government === 'republic' || government === 'democracy') && trade > 0) trade += 1;
 
+  // D.2: WLTKD bonus — +1 trade on every tile that produces trade > 0
+  if (city.weLoveKingDay && trade > 0) trade += 1;
+
   // Superhighways (25) + road: +50%
   if (hasRoad && cityHasBuilding(city, 25))
     trade = trade + Math.floor(trade / 2);
@@ -495,14 +498,89 @@ export function calcBuildingMaintenance(city, gameState) {
 }
 
 /**
+ * D.5: Calculate ongoing trade route income for a city.
+ *
+ * Each active trade route contributes:
+ *   base = (cityA.tradeBase + cityB.tradeBase + distance) / 8
+ *
+ * Where tradeBase = grossTrade for each city. Modifiers:
+ *   - Railroad connection between cities: +50%
+ *   - Same continent (same landmass body ID): halved
+ *   - Foreign civ (different owner): +50%
+ *   - Demand bonus: +50% if commodity matches partner city's demand
+ *
+ * @param {object} city - the city with trade routes
+ * @param {number} cityIndex
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @returns {number} total ongoing trade route gold per turn
+ */
+export function calcTradeRouteIncome(city, cityIndex, gameState, mapBase) {
+  if (!city.tradeRoutes || city.tradeRoutes.length === 0) return 0;
+
+  const myGross = calcGrossTrade(city, cityIndex, gameState, mapBase);
+  let total = 0;
+
+  for (const route of city.tradeRoutes) {
+    const dest = gameState.cities[route.destCityIndex];
+    if (!dest || dest.size <= 0) continue;
+
+    const destGross = calcGrossTrade(dest, route.destCityIndex, gameState, mapBase);
+
+    // Distance (Manhattan distance on grid)
+    let dx = Math.abs(city.gx - dest.gx);
+    if (mapBase.wraps && dx > mapBase.mw / 2) dx = mapBase.mw - dx;
+    const dy = Math.abs(city.gy - dest.gy);
+    const distance = dx + dy;
+
+    let income = Math.floor((myGross + destGross + distance) / 8);
+
+    // Same continent: halved
+    if (mapBase.getBodyId) {
+      const myBody = mapBase.getBodyId(city.gx, city.gy);
+      const destBody = mapBase.getBodyId(dest.gx, dest.gy);
+      if (myBody === destBody && myBody >= 0) {
+        income = Math.floor(income / 2);
+      }
+    }
+
+    // Foreign civ: +50%
+    if (city.owner !== dest.owner) {
+      income = income + Math.floor(income / 2);
+    }
+
+    // Demand bonus: if commodity matches destination city's demand list, +50%
+    if (route.commodity != null && dest.demandList) {
+      if (dest.demandList.includes(route.commodity)) {
+        income = income + Math.floor(income / 2);
+      }
+    }
+
+    // Railroad connection: +50% (check if road path with railroad exists)
+    // Approximation: if both cities have railroads (via their center tiles having
+    // tech 67 Railroad), grant the bonus
+    if (gameState.civTechs?.[city.owner]?.has(67)) {
+      income = income + Math.floor(income / 2);
+    }
+
+    // Minimum 1 gold per active route
+    total += Math.max(1, income);
+  }
+
+  return total;
+}
+
+/**
  * Compute full trade output for a city.
- * Returns { grossTrade, corruption, netTrade, lux, tax, sci, maintenance }
+ * Returns { grossTrade, corruption, netTrade, lux, tax, sci, maintenance, tradeRouteIncome }
  */
 export function calcCityTrade(city, cityIndex, gameState, mapBase) {
   const grossTrade = calcGrossTrade(city, cityIndex, gameState, mapBase);
-  const corruption = calcTradeCorruption(city, grossTrade, gameState, mapBase);
-  const netTrade = grossTrade - corruption;
+  const tradeRouteIncome = calcTradeRouteIncome(city, cityIndex, gameState, mapBase);
+  const totalGross = grossTrade + tradeRouteIncome;
+  const corruption = calcTradeCorruption(city, totalGross, gameState, mapBase);
+  const netTrade = totalGross - corruption;
   const { lux, tax, sci } = calcTradeDistribution(netTrade, city, cityIndex, gameState);
   const maintenance = calcBuildingMaintenance(city, gameState);
-  return { grossTrade, corruption, netTrade, lux, tax, sci, maintenance };
+  return { grossTrade: totalGross, corruption, netTrade, lux, tax, sci, maintenance, tradeRouteIncome };
 }

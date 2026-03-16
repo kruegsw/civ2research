@@ -6,6 +6,12 @@
 //
 // Visibility radii from civ2mod.c addToVisibilityMap() (doubled-X offsets):
 //   Units: radius 1 (9 tiles), Cities: radius 2 (21 tiles)
+//
+// H.1: Terrain-based LOS — Hills/Mountains/Fortress/Watchtower grant
+//       extended visibility range for units standing on them.
+//   Hills (terrain 4):      +1 → radius 2 (21 tiles)
+//   Mountains (terrain 5):  +2 → radius 3 (37 tiles)
+//   Fortress improvement:   +1 visibility range
 // ═══════════════════════════════════════════════════════════════════
 
 const RADIUS_1 = [
@@ -16,9 +22,62 @@ const RADIUS_2 = [
   [-1,-3], [1,-3], [-2,-2], [2,-2], [-3,-1], [3,-1],
   [-3,1], [3,1], [-2,2], [2,2], [-1,3], [1,3]
 ];
+// Radius 3 offsets (for mountains +2 or hills+fortress): 37 tiles
+const RADIUS_3 = [
+  ...RADIUS_2,
+  [0,-4], [0,4], [4,0], [-4,0],
+  [2,-4], [-2,-4], [4,-2], [-4,-2],
+  [4,2], [-4,2], [2,4], [-2,4],
+];
+
+/** Pick the offset array for a given effective radius level (1/2/3). */
+function radiusOffsets(r) {
+  if (r >= 3) return RADIUS_3;
+  if (r >= 2) return RADIUS_2;
+  return RADIUS_1;
+}
+
+/**
+ * Determine effective visibility radius for a unit based on terrain/improvements.
+ * @param {object} mapData - must have tileData, mw (or accessor getTerrain/getImprovements)
+ * @param {number} gx - unit gx
+ * @param {number} gy - unit gy
+ * @returns {number} effective radius (1, 2, or 3)
+ */
+function unitVisRadius(mapData, gx, gy) {
+  let radius = 1;
+  // Read terrain — support both accessor-style and direct tileData
+  let terrain = -1;
+  let hasFortress = false;
+  if (mapData.getTerrain) {
+    terrain = mapData.getTerrain(gx, gy);
+    const imp = mapData.getImprovements ? mapData.getImprovements(gx, gy) : null;
+    hasFortress = !!(imp && imp.fortress);
+  } else if (mapData.tileData) {
+    const mw = mapData.mw;
+    const wraps = mapData.mapShape === 0;
+    const wgx = wraps ? ((gx % mw) + mw) % mw : gx;
+    if (gy >= 0 && gy < mapData.mh && wgx >= 0 && wgx < mw) {
+      const tile = mapData.tileData[gy * mw + wgx];
+      if (tile) {
+        terrain = tile.terrain;
+        hasFortress = !!(tile.improvements && tile.improvements.fortress);
+      }
+    }
+  }
+  // Hills: +1 visibility
+  if (terrain === 4) radius += 1;
+  // Mountains: +2 visibility
+  else if (terrain === 5) radius += 2;
+  // Fortress/Watchtower: +1 visibility
+  if (hasFortress) radius += 1;
+  // Cap at 3
+  return Math.min(radius, 3);
+}
 
 /**
  * Compute line-of-sight for a specific civ.
+ * H.1: Units on Hills/Mountains/Fortress get extended visibility.
  * @param {object} mapData - parsed save with mw, mh, mapShape, cities, units
  * @param {number} civSlot - civ index (0-7)
  * @returns {Uint8Array} mw*mh array: 1 = in LOS, 0 = not
@@ -45,7 +104,8 @@ export function computeLOS(mapData, civSlot) {
 
   for (const u of units) {
     if (u.owner !== civSlot || u.gx < 0) continue;
-    mark(u.x, u.y, RADIUS_1);
+    const r = unitVisRadius(mapData, u.gx, u.gy);
+    mark(u.x, u.y, radiusOffsets(r));
   }
   for (const c of cities) {
     if (c.owner !== civSlot) continue;
@@ -58,6 +118,7 @@ export function computeLOS(mapData, civSlot) {
 /**
  * Update persistent visibility (tile byte[4]) around a position.
  * Sets the exploration bit for the given civ on all tiles within the specified radius.
+ * H.1: For units (radius=1 or unspecified), terrain elevation and fortress boost the radius.
  *
  * @param {Array} tileData - mw*mh array of byte arrays
  * @param {number} mw - map width
@@ -72,7 +133,24 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
   const bit = 1 << civSlot;
   const mw2 = mw * 2;
   const dx = gx * 2 + (gy % 2); // doubled-X coordinate
-  const offsets = (radius === 2) ? RADIUS_2 : RADIUS_1;
+
+  // For units (radius !== 2 i.e. not city), apply terrain-based LOS boost
+  let effectiveRadius = radius || 1;
+  if (effectiveRadius !== 2) {
+    // Read terrain and improvements from tileData to determine boost
+    const wgx = wraps ? ((gx % mw) + mw) % mw : gx;
+    if (gy >= 0 && gy < mh && wgx >= 0 && wgx < mw) {
+      const tile = tileData[gy * mw + wgx];
+      if (tile) {
+        if (tile.terrain === 4) effectiveRadius += 1;       // Hills: +1
+        else if (tile.terrain === 5) effectiveRadius += 2;   // Mountains: +2
+        if (tile.improvements && tile.improvements.fortress) effectiveRadius += 1; // Fortress: +1
+        if (effectiveRadius > 3) effectiveRadius = 3;
+      }
+    }
+  }
+
+  const offsets = radiusOffsets(effectiveRadius);
 
   for (const [odx, ody] of offsets) {
     let ndx = dx + odx;
@@ -88,26 +166,52 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
   }
 }
 
-import { UNIT_SUBMARINE, UNIT_SUB_DETECTOR } from './defs.js';
+import { UNIT_SUBMARINE, UNIT_SUB_DETECTOR, UNIT_DOMAIN } from './defs.js';
 
 /**
  * Check if an enemy submarine is detected by the given civ.
- * A sub is detected if:
- *   - A friendly unit is on the same tile
- *   - A friendly destroyer (37) or AEGIS cruiser (39) is within 2 tiles
+ * H.3: Submarine detection rules (faithful to Civ2):
+ *   - A friendly unit on the same tile: always detected
+ *   - An adjacent friendly Destroyer/AEGIS Cruiser (UNIT_SUB_DETECTOR): detected
+ *   - An adjacent friendly city: detected
+ *   - If civ has Sonar tech (not yet tracked): all naval units detect adjacent subs
+ *   - Other adjacent naval units do NOT detect subs (unless Sonar)
+ *
+ * @param {object} sub - submarine unit
+ * @param {number} civSlot - detecting civ
+ * @param {Array} allUnits - all units in game
+ * @param {number} mw - map width
+ * @param {boolean} wraps - map wraps
+ * @param {Array} [cities] - all cities (for adjacent city detection)
+ * @param {boolean} [hasSonar=false] - whether detecting civ has Sonar tech
  */
-function isSubDetected(sub, civSlot, allUnits, mw, wraps) {
+function isSubDetected(sub, civSlot, allUnits, mw, wraps, cities, hasSonar) {
+  // Check adjacent cities (any of this civ's cities within 1 tile)
+  if (cities) {
+    for (const c of cities) {
+      if (c.owner !== civSlot || c.size <= 0) continue;
+      const cgx = c.gx != null ? c.gx : c.cx;
+      const cgy = c.gy != null ? c.gy : c.cy;
+      let dx = Math.abs(cgx - sub.gx);
+      if (wraps) dx = Math.min(dx, mw - dx);
+      const dy = Math.abs(cgy - sub.gy);
+      if (dx + dy <= 1) return true;
+    }
+  }
+
   for (const u of allUnits) {
     if (u.owner !== civSlot || u.gx < 0) continue;
-    // Same tile: detected
+    // Same tile: always detected
     if (u.gx === sub.gx && u.gy === sub.gy) return true;
-    // Detector within 2 tiles
-    if (UNIT_SUB_DETECTOR.has(u.type)) {
-      let dx = Math.abs(u.gx - sub.gx);
-      if (wraps) dx = Math.min(dx, mw - dx);
-      const dy = Math.abs(u.gy - sub.gy);
-      if (dx + dy <= 2) return true;
-    }
+    // Adjacency check (Manhattan distance <= 1 in gx,gy space)
+    let dx = Math.abs(u.gx - sub.gx);
+    if (wraps) dx = Math.min(dx, mw - dx);
+    const dy = Math.abs(u.gy - sub.gy);
+    if (dx + dy > 1) continue;
+    // Adjacent destroyer/AEGIS: always detect
+    if (UNIT_SUB_DETECTOR.has(u.type)) return true;
+    // Sonar tech: all naval units detect adjacent subs
+    if (hasSonar && (UNIT_DOMAIN[u.type] === 1)) return true;
   }
   return false;
 }
@@ -115,6 +219,10 @@ function isSubDetected(sub, civSlot, allUnits, mw, wraps) {
 /**
  * Filter game state for a specific civ's visibility.
  * Returns a copy with only visible units/cities.
+ *
+ * H.2: For explored-but-not-visible tiles, send stale snapshot (last-known state)
+ *       for cities — hide production, specialists, and current buildings.
+ * H.3: Pass cities array for adjacent-city submarine detection.
  *
  * @param {object} mapBase - accessor functions (mw, mh, tileData, etc.)
  * @param {object} gameState - full game state (units, cities, etc.)
@@ -126,7 +234,13 @@ export function filterStateForCiv(mapBase, gameState, civSlot) {
   const fowBit = 1 << civSlot;
 
   // Compute current LOS from this civ's units + cities
-  const los = computeLOS({ mw, mh, mapShape: mapBase.mapShape, cities: gameState.cities, units: gameState.units }, civSlot);
+  // Pass mapBase through so computeLOS can read terrain for H.1 elevation boost
+  const losInput = { mw, mh, mapShape: mapBase.mapShape, cities: gameState.cities, units: gameState.units };
+  // Attach tileData/accessors so unitVisRadius can read terrain
+  if (mapBase.tileData) losInput.tileData = mapBase.tileData;
+  if (mapBase.getTerrain) losInput.getTerrain = mapBase.getTerrain;
+  if (mapBase.getImprovements) losInput.getImprovements = mapBase.getImprovements;
+  const los = computeLOS(losInput, civSlot);
 
   // Filter units: own units always visible, others only in LOS
   // Also apply submarine stealth: enemy subs invisible unless detected
@@ -135,26 +249,39 @@ export function filterStateForCiv(mapBase, gameState, civSlot) {
     if (u.gx < 0) return false;
     const idx = u.gy * mw + ((u.gx % mw + mw) % mw);
     if (los[idx] !== 1) return false;
-    // Submarine stealth check
+    // Submarine stealth check (H.3: pass cities for adjacent city detection)
     if (UNIT_SUBMARINE.has(u.type)) {
-      return isSubDetected(u, civSlot, gameState.units, mw, mapBase.wraps);
+      return isSubDetected(u, civSlot, gameState.units, mw, mapBase.wraps, gameState.cities);
     }
     return true;
   });
 
   // Filter cities: visible if tile has been explored
+  // H.2: Explored but not in LOS — send stale snapshot (last-known state)
   const cities = [];
   for (const c of gameState.cities) {
-    const gx = (c.gx != null) ? c.gx : c.cx; // parser uses gx; some might use cx
+    const gx = (c.gx != null) ? c.gx : c.cx;
     const gy = (c.gy != null) ? c.gy : c.cy;
     const idx = gy * mw + ((gx % mw + mw) % mw);
     const vis = mapBase.tileData[idx].visibility;
     if (!(vis & fowBit)) continue; // unexplored, omit
     if (los[idx]) {
       cities.push(c); // in LOS: full info
+      // H.2: Update last-known snapshot for this city
+      updateLastSeen(gameState, civSlot, c);
     } else {
-      // Explored but not in LOS: hide current details
-      cities.push({ ...c, size: c.size }); // send as-is for now (future: last-known)
+      // H.2: Explored but not in LOS — send stale/stripped info
+      const lastSeen = getLastSeen(gameState, civSlot, gx, gy);
+      if (lastSeen) {
+        cities.push(lastSeen);
+      } else {
+        // No last-seen data yet — send minimal info (name, owner, location, last-known size)
+        cities.push({
+          name: c.name, owner: c.owner, gx: c.gx, gy: c.gy,
+          cx: c.cx, cy: c.cy, size: c.size,
+          fogOfWar: true,
+        });
+      }
     }
   }
 
@@ -169,4 +296,38 @@ export function filterStateForCiv(mapBase, gameState, civSlot) {
       return { name: civ.name, style: civ.style, government: civ.government, rulesCivNumber: civ.rulesCivNumber };
     }) : null,
   };
+}
+
+// ── H.2: Last-seen city snapshot storage ──
+// Stores per-civ snapshots of cities when they were last in LOS.
+// Uses gameState.lastSeenCities[civSlot] = Map<"gx,gy" → snapshot>
+
+/**
+ * Save a stripped snapshot of a city into the civ's last-seen cache.
+ * Called when a city is currently in LOS.
+ */
+function updateLastSeen(gameState, civSlot, city) {
+  if (!gameState.lastSeenCities) gameState.lastSeenCities = {};
+  if (!gameState.lastSeenCities[civSlot]) gameState.lastSeenCities[civSlot] = {};
+  const gx = city.gx != null ? city.gx : city.cx;
+  const gy = city.gy != null ? city.gy : city.cy;
+  const key = `${gx},${gy}`;
+  // Store a minimal snapshot — enough for the client to render, but not revealing current state
+  gameState.lastSeenCities[civSlot][key] = {
+    name: city.name,
+    owner: city.owner,
+    gx: city.gx, gy: city.gy,
+    cx: city.cx, cy: city.cy,
+    size: city.size,
+    hasWalls: city.hasWalls,
+    fogOfWar: true,
+  };
+}
+
+/**
+ * Retrieve the last-seen snapshot for a city at the given position.
+ */
+function getLastSeen(gameState, civSlot, gx, gy) {
+  if (!gameState.lastSeenCities || !gameState.lastSeenCities[civSlot]) return null;
+  return gameState.lastSeenCities[civSlot][`${gx},${gy}`] || null;
 }

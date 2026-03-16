@@ -274,6 +274,10 @@ export function parseEvents(eventsText, civNames) {
         currentEvent.triggerType = EVENT_NO_SCHISM;
       } else if (upper === 'RECEIVEDTECHNOLOGY') {
         currentEvent.triggerType = EVENT_RECEIVED_TECH;
+      } else if (upper === 'NOCITIES') {
+        currentEvent.triggerType = EVENT_NO_CITIES;
+      } else if (upper === 'CITYPRODUCTION') {
+        currentEvent.triggerType = EVENT_CITY_PRODUCTION;
       } else {
         // Parse condition key=value pairs
         const kv = parseKeyValue(line);
@@ -317,6 +321,19 @@ export function parseEvents(eventsText, civNames) {
               break;
             case 'listenertype':
               currentEvent.conditions.listenerType = kv.value.toUpperCase();
+              break;
+            // J.4: Additional condition keys for NOCITIES and CITYPRODUCTION
+            case 'builder':
+              currentEvent.conditions.builder = resolveCivName(kv.value, civNames);
+              break;
+            case 'item':
+            case 'production':
+              // Parse item for CITYPRODUCTION: can be unit name, improvement name, or wonder name
+              currentEvent.conditions.productionItem = kv.value;
+              break;
+            // J.4: HAS_TECH condition — check if civ has specific tech
+            case 'hastech':
+              currentEvent.conditions.hasTech = resolveTechName(kv.value);
               break;
           }
         }
@@ -439,7 +456,18 @@ export function parseEvents(eventsText, civNames) {
       }
 
       if (upper === 'DONTPLAYWONDERS') {
+        // J.5: Parse DONTPLAYWONDERS as a no-op action (we don't play wonder movies)
+        currentAction = { type: 'dontPlayWonders' };
+        currentEvent.actions.push(currentAction);
         currentEvent.actionFlags |= ACTION_DONT_PLAY_WONDERS;
+        continue;
+      }
+
+      if (upper === 'TRANSPORT') {
+        // J.5: TRANSPORT action — block negotiation with specific civs
+        currentAction = { type: 'transport', who: ANYBODY, whom: ANYBODY };
+        currentEvent.actions.push(currentAction);
+        currentEvent.actionFlags |= ACTION_TRANSPORT;
         continue;
       }
 
@@ -488,8 +516,15 @@ export function parseEvents(eventsText, civNames) {
               currentAction.numberToMove = kv.value.toUpperCase() === 'ALL' ? 'ALL' : parseInt(kv.value, 10);
               break;
             case 'moveto': {
-              const parts = kv.value.split(',').map(s => parseInt(s.trim(), 10));
-              if (parts.length >= 2) currentAction.moveTo = { x: parts[0], y: parts[1] };
+              // J.5: Support both coordinate pairs (x,y) and city name variant
+              const parts = kv.value.split(',').map(s => s.trim());
+              const nums = parts.map(s => parseInt(s, 10));
+              if (parts.length >= 2 && !isNaN(nums[0]) && !isNaN(nums[1])) {
+                currentAction.moveTo = { x: nums[0], y: nums[1] };
+              } else {
+                // City name variant: moveto=CityName
+                currentAction.moveToCityName = kv.value.trim();
+              }
               break;
             }
             case 'maprect': {
@@ -530,11 +565,20 @@ export function parseEvents(eventsText, civNames) {
  * @param {object} ctx - trigger context
  * @returns {boolean} true if the event should fire
  */
-function triggerMatches(evt, triggerType, ctx) {
+function triggerMatches(evt, triggerType, ctx, rng) {
   if (evt.triggerType !== triggerType) return false;
   if (evt.justOnce && evt.fired) return false;
 
   const c = evt.conditions;
+
+  // J.4: Universal HAS_TECH condition — applies to any trigger type
+  if (c.hasTech != null && c.hasTech >= 0) {
+    const checkCiv = c.receiver ?? c.attacker ?? c.defender ?? ctx.civSlot;
+    const resolvedCiv = (checkCiv != null && checkCiv !== ANYBODY) ? checkCiv : ctx.civSlot;
+    if (resolvedCiv != null && resolvedCiv >= 0 && ctx.gameState?.civTechs?.[resolvedCiv]) {
+      if (!ctx.gameState.civTechs[resolvedCiv].has(c.hasTech)) return false;
+    }
+  }
 
   switch (triggerType) {
     case EVENT_TURN:
@@ -550,7 +594,7 @@ function triggerMatches(evt, triggerType, ctx) {
       // Random trigger: 1/denominator chance
       const denom = c.denominator || 1;
       if (denom < 2) return true;
-      return Math.floor(Math.random() * denom) + 1 === denom;
+      return (rng ? rng.nextInt(denom) : Math.floor(Math.random() * denom)) + 1 === denom;
     }
 
     case EVENT_UNIT_KILLED:
@@ -578,6 +622,15 @@ function triggerMatches(evt, triggerType, ctx) {
       // Negotiation: match talker and listener
       if (c.talker != null && c.talker !== ANYBODY && c.talker !== ctx.talker) return false;
       if (c.listener != null && c.listener !== ANYBODY && c.listener !== ctx.listener) return false;
+      // J.4: Match talkerType/listenerType if specified (HUMAN/COMPUTER/HUMANORCOMPUTER)
+      if (c.talkerType && c.talkerType !== 'HUMANORCOMPUTER') {
+        if (c.talkerType === 'HUMAN' && !ctx.talkerIsHuman) return false;
+        if (c.talkerType === 'COMPUTER' && ctx.talkerIsHuman) return false;
+      }
+      if (c.listenerType && c.listenerType !== 'HUMANORCOMPUTER') {
+        if (c.listenerType === 'HUMAN' && !ctx.listenerIsHuman) return false;
+        if (c.listenerType === 'COMPUTER' && ctx.listenerIsHuman) return false;
+      }
       return true;
 
     case EVENT_SCENARIO_LOADED:
@@ -587,12 +640,32 @@ function triggerMatches(evt, triggerType, ctx) {
       if (c.defender != null && c.defender !== ANYBODY && c.defender !== ctx.civSlot) return false;
       return true;
 
-    case EVENT_NO_CITIES:
+    case EVENT_NO_CITIES: {
+      // J.4: Check if specific civ has 0 cities
       if (c.defender != null && c.defender !== ANYBODY && c.defender !== ctx.civSlot) return false;
+      // Must verify the civ actually has no cities in the game state
+      const checkCiv = (c.defender != null && c.defender !== ANYBODY) ? c.defender : ctx.civSlot;
+      if (checkCiv == null || checkCiv < 0) return false;
+      if (ctx.gameState && ctx.gameState.cities) {
+        const hasCities = ctx.gameState.cities.some(city =>
+          city.owner === checkCiv && city.size > 0
+        );
+        if (hasCities) return false;
+      }
       return true;
+    }
 
-    case EVENT_CITY_PRODUCTION:
+    case EVENT_CITY_PRODUCTION: {
+      // J.4: Check if city is producing specific item
+      if (c.builder != null && c.builder !== ANYBODY && c.builder !== ctx.civSlot) return false;
+      if (c.productionItem && ctx.productionName) {
+        if (c.productionItem.toLowerCase() !== ctx.productionName.toLowerCase()) return false;
+      }
+      if (c.cityName && ctx.cityName) {
+        if (c.cityName.toLowerCase() !== ctx.cityName.toLowerCase()) return false;
+      }
       return true;
+    }
 
     default:
       return false;
@@ -628,9 +701,12 @@ export function executeEventAction(state, mapBase, action, ctx) {
   switch (action.type) {
     case 'text': {
       // Display message text — store in turnEvents for client to show
+      // J.4: %STRING substitution — replace %STRING0..%STRING9 with context values
+      const rawLines = action.textLines || [];
+      const substituted = rawLines.map(line => substituteEventText(line, ctx, state));
       return {
         type: 'scenarioText',
-        textLines: action.textLines || [],
+        textLines: substituted,
       };
     }
 
@@ -647,7 +723,7 @@ export function executeEventAction(state, mapBase, action, ctx) {
       if (locs.length === 0) return null;
 
       // Pick a random location from the list
-      const loc = locs[Math.floor(Math.random() * locs.length)];
+      const loc = locs[state.rng ? state.rng.nextInt(locs.length) : Math.floor(Math.random() * locs.length)];
 
       // Convert doubled-X to iso coordinates
       const gx = Math.floor((loc.x - (loc.y % 2)) / 2);
@@ -696,11 +772,25 @@ export function executeEventAction(state, mapBase, action, ctx) {
     case 'moveUnit': {
       // Teleport matching units within mapRect to moveTo destination
       const owner = resolveActionCiv(action.owner, ctx);
-      if (!action.moveTo) return null;
 
-      const destGx = Math.floor((action.moveTo.x - (action.moveTo.y % 2)) / 2);
-      const destGy = action.moveTo.y;
-      const wDestGx = mapBase.wraps ? ((destGx % mapBase.mw) + mapBase.mw) % mapBase.mw : destGx;
+      // J.5: Resolve destination — either coordinates or city name
+      let destGx, destGy, wDestGx;
+      if (action.moveTo) {
+        destGx = Math.floor((action.moveTo.x - (action.moveTo.y % 2)) / 2);
+        destGy = action.moveTo.y;
+        wDestGx = mapBase.wraps ? ((destGx % mapBase.mw) + mapBase.mw) % mapBase.mw : destGx;
+      } else if (action.moveToCityName && state.cities) {
+        // City-name variant: find city by name and use its coordinates
+        const targetCity = state.cities.find(c =>
+          c.size > 0 && c.name && c.name.toLowerCase() === action.moveToCityName.toLowerCase()
+        );
+        if (!targetCity) return null;
+        destGx = targetCity.gx;
+        destGy = targetCity.gy;
+        wDestGx = destGx;
+      } else {
+        return null;
+      }
 
       let moved = 0;
       const maxMove = action.numberToMove === 'ALL' ? Infinity : (action.numberToMove || 1);
@@ -838,9 +928,81 @@ export function executeEventAction(state, mapBase, action, ctx) {
       // Audio actions are no-ops in the multiplayer engine
       return null;
 
+    case 'dontPlayWonders':
+      // J.5: No-op — we don't play wonder movies
+      return null;
+
+    case 'transport': {
+      // J.5: TRANSPORT action — block negotiation with specific civs
+      // Set a flag on state so negotiation checks can respect it
+      const who = resolveActionCiv(action.who, ctx);
+      const whom = resolveActionCiv(action.whom, ctx);
+      if (!state.negotiationBlocks) state.negotiationBlocks = [];
+      state.negotiationBlocks = [...state.negotiationBlocks, { who, whom }];
+      return { type: 'scenarioTransport', who, whom };
+    }
+
     default:
       return null;
   }
+}
+
+/**
+ * J.4: Substitute %STRING0..%STRING9 and %NUMBER0..%NUMBER9 placeholders in event text.
+ *
+ * Standard Civ2 substitutions:
+ *   %STRING0 = attacker/talker civ name
+ *   %STRING1 = defender/listener civ name
+ *   %STRING2 = city name
+ *   %STRING3 = unit name
+ *   %STRING4 = tech name
+ *
+ * @param {string} line - text line with potential placeholders
+ * @param {object} ctx - trigger context
+ * @param {object} state - game state
+ * @returns {string} substituted text
+ */
+function substituteEventText(line, ctx, state) {
+  if (!line || !line.includes('%')) return line;
+
+  // Build substitution arrays
+  const civNames = state.civs ? state.civs.map(c => c?.name || c?.tribeName || '') : [];
+  const strings = [
+    // %STRING0 = attacker/talker civ name
+    civNames[ctx.attacker ?? ctx.talker ?? ctx.civSlot ?? 0] || '',
+    // %STRING1 = defender/listener civ name
+    civNames[ctx.defender ?? ctx.listener ?? 0] || '',
+    // %STRING2 = city name
+    ctx.cityName || '',
+    // %STRING3 = unit name
+    (ctx.unitType != null && ctx.unitType >= 0 && UNIT_NAMES[ctx.unitType]) || '',
+    // %STRING4 = tech name
+    (ctx.techId != null && ctx.techId >= 0 && ADVANCE_NAMES[ctx.techId]) || '',
+    // %STRING5..9 = empty (reserved)
+    '', '', '', '', '',
+  ];
+
+  let result = line;
+  // Replace %STRING0 through %STRING9
+  for (let i = 0; i <= 9; i++) {
+    const placeholder = `%STRING${i}`;
+    if (result.includes(placeholder)) {
+      result = result.split(placeholder).join(strings[i] || '');
+    }
+  }
+  // Replace %NUMBER0 through %NUMBER9 (used less commonly)
+  const numbers = [
+    ctx.turn ?? state.turn?.number ?? 0,
+    ctx.civSlot ?? 0,
+  ];
+  for (let i = 0; i <= 9; i++) {
+    const placeholder = `%NUMBER${i}`;
+    if (result.includes(placeholder)) {
+      result = result.split(placeholder).join(String(numbers[i] || 0));
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -880,7 +1042,7 @@ export function dispatchEvents(state, mapBase, triggerType, ctx) {
   const results = [];
 
   for (const evt of scenarioEvents) {
-    if (!triggerMatches(evt, triggerType, ctx)) continue;
+    if (!triggerMatches(evt, triggerType, ctx, state.rng)) continue;
 
     // Resolve wildcards for this firing
     resolveWildcards(evt, ctx);

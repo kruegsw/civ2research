@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction } from '../rules.js';
-import { getProductionCost, calcFoodSurplus } from '../production.js';
+import { getProductionCost, calcFoodSurplus, calcShieldProduction, calcCityTrade } from '../production.js';
 import { calcRushBuyCost } from '../happiness.js';
 import {
   UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
@@ -279,19 +279,31 @@ function countCitiesWithBuilding(gameState, mapBase, city, civSlot, buildingId) 
 }
 
 /**
- * Estimate city trade output as a rough proxy (city size is a decent approximation).
+ * Compute actual city trade output. Falls back to size proxy when context
+ * is unavailable (follows the same pattern as estimateFoodSurplus).
  */
-function estimateCityTrade(city) {
-  return Math.max(1, city.size);
+function estimateCityTrade(city, cityIndex, gameState, mapBase) {
+  if (!gameState || !mapBase || cityIndex == null) {
+    // Fallback for callers without full context
+    return Math.max(1, city.size);
+  }
+  const { netTrade } = calcCityTrade(city, cityIndex, gameState, mapBase);
+  return Math.max(1, netTrade);
 }
 
 /**
- * Estimate city shield output.
+ * Compute actual city shield output. Falls back to size proxy when context
+ * is unavailable (follows the same pattern as estimateFoodSurplus).
  * Returns 0 if the city is in civil disorder (no production).
  */
-function estimateCityShields(city) {
+function estimateCityShields(city, cityIndex, gameState, mapBase) {
   if (city.civilDisorder) return 0;
-  return Math.max(1, Math.floor(city.size * 0.7) + 1);
+  if (!gameState || !mapBase || cityIndex == null) {
+    // Fallback for callers without full context
+    return Math.max(1, Math.floor(city.size * 0.7) + 1);
+  }
+  const { netShields } = calcShieldProduction(city, cityIndex, gameState, mapBase, gameState.units);
+  return Math.max(1, netShields);
 }
 
 /**
@@ -430,45 +442,34 @@ function _scoreSpaceshipPart(buildingId, gameState, civSlot, strategy) {
   const civ = gameState.civs?.[civSlot];
   if (!civ) return -1;
 
-  // Current spaceship component counts from civ data
-  // The parser stores: spaceshipStructural, spaceshipPropulsion
-  // We need to derive fuel from propulsion or estimate from context.
-  // In the game, civ data at offsets +1022..+1029 stores:
-  //   +1022: structural count, +1024: propulsion count
-  //   +1026/+1028: estimates (year projections)
-  // Fuel count is not directly stored but implied by component balance.
-  const structural = civ.spaceshipStructural || 0;
-  const propulsion = civ.spaceshipPropulsion || 0;
-  // Fuel is typically tracked alongside propulsion; estimate from propulsion
-  // In the decompiled code, both fuel and propulsion are at fixed offsets
-  // from DAT_0064caa8 (spaceship data array per civ):
-  //   [0]=structural, [1]=fuel, [2]=propulsion, [3]=habitation, [4]=life support, [5]=solar
-  // We only have structural and propulsion from the parser, so estimate fuel.
-  const fuel = propulsion; // Balanced build strategy: fuel ~ propulsion
-
   // Determine which phase this building belongs to
-  let phase; // 0=structural, 1=components (fuel+propulsion), 2=modules
+  let phase; // 0=structural, 1=components, 2=modules
   if (buildingId === SS_STRUCTURAL_ID) phase = 0;
   else if (buildingId === SS_COMPONENT_ID) phase = 1;
   else if (buildingId === SS_MODULE_ID) phase = 2;
   else return -1;
 
-  // ── Phase priority logic from FUN_00597d6f ──
-  // Structural must be built first. Components need structural >= N to support them.
-  // Modules need components to function.
+  // ── N.4: Count actual spaceship parts from city buildings ──
+  // This is accurate for both parsed saves and mapgen-started games.
+  let structural = 0, components = 0, modules = 0;
+  for (const c of gameState.cities) {
+    if (!c || c.size <= 0 || c.owner !== civSlot || !c.buildings) continue;
+    if (c.buildings.has(SS_STRUCTURAL_ID)) structural++;
+    if (c.buildings.has(SS_COMPONENT_ID)) components++;
+    if (c.buildings.has(SS_MODULE_ID)) modules++;
+  }
 
-  // Check if structural phase is complete (have enough structurals)
-  const structuralDone = structural >= SS_MAX[0];
+  // ── N.4: Exact target ratios ──
+  // Structurals: need 10, Components: need 4 (balanced fuel+propulsion),
+  // Modules: need 3 (habitation+life support+solar).
+  // Build order enforced: structural → components → modules.
+  const TARGET_STRUCTURAL = 10;
+  const TARGET_COMPONENTS = 4;
+  const TARGET_MODULES    = 3;
 
-  // Check if component phase is complete (fuel + propulsion at max)
-  const componentsDone = fuel >= SS_MAX[1] && propulsion >= SS_MAX[2];
-
-  // Max components limited by structural count:
-  // Decompiled FUN_00596b00: for fuel/propulsion (param_2==1 or 2),
-  //   maxAllowed = clamp(SS_MAX[type], 0, (structural+1-(type*2-2))/4)
-  // Simplified: components limited to roughly structural/4
-  const maxFuelAllowed = Math.min(SS_MAX[1], Math.max(0, Math.floor((structural + 1) / 4)));
-  const maxPropAllowed = Math.min(SS_MAX[2], Math.max(0, Math.floor((structural + 1 - 2) / 4)));
+  const structuralNeeded = Math.max(0, TARGET_STRUCTURAL - structural);
+  const componentsNeeded = Math.max(0, TARGET_COMPONENTS - components);
+  const modulesNeeded    = Math.max(0, TARGET_MODULES - modules);
 
   // Strategy context
   const aiData = strategy?.aiData;
@@ -483,58 +484,55 @@ function _scoreSpaceshipPart(buildingId, gameState, civSlot, strategy) {
     if (other === civSlot) continue;
     if (!(civsAlive & (1 << other))) continue;
     const otherCiv = gameState.civs?.[other];
-    if (otherCiv && (otherCiv.spaceshipStructural || 0) > 0) {
-      const otherProgress = (otherCiv.spaceshipStructural || 0) +
-        (otherCiv.spaceshipPropulsion || 0);
-      if (otherProgress > rivalSpaceProgress) {
-        rivalSpaceProgress = otherProgress;
-      }
-      if (otherProgress > structural + propulsion) {
-        rivalAhead = true;
-      }
+    if (!otherCiv) continue;
+    // Count rival parts from their cities
+    let otherParts = 0;
+    for (const c of gameState.cities) {
+      if (!c || c.size <= 0 || c.owner !== other || !c.buildings) continue;
+      if (c.buildings.has(SS_STRUCTURAL_ID)) otherParts++;
+      if (c.buildings.has(SS_COMPONENT_ID)) otherParts++;
+      if (c.buildings.has(SS_MODULE_ID)) otherParts++;
+    }
+    if (otherParts > rivalSpaceProgress) {
+      rivalSpaceProgress = otherParts;
+    }
+    if (otherParts > structural + components + modules) {
+      rivalAhead = true;
     }
   }
 
-  // Base score: lower = better in decompiled, we use higher = better
+  // ── Phase priority with strict build order ──
   let score;
+  const totalOurs = structural + components + modules;
 
   if (phase === 0) {
-    // Structural phase
-    if (structuralDone) return -1; // already have enough
-    // Priority increases as fewer structurals are built
-    score = SS_MAX[0] - structural;
-    // Structural gets top priority if not enough built yet
-    if (structural < 3) score += 5; // Early structural is critical
+    // Structural phase — always first priority
+    if (structuralNeeded <= 0) return -1;
+    score = structuralNeeded + 5; // High base to ensure structurals come first
+    if (structural < 3) score += 5; // Extra urgency for initial structurals
   } else if (phase === 1) {
-    // Component phase (fuel + propulsion)
-    // Don't build components until we have some structural base
-    if (structural < 2) return -1;
-    if (componentsDone) return -1;
-    // Score based on how many more are needed
-    const fuelNeeded = Math.max(0, maxFuelAllowed - fuel);
-    const propNeeded = Math.max(0, maxPropAllowed - propulsion);
-    score = fuelNeeded + propNeeded;
-    if (score <= 0) return -1;
-    // Decompiled: if structural race vs rival, deprioritize components
-    // (bVar2 flag in FUN_00597d6f checks if we're behind rival in score)
-    if (rivalAhead && !structuralDone) {
-      score = Math.max(1, score - 2);
+    // Component phase — only after enough structurals
+    if (componentsNeeded <= 0) return -1;
+    // Enforce build order: need at least 4 structurals before components
+    if (structural < 4) return -1;
+    score = componentsNeeded + 2;
+    // Deprioritize if structural phase isn't done yet
+    if (structuralNeeded > 0) {
+      score = Math.max(1, score - 3);
     }
   } else {
-    // Module phase (habitation, life support, solar panels)
-    // Modules need significant structural + component base
-    if (structural < 5) return -1;
-    if (!componentsDone && fuel < 2 && propulsion < 2) return -1;
-    // Estimate how many modules are needed (we don't track individual module types)
-    // Give a moderate score to encourage late-game module building
-    score = 5;
-    // Less urgent than structural/components
-    if (!structuralDone) score -= 2;
-    if (!componentsDone) score -= 1;
+    // Module phase — only after structurals and components
+    if (modulesNeeded <= 0) return -1;
+    // Enforce build order: need structural base and some components first
+    if (structural < 6) return -1;
+    if (components < 2) return -1;
+    score = modulesNeeded + 1;
+    // Deprioritize if earlier phases aren't done
+    if (structuralNeeded > 0) score = Math.max(1, score - 4);
+    if (componentsNeeded > 0) score = Math.max(1, score - 2);
   }
 
   // War penalty: reduce spaceship priority during wartime
-  // Decompiled: if multiple opponents at war, reduce priority
   if (warTargets.length > 1 && aliveCivCount > 2) {
     score = Math.max(1, score - 2);
   }
@@ -546,8 +544,6 @@ function _scoreSpaceshipPart(buildingId, gameState, civSlot, strategy) {
     score += 1;
   }
 
-  // Scale to match building score range (buildings score ~0-400 before normalization)
-  // Spaceship parts should score highly in late game
   return Math.max(0, score);
 }
 
@@ -1055,7 +1051,7 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
   const threatLevel = warTargets.length;
 
   // Shield production estimate (divided by 2 = iVar5 in many formulas)
-  const cityShields = estimateCityShields(city);
+  const cityShields = estimateCityShields(city, cityIndex, gameState, mapBase);
   const halfShields = cityShields >> 1;
 
   // Strategic posture (0-5): map from strategy assessment
@@ -2007,8 +2003,38 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
   }
   rawScore += otherWonderBuilders * 5;
 
-  // ── Someone else building penalty ──
-  if (someoneElseBuilding) rawScore += 10;
+  // ── N.3: Wonder competition — compare shield investments with rival ──
+  if (someoneElseBuilding) {
+    // Find rival's shield investment and our own
+    let rivalShields = 0;
+    let rivalShieldRate = 0;
+    let ourShields = 0;
+    for (const c of gameState.cities) {
+      if (!c || c.size <= 0) continue;
+      const cItem = c.itemInProduction;
+      if (!cItem || cItem.type !== 'wonder' || cItem.id !== wonderBuildId) continue;
+      if (c.owner === civSlot) {
+        ourShields = c.shieldsInBox || 0;
+      } else {
+        rivalShields = Math.max(rivalShields, c.shieldsInBox || 0);
+        // Estimate rival production rate from city size
+        rivalShieldRate = Math.max(rivalShieldRate, Math.floor(c.size * 0.7) + 1);
+      }
+    }
+    const wonderCost = WONDER_COSTS[wonderIndex] || 200;
+    const rivalProgress = rivalShields / wonderCost;   // 0..1
+    const ourProgress = ourShields / wonderCost;        // 0..1
+    if (rivalProgress > ourProgress + 0.2) {
+      // Rival is significantly ahead — big penalty (lower priority)
+      rawScore += 15 + Math.floor(rivalProgress * 10);
+    } else if (ourProgress > rivalProgress + 0.1) {
+      // We're ahead — boost priority (lower rawScore = better in decompiled convention)
+      rawScore -= 5;
+    } else {
+      // Neck and neck — moderate penalty, urgency from competition
+      rawScore += 5;
+    }
+  }
 
   // ── Currently building this wonder: stickiness bonus ──
   const thisItem = city.itemInProduction;
@@ -2693,7 +2719,7 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
       // Estimate turns remaining for rival vs us
       const ourRemaining = totalCost - shieldsStored;
       const rivalRemaining = rivalCost - rivalShields;
-      const ourShieldsPerTurn = estimateCityShields(city);
+      const ourShieldsPerTurn = estimateCityShields(city, ci, gameState, mapBase);
       const ourTurns = ourShieldsPerTurn > 0 ? Math.ceil(ourRemaining / ourShieldsPerTurn) : 999;
       // Rough estimate: rival produces similar shields
       const rivalTurns = ourShieldsPerTurn > 0 ? Math.ceil(rivalRemaining / ourShieldsPerTurn) : 999;
@@ -2796,8 +2822,29 @@ const OBSOLETE_BUILDING_PAIRS = [
 ];
 
 /**
+ * N.5: Tech-based building obsolescence.
+ * Key = building ID, value = tech ID that makes it obsolete.
+ *   - Barracks (2) → obsolete when civ has Mobile Warfare (tech 53)
+ */
+const OBSOLETE_BUILDING_TECHS = [
+  [2, 53], // Barracks → Mobile Warfare
+];
+
+/**
+ * N.5: Wonder-based building obsolescence.
+ * Key = building ID, value = wonder index whose effect replaces the building.
+ *   - Granary (3) → obsolete when Pyramids (wonder 0) active for civ
+ *   - City Walls (8) → obsolete when Great Wall (wonder 6) active for civ
+ */
+const OBSOLETE_BUILDING_WONDERS = [
+  [3, 0],  // Granary → Pyramids (free Granary effect)
+  [8, 6],  // City Walls → Great Wall (free City Walls effect)
+];
+
+/**
  * Generate SELL_BUILDING actions for buildings that are obsolete because
- * a superior replacement exists in the same city.
+ * a superior replacement exists in the same city, a tech makes them
+ * redundant, or a wonder provides their effect for free.
  *
  * Only sells one building per city per turn (game rule).
  *
@@ -2809,29 +2856,107 @@ const OBSOLETE_BUILDING_PAIRS = [
  */
 export function generateSellObsoleteActions(gameState, mapBase, civSlot, debugLog = null) {
   const actions = [];
+  const civTechs = gameState.civTechs?.[civSlot];
 
   for (let ci = 0; ci < gameState.cities.length; ci++) {
     const city = gameState.cities[ci];
     if (!city || city.size <= 0 || city.owner !== civSlot) continue;
     if (!city.buildings || city.buildings.size === 0) continue;
 
-    // Check each obsolete pair
-    for (const [oldId, replacements] of OBSOLETE_BUILDING_PAIRS) {
-      if (!city.buildings.has(oldId)) continue;
+    let sold = false;
 
-      // Check if city has any replacement
-      const hasReplacement = replacements.some(rid => city.buildings.has(rid));
-      if (!hasReplacement) continue;
+    // ── Check building-replacement pairs ──
+    if (!sold) {
+      for (const [oldId, replacements] of OBSOLETE_BUILDING_PAIRS) {
+        if (!city.buildings.has(oldId)) continue;
+        const hasReplacement = replacements.some(rid => city.buildings.has(rid));
+        if (!hasReplacement) continue;
 
-      const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: oldId };
-      const err = validateAction(gameState, mapBase, action, civSlot);
-      if (!err) {
-        actions.push(action);
-        if (debugLog) {
-          const oldName = IMPROVE_NAMES[oldId] || `bldg#${oldId}`;
-          debugLog.push(`SELL: ${city.name}: selling obsolete ${oldName}`);
+        const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: oldId };
+        const err = validateAction(gameState, mapBase, action, civSlot);
+        if (!err) {
+          actions.push(action);
+          if (debugLog) {
+            const oldName = IMPROVE_NAMES[oldId] || `bldg#${oldId}`;
+            debugLog.push(`SELL: ${city.name}: selling obsolete ${oldName} (replaced)`);
+          }
+          sold = true;
+          break;
         }
-        break; // one sell per city per turn (game rule)
+      }
+    }
+
+    // ── N.5: Check tech-based obsolescence ──
+    if (!sold && civTechs) {
+      for (const [bldgId, techId] of OBSOLETE_BUILDING_TECHS) {
+        if (!city.buildings.has(bldgId)) continue;
+        if (!civTechs.has(techId)) continue;
+
+        const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: bldgId };
+        const err = validateAction(gameState, mapBase, action, civSlot);
+        if (!err) {
+          actions.push(action);
+          if (debugLog) {
+            const bName = IMPROVE_NAMES[bldgId] || `bldg#${bldgId}`;
+            debugLog.push(`SELL: ${city.name}: selling ${bName} (tech obsolete)`);
+          }
+          sold = true;
+          break;
+        }
+      }
+    }
+
+    // ── N.5: Check wonder-based obsolescence ──
+    if (!sold) {
+      for (const [bldgId, wonderIdx] of OBSOLETE_BUILDING_WONDERS) {
+        if (!city.buildings.has(bldgId)) continue;
+        if (!hasWonderEffect(gameState, civSlot, wonderIdx)) continue;
+
+        const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: bldgId };
+        const err = validateAction(gameState, mapBase, action, civSlot);
+        if (!err) {
+          actions.push(action);
+          if (debugLog) {
+            const bName = IMPROVE_NAMES[bldgId] || `bldg#${bldgId}`;
+            const wName = WONDER_NAMES[wonderIdx] || `wonder#${wonderIdx}`;
+            debugLog.push(`SELL: ${city.name}: selling ${bName} (${wName} active)`);
+          }
+          sold = true;
+          break;
+        }
+      }
+    }
+
+    // ── N.5: Check zero-benefit buildings (maintenance > 0 with no effect) ──
+    // Sell buildings whose benefit is zero: Coastal Fortress (11) if no sea tiles,
+    // Harbor (14) if not coastal, SAM Battery (12) if no air threat.
+    // Keep this conservative — only sell clearly useless buildings.
+    if (!sold) {
+      // Coastal Fortress (11): useless for landlocked cities
+      if (city.buildings.has(11)) {
+        const tile = mapBase.tileData?.[city.gy * mapBase.mw + city.gx];
+        const isCoastal = tile?.flags?.river || false; // approximate; check adjacent sea
+        let hasAdjacentSea = false;
+        const dirs = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+        for (const [ddx, ddy] of dirs) {
+          const nx = (city.gx + ddx + mapBase.mw) % mapBase.mw;
+          const ny = city.gy + ddy;
+          if (ny < 0 || ny >= mapBase.mh) continue;
+          const nt = mapBase.tileData?.[ny * mapBase.mw + nx];
+          if (nt && (nt.terrain === 10 || nt.terrain === 11)) { // ocean/coast terrain IDs
+            hasAdjacentSea = true;
+            break;
+          }
+        }
+        if (!hasAdjacentSea) {
+          const action = { type: 'SELL_BUILDING', cityIndex: ci, buildingId: 11 };
+          const err = validateAction(gameState, mapBase, action, civSlot);
+          if (!err) {
+            actions.push(action);
+            if (debugLog) debugLog.push(`SELL: ${city.name}: selling Coastal Fortress (landlocked)`);
+            sold = true;
+          }
+        }
       }
     }
   }

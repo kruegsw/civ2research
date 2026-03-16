@@ -81,7 +81,7 @@ function tileDist(ax, ay, bx, by, mw, wraps) {
  * @param {number} successLevel - -1=caught, 0=normal, 1=hard
  * @returns {{ survives: boolean, becomesVeteran: boolean }}
  */
-export function checkSpySurvival(unit, successLevel) {
+export function checkSpySurvival(unit, successLevel, rng) {
   // Diplomats (type 46) always die
   if (unit.type === 46) {
     return { survives: false, becomesVeteran: false };
@@ -100,7 +100,7 @@ export function checkSpySurvival(unit, successLevel) {
 
   // Coin flip bonus when odds are low
   if (survivalOdds < 2) {
-    if (Math.random() < 0.5) {
+    if ((rng ? rng.random() : Math.random()) < 0.5) {
       survivalOdds++;
     }
   }
@@ -109,7 +109,7 @@ export function checkSpySurvival(unit, successLevel) {
     return { survives: false, becomesVeteran: false };
   }
 
-  const roll = Math.floor(Math.random() * survivalOdds);
+  const roll = rng ? rng.nextInt(survivalOdds) : Math.floor(Math.random() * survivalOdds);
   if (roll !== 0) {
     // Spy survives and becomes veteran
     return { survives: true, becomesVeteran: true };
@@ -125,8 +125,8 @@ export function checkSpySurvival(unit, successLevel) {
  * @param {object} unit - the spy unit
  * @returns {boolean} true if spy is caught (fails check)
  */
-export function spyCaughtCheck(unit) {
-  const result = checkSpySurvival(unit, -1);
+export function spyCaughtCheck(unit, rng) {
+  const result = checkSpySurvival(unit, -1, rng);
   return !result.survives;
 }
 
@@ -384,7 +384,7 @@ export function handleEspionageIncident(state, mapBase, attackerCiv, defenderCiv
     triggerRevolutionFromScandal(state, attackerCiv);
   } else if (attackerGovt === 'republic') {
     // 50% chance of scandal for republic
-    if (Math.random() < 0.5) {
+    if ((state.rng ? state.rng.random() : Math.random()) < 0.5) {
       triggerRevolutionFromScandal(state, attackerCiv);
     }
   }
@@ -399,7 +399,7 @@ function triggerRevolutionFromScandal(state, civSlot) {
   state.civs = [...state.civs];
   const civ = { ...state.civs[civSlot] };
   civ.government = 'anarchy';
-  civ.anarchyTurns = 1 + Math.floor(Math.random() * 4); // 1-4 turns
+  civ.anarchyTurns = 1 + (state.rng ? state.rng.nextInt(4) : Math.floor(Math.random() * 4)); // 1-4 turns
   state.civs[civSlot] = civ;
 
   if (!state.turnEvents) state.turnEvents = [];

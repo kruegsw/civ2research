@@ -34,6 +34,24 @@ export function getGameYear(turnsPassed) {
 }
 
 /**
+ * Convert turnsPassed to a numeric year (negative = BC, positive = AD).
+ * @param {number} turnsPassed
+ * @returns {number}
+ */
+export function getNumericYear(turnsPassed) {
+  const turn = turnsPassed || 0;
+  let year = -4000, t = 0;
+  for (const seg of SCHEDULE) {
+    const turnsInSeg = Math.min(turn, seg.until) - t;
+    if (turnsInSeg <= 0) break;
+    year += turnsInSeg * seg.perTurn;
+    t += turnsInSeg;
+    if (t >= turn) break;
+  }
+  return year;
+}
+
+/**
  * Convenience: extract turnsPassed from a mapData object.
  * @param {object} mapData - parsed save data with gameState
  * @returns {string} year string

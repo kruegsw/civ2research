@@ -8,8 +8,9 @@
 
 import {
   UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
-  WONDER_OBSOLETE,
+  WONDER_OBSOLETE, SETTLER_TYPES, ADVANCE_EPOCH,
 } from '../defs.js';
+import { calcCityTrade, calcFoodSurplus } from '../production.js';
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -50,19 +51,25 @@ export function computeAiData(gameState, mapBase, civSlot) {
   const mw = mapBase.mw;
 
   // ── (a) Continent analysis ───────────────────────────────────
-  // Map<bodyId, { cityCounts: Map<civSlot, count>, militaryCounts: Map<civSlot, count> }>
+  // Map<bodyId, { cityCounts, militaryCounts, attackStrength, cityPop, settlerCount }>
   const continents = new Map();
 
   function getContinent(bodyId) {
     let c = continents.get(bodyId);
     if (!c) {
-      c = { cityCounts: new Map(), militaryCounts: new Map() };
+      c = {
+        cityCounts: new Map(),
+        militaryCounts: new Map(),
+        attackStrength: new Map(),   // L.1: sum of UNIT_ATK per civ
+        cityPop: new Map(),          // L.1: sum of city sizes per civ
+        settlerCount: new Map(),     // L.2: settler/engineer count per civ
+      };
       continents.set(bodyId, c);
     }
     return c;
   }
 
-  // Count cities per continent per civ
+  // Count cities per continent per civ + city population
   for (const city of cities) {
     if (!city || city.size <= 0 || city.gx < 0) continue;
     const idx = city.gy * mw + city.gx;
@@ -71,21 +78,42 @@ export function computeAiData(gameState, mapBase, civSlot) {
     const bodyId = tile.bodyId ?? 0;
     const cont = getContinent(bodyId);
     cont.cityCounts.set(city.owner, (cont.cityCounts.get(city.owner) || 0) + 1);
+    cont.cityPop.set(city.owner, (cont.cityPop.get(city.owner) || 0) + city.size);
   }
 
-  // Count military units per continent per civ
+  // Count military units per continent per civ + attack strength + settler count
   for (const u of units) {
     if (u.gx < 0) continue; // dead unit
-    const atk = UNIT_ATK[u.type] || 0;
-    const def = UNIT_DEF[u.type] || 0;
-    if (atk === 0 && def === 0) continue; // non-combat
     const idx = u.gy * mw + u.gx;
     const tile = mapBase.tileData[idx];
     if (!tile) continue;
     const bodyId = tile.bodyId ?? 0;
     const cont = getContinent(bodyId);
+
+    // L.2: settler/engineer counts per continent
+    if (SETTLER_TYPES.has(u.type)) {
+      cont.settlerCount.set(u.owner, (cont.settlerCount.get(u.owner) || 0) + 1);
+    }
+
+    const atk = UNIT_ATK[u.type] || 0;
+    const def = UNIT_DEF[u.type] || 0;
+    if (atk === 0 && def === 0) continue; // non-combat
     cont.militaryCounts.set(u.owner, (cont.militaryCounts.get(u.owner) || 0) + 1);
+    // L.1: accumulate attack strength per continent per civ
+    cont.attackStrength.set(u.owner, (cont.attackStrength.get(u.owner) || 0) + atk);
   }
+
+  // ── (a2) L.1 Continent flags ──────────────────────────────────
+  // continentFlags[civ][bodyId] — bitfield per continent:
+  //   0x01 = enemy cities present
+  //   0x02 = enemy military present
+  //   0x04 = at-peace (non-war contacted) cities present
+  //   0x08 = at-peace military present
+  //   0x10 = strong threat (enemy attack strength > our attack strength)
+  const continentFlags = Array.from({ length: 8 }, () => new Map());
+
+  // Build per-continent flag maps after we know treaty relationships
+  // (deferred until after treaty loop — see below, populated after atWarWith)
 
   // ── (d) Per-civ military stats ───────────────────────────────
   const milStrength = new Array(8).fill(0);  // sum ATK+DEF
@@ -94,6 +122,11 @@ export function computeAiData(gameState, mapBase, civSlot) {
   const unitCount   = new Array(8).fill(0);  // total alive units
   const cityCount   = new Array(8).fill(0);  // total alive cities
   const techCount   = new Array(8).fill(0);  // number of techs known
+
+  // L.2: per-civ additional counters
+  const unitTypeCounts = Array.from({ length: 8 }, () => new Array(62).fill(0));
+  const navalUnitCount = new Array(8).fill(0);
+  const totalPopulation = new Array(8).fill(0);
 
   for (const u of units) {
     if (u.gx < 0) continue;
@@ -105,15 +138,78 @@ export function computeAiData(gameState, mapBase, civSlot) {
     milStrength[own] += atk + def;
     milAtkSum[own] += atk;
     milDefSum[own] += def;
+    // L.2: unit type counts
+    if (u.type >= 0 && u.type < 62) {
+      unitTypeCounts[own][u.type]++;
+    }
+    // L.2: naval unit count (domain 1 = sea)
+    if ((UNIT_DOMAIN[u.type] ?? 0) === 1) {
+      navalUnitCount[own]++;
+    }
   }
 
   for (const city of cities) {
     if (!city || city.size <= 0 || city.gx < 0) continue;
     cityCount[city.owner]++;
+    totalPopulation[city.owner] += city.size;
   }
 
   for (let c = 0; c < 8; c++) {
     techCount[c] = gameState.civTechs?.[c]?.size ?? 0;
+  }
+
+  // L.2: era quarters — count techs in 4 era ranges (ADVANCE_EPOCH 0-3)
+  const eraQuarters = Array.from({ length: 8 }, () => [0, 0, 0, 0]);
+  for (let c = 0; c < 8; c++) {
+    const techs = gameState.civTechs?.[c];
+    if (!techs) continue;
+    for (const techId of techs) {
+      const era = ADVANCE_EPOCH[techId];
+      if (era >= 0 && era <= 3) {
+        eraQuarters[c][era]++;
+      }
+    }
+  }
+
+  // L.2: per-city trade surplus and net food surplus
+  // Attach computed values to city objects for use by strategy assessments
+  for (let ci = 0; ci < cities.length; ci++) {
+    const city = cities[ci];
+    if (!city || city.size <= 0 || city.gx < 0) continue;
+    // Compute actual trade surplus (tax - maintenance) using real yield calc
+    try {
+      const tradeResult = calcCityTrade(city, ci, gameState, mapBase);
+      city.tradeSurplus = tradeResult.tax - tradeResult.maintenance;
+    } catch (_) {
+      city.tradeSurplus = Math.max(0, city.size - 1); // fallback proxy
+    }
+    // Compute actual net food surplus
+    try {
+      const foodResult = calcFoodSurplus(city, ci, gameState, mapBase, units);
+      city.netFoodSurplus = foodResult.surplus;
+    } catch (_) {
+      city.netFoodSurplus = 0; // fallback
+    }
+  }
+
+  // L.2: continent settler counts (convenience accessor mirroring continents)
+  const continentSettlerCount = Array.from({ length: 8 }, () => new Map());
+  for (const [bodyId, cont] of continents) {
+    for (const [civ, count] of cont.settlerCount) {
+      continentSettlerCount[civ].set(bodyId, count);
+    }
+  }
+
+  // L.1: continent-level convenience accessors
+  const continentAttackStrength = Array.from({ length: 8 }, () => new Map());
+  const continentCityPop = Array.from({ length: 8 }, () => new Map());
+  for (const [bodyId, cont] of continents) {
+    for (const [civ, str] of cont.attackStrength) {
+      continentAttackStrength[civ].set(bodyId, str);
+    }
+    for (const [civ, pop] of cont.cityPop) {
+      continentCityPop[civ].set(bodyId, pop);
+    }
   }
 
   // ── (c) Alive civs bitmask ──────────────────────────────────
@@ -176,8 +272,83 @@ export function computeAiData(gameState, mapBase, civSlot) {
     }
   }
 
+  // L.4: Embassy and provocation tracking from diplomacy state
+  const embassyFlags = Array.from({ length: 8 }, () => new Array(8).fill(false));
+  const provocationFlags = Array.from({ length: 8 }, () => new Array(8).fill(0));
+  // Populate from gameState.diplomacy
+  for (let a = 1; a < 8; a++) {
+    for (let b = 1; b < 8; b++) {
+      if (a === b) continue;
+      const dKey = a < b ? `${a}-${b}` : `${b}-${a}`;
+      const diplo = gameState.diplomacy?.[dKey];
+      if (!diplo) continue;
+      // Embassy: the diplomacy key is symmetric but embassy is directional
+      // in our system. embassy flag means the pair has established embassy.
+      // The original binary tracks per-civ pair directionality (A has embassy with B).
+      // Our diplomacy stores embassy: true meaning both ways (see diplomacy.js alliance auto-embassy).
+      // For now treat as bidirectional: if flag set, both civs have embassy intel.
+      if (diplo.embassy) {
+        embassyFlags[a][b] = true;
+        embassyFlags[b][a] = true;
+      }
+      // Provocation: sneak attack flag (nuke talk / border intrusion equivalent)
+      // Bit 0x01 = sneak attack happened from one direction
+      // We store the flag for both directions since it affects trust
+      if (diplo.sneak) {
+        provocationFlags[a][b] |= 0x01;
+        provocationFlags[b][a] |= 0x01;
+      }
+    }
+  }
+
+  // L.1: Populate continent flags now that we know treaty relationships
+  for (const [bodyId, cont] of continents) {
+    for (let myCiv = 1; myCiv < 8; myCiv++) {
+      if (!(civsAlive & (1 << myCiv))) continue;
+      let flags = 0;
+      const myAtk = cont.attackStrength.get(myCiv) || 0;
+
+      for (const [otherCiv, count] of cont.cityCounts) {
+        if (otherCiv === myCiv || otherCiv === 0) continue;
+        const key = myCiv < otherCiv ? `${myCiv}-${otherCiv}` : `${otherCiv}-${myCiv}`;
+        const hasContact = gameState.treaties?.[key] !== undefined;
+        const treaty = getTreaty(gameState, myCiv, otherCiv);
+        if (treaty === 'war' && hasContact) {
+          flags |= 0x01; // enemy cities
+        } else if (hasContact && treaty !== 'war') {
+          flags |= 0x04; // at-peace cities
+        }
+      }
+
+      for (const [otherCiv, count] of cont.militaryCounts) {
+        if (otherCiv === myCiv || otherCiv === 0) continue;
+        const key = myCiv < otherCiv ? `${myCiv}-${otherCiv}` : `${otherCiv}-${myCiv}`;
+        const hasContact = gameState.treaties?.[key] !== undefined;
+        const treaty = getTreaty(gameState, myCiv, otherCiv);
+        if (treaty === 'war' && hasContact) {
+          flags |= 0x02; // enemy military
+          // Check for strong threat: enemy attack strength > our attack strength
+          const enemyAtk = cont.attackStrength.get(otherCiv) || 0;
+          if (enemyAtk > myAtk) {
+            flags |= 0x10; // strong threat
+          }
+        } else if (hasContact && treaty !== 'war') {
+          flags |= 0x08; // at-peace military
+        }
+      }
+
+      if (flags !== 0) {
+        continentFlags[myCiv].set(bodyId, flags);
+      }
+    }
+  }
+
   return {
     continents,
+    continentAttackStrength,
+    continentCityPop,
+    continentFlags,
+    continentSettlerCount,
     powerRanking,
     powerRank,
     civsAlive,
@@ -186,10 +357,16 @@ export function computeAiData(gameState, mapBase, civSlot) {
     milAtkSum,
     milDefSum,
     unitCount,
+    unitTypeCounts,
+    navalUnitCount,
+    totalPopulation,
+    eraQuarters,
     cityCount,
     techCount,
     atWarWith,
     contactedCivs,
+    embassyFlags,
+    provocationFlags,
   };
 }
 

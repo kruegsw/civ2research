@@ -652,12 +652,12 @@ function pickResearchGoal(civSlot, gameState, mapBase) {
       if (techVal <= 1) {
         selectionScore = 0;
       } else {
-        selectionScore = Math.floor(Math.random() * techVal);
+        selectionScore = gameState.rng ? gameState.rng.nextInt(techVal) : Math.floor(Math.random() * techVal);
       }
     } else {
       // Human (with AI advisor): rand() % 3 + techVal - 1
       // Lines 142-144
-      selectionScore = Math.floor(Math.random() * 3) + techVal - 1;
+      selectionScore = (gameState.rng ? gameState.rng.nextInt(3) : Math.floor(Math.random() * 3)) + techVal - 1;
     }
 
     // Lines 146-149: keep the highest scoring tech

@@ -521,7 +521,7 @@ function scoredMovement(unit, unitIndex, gameState, mapBase, unitBodyId, targetC
     }
 
     // Random factor (0-5)
-    score += Math.floor(Math.random() * 6);
+    score += gameState.rng ? gameState.rng.nextInt(6) : Math.floor(Math.random() * 6);
 
     // Friendly unit penalty when in a city (avoid stacking on top of
     // barbarian units in our own cities)

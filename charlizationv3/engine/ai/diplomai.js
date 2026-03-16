@@ -8,12 +8,23 @@
 //   FUN_0055d685 — third-party "join war" requests
 //   FUN_0055d8d8 — main diplomacy encounter orchestrator
 //   FUN_0045705e — diplomacy evaluation (tribute, attitude, tech desire)
+//
+// Phase 6 Wave 6 (O.1-O.5):
+//   O.1: Full negotiation state machine (greeting, demand eval, counter-offers)
+//   O.2: AI tech exchange (mutual benefit, superior-civ blocking, alliance tribute)
+//   O.3: Alliance/crusade proposals (HELPME formation, multi-civ coalitions)
+//   O.4: Full ai_diplomacy_turn_processing (patience, flags, anarchy govt)
+//   O.5: Full ai_evaluate_diplomacy_toward_human (multi-factor attitude)
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction } from '../rules.js';
 import {
   UNIT_ATK, UNIT_DEF,
   DIFFICULTY_KEYS,
+  ADVANCE_PREREQS, ADVANCE_EPOCH, ADVANCE_AI_INTEREST,
+  UNIT_PREREQS, UNIT_ROLE,
+  IMPROVE_PREREQS, GOVT_TECH_PREREQS, GOVT_INDEX,
+  GOVERNMENT_NAMES,
 } from '../defs.js';
 import { hasWonderEffect } from '../utils.js';
 
@@ -141,6 +152,315 @@ function countWars(gameState, civSlot) {
     if (getTreaty(gameState, civSlot, i) === 'war' && haveContact(gameState, civSlot, i)) wars++;
   }
   return wars;
+}
+
+// ── O.1: Greeting / Negotiation Helpers ──────────────────────────
+
+/**
+ * Classify greeting tone based on attitude value.
+ * Port of FUN_0045705e greeting branch (~3540-3560):
+ *   attitude < 4  → hostile
+ *   attitude < 26 → guarded
+ *   attitude < 50 → neutral
+ *   attitude < 74 → friendly
+ *   attitude >= 74 → enthusiastic
+ */
+function getGreetingTone(attitude) {
+  if (attitude < -25) return 'hostile';
+  if (attitude < 0)   return 'guarded';
+  if (attitude < 25)  return 'neutral';
+  if (attitude < 50)  return 'friendly';
+  return 'enthusiastic';
+}
+
+/**
+ * Check if civSlot is a human player.
+ * Mirrors econai.js isHumanCiv.
+ */
+function isHumanCiv(gameState, civSlot) {
+  if (gameState.seatCivMap) {
+    for (const seat of Object.values(gameState.seatCivMap)) {
+      if (seat === civSlot) return true;
+    }
+    return false;
+  }
+  return civSlot === 1;
+}
+
+/**
+ * Count the depth of a tech in the prerequisite tree (0 = no prereqs).
+ * Cached per call via a Map to avoid redundant recursion.
+ * Port of FUN_004bdaa5 recursive prereq walk.
+ */
+function techPrereqDepth(techId, cache) {
+  if (techId < 0 || techId >= 89) return 0;
+  if (cache.has(techId)) return cache.get(techId);
+  // Mark visited to prevent cycles
+  cache.set(techId, 0);
+  const prereqs = ADVANCE_PREREQS[techId];
+  if (!prereqs) { cache.set(techId, 0); return 0; }
+  let maxDepth = 0;
+  for (const pid of prereqs) {
+    if (pid >= 0 && pid < 89) {
+      maxDepth = Math.max(maxDepth, 1 + techPrereqDepth(pid, cache));
+    }
+  }
+  cache.set(techId, maxDepth);
+  return maxDepth;
+}
+
+/**
+ * Compute a tech's valuation score for diplomacy.
+ * O.1: techs valued by prereq chain depth x military/economic utility.
+ *
+ * From FUN_004bdb2c (calcTechValue):
+ *   value = baseCost * (1 + prereqDepth/4) * utilityMultiplier
+ *
+ * utilityMultiplier:
+ *   - Enables a military unit (ATK >= 3): x2
+ *   - Enables a building/wonder: x1.5
+ *   - Enables a government: x2
+ *   - AI_INTEREST flag: x1.5
+ *   - Modern era (epoch 3): x1.25
+ */
+function valueTech(techId, civSlot, gameState) {
+  if (techId < 0 || techId >= 89) return 0;
+  const depthCache = new Map();
+  const depth = techPrereqDepth(techId, depthCache);
+  const epoch = ADVANCE_EPOCH[techId] ?? 0;
+
+  let baseValue = 5 + depth * 2;
+
+  // Check if tech enables a military unit
+  for (let ut = 0; ut < (UNIT_PREREQS?.length ?? 0); ut++) {
+    if (UNIT_PREREQS[ut] === techId) {
+      const atk = UNIT_ATK[ut] || 0;
+      if (atk >= 3) { baseValue *= 2; break; }
+      if ((UNIT_ROLE[ut] ?? 0) <= 1) { baseValue *= 1.5; break; }
+    }
+  }
+
+  // Check if tech enables a building
+  if (IMPROVE_PREREQS) {
+    for (let bi = 0; bi < IMPROVE_PREREQS.length; bi++) {
+      if (IMPROVE_PREREQS[bi] === techId) { baseValue *= 1.3; break; }
+    }
+  }
+
+  // Check if tech enables a government
+  for (const govtName of Object.keys(GOVT_TECH_PREREQS)) {
+    if (GOVT_TECH_PREREQS[govtName] === techId) { baseValue *= 2; break; }
+  }
+
+  // AI interest flag
+  if (ADVANCE_AI_INTEREST[techId]) baseValue *= 1.5;
+
+  // Modern era bonus
+  if (epoch === 3) baseValue *= 1.25;
+
+  return Math.floor(baseValue);
+}
+
+/**
+ * Evaluate a gold amount relative to civ's treasury.
+ * O.1: Gold valuation scaled by treasury ratio.
+ * Returns 0-100 "pain" score: how much this gold amount costs the civ.
+ */
+function valueGold(amount, treasury) {
+  if (treasury <= 0) return 100;
+  const ratio = amount / treasury;
+  return Math.min(100, Math.floor(ratio * 100));
+}
+
+/**
+ * Evaluate a city's strategic value.
+ * O.1: city.size x improvements x strategic position.
+ */
+function valueCity(city, gameState) {
+  if (!city || city.size <= 0) return 0;
+  let val = city.size * 10;
+  // Count improvements
+  if (city.buildings) {
+    val += city.buildings.size * 5;
+  }
+  // Capital bonus
+  if (city.buildings?.has(1)) val += 30; // Palace
+  return val;
+}
+
+/**
+ * Evaluate a demand and decide whether to accept.
+ * O.1: Different thresholds for tech, gold, map demands.
+ *
+ * From FUN_0045705e:
+ *   Tech demand: accept if attitude > 50 (neutral+) or demander 2x stronger
+ *   Gold demand: accept if attitude > 26 (guarded+) and affordable
+ *   Map demand:  accept if attitude > 0 (not hostile)
+ *   Treaty:      see treaty-specific thresholds
+ */
+function evaluateDemand(civSlot, fromCiv, demandType, demandValue, gameState, continentData) {
+  const attitude = getAttitude(gameState, civSlot, fromCiv);
+  const personality = getPersonality(gameState, civSlot);
+  const ourStr = calcMilitaryStrength(gameState, civSlot);
+  const theirStr = calcMilitaryStrength(gameState, fromCiv);
+  const powerRatio = theirStr / Math.max(ourStr, 1);
+
+  switch (demandType) {
+    case 'tech': {
+      // Accept if friendly (attitude > 50) or they're 2x stronger
+      if (attitude > 50) return true;
+      if (powerRatio > 2.0) return true;
+      // Peaceful leaders give tech more readily
+      if (personality.militarism < 0 && attitude > 25) return true;
+      return false;
+    }
+    case 'gold': {
+      const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
+      const pain = valueGold(demandValue, treasury);
+      // Accept if not too painful and attitude is at least guarded
+      if (attitude > 0 && pain < 30) return true;
+      // Accept if they're much stronger
+      if (powerRatio > 2.0 && pain < 60) return true;
+      return false;
+    }
+    case 'map': {
+      // Maps are cheap to share — accept if not hostile
+      if (attitude > -25) return true;
+      return false;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
+ * Generate a counter-offer when rejecting a demand.
+ * O.1: If we reject a demand, propose an alternative.
+ *
+ * Counter-offer logic:
+ *   - Tech demand rejected → offer gold (25% of treasury, max 100)
+ *   - Gold demand rejected → offer half the gold
+ *   - Any demand rejected + we want peace → propose ceasefire
+ */
+function generateCounterOffer(civSlot, fromCiv, demandType, gameState) {
+  const attitude = getAttitude(gameState, civSlot, fromCiv);
+  const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
+  const treaty = getTreaty(gameState, civSlot, fromCiv);
+
+  // If at war and we're weaker, propose peace instead
+  if (treaty === 'war') {
+    const ourStr = calcMilitaryStrength(gameState, civSlot);
+    const theirStr = calcMilitaryStrength(gameState, fromCiv);
+    if (theirStr > ourStr) {
+      return { type: 'PROPOSE_TREATY', targetCiv: fromCiv, treaty: 'ceasefire' };
+    }
+  }
+
+  // Counter gold with half amount
+  if (demandType === 'gold' && treasury > 50) {
+    const counterAmount = Math.min(Math.floor(treasury * 0.15), 100);
+    if (counterAmount >= 25) {
+      return { type: 'DEMAND_TRIBUTE', targetCiv: fromCiv, amount: counterAmount };
+    }
+  }
+
+  return null;
+}
+
+// ── O.2: Tech Exchange Helpers ─────────────────────────────────
+
+/**
+ * Find techs that civA has but civB does not.
+ * Returns array of tech IDs.
+ */
+function findTradableTechs(gameState, civA, civB) {
+  const techsA = gameState.civTechs?.[civA];
+  const techsB = gameState.civTechs?.[civB];
+  if (!techsA || !techsB) return [];
+  const result = [];
+  for (const tid of techsA) {
+    if (!techsB.has(tid)) result.push(tid);
+  }
+  return result;
+}
+
+/**
+ * Check "superior civ" blocking rule.
+ * O.2: If the strongest human has powerRank >= 5 and more techs than
+ * both trading AIs, block AI-AI trading to prevent runaway catch-up.
+ *
+ * Port of FUN_0055d1e2 ~5375-5395: checks if human is "far ahead"
+ * and blocks tech transfer between AI civs.
+ */
+function isTechTradeBlocked(gameState, civA, civB) {
+  const techCountA = gameState.civTechs?.[civA]?.size ?? 0;
+  const techCountB = gameState.civTechs?.[civB]?.size ?? 0;
+  const maxAiTechs = Math.max(techCountA, techCountB);
+
+  for (let h = 1; h < 8; h++) {
+    if (!isHumanCiv(gameState, h)) continue;
+    if (!(gameState.civsAlive & (1 << h))) continue;
+    const humanTechs = gameState.civTechs?.[h]?.size ?? 0;
+    // If human has significantly more techs (6+) than the better AI,
+    // and both AIs are behind, block trading to avoid catch-up
+    if (humanTechs > maxAiTechs + 6) return true;
+  }
+  return false;
+}
+
+// ── O.5: Border Intrusion Detection ────────────────────────────
+
+/**
+ * Detect border intrusions: count foreign military units inside
+ * a civ's city radius tiles.
+ *
+ * O.5: Port of FUN_0045705e border scan (~3594-3620).
+ * Returns { intruders: number, intruderCivs: Set<number> }
+ */
+function detectBorderIntrusions(gameState, mapBase, civSlot) {
+  const intruderCivs = new Set();
+  let intruders = 0;
+
+  if (!gameState.cities || !gameState.units || !mapBase) {
+    return { intruders, intruderCivs };
+  }
+
+  // Collect tile indices within city radius for all our cities
+  const ourTiles = new Set();
+  const mw = mapBase.mw;
+  for (const city of gameState.cities) {
+    if (!city || city.owner !== civSlot || city.size <= 0 || city.gx < 0) continue;
+    // Add city tile + neighboring tiles (simplified radius)
+    ourTiles.add(city.gy * mw + city.gx);
+    if (mapBase.getNeighbors) {
+      const neighbors = mapBase.getNeighbors(city.gx, city.gy);
+      for (const dir in neighbors) {
+        const [nx, ny] = neighbors[dir];
+        if (ny >= 0 && ny < mapBase.mh) {
+          const wnx = ((nx % mw) + mw) % mw;
+          ourTiles.add(ny * mw + wnx);
+        }
+      }
+    }
+  }
+
+  // Check for foreign military units on our tiles
+  for (const u of gameState.units) {
+    if (!u || u.gx < 0 || u.owner === civSlot || u.owner === 0) continue;
+    const atk = UNIT_ATK[u.type] || 0;
+    if (atk === 0) continue; // ignore non-combat units
+    const idx = u.gy * mw + u.gx;
+    if (ourTiles.has(idx)) {
+      const treaty = getTreaty(gameState, civSlot, u.owner);
+      // Only count as intrusion if not at war (war units are expected)
+      if (treaty !== 'war' && haveContact(gameState, civSlot, u.owner)) {
+        intruders++;
+        intruderCivs.add(u.owner);
+      }
+    }
+  }
+
+  return { intruders, intruderCivs };
 }
 
 // ── Per-Continent Military Analysis ─────────────────────────────
@@ -416,7 +736,7 @@ function shouldDeclareWar(civSlot, targetCiv, continentData, gameState) {
   // The original uses `_rand()` checks scattered throughout; we simplify
   // to a single probabilistic gate per turn
   const warChance = 0.2 + 0.1 * personality.militarism + difficultyBonus;
-  if (Math.random() > warChance) return false;
+  if ((gameState.rng ? gameState.rng.random() : Math.random()) > warChance) return false;
 
   return true;
 }
@@ -545,7 +865,7 @@ function shouldDemandTribute(civSlot, targetCiv, continentData, gameState) {
   if ((turnNumber + civSlot * 3 + targetCiv) % 10 !== 0) return null;
 
   // Peaceful leaders rarely demand tribute
-  if (personality.militarism < 0 && Math.random() > 0.33) return null;
+  if (personality.militarism < 0 && (gameState.rng ? gameState.rng.random() : Math.random()) > 0.33) return null;
 
   // Military comparison
   const balance = evaluateMilitaryBalance(civSlot, targetCiv, continentData, gameState);
@@ -590,7 +910,7 @@ function shouldDemandTribute(civSlot, targetCiv, continentData, gameState) {
 
   // FUN_0055d685 ~5446: barbarian-like civs have 1-in-3 random gate
   // We apply a general random check for less aggressive leaders
-  if (personality.militarism <= 0 && Math.random() > 0.5) return null;
+  if (personality.militarism <= 0 && (gameState.rng ? gameState.rng.random() : Math.random()) > 0.5) return null;
 
   return { targetCiv, amount };
 }
@@ -683,12 +1003,15 @@ function processFirstContact(civSlot, targetCiv, gameState) {
 /**
  * Respond to any unresolved treaty proposals addressed to this civ.
  *
- * Ported acceptance logic from FUN_0045705e attitude scoring:
- *   - Base attitude from DAT_0064b114 (historical relations)
- *   - Modified by alliance status, hatred, strength ratio
- *   - Thresholds: attitude < 26 → halve willingness,
- *                 attitude < 4 (hostile) → reduce further,
- *                 attitude > 74 → boost willingness
+ * O.1 Full Negotiation State Machine:
+ *   1. Determine greeting tone from attitude
+ *   2. Evaluate proposal type with attitude-based thresholds
+ *   3. For alliance: attitude > 74 required
+ *   4. For peace:    attitude > 50 OR military weakness
+ *   5. For ceasefire: attitude > 26 OR multi-front war
+ *   6. If rejected, generate counter-offer
+ *
+ * Ported from FUN_0045705e attitude scoring with full thresholds.
  */
 function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
   const actions = [];
@@ -701,6 +1024,8 @@ function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
     const p = proposals[i];
     if (!p || p.resolved || p.to !== civSlot) continue;
 
+    const attitude = getAttitude(gameState, civSlot, p.from);
+    const tone = getGreetingTone(attitude);
     const balance = evaluateMilitaryBalance(
       civSlot, p.from, continentData, gameState);
     const ourStr = calcMilitaryStrength(gameState, civSlot);
@@ -710,24 +1035,59 @@ function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
 
     let accept = false;
 
-    // Accept peace/ceasefire if:
-    // - They're stronger or roughly equal (ratio < 1.5)
-    // - We're fighting on multiple fronts
-    // - We're weak on shared continents
-    // - Peaceful personality
-    if (ratio < 1.5) accept = true;
-    if (warCount > 1) accept = true;
-    if (balance.weakCount > 0) accept = true;
-    if (personality.militarism < 0) accept = true;
-
-    // Reject if we clearly dominate and are aggressive
-    if (ratio > 2.0 && balance.dominantCount > 0 && personality.militarism > 0) {
-      accept = false;
+    if (p.treaty === 'alliance') {
+      // O.1 Treaty evaluation: alliance if attitude > 74
+      if (attitude > 74) accept = true;
+      // Also accept if we share enemies and are relatively weak
+      if (attitude > 50 && warCount > 0 && ratio < 1.0) accept = true;
+      // Enthusiastic greeting → always consider
+      if (tone === 'enthusiastic') accept = true;
+      // Hostile/guarded → never accept alliance
+      if (tone === 'hostile' || tone === 'guarded') accept = false;
+    } else if (p.treaty === 'peace') {
+      // O.1 Treaty evaluation: peace if attitude > 50
+      if (attitude > 50) accept = true;
+      // Accept if they're stronger or roughly equal
+      if (ratio < 1.5) accept = true;
+      if (warCount > 1) accept = true;
+      if (balance.weakCount > 0) accept = true;
+      if (personality.militarism < 0) accept = true;
+      // Reject if we clearly dominate and are aggressive
+      if (ratio > 2.0 && balance.dominantCount > 0 && personality.militarism > 0) {
+        accept = false;
+      }
+      // Hostile tone halves willingness (FUN_0045705e attitude < 4)
+      if (tone === 'hostile' && ratio > 0.8) accept = false;
+    } else {
+      // Ceasefire: attitude > 26 OR multi-front pressure
+      if (attitude > 0) accept = true;
+      if (ratio < 1.5) accept = true;
+      if (warCount > 1) accept = true;
+      if (balance.weakCount > 0) accept = true;
+      if (personality.militarism < 0) accept = true;
+      // Reject if dominant + aggressive
+      if (ratio > 2.0 && balance.dominantCount > 0 && personality.militarism > 0) {
+        accept = false;
+      }
     }
 
     const action = { type: 'RESPOND_TREATY', proposalIndex: i, accept };
     const err = validateAction(gameState, mapBase, action, civSlot);
-    if (!err) actions.push(action);
+    if (!err) {
+      actions.push(action);
+      // O.1: Attitude adjustment on accept/reject
+      if (accept) {
+        actions.push(makeAttitudeAction(civSlot, p.from, +10));
+      } else {
+        actions.push(makeAttitudeAction(civSlot, p.from, -5));
+        // O.1: Counter-offer on rejection
+        const counter = generateCounterOffer(civSlot, p.from, 'treaty', gameState);
+        if (counter) {
+          const cErr = validateAction(gameState, mapBase, counter, civSlot);
+          if (!cErr) actions.push(counter);
+        }
+      }
+    }
   }
 
   return actions;
@@ -740,9 +1100,12 @@ function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
 /**
  * Respond to unresolved tribute demands.
  *
+ * O.1 Full Demand Evaluation:
+ *   - Use evaluateDemand() with attitude thresholds
+ *   - Generate counter-offers when rejecting
+ *   - Attitude adjustments for accept/reject
+ *
  * From FUN_0045705e: acceptance based on military ratio and attitude.
- * Accept if demander is much stronger (>2x) and we can afford it,
- * or if we have Great Wall/UN wonder protection and prefer diplomacy.
  */
 function respondToTributeDemands(gameState, mapBase, civSlot, continentData) {
   const actions = [];
@@ -756,15 +1119,17 @@ function respondToTributeDemands(gameState, mapBase, civSlot, continentData) {
     const d = demands[i];
     if (!d || d.resolved || d.to !== civSlot) continue;
 
+    const attitude = getAttitude(gameState, civSlot, d.from);
     const balance = evaluateMilitaryBalance(
       civSlot, d.from, continentData, gameState);
     const ourStr = calcMilitaryStrength(gameState, civSlot);
     const theirStr = calcMilitaryStrength(gameState, d.from);
     const ratio = theirStr / Math.max(ourStr, 1);
 
-    let accept = false;
+    // O.1: Use evaluateDemand for the base decision
+    let accept = evaluateDemand(civSlot, d.from, 'gold', d.amount, gameState, continentData);
 
-    // Accept if they're much stronger (>2x) and we can afford it
+    // Override: accept if they're much stronger (>2x) and we can afford it
     if (ratio > 2 && treasury >= d.amount) accept = true;
 
     // Peaceful leaders accept more readily
@@ -785,7 +1150,752 @@ function respondToTributeDemands(gameState, mapBase, civSlot, continentData) {
 
     const action = { type: 'RESPOND_DEMAND', demandIndex: i, accept };
     const err = validateAction(gameState, mapBase, action, civSlot);
-    if (!err) actions.push(action);
+    if (!err) {
+      actions.push(action);
+      // O.1: Attitude changes
+      if (accept) {
+        // Paying tribute slightly increases their view of us
+        actions.push(makeAttitudeAction(d.from, civSlot, +5));
+      } else {
+        // Rejection worsens relations
+        actions.push(makeAttitudeAction(d.from, civSlot, -10));
+        // O.1: Counter-offer on rejection
+        const counter = generateCounterOffer(civSlot, d.from, 'gold', gameState);
+        if (counter) {
+          const cErr = validateAction(gameState, mapBase, counter, civSlot);
+          if (!cErr) actions.push(counter);
+        }
+      }
+    }
+  }
+
+  return actions;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O.2: AI Tech Exchange — AI-to-AI tech trading
+//
+// Port of FUN_0055d1e2 (tech/peace negotiation between two AI civs):
+//   - Evaluate mutual benefit
+//   - "Superior civ" blocking: if strongest human is far ahead, block
+//   - Alliance-based tech tribute: allies share techs freely
+//   - One tech per exchange per turn
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Generate AI-to-AI tech exchange actions for this civ.
+ *
+ * Each AI civ can perform at most one tech exchange per turn.
+ * Allies share techs freely. Non-allied civs trade based on
+ * mutual benefit (each gives one tech the other doesn't have).
+ *
+ * @param {number} civSlot - the AI civ
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {object} continentData
+ * @param {Array<string>|null} debugLog
+ * @returns {Array<object>} actions
+ */
+function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debugLog) {
+  const actions = [];
+
+  // Both civs must be AI
+  if (isHumanCiv(gameState, civSlot)) return actions;
+
+  // Superior civ blocking check
+  if (isTechTradeBlocked(gameState, civSlot, civSlot)) return actions;
+
+  let traded = false;
+
+  for (let other = 1; other < 8; other++) {
+    if (other === civSlot) continue;
+    if (!(gameState.civsAlive & (1 << other))) continue;
+    if (isHumanCiv(gameState, other)) continue;
+    if (!haveContact(gameState, civSlot, other)) continue;
+    if (traded) break; // one exchange per turn
+
+    const treaty = getTreaty(gameState, civSlot, other);
+    if (treaty === 'war') continue;
+
+    // Check per-pair frequency: trade every 4 turns per pair
+    const turnNumber = gameState.turn?.number ?? 0;
+    if ((turnNumber + civSlot * 7 + other * 3) % 4 !== 0) continue;
+
+    // Find tradable techs in each direction
+    const weCanGive = findTradableTechs(gameState, civSlot, other);
+    const theyCanGive = findTradableTechs(gameState, other, civSlot);
+
+    if (treaty === 'alliance') {
+      // O.2: Alliance-based tech tribute — allies share techs freely
+      // Give our best tech to ally (one per turn)
+      if (weCanGive.length > 0) {
+        // Pick the tech with highest value for the recipient
+        let bestTech = weCanGive[0];
+        let bestVal = 0;
+        for (const tid of weCanGive) {
+          const val = valueTech(tid, other, gameState);
+          if (val > bestVal) { bestVal = val; bestTech = tid; }
+        }
+        actions.push({
+          type: 'EXECUTE_TRADE',
+          fromCiv: civSlot,
+          toCiv: other,
+          transaction: { from: civSlot, to: other, techs: [bestTech] },
+        });
+        // Receive their best tech in return (if they have one)
+        if (theyCanGive.length > 0) {
+          let theirBest = theyCanGive[0];
+          let theirBestVal = 0;
+          for (const tid of theyCanGive) {
+            const val = valueTech(tid, civSlot, gameState);
+            if (val > theirBestVal) { theirBestVal = val; theirBest = tid; }
+          }
+          actions.push({
+            type: 'EXECUTE_TRADE',
+            fromCiv: other,
+            toCiv: civSlot,
+            transaction: { from: other, to: civSlot, techs: [theirBest] },
+          });
+        }
+        traded = true;
+        if (debugLog) {
+          const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+          const otherName = gameState.civs?.[other]?.name || `Civ ${other}`;
+          debugLog.push(`DIPLO: ${civName} exchanges tech with ally ${otherName}`);
+        }
+      }
+    } else {
+      // Non-allied: mutual benefit trade
+      // Both must have something to give
+      if (weCanGive.length === 0 || theyCanGive.length === 0) continue;
+
+      // Check attitude — need at least neutral relations
+      const attitude = getAttitude(gameState, civSlot, other);
+      if (attitude < 0) continue;
+
+      // Evaluate mutual benefit: pick techs of similar value
+      let ourBestTech = weCanGive[0];
+      let ourBestVal = 0;
+      for (const tid of weCanGive) {
+        const val = valueTech(tid, other, gameState);
+        if (val > ourBestVal) { ourBestVal = val; ourBestTech = tid; }
+      }
+
+      let theirBestTech = theyCanGive[0];
+      let theirBestVal = 0;
+      for (const tid of theyCanGive) {
+        const val = valueTech(tid, civSlot, gameState);
+        if (val > theirBestVal) { theirBestVal = val; theirBestTech = tid; }
+      }
+
+      // Only trade if values are within 2:1 ratio (fair trade)
+      const valRatio = ourBestVal / Math.max(theirBestVal, 1);
+      if (valRatio > 2.0 || valRatio < 0.5) continue;
+
+      // Random gate: 50% chance per eligible pair
+      if ((gameState.rng ? gameState.rng.random() : Math.random()) > 0.5) continue;
+
+      actions.push({
+        type: 'EXECUTE_TRADE',
+        fromCiv: civSlot,
+        toCiv: other,
+        transaction: { from: civSlot, to: other, techs: [ourBestTech] },
+      });
+      actions.push({
+        type: 'EXECUTE_TRADE',
+        fromCiv: other,
+        toCiv: civSlot,
+        transaction: { from: other, to: civSlot, techs: [theirBestTech] },
+      });
+      traded = true;
+
+      // Improve attitudes after successful trade
+      actions.push(makeAttitudeAction(civSlot, other, +5));
+      actions.push(makeAttitudeAction(other, civSlot, +5));
+
+      if (debugLog) {
+        const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+        const otherName = gameState.civs?.[other]?.name || `Civ ${other}`;
+        debugLog.push(`DIPLO: ${civName} trades tech with ${otherName} (mutual benefit)`);
+      }
+    }
+  }
+
+  return actions;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O.3: Alliance/Crusade Proposals — "HELPME" alliance formation
+//
+// Port of FUN_0055d685 (third-party "join war" requests):
+//   - AI offers gold + techs for alliance against mutual enemy
+//   - Crusade: multiple civs allied against dominant civ
+//   - Evaluate: strength of target vs combined alliance strength
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Generate alliance proposals and crusade requests.
+ *
+ * "HELPME" pattern:
+ *   1. Find our biggest enemy (strongest civ we're at war with)
+ *   2. Find potential allies (civs at peace with us, not allied with enemy)
+ *   3. Offer alliance + gold/tech incentive if combined strength > enemy
+ *
+ * Crusade pattern:
+ *   1. Find the dominant civ (highest power ranking)
+ *   2. If dominant civ is much stronger than any single civ
+ *   3. Propose alliances between multiple weaker civs against dominant
+ *
+ * @param {number} civSlot
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {object} continentData
+ * @param {Array<string>|null} debugLog
+ * @returns {Array<object>} actions
+ */
+function generateAllianceProposals(civSlot, gameState, mapBase, continentData, debugLog) {
+  const actions = [];
+  const personality = getPersonality(gameState, civSlot);
+  const turnNumber = gameState.turn?.number ?? 0;
+
+  // Only consider alliances periodically (every 6 turns)
+  if ((turnNumber + civSlot * 5) % 6 !== 0) return actions;
+
+  // ── HELPME: Find our biggest war enemy ──
+  let biggestEnemy = -1;
+  let biggestEnemyStr = 0;
+  for (let i = 1; i < 8; i++) {
+    if (i === civSlot) continue;
+    if (!(gameState.civsAlive & (1 << i))) continue;
+    if (getTreaty(gameState, civSlot, i) !== 'war') continue;
+    if (!haveContact(gameState, civSlot, i)) continue;
+    const str = calcMilitaryStrength(gameState, i);
+    if (str > biggestEnemyStr) {
+      biggestEnemyStr = str;
+      biggestEnemy = i;
+    }
+  }
+
+  if (biggestEnemy >= 0) {
+    const ourStr = calcMilitaryStrength(gameState, civSlot);
+    // Only seek help if enemy is stronger
+    if (biggestEnemyStr > ourStr * 0.8) {
+      for (let ally = 1; ally < 8; ally++) {
+        if (ally === civSlot || ally === biggestEnemy) continue;
+        if (!(gameState.civsAlive & (1 << ally))) continue;
+        if (!haveContact(gameState, civSlot, ally)) continue;
+
+        const allyTreaty = getTreaty(gameState, civSlot, ally);
+        const allyEnemyTreaty = getTreaty(gameState, ally, biggestEnemy);
+
+        // Can't propose alliance if already at war with potential ally
+        if (allyTreaty === 'war') continue;
+        // Skip if ally is already allied with our enemy
+        if (allyEnemyTreaty === 'alliance') continue;
+        // Already allied — no need to propose
+        if (allyTreaty === 'alliance') continue;
+
+        const allyStr = calcMilitaryStrength(gameState, ally);
+        const combinedStr = ourStr + allyStr;
+
+        // Only propose if combined strength exceeds enemy strength
+        if (combinedStr < biggestEnemyStr * 0.9) continue;
+
+        // Check attitude — need at least neutral
+        const attitude = getAttitude(gameState, civSlot, ally);
+        if (attitude < -10) continue;
+
+        // Propose alliance
+        const hasPending = gameState.treatyProposals?.some(
+          p => p.from === civSlot && p.to === ally && !p.resolved
+        );
+        if (hasPending) continue;
+
+        const action = { type: 'PROPOSE_TREATY', targetCiv: ally, treaty: 'alliance' };
+        const err = validateAction(gameState, mapBase, action, civSlot);
+        if (!err) {
+          actions.push(action);
+          actions.push(makeAttitudeAction(civSlot, ally, +15));
+
+          // O.3: Offer gold incentive if we have surplus
+          const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
+          if (treasury > 200) {
+            const giftAmount = Math.min(Math.floor(treasury * 0.1), 100);
+            actions.push({
+              type: 'EXECUTE_TRADE',
+              fromCiv: civSlot,
+              toCiv: ally,
+              transaction: { from: civSlot, to: ally, gold: giftAmount },
+            });
+          }
+
+          // O.3: Offer tech incentive (one tech ally doesn't have)
+          const tradableTechs = findTradableTechs(gameState, civSlot, ally);
+          if (tradableTechs.length > 0 && !isTechTradeBlocked(gameState, civSlot, ally)) {
+            const giftTech = tradableTechs[0]; // cheapest available
+            actions.push({
+              type: 'EXECUTE_TRADE',
+              fromCiv: civSlot,
+              toCiv: ally,
+              transaction: { from: civSlot, to: ally, techs: [giftTech] },
+            });
+          }
+
+          if (debugLog) {
+            const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+            const allyName = gameState.civs?.[ally]?.name || `Civ ${ally}`;
+            const enemyName = gameState.civs?.[biggestEnemy]?.name || `Civ ${biggestEnemy}`;
+            debugLog.push(`DIPLO: ${civName} proposes HELPME alliance with ${allyName} against ${enemyName}`);
+          }
+          break; // one alliance proposal per turn
+        }
+      }
+    }
+  }
+
+  // ── Crusade: Rally against dominant civ ──
+  // Find the most powerful civ overall
+  let dominantCiv = -1;
+  let dominantStr = 0;
+  for (let i = 1; i < 8; i++) {
+    if (!(gameState.civsAlive & (1 << i))) continue;
+    const str = calcMilitaryStrength(gameState, i);
+    const cities = countCities(gameState, i);
+    const power = str + cities * 20;
+    if (power > dominantStr) {
+      dominantStr = power;
+      dominantCiv = i;
+    }
+  }
+
+  // Only initiate crusade if dominant civ is not us and is much stronger
+  if (dominantCiv >= 0 && dominantCiv !== civSlot) {
+    const ourStr = calcMilitaryStrength(gameState, civSlot);
+    const ourPower = ourStr + countCities(gameState, civSlot) * 20;
+
+    // Dominant must be 2x our power
+    if (dominantStr > ourPower * 2) {
+      const domTreaty = getTreaty(gameState, civSlot, dominantCiv);
+      // Only crusade if already hostile or at war
+      const domAttitude = getAttitude(gameState, civSlot, dominantCiv);
+      if (domAttitude < 0 || domTreaty === 'war') {
+        // Look for other weak civs to ally with
+        for (let ally = 1; ally < 8; ally++) {
+          if (ally === civSlot || ally === dominantCiv) continue;
+          if (!(gameState.civsAlive & (1 << ally))) continue;
+          if (!haveContact(gameState, civSlot, ally)) continue;
+          const allyTreaty = getTreaty(gameState, civSlot, ally);
+          if (allyTreaty === 'war' || allyTreaty === 'alliance') continue;
+
+          // Only approach civs who are also threatened by dominant
+          const allyPower = calcMilitaryStrength(gameState, ally) + countCities(gameState, ally) * 20;
+          if (dominantStr <= allyPower * 1.5) continue; // not threatened enough
+
+          const hasPending = gameState.treatyProposals?.some(
+            p => p.from === civSlot && p.to === ally && !p.resolved
+          );
+          if (hasPending) continue;
+
+          // Propose alliance (crusade)
+          const action = { type: 'PROPOSE_TREATY', targetCiv: ally, treaty: 'alliance' };
+          const err = validateAction(gameState, mapBase, action, civSlot);
+          if (!err) {
+            actions.push(action);
+            actions.push(makeAttitudeAction(civSlot, ally, +10));
+            if (debugLog) {
+              const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+              const allyName = gameState.civs?.[ally]?.name || `Civ ${ally}`;
+              const domName = gameState.civs?.[dominantCiv]?.name || `Civ ${dominantCiv}`;
+              debugLog.push(`DIPLO: ${civName} proposes crusade alliance with ${allyName} against dominant ${domName}`);
+            }
+            break; // one crusade proposal per turn
+          }
+        }
+      }
+    }
+  }
+
+  return actions;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O.4: Full ai_diplomacy_turn_processing
+//
+// Per-turn AI diplomacy orchestrator. Port of main loop in
+// FUN_0055d8d8 + FUN_0045705e:
+//   - Government management during anarchy (choose best government)
+//   - AI random seed roll per turn for stochastic decisions
+//   - Patience decrement (every 3rd turn)
+//   - Alliance violation detection and war declaration
+//   - 32-turn / 16-turn / 8-turn periodic flag clearing
+//   - Ceasefire expiration checks
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Per-turn diplomacy housekeeping actions.
+ *
+ * Called once at the start of diplomacy processing each turn.
+ * Handles periodic state updates that the original binary does
+ * in the main diplomacy loop body.
+ *
+ * @param {number} civSlot
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {Array<string>|null} debugLog
+ * @returns {Array<object>} actions
+ */
+function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
+  const actions = [];
+  const civ = gameState.civs?.[civSlot];
+  if (!civ) return actions;
+
+  const turnNumber = gameState.turn?.number ?? 0;
+
+  // ── O.4: Government management during anarchy ──
+  // If in anarchy with no pending government, pick the best one.
+  // Port of FUN_0055f5a3 reactive path (param_2=1):
+  //   During anarchy, the AI must choose a government to emerge into.
+  if (civ.government === 'anarchy' && !civ.pendingGovernment) {
+    const bestGovt = chooseBestGovernment(civSlot, gameState);
+    if (bestGovt) {
+      const action = { type: 'REVOLUTION', government: bestGovt };
+      const err = validateAction(gameState, mapBase, action, civSlot);
+      if (!err) {
+        actions.push(action);
+        if (debugLog) {
+          const civName = civ.name || `Civ ${civSlot}`;
+          debugLog.push(`DIPLO: ${civName} chooses ${bestGovt} during anarchy`);
+        }
+      }
+    }
+  }
+
+  // ── O.4: Patience decrement (every 3rd turn) ──
+  // Port of FUN_0055d8d8 ~5500: DAT_006554f8[civ] -= 1 every 3 turns
+  // Patience decreases over time, making AI more aggressive
+  if (turnNumber > 0 && turnNumber % 3 === 0) {
+    const currentPatience = civ.patience ?? 3;
+    if (currentPatience > 0) {
+      // Emit attitude adjustments toward all contacted war enemies
+      // (simulates growing impatience with ongoing wars)
+      for (let i = 1; i < 8; i++) {
+        if (i === civSlot) continue;
+        if (!(gameState.civsAlive & (1 << i))) continue;
+        if (getTreaty(gameState, civSlot, i) === 'war' && haveContact(gameState, civSlot, i)) {
+          actions.push(makeAttitudeAction(civSlot, i, -2));
+        }
+      }
+    }
+  }
+
+  // ── O.4: Alliance violation detection ──
+  // Check if any ally is attacking civs we're at peace with.
+  // If so, warn (attitude penalty) and potentially break alliance.
+  for (let ally = 1; ally < 8; ally++) {
+    if (ally === civSlot) continue;
+    if (!(gameState.civsAlive & (1 << ally))) continue;
+    if (getTreaty(gameState, civSlot, ally) !== 'alliance') continue;
+
+    for (let third = 1; third < 8; third++) {
+      if (third === civSlot || third === ally) continue;
+      if (!(gameState.civsAlive & (1 << third))) continue;
+
+      const allyThirdTreaty = getTreaty(gameState, ally, third);
+      const ourThirdTreaty = getTreaty(gameState, civSlot, third);
+
+      // Ally is at war with someone we have peace/alliance with
+      if (allyThirdTreaty === 'war' && haveContact(gameState, ally, third) &&
+          (ourThirdTreaty === 'peace' || ourThirdTreaty === 'alliance')) {
+        // Small attitude penalty toward violating ally
+        actions.push(makeAttitudeAction(civSlot, ally, -3));
+      }
+    }
+  }
+
+  // ── O.4: 32-turn periodic attitude drift toward neutral ──
+  // Port of FUN_0055d8d8 ~5507-5509: every 32 turns, attitudes
+  // drift 1 point toward 0 (forgiveness / forgetting)
+  if (turnNumber > 0 && turnNumber % 32 === 0) {
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (!(gameState.civsAlive & (1 << i))) continue;
+      const att = getAttitude(gameState, civSlot, i);
+      if (att > 0) {
+        actions.push(makeAttitudeAction(civSlot, i, -1));
+      } else if (att < 0) {
+        actions.push(makeAttitudeAction(civSlot, i, +1));
+      }
+    }
+  }
+
+  // ── O.4: 16-turn periodic re-evaluation of peace treaties ──
+  // Every 16 turns, consider upgrading ceasefire to peace
+  if (turnNumber > 0 && turnNumber % 16 === 0) {
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (!(gameState.civsAlive & (1 << i))) continue;
+      if (getTreaty(gameState, civSlot, i) !== 'ceasefire') continue;
+
+      const attitude = getAttitude(gameState, civSlot, i);
+      if (attitude > 25) {
+        const hasPending = gameState.treatyProposals?.some(
+          p => (p.from === civSlot && p.to === i || p.from === i && p.to === civSlot) && !p.resolved
+        );
+        if (!hasPending) {
+          const action = { type: 'PROPOSE_TREATY', targetCiv: i, treaty: 'peace' };
+          const err = validateAction(gameState, mapBase, action, civSlot);
+          if (!err) {
+            actions.push(action);
+            if (debugLog) {
+              const civName = civ.name || `Civ ${civSlot}`;
+              const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
+              debugLog.push(`DIPLO: ${civName} proposes upgrading ceasefire to peace with ${targetName}`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ── O.4: 8-turn periodic ceasefire expiration warning ──
+  // After 8 turns of ceasefire with negative attitude, consider war
+  if (turnNumber > 0 && turnNumber % 8 === 0) {
+    const personality = getPersonality(gameState, civSlot);
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (!(gameState.civsAlive & (1 << i))) continue;
+      if (getTreaty(gameState, civSlot, i) !== 'ceasefire') continue;
+
+      const attitude = getAttitude(gameState, civSlot, i);
+      // Hostile attitude + aggressive personality → ceasefire may expire into war
+      if (attitude < -25 && personality.militarism > 0) {
+        actions.push(makeAttitudeAction(civSlot, i, -5));
+      }
+    }
+  }
+
+  return actions;
+}
+
+/**
+ * Choose the best government for an AI civ during anarchy.
+ * Simplified version of FUN_0055f5a3 reactive path.
+ * Returns a government name string or null.
+ */
+function chooseBestGovernment(civSlot, gameState) {
+  const civ = gameState.civs?.[civSlot];
+  if (!civ) return null;
+
+  const civTechs = gameState.civTechs?.[civSlot];
+  if (!civTechs) return 'despotism';
+
+  // Score each government
+  const govts = ['despotism', 'monarchy', 'communism', 'fundamentalism', 'republic', 'democracy'];
+  let bestGovt = 'despotism';
+  let bestScore = 0;
+
+  const cityCount = countCities(gameState, civSlot);
+  const warCount = countWars(gameState, civSlot);
+  const personality = getPersonality(gameState, civSlot);
+
+  for (const govt of govts) {
+    // Check tech prereq
+    const prereq = GOVT_TECH_PREREQS[govt];
+    if (prereq >= 0 && !civTechs.has(prereq)) continue;
+
+    // Statue of Liberty (wonder 19) grants all governments
+    if (prereq >= 0 && !civTechs.has(prereq) && !hasWonderEffect(gameState, civSlot, 19)) continue;
+
+    const gIdx = GOVT_INDEX[govt] ?? 0;
+    let score = gIdx; // higher government = generally better
+
+    switch (govt) {
+      case 'despotism':
+        score = 1;
+        break;
+      case 'monarchy':
+        score = 5 + cityCount;
+        if (warCount > 0) score += 3;
+        break;
+      case 'communism':
+        score = 8 + cityCount;
+        if (warCount > 0) score += 5;
+        if (personality.militarism > 0) score += 3;
+        break;
+      case 'fundamentalism':
+        score = 6;
+        if (personality.militarism > 0) score += 8;
+        if (warCount > 0) score += 4;
+        break;
+      case 'republic':
+        score = 10 + cityCount * 2;
+        if (warCount > 1) score -= 5;
+        if (personality.militarism < 0) score += 3;
+        break;
+      case 'democracy':
+        score = 14 + cityCount * 2;
+        if (warCount > 0) score -= 8;
+        if (personality.militarism > 0) score -= 5;
+        if (personality.militarism < 0) score += 5;
+        break;
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestGovt = govt;
+    }
+  }
+
+  return bestGovt;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// O.5: Full ai_evaluate_diplomacy_toward_human
+//
+// Multi-factor attitude evaluation. Port of FUN_0045705e full
+// attitude computation loop (~3540-3679):
+//   - Border intrusion detection
+//   - Unit withdrawal mechanics
+//   - Senate scandal for espionage
+//   - Spaceship status checks (racing → hostile)
+//   - Alliance strength calculation
+//   - Wonder effects on attitude
+//   - Personality modifiers (militarism, expansionism)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Compute multi-factor attitude adjustments toward all civs.
+ *
+ * Called once per turn. Evaluates each contacted civ and generates
+ * ADJUST_ATTITUDE actions that shift the relationship based on
+ * current game conditions.
+ *
+ * @param {number} civSlot - evaluating AI civ
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {object} continentData
+ * @param {Array<string>|null} debugLog
+ * @returns {Array<object>} attitude adjustment actions
+ */
+function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, debugLog) {
+  const actions = [];
+  const personality = getPersonality(gameState, civSlot);
+  const ourStr = calcMilitaryStrength(gameState, civSlot);
+  const ourCities = countCities(gameState, civSlot);
+
+  // O.5: Border intrusion detection
+  const { intruders, intruderCivs } = detectBorderIntrusions(gameState, mapBase, civSlot);
+  for (const intruderCiv of intruderCivs) {
+    // Each intrusion worsens attitude by -5 (cumulative)
+    actions.push(makeAttitudeAction(civSlot, intruderCiv, -5));
+    if (debugLog) {
+      const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+      const intName = gameState.civs?.[intruderCiv]?.name || `Civ ${intruderCiv}`;
+      debugLog.push(`DIPLO: ${civName} detects border intrusion by ${intName}`);
+    }
+  }
+
+  for (let other = 1; other < 8; other++) {
+    if (other === civSlot) continue;
+    if (!(gameState.civsAlive & (1 << other))) continue;
+    if (!haveContact(gameState, civSlot, other)) continue;
+
+    let attDelta = 0;
+    const treaty = getTreaty(gameState, civSlot, other);
+    const attitude = getAttitude(gameState, civSlot, other);
+
+    // ── O.5: Personality modifiers ──
+    // Militarist leaders distrust everyone slightly
+    if (personality.militarism > 0) attDelta -= 1;
+    // Expansionist leaders dislike civs with more cities
+    const theirCities = countCities(gameState, other);
+    if (personality.expansionism > 0 && theirCities > ourCities) {
+      attDelta -= 2;
+    }
+    // Peaceful leaders slowly warm to non-enemies
+    if (personality.militarism < 0 && treaty !== 'war') {
+      attDelta += 1;
+    }
+
+    // ── O.5: Military threat assessment ──
+    const theirStr = calcMilitaryStrength(gameState, other);
+    if (theirStr > ourStr * 2 && treaty !== 'alliance') {
+      // Much stronger civ → fear-based hostility
+      attDelta -= 3;
+    } else if (ourStr > theirStr * 3 && treaty !== 'war') {
+      // We're much stronger → mild contempt
+      attDelta -= 1;
+    }
+
+    // ── O.5: Alliance strength bonus ──
+    if (treaty === 'alliance') {
+      // Allies get +3 per turn (up to cap)
+      if (attitude < 80) attDelta += 3;
+    }
+
+    // ── O.5: Peace treaty warmth ──
+    if (treaty === 'peace') {
+      if (attitude < 50) attDelta += 1;
+    }
+
+    // ── O.5: Wonder effects on attitude ──
+    // Eiffel Tower (wonder 20): other civs view us more favorably
+    if (hasWonderEffect(gameState, civSlot, 20)) {
+      attDelta += 2;
+    }
+    // Women's Suffrage (wonder 21): stability bonus, others respect
+    if (hasWonderEffect(gameState, civSlot, 21)) {
+      attDelta += 1;
+    }
+
+    // ── O.5: Spaceship race detection ──
+    // If other civ is building spaceship parts, become hostile
+    if (gameState.spaceships?.[other]) {
+      const ss = gameState.spaceships[other];
+      if (ss.structurals > 0 || ss.components > 0 || ss.modules > 0) {
+        // They're building a spaceship — racing → hostile
+        attDelta -= 5;
+        if (debugLog && attitude > -20) {
+          const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+          const otherName = gameState.civs?.[other]?.name || `Civ ${other}`;
+          debugLog.push(`DIPLO: ${civName} grows hostile toward ${otherName} (spaceship race)`);
+        }
+      }
+    }
+    // Also check raw spaceship structural count (from parser data)
+    const otherCiv = gameState.civs?.[other];
+    if (otherCiv?.spaceshipStructural > 0) {
+      attDelta -= 3;
+    }
+
+    // ── O.5: Espionage scandal ──
+    // If other civ was caught spying on us (provocation flag),
+    // major attitude penalty
+    const dKey = civSlot < other ? `${civSlot}-${other}` : `${other}-${civSlot}`;
+    const diplo = gameState.diplomacy?.[dKey];
+    if (diplo?.sneak) {
+      attDelta -= 8;
+    }
+
+    // ── O.5: Shared enemy bonus ──
+    // If we and other are both at war with the same civ, attitude improves
+    for (let third = 1; third < 8; third++) {
+      if (third === civSlot || third === other) continue;
+      if (!(gameState.civsAlive & (1 << third))) continue;
+      const ourWar = getTreaty(gameState, civSlot, third) === 'war' && haveContact(gameState, civSlot, third);
+      const theirWar = getTreaty(gameState, other, third) === 'war' && haveContact(gameState, other, third);
+      if (ourWar && theirWar) {
+        attDelta += 2;
+        break; // only count once
+      }
+    }
+
+    // Clamp total per-turn delta to avoid extreme swings
+    attDelta = Math.max(-15, Math.min(15, attDelta));
+
+    if (attDelta !== 0) {
+      actions.push(makeAttitudeAction(civSlot, other, attDelta));
+    }
   }
 
   return actions;
@@ -798,12 +1908,18 @@ function respondToTributeDemands(gameState, mapBase, civSlot, continentData) {
 /**
  * Generate all diplomacy-related actions for an AI turn.
  *
- * Evaluation order follows FUN_0055d8d8's priority:
- *   1. Respond to incoming proposals/demands (time-sensitive)
+ * Evaluation order follows FUN_0055d8d8's priority, enhanced with
+ * Phase 6 Wave 6 (O.1-O.5) systems:
+ *
+ *   0. Per-turn housekeeping (O.4: patience, flags, anarchy govt)
+ *   0b. Multi-factor attitude evaluation (O.5)
+ *   1. Respond to incoming proposals/demands (O.1: full negotiation)
  *   2. Check for war declarations (most impactful proactive move)
  *   3. Check for peace proposals (urgent if losing)
  *   4. Check for tribute demands (opportunistic)
  *   5. Check for alliance breaks (rare)
+ *   6. AI tech exchange (O.2)
+ *   7. Alliance/crusade proposals (O.3)
  *
  * Uses per-continent military analysis ported from FUN_0055cbd5's
  * strength comparison loops across shared continents.
@@ -819,6 +1935,14 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
   try {
     // Compute continent-based military data once for all evaluations
     const continentData = computeContinentData(gameState, mapBase);
+
+    // ── 0. O.4: Per-turn diplomacy housekeeping ──
+    const housekeeping = diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog);
+    actions.push(...housekeeping);
+
+    // ── 0b. O.5: Multi-factor attitude evaluation ──
+    const attitudeActions = evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, debugLog);
+    actions.push(...attitudeActions);
 
     // ── 1. Respond to incoming proposals/demands first ──
     const treatyResponses = respondToTreatyProposals(
@@ -946,6 +2070,14 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
         }
       }
     }
+
+    // ── 6. O.2: AI tech exchange ──
+    const techExchangeActions = generateAiTechExchange(civSlot, gameState, mapBase, continentData, debugLog);
+    actions.push(...techExchangeActions);
+
+    // ── 7. O.3: Alliance/crusade proposals ──
+    const allianceActions = generateAllianceProposals(civSlot, gameState, mapBase, continentData, debugLog);
+    actions.push(...allianceActions);
 
   } catch (err) {
     console.error(`[diplomai] Error for civ ${civSlot}:`, err);

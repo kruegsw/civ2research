@@ -307,9 +307,8 @@ export function assessCityDefense(civSlot, threatLevel, aiData, gameState) {
     if (city.owner !== civSlot) continue;
     ourCities++;
     if (cityHasBuilding(city, defenseBuilding)) citiesWithDefBuilding++;
-    // Add city's trade surplus approximation (use city size as proxy)
-    // Original: local_8 += city.tradeSurplus. We don't have that field.
-    tradeSurplus += Math.max(0, city.size - 1); // rough proxy
+    // L.2: Use actual trade surplus computed by computeAiData (calcCityTrade)
+    tradeSurplus += city.tradeSurplus != null ? Math.max(0, city.tradeSurplus) : Math.max(0, city.size - 1);
   }
 
   // Check if civ has the tech prerequisite for the defense building
@@ -398,8 +397,8 @@ export function assessEconomy(civSlot, threatLevel, aiData, gameState) {
     if (city.owner !== civSlot) continue;
     ourCityCount++;
 
-    // Accumulate trade surplus proxy
-    tradeSurplus += Math.max(0, city.size - 1);
+    // L.2: Use actual trade surplus computed by computeAiData (calcCityTrade)
+    tradeSurplus += city.tradeSurplus != null ? Math.max(0, city.tradeSurplus) : Math.max(0, city.size - 1);
 
     // Original code calls FUN_004ea1f6 to recalc happiness — we skip that.
     // Count all buildings in this city
@@ -410,11 +409,10 @@ export function assessEconomy(civSlot, threatLevel, aiData, gameState) {
     // Check target building
     if (cityHasBuilding(city, targetBuilding)) citiesWithTarget++;
 
-    // Food surplus approximation: use city size as proxy for net food
-    // (original uses city.netFoodSurplus which we don't have)
+    // L.2: Use actual net food surplus computed by computeAiData (calcFoodSurplus)
     // Cities NOT in civil disorder contribute food
     if (!city.civilDisorder) {
-      totalFoodSurplus += Math.max(0, city.size);
+      totalFoodSurplus += city.netFoodSurplus != null ? city.netFoodSurplus : Math.max(0, city.size);
     }
   }
 
@@ -509,10 +507,10 @@ export function assessDiplomacy(civSlot, threatLevel, aiData, gameState) {
       hatredCount++;
     }
 
-    // Visibility: embassy flag, or human player has United Nations(24)
-    // or Marco Polo(9). Original checks DAT_0064c6c0[humanCiv*0x594+c*4] & 0x80
-    // Approximation: check if we have Marco Polo or UN
-    if (hasWonderEffect(gameState, civSlot, 24) ||  // United Nations (wonder 0x18)
+    // Visibility: embassy flag, or wonders (Marco Polo, United Nations)
+    // L.4: Use actual embassy tracking from aiData instead of wonder-only approximation
+    if ((aiData.embassyFlags && aiData.embassyFlags[civSlot]?.[c]) ||
+        hasWonderEffect(gameState, civSlot, 24) ||  // United Nations (wonder 0x18)
         hasWonderEffect(gameState, civSlot, 9)) {    // Marco Polo (wonder 9)
       visibleCivs++;
     }
@@ -533,7 +531,15 @@ export function assessDiplomacy(civSlot, threatLevel, aiData, gameState) {
   // Original: if contacts < 2 OR government > despotism OR has alliances
   //           OR (civ attribs & 0x100) OR powerRank > 6
   const govtIdx = getGovtIndex(gameState, civSlot);
-  const provoked = false; // DAT_0064c6a0 & 0x100 — nuke talk flag, not easily available
+  // L.4: Use actual provocation tracking from aiData (sneak attack / border intrusion flags)
+  // Original: DAT_0064c6a0 & 0x100 — nuke talk / provocation flag
+  let provoked = false;
+  if (aiData.provocationFlags) {
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot) continue;
+      if (aiData.provocationFlags[civSlot]?.[c]) { provoked = true; break; }
+    }
+  }
 
   if (contactCount < 2 || govtIdx > 1 || allianceCount > 0 ||
       provoked || aiData.powerRank[civSlot] > 6) {
@@ -548,7 +554,7 @@ export function assessDiplomacy(civSlot, threatLevel, aiData, gameState) {
       return 4;
     }
     // Check if we have embassy intelligence (DAT_0064c6a0 & 0x80)
-    // Approximation: we can see other civs via wonders
+    // L.4: visibleCivs now includes actual embassy tracking
     if (visibleCivs === 0) {
       // No intelligence → 6 (standard)
       return 6;

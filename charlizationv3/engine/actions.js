@@ -173,3 +173,21 @@ export const SPY_ESTABLISH_EMBASSY = 'SPY_ESTABLISH_EMBASSY';
 export const SPY_SABOTAGE_UNIT = 'SPY_SABOTAGE_UNIT';
 //   { type: 'SPY_SABOTAGE_UNIT', unitIndex, targetIndex }
 //   Spy sabotages enemy unit: deals 50% HP damage. Only Spies (not Diplomats).
+
+export const LAUNCH_SPACESHIP = 'LAUNCH_SPACESHIP';
+//   { type: 'LAUNCH_SPACESHIP' }
+//   Launch the civ's spaceship. Requires at least 1 structural, 1 component, 1 module.
+
+export const EXECUTE_TRADE = 'EXECUTE_TRADE';
+//   { type: 'EXECUTE_TRADE', transaction }
+//   Execute a diplomatic trade transaction (tech swap, gold exchange, map sharing).
+
+export const SPY_SUBVERT_CITY = 'SPY_SUBVERT_CITY';
+//   { type: 'SPY_SUBVERT_CITY', unitIndex }
+//   Spy-only operation: subvert a city (flip ownership). Like INCITE_REVOLT but
+//   keeps all buildings intact and units stay. Costs 2× normal incite cost. Spy only (type 47).
+
+export const CARAVAN_HELP_WONDER = 'CARAVAN_HELP_WONDER';
+//   { type: 'CARAVAN_HELP_WONDER', unitIndex, cityIndex }
+//   Caravan/Freight at a city building a wonder donates 50 shields to production.
+//   The caravan/freight unit is consumed.

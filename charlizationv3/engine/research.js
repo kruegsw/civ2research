@@ -41,8 +41,16 @@ export function getAvailableResearch(gameState, civSlot) {
 /**
  * Calculate the science cost for a civ to research a tech.
  *
- * Simplified formula suitable for multiplayer (skips AI catch-up,
- * scenario flags, etc.). Based on FUN_004c2788.
+ * Q.1: Enhanced with AI difficulty-based cost scaling from the binary.
+ * AI civs get costs multiplied by (14 - difficultyLevel) / 10:
+ *   Chieftain AI (0): ×1.4 (slower — helps human)
+ *   Warlord AI (1):   ×1.3
+ *   Prince AI (2):    ×1.2
+ *   King AI (3):      ×1.1
+ *   Emperor AI (4):   ×1.0 (no change)
+ *   Deity AI (5):     ×0.9 (faster — challenges human)
+ *
+ * Based on FUN_004c2788.
  *
  * @param {object} gameState
  * @param {number} civSlot
@@ -87,7 +95,18 @@ export function calcResearchCost(gameState, civSlot) {
   }
 
   // Final cost = baseCost × totalTechs
-  const cost = Math.max(1, Math.min(32000, baseCost * totalTechs));
+  let cost = Math.max(1, Math.min(32000, baseCost * totalTechs));
+
+  // ── Q.1: AI difficulty-based cost scaling ──
+  // Binary: aiCost = baseCost * (14 - difficultyLevel) / 10
+  // Check if this civ is AI (not in humanPlayers bitmask)
+  const isHuman = gameState.humanPlayers & (1 << civSlot);
+  if (!isHuman && civSlot > 0) {
+    // AI cost modifier: (14 - diffIdx) / 10
+    // Chieftain(0): 14/10 = 1.4×, Deity(5): 9/10 = 0.9×
+    cost = Math.max(1, Math.floor(cost * (14 - diffIdx) / 10));
+  }
+
   return cost;
 }
 

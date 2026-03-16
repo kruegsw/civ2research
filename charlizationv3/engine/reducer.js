@@ -9,22 +9,23 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN } from './defs.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER } from './actions.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, SHIELD_BOX_FACTOR, ADVANCE_NAMES, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, SUPPORT_EXEMPT_TYPES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, TERRAIN_TRANSFORM, TRANSFORM_TURNS, POLLUTION_THRESHOLD, UNIT_UPGRADE_TO, BARBARIAN_LAND_UNITS, BARBARIAN_SEA_UNITS, BARBARIAN_SPAWN_FREQUENCY, BARBARIAN_MAX_UNITS, BARBARIAN_MIN_TURN, ADVANCE_EPOCH, COMMODITY_NAMES } from './defs.js';
 import { calcResearchCost, grantAdvance, getAvailableResearch, handleTechDiscovery, upgradeUnitsForTech } from './research.js';
-import { checkGameEndConditions } from './spaceship.js';
-import { resolveDirection, moveCost } from './movement.js';
-import { findPath } from './pathfinding.js';
+import { checkGameEndConditions, recalcSpaceshipStats, launchSpaceship } from './spaceship.js';
+import { resolveDirection, moveCost, calcEffectiveMovementPoints, checkTriremeSinking, checkAirFuel, findAvailableTransport } from './movement.js';
+import { findPath, calcGotoDirection, findRoadPath } from './pathfinding.js';
 import { updateVisibility } from './visibility.js';
 import { calcShieldProduction, getProductionCost, calcCityTrade, getTileYields } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
 import { resolveCombat, calcStackBestDefender } from './combat.js';
-import { cityHasBuilding, hasWonderEffect } from './utils.js';
+import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
 import { processCityTurn } from './cityturn.js';
 import { handleCityCapture, handleCivilWar } from './citycapture.js';
-import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance } from './diplomacy.js';
-import { checkSpySurvival, spyCaughtCheck, handleEspionageIncident, calcBribeCostEnhanced, calcInciteCostEnhanced } from './espionage.js';
+import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance, executeTransaction, processDiplomacyTimers, isReputationTooLow } from './diplomacy.js';
+import { checkSpySurvival, spyCaughtCheck, handleEspionageIncident, calcBribeCostEnhanced, calcInciteCostEnhanced, calcSpySuccessChance } from './espionage.js';
 import { dispatchEvents, EVENT_TURN, EVENT_CITY_TAKEN, EVENT_UNIT_KILLED, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from './events.js';
+import { getNumericYear } from './year.js';
 
 /**
  * Apply completed worker improvement to the map tile data.
@@ -280,14 +281,15 @@ function anyoneHasTech(state, techId) {
  * Tech checks use ANY civ's discoveries, not just the triggering civ.
  */
 function getHutMercType(state) {
-  if (Math.random() < 0.5) {
+  const rng = state.rng;
+  if (rng.random() < 0.5) {
     // 2-move class: Horsemen→Elephant→Knights→Crusaders→Dragoons→Riflemen
     if (anyoneHasTech(state, 17)) return 11; // Conscription → Riflemen
     if (anyoneHasTech(state, 42)) return 20; // Leadership → Dragoons
     if (anyoneHasTech(state, 55)) return 18; // Monotheism → Crusaders
     if (anyoneHasTech(state, 11)) return 19; // Chivalry → Knights
-    if (anyoneHasTech(state, 64) && Math.random() < 0.5) return 17; // Polytheism → 50% Elephant
-    return Math.random() < 0.67 ? 15 : 16; // 2/3 Horsemen, 1/3 Chariot
+    if (anyoneHasTech(state, 64) && rng.random() < 0.5) return 17; // Polytheism → 50% Elephant
+    return rng.random() < 0.67 ? 15 : 16; // 2/3 Horsemen, 1/3 Chariot
   } else {
     // 1-move class: Archers→Legion→Musketeers→Fanatics
     if (anyoneHasTech(state, 34)) return 8;  // Guerrilla Warfare → Fanatics
@@ -297,19 +299,27 @@ function getHutMercType(state) {
   }
 }
 
-/** Pick barbarian unit type based on max tech count across alive civs. */
+/**
+ * I.1: Pick barbarian unit type based on game era (year).
+ * Era pools (pick randomly from available types for the era):
+ *   Before 1000 BC: Warriors (2), Horsemen (15)
+ *   1000 BC - 1 AD: + Archers (4), Chariots (16)
+ *   1 AD - 1500 AD: + Legion (5), Pikemen (6), Knights (19)
+ *   After 1500 AD:  + Musketeers (7), Dragoons (20), Cannon (24)
+ * Falls back to tech-count method if year calculation fails.
+ */
 function getBarbUnitType(state) {
-  let maxTechCount = 0;
-  for (let c = 1; c < 8; c++) {
-    if (!(state.civsAlive & (1 << c))) continue;
-    const tc = state.civTechCounts?.[c] || 0;
-    if (tc > maxTechCount) maxTechCount = tc;
-  }
-  // Walk BARBARIAN_LAND_UNITS backwards to pick highest qualifying type
-  for (let i = BARBARIAN_LAND_UNITS.length - 1; i >= 0; i--) {
-    if (maxTechCount >= BARBARIAN_LAND_UNITS[i][1]) return BARBARIAN_LAND_UNITS[i][0];
-  }
-  return BARBARIAN_LAND_UNITS[0][0]; // fallback: Warriors
+  const turnNum = state.turn?.number || 0;
+  const year = getNumericYear(turnNum);
+  const rng = state.rng;
+
+  // Build pool of available barbarian unit types based on era
+  const pool = [2, 15]; // Warriors, Horsemen (always available)
+  if (year >= -1000) pool.push(4, 16);  // Archers, Chariots
+  if (year >= 1)     pool.push(5, 6, 19); // Legion, Pikemen, Knights
+  if (year >= 1500)  pool.push(7, 20, 24); // Musketeers, Dragoons, Cannon
+
+  return pool[rng.nextInt(pool.length)];
 }
 
 /** Pick barbarian sea unit type based on max tech count across alive civs. */
@@ -328,6 +338,8 @@ function getBarbSeaUnitType(state) {
 
 /** Make a new unit object at the given position. */
 function makeUnit(type, owner, gx, gy, movesLeft) {
+  // C.3: Initialize fuel for air units based on UNIT_FUEL table
+  const maxFuel = UNIT_FUEL[type];
   return {
     type, owner, gx, gy,
     x: gx * 2 + (gy % 2), y: gy,
@@ -335,111 +347,279 @@ function makeUnit(type, owner, gx, gy, movesLeft) {
     movesMade: 0, movesLeft: movesLeft ?? 0,
     homeCityId: 0xFFFF,
     goToX: -1, goToY: -1, visFlag: 0xFF,
-    commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+    commodityCarried: -1, workTurns: 0,
+    fuelRemaining: maxFuel > 0 ? maxFuel : -1,
     prevInStack: -1, nextInStack: -1,
   };
 }
 
+// I.3: Difficulty-based goody hut outcome weights
+// [advancedTribe, mercenary, gold, tech, mapReveal, settler, barbarians]
+const GOODY_HUT_WEIGHTS = {
+  chieftain:     [15, 20, 25, 15, 10, 10, 5],
+  warlord:       [12, 18, 20, 15, 10, 10, 15],
+  prince:        [10, 15, 20, 15, 10,  8, 22],
+  king:          [ 8, 15, 15, 15, 10,  7, 30],
+  emperor:       [ 5, 12, 15, 13, 10,  5, 40],
+  deity:         [ 3, 10, 10, 12, 10,  5, 50],
+};
+
 /**
- * Resolve a goody hut encounter. Faithful to Civ2 decompiled logic.
- * Roll rand()%5 → 0:tribe/nomads, 1:mercs, 2:gold, 3:barbarians, 4:scrolls.
- * Suppression rules redirect outcomes when conditions aren't met.
+ * I.3: Resolve a goody hut encounter with full outcome table.
+ * Outcomes:
+ *   0: Advanced Tribe (found city with some buildings)
+ *   1: Mercenary unit (friendly unit joins, era-based)
+ *   2: Gold (25-100g scaled by era)
+ *   3: Technology (random no-prereq tech civ doesn't have)
+ *   4: Map reveal (reveal area around hut)
+ *   5: Settler (free settler unit)
+ *   6: Barbarian uprising (spawn 4-8 hostile barbarians)
+ *
+ * Uses difficulty-based probability weights.
  */
 function resolveGoodyHut(state, mapBase, unit, civSlot) {
   const turnNum = state.turn?.number || 0;
   const hasCities = state.cities.some(c => c.owner === civSlot && c.size > 0);
   const earlyNoCities = !hasCities && turnNum < 50;
 
-  // Roll outcome (Civ2: rand()%5 → equal 20% each)
-  let outcome = Math.floor(Math.random() * 5); // 0-4
+  const rng = state.rng;
+  const difficulty = state.difficulty || 'chieftain';
+  const weights = GOODY_HUT_WEIGHTS[difficulty] || GOODY_HUT_WEIGHTS.prince;
+
+  // Weighted random selection
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  let roll = rng.nextInt(totalWeight);
+  let outcome = 0;
+  for (let i = 0; i < weights.length; i++) {
+    roll -= weights[i];
+    if (roll < 0) { outcome = i; break; }
+  }
 
   // Suppression rules
-  // Tribe (0): needs epoch ≥ 4 (approx turn 100+); redirect to mercs
   if (outcome === 0 && turnNum < 100) outcome = 1;
-  // Barbarians (3): suppressed early game with no cities; redirect to mercs
-  if (outcome === 3 && earlyNoCities) outcome = 1;
-  // Scrolls (4): suppressed once any civ discovers Invention (38); redirect to gold
-  if (outcome === 4 && anyoneHasTech(state, 38)) outcome = 2;
-
-  // Non-combat units never trigger barbarians
+  if (outcome === 6 && earlyNoCities) outcome = 1;
+  if (outcome === 3 && anyoneHasTech(state, 38)) outcome = 2;
+  if (outcome === 5 && anyoneHasTech(state, 28)) outcome = 2;
   const NONCOMBAT = new Set([0, 1, 46, 47, 48, 49, 50]);
-  if (outcome === 3 && NONCOMBAT.has(unit.type)) outcome = 2;
+  if (outcome === 6 && NONCOMBAT.has(unit.type)) outcome = 2;
 
   switch (outcome) {
-    case 2: { // Gold
-      // Base 50, 1/3 chance re-roll: low=25, high=100. After turn 250 (≈1000 AD): doubled
-      let amount = 50;
-      if (Math.random() < 0.33) amount = Math.random() < 0.5 ? 25 : 100;
-      if (turnNum > 250) amount *= 2;
-      if (state.civs?.[civSlot]) {
-        state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
+    case 0: { // Advanced Tribe — found a city with some buildings
+      const terrain = mapBase.getTerrain(unit.gx, unit.gy);
+      if (terrain === 10) return hutGiveGold(state, civSlot, turnNum, rng);
+      let tooClose = false;
+      for (const c of state.cities) {
+        if (c.size <= 0) continue;
+        let dx = Math.abs(unit.gx - c.gx);
+        if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+        const dy = Math.abs(unit.gy - c.gy);
+        if (dx + dy <= 3) { tooClose = true; break; }
       }
-      return { type: 'gold', amount };
+      if (tooClose) return hutGiveMerc(state, civSlot, unit, rng);
+
+      const cityName = getCityName(civSlot, state.cities, state.civs);
+      const buildings = new Set();
+      buildings.add(3); // Granary
+      if (turnNum > 150) buildings.add(4); // Temple after early game
+      const isFirstCity = state.cities.filter(c => c.owner === civSlot && c.size > 0).length === 0;
+      if (isFirstCity) buildings.add(1); // Palace
+
+      const newCity = {
+        name: cityName, owner: civSlot, originalOwner: civSlot,
+        size: 1 + rng.nextInt(2),
+        gx: unit.gx, gy: unit.gy,
+        cx: unit.gx * 2 + (unit.gy % 2), cy: unit.gy,
+        hasWalls: false, hasPalace: isFirstCity,
+        civilDisorder: false, weLoveKingDay: false, isOccupied: false,
+        workedTiles: [], specialists: [], buildings,
+        foodInBox: 0, shieldsInBox: 0,
+        itemInProduction: { type: 'unit', id: 2 },
+      };
+      state.cities = [...state.cities, newCity];
+      const newCityIndex = state.cities.length - 1;
+      newCity.workedTiles = assignInitialWorkers(unit.gx, unit.gy, newCity.size, newCity, newCityIndex, state, mapBase);
+
+      const cityTileIdx = unit.gy * mapBase.mw + unit.gx;
+      if (mapBase.tileData[cityTileIdx]) {
+        mapBase.tileData[cityTileIdx].improvements = { ...mapBase.tileData[cityTileIdx].improvements, city: true, road: true };
+        mapBase.tileData[cityTileIdx].tileOwnership = civSlot;
+      }
+      for (let ri = 0; ri < 20; ri++) {
+        const rpos = radiusTileCoords(newCity.gx, newCity.gy, ri, mapBase);
+        if (!rpos) continue;
+        const rTile = mapBase.tileData[rpos.gy * mapBase.mw + rpos.gx];
+        if (rTile && (rTile.tileOwnership === 0 || rTile.tileOwnership === 0x0F)) rTile.tileOwnership = civSlot;
+      }
+      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, newCity.gx, newCity.gy, mapBase.wraps, 2);
+      return { type: 'advancedTribe', cityName, cityIndex: newCityIndex };
     }
 
-    case 4: { // Scrolls (tech)
+    case 2: return hutGiveGold(state, civSlot, turnNum, rng);
+
+    case 3: { // Technology
       const available = getAvailableResearch(state, civSlot);
-      if (available.length === 0) {
-        // No tech available — give gold instead
-        const amount = turnNum > 250 ? 100 : 50;
-        if (state.civs?.[civSlot]) {
-          state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
-        }
-        return { type: 'gold', amount };
-      }
-      const techId = available[Math.floor(Math.random() * available.length)];
+      if (available.length === 0) return hutGiveGold(state, civSlot, turnNum, rng);
+      const techId = available[rng.nextInt(available.length)];
       grantAdvance(state, civSlot, techId);
       return { type: 'tech', advanceId: techId, advanceName: ADVANCE_NAMES[techId] };
     }
 
-    case 1: { // Mercenaries
-      const unitType = getHutMercType(state);
-      const mercMoves = (UNIT_MOVE_POINTS[unitType] || 1) * MOVEMENT_MULTIPLIER;
-      state.units = [...state.units, makeUnit(unitType, civSlot, unit.gx, unit.gy, mercMoves)];
-      const mercIdx = state.units.length - 1;
-      return { type: 'unit', unitType, unitName: UNIT_NAMES[unitType], mercenaryIndices: [mercIdx] };
-    }
+    case 1: return hutGiveMerc(state, civSlot, unit, rng);
 
-    case 0: { // Tribe → nomads (simplified: skip advanced tribe/city founding)
-      // Nomads suppressed if any civ has Explosives (28); redirect to gold
-      if (anyoneHasTech(state, 28)) {
-        const amount = turnNum > 250 ? 100 : 50;
-        if (state.civs?.[civSlot]) {
-          state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
+    case 4: { // Map reveal
+      const bit = 1 << civSlot;
+      const { mw, mh, tileData } = mapBase;
+      const wraps = mapBase.wraps;
+      let tilesRevealed = 0;
+      for (let dy = -5; dy <= 5; dy++) {
+        for (let dx = -5; dx <= 5; dx++) {
+          if (Math.abs(dx) + Math.abs(dy) > 7) continue;
+          let gx = unit.gx + dx;
+          const gy = unit.gy + dy;
+          if (gy < 0 || gy >= mh) continue;
+          if (wraps) { gx = ((gx % mw) + mw) % mw; } else if (gx < 0 || gx >= mw) continue;
+          const tile = tileData[gy * mw + gx];
+          if (tile && !(tile.visibility & bit)) { tile.visibility |= bit; tilesRevealed++; }
         }
-        return { type: 'gold', amount };
       }
-      const nomadMoves = (UNIT_MOVE_POINTS[0] || 1) * MOVEMENT_MULTIPLIER;
-      state.units = [...state.units, makeUnit(0, civSlot, unit.gx, unit.gy, nomadMoves)];
-      const nomadIdx = state.units.length - 1;
-      return { type: 'nomads', mercenaryIndices: [nomadIdx] };
+      return { type: 'mapReveal', tilesRevealed };
     }
 
-    case 3: { // Barbarians
+    case 5: { // Settler
+      const settlerMoves = (UNIT_MOVE_POINTS[0] || 1) * MOVEMENT_MULTIPLIER;
+      state.units = [...state.units, makeUnit(0, civSlot, unit.gx, unit.gy, settlerMoves)];
+      return { type: 'settler', mercenaryIndices: [state.units.length - 1] };
+    }
+
+    case 6: { // Barbarian uprising (4-8 hostile barbarians)
       const barbType = getBarbUnitType(state);
       const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const count = 1 + Math.floor(Math.random() * 3);
+      const count = 4 + rng.nextInt(5);
       let spawned = 0;
       for (let i = dirs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = rng.nextInt(i + 1);
         [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
       }
+      const spawnLocs = [];
       for (const dir of dirs) {
-        if (spawned >= count) break;
         const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
         if (!dest) continue;
         if (mapBase.getTerrain(dest.gx, dest.gy) === 10) continue;
         if (state.cities.some(c => c.gx === dest.gx && c.gy === dest.gy && c.size > 0)) continue;
-        state.units = [...state.units,
-          makeUnit(barbType, 0, dest.gx, dest.gy, UNIT_MOVE_POINTS[barbType] * MOVEMENT_MULTIPLIER)];
+        spawnLocs.push(dest);
+      }
+      state.units = [...state.units];
+      for (let i = 0; i < count; i++) {
+        if (spawnLocs.length === 0) break;
+        const loc = spawnLocs[i % spawnLocs.length];
+        state.units.push(makeUnit(barbType, 0, loc.gx, loc.gy, UNIT_MOVE_POINTS[barbType] * MOVEMENT_MULTIPLIER));
         spawned++;
       }
       return { type: 'barbarians', count: spawned };
     }
 
-    default:
-      return { type: 'nothing' };
+    default: return { type: 'nothing' };
   }
+}
+
+/** Helper: give gold from goody hut. */
+function hutGiveGold(state, civSlot, turnNum, rng) {
+  const year = getNumericYear(turnNum);
+  let amount;
+  if (year < -1000) amount = 25 + rng.nextInt(26);
+  else if (year < 1) amount = 25 + rng.nextInt(51);
+  else amount = 50 + rng.nextInt(51);
+  if (year >= 1500) amount *= 2;
+  if (state.civs?.[civSlot]) {
+    state.civs = state.civs.map((c, i) => i === civSlot ? { ...c, treasury: (c.treasury || 0) + amount } : c);
+  }
+  return { type: 'gold', amount };
+}
+
+/** Helper: give mercenary unit from goody hut. */
+function hutGiveMerc(state, civSlot, unit, rng) {
+  const unitType = getHutMercType(state);
+  const mercMoves = (UNIT_MOVE_POINTS[unitType] || 1) * MOVEMENT_MULTIPLIER;
+  state.units = [...state.units, makeUnit(unitType, civSlot, unit.gx, unit.gy, mercMoves)];
+  return { type: 'unit', unitType, unitName: UNIT_NAMES[unitType], mercenaryIndices: [state.units.length - 1] };
+}
+
+/**
+ * Check if the senate blocks a war declaration.
+ * Ported from FUN_00579ed0 (diplomacy_check_attack_allowed).
+ *
+ * Under Republic/Democracy the senate can refuse war. Exceptions:
+ *   - Statue of Liberty (wonder 19): bypasses senate entirely
+ *   - Enemy units on attacker's territory: war is allowed
+ *   - Already at war: no check needed
+ *
+ * Republic: 50% chance senate blocks.
+ * Democracy: senate always blocks.
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map accessor
+ * @param {number} attackerCiv - civ declaring war
+ * @param {number} defenderCiv - target civ
+ * @returns {{ blocked: boolean, events: object[] }}
+ */
+function checkSenateVeto(state, mapBase, attackerCiv, defenderCiv) {
+  const events = [];
+  const govt = getGovernment(null, state, attackerCiv);
+
+  // Only Republic and Democracy have a senate
+  if (govt !== 'republic' && govt !== 'democracy') {
+    return { blocked: false, events };
+  }
+
+  // Statue of Liberty (wonder 19) bypasses senate
+  if (hasWonderEffect(state, attackerCiv, 19)) {
+    return { blocked: false, events };
+  }
+
+  // If already at war, no senate check
+  if (state.treaties) {
+    const key = attackerCiv < defenderCiv
+      ? `${attackerCiv}-${defenderCiv}` : `${defenderCiv}-${attackerCiv}`;
+    if (state.treaties[key] === 'war') {
+      return { blocked: false, events };
+    }
+  }
+
+  // If enemy units are on attacker's territory, senate allows war
+  const hasTileOwnership = mapBase.getTileOwnership != null;
+  if (hasTileOwnership) {
+    for (const u of state.units) {
+      if (u.owner === defenderCiv && u.gx >= 0) {
+        const owner = mapBase.getTileOwnership(u.gx, u.gy);
+        if (owner === attackerCiv) {
+          return { blocked: false, events };
+        }
+      }
+    }
+  }
+
+  // Senate veto check
+  let blocked = false;
+  if (govt === 'democracy') {
+    // Democracy: senate always blocks
+    blocked = true;
+  } else {
+    // Republic: 50% chance senate blocks
+    const roll = state.rng ? state.rng.random() : Math.random();
+    blocked = roll < 0.5;
+  }
+
+  if (blocked) {
+    events.push({
+      type: 'senateVeto',
+      civSlot: attackerCiv,
+      targetCiv: defenderCiv,
+      government: govt,
+      message: `The Senate refuses to declare war!`,
+    });
+  }
+
+  return { blocked, events };
 }
 
 /**
@@ -486,9 +666,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
           state.turnEvents.push({ type: 'firstContact', civA: civSlot, civB: defCivSlot });
         }
         if (state.treaties[warKey] !== 'war') {
+          // F.2: Senate war veto — check before attacking a non-war civ
+          const combatSenateCheck = checkSenateVeto(state, mapBase, civSlot, defCivSlot);
+          if (!state.turnEvents) state.turnEvents = [];
+          for (const evt of combatSenateCheck.events) {
+            state.turnEvents.push(evt);
+          }
+          if (combatSenateCheck.blocked) break; // Senate blocks the attack
+
           // Declare war via diplomacy module (handles reputation, alliances, trade routes)
           const combatWarResult = diplomacyDeclareWar(state, mapBase, civSlot, defCivSlot);
-          if (!state.turnEvents) state.turnEvents = [];
           for (const evt of combatWarResult.events) {
             state.turnEvents.push(evt);
           }
@@ -679,16 +866,59 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const prevGx = unit.gx, prevGy = unit.gy;
         const cost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
         const domain = UNIT_DOMAIN[unit.type] ?? 0;
+        const destTerrain = mapBase.getTerrain(dest.gx, dest.gy);
+        const srcTerrain = mapBase.getTerrain(unit.gx, unit.gy);
+
+        // ── C.4: Transport boarding — land unit moving to ocean tile ──
+        if (domain === 0 && destTerrain === 10) {
+          const transportIdx = findAvailableTransport(dest.gx, dest.gy, unit.owner, state.units);
+          if (transportIdx < 0) {
+            // No transport available — can't enter ocean, reject move
+            break;
+          }
+          // Board transport: move unit to transport's tile, costs 1 MP
+          unit.gx = dest.gx;
+          unit.gy = dest.gy;
+          unit.x = dest.gx * 2 + (dest.gy % 2);
+          unit.y = dest.gy;
+          unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
+          if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+          state.units[unitIndex] = unit;
+          // Update visibility
+          if (unit.gx >= 0) {
+            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+            discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
+          }
+          break;
+        }
+
+        // ── C.4: Disembarkation — land unit on ocean tile moving to land ──
+        if (domain === 0 && srcTerrain === 10 && destTerrain !== 10) {
+          unit.gx = dest.gx;
+          unit.gy = dest.gy;
+          unit.x = dest.gx * 2 + (dest.gy % 2);
+          unit.y = dest.gy;
+          // Disembarkation costs all remaining MP
+          unit.movesLeft = 0;
+          if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+          state.units[unitIndex] = unit;
+          // Update visibility
+          if (unit.gx >= 0) {
+            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+            discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
+          }
+          break;
+        }
 
         // Probabilistic movement check (from Civ2 binary FUN_0059062c lines 712-729):
         // When a land unit has insufficient MP for terrain cost AND has already spent
         // some MP this turn, movement succeeds probabilistically: P = movesLeft / cost.
         // If check fails, all remaining MP are exhausted and unit does not move.
         if (domain === 0 && cost > 1 && unit.movesLeft < cost) {
-          const totalMP = (UNIT_MOVE_POINTS[unit.type] || 1) * MOVEMENT_MULTIPLIER;
+          const totalMP = calcEffectiveMovementPoints(unit);
           if (unit.movesLeft < totalMP) {
             // Unit has already used some movement — probabilistic check
-            const roll = Math.floor(Math.random() * cost); // 0 to cost-1
+            const roll = state.rng.nextInt(cost); // 0 to cost-1
             if (unit.movesLeft <= roll) {
               // Failed: exhaust all remaining MP, do not move
               unit.movesLeft = 0;
@@ -887,13 +1117,23 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { cityIndex, item } = action;
       state.cities = [...prev.cities];
       const city = state.cities[cityIndex];
-      // Civ2 ShieldPenaltyTypeChange (COSMIC, default 50%):
-      // Same type (unit→unit, building→building, wonder→wonder): keep all shields
-      // Cross-type (unit→building, etc.): keep 50%, applied once on switch
+      // D.7: Civ2 production change penalty (ported from binary):
+      //  - Same item (same type + same id): no penalty
+      //  - Same category (unit→unit, building→building, wonder→wonder): 50% shield loss
+      //  - Cross-category (unit↔building/wonder): 100% shield loss (all shields)
       const prevItem = city.itemInProduction;
-      const sameType = prevItem && prevItem.type === item.type;
       const oldShields = city.shieldsInBox || 0;
-      const newShields = sameType ? oldShields : Math.floor(oldShields / 2);
+      let newShields;
+      if (prevItem && prevItem.type === item.type && prevItem.id === item.id) {
+        // Switching to same item — no penalty
+        newShields = oldShields;
+      } else if (prevItem && prevItem.type === item.type) {
+        // Same category, different item — 50% penalty
+        newShields = Math.floor(oldShields / 2);
+      } else {
+        // Cross-category switch — 100% penalty (lose all shields)
+        newShields = 0;
+      }
       state.cities[cityIndex] = {
         ...city,
         itemInProduction: { type: item.type, id: item.id },
@@ -1019,7 +1259,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         civ.government = government;
       } else {
         civ.government = 'anarchy';
-        civ.anarchyTurns = 1 + Math.floor(Math.random() * 4);
+        civ.anarchyTurns = 1 + state.rng.nextInt(4);
         civ.pendingGovernment = government;
       }
       state.civs[civSlot] = civ;
@@ -1138,8 +1378,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
     case DECLARE_WAR: {
       const { targetCiv: dwTarget } = action;
-      const dwResult = diplomacyDeclareWar(state, mapBase, civSlot, dwTarget);
+
+      // F.2: Senate war veto — Republic/Democracy senate can block war declarations
+      const senateCheck = checkSenateVeto(state, mapBase, civSlot, dwTarget);
       if (!state.turnEvents) state.turnEvents = [];
+      for (const evt of senateCheck.events) {
+        state.turnEvents.push(evt);
+      }
+      if (senateCheck.blocked) break;
+
+      const dwResult = diplomacyDeclareWar(state, mapBase, civSlot, dwTarget);
       for (const evt of dwResult.events) {
         state.turnEvents.push(evt);
       }
@@ -1151,34 +1399,117 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const etUnit = state.units[etUi];
       const homeCity = state.cities[etUnit.homeCityId];
       const destCity = state.cities[etCi];
-      // Calculate trade income (simplified: based on distance + city sizes)
-      const dx = Math.abs(homeCity.gx - destCity.gx);
-      const dy = Math.abs(homeCity.gy - destCity.gy);
-      const dist = dx + dy;
+
+      // D.8: If destination city is own city building a wonder, deliver shields instead
+      if (destCity.owner === civSlot && destCity.itemInProduction?.type === 'wonder') {
+        const helpShields = 50;
+        state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+        const updDest = { ...state.cities[etCi] };
+        updDest.shieldsInBox = (updDest.shieldsInBox || 0) + helpShields;
+        state.cities[etCi] = updDest;
+        killUnit(state, etUi);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'caravanHelpWonder', civSlot,
+          cityName: destCity.name, cityIndex: etCi,
+          shieldsAdded: helpShields,
+        });
+        break;
+      }
+
+      // Domestic trade requires road connection (Civ2 rule)
+      const etIsForeignTrade = homeCity.owner !== destCity.owner;
+      if (!etIsForeignTrade) {
+        const roadPath = findRoadPath(homeCity.gx, homeCity.gy, destCity.gx, destCity.gy, mapBase);
+        if (!roadPath) break; // no road connection — reject
+      }
+
+      // D.6: Full commodity matching one-time bonus formula
+      // Distance calculation
+      let etDx = Math.abs(homeCity.gx - destCity.gx);
+      if (mapBase.wraps && etDx > mapBase.mw / 2) etDx = mapBase.mw - etDx;
+      const etDy = Math.abs(homeCity.gy - destCity.gy);
+      const etDist = etDx + etDy;
+
+      // Supply/demand matching
+      const commodity = etUnit.commodityCarried ?? -1;
+      let supplyMatch = false;
+      let demandMatch = false;
+      if (commodity >= 0 && commodity < COMMODITY_NAMES.length) {
+        // Check if commodity is in home city's supply list
+        if (homeCity.supplyList && homeCity.supplyList.includes(commodity)) supplyMatch = true;
+        else supplyMatch = true; // assume supply if no list (city built it)
+        // Check if commodity is in dest city's demand list
+        if (destCity.demandList && destCity.demandList.includes(commodity)) demandMatch = true;
+      }
+
+      // Base one-time bonus: (supply + demand) × distanceFactor × eraFactor
+      // supply/demand each contribute the distance to the bonus
+      const supplyVal = supplyMatch ? etDist : Math.floor(etDist / 2);
+      const demandVal = demandMatch ? etDist : Math.floor(etDist / 2);
+
+      // Era factor based on civ's most advanced tech epoch
+      // Pre-Industrial (epoch 0,1) = ×2, Industrial (epoch 2) = ×1.5, Modern (epoch 3) = ×1
+      let maxEpoch = 0;
+      if (state.civTechs?.[civSlot]) {
+        for (const techId of state.civTechs[civSlot]) {
+          const ep = ADVANCE_EPOCH[techId] ?? 0;
+          if (ep > maxEpoch) maxEpoch = ep;
+        }
+      }
+      let eraFactor = 2; // pre-industrial default
+      if (maxEpoch >= 3) eraFactor = 1;
+      else if (maxEpoch >= 2) eraFactor = 1.5;
+
       const isForeign = homeCity.owner !== destCity.owner;
-      // Civ2 formula: (dist + 10) × (homeSize + destSize) / 24, ×2 if foreign
-      const baseIncome = Math.floor((dist + 10) * (homeCity.size + destCity.size) / 24);
-      const income = isForeign ? baseIncome * 2 : baseIncome;
-      // Create route
-      const route = { destCityIndex: etCi, income };
+      let bonus = Math.floor((supplyVal + demandVal) * eraFactor);
+      // Foreign trade: ×2
+      if (isForeign) bonus *= 2;
+      // Minimum bonus: 1 gold
+      bonus = Math.max(1, bonus);
+
+      // D.6: Food caravan special case — deliver food instead of gold
+      // if commodity is Hides(0)/Wool(1)/Beads(2) (food commodities) and
+      // dest city has Harbour(30) or Granary(3)
+      const foodCommodities = new Set([0, 1, 2]); // approximation: low-value = food
+      const isFood = foodCommodities.has(commodity) &&
+        (cityHasBuilding(destCity, 30) || cityHasBuilding(destCity, 3));
+
+      // Create ongoing trade route (D.5)
+      const route = { destCityIndex: etCi, commodity };
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const updHome = { ...state.cities[etUnit.homeCityId] };
       updHome.tradeRoutes = [...(updHome.tradeRoutes || []), route];
       state.cities[etUnit.homeCityId] = updHome;
+
       // Consume the caravan/freight
       killUnit(state, etUi);
-      // One-time trade bonus (gold)
-      if (state.civs?.[civSlot]) {
-        state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
-        const civ = { ...state.civs[civSlot] };
-        const bonus = income * 3;
-        civ.treasury = (civ.treasury || 0) + bonus;
-        state.civs[civSlot] = civ;
+
+      // Apply one-time bonus
+      if (isFood) {
+        // Food delivery: add food to destination city
+        const updDest = { ...state.cities[etCi] };
+        updDest.foodInBox = (updDest.foodInBox || 0) + bonus * 2; // convert gold to food equivalent
+        state.cities[etCi] = updDest;
         if (!state.turnEvents) state.turnEvents = [];
         state.turnEvents.push({
           type: 'tradeEstablished', civSlot,
           homeCityName: homeCity.name, destCityName: destCity.name,
-          income, bonus,
+          foodDelivered: bonus * 2, commodity,
+        });
+      } else {
+        // Gold bonus
+        if (state.civs?.[civSlot]) {
+          state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+          const civ = { ...state.civs[civSlot] };
+          civ.treasury = (civ.treasury || 0) + bonus;
+          state.civs[civSlot] = civ;
+        }
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'tradeEstablished', civSlot,
+          homeCityName: homeCity.name, destCityName: destCity.name,
+          bonus, commodity,
         });
       }
       break;
@@ -1202,7 +1533,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // Transfer unit ownership
       state.units[action.targetIndex] = { ...target, owner: civSlot, homeCityId: 0xFFFF, orders: 'none' };
       // Spy survival check (uses decompiled formula)
-      const bribeSurvival = checkSpySurvival(spy, 0);
+      const bribeSurvival = checkSpySurvival(spy, 0, state.rng);
       if (bribeSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: bribeSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
@@ -1218,15 +1549,38 @@ export function applyAction(prev, mapBase, action, civSlot) {
     case STEAL_TECH: {
       const spy = state.units[action.unitIndex];
       const sCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      // Success chance gate (ported from decompiled spy success check)
+      const stealChance = calcSpySuccessChance(spy, sCity, 'steal', state);
+      if (state.rng.random() >= stealChance) {
+        // Failed — spy caught
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, sCity.owner);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'stealTech', cityName: sCity.name });
+        break;
+      }
       const theirTechs = state.civTechs?.[sCity.owner];
       const myTechs = state.civTechs?.[civSlot];
       // Collect stealable techs
       const stealable = [];
       for (const t of theirTechs) { if (!myTechs.has(t)) stealable.push(t); }
-      const stolenId = stealable[Math.floor(Math.random() * stealable.length)];
+      let stolenId;
+      // J.2: Spies (type 47) can target a specific tech; Diplomats get random
+      if (spy.type === 47 && action.techId != null && action.techId >= 0) {
+        // Targeted theft — validate the target civ actually has it and we don't
+        if (stealable.includes(action.techId)) {
+          stolenId = action.techId;
+        } else {
+          // Fallback to random if requested tech isn't available
+          stolenId = stealable[state.rng.nextInt(stealable.length)];
+        }
+      } else {
+        // Diplomat or spy without targeted choice: random tech
+        stolenId = stealable[state.rng.nextInt(stealable.length)];
+      }
       grantAdvance(state, civSlot, stolenId);
       // Spy survival (decompiled formula: successLevel=0 for normal steal)
-      const stealSurvival = checkSpySurvival(spy, 0);
+      const stealSurvival = checkSpySurvival(spy, 0, state.rng);
       if (stealSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: stealSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
@@ -1244,6 +1598,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
     case SABOTAGE_CITY: {
       const spy = state.units[action.unitIndex];
       const sCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      // Success chance gate
+      const sabChance = calcSpySuccessChance(spy, sCity, 'sabotage', state);
+      if (state.rng.random() >= sabChance) {
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, sCity.owner);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'sabotageCity', cityName: sCity.name });
+        break;
+      }
       const sCityIdx = state.cities.indexOf(sCity);
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const sabCity = { ...sCity };
@@ -1252,8 +1615,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const buildings = sabCity.buildings instanceof Set ? [...sabCity.buildings] : [];
       // Never destroy Palace (1), City Walls (8), SDI Defense (17)
       const destructible = buildings.filter(b => b !== 1 && b !== 8 && b !== 17);
-      if (destructible.length > 0 && Math.random() < 0.5) {
-        const bid = destructible[Math.floor(Math.random() * destructible.length)];
+      if (destructible.length > 0 && state.rng.random() < 0.5) {
+        const bid = destructible[state.rng.nextInt(destructible.length)];
         const newBuildings = new Set(sabCity.buildings);
         newBuildings.delete(bid);
         sabCity.buildings = newBuildings;
@@ -1265,7 +1628,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       }
       state.cities[sCityIdx] = sabCity;
       // Spy survival (decompiled formula)
-      const sabSurvival = checkSpySurvival(spy, 0);
+      const sabSurvival = checkSpySurvival(spy, 0, state.rng);
       if (sabSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: sabSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
@@ -1311,7 +1674,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       captureCity(state, prev, mapBase, iCityIdx, civSlot, oldOwner, { skipBuildingDestruction: true });
       // Spy survival (decompiled formula)
-      const inciteSurvival = checkSpySurvival(spy, 0);
+      const inciteSurvival = checkSpySurvival(spy, 0, state.rng);
       if (inciteSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: inciteSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
@@ -1340,6 +1703,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // From decompiled spy_enters_city case 4
       const spy = state.units[action.unitIndex];
       const pCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      // Success chance gate
+      const poisonChance = calcSpySuccessChance(spy, pCity, 'poison', state);
+      if (state.rng.random() >= poisonChance) {
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, pCity.owner);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'poisonWater', cityName: pCity.name });
+        break;
+      }
       const pCityIdx = state.cities.indexOf(pCity);
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const poisonCity = { ...pCity };
@@ -1355,8 +1727,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
       }
       state.cities[pCityIdx] = poisonCity;
       // Spy survival (poison is random difficulty: successLevel = rand 0 or -1)
-      const poisonLevel = Math.random() < 0.5 ? -1 : 0;
-      const poisonSurvival = checkSpySurvival(spy, poisonLevel);
+      const poisonLevel = state.rng.random() < 0.5 ? -1 : 0;
+      const poisonSurvival = checkSpySurvival(spy, poisonLevel, state.rng);
       if (poisonSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: poisonSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
@@ -1380,11 +1752,11 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // Cumulative spy caught checks (4 total, harder if barracks present)
       let nukeCaught = false;
       for (let chk = 0; chk < 3; chk++) {
-        if (spyCaughtCheck(spy)) { nukeCaught = true; break; }
+        if (spyCaughtCheck(spy, state.rng)) { nukeCaught = true; break; }
       }
       // Extra check if city has barracks (building 2)
       if (!nukeCaught && nCity.buildings && nCity.buildings.has(2)) {
-        if (spyCaughtCheck(spy)) nukeCaught = true;
+        if (spyCaughtCheck(spy, state.rng)) nukeCaught = true;
       }
 
       if (nukeCaught) {
@@ -1402,7 +1774,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const nukeBldgs = new Set(nukeCity.buildings);
         for (const bid of [...nukeBldgs]) {
           if (bid === 1) continue; // keep Palace
-          if (Math.random() < 0.5) nukeBldgs.delete(bid);
+          if (state.rng.random() < 0.5) nukeBldgs.delete(bid);
         }
         nukeCity.buildings = nukeBldgs;
         nukeCity.hasWalls = nukeBldgs.has(8);
@@ -1421,14 +1793,14 @@ export function applyAction(prev, mapBase, action, civSlot) {
       for (let ui = 0; ui < state.units.length; ui++) {
         const u = state.units[ui];
         if (u.gx === nCity.gx && u.gy === nCity.gy && u.gx >= 0 && u.owner !== civSlot) {
-          if (Math.random() < 0.5) {
+          if (state.rng.random() < 0.5) {
             killUnit(state, ui);
           }
         }
       }
 
       // Spy survival
-      const nukeSurvival = checkSpySurvival(spy, 1); // hard mission
+      const nukeSurvival = checkSpySurvival(spy, 1, state.rng); // hard mission
       if (nukeSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: nukeSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
@@ -1450,11 +1822,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // Spy resets city's shieldsInBox to 0
       const spy = state.units[action.unitIndex];
       const spCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      // Success chance gate
+      const spSabChance = calcSpySuccessChance(spy, spCity, 'sabotageProduction', state);
+      if (state.rng.random() >= spSabChance) {
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, spCity.owner);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'sabotageProduction', cityName: spCity.name });
+        break;
+      }
       const spCityIdx = state.cities.indexOf(spCity);
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       state.cities[spCityIdx] = { ...spCity, shieldsInBox: 0 };
       // Spy survival
-      const spSurvival = checkSpySurvival(spy, 0);
+      const spSurvival = checkSpySurvival(spy, 0, state.rng);
       if (spSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: spSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
@@ -1471,25 +1852,22 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // From decompiled spy_enters_city case 1
       const spy = state.units[action.unitIndex];
       const invCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
-      // Diplomat consumed; Spy survives if city has no walls
-      if (spy.type === 46) {
-        // Diplomat: consumed after investigation
-        const invSurvival = checkSpySurvival(spy, 0);
-        if (!invSurvival.survives) {
-          killUnit(state, action.unitIndex);
-        }
+      // Unified success/detection check (J.1)
+      const invChance = calcSpySuccessChance(spy, invCity, 'investigate', state);
+      if (state.rng.random() >= invChance) {
+        // Failed — spy caught
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, invCity.owner);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'investigateCity', cityName: invCity.name });
+        break;
+      }
+      // Spy survival (decompiled formula)
+      const invSurvival = checkSpySurvival(spy, 0, state.rng);
+      if (invSurvival.survives) {
+        state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: invSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
-        // Spy: survives if city has no walls, otherwise check
-        if (invCity.buildings && invCity.buildings.has(8)) {
-          const invSurvival = checkSpySurvival(spy, 0);
-          if (invSurvival.survives) {
-            state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: invSurvival.becomesVeteran ? 1 : spy.veteran };
-          } else {
-            killUnit(state, action.unitIndex);
-          }
-        } else {
-          state.units[action.unitIndex] = { ...spy, movesLeft: 0 };
-        }
+        killUnit(state, action.unitIndex);
       }
       if (!state.turnEvents) state.turnEvents = [];
       // Send city details to the acting civ
@@ -1510,6 +1888,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const spy = state.units[action.unitIndex];
       const embCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
       const embTarget = embCity.owner;
+      // Unified success/detection check (J.1)
+      const embChance = calcSpySuccessChance(spy, embCity, 'embassy', state);
+      if (state.rng.random() >= embChance) {
+        // Failed — spy caught
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, embTarget);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'establishEmbassy', cityName: embCity.name });
+        break;
+      }
       // Set embassy flag in diplomacy
       if (!state.diplomacy) state.diplomacy = {};
       const embKey = `${civSlot}-${embTarget}`;
@@ -1517,11 +1905,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
         ...state.diplomacy,
         [embKey]: { ...(state.diplomacy[embKey] || {}), embassy: true },
       };
-      // Diplomat consumed; Spy survives
-      if (spy.type === 46) {
-        killUnit(state, action.unitIndex);
+      // Spy survival (decompiled formula)
+      const embSurvival = checkSpySurvival(spy, 0, state.rng);
+      if (embSurvival.survives) {
+        state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: embSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
-        state.units[action.unitIndex] = { ...spy, movesLeft: 0 };
+        killUnit(state, action.unitIndex);
       }
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push({ type: 'embassyEstablished', civSlot, targetCiv: embTarget, cityName: embCity.name });
@@ -1533,6 +1922,19 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // From decompiled FUN_004c9ebd (spy_sabotage_unit, 784B)
       const spy = state.units[action.unitIndex];
       const sabTarget = state.units[action.targetIndex];
+      // Unified success/detection check (J.1) — use nearest city for building modifiers
+      const sabUnitCity = state.cities.find(c => c.gx === sabTarget.gx && c.gy === sabTarget.gy && c.size > 0 && c.owner === sabTarget.owner);
+      // If target isn't in a city, use a dummy city with no buildings for the check
+      const sabUnitCheckCity = sabUnitCity || { gx: sabTarget.gx, gy: sabTarget.gy, buildings: new Set(), owner: sabTarget.owner };
+      const sabUnitChance = calcSpySuccessChance(spy, sabUnitCheckCity, 'sabotage', state);
+      if (state.rng.random() >= sabUnitChance) {
+        // Failed — spy caught
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, sabTarget.owner);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'sabotageUnit' });
+        break;
+      }
       const maxHp = (UNIT_HP && UNIT_HP[sabTarget.type]) || 10;
       const damage = Math.floor(maxHp / 2);
       state.units[action.targetIndex] = {
@@ -1540,14 +1942,79 @@ export function applyAction(prev, mapBase, action, civSlot) {
         hpLost: Math.min(maxHp - 1, (sabTarget.hpLost || 0) + damage),
       };
       // Spy survival
-      const sabUnitSurvival = checkSpySurvival(spy, 0);
+      const sabUnitSurvival = checkSpySurvival(spy, 0, state.rng);
       if (sabUnitSurvival.survives) {
         state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: sabUnitSurvival.becomesVeteran ? 1 : spy.veteran };
       } else {
         killUnit(state, action.unitIndex);
       }
+      handleEspionageIncident(state, mapBase, civSlot, sabTarget.owner);
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push({ type: 'unitSabotaged', civSlot, targetType: sabTarget.type, damage });
+      break;
+    }
+
+    case SPY_SUBVERT_CITY: {
+      // J.3: Spy-only subvert city — like incite revolt but keeps buildings intact
+      // Costs 2× normal incite cost
+      const spy = state.units[action.unitIndex];
+      const svCity = state.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      const svCityIdx = state.cities.indexOf(svCity);
+      const svBaseCost = calcInciteCost(state, svCity, mapBase);
+      const svCost = svBaseCost * 2;
+      const svOldOwner = svCity.owner;
+      // Unified success/detection check (J.1)
+      const svChance = calcSpySuccessChance(spy, svCity, 'sabotage', state);
+      if (state.rng.random() >= svChance) {
+        killUnit(state, action.unitIndex);
+        handleEspionageIncident(state, mapBase, civSlot, svOldOwner);
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({ type: 'spyCaught', civSlot, operation: 'subvertCity', cityName: svCity.name });
+        break;
+      }
+      // Deduct gold
+      state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+      const svCiv = { ...state.civs[civSlot] };
+      svCiv.treasury = (svCiv.treasury || 0) - svCost;
+      state.civs[civSlot] = svCiv;
+      // Transfer nearby units (within distance 1) to new owner
+      state.units = state.units !== prev.units ? state.units : [...prev.units];
+      for (let ui = 0; ui < state.units.length; ui++) {
+        const u = state.units[ui];
+        if (u.gx < 0 || u.owner !== svOldOwner) continue;
+        const udx = Math.abs(u.gx - svCity.gx);
+        const udy = Math.abs(u.gy - svCity.gy);
+        const udist = (mapBase.wraps ? Math.min(udx, mapBase.mw - udx) : udx) + udy;
+        if (udist < 2) {
+          if (udist === 0 || !state.cities.some(c => c.gx === u.gx && c.gy === u.gy && c.size > 0 && c !== svCity)) {
+            state.units[ui] = { ...u, owner: civSlot, homeCityId: svCityIdx, orders: 'none' };
+            if (mapBase.tileData) {
+              updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, u.gx, u.gy, mapBase.wraps);
+            }
+          }
+        }
+      }
+      // Transfer city ownership — skip building destruction (subvert keeps all buildings)
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      captureCity(state, prev, mapBase, svCityIdx, civSlot, svOldOwner, { skipBuildingDestruction: true });
+      // Spy survival
+      const svSurvival = checkSpySurvival(spy, 0, state.rng);
+      if (svSurvival.survives) {
+        state.units[action.unitIndex] = { ...spy, movesLeft: 0, veteran: svSurvival.becomesVeteran ? 1 : spy.veteran };
+      } else {
+        killUnit(state, action.unitIndex);
+      }
+      // Diplomatic incident
+      handleEspionageIncident(state, mapBase, civSlot, svOldOwner);
+      checkCivElimination(state, svOldOwner);
+      if (svOldOwner > 0 && !(state.civsAlive & (1 << svOldOwner))) {
+        spawnBarbarianUprising(state, mapBase, svCity.gx, svCity.gy);
+      }
+      dispatchEvents(state, mapBase, EVENT_CITY_TAKEN, {
+        cityName: svCity.name, attacker: civSlot, defender: svOldOwner,
+      });
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'citySubverted', civSlot, cityName: svCity.name, from: svOldOwner, cost: svCost });
       break;
     }
 
@@ -1608,9 +2075,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
         const bmbBestDef = bmbDefenders.reduce((a, b) => (UNIT_DEF[b.type] || 0) > (UNIT_DEF[a.type] || 0) ? b : a);
         const bmbDi = state.units.indexOf(bmbBestDef);
         if (bmbDi >= 0) {
-          state.units[bmbDi] = { ...bmbBestDef };
-          state.units[bmbDi].hp = Math.max(0, (bmbBestDef.hp ?? 10) - 2);
-          if (state.units[bmbDi].hp <= 0) {
+          const bmbMaxHp = (UNIT_HP[bmbBestDef.type] || 1);
+          const bmbNewHpLost = Math.min(bmbMaxHp, (bmbBestDef.hpLost || 0) + 2);
+          state.units[bmbDi] = { ...bmbBestDef, hpLost: bmbNewHpLost };
+          if (bmbNewHpLost >= bmbMaxHp) {
             state.units[bmbDi].gx = -1; // kill
           }
         }
@@ -1670,7 +2138,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
         if (gtDomain === 0 && gtCost > 1 && gtCur.movesLeft < gtCost) {
           const gtTotalMP = (UNIT_MOVE_POINTS[gtCur.type] || 1) * MOVEMENT_MULTIPLIER;
           if (gtCur.movesLeft < gtTotalMP) {
-            const gtRoll = Math.floor(Math.random() * gtCost);
+            const gtRoll = state.rng.nextInt(gtCost);
             if (gtCur.movesLeft <= gtRoll) {
               gtCur = { ...gtCur, movesLeft: 0 };
               state.units[gtUi] = gtCur;
@@ -1943,15 +2411,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const activeCiv = next;
 
       // Reset movement for the new active civ's units + promote fortifying→fortified
+      // C.1: Use calcEffectiveMovementPoints for damage-based MP reduction
       // Lighthouse (+1 MP sea), Magellan (+1 MP sea) — stack
       const seaBonus = (hasWonderEffect(state, activeCiv, 3) ? 1 : 0)
         + (hasWonderEffect(state, activeCiv, 12) ? 1 : 0);
       state.units = state.units.map(u => {
         if (u.owner !== activeCiv) return u;
         const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
-        let mp = UNIT_MOVE_POINTS[u.type];
-        if (seaBonus && UNIT_DOMAIN[u.type] === 1) mp += seaBonus;
-        return { ...u, movesLeft: mp * MOVEMENT_MULTIPLIER, orders };
+        let mp = calcEffectiveMovementPoints(u);
+        if (seaBonus && UNIT_DOMAIN[u.type] === 1) mp += seaBonus * MOVEMENT_MULTIPLIER;
+        return { ...u, movesLeft: mp, orders };
       });
 
       // ── Anarchy countdown ──
@@ -2019,48 +2488,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
+      // ── Recalc spaceship stats (may have built SS parts this turn) ──
+      recalcSpaceshipStats(state, activeCiv);
+
       // ── Famine elimination check: if a city was destroyed by famine, check if civ is eliminated ──
       checkCivElimination(state, activeCiv);
 
-      // ── Pollution generation for the active civ's cities ──
-      for (let ci = 0; ci < state.cities.length; ci++) {
-        const city = state.cities[ci];
-        if (city.owner !== activeCiv || city.size <= 0) continue;
-        if (city.resistanceTurns > 0) continue; // no production → no pollution
-        const { netShields } = calcShieldProduction(city, ci, state, mapBase, state.units);
-        let pollScore = Math.max(0, netShields - POLLUTION_THRESHOLD);
-        // Population contribution: (population - 4) if no Mass Transit (building 13)
-        if (!cityHasBuilding(city, 13)) {
-          pollScore += Math.max(0, city.size - 4);
-        }
-        if (pollScore > 0 && Math.random() < pollScore / 100) {
-          // Place pollution on a random land tile within city's 21-tile radius
-          const parC = city.gy & 1;
-          const landTiles = [];
-          for (let ri = 0; ri < 21; ri++) {
-            const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
-            const parT = ((city.gy + ddy) % 2 + 2) % 2;
-            const tgx = city.gx + ((parC + ddx - parT) >> 1);
-            const tgy = city.gy + ddy;
-            const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
-            if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
-            const ter = mapBase.getTerrain(wgx, tgy);
-            if (ter === 10) continue; // skip ocean
-            const imp = mapBase.getImprovements(wgx, tgy);
-            if (imp.pollution) continue; // already polluted
-            landTiles.push({ gx: wgx, gy: tgy });
-          }
-          if (landTiles.length > 0) {
-            const pick = landTiles[Math.floor(Math.random() * landTiles.length)];
-            const pollIdx = pick.gy * mapBase.mw + pick.gx;
-            if (mapBase.tileData[pollIdx]) {
-              mapBase.tileData[pollIdx].improvements = { ...mapBase.tileData[pollIdx].improvements, pollution: true };
-            }
-            if (!state.turnEvents) state.turnEvents = [];
-            state.turnEvents.push({ type: 'pollution', cityName: city.name, civSlot: activeCiv });
-          }
-        }
-      }
+      // NOTE: Pollution generation is now handled per-city by processCityPollution()
+      // inside processCityTurn() (D.1), including nuclear meltdown. Only the global
+      // warming check remains here.
 
       // ── Global warming check: 8+ pollution tiles → convert random coastal tile ──
       {
@@ -2086,7 +2522,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
             }
           }
           if (coastalTiles.length > 0) {
-            const gwPick = coastalTiles[Math.floor(Math.random() * coastalTiles.length)];
+            const gwPick = coastalTiles[state.rng.nextInt(coastalTiles.length)];
             const gwIdx = gwPick.gy * mapBase.mw + gwPick.gx;
             const gwTransform = { 1: 0, 2: 0, 3: 9, 4: 4, 5: 5, 6: 0, 7: 6, 8: 8, 9: 9 };
             const newTer = gwTransform[gwPick.terrain];
@@ -2109,10 +2545,11 @@ export function applyAction(prev, mapBase, action, civSlot) {
       }
 
       // ── Trade / Treasury / Science for the active civ ──
+      // D.5: Trade route income is now folded into calcCityTrade via
+      // calcTradeRouteIncome — no separate accumulation needed.
       let civTaxTotal = 0;
       let civSciTotal = 0;
       let civMaintenanceTotal = 0;
-      let tradeRouteIncome = 0;
       for (let ci = 0; ci < state.cities.length; ci++) {
         const city = state.cities[ci];
         if (city.owner !== activeCiv || city.size <= 0) continue;
@@ -2121,20 +2558,13 @@ export function applyAction(prev, mapBase, action, civSlot) {
         civTaxTotal += tax;
         civSciTotal += sci;
         civMaintenanceTotal += maintenance;
-        // Trade route income
-        if (city.tradeRoutes) {
-          for (const route of city.tradeRoutes) {
-            const dest = state.cities[route.destCityIndex];
-            if (dest && dest.size > 0) tradeRouteIncome += route.income;
-          }
-        }
       }
 
       // Update civ treasury and research progress
       if (state.civs && state.civs[activeCiv]) {
         state.civs = [...prev.civs];
         const civ = { ...state.civs[activeCiv] };
-        civ.treasury = (civ.treasury || 0) + civTaxTotal + tradeRouteIncome - civMaintenanceTotal;
+        civ.treasury = (civ.treasury || 0) + civTaxTotal - civMaintenanceTotal;
 
         // If treasury goes negative, sell cheapest-maintenance building to cover deficit
         while (civ.treasury < 0) {
@@ -2168,7 +2598,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
           });
         }
 
-        civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
+        // Q.4: If scenario restricts tech advances, don't accumulate science
+        if (!state.scenarioTechRestrictions?.noResearch) {
+          civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
+        }
 
         // ── Research completion check ──
         const techId = civ.techBeingResearched;
@@ -2200,10 +2633,29 @@ export function applyAction(prev, mapBase, action, civSlot) {
         state.civs[activeCiv] = civ;
       }
 
-      // ── Great Library: auto-grant techs known by 2+ other civs ──
-      if (hasWonderEffect(state, activeCiv, 4)) {
+      // ── Q.2: Tech leak + Great Library ──
+      // Great Library (wonder 4): immediately grant techs known by 2+ other civs.
+      // Tech leak (no wonder needed): if 2+ other civs already know a tech,
+      // civ gets it free on the NEXT turn (tracked via pendingLeakedTechs).
+      {
+        const hasGreatLibrary = hasWonderEffect(state, activeCiv, 4);
         const myTechs = state.civTechs?.[activeCiv];
         if (myTechs) {
+          // First, grant any pending leaked techs from last turn
+          if (state.pendingLeakedTechs?.[activeCiv]?.length > 0) {
+            for (const advId of state.pendingLeakedTechs[activeCiv]) {
+              if (!myTechs.has(advId)) {
+                grantAdvance(state, activeCiv, advId);
+                if (!state.turnEvents) state.turnEvents = [];
+                state.turnEvents.push({ type: 'freeAdvance', civSlot: activeCiv, advanceId: advId, source: 'tech leak' });
+              }
+            }
+            // Clear pending
+            if (!state.pendingLeakedTechs) state.pendingLeakedTechs = {};
+            state.pendingLeakedTechs = { ...state.pendingLeakedTechs, [activeCiv]: [] };
+          }
+
+          // Now check for techs known by 2+ other civs
           for (let advId = 0; advId < ADVANCE_NAMES.length; advId++) {
             if (myTechs.has(advId)) continue;
             let count = 0;
@@ -2212,9 +2664,24 @@ export function applyAction(prev, mapBase, action, civSlot) {
               if (state.civTechs[c]?.has(advId)) count++;
             }
             if (count >= 2) {
-              grantAdvance(state, activeCiv, advId);
-              if (!state.turnEvents) state.turnEvents = [];
-              state.turnEvents.push({ type: 'freeAdvance', civSlot: activeCiv, advanceId: advId, source: 'Great Library' });
+              if (hasGreatLibrary) {
+                // Great Library: grant immediately
+                grantAdvance(state, activeCiv, advId);
+                if (!state.turnEvents) state.turnEvents = [];
+                state.turnEvents.push({ type: 'freeAdvance', civSlot: activeCiv, advanceId: advId, source: 'Great Library' });
+              } else {
+                // Tech leak: queue for next turn
+                if (!state.pendingLeakedTechs) state.pendingLeakedTechs = {};
+                state.pendingLeakedTechs = { ...state.pendingLeakedTechs };
+                if (!state.pendingLeakedTechs[activeCiv]) {
+                  state.pendingLeakedTechs[activeCiv] = [];
+                } else {
+                  state.pendingLeakedTechs[activeCiv] = [...state.pendingLeakedTechs[activeCiv]];
+                }
+                if (!state.pendingLeakedTechs[activeCiv].includes(advId)) {
+                  state.pendingLeakedTechs[activeCiv].push(advId);
+                }
+              }
             }
           }
         }
@@ -2342,16 +2809,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
           if (u.gx === gtTargetGx && u.gy === gtTargetGy) {
             state.units[ui] = { ...u, orders: 'none', goToX: undefined, goToY: undefined };
           } else {
-            // Use A* pathfinding to compute optimal path each step
+            // Use calcGotoDirection for step-by-step GOTO continuation
             let gtCurUnit = { ...u };
             let gtMoved = false;
             while (gtCurUnit.movesLeft > 0 && gtCurUnit.gx >= 0) {
-              // Re-compute path from current position (handles dynamic obstacles)
-              const gtPath = findPath(gtCurUnit.type, gtCurUnit.gx, gtCurUnit.gy, gtTargetGx, gtTargetGy, mapBase, gtCurUnit.owner, state.units, state.cities);
-              if (!gtPath || gtPath.length === 0) break; // no path or already there
+              // Compute next direction (handles A*, adjacency, geometric fallback)
+              const gtResult = calcGotoDirection(gtCurUnit, gtTargetGx, gtTargetGy, mapBase, gtCurUnit.owner, state.units, state.cities);
+              if (!gtResult) break; // no path or already there
 
-              // Take only the first step of the computed path
-              const gtDir = gtPath[0];
+              const gtDir = gtResult.dir;
               const gtNextDest = resolveDirection(gtCurUnit.gx, gtCurUnit.gy, gtDir, mapBase);
               if (!gtNextDest) break;
               const gtMoveCostVal = moveCost(gtCurUnit.type, mapBase, gtCurUnit.gx, gtCurUnit.gy, gtNextDest.gx, gtNextDest.gy);
@@ -2393,6 +2859,17 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
+      // ── C.2: Trireme sinking check for active civ ──
+      for (let ui = 0; ui < state.units.length; ui++) {
+        const u = state.units[ui];
+        if (u.owner !== activeCiv || u.gx < 0) continue;
+        if (checkTriremeSinking(u, ui, state, mapBase, hasWonderEffect)) {
+          killUnit(state, ui);
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({ type: 'unitLost', unitType: u.type, reason: 'triremeSinking', civSlot: activeCiv });
+        }
+      }
+
       // ── Barbarian spawning phase (runs once per full turn cycle) ──
       // turnNumber was incremented above when activeCiv wraps back to firstAlive
       if (turnNumber > (prev.turn?.number || 0)) {
@@ -2402,6 +2879,32 @@ export function applyAction(prev, mapBase, action, civSlot) {
           dispatchEvents(state, mapBase, EVENT_TURN, { turn: turnNumber });
           dispatchEvents(state, mapBase, EVENT_TURN_INTERVAL, { turn: turnNumber });
           dispatchEvents(state, mapBase, EVENT_RANDOM_TURN, { turn: turnNumber });
+        }
+
+        // ── G.1-G.5: Diplomacy timers (ceasefire expiration, withdrawal, alliance visibility, reputation decay) ──
+        const diploEvents = processDiplomacyTimers(state, mapBase, turnNumber);
+        if (diploEvents.length > 0) {
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push(...diploEvents);
+        }
+      }
+
+      // ── K.3: Track consecutive peace turns per civ (for score formula) ──
+      // A civ is "at peace" if no treaty with any other alive civ is 'war'.
+      if (turnNumber > (prev.turn?.number || 0)) {
+        if (!state.civPeaceTurns) state.civPeaceTurns = new Array(8).fill(0);
+        state.civPeaceTurns = [...state.civPeaceTurns];
+        for (let c = 1; c <= 7; c++) {
+          if (!(state.civsAlive & (1 << c))) continue;
+          let atWar = false;
+          if (state.treaties) {
+            for (const [key, status] of Object.entries(state.treaties)) {
+              if (status !== 'war') continue;
+              const [a, b] = key.split('-').map(Number);
+              if (a === c || b === c) { atWar = true; break; }
+            }
+          }
+          state.civPeaceTurns[c] = atWar ? 0 : (state.civPeaceTurns[c] || 0) + 1;
         }
       }
 
@@ -2424,6 +2927,40 @@ export function applyAction(prev, mapBase, action, civSlot) {
       break;
     }
 
+    case LAUNCH_SPACESHIP: {
+      // Wire launchSpaceship from spaceship.js
+      const lsEvents = launchSpaceship(state, civSlot);
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push(...lsEvents);
+      break;
+    }
+
+    case EXECUTE_TRADE: {
+      // Wire executeTransaction from diplomacy.js
+      const { fromCiv, toCiv, transaction } = action;
+      executeTransaction(state, fromCiv, toCiv, transaction);
+      break;
+    }
+
+    case CARAVAN_HELP_WONDER: {
+      // D.8: Caravan/Freight at a city building a wonder donates 50 shields
+      const { unitIndex: helpUi, cityIndex: helpCi } = action;
+      const helpShields = 50;
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+      const helpCity = { ...state.cities[helpCi] };
+      helpCity.shieldsInBox = (helpCity.shieldsInBox || 0) + helpShields;
+      state.cities[helpCi] = helpCity;
+      // Consume the caravan/freight
+      killUnit(state, helpUi);
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'caravanHelpWonder', civSlot,
+        cityName: helpCity.name, cityIndex: helpCi,
+        shieldsAdded: helpShields,
+      });
+      break;
+    }
+
     default:
       return prev;
   }
@@ -2432,9 +2969,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
   return state;
 }
 
+// I.1: Difficulty-based spawn count multiplier
+const DIFFICULTY_BARB_MULTIPLIER = {
+  chieftain: 0.5, warlord: 0.75, prince: 1.0, king: 1.25, emperor: 1.5, deity: 2.0,
+};
+
 /**
  * Barbarian spawning phase: land units, sea units, and camp founding.
  * Called once per full turn cycle (when turn number increments).
+ * I.1: Difficulty-scaled frequency, territory suppression, leader units with gold.
+ * I.2: Naval barbarians near coastal settlements, fuel timeout, scuttle weak ships.
  */
 function spawnBarbarians(state, mapBase) {
   const activity = state.barbarianActivity || 'none';
@@ -2444,6 +2988,12 @@ function spawnBarbarians(state, mapBase) {
   const turnNum = state.turn.number;
   if (turnNum < BARBARIAN_MIN_TURN) return;
 
+  // I.1: Difficulty-scaled spawn frequency
+  const difficulty = state.difficulty || 'chieftain';
+  const diffMult = DIFFICULTY_BARB_MULTIPLIER[difficulty] || 1.0;
+  // Scale frequency: lower freq = more spawning. Multiply freq by inverse of difficulty.
+  const scaledFreq = Math.max(1, Math.round(freq / diffMult));
+
   // Count existing barbarian units on the map
   let barbCount = 0;
   for (const u of state.units) {
@@ -2451,21 +3001,34 @@ function spawnBarbarians(state, mapBase) {
   }
 
   // ── Land barbarian spawning ──
-  if (turnNum % freq === 0 && barbCount < BARBARIAN_MAX_UNITS) {
+  if (turnNum % scaledFreq === 0 && barbCount < BARBARIAN_MAX_UNITS) {
     const spawnLoc = findBarbSpawnTile(state, mapBase, /* land */ true);
     if (spawnLoc) {
       const unitType = getBarbUnitType(state);
-      const spawnCount = 1 + Math.floor(Math.random() * 3); // 1-3
+      // I.1: Difficulty-scaled spawn count
+      const baseCount = 1 + state.rng.nextInt(3); // 1-3
+      const spawnCount = Math.max(1, Math.round(baseCount * diffMult));
 
       // Ensure units array is a fresh clone before pushing
       state.units = [...state.units];
 
       let actualSpawned = 0;
       for (let s = 0; s < spawnCount && barbCount + actualSpawned < BARBARIAN_MAX_UNITS; s++) {
-        state.units.push(makeUnit(
+        const newUnit = makeUnit(
           unitType, 0, spawnLoc.gx, spawnLoc.gy,
           UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER
-        ));
+        );
+        state.units.push(newUnit);
+        actualSpawned++;
+      }
+
+      // I.1: Spawn a barbarian leader unit carrying gold ransom (1 in 4 chance)
+      if (actualSpawned > 0 && state.rng.random() < 0.25 && barbCount + actualSpawned < BARBARIAN_MAX_UNITS) {
+        const leaderUnit = makeUnit(2, 0, spawnLoc.gx, spawnLoc.gy, UNIT_MOVE_POINTS[2] * MOVEMENT_MULTIPLIER); // Warriors as leader
+        // Barbarian leaders carry gold: 25 × difficulty rank (1-6)
+        const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty);
+        leaderUnit.barbarianGold = 25 * (diffIdx + 1);
+        state.units.push(leaderUnit);
         actualSpawned++;
       }
 
@@ -2477,19 +3040,22 @@ function spawnBarbarians(state, mapBase) {
     }
   }
 
-  // ── Sea barbarian spawning (same frequency, separate check) ──
-  if (turnNum % freq === 0 && barbCount < BARBARIAN_MAX_UNITS && !mapBase.wraps) {
-    const seaLoc = findBarbSeaSpawnTile(mapBase);
+  // ── I.2: Sea barbarian spawning — near coastal settlements ──
+  if (turnNum % scaledFreq === 0 && barbCount < BARBARIAN_MAX_UNITS) {
+    const seaLoc = findBarbCoastalSpawnTile(state, mapBase);
     if (seaLoc) {
       const seaType = getBarbSeaUnitType(state);
-      const seaCount = 1 + Math.floor(Math.random() * 2); // 1-2
+      const seaCount = 1 + state.rng.nextInt(2); // 1-2
 
       let actualSeaSpawned = 0;
       for (let s = 0; s < seaCount && barbCount + actualSeaSpawned < BARBARIAN_MAX_UNITS; s++) {
-        state.units.push(makeUnit(
+        const seaUnit = makeUnit(
           seaType, 0, seaLoc.gx, seaLoc.gy,
           UNIT_MOVE_POINTS[seaType] * MOVEMENT_MULTIPLIER
-        ));
+        );
+        // I.2: Track spawn turn for 30-turn fuel timeout
+        seaUnit.barbSeaTurn = turnNum;
+        state.units.push(seaUnit);
         actualSeaSpawned++;
       }
 
@@ -2501,8 +3067,11 @@ function spawnBarbarians(state, mapBase) {
     }
   }
 
+  // ── I.2: Barbarian sea unit maintenance — fuel timeout and scuttle ──
+  processBarbNavalMaintenance(state, mapBase, turnNum);
+
   // ── Camp founding (every 64 turns, 25% chance) ──
-  if (turnNum % 64 === 0 && Math.random() < 0.25) {
+  if (turnNum % 64 === 0 && state.rng.random() < 0.25) {
     // Find a barbarian unit far from any city (distance > 3)
     for (let ui = 0; ui < state.units.length; ui++) {
       const u = state.units[ui];
@@ -2552,9 +3121,41 @@ function spawnBarbarians(state, mapBase) {
 }
 
 /**
+ * I.2: Process barbarian naval unit maintenance.
+ * - 30-turn fuel timeout: destroy barbarian ships older than 30 turns at sea.
+ * - Scuttle weak ships: HP - stackSize < 2.
+ */
+function processBarbNavalMaintenance(state, mapBase, turnNum) {
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.owner !== 0 || u.gx < 0) continue;
+    if (UNIT_DOMAIN[u.type] !== 1) continue; // sea units only
+
+    // 30-turn fuel timeout
+    if (u.barbSeaTurn != null && turnNum - u.barbSeaTurn >= 30) {
+      killUnit(state, i);
+      continue;
+    }
+
+    // Scuttle weak ships: calculate HP remaining and stack size on tile
+    const maxHp = (UNIT_HP[u.type] || 1) * 10;
+    const currentHp = maxHp - (u.hpLost || 0);
+    let stackSize = 0;
+    for (let j = 0; j < state.units.length; j++) {
+      const su = state.units[j];
+      if (su.owner === 0 && su.gx === u.gx && su.gy === u.gy && su.gx >= 0) stackSize++;
+    }
+    if (currentHp - stackSize < 2) {
+      killUnit(state, i);
+    }
+  }
+}
+
+/**
  * Find a random unexplored land tile for barbarian spawning.
  * Unexplored = visibility byte has NO bits set for any alive civ (slots 1-7).
  * Must be land (terrain !== 10), not in/adjacent to a city.
+ * I.1: Territory suppression — no spawning on tiles owned by any civ.
  * Tries up to 100 random positions.
  */
 function findBarbSpawnTile(state, mapBase, _land) {
@@ -2568,8 +3169,8 @@ function findBarbSpawnTile(state, mapBase, _land) {
   }
 
   for (let attempt = 0; attempt < 100; attempt++) {
-    const gx = Math.floor(Math.random() * mw);
-    const gy = Math.floor(Math.random() * mh);
+    const gx = state.rng.nextInt(mw);
+    const gy = state.rng.nextInt(mh);
     const idx = gy * mw + gx;
     const tile = tileData[idx];
     if (!tile) continue;
@@ -2579,6 +3180,10 @@ function findBarbSpawnTile(state, mapBase, _land) {
 
     // Must be unexplored by all alive civs
     if ((tile.visibility & aliveMask) !== 0) continue;
+
+    // I.1: Territory suppression — no barbarian camps on tiles owned by civs
+    const tileOwner = tile.tileOwnership;
+    if (tileOwner !== undefined && tileOwner !== 0 && tileOwner !== 0x0F) continue;
 
     // Must not be in or adjacent to a city
     let nearCity = false;
@@ -2601,19 +3206,20 @@ function findBarbSpawnTile(state, mapBase, _land) {
  * Only used when mapBase.wraps is false (edge tiles exist).
  * Tries up to 100 random positions along edges.
  */
-function findBarbSeaSpawnTile(mapBase) {
+function findBarbSeaSpawnTile(state, mapBase) {
   const { mw, mh, tileData } = mapBase;
   if (!tileData) return null;
+  const rng = state.rng;
 
   for (let attempt = 0; attempt < 100; attempt++) {
     let gx, gy;
     // Pick a random edge: 0=top, 1=bottom, 2=left, 3=right
-    const edge = Math.floor(Math.random() * 4);
+    const edge = rng.nextInt(4);
     switch (edge) {
-      case 0: gx = Math.floor(Math.random() * mw); gy = 0; break;
-      case 1: gx = Math.floor(Math.random() * mw); gy = mh - 1; break;
-      case 2: gx = 0; gy = Math.floor(Math.random() * mh); break;
-      case 3: gx = mw - 1; gy = Math.floor(Math.random() * mh); break;
+      case 0: gx = rng.nextInt(mw); gy = 0; break;
+      case 1: gx = rng.nextInt(mw); gy = mh - 1; break;
+      case 2: gx = 0; gy = rng.nextInt(mh); break;
+      case 3: gx = mw - 1; gy = rng.nextInt(mh); break;
     }
     const idx = gy * mw + gx;
     const tile = tileData[idx];
@@ -2622,6 +3228,69 @@ function findBarbSeaSpawnTile(mapBase) {
     return { gx, gy };
   }
   return null;
+}
+
+/**
+ * I.2: Find an ocean tile near a coastal settlement for sea barbarian spawning.
+ * Picks a random non-barbarian coastal city, then finds an adjacent ocean tile.
+ * Falls back to findBarbSeaSpawnTile if no coastal cities exist.
+ */
+function findBarbCoastalSpawnTile(state, mapBase) {
+  const rng = state.rng;
+  const { mw, mh, tileData } = mapBase;
+  if (!tileData) return null;
+
+  // Collect non-barbarian coastal cities (those with an adjacent ocean tile)
+  const coastalCities = [];
+  for (const c of state.cities) {
+    if (c.owner === 0 || c.size <= 0) continue;
+    const cgx = c.gx != null ? c.gx : c.cx;
+    const cgy = c.gy != null ? c.gy : c.cy;
+    // Check if any adjacent tile is ocean
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    for (const dir of dirs) {
+      const dest = resolveDirection(cgx, cgy, dir, mapBase);
+      if (!dest) continue;
+      if (dest.gy < 0 || dest.gy >= mh) continue;
+      const wgx = mapBase.wraps ? ((dest.gx % mw) + mw) % mw : dest.gx;
+      if (wgx < 0 || wgx >= mw) continue;
+      const dTile = tileData[dest.gy * mw + wgx];
+      if (dTile && dTile.terrain === 10) {
+        coastalCities.push({ city: c, oceanGx: wgx, oceanGy: dest.gy });
+        break; // one match per city is enough
+      }
+    }
+  }
+
+  if (coastalCities.length === 0) {
+    // Fallback to edge spawn
+    return findBarbSeaSpawnTile(state, mapBase);
+  }
+
+  // Pick a random coastal city, find ocean tiles near it
+  const pick = coastalCities[rng.nextInt(coastalCities.length)];
+  // Try to find an ocean tile 2-4 tiles from the city (not directly adjacent)
+  const cgx = pick.city.gx != null ? pick.city.gx : pick.city.cx;
+  const cgy = pick.city.gy != null ? pick.city.gy : pick.city.cy;
+
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const dx = rng.nextInt(7) - 3; // -3 to 3
+    const dy = rng.nextInt(7) - 3;
+    if (Math.abs(dx) + Math.abs(dy) < 2) continue; // not too close
+    let gx = cgx + dx;
+    const gy = cgy + dy;
+    if (gy < 0 || gy >= mh) continue;
+    if (mapBase.wraps) {
+      gx = ((gx % mw) + mw) % mw;
+    } else if (gx < 0 || gx >= mw) {
+      continue;
+    }
+    const tile = tileData[gy * mw + gx];
+    if (tile && tile.terrain === 10) return { gx, gy };
+  }
+
+  // Direct fallback: use the first ocean tile we found adjacent to the city
+  return { gx: pick.oceanGx, gy: pick.oceanGy };
 }
 
 function findFirstAliveCiv(civsAlive) {
@@ -2793,7 +3462,7 @@ function processBarbarianAI(state, prev, mapBase) {
         // Random movement
         const shuffled = [...BARB_DIRS];
         for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
+          const j = state.rng.nextInt(i + 1);
           [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
         for (const dir of shuffled) {
@@ -2959,7 +3628,7 @@ function spawnBarbarianUprising(state, mapBase, cityGx, cityGy) {
   if (activity === 'none') return;
 
   const unitType = getBarbUnitType(state);
-  const count = 2 + Math.floor(Math.random() * 3); // 2-4
+  const count = 2 + state.rng.nextInt(3); // 2-4
 
   // Collect candidate land tiles within distance 5
   const candidates = [];
@@ -2986,7 +3655,7 @@ function spawnBarbarianUprising(state, mapBase, cityGx, cityGy) {
 
   // Shuffle candidates
   for (let i = candidates.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = state.rng.nextInt(i + 1);
     [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
   }
 

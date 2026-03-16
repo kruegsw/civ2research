@@ -15,6 +15,7 @@ import {
 import { hasWonderEffect, civHasWonder } from './utils.js';
 import { updateVisibility } from './visibility.js';
 import { grantAdvance } from './research.js';
+import { isSchismBlocked } from './events.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Constants
@@ -441,7 +442,7 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   // If old owner has palace in this city and has 5+ remaining cities
   const hadPalace = !!(city.buildings && city.buildings.has(1));
   let civilWarResult = null;
-  if (hadPalace && countCities(state, oldOwner) >= 6) {
+  if (hadPalace && countCities(state, oldOwner) >= 6 && !isSchismBlocked(state, oldOwner)) {
     // 6 because this city hasn't been transferred yet (it counts as 1 of the 6)
     civilWarResult = handleCivilWar(state, mapBase, oldOwner, cityIndex);
     if (civilWarResult.success) {

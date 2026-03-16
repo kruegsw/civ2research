@@ -17,6 +17,9 @@ import {
   BUSY_ORDERS, TERRAIN_DEFENSE, TERRAIN_MOVE_COST, UNIT_NEGATES_WALLS,
   UNIT_MOVE_POINTS, UNIT_COSTS, GOVT_INDEX, UNIT_FUEL, UNIT_CARRY_CAP,
 } from '../defs.js';
+import {
+  GOAL_BUILD_ROAD, GOAL_ESCORT, GOAL_TRANSPORT, GOAL_AIR_STRIKE,
+} from './goals.js';
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -36,6 +39,156 @@ const FRONTIER_EXTRA_DEFENDERS = 1;
 
 /** Distance threshold (doubled-coord) to consider a city "frontier". */
 const FRONTIER_DISTANCE = 16;
+
+// ── M.1: Damage level constants ──────────────────────────────────
+// Damage levels: 0=healthy (>75%), 1=scratched (50-75%), 2=wounded (25-50%), 3=critical (<25%)
+const DAMAGE_HEALTHY   = 0;
+const DAMAGE_SCRATCHED = 1;
+const DAMAGE_WOUNDED   = 2;
+const DAMAGE_CRITICAL  = 3;
+
+/**
+ * Per-role retreat thresholds. When a unit's damage level meets or exceeds
+ * its role's threshold, it should retreat to a city for healing.
+ *
+ * - Attackers (role 0): retreat at wounded (50% HP) — they need strength to fight
+ * - Defenders (role 1): hold until critical (25% HP) — their job is to hold
+ * - Naval superiority (role 2): retreat at wounded — expensive to replace
+ * - Air attack (role 3): N/A (fuel-based return logic handles this)
+ * - Air defense (role 4): N/A
+ * - Sea transport (role 5): retreat at scratched — losing cargo is catastrophic
+ * - Settle (role 6): retreat at scratched — settlers are precious
+ * - Diplomacy (role 7): retreat at scratched — non-combat
+ * - Trade (role 8): retreat at scratched — non-combat
+ */
+const ROLE_RETREAT_THRESHOLD = [
+  DAMAGE_WOUNDED,   // 0: Attack
+  DAMAGE_CRITICAL,  // 1: Defend
+  DAMAGE_WOUNDED,   // 2: Naval superiority
+  DAMAGE_CRITICAL,  // 3: Air attack (handled by fuel)
+  DAMAGE_CRITICAL,  // 4: Air defense (handled by fuel)
+  DAMAGE_SCRATCHED, // 5: Sea transport
+  DAMAGE_SCRATCHED, // 6: Settle
+  DAMAGE_SCRATCHED, // 7: Diplomacy
+  DAMAGE_SCRATCHED, // 8: Trade
+];
+
+// ── RNG helpers ──────────────────────────────────────────────────
+
+/**
+ * Return a random int in [0, n) using state.rng if available, else Math.random().
+ */
+function _rngInt(gameState, n) {
+  if (n <= 1) return 0;
+  return gameState.rng ? gameState.rng.nextInt(n) : Math.floor(Math.random() * n);
+}
+
+/**
+ * Return the DIRECTIONS array shuffled via Fisher-Yates using state.rng.
+ */
+function _shuffleDirs(gameState) {
+  const arr = [...DIRECTIONS];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = _rngInt(gameState, i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ── M.1: Damage assessment ────────────────────────────────────────
+
+/**
+ * Compute the damage level of a unit.
+ * Returns 0=healthy (>75%), 1=scratched (50-75%), 2=wounded (25-50%), 3=critical (<25%).
+ *
+ * Ported from decompiled local_d8 computation in FUN_00538a29.
+ *
+ * @param {object} unit - unit object with type and hpLost fields
+ * @returns {number} damage level 0-3
+ */
+export function getDamageLevel(unit) {
+  const maxHp = UNIT_HP[unit.type] || 1;
+  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
+  if (curHp * 4 <= maxHp) return DAMAGE_CRITICAL;   // <25% HP
+  if (curHp * 2 <= maxHp) return DAMAGE_WOUNDED;     // 25-50% HP
+  if ((unit.hpLost || 0) > 0) return DAMAGE_SCRATCHED; // 50-75% HP
+  return DAMAGE_HEALTHY;                              // >75% HP (full)
+}
+
+/**
+ * Determine whether a unit should retreat based on its role and damage level.
+ *
+ * @param {object} unit - unit object
+ * @param {number} [roleOverride] - override the unit's role (for temp garrison logic)
+ * @returns {boolean} true if unit should retreat to heal
+ */
+function shouldRetreat(unit, roleOverride) {
+  const role = roleOverride ?? (UNIT_ROLE[unit.type] ?? 0);
+  const threshold = ROLE_RETREAT_THRESHOLD[role] ?? DAMAGE_WOUNDED;
+  return getDamageLevel(unit) >= threshold;
+}
+
+/**
+ * Handle damage-based retreat for any unit.
+ * Attempts to move toward the nearest friendly city for healing.
+ * If the unit is critical and already in a city, returns a disband action
+ * for shield recovery (only if the city is producing a unit/building).
+ *
+ * @param {object} unit
+ * @param {number} unitIndex
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {Map} spatialIdx
+ * @param {number} civSlot
+ * @param {number} domain - unit domain (0=land, 1=sea, 2=air)
+ * @param {number} bodyId - unit's continent body ID (-1 if not land)
+ * @returns {object|null} action or null if no retreat possible
+ */
+function _handleDamageRetreat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain, bodyId) {
+  const dmg = getDamageLevel(unit);
+
+  // Critical unit already in own city: consider disbanding for shield recovery
+  if (dmg >= DAMAGE_CRITICAL) {
+    const inCity = gameState.cities.find(c =>
+      c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+    if (inCity) {
+      // Disband only if city is producing something useful (not capitalization)
+      // and the unit cost > 20 shields (not cheap trash)
+      const unitCost = UNIT_COSTS[unit.type] ?? 0;
+      const isProducing = inCity.itemInProduction && inCity.itemInProduction.type !== 'capitalization';
+      if (isProducing && unitCost > 20) {
+        const disbandAction = { type: 'DISBAND_UNIT', unitIndex };
+        const err = validateAction(gameState, mapBase, disbandAction, civSlot);
+        if (!err) return disbandAction;
+      }
+      // If we can't disband, just skip and heal in city
+      return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+    }
+  }
+
+  // Find nearest own city to retreat to
+  const retreatCity = _findNearestOwnCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, bodyId);
+  if (retreatCity) {
+    if (domain === 1) {
+      // Naval: use port finding for sea units
+      const port = _findNearestFriendlyPort(gameState, mapBase, unit.gx, unit.gy, civSlot);
+      if (port) {
+        const dir = _navalDirectionToward(mapBase, unit.gx, unit.gy, port.gx, port.gy);
+        if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
+    } else {
+      const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
+        retreatCity.gx, retreatCity.gy, unit, civSlot);
+      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
+    }
+  }
+
+  // Can't retreat — fortify or skip
+  if (domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
+    return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+  }
+  return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+}
 
 // ── Geometry helpers ──────────────────────────────────────────────
 
@@ -497,24 +650,13 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
   const negatesWalls = UNIT_NEGATES_WALLS.has(unit.type);
   const unitBodyId = (domain === 0) ? mapBase.getBodyId(unit.gx, unit.gy) : -1;
 
-  // ── Damage level (ported from decompiled local_d8 computation) ──
-  // 0 = full HP, 1 = any damage, 2 = below 50% HP, 3 = below 25% HP
-  const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
-  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
-  if (curHp * 4 < maxHp) damageLevel = 3;
-  else if (curHp * 2 < maxHp) damageLevel = 2;
+  // ── M.1: Damage assessment using shared function ──
+  const damageLevel = getDamageLevel(unit);
 
-  // Heavily damaged attackers (< 25% HP) should retreat or skip, not attack
-  if (damageLevel >= 3) {
-    // Try to retreat to a friendly city
-    const retreatCity = _findNearestOwnCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, unitBodyId);
-    if (retreatCity) {
-      const dir = safeDirectionToward(mapBase, gameState, spatialIdx, unit.gx, unit.gy,
-        retreatCity.gx, retreatCity.gy, unit, civSlot);
-      if (dir) return { type: 'MOVE_UNIT', unitIndex, dir };
-    }
-    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  // Attackers retreat at wounded (role threshold) or worse
+  if (shouldRetreat(unit, 0)) {
+    const retreatAction = _handleDamageRetreat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain, unitBodyId);
+    if (retreatAction) return retreatAction;
   }
 
   // ── 1. Evaluate adjacent enemies for attack ──
@@ -627,7 +769,7 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
     }
 
     // Small random factor (0-4) to prevent identical moves across units
-    score += Math.random() * 4;
+    score += gameState.rng ? gameState.rng.random() * 4 : Math.random() * 4;
 
     if (score > bestTargetScore) {
       bestTargetScore = score;
@@ -683,7 +825,7 @@ function aiAttacker(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, st
   }
 
   // 6. Random patrol
-  return randomMove(unit, unitIndex, mapBase, domain);
+  return randomMove(unit, unitIndex, mapBase, domain, gameState);
 }
 
 // ── aiAttacker helper: compute combat score ─────────────────────────
@@ -1002,24 +1144,24 @@ function _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, ci
         if (curTerrain === 10 && _anyEnemyNearUnit(gameState, mapBase, wnx, ny, civSlot)) {
           continue;  // goto LAB_0054168e
         }
-        score = Math.floor(Math.random() * 5);
+        score = _rngInt(gameState, 5);
       } else if (firstUnitOwner < 0 && !isOcean) {
         // ── Path 2: Empty land tile, no units present (lines 4869-4878) ──
         if (role === 0) {
           // Attack role, land: random(0,2) minus terrain move cost × 2
           // Ported from line 4871-4872
-          score = Math.floor(Math.random() * 3);
+          score = _rngInt(gameState, 3);
           score += (TERRAIN_MOVE_COST[terrain] ?? 1) * -2;
         } else {
           // Non-attack roles: random(0,2) minus terrain defense bonus
           // Ported from line 4875-4876
-          score = Math.floor(Math.random() * 3);
+          score = _rngInt(gameState, 3);
           score -= (TERRAIN_DEFENSE[terrain] ?? 2);
         }
       } else {
         // ── Path 3: Has own units or is ocean tile (lines 4879-4991) ──
         // Ported from the else branch at line 4879
-        score = Math.floor(Math.random() * 5);
+        score = _rngInt(gameState, 5);
 
         // If no enemy units and no own units (empty tile with our civ's presence)
         if (firstUnitOwner < 0 || firstUnitOwner === civSlot) {
@@ -1064,7 +1206,7 @@ function _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, ci
       // ── Own units on tile: role-based stacking evaluation ──
       // Ported from lines 4913-4989
 
-      score = Math.floor(Math.random() * 5);
+      score = _rngInt(gameState, 5);
 
       // Check if the tile is our city (binary: thunk_FUN_005b94d5 returns city flag)
       const isFriendlyCity = gameState.cities.some(c =>
@@ -2418,7 +2560,7 @@ function aiNavalCombat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot)
   }
 
   // ── 8. Random sea movement ──
-  return randomMove(unit, unitIndex, mapBase, 1);
+  return randomMove(unit, unitIndex, mapBase, 1, gameState);
 }
 
 // ── aiNavalCombat helpers ──────────────────────────────────────────
@@ -2618,7 +2760,7 @@ function _findCoastalPatrolTarget(gameState, mapBase, fromGx, fromGy, civSlot, s
 
       const dist = tileDist(fromGx, fromGy, wnx, ny, mapBase);
       // Score: prefer closer, less crowded patrol points near larger cities
-      const score = city.size * 5 - dist - ownNavalHere.length * 10 + Math.random() * 4;
+      const score = city.size * 5 - dist - ownNavalHere.length * 10 + (gameState.rng ? gameState.rng.random() * 4 : Math.random() * 4);
 
       if (score > bestScore) {
         bestScore = score;
@@ -2820,31 +2962,29 @@ function aiNuclearMissile(unit, unitIndex, gameState, mapBase, spatialIdx, civSl
     if (!isAtWar(gameState, civSlot, city.owner)) continue;
 
     // Range check
-    let dx = Math.abs(unit.gx - city.gx);
-    if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
-    const dy = Math.abs(unit.gy - city.gy);
-    if (dx + dy > nukeRange) continue;
+    const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
+    if (dist > nukeRange * 2) continue;
 
-    // Score based on city value
-    let score = city.size * 20;
-
-    // Bonus for number of buildings (more to destroy = more valuable target)
+    // M.6: Nuclear targeting formula: (size + buildings + wonders) / (1 + hasSDI * 10)
     const numBuildings = city.buildings ? city.buildings.size : 0;
-    score += numBuildings * 5;
+    let wonderCount = 0;
+    if (gameState.wonders) {
+      const ci = gameState.cities.indexOf(city);
+      for (let w = 0; w < 28; w++) {
+        const wd = gameState.wonders[w];
+        if (wd && wd.cityIndex === ci && !wd.destroyed) wonderCount++;
+      }
+    }
+    const hasSDI = city.buildings?.has(17) ? 1 : 0;
+    let score = Math.floor((city.size + numBuildings + wonderCount * 5) / (1 + hasSDI * 10));
 
     // Bonus for wonder-building cities (very high-value sabotage)
     if (city.itemInProduction?.type === 'wonder') {
       score += 100;
     }
 
-    // SDI Defense (building 17) — dramatically reduces nuke effectiveness
-    // In Civ2, SDI gives 75% chance to intercept nuclear missiles
-    if (city.buildings?.has(17)) {
-      score = Math.floor(score * 0.25); // 75% likely to fail
-    }
-
     // Distance penalty (prefer closer targets — less time exposed)
-    score -= Math.floor((dx + dy) / 2);
+    score -= Math.floor(dist / 4);
 
     // Bonus for capitals (building 1 = palace)
     if (city.buildings?.has(1)) {
@@ -2904,6 +3044,10 @@ function _isAtAirBase(unit, gameState, mapBase, civSlot) {
 /**
  * Return an air unit to the nearest valid base.
  * Uses REBASE action for instant relocation, or movement if in range.
+ *
+ * M.6: Carrier operations — air units preferentially return to carriers
+ * when fuel is critically low and carrier is closer than nearest city.
+ * Also considers carrier capacity (type 42, cap 8 air units).
  */
 function _airReturnToBase(unit, unitIndex, gameState, mapBase, civSlot) {
   // Find nearest base: own city, carrier, or airbase
@@ -2920,13 +3064,46 @@ function _airReturnToBase(unit, unitIndex, gameState, mapBase, civSlot) {
     }
   }
 
-  // Check carriers
-  for (const u of gameState.units) {
+  // M.6: Check carriers — prefer carriers when closer, especially for fuel-critical units
+  for (let ci = 0; ci < gameState.units.length; ci++) {
+    const u = gameState.units[ci];
     if (u.gx < 0 || u.owner !== civSlot || u.type !== 42) continue;
+    // Check carrier capacity: count air units already on this carrier tile
+    const airOnCarrier = gameState.units.filter(
+      au => au.gx === u.gx && au.gy === u.gy && au.owner === civSlot &&
+            (UNIT_DOMAIN[au.type] ?? 0) === 2 && au !== unit
+    ).length;
+    const carrierCap = UNIT_CARRY_CAP[42] || 8;
+    if (airOnCarrier >= carrierCap) continue; // carrier is full
+
     const dist = tileDist(unit.gx, unit.gy, u.gx, u.gy, mapBase);
     if (dist < bestDist) {
       bestDist = dist;
       bestBase = { gx: u.gx, gy: u.gy };
+    }
+  }
+
+  // Check airbases
+  if (mapBase.tileData) {
+    // Scan tiles near our position for airbases (within reasonable range)
+    const searchRadius = UNIT_MOVE_POINTS[unit.type] || 10;
+    for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+      for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+        const gy = unit.gy + dy;
+        if (gy < 0 || gy >= mapBase.mh) continue;
+        let gx = unit.gx + dx;
+        if (mapBase.wraps) gx = ((gx % mapBase.mw) + mapBase.mw) % mapBase.mw;
+        else if (gx < 0 || gx >= mapBase.mw) continue;
+        const idx = gy * mapBase.mw + gx;
+        const tile = mapBase.tileData[idx];
+        if (tile && tile.improvements && tile.improvements.airbase) {
+          const dist = tileDist(unit.gx, unit.gy, gx, gy, mapBase);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestBase = { gx, gy };
+          }
+        }
+      }
     }
   }
 
@@ -3038,12 +3215,25 @@ function aiAirDefense(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) 
         let score = 100 - dist;
         const eAtk = UNIT_ATK[eu.type] || 0;
         score += eAtk * 3; // higher attack = higher priority target
-        // Bonus for enemies near our cities
-        const nearOwnCity = gameState.cities.some(c =>
-          c && c.owner === civSlot && c.size > 0 &&
-          tileDist(eu.gx, eu.gy, c.gx, c.gy, mapBase) <= 6
-        );
-        if (nearOwnCity) score += 50;
+        // M.6: Scramble — bonus for enemies threatening our cities within half-range
+        for (const c of gameState.cities) {
+          if (!c || c.owner !== civSlot || c.size <= 0) continue;
+          const cityDist = tileDist(eu.gx, eu.gy, c.gx, c.gy, mapBase);
+          if (cityDist <= 6) {
+            score += 50;
+            // Extra priority for larger cities and cities with wonders
+            score += c.size * 2;
+            if (gameState.wonders) {
+              const ci = gameState.cities.indexOf(c);
+              for (let w = 0; w < 28; w++) {
+                if (gameState.wonders[w]?.cityIndex === ci && !gameState.wonders[w].destroyed) {
+                  score += 30;
+                }
+              }
+            }
+            break;
+          }
+        }
 
         if (score > bestInterceptScore) {
           bestInterceptScore = score;
@@ -3271,12 +3461,8 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   const domain = 1; // sea
   const carryCapacity = UNIT_CARRY_CAP[unit.type] || 2;
 
-  // ── Damage level ──
-  const maxHp = UNIT_HP[unit.type] || 1;
-  const curHp = Math.max(1, maxHp - (unit.hpLost || 0));
-  let damageLevel = (unit.hpLost || 0) > 0 ? 1 : 0;
-  if (curHp * 4 < maxHp) damageLevel = 3;
-  else if (curHp * 2 < maxHp) damageLevel = 2;
+  // ── M.1/M.5: Damage level using shared function ──
+  const damageLevel = getDamageLevel(unit);
 
   // ── Count cargo: land units at our tile belonging to us ──
   const cargoHere = unitsAt(spatialIdx, unit.gx, unit.gy).filter(
@@ -3285,9 +3471,8 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   const cargoCount = cargoHere.length;
   const isLoaded = cargoCount > 0;
 
-  // ── Danger check: retreat when damaged and near enemy warships ──
-  // Ported from the damage-level retreat logic used across all roles.
-  if (damageLevel >= 3) {
+  // ── M.1: Transports retreat at SCRATCHED — losing cargo is catastrophic ──
+  if (shouldRetreat(unit, 5)) {
     const port = _findNearestFriendlyPort(gameState, mapBase, unit.gx, unit.gy, civSlot);
     if (port) {
       const dir = _transportSafeDirection(mapBase, gameState, spatialIdx,
@@ -3301,11 +3486,55 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   //  LOADED: Transport is carrying land units
   // ══════════════════════════════════════════════════════════════
   if (isLoaded) {
-    // ── 1. Check if adjacent to enemy coastal city → unload nearby ──
-    // Ported from lines 4435-4438: if transport arrives near target,
-    // check adjacent tiles for unloading positions.
+    // ── M.5: Coordinated assault — wait until transport is sufficiently full ──
+    // If we're in or adjacent to a friendly coastal city and less than half
+    // loaded, wait for more units to board before departing.
+    if (cargoCount < Math.ceil(carryCapacity / 2)) {
+      const atPort = gameState.cities.some(c =>
+        c.gx === unit.gx && c.gy === unit.gy && c.owner === civSlot && c.size > 0);
+      if (atPort) {
+        // Check if there are more land combat units in this city that could board
+        const moreUnitsAvailable = unitsAt(spatialIdx, unit.gx, unit.gy).some(
+          e => e.unit.owner === civSlot && e.index !== unitIndex &&
+          (UNIT_DOMAIN[e.unit.type] ?? 0) === 0 && (UNIT_ATK[e.unit.type] || 0) > 0 &&
+          !cargoHere.some(c => c.index === e.index)
+        );
+        if (moreUnitsAvailable) {
+          // Wait for more units to load — skip this turn
+          return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+        }
+      }
+      // Also check if we're adjacent to a city with waiting units
+      const nbrs = mapBase.getNeighbors(unit.gx, unit.gy);
+      for (const ndir in nbrs) {
+        const [anx, any] = nbrs[ndir];
+        if (!inBounds(anx, any, mapBase)) continue;
+        const awnx = wrapX(anx, mapBase);
+        const adjCity = gameState.cities.find(c =>
+          c.gx === awnx && c.gy === any && c.owner === civSlot && c.size > 0);
+        if (adjCity) {
+          const landCombatHere = unitsAt(spatialIdx, awnx, any).filter(
+            e => e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 0 &&
+            (UNIT_ATK[e.unit.type] || 0) > 0
+          );
+          if (landCombatHere.length > 0) {
+            // Adjacent city has units — wait (they'll board next turn)
+            return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+          }
+        }
+      }
+    }
+
+    // ── M.5: Enhanced unloading with priority scoring ──
+    // Score adjacent land tiles for unloading. Prefer:
+    // 1. Tiles adjacent to undefended enemy cities (immediate capture)
+    // 2. Tiles with defensible terrain (hills, forest) near enemy cities
+    // 3. Empty land tiles away from strong enemy units
     {
       const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
+      let bestUnloadDir = null;
+      let bestUnloadScore = -Infinity;
+
       for (const dir in neighbors) {
         const [nx, ny] = neighbors[dir];
         if (!inBounds(nx, ny, mapBase)) continue;
@@ -3313,22 +3542,47 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
         const terrain = mapBase.getTerrain(wnx, ny);
         if (terrain === 10) continue; // skip ocean — need land to unload
 
-        // Check for enemy city at this land tile
+        // Check for enemy combat units on this tile
+        const enemyUnitsHere = unitsAt(spatialIdx, wnx, ny).filter(
+          e => e.unit.owner !== civSlot && isAtWar(gameState, civSlot, e.unit.owner) &&
+          (UNIT_ATK[e.unit.type] || 0) > 0
+        );
+        // Don't unload into tiles with strong enemy combat units
+        if (enemyUnitsHere.length > 0) continue;
+
+        let score = 0;
+
+        // Check for enemy city at this land tile — highest priority
         const enemyCity = gameState.cities.find(c =>
           c.gx === wnx && c.gy === ny && c.owner !== civSlot && c.size > 0 &&
           isAtWar(gameState, civSlot, c.owner));
+        if (enemyCity) score += 200;
 
-        // Check for empty land (no enemy units) suitable for landing
-        const enemyUnitsHere = unitsAt(spatialIdx, wnx, ny).filter(
-          e => e.unit.owner !== civSlot && isAtWar(gameState, civSlot, e.unit.owner)
-        );
-
-        // Prefer unloading adjacent to enemy cities (for immediate attack)
-        // or onto empty land tiles (for staging)
-        if (enemyCity || enemyUnitsHere.length === 0) {
-          // Move toward this land tile (which will unload cargo in the game engine)
-          return { type: 'MOVE_UNIT', unitIndex, dir };
+        // Check for enemy city within 2 tiles — still valuable
+        for (const city of gameState.cities) {
+          if (!city || city.size <= 0 || city.owner === civSlot) continue;
+          if (!isAtWar(gameState, civSlot, city.owner)) continue;
+          const dist = tileDist(wnx, ny, city.gx, city.gy, mapBase);
+          if (dist <= 4) { score += 100; break; }
         }
+
+        // Terrain defensibility bonus (hills=4, forest=3, mountains=6)
+        const terrDef = TERRAIN_DEFENSE[terrain] ?? 2;
+        score += terrDef * 5;
+
+        // Penalty if tile is adjacent to strong enemy units
+        if (isAdjacentToEnemy(mapBase, spatialIdx, wnx, ny, civSlot, gameState)) {
+          score -= 30;
+        }
+
+        if (score > bestUnloadScore) {
+          bestUnloadScore = score;
+          bestUnloadDir = dir;
+        }
+      }
+
+      if (bestUnloadDir && bestUnloadScore > -20) {
+        return { type: 'MOVE_UNIT', unitIndex, dir: bestUnloadDir };
       }
     }
 
@@ -3546,7 +3800,7 @@ function aiTransport(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   }
 
   // Random sea movement or skip
-  return randomMove(unit, unitIndex, mapBase, 1) || { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  return randomMove(unit, unitIndex, mapBase, 1, gameState) || { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
 }
 
 // ── aiTransport helpers ────────────────────────────────────────────
@@ -3636,6 +3890,87 @@ function _hasContinentEnemy(gameState, mapBase, civSlot, bodyId) {
   }
 
   return false;
+}
+
+/**
+ * M.5: Find a coastal tile on the same continent as a land unit that has
+ * ocean access to a target continent. Used for aiSetGotoViaCoast() — land
+ * units heading to a transport embarkation point.
+ *
+ * Searches coastal tiles (land tiles adjacent to ocean) on the unit's
+ * continent and returns the one closest to the target continent.
+ *
+ * @param {object} gameState
+ * @param {object} mapBase
+ * @param {number} fromGx - land unit's current X
+ * @param {number} fromGy - land unit's current Y
+ * @param {number} civSlot
+ * @param {number} unitBodyId - land unit's continent bodyId
+ * @param {number} targetGx - target tile X (on different continent)
+ * @param {number} targetGy - target tile Y
+ * @returns {{ gx: number, gy: number }|null} coastal tile or null
+ */
+function _findCoastalGotoTile(gameState, mapBase, fromGx, fromGy, civSlot, unitBodyId, targetGx, targetGy) {
+  if (unitBodyId <= 0) return null;
+
+  let bestCoast = null;
+  let bestScore = -Infinity;
+
+  // BFS from unit's position, looking for coastal tiles on same continent
+  const visited = new Set();
+  const key = (gx, gy) => `${gx},${gy}`;
+  const queue = [{ gx: fromGx, gy: fromGy, dist: 0 }];
+  visited.add(key(fromGx, fromGy));
+
+  while (queue.length > 0) {
+    const cur = queue.shift();
+    if (cur.dist > 15) break; // limit search radius
+
+    // Check if this tile is on our continent and adjacent to ocean
+    const tileBodyId = mapBase.getBodyId(cur.gx, cur.gy);
+    if (tileBodyId === unitBodyId) {
+      const neighbors = mapBase.getNeighbors(cur.gx, cur.gy);
+      let hasOcean = false;
+      for (const dir in neighbors) {
+        const [nx, ny] = neighbors[dir];
+        if (!inBounds(nx, ny, mapBase)) continue;
+        const wnx = wrapX(nx, mapBase);
+        if (mapBase.getTerrain(wnx, ny) === 10) { hasOcean = true; break; }
+      }
+
+      if (hasOcean) {
+        // Score: prefer coastal tiles closer to target, closer to us
+        const distToTarget = tileDist(cur.gx, cur.gy, targetGx, targetGy, mapBase);
+        const distFromUs = cur.dist;
+        // Bonus if there's a friendly coastal city here (port for embarkation)
+        const hasPort = gameState.cities.some(c =>
+          c.gx === cur.gx && c.gy === cur.gy && c.owner === civSlot && c.size > 0);
+        let score = 200 - distToTarget - distFromUs * 2;
+        if (hasPort) score += 50;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestCoast = { gx: cur.gx, gy: cur.gy };
+        }
+      }
+    }
+
+    // BFS neighbors (land only, same continent)
+    const nbrs = mapBase.getNeighbors(cur.gx, cur.gy);
+    for (const dir in nbrs) {
+      const [nx, ny] = nbrs[dir];
+      if (!inBounds(nx, ny, mapBase)) continue;
+      const wnx = wrapX(nx, mapBase);
+      const k = key(wnx, ny);
+      if (visited.has(k)) continue;
+      visited.add(k);
+      const terrain = mapBase.getTerrain(wnx, ny);
+      if (terrain === 10) continue; // skip ocean
+      queue.push({ gx: wnx, gy: ny, dist: cur.dist + 1 });
+    }
+  }
+
+  return bestCoast;
 }
 
 /**
@@ -4285,7 +4620,7 @@ function aiExplorer(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   if (moveDir) return { type: 'MOVE_UNIT', unitIndex, dir: moveDir };
 
   // Fallback: random safe movement (same as before)
-  const shuffled = [...DIRECTIONS].sort(() => Math.random() - 0.5);
+  const shuffled = _shuffleDirs(gameState);
   for (const dir of shuffled) {
     const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
     if (!dest) continue;
@@ -4298,13 +4633,81 @@ function aiExplorer(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot) {
   return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
 }
 
+// ── M.2: Diplomatic encounter check ──────────────────────────────
+
+/**
+ * Check for diplomatic encounters when an AI unit is adjacent to enemy units.
+ *
+ * Rules:
+ * - If at peace/ceasefire with an adjacent unit's owner: don't engage (skip)
+ * - If at war and adjacent enemy is non-combat (settler, caravan, diplomat/spy):
+ *   auto-capture by moving onto their tile
+ * - Diplomat/spy units: if at war, can be auto-captured by any combat unit
+ *
+ * @returns {object|null} action if a diplomatic encounter was handled, null otherwise
+ */
+function _checkDiplomaticEncounter(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain) {
+  const unitAtk = UNIT_ATK[unit.type] || 0;
+  if (unitAtk === 0) return null; // non-combat units don't auto-capture
+
+  const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
+
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (!inBounds(nx, ny, mapBase)) continue;
+    const wnx = wrapX(nx, mapBase);
+
+    // Domain check: land can't enter ocean, sea can't enter land
+    const terrain = mapBase.getTerrain(wnx, ny);
+    if (domain === 0 && terrain === 10) continue;
+    if (domain === 1 && terrain !== 10) continue;
+
+    const entries = unitsAt(spatialIdx, wnx, ny);
+    if (entries.length === 0) continue;
+
+    for (const { unit: enemy } of entries) {
+      if (enemy.owner === civSlot || enemy.gx < 0) continue;
+
+      const atWar = isAtWar(gameState, civSlot, enemy.owner);
+
+      if (!atWar) {
+        // At peace/ceasefire: skip this tile entirely (don't accidentally engage)
+        // The role-based AI already handles this, but this is an explicit guard
+        continue;
+      }
+
+      // At war: check if enemy is a non-combat unit we can auto-capture
+      // Non-combat types: settlers (0,1), diplomats (46), spies (47), caravans (48,49), explorers (50)
+      const enemyAtk = UNIT_ATK[enemy.type] || 0;
+      const enemyRole = UNIT_ROLE[enemy.type] ?? 0;
+
+      // Auto-capture conditions:
+      // 1. Enemy has 0 attack (settler, caravan, freight, explorer)
+      // 2. Enemy is a diplomat/spy (role 7) — they get captured when not the aggressor
+      if (enemyAtk === 0 || enemyRole === 7) {
+        // Check there are no combat defenders also on that tile
+        const hasDefender = entries.some(e =>
+          e.unit.owner !== civSlot && e.unit.gx >= 0 &&
+          (UNIT_ATK[e.unit.type] || 0) > 0 && (UNIT_ROLE[e.unit.type] ?? 0) !== 7
+        );
+        if (!hasDefender) {
+          // No combat defender — auto-capture by moving onto tile
+          return { type: 'MOVE_UNIT', unitIndex, dir };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 // ── Shared helper ─────────────────────────────────────────────────
 
 /**
  * Generate a random valid move for a unit, respecting domain constraints.
  */
-function randomMove(unit, unitIndex, mapBase, domain) {
-  const shuffled = [...DIRECTIONS].sort(() => Math.random() - 0.5);
+function randomMove(unit, unitIndex, mapBase, domain, gameState) {
+  const shuffled = _shuffleDirs(gameState || {});
   for (const dir of shuffled) {
     const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
     if (!dest) continue;
@@ -4394,14 +4797,51 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
 
     let action = null;
 
+    // ── Goal-directed behavior: check if unit has an assigned goal ──
+    const goals = strategy?.goals;
+    if (goals && !action) {
+      const unitGoal = goals.getGoalForUnit(i);
+      if (unitGoal) {
+        const gt = unitGoal.goalType;
+        const tgx = unitGoal.targetGx;
+        const tgy = unitGoal.targetGy;
+        if (tgx >= 0 && tgy >= 0) {
+          if (gt === GOAL_BUILD_ROAD && unit.gx === tgx && unit.gy === tgy) {
+            // At target: issue road build order
+            action = { type: 'WORKER_ORDER', unitIndex: i, order: 'road' };
+          } else if (gt === GOAL_AIR_STRIKE && tgx >= 0) {
+            // Air strike: use BOMBARD to attack target tile
+            action = { type: 'BOMBARD', unitIndex: i, targetGx: tgx, targetGy: tgy };
+          } else if (gt === GOAL_BUILD_ROAD || gt === GOAL_ESCORT ||
+                     gt === GOAL_TRANSPORT || gt === GOAL_AIR_STRIKE) {
+            // Move toward goal target tile using direction evaluator
+            const moveDir = _evaluateDirections(
+              unit, i, gameState, mapBase, spatialIdx, civSlot, domain,
+              tgx, tgy, { role, explore: false }
+            );
+            if (moveDir) action = { type: 'MOVE_UNIT', unitIndex: i, dir: moveDir };
+          }
+        }
+      }
+    }
+
+    // ── M.2: Diplomatic encounter pre-check ──
+    // When an AI combat unit is adjacent to an enemy non-combat unit (settler,
+    // caravan, diplomat) and we're at war, auto-capture them. When adjacent to
+    // an enemy unit and NOT at war, skip engagement (don't accidentally attack).
+    if (!action) {
+      const dipAction = _checkDiplomaticEncounter(unit, i, gameState, mapBase, spatialIdx, civSlot, domain);
+      if (dipAction) action = dipAction;
+    }
+
     // Nuclear missile special case (type 45) — uses NUKE action, not BOMBARD
-    if (unit.type === 45) {
+    if (!action && unit.type === 45) {
       action = aiNuclearMissile(unit, i, gameState, mapBase, spatialIdx, civSlot);
     }
     // Explorer special case (type 50) — non-combat, unique behavior
-    else if (unit.type === 50) {
+    else if (!action && unit.type === 50) {
       action = aiExplorer(unit, i, gameState, mapBase, spatialIdx, civSlot);
-    } else {
+    } else if (!action) {
       // Role-based dispatch
       switch (role) {
         case 0: // Attack

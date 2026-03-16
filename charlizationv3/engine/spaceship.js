@@ -2,6 +2,7 @@
 // spaceship.js — Spaceship & Victory system (shared: server + client)
 //
 // Phase I: Spaceship stats, launch, scoring, and game end conditions.
+// Phase 6 K: Accurate mass tables, score formula, year 2000 warning.
 // Ported from:
 //   FUN_00596eec (recalc_spaceship_stats)
 //   FUN_005973fd (launch_spaceship)
@@ -9,7 +10,8 @@
 //   FUN_0048aedc (check_game_end_conditions)
 // ═══════════════════════════════════════════════════════════════════
 
-import { WONDER_NAMES, WONDER_OBSOLETE, DIFFICULTY_KEYS } from './defs.js';
+import { WONDER_NAMES, WONDER_OBSOLETE, DIFFICULTY_KEYS, ADVANCE_NAMES } from './defs.js';
+import { getNumericYear } from './year.js';
 
 // ── Spaceship part building IDs ──
 const SS_STRUCTURAL = 35;  // building ID for SS Structural
@@ -22,27 +24,17 @@ const WONDER_APOLLO = 25;
 // COSMIC parameter #20 default: base flight time constant
 const COSMIC_FLIGHT_TIME = 220;
 
-// ── Year calculation (inlined to avoid import cycle with year.js) ──
-const YEAR_SCHEDULE = [
-  { until: 250, perTurn: 20 },
-  { until: 300, perTurn: 10 },
-  { until: 350, perTurn: 5 },
-  { until: 400, perTurn: 2 },
-  { until: Infinity, perTurn: 1 },
-];
-
-function getNumericYear(turnsPassed) {
-  const turn = turnsPassed || 0;
-  let year = -4000, t = 0;
-  for (const seg of YEAR_SCHEDULE) {
-    const turnsInSeg = Math.min(turn, seg.until) - t;
-    if (turnsInSeg <= 0) break;
-    year += turnsInSeg * seg.perTurn;
-    t += turnsInSeg;
-    if (t >= turn) break;
-  }
-  return year;
-}
+// ── K.1: Binary-accurate mass per part type (tons) ──
+// Structural parts: 800 tons each
+// Components have two sub-types (propulsion/fuel) but in our building system
+// they're one type; the binary uses 400 for propulsion + 600 for fuel.
+// Average component mass = 500 tons (split evenly propulsion/fuel)
+// Modules have three sub-types: habitation (1000), life support (800), solar panel (800)
+// Average module mass = ~867 tons, but binary counts them separately.
+// Since we track aggregate counts, we use the per-part averages:
+const SS_MASS_STRUCTURAL = 800;   // 800 tons each
+const SS_MASS_COMPONENT  = 500;   // avg of propulsion(400) + fuel(600)
+const SS_MASS_MODULE     = 867;   // avg of hab(1000) + life(800) + solar(800)
 
 /**
  * Count spaceship parts across all cities owned by a civ.
@@ -103,28 +95,31 @@ export function recalcSpaceshipStats(state, civSlot) {
   const launched = existing.launched || false;
   const launchTurn = existing.launchTurn ?? -1;
 
-  // ── Mass calculation ──
-  // Each structural = 600 tons, component = 400 tons, module = 800 tons
-  // (simplified from the weight table in the binary)
-  const mass = parts.structurals * 600 + parts.components * 400 + parts.modules * 800;
+  // ── K.1: Mass calculation using binary's weight table ──
+  const mass = parts.structurals * SS_MASS_STRUCTURAL
+    + parts.components * SS_MASS_COMPONENT
+    + parts.modules * SS_MASS_MODULE;
 
-  // ── Success probability ──
+  // ── K.1: Success probability — fuel ratio × energy ratio × flight penalty ──
   let success = 100;
 
   // Success requires at least 1 of each part type for basic integrity
   if (parts.structurals === 0 || parts.components === 0 || parts.modules === 0) {
     success = 0;
   } else {
-    // Fuel ratio: components provide propulsion, modules provide habitation
-    // fuel_ratio = (components * 100) / modules — clamped to 0-100
+    // Fuel ratio: components (propulsion+fuel) vs modules (habitation+life+solar)
+    // Higher component-to-module ratio = better fuel coverage
+    // fuel_ratio = min(100, components * 100 / modules)
     const fuelRatio = Math.min(100, Math.floor((parts.components * 100) / Math.max(1, parts.modules)));
-    success = Math.floor((Math.min(100, fuelRatio) * success) / 100);
 
-    // Energy ratio: structurals provide shielding
-    // energy_ratio = (structurals * 200) / (components + modules) — clamped to 0-100
+    // Energy ratio: structurals (shielding) vs total payload (components + modules)
+    // energy_ratio = min(100, structurals * 200 / (components + modules))
     const energyRatio = Math.min(100,
       Math.floor((parts.structurals * 200) / Math.max(1, parts.components + parts.modules)));
-    success = Math.floor((Math.min(100, energyRatio) * success) / 100);
+
+    // Binary formula: success = (fuelRatio * energyRatio) / 100
+    // This is fuel ratio × energy ratio as multiplicative percentages
+    success = Math.floor((fuelRatio * energyRatio) / 100);
   }
 
   // ── Flight time (in 10ths of a turn) ──
@@ -235,66 +230,76 @@ export function launchSpaceship(state, civSlot) {
 /**
  * Calculate a civ's score — ported from FUN_004a28b0.
  *
- * Components:
- *   - Population: sum(city.size + happyCitizens - unhappyCitizens)
- *   - Wonders: 20 points per active wonder owned
- *   - Future tech: 5 points per future tech level
- *   - Difficulty modifier: difficultyLevel * 25 - 50
- *   - Map exploration bonus (after turn 199): up to 100 points
+ * K.3: Fixed to match binary scoring formula:
+ *   - Population: sum of citySize * (citySize + 1) / 2 * 10000 (Civ2 population formula)
+ *     Score contribution = totalPopulation / 10000 (displayed as population in thousands)
+ *   - Wonders: 20 points each (owned, not obsolete)
+ *   - Future techs: 5 points per level
+ *   - Peace bonus: 3 points per consecutive turn of peace
+ *   - Technology: 2 points per tech discovered
+ *   - Map exploration: (exploredTiles / totalTiles) * 300
+ *   - Spaceship: arrival bonus scaled by year
  *
  * @param {object} state - game state
  * @param {number} civSlot
- * @returns {{ total: number, population: number, wonders: number, futureTech: number, difficulty: number }}
+ * @returns {{ total: number, population: number, wonders: number, futureTech: number, peace: number, technology: number, mapBonus: number, spaceship: number }}
  */
 export function calcCivScore(state, civSlot) {
-  // ── Population score ──
+  // ── Population score (binary formula: citySize * (citySize+1) / 2 * 10000) ──
+  // Civ2 population: each city has pop = size * (size+1) / 2 * 10000
+  // Score contribution is totalPop / 10000 (so effectively sum of size*(size+1)/2)
   let populationScore = 0;
   for (let ci = 0; ci < state.cities.length; ci++) {
     const city = state.cities[ci];
     if (city.owner !== civSlot || city.size <= 0) continue;
-    // Original: city.size + happyCitizens - unhappyCitizens
-    // We may not track happy/unhappy on the state — use city.size as base
-    const happy = city.happyCitizens || 0;
-    const unhappy = city.unhappyCitizens || 0;
-    populationScore += city.size + happy - unhappy;
+    // Binary: sum of citySize * (citySize + 1) / 2 per city
+    // This gives population in units of 10000, so score = raw pop / 10000
+    populationScore += Math.floor(city.size * (city.size + 1) / 2);
   }
 
-  // ── Wonder score ──
+  // ── Wonder score: 20 points per owned, non-obsolete wonder ──
   let wonderScore = 0;
   if (state.wonders) {
     for (let wi = 0; wi < state.wonders.length; wi++) {
       const w = state.wonders[wi];
       if (!w || w.cityIndex == null || w.destroyed) continue;
       const wCity = state.cities[w.cityIndex];
-      if (wCity && wCity.owner === civSlot) {
-        wonderScore += 20;
+      if (!wCity || wCity.owner !== civSlot) continue;
+      // Check if wonder is obsolete
+      const obsTech = WONDER_OBSOLETE[wi];
+      let obsolete = false;
+      if (obsTech >= 0 && state.civTechs) {
+        for (let c = 0; c < 8; c++) {
+          if (state.civTechs[c]?.has(obsTech)) { obsolete = true; break; }
+        }
       }
+      if (!obsolete) wonderScore += 20;
     }
   }
 
-  // ── Future tech score ──
+  // ── Future tech score: 5 points per level ──
   const futureTechCount = state.futureTechCounts?.[civSlot] || 0;
   const futureTechScore = futureTechCount * 5;
 
-  // ── Difficulty modifier ──
-  const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain'));
-  const difficultyMod = diffIdx * 25 - 50;
+  // ── Peace bonus: 3 points per consecutive turn of peace ──
+  const peaceTurns = state.civPeaceTurns?.[civSlot] || 0;
+  const peaceScore = peaceTurns * 3;
 
-  // ── Map exploration bonus (after turn 199) ──
+  // ── Technology: 2 points per tech discovered ──
+  const techCount = state.civTechs?.[civSlot]?.size || 0;
+  const techScore = techCount * 2;
+
+  // ── Map exploration: (exploredTiles / totalTiles) * 300 ──
   let mapBonus = 0;
-  const turnNum = state.turn?.number || 0;
-  if (turnNum > 199) {
-    // Approximate map explored percentage from explored tile count
-    // In practice, we clamp to a reasonable value
-    const exploredPercent = state.mapExploredPercent?.[civSlot] || 0;
-    mapBonus = Math.min(100, Math.max(0, exploredPercent * 3));
-  }
+  const exploredPercent = state.mapExploredPercent?.[civSlot] || 0;
+  // exploredPercent is 0-100; score = percent * 3 (max 300)
+  mapBonus = Math.min(300, Math.max(0, Math.floor(exploredPercent * 3)));
 
   // ── Spaceship score ──
+  const turnNum = state.turn?.number || 0;
   let spaceshipScore = 0;
   const ss = state.spaceships?.[civSlot];
   if (ss && ss.launched) {
-    // Bonus based on flight time and arrival
     const arrived = ss.arrivalTurn <= turnNum;
     if (arrived) {
       // Successful arrival: large bonus scaled by year
@@ -306,16 +311,17 @@ export function calcCivScore(state, civSlot) {
     }
   }
 
-  // ── Base score ──
+  // ── Total score ──
   const baseScore = Math.max(0,
-    populationScore + wonderScore + futureTechScore + difficultyMod + mapBonus + spaceshipScore);
+    populationScore + wonderScore + futureTechScore + peaceScore + techScore + mapBonus + spaceshipScore);
 
   return {
     total: baseScore,
     population: populationScore,
     wonders: wonderScore,
     futureTech: futureTechScore,
-    difficulty: difficultyMod,
+    peace: peaceScore,
+    technology: techScore,
     mapBonus,
     spaceship: spaceshipScore,
   };
@@ -324,11 +330,15 @@ export function calcCivScore(state, civSlot) {
 /**
  * Check game end conditions — ported from FUN_0048aedc.
  *
+ * K.4: Added year 2000 AD warning event (game continues), year 2020 AD
+ * forced retirement. Uses seeded RNG for spaceship success roll.
+ *
  * Conditions checked:
  *   1. Conquest: only one non-barbarian civ remains alive
  *   2. Spaceship arrival: a launched spaceship has arrived (turn >= arrivalTurn)
- *      and the random success check passes
- *   3. Retirement: year >= 2020 AD (forced game end)
+ *      and the random success check passes (rolled against successProb)
+ *   3. Year 2000 AD: emit warning event (game continues)
+ *   4. Retirement: year >= 2020 AD (forced game end, highest score wins)
  *
  * @param {object} state - game state
  * @returns {object|null} { ended: true, winner: civSlot, reason: string } or null
@@ -362,9 +372,9 @@ export function checkGameEndConditions(state) {
       const ss = state.spaceships[c];
       if (!ss || !ss.launched) continue;
       if (turnNum >= ss.arrivalTurn) {
-        // Success check: roll against successProb
-        // In a deterministic simulation, use successProb > 50 as threshold
-        if (ss.successProb >= 50) {
+        // Success check: roll 0-99 against successProb using seeded RNG
+        const roll = state.rng ? state.rng.nextInt(100) : Math.floor(Math.random() * 100);
+        if (roll < ss.successProb) {
           return {
             ended: true, winner: c,
             reason: 'spaceship',
@@ -374,13 +384,28 @@ export function checkGameEndConditions(state) {
           // Ship lost! Mark it
           const updatedSs = { ...ss, launched: false, destroyed: true };
           state.spaceships = { ...state.spaceships, [c]: updatedSs };
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({
+            type: 'spaceshipLost', civSlot: c,
+            successProb: ss.successProb,
+          });
         }
       }
     }
   }
 
-  // ── 3. Retirement: year >= 2020 ──
+  // ── 3. Year 2000 AD warning (game continues) ──
   const year = getNumericYear(turnNum);
+  if (year >= 2000 && year < 2020 && !state.year2000Warned) {
+    state.year2000Warned = true;
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({
+      type: 'year2000Warning', year,
+      message: 'The year 2000 approaches! The game will end in 2020 AD.',
+    });
+  }
+
+  // ── 4. Retirement: year >= 2020 AD ──
   if (year >= 2020) {
     // Find the civ with the highest score
     let bestCiv = -1, bestScore = -1;

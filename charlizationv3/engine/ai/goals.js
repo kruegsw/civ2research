@@ -300,24 +300,157 @@ export class GoalList {
     }
   }
 
+  /**
+   * Get the goal assigned to a specific unit, if any.
+   * Searches both tactical and strategic lists.
+   *
+   * @param {number} unitIndex
+   * @returns {Goal|null}
+   */
+  getGoalForUnit(unitIndex) {
+    for (const g of this.tactical) {
+      if (g.goalType !== GOAL_NONE && g.assignedUnit === unitIndex) return g;
+    }
+    for (const g of this.strategic) {
+      if (g.goalType !== GOAL_NONE && g.assignedUnit === unitIndex) return g;
+    }
+    return null;
+  }
+
   // ── Age / decay ───────────────────────────────────────────────
 
   /**
    * Age all goals by 1 turn. Goals older than MAX_AGE are removed.
+   * During decay, strategic (List B) goals that have aged out are merged
+   * into the tactical (List A) list — promoting long-term strategic goals
+   * into tactical execution. This mirrors the binary's behavior where
+   * continent-level goals get pushed to the tactical queue.
    * Call once at the start of each AI turn.
    */
   decayGoals() {
-    const decay = (slots) => {
+    // First: age and collect strategic goals that are expiring (for merge into tactical)
+    const expiring = [];
+    for (let i = 0; i < this.strategic.length; i++) {
+      if (this.strategic[i].goalType === GOAL_NONE) continue;
+      this.strategic[i].age++;
+      if (this.strategic[i].age > MAX_AGE) {
+        // Merge into tactical before removing: carry the goal forward
+        // with reduced priority (decay penalty) so it doesn't dominate
+        const g = this.strategic[i];
+        expiring.push({
+          goalType: g.goalType,
+          priority: Math.max(1, g.priority - 20), // decay penalty
+          targetGx: g.targetGx,
+          targetGy: g.targetGy,
+        });
+        this.strategic[i] = emptyGoal();
+      }
+    }
+
+    // Merge expiring strategic goals into tactical list
+    for (const eg of expiring) {
+      this._addGoal(this.tactical, eg.goalType, eg.priority, eg.targetGx, eg.targetGy);
+    }
+
+    // Then: age tactical goals normally
+    for (let i = 0; i < this.tactical.length; i++) {
+      if (this.tactical[i].goalType === GOAL_NONE) continue;
+      this.tactical[i].age++;
+      if (this.tactical[i].age > MAX_AGE) {
+        this.tactical[i] = emptyGoal();
+      }
+    }
+  }
+
+  // ── Negate / area remove / find max / clear strategic ──────────
+
+  /**
+   * Negate the priority of a goal matching (type, gx, gy).
+   * This effectively cancels the goal without removing it from the slot,
+   * preventing the same goal from being re-added at high priority.
+   * Equivalent to the binary's "cancel without remove" behavior.
+   *
+   * @param {number} goalType - GOAL_* constant
+   * @param {number} gx - target X
+   * @param {number} gy - target Y
+   * @returns {boolean} true if a goal was negated
+   */
+  negateGoalPriority(goalType, gx, gy) {
+    const negate = (slots) => {
       for (let i = 0; i < slots.length; i++) {
-        if (slots[i].goalType === GOAL_NONE) continue;
-        slots[i].age++;
-        if (slots[i].age > MAX_AGE) {
+        const g = slots[i];
+        if (g.goalType === goalType && g.targetGx === gx && g.targetGy === gy) {
+          g.priority = -Math.abs(g.priority);
+          return true;
+        }
+      }
+      return false;
+    };
+    return negate(this.tactical) || negate(this.strategic);
+  }
+
+  /**
+   * Remove all goals within a given distance of (gx, gy).
+   * Uses Chebyshev distance (max of |dx|, |dy|).
+   *
+   * @param {number} gx - center X
+   * @param {number} gy - center Y
+   * @param {number} distance - radius (inclusive)
+   */
+  removeGoalsNear(gx, gy, distance) {
+    const removeNear = (slots) => {
+      for (let i = 0; i < slots.length; i++) {
+        const g = slots[i];
+        if (g.goalType === GOAL_NONE) continue;
+        if (g.targetGx < 0 && g.targetGy < 0) continue; // skip abstract goals
+        const dx = Math.abs(g.targetGx - gx);
+        const dy = Math.abs(g.targetGy - gy);
+        if (Math.max(dx, dy) <= distance) {
           slots[i] = emptyGoal();
         }
       }
     };
-    decay(this.tactical);
-    decay(this.strategic);
+    removeNear(this.tactical);
+    removeNear(this.strategic);
+  }
+
+  /**
+   * Find the highest-priority goal matching a criteria function.
+   * Returns the matching entry or null.
+   *
+   * @param {function(Goal):boolean} criteria - predicate function
+   * @returns {{ goal: Goal, index: number, list: string }|null}
+   */
+  findMaxGoalPriority(criteria) {
+    let best = null;
+    let bestPri = -Infinity;
+
+    const search = (slots, listName) => {
+      for (let i = 0; i < slots.length; i++) {
+        const g = slots[i];
+        if (g.goalType === GOAL_NONE) continue;
+        if (!criteria(g)) continue;
+        if (g.priority > bestPri) {
+          bestPri = g.priority;
+          best = { goal: g, index: i, list: listName };
+        }
+      }
+    };
+
+    search(this.tactical, 'tactical');
+    search(this.strategic, 'strategic');
+    return best;
+  }
+
+  /**
+   * Clear all strategic (List B) goals.
+   * Used when a civ needs to completely reset its strategic posture
+   * (e.g., after a major diplomatic shift).
+   */
+  clearStrategicGoals() {
+    for (let i = 0; i < this.strategic.length; i++) {
+      this.strategic[i] = emptyGoal();
+    }
   }
 
   // ── Cleanup ───────────────────────────────────────────────────

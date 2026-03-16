@@ -5,7 +5,148 @@
 // 8-direction movement with proper wrapping.
 // ═══════════════════════════════════════════════════════════════════
 
-import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_ATK } from './defs.js';
+import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_ATK, UNIT_MOVE_POINTS, UNIT_HP, UNIT_FUEL, UNIT_CARRY_CAP } from './defs.js';
+
+// ═══════════════════════════════════════════════════════════════════
+// C.1: Damage-based movement reduction
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate effective movement points for a unit, accounting for HP damage.
+ * Damaged units have reduced MP: baseMP * currentHP / maxHP, rounded up.
+ * Minimum floor: MOVEMENT_MULTIPLIER (1 full MP = 3 thirds).
+ *
+ * @param {object} unit - unit object { type, hpLost }
+ * @returns {number} effective movement points in movement thirds
+ */
+export function calcEffectiveMovementPoints(unit) {
+  const baseMP = (UNIT_MOVE_POINTS[unit.type] || 1) * MOVEMENT_MULTIPLIER;
+  const maxHP = UNIT_HP[unit.type] || 1;
+  const currentHP = maxHP - (unit.hpLost || 0);
+  if (currentHP >= maxHP) return baseMP;
+  // Damaged: scale proportionally, round up, floor at 1 full MP
+  const effectiveMP = Math.ceil(baseMP * currentHP / maxHP);
+  return Math.max(effectiveMP, MOVEMENT_MULTIPLIER);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// C.2: Trireme sinking check
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if a Trireme should sink at end of turn.
+ * Triremes (type 32) not adjacent to land, without Astronomy tech (ID 3),
+ * and not protected by Lighthouse (wonder 3) or Magellan's (wonder 12),
+ * have a 50% chance of sinking each turn.
+ *
+ * @param {object} unit - the unit to check
+ * @param {number} unitIndex - index in units array
+ * @param {object} state - game state (needs civTechs, wonders)
+ * @param {object} mapBase - map accessor
+ * @param {function} hasWonderEffectFn - hasWonderEffect(state, civSlot, wonderIndex)
+ * @returns {boolean} true if the unit sinks
+ */
+export function checkTriremeSinking(unit, unitIndex, state, mapBase, hasWonderEffectFn) {
+  // Only triremes (type 32)
+  if (unit.type !== 32) return false;
+  if (unit.gx < 0) return false;
+
+  // Check if civ has Astronomy (tech ID 3)
+  const civTechs = state.civTechs?.[unit.owner];
+  if (civTechs && civTechs.has(3)) return false;
+
+  // Lighthouse (wonder 3) or Magellan's Expedition (wonder 12) protect
+  if (hasWonderEffectFn(state, unit.owner, 3)) return false;
+  if (hasWonderEffectFn(state, unit.owner, 12)) return false;
+
+  // Check adjacency to land: any of 8 neighbors is NOT ocean (terrain != 10)
+  const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
+  for (const dir in neighbors) {
+    const [nx, ny] = neighbors[dir];
+    if (ny < 0 || ny >= mapBase.mh) continue;
+    const terrain = mapBase.getTerrain(nx, ny);
+    if (terrain !== 10) return false; // adjacent to land — safe
+  }
+
+  // Open ocean: 50% chance of sinking
+  const roll = state.rng ? state.rng.nextInt(2) : (Math.random() < 0.5 ? 0 : 1);
+  return roll === 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// C.3: Air unit fuel check
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check air unit fuel status. Air units away from base lose 1 fuel per turn.
+ * At base (city, carrier type 42, airbase tile): fuel resets to max.
+ * At fuel 0 away from base: unit crashes.
+ *
+ * @param {object} unit - the unit to check
+ * @param {number} unitIndex - index in units array
+ * @param {object} state - game state (needs cities, units)
+ * @param {object} mapBase - map accessor
+ * @returns {{ crashed: boolean, fuelRemaining: number }} result
+ */
+export function checkAirFuel(unit, unitIndex, state, mapBase) {
+  const maxFuel = UNIT_FUEL[unit.type];
+  if (!maxFuel || maxFuel <= 0) return { crashed: false, fuelRemaining: -1 };
+  if (unit.gx < 0) return { crashed: false, fuelRemaining: -1 };
+
+  // Check if at a base: city, carrier (type 42), or airbase tile
+  const tileIdx = unit.gy * mapBase.mw + unit.gx;
+  const tile = mapBase.tileData?.[tileIdx];
+  const onAirbase = tile && tile.improvements && tile.improvements.airbase;
+  const inCity = state.cities.some(c => c.gx === unit.gx && c.gy === unit.gy && c.owner === unit.owner);
+  const onCarrier = state.units.some((v, vi) => vi !== unitIndex && v.gx === unit.gx && v.gy === unit.gy
+    && v.owner === unit.owner && v.type === 42 && v.gx >= 0);
+  const atBase = onAirbase || inCity || onCarrier;
+
+  if (atBase) {
+    return { crashed: false, fuelRemaining: maxFuel };
+  }
+
+  // Away from base: decrement fuel
+  const currentFuel = (unit.fuelRemaining != null && unit.fuelRemaining >= 0) ? unit.fuelRemaining : maxFuel;
+  const newFuel = currentFuel - 1;
+  if (newFuel <= 0) {
+    return { crashed: true, fuelRemaining: 0 };
+  }
+  return { crashed: false, fuelRemaining: newFuel };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// C.4: Transport capacity check
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Find a friendly transport at the given ocean tile with available cargo space.
+ * Returns the index of the transport unit, or -1 if none available.
+ *
+ * @param {number} gx - tile gx
+ * @param {number} gy - tile gy
+ * @param {number} owner - civ slot of the unit wanting to board
+ * @param {Array} units - all units array
+ * @returns {number} transport unit index, or -1
+ */
+export function findAvailableTransport(gx, gy, owner, units) {
+  for (let i = 0; i < units.length; i++) {
+    const u = units[i];
+    if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
+    if (UNIT_DOMAIN[u.type] !== 1) continue;
+    const cap = UNIT_CARRY_CAP[u.type];
+    if (!cap || cap <= 0) continue;
+    // Count current cargo (land units at same tile owned by same civ)
+    let cargo = 0;
+    for (const v of units) {
+      if (v.gx === gx && v.gy === gy && v.owner === owner && UNIT_DOMAIN[v.type] === 0 && v.gx >= 0) {
+        cargo++;
+      }
+    }
+    if (cargo < cap) return i;
+  }
+  return -1;
+}
 
 // Direction offsets in (gx, gy) doubled-X isometric space.
 // Even rows: NE/SE shift left, NW/SW shift left.
@@ -93,7 +234,14 @@ export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
 
   // Base terrain cost
   const terrain = mapBase.getTerrain(toGx, toGy);
-  return (TERRAIN_MOVE_COST[terrain] ?? 1) * MOVEMENT_MULTIPLIER;
+  const baseCost = (TERRAIN_MOVE_COST[terrain] ?? 1) * MOVEMENT_MULTIPLIER;
+
+  // C.5: Alpine Troops (type 10) ignore terrain costs in hills (4) and mountains (5)
+  if (unitType === 10 && (terrain === 4 || terrain === 5)) {
+    return MOVEMENT_MULTIPLIER; // 1 MP regardless of terrain
+  }
+
+  return baseCost;
 }
 
 /**

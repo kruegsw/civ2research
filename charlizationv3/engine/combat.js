@@ -13,6 +13,11 @@
 //   - Aegis Cruiser defense bonus vs air/missile attacks (flags bit 14)
 //   - Air vs unarmed ships: halved defense, FP capped to 1
 //   - Air vs land: FP capped to 1 for both sides
+//   - Sea vs land: FP capped to 1 for both sides
+//   - Caught in port: sea unit on land → attacker FP ×2, defender FP = 1
+//   - City Walls: attacker FP = 1 for land attackers (not wall-negating)
+//   - Siege units defending: FP forced to 1 (Catapult/Cannon/Artillery/Howitzer)
+//   - Helicopter vs Fighter: defender (helicopter) FP = 1
 //   - Helicopter vs submarines: ×8 attack multiplier
 //   - Partial movement attack penalty (fractional MP)
 //   - Great Wall wonder: double-roll mechanic for defenders
@@ -25,9 +30,12 @@ import {
   UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
   UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER,
   UNIT_PIKEMAN_BONUS, MOUNTED_UNITS, UNIT_AEGIS_BONUS,
-  UNIT_SUBMARINE, DIFFICULTY_KEYS,
+  UNIT_SUBMARINE, DIFFICULTY_KEYS, UNIT_FUEL, UNIT_NEGATES_WALLS,
 } from './defs.js';
 import { hasWonderEffect } from './utils.js';
+
+// Siege units: FP forced to 1 when defending (Catapult=23, Cannon=24, Artillery=25, Howitzer=26)
+const SIEGE_DEFENDING_FP1 = new Set([23, 24, 25, 26]);
 
 // ═══════════════════════════════════════════════════════════════════
 // B.1 — Defense Calculation (ported from FUN_0057e33a)
@@ -255,14 +263,12 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   }
 
   // ── Special interaction: Air vs land ──────────────────────────
-  // Ported from FUN_00580341 lines 187-191: when air attacks land,
-  // both sides get FP capped to 1 and defender HP capped to 1.
-  // This prevents bombers from one-shotting ground units and vice-versa.
+  // Ported from FUN_00580341 lines 141-144: when air attacks land,
+  // both sides get FP capped to 1. This prevents bombers from
+  // one-shotting ground units and vice-versa.
   if (atkDomain === 2 && defDomain === 0) {
     atkFp = 1;
     defFp = 1;
-    defMaxHp = 10; // cap defender to 1 HP unit equivalent
-    atkMaxHp = 10; // cap attacker to 1 HP unit equivalent
   }
 
   // ── Special interaction: Helicopter vs submarines ─────────────
@@ -289,9 +295,12 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     if (effAtk < 1) effAtk = 1;
   }
 
-  // Effective defense: base × terrain × veteran × fortification × city/walls/fortress
-  const terrainMul = TERRAIN_DEFENSE[defTerrain] ?? 2; // ×50% each
-  let effDef = defBase * terrainMul * 4; // ×4 for fixed-point (terrainMul already includes ×2 base)
+  // Effective defense: base × (terrain + river) × veteran × fortification × city/walls/fortress
+  // River bonus is additive to terrain defense multiplier per the binary
+  // (matches calcUnitDefenseStrength — FUN_0057e6e2 analysis)
+  const terrainMul = TERRAIN_DEFENSE[defTerrain] ?? 2;
+  const riverBonus = (defOnRiver && !defInCity) ? 1 : 0;
+  let effDef = defBase * (terrainMul + riverBonus) * 4; // ×4 for fixed-point
   if (defender.veteran) effDef += Math.floor(effDef / 2); // +50% veteran
 
   // Fortification bonus: +50%
@@ -327,11 +336,6 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     effDef *= 2;
   }
 
-  // River bonus: +50% defense
-  if (defOnRiver && !defInCity) {
-    effDef += Math.floor(effDef / 2);
-  }
-
   // Defensive building bonuses (city buildings)
   if (defInCity && defCityBuildings) {
     // Coastal Fortress (28): ×2 defense vs naval attackers
@@ -354,6 +358,48 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // does more damage per hit.
   if (amphibious) {
     defFp *= 2;
+  }
+
+  // ── B.1: Sea unit attacks land unit ────────────────────────────
+  // From Civ2 mechanics: when a sea unit attacks a land unit,
+  // both sides have firepower reduced to 1.
+  if (atkDomain === 1 && defDomain === 0) {
+    atkFp = 1;
+    defFp = 1;
+  }
+
+  // ── B.1: Caught in port (sea unit on land) ────────────────────
+  // When a non-air unit attacks a sea-domain defender on a non-ocean tile,
+  // the attacker's FP is doubled and the defender's FP is reduced to 1.
+  // The sea unit is vulnerable when not at sea.
+  if (atkDomain !== 2 && defDomain === 1 && defTerrain !== 10) {
+    atkFp *= 2;
+    defFp = 1;
+  }
+
+  // ── B.1: City Walls reduce attacker FP to 1 ──────────────────
+  // When a land attacker attacks a city with City Walls, the attacker's
+  // firepower is reduced to 1. This means the defender takes less damage
+  // per round, making walls effective against high-FP siege units.
+  // Howitzer and other wall-negating units are exempt.
+  if (defCityHasWalls && atkDomain === 0 && !UNIT_NEGATES_WALLS.has(attacker.type)) {
+    atkFp = 1;
+  }
+
+  // ── B.1: Siege units have FP=1 when defending ────────────────
+  // Catapult (23), Cannon (24), Artillery (25), Howitzer (26) always
+  // have their defensive firepower forced to 1. These units are designed
+  // as offensive siege weapons, not defensive combatants.
+  if (SIEGE_DEFENDING_FP1.has(defender.type)) {
+    defFp = 1;
+  }
+
+  // ── B.1: Helicopter vs Fighter — defender FP reduced to 1 ────
+  // When a fighter (air domain with fuel limit) attacks a helicopter
+  // (air domain with no fuel limit), the helicopter's defensive FP is
+  // reduced to 1. Helicopters are vulnerable to fighter interception.
+  if (atkDomain === 2 && defDomain === 2 && (UNIT_FUEL[attacker.type] || 0) > 0 && !(UNIT_FUEL[defender.type] > 0)) {
+    defFp = 1;
   }
 
   // ── B.2: Great Wall wonder — applied to attack power ────────────

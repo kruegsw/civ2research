@@ -9,13 +9,14 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS } from './defs.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, CARAVAN_HELP_WONDER } from './actions.js';
+import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS } from './defs.js';
 import { resolveDirection, getDirection, isZOCBlocked } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
 import { getGovernment } from './utils.js';
 import { canBuildUnitType, canBuildImprovement, canBuildWonder } from './buildcheck.js';
+import { calcBribeCostEnhanced, calcInciteCostEnhanced } from './espionage.js';
 
 const VALID_SPECIALIST_TYPES = new Set(['entertainer', 'taxman', 'scientist']);
 
@@ -90,7 +91,12 @@ export function validateAction(gameState, mapBase, action, civSlot) {
         const err = checkTransportCapacity(gameState, dest.gx, dest.gy, unit.owner);
         if (err) return err;
       }
-      if (domain === 1 && terrain !== 10) return 'Sea unit cannot enter land';
+      // C.4: Disembarkation (land unit on ocean → land) passes through — handled in reducer
+      if (domain === 1 && terrain !== 10) {
+        // Sea unit can enter coastal city tiles
+        const hasDestCity = gameState.cities.some(c => c.gx === dest.gx && c.gy === dest.gy && c.size > 0);
+        if (!hasDestCity) return 'Sea unit cannot enter land';
+      }
 
       // Check for enemy units at destination
       const hasEnemy = gameState.units.some(u =>
@@ -456,6 +462,21 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       return null;
     }
 
+    case CARAVAN_HELP_WONDER: {
+      const { unitIndex: helpUi, cityIndex: helpCi } = action;
+      const helpUnit = gameState.units[helpUi];
+      if (!helpUnit) return 'Unit not found';
+      if (helpUnit.owner !== civSlot) return 'Not your unit';
+      if (helpUnit.type !== 48 && helpUnit.type !== 49) return 'Only Caravans/Freight can help';
+      if (helpUnit.gx < 0) return 'Unit is dead';
+      const helpCity = gameState.cities[helpCi];
+      if (!helpCity) return 'City not found';
+      if (helpCity.owner !== civSlot) return 'Not your city';
+      if (helpCity.gx !== helpUnit.gx || helpCity.gy !== helpUnit.gy) return 'Must be in the city';
+      if (!helpCity.itemInProduction || helpCity.itemInProduction.type !== 'wonder') return 'City must be building a wonder';
+      return null;
+    }
+
     case RENAME_CITY: {
       const city = gameState.cities[action.cityIndex];
       if (!city) return 'City not found';
@@ -805,6 +826,26 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       return null;
     }
 
+    case SPY_SUBVERT_CITY: {
+      // J.3: Spy-only subvert city (keeps buildings intact, costs 2× incite)
+      const spy = gameState.units[action.unitIndex];
+      if (!spy) return 'Unit not found';
+      if (spy.owner !== civSlot) return 'Not your unit';
+      if (spy.type !== 47) return 'Only Spies can subvert cities';
+      if (spy.gx < 0) return 'Unit is dead';
+      if (spy.movesLeft <= 0) return 'No moves left';
+      const city = gameState.cities.find(c => c.gx === spy.gx && c.gy === spy.gy && c.size > 0);
+      if (!city) return 'Must be in an enemy city';
+      if (city.owner === civSlot) return 'Cannot subvert own city';
+      if (city.buildings?.has(1)) return 'Cannot subvert capital';
+      const cGovt = getGovernment(null, gameState, city.owner);
+      if (cGovt === 'democracy') return 'Cannot subvert democratic city';
+      const svBaseCost = calcInciteCost(gameState, city, mapBase);
+      const svCost = svBaseCost * 2;
+      if ((gameState.civs?.[civSlot]?.treasury || 0) < svCost) return `Costs ${svCost} gold (insufficient)`;
+      return null;
+    }
+
     case END_TURN: {
       // Reject if any unit still needs orders (has moves left and not busy)
       const hasUnitNeedingOrders = gameState.units.some(u =>
@@ -888,55 +929,21 @@ export function getValidActions(gameState, mapBase, unitIndex, tile) {
  * Bribe cost: ((target_treasury + 750) / (distance_to_capital + 2)) * (shield_cost / 10)
  * Damaged units cost less proportionally. Settlers/Engineers cost double.
  */
+/**
+ * Bribe cost — delegates to the enhanced version from espionage.js.
+ * Kept for API compatibility (same signature, returns a number).
+ */
 export function calcBribeCost(gameState, target, mapBase) {
-  const treasury = gameState.civs?.[target.owner]?.treasury || 0;
-  const capital = gameState.cities.find(c => c.owner === target.owner && c.buildings?.has(1) && c.size > 0);
-  let dist = 16;
-  if (capital) {
-    const mw2 = (mapBase.mw || 0) * 2;
-    const ux = target.gx * 2 + (target.gy % 2);
-    const cx = capital.gx * 2 + (capital.gy % 2);
-    let dx = Math.abs(ux - cx);
-    if (mapBase.wraps) dx = Math.min(dx, mw2 - dx);
-    dist = dx + Math.abs(target.gy - capital.gy);
-  }
-  const govt = getGovernment(null, gameState, target.owner);
-  if (govt === 'communism') dist = Math.min(dist, 10);
-  const shieldCost = (UNIT_COSTS[target.type] || 1) * 10;
-  let cost = Math.floor(((treasury + 750) / (dist + 2)) * (shieldCost / 10));
-  // Settlers/Engineers: double
-  if (target.type === 0 || target.type === 1) cost *= 2;
-  // Damaged: proportional reduction
-  const maxHp = 10; // base HP
-  const curHp = Math.max(1, maxHp - (target.hpLost || 0));
-  cost = Math.floor((cost / 2) * (1 + curHp / maxHp));
-  return Math.max(1, cost);
+  return calcBribeCostEnhanced(gameState, target, mapBase);
 }
 
 /**
- * Incite cost: city_size * (target_treasury + 1000) / (distance_to_own_capital + 3)
- * Courthouse halves distance. Civil disorder, no garrison, originally yours: each halves cost.
+ * Incite cost — delegates to the enhanced version from espionage.js.
+ * Returns a plain number for API compatibility; ignores blocked state.
  */
 export function calcInciteCost(gameState, city, mapBase) {
-  const treasury = gameState.civs?.[city.owner]?.treasury || 0;
-  const capital = gameState.cities.find(c => c.owner === city.owner && c.buildings?.has(1) && c.size > 0);
-  let dist = 32;
-  if (capital) {
-    const mw2 = (mapBase.mw || 0) * 2;
-    const cx = city.gx * 2 + (city.gy % 2);
-    const capx = capital.gx * 2 + (capital.gy % 2);
-    let dx = Math.abs(cx - capx);
-    if (mapBase.wraps) dx = Math.min(dx, mw2 - dx);
-    dist = dx + Math.abs(city.gy - capital.gy);
-  }
-  const govt = getGovernment(null, gameState, city.owner);
-  if (govt === 'communism') dist = Math.min(dist, 10);
-  if (city.buildings?.has(7)) dist = Math.max(1, Math.floor(dist / 2)); // Courthouse
-  let cost = Math.floor(city.size * (treasury + 1000) / (dist + 3));
-  if (city.civilDisorder) cost = Math.floor(cost / 2);
-  const hasGarrison = gameState.units.some(u => u.gx === city.gx && u.gy === city.gy && u.owner === city.owner && u.gx >= 0);
-  if (!hasGarrison) cost = Math.floor(cost / 2);
-  return Math.max(1, cost);
+  const result = calcInciteCostEnhanced(gameState, city, mapBase);
+  return result.blocked ? Infinity : result.cost;
 }
 
 /** Check if a friendly transport with spare capacity exists at (gx, gy). */
