@@ -927,41 +927,42 @@ export const TRADE_DESIRABILITY = {
 
   techIdsPerCommodity: {
     // Tech IDs checked via thunk_FUN_004bd9f0 (civ_has_tech)
-    0x25: { decimal: 37, name: 'Railroad', commodities: 'supply[2]/demand[0]/demand[1]/demand[5]/demand[14]', lines: '4904,5071,5095,5124,5249' },
-    0x41: { decimal: 65, name: 'Miniaturization', commodities: 'supply[3](Gems)', line: '4915' },
-    0x27: { decimal: 39, name: 'Refrigeration', commodities: 'supply[9](Spice)', line: '4978' },
-    0x30: { decimal: 48, name: 'Automobile', commodities: 'demand[0](Hides)', line: '5075', effect: 'set to 1' },
-    0x17: { decimal: 23, name: 'Explosives', commodities: 'demand[5](Coal)/demand[6](Wine)', lines: '5128,5153' },
-    0x3a: { decimal: 58, name: 'Electronics', commodities: 'supply[13]/supply[15]/demand[15]', lines: '5046,5290,5374' },
-    0x16: { decimal: 22, name: 'Electricity', commodities: 'demand[10](special)', line: '5217' },
-    0x10: { decimal: 16, name: 'Navigation', commodities: 'demand[6](Wine)/demand[10]', lines: '5157,5221' },
-    0x46: { decimal: 70, name: 'Recycling', commodities: 'demand[11](Spice)', line: '5245' },
-    0x05: { decimal: 5, name: 'Masonry', commodities: 'demand[14](Oil)', line: '5273', effect: '*3' },
+    0x25: { decimal: 37, name: 'Industrialization', commodities: 'supply[2]/demand[0]/demand[1]/demand[5]/demand[14]', lines: '4904,5071,5095,5124,5249' },
+    0x41: { decimal: 65, name: 'Pottery', commodities: 'supply[3](Gems)', line: '4915' },
+    0x27: { decimal: 39, name: 'Iron Working', commodities: 'supply[9](Spice)', line: '4978' },
+    0x30: { decimal: 48, name: 'Mass Production', commodities: 'demand[0](Hides)', line: '5075', effect: 'set to 1' },
+    0x17: { decimal: 23, name: 'Electricity', commodities: 'demand[5](Coal)/demand[6](Wine)', lines: '5128,5153' },
+    0x3a: { decimal: 58, name: 'Nuclear Fission', commodities: 'supply[13]/supply[15]/demand[15]', lines: '5046,5290,5374' },
+    0x16: { decimal: 22, name: 'Economics', commodities: 'demand[10](special)', line: '5217' },
+    0x10: { decimal: 16, name: 'Computers', commodities: 'demand[6](Wine)/demand[10]', lines: '5157,5221' },
+    0x46: { decimal: 70, name: 'Refrigeration', commodities: 'demand[11](Spice)', line: '5245' },
+    0x05: { decimal: 5, name: 'Automobile', commodities: 'demand[14](Oil)', line: '5273', effect: '*3' },
   },
 
   buildingIdsPerCommodity: {
     // Building IDs checked via thunk_FUN_0043d20a (city_has_building)
-    9:    { name: 'MarcoPolosEmbassy', commodities: 'supply[3](Gems)', line: '4919', effect: '+50%' },
-    10:   { name: 'Colosseum', commodities: 'demand[10]/demand[11]', lines: '5149,5213', effect: '+50%' },
-    0x0b: { decimal: 11, name: 'Marketplace', commodities: 'demand[10](special)', line: '5209', effect: '+50%' },
-    0x0f: { decimal: 15, name: 'SuperMarket', commodities: 'demand[14](Oil)', line: '5258', effect: '+50%' },
-    0x13: { decimal: 19, name: 'Factory', commodities: 'demand[5](Coal)', line: '5132', effect: 'doubles' },
-    0x14: { decimal: 20, name: 'MfgPlant', commodities: 'demand[5](Coal)', line: '5137', effect: '/8' },
-    0x15: { decimal: 21, name: 'PowerPlant', commodities: 'demand[5]/supply[15]', lines: '5137,5298', effect: '/8 or *2' },
-    0x19: { decimal: 25, name: 'ResearchLab', commodities: 'demand[14](Oil)', line: '5277', effect: 'doubles' },
-    0x1d: { decimal: 29, name: 'HydroPlant', commodities: 'demand[5](Coal)', line: '5138', effect: '/8' },
-    5:    { name: 'Granary', commodities: 'demand[6](Wine)', line: '5145', effect: '+50%' },
-    0x0d: { decimal: 13, name: 'Bank', commodities: 'demand[14](Oil)', line: '5281', effect: '/2' },
-    0x12: { decimal: 18, name: 'SolarPlant', commodities: 'demand[14]/supply[15]', lines: '5285,5299', effect: '/2 or *2' },
-    0x11: { decimal: 17, name: 'NuclearPlant', commodities: 'supply[15](Uranium-II)', line: '5299', effect: 'doubles' },
+    9:    { name: 'Aqueduct', commodities: 'supply[3](Gems)', line: '4919', effect: '+50%' },
+    10:   { name: 'Bank', commodities: 'demand[10]/demand[11]', lines: '5149,5213', effect: '+50%' },
+    0x0b: { decimal: 11, name: 'Cathedral', commodities: 'demand[10](special)', line: '5209', effect: '+50%' },
+    0x0f: { decimal: 15, name: 'Factory', commodities: 'demand[14](Oil)', line: '5258', effect: '+50%' },
+    0x13: { decimal: 19, name: 'Power Plant', commodities: 'demand[5](Coal)', line: '5132', effect: 'doubles' },
+    0x14: { decimal: 20, name: 'Hydro Plant', commodities: 'demand[5](Coal)', line: '5137', effect: '/8' },
+    0x15: { decimal: 21, name: 'Nuclear Plant', commodities: 'demand[5]/supply[15]', lines: '5137,5298', effect: '/8 or *2' },
+    0x19: { decimal: 25, name: 'Superhighways', commodities: 'demand[14](Oil)', line: '5277', effect: 'doubles' },
+    0x1d: { decimal: 29, name: 'Solar Plant', commodities: 'demand[5](Coal)', line: '5138', effect: '/8' },
+    5:    { name: 'Marketplace', commodities: 'demand[6](Wine)', line: '5145', effect: '+50%' },
+    0x0d: { decimal: 13, name: 'Mass Transit', commodities: 'demand[14](Oil)', line: '5281', effect: '/2' },
+    0x12: { decimal: 18, name: 'Recycling Center', commodities: 'demand[14]/supply[15]', lines: '5285,5299', effect: '/2 or *2' },
+    0x11: { decimal: 17, name: 'SDI Defense', commodities: 'supply[15](Uranium-II)', line: '5299', effect: 'doubles' },
   },
 
   governmentTypeBonuses: {
-    // Government type via *(short *)(&DAT_0064c6a6 + iVar4*0x594)
-    9:  { name: 'Fundamentalism', commodities: 'supply[7](Dye)', line: '4961', effect: 'doubles' },
-    10: { name: 'Democracy', commodities: 'supply[9](Gold)/supply[8]', lines: '4989,4972', effect: 'doubles' },
-    11: { name: 'Communism', commodities: 'supply[8](Wine)', line: '4972', effect: 'doubles' },
-    0x11: { decimal: 17, name: 'LeaderStyle17', commodities: 'demand[10](special)', line: '5225', effect: 'doubles' },
+    // NOTE: These are civ style indices (rulesCivNumber from LEADERS.TXT), NOT government type IDs
+    // Read via *(short *)(&DAT_0064c6a6 + iVar4*0x594) — offset 0x06 in civ record = rulesCivNumber
+    9:  { name: 'French (civStyle 9)', commodities: 'supply[7](Dye)', line: '4961', effect: 'doubles' },
+    10: { name: 'Aztecs (civStyle 10)', commodities: 'supply[9](Gold)/supply[8]', lines: '4989,4972', effect: 'doubles' },
+    11: { name: 'Chinese (civStyle 11)', commodities: 'supply[8](Wine)', line: '4972', effect: 'doubles' },
+    0x11: { decimal: 17, name: 'Spanish (civStyle 17)', commodities: 'demand[10](special)', line: '5225', effect: 'doubles' },
   },
 
   continentThresholds: {
@@ -5120,7 +5121,7 @@ export const WORKER_ASSIGNMENT = {
   recalcTurnMask: 3,          // (DAT_00655AF8 + cityIndex) & 3 == 0 triggers full recalc
 
   foodPerPopAddr: 'DAT_0064BCCA',
-  foodPerPopMin: 2,
+  foodPerPopMin: 2,                  // threshold below which minimum 1 is used
 
   buildingWordLayout: {
     tileBits: '0x000FFFFF',
@@ -5780,9 +5781,15 @@ export const POLLUTION_MELTDOWN = {
   noPolluteFlags: 0x82,
 
   // Nuclear meltdown: disorder + Nuclear Plant (0x15) + no Fusion Power (0x20)
+  // Raw C control flow (FUN_004efd44 lines 6037-6069):
+  //   1. Check city in disorder (flags & 1)
+  //   2. Check city has Nuclear Plant (building 0x15)
+  //   3. Check civ lacks Fusion Power (tech 0x20)
+  //   4. iVar2 = 5 - difficulty; if iVar2 < 1: local_20 = 0 (ALWAYS meltdown on Deity)
+  //   5. Otherwise: local_20 = rand() % (6 - difficulty); meltdown if local_20 == 0
   nuclearPlantBuildingId: 0x15,
   fusionPowerTechId: 0x20,
-  meltdownChanceFormula: 'rand() % max(1, 6 - difficulty)',
+  meltdownChanceFormula: 'if (5 - difficulty < 1) → always meltdown; else rand() % (6 - difficulty) == 0',
   meltdownDifficultyBase: 6,
   meltdownDialogString: 's_CHERNOBYL_0062ef70',
 
@@ -6091,7 +6098,7 @@ export const KILL_CIV = {
 
   // After kill: game end check — if only 1 human left and no AI alive
   minPlayersForContinue: 2,            // if alive < 2: game ending
-  gameEndFlag: 3,                      // DAT_0064B1AC = 3 → game over
+  gameEndFlag: 4,                      // DAT_0064B1AC = 4 → game over (raw C: DAT_0064b1ac = 4)
   gameEndBitmask: 2,                   // DAT_00655AF0 |= 2
 
   // MP: kill_civ request uses msg type 0x60 with 0xE10 timeout
@@ -6511,7 +6518,7 @@ export const AI_TERRITORY_ANALYSIS = {
     maxCities: 'DAT_00655b18',      // total city count                          // 0x005305d0
   },
 
-  // sourceAddr: '0x00530280' (territory analysis), '0x005305d0' (city counting)
+  // sourceAddr: '0x00530280' (territory analysis — NOTE: data address, not a function entry point), '0x005305d0' (city counting)
 };
 
 // ============================================================================
@@ -7938,7 +7945,8 @@ export const ROAD_CONNECTIVITY = {
 
 // ============================================================================
 // === AI PRODUCTION URGENCY FORMULAS ===
-// Binary ref: FUN_004ec312 @ block_004E0000.c lines 5525-5577 (city turn processing)
+// NOTE: FUN_004ec312 is handle_espionage_discovery (236 bytes), not production urgency.
+// Production urgency is embedded in FUN_004ec3fe @ block_004E0000.c lines 5525-5577 (city turn processing)
 // ============================================================================
 // When the AI evaluates how urgently a city should rush-buy or prioritize shield
 // production, it uses the civ's total treasury (DAT_0064c6a2[civ * 0x594]) as
@@ -8019,7 +8027,7 @@ export const AI_PRODUCTION_URGENCY = {
     note: 'AI "rush-buys" by converting treasury to shields at a rate based on difficulty and civ rank',
   },
 
-  sourceAddr: '0x004EC312',
+  sourceAddr: '0x004EC3FE',  // NOTE: 0x004EC312 is handle_espionage_discovery; production urgency is embedded in FUN_004ec3fe
 };
 
 // ============================================================================

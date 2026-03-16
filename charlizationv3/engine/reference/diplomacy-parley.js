@@ -1611,7 +1611,7 @@ export const DIPLO_ENCOUNTER_CONSTANTS = {
   warDeclarationFlags: {
     clearPeace: 0x04,                  // clear peace treaty flag
     setVendetta: 0x2000,               // set vendetta flag
-    clearEmbassy: 0x10,                // if had embassy: clear
+    clearVendetta: 0x10,               // if had vendetta flag: clear
     setBetrayalOnEmbassy: 0x800,       // set betrayal if embassy existed
     sourceAddr: '0x0055D8D8',
   },

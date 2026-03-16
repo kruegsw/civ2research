@@ -1293,8 +1293,8 @@ export const CHEAT_EDIT_KING = {
     peace:       { bit: 2,  checkbox: 2, flagValue: 4 },                          // 0x00556F54
     alliance:    { bit: 3,  checkbox: 3, flagValue: 8 },                          // 0x00556F54
     vendetta:    { bit: 13, checkbox: 4, flagValue: 0x2000 },                     // 0x00556F54
-    embassy:     { bit: 4,  checkbox: 5, flagValue: 0x10 },                       // 0x00556F54
-    mapShared:   { bit: 7,  checkbox: 6, flagValue: 0x80 },                       // 0x00556F54
+    vendetta2:   { bit: 4,  checkbox: 5, flagValue: 0x10 },                       // 0x00556F54 (second vendetta flag)
+    embassy:     { bit: 7,  checkbox: 6, flagValue: 0x80 },                       // 0x00556F54
   },
   clearTreatyMask: 0x60,               // clear ceasefire+peace before set        // 0x00556F54
   clearVendettaMask: 0x200E,           // clear vendetta+war group before set     // 0x00556F54
