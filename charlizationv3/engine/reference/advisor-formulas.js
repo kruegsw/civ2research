@@ -960,8 +960,8 @@ export const TRADE_DESIRABILITY = {
     // NOTE: These are civ style indices (rulesCivNumber from LEADERS.TXT), NOT government type IDs
     // Read via *(short *)(&DAT_0064c6a6 + iVar4*0x594) — offset 0x06 in civ record = rulesCivNumber
     9:  { name: 'French (civStyle 9)', commodities: 'supply[7](Dye)', line: '4961', effect: 'doubles' },
-    10: { name: 'Aztecs (civStyle 10)', commodities: 'supply[9](Gold)/supply[8]', lines: '4989,4972', effect: 'doubles' },
-    11: { name: 'Chinese (civStyle 11)', commodities: 'supply[8](Wine)', line: '4972', effect: 'doubles' },
+    10: { name: 'Aztecs (civStyle 10)', commodities: 'supply[9](Gold, DAT_0063f68c)', lines: '4989', effect: 'doubles' },
+    11: { name: 'Chinese (civStyle 11)', commodities: 'supply[9](Gold, DAT_0063f68c)', line: '4972', effect: 'doubles' },
     0x11: { decimal: 17, name: 'Spanish (civStyle 17)', commodities: 'demand[10](special)', line: '5225', effect: 'doubles' },
   },
 
@@ -1046,6 +1046,15 @@ export const TRADE_DESIRABILITY = {
         { condition: 'scienceRate < 16', effect: 'halved', line: '4912' },
       ],
     },
+    gems: {
+      // @ line 4914: DAT_0063f678
+      formula: '(terrainCount[10]*3 + terrainCount[0]*4 + terrainCount[8]*2) - scienceRate/6',
+      modifiers: [
+        { condition: 'no Pottery (0x41)', effect: '/3', line: '4917' },
+        { condition: 'has Aqueduct (building 9)', effect: '+50%', line: '4921' },
+        { condition: 'continent odd && continent < 6', effect: '+50%', line: '4924' },
+      ],
+    },
     salt: {
       // @ line 4926: DAT_0063f67c
       formula: '(t[9]+t[1]+t[3]+t[8]+1) * t[4] * 5',
@@ -1086,6 +1095,7 @@ export const TRADE_DESIRABILITY = {
         { condition: 'nonzero: add distX*2', line: '4968' },
         { condition: 'continent % 5 == 0', effect: 'doubled', line: '4970' },
         { condition: 'govt == Communism (11)', effect: 'doubled', line: '4973' },
+        { condition: 'govt == Democracy (10)', effect: 'doubled (DAT_0063f68c)', line: '4989' },
       ],
     },
     spice: {
@@ -1096,7 +1106,6 @@ export const TRADE_DESIRABILITY = {
         { condition: 'no Refrigeration (0x27)', effect: 'halved', line: '4980' },
         { condition: 'continent > 8', effect: '+50%', line: '4983' },
         { condition: 'city.size < 5', effect: 'halved', line: '4986' },
-        { condition: 'govt == Democracy (10)', effect: 'doubled', line: '4989' },
       ],
     },
     silverIvory: {
@@ -1104,6 +1113,7 @@ export const TRADE_DESIRABILITY = {
       formula: '(t[9]*3+t[8]*2+t[0]*2) * ((t[10]+riverCount)/2)',
       modifiers: [
         { condition: 'nonzero && distY < 10', effect: 'doubled', line: '4996' },
+        { condition: 'nonzero', effect: 'subtract distY', line: '4998' },
         { condition: 'continent pop < 26', effect: '+50%', line: '5000' },
         { condition: 'continent pop > 300', effect: 'halved', line: '5003' },
         { condition: 'continent == 1', effect: 'halved', line: '5006' },
@@ -1134,6 +1144,7 @@ export const TRADE_DESIRABILITY = {
         { condition: 'value == 0', effect: 'set to -1', line: '5032' },
         { condition: 'continent leader == 0x11', effect: '*3', line: '5036' },
         { condition: '(continent-1) & 7 == 0', effect: '+50%', line: '5039' },
+        { condition: 'value != -1', effect: 'clamp(sizeTier/2 - 2, 1, 2) * value', line: '5041-5042' },
       ],
     },
     uraniumII: {
@@ -1177,6 +1188,10 @@ export const TRADE_DESIRABILITY = {
         { condition: 'scienceRate > 47', effect: 'halved', line: '5107' },
       ],
     },
+    clothDemand3: {
+      // @ line 5066: _DAT_0063f54c (demand[3])
+      formula: 'terrainCount[4]*4 + terrainCount[3]*4 + (scienceRate/10 * demand[0]) / 8',
+    },
     salt: {
       // @ line 5109: _DAT_0063f550
       formula: 'Decaying weight loop: weight=8, portion=clamp(remaining,0,5), demand += portion*weight, weight/=2',
@@ -1199,7 +1214,7 @@ export const TRADE_DESIRABILITY = {
       // @ line 5141: DAT_0063f558
       formula: '(riverCount + roadCount + 1) * sizeTier',
       modifiers: [
-        { condition: 'value <= supply[5]', effect: 'halved', line: '5143' },
+        { condition: 'value <= supply[6] (Coal)', effect: 'halved', line: '5143' },
         { condition: 'has Granary (5)', effect: '+50%', line: '5146' },
         { condition: 'has Colosseum (10)', effect: '+50%', line: '5150' },
         { condition: 'has Explosives (0x17)', effect: '+50%', line: '5154' },
@@ -1209,10 +1224,23 @@ export const TRADE_DESIRABILITY = {
     },
     cloth: {
       // @ line 5164: DAT_0063f55c
-      formula: 'supply[2] + roadCount',
+      formula: 'supply[3] (Cloth) + roadCount',
       modifiers: [
         { condition: 'has tech 10', effect: 'halved', line: '5167' },
         { condition: 'has Automobile (0x30)', effect: 'halved', line: '5171' },
+      ],
+    },
+    demand8: {
+      // @ line 5184: _DAT_0063f560
+      formula: 'sizeTier*4 + 4 + abs(x - y)',
+    },
+    demand9: {
+      // @ line 5185: DAT_0063f564
+      formula: '((mapHeight/2 - distY)*2 - distX) + mapWidth/2 + t[9]*4 + t[1]/2 + t[8]*2 + t[0]*4',
+      modifiers: [
+        { condition: 'shifted by clamp(sizeTier-1, -1, 1)', line: '5187-5188' },
+        { condition: 'continent == 1 && (civSlot & 2) != 0', effect: '+50%', line: '5190' },
+        { condition: 'city.size < 7', effect: 'halved', line: '5193' },
       ],
     },
     specialCommodity: {
@@ -1261,7 +1289,7 @@ export const TRADE_DESIRABILITY = {
       formula: 'scienceRate^2',
       modifiers: [
         { condition: 'shifted by clamp(sizeTier-3, -3, 0)', line: '5297' },
-        { condition: 'has PowerPlant/NuclearPlant', effect: 'doubled', line: '5299' },
+        { condition: 'has Nuclear Plant (0x15) or SDI Defense (0x11)', effect: 'doubled', line: '5299' },
       ],
     },
   },
@@ -7713,6 +7741,10 @@ export const POWER_GRAPH_BINARY = {
     // C: ((&DAT_0064c6c0)[target * 0x594 + attacker * 4] & 0x10) != 0
     provocationMask: 0x10,          // treaty flag for provocation                   // line 1126
 
+    // Third OR trigger: thunk_FUN_00598ceb() != 0 (unknown global condition check)
+    // C: (iVar2 = thunk_FUN_00598ceb(), iVar2 != 0)
+    thirdTriggerFn: 'thunk_FUN_00598ceb',  // nonzero triggers war alongside militarism/provocation  // line 1127
+
     // War declaration (no existing treaty): treaty & 8 == 0 AND treaty & 6 == 0
     // C: thunk_FUN_00456f20(target, attacker, 1); treaty |= 1 (contact)
     warDeclarationFn: 'thunk_FUN_00456f20',                                         // line 1130
@@ -7727,10 +7759,11 @@ export const POWER_GRAPH_BINARY = {
     atWarMask: 0x08,                // treaty bit for existing war                   // line 1128
 
     // Random treaty-break check (when ceasefire/peace exists):
-    // C: abs(rand()) & 0x1f <= difficulty
-    // If random 0..31 <= difficulty, break treaty and set vendetta
-    randomBreakFormula: 'abs(rand()) & 0x1f <= difficulty',                          // line 1137
+    // C: abs(rand()) & 0x1f <= difficulty OR thunk_FUN_004a7577(target) != 0
+    // If random 0..31 <= difficulty OR domination detected, break treaty and set vendetta
+    randomBreakFormula: 'abs(rand()) & 0x1f <= difficulty OR thunk_FUN_004a7577(target) != 0',  // line 1137-1138
     randomMask: 0x1F,               // mask for random value (0..31)                 // line 1137
+    dominationOrInBreak: 'thunk_FUN_004a7577(target)',  // domination check as alternative to random  // line 1138
     vendettaSetFlag: 0x20,          // treaty |= 0x20 (vendetta flag set)            // line 1141
 
     // At-war + domination override: if already at war AND domination detected AND difficulty > 3
@@ -8538,10 +8571,13 @@ export const AI_TAX_SCIENCE = {
     govtComparison: 4,              // government type 4: Fundamentalism              // line 2068
     govtAddr: 'DAT_0064c6b5 + civId * 0x594',                                        // line 2068
 
-    // Tribute formula: (topCiv.unitSupport + topCiv.unitCount + topCiv.numCities) * (numCities + 1 + local_c)
-    // local_c = topCiv.numCities + 1 (only when tech/govt conditions met)
+    // Tribute formula: (topCiv.unitSupport + topCiv.unitCount + topCiv.numCities) * (topCiv.numCities + local_c)
+    //   + existingTributeValue
+    // local_c = topCiv.numCities + 1 (only when tech/govt conditions met), else 0
     // C: local_c = *(short *)(&DAT_0064c6bc + DAT_00655c20 * 0x594) + 1
-    tributeCitiesBase: 'topCiv.numCities + 1',                                        // line 2069
+    // C (line 2076): += existing DAT_0064ca80 value (tribute is additive, not overwritten)
+    tributeCitiesBase: 'topCiv.numCities + local_c (NOT numCities + 1 + local_c)',    // line 2075
+    tributeAdditive: 'existing tribute value is added to computed result',             // line 2076
 
     // Treasury +10 bonus: if own treasury < topCiv treasury, add 10 to tribute
     // C: if (ownTreasury < topCivTreasury) tribute += 10
@@ -8565,6 +8601,11 @@ export const AI_TAX_SCIENCE = {
     //    This is signed division: (tribute * 3) / 4, i.e. 75%
     multiplier75pct: { numerator: 3, denominator: 4 },                               // lines 2098-2103
     multiplier75pctCondition: 'topAI is dead AND (govtAggression == 1 OR (aggression == 0 AND govtMinMil < 0))',
+
+    // Guard condition: strength multiplier block only executes when:
+    // C (lines 2110-2113): ownRank >= topCivRank - 1 OR ownTechs >= topCivTechs
+    // i.e., the civ must be close in rank or have at least as many techs as the top civ
+    strengthMultiplierGuard: 'ownRank >= topCivRank - 1 OR ownTechs >= topCivTechs', // lines 2110-2113
 
     // Comparison multipliers: iVar4*4 and iVar4*8 for military strength thresholds
     // C: if (ownTechs + iVar4 * 4 < topCivTechs) -> zero tribute
