@@ -2,7 +2,7 @@
 // reduce/end-turn.js — END_TURN action handler
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_NO_LIGHTHOUSE_BONUS } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, checkTriremeSinking } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
@@ -59,14 +59,27 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
   // Reset movement for the new active civ's units + promote fortifying→fortified
   // C.1: Use calcEffectiveMovementPoints for damage-based MP reduction
-  // Lighthouse (+1 MP sea), Magellan (+1 MP sea) — stack
-  const seaBonus = (hasWonderEffect(state, activeCiv, 3) ? 1 : 0)
-    + (hasWonderEffect(state, activeCiv, 12) ? 1 : 0);
+  // Sea unit movement bonuses (Raw C FUN_005b2a39):
+  //   Lighthouse (wonder 3): +1x MP_PER_TURN, but NOT for units with flagsA & 0x20
+  //   Magellan (wonder 12): +2x MP_PER_TURN (DAT_0064bcc8 * 2)
+  //   Nuclear Power (tech 59/0x3B): +1x MP_PER_TURN
+  const hasLighthouse = hasWonderEffect(state, activeCiv, 3);
+  const hasMagellan = hasWonderEffect(state, activeCiv, 12);
+  const hasNuclearPower = !!(state.civTechs?.[activeCiv]?.has(59));
   state.units = state.units.map(u => {
     if (u.owner !== activeCiv) return u;
     const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
     let mp = calcEffectiveMovementPoints(u);
-    if (seaBonus && UNIT_DOMAIN[u.type] === 1) mp += seaBonus * MOVEMENT_MULTIPLIER;
+    if (UNIT_DOMAIN[u.type] === 1) { // sea domain
+      // Lighthouse: +1 MP, but skip units with flagsA & 0x20 (transports/carriers)
+      if (hasLighthouse && !UNIT_NO_LIGHTHOUSE_BONUS.has(u.type)) {
+        mp += MOVEMENT_MULTIPLIER;
+      }
+      // Magellan's Expedition: +2 MP
+      if (hasMagellan) mp += 2 * MOVEMENT_MULTIPLIER;
+      // Nuclear Power tech: +1 MP
+      if (hasNuclearPower) mp += MOVEMENT_MULTIPLIER;
+    }
     return { ...u, movesLeft: mp, orders };
   });
 

@@ -179,6 +179,11 @@ export const FANATIC_TYPES = new Set([8]);
 export const SEA_COMBAT_TYPES = new Set([35, 36, 37, 38, 39, 40, 41]);
 export const SEA_TRANSPORT_TYPES = new Set([32, 33, 34, 43]);
 
+// Units with flagsA & 0x20 — "no sea bonus" flag (skip Lighthouse MP bonus).
+// In vanilla Civ2: Trireme(32), Caravel(33), Galleon(34), Carrier(42), Transport(43).
+// Raw C FUN_005b2a39: checks unit_types[type].flagsA & 0x20 before applying Lighthouse.
+export const UNIT_NO_LIGHTHOUSE_BONUS = new Set([32, 33, 34, 42, 43]);
+
 // Transport capacity (only units that can carry others)
 // Trireme=2, Caravel=3, Galleon=4, Carrier=8 (air only), Transport=8
 export const UNIT_CARRY_CAP = [];
@@ -492,9 +497,9 @@ export const BARBARIAN_LAND_UNITS = [
 ];
 
 export const BARBARIAN_SEA_UNITS = [
-  [36, 0],   // Trireme
-  [37, 20],  // Caravel
-  [39, 40],  // Frigate
+  [32, 0],   // Trireme
+  [33, 20],  // Caravel
+  [35, 40],  // Frigate
 ];
 
 // Spawn frequency by activity level (every N turns)
@@ -936,6 +941,10 @@ export const ADVANCE_ICON = [
 
 // COSMIC parameter #11: tech cost multiplier (default 3, applied as baseCost * value / 10)
 export const COSMIC_TECH_MULTIPLIER = 3;
+
+// COSMIC parameter #17 (DAT_0064bcd9): Fundamentalism science penalty percentage (default 50).
+// Raw C FUN_004ea1f6 line 3900: science -= (DAT_0064bcd9 * science) / 100
+export const COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY = 50;
 
 // Tech prerequisite for each government type (advance ID, -1 = always available)
 export const GOVT_TECH_PREREQS = {

@@ -13,6 +13,7 @@ import {
   COSMIC_FREE_SUPPORT, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
   IMPROVE_MAINTENANCE,
   GOVT_FACTOR, GOVT_CORRUPTION_DIVISOR, GOVT_WLTKD_BUMP,
+  COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY,
 } from './defs.js';
 import { cityHasBuilding, civHasWonder, cityHasWonder, hasWonderEffect, getGovernment } from './utils.js';
 
@@ -470,6 +471,13 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
 
   // Copernicus' Observatory (wonder 11): doubles science in wonder city
   if (cityHasWonder(gameState, cityIndex, 11)) sci <<= 1;
+
+  // Fundamentalism science penalty (Raw C FUN_004ea1f6 line 3900):
+  // science -= (DAT_0064bcd9 * science) / 100
+  // Applied AFTER all specialist/building/wonder multipliers.
+  if (govt === 'fundamentalism') {
+    sci -= Math.trunc((COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY * sci) / 100);
+  }
 
   return { lux, tax, sci };
 }

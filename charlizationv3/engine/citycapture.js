@@ -21,15 +21,16 @@ import { isSchismBlocked } from './events.js';
 // Constants
 // ═══════════════════════════════════════════════════════════════════
 
-/** Buildings always destroyed on city capture (Civ2 rules). */
+/** Buildings always destroyed on city capture (Civ2 rules).
+ *  Raw C FUN_0057b5df: calls FUN_0043d289 for buildings 1, 4, 0xB(11), 7.
+ *  City Walls (8) are NOT always destroyed — they go through the 0xAA random mask. */
 const ALWAYS_DESTROYED_ON_CAPTURE = new Set([
-  1,  // Palace
-  7,  // Courthouse
-  8,  // City Walls
+  1,   // Palace
+  4,   // Temple
+  7,   // Courthouse
+  11,  // Cathedral
 ]);
 
-/** Fortifications building ID (if it existed as a building — in Civ2, City Walls = 8 covers this). */
-// City Walls (8) already in set above.
 
 /** Partisan unit type. */
 const PARTISAN_TYPE = 9;
@@ -522,7 +523,7 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   // ── Building destruction ──
   let buildings = new Set(city.buildings);
 
-  // Always destroy: Palace, Courthouse, City Walls
+  // Always destroy: Palace, Temple, Courthouse, Cathedral
   for (const bid of ALWAYS_DESTROYED_ON_CAPTURE) {
     buildings.delete(bid);
   }
