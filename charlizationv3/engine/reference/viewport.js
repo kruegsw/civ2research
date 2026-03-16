@@ -461,6 +461,17 @@ export const MINIMAP_LAYOUT = {
     resolutionThreshold: 1000,    // @ FUN_0040785b: if (1000 < DAT_006acbb0 + iVar1)
     base:  { width: 0xA0, height: 100 },   // 160x100 — default for low-res (<=1000px)
     large: { width: 0xF0, height: 0x96 },  // 240x150 — used for high-res (>1000px)
+
+    // --- Width adjustment for status/info panel ---
+    // After selecting base or large width, the panel width is further adjusted:
+    //   C: local_14 = local_14 + DAT_0063359c * 2;
+    //   @ block_00400000.c line 576, FUN_0040785b
+    // DAT_0063359c is the vertical scrollbar width (or side panel border width).
+    // The minimap panel is widened by twice this value to account for the
+    // scrollbar/border on both sides of the adjacent info panel.
+    // Final panel width = baseWidth + (DAT_0063359c * 2)
+    widthAdjustment: 'baseWidth + DAT_0063359c * 2',  // @ 0x0040785B line 576
+
     sourceAddr: '0x0040785B',
   },
 

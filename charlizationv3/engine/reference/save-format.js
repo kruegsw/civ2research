@@ -236,6 +236,15 @@ export const CITY_FLAGS = {
                                   //   another city completes the same wonder type.
   // bit 0x200:                   // (unobserved in binary — possibly unused)
   CAN_BUILD_HYDRO:      0x800,    // city can build hydroelectric plant (byte+5 bit 3)
+  DISORDER_ACTIVE:      0x2000,   // city is actively in civil disorder (byte+5 bit 5)
+                                  // Set by: FUN_004ee3c0 (happiness evaluation) when disorder detected
+                                  //   AND city was already in disorder (CIVIL_DISORDER bit already set).
+                                  //   C: flags |= 0x2000 @ block_004E0000.c:5853-5854
+                                  // Cleared by: CLEAR_DISORDER mask 0xffefdffe (block_004E0000.c:5879)
+                                  // Distinguishes ongoing disorder (0x2000 set) from first-turn disorder
+                                  //   entry (only 0x4001 set). On first entry, flags |= 0x4001; on
+                                  //   subsequent turns already in disorder, flags |= 0x2000 is added.
+                                  // sourceAddr: block_004E0000.c:5853-5854
   CONTENT_SURPLUS:      0x4000,   // city content with surplus — enables rapture growth (byte+5 bit 6)
                                   // Set when: happy == unhappy AND (netShields > 0) AND
                                   //   (netFood >= 0). Also set on civil disorder entry (0x4001).
@@ -296,8 +305,8 @@ export const CITY_FLAGS = {
 // These bitmasks are applied to the 32-bit city flags word during specific events.
 export const CITY_FLAG_MASKS = {
   CLEAR_DISORDER:       0xffefdffe,
-    // Clears: CIVIL_DISORDER(0x01), WE_LOVE_KING_DAY(0x02), RAPTURE_GROWTH(0x8000),
-    //         WAS_CELEBRATING(0x100000), and bit 0x2000 (disorder-continuation).
+    // Clears: CIVIL_DISORDER(0x01), DISORDER_ACTIVE(0x2000),
+    //         WAS_CELEBRATING(0x100000).
     // Applied when: disorder resolves (happiness >= unhappiness after re-evaluation).
     // sourceAddr: block_004E0000.c lines 5787, 5879
 

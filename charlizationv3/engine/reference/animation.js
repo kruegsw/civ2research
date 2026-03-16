@@ -51,7 +51,63 @@ export const COMBAT_BATTLE_ANIMATION = {
   // @ 0x00580341: if (DAT_0064b1bd[attacker.type * 0x14] & 0x10) != 0 => skip normal animation
   // Units with "can carry aircraft" flag (0x10 in flagsB) use a simplified combat path
   carrierAircraftFlag: 0x10,     // flagsB bit: skip normal combat animation for carriers
+
+  // --- Draw queue opcode 0x73 (ANIMATION) payload format ---
+  // Sent to all remote players in multiplayer after normal combat resolution.
+  // Binary ref: block_00580000.c lines 698-707
+  //   C: thunk_FUN_0046b14d(0x73, socketFd, attackerUnitId, attackerDestX, attackerDestY,
+  //                          defenderX, defenderY, 0, 0, 0);
+  // Parameters (10 total including opcode):
+  //   [0] opcode:     0x73 (ANIMATION)
+  //   [1] socketFd:   remote player's socket descriptor
+  //   [2] unitId:     attacker unit ID (uVar11 — the attacking unit index)
+  //   [3] destX:      attacker's destination X (iVar10 — tile attacker moves to)
+  //   [4] destY:      attacker's destination Y (iVar8 — Y of destination)
+  //   [5] targetX:    defender's X position (iVar9 — from param_2 decomposition)
+  //   [6] targetY:    0 (unused)
+  //   [7] reserved1:  0
+  //   [8] reserved2:  0
+  //   [9] reserved3:  0
+  // Condition: only sent when DAT_00655b02 > 2 (multiplayer with 3+ players)
+  //   AND the remote player has visibility (aiStack_58[playerId] != 0).
+  // Preceded by: thunk_FUN_004b0b53(0xff, 2, 0, 0, 0) — flush/sync draw queue.
+  opcodeAnimationPayload: { opcode: 0x73, params: ['socketFd', 'unitId', 'destX', 'destY', 'targetX', 'targetY', '0', '0', '0'] },
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// NUCLEAR / LONG-RANGE ATTACK PATH
+// Binary ref: block_00580000.c lines 709-733 (inside combat resolution function)
+// ═══════════════════════════════════════════════════════════════════
+
+// When the attacker's attack stat > 98 (0x62 = 'b'), the normal combat
+// animation is skipped entirely and the nuclear/missile path is taken instead.
+//
+// C: if ('b' < (char)(&DAT_0064b1c4)[unitTypeIndex * 0x14])
+//      — DAT_0064b1c4 is the attack stat in the unit type table (stride 0x14)
+//
+// Flow:
+//   1. DAT_00633e48 = -1 (0xffffffff) — sets combat result to "no normal rounds"
+//   2. iVar13 = thunk_FUN_0057f9e3(targetCivId, attackerUnitId, attackerDestPos, 1)
+//      — FUN_0057f9e3 executes the nuclear/missile strike animation & damage
+//      — param4 = 1 indicates "actual attack" (vs. 0 for preview)
+//   3. If strike succeeds (iVar13 == 0):
+//      a. thunk_FUN_005b4391(attackerSlotId, 1) — kill/consume the attacking unit
+//      b. thunk_FUN_0047cea6(defenderX, defenderY) — redraw target tile
+//      c. In multiplayer (DAT_00655b02 > 2):
+//         - thunk_FUN_004b0b53(0xff, 2, 0, 0, 0) — flush draw queue
+//         - Opcode 0x72 (REDRAW_TILES) sent to all remote players:
+//           thunk_FUN_0046b14d(0x72, socketFd, defenderX, defenderY, 0,0,0,0,0,0)
+//           @ block_00580000.c:719-721
+//   4. If strike fails (iVar13 != 0):
+//      a. (&DAT_0064c6f0)[targetCiv * 0x594 + unitSlot] = 0 — clear unit entry
+//   5. If failed AND attacker is human AND DAT_006acb08 >= 0:
+//      a. thunk_FUN_0057febc(targetCivId, attackerUnitId, attackerDestPos)
+//         — shows the failed-strike aftermath to the player
+//
+// Key constant:
+//   attackThreshold: 98 (0x62 = ASCII 'b') — any unit with attack > 98 uses
+//   the nuclear path. In standard Civ2, only Nuclear Missile (attack=99) qualifies.
+//   sourceAddr: block_00580000.c:709
 
 // ═══════════════════════════════════════════════════════════════════
 // UNIT MOVEMENT ANIMATION

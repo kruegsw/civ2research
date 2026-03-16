@@ -8,6 +8,13 @@
  *
  * NOT executable code -- reference data only. Each constant includes its
  * binary address as a comment.
+ *
+ * TECH ID NUMBERING: All techId values in this file (and other reference files)
+ * use the binary's internal tech numbering, NOT the alphabetical index used in
+ * engine/defs.js. The binary assigns IDs by category/era (e.g., 0x00 = Advanced
+ * Flight, 0x01 = Alphabet, matching Civ2-clone's AdvanceType enum), whereas
+ * defs.js sorts techs alphabetically (0 = Alphabet, 1 = Amphibious Warfare, ...).
+ * When cross-referencing techId values here against defs.js, a mapping is required.
  */
 
 // ============================================================================
