@@ -140,7 +140,7 @@ function shouldRetreat(unit, roleOverride) {
  * @param {object} mapBase
  * @param {Map} spatialIdx
  * @param {number} civSlot
- * @param {number} domain - unit domain (0=land, 1=sea, 2=air)
+ * @param {number} domain - unit domain (0=ground, 1=air, 2=sea)
  * @param {number} bodyId - unit's continent body ID (-1 if not land)
  * @returns {object|null} action or null if no retreat possible
  */
@@ -169,7 +169,7 @@ function _handleDamageRetreat(unit, unitIndex, gameState, mapBase, spatialIdx, c
   // Find nearest own city to retreat to
   const retreatCity = _findNearestOwnCity(gameState, mapBase, unit.gx, unit.gy, civSlot, domain, bodyId);
   if (retreatCity) {
-    if (domain === 1) {
+    if (domain === 2) {
       // Naval: use port finding for sea units
       const port = _findNearestFriendlyPort(gameState, mapBase, unit.gx, unit.gy, civSlot);
       if (port) {
@@ -373,7 +373,7 @@ function findNearestUnexplored(mapBase, startGx, startGy, civSlot, domain, maxRa
       // Domain check: land units skip ocean, sea units skip land
       const terrain = mapBase.getTerrain(wnx, ny);
       if (domain === 0 && terrain === 10) continue;
-      if (domain === 1 && terrain !== 10) continue;
+      if (domain === 2 && terrain !== 10) continue;
 
       queue.push({ gx: wnx, gy: ny, dist: cur.dist + 1 });
     }
@@ -458,9 +458,9 @@ function findNearestEnemyUnit(gameState, mapBase, startGx, startGy, civSlot, dom
  * Picks the adjacent tile closest to the target.
  *
  * Optional domain parameter adds terrain passability filtering:
- *   domain 0 (land): skip ocean tiles (terrain 10)
- *   domain 1 (sea):  skip land tiles (terrain !== 10)
- *   domain 2 (air):  no filtering
+ *   domain 0 (ground): skip ocean tiles (terrain 10)
+ *   domain 1 (air):    no filtering
+ *   domain 2 (sea):    skip land tiles (terrain !== 10)
  *   domain -1 or omitted: no filtering (legacy behavior)
  */
 function directionToward(mapBase, fromGx, fromGy, toGx, toGy, domain = -1) {
@@ -468,12 +468,12 @@ function directionToward(mapBase, fromGx, fromGy, toGx, toGy, domain = -1) {
   const direct = getDirection(fromGx, fromGy, toGx, toGy, mapBase);
   if (direct) {
     // Even for adjacent tiles, respect domain constraints
-    if (domain >= 0 && domain <= 1) {
+    if (domain === 0 || domain === 2) {
       const dest = resolveDirection(fromGx, fromGy, direct, mapBase);
       if (dest) {
         const terrain = mapBase.getTerrain(dest.gx, dest.gy);
         if (domain === 0 && terrain === 10) return null;
-        if (domain === 1 && terrain !== 10) return null;
+        if (domain === 2 && terrain !== 10) return null;
       }
     }
     return direct;
@@ -489,10 +489,10 @@ function directionToward(mapBase, fromGx, fromGy, toGx, toGy, domain = -1) {
     const wnx = wrapX(nx, mapBase);
 
     // Domain passability check
-    if (domain >= 0 && domain <= 1) {
+    if (domain === 0 || domain === 2) {
       const terrain = mapBase.getTerrain(wnx, ny);
       if (domain === 0 && terrain === 10) continue;
-      if (domain === 1 && terrain !== 10) continue;
+      if (domain === 2 && terrain !== 10) continue;
     }
 
     const dist = tileDist(wnx, ny, toGx, toGy, mapBase);
@@ -523,7 +523,7 @@ function safeDirectionToward(mapBase, gameState, spatialIdx, fromGx, fromGy, toG
     // Domain passability
     const terrain = mapBase.getTerrain(wnx, ny);
     if (domain === 0 && terrain === 10) continue;
-    if (domain === 1 && terrain !== 10) continue;
+    if (domain === 2 && terrain !== 10) continue;
 
     // Avoid tiles with enemy units unless we want to attack
     const enemiesOnTile = unitsAt(spatialIdx, wnx, ny).filter(
@@ -852,7 +852,7 @@ function _computeCombatScore(attacker, defender, defTerrain, hasCityWalls, negat
   if (defFortified) effDef = Math.floor(effDef * 1.5);
   if (hasCityWalls && !negatesWalls) {
     const atkDomain = UNIT_DOMAIN[attacker.type] ?? 0;
-    if (atkDomain !== 2) effDef *= 3; // walls don't help vs air
+    if (atkDomain !== 1) effDef *= 3; // walls don't help vs air
   }
 
   if (effAtk <= 0) return -999;
@@ -984,7 +984,7 @@ function _findNearestOwnCity(gameState, mapBase, gx, gy, civSlot, domain, bodyId
 // @param {object} mapBase - immutable map data with accessors
 // @param {Map} spatialIdx - spatial index from buildUnitSpatialIndex
 // @param {number} civSlot - civ slot (1-7)
-// @param {number} domain - unit domain (0=land, 1=sea, 2=air)
+// @param {number} domain - unit domain (0=ground, 1=air, 2=sea)
 // @param {number|null} targetGx - target tile gx (or null for no target)
 // @param {number|null} targetGy - target tile gy (or null for no target)
 // @param {object} [opts] - options:
@@ -1067,7 +1067,7 @@ function _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, ci
     // Land units can't enter ocean (unless air transport flag)
     // Sea units can't enter land
     if (domain === 0 && isOcean) continue;
-    if (domain === 1 && !isOcean) continue;
+    if (domain === 2 && !isOcean) continue;
 
     // ── Find first combat-relevant unit at destination (ported from local_54) ──
     // Walk the stack, skip units with role > 4 (transports, settlers, diplomats, traders)
@@ -2649,7 +2649,7 @@ function _findNearestFriendlyTransport(gameState, mapBase, fromGx, fromGy, civSl
     const uRole = UNIT_ROLE[u.type] ?? 0;
     if (uRole !== 5) continue; // must be transport role
     const uDomain = UNIT_DOMAIN[u.type] ?? 0;
-    if (uDomain !== 1) continue; // must be sea domain
+    if (uDomain !== 2) continue; // must be sea domain
 
     // Check if transport has land units aboard (same tile)
     const unitsOnTile = unitsAt(spatialIdx, u.gx, u.gy);
@@ -2719,7 +2719,7 @@ function _findNearestEnemySeaUnit(gameState, mapBase, fromGx, fromGy, civSlot, m
     if (u.gx < 0 || u.owner === civSlot) continue;
     if (!isAtWar(gameState, civSlot, u.owner)) continue;
     const uDomain = UNIT_DOMAIN[u.type] ?? 0;
-    if (uDomain !== 1) continue; // sea units only
+    if (uDomain !== 2) continue; // sea units only
 
     const dist = tileDist(fromGx, fromGy, u.gx, u.gy, mapBase);
     if (dist <= maxRange * 2 && dist < bestDist) {
@@ -2754,7 +2754,7 @@ function _findCoastalPatrolTarget(gameState, mapBase, fromGx, fromGy, civSlot, s
       // Skip tiles that already have our naval units
       const unitsHere = unitsAt(spatialIdx, wnx, ny);
       const ownNavalHere = unitsHere.filter(e =>
-        e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 1
+        e.unit.owner === civSlot && (UNIT_DOMAIN[e.unit.type] ?? 0) === 2
       );
       if (ownNavalHere.length >= 2) continue;
 
@@ -4660,7 +4660,7 @@ function _checkDiplomaticEncounter(unit, unitIndex, gameState, mapBase, spatialI
     // Domain check: land can't enter ocean, sea can't enter land
     const terrain = mapBase.getTerrain(wnx, ny);
     if (domain === 0 && terrain === 10) continue;
-    if (domain === 1 && terrain !== 10) continue;
+    if (domain === 2 && terrain !== 10) continue;
 
     const entries = unitsAt(spatialIdx, wnx, ny);
     if (entries.length === 0) continue;
@@ -4713,7 +4713,7 @@ function randomMove(unit, unitIndex, mapBase, domain, gameState) {
     if (!dest) continue;
     const terrain = mapBase.getTerrain(dest.gx, dest.gy);
     if (domain === 0 && terrain === 10) continue;
-    if (domain === 1 && terrain !== 10) continue;
+    if (domain === 2 && terrain !== 10) continue;
     return { type: 'MOVE_UNIT', unitIndex, dir };
   }
   return null;

@@ -32,7 +32,7 @@
 import {
   UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
   UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER,
-  UNIT_PIKEMAN_BONUS, UNIT_AEGIS_BONUS,
+  UNIT_PIKEMAN_BONUS, UNIT_AEGIS_BONUS, UNIT_ANTI_AIR,
   UNIT_SUBMARINE, DIFFICULTY_KEYS, UNIT_FUEL, UNIT_NEGATES_WALLS,
 } from './defs.js';
 import { hasWonderEffect } from './utils.js';
@@ -79,9 +79,9 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   }
 
   // Fortress: ×2 (mult goes to 4) — only if not in a city
-  // Binary: fortress ignored when attacker domain == air (binary 0x01 = JS 2)
+  // Binary: fortress ignored when attacker domain == air (1)
   if (hasFortress && !inCity) {
-    if (attackerType == null || attackerType < 0 || atkDomain !== 2) {
+    if (attackerType == null || attackerType < 0 || atkDomain !== 1) {
       defense *= 2;
     }
   }
@@ -101,10 +101,10 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
   if (inCity && cityBuildings) {
     // Coastal Fortress (building 28): ×2 defense vs naval attackers when defender is NOT sea domain
     // Binary: attacker domain == sea AND defender domain != sea AND city has Coastal Fortress
-    if (cityBuildings.has(28) && atkDomain === 1 && defDomain !== 1) defense *= 2;
+    if (cityBuildings.has(28) && atkDomain === 2 && defDomain !== 2) defense *= 2;
     // SAM Battery (building 27): ×2 defense vs ALL air domain attackers (no missile exclusion)
     // Binary: attacker domain == air AND city has SAM Battery
-    if (cityBuildings.has(27) && atkDomain === 2) {
+    if (cityBuildings.has(27) && atkDomain === 1) {
       defense *= 2;
     }
     // SDI Defense (building 17): ×2 defense vs missiles with attack < 99
@@ -186,8 +186,8 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
       score += 1;
     }
 
-    // ── AEGIS bonus vs air/missile attackers ──
-    if (UNIT_AEGIS_BONUS.has(u.type) && atkDomain === 2) {
+    // ── B.2: Anti-air bonus vs air/missile attackers (flagsB 0x20) ──
+    if (UNIT_ANTI_AIR.has(u.type) && atkDomain === 1) {
       if (UNIT_DESTROYED_AFTER_ATTACK.has(attackerType)) {
         score *= 5; // vs missiles
       } else {
@@ -196,7 +196,7 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
     }
 
     // ── Submarine: ×2 score if attacker is also a submarine ──
-    if (UNIT_SUBMARINE.has(u.type) && atkDomain === 1) {
+    if (UNIT_SUBMARINE.has(u.type) && atkDomain === 2) {
       score *= 2;
     }
 
@@ -269,7 +269,7 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // Ported from FUN_00580341 lines 124-129: role 3 (air attack) vs
   // sea-domain defender with 0 attack → halve defense, set defender FP=1.
   // This models helicopters/bombers attacking defenseless transports.
-  if (atkRole === 3 && defDomain === 1 && defAtk === 0) {
+  if (atkRole === 3 && defDomain === 2 && defAtk === 0) {
     defFp = 1;
     // Defense is halved after all other modifiers (applied to effDef below)
   }
@@ -312,10 +312,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     effDef = effDef + Math.floor(effDef / 2);
   }
 
-  // ── Special interaction: Aegis defense bonus vs air/missiles ──
-  // Ported from FUN_00580341: Aegis-flagged defenders (flags bit 14)
-  // get ×3 defense vs air-domain attackers and ×5 vs missiles.
-  if (UNIT_AEGIS_BONUS.has(defender.type) && atkDomain === 2) {
+  // ── B.2: Anti-air defense bonus vs air/missiles (flagsB 0x20) ──
+  // Any unit with anti-air flag gets ×3 defense vs non-missile air, ×5 vs missiles.
+  if (UNIT_ANTI_AIR.has(defender.type) && atkDomain === 1) {
     if (UNIT_DESTROYED_AFTER_ATTACK.has(attacker.type)) {
       effDef *= 5; // ×5 vs missiles (cruise missile, nuclear missile)
     } else {
@@ -324,7 +323,7 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   }
 
   // Air vs unarmed ships: halve effective defense (after all other defense mods)
-  if (atkRole === 3 && defDomain === 1 && defAtk === 0) {
+  if (atkRole === 3 && defDomain === 2 && defAtk === 0) {
     effDef = Math.max(1, effDef >> 1);
   }
 
@@ -340,7 +339,7 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // ── B.1: Sea unit attacks land unit ────────────────────────────
   // From Civ2 mechanics: when a sea unit attacks a land unit,
   // both sides have firepower reduced to 1.
-  if (atkDomain === 1 && defDomain === 0) {
+  if (atkDomain === 2 && defDomain === 0) {
     atkFp = 1;
     defFp = 1;
   }
@@ -349,7 +348,7 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // When a non-air unit attacks a sea-domain defender on a non-ocean tile,
   // the attacker's FP is doubled and the defender's FP is reduced to 1.
   // The sea unit is vulnerable when not at sea.
-  if (atkDomain !== 2 && defDomain === 1 && defTerrain !== 10) {
+  if (atkDomain !== 1 && defDomain === 2 && defTerrain !== 10) {
     atkFp *= 2;
     defFp = 1;
   }
@@ -375,7 +374,7 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // When a fighter (air domain with fuel limit) attacks a helicopter
   // (air domain with no fuel limit), the helicopter's defensive FP is
   // reduced to 1. Helicopters are vulnerable to fighter interception.
-  if (atkDomain === 2 && defDomain === 2 && (UNIT_FUEL[attacker.type] || 0) > 0 && !(UNIT_FUEL[defender.type] > 0)) {
+  if (atkDomain === 1 && defDomain === 1 && (UNIT_FUEL[attacker.type] || 0) > 0 && !(UNIT_FUEL[defender.type] > 0)) {
     defFp = 1;
   }
 
@@ -420,6 +419,13 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     if (difficulty === 'deity') effAtk = Math.floor(effAtk * 3 / 2);     // +50%
     if (difficulty === 'chieftain') effAtk = Math.floor(effAtk / 2);     // -50%
     if (difficulty === 'warlord') effAtk = Math.floor(effAtk * 3 / 4);   // -25%
+  }
+
+  // B.1: Attack power clamping — prevent overflow with high-attack endgame units
+  // Binary: while (attack > 3999) { attack >>= 1; defense >>= 1; }
+  while (effAtk > 3999) {
+    effAtk >>= 1;
+    effDef >>= 1;
   }
 
   // Ensure minimums

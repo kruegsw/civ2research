@@ -92,7 +92,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
         if (err) return err;
       }
       // C.4: Disembarkation (land unit on ocean → land) passes through — handled in reducer
-      if (domain === 1 && terrain !== 10) {
+      if (domain === 2 && terrain !== 10) {
         // Sea unit can enter coastal city tiles
         const hasDestCity = gameState.cities.some(c => c.gx === dest.gx && c.gy === dest.gy && c.size > 0);
         if (!hasDestCity) return 'Sea unit cannot enter land';

@@ -70,7 +70,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     if (u.owner !== activeCiv) return u;
     const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
     let mp = calcEffectiveMovementPoints(u);
-    if (UNIT_DOMAIN[u.type] === 1) { // sea domain
+    if (UNIT_DOMAIN[u.type] === 2) { // sea domain
       // Lighthouse: +1 MP, but skip units with flagsA & 0x20 (transports/carriers)
       if (hasLighthouse && !UNIT_NO_LIGHTHOUSE_BONUS.has(u.type)) {
         mp += MOVEMENT_MULTIPLIER;
@@ -305,6 +305,23 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       });
     }
 
+    // A.3: Science doubling (FUN_004efbc6)
+    // Chieftain difficulty: double all science output for human players
+    // AI with difficulty > 1: double science while building spaceship parts (35-37)
+    const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(state.difficulty || 'chieftain');
+    const isHumanCiv = !!((1 << activeCiv) & (state.humanPlayers || 0xFF));
+    if (diffIdx === 0 && isHumanCiv) {
+      civSciTotal *= 2;
+    } else if (!isHumanCiv && diffIdx > 1) {
+      // Check if any AI city is building spaceship parts
+      const buildingSpaceship = state.cities.some(c =>
+        c.owner === activeCiv && c.size > 0 && c.itemInProduction &&
+        c.itemInProduction.type === 'building' &&
+        c.itemInProduction.id >= 35 && c.itemInProduction.id <= 37
+      );
+      if (buildingSpaceship) civSciTotal *= 2;
+    }
+
     // Q.4: If scenario restricts tech advances, don't accumulate science
     if (!state.scenarioTechRestrictions?.noResearch) {
       civ.researchProgress = (civ.researchProgress || 0) + civSciTotal;
@@ -429,7 +446,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
       if (ownCity) {
         // Domain-specific building: Barracks(2) for land, Port Facility(34) for sea, Airport(32) for air
-        const matchingBuildingId = domain === 0 ? 2 : domain === 1 ? 34 : 32;
+        const matchingBuildingId = domain === 0 ? 2 : domain === 2 ? 34 : 32;
         if (cityHasBuilding(ownCity, matchingBuildingId)) {
           // Full heal: matching building in own city
           healAmt = u.movesRemain;

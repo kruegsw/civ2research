@@ -431,7 +431,7 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
   const taxRate = civData ? (civData.taxRate || 0) : 0;
   const govt = getGovernment(city, gameState);
 
-  // Fundamentalism caps science rate at 5
+  // Fundamentalism caps science rate at 5 (DAT_0064BCDD default=5)
   if (govt === 'fundamentalism' && sciRate > 5) sciRate = 5;
 
   const luxRate = 10 - sciRate - taxRate;
@@ -441,6 +441,15 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
   let sci = netTrade > 0 && sciRate > 0
     ? Math.min(netTrade - lux, Math.floor((netTrade * sciRate + 4) / 10)) : 0;
   let tax = netTrade - (sci + lux);
+
+  // A.5: AI Fundamentalism gold→science conversion
+  // Binary: applied BEFORE specialist bonuses and building multipliers
+  const humanPlayers = gameState.humanPlayers || 0xFF;
+  const isAI = !((1 << city.owner) & humanPlayers);
+  if (isAI && govt === 'fundamentalism') {
+    sci += tax;
+    tax = 0;
+  }
 
   // Specialist bonuses (before building multipliers)
   // Binary ref: entertainer(status1)=2 luxury, taxman(status2)=3 gold, scientist(status3)=3 science
@@ -458,7 +467,7 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
   lux += (lux * lgMult) >> 1;
   tax += (tax * lgMult) >> 1;
 
-  // Library(6)/University(12)/Research Lab(26) or SETI(wonder 18): each +50% to sci
+  // Library(6)/University(12)/Research Lab(26) or SETI(wonder 26): each +50% to sci
   let sciMult = 0;
   if (cityHasBuilding(city, 6)) sciMult++;
   if (cityHasBuilding(city, 12)) sciMult++;
@@ -493,14 +502,39 @@ function countSpecialists(city) {
 
 /**
  * Total building maintenance for a city (gold per turn).
+ * Port of FUN_004f00f0 (per-building upkeep) with special cases:
+ * - Barracks(2): Chieftain reduces cost by 1; Gunpowder(35) adds +1
+ * - Adam Smith's(wonder 17): eliminates upkeep for buildings with cost == 1 (not <= 1)
+ * - Fundamentalism: Temple(4), Colosseum(14), Cathedral(11) are free
  */
 export function calcBuildingMaintenance(city, gameState) {
   let total = 0;
   const smithFree = gameState && hasWonderEffect(gameState, city.owner, 17);
+  const govt = getGovernment(city, gameState);
+  const diffIdx = gameState?.difficulty
+    ? ['chieftain','warlord','prince','king','emperor','deity'].indexOf(gameState.difficulty)
+    : 0;
+  const civTechs = gameState?.civTechs?.[city.owner];
+  const hasGunpowder = civTechs ? civTechs.has(35) : false;
+
   if (city.buildings) {
     for (const id of city.buildings) {
-      const cost = IMPROVE_MAINTENANCE[id] || 0;
-      if (smithFree && cost <= 1) continue;
+      let cost = IMPROVE_MAINTENANCE[id] || 0;
+
+      // Barracks (building 2) special scaling
+      if (id === 2) {
+        if (diffIdx < 2 && cost !== 0) cost -= 1;
+        if (hasGunpowder) cost += 1;
+      }
+
+      // Adam Smith's Trading Co. (wonder 17): free upkeep for buildings with cost == 1
+      if (smithFree && cost === 1) cost = 0;
+
+      // Fundamentalism: Temple(4), Colosseum(14), Cathedral(11) are maintenance-free
+      if (cost !== 0 && govt === 'fundamentalism' && (id === 4 || id === 14 || id === 11)) {
+        cost = 0;
+      }
+
       total += cost;
     }
   }

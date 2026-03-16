@@ -578,7 +578,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
 
   // ── Domain filters ──
   // Landlocked cities skip naval units
-  if (domain === 1 && !cityCtx.isCoastal) return -1;
+  if (domain === 2 && !cityCtx.isCoastal) return -1;
   // Nuclear missiles (45): skip
   if (unitId === 42) return -1; // unit 42 = Carrier (0x2a in decompiled skip)
 
@@ -844,9 +844,8 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     if (atk === 0 && def === 0) return -1;
   }
 
-  // Sea domain: need coastal city AND adequate sea
-  if (domain === 2) {
-    // Air domain checks
+  // Air domain checks
+  if (domain === 1) {
     // Decompiled: check for nearby ocean tile for air domain (approximation)
   }
 
@@ -927,7 +926,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   }
 
   // Sea domain: double for sea units
-  if (domain === 1) {
+  if (domain === 2) {
     rawScore = rawScore << 1;
     // Airport bonus for sea units
     if (city.buildings && city.buildings.has(32)) {
@@ -985,7 +984,7 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   // ── Personality normalization (same pattern as buildings) ──
   if (rawScore >= 400) return -1;
 
-  const coastalPref = (role === 2 || domain === 1) ? 1 : 0;
+  const coastalPref = (role === 2 || domain === 2) ? 1 : 0;
   const coastalMatch = (cityCtx.isCoastal ? 1 : 0) === coastalPref ? 1 : 0;
   const coastMul = coastalMatch ? 10 : 20;
   rawScore = Math.floor(coastMul * rawScore * 3 / (expansionism + 3));
@@ -1807,7 +1806,7 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
       {
         let navalCount = 0;
         for (const u of gameState.units) {
-          if (u.owner === civSlot && u.gx >= 0 && UNIT_DOMAIN[u.type] === 1) navalCount++;
+          if (u.owner === civSlot && u.gx >= 0 && UNIT_DOMAIN[u.type] === 2) navalCount++;
         }
         rawScore -= Math.floor((navalCount + 2) / 4);
       }
@@ -1878,7 +1877,7 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
       {
         let airCount = 0;
         for (const u of gameState.units) {
-          if (u.owner === civSlot && u.gx >= 0 && UNIT_DOMAIN[u.type] === 2) airCount++;
+          if (u.owner === civSlot && u.gx >= 0 && UNIT_DOMAIN[u.type] === 1) airCount++;
         }
         rawScore -= Math.floor((airCount + 3) / 4);
       }

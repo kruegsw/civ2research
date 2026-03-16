@@ -223,16 +223,22 @@ UNIT_FUEL[44] = 1;  // Cruise Missile
 UNIT_FUEL[45] = 1;  // Nuclear Missile
 // Helicopter (29) has unlimited fuel (no entry)
 
-// Unit domain: 0=land, 1=sea, 2=air (indexed by unit type 0-51)
+// Domain constants — matches binary convention (0=ground, 1=air, 2=sea)
+export const DOMAIN_GROUND = 0;
+export const DOMAIN_AIR = 1;
+export const DOMAIN_SEA = 2;
+
+// Unit domain: 0=ground, 1=air, 2=sea (indexed by unit type 0-51)
+// Binary convention: matches decompiled Civ2 domain numbering
 export const UNIT_DOMAIN = [
-  0, 0, 0, 0, 0, 0, 0, 0,   // 0-7
-  0, 0, 0, 0, 0, 0, 0,       // 8-14
-  0, 0, 0, 0, 0, 0, 0, 0,    // 15-22
-  0, 0, 0, 0, 2, 2, 2,       // 23-29
-  2, 2, 1, 1, 1, 1, 1,       // 30-36
-  1, 1, 1, 1, 1, 1, 1,       // 37-43
-  2, 2, 0, 0, 0, 0, 0,       // 44-50
-  0,                          // 51
+  0, 0, 0, 0, 0, 0, 0, 0,   // 0-7:  Settlers..Musketeers (ground)
+  0, 0, 0, 0, 0, 0, 0,       // 8-14: Fanatics..Mech.Inf. (ground)
+  0, 0, 0, 0, 0, 0, 0, 0,    // 15-22: Horsemen..Armor (ground)
+  0, 0, 0, 0, 1, 1, 1,       // 23-29: Catapult..Helicopter (27-29=air)
+  1, 1, 2, 2, 2, 2, 2,       // 30-36: StealthF..Ironclad (30-31=air, 32-36=sea)
+  2, 2, 2, 2, 2, 2, 2,       // 37-43: Destroyer..Transport (sea)
+  1, 1, 0, 0, 0, 0, 0,       // 44-50: CruiseMsl..Explorer (44-45=air)
+  0,                          // 51: Extra Land (ground)
 ];
 
 // Unit flags (per RULES.TXT specification)
@@ -279,6 +285,11 @@ export const MOUNTED_UNITS = new Set([
 // Units with Aegis defense bonus (double defense vs air and missile attacks)
 // From RULES.TXT flags bit 14 (0x4000)
 export const UNIT_AEGIS_BONUS = new Set([39]); // AEGIS Cruiser (type 39)
+
+// Units with anti-air capability (flagsB & 0x20)
+// ×3 defense vs non-missile air, ×5 vs missile air
+// In standard RULES.TXT: AEGIS Cruiser (39) has this flag
+export const UNIT_ANTI_AIR = new Set([39]); // AEGIS Cruiser
 
 // Terrain transformation table for engineers (Transform order)
 // Index by terrain type → result terrain. -1 = cannot transform

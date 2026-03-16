@@ -133,7 +133,7 @@ export function findAvailableTransport(gx, gy, owner, units) {
   for (let i = 0; i < units.length; i++) {
     const u = units[i];
     if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
-    if (UNIT_DOMAIN[u.type] !== 1) continue;
+    if (UNIT_DOMAIN[u.type] !== 2) continue;
     const cap = UNIT_CARRY_CAP[u.type];
     if (!cap || cap <= 0) continue;
     // Count current cargo (land units at same tile owned by same civ)
@@ -212,9 +212,9 @@ export function resolveDirection(gx, gy, dir, mapBase) {
 export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   const domain = UNIT_DOMAIN[unitType] ?? 0;
 
-  // Sea units: 1 MP per tile
-  if (domain === 1) return MOVEMENT_MULTIPLIER;
   // Air units: 1 MP per tile
+  if (domain === 1) return MOVEMENT_MULTIPLIER;
+  // Sea units: 1 MP per tile
   if (domain === 2) return MOVEMENT_MULTIPLIER;
 
   const fromImp = mapBase.getImprovements(fromGx, fromGy);

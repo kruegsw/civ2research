@@ -92,18 +92,18 @@ export const UNIT_ATK_SFX = [
 
 // Unit type → death sound
 const UNIT_DOMAIN_IMPORTED = [
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   // 0-14 land
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             // 15-26 land
-  2, 2, 2, 2, 2,                                     // 27-31 air
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,               // 32-43 sea
-  2, 2,                                               // 44-45 air (missiles)
-  0, 0, 0, 0, 0, 0,                                   // 46-51 land
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   // 0-14 ground
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,             // 15-26 ground
+  1, 1, 1, 1, 1,                                     // 27-31 air
+  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,               // 32-43 sea
+  1, 1,                                               // 44-45 air (missiles)
+  0, 0, 0, 0, 0, 0,                                   // 46-51 ground
 ];
 
 export function getDeathSfx(unitType) {
   const domain = UNIT_DOMAIN_IMPORTED[unitType] ?? 0;
-  if (domain === 1) return 'BOATSINK';
-  if (domain === 2) return unitType === 29 ? 'DIVCRASH' : 'JETCRASH';
+  if (domain === 2) return 'BOATSINK';
+  if (domain === 1) return unitType === 29 ? 'DIVCRASH' : 'JETCRASH';
   if (unitType >= 22 && unitType <= 26) return 'LARGEXPL';
   if (unitType >= 10 && unitType <= 14) return 'MEDEXPL';
   return 'SMALLEXP';

@@ -1014,7 +1014,7 @@ export function showGoalPicker() {
 /** Show a Civilopedia-style detail dialog for a technology advance. */
 function _showGoalDetail(advId, returnTo) {
   const techName = ADVANCE_NAMES[advId] || `Advance ${advId}`;
-  const DOMAIN_LABELS = ['Land', 'Sea', 'Air'];
+  const DOMAIN_LABELS = ['Land', 'Air', 'Sea'];
 
   // ── Build reverse-lookup data ──
 
@@ -1771,7 +1771,7 @@ export function showCivpedia(initialTab) {
             `<div class="civpedia-stat"><span class="civpedia-stat-label">Moves</span><span class="civpedia-stat-value">${UNIT_MOVE_POINTS[i] ?? 1}</span></div>` +
             `<div class="civpedia-stat"><span class="civpedia-stat-label">HP</span><span class="civpedia-stat-value">${UNIT_HP[i] ?? 10}</span></div>` +
             `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${UNIT_COSTS[i] / 10}</span></div>` +
-            `<div class="civpedia-stat"><span class="civpedia-stat-label">Domain</span><span class="civpedia-stat-value">${['Land','Sea','Air'][UNIT_DOMAIN[i] ?? 0]}</span></div>`;
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Domain</span><span class="civpedia-stat-value">${['Land','Air','Sea'][UNIT_DOMAIN[i] ?? 0]}</span></div>`;
           page.appendChild(entry);
         });
       } else if (t.id === 'buildings') {

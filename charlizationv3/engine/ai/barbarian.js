@@ -287,7 +287,7 @@ function tryAttackAdjacent(unit, unitIndex, gameState, mapBase) {
     // against units on land, so respect domains)
     const terrain = mapBase.getTerrain(dest.gx, dest.gy);
     if (domain === 0 && terrain === 10) continue;
-    if (domain === 1 && terrain !== 10) continue;
+    if (domain === 2 && terrain !== 10) continue;
 
     // Check for enemy units on the tile
     for (const u of gameState.units) {
@@ -318,7 +318,7 @@ function tryRushAdjacentCity(unit, unitIndex, gameState, mapBase, unitBodyId, de
 
     const terrain = mapBase.getTerrain(dest.gx, dest.gy);
     if (domain === 0 && terrain === 10) continue;
-    if (domain === 1 && terrain !== 10) continue;
+    if (domain === 2 && terrain !== 10) continue;
 
     const city = cityAt(gameState, dest.gx, dest.gy);
     if (!city || city.owner === 0) continue;
@@ -482,11 +482,9 @@ function scoredMovement(unit, unitIndex, gameState, mapBase, unitBodyId, targetC
     const terrain = mapBase.getTerrain(dest.gx, dest.gy);
 
     // Domain passability: land units skip ocean, sea units skip land
-    // Domain 2 (air) = ocean tiles. The original code checks:
-    //   (UNIT_DOMAIN[type] == 2) == (terrain == 10)
-    // which means sea/air units must go to ocean, land units must go to land
+    // Domain 2 (sea) must go to ocean, domain 0 (ground) must go to land
     if (domain === 0 && terrain === 10) continue;
-    if (domain === 1 && terrain !== 10) continue;
+    if (domain === 2 && terrain !== 10) continue;
 
     let score = 0;
 

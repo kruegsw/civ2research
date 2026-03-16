@@ -681,7 +681,7 @@ function updateUnitInfoStrip() {
 
   // Domain indicator
   const domain = UNIT_DOMAIN[u.type] ?? 0;
-  const domainIcon = domain === 2 ? ' [Air]' : domain === 1 ? ' [Sea]' : '';
+  const domainIcon = domain === 1 ? ' [Air]' : domain === 2 ? ' [Sea]' : '';
 
   let html =
     `<span class="unit-strip-name">${name}${domainIcon}</span>` +

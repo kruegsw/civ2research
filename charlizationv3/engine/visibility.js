@@ -211,7 +211,7 @@ function isSubDetected(sub, civSlot, allUnits, mw, wraps, cities, hasSonar) {
     // Adjacent destroyer/AEGIS: always detect
     if (UNIT_SUB_DETECTOR.has(u.type)) return true;
     // Sonar tech: all naval units detect adjacent subs
-    if (hasSonar && (UNIT_DOMAIN[u.type] === 1)) return true;
+    if (hasSonar && (UNIT_DOMAIN[u.type] === 2)) return true;
   }
   return false;
 }

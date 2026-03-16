@@ -575,7 +575,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     }
 
     // Naval transport: sea unit with carry capacity auto-moves cargo
-    if (UNIT_DOMAIN[unit.type] === 1 && UNIT_CARRY_CAP[unit.type]) {
+    if (UNIT_DOMAIN[unit.type] === 2 && UNIT_CARRY_CAP[unit.type]) {
       for (let i = 0; i < state.units.length; i++) {
         const u = state.units[i];
         if (u.gx === prevGx && u.gy === prevGy && u.owner === unit.owner &&

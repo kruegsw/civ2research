@@ -135,28 +135,48 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
       events.push({ type: 'cityGrowth', cityName: city.name, cityIndex, civSlot: activeCiv, newSize });
     }
   } else if (newFood < 0) {
-    // ── Famine ──
+    // ── A.7: Famine (binary-faithful path) ──
     newFood = 0;
 
-    if (newSize > 1) {
-      newSize--;
-      // Remove a specialist first, then worst worker
-      if (newSpecs.length > 0) {
-        newSpecs = newSpecs.slice(0, -1);
-      } else if (newWorked.length > 0 && callbacks?.removeWorstWorker) {
-        newWorked = callbacks.removeWorstWorker(city, cityIndex, newWorked, state, mapBase);
+    // First check: disband a settler/engineer homed to this city instead of shrinking
+    let settlerDisbanded = false;
+    for (let ui = 0; ui < state.units.length; ui++) {
+      const u = state.units[ui];
+      if (u && u.owner === activeCiv && u.gx >= 0 &&
+          u.homeCityId === cityIndex && SETTLER_TYPES.has(u.type)) {
+        state.units = state.units.length ? [...state.units] : state.units;
+        state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
+        events.push({
+          type: 'unitDisbanded', unitType: u.type,
+          civSlot: activeCiv, cityName: city.name, reason: 'famine',
+        });
+        settlerDisbanded = true;
+        break;
       }
-      events.push({ type: 'famine', cityName: city.name, cityIndex, civSlot: activeCiv, newSize });
-    } else {
-      // City destroyed by famine (size 1 → 0)
-      newSize = 0;
-      cityDestroyed = true;
-      events.push({ type: 'cityDestroyed', cityName: city.name, cityIndex, civSlot: activeCiv, reason: 'famine' });
-      // Disband all units homed to this city
-      for (let ui = 0; ui < state.units.length; ui++) {
-        const u = state.units[ui];
-        if (u && u.homeCityIndex === cityIndex && u.gx >= 0) {
-          state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
+    }
+
+    if (!settlerDisbanded) {
+      if (newSize > 1) {
+        newSize--;
+        // Remove a specialist first, then worst worker
+        if (newSpecs.length > 0) {
+          newSpecs = newSpecs.slice(0, -1);
+        } else if (newWorked.length > 0 && callbacks?.removeWorstWorker) {
+          newWorked = callbacks.removeWorstWorker(city, cityIndex, newWorked, state, mapBase);
+        }
+        events.push({ type: 'famine', cityName: city.name, cityIndex, civSlot: activeCiv, newSize });
+      } else {
+        // City destroyed by famine (size 1 → 0)
+        newSize = 0;
+        cityDestroyed = true;
+        events.push({ type: 'cityDestroyed', cityName: city.name, cityIndex, civSlot: activeCiv, reason: 'famine' });
+        // Disband all units homed to this city
+        for (let ui = 0; ui < state.units.length; ui++) {
+          const u = state.units[ui];
+          if (u && u.homeCityId === cityIndex && u.gx >= 0) {
+            state.units = state.units.length ? [...state.units] : state.units;
+            state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
+          }
         }
       }
     }
@@ -290,8 +310,8 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         gx: city.gx, gy: city.gy,
         x: city.gx * 2 + (city.gy % 2), y: city.gy,
         veteran: (cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)
-          || (UNIT_DOMAIN[item.id] === 2 && cityHasBuilding(city, 32))
-          || (UNIT_DOMAIN[item.id] === 1 && cityHasBuilding(city, 34))) ? 1 : 0,
+          || (UNIT_DOMAIN[item.id] === 1 && cityHasBuilding(city, 32))
+          || (UNIT_DOMAIN[item.id] === 2 && cityHasBuilding(city, 34))) ? 1 : 0,
         movesRemain: 0,
         orders: 'none', movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
@@ -373,6 +393,19 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
               if (tile) tile.visibility |= bit;
             }
             events.push({ type: 'apolloProgram', civSlot: activeCiv });
+          }
+          // A.4: SETI Program (26): halve remaining research cost, -25 attitude
+          if (wi === 26) {
+            // Halve remaining research cost for current tech
+            if (state.civs?.[activeCiv]) {
+              const civ = state.civs[activeCiv];
+              const curCost = civ.researchCost || 0;
+              if (curCost > 0) {
+                state.civs = [...state.civs];
+                state.civs[activeCiv] = { ...civ, researchCost: curCost >> 1 };
+              }
+            }
+            events.push({ type: 'setiProgram', civSlot: activeCiv });
           }
         }
       }

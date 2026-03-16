@@ -207,7 +207,7 @@ export function processBarbNavalMaintenance(state, mapBase, turnNum) {
   for (let i = 0; i < state.units.length; i++) {
     const u = state.units[i];
     if (u.owner !== 0 || u.gx < 0) continue;
-    if (UNIT_DOMAIN[u.type] !== 1) continue; // sea units only
+    if (UNIT_DOMAIN[u.type] !== 2) continue; // sea units only
 
     // 30-turn fuel timeout
     if (u.barbSeaTurn != null && turnNum - u.barbSeaTurn >= 30) {
@@ -721,7 +721,7 @@ export function processBarbCampProduction(state, mapBase) {
 export function barbCanEnter(gx, gy, domain, state, mapBase) {
   const terrain = mapBase.getTerrain(gx, gy);
   if (domain === 0 && terrain === 10) return false;
-  if (domain === 1 && terrain !== 10) return false;
+  if (domain === 2 && terrain !== 10) return false;
   // Barbarian units are allowed to stack on the same tile (no stacking check)
   if (state.cities.some(c => c.gx === gx && c.gy === gy && c.owner === 0 && c.size > 0)) return false;
   return true;

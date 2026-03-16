@@ -45,7 +45,7 @@ export function canBuildUnitType(civSlot, cityIndex, unitTypeId, gameState, mapB
 
   // Domain restrictions for sea units: need coastal city
   const domain = UNIT_DOMAIN[unitTypeId] ?? 0;
-  if (domain === 1 && cityIndex >= 0) {
+  if (domain === 2 && cityIndex >= 0) {
     const city = gameState.cities[cityIndex];
     if (city && !isCityCoastal(city, mapBase)) return false;
   }

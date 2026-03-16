@@ -176,7 +176,7 @@ export function assessMilitaryPosture(civSlot, aiData, gameState) {
       const domain = UNIT_DOMAIN[utype];
       const role = UNIT_ROLE[utype];
 
-      if (domain === 2) {
+      if (domain === 1) {
         // Air domain → adds to naval score
         navalScore[c]++;
       } else if (role === 0 || role === 1) {

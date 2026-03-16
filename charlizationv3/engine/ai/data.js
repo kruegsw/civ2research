@@ -142,8 +142,8 @@ export function computeAiData(gameState, mapBase, civSlot) {
     if (u.type >= 0 && u.type < 62) {
       unitTypeCounts[own][u.type]++;
     }
-    // L.2: naval unit count (domain 1 = sea)
-    if ((UNIT_DOMAIN[u.type] ?? 0) === 1) {
+    // L.2: naval unit count (domain 2 = sea)
+    if ((UNIT_DOMAIN[u.type] ?? 0) === 2) {
       navalUnitCount[own]++;
     }
   }

@@ -92,7 +92,7 @@ function hasEnemyCombat(gx, gy, owner, units) {
 function hasFriendlyTransport(gx, gy, owner, units) {
   for (const u of units) {
     if (u.gx === gx && u.gy === gy && u.owner === owner && u.gx >= 0
-        && UNIT_DOMAIN[u.type] === 1 && (UNIT_CARRY_CAP[u.type] || 0) > 0) {
+        && UNIT_DOMAIN[u.type] === 2 && (UNIT_CARRY_CAP[u.type] || 0) > 0) {
       return true;
     }
   }
@@ -211,7 +211,7 @@ export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities
           // unless transport or city — skip if neither
           if (!canBoard && !isCoastalCity) continue;
         }
-      } else if (domain === 1) {
+      } else if (domain === 2) {
         // Sea unit: can only enter ocean tiles or cities on coast
         if (terrain !== 10) {
           if (!hasCity(nx, ny, mapBase)) continue;
@@ -329,7 +329,7 @@ export function calcGotoDirection(unit, targetGx, targetGy, mapBase, owner, unit
     if (domain === 0 && terrain === 10) {
       if (!units || !hasFriendlyTransport(nx, ny, owner, units)) continue;
     }
-    if (domain === 1 && terrain !== 10) {
+    if (domain === 2 && terrain !== 10) {
       if (!hasCity(nx, ny, mapBase)) continue;
     }
 

@@ -320,7 +320,7 @@ function phaseUnitClassification(gameState, mapBase, civSlot, strategy, debugLog
 
   // Classify units by role and domain
   const unitsByRole = new Map(); // role → [unitIndex]
-  const unitsByDomain = [[], [], []]; // domain 0=land, 1=sea, 2=air
+  const unitsByDomain = [[], [], []]; // domain 0=ground, 1=air, 2=sea
   const settlerUnits = [];
   let cancelledGotos = 0;
   let zocWaitCount = 0;
@@ -364,7 +364,7 @@ function phaseUnitClassification(gameState, mapBase, civSlot, strategy, debugLog
           if (domain === 0 && targetTerrain === 10) {
             // Land unit with ocean target — stale
             cancelledGotos++;
-          } else if (domain === 1 && targetTerrain !== 10) {
+          } else if (domain === 2 && targetTerrain !== 10) {
             // Sea unit with land target (OK for coastal cities, but check)
             const hasCity = gameState.cities.some(c =>
               c.gx === u.goToX && c.gy === u.goToY && c.size > 0);
@@ -829,7 +829,7 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
     const domain = UNIT_DOMAIN[u.type] ?? 0;
 
     // Skip air units from goal matching (they have their own AI)
-    if (domain === 2) continue;
+    if (domain === 1) continue;
 
     // Check if unit already has a goal assignment
     const currentGoal = goals.getGoalForUnit(i);
@@ -917,7 +917,7 @@ function _goalMatchesUnit(goalType, role, domain, atk, def) {
 
     case GOAL_NAVAL_ASSAULT:
       // Naval assault: sea combat (role 2) or sea transport (role 5)
-      return domain === 1;
+      return domain === 2;
 
     case GOAL_TRANSPORT:
       // Transport pickup: any land combat unit (they need to get to the pickup)

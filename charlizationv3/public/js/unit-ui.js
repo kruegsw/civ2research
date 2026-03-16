@@ -637,7 +637,7 @@ export function buildOrderMenuItems(unitIdx) {
   }
 
   // Rebase (air units only)
-  if ((UNIT_DOMAIN[u.type] ?? 0) === 2 && u.movesLeft > 0) {
+  if ((UNIT_DOMAIN[u.type] ?? 0) === 1 && u.movesLeft > 0) {
     items.push({ label: 'Rebase (L)', action: () => { selectUnit(unitIdx); enterRebaseMode(); } });
   }
 
@@ -799,7 +799,7 @@ export function doBombard(unitIndex, targetGx, targetGy) {
 export function enterRebaseMode() {
   if (S.mpSelectedUnit == null || !S.mpGameState) return;
   const u = S.mpGameState.units[S.mpSelectedUnit];
-  if (!u || (UNIT_DOMAIN[u.type] ?? 0) !== 2) return;
+  if (!u || (UNIT_DOMAIN[u.type] ?? 0) !== 1) return;
   S.rebaseMode = true;
   document.getElementById('map-container').style.cursor = 'crosshair';
 }

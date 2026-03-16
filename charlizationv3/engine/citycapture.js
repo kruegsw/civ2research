@@ -451,15 +451,25 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     }
   }
 
-  // ── Gold plunder ──
-  // From pseudocode: calc_city_value_for_capture
-  // Simplified: city.size * (random 3-10)
-  const plunderRoll = (rand() % 8) + 3; // 3 to 10
-  let plunder = city.size * plunderRoll;
-
-  // Clamp to old owner's treasury
+  // ── B.4: Gold plunder (binary-faithful formula) ──
+  // Binary ref: FUN_00579DBB — gold = (citySize * treasury) / (totalPop + 1)
+  // with overflow protection: if treasury >= 32000/citySize, reorder to avoid overflow
   const oldOwnerCiv = state.civs?.[oldOwner];
   const oldTreasury = oldOwnerCiv?.treasury || 0;
+  let totalPop = 0;
+  for (const c of state.cities) {
+    if (c.owner === oldOwner && c.size > 0) totalPop += c.size;
+  }
+  let plunder;
+  if (totalPop + 1 <= 0) {
+    plunder = 0;
+  } else if (oldTreasury >= Math.floor(32000 / Math.max(1, city.size))) {
+    // Overflow protection: reorder to (treasury / (totalPop+1)) * citySize
+    plunder = Math.floor(oldTreasury / (totalPop + 1)) * city.size;
+  } else {
+    plunder = Math.floor((city.size * oldTreasury) / (totalPop + 1));
+  }
+  if (plunder < 0) plunder = Math.min(32000, oldTreasury); // overflow cap
   plunder = Math.min(plunder, Math.max(0, oldTreasury));
 
   // Transfer gold
@@ -528,15 +538,20 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     buildings.delete(bid);
   }
 
-  // Random destruction of remaining buildings
-  // From pseudocode: alternating bit pattern (0xAA >> bit) applied per building byte
-  // Simplified: ~50% chance each (using seeded PRNG for determinism)
+  // B.5: Building destruction using 0xAA mask pattern
+  // Binary: applies mask 0xAA with random shift (0 or 1) to building bitfield
+  // This creates a deterministic alternating pattern of destruction
   if (!opts.skipBuildingDestruction && captureType === 0 && !wasOurs) {
-    const remaining = [...buildings];
+    const shift = rand() & 1; // 0 or 1
+    const mask = 0xAA >>> shift; // 0xAA=10101010 or 0x55=01010101
+    const remaining = [...buildings].filter(bid => bid >= 1 && bid <= 38);
     for (const bid of remaining) {
-      // Wonders (stored as buildings >= 39) are NEVER destroyed on capture
-      // Normal buildings (1-38) have ~50% destruction chance
-      if (bid < 39 && rand() % 2 === 0) {
+      // Check if the bit for this building is set in the mask
+      // Buildings map to bits within 5 bytes (40 bits total)
+      const byteIdx = Math.floor((bid - 1) / 8);
+      const bitIdx = (bid - 1) % 8;
+      const byteMask = (0xAA >>> shift) & 0xFF;
+      if (byteMask & (1 << bitIdx)) {
         buildings.delete(bid);
       }
     }
@@ -665,19 +680,29 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     const hasDemocracy = hasTech(state, oldOwner, TECH_DEMOCRACY);
 
     if ((hasCommunism || hasDemocracy) && hasGuerrilla) {
-      // Partisan count from pseudocode:
-      // base = ((city.size + 5) / 8), adjusted by government and other factors
-      let partisanCount = Math.max(1, Math.floor((city.size + 5) / 8));
+      // B.6: Partisan count formula (FUN_0057b5df lines 5103-5243)
+      // formula: ((citySize + 5) / 8) * (govtDiff + ageDiff + 1) / 2
+      const defGovt = govtIndex(getGovt(state, oldOwner));
+      const atkGovt = govtIndex(getGovt(state, capturerCivSlot));
+      const govtDiff = Math.abs(defGovt - atkGovt);
+      // Power rank approximation: use tech count as proxy
+      const defTechs = state.civTechCounts?.[oldOwner] || 0;
+      const atkTechs = state.civTechCounts?.[capturerCivSlot] || 0;
+      const ageDiff = Math.abs(defTechs - atkTechs) >> 3; // scale down
+      let partisanCount = Math.floor(((city.size + 5) / 8) * (govtDiff + ageDiff + 1) / 2);
 
-      // Adjust for communism ownership
-      if (hasCommunism && !hasTech(state, capturerCivSlot, TECH_COMMUNISM)) {
-        partisanCount *= 2;
-      } else {
+      // Conscription (tech 17) prerequisite: if no Conscription, count -= 1
+      if (!hasTech(state, oldOwner, 17)) partisanCount -= 1;
+
+      // Guerrilla Warfare interaction with attacker
+      if (hasTech(state, capturerCivSlot, TECH_GUERRILLA_WARFARE)) {
         partisanCount += 1;
+      } else {
+        partisanCount *= 2;
       }
 
-      // Cap to reasonable number
-      partisanCount = Math.min(partisanCount, 8);
+      // Minimum 1, cap at reasonable limit
+      partisanCount = Math.max(1, Math.min(partisanCount, 8));
 
       // Find suitable tiles for partisans (nearby land tiles with good defense)
       const partisanTiles = [];

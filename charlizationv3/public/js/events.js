@@ -311,7 +311,7 @@ export function initEvents(canvas, vp, fns) {
         let name = UNIT_NAMES[u.type] || `Unit#${u.type}`;
         // Show cargo count for transports/carriers
         if (UNIT_CARRY_CAP[u.type]) {
-          const carryDomain = (UNIT_DOMAIN[u.type] ?? 0) === 1 ? 0 : 0; // sea transports carry land (domain 0)
+          const carryDomain = (UNIT_DOMAIN[u.type] ?? 0) === 2 ? 0 : 0; // sea transports carry land (domain 0)
           const loaded = tileUnits.filter(lu => lu.owner === u.owner && (UNIT_DOMAIN[lu.type] ?? 0) === carryDomain && lu !== u).length;
           name += ` (${loaded}/${UNIT_CARRY_CAP[u.type]} units)`;
         }
