@@ -147,7 +147,7 @@ export const SOUND_NAMES = {
 
   // -- Missile unit sounds (IDs 0x65..0x84) --
   // These map to specific missile/nuke unit types in the sound editor
-  0x65: { name: 'MISSILE1', sourceAddr: '(computed)' },   // Cruise Missile (type 0x33)
+  0x65: { name: 'MISSILE1', sourceAddr: '(computed)' },   // Scenario unit slot 51 (type 0x33)
   0x66: { name: 'MISSILE2', sourceAddr: '(computed)' },   // type 0x34
   0x67: { name: 'MISSILE3', sourceAddr: '(computed)' },   // type 0x35
   0x7D: { name: 'NUKE1',    sourceAddr: '(computed)' },   // type 0x36
@@ -278,38 +278,38 @@ export const SOUND_TRIGGERS = {
     channel: 1, loop: false,
     sourceAddr: '0x00580000:645',
   },
-  combatMissileUnit: {
+  combatElephantUnit: {
     soundId: 0x19,
     wav: 'MISSILE.WAV',
-    condition: 'Missile unit type 0x11 (Cruise Missile)',
+    condition: 'Elephant unit type 0x11',
     channel: 1, loop: false,
     sourceAddr: '0x00580000:649',
   },
-  combatHelicopterUnit: {
+  combatMountedUnit: {
     soundId: 0x4A,
     wav: 'FEEDBK05.WAV',
-    condition: 'Helicopter-type units (types 0xF,0x10,0x13,0x12)',
+    condition: 'Mounted units (types 0xF=Horsemen, 0x10=Chariot, 0x13=Knights, 0x12=Crusaders)',
     channel: 1, loop: false,
     sourceAddr: '0x00580000:652',
   },
-  combatSubUnit: {
+  combatDragoonCavUnit: {
     soundId: 0x0C,
     wav: 'SUBMRINE.WAV',
-    condition: 'Submarine-type units (types 0x14,0x15)',
+    condition: 'Dragoons/Cavalry (types 0x14=Dragoons, 0x15=Cavalry)',
     channel: 1, loop: false,
     sourceAddr: '0x00580000:655',
   },
-  combatArmorUnit: {
+  combatMusketeerUnit: {
     soundId: 0x22,
     wav: 'MRKTPLCE.WAV',
-    condition: 'Armor/mech units (types 7,0xB,0xA,9)',
+    condition: 'Musketeer-era units (types 7=Musketeers, 0xB=Riflemen, 0xA=Alpine Troops, 9=Partisans)',
     channel: 1, loop: false,
     sourceAddr: '0x00580000:658',
   },
-  combatArtilleryUnit: {
+  combatFanaticsUnit: {
     soundId: 0x26,
     wav: 'BLDSPCSH.WAV',
-    condition: 'Artillery-type units (types 8,0xD,0xC,0xE)',
+    condition: 'Fanatics-era units (types 8=Fanatics, 0xD=Paratroopers, 0xC=Marines, 0xE=Mech. Infantry)',
     channel: 1, loop: false,
     sourceAddr: '0x00580000:661',
   },
@@ -320,10 +320,10 @@ export const SOUND_TRIGGERS = {
     channel: 1, loop: false,
     sourceAddr: '0x00580000:664',
   },
-  combatTankUnit: {
+  combatCatapultUnit: {
     soundId: 0x0A,
     wav: 'TANKMOTR.WAV',
-    condition: 'Tank-era cavalry units (type 0x17)',
+    condition: 'Catapult (type 0x17)',
     channel: 1, loop: false,
     sourceAddr: '0x00580000:667',
   },
@@ -897,26 +897,26 @@ export const UNIT_COMBAT_SOUNDS = {
   airStealth: { soundId: 0x4D, wav: 'FEEDBK08', condition: 'Air stealth unit' },
 
   // specific unit type mappings (from populate_slots switch @ 0x0058AFB6)
-  0x11: { soundId: 0x19, wav: 'MISSILE', note: 'Type 0x11 = Cruise Missile' },
-  0x0F: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Helicopter types (0xF,0x10,0x13,0x12)' },
-  0x10: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Helicopter types' },
-  0x12: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Helicopter types' },
-  0x13: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Helicopter types' },
-  0x14: { soundId: 0x0C, wav: 'SUBMRINE', note: 'Submarine types (0x14,0x15)' },
-  0x15: { soundId: 0x0C, wav: 'SUBMRINE', note: 'Submarine types' },
-  0x07: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Armor/mech (7,0xB,0xA,9)' },
-  0x09: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Armor/mech' },
-  0x0A: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Armor/mech' },
-  0x0B: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Armor/mech' },
-  0x08: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Artillery (8,0xD,0xC,0xE)' },
-  0x0C: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Artillery' },
-  0x0D: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Artillery' },
-  0x0E: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Artillery' },
-  0x17: { soundId: 0x0A, wav: 'TANKMOTR', note: 'Tank-era cavalry' },
+  0x11: { soundId: 0x19, wav: 'MISSILE', note: 'Type 0x11 = Elephant' },
+  0x0F: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Mounted units (0xF=Horsemen, 0x10=Chariot, 0x13=Knights, 0x12=Crusaders)' },
+  0x10: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Mounted: Chariot' },
+  0x12: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Mounted: Crusaders' },
+  0x13: { soundId: 0x4A, wav: 'FEEDBK05', note: 'Mounted: Knights' },
+  0x14: { soundId: 0x0C, wav: 'SUBMRINE', note: 'Dragoons/Cavalry (0x14=Dragoons, 0x15=Cavalry)' },
+  0x15: { soundId: 0x0C, wav: 'SUBMRINE', note: 'Cavalry' },
+  0x07: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Musketeer-era (7=Musketeers, 0xB=Riflemen, 0xA=Alpine Troops, 9=Partisans)' },
+  0x09: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Musketeer-era: Partisans' },
+  0x0A: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Musketeer-era: Alpine Troops' },
+  0x0B: { soundId: 0x22, wav: 'MRKTPLCE', note: 'Musketeer-era: Riflemen' },
+  0x08: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Fanatics-era (8=Fanatics, 0xD=Paratroopers, 0xC=Marines, 0xE=Mech. Infantry)' },
+  0x0C: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Marines' },
+  0x0D: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Paratroopers' },
+  0x0E: { soundId: 0x26, wav: 'BLDSPCSH', note: 'Mech. Infantry' },
+  0x17: { soundId: 0x0A, wav: 'TANKMOTR', note: 'Catapult' },
   defaultGround: { soundId: 0x49, wav: 'FEEDBK04', note: 'Unclassified ground units' },
 
   // Missile unit sounds (type 0x33..0x3D)
-  0x33: { soundId: 0x65, wav: 'MISSILE1', note: 'Cruise Missile variant' },
+  0x33: { soundId: 0x65, wav: 'MISSILE1', note: 'Scenario unit slot 51 (missile sound)' },
   0x34: { soundId: 0x66, wav: 'MISSILE2' },
   0x35: { soundId: 0x67, wav: 'MISSILE3' },
   0x36: { soundId: 0x7D, wav: 'NUKE1', note: 'Nuclear missile variants' },
@@ -951,10 +951,10 @@ export const PRODUCTION_COMPLETION_SOUNDS = {
   // --- Building-specific sounds (local_3c < 0, i.e. NOT a wonder) ---
   // Switch on local_24 (building ID from RULES.TXT @IMPROVE section):
   buildings: {
-    2:  { soundId: 0x05, note: 'Granary' },
+    2:  { soundId: 0x05, note: 'Barracks' },
     9:  { soundId: 0x04, note: 'Aqueduct' },
-    10: { soundId: 0x2F, note: 'SDI Defense' },
-    0xB: { soundId: 0x0B, note: 'Library' },
+    10: { soundId: 0x2F, note: 'Bank' },
+    0xB: { soundId: 0x0B, note: 'Cathedral' },
     0xC: { soundId: 0x37, note: 'University' },
     0x16: { soundId: 0x45, note: 'Stock Exchange' },
     default: { soundId: 0x02, note: 'All other buildings not in switch' },
@@ -976,14 +976,14 @@ export const PRODUCTION_COMPLETION_SOUNDS = {
   // --- City advisor notification sounds (from same function area) ---
   // Building type -> advisor portrait image index (local_4c), used for city notification:
   advisorPortraits: {
-    0x1B: { portraitId: 0xB8, note: 'Palace built -> specific advisor portrait' },
-    9:    { portraitId: 0xBA, note: 'Aqueduct/Sewer/Harbour/Airport advisor' },
-    7:    { portraitId: 0xBA, note: 'Harbour' },
-    8:    { portraitId: 0xBA, note: 'Airport' },
-    0xE:  { portraitId: 0xBA, note: 'Sewer System' },
-    0x12: { portraitId: 0xBA, note: 'Superhighways' },
-    0xC:  { portraitId: 0xBA, note: 'University' },
-    0x15: { portraitId: 0xB9, note: 'Nuclear Plant' },
+    0x1B: { portraitId: 0xB8, note: 'SAM Battery (27) -> specific advisor portrait' },
+    9:    { portraitId: 0xBA, note: 'Aqueduct (9)' },
+    7:    { portraitId: 0xBA, note: 'Courthouse (7)' },
+    8:    { portraitId: 0xBA, note: 'City Walls (8)' },
+    0xE:  { portraitId: 0xBA, note: 'Colosseum (14)' },
+    0x12: { portraitId: 0xBA, note: 'Recycling Center (18)' },
+    0xC:  { portraitId: 0xBA, note: 'University (12)' },
+    0x15: { portraitId: 0xB9, note: 'Nuclear Plant (21)' },
     default: { portraitId: 0xBB, note: 'Standard building advisor portrait' },
   },
 

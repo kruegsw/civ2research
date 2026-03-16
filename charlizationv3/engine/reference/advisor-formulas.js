@@ -270,9 +270,9 @@ export const FOREIGN_ADVISOR = {
   treatyFlags: {
     embassy:  0x80,   // @ FUN_004308ae: treaty byte
     hatred:   0x20,   // displayed as "Enraged"
-    war:      0x08,   // displayed as "War"
-    alliance: 0x04,   // displayed as "Alliance"
-    peace:    0x02,   // displayed as "Peace"
+    alliance: 0x08,   // displayed as "Alliance"
+    peace:    0x04,   // displayed as "Peace"
+    ceasefire:0x02,   // displayed as "Ceasefire"
   },
 
   visibilityRequirement: 'has_tech(WRITING) OR has_tech(ESPIONAGE) OR globalRevealFlag OR treaty_exists',
@@ -399,7 +399,7 @@ export const INTELLIGENCE_REPORT = {
       maxRecursionDepth: 101,
       cachingAddress: '@ DAT_00673b30 (100 entries)',
     },
-    espionageVisibility: 'treaty[civ][target] & 0x80 OR has_wonder(SETI=0x18) OR has_wonder(GREAT_LIBRARY=9)',
+    espionageVisibility: 'treaty[civ][target] & 0x80 OR has_wonder(UNITED_NATIONS=0x18) OR has_wonder(MARCO_POLOS_EMBASSY=9)',
     renderPosition: { x: 0x213, y: 0x89, rowSpacing: 0x1F },
   },
 
@@ -555,7 +555,7 @@ export const DIPLOMACY = {
     modifiers: [
       { condition: 'liveAttitudeScore < 25', effect: '+1 (threshold = 3)' },
       { condition: 'liveAttitudeScore > 60', effect: '-1' },
-      { condition: 'civ_has_active_wonder(civA, STATUE_OF_LIBERTY=0x14)', effect: '+1' },
+      { condition: 'civ_has_active_wonder(civA, EIFFEL_TOWER=0x14)', effect: '+1' },
       { condition: 'treaty[civA][civB] & 0x04 (embassy)', effect: '+1' },
       { condition: 'treaty[civA][civB] & 0x08 (alliance)', effect: '+2' },
       { condition: 'treaty[civA][civB].byte1 & 0x20 (hatred)', effect: 'override to 2' },
@@ -618,11 +618,11 @@ export const DIPLOMACY = {
       wonderId: 24,  // 0x18
       effect: 'Same as Great Wall',
     },
-    greatLibrary: {
+    marcoPolosEmbassy: {
       wonderId: 9,
       effect: 'techDemand += techDemand / 4 (25% bonus)',
     },
-    statueOfLiberty: {
+    eiffelTower: {
       wonderId: 0x14,  // 20
       effect: '+1 patience threshold',
     },
@@ -847,8 +847,8 @@ export const WONDER_QUERIES = {
   civHasActiveWonder: {
     // @ FUN_00453e51
     formula: 'get_wonder_city(wonderId) >= 0 AND city.owner == civId',
-    statueOfLibertyOverride: {
-      wonderId: 0x14,
+    eiffelTowerOverride: {
+      wonderId: 0x14,  // wonder 20 = Eiffel Tower
       condition: 'scenarioFlags & 0x80 AND scenarioBits & 1 => always false',
     },
   },
@@ -990,7 +990,7 @@ export const AI_MILITARY_ADVISOR = {
     cityExistsOffset: '@ DAT_0064f394[slot * 0x58] (nonzero = city exists)',
     maxCities: '@ DAT_00655b18',
     barracksBuilding: { id: 2, check: 'FUN_0043d20a(citySlot, 2)' },
-    cityWallsBuilding: { id: 1, check: 'FUN_0043d20a(citySlot, 1)' },
+    palaceBuilding: { id: 1, check: 'FUN_0043d20a(citySlot, 1)' },
   },
 
   unitLoop: {
@@ -1012,13 +1012,13 @@ export const AI_MILITARY_ADVISOR = {
   techComparison: {
     // Counts advanced-era techs per civ, compares to others
     militaryTechIds: [
-      { id: 0x4B, name: 'Rocketry', weight: 1 },
-      { id: 0x3B, name: 'Nuclear Fission', weight: 1 },
+      { id: 0x4B, name: 'Seafaring', weight: 1 },
+      { id: 0x3B, name: 'Nuclear Power', weight: 1 },
     ],
     unitTypeTableStride: 0x14,
     maxUnitTypes: 0x3E,  // 62 unit types
     unitPrereqTechOffset: '@ DAT_0064b1cb[type * 0x14]',
-    unitDomainOffset: '@ DAT_0064b1c1[type * 0x14]',   // domain: 0=land, 1=sea, 2=air
+    unitDomainOffset: '@ DAT_0064b1c1[type * 0x14]',   // domain: 0=ground, 1=air, 2=sea [binary convention; JS engine remaps to 0=land, 1=sea, 2=air]
     unitRoleOffset: '@ DAT_0064b1ca[type * 0x14]',
     // domain == 2 (air): count in aiStack_68 (offensive tech)
     // role == 0 or 1 (land/sea defense): count in aiStack_24 (defensive tech)
@@ -1031,8 +1031,8 @@ export const AI_MILITARY_ADVISOR = {
   },
 
   fortificationCheck: {
-    gunpowderTech: { id: 0x2F, name: 'Gunpowder' },
-    coastalDefenseBuilding: { id: 8, name: 'Coastal Fortress' },
+    masonryTech: { id: 0x2F, name: 'Masonry' },
+    cityWallsBuilding: { id: 8, name: 'City Walls' },
     greatWallWonder: { id: 6, name: 'Great Wall' },
     // Returns 5 if: has Gunpowder, has a city with walls, that city lacks Coastal Fortress,
     // and civ does NOT have Great Wall wonder
@@ -1084,8 +1084,8 @@ export const AI_SCIENCE_ADVISOR = {
   buildingTargets: {
     // Target building varies by era category
     byEra: [
-      { era: 0, buildingId: 6,    name: 'Marketplace' },
-      { era: 1, buildingId: 0x0C, name: 'Factory (12)' },
+      { era: 0, buildingId: 6,    name: 'Library' },
+      { era: 1, buildingId: 0x0C, name: 'University (12)' },
       { era: 2, buildingId: 0x1A, name: 'Research Lab (26)' },
     ],
     prerequisiteTechLookup: '@ DAT_0064c48e[buildingId * 8] (tech required)',
@@ -1096,16 +1096,16 @@ export const AI_SCIENCE_ADVISOR = {
     },
   },
 
-  electronicsTech: {
-    id: 0x54,  // Electronics
-    // Checks if civ has Electronics; if so, checks specialist count vs cities/4
+  tradeTech: {
+    id: 0x54,  // Trade
+    // Checks if civ has Trade; if so, checks specialist count vs cities/4
     specialistFields: {
       offset1: '@ DAT_0064c7a8[civ * 0x594]',  // specialist count byte 1
       offset2: '@ DAT_0064c7a9[civ * 0x594]',  // specialist count byte 2
     },
     cityPopAdjust: '@ DAT_0064f37a[slot * 0x58] (signed byte, added per city)',
     formula: 'totalSpecialists + sum(cityPopAdjust) < totalCities / 4',
-    result4: { value: 4, condition: 'Has Electronics but too few specialists' },
+    result4: { value: 4, condition: 'Has Trade but too few specialists' },
   },
 
   aliveCivsComparison: {
@@ -1128,9 +1128,9 @@ export const AI_DOMESTIC_ADVISOR = {
   eraTargets: {
     // Target building, building coverage divisor, and maintenance threshold by era
     byEra: [
-      { era: 0, targetBuilding: 0x14, targetBuildingId: 5, maintenanceDivisor: 2 },  // Temple, coverage/2
-      { era: 1, targetBuilding: 6,    targetBuildingId: 10, maintenanceDivisor: 3 },  // Marketplace, coverage/3
-      { era: 2, targetBuilding: 0x16, targetBuildingId: 0x16, maintenanceDivisor: 4 }, // Supermarket(22), coverage/4
+      { era: 0, targetBuilding: 0x14, targetBuildingId: 5, maintenanceDivisor: 2 },  // Marketplace (5), coverage/2
+      { era: 1, targetBuilding: 6,    targetBuildingId: 10, maintenanceDivisor: 3 },  // Bank (10), coverage/3
+      { era: 2, targetBuilding: 0x16, targetBuildingId: 0x16, maintenanceDivisor: 4 }, // Stock Exchange (22), coverage/4
     ],
   },
 
@@ -1153,9 +1153,9 @@ export const AI_DOMESTIC_ADVISOR = {
 
   techChecks: {
     targetTechByEra: {
-      0: { techId: 0x14, name: 'Construction' },    // ancient era target tech
+      0: { techId: 0x14, name: 'Currency' },          // ancient era target tech
       1: { techId: 6,    name: 'Currency' },         // middle era target tech
-      2: { techId: 0x16, name: 'Electronics' },      // modern era target tech
+      2: { techId: 0x16, name: 'Economics' },        // modern era target tech
     },
     result2: { value: 2, condition: 'Does not have era-appropriate tech' },
   },
@@ -1166,14 +1166,14 @@ export const AI_DOMESTIC_ADVISOR = {
     result3: { value: 3, condition: 'Target building coverage below era threshold' },
   },
 
-  electronicsTech: {
-    id: 0x54,  // Electronics
+  tradeTech: {
+    id: 0x54,  // Trade
     specialistCheck: {
       // Same specialist formula as science advisor
       formula: 'totalSpecialists < totalCities / 4',
-      result5: { value: 5, condition: 'Has Electronics but specialist count too low' },
+      result5: { value: 5, condition: 'Has Trade but specialist count too low' },
     },
-    result4: { value: 4, condition: 'Does not have Electronics' },
+    result4: { value: 4, condition: 'Does not have Trade' },
   },
 
   surplusCheck: {
@@ -1204,10 +1204,10 @@ export const AI_FOREIGN_ADVISOR_ASSESSMENT = {
   },
 
   intelligenceCheck: {
-    // Check if player civ can see other civs via embassy/SETI/Great Library
-    setiWonder: { id: 0x18, name: 'SETI Program' },
-    greatLibraryWonder: { id: 9, name: 'Great Library' },
-    // Has embassy (0x80 in DAT_0064c6c0 from human civ's row) OR has SETI OR has Great Library
+    // Check if player civ can see other civs via embassy/United Nations/Marco Polo's Embassy
+    unitedNationsWonder: { id: 0x18, name: 'United Nations' },
+    marcoPoloWonder: { id: 9, name: "Marco Polo's Embassy" },
+    // Has embassy (0x80 in DAT_0064c6c0 from human civ's row) OR has United Nations OR has Marco Polo's Embassy
     playerCivAddress: '@ DAT_006d1da0 (current human player civId)',
   },
 
@@ -1373,16 +1373,16 @@ export const AI_TECH_VALUATION = {
     // Only applied if civ is NOT in DAT_00655b0b alive bitmask (i.e., dead/AI check)
     wonderObsolescenceCheck: {
       // If wonder obsolescence tech matches this tech and civ already has the wonder: -2
-      // But if tech is "Philosophy" (0x25): skip the -2 penalty
+      // But if tech is "Industrialization" (0x25): skip the -2 penalty
       wonderObsoleteTable: '@ DAT_0064ba28[wonderId] (byte, tech that obsoletes)',
       totalWonders: 0x1C,  // 28 wonders
-      philosophyException: 0x25,  // Philosophy tech exempt from wonder obsolescence penalty
+      industrializationException: 0x25,  // Industrialization tech exempt from wonder obsolescence penalty
       ownedWonderPenalty: -2,
       // If wonder is built and owned by alive civ: +2
       rivalWonderBonus: 2,
     },
     eraCheckTech: {
-      techId: 0x20,  // Navigation
+      techId: 0x20,  // Fusion Power
       // If prerequisite: +2 bonus
       bonus: 2,
     },
@@ -1415,18 +1415,18 @@ export const AI_TECH_VALUATION = {
   },
 
   nuclearBonus: {
-    // If civ has style bonus >= 0, has Radio (0x55), and this tech is a prereq of 0x10 (Composites?):
-    radioTech: { id: 0x55, name: 'Radio' },
-    targetTech: { id: 0x10, name: 'Composites/Nuclear prerequisite chain' },
+    // If civ has style bonus >= 0, has University (0x55), and this tech is a prereq of 0x10 (Computers):
+    universityTech: { id: 0x55, name: 'University' },
+    targetTech: { id: 0x10, name: 'Computers' },
     prereqBonus: 'style_bonus + 1',
     exactMatchBonus: 2,  // if techId == 0x10: +2 extra
   },
 
-  fusionBonus: {
-    // If civ has tech 0x26 (Fusion Power?) and tech is prereq of 0x25 (some advanced tech):
-    fusionTech: { id: 0x26 },
+  inventionBonus: {
+    // If civ has tech 0x26 (Invention) and tech is prereq of 0x25 (Industrialization):
+    inventionTech: { id: 0x26 },
     targetTech: { id: 0x25 },
-    // Additional check: if civ also has tech 0x39: bonus = 2; else bonus = 1
+    // Additional check: if civ also has tech 0x39 (Navigation): bonus = 2; else bonus = 1
     advancedTechId: 0x39,
     bonusWithAdvanced: 2,
     bonusWithout: 1,
@@ -1437,12 +1437,12 @@ export const AI_TECH_VALUATION = {
   civStyleBonuses: {
     0: {  // Romans
       bonusTechs: [
-        { id: 0x27, bonus: 2, name: 'Engineering/Republic' },
+        { id: 0x27, bonus: 2, name: 'Iron Working' },
         { id: 0x08, bonus: 2, name: 'Bronze Working' },
         { id: 0x56, bonus: 2, name: 'Warrior Code' },
       ],
       penaltyTechs: [
-        { id: 0x37, bonus: -1, name: 'Mysticism' },
+        { id: 0x37, bonus: -1, name: 'Monotheism' },
       ],
     },
     1: {  // Babylonians
@@ -1452,22 +1452,22 @@ export const AI_TECH_VALUATION = {
     },
     2: {  // Germans
       bonusTechs: [
-        { id: 0x06, bonus: 1, name: 'Astronomy' },
-        { id: 0x52, bonus: 1, name: 'University' },
-        { id: 0x3C, bonus: 1, name: 'Theology' },
+        { id: 0x06, bonus: 1, name: 'Banking' },
+        { id: 0x52, bonus: 1, name: 'Theology' },
+        { id: 0x3C, bonus: 1, name: 'Philosophy' },
       ],
     },
     3: {  // Egyptians
       bonusTechs: [
-        { id: 0x2F, bonus: 2, name: 'Gunpowder' },
+        { id: 0x2F, bonus: 2, name: 'Masonry' },
       ],
     },
     4: {  // Americans
       bonusTechs: [
         { id: 0x15, bonus: 2, name: 'Democracy' },
-        { id: 0x49, bonus: 1, name: 'Industrialization' },
-        { id: 0x10, bonus: 1, name: 'Composites' },
-        { id: 0x2A, bonus: 1, name: 'Philosophy' },
+        { id: 0x49, bonus: 1, name: 'Rocketry' },
+        { id: 0x10, bonus: 1, name: 'Computers' },
+        { id: 0x2A, bonus: 1, name: 'Leadership' },
       ],
       penaltyTechs: [
         { id: 0x0F, bonus: -1, name: 'Communism' },
@@ -1475,77 +1475,77 @@ export const AI_TECH_VALUATION = {
     },
     5: {  // Greeks
       bonusTechs: [
-        { id: 0x40, bonus: 1, name: 'Seafaring' },
+        { id: 0x40, bonus: 1, name: 'Polytheism' },
         { id: 0x08, bonus: 1, name: 'Bronze Working' },
         { id: 0x01, bonus: 1, name: 'Alphabet' },
         { id: 0x2E, bonus: 1, name: 'Map Making' },
-        { id: 0x3C, bonus: 2, name: 'Theology' },
+        { id: 0x3C, bonus: 2, name: 'Philosophy' },
       ],
       penaltyTechs: [
-        { id: 0x37, bonus: -1, name: 'Mysticism' },
+        { id: 0x37, bonus: -1, name: 'Monotheism' },
       ],
     },
     6: {  // Indians
       bonusTechs: [
-        { id: 0x40, bonus: 2, name: 'Seafaring' },
-        { id: 0x24, bonus: 1, name: 'Mathematics' },
-        { id: 0x38, bonus: 1, name: 'Navigation' },
+        { id: 0x40, bonus: 2, name: 'Polytheism' },
+        { id: 0x24, bonus: 1, name: 'Horseback Riding' },
+        { id: 0x38, bonus: 1, name: 'Mysticism' },
         { id: 0x09, bonus: 1, name: 'Ceremonial Burial' },
       ],
       penaltyTechs: [
-        { id: 0x37, bonus: -1, name: 'Mysticism' },
+        { id: 0x37, bonus: -1, name: 'Monotheism' },
       ],
     },
     7: {  // Russians
       bonusTechs: [
         { id: 0x0F, bonus: 2, name: 'Communism' },
-        { id: 0x3C, bonus: 1, name: 'Theology' },
-        { id: 0x22, bonus: 1, name: 'Literacy' },
+        { id: 0x3C, bonus: 1, name: 'Philosophy' },
+        { id: 0x22, bonus: 1, name: 'Guerrilla Warfare' },
       ],
     },
     8: {  // Zulus
       bonusTechs: [
-        { id: 0x40, bonus: 2, name: 'Seafaring' },
-        { id: 0x24, bonus: 1, name: 'Mathematics' },
-        { id: 0x38, bonus: 1, name: 'Navigation' },
+        { id: 0x40, bonus: 2, name: 'Polytheism' },
+        { id: 0x24, bonus: 1, name: 'Horseback Riding' },
+        { id: 0x38, bonus: 1, name: 'Mysticism' },
         { id: 0x09, bonus: 1, name: 'Ceremonial Burial' },
       ],
       penaltyTechs: [
         { id: 0x08, bonus: -1, name: 'Bronze Working' },
-        { id: 0x27, bonus: -1, name: 'Engineering/Republic' },
+        { id: 0x27, bonus: -1, name: 'Iron Working' },
       ],
     },
     9: {  // French
       bonusTechs: [
-        { id: 0x2A, bonus: 1, name: 'Philosophy' },
-        { id: 0x51, bonus: 1, name: 'The Wheel' },
+        { id: 0x2A, bonus: 1, name: 'Leadership' },
+        { id: 0x51, bonus: 1, name: 'Tactics' },
         { id: 0x11, bonus: 1, name: 'Conscription' },
       ],
     },
     10: {  // Aztecs
       penaltyTechs: [
-        { id: 0x23, bonus: -2, name: 'Horseback Riding' },
-        { id: 0x37, bonus: -1, name: 'Mysticism' },
+        { id: 0x23, bonus: -2, name: 'Gunpowder' },
+        { id: 0x37, bonus: -1, name: 'Monotheism' },
       ],
     },
     11: {  // Chinese (0x0B)
       special: 'If unique continent (local_34 != 0): subtract continent bonus',
       bonusTechs: [
-        { id: 0x23, bonus: 1, name: 'Horseback Riding' },
+        { id: 0x23, bonus: 1, name: 'Gunpowder' },
       ],
     },
     12: {  // English (0x0C)
       special: 'If continent bonus > 0: +1 extra',
       bonusTechs: [
-        { id: 0x37, bonus: 1, name: 'Mysticism' },
+        { id: 0x37, bonus: 1, name: 'Monotheism' },
       ],
     },
     // 13 (0x0D): no bonuses
     // 14 (0x0E): no bonuses
     15: {  // Persians (0x0F)
       bonusTechs: [
-        { id: 0x4F, bonus: 1, name: 'Monotheism' },
-        { id: 0x34, bonus: 1, name: 'Feudalism' },
+        { id: 0x4F, bonus: 1, name: 'Steel' },
+        { id: 0x34, bonus: 1, name: 'Miniaturization' },
       ],
     },
     16: {  // Carthaginians (0x10)
@@ -1556,34 +1556,34 @@ export const AI_TECH_VALUATION = {
     17: {  // Arabs (0x11)
       special: 'If continent bonus > 1: +1 extra',
       bonusTechs: [
-        { id: 0x37, bonus: 1, name: 'Mysticism' },
+        { id: 0x37, bonus: 1, name: 'Monotheism' },
       ],
     },
     18: {  // Vikings (0x12)
       bonusTechs: [
-        { id: 0x40, bonus: 2, name: 'Seafaring' },
-        { id: 0x24, bonus: 1, name: 'Mathematics' },
-        { id: 0x38, bonus: 1, name: 'Navigation' },
+        { id: 0x40, bonus: 2, name: 'Polytheism' },
+        { id: 0x24, bonus: 1, name: 'Horseback Riding' },
+        { id: 0x38, bonus: 1, name: 'Mysticism' },
         { id: 0x09, bonus: 1, name: 'Ceremonial Burial' },
       ],
       penaltyTechs: [
-        { id: 0x37, bonus: -1, name: 'Mysticism' },
+        { id: 0x37, bonus: -1, name: 'Monotheism' },
       ],
     },
     19: {  // Spanish (0x13) — same as Vikings (0x12)
       bonusTechs: [
-        { id: 0x40, bonus: 2, name: 'Seafaring' },
-        { id: 0x24, bonus: 1, name: 'Mathematics' },
-        { id: 0x38, bonus: 1, name: 'Navigation' },
+        { id: 0x40, bonus: 2, name: 'Polytheism' },
+        { id: 0x24, bonus: 1, name: 'Horseback Riding' },
+        { id: 0x38, bonus: 1, name: 'Mysticism' },
         { id: 0x09, bonus: 1, name: 'Ceremonial Burial' },
       ],
       penaltyTechs: [
-        { id: 0x37, bonus: -1, name: 'Mysticism' },
+        { id: 0x37, bonus: -1, name: 'Monotheism' },
       ],
     },
     20: {  // Celts (0x14)
       bonusTechs: [
-        { id: 0x24, bonus: 2, name: 'Mathematics' },
+        { id: 0x24, bonus: 2, name: 'Horseback Riding' },
       ],
     },
   },
@@ -1612,24 +1612,24 @@ export const AI_TECH_VALUATION = {
 // Binary ref: FUN_004be6ba @ block_004B0000.c (970 bytes)
 // ============================================================================
 
-export const LEONARDOS_WORKSHOP = {
+export const DA_VINCIS_WORKSHOP = {
   // Triggered per civ: upgrades all units when prerequisite tech is researched
-  wonderId: 0x0E,  // Leonardo's Workshop
+  wonderId: 0x0E,  // Da Vinci's Workshop (wonder 14)
   wonderCheck: 'FUN_00453e51(civId, 0x0E)',
 
   unitTypeTable: {
     stride: 0x14,        // 20 bytes per unit type entry
     maxTypes: 0x3E,      // 62 unit types
     obsoleteTechOffset: '@ DAT_0064b1c0[type * 0x14] (signed byte, tech that obsoletes)',
-    domainOffset: '@ DAT_0064b1ca[type * 0x14]',   // 0=land, 1=sea
+    domainOffset: '@ DAT_0064b1ca[type * 0x14]',   // NOTE: this is actually the ROLE field (offset 0x12), not domain. Domain is at DAT_0064b1c1 (offset 0x09).
     attackOffset: '@ DAT_0064b1c5[type * 0x14]',
     defenseOffset: '@ DAT_0064b1c9[type * 0x14]',
     prereqTechOffset: '@ DAT_0064b1cb[type * 0x14]',
   },
 
   advancedUpgrade: {
-    // If unit role == 1 (sea domain) and attack < threshold and has Horseback Riding: upgrade to land unit 0x23
-    techId: 0x23,        // Horseback Riding prerequisite for advanced upgrade
+    // If unit role == 1 (sea domain) and attack < threshold and has Gunpowder: upgrade to land unit 0x23
+    techId: 0x23,        // Gunpowder prerequisite for advanced upgrade
     attackThreshold: '@ DAT_0064b251 (global attack threshold)',
     condition: 'role == 1 AND attack < threshold AND civ_has_tech(civId, 0x23)',
     upgradeTo: 0x23,     // land unit type for advanced upgrade
@@ -1660,7 +1660,7 @@ export const TECH_GOVERNMENT_REVOLUTION = {
 
   monarchyTech: {
     techId: 0x36,  // Monarchy tech
-    targetGovernment: 1,  // Monarchy
+    targetGovernment: 1,  // Despotism (gov 0=Anarchy, 1=Despotism, 2=Monarchy)
     condition: 'current government == Despotism(1)',
     dialog: 'AUTOMONARCHY',
     startRevDialog: 'STARTREV',
@@ -1726,8 +1726,8 @@ export const GOLDEN_AGE = {
   eventName: 'GOLDENAGE',
   citySelection: {
     algorithm: 'Iterate all cities owned by civ; for each city: weight = city.size',
-    cityWallsBonus: {
-      buildingId: 1,  // City Walls
+    palaceBonus: {
+      buildingId: 1,  // Palace
       effect: 'weight = size * 2 (doubles chance)',
     },
     randomSelection: 'rand() % weight; highest (random+1) wins',
@@ -1776,9 +1776,9 @@ export const TECH_ACQUISITION = {
 
   discoveryNotification: {
     // Shows discovery dialog to human player (if applicable)
-    // Checks embassy, SETI (0x18), Great Library (9), alliance (0x08), and reveal flag
-    setiWonder: 0x18,
-    greatLibraryWonder: 9,
+    // Checks embassy, United Nations (0x18), Marco Polo's Embassy (9), alliance (0x08), and reveal flag
+    unitedNationsWonder: 0x18,
+    marcoPoloWonder: 9,
     embassyFlag: 0x80,
     allianceFlag: 0x08,
     revealFlag: '@ DAT_00655b07',
@@ -1815,10 +1815,10 @@ export const TECH_ACQUISITION = {
   },
 
   goldenAgeTrigger: {
-    // If this is the first-in-world discovery (local_1c != 0) and tech 0x3C (Theology):
-    techId: 0x3C,  // Theology triggers golden age
+    // If this is the first-in-world discovery (local_1c != 0) and tech 0x3C (Philosophy):
+    techId: 0x3C,  // Philosophy triggers golden age
     civAttribsFlagSet: 0x20,  // DAT_0064c6a0 |= 0x20
-    condition: 'firstDiscoverer AND tech == 0x3C AND (not loading AND (not self-discovery OR sourceCiv != 0))',
+    condition: 'firstDiscoverer AND tech == 0x3C (Philosophy) AND (not loading AND (not self-discovery OR sourceCiv != 0))',
     function: 'FUN_004bee56(civId)',
   },
 
@@ -1882,8 +1882,8 @@ export const UNIT_BUILDABILITY = {
     techDisabledValue: -2,  // prereq == -2 means unit is disabled
   },
 
-  horsbackRidingCheck: {
-    // If domain == 1 (sea) and attack < threshold and civ has Horseback Riding (0x23):
+  gunpowderCheck: {
+    // If domain == 1 (sea) and attack < threshold and civ has Gunpowder (0x23):
     // Then the obsolete version of this sea unit exists, so it can't be built
     techId: 0x23,
     attackThreshold: '@ DAT_0064b251',
@@ -1932,7 +1932,7 @@ export const BEST_CITY_SELECTION = {
   // Finds the "best" city for a civ (highest score) for military display purposes
   cityScoring: {
     baseScore: 'city.size (DAT_0064f349[slot * 0x58])',
-    cityWallsBonus: 200,    // +200 if city has City Walls (building 1)
+    palaceBonus: 200,       // +200 if city has Palace (building 1)
     capitalBonus: 100,       // +100 if city.production == -1 (capital marker at DAT_0064f379)
   },
   highResDisplay: {
@@ -1963,8 +1963,8 @@ export const COMBAT_RESOLUTION = {
       formula: 'if param_3 != 0: attack = attack * min(movesLeft, maxMoves) / maxMoves',
       maxMovesAddr: 'DAT_0064bcc8',  // cosmic parameter: base movement rate
     },
-    // Attacker type 0x09 (Diplomat) vs defender with 0 attack: attack *= 8
-    diplomatVsZeroAttack: {
+    // Attacker type 0x09 (Partisans) vs defender with 0 attack: attack *= 8
+    partisansVsZeroAttack: {
       attackerType: 0x09,
       multiplier: 8,
       condition: 'attacker.type == 0x09 AND defender.attack == 0',
@@ -1975,6 +1975,17 @@ export const COMBAT_RESOLUTION = {
       humanDefender: 'attack /= 2',
       aiDefender: 'attack = (difficulty + 1) * attack / 4',
       sourceAddr: '0x00580341+line213',
+    },
+    // Barbarian attacker vs city with Palace: attack >>= 1 (additional halving)
+    // C (line 225-228): if (thunk_FUN_0043d20a(city, 1) != 0) local_a0 = local_a0 >> 1
+    // This is SEPARATE from the double-roll mechanic (bVar18) — the Palace halves
+    // the barbarian's attack power outright, AND enables the double-roll re-check.
+    barbarianPalaceHalving: {
+      buildingId: 1,            // has_building(city, 1) = Palace
+      effect: 'attack >>= 1 (barbarian attack halved)',
+      condition: 'attacker civId == 0 (barbarian) AND defender city has Palace',
+      note: 'Applies in addition to the basic barbarian penalty above and the double-roll mechanic',
+      sourceAddr: '0x00580341+line225',
     },
     // Sneak attack bonus: attack *= 2
     sneakAttackBonus: {
@@ -2423,10 +2434,10 @@ export const TECH_COST = {
 
 export const ESPIONAGE = {
   // Master espionage function. param_1 = spy unit index, param_2 = target city index.
-  // Spy unit type = 0x2F (47), Diplomat unit type = 0x09
+  // Spy unit type = 0x2F (47), Partisans unit type = 0x09
 
   spyUnitType: 0x2F,       // unit type for Spy
-  diplomatUnitType: 0x09,  // unit type for Diplomat (no spy missions, only diplomat ones)
+  partisansUnitType: 0x09,  // unit type for Partisans (0x09) — checked in espionage code
 
   missionTypes: {
     // 8 espionage missions (local_3ac values), selected from SPYOPTIONS dialog
@@ -2448,7 +2459,7 @@ export const ESPIONAGE = {
       techSearch: {
         algorithm: 'random start (rand()%100), scan all 100 techs for one target has but spy civ lacks',
         maxTechs: 100,
-        priorityTechs: ['DAT_0064c5a6', 'DAT_0064c5ae', 'DAT_0064c5b6', '0x20 (Navigation)'],
+        priorityTechs: ['DAT_0064c5a6', 'DAT_0064c5ae', 'DAT_0064c5b6', '0x20 (Fusion Power)'],
         note: 'Priority techs break the search early',
       },
       specificStealDialog: 'STEALSPECIFIC',
@@ -2473,23 +2484,23 @@ export const ESPIONAGE = {
       //    scans buildings 1..0x26, shows list excluding Palace (id 1)
       specificSabotageDialog: 'SABOTAGESPECIFIC',
       sabotageHardDialog: 'SABOTAGEHARD',
-      sabotageNoDialog: 'SABOTAGENO',       // shown when Palace (0x11) is selected but blocked
+      sabotageNoDialog: 'SABOTAGENO',       // shown when SDI Defense (0x11=17) is selected but blocked
       sabotageTwoDialog: 'SABOTAGETWO',     // shown when production reset instead of building
-      // C (line 2727-2738): extra detection checks for City Walls (building 1) or specific buildings
-      //    City Walls or building 8: requires SABOTAGEHARD confirmation + extra detection roll
-      //    Building 0x11: 2 extra detection checks
+      // C (line 2727-2738): extra detection checks for Palace (building 1) or specific buildings
+      //    Palace (1) or City Walls (8): requires SABOTAGEHARD confirmation + extra detection roll
+      //    SDI Defense (0x11=17): 2 extra detection checks
       detectionChecks: {
         base: 1,
-        withWalls: 2,       // city has walls → extra check
+        withPalace: 2,      // city has Palace (building 1) → extra check
         building8: 2,       // City Walls target → extra check + SABOTAGEHARD dialog
-        building0x11: 3,    // 2 extra checks for this building type
+        building0x11: 3,    // 2 extra checks for SDI Defense (17)
       },
       // C (line 2787): thunk_FUN_0043d289(param_2, local_74, 0) — destroy selected building
       destroyBuildingFn: 'FUN_0043d289(cityIndex, buildingId, 0)',
       // C (line 2772-2773): if random sabotage (local_74 == 0): reset production shields to 0
       productionResetEffect: 'city.shields = 0 via DAT_0064f35c + param_2 * 0x58',
       mpMessage: 0x5A,  // sent to target for random sabotage
-      soundEffect: { withStealth: 0x27, normal: 0x44 },  // tech 0x23 (Stealth) → sound 0x27
+      soundEffect: { withStealth: 0x27, normal: 0x44 },  // tech 0x23 (Gunpowder) → sound 0x27
       sourceAddr: '0x004c6bf5+case3',
     },
     4: {
@@ -2501,7 +2512,7 @@ export const ESPIONAGE = {
       name: 'Plant Nuclear Device',
       requirements: [
         'spy must be Spy type',
-        'civ must have tech 0x49 (Industrialization)',
+        'civ must have tech 0x49 (Rocketry)',
         'civ must have tech 0x3A (Nuclear Fission)',
         'Manhattan Project wonder (0x17) must exist (not == -1)',
       ],
@@ -2509,7 +2520,7 @@ export const ESPIONAGE = {
     },
     6: {
       name: 'Poison Water Supply',
-      condition: 'city must NOT have City Walls (building 1)',
+      condition: 'city must NOT have Palace (building 1)',
       // C (case 4, lines 2436-2466):
       // if (city.size < 2) → destroy city (zero population)
       // else → city.size -= 1
@@ -2550,8 +2561,8 @@ export const ESPIONAGE = {
       extraCondition: 'treaty & 0x2010 != 0 AND target government != Democracy(6)',
       mission: 6,  // poison water
     },
-    wallsOverride: {
-      condition: 'city has walls (building 1) AND spy is diplomat (not spy type) AND treaty & 0x0E != 0',
+    palaceOverride: {
+      condition: 'city has Palace (building 1) AND spy is diplomat (not spy type) AND treaty & 0x0E != 0',
       mission: 0,  // establish embassy (fallback)
     },
     sourceAddr: '0x004c6bf5+line2249',
@@ -2569,11 +2580,24 @@ export const ESPIONAGE = {
     // C: local_7c = thunk_FUN_004c65d2(local_80, spyX, spyY)
     distanceToWalledCity: {
       helperFn: 'FUN_004c65d2',
-      meaning: 'Manhattan distance to nearest city with Walls (building 1) owned by target civ',
+      meaning: 'Manhattan distance to nearest city with Palace (building 1) owned by target civ',
       maxDefault: 0x10,  // 16 — returned if no walled city found
     },
 
-    // Step 3: Communism distance cap
+    // Step 2b: Close-proximity block — distance < 2 prevents incite for human players
+    // C (line 2532-2535): if (local_7c < 2) {
+    //   if (human) break;    // blocked entirely — cannot incite cities adjacent to walled cities
+    //   else local_3ac = 2;  // AI gets cost doubled instead of blocked
+    // }
+    closeProximityBlock: {
+      distanceThreshold: 2,
+      humanEffect: 'incite revolt is blocked (break) — cannot incite when distance to nearest walled city < 2',
+      aiEffect: 'local_3ac = 2 (cost multiplier doubled instead of blocked)',
+      meaning: 'Cities very close to a walled city (distance < 2) cannot be incited by human players',
+      sourceAddr: '0x004c6bf5+line2532',
+    },
+
+    // Step 3: Communism distance cap (checks TARGET civ's government, unlike bribery which checks briber)
     // C: if ((&DAT_0064c6b5)[local_80 * 0x594] == '\x03') && (9 < local_7c)) local_7c = 10
     communismDistanceCap: { govtId: 3, threshold: 9, cap: 10,
       meaning: 'Under Communism, distance to walled city is capped at 10 (if > 9)' },
@@ -2761,14 +2785,14 @@ export const ESPIONAGE = {
 };
 
 // ============================================================================
-// === DISTANCE TO NEAREST WALLED CITY (Helper) ===
+// === DISTANCE TO NEAREST PALACE CITY (Helper) ===
 // Binary ref: FUN_004c65d2 @ block_004C0000.c (232 bytes), lines 1990-2013
 // ============================================================================
 
 export const DISTANCE_TO_WALLED_CITY = {
   // Used by incite revolt cost formula (case 6) and AI espionage evaluation
-  // Scans all cities belonging to param_1 (civ) for Walls (building 1)
-  // Returns Manhattan distance to nearest walled city, or 0x10 (16) if none found
+  // Scans all cities belonging to param_1 (civ) for Palace (building 1)
+  // Returns Manhattan distance to nearest palace city (capital), or 0x10 (16) if none found
 
   // C: local_8 = 0x10;  // default max distance
   defaultDistance: 0x10,  // 16
@@ -2777,7 +2801,7 @@ export const DISTANCE_TO_WALLED_CITY = {
   //   C: if (city.active != 0) AND (city.owner == param_1) AND (has_building(city, 1))
   //      distance = FUN_005ae31d(cityX, cityY, spyX, spyY)
   //      if (distance < local_8) local_8 = distance
-  wallsBuildingId: 1,
+  palaceBuildingId: 1,
   cityOwnerAddr: 'DAT_0064F348 + cityIndex * 0x58',
   cityActiveAddr: 'DAT_0064F394 + cityIndex * 0x58',
   distanceFn: 'FUN_005ae31d (Manhattan distance on wrapped map)',
@@ -2818,10 +2842,14 @@ export const UNIT_BRIBERY = {
   treasuryOffset: 750,
   distanceDivisorOffset: 2,
 
-  // Communism distance cap (same as incite revolt)
-  // C: if ((&DAT_0064c6b5)[local_24 * 0x594] == '\x03') && (9 < local_7c)) local_7c = 10
+  // Communism distance cap — checks the BRIBER's government (spy's civ), not the target's
+  // C (line 2953): if ((&DAT_0064c6b5)[param_2 * 0x594] == '\x03') && (9 < local_c)) local_c = 10
+  // param_2 = spy's civ (the one performing the bribery)
+  // NOTE: In incite revolt (case 6), the Communism check is on the TARGET civ (local_80).
+  //       In bribery, it is on the BRIBER's civ (param_2). These differ.
   communismDistanceCap: { govtId: 3, threshold: 9, cap: 10,
-    meaning: 'Under Communism, distance to nearest walled city capped at 10 if > 9' },
+    appliesTo: 'briber (spy civ) government — NOT the target civ',
+    meaning: 'Under Communism (briber\'s govt), distance to nearest walled city capped at 10 if > 9' },
 
   // Role discount: non-settler roles get half cost
   // C: if ((&DAT_0064b1ca)[unitType * 0x14] != '\x05') local_18 /= 2
@@ -2968,10 +2996,10 @@ export const UNIT_MOVEMENT = {
   // @ FUN_005b2a39 (516 bytes)
   totalMP: {
     seaDomain: 2,                  // domain == 2 triggers wonder checks
-    lighthouseWonderId: 0x3B,      // adds 1x MP_PER_TURN
-    magellanWonderId: 0x0C,        // adds 2x MP_PER_TURN
-    nuclearPowerWonderId: 3,       // adds 1x MP_PER_TURN if unit flag 0x20 NOT set
-    nuclearPowerExcludeFlag: 0x20, // DAT_0064B1BC[type*0x14] & 0x20 → skip bonus
+    unknownId0x3B: 0x3B,            // adds 1x MP_PER_TURN (0x3B=59, NOT a valid wonder 0-27; suspect misread constant)
+    magellanWonderId: 0x0C,        // wonder 12 = Magellan's Expedition, adds 2x MP_PER_TURN
+    lighthouseWonderId: 3,         // wonder 3 = Lighthouse, adds 1x MP_PER_TURN if unit flag 0x20 NOT set
+    lighthouseExcludeFlag: 0x20,   // DAT_0064B1BC[type*0x14] & 0x20 → skip bonus
     mpPerTurnGlobal: 'DAT_0064BCC8',
 
     // Simplified combat fractional MP:
@@ -3398,14 +3426,14 @@ export const CITY_CAPTURE = {
       sizeMultiplier: 3,
       distancePenalty: 1,
       stackMultiplier: 4,
-      // Bonuses: palace wonder (0x1B) → *3/2, city walls (8) or Great Wall (6) → *2
-      palaceWonderId: 0x1B,
-      palaceBonus: '3/2',            // local_14 = (local_14 * 3) / 2
+      // Bonuses: Cure for Cancer wonder (0x1B=27) → *3/2, City Walls (8) or Great Wall (6) → *2
+      cureForCancerWonderId: 0x1B,
+      cureForCancerBonus: '3/2',     // local_14 = (local_14 * 3) / 2
       cityWallsBuildingId: 8,
       greatWallWonderId: 6,
       wallsBonus: 2,                 // local_14 <<= 1
       // Coastal bonus: if same continent → /2 penalty for diff continent
-      coastalWonderId: 0x11,         // Coastal Fortress? bonus *3
+      adamSmithWonderId: 0x11,       // wonder 17 = Adam Smith's Trading Co., bonus *3
       coastalBonus: 3,
       continentPenalty: 2,           // diff continent → /2
 
@@ -3433,8 +3461,8 @@ export const CITY_CAPTURE = {
       wonderCityOffset: 0x27,        // wonder ID + 0x27 = improvement slot
       // Wonders that DON'T show normal capture text: 7..19 skip, except 0x13, 0x14, >0x16
       normalCaptureExclusions: 'local_8c < 7 || local_8c == 0x13 || local_8c == 0x14 || 0x16 < local_8c',
-      // Special: wonder 0x14 (Marco Polo) triggers embassy update
-      marcoPoloWonderId: 0x14,
+      // Special: wonder 0x14 (Eiffel Tower) triggers embassy update
+      eiffelTowerWonderId: 0x14,
       // Sprite ID for wonder header: 0xF3
       wonderHeaderSpriteId: 0xF3,
       dialogKeys: {
@@ -3506,8 +3534,8 @@ export const CITY_CAPTURE = {
     // Defender unit disbanding
     unitDisband: {
       // Units homed to captured city (home_city == param_1) and owned by defender
-      // Diplomats (type 9) have home city set to 0xFF instead of disbanded
-      diplomatTypeId: 9,
+      // Partisans (type 9) have home city set to 0xFF instead of disbanded
+      partisansTypeId: 9,
       noHomeCityValue: 0xFF,
       // Non-combat air units in city → try re-home to nearby city
       // Otherwise: disband via FUN_005b6042
@@ -3527,11 +3555,11 @@ export const CITY_CAPTURE = {
       // Triggered after kill_civ check, if:
       //   defender govt is Communist (3) or Democracy (6)
       //   OR DAT_00655b40 != 0 (scenario override)
-      //   OR defender has tech 0x0F (Guerrilla Warfare)
+      //   OR defender has tech 0x0F (Communism)
       governmentCommunism: 3,
       governmentDemocracy: 6,
       scenarioPartisanFlag: 'DAT_00655b40',
-      guerrillaWarfareTechId: 0x0F,
+      communismTechId: 0x0F,
 
       // Partisan count formula:
       //   govtDiff = abs(defender.govt - attacker.govt)
@@ -3543,13 +3571,13 @@ export const CITY_CAPTURE = {
       subvertHalving: true,          // param_3 != 0 → count /= 2
 
       // Tech prerequisites for partisans to appear:
-      //   Must have tech 0x11 (Communism) — if not, count -= 1
+      //   Must have tech 0x11 (Conscription) — if not, count -= 1
       //   Must have tech 0x22 (Guerrilla Warfare) — if not, need 0x0F AND 0x23
       //   If attacker also has 0x22: count += 1; else: count *= 2
-      techCommunism: 0x11,
+      techConscription: 0x11,
       techGuerrillaWarfare: 0x22,
-      techGunpowder: 0x0F,
-      techCombinedArms: 0x23,
+      techCommunism: 0x0F,
+      techGunpowder: 0x23,
 
       // Partisan unit type: 9 (Partisan)
       unitType: 9,                   // FUN_005b3d06(9, ...)
@@ -3655,8 +3683,8 @@ export const CITY_CAPTURE = {
     capturedByOffset: 'DAT_0064f34a', // city + 0x02 (byte)
     capturedTurnOffset: 'DAT_0064f34b', // city + 0x03 (byte)
 
-    // Marco Polo wonder (0x0E) triggers embassy discovery
-    marcoPoloId: 0x0E,
+    // Da Vinci's Workshop wonder (0x0E=14) triggers embassy discovery
+    daVinciWorkshopId: 0x0E,
 
     // --- Sprite resource table offsets (DAT_00628420 + offset) ---
     // @ FUN_0057b5df: thunk_FUN_004271e8 text sprites for capture popup
@@ -4000,11 +4028,11 @@ export const WONDER_COMPLETION_TRIGGERS = {
     sourceAddr: '0x004EC3FE+line5137',
   },
 
-  // --- Leonardo Workshop (wonder slot 0x0E = wonder 14) ---
+  // --- Da Vinci's Workshop (wonder slot 0x0E = wonder 14) ---
   // C: if (local_3c == 0x0e) { thunk_FUN_004be6ba(civId); }
-  leonardosWorkshop: {
-    wonderSlot: 0x0E,          // wonder 14 = Leonardo Workshop
-    effect: 'triggers unit upgrade for all owned units (see LEONARDOS_WORKSHOP export)',
+  daVincisWorkshop: {
+    wonderSlot: 0x0E,          // wonder 14 = Da Vinci's Workshop
+    effect: 'triggers unit upgrade for all owned units (see DA_VINCIS_WORKSHOP export)',
     functionCalled: 'thunk_FUN_004be6ba(civId)',
     sourceAddr: '0x004EC3FE+line5141',
   },
@@ -4033,7 +4061,7 @@ export const WONDER_COMPLETION_TRIGGERS = {
     cureForCancer: { wonderSlot: 0x1B, sound: 0xB8 },
     militaryWonders: { wonderSlots: [9, 7, 8, 0x0E], sound: 0xBA },
     scienceWonders: { wonderSlots: [0x12, 0x0C], sound: 0xBA },
-    womensSuffrage: { wonderSlot: 0x15, sound: 0xB9 },
+    womensSuffrage: { wonderSlot: 0x15, sound: 0xB9 },  // wonder 21 = Women's Suffrage
     sourceAddr: '0x004EC3FE+line5009',
   },
 
@@ -4190,6 +4218,25 @@ export const CITY_CALC_PIPELINE = {
     sourceAddr: '0x004F0A9C+line306',
   },
 
+  // --- Food box size (growth threshold) formula ---
+  // Binary ref: FUN_004e7eb1 @ block_004E0000.c (sets DAT_006a6560)
+  // C (line 4656): growthThreshold = (city.size + 1) * DAT_006a6560
+  // C (line 4657-4658): if (foodStored >= growthThreshold) city grows
+  // DAT_006a6560 is set by FUN_004e7eb1:
+  //   AI: DAT_006a6560 = DAT_0064bccb (cosmic parameter, default 10)
+  //   Human: DAT_006a6560 = 0x0D - difficulty (with bonuses at difficulty < 3 and == 0)
+  //          then scaled: (DAT_0064bccb * DAT_006a6560) / 10, rounded up if odd
+  foodBoxSize: {
+    formula: '(citySize + 1) * foodBoxMultiplier',
+    cosmicParameter: 'DAT_0064BCCB',  // default 10 (FOOD_BOX_MULTIPLIER in defs.js)
+    computedMultiplierAddr: 'DAT_006A6560',
+    humanFormula: 'base = 0x0D - difficulty; if (difficulty < 3) base += 1; if (difficulty == 0) base += 1; then (DAT_0064bccb * base) / 10',
+    aiFormula: 'DAT_0064bccb (straight from cosmic rules, default 10)',
+    granaryEffect: 'After growth with Granary (building 3) or Pyramids (wonder 0): foodStored = (newSize + 1) * (foodBoxMultiplier / 2)',
+    noGranaryEffect: 'After growth without Granary: foodStored = 0',
+    sourceAddr: '0x004E7EB1 (multiplier calc), 0x004EC3FE+line4656 (growth check)',
+  },
+
   // --- Gap 4: Food shortage 3-turn lookahead ---
   // Binary ref: FUN_004f0a9c @ block_004F0000.c lines 310-312
   // C: if (0 < sVar3 && *(short*)food_stored < sVar3 && (int)*(short*)food_stored + DAT_006a661c * 3 < 0)
@@ -4255,23 +4302,23 @@ export const CITY_CALC_PIPELINE = {
     govtTableAddr: 'DAT_006554FA + govtType * 0x30',
 
     // C lines 361-364: if has_building(param_1, 5) { local_c = -cVar2 + 5 }
-    templeEffect: { buildingId: 5, formula: '-(govtHappinessMod) + 5', meaning: 'Temple reduces content threshold' },
+    marketplaceEffect: { buildingId: 5, formula: '-(govtHappinessMod) + 5', meaning: 'Marketplace (5) reduces content threshold' },
     // C lines 365-368: if has_building(param_1, 10) { local_c -= 1 }
-    cathedralEffect: { buildingId: 10, effect: 'threshold -= 1', meaning: 'Cathedral reduces threshold by 1' },
+    bankEffect: { buildingId: 10, effect: 'threshold -= 1', meaning: 'Bank (10) reduces threshold by 1' },
     // C lines 369-374: if has_building(param_1, 4) && (has_building(param_1, 0xb) || has_wonder(iVar3, 10))
-    marketplaceLibraryCombo: {
-      marketplaceBuildingId: 4,
-      libraryBuildingId: 0x0B,
+    templeCathedralCombo: {
+      templeBuildingId: 4,
+      cathedralBuildingId: 0x0B,
       wonderId: 10,
       effect: 'threshold -= 1',
-      meaning: 'Marketplace + (Library OR Wonder 10) reduces threshold by 1',
+      meaning: 'Temple (4) + (Cathedral (11) OR Michelangelo\'s Chapel wonder 10) reduces threshold by 1',
     },
 
-    // C lines 375-384: Hanging Gardens wonder 0x0D happiness effect
+    // C lines 375-384: Shakespeare's Theatre wonder 0x0D happiness effect
     // if wonder owner (FUN_00453e18(0xd)) != param_1 city
-    hangingGardensEffect: {
+    shakespeareEffect: {
       wonderId: 0x0D,
-      condition: 'Wonder 0x0D owner is NOT this city',
+      condition: 'Wonder 0x0D (Shakespeare\'s Theatre) owner is NOT this city',
       // C: iVar6 = govtMilitaryMod + DAT_006a65e4
       // sVar4 = clamp((2 - local_8) * (iVar6 + 1), 0, 99)
       // civ.contentScore -= sVar4 * local_c
@@ -4627,7 +4674,7 @@ export const TRADE_DISTRIBUTION = {
     mysticismTech: 0x38,         // tech 56
     oracleWonder: 0x05,          // wonder 5 (doubles temple effect)
     shakespeareWonder: 0x0D,     // wonder 13 (zeroes unhappy in wonder city)
-    cathedral: 0x0E,             // building 14
+    colosseum: 0x0E,             // building 14 = Colosseum
     michelangeloWonder: 0x0A,    // wonder 10 (acts as cathedral in all cities)
     jsBachWonder: 0x0F,          // wonder 15 (J.S. Bach's Cathedral, -2 unhappy everywhere)
     cureForCancerWonder: 0x1B,   // wonder 27
@@ -4888,12 +4935,12 @@ export const HAPPINESS_CALC = {
   },
 
   // For govts >= Republic (>= 5): war weariness
-  // C: if (has_wonder_effect(civ, Women_Suffrage=0x15) OR has_building(city, Police_Station=0x21))
+  // C: if (has_wonder_effect(civ, Womens_Suffrage=0x15) OR has_building(city, Police_Station=0x21))
   //    local_10 = 0; else local_10 = 1
   // C: if (govt == Democracy(6)) local_10 += 1
   // C: if (local_10 != 0) unhappy += local_10 * warWeariness
   warWeariness: {
-    womensSuffrageWonderId: 0x15,
+    womensSuffrageWonderId: 0x15,  // wonder 21 = Women's Suffrage (negates war weariness)
     policeStationBuildingId: 0x21,
     basePenalty: { republic: 1, democracy: 2 },
     republicGovtId: 5,
@@ -4996,7 +5043,7 @@ export const TRADE_SCIENCE_INTEGRATION = {
     powerPlant: 0x13,          // building 19 = Power Plant → local_c = 2
     hydroPlant: 0x14,          // building 20 = Hydro Plant → local_c = 2, DAT_006a65f8 = 2
     nuclearPlant: 0x15,        // building 21 = Nuclear Plant → local_c = 2, DAT_006a65f8 = 2
-    hooverDamWonder: 0x16,     // wonder 22 = Hoover Dam → local_c = 2, DAT_006a65f8 = 2
+    hooverDamWonder: 0x16,      // wonder 22 = Hoover Dam → local_c = 2, DAT_006a65f8 = 2
     recyclingCenter: 0x12,     // building 18 = Recycling Center → DAT_006a65f8 = 3
     solarPlant: 0x1D,          // building 29 = Solar Plant → local_c = 2, DAT_006a65f8 = 3
   },
@@ -5023,9 +5070,9 @@ export const TRADE_SCIENCE_INTEGRATION = {
   // C: hasTech(civ, 0x3E=62=Plastics) → +1
   pollutionTechs: [0x25, 0x05, 0x30, 0x3E],
   pollutionTechNames: ['Industrialization(37)', 'Automobile(5)', 'Mass Production(48)', 'Plastics(62)'],
-  // hasTech(civ, 0x4A=74=Recycling) → counter +1 ONLY if counter is currently 0
-  // (inverted: recycling reduces, but code adds 1 when civ does NOT have Recycling)
-  recyclingTechId: 0x4A,       // tech 74 = Recycling
+  // hasTech(civ, 0x4A=74=Sanitation) → counter +1 ONLY if counter is currently 0
+  // (inverted: sanitation reduces, but code adds 1 when civ does NOT have Sanitation)
+  sanitationTechId: 0x4A,      // tech 74 = Sanitation
   // hasTech(civ, 0x1A=26=Environmentalism) → counter -= 1
   environmentalismTechId: 0x1A, // tech 26 = Environmentalism
   // has_building(city, 0x1D=Solar Plant) → counter -= 1
@@ -5529,7 +5576,7 @@ export const SCENARIO_STARTUP = {
 
   // Per-era tech grants (IDs given to each civ at start)
   eraBaseTechs: {
-    allEras: [0x24, 9, 1, 8],          // Alphabet(9), Ceremonial Burial(1), Code of Laws(8), Bronze Working(0x24)
+    allEras: [0x24, 9, 1, 8],          // Horseback Riding(0x24), Ceremonial Burial(9), Alphabet(1), Bronze Working(8)
   },
 
   // City population: rand() % 50 + 25 → (25..74) * (era + 1)
@@ -5851,9 +5898,9 @@ export const AI_SETTLER_MILITARY = {
     hostilityCheck: 0x32,           // 50 — attitude score indicating hostility   // 0x00537331
     warReadiness: 0x3C,             // 60 — threshold for war preparation         // 0x00537331
     hatredFlag: 0x20,               // treaty byte1 bit for vendetta/hatred       // 0x00537331
-    warFlag: 0x08,                  // treaty byte0 bit for active war            // 0x00537331
-    allianceFlag: 0x04,             // treaty byte0 bit for alliance              // 0x00537331
-    peaceFlag: 0x02,                // treaty byte0 bit for peace treaty          // 0x00537331
+    allianceFlag: 0x08,             // treaty byte0 bit for alliance              // 0x00537331
+    peaceFlag: 0x04,                // treaty byte0 bit for peace treaty          // 0x00537331
+    ceasefireFlag: 0x02,            // treaty byte0 bit for ceasefire             // 0x00537331
     embassyFlag: 0x80,              // treaty byte0 bit for embassy established   // 0x00537331
   },
 
@@ -5971,13 +6018,13 @@ export const DEMOGRAPHICS_BINARY = {
 
   // --- Disease Rate ---
   // Base: 0x708 (1800) / (diseaseCityScore + 0x14)
-  // diseaseCityScore = sum of city.size for cities with Aqueduct (6) or Sewer (12)
+  // diseaseCityScore = sum of city.size for cities with Library (6) or University (12)
   diseaseRate: {
     baseNumerator: 0x708,         // 1800
     baseDenominator: 0x14,        // 20 (added to diseaseCityScore)
     buildingChecks: [
-      { buildingId: 6,  name: 'Aqueduct',     effect: '+city.size to diseaseCityScore' },
-      { buildingId: 12, name: 'Sewer System',  effect: '+city.size to diseaseCityScore' },
+      { buildingId: 6,  name: 'Library',      effect: '+city.size to diseaseCityScore' },
+      { buildingId: 12, name: 'University',    effect: '+city.size to diseaseCityScore' },
     ],
     halvings: [
       { type: 'tech', id: 0x32, name: 'Medicine (50)', fn: 'hasTech(civ, 0x32)' },
@@ -6039,7 +6086,7 @@ export const DEMOGRAPHICS_BINARY = {
     rankStringBase: 0x189,        // string ID = rank + 0x189 (e.g., rank 1 = string 0x18A)
     intelligenceCheck: {
       embassyFlag: 0x80,          // treaty[currentPlayer][otherCiv] & 0x80
-      wonderIds: [0x18, 9],       // United Nations (24), Great Library (9)
+      wonderIds: [0x18, 9],       // United Nations (24), Marco Polo's Embassy (9)
       globalReveal: 'DAT_00655b07',
     },
   },
@@ -6539,7 +6586,7 @@ export const TURN_PROCESSING = {
     halfDecayFormula: '(difficulty + 1) * 24',  // 0x18 = 24                   // 0x00487371
     decayAmount: -1,              // reduce attitude by 1                       // 0x00487371
     clampToGovernment: true,      // clamp attitude to range [0, govLevel]     // 0x00487371
-    techIdForHalfDecay: 0x14,     // Democracy tech — halves decay interval    // 0x00487371
+    techIdForHalfDecay: 0x14,     // Currency tech — halves decay interval      // 0x00487371
   },
 
   // Historian report timing
@@ -7054,11 +7101,11 @@ export const AI_PRODUCTION_URGENCY = {
     note: 'Isolated or threatened cities get high urgency for military production',
   },
 
-  // --- Capitulation building (item == 1, i.e., Barracks) ---
-  barracksUrgency: {
+  // --- Palace building (item == 1, i.e., Palace) ---
+  palaceUrgency: {
     divisor: 8,                  // treasury >> 3                              // line 5569
     condition: 'item == 1 AND shields_in_box != 0',
-    note: 'Barracks always get high urgency when being built',
+    note: 'Palace always gets high urgency when being built',
   },
 
   // --- Empty production queue ---
@@ -7208,8 +7255,8 @@ export const SETTLER_PRIORITY = {
   sizeThreshold: 4,
   sizePriorityBonus: 1,
   // C: if has_building(param_1, 1) DAT_006a65d4 += 1
-  barracksBuildingId: 1,
-  barracksPriorityBonus: 1,
+  palaceBuildingId: 1,
+  palacePriorityBonus: 1,
 
   // C: if (city.size < 4) DAT_006a65d4 -= 1
   smallCityThreshold: 4,
@@ -7565,6 +7612,8 @@ export const CIV_SCORING = {
     formula: 'civ.spaceshipPopulation * DAT_006AD0EC',
     condition: 'spaceship data exists AND civ has spaceship population > 0',
     spaceshipPopAddr: 'DAT_0064CAA6 + civId * 0x594',
+    excludedFromTotal: true,  // DAT_00673f84 is NEVER added to the totalScore sum (line 371)
+    note: 'Pre-launch spaceship revenue is computed for display only — it is NOT included in totalScore. Only post-launch revenue (DAT_00673f60) enters the total sum.',
     sourceAddr: '0x004A28B0+line358',
   },
 
@@ -7623,7 +7672,7 @@ export const CIV_SCORING = {
     formula: 'difficulty * 25 - 50',
     multiplier: 0x19,  // 25
     offset: -0x32,     // -50
-    difficultyAddr: 'DAT_00655B0D',  // corrected: 0x655B0D is the difficulty level byte used in scoring
+    difficultyAddr: 'DAT_00655B09',  // binary line 370: (uint)DAT_00655b09 * 0x19 — barbarian level byte, doubles as difficulty in scoring
     breakdown: {
       chieftain: -50,   // 0 * 25 - 50
       warlord: -25,     // 1 * 25 - 50
@@ -7641,7 +7690,7 @@ export const CIV_SCORING = {
     addr: 'DAT_00673F88',
     formula: 'contentCitizens + wonderScore + spaceshipPost + pollutionOffset + turnBonus + futureTech + difficultyBonus',
     clampMin: 0,
-    note: 'spaceshipRevenuePre is NOT included in total if flag 0x10 is set (it is replaced by spaceshipRevenuePost)',
+    note: 'spaceshipRevenuePre (DAT_00673f84) is NEVER included in this sum — only spaceshipPost (DAT_00673f60) contributes. Pre-launch revenue is display-only.',
     sourceAddr: '0x004A28B0+line371',
   },
 
@@ -7686,7 +7735,15 @@ export const CIV_SCORING = {
     scenarioFlagAddr: 'DAT_00655AF0',
 
     // C: score = sum over civs of (civ_population * tierMultiplier)
-    formula: 'score = sum_of(civ_population(civId) * tierMultiplier[tier[civId]])',
+    formula: 'score = tierMultiplier + ownPopulation * 10',
+    // C (line 455): DAT_00673f68 = DAT_00673f68 + DAT_00673f80 * 10
+    // DAT_00673f80 = sum of population for all cities owned by scoring civ (param_1)
+    ownPopulationBonus: {
+      multiplier: 10,
+      populationAddr: 'DAT_00673F80',
+      formula: 'ownPopulation * 10 added to scenario score after tier calculation',
+      sourceAddr: '0x004A28B0+line455',
+    },
 
     // C: if (DAT_00673f7c > 0) score *= 2  — victory doubling
     victoryDoubling: {

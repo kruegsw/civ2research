@@ -536,13 +536,13 @@ export const HAPPINESS_PANEL = {
   // --- Building effects (row 2) ---
   buildingChecks: {
     // @ FUN_00508552 case 2: checks these buildings to decide if row has content
-    temple: 4,               // building 4
-    cityWalls: 0x0E,         // building 14
-    coastalFortress: 0x0B,   // building 11
-    greatWallWonder: 10,     // wonder 10
-    library: 7,              // building 7
-    barracks: 1,             // building 1
-    democracyGovtId: 6,      // if govt == 6 => skip barracks/library check
+    temple: 4,               // building 4 (Temple)
+    colosseum: 0x0E,         // building 14 (Colosseum)
+    cathedral: 0x0B,         // building 11 (Cathedral)
+    michelangeloWonder: 10,  // wonder 10 (Michelangelo's Chapel)
+    courthouse: 7,           // building 7 (Courthouse)
+    palace: 1,               // building 1 (Palace)
+    democracyGovtId: 6,      // if govt == 6 => skip palace/courthouse check
   },
 
   // --- Military happiness modifiers ---
@@ -998,8 +998,8 @@ export const CIVILOPEDIA = {
     techFilterThreshold: 0x59, // @ FUN_00450480: local_2c < 0x59 (89) for prereq check
     prereqFlag: 0x01,         // @ FUN_00450480: (&DAT_00627689)[local_2c * 0x10] == '\x01'
     intelligenceCheck: {
-      setiWonderId: 0x18,        // @ FUN_00450480: thunk_FUN_00453e51(DAT_006d1da0, 0x18)
-      greatLibraryWonderId: 9,   // @ FUN_00450480: thunk_FUN_00453e51(DAT_006d1da0, 9)
+      unitedNationsWonderId: 0x18, // @ FUN_00450480: thunk_FUN_00453e51(DAT_006d1da0, 0x18) — wonder 24 (United Nations)
+      marcoPoloWonderId: 9,        // @ FUN_00450480: thunk_FUN_00453e51(DAT_006d1da0, 9) — wonder 9 (Marco Polo's Embassy)
       embassyFlag: 0x80,         // @ FUN_00450480: treaty & 0x80
       allianceFlag: 0x08,        // @ FUN_00450480: treaty & 8
       spyFlag: 'DAT_00655b07',   // @ FUN_00450480: DAT_00655b07 != '\0'
@@ -1181,10 +1181,10 @@ export const DEFENSE_BUILDING_ICONS = {
   spriteVerticalId: 0x14,    // @ FUN_00507f31: thunk_FUN_00511690(0x14) — 20px centering height
   spacingId: 2,              // @ FUN_00507f31: thunk_FUN_00511690(2) — gap between icons
   checks: [
-    { order: 0, buildingId: 0x0E, name: 'City Walls (14)' },
-    { order: 1, buildingId: 0x0B, name: 'Coastal Fortress (11)', wonderFallback: { wonderId: 10, buildingId: 0x37, name: 'Great Wall', greatWallBuildingId: 0x31 } },
+    { order: 0, buildingId: 0x0E, name: 'Colosseum (14)' },
+    { order: 1, buildingId: 0x0B, name: 'Cathedral (11)', wonderFallback: { wonderId: 10, spriteId: 0x37, name: "Michelangelo's Chapel", altSpriteId: 0x31 } },
     { order: 2, buildingId: 4, name: 'Temple' },
-    { order: 3, buildingId: 1, name: 'Barracks', altBuildingId: 7, altName: 'Library', govtRestriction: 'govt != 6 (Democracy)' },
+    { order: 3, buildingId: 1, name: 'Palace', altBuildingId: 7, altName: 'Courthouse', govtRestriction: 'govt != 6 (Democracy)' },
   ],
 };
 

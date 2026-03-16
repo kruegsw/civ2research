@@ -421,7 +421,7 @@ export const NETWORK_DISCONNECT_DELAY = {
 // Source: FUN_00580341 — combat initiation sound selection
 //
 // bVar6 = unit type byte from DAT_006560f6[attacker * 0x20]
-// DAT_0064b1c1[type * 0x14] = domain (0=ground, 1=sea, 2=air)
+// DAT_0064b1c1[type * 0x14] = domain (0=ground, 1=air, 2=sea) [binary convention; JS engine remaps to 0=land, 1=sea, 2=air]
 // DAT_0064b1bc[type * 0x14] bit 3 = stealth flag
 // DAT_0064b1bd[type * 0x14] bit 4 (0x10) = "can carry aircraft" flag
 // DAT_0064b1c3[type * 0x14] = bombard range (0 = no bombard)
@@ -448,9 +448,9 @@ export const COMBAT_ATTACK_SOUNDS = {
     0x3B: { soundId: 0x82, channel: 1, note: 'Nuke variant 6' },
     0x3C: { soundId: 0x83, channel: 1, note: 'Nuke variant 7' },
     0x3D: { soundId: 0x84, channel: 1, note: 'Nuke variant 8' },
-    0x33: { soundId: 0x65, channel: 1, note: 'Cruise Missile variant 1' },
-    0x34: { soundId: 0x66, channel: 1, note: 'Cruise Missile variant 2' },
-    0x35: { soundId: 0x67, channel: 1, note: 'Cruise Missile variant 3' },
+    0x33: { soundId: 0x65, channel: 1, note: 'Scenario slot 51 (missile sound 1)' },
+    0x34: { soundId: 0x66, channel: 1, note: 'Scenario slot 52 (missile sound 2)' },
+    0x35: { soundId: 0x67, channel: 1, note: 'Scenario slot 53 (missile sound 3)' },
     sourceAddr: '0x00580341 lines 584-615',
   },
 
@@ -486,10 +486,10 @@ export const COMBAT_ATTACK_SOUNDS = {
     stealth:     { soundId: 0x4D, channel: 1, note: 'FEEDBK08 — submarine/stealth sound' },
     // Non-stealth aircraft
     defaultAnimOffset: 6,              // @ line 639 — local_ac = 6 for standard air units
-    jetFighters: {
-      types: [0x25, 0x26, 0x27, 0x28],// @ line 640 — Jet Fighter era aircraft
-      animOffset: 0x2E,                // @ line 641 — local_ac = 0x2E for jets
-      note: 'Jet fighters use extended animation offset (46 frames)',
+    navalHeavy: {
+      types: [0x25, 0x26, 0x27, 0x28],// @ line 640 — Destroyer, Cruiser, AEGIS Cruiser, Battleship
+      animOffset: 0x2E,                // @ line 641 — local_ac = 0x2E for these types
+      note: 'Destroyer-Battleship use extended animation offset (46 frames)',
     },
     sourceAddr: '0x00580341 lines 637-646',
   },
@@ -497,15 +497,15 @@ export const COMBAT_ATTACK_SOUNDS = {
   // Ground domain (domain == 0, no carrier flag)
   ground: {
     // Specific ground unit type mappings (checked in if/else order)
-    cannon:       { types: [0x11],                        soundId: 0x19, channel: 1, note: 'MISSILE — Cannon' },
-    horseback:    { types: [0x0F, 0x10, 0x13, 0x12],     soundId: 0x4A, channel: 1, note: 'FEEDBK05 — mounted units (Horsemen, Knights, Dragoons, Cavalry)' },
-    submarine:    { types: [0x14, 0x15],                  soundId: 0x0C, channel: 1, note: 'SUBMRINE — Carrier class naval (Carrier, Submarine)' },
-    chariotKnight:{ types: [0x07, 0x0B, 0x0A, 0x09],     soundId: 0x22, channel: 1, note: 'MRKTPLCE — Chariot, Knight, Armor, Mech Inf era' },
-    artillery:    { types: [0x08, 0x0D, 0x0C, 0x0E],     soundId: 0x26, channel: 1, note: 'BLDSPCSH — Catapult, Artillery, Howitzer' },
+    elephant:     { types: [0x11],                        soundId: 0x19, channel: 1, note: 'MISSILE — Elephant' },
+    horseback:    { types: [0x0F, 0x10, 0x13, 0x12],     soundId: 0x4A, channel: 1, note: 'FEEDBK05 — mounted units (Horsemen, Chariot, Knights, Crusaders)' },
+    dragoonCav:   { types: [0x14, 0x15],                  soundId: 0x0C, channel: 1, note: 'SUBMRINE — Dragoons, Cavalry' },
+    musketeer:    { types: [0x07, 0x0B, 0x0A, 0x09],     soundId: 0x22, channel: 1, note: 'MRKTPLCE — Musketeers, Riflemen, Alpine Troops, Partisans' },
+    fanatics:     { types: [0x08, 0x0D, 0x0C, 0x0E],     soundId: 0x26, channel: 1, note: 'BLDSPCSH — Fanatics, Paratroopers, Marines, Mech. Infantry' },
     // Tank-era range check (0x16 <= type <= 0x1A)
     tankEra: {
       typeRange: [0x16, 0x1A],         // @ line 663 — bVar6 >= 0x16 AND bVar6 <= 0x1A
-      spy: { type: 0x17, soundId: 0x0A, channel: 1, note: 'TANKMOTR — type 0x17 (Alpine Troops / Spy era)' },
+      catapult: { type: 0x17, soundId: 0x0A, channel: 1, note: 'TANKMOTR — type 0x17 (Catapult)' },
       heavyTank: {
         condition: 'type > 0x17',      // @ line 671 — types 0x18, 0x19, 0x1A
         soundId: 0x1C,                 // LARGEXPL
@@ -592,7 +592,7 @@ export const COMBAT_NOTIFICATION_STRINGS = {
     stringAddr: 's_BATTERY_00634484',
     aiMessageId: 0x32,
     viewType: 3,
-    condition: 'Coastal bombardment with no land attacker (local_24 == 0) OR bombarding unit is Cannon (0x11)',
+    condition: 'Coastal bombardment with no land attacker (local_24 == 0) OR bombarding unit is Elephant (0x11)',
     localDisplay: 'thunk_FUN_004cc870(s_BATTERY_00634484, local_b8, 8)',
     sourceAddr: '0x00580341 lines 500-514',
   },
@@ -601,7 +601,7 @@ export const COMBAT_NOTIFICATION_STRINGS = {
     stringAddr: 's_BATTERY2_00634478',
     aiMessageId: 0x31,
     viewType: 4,
-    condition: 'Coastal bombardment with land attacker present (local_24 != 0 AND unit != Cannon)',
+    condition: 'Coastal bombardment with land attacker present (local_24 != 0 AND unit != Elephant)',
     localDisplay: 'thunk_FUN_004cc870(s_BATTERY2_00634478, local_b8, 8)',
     sourceAddr: '0x00580341 lines 517-533',
     note: 'BATTERY2 adds a third text substitution (city name via DAT_0064c510) vs plain BATTERY',

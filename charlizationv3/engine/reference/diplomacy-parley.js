@@ -187,11 +187,11 @@ export const TRANSACTION_VALUATION = {
       full: 'mode=0: share tiles + units + cities (3 passes, 21-tile radius reveal)',
       visibility: 'mode=1: share tile visibility + cities only',
     },
-    mapPrereqTechs: 'Alphabet (0x2E) and/or Writing required for map exchange',
+    mapPrereqTechs: 'Map Making (0x2E) and/or Writing required for map exchange',
     mapRefusalConditions: [
       'At war (no alliance)',
       'attitudeScore > 25 (too hostile)',
-      'Neither civ has Alphabet (0x2E)',
+      'Neither civ has Map Making (0x2E)',
     ],
     sourceAddr: '0x004DD8AD',
   },
@@ -428,8 +428,8 @@ export const FAVOR_MENU = {
       id: 3, label: 'Exchange maps',
       conditions: [
         'Not at war (or allied)',
-        'attitudeScore <= 25 (or has Alphabet tech 0x2E)',
-        'or: has wonder 9 (Intelligence Agency) or wonder 12 (Marco Polo)',
+        'attitudeScore <= 25 (or has Map Making tech 0x2E)',
+        'or: has wonder 9 (Marco Polo\'s Embassy) or wonder 12 (Magellan\'s Expedition)',
       ],
       effect: 'Mutual tile/unit/city visibility reveal, patience += 2',
       sourceAddr: '0x0045DD7F choice 3',
@@ -597,7 +597,7 @@ export const TREATY_EXECUTION = {
     // Common: patience increments require emperor (rank 7), cities > 4, difficulty > 0, no Statue of Liberty
     patienceConditions: {
       emperor: { rank: 7, addr: 'DAT_00655c22', cities: 'DAT_0064c708 > 4' },
-      statueOfLiberty: { wonderId: 0x14, check: 'thunk_FUN_00453e51(civ, 0x14)' },
+      statueOfLiberty: { wonderId: 0x13, check: 'thunk_FUN_00453e51(civ, 0x13)' },
     },
     sourceAddr: '0x0045AC71',
   },
@@ -646,8 +646,8 @@ export const GREETING_EMISSARY = {
     },
     intelligenceChecks: {
       embassyFlag: 0x80,             // treaty & 0x80
-      setiWonderId: 0x18,            // wonder 24 (SETI)
-      greatLibraryWonderId: 9,       // wonder 9
+      unitedNationsWonderId: 0x18,    // wonder 24 (United Nations)
+      marcoPoloWonderId: 9,          // wonder 9 (Marco Polo's Embassy)
     },
     sourceAddr: '0x00458DF9',
   },
@@ -1167,7 +1167,7 @@ export const DIPLO_WONDER_EFFECTS = {
     ],
     sourceAddr: '0x0045705E, 0x0045FD67',
   },
-  GREAT_LIBRARY: {
+  MARCO_POLO: {
     wonderId: 9,
     effects: ['techDemand += techDemand / 4 (25% bonus to tech demand value)'],
     sourceAddr: '0x0045705E',
@@ -1180,9 +1180,9 @@ export const DIPLO_WONDER_EFFECTS = {
     ],
     sourceAddr: '0x00456F8B, 0x0045AC71',
   },
-  MARCO_POLO: {
-    wonderId: 0x18, // shared with UN in some contexts
-    note: 'Marco Polo (wonder 9) vs UN (wonder 24/0x18) — verify per context',
+  UNITED_NATIONS_SENATE: {
+    wonderId: 0x18, // 24 = United Nations
+    note: 'United Nations (wonder 24/0x18) — senate war check context',
     effects: [
       'check_can_declare_war: betrayal threshold = 50',            // @ 0x0055BEF9
       'Intelligence access for notifications',
@@ -1386,7 +1386,7 @@ export const CITY_TRANSFER = {
   buildingsRemoved: [
     { id: 1,  name: 'Palace',   sourceAddr: '0x004DE0E2' },
     { id: 4,  name: 'Temple',   sourceAddr: '0x004DE0E2' },
-    { id: 0xb, name: 'Library', sourceAddr: '0x004DE0E2' },
+    { id: 0xb, name: 'Cathedral', sourceAddr: '0x004DE0E2' },
     { id: 7,  name: 'Courthouse', sourceAddr: '0x004DE0E2' },
   ],
   tileRevealRadius: 21, // 0x14 + 1 spiral positions
@@ -1439,7 +1439,7 @@ export const SENATE_WAR_CHECK = {
   betrayalThreshold: {
     base: 0,
     embassy: 'if treaty & 0x10 (embassy): threshold = 25',
-    marcoPolo: 'if has_wonder(Marco Polo, 0x18): threshold = 50',
+    unitedNations: 'if has_wonder(United Nations, 0x18): threshold = 50',
     patienceModifier: 'threshold = clamp(threshold + patience * 15, 0, 75)',
   },
   democracyRequires: 'senate override flag (civ.flags & 0x04)',
@@ -1545,7 +1545,7 @@ export const DIPLO_ENCOUNTER_STRINGS = {
     conditions: [
       'Human has map sharing (treaty & 0x80) with either civ',
       'Human has United Nations wonder (0x18)',
-      'Human has Intelligence Agency wonder (9)',
+      'Human has Marco Polo\'s Embassy wonder (9)',
       'Human is in observer mode (DAT_00655b07)',
     ],
     sourceAddr: '0x0055D8D8',
@@ -2109,14 +2109,14 @@ export const AMBASSADOR_AUTO_ESTABLISH = {
     '(treaty_byte1[aiCiv][playerCiv] & 0x20) == 0',               // no vendetta
     '(treaty[currentPlayer][aiCiv] & 0x80) == 0',                  // no existing embassy
     'civ_has_active_wonder(currentPlayer, 0x18) == 0',             // no United Nations (wonder 24)
-    'civ_has_active_wonder(currentPlayer, 9) == 0',                // no Great Library (wonder 9)
+    'civ_has_active_wonder(currentPlayer, 9) == 0',                // no Marco Polo\'s Embassy (wonder 9)
     'civ_has_tech(aiCiv, 0x58) != 0',                              // AI has tech 0x58 (Writing)
   ],
   dialogString: 'AMBASSADORS',  // @ 0x00627290
   dialogParams: { param2: 0x2E },
   action: 'treaty[aiCiv][currentPlayer] |= 0x80',  // set embassy flag
   followUp: 'thunk_FUN_0043060b(aiCiv, playerCiv)',  // show intelligence for this civ
-  wonderBlockIds: { unitedNations: 0x18, greatLibrary: 9 },
+  wonderBlockIds: { unitedNations: 0x18, marcoPolo: 9 },
   embassyTechId: 0x58,  // Writing
 };
 
@@ -2169,8 +2169,8 @@ export const ALLIANCE_CANCELLATION = {
     cityRecordStride: 0x58,
   },
   notification: {
-    thirdPartyVisible: 'Shown to any player with embassy or SETI/Great Library wonder',
-    wonderCheck: [0x18, 9],    // United Nations, Great Library
+    thirdPartyVisible: 'Shown to any player with embassy or United Nations/Marco Polo\'s Embassy wonder',
+    wonderCheck: [0x18, 9],    // United Nations, Marco Polo's Embassy
     embassyFlag: 0x80,
   },
 };
@@ -2843,17 +2843,17 @@ export const MAP_EXCHANGE_DETAIL = {
       conditions: [
         '!(treaty[civB][civA] & 0x08)',   // not allied
         'attitude > 0 (DAT_0064b114 > 0)',
-        '!has_wonder(civA, 9)',            // no Great Library (wonder 9)
-        '!has_wonder(civA, 0xc)',          // no wonder 12 (Marco Polo)
+        '!has_wonder(civA, 9)',            // no Marco Polo's Embassy (wonder 9)
+        '!has_wonder(civA, 0xc)',          // no Magellan's Expedition (wonder 12)
       ],
       allRequired: true,
       rawC: `(treaty[p2*4+p1*0x594] & 8)==0 && 0<DAT_0064b114 &&
-        !has_wonder(p1,9) && !has_wonder(p1,0xc)`,
+        !has_wonder(p1,9) && !has_wonder(p1,0xc)`,  // wonder 9 = Marco Polo's Embassy, wonder 0xc = Magellan's Expedition
     },
     path2: {
       conditions: [
         'attitude > 0x19 (25)',            // too hostile
-        'OR neither civ has tech 0x2E (Alphabet)',
+        'OR neither civ has tech 0x2E (Map Making)',
       ],
       rawC: '0x19 < DAT_0064b114 || !has_tech(civB, 0x2e) || !has_tech(civA, 0x2e)',
     },
@@ -2868,7 +2868,7 @@ export const MAP_EXCHANGE_DETAIL = {
   },
 
   unitType0x2e: {
-    note: 'The check for tech 0x2E (Alphabet) is via FUN_004bd9f0 — checks if civ has researched the tech',
+    note: 'The check for tech 0x2E (Map Making) is via FUN_004bd9f0 — checks if civ has researched the tech',
   },
 };
 
@@ -3079,11 +3079,11 @@ export const UNIT_REASSIGNMENT_PATHFINDING = {
       dialog: 'CANCELALLIANCE',          // s_CANCELALLIANCE_0062831c
     },
     thirdParty: {
-      condition: 'Has embassy (0x80) or wonder 0x18 or wonder 9 or observer mode',
+      condition: 'Has embassy (0x80) or wonder 0x18 (United Nations) or wonder 9 (Marco Polo\'s Embassy) or observer mode',
       visibilityChecks: [
         'treaty[currentPlayer][civA] & 0x80',
-        'has_wonder(currentPlayer, 0x18)',
-        'has_wonder(currentPlayer, 9)',
+        'has_wonder(currentPlayer, 0x18)',  // United Nations
+        'has_wonder(currentPlayer, 9)',     // Marco Polo's Embassy
         'DAT_00655b07 (observer mode)',
       ],
     },

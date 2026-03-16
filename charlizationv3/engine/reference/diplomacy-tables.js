@@ -645,11 +645,11 @@ export const ATTITUDE_SCORING = {
         'Great Wall = wonder index 6, United Nations = wonder index 24 (0x18)',
       ],
     },
-    // Statue of Liberty (wonder 20 = 0x14)
+    // Statue of Liberty (wonder 19 = 0x13)
     statueOfLiberty: {
       aiHasStatueOfLiberty: {
         delta: +1,
-        condition: 'aiCiv has Statue of Liberty (wonder 0x14)',
+        condition: 'aiCiv has Statue of Liberty (wonder 0x13)',
         address: '0x00561998',
         notes: 'AI civ owning Statue of Liberty: +1 attitude toward human',
       },
@@ -662,8 +662,8 @@ export const ATTITUDE_SCORING = {
           'score = temp',
         ],
         notes: [
-          'CORRECTION: Pseudocode annotation said "Democracy advance" but binary checks wonder 0x14',
-          'Statue of Liberty = wonder index 20 (0x14)',
+          'CORRECTION: Pseudocode annotation said "Democracy advance" but binary checks wonder 0x13',
+          'Statue of Liberty = wonder index 19 (0x13)',
           'Very strong anti-human effect: halves positive score, then -2 if result >= 1, else -1',
           'Examples: score=4 -> /2=2 -> -2=0; score=1 -> /2=0 -> -1=-1; score=-2 -> -1=-3',
         ],
@@ -816,7 +816,7 @@ export const TURN_PROCESSING = {
       condition: '(turnNumber & 0x0F) == 0',
       address: '0x00560378',
       actions: [
-        'Fire "WARENDS" event if conditions met (embassy OR Navigation tech OR Writing tech)',
+        'Fire "WARENDS" event if conditions met (embassy OR Electronics tech(0x18) OR Ceremonial Burial tech(0x09))',
         'Attempt diplomacy_encounter if ceasefire active',
         'Attempt tech_negotiation if at war',
         'Call shared-visibility diplomacy check',
@@ -1088,9 +1088,9 @@ export const ALLIANCE_PROPOSALS = {
         '  Track best tech with highest score',
       ],
       embargoCheck: {
-        condition: 'treaty[humanCiv][aiCiv] & 0x80 == 0 (no embassy) AND no Navigation/Writing tech',
+        condition: 'treaty[humanCiv][aiCiv] & 0x80 == 0 (no embassy) AND no Electronics(0x18)/Ceremonial Burial(0x09) tech',
         address: '0x0056213E',
-        notes: 'Cannot share target civ techs if human cannot verify (no embassy, no Navigation/Writing)',
+        notes: 'Cannot share target civ techs if human cannot verify (no embassy, no Electronics(0x18)/Ceremonial Burial(0x09))',
       },
     },
 
@@ -1232,9 +1232,9 @@ export const EVENT_CHAINS = [
       'Every 16 turns',
       'Both civs alive and not at war/allied',
       'Has contact + alliance between them',
-      'Visibility: embassy OR Navigation tech (0x18) OR Writing tech (0x09)',
+      'Visibility: embassy OR Electronics tech (0x18) OR Ceremonial Burial tech (0x09)',
     ],
-    visibilityTechs: { navigation: 0x18, writing: 0x09 },
+    visibilityTechs: { electronics: 0x18, ceremonialBurial: 0x09 },
     notes: 'Announced to human player; MP broadcasts to all visible human players',
   },
 
@@ -1424,7 +1424,7 @@ export const MODIFIER_SUMMARY = [
 
   // --- Wonders (Phase 11) ---
   { name: 'Great Wall / UN',            delta: '-1 or /2', condition: 'human has wonder 6 or 24' },
-  { name: 'AI has Statue of Liberty',   delta: '+1',  condition: 'AI has wonder 20' },
+  { name: 'AI has Statue of Liberty',   delta: '+1',  condition: 'AI has wonder 19' },
   { name: 'Human has Statue of Liberty', delta: '-1 to -2', formula: '/2 then -2 if >=1, else -1' },
 
   // --- Tech/tolerance (Phases 12-13) ---
@@ -1491,11 +1491,11 @@ export const SPACE_RACE_TECH_IDS = {
   // Tech IDs checked for space race capability (from FUN_00568861):
   // The function checks if a civ has specific advances that enable spaceship parts.
   // These are cross-referenced with production/wonder eligibility.
-  rocketry:       0x48,   // tech 72 — Rocketry (propulsion)
-  spaceFlight:    0x4E,   // tech 78 — Space Flight (structural)
-  plastics:       0x41,   // tech 65 — Plastics (habitation)
-  fusion:         0x21,   // tech 33 — Fusion Power (fuel pods)
-  lifeSupportTech:0x4F,   // tech 79 — Life Support (not in base rules but checked)
+  robotics:       0x48,   // tech 72 — Robotics (propulsion)
+  steamEngine:    0x4E,   // tech 78 — Steam Engine (structural)
+  pottery:        0x41,   // tech 65 — Pottery (habitation)
+  geneticEng:     0x21,   // tech 33 — Genetic Engineering (fuel pods)
+  steel:          0x4F,   // tech 79 — Steel (not in base rules but checked)
   sourceAddr: '0x00568861',
 };
 

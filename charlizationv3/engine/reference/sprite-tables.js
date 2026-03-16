@@ -787,7 +787,7 @@ export const UNIT_RENDERING = {
 
   // Barbarian settler type substitution
   // @ 0x0056BAFF: if (type == 0x2e AND owner == 0) type = 0x3e
-  barbarianSettlerType: 0x2E,     // 46 = Settlers
+  barbarianSettlerType: 0x2E,     // 46 = Diplomat
   barbarianReplacementType: 0x3E, // 62 = barbarian display type
 
   // Order character lookup table address
@@ -1085,13 +1085,13 @@ export const TRADE_ROUTES = {
   // @ FUN_00440750: if (turn < 200 AND !has_tech(0x26) AND !has_tech(0x39))
   //                 revenue doubled (early game bonus)
   earlyGameTurnThreshold: 200,  // @ FUN_00440750: DAT_00655af8 < 200
-  earlyGameTech1: 0x26,         // 38 = Corporation
-  earlyGameTech2: 0x39,         // 57 = Economics
+  earlyGameTech1: 0x26,         // 38 = Invention
+  earlyGameTech2: 0x39,         // 57 = Navigation
 
   // @ FUN_00440750: if (has_tech(0x43)) revenue -= revenue/3
-  tradeReductionTech1: 0x43,    // 67 = Superhighways? (reduces trade revenue 33%)
+  tradeReductionTech1: 0x43,    // 67 = Railroad (reduces trade revenue 33%)
   // @ FUN_00440750: if (has_tech(0x1e)) revenue -= revenue/3
-  tradeReductionTech2: 0x1e,    // 30 = Trade (reduces trade revenue 33%)
+  tradeReductionTech2: 0x1e,    // 30 = Flight (reduces trade revenue 33%)
 
   // === Building Checks for Trade ===
   // @ FUN_00440453: thunk_FUN_0043d20a(city, 0x20) -- checks building 32 (Airport)
@@ -1281,7 +1281,7 @@ export const DELETE_CITY = {
   // @ delete_city line ~524: unit type domain 0x01 (sea) stride 0x14
   //   if (DAT_0064b1ca[unit_type * 0x14] != '\x01') — checks if unit is NOT sea domain
   //   Sea domain units are handled differently (attempted reassignment via thunk_FUN_005b53b6)
-  seaDomainId: 0x01,              // domain 1 = sea
+  seaDomainId: 0x01,              // domain 1 = air in binary convention (0=ground, 1=air, 2=sea); JS engine remaps to 0=land, 1=sea, 2=air
   unitTypeStride: 0x14,           // 20 bytes per unit type in rules table
 
   // @ delete_city line ~529: city.flags |= 0x20 on receiving city during unit reassignment

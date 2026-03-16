@@ -597,7 +597,7 @@ export const GOVERNMENT_TYPES = {
   MONARCHY:        2,   // requires tech 0x36 (54 = Monarchy)               // 0x0055C277
   COMMUNISM:       3,   // requires tech 0x0F (15 = Communism)              // 0x0055C277
   FUNDAMENTALISM:  4,   // requires tech 0x1F (31 = Fundamentalism)         // 0x0055C277
-  REPUBLIC:        5,   // requires tech 0x47 (71 = Code of Laws)           // 0x0055C277
+  REPUBLIC:        5,   // requires tech 0x47 (71 = The Republic)            // 0x0055C277
   DEMOCRACY:       6,   // requires tech 0x15 (21 = Democracy)              // 0x0055C277
 };
 
@@ -605,7 +605,7 @@ export const GOVT_TECH_PREREQUISITES = {
   2: 0x36,   // Monarchy → tech 54                                         // 0x0055C277
   3: 0x0F,   // Communism → tech 15                                        // 0x0055C277
   4: 0x1F,   // Fundamentalism → tech 31                                   // 0x0055C277
-  5: 0x47,   // Republic → tech 71 (Code of Laws)                          // 0x0055C277
+  5: 0x47,   // Republic → tech 71 (The Republic)                           // 0x0055C277
   6: 0x15,   // Democracy → tech 21                                        // 0x0055C277
   // Statue of Liberty (wonder 0x13 = 19) bypasses all tech requirements   // 0x0055C277
   statueOfLibertyWonderId: 0x13,                                            // 0x0055C277
@@ -643,8 +643,8 @@ export const AI_REVOLUTION = {
   notificationFlag:    0x01,      // civ.flags bit: already notified       // 0x0055C69D
   overthrownMsgKey:    'OVERTHROWN',   // first notification message       // 0x0055C69D
   changedMsgKey:       'CHANGED',      // second notification message      // 0x0055C69D
-  marcoPoloWonderId:   0x18,      // 24 — Marco Polo Embassy wonder       // 0x0055C69D
-  intelAgencyWonderId: 9,         // Intelligence Agency wonder            // 0x0055C69D
+  unitedNationsWonderId: 0x18,    // 24 — United Nations wonder            // 0x0055C69D
+  marcoPoloWonderId:     9,      // 9 — Marco Polo's Embassy wonder       // 0x0055C69D
   // AI personality formula on govt change:
   // adjustedGovt = (newGovt < 4) ? newGovt : newGovt - 1
   // personality = 4 - (adjustedGovt >> 1)                                 // 0x0055C69D
@@ -2331,7 +2331,7 @@ export const MENU_ENABLE_STATE = {
       pediaWonders:   { menuId: 0x412, greyed: 'railroad-dependent' },
     },
     attitudeAdvisor: { menuId: 0x450, condition: 'domain == settler (settlers only)' },
-    pediaTerrain:    { menuId: 0x418, techReq: 0x12 },  // requires Invention (0x12) tech
+    pediaTerrain:    { menuId: 0x418, techReq: 0x12 },  // requires Construction (0x12 = 18) tech
     pedaGovernments: { menuId: 0x417, techReq: 0x42 },  // requires tech 0x42
     demographics:    { menuId: 0x430, condition: 'domain == settler' },
     pediaGame:       { menuId: 0x41B, condition: 'domain != settler' },
@@ -2786,7 +2786,7 @@ export const UNIT_TYPE_EDITOR = {
     name:        0x00,              // char* — unit name pointer                  // 0x005aef20
     prereqTech:  0x13,              // int8 — technology prerequisite             // 0x005aef20
     obsoleteTech:0x08,              // int8 — technology that obsoletes           // 0x005aef20
-    domain:      0x12,              // int8 — 0=land, 1=sea, 2=air               // 0x005aef20
+    domain:      0x12,              // int8 — 0=ground, 1=air, 2=sea [binary convention; JS engine remaps to 0=land, 1=sea, 2=air]  // 0x005aef20
     role:        0x09,              // int8 — unit role/category                  // 0x005aef20
     attack:      0x0C,              // int8 — base attack strength               // 0x005aef20
     defense:     0x0D,              // int8 — base defense strength              // 0x005aef20

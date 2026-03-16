@@ -884,7 +884,7 @@ export const UNIT_STATUS_FLAGS = {
                                 //   Set by: FUN_004e7d7f (AI city unit evaluation) line 3054: flags |= 0x400
                                 //     when the unit's attack evaluation changes (DAT_006a65e4 modified)
                                 //   Checked by: FUN_00500000 city view (line 2524) for attack display
-                                //     with additional check for wonder 0x15 (Leonardo's Workshop)
+                                //     with additional check for wonder 0x15 (Women's Suffrage)
                                 //   sourceAddr: block_004E0000.c:3054, block_00500000.c:2524
   AI_MOBILIZED:        0x0800,  // bit 11: AI unit is mobilized for city defense / production allocation
                                 //   Set by: FUN_004e7d7f (AI city unit evaluation) line 3007: flags |= 0x800
