@@ -143,10 +143,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const prevItem = city.itemInProduction;
       const oldShields = city.shieldsInBox || 0;
       let newShields;
-      if (prevItem && prevItem.type === item.type && prevItem.id === item.id) {
-        // Switching to same item — no penalty
+      if (!prevItem || (prevItem.type === item.type && prevItem.id === item.id)) {
+        // No previous production or switching to same item — no penalty
         newShields = oldShields;
-      } else if (prevItem && prevItem.type === item.type) {
+      } else if (prevItem.type === item.type) {
         // Same category, different item — 50% penalty
         newShields = Math.floor(oldShields / 2);
       } else {

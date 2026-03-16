@@ -283,6 +283,12 @@ export function animateCombat(cr, onComplete) {
     return;
   }
 
+  // ── Civ2-faithful animation: batch rounds into groups of 5 ──
+  // Real Civ2 shows one 8-frame explosion per 5 combat rounds.
+  // HP bars update per group (accumulated damage), not per individual round.
+  const ROUNDS_PER_EXPLOSION = 5;
+  const FRAME_MS = 70; // Real Civ2 uses 70ms per explosion frame
+
   // HP tracking in internal units (×10)
   let atkHp = cr.atkStartHp;
   let defHp = cr.defStartHp;
@@ -291,79 +297,105 @@ export function animateCombat(cr, onComplete) {
   const atkFp = cr.atkFp;
   const defFp = cr.defFp;
 
+  // Pre-group rounds into batches of 5 (last group may be smaller)
+  const groups = [];
+  for (let i = 0; i < rounds.length; i += ROUNDS_PER_EXPLOSION) {
+    groups.push(rounds.slice(i, i + ROUNDS_PER_EXPLOSION));
+  }
+  // Ensure at least 1 group (the final death explosion)
+  if (groups.length === 0) groups.push([]);
+
   // Bar positions: attacker bar on left of tile, defender on right
   const barY = screenY(tileY) - 6 * pxPerMap;
   const atkBarX = screenX(tileX) - 2 * pxPerMap;
   const defBarX = screenX(tileX) + 52 * pxPerMap;
 
+  // Center explosion on tile (32×32 sprite centered on 64×32 tile)
+  const expX = tileX + 16;
+  const expY = tileY + 8;
+
   // Play attack sound on first frame
   const atkSfx = UNIT_ATK_SFX[cr.attacker];
   if (atkSfx) sfx(atkSfx);
 
-  let roundIdx = 0;
+  // Pre-load explosion frames
+  _ensureExplosionFrames().then(expFrames => {
+    let groupIdx = 0;
 
-  // Phase A: combat rounds
-  function roundFrame() {
-    if (roundIdx >= rounds.length) {
-      // Phase B: explosion on loser
-      playExplosion();
-      return;
+    function playNextGroup() {
+      if (groupIdx >= groups.length) {
+        // All groups done — play final death explosion
+        playDeathExplosion(expFrames);
+        return;
+      }
+
+      const group = groups[groupIdx];
+
+      // Apply all damage in this group at once
+      for (const atkWon of group) {
+        if (atkWon) {
+          defHp -= atkFp * 10;
+        } else {
+          atkHp -= defFp * 10;
+        }
+      }
+      if (atkHp < 0) atkHp = 0;
+      if (defHp < 0) defHp = 0;
+
+      // Play 8-frame explosion for this group
+      let fi = 0;
+      function explosionFrame() {
+        if (fi >= 8) {
+          // Group done, move to next
+          groupIdx++;
+          playNextGroup();
+          return;
+        }
+
+        S.vCtx.putImageData(bgSnapshot, 0, 0);
+
+        // Draw both units during combat
+        drawSpriteAt(atkSprite, tileX, tileY);
+        drawSpriteAt(defSprite, tileX, tileY);
+
+        // Draw HP bars (updated for this group's accumulated damage)
+        drawHpBar(atkBarX, barY, atkHp, atkMaxHp);
+        drawHpBar(defBarX, barY, defHp, defMaxHp);
+
+        // Draw explosion frame on the tile
+        if (expFrames && expFrames[fi]) {
+          drawSpriteAt(expFrames[fi], expX, expY);
+        }
+
+        fi++;
+        setTimeout(explosionFrame, FRAME_MS);
+      }
+      explosionFrame();
     }
 
-    // Apply this round's damage
-    if (rounds[roundIdx]) {
-      defHp -= atkFp * 10;
-    } else {
-      atkHp -= defFp * 10;
-    }
-    if (atkHp < 0) atkHp = 0;
-    if (defHp < 0) defHp = 0;
+    playNextGroup();
+  });
 
-    // Restore background
-    S.vCtx.putImageData(bgSnapshot, 0, 0);
-
-    // Draw alternating sprite (attacker on even rounds, defender on odd)
-    const sprite = (roundIdx % 2 === 0) ? atkSprite : defSprite;
-    drawSpriteAt(sprite, tileX, tileY);
-
-    // Draw HP bars
-    drawHpBar(atkBarX, barY, atkHp, atkMaxHp);
-    drawHpBar(defBarX, barY, defHp, defMaxHp);
-
-    roundIdx++;
-    setTimeout(roundFrame, 100);
-  }
-
-  // Phase B: explosion over loser
-  async function playExplosion() {
-    const frames = await _ensureExplosionFrames();
-
-    // Play death sound
+  // Final death explosion on loser
+  function playDeathExplosion(expFrames) {
     const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
     sfx(getDeathSfx(loser));
 
-    if (!frames || frames.length === 0) {
+    if (!expFrames || expFrames.length === 0) {
       if (onComplete) onComplete();
       return;
     }
 
-    // Show 4 explosion frames (use frames 0,2,4,6 for variety)
-    const frameIndices = [0, 2, 4, 6];
     let fi = 0;
-
-    // Center explosion on tile (32×32 sprite centered on 64×32 tile)
-    const expX = tileX + 16; // center of tile minus half explosion width
-    const expY = tileY + 8;  // vertically centered
-
-    function explodeFrame() {
-      if (fi >= frameIndices.length) {
+    function deathFrame() {
+      if (fi >= 8) {
         if (onComplete) onComplete();
         return;
       }
 
       S.vCtx.putImageData(bgSnapshot, 0, 0);
 
-      // Draw surviving unit
+      // Draw surviving unit only
       const survivor = cr.type === 'atkWin' ? atkSprite : defSprite;
       drawSpriteAt(survivor, tileX, tileY);
 
@@ -371,18 +403,16 @@ export function animateCombat(cr, onComplete) {
       drawHpBar(atkBarX, barY, atkHp, atkMaxHp);
       drawHpBar(defBarX, barY, defHp, defMaxHp);
 
-      // Draw explosion frame
-      const frame = frames[frameIndices[fi]];
-      drawSpriteAt(frame, expX, expY);
+      // Draw explosion frame over loser position
+      if (expFrames[fi]) {
+        drawSpriteAt(expFrames[fi], expX, expY);
+      }
 
       fi++;
-      setTimeout(explodeFrame, 100);
+      setTimeout(deathFrame, FRAME_MS);
     }
-
-    explodeFrame();
+    deathFrame();
   }
-
-  roundFrame();
 }
 
 // ═══════════════════════════════════════════════════════════════════
