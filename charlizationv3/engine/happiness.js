@@ -69,17 +69,21 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
 
     // Binary: contentCitizens = ((govtType >> 1) + 2) * contentBase / 2
     // govtType is the numeric government index (0=anarchy, 1=despotism, etc.)
+    // NOTE: contentCitizens is used ONLY for empire size penalty divisor, NOT for initial unhappy
     const govtIdx = GOVT_INDEX[govt] ?? 1;
     let contentCitizens = Math.trunc(((govtIdx >> 1) + 2) * spread / 2);
     if (contentCitizens < 2) contentCitizens = 1;
 
-    st.unhappy = (pop - 1) - contentCitizens;
+    // Binary: local_20 = CONTENT_BASE - difficulty (martial law base)
+    // Binary: unhappy = (size - 1) - (local_20 - 2)
+    const martialLawBase = CONTENT_BASE - diffIdx;
+    st.unhappy = (pop - 1) - (martialLawBase - 2);
 
-    // Empire size penalty (Communism exempt)
+    // Empire size penalty (Communism exempt) — uses govt-scaled contentCitizens as divisor
     if (govt !== 'communism') {
       const cityCount = gameState.cities.filter(c => c.owner === ownerSlot && c.size > 0).length;
       const divisor = Math.max(1, contentCitizens);
-      st.unhappy += Math.floor((cityCount - divisor + cityIndex % divisor) / divisor);
+      st.unhappy += Math.trunc((cityCount - divisor + cityIndex % divisor) / divisor);
     }
   }
 

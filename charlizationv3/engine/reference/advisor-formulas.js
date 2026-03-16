@@ -2728,6 +2728,11 @@ export const ESPIONAGE = {
     caughtDialog: 's_NAILED_0062dd70',
     returnValue: { detected: 1, undetected: 0 },
     meaning: 'Each call is one spy detection roll; missions call this 1-4 times depending on difficulty',
+    // Steal tech detection survival percentages (from FUN_004c6bf5 case 2):
+    // When role == 6 (diplomat), local_39c = 0x14 (20%) base survival
+    // When spy (non-veteran): local_39c = 0x28 (40%)
+    // When veteran spy: local_39c = 0x3C (60%)
+    stealDetectionSurvival: { diplomat: 0x14, spy: 0x28, veteranSpy: 0x3C },
     sourceAddr: '0x004c64aa',
   },
 
@@ -4532,6 +4537,15 @@ export const TILE_YIELD = {
 
   govtTradeBonusMin: 2,
 
+  // Missing from earlier audits — added Round 6:
+  kingRichardWonderId: 8,    // wonder 8 = King Richard's Crusade: +1 shields per tile in wonder city
+  superhighwaysBuildingId: 0x19, // building 25: +50% trade on road/railroad tiles (trade += trade >> 1)
+  railroadShieldBonus: '>> 1',  // +50% shields on railroad tiles (shields += shields >> 1)
+  riverTradeBonus: 1,           // river bit (byte 0 & 0x80): +1 trade
+  pollutionYieldPenalty: '>> 1', // pollution on tile: yield = (yield + 1) >> 1 (halved, rounded up)
+  centerTileMinShield: 1,       // city center tile (index 0x14) guarantees at least 1 shield
+  grasslandShieldCheckFn: 'FUN_0040bcb0', // grassland_has_shield: some grasslands have 0 shields
+
   sourceAddr: '0x004E868F',
 };
 
@@ -4566,19 +4580,20 @@ export const WORKER_ASSIGNMENT = {
 // ============================================================================
 
 export const TRADE_DISTRIBUTION = {
-  luxuryRateOffset: 0x13,     // DAT_0064C6B3 relative to civ base
-  scienceRateOffset: 0x14,
+  scienceRateOffset: 0x13,    // DAT_0064C6B3 relative to civ base
+  taxRateOffset: 0x14,        // DAT_0064C6B4 relative to civ base; luxury = 10 - science - tax
   govtTypeOffset: 0x15,
 
   roundingOffset: 4,          // +4 before /10
 
   specialistBonuses: {
     // C: FUN_004e75ea(param_1, statusType) returns count of specialists with that status
-    // C line 3893: DAT_006a65fc (gold) += count_status1 * 2
-    // C line 3895: DAT_006a6554 (luxury) += count_status2 * 3
+    // C line 3893: DAT_006a65fc (luxury) += count_status1 * 2
+    // C line 3895: DAT_006a6554 (gold) += count_status2 * 3
     // C line 3897: DAT_006a6578 (science) += count_status3 * 3
-    taxman:    { status: 1, bonus: 2, yields: 'gold' },
-    elvis:     { status: 2, bonus: 3, yields: 'luxury' },
+    // NOTE: DAT_006a65fc is LUXURY (feeds contentFromLuxury = DAT_006a65fc >> 1), DAT_006a6554 is GOLD
+    elvis:     { status: 1, bonus: 2, yields: 'luxury' },
+    taxman:    { status: 2, bonus: 3, yields: 'gold' },
     scientist: { status: 3, bonus: 3, yields: 'science' },
   },
 
@@ -4847,14 +4862,24 @@ export const HAPPINESS_CALC = {
     palaceCondition: 'no corruption AND no waste in city',
   },
 
+  // Initial unhappy count (human):
+  // C line 4093: DAT_006a65a8 = (size - 1) - (local_20 - 2)
+  // NOTE: initial unhappy uses (martialLawBase - 2), NOT the govt-scaled contentCitizens.
+  // The govt-scaled contentCitizens (iVar5) is used ONLY as the divisor in empire size penalty below.
+  initialUnhappy: {
+    formula: 'unhappy = (citySize - 1) - (martialLawBase - 2)',
+    note: 'martialLawBase = DAT_0064BCCF - difficulty. NOT the same as contentCitizens.',
+  },
+
   // Distance-based unhappiness (not Communism):
   // C: if (govt != Communism(3)):
   //    unhappy += (numCities - contentCitizens + cityIndex % contentCitizens) / contentCitizens
+  // NOTE: contentCitizens here is the govt-scaled iVar5 = ((govtType >> 1) + 2) * contentBase / 2
   distanceUnhappy: {
     formula: 'unhappy += (civTotalCities - contentCitizens + (cityIndex % contentCitizens)) / contentCitizens',
     civCitiesAddr: 'DAT_0064C708 + civId * 0x594',
     exemptGovt: 3,  // Communism exempt
-    meaning: 'Additional unhappiness based on empire size relative to content citizens',
+    meaning: 'Additional unhappiness based on empire size relative to govt-scaled content citizens',
   },
 
   // --- Phase 3: Luxury conversion (line 4106) ---
@@ -7658,8 +7683,8 @@ export const CIV_SCORING = {
     addr: 'DAT_00673F58',
     formula: '(DAT_00655B12 - DAT_00655B10) * -10',
     meaning: 'Negative score for excess pollution (global warming events minus cooling events)',
-    warmingAddr: 'DAT_00655B10',
-    coolingAddr: 'DAT_00655B12',
+    warmingAddr: 'DAT_00655B12',  // formula: (warming - cooling) * -10 → negative when warming > cooling
+    coolingAddr: 'DAT_00655B10',
     multiplier: -10,
     sourceAddr: '0x004A28B0+line364',
   },
