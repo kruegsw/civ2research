@@ -5679,10 +5679,10 @@ export const BARBARIAN_CAMP_SPAWNING = {
     formula: 'continentPop / 50, clamped to 3..6',
   },
 
-  // Government check for barbarian type: DAT_00655B08 == 5 (democracy)
-  // If civ is human AND democracy → weaker barbarians (+1 instead of +3)
-  democracyGovtId: 5,
-  democracyBonus: 1,
+  // Difficulty check for barbarian scoring: DAT_00655B08 == 5 (Deity)
+  // If Deity difficulty → smaller score increment (+1 instead of +3)
+  deityDifficultyId: 5,
+  deityBonus: 1,
   normalBonus: 3,
 
   // Hut placement: for each settler, add (maxScore - thisScore) barbarian units
