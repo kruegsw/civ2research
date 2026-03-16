@@ -2,13 +2,17 @@
  * Civ2 MGE UI System — Binary-Extracted Reference Data (Part 2)
  * Source: civ2.exe decompilation (Ghidra)
  *
- * Covers 6 subsystems not in ui-constants.js (which has city dialog):
+ * Covers 10 subsystems not in ui-constants.js (which has city dialog):
  *   1. Popup / Dialog Engine — @-directive parser, flags, stack, button types
  *   2. Dialog Framework — font sizing, window positioning, popup dimensions
  *   3. Government Council — 5 advisor types, panel layout, video system
  *   4. Turn Timer — hourglass icons, blink intervals, color thresholds
  *   5. Drawing Primitives — 3D border, fill, blit specifications
  *   6. Multiplayer Event Dispatch — ~100 event type catalog
+ *   7. Cheat Mode Flags — god mode, observer, cheat toggles
+ *   8. Terrain Editor — 33 terrain types, editor layout, data structures
+ *   9. Game Setup Dialogs — difficulty, enemies, barbarity, rules, MP config
+ *  10. Civ Selection — 21 leader entries, custom tribe, city style
  *
  * Every constant includes its binary address as a comment.
  */
@@ -744,6 +748,87 @@ export const MP_EVENT_TYPES = {
   0x61: { key: 'UPYOURSTOO',       desc: 'diplomatic retort (animated)' },  // 0x00511BA2
 };
 
+// --- MP Event Sound and Network Details ---
+// Each entry documents the play_sound (thunk_FUN_0046e020) and net_send (thunk_FUN_0046b14d)
+// calls made within dispatch_mp_event (FUN_00511ba2) for specific event cases.
+export const MP_EVENT_DETAILS = {
+  // sound = play_sound(soundId, ...), netMsg = net_send(msgType, ...)
+  // ── Caravan/Trade ──
+  0x0F: { sound: { id: 0x16, cond: 'default; 0x2A if piVar1[5]==0' },       // 0x00511BA2
+          desc: 'caravan: sound = 0x16 (or 0x2A if supply)' },
+  0x10: { sound: { id: 0x16, cond: 'default; 0x2A if piVar1[5]==0' },       // 0x00511BA2
+          desc: 'food caravan: same sound logic as 0x0F' },
+  // ── City Capture ──
+  0x1B: { sound: 0x05,                                                       // 0x00511BA2
+          desc: 'city capture: sound 5' },
+  0x1C: { sound: 0x05,                                                       // 0x00511BA2
+          desc: 'city captured by ally: sound 5' },
+  0x1D: { sound: 0x05,                                                       // 0x00511BA2
+          desc: 'city lost by ally: sound 5' },
+  0x1E: { sound: 0x05,                                                       // 0x00511BA2
+          desc: 'city capture variant: sound 5' },
+  // ── Diplomacy/Parley ──
+  0x3D: { netMsg: 0x80,                                                      // 0x00511BA2
+          desc: 'parley request: sends 0x80 (diplomacy response)' },
+  // ── Deserter ──
+  0x23: { netMsg: 0x7B,                                                      // 0x00511BA2
+          desc: 'deserter: sends 0x7B to source player' },
+  0x24: { netMsg: 0x7B,                                                      // 0x00511BA2
+          desc: 'deserter variant: sends 0x7B to source player' },
+  // ── Can Escape ──
+  0x17: { netMsg: 0x77,                                                      // 0x00511BA2
+          desc: 'can_escape: sends 0x77 response' },
+  // ── Manhattan Project ──
+  0x46: { sound: 0x23,                                                       // 0x00511BA2
+          desc: 'Manhattan Project: sound 0x23' },
+  // ── Golden Age ──
+  0x54: { sound: 0x3C,                                                       // 0x00511BA2
+          desc: 'golden age: sound 0x3C' },
+  // ── Espionage ──
+  0x55: { sound: 0x44,                                                       // 0x00511BA2
+          desc: 'enemy embassy: sound 0x44 (spy)' },
+  0x56: { sound: 0x44,                                                       // 0x00511BA2
+          desc: 'enemy investigate: sound 0x44 (spy)' },
+  0x57: { sound: { id: 0x44, cond: 'no espionage tech; 0x27 if has it' },   // 0x00511BA2
+          desc: 'steal tech: sound 0x44 or 0x27 depending on tech 0x23' },
+  0x58: { sound: 0x44,                                                       // 0x00511BA2
+          desc: 'foiled spy: sound 0x44' },
+  0x59: { sound: { id: 0x44, cond: 'no espionage tech; 0x27 if has it' },   // 0x00511BA2
+          desc: 'sabotage one: sound 0x44 or 0x27' },
+  0x5A: { sound: { id: 0x44, cond: 'no espionage tech; 0x27 if has it' },   // 0x00511BA2
+          desc: 'sabotage two: sound 0x44 or 0x27' },
+  0x5B: { sound: 0x44,                                                       // 0x00511BA2
+          desc: 'water supply sabotage: sound 0x44' },
+  0x5E: { sound: 0x44,                                                       // 0x00511BA2
+          desc: 'civil war: sound 0x44' },
+  // ── Nuclear Events ──
+  0x29: { sound: 0x3E,                                                       // 0x00511BA2
+          desc: 'nuke explosion: sound 0x3E' },
+  0x2A: { sound: 0x11,                                                       // 0x00511BA2
+          desc: 'nuclear plant meltdown: sound 0x11' },
+  0x5C: { sound: 0x3E,                                                       // 0x00511BA2
+          desc: 'planted nuke: sound 0x3E' },
+  0x5D: { sound: 0x3E,                                                       // 0x00511BA2
+          desc: 'planted nuke variant: sound 0x3E' },
+  // ── Uprising/Mine ──
+  0x5F: { sound: 0x5D,                                                       // 0x00511BA2
+          desc: 'upgrade mine: sound 0x5D' },
+  0x60: { sound: 0x5D,                                                       // 0x00511BA2
+          desc: 'diplomatic insult: sound 0x5D' },
+  0x61: { sound: 0x5D,                                                       // 0x00511BA2
+          desc: 'diplomatic retort: sound 0x5D' },
+  // ── Turn Timer ──
+  0x40: { netMsg: 0x56,                                                      // 0x00511BA2
+          desc: 'turn timer client vote: sends 0x56 response' },
+  0x43: { netMsg: 0x57,                                                      // 0x00511BA2
+          desc: 'password master change: sends 0x57 response' },
+  // ── Intelligence ──
+  0x64: { netMsg: 0xA7, flag: 'DAT_0067ab65',                               // 0x00511BA2
+          desc: 'reveal unit origins: sends 0xA7, sets flag' },
+  0x65: { netMsg: 0xA5, flag: 'DAT_0067ab66',                               // 0x00511BA2
+          desc: 'reveal city info: sends 0xA5, sets flag' },
+};
+
 // --- MP Event System Infrastructure ---
 // enqueue_mp_event (FUN_00511880), dispatch_mp_event (FUN_00511ba2)
 export const MP_EVENT_SYSTEM = {
@@ -797,4 +882,2173 @@ export const CHEAT_FLAGS = {
   godModeFlag:      'DAT_00655b07',                                         // 0x0055560F
   observerFlag:     'DAT_00655b06',                                         // 0x0055560F
   currentPlayerVar: 'DAT_006d1da0',                                         // 0x0055560F
+};
+
+// --- Cheat Edit Dialogs ---
+// Debug/cheat mode editor dialogs for in-game modification of units, cities, civs, scenarios.
+// Source: block_00550000.c — FUN_0055560f through FUN_005582ad
+
+// cheat_set_game_year (FUN_00555a02), 137 bytes — DEBUG mode game year override
+export const CHEAT_GAME_YEAR = {
+  dialogSection:   'DEBUG',            // dialog section in GAME.TXT              // 0x00555A02
+  dialogKey:       'GAMEYEAR',         // prompt key                              // 0x00555A02
+  turnVar:         'DAT_00655af8',     // current game turn                       // 0x00555A02
+  yearVar:         'DAT_00655afa',     // display year (recalculated from turn)   // 0x00555A02
+  sourceAddr:      '0x00555A02',
+};
+
+// cheat_set_money (FUN_0055615c), 255 bytes — set civ treasury (cheat mode)
+export const CHEAT_SET_MONEY = {
+  dialogSection:   'DEBUG',            // dialog section in GAME.TXT              // 0x0055615C
+  dialogKey:       'MONEY',            // prompt key                              // 0x0055615C
+  maxGold:         30000,              // hard cap: gold clamped to 0..30000      // 0x0055615C
+  minGold:         0,                  // minimum gold value                      // 0x0055615C
+  treasuryOffset:  '+0x02 in civ record (DAT_0064c6a2 + civIdx * 0x594)',        // 0x0055615C
+  sourceAddr:      '0x0055615C',
+};
+
+// cheat_edit_unit (FUN_0055625b), 1892 bytes — unit property editor
+export const CHEAT_EDIT_UNIT = {
+  dialogKey:       'UNITEDIT',         // GAME.TXT section key                    // 0x0055625B
+  unitRecordBase:  'DAT_006560f0',     // unit records start                      // 0x0055625B
+  unitRecordStride: 0x20,              // 32 bytes per unit record                // 0x0055625B
+  fields: {
+    position:      '+0x00 (x:int16, y:int16)',                                    // 0x0055625B
+    flags:         '+0x04 (uint16)',     // bit 0x2000 = fortified                // 0x0055625B
+    type:          '+0x06 (byte)',       // unit type index                       // 0x0055625B
+    owner:         '+0x07 (byte)',       // civ index                             // 0x0055625B
+    movesLeft:     '+0x08 (byte)',       // movement points remaining             // 0x0055625B
+    hitpoints:     '+0x0a (byte)',       // current hitpoints                     // 0x0055625B
+    homeCity:      '+0x10 (byte)',       // home city index (0xFF = none)         // 0x0055625B
+    goto:          '+0x0f (byte)',       // goto mode flag (0x02 or 0xFF)         // 0x0055625B
+    cargoSearch:   '+0x0d (byte)',       // supply search target type             // 0x0055625B
+  },
+  editOptions: [
+    { id: 1, name: 'Toggle fortified',  bit: 0x2000 },                           // 0x0055625B
+    { id: 2, name: 'Clear movement',    setsTo: 0 },                             // 0x0055625B
+    { id: 3, name: 'Set hitpoints',     dialogKey: 'UNITHITPOINTS' },            // 0x0055625B
+    { id: 4, name: 'Change home city',  dialogKey: 'EDITHOMECITY' },             // 0x0055625B
+    { id: 5, name: 'Toggle goto',       values: [0x02, 0xFF] },                  // 0x0055625B
+    { id: 6, name: 'Change cargo search', dialogKey: 'SUPPLYSEARCH', maxId: 0x10 }, // 0x0055625B
+  ],
+  supplySearchCount: 0x10,             // 16 supply search targets + "None"       // 0x0055625B
+  supplyCancelId:    0x10,             // id 16 = "None" (clears supply search)   // 0x0055625B
+  sourceAddr:        '0x0055625B',
+};
+
+// cheat_unit_icon_id (FUN_00555ced), 131 bytes — maps unit domain to minimap icon
+export const CHEAT_UNIT_ICON_MAP = {
+  defaultIcon:   0x29,   // fallback icon ID                                      // 0x00555CED
+  domainIcons: {
+    0: 0x6A,             // land unit icon (param_1 == 0)                         // 0x00555CED
+    1: 0x7A,             // sea unit icon (param_1 == 1)                          // 0x00555CED
+    2: 0x5E,             // air unit icon (param_1 == 2)                          // 0x00555CED
+    4: 0x55,             // special unit icon (param_1 == 4)                      // 0x00555CED
+    5: 0x2A,             // settler-class icon (param_1 == 5)                     // 0x00555CED
+    0x15: 0x1D,          // nuke icon (param_1 == 0x15)                           // 0x00555CED
+  },
+  sourceAddr: '0x00555CED',
+};
+
+// cheat_edit_city (set_city_shields FUN_005569e3), 1357 bytes — city property editor
+export const CHEAT_EDIT_CITY = {
+  dialogKey:       'CITYEDIT',         // GAME.TXT section key                    // 0x005569E3
+  cityRecordBase:  'DAT_0064f340',     // city records start                      // 0x005569E3
+  cityRecordStride: 0x58,              // 88 bytes per city record                // 0x005569E3
+  editOptions: [
+    { id: 1, name: 'Set city size',    dialogKey: 'SETCITYSIZE' },               // 0x005569E3
+    { id: 2, name: 'Clear wonders',    addrBase: 'DAT_00655be6', count: 0x1C },  // 0x005569E3
+    { id: 3, name: 'Clear disorder',   mask: 0xFFFFFFFC },                       // 0x005569E3
+    { id: 4, name: 'Copy city',        dialogKey: 'COPYCITY' },                  // 0x005569E3
+    { id: 5, name: 'Set shields',      dialogKey: 'SETCITYSHIELDS' },            // 0x005569E3
+    { id: 6, name: 'Toggle capital',   bit: 0x4000000 },                         // 0x005569E3
+  ],
+  wonderSlotCount: 0x1C,               // 28 wonder slots in DAT_00655be6         // 0x005569E3
+  capitalFlag:     0x4000000,          // city flags bit for capital               // 0x005569E3
+  copyFieldCount:  5,                  // 5 bytes copied for city type/buildings   // 0x005569E3
+  sourceAddr:      '0x005569E3',
+};
+
+// cheat_edit_king (FUN_00556f54), 3764 bytes — civ/player property editor
+export const CHEAT_EDIT_KING = {
+  dialogKey:       'EDITKING',          // GAME.TXT section key                   // 0x00556F54
+  editOptions: [
+    { id: 1,  name: 'Edit treaties',     dialogKey: 'EDITTREATIES' },            // 0x00556F54
+    { id: 2,  name: 'Edit last contact', dialogKey: 'LASTCONTACT' },             // 0x00556F54
+    { id: 3,  name: 'Edit attitude',     dialogKey: 'EDITATTITUDE' },            // 0x00556F54
+    { id: 4,  name: 'Edit betrayal',     dialogKey: 'EDITBETRAY' },              // 0x00556F54
+    { id: 5,  name: 'Clear patience' },                                          // 0x00556F54
+    { id: 6,  name: 'Reset all contacts to current turn' },                      // 0x00556F54
+    { id: 7,  name: 'Show power graph',  fn: 'thunk_FUN_004c195e(civIdx, 1)' },  // 0x00556F54
+    { id: 8,  name: 'Edit research progress', dialogKey: 'EDITPROGRESS' },       // 0x00556F54
+    { id: 9,  name: 'Clear current research', setsTo: 0xFFFF },                  // 0x00556F54
+    { id: 10, name: 'Edit leader name',  dialogKey: 'EDITKINGNAME', maxLen: 0x17 }, // 0x00556F54
+    { id: 11, name: 'Copy techs from civ' },                                     // 0x00556F54
+    { id: 12, name: 'Toggle human/AI',   flagBit: 0x200 },                       // 0x00556F54
+  ],
+  treatyEditBits: {
+    // Treaty flag bits edited via checkbox dialog
+    contact:     { bit: 0,  checkbox: 0, flagValue: 1 },                          // 0x00556F54
+    ceasefire:   { bit: 1,  checkbox: 1, flagValue: 2 },                          // 0x00556F54
+    peace:       { bit: 2,  checkbox: 2, flagValue: 4 },                          // 0x00556F54
+    alliance:    { bit: 3,  checkbox: 3, flagValue: 8 },                          // 0x00556F54
+    vendetta:    { bit: 13, checkbox: 4, flagValue: 0x2000 },                     // 0x00556F54
+    embassy:     { bit: 4,  checkbox: 5, flagValue: 0x10 },                       // 0x00556F54
+    mapShared:   { bit: 7,  checkbox: 6, flagValue: 0x80 },                       // 0x00556F54
+  },
+  clearTreatyMask: 0x60,               // clear ceasefire+peace before set        // 0x00556F54
+  clearVendettaMask: 0x200E,           // clear vendetta+war group before set     // 0x00556F54
+  humanAIFlag:     0x200,              // civ.flags bit 9: human/AI toggle        // 0x00556F54
+  leaderNameMaxLen: 0x17,              // 23 character limit                      // 0x00556F54
+  techCountField:  '+0x10 in civ record (DAT_0064c6b0)',                          // 0x00556F54
+  techCopyCount:   0xD,                // 13 tech bytes copied per civ            // 0x00556F54
+  // Human-controlled civ personality recalculation on toggle:
+  // Uses leader personality at DAT_006554f8 + leaderIdx * 0x30
+  personalityLeaderAddr: 'DAT_006554fc + leaderIdx * 0x30',                       // 0x00556F54
+  personalityMappingAdj: '+0x15 to personality byte if human',                    // 0x00556F54
+  sourceAddr:      '0x00556F54',
+};
+
+// cheat_edit_victory (FUN_00557e2c), 843 bytes — victory conditions editor
+export const CHEAT_EDIT_VICTORY = {
+  dialogKey:       'EDITVICTORY',       // GAME.TXT section key                   // 0x00557E2C
+  fields: {
+    totalPopulation: 'sum of city_population for all cities',                     // 0x00557E2C
+    civPopulation:   'sum for selected civ only',                                 // 0x00557E2C
+    conquestFlag:    { bit: 0x02, desc: 'conquest victory enabled' },             // 0x00557E2C
+    scienceFlag:     { bit: 0x04, desc: 'science (spaceship) victory enabled' },  // 0x00557E2C
+  },
+  editOptions: [
+    { id: 1, name: 'Toggle conquest',       flagBit: 0x02, addr: 'DAT_0064bc60' }, // 0x00557E2C
+    { id: 2, name: 'Toggle science',        flagBit: 0x04, addr: 'DAT_0064bc60' }, // 0x00557E2C
+    { id: 3, name: 'Select civ to display', fn: 'civ_picker_dialog' },            // 0x00557E2C
+    { id: 4, name: 'Edit victory value',    dialogKey: 'EDITVICTORYOBJ' },        // 0x00557E2C
+  ],
+  victoryObjAddr:  'DAT_0064bcb4 (short[4], indices 4-7)',                        // 0x00557E2C
+  sourceAddr:      '0x00557E2C',
+};
+
+// cheat_edit_rules (FUN_0055819b), 274 bytes — game rule toggles
+export const CHEAT_EDIT_RULES = {
+  dialogKey:       'EDITRULES',         // GAME.TXT section key                   // 0x0055819B
+  ruleFlags: {
+    flag0x10: { bit: 0x10, checkbox: 0, desc: 'rule flag bit 4' },               // 0x0055819B
+    flag0x20: { bit: 0x20, checkbox: 1, desc: 'rule flag bit 5' },               // 0x0055819B
+    flag0x40: { bit: 0x40, checkbox: 2, desc: 'rule flag bit 6' },               // 0x0055819B
+    flag0x8000: { bit: 0x8000, checkbox: 3, desc: 'WW2/special scenario flag' }, // 0x0055819B
+  },
+  flagsAddr:       'DAT_0064bc60',     // scenario/game flags word                // 0x0055819B
+  sourceAddr:      '0x0055819B',
+};
+
+// cheat_edit_scenario (FUN_005582ad), 1648 bytes — scenario editor
+export const CHEAT_EDIT_SCENARIO = {
+  dialogKey:       'EDITSCEN',          // GAME.TXT section key                   // 0x005582AD
+  scenarioModeFlag: 0x80,              // DAT_00655af0 & 0x80                     // 0x005582AD
+  editOptions: [
+    { id: 1,  name: 'Edit paradigm',         dialogKey: 'EDITPARADIGM',   addr: 'DAT_0064bcb2' },
+    { id: 2,  name: 'Edit increment',        dialogKey: 'EDITINCREMENT',  addr: 'DAT_0064bcb4' },
+    { id: 3,  name: 'Edit start year',       dialogKey: 'EDITSTARTYEAR',  addr: 'DAT_0064bcb6' },
+    { id: 4,  name: 'Edit max turns',        dialogKey: 'EDITMAXTURNS',   addr: 'DAT_0064bcb8' },
+    { id: 5,  name: 'Reveal all terrain',    desc: 'Clear fog byte (0xF0 mask) for all tiles' },
+    { id: 6,  name: 'Hide all terrain',      desc: 'Set fog byte to 0xF0 for unimproved tiles' },
+    { id: 7,  name: 'Reset visibility',      desc: 'Reset fog-of-war per-civ; set all cities visible' },
+    { id: 8,  name: 'Restore fog-of-war',    desc: 'Recalculate visibility from improvements' },
+    { id: 9,  name: 'Edit scenario name',    dialogKey: 'SCENNAME', maxLen: 0x18 },
+    { id: 10, name: 'Toggle tech paradigm',  flagBit: 0x01, addr: 'DAT_0064bc60' },
+    { id: 11, name: 'Victory conditions',    fn: 'cheat_edit_victory()' },
+    { id: 12, name: 'Game rules',            fn: 'cheat_edit_rules()' },
+  ],
+  fogByteMask:      0xF0,              // upper nibble = fog visibility            // 0x005582AD
+  fogClearCheck:     0x03,             // tile improvement bits check               // 0x005582AD
+  fogOfWarFlag:      0x08,             // DAT_0064bc60 |= 0x08 on visibility reset // 0x005582AD
+  fogOfWarClear:     0xFFF7,           // DAT_0064bc60 &= 0xFFF7 on fog restore   // 0x005582AD
+  scenarioNameAddr:  'DAT_0064bc62',   // scenario display name                    // 0x005582AD
+  scenarioNameMaxLen: 0x18,            // 24 character limit                       // 0x005582AD
+  tileRecordStride:  6,                // 6 bytes per map tile record              // 0x005582AD
+  sourceAddr:        '0x005582AD',
+};
+
+// cheat_destroy_civ (FUN_00555a8b), 514 bytes — remove a civ from the game
+export const CHEAT_DESTROY_CIV = {
+  mpEventCode:     0x31,               // MP event: civ destroyed                  // 0x00555A8B
+  mpProtocolLevel: 2,                  // only sent if DAT_00655b02 > 2            // 0x00555A8B
+  process: [
+    'Delete all cities belonging to target civ',
+    'Call kill_civ(target, currentPlayer) to transfer units/territory',
+    'Clear civ from active bitmask',
+  ],
+  cityDeleteFn:    'thunk_delete_city(cityIdx, 0)',                                // 0x00555A8B
+  civKillFn:       'thunk_kill_civ(civIdx, currentPlayer)',                        // 0x00555A8B
+  sourceAddr:      '0x00555A8B',
+};
+
+// resign_game (FUN_0055b6c7), 586 bytes — player resignation flow
+export const RESIGN_GAME = {
+  singlePlayerFlow: 'thunk_FUN_0046e6a9(); thunk_FUN_00484d3b(); — end game',    // 0x0055B6C7
+  multiplayerFlow: {
+    cancelTimer:    'stop and clear turn timer',                                   // 0x0055B6C7
+    showDialog:     'show_dialog with civ name, adj, title, govt style',          // 0x0055B6C7
+    soundEffect:    'play fanfare 0 or 1 depending on DAT_00654c76',              // 0x0055B6C7
+    removeCivBit:   'clear civ bit from DAT_00655b0b',                            // 0x0055B6C7
+    mpEventCivDeath: 0x31,             // broadcast civ death                      // 0x0055B6C7
+    localTransfer:  'transfer to next AI via FUN_004e1763(civId, 0, 0)',           // 0x0055B6C7
+    networkNotify:  'if host: send FUN_004b0b53(0xff, 2, 0, 0, 0) + event 0xA2', // 0x0055B6C7
+    remoteHandoff:  'if client: call FUN_004824e3()',                              // 0x0055B6C7
+  },
+  mpEventResigned: 0xA2,              // MP event: player resigned to AI           // 0x0055B6C7
+  sourceAddr:      '0x0055B6C7',
+};
+
+
+// ============================================================================
+// 8. TERRAIN EDITOR
+// ============================================================================
+
+// --- Terrain Type Table ---
+// terrain_editor_load_data (FUN_00519200), 493 bytes
+// Loads 33 terrain types from the RULES.TXT terrain table into editor buffers.
+export const TERRAIN_EDITOR_DATA = {
+  terrainTypeCount: 0x21,      // 33 terrain types total                      // 0x00519200
+  ruleTableStride:  0x18,      // 24-byte stride in DAT_00627cc4 table       // 0x00519200
+  nameBufferSize:   0x28,      // 40-byte name buffer per terrain type       // 0x00519200
+  nameTable:        'DAT_006a1d88',  // editor name buffer start              // 0x00519200
+  editDataTable:    'DAT_006a2d28',  // expanded editor data (stride 0x58)   // 0x00519200
+  editDataStride:   0x58,      // 88 bytes per terrain edit record           // 0x00519200
+  ruleNameIdTable:  'DAT_00627cc4',  // string IDs for terrain names         // 0x00519200
+  // Base terrain (types 0–10) have additional improvement data:
+  baseTerrain: {
+    maxIndex:      0xB,        // types < 0xB have improvement sub-table     // 0x00519200
+    improvSlots:   2,          // 2 improvement slots per base terrain       // 0x00519200
+    improvFields:  4,          // 4 fields per improvement slot              // 0x00519200
+    defenseField:  'DAT_00627ccd',  // defense modifier                     // 0x00519200
+  },
+  // terrain_editor_save_data (FUN_005193ed) — reverse of load
+  saveFn:           '0x005193ED',                                             // 0x005193ED
+};
+
+// --- Terrain Index Fixup ---
+// terrain_index_collapse (FUN_005195c4) — removes gaps at indices 0xD, 0x18
+// terrain_index_expand (FUN_005195f1) — re-inserts gaps
+export const TERRAIN_INDEX_FIXUP = {
+  gapA: 0xD,                  // index 13 skipped in compact list             // 0x005195C4
+  gapB: 0x18,                 // index 24 skipped in compact list             // 0x005195C4
+  collapseFn: '0x005195C4',   // remove gaps for combo box index             // 0x005195C4
+  expandFn:   '0x005195F1',   // restore gaps for terrain table index        // 0x005195F1
+};
+
+// --- Terrain Editor Main Window ---
+// terrain_editor_main (FUN_0051bba1), large
+// Creates the terrain editor property sheet with GIF preview.
+export const TERRAIN_EDITOR_WINDOW = {
+  editorGif:       'EDITORPT.GIF',   // terrain preview image file           // 0x0051BBA1
+  startControlId:  0xC9,             // first control ID (terrain type combo) // 0x0051ACDC
+  controlIds: {
+    terrainCombo:  0xC9,      // terrain type selector combo box              // 0x0051ACDC
+    updateBtnA:    0xCF,      // triggers update_terrain_preview              // 0x0051ACDC
+    updateBtnB:    0xD3,      // triggers update_terrain_preview              // 0x0051ACDC
+  },
+  buttonCheckIds:  [0xCF, 0xD3],    // buttons that trigger invalidate       // 0x0051ACDC
+  controlCount:    0xF,              // 15 editor controls (loop 1..14)       // 0x0051961E
+  controlTypeEdit: 9,                // control type: edit field              // 0x0051961E
+  controlTypeCombo:0xC,              // control type: combo box               // 0x0051961E
+  editorPointer:   'DAT_006a4f88',   // editor instance pointer              // 0x0051BBA1
+  exitFlag:        'DAT_006a1d7c',   // 0 = close editor                     // 0x00519D67
+  activeTerrIdx:   0x2EC,            // offset in editor for active terrain   // 0x0051BBA1
+  terrEditSuffix:  0x2F8,            // field_2F8: editor mode flag           // 0x0051BBA1
+  // File I/O: writes RULES.TXT via terrain_editor_save (show_messagebox_9D67)
+  rulesSaveKey:    'TERRAIN',        // RULES.TXT section key                // 0x00519D67
+  rulesSaveNotice: 'NOTICE',         // success notification key             // 0x00519D67
+  // sourceAddr: '0x0051BBA1' (main), '0x00519D67' (save), '0x0051ACDC' (command handler)
+};
+
+// --- Terrain Editor Sub-dialogs ---
+// Forest selection (FUN_0051a26c), Hills (param==4), Mountains (param==5),
+// River (FUN_0051a678), Coast (FUN_0051a797), Misc (FUN_0051a8b7)
+export const TERRAIN_EDITOR_DIALOGS = {
+  forest:    { dialogKey: 'FOREST',    helpKey: 'HELPFOREST',    terrainIdx: 3 },  // 0x0051A26C
+  hills:     { dialogKey: 'HILLS',     helpKey: 'HELPHILLS',     terrainIdx: 4 },  // 0x0051A26C
+  mountains: { dialogKey: 'MOUNTAINS', helpKey: 'HELPMOUNTAINS', terrainIdx: 5 },  // 0x0051A26C
+  river:     { dialogKey: 'RIVER',     helpKey: 'HELPRIVER' },                     // 0x0051A678
+  coast:     { dialogKey: 'COAST',     helpKey: 'HELPCOAST' },                     // 0x0051A797
+  misc:      { dialogKey: 'TERRMISC',  helpKey: 'HELPTERRMISC' },                  // 0x0051A8B7
+  terrName:  { dialogKey: 'TERRNAME',  section: 'DEBUG' },                         // 0x00519E74
+};
+
+
+// ============================================================================
+// 9. GAME SETUP DIALOGS
+// ============================================================================
+
+// --- MP Startup Config ---
+// mp_startup_config (FUN_0051d9a0), 952 bytes
+// Reads INI settings and launches the multiplayer type selection dialog.
+export const MP_STARTUP_CONFIG = {
+  iniSection:      'Civilization Gold',                                       // 0x0051D9A0
+  iniFile:         'CIV.INI',         // Windows INI file                    // 0x0051D9A0
+  netTimeoutKey:   'NetTimeOut',       // network timeout setting            // 0x0051D9A0
+  netTimeoutDefault: 0x1E,            // 30 seconds default                  // 0x0051D9A0
+  netTimeoutVar:   'DAT_006ad8b8',    // stored timeout value               // 0x0051D9A0
+  adapterKey:      'Adapter',         // network adapter setting             // 0x0051D9A0
+  maxPlayersKey:   'MaxPlayers',      // max player count setting            // 0x0051D9A0
+  maxPlayersDefault: 7,               // default max players                 // 0x0051D9A0
+  maxPlayersClamp: { min: 4, max: 7 }, // clamped to 4-7                    // 0x0051D9A0
+  maxPlayersVar:   'DAT_006c3164',    // stored max players                  // 0x0051D9A0
+  // MP type dialog: 'MULTITYPE2' key, 4 choices (0=IPX, 1=TCP new, 2=TCP load, 3=serial)
+  mpTypeDialog:    'MULTITYPE2',      // GAME.TXT dialog key                 // 0x0051D9A0
+  mpTypes: {
+    0: 'IPX/SPX',                     // thunk_FUN_00419170                   // 0x0051D9A0
+    1: 'TCP/IP new game',             // thunk_FUN_00444310(1)                // 0x0051D9A0
+    2: 'TCP/IP load game',            // thunk_FUN_00444310(0)                // 0x0051D9A0
+    3: 'serial (2-player)',           // DAT_006c3164=2, thunk_FUN_00444310(4) // 0x0051D9A0
+  },
+  devPath:         'D:\\Ss\\Franklinton\\startup_multip',                     // 0x0051D9A0
+  soundId:         0x6A,              // sound played after type selection    // 0x0051D9A0
+};
+
+// --- Game Setup Dialog Sequence ---
+// game_setup_dialogs (FUN_0051dd97), 3152 bytes
+// Presents the series of game configuration dialogs for new game setup.
+export const GAME_SETUP_DIALOGS = {
+  // Dialog sequence and GAME.TXT section keys:
+  dialogs: [
+    { order: 1, key: 'DIFFICULTY',  setting: 'DAT_0064bc14', result: 'DAT_00655b08' }, // 0x0051DD97
+    { order: 2, key: 'ENEMIES2',    setting: 'DAT_0064bc24', result: 'DAT_00655b0d' }, // 0x0051DD97
+    { order: 3, key: 'BARBARITY',   setting: 'DAT_0064bc28', result: 'DAT_00655b09' }, // 0x0051DD97
+    { order: 4, key: 'RULES',       setting: 'DAT_0064bc54' },                          // 0x0051DD97
+    { order: 5, key: 'ADVANCED',    type: 'checkbox dialog' },                           // 0x0051DD97
+    { order: 6, key: 'ACCELERATED', setting: 'DAT_0064bc56' },                           // 0x0051DD97
+    { order: 7, key: 'ADVANCEDMP',  type: 'checkbox dialog' },                           // 0x0051DD97
+  ],
+  soundId:           0x6A,            // sound played after each dialog      // 0x0051DD97
+  // Random enemies formula (when random option selected):
+  randomEnemies:     'rand() % 5 + 2',  // 2 to 6 enemies                   // 0x0051DD97
+  // Barbarity randomization based on difficulty:
+  // diff < 2: rand()&1 + diff
+  // diff < 5: rand()%3 + 1
+  // diff >= 5: rand()&1 + 2
+
+  // --- Advanced Rules Flag Bits (DAT_00655ae8) ---
+  // Presented via ADVANCED checkbox dialog with 6 options:
+  advancedRuleBits: {
+    0: { bit: 0x10,   meaning: 'simplified combat (inverted: 0=on)' },       // 0x0051DD97
+    1: { bit: 0x8000, meaning: 'bloodlust (always war)' },                    // 0x0051DD97
+    2: { bit: null,    meaning: 'flat world (DAT_00631ee4)' },                // 0x0051DD97
+    3: { bit: null,    meaning: 'accelerated startup (DAT_00631ee8)' },       // 0x0051DD97
+    4: { bit: 0x80,   meaning: 'don\'t restart eliminated players' },         // 0x0051DD97
+    5: { bit: 0x100,  meaning: 'simultaneous moves (obsolete flag)' },        // 0x0051DD97
+  },
+  defaultFlags:      0x3F,            // initial DAT_00655ae8 = 0x3F         // 0x0051DD97
+  combinedDefault:   0x2F,            // after ADVANCED dialog = 0x2F        // 0x0051DD97
+
+  // --- Advanced MP Rules ---
+  // Presented via ADVANCEDMP checkbox dialog with 6-7 options:
+  advancedMpKeys: {
+    0: 'DAT_00654c74',  // reveal map                                         // 0x0051DD97
+    1: 'DAT_00654c76',  // auto-save each turn                                // 0x0051DD97
+    2: 'DAT_00654c78',  // disable unit cycling                                // 0x0051DD97
+    3: 'DAT_00654c7a',  // auto-end turn                                       // 0x0051DD97
+    4: 'DAT_00654fac',  // lock white area                                     // 0x0051DD97
+    5: 'DAT_00654fae',  // chat sound                                          // 0x0051DD97
+    6: 'DAT_00654c7c',  // retire after N turns (only if DAT_006c3160!=0)     // 0x0051DD97
+  },
+  timerDialogCtrlId: 0x364,           // control ID for turn timer embedded  // 0x0051DD97
+
+  // --- Accelerated Startup Presets ---
+  // 3 tech presets at indices 0x00, 0x15, 0x29 checked via FUN_00484fec
+  acceleratedTechIds: [0x00, 0x15, 0x29],                                    // 0x0051DD97
+  scientificMaxId:    0xFFFF,         // DAT_00655afc set to -1 (all techs) // 0x0051DD97
+};
+
+// --- Game Timer Dialog ---
+// game_timer_dialog (FUN_0051ea8e), 1579 bytes
+// Timer preset selection and custom timer input.
+export const GAME_TIMER_DIALOG = {
+  dialogKey:         'GAMETIMER',     // GAME.TXT section key                // 0x0051EA8E
+  dialogKeyMP:       'GAMETIMER',     // variant for MP context              // 0x0051EA8E
+  customDialogKey:   'CUSTOMGAMETIMER', // custom timer input dialog         // 0x0051EA8E
+  timerVar:          'DAT_00654b70',  // turn timer total ms                 // 0x0051EA8E
+  timerSelectionVar: 'DAT_006665d0',  // selected timer preset index         // 0x0051EA8E
+  presets: {
+    0:  0,                    // no timer                                      // 0x0051EA8E
+    1:  30000,                // 30 seconds                                    // 0x0051EA8E
+    2:  60000,                // 1 minute                                      // 0x0051EA8E
+    3:  120000,               // 2 minutes                                     // 0x0051EA8E
+    4:  180000,               // 3 minutes                                     // 0x0051EA8E
+    5:  300000,               // 5 minutes                                     // 0x0051EA8E
+    6:  'custom',             // launches CUSTOMGAMETIMER dialog               // 0x0051EA8E
+  },
+  customRange: { min: 10, max: 0xE10 },  // 10 to 3600 seconds              // 0x0051EA8E
+  customMultiplier:  1000,    // input seconds × 1000 → ms                    // 0x0051EA8E
+  // MP timer negotiation events (sent to server):
+  mpEvents: {
+    request:   0x40,          // NEWTURNTIMERSERVER — server proposal          // 0x0051EA8E
+    rejected:  0x41,          // NEWTURNTIMERNO — server rejected              // 0x0051EA8E
+    accepted:  0x42,          // NEWTURNTIMERYES — server accepted             // 0x0051EA8E
+  },
+  // Client-side vote (MP event 0x40):
+  clientDialogKey:   'NEWTURNTIMERCLIENT',                                    // 0x00511BA2
+  clientNetMsg:      0x56,    // net_send response to server                  // 0x00511BA2
+  // Password master change (MP event 0x43):
+  pmChangeKey:       'PMCHANGECLIENT',                                        // 0x00511BA2
+  pmChangeNetMsg:    0x57,    // net_send response to server                  // 0x00511BA2
+  // sourceAddr: '0x0051EA8E' (dialog), '0x00511BA2' (dispatch cases 0x40,0x43)
+};
+
+
+// ============================================================================
+// 10. CIV SELECTION DIALOG
+// ============================================================================
+
+// --- Civilization Selection ---
+// civ_selection_dialog (FUN_0051f19c), 9815 bytes
+// Handles leader/tribe selection during game setup for all modes.
+export const CIV_SELECTION = {
+  leaderEntries:     0x15,            // 21 leader entries in selection list  // 0x0051F19C
+  leaderTableBase:   'DAT_006554fe',  // leader civ index table              // 0x0051F19C
+  leaderStride:      0x30,            // 48-byte stride per leader record    // 0x0051F19C
+  // Leader record fields (offsets from DAT_006554fe + idx * 0x30):
+  leaderFields: {
+    civIndex:        0x00,    // byte: civ index (DAT_006554fe)               // 0x0051F19C
+    isUsedFlag:      -0x02,   // byte: 0/1 is custom (DAT_006554fc)          // 0x0051F19C
+    portraitId:      0x04,    // short: leader portrait string ID             // 0x0051F19C
+    adjectiveId:     0x06,    // short: adjective string ID                   // 0x0051F19C
+    nounId:          0x08,    // short: noun string ID                        // 0x0051F19C
+    cityStyleId:     0x02,    // short: city style selection                  // 0x0051F19C
+    cityNameIds:     { offset: 0x0E, count: 7, stride: 4 }, // city name IDs // 0x0051F19C
+  },
+  civRecordStride:   0x594,           // 1428 bytes per civ record           // 0x0051F19C
+  civRecordLeaderOff:0xA6,            // civ_record + 0xA6 = leader index    // 0x0051F19C
+  civNameStride:     0xF2,            // 242 bytes per civ name block        // 0x0051F19C
+  takenBitmask:      'DAT_00655b0b',  // bitmask of claimed civ slots       // 0x0051F19C
+  selectedCiv:       'DAT_00655b03',  // selected civ index                  // 0x0051F19C
+  currentPlayer:     'DAT_006d1da0',  // current player civ index            // 0x0051F19C
+  // Dialog sequence: GENDER → name input → CUSTOMTRIBE → CUSTOMTRIBE2 → CUSTOMCITY
+  genderDialog:      'GENDER',        // first dialog: gender/tribe select   // 0x0051F19C
+  customTribe:       'CUSTOMTRIBE',   // custom tribe name dialog            // 0x0051F19C
+  customTribe2:      'CUSTOMTRIBE2',  // custom tribe adjectives dialog      // 0x0051F19C
+  customCity:        'CUSTOMCITY',    // city name customization dialog      // 0x0051F19C
+  maxJoinedMsg:      'JOINEDMAX',     // shown when all slots are taken      // 0x0051F19C
+  emailDialog:       'EMAILADDRESS',  // PBEM email address input            // 0x0051F19C
+  // City style selector:
+  cityStyleCount:    4,               // 4 city style options                 // 0x0051F19C
+  cityStyleSprite:   0x3D8,           // DAT_00628420 + 0x3D8 base offset   // 0x0051F19C
+  cityStyleStride:   0x1E0,           // 480 bytes per city style preview    // 0x0051F19C
+  // MP network messages used during selection:
+  netMsgCivChosen:   0x30,            // sent to server when civ is chosen   // 0x0051F19C
+  netMsgCivUnchoose: 0x31,            // sent to server to cancel selection  // 0x0051F19C
+  // Connection messages:
+  lostServerMsg:     'LOSTSERVER',    // shown on server disconnect          // 0x0051F19C
+  serverQuitMsg:     'SERVERQUIT',    // shown on server quit                // 0x0051F19C
+  alreadyChosenMsg:  'ALREADYCHOSEN', // shown when civ already taken        // 0x0051F19C
+  connectFailMsg:    'SERVERCONNECTFAIL', // shown on connection failure     // 0x0051F19C
+  // sourceAddr: '0x0051F19C'
+};
+
+
+// ============================================================================
+// 11. SPACESHIP SYSTEM
+// ============================================================================
+
+// --- Spaceship Component Definitions ---
+// Binary ref: FUN_00596b00 (component_cost), FUN_00596eec (recalc_spaceship),
+//             FUN_005973fd (launch_spaceship), FUN_0059772c (spaceship_dialog),
+//             FUN_00597d6f (AI_spaceship_build), FUN_00598197 (AI_add_component),
+//             FUN_00598d45 (AI_should_build_spaceship) @ block_00590000.c
+export const SPACESHIP_COMPONENTS = {
+  // 6 component types indexed 0-5
+  STRUCTURAL:   0,    // structural support frames
+  FUEL:         1,    // fuel pods
+  PROPULSION:   2,    // propulsion units
+  HABITATION:   3,    // habitation modules
+  LIFE_SUPPORT: 4,    // life support modules
+  SOLAR_ENERGY: 5,    // solar energy modules
+
+  // 3 categories grouping the 6 component types
+  categories: {
+    0: { name: 'structural',  indices: [0],       // @ FUN_00596c61 — param_2 == 0
+         dialogKey: null },
+    1: { name: 'components',  indices: [1, 2],    // @ FUN_00596c61 — param_2 == 1
+         dialogKey: 'COMPONENT' },                // @ FUN_00598197: s_COMPONENT_00635004
+    2: { name: 'modules',     indices: [3, 4, 5], // @ FUN_00596c61 — param_2 == 2
+         dialogKey: 'MODULE' },                   // @ FUN_00598197: s_MODULE_00635010
+  },
+
+  // Component data is stored per-civ at DAT_0064caa8 + civId * 0x594
+  // as 6 consecutive int16 values (one per component type)
+  civRecordBase:   'DAT_0064caa8',  // @ FUN_0059772c — short[] per civ
+  civRecordStride: 0x594,           // 1428 bytes per civ record
+  componentCount:  6,               // @ FUN_00596eec — loop: local_1c < 6
+
+  // Cost data array at DAT_00634f64 with stride 0xc (12 bytes per component)
+  costArrayBase:   'DAT_00634f64',  // @ FUN_00596b00 — (&DAT_00634f64)[param_2 * 3]
+  costArrayStride: 0xc,             // 12 bytes: cost(4), weight(4), civpedia_icon(4)
+
+  // Weight data array at DAT_00634f68 (offset +4 within each 12-byte entry)
+  weightArrayBase: 'DAT_00634f68',  // @ FUN_00596eec — *(int *)(&DAT_00634f68 + local_1c * 0xc)
+
+  // Civilopedia icon IDs for component display
+  iconArrayBase:   'DAT_00634f60',  // @ FUN_0059772c — *(int *)(&DAT_00634f60 + local_18 * 0xc)
+
+  // sourceAddr: '0x00596B00' (cost), '0x00596EEC' (recalc), '0x0059772C' (dialog)
+};
+
+// --- Spaceship Weight Escalation ---
+// Binary ref: FUN_00596e92 @ block_00590000.c
+// Weight per part increases at thresholds: +1 base, +2 after 4th part, +3 after 6th part
+export const SPACESHIP_WEIGHT_ESCALATION = {
+  // Formula from FUN_00596e92:
+  //   weight = 0
+  //   for i in 0..count-1:
+  //     weight += 1
+  //     if i > 3: weight += 1   (extra +1 after 4th)
+  //     if i > 5: weight += 1   (extra +1 after 6th)
+  baseIncrementPerPart:  1,     // @ 0x00596e92 — iVar1 = local_8 + 1
+  thresholdA:            4,     // @ 0x00596e92 — if (3 < local_c) iVar1 = local_8 + 2
+  bonusA:                1,     // extra +1 per part after index 4
+  thresholdB:            6,     // @ 0x00596e92 — if (5 < local_c) local_8 = local_8 + 1
+  bonusB:                1,     // extra +1 per part after index 6
+  // Total per-part weight: 1 (base) + 1 (if idx>3) + 1 (if idx>5)
+  // sourceAddr: '0x00596E92'
+};
+
+// --- Spaceship Success Rate & Travel Time ---
+// Binary ref: FUN_00596eec (recalc_spaceship) @ block_00590000.c
+export const SPACESHIP_FORMULAS = {
+  // Success rate starts at 100% and is modified by fuel/propulsion ratios
+  baseSuccessRate: 100,          // @ 0x00596eec — DAT_006ad0ec = 100
+
+  // Fuel ratio: (life_support_actual * 100) / max(fuel_actual + propulsion_actual, 1)
+  // Propulsion ratio: (solar_energy_actual * 200) / max(fuel_actual + propulsion_actual, 1)
+
+  // Mass penalty: if total mass (DAT_006ad0f4) > 0x96 (150), success drops
+  massPenaltyThreshold: 0x96,    // @ 0x00596eec — if (0x96 < DAT_006ad0f4)
+  massPenaltyFormula: '-(mass - 0x96) / 10',  // @ 0x00596eec — DAT_006ad0ec - (DAT_006ad0f4 + -0x96) / 10
+
+  // Habitation flag: civ_byte & 8 (from Apollo Program wonder, advance ID 0x20)
+  habitationFlag:      0x08,     // @ 0x00596eec — (bVar1 & 8) != 0
+  habitationDiscount:  '3/4',    // @ 0x00596eec — local_c = (int)(local_c * 3) >> 2
+  habitationAdvanceId: 0x20,     // @ 0x00596eec — thunk_FUN_004bd9f0(param_1, 0x20)
+
+  // Cost scaling: when mass > 100, doubles and doubles again
+  massScaleLoop: 'while (100 < local_c) { local_c >>= 1; local_8 <<= 1; }',
+
+  // Global computed values:
+  totalMassGlobal:     'DAT_006ad0e4',  // total spaceship mass
+  successRateGlobal:   'DAT_006ad0ec',  // final success percentage (0-100)
+  fuelRatioGlobal:     'DAT_006ad0f0',  // fuel ratio percentage
+  propulsionRatioGlobal:'DAT_006ad0e8', // propulsion ratio percentage
+  travelTimeGlobal:    'DAT_006ad0f4',  // travel time in tenths-of-years
+  lifeSupportGlobal:   'DAT_006ad0dc',  // life support ratio
+  arrivalFallback:     'DAT_006ad0e0',  // arrival year for "all built" scenario
+
+  // sourceAddr: '0x00596EEC'
+};
+
+// --- Spaceship Dialog Icons ---
+// Binary ref: FUN_0059772c (spaceship_dialog) @ block_00590000.c
+// Civilopedia icon IDs used in the spaceship dialog display
+export const SPACESHIP_DIALOG_ICONS = {
+  structural:   0x22,  // @ 0x0059772c — thunk_FUN_0040bc10(0x22) — structural parts count
+  fuelPercent:  0x42,  // @ 0x0059772c — thunk_FUN_0040bc10(0x42) — fuel ratio %
+  propulsion:   0xcd,  // @ 0x0059772c — thunk_FUN_0040bc10(0xcd) — propulsion ratio %
+  habitation:   0xce,  // @ 0x0059772c — thunk_FUN_0040bc10(0xce) — habitation population
+  duration:     0xd1,  // @ 0x0059772c — thunk_FUN_0040bc10(0xd1) — travel duration
+  lifeSupport:  0xc8,  // @ 0x0059772c — thunk_FUN_0040bc10(200) — life support % (200 = 0xc8)
+  habitBonus:   0xeb,  // @ 0x0059772c — thunk_FUN_0040bc10(0xeb) — habitation bonus indicator
+  mass:         0xcf,  // @ 0x0059772c — thunk_FUN_0040bc10(0xcf) — total mass display
+  massUnits:    0xd2,  // @ 0x0059772c — thunk_FUN_0040bc10(0xd2) — mass units label
+  successRate:  0xd0,  // @ 0x0059772c — thunk_FUN_0040bc10(0xd0) — success rate %
+  arrival:      0xd3,  // @ 0x0059772c — thunk_FUN_0040bc10(0xd3) — arrival year (when launched)
+  noArrival:    0xd4,  // @ 0x0059772c — thunk_FUN_0040bc10(0xd4) — no arrival (not launched)
+  arrivalYear:  0xda,  // @ 0x0059772c — thunk_FUN_0040bc10(0xda) — arrival year number
+  // sourceAddr: '0x0059772C'
+};
+
+// --- Spaceship Dialog Strings ---
+// Binary ref: FUN_0059772c, FUN_00598b4e @ block_00590000.c
+export const SPACESHIP_DIALOG_STRINGS = {
+  SPACESHIP:    's_SPACESHIP_00634fb4',   // @ 0x0059772c — main spaceship dialog title
+  LAUNCH:       's_LAUNCH_00634ffc',      // @ 0x0059772c — launch confirmation dialog
+  SPACESHIPS:   's_SPACESHIPS_00635024',  // @ 0x00598b4e — spaceships overview dialog
+  NOSPACESHIPS: 's_NOSPACESHIPS_00635030',// @ 0x00598b4e — no spaceships to display
+  NOFURTHER:    's_NOFURTHER_00635018',   // @ 0x00598197 — no further components available
+  LAUNCHED:     's_LAUNCHED_00634fa8',     // @ 0x005973fd — spaceship launched notification
+  // sourceAddr: '0x0059772C' (dialog), '0x00598B4E' (overview), '0x005973FD' (launch)
+};
+
+// --- AI Spaceship Thresholds ---
+// Binary ref: FUN_00598197 (AI_add_component), FUN_00597d6f (AI_spaceship_build)
+//             @ block_00590000.c
+export const SPACESHIP_AI_THRESHOLDS = {
+  // Minimum success rate for AI to consider launching (from AI_add_component)
+  minSuccessToLaunch:   0x27,    // @ 0x00598197 — if (0x27 < DAT_006ad0ec) — 39% minimum
+  // Force launch threshold when under pressure
+  forceLaunchSuccess:   0x4b,    // @ 0x00598197 — bVar2 = 0x4b < DAT_006ad0ec — 75% threshold
+
+  // Travel time comparison: AI won't launch if arrival is > 14 turns past current best
+  travelTimeDelta:      0x0e,    // @ 0x00597d6f — 0xe < (arrival - current_turn) — 14 turns
+
+  // AI checks rivalry score at DAT_00655c22 per civ for competitive pressure
+  rivalryScoreAddr:     'DAT_00655c22',  // @ 0x00598197 — (&DAT_00655c22)[param_1]
+
+  // Diplomacy flags set when AI launches ahead of rivals:
+  diplomacyFlags: {
+    sneakAttack:      0x20,      // @ 0x005973fd — *(uint*) |= 0x20
+    declareWar:       0x40,      // @ 0x005973fd — *(uint*) |= 0x40
+    clearMask:        0xffffffd9,// @ 0x005973fd — *(uint*) &= 0xffffffd9
+    warAndSneak:      0x80840,   // @ 0x005973fd — *(uint*) |= 0x80840
+  },
+
+  // sourceAddr: '0x00598197' (AI add), '0x00597D6F' (AI build), '0x005973FD' (launch)
+};
+
+
+// ============================================================================
+// 12. MOVE_UNIT DIALOG STRINGS & CONSTANTS
+// ============================================================================
+
+// --- Move Unit Dialog Strings ---
+// Binary ref: FUN_0059062c (move_unit) @ block_00590000.c
+// String references used in move_unit for various movement outcomes
+export const MOVE_UNIT_DIALOGS = {
+  NOTONMAP:      's_NOTONMAP_00634d2c',      // unit is off map boundary
+  AMPHIB:        's_AMPHIB_00634d4c',        // amphibious landing blocked
+  NONCOMBAT:     's_NONCOMBAT_00634d54',     // non-combat unit can't attack
+  FIGHTER:       's_FIGHTER_00634d60',        // fighter can't land here
+  NOEXPEL:       's_NOEXPEL_00634dc4',       // can't expel unit from this tile
+  EXPEL:         's_EXPEL_00634d68',         // confirm expel dialog
+  ALLIEDREPAIR:  's_ALLIEDREPAIR_00634d3c',  // allied unit repaired
+  FATIGUE:       's_FATIGUE_00634dcc',       // unit fatigued (insufficient MP)
+  NOLANDFALL:    's_NOLANDFALL_00634dd4',    // no valid landfall for sea transport
+  LANDFALL:      's_LANDFALL_00634de0',      // confirm landfall dialog
+  OCCUPY:        's_OCCUPY_00634dec',        // can't occupy (non-military unit)
+  LONGMOVE:      's_LONGMOVE_00634e60',      // long move confirmation dialog
+  LANDING:       's_LANDING_00634df4',       // air unit landing notification
+  TRIREME:       's_TRIREME_00634e58',       // trireme lost at sea notification
+  UPMINE:        's_UPMINE_00634d80',        // upgrade mine (single player)
+  UPMINE_MP1:    's_UPMINE_00634d70',        // upgrade mine (MP, local player expels)
+  UPYOURS:       's_UPYOURS_00634d78',       // diplomatic insult (local player)
+  UPYOURS_SP:    's_UPYOURS_00634dbc',       // diplomatic insult (single player)
+  UPYOURS_MP:    's_UPYOURS_00634dac',       // diplomatic insult (MP local)
+  UPYOURS_MP2:   's_UPYOURS_00634db4',       // diplomatic insult (MP remote)
+  UPYOURSTOO:    's_UPYOURSTOO_00634d88',    // diplomatic retort (MP, local allied)
+  UPYOURSTOO_SP: 's_UPYOURSTOO_00634da0',   // diplomatic retort (single player)
+  UPYOURSTOO_MP: 's_UPYOURSTOO_00634d94',   // diplomatic retort (MP remote)
+  // sourceAddr: '0x0059062C'
+};
+
+// --- Move Unit Gameplay Constants ---
+// Binary ref: FUN_0059062c (move_unit) @ block_00590000.c
+export const MOVE_UNIT_CONSTANTS = {
+  // Long move detection: counter increments each move, +0x0f if backtracking,
+  // triggers LONGMOVE dialog when counter exceeds '/' (0x2f = 47)
+  longMoveThreshold:      0x2f,   // @ 0x0059062c — if ('/' < counter) show LONGMOVE dialog
+  backtrackIncrement:     0x0f,   // @ 0x0059062c — counter += 0x0f when direction reverses
+  longMoveCounterField:   'unit_record + 0x0e',  // DAT_006560fe offset in unit record
+
+  // AI stuck detection: AI unit resets after 0x13 (19) unsuccessful move attempts
+  aiStuckThreshold:       0x13,   // @ 0x0059062c — if (0x13 < counter) reset unit orders
+  aiStuckCounterField:    'unit_record + 0x0e',  // same counter field
+
+  // Movement cost: terrain cost × cosmic movement points (DAT_0064bcc8)
+  cosmicMovementPoints:   'DAT_0064bcc8',  // @ 0x0059062c — movement points per turn
+  cosmicTriremeLoss:      'DAT_0064bcc9',  // @ 0x0059062c — trireme loss denominator
+
+  // Trireme loss at sea: 1/N chance per turn at sea without adjacent land
+  // Modified by wonders: Lighthouse (0x4b) doubles denominator, Magellan's (0x39) halves it
+  lighthouseWonderId:     0x4b,   // @ 0x0059062c — thunk_FUN_004bd9f0(uVar10, 0x4b)
+  magellansWonderId:      0x39,   // @ 0x0059062c — thunk_FUN_004bd9f0(uVar10, 0x39)
+  triremeLandScanDirs:    9,      // @ 0x0059062c — for (local_38 = 0; local_38 < 9; ...)
+  triremeMinDenominator:  2,      // @ 0x0059062c — if (local_c4 < 3) local_c4 = 2
+
+  // Allied repair: movement cost = hit_points / 10, doubled if near fortress
+  alliedRepairDivisor:    10,     // @ 0x0059062c — local_14 = local_14 / 10
+  alliedRepairFortressMultiplier: 2,  // @ 0x0059062c — local_14 = local_14 << 1
+  alliedRepairFortressCheck: 2,   // @ 0x0059062c — thunk_FUN_0043d20a(iVar11, 2)
+
+  // Air unit fuel threshold: unit type index < 0x1e plays landing sound, >= 0x1e plays crash
+  airUnitTypeThreshold:   0x1e,   // @ 0x0059062c — if (unit_type < 0x1e) play 0x1a else 0x4e
+
+  // Diplomacy bitmasks in civ record area (DAT_0064c6c0):
+  diplomacyFlags: {
+    warCeasefirePeace:  0xe,      // @ 0x0059062c — (&DAT_0064c6c0)[...] & 0xe — any active treaty
+    warOrCeasefire:     6,        // @ 0x0059062c — & 6 — war or ceasefire
+    alliance:           8,        // @ 0x0059062c — & 8 — alliance flag
+    sneakAttackSet:     0x20,     // @ 0x0059062c — |= 0x20 — set sneak attack flag
+    warDeclare:         0x40,     // @ 0x0059062c — |= 0x40 — declare war
+    alliedFlag:         0x80,     // @ 0x0059062c — & 0x80 — allied visibility
+    clearTreatyMask:    0xffffffd9, // @ 0x0059062c — &= 0xffffffd9 — clear peace/ceasefire
+    fullWarPackage:     0x80840,  // @ 0x0059062c — |= 0x80840 — full war + sneak + hostile
+  },
+
+  // Network messages sent during movement:
+  networkMessages: {
+    UNIT_VISIBILITY:   0x71,  // @ 0x0059062c — thunk_FUN_0046b14d(0x71, ...) — tile visibility update
+    TILE_REDRAW:       0x72,  // @ 0x0059062c — thunk_FUN_0046b14d(0x72, ...) — tile redraw
+    AREA_REDRAW:       0x75,  // @ 0x0059062c — thunk_FUN_0046b14d(0x75, ...) — area redraw radius 1
+    UNIT_MOVE:         0x70,  // @ 0x0059062c — thunk_FUN_0046b14d(0x70, ...) — unit move animation
+    REALTIME_MOVE:     0x5a,  // @ 0x0059062c — thunk_FUN_0046b14d(0x5a, ...) — realtime move data
+  },
+
+  // Realtime move timeout: 0xe10 ticks (3600) waiting for server response
+  realtimeMoveTimeout:    0xe10,  // @ 0x0059062c — while (iVar17 - iVar15 < 0xe10 && ...)
+  serverTimeoutMsg:       's_SERVERCONNECTTIME_00634e3c',  // @ 0x0059062c
+
+  // sourceAddr: '0x0059062C'
+};
+
+
+// ============================================================================
+// 11. IMPROVEMENT / RULES EDITOR (Scenario Editor)
+// ============================================================================
+
+// --- Improvement/Wonder Editor Main ---
+// FUN_004da107 @ 0x004DA107 (2205 bytes) — editor_main
+// FUN_004d8bc0 @ 0x004D8BC0 (448 bytes) — editor_load_data
+// FUN_004d8d80 @ 0x004D8D80 (332 bytes) — editor_populate_fields
+// FUN_004d8ed6 @ 0x004D8ED6 (437 bytes) — editor_save_data
+// FUN_004d90b0 @ 0x004D90B0 (328 bytes) — editor_write_improvements_section
+// FUN_004d91f8 @ 0x004D91F8 (162 bytes) — editor_write_wonders_section
+// FUN_004d93b9 @ 0x004D93B9 (390 bytes) — editor_rename_improvement
+// FUN_004d9619 @ 0x004D9619 (250 bytes) — editor_misc_properties
+// FUN_004d9718 @ 0x004D9718 (342 bytes) — editor_on_list_select
+// FUN_004d986e @ 0x004D986E (551 bytes) — editor_create_field_controls
+// FUN_004d9a9f @ 0x004D9A9F (244 bytes) — editor_create_dropdown
+// FUN_004d9b93 @ 0x004D9B93 (1396 bytes) — editor_paint (renders pedia + fields)
+export const IMPROVEMENT_EDITOR = {
+  sourceAddr: '0x004DA107',
+
+  // --- Entry Count and Layout ---
+  entryCount:       0x43,    // 67 entries total (improvements + wonders)        // 0x004D8BC0
+  wonderCutoff:     0x27,    // entries 0x00-0x26 are improvements,              // 0x004D91F8
+                             // entries 0x27-0x42 are wonders
+  initialSelection: 1,       // editor starts with entry 1 selected             // 0x004DA107
+  listControlId:    0xC9,    // 201 — list control ID for improvement list       // 0x004D9718
+
+  // --- Data Record Layout ---
+  // Improvement names stored at DAT_006a1d88, stride 0x28 (40 bytes each)
+  nameTable: {
+    base: 'DAT_006a1d88',                                                        // 0x004D8BC0
+    stride: 0x28,              // 40 bytes per name entry                        // 0x004D8BC0
+    maxNameLength: 0x19,       // 25-char max copied via strncpy                 // 0x004D8BC0
+  },
+  // String table entries for improvement names at DAT_0064c488, stride 8
+  stringTable: {
+    base: 'DAT_0064c488',     // string table pointer per entry                 // 0x004D8BC0
+    stride: 8,                 // 8 bytes per entry (pointer + 3 data bytes)     // 0x004D8BC0
+  },
+  // Numeric fields per entry at DAT_0064c48c/c48d/c48e, stride 8
+  fieldOffsets: {
+    field0: 'DAT_0064c48c',   // byte field 0 (e.g. cost)                       // 0x004D8BC0
+    field1: 'DAT_0064c48d',   // byte field 1 (e.g. upkeep)                     // 0x004D8BC0
+    field2: 'DAT_0064c48e',   // byte field 2 (e.g. prerequisite)               // 0x004D8BC0
+    stride: 8,                 // same stride as string table                    // 0x004D8BC0
+  },
+  // Wonder-specific extra field at DAT_0064ba01 (only for entries >= 0x27)
+  wonderExtraField: {
+    base: 'DAT_0064ba01',     // wonder obsolescence tech                        // 0x004D8BC0
+    note: 'only written for entries >= 0x27 (wonders)',                           // 0x004D8BC0
+  },
+
+  // --- Supplementary Data Tables ---
+  // Improvement detail records at DAT_006a2d28 (stride 0x58 = 88 bytes)
+  detailTable: {
+    base: 'DAT_006a2d28',     // improvement detail records                      // 0x004D8BC0
+    stride: 0x58,              // 88 bytes per record                            // 0x004D8BC0
+  },
+  // Tech list at DAT_006a2a00 (indexed by field * 4 + entryIndex * 0x58)
+  techLookup: {
+    base: 'DAT_006a2a00',                                                        // 0x004D8D80
+  },
+
+  // --- Editor Field Types ---
+  // The editor uses two field types for editable columns:
+  fieldTypes: {
+    NUMERIC_INPUT:  9,         // text input field — uses atoi, sprintf          // 0x004D8D80
+    DROPDOWN_LIST:  0xC,       // dropdown list — uses thunk_FUN_00418d60/90     // 0x004D8D80
+    fieldTypeTable: 'DAT_0062e3c0',  // field type array, stride 8              // 0x004D8D80
+    fieldParamTable:'DAT_0062e3c4',  // field param array (paired with type)    // 0x004D986E
+  },
+  // Editor has 5 columns (loop 1..4 for data fields, plus name at index 0)
+  fieldCount:       5,         // loop local_460 = 0 to 4                        // 0x004DA107
+
+  // --- Editor Validation ---
+  // DAT_0062e3e8/DAT_0062e3f0 hold min/max for numeric fields
+  numericValidation: {
+    minTable: 'DAT_0062e3e8',                                                    // 0x004D8ED6
+    maxTable: 'DAT_0062e3f0',                                                    // 0x004D8ED6
+    clampFn: 'thunk_FUN_005adfa0(value, min, max)',                              // 0x004D8ED6
+    offsetFromControlId: -0xCA,  // iVar1 = thunk_FUN_00418740() - 0xCA          // 0x004D8ED6
+  },
+
+  // --- Display Size ---
+  displaySize: { width: 0x230, height: 0x17C },  // 560 x 380 pixels            // 0x004DA107
+
+  // --- Sprite / Background ---
+  editorGif:    'EDITORAS.GIF',   // background sprite                           // 0x004DA107
+  gifLoadParams: { param1: 10, param2: 0xC0 },                                  // 0x004DA107
+
+  // --- String Table Offsets (DAT_00628420 + offset) ---
+  // These reference entries in the master string table for labels
+  stringTableOffsets: {
+    dialogTitle:   0x730,      // dialog title string                            // 0x004DA107
+    renamePrompt:  0x7D8,      // "Rename" prompt label                          // 0x004D95C6
+    pediaButton:   0x7C0,      // "Civilopedia" label (button 1)                 // 0x004D986E
+    advancesButton:0x7C4,      // "Advances" label (button 2)                    // 0x004D986E
+    effectsButton: 0x8EC,      // "Effects" label (button 3)                     // 0x004DA107
+    miscButton:    0x3FC,      // "Misc" label (button 4)                        // 0x004DA107
+    navPrev:       0x3F8,      // prev navigation button                         // 0x004DA107
+    navNext:       0xA8,       // next navigation button                         // 0x004DA107
+    wonderLabel:   0x8F0,      // wonder-specific label                          // 0x004DA107
+    miscLabel:     0x7CC,      // misc properties label                          // 0x004DA107
+  },
+
+  // --- GAME.TXT Keys ---
+  textFileKeys: {
+    pedia:       'PEDIAIMPROVE', // civilopedia lookup for improvement            // 0x004D9B93
+    pediaFile:   'PEDIA',        // pedia file section key                       // 0x004D9B93
+    rename:      'IMPRNAME',     // rename dialog key                            // 0x004D93B9
+    miscDialog:  'IMPRMISC',     // miscellaneous properties dialog              // 0x004D9619
+    improvements:'IMPROVEMENTS', // improvements section header                   // 0x004D953F
+    improve:     'IMPROVE',      // used with ENDWONDER for file I/O             // 0x004D929A
+    endWonder:   'ENDWONDER',    // end-of-wonders marker                        // 0x004D929A
+    notice:      'NOTICE',       // validation notice key                        // 0x004D929A
+    debugSection:'DEBUG',        // parent dialog section                         // 0x004D93B9
+  },
+
+  // --- Pedia Text Rendering ---
+  pediaArea: {
+    bgColor:   0x29,         // background fill color                            // 0x004D9B93
+    outlineColor: 10,        // outline rect color                               // 0x004D9B93
+    offsetX:   0x32,         // pedia text area X offset from window left        // 0x004D9B93
+    offsetY:   0xE8,         // pedia text area Y offset from window top         // 0x004D9B93
+    width:     0x1CC,        // pedia area width                                 // 0x004D9B93
+    height:    0x6E,         // pedia area height                                // 0x004D9B93
+    caretChar: '^',          // skip caret prefix in pedia text lines            // 0x004D9B93
+  },
+
+  // --- Name Display ---
+  nameDisplay: {
+    boxOffset: { x: 0x20, y: 0x20 },  // name box position relative to window   // 0x004D9B93
+    boxSize:   { w: 0x48, h: 0x28 },  // name box size                          // 0x004D9B93
+    borderSize: 6,                      // 3D border depth                        // 0x004D9B93
+    emptyEntryColor: 10,               // color when entry index == 0            // 0x004D9B93
+  },
+
+  // --- Improvement vs Wonder Distinction ---
+  // Entries < 0x27 use FUN_0043c5f0 (city improvement view)
+  // Entries >= 0x27 use FUN_0040f380 (wonder view)
+  // Also: entries < 0x27 -> DAT_00645160 + idx*0x3c (improvement detail record)
+  //        entries >= 0x27 -> DAT_00645a84 + (idx*4 - 0x9c)*0xf (wonder detail record)
+  improvementDetailBase: 'DAT_00645160',
+  improvementDetailStride: 0x3C,                                                 // 0x004D9B93
+  wonderDetailBase: 'DAT_00645a84',
+  wonderDetailFormula: '(idx * 4 - 0x9c) * 0xf',                                // 0x004D9B93
+
+  // --- Misc Properties Sub-dialog ---
+  // FUN_004d9619: option 0 -> DAT_00640b98 (5 params), options 1+ -> DAT_00647168
+  miscProperties: {
+    option0Base: 'DAT_00640b98',    // global misc properties                    // 0x004D9619
+    option0ParamCount: 5,            // field count for option 0                  // 0x004D9619
+    otherBase:  'DAT_00647168',      // per-improvement misc data                // 0x004D9619
+    otherParamCount: 6,              // field count for options 1+                // 0x004D9619
+    formula:    '(iVar1 * 4 - 4) * 0xF',  // offset formula for option > 0      // 0x004D9619
+  },
+
+  // --- Button Positions ---
+  // Field control positions from DAT_0062e398/DAT_0062e39c (for dropdowns/inputs)
+  fieldPositionTable: {
+    base: 'DAT_0062e398',     // X positions, stride 8                           // 0x004D986E
+    yBase:'DAT_0062e39c',     // Y positions, stride 8                           // 0x004D986E
+    dropdownWidth: 200,        // dropdown list width param                      // 0x004D986E
+    shift: 3,                  // width = this+0x2e8 << 3                        // 0x004D986E
+  },
+  // Dropdown label positions from DAT_0062e3b0/DAT_0062e3b4
+  labelPositionTable: {
+    base: 'DAT_0062e3b0',     // X positions, stride 8 (2 ints)                 // 0x004D9A9F
+    yBase:'DAT_0062e3b4',     // Y positions, stride 8                           // 0x004D9A9F
+    height: 0x30,              // label height                                   // 0x004D9A9F
+  },
+
+  // --- Tech List for Dropdown ---
+  techEntryCount: 100,         // dropdown iterates 0..99 for tech list          // 0x004D986E
+  techEntryBase: 'DAT_00627684',  // tech name table, stride 0x10               // 0x004D986E
+};
+
+// ============================================================================
+// 13. MENU COMMAND IDS (WM_COMMAND dispatch table)
+// ============================================================================
+
+// Binary ref: FUN_004e2803 @ block_004E0000.c (4219 bytes)
+// Main WM_COMMAND handler dispatching menu/toolbar commands
+export const MENU_COMMAND_IDS = {
+  // --- Game menu ---
+  GAME_OPTIONS:     0x101,    // FUN_004e0ab0 — game options dialog (GAMEOPTIONS)
+  GRAPHIC_OPTIONS:  0x102,    // FUN_004e0d71 — graphic options dialog (GRAPHICOPTIONS)
+  MESSAGE_OPTIONS:  0x103,    // FUN_004e1452 — message options dialog (MESSAGEOPTIONS)
+  CITY_REPORT_OPTIONS: 0x104, // FUN_004e0f18 — city report options
+  MULTIPLAYER_OPTIONS: 0x105, // FUN_004259a6 — multiplayer options
+  AUTOPILOT:        0x106,    // FUN_004e25ef — autopilot toggle
+  SAVE_GAME:        0x110,    // save_game(0)
+  LOAD_GAME:        0x120,    // FUN_004e068d — load game
+  SET_PASSWORD:     0x130,    // FUN_00522b2b — set password
+  RETIRE:           0x131,    // FUN_0049836a — retire (with current civ)
+  REVOLUTION:       0x132,    // FUN_0055b2c6 — revolution (change government)
+
+  // --- View menu ---
+  SAVE_AND_QUIT:    0x1F0,    // FUN_004e22c9(1) — save and quit to menu
+  QUIT_WITHOUT_SAVE:0x1F1,    // FUN_004e22c9(0) — quit without saving
+  QUIT_HOTSEAT:     0x1F2,    // quit hotseat game (with confirmation)
+
+  // --- Kingdom menu ---
+  TAX_RATE:         0x201,    // FUN_0040ddc6 — tax rate dialog
+  FIND_CITY:        0x205,    // FUN_0044cd9b — find city
+  PALACE:           0x210,    // FUN_0040e017 — palace view
+  WONDERS:          0x220,    // FUN_0040e3b1 — wonders of the world
+
+  // --- View menu (continued) ---
+  ZOOM_IN:          0x310,    // increment zoom level (DAT_0066CA8C + 1, max 8)
+  ZOOM_OUT:         0x311,    // decrement zoom level (DAT_0066CA8C - 1, min -7)
+  MAX_ZOOM_IN:      0x320,    // DAT_0066CA8C = 8
+  ARRANGE:          0x321,    // reset zoom + center on capital
+  MEDIUM_ZOOM:      0x322,    // DAT_0066CA8C = -3
+  MAX_ZOOM_OUT:     0x324,    // DAT_0066CA8C = -7
+  TOGGLE_MAP_GRID:  0x327,    // DAT_00655AEA ^= 0x20 — toggle grid overlay
+  CENTER_VIEW:      0x328,    // FUN_004e02ef — center view on active unit
+  TOGGLE_FOG:       0x330,    // FUN_004e2597 — toggle fog of war
+  PLACE_POLLUTION:  0x340,    // FUN_00410402 — place pollution (cheat)
+
+  // --- Advisors menu ---
+  CITY_STATUS:      0x301,    // FUN_00489a0d(1) — city status advisor
+  DEFENSE_MINISTER: 0x302,    // FUN_004897fa(0) — defense minister
+  CIVILOPEDIA:      0x401,    // FUN_0058be56 — civilopedia
+  DEMOGRAPHICS:     0x430,    // FUN_0058ddce — demographics
+  SPACESHIP:        0x441,    // FUN_0058d60a — spaceship
+  TOP_5_CITIES:     0x442,    // FUN_0058df7b — top 5 cities
+  ATTITUDE_ADVISOR: 0x450,    // FUN_0058cce6 — attitude advisor
+  TRADE_ADVISOR:    0x451,    // FUN_0058cde5 — trade advisor
+  SCIENCE_ADVISOR:  0x460,    // FUN_0058c295 — science advisor
+  HISTORIANS:       0x468,    // FUN_0058d442 — historians replay
+  INTELLIGENCE:     0x470,    // FUN_0058bdfd — intelligence report
+  MILITARY_ADVISOR: 0x480,    // FUN_0058bd60 — military advisor (losses)
+  POWER_GRAPH:      0x490,    // FUN_0058bd84 — power graph
+
+  // --- Reports menu ---
+  WORLD_MAP:        0x500,    // FUN_00516570 — world map (shift=cheat view)
+  SCIENCE_REPORT:   0x501,    // FUN_0042d71e — science report
+  TAX_REPORT:       0x502,    // FUN_0042f079 — tax report
+  MILITARY_REPORT:  0x503,    // FUN_004308ae — military report
+  TRADE_REPORT:     0x504,    // FUN_0042e185 — trade report
+  WONDER_REPORT:    0x505,    // FUN_0042cd2f — wonder report
+  HAPPINESS_REPORT: 0x506,    // FUN_0042b67d — happiness report
+  SCORE:            0x507,    // FUN_004b7eb6 — score (hall of fame)
+  POLLUTION_REPORT: 0x508,    // FUN_0043856b — pollution report
+
+  // --- Civilopedia categories ---
+  PEDIA_ADVANCES:   0x410,    // FUN_0058c65e(5)
+  PEDIA_CITY_IMPROVEMENTS: 0x411, // FUN_0058c65e(6)
+  PEDIA_WONDERS:    0x412,    // FUN_0058c65e(7)
+  PEDIA_UNITS:      0x413,    // FUN_0058c65e(8)
+  PEDIA_GOVERNMENTS:0x417,    // FUN_0058c65e(10)
+  PEDIA_TERRAIN:    0x418,    // FUN_0058c65e(4)
+  PEDIA_GAME:       0x41B,    // FUN_0058df14 — game concepts
+  PEDIA_MISC:       0x420,    // FUN_0058c65e(9)
+  PEDIA_SEARCH:     0x421,    // FUN_0058cfcd — civilopedia search
+
+  // --- Diplomacy ---
+  FOREIGN_MINISTER: 0x440,    // FUN_0058d6af — foreign minister
+  EMBASSY_REPORT:   0x445,    // FUN_0058cbe1 — embassy report
+
+  // --- City/Unit ---
+  CITY_LIST:        0x601,    // FUN_00431c73 — city list (shift=cheat edit)
+  DEFENSE_REPORT:   0x602,    // FUN_00433122 — defense report (shift=cheat)
+  PRODUCTION_REPORT:0x603,    // FUN_00435d15 — production report (shift=cheat)
+  TRADE_ROUTES:     0x605,    // FUN_00434d8a — trade routes (shift=cheat)
+  SPACESHIP_REPORT: 0x606,    // FUN_00598b4e — spaceship report (shift=cheat)
+
+  // --- Cheat menu (requires DAT_00655AEA & 0x8000 and DAT_00655B02 == 0) ---
+  CHEAT_MONEY:      0x701,    // FUN_00554297 — edit gold
+  CHEAT_CREATE_UNIT:0x711,    // FUN_005551b3 — create unit
+  CHEAT_REVEAL_MAP: 0x712,    // FUN_0055560f — reveal map
+  CHEAT_SET_GOVT:   0x713,    // FUN_0055583f — set government
+  CHEAT_TECH:       0x721,    // FUN_00555a02 — give/take technology
+  CHEAT_FORCE_GOVT: 0x722,    // FUN_00555a8b — force government
+  CHEAT_CHANGE_TERRAIN: 0x731,// FUN_00554423 — change terrain
+  CHEAT_DESTROY_ALL:0x732,    // FUN_005545d3 — destroy all units
+  CHEAT_CHANGE_MONEY:0x740,   // FUN_00554962 — change civ money
+  CHEAT_EDIT_KING:  0x748,    // FUN_005549f — edit king
+  CHEAT_SCENARIO:   0x750,    // FUN_00555cb1 — scenario params
+  CHEAT_SAVE_MAP:   0x752,    // FUN_0055615c — save map
+  CHEAT_SAVE_GIF:   0x755,    // FUN_0055625b — save as GIF
+  CHEAT_SET_CITY:   0x760,    // set_city_shields — set city production
+  CHEAT_GLOBAL_WARM:0x765,    // FUN_00556f54 — global warming
+  CHEAT_EDIT_UNIT:  0x768,    // FUN_005582ad — edit unit
+  CHEAT_EDIT_CITY:  0x770,    // FUN_0055891d — edit city
+
+  // --- Help menu ---
+  HELP_CONTENTS:    0x801,    // FUN_00553ff6 — help contents
+  HELP_SEARCH:      0x802,    // FUN_00417566 — help search
+  HELP_HOW:         0x803,    // FUN_00429e77 — how to play
+  HELP_STRATEGY:    0x804,    // FUN_0058760d — strategy tips
+  HELP_ABOUT:       0x805,    // FUN_004da9e2 — about dialog
+
+  // --- Multiplayer menu ---
+  MP_COUNCIL:       0x901,    // FUN_004f7bd1(1,1) — multiplayer council
+  MP_SCENARIO_EDIT: 0x9F0,    // FUN_005792e1 — scenario editor (MP context)
+
+  sourceAddr: '0x004E2803',
+};
+
+
+// ============================================================================
+// 13. SCENARIO EVENT SYSTEM
+// ============================================================================
+
+// --- Scenario Event Memory & Structure ---
+// Binary ref: FUN_0054d7ef (trigger/action editor), FUN_0054f3b9 (event editor main),
+//             show_messagebox_D4E6 (trigger picker) @ block_00540000.c
+// Events are stored as a linked list in a preallocated 50,000-byte buffer.
+export const SCENARIO_EVENT_SYSTEM = {
+  memoryAllocation: 50000,          // @ FUN_00540000 — thunk_FUN_004fa5d9(50000)
+  eventListHead: 'DAT_0064b99c',    // head of linked list                       // 0x00540000
+  nextPointerOffset: 0x1BC,         // offset to next-event pointer in record    // 0x00473d5e (save)
+  eventRecordSize: 0x1BC,           // 444 bytes of event data per record        // 0x00473d5e (save)
+
+  // --- Trigger Types (bitmask, one bit per trigger) ---
+  // 9 trigger types, tested as bit flags in trigger bitmask field
+  triggerTypes: {
+    TURN_INTERVAL:      0x001,      // fires every N turns                       // 0x0054d7ef
+    UNIT_KILLED:        0x002,      // specific unit type killed                 // 0x0054d7ef
+    NO_CITIES_LEFT:     0x004,      // civ has no remaining cities               // 0x0054d7ef
+    CITY_TAKEN:         0x008,      // specific city captured                    // 0x0054d7ef
+    TURN_NUMBER:        0x010,      // fires on exact turn number                // 0x0054d7ef
+    NEGOTIATION:        0x020,      // diplomacy contact occurs                  // 0x0054d7ef
+    SCENARIO_LOADED:    0x040,      // fires when scenario first loads           // 0x0054d7ef
+    RECEIVED_TECH:      0x080,      // civ receives a technology                 // 0x0054d7ef
+    RANDOM_TURN:        0x100,      // random chance each turn                   // 0x0054d7ef
+  },
+  triggerTypeCount: 9,              // bits 0-8 (values 1-0x100)                 // 0x0054d7ef
+
+  // --- Action Types (bitmask, one bit per action) ---
+  // 13 action types, tested as bit flags in action bitmask field
+  actionTypes: {
+    MOVE_UNIT:          0x0001,     // move unit to location                     // 0x0054d7ef
+    CREATE_UNIT:        0x0002,     // create new unit                           // 0x0054d7ef
+    CHANGE_MONEY:       0x0004,     // add/subtract gold                         // 0x0054d7ef
+    MAKE_AGGRESSION:    0x0008,     // declare war between civs                  // 0x0054d7ef
+    PLAY_CD_TRACK:      0x0010,     // play audio CD track                       // 0x0054d7ef
+    CHANGE_TERRAIN:     0x0020,     // modify map terrain                        // 0x0054d7ef
+    DESTROY_BUILDINGS:  0x0040,     // destroy city buildings                    // 0x0054d7ef
+    GIVE_TECH:          0x0080,     // give technology to civ                    // 0x0054d7ef
+    MODIFY_FLAG:        0x0100,     // modify scenario/game flag                 // 0x0054d7ef
+    TRANSPORT:          0x0200,     // transport unit                            // 0x0054d7ef
+    PLAY_WAV:           0x0400,     // play WAV sound file                       // 0x0054d7ef
+    DISPLAY_TEXT:       0x0800,     // show text popup                           // 0x0054d7ef
+    TAKE_TECH:          0x1000,     // remove technology from civ                // 0x0054d7ef
+    NEGOTIATE:          0x2000,     // force diplomacy contact                   // 0x0054d7ef
+  },
+  actionTypeCount: 13,              // bits 0-12 (values 1-0x2000)               // 0x0054d7ef
+  maxActionsPerEvent: 0x0D,         // 13 actions max per event                  // 0x0054d7ef
+
+  // --- Negotiation Target Types ---
+  negotiationTypes: {
+    HUMAN:              1,          // triggers only for human players            // 0x0054d7ef
+    COMPUTER:           2,          // triggers only for AI players              // 0x0054d7ef
+    HUMAN_OR_COMPUTER:  4,          // triggers for either                       // 0x0054d7ef
+  },
+
+  // --- Special Target Civ IDs ---
+  specialTargets: {
+    ANYBODY:            -2,         // any civ                                   // 0x0054d7ef
+    TRIGGER_ATTACKER:   -3,         // civ that triggered the event (attacker)   // 0x0054d7ef
+    TRIGGER_RECEIVER:   -4,         // civ that was acted upon (receiver/defender) // 0x0054d7ef
+  },
+
+  // --- CD Track Range ---
+  cdTrackRange: { min: 2, max: 0x18 },  // tracks 2-24                          // 0x0054d7ef
+
+  // --- Event Record String Pointers ---
+  // The event record contains up to 0x14 (20) string pointers at offsets 0x38..0x87
+  stringSlots: 0x14,                // 20 string pointer slots per event         // 0x00473d5e (save)
+  stringSlotBaseOffset: 0x38,       // first string pointer at record+0x38       // 0x00473d5e (save)
+
+  // --- Linked List Structure ---
+  prevPointerOffset: 0x1C0,         // offset to prev-event pointer in record    // 0x0054c36e (delete)
+  // Record layout: [0x000..0x1BB] event data, [0x1BC] next ptr, [0x1C0] prev ptr
+
+  // --- EVENTS.TXT File Format Keywords ---
+  // Section delimiters (prefixed with '@' in file)
+  fileKeywords: {
+    BEGINEVENTS:  '@BEGINEVENTS',   // start of event block                      // 0x004F parser
+    ENDEVENTS:    '@ENDEVENTS',     // end of event block                        // 0x004F parser
+    IF:           '@IF',            // start of trigger section                  // 0x004F parser
+    THEN:         '@THEN',          // start of action section                   // 0x004F parser
+    ENDIF:        '@ENDIF',         // end of single event                       // 0x004F parser
+    DEBUG:        '@DEBUG',         // enable parser debug output                // 0x004F parser
+  },
+
+  // --- Trigger Keywords (EVENTS.TXT) ---
+  // These appear after @IF to define what fires the event
+  triggerKeywords: {
+    UNITKILLED:         'UNITKILLED',         // trigger type 0x01 (bit 0)       // 0x004F:4652
+    CITYTAKEN:          'CITYTAKEN',          // trigger type 0x02 (bit 1)       // 0x004F:4989
+    TURN:               'TURN',               // trigger type 0x04 (bit 2)       // 0x004F:5074
+    TURNINTERVAL:       'TURNINTERVAL',       // trigger type 0x08 (bit 3)       // 0x004F:5119
+    NEGOTIATION:        'NEGOTIATION',        // trigger type 0x10 (bit 4)       // 0x004F:4744
+    SCENARIOLOADED:     'SCENARIOLOADED',     // trigger type 0x20 (bit 5)       // 0x004F:5202
+    RANDOMTURN:         'RANDOMTURN',         // trigger type 0x40 (bit 6)       // 0x004F:5159
+    NOSCHISM:           'NOSCHISM',           // trigger type 0x80 (bit 7)       // 0x004F:4879
+    RECEIVEDTECHNOLOGY: 'RECEIVEDTECHNOLOGY', // trigger type 0x100 (bit 8)      // 0x004F:4924
+  },
+
+  // --- Action Keywords (EVENTS.TXT) ---
+  // These appear after @THEN to define what happens when triggered
+  actionKeywords: {
+    TEXT:                  'TEXT',                  // action bit 0x0001           // 0x004F:5217
+    MOVEUNIT:              'MOVEUNIT',              // action bit 0x0002          // 0x004F:5711
+    CREATEUNIT:            'CREATEUNIT',            // action bit 0x0004          // 0x004F:5323
+    CHANGEMONEY:           'CHANGEMONEY',           // action bit 0x0008          // 0x004F:5473
+    PLAYWAVEFILE:          'PLAYWAVEFILE',          // action bit 0x0010          // 0x004F:5890
+    MAKEAGGRESSION:        'MAKEAGGRESSION',        // action bit 0x0020          // 0x004F:5547
+    JUSTONCE:              'JUSTONCE',              // action bit 0x0040          // 0x004F:5531
+    PLAYCDTRACK:           'PLAYCDTRACK',           // action bit 0x0080          // 0x004F:5868
+    DONTPLAYWONDERS:       'DONTPLAYWONDERS',       // action bit 0x0100          // 0x004F:5539
+    CHANGETERRAIN:         'CHANGETERRAIN',         // action bit 0x0200          // 0x004F:5254
+    DESTROYACIVILIZATION:  'DESTROYACIVILIZATION',  // action bit 0x0400          // 0x004F:5616
+    GIVETECHNOLOGY:        'GIVETECHNOLOGY',        // action bit 0x0800          // 0x004F:5656
+    HASTRIGGERED:          'HASTRIGGERED',          // action bit 0x2000          // 0x0054:482
+    ENDTEXT:               'ENDTEXT',               // terminates TEXT block       // 0x004F:5225
+  },
+
+  // --- Trigger Sub-Parameter Keywords (EVENTS.TXT) ---
+  // These appear as lines within a trigger block (e.g., "unit=Warriors")
+  triggerParameterKeywords: {
+    unit:         'unit=',          // unit type name (UNITKILLED)                // 0x004F:4671
+    attacker:     'attacker=',      // attacking civ name (UNITKILLED, CITYTAKEN) // 0x004F:4694
+    defender:     'defender=',      // defending civ name (UNITKILLED, CITYTAKEN, NOSCHISM) // 0x004F:4717
+    city:         'city=',          // city name (CITYTAKEN)                      // 0x004F:5055
+    turn:         'turn=',          // turn number or EVERY (TURN)               // 0x004F:5094
+    interval:     'interval=',      // turn interval (TURNINTERVAL)              // 0x004F:5138
+    talker:       'talker=',        // initiating civ (NEGOTIATION)              // 0x004F:4763
+    talkertype:   'talkertype=',    // Human/Computer/HumanOrComputer            // 0x004F:4786
+    listener:     'listener=',      // receiving civ (NEGOTIATION)               // 0x004F:4818
+    listenertype: 'listenertype=',  // Human/Computer/HumanOrComputer            // 0x004F:4841
+    receiver:     'receiver=',      // receiving civ (RECEIVEDTECHNOLOGY)         // 0x004F:4943
+    technology:   'technology=',    // tech ID number (RECEIVEDTECHNOLOGY)        // 0x004F:4967
+    denominator:  'denominator=',   // 1/N chance per turn (RANDOMTURN)           // 0x004F:5178
+  },
+
+  // --- Action Sub-Parameter Keywords (EVENTS.TXT) ---
+  actionParameterKeywords: {
+    unit:          'unit=',         // unit type (MOVEUNIT, CREATEUNIT)           // 0x004F:5345,5732
+    owner:         'owner=',        // owning civ (MOVEUNIT, CREATEUNIT)          // 0x004F:5368,5756
+    maprect:       'maprect',       // 4-corner rectangle (MOVEUNIT, CHANGETERRAIN) // 0x004F:5294,5781
+    moveto:        'moveto',        // destination x,y (MOVEUNIT)                // 0x004F:5807
+    numbertomove:  'numbertomove=', // count or ALL (MOVEUNIT)                   // 0x004F:5833
+    veteran:       'veteran=',      // yes/true/no/false (CREATEUNIT)            // 0x004F:5391
+    homecity:      'homecity=',     // home city name (CREATEUNIT)               // 0x004F:5412
+    locations:     'locations',     // start of location list (CREATEUNIT)       // 0x004F:5426
+    endlocations:  'endlocations',  // end of location list (CREATEUNIT)         // 0x004F:5441
+    receiver:      'receiver=',     // target civ (CHANGEMONEY, GIVETECHNOLOGY)  // 0x004F:5492,5675
+    amount:        'amount=',       // gold amount (CHANGEMONEY)                 // 0x004F:5515
+    who:           'who=',          // aggressor civ (MAKEAGGRESSION)            // 0x004F:5566
+    whom:          'whom=',         // target civ (MAKEAGGRESSION, DESTROYACIVILIZATION) // 0x004F:5589,5635
+    terraintype:   'terraintype=',  // terrain ID 0-10 (CHANGETERRAIN)           // 0x004F:5274
+    technology:    'technology=',   // tech ID (GIVETECHNOLOGY)                  // 0x004F:5695
+  },
+
+  // --- Special Unit Target ---
+  specialUnitTarget: {
+    ANYUNIT:  -2,                   // matches any unit type                     // 0x0054:1149
+    keyword: 'ANYUNIT',             // EVENTS.TXT keyword                        // s_ANYUNIT_00632adc
+  },
+
+  // --- Special Turn Value ---
+  specialTurnValue: {
+    EVERY:    -1,                   // fires every turn (TURN trigger)           // 0x004F:5099
+    keyword: 'EVERY',               // EVENTS.TXT keyword                        // s_EVERY_0062fae8
+  },
+
+  // --- Trigger Actor Type Keywords (NEGOTIATION talkertype/listenertype) ---
+  triggerActorTypeKeywords: {
+    HUMAN:           'Human',            // value 1                              // 0x004F:4789
+    COMPUTER:        'Computer',         // value 2                              // 0x004F:4795
+    HUMANORCOMPUTER: 'HumanOrComputer',  // value 4                              // 0x004F:4801
+  },
+
+  // --- Special Target Keywords (EVENTS.TXT output strings) ---
+  specialTargetKeywords: {
+    ANYBODY:          'ANYBODY',          // any civ (-2)                         // s_ANYBODY_00632aa4
+    TRIGGERATTACKER:  'TRIGGERATTACKER',  // attacker civ (-3)                    // s_TRIGGERATTACKER_00632aac
+    TRIGGERDEFENDER:  'TRIGGERDEFENDER',  // defender civ (-4 in attacker ctx)    // s_TRIGGERDEFENDER_00632abc
+    TRIGGERRECEIVER:  'TRIGGERRECEIVER',  // receiver civ (-4 in receiver ctx)    // s_TRIGGERRECEIVER_00632acc
+  },
+
+  // --- Event Record Field Offsets (int32 array indices into record) ---
+  // The event record is accessed as an array of uint32 (local_68[N])
+  eventRecordFields: {
+    triggerType:       0x00,        // trigger bitmask (1 int)                   // 0x004F parser
+    actionBitmask:     0x01,        // action bitmask (1 int, OR'd per action)   // 0x004F parser
+    // UNITKILLED trigger fields
+    unitName:          0x02,        // char* — unit name string                  // 0x004F:4683
+    unitTypeId:        0x03,        // int — unit type ID                        // 0x004F:4686
+    // CITYTAKEN trigger fields
+    cityName:          0x04,        // char* — city name string                  // 0x004F:5060
+    // Attacker/Defender (shared by UNITKILLED, CITYTAKEN, NEGOTIATION)
+    attackerName:      0x05,        // char* — attacker/talker civ name          // 0x004F:4706
+    attackerId:        0x06,        // int — attacker/talker civ ID              // 0x004F:4709
+    talkerType:        0x07,        // int — 1=Human, 2=Computer, 4=Both         // 0x004F:4791
+    defenderName:      0x08,        // char* — defender/listener civ name        // 0x004F:4729
+    defenderId:        0x09,        // int — defender/listener civ ID            // 0x004F:4732
+    listenerType:      0x0A,        // int — 1=Human, 2=Computer, 4=Both         // 0x004F:4846
+    // TURN / TURNINTERVAL fields
+    turnNumber:        0x0B,        // int — turn number or interval             // 0x004F:5105,5149
+    // RANDOMTURN fields
+    denominator:       0x0C,        // int — 1/N chance (1-1000)                 // 0x004F:5188
+    // RECEIVEDTECHNOLOGY trigger fields
+    techId:            0x0D,        // int — technology ID                       // 0x004F:4977
+    // TEXT action fields
+    textLines:         0x0E,        // char*[20] — text line pointers (0x0E..0x21) // 0x004F:5229
+    // MOVEUNIT action fields
+    moveOwnerName:     0x22,        // char* — move unit owner name              // 0x004F:5769
+    moveOwnerId:       0x23,        // int — move unit owner civ ID              // 0x004F:5772
+    moveUnitName:      0x24,        // char* — move unit type name               // 0x004F:5745
+    moveUnitTypeId:    0x25,        // int — move unit type ID                   // 0x004F:5748
+    moveNumberToMove:  0x26,        // int — count (-2 = ALL)                    // 0x004F:5839,5852
+    moveMapRect:       0x27,        // int[8] — 4 x,y pairs (0x27..0x2E)        // 0x004F:5795
+    moveToX:           0x2F,        // int — destination X                       // 0x004F:5822
+    moveToY:           0x30,        // int — destination Y                       // 0x004F:5824
+    // MAKEAGGRESSION action fields
+    aggrWhomName:      0x31,        // char* — target civ name                   // 0x004F:5601
+    aggrWhomId:        0x32,        // int — target civ ID                       // 0x004F:5604
+    aggrWhoName:       0x33,        // char* — aggressor civ name                // 0x004F:5578
+    aggrWhoId:         0x34,        // int — aggressor civ ID                    // 0x004F:5581
+    // CREATEUNIT action fields
+    createOwnerName:   0x35,        // char* — create unit owner name            // 0x004F:5380
+    createOwnerId:     0x36,        // int — create unit owner civ ID            // 0x004F:5383
+    createUnitName:    0x37,        // char* — create unit type name             // 0x004F:5357
+    createUnitTypeId:  0x38,        // int — create unit type ID                 // 0x004F:5360
+    createLocations:   0x39,        // int[20] — up to 10 x,y pairs (0x39..0x4C) // 0x004F:5451
+    createLocationCount: 0x4D,      // int — number of locations                 // 0x004F:5469
+    createVeteran:     0x4E,        // int — 0=no, 1=yes                         // 0x004F:5396
+    createHomecity:    0x4F,        // char* — home city name                    // 0x004F:5417
+    // CHANGEMONEY action fields
+    changeMoneyRecvName: 0x5D,      // char* — receiver civ name                 // 0x004F:5504
+    changeMoneyRecvId:   0x5E,      // int — receiver civ ID                     // 0x004F:5507
+    changeMoneyAmount:   0x5F,      // int — gold amount (+/-)                   // 0x004F:5520
+    // NEGOTIATION trigger extra (stored in action bitmask area)
+    negotiationFlag:   0x60,        // int — 0x1000 flag for negotiation trigger // 0x004F:4877
+    // PLAYWAVEFILE action fields
+    waveFileName:      0x61,        // char* — WAV file path                     // 0x004F:5904
+    // PLAYCDTRACK action fields
+    cdTrackNumber:     0x62,        // int — CD track number                     // 0x004F:5881
+    // CHANGETERRAIN action fields
+    changeTerrainType: 0x63,        // int — terrain type ID (0-10)              // 0x004F:5285
+    changeTerrainRect: 0x64,        // int[8] — 4 x,y pairs (0x64..0x6B)        // 0x004F:5308
+    // DESTROYACIVILIZATION action fields
+    destroyCivId:      0x6C,        // int — target civ ID                       // 0x004F:5645
+    // GIVETECHNOLOGY action fields
+    giveTechId:        0x6D,        // int — technology ID                       // 0x004F:5699
+    giveTechRecvId:    0x6E,        // int — receiver civ ID                     // 0x004F:5686
+    // Linked list pointers
+    nextEventPtr:      0x6F,        // void* — next event in list (offset 0x1BC) // 0x004F parser
+    prevEventPtrByte:  0x1C0,       // void* — prev event in list (byte offset)  // 0x0054c36e
+  },
+
+  // --- Event Parameter Limits ---
+  parameterLimits: {
+    maxTextLines:          0x14,     // 20 text lines per TEXT action             // 0x004F:5226
+    maxCreateLocations:    10,       // 10 location pairs for CREATEUNIT          // 0x004F:5431
+    moveMapRectCorners:    4,        // 4 corner points for maprect               // 0x004F:5306,5793
+    changeTerrainCorners:  4,        // 4 corner points for terrain maprect       // 0x004F:5306
+    randomDenominatorMin:  1,        // minimum denominator for RANDOMTURN        // 0x004F:5189
+    randomDenominatorMax:  1000,     // maximum denominator for RANDOMTURN        // 0x004F:5189
+    moveNumberAll:         -2,       // numbertomove=ALL sentinel value           // 0x004F:5839
+    turnEvery:             -1,       // turn=EVERY sentinel value                 // 0x004F:5099
+    changeMoneyMin:        -30000,   // minimum gold change (0xFFFF8AD0)          // 0x0054:3031
+    changeMoneyMax:        30000,    // maximum gold change                       // 0x0054:3031
+  },
+
+  // --- Trigger Help Keywords (editor help dialog) ---
+  // FUN_0054b1d5 @ block_00540000.c — maps trigger index to help dialog key
+  triggerHelpKeywords: {
+    0: 'HELPUNITKILLED',             // help for UNITKILLED trigger               // s_HELPUNITKILLED_00632b48
+    1: 'HELPCITYTAKEN',              // help for CITYTAKEN trigger                // s_HELPCITYTAKEN_00632b58
+    2: 'HELPTURN',                   // help for TURN trigger                     // s_HELPTURN_00632b68
+    3: 'HELPTURNINTERVAL',           // help for TURNINTERVAL trigger             // s_HELPTURNINTERVAL_00632b74
+    4: 'HELPNEGOTIATION',            // help for NEGOTIATION trigger              // s_HELPNEGOTIATION_00632b88
+    5: 'HELPSCENARIOLOADED',         // help for SCENARIOLOADED trigger           // s_HELPSCENARIOLOADED_00632b98
+    6: 'HELPRANDOMTURN',             // help for RANDOMTURN trigger               // s_HELPRANDOMTURN_00632bac
+    7: 'HELPNOSCHISM',               // help for NOSCHISM trigger                 // s_HELPNOSCHISM_00632bbc
+    8: 'HELPRECEIVEDTECHNOLOGY',     // help for RECEIVEDTECHNOLOGY trigger       // s_HELPRECEIVEDTECHNOLOGY_00632bcc
+  },
+
+  // --- Action Help Keywords (editor help dialog) ---
+  // FUN_0054b2ec @ block_00540000.c — maps action index to help dialog key
+  actionHelpKeywords: {
+    0:  'HELPTEXT',                  // help for TEXT action                       // s_HELPTEXT_00632bec
+    1:  'HELPMOVEUNIT',              // help for MOVEUNIT action                  // s_HELPMOVEUNIT_00632bf8
+    2:  'HELPCREATEUNIT',            // help for CREATEUNIT action                // s_HELPCREATEUNIT_00632c08
+    3:  'HELPCHANGEMONEY',           // help for CHANGEMONEY action               // s_HELPCHANGEMONEY_00632c18
+    4:  'HELPPLAYWAVEFILE',          // help for PLAYWAVEFILE action              // s_HELPPLAYWAVEFILE_00632c28
+    5:  'HELPMAKEAGGRESSION',        // help for MAKEAGGRESSION action            // s_HELPMAKEAGGRESSION_00632c3c
+    6:  'HELPJUSTONCE',              // help for JUSTONCE action                  // s_HELPJUSTONCE_00632c50
+    7:  'HELPPLAYCDTRACK',           // help for PLAYCDTRACK action               // s_HELPPLAYCDTRACK_00632c60
+    8:  'HELPDONTPLAYWONDERS',       // help for DONTPLAYWONDERS action           // s_HELPDONTPLAYWONDERS_00632c70
+    9:  'HELPCHANGETERRAIN',         // help for CHANGETERRAIN action             // s_HELPCHANGETERRAIN_00632c84
+    10: 'HELPDESTROYACIVILIZATION',  // help for DESTROYACIVILIZATION action      // s_HELPDESTROYACIVILIZATION_00632c98
+    11: 'HELPGIVETECHNOLOGY',        // help for GIVETECHNOLOGY action            // s_HELPGIVETECHNOLOGY_00632cb4
+  },
+
+  // --- Event File Names ---
+  eventFileNames: {
+    eventsFile:    'EVENTS.',        // event file name prefix (+ extension)      // s_EVENTS__00632a20
+    backupFile:    'EVENTS.BAK',     // backup before save                        // s_EVENTS_BAK_00632a28
+    badEventsKey:  'BADEVENTSFILE',  // error message key for parse failure       // s_BADEVENTSFILE_00630868
+    eventEditorKey:'EVENTS',         // editor dialog key                         // s_EVENTS_00632cd0
+    triggerPickerKey: 'TRIGGERS',    // trigger picker dialog key                 // s_TRIGGERS_006331e8
+  },
+
+  // --- Parser State Machine ---
+  // FUN_004f42f4 @ block_004F0000.c — states for EVENTS.TXT parsing
+  parserStates: {
+    INITIAL:             1,          // waiting for @IF or @BEGINEVENTS           // 0x004F:4567
+    READING_TRIGGER:     2,          // inside @IF block, reading trigger keyword // 0x004F:4614
+    READING_ACTIONS:     3,          // inside @THEN block, reading action keywords // 0x004F:4622
+    EVENT_COMPLETE:      5,          // @ENDIF found, event finalized             // 0x004F:4630
+    END_OF_FILE:         10,         // @ENDEVENTS found or EOF reached           // 0x004F:4644
+  },
+
+  // --- Editor Picker List Types ---
+  // FUN_0054a912 @ block_00540000.c — param_3 selects which picker list to show
+  pickerListTypes: {
+    CIV_LIST:            0,          // civs 1-7 (default = 1)                    // 0x0054:1121
+    UNIT_TYPE_LIST:      1,          // all 62 unit types                         // 0x0054:1133
+    TECH_LIST:           2,          // all 100 technologies                      // 0x0054:1141
+    UNIT_WITH_ANYUNIT:   3,          // ANYUNIT + all 62 unit types               // 0x0054:1148
+    CIV_WITH_ANYBODY:    4,          // ANYBODY + civs 1-7 (default = -2)         // 0x0054:1157
+    CIV_WITH_ATTACKDEF:  5,          // TRIGGERATTACKER + TRIGGERDEFENDER + civs   // 0x0054:1169
+    CIV_WITH_RECEIVER:   6,          // TRIGGERRECEIVER + civs 1-7                // 0x0054:1182
+    TERRAIN_LIST:        7,          // 11 terrain types (0-10)                   // 0x0054:1194
+  },
+
+  // sourceAddr: '0x0054D7EF' (editor), '0x0054F3B9' (main), '0x00473D5E' (save)
+};
+
+// --- Scenario Event Editor UI ---
+// Binary ref: FUN_0054f3b9 @ block_00540000.c
+export const SCENARIO_EVENT_EDITOR = {
+  dialogDimensions: { width: 0x230, height: 0x17C },  // 560 x 380 pixels       // 0x0054f3b9
+  progressBarWidth: 0x13B,          // 315 pixels — event list progress bar      // 0x0054f3b9
+
+  // sourceAddr: '0x0054F3B9'
+};
+
+// --- Unit Type Editor ---
+// Binary ref: FUN_005aef20 (load), FUN_005af140 (save) @ block_005A0000.c
+export const UNIT_TYPE_EDITOR = {
+  maxUnitTypes: 0x3E,               // 62 unit types                             // 0x005aef20
+  gameRecordStride: 0x14,           // 20 bytes per unit type in game format     // 0x005aef20
+  editorRecordStride: 0x58,         // 88 bytes per unit type in editor format   // 0x005aef20
+  nameLength: 0x28,                 // 40 bytes per unit name buffer             // 0x005aef20
+
+  // Unit type field offsets within game record (stride 0x14)
+  unitTypeFieldOffsets: {
+    name:        0x00,              // char* — unit name pointer                  // 0x005aef20
+    prereqTech:  0x13,              // int8 — technology prerequisite             // 0x005aef20
+    obsoleteTech:0x08,              // int8 — technology that obsoletes           // 0x005aef20
+    domain:      0x12,              // int8 — 0=land, 1=sea, 2=air               // 0x005aef20
+    role:        0x09,              // int8 — unit role/category                  // 0x005aef20
+    attack:      0x0C,              // int8 — base attack strength               // 0x005aef20
+    defense:     0x0D,              // int8 — base defense strength              // 0x005aef20
+    moveRate:    0x0A,              // int8 — base movement points               // 0x005aef20
+    hitpoints:   0x11,              // int8 — base hit points                    // 0x005aef20
+    firepower:   0x10,              // int8 — base firepower                     // 0x005aef20
+    cost:        0x0E,              // int8 — shield cost to build               // 0x005aef20
+    flags:       0x0B,              // int8 — unit flags                         // 0x005aef20
+  },
+
+  // sourceAddr: '0x005AEF20' (load), '0x005AF140' (save)
+};
+
+
+// ============================================================================
+// 15. MAP GENERATION CONSTANTS
+// ============================================================================
+// Binary ref: block_00400000.c — continent placement, terrain assignment,
+//             climate zones, polar ice/glacier placement
+
+export const MAP_GENERATION = {
+  // --- Continent/Island Placement ---
+  continentPlacement: {
+    continentBlobSize: 0x30,       // 48 — blob growth iterations for continents
+    islandBlobSize:    0x3F,       // 63 — blob growth iterations for islands
+    maxIterations:     1024,       // max placement attempts before giving up
+  },
+
+  // --- Polar Ice / Glacier Placement ---
+  // Polar ice (terrain type 7) and glacier (terrain type 6) at map edges
+  polarTerrain: {
+    ice:     7,                    // terrain type for Arctic ice
+    glacier: 6,                    // terrain type for glacier
+  },
+
+  // --- Climate Zone Threshold ---
+  climateZone: {
+    // threshold = (mapHeight * 3) / 10
+    numerator: 3,
+    denominator: 10,
+    note: 'Climate boundary = (mapHeight * 3) / 10 rows from equator',
+  },
+
+  sourceAddr: 'block_00400000.c (map generation functions)',
+};
+
+
+// ============================================================================
+// 16. GAME SETUP DIALOG CONSTANTS
+// ============================================================================
+// Binary ref: FUN_0041cc04 @ block_00410000.c (new_game_setup)
+
+export const GAME_SETUP = {
+  // --- Player Count Range (Multiplayer) ---
+  maxPlayers: {
+    default: 7,
+    min: 4,
+    max: 7,
+    serialMode: 2,
+    sourceAddr: '0x0051D9A0',
+  },
+
+  // --- Difficulty / Barbarian / Gender ---
+  difficultyCount: 6,              // 0=Chieftain..5=Deity
+  barbarianLevels: 4,              // 0=None, 1=Roaming, 2=Restless, 3=Raging
+  genderOptions: 2,                // 0=Male, 1=Female
+
+  // --- Map Size Presets ---
+  // See MAP_SIZE_PRESETS in ui-constants.js for full detail
+  mapSizePresetCount: 3,           // Small, Medium, Large (+ Custom option)
+
+  // --- Custom Land Dialog ---
+  customLandDialog: 'CUSTOMLAND',  // @ s_CUSTOMLAND_0062555c
+
+  // --- INI File Settings ---
+  iniSection: 'Civilization Gold',
+  iniKeys: {
+    netTimeout: { key: 'NetTimeOut', default: 30 },
+    adapter:    { key: 'Adapter',    default: 0 },
+    maxPlayers: { key: 'MaxPlayers', default: 7 },
+  },
+
+  // --- Language Selection ---
+  languages: {
+    0: 'English',                      // @ s_English_00625364                         // 0x0041B177
+    1: 'Francais',                     // @ s_Francais_0062536c                        // 0x0041B177
+    2: 'Deutsch',                      // @ s_Deutsch_00625378                         // 0x0041B177
+  },
+  languageIniKey: 'Language Preference',  // @ s_Language_Preference_00625388           // 0x0041B177
+  interDatFile: 'INTER.DAT',          // @ s_INTER_DAT_00625358 — language availability // 0x0041B177
+
+  // --- New Game Setup Dialog Keys ---
+  // Dialog keys used during the new-game setup wizard (FUN_0041ba52)
+  setupDialogKeys: {
+    difficulty:   'DIFFICULTY',        // @ s_DIFFICULTY_006254a8                      // 0x0041BA52
+    enemies:      'ENEMIES',           // @ s_ENEMIES_006254b4                        // 0x0041BA52
+    barbarity:    'BARBARITY',         // @ s_BARBARITY_006254bc                      // 0x0041BA52
+    rules:        'RULES',             // @ s_RULES_006254c8                          // 0x0041BA52
+    advanced:     'ADVANCED',          // @ s_ADVANCED_006254d0                        // 0x0041BA52
+    accelerated:  'ACCELERATED',       // @ s_ACCELERATED_006254dc                    // 0x0041BA52
+    gender:       'GENDER',            // @ s_GENDER_006254e8                         // 0x0041BA52
+    customTribe:  'CUSTOMTRIBE',       // @ s_CUSTOMTRIBE_00625500                    // 0x0041BA52
+    customTribe2: 'CUSTOMTRIBE2',      // @ s_CUSTOMTRIBE2_0062550c                   // 0x0041BA52
+    customCity:   'CUSTOMCITY',        // @ s_CUSTOMCITY_00625524                     // 0x0041BA52
+    opponent:     'OPPONENT',          // @ s_OPPONENT_00625530                        // 0x0041BA52
+    sizeOfMap:    'SIZEOFMAP',         // @ s_SIZEOFMAP_0062553c                      // 0x0041BA52
+    customLand:   'CUSTOMLAND',        // @ s_CUSTOMLAND_0062555c                     // 0x0041BA52
+    hotSeatNot:   'HOTSEATNOT',        // @ s_HOTSEATNOT_006252B0                     // 0x0041BA52
+  },
+
+  // --- AI Opponent Auto-Selection ---
+  // When choosing random opponents:
+  //   difficulty < 2: opponents = rand()%5 + 2
+  //   difficulty < 5: opponents = rand()%3 + 1
+  //   difficulty >= 5: opponents = (rand() & 1) + 2
+  maxLeaderEntries: 0x15,              // 21 civilizations to pick from                // 0x0041BA52
+  leaderRecordStride: 0x30,            // 48 bytes per leader entry                    // 0x0041BA52
+  leaderRecordBase: 'DAT_00655500',    // leader personality data base                 // 0x0041BA52
+
+  // --- Sound during setup ---
+  setupMenuSound: 0x6A,               // thunk_FUN_0046e020(0x6a, 0, 0, 0) after each dialog  // 0x0041BA52
+
+  // --- Default game flags ---
+  defaultGameFlags: 0x3F,             // DAT_00655ae8 = 0x3f at start of rules selection      // 0x0041BA52
+  flatEarthFlag: 0x8000,              // bit 15: flat earth / cylinder world toggle           // 0x0041BA52
+  bloodlustFlag: 0x10,                // bit 4: bloodlust (no spaceship win)                  // 0x0041BA52
+  noSpecialResourcesFlag: 0x80,       // bit 7: no special resources                          // 0x0041BA52
+  selectComputerOpponentsFlag: 0x100,  // bit 8: manually select computer opponents            // 0x0041BA52
+
+  sourceAddr: '0x0041CC04, 0x0051D9A0, 0x0041BA52, 0x0041B177',
+};
+
+
+// ============================================================================
+// 17. CURSOR MODES (Main Map Window)
+// ============================================================================
+// Binary ref: FUN_004135ab @ block_00410000.c:1890-1914
+
+export const CURSOR_MODES = {
+  GOTO_CURSOR:    0x1FE,           // goto cursor mode (waiting for destination)
+  NORMAL:         0x201,           // normal/idle cursor (default)
+  GOTO_ACTIVE:    0x202,           // goto: unit actively moving to destination
+  GOTO_BLOCKED:   0x203,           // goto: movement blocked
+
+  // Directional cursor: 500 + direction (0=N, 1=NE, 2=E, ...)
+  // Computed in mouse-move handler at block_00410000.c:406:
+  //   cursor = (direction + 1 & 7) + 500
+  DIRECTIONAL_BASE: 500,
+
+  // Goto-blocked detection (FUN_00410e0a @ 0x00410E0A):
+  //   - If current unit move distance > cosmic param 19 (DAT_0064bcdb), cursor = 0x203
+  //   - If tile occupied by enemy, cursor = 0x203
+  gotoBlockedDistanceParam: 'DAT_0064bcdb',  // cosmic param 19 = movement range       // 0x00410402
+
+  // Viewport mode cycling (case 4): viewport+0x2de = (viewport+0x2de + 1) & 3
+  viewportModeCycleMax: 3,
+
+  // Viewport state offsets within the map window object
+  viewportOffsets: {
+    zoomLevel:    0x2E4,               // zoom level (short)                           // 0x004135AB
+    displayMode:  0x2DE,               // display mode / FOW bits (ushort)             // 0x004135AB
+    activeView:   0x2DC,               // active view flag (short)                     // 0x004135AB
+    viewportIdx:  0x2D8,               // viewport index (int, 0 = main)              // 0x004135AB
+    cursorMode:   0x358,               // current cursor mode (int)                   // 0x00410402
+  },
+
+  sourceAddr: '0x004135AB, 0x00410402, 0x00410E0A',
+};
+
+
+// NOTE: TAX_RATE_DIALOG and MAP_SIZE_PRESETS are defined in ui-constants.js
+// (the more detailed canonical versions with full binary address annotations).
+
+// ============================================================================
+// === TERRAIN EDITOR CONSTANTS ===
+// Binary ref: block_00420000.c (lines ~3332-3348) — scenario editor initialization
+// Surface dimensions, cell sizes, and resource references for the map editor.
+// ============================================================================
+
+export const TERRAIN_EDITOR = {
+  // Editor surface dimensions (in pixels)
+  surfaceWidth:  0x230,           // 560 pixels                              // 0x0042xxxx+0x2d8
+  surfaceHeight: 0x17C,           // 380 pixels                              // 0x0042xxxx+0x2dc
+
+  // Cell/tile rendering size
+  cellWidth:     0x40,            // 64 pixels per cell                      // FUN_0042xxxx
+  cellHeight:    0x40,            // 64 pixels per cell                      // FUN_0042xxxx
+
+  // Editor GIF resource
+  editorGif:     'EDITORSQ.GIF',  // @ s_EDITORSQ_GIF_00625ea4
+  editorGifFrames: 10,
+  editorGifPalette: 0xC0,
+
+  // Tiles DLL reference
+  tilesDll:      'TILES_DLL',     // @ s_TILES_DLL_00625ed4
+  // Loaded via thunk_FUN_0043c3f0 during editor initialization
+
+  // Credits screen special case
+  creditsGif:    'scredits.gif',  // @ s_scredits_gif_00625ee0
+  creditsMagic:  10000,           // param_1 == 10000 triggers credits GIF load
+  creditsPalette: 0xC0,
+
+  // Editor button ID
+  buttonIdBase:  0xC9,            // 201: editor action button base
+
+  // String IDs for editor labels
+  labelStringIds: {
+    terrainInfo:   0x864,         // terrain label (DAT_00628420 + 0x864)
+    improvementInfo: 0x868,       // improvement label (DAT_00628420 + 0x868)
+    resourceInfo:  0x86C,         // resource label (DAT_00628420 + 0x86C)
+    mapEditorTitle: 0x738,        // map editor title (DAT_00628420 + 0x738)
+  },
+
+  sourceAddr: '0x0042xxxx (editor init in block_00420000.c)',
+};
+
+// ============================================================================
+// === SUPPLY / DEMAND SEARCH DIALOGS ===
+// Binary ref: block_00420000.c (lines ~4653-4785) — city trade display
+// Dialog strings used in the city supply/demand trade route UI.
+// ============================================================================
+
+export const SUPPLY_DEMAND_DIALOGS = {
+  showDialog:    'SUPPLYSHOW',    // @ s_SUPPLYSHOW_00625ef0 — display supply routes
+  noneDialog:    'SUPPLYNONE',    // @ s_SUPPLYNONE_00625f00 — no supply available
+  searchDialog:  'SUPPLYSEARCH',  // @ s_SUPPLYSEARCH_00625f0c — search for routes
+
+  // Display flags
+  showFlags: 0x40001,             // dialog display flags for SUPPLYSHOW/SUPPLYSEARCH
+
+  sourceAddr: '0x0042xxxx (trade display in block_00420000.c)',
+};
+
+// ============================================================================
+// === MILITARY ADVISOR BUILDING TYPES ===
+// Binary ref: block_00420000.c — military advisor display
+// The military advisor screen iterates over 0x27 (39) building types
+// for counting per-city military infrastructure.
+// ============================================================================
+
+export const MILITARY_ADVISOR_BUILDINGS = {
+  totalBuildingTypes: 0x27,       // 39 building types checked per city
+  // Building string IDs used in advisor display
+  buildingStringIds: {
+    range1: { start: 0x84, end: 0x89, count: 6, desc: 'Basic building improvement names' },
+    range2: { start: 0x16E, end: 0x171, count: 4, desc: 'Advanced building improvement names' },
+  },
+  // Scrollable list parameters
+  scrollableList: {
+    rowHeight_standard: 0x16,     // 22 pixels per row (standard list)
+    rowHeight_extended: 0x18,     // 24 pixels per row (extended list with details)
+  },
+
+  sourceAddr: '0x0042xxxx (military advisor in block_00420000.c)',
+};
+
+
+// ============================================================================
+// 20. KEYBOARD SHORTCUTS — MAP VIEW
+// ============================================================================
+// Binary ref: map_ascii @ 0x00411F91 (block_00410000.c:1124-1299)
+//             FUN_00411bf5 @ 0x00411BF5 (block_00410000.c:1021-1119)
+//             map_key @ 0x004125C6 (block_00410000.c:1304-1671)
+
+/**
+ * ASCII keypress handler for the main map view.
+ *
+ * map_ascii (0x00411F91) dispatches based on the typed character.
+ * It first checks for city-window mode (DAT_00655aea & 0x40), then
+ * falls through to global shortcuts. FUN_00411bf5 handles unit-specific
+ * shortcuts when a unit is active.
+ *
+ * map_key (0x004125C6) handles virtual keycodes (numpad, function keys,
+ * menu command IDs).
+ */
+export const KEYBOARD_SHORTCUTS = {
+  // --- City Window Mode (DAT_00655aea & 0x40 set) ---
+  // These fire when a city dialog is open
+  cityWindow: {
+    0x0D: 'close_city_dialog',         // Enter — thunk_citywin_BC4F(0)              // 0x00411F91
+    0x45: 'close_city_dialog',         // 'E'                                        // 0x00411F91
+    0x58: 'close_city_dialog',         // 'X'                                        // 0x00411F91
+    0x65: 'close_city_dialog',         // 'e'                                        // 0x00411F91
+    0x78: 'close_city_dialog',         // 'x'                                        // 0x00411F91
+    0x41: 'change_production',         // 'A' / 'C' / 'a' / 'c' — thunk_city_button_change(0)  // 0x00411F91
+    0x43: 'change_production',
+    0x61: 'change_production',
+    0x63: 'change_production',
+    0x42: 'buy_production',            // 'B' / 'b' — thunk_city_button_buy(0)       // 0x00411F91
+    0x62: 'buy_production',
+    0x48: 'city_happy_advisor',        // 'H' / 'h' — thunk_citywin_BA6A(0)          // 0x00411F91
+    0x68: 'city_happy_advisor',
+    0x49: 'city_improvements',         // 'I' / 'i' — thunk_citywin_B9A4(0)          // 0x00411F91
+    0x69: 'city_improvements',
+    0x4D: 'city_map',                  // 'M' / 'm' — thunk_citywin_BA07(0)          // 0x00411F91
+    0x6D: 'city_map',
+    0x52: 'rename_city',               // 'R' / 'r' — thunk_city_button_rename(0)    // 0x00411F91
+    0x72: 'rename_city',
+    0x56: 'city_view',                 // 'V' / 'v' — thunk_city_button_view(0)      // 0x00411F91
+    0x76: 'city_view',
+  },
+
+  // --- Global ASCII Shortcuts (map view, no city dialog) ---
+  // These fire from map_ascii when not in city-window mode
+  global: {
+    0x43: 'center_on_capital',         // 'C' — thunk_FUN_0040e017()                 // 0x00411F91
+    0x44: 'disband_unit',              // 'D' — thunk_FUN_0058c295()                 // 0x00411F91
+    0x48: 'help_civilopedia',          // 'H' — thunk_FUN_0044cd9b(player)           // 0x00411F91
+    0x52: 'revolution',                // 'R' — thunk_FUN_0040e3b1()                 // 0x00411F91
+    0x53: 'save_game',                 // 'S' — thunk_save_game(0)                   // 0x00411F91
+    0x54: 'tax_rate_dialog',           // 'T' — thunk_FUN_0040ddc6(player)           // 0x00411F91
+    0x58: 'zoom_out_reset',            // 'X' — DAT_0066ca8c = -3; redraw            // 0x00411F91
+    0x5A: 'zoom_in_to_cursor',         // 'Z' — zoom=0, center on cursor             // 0x00411F91
+  },
+
+  // --- Unit-Active Shortcuts (FUN_00411bf5) ---
+  // These fire when a unit is selected (param_2 = VK code, param_1 = ASCII)
+  unitActive: {
+    0x0D: 'enter_city_or_info',        // Enter — enter city or show unit info        // 0x00411BF5
+    0x20: 'skip_turn',                 // Space — thunk_FUN_0058bd60()                // 0x00411BF5
+    0x42: 'build_city',                // 'B' — thunk_FUN_0058be56()                  // 0x00411BF5
+    0x43: 'center_on_unit',            // 'C' — center map on selected unit            // 0x00411BF5
+    0x45: 'explore',                   // 'E' — thunk_FUN_0058c65e(10)                // 0x00411BF5
+    0x46: 'fortify_or_fortress',       // 'F' — fortify (or build fortress if settler) // 0x00411BF5
+    0x47: 'goto',                      // 'G' — thunk_FUN_0058d6af()                  // 0x00411BF5
+    0x48: 'home_city',                 // 'H' — thunk_FUN_0058cbe1()                  // 0x00411BF5
+    0x49: 'irrigate',                  // 'I' — thunk_FUN_0058c65e(6)                 // 0x00411BF5
+    0x4B: 'automation_settler',        // 'K' — thunk_FUN_0058df14()                  // 0x00411BF5
+    0x4C: 'clear_orders',              // 'L' — thunk_FUN_0058df7b()                  // 0x00411BF5
+    0x4D: 'mine',                      // 'M' — thunk_FUN_0058c65e(7)                 // 0x00411BF5
+    0x4F: 'transform_terrain',         // 'O' — thunk_FUN_0058c65e(8)                 // 0x00411BF5
+    0x50: 'pollution_or_pillage',      // 'P' — clean pollution (settler) or pillage   // 0x00411BF5
+    0x51: 'end_turn_selection',        // 'Q' — end current turn selection             // 0x00411BF5
+    0x52: 'road',                      // 'R' — thunk_FUN_0058c65e(5)                 // 0x00411BF5
+    0x53: 'sentry',                    // 'S' — thunk_FUN_0058cde5()                  // 0x00411BF5
+    0x55: 'unload',                    // 'U' — thunk_FUN_0058ddce()                  // 0x00411BF5
+    0x57: 'wait',                      // 'W' — thunk_FUN_0058bdfd()                  // 0x00411BF5
+  },
+
+  // --- Shift+ASCII (Cheat/Debug) ---
+  // From map_ascii inner bVar1==true block
+  shiftGlobal: {
+    0x41: 'select_all_units',          // 'A' — thunk_FUN_0058d442()                 // 0x00411F91
+    0x54: 'tech_dialog',               // 'T' — thunk_FUN_004e2597()                 // 0x00411F91
+    0x56: 'toggle_view_mode',          // 'V' — toggle strategic/normal view          // 0x00411F91
+    0x58: 'shift_zoom_out',            // 'X' — zoom out (min -7)                     // 0x00411F91
+    0x5A: 'shift_zoom_in',             // 'Z' — zoom in (max 8)                       // 0x00411F91
+    0x59: 'cheat_mode_toggle',         // 'Y' — toggle DAT_00655b07 (cheat mode)      // 0x00411F91
+  },
+
+  // --- Virtual Key Codes (map_key @ 0x004125C6) ---
+  // Numpad and directional key → direction mapping
+  keyToDirection: {
+    // Direction assignments: 0=N, 1=NE, 2=E, 3=SE, 4=S, 5=SW, 6=W, 7=NW
+    0xA1: 4, 0xC7: 4,                 // Numpad 1 / Home+shift → direction 4 (S)    // 0x004125C6
+    0xA2: 3, 0xC1: 3,                 // Numpad 2 / Down → direction 3 (SE)          // 0x004125C6
+    0xA3: 2, 0xC6: 2,                 // Numpad 3 / PgDn → direction 2 (E)           // 0x004125C6
+    0xA4: 5, 0xC2: 5,                 // Numpad 4 / Left → direction 5 (SW)          // 0x004125C6
+    0xA6: 1, 0xC3: 1,                 // Numpad 6 / Right → direction 1 (NE)         // 0x004125C6
+    0xA7: 6, 0xC4: 6,                 // Numpad 7 / Home → direction 6 (W)           // 0x004125C6
+    0xA8: 7, 0xC0: 7,                 // Numpad 8 / Up → direction 7 (NW)            // 0x004125C6
+    0xA9: 0, 0xC5: 0,                 // Numpad 9 / PgUp → direction 0 (N)           // 0x004125C6
+  },
+
+  // --- City View Numpad (in city dialog mode, DAT_00655aea & 0x40) ---
+  cityViewKeys: {
+    scrollDown: [0xA2, 0xA6, 0xC1, 0xC3],  // thunk_citywin_BD13 (next city)        // 0x004125C6
+    scrollUp:   [0xA4, 0xA8, 0xC0, 0xC2],  // thunk_citywin_BF72 (prev city)        // 0x004125C6
+  },
+
+  // --- Menu Command IDs (map_key handles these from menu bar) ---
+  menuCommands: {
+    0xB0: 'find_city',                 // thunk_FUN_0042d71e                          // 0x004125C6
+    0xB1: 'city_report',               // thunk_FUN_0042f079                          // 0x004125C6
+    0xB2: 'science_report',            // thunk_FUN_004308ae                          // 0x004125C6
+    0xB3: 'trade_report',              // thunk_FUN_0042e185                          // 0x004125C6
+    0xB4: 'attitude_advisor',          // thunk_FUN_0042cd2f                          // 0x004125C6
+    0xB5: 'wonders_of_world',          // thunk_FUN_0042b67d                          // 0x004125C6
+    0xB6: 'top_5_cities',              // thunk_FUN_00431c73                          // 0x004125C6
+    0xB7: 'demographics',              // thunk_FUN_00433122                          // 0x004125C6
+    0xB8: 'spaceships',                // thunk_FUN_00435d15                          // 0x004125C6
+    0xBA: 'intelligence_report',       // thunk_FUN_00434d8a                          // 0x004125C6
+    0xBB: 'battle_log',                // thunk_FUN_00598b4e                          // 0x004125C6
+    0xD2: 'open_city_dialog',          // thunk_citywin_994F                          // 0x004125C6
+    0x243: 'scenario_editor',          // thunk_FUN_004b7eb6                          // 0x004125C6
+    0x244: 'trade_routes',             // thunk_FUN_0043856b                          // 0x004125C6
+    0x245: 'research_dialog',          // thunk_FUN_004e1452                          // 0x004125C6
+    0x246: 'map_editor_toggle',        // thunk_FUN_00553ff6                          // 0x004125C6
+    0x247: 'toggle_grid',              // DAT_00655aea ^= 0x20                        // 0x004125C6
+    0x248: 'really_quit',              // s_REALLYQUIT dialog                         // 0x004125C6
+    0x24B: 'scenario_parameters',      // thunk_FUN_00554297                          // 0x004125C6
+    0x24C: 'set_game_year',            // thunk_FUN_004e068d                          // 0x004125C6
+    0x24E: 'activate_unit',            // thunk_FUN_0058bd84                          // 0x004125C6
+    0x24F: 'set_human_player',         // thunk_FUN_004e0ab0                          // 0x004125C6
+    0x250: 'set_computer_player',      // thunk_FUN_004e0d71                          // 0x004125C6
+    0x251: 'create_unit',              // thunk_FUN_004e22c9(0)                       // 0x004125C6
+    0x252: 'create_unit_veteran',      // thunk_FUN_004e22c9(1)                       // 0x004125C6
+    0x253: 'save_game_menu',           // thunk_save_game(0)                          // 0x004125C6
+    0x254: 'load_scenario',            // thunk_FUN_0055b2c6                          // 0x004125C6
+    0x257: 'palace_dialog',            // thunk_FUN_0049836a                          // 0x004125C6
+    0x258: 'max_zoom_out',             // DAT_0066ca8c = 0xfff9 (-7)                 // 0x004125C6
+    0x259: 'scenario_event_editor',    // thunk_FUN_004e0f18                          // 0x004125C6
+    0x25A: 'max_zoom_in',              // DAT_0066ca8c = 8                            // 0x004125C6
+    0x354: 'select_next_unit',         // thunk_FUN_00516570                          // 0x004125C6
+  },
+
+  // --- Cheat Menu Commands (require DAT_00655aea & 0x8000 and DAT_00655b02 == 0) ---
+  cheatMenuCommands: {
+    0x1B0: 'reveal_map',               // thunk_FUN_005551b3                          // 0x004125C6
+    0x1B1: 'set_difficulty',           // thunk_FUN_0055560f                          // 0x004125C6
+    0x1B2: 'edit_unit',                // thunk_FUN_0055583f                          // 0x004125C6
+    0x1B3: 'edit_city',                // thunk_FUN_00555a02                          // 0x004125C6
+    0x1B4: 'create_tech',              // thunk_FUN_00555a8b                          // 0x004125C6
+    0x1B5: 'toggle_cheat_mode',        // thunk_FUN_00554423                          // 0x004125C6
+    0x1B6: 'edit_terrain',             // thunk_FUN_00554962                          // 0x004125C6
+    0x1B7: 'destroy_all_units',        // DAT_00633678 = -1; destroy                  // 0x004125C6
+    0x1B8: 'edit_resources',           // thunk_FUN_0055615c                          // 0x004125C6
+    0x331: 'debug_dialog',             // thunk_FUN_00417566                          // 0x004125C6
+    0x332: 'goto_coordinate',          // thunk_FUN_00429e77                          // 0x004125C6
+    0x333: 'military_advisor',         // thunk_FUN_0058760d                          // 0x004125C6
+    0x334: 'ai_advisor',               // thunk_FUN_004da9e2                          // 0x004125C6
+    0x335: 'multiplayer_admin',        // thunk_FUN_0051c635                          // 0x004125C6
+    0x336: 'diplomacy_debug',          // thunk_FUN_004a5d92                          // 0x004125C6
+    0x337: 'view_replay',              // thunk_FUN_005b1a29                          // 0x004125C6
+    0x338: 'event_editor',             // thunk_FUN_0054ffc8                          // 0x004125C6
+    0x343: 'set_city_shields',         // thunk_set_city_shields                      // 0x004125C6
+    0x344: 'place_improvement',        // thunk_FUN_00555cb1                          // 0x004125C6
+    0x34B: 'remove_improvement',       // thunk_FUN_00556f54                          // 0x004125C6
+    0x350: 'set_city_population',      // thunk_FUN_005582ad                          // 0x004125C6
+    0x353: 'set_city_food',            // thunk_FUN_0055891d                          // 0x004125C6
+    0x355: 'edit_map',                 // thunk_FUN_0055625b                          // 0x004125C6
+    0x3B5: 'toggle_ai_control',        // thunk_FUN_005545d3                          // 0x004125C6
+    0x3B7: 'destroy_units_and_ai',     // thunk_FUN_0055499f                          // 0x004125C6
+  },
+
+  // --- Goto Timer ---
+  // When the user clicks a unit and holds, after 400ms it enters goto mode
+  gotoHoldTimerMs: 400,                // @ FUN_00410bc3: FUN_005d1f50(callback, 400, 1)  // 0x00410BC3
+
+  sourceAddr: '0x00411F91, 0x00411BF5, 0x004125C6',
+};
+
+
+// ============================================================================
+// 21. REVOLUTION INITIATION (Main Menu Handler)
+// ============================================================================
+// Binary ref: FUN_0040e3b1 @ 0x0040E3B1 (block_00400000.c:3714-3747)
+// Complements REVOLUTION_DIALOG (section 4 above) which covers the govt picker.
+
+/**
+ * Revolution handler: allows the player to initiate a revolution (government change).
+ *
+ * Checks:
+ *   - Multiplayer lock: (DAT_00655af0 & 0x80) && (DAT_0064bc60 & 0x10) → blocked
+ *   - Already in anarchy: (civFlags & 8) → calls thunk_FUN_0055c69d(player, 1) to choose
+ *   - Otherwise: shows REVOLUTION dialog, then STARTREV confirmation
+ *
+ * On confirming revolution:
+ *   1. thunk_FUN_0046e020(0x3e, 1, 0, 0) — create "anarchy" event (sound 0x3e = 62)
+ *   2. thunk_FUN_0055c066(player, 0)     — set government to anarchy
+ *   3. thunk_FUN_004e4ceb()               — trigger AI recalculation
+ */
+export const REVOLUTION_INITIATION = {
+  dialogs: {
+    confirm:   'REVOLUTION',           // @ s_REVOLUTION_00624f34                     // 0x0040E3B1
+    started:   'STARTREV',             // @ s_STARTREV_00624f40                       // 0x0040E3B1
+  },
+
+  // High-res check for dialog size:
+  // (DAT_00633584 == 0) - 1U & 8 → pass 8 when high-res, 0 when standard
+  highResDialogFlag: 8,                // @ 0x0040E3B1: (DAT_00633584 == 0) - 1U & 8
+
+  // Sound event for entering anarchy
+  anarchySoundId: 0x3E,                // 62 — thunk_FUN_0046e020(0x3e, 1, 0, 0)     // 0x0040E3B1
+
+  // Civ data offsets used:
+  civFlagOffset: 0x594,                // per-civ record stride                       // 0x0040E3B1
+  governmentOffset: 'DAT_0064c6b5',   // government type within civ record            // 0x0040E3B1
+  civFlagsWord: 'DAT_0064c6a0',       // civ flags (ushort) — bit 3 = in anarchy     // 0x0040E3B1
+  anarchyFlag: 8,                      // bit 3 of civ flags = already in anarchy     // 0x0040E3B1
+
+  // Government name table for dialog text
+  govNameTable: 'DAT_0064b9a0',        // government name pointers (4 bytes per entry) // 0x0040E3B1
+  govTitleTable: 'DAT_00646878',       // government title strings (0x3c per entry)   // 0x0040E3B1
+  govTitleStride: 0x3C,                // 60 bytes per title entry                    // 0x0040E3B1
+
+  // Multiplayer lock bits
+  multiplayerLock: {
+    flag: 0x80,                        // DAT_00655af0 & 0x80                          // 0x0040E3B1
+    revolutionBit: 0x10,               // DAT_0064bc60 & 0x10                          // 0x0040E3B1
+  },
+
+  sourceAddr: '0x0040E3B1',
+};
+
+
+// ============================================================================
+// 22. MAP GENERATION — TERRAIN ASSIGNMENT
+// ============================================================================
+// Binary ref: FUN_0040ac5a @ 0x0040AC5A (block_00400000.c:2480-2626)
+
+/**
+ * FUN_0040ac5a is the main terrain assignment loop for map generation.
+ * It iterates up to 0x400 (1024) times, placing land blobs and converting
+ * terrain types based on probability rolls.
+ *
+ * Blob growth uses a random walk with directional tables at DAT_0062833c/DAT_00628344.
+ * After each blob, terrain types near the equator get desert conversion based on
+ * climate zone threshold: (mapHeight * 3) / 10.
+ *
+ * The loop terminates when enough landmasses are placed:
+ *   total = DAT_00624ee8 * 2 + DAT_00624ef4 * 2 + 0xc
+ * where DAT_00624ee8 = large continent count, DAT_00624ef4 = small island count.
+ */
+export const MAP_GENERATION_TERRAIN = {
+  // --- Iteration Limits ---
+  maxPlacementAttempts: 0x400,         // 1024 — outer loop limit                     // 0x0040AC5A
+  targetFormula: 'continents*2 + islands*2 + 12',  // termination condition            // 0x0040AC5A
+  continentCountGlobal: 'DAT_00624ee8',// large continent count                       // 0x0040AC5A
+  islandCountGlobal: 'DAT_00624ef4',  // small island count                          // 0x0040AC5A
+  baseTarget: 0x0C,                    // 12 — base landmass count before scaling      // 0x0040AC5A
+
+  // --- Blob Growth Minimum Threshold ---
+  // A placed blob must be at least (5 - iteration/800) tiles to count
+  blobMinSizeFormula: '5 - iteration / 800',  // @ 0x0040AC5A line 2600               // 0x0040AC5A
+
+  // --- Terrain Type Conversions (during blob walk) ---
+  // Switch on current terrain type, with random probability:
+  terrainConversions: {
+    // terrain 0 (Desert):   → 1 (Plains), or → 2 (Grassland) if rand()%10 > 1 or blob > 3
+    0: { default: 1, convert: 2, probability: 'rand()%10 > 1 || blobSize > 3' },
+    // terrain 1 (Plains):   → 2 (Grassland) if rand()%10 > 3
+    1: { convert: 2, probability: 'rand()%10 > 3' },
+    // terrain 3 (Tundra):   → 2 (Grassland) if rand()%10 > 2
+    3: { convert: 2, probability: 'rand()%10 > 2' },
+    // terrain 4 (Sea/Shore): always → 2 (Grassland)
+    4: { convert: 2, always: true },
+    // terrain 5 (?)        : always → 2 (Grassland)
+    5: { convert: 2, always: true },
+    // terrain 6 (Glacier):  → 1 (Plains)
+    6: { convert: 1 },
+    // terrain 7 (Arctic):   → 6 (Glacier)
+    7: { convert: 6 },
+    // terrain 8 (Swamp):    → 9 (Jungle) if rand()%10 > 3
+    8: { convert: 9, probability: 'rand()%10 > 3' },
+  },
+
+  // --- Climate Zone Threshold for Desert Conversion ---
+  // After blob placement, tiles near the equator with terrain 3 (Tundra)
+  // and within (mapHeight*3)/10 of center get checked for desert conversion
+  climateZone: {
+    numerator: 3,
+    denominator: 10,
+    formula: 'abs(mapHeight/2 - tileY) < (mapHeight * 3) / 10',
+    targetTerrain: 3,                  // Tundra tiles are candidates                 // 0x0040AC5A
+  },
+
+  // --- Directional Walk Tables ---
+  directionTableX: 'DAT_0062833c',     // 4-entry dx table for blob walk              // 0x0040AC5A
+  directionTableY: 'DAT_00628344',     // 4-entry dy table for blob walk              // 0x0040AC5A
+  neighborCheckTable: {
+    dx: 'DAT_00628370',                // 20-entry dx table for neighbor check         // 0x0040AC5A
+    dy: 'DAT_006283a0',               // 20-entry dy table for neighbor check         // 0x0040AC5A
+    count: 0x14,                       // 20 neighbors checked                        // 0x0040AC5A
+  },
+
+  // --- Random Blob Size for Island Placement (FUN_0040aaa4) ---
+  // islandBlobSize = (rand() & 0xF) + 1, i.e. 1-16 tiles
+  islandBlobSizeRange: { min: 1, max: 16 },  // @ FUN_0040AAA4                        // 0x0040AAA4
+
+  // --- Continent Blob Size (FUN_0040a92f) ---
+  // continentBlobSize = rand() % 0x30, halved if on special tile, + 1
+  continentBlobSizeRange: { max: 0x30, note: 'rand() % 48, halved on special tile, + 1' },  // 0x0040A92F
+
+  sourceAddr: '0x0040AC5A, 0x0040A92F, 0x0040AAA4',
+};
+
+
+// ============================================================================
+// 23. EDITOR TAB SYSTEM — LIST CONTENTS
+// ============================================================================
+// Binary ref: FUN_00416354 @ 0x00416354 (block_00410000.c:2983-3048)
+
+/**
+ * The map/scenario editor uses a tabbed list control with 5 tabs (cases 0-4).
+ * Each tab populates its list from different data sources.
+ *
+ * The list item area is 0xA0 (160) pixels wide.
+ * List height = tab_count * 8 pixels (from viewport+0x2e8 << 3).
+ *
+ * Tab layout positions are stored in DAT_00625128/DAT_0062512c (8 bytes per tab).
+ */
+export const EDITOR_TAB_SYSTEM = {
+  listWidth: 0xA0,                     // 160 pixels — list item area width            // 0x00416354
+  listHeightFormula: 'tabCount * 8',   // list height = *(viewport+0x2e8) << 3         // 0x00416354
+
+  tabs: {
+    // Tab 0: Advances (100 entries from advance name table)
+    0: {
+      name: 'Advances',
+      source: 'DAT_00627684',          // advance name pointers                       // 0x00416354
+      stride: 0x10,                    // 16 bytes per advance record                 // 0x00416354
+      count: 100,                      // 100 advance entries                         // 0x00416354
+    },
+    // Tab 1/2: "None" + "None" headers (from DAT_00628420 offsets) + 100 advances
+    1: {
+      name: 'Prerequisites (1)',
+      headerSources: [0x7C0, 0x7C4],  // DAT_00628420 + offset → "None" string IDs    // 0x00416354
+      source: 'DAT_00627684',
+      count: 100,
+    },
+    2: {
+      name: 'Prerequisites (2)',
+      headerSources: [0x7C0, 0x7C4],  // same as tab 1                               // 0x00416354
+      source: 'DAT_00627684',
+      count: 100,
+    },
+    // Tab 3: 4 special items (from DAT_00628420 offsets 0x810-0x81c)
+    3: {
+      name: 'Epochs',
+      headerSources: [0x810, 0x814, 0x818, 0x81C],  // 4 epoch-related strings        // 0x00416354
+      count: 4,
+    },
+    // Tab 4: 5 special items (from DAT_00628420 offsets 0x820-0x830)
+    4: {
+      name: 'Flags',
+      headerSources: [0x820, 0x824, 0x828, 0x82C, 0x830],  // 5 flag-related strings  // 0x00416354
+      count: 5,
+    },
+  },
+
+  // Tab selector button dimensions: 0x30 (48) pixels wide, tabCount+6 pixels tall
+  tabButtonWidth: 0x30,                // @ FUN_00416734: 48 pixels per tab button     // 0x00416734
+  tabButtonHeightFormula: 'tabCount + 6',
+
+  // Tab layout positions (X,Y offsets per tab from DAT_00625128)
+  tabPositionTable: 'DAT_00625128',    // 8 bytes per tab: {x: int32, y: int32}        // 0x00416354
+  tabPositionStride: 8,                // bytes per entry                              // 0x00416354
+
+  sourceAddr: '0x00416354, 0x00416734',
+};
+
+
+// ============================================================================
+// 24. EDITOR RENDERING — LABEL STRING IDS
+// ============================================================================
+// Binary ref: FUN_00416828 @ 0x00416828 (block_00410000.c:3091-3165)
+
+/**
+ * The editor paint handler renders tab labels using string IDs from thunk_FUN_0040bc10.
+ * These correspond to resource string table entries in the DLL.
+ */
+export const EDITOR_LABEL_IDS = {
+  // Label string IDs rendered in editor tab headers
+  tab0Label: 0x7E,                     // first two tab labels use 0x7E               // 0x00416828
+  tab2Label: 0x1EB,                    // "Advances" tab label                        // 0x00416828
+  tab3Label: 0x1EC,                    // "Epoch" tab label                           // 0x00416828
+  tab4Label: 0x1ED,                    // tab 4 label                                 // 0x00416828
+  tab5Label: 0x1EE,                    // tab 5 label                                 // 0x00416828
+  titleLabel: 0x1EA,                   // editor title label                          // 0x00416828
+
+  // Editor sprite cell position offsets
+  spritePosX: 0x20,                    // sprite cell X offset from viewport           // 0x00416828
+  spritePosY: 0x20,                    // sprite cell Y offset from viewport           // 0x00416828
+  spriteWidth: 0x48,                   // 72 pixels — editor sprite cell width         // 0x00416828
+  spriteHeight: 0x28,                  // 40 pixels — editor sprite cell height        // 0x00416828
+
+  // Minimap overlay in editor: 0x29 × 0x12 = 41 × 18 tiles
+  editorMinimapSize: {
+    cols: 0x29,                        // 41 columns                                  // 0x00416828
+    rows: 0x12,                        // 18 rows                                     // 0x00416828
+  },
+
+  // Annotation label Y offset from viewport bottom
+  annotationYOffset: 0xE6,             // @ 0x00416828: y = viewport_y - tabHeight + 0xe6
+
+  sourceAddr: '0x00416828',
+};
+
+
+// ============================================================================
+// 25. PARITY CHECK (Tile Coordinate Validity)
+// ============================================================================
+// Binary ref: FUN_0040bcb0 @ 0x0040BCB0 (block_00400000.c:2705-2709)
+
+/**
+ * FUN_0040bcb0 validates tile coordinate parity for the isometric grid.
+ * A tile at (x, y) is valid only if (x + y) is even (same parity).
+ *
+ * Implementation: return (-(y + x >> 1) - x & 2) == 0
+ * This is equivalent to: return (x + y) % 2 == 0
+ */
+export const TILE_PARITY_CHECK = {
+  // Coordinates are valid when (x + y) % 2 == 0
+  // This is enforced by the isometric diamond grid
+  formula: '(x + y) % 2 == 0',
+  sourceAddr: '0x0040BCB0',
+};
+
+
+// ============================================================================
+// 26. GAME INITIALIZATION CONSTANTS
+// ============================================================================
+// Binary ref: FUN_0041b4c0 @ 0x0041B4C0 (block_00410000.c:5774-5881)
+//             FUN_0041b8b0 @ 0x0041B8B0 (block_00410000.c:5890-5906)
+//             FUN_0041f69f @ block_00410000.c:7694+ (main game loop)
+
+/**
+ * Game initialization and main loop constants extracted from block_00410000.c.
+ * FUN_0041b4c0 initializes the game engine, FUN_0041f69f is the main game loop.
+ */
+export const GAME_INIT = {
+  // --- Multimedia Timer Resolution ---
+  // timeBeginPeriod(4) at init, timeEndPeriod(4) at shutdown
+  multimediaTimerPeriodMs: 4,          // @ FUN_0041b4c0 line 5790 / FUN_0041b8b0 line 5904
+
+  // --- Player Slots ---
+  maxPlayerSlots: 8,                   // 8 slots (0-7), slot 0 = barbarians          // 0x0041B4C0
+  playerViewportStride: 0x3F0,         // 1008 bytes per viewport/player slot          // 0x0041B4C0
+  playerViewportBase: 'DAT_0066ca84',  // base of per-player viewport array            // 0x0041B4C0
+
+  // --- Unit Slots ---
+  maxUnitSlots: 0x800,                 // 2048 unit slots                              // 0x0041F69F
+  unitSlotStride: 0x20,                // 32 bytes per unit slot                       // 0x0041F69F
+  unitSlotBase: 'DAT_0065610a',        // base of unit array                           // 0x0041F69F
+  unitSlotInitValues: {
+    active: 0,                         // *(DAT_0065610a + i*0x20) = 0                 // 0x0041F69F
+    owner: 0xFFFF,                     // *(DAT_00656106 + i*0x20) = 0xFFFF            // 0x0041F69F
+    location: 0xFFFF,                  // *(DAT_00656108 + i*0x20) = 0xFFFF            // 0x0041F69F
+  },
+
+  // --- City Slots ---
+  maxCitySlots: 0x100,                 // 256 city slots                               // 0x0041F69F
+  citySlotStride: 0x58,                // 88 bytes per city slot                       // 0x0041F69F
+
+  // --- Event Memory ---
+  eventMemoryAllocation: 50000,        // thunk_FUN_004fa5d9(50000) — event buffer     // 0x0041F69F
+
+  // --- Civ Diplomacy Reset ---
+  diplomacyResetSize: 0xC0,            // 192 bytes of diplomacy state, cleared to -1  // 0x0041F69F
+
+  // --- INI Settings (Read During Init) ---
+  iniFile: 'CIV.INI',                 // @ s_CIV_INI_* (multiple refs)                // 0x0041B4C0
+  iniSection: 'Civilization Gold',     // @ s_Civilization_Gold_*                      // 0x0041B4C0
+  iniKeys: {
+    languagePreference: {
+      key: 'Language Preference',      // @ s_Language_Preference_00625388              // 0x0041B177
+      default: 0,
+    },
+    heraldWarningShown: {
+      key: 'Herald Warning Shown',     // @ s_Herald_Warning_Shown_0062542c            // 0x0041B4C0
+      default: 0,
+    },
+    simultaneous: {
+      key: 'Simultaneous',             // @ s_Simultaneous_006257d4                    // 0x0041F69F
+      default: -1,
+      note: 'If > 0, enables simultaneous multiplayer mode',
+    },
+    maxPlayers: {
+      key: 'MaxPlayers',               // @ s_MaxPlayers_00625830                      // 0x0041F69F
+      default: -1,
+      range: { min: 4, max: 7 },
+    },
+    netTimeout: {
+      key: 'NetTimeOut',               // @ s_NetTimeOut_* (from GAME_SETUP)
+      default: 30,
+    },
+  },
+
+  // --- Resolution Threshold ---
+  // If DAT_006acbb0 + screen_width > 1000, load high-res art
+  highResThreshold: 1000,              // @ FUN_0041b4c0 line 5863                     // 0x0041B4C0
+  highResArtIds: [0x18, 0x14, 0x18],   // 3 art resources loaded for high-res          // 0x0041B4C0
+  highResDisplayMode: { columns: 3, rows: 2 },  // thunk_FUN_00421e40(3, 2)            // 0x0041B4C0
+
+  // --- LABELS.TXT Parsing ---
+  stringHeapSection: 'STRINGHEAP',     // @ s_STRINGHEAP_00625410                      // 0x0041B4C0
+  nilString: '<nil>',                  // @ s_<nil>_0062541c — default empty string     // 0x0041B4C0
+
+  // --- Flush Send Buffer Timeouts (Multiplayer) ---
+  flushTimeouts: {
+    gameStart: 180000,                 // 3 minutes — XD_FlushSendBuffer(180000)       // 0x0041F69F
+    normalFlush: 5000,                 // 5 seconds — XD_FlushSendBuffer(5000)         // 0x0041F69F
+  },
+
+  // --- Simultaneous Tutorial Dialog ---
+  simulTutorialDialog: 'SIMULTUT',     // @ s_SIMULTUT_0062587c                        // 0x0041F69F
+
+  // --- Chat Log ---
+  chatLogFile: 'chatlog.txt',          // @ s_chatlog_txt_00625888                     // 0x0041F69F
+
+  sourceAddr: '0x0041B4C0, 0x0041B8B0, 0x0041F69F',
 };

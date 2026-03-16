@@ -12,27 +12,40 @@
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Zoom level ranges from -6 to +6. Default is 0.
+ * Zoom level ranges from -7 to +8. Default is 0.
  * Formula: scaled_size = (zoom_level + 8) * base_size / 8
  *
  * @ 0x00472cf0 — scale_sprite: return ((zoom_level + 8) * base_size) / 8
+ * @ 0x004135ab — FUN_004135ab (block_00410000.c:1898-1907):
+ *   case 2 (zoom in):  if (zoom < 8) zoom++    — max zoom = 8
+ *   case 3 (zoom out): if (-7 < zoom) zoom--   — min zoom = -7
  *
- * At zoom 0:  (0+8)*base/8 = base (100%)
- * At zoom -6: (2)*base/8   = 25%
- * At zoom +6: (14)*base/8  = 175%
+ * At zoom  0: (0+8)*base/8  = base (100%)
+ * At zoom -7: (1)*base/8    = 12.5%
+ * At zoom +8: (16)*base/8   = 200%
+ *
+ * NOTE: The scale_sprite function at 0x00472cf0 does not itself clamp.
+ * The limits -7/+8 are enforced by the zoom in/out handler at 0x004135ab.
+ * Menu commands confirm this: ZOOM_IN max 8, ZOOM_OUT min -7,
+ * MAX_ZOOM_IN sets 8, MAX_ZOOM_OUT sets -7, MEDIUM_ZOOM sets -3.
+ * (See MENU_COMMAND_IDS in ui-constants-part2.js @ 0x004E2803.)
  */
 export const ZOOM_LEVELS = {
-  min: -6,                       // @ 0x00472cf0 — practical minimum (25% scale)
-  max: 6,                        // @ 0x00472cf0 — practical maximum (175% scale)
+  min: -7,                       // @ 0x004135ab — zoom out: if (-7 < zoom) zoom-- (min = -7)
+  max: 8,                        // @ 0x004135ab — zoom in: if (zoom < 8) zoom++ (max = 8)
   default: 0,                    // @ 0x00479ede — init_map_viewport sets zoom = 0
   scaleBase: 8,                  // @ 0x00472cf0 — denominator in zoom formula
+
+  // Auto-zoom for large maps: if tile count > 999, zoom starts at 2
+  autoZoomThreshold: 999,        // @ 0x00413717 (block_00410000.c:1943): if (999 < DAT_006ab198) zoom = 2
+  autoZoomLevel: 2,              // @ 0x00413717 (block_00410000.c:1944): zoom = 2
 
   /**
    * Compute zoom scale factor for a given zoom level.
    * Direct port of FUN_00472cf0 @ 0x00472CF0.
    *
    * @param {number} baseSize - base pixel dimension (e.g. 64 for tile width)
-   * @param {number} zoomLevel - zoom level (-6 to +6)
+   * @param {number} zoomLevel - zoom level (-7 to +8)
    * @returns {number} scaled pixel dimension
    */
   scale(baseSize, zoomLevel) {
@@ -42,6 +55,7 @@ export const ZOOM_LEVELS = {
   // Precomputed scale percentages for each zoom level
   // zoom: (zoom+8)/8 ratio
   table: [
+    { zoom: -7, ratio: 0.125, pct: '12.5%' },
     { zoom: -6, ratio: 0.25,  pct: '25%'  },
     { zoom: -5, ratio: 0.375, pct: '37.5%' },
     { zoom: -4, ratio: 0.5,   pct: '50%'  },
@@ -55,6 +69,8 @@ export const ZOOM_LEVELS = {
     { zoom:  4, ratio: 1.5,   pct: '150%' },
     { zoom:  5, ratio: 1.625, pct: '162.5%' },
     { zoom:  6, ratio: 1.75,  pct: '175%' },
+    { zoom:  7, ratio: 1.875, pct: '187.5%' },
+    { zoom:  8, ratio: 2.0,   pct: '200%' },
   ],
 };
 
@@ -120,7 +136,7 @@ export const VIEWPORT_OFFSETS = {
   viewportFlags: 0x2DE,          // @ 0x00479ede — set to (mode==0)?1:0
   cursorX:       0x2E0,          // @ 0x00479ede — cursor tile X (center of view)
   cursorY:       0x2E2,          // @ 0x00479ede — cursor tile Y (center of view)
-  zoomLevel:     0x2E4,          // @ 0x00479ede — current zoom level (-6 to +6)
+  zoomLevel:     0x2E4,          // @ 0x00479ede — current zoom level (-7 to +8)
 
   // ─── Computed Viewport Bounds ───
   viewportLeftX: 0x2E8,          // @ 0x00479fbe — leftmost visible tile X
@@ -421,6 +437,110 @@ export const RENDER_DETAIL = {
 
   // Minimap refresh threshold
   minimapRefreshThreshold: 2,    // @ 0x0047cb50 — updates minimap if DAT_00655b02 > 2
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// MINIMAP LAYOUT
+// Binary ref: FUN_00406b4c @ block_00400000.c (minimap_calc_layout)
+// ═══════════════════════════════════════════════════════════════════
+
+export const MINIMAP_LAYOUT = {
+  /**
+   * Minimap scale computation (FUN_00406b4c @ 0x00406B4C, 620 bytes):
+   *
+   * The minimap fits the full map into a fixed-size panel. Scale is computed:
+   *   scaleX = panelWidth / mapWidth   (min 1)
+   *   scaleY = panelHeight / mapHeight (min 1)
+   *   scale = min(scaleX, scaleY)      (use the tighter fit)
+   *
+   * DAT_0063c804 = scale (pixels per tile vertically)
+   * DAT_0063c800 = scale * 2 (pixels per tile horizontally — tiles are 2:1 aspect)
+   * DAT_0063c80c = min(mapWidth/2, (panelWidth - scale*2/2) / scale*2)
+   *                  = visible columns (half-width, since isometric)
+   * DAT_0063c808 = min(mapHeight, panelHeight / scale) = visible rows
+   *
+   * Centering margins:
+   *   DAT_0063caf4 = clamp(panelWidth - visibleCols * hScale, 0, 999) / 2
+   *   DAT_0063caf0 = clamp(panelHeight - visibleRows * scale, 0, 999) / 2
+   *
+   * Viewport tracking (scroll offset):
+   *   DAT_0063c810 = clamp(cursorY - visibleRows/2, 0, maxY - visibleRows)
+   *   DAT_0063c814 = wrap(cursorX - visibleCols)
+   *
+   * Parity constraints (same as main viewport):
+   *   if (DAT_0063c814 is odd) DAT_0063c814--
+   *   if (DAT_0063c810 is odd) DAT_0063c814++
+   *
+   * @ 0x00406B4C — minimap_calc_layout (block_00400000.c:122-182)
+   */
+  globals: {
+    scale:         'DAT_0063c804',  // @ 0x00406b4c — vertical pixels per tile
+    hScale:        'DAT_0063c800',  // @ 0x00406b4c — horizontal pixels per tile (= scale * 2)
+    visibleCols:   'DAT_0063c80c',  // @ 0x00406b4c — visible tile columns (half-width)
+    visibleRows:   'DAT_0063c808',  // @ 0x00406b4c — visible tile rows
+    scrollY:       'DAT_0063c810',  // @ 0x00406b4c — top visible row offset
+    scrollX:       'DAT_0063c814',  // @ 0x00406b4c — left visible column offset
+    marginX:       'DAT_0063caf4',  // @ 0x00406b4c — centering margin X (pixels)
+    marginY:       'DAT_0063caf0',  // @ 0x00406b4c — centering margin Y (pixels)
+    panelWidth:    'DAT_0063c944',  // @ 0x00406b4c — minimap panel width in pixels
+    panelHeight:   'DAT_0063c948',  // @ 0x00406b4c — minimap panel height in pixels
+  },
+
+  /**
+   * Minimap tile color assignment (FUN_00406e61 @ 0x00406E61, 425 bytes):
+   *
+   * Returns a palette index for each minimap tile depending on visibility/ownership.
+   * Used by the minimap rendering loop (FUN_0040733c) to color each tile pixel.
+   *
+   *   - Not visible (fog):          10 (black/dark)
+   *   - Visible, no city:
+   *       On cursor tile:           0x29 (41 — white/highlight)
+   *       Land (no ocean):          0x30 (48 — terrain green)
+   *       Ocean:                    0x5d (93 — ocean blue)
+   *   - Visible, has city:          DAT_00655360[owner * 0x10] (per-civ color from color table)
+   *
+   * @ block_00400000.c:219-260
+   */
+  tileColors: {
+    fogOfWar:      10,               // @ FUN_00406e61: not visible → color 10
+    cursorTile:    0x29,             // @ FUN_00406e61: cursor position → color 0x29 (41)
+    land:          0x30,             // @ FUN_00406e61: visible land, no ocean → color 0x30 (48)
+    ocean:         0x5d,             // @ FUN_00406e61: visible ocean tile → color 0x5d (93)
+    cityOwnerBase: 'DAT_00655360',   // @ FUN_00406e61: city tile → DAT_00655360[owner * 0x10]
+    cityOwnerStride: 0x10,           // 16 bytes per civ in color table
+  },
+
+  /**
+   * Minimap rectangle erase color for viewport indicator (FUN_0040701e @ 0x0040701E):
+   *   Draws the viewport outline rectangle using color 0x29 (white).
+   * @ block_00400000.c:283-287
+   */
+  viewportOutlineColor: 0x29,        // @ FUN_0040701e: thunk_FUN_00408700(rect, 0x29)
+
+  // sourceAddr: '0x00406B4C'
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// MAIN WINDOW TIMERS
+// Binary ref: FUN_00413717 @ block_00410000.c (main_window_init)
+// ═══════════════════════════════════════════════════════════════════
+
+export const MAIN_WINDOW_TIMERS = {
+  // Two periodic timers created during main window initialization
+  cursorBlinkTimer: {
+    intervalMs: 0x96,              // @ 0x00413717 (block_00410000.c:2047) — 150ms
+    handle: 'DAT_0063cbc4',       // timer handle stored here
+    callback: 'LAB_0040364d',     // cursor blink / unit flash callback
+    sourceAddr: '0x00413717',
+  },
+  gameTickTimer: {
+    intervalMs: 500,               // @ 0x00413717 (block_00410000.c:2048) — 500ms
+    handle: 'DAT_0063cbc0',       // timer handle stored here
+    callback: 'LAB_00402540',     // game tick / auto-advance callback
+    sourceAddr: '0x00413717',
+  },
+  // Both timers destroyed in FUN_00413bd1 via FUN_005d2004(handle)
+  // sourceAddr: '0x00413717' (create), '0x00413BD1' (destroy)
 };
 
 // ═══════════════════════════════════════════════════════════════════

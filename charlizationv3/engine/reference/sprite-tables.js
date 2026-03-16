@@ -629,7 +629,8 @@ export const RECOLOR_SYSTEM = {
   // These are NOT hardcoded in the binary -- they are sampled from the GIF palette
   // at load time via FUN_005c0bf2 (get_pixel). The values below are from the
   // standard MGE palette and match the JS CIV_COLORS array.
-  // NOT FOUND IN BINARY -- inferred from standard MGE palette + JS CIV_COLORS
+  // Sampled at runtime via FUN_005c0bf2 (get_pixel), not hardcoded as constants.
+  // Values below from standard MGE palette; match JS CIV_COLORS array.
   defaultCivColors: [
     { index: 0, hex: '#c80000', name: 'Red (Romans/Barbarians)', r: 200, g: 0, b: 0 },
     { index: 1, hex: '#ffffff', name: 'White', r: 255, g: 255, b: 255 },
@@ -653,7 +654,7 @@ export const CHROMA_KEY = {
   // Palette index 253 = Magenta (255, 0, 255) -- primary transparency color
   // Used across ALL spritesheets (TERRAIN1, TERRAIN2, CITIES, UNITS)
   magenta: {
-    paletteIndex: 253,        // NOT FOUND IN BINARY -- inferred from GIF palette analysis
+    paletteIndex: 253,        // 0xFD: used in block_004D0000 palette fill (e.g. line 1696); set via FUN_005c19ad
     r: 255, g: 0, b: 255,
     tolerance: 15,            // @ renderer.js line 104, 126
   },
@@ -661,7 +662,7 @@ export const CHROMA_KEY = {
   // Palette index 248 = Cyan (0, 255, 255) -- secondary transparency
   // Used in TERRAIN1 and TERRAIN2 for overlay sprites
   cyan: {
-    paletteIndex: 248,        // NOT FOUND IN BINARY -- inferred from GIF palette analysis
+    paletteIndex: 248,        // 0xF8: passed to FUN_005c19ad at block_005C0000:7512-7513 (transparency setter)
     r: 0, g: 255, b: 255,
     tolerance: 15,            // @ renderer.js line 126
   },
@@ -954,4 +955,596 @@ export const ANIMATION = {
   // Human unit animation: non-combat units animate at double speed
   // @ FUN_0056c705: if (is_non_combat(unitType) AND isHumanUnit) animSpeed *= 2
   humanNonCombatSpeedMultiplier: 2,
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Trade Route Constants
+// Binary ref: FUN_00440325, FUN_004403ec, FUN_00440453, FUN_00440750
+//             @ block_00440000.c (trade route management)
+// ═══════════════════════════════════════════════════════════════════
+
+export const TRADE_ROUTES = {
+  // === City Record Trade Route Layout ===
+  // City record base: DAT_0064f340, stride 0x58 (88 bytes)
+  cityRecordBase: 0x0064F340,
+  cityRecordStride: 0x58,
+
+  // Trade route fields within city record:
+  // @ 0x0064f37a + city*0x58 = number of trade routes (byte, max 3)
+  // @ 0x0064f381 + city*0x58 + slot = commodity type (byte per slot)
+  // @ 0x0064f384 + city*0x58 + slot*2 = partner city ID (short per slot)
+  maxRoutesPerCity: 3,          // @ FUN_00440453: if (numRoutes < '\x03')
+  tradeRouteCountOffset: 0x3A,  // 0x0064f37a - 0x0064f340 = 0x3A
+  commodityTypeOffset: 0x41,    // 0x0064f381 - 0x0064f340 = 0x41
+  partnerCityOffset: 0x44,      // 0x0064f384 - 0x0064f340 = 0x44
+
+  // City changed flag bit for trade routes
+  // @ FUN_00440325: city_flags |= 0x20000
+  cityChangedTradeFlag: 0x20000,  // @ 0x00440325 + 0x004403ec
+
+  // === Trade Revenue Formula (FUN_00440750) ===
+  // revenue = ((city1_trade + city2_trade) * (distance + 10)) / 24
+  distanceBonus: 10,            // @ FUN_00440750: (local_1c + 10)
+  revenueDivisor: 24,           // @ FUN_00440750: / 0x18
+  // Inter-continent bonus: revenue doubled if cities on different continents
+  // @ FUN_00440750: if (continent1 != continent2) local_1c <<= 1
+  // Intra-civ penalty: revenue halved if same civ owns both cities
+  // @ FUN_00440750: if (unit_owner == city_owner) local_1c >>= 1
+  // Demanded commodity bonus: double + supply bonus
+  // @ FUN_00440750: loop over 3 demand slots
+
+  // === Commodity Supply/Demand Revenue Multipliers ===
+  // @ FUN_00440750 switch on commodity type (uVar8):
+  commodityRevenueMultipliers: {
+    // Half revenue: commodities 3, 5, 8, 10
+    half: [3, 5, 8, 10],       // local_30 = local_1c / 2
+    // Full revenue: commodities 9, 11, 12, 13
+    full: [9, 11, 12, 13],     // local_30 = local_1c
+    // 1.5x revenue: commodity 14
+    oneAndHalf: [14],           // local_30 = (local_1c * 3) / 2
+    // 2x revenue: commodity 15
+    double: [15],               // local_30 = local_1c * 2
+  },
+
+  // === Trade Modifier Flags ===
+  // Global game flags at DAT_00655af0
+  // @ FUN_00440750: if (flags & 4) distance = distance * 4 / 5
+  tradeDistanceReduction4: 4,   // flag bit: 80% distance (trade bonus)
+  // @ FUN_00440750: if (flags & 8) distance = distance * 5 / 4
+  tradeDistanceIncrease8: 8,    // flag bit: 125% distance (trade penalty)
+
+  // === Tech Checks for Trade ===
+  // @ FUN_00440750: if (turn < 200 AND !has_tech(0x26) AND !has_tech(0x39))
+  //                 revenue doubled (early game bonus)
+  earlyGameTurnThreshold: 200,  // @ FUN_00440750: DAT_00655af8 < 200
+  earlyGameTech1: 0x26,         // 38 = Corporation
+  earlyGameTech2: 0x39,         // 57 = Economics
+
+  // @ FUN_00440750: if (has_tech(0x43)) revenue -= revenue/3
+  tradeReductionTech1: 0x43,    // 67 = Superhighways? (reduces trade revenue 33%)
+  // @ FUN_00440750: if (has_tech(0x1e)) revenue -= revenue/3
+  tradeReductionTech2: 0x1e,    // 30 = Trade (reduces trade revenue 33%)
+
+  // === Building Checks for Trade ===
+  // @ FUN_00440453: thunk_FUN_0043d20a(city, 0x20) -- checks building 32 (Airport)
+  airportBuildingId: 0x20,      // 32 = Airport -- halves distance for trade routes
+  // @ FUN_00440750: thunk_FUN_0043d20a(city, 0x19) -- checks building 25 (Superhighways)
+  superhighwaysBuildingId: 0x19, // 25 = Superhighways -- adds to trade route distance bonus
+
+  // === Sound IDs for Trade ===
+  // @ FUN_00440750: thunk_FUN_0046e020((-!bVar12 & 0x14U) + 0x16, 1, 0, 0)
+  // bVar12 = is demanded commodity (supply vs demand delivery)
+  tradeSoundDemand: 0x16,       // 22 -- sound for demanded commodity delivery
+  tradeSoundSupply: 0x2A,       // 42 -- sound for supply commodity delivery (0x14 + 0x16)
+
+  // === String References for Trade Popups ===
+  // @ FUN_00440750: different strings for food vs regular caravans
+  strings: {
+    caravan:     's_CARAVAN_006262d4',      // @ FUN_00440750: regular caravan delivery
+    caravanSelf: 's_CARAVAN_006262dc',      // @ FUN_00440750: caravan to own city
+    caravanOther:'s_CARAVAN_006262e4',      // @ FUN_00440750: caravan to other civ city
+    foodCaravan:     's_FOODCARAVAN_006262ec', // @ FUN_00440750: food caravan
+    foodCaravanSelf: 's_FOODCARAVAN_006262f8', // @ FUN_00440750: food caravan to own city
+    foodCaravanOther:'s_FOODCARAVAN_00626304', // @ FUN_00440750: food caravan from other civ
+    caravanReturn:   's_CARAVANOTHER_00626310', // @ FUN_00440750: return route notification
+    caravanReturnAlt:'s_CARAVANOTHER_00626320', // @ FUN_00440750: alt return notification
+  },
+
+  // === Diplomacy Effect of Trade ===
+  // @ FUN_00440750: thunk_FUN_00456f20(civ1, civ2, -10)
+  tradeAttiudeBonus: -10,       // 0xFFFFFFF6 = -10 -- improves attitude by 10
+  // (negative = friendlier in Civ2's attitude system)
+
+  // === Food Caravan Bonus ===
+  // @ FUN_00440750: if commodity < 0 (food delivery):
+  //   city food += ((city_size + 1) * DAT_006a6560) / 2
+  // DAT_006a6560 = food_per_citizen from rules
+  foodCaravanFormula: '((city_size + 1) * food_per_citizen) / 2',
+
+  // === Civ Record Trade Income ===
+  // @ FUN_00440750: DAT_0064c6a2 + civ*0x594 += revenue (treasury)
+  //                 DAT_0064c6a8 + civ*0x594 += revenue (trade income this turn)
+  civTreasuryOffset: 0x02,      // offset 0x0064c6a2 - 0x0064c6a0 within civ record
+  civTradeIncomeOffset: 0x08,   // offset 0x0064c6a8 - 0x0064c6a0 within civ record
+
+  // === AI Message IDs for Trade ===
+  // @ FUN_00440750: thunk_FUN_00511880(0xf, ...) -- non-food caravan
+  //                 thunk_FUN_00511880(0x10, ...) -- food caravan
+  //                 thunk_FUN_00511880(0x11, ...) -- return route notification
+  aiMsgCaravan: 0x0F,           // 15
+  aiMsgFoodCaravan: 0x10,       // 16
+  aiMsgCaravanReturn: 0x11,     // 17
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// City Epoch Tech Checks (City Sprite Selection)
+// Binary ref: FUN_00448f92 @ block_00440000.c
+// Cross-ref: FUN_0056d289 @ block_00560000.c (draw_city_sprite)
+// ═══════════════════════════════════════════════════════════════════
+
+export const CITY_EPOCH_TECH_CHECKS = {
+  // FUN_00448f92 determines which city epoch upgrade building to auto-queue
+  // Returns building ID if city is large enough and doesn't have the building
+
+  // @ FUN_00448f92: if (city_size >= DAT_0064bcd1 AND !has_building(9))
+  //   return 9 -- Aqueduct
+  aqueduct: {
+    buildingId: 9,
+    sizeThresholdAddr: 0x0064BCD1,  // rules-defined size threshold
+    sourceAddr: '0x00448F92',
+  },
+
+  // @ FUN_00448f92: if (city_size >= DAT_0064bcd2 AND !has_building(0x17))
+  //   return 0x17 -- Sewer System (23)
+  sewerSystem: {
+    buildingId: 0x17,               // 23
+    sizeThresholdAddr: 0x0064BCD2,  // rules-defined size threshold
+    sourceAddr: '0x00448F92',
+  },
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Delete City Constants
+// Binary ref: delete_city @ 0x004413D1, block_00440000.c
+// ═══════════════════════════════════════════════════════════════════
+
+export const DELETE_CITY = {
+  // @ delete_city: city radius scan uses 0x2d (45) tiles
+  cityRadiusTiles: 0x2D,        // 45 tiles in city radius (inner 21 + outer 24)
+  innerRadiusTiles: 0x15,       // 21 inner tiles (standard BFC)
+
+  // @ delete_city: city tile offsets at DAT_00628370 (x) and DAT_006283a0 (y)
+  tileOffsetsX: 0x00628370,
+  tileOffsetsY: 0x006283A0,
+
+  // @ delete_city: adjacent tile offsets at DAT_00628350 (x) and DAT_00628360 (y), 8 directions
+  adjacentOffsetsX: 0x00628350,
+  adjacentOffsetsY: 0x00628360,
+  adjacentCount: 8,
+
+  // @ delete_city: number of wonders = 0x1c (28)
+  wonderCount: 0x1C,            // 28 wonders checked at DAT_00655be6
+
+  // @ delete_city: network message IDs
+  netMsgDeleteCity: 0x89,       // @ 0x004413D1: thunk_FUN_0046b14d(0x89, ...)
+  netMsgCityDeleted: 0x8A,      // @ 0x004413D1: thunk_FUN_0046b14d(0x8a, ...)
+  netMsgDeleteCityRequest: 0x39, // @ 0x004413D1: thunk_FUN_0046b14d(0x39, ...)
+
+  // @ delete_city: server connection timeout = 3600 ticks (0xe10)
+  serverTimeout: 0x0E10,        // 3600 ticks
+
+  sourceAddr: '0x004413D1',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Wonder Production Change Constants
+// Binary ref: FUN_00441b11 @ block_00440000.c (change_city_production)
+// ═══════════════════════════════════════════════════════════════════
+
+export const WONDER_PRODUCTION = {
+  // Production item encoding: wonder IDs start at 0x27 (39) offset
+  wonderIdOffset: 0x27,         // 39 -- production item = wonderIndex + 0x27
+  maxProductionItem: 0x62,      // 98 -- max valid production item (> 0x62 triggers auto-select)
+  maxWonderIndex: 0x3E,         // 62 -- wonder production items < 0x3E
+
+  // Wonder completed tracking per civ
+  // @ FUN_00441b11: DAT_0063f580 + civ*0x1c + wonderSlot
+  wonderCompletedBase: 0x0063F580,
+  wonderCompletedStride: 0x1C,  // 28 bytes per civ
+  wonderStartedBit: 1,          // bit 0 = wonder started
+  wonderAbandonedBit: 2,        // bit 1 = wonder abandoned
+
+  // Wonder city tracking: DAT_00655b98 + wonderIndex*2 = city building it
+  wonderCityBase: 0x00655B98,
+
+  // Wonder cost multiplier when all civs have started
+  // @ FUN_00441b11: cost = (DAT_00655b08 + wonder_slots_used * -2)
+  //                 if (cost < 1) cost = 0
+  //                 result = cost * wonder_base_cost + shields_remaining
+  // DAT_00655b08 = difficulty level
+
+  // Civ2 wonder sprite base for production display
+  // @ FUN_00441b11: DAT_00645160 + wonderIndex * 0x3c
+  wonderSpriteBase: 0x00645160,
+  wonderSpriteStride: 0x3C,
+
+  // Wonder name lookup: DAT_0064c488 + wonderIndex * 8
+  wonderNameBase: 0x0064C488,
+  wonderNameStride: 8,
+
+  // String references
+  strings: {
+    startWonder:   's_STARTWONDER_00626374',
+    switchWonder:  's_SWITCHWONDER_00626380',
+    abandonWonder: 's_ABANDONWONDER_00626390',
+  },
+
+  // AI message IDs for wonder events
+  aiMsgStartWonder: 0x12,       // 18
+  aiMsgSwitchWonder: 0x13,      // 19
+  aiMsgAbandonWonder: 0x14,     // 20
+
+  sourceAddr: '0x00441B11',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Game Startup / Network Constants
+// Binary ref: FUN_00444310 @ block_00440000.c (network_startup)
+// ═══════════════════════════════════════════════════════════════════
+
+export const GAME_STARTUP = {
+  // Game mode encoding at DAT_00655b02
+  // @ FUN_00444310: sets DAT_00655b02 based on network type
+  gameModes: {
+    hotseat: 4,                 // @ FUN_00444310: param_1==0 -> DAT_00655b02 = 4
+    lan: 3,                     // @ FUN_00444310: param_1==1 -> DAT_00655b02 = 3
+    internet: 5,                // @ FUN_00444310: param_1==2 -> DAT_00655b02 = 5
+    directConnect: 6,           // @ FUN_00444310: param_1==3 -> DAT_00655b02 = 6
+    scenario: 4,                // @ FUN_00444310: param_1==4 -> DAT_00655b02 = 4
+  },
+
+  // Menu/dialog string IDs
+  // @ FUN_00444310: thunk_FUN_0040bc10(id) for menu setup
+  menuIds: {
+    singlePlayer: 0x28F,       // 655
+    lanGame: 0x290,             // 656
+    scenario: 0x362,            // 866
+    lanTcp: 0x291,              // 657
+    lanIpx: 0x292,              // 658
+    internetGame: 0x349,        // 841
+  },
+
+  // Sound IDs
+  // @ FUN_00444310: thunk_FUN_0046e020(0x6a, 0, 0, 0)
+  soundMenuMusic: 0x6A,         // 106 -- menu background music
+  // @ FUN_00445712: thunk_FUN_0046e020(0x6b, 0, 1, 0)
+  soundLoadGame: 0x6B,          // 107 -- loading game sound
+
+  // DLL resource for scenario select
+  // @ FUN_00444310: FUN_005bf5e1(0x5a, 10, 0xc0, ...) -- scenario select screen
+  scenarioSelectDll: 0x5A,      // 90
+
+  // Network defaults
+  // @ FUN_00444310: DAT_00655af8 = 0 (turn counter)
+  //                 DAT_00655afc = 0xffff (max cities)
+  //                 DAT_00655af0 = 0 (game flags)
+  initialTurn: 0,
+  initialMaxCities: 0xFFFF,     // 65535
+  initialGameFlags: 0,
+
+  sourceAddr: '0x00444310',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Advisor DLL Sprite Positions
+// Binary ref: FUN_00449a0e @ block_00440000.c (load_icon_sprites)
+// ═══════════════════════════════════════════════════════════════════
+
+export const ADVISOR_SPRITES = {
+  // DLL resource 0x56 (86) -- advisor portraits
+  resourceId: 0x56,
+
+  // 7 small advisor heads (34x34 each)
+  // @ 0x00449A0E: FUN_004499d3(DAT_00646878, 2, 0x44, 0x22, 0x22)
+  advisorHeads: {
+    startX: 2,
+    startY: 68,                 // 0x44
+    width: 34,                  // 0x22
+    height: 34,                 // 0x22
+    spacing: 66,                // 0x42 between each
+    count: 7,
+    spriteBase: 0x00646878,
+    spriteStride: 0x3C,
+    // Addresses: DAT_00646878, DAT_006468b4 (copy), DAT_0064692c, DAT_00646968,
+    //            DAT_006468f0, DAT_006469e0, DAT_006469a4
+  },
+
+  // 5 large advisor portraits (64x64 each) at y=200 (0xc8)
+  // @ 0x00449A0E: FUN_004499d3(DAT_00647748, 2, 200, 0x40, 0x40)
+  advisorPortraits: {
+    startX: 2,
+    startY: 200,                // 0xc8
+    width: 64,                  // 0x40
+    height: 64,                 // 0x40
+    spacing: 66,                // 0x42 between each
+    count: 5,
+    // Addresses: DAT_00647748, DAT_006409d8, DAT_00644e48, DAT_0063fc98, DAT_00648018
+  },
+
+  // Two special 64x64 sprites
+  // @ 0x00449A0E: FUN_004499d3(DAT_0063fc58, 0x18e, 0x86, 0x40, 0x40)
+  specialPortrait1: { x: 398, y: 134, w: 64, h: 64, addr: 0x0063FC58 }, // 0x18e=398, 0x86=134
+  // @ 0x00449A0E: FUN_004499d3(DAT_00643af8, 0x86, 0x18e, 0x40, 0x40)
+  specialPortrait2: { x: 134, y: 398, w: 64, h: 64, addr: 0x00643AF8 }, // reversed coords
+
+  // 8 civ-colored 64x64 sprites at (2, 0x18e)
+  // @ 0x00449A0E: for (local_46c = 0; local_46c < 8; ...)
+  //   FUN_004499d3(DAT_00643798 + i*0x3c, 2, 0x18e, 0x40, 0x40)
+  //   FUN_005cf467(8, DAT_00655358 + i*0x10)  -- recolor with civ light color
+  civColoredSprites: {
+    x: 2,
+    y: 398,                     // 0x18e
+    width: 64,
+    height: 64,
+    count: 8,
+    spriteBase: 0x00643798,
+    spriteStride: 0x3C,
+    // Recolored using civ light color from DAT_00655358 + civIdx * 0x10
+  },
+
+  sourceAddr: '0x00449A0E',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ICONS.GIF — Additional Sprites (Research/GW Progress, Adv Categories)
+// Binary ref: FUN_00449a0e @ block_00440000.c
+// ═══════════════════════════════════════════════════════════════════
+
+export const ICONS_GIF_EXTRA = {
+  // Research progress sprites: 3 sets x 2 rows = 6 indicators
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00644f00 + set*0x78, x, y, 14)
+  // 14x14 square sprites (FUN_0044aba9 calls FUN_004499d3 with w=h=param_4)
+  researchProgress: {
+    startX: 1,
+    startY: 290,                // 0x122
+    width: 14,                  // 0xe
+    height: 14,
+    colStep: 15,                // 0xf
+    sets: 3,
+    rowsPerSet: 2,
+    rowStep: 15,                // 0xf
+    spriteBase: 0x00644F00,
+    spriteStride: 0x78,         // per set
+  },
+
+  // Global warming progress: 3 sprites at y=320 (0x140)
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00648860 + i*0x3c, x, 0x140, 14)
+  globalWarmingProgress: {
+    startX: 1,
+    startY: 320,                // 0x140
+    width: 14,
+    height: 14,
+    colStep: 15,
+    count: 3,
+    spriteBase: 0x00648860,
+  },
+
+  // Science advisor minibar sprites: 3 at (49, 334), 10x10
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00645068 + i*0x3c, 0x31, 0x14e, 10)
+  scienceBar: {
+    startX: 49,                 // 0x31
+    startY: 334,                // 0x14e
+    width: 10,
+    height: 10,
+    colStep: 11,                // 0xb
+    count: 3,
+    spriteBase: 0x00645068,
+  },
+
+  // Second science bar row: 3 at (49, 345), 10x10
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00648918 + i*0x3c, 0x31, 0x159, 10)
+  scienceBar2: {
+    startX: 49,
+    startY: 345,                // 0x159
+    width: 10,
+    height: 10,
+    colStep: 11,
+    count: 3,
+    spriteBase: 0x00648918,
+  },
+
+  // Special single sprites: (82, 334) and (82, 345) -- 10x10 each
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00646598, 0x52, 0x14e, 10)
+  //               FUN_0044aba9(DAT_00648058, 0x52, 0x159, 10)
+  specialIndicator1: { x: 82, y: 334, w: 10, h: 10, addr: 0x00646598 },
+  specialIndicator2: { x: 82, y: 345, w: 10, h: 10, addr: 0x00648058 },
+
+  // HP bar progress sprites: 4 sets at (49, 290), 14x14 each
+  // @ 0x00449A0E: FUN_0044aba9(DAT_00648118 + i*0x3c, x, 0x122, 14)
+  //               FUN_0044aba9(DAT_00648208 + i*0x3c, x, 0x131, 14)
+  hpBarSprites: {
+    row1Y: 290,                 // 0x122
+    row2Y: 305,                 // 0x131
+    startX: 49,                 // 0x31
+    width: 14,
+    height: 14,
+    colStep: 15,
+    count: 4,
+    row1Base: 0x00648118,
+    row2Base: 0x00648208,
+  },
+
+  // Advance categories (4 rows x 5 cols = 20 sprites)
+  // @ 0x00449A0E: for 4 rows, 5 cols: FUN_004499d3(DAT_00646cb8, 0x157, y, 0x24, 0x14)
+  advanceCategories: {
+    startX: 343,                // 0x157
+    startY: 211,                // 0xd3
+    width: 36,                  // 0x24
+    height: 20,                 // 0x14
+    colStep: 37,                // 0x25
+    rowStep: 21,                // 0x15
+    cols: 5,
+    rows: 4,
+    count: 20,
+    spriteBase: 0x00646CB8,
+    spriteStride: 0x3C,         // per category
+    rowStride: 0xF0,            // per row (5 * 0x3C = 0xF0)
+  },
+
+  // Extra 64x48 and 64x32 from ICONS.GIF right edge
+  // @ 0x00449A0E: FUN_005cedad(DAT_0063fe08, 7, 0x23f, 1, 0x40, 0x30)
+  extraSprite64x48: { x: 575, y: 1, w: 64, h: 48 },   // 0x23f=575
+  // @ 0x00449A0E: FUN_005cedad(DAT_0063fe08, 7, 0x23f, 0x32, 0x40, 0x20)
+  extraSprite64x32: { x: 575, y: 50, w: 64, h: 32 },   // 0x32=50
+
+  // Map viewport resource sprite (32x32) at (0x12a, 0xbe) = (298, 190)
+  // @ 0x00449A0E: thunk_FUN_005a9afe(DAT_0063fe08, DAT_00640990, 0x12a, 0xbe, 0, 0, 0x20, 0x20)
+  mapViewportIcon: { x: 298, y: 190, w: 32, h: 32, addr: 0x00640990 },
+
+  // Resource overlay at (199, 0x142) = (199, 322) 64x32
+  // @ 0x00449A0E: thunk_FUN_005a9afe(DAT_0063fe08, DAT_00647f18, 199, 0x142, 0, 0, 0x40, 0x20)
+  resourceOverlayExtra: { x: 199, y: 322, w: 64, h: 32, addr: 0x00647F18 },
+
+  sourceAddr: '0x00449A0E',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Sprite Loading Order
+// Binary ref: FUN_0044b49e @ block_00440000.c (load_all_sprites)
+// ═══════════════════════════════════════════════════════════════════
+
+export const SPRITE_LOAD_ORDER = {
+  // FUN_0044b49e calls these in order:
+  // 1. thunk_FUN_0044c5a0() -- init sprite engine
+  // 2. thunk_FUN_0044ae4c() -- load CITIES.GIF
+  // 3. thunk_FUN_00449a0e() -- load ICONS.GIF + PEOPLE.GIF + EDITORPT.GIF + DLL resources
+  // 4. thunk_FUN_00449030() -- load TERRAIN1.GIF + TERRAIN2.GIF
+  // 5. thunk_FUN_0044b30e() -- load UNITS.GIF
+  order: ['CITIES', 'ICONS+PEOPLE+EDITOR+DLL', 'TERRAIN1+TERRAIN2', 'UNITS'],
+  sourceAddr: '0x0044B49E',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Sprite Editor Coordinate Table
+// Binary ref: FUN_005746a1 @ block_00570000.c (1362 bytes)
+// Computes (x, y, w, h) for editor sprite slots by category
+// DAT_006ac924 selects the category (0..11)
+// ═══════════════════════════════════════════════════════════════════
+
+export const SPRITE_EDITOR_COORDS = {
+  // Each case returns: count, x, y, w, h based on param_1 (sprite index)
+  categories: {
+    0: { // Terrain editor small tiles
+      count: 0x14,           // 20 sprites
+      w: 0x24, h: 0x14,     // 36 x 20
+      // x = (index / 4) * 0x25 + 0x157
+      // y = (index % 4) * 0x15 + 0xD3
+      gridCols: 4,
+      origin: { x: 0x157, y: 0xD3 },
+      spacing: { x: 0x25, y: 0x15 },
+    },
+    1: { // City improvements (two-row layout)
+      count: 0x30,           // 48 sprites (24 + 24)
+      w: 0x40, h: 0x30,     // 64 x 48
+      // First 24: x=1 + (index%4)*0x41, y=(index/4)*0x31 + 0x27
+      // Last 24:  x=0x14E + ((index-24)%4)*0x41, y=((index-24)/4)*0x31 + 0x27
+      splitAt: 0x18,         // 24
+      firstOrigin: { x: 1, y: 0x27 },
+      secondOrigin: { x: 0x14E, y: 0x27 },
+      spacing: { x: 0x41, y: 0x31 },
+    },
+    2: { // Wonders bar
+      count: 4,
+      w: 0x40, h: 0x30,     // 64 x 48
+      // x = index * 0x41 + 0x8F
+      // y = 0x1A7
+      origin: { x: 0x8F, y: 0x1A7 },
+      spacing: { x: 0x41 },
+    },
+    3: { // Small unit icons (2 rows x 9 cols)
+      count: 0x12,           // 18 sprites
+      w: 0x0E, h: 0x16,     // 14 x 22
+      // x = ((index/2) % 9) * (w+1) + 1
+      // y = (h+1) * (index & 1) + 0x1A9
+      gridCols: 9,
+      origin: { x: 1, y: 0x1A9 },
+    },
+    4: { // Terrain editor large tiles (split layout)
+      count: 0x42,           // 66 sprites
+      w: 0x24, h: 0x14,     // 36 x 20
+      // First 38: x=(index%8)*0x25+0x157, y=(index/8)*0x15+1
+      // Remaining: x=((index-38)%7)*0x25+0x157, y=((index-38)/7)*0x15+0x6A
+      splitAt: 0x26,         // 38
+      firstOrigin: { x: 0x157, y: 1 },
+      secondOrigin: { x: 0x157, y: 0x6A },
+    },
+    5: { // Single large sprite
+      count: 1,
+      w: 0x40, h: 0x20,     // 64 x 32
+      origin: { x: 199, y: 0x100 },
+    },
+    6: { // Row of 8 medium sprites
+      count: 8,
+      w: 0x20, h: 0x20,     // 32 x 32
+      // x = (w+1) * index + 1
+      // y = 0x164
+      origin: { x: 1, y: 0x164 },
+      spacing: { x: 0x21 },
+    },
+    7: { // Grid 11 rows x 4 cols
+      count: 0x2C,           // 44 sprites
+      w: 0x40, h: 0x20,     // 64 x 32
+      // x = (index / 11) * 0x41 + 1
+      // y = (index % 11) * 0x21 + 1
+      gridRows: 11,
+      origin: { x: 1, y: 1 },
+      spacing: { x: 0x41, y: 0x21 },
+    },
+    8: { // Complex 2-tier + extra row
+      count: 0x44,           // 68 sprites
+      w: 0x40, h: 0x20,     // 64 x 32
+      // First 64: complex staggered grid with half-row offsets
+      // Last 4+: x=(index-64)*0x41+1, y=0x14B
+      splitAt: 0x40,         // 64
+      extraRowY: 0x14B,
+    },
+    9: { // 4-variant interleaved
+      count: 0x20,           // 32 sprites
+      w: 0x20, h: 0x10,     // 32 x 16
+      // 4 variants with different y offsets from 0x1AD
+      origin: { x: 1, y: 0x1AD },
+      variantOffsets: [0, 0x22, 0x11, 0x22],
+    },
+    10: { // 6 top + grid below
+      count: 0x18,           // 24 sprites
+      w: 0x40, h: 0x20,     // 64 x 32
+      // First 6: x=0x1C8, y=index*0x21+100
+      // Remaining: x=((index-6)%9)*0x41+1, y=((index-6)/9)*0x21+0x16C
+      splitAt: 6,
+      firstOrigin: { x: 0x1C8, y: 100 },
+      secondOrigin: { x: 1, y: 0x16C },
+    },
+    11: { // 9-col grid
+      count: 0x3F,           // 63 sprites
+      w: 0x40, h: 0x30,     // 64 x 48
+      // x = (index % 9) * 0x41 + 1
+      // y = (index / 9) * 0x31 + 1
+      gridCols: 9,
+      origin: { x: 1, y: 1 },
+      spacing: { x: 0x41, y: 0x31 },
+    },
+  },
+
+  // Category selector address
+  categoryAddr: 'DAT_006ac924',
+  sourceAddr: '0x005746A1',
 };

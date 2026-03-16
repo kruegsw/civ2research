@@ -786,3 +786,150 @@ export const ANIMATION_TIMING = {
     sourceAddr: '0x0046E287',
   },
 };
+
+// === Production Completion Sounds ===
+// Binary ref: FUN_004ec3fe (city production handler) @ block_004E0000.c:5024-5056
+// When a building/wonder/spaceship part is completed, the game plays an item-specific sound.
+// local_3c = wonder index (>=0 means wonder), local_24 = building index (when local_3c < 0).
+export const PRODUCTION_COMPLETION_SOUNDS = {
+  note: 'Sound played via thunk_FUN_0046e020(soundId, 1, 0, 0) when production completes.',
+
+  // --- Building-specific sounds (local_3c < 0, i.e. NOT a wonder) ---
+  // Switch on local_24 (building ID from RULES.TXT @IMPROVE section):
+  buildings: {
+    2:  { soundId: 0x05, note: 'Granary' },
+    9:  { soundId: 0x04, note: 'Aqueduct' },
+    10: { soundId: 0x2F, note: 'SDI Defense' },
+    0xB: { soundId: 0x0B, note: 'Library' },
+    0xC: { soundId: 0x37, note: 'University' },
+    0x16: { soundId: 0x45, note: 'Stock Exchange' },
+    default: { soundId: 0x02, note: 'All other buildings not in switch' },
+  },
+
+  // --- Spaceship parts (building IDs 0x23..0x25) ---
+  spaceshipParts: {
+    range: '0x23-0x25',
+    soundId: 0x08,
+    note: 'SS Structural, SS Component, SS Module',
+  },
+
+  // --- Wonder completed (local_3c >= 0) ---
+  wonder: {
+    soundId: 0x30,
+    note: 'Any wonder completion',
+  },
+
+  // --- City advisor notification sounds (from same function area) ---
+  // Building type -> advisor portrait image index (local_4c), used for city notification:
+  advisorPortraits: {
+    0x1B: { portraitId: 0xB8, note: 'Palace built -> specific advisor portrait' },
+    9:    { portraitId: 0xBA, note: 'Aqueduct/Sewer/Harbour/Airport advisor' },
+    7:    { portraitId: 0xBA, note: 'Harbour' },
+    8:    { portraitId: 0xBA, note: 'Airport' },
+    0xE:  { portraitId: 0xBA, note: 'Sewer System' },
+    0x12: { portraitId: 0xBA, note: 'Superhighways' },
+    0xC:  { portraitId: 0xBA, note: 'University' },
+    0x15: { portraitId: 0xB9, note: 'Nuclear Plant' },
+    default: { portraitId: 0xBB, note: 'Standard building advisor portrait' },
+  },
+
+  sourceAddr: '0x004EC3FE',
+};
+
+// === Manhattan Project Sound ===
+// Binary ref: block_004E0000.c:4957-4969
+// When wonder 0x17 (Manhattan Project) is built, each visible civ hears sound 0x23.
+export const MANHATTAN_PROJECT_SOUND = {
+  wonderId: 0x17,
+  soundId: 0x23,
+  note: 'Manhattan Project completion alert played for all civs that can see the building civ.',
+  eventText: 'MANHATTAN',
+  sourceAddr: '0x004E0000:4957',
+};
+
+// === City Disorder / WLtKD Sounds ===
+// Binary ref: handle_city_disorder_004ef578 @ block_004E0000.c:5819-5931
+export const CITY_STATUS_SOUNDS = {
+  disorder: {
+    soundId: 0x0E,
+    note: 'Played when city enters disorder (happy < unhappy). thunk_FUN_0046e020(0xe,1,0,0)',
+    eventText: 'DISORDER',
+    messageId: 0x48,
+    sourceAddr: '0x004EF578',
+  },
+  weLoveTheKing: {
+    soundId: null,
+    note: 'WLtKD start uses thunk_FUN_0046e571(3,0) for music, not a one-shot sound.',
+    musicChannel: 3,
+    eventText: 'WELOVEKING',
+    messageId: 0x4A,
+    sourceAddr: '0x004EF578',
+  },
+  weDontLoveTheKing: {
+    eventText: 'WEDONTLOVEKING',
+    note: 'WLtKD ends. No sound played, just a text notification.',
+    sourceAddr: '0x004EF578',
+  },
+  revolt: {
+    eventText: 'REVOLT',
+    note: 'Democracy in disorder -> forced revolution to Anarchy (govt 6, govt set to 0).',
+    condition: 'govt == 6 (Democracy) AND continuing disorder AND not scenario-protected',
+    sourceAddr: '0x004EF578',
+  },
+};
+
+// === Move Capital Sound ===
+// Binary ref: block_004E0000.c:5117-5134
+// Building 1 (Palace) triggers capital relocation.
+export const MOVE_CAPITAL_SOUND = {
+  buildingId: 1,
+  messageId: 0x48,
+  eventText: 'MOVECAPITAL',
+  note: 'Palace built -> capital moves to this city. Network message 0x48 sent.',
+  sourceAddr: '0x004E0000:5117',
+};
+
+// === Unit Production Notification ===
+// Binary ref: block_004E0000.c:5457-5464
+// When an AI civ completes a unit, the notification portrait depends on the unit role.
+export const UNIT_BUILT_NOTIFICATION_PORTRAITS = {
+  default: { portraitId: 0xBB, note: 'Standard unit built notification' },
+  settler: { portraitId: 0xB6, note: 'Settler/Engineer type (unit role 6)' },
+  diplomat: { portraitId: 0xBC, note: 'Diplomat/Spy type (unit role 7)' },
+  sourceAddr: '0x004E0000:5457',
+};
+
+// ============================================================================
+// === TURN-PROCESSING SOUND EVENTS ===
+// Binary ref: FUN_00511880 calls in FUN_00487371 (turn processing),
+//             FUN_0048aedc (game end), FUN_00486c2e (pollution),
+//             FUN_004868fb (warming) — all in block_00480000.c
+// These are the numeric event IDs passed to FUN_00511880 during turn processing.
+// The first parameter is the event ID; 0xFF = broadcast to all players.
+// ============================================================================
+
+export const TURN_PROCESSING_SOUND_EVENTS = {
+  // Event ID → game event mapping
+  events: {
+    3: { name: 'GLOBAL_WARMING',      trigger: 'Global warming event fires',
+         sourceAddr: '0x004868FB', dialog: 'GLOBALWARMING' },
+    4: { name: 'POLLUTION_WARNING',    trigger: 'Pollution counter reaches 12 (warning)',
+         sourceAddr: '0x00486C2E', dialog: 'FEARWARMING' },
+    5: { name: 'HISTORIAN_REPORT',     trigger: 'Historian report interval reached',
+         sourceAddr: '0x00487371' },
+    6: { name: 'SPACESHIP_ARRIVED',    trigger: 'Spaceship arrives at Alpha Centauri',
+         sourceAddr: '0x00487371', dialog: 'EAGLEHASLANDED' },
+    7: { name: 'SCENARIO_WARNING',     trigger: 'Scenario ends in 5 turns',
+         sourceAddr: '0x0048AEDC', dialog: 'SCENARIOENDS' },
+    8: { name: 'SCENARIO_END',         trigger: 'Scenario end turn reached',
+         sourceAddr: '0x0048AEDC', dialog: 'SCENARIOEND' },
+    9: { name: 'PLAN_RETIREMENT',      trigger: 'Year 2000 reached (plan retirement)',
+         sourceAddr: '0x0048AEDC', dialog: 'PLANRETIRE' },
+    10: { name: 'FORCE_RETIREMENT',    trigger: 'Year 2020 reached (forced retirement)',
+          sourceAddr: '0x0048AEDC', dialog: 'DORETIRE' },
+  },
+
+  // Call signature: FUN_00511880(eventId, targetPlayer, param3, param4, param5, param6)
+  // targetPlayer 0xFF = broadcast to all connected players
+  callSignature: 'FUN_00511880(eventId, 0xFF, 0, 0, 0, 0)',
+};

@@ -135,38 +135,75 @@ export const CIV_PERSONALITIES = [
 // ============================================================================
 
 export const TREATY_FLAGS = {
-  // --- Byte 0 (low byte) ---
+  // === Byte 0 (low byte) ===
+  // Confirmed by: Civ2-clone Read.ClassicSav.cs (lines 303-308),
+  //   FUN_004df10f treaty-signing switch (cases 0/1/2),
+  //   EDITTREATIES dialog in FUN_0055d8d8 (checkboxes 0-6)
   CONTACT:             0x01,  // bit 0:  have made contact
-  CEASE_FIRE_BROKEN:   0x02,  // bit 1:  ceasefire broken (used in alliance logic)
-  CEASEFIRE:           0x04,  // bit 2:  ceasefire active
-  WAR:                 0x08,  // bit 3:  at war
-  TRESPASS:            0x10,  // bit 4:  trespass/intrusion detected
-  ALLIANCE_VIOLATION:  0x20,  // bit 5:  alliance violation / hatred flag
-  PREV_VIOLATION:      0x40,  // bit 6:  previous alliance violation (saved across turns)
+                               //   FUN_0055d8d8: set via thunk_FUN_00467825(p1,p2,0x401)
+  CEASEFIRE:           0x02,  // bit 1:  ceasefire treaty active
+                               //   FUN_004df10f case 0: thunk_FUN_00467825(p2,p3,2)
+  PEACE:               0x04,  // bit 2:  peace treaty active
+                               //   FUN_004df10f case 1: thunk_FUN_00467825(p2,p3,4)
+  ALLIANCE:            0x08,  // bit 3:  alliance active
+                               //   FUN_004df10f case 2: thunk_FUN_00467825(p2,p3,8)
+  VENDETTA:            0x10,  // bit 4:  vendetta — war grudge / embassy expelled
+                               //   Civ2-clone: treatyVendetta = GetBit(byte0, 4)
+                               //   FUN_0055d8d8 line 5915: cleared when declaring war, sets 0x800
+  INTRUDER_FLAG:       0x20,  // bit 5:  set when both sides have embassies (shared intelligence)
+                               //   FUN_0055d8d8 line 5430-5433: set if both have 0x10
+                               //   cleared by set-treaty cascade (mask 0x2a60)
+  HOSTILITY_FLAG:      0x40,  // bit 6:  transient hostility flag
+                               //   cleared by set-treaty cascade (mask 0x2a60)
   EMBASSY:             0x80,  // bit 7:  embassy established
+                               //   Civ2-clone: treatyEmbassy = GetBit(byte0, 7)
+                               //   EDITTREATIES: checkbox 6
 
-  // --- Byte 1 (bits 8-15) ---
+  // === Byte 1 (bits 8-15) ===
   // 0x0100:  (bit 8)
   // 0x0200:  (bit 9)  "attacked" flag, cleared by alliance proposal loop
-  PERIODIC_FLAG_10:    0x0400, // bit 10: cleared every 16 turns
-  WAR_STARTED:         0x0800, // bit 11: war just started, cleared every 32 turns
+  PERIODIC_FLAG_10:    0x0400, // bit 10: set on first contact (0x401 = CONTACT + this)
+                               //   cleared every 16 turns
+  WAR_STARTED:         0x0800, // bit 11: war just started / attacked flag
+                               //   cleared every 32 turns; set on city capture / war declaration
+  CAPTURE_VENDETTA:    0x1000, // bit 12: vendetta from city capture (FUN_00579c40)
+                               //   when neither side has NUCLEAR_PACT, indicates blood feud
 
-  // --- Byte 2 (bits 16-23) ---
-  ALLIANCE:            0x2000, // bit 13: formal alliance
-  TRANSIENT_14:        0x4000, // bit 14: transient, cleared each turn @ 0xFF5FBFFF
+  // === Bits 13-15 ===
+  WAR:                 0x2000, // bit 13: at war (declared war / vendetta state)
+                               //   Civ2-clone: treatyWar = GetBit(byte1, 5) = bit 13
+                               //   EDITTREATIES: checkbox 4
+                               //   FUN_0055d8d8 line 5914: thunk_FUN_00467825(p1,p2,0x2000)
+  RECENT_CONTACT:      0x4000, // bit 14: transient, cleared each turn @ 0xFF5FBFFF
+                               //   set on first-contact if not previously contacted
   // 0x8000:  (bit 15)
 
-  // --- Byte 3 (bits 24-31) ---
+  // === Bytes 2-3 (bits 16-23+) ===
+  CAPTURE_NOTIFY:      0x10000, // bit 16: set when city captured (FUN_0057b5df)
+                                //   thunk_FUN_00467825(attacker, defender, 0x10000)
+  NUCLEAR_ATTACK:      0x20000, // bit 17: set on nuke attacker's treaty toward victim
+                                //   (FUN_0057f9e3: treaty[attacker][victim] |= 0x20000)
   PERIODIC_FLAG_18:    0x40000,  // bit 18: periodic, cleared for AI-AI each turn
   PERIODIC_FLAG_19:    0x80000,  // bit 19: cleared every 32 turns
+  WAR_TRACKING:        0x200000, // bit 21: auto-set when WAR (0x2000) is set via cascade
+                                 //   FUN_00467825: if setting 0x2000, param_3 |= 0x200000
+  MULTI_CAPTURE_VENDETTA: 0x400000, // bit 22: set when even number of units captured > 1
+                                    //   from city (FUN_0057b5df) — or democracy+max power
+  DIPLOMACY_ACTIVE:    0x800000, // bit 23: set when diplomacy encounter starts
+                                 //   FUN_00460129 line 163: thunk_FUN_00467825(p1,p2,0x800000)
 
-  // --- Compound masks used in code ---
-  WAR_DECLARATION_SET: 0x80840,  // set when declaring war via alliance violation
-                                  // = WAR(0x08) | WAR_STARTED(0x800) | 0x80000
-  CLEAR_WAR_BITS:      0xFFFFFFD9, // ~(CEASEFIRE|TRESPASS) = clear bits 1,2,5
-  CLEAR_TRANSIENT:     0xFF5FBFFF, // clear bits 14, 17, 23 each turn
-  WAR_OR_ALLIANCE:     0x2008,     // at war OR has alliance
-  ALLIED_CHECK:        0x2000,     // alliance bit only
+  // === Compound masks used in code ===
+  TREATY_BITS:         0x0E,       // CEASEFIRE(0x02) | PEACE(0x04) | ALLIANCE(0x08)
+  WAR_OR_ALLIANCE:     0x2008,     // WAR(0x2000) | ALLIANCE(0x08)
+  ALLIANCE_CHECK:      0x08,       // alliance bit only
+  WAR_CHECK:           0x2000,     // war bit only
+  CLEAR_TRANSIENT:     0xFF5FBFFF, // ~(RECENT_CONTACT | NUCLEAR_ATTACK | DIPLOMACY_ACTIVE)
+                                    //   clear bits 14, 17, 23 each turn
+
+  // Civ schism initial treaties (FUN_0057a904):
+  CHILD_TO_PARENT:     0x2001,     // CONTACT(0x01) + WAR(0x2000) — rebel starts at war
+  PARENT_TO_CHILD:     0x82801,    // CONTACT(0x01) + WAR_STARTED(0x800) + WAR(0x2000)
+                                    //   + PERIODIC_FLAG_19(0x80000) — parent at war with rebel
 };
 
 // ============================================================================
@@ -417,7 +454,7 @@ export const ATTITUDE_SCORING = {
   // --- Phase 9: Military power comparison (conditional) ---
   militaryPowerComparison: {
     // Gate condition: NOT scenario mode OR (tolerance - attitude <= allianceStrength AND no trespass)
-    condition: '(gameFlags & 1) == 0 OR (tolerance - attitude <= allianceStrength AND !(treaty & TRESPASS))',
+    condition: '(gameFlags & 1) == 0 OR (tolerance - attitude <= allianceStrength AND !(treaty & VENDETTA))',
     address: '0x00561924',
     modifiers: [
       {
@@ -710,24 +747,25 @@ export const ALLIANCE_VIOLATION = {
 
   // --- Response ---
   response: {
-    // If not already at war: declare war
-    declareWar: {
-      condition: 'treaty[otherCiv][aiCiv] & 0x08 == 0 (not at war)',
+    // If not already allied: break treaties and set hostility
+    breakTreaties: {
+      condition: 'treaty[otherCiv][aiCiv] & 0x08 == 0 (not allied)',
       address: '0x0056030A',
       actions: [
-        'Clear ceasefire+peace bits (& 0xFFFFFFD9)',
-        'Set war flags (| 0x80840 = WAR | WAR_STARTED | 0x80000)',
+        'Clear CEASEFIRE+PEACE+INTRUDER_FLAG (& 0xFFFFFFD9 = ~0x26)',
+        'Set hostility flags (| 0x80840 = PERIODIC_FLAG_19 | WAR_STARTED | HOSTILITY_FLAG)',
         'Set contactTurn = max(current, turn - 8)',
       ],
+      notes: 'Does NOT use FUN_00467825 cascade — raw bitwise OR, so WAR(0x2000) is NOT set',
     },
-    // If already at war: max hostility
+    // If already allied: max hostility
     maxHostility: {
-      condition: 'treaty[otherCiv][aiCiv] & 0x08 != 0 (already at war)',
+      condition: 'treaty[otherCiv][aiCiv] & 0x08 != 0 (allied — alliance exists)',
       address: '0x00560324',
       actions: [
         'set_attitude(aiCiv, otherCiv, 100) — maximum hostility',
         'contactTurn = 0xFFFF — permanent cooldown',
-        'Clear violation flag (& ~0x20)',
+        'Clear INTRUDER_FLAG (& ~0x20)',
       ],
       notes: 'Attitude 100 = absolute maximum hostility, locks out all diplomacy',
     },
@@ -1237,6 +1275,67 @@ export const MODIFIER_SUMMARY = [
 ];
 
 // ============================================================================
+// === ATTITUDE SCORING — HARDCODED NUMERIC CONSTANTS ===
+// Binary ref: FUN_00560d95 @ block_00560000.c (4728 bytes)
+// All threshold values embedded as numeric literals in the attitude scoring function.
+// ============================================================================
+
+export const ATTITUDE_SCORING_CONSTANTS = {
+  // Phase 3 — War-only modifiers
+  largeTechGap:       8,     // @ 0x00560D95: if AI techCount + 8 < human techCount: +1
+  multiWarBase:       1,     // @ 0x00560D95: base penalty per additional war
+  multiWarExpDiv:     6,     // formula: warCount - (6 - expansionism); min 1, max 6
+
+  // Phase 5 — Late game
+  lateGameTurnGate:   200,   // @ 0x00560D95: spaceship/power checks only if turn > 200
+  topPowerCityGate:   3,     // @ 0x00560D95: top power bonus only if human cities > 3
+
+  // Phase 6 — Spaceship
+  // Checks DAT_0064caa8 (spaceship data) for active spaceship parts
+
+  // Phase 7 — Personality
+  personalityFloor:   -2,    // @ 0x00560D95: personality score floored at -2
+  personalityExpMul:  3,     // @ 0x00560D95: expansionism * 3
+  personalityMilMul:  2,     // @ 0x00560D95: militarism * 2
+
+  // Phase 8 — Power ranking
+  maxPowerDelta:      3,     // @ 0x00560D95: power differential clamped to -3..+3
+
+  // Phase 9 — Military comparison multipliers
+  milThreshold1_5x:   1.5,   // @ 0x00560D95: AI * 3/2 < human
+  milThreshold2x:     2,     // @ 0x00560D95: AI * 2 < human
+  milThreshold4x:     4,     // @ 0x00560D95: AI * 4 < human
+
+  // Phase 12-13 — Tech/tolerance
+  techRankZero:       0,     // @ 0x00560D95: techRankCount == 0 means human has most techs
+
+  // Final clamps (from FUN_00560d95 post-scoring)
+  allianceViolationMax:  100,  // @ 0x00560334: max hostility on alliance violation while at war
+  ceasefireViolation:     50,  // @ 0x0056139A: hostility on ceasefire violation
+
+  sourceAddr: '0x00560D95',
+};
+
+// ============================================================================
+// === SPACE RACE TECH CHECK ===
+// Binary ref: FUN_00568861 @ block_00560000.c
+// Checks whether a civ has the technology prerequisites for space race components.
+// Used in attitude scoring to evaluate if the human is a spaceship threat.
+// ============================================================================
+
+export const SPACE_RACE_TECH_IDS = {
+  // Tech IDs checked for space race capability (from FUN_00568861):
+  // The function checks if a civ has specific advances that enable spaceship parts.
+  // These are cross-referenced with production/wonder eligibility.
+  rocketry:       0x48,   // tech 72 — Rocketry (propulsion)
+  spaceFlight:    0x4E,   // tech 78 — Space Flight (structural)
+  plastics:       0x41,   // tech 65 — Plastics (habitation)
+  fusion:         0x21,   // tech 33 — Fusion Power (fuel pods)
+  lifeSupportTech:0x4F,   // tech 79 — Life Support (not in base rules but checked)
+  sourceAddr: '0x00568861',
+};
+
+// ============================================================================
 // === ATTITUDE THRESHOLDS ===
 // These are the values used in diplomacy decisions based on the attitude score
 // set by FUN_00560d95. Not all are in the attitude function itself; some are
@@ -1278,4 +1377,120 @@ export const MILITARY_AID = {
   ],
   action: 'Pick up unit from AI, place at ally city, change ownership',
   notes: 'Not ported in JS engine; no unit gifting mechanism exists',
+};
+
+// ============================================================================
+// === ATTITUDE LEVEL FUNCTION ===
+// Binary ref: FUN_004679ab @ 0x004679AB (178 bytes), block_00460000.c
+// Converts raw attitude score (0-100) to discrete level (0-8).
+// Used throughout diplomacy UI and AI greeting/response selection.
+// ============================================================================
+
+export const ATTITUDE_LEVEL = {
+  sourceAddr: '0x004679AB',
+  // Thresholds: raw attitude score → level
+  // Each entry: { maxExclusive, level }
+  thresholds: [
+    { range: '< 0',    level: 0, label: 'Enraged' },
+    { range: '0-10',   level: 1, label: 'Furious',   upperBound: 0x0B },   // < 11
+    { range: '11-25',  level: 2, label: 'Annoyed',   upperBound: 0x1A },   // < 26
+    { range: '26-38',  level: 3, label: 'Uncooperative', upperBound: 0x27 }, // < 39
+    { range: '39-61',  level: 4, label: 'Neutral',   upperBound: 0x3E },   // < 62
+    { range: '62-74',  level: 5, label: 'Cordial',   upperBound: 0x4B },   // < 75
+    { range: '75-89',  level: 6, label: 'Polite',    upperBound: 0x5A },   // < 90
+    { range: '90-99',  level: 7, label: 'Enthusiastic', upperBound: 100 }, // < 100
+    { range: '>= 100', level: 8, label: 'Worshipful' },
+  ],
+
+  // Helper functions that use attitude level
+  helpers: {
+    isHostile: {
+      // FUN_00467a86: returns true if attitude level < 4
+      sourceAddr: '0x00467A86',
+      formula: 'get_attitude_level(get_attitude(civA, civB)) < 4',
+      note: 'Hostile = Enraged, Furious, Annoyed, or Uncooperative',
+    },
+    isFriendly: {
+      // FUN_00467abb: returns true if attitude level > 4
+      sourceAddr: '0x00467ABB',
+      formula: 'get_attitude_level(get_attitude(civA, civB)) > 4',
+      note: 'Friendly = Cordial, Polite, Enthusiastic, or Worshipful',
+    },
+  },
+
+  // War readiness trust check: FUN_00467af0
+  warReadinessTrust: {
+    sourceAddr: '0x00467AF0',
+    logic: [
+      'if vendetta flag (byte1 & 0x20): return true (always considered hostile)',
+      'if alliance (treaty & 0x08): return false (ally = peaceful)',
+      'if only contact + ceasefire (treaty & 0x05 == 0x01): return attitude > 0x31 (49)',
+      'else: return false',
+    ],
+    attitudeThreshold: 0x31,  // 49: ceasefire with attitude > 49 = considered peaceful
+  },
+};
+
+// ============================================================================
+// === TREATY FLAG CASCADE RULES ===
+// Binary ref: FUN_00467750 (clear) @ 0x00467750 (213 bytes), block_00460000.c
+// Binary ref: FUN_00467825 (set)   @ 0x00467825 (223 bytes), block_00460000.c
+// These functions enforce treaty flag dependencies — clearing or setting one
+// flag may automatically clear/set related flags.
+// ============================================================================
+
+export const TREATY_FLAG_CASCADE = {
+  // --- CLEAR (FUN_00467750 @ 0x00467750) ---
+  // Clearing a flag may trigger additional flag clears before applying.
+  // Applied symmetrically: treaty[A][B] AND treaty[B][A] both cleared.
+  clear: {
+    sourceAddr: '0x00467750',
+    rules: [
+      {
+        trigger: 0x04,     // clearing PEACE
+        alsoClear: 0x08,   // also clears ALLIANCE
+        note: 'Removing peace also removes alliance (hierarchy: CEASEFIRE < PEACE < ALLIANCE)',
+      },
+      {
+        trigger: 0x2000,   // clearing WAR
+        alsoClear: 0x1800, // also clears WAR_STARTED(0x800) + CAPTURE_VENDETTA(0x1000)
+        note: 'Removing war also clears war-started and city-capture vendetta bits',
+      },
+      {
+        trigger: 0x01,     // clearing CONTACT
+        alsoClear: 0x2000, // also clears WAR (which cascades to clear 0x1800)
+        note: 'Removing contact clears war (full cascade)',
+      },
+    ],
+    operation: 'treaty[A][B] &= ~param; treaty[B][A] &= ~param',
+    symmetric: true,
+  },
+
+  // --- SET (FUN_00467825 @ 0x00467825) ---
+  // Setting a flag may trigger prerequisite sets and/or clear conflicting flags.
+  // Applied symmetrically: treaty[A][B] AND treaty[B][A] both set.
+  set: {
+    sourceAddr: '0x00467825',
+    rules: [
+      {
+        trigger: 0x08,     // setting ALLIANCE
+        alsoSet: 0x04,     // prerequisite: also sets PEACE
+        note: 'Alliance requires peace — auto-sets peace flag',
+      },
+      {
+        trigger: 0x0E,     // setting any of CEASEFIRE(0x02)|PEACE(0x04)|ALLIANCE(0x08)
+        alsoClear: 0x2A60, // clears WAR(0x2000) + WAR_STARTED(0x0800)
+                           //   + INTRUDER_FLAG(0x0020) + HOSTILITY_FLAG(0x0040) + 0x0200
+        note: 'Any treaty clears all war/hostility flags',
+      },
+      {
+        trigger: 0x2000,   // setting WAR
+        alsoClear: 0x0E,   // clears CEASEFIRE(0x02)|PEACE(0x04)|ALLIANCE(0x08)
+        alsoAdd: 0x200000, // adds WAR_TRACKING bit
+        note: 'Declaring war clears all existing treaties; adds war-tracking bit',
+      },
+    ],
+    operation: 'treaty[A][B] |= param; treaty[B][A] |= param',
+    symmetric: true,
+  },
 };

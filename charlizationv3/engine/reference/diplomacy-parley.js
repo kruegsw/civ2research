@@ -51,47 +51,58 @@ export const TRANSACTION_TYPES = {
 // ═══════════════════════════════════════════════════════════════════════
 
 export const TREATY_FLAGS = {
-  // --- Byte 0 (low byte) ---
+  // === Byte 0 (low byte) ===
+  // Confirmed by: Civ2-clone Read.ClassicSav.cs (lines 303-308),
+  //   FUN_004df10f treaty-signing switch (cases 0/1/2),
+  //   EDITTREATIES dialog in FUN_0055d8d8 (checkboxes 0-6)
   CONTACT:           { bit: 0x01,    desc: 'Civs have met',
-                       sourceAddr: '0x0055D8D8 set_treaty_flag 0x401' },
+                       sourceAddr: 'FUN_0055d8d8: thunk_FUN_00467825(p1,p2,0x401)' },
   CEASEFIRE:         { bit: 0x02,    desc: 'Ceasefire treaty active',
-                       sourceAddr: '0x004DF10F case 0' },
+                       sourceAddr: 'FUN_004df10f case 0: thunk_FUN_00467825(p2,p3,2)' },
   PEACE:             { bit: 0x04,    desc: 'Peace treaty active',
-                       sourceAddr: '0x004DF10F case 1' },
+                       sourceAddr: 'FUN_004df10f case 1: thunk_FUN_00467825(p2,p3,4)' },
   ALLIANCE:          { bit: 0x08,    desc: 'Alliance active',
-                       sourceAddr: '0x004DF10F case 2' },
-  EMBASSY:           { bit: 0x10,    desc: 'Embassy established / has contact info',
-                       sourceAddr: '0x0055BEF9' },
+                       sourceAddr: 'FUN_004df10f case 2: thunk_FUN_00467825(p2,p3,8)' },
+  VENDETTA:          { bit: 0x10,    desc: 'Vendetta — war grudge / embassy expelled on war declaration',
+                       sourceAddr: 'Civ2-clone: GetBit(byte0, 4); FUN_0055d8d8 line 5915' },
+  INTRUDER_FLAG:     { bit: 0x20,    desc: 'Set when both sides have embassies (shared intelligence)',
+                       sourceAddr: 'FUN_0055d8d8 line 5430-5433; cleared by treaty cascade 0x2a60' },
+  HOSTILITY_FLAG:    { bit: 0x40,    desc: 'Transient hostility flag, cleared by treaty cascade',
+                       sourceAddr: 'FUN_00467825: cleared in mask 0x2a60' },
+  EMBASSY:           { bit: 0x80,    desc: 'Embassy established',
+                       sourceAddr: 'Civ2-clone: GetBit(byte0, 7); EDITTREATIES checkbox 6' },
 
-  // --- Byte 1 (bits 0x100-0xFF00 of the 16-bit treaty word) ---
+  // === Byte 1 (bits 8-15 of the 32-bit treaty word) ===
+  // Note: some binary code tests byte1 directly (DAT_0064c6c1). Byte1 bit N = word bit (N+8).
   NUKE_AWARENESS:    { bit: 0x100,   desc: 'Aware other civ has nuclear weapons',
                        sourceAddr: '0x0045705E' },
-  ATTACKED:          { bit: 0x800,   desc: 'Attacked / betrayal flag',
-                       sourceAddr: '0x0045AC71' },
-  PROVOKED:          { bit: 0x800,   desc: 'Provoked (same bit, context-dependent)',
-                       sourceAddr: '0x0045A8E3' },
-  DECLARED_WAR:      { bit: 0x2000,  desc: 'Has formally declared war (vendetta)',
-                       sourceAddr: '0x0055CBD5 byte1 0x08 mapped to 0x2000' },
-  // 0x2401 = war + contact + declared
+  // 0x0200 (bit 9): attacked/provocation flag, cleared by alliance proposal loop
+  PERIODIC_FLAG_10:  { bit: 0x400,   desc: 'Set on first contact (0x401 = CONTACT + this)',
+                       sourceAddr: 'FUN_0055d8d8: thunk_FUN_00467825(p1,p2,0x401)' },
+  WAR_STARTED:       { bit: 0x800,   desc: 'War just started / attacked / betrayal flag',
+                       sourceAddr: 'FUN_0045AC71; cleared every 32 turns' },
+  CAPTURE_VENDETTA:  { bit: 0x1000,  desc: 'City capture vendetta (FUN_00579c40)',
+                       sourceAddr: 'Set when neither side has nuclear pact; blood feud' },
+  WAR:               { bit: 0x2000,  desc: 'At war (formally declared)',
+                       sourceAddr: 'Civ2-clone: GetBit(byte1, 5); EDITTREATIES checkbox 4; FUN_0055d8d8 line 5914' },
   RECENT_CONTACT:    { bit: 0x4000,  desc: 'Recent contact flag (post first-contact)',
-                       sourceAddr: '0x0055D8D8 set_treaty_flag 0x4000' },
+                       sourceAddr: 'FUN_0055d8d8: thunk_FUN_00467825(p1,p2,0x4000)' },
 
-  // --- Byte 2 (high bits) ---
+  // === Bytes 2-3 (bits 16-23+) ===
+  CAPTURE_NOTIFY:    { bit: 0x10000, desc: 'City captured notification flag',
+                       sourceAddr: 'FUN_0057b5df: thunk_FUN_00467825(attacker,defender,0x10000)' },
+  NUCLEAR_ATTACK:    { bit: 0x20000, desc: 'Set on nuke attacker toward victim',
+                       sourceAddr: 'FUN_0057f9e3: treaty[attacker][victim] |= 0x20000' },
   TRIBUTE_DEMANDED:  { bit: 0x40000, desc: 'Tribute has been demanded (alliance context)',
-                       sourceAddr: '0x0055D1E2 set_treaty_flag 0x40000' },
-  CITY_PROVOCATION:  { bit: 0x10000, desc: 'City-level provocation (allied AI sets this)',
-                       sourceAddr: '0x0055D8D8' },
-  WAR_WEARINESS:     { bit: 0x100000, desc: 'War weariness flag (cleared when no allies)',
-                       sourceAddr: '0x0045705E' },
-
-  // --- Vendetta byte 1 ---
-  VENDETTA:          { bit: 0x20,    desc: 'Vendetta / hatred (byte 1, tested separately)',
-                       note: 'treaty_byte1[civA][civB] & 0x20',
-                       sourceAddr: '0x0055CBD5' },
-  RECENT_ATTACK:     { bit: 0x08,    desc: 'Attacked recently (byte 1)',
-                       sourceAddr: '0x0055CBD5 fast path' },
-  CEASEFIRE_BROKEN:  { bit: 0x02,    desc: 'Ceasefire was broken (byte 1)',
-                       sourceAddr: '0x0055F7D1' },
+                       sourceAddr: 'FUN_0055d1e2: thunk_FUN_00467825(p1,p2,0x40000)' },
+  PERIODIC_FLAG_19:  { bit: 0x80000, desc: 'Cleared every 32 turns',
+                       sourceAddr: 'FUN_00560084 line 107' },
+  WAR_TRACKING:      { bit: 0x200000, desc: 'Auto-set when WAR(0x2000) is set via cascade',
+                       sourceAddr: 'FUN_00467825: if setting 0x2000, param_3 |= 0x200000' },
+  MULTI_CAPTURE_VENDETTA: { bit: 0x400000, desc: 'Multiple captures vendetta',
+                       sourceAddr: 'FUN_0057b5df' },
+  DIPLOMACY_ACTIVE:  { bit: 0x800000, desc: 'Diplomacy encounter active',
+                       sourceAddr: 'FUN_00460129 line 163' },
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -442,6 +453,258 @@ export const WAR_DECLARATION = {
     sourceAddr: '0x0045A8E3',
   },
   sourceAddr: '0x0045AC71',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// TREATY EXECUTION — execute_alliance, execute_peace, execute_ceasefire
+// Source: FUN_0045a535, FUN_0045a6ab, FUN_0045a7a8 @ block_00450000.c
+// ═══════════════════════════════════════════════════════════════════════
+
+export const TREATY_EXECUTION = {
+  executeAlliance: {
+    // @ FUN_0045a535 (374 bytes)
+    attitudeAdjust: -25,         // 0xFFFFFFE7: adjust_attitude(civA, civB, -25)
+    treatyFlagSet: 0x08,         // set alliance flag
+    civFlagsSet: 0x100,          // set nuke awareness flag on civ
+    dialogString: 'ALLIANCE',    // game.txt dialog key
+    sourceAddr: '0x0045A535',
+  },
+
+  executePeace: {
+    // @ FUN_0045a6ab (253 bytes)
+    treatyFlagsSet: 0x4004,      // peace (0x04) + recent contact (0x4000)
+    attitudeClamp: { min: 0, max: 0x32 },  // clamp attitude to 0-50
+    dialogString: 'TREATY',      // game.txt dialog key
+    sourceAddr: '0x0045A6AB',
+  },
+
+  executeCeasefire: {
+    // @ FUN_0045a7a8 (315 bytes)
+    treatyFlagsSet: 0x4002,      // ceasefire (0x02) + recent contact (0x4000)
+    clearFlag: 0x40000,          // clear tribute demanded flag
+    attitudeClamp: { min: 0, max: 0x32 },  // clamp attitude to 0-50
+    clearOnAllCivs: 0x800,       // clear attacked flag on all civs (loop 1..7)
+    dialogString: 'CEASEFIRE',   // game.txt dialog key
+    sourceAddr: '0x0045A7A8',
+  },
+
+  allianceChainWar: {
+    // @ FUN_0045a8e3 (398 bytes)
+    civLoop: { start: 1, end: 7 },     // iterate civs 1..7
+    allianceCheck: 0x08,                // check alliance flag
+    nonWarCheck: 0x2008,                // check !(treaty & 0x2008) to avoid re-declaring
+    soundIds: { ai: 0x39, human: 0x38 }, // war declaration sound effects
+    warFlags: 0x80800,                   // set war + betrayal flags
+    declaredWarFlags: 0x2401,            // declared war + contact + ceasefire
+    sourceAddr: '0x0045A8E3',
+  },
+
+  declareWarTiers: {
+    // @ FUN_0045ac71 (1125 bytes)
+    noTreaty: {
+      attitudeAdjust: -5,    // 0xFFFFFFFB
+      patienceIncrement: 1,
+    },
+    ceasefireOrPeace: {
+      attitudeAdjust: -15,   // 0xFFFFFFF1
+      patienceIncrement: 1,
+      provocationFlag: 0x10,
+    },
+    alliance: {
+      attitudeAdjust: -25,   // 0xFFFFFFE7
+      patienceIncrement: 2,
+      provocationFlag: 0x10,
+    },
+    warFlags: {
+      declaredWar: 0x2000,
+      warAndBetray: 0x80800,
+    },
+    sourceAddr: '0x0045AC71',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// HAWKS WARNING — senate war check display
+// Source: FUN_0045fd67 @ 0x0045FD67 (178 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const HAWKS_WARNING = {
+  militaryLevelThreshold: 4,   // @ FUN_0045fd67: requires militaryLevel > 4
+  dialogStrings: {
+    hawks: 'CONTINUEHAWKS',    // @ FUN_0045fd67: default war weariness warning
+    unitedNations: 'CONTINUEUN', // @ FUN_0045fd67: if UN wonder active
+  },
+  unitedNationsWonderId: 0x18,  // wonder 24
+  sourceAddr: '0x0045FD67',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// GREETING & EMISSARY DIALOGS — diplomacy meeting entry points
+// Source: FUN_00458ab1 @ 0x00458AB1 (804 bytes)
+//         FUN_00458df9 @ 0x00458DF9 (880 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const GREETING_EMISSARY = {
+  greeting: {
+    // @ FUN_00458ab1 (804 bytes)
+    dialogString: 'GREETINGS',      // game.txt section key
+    nuclearAwareness: {
+      flagCheck: 0x104,              // @ FUN_00458ab1: check flags & 0x104
+      dialogStrings: {
+        theyHaveNukes: 'NUCLEARWEAPONS',
+        youHaveNukes: 'YOURNUKES',
+      },
+    },
+    sourceAddr: '0x00458AB1',
+  },
+
+  emissary: {
+    // @ FUN_00458df9 (880 bytes)
+    dialogStrings: {
+      forced: 'EMISSARYFORCE',       // forced meeting
+      normal: 'EMISSARY',            // normal meeting
+    },
+    intelligenceChecks: {
+      embassyFlag: 0x80,             // treaty & 0x80
+      setiWonderId: 0x18,            // wonder 24 (SETI)
+      greatLibraryWonderId: 9,       // wonder 9
+    },
+    sourceAddr: '0x00458DF9',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// GOLD-TO-ATTITUDE CONVERSION — calc_gold_to_attitude
+// Source: FUN_0045b472 @ 0x0045B472 (104 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const GOLD_TO_ATTITUDE = {
+  // Diminishing returns: first 50g at 1:10, then 100g brackets at 1:(10+5n)
+  firstBracket: { gold: 50, divisor: 10 },
+  subsequentBrackets: { gold: 100, divisorIncrement: 5 },
+  // Examples: 50g -> 5 attitude, 150g -> ~11, 250g -> ~16
+  sourceAddr: '0x0045B472',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// TECH SELL PRICING — diplo_sell_tech hardcoded constants
+// Source: FUN_004591cb @ 0x004591CB (852 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const TECH_SELL_CONSTANTS = {
+  basePriceMultiplier: 0x14,     // 20: tech_value * 20
+  attitudeThreshold: 50,          // if attitudeScore > 50: scale price
+  epochScaling: {
+    epochFloor: 1,                // max(epoch - 1, 1)
+    scaleFactor: 10,              // (price / epoch) * 10
+  },
+  treasuryThresholds: {
+    tier1: 0x5DC,                 // 1500: if treasury > 1500, price *= 30/20
+    tier2: 3000,                  // 3000: if treasury > 3000, price *= 3/2
+  },
+  allianceDiscounts: {
+    techBehind: 'price /= 2',
+    techAhead: 'price -= price/4',  // 25% off
+    farBehind: 'additional price /= 2',  // techLevel + 4 < other
+  },
+  clamp: { min: 100, max: 30000 },
+  sourceAddr: '0x004591CB',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// TECH EXCHANGE — handle_exchange_gift dialog strings
+// Source: FUN_0045950b @ 0x0045950B (1494 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const TECH_EXCHANGE_STRINGS = {
+  dialogStrings: {
+    exchange: 'EXCHANGE',
+    noExchangeMedium: 'NOEXCHANGEMEDIUM',   // medium hostility refusal
+    noExchangeMad: 'NOEXCHANGEMAD',          // high hostility refusal
+    exchangePetty: 'EXCHANGEPETTY',          // petty exchange attempt
+  },
+  attitudeEffects: {
+    techExchangeFormula: 'adjust_attitude(civB, civA, -(techValue * 2))',
+    wonderBlockCheck: 'prevents exchange if would enable wonder construction',
+  },
+  sourceAddr: '0x0045950B',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// MERCENARY PRICING — favor menu mercenary hire constants
+// Source: FUN_0045dd7f @ 0x0045DD7F (4878 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const MERCENARY_PRICING = {
+  priceClamp: { min: 2, max: 500 },   // base price clamped, then * 50
+  priceMultiplier: 50,                  // final = clamp(base, 2, 500) * 50
+  modifiers: {
+    noTreaty: -0.33,                    // -33% if no existing treaty
+    richerPlayer: +0.33,                // +33% if player is richer
+    alliedTarget: { multiplier: 3, clamp: { min: 500, max: 25000 } },
+    emperorTarget: 0.5,                 // /2 if target is emperor difficulty
+    targetNotAtWarWithPlayer: +0.33,    // +33% if target isn't at war with you
+  },
+  refusal: {
+    reputationThreshold: 6,             // if reputationScore > 6: refuse
+    refusalString: 'HELLNOWEWONTGO',
+  },
+  betrayal: {
+    chance: 0.5,                        // 50% chance if friendly with target
+    strings: {
+      normal: 'MERCBETRAY',
+      allied: 'MERCBETRAYALLY',
+    },
+  },
+  sourceAddr: '0x0045DD7F',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// MILITARY GIFT — show_gift_menu military unit constants
+// Source: FUN_0045f0b1 @ 0x0045F0B1 (3218 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const MILITARY_GIFT = {
+  attitudeFormula: 'unit_cost * 3',      // -(UNIT_UPKEEP[unitType] * 3)
+  techDiscount: 0.5,                      // halved if civB has relevant tech
+  techGrantChance: 0.5,                   // 50% chance: grant prerequisite tech for unit type
+  goldGiftIncrements: 4,                  // 25%/50%/75%/100% of treasury
+  goldRounding: 50,                       // round to nearest 50
+  patienceCost: 'patience -= (giftCount + 2); giftCount++',
+  sourceAddr: '0x0045F0B1',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// DIPLOMACY MENU — full option list with conditions
+// Source: FUN_0045fe19 @ 0x0045FE19 (747 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const DIPLOMACY_MENU = {
+  dialogTemplate: 'DIPLOMACYMENU',   // from game.txt
+  optionCount: 9,                     // options 0-8
+  sourceAddr: '0x0045FE19',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// AI TREATY RESPONSE SUB-NEGOTIATION — PERHAPS* dialog strings
+// Source: FUN_0045b4da @ 0x0045B4DA (10271 bytes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const AI_SUBNEGOTIATION = {
+  dialogStrings: {
+    perhapsSecret: 'PERHAPSSECRET',         // AI wants a tech to sweeten the deal
+    perhapsThrowIn: 'PERHAPSTHROWIN',       // AI wants gold added
+    perhapsSolidarity: 'PERHAPSSOLIDARITY', // AI wants joint war declaration
+  },
+  goldSweetener: {
+    formula: 'calc_gold_to_attitude used to convert gold offer to attitude bonus',
+    minMeaningful: 50,                       // first bracket starts at 50g
+  },
+  consecutiveDemandTracking: {
+    resetThreshold: 9,                       // if consecutiveDemands > 9: reset tribute to 0
+    trackingAddr: 'DAT_0064b108',            // last tribute turn
+  },
+  sourceAddr: '0x0045B4DA',
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1005,4 +1268,732 @@ export const SENATE_WAR_CHECK = {
   democracyRequires: 'senate override flag (civ.flags & 0x04)',
   higherGovt: 'government >= 6: always allowed',
   sourceAddr: '0x0055BEF9',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// DIPLOMACY ENCOUNTER DIALOG STRINGS — AI-vs-AI peace/war notifications
+// Source: FUN_0055D8D8 @ 0x0055D8D8 (7326 bytes) — process_diplomatic_contact
+// These dialog keys are shown to the human player when AI civs sign or break
+// treaties that affect the player's alliances.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const DIPLO_ENCOUNTER_STRINGS = {
+  // --- Parley request/response (multiplayer diplomacy) ---
+  PARLEYBUSY_NOTCONTACT: {
+    key: 'PARLEYBUSY',
+    addr: 's_PARLEYBUSY_00633b18',
+    desc: 'Target civ does not have contact with initiator',
+    sourceAddr: '0x0055D8D8',
+  },
+  PARLEYCANCEL_REJECT: {
+    key: 'PARLEYCANCEL',
+    addr: 's_PARLEYCANCEL_00633b24',
+    desc: 'Target human player cancelled the diplomacy request',
+    sourceAddr: '0x0055D8D8',
+  },
+  PARLEYGOAWAY: {
+    key: 'PARLEYGOAWAY',
+    addr: 's_PARLEYGOAWAY_00633b34',
+    desc: 'Diplomacy state < 1 — AI refuses to meet (cooldown or hostile)',
+    sourceAddr: '0x0055D8D8',
+  },
+  PARLEYOK: {
+    key: 'PARLEYOK',
+    addr: 's_PARLEYOK_00633b44',
+    desc: 'Diplomacy state == 1 — AI accepts meeting, redirect to parley window',
+    sourceAddr: '0x0055D8D8',
+  },
+  PARLEYBUSY_OCCUPIED: {
+    key: 'PARLEYBUSY',
+    addr: 's_PARLEYBUSY_00633b50',
+    desc: 'Target is AI-controlled but occupied (another negotiation in progress)',
+    sourceAddr: '0x0055D8D8',
+  },
+  PARLEYCANCEL_MP: {
+    key: 'PARLEYCANCEL',
+    addr: 's_PARLEYCANCEL_00633b5c',
+    desc: 'Multiplayer: human target rejected; DAT_006c91e4 flag was set',
+    sourceAddr: '0x0055D8D8',
+  },
+  PARLEYBUSY_HUMAN: {
+    key: 'PARLEYBUSY',
+    addr: 's_PARLEYBUSY_00633b6c',
+    desc: 'Target is human but busy (diplomacy state > 1)',
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // --- Peace treaty notifications ---
+  UNFORCE: {
+    key: 'UNFORCE',
+    addr: 's_UNFORCE_00633b78',
+    desc: 'AI civA signs peace with civB — civB had United Nations wonder',
+    sourceAddr: '0x0055D8D8',
+  },
+  WALLFORCE: {
+    key: 'WALLFORCE',
+    addr: 's_WALLFORCE_00633b80',
+    desc: 'AI civA signs peace with civB — civB had Great Wall wonder',
+    sourceAddr: '0x0055D8D8',
+  },
+  UNFORCE_REVERSE: {
+    key: 'UNFORCE',
+    addr: 's_UNFORCE_00633b8c',
+    desc: 'AI civB signs peace with civA — civA had United Nations wonder',
+    sourceAddr: '0x0055D8D8',
+  },
+  WALLFORCE_REVERSE: {
+    key: 'WALLFORCE',
+    addr: 's_WALLFORCE_00633b94',
+    desc: 'AI civB signs peace with civA — civA had Great Wall wonder',
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // --- Alliance notifications to human player ---
+  ALLYMAKESPEACE_A: {
+    key: 'ALLYMAKESPEACE',
+    addr: 's_ALLYMAKESPEACE_00633ba0',
+    desc: 'Human allied with civA; civA signed peace with civB',
+    sourceAddr: '0x0055D8D8',
+  },
+  ALLYMAKESPEACE_B: {
+    key: 'ALLYMAKESPEACE',
+    addr: 's_ALLYMAKESPEACE_00633bb0',
+    desc: 'Human allied with civB; civB signed peace with civA',
+    sourceAddr: '0x0055D8D8',
+  },
+  SIGNPEACE: {
+    key: 'SIGNPEACE',
+    addr: 's_SIGNPEACE_00633bc0',
+    desc: 'Two AI civs sign peace — human has map intel on both (embassy/wonder/observer)',
+    conditions: [
+      'Human has map sharing (treaty & 0x80) with either civ',
+      'Human has United Nations wonder (0x18)',
+      'Human has Intelligence Agency wonder (9)',
+      'Human is in observer mode (DAT_00655b07)',
+    ],
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // --- War/alliance break notifications ---
+  CANCELALLIED: {
+    key: 'CANCELALLIED',
+    addr: 's_CANCELALLIED_00633be4',
+    desc: 'Alliance cancelled between two AI civs — human had allied treaty with one/both',
+    conditions: [
+      'Prior alliance (treaty & 0x08) existed between civA and civB',
+      'No third-party mutual enemy found',
+      'Human player sees this via embassy/wonder/observer',
+    ],
+    sourceAddr: '0x0055D8D8',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// DIPLOMACY ENCOUNTER — ADDITIONAL CONSTANTS
+// Source: FUN_0055D8D8 @ 0x0055D8D8 (7326 bytes) — process_diplomatic_contact
+// Constants not in AI_VS_AI_DIPLOMACY above, extracted from deeper analysis.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const DIPLO_ENCOUNTER_CONSTANTS = {
+  // Encounter frequency gate
+  encounterFrequency: {
+    modulus: 4,
+    formula: '(game_turn + civA + civB) % 4 == 0',
+    bypass: 'First contact (treaty & 0x400 not set) always proceeds',
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // First-contact treaty setup
+  firstContact: {
+    setFlags: 0x4401,                  // 0x4000 (recent) + 0x400 (?) + 0x01 (contact)
+    desc: 'set_treaty_flag(civA, civB, 0x4401) on first meeting',
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // Scenario special case: civs 6 and 7 in WW2 scenarios
+  scenarioWW2SpecialCase: {
+    civ1: 6,
+    civ2: 7,
+    condition: '(DAT_00655af0 & 0x80) != 0 AND (DAT_0064bc60 & 0x8000) != 0',
+    turnGate: 'DAT_00655af8 > 1 (not first two turns)',
+    extraAllyGate: 'DAT_00655af8 > 4 for contact between civs 3 and 1',
+    effect: 'Forces third-party alliance candidate = civ 0 (barbarians/special)',
+    desc: 'WW2 scenario: Rome(6) and Celts(7) forced to ally against Barbarians after turn 1',
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // Alliance evaluation power rank thresholds
+  allianceSuperpowerBlock: {
+    threshold: 7,                       // rank 7 = superpower
+    secondaryThreshold: 3,             // rank > 3 = won\'t ally with superpower
+    formula: 'if (rank == 7 AND otherRank > 3): reject alliance',
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // War declaration: betrayal and diplomatic flags
+  warDeclarationFlags: {
+    clearPeace: 0x04,                  // clear peace treaty flag
+    setVendetta: 0x2000,               // set vendetta flag
+    clearEmbassy: 0x10,                // if had embassy: clear
+    setBetrayalOnEmbassy: 0x800,       // set betrayal if embassy existed
+    sourceAddr: '0x0055D8D8',
+  },
+
+  // MP parley redirect codes
+  mpRedirect: {
+    parleyRequest: 0x3D,               // send parley request to remote
+    parleyTimeout: 0x81,               // parley timeout event
+    diploRedirect: 0x99,               // redirect diplomacy to remote human
+    desc: 'Human-controlled civ in MP: redirect diplomacy to their client',
+    sourceAddr: '0x0055D8D8',
+  },
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// PARLEY EXECUTION DISPATCHER — parley_execute_transaction
+// Source: FUN_004dd285 @ 0x004DD285 (1381 bytes)
+// Master dispatcher that routes completed parley transactions to their
+// specific execution handlers. Called after both sides agree to terms.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const PARLEY_EXECUTION = {
+  sourceAddr: '0x004DD285',
+
+  // --- Packet Layout ---
+  // param_1 points to the parley transaction packet
+  packetLayout: {
+    transactionType: '+0x10',     // switch(*(param_1 + 0x10)) -- transaction type
+    civId1:          '+0x14',     // iVar1 = *(param_1 + 0x14) -- first civ
+    civId2:          '+0x18',     // iVar2 = *(param_1 + 0x18) -- second civ
+    offerData:       '+0x20',     // puVar3 = param_1 + 0x20 -- first offer payload
+    counterOffset:   '+0x24',     // *(param_1 + 0x24) = offset to counter-offer
+    counterData:     'param_1 + *(param_1 + 0x24) + 0x20',  // second offer payload
+  },
+
+  // --- Dispatch Table (transaction type -> handler) ---
+  handlers: {
+    6:    { fn: 'FUN_004df10f', name: 'execute_treaty',
+            args: '(treaty_subtype, civId1, civId2)',
+            desc: 'Set ceasefire/peace/alliance or cancel all treaties' },
+    7:    { fn: 'FUN_004ddfb2', name: 'give_tech_single',
+            args: '(civId2, civId1, offerData)',
+            desc: 'Transfer single technology from giver to receiver' },
+    8:    { fn: 'FUN_004ddf04', name: 'give_tech_list',
+            args: '(civId2, civId1, techCount)',
+            desc: 'Transfer multiple technologies' },
+    9:    { fn: 'FUN_004de990', name: 'give_gold',
+            args: '(civId2, offerData)',
+            desc: 'Transfer gold; clamps to sender treasury' },
+    10:   { fn: 'FUN_004de049', name: 'give_units',
+            args: '(civId2, offerData)',
+            desc: 'Transfer units to other civ' },
+    0xB:  { fn: 'FUN_004dd8ad', name: 'declare_war',
+            args: '(civId2, civId1, param3)',
+            desc: 'Declare war: transfers units/cities and reveals tiles' },
+    0xC:  { fn: 'FUN_004dde9e', name: 'share_maps',
+            args: '(civId, offerData)',
+            desc: 'Share map knowledge; called twice (both civs)' },
+    0xD:  { fn: 'FUN_004dd8ad', name: 'attitude_change',
+            args: 'called twice: (civ1,civ2,sub) then (civ2,civ1,sub)',
+            desc: 'Mutual attitude/treaty change for both sides' },
+    0xE:  { desc: 'Trade exchange: dispatches BOTH counter-offer and offer',
+            note: 'Counter-offer (puVar5) executed first, then offer (puVar3)',
+            subDispatch: 'Each side uses sub-switch on *puVar5/*puVar3' },
+    0xF:  { desc: 'Demand: dispatches only the offering side (puVar3)',
+            note: 'Only the offeror gives; receiver gets for free' },
+  },
+
+  // --- Post-Execution Effects ---
+  postExecution: {
+    // After dispatching: refresh state for both civs
+    stateDiffSync: {
+      fn: 'thunk_FUN_004b0b53',
+      args: '(0xFF, 2, 0, 0, 0)',
+      desc: 'Recalculate all civ state after transaction',                       // 0x004DD285+0x47C
+    },
+    // Send MP message 0x79 to refresh advisor panels for affected civs
+    advisorRefresh: {
+      msgType: 0x79,
+      desc: 'Sent to each civ unless they are the local player',                 // 0x004DD285+0x486
+      localPlayerFn: 'thunk_FUN_0056a65e(1)',
+      remotePlayerFn: 'thunk_FUN_0046b14d(0x79, ...)',
+    },
+    // Kill civ check: if city count == 0 AND unit count == 0 -> kill_civ
+    killCivCheck: {
+      cityCountAddr: 'DAT_0064c708 + civId * 0x594',   // short: city count
+      unitCountAddr: 'DAT_0064b9e8 + civId * 4',       // int: total units
+      killFn: 'thunk_kill_civ(deadCiv, killerCiv)',
+      note: 'Checked for BOTH civId1 and civId2 after execution',               // 0x004DD285+0x4AE
+    },
+  },
+
+  // --- Debug Logging ---
+  debugLog: {
+    startMsg: 'Start ExecuteParleyTransaction_M',  // DAT_0062ea04              // 0x004DD285
+    endMsg:   'End ExecuteParleyTransaction_Mes',   // DAT_0062ea30              // 0x004DD285+0x4CA
+    logLevel: 'DAT_00628468',
+  },
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// PARLEY TREATY SET/CLEAR -- parley_execute_treaty (parley-side dispatcher)
+// Source: FUN_004df10f @ 0x004DF10F (289 bytes)
+// Sets or cancels treaty flags between two civs when a parley treaty
+// transaction is executed. Distinct from TREATY_EXECUTION above which
+// covers the full alliance/peace/ceasefire ceremony functions.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const PARLEY_TREATY_SET = {
+  sourceAddr: '0x004DF10F',
+  // param_1 = treaty subtype, param_2 = civA, param_3 = civB
+  subtypes: {
+    0: { fn: 'FUN_00467825(civA, civB, 2)', desc: 'Set ceasefire (flag 0x02)' },
+    1: { fn: 'FUN_00467825(civA, civB, 4)', desc: 'Set peace (flag 0x04)' },
+    2: { fn: 'FUN_00467825(civA, civB, 8)', desc: 'Set alliance (flag 0x08)' },
+    3: { desc: 'Cancel all: clear ceasefire (2), peace (4), alliance (8)',
+         note: 'Checks each flag individually on DAT_0064c6c0[civB*4 + civA*0x594]',
+         clearFn: 'FUN_00467750(civA, civB, flag)' },
+  },
+  treatyFlagAddr: 'DAT_0064c6c0',
+  civRecordStride: 0x594,
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// GIVE GOLD -- parley_give_gold
+// Source: FUN_004ddf04 @ 0x004DDF04 (174 bytes)
+// Transfers gold from sender to receiver, clamped to sender's treasury.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const GIVE_GOLD_EXECUTION = {
+  sourceAddr: '0x004DDF04',
+  treasuryAddr: 'DAT_0064c6a2',  // + civId * 0x594 -- gold (int)
+  civRecordStride: 0x594,
+  // If requested amount > sender treasury, clamp to treasury
+  // sender.gold -= amount; receiver.gold += amount
+  // Attitude effect: -(calc_gold_to_attitude(amount) * 3 / 2)
+  attitudeFormula: {
+    fn: 'thunk_FUN_0045b472(goldAmount)',
+    multiplier: 3,
+    divisor: 2,
+    sign: 'negative',  // -(result * 3 / 2)
+    applyFn: 'thunk_FUN_00456f20(receiver, sender, attitudeChange)',
+  },
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// GIVE CITIES -- parley_give_cities (called via share_maps handler)
+// Source: FUN_004dde9e @ 0x004DDE9E (102 bytes)
+// Transfers map knowledge entries with 0x2000 flag.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const GIVE_CITIES_FLAG = {
+  sourceAddr: '0x004DDE9E',
+  transferFlag: 0x2000,        // passed to FUN_00467825(civId, entry, 0x2000)
+  desc: 'Each city entry in the offer list is transferred via set_treaty_flag 0x2000',
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// DECLARE WAR -- parley_declare_war
+// Source: FUN_004dd8ad @ 0x004DD8AD (1521 bytes)
+// Massive function: transfers all shared units/cities, reveals tiles.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const DECLARE_WAR_EXECUTION = {
+  sourceAddr: '0x004DD8AD',
+
+  // --- Visibility Reveal ---
+  // When a unit belongs to the declaring civ, reveal surrounding tiles
+  // to both attacker and defender using 0x15 (21) entries from offset tables
+  visibilityReveal: {
+    entryCount: 0x15,          // 21 entries in the offset tables                // 0x004DD8AD
+    xOffsetTable: 'DAT_00628370',  // signed byte X offsets                     // 0x004DD8AD
+    yOffsetTable: 'DAT_006283a0',  // signed byte Y offsets                     // 0x004DD8AD
+    revealFn: 'thunk_FUN_005b976d(x, y, civBitmask, 1, 1)',
+    note: 'Used for both unit transfer and city transfer visibility reveal',
+  },
+
+  // --- Unit Transfer Search ---
+  // When relocating a transferred unit, search 0x2D (45) candidate positions
+  unitPlacementSearch: {
+    candidateCount: 0x2D,      // 45 entries searched for valid placement        // 0x004DED07
+    xOffsetTable: 'DAT_00628370',  // reuses same tables as visibility reveal   // 0x004DED07
+    yOffsetTable: 'DAT_006283a0',  // extended to 45 entries                    // 0x004DED07
+    validationChecks: [
+      'FUN_004087c0(x, y) != 0',       // valid map tile
+      'FUN_005b8ca6(x, y) == targetCiv OR -1',  // owned by target or unowned
+      'domain match check on FUN_005b89e4',      // land/sea/air domain match
+    ],
+    sourceFn: 'FUN_004ded07',
+    sourceAddr: '0x004DED07',
+  },
+
+  // --- City Transfer ---
+  // FUN_004de0e2 (2217 bytes): full city ownership transfer
+  cityTransfer: {
+    fn: 'FUN_004de0e2',
+    sourceAddr: '0x004DE0E2',
+    // Sets last contact turn: DAT_0064c6ae + newOwner*0x594 = current_turn
+    lastContactTurnAddr: 'DAT_0064c6ae',
+    // Increments new owner city count, decrements old owner city count
+    cityCountAddr: 'DAT_0064c708',   // + civId * 0x594 (short)
+    // Also increments/decrements unit counts at DAT_0064b9e8 + civId*4
+    unitCountAddr: 'DAT_0064b9e8',
+    // Scans units (stride 0x20) for home city reassignment
+    unitRecordStride: 0x20,
+    unitOwnerField: 'DAT_006560f7',  // + unitIdx * 0x20
+    // City record stride 0x58
+    cityRecordStride: 0x58,
+    cityOwnerField: 'DAT_0064f348',  // + cityIdx * 0x58
+    // Adjacent tile reveal (8 directions) after transfer
+    adjacentDirs: 8,                  // for (local_10 = 0; local_10 < 8; ...)
+    dirXTable: 'DAT_00628350',        // 8-entry direction X offsets
+    dirYTable: 'DAT_00628360',        // 8-entry direction Y offsets
+  },
+
+  // --- Network ---
+  networkMsg: {
+    mapRefresh: 0x74,          // thunk_FUN_0046b14d(0x74, ...) -- redraw map      // 0x004DD8AD
+    areaRedraw: 0x75,          // thunk_FUN_0046b14d(0x75, ...) -- area redraw     // 0x004DE0E2
+  },
+
+  // --- Flush ---
+  flushTimeoutMs: 5000,        // XD_FlushSendBuffer(5000) after unit transfer    // 0x004DE990
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// FILE SECTION PARSER -- Rules file '@' section index builder
+// Source: FUN_004db23f @ 0x004DB23F (529 bytes)
+// Builds an index of '@'-prefixed section headers in rules files
+// (RULES.TXT, etc.) for fast random-access by section name.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const FILE_SECTION_PARSER = {
+  sourceAddr: '0x004DB23F',
+
+  // --- Section Marker Format ---
+  // Lines starting with '@' followed by an uppercase letter (A-Z) are section headers
+  sectionMarker: '@',                  // local_108 == '@'                         // 0x004DB23F
+  uppercaseRange: { min: 0x41, max: 0x5A },  // 'A' (0x41) through 'Z' (0x5A)
+  // Condition: local_108 == '@' && local_107 > '@' (0x40) && local_107 < '[' (0x5B)
+
+  // --- Line Reading ---
+  lineBuffer: 0xFF,                    // _fgets buffer size (255 bytes)           // 0x004DB23F
+  cwdBuffer: 0x104,                    // __getcwd buffer size (260 bytes)         // 0x004DB23F
+
+  // --- Index Entry Format ---
+  // Each entry in the index: [file_offset (4 bytes long)] + [section_name (null-terminated)]
+  entryOverhead: 5,                    // sVar3 + 5 = string length + 4 (long) + 1 (null)
+  indexCountVar: 'DAT_0062e610',       // number of sections found                // 0x004DB23F
+  indexActiveVar: 'DAT_0062e60c',      // 1 when index is valid                   // 0x004DB23F
+  pathBuffer: 'DAT_0062e508',          // current working directory + filename     // 0x004DB23F
+  memoryPool: 'DAT_006a5b38',          // memory pool for index entries            // 0x004DB23F
+  poolCapacity: 'DAT_006a5b48',        // remaining pool capacity                 // 0x004DB23F
+
+  // --- Lookup (FUN_004db481) ---
+  lookup: {
+    sourceAddr: '0x004DB481',
+    desc: 'Search index by section name (case-insensitive strcmp)',
+    cwdValidation: true,               // only matches if cwd matches cached path
+    returnValue: 'file_offset (long) or -1 if not found',
+  },
+
+  // --- Path Construction ---
+  pathSeparator: 'DAT_0062e61c',       // path separator appended                // 0x004DB23F
+  rulesFileSuffix: 'DAT_0062cd24',     // appended to build full path             // 0x004DB23F
+  readMode: 'DAT_0062e618',            // fopen mode string (e.g. "r")           // 0x004DB23F
+
+  // --- Pre-processing ---
+  trimFn: 'thunk_FUN_0056b810',        // trim whitespace from line               // 0x004DB23F
+  stripFn: 'thunk_FUN_004d007e',       // strip comments / trailing content       // 0x004DB23F
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// PARLEY PACKET BUILDER -- parley_build_packet
+// Source: FUN_004db690 @ 0x004DB690 (990 bytes)
+// Allocates and populates a network packet for parley transactions.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const PARLEY_PACKET_BUILDER = {
+  sourceAddr: '0x004DB690',
+
+  // --- Packet Header ---
+  magic: 0x66606660,                   // puVar2[0] = 0x66606660                  // 0x004DB690
+  messageType: 0x82,                   // puVar2[1] = 0x82                        // 0x004DB690
+  // puVar2[2] = total packet size
+  // puVar2[4] = *(in_ECX + 0x1EC) -- session/game id
+  // puVar2[5] = DAT_006d1da0 -- current player
+  // puVar2[6] = *(in_ECX + 0x118) -- parley window id
+  // puVar2[7] = transaction_descriptor from DAT_0062e658[param_1 * 4]
+  headerSize: 0x20,                    // 8 dwords (32 bytes) of header           // 0x004DB690
+
+  // --- Transaction Size Table ---
+  // DAT_0062e698[transactionType * 4] = base size of serialized transaction
+  transactionSizeTable: 'DAT_0062e698',                                          // 0x004DB690
+  // For types 8, 0xC, 10, 0x11: size += selectedItemCount * 4
+  // For type 0x11 with GIVE_CITIES: size += selectedItemCount * 4 (doubled)
+  variableSizeTypes: [8, 0xC, 10, 0x11],
+  selectedItemCountOffset: 0x10428,    // *(in_ECX + 0x10428 + side * 4)          // 0x004DB690
+
+  // --- Trade Exchange (type 0xE) ---
+  // Builds TWO serialized transactions in one packet:
+  //   chunk0 at puVar2+8 (size = local_c), chunk1 at puVar2+8+local_c (size = local_8)
+  tradeExchangeType: 0x0E,
+
+  // --- Serialization ---
+  serializeFn: 'thunk_FUN_004dbab4(dest, transType, chunkSize, sideIndex)',      // 0x004DB690
+
+  // --- Network Send ---
+  sendFn: 'thunk_FUN_0046b14d(0x82, targetAddr, 0, 0, 0, 0, 0, 0, 0, puVar2)', // 0x004DB690
+
+  // --- Dev Build Path (assertion) ---
+  devPath: 'D:\\Ss\\Franklinton\\parleywin_tran',                                // 0x004DB690
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// DIPLOMACY GREETING DIALOG STRINGS — show_diplomacy_greeting
+// Source: FUN_00463224 @ 0x00463224, block_00460000.c (lines ~1000-1223)
+// The greeting string varies based on:
+//   - Whether AI initiated (param_5==0) or player visited (param_5!=0)
+//   - Treaty state (alliance/peace/none)
+//   - Patience counter (< 2 = patient, >= 2 = impatient)
+//   - Attitude (score==999 + hostile => ATTITUDE variants)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const DIPLOMACY_GREETING_STRINGS = {
+  sourceAddr: '0x00463224',
+
+  // --- AI-initiated meeting (param_5 == 0) ---
+  aiInitiated: {
+    // String depends on treaty state
+    alliance: 'WELCOMEALLY',   // treaty & 0x08                              // 0x006271F0
+    peace:    'WELCOMEPEACE',  // treaty & 0x04 (no alliance)                // 0x006271FC
+    none:     'WELCOME',       // no treaty                                  // 0x0062720C
+    // Before greeting: AI displays demand indicator portrait
+    demandPortraits: {
+      tribute:    0x6F,        // tributeAmount != 0 → demanding portrait    // 0x00463224
+      techBehind: 0x70,        // AI has fewer units than player → concerned // 0x00463224
+      default:    0x71,        // normal portrait                            // 0x00463224
+    },
+    attitudeLevelCheck: {
+      // If attitude level < 4 AND (patience - attitude_raw) < 3 → use 0x70
+      threshold: 4,
+      patienceDelta: 3,
+    },
+  },
+
+  // --- Player-visited meeting (param_5 != 0), low patience (<2) ---
+  playerVisit_patient: {
+    alliance: 'HOWDYALLY',     // treaty & 0x08                              // 0x006271BC
+    peace:    'HOWDYPEACE',    // treaty & 0x04 (no alliance)                // 0x006271C8
+    none:     'HOWDY',         // no treaty                                  // 0x006271D4
+  },
+
+  // --- Player-visited meeting (param_5 != 0), high patience (>=2) ---
+  playerVisit_impatient: {
+    alliance: 'DOODYALLY',     // treaty & 0x08                              // 0x006271DC
+    none:     'DOODY',         // no alliance (any other treaty state)       // 0x006271E8
+    note: 'No DOODY variant for peace-only — falls through to DOODY for non-alliance',
+  },
+
+  // --- Attitude-only greeting (score==999, implies max hostility but not at war) ---
+  attitude: {
+    alliance: 'ATTITUDEALLY',  // treaty & 0x08                              // 0x00627190
+    peace:    'ATTITUDEPEACE', // treaty & 0x06 (peace or ceasefire)         // 0x006271A0
+    none:     'ATTITUDE',      // no peace/ceasefire/alliance                // 0x006271B0
+  },
+
+  // --- Patience exhaustion (audience ends) ---
+  patienceExhausted: {
+    alliance: 'PATIENCEALLY',  // treaty & 0x08                              // 0x00627268
+    none:     'PATIENCE',      // no alliance                                // 0x00627278
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// PATIENCE COUNTER MECHANICS — in show_diplomacy_greeting loop
+// Source: FUN_00463224 @ block_00460000.c (lines ~1140-1192)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const PATIENCE_COUNTER_MECHANICS = {
+  sourceAddr: '0x00463224',
+
+  // patience is stored at civ_struct + 0x1F (DAT_0064c6bf), signed byte
+  fieldOffset: 0x1F,
+  fieldAddr: 'DAT_0064c6bf',
+
+  // At start of each audience turn:
+  clampNegative: {
+    condition: 'patience < 0',
+    action: 'patience = 0',
+    note: 'Patience is clamped to >= 0 before each menu iteration',
+  },
+
+  // After each menu action:
+  increment: {
+    action: 'patience += 1',
+    note: 'Incremented after every menu selection (favor, gift, or negotiate)',
+  },
+
+  // Loop termination:
+  loopEnd: {
+    condition: 'patience >= calc_patience_threshold(civA, civB)',
+    action: 'Exit menu loop → show PATIENCE/PATIENCEALLY dismissal',
+  },
+
+  // Post-audience bonus patience (if bVar10 or local_34 != 0):
+  postAudienceBonus: {
+    condition: 'AI had demands to make (bVar10) OR AI granted concessions (local_34)',
+    action: 'Increment patience until it reaches threshold + local_34',
+    note: 'AI that made demands consumes extra patience budget from the player',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// CITY PLEA — AI warns about threatened border cities
+// Source: FUN_00463224 @ block_00460000.c (lines ~1090-1101)
+// Shown after greeting if: no peace/alliance AND war_readiness != 0
+// ═══════════════════════════════════════════════════════════════════════
+
+export const CITY_PLEA = {
+  sourceAddr: '0x00463224',
+  condition: '(treaty & 0x0C) == 0',  // no peace or alliance
+  warReadinessCall: 'thunk_FUN_0055bbc0(playerCiv, aiCiv)',
+  warReadinessResult: 'DAT_006ab5e8',  // nonzero = cities under threat
+
+  dialogStrings: {
+    singleCity:    'PLEASECITY',    // DAT_006ab5e4 < 2 (0 or 1 city threatened)   // 0x00627244
+    multipleCities: 'PLEASECITIES', // DAT_006ab5e4 >= 2 (2+ cities threatened)    // 0x00627234
+  },
+  citySlotGlobal: 'DAT_006ab5e4',  // last city found during war readiness scan
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// ALLIANCE PLEA / BRAG — Allied AI discusses third-party threats
+// Source: FUN_00463224 @ block_00460000.c (lines ~1102-1139)
+// Shown after greeting if: player is allied with AI AND third-party exists
+// ═══════════════════════════════════════════════════════════════════════
+
+export const ALLIANCE_PLEA = {
+  sourceAddr: '0x00463224',
+  condition: '(treaty[player][AI] & 0x08) != 0',  // player and AI are allied
+
+  // Scenario 1: thirdPartyCivForTech exists (DAT_0064b0fc > 0)
+  // Scans continents 1..62 to count where thirdParty outguns the player
+  techThreat: {
+    dialogString: 'ALLYPLEA',     // @ 0x00627250
+    note: 'AI warns player about a third-party civ that is militarily superior on some continents',
+    continentScan: {
+      range: '1..0x3E (62)',
+      condition: 'thirdParty has goal priority > 1 AND thirdParty.attackStrength > player.militaryCount',
+    },
+  },
+
+  // Scenario 2: thirdPartyCivForCancel exists (DAT_0064b100 > 0)
+  // Same continent scan but checking if the cancel-target threatens the player
+  cancelThreat: {
+    dialogString: 'ALLYBRAG',     // @ 0x0062725C
+    note: 'AI boasts about helping player against a third-party threat',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// CEASEFIRE EXPIRATION — Shown after audience ends
+// Source: FUN_00463224 @ block_00460000.c (lines ~1194-1199)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const CEASEFIRE_EXPIRATION = {
+  sourceAddr: '0x00463224',
+  condition: [
+    'DAT_0064b138 != 0',                              // ceasefire expiration pending
+    '(treaty[aiCiv][playerCiv] & 0x02) == 0',         // no active ceasefire
+    '(treaty[playerCiv][aiCiv] & 0x200C) == 0',       // no peace/alliance/declared-war
+  ],
+  dialogString: 'CEASEEXPIRE',   // @ 0x00627284
+  note: 'Notifies player that a ceasefire has expired',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// AMBASSADOR AUTO-ESTABLISHMENT — After audience ends
+// Source: FUN_00463224 @ block_00460000.c (lines ~1200-1211)
+// Automatically establishes an embassy if conditions are met.
+// ═══════════════════════════════════════════════════════════════════════
+
+export const AMBASSADOR_AUTO_ESTABLISH = {
+  sourceAddr: '0x00463224',
+  conditions: [
+    'DAT_00655b08 == 0',                                           // not scenario mode
+    '(treaty_byte1[aiCiv][playerCiv] & 0x20) == 0',               // no vendetta
+    '(treaty[currentPlayer][aiCiv] & 0x80) == 0',                  // no existing embassy
+    'civ_has_active_wonder(currentPlayer, 0x18) == 0',             // no United Nations (wonder 24)
+    'civ_has_active_wonder(currentPlayer, 9) == 0',                // no Great Library (wonder 9)
+    'civ_has_tech(aiCiv, 0x58) != 0',                              // AI has tech 0x58 (Writing)
+  ],
+  dialogString: 'AMBASSADORS',  // @ 0x00627290
+  dialogParams: { param2: 0x2E },
+  action: 'treaty[aiCiv][currentPlayer] |= 0x80',  // set embassy flag
+  followUp: 'thunk_FUN_0043060b(aiCiv, playerCiv)',  // show intelligence for this civ
+  wonderBlockIds: { unitedNations: 0x18, greatLibrary: 9 },
+  embassyTechId: 0x58,  // Writing
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// SCHISM TRIGGER — Religious schism event
+// Source: FUN_00463224 @ block_00460000.c (lines ~1212-1220)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const SCHISM_TRIGGER = {
+  sourceAddr: '0x00463224',
+  conditions: [
+    '(DAT_00655aea byte1 & 0x01) != 0',                  // specific game flag set
+    'bVar11 (AI had something to say)',                    // AI actually spoke during meeting
+    'DAT_00626a30 != 0 OR param_5 != 0',                  // either global flag or player-initiated
+    'DAT_00626a34 != -1',                                  // schism target is valid
+    'aiCiv.techCount > 4',                                 // @ DAT_0064c708: AI has > 4 techs
+    'aiCiv.powerRank > playerCiv.powerRank + 1',           // @ DAT_00655c22: AI significantly stronger
+    '(treaty_byte1[aiCiv][playerCiv] & 0x20) != 0',       // vendetta flag set
+  ],
+  dialogString: 'SCHISM',        // @ 0x0062729C
+  tutorialSection: 'TUTORIAL',   // PTR_s_TUTORIAL_00627678
+  note: 'Triggers religious schism — powerful hostile AI with vendetta can fragment the player',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// ALLIANCE CANCELLATION — cancel_alliance function
+// Source: FUN_00467ef2 @ 0x00467EF2 (632 bytes), block_00460000.c
+// ═══════════════════════════════════════════════════════════════════════
+
+export const ALLIANCE_CANCELLATION = {
+  sourceAddr: '0x00467EF2',
+  steps: [
+    'clear_treaty_flag(civA, civB, 0x08)',                 // clear alliance flag (cascades to peace)
+    'withdraw_units(civA, civB)',                           // FUN_00467baf: move civA units away from civB cities
+    'withdraw_units(civB, civA)',                           // FUN_00467baf: move civB units away from civA cities
+  ],
+  dialogString: 'CANCELALLIANCE',  // @ 0x0062831C
+  unitWithdrawal: {
+    sourceAddr: '0x00467BAF',
+    size: 835,
+    algorithm: [
+      'For each unit owned by civA:',
+      '  Find nearest city owned by civB',
+      '  If unit is in/near that city:',
+      '    If unit is in a city on a continent with AI goals, relocate to nearest own city',
+      '    Else: try to find nearest own city on same continent and relocate there',
+      '  Clear unit orders (set to 0xFF)',
+    ],
+    unitRecordStride: 0x20,
+    cityRecordStride: 0x58,
+  },
+  notification: {
+    thirdPartyVisible: 'Shown to any player with embassy or SETI/Great Library wonder',
+    wonderCheck: [0x18, 9],    // United Nations, Great Library
+    embassyFlag: 0x80,
+  },
 };

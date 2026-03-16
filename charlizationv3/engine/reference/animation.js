@@ -33,6 +33,24 @@ export const COMBAT_BATTLE_ANIMATION = {
   framesPerExplosion: 5,         // Civ2-clone: explosion += 5 per round (AttackAnimation.cs:43)
   // The binary's battle animation sprites come from the active unit's BattleAnim sprite set
   // (loaded from UNITS.GIF or equivalent sprite sheet)
+
+  // --- Combat animation frame count (from FUN_00580341 @ block_00580000.c) ---
+  // local_2c = 10 >> local_cc; where local_cc is 1 if BOTH units have
+  // movement < 0x1E (30 = pre-gunpowder era), otherwise 0.
+  // This halves the animation frame count for ancient-vs-ancient combat.
+  ancientEraThreshold: 0x1E,     // @ 0x00580341: if attacker.move < 0x1e AND defender.move < 0x1e
+  framesModern: 10,              // 10 >> 0 = 10 frames per combat round (default)
+  framesAncient: 5,              // 10 >> 1 = 5 frames per combat round (both ancient)
+
+  // --- Post-explosion delay for heavy units ---
+  // @ 0x00580341 line ~672: if unit type > 0x17 (tank-era+): play LARGEXPL (0x1C)
+  //   then thunk_FUN_0046e287(0x14) — 20-tick delay after large explosion sound
+  postLargeExplosionDelay: 0x14, // 20 ticks (~333ms at 60fps) after LARGEXPL sound for heavy units
+
+  // --- Carrier aircraft skip ---
+  // @ 0x00580341: if (DAT_0064b1bd[attacker.type * 0x14] & 0x10) != 0 => skip normal animation
+  // Units with "can carry aircraft" flag (0x10 in flagsB) use a simplified combat path
+  carrierAircraftFlag: 0x10,     // flagsB bit: skip normal combat animation for carriers
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -284,4 +302,59 @@ export const ANIMATION_FLAGS = {
 
 export const MINIMAP_ANIMATION = {
   globeRotationStepMs: 1000,     // Civ2-clone: _globeRotation_dt = 1000ms
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// MOVEMENT SOUND IDs (from move_unit @ FUN_0059062c)
+// Binary ref: block_00590000.c — thunk_FUN_0046e020(soundId, ...)
+// ═══════════════════════════════════════════════════════════════════
+
+export const MOVE_UNIT_SOUNDS = {
+  // Sound IDs passed to play_sound (thunk_FUN_0046e020) during unit movement
+  BLOCKED:         0x69,  // @ 0x0059062c — can't move / ZOC blocked / non-combat unit blocked
+                          // C: thunk_FUN_0046e020(0x69,1,0,0) and thunk_FUN_0046e020(0x69,0,0,0)
+  ALLIED_REPAIR:   0x68,  // @ 0x0059062c — allied unit repair in allied city
+                          // C: thunk_FUN_0046e020(0x68,1,0,0)
+  UNIT_EXPELLED:   0x5d,  // @ 0x0059062c — unit captured/expelled from tile (spy, settler, etc.)
+                          // C: thunk_FUN_0046e020(0x5d,0,0,0)
+  AIR_LANDING:     0x1a,  // @ 0x0059062c — air unit landing sound (unit type index < 0x1e)
+                          // C: thunk_FUN_0046e020(0x1a,0,0,0)
+  AIR_CRASH:       0x4e,  // @ 0x0059062c — air unit crash / out of fuel (unit type index >= 0x1e)
+                          // C: thunk_FUN_0046e020(0x4e,0,0,0)
+  TRIREME_LOST:    0x09,  // @ 0x0059062c — trireme lost at sea
+                          // C: thunk_FUN_0046e020(9,1,0,0)
+  UNIT_MOVE:       0x63,  // @ 0x0059062c — standard unit movement animation sound (decimal 99)
+                          // C: thunk_FUN_0046e020(99,1,0,0)
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// MOVE_UNIT ANIMATION DELAYS (from move_unit @ FUN_0059062c)
+// Binary ref: block_00590000.c — thunk_FUN_0046e287(ticks)
+// ═══════════════════════════════════════════════════════════════════
+
+export const MOVE_UNIT_DELAYS = {
+  // Delay values passed to play_delay_animation (thunk_FUN_0046e287) during movement
+  POST_EXPEL_DELAY:       10,   // @ 0x0059062c — after expelling/capturing unit from city/tile
+                                // C: thunk_FUN_0046e287(10) — appears in naval boarding and city capture paths
+  POST_DIPLOMACY_DELAY:   0x14, // @ 0x0059062c — after diplomat enters foreign city (20 ticks)
+                                // C: thunk_FUN_0046e287(0x14)
+  POST_MOVE_VISIBLE:      10,   // @ 0x0059062c — delay after visible unit movement when no animation flags
+                                // C: thunk_FUN_0046e287(10) — when (DAT_00655aea._1_1_ & 0x10) == 0
+  POST_MOVE_FAST:         0x0f, // @ 0x0059062c — delay after visible unit movement with animation flags (15 ticks)
+                                // C: thunk_FUN_0046e287(0xf) — when (DAT_00655aea._1_1_ & 0x10) != 0
+
+  // Shift-key check during movement: GetAsyncKeyState(0x10)
+  // If Shift is held, the local player skips the movement animation
+  // (aiStack_80[DAT_006d1da0] = 0) — used for "quick move" when holding Shift
+  SHIFT_KEY_VK:           0x10, // @ 0x0059062c — VK_SHIFT virtual key code for GetAsyncKeyState
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// NETWORK DISCONNECT DELAY
+// Binary ref: FUN_0059b293 @ block_00590000.c (disconnect_from_network)
+// ═══════════════════════════════════════════════════════════════════
+
+export const NETWORK_DISCONNECT_DELAY = {
+  ticks: 0x78,    // @ 0x0059b293 — 120 ticks delay after network disconnection
+                  // C: thunk_FUN_0046e287(0x78) — "Disconnection delay: 2 seconds"
 };

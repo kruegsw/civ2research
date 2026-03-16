@@ -483,18 +483,20 @@ export const HALL_OF_FAME = {
   fileName:      'HALLFAME.DAT',
 
   // Record field layout (offsets within each 72-byte record)
+  // Verified against FUN_00436f5a (populate record) and FUN_004362E2 (display)
   recordFields: {
     score:         { offset: 0x00, type: 'int16', desc: 'Score (negative = empty slot)' },
-    civId:         { offset: 0x02, type: 'int16', desc: 'Civilization ID' },
-    // 0x04-0x05: padding/unknown
-    yearOrTurn:    { offset: 0x06, type: 'int16', desc: 'Year or turn number' },
-    bcFlag:        { offset: 0x08, type: 'int16', desc: 'BC era flag (0 = AD)' },
-    yearPerTurn:   { offset: 0x0A, type: 'int16', desc: 'Years per turn (for date calc)' },
-    monthOffset:   { offset: 0x0C, type: 'int16', desc: 'Month offset for late-game dates' },
-    rankLevel:     { offset: 0x0E, type: 'int16', desc: 'Rank level (0..23)' },
-    gender:        { offset: 0x10, type: 'int16', desc: 'Leader gender (0=male, 1=female)' },
-    population:    { offset: 0x12, type: 'int16', desc: 'Total population (display value)' },
-    // 0x14-0x17: padding/unknown
+    civId:         { offset: 0x02, type: 'int16', desc: 'Civilization ID (low nibble=difficulty, bit 7=scenario/AC victory)' },
+    turnNumber:    { offset: 0x04, type: 'int16', desc: 'Turn number (DAT_00655af8). Used in month calc: turn * |monthsPerTurn| + monthIndex - 1' },
+    year:          { offset: 0x06, type: 'int16', desc: 'Year value (DAT_00655afa, init -4000 = 4000 BC)' },
+    dateCalc:      { offset: 0x08, type: 'int16', desc: 'Date display value from FUN_0043cce5 (year/turn for display)' },
+    yearsPerTurn:  { offset: 0x0A, type: 'int16', desc: 'Years per turn (0xFFFF if no Oedo Year; else DAT_00673f80)' },
+    monthsPerTurn: { offset: 0x0C, type: 'int16', desc: 'Months per turn (DAT_0064bcb4). Negative = late-game monthly calendar' },
+    monthIndex:    { offset: 0x0E, type: 'int16', desc: 'Month index (DAT_0064bcb6). Used with monthsPerTurn for month display' },
+    bloodlustFlag: { offset: 0x10, type: 'int16', desc: 'Bloodlust flag (DAT_00655af0 & 0x80). Affects date/score display' },
+    population:    { offset: 0x12, type: 'int16', desc: 'Total population (ranking value, DAT_0063ea18). Used for insertion sort' },
+    gender:        { offset: 0x14, type: 'int16', desc: 'Leader gender (0=male MALEFAME, nonzero=female FEMALEFAME). From leader data table' },
+    rankLevel:     { offset: 0x16, type: 'int16', desc: 'Rank level (0..23, clamped from DAT_0063e4ec)' },
     leaderName:    { offset: 0x18, type: 'char[24]', desc: 'Leader name string' },
     civName:       { offset: 0x30, type: 'char[24]', desc: 'Civilization name string' },
   },
