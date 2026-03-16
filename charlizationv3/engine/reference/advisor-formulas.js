@@ -166,7 +166,7 @@ export const HISTORIANS_REPORT = {
   categories: [
     { id: 0, name: 'Wealthiest', formula: 'sum_of(civ.treasury)' },
     { id: 1, name: 'Most Powerful', formula: 'sum_of(civ.militaryUnitCount)' },
-    { id: 2, name: 'Most Advanced', formula: 'count_of(alive cities per civ)' },
+    { id: 2, name: 'Most Advanced', formula: 'count_of(techs owned by civ)' },
     { id: 3, name: 'Happiest', formula: 'sum_of(city.size + city.happyCitizens - city.unhappyCitizens)' },
     { id: 4, name: 'Largest', formula: 'sum_of(city.size) per civ' },
   ],
@@ -478,7 +478,7 @@ export const SCORE = {
         2: 6,   // Prince
         3: 8,   // King (6+1+1)
         4: 10,  // Emperor (8+1+1+2... wait: 4+4=8, >2 +1=9, >3 +1=10, >4 no)
-        // Actual: d=0→4, d=1→5, d=2→6, d=3→8, d=4→10, d=5→12
+        // Actual: d=0→4, d=1→5, d=2→6, d=3→8, d=4→10, d=5→13
       },
     },
     rawScoreFormula: '(scoreMult * max(DAT_00673f88, DAT_00673f7c)) / 100',
@@ -1128,8 +1128,8 @@ export const AI_DOMESTIC_ADVISOR = {
   eraTargets: {
     // Target building, building coverage divisor, and maintenance threshold by era
     byEra: [
-      { era: 0, targetBuilding: 0x14, targetBuildingId: 5, maintenanceDivisor: 2 },  // Marketplace (5), coverage/2
-      { era: 1, targetBuilding: 6,    targetBuildingId: 10, maintenanceDivisor: 3 },  // Bank (10), coverage/3
+      { era: 0, targetTechId: 0x14, targetBuildingId: 5, maintenanceDivisor: 2 },  // Currency tech (0x14), Marketplace (5), coverage/2
+      { era: 1, targetTechId: 6,    targetBuildingId: 10, maintenanceDivisor: 3 },  // Banking tech (6), Bank (10), coverage/3
       { era: 2, targetBuilding: 0x16, targetBuildingId: 0x16, maintenanceDivisor: 4 }, // Stock Exchange (22), coverage/4
     ],
   },
@@ -2435,7 +2435,7 @@ export const TECH_COST = {
 
   finalCalculation: {
     formula: 'totalCost = cost * techCount',
-    clamp: { min: 1, max: 32000 },
+    clamp: { min: 32000, max: 32000 },  // both < 1 and > 32000 are set to 32000
     sourceAddr: '0x004c2788+line1024',
   },
 };
@@ -2517,21 +2517,6 @@ export const ESPIONAGE = {
       sourceAddr: '0x004c6bf5+case3',
     },
     4: {
-      name: 'Incite Revolt',
-      condition: 'spy must be Spy type AND city.size > 1',
-      sourceAddr: '0x004c6bf5+case4',
-    },
-    5: {
-      name: 'Plant Nuclear Device',
-      requirements: [
-        'spy must be Spy type',
-        'civ must have tech 0x49 (Rocketry)',
-        'civ must have tech 0x3A (Nuclear Fission)',
-        'Manhattan Project wonder (0x17) must exist (not == -1)',
-      ],
-      sourceAddr: '0x004c6bf5+case5',
-    },
-    6: {
       name: 'Poison Water Supply',
       condition: 'city must NOT have Palace (building 1)',
       // C (case 4, lines 2436-2466):
@@ -2550,6 +2535,21 @@ export const ESPIONAGE = {
       spySurvivalParam: 'rand() & 1 → 0 or 1 (50/50 hostile/friendly)',
       sourceAddr: '0x004c6bf5+case4',
     },
+    5: {
+      name: 'Plant Nuclear Device',
+      requirements: [
+        'spy must be Spy type',
+        'civ must have tech 0x49 (Rocketry)',
+        'civ must have tech 0x3A (Nuclear Fission)',
+        'Manhattan Project wonder (0x17) must exist (not == -1)',
+      ],
+      sourceAddr: '0x004c6bf5+case5',
+    },
+    6: {
+      name: 'Incite Revolt',
+      condition: 'spy must be Spy type AND city.size > 1',
+      sourceAddr: '0x004c6bf5+case6',
+    },
     7: {
       name: 'Subvert Unit / Sabotage (MP only)',
       condition: 'multiplayer (DAT_00655b02 > 2) AND target is human AND city has walls AND no prior counter-espionage (treaty & 1 == 0)',
@@ -2563,7 +2563,7 @@ export const ESPIONAGE = {
     counterIntelOverride: {
       flag: 0x10,  // treaty[target][spy_civ] & 0x10 = counter-intelligence active
       chance: '1 in 3 (rand() % 3 == 0)',
-      mission: 4,  // incite revolt
+      mission: 4,  // poison water supply
     },
     allianceOverride: {
       flag: 0x04,  // alliance treaty
@@ -3011,7 +3011,7 @@ export const UNIT_MOVEMENT = {
   // @ FUN_005b2a39 (516 bytes)
   totalMP: {
     seaDomain: 2,                  // domain == 2 triggers wonder checks
-    unknownId0x3B: 0x3B,            // adds 1x MP_PER_TURN (0x3B=59, NOT a valid wonder 0-27; suspect misread constant)
+    nuclearPowerTechId: 0x3B,        // tech 59 = Nuclear Power, adds 1x MP_PER_TURN to sea units (civ_has_tech check)
     magellanWonderId: 0x0C,        // wonder 12 = Magellan's Expedition, adds 2x MP_PER_TURN
     lighthouseWonderId: 3,         // wonder 3 = Lighthouse, adds 1x MP_PER_TURN if unit flag 0x20 NOT set
     lighthouseExcludeFlag: 0x20,   // DAT_0064B1BC[type*0x14] & 0x20 → skip bonus
@@ -4438,13 +4438,13 @@ export const GARRISON_PROXIMITY = {
 // ============================================================================
 
 export const FREE_SUPPORT = {
-  // Human formula: base = 0x0D - difficulty
+  // AI formula: base = 0x0D - difficulty (civ NOT in human bitmask)
   // If difficulty < 3: base += 1; if difficulty == 0: base += 1 more
-  humanBaseFormula: '0x0D - difficulty',
-  humanBonusUnder3: 1,
-  humanBonusAt0: 1,
+  aiBaseFormula: '0x0D - difficulty',
+  aiBonusUnder3: 1,
+  aiBonusAt0: 1,
 
-  // Alliance modifier (turn > 200, difficulty > 1, human has allies)
+  // Alliance modifier (turn > 200, difficulty > 1, has allies)
   allianceTurnThreshold: 200, // DAT_00655AF8 > 200
   allianceDifficultyMin: 2,
   allianceMaxAdjust: 2,
@@ -4453,13 +4453,13 @@ export const FREE_SUPPORT = {
   // result = (govtSupport * base) / 10, rounded up if odd
   defaultMultiplier: 10,
 
-  // AI: free support from rules.txt constants
-  aiFreeSupport: 'DAT_0064BCCB',
-  aiFreeShieldSupport: 'DAT_0064BCCC',
+  // Human: free support from rules.txt constants
+  humanFreeSupport: 'DAT_0064BCCB',
+  humanFreeShieldSupport: 'DAT_0064BCCC',
 
   // Shield support (FUN_004e80b1): same formula pattern
-  humanShieldBase: '0x0D - difficulty',
-  humanShieldBonusAt0: 0x0E,
+  aiShieldBase: '0x0D - difficulty',
+  aiShieldBonusAt0: 0x0E,
 
   govtThresholdLow: 2,
   govtThresholdHigh: 2,
@@ -4577,8 +4577,8 @@ export const TRADE_DISTRIBUTION = {
     // C line 3893: DAT_006a65fc (gold) += count_status1 * 2
     // C line 3895: DAT_006a6554 (luxury) += count_status2 * 3
     // C line 3897: DAT_006a6578 (science) += count_status3 * 3
-    taxman:    { status: 1, bonus: 3, yields: 'gold' },
-    elvis:     { status: 2, bonus: 2, yields: 'luxury' },
+    taxman:    { status: 1, bonus: 2, yields: 'gold' },
+    elvis:     { status: 2, bonus: 3, yields: 'luxury' },
     scientist: { status: 3, bonus: 3, yields: 'science' },
   },
 
@@ -6303,7 +6303,7 @@ export const FAME_TITLE_BINARY = {
       { difficulty: 2, name: 'Prince',    multiplier: 6 },
       { difficulty: 3, name: 'King',      multiplier: 8 },
       { difficulty: 4, name: 'Emperor',   multiplier: 10 },
-      { difficulty: 5, name: 'Deity',     multiplier: 12 },
+      { difficulty: 5, name: 'Deity',     multiplier: 13 },
     ],
   },
 };
@@ -6526,7 +6526,7 @@ export const PASSWORD_ENCRYPTION = {
   encrypt: {
     direction: 'forward',         // loop 0..255                               // 0x004988b8
     xorWithIndex: true,           // byte[i] ^= i                              // 0x004988b8
-    rotateRight: 5,               // bits: (byte >> 3) | (prevByte << 5)       // 0x004988b8
+    rotateRight: 3,               // bits: (byte >> 3) | (prevByte << 5)       // 0x004988b8
     carrySource: 'previous byte (with wraparound from byte[255])',             // 0x004988b8
   },
 
@@ -6607,7 +6607,7 @@ export const TURN_PROCESSING = {
     halfDecayFormula: '(difficulty + 1) * 24',  // 0x18 = 24                   // 0x00487371
     decayAmount: -1,              // reduce attitude by 1                       // 0x00487371
     clampToGovernment: true,      // clamp attitude to range [0, govLevel]     // 0x00487371
-    techIdForHalfDecay: 0x14,     // Currency tech — halves decay interval      // 0x00487371
+    techIdForHalfDecay: 0x14,     // Eiffel Tower wonder (0x14) — halves decay interval (wonder check, not tech) // 0x00487371
   },
 
   // Historian report timing
@@ -6862,7 +6862,7 @@ export const POWER_GRAPH_BINARY = {
   // Power score composition (non-scenario)
   scoring: {
     techWeight: 3,                // numTechs * 3                              // 0x004853e7
-    militaryWeight: 8,            // numCities * 8                             // 0x004853e7
+    militaryWeight: 8,            // research * 8 (accumulated beakers)         // 0x004853e7
     treasuryWeight: '>> 5',       // treasury / 32                             // 0x004853e7
     unitStrengthFormula: 'sum over all unit types: unitCount * (attack+defense+1)/2 * movePoints/2',
     unitTypeStride: 0x14,         // 20 bytes per unit type definition         // 0x004853e7
@@ -7406,7 +7406,10 @@ export const MAPGEN_LAND_VALUE = {
 // Binary ref: FUN_0040a572 @ block_00400000.c lines 2146-2221 (497 bytes)
 // ============================================================================
 
-export const MAPGEN_SPECIAL_RESOURCES = {
+export const MAPGEN_CONTINENT_PLACEMENT = {
+  // NOTE: This entry documents FUN_0040a572 (place_continent), NOT special resource placement.
+  // Sub-functions: FUN_0040a763 = place_land_small, FUN_0040a92f = place_land_large,
+  //               FUN_0040aaa4 = place_land_island
   // X margin: rand() % (mapWidth - 0x10) + 8
   // C: if (DAT_006d1160 == 0x11 || DAT_006d1160 - 0x11 < 0) local_20 = 0; else local_20 = rand() % (DAT_006d1160 - 0x10)
   // C: local_20 = local_20 + 8
@@ -7427,8 +7430,8 @@ export const MAPGEN_SPECIAL_RESOURCES = {
   richnessFormula: 'rand() % (richness + 2) != 0 → stop placing, else continue',
   // C: if (DAT_00624eec < 1) FUN_0040a763(...) else FUN_0040a92f(...)
   lowRichnessThreshold: 1,
-  lowRichnessFn: 'FUN_0040a763 — sparse resource placement',
-  highRichnessFn: 'FUN_0040a92f — dense resource placement',
+  lowRichnessFn: 'FUN_0040a763 — place_land_small (random walk)',
+  highRichnessFn: 'FUN_0040a92f — place_land_large (branching)',
 
   // Hut placement (param_1 != 0):
   // C: iVar1 = rand(); FUN_0040aaa4(x, y); if (6 < iVar1 % 10) FUN_0040aaa4 again; if (8 < iVar1 % 10) third time
@@ -7453,7 +7456,7 @@ export const MAPGEN_SPECIAL_RESOURCES = {
 // ============================================================================
 
 export const MAPGEN_OCEAN_LAKE = {
-  // Converts inland water tiles to ocean (terrain type 10) if surrounded by water
+  // Converts inland land tiles to ocean (terrain type 10) if surrounded by land
   // C: 4-cardinal checks at (x-2,y), (x+2,y), (x,y-2), (x,y+2)
   cardinalOffsets: [
     { dx: -2, dy: 0 },
@@ -7462,7 +7465,7 @@ export const MAPGEN_OCEAN_LAKE = {
     { dx: 0, dy: 2 },
   ],
   checkFn: 'FUN_005b89e4 — returns 0 if water/ocean, nonzero if land',
-  conversionCondition: 'All 4 cardinal neighbors (distance 2) must be water (all return 0)',
+  conversionCondition: 'All 4 cardinal neighbors (distance 2) must be land (all return nonzero) — creates inland sea',
   resultTerrainType: 10,  // ocean
 
   // Edge exclusion: tiles too close to map edge are excluded
@@ -7717,6 +7720,7 @@ export const CIV_SCORING = {
 
   // --- Retirement/victory scoring (separate) ---
   // C: DAT_00673f7c = difficulty * 100 + (0x23a - turn) * 2 + 400
+  // NOTE: Pseudocode says first term is spaceshipMult, not difficulty. Needs raw binary re-verification.
   retirementScore: {
     addr: 'DAT_00673F7C',
     condition: 'Only surviving solo civ (aliveBitmask & ~1 == 1 << civId)',

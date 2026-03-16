@@ -442,10 +442,10 @@ export function calcTradeDistribution(netTrade, city, cityIndex, gameState) {
   let tax = netTrade - (sci + lux);
 
   // Specialist bonuses (before building multipliers)
-  // Binary ref: taxman=3 gold, entertainer(elvis)=2 luxury, scientist=3 science
+  // Binary ref: taxman=2 gold, entertainer(elvis)=3 luxury, scientist=3 science
   const specs = countSpecialists(city);
-  lux += specs.entertainer * 2;
-  tax += specs.taxman * 3;
+  lux += specs.entertainer * 3;
+  tax += specs.taxman * 2;
   sci += specs.scientist * 3;
 
   // Marketplace(5)/Bank(10)/Stock Exchange(22): each +50% to lux and tax

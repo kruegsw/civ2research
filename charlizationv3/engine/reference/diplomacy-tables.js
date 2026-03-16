@@ -395,9 +395,11 @@ export const ATTITUDE_SCORING = {
   },
 
   // --- Phase 3: War modifiers (only when at war with human) ---
-  // @ 0x005616F0: if treaty[humanCiv][aiCiv] & 0x08 (at war)
+  // @ 0x005616F0: if treaty[humanCiv][aiCiv] & 0x08
+  // NOTE: 0x08 = ALLIANCE per TREATY_FLAGS, but pseudocode labels this "atWar" check.
+  // May need raw binary re-verification — could be 0x2000 (WAR) in actual binary.
   warModifiers: {
-    condition: 'treaty[humanCiv][aiCiv] & 0x08 (WAR flag)',
+    condition: 'treaty[humanCiv][aiCiv] & 0x08 (ALLIANCE flag — see NOTE above)',
     address: '0x005616F0',
 
     // Path A: No other wars (warCount == 0)

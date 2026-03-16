@@ -236,7 +236,7 @@ export const PATIENCE_THRESHOLD = {
   lowAttitudeBonus: 'if liveAttitudeScore < 25: threshold = 3', // +1
   highAttitudeReduction: 'if liveAttitudeScore > 60: threshold -= 1',
   statueOfLibertyBonus: 'if has_wonder(STATUE_OF_LIBERTY): threshold += 1',
-  embassyBonus: 'if treaty & 0x04 (embassy): threshold += 1',
+  peaceTreatyBonus: 'if treaty & 0x04 (PEACE treaty): threshold += 1',
   allianceBonus: 'if treaty & 0x08 (alliance): threshold += 2',
   hatredOverride: 'if treaty_byte1 & 0x20 (vendetta): threshold = 2', // hard reset
   sourceAddr: '0x00456F8B',
