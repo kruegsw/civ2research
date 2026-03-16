@@ -235,7 +235,7 @@ export const PATIENCE_THRESHOLD = {
   base: 2,                                                     // @ 0x00456F8B
   lowAttitudeBonus: 'if liveAttitudeScore < 25: threshold = 3', // +1
   highAttitudeReduction: 'if liveAttitudeScore > 60: threshold -= 1',
-  statueOfLibertyBonus: 'if has_wonder(STATUE_OF_LIBERTY): threshold += 1',
+  eiffelTowerBonus: 'if has_wonder(EIFFEL_TOWER=0x14): threshold += 1',
   peaceTreatyBonus: 'if treaty & 0x04 (PEACE treaty): threshold += 1',
   allianceBonus: 'if treaty & 0x08 (alliance): threshold += 2',
   hatredOverride: 'if treaty_byte1 & 0x20 (vendetta): threshold = 2', // hard reset
@@ -449,7 +449,7 @@ export const WAR_DECLARATION = {
       desc: 'Worst damage — double penalty for breaking alliance',
       effects: [
         'patience++ (if emperor, cities>4, no third party)',
-        'patience++ (if difficulty>0 AND no Statue of Liberty)',
+        'patience++ (if difficulty>0 AND no Eiffel Tower)',
         'adjust_attitude(thirdParty, civA, -15)',
         'provocation flag set (0x10)',
         'If also had peace+ceasefire: penalties doubled',
@@ -468,7 +468,7 @@ export const WAR_DECLARATION = {
     noTreaty: {
       desc: 'Minimal damage — no existing treaty',
       effects: [
-        'patience++ (if difficulty>0 AND no Statue of Liberty)',
+        'patience++ (if difficulty>0 AND no Eiffel Tower)',
         'patience++ (if no third party)',
         'adjust_attitude(thirdParty, civA, -25)',
       ],
@@ -594,10 +594,10 @@ export const TREATY_EXECUTION = {
       declaredWar: 0x2000,   // thunk_FUN_00467825(declarer, target, 0x2000)
       warAndBetray: 0x80800, // treaty[target][declarer] |= 0x80800 (WAR_STARTED + PERIODIC_FLAG_19)
     },
-    // Common: patience increments require emperor (rank 7), cities > 4, difficulty > 0, no Statue of Liberty
+    // Common: patience increments require emperor (rank 7), cities > 4, difficulty > 0, no Eiffel Tower
     patienceConditions: {
       emperor: { rank: 7, addr: 'DAT_00655c22', cities: 'DAT_0064c708 > 4' },
-      statueOfLiberty: { wonderId: 0x13, check: 'thunk_FUN_00453e51(civ, 0x13)' },
+      eiffelTower: { wonderId: 0x14, check: 'thunk_FUN_00453e51(civ, 0x14)' },
     },
     sourceAddr: '0x0045AC71',
   },

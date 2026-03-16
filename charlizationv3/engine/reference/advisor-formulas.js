@@ -556,7 +556,7 @@ export const DIPLOMACY = {
       { condition: 'liveAttitudeScore < 25', effect: '+1 (threshold = 3)' },
       { condition: 'liveAttitudeScore > 60', effect: '-1' },
       { condition: 'civ_has_active_wonder(civA, EIFFEL_TOWER=0x14)', effect: '+1' },
-      { condition: 'treaty[civA][civB] & 0x04 (embassy)', effect: '+1' },
+      { condition: 'treaty[civA][civB] & 0x04 (PEACE treaty)', effect: '+1' },
       { condition: 'treaty[civA][civB] & 0x08 (alliance)', effect: '+2' },
       { condition: 'treaty[civA][civB].byte1 & 0x20 (hatred)', effect: 'override to 2' },
     ],
@@ -6804,7 +6804,7 @@ export const POLLUTION_AND_WARMING = {
     addr: 'DAT_00655b0e',         // char: pollution counter                   // 0x00486c2e
     formula: 'DAT_00655b12 - DAT_00655b10 + DAT_00655b10 / 2',
     multiCivDivisor: 'numAliveCivs',  // divided by alive civ count            // 0x00486c2e
-    netFormula: '(pollutionScore * 2 - DAT_00655b0f * 4) - recyclingCenterCities',
+    netFormula: '(pollutionScore * 2 - DAT_00655b0f * 4) - solarPlantCities',
     solarPlantBuildingId: 0x1D,  // building 29: Solar Plant (Nuclear Plant = 0x15) // 0x00486c2e
     clampRange: { min: 0, max: 99 },  // clamped to 0..99                     // 0x00486c2e
   },
