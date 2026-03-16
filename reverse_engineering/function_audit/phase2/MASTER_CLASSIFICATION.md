@@ -4,10 +4,10 @@ Generated from Phase 2 pseudocode analysis of Civ2 MGE (civ2.exe).
 Source: 34 pseudocode block files in `reverse_engineering/function_audit/phase2/pseudocode/`.
 
 - Total functions: **5149**
-- Porting-relevant (P/PA/FP/R/TH/TM/TL): **599** (11.6%)
-- Framework/skip (SK/NN): **3635** (70.6%)
-- Unclassified status: **915** (17.8%)
-- Unclassified category: **762** (14.8%)
+- Porting-relevant (P/PA/FP/R/TH/TM/TL/EX): **629** (12.2%)
+- Framework/skip (SK/NN): **4341** (84.3%)
+- Unclassified status: **179** (3.5%) -- legacy entries with category assigned but no status
+- Unclassified category (UNSET): **0** (0%) -- ALL RESOLVED via Phase B
 
 ## Statistics
 
@@ -15,21 +15,20 @@ Source: 34 pseudocode block files in `reverse_engineering/function_audit/phase2/
 
 | Category | Code | Count | % |
 |----------|------|-------|---|
-| Framework (CRT/MFC/SEH/Win32) | FW | 1975 | 38.4% |
-| User Interface | UI | 1103 | 21.4% |
-| Unclassified | UNSET | 762 | 14.8% |
-| Game Logic | GL | 487 | 9.5% |
-| Rendering | RN | 358 | 7.0% |
-| Network/Multiplayer | NW | 164 | 3.2% |
+| Framework (CRT/MFC/SEH/Win32) | FW | 2530 | 49.1% |
+| User Interface | UI | 1241 | 24.1% |
+| Game Logic | GL | 491 | 9.5% |
+| Rendering | RN | 368 | 7.1% |
+| Network/Multiplayer | NW | 189 | 3.7% |
 | Sound/Audio | SN | 118 | 2.3% |
 | AI | AI | 53 | 1.0% |
+| Cutscene/Video | CS | 37 | 0.7% |
 | File I/O | FI | 31 | 0.6% |
-| Cutscene/Video | CS | 28 | 0.5% |
-| Save/Load I/O | IO | 19 | 0.4% |
+| Viewport/Camera | VP | 26 | 0.5% |
+| Save/Load I/O | IO | 21 | 0.4% |
 | Renderer/Drawing | RD | 18 | 0.3% |
 | Multiplayer UI | MP | 12 | 0.2% |
 | System Utilities | SYS | 8 | 0.2% |
-| Viewport/Camera | VP | 7 | 0.1% |
 | Utility | UTIL | 5 | 0.1% |
 | Network | NET | 1 | 0.0% |
 | **Total** | | **5149** | **100%** |
@@ -42,46 +41,47 @@ Source: 34 pseudocode block files in `reverse_engineering/function_audit/phase2/
 | PA | Partially ported | 171 | 3.3% |
 | FP | Fully ported (legacy) | 11 | 0.2% |
 | R | Referenced in JS | 51 | 1.0% |
+| EX | Extracted (binary reference) | 30 | 0.6% |
 | TH | TODO high priority | 62 | 1.2% |
 | TM | TODO medium priority | 114 | 2.2% |
 | TL | TODO low priority | 100 | 1.9% |
-| SK | Skip (framework/rendering/UI) | 2422 | 47.0% |
-| NN | Not needed (CRT/MFC/SEH) | 1213 | 23.6% |
-| UNSET | Unclassified | 915 | 17.8% |
+| SK | Skip (framework/rendering/UI) | 2736 | 53.1% |
+| NN | Not needed (CRT/MFC/SEH) | 1605 | 31.2% |
+| (empty) | Legacy entries, category assigned | 179 | 3.5% |
 | **Total** | | **5149** | **100%** |
 
 ### By Block
 
 | Block | Total | P | PA | FP | R | TH | TM | TL | SK | NN | ? | Top Categories |
 |-------|-------|---|----|----|---|----|----|----|----|----|----|----------------|
-| 0x00400000 | 154 | 11 | 7 | 0 | 1 | 1 | 1 | 0 | 128 | 2 | 3 | UI:71, FW:49, GL:20 |
-| 0x00410000 | 204 | 2 | 21 | 0 | 5 | 0 | 6 | 4 | 88 | 60 | 18 | FW:88, UI:76, GL:18 |
+| 0x00400000 | 154 | 11 | 7 | 0 | 1 | 1 | 1 | 0 | 128 | 5 | 0 | UI:71, FW:52, GL:20 |
+| 0x00410000 | 204 | 2 | 21 | 0 | 5 | 0 | 6 | 4 | 88 | 78 | 0 | FW:106, UI:76, GL:18 |
 | 0x00420000 | 157 | 0 | 3 | 0 | 2 | 1 | 4 | 5 | 61 | 81 | 0 | FW:61, UI:53, NW:39 |
 | 0x00430000 | 114 | 12 | 4 | 0 | 1 | 1 | 1 | 0 | 63 | 32 | 0 | UI:73, GL:21, FW:20 |
-| 0x00440000 | 355 | 15 | 7 | 0 | 1 | 0 | 0 | 0 | 60 | 37 | 235 | UNSET:235, FW:51, RN:30 |
-| 0x00450000 | 136 | 3 | 3 | 0 | 2 | 6 | 7 | 3 | 7 | 1 | 104 | UI:100, GL:21, FW:7 |
+| 0x00440000 | 355 | 15 | 7 | 0 | 1 | 0 | 0 | 0 | 60 | 272 | 0 | FW:286, RN:30, GL:15 |
+| 0x00450000 | 136 | 3 | 3 | 0 | 2 | 6 | 7 | 3 | 7 | 4 | 101 | UI:100, GL:21, FW:10 |
 | 0x00460000 | 107 | 0 | 9 | 0 | 1 | 0 | 0 | 0 | 81 | 16 | 0 | UI:35, FW:20, NW:14 |
-| 0x00470000 | 139 | 0 | 9 | 8 | 1 | 0 | 0 | 0 | 34 | 21 | 66 | UNSET:60, CS:28, IO:19 |
+| 0x00470000 | 139 | 0 | 9 | 8 | 1 | 0 | 0 | 0 | 55 | 66 | 0 | FW:60, CS:28, IO:19 |
 | 0x00480000 | 61 | 0 | 10 | 0 | 0 | 1 | 4 | 1 | 9 | 36 | 0 | GL:23, NW:17, UI:12 |
 | 0x00490000 | 124 | 0 | 3 | 0 | 2 | 3 | 8 | 0 | 17 | 91 | 0 | UI:55, NW:26, FW:17 |
 | 0x004A0000 | 117 | 0 | 0 | 0 | 0 | 10 | 26 | 28 | 18 | 35 | 0 | FW:41, UI:35, GL:29 |
-| 0x004B0000 | 164 | 8 | 2 | 0 | 1 | 2 | 3 | 4 | 34 | 61 | 49 | UNSET:49, UI:40, FW:34 |
-| 0x004C0000 | 92 | 1 | 11 | 0 | 0 | 5 | 4 | 3 | 23 | 27 | 18 | UI:35, GL:25, UNSET:18 |
+| 0x004B0000 | 164 | 8 | 2 | 0 | 1 | 2 | 3 | 4 | 34 | 110 | 0 | FW:83, UI:40, GL:20 |
+| 0x004C0000 | 92 | 1 | 11 | 0 | 0 | 5 | 4 | 3 | 25 | 43 | 0 | FW:30, GL:25, UI:37 |
 | 0x004D0000 | 123 | 0 | 0 | 0 | 0 | 9 | 3 | 12 | 44 | 55 | 0 | UI:66, FW:44, GL:12 |
 | 0x004E0000 | 76 | 5 | 9 | 0 | 2 | 4 | 11 | 10 | 18 | 17 | 0 | GL:40, FW:18, UI:17 |
 | 0x004F0000 | 107 | 0 | 1 | 0 | 0 | 10 | 8 | 12 | 52 | 24 | 0 | FW:52, GL:30, UI:23 |
-| 0x00500000 | 123 | 0 | 12 | 0 | 0 | 0 | 0 | 0 | 32 | 33 | 46 | UNSET:46, UI:45, FW:32 |
-| 0x00510000 | 162 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 96 | 32 | 34 | UI:69, UNSET:34, FW:32 |
+| 0x00500000 | 123 | 0 | 12 | 0 | 0 | 0 | 0 | 0 | 68 | 43 | 0 | UI:80, FW:43, GL:0 |
+| 0x00510000 | 162 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 96 | 66 | 0 | UI:69, FW:66, GL:0 |
 | 0x00520000 | 51 | 0 | 0 | 0 | 2 | 0 | 0 | 0 | 33 | 16 | 0 | UI:22, FW:15, MP:12 |
 | 0x00530000 | 23 | 0 | 6 | 0 | 8 | 0 | 0 | 0 | 0 | 9 | 0 | AI:14, UI:7, FW:2 |
 | 0x00540000 | 37 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 27 | 8 | 0 | UI:27, FW:8, AI:2 |
-| 0x00550000 | 152 | 0 | 8 | 3 | 9 | 0 | 0 | 0 | 37 | 0 | 95 | UNSET:95, UI:28, GL:20 |
-| 0x00560000 | 131 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 13 | 118 | UNSET:46, UI:31, NW:15 |
+| 0x00550000 | 152 | 0 | 8 | 3 | 9 | 0 | 0 | 0 | 122 | 0 | 10 | FW:48, UI:48, GL:23 |
+| 0x00560000 | 131 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 59 | 13 | 59 | FW:59, UI:31, NW:15 |
 | 0x00570000 | 122 | 0 | 0 | 0 | 0 | 5 | 7 | 4 | 98 | 8 | 0 | UI:63, FW:37, GL:16 |
-| 0x00580000 | 91 | 2 | 3 | 0 | 1 | 0 | 7 | 8 | 22 | 27 | 21 | UI:30, GL:23, UNSET:21 |
-| 0x00590000 | 157 | 1 | 3 | 0 | 1 | 0 | 10 | 4 | 5 | 46 | 87 | UNSET:113, GL:26, FW:18 |
-| 0x005A0000 | 111 | 14 | 0 | 0 | 0 | 2 | 0 | 0 | 0 | 75 | 20 | UI:53, UNSET:20, GL:16 |
-| 0x005B0000 | 242 | 16 | 38 | 0 | 11 | 2 | 4 | 2 | 164 | 4 | 1 | FW:122, GL:99, UI:20 |
+| 0x00580000 | 91 | 2 | 3 | 0 | 1 | 0 | 7 | 8 | 41 | 29 | 0 | FW:34, UI:32, GL:23 |
+| 0x00590000 | 157 | 1 | 3 | 0 | 1 | 0 | 10 | 4 | 78 | 46 | 14 | UI:62, NW:28, FW:32 |
+| 0x005A0000 | 111 | 14 | 0 | 0 | 0 | 2 | 0 | 0 | 6 | 89 | 0 | UI:59, FW:14, GL:16 |
+| 0x005B0000 | 242 | 16 | 38 | 0 | 11 | 2 | 4 | 2 | 165 | 4 | 0 | FW:122, GL:99, UI:20 |
 | 0x005C0000 | 339 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 339 | 0 | 0 | RN:250, FW:89 |
 | 0x005D0000 | 370 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 370 | 0 | 0 | FW:258, SN:100, RN:12 |
 | 0x005E0000 | 357 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 357 | 0 | 0 | FW:357 |
@@ -89,12 +89,14 @@ Source: 34 pseudocode block files in `reverse_engineering/function_audit/phase2/
 | 0x00600000 | 103 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 103 | 0 | 0 | FW:103 |
 | 0x00610000 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | RN:2 |
 
+**Phase A Verification**: Blocks 0x005C-0x00610000 (1,517 functions) verified as GENERIC -- SMEDS32 graphics engine, audio/timer/file I/O, DirectDraw/AVI/input, MFC/CRT, MSVC CRT debug, legacy 16-bit sprite blitters. Zero game-specific content found.
+
 ### Top 40 Subcategories
 
 | Subcategory | Count |
 |-------------|-------|
-| UNSET | 762 |
-| UI.editor | 162 |
+| FW.cstring_init | 310 |
+| UI.editor | 178 |
 | FW.crt | 151 |
 | FW.window | 109 |
 | FW.SEH | 87 |
@@ -144,10 +146,11 @@ Functions with game logic that have been ported or are candidates:
 | PA (partial) | 171 | Core logic ported, edge cases remain |
 | FP (legacy) | 11 | Ported via earlier analysis |
 | R (referenced) | 51 | Called from JS but logic not ported |
+| EX (extracted) | 30 | Binary data extracted to reference files |
 | TH (high) | 62 | High priority game logic TODO |
 | TM (medium) | 114 | Medium priority TODO |
 | TL (low) | 100 | Low priority TODO |
-| **Subtotal** | **599** | **All porting-relevant functions** |
+| **Subtotal** | **629** | **All porting-relevant functions** |
 
 ## Master Table
 
@@ -183,8 +186,8 @@ Functions with game logic that have been ported or are candidates:
 | 0x004080f0 | window_update_rect | FW | window | 43b | 0x00400000 | SK |  |
 | 0x00408130 | set_paint_handler | FW | window | 45b | 0x00400000 | SK |  |
 | 0x00408170 | set_timer_handler | FW | window | 45b | 0x00400000 | SK |  |
-| 0x004081b0 | SetDlgCtrlID | UNSET |  | 45 | 0x00400000 |  |  |
-| 0x004081f0 | tie | UNSET |  | 45 | 0x00400000 |  |  |
+| 0x004081b0 | set_dlg_ctrl_id | FW | window | 45 | 0x00400000 | NN |  |
+| 0x004081f0 | set_ascii_handler | FW | window | 45 | 0x00400000 | NN |  |
 | 0x00408230 | set_handler_0x30 | FW | window | 45b | 0x00400000 | SK |  |
 | 0x00408270 | set_handler_0x34 | FW | window | 45b | 0x00400000 | SK |  |
 | 0x004082b0 | set_handler_0x38 | FW | window | 45b | 0x00400000 | SK |  |
@@ -253,7 +256,7 @@ Functions with game logic that have been ported or are candidates:
 | 0x0040e3b1 | handle_revolution | UI | revolution | 397b | 0x00400000 | R |  |
 | 0x0040ef50 | process_messages | UI | control | 21b | 0x00400000 | SK |  |
 | 0x0040ef70 | ctrl_get_height | UI | control | 28b | 0x00400000 | SK |  |
-| 0x0040efa0 | ~_Timevec | UNSET |  | 36 | 0x00400000 |  |  |
+| 0x0040efa0 | timevec_destructor | FW | crt | 36 | 0x00400000 | NN |  |
 | 0x0040efd0 | ctrl_measure_text | UI | control | 42b | 0x00400000 | SK |  |
 | 0x0040f010 | ctrl_destructor_and_free | UI | control | 57b | 0x00400000 | SK |  |
 | 0x0040f060 | dialog_object_constructor | UI | control | 196b | 0x00400000 | SK |  |
@@ -398,24 +401,24 @@ Functions with game logic that have been ported or are candidates:
 | 0x00417fa0 | construct_editor_object | FW | FW | 498 | 0x00410000 | SK |  |
 | 0x004183d0 | destroy_editor_object | FW | FW | 335 | 0x00410000 | SK |  |
 | 0x0041851f | editor_dtor_step_01 | FW | FW | 15 | 0x00410000 | SK | destroy_dropdown_item |
-| 0x0041852e | editor_dtor_step_02 | UNSET |  | 15 | 0x00410000 |  | destroy_dropdown_item |
-| 0x0041853d | editor_dtor_step_03 | UNSET |  | 15 | 0x00410000 |  | destroy_dropdown_item |
-| 0x0041854c | editor_dtor_step_04 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x0041855b | editor_dtor_step_05 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x0041856a | editor_dtor_step_06 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x00418579 | editor_dtor_step_07 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x00418588 | editor_dtor_step_08 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x00418597 | editor_dtor_step_09 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x004185a6 | editor_dtor_step_10 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x004185b5 | editor_dtor_step_11 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x004185c4 | editor_dtor_step_12 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x004185d3 | editor_dtor_step_13 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x004185e2 | editor_dtor_step_14 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x004185f1 | editor_dtor_step_15 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x00418600 | editor_dtor_step_16 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x0041860f | editor_dtor_step_17 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x0041861e | editor_dtor_step_18 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
-| 0x0041862d | editor_dtor_step_19 | UNSET |  | 15 | 0x00410000 |  | destroy_button |
+| 0x0041852e | editor_dtor_step_02 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_dropdown_item |
+| 0x0041853d | editor_dtor_step_03 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_dropdown_item |
+| 0x0041854c | editor_dtor_step_04 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x0041855b | editor_dtor_step_05 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x0041856a | editor_dtor_step_06 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x00418579 | editor_dtor_step_07 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x00418588 | editor_dtor_step_08 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x00418597 | editor_dtor_step_09 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x004185a6 | editor_dtor_step_10 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x004185b5 | editor_dtor_step_11 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x004185c4 | editor_dtor_step_12 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x004185d3 | editor_dtor_step_13 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x004185e2 | editor_dtor_step_14 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x004185f1 | editor_dtor_step_15 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x00418600 | editor_dtor_step_16 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x0041860f | editor_dtor_step_17 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x0041861e | editor_dtor_step_18 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
+| 0x0041862d | editor_dtor_step_19 | FW | seh_dtor | 15 | 0x00410000 | NN | destroy_button |
 | 0x0041863c | FUN_0041863c | FW | FW | 24 | 0x00410000 | SK |  |
 | 0x00418654 | FUN_00418654 | FW | FW | 24 | 0x00410000 | SK |  |
 | 0x0041866c | FUN_0041866c | FW | FW | 9 | 0x00410000 | SK |  |
@@ -824,246 +827,246 @@ Functions with game logic that have been ported or are candidates:
 | 0x00447210 | disable_civ_slot | NW | mp | 133b | 0x00440000 | NN |  |
 | 0x004472c0 | GetCheckStyle | FW | mfc | 28b | 0x00440000 | SK |  |
 | 0x004472f0 | set_selected_slot | FW | mfc | 33b | 0x00440000 | SK |  |
-| 0x00447320 | DAT_00647c40 | UNSET |  | 11 | 0x00440000 |  | terrain type labels |
-| 0x0044733a | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00447362 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044737f | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004473a2 | DAT_00640bd8 | UNSET |  | 52 | 0x00440000 |  | dither blend sprites |
-| 0x004473bc | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004473e4 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447401 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00447424 | DAT_0063f858 | UNSET |  | 16 | 0x00440000 |  | coast quadrant sprites set 1 |
-| 0x0044743e | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00447466 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447483 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004474a6 | DAT_006461d8 | UNSET |  | 16 | 0x00440000 |  | coast quadrant sprites set 2 |
-| 0x004474c0 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004474e8 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447505 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00447528 | DAT_00647388 | UNSET |  | 16 | 0x00440000 |  | coast quadrant sprites set 3 |
-| 0x00447542 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044756a | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447587 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004475aa | DAT_006447b0 | UNSET |  | 16 | 0x00440000 |  | coast quadrant sprites set 4 |
-| 0x004475c4 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004475ec | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447609 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x0044762c | DAT_00646158 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447646 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447660 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044767d | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447697 | DAT_00644e88 | UNSET |  | 26 | 0x00440000 |  | 2 / resource sprites |
-| 0x004476b1 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004476d9 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004476f6 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00447719 | DAT_0063fcd8 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447733 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x0044774d | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044776a | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447784 | DAT_00647ed8 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x0044779e | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x004477b8 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004477d5 | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x004477ef | DAT_00646118 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447809 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447823 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447840 | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x0044785a | DAT_00643b38 | UNSET |  | 32 | 0x00440000 |  | river sprites |
-| 0x00447874 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044789c | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004478b9 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004478dc | DAT_0063fd18 | UNSET |  | 26 | 0x00440000 |  | 4 / misc sprites |
-| 0x004478f6 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044791e | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044793b | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x0044795e | DAT_00642710 | UNSET |  | 18 | 0x00440000 |  | overlay sprites |
-| 0x00447978 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004479a0 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004479bd | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004479e0 | DAT_006446b8 | UNSET |  | 26 | 0x00440000 |  | 3 / improvement sprites |
-| 0x004479fa | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00447a22 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447a3f | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00447a62 | DAT_00641808 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447a7c | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447a96 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447ab3 | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447acd | DAT_0063fc18 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447ae7 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447b01 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447b1e | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447b38 | DAT_006482f8 | UNSET |  | 22 | 0x00440000 |  | city flag sprites |
-| 0x00447b52 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00447b7a | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447b97 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00447bba | DAT_00647fa0 | UNSET |  | 26 | 0x00440000 |  | 2 / airbase sprites |
-| 0x00447bd4 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00447bfc | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447c19 | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00447c3c | DAT_00645120 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447c56 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447c70 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447c8d | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447ca7 | DAT_00648820 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447cc1 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447cdb | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447cf8 | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447d12 | DAT_00647788 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447d2c | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447d46 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447d63 | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447d7d | DAT_00647348 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447d97 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447db1 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447dce | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447de8 | DAT_00644770 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447e02 | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447e1c | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447e39 | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447e53 | DAT_006480d8 | UNSET |  | 26 | 0x00440000 |  | 1 / single CString |
-| 0x00447e6d | constructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447e87 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447ea4 | destructor | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447ebe | DAT_00644b70 | UNSET |  | 11 | 0x00440000 |  | people sprites |
-| 0x00447ed8 | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00447f00 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447f1d | destructor | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00447f40 | DAT_006477c8 | UNSET |  | 15 | 0x00440000 |  | editor sprites |
-| 0x00447f5a | constructor | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00447f82 | atexit | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00447f9f | destructor | UNSET |  | 35 | 0x00440000 |  |  |
+| 0x00447320 | terrain_labels_init | FW | cstring_init | 11 | 0x00440000 | NN | terrain type labels |
+| 0x0044733a | terrain_labels_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00447362 | terrain_labels_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044737f | terrain_labels_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004473a2 | dither_blend_init | FW | cstring_init | 52 | 0x00440000 | NN | dither blend sprites |
+| 0x004473bc | dither_blend_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004473e4 | dither_blend_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447401 | dither_blend_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00447424 | coast_q1_init | FW | cstring_init | 16 | 0x00440000 | NN | coast quadrant sprites set 1 |
+| 0x0044743e | coast_q1_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00447466 | coast_q1_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447483 | coast_q1_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004474a6 | coast_q2_init | FW | cstring_init | 16 | 0x00440000 | NN | coast quadrant sprites set 2 |
+| 0x004474c0 | coast_q2_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004474e8 | coast_q2_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447505 | coast_q2_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00447528 | coast_q3_init | FW | cstring_init | 16 | 0x00440000 | NN | coast quadrant sprites set 3 |
+| 0x00447542 | coast_q3_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044756a | coast_q3_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447587 | coast_q3_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004475aa | coast_q4_init | FW | cstring_init | 16 | 0x00440000 | NN | coast quadrant sprites set 4 |
+| 0x004475c4 | coast_q4_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004475ec | coast_q4_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447609 | coast_q4_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x0044762c | cstring_single_a_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447646 | cstring_single_a_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447660 | cstring_single_a_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044767d | cstring_single_a_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447697 | resource_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN | resource sprites |
+| 0x004476b1 | resource_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004476d9 | resource_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004476f6 | resource_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00447719 | cstring_single_b_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447733 | cstring_single_b_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x0044774d | cstring_single_b_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044776a | cstring_single_b_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447784 | cstring_single_c_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x0044779e | cstring_single_c_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x004477b8 | cstring_single_c_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004477d5 | cstring_single_c_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x004477ef | cstring_single_d_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447809 | cstring_single_d_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447823 | cstring_single_d_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447840 | cstring_single_d_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x0044785a | river_sprites_init | FW | cstring_init | 32 | 0x00440000 | NN | river sprites |
+| 0x00447874 | river_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044789c | river_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004478b9 | river_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004478dc | misc_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN | misc sprites |
+| 0x004478f6 | misc_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044791e | misc_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044793b | misc_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x0044795e | overlay_sprites_init | FW | cstring_init | 18 | 0x00440000 | NN | overlay sprites |
+| 0x00447978 | overlay_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004479a0 | overlay_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004479bd | overlay_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004479e0 | improvement_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN | improvement sprites |
+| 0x004479fa | improvement_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00447a22 | improvement_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447a3f | improvement_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00447a62 | cstring_single_e_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447a7c | cstring_single_e_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447a96 | cstring_single_e_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447ab3 | cstring_single_e_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447acd | cstring_single_f_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447ae7 | cstring_single_f_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447b01 | cstring_single_f_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447b1e | cstring_single_f_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447b38 | city_flag_sprites_init | FW | cstring_init | 22 | 0x00440000 | NN | city flag sprites |
+| 0x00447b52 | city_flag_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00447b7a | city_flag_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447b97 | city_flag_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00447bba | airbase_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN | airbase sprites |
+| 0x00447bd4 | airbase_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00447bfc | airbase_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447c19 | airbase_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00447c3c | cstring_single_g_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447c56 | cstring_single_g_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447c70 | cstring_single_g_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447c8d | cstring_single_g_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447ca7 | cstring_single_h_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447cc1 | cstring_single_h_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447cdb | cstring_single_h_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447cf8 | cstring_single_h_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447d12 | cstring_single_i_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447d2c | cstring_single_i_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447d46 | cstring_single_i_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447d63 | cstring_single_i_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447d7d | cstring_single_j_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447d97 | cstring_single_j_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447db1 | cstring_single_j_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447dce | cstring_single_j_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447de8 | cstring_single_k_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447e02 | cstring_single_k_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447e1c | cstring_single_k_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447e39 | cstring_single_k_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447e53 | cstring_single_l_init | FW | cstring_init | 26 | 0x00440000 | NN | single CString |
+| 0x00447e6d | cstring_single_l_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447e87 | cstring_single_l_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447ea4 | cstring_single_l_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447ebe | people_sprites_init | FW | cstring_init | 11 | 0x00440000 | NN | people sprites |
+| 0x00447ed8 | people_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00447f00 | people_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447f1d | people_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00447f40 | editor_sprites_init | FW | cstring_init | 15 | 0x00440000 | NN | editor sprites |
+| 0x00447f5a | editor_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00447f82 | editor_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00447f9f | editor_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
 | 0x00447fc2 | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00447fdc | FUN_00447fdc | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00447ff6 | FUN_00447ff6 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448013 | FUN_00448013 | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x00447fdc | cstring_single_m_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00447ff6 | cstring_single_m_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448013 | cstring_single_m_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x0044802d | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448047 | FUN_00448047 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448061 | FUN_00448061 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044807e | FUN_0044807e | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x00448047 | cstring_single_n_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448061 | cstring_single_n_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044807e | cstring_single_n_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x00448098 | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x004480b2 | FUN_004480b2 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x004480cc | FUN_004480cc | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004480e9 | FUN_004480e9 | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x004480b2 | cstring_single_o_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x004480cc | cstring_single_o_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004480e9 | cstring_single_o_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x00448103 | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x0044811d | FUN_0044811d | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448137 | FUN_00448137 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448154 | FUN_00448154 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x0044816e | FUN_0044816e | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448188 | FUN_00448188 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004481b0 | FUN_004481b0 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004481cd | FUN_004481cd | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004481f0 | FUN_004481f0 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x0044820a | FUN_0044820a | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448232 | FUN_00448232 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044824f | FUN_0044824f | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00448272 | FUN_00448272 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x0044828c | FUN_0044828c | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004482b4 | FUN_004482b4 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004482d1 | FUN_004482d1 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004482f4 | FUN_004482f4 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x0044830e | FUN_0044830e | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448336 | FUN_00448336 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448353 | FUN_00448353 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00448376 | FUN_00448376 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448390 | FUN_00448390 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004483b8 | FUN_004483b8 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004483d5 | FUN_004483d5 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004483f8 | FUN_004483f8 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448412 | FUN_00448412 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044843a | FUN_0044843a | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448457 | FUN_00448457 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x0044847a | FUN_0044847a | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448494 | FUN_00448494 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004484bc | FUN_004484bc | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004484d9 | FUN_004484d9 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004484fc | FUN_004484fc | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448516 | FUN_00448516 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044853e | FUN_0044853e | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044855b | FUN_0044855b | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x0044857e | FUN_0044857e | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448598 | FUN_00448598 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x004485c0 | FUN_004485c0 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004485dd | FUN_004485dd | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00448600 | FUN_00448600 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x0044861a | FUN_0044861a | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448642 | FUN_00448642 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044865f | FUN_0044865f | UNSET |  | 35 | 0x00440000 |  |  |
+| 0x0044811d | cstring_single_p_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448137 | cstring_single_p_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448154 | cstring_single_p_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x0044816e | unit_sprites_a_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448188 | unit_sprites_a_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004481b0 | unit_sprites_a_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004481cd | unit_sprites_a_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004481f0 | terrain_overlay_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x0044820a | terrain_overlay_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448232 | terrain_overlay_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044824f | terrain_overlay_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00448272 | unit_sprites_b_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x0044828c | unit_sprites_b_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004482b4 | unit_sprites_b_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004482d1 | unit_sprites_b_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004482f4 | misc_sprites_b_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x0044830e | misc_sprites_b_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448336 | misc_sprites_b_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448353 | misc_sprites_b_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00448376 | road_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448390 | road_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004483b8 | road_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004483d5 | road_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004483f8 | building_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448412 | building_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044843a | building_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448457 | building_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x0044847a | wonder_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448494 | wonder_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004484bc | wonder_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004484d9 | wonder_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004484fc | special_sprites_a_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448516 | special_sprites_a_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044853e | special_sprites_a_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044855b | special_sprites_a_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x0044857e | special_sprites_b_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448598 | special_sprites_b_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x004485c0 | special_sprites_b_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004485dd | special_sprites_b_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00448600 | special_sprites_c_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x0044861a | special_sprites_c_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448642 | special_sprites_c_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044865f | special_sprites_c_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
 | 0x00448682 | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x0044869c | FUN_0044869c | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x004486b6 | FUN_004486b6 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004486d3 | FUN_004486d3 | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x0044869c | cstring_single_q_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x004486b6 | cstring_single_q_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004486d3 | cstring_single_q_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x004486ed | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448707 | FUN_00448707 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448721 | FUN_00448721 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044873e | FUN_0044873e | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448758 | FUN_00448758 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448772 | FUN_00448772 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044879a | FUN_0044879a | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004487b7 | FUN_004487b7 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004487da | FUN_004487da | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x004487f4 | FUN_004487f4 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044881c | FUN_0044881c | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448839 | FUN_00448839 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x0044885c | FUN_0044885c | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448876 | FUN_00448876 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044889e | FUN_0044889e | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004488bb | FUN_004488bb | UNSET |  | 35 | 0x00440000 |  |  |
+| 0x00448707 | cstring_single_r_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448721 | cstring_single_r_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044873e | cstring_single_r_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448758 | hp_bar_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448772 | hp_bar_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044879a | hp_bar_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004487b7 | hp_bar_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004487da | hp_bar_sprites_b_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x004487f4 | hp_bar_sprites_b_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044881c | hp_bar_sprites_b_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448839 | hp_bar_sprites_b_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x0044885c | shield_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448876 | shield_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044889e | shield_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004488bb | shield_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
 | 0x004488de | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x004488f8 | FUN_004488f8 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448912 | FUN_00448912 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x0044892f | FUN_0044892f | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448949 | FUN_00448949 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448963 | FUN_00448963 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x0044898b | FUN_0044898b | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x004489a8 | FUN_004489a8 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x004489cb | FUN_004489cb | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x004489e5 | FUN_004489e5 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448a0d | FUN_00448a0d | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448a2a | FUN_00448a2a | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00448a4d | FUN_00448a4d | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448a67 | FUN_00448a67 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448a8f | FUN_00448a8f | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448aac | FUN_00448aac | UNSET |  | 35 | 0x00440000 |  |  |
+| 0x004488f8 | cstring_single_s_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448912 | cstring_single_s_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x0044892f | cstring_single_s_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448949 | unit_labels_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448963 | unit_labels_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x0044898b | unit_labels_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x004489a8 | unit_labels_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x004489cb | improvement_labels_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x004489e5 | improvement_labels_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448a0d | improvement_labels_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448a2a | improvement_labels_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00448a4d | wonder_labels_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448a67 | wonder_labels_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448a8f | wonder_labels_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448aac | wonder_labels_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
 | 0x00448acf | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448ae9 | FUN_00448ae9 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448b03 | FUN_00448b03 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448b20 | FUN_00448b20 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448b3a | FUN_00448b3a | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448b54 | FUN_00448b54 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448b7c | FUN_00448b7c | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448b99 | FUN_00448b99 | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00448bbc | FUN_00448bbc | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448bd6 | FUN_00448bd6 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448bfe | FUN_00448bfe | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448c1b | FUN_00448c1b | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00448c3e | FUN_00448c3e | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448c58 | FUN_00448c58 | UNSET |  | 40 | 0x00440000 |  |  |
-| 0x00448c80 | FUN_00448c80 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448c9d | FUN_00448c9d | UNSET |  | 35 | 0x00440000 |  |  |
-| 0x00448cc0 | FUN_00448cc0 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448cda | FUN_00448cda | UNSET |  | 66 | 0x00440000 |  |  |
-| 0x00448d1c | FUN_00448d1c | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448d39 | FUN_00448d39 | UNSET |  | 66 | 0x00440000 |  |  |
+| 0x00448ae9 | cstring_single_t_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448b03 | cstring_single_t_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448b20 | cstring_single_t_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448b3a | selector_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448b54 | selector_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448b7c | selector_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448b99 | selector_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00448bbc | government_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448bd6 | government_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448bfe | government_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448c1b | government_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00448c3e | tech_sprites_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448c58 | tech_sprites_ctor | FW | cstring_init | 40 | 0x00440000 | NN |  |
+| 0x00448c80 | tech_sprites_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448c9d | tech_sprites_dtor | FW | cstring_init | 35 | 0x00440000 | NN |  |
+| 0x00448cc0 | misc_singles_init | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448cda | misc_singles_ctor | FW | cstring_init | 66 | 0x00440000 | NN |  |
+| 0x00448d1c | misc_singles_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448d39 | misc_singles_dtor | FW | cstring_init | 66 | 0x00440000 | NN |  |
 | 0x00448d7b | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448d95 | FUN_00448d95 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448daf | FUN_00448daf | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448dcc | FUN_00448dcc | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x00448d95 | cstring_single_u_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448daf | cstring_single_u_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448dcc | cstring_single_u_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x00448de6 | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448e00 | FUN_00448e00 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448e1a | FUN_00448e1a | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448e37 | FUN_00448e37 | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x00448e00 | cstring_single_v_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448e1a | cstring_single_v_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448e37 | cstring_single_v_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x00448e51 | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448e6b | FUN_00448e6b | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448e85 | FUN_00448e85 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448ea2 | FUN_00448ea2 | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x00448e6b | directdraw_surface_a_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448e85 | directdraw_surface_a_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448ea2 | directdraw_surface_a_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x00448ebc | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448ed6 | FUN_00448ed6 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448ef0 | FUN_00448ef0 | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448f0d | FUN_00448f0d | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x00448ed6 | directdraw_surface_b_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448ef0 | directdraw_surface_b_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448f0d | directdraw_surface_b_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x00448f27 | FID_conflict:_$E31 | FW | crt | 26 | 0x00440000 | NN |  |
-| 0x00448f41 | FUN_00448f41 | UNSET |  | 26 | 0x00440000 |  |  |
-| 0x00448f5b | FUN_00448f5b | UNSET |  | 29 | 0x00440000 |  |  |
-| 0x00448f78 | FUN_00448f78 | UNSET |  | 26 | 0x00440000 |  |  |
+| 0x00448f41 | directdraw_surface_c_init_ctor | FW | cstring_init | 26 | 0x00440000 | NN |  |
+| 0x00448f5b | directdraw_surface_c_atexit | FW | cstring_init | 29 | 0x00440000 | NN |  |
+| 0x00448f78 | directdraw_surface_c_dtor | FW | cstring_init | 26 | 0x00440000 | NN |  |
 | 0x00448f92 | get_city_epoch | GL | epoch | 158b | 0x00440000 | P |  |
 | 0x00449030 | load_terrain_sprites | RN | sprite | 2367b | 0x00440000 | P |  |
 | 0x0044996f | FUN_0044996f | FW | seh | 12 | 0x00440000 | SK |  |
@@ -1112,14 +1115,14 @@ Functions with game logic that have been ported or are candidates:
 | 0x0044ce16 | init_throne_context | UI | throne | 405b | 0x00440000 | NN |  |
 | 0x0044d027 | destroy_throne_context | UI | throne | 177b | 0x00440000 | NN |  |
 | 0x0044d0d8 | FUN_0044d0e7 | UI | throne | 9 | 0x00440000 | SK |  |
-| 0x0044d0e7 | FUN_0044d0e7 | UNSET |  | 15 | 0x00440000 |  |  |
-| 0x0044d0f6 | FUN_0044d0f6 | UNSET |  | 15 | 0x00440000 |  |  |
-| 0x0044d105 | FUN_0044d105 | UNSET |  | 15 | 0x00440000 |  |  |
-| 0x0044d114 | FUN_0044d114 | UNSET |  | 15 | 0x00440000 |  |  |
-| 0x0044d123 | FUN_0044d123 | UNSET |  | 15 | 0x00440000 |  |  |
-| 0x0044d132 | FUN_0044d132 | UNSET |  | 15 | 0x00440000 |  |  |
-| 0x0044d141 | FUN_0044d141 | UNSET |  | 9 | 0x00440000 |  |  |
-| 0x0044d154 | FUN_0044d154 | UNSET |  | 14 | 0x00440000 |  |  |
+| 0x0044d0e7 | seh_cleanup_df8a | FW | seh | 15 | 0x00440000 | NN |  |
+| 0x0044d0f6 | seh_cleanup_ab49 | FW | seh | 15 | 0x00440000 | NN |  |
+| 0x0044d105 | seh_cleanup_bd915 | FW | seh | 15 | 0x00440000 | NN |  |
+| 0x0044d114 | seh_cleanup_cba0 | FW | seh | 15 | 0x00440000 | NN |  |
+| 0x0044d123 | seh_timevec_dtor | FW | seh | 15 | 0x00440000 | NN |  |
+| 0x0044d132 | seh_cleanup_656b | FW | seh | 15 | 0x00440000 | NN |  |
+| 0x0044d141 | seh_cleanup_ca60 | FW | seh | 9 | 0x00440000 | NN |  |
+| 0x0044d154 | seh_fs_restore | FW | seh | 14 | 0x00440000 | NN |  |
 | 0x0044d162 | load_throne_dll | UI | throne | 308b | 0x00440000 | NN |  |
 | 0x0044d296 | throne_room_add_improvement | UI | throne | 1799b | 0x00440000 | NN |  |
 | 0x0044d99d | FUN_0044d99d | FW | seh | 12 | 0x00440000 | SK |  |
@@ -1256,7 +1259,7 @@ Functions with game logic that have been ported or are candidates:
 | 0x004591cb | diplo_sell_tech | GL | diplomacy | 832 bytes | 0x00450000 | TL |  |
 | 0x0045950b | handle_exchange_gift | GL | diplomacy | 4096 bytes | 0x00450000 | TH |  |
 | 0x0045a510 | FUN_0045a526 | UI | diplomacy | 12 | 0x00450000 | SK |  |
-| 0x0045a526 | FUN_0045a526 | UNSET |  | 15 | 0x00450000 |  |  |
+| 0x0045a526 | seh_epilog_exchange_gift | FW | seh | 15 | 0x00450000 | NN |  |
 | 0x0045a535 | diplo_form_alliance | GL | diplomacy | 374 bytes | 0x00450000 | TH |  |
 | 0x0045a6ab | diplo_sign_peace_treaty | GL | diplomacy | 253 bytes | 0x00450000 | TH |  |
 | 0x0045a7a8 | diplo_sign_ceasefire | GL | diplomacy | 315 bytes | 0x00450000 | TH |  |
@@ -1267,10 +1270,10 @@ Functions with game logic that have been ported or are candidates:
 | 0x0045b4da | diplo_ai_negotiate | AI | diplomacy | 10271 bytes | 0x00450000 | PA |  |
 | 0x0045dd7f | diplo_favor_menu | GL | diplomacy | 4878 bytes | 0x00450000 | TM |  |
 | 0x0045f08d | FUN_0045f0a3 | UI | diplomacy | 12 | 0x00450000 | SK |  |
-| 0x0045f0a3 | FUN_0045f0a3 | UNSET |  | 14 | 0x00450000 |  |  |
+| 0x0045f0a3 | seh_epilog_diplo_favor | FW | seh | 14 | 0x00450000 | NN |  |
 | 0x0045f0b1 | show_gift_menu | GL | diplomacy | 3218 bytes | 0x00450000 | TM |  |
 | 0x0045fd43 | FUN_0045fd59 | UI | diplomacy | 12 | 0x00450000 | SK |  |
-| 0x0045fd59 | FUN_0045fd59 | UNSET |  | 14 | 0x00450000 |  |  |
+| 0x0045fd59 | seh_epilog_show_gift | FW | seh | 14 | 0x00450000 | NN |  |
 | 0x0045fd67 | diplo_check_war_weariness | GL | diplomacy | 178 bytes | 0x00450000 | TM |  |
 | 0x0045fe19 | diplo_show_main_menu | GL | diplomacy | 747 bytes | 0x00450000 | TM |  |
 | 0x00460104 | crt_init_thunk_0 | FW | crt | 12 | 0x00460000 | SK |  |
@@ -1402,13 +1405,13 @@ Functions with game logic that have been ported or are candidates:
 | 0x00471354 | FUN_00471354 | CS | winner | 14 | 0x00470000 |  |  |
 | 0x00471362 | ctor_cutscene_object_2 | CS | winner | 186 | 0x00470000 |  |  |
 | 0x0047147a | dtor_cutscene_object_2 | CS | winner | 127 | 0x00470000 |  |  |
-| 0x004714f9 | FUN_004714f9 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x00471508 | FUN_00471508 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x00471517 | FUN_00471517 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x00471526 | FUN_00471526 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x00471535 | FUN_00471535 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x00471544 | FUN_00471544 | UNSET |  | 9 | 0x00470000 |  |  |
-| 0x00471557 | FUN_00471557 | UNSET |  | 14 | 0x00470000 |  |  |
+| 0x004714f9 | seh_surface_dtor | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x00471508 | seh_cleanup_c520 | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x00471517 | seh_timevec_dtor | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x00471526 | seh_cleanup_d1a0 | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x00471535 | seh_cleanup_656b | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x00471544 | seh_cleanup_ca60 | FW | seh | 9 | 0x00470000 | NN |  |
+| 0x00471557 | seh_fs_restore | FW | seh | 14 | 0x00470000 | NN |  |
 | 0x00471565 | load_civ2_art_00471565 | CS | winner | 753 | 0x00470000 |  |  |
 | 0x00471856 | show_winner_text | CS | winner | 936 | 0x00470000 |  |  |
 | 0x00471bfe | FUN_00471bfe | CS | winner | 22 | 0x00470000 | NN |  |
@@ -1417,12 +1420,12 @@ Functions with game logic that have been ported or are candidates:
 | 0x00471db7 | FUN_00471db7 | CS | winner | 33 bytes | 0x00470000 | NN |  |
 | 0x00471dd8 | show_beaten_cutscene | CS | winner | 1467 bytes | 0x00470000 | SK |  |
 | 0x00472393 | FUN_00472393 | CS | winner | 12 | 0x00470000 | NN |  |
-| 0x0047239f | FUN_0047239f | UNSET |  | 12 | 0x00470000 |  |  |
-| 0x004723ab | FUN_004723ab | UNSET |  | 12 | 0x00470000 |  |  |
-| 0x004723b7 | FUN_004723b7 | UNSET |  | 12 | 0x00470000 |  |  |
-| 0x004723c3 | FUN_004723c3 | UNSET |  | 12 | 0x00470000 |  |  |
-| 0x004723cf | FUN_004723cf | UNSET |  | 12 | 0x00470000 |  |  |
-| 0x004723e5 | FUN_004723e5 | UNSET |  | 14 | 0x00470000 |  |  |
+| 0x0047239f | seh_surface_dtor_b | FW | seh | 12 | 0x00470000 | NN |  |
+| 0x004723ab | seh_cleanup_656b_b | FW | seh | 12 | 0x00470000 | NN |  |
+| 0x004723b7 | seh_cleanup_ca60_b | FW | seh | 12 | 0x00470000 | NN |  |
+| 0x004723c3 | seh_timevec_dtor_b | FW | seh | 12 | 0x00470000 | NN |  |
+| 0x004723cf | seh_cleanup_cba0 | FW | seh | 12 | 0x00470000 | NN |  |
+| 0x004723e5 | seh_fs_restore_b | FW | seh | 14 | 0x00470000 | NN |  |
 | 0x004728c0 | scalar_deleting_dtor_winner | CS | winner | 57 bytes | 0x00470000 | NN |  |
 | 0x00472910 | set_callback_pointers | RD | helper | 48 bytes | 0x00470000 | SK |  |
 | 0x00472950 | append_extension_if_missing | IO | file_dialog | 91 bytes | 0x00470000 | SK |  |
@@ -1435,9 +1438,9 @@ Functions with game logic that have been ported or are candidates:
 | 0x00472e1d | init_and_place_unit | RD | helper | 63 bytes | 0x00470000 | SK |  |
 | 0x00472e5c | stop_unit_animation | RD | helper | 79 bytes | 0x00470000 | SK |  |
 | 0x00472f10 | FID_conflict:_$E31 | FW | crt_init | 26 bytes | 0x00470000 | NN |  |
-| 0x00472f2a | FUN_00472f2a | UNSET |  | 26 | 0x00470000 |  |  |
-| 0x00472f44 | FUN_00472f44 | UNSET |  | 29 | 0x00470000 |  |  |
-| 0x00472f61 | FUN_00472f61 | UNSET |  | 26 | 0x00470000 |  |  |
+| 0x00472f2a | surface_static_init_ctor | FW | cstring_init | 26 | 0x00470000 | NN |  |
+| 0x00472f44 | surface_static_init_atexit | FW | cstring_init | 29 | 0x00470000 | NN |  |
+| 0x00472f61 | surface_static_init_dtor | FW | cstring_init | 26 | 0x00470000 | NN |  |
 | 0x00472f7b | pack_viewport_state | IO | viewport_pack | 233 bytes | 0x00470000 | PA |  |
 | 0x00473064 | unpack_viewport_state | IO | viewport_pack | 234 bytes | 0x00470000 | PA |  |
 | 0x0047314e | rect_int32_to_int16 | IO | viewport_pack | 66 | 0x00470000 | PA |  |
@@ -1455,20 +1458,20 @@ Functions with game logic that have been ported or are candidates:
 | 0x00475666 | load_full_game | IO | save | 7734 bytes | 0x00470000 | FP |  |
 | 0x0047758c | save_game | IO | save | 2038 bytes | 0x00470000 | SK |  |
 | 0x00477d8c | load_verify_units | IO | load | 2391 bytes | 0x00470000 | SK |  |
-| 0x004786f8 | FUN_004786f8 | UNSET |  | 12 | 0x00470000 |  |  |
-| 0x0047870e | FUN_0047870e | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x00479d20 | FUN_00479d20 | UNSET |  | 26 | 0x00470000 |  |  |
-| 0x00479d3a | construct_civ_array | UNSET |  | 43 | 0x00470000 |  |  |
-| 0x00479d65 | FUN_00479d65 | UNSET |  | 29 | 0x00470000 |  |  |
-| 0x00479d82 | FUN_00479d82 | UNSET |  | 38 | 0x00470000 |  |  |
+| 0x004786f8 | seh_cleanup_656b_c | FW | seh | 12 | 0x00470000 | NN |  |
+| 0x0047870e | seh_fs_restore_c | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x00479d20 | civ_player_windows_init | FW | cstring_init | 26 | 0x00470000 | NN |  |
+| 0x00479d3a | civ_player_windows_ctor | FW | cstring_init | 43 | 0x00470000 | NN |  |
+| 0x00479d65 | civ_player_windows_atexit | FW | cstring_init | 29 | 0x00470000 | NN |  |
+| 0x00479d82 | civ_player_windows_dtor | FW | cstring_init | 38 | 0x00470000 | NN |  |
 | 0x00479da8 | FID_conflict:_$E31 | FW | crt | 26 | 0x00470000 | NN |  |
-| 0x00479dc2 | FUN_00479dc2 | UNSET |  | 26 | 0x00470000 |  |  |
-| 0x00479ddc | FUN_00479ddc | UNSET |  | 29 | 0x00470000 |  |  |
-| 0x00479df9 | FUN_00479df9 | UNSET |  | 26 | 0x00470000 |  |  |
+| 0x00479dc2 | minimap_a_init_ctor | FW | cstring_init | 26 | 0x00470000 | NN |  |
+| 0x00479ddc | minimap_a_atexit | FW | cstring_init | 29 | 0x00470000 | NN |  |
+| 0x00479df9 | minimap_a_dtor | FW | cstring_init | 26 | 0x00470000 | NN |  |
 | 0x00479e13 | FID_conflict:_$E31 | FW | crt | 26 | 0x00470000 | NN |  |
-| 0x00479e2d | FUN_00479e2d | UNSET |  | 26 | 0x00470000 |  |  |
-| 0x00479e47 | FUN_00479e47 | UNSET |  | 29 | 0x00470000 |  |  |
-| 0x00479e64 | FUN_00479e64 | UNSET |  | 26 | 0x00470000 |  |  |
+| 0x00479e2d | minimap_b_init_ctor | FW | cstring_init | 26 | 0x00470000 | NN |  |
+| 0x00479e47 | minimap_b_atexit | FW | cstring_init | 29 | 0x00470000 | NN |  |
+| 0x00479e64 | minimap_b_dtor | FW | cstring_init | 26 | 0x00470000 | NN |  |
 | 0x00479e7e | scroll_map_to_y | VP | camera | 48 bytes | 0x00470000 | SK |  |
 | 0x00479eae | scroll_map_to_x | VP | camera | 48 bytes | 0x00470000 | SK |  |
 | 0x00479ede | init_map_viewport | VP | camera | 224 bytes | 0x00470000 | SK |  |
@@ -1478,43 +1481,43 @@ Functions with game logic that have been ported or are candidates:
 | 0x0047a747 | calc_coast_quadrants | RD | terrain | 386 bytes | 0x00470000 | FP |  |
 | 0x0047a8c9 | render_tile | RD | terrain | 4431 bytes | 0x00470000 | FP |  |
 | 0x0047ba1d | render_city_on_map | RD | terrain | 392 bytes | 0x00470000 | SK |  |
-| 0x0047bba5 | draw_unit_simple | UNSET |  | 69 | 0x00470000 |  |  |
-| 0x0047bbea | draw_unit_if_visible | UNSET |  | 111 | 0x00470000 |  |  |
-| 0x0047bc59 | draw_unit_at_position | UNSET |  | 171 | 0x00470000 |  |  |
-| 0x0047bd04 | draw_unit_with_stacking | UNSET |  | 351 | 0x00470000 |  |  |
-| 0x0047be63 | draw_units_at_tile | UNSET |  | 662 | 0x00470000 |  |  |
+| 0x0047bba5 | draw_unit_simple | RN | sprite | 69 | 0x00470000 | SK |  |
+| 0x0047bbea | draw_unit_if_visible | RN | sprite | 111 | 0x00470000 | SK |  |
+| 0x0047bc59 | draw_unit_at_position | RN | sprite | 171 | 0x00470000 | SK |  |
+| 0x0047bd04 | draw_unit_with_stacking | RN | sprite | 351 | 0x00470000 | SK |  |
+| 0x0047be63 | draw_units_at_tile | RN | sprite | 662 | 0x00470000 | SK |  |
 | 0x0047c103 | draw_complete_tile | RD | compose | 495 bytes | 0x00470000 | SK |  |
 | 0x0047c2f2 | is_x_in_range | RD | compose | 141 bytes | 0x00470000 | FP |  |
 | 0x0047c37f | is_tile_in_viewport_rect | RD | compose | 97 bytes | 0x00470000 | SK |  |
 | 0x0047c3e0 | is_tile_visible | RD | compose | 99 bytes | 0x00470000 | SK |  |
 | 0x0047c443 | draw_city_labels | RD | compose | 871 bytes | 0x00470000 | SK |  |
-| 0x0047c7aa | calc_tile_group_rect | UNSET |  | 191 | 0x00470000 |  |  |
-| 0x0047c869 | redraw_tile_area | UNSET |  | 352 | 0x00470000 |  |  |
-| 0x0047c9d4 | redraw_full_viewport | UNSET |  | 278 | 0x00470000 |  |  |
-| 0x0047caea | invalidate_tile_area | UNSET |  | 60 | 0x00470000 |  |  |
-| 0x0047cb26 | invalidate_single_tile | UNSET |  | 42 | 0x00470000 |  |  |
-| 0x0047cb50 | begin_end_paint_cycle | UNSET |  | 100 | 0x00470000 |  |  |
-| 0x0047cbb4 | update_map_area | UNSET |  | 313 | 0x00470000 |  |  |
-| 0x0047cced | update_map_tile | UNSET |  | 50 | 0x00470000 |  |  |
-| 0x0047cd1f | update_map_radius1 | UNSET |  | 50 | 0x00470000 |  |  |
-| 0x0047cd51 | redraw_entire_map | UNSET |  | 205 | 0x00470000 |  |  |
-| 0x0047ce1e | update_map_area_all_players | UNSET |  | 136 | 0x00470000 |  |  |
-| 0x0047cea6 | update_tile_all_players | UNSET |  | 124 | 0x00470000 |  |  |
-| 0x0047cf22 | update_radius1_all_players | UNSET |  | 124 | 0x00470000 |  |  |
-| 0x0047cf9e | redraw_map_all_players | UNSET |  | 124 | 0x00470000 |  |  |
-| 0x0047dce0 | ctor_map_window | UNSET |  | 164 | 0x00470000 |  |  |
-| 0x0047de10 | ~CBitmapButton | UNSET |  | 114 | 0x00470000 |  |  |
-| 0x0047de82 | FUN_0047de82 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x0047de91 | FUN_0047de91 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x0047dea0 | FUN_0047dea0 | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x0047deaf | FUN_0047deaf | UNSET |  | 15 | 0x00470000 |  |  |
-| 0x0047debe | FUN_0047debe | UNSET |  | 9 | 0x00470000 |  |  |
-| 0x0047ded1 | FUN_0047ded1 | UNSET |  | 14 | 0x00470000 |  |  |
-| 0x0047df20 | set_sprite_scale | UNSET |  | 33 | 0x00470000 |  |  |
-| 0x0047df50 | reset_sprite_scale | UNSET |  | 28 | 0x00470000 |  |  |
-| 0x0047df80 | FUN_0047df80 | UNSET |  | 34 | 0x00470000 |  |  |
-| 0x0047dfb0 | scale_at_current_zoom | UNSET |  | 47 | 0x00470000 |  |  |
-| 0x0047dff0 | set_current_zoom_scale | UNSET |  | 41 | 0x00470000 |  |  |
+| 0x0047c7aa | calc_tile_group_rect | VP | scroll | 191 | 0x00470000 | SK |  |
+| 0x0047c869 | redraw_tile_area | VP | scroll | 352 | 0x00470000 | SK |  |
+| 0x0047c9d4 | redraw_full_viewport | VP | scroll | 278 | 0x00470000 | SK |  |
+| 0x0047caea | invalidate_tile_area | VP | scroll | 60 | 0x00470000 | SK |  |
+| 0x0047cb26 | invalidate_single_tile | VP | scroll | 42 | 0x00470000 | SK |  |
+| 0x0047cb50 | begin_end_paint_cycle | VP | scroll | 100 | 0x00470000 | SK |  |
+| 0x0047cbb4 | update_map_area | VP | scroll | 313 | 0x00470000 | SK |  |
+| 0x0047cced | update_map_tile | VP | scroll | 50 | 0x00470000 | SK |  |
+| 0x0047cd1f | update_map_radius1 | VP | scroll | 50 | 0x00470000 | SK |  |
+| 0x0047cd51 | redraw_entire_map | VP | scroll | 205 | 0x00470000 | SK |  |
+| 0x0047ce1e | update_map_area_all_players | VP | scroll | 136 | 0x00470000 | SK |  |
+| 0x0047cea6 | update_tile_all_players | VP | scroll | 124 | 0x00470000 | SK |  |
+| 0x0047cf22 | update_radius1_all_players | VP | scroll | 124 | 0x00470000 | SK |  |
+| 0x0047cf9e | redraw_map_all_players | VP | scroll | 124 | 0x00470000 | SK |  |
+| 0x0047dce0 | ctor_map_window | UI | dialog | 164 | 0x00470000 | SK |  |
+| 0x0047de10 | dtor_CBitmapButton | FW | mfc | 114 | 0x00470000 | NN |  |
+| 0x0047de82 | bitmapbtn_surface_dtor_a | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x0047de91 | bitmapbtn_surface_dtor_b | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x0047dea0 | bitmapbtn_obj_dtor_a | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x0047deaf | bitmapbtn_obj_dtor_b | FW | seh | 15 | 0x00470000 | NN |  |
+| 0x0047debe | bitmapbtn_frame_dtor | FW | mfc | 9 | 0x00470000 | NN |  |
+| 0x0047ded1 | bitmapbtn_seh_fs_restore | FW | seh | 14 | 0x00470000 | NN |  |
+| 0x0047df20 | set_sprite_scale | VP | zoom | 33 | 0x00470000 | SK |  |
+| 0x0047df50 | reset_sprite_scale | VP | zoom | 28 | 0x00470000 | SK |  |
+| 0x0047df80 | intersect_rect | FW | window | 34 | 0x00470000 | NN |  |
+| 0x0047dfb0 | scale_at_current_zoom | VP | zoom | 47 | 0x00470000 | SK |  |
+| 0x0047dff0 | set_current_zoom_scale | VP | zoom | 41 | 0x00470000 | SK |  |
 | 0x0047e030 | is_tile_visible_to_any_player | RD | visibility | 181 bytes | 0x00470000 | SK |  |
 | 0x0047e0e5 | enqueue_stacked_draw | RD | visibility | 462 bytes | 0x00470000 | R |  |
 | 0x0047e2b3 | dequeue_stacked_draw | RD | visibility | 1590 bytes | 0x00470000 | SK |  |
@@ -1824,8 +1827,8 @@ Functions with game logic that have been ported or are candidates:
 | 0x004b0157 | draw_best_city_sprite | UI | render | 484B | 0x004B0000 | NN | Renders city sprite in diplomacy/advisor screens. Pure rendering. |
 | 0x004b0720 | lookup_tech_by_name | GL | lookup | 177B | 0x004B0000 | NN | String lookup for scenario/rules parsing. Not needed for engine. |
 | 0x004b07d1 | lookup_terrain_by_name | GL | lookup | 167B | 0x004B0000 | NN |  |
-| 0x004b08e0 | _crt_init_E2 | UNSET |  | 21B | 0x004B0000 |  | Calls _E1 |
-| 0x004b08f5 | _crt_init_E1 | UNSET |  | 10B | 0x004B0000 |  | No-op return |
+| 0x004b08e0 | _crt_init_E2 | FW | crt | 21B | 0x004B0000 | NN | Calls _E1 |
+| 0x004b08f5 | _crt_init_E1 | FW | crt | 10B | 0x004B0000 | NN | No-op return |
 | 0x004b0905 | diff_engine_alloc_mirror | NW | diff | 261B | 0x004B0000 | NN |  |
 | 0x004b0a0a | diff_engine_free_mirror | NW | diff | 55B | 0x004B0000 | NN |  |
 | 0x004b0a41 | diff_engine_copy_sections | NW | diff | 99B | 0x004B0000 | NN |  |
@@ -1850,54 +1853,54 @@ Functions with game logic that have been ported or are candidates:
 | 0x004b3110 | continent_set_adjacency_bit | GL | map | 76B | 0x004B0000 | TL |  |
 | 0x004b315c | continent_calc_adjacency | GL | map | 418B | 0x004B0000 | TL |  |
 | 0x004b32fe | continent_assign_body_ids | GL | map | 1853B | 0x004B0000 | TH |  |
-| 0x004b3ca0 | static_init_obj_a | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3cba | static_init_obj_a_ctor | UNSET |  | 32B | 0x004B0000 |  | FUN_0043c4c0(0,0x10,1) |
-| 0x004b3cda | static_init_obj_a_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b3cf7 | static_init_obj_a_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b3d11 | static_init_obj_b | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3d2b | static_init_obj_b_ctor | UNSET |  | 30B | 0x004B0000 |  | FUN_0043c460(0,0x14) |
-| 0x004b3d49 | static_init_obj_b_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b3d66 | static_init_obj_b_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b3d80 | static_init_obj_c | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3d9a | static_init_obj_c_ctor | UNSET |  | 30B | 0x004B0000 |  | FUN_0043c460(0,0x0E) |
-| 0x004b3db8 | static_init_obj_c_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b3dd5 | static_init_obj_c_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b3def | static_init_obj_d | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3e09 | static_init_obj_d_ctor | UNSET |  | 30B | 0x004B0000 |  | FUN_0043c460(0,0x10) |
-| 0x004b3e27 | static_init_obj_d_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b3e44 | static_init_obj_d_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b3e5e | static_init_obj_e | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3e78 | static_init_obj_e_ctor | UNSET |  | 32B | 0x004B0000 |  | FUN_0043c4c0(0,0x18,1) |
-| 0x004b3e98 | static_init_obj_e_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b3eb5 | static_init_obj_e_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b3ecf | static_init_obj_f | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3ee9 | static_init_obj_f_ctor | UNSET |  | 30B | 0x004B0000 |  | FUN_0043c460(0,0x1E) |
-| 0x004b3f07 | static_init_obj_f_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b3f24 | static_init_obj_f_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b3f3e | static_init_obj_g | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3f58 | static_init_obj_g_ctor | UNSET |  | 30B | 0x004B0000 |  | FUN_0043c460(0,0x15) |
-| 0x004b3f76 | static_init_obj_g_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b3f93 | static_init_obj_g_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b3fad | static_init_obj_h | UNSET |  | 26B | 0x004B0000 |  | Calls ctor + atexit |
-| 0x004b3fc7 | static_init_obj_h_ctor | UNSET |  | 30B | 0x004B0000 |  | FUN_0043c460(0,0x18) |
-| 0x004b3fe5 | static_init_obj_h_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit(dtor) |
-| 0x004b4002 | static_init_obj_h_dtor | UNSET |  | 26B | 0x004B0000 |  | FUN_0043c520 |
-| 0x004b401c | static_init_parleywin_a | UNSET |  | 26B | 0x004B0000 |  | Init DAT_006665da |
-| 0x004b4036 | static_init_parleywin_a_ctor | UNSET |  | 37B | 0x004B0000 |  | Calls parleywin_construct |
-| 0x004b405b | static_init_parleywin_a_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit |
-| 0x004b4078 | static_init_parleywin_a_dtor | UNSET |  | 26B | 0x004B0000 |  | Calls parleywin_destruct |
-| 0x004b4092 | static_init_parleywin_b | UNSET |  | 26B | 0x004B0000 |  | Init DAT_006665ea |
-| 0x004b40ac | static_init_parleywin_b_ctor | UNSET |  | 37B | 0x004B0000 |  | Calls parleywin_construct |
-| 0x004b40d1 | static_init_parleywin_b_atexit | UNSET |  | 29B | 0x004B0000 |  | _atexit |
-| 0x004b40ee | static_init_parleywin_b_dtor | UNSET |  | 26B | 0x004B0000 |  | Calls parleywin_destruct |
+| 0x004b3ca0 | static_init_obj_a | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3cba | static_init_obj_a_ctor | FW | cstring_init | 32B | 0x004B0000 | NN | FUN_0043c4c0(0,0x10,1) |
+| 0x004b3cda | static_init_obj_a_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b3cf7 | static_init_obj_a_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b3d11 | static_init_obj_b | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3d2b | static_init_obj_b_ctor | FW | cstring_init | 30B | 0x004B0000 | NN | FUN_0043c460(0,0x14) |
+| 0x004b3d49 | static_init_obj_b_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b3d66 | static_init_obj_b_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b3d80 | static_init_obj_c | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3d9a | static_init_obj_c_ctor | FW | cstring_init | 30B | 0x004B0000 | NN | FUN_0043c460(0,0x0E) |
+| 0x004b3db8 | static_init_obj_c_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b3dd5 | static_init_obj_c_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b3def | static_init_obj_d | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3e09 | static_init_obj_d_ctor | FW | cstring_init | 30B | 0x004B0000 | NN | FUN_0043c460(0,0x10) |
+| 0x004b3e27 | static_init_obj_d_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b3e44 | static_init_obj_d_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b3e5e | static_init_obj_e | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3e78 | static_init_obj_e_ctor | FW | cstring_init | 32B | 0x004B0000 | NN | FUN_0043c4c0(0,0x18,1) |
+| 0x004b3e98 | static_init_obj_e_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b3eb5 | static_init_obj_e_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b3ecf | static_init_obj_f | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3ee9 | static_init_obj_f_ctor | FW | cstring_init | 30B | 0x004B0000 | NN | FUN_0043c460(0,0x1E) |
+| 0x004b3f07 | static_init_obj_f_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b3f24 | static_init_obj_f_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b3f3e | static_init_obj_g | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3f58 | static_init_obj_g_ctor | FW | cstring_init | 30B | 0x004B0000 | NN | FUN_0043c460(0,0x15) |
+| 0x004b3f76 | static_init_obj_g_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b3f93 | static_init_obj_g_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b3fad | static_init_obj_h | FW | cstring_init | 26B | 0x004B0000 | NN | Calls ctor + atexit |
+| 0x004b3fc7 | static_init_obj_h_ctor | FW | cstring_init | 30B | 0x004B0000 | NN | FUN_0043c460(0,0x18) |
+| 0x004b3fe5 | static_init_obj_h_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit(dtor) |
+| 0x004b4002 | static_init_obj_h_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | FUN_0043c520 |
+| 0x004b401c | static_init_parleywin_a | FW | cstring_init | 26B | 0x004B0000 | NN | Init DAT_006665da |
+| 0x004b4036 | static_init_parleywin_a_ctor | FW | cstring_init | 37B | 0x004B0000 | NN | Calls parleywin_construct |
+| 0x004b405b | static_init_parleywin_a_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit |
+| 0x004b4078 | static_init_parleywin_a_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | Calls parleywin_destruct |
+| 0x004b4092 | static_init_parleywin_b | FW | cstring_init | 26B | 0x004B0000 | NN | Init DAT_006665ea |
+| 0x004b40ac | static_init_parleywin_b_ctor | FW | cstring_init | 37B | 0x004B0000 | NN | Calls parleywin_construct |
+| 0x004b40d1 | static_init_parleywin_b_atexit | FW | cstring_init | 29B | 0x004B0000 | NN | _atexit |
+| 0x004b40ee | static_init_parleywin_b_dtor | FW | cstring_init | 26B | 0x004B0000 | NN | Calls parleywin_destruct |
 | 0x004b4108 | parleywin_construct | UI | diplomacy | 1163B | 0x004B0000 | NN | Pure Win32/MFC UI construction. Not needed. |
 | 0x004b4593 | parleywin_destruct | UI | diplomacy | 352B | 0x004B0000 | NN | Saves chat log to `chatlog.txt` if MP chat mode. Frees chat buffers. |
-| 0x004b4705 | parleywin_close_file | UNSET |  | 12B | 0x004B0000 |  | Thunk to FUN_005d7c6e |
-| 0x004b4711 | parleywin_cleanup_base | UNSET |  | 22B | 0x004B0000 |  | Thunk to FUN_0044cba0 |
-| 0x004b4727 | parleywin_seh_unwind_a | UNSET |  | 14B | 0x004B0000 |  | SEH epilogue |
+| 0x004b4705 | parleywin_close_file | FW | seh | 12B | 0x004B0000 | NN | Thunk to FUN_005d7c6e (close file handle) |
+| 0x004b4711 | parleywin_cleanup_base | FW | seh | 22B | 0x004B0000 | NN | Thunk to FUN_0044cba0 (base cleanup) |
+| 0x004b4727 | parleywin_seh_unwind_a | FW | seh | 14B | 0x004B0000 | NN | SEH FS chain restore |
 | 0x004b4735 | parleywin_open | UI | diplomacy | 1198B | 0x004B0000 | NN | Opens diplomacy window. Mode 4 = MP chat (reads ChatShowSize from CIV.INI). Creates child control... |
-| 0x004b4be3 | parleywin_close_file_2 | UNSET |  | 22B | 0x004B0000 |  | Thunk |
-| 0x004b4bf9 | parleywin_seh_unwind_b | UNSET |  | 16B | 0x004B0000 |  | SEH epilogue |
+| 0x004b4be3 | parleywin_close_file_2 | FW | seh | 22B | 0x004B0000 | NN | Thunk to FUN_005d7c6e |
+| 0x004b4bf9 | parleywin_seh_unwind_b | FW | seh | 16B | 0x004B0000 | NN | SEH FS chain restore |
 | 0x004b4c09 | parleywin_save_position | UI | diplomacy | 56B | 0x004B0000 | NN |  |
 | 0x004b4c81 | parleywin_set_resolution | UI | diplomacy | 43B | 0x004B0000 | NN |  |
 | 0x004b4cf0 | parleywin_calc_layout | UI | diplomacy | 410B | 0x004B0000 | NN |  |
@@ -1981,8 +1984,8 @@ Functions with game logic that have been ported or are candidates:
 | 0x004bee56 | we_love_the_king_day | GL | event | 379B | 0x004B0000 | TM |  |
 | 0x004befd1 | format_enabled_item | GL | tech | 138B | 0x004B0000 | NN | Pure UI formatting for tech discovery screen. Not needed for game engine. |
 | 0x004bf05b | handle_tech_discovery | GL | tech | 3391B | 0x004B0000 | PA |  |
-| 0x004bfd9a | tech_discovery_cleanup | UNSET |  | 12B | 0x004B0000 |  | Thunk to FUN_0059df8a |
-| 0x004bfdb0 | tech_discovery_seh_unwind | UNSET |  | 14B | 0x004B0000 |  | SEH epilogue |
+| 0x004bfd9a | tech_discovery_cleanup | FW | seh | 12B | 0x004B0000 | NN | Thunk to FUN_0059df8a |
+| 0x004bfdb0 | tech_discovery_seh_unwind | FW | seh | 14B | 0x004B0000 | NN | SEH FS chain restore |
 | 0x004bfdbe | can_research_tech | GL | tech | 156B | 0x004B0000 | P |  |
 | 0x004bfe5a | can_build_unit_type | GL | tech | 1095B | 0x004B0000 | TH |  |
 | 0x004c02d8 | can_build_wonder | GL | build_prereq | 199b | 0x004C0000 | TH |  |
@@ -1993,15 +1996,15 @@ Functions with game logic that have been ported or are candidates:
 | 0x004c0c83 | blit_tech_icon_alt | UI | research | 116b | 0x004C0000 | SK |  |
 | 0x004c0cf7 | show_research_goal_dialog | UI | research | 3119b | 0x004C0000 | SK |  |
 | 0x004c193a | FUN_004c193a | FW | seh_crt | 12 | 0x004C0000 | SK |  |
-| 0x004c1950 | FUN_004c1950 | UNSET |  | 14 | 0x004C0000 |  |  |
+| 0x004c1950 | seh_epilog_research_goal | FW | seh | 14 | 0x004C0000 | NN | SEH epilog for show_research_goal_dialog |
 | 0x004c195e | choose_research_tech | UI | research | 2078b | 0x004C0000 | SK |  |
-| 0x004c217c | FUN_004c217c | UNSET |  | 12 | 0x004C0000 |  |  |
-| 0x004c2188 | FUN_004c2188 | UNSET |  | 12 | 0x004C0000 |  |  |
-| 0x004c219e | FUN_004c219e | UNSET |  | 15 | 0x004C0000 |  |  |
+| 0x004c217c | crt_cleanup_choose_research_1 | FW | crt | 12 | 0x004C0000 | NN | CRT cleanup stub (thunk_FUN_0059df8a) for choose_research_tech |
+| 0x004c2188 | crt_cleanup_choose_research_2 | FW | crt | 12 | 0x004C0000 | NN | CRT cleanup stub for choose_research_tech |
+| 0x004c219e | seh_epilog_choose_research | FW | seh | 15 | 0x004C0000 | NN | SEH epilog for choose_research_tech |
 | 0x004c21ad | choose_research_wrapper | UI | research | 40b | 0x004C0000 | SK |  |
 | 0x004c21d5 | complete_research | GL | research | 1422b | 0x004C0000 | PA |  |
 | 0x004c2763 | FUN_004c2763 | FW | seh_crt | 12 | 0x004C0000 | SK |  |
-| 0x004c2779 | FUN_004c2779 | UNSET |  | 15 | 0x004C0000 |  |  |
+| 0x004c2779 | seh_epilog_complete_research | FW | seh | 15 | 0x004C0000 | NN | SEH epilog for complete_research |
 | 0x004c2788 | calc_tech_cost | GL | research | 1003b | 0x004C0000 | PA |  |
 | 0x004c2b73 | add_research_beakers | GL | research | 458b | 0x004C0000 | PA |  |
 | 0x004c4210 | set_paradrop_range | GL | research | 31b | 0x004C0000 | NN |  |
@@ -2022,7 +2025,7 @@ Functions with game logic that have been ported or are candidates:
 | 0x004c66ba | execute_civil_war | GL | espionage | 1339b | 0x004C0000 | TH |  |
 | 0x004c6bf5 | spy_enters_city | GL | espionage | 10469b | 0x004C0000 | PA |  |
 | 0x004c9504 | FUN_004c9504 | FW | seh_crt | 12 | 0x004C0000 | SK |  |
-| 0x004c951a | FUN_004c951a | UNSET |  | 14 | 0x004C0000 |  |  |
+| 0x004c951a | seh_epilog_spy_enters_city | FW | seh | 14 | 0x004C0000 | NN | SEH epilog for spy_enters_city |
 | 0x004c9528 | pick_up_unit | GL | bribery | 2453b | 0x004C0000 | PA |  |
 | 0x004c9ebd | spy_sabotage_unit | GL | espionage | 784b | 0x004C0000 | TM |  |
 | 0x004ca1cd | execute_airlift | GL | transport | 460b | 0x004C0000 | TL |  |
@@ -2034,26 +2037,26 @@ Functions with game logic that have been ported or are candidates:
 | 0x004cc924 | FUN_004cc924 | FW | seh_crt | 29b | 0x004C0000 | SK |  |
 | 0x004cc941 | FUN_004cc941 | FW | seh_crt | 26b | 0x004C0000 | SK |  |
 | 0x004cc95b | FID_conflict:_$E31 | FW | seh_crt | 26 | 0x004C0000 | SK |  |
-| 0x004cc975 | FUN_004cc975 | UNSET |  | 26 | 0x004C0000 |  |  |
-| 0x004cc98f | FUN_004cc98f | UNSET |  | 29 | 0x004C0000 |  |  |
-| 0x004cc9ac | FUN_004cc9ac | UNSET |  | 26 | 0x004C0000 |  |  |
+| 0x004cc975 | crt_static_init_frame_a1 | FW | crt | 26 | 0x004C0000 | NN | CRT static init: construct via thunk_FUN_004187a0 |
+| 0x004cc98f | crt_static_init_frame_a2 | FW | crt | 29 | 0x004C0000 | NN | CRT static init: register atexit handler |
+| 0x004cc9ac | crt_static_dtor_frame_a | FW | crt | 26 | 0x004C0000 | NN | CRT static dtor: thunk_FUN_00418870 |
 | 0x004cc9c6 | FID_conflict:_$E51 | FW | seh_crt | 26 | 0x004C0000 | SK |  |
-| 0x004cc9e0 | FUN_004cc9e0 | UNSET |  | 30 | 0x004C0000 |  |  |
-| 0x004cc9fe | FUN_004cc9fe | UNSET |  | 29 | 0x004C0000 |  |  |
-| 0x004cca1b | FUN_004cca1b | UNSET |  | 26 | 0x004C0000 |  |  |
-| 0x004cca35 | show_messagebox_CA35 | UNSET |  | 132 | 0x004C0000 |  |  |
+| 0x004cc9e0 | crt_static_init_frame_b1 | FW | crt | 30 | 0x004C0000 | NN | CRT static init: construct via thunk_FUN_0043c460(0, 0x10) |
+| 0x004cc9fe | crt_static_init_frame_b2 | FW | crt | 29 | 0x004C0000 | NN | CRT static init: register atexit handler |
+| 0x004cca1b | crt_static_dtor_frame_b | FW | crt | 26 | 0x004C0000 | NN | CRT static dtor: thunk_FUN_0043c520 |
+| 0x004cca35 | show_messagebox_CA35 | UI | popup | 132 | 0x004C0000 | NN | Shows error messagebox when param exceeds maxParam. Calls MessageBoxA. No game formulas. |
 | 0x004ccab9 | init_rules_editor_sections | UI | rules_editor | 52b | 0x004C0000 | NN |  |
 | 0x004ccaed | add_rules_editor_section | UI | rules_editor | 125b | 0x004C0000 | NN |  |
 | 0x004ccb6a | draw_border_frame | UI | popup | 588b | 0x004C0000 | SK |  |
 | 0x004ccdb6 | append_number_to_buffer | UI | misc | 57b | 0x004C0000 | NN |  |
 | 0x004ccdef | append_tech_name_to_buffer | UI | civilopedia | 318b | 0x004C0000 | NN |  |
-| 0x004ccf2d | show_messagebox_CF2D | UNSET |  | 1149 | 0x004C0000 |  |  |
+| 0x004ccf2d | save_rules_txt | UI | rules_editor | 1149 | 0x004C0000 | NN | Writes modified RULES.TXT file section-by-section. Scenario/modding editor only. |
 | 0x004cd3d7 | save_city_txt_entry | UI | rules_editor | 1171b | 0x004C0000 | NN |  |
 | 0x004cd8a6 | update_city_txt_civ_names | UI | rules_editor | 1069b | 0x004C0000 | NN |  |
 | 0x004cdcf6 | is_numeric_char | UI | misc | 71b | 0x004C0000 | NN |  |
 | 0x004cdd3d | show_cheat_checkbox_dialog | UI | popup | 489b | 0x004C0000 | NN |  |
 | 0x004cdf26 | FUN_004cdf26 | FW | seh_crt | 12 | 0x004C0000 | SK |  |
-| 0x004cdf3c | FUN_004cdf3c | UNSET |  | 15 | 0x004C0000 |  |  |
+| 0x004cdf3c | seh_epilog_cheat_checkbox | FW | seh | 15 | 0x004C0000 | NN | SEH epilog for show_cheat_checkbox_dialog |
 | 0x004cdf4b | clamp_with_flag | UI | misc | 79b | 0x004C0000 | NN |  |
 | 0x004cdfa4 | create_popup_dialog | UI | popup | 498b | 0x004C0000 | NN |  |
 | 0x004ce196 | load_civilopedia_pages | UI | civilopedia | 349b | 0x004C0000 | NN |  |
@@ -2061,8 +2064,8 @@ Functions with game logic that have been ported or are candidates:
 | 0x004ce322 | paint_civilopedia_header | UI | civilopedia | 104b | 0x004C0000 | NN |  |
 | 0x004ce38a | show_civilopedia_viewer | UI | civilopedia | 867b | 0x004C0000 | NN |  |
 | 0x004ce6ed | FUN_004ce6ed | FW | seh_crt | 9 | 0x004C0000 | SK |  |
-| 0x004ce6f9 | FUN_004ce6f9 | UNSET |  | 9 | 0x004C0000 |  |  |
-| 0x004ce70c | FUN_004ce70c | UNSET |  | 15 | 0x004C0000 |  |  |
+| 0x004ce6f9 | crt_cleanup_civilopedia | FW | crt | 9 | 0x004C0000 | NN | Base class dtor for civilopedia viewer |
+| 0x004ce70c | seh_epilog_civilopedia | FW | seh | 15 | 0x004C0000 | NN | SEH epilog for show_civilopedia_viewer |
 | 0x004ce71b | check_city_name_available | UI | civilopedia | 290b | 0x004C0000 | NN |  |
 | 0x004ce83d | refresh_civilopedia_tabs | UI | civilopedia | 103b | 0x004C0000 | NN |  |
 | 0x004ce8a4 | read_ini_long | UI | misc | 95b | 0x004C0000 | NN |  |
@@ -2070,7 +2073,7 @@ Functions with game logic that have been ported or are candidates:
 | 0x004ce98e | clone_event_data | UI | events | 1367b | 0x004C0000 | NN |  |
 | 0x004cef35 | rebuild_event_system | UI | events | 144b | 0x004C0000 | NN |  |
 | 0x004cefc5 | FUN_004cefc5 | FW | seh_crt | 12 | 0x004C0000 | SK |  |
-| 0x004cefdb | FUN_004cefdb | UNSET |  | 14 | 0x004C0000 |  |  |
+| 0x004cefdb | seh_epilog_rebuild_events | FW | seh | 14 | 0x004C0000 | NN | SEH epilog for rebuild_event_system |
 | 0x004cefe9 | rename_city_in_events | UI | events | 347b | 0x004C0000 | NN |  |
 | 0x004cf144 | rename_text_in_events | UI | events | 630b | 0x004C0000 | NN |  |
 | 0x004cf3ba | rename_unit_in_events | UI | events | 201b | 0x004C0000 | NN |  |
@@ -2411,15 +2414,15 @@ Functions with game logic that have been ported or are candidates:
 | 0x005011b4 | citywin_create_arrow_button | UI | citywin_bg | 520 bytes | 0x00500000 | SK |  |
 | 0x005013bc | citywin_modal_refresh | UI | citywin_bg | 132 bytes | 0x00500000 | SK |  |
 | 0x00501440 | citywin_init_members | UI | citywin_init | 127 bytes | 0x00500000 | SK |  |
-| 0x005014bf | OnClose | UNSET |  | 38 | 0x00500000 |  |  |
-| 0x005014e5 | citywin_close_all_panels | UNSET |  | 70 | 0x00500000 |  |  |
-| 0x0050152b | citywin_close_and_destroy | UNSET |  | 38 | 0x00500000 |  |  |
-| 0x00501551 | citywin_constructor | UNSET |  | 136 | 0x00500000 |  |  |
-| 0x0050160a | citywin_destructor | UNSET |  | 105 | 0x00500000 |  |  |
-| 0x00501673 | FUN_00501673 | UNSET |  | 15 | 0x00500000 |  |  |
-| 0x00501682 | FUN_00501682 | UNSET |  | 15 | 0x00500000 |  |  |
-| 0x00501691 | FUN_00501691 | UNSET |  | 9 | 0x00500000 |  |  |
-| 0x005016a4 | FUN_005016a4 | UNSET |  | 14 | 0x00500000 |  |  |
+| 0x005014bf | citywin_on_close | UI | citywin_wndmgmt | 38 | 0x00500000 | SK | close_dialog(2) |
+| 0x005014e5 | citywin_close_all_panels | UI | citywin_wndmgmt | 70 | 0x00500000 | SK | close_dialog(1,3,4) |
+| 0x0050152b | citywin_close_and_destroy | UI | citywin_wndmgmt | 38 | 0x00500000 | SK | close_all_panels() then on_close() |
+| 0x00501551 | citywin_constructor | UI | citywin_init | 136 | 0x00500000 | SK | Base class ctors, vtable PTR_FUN_0061d6d4, init_members() |
+| 0x0050160a | citywin_destructor | UI | citywin_init | 105 | 0x00500000 | SK | Set vtable, close_and_destroy(), base class dtors |
+| 0x00501673 | citywin_dtor_helper_1 | FW | seh_dtor | 15 | 0x00500000 | NN | thunk_FUN_0043c520 |
+| 0x00501682 | citywin_dtor_helper_2 | FW | seh_dtor | 15 | 0x00500000 | NN | thunk_FUN_0046ab49 |
+| 0x00501691 | citywin_dtor_helper_3 | FW | seh_dtor | 9 | 0x00500000 | NN | COleCntrFrameWnd dtor (Ghidra MFC misID) |
+| 0x005016a4 | citywin_seh_epilog | FW | seh | 14 | 0x00500000 | NN | Restores FS:[0] |
 | 0x005016b2 | citywin_blit_panel | UI | citywin_render_core | 129 | 0x00500000 | SK |  |
 | 0x00501733 | citywin_prepare_panel | UI | citywin_render_core | 77 | 0x00500000 | SK |  |
 | 0x00501780 | citywin_refresh_top_panels | UI | citywin_render_core | 153 | 0x00500000 | SK |  |
@@ -2450,22 +2453,22 @@ Functions with game logic that have been ported or are candidates:
 | 0x00508177 | citywin_draw_happiness_modifiers | UI | citywin_infopanel | 987 bytes | 0x00500000 | PA |  |
 | 0x00508552 | citywin_draw_happiness_panel | UI | citywin_infopanel | 1393 bytes | 0x00500000 | PA |  |
 | 0x00508adc | citywin_draw_info_panel | UI | citywin_infopanel | 228 bytes | 0x00500000 | SK |  |
-| 0x00508bc5 | citywin_8BC5 | UNSET |  | 191 | 0x00500000 |  |  |
-| 0x00508c84 | citywin_8C84 | UNSET |  | 160 | 0x00500000 |  |  |
-| 0x00508d24 | citywin_8D24 | UNSET |  | 418 | 0x00500000 |  |  |
-| 0x00508ec6 | citywin_8EC6 | UNSET |  | 354 | 0x00500000 |  |  |
-| 0x00509028 | citywin_9028 | UNSET |  | 647 | 0x00500000 |  |  |
-| 0x005092af | citywin_92AF | UNSET |  | 378 | 0x00500000 |  |  |
-| 0x00509429 | citywin_9429 | UNSET |  | 246 | 0x00500000 |  |  |
-| 0x0050951f | citywin_951F | UNSET |  | 38 | 0x00500000 |  |  |
-| 0x00509545 | citywin_9545 | UNSET |  | 75 | 0x00500000 |  |  |
+| 0x00508bc5 | citywin_redraw_all_panels | UI | citywin_layout | 191 | 0x00500000 | SK | Calls 8 draw functions (citizens, resources, food, prod, buy, supported, improvements, info) |
+| 0x00508c84 | citywin_calc_panel_rect | UI | citywin_layout | 160 | 0x00500000 | SK | Scales coordinates by zoom factor: (zoom * coord + 1) / 2 + offsets |
+| 0x00508d24 | citywin_calc_all_rects | UI | citywin_layout | 418 | 0x00500000 | SK | 12 calls to calc_panel_rect with hardcoded base coordinates for all panels |
+| 0x00508ec6 | citywin_draw_border_fills | UI | citywin_layout | 354 | 0x00500000 | SK | Fills margins with palette color 10 if window > content (636x421) |
+| 0x00509028 | citywin_calc_zoom_and_layout | UI | citywin_layout | 647 | 0x00500000 | SK | Zoom: 1 (small), 2 (default), 3 (large). Font size 0x10 or 0xC. |
+| 0x005092af | citywin_draw_title_bar | UI | citywin_title | 378 | 0x00500000 | SK | Formats "city_name + turn + gold". Shows governor indicator if city.flags & 2. |
+| 0x00509429 | citywin_full_refresh | UI | citywin_title | 246 | 0x00500000 | SK | Guards on city valid/alive, calls calc_city_production then redraws all panels |
+| 0x0050951f | citywin_show_dialog | UI | citywin_title | 38 | 0x00500000 | SK | FUN_005bb574() + show_window() |
+| 0x00509545 | citywin_bring_to_front | UI | citywin_title | 75 | 0x00500000 | SK | BringWindowToTop(hwnd) if not blocked |
 | 0x00509590 | handle_city_disorder | UI | citywin_open | 933 bytes | 0x00500000 | SK | 1 |
-| 0x00509935 | citywin_9935 | UNSET |  | 26 | 0x00500000 |  |  |
-| 0x0050994f | citywin_994F | UNSET |  | 64 | 0x00500000 |  |  |
-| 0x0050998f | citywin_998F | UNSET |  | 186 | 0x00500000 |  |  |
-| 0x00509a49 | citywin_9A49 | UNSET |  | 57 | 0x00500000 |  |  |
-| 0x00509a82 | citywin_9A82 | UNSET |  | 26 | 0x00500000 |  |  |
-| 0x00509a9c | citywin_9A9C | UNSET |  | 36 | 0x00500000 |  |  |
+| 0x00509935 | citywin_on_refresh_msg | UI | citywin_zoom_misc | 26 | 0x00500000 | SK | Just calls citywin_full_refresh() |
+| 0x0050994f | citywin_close_dialog | UI | citywin_zoom_misc | 64 | 0x00500000 | SK | DAT_006aa75c = 1; refresh_map_chain() |
+| 0x0050998f | citywin_calc_window_position | UI | citywin_zoom_misc | 186 | 0x00500000 | SK | Base 636x421 + chrome; center on screen |
+| 0x00509a49 | citywin_set_zoom_and_position | UI | citywin_zoom_misc | 57 | 0x00500000 | SK | DAT_006aa78c = 2; if screen > 999: 3; calc_window_position() |
+| 0x00509a82 | citywin_set_drag_mode | UI | citywin_zoom_misc | 26 | 0x00500000 | SK | DAT_006aa758 = 1 |
+| 0x00509a9c | citywin_clear_drag_mode | UI | citywin_zoom_misc | 36 | 0x00500000 | SK | DAT_006aa758 = 0; full_refresh() |
 | 0x00509ac0 | citywin_format_turns_to_complete | UI | citywin_zoom_misc | 136 bytes | 0x00500000 | SK |  |
 | 0x00509b48 | city_button_buy | UI | citywin_buy | 1642 bytes | 0x00500000 | PA | 1 |
 | 0x0050a1b2 | citywin_A1B2 | FW | dialog_cleanup | 12 | 0x00500000 | NN |  |
@@ -2473,39 +2476,39 @@ Functions with game logic that have been ported or are candidates:
 | 0x0050a1d6 | citywin_A1D6 | UI | citywin_change | 289 | 0x00500000 | SK |  |
 | 0x0050a2f7 | citywin_A2F7 | UI | citywin_change | 380 | 0x00500000 | SK |  |
 | 0x0050a473 | city_button_change | UI | citywin_change | 4544 bytes | 0x00500000 | PA |  |
-| 0x0050b638 | citywin_B638 | UNSET |  | 12 | 0x00500000 |  |  |
-| 0x0050b644 | citywin_B644 | UNSET |  | 12 | 0x00500000 |  |  |
-| 0x0050b650 | citywin_B650 | UNSET |  | 12 | 0x00500000 |  |  |
-| 0x0050b666 | citywin_B666 | UNSET |  | 14 | 0x00500000 |  |  |
+| 0x0050b638 | citywin_dialog_cleanup_1 | FW | dialog_cleanup | 12 | 0x00500000 | NN | thunk_FUN_0059df8a (dialog teardown) |
+| 0x0050b644 | citywin_dialog_cleanup_2 | FW | dialog_cleanup | 12 | 0x00500000 | NN | thunk_FUN_0059df8a |
+| 0x0050b650 | citywin_dialog_cleanup_3 | FW | dialog_cleanup | 12 | 0x00500000 | NN | thunk_FUN_0059df8a |
+| 0x0050b666 | citywin_seh_epilog_change | FW | seh | 14 | 0x00500000 | NN | SEH epilog for city_button_change |
 | 0x0050b674 | citywin_idle_timer_check | UI | citywin_idle | 218 bytes | 0x00500000 | NN | 1 |
 | 0x0050b74e | city_button_rename | UI | citywin_rename | 598 bytes | 0x00500000 | SK | 1 |
 | 0x0050b9a4 | citywin_B9A4 | UI | citywin_tabs | 99 | 0x00500000 | SK |  |
 | 0x0050ba07 | citywin_BA07 | UI | citywin_tabs | 99 | 0x00500000 | SK |  |
 | 0x0050ba6a | citywin_BA6A | UI | citywin_tabs | 99 | 0x00500000 | SK |  |
 | 0x0050bacd | city_button_view | UI | citywin_view | 386 bytes | 0x00500000 | SK | 1 |
-| 0x0050bc4f | citywin_BC4F | UNSET |  | 139 | 0x00500000 |  |  |
-| 0x0050bcda | citywin_BCDA | UNSET |  | 57 | 0x00500000 |  |  |
-| 0x0050bd13 | citywin_BD13 | UNSET |  | 607 | 0x00500000 |  |  |
-| 0x0050bf72 | citywin_BF72 | UNSET |  | 607 | 0x00500000 |  |  |
-| 0x0050c1d1 | city_mouse | UNSET |  | 535 | 0x00500000 |  |  |
-| 0x0050c405 | citywin_C405 | UNSET |  | 34 | 0x00500000 |  |  |
-| 0x0050c427 | citywin_C427 | UNSET |  | 34 | 0x00500000 |  |  |
-| 0x0050c449 | citywin_C449 | UNSET |  | 75 | 0x00500000 |  |  |
-| 0x0050c494 | citywin_C494 | UNSET |  | 485 | 0x00500000 |  |  |
-| 0x0050c679 | citywin_C679 | UNSET |  | 118 | 0x00500000 |  |  |
-| 0x0050c6ef | citywin_C6EF | UNSET |  | 180 | 0x00500000 |  |  |
+| 0x0050bc4f | citywin_button_close_action | UI | citywin_buttons | 139 | 0x00500000 | SK | Gets city idx, sends net msg 99, closes panels. If MP mode 2, sets deferred close flag. |
+| 0x0050bcda | citywin_set_imp_scroll | UI | citywin_buttons | 57 | 0x00500000 | SK | Sets DAT_006aa76c = param, refreshes improvements list |
+| 0x0050bd13 | citywin_button_next_city | UI | citywin_buttons | 607 | 0x00500000 | SK | Finds next city alphabetically AFTER current; wraps to last. Pure string comparison. |
+| 0x0050bf72 | citywin_button_prev_city | UI | citywin_buttons | 607 | 0x00500000 | SK | Same as next but reversed: initial sentinel "zzzzz..."; finds prev alphabetically. |
+| 0x0050c1d1 | city_mouse | UI | citywin_mouse | 535 | 0x00500000 | SK | Hit-test dispatch: panel 1=resource map click, 2=citizen, 3=unit present, 4=sell improvement, 6=unit supported. |
+| 0x0050c405 | citywin_on_lbutton_down | UI | citywin_mouse | 34 | 0x00500000 | SK | city_mouse(x, y, 0) |
+| 0x0050c427 | citywin_on_rbutton_down | UI | citywin_mouse | 34 | 0x00500000 | SK | city_mouse(x, y, 1) |
+| 0x0050c449 | citywin_on_city_deleted | UI | citywin_notify | 75 | 0x00500000 | SK | If deleted city == displayed city: close dialog |
+| 0x0050c494 | citywin_on_unit_moved | UI | citywin_notify | 485 | 0x00500000 | SK | Refreshes info panel if unit moved to/from city tile. No formulas, just recalc trigger. |
+| 0x0050c679 | citywin_on_city_changed | UI | citywin_notify | 118 | 0x00500000 | SK | If changed city == displayed city: full_refresh() |
+| 0x0050c6ef | citywin_on_tile_changed | UI | citywin_notify | 180 | 0x00500000 | SK | If changed tile within distance 3 of city: refresh top panels |
 | 0x0050c7a3 | citywin_C7A3 | UI | citywin_buttons | 182 | 0x00500000 | SK |  |
 | 0x0050c859 | citywin_C859 | UI | citywin_buttons | 564 | 0x00500000 | SK |  |
 | 0x0050ca8d | citywin_CA8D | UI | citywin_buttons | 527 | 0x00500000 | SK |  |
 | 0x0050ccb3 | citywin_CCB3 | UI | citywin_buttons | 572 | 0x00500000 | SK |  |
 | 0x0050cf06 | citywin_create_all_buttons | UI | citywin_buttons | 2883 bytes | 0x00500000 | SK |  |
-| 0x0050dada | citywin_DADA | UNSET |  | 92 | 0x00500000 |  |  |
-| 0x0050db36 | citywin_DB36 | UNSET |  | 92 | 0x00500000 |  |  |
-| 0x0050db92 | citywin_DB92 | UNSET |  | 38 | 0x00500000 |  |  |
-| 0x0050dbb8 | citywin_DBB8 | UNSET |  | 38 | 0x00500000 |  |  |
-| 0x0050dbde | citywin_DBDE | UNSET |  | 211 | 0x00500000 |  |  |
-| 0x0050dcb6 | citywin_DCB6 | UNSET |  | 498 | 0x00500000 |  |  |
-| 0x0050dea8 | citywin_DEA8 | UNSET |  | 51 | 0x00500000 |  |  |
+| 0x0050dada | citywin_on_activate | UI | citywin_activate | 92 | 0x00500000 | SK | Sets activation mode (0x15ac = 2 if not blocked, 1 if blocked) |
+| 0x0050db36 | citywin_on_deactivate | UI | citywin_activate | 92 | 0x00500000 | SK | Restores mode, creates close button if was active |
+| 0x0050db92 | citywin_on_getminmaxinfo | UI | citywin_activate | 38 | 0x00500000 | SK | Returns DAT_00655344 (window rect) |
+| 0x0050dbb8 | citywin_on_nchittest | UI | citywin_activate | 38 | 0x00500000 | SK | Returns DAT_00655344 |
+| 0x0050dbde | citywin_on_syscommand | UI | citywin_activate | 211 | 0x00500000 | SK | cmd 1: close. cmd 2: zoom out (min 2). cmd 3: zoom in (max 3, or 2 if screen<1000). |
+| 0x0050dcb6 | citywin_on_create | UI | citywin_init | 498 | 0x00500000 | SK | Full window initialization: create 636x421 window, register surfaces (food/shield/trade), set all event handlers. |
+| 0x0050dea8 | citywin_on_destroy | UI | citywin_activate | 51 | 0x00500000 | SK | Mark closing (0x15a0 = 1), destroy_buttons(), base cleanup |
 | 0x00511320 | FUN_00511320 | RN | draw | 28 | 0x00510000 | SK |  |
 | 0x00511350 | clamp_to_range | RN | draw | 59 | 0x00510000 | SK |  |
 | 0x005113b0 | draw_line | RN | draw | 46 | 0x00510000 | SK |  |
@@ -2514,12 +2517,12 @@ Functions with game logic that have been ported or are candidates:
 | 0x00511460 | invalidate_rect_region | UI | layout | 78 | 0x00510000 | SK | 1 |
 | 0x005114d0 | blit_sprite_8param | RN | draw | 62 | 0x00510000 | SK |  |
 | 0x00511520 | FUN_00511520 | UI | popup | 41 | 0x00510000 | SK | 1 |
-| 0x00511560 | scalar_deleting_destructor_a | UNSET |  | 57 | 0x00510000 |  | Calls dtor, conditionally deletes |
-| 0x005115b0 | destructor_chain_a | UNSET |  | 116 | 0x00510000 |  | Deletes *(this+0x1c), calls sub-dtors |
-| 0x00511624 | dtor_helper_a1 | UNSET |  | 12 | 0x00510000 |  | CString dtor |
-| 0x00511630 | dtor_helper_a2 | UNSET |  | 12 | 0x00510000 |  | CString dtor |
-| 0x0051163c | dtor_helper_a3 | UNSET |  | 9 | 0x00510000 |  | Base class dtor |
-| 0x0051164f | seh_epilog_a | UNSET |  | 14 | 0x00510000 |  | Restores FS:[0] |
+| 0x00511560 | scalar_deleting_destructor_a | FW | seh_dtor | 57 | 0x00510000 | NN | Calls dtor, conditionally deletes |
+| 0x005115b0 | destructor_chain_a | FW | seh_dtor | 116 | 0x00510000 | NN | Deletes *(this+0x1c), calls sub-dtors |
+| 0x00511624 | dtor_helper_a1 | FW | seh_dtor | 12 | 0x00510000 | NN | CString dtor |
+| 0x00511630 | dtor_helper_a2 | FW | seh_dtor | 12 | 0x00510000 | NN | CString dtor |
+| 0x0051163c | dtor_helper_a3 | FW | seh_dtor | 9 | 0x00510000 | NN | Base class dtor |
+| 0x0051164f | seh_epilog_a | FW | seh | 14 | 0x00510000 | NN | Restores FS:[0] |
 | 0x00511690 | scale_universal | RN | draw | 67 | 0x00510000 | SK |  |
 | 0x005116f0 | format_string_to_buf | RN | draw | 33 | 0x00510000 | SK |  |
 | 0x00511720 | FUN_00511720 | FW | window | 123 | 0x00510000 | NN |  |
@@ -2539,24 +2542,24 @@ Functions with game logic that have been ported or are candidates:
 | 0x0051435f | is_alpha_message | NW | netmsg | 48 | 0x00510000 | SK |  |
 | 0x0051438f | netmsg_enqueue | NW | netmsg | 1602 | 0x00510000 | SK |  |
 | 0x005149d6 | netmsg_dequeue | NW | netmsg | 461 | 0x00510000 | SK |  |
-| 0x00514e10 | static_init_e31 | UNSET |  | 26 | 0x00510000 |  | Calls two sub-inits |
-| 0x00514e2a | static_init_e31a | UNSET |  | 26 | 0x00510000 |  | CString constructor |
-| 0x00514e44 | static_init_e31b | UNSET |  | 29 | 0x00510000 |  | Registers atexit handler |
-| 0x00514e61 | static_dtor_e31 | UNSET |  | 26 | 0x00510000 |  | CString destructor |
+| 0x00514e10 | static_init_e31 | FW | crt | 26 | 0x00510000 | NN | Calls two sub-inits |
+| 0x00514e2a | static_init_e31a | FW | crt | 26 | 0x00510000 | NN | CString constructor |
+| 0x00514e44 | static_init_e31b | FW | crt | 29 | 0x00510000 | NN | Registers atexit handler |
+| 0x00514e61 | static_dtor_e31 | FW | crt | 26 | 0x00510000 | NN | CString destructor |
 | 0x00514e7b | show_council_dialog | UI | council_advisor | 119 | 0x00510000 | SK |  |
 | 0x00514ef2 | FUN_00514ef2 | FW | seh_dtor | 12 | 0x00510000 | NN | council destructor helper |
 | 0x00514f08 | FUN_00514f08 | FW | seh_dtor | 14 | 0x00510000 | NN | SEH epilog |
 | 0x00514f16 | council_construct | UI | council_advisor | 295 | 0x00510000 | SK |  |
 | 0x005150b9 | council_destruct | UI | council_advisor | 177 | 0x00510000 | SK |  |
-| 0x0051516a | thunk_FUN_0043c520 | UNSET |  | 15 | 0x00510000 |  | council sub-dtor |
-| 0x00515179 | FUN_00515179 | UNSET |  | 15 | 0x00510000 |  | surface dtor |
-| 0x00515188 | FUN_00515188 | UNSET |  | 15 | 0x00510000 |  | surface dtor |
-| 0x00515197 | FUN_00515197 | UNSET |  | 15 | 0x00510000 |  | _Timevec dtor |
-| 0x005151a6 | FUN_005151a6 | UNSET |  | 15 | 0x00510000 |  | CString dtor |
-| 0x005151b5 | thunk_FUN_0044cba0 | UNSET |  | 15 | 0x00510000 |  | CWnd dtor |
-| 0x005151c4 | FUN_005151c4 | UNSET |  | 15 | 0x00510000 |  | surface cleanup |
-| 0x005151d3 | thunk_FUN_0044ca60 | UNSET |  | 9 | 0x00510000 |  | CWnd dtor |
-| 0x005151e6 | FUN_005151e6 | UNSET |  | 14 | 0x00510000 |  | SEH epilog |
+| 0x0051516a | council_sub_dtor | FW | seh_dtor | 15 | 0x00510000 | NN | thunk_FUN_0043c520 (council dialog sub-dtor) |
+| 0x00515179 | council_surface_dtor_1 | FW | seh_dtor | 15 | 0x00510000 | NN | Surface destructor for council advisor dialog |
+| 0x00515188 | council_surface_dtor_2 | FW | seh_dtor | 15 | 0x00510000 | NN | Surface destructor |
+| 0x00515197 | council_timevec_dtor | FW | seh_dtor | 15 | 0x00510000 | NN | _Timevec dtor (actually GDI object cleanup) |
+| 0x005151a6 | council_cstring_dtor | FW | seh_dtor | 15 | 0x00510000 | NN | CString destructor |
+| 0x005151b5 | council_cwnd_dtor_1 | FW | seh_dtor | 15 | 0x00510000 | NN | thunk_FUN_0044cba0 (CWnd dtor) |
+| 0x005151c4 | council_surface_cleanup | FW | seh_dtor | 15 | 0x00510000 | NN | Surface cleanup |
+| 0x005151d3 | council_cwnd_dtor_2 | FW | seh_dtor | 9 | 0x00510000 | NN | thunk_FUN_0044ca60 (CWnd dtor) |
+| 0x005151e6 | council_seh_epilog | FW | seh | 14 | 0x00510000 | NN | SEH epilog for council advisor dialog |
 | 0x005151f4 | council_init | UI | council_advisor | 802 | 0x00510000 | SK |  |
 | 0x00515516 | council_play_video | UI | council_advisor | 1122 | 0x00510000 | SK |  |
 | 0x00515978 | FUN_00515978 | FW | seh_dtor | 9 | 0x00510000 | NN | council video dtor (thunk_FUN_0043c520) |
@@ -2576,17 +2579,17 @@ Functions with game logic that have been ported or are candidates:
 | 0x0051660c | FUN_0051660c | FW | seh_dtor | 14 | 0x00510000 | NN | SEH epilog |
 | 0x0051661a | govt_council_construct | UI | council_govt | 293 | 0x00510000 | SK |  |
 | 0x005167d9 | govt_council_destruct | UI | council_govt | 198 | 0x00510000 | SK |  |
-| 0x0051689f | FUN_0051689f | UNSET |  | 15 | 0x00510000 |  | button dtor |
-| 0x005168ae | FUN_005168ae | UNSET |  | 15 | 0x00510000 |  | button dtor |
-| 0x005168bd | FUN_005168bd | UNSET |  | 15 | 0x00510000 |  | button dtor |
-| 0x005168cc | FUN_005168cc | UNSET |  | 15 | 0x00510000 |  | button dtor |
-| 0x005168db | FUN_005168db | UNSET |  | 15 | 0x00510000 |  | button dtor |
-| 0x005168ea | FUN_005168ea | UNSET |  | 15 | 0x00510000 |  | button dtor |
-| 0x005168f9 | FUN_005168f9 | UNSET |  | 15 | 0x00510000 |  | _Timevec dtor |
-| 0x00516908 | FUN_00516908 | UNSET |  | 15 | 0x00510000 |  | CDialog dtor |
-| 0x00516917 | FUN_00516917 | UNSET |  | 15 | 0x00510000 |  | video player dtor |
-| 0x00516926 | FUN_00516926 | UNSET |  | 9 | 0x00510000 |  | CWnd dtor |
-| 0x00516939 | FUN_00516939 | UNSET |  | 14 | 0x00510000 |  | SEH epilog |
+| 0x0051689f | govt_button_dtor_1 | FW | seh_dtor | 15 | 0x00510000 | NN | Button dtor for government council dialog |
+| 0x005168ae | govt_button_dtor_2 | FW | seh_dtor | 15 | 0x00510000 | NN | Button dtor |
+| 0x005168bd | govt_button_dtor_3 | FW | seh_dtor | 15 | 0x00510000 | NN | Button dtor |
+| 0x005168cc | govt_button_dtor_4 | FW | seh_dtor | 15 | 0x00510000 | NN | Button dtor |
+| 0x005168db | govt_button_dtor_5 | FW | seh_dtor | 15 | 0x00510000 | NN | Button dtor |
+| 0x005168ea | govt_button_dtor_6 | FW | seh_dtor | 15 | 0x00510000 | NN | Button dtor |
+| 0x005168f9 | govt_timevec_dtor | FW | seh_dtor | 15 | 0x00510000 | NN | _Timevec dtor (GDI object cleanup) |
+| 0x00516908 | govt_cdialog_dtor | FW | seh_dtor | 15 | 0x00510000 | NN | CDialog destructor |
+| 0x00516917 | govt_video_dtor | FW | seh_dtor | 15 | 0x00510000 | NN | Video player destructor |
+| 0x00516926 | govt_cwnd_dtor | FW | seh_dtor | 9 | 0x00510000 | NN | CWnd destructor |
+| 0x00516939 | govt_seh_epilog | FW | seh | 14 | 0x00510000 | NN | SEH epilog for government council dialog |
 | 0x00516947 | council_video_init | UI | council_govt | 1672 | 0x00510000 | SK |  |
 | 0x00516fd4 | council_video_run | UI | council_govt | 388 | 0x00510000 | SK |  |
 | 0x00517158 | council_draw_panels | UI | council_govt | 1307 | 0x00510000 | SK |  |
@@ -2607,10 +2610,10 @@ Functions with game logic that have been ported or are candidates:
 | 0x00518e80 | video_set_position | UI | council_govt | 47 | 0x00510000 | SK |  |
 | 0x00518ec0 | show_input_dialog_int | UI | council_govt | 41 | 0x00510000 | SK |  |
 | 0x00518f00 | init_scrollbar_list | UI | scrollbar | 365 | 0x00510000 | SK | 1 |
-| 0x005190d0 | FUN_005190d0 | UNSET |  | 26 | 0x00510000 |  | static_init_dialog_obj: calls ctor + atexit |
-| 0x005190ea | FUN_005190ea | UNSET |  | 31 | 0x00510000 |  | static_init_dialog_ctor: CDialog(0x4000) |
-| 0x00519109 | FUN_00519109 | UNSET |  | 29 | 0x00510000 |  | static_init_dialog_atexit: _atexit(dtor) |
-| 0x00519126 | FUN_00519126 | UNSET |  | 26 | 0x00510000 |  | static_dtor_dialog: CDialog dtor |
+| 0x005190d0 | static_init_dialog_obj | FW | crt | 26 | 0x00510000 | NN | Calls ctor + atexit for static dialog object |
+| 0x005190ea | static_init_dialog_ctor | FW | crt | 31 | 0x00510000 | NN | CDialog constructor with ID 0x4000 |
+| 0x00519109 | static_init_dialog_atexit | FW | crt | 29 | 0x00510000 | NN | Registers _atexit(dtor) for static dialog |
+| 0x00519126 | static_dtor_dialog | FW | crt | 26 | 0x00510000 | NN | CDialog destructor for static object |
 | 0x00519140 | close_active_popup | UI | dialog | 49 bytes | 0x00510000 | SK |  |
 | 0x00519171 | show_popup_labeled | UI | editor | 77 | 0x00510000 | SK |  |
 | 0x00519200 | load_terrain_rules_to_editor | UI | editor | 493 | 0x00510000 | SK |  |
@@ -2779,28 +2782,28 @@ Functions with game logic that have been ported or are candidates:
 | 0x0054ffa4 | events_editor_window_cleanup | FW | seh_thunk | 12 bytes | 0x00540000 | NN |  |
 | 0x0054ffba | events_editor_seh_unwind | FW | seh_thunk | 14 bytes | 0x00540000 | NN |  |
 | 0x0054ffc8 | open_events_editor | UI | events_editor | 79 bytes | 0x00540000 | SK |  |
-| 0x00550017 | thunk_wrapper_4183d0 | UNSET |  | 12 | 0x00550000 |  | Thunk to FUN_004183d0 |
-| 0x0055002d | seh_epilog_002d | UNSET |  | 14 | 0x00550000 |  | SEH — restores FS:[0] |
-| 0x00551cd0 | scalar_deleting_destructor | UNSET |  | 57 | 0x00550000 |  | MFC pattern: call dtor, conditionally free |
-| 0x00551d20 | streambuf::egptr | UNSET |  | 28 | 0x00550000 |  | Library: returns `this+0x2c |
+| 0x00550017 | thunk_wrapper_4183d0 | FW | mfc | 12 | 0x00550000 | SK | Thunk to FUN_004183d0 |
+| 0x0055002d | seh_epilog_002d | FW | seh | 14 | 0x00550000 | SK | SEH — restores FS:[0] |
+| 0x00551cd0 | scalar_deleting_destructor | FW | mfc | 57 | 0x00550000 | SK | MFC pattern: call dtor, conditionally free |
+| 0x00551d20 | streambuf_egptr | FW | crt | 28 | 0x00550000 | SK | Library: returns this+0x2c (streambuf::egptr) |
 | 0x00551d50 | dlg_send_3dbf | UI | dialog_framework | 37 bytes | 0x00550000 | SK |  |
 | 0x00551d80 | dlg_send_3e92 | UI | dialog_framework | 43 bytes | 0x00550000 | SK |  |
 | 0x00551dc0 | dlg_set_field_30 | UI | dialog_framework | 33 bytes | 0x00550000 | SK |  |
 | 0x00551df0 | dlg_set_field_34 | UI | dialog_framework | 33 bytes | 0x00550000 | SK |  |
 | 0x00551e20 | dlg_log_normal | UI | dialog_framework | 41 bytes | 0x00550000 | SK |  |
 | 0x00551e60 | dlg_log_debug | UI | dialog_framework | 41 bytes | 0x00550000 | SK |  |
-| 0x00551ea0 | crt_static_init_1 | UNSET |  | 26 | 0x00550000 |  | Calls init+atexit pair |
-| 0x00551eba | crt_alloc_16 | UNSET |  | 30 | 0x00550000 |  | thunk_FUN_0043c460(0, 0x10) |
-| 0x00551ed8 | crt_register_atexit_1 | UNSET |  | 29 | 0x00550000 |  | Registers FUN_00551ef5 via _atexit |
-| 0x00551ef5 | crt_static_dtor_1 | UNSET |  | 26 | 0x00550000 |  | Thunk to thunk_FUN_0043c520 |
-| 0x00551f0f | crt_static_init_2 | UNSET |  | 26 | 0x00550000 |  | Calls init+atexit pair |
-| 0x00551f29 | crt_alloc_10 | UNSET |  | 30 | 0x00550000 |  | thunk_FUN_0043c460(0, 10) |
-| 0x00551f47 | crt_register_atexit_2 | UNSET |  | 29 | 0x00550000 |  | Registers FUN_00551f64 via _atexit |
-| 0x00551f64 | crt_static_dtor_2 | UNSET |  | 26 | 0x00550000 |  | Thunk to thunk_FUN_0043c520 |
-| 0x00551f7e | crt_static_init_3 | UNSET |  | 26 | 0x00550000 |  | Calls init+atexit pair |
-| 0x00551f98 | crt_alloc_16b | UNSET |  | 30 | 0x00550000 |  | thunk_FUN_0043c460(0, 0x10) |
-| 0x00551fb6 | crt_register_atexit_3 | UNSET |  | 29 | 0x00550000 |  | Registers FUN_00551fd3 via _atexit |
-| 0x00551fd3 | crt_static_dtor_3 | UNSET |  | 26 | 0x00550000 |  | Thunk to thunk_FUN_0043c520 |
+| 0x00551ea0 | crt_static_init_1 | FW | crt | 26 | 0x00550000 | SK | Calls init+atexit pair |
+| 0x00551eba | crt_alloc_16 | FW | crt | 30 | 0x00550000 | SK | thunk_FUN_0043c460(0, 0x10) |
+| 0x00551ed8 | crt_register_atexit_1 | FW | crt | 29 | 0x00550000 | SK | Registers FUN_00551ef5 via _atexit |
+| 0x00551ef5 | crt_static_dtor_1 | FW | crt | 26 | 0x00550000 | SK | Thunk to thunk_FUN_0043c520 |
+| 0x00551f0f | crt_static_init_2 | FW | crt | 26 | 0x00550000 | SK | Calls init+atexit pair |
+| 0x00551f29 | crt_alloc_10 | FW | crt | 30 | 0x00550000 | SK | thunk_FUN_0043c460(0, 10) |
+| 0x00551f47 | crt_register_atexit_2 | FW | crt | 29 | 0x00550000 | SK | Registers FUN_00551f64 via _atexit |
+| 0x00551f64 | crt_static_dtor_2 | FW | crt | 26 | 0x00550000 | SK | Thunk to thunk_FUN_0043c520 |
+| 0x00551f7e | crt_static_init_3 | FW | crt | 26 | 0x00550000 | SK | Calls init+atexit pair |
+| 0x00551f98 | crt_alloc_16b | FW | crt | 30 | 0x00550000 | SK | thunk_FUN_0043c460(0, 0x10) |
+| 0x00551fb6 | crt_register_atexit_3 | FW | crt | 29 | 0x00550000 | SK | Registers FUN_00551fd3 via _atexit |
+| 0x00551fd3 | crt_static_dtor_3 | FW | crt | 26 | 0x00550000 | SK | Thunk to thunk_FUN_0043c520 |
 | 0x00551fed | init_dialog_metrics | UI | dialog_framework | 269 bytes | 0x00550000 | SK |  |
 | 0x005520fa | set_dialog_background | UI | dialog_framework | 24 bytes | 0x00550000 | SK |  |
 | 0x00552112 | dialog_paint_titlebar | UI | dialog_framework | 3401 bytes | 0x00550000 | SK |  |
@@ -2811,9 +2814,9 @@ Functions with game logic that have been ported or are candidates:
 | 0x005532d7 | dialog_destroy_buttons | UI | dialog_framework | 162 bytes | 0x00550000 | SK |  |
 | 0x00553379 | dialog_cleanup | UI | dialog_framework | 38 bytes | 0x00550000 | SK |  |
 | 0x0055339f | dialog_ctor | UI | dialog_framework | 165 bytes | 0x00550000 | SK |  |
-| 0x00553444 | dialog_dtor | UNSET |  | 87 | 0x00550000 |  | Sets vtable, destroys buttons, chains base dtor |
-| 0x0055349b | dialog_base_dtor | UNSET |  | 9 | 0x00550000 |  | Thunk to thunk_FUN_0044cba0 |
-| 0x005534ae | seh_epilog_34ae | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
+| 0x00553444 | dialog_dtor | FW | mfc | 87 | 0x00550000 | SK | Sets vtable, destroys buttons, chains base dtor |
+| 0x0055349b | dialog_base_dtor | FW | mfc | 9 | 0x00550000 | SK | Thunk to thunk_FUN_0044cba0 |
+| 0x005534ae | seh_epilog_34ae | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
 | 0x005534bc | dialog_create | UI | dialog_framework | 2164 bytes | 0x00550000 | SK |  |
 | 0x00553d30 | dialog_set_callback_60 | UI | dialog_framework | 64 bytes | 0x00550000 | SK |  |
 | 0x00553d70 | dialog_set_callback_64 | UI | dialog_framework | 64 bytes | 0x00550000 | SK |  |
@@ -2821,85 +2824,85 @@ Functions with game logic that have been ported or are candidates:
 | 0x00553dfd | create_scenario_folder | UI | cheat_menu | 505 bytes | 0x00550000 | SK |  |
 | 0x00553ff6 | toggle_cheat_mode | UI | cheat_menu | 335 bytes | 0x00550000 | SK |  |
 | 0x00554145 | cheat_pick_civ | UI | cheat_menu | 301 bytes | 0x00550000 | SK |  |
-| 0x00554272 | seh_cleanup_54272 | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x00554288 | seh_epilog_54288 | UNSET |  | 15 | 0x00550000 |  | SEH epilog |
+| 0x00554272 | seh_cleanup_54272 | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close (0x0059df8a) |
+| 0x00554288 | seh_epilog_54288 | FW | seh | 15 | 0x00550000 | SK | SEH epilog |
 | 0x00554297 | toggle_cheat_multiplayer | UI | cheat_menu | 396 bytes | 0x00550000 | SK |  |
-| 0x00554423 | cheat_reveal_map | UNSET |  | 61 | 0x00550000 |  |  |
-| 0x00554460 | cheat_toggle_all_tech | UNSET |  | 371 | 0x00550000 |  |  |
-| 0x005545d3 | cheat_edit_tech | UNSET |  | 870 | 0x00550000 |  |  |
-| 0x0055493e | seh_cleanup_5493e | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x00554954 | seh_epilog_54954 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x00554962 | cheat_change_govt | UNSET |  | 61 | 0x00550000 |  |  |
-| 0x0055499f | cheat_edit_terrain | UNSET |  | 2032 | 0x00550000 |  |  |
-| 0x0055518f | seh_cleanup_5518f | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x005551a5 | seh_epilog_551a5 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x005551b3 | cheat_place_unit | UNSET |  | 1059 | 0x00550000 |  |  |
-| 0x005555eb | seh_cleanup_555eb | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x00555601 | seh_epilog_55601 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x0055560f | cheat_change_player | UNSET |  | 524 | 0x00550000 |  |  |
-| 0x0055581b | seh_cleanup_5581b | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x00555831 | seh_epilog_55831 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x0055583f | cheat_change_human_civ | UNSET |  | 415 | 0x00550000 |  |  |
-| 0x005559de | seh_cleanup_559de | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x005559f4 | seh_epilog_559f4 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x00555a02 | cheat_set_game_year | UNSET |  | 137 | 0x00550000 |  |  |
-| 0x00555a8b | cheat_destroy_civ | UNSET |  | 514 | 0x00550000 |  |  |
-| 0x00555c8d | seh_cleanup_55c8d | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x00555ca3 | seh_epilog_55ca3 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x00555cb1 | cheat_edit_unit_at_cursor | UNSET |  | 60 | 0x00550000 |  |  |
+| 0x00554423 | cheat_reveal_map | UI | editor | 61 | 0x00550000 | SK | Calls map reveal function with player param |
+| 0x00554460 | cheat_toggle_all_tech | GL | research | 371 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Toggles all techs for a player -- iterates 100 techs, sets/clears tech bits in civ record |
+| 0x005545d3 | cheat_edit_tech | UI | editor | 870 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Tech editor -- shows popup listing 100 techs, allows toggling individual techs |
+| 0x0055493e | seh_cleanup_5493e | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x00554954 | seh_epilog_54954 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x00554962 | cheat_change_govt | UI | editor | 61 | 0x00550000 | SK | Calls FUN_0055c3d3 (government change) with player index |
+| 0x0055499f | cheat_edit_terrain | UI | editor | 2032 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Terrain editor -- modifies terrain byte flags, terrain type changes (0-10 types) |
+| 0x0055518f | seh_cleanup_5518f | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x005551a5 | seh_epilog_551a5 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x005551b3 | cheat_place_unit | UI | editor | 1059 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Unit placement editor -- iterates 62 unit types, filters by tech prerequisites |
+| 0x005555eb | seh_cleanup_555eb | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x00555601 | seh_epilog_55601 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x0055560f | cheat_change_player | UI | editor | 524 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Switches active player -- sets DAT_00655b06/b07, DAT_006d1da0 |
+| 0x0055581b | seh_cleanup_5581b | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x00555831 | seh_epilog_55831 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x0055583f | cheat_change_human_civ | UI | editor | 415 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Changes which civ is human-controlled -- modifies human player bitmask |
+| 0x005559de | seh_cleanup_559de | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x005559f4 | seh_epilog_559f4 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x00555a02 | cheat_set_game_year | GL | init | 137 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Sets game year (DAT_00655af8), recalculates year string |
+| 0x00555a8b | cheat_destroy_civ | GL | city | 514 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Destroys a civ -- clears player from bitmask, deletes all owned cities |
+| 0x00555c8d | seh_cleanup_55c8d | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x00555ca3 | seh_epilog_55ca3 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x00555cb1 | cheat_edit_unit_at_cursor | UI | editor | 60 | 0x00550000 | SK | Gets unit at cursor coords then calls thunk_FUN_005b47fa (unit edit) |
 | 0x00555ced | get_ai_continent_goal_icon | UI | cheat_menu | 131 bytes | 0x00550000 | SK |  |
-| 0x00555d70 | cheat_show_ai_goals | UNSET |  | 857 | 0x00550000 |  |  |
-| 0x005560c9 | cheat_reveal_map_area | UNSET |  | 147 | 0x00550000 |  |  |
-| 0x0055615c | cheat_set_money | UNSET |  | 255 | 0x00550000 |  |  |
-| 0x0055625b | cheat_edit_unit | UNSET |  | 1892 | 0x00550000 |  |  |
-| 0x005569bf | seh_cleanup_569bf | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x005569d5 | seh_epilog_569d5 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x005569e3 | set_city_shields | UNSET |  | 1357 | 0x00550000 |  |  |
-| 0x00556f30 | seh_cleanup_56f30 | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x00556f46 | seh_epilog_56f46 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x00556f54 | cheat_edit_civ | UNSET |  | 3764 | 0x00550000 |  |  |
-| 0x00557e08 | seh_cleanup_57e08 | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x00557e1e | seh_epilog_57e1e | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x00557e2c | cheat_edit_victory | UNSET |  | 843 | 0x00550000 |  |  |
-| 0x00558177 | seh_cleanup_58177 | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x0055818d | seh_epilog_5818d | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x0055819b | cheat_edit_rules | UNSET |  | 274 | 0x00550000 |  |  |
-| 0x005582ad | cheat_edit_scenario | UNSET |  | 1648 | 0x00550000 |  |  |
-| 0x0055891d | cheat_save_game | UNSET |  | 26 | 0x00550000 |  |  |
-| 0x00559c20 | crt_static_init_miniframe | UNSET |  | 26 | 0x00550000 |  | CRT static init for CMiniFrameWnd at DAT_006ab1b8 |
-| 0x00559c3a | crt_init_miniframe | UNSET |  | 26 | 0x00550000 |  | Thunk to FUN_00559e3c |
-| 0x00559c54 | crt_register_atexit_miniframe | UNSET |  | 29 | 0x00550000 |  | Registers dtor via _atexit |
-| 0x00559c71 | crt_dtor_miniframe | UNSET |  | 26 | 0x00550000 |  | CMiniFrameWnd::~CMiniFrameWnd on DAT_006ab1b8 |
-| 0x00559c8b | crt_static_init_surface | UNSET |  | 26 | 0x00550000 |  | CRT static init for surface object |
-| 0x00559ca5 | crt_init_surface_obj | UNSET |  | 26 | 0x00550000 |  | Thunk to FUN_005bd630 |
-| 0x00559cbf | crt_register_atexit_surface | UNSET |  | 29 | 0x00550000 |  | Registers FUN_00559cdc via _atexit |
-| 0x00559cdc | crt_dtor_surface_obj | UNSET |  | 26 | 0x00550000 |  | Thunk to FUN_005bd915 |
-| 0x00559cf6 | video_create_surface | UNSET |  | 199 | 0x00550000 |  |  |
-| 0x00559dbd | FUN_00559dbd | UNSET |  | 12 | 0x00550000 |  |  |
-| 0x00559dc9 | FUN_00559dc9 | UNSET |  | 12 | 0x00550000 |  |  |
-| 0x00559ddf | seh_epilog_59ddf | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x00559ded | video_init_playback_params | UNSET |  | 79 | 0x00550000 |  |  |
-| 0x00559e3c | video_window_ctor | UNSET |  | 118 | 0x00550000 |  |  |
-| 0x00559ed4 | video_window_dtor | UNSET |  | 92 | 0x00550000 |  | Destroys playback, timevec, chains base dtors |
-| 0x00559f30 | video_destroy_timevec | UNSET |  | 15 | 0x00550000 |  | Destroys _Timevec at this+0x2F8 |
-| 0x00559f3f | video_dtor_base | UNSET |  | 9 | 0x00550000 |  | Chains to COleCntrFrameWnd dtor |
-| 0x00559f52 | seh_epilog_59f52 | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
-| 0x00559f60 | video_blit_rect | UNSET |  | 111 | 0x00550000 |  |  |
-| 0x00559fcf | video_prepare_and_blit | UNSET |  | 60 | 0x00550000 |  |  |
-| 0x0055a00b | FUN_0055a00b | UNSET |  | 70 | 0x00550000 |  |  |
-| 0x0055a051 | video_render_frame | UNSET |  | 144 | 0x00550000 |  |  |
-| 0x0055a0e1 | FUN_0055a0e1 | UNSET |  | 44 | 0x00550000 |  |  |
-| 0x0055a10d | FUN_0055a10d | UNSET |  | 81 | 0x00550000 |  |  |
-| 0x0055a15e | FUN_0055a15e | UNSET |  | 26 | 0x00550000 |  |  |
-| 0x0055a178 | FUN_0055a178 | UNSET |  | 26 | 0x00550000 |  |  |
+| 0x00555d70 | cheat_show_ai_goals | UI | editor | 857 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Shows AI goals for a player -- reads 48 AI goal entries |
+| 0x005560c9 | cheat_reveal_map_area | UI | editor | 147 | 0x00550000 | SK | Reveals map area around viewport -- iterates tiles, calls map reveal function |
+| 0x0055615c | cheat_set_money | GL | city | 255 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Sets player gold -- reads/writes treasury, caps at 0-30000 |
+| 0x0055625b | cheat_edit_unit | UI | editor | 1892 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Full unit editor -- veteran flag, home city, hit points, movement type |
+| 0x005569bf | seh_cleanup_569bf | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x005569d5 | seh_epilog_569d5 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x005569e3 | cheat_edit_city | UI | editor | 1357 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: City editor -- edits city size, wonders, food box, production, shield box, capital flag |
+| 0x00556f30 | seh_cleanup_56f30 | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x00556f46 | seh_epilog_56f46 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x00556f54 | cheat_edit_civ | UI | editor | 3764 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Full civ editor -- treaties, AI attitudes, betrayal counter, research progress, govt type |
+| 0x00557e08 | seh_cleanup_57e08 | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x00557e1e | seh_epilog_57e1e | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x00557e2c | cheat_edit_victory | UI | editor | 843 | 0x00550000 | SK | Victory conditions editor UI |
+| 0x00558177 | seh_cleanup_58177 | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x0055818d | seh_epilog_5818d | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x0055819b | cheat_edit_rules | UI | editor | 274 | 0x00550000 | SK | Rules editor -- opens cosmic rules dialog |
+| 0x005582ad | cheat_edit_scenario | UI | editor | 1648 | 0x00550000 | EX | CONTAINS_GAME_LOGIC: Scenario editor -- terrain visibility, nationality, start year, max turns |
+| 0x0055891d | cheat_save_game | IO | save | 26 | 0x00550000 | SK | Calls thunk_save_game(1) |
+| 0x00559c20 | crt_static_init_miniframe | FW | crt | 26 | 0x00550000 | SK | CRT static init for CMiniFrameWnd at DAT_006ab1b8 |
+| 0x00559c3a | crt_init_miniframe | FW | crt | 26 | 0x00550000 | SK | Thunk to FUN_00559e3c (video window ctor) |
+| 0x00559c54 | crt_register_atexit_miniframe | FW | crt | 29 | 0x00550000 | SK | Registers dtor via _atexit |
+| 0x00559c71 | crt_dtor_miniframe | FW | mfc | 26 | 0x00550000 | SK | CMiniFrameWnd::~CMiniFrameWnd on DAT_006ab1b8 |
+| 0x00559c8b | crt_static_init_surface | FW | crt | 26 | 0x00550000 | SK | CRT static init for surface object |
+| 0x00559ca5 | crt_init_surface_obj | FW | crt | 26 | 0x00550000 | SK | Thunk to FUN_005bd630 (surface ctor) |
+| 0x00559cbf | crt_register_atexit_surface | FW | crt | 29 | 0x00550000 | SK | Registers FUN_00559cdc via _atexit |
+| 0x00559cdc | crt_dtor_surface_obj | FW | crt | 26 | 0x00550000 | SK | Thunk to FUN_005bd915 (surface dtor) |
+| 0x00559cf6 | video_create_surface | CS | wonder | 199 | 0x00550000 | SK | Creates video playback surface: calls surface ctor, GIF loader, blit setup |
+| 0x00559dbd | video_cleanup_smk | FW | seh | 12 | 0x00550000 | SK | SEH cleanup: calls FUN_005c656b (smacker cleanup) |
+| 0x00559dc9 | video_dtor_surface | FW | seh | 12 | 0x00550000 | SK | SEH cleanup: calls FUN_005bd915 (surface dtor) |
+| 0x00559ddf | seh_epilog_59ddf | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x00559ded | video_init_playback_params | CS | wonder | 79 | 0x00550000 | SK | Sets playback speed (100), scale, frame counter fields |
+| 0x00559e3c | video_window_ctor | CS | wonder | 118 | 0x00550000 | SK | Video window constructor: chains CMiniFrameWnd ctor, sets vtable |
+| 0x00559ed4 | video_window_dtor | CS | wonder | 92 | 0x00550000 | SK | Destroys playback, timevec, chains base dtors |
+| 0x00559f30 | video_destroy_timevec | FW | mfc | 15 | 0x00550000 | SK | Destroys _Timevec at this+0x2F8 |
+| 0x00559f3f | video_dtor_base | FW | mfc | 9 | 0x00550000 | SK | Chains to COleCntrFrameWnd dtor |
+| 0x00559f52 | seh_epilog_59f52 | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
+| 0x00559f60 | video_blit_rect | RN | surface | 111 | 0x00550000 | SK | Blits video frame to screen via thunk_FUN_005a9afe |
+| 0x00559fcf | video_prepare_and_blit | RN | surface | 60 | 0x00550000 | SK | Prepares palette then blits video frame |
+| 0x0055a00b | video_blit_offset | RN | surface | 70 | 0x00550000 | SK | Blits with offset from video window origin |
+| 0x0055a051 | video_render_frame | CS | wonder | 144 | 0x00550000 | SK | Full video frame render: creates surface, blits frame, renders status bar overlay |
+| 0x0055a0e1 | video_on_create | FW | window | 44 | 0x00550000 | SK | WM_CREATE handler: calls app init functions |
+| 0x0055a10d | video_calc_window_rect | VP | camera | 81 | 0x00550000 | SK | Calculates video window rectangle with padding |
+| 0x0055a15e | video_on_paint_1 | CS | wonder | 26 | 0x00550000 | SK | Thunk to video_render_frame |
+| 0x0055a178 | video_on_paint_2 | CS | wonder | 26 | 0x00550000 | SK | Thunk to video_render_frame |
 | 0x0055a192 | calc_window_position | UI | window_layout | 407 bytes | 0x00550000 | SK |  |
 | 0x0055a329 | get_popup_dimensions | UI | window_layout | 244 bytes | 0x00550000 | SK |  |
 | 0x0055a41d | show_popup_window | UI | window_layout | 330 bytes | 0x00550000 | SK |  |
-| 0x0055a567 | FUN_0055a567 | UNSET |  | 61 | 0x00550000 |  |  |
-| 0x0055a5a4 | FUN_0055a5a4 | UNSET |  | 64 | 0x00550000 |  |  |
-| 0x0055a5e4 | load_intro_dll | UNSET |  | 102 | 0x00550000 |  |  |
-| 0x0055a64a | unload_intro_dll | UNSET |  | 65 | 0x00550000 |  |  |
-| 0x0055a930 | FUN_0055a930 | UNSET |  | 56 | 0x00550000 |  |  |
+| 0x0055a567 | video_on_close | FW | window | 61 | 0x00550000 | SK | WM_CLOSE handler: hides window, frees resources |
+| 0x0055a5a4 | video_on_destroy | FW | window | 64 | 0x00550000 | SK | WM_DESTROY handler: hides window, unloads DLL |
+| 0x0055a5e4 | load_intro_dll | CS | intro | 102 | 0x00550000 | SK | Loads civ2_intro.dll via thunk_FUN_00564713 |
+| 0x0055a64a | unload_intro_dll | CS | intro | 65 | 0x00550000 | SK | Unloads intro DLL, clears playback flag |
+| 0x0055a930 | surface_blit_full | RN | surface | 56 | 0x00550000 | SK | Full surface blit wrapper: calls thunk_FUN_005a9afe |
 | 0x0055a980 | build_trade_route_map | GL | trade_route | 695 bytes | 0x00550000 | R |  |
 | 0x0055ac37 | find_trade_tile | GL | trade_route | 180 bytes | 0x00550000 | R |  |
 | 0x0055add0 | app_entry_point | GL | app_entry | 140 bytes | 0x00550000 | SK | 2 |
@@ -2922,8 +2925,8 @@ Functions with game logic that have been ported or are candidates:
 | 0x0055c066 | set_government_type | GL | government | 529 bytes | 0x00550000 | FP |  |
 | 0x0055c277 | check_govt_available | GL | government | 323 bytes | 0x00550000 | FP |  |
 | 0x0055c3d3 | revolution_dialog | GL | government | 678 bytes | 0x00550000 | PA |  |
-| 0x0055c679 | seh_cleanup_5c679 | UNSET |  | 12 | 0x00550000 |  | thunk_FUN_0059df8a |
-| 0x0055c68f | seh_epilog_5c68f | UNSET |  | 14 | 0x00550000 |  | SEH epilog |
+| 0x0055c679 | seh_cleanup_5c679 | FW | seh | 12 | 0x00550000 | SK | Thunk to popup_dialog_close |
+| 0x0055c68f | seh_epilog_5c68f | FW | seh | 14 | 0x00550000 | SK | SEH epilog |
 | 0x0055c69d | ai_revolution_notification | AI | diplomacy | 1336 bytes | 0x00550000 | PA |  |
 | 0x0055cbd5 | ai_should_declare_war | AI | diplomacy | 1549 bytes | 0x00550000 | PA |  |
 | 0x0055d1e2 | ai_tech_exchange | AI | diplomacy | 1182 bytes | 0x00550000 | PA |  |
@@ -2947,36 +2950,36 @@ Functions with game logic that have been ported or are candidates:
 | 0x005674b9 | draw_tech_tree_connector | UI | tech_tree | 254 bytes | 0x00560000 |  |  |
 | 0x005675b7 | draw_tech_tree_continuation | UI | tech_tree | 138 bytes | 0x00560000 |  |  |
 | 0x005680a0 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x005680ba | FUN_005680ba | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x005680d4 | FUN_005680d4 | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x005680f1 | FUN_005680f1 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x005680ba | crt_init_smk_surface | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005c64da (smacker surface init) |
+| 0x005680d4 | crt_register_atexit_smk | FW | crt | 29 | 0x00560000 | SK | Registers FUN_005680f1 via _atexit |
+| 0x005680f1 | crt_dtor_smk_surface | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005c656b (smacker surface cleanup) |
 | 0x0056810b | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x00568125 | FUN_00568125 | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056813f | FUN_0056813f | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056815c | FUN_0056815c | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x00568125 | crt_init_surface_1 | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005bd630 (surface ctor) |
+| 0x0056813f | crt_register_atexit_surface_1 | FW | crt | 29 | 0x00560000 | SK | Registers FUN_0056815c via _atexit |
+| 0x0056815c | crt_dtor_surface_1 | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005bd915 (surface dtor) |
 | 0x00568176 | return_true | UI | main_window | 24 | 0x00560000 |  |  |
 | 0x005681c9 | load_civ2_art_005681c9 | UI | main_window | 383 | 0x00560000 |  |  |
-| 0x00568348 | FUN_00568348 | UNSET |  | 12 | 0x00560000 |  |  |
-| 0x00568354 | FUN_00568354 | UNSET |  | 9 | 0x00560000 |  |  |
-| 0x0056835d | FUN_0056835d | UNSET |  | 12 | 0x00560000 |  |  |
-| 0x00568373 | FUN_00568373 | UNSET |  | 14 | 0x00560000 |  |  |
+| 0x00568348 | art_cleanup_timevec | FW | mfc | 12 | 0x00560000 | SK | Destroys _Timevec during civ2art loading |
+| 0x00568354 | art_cleanup_cstring | FW | mfc | 9 | 0x00560000 | SK | Calls FUN_005cde4d (CString cleanup) |
+| 0x0056835d | art_dtor_surface | FW | mfc | 12 | 0x00560000 | SK | Calls FUN_005bd915 (surface dtor) |
+| 0x00568373 | seh_epilog_68373 | FW | seh | 14 | 0x00560000 | SK | SEH epilog |
 | 0x00568381 | on_display_change | UI | main_window | 36 | 0x00560000 |  |  |
 | 0x005683a5 | noop_a | UI | main_window | 16 | 0x00560000 |  |  |
 | 0x005683b5 | noop_b | UI | main_window | 16 | 0x00560000 |  |  |
 | 0x005683c5 | screen_reveal_animation | UI | animation | 1155 | 0x00560000 |  |  |
 | 0x00568861 | get_civ_era_from_techs | UTIL | era | 136 | 0x00560000 |  |  |
 | 0x00568b00 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x00568b1a | FUN_00568b1a | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x00568b34 | FUN_00568b34 | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x00568b51 | FUN_00568b51 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x00568b1a | crt_init_wnd_1 | FW | crt | 26 | 0x00560000 | SK | Calls thunk_FUN_0055339f (window ctor) for DAT_006abc68 |
+| 0x00568b34 | crt_register_atexit_wnd_1 | FW | crt | 29 | 0x00560000 | SK | Registers FUN_00568b51 via _atexit |
+| 0x00568b51 | crt_dtor_wnd_1 | FW | mfc | 26 | 0x00560000 | SK | COleCntrFrameWnd::~COleCntrFrameWnd on DAT_006abc68 |
 | 0x00568b6b | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x00568b85 | FUN_00568b85 | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x00568b9f | FUN_00568b9f | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x00568bbc | FUN_00568bbc | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x00568b85 | crt_init_cstring_1 | FW | cstring_init | 26 | 0x00560000 | SK | Calls thunk_FUN_0043c690 (CString static init) |
+| 0x00568b9f | crt_register_atexit_cstring_1 | FW | cstring_init | 29 | 0x00560000 | SK | Registers FUN_00568bbc via _atexit |
+| 0x00568bbc | crt_dtor_cstring_1 | FW | cstring_init | 26 | 0x00560000 | SK | Calls thunk_FUN_0043c520 (CString dtor) |
 | 0x00568bd6 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x00568bf0 | FUN_00568bf0 | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x00568c0a | FUN_00568c0a | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x00568c27 | FUN_00568c27 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x00568bf0 | crt_init_cstring_2 | FW | cstring_init | 26 | 0x00560000 | SK | Calls thunk_FUN_0043c690 (CString static init) |
+| 0x00568c0a | crt_register_atexit_cstring_2 | FW | cstring_init | 29 | 0x00560000 | SK | Registers FUN_00568c27 via _atexit |
+| 0x00568c27 | crt_dtor_cstring_2 | FW | cstring_init | 26 | 0x00560000 | SK | Calls thunk_FUN_0043c520 (CString dtor) |
 | 0x00568c41 | disable_status_panel_flag | UI | main_window | 23 | 0x00560000 |  |  |
 | 0x00568c58 | enable_status_panel_and_refresh | UI | main_window | 38 | 0x00560000 |  |  |
 | 0x00568c7e | on_resize_disable_status | UI | main_window | 36 | 0x00560000 |  |  |
@@ -2996,13 +2999,13 @@ Functions with game logic that have been ported or are candidates:
 | 0x0056aacb | main_window_setup | UI | main_window | 379 | 0x00560000 |  |  |
 | 0x0056ac46 | main_window_disable_status | UI | main_window | 33 | 0x00560000 |  |  |
 | 0x0056ac67 | status_panel_draw_minimap | UI | status_panel | 646 | 0x00560000 |  |  |
-| 0x0056aeed | FUN_0056aeed | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056aeed | crt_dtor_surface_2 | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005bd915 (surface dtor) during status panel cleanup |
 | 0x0056b810 | strip_newline | UTIL | UTIL | 55 | 0x00560000 |  |  |
 | 0x0056b847 | append_newline | UTIL | UTIL | 54 | 0x00560000 |  |  |
 | 0x0056b8a0 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056b8ba | FUN_0056b8ba | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056b8d4 | FUN_0056b8d4 | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056b8f1 | FUN_0056b8f1 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056b8ba | crt_init_cstring_3 | FW | cstring_init | 26 | 0x00560000 | SK | Calls thunk_FUN_0043c690 (CString static init) |
+| 0x0056b8d4 | crt_register_atexit_cstring_3 | FW | cstring_init | 29 | 0x00560000 | SK | Registers FUN_0056b8f1 via _atexit |
+| 0x0056b8f1 | crt_dtor_cstring_3 | FW | cstring_init | 26 | 0x00560000 | SK | Calls thunk_FUN_0043c520 (CString dtor) |
 | 0x0056b90b | setup_unit_font | RN | unit | 99 | 0x00560000 |  |  |
 | 0x0056b96e | pick_best_display_unit | RN | unit | 396 | 0x00560000 |  |  |
 | 0x0056baff | draw_unit_sprite_full | RN | unit | 2803 | 0x00560000 |  |  |
@@ -3030,37 +3033,37 @@ Functions with game logic that have been ported or are candidates:
 | 0x0056f3e0 | mp_find_node_by_id | NW | multiplayer | 75 | 0x00560000 |  |  |
 | 0x0056f42b | mp_find_slot_by_id | NW | multiplayer | 89 | 0x00560000 |  |  |
 | 0x0056f910 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056f92a | FUN_0056f92a | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056f944 | FUN_0056f944 | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056f961 | FUN_0056f961 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056f92a | crt_init_surface_3 | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005bd630 (surface ctor) for sprite recolor |
+| 0x0056f944 | crt_register_atexit_surface_3 | FW | crt | 29 | 0x00560000 | SK | Registers FUN_0056f961 via _atexit |
+| 0x0056f961 | crt_dtor_surface_3 | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005bd915 (surface dtor) |
 | 0x0056f97b | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056f995 | FUN_0056f995 | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056f9af | FUN_0056f9af | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056f9cc | FUN_0056f9cc | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056f995 | crt_init_cstring_4 | FW | cstring_init | 26 | 0x00560000 | SK | CString::CString on DAT_006ac170 |
+| 0x0056f9af | crt_register_atexit_cstring_4 | FW | cstring_init | 29 | 0x00560000 | SK | Registers FUN_0056f9cc via _atexit |
+| 0x0056f9cc | crt_dtor_cstring_4 | FW | cstring_init | 26 | 0x00560000 | SK | Calls FUN_005cde4d (CString cleanup) |
 | 0x0056f9e6 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056fa00 | FUN_0056fa00 | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056fa1a | FUN_0056fa1a | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056fa37 | FUN_0056fa37 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056fa00 | crt_init_cstring_5 | FW | cstring_init | 26 | 0x00560000 | SK | CString::CString on DAT_006ac8a8 |
+| 0x0056fa1a | crt_register_atexit_cstring_5 | FW | cstring_init | 29 | 0x00560000 | SK | Registers FUN_0056fa37 via _atexit |
+| 0x0056fa37 | crt_dtor_cstring_5 | FW | cstring_init | 26 | 0x00560000 | SK | Calls FUN_005cde4d (CString cleanup) |
 | 0x0056fa51 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056fa6b | FUN_0056fa6b | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056fa85 | FUN_0056fa85 | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056faa2 | FUN_0056faa2 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056fa6b | crt_init_cstring_6 | FW | cstring_init | 26 | 0x00560000 | SK | CString::CString on DAT_006ac8e8 |
+| 0x0056fa85 | crt_register_atexit_cstring_6 | FW | cstring_init | 29 | 0x00560000 | SK | Registers FUN_0056faa2 via _atexit |
+| 0x0056faa2 | crt_dtor_cstring_6 | FW | cstring_init | 26 | 0x00560000 | SK | Calls FUN_005cde4d (CString cleanup) |
 | 0x0056fabc | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056fad6 | FUN_0056fad6 | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056faf0 | FUN_0056faf0 | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056fb0d | FUN_0056fb0d | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056fad6 | crt_init_surface_4 | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005bd630 (surface ctor) |
+| 0x0056faf0 | crt_register_atexit_surface_4 | FW | crt | 29 | 0x00560000 | SK | Registers FUN_0056fb0d via _atexit |
+| 0x0056fb0d | crt_dtor_surface_4 | FW | crt | 26 | 0x00560000 | SK | Calls FUN_005bd915 (surface dtor) |
 | 0x0056fb27 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056fb41 | FUN_0056fb41 | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056fb5b | FUN_0056fb5b | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056fb78 | FUN_0056fb78 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056fb41 | crt_init_wnd_2 | FW | crt | 26 | 0x00560000 | SK | Calls thunk_FUN_0055339f (window ctor) for DAT_006ac1b0 |
+| 0x0056fb5b | crt_register_atexit_wnd_2 | FW | crt | 29 | 0x00560000 | SK | Registers FUN_0056fb78 via _atexit |
+| 0x0056fb78 | crt_dtor_wnd_2 | FW | mfc | 26 | 0x00560000 | SK | COleCntrFrameWnd::~COleCntrFrameWnd on DAT_006ac1b0 |
 | 0x0056fb92 | FID_conflict:_$E31 | FW | crt | 26 | 0x00560000 | NN |  |
-| 0x0056fbac | FUN_0056fbac | UNSET |  | 26 | 0x00560000 |  |  |
-| 0x0056fbc6 | FUN_0056fbc6 | UNSET |  | 29 | 0x00560000 |  |  |
-| 0x0056fbe3 | FUN_0056fbe3 | UNSET |  | 26 | 0x00560000 |  |  |
+| 0x0056fbac | crt_init_bitmap_btn | FW | crt | 26 | 0x00560000 | SK | Calls thunk_FUN_005784a0 (CBitmapButton ctor) for DAT_006ac488 |
+| 0x0056fbc6 | crt_register_atexit_bitmap_btn | FW | crt | 29 | 0x00560000 | SK | Registers FUN_0056fbe3 via _atexit |
+| 0x0056fbe3 | crt_dtor_bitmap_btn | FW | mfc | 26 | 0x00560000 | SK | CBitmapButton::~CBitmapButton on DAT_006ac488 |
 | 0x0056fbfd | draw_unit_origin_markers | RN | spritesheet | 231 | 0x00560000 |  |  |
 | 0x0056fce4 | recolor_units_spritesheet | RN | spritesheet | 722 | 0x00560000 |  |  |
-| 0x0056ffb6 | FUN_0056ffb6 | UNSET |  | 12 | 0x00560000 |  |  |
-| 0x0056ffcc | FUN_0056ffcc | UNSET |  | 14 | 0x00560000 |  |  |
+| 0x0056ffb6 | seh_cleanup_smk | FW | seh | 12 | 0x00560000 | SK | Calls FUN_005c656b (smacker cleanup) |
+| 0x0056ffcc | seh_epilog_ffcc | FW | seh | 14 | 0x00560000 | SK | SEH epilog |
 | 0x0056ffda | recolor_cities_spritesheet | RN | spritesheet | 1922 | 0x00560000 |  |  |
 | 0x0057075c | sprited_terrain1_destructor_helper | FW | seh_crt | 12b | 0x00570000 | SK |  |
 | 0x00570772 | sprited_terrain1_seh_restore | FW | seh_crt | 14b | 0x00570000 | SK |  |
@@ -3191,19 +3194,19 @@ Functions with game logic that have been ported or are candidates:
 | 0x005869d4 | cosmic_editor_display_list | UI | editor | 482b | 0x00580000 | NN |  |
 | 0x00586bb6 | cosmic_editor_edit_value | UI | editor | 340b | 0x00580000 | NN |  |
 | 0x00586d0a | cosmic_editor_write_rules | UI | editor | 151b | 0x00580000 | NN |  |
-| 0x00586da1 | show_messagebox_6DA1 | UNSET |  | 131 | 0x00580000 |  |  |
+| 0x00586da1 | show_messagebox_cosmic_save | UI | dialog | 131 | 0x00580000 | SK | Shows error message when cosmic rules file save fails |
 | 0x00586e24 | cosmic_editor_show_effects | UI | editor | 100b | 0x00580000 | NN |  |
 | 0x00586e88 | cosmic_editor_close | UI | editor | 40b | 0x00580000 | NN |  |
 | 0x00586eb0 | cosmic_editor_repaint | UI | editor | 102b | 0x00580000 | NN |  |
 | 0x00586f16 | cosmic_editor_init_window | UI | editor | 1731b | 0x00580000 | NN |  |
 | 0x005875e9 | FUN_005875e9 | FW | seh_crt | stub | 0x00580000 | SK |  |
-| 0x005875ff | FUN_005875ff | UNSET |  | 14 | 0x00580000 |  |  |
-| 0x0058760d | cosmic_editor_launch | UNSET |  | 89 | 0x00580000 |  |  |
-| 0x00587666 | FUN_00587666 | UNSET |  | 12 | 0x00580000 |  |  |
-| 0x0058767c | FUN_0058767c | UNSET |  | 14 | 0x00580000 |  |  |
+| 0x005875ff | seh_epilog_75ff | FW | seh | 14 | 0x00580000 | SK | SEH epilog |
+| 0x0058760d | cosmic_editor_launch | UI | editor | 89 | 0x00580000 | SK | Launches cosmic rules editor |
+| 0x00587666 | cosmic_cleanup_mfc | FW | mfc | 12 | 0x00580000 | SK | Calls thunk_FUN_004183d0 (MFC cleanup) |
+| 0x0058767c | seh_epilog_767c | FW | seh | 14 | 0x00580000 | SK | SEH epilog |
 | 0x00587a90 | city_list_create_panel | UI | city_list | 849b | 0x00580000 | SK |  |
 | 0x00587e05 | city_list_scroll_top | UI | city_list | 30b | 0x00580000 | SK |  |
-| 0x00587e23 | FUN_00587e23 | UNSET |  | 30 | 0x00580000 |  |  |
+| 0x00587e23 | scrollbar_handle_right | UI | dialog | 30 | 0x00580000 | SK | Calls thunk_FUN_0058804f(1, param) -- right scrollbar handler |
 | 0x00587e41 | city_list_toggle_filter | UI | city_list | 191b | 0x00580000 | SK |  |
 | 0x00587f00 | city_list_toggle_filter_off | UI | city_list | 191b | 0x00580000 | SK |  |
 | 0x00587fbf | city_list_send_message | UI | city_list | 144b | 0x00580000 | SK |  |
@@ -3215,12 +3218,12 @@ Functions with game logic that have been ported or are candidates:
 | 0x00588e47 | city_list_draw_city_sprite | UI | city_list | 239b | 0x00580000 | SK |  |
 | 0x00588f36 | city_list_populate | UI | city_list | 1138b | 0x00580000 | SK |  |
 | 0x005899f0 | FID_conflict:_$E31 | FW | crt | 26 | 0x00580000 | NN |  |
-| 0x00589a0a | FUN_00589a0a | UNSET |  | 26 | 0x00580000 |  |  |
-| 0x00589a24 | FUN_00589a24 | UNSET |  | 29 | 0x00580000 |  |  |
-| 0x00589a41 | FUN_00589a41 | UNSET |  | 26 | 0x00580000 |  |  |
+| 0x00589a0a | crt_init_surface_main | FW | crt | 26 | 0x00580000 | SK | Calls FUN_005bd630 (surface ctor) for main game surface |
+| 0x00589a24 | crt_register_atexit_surface_main | FW | crt | 29 | 0x00580000 | SK | Registers FUN_00589a41 via _atexit |
+| 0x00589a41 | crt_dtor_surface_main | FW | crt | 26 | 0x00580000 | SK | Calls FUN_005bd915 (surface dtor) |
 | 0x00589a5b | app_init_main_window | SYS | app_init | 505b | 0x00580000 | NN |  |
 | 0x00589c54 | app_init_cleanup | FW | seh_crt | stub | 0x00580000 | SK |  |
-| 0x00589c6a | FUN_00589c6a | UNSET |  | 15 | 0x00580000 |  |  |
+| 0x00589c6a | seh_epilog_9c6a | FW | seh | 15 | 0x00580000 | SK | SEH epilog (restores FS:[0]) |
 | 0x00589c79 | app_shutdown_handler | SYS | app_init | 36b | 0x00580000 | NN |  |
 | 0x00589d50 | app_init_subsystem | SYS | app_init | 37b | 0x00580000 | NN |  |
 | 0x00589d80 | register_crash_handler | SYS | error | 69b | 0x00580000 | NN |  |
@@ -3229,14 +3232,14 @@ Functions with game logic that have been ported or are candidates:
 | 0x00589fc9 | lookup_error_string | SYS | error | 278b | 0x00580000 | NN |  |
 | 0x0058a0ee | crash_report_and_exit | SYS | error | 778b | 0x00580000 | NN |  |
 | 0x0058a5b0 | FID_conflict:_$E31 | FW | crt | 26 | 0x00580000 | NN |  |
-| 0x0058a5ca | FUN_0058a5ca | UNSET |  | 26 | 0x00580000 |  |  |
-| 0x0058a5e4 | FUN_0058a5e4 | UNSET |  | 29 | 0x00580000 |  |  |
-| 0x0058a601 | FUN_0058a601 | UNSET |  | 26 | 0x00580000 |  |  |
+| 0x0058a5ca | crt_init_wnd_main | FW | crt | 26 | 0x00580000 | SK | Calls thunk_FUN_0055339f (window ctor) for DAT_006acd58 |
+| 0x0058a5e4 | crt_register_atexit_wnd_main | FW | crt | 29 | 0x00580000 | SK | Registers FUN_0058a601 via _atexit |
+| 0x0058a601 | crt_dtor_wnd_main | FW | mfc | 26 | 0x00580000 | SK | COleCntrFrameWnd::~COleCntrFrameWnd on DAT_006acd58 |
 | 0x0058a61b | create_popup_window | UI | popup | 498b | 0x00580000 | SK |  |
-| 0x0058a80d | show_messagebox_A80D | UNSET |  | 248 | 0x00580000 |  |  |
+| 0x0058a80d | file_copy | IO | save | 248 | 0x00580000 | SK | Generic file copy utility: opens src/dst with fopen, reads/writes in 1KB blocks |
 | 0x0058a905 | import_sound_file | UI | sound_editor | 709b | 0x00580000 | NN |  |
 | 0x0058abca | import_sound_cleanup | FW | seh_crt | stub | 0x00580000 | SK |  |
-| 0x0058abe0 | FUN_0058abe0 | UNSET |  | 14 | 0x00580000 |  |  |
+| 0x0058abe0 | seh_epilog_abe0 | FW | seh | 14 | 0x00580000 | SK | SEH epilog |
 | 0x0058abee | sound_editor_close_a | UI | sound_editor | 37b | 0x00580000 | NN |  |
 | 0x0058ac13 | sound_editor_close_b | UI | sound_editor | 37b | 0x00580000 | NN |  |
 | 0x0058ac38 | sound_editor_paint | UI | sound_editor | 488b | 0x00580000 | NN |  |
@@ -3245,9 +3248,9 @@ Functions with game logic that have been ported or are candidates:
 | 0x0058afb6 | sound_editor_populate_slots | UI | sound_editor | 1224b | 0x00580000 | NN |  |
 | 0x0058b47e | sound_editor_init_window | UI | sound_editor | 987b | 0x00580000 | NN |  |
 | 0x0058b859 | FUN_0058b859 | FW | seh_crt | stub | 0x00580000 | SK |  |
-| 0x0058b86f | FUN_0058b86f | UNSET |  | 12 | 0x00580000 |  |  |
-| 0x0058b87b | FUN_0058b87b | UNSET |  | 9 | 0x00580000 |  |  |
-| 0x0058b88e | FUN_0058b88e | UNSET |  | 14 | 0x00580000 |  |  |
+| 0x0058b86f | diplomacy_cleanup_1 | FW | mfc | 12 | 0x00580000 | SK | Calls thunk_FUN_0040f570 (form cleanup) |
+| 0x0058b87b | diplomacy_cleanup_2 | FW | mfc | 9 | 0x00580000 | SK | Calls thunk_FUN_0040f570 (form cleanup) |
+| 0x0058b88e | seh_epilog_b88e | FW | seh | 14 | 0x00580000 | SK | SEH epilog |
 | 0x0058bd60 | unit_order_activate | GL | unit_orders | 36b | 0x00580000 | TL |  |
 | 0x0058bd84 | unit_order_wake_all_own | GL | unit_orders | 121b | 0x00580000 | TL |  |
 | 0x0058bdfd | unit_order_automate | GL | unit_orders | 89b | 0x00580000 | TL |  |
@@ -3260,23 +3263,23 @@ Functions with game logic that have been ported or are candidates:
 | 0x0058cde5 | unit_order_unload | GL | unit_orders | 488b | 0x00580000 | TM |  |
 | 0x0058cfcd | unit_order_pillage | GL | unit_orders | 1105b | 0x00580000 | TM |  |
 | 0x0058d41e | pillage_cleanup | FW | seh_crt | stub | 0x00580000 | SK |  |
-| 0x0058d434 | FUN_0058d434 | UNSET |  | 14 | 0x00580000 |  |  |
+| 0x0058d434 | seh_epilog_d434 | FW | seh | 14 | 0x00580000 | SK | SEH epilog |
 | 0x0058d442 | unit_order_sentry | GL | unit_orders | 451b | 0x00580000 | TL |  |
 | 0x0058d60a | unit_order_paradrop | GL | unit_orders | 165b | 0x00580000 | TL |  |
 | 0x0058d6af | unit_order_goto_city | GL | unit_orders | 1787b | 0x00580000 | TL |  |
 | 0x0058ddaa | goto_city_cleanup | FW | seh_crt | stub | 0x00580000 | SK |  |
-| 0x0058ddc0 | FUN_0058ddc0 | UNSET |  | 14 | 0x00580000 |  |  |
+| 0x0058ddc0 | seh_epilog_ddc0 | FW | seh | 14 | 0x00580000 | SK | SEH epilog |
 | 0x0058ddce | unit_order_wake_sentries | GL | unit_orders | 326b | 0x00580000 | TL |  |
 | 0x0058df14 | unit_order_clean_toggle | GL | unit_mgmt | 103b | 0x00580000 | TL |  |
 | 0x0058df7b | unit_order_airlift | GL | unit_orders | 1609b | 0x00580000 | TM |  |
 | 0x0058e5c4 | airlift_cleanup | FW | seh_crt | stub | 0x00580000 | SK |  |
-| 0x0058e5da | FUN_0058e5da | UNSET |  | 14 | 0x00580000 |  |  |
+| 0x0058e5da | seh_epilog_e5da | FW | seh | 14 | 0x00580000 | SK | SEH epilog |
 | 0x0058f010 | show_message_if_visible | GL | goody_hut | 48b | 0x00580000 | SK |  |
 | 0x0058f040 | process_goody_hut | GL | goody_hut | 3404b | 0x00580000 | PA |  |
 | 0x0058fda9 | claim_adjacent_ocean_tiles | GL | goody_hut | 306b | 0x00580000 | R |  |
 | 0x0058fedb | handle_caravan_arrival | GL | trade | 1831b | 0x00580000 | PA |  |
 | 0x00590607 | caravan_cleanup | FW | seh_crt | stub | 0x00590000 | SK |  |
-| 0x0059061d | FUN_0059061d | UNSET |  | 15 | 0x00590000 |  |  |
+| 0x0059061d | seh_epilog_061d | FW | seh | 15 | 0x00590000 | SK | SEH epilog (restores FS:[0]) |
 | 0x0059062c | move_unit | GL | Movement | 17963 bytes | 0x00590000 | PA | engine/reducer.js:649 |
 | 0x00594d42 | mp_lock_map | GL | Movement | 971 bytes | 0x00590000 | NN |  |
 | 0x0059511c | mp_unlock_map | GL | Movement | 324 bytes | 0x00590000 | NN |  |
@@ -3303,112 +3306,112 @@ Functions with game logic that have been ported or are candidates:
 | 0x005998b0 | spaceship_has_enough_raw | GL | Spaceship | 66 bytes | 0x00590000 | TM |  |
 | 0x00599910 | spaceship_can_build_category | GL | Spaceship | 132 bytes | 0x00590000 | TM |  |
 | 0x005999c0 | spaceship_category_maxed | GL | Spaceship | 70 bytes | 0x00590000 | TM |  |
-| 0x00599a20 | pedia_init_list | UNSET |  | 365 | 0x00590000 | NN |  |
-| 0x00599b8d | pedia_draw_item_detail | UNSET |  | 1488 | 0x00590000 | NN |  |
-| 0x0059a15d | pedia_load_description | UNSET |  | 388 | 0x00590000 | NN |  |
-| 0x0059a2e6 | pedia_navigate_to_item | UNSET |  | 369 | 0x00590000 | NN |  |
+| 0x00599a20 | pedia_init_list | UI | civilopedia | 365 | 0x00590000 | SK | Initializes civilopedia item list, sets scroll range/position |
+| 0x00599b8d | pedia_draw_item_detail | UI | civilopedia | 1488 | 0x00590000 | SK | Draws civilopedia detail view with formatted text, icons, sprite previews |
+| 0x0059a15d | pedia_load_description | UI | civilopedia | 388 | 0x00590000 | SK | Loads civilopedia text descriptions from game data files |
+| 0x0059a2e6 | pedia_navigate_to_item | UI | civilopedia | 369 | 0x00590000 | SK | Navigates civilopedia to a specific item, updates display |
 | 0x0059a6f0 | rng_set_seed | GL | RNG | 62 bytes | 0x00590000 | NN |  |
 | 0x0059a733 | rng_next_float | GL | RNG | 94 bytes | 0x00590000 | NN |  |
 | 0x0059a791 | rng_range | GL | RNG | 113 bytes | 0x00590000 | NN |  |
 | 0x0059a850 | FID_conflict:_$E31 | FW | crt | 26 | 0x00590000 | NN |  |
-| 0x0059a86a | FUN_0059a86a | UNSET |  | 26 | 0x00590000 |  |  |
-| 0x0059a884 | FUN_0059a884 | UNSET |  | 29 | 0x00590000 |  |  |
-| 0x0059a8a1 | FUN_0059a8a1 | UNSET |  | 26 | 0x00590000 |  |  |
-| 0x0059a8bb | netmgr_init | UNSET |  | 196 | 0x00590000 | NN |  |
-| 0x0059a998 | netmgr_reset_state | UNSET |  | 936 | 0x00590000 | NN |  |
-| 0x0059ad40 | netmgr_dtor | UNSET |  | 136 | 0x00590000 | NN |  |
-| 0x0059adc8 | FUN_0059adc8 | UNSET |  | 15 | 0x00590000 |  |  |
-| 0x0059ade1 | FUN_0059ade1 | UNSET |  | 14 | 0x00590000 |  |  |
-| 0x0059adef | netmgr_connect | UNSET |  | 1167 | 0x00590000 | NN |  |
-| 0x0059b293 | netmgr_disconnect | UNSET |  | 691 | 0x00590000 | NN |  |
-| 0x0059b55b | FUN_0059b55b | UNSET |  | 22 | 0x00590000 | NN |  |
-| 0x0059b571 | netmgr_update_player_list | UNSET |  | 651 | 0x00590000 | NN |  |
-| 0x0059b7fc | netmgr_add_client | UNSET |  | 366 | 0x00590000 | NN |  |
-| 0x0059b96a | netmgr_remove_client | UNSET |  | 390 | 0x00590000 | NN |  |
-| 0x0059baf0 | netmgr_free_player_list | UNSET |  | 100 | 0x00590000 | NN |  |
-| 0x0059bb54 | netmgr_broadcast_receive | UNSET |  | 237 | 0x00590000 | NN |  |
-| 0x0059bc41 | netmgr_secure_receive | UNSET |  | 884 | 0x00590000 | NN |  |
-| 0x0059bfb5 | netmgr_on_new_client | UNSET |  | 38 | 0x00590000 | NN |  |
-| 0x0059bfdb | netmgr_on_connected_to_server | UNSET |  | 112 | 0x00590000 | NN |  |
-| 0x0059c04b | netmgr_on_connection_lost | UNSET |  | 89 | 0x00590000 | NN |  |
-| 0x0059c0a4 | netmgr_on_oversized_msg | UNSET |  | 61 | 0x00590000 | NN |  |
-| 0x0059c0e1 | netmgr_build_packet | UNSET |  | 405 | 0x00590000 | NN |  |
-| 0x0059c276 | FUN_0059c276 | UNSET |  | 66 | 0x00590000 | NN |  |
-| 0x0059c2b8 | FUN_0059c2b8 | UNSET |  | 73 | 0x00590000 | NN |  |
-| 0x0059c301 | FUN_0059c301 | UNSET |  | 30 | 0x00590000 | NN |  |
-| 0x0059c31f | netmgr_fill_game_info | UNSET |  | 598 | 0x00590000 | NN |  |
+| 0x0059a86a | crt_init_cstring_pedia | FW | cstring_init | 26 | 0x00590000 | SK | CRT static init for civilopedia CString |
+| 0x0059a884 | crt_register_atexit_pedia | FW | cstring_init | 29 | 0x00590000 | SK | Registers FUN_0059a8a1 via _atexit |
+| 0x0059a8a1 | crt_dtor_cstring_pedia | FW | cstring_init | 26 | 0x00590000 | SK | CRT static dtor for civilopedia CString |
+| 0x0059a8bb | netmgr_init | NW | mp | 196 | 0x00590000 | EX | Network manager constructor: popup_msg_init, XD_Set* callbacks, 50KB msg limit |
+| 0x0059a998 | netmgr_reset_state | NW | mp | 936 | 0x00590000 | EX | Resets all network state: 8 player slots, packet counters, connection status |
+| 0x0059ad40 | netmgr_dtor | NW | mp | 136 | 0x00590000 | SK | Network manager destructor: frees packet buffer, calls disconnect |
+| 0x0059adc8 | netmgr_cleanup_xdp | FW | mfc | 15 | 0x00590000 | SK | Calls thunk_FUN_00514254 (XDP cleanup) |
+| 0x0059ade1 | seh_epilog_ade1 | FW | seh | 14 | 0x00590000 | SK | SEH epilog |
+| 0x0059adef | netmgr_connect | NW | mp | 1167 | 0x00590000 | EX | Multiplayer connection setup: host/join, session enumeration, player listing |
+| 0x0059b293 | netmgr_disconnect | NW | mp | 691 | 0x00590000 | EX | Disconnects from multiplayer: frees player list, closes DirectPlay session |
+| 0x0059b55b | netmgr_get_player_count | NW | mp | 22 | 0x00590000 | SK | Returns player count from network manager |
+| 0x0059b571 | netmgr_update_player_list | NW | mp | 651 | 0x00590000 | EX | Updates player list from DirectPlay session, assigns player IDs |
+| 0x0059b7fc | netmgr_add_client | NW | mp | 366 | 0x00590000 | EX | Adds new client to player list, allocates player slot |
+| 0x0059b96a | netmgr_remove_client | NW | mp | 390 | 0x00590000 | EX | Removes client from player list, frees slot |
+| 0x0059baf0 | netmgr_free_player_list | NW | mp | 100 | 0x00590000 | SK | Frees DirectPlay player list memory |
+| 0x0059bb54 | netmgr_broadcast_receive | NW | mp | 237 | 0x00590000 | EX | Handles incoming broadcast messages in multiplayer |
+| 0x0059bc41 | netmgr_secure_receive | NW | mp | 884 | 0x00590000 | EX | Handles incoming secure/reliable messages, dispatches by packet type |
+| 0x0059bfb5 | netmgr_on_new_client | NW | mp | 38 | 0x00590000 | SK | Callback for new client connection event |
+| 0x0059bfdb | netmgr_on_connected_to_server | NW | mp | 112 | 0x00590000 | SK | Callback for successful server connection |
+| 0x0059c04b | netmgr_on_connection_lost | NW | mp | 89 | 0x00590000 | SK | Callback for lost connection event |
+| 0x0059c0a4 | netmgr_on_oversized_msg | NW | mp | 61 | 0x00590000 | SK | Callback for oversized message (>50KB) |
+| 0x0059c0e1 | netmgr_build_packet | NW | mp | 405 | 0x00590000 | EX | Builds multiplayer packet: serializes header + payload, handles compression |
+| 0x0059c276 | netmgr_send_to_player | NW | mp | 66 | 0x00590000 | SK | Sends packet to specific player via DirectPlay |
+| 0x0059c2b8 | netmgr_reset_packet_buffers | NW | mp | 73 | 0x00590000 | SK | Resets packet send/receive buffers |
+| 0x0059c301 | netmgr_get_local_player_id | NW | mp | 30 | 0x00590000 | SK | Returns local player's DirectPlay ID |
+| 0x0059c31f | netmgr_fill_game_info | NW | sync | 598 | 0x00590000 | EX | Fills game info struct for multiplayer sync: copies civ names, player flags |
 | 0x0059c575 | record_combat_kill | GL | CombatLog | 762 bytes | 0x00590000 | TM |  |
-| 0x0059d080 | popup_msg_init | UNSET |  | 209 bytes | 0x00590000 | NN |  |
-| 0x0059d190 | FUN_0059d190 | UNSET |  | 26 | 0x00590000 |  |  |
-| 0x0059d1aa | FUN_0059d1aa | UNSET |  | 32 | 0x00590000 |  |  |
-| 0x0059d1ca | FUN_0059d1ca | UNSET |  | 29 | 0x00590000 |  |  |
-| 0x0059d1e7 | FUN_0059d1e7 | UNSET |  | 26 | 0x00590000 |  |  |
+| 0x0059d080 | popup_msg_init | UI | popup | 209 | 0x00590000 | SK | Popup dialog system constructor: initializes dialog state, allocates memory arena |
+| 0x0059d190 | crt_static_init_popup_1 | FW | crt | 26 | 0x00590000 | SK | CRT static init for popup system |
+| 0x0059d1aa | crt_alloc_popup_1 | FW | crt | 32 | 0x00590000 | SK | Allocator for popup (thunk_FUN_0043c460 with size param) |
+| 0x0059d1ca | crt_register_atexit_popup_1 | FW | crt | 29 | 0x00590000 | SK | Registers popup dtor via _atexit |
+| 0x0059d1e7 | crt_dtor_popup_1 | FW | crt | 26 | 0x00590000 | SK | Calls thunk_FUN_0043c520 (dealloc) |
 | 0x0059d201 | FID_conflict:_$E51 | FW | crt | 26 | 0x00590000 | NN |  |
-| 0x0059d21b | FUN_0059d21b | UNSET |  | 30 | 0x00590000 |  |  |
-| 0x0059d239 | FUN_0059d239 | UNSET |  | 29 | 0x00590000 |  |  |
-| 0x0059d256 | FUN_0059d256 | UNSET |  | 26 | 0x00590000 |  |  |
+| 0x0059d21b | crt_alloc_popup_2 | FW | crt | 30 | 0x00590000 | SK | thunk_FUN_0043c460(0, 0x14) |
+| 0x0059d239 | crt_register_atexit_popup_2 | FW | crt | 29 | 0x00590000 | SK | Registers popup dtor via _atexit |
+| 0x0059d256 | crt_dtor_popup_2 | FW | crt | 26 | 0x00590000 | SK | Calls thunk_FUN_0043c520 (dealloc) |
 | 0x0059d270 | FID_conflict:_$E51 | FW | crt | 26 | 0x00590000 | NN |  |
-| 0x0059d28a | FUN_0059d28a | UNSET |  | 30 | 0x00590000 |  |  |
-| 0x0059d2a8 | FUN_0059d2a8 | UNSET |  | 29 | 0x00590000 |  |  |
-| 0x0059d2c5 | FUN_0059d2c5 | UNSET |  | 26 | 0x00590000 |  |  |
+| 0x0059d28a | crt_alloc_popup_3 | FW | crt | 30 | 0x00590000 | SK | thunk_FUN_0043c460(1, 0xe) |
+| 0x0059d2a8 | crt_register_atexit_popup_3 | FW | crt | 29 | 0x00590000 | SK | Registers popup dtor via _atexit |
+| 0x0059d2c5 | crt_dtor_popup_3 | FW | crt | 26 | 0x00590000 | SK | Calls thunk_FUN_0043c520 (dealloc) |
 | 0x0059d2df | FID_conflict:_$E51 | FW | crt | 26 | 0x00590000 | NN |  |
-| 0x0059d2f9 | FUN_0059d2f9 | UNSET |  | 30 | 0x00590000 |  |  |
-| 0x0059d317 | FUN_0059d317 | UNSET |  | 29 | 0x00590000 |  |  |
-| 0x0059d334 | FUN_0059d334 | UNSET |  | 26 | 0x00590000 |  |  |
-| 0x0059d34e | FUN_0059d34e | UNSET |  | 21 | 0x00590000 |  |  |
-| 0x0059d363 | FUN_0059d363 | UNSET |  | 26 | 0x00590000 |  |  |
-| 0x0059d37d | FUN_0059d37d | UNSET |  | 26 | 0x00590000 |  |  |
-| 0x0059d397 | FUN_0059d397 | UNSET |  | 26 | 0x00590000 |  |  |
-| 0x0059d3b1 | FUN_0059d3b1 | UNSET |  | 24 | 0x00590000 |  |  |
-| 0x0059d3c9 | FUN_0059d3c9 | UNSET |  | 24 | 0x00590000 |  |  |
-| 0x0059d3e1 | FUN_0059d3e1 | UNSET |  | 32 | 0x00590000 |  |  |
-| 0x0059d401 | popup_load_labels | UNSET |  | 129 | 0x00590000 |  |  |
-| 0x0059d487 | FUN_0059d487 | UNSET |  | 88 | 0x00590000 |  |  |
-| 0x0059d4df | FUN_0059d4df | UNSET |  | 72 | 0x00590000 |  |  |
-| 0x0059d527 | FUN_0059d527 | UNSET |  | 24 | 0x00590000 |  |  |
-| 0x0059d53f | FUN_0059d53f | UNSET |  | 24 | 0x00590000 |  |  |
-| 0x0059d557 | FUN_0059d557 | UNSET |  | 24 | 0x00590000 |  |  |
-| 0x0059d56f | FUN_0059d56f | UNSET |  | 46 | 0x00590000 |  |  |
-| 0x0059d59d | FUN_0059d59d | UNSET |  | 24 | 0x00590000 |  |  |
-| 0x0059d5b5 | FUN_0059d5b5 | UNSET |  | 64 | 0x00590000 |  |  |
-| 0x0059d5f5 | popup_dialog_reset | UNSET |  | 1299 | 0x00590000 |  |  |
-| 0x0059db08 | popup_dialog_create | UNSET |  | 93 | 0x00590000 |  |  |
-| 0x0059db65 | popup_dialog_destroy | UNSET |  | 1061 | 0x00590000 |  |  |
-| 0x0059df8a | popup_dialog_close | UNSET |  | 47 | 0x00590000 |  |  |
-| 0x0059dfb9 | popup_dialog_open | UNSET |  | 306 | 0x00590000 |  |  |
-| 0x0059e0eb | popup_set_edit_text | UNSET |  | 160 | 0x00590000 |  |  |
-| 0x0059e18b | popup_add_edit_field | UNSET |  | 412 | 0x00590000 |  |  |
-| 0x0059e327 | FUN_0059e327 | UNSET |  | 47 | 0x00590000 |  |  |
-| 0x0059e356 | FUN_0059e356 | UNSET |  | 32 | 0x00590000 |  |  |
-| 0x0059e376 | FUN_0059e376 | UNSET |  | 132 | 0x00590000 |  |  |
-| 0x0059e3fa | FUN_0059e3fa | UNSET |  | 78 | 0x00590000 |  |  |
-| 0x0059e448 | FUN_0059e448 | UNSET |  | 42 | 0x00590000 |  |  |
-| 0x0059e472 | FUN_0059e472 | UNSET |  | 50 | 0x00590000 |  |  |
-| 0x0059e4a4 | SetObjectSchema | UNSET |  | 33 | 0x00590000 |  |  |
-| 0x0059e4c5 | FUN_0059e4c5 | UNSET |  | 33 | 0x00590000 |  |  |
-| 0x0059e4e6 | FUN_0059e4e6 | UNSET |  | 33 | 0x00590000 |  |  |
-| 0x0059e507 | FUN_0059e507 | UNSET |  | 126 | 0x00590000 |  |  |
-| 0x0059e585 | FUN_0059e585 | UNSET |  | 68 | 0x00590000 |  |  |
-| 0x0059e5c9 | FUN_0059e5c9 | UNSET |  | 91 | 0x00590000 |  |  |
+| 0x0059d2f9 | crt_alloc_popup_4 | FW | crt | 30 | 0x00590000 | SK | thunk_FUN_0043c460(0, 0x10) |
+| 0x0059d317 | crt_register_atexit_popup_4 | FW | crt | 29 | 0x00590000 | SK | Registers popup dtor via _atexit |
+| 0x0059d334 | crt_dtor_popup_4 | FW | crt | 26 | 0x00590000 | SK | Calls thunk_FUN_0043c520 (dealloc) |
+| 0x0059d34e | popup_static_init | UI | popup | 21 | 0x00590000 | SK | Thunk to popup_init_defaults |
+| 0x0059d363 | popup_init_defaults | UI | popup | 26 | 0x00590000 | SK | Sets default popup palette (DAT_006cec84 = DAT_00635a58) |
+| 0x0059d37d | popup_get_font_handle_1 | UI | popup | 26 | 0x00590000 | SK | Gets font handle via thunk_FUN_00421bb0 |
+| 0x0059d397 | popup_get_font_handle_2 | UI | popup | 26 | 0x00590000 | SK | Gets font handle via thunk_FUN_00421bb0 |
+| 0x0059d3b1 | popup_set_callback | UI | popup | 24 | 0x00590000 | SK | Sets popup callback function pointer (DAT_006359c0) |
+| 0x0059d3c9 | popup_set_parent_window | UI | popup | 24 | 0x00590000 | SK | Sets parent window handle (DAT_006359c4) |
+| 0x0059d3e1 | popup_set_position | UI | popup | 32 | 0x00590000 | SK | Sets popup position (DAT_006359cc, DAT_006359d0) |
+| 0x0059d401 | popup_load_labels | UI | popup | 129 | 0x00590000 | SK | Loads popup label strings from POPUPS section in labels file |
+| 0x0059d487 | popup_set_color_scheme | UI | popup | 88 | 0x00590000 | SK | Sets 9 color parameters for popup rendering |
+| 0x0059d4df | popup_set_layout_params | UI | popup | 72 | 0x00590000 | SK | Sets 7 layout parameters (spacing, margins, etc.) |
+| 0x0059d527 | popup_set_font_1 | UI | popup | 24 | 0x00590000 | SK | Sets font pointer 1 (PTR_DAT_006359e4) |
+| 0x0059d53f | popup_set_font_2 | UI | popup | 24 | 0x00590000 | SK | Sets font pointer 2 (PTR_DAT_006359e8) |
+| 0x0059d557 | popup_set_font_3 | UI | popup | 24 | 0x00590000 | SK | Sets font pointer 3 (PTR_DAT_006359ec) |
+| 0x0059d56f | popup_reset_fonts | UI | popup | 46 | 0x00590000 | SK | Resets all 3 font pointers to default addresses |
+| 0x0059d59d | popup_set_surface | UI | popup | 24 | 0x00590000 | SK | Sets render surface (DAT_00635aa0) |
+| 0x0059d5b5 | popup_init_memory_arena | UI | popup | 64 | 0x00590000 | SK | Initializes memory arena for popup allocations (this+0x254) |
+| 0x0059d5f5 | popup_dialog_reset | UI | popup | 1299 | 0x00590000 | EX | Full popup dialog state reset: clears all lists, resets dimensions, font, colors |
+| 0x0059db08 | popup_dialog_create | UI | popup | 93 | 0x00590000 | SK | Creates popup dialog: allocates from arena, calls reset |
+| 0x0059db65 | popup_dialog_destroy | UI | popup | 1061 | 0x00590000 | EX | Destroys popup dialog: frees all child elements, resets arena |
+| 0x0059df8a | popup_dialog_close | UI | popup | 47 | 0x00590000 | SK | Closes popup dialog and restores previous rendering state |
+| 0x0059dfb9 | popup_dialog_open | UI | popup | 306 | 0x00590000 | SK | Opens popup dialog: sets up rendering, calls layout |
+| 0x0059e0eb | popup_set_edit_text | UI | popup | 160 | 0x00590000 | SK | Sets text content of an edit field in popup |
+| 0x0059e18b | popup_add_edit_field | UI | popup | 412 | 0x00590000 | SK | Adds a text edit field to popup dialog |
+| 0x0059e327 | popup_get_edit_width | UI | popup | 47 | 0x00590000 | SK | Returns width calculation for edit field |
+| 0x0059e356 | popup_get_radio_indicator_width | UI | popup | 32 | 0x00590000 | SK | Returns width of radio button indicator |
+| 0x0059e376 | popup_set_flags | UI | popup | 132 | 0x00590000 | SK | Sets various popup display flags (border, scroll, sort, etc.) |
+| 0x0059e3fa | popup_get_line_height | UI | popup | 78 | 0x00590000 | SK | Calculates text line height based on font |
+| 0x0059e448 | popup_set_column_mode | UI | popup | 42 | 0x00590000 | SK | Sets column display mode (0 or 1) |
+| 0x0059e472 | popup_set_column_params | UI | popup | 50 | 0x00590000 | SK | Sets column width, position, spacing |
+| 0x0059e4a4 | popup_set_object_schema | UI | popup | 33 | 0x00590000 | SK | Sets schema version for popup serialization (this+0x30) |
+| 0x0059e4c5 | popup_set_border_width | UI | popup | 33 | 0x00590000 | SK | Sets border width parameter (this+0x34) |
+| 0x0059e4e6 | popup_set_scroll_step | UI | popup | 33 | 0x00590000 | SK | Sets scroll step size (this+0x38) |
+| 0x0059e507 | popup_set_max_rows | UI | popup | 126 | 0x00590000 | SK | Sets max visible rows, calculates pixel height based on row count and font |
+| 0x0059e585 | popup_set_page_index | UI | popup | 68 | 0x00590000 | SK | Sets current page (0 or 1) for multi-page popups |
+| 0x0059e5c9 | popup_set_page_params | UI | popup | 91 | 0x00590000 | SK | Sets page offset, alternate width, and optionally max rows |
 | 0x0059e624 | EnableStackedTabs | FW | mfc | 36 | 0x00590000 | NN |  |
-| 0x0059e648 | FUN_0059e648 | UNSET |  | 46 | 0x00590000 |  |  |
-| 0x0059e676 | FUN_0059e676 | UNSET |  | 51 | 0x00590000 |  |  |
-| 0x0059e6a9 | popup_set_title | UNSET |  | 86 | 0x00590000 |  |  |
-| 0x0059e6ff | FUN_0059e6ff | UNSET |  | 99 | 0x00590000 |  |  |
-| 0x0059e762 | delbuf | UNSET |  | 33 | 0x00590000 |  |  |
-| 0x0059e783 | FUN_0059e783 | UNSET |  | 42 | 0x00590000 |  |  |
-| 0x0059e7ad | FUN_0059e7ad | UNSET |  | 101 | 0x00590000 |  |  |
-| 0x0059e812 | FUN_0059e812 | UNSET |  | 101 | 0x00590000 |  |  |
-| 0x0059e877 | FUN_0059e877 | UNSET |  | 100 | 0x00590000 |  |  |
-| 0x0059e8db | FUN_0059e8db | UNSET |  | 76 | 0x00590000 |  |  |
-| 0x0059e927 | FUN_0059e927 | UNSET |  | 76 | 0x00590000 |  |  |
-| 0x0059e973 | FUN_0059e973 | UNSET |  | 64 | 0x00590000 |  |  |
-| 0x0059e9b3 | FUN_0059e9b3 | UNSET |  | 64 | 0x00590000 |  |  |
-| 0x0059e9f3 | FUN_0059e9f3 | UNSET |  | 90 | 0x00590000 |  |  |
-| 0x0059ea4d | FUN_0059ea4d | UNSET |  | 76 | 0x00590000 |  |  |
-| 0x0059ea99 | FUN_0059ea99 | UNSET |  | 116 | 0x00590000 |  |  |
-| 0x0059eb0d | FUN_0059eb0d | UNSET |  | 53 | 0x00590000 |  |  |
-| 0x0059eb42 | FUN_0059eb42 | UNSET |  | 38 | 0x00590000 |  |  |
+| 0x0059e648 | popup_calc_button_height | UI | popup | 46 | 0x00590000 | SK | Calculates button area height using _Timevec and border spacing |
+| 0x0059e676 | popup_calc_option_width | UI | popup | 51 | 0x00590000 | SK | Calculates radio option width (text width + indicator + spacing) |
+| 0x0059e6a9 | popup_set_title | UI | popup | 86 | 0x00590000 | SK | Sets popup title string (allocated from arena) |
+| 0x0059e6ff | popup_set_max_width | UI | popup | 99 | 0x00590000 | SK | Sets max popup width, adjusts for aspect ratio if needed |
+| 0x0059e762 | ios_delbuf | FW | crt | 33 | 0x00590000 | SK | Library: ios::delbuf -- sets this+0x1c |
+| 0x0059e783 | popup_set_scroll_position | UI | popup | 42 | 0x00590000 | SK | Sets scroll position (this+0x14, this+0x18) |
+| 0x0059e7ad | popup_find_radio_by_id | UI | popup | 101 | 0x00590000 | SK | Searches radio option linked list for item with matching ID |
+| 0x0059e812 | popup_find_textinput_by_id | UI | popup | 101 | 0x00590000 | SK | Searches text input linked list for item with matching ID |
+| 0x0059e877 | popup_find_button_by_id | UI | popup | 100 | 0x00590000 | SK | Searches button linked list for item with matching ID |
+| 0x0059e8db | popup_set_radio_disabled | UI | popup | 76 | 0x00590000 | SK | Sets/clears disabled flag (bit 0) on radio option |
+| 0x0059e927 | popup_set_radio_highlighted | UI | popup | 76 | 0x00590000 | SK | Sets/clears highlighted flag (bit 1) on radio option |
+| 0x0059e973 | popup_clear_all_disabled | UI | popup | 64 | 0x00590000 | SK | Clears disabled flag on all radio options |
+| 0x0059e9b3 | popup_clear_all_highlighted | UI | popup | 64 | 0x00590000 | SK | Clears highlighted flag on all radio options |
+| 0x0059e9f3 | popup_get_radio_selected | UI | popup | 90 | 0x00590000 | SK | Returns whether a radio option has the selected flag (bit 2) |
+| 0x0059ea4d | popup_set_radio_selected | UI | popup | 76 | 0x00590000 | SK | Sets/clears selected flag (bit 2) on radio option |
+| 0x0059ea99 | popup_select_default | UI | popup | 116 | 0x00590000 | SK | Sets default selected item in radio list or button list |
+| 0x0059eb0d | popup_show_icon | UI | popup | 53 | 0x00590000 | SK | Displays icon in popup via thunk_FUN_00418a70 |
+| 0x0059eb42 | popup_show_icon_default | UI | popup | 38 | 0x00590000 | SK | Calls popup_show_icon with default params |
 | 0x0059eb68 | EnableStackedTabs | FW | mfc | 36 | 0x00590000 | NN |  |
 | 0x0059eb8c | EnableStackedTabs | FW | mfc | 36 | 0x00590000 | NN |  |
 | 0x0059ebb0 | EnableStackedTabs | FW | mfc | 36 | 0x00590000 | NN |  |
@@ -3417,21 +3420,21 @@ Functions with game logic that have been ported or are candidates:
 | 0x0059ec1c | EnableStackedTabs | FW | mfc | 36 | 0x00590000 | NN |  |
 | 0x0059ec40 | EnableStackedTabs | FW | mfc | 36 | 0x00590000 | NN |  |
 | 0x0059ec64 | EnableStackedTabs | FW | mfc | 36 | 0x00590000 | NN |  |
-| 0x0059ec88 | popup_add_button | UNSET |  | 360 | 0x00590000 |  |  |
-| 0x0059edf0 | popup_add_radio_option | UNSET |  | 566 | 0x00590000 |  |  |
-| 0x0059f026 | FUN_0059f026 | UNSET |  | 71 | 0x00590000 |  |  |
-| 0x0059f06d | popup_add_text_input | UNSET |  | 566 | 0x00590000 |  |  |
-| 0x0059f2a3 | FUN_0059f2a3 | UNSET |  | 119 | 0x00590000 |  |  |
-| 0x0059f31a | popup_set_text_style | UNSET |  | 189 | 0x00590000 |  |  |
-| 0x0059f3d7 | popup_render_label | UNSET |  | 226 | 0x00590000 |  |  |
-| 0x0059f5ba | FUN_0059f5ba | UNSET |  | 61 | 0x00590000 |  |  |
-| 0x0059f5f7 | FUN_0059f5f7 | UNSET |  | 83 | 0x00590000 |  |  |
-| 0x0059f64a | popup_layout_text | UNSET |  | 1326 | 0x00590000 |  |  |
-| 0x0059fb78 | FUN_0059fb78 | UNSET |  | 156 | 0x00590000 |  |  |
-| 0x0059fc19 | FUN_0059fc19 | UNSET |  | 156 | 0x00590000 |  |  |
-| 0x0059fcba | FUN_0059fcba | UNSET |  | 56 | 0x00590000 |  |  |
-| 0x0059fcf2 | FUN_0059fcf2 | UNSET |  | 56 | 0x00590000 |  |  |
-| 0x0059fd2a | popup_layout_dialog | UNSET |  | 4785 | 0x00590000 |  |  |
+| 0x0059ec88 | popup_add_button | UI | popup | 360 | 0x00590000 | SK | Adds a button to popup dialog: allocates from arena, creates linked list node |
+| 0x0059edf0 | popup_add_radio_option | UI | popup | 566 | 0x00590000 | EX | Adds radio option: allocates node, maintains sorted linked list, tracks max width |
+| 0x0059f026 | popup_add_radio_group | UI | popup | 71 | 0x00590000 | SK | Adds radio group with pre-selected option |
+| 0x0059f06d | popup_add_text_input | UI | popup | 566 | 0x00590000 | SK | Adds text input field: allocates node, sets max length (cap 255) |
+| 0x0059f2a3 | popup_add_footer_text | UI | popup | 119 | 0x00590000 | SK | Adds footer text line (up to 6 lines, stored at this+0x294) |
+| 0x0059f31a | popup_set_text_style | UI | popup | 189 | 0x00590000 | SK | Sets text color/style based on selection state and highlight flags |
+| 0x0059f3d7 | popup_render_label | UI | popup | 226 | 0x00590000 | SK | Renders a single label in popup (replaces underscores with spaces) |
+| 0x0059f5ba | popup_draw_separator | UI | popup | 61 | 0x00590000 | SK | Draws horizontal separator line in popup |
+| 0x0059f5f7 | popup_draw_icon | UI | popup | 83 | 0x00590000 | SK | Draws icon sprite at specified position in popup |
+| 0x0059f64a | popup_layout_text | UI | popup | 1326 | 0x00590000 | EX | Complex text layout engine: word wrapping, multi-line, scrolling, column layout |
+| 0x0059fb78 | popup_get_radio_index | UI | popup | 156 | 0x00590000 | SK | Returns ordinal index of a radio option within its group |
+| 0x0059fc19 | popup_get_radio_by_index | UI | popup | 156 | 0x00590000 | SK | Returns radio option node at specified index |
+| 0x0059fcba | popup_get_radio_page | UI | popup | 56 | 0x00590000 | SK | Returns page number for a radio option based on items-per-page |
+| 0x0059fcf2 | popup_scroll_to_page | UI | popup | 56 | 0x00590000 | SK | Scrolls radio list to show specified page |
+| 0x0059fd2a | popup_layout_dialog | UI | popup | 4785 | 0x00590000 | EX | Master layout function: calculates dimensions for all elements, handles multi-column, scrollbars |
 | 0x005a0fea | popup_draw_text_truncated | UI | Popup | 350 | 0x005A0000 | NN |  |
 | 0x005a1148 | FUN_005a1148 | UI | Popup | 195 | 0x005A0000 | NN |  |
 | 0x005a120b | popup_draw_item | UI | Popup | 706 | 0x005A0000 | NN |  |
@@ -3471,15 +3474,15 @@ Functions with game logic that have been ported or are candidates:
 | 0x005a9320 | FID_conflict:`vector_deleting_destructor' | FW | crt | 110 | 0x005A0000 | NN |  |
 | 0x005a93b0 | FID_conflict:`vector_deleting_destructor' | FW | crt | 110 | 0x005A0000 | NN |  |
 | 0x005a9440 | FID_conflict:`vector_deleting_destructor' | FW | crt | 110 | 0x005A0000 | NN |  |
-| 0x005a94d0 | FUN_005a94d0 | UNSET |  | 57 | 0x005A0000 |  |  |
+| 0x005a94d0 | dtor_icon_list | FW | seh_dtor | 57 | 0x005A0000 | NN | Scalar deleting destructor for icon-list control |
 | 0x005a9520 | FID_conflict:`vector_deleting_destructor' | FW | crt | 110 | 0x005A0000 | NN |  |
-| 0x005a95b0 | FUN_005a95b0 | UNSET |  | 57 | 0x005A0000 |  |  |
-| 0x005a9600 | FUN_005a9600 | UNSET |  | 43 | 0x005A0000 |  |  |
-| 0x005a9640 | FUN_005a9640 | UNSET |  | 32 | 0x005A0000 |  |  |
-| 0x005a9670 | FUN_005a9670 | UNSET |  | 47 | 0x005A0000 |  |  |
-| 0x005a96b0 | FUN_005a96b0 | UNSET |  | 43 | 0x005A0000 |  |  |
-| 0x005a96f0 | FUN_005a96f0 | UNSET |  | 47 | 0x005A0000 |  |  |
-| 0x005a9730 | FUN_005a9730 | UNSET |  | 55 | 0x005A0000 |  |  |
+| 0x005a95b0 | dtor_grid_control | FW | seh_dtor | 57 | 0x005A0000 | NN | Scalar deleting destructor for grid control (0x50 object) |
+| 0x005a9600 | popup_set_icon_bitmap | UI | popup | 43 | 0x005A0000 | SK | set_bitmap(this.surface, bitmap_id). Simple accessor. |
+| 0x005a9640 | popup_clear_checked | UI | popup | 32 | 0x005A0000 | SK | this.checked (offset +0x34) = 0. Simple accessor. |
+| 0x005a9670 | popup_get_item_text | UI | popup | 47 | 0x005A0000 | SK | send_msg(this.listCtrl, 0x3CFF, index, buf). Win32 message wrapper. |
+| 0x005a96b0 | popup_get_selected_text | UI | popup | 43 | 0x005A0000 | SK | send_msg(this.listCtrl, 0x3D62, buf). Win32 message wrapper. |
+| 0x005a96f0 | popup_is_cancelled | UI | popup | 47 | 0x005A0000 | SK | return (this.flags_3D & 1) != 0. Simple predicate. |
+| 0x005a9730 | popup_draw_icon | UI | popup | 55 | 0x005A0000 | SK | draw_icon(this.surface, icon, x, y, flags). Rendering call. |
 | 0x005a9780 | prepare_surface | RN | Drawing | 24 | 0x005A0000 | NN |  |
 | 0x005a9798 | draw_colored_rect | RN | Drawing | 52 | 0x005A0000 | NN |  |
 | 0x005a97cc | draw_hline | RN | Drawing | 69 | 0x005A0000 | NN |  |
@@ -3497,15 +3500,15 @@ Functions with game logic that have been ported or are candidates:
 | 0x005a9f30 | mp_check_all_human_ready_production | NW | Multiplayer | 212 | 0x005A0000 | NN |  |
 | 0x005aa004 | mp_check_all_human_ready_moves | NW | Multiplayer | 225 | 0x005A0000 | NN |  |
 | 0x005aa0e5 | wait_production_005aa0e5 | NW | Multiplayer | 3994 | 0x005A0000 | NN |  |
-| 0x005ab07f | FUN_005ab07f | UNSET |  | 12 | 0x005A0000 |  |  |
-| 0x005ab095 | FUN_005ab095 | UNSET |  | 14 | 0x005A0000 |  |  |
-| 0x005ab0a3 | mp_check_ready_waitprod | UNSET |  | 125 | 0x005A0000 |  |  |
-| 0x005ab120 | mp_check_ready_waitmoves | UNSET |  | 125 | 0x005A0000 |  |  |
-| 0x005ab19d | mp_check_ready_human | UNSET |  | 157 | 0x005A0000 |  |  |
-| 0x005ab23a | mp_check_ready_human_alt | UNSET |  | 155 | 0x005A0000 |  |  |
+| 0x005ab07f | mp_cleanup_dialog | FW | dialog_cleanup | 12 | 0x005A0000 | NN | Calls dialog_teardown (thunk_FUN_0059df8a) |
+| 0x005ab095 | mp_restore_seh | FW | seh | 14 | 0x005A0000 | NN | SEH epilog -- restores FS:[0] |
+| 0x005ab0a3 | mp_check_ready_waitprod | NW | mp | 125 | 0x005A0000 | NN | Process network, check connection. Close popup if DAT_006c9214/game_over/disconnect. |
+| 0x005ab120 | mp_check_ready_waitmoves | NW | mp | 125 | 0x005A0000 | NN | Same pattern but checks DAT_006c9218 instead. |
+| 0x005ab19d | mp_check_ready_human | NW | mp | 157 | 0x005A0000 | NN | Checks DAT_006c920c, reconnect==1, disconnect==1. |
+| 0x005ab23a | mp_check_ready_human_alt | NW | mp | 155 | 0x005A0000 | NN | Same as above but reconnect!=0, disconnect!=0 (looser check). |
 | 0x005ab2d5 | wait_production_005ab2d5 | NW | Multiplayer | 3334 | 0x005A0000 | NN |  |
-| 0x005abfdb | FUN_005abfdb | UNSET |  | 12 | 0x005A0000 |  |  |
-| 0x005abff1 | FUN_005abff1 | UNSET |  | 15 | 0x005A0000 |  |  |
+| 0x005abfdb | mp_client_cleanup_dialog | FW | dialog_cleanup | 12 | 0x005A0000 | NN | Calls dialog_teardown |
+| 0x005abff1 | mp_client_restore_seh | FW | seh | 15 | 0x005A0000 | NN | SEH epilog |
 | 0x005ac840 | pedia_unit_init_list | UI | Civilopedia | 365 | 0x005A0000 | NN |  |
 | 0x005ac9ad | pedia_unit_draw_details | UI | Civilopedia | 4075 | 0x005A0000 | NN |  |
 | 0x005ad998 | pedia_select_unit_type | UI | Civilopedia | 342 | 0x005A0000 | NN |  |
@@ -3524,11 +3527,11 @@ Functions with game logic that have been ported or are candidates:
 | 0x005ae3bf | bit_index_to_byte_mask | GL | MapUtil | 45 | 0x005A0000 | P |  |
 | 0x005ae3ec | shift_by_signed | GL | MapUtil | 98 | 0x005A0000 | P |  |
 | 0x005ae580 | pbem_game_setup | GL | PBEM | 1602 | 0x005A0000 | TH |  |
-| 0x005aebef | FUN_005aebef | UNSET |  | 12 | 0x005A0000 |  |  |
-| 0x005aec05 | FUN_005aec05 | UNSET |  | 15 | 0x005A0000 |  |  |
+| 0x005aebef | pbem_cleanup_dialog | FW | dialog_cleanup | 12 | 0x005A0000 | NN | Calls dialog_teardown |
+| 0x005aec05 | pbem_restore_seh | FW | seh | 15 | 0x005A0000 | NN | SEH epilog |
 | 0x005aec14 | pbem_get_email_address | GL | PBEM | 249 | 0x005A0000 | TH |  |
-| 0x005aed0d | FUN_005aed0d | UNSET |  | 12 | 0x005A0000 |  |  |
-| 0x005aed23 | FUN_005aed23 | UNSET |  | 14 | 0x005A0000 |  |  |
+| 0x005aed0d | pbem_email_cleanup | FW | dialog_cleanup | 12 | 0x005A0000 | NN | Calls dialog_teardown for email address dialog |
+| 0x005aed23 | pbem_email_restore_seh | FW | seh | 14 | 0x005A0000 | NN | SEH epilog |
 | 0x005aef20 | editor_save_unit_types_to_buffer | UI | UnitEditor | 544 | 0x005A0000 | NN |  |
 | 0x005af140 | editor_load_unit_types_from_buffer | UI | UnitEditor | 515 | 0x005A0000 | NN |  |
 | 0x005af343 | editor_populate_spinners | UI | UnitEditor | 353 | 0x005A0000 | NN |  |
@@ -3611,7 +3614,7 @@ Functions with game logic that have been ported or are candidates:
 | 0x005b68f6 | check_unit_can_improve | GL | unit_mgmt | 362b | 0x005B0000 | TH |  |
 | 0x005b6a58 | clear_unit_orders | GL | unit_mgmt | 66b | 0x005B0000 | PA |  |
 | 0x005b6aa0 | return_true | GL | unit_mgmt | 21b | 0x005B0000 | SK |  |
-| 0x005b6ab5 | draw_unit_for_dialog | UNSET |  | 53 | 0x005B0000 |  |  |
+| 0x005b6ab5 | draw_unit_for_dialog | RN | sprite | 53 | 0x005B0000 | SK | Thunk: calls draw_unit(surface, unit_id, 4/*full*/, x, y+2, zoom). Pure rendering. |
 | 0x005b6aea | show_unit_list_dialog | UI | text | 693b | 0x005B0000 | SK |  |
 | 0x005b6d9f | dialog_cleanup_a | FW | window | 12b | 0x005B0000 | SK |  |
 | 0x005b6dab | dialog_cleanup_b | FW | window | 13b | 0x005B0000 | SK |  |
