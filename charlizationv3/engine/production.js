@@ -299,29 +299,40 @@ export function calcUnitShieldSupport(city, cityIndex, units, gameState) {
   let unitCounter = 0;
   let shieldCost = 0;
 
+  // A.2: AI uses difficulty-scaled free support; human uses cosmic constants
+  const humanPlayers = gameState?.humanPlayers || 0xFF;
+  const isAI = !((1 << city.owner) & humanPlayers);
+  let freeSupport;
+  if (government === 'anarchy' || government === 'despotism') {
+    freeSupport = city.size; // same for AI and human
+  } else if (government === 'republic' || government === 'democracy') {
+    freeSupport = 0; // every unit costs
+  } else if (isAI) {
+    // AI formula: base = 0x0D - difficulty, bonuses at low difficulty
+    const diffIdx = gameState?.difficulty
+      ? ['chieftain','warlord','prince','king','emperor','deity'].indexOf(gameState.difficulty)
+      : 0;
+    let base = 13 - diffIdx;
+    if (diffIdx < 3) base += 1;
+    if (diffIdx === 0) base += 1;
+    freeSupport = base;
+  } else {
+    // Human: use cosmic constants
+    freeSupport = COSMIC_FREE_SUPPORT[government] || 0;
+  }
+
   for (const u of units) {
     if (u.owner !== city.owner || u.gx < 0) continue;
     if (u.homeCityId !== cityIndex) continue;
     if (SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
 
     unitCounter++;
-    switch (government) {
-      case 'anarchy': case 'despotism':
-        if (unitCounter > city.size) shieldCost++;
-        break;
-      case 'monarchy':
-        if (unitCounter > COSMIC_FREE_SUPPORT.monarchy) shieldCost++;
-        break;
-      case 'communism':
-        if (unitCounter > COSMIC_FREE_SUPPORT.communism) shieldCost++;
-        break;
-      case 'fundamentalism':
-        if (!FANATIC_TYPES.has(u.type) &&
-            unitCounter > COSMIC_FREE_SUPPORT.fundamentalism) shieldCost++;
-        break;
-      default: // republic, democracy: every unit costs
-        shieldCost++;
-        break;
+    if (government === 'republic' || government === 'democracy') {
+      shieldCost++; // every unit costs
+    } else if (government === 'fundamentalism' && FANATIC_TYPES.has(u.type)) {
+      continue; // fanatics are always free under fundamentalism
+    } else if (unitCounter > freeSupport) {
+      shieldCost++;
     }
   }
   return shieldCost;

@@ -473,7 +473,7 @@ export function processUnitSupportDeficit(city, cityIndex, state, mapBase) {
 
     if (worstIdx < 0) break; // No disbandable units found
 
-    // Kill the unit
+    // Kill the unit and recover half shields to nearest city
     const u = state.units[worstIdx];
     state.units[worstIdx] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
     events.push({
@@ -481,10 +481,57 @@ export function processUnitSupportDeficit(city, cityIndex, state, mapBase) {
       civSlot: activeCiv, cityName: city.name,
     });
 
+    // A.8: Half-shield recovery — disbanded units return half their cost to nearest city
+    const unitCost = UNIT_COSTS[u.type] || 0;
+    if (unitCost > 0) {
+      const halfShields = Math.floor(unitCost / 2);
+      if (halfShields > 0) {
+        // Add to the disbanding city's shield box
+        const curCity = state.cities[cityIndex];
+        state.cities[cityIndex] = {
+          ...curCity,
+          shieldsInBox: (curCity.shieldsInBox || 0) + halfShields,
+        };
+      }
+    }
+
     // Recalculate support after disbanding
     const recheck = calcShieldProduction(city, cityIndex, state, mapBase, state.units);
     currentSupport = recheck.support;
     if (recheck.support <= recheck.grossShields) break;
+  }
+
+  // A.8: AI auto-disband — every 8 turns, AI in Republic/Democracy with disorder
+  // disbands excess units to restore order
+  const humanPlayers = state.humanPlayers || 0xFF;
+  const isAI = !((1 << activeCiv) & humanPlayers);
+  const govt = getGovernment(city, state);
+  if (isAI && city.civilDisorder &&
+      (govt === 'republic' || govt === 'democracy')) {
+    const turnNum = state.turn?.number || 0;
+    for (let ui = 0; ui < state.units.length; ui++) {
+      if (((turnNum + ui) & 7) !== 0) continue; // every 8 turns per unit
+      const u = state.units[ui];
+      if (u.owner !== activeCiv || u.gx < 0 || u.homeCityId !== cityIndex) continue;
+      if (SUPPORT_EXEMPT_TYPES.has(u.type)) continue;
+      if (u.gx === city.gx && u.gy === city.gy) continue; // keep garrison
+
+      state.units[ui] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+      events.push({
+        type: 'unitDisbanded', unitType: u.type,
+        civSlot: activeCiv, cityName: city.name, reason: 'aiAutoDisband',
+      });
+      // Recover half shields
+      const unitCost = UNIT_COSTS[u.type] || 0;
+      if (unitCost > 0) {
+        const curCity = state.cities[cityIndex];
+        state.cities[cityIndex] = {
+          ...curCity,
+          shieldsInBox: (curCity.shieldsInBox || 0) + Math.floor(unitCost / 2),
+        };
+      }
+      break; // one per call
+    }
   }
 
   return { events };

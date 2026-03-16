@@ -6,7 +6,7 @@ import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL,
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, checkTriremeSinking } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
-import { calcCityTrade } from '../production.js';
+import { calcCityTrade, calcShieldProduction } from '../production.js';
 import { cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech } from '../research.js';
 import { checkGameEndConditions, recalcSpaceshipStats } from '../spaceship.js';
@@ -257,6 +257,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   let civTaxTotal = 0;
   let civSciTotal = 0;
   let civMaintenanceTotal = 0;
+  let shieldOverflowBeakers = 0;
   for (let ci = 0; ci < state.cities.length; ci++) {
     const city = state.cities[ci];
     if (city.owner !== activeCiv || city.size <= 0) continue;
@@ -265,7 +266,16 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     civTaxTotal += tax;
     civSciTotal += sci;
     civMaintenanceTotal += maintenance;
+
+    // A.6: Shield overflow → research beakers
+    // Binary: clamp(shieldSurplus - freeUnitSupport, 0, citySize) → civ research pool
+    const { grossShields, support } = calcShieldProduction(city, ci, state, mapBase, state.units);
+    const shieldSurplus = grossShields - support;
+    if (shieldSurplus > city.size) {
+      shieldOverflowBeakers += Math.min(shieldSurplus - city.size, city.size);
+    }
   }
+  civSciTotal += shieldOverflowBeakers;
 
   // Update civ treasury and research progress
   if (state.civs && state.civs[activeCiv]) {

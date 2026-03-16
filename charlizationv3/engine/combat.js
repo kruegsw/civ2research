@@ -336,6 +336,14 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     defFp *= 2;
   }
 
+  // ── B.3: Air vs land — both FP forced to 1 ──────────────────
+  // From FUN_00580341: when an air unit attacks a ground unit,
+  // both firepower values are reduced to 1.
+  if (atkDomain === 1 && defDomain === 0) {
+    atkFp = 1;
+    defFp = 1;
+  }
+
   // ── B.1: Sea unit attacks land unit ────────────────────────────
   // From Civ2 mechanics: when a sea unit attacks a land unit,
   // both sides have firepower reduced to 1.
@@ -447,6 +455,10 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const defenderIsSub = UNIT_SUBMARINE.has(defender.type);
   let submarineRetreated = false;
 
+  // ── B.3: Fortress retreat flag ─────────────────────────────────
+  // Defender on fortress retreats instead of dying
+  let fortressRetreat = false;
+
   // Round-by-round combat using pseudo-random sequence.
   // Seed includes unit stats + extraSeed (positions, turn, state version) for varied outcomes.
   let seed = ((attacker.type * 31 + defender.type * 17 + defTerrain * 7 + atkHp + defHp +
@@ -498,11 +510,17 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     }
   }
 
+  // B.3: Fortress retreat — defender on fortress retreats instead of dying
+  if (defHasFortress && !defInCity && defHp <= 0 && atkHp > 0 && defDomain === 0) {
+    fortressRetreat = true;
+    defHp = 10; // survive with 1 HP
+  }
+
   // If submarine retreated, neither side "wins" in the normal sense.
   // The attacker doesn't advance, the defender survives with damage.
   // We report attackerWins=false but with submarineRetreated=true
   // so the reducer knows NOT to kill the attacker.
-  const attackerWins = !submarineRetreated && atkHp > 0;
+  const attackerWins = !submarineRetreated && !fortressRetreat && atkHp > 0;
 
   // HP lost in units of movesRemain field (each = 1 HP out of UNIT_HP max)
   const atkHpLost = Math.max(0, Math.ceil((atkMaxHp - Math.max(0, atkHp)) / 10));
@@ -534,5 +552,5 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
 
   return { attackerWins, atkHpLost, defHpLost, atkVeteranPromo, defVeteranPromo,
     rounds, atkMaxHp, defMaxHp, atkFp, defFp, atkStartHp, defStartHp,
-    submarineRetreated, barbarianGold, treatyViolation };
+    submarineRetreated, fortressRetreat, barbarianGold, treatyViolation };
 }
