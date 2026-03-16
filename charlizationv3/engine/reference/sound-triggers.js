@@ -873,6 +873,14 @@ export const SOUND_EDITOR = {
   soundSlotArray: 'DAT_006ACD38 (6 int32 indices into AIRCOMBT table)',
   importSlotArray: 'DAT_006ACA14 (indices for import file dialog)',
   note: 'Cheat-mode sound editor. 6 buttons show current unit sound assignments. Click plays sound, can import custom WAV files.',
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  // @ FUN_0058a905 (import_sound_file)
+  spriteOffsets: {
+    wavFileFilter: 0x888,          // DAT_00628420 + 0x888 — WAV file filter label for open dialog      // 0x0058A905
+    wavFileDialog: 0x88c,          // DAT_00628420 + 0x88c — WAV import file dialog title/icon          // 0x0058A905
+  },
+
   sourceAddr: '0x0058B47E',
 };
 

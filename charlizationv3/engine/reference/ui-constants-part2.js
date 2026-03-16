@@ -441,6 +441,25 @@ export const COUNCIL_LABEL_COLORS = {
   activeNormalColor:  0x10,   // normal text color (active mode)           // 0x00515999
   nameTableStride:    0x18,   // stride in advisor name table              // 0x00515999
   nameTableAddr:      'DAT_0065515a',                                      // 0x00515999
+  spriteOffsets: {
+    // @ FUN_00515999: when DAT_00631a9c != 0 (active label mode), loads separator sprite
+    labelSeparator: 0x71c,     // DAT_00628420 + 0x71c — advisor label connector/separator   // 0x00515999
+  },
+};
+
+// --- Council Create Buttons ---
+// council_create_buttons (FUN_00517673), creates 5 advisor navigation buttons
+// Each button created via thunk_FUN_00497d40(parent, buttonId, rect, style=0x21, sprite)
+// Buttons are spaced at DAT_0063359c + 0x5A (90px) column stride
+export const COUNCIL_BUTTON_SPRITES = {
+  // @ FUN_00517673 (lines ~2844-2885)
+  button0: 0x26c,   // DAT_00628420 + 0x26c — advisor button 0 sprite (buttonId 0)   // 0x00517673
+  button1: 0x16c,   // DAT_00628420 + 0x16c — advisor button 1 sprite (buttonId 1)   // 0x00517673
+  button2: 0x114,   // DAT_00628420 + 0x114 — advisor button 2 sprite (buttonId 2)   // 0x00517673
+  button3: 0x6e0,   // DAT_00628420 + 0x6e0 — advisor button 3 sprite (buttonId 3)   // 0x00517673
+  button4: 0x6e4,   // DAT_00628420 + 0x6e4 — advisor button 4 sprite (buttonId 4)   // 0x00517673
+  buttonStyle:  0x21,    // style flags for all buttons                                // 0x00517673
+  columnStride: 0x5A,    // 90px horizontal spacing between buttons                    // 0x00517673
 };
 
 // --- Council Advisor Background Sprite ---
@@ -1153,6 +1172,14 @@ export const CHEAT_FLAGS = {
   godModeFlag:      'DAT_00655b07',                                         // 0x0055560F
   observerFlag:     'DAT_00655b06',                                         // 0x0055560F
   currentPlayerVar: 'DAT_006d1da0',                                         // 0x0055560F
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  // @ cheat_change_player (FUN_0055560f) and cheat_change_human_civ (FUN_0055583f)
+  spriteOffsets: {
+    kingOfKingsOption: 0x13c,  // DAT_00628420 + 0x13c — "King of Kings" (god mode) menu option sprite   // 0x0055560F
+    observerOption:    0x138,  // DAT_00628420 + 0x138 — "Observer" mode menu option sprite               // 0x0055560F
+    noneOption:        0x140,  // DAT_00628420 + 0x140 — "None" option sprite (clear human civ)           // 0x0055583F
+  },
 };
 
 // --- Cheat Edit Dialogs ---
@@ -1337,6 +1364,13 @@ export const CHEAT_EDIT_SCENARIO = {
   scenarioNameAddr:  'DAT_0064bc62',   // scenario display name                    // 0x005582AD
   scenarioNameMaxLen: 0x18,            // 24 character limit                       // 0x005582AD
   tileRecordStride:  6,                // 6 bytes per map tile record              // 0x005582AD
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  spriteOffsets: {
+    normalTitle:       0x68c,  // DAT_00628420 + 0x68c — dialog title for normal (non-scenario) mode     // 0x005582AD
+    scenarioTitle:     0x688,  // DAT_00628420 + 0x688 — dialog title for scenario mode                  // 0x005582AD
+  },
+
   sourceAddr:        '0x005582AD',
 };
 
@@ -1430,6 +1464,28 @@ export const TERRAIN_EDITOR_WINDOW = {
   // File I/O: writes RULES.TXT via terrain_editor_save (show_messagebox_9D67)
   rulesSaveKey:    'TERRAIN',        // RULES.TXT section key                // 0x00519D67
   rulesSaveNotice: 'NOTICE',         // success notification key             // 0x00519D67
+
+  // --- Sprite Offsets ---
+  spriteOffsets: {
+    // @ FUN_0051bba1 (terrain_editor_main): dialog frame and navigation buttons
+    dialogFrame:     0x728,   // DAT_00628420 + 0x728 — editor dialog frame (via thunk_FUN_005534bc) // 0x0051BBA1
+    dialogFrameStyle: 0xD,    // style param to dialog frame renderer                                // 0x0051BBA1
+    navButtonA:      0x8f4,   // DAT_00628420 + 0x8f4 — editor button (buttonId 0x65, callback LAB_00401cfd)  // 0x0051BBA1
+    navButtonB:      0x8f8,   // DAT_00628420 + 0x8f8 — editor button (buttonId 0x65, callback LAB_00403535)  // 0x0051BBA1
+
+    // @ FUN_00519e74 (editor_rename_terrain): resource preloading for rename dialog
+    renameTerrainA:  0x7bc,   // DAT_00628420 + 0x7bc — terrain rename resource A (loaded twice)     // 0x00519E74
+    renameTerrainB:  0x7c0,   // DAT_00628420 + 0x7c0 — terrain rename resource B (loaded 3x)       // 0x00519E74
+
+    // @ FUN_0051adfd (editor_create_control): control sprites by editor page type
+    // case 0/default: loads all 33 terrain type sprites from DAT_00627cc4
+    // case 1/3: loads 0x7bc + 0x7c0, then 11 terrain sprites (indices 0–10)
+    controlSpriteA:  0x7bc,   // DAT_00628420 + 0x7bc — control sprite for case 1/3 pages           // 0x0051ADFD
+    controlSpriteB:  0x7c0,   // DAT_00628420 + 0x7c0 — control sprite for case 1/3 pages           // 0x0051ADFD
+    // case 2/4: loads 0x7c8, then 6 resource sprites from DAT_0064b9a0
+    resourceSprite:  0x7c8,   // DAT_00628420 + 0x7c8 — resource type header for case 2/4 pages     // 0x0051ADFD
+  },
+
   // sourceAddr: '0x0051BBA1' (main), '0x00519D67' (save), '0x0051ACDC' (command handler)
 };
 
@@ -1733,6 +1789,14 @@ export const SPACESHIP_DIALOG_ICONS = {
   arrival:      0xd3,  // @ 0x0059772c — thunk_FUN_0040bc10(0xd3) — arrival year (when launched)
   noArrival:    0xd4,  // @ 0x0059772c — thunk_FUN_0040bc10(0xd4) — no arrival (not launched)
   arrivalYear:  0xda,  // @ 0x0059772c — thunk_FUN_0040bc10(0xda) — arrival year number
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  spriteOffsets: {
+    launchButton: 0x354,  // DAT_00628420 + 0x354 — "Launch" button sprite in spaceship dialog        // 0x0059772C
+    // Component icons are dynamic: DAT_00628420 + *(DAT_00634f60 + componentIdx * 0xc) * 4
+    // These resolve at runtime from the spaceship component icon table
+  },
+
   // sourceAddr: '0x0059772C'
 };
 
@@ -1865,6 +1929,11 @@ export const MOVE_UNIT_CONSTANTS = {
   // Realtime move timeout: 0xe10 ticks (3600) waiting for server response
   realtimeMoveTimeout:    0xe10,  // @ 0x0059062c — while (iVar17 - iVar15 < 0xe10 && ...)
   serverTimeoutMsg:       's_SERVERCONNECTTIME_00634e3c',  // @ 0x0059062c
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  spriteOffsets: {
+    noExpelText: 0x234,          // DAT_00628420 + 0x234 — additional text for NOEXPEL dialog (non-diplomat units)  // 0x0059062C
+  },
 
   // sourceAddr: '0x0059062C'
 };
@@ -2646,7 +2715,62 @@ export const SCENARIO_EVENT_EDITOR = {
   dialogDimensions: { width: 0x230, height: 0x17C },  // 560 x 380 pixels       // 0x0054f3b9
   progressBarWidth: 0x13B,          // 315 pixels — event list progress bar      // 0x0054f3b9
 
-  // sourceAddr: '0x0054F3B9'
+  // --- Sprite Offsets (events_editor_init, FUN_0054f3b9) ---
+  spriteOffsets: {
+    dialogFrame:   0x73c,   // DAT_00628420 + 0x73c — editor dialog frame (via thunk_FUN_005534bc) // 0x0054F3B9
+    dialogStyle:   0xD,     // style param to dialog frame renderer                                // 0x0054F3B9
+    triggerBtn:    0x8dc,   // DAT_00628420 + 0x8dc — trigger list button (buttonId 0x65)          // 0x0054F3B9
+    actionBtn:     0x8e0,   // DAT_00628420 + 0x8e0 — action list button (buttonId 0x65)           // 0x0054F3B9
+    eventNameBtn:  0x8e4,   // DAT_00628420 + 0x8e4 — event name/label button (buttonId 0x65)      // 0x0054F3B9
+    // 0x3f8, 0x8ec, 0x3fc also used — already documented in other exports
+  },
+
+  // --- Paint Labels (events_editor_paint, FUN_0054f16b) ---
+  paintLabels: {
+    triggerLabel:  0x8d4,   // DAT_00628420 + 0x8d4 — "Triggers:" header label text                // 0x0054F16B
+    actionLabel:   0x8d8,   // DAT_00628420 + 0x8d8 — "Actions:" header label text                 // 0x0054F16B
+  },
+
+  // sourceAddr: '0x0054F3B9' (init), '0x0054F16B' (paint)
+};
+
+// --- Event Trigger Editor Sprites ---
+// Binary ref: edit_event_trigger (FUN_0054c4a1) @ 0x0054C4A1 (3867 bytes)
+// Shows picker dialogs for event trigger conditions (unit type, city, tech, etc.)
+// Each sprite is a dialog title/label loaded via show_event_picker_dialog (FUN_0054a912).
+export const EVENT_TRIGGER_SPRITES = {
+  // @ FUN_0054c4a1: picker dialog title sprites (DAT_00628420 + offset)
+  unitPicker:     0x890,   // "Select Unit" picker title (case uVar4==1)              // 0x0054C4A1
+  cityPicker:     0x894,   // "Select City" picker title (case uVar4==2)              // 0x0054C4A1
+  techPicker:     0x898,   // "Select Technology" picker title (nested in city case)   // 0x0054C4A1
+  civPicker:      0x89c,   // "Select Civilization" picker title                      // 0x0054C4A1
+  terrainPicker:  0x8a0,   // "Select Terrain Type" picker title                      // 0x0054C4A1
+  improvPicker:   0x8a4,   // "Select Improvement" picker title (case 0x80)           // 0x0054C4A1
+  textFormatA:    0x8a8,   // text format string (used for turn/count display)        // 0x0054C4A1
+  textFormatB:    0x8ac,   // secondary text format (number formatting)               // 0x0054C4A1
+  // MessageBox strings:
+  msgBoxCaption:  0x8d0,   // MessageBoxA caption for save confirmation               // 0x0054C4A1
+  msgBoxText:     0x8e8,   // MessageBoxA body text for save prompt                   // 0x0054C4A1
+};
+
+// --- Event Action Editor Sprites ---
+// Binary ref: edit_event_action (FUN_0054d7ef) @ 0x0054D7EF (5782 bytes)
+// Shows picker dialogs for event action parameters.
+export const EVENT_ACTION_SPRITES = {
+  // @ FUN_0054d7ef: picker and label sprites (DAT_00628420 + offset)
+  textFormatA:    0x8a8,   // reuses trigger text format (turn/count display)         // 0x0054D7EF
+  headerLabel:    0x8b0,   // action header label text                                // 0x0054D7EF
+  subLabel:       0x8b4,   // action sub-label/description text                       // 0x0054D7EF
+  paramPicker:    0x8b8,   // action parameter picker title                           // 0x0054D7EF
+  valuePicker:    0x8bc,   // action value picker title                               // 0x0054D7EF
+  toggleLabel:    0x8c0,   // action toggle/flag label                                // 0x0054D7EF
+  optionLabel:    0x8c4,   // action option selector label                            // 0x0054D7EF
+  resultFormat:   0x8c8,   // action result display format                            // 0x0054D7EF
+  textFormatB:    0x8ac,   // reuses trigger secondary format                         // 0x0054D7EF
+  specialPicker:  0x970,   // special action picker (case 0x7 in action switch)       // 0x0054D7EF
+  // MessageBox strings (in show_messagebox_D4E6):
+  msgBoxCaption:  0x8d0,   // reuses trigger MessageBox caption                       // 0x0054D7EF
+  msgBoxText:     0x8cc,   // action-specific MessageBox body text                    // 0x0054D7EF
 };
 
 // --- Unit Type Editor ---
@@ -2673,7 +2797,36 @@ export const UNIT_TYPE_EDITOR = {
     flags:       0x0B,              // int8 — unit flags                         // 0x005aef20
   },
 
-  // sourceAddr: '0x005AEF20' (load), '0x005AF140' (save)
+  // --- Editor Init Sprites (editor_init_window, FUN_005b1037) ---
+  spriteOffsets: {
+    dialogFrame:     0x72c,   // DAT_00628420 + 0x72c — editor dialog frame (via thunk_FUN_005534bc) // 0x005B1037
+    dialogStyle:     0xD,     // style param to dialog frame renderer                                // 0x005B1037
+    secondaryNav:    0x7d0,   // DAT_00628420 + 0x7d0 — secondary nav button (buttonId 0x65)         // 0x005B1037
+    tertiaryNav:     0x7d4,   // DAT_00628420 + 0x7d4 — tertiary nav button (buttonId 0x65)          // 0x005B1037
+    // 0x3f8 (save), 0xa8 (next), 0x8ec (delete), 0x3fc (cancel), 0x7cc (side nav) — shared sprites
+  },
+
+  // --- Listbox Population (editor_populate_listbox, FUN_005b0473) ---
+  listboxSprites: {
+    // case 1/2 (tech advance list): loads header sprites then 100 tech names
+    techNoneHeader:  0x7c4,   // DAT_00628420 + 0x7c4 — "None" header for tech list (case 1/2)      // 0x005B0473
+    // 0x7c0 also loaded — already documented as terrain rename resource B
+  },
+
+  // sourceAddr: '0x005AEF20' (load), '0x005AF140' (save), '0x005B1037' (init), '0x005B0473' (listbox)
+};
+
+// --- Unit Utility Sprites ---
+// Binary ref: block_005B0000.c — unit lookup and display functions
+export const UNIT_UTILITY_SPRITES = {
+  // @ get_unit_home_city_name (FUN_005b6898): returns default text when unit has no home city
+  noHomeCityText: 0x38,    // DAT_00628420 + 0x38 — "None" text for unit with no home city         // 0x005B6898
+
+  // @ show_unit_list_dialog (FUN_005b6aea): helicopter/VTOL unit icon in unit list
+  helicopterIcon: 0x300,   // DAT_00628420 + 0x300 — helicopter domain unit icon (domain==7)       // 0x005B6AEA
+
+  // @ unit_order_sentry (FUN_0058d442): sprite passed to show_unit_list_dialog as title icon
+  sentryListIcon: 0xf8,    // DAT_00628420 + 0xf8 — sentry order unit list dialog icon             // 0x0058D442
 };
 
 
@@ -3410,7 +3563,11 @@ export const EDITOR_MISC_DIALOG_SPRITES = {
   cityStyleIconStride: 4,              // 4 bytes between each style icon offset        // 0x0041ba52
   cityStyleIconCount: 4,               // 4 city styles                                 // 0x0041ba52
 
-  sourceAddr: '0x004161B5, 0x0041DD0E, 0x0041BA52',
+  // Unit sound editor title sprite
+  // @ FUN_005afe15 (editor_export_unit_text): thunk_FUN_00428b0c(DAT_00628420 + 0x7dc, ...)
+  unitSoundEditorTitle: 0x7dc,         // title sprite for unit sound editor entry             // 0x005AFE15
+
+  sourceAddr: '0x004161B5, 0x0041DD0E, 0x0041BA52, 0x005AFE15',
 };
 
 
@@ -3852,4 +4009,27 @@ export const FIND_CITY_DIALOG = {
   // If the city has disorder and belongs to current player:
   disorderHandler: 'thunk_handle_city_disorder_00509590', // open city disorder    // 0x0040E017
   listContainer:   'DAT_00679640',     // listbox container                        // 0x0040E017
+};
+
+
+// ============================================================================
+// === CITY LIST DRAW SPRITES ===
+// Binary ref: FUN_0058878e (city_list_draw) @ block_00580000.c (1721 bytes)
+// ============================================================================
+
+/**
+ * Sprite resource table offsets used when drawing the city list panel.
+ * city_list_draw iterates visible rows, draws city names and icons.
+ * These sprites indicate trade route status and selected/filtered states.
+ */
+export const CITY_LIST_DRAW_SPRITES = {
+  sourceAddr: '0x0058878E',
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  spriteOffsets: {
+    noScrollPlaceholder: 0xb78,    // DAT_00628420 + 0xb78 — shown when scroll pos == -1 (no list)     // 0x0058878E
+    tradeCountLow:       0xb70,    // DAT_00628420 + 0xb70 — trade route count < 2 indicator           // 0x0058878E
+    tradeCountHigh:      0xb6c,    // DAT_00628420 + 0xb6c — trade route count >= 2 indicator           // 0x0058878E
+    capitalOrSpecial:    0xb74,    // DAT_00628420 + 0xb74 — capital city / special status icon         // 0x0058878E
+  },
 };

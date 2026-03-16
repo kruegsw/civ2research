@@ -1159,9 +1159,12 @@ export const TRADE_ROUTES = {
   aiMsgCaravanReturn: 0x11,     // 17
 
   // Sprite resource table offsets (DAT_00628420 + offset)
-  // @ FUN_00440750
+  // @ FUN_00440750 (execute_trade_route) and FUN_0058fedb (handle_caravan_arrival)
   spriteOffsets: {
-    unknownCommodity: 0x100,  // fallback commodity icon when commodity type < 0 (food delivery)
+    unknownCommodity: 0x100,        // fallback commodity icon when commodity type < 0 (food delivery)  // 0x00440750, 0x0058FEDB
+    establishRoute:   0x284,        // "Establish Trade Route" popup menu option sprite                 // 0x0058FEDB
+    keepMoving:       0x288,        // "Keep Moving" popup menu option sprite (shown when not home city)// 0x0058FEDB
+    helpBuildWonder:  0x28c,        // "Help Build Wonder" popup menu option sprite (city builds wonder)// 0x0058FEDB
   },
 };
 
@@ -1849,4 +1852,21 @@ export const SPRITE_EDITOR_COORDS = {
   // Category selector address
   categoryAddr: 'DAT_006ac924',
   sourceAddr: '0x005746A1',
+
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  // @ FUN_00575dec (sprited_setup_preview_window)
+  spriteOffsets: {
+    previewDialogFrame: 0x950,       // DAT_00628420 + 0x950 — preview window dialog frame (0xf0x0xf0)   // 0x00575DEC
+    previewNavButton:   0x954,       // DAT_00628420 + 0x954 — preview window navigation button sprite    // 0x00575DEC
+  },
+
+  // @ FUN_00575dec inner loop (sprited_open_preview_dialog)
+  // These sprites are used for file-open dialog and error messages
+  fileDialogSprites: {
+    fileFilter:         0x958,       // DAT_00628420 + 0x958 — sprite file open dialog filter label        // 0x00575DEC
+    fileDialogTitle:    0x95c,       // DAT_00628420 + 0x95c — sprite file open dialog title/icon          // 0x00575DEC
+    wrongFilenameError: 0x960,       // DAT_00628420 + 0x960 — error: filename does not match expected     // 0x00575DEC
+    loadFailedError:    0x964,       // DAT_00628420 + 0x964 — error: BMP/GIF could not be loaded          // 0x00575DEC
+    unknownFormatError: 0x968,       // DAT_00628420 + 0x968 — error: file is neither BMP nor GIF          // 0x00575DEC
+  },
 };

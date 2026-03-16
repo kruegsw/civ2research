@@ -563,6 +563,19 @@ export const MAIN_WINDOW_TIMERS = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
+// MAIN WINDOW SETUP SPRITES
+// Binary ref: FUN_0056aacb (main_window_setup) @ block_00560000.c (379 bytes)
+// ═══════════════════════════════════════════════════════════════════
+
+export const MAIN_WINDOW_SETUP_SPRITES = {
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  spriteOffsets: {
+    windowFrame: 0x14,           // DAT_00628420 + 0x14 — main game window dialog frame background       // 0x0056AACB
+  },
+  sourceAddr: '0x0056AACB',
+};
+
+// ═══════════════════════════════════════════════════════════════════
 // SAVE FORMAT CONSTANTS (Unit/City record sizes by version)
 // Binary ref: FUN_004732a6 (load_units_and_cities) @ block_00470000.c
 // ═══════════════════════════════════════════════════════════════════

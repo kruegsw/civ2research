@@ -729,6 +729,33 @@ export const MP_EVENT_TYPES = {
 };
 // sourceAddr: '0x00511BA2' (dispatch_mp_event)
 
+// --- MP Event Sprite Offsets ---
+// dispatch_mp_event (FUN_00511ba2) loads DAT_00628420 sprite resources for certain events.
+// thunk_FUN_0059f2a3 adds sprite to popup menu; thunk_FUN_0040bc80 sets timer delay.
+export const MP_EVENT_SPRITES = {
+  // Cases 0x40 (NEWTURNTIMERCLIENT) and 0x43 (PMCHANGECLIENT):
+  // Both load two sprites then show a timed popup (0x28 = 40 ticks for turn timer, 0 for PM change)
+  // @ FUN_00511ba2 cases 0x40, 0x43 (lines ~847, 862)
+  turnTimerPopupA:     0xd50,   // DAT_00628420 + 0xd50 — MP turn timer notification icon A  // 0x00511BA2
+  turnTimerPopupB:     0xd54,   // DAT_00628420 + 0xd54 — MP turn timer notification icon B  // 0x00511BA2
+  turnTimerDelay:      0x28,    // thunk_FUN_0040bc80(0x28) — 40-tick display for turn timer // 0x00511BA2
+  pmChangeDelay:       0x00,    // thunk_FUN_0040bc80(0) — immediate for PM change            // 0x00511BA2
+
+  // Case 0x64 (REVEALUNITORIGINS): reveal hidden unit owners after spy mission
+  // @ FUN_00511ba2 case 100 (lines ~1031-1035)
+  revealUnitsA:        0xdd4,   // DAT_00628420 + 0xdd4 — reveal unit origins icon A         // 0x00511BA2
+  revealUnitsB:        0xdd8,   // DAT_00628420 + 0xdd8 — shared reveal info icon            // 0x00511BA2
+
+  // Case 0x65 (REVEALCITYINFO): reveal city info after spy mission
+  // @ FUN_00511ba2 case 0x65 (lines ~1071-1075)
+  revealCityA:         0xddc,   // DAT_00628420 + 0xddc — reveal city info icon A            // 0x00511BA2
+  revealCityB:         0xdd8,   // DAT_00628420 + 0xdd8 — shared reveal info icon (same)     // 0x00511BA2
+
+  revealDelay:         0x14,    // thunk_FUN_0040bc80(0x14) — 20-tick delay for reveal popups // 0x00511BA2
+  // DAT_00631138: flag set to 1 during REVEALUNITORIGINS processing                         // 0x00511BA2
+  // DAT_0063113c: flag set to 1 during REVEALCITYINFO processing                            // 0x00511BA2
+};
+
 // =============================================================================
 // === Multiplayer Chat System ===
 // =============================================================================

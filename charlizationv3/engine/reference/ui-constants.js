@@ -1808,6 +1808,11 @@ export const COSMIC_EDITOR_WINDOW = {
   // @ constructor: line_height = ((width-10 + ((width-10)>>31 & 3)) >> 2
   columnWidthFormula: '(windowWidth - 10 + 3) >> 2',
 
+  // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+  spriteOffsets: {
+    dialogFrame: 0x94c,          // DAT_00628420 + 0x94c — cosmic editor dialog frame background       // 0x00586F16
+  },
+
   // sourceAddr: block_00580000.c ~line 1560-1640
 };
 

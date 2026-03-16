@@ -1163,6 +1163,13 @@ export const ALLIANCE_PROPOSALS = {
       notes: 'No gold or tech offered in CRUSADE path (AI is asking for help, not buying it)',
     },
 
+    // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+    // @ FUN_00560d95: text register 2 set based on alliance state
+    spriteOffsets: {
+      labelAllied:    0x1cc,   // DAT_00628420 + 0x1cc — opponent label when allied (treaty & 8 != 0)    // 0x00560D95
+      labelNotAllied: 0x1d0,   // DAT_00628420 + 0x1d0 — opponent label when not allied (treaty & 8 == 0)// 0x00560D95
+    },
+
     // On rejection
     rejection: {
       cooldown: 14,            // same as HELPME: contactTurn = max(current, turn - 14)
