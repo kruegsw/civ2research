@@ -97,24 +97,24 @@ export const IMPROVE_MAINTENANCE = [
   3, // 12: University
   4, // 13: Mass Transit
   4, // 14: Colosseum
-  3, // 15: Factory
+  4, // 15: Factory (RULES.TXT: 4, was 3)
   6, // 16: Mfg. Plant
   4, // 17: SDI Defense
   2, // 18: Recycling Center
-  3, // 19: Power Plant
-  3, // 20: Hydro Plant
-  3, // 21: Nuclear Plant
+  4, // 19: Power Plant (RULES.TXT: 4, was 3)
+  4, // 20: Hydro Plant (RULES.TXT: 4, was 3)
+  2, // 21: Nuclear Plant (RULES.TXT: 2, was 3)
   4, // 22: Stock Exchange
   2, // 23: Sewer System
   3, // 24: Supermarket
-  3, // 25: Superhighways
+  5, // 25: Superhighways (RULES.TXT: 5, was 3)
   3, // 26: Research Lab
   2, // 27: SAM Battery
   1, // 28: Coastal Fortress
-  3, // 29: Solar Plant
+  4, // 29: Solar Plant (RULES.TXT: 4, was 3)
   1, // 30: Harbour
   3, // 31: Offshore Platform
-  5, // 32: Airport
+  3, // 32: Airport (RULES.TXT: 3, was 5)
   2, // 33: Police Station
   3, // 34: Port Facility
   0, // 35: SS Structural
@@ -208,8 +208,8 @@ export const UNIT_MOVE_POINTS = [
   2, 2, 2, 2, 2, 2, 2, 3,    // 15-22: Horsemen..Armor
   1, 1, 1, 2, 10, 8, 6,      // 23-29: Catapult..Helicopter
   14, 12, 3, 3, 4, 4, 4,     // 30-36: StealthF..Ironclad
-  6, 6, 8, 4, 3, 5, 5,       // 37-43: Destroyer..Transport
-  12, 16, 2, 3, 1, 1, 1,     // 44-50: CruiseMsl..Explorer
+  5, 5, 5, 4, 3, 5, 5,       // 37-43: Destroyer..Transport (Cruiser=5, AEGIS=5 per RULES.TXT)
+  12, 16, 2, 3, 1, 2, 1,     // 44-50: CruiseMsl..Explorer (Freight=2 per RULES.TXT)
   1,                          // 51:   Extra Land
 ];
 
@@ -243,7 +243,7 @@ export const UNIT_IGNORE_ZOC = [
   // All air units (27-31) ignore ZOC
   // All sea units (32-43) ignore ZOC
   1, 1, 0, 0, 0, 0, 0, 0,   // 0-7: settlers,engineers ignore; warriors-musketeers don't
-  0, 0, 0, 0, 0, 0, 0,       // 8-14: fanatics-mech.inf don't
+  0, 1, 0, 0, 0, 0, 0,       // 8-14: fanatics-mech.inf (Partisans=9 ignore ZOC per RULES.TXT)
   0, 0, 0, 0, 0, 0, 0, 0,   // 15-22: horsemen-armor don't
   0, 0, 0, 0,                 // 23-26: catapult-howitzer don't
   1, 1, 1, 1, 1,             // 27-31: all air ignore ZOC
@@ -284,7 +284,8 @@ export const UNIT_AEGIS_BONUS = new Set([39]); // AEGIS Cruiser (type 39)
 // Index by terrain type → result terrain. -1 = cannot transform
 export const TERRAIN_TRANSFORM = [
 //  desert plains grass  forest hills  mount  tundra glacier swamp jungle ocean
-    1,     2,     0,     1,     0,     4,     0,     6,     2,    3,     -1
+    1,     2,     4,     2,     1,     4,     0,     6,     1,    1,     -1
+// Corrected per RULES.TXT: Grass→Hills, Forest→Grass, Hills→Plains, Swamp→Plains, Jungle→Plains
 ];
 // Transform turns (engineer-only, before halving)
 export const TRANSFORM_TURNS = [
