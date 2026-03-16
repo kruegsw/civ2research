@@ -581,7 +581,7 @@ export const DIPLOMACY = {
 
   tributeFormula: {
     // @ FUN_0045705e ~line 476
-    final: 'tribute = ((difficulty + 1) * techDemand + 16) / 32 * 50',
+    final: 'tribute = clamp((difficulty + 1) * techDemand / 32, 0, 20) * 50',
     clampToTreasury: 'if tribute > treasury && tribute < treasury*2 && treasury > 49: tribute = (treasury/50) * 50',
     resetCondition: 'if consecutiveDemands > 9: reset to 0',
   },
@@ -1369,8 +1369,8 @@ export const AI_TECH_VALUATION = {
     formula: 'local_8 += priority / 4',
   },
 
-  humanCivBonuses: {
-    // Only applied if civ is NOT in DAT_00655b0b alive bitmask (i.e., dead/AI check)
+  aiCivBonuses: {
+    // Only applied if civ is NOT in DAT_00655b0b human bitmask (i.e., AI civ)
     wonderObsolescenceCheck: {
       // If wonder obsolescence tech matches this tech and civ already has the wonder: -2
       // But if tech is "Industrialization" (0x25): skip the -2 penalty
@@ -1900,9 +1900,9 @@ export const UNIT_BUILDABILITY = {
   },
 
   cityRequirements: {
-    // If param_2 (citySlot) >= 0 and unit role == 2 (air):
+    // If param_2 (citySlot) >= 0 and unit domain == 2 (sea):
     // City must have coast access (DAT_0064f346 & 0x20) and be valid (DAT_0064f344 & 0x80)
-    airUnitRole: 2,
+    seaUnitDomain: 2,
     coastalBit: 0x20,   // city.flags[+2] & 0x20
     validCityBit: 0x80,  // city.flags[+0] & 0x80
   },
