@@ -24,10 +24,15 @@
  */
 
 // =============================================================================
-// === File Header (14 bytes: 0x0000–0x000D) ===
+// === File Header (12 bytes: 0x0000–0x000B) ===
 // =============================================================================
 // Already in parser.js. Binary-confirmed details:
 export const FILE_HEADER = {
+  // Header is 12 bytes: 8 (magic) + 1 (null) + 1 (format marker) + 2 (version).
+  // Game state begins immediately at offset 0x000C.
+  // NOTE: MAP_HEIGHT and FLAGS at file offsets 0x000C/0x000D are the first bytes
+  // of the game state block, NOT part of the header. Previous documentation
+  // incorrectly included them in the header (claiming 14-byte header).
   MAGIC_STRING: 'CIVILIZE',   // 8 bytes at offset 0x0000, sourceAddr: '0x004741BE'
   NULL_SEPARATOR: 0x00,       // byte at 0x0008
   FORMAT_MARKER: 0x1A,        // byte at 0x0009 (ASCII SUB — acts as EOF for TYPE command)
@@ -38,8 +43,7 @@ export const FILE_HEADER = {
   VERSION_MAX: 0x2C,          // versions > 0x2C rejected as "too new"
   // Rejected intermediate versions (load_full_game @ 0x00475666):
   REJECTED_VERSIONS: [0x29, 0x2A, 0x2B], // transitional versions, not loadable
-  MAP_HEIGHT_OFFSET: 0x000C,  // byte — map height indicator
-  FLAGS_OFFSET: 0x000D,       // byte — header flags
+  HEADER_SIZE: 12,            // total header size in bytes (0x0000–0x000B)
   // sourceAddr: '0x004741BE' (write), '0x0047543C' (validate), '0x00475666' (load)
 };
 
@@ -49,10 +53,10 @@ export const FILE_HEADER = {
 // Order of blocks as written by write_save_file @ 0x004741BE
 // and read by load_full_game @ 0x00475666
 export const SAVE_BLOCKS = {
-  header:          { offset: 0x0000, size: 14,      note: 'CIVILIZE + version + flags', sourceAddr: '0x004741BE' },
-  gameState:       { offset: 0x000E, size: 0x14A,   note: '330 bytes (v>=0x28)', sourceAddr: '0x004741BE fwrite(0x14A)' },
-  cosmicRules:     { offset: 'after gameState', size: 0x790, note: '1936 bytes — always this size', sourceAddr: '0x004741BE fwrite(0x790)' },
-  civData:         { offset: 'after cosmicRules', size: 0x2CA0, note: '11424 bytes (8 × 0x594)', sourceAddr: '0x004741BE fwrite(0x2CA0)' },
+  header:          { offset: 0x0000, size: 12,      note: 'CIVILIZE + null + 0x1A + version (12 bytes, 0x0000–0x000B)', sourceAddr: '0x004741BE' },
+  gameState:       { offset: 0x000C, size: 0x14A,   note: '330 bytes (v>=0x28), starts immediately after 12-byte header', sourceAddr: '0x004741BE fwrite(0x14A)' },
+  civNameBlocks:   { offset: 'after gameState', size: 0x790, note: '1936 bytes — 8 civ name blocks (8 × 242 bytes: leader name, tribe name, adjective per civ)', sourceAddr: '0x004741BE fwrite(0x790)' },
+  civData:         { offset: 'after civNameBlocks', size: 0x2CA0, note: '11424 bytes (8 × 0x594)', sourceAddr: '0x004741BE fwrite(0x2CA0)' },
   mapData:         { offset: 'after civData', size: 'variable', note: 'terrain layers + map header', sourceAddr: '0x004741BE write_map_data(file, 0)' },
   visibilityLayer1:{ offset: 'after mapData', size: 'variable', note: 'per-tile visibility layer 1', sourceAddr: '0x004741BE' },
   visibilityLayer2:{ offset: 'after vis1', size: 'variable', note: 'per-tile visibility layer 2', sourceAddr: '0x004741BE' },
@@ -110,7 +114,7 @@ export const VERSION_RECORD_SIZES = {
 export const GAME_STATE_VERSIONS = {
   v_ge_0x28: {
     totalSize: 0x14A,        // 330 bytes, single block
-    cosmicRulesSize: 0x790,  // 1936 bytes
+    civNameBlocksSize: 0x790,  // 1936 bytes — 8 civ name blocks (8 × 242 bytes)
     civDataTotal: 0x2CA0,    // 11424 bytes (8 × 0x594)
     // sourceAddr: '0x00473660 v>=0x28 path'
   },
@@ -119,7 +123,7 @@ export const GAME_STATE_VERSIONS = {
     piece2: 0x5D,            // 93 bytes — tech first discoverer
     piece3: 0x5D,            // 93 bytes — tech civ ownership
     piece4: 0x4C,            // 76 bytes — wonder data
-    cosmicRulesSize: 0x790,  // 1936 bytes (same)
+    civNameBlocksSize: 0x790,  // 1936 bytes — 8 civ name blocks (8 × 242 bytes) (same)
     perCivPieces: {          // read per-civ in 7 pieces:
       civNameBlock: 0x58,    // 88 bytes
       wonderFlags:  0x0C,    // 12 bytes

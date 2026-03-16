@@ -84,6 +84,15 @@ export const SOUND_NAMES = {
   0x39: { name: 'CHEERS2',  sourceAddr: '0x0062B171' },
   0x3A: { name: 'CHEERS3',  sourceAddr: '0x0062B17A' },
 
+  // -- Undocumented slots (IDs 0x3B..0x3D) --
+  // These slots exist in the 9-byte string table but are not referenced by any
+  // known call site in the binary. WAV files NEG1.WAV, POS1.WAV, and POMPCIRC.WAV
+  // exist on disk in the SOUND directory but have no mapped table entry.
+  // Likely candidates for these slots based on address spacing (9 bytes each):
+  0x3B: { name: '(unknown)', sourceAddr: '0x0062B183', note: 'Undocumented — likely NEG1 (negative diplomacy response sound)' },
+  0x3C: { name: '(unknown)', sourceAddr: '0x0062B18C', note: 'Undocumented — likely POS1 (positive diplomacy response sound)' },
+  0x3D: { name: '(unknown)', sourceAddr: '0x0062B195', note: 'Undocumented — likely POMPCIRC (pomp & circumstance fanfare)' },
+
   // -- Fanfare sounds (IDs 0x3E..0x52) --
   0x3E: { name: 'FANFARE1', sourceAddr: '0x0062B1A4' },
   0x3F: { name: 'FANFARE2', sourceAddr: '0x0062B1AD' },
@@ -142,8 +151,26 @@ export const SOUND_NAMES = {
   0x6A: { name: 'MENUOK',   sourceAddr: '(dup)' },       // generic UI confirm
   0x6B: { name: 'MENULOOP', sourceAddr: '(dup)' },       // menu background music loop
   0x6C: { name: 'MENUEND',  sourceAddr: '(dup)' },       // menu end sound
+  0x6D: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot — may contain SELL (building sell confirmation sound)' },
   0x6E: { name: 'LETTER',   sourceAddr: '(dup)' },       // notification letter
   0x6F: { name: 'ENDOTURN', sourceAddr: '(dup)' },       // end of turn notification
+
+  // -- Undocumented slots (IDs 0x70..0x7C) --
+  // These 13 slots exist in the string table address range but are not referenced
+  // by any known call site. May contain FEEDBKXX variants or scenario-specific sounds.
+  0x70: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x70' },
+  0x71: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x71' },
+  0x72: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x72' },
+  0x73: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x73' },
+  0x74: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x74' },
+  0x75: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x75' },
+  0x76: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x76' },
+  0x77: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x77' },
+  0x78: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x78' },
+  0x79: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x79' },
+  0x7A: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x7A' },
+  0x7B: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x7B' },
+  0x7C: { name: '(unknown)', sourceAddr: '(gap)', note: 'Undocumented slot 0x7C' },
 
   // -- Missile unit sounds (IDs 0x65..0x84) --
   // These map to specific missile/nuke unit types in the sound editor
@@ -159,6 +186,17 @@ export const SOUND_NAMES = {
   0x83: { name: 'NUKE7',    sourceAddr: '(computed)' },   // type 0x3C
   0x84: { name: 'NUKE8',    sourceAddr: '(computed)' },   // type 0x3D
 };
+
+// === Unmapped WAV Files ===
+// These 5 WAV files exist in the CIV2/SOUND directory on disk but are NOT
+// mapped to any entry in the SOUND_NAMES string table at 0x0062AF70:
+//   - NEG1.WAV     — likely negative diplomacy response (candidate for slot 0x3B)
+//   - POS1.WAV     — likely positive diplomacy response (candidate for slot 0x3C)
+//   - POMPCIRC.WAV — pomp & circumstance fanfare (candidate for slot 0x3D)
+//   - SELL.WAV     — building sell confirmation (candidate for slot 0x6D)
+//   - FEEDBKXX.WAV — feedback variant (candidate for slots 0x70-0x7C)
+// These may be loaded by filename directly (bypassing the soundId table) or may
+// be vestigial files from earlier builds that were never wired into the engine.
 
 // === Sound Effect Triggers ===
 // Binary ref: all call sites of thunk_FUN_0046e020 (play_sound_effect)

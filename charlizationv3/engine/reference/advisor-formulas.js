@@ -8829,3 +8829,338 @@ export const CIV_SCORING = {
 
   sourceAddr: '0x004A28B0',
 };
+
+// ============================================================================
+// === TAX RATE RECALCULATION ===
+// Binary ref: FUN_0040c480 taxrate_recalc_totals @ block_00400000.c (848 bytes)
+// Called after tax/science/luxury rate changes to recompute empire-wide totals.
+// ============================================================================
+
+export const TAXRATE_RECALC = {
+  // Function: FUN_0040c480 @ 0x0040C480 (848 bytes)
+  // Recalculates total gold income, science income, and building maintenance
+  // for a civ after tax/science/luxury rate sliders change.
+
+  // --- Accumulator fields (reset to 0 at start) ---
+  accumulators: {
+    goldTotal:        { offset: 0x308, note: 'Total gold income across all cities (int32)' },
+    maintenanceTotal: { offset: 0x310, note: 'Total building maintenance cost across all cities (int32)' },
+    scienceTotal:     { offset: 0x30C, note: 'Total science output across all cities (int32)' },
+  },
+
+  // --- Input fields ---
+  civIndex:         { offset: 0x2D8, note: 'Civ slot index (from dialog context)' },
+  newTaxRate:       { offset: 0x2E0, note: 'New tax rate (0-10, represents 0%-100% in steps of 10%)' },
+  newScienceRate:   { offset: 0x2E8, note: 'New science rate (0-10)' },
+  // Luxury rate is implicit: 10 - taxRate - scienceRate
+
+  // --- Civ record fields ---
+  civRecordStride:  0x594,           // 1428 bytes per civ record
+  taxRateAddr:      'DAT_0064c6b3',  // byte: current tax rate (per civ, at civ_base + 0x594*civIdx)
+  sciRateAddr:      'DAT_0064c6b4',  // byte: current science rate
+
+  // --- Algorithm ---
+  // 1. Save current tax/science rates, temporarily overwrite with new values
+  // 2. Building count array: int[0x27] (39 building types), initialized to 0
+  buildingTypeCount: 0x27,           // 39 building types iterated         // 0x0040c480+loop
+  // 3. For each alive city owned by this civ:
+  //    a. Call city_calc_production(cityIdx, city.productionItem, 1, 0)
+  //       — recalculates trade distribution with new tax/science rates
+  //    b. Count buildings: for each building type 0..0x26,
+  //       if has_building(cityIdx, buildingType) then buildingCount[type]++
+  //    c. If city NOT in civil disorder (city_flags & 0x01 == 0):
+  //       - goldTotal    += city.goldIncome    (city record + 0x48, int16)
+  //       - scienceTotal += city.scienceIncome (city record + 0x46, int16)
+  cityRecordStride: 0x58,            // 88 bytes per city record
+  cityAliveField:   { offset: 0x50, note: 'city population (int32), 0 = dead' },   // DAT_0064f394
+  cityOwnerField:   { offset: 0x04, note: 'city owner civ (byte)' },               // DAT_0064f348
+  cityGoldField:    { offset: 0x48, note: 'city gold income (int16)' },             // DAT_0064f38c
+  cityScienceField: { offset: 0x46, note: 'city science income (int16)' },          // DAT_0064f38a
+  cityFlagsField:   { offset: 0x00, note: 'city status flags (bit 0 = civil disorder)' }, // DAT_0064f344
+  disorderBit:      0x01,            // civil disorder flag — cities in disorder contribute 0
+
+  // 4. Building maintenance:
+  //    For each building type 0..0x26 with count > 0:
+  //      maintenanceCost = get_building_maintenance(civIdx, buildingType)
+  //      maintenanceTotal += count * maintenanceCost
+  getBuildingMaintenance: 'FUN_004f00f0', // (civIdx, buildingType) → cost per building
+  hasBuilding:            'FUN_0043d20a', // (cityIdx, buildingType) → 0/1
+  cityCalcProduction:     'FUN_004ea1f6', // (cityIdx, productionItem, param3, param4) — recalcs trade
+
+  // 5. Restore original tax/science rates (the new rates are only used temporarily
+  //    for the preview calculation shown in the tax rate dialog)
+
+  maxCityCount:     'DAT_00655b18',  // total city slots to iterate
+
+  sourceAddr: '0x0040C480',
+};
+
+// ============================================================================
+// === UNIT MOVE VISIBILITY ===
+// Binary ref: FUN_004274a6 process_unit_move_visibility @ block_00420000.c (4250 bytes)
+// Called after a unit moves to update tile visibility, wake sentries,
+// cancel GOTO orders, discover cities, trigger first contact, and goody huts.
+// ============================================================================
+
+export const UNIT_MOVE_VISIBILITY = {
+  // Function: FUN_004274a6 @ 0x004274A6 (4250 bytes)
+  // params: (unit_id, enable_first_contact)
+  //   unit_id: index into unit array (stride 0x20 = 32 bytes)
+  //   enable_first_contact: if nonzero, triggers diplomatic first contact events
+
+  // --- Record strides ---
+  unitRecordStride: 0x20,    // 32 bytes per unit
+  cityRecordStride: 0x58,    // 88 bytes per city
+  civRecordStride:  0x594,   // 1428 bytes per civ
+  unitTypeStride:   0x14,    // 20 bytes per unit type definition
+
+  // --- Unit fields used ---
+  unitFields: {
+    x:              { offset: 0x00, type: 'int16', addr: 'DAT_006560f0' },
+    y:              { offset: 0x02, type: 'int16', addr: 'DAT_006560f2' },
+    type:           { offset: 0x06, type: 'byte',  addr: 'DAT_006560f6' },
+    owner:          { offset: 0x07, type: 'byte',  addr: 'DAT_006560f7' },
+    visibilityMask: { offset: 0x09, type: 'byte',  addr: 'DAT_006560f9' },
+    orders:         { offset: 0x0F, type: 'byte',  addr: 'DAT_006560ff' },
+  },
+
+  // --- Unit type flags ---
+  unitTypeFlags: {
+    flags1:     { offset: 0x00, type: 'uint32', addr: 'DAT_0064b1bc',
+                  bit0_submarine: 0x01,    // submarine visibility rules
+                  bit3_goto:      0x08,    // has GOTO capability
+                },
+    flags2:     { offset: 0x01, type: 'byte', addr: 'DAT_0064b1bd',
+                  bit6_igzoc: 0x40,        // ignore zones of control
+                },
+    domain:     { offset: 0x05, type: 'byte', addr: 'DAT_0064b1c1',
+                  LAND: 0, SEA: 1, AIR: 2,
+                },
+    visionRange:{ offset: 0x08, type: 'byte', addr: 'DAT_0064b1c4' },
+    aiRole:     { offset: 0x0E, type: 'byte', addr: 'DAT_0064b1ca' },
+  },
+
+  // --- Visibility reveal pattern ---
+  // Two concentric rings of tiles are checked:
+  visibilityPattern: {
+    // Ring 1: 25 tiles total (city radius pattern)
+    // Offsets at DAT_00628370 (dx) and DAT_006283a0 (dy), indexed 0..24
+    fullRadius:       25,    // 0x19 tiles in visibility spiral
+    offsetTableDx:    'DAT_00628370',  // int8[25] — x offsets for 25-tile pattern
+    offsetTableDy:    'DAT_006283a0',  // int8[25] — y offsets for 25-tile pattern
+    centerTileIndex:  0x14,  // index 20 = center tile (self)
+
+    // Inner ring (indices 0-7): always checked for all units
+    // Outer ring (indices 8-24, except 20): only checked for units with
+    //   submarine flag (unitType.flags1 & 0x01) AND matching domain condition:
+    //   domain == 1 (all-terrain) OR is_ocean matches (domain == 2)
+    innerRingSize: 8,
+
+    // Ring 2: 8 adjacent tiles (for city/unit encounter checks)
+    // Offsets at DAT_00628350 (dx) and DAT_00628360 (dy), indexed 0..7
+    adjacentTiles:    8,
+    adjacentDx:       'DAT_00628350',  // int8[8] — x offsets for 8 adjacent tiles
+    adjacentDy:       'DAT_00628360',  // int8[8] — y offsets for 8 adjacent tiles
+  },
+
+  // --- Visibility change flags (local_30 bitmask) ---
+  // Tracks what changed during this move for network notification
+  visibilityChangeFlags: {
+    ADJACENT_CHANGE:       0x01,   // bit 0: adjacent tile visibility changed
+    EXTENDED_CHANGE:       0x02,   // bit 1: extended range tile visibility changed
+    ADJACENT_NEW_REVEAL:   0x04,   // bit 2: adjacent tile newly revealed
+    EXTENDED_NEW_REVEAL:   0x08,   // bit 3: extended tile newly revealed
+    // Combined: 5 = 0x01|0x04 (adjacent new), 10 = 0x02|0x08 (extended new)
+  },
+
+  // --- Sentry wake / GOTO cancellation conditions ---
+  sentryWake: {
+    // For each unit found on adjacent tiles:
+    // cancel_unit_goto called when:
+    //   - enemy unit spotted AND not at war (treaty & 0x08 == 0)
+    // cancel_unit_orders (wake sentry) called when:
+    //   - unit's civ is alive (1 << ownerBit & aliveMask)
+    //     AND (is_ocean == ocean_of_origin OR is_ocean == 0) for non-alive civs
+    //   - OR alive civ: always wake if domain matches
+    //   - Special: if civ is alive AND is_ocean matches origin, wake
+    //   - If civ is NOT alive: wake only when ocean matches AND origin doesn't
+    cancelGoto:     'FUN_004273e6',  // cancel GOTO pathfinding
+    cancelOrders:   'FUN_0042738c',  // wake sentry / cancel all orders
+    aliveCivsMask:  'DAT_00655b0b',  // bitmask of alive civs
+  },
+
+  // --- City discovery ---
+  // When moving unit finds a city on an adjacent tile owned by different civ:
+  cityDiscovery: {
+    findCityAtTile:   'FUN_0043cf76',  // (x, y) → cityIdx or -1
+    discoverCity:     'FUN_0043cc00',  // (cityIdx, civId) — update city visibility for civ
+    // City visibility bit check: city.visibilityBits & (1 << ownerBit)
+    cityVisField:     { offset: 0x08, note: 'city visibility bitmask (byte)', addr: 'DAT_0064f34c' },
+    cityOwnerField:   { offset: 0x05, note: 'city displayed owner', addr: 'DAT_0064f34d' },
+    cityActualOwner:  { offset: 0x04, note: 'city actual owner', addr: 'DAT_0064f349' },
+  },
+
+  // --- Diplomatic first contact ---
+  // Triggered when unit of civ A enters territory visible to civ B for the first time
+  // AND no existing treaty (treaty & 0x04 == 0, no contact flag)
+  firstContact: {
+    treatyFlags:        { addr: 'DAT_0064c6c0', note: 'treaty[civA*4 + civB*0x594]' },
+    contactBit:         0x04,     // bit 2 = contact established
+    initiateContact:    'FUN_0055d8d8',  // (civA, civB, x, y) — show first contact dialog
+    // Skipped for diplomat units (unit type index == 0x09)
+    diplomatTypeIndex:  0x09,
+    // Skipped if unit vision range (aiRole) >= 6 — scouts/explorers don't trigger contact
+    scoutVisionThreshold: 6,      // aiRole >= 6 skips contact
+  },
+
+  // --- Goody hut (minor tribe village) discovery ---
+  goodyHut: {
+    // When unit moves onto tile with no city and tile_owner < 0 (unclaimed):
+    // If current player's unit AND is_ocean_tile == 0 (land):
+    //   center viewport on tile, send network message 0x72 (visibility update)
+    // Then if enable_first_contact: initiate first contact event
+    getTileOwner:       'FUN_005b8ca6',  // (x, y) → ownerCivId or -1
+    centerViewport:     'FUN_0047cea6',  // (x, y)
+    networkMsgVisUpdate: 0x72,
+  },
+
+  // --- Multiplayer synchronization ---
+  multiplayer: {
+    mpFlag:             'DAT_00655af8',  // nonzero = multiplayer game
+    protocolVersion:    'DAT_00655b02',  // must be > 2 for network messages
+    currentPlayerCiv:   'DAT_006d1da0',  // current human player civ index
+    globalRevealFlag:   'DAT_00655b07',  // if set, all tiles visible to all
+    scenarioFlags:      'DAT_00655af0',  // bit 0x80 = scenario mode
+    scenarioType:       'DAT_0064bc60',  // bit 3 = special scenario visibility rules
+    // Network messages sent:
+    networkMessages: {
+      visibilityUpdate: 0x72,   // tile reveal notification
+      unitMoveRemote:   0x75,   // unit movement seen by other player
+      unitMoveLocal:    0x76,   // unit movement by local player
+    },
+    // Animation level sent with 0x76: 0 = none, 1 = minimal, 2 = moderate, 3 = full
+    animationLevels: {
+      0: 'no change detected',
+      1: 'adjacent visibility change only',
+      2: 'extended range or adjacent new reveal',
+      3: 'extended new reveal',
+    },
+  },
+
+  // --- Helper functions called ---
+  helpers: {
+    isOceanTile:        'FUN_005b89e4',   // (x, y) → 0/1
+    getTilePtr:         'FUN_005b8931',   // (x, y) → tile data pointer
+    getTileVisPtr:      'FUN_005b898b',   // (x, y, civId) → visibility byte pointer
+    updateTileVis:      'FUN_005b9d81',   // (x, y, terrain, civId, 0, 1)
+    revealTile:         'FUN_005b976d',   // (x, y, visMask, 1, 1)
+    updateUnitVis:      'FUN_005b496e',   // (unitId, civId)
+    findUnitAtTile:     'FUN_005b2e69',   // (x, y) → unitIdx or -1
+    checkVisibleToCiv:  'FUN_005b8b65',   // (x, y, civId) → bool
+    getSpecialMoves:    'FUN_005b50ad',   // (unitIdx, mode) → count
+    validateCoords:     'FUN_004087c0',   // (x, y) → valid
+    wrapXCoord:         'FUN_005ae052',   // (x) → wrapped x
+    beginVisUpdate:     'FUN_005b9ec6',   // () — start batch visibility update
+    endVisUpdate:       'FUN_005b9f1c',   // () — commit batch visibility update
+    triggerDiploEvent:  'FUN_0049301b',   // (civId, x, y, eventType, priority)
+  },
+
+  sourceAddr: '0x004274A6',
+};
+
+// ============================================================================
+// === PLACEHOLDER: UNPORTED GAP FUNCTIONS ===
+// These functions contain game-relevant constants that will be fully extracted
+// during the porting phase. Listed here with address, size, and summary only.
+// ============================================================================
+
+// --- city_update_tile_ownership ---
+// FUN_0043f7a7 @ 0x0043F7A7 (265 bytes) — block_00430000.c
+// Sets tile ownership radius around a city. Called when a city is founded or captured.
+// Key constants: ownership radius (21-tile pattern), tile byte5 upper nibble = owning civ.
+// Phase A (porting priority): Critical for city founding.
+export const CITY_UPDATE_TILE_OWNERSHIP_PLACEHOLDER = {
+  address: '0x0043F7A7',
+  size: 265,
+  block: 'block_00430000.c',
+  description: 'Set tile ownership radius around city — assigns owning civ to tiles in 21-tile city radius pattern',
+  keyConstants: ['ownership radius pattern (21 tiles)', 'tile byte5 upper nibble = civ owner', 'city position (x,y) from city record'],
+  portingPhase: 'A',
+  status: 'placeholder — extract during porting',
+};
+
+// --- expand_city_territory ---
+// FUN_004a93b3 @ 0x004A93B3 (953 bytes) — block_004A0000.c
+// Expands territory control when a city grows. Called during population growth events.
+// Key constants: territory expansion thresholds, tile ownership update pattern,
+// distance-based territory scoring.
+export const EXPAND_CITY_TERRITORY_PLACEHOLDER = {
+  address: '0x004A93B3',
+  size: 953,
+  block: 'block_004A0000.c',
+  description: 'Expand territory control when city grows — updates tile ownership in growing radius',
+  keyConstants: ['growth thresholds for territory expansion', 'distance-based tile scoring', 'ownership update loop'],
+  portingPhase: 'A',
+  status: 'placeholder — extract during porting',
+};
+
+// --- load_unit_onto_ship ---
+// FUN_005b542e @ 0x005B542E (1912 bytes) — block_005B0000.c
+// Loads a unit onto a transport ship. Handles cargo capacity checks, unit stacking,
+// and network synchronization for multiplayer.
+// Key constants: max cargo capacity per ship type, unit domain checks,
+// transport loading validation rules.
+export const LOAD_UNIT_ONTO_SHIP_PLACEHOLDER = {
+  address: '0x005B542E',
+  size: 1912,
+  block: 'block_005B0000.c',
+  description: 'Load unit onto transport ship — cargo capacity validation, stacking, network sync',
+  keyConstants: ['cargo capacity per transport type', 'domain compatibility checks', 'transport stacking rules', 'network sync messages'],
+  portingPhase: 'I',
+  status: 'placeholder — extract during porting',
+};
+
+// --- check_unit_can_improve ---
+// FUN_005b68f6 @ 0x005B68F6 (362 bytes) — block_005B0000.c
+// Checks whether a settler/engineer unit can perform tile improvements at the given location.
+// Returns 0 (cannot), 1 (can improve), or 2 (can improve with restrictions).
+// Key constants: terrain type checks, existing improvement checks, tech requirements.
+export const CHECK_UNIT_CAN_IMPROVE_PLACEHOLDER = {
+  address: '0x005B68F6',
+  size: 362,
+  block: 'block_005B0000.c',
+  description: 'Check if settler/engineer can improve tile — terrain validation, existing improvement checks',
+  keyConstants: ['terrain type eligibility', 'existing improvement conflict checks', 'tech prerequisite validation', 'return values: 0/1/2'],
+  portingPhase: 'D',
+  status: 'placeholder — extract during porting',
+};
+
+// --- setup_scenario_start ---
+// FUN_004a9785 @ 0x004A9785 (3059 bytes) — block_004A0000.c
+// Scenario-specific initialization: assigns civs to scenario slots, sets victory conditions,
+// initializes special scenario rules, configures starting units/cities.
+// Key constants: scenario slot mapping, victory condition types, special rule flags.
+export const SETUP_SCENARIO_START_PLACEHOLDER = {
+  address: '0x004A9785',
+  size: 3059,
+  block: 'block_004A0000.c',
+  description: 'Scenario initialization — civ slot assignment, victory conditions, special rules setup',
+  keyConstants: ['scenario slot-to-civ mapping', 'victory condition type flags', 'special scenario rule initialization', 'starting unit/city configuration'],
+  portingPhase: 'F',
+  status: 'placeholder — extract during porting',
+};
+
+// --- pbem_game_setup ---
+// FUN_005ae580 @ 0x005AE580 (1602 bytes) — block_005A0000.c
+// Play-by-email game initialization: seat-to-civ mapping, map generation parameters,
+// turn timer configuration, email transport setup.
+// Key constants: seat assignment table, map gen parameters, PBEM-specific flags.
+export const PBEM_GAME_SETUP_PLACEHOLDER = {
+  address: '0x005AE580',
+  size: 1602,
+  block: 'block_005A0000.c',
+  description: 'PBEM initialization — seat-to-civ mapping, map gen params, turn timer, email transport',
+  keyConstants: ['seat-to-civ assignment table', 'map generation parameter block', 'PBEM turn timer configuration', 'email transport flags'],
+  portingPhase: 'F',
+  status: 'placeholder — extract during porting',
+};
