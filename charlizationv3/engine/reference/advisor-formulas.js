@@ -74,14 +74,13 @@ export const DEMOGRAPHICS = {
     formula: '(pop * 2 + literacyCities) * 2 / pop',
     techDoublings: [
       { techId: 0x01, name: 'Alphabet' },     // @ DAT_00627684
-      { techId: 0x58, name: 'Feudalism' },
-      { techId: 0x2b, name: 'Physics' },
-      { techId: 0x55, name: 'Radio' },
+      { techId: 0x58, name: 'Writing' },       // tech 88
+      { techId: 0x2b, name: 'Literacy' },      // tech 43
+      { techId: 0x55, name: 'University' },    // tech 85
     ],
     buildingBoosts: [
-      { id: 3, name: 'Granary', notes: '+city.size to literacyCities' },  // or Pottery tech
-      { id: 9, name: 'Library', notes: '+city.size to literacyCities' },
-      { id: 23, name: 'University', notes: '+city.size to literacyCities' },
+      { id: 6, name: 'Library', notes: '+city.size to literacyCities' },
+      { id: 12, name: 'University', notes: '+city.size to literacyCities' },
     ],
     clamp: [0, 100],   // @ FUN_00433434: clamped to 0..100%
     unit: '%',
@@ -92,12 +91,13 @@ export const DEMOGRAPHICS = {
     // @ FUN_00433434+0x600 approx
     formula: 'pop * 50 / (diseaseCities + pop)',
     techHalvings: [
-      { techId: 0x32, name: 'Medicine' },      // halves disease rate
-      { techId: 0x1b, name: 'Sanitation' },     // halves again
+      { techId: 0x32, name: 'Medicine' },      // halves disease rate (hasTech check)
+      { wonderId: 0x1b, name: 'Cure for Cancer', notes: 'uses hasWonderEffect (FUN_00453e51), not hasTech' },
     ],
     buildingBoosts: [
-      { id: 6, name: 'Aqueduct', notes: '+city.size to diseaseCities' },
-      { id: 12, name: 'Sewer System', notes: '+city.size to diseaseCities' },
+      { id: 3, name: 'Granary', notes: '+city.size to diseaseCities (or Pyramids wonder)' },
+      { id: 9, name: 'Aqueduct', notes: '+city.size to diseaseCities' },
+      { id: 23, name: 'Sewer System', notes: '+city.size to diseaseCities' },
     ],
     unit: 'years',
     lowerIsBetter: true,  // negative param_sign in render_demog_row_with_rank
@@ -3650,6 +3650,15 @@ export const CITY_CAPTURE = {
 
     // Marco Polo wonder (0x0E) triggers embassy discovery
     marcoPoloId: 0x0E,
+
+    // --- Sprite resource table offsets (DAT_00628420 + offset) ---
+    // @ FUN_0057b5df: thunk_FUN_004271e8 text sprites for capture popup
+    spriteOffsets: {
+      captureTextA_own:   0x2bc,     // DAT_00628420 + 0x2bc — capture popup text A (reconquering own city)   // 0x0057B5DF
+      captureTextA_enemy: 0x2b8,     // DAT_00628420 + 0x2b8 — capture popup text A (capturing enemy city)    // 0x0057B5DF
+      captureTextB_own:   0x2c4,     // DAT_00628420 + 0x2c4 — capture popup text B (reconquering own city)   // 0x0057B5DF
+      captureTextB_enemy: 0x2c0,     // DAT_00628420 + 0x2c0 — capture popup text B (capturing enemy city)    // 0x0057B5DF
+    },
 
     sourceAddr: '0x0057B5DF',
   },

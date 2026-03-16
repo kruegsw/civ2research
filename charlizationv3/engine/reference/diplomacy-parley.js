@@ -284,17 +284,18 @@ export const NEGOTIATE_MENU_CHOICES = {
         attitudeAbove: 0x4B,  // 75: DAT_0064b114 > 0x4B always rejects
         rawC: 'if (0x4b < DAT_0064b114) bVar2 = false',
       },
-      patienceBlockMP: {
-        condition: 'patience > 4 AND multiplayer',
+      patienceBlockNonChieftain: {
+        condition: 'patience > 4 AND difficulty > 0 (non-Chieftain)',
         rawC: 'if (\'\\x04\' < (char)DAT_0064c6bf[param_2*0x594]) && (DAT_00655b08 != 0)) bVar2 = false',
-        note: 'In multiplayer only, patience > 4 blocks alliance acceptance',
+        note: 'DAT_00655b08 is difficulty level (0=Chieftain). On Chieftain, patience never blocks alliance.',
       },
       betrayalThreshold: {
-        formula: '(-(MP==0) & 2) + 2',
-        singlePlayer: 4,  // SP: threshold = (2) + 2 = 4
-        multiPlayer: 2,   // MP: threshold = (0) + 2 = 2
+        formula: '(-(difficulty==0) & 2) + 2',
+        chieftain: 4,     // difficulty 0: threshold = (2) + 2 = 4 (more lenient)
+        nonChieftain: 2,  // difficulty > 0: threshold = (0) + 2 = 2 (stricter)
         check: 'tolerance - attitude > threshold => reject',
         rawC: '(int)((-(uint)(DAT_00655b08 == 0) & 2) + 2) < (tolerance - attitude)',
+        note: 'DAT_00655b08 is difficulty level, not multiplayer flag',
       },
     },
     sourceAddr: '0x0045B4DA case 1',
@@ -2224,9 +2225,10 @@ export const ALLY_DEMAND_REFUSAL = {
           continent_mil_A: 'DAT_0064c832[continent*2 + AI*0x594] — AI military count on continent',
         },
         difficultyFactor: {
-          singlePlayer: 4,  // (2 + 2) when DAT_00655b08 == 0
-          multiPlayer: 2,   // (0 + 2) when DAT_00655b08 != 0
+          chieftain: 4,     // (2 + 2) when DAT_00655b08 == 0 (Chieftain difficulty)
+          nonChieftain: 2,  // (0 + 2) when DAT_00655b08 != 0 (all other difficulties)
           rawC: '(-(uint)(DAT_00655b08 == \'\\0\') & 2) + 2',
+          note: 'DAT_00655b08 is difficulty level, not multiplayer flag',
         },
         condition: 'Only accumulates when AI cities > 1 on continent AND target goalCount > AI militaryCount',
         loop: 'for continent 1..62 (0x3F exclusive)',
@@ -2289,10 +2291,10 @@ export const PEACE_ACCEPTANCE = {
     shouldDeclareWar: 'DAT_0064b11c == 0',
     attitudeBelow: 0x33,         // DAT_0064b114 < 0x33 (51)
     betrayalThreshold: {
-      formula: '(-(MP==0) & 2) + 4',
-      meaning: 'If multiplayer: threshold = 4; if singleplayer: threshold = 6',
+      formula: '(-(difficulty==0) & 2) + 4',
+      meaning: 'Chieftain: threshold = 6 (lenient); other difficulties: threshold = 4 (stricter)',
       rawC: '(-(uint)(DAT_00655b08 == 0) & 2) + 4',
-      note: 'DAT_00655b08 is multiplayer flag (0 = single, >0 = multi)',
+      note: 'DAT_00655b08 is difficulty level (0=Chieftain), not multiplayer flag',
     },
     betrayalCheck: 'tolerance - attitude <= threshold',
     rawC: 'bVar5 = (DAT_0064b11c==0) && (DAT_0064b114 < 0x33) && (tolerance - attitude <= ((-(MP==0)&2)+4))',
@@ -3209,6 +3211,189 @@ export const CIVILOPEDIA_UNIT_DISPLAY = {
     movementHeader:   0x294,  // "Movement:" header string
     terrainHeader:    0x297,  // "Terrain:" header string
     specialHeader:    0x299,  // "Special:" header string
+  },
+};
+
+// ============================================================================
+// === CIVILOPEDIA DETAIL PANEL SPRITES ===
+// Binary ref: parley_add_dialog_panel (FUN_00526ca0) @ 0x00526CA0 (26152 bytes)
+// in block_00520000.c. This massive function builds the right-side detail panel
+// for every civilopedia category. param_1 selects the panel type, param_2 is
+// the column index (0 = left, 1 = right in dual-column mode).
+// All sprite offsets are DAT_00628420 + value.
+// ============================================================================
+
+export const CIVILOPEDIA_DETAIL_SPRITES = {
+  sourceAddr: '0x00526CA0',
+  size: 26152,
+
+  // --- Common Header Sprites (all panel types) ---
+  // Three column header buttons created at top of every detail page
+  columnHeaders: {
+    col0: 0xba4,     // column 0 header (controlId 0x415)                         // 0x00526CA0
+    col1: 0xd84,     // column 1 header (controlId 0x430)                         // 0x00526CA0
+    col2: 0xba8,     // column 2 header (controlId 0x416)                         // 0x00526CA0
+  },
+  detailTextFormat: 0xd2c,  // detail text description format string                // 0x00526CA0
+
+  // --- Shared Title Sprites ---
+  // Used across multiple categories to show "has prerequisite" text
+  panelTitleLeft:  0xc0c,  // title text when param_2 == 0 (left panel)            // 0x00526CA0
+  panelTitleRight: 0xc10,  // title text when param_2 == 1 (right panel)           // 0x00526CA0
+
+  // --- case 2: Unit Detail ---
+  units: {
+    titleText:   0xb8c,  // unit name/type title (centered, measured for layout)   // 0x00526CA0
+    statLabels: [
+      0xb90,             // stat column label 0 (attack)                           // 0x00526CA0
+      0xb94,             // stat column label 1 (defense)                          // 0x00526CA0
+      0xb98,             // stat column label 2 (hp/firepower)                     // 0x00526CA0
+      0xb9c,             // stat column label 3 (movement)                         // 0x00526CA0
+    ],
+    extraLabel:  0xba0,  // additional stat text (cost/category)                   // 0x00526CA0
+    listControlId: 0x3f3,  // scrollable list control ID                           // 0x00526CA0
+  },
+
+  // --- case 3: City Improvement Detail ---
+  improvements: {
+    columnLabels: [
+      0xbac,             // column header 0 (name)                                 // 0x00526CA0
+      0xbb0,             // column header 1 (cost)                                 // 0x00526CA0
+      0xbb4,             // column header 2 (maintenance)                          // 0x00526CA0
+      /* 3000 decimal = 0xBB8 */ // column header 3 (prerequisite)                 // 0x00526CA0
+      0xbbc,             // column header 4 (effect)                               // 0x00526CA0
+      0xbc0,             // column header 5 (makes obsolete)                       // 0x00526CA0
+    ],
+    extraColumn: 0xd08,  // column header 6 (special/scenario flag)                // 0x00526CA0
+    listControlId: 0x3f3,  // scrollable list control ID                           // 0x00526CA0
+  },
+
+  // --- case 4: Wonder Detail ---
+  wonders: {
+    columnLabels: [
+      0xbac,             // reuses improvement column 0 (name)                     // 0x00526CA0
+      0xbb0,             // reuses improvement column 1 (cost)                     // 0x00526CA0
+      0xbb4,             // reuses improvement column 2                            // 0x00526CA0
+      /* 3000 decimal = 0xBB8 */ // reuses improvement column 3                    // 0x00526CA0
+      0xbbc,             // reuses improvement column 4                            // 0x00526CA0
+      0xbc4,             // wonder-specific column (expiration/obsolete)            // 0x00526CA0
+    ],
+    extraColumn: 0xd08,  // reuses special column                                  // 0x00526CA0
+    listControlId: 0x3f5,  // scrollable list control ID                           // 0x00526CA0
+  },
+
+  // --- case 5: Terrain Detail ---
+  terrain: {
+    columnLabels: [
+      0xbcc,             // terrain column 0 (name/type)                           // 0x00526CA0
+      0xbd0,             // terrain column 1 (movement cost)                       // 0x00526CA0
+      0xbd4,             // terrain column 2 (defense bonus)                       // 0x00526CA0
+      0xbd8,             // terrain column 3 (food/shield/trade)                   // 0x00526CA0
+    ],
+    altTitleNoPrereq: 0xb90,  // uses unit stat[0] when no prereq text             // 0x00526CA0
+    altTitleWithPrereq: 0xd08, // uses special column when prereq text present     // 0x00526CA0
+    listControlId: 0x3f6,  // scrollable list control ID                           // 0x00526CA0
+  },
+
+  // --- case 6: Government Detail ---
+  governments: {
+    titleText:     0xbdc,  // government name title (centered)                     // 0x00526CA0
+    // Conditional government type icons based on DAT_0064c6c0 flags:
+    typeIcons: {
+      militaryGovt:  0xbe0,  // flag & 8: military government (strongest)          // 0x00526CA0
+      commerceGovt:  0xbe4,  // flag & 4: commerce government                     // 0x00526CA0
+      fundamentalist:0xbcc,  // flag & 2: fundamentalist (reuses terrain col 0)    // 0x00526CA0
+      specialGovt:   0xbe8,  // flag2 & 0x20: special government type              // 0x00526CA0
+      defaultGovt:   0xbec,  // fallback: no special flags set                     // 0x00526CA0
+    },
+  },
+
+  // --- case 7: Game Concepts Detail ---
+  concepts: {
+    titleText: 0xbf0,  // concept section title                                   // 0x00526CA0
+    columnLabels: [
+      0xbf4,            // concept column 0                                        // 0x00526CA0
+      0xbf8,            // concept column 1                                        // 0x00526CA0
+      0xbfc,            // concept column 2                                        // 0x00526CA0
+      0xc00,            // concept column 3                                        // 0x00526CA0
+      0xc04,            // concept column 4                                        // 0x00526CA0
+    ],
+    listControlId: 0x3f7,  // scrollable list control ID                           // 0x00526CA0
+  },
+
+  // --- case 8: Map/Battle Detail ---
+  mapBattle: {
+    titleText: 0xc08,  // map/battle section title                                 // 0x00526CA0
+  },
+
+  // --- case 9: Gold/Trade Detail ---
+  goldTrade: {
+    // Conditional text based on local_30 (trade route) flag:
+    withTradeRoute:  0xc14,  // single format when trade route exists               // 0x00526CA0
+    noRoutePartA:    0xc18,  // first part when no trade route                     // 0x00526CA0
+    noRoutePartB:    0xc1c,  // second part, appends player gold amount            // 0x00526CA0
+    goldDisplayFmt:  0xc20,  // gold amount display format string                  // 0x00526CA0
+    // Navigation buttons:
+    navButtonA:      0xc28,  // button (controlId = param_2 + 0x400)               // 0x00526CA0
+    navButtonB:      0xc2c,  // button (controlId = param_2 + 0x402)               // 0x00526CA0
+    // Navigation sprites for dual-panel mode:
+    prevButton:      0xdbc,  // "previous" nav (param_2 == 0)                      // 0x00526CA0
+    nextButtonShared:0xdc0,  // "next" nav (shared for both panels)                // 0x00526CA0
+    backButton:      0xdc4,  // "back" nav (param_2 == 0)                          // 0x00526CA0
+  },
+
+  // --- case 0xA: Diplomacy Detail ---
+  diplomacy: {
+    titleText: 0xc24,  // diplomacy detail title (no-prereq mode only)             // 0x00526CA0
+  },
+
+  // --- case 0xB: Tech Tree Detail ---
+  techTree: {
+    titleText: 0xc30,  // tech tree section title                                  // 0x00526CA0
+    columnLabels: [
+      0xc34,            // tech tree column 0 (leads to)                           // 0x00526CA0
+      0xc38,            // tech tree column 1 (required for)                       // 0x00526CA0
+    ],
+    listControlId: 0x40c,  // scrollable list control ID                           // 0x00526CA0
+  },
+
+  // --- case 0xC: Multi-Item Detail (e.g., combat odds) ---
+  multiItem: {
+    titleSprites: [
+      0xc50,            // multi-item title 0 (local situation)                    // 0x00526CA0
+      0xc54,            // multi-item title 1 (opponent)                           // 0x00526CA0
+      0xc58,            // multi-item title 2 (result)                             // 0x00526CA0
+      0xd0c,            // multi-item title 3 (special/extra)                      // 0x00526CA0
+    ],
+  },
+
+  // --- case 0xD: Government Comparison ---
+  govtComparison: {
+    titleSprites: [
+      0xc3c,            // govt comparison title 0                                 // 0x00526CA0
+      0xc40,            // govt comparison title 1                                 // 0x00526CA0
+      0xc44,            // govt comparison title 2                                 // 0x00526CA0
+      0xc48,            // govt comparison title 3                                 // 0x00526CA0
+    ],
+    summaryLabel:  0xc4c,  // govt comparison summary/footer label                 // 0x00526CA0
+    listControlId: 0x424,  // base controlId (+ param_2)                           // 0x00526CA0
+  },
+
+  // --- case 0xF: Full Improvement List ---
+  fullImprovementList: {
+    // Reuses improvement column headers (0xbac-0xbc4, 0xd08)
+    sectionTitleA: 0xc5c,  // first section title                                  // 0x00526CA0
+    sectionTitleB: 0xc60,  // second section title                                 // 0x00526CA0
+    listControlId: 0x41f,  // scrollable list control ID                           // 0x00526CA0
+  },
+
+  // --- case 0x11: Advanced Detail (e.g., scenario info) ---
+  advancedDetail: {
+    titleText: 0xc68,  // advanced detail title (no-prereq mode only)              // 0x00526CA0
+    // Navigation buttons (dual-panel mode only):
+    prevButton:       0xdc8,  // "previous" button (param_2==0, controlId=0x408)   // 0x00526CA0
+    nextButtonShared: 0xdcc,  // "next" button shared (controlId=0x408/0x40a)      // 0x00526CA0
+    backButton:       0xdd0,  // "back" button (param_2==0, controlId=0x40a)       // 0x00526CA0
   },
 };
 
