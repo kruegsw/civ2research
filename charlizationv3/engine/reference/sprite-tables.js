@@ -1281,7 +1281,7 @@ export const DELETE_CITY = {
   // @ delete_city line ~524: unit type domain 0x01 (sea) stride 0x14
   //   if (DAT_0064b1ca[unit_type * 0x14] != '\x01') — checks if unit is NOT sea domain
   //   Sea domain units are handled differently (attempted reassignment via thunk_FUN_005b53b6)
-  seaDomainId: 0x01,              // domain 1 = air in binary convention (0=ground, 1=air, 2=sea); JS engine remaps to 0=land, 1=sea, 2=air
+  airDomainId: 0x01,              // binary convention: 0=ground, 1=air, 2=sea (JS engine remaps to 0=land, 1=sea, 2=air). DAT_0064b1ca is actually the role field, not domain.
   unitTypeStride: 0x14,           // 20 bytes per unit type in rules table
 
   // @ delete_city line ~529: city.flags |= 0x20 on receiving city during unit reassignment

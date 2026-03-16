@@ -1154,7 +1154,7 @@ export const AI_DOMESTIC_ADVISOR = {
   techChecks: {
     targetTechByEra: {
       0: { techId: 0x14, name: 'Currency' },          // ancient era target tech
-      1: { techId: 6,    name: 'Currency' },         // middle era target tech
+      1: { techId: 6,    name: 'Banking' },          // middle era target tech (0x06 = Banking)
       2: { techId: 0x16, name: 'Economics' },        // modern era target tech
     },
     result2: { value: 2, condition: 'Does not have era-appropriate tech' },
@@ -1867,8 +1867,8 @@ export const UNIT_BUILDABILITY = {
     stride: 0x14,
     prereqTechOffset: '@ DAT_0064b1cb[type * 0x14] (signed byte)',
     obsoleteTechOffset: '@ DAT_0064b1c0[type * 0x14] (signed byte)',
-    domainOffset: '@ DAT_0064b1ca[type * 0x14]',  // 0=land, 1=sea, 2=air
-    roleOffset: '@ DAT_0064b1c1[type * 0x14]',
+    roleOffset: '@ DAT_0064b1ca[type * 0x14]',    // offset 0x12 in unit type record = role field
+    domainOffset: '@ DAT_0064b1c1[type * 0x14]', // offset 0x09 = domain (binary: 0=ground, 1=air, 2=sea)
     attackOffset: '@ DAT_0064b1c4[type * 0x14]',
     defenseOffset: '@ DAT_0064b1c5[type * 0x14]',
     moveRateOffset: '@ DAT_0064b1c2[type * 0x14]',
@@ -1883,7 +1883,7 @@ export const UNIT_BUILDABILITY = {
   },
 
   gunpowderCheck: {
-    // If domain == 1 (sea) and attack < threshold and civ has Gunpowder (0x23):
+    // If role == 1 (sea-capable) and defense < threshold and civ has Gunpowder (0x23):
     // Then the obsolete version of this sea unit exists, so it can't be built
     techId: 0x23,
     attackThreshold: '@ DAT_0064b251',
@@ -6759,7 +6759,7 @@ export const POLLUTION_AND_WARMING = {
     formula: 'DAT_00655b12 - DAT_00655b10 + DAT_00655b10 / 2',
     multiCivDivisor: 'numAliveCivs',  // divided by alive civ count            // 0x00486c2e
     netFormula: '(pollutionScore * 2 - DAT_00655b0f * 4) - nuclearPlantCities',
-    nuclearPlantBuildingId: 0x1D, // building 29: Nuclear Plant                // 0x00486c2e
+    solarPlantBuildingId: 0x1D,  // building 29: Solar Plant (Nuclear Plant = 0x15) // 0x00486c2e
     clampRange: { min: 0, max: 99 },  // clamped to 0..99                     // 0x00486c2e
   },
 

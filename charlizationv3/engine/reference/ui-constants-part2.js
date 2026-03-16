@@ -1891,9 +1891,9 @@ export const MOVE_UNIT_CONSTANTS = {
   cosmicTriremeLoss:      'DAT_0064bcc9',  // @ 0x0059062c — trireme loss denominator
 
   // Trireme loss at sea: 1/N chance per turn at sea without adjacent land
-  // Modified by wonders: Lighthouse (0x4b) doubles denominator, Magellan's (0x39) halves it
-  lighthouseWonderId:     0x4b,   // @ 0x0059062c — thunk_FUN_004bd9f0(uVar10, 0x4b)
-  magellansWonderId:      0x39,   // @ 0x0059062c — thunk_FUN_004bd9f0(uVar10, 0x39)
+  // Modified by tech checks: Seafaring (0x4b) doubles denominator, Navigation (0x39) halves it
+  seafaringTechId:        0x4b,   // @ 0x0059062c — thunk_FUN_004bd9f0(uVar10, 0x4b) = hasTech(civ, 75=Seafaring)
+  navigationTechId:       0x39,   // @ 0x0059062c — thunk_FUN_004bd9f0(uVar10, 0x39) = hasTech(civ, 57=Navigation)
   triremeLandScanDirs:    9,      // @ 0x0059062c — for (local_38 = 0; local_38 < 9; ...)
   triremeMinDenominator:  2,      // @ 0x0059062c — if (local_c4 < 3) local_c4 = 2
 

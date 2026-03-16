@@ -467,8 +467,8 @@ export const COMBAT_ATTACK_SOUNDS = {
 
   // --- Priority 3: Domain-based dispatch ---
 
-  // Sea domain (domain == 1)
-  sea: {
+  // Air domain (domain == 1 in binary: 0=ground, 1=air, 2=sea)
+  air: {
     // Sea vs sea (defender also sea domain)
     vsSeaAncient:   { soundId: 0x00, channel: 0, note: 'AIRCOMBT — ancient sea unit (type < 0x1E) vs sea' },
     vsSeaModern:    { soundId: 0x52, channel: 0, note: 'BOATSINK dup — modern sea unit (type >= 0x1E) vs sea' },
@@ -480,8 +480,8 @@ export const COMBAT_ATTACK_SOUNDS = {
     sourceAddr: '0x00580341 lines 618-635',
   },
 
-  // Air domain (domain == 2)
-  air: {
+  // Sea domain (domain == 2 in binary: 0=ground, 1=air, 2=sea)
+  sea: {
     // Stealth aircraft (flagsA bit 3 set: DAT_0064b1bc & 8)
     stealth:     { soundId: 0x4D, channel: 1, note: 'FEEDBK08 — submarine/stealth sound' },
     // Non-stealth aircraft
