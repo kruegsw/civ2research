@@ -904,6 +904,14 @@ export function balanceRates(gameState, mapBase, civSlot) {
       return null;
   }
 
+  // ── G.3: Treasury threshold adjustments ──
+  // Binary: wealthy AI increases science based on treasury level
+  const treasury = civ.treasury || 0;
+  const turnNum = gameState.turn?.number || 0;
+  if (treasury > turnNum + 100 && science < maxSci) science += 1;
+  if (treasury > 2000 && science < maxSci) science += 1;
+  if (treasury > 8000) science = Math.min(maxSci, 10 - tax);
+
   // ── Final sanity clamps ──
   science = Math.max(0, Math.min(maxSci, science));
   tax = Math.max(0, Math.min(maxRate, tax));

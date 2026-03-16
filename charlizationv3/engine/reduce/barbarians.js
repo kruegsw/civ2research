@@ -25,15 +25,21 @@ export const DIFFICULTY_BARB_MULTIPLIER = {
  * Falls back to tech-count method if year calculation fails.
  */
 export function getBarbUnitType(state) {
-  const turnNum = state.turn?.number || 0;
-  const year = getNumericYear(turnNum);
   const rng = state.rng;
 
-  // Build pool of available barbarian unit types based on era
+  // G.1: Era-specific pools via tech checks (binary-faithful)
+  // Binary uses max tech count across all alive civs to determine era
+  let maxTechCount = 0;
+  for (let c = 1; c < 8; c++) {
+    if (!(state.civsAlive & (1 << c))) continue;
+    const tc = state.civTechCounts?.[c] || 0;
+    if (tc > maxTechCount) maxTechCount = tc;
+  }
+
   const pool = [2, 15]; // Warriors, Horsemen (always available)
-  if (year >= -1000) pool.push(4, 16);  // Archers, Chariots
-  if (year >= 1)     pool.push(5, 6, 19); // Legion, Pikemen, Knights
-  if (year >= 1500)  pool.push(7, 20, 24); // Musketeers, Dragoons, Cannon
+  if (maxTechCount >= 10) pool.push(4, 16);  // Archers, Chariots
+  if (maxTechCount >= 25) pool.push(5, 6, 19); // Legion, Pikemen, Knights
+  if (maxTechCount >= 45) pool.push(7, 20, 24); // Musketeers, Dragoons, Cannon
 
   return pool[rng.nextInt(pool.length)];
 }
@@ -66,11 +72,22 @@ export function spawnBarbarians(state, mapBase) {
   const turnNum = state.turn.number;
   if (turnNum < BARBARIAN_MIN_TURN) return;
 
-  // I.1: Difficulty-scaled spawn frequency
+  // G.1: Binary spawn frequency formula
+  // difficulty < 5: timing = ((3 - barbLevel) * 3 + 0x1E) * (5 - difficulty)
+  // difficulty >= 5: timing = (3 - barbLevel) * 3 + 0x0F
   const difficulty = state.difficulty || 'chieftain';
-  const diffMult = DIFFICULTY_BARB_MULTIPLIER[difficulty] || 1.0;
-  // Scale frequency: lower freq = more spawning. Multiply freq by inverse of difficulty.
-  const scaledFreq = Math.max(1, Math.round(freq / diffMult));
+  const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty);
+  const barbLevel = activity === 'roaming' ? 1 : activity === 'restless' ? 2 : 3;
+  let timing;
+  if (diffIdx < 5) {
+    timing = ((3 - barbLevel) * 3 + 0x1E) * (5 - diffIdx);
+  } else {
+    timing = (3 - barbLevel) * 3 + 0x0F;
+  }
+  // Find the largest power-of-2 mask <= timing
+  let frequencyMask = 1;
+  while (frequencyMask * 2 <= timing) frequencyMask *= 2;
+  frequencyMask -= 1; // e.g. 64 → 63 = 0x3F
 
   // Count existing barbarian units on the map
   let barbCount = 0;
@@ -79,7 +96,7 @@ export function spawnBarbarians(state, mapBase) {
   }
 
   // ── Land barbarian spawning ──
-  if (turnNum % scaledFreq === 0 && barbCount < BARBARIAN_MAX_UNITS) {
+  if (((turnNum + 1) & frequencyMask) === 0 && barbCount < BARBARIAN_MAX_UNITS) {
     const spawnLoc = findBarbSpawnTile(state, mapBase, /* land */ true);
     if (spawnLoc) {
       const unitType = getBarbUnitType(state);
@@ -96,6 +113,8 @@ export function spawnBarbarians(state, mapBase) {
           unitType, 0, spawnLoc.gx, spawnLoc.gy,
           UNIT_MOVE_POINTS[unitType] * MOVEMENT_MULTIPLIER
         );
+        // G.1: 50% veteran chance for spawned barbarians
+        if (state.rng.nextInt(2) === 0) newUnit.veteran = 1;
         state.units.push(newUnit);
         actualSpawned++;
       }
@@ -119,7 +138,7 @@ export function spawnBarbarians(state, mapBase) {
   }
 
   // ── I.2: Sea barbarian spawning — near coastal settlements ──
-  if (turnNum % scaledFreq === 0 && barbCount < BARBARIAN_MAX_UNITS) {
+  if (((turnNum + 1) & frequencyMask) === 0 && barbCount < BARBARIAN_MAX_UNITS) {
     const seaLoc = findBarbCoastalSpawnTile(state, mapBase);
     if (seaLoc) {
       const seaType = getBarbSeaUnitType(state);
