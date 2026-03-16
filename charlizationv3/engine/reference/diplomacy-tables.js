@@ -312,10 +312,10 @@ export const TREATY_FLAGS = {
                                     //   — triggers AI to prioritize attacking this civ
   ALLIANCE_CHECK:      0x08,       // alliance bit only
   WAR_CHECK:           0x2000,     // war bit only
-  CLEAR_TRANSIENT:     0xFF5FBFFF, // ~(RECENT_CONTACT | NUCLEAR_ATTACK | DIPLOMACY_ACTIVE)
-                                    //   clear bits 14, 17, 23 each turn
-  CLEAR_DEAD_CIV:      0xFFFFFFD9, // ~(CEASEFIRE(0x02) | INTRUDER_FLAG(0x20))
-                                    //   Applied when civ is dead (block_00560000.c:80)
+  CLEAR_TRANSIENT:     0xFF5FBFFF, // ~(RECENT_CONTACT | WAR_TRACKING | DIPLOMACY_ACTIVE)
+                                    //   clear bits 14, 21, 23 each turn
+  CLEAR_DEAD_CIV:      0xFFFFFFD9, // ~(CEASEFIRE(0x02) | PEACE(0x04) | INTRUDER_FLAG(0x20))
+                                    //   ~0xFFFFFFD9 = 0x26; applied when civ is dead (block_00560000.c:80)
 
   // === Periodic clearing schedule (FUN_00560084, block_00560000.c) ===
   // Each AI turn: clear 0xFF5FBFFF (transient each turn)
@@ -353,8 +353,8 @@ export const ATTITUDE_SCORING = {
   // --- Phase 1: Border proximity base score ---
   // @ FUN_0055bbc0 (calc_war_readiness) runs first, sets DAT_006ab5e8
   // The border score accumulates: +1 per enemy unit near our city,
-  // +1 for road, +1 for railroad, +1 for fortress, +1 for city tile,
-  // +2 for airbase. Higher score = more threatened.
+  // +1 for road (replaces base), +1 for railroad, +1 for mine, +1 for irrigation,
+  // +2 for fortress. Higher score = more threatened.
   baseScore: {
     description: 'Border proximity score from calc_war_readiness (DAT_006ab5e8)',
     address: '0x006ab5e8',
@@ -394,12 +394,12 @@ export const ATTITUDE_SCORING = {
     },
   },
 
-  // --- Phase 3: War modifiers (only when at war with human) ---
+  // --- Phase 3: Treaty modifiers (only when allied with human) ---
   // @ 0x005616F0: if treaty[humanCiv][aiCiv] & 0x08
-  // NOTE: 0x08 = ALLIANCE per TREATY_FLAGS, but pseudocode labels this "atWar" check.
-  // May need raw binary re-verification — could be 0x2000 (WAR) in actual binary.
-  warModifiers: {
-    condition: 'treaty[humanCiv][aiCiv] & 0x08 (ALLIANCE flag — see NOTE above)',
+  // 0x08 = ALLIANCE per TREATY_FLAGS. The pseudocode annotations incorrectly labeled
+  // this as a "war" check, but the binary checks bit 3 (ALLIANCE), not bit 13 (WAR).
+  allianceModifiers: {
+    condition: 'treaty[humanCiv][aiCiv] & 0x08 (ALLIANCE flag)',
     address: '0x005616F0',
 
     // Path A: No other wars (warCount == 0)
@@ -567,7 +567,7 @@ export const ATTITUDE_SCORING = {
     formula: [
       'powerDiff = humanCiv.powerRank - aiCiv.powerRank',
       'if powerDiff < 0: powerDiff /= 2  (human weaker: halved effect)',
-      'else if NOT atWar: powerDiff /= 2  (human stronger but peaceful: halved)',
+      'else if NOT allied: powerDiff /= 2  (human stronger but not allied: halved)',
       'score += personalityMod + powerDiff',
     ],
     field: 'DAT_00655c22 (powerRanking, byte[8], 0-7 scale)',
@@ -609,9 +609,9 @@ export const ATTITUDE_SCORING = {
     notes: 'All three can stack: max -3 if human has 4x military power',
   },
 
-  // --- Phase 10: Peaceful strength bonus (only when NOT at war) ---
+  // --- Phase 10: Peaceful strength bonus (only when NOT allied) ---
   peacefulStrengthBonus: {
-    condition: 'NOT atWar(humanCiv, aiCiv)',
+    condition: 'NOT allied(humanCiv, aiCiv) — treaty[humanCiv][aiCiv] & 0x08 == 0',
     address: '0x005619A4',
     modifiers: [
       {
@@ -647,15 +647,15 @@ export const ATTITUDE_SCORING = {
         'Great Wall = wonder index 6, United Nations = wonder index 24 (0x18)',
       ],
     },
-    // Statue of Liberty (wonder 19 = 0x13)
-    statueOfLiberty: {
-      aiHasStatueOfLiberty: {
+    // Eiffel Tower (wonder 20 = 0x14)
+    eiffelTower: {
+      aiHasEiffelTower: {
         delta: +1,
-        condition: 'aiCiv has Statue of Liberty (wonder 0x13)',
+        condition: 'aiCiv has Eiffel Tower (wonder 0x14)',
         address: '0x00561998',
-        notes: 'AI civ owning Statue of Liberty: +1 attitude toward human',
+        notes: 'AI civ owning Eiffel Tower: +1 attitude toward human',
       },
-      humanHasStatueOfLiberty: {
+      humanHasEiffelTower: {
         address: '0x005619A8',
         formula: [
           'if score > 0: score /= 2  (integer division)',
@@ -664,8 +664,8 @@ export const ATTITUDE_SCORING = {
           'score = temp',
         ],
         notes: [
-          'CORRECTION: Pseudocode annotation said "Democracy advance" but binary checks wonder 0x13',
-          'Statue of Liberty = wonder index 19 (0x13)',
+          'Raw C FUN_00560d95 lines 548/552: thunk_FUN_00453e51(param, 0x14) — wonder 0x14 = Eiffel Tower',
+          'Eiffel Tower = wonder index 20 (0x14)',
           'Very strong anti-human effect: halves positive score, then -2 if result >= 1, else -1',
           'Examples: score=4 -> /2=2 -> -2=0; score=1 -> /2=0 -> -1=-1; score=-2 -> -1=-3',
         ],
@@ -810,7 +810,7 @@ export const TURN_PROCESSING = {
       condition: '(turnNumber & 0x1F) == 0',
       address: '0x00560342',
       actions: [
-        'Clear WAR_STARTED (0x800) if next-civ not at war',
+        'Clear WAR_STARTED (0x800) if PERIODIC_FLAG_19 is not set (byte2 & 8 == 0)',
         'Clear 0x80000 periodic flag',
       ],
     },
@@ -1058,7 +1058,7 @@ export const ALLIANCE_PROPOSALS = {
     conditions: [
       'targetCiv != aiCiv AND targetCiv != humanCiv',
       'targetCiv is alive',
-      'aiCiv is at war with targetCiv (treaty byte1 & 0x02)',
+      'aiCiv has attacked flag set toward targetCiv (treaty byte1 & 0x02 = bit 9 = 0x200)',
       'aiCiv is NOT at war/alliance with humanCiv (treaty & 0x2008 == 0)',
       'humanCiv has no existing wars with targetCiv (count_wars == 0)',
       'Both aiCiv and humanCiv have contact with targetCiv (treaty & 0x01)',
@@ -1426,8 +1426,8 @@ export const MODIFIER_SUMMARY = [
 
   // --- Wonders (Phase 11) ---
   { name: 'Great Wall / UN',            delta: '-1 or /2', condition: 'human has wonder 6 or 24' },
-  { name: 'AI has Statue of Liberty',   delta: '+1',  condition: 'AI has wonder 19' },
-  { name: 'Human has Statue of Liberty', delta: '-1 to -2', formula: '/2 then -2 if >=1, else -1' },
+  { name: 'AI has Eiffel Tower',         delta: '+1',  condition: 'AI has wonder 20 (0x14)' },
+  { name: 'Human has Eiffel Tower',     delta: '-1 to -2', formula: '/2 then -2 if >=1, else -1' },
 
   // --- Tech/tolerance (Phases 12-13) ---
   { name: 'Tech leader bonus',          delta: '+1',  condition: 'human has most techs (techRankCount == 0)' },
@@ -1450,7 +1450,7 @@ export const ATTITUDE_SCORING_CONSTANTS = {
   // Phase 3 — War-only modifiers
   largeTechGap:       8,     // @ 0x00560D95: if AI techCount + 8 < human techCount: +1
   multiWarBase:       1,     // @ 0x00560D95: base penalty per additional war
-  multiWarExpDiv:     6,     // formula: warCount - (6 - expansionism); min 1, max 6
+  multiWarExpDiv:     1,     // formula: warCount - expansionism - 1; if < 2: set to 1
 
   // Phase 5 — Late game
   lateGameTurnGate:   200,   // @ 0x00560D95: spaceship/power checks only if turn > 200
@@ -1485,19 +1485,21 @@ export const ATTITUDE_SCORING_CONSTANTS = {
 // ============================================================================
 // === SPACE RACE TECH CHECK ===
 // Binary ref: FUN_00568861 @ block_00560000.c
-// Checks whether a civ has the technology prerequisites for space race components.
-// Used in attitude scoring to evaluate if the human is a spaceship threat.
+// Returns a space-race capability level (0, 1, or 2) based on tech pairs.
+// NOT called from attitude scoring — used elsewhere in spaceship AI evaluation.
 // ============================================================================
 
 export const SPACE_RACE_TECH_IDS = {
-  // Tech IDs checked for space race capability (from FUN_00568861):
-  // The function checks if a civ has specific advances that enable spaceship parts.
-  // These are cross-referenced with production/wonder eligibility.
-  robotics:       0x48,   // tech 72 — Robotics (propulsion)
-  steamEngine:    0x4E,   // tech 78 — Steam Engine (structural)
-  pottery:        0x41,   // tech 65 — Pottery (habitation)
-  geneticEng:     0x21,   // tech 33 — Genetic Engineering (fuel pods)
-  steel:          0x4F,   // tech 79 — Steel (not in base rules but checked)
+  // FUN_00568861: Returns a space-race capability level for a civ.
+  // NOT called from attitude scoring — used elsewhere (e.g., spaceship AI evaluation).
+  // The function checks two pairs of techs and returns 0, 1, or 2:
+  //   if civ has tech 5 (Automobile) AND tech 0x18 (Electronics): return 2
+  //   if civ has tech 0x3c (Philosophy) AND tech 0x26 (Invention): return 1
+  //   else: return 0
+  automobile:     0x05,   // tech 5  — Automobile  (pair 1, required for level 2)
+  electronics:    0x18,   // tech 24 — Electronics (pair 1, required for level 2)
+  philosophy:     0x3c,   // tech 60 — Philosophy  (pair 2, required for level 1)
+  invention:      0x26,   // tech 38 — Invention   (pair 2, required for level 1)
   sourceAddr: '0x00568861',
 };
 
@@ -1629,9 +1631,9 @@ export const ATTITUDE_LEVEL = {
   warReadinessTrust: {
     sourceAddr: '0x00467AF0',
     logic: [
-      'if vendetta flag (byte1 & 0x20): return true (always considered hostile)',
+      'if WAR flag (byte1 & 0x20 = bit 13 = 0x2000): return true (at war = always hostile)',
       'if alliance (treaty & 0x08): return false (ally = peaceful)',
-      'if only contact + ceasefire (treaty & 0x05 == 0x01): return attitude > 0x31 (49)',
+      'if has CONTACT but NOT PEACE ((treaty & 0x05) == 0x01): return attitude > 0x31 (49)',
       'else: return false',
     ],
     attitudeThreshold: 0x31,  // 49: ceasefire with attitude > 49 = considered peaceful

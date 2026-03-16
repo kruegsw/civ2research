@@ -2144,7 +2144,7 @@ export const MENU_COMMAND_IDS = {
   // --- Kingdom menu ---
   TAX_RATE:         0x201,    // FUN_0040ddc6 — tax rate dialog
   FIND_CITY:        0x205,    // FUN_0044cd9b — find city
-  PALACE:           0x210,    // FUN_0040e017 — palace view
+  FIND_CITY_2:      0x210,    // FUN_0040e017 — find city dialog
   REVOLUTION_KINGDOM: 0x220,  // FUN_0040e3b1 — revolution (Kingdom menu, confirms + sets anarchy)
 
   // --- View menu (continued) ---
@@ -2217,7 +2217,7 @@ export const MENU_COMMAND_IDS = {
   CHEAT_CHANGE_TERRAIN: 0x731,// FUN_00554423 — change terrain
   CHEAT_DESTROY_ALL:0x732,    // FUN_005545d3 — destroy all units
   CHEAT_CHANGE_MONEY:0x740,   // FUN_00554962 — change civ money
-  CHEAT_EDIT_KING:  0x748,    // FUN_005549f — edit king
+  CHEAT_EDIT_KING:  0x748,    // FUN_0055499f — edit king
   CHEAT_SCENARIO:   0x750,    // FUN_00555cb1 — scenario params
   CHEAT_SAVE_MAP:   0x752,    // FUN_0055615c — save map
   CHEAT_SAVE_GIF:   0x755,    // FUN_0055625b — save as GIF
@@ -2391,38 +2391,36 @@ export const SCENARIO_EVENT_SYSTEM = {
   // --- Trigger Types (bitmask, one bit per trigger) ---
   // 9 trigger types, tested as bit flags in trigger bitmask field
   triggerTypes: {
-    TURN_INTERVAL:      0x001,      // fires every N turns                       // 0x0054d7ef
-    UNIT_KILLED:        0x002,      // specific unit type killed                 // 0x0054d7ef
-    NO_CITIES_LEFT:     0x004,      // civ has no remaining cities               // 0x0054d7ef
-    CITY_TAKEN:         0x008,      // specific city captured                    // 0x0054d7ef
-    TURN_NUMBER:        0x010,      // fires on exact turn number                // 0x0054d7ef
-    NEGOTIATION:        0x020,      // diplomacy contact occurs                  // 0x0054d7ef
-    SCENARIO_LOADED:    0x040,      // fires when scenario first loads           // 0x0054d7ef
-    RECEIVED_TECH:      0x080,      // civ receives a technology                 // 0x0054d7ef
-    RANDOM_TURN:        0x100,      // random chance each turn                   // 0x0054d7ef
+    UNITKILLED:         0x001,      // specific unit type killed                 // 0x0054d7ef
+    CITYTAKEN:          0x002,      // specific city captured                    // 0x0054d7ef
+    TURN:               0x004,      // fires on exact turn number                // 0x0054d7ef
+    TURNINTERVAL:       0x008,      // fires every N turns                       // 0x0054d7ef
+    NEGOTIATION:        0x010,      // diplomacy contact occurs                  // 0x0054d7ef
+    SCENARIOLOADED:     0x020,      // fires when scenario first loads           // 0x0054d7ef
+    RANDOMTURN:         0x040,      // random chance each turn                   // 0x0054d7ef
+    NOSCHISM:           0x080,      // prevents civ schism                       // 0x0054d7ef
+    RECEIVEDTECHNOLOGY: 0x100,      // civ receives a technology                 // 0x0054d7ef
   },
   triggerTypeCount: 9,              // bits 0-8 (values 1-0x100)                 // 0x0054d7ef
 
   // --- Action Types (bitmask, one bit per action) ---
-  // 13 action types, tested as bit flags in action bitmask field
+  // 12 action types, tested as bit flags in action bitmask field
   actionTypes: {
-    MOVE_UNIT:          0x0001,     // move unit to location                     // 0x0054d7ef
-    CREATE_UNIT:        0x0002,     // create new unit                           // 0x0054d7ef
-    CHANGE_MONEY:       0x0004,     // add/subtract gold                         // 0x0054d7ef
-    MAKE_AGGRESSION:    0x0008,     // declare war between civs                  // 0x0054d7ef
-    PLAY_CD_TRACK:      0x0010,     // play audio CD track                       // 0x0054d7ef
-    CHANGE_TERRAIN:     0x0020,     // modify map terrain                        // 0x0054d7ef
-    DESTROY_BUILDINGS:  0x0040,     // destroy city buildings                    // 0x0054d7ef
-    GIVE_TECH:          0x0080,     // give technology to civ                    // 0x0054d7ef
-    MODIFY_FLAG:        0x0100,     // modify scenario/game flag                 // 0x0054d7ef
-    TRANSPORT:          0x0200,     // transport unit                            // 0x0054d7ef
-    PLAY_WAV:           0x0400,     // play WAV sound file                       // 0x0054d7ef
-    DISPLAY_TEXT:       0x0800,     // show text popup                           // 0x0054d7ef
-    TAKE_TECH:          0x1000,     // remove technology from civ                // 0x0054d7ef
-    NEGOTIATE:          0x2000,     // force diplomacy contact                   // 0x0054d7ef
+    TEXT:               0x0001,     // show text popup                           // 0x0054d7ef
+    MOVEUNIT:           0x0002,     // move unit to location                     // 0x0054d7ef
+    CREATEUNIT:         0x0004,     // create new unit                           // 0x0054d7ef
+    CHANGEMONEY:        0x0008,     // add/subtract gold                         // 0x0054d7ef
+    PLAYWAVEFILE:       0x0010,     // play WAV sound file                       // 0x0054d7ef
+    MAKEAGGRESSION:     0x0020,     // declare war between civs                  // 0x0054d7ef
+    JUSTONCE:           0x0040,     // event fires only once                     // 0x0054d7ef
+    PLAYCDTRACK:        0x0080,     // play audio CD track                       // 0x0054d7ef
+    DONTPLAYWONDERS:    0x0100,     // suppress wonder movies                    // 0x0054d7ef
+    CHANGETERRAIN:      0x0200,     // modify map terrain                        // 0x0054d7ef
+    DESTROYACIVILIZATION: 0x0400,   // destroy a civilization                    // 0x0054d7ef
+    GIVETECHNOLOGY:     0x0800,     // give technology to civ                    // 0x0054d7ef
   },
-  actionTypeCount: 13,              // bits 0-12 (values 1-0x2000)               // 0x0054d7ef
-  maxActionsPerEvent: 0x0D,         // 13 actions max per event                  // 0x0054d7ef
+  actionTypeCount: 12,              // bits 0-11 (values 1-0x800)                // 0x0054d7ef
+  maxActionsPerEvent: 0x0C,         // 12 actions max per event                  // 0x0054d7ef
 
   // --- Negotiation Target Types ---
   negotiationTypes: {
@@ -3121,7 +3119,7 @@ export const KEYBOARD_SHORTCUTS = {
   // --- Global ASCII Shortcuts (map view, no city dialog) ---
   // These fire from map_ascii when not in city-window mode
   global: {
-    0x43: 'center_on_capital',         // 'C' — thunk_FUN_0040e017()                 // 0x00411F91
+    0x43: 'find_city',                  // 'C' — thunk_FUN_0040e017()                 // 0x00411F91
     0x44: 'disband_unit',              // 'D' — thunk_FUN_0058c295()                 // 0x00411F91
     0x48: 'help_civilopedia',          // 'H' — thunk_FUN_0044cd9b(player)           // 0x00411F91
     0x52: 'revolution',                // 'R' — thunk_FUN_0040e3b1()                 // 0x00411F91

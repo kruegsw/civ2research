@@ -697,10 +697,10 @@ export const DIFF_ENGINE_SIZES = {
 export const FORMAT_DETECTION = {
   // 1. Read "CIVILIZE" magic (8 bytes) — reject if mismatch
   // 2. Read version (uint16) — reject if outside [0x26, 0x2C]
-  // 3. save_format_version stored at game_state+0x2DC (offset from DAT_00655AE8)
-  //    Maps to DAT_00655B04 in runtime
-  SAVE_FORMAT_OFFSET: 0x2DC,  // relative to game state start
-  SAVE_FORMAT_GLOBAL: 'DAT_00655B04',
+  // 3. save_format_version stored at game_state+0x1A (offset from DAT_00655AE8)
+  //    Maps to DAT_00655B02 in runtime (save format version)
+  SAVE_FORMAT_OFFSET: 0x1A,   // relative to game state start
+  SAVE_FORMAT_GLOBAL: 'DAT_00655B02',
 
   // The extension is informational only — the save_format_version inside
   // the file is authoritative for determining game mode.
@@ -806,8 +806,8 @@ export const UNIT_RECORD_FIELDS = {
     type:          { offset: 0x06, size: 1, type: 'uint8',  addr: 'DAT_006560F6', note: 'unit type index (0..61)' },
     owner:         { offset: 0x07, size: 1, type: 'int8',   addr: 'DAT_006560F7', note: 'owning civ (0..7, -1 = none)' },
     moveSpent:     { offset: 0x08, size: 1, type: 'uint8',  addr: 'DAT_006560F8', note: 'movement points spent this turn' },
-    hpLost:        { offset: 0x09, size: 1, type: 'uint8',  addr: 'DAT_006560F9', note: 'visibility/seen bitmask (1 bit per civ)' },
-    movesRemain:   { offset: 0x0A, size: 1, type: 'uint8',  addr: 'DAT_006560FA', note: 'damage taken (reduces from max HP)' },
+    visibilityMask:{ offset: 0x09, size: 1, type: 'uint8',  addr: 'DAT_006560F9', note: 'visibility/seen bitmask (1 bit per civ)' },
+    hpLost:        { offset: 0x0A, size: 1, type: 'uint8',  addr: 'DAT_006560FA', note: 'damage taken (reduces from max HP)' },
     lastDirection: { offset: 0x0B, size: 1, type: 'uint8',  addr: 'DAT_006560FB', note: 'last movement direction (0=up-right, 1=right, ..., 7=up, 0xFF=no movement). Previously mislabeled goto_dest_x.' },
     shield_charge: { offset: 0x0C, size: 1, type: 'uint8',  addr: 'DAT_006560FC', note: 'shield cost charged on creation (default 0x58=88)' },
     caravan_dest:  { offset: 0x0D, size: 1, type: 'uint8',  addr: 'DAT_006560FD', note: 'caravan commodity / special data' },
