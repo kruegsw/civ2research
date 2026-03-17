@@ -7,7 +7,7 @@
  */
 
 import { S } from './state.js';
-import { sfx, getDeathSfx } from './sound.js';
+import { sfx, getDeathSfx, playSoundForEvent, getProductionSound, playCityStatusSound, playTurnEventSound, playRandomCheers } from './sound.js';
 import {
   UNIT_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES,
   ORDER_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN, CIV_CITY_NAMES,
@@ -457,7 +457,7 @@ export function showTurnEvents(events) {
     const ev = events[i++];
     switch (ev.type) {
       case 'cityGrowth':
-        sfx('CHEERS3');
+        playSoundForEvent('cityGrowth');
         createCiv2Dialog('turn-event-dialog', 'City Growth', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -467,7 +467,7 @@ export function showTurnEvents(events) {
         break;
 
       case 'famine':
-        sfx('CIVDISOR');
+        playSoundForEvent('famine');
         createCiv2Dialog('turn-event-dialog', 'Famine!', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
@@ -499,10 +499,12 @@ export function showTurnEvents(events) {
       case 'productionComplete': {
         const item = ev.item;
         let itemName;
-        if (item.type === 'unit') { itemName = UNIT_NAMES[item.id] || 'Unit'; sfx('BARRACKS'); }
-        else if (item.type === 'building') { itemName = IMPROVE_NAMES[item.id] || 'Building'; sfx('CATHEDRL'); }
-        else if (item.type === 'wonder') { itemName = WONDER_NAMES[item.id - 39] || 'Wonder'; sfx('NEWONDER'); }
+        if (item.type === 'unit') { itemName = UNIT_NAMES[item.id] || 'Unit'; }
+        else if (item.type === 'building') { itemName = IMPROVE_NAMES[item.id] || 'Building'; }
+        else if (item.type === 'wonder') { itemName = WONDER_NAMES[item.id - 39] || 'Wonder'; }
         else itemName = 'Item';
+        const prodSnd = getProductionSound(item.type, item.type === 'wonder' ? item.id - 39 : item.id);
+        if (prodSnd) sfx(prodSnd);
 
         createCiv2Dialog('turn-event-dialog', 'Production Complete', panel => {
           const msg = document.createElement('div');
@@ -546,7 +548,7 @@ export function showTurnEvents(events) {
       }
 
       case 'freeAdvance': {
-        sfx('FANFARE1');
+        playSoundForEvent('techDiscovered');
         const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
         createCiv2Dialog('turn-event-dialog', ev.source || 'Free Advance', panel => {
           const msg = document.createElement('div');
@@ -696,6 +698,120 @@ export function showTurnEvents(events) {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
           msg.textContent = `${uName} from ${ev.cityName} disbanded due to insufficient support.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'civilDisorder': {
+        playCityStatusSound('civilDisorder');
+        createCiv2Dialog('turn-event-dialog', 'Civil Disorder!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `Civil disorder in ${ev.cityName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'weLoveKingDay': {
+        playCityStatusSound('weLoveKingDay');
+        createCiv2Dialog('turn-event-dialog', 'Celebration!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `${ev.cityName} celebrates We Love the King Day!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'revolution': {
+        playCityStatusSound('revolution');
+        createCiv2Dialog('turn-event-dialog', 'Revolution!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = ev.message || 'Revolution! Government overthrown!';
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'nuclearMeltdown': {
+        playSoundForEvent('nukeExplosion');
+        createCiv2Dialog('turn-event-dialog', 'Nuclear Meltdown!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `Nuclear meltdown in ${ev.cityName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'pollutionWarning': {
+        playTurnEventSound(4);
+        createCiv2Dialog('turn-event-dialog', 'Pollution!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = ev.message || 'Pollution detected near your cities!';
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'globalWarming': {
+        playTurnEventSound(3);
+        createCiv2Dialog('turn-event-dialog', 'Global Warming!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = ev.message || 'Global warming is altering the terrain!';
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'cityCapture': {
+        playSoundForEvent('combatVictoryFanfare');
+        const capName = ev.cityName || 'City';
+        createCiv2Dialog('turn-event-dialog', 'City Captured!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `${capName} has been captured!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'wonderBuilt': {
+        sfx('NEWONDER');
+        const wName = ev.wonderName || WONDER_NAMES[ev.wonderId] || 'A wonder';
+        const builderName = S.mpGameState?.civNames?.[ev.civSlot] || `Civ ${ev.civSlot}`;
+        createCiv2Dialog('turn-event-dialog', 'Wonder Built!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `${builderName} has completed ${wName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'councilMeeting': {
+        playSoundForEvent('cheers');
+        createCiv2Dialog('turn-event-dialog', 'Council Meeting', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = ev.message || 'Your advisors request a meeting.';
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'techDiscovered': {
+        playSoundForEvent('techDiscovered');
+        const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
+        createCiv2Dialog('turn-event-dialog', 'Discovery!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = `You have discovered the secret of ${advName}!`;
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;

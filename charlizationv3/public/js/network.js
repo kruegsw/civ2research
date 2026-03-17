@@ -4,7 +4,7 @@
 
 import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
-import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS } from './sound.js';
+import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS, playTurnEventSound, playSoundForEvent } from './sound.js';
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
@@ -1160,7 +1160,7 @@ function initNetwork(appCallbacks) {
 
             // Tech discovery notification — auto-show research picker
             if (statePayload.discoveredAdvance && statePayload.discoveredAdvance.civSlot === S.mpCivSlot) {
-              sfx('FANFARE1');
+              playSoundForEvent('techDiscovered');
               const da = statePayload.discoveredAdvance;
               const ct = S.mpGameState.civTechs?.[da.civSlot];
               console.log('[tech] Discovered advance', da.advanceId, ADVANCE_NAMES[da.advanceId],
@@ -1243,6 +1243,12 @@ function initNetwork(appCallbacks) {
 
             // Game over: show victory/defeat dialog (do NOT close WebSocket)
             if (statePayload.gameOver) {
+              // Play appropriate end-game sound
+              if (statePayload.gameOver.reason === 'spaceship') {
+                playTurnEventSound(6); // SPACESHIP_ARRIVED
+              } else {
+                playTurnEventSound(9); // PLAN_RETIREMENT
+              }
               setTimeout(() => showGameOverDialog(statePayload.gameOver.winner, S.mpGameState), 600);
             }
 

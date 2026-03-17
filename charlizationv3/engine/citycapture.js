@@ -16,6 +16,7 @@ import { hasWonderEffect, civHasWonder } from './utils.js';
 import { updateVisibility } from './visibility.js';
 import { grantAdvance } from './research.js';
 import { isSchismBlocked } from './events.js';
+import { killCiv } from './diplomacy.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Constants
@@ -862,8 +863,8 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     const hasCity = state.cities.some(c => c.owner === oldOwner && c.size > 0);
     const hasUnit = state.units.some(u => u.owner === oldOwner && u.gx >= 0);
     if (!hasCity && !hasUnit) {
-      state.civsAlive &= ~(1 << oldOwner);
-      events.push({ type: 'civEliminated', civSlot: oldOwner });
+      const killResult = killCiv(state, mapBase, oldOwner, capturerCivSlot);
+      events.push(...killResult.events);
     }
   }
 

@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL } from '../defs.js';
-import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport } from '../movement.js';
+import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender } from '../combat.js';
 import { cityHasBuilding, hasWonderEffect } from '../utils.js';
@@ -386,6 +386,81 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       return;
     }
 
+    // ── B.3: Fortress retreat handling ──
+    // Defender on a fortress retreats to an adjacent land tile instead of dying.
+    // Attacker advances to the defender's former position.
+    if (result.fortressRetreat) {
+      // Find a random adjacent land tile for the defender to retreat to (away from attacker)
+      const retreatDirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      let retreatDest = null;
+      // Shuffle directions using state RNG for determinism
+      for (let ri = retreatDirs.length - 1; ri > 0; ri--) {
+        const rj = state.rng.nextInt(ri + 1);
+        [retreatDirs[ri], retreatDirs[rj]] = [retreatDirs[rj], retreatDirs[ri]];
+      }
+      for (const rd of retreatDirs) {
+        const rDest = resolveDirection(dest.gx, dest.gy, rd, mapBase);
+        if (!rDest) continue;
+        // Must be land tile
+        if (mapBase.getTerrain(rDest.gx, rDest.gy) === 10) continue;
+        // Must not be the attacker's tile
+        if (rDest.gx === unit.gx && rDest.gy === unit.gy) continue;
+        // Must not have enemy units
+        const hasEnemy = state.units.some(u => u.gx === rDest.gx && u.gy === rDest.gy && u.owner !== defender.owner && u.gx >= 0);
+        if (hasEnemy) continue;
+        retreatDest = rDest;
+        break;
+      }
+
+      if (retreatDest) {
+        // Move defender to retreat tile with 1 HP
+        state.units[bestDefIdx] = {
+          ...defender,
+          gx: retreatDest.gx, gy: retreatDest.gy,
+          x: retreatDest.gx * 2 + (retreatDest.gy % 2), y: retreatDest.gy,
+          movesRemain: result.defHpLost, movesLeft: 0,
+          orders: 'none',
+        };
+        // Attacker advances to defender's former position
+        unit.gx = dest.gx; unit.gy = dest.gy;
+        unit.x = dest.gx * 2 + (dest.gy % 2); unit.y = dest.gy;
+        unit.movesRemain = result.atkHpLost;
+        unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
+        if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+        if (result.atkVeteranPromo) unit.veteran = 1;
+      } else {
+        // No valid retreat tile — defender dies normally
+        killUnit(state, bestDefIdx);
+        unit.gx = dest.gx; unit.gy = dest.gy;
+        unit.x = dest.gx * 2 + (dest.gy % 2); unit.y = dest.gy;
+        unit.movesRemain = result.atkHpLost;
+        unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
+        if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+        if (result.atkVeteranPromo) unit.veteran = 1;
+      }
+      state.units[unitIndex] = unit;
+      state.combatResult = {
+        type: 'fortressRetreat',
+        attacker: unit.type, defender: defender.type,
+        atkOwner: unit.owner, defOwner: defender.owner,
+        atkVeteran: !!attacker_preCombat_veteran, defVeteran: !!defender_preCombat_veteran,
+        gx: dest.gx, gy: dest.gy,
+        retreatGx: retreatDest?.gx, retreatGy: retreatDest?.gy,
+        atkHpLost: result.atkHpLost, defHpLost: result.defHpLost,
+        rounds: result.rounds,
+        atkMaxHp: result.atkMaxHp, defMaxHp: result.defMaxHp,
+        atkFp: result.atkFp, defFp: result.defFp,
+        atkStartHp: result.atkStartHp, defStartHp: result.defStartHp,
+        atkVeteranPromo: result.atkVeteranPromo,
+      };
+      // Update visibility at new positions
+      if (unit.gx >= 0) {
+        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
+        discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
+      }
+      return;
+    }
+
     if (result.attackerWins) {
       // Defender destroyed
       killUnit(state, bestDefIdx);
@@ -586,6 +661,8 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
           };
         }
       }
+      // C.4: Auto-load friendly units at destination tile onto the transport
+      loadUnitsOntoShip(state, unitIndex, dest.gx, dest.gy);
     }
 
     // ── Capture undefended enemy city ──

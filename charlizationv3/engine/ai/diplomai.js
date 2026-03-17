@@ -35,6 +35,7 @@ import {
   declareWar as diplomacyDeclareWar,
   signCeasefire, signPeaceTreaty, formAlliance,
   getReputation,
+  getAttitudeLevel, isHostile, isFriendly,
 } from '../diplomacy.js';
 
 // ── Leader Personality Table ─────────────────────────────────────
@@ -177,11 +178,13 @@ function countWars(gameState, civSlot) {
  * Binary attitude is on a 0-100 scale (not -100 to +100).
  */
 function getGreetingTone(attitude) {
-  if (attitude < 4)  return 'hostile';
-  if (attitude < 26) return 'guarded';
-  if (attitude < 50) return 'neutral';
-  if (attitude < 74) return 'friendly';
-  return 'enthusiastic';
+  // Use the 9-level attitude scale from diplomacy.js for consistent grading
+  const level = getAttitudeLevel(attitude);
+  if (level <= 1) return 'hostile';      // Enraged / Furious
+  if (level <= 3) return 'guarded';      // Annoyed / Uncooperative
+  if (level === 4) return 'neutral';     // Neutral
+  if (level <= 6) return 'friendly';     // Cordial / Polite
+  return 'enthusiastic';                  // Enthusiastic / Worshipful
 }
 
 /**
@@ -2808,9 +2811,10 @@ export function checkSpontaneousWar(state, aiCiv, targetCiv) {
   const aiMilPower = state.civs?.[aiCiv]?.militaryPower ?? 0;
   if (aiMilPower <= 5) return null;
 
-  // Attitude must be < 26
+  // Attitude must be hostile (level < 4 on the 9-level scale, i.e. raw < ~39)
   const attitude = state.civs?.[aiCiv]?.attitudes?.[targetCiv] ?? 50;
-  if (attitude >= 26) return null;
+  const attitudeLevel = getAttitudeLevel(attitude);
+  if (!isHostile(attitudeLevel)) return null;
 
   return { type: 'DECLARE_WAR', targetCiv };
 }
@@ -2834,9 +2838,10 @@ export function checkAllianceBreak(state, aiCiv, allyCiv) {
   const treaty = getTreaty(state, aiCiv, allyCiv);
   if (treaty !== 'alliance') return null;
 
-  // Attitude must be < 76
+  // Attitude must not be friendly (level > 4) to consider breaking alliance
   const attitude = state.civs?.[aiCiv]?.attitudes?.[allyCiv] ?? 50;
-  if (attitude >= 76) return null;
+  const attitudeLevel = getAttitudeLevel(attitude);
+  if (isFriendly(attitudeLevel)) return null;
 
   // Military power must be > ally's * 2
   const aiMilPower = state.civs?.[aiCiv]?.militaryPower ?? 0;

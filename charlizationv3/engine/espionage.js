@@ -15,6 +15,7 @@
 
 import { UNIT_COSTS, UNIT_HP, ADVANCE_NAMES, DIFFICULTY_KEYS } from './defs.js';
 import { getGovernment, cityHasBuilding, hasWonderEffect } from './utils.js';
+import { calcGarrisonDistance } from './production.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // calc_city_revolt_distance — FUN_004c65d2 (232B)
@@ -187,6 +188,15 @@ export function calcBribeCostEnhanced(state, target, mapBase, spyCiv) {
   const curHp = Math.max(1, maxHp - (target.movesRemain || 0));
   cost = Math.floor(cost * curHp / maxHp);
 
+  // Garrison proximity discount: if nearest garrison is far (distance > 10),
+  // the unit is less protected and easier to bribe — reduce cost by 10%
+  if (mapBase) {
+    const garrisonDist = calcGarrisonDistance(state, mapBase, target.gx, target.gy, target.owner);
+    if (garrisonDist > 10) {
+      cost = Math.floor(cost * 0.9);
+    }
+  }
+
   return Math.max(1, cost);
 }
 
@@ -268,6 +278,15 @@ export function calcInciteCostEnhanced(state, city, mapBase, spy) {
       cost -= Math.floor(cost / 3);
     } else {
       cost -= Math.floor(cost / 6);
+    }
+  }
+
+  // Garrison proximity discount: if nearest garrison is far (distance > 10),
+  // the city is less protected — reduce incite cost by 15%
+  if (mapBase) {
+    const garrisonDist = calcGarrisonDistance(state, mapBase, city.gx, city.gy, city.owner);
+    if (garrisonDist > 10) {
+      cost = Math.floor(cost * 0.85);
     }
   }
 

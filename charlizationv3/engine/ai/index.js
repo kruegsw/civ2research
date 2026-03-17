@@ -20,7 +20,7 @@
 //   Military unit AI, Goal cleanup, Movement cleanup
 // ═══════════════════════════════════════════════════════════════════
 
-import { assessStrategy } from './strategyai.js';
+import { assessStrategy, analyzeTerritory } from './strategyai.js';
 import { generateEconActions } from './econai.js';
 import { generateDiplomacyActions } from './diplomai.js';
 import { generateProductionActions, generateRushBuyActions, generateSellObsoleteActions } from './prodai.js';
@@ -1060,7 +1060,10 @@ export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
     // ═══════════════════════════════════════════════════════════════
 
     // ── P0. Strategic assessment (advisory — no actions) ──
+    const territory = analyzeTerritory(gameState, mapBase, civSlot);
     const strategy = assessStrategy(gameState, mapBase, civSlot, undefined, debugLog);
+    // Attach territory analysis for downstream AI modules
+    strategy.territory = territory;
 
     // ── P0b. Goal list initialization and decay ──
     const goals = getGoalList(civSlot);

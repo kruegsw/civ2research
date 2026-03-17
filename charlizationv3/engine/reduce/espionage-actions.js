@@ -6,12 +6,19 @@ import { UNIT_HP } from '../defs.js';
 import { validateAction, calcBribeCost, calcInciteCost } from '../rules.js';
 import { updateVisibility } from '../visibility.js';
 import { grantAdvance } from '../research.js';
-import { checkSpySurvival, spyCaughtCheck, handleEspionageIncident, calcSpySuccessChance } from '../espionage.js';
+import { checkSpySurvival, spyCaughtCheck, handleEspionageIncident, calcSpySuccessChance, validateBribery } from '../espionage.js';
 import { dispatchEvents, EVENT_RECEIVED_TECH, EVENT_CITY_TAKEN } from '../events.js';
 import { killUnit, captureCity, checkCivElimination, removeWorstWorker } from './helpers.js';
 import { spawnBarbarianUprising } from './barbarians.js';
 
 export function handleBribeUnit(state, prev, mapBase, action, civSlot) {
+  // Validate bribery preconditions (sole city defender, barbarians, etc.)
+  const bribeCheck = validateBribery(state, action.targetIndex, civSlot);
+  if (!bribeCheck.valid) {
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({ type: 'bribeFailed', civSlot, reason: bribeCheck.reason });
+    return;
+  }
   const spy = state.units[action.unitIndex];
   const target = state.units[action.targetIndex];
   const bCost = calcBribeCost(state, target, mapBase, civSlot);

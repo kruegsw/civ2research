@@ -10,8 +10,8 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, CARAVAN_HELP_WONDER } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS, TRADE } from './defs.js';
-import { resolveDirection, getDirection, isZOCBlocked } from './movement.js';
+import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS, TRADE, SPECIALIST_CYCLE, SPECIALIST_MIN_CITY_SIZE } from './defs.js';
+import { resolveDirection, getDirection, isZOCBlocked, checkRoadConnection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
 import { getGovernment } from './utils.js';
@@ -160,10 +160,13 @@ export function validateAction(gameState, mapBase, action, civSlot) {
         return `Workers (${workedTiles.length}) + specialists (${specialists.length}) != city size (${city.size})`;
       }
 
-      // Validate specialist types
+      // Validate specialist types and enforce cycling order
       for (const spec of specialists) {
         if (!VALID_SPECIALIST_TYPES.has(spec))
           return `Invalid specialist type: ${spec}`;
+        // Cities below SPECIALIST_MIN_CITY_SIZE can only have entertainers
+        if (city.size < SPECIALIST_MIN_CITY_SIZE && spec !== 'entertainer')
+          return `City size ${city.size} < ${SPECIALIST_MIN_CITY_SIZE}: only entertainers allowed`;
       }
 
       // Validate tile indices are in range and unique
@@ -459,6 +462,11 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (!homeCity || homeCity.size <= 0) return 'Home city not found';
       // Check max 3 trade routes on home city
       if ((homeCity.tradeRoutes?.length || 0) >= TRADE.MAX_ROUTES_PER_CITY) return 'Home city has max trade routes';
+      // Domestic trade requires road connection between home and destination city
+      if (homeCity.owner === tradeCity.owner) {
+        const roadConn = checkRoadConnection(mapBase, homeCity.gx, homeCity.gy, tradeCity.gx, tradeCity.gy);
+        if (roadConn === 0) return 'No road connection to destination';
+      }
       return null;
     }
 

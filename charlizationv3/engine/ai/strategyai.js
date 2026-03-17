@@ -19,6 +19,7 @@ import {
 } from '../defs.js';
 
 import { computeAiData, hasWonderEffect } from './data.js';
+import { checkSpaceRaceCapability } from '../spaceship.js';
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -803,6 +804,9 @@ export function assessStrategy(gameState, mapBase, civSlot, aiData, debugLog = n
   const diplomacyScore = assessDiplomacy(civSlot, threatLevel, aiData, gameState);
   const taxRateScore = assessTaxRate(civSlot, aiData, gameState);
 
+  // Space race capability assessment
+  const spaceRaceLevel = checkSpaceRaceCapability(gameState, civSlot);
+
   // ── Backward-compatible fields ──
   // Map the new numeric scores to the old string-based fields
   // so existing AI modules don't break.
@@ -837,7 +841,8 @@ export function assessStrategy(gameState, mapBase, civSlot, aiData, debugLog = n
 
   // Production focus
   let productionFocus;
-  if (economyScore <= 2) productionFocus = 'economy';
+  if (spaceRaceLevel >= 2) productionFocus = 'spaceship';
+  else if (economyScore <= 2) productionFocus = 'economy';
   else if (militaryPostureScore <= 2 || threat === 'high') productionFocus = 'military';
   else if (expansionDesired) productionFocus = 'growth';
   else if (cityDefenseScore >= 5) productionFocus = 'science';
@@ -868,6 +873,7 @@ export function assessStrategy(gameState, mapBase, civSlot, aiData, debugLog = n
     diplomacyScore,
     taxRateScore,
     threatLevel,
+    spaceRaceLevel,
 
     // Backward-compatible string fields
     threat,

@@ -4,7 +4,7 @@
 
 import { S, BUSY_ORDERS } from './state.js';
 import { clampViewport, drawViewport, blitPatchToViewport, invalidateFowCanvases } from './viewport.js';
-import { sfx, getDeathSfx, UNIT_ATK_SFX } from './sound.js';
+import { sfx, getDeathSfx, UNIT_ATK_SFX, getCombatAttackSound, getCombatResolutionSound } from './sound.js';
 import { showOverlayMessage, showConfirmDialog, showNameCityDialog } from './dialogs.js';
 import { Civ2Renderer } from './renderer.js';
 import { UNIT_NAMES, ORDER_KEYS, ORDER_NAMES, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_CARRY_CAP, TERRAIN_NAMES, TERRAIN_TRANSFORM } from '../engine/defs.js';
@@ -358,8 +358,8 @@ export function animateCombat(cr, onComplete) {
   const expX = tileX + 16;
   const expY = tileY + 8;
 
-  // Play attack sound on first frame
-  const atkSfx = UNIT_ATK_SFX[cr.attacker];
+  // Play attack sound on first frame (era-aware dispatch)
+  const atkSfx = getCombatAttackSound(cr.attacker, cr.defender);
   if (atkSfx) sfx(atkSfx);
 
   // Pre-load explosion frames
@@ -423,6 +423,11 @@ export function animateCombat(cr, onComplete) {
   // Final death explosion on loser
   function playDeathExplosion(expFrames) {
     const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
+    const loserDomain = (loser >= 27 && loser <= 31) || loser === 44 || loser === 45 ? 1
+      : (loser >= 32 && loser <= 43) ? 2 : 0;
+    const wasNavalOrAir = loserDomain !== 0;
+    const resSfx = getCombatResolutionSound(loser, wasNavalOrAir);
+    if (resSfx) sfx(resSfx);
     sfx(getDeathSfx(loser));
 
     if (!expFrames || expFrames.length === 0) {

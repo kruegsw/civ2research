@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { validateAction } from '../rules.js';
-import { getProductionCost, calcFoodSurplus, calcShieldProduction, calcCityTrade } from '../production.js';
+import { getProductionCost, calcFoodSurplus, calcShieldProduction, calcCityTrade, analyzeSurroundingTiles } from '../production.js';
 import { calcRushBuyCost } from '../happiness.js';
 import {
   UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
@@ -972,6 +972,16 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
       rawScore += 15;
       const closestDist = Math.min(...cityCtx.nearbyEnemies.map(e => e.dist));
       if (closestDist <= 3) rawScore += 10;
+    }
+  }
+
+  // ── Surrounding tile threat boost for defenders ──
+  // Enemy military in surrounding tiles (flag 0x04) increases defender urgency
+  if (def > 0 && domain === 0 && cityCtx.surroundingEnemyMilCount > 0) {
+    rawScore += cityCtx.surroundingEnemyMilCount * 3;
+    // At-war enemies (flag 0x20) further boost urgency
+    if (cityCtx.surroundingAtWarCount > 0) {
+      rawScore += cityCtx.surroundingAtWarCount * 5;
     }
   }
 
@@ -2190,6 +2200,16 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     }
   }
 
+  // Analyze surrounding tiles for enemy presence flags
+  const surroundingFlags = analyzeSurroundingTiles(gameState, mapBase, city.gx, city.gy, civSlot);
+  // Count tiles with enemy military (flag 0x04) and at-war enemy (flag 0x20)
+  let surroundingEnemyMilCount = 0;
+  let surroundingAtWarCount = 0;
+  for (const f of surroundingFlags) {
+    if (f & 0x04) surroundingEnemyMilCount++;
+    if (f & 0x20) surroundingAtWarCount++;
+  }
+
   return {
     nearbyEnemies,
     defenders,
@@ -2211,6 +2231,9 @@ function buildCityContext(city, gameState, mapBase, civSlot, strategy, ownCities
     unitTypeCountOnCont,
     contOurMilStrength,
     contEnemyMilStrength,
+    surroundingFlags,
+    surroundingEnemyMilCount,
+    surroundingAtWarCount,
   };
 }
 
