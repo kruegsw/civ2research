@@ -22,16 +22,17 @@ import {
   WONDER_PREREQS, WONDER_OBSOLETE,
   GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, GOVT_INDEX,
   GOVERNMENT_KEYS, LEADER_PERSONALITY, DIFFICULTY_KEYS,
+  GROWTH_CAP_BUILDINGS,
 } from '../defs.js';
 
 // ── Constants ──────────────────────────────────────────────────
 
 // Aqueduct/Sewer building IDs and their population thresholds
-// (COSMIC defaults: cities need Aqueduct to grow past 8, Sewer past 12)
-const AQUEDUCT_BUILDING_ID = 9;
-const SEWER_BUILDING_ID = 23;
-const AQUEDUCT_THRESHOLD = 8;
-const SEWER_THRESHOLD = 12;
+// Binary ref: FUN_00441a79 (city_growth_building_check)
+const AQUEDUCT_BUILDING_ID = GROWTH_CAP_BUILDINGS.AQUEDUCT.buildingId;
+const SEWER_BUILDING_ID = GROWTH_CAP_BUILDINGS.SEWER.buildingId;
+const AQUEDUCT_THRESHOLD = GROWTH_CAP_BUILDINGS.AQUEDUCT.defaultThreshold;
+const SEWER_THRESHOLD = GROWTH_CAP_BUILDINGS.SEWER.defaultThreshold;
 
 // Space ship part building IDs (SS Structural=35, SS Component=36, SS Module=37)
 const SS_PART_BUILDINGS = [35, 36, 37];

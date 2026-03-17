@@ -1556,11 +1556,14 @@ const Civ2CityDialog = {
   },
 
   // ── Extract city dialog sprites from ICONS.GIF, PEOPLE.GIF, and optionally CITY.GIF ──
+  // Binary ref: FUN_00449a0e @ block_00440000.c (load_icon_sprites)
+  // Sprite coordinates verified against engine/reference/sprite-tables.js
   extractSprites(iconsCtx, peopleCtx, cityGifCtx) {
     const CK = [[255, 0, 255, 15], [255, 159, 163, 15]];
     const cdSprites = {};
 
-    // Resource icons 14x14
+    // Resource icons 14x14 — ICONS_GIF_EXTRA.researchProgress (3 sets x 2 rows at y=290/305)
+    // and ICONS_GIF_EXTRA.globalWarmingProgress (y=320)
     const resIcons = {
       hunger:  {x:1, y:290}, shortage: {x:16, y:290}, corruption: {x:31, y:290},
       food:    {x:1, y:305}, shields:  {x:16, y:305}, trade:      {x:31, y:305},
@@ -1591,6 +1594,7 @@ const Civ2CityDialog = {
     cdSprites.arrowPrev = Civ2Renderer.extractSprite(iconsCtx, 246, 389, 18, 24, CK, false);
 
     // Improvement thumbnails 36x20, 5 rows x 8 cols, origin (343,1), stride 37x21
+    // Binary ref: ICONS_GIF.buildingIcons — startX=343, startY=1, w=36, h=20, colStep=37, rowStep=21, perRow=8, count=38
     cdSprites.improvements = {};
     for (let idx = 1; idx <= 38; idx++) {
       const col = (idx - 1) % 8;
@@ -1601,6 +1605,7 @@ const Civ2CityDialog = {
     }
 
     // Wonder thumbnails 36x20, 4 rows x 7 cols, origin (343,106), stride 37x21
+    // Binary ref: ICONS_GIF.wonderIcons — startX=343, startY=106, w=36, h=20, colStep=37, rowStep=21, perRow=7, count=28
     cdSprites.wonders = {};
     for (let idx = 0; idx < 28; idx++) {
       const col = idx % 7;
@@ -1610,7 +1615,8 @@ const Civ2CityDialog = {
       );
     }
 
-    // Citizen faces 27x30, 11 cols x 5 rows, origin (2,6), stride 28x31
+    // Citizen faces 27x30, 11 cols x 4 rows (+1 specialist row), origin (2,6), stride 28x31
+    // Binary ref: PEOPLE_GIF — moods=4, typesPerMood=11, w=27, h=30, startX=2, startY=6, colStep=28, rowStep=31
     const PKC = [[255, 0, 255, 15]];
     cdSprites.citizens = [];
     for (let row = 0; row < 5; row++) {

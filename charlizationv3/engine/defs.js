@@ -1183,3 +1183,142 @@ export const LEADER_TITLES_FEMALE = {
   anarchy: '', despotism: 'Despot', monarchy: 'Queen', communism: 'Comrade',
   fundamentalism: 'High Priestess', republic: 'Consul', democracy: 'President',
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// City epoch tech classifier (binary ref: FUN_00448f92)
+// Determines visual epoch for city sprites based on techs researched.
+// Used by renderer, city advisor, and any system needing era classification.
+// ═══════════════════════════════════════════════════════════════════
+export const CITY_EPOCH_TECHS = {
+  // Modern (epoch 3): Electronics (24) AND Automobile (5)
+  ELECTRONICS: 24,
+  AUTOMOBILE: 5,
+  // Industrial (epoch 2): Industrialization (37)
+  INDUSTRIALIZATION: 37,
+  // Renaissance (epoch 1): Invention (38) AND Philosophy (60)
+  INVENTION: 38,
+  PHILOSOPHY: 60,
+};
+
+/**
+ * Classify a civ's visual epoch based on its tech set.
+ * Binary ref: FUN_00448f92 @ block_00440000.c
+ * @param {Set|Array} civTechSet - set/array of tech IDs the civ has researched
+ * @returns {number} 0=Ancient, 1=Renaissance, 2=Industrial, 3=Modern
+ */
+export function getCityEpoch(civTechSet) {
+  if (!civTechSet) return 0;
+  const has = (id) => civTechSet instanceof Set ? civTechSet.has(id) : civTechSet.includes(id);
+  const T = CITY_EPOCH_TECHS;
+  if (has(T.ELECTRONICS) && has(T.AUTOMOBILE)) return 3;  // Modern
+  if (has(T.INDUSTRIALIZATION)) return 2;                  // Industrial
+  if (has(T.INVENTION) && has(T.PHILOSOPHY)) return 1;     // Renaissance
+  return 0;                                                // Ancient
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// City growth building check (binary ref: FUN_00441a79)
+// Determines which growth-cap building to auto-queue when a city
+// reaches the size threshold and doesn't have the building.
+// ═══════════════════════════════════════════════════════════════════
+export const GROWTH_CAP_BUILDINGS = {
+  AQUEDUCT: { buildingId: 9, defaultThreshold: 8 },
+  SEWER:    { buildingId: 23, defaultThreshold: 12 },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Trade route constants (binary ref: FUN_00440325, FUN_004403ec,
+// FUN_00440453, FUN_00440750)
+// ═══════════════════════════════════════════════════════════════════
+export const TRADE = {
+  MAX_ROUTES_PER_CITY: 3,
+
+  // Revenue formula: ((city1_trade + city2_trade) * (distance + 10)) / 24
+  DISTANCE_BONUS: 10,
+  REVENUE_DIVISOR: 24,
+
+  // Modifiers
+  INTER_CONTINENT_MULTIPLIER: 2,   // revenue doubled if different continents
+  INTRA_CIV_DIVISOR: 2,           // revenue halved if same civ
+
+  // Tech-based modifiers
+  EARLY_GAME_TURN_THRESHOLD: 200,  // before turn 200 with no Invention/Navigation: double
+  EARLY_GAME_TECH_1: 38,           // Invention
+  EARLY_GAME_TECH_2: 57,           // Navigation
+  REDUCTION_TECH_RAILROAD: 67,     // Railroad: -33% revenue
+  REDUCTION_TECH_FLIGHT: 30,       // Flight: -33% revenue
+
+  // Building effects
+  AIRPORT_BUILDING_ID: 32,         // Airport: halves distance for route evaluation
+  SUPERHIGHWAYS_BUILDING_ID: 25,   // Superhighways: adds to trade distance bonus
+
+  // Revenue post-processing
+  REVENUE_CAP: 30000,
+  REVENUE_FINAL_NUMERATOR: 2,      // final = (revenue * 2) / 3
+  REVENUE_FINAL_DENOMINATOR: 3,
+
+  // Commodity supply revenue multipliers (indexed by commodity type)
+  // half=[3,5,8,10], full=[9,11,12,13], 1.5x=[14], 2x=[15]
+  COMMODITY_HALF: new Set([3, 5, 8, 10]),
+  COMMODITY_FULL: new Set([9, 11, 12, 13]),
+  COMMODITY_150: new Set([14]),
+  COMMODITY_DOUBLE: new Set([15]),
+
+  // Diplomacy effect: trade improves relations by 10
+  DIPLOMACY_BONUS: 10,
+
+  // Food caravan: ((city_size + 1) * food_per_citizen) / 2
+  FOOD_CARAVAN_DIVISOR: 2,
+
+  // Commodity replacement scoring
+  REPLACEMENT_RANDOM_MASK: 7,       // rand() & 7 (0-7)
+  REPLACEMENT_SUPPLY_BONUS: 10,     // +10 if supply >= 0
+  REPLACEMENT_DEMAND_BONUS: 10,     // +10 if matches demand
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// City deletion constants (binary ref: delete_city @ 0x004413D1)
+// ═══════════════════════════════════════════════════════════════════
+export const DELETE_CITY_CONSTANTS = {
+  CITY_RADIUS_TILES: 45,           // full radius scan (inner 21 + outer 24)
+  INNER_RADIUS_TILES: 21,          // standard BFC
+  WONDER_COUNT: 28,
+  DESTROYED_WONDER_SENTINEL: 0xFFFE,  // -2 as u16: marks wonder city as destroyed
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Wonder production constants (binary ref: FUN_00441b11)
+// ═══════════════════════════════════════════════════════════════════
+export const WONDER_PRODUCTION = {
+  // Production item encoding: wonder IDs use offset 39 (building 1-38 + 1)
+  WONDER_ID_OFFSET: 39,
+
+  // Switching to a wonder from a non-wonder halves accumulated shields
+  SWITCH_PENALTY_DIVISOR: 2,
+
+  // Wonder era grouping: 7 wonders per era (for era-completion tracking)
+  WONDERS_PER_ERA: 7,
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Game startup / mode constants (binary ref: FUN_00444310)
+// ═══════════════════════════════════════════════════════════════════
+export const GAME_MODE = {
+  HOTSEAT: 4,
+  LAN: 3,
+  INTERNET: 5,
+  DIRECT_CONNECT: 6,
+  SCENARIO: 4,  // same as hotseat
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// City rendering sprite selection helpers
+// Binary ref: FUN_0056d289 (draw_city_sprite)
+// ═══════════════════════════════════════════════════════════════════
+
+// City size thresholds for sub-style selection (4 size classes per epoch)
+// Binary: if (size < 4) class=0, elif (<6) 1, elif (<8) 2, else 3
+export const CITY_SIZE_THRESHOLDS = [4, 6, 8];
+
+// Capital city gets +1 size class (capped at 3)
+export const CITY_CAPITAL_SIZE_BONUS = 1;

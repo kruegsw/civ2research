@@ -15,6 +15,7 @@ import {
   SUPPORT_EXEMPT_TYPES, SETTLER_TYPES,
   CITY_RADIUS_DOUBLED,
   COMMODITY_NAMES,
+  GROWTH_CAP_BUILDINGS,
 } from './defs.js';
 import {
   calcFoodSurplus, calcShieldProduction, getProductionCost,
@@ -114,14 +115,15 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
 
     // Aqueduct gate: can't grow past size 8 without Aqueduct (building 9)
     let growthBlocked = null;
-    if (newSize > 8 && !cityHasBuilding(city, 9)) {
-      newSize = 8;
+    // Binary ref: FUN_00441a79 (city_growth_building_check)
+    if (newSize > GROWTH_CAP_BUILDINGS.AQUEDUCT.defaultThreshold && !cityHasBuilding(city, GROWTH_CAP_BUILDINGS.AQUEDUCT.buildingId)) {
+      newSize = GROWTH_CAP_BUILDINGS.AQUEDUCT.defaultThreshold;
       newFood = growthThreshold - 1; // cap food just below threshold
       growthBlocked = 'needsAqueduct';
     }
     // Sewer System gate: can't grow past size 12 without Sewer System (building 23)
-    else if (newSize > 12 && !cityHasBuilding(city, 23)) {
-      newSize = 12;
+    else if (newSize > GROWTH_CAP_BUILDINGS.SEWER.defaultThreshold && !cityHasBuilding(city, GROWTH_CAP_BUILDINGS.SEWER.buildingId)) {
+      newSize = GROWTH_CAP_BUILDINGS.SEWER.defaultThreshold;
       newFood = growthThreshold - 1;
       growthBlocked = 'needsSewer';
     }

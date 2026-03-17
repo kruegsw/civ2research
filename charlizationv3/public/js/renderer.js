@@ -20,12 +20,75 @@
 //     Binary format offsets, tile data structure
 // ═══════════════════════════════════════════════════════════════════
 
-import { TERRAIN_NAMES, UNIT_NAMES, CIV_COLORS, ORDER_KEYS } from '../engine/defs.js';
+import { TERRAIN_NAMES, UNIT_NAMES, CIV_COLORS, ORDER_KEYS, getCityEpoch, CITY_SIZE_THRESHOLDS, CITY_CAPITAL_SIZE_BONUS } from '../engine/defs.js';
 
 const Civ2Renderer = {
 
   TW: 64,  // Tile width in pixels
   TH: 32,  // Tile height in pixels
+
+  // ── Sprite sheet layout constants (binary-verified) ──
+  // Binary ref: engine/reference/sprite-tables.js
+
+  // UNITS.GIF: 9 cols x 7 rows = 63 unit slots, 65x49 cell stride, 64x48 sprite
+  // Shield templates at right margin: backShield1 (586,1,12,20), backShield2 (599,1,12,20)
+  UNITS_LAYOUT: {
+    columns: 9, rows: 7, totalSlots: 63,
+    cellStride: 65, rowStride: 49,
+    spriteWidth: 64, spriteHeight: 48,
+    startX: 1, startY: 1,
+    shield: {
+      backShield1: { x: 586, y: 1, w: 12, h: 20 },
+      backShield2: { x: 599, y: 1, w: 12, h: 20 },
+      hpShield:    { x: 597, y: 30, w: 12, h: 20 },
+    },
+    blueMarkerPaletteIndex: 4,
+  },
+
+  // CITIES.GIF: 6 epochs x 4 styles x 2 wall states, 65x49 cell stride, 64x48 sprite
+  CITIES_LAYOUT: {
+    epochs: 6, stylesPerEpoch: 4, wallStates: 2,
+    cellStride: 65, rowStride: 49,
+    spriteWidth: 64, spriteHeight: 48,
+    unwalledStartX: 1, walledStartX: 334, startY: 39,
+    flags: {
+      frontRowY: 425, backRowY: 448,
+      width: 14, height: 22, spacing: 15, count: 8, startX: 1,
+    },
+    fortify:     { x: 143, y: 423, w: 64, h: 48 },
+    fortressAlt: { x: 208, y: 423, w: 64, h: 48 },
+    airbase:     { x: 273, y: 423, w: 64, h: 48 },
+    airbaseFull: { x: 338, y: 423, w: 64, h: 48 },
+  },
+
+  // ICONS.GIF government icons: 8 icons at (1, 356, 32, 32) stepping by 33
+  ICONS_GOV: {
+    startX: 1, startY: 356, width: 32, height: 32, colStep: 33, count: 8,
+  },
+
+  // ICONS.GIF explosion/battle animation frames: 8 frames at (1+33*i, 356, 32, 32)
+  ICONS_EXPLOSION: {
+    startX: 1, startY: 356, width: 32, height: 32, colStep: 33, count: 8,
+  },
+
+  // ICONS.GIF score bars: 31x96 at (311, 1) and (311, 98)
+  ICONS_SCORE_BARS: {
+    bar1: { x: 311, y: 1, w: 31, h: 96 },
+    bar2: { x: 311, y: 98, w: 31, h: 96 },
+  },
+
+  // ICONS.GIF gridlines and view piece overlay sprites
+  ICONS_OVERLAYS: {
+    viewPiece:   { x: 199, y: 256, w: 64, h: 32 },
+    gridlines:   { x: 183, y: 430, w: 64, h: 32 },
+    gridVisible: { x: 248, y: 430, w: 64, h: 32 },
+  },
+
+  // ICONS.GIF pollution/nuclear markers
+  ICONS_MARKERS: {
+    pollution: { x: 350, y: 255, w: 64, h: 32 },
+    nuclear:   { x: 350, y: 288, w: 64, h: 32 },
+  },
 
   // ── Terrain sprite sheet layout ──
   // Binary ref: FUN_00570780 @ block_00570000.c (sprited_process_terrain1)
@@ -1726,22 +1789,10 @@ const Civ2Renderer = {
     return (mx >= 0 && my >= 0) ? { x: mx, y: my } : null;
   },
 
-  // Epoch tech IDs (from RULES.TXT advance order)
-  EPOCH_TECHS: {
-    INVENTION: 38, PHILOSOPHY: 60,       // Renaissance (epoch 1)
-    INDUSTRIALIZATION: 37,               // Industrial (epoch 2)
-    AUTOMOBILE: 5, ELECTRONICS: 24,      // Modern (epoch 3)
-  },
-
-  // Determine epoch for a civ from its tech set
-  // Returns 0=Ancient, 1=Renaissance, 2=Industrial, 3=Modern
+  // Epoch tech IDs — delegates to shared getCityEpoch() in engine/defs.js
+  // Binary ref: FUN_00448f92 @ block_00440000.c
   _getEpoch(civTechSet) {
-    if (!civTechSet) return 0;
-    const T = this.EPOCH_TECHS;
-    if (civTechSet.has(T.AUTOMOBILE) && civTechSet.has(T.ELECTRONICS)) return 3;
-    if (civTechSet.has(T.INDUSTRIALIZATION)) return 2;
-    if (civTechSet.has(T.INVENTION) && civTechSet.has(T.PHILOSOPHY)) return 1;
-    return 0;
+    return getCityEpoch(civTechSet);
   },
 
   // Get city sprite row from epoch and architectural style
