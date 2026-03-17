@@ -1545,8 +1545,12 @@ export function calcAttitudeScore(state, aiCiv, targetCiv) {
   }
 
   // Phase 11: Wonder effects
+  // Great Wall (wonder 6) or United Nations (wonder 24): strong diplomatic deterrent
+  // These wonders block AI war declarations (shouldDeclareWar = 0) and impose
+  // an attitude penalty of -10, in addition to the score halving/reduction.
   if (civHasWonder(state, targetCiv, 6) || civHasWonder(state, targetCiv, 24)) {
     if (score < 1) score -= 1; else score >>= 1;
+    score -= 10;
   }
   if (civHasWonder(state, aiCiv, 20)) score += 1;
   if (civHasWonder(state, targetCiv, 20)) {
@@ -1567,6 +1571,19 @@ export function calcAttitudeScore(state, aiCiv, targetCiv) {
   if (!haveContact(state, aiCiv, targetCiv)) score = 0;
 
   return score;
+}
+
+/**
+ * Check if target civ's wonders block AI war declarations.
+ * Great Wall (wonder 6) or United Nations (wonder 24) prevent AI from
+ * declaring war (shouldDeclareWar = false).
+ *
+ * @param {object} state - game state
+ * @param {number} targetCiv - the civ being considered for war
+ * @returns {boolean} true if war declaration should be blocked
+ */
+export function shouldBlockWarDeclaration(state, targetCiv) {
+  return civHasWonder(state, targetCiv, 6) || civHasWonder(state, targetCiv, 24);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1655,4 +1672,59 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
   }
 
   return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AI Patience Threshold — how many turns an AI will tolerate
+// provocations before escalating (war declaration, etc.)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate AI patience threshold toward a target civ.
+ * Higher patience = more tolerant of provocations before declaring war.
+ *
+ * Factors: base patience (2), attitude, Eiffel Tower (wonder 20),
+ * and current treaty status.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ computing patience
+ * @param {number} targetCiv - civ being evaluated
+ * @returns {number} patience threshold (0+)
+ */
+export function calcPatienceThreshold(state, aiCiv, targetCiv) {
+  let patience = 2;
+  const attitude = getAttitude(state, aiCiv, targetCiv); // 0-100 scale
+  if (attitude < 25) patience += 1;
+  if (attitude > 60) patience -= 1;
+  if (civHasWonder(state, aiCiv, 20)) patience += 1; // Eiffel Tower
+  const treaty = getTreaty(state, aiCiv, targetCiv);
+  if (treaty === 'peace') patience += 1;
+  if (treaty === 'alliance') patience += 2;
+  return Math.max(0, patience);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Tribute Demand — how much gold an AI demands from a target civ
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate tribute demand amount from AI toward a target civ.
+ * Based on difficulty level, tech desire weight, and target's treasury.
+ * Rounded to nearest 50 gold.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ making the demand
+ * @param {number} targetCiv - civ being demanded from
+ * @param {number} techDesire - weight of the tech desire (0-100+)
+ * @returns {number} tribute amount in gold (multiple of 50)
+ */
+export function calcTributeDemand(state, aiCiv, targetCiv, techDesire) {
+  const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
+  let tribute = Math.floor((diffIdx + 1) * techDesire / 32);
+  tribute = Math.max(0, Math.min(20, tribute)) * 50;
+  const treasury = state.civs?.[targetCiv]?.treasury || 0;
+  if (tribute > treasury && tribute < treasury * 2 && treasury > 49) {
+    tribute = Math.floor(treasury / 50) * 50;
+  }
+  return tribute;
 }

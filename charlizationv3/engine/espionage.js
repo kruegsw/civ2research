@@ -13,7 +13,7 @@
 //   FUN_004c9ebd  — spy_sabotage_unit (784B)
 // ═══════════════════════════════════════════════════════════════════
 
-import { UNIT_COSTS, UNIT_HP, ADVANCE_NAMES } from './defs.js';
+import { UNIT_COSTS, UNIT_HP, ADVANCE_NAMES, DIFFICULTY_KEYS } from './defs.js';
 import { getGovernment, cityHasBuilding, hasWonderEffect } from './utils.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -534,4 +534,499 @@ export function validateBribery(state, targetIndex, spyCiv) {
   }
 
   return { valid: true, reason: '' };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Mission Execution Stubs — J.2 Phase 2
+//
+// Each mission function: checks spy survival via calcSpySuccessChance,
+// applies the effect on success, handles diplomatic incident via
+// handleEspionageIncident, teleports surviving spy, and returns events.
+//
+// Binary ref: FUN_004c6bf5 (spy_enters_city) — giant switch statement
+// with cases 0-7 for each mission type.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Find the spy unit index on a city tile for a given civ.
+ * @returns {number} unit index or -1
+ */
+function findSpyOnCity(state, spyCiv, cityIndex) {
+  const city = state.cities[cityIndex];
+  if (!city) return -1;
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.owner === spyCiv && u.gx === city.gx && u.gy === city.gy && u.gx >= 0 &&
+        (u.type === 46 || u.type === 47)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Mission 0: Establish Embassy.
+ * No detection checks. Always succeeds. Diplomat/spy is consumed (diplomat)
+ * or survives (spy). Sets embassy flag between civs.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} targetCiv - civ owning the target city
+ * @param {number} cityIndex - index of target city
+ * @returns {object[]} events
+ */
+export function establishEmbassy(state, mapBase, spyCiv, targetCiv, cityIndex) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.owner !== targetCiv) {
+    events.push({ type: 'espionageFailed', mission: 'embassy', reason: 'Invalid city' });
+    return events;
+  }
+
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'embassy', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+
+  // Embassy: no detection checks (case 0 in binary)
+  // Set embassy flag
+  if (!state.embassies) state.embassies = {};
+  const embKey = `${spyCiv}-${targetCiv}`;
+  state.embassies = { ...state.embassies, [embKey]: true };
+
+  events.push({
+    type: 'embassyEstablished', spyCiv, targetCiv,
+    cityName: city.name, cityIndex,
+  });
+
+  // Spy survival (diplomats always consumed, spies survive)
+  const survival = checkSpySurvival(spy, 0, state.rng);
+  if (!survival.survives) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx });
+  } else {
+    if (survival.becomesVeteran && !spy.veteran) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, veteran: true };
+    }
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  return events;
+}
+
+/**
+ * Mission 1: Investigate City.
+ * No detection checks. Reveals city production, buildings, garrison.
+ * Diplomat consumed; spy survives.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} cityIndex - index of target city
+ * @returns {object[]} events
+ */
+export function investigateCity(state, mapBase, spyCiv, cityIndex) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0) {
+    events.push({ type: 'espionageFailed', mission: 'investigate', reason: 'Invalid city' });
+    return events;
+  }
+
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'investigate', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+
+  // Investigation: no detection checks (case 1 in binary)
+  // Gather intelligence
+  const garrison = state.units.filter(u =>
+    u.gx === city.gx && u.gy === city.gy && u.owner === city.owner && u.gx >= 0);
+
+  events.push({
+    type: 'cityInvestigated', spyCiv, cityIndex,
+    cityName: city.name, owner: city.owner,
+    production: city.itemInProduction,
+    buildings: city.buildings ? [...city.buildings] : [],
+    garrisonCount: garrison.length,
+    size: city.size,
+  });
+
+  // Spy survival
+  const survival = checkSpySurvival(spy, 0, state.rng);
+  if (!survival.survives) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx });
+  } else {
+    if (survival.becomesVeteran && !spy.veteran) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, veteran: true };
+    }
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  return events;
+}
+
+/**
+ * Mission 2: Steal Technology.
+ * 1 detection check. On success, transfers a random tech from target to spy's civ.
+ * Triggers diplomatic incident.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} targetCiv - civ owning the target city
+ * @param {number} cityIndex - index of target city
+ * @param {object} rng - random number generator
+ * @returns {object[]} events
+ */
+export function stealTech(state, mapBase, spyCiv, targetCiv, cityIndex, rng) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.owner !== targetCiv) {
+    events.push({ type: 'espionageFailed', mission: 'stealTech', reason: 'Invalid city' });
+    return events;
+  }
+
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'stealTech', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+  const effectiveRng = rng || state.rng;
+
+  // Detection check (case 2: 1 check)
+  const detectionResult = calcSpySuccessChance(spy, city, 'steal', state);
+  if (detectionResult === 0.0) {
+    // Spy caught
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'stealTech', cityName: city.name });
+    handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+    return events;
+  }
+
+  // Find a tech the target has that spy's civ doesn't
+  const spyTechs = state.civTechs?.[spyCiv] || new Set();
+  const targetTechs = state.civTechs?.[targetCiv] || new Set();
+  const stealable = [];
+  for (const tech of targetTechs) {
+    if (!spyTechs.has(tech)) stealable.push(tech);
+  }
+
+  if (stealable.length === 0) {
+    events.push({ type: 'stealTechFailed', spyCiv, targetCiv, reason: 'No stealable techs' });
+  } else {
+    const techId = stealable[effectiveRng ? effectiveRng.nextInt(stealable.length) : Math.floor(Math.random() * stealable.length)];
+    // Grant the tech to spy's civ
+    if (!state.civTechs[spyCiv]) state.civTechs[spyCiv] = new Set();
+    state.civTechs[spyCiv] = new Set(state.civTechs[spyCiv]);
+    state.civTechs[spyCiv].add(techId);
+    events.push({
+      type: 'techStolen', spyCiv, targetCiv, techId,
+      techName: ADVANCE_NAMES[techId] || `Tech ${techId}`,
+      cityName: city.name,
+    });
+  }
+
+  // Diplomatic incident
+  handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+
+  // Spy survival
+  const survival = checkSpySurvival(spy, 0, effectiveRng);
+  if (!survival.survives) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx });
+  } else {
+    if (survival.becomesVeteran && !spy.veteran) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, veteran: true };
+    }
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  return events;
+}
+
+/**
+ * Mission 3: Sabotage Production.
+ * 1 detection check. On success, resets target city's shields to 0.
+ * Triggers diplomatic incident.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} cityIndex - index of target city
+ * @param {object} rng - random number generator
+ * @returns {object[]} events
+ */
+export function sabotageProduction(state, mapBase, spyCiv, cityIndex, rng) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0) {
+    events.push({ type: 'espionageFailed', mission: 'sabotageProduction', reason: 'Invalid city' });
+    return events;
+  }
+
+  const targetCiv = city.owner;
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'sabotageProduction', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+  const effectiveRng = rng || state.rng;
+
+  // Detection check (case 3: 1 check)
+  const detectionResult = calcSpySuccessChance(spy, city, 'sabotageProduction', state);
+  if (detectionResult === 0.0) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'sabotageProduction', cityName: city.name });
+    handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+    return events;
+  }
+
+  // Sabotage: reset shields to 0
+  state.cities = [...state.cities];
+  state.cities[cityIndex] = { ...city, shieldsStored: 0 };
+
+  events.push({
+    type: 'productionSabotaged', spyCiv, targetCiv, cityIndex,
+    cityName: city.name,
+    production: city.itemInProduction,
+  });
+
+  // Diplomatic incident
+  handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+
+  // Spy survival
+  const survival = checkSpySurvival(spy, 1, effectiveRng); // hard mission
+  if (!survival.survives) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx });
+  } else {
+    if (survival.becomesVeteran && !spy.veteran) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, veteran: true };
+    }
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  return events;
+}
+
+/**
+ * Mission 6: Poison Water Supply.
+ * 1 detection check. On success, reduces city size by 1.
+ * Triggers diplomatic incident.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} cityIndex - index of target city
+ * @param {object} rng - random number generator
+ * @returns {object[]} events
+ */
+export function poisonWater(state, mapBase, spyCiv, cityIndex, rng) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0) {
+    events.push({ type: 'espionageFailed', mission: 'poisonWater', reason: 'Invalid city' });
+    return events;
+  }
+
+  const targetCiv = city.owner;
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'poisonWater', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+  const effectiveRng = rng || state.rng;
+
+  // Detection check (case 6: 1 check)
+  const detectionResult = calcSpySuccessChance(spy, city, 'poison', state);
+  if (detectionResult === 0.0) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'poisonWater', cityName: city.name });
+    handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+    return events;
+  }
+
+  // Poison: reduce city size by 1 (minimum 1)
+  const newSize = Math.max(1, city.size - 1);
+  state.cities = [...state.cities];
+  state.cities[cityIndex] = { ...city, size: newSize };
+
+  events.push({
+    type: 'waterPoisoned', spyCiv, targetCiv, cityIndex,
+    cityName: city.name,
+    oldSize: city.size, newSize,
+  });
+
+  // Diplomatic incident
+  handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+
+  // Spy survival
+  const survival = checkSpySurvival(spy, 1, effectiveRng); // hard mission
+  if (!survival.survives) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx });
+  } else {
+    if (survival.becomesVeteran && !spy.veteran) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, veteran: true };
+    }
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  return events;
+}
+
+/**
+ * Mission 4: Incite Revolt.
+ * Cost-based (no detection checks). On success, transfers city ownership
+ * to spy's civ. Uses calcInciteCostEnhanced for cost validation.
+ * Triggers diplomatic incident.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} cityIndex - index of target city
+ * @param {object} rng - random number generator
+ * @returns {object[]} events
+ */
+export function inciteRevolt(state, mapBase, spyCiv, cityIndex, rng) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0) {
+    events.push({ type: 'espionageFailed', mission: 'inciteRevolt', reason: 'Invalid city' });
+    return events;
+  }
+
+  const targetCiv = city.owner;
+  if (targetCiv === spyCiv) {
+    events.push({ type: 'espionageFailed', mission: 'inciteRevolt', reason: 'Cannot incite own city' });
+    return events;
+  }
+
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'inciteRevolt', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+  const effectiveRng = rng || state.rng;
+
+  // Calculate cost
+  const costResult = calcInciteCostEnhanced(state, city, mapBase, spy);
+  if (costResult.blocked) {
+    events.push({ type: 'inciteBlocked', spyCiv, targetCiv, cityName: city.name, reason: 'Palace too close' });
+    return events;
+  }
+
+  // Check if spy's civ can afford it
+  const spyTreasury = state.civs?.[spyCiv]?.treasury || 0;
+  if (spyTreasury < costResult.cost) {
+    events.push({ type: 'inciteTooExpensive', spyCiv, targetCiv, cityName: city.name, cost: costResult.cost, treasury: spyTreasury });
+    return events;
+  }
+
+  // Deduct cost
+  state.civs = [...state.civs];
+  state.civs[spyCiv] = { ...state.civs[spyCiv], treasury: spyTreasury - costResult.cost };
+
+  // Transfer city ownership
+  state.cities = [...state.cities];
+  state.cities[cityIndex] = { ...city, owner: spyCiv };
+
+  // Transfer garrison units to spy's civ
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.gx === city.gx && u.gy === city.gy && u.owner === targetCiv && u.gx >= 0) {
+      state.units = [...state.units];
+      state.units[i] = { ...u, owner: spyCiv };
+    }
+  }
+
+  events.push({
+    type: 'cityRevolt', spyCiv, targetCiv, cityIndex,
+    cityName: city.name, cost: costResult.cost,
+  });
+
+  // Diplomatic incident
+  handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+
+  // Spy survival (no detection checks for incite, but spy is consumed)
+  const survival = checkSpySurvival(spy, 0, effectiveRng);
+  if (!survival.survives) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx });
+  } else {
+    if (survival.becomesVeteran && !spy.veteran) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, veteran: true };
+    }
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  return events;
+}
+
+/**
+ * Mission 7: Counter-Espionage.
+ * Sets a flag on the city that increases spy detection for enemy spies.
+ * No detection checks. Spy remains at city.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} cityIndex - index of own city to protect
+ * @returns {object[]} events
+ */
+export function counterEspionage(state, mapBase, spyCiv, cityIndex) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0 || city.owner !== spyCiv) {
+    events.push({ type: 'espionageFailed', mission: 'counterEspionage', reason: 'Invalid or not own city' });
+    return events;
+  }
+
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'counterEspionage', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+
+  // Set counter-espionage flag on the city
+  state.cities = [...state.cities];
+  state.cities[cityIndex] = { ...city, counterEspionage: true, counterEspionageCiv: spyCiv };
+
+  events.push({
+    type: 'counterEspionageSet', spyCiv, cityIndex, cityName: city.name,
+  });
+
+  // Spy is consumed (stationed for counter-espionage duty)
+  state.units = [...state.units];
+  state.units[spyIdx] = { ...spy, gx: -1, gy: -1, orders: 'counterEspionage' };
+  events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx, reason: 'counter-espionage duty' });
+
+  return events;
 }

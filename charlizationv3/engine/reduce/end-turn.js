@@ -679,6 +679,34 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push(...diploEvents);
     }
+
+    // ── Council meeting: every 50 turns (min turn 2) ──
+    // Formula: (turn-1) % 50 == 0, starting from turn 2
+    if (turnNumber >= 2 && (turnNumber - 1) % 50 === 0 && state.councilEnabled !== false) {
+      // Select the largest city, weighted by size (Palace doubles weight)
+      let councilCi = -1;
+      let councilWeight = -1;
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (!c || c.size <= 0) continue;
+        let weight = c.size;
+        if (c.buildings && c.buildings.has(1)) weight *= 2; // Palace doubles weight
+        if (weight > councilWeight) {
+          councilWeight = weight;
+          councilCi = ci;
+        }
+      }
+      if (councilCi >= 0) {
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'councilMeeting',
+          cityIndex: councilCi,
+          cityName: state.cities[councilCi].name,
+          civSlot: state.cities[councilCi].owner,
+          turn: turnNumber,
+        });
+      }
+    }
   }
 
   // ── K.3: Track consecutive peace turns per civ (for score formula) ──

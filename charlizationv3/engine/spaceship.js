@@ -13,6 +13,9 @@
 import { WONDER_NAMES, WONDER_OBSOLETE, DIFFICULTY_KEYS, ADVANCE_NAMES } from './defs.js';
 import { getNumericYear } from './year.js';
 
+// ── Retirement score difficulty multipliers (from binary) ──
+const DIFFICULTY_MULTIPLIER = { 0: 4, 1: 5, 2: 6, 3: 8, 4: 10, 5: 13 };
+
 // ── Spaceship part building IDs ──
 const SS_STRUCTURAL = 35;  // building ID for SS Structural
 const SS_COMPONENT  = 36;  // building ID for SS Component
@@ -328,6 +331,45 @@ export function calcCivScore(state, civSlot) {
 }
 
 /**
+ * Calculate retirement score for a civ — used when the game ends
+ * at year 2020 or the player retires.
+ *
+ * Formula (from binary):
+ *   difficultyMultiplier table: {0:4, 1:5, 2:6, 3:8, 4:10, 5:13}
+ *   rawScore = (diffMultiplier * max(civilizationScore, gameScore)) / 100
+ *   Rank = largest rank where (rank+1)^2 / 3 <= rawScore, maxRank=23
+ *
+ * @param {object} state - game state
+ * @param {number} civSlot
+ * @returns {{ rawScore: number, rank: number, civScore: number }}
+ */
+export function calcRetirementScore(state, civSlot) {
+  const scoreBreakdown = calcCivScore(state, civSlot);
+  const civScore = scoreBreakdown.total;
+
+  // gameScore could be a separate metric; for now use civScore as both
+  // (the binary distinguishes "civilization score" from "game score" but
+  // both are computed from overlapping formulas)
+  const gameScore = civScore;
+
+  const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain'));
+  const diffMultiplier = DIFFICULTY_MULTIPLIER[diffIdx] ?? 4;
+  const rawScore = Math.floor((diffMultiplier * Math.max(civScore, gameScore)) / 100);
+
+  // Rank formula: largest rank where (rank+1)^2 / 3 <= rawScore, maxRank=23
+  let rank = 0;
+  for (let r = 0; r <= 23; r++) {
+    if (Math.floor(((r + 1) * (r + 1)) / 3) <= rawScore) {
+      rank = r;
+    } else {
+      break;
+    }
+  }
+
+  return { rawScore, rank, civScore };
+}
+
+/**
  * Check game end conditions — ported from FUN_0048aedc.
  *
  * K.4: Added year 2000 AD warning event (game continues), year 2020 AD
@@ -394,18 +436,18 @@ export function checkGameEndConditions(state) {
     }
   }
 
-  // ── 3. Year 2000 AD warning (game continues) ──
+  // ── 3. Year 2000 AD: plan retirement prompt (game continues) ──
   const year = getNumericYear(turnNum);
   if (year >= 2000 && year < 2020 && !state.year2000Warned) {
     state.year2000Warned = true;
     if (!state.turnEvents) state.turnEvents = [];
     state.turnEvents.push({
       type: 'year2000Warning', year,
-      message: 'The year 2000 approaches! The game will end in 2020 AD.',
+      message: 'The year 2000 approaches! You may retire now or continue until 2020 AD.',
     });
   }
 
-  // ── 4. Retirement: year >= 2020 AD ──
+  // ── 4. Year 2020 AD: forced retirement ──
   if (year >= 2020) {
     // Find the civ with the highest score
     let bestCiv = -1, bestScore = -1;
@@ -424,6 +466,42 @@ export function checkGameEndConditions(state) {
       year,
       score: bestScore,
     };
+  }
+
+  // ── 5. Scenario end: warning 5 turns before, end at scenario turn limit ──
+  const scenarioTurnLimit = state.scenarioTurnLimit ?? -1;
+  if (scenarioTurnLimit > 0) {
+    const turnsRemaining = scenarioTurnLimit - turnNum;
+
+    // Warning 5 turns before end
+    if (turnsRemaining <= 5 && turnsRemaining > 0 && !state.scenarioEndWarned) {
+      state.scenarioEndWarned = true;
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'scenarioEndWarning',
+        turnsRemaining,
+        message: `The scenario will end in ${turnsRemaining} turn${turnsRemaining !== 1 ? 's' : ''}!`,
+      });
+    }
+
+    // Scenario end
+    if (turnNum >= scenarioTurnLimit) {
+      let bestCiv = -1, bestScore = -1;
+      for (let c = 1; c <= 7; c++) {
+        if (!(state.civsAlive & (1 << c))) continue;
+        const score = calcCivScore(state, c);
+        if (score.total > bestScore) {
+          bestScore = score.total;
+          bestCiv = c;
+        }
+      }
+      return {
+        ended: true,
+        winner: bestCiv,
+        reason: 'scenarioEnd',
+        score: bestScore,
+      };
+    }
   }
 
   return null;

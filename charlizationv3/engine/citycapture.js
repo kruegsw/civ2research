@@ -654,21 +654,109 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   // ── Rehome old owner's units that were based here ──
   rehomeOrDisbandUnits(state, cityIndex, oldOwner, mapBase);
 
-  // ── Palace relocation for old owner ──
+  // ── Palace relocation for old owner (capital escape scoring) ──
+  // Binary ref: FUN_0057b5df — capital escape attempt
+  // Score formula: size*3 - distance + stackCount*4
+  // Bonuses: Cure for Cancer(27)→×3/2, City Walls(8) or Great Wall(6)→×2,
+  //          same continent→+2, coastal→+3, Adam Smith(17)→×3
   if (hadPalace && !civilWarResult?.success) {
-    // If civil war didn't happen (or failed), relocate palace
-    let bestPalaceCi = -1, bestPalaceSize = 0;
+    const remainingCount = countCities(state, oldOwner);
+
+    // Capital escape requires 4+ remaining cities, candidate size > 7
+    // and candidate size*3 > captured city size*2
+    let bestPalaceCi = -1;
+    let bestScore = -Infinity;
+    const capturedContinent = mapBase.getBodyId ? mapBase.getBodyId(cityGx, cityGy) : -1;
+
     for (let ci = 0; ci < state.cities.length; ci++) {
       const c = state.cities[ci];
-      if (c.owner === oldOwner && c.size > 0 && ci !== cityIndex) {
-        if (c.size > bestPalaceSize) { bestPalaceSize = c.size; bestPalaceCi = ci; }
+      if (c.owner !== oldOwner || c.size <= 0 || ci === cityIndex) continue;
+
+      // Basic eligibility: size > 7 and size*3 > capturedSize*2
+      if (remainingCount >= 4 && c.size > 7 && c.size * 3 > city.size * 2) {
+        // Full scoring formula from binary
+        const dist = tileDist(c.gx, c.gy, cityGx, cityGy, mapBase.mw, mapBase.wraps);
+
+        // Count military units stacked at this city
+        let stackCount = 0;
+        for (const u of state.units) {
+          if (u.owner === oldOwner && u.gx === c.gx && u.gy === c.gy && u.gx >= 0 &&
+              (UNIT_ATK[u.type] || 0) > 0) {
+            stackCount++;
+          }
+        }
+
+        let score = c.size * 3 - dist + stackCount * 4;
+
+        // Cure for Cancer (wonder 27): ×3/2
+        if (civHasWonder(state, oldOwner, 27)) {
+          score = Math.floor(score * 3 / 2);
+        }
+        // City Walls (building 8) or Great Wall (wonder 6): ×2
+        if ((c.buildings && c.buildings.has(8)) || hasWonderEffect(state, oldOwner, 6)) {
+          score *= 2;
+        }
+        // Same continent bonus: +2; different continent: /2 penalty
+        if (mapBase.getBodyId) {
+          const cContinent = mapBase.getBodyId(c.gx, c.gy);
+          if (cContinent === capturedContinent) {
+            score += 2;
+          } else {
+            score = Math.floor(score / 2);
+          }
+        }
+        // Coastal bonus: +3 (approximate — check if city is near ocean)
+        if (mapBase.getTerrain) {
+          const parC2 = c.gy & 1;
+          let isCoastal = false;
+          for (let ri = 0; ri < 8 && !isCoastal; ri++) {
+            const [ddx2, ddy2] = CITY_RADIUS_DOUBLED[ri];
+            const parT2 = ((c.gy + ddy2) % 2 + 2) % 2;
+            const tgx2 = c.gx + ((parC2 + ddx2 - parT2) >> 1);
+            const tgy2 = c.gy + ddy2;
+            const wgx2 = mapBase.wraps ? ((tgx2 % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx2;
+            if (tgy2 >= 0 && tgy2 < mapBase.mh && wgx2 >= 0 && wgx2 < mapBase.mw) {
+              if (mapBase.getTerrain(wgx2, tgy2) === 10) isCoastal = true;
+            }
+          }
+          if (isCoastal) score += 3;
+        }
+        // Adam Smith's Trading Co. (wonder 17): ×3
+        if (civHasWonder(state, oldOwner, 17)) {
+          score *= 3;
+        }
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestPalaceCi = ci;
+        }
+      } else {
+        // Simple fallback for cities that don't meet escape criteria:
+        // just pick the largest city
+        const simpleScore = c.size;
+        if (bestPalaceCi < 0 || simpleScore > bestScore) {
+          // Only use simple scoring if no escape-eligible candidate found yet
+          if (bestScore < 0) {
+            bestScore = simpleScore;
+            bestPalaceCi = ci;
+          }
+        }
       }
     }
+
     if (bestPalaceCi >= 0) {
       const palaceCity = state.cities[bestPalaceCi];
       const palaceBuildings = new Set(palaceCity.buildings);
       palaceBuildings.add(1);
       state.cities[bestPalaceCi] = { ...palaceCity, buildings: palaceBuildings, hasPalace: true };
+
+      if (bestScore >= 1000) {
+        events.push({
+          type: 'capitalEscape', civSlot: oldOwner,
+          cityName: palaceCity.name, cityIndex: bestPalaceCi,
+          escapeScore: bestScore,
+        });
+      }
     }
   }
 

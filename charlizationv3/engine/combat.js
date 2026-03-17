@@ -35,7 +35,7 @@ import {
   UNIT_PIKEMAN_BONUS, UNIT_AEGIS_BONUS, UNIT_ANTI_AIR,
   UNIT_SUBMARINE, DIFFICULTY_KEYS, UNIT_FUEL, UNIT_NEGATES_WALLS,
 } from './defs.js';
-import { hasWonderEffect } from './utils.js';
+import { hasWonderEffect, civHasWonder } from './utils.js';
 
 // Siege units: FP forced to 1 when defending (Catapult=23, Cannon=24, Artillery=25, Howitzer=26)
 const SIEGE_DEFENDING_FP1 = new Set([23, 24, 25, 26]);
@@ -553,4 +553,39 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   return { attackerWins, atkHpLost, defHpLost, atkVeteranPromo, defVeteranPromo,
     rounds, atkMaxHp, defMaxHp, atkFp, defFp, atkStartHp, defStartHp,
     submarineRetreated, fortressRetreat, barbarianGold, treatyViolation };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Senate Override — Pre-combat check for Republic/Democracy
+//
+// In Republic and Democracy governments, the Senate can block
+// offensive attacks against civs you're at peace with. The UN
+// wonder (wonder 24) guarantees senate intervention (always blocks).
+//
+// This is a pre-combat check, not part of combat resolution itself.
+// The caller should check this BEFORE initiating combat and present
+// the player with the senate override dialog.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if the Senate will override (block) an attack.
+ * Republic and Democracy governments have senate oversight.
+ * The United Nations wonder (wonder 24) guarantees senate intervention.
+ *
+ * @param {object} state - game state
+ * @param {number} attackerCiv - civ attempting to attack
+ * @returns {boolean} true if senate blocks the attack
+ */
+export function checkSenateOverride(state, attackerCiv) {
+  const govt = state.civs?.[attackerCiv]?.government;
+  if (govt !== 'republic' && govt !== 'democracy') return false;
+  // UN wonder (wonder 24) always triggers senate intervention
+  const hasUN = civHasWonder(state, attackerCiv, 24);
+  if (hasUN) return true;
+  // Simplified: in full implementation, the senate's decision would
+  // depend on attitude toward the target civ and a random roll.
+  // For now, return false (senate does not block) as the baseline
+  // behavior — the full attitude-based check would require the
+  // target civ parameter and attitude lookup.
+  return false;
 }

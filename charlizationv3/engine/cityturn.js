@@ -23,7 +23,8 @@ import {
 } from './production.js';
 import { calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
-import { grantAdvance, getAvailableResearch, checkUnitAutoUpgrade } from './research.js';
+import { grantAdvance, getAvailableResearch, checkUnitAutoUpgrade, upgradeUnitsForTech } from './research.js';
+import { calcAttitudeScore } from './diplomacy.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Food processing (Wave 1 — unchanged)
@@ -370,6 +371,23 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         completedItem = null;
       } else {
         newBuildings.add(item.id);
+
+        // Palace (building 1) is unique per civ — remove from all other cities
+        if (item.id === 1) {
+          for (let oci = 0; oci < state.cities.length; oci++) {
+            if (oci === cityIndex) continue;
+            const oc = state.cities[oci];
+            if (!oc || oc.size <= 0 || oc.owner !== activeCiv) continue;
+            if (oc.buildings && oc.buildings.has(1)) {
+              const updBlds = new Set(oc.buildings);
+              updBlds.delete(1);
+              state.cities[oci] = { ...oc, buildings: updBlds, hasPalace: false };
+              events.push({
+                type: 'palaceRemoved', cityName: oc.name, cityIndex: oci, civSlot: activeCiv,
+              });
+            }
+          }
+        }
       }
     } else if (item.type === 'wonder') {
       // ── Complete wonder ──
@@ -444,6 +462,52 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
               }
             }
             events.push({ type: 'setiProgram', civSlot: activeCiv });
+          }
+          // Da Vinci's Workshop (14): trigger unit auto-upgrade for all owned units
+          // Binary ref: FUN_004ec3fe line 5141 — thunk_FUN_004be6ba(civId)
+          if (wi === 14) {
+            const techs = state.civTechs?.[activeCiv];
+            if (techs) {
+              for (const t of techs) {
+                const leoEvents = upgradeUnitsForTech(state, activeCiv, t);
+                events.push(...leoEvents);
+              }
+            }
+          }
+          // Eiffel Tower (20): trigger attitude recalculation for all other civs
+          // Binary ref: FUN_004ec3fe line 5144 — thunk_FUN_004ec312(civId)
+          if (wi === 20) {
+            if (state.civs) {
+              state.civs = [...state.civs];
+              for (let ci = 1; ci < 8; ci++) {
+                if (ci === activeCiv || !(state.civsAlive & (1 << ci))) continue;
+                const attScore = calcAttitudeScore(state, ci, activeCiv);
+                const otherCiv = state.civs[ci];
+                if (otherCiv) {
+                  state.civs[ci] = { ...otherCiv, attitudeToward: { ...(otherCiv.attitudeToward || {}), [activeCiv]: attScore } };
+                }
+              }
+            }
+            events.push({ type: 'eiffelTower', civSlot: activeCiv });
+          }
+
+          // Force reassign: all other cities building the SAME wonder get production reset
+          // Binary ref: FUN_004ec3fe line 5156 — thunk_FUN_00441b11(citySlot, 99)
+          for (let oci = 0; oci < state.cities.length; oci++) {
+            if (oci === cityIndex) continue;
+            const oc = state.cities[oci];
+            if (!oc || oc.size <= 0) continue;
+            if (oc.itemInProduction?.type === 'wonder' && oc.itemInProduction?.id === item.id) {
+              state.cities[oci] = {
+                ...oc,
+                itemInProduction: { type: 'unit', id: 2 }, // Reset to Warriors
+                shieldsInBox: 0,
+              };
+              events.push({
+                type: 'wonderRaceForceReassign', cityName: oc.name, cityIndex: oci,
+                civSlot: oc.owner, wonderIndex: wi,
+              });
+            }
           }
         }
       }
@@ -963,6 +1027,18 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
   // Skip cities in resistance (no production, food, etc.)
   if (city.resistanceTurns > 0) return { events, cityDestroyed: false };
 
+  // ── Step 0a: City turn sync — adoption check (every 64 turns, staggered) ──
+  // Binary ref: FUN_004f0a9c line 278
+  // Formula: ((turnAge - 1) ^ (turnNumber & 0x3F)) & 0x3F == 0
+  // When true, city.foundedBy is set to city.owner (adoption)
+  const turnNumber = state.turn?.number || 0;
+  const turnAge = city.turnAge || 0;
+  if (turnAge > 0 && (((turnAge - 1) ^ (turnNumber & 0x3F)) & 0x3F) === 0) {
+    if (city.foundedBy !== activeCiv) {
+      state.cities[cityIndex] = { ...state.cities[cityIndex], foundedBy: activeCiv };
+    }
+  }
+
   // ── Step 1: Compute happiness ──
   const hap = calcHappiness(city, cityIndex, state, mapBase);
   if (city.civilDisorder !== hap.civilDisorder ||
@@ -986,6 +1062,21 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
   let newBuildings = cityAfterHap.buildings;
   let cityDestroyed = foodResult.cityDestroyed;
   events.push(...foodResult.events);
+
+  // ── Step 2b: Food shortage 3-turn lookahead warning ──
+  // If food is decreasing (surplus < 0) and will hit 0 within 3 turns, emit warning
+  if (!cityDestroyed) {
+    const { surplus } = calcFoodSurplus(cityAfterHap, cityIndex, state, mapBase, state.units || []);
+    if (surplus < 0 && newFood > 0) {
+      const turnsUntilEmpty = Math.ceil(newFood / Math.abs(surplus));
+      if (turnsUntilEmpty <= 3) {
+        events.push({
+          type: 'foodShortageWarning', cityName: city.name, cityIndex,
+          civSlot: activeCiv, turnsUntilEmpty,
+        });
+      }
+    }
+  }
 
   // ── Step 3: Shield production (via processCityProduction) ──
   const prodResult = processCityProduction(cityAfterHap, cityIndex, state, mapBase, callbacks);
