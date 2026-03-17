@@ -96,7 +96,12 @@ export async function quickRerender() {
 
 // ═══════════════════════════════════════════════════════════════════
 // BLINK
+// Binary ref: Civ2-clone UnitReadyView.cs / WaitingView.cs
 // ═══════════════════════════════════════════════════════════════════
+
+// Blink intervals from Civ2-clone (binary-verified)
+const CURSOR_BLINK_UNIT_READY_MS = 150;    // UnitReadyView interval — active unit blink
+const CURSOR_BLINK_WAITING_VIEW_MS = 200;  // WaitingView interval — "view piece" cursor blink
 
 export function startBlink() {
   stopBlink();
@@ -109,7 +114,7 @@ export function startBlink() {
   S.blinkInterval = setInterval(() => {
     S.blinkOn = !S.blinkOn;
     toggleBlinkOverlay();
-  }, 130);
+  }, CURSOR_BLINK_UNIT_READY_MS);
 }
 
 export function stopBlink() {
@@ -191,7 +196,45 @@ export function applyImprovementsUpdate(tileImprovements) {
 
 // ═══════════════════════════════════════════════════════════════════
 // COMBAT ANIMATION
+// Binary ref: FUN_0057ed3f (combat movement), FUN_00580341 (battle),
+//             Civ2-clone AttackAnimation.cs, MoveAnimation.cs
 // ═══════════════════════════════════════════════════════════════════
+
+// ── Combat movement animation (moving units during combat) ──
+// Binary ref: FUN_0057ed3f @ block_00570000.c
+const COMBAT_MOVE_FRAMES = 8;        // outer loop count @ 0x0057ed3f
+const COMBAT_MOVE_MS_PER_FRAME = 64; // timeGetTime comparison: < 0x40 @ 0x0057f4e6
+const COMBAT_MOVE_TOTAL_MS = 512;    // 8 × 64ms
+const COMBAT_POST_ANIM_DELAY = 10;   // play_delay_animation(10) @ 0x0057f5e6
+
+// ── Battle explosion animation ──
+// Binary ref: FUN_00580341 @ block_00580000.c, Civ2-clone AttackAnimation.cs
+const COMBAT_BATTLE_MS_PER_FRAME = 70;    // Civ2-clone: AttackAnimation interval = 70ms
+const COMBAT_BATTLE_FRAMES_PER_EXPLOSION = 5; // explosion += 5 per round
+// Ancient era: both units with move < 30 → halved frame count
+const COMBAT_ANCIENT_ERA_THRESHOLD = 0x1E; // 30 movement points (pre-gunpowder boundary)
+const COMBAT_FRAMES_MODERN = 10;           // 10 >> 0 = 10 frames per combat round
+const COMBAT_FRAMES_ANCIENT = 5;           // 10 >> 1 = 5 frames (both ancient)
+// Heavy unit post-explosion delay
+const COMBAT_POST_LARGE_EXPLOSION_DELAY = 0x14; // 20 ticks after LARGEXPL for tank-era+ units
+
+// ── Unit movement animation ──
+// Binary ref: FUN_0057ed3f, Civ2-clone MoveAnimation.cs
+const MOVEMENT_FRAMES_PER_TILE = 8;   // outer loop count, MoveAnimation noFramesForOneMove
+const MOVEMENT_MS_PER_FRAME = 30;     // Civ2-clone: MoveAnimation interval = 30ms
+const MOVEMENT_TOTAL_MS = 240;        // 8 × 30ms per tile traversal
+const MOVEMENT_CITY_ENTRY_FRAMES = 7; // noFramesForOneMove - 1 for city entry (last blank)
+
+// ── Nuke explosion animation ──
+// Binary ref: FUN_0057f657 @ block_00570000.c
+const NUKE_TOTAL_FRAMES = 11;         // loop: local_34 < 0xb @ 0x0057f897
+const NUKE_MS_PER_FRAME = 100;        // timeGetTime comparison: < 100 @ 0x0057f8be
+const NUKE_TOTAL_MS = 1100;           // 11 × 100ms
+const NUKE_SPRITE_WIDTH = 0x5B;       // 91px at zoom 0 — scale_sprite(0x5B) @ 0x0057f880
+const NUKE_SPRITE_HEIGHT = 0x48;      // 72px at zoom 0 — scale_sprite(0x48) @ 0x0057f886
+const NUKE_SPRITE_SOURCE = 'Tiles.dll #85'; // DLL resource for mushroom cloud frames
+const NUKE_SOUND_ID = 0x32;           // play_sound(0x32) = nuke explosion @ 0x0057f867
+const NUKE_PRE_DELAY_MS = 5500;       // wait loop < 0x157c when detailed anim enabled @ 0x0057f878
 
 // ── Explosion sprites from ICONS.GIF ──
 export async function _ensureExplosionFrames() {
@@ -284,10 +327,10 @@ export function animateCombat(cr, onComplete) {
   }
 
   // ── Civ2-faithful animation: batch rounds into groups of 5 ──
-  // Real Civ2 shows one 8-frame explosion per 5 combat rounds.
+  // Binary ref: Civ2-clone AttackAnimation.cs — explosion += 5 per round
   // HP bars update per group (accumulated damage), not per individual round.
-  const ROUNDS_PER_EXPLOSION = 5;
-  const FRAME_MS = 70; // Real Civ2 uses 70ms per explosion frame
+  const ROUNDS_PER_EXPLOSION = COMBAT_BATTLE_FRAMES_PER_EXPLOSION;
+  const FRAME_MS = COMBAT_BATTLE_MS_PER_FRAME;
 
   // HP tracking in internal units (×10)
   let atkHp = cr.atkStartHp;

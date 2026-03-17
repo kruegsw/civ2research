@@ -589,3 +589,43 @@ export function checkSenateOverride(state, attackerCiv) {
   // target civ parameter and attitude lookup.
   return false;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Combat Notification Strings — Dialog keys and AI message IDs
+// Binary ref: FUN_00580341 @ block_00580000.c lines 357-577
+//
+// These are the 8 combat event notification string keys that Civ2
+// displays to players during combat resolution. Each maps to a
+// GAME.TXT / labels.txt dialog key.
+// ═══════════════════════════════════════════════════════════════════
+
+export const COMBAT_NOTIFICATION_STRINGS = {
+  SNEAK:          { dialogKey: 'SNEAK',          aiMsgId: 0x2E, note: 'sneak attack (no ceasefire treaty)' },
+  BREAKCEASE:     { dialogKey: 'BREAKCEASE',     aiMsgId: 0x2D, note: 'breaks ceasefire treaty' },
+  MISSILEATTACK:  { dialogKey: 'MISSILEATTACK',  aiMsgId: 0x2F, note: 'carrier/missile attacks city' },
+  PEARLHARBOR:    { dialogKey: 'PEARLHARBOR',    aiMsgId: 0x30, note: 'surprise naval/air attack on city' },
+  BATTERY:        { dialogKey: 'BATTERY',        aiMsgId: 0x32, note: 'coastal bombardment (no land attacker)' },
+  BATTERY2:       { dialogKey: 'BATTERY2',       aiMsgId: 0x31, note: 'coastal bombardment (with land attacker)' },
+  SCRAMBLE:       { dialogKey: 'SCRAMBLE',       aiMsgId: 0x33, note: 'air defense scramble' },
+  AMPHIBMOTIZE:   { dialogKey: 'AMPHIBMOTIZE',   aiMsgId: 0x34, note: 'amphibious assault from sea' },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Nuclear / Long-Range Attack Path
+// Binary ref: block_00580000.c lines 709-733
+//
+// When a unit's attack stat > 98, normal combat is skipped and the
+// nuclear/missile strike path is taken instead. In standard Civ2,
+// only the Nuclear Missile (attack=99) qualifies.
+// ═══════════════════════════════════════════════════════════════════
+
+export const NUKE_ATTACK_THRESHOLD = 98; // attack > 98 uses nuclear path @ block_00580000.c:709
+
+// ═══════════════════════════════════════════════════════════════════
+// Combat Animation Detail Flags
+// Binary ref: DAT_00655aea — controls animation fidelity
+// ═══════════════════════════════════════════════════════════════════
+
+export const ANIMATION_FLAGS = {
+  DETAILED_NUKE: 0x10,  // @ 0x0057f86b — enables 5.5s pre-delay for nuke animation
+};

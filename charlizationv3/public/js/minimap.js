@@ -9,6 +9,10 @@
 const TW = 64;
 const TH = 32;
 
+// ── Minimap animation timing ──
+// Binary ref: Civ2-clone MinimapPanel.cs
+const MINIMAP_GLOBE_ROTATION_STEP_MS = 1000; // _globeRotation_dt = 1000ms
+
 // Terrain type → flat color for minimap rendering
 const TERRAIN_COLORS = [
   [200, 180, 100],  //  0 Desert     — sand

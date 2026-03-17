@@ -27,6 +27,24 @@ const Civ2Renderer = {
   TW: 64,  // Tile width in pixels
   TH: 32,  // Tile height in pixels
 
+  // ── Terrain sprite sheet layout ──
+  // Binary ref: FUN_00570780 @ block_00570000.c (sprited_process_terrain1)
+  TERRAIN1_LAYOUT: {
+    baseTerrainStartX: 1,       // initial x=1 @ 0x00570780
+    baseTerrainStartY: 1,       // initial y=1
+    tileStepY: 0x21,            // 33px per terrain row
+    terrainCount: 11,           // 0xb terrain types (0-10)
+    secondColumnX: 0x83,        // 131px — local_55c
+    thirdColumnX: 0xC4,         // 196px — local_560
+    specialStartX: 0x1C8,       // 456px — local_554 (special terrain)
+    specialStartY: 100,         // local_558
+    specialCount: 3,            // loop: local_14 < 3
+    overlayStartX: 1,           // road/railroad overlays
+    overlayStartY: 0x16C,       // 364px — local_558
+    overlayCount: 9,            // loop: local_14 < 9
+    overlayStepX: 0x41,         // 65px — local_554 += 0x41
+  },
+
   // Re-export from engine/defs.js for backward compat (other modules reference Civ2Renderer.*)
   TERRAIN_NAMES,
   UNIT_NAMES,

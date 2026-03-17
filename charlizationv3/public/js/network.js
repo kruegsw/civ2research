@@ -4,7 +4,7 @@
 
 import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
-import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX } from './sound.js';
+import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS } from './sound.js';
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
@@ -1284,6 +1284,8 @@ function initNetwork(appCallbacks) {
               doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
               processNotifications();
               // Wait so user can see newly revealed terrain, then advance to next unit
+              // Binary ref: POST_MOVE_VISIBLE = 10 ticks (~167ms), POST_MOVE_FAST = 15 ticks (~250ms)
+              // Web UI uses longer delay (500ms) for better feedback on terrain reveal
               setTimeout(() => {
                 doRenderFromState({ skipCenter: true, autoAdvanceFrom: autoAdvFrom });
               }, 500);

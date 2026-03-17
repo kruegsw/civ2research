@@ -190,6 +190,16 @@ sfxLoad('FEEDBK03');
 sfxLoad('JETSPUTR');
 sfxLoad('JETCOMBT');
 
+// Movement event sounds (binary ref: move_unit @ FUN_0059062c)
+sfxLoad('FEEDBK05');
+sfxLoad('FEEDBK08');
+sfxLoad('SUBMARINE');
+sfxLoad('RIFLE');
+sfxLoad('HELICPTR');
+sfxLoad('JETPLANE');
+sfxLoad('TANKMOTR');
+sfxLoad('AIRPLANE');
+
 // ═══════════════════════════════════════════════════════════════════
 // 5. UNIT_ATK_SFX — Unit type → attack sound name
 // Binary ref: sound_editor_populate_slots @ 0x0058AFB6
@@ -223,6 +233,74 @@ export function getDeathSfx(unitType) {
   if (unitType >= 22 && unitType <= 26) return 'LARGEXPL';
   if (unitType >= 10 && unitType <= 14) return 'MEDEXPL';
   return 'SMALLEXP';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MOVE_UNIT_SOUNDS — Sound IDs for unit movement events
+// Binary ref: move_unit @ FUN_0059062c (thunk_FUN_0046e020 calls)
+// ═══════════════════════════════════════════════════════════════════
+export const MOVE_UNIT_SOUNDS = {
+  BLOCKED:       'MOVPIECE',  // 0x69 — can't move / ZOC blocked / non-combat blocked
+  ALLIED_REPAIR: 'EXTRA7',    // 0x68 — allied unit repair in allied city
+  UNIT_EXPELLED: 'DRUMC0',    // 0x5d — unit captured/expelled from tile
+  AIR_LANDING:   'SMALLEXP',  // 0x1a — air unit landing
+  AIR_CRASH:     'NUKEXPLO',  // 0x4e — air unit crash / out of fuel
+  TRIREME_LOST:  'MEDGUN',    // 0x09 — trireme lost at sea
+  UNIT_MOVE:     'EXTRA2',    // 0x63 — standard unit movement sound
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// MOVE_UNIT_DELAYS — Post-movement animation delays (ticks)
+// Binary ref: move_unit @ FUN_0059062c (thunk_FUN_0046e287 calls)
+// Formula: ticks * (50/3) ≈ 16.7ms per tick
+// ═══════════════════════════════════════════════════════════════════
+export const MOVE_UNIT_DELAYS = {
+  POST_EXPEL:       10,    // after expelling/capturing unit
+  POST_DIPLOMACY:   0x14,  // 20 ticks after diplomat enters foreign city
+  POST_MOVE_VISIBLE: 10,   // after visible movement (no animation flags)
+  POST_MOVE_FAST:   0x0f,  // 15 ticks after visible movement (with animation flags)
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// COMBAT_ATTACK_SOUNDS — Full dispatch by unit type/domain/era
+// Binary ref: FUN_00580341 @ block_00580000.c lines 584-679
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Get the combat attack sound for an attacker unit type.
+ * Implements the binary's priority-based dispatch:
+ *   1. Unit-specific (missile/nuke types)
+ *   2. Domain-based (air, sea, ground) with era branching
+ *
+ * @param {number} unitType - attacker unit type index
+ * @param {number} [defenderType] - defender unit type (for domain checks)
+ * @returns {string|null} WAV filename to play
+ */
+export function getCombatAttackSound(unitType, defenderType) {
+  // Priority 1: Nuke/missile-specific sounds (unit types 0x33-0x3D)
+  const missileMap = {
+    0x33: 'EXTRA4',   0x34: 'EXTRA5',   0x35: 'EXTRA6',   // scenario missiles
+    0x36: 'NUKE1',    0x37: 'NUKE2',    0x38: 'NUKE3',    0x39: 'NUKE4',
+    0x3A: 'NUKE5',    0x3B: 'NUKE6',    0x3C: 'NUKE7',    0x3D: 'NUKE8',
+  };
+  if (missileMap[unitType]) return missileMap[unitType];
+
+  // Fall back to UNIT_ATK_SFX table (which covers the common dispatch)
+  return UNIT_ATK_SFX[unitType] || null;
+}
+
+/**
+ * Get the post-combat resolution sound based on outcome and unit era.
+ * Binary ref: FUN_00580341 lines 880-903
+ *
+ * @param {number} deadUnitType - type of the unit that was destroyed
+ * @param {boolean} wasNavalOrAir - true if naval/air combat (local_ac != 0)
+ * @returns {string} WAV filename
+ */
+export function getCombatResolutionSound(deadUnitType, wasNavalOrAir) {
+  if (wasNavalOrAir) return 'NEWBANK';      // 0x23 — naval/aircraft explosion
+  if (deadUnitType < 0x1E) return 'JETSPUTR'; // 0x17 — ancient unit death
+  return 'JETSPUTR';                          // 0x4F — modern unit death (same WAV)
 }
 
 // ═══════════════════════════════════════════════════════════════════
