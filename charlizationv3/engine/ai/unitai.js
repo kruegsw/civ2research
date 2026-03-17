@@ -4834,6 +4834,40 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
       if (dipAction) action = dipAction;
     }
 
+    // ── Threat-radius check: prioritize combat when enemies within 2 tiles ──
+    // Before normal role dispatch, scan a 3-tile radius (doubled-coord dist 6)
+    // for enemy combat units. If enemies are within 2 tiles (dist 4), override
+    // non-combat roles to attack or defend depending on unit capabilities.
+    if (!action && domain === 0 && (UNIT_ATK[unit.type] || 0) > 0) {
+      const threatRadius = 6; // 3 real tiles in doubled-coord
+      const immediateRadius = 4; // 2 real tiles in doubled-coord
+      let nearestEnemyDist = Infinity;
+      let nearestEnemyGx = -1;
+      let nearestEnemyGy = -1;
+      for (const eu of gameState.units) {
+        if (eu.gx < 0 || eu.owner === civSlot || eu.owner === 0) continue;
+        if ((UNIT_ATK[eu.type] || 0) === 0) continue;
+        if (!isAtWar(gameState, civSlot, eu.owner)) continue;
+        const d = tileDist(unit.gx, unit.gy, eu.gx, eu.gy, mapBase);
+        if (d <= threatRadius && d < nearestEnemyDist) {
+          nearestEnemyDist = d;
+          nearestEnemyGx = eu.gx;
+          nearestEnemyGy = eu.gy;
+        }
+      }
+      if (nearestEnemyDist <= immediateRadius) {
+        // Enemy within 2 tiles — override to attack/defend behavior
+        if (role !== 0 && role !== 1) {
+          // Non-combat role unit with ATK: treat as attacker toward threat
+          const moveDir = _evaluateDirections(
+            unit, i, gameState, mapBase, spatialIdx, civSlot, domain,
+            nearestEnemyGx, nearestEnemyGy, { role: 0, explore: false }
+          );
+          if (moveDir) action = { type: 'MOVE_UNIT', unitIndex: i, dir: moveDir };
+        }
+      }
+    }
+
     // Nuclear missile special case (type 45) — uses NUKE action, not BOMBARD
     if (!action && unit.type === 45) {
       action = aiNuclearMissile(unit, i, gameState, mapBase, spatialIdx, civSlot);

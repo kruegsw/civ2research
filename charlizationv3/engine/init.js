@@ -117,10 +117,29 @@ export function initFromSav(parsed, seatList) {
     }
   }
 
+  // ── Ensure all 8 civ slots are initialized with defaults ──
+  const civs = Array.from({ length: 8 }, (_, i) => {
+    if (parsed.civs && parsed.civs[i]) return parsed.civs[i];
+    return {
+      name: i === 0 ? 'Barbarians' : `Civ ${i}`,
+      style: i % 4,
+      government: i === 0 ? 'anarchy' : 'despotism',
+      treasury: 0,
+      scienceRate: i === 0 ? 0 : 5,
+      taxRate: i === 0 ? 10 : 5,
+      luxuryRate: 0,
+      researchProgress: 0,
+      techBeingResearched: 0xFF,
+      rulesCivNumber: i === 0 ? 0 : i - 1,
+      attitudes: [0, 0, 0, 0, 0, 0, 0, 0],
+      reputation: 100,
+    };
+  });
+
   const gameState = {
     units,
     cities: parsed.cities,
-    civs: parsed.civs,
+    civs,
     civTechCounts: parsed.civTechCounts,
     civTechs: parsed.civTechs,
     civsAlive,

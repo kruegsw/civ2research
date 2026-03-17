@@ -141,9 +141,10 @@ function hasCity(gx, gy, mapBase) {
  * @param {Array} units - all units array (for ZOC checks, transport detection)
  * @param {Array} [cities] - cities array (unused but kept for backward compat)
  * @param {number} [maxCost=Infinity] - stop searching when g exceeds this cost
+ * @param {number} [maxIterations=4096] - maximum node expansions (binary default: 4096)
  * @returns {string[]|null} array of direction strings, or null if no path
  */
-export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities, maxCost) {
+export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities, maxCost, maxIterations) {
   if (sx === gx && sy === gy) return [];
 
   const domain = UNIT_DOMAIN[unitType] ?? 0;
@@ -162,7 +163,8 @@ export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities
   const heap = new MinHeap();
   heap.push({ x: sx, y: sy, f: heuristic(sx, sy, gx, gy, mw, wraps), g: 0 });
 
-  const maxIter = mw * mh * 4; // safety limit
+  // Binary's exact iteration limit: 4096 node expansions (from FUN_004abfe5)
+  const maxIter = maxIterations ?? 4096;
   let iter = 0;
 
   while (heap.size > 0 && iter++ < maxIter) {

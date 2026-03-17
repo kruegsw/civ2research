@@ -696,11 +696,17 @@ export function generateMap(settings = {}) {
   // ── Phase 8: Body ID assignment (flood fill) ──
   assignBodyIds(tileData, mw, mh, wraps);
 
+  // ── Phase 8b: Lake classification (ocean bodies with <20 tiles) ──
+  classifyLakes(tileData, mw, mh, wraps);
+
   // ── Phase 9: Fertility calculation ──
   calculateFertility(tileData, mw, mh, wraps);
 
+  // ── Phase 10: Pseudo-random resource placement ──
+  placeResources(tileData, mw, mh, mapSeed);
+
   // ── Goody huts: place on land tiles, sparse ──
-  placeGoodyHuts(tileData, mw, mh, rng);
+  placeGoodyHuts(tileData, mw, mh, rng, mapSeed);
 
   return { mw, mh, mapShape, mapSeed, tileData };
 }
@@ -745,6 +751,61 @@ function assignBodyIds(tileData, mw, mh, wraps) {
           visited[ni] = 1;
           queue.push({ x: nx, y: ny });
         }
+      }
+    }
+  }
+}
+
+/**
+ * Classify ocean bodies as ocean or lake based on tile count.
+ * Lakes: contiguous ocean bodies with fewer than 20 tiles.
+ * Sets tile.isLake = true on lake tiles for downstream use.
+ *
+ * @param {object[]} tileData - tile array
+ * @param {number} mw - map width
+ * @param {number} mh - map height
+ * @param {boolean} wraps - X wraparound
+ */
+function classifyLakes(tileData, mw, mh, wraps) {
+  const LAKE_THRESHOLD = 20;
+  const visited = new Uint8Array(mw * mh);
+
+  function wrapX(x) { return wraps ? ((x % mw) + mw) % mw : x; }
+
+  for (let y = 0; y < mh; y++) {
+    for (let x = 0; x < mw; x++) {
+      const i = y * mw + x;
+      if (visited[i]) continue;
+      if (tileData[i].terrain !== T_OCEAN) { visited[i] = 1; continue; }
+
+      // BFS flood fill for this ocean body
+      const body = [i];
+      const queue = [x, y]; // flat pairs for speed
+      visited[i] = 1;
+
+      while (queue.length > 0) {
+        const cy = queue.pop();
+        const cx = queue.pop();
+
+        for (let d = 0; d < 8; d++) {
+          let nx = cx + DIR8_DX[d];
+          const ny = cy + DIR8_DY[d];
+          if (ny < 0 || ny >= mh) continue;
+          nx = wrapX(nx);
+          if (nx < 0 || nx >= mw) continue;
+          const ni = ny * mw + nx;
+          if (visited[ni]) continue;
+          if (tileData[ni].terrain !== T_OCEAN) { visited[ni] = 1; continue; }
+          visited[ni] = 1;
+          body.push(ni);
+          queue.push(nx, ny);
+        }
+      }
+
+      // Classify: bodies with fewer than LAKE_THRESHOLD tiles are lakes
+      const isLake = body.length < LAKE_THRESHOLD;
+      for (const ti of body) {
+        tileData[ti].isLake = isLake;
       }
     }
   }
@@ -943,13 +1004,73 @@ function calculateFertility(tileData, mw, mh, wraps) {
 }
 
 /**
- * Place goody huts on ~2% of eligible land tiles.
+ * Place special resources using the binary's deterministic formula.
+ * For each tile, resource = ((gx * 11 + gy * 13 + mapSeed) & 0xFF) < threshold.
+ * The threshold varies by terrain type (some terrains have higher resource density).
+ * Tiles flagged with hasResource get the special resource variant for their terrain.
+ *
+ * @param {object[]} tileData - tile array
+ * @param {number} mw - map width
+ * @param {number} mh - map height
+ * @param {number} mapSeed - map seed for determinism
  */
-function placeGoodyHuts(tileData, mw, mh, rng) {
-  for (let i = 0; i < tileData.length; i++) {
-    const t = tileData[i];
-    if (t.terrain !== T_OCEAN && t.terrain !== T_GLACIER && t.terrain !== T_MOUNTAINS) {
-      if (rng.random() < 0.02) {
+function placeResources(tileData, mw, mh, mapSeed) {
+  // Resource threshold per terrain type (from binary analysis)
+  // Higher threshold = more resources. 0 = no special resources for this terrain.
+  // Binary uses ~1/16 probability for most terrains (threshold ~16 out of 256).
+  const RESOURCE_THRESHOLD = [
+    16, // Desert (oasis)
+    16, // Plains (wheat/buffalo)
+    16, // Grassland (resource suppression marker only — grassland shield)
+    16, // Forest (pheasant/silk)
+    16, // Hills (coal/wine)
+    16, // Mountains (gold/iron)
+    16, // Tundra (game)
+     0, // Glacier (no special)
+    16, // Swamp (peat/spice)
+    16, // Jungle (gems/fruit)
+    16, // Ocean (fish/whales)
+  ];
+
+  for (let y = 0; y < mh; y++) {
+    for (let x = 0; x < mw; x++) {
+      const i = y * mw + x;
+      const t = tileData[i];
+      const ter = t.terrain;
+      if (ter > 10) continue;
+      const threshold = RESOURCE_THRESHOLD[ter];
+      if (threshold === 0) continue;
+
+      // Pseudo-random resource hash (from binary)
+      const hash = ((x * 11 + y * 13 + mapSeed) & 0xFF);
+      t.hasResource = hash < threshold;
+    }
+  }
+}
+
+/**
+ * Place goody huts on eligible land tiles using deterministic formula
+ * with RNG fallback.
+ * Binary formula: ((gx * 7 + gy * 11 + mapSeed * 3) & 0xFF) < hutThreshold
+ *
+ * @param {object[]} tileData - tile array
+ * @param {number} mw - map width
+ * @param {number} mh - map height
+ * @param {object} rng - PRNG instance
+ * @param {number} mapSeed - map seed for determinism
+ */
+function placeGoodyHuts(tileData, mw, mh, rng, mapSeed) {
+  // Hut threshold: ~2% of eligible tiles (~5 out of 256)
+  const HUT_THRESHOLD = 5;
+
+  for (let y = 0; y < mh; y++) {
+    for (let x = 0; x < mw; x++) {
+      const i = y * mw + x;
+      const t = tileData[i];
+      if (t.terrain === T_OCEAN || t.terrain === T_GLACIER || t.terrain === T_MOUNTAINS) continue;
+
+      const hash = ((x * 7 + y * 11 + mapSeed * 3) & 0xFF);
+      if (hash < HUT_THRESHOLD) {
         t.goodyHut = true;
       }
     }

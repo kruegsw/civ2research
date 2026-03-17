@@ -14,8 +14,10 @@ import {
   CAN_IRRIGATE, CAN_MINE, IRRIGATION_TURNS, MINING_TURNS,
   CITY_RADIUS_DOUBLED, TERRAIN_BASE,
   SPECIAL_TOTAL, IRRIGATION_BONUS, MINING_BONUS,
-  UNIT_ATK, DIFFICULTY_KEYS, TERRAIN_DEFENSE,
+  UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
+  DIFFICULTY_KEYS, TERRAIN_DEFENSE,
 } from '../defs.js';
+import { GOAL_ESCORT } from './goals.js';
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -543,6 +545,61 @@ function evaluateCitySite(gx, gy, gameState, mapBase, civSlot) {
   }
   if (hasCityOnContinent) score += 3;
 
+  // ═════════════════════════════════════════════════════════════
+  // Part 3: Settler priority formula
+  //
+  // Exact priority scoring for settler city founding decisions:
+  //   - Distance to nearest own city: closer = higher (inverse distance)
+  //   - Terrain quality: count good terrain in 2-tile radius
+  //   - Fresh water (river): +5 priority (already applied above)
+  //   - Coastal: +3 priority (already applied above)
+  //   - Far from enemies: +2 priority
+  // ═════════════════════════════════════════════════════════════
+
+  // Distance to nearest own city: inverse distance bonus
+  // Closer sites are more valuable (easier to defend, faster to connect)
+  let nearestOwnCityDist = Infinity;
+  for (const city of gameState.cities) {
+    if (city.owner !== civSlot || city.size <= 0) continue;
+    const d = tileDist(gx, gy, city.gx, city.gy, mapBase);
+    if (d < nearestOwnCityDist) nearestOwnCityDist = d;
+  }
+  if (nearestOwnCityDist < Infinity && nearestOwnCityDist > 0) {
+    // Inverse distance: closer = higher priority (max +8 at dist 1)
+    score += Math.max(0, Math.floor(8 / nearestOwnCityDist));
+  }
+
+  // Terrain quality: count good terrain tiles (food >= 2) in 2-tile radius
+  let goodTerrainCount = 0;
+  for (let ri = 0; ri < 21; ri++) {
+    const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
+    const parT2 = ((gy + ddy) % 2 + 2) % 2;
+    const tgx2 = gx + ((parC + ddx - parT2) >> 1);
+    const tgy2 = gy + ddy;
+    const wgx2 = mapBase.wraps
+      ? ((tgx2 % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx2;
+    if (tgy2 < 0 || tgy2 >= mapBase.mh || wgx2 < 0 || wgx2 >= mapBase.mw) continue;
+    const t2 = mapBase.getTerrain(wgx2, tgy2);
+    if (t2 === 10) continue;
+    const baseFood = TERRAIN_BASE[t2]?.[0] ?? 0;
+    if (baseFood >= 2) goodTerrainCount++;
+  }
+  // Scale: +1 per 3 good terrain tiles (max +7 for 21 tiles)
+  score += Math.floor(goodTerrainCount / 3);
+
+  // Far from enemies: +2 priority if no enemy units within 5 tiles
+  let enemyNearby = false;
+  for (const u of (gameState.units || [])) {
+    if (u.gx < 0 || u.owner === civSlot || u.owner === 0) continue;
+    if ((UNIT_ATK[u.type] || 0) === 0) continue;
+    const d = tileDist(gx, gy, u.gx, u.gy, mapBase);
+    if (d <= 10) { // 5 real tiles = doubled-coord 10
+      enemyNearby = true;
+      break;
+    }
+  }
+  if (!enemyNearby) score += 2;
+
   return score;
 }
 
@@ -803,6 +860,70 @@ function _isChokepoint(gx, gy, mapBase) {
 }
 
 /**
+ * Score the value of a specific terrain improvement on a tile.
+ * Used by settlers to decide which tile improvements to make.
+ *
+ * Scoring:
+ *   - Irrigatable grassland/plains: +3 value
+ *   - Minable hills: +2 value
+ *   - Road-connectable tiles between cities: +4 value
+ *   - Already improved tiles: 0 value
+ *
+ * @param {number} gx - tile X
+ * @param {number} gy - tile Y
+ * @param {object} mapBase - map data
+ * @param {object} [gameState] - for city connectivity check
+ * @param {number} [civSlot] - civ slot for city ownership check
+ * @returns {number} improvement value score
+ */
+function scoreTerrainImprovement(gx, gy, mapBase, gameState, civSlot) {
+  const terrain = mapBase.getTerrain(gx, gy);
+  if (terrain === 10) return 0; // ocean
+
+  const imp = mapBase.getImprovements(gx, gy);
+  let value = 0;
+
+  // Irrigatable grassland (terrain 2) / plains (terrain 1): +3
+  if (!imp.irrigation && CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0) {
+    if (terrain === 1 || terrain === 2) { // plains or grassland
+      if (checkWaterSource(gx, gy, mapBase)) {
+        value += 3;
+      }
+    }
+  }
+
+  // Minable hills (terrain 4): +2
+  if (!imp.mining && CAN_MINE[terrain] && MINING_TURNS[terrain] > 0) {
+    if (terrain === 4) { // hills
+      value += 2;
+    }
+  }
+
+  // Road-connectable tiles between cities: +4
+  if (!imp.road) {
+    if (gameState && civSlot != null) {
+      let nearCityCount = 0;
+      for (const city of gameState.cities) {
+        if (!city || city.owner !== civSlot || city.size <= 0) continue;
+        const dist = tileDist(gx, gy, city.gx, city.gy, mapBase);
+        if (dist <= 6) nearCityCount++;
+        if (nearCityCount >= 2) break;
+      }
+      if (nearCityCount >= 2) {
+        value += 4; // between two cities — road connectivity is valuable
+      }
+    }
+  }
+
+  // Already improved tiles: 0 value (nothing to do)
+  if (imp.road && imp.irrigation && imp.mining) {
+    return 0;
+  }
+
+  return value;
+}
+
+/**
  * Score how much a tile needs improvement (for worker movement targeting).
  * Higher = more needed.
  * @param {number} gx
@@ -912,6 +1033,10 @@ function tileImprovementNeed(gx, gy, mapBase, gameState, civSlot) {
       score += 2;
     }
   }
+
+  // ── Terrain improvement value bonus ──
+  // Add specific terrain improvement value scoring for settler decisions
+  score += scoreTerrainImprovement(gx, gy, mapBase, gameState, civSlot);
 
   return score;
 }
@@ -1030,6 +1155,71 @@ function moveTowardCity(unit, city, mapBase, gameState, civSlot) {
   return bestDir;
 }
 
+// ── Settler military escort assignment ─────────────────────────────
+
+/**
+ * Find a nearby military unit (within 3 tiles) to escort a settler
+ * and assign it an ESCORT goal toward the settler's destination.
+ *
+ * If no military escort is nearby, returns true to signal the settler
+ * should move more cautiously (prefer tiles near own cities).
+ *
+ * @param {object} gameState - current game state
+ * @param {object} mapBase   - map data
+ * @param {number} civSlot   - civ slot
+ * @param {number} settlerGx - settler position X
+ * @param {number} settlerGy - settler position Y
+ * @param {number} destGx    - destination X
+ * @param {number} destGy    - destination Y
+ * @param {object} [strategy] - strategy with goals
+ * @param {Array<string>|null} [debugLog=null]
+ * @returns {boolean} true if an escort was assigned
+ */
+function assignSettlerEscort(gameState, mapBase, civSlot, settlerGx, settlerGy, destGx, destGy, strategy, debugLog) {
+  const escortRadius = 6; // 3 real tiles in doubled-coord
+  let bestUnit = null;
+  let bestDist = Infinity;
+  let bestIdx = -1;
+
+  for (let i = 0; i < gameState.units.length; i++) {
+    const u = gameState.units[i];
+    if (u.gx < 0 || u.owner !== civSlot) continue;
+    // Must be a land military unit (not settler, diplomat, trader)
+    const domain = UNIT_DOMAIN[u.type] ?? 0;
+    if (domain !== 0) continue;
+    const role = UNIT_ROLE[u.type] ?? 0;
+    if (role >= 5) continue; // skip transports, settlers, diplomats, traders
+    if ((UNIT_ATK[u.type] || 0) === 0 && (UNIT_DEF[u.type] || 0) === 0) continue;
+    // Must not already have orders (goto, fortified, etc.)
+    if (u.orders === 'goto') continue;
+
+    const dist = tileDist(u.gx, u.gy, settlerGx, settlerGy, mapBase);
+    if (dist <= escortRadius && dist < bestDist) {
+      bestDist = dist;
+      bestUnit = u;
+      bestIdx = i;
+    }
+  }
+
+  if (bestUnit && strategy?.goals) {
+    strategy.goals.addTacticalGoal(GOAL_ESCORT, 100, destGx, destGy);
+    // Try to assign the unit to this escort goal
+    const escortGoals = strategy.goals.findGoals(GOAL_ESCORT);
+    for (const { goal } of escortGoals) {
+      if (goal.targetGx === destGx && goal.targetGy === destGy && goal.assignedUnit < 0) {
+        goal.assignedUnit = bestIdx;
+        break;
+      }
+    }
+    if (debugLog) {
+      debugLog.push(`CITY: Escort assigned: unit #${bestIdx} (dist ${bestDist}) → settler dest (${destGx},${destGy})`);
+    }
+    return true;
+  }
+
+  return false;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // Main export
 // ═══════════════════════════════════════════════════════════════════
@@ -1111,7 +1301,7 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy, de
 
       // ── EXPAND: settler should found a new city ──
       if (wantExpand && !isFirstCity) {
-        const expandAction = _tryExpandCity(unit, i, gameState, mapBase, civSlot, ownCities, debugLog);
+        const expandAction = _tryExpandCity(unit, i, gameState, mapBase, civSlot, ownCities, debugLog, strategy);
         if (expandAction) {
           actions.push(expandAction);
           continue;
@@ -1232,7 +1422,7 @@ function _tryFoundFirstCity(unit, unitIndex, gameState, mapBase, civSlot, debugL
  *
  * @returns {object|null} action or null
  */
-function _tryExpandCity(unit, unitIndex, gameState, mapBase, civSlot, ownCities, debugLog) {
+function _tryExpandCity(unit, unitIndex, gameState, mapBase, civSlot, ownCities, debugLog, strategy) {
   const threshold = BUILD_THRESHOLD_NORMAL;
   const currentScore = evaluateCitySite(unit.gx, unit.gy, gameState, mapBase, civSlot);
 
@@ -1260,11 +1450,32 @@ function _tryExpandCity(unit, unitIndex, gameState, mapBase, civSlot, ownCities,
       }
     }
 
+    // ── Escort assignment: try to assign a nearby military unit ──
+    assignSettlerEscort(gameState, mapBase, civSlot, unit.gx, unit.gy,
+      bestSite.gx, bestSite.gy, strategy, debugLog);
+
     const dir = settlerDirectionToward(unit, bestSite.gx, bestSite.gy, gameState, mapBase, civSlot);
     if (dir) {
       const moveAction = { type: 'MOVE_UNIT', unitIndex, dir };
       const err = validateAction(gameState, mapBase, moveAction, civSlot);
       if (!err) {
+        // If no escort was found, check for nearby enemies before moving
+        const hasEscort = assignSettlerEscort(gameState, mapBase, civSlot, unit.gx, unit.gy,
+          bestSite.gx, bestSite.gy, strategy, null);
+        if (!hasEscort && isAdjacentToEnemy(unit.gx, unit.gy, mapBase, gameState, civSlot)) {
+          // No escort and enemies adjacent — move toward nearest city instead
+          const nearestCity = ownCities.reduce((best, c) => {
+            const d = tileDist(unit.gx, unit.gy, c.gx, c.gy, mapBase);
+            return (!best || d < best.dist) ? { city: c, dist: d } : best;
+          }, null);
+          if (nearestCity) {
+            const safeDir = moveTowardCity(unit, nearestCity.city, mapBase, gameState, civSlot);
+            if (safeDir) {
+              if (debugLog) debugLog.push(`CITY: Settler #${unitIndex}: no escort, retreating toward ${nearestCity.city.name}`);
+              return { type: 'MOVE_UNIT', unitIndex, dir: safeDir };
+            }
+          }
+        }
         if (debugLog) debugLog.push(`CITY: Settler #${unitIndex}: moving toward site (${bestSite.gx},${bestSite.gy}), score=${bestSite.score}`);
         return moveAction;
       }

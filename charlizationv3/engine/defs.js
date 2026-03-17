@@ -1156,3 +1156,15 @@ export const POWER_PLANT_BUILDINGS = new Set([19, 20, 21, 29]); // Power Plant, 
 export const SS_STRUCTURAL = 35;
 export const SS_COMPONENT = 36;
 export const SS_MODULE = 37;
+
+// ── Government-dependent leader titles ──
+// From Civ2 RULES.TXT @LEADERS section: title prefixes vary by government type.
+// Used for display strings like "President Lincoln" or "King Frederick".
+export const LEADER_TITLES = {
+  anarchy: '', despotism: 'Despot', monarchy: 'King', communism: 'Comrade',
+  fundamentalism: 'High Priest', republic: 'Consul', democracy: 'President',
+};
+export const LEADER_TITLES_FEMALE = {
+  anarchy: '', despotism: 'Despot', monarchy: 'Queen', communism: 'Comrade',
+  fundamentalism: 'High Priestess', republic: 'Consul', democracy: 'President',
+};

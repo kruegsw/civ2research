@@ -25,17 +25,33 @@ import { grantAdvance } from './research.js';
 // Trigger type constants (from decompiled event node +0x00)
 // ═══════════════════════════════════════════════════════════════════
 
-export const EVENT_UNIT_KILLED       = 0x01;  // trigger when specific unit type killed
-export const EVENT_CITY_TAKEN        = 0x02;  // trigger when city captured
-export const EVENT_TURN              = 0x04;  // trigger on specific turn number
-export const EVENT_TURN_INTERVAL     = 0x08;  // trigger every N turns
-export const EVENT_NEGOTIATION       = 0x10;  // trigger during diplomacy
-export const EVENT_SCENARIO_LOADED   = 0x20;  // trigger on scenario load
-export const EVENT_RANDOM_TURN       = 0x40;  // trigger with probability each turn
-export const EVENT_NO_SCHISM         = 0x80;  // prevent civil war for a civ
-export const EVENT_RECEIVED_TECH     = 0x100; // trigger when tech received
-export const EVENT_NO_CITIES         = 0x200; // trigger when civ has no cities
-export const EVENT_CITY_PRODUCTION   = 0x400; // trigger when city completes item
+// ── Trigger type constants (binary event node +0x00, IDs 0-22) ──
+// Implemented triggers:
+export const EVENT_UNIT_KILLED       = 0x01;  // ID 0: trigger when specific unit type killed
+export const EVENT_CITY_TAKEN        = 0x02;  // ID 1: trigger when city captured
+export const EVENT_TURN              = 0x04;  // ID 2: trigger on specific turn number
+export const EVENT_TURN_INTERVAL     = 0x08;  // ID 3: trigger every N turns
+export const EVENT_NEGOTIATION       = 0x10;  // ID 4: trigger during diplomacy
+export const EVENT_SCENARIO_LOADED   = 0x20;  // ID 5: trigger on scenario load
+export const EVENT_RANDOM_TURN       = 0x40;  // ID 6: trigger with probability each turn
+export const EVENT_NO_SCHISM         = 0x80;  // ID 7: prevent civil war for a civ
+export const EVENT_RECEIVED_TECH     = 0x100; // ID 8: trigger when tech received
+export const EVENT_NO_CITIES         = 0x200; // ID 9: trigger when civ has no cities
+export const EVENT_CITY_PRODUCTION   = 0x400; // ID 10: trigger when city completes item
+
+// Stub triggers (binary IDs 11-22, not yet fully implemented):
+export const EVENT_BRIBE_UNIT        = 0x0800;  // ID 11: trigger when unit bribed
+export const EVENT_CITY_DESTROYED    = 0x1000;  // ID 12: trigger when city destroyed
+export const EVENT_FLAG_SET          = 0x2000;  // ID 13: trigger when scenario flag set
+export const EVENT_FLAG_CLEAR        = 0x4000;  // ID 14: trigger when scenario flag cleared
+export const EVENT_CITY_FLIP         = 0x8000;  // ID 15: trigger when city flips allegiance
+export const EVENT_JUST_ONCE_FLAG   = 0x10000;  // ID 16: internal just-once tracking
+export const EVENT_COUNT_UNITS      = 0x20000;  // ID 17: trigger on unit count threshold
+export const EVENT_COUNT_CITIES     = 0x40000;  // ID 18: trigger on city count threshold
+export const EVENT_CITY_SIZE        = 0x80000;  // ID 19: trigger when city reaches size
+export const EVENT_TECH_COUNT      = 0x100000;  // ID 20: trigger on tech count threshold
+export const EVENT_GOLD_AMOUNT     = 0x200000;  // ID 21: trigger on gold threshold
+export const EVENT_TURN_YEAR       = 0x400000;  // ID 22: trigger on specific year
 
 // ═══════════════════════════════════════════════════════════════════
 // Action flag constants (from decompiled event node +0x04 bitflags)
@@ -278,6 +294,29 @@ export function parseEvents(eventsText, civNames) {
         currentEvent.triggerType = EVENT_NO_CITIES;
       } else if (upper === 'CITYPRODUCTION') {
         currentEvent.triggerType = EVENT_CITY_PRODUCTION;
+      // ── Stub trigger types (IDs 11-22) ──
+      } else if (upper === 'BRIBEUNIT') {
+        currentEvent.triggerType = EVENT_BRIBE_UNIT;
+      } else if (upper === 'CITYDESTROYED') {
+        currentEvent.triggerType = EVENT_CITY_DESTROYED;
+      } else if (upper === 'FLAGSET') {
+        currentEvent.triggerType = EVENT_FLAG_SET;
+      } else if (upper === 'FLAGCLEAR') {
+        currentEvent.triggerType = EVENT_FLAG_CLEAR;
+      } else if (upper === 'CITYFLIP') {
+        currentEvent.triggerType = EVENT_CITY_FLIP;
+      } else if (upper === 'COUNTUNITS') {
+        currentEvent.triggerType = EVENT_COUNT_UNITS;
+      } else if (upper === 'COUNTCITIES') {
+        currentEvent.triggerType = EVENT_COUNT_CITIES;
+      } else if (upper === 'CITYSIZE') {
+        currentEvent.triggerType = EVENT_CITY_SIZE;
+      } else if (upper === 'TECHCOUNT') {
+        currentEvent.triggerType = EVENT_TECH_COUNT;
+      } else if (upper === 'GOLDAMOUNT') {
+        currentEvent.triggerType = EVENT_GOLD_AMOUNT;
+      } else if (upper === 'TURNYEAR') {
+        currentEvent.triggerType = EVENT_TURN_YEAR;
       } else {
         // Parse condition key=value pairs
         const kv = parseKeyValue(line);
@@ -334,6 +373,20 @@ export function parseEvents(eventsText, civNames) {
             // J.4: HAS_TECH condition — check if civ has specific tech
             case 'hastech':
               currentEvent.conditions.hasTech = resolveTechName(kv.value);
+              break;
+            // Stub trigger conditions (IDs 11-22)
+            case 'flag':
+            case 'flagindex':
+              currentEvent.conditions.flagIndex = parseInt(kv.value, 10);
+              break;
+            case 'threshold':
+            case 'count':
+            case 'size':
+            case 'amount':
+              currentEvent.conditions.threshold = parseInt(kv.value, 10);
+              break;
+            case 'year':
+              currentEvent.conditions.year = parseInt(kv.value, 10);
               break;
           }
         }
@@ -666,6 +719,69 @@ function triggerMatches(evt, triggerType, ctx, rng) {
       }
       return true;
     }
+
+    // ── Stub triggers (IDs 11-22) — basic matching, no full implementation yet ──
+    case EVENT_BRIBE_UNIT:
+      // Match unit type and briber/defender civs
+      if (c.unitType != null && c.unitType >= 0 && c.unitType !== ctx.unitType) return false;
+      if (c.attacker != null && c.attacker !== ANYBODY && c.attacker !== ctx.attacker) return false;
+      if (c.defender != null && c.defender !== ANYBODY && c.defender !== ctx.defender) return false;
+      return true;
+
+    case EVENT_CITY_DESTROYED:
+      if (c.cityName && ctx.cityName &&
+          c.cityName.toLowerCase() !== ctx.cityName.toLowerCase()) return false;
+      if (c.attacker != null && c.attacker !== ANYBODY && c.attacker !== ctx.attacker) return false;
+      return true;
+
+    case EVENT_FLAG_SET:
+    case EVENT_FLAG_CLEAR:
+      // Scenario flag events: match flag index
+      if (c.flagIndex != null && c.flagIndex !== ctx.flagIndex) return false;
+      return true;
+
+    case EVENT_CITY_FLIP:
+      if (c.cityName && ctx.cityName &&
+          c.cityName.toLowerCase() !== ctx.cityName.toLowerCase()) return false;
+      return true;
+
+    case EVENT_COUNT_UNITS:
+      // Trigger when civ has >= threshold units of a type
+      if (c.defender != null && c.defender !== ANYBODY && c.defender !== ctx.civSlot) return false;
+      if (c.unitType != null && c.unitType >= 0 && ctx.unitCount != null) {
+        if (ctx.unitCount < (c.threshold || 0)) return false;
+      }
+      return true;
+
+    case EVENT_COUNT_CITIES:
+      if (c.defender != null && c.defender !== ANYBODY && c.defender !== ctx.civSlot) return false;
+      if (ctx.cityCount != null && ctx.cityCount < (c.threshold || 0)) return false;
+      return true;
+
+    case EVENT_CITY_SIZE:
+      if (c.cityName && ctx.cityName &&
+          c.cityName.toLowerCase() !== ctx.cityName.toLowerCase()) return false;
+      if (ctx.citySize != null && ctx.citySize < (c.threshold || 0)) return false;
+      return true;
+
+    case EVENT_TECH_COUNT:
+      if (c.defender != null && c.defender !== ANYBODY && c.defender !== ctx.civSlot) return false;
+      if (ctx.techCount != null && ctx.techCount < (c.threshold || 0)) return false;
+      return true;
+
+    case EVENT_GOLD_AMOUNT:
+      if (c.defender != null && c.defender !== ANYBODY && c.defender !== ctx.civSlot) return false;
+      if (ctx.gold != null && ctx.gold < (c.threshold || 0)) return false;
+      return true;
+
+    case EVENT_TURN_YEAR:
+      // Trigger on specific year (not turn number)
+      if (c.year != null && c.year !== ctx.year) return false;
+      return true;
+
+    case EVENT_JUST_ONCE_FLAG:
+      // Internal tracking — always matches, handled by justOnce logic
+      return true;
 
     default:
       return false;

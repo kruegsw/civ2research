@@ -14,6 +14,7 @@
 
 import { getAvailableResearch, calcResearchCost } from '../research.js';
 import { validateAction } from '../rules.js';
+import { calcCityTrade } from '../production.js';
 import {
   ADVANCE_NAMES, ADVANCE_PREREQS, ADVANCE_EPOCH, ADVANCE_AI_INTEREST,
   UNIT_PREREQS, UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
@@ -215,6 +216,122 @@ function isHumanCiv(gameState, civSlot) {
 function getTechCount(gameState, civSlot) {
   return gameState.civTechCounts?.[civSlot] ??
          gameState.civTechs?.[civSlot]?.size ?? 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 0. getCivStyleTechBonus — Per-civ-style tech bonus (21 cases)
+//
+// Extracted from FUN_004bdb2c lines 6227-6420: the big switch on
+// rulesCivNumber. Returns a bonus (positive or negative) for a
+// specific tech based on the civ's hardcoded preferences.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Get per-civ-style tech bonus from the binary's hardcoded preference table.
+ *
+ * Port of FUN_004bdb2c lines 6227-6420: 21-way switch on rulesCivNumber.
+ * Each civ has specific tech preferences (bonuses) and aversions (penalties).
+ * This excludes context-dependent bonuses (navalScore, continent access)
+ * which are applied separately in calcTechValue.
+ *
+ * @param {number} rulesCivNumber - civ style index 0-20
+ * @param {number} techId - advance ID 0-88
+ * @returns {number} bonus value (can be negative)
+ */
+export function getCivStyleTechBonus(rulesCivNumber, techId) {
+  let bonus = 0;
+  switch (rulesCivNumber) {
+    case 0: // Romans — militaristic: favor early military techs
+      if (techId === 39 || techId === 8 || techId === 86) bonus += 2; // Iron Working(0x27), Bronze Working(0x08), Warrior Code(0x56)
+      if (techId === 55) bonus -= 1; // Monotheism (0x37)
+      break;
+    case 1: // Babylonians — civilized: favor law
+      if (techId === 12) bonus += 1; // Code of Laws (0x0C)
+      break;
+    case 2: // Germans — balanced: favor economy and culture
+      if (techId === 6) bonus += 1;  // Banking (0x06)
+      if (techId === 82) bonus += 1; // Theology (0x52)
+      if (techId === 60) bonus += 1; // Philosophy (0x3C)
+      break;
+    case 3: // Egyptians — builders: favor construction
+      if (techId === 47) bonus += 2; // Masonry (0x2F)
+      break;
+    case 4: // Americans — democratic: favor democracy & tech
+      if (techId === 21) bonus += 2; // Democracy (0x15)
+      if (techId === 15) bonus -= 1; // Communism (0x0F)
+      if (techId === 73) bonus += 1; // Rocketry (0x49)
+      if (techId === 16) bonus += 1; // Computers (0x10)
+      if (techId === 42) bonus += 1; // Leadership (0x2A)
+      break;
+    case 5: // Greeks — expansionist scholars: favor learning
+      if (techId === 64) bonus += 1; // Polytheism (0x40)
+      if (techId === 8) bonus += 1;  // Bronze Working (0x08)
+      if (techId === 1) bonus += 1;  // Alphabet (0x01)
+      if (techId === 46) bonus += 1; // Map Making (0x2E)
+      if (techId === 55) bonus -= 1; // Monotheism (0x37)
+      if (techId === 60) bonus += 2; // Philosophy (0x3C)
+      break;
+    case 6: // Indians — peaceful polytheists
+      if (techId === 64) bonus += 2; // Polytheism (0x40)
+      if (techId === 36) bonus += 1; // Horseback Riding (0x24)
+      if (techId === 56) bonus += 1; // Mysticism (0x38)
+      if (techId === 9) bonus += 1;  // Ceremonial Burial (0x09)
+      if (techId === 55) bonus -= 1; // Monotheism (0x37)
+      break;
+    case 7: // Russians — communist philosophers
+      if (techId === 15) bonus += 2; // Communism (0x0F)
+      if (techId === 60) bonus += 1; // Philosophy (0x3C)
+      if (techId === 34) bonus += 1; // Guerrilla Warfare (0x22)
+      break;
+    case 8: // Zulus — tribal warriors, anti-metalworking
+      if (techId === 64) bonus += 2; // Polytheism (0x40)
+      if (techId === 36) bonus += 1; // Horseback Riding (0x24)
+      if (techId === 56) bonus += 1; // Mysticism (0x38)
+      if (techId === 9) bonus += 1;  // Ceremonial Burial (0x09)
+      if (techId === 8) bonus -= 1;  // Bronze Working (0x08)
+      if (techId === 39) bonus -= 1; // Iron Working (0x27)
+      break;
+    case 9: // French — militaristic leaders
+      if (techId === 42) bonus += 1; // Leadership (0x2A)
+      if (techId === 81) bonus += 1; // Tactics (0x51)
+      if (techId === 17) bonus += 1; // Conscription (0x11)
+      break;
+    case 10: // Aztecs — anti-gunpowder, anti-monotheism
+      if (techId === 35) bonus -= 2; // Gunpowder (0x23)
+      if (techId === 55) bonus -= 1; // Monotheism (0x37)
+      break;
+    case 11: // Chinese — favor gunpowder (context naval penalty applied in calcTechValue)
+      if (techId === 35) bonus += 1; // Gunpowder (0x23)
+      break;
+    case 12: // English — favor monotheism (context naval bonus applied in calcTechValue)
+      if (techId === 55) bonus += 1; // Monotheism (0x37)
+      break;
+    // cases 13 (Mongols) and 14 (Celts): no tech-specific bonuses in decompiled code
+    case 15: // Japanese — favor modern military tech
+      if (techId === 79) bonus += 1; // Steel (0x4F)
+      if (techId === 52) bonus += 1; // Miniaturization (0x34)
+      break;
+    case 16: // Vikings — favor naval exploration
+      if (techId === 46) bonus += 1; // Map Making (0x2E)
+      break;
+    case 17: // Spanish — favor monotheism (context naval bonus applied in calcTechValue)
+      if (techId === 55) bonus += 1; // Monotheism (0x37)
+      break;
+    case 18: // Persians
+    case 19: // Carthaginians — polytheistic horsemen
+      if (techId === 64) bonus += 2; // Polytheism (0x40)
+      if (techId === 36) bonus += 1; // Horseback Riding (0x24)
+      if (techId === 56) bonus += 1; // Mysticism (0x38)
+      if (techId === 9) bonus += 1;  // Ceremonial Burial (0x09)
+      if (techId === 55) bonus -= 1; // Monotheism (0x37)
+      break;
+    case 20: // Sioux — horse culture
+      if (techId === 36) bonus += 2; // Horseback Riding (0x24)
+      break;
+    default:
+      break;
+  }
+  return bonus;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -450,117 +567,32 @@ function calcTechValue(civSlot, techId, gameState, mapBase) {
   // ── Leader-specific civ bonuses ──
   // Lines 6227-6420: Big switch on rulesCivNumber (0-20).
   // Each civ has hardcoded tech preferences/aversions.
-  switch (rulesCivNum) {
-    case 0: // Romans
-      if (techId === 39 || techId === 8 || techId === 86) score += 2; // Iron Working(0x27), Bronze Working, Warrior Code(0x56)
-      if (techId === 55) score -= 1; // Monotheism (0x37)
-      break;
-    case 1: // Babylonians
-      if (techId === 12) score += 1; // Code of Laws (0x0c)
-      break;
-    case 2: // Germans
-      if (techId === 6) score += 1;  // Banking
-      if (techId === 82) score += 1; // Theology (0x52)
-      if (techId === 44) score += 1; // Machine Tools (0x2C)
-      break;
-    case 3: // Egyptians
-      if (techId === 47) score += 2; // Masonry (0x2f)
-      break;
-    case 4: // Americans
-      if (techId === 21) score += 2; // Democracy (0x15)
-      if (techId === 15) score -= 1; // Communism (0x0f)
-      if (techId === 73) score += 1; // Rocketry (0x49)
-      if (techId === 16) score += 1; // Computers (0x10)
-      if (techId === 42) score += 1; // Leadership (0x2a)
-      break;
-    case 5: // Greeks
-      if (techId === 64) score += 1; // Polytheism (0x40)
-      if (techId === 8) score += 1;  // Bronze Working
-      if (techId === 1) score += 1;  // Alphabet
-      if (techId === 46) score += 1; // Map Making (0x2e)
-      if (techId === 55) score -= 1; // Monotheism (0x37)
-      if (techId === 44) score += 2; // Machine Tools (0x2C)
-      break;
-    case 6: // Indians
-      if (techId === 64) score += 2; // Polytheism (0x40)
-      if (techId === 36) score += 1; // Horseback Riding (0x24)
-      if (techId === 56) score += 1; // Mysticism (0x38)
-      if (techId === 9) score += 1;  // Ceremonial Burial
-      if (techId === 55) score -= 1; // Monotheism (0x37)
-      break;
-    case 7: // Russians
-      if (techId === 15) score += 2; // Communism (0x0f)
-      if (techId === 44) score += 1; // Machine Tools (0x2C)
-      if (techId === 34) score += 1; // Guerrilla Warfare (0x22)
-      break;
-    case 8: // Zulus
-      if (techId === 64) score += 2; // Polytheism (0x40)
-      if (techId === 36) score += 1; // Horseback Riding (0x24)
-      if (techId === 56) score += 1; // Mysticism (0x38)
-      if (techId === 9) score += 1;  // Ceremonial Burial
-      if (techId === 8) score -= 1;  // Bronze Working
-      if (techId === 39) score -= 1; // Iron Working (0x27)
-      break;
-    case 9: // French
-      if (techId === 42) score += 1; // Leadership (0x2a)
-      if (techId === 81) score += 1; // Tactics (0x51)
-      if (techId === 17) score += 1; // Conscription (0x11)
-      break;
-    case 10: // Aztecs
-      if (techId === 35) score -= 2; // Gunpowder (0x23)
-      if (techId === 55) score -= 1; // Monotheism (0x37)
-      break;
-    case 11: // Chinese
-      // Decompiled: if no naval access (local_34 != 0), subtract navalScore.
-      // We don't track per-continent data, so approximate: if civ has no
-      // coastal cities, treat as landlocked and penalize naval techs.
-      // Also: +1 for Gunpowder (0x23)
-      if (navalScore > 0) {
-        // Approximate local_34: check if any city is coastal (heuristic)
-        let hasCoastal = false;
-        if (gameState.cities && mapBase) {
-          for (const city of gameState.cities) {
-            if (city && city.owner === civSlot && city.gx >= 0) {
-              // Simple heuristic: assume coastal if mapBase has ocean neighbors
-              // Without per-tile data we can't check; default to has coastal
-              hasCoastal = true;
-              break;
-            }
+  // Uses getCivStyleTechBonus for the base tech-specific bonus,
+  // plus context-dependent bonuses (navalScore, continent access)
+  // that require gameState/mapBase.
+  score += getCivStyleTechBonus(rulesCivNum, techId);
+
+  // Context-dependent civ bonuses that need navalScore/gameState/mapBase
+  if (rulesCivNum === 11) { // Chinese
+    // Decompiled: if no naval access (local_34 != 0), subtract navalScore.
+    // We don't track per-continent data, so approximate: if civ has no
+    // coastal cities, treat as landlocked and penalize naval techs.
+    if (navalScore > 0) {
+      let hasCoastal = false;
+      if (gameState.cities && mapBase) {
+        for (const city of gameState.cities) {
+          if (city && city.owner === civSlot && city.gx >= 0) {
+            hasCoastal = true;
+            break;
           }
         }
-        if (!hasCoastal) score -= navalScore;
       }
-      if (techId === 35) score += 1; // Gunpowder (0x23)
-      break;
-    case 12: // English
-      if (techId === 55) score += 1; // Monotheism (0x37)
-      if (navalScore > 0) score += 1; // English favor naval techs
-      break;
-    // cases 13 (Mongols) and 14 (Celts): no special bonuses in decompiled code
-    case 15: // Japanese
-      if (techId === 79) score += 1; // Steel (0x4f)
-      if (techId === 52) score += 1; // Miniaturization (0x34)
-      break;
-    case 16: // Vikings
-      if (techId === 46) score += 1; // Map Making (0x2e)
-      break;
-    case 17: // Spanish
-      if (navalScore > 1) score += 1; // Spanish favor advanced naval
-      if (techId === 55) score += 1;  // Monotheism (0x37)
-      break;
-    case 18: // Persians
-    case 19: // Carthaginians
-      if (techId === 64) score += 2; // Polytheism (0x40)
-      if (techId === 36) score += 1; // Horseback Riding (0x24)
-      if (techId === 56) score += 1; // Mysticism (0x38)
-      if (techId === 9) score += 1;  // Ceremonial Burial
-      if (techId === 55) score -= 1; // Monotheism (0x37)
-      break;
-    case 20: // Sioux
-      if (techId === 36) score += 2; // Horseback Riding (0x24)
-      break;
-    default:
-      break;
+      if (!hasCoastal) score -= navalScore;
+    }
+  } else if (rulesCivNum === 12) { // English
+    if (navalScore > 0) score += 1; // English favor naval techs
+  } else if (rulesCivNum === 17) { // Spanish
+    if (navalScore > 1) score += 1; // Spanish favor advanced naval
   }
 
   // ── No-one-has-this-tech bonus ──
@@ -911,6 +943,43 @@ export function balanceRates(gameState, mapBase, civSlot) {
   if (treasury > turnNum + 100 && science < maxSci) science += 1;
   if (treasury > 2000 && science < maxSci) science += 1;
   if (treasury > 8000) science = Math.min(maxSci, 10 - tax);
+
+  // ── Iterative optimization: greedily push science higher while treasury stays positive ──
+  // After the situation-based selection, try incrementing science by 1 and decrementing
+  // tax by 1 repeatedly. Accept only if treasury won't go negative.
+  // This matches the binary's iterative optimization approach (FUN_004bd2a3).
+  if (science < maxSci && tax > 0 && disorderCount === 0 && mapBase) {
+    // Estimate net income at current rates to see if we can afford more science
+    let trialSci = science;
+    let trialTax = tax;
+    while (trialSci < maxSci && trialTax > 0) {
+      const nextSci = trialSci + 1;
+      const nextTax = trialTax - 1;
+      // Estimate treasury impact: compute total tax income - maintenance at trial rates
+      let trialTaxIncome = 0;
+      let trialMaintenance = 0;
+      // Build simulated state once per trial iteration
+      const simCiv = { ...civ, scienceRate: nextSci, taxRate: nextTax };
+      const simState = { ...gameState, civs: [...gameState.civs] };
+      simState.civs[civSlot] = simCiv;
+      const cities = gameState.cities || [];
+      for (let ci = 0; ci < cities.length; ci++) {
+        const city = cities[ci];
+        if (!city || city.owner !== civSlot || city.size <= 0) continue;
+        if (city.resistanceTurns > 0) continue;
+        const tradeResult = calcCityTrade(city, ci, simState, mapBase);
+        trialTaxIncome += tradeResult.tax || 0;
+        trialMaintenance += tradeResult.maintenance || 0;
+      }
+      const netIncome = trialTaxIncome - trialMaintenance;
+      if (netIncome + (treasury || 0) < 0) break; // would cause deficit
+      trialSci = nextSci;
+      trialTax = nextTax;
+    }
+    science = trialSci;
+    tax = trialTax;
+    luxury = 10 - science - tax;
+  }
 
   // ── Final sanity clamps ──
   science = Math.max(0, Math.min(maxSci, science));

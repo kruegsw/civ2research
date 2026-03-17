@@ -16,6 +16,15 @@ import { getNumericYear } from './year.js';
 // ── Retirement score difficulty multipliers (from binary) ──
 const DIFFICULTY_MULTIPLIER = { 0: 4, 1: 5, 2: 6, 3: 8, 4: 10, 5: 13 };
 
+// ── Final display difficulty multipliers (percentage, from binary) ──
+// chieftain=50%, warlord=75%, prince=100%, king=125%, emperor=150%, deity=200%
+const FINAL_SCORE_MULTIPLIER = { 0: 50, 1: 75, 2: 100, 3: 125, 4: 150, 5: 200 };
+
+// ── Alpha Centauri bonus points per spaceship part type ──
+const AC_BONUS_STRUCTURAL = 100;
+const AC_BONUS_COMPONENT  = 200;
+const AC_BONUS_MODULE      = 300;
+
 // ── Spaceship part building IDs ──
 const SS_STRUCTURAL = 35;  // building ID for SS Structural
 const SS_COMPONENT  = 36;  // building ID for SS Component
@@ -367,6 +376,54 @@ export function calcRetirementScore(state, civSlot) {
   }
 
   return { rawScore, rank, civScore };
+}
+
+/**
+ * Calculate final civilization score with difficulty multiplier and
+ * Alpha Centauri bonus.
+ *
+ * The final displayed score applies a difficulty-based percentage
+ * multiplier to the base civ score, then adds a spaceship arrival
+ * bonus if the ship reached Alpha Centauri.
+ *
+ * Difficulty multipliers for final display:
+ *   chieftain=50%, warlord=75%, prince=100%, king=125%, emperor=150%, deity=200%
+ *
+ * Alpha Centauri bonus (if spaceship arrived):
+ *   +100 per structural, +200 per component, +300 per module
+ *
+ * @param {object} state - game state
+ * @param {number} civSlot
+ * @returns {{ finalScore: number, baseScore: number, difficultyPct: number, acBonus: number, breakdown: object }}
+ */
+export function calcFinalScore(state, civSlot) {
+  const breakdown = calcCivScore(state, civSlot);
+  const baseScore = breakdown.total;
+
+  // Difficulty multiplier
+  const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain'));
+  const difficultyPct = FINAL_SCORE_MULTIPLIER[diffIdx] ?? 100;
+  const scaledScore = Math.floor(baseScore * difficultyPct / 100);
+
+  // Alpha Centauri bonus: only if spaceship arrived
+  let acBonus = 0;
+  const ss = state.spaceships?.[civSlot];
+  const turnNum = state.turn?.number || 0;
+  if (ss && ss.launched && ss.arrivalTurn <= turnNum && !ss.destroyed) {
+    acBonus += (ss.structurals || 0) * AC_BONUS_STRUCTURAL;
+    acBonus += (ss.components || 0) * AC_BONUS_COMPONENT;
+    acBonus += (ss.modules || 0) * AC_BONUS_MODULE;
+  }
+
+  const finalScore = scaledScore + acBonus;
+
+  return {
+    finalScore,
+    baseScore,
+    difficultyPct,
+    acBonus,
+    breakdown,
+  };
 }
 
 /**

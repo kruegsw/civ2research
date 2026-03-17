@@ -685,6 +685,90 @@ export function assessTaxRate(civSlot, aiData, gameState) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Territory Analysis — zone-based threat assessment
+//
+// Divides the map into an 8×8 grid of zones and counts own/enemy
+// units and cities per zone. Returns a threat level per zone:
+//   0 = safe (no enemy presence)
+//   1 = contested (enemy units nearby but outnumbered)
+//   2 = threatened (enemy presence equals or exceeds ours)
+//   3 = under attack (enemy significantly outnumbers us)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Analyze territorial control across the map using an 8×8 zone grid.
+ *
+ * @param {object} gameState - current game state
+ * @param {object} mapBase   - immutable map data with mw, mh, tileData
+ * @param {number} civSlot   - civ slot (1-7)
+ * @returns {object} { zones: Array<{ownUnits, enemyUnits, ownCities, enemyCities, threat}>, gridW, gridH }
+ */
+export function analyzeTerritory(gameState, mapBase, civSlot) {
+  const GRID_W = 8;
+  const GRID_H = 8;
+  const zoneW = Math.max(1, Math.ceil(mapBase.mw / GRID_W));
+  const zoneH = Math.max(1, Math.ceil(mapBase.mh / GRID_H));
+
+  // Initialize zone data
+  const zones = new Array(GRID_W * GRID_H);
+  for (let i = 0; i < zones.length; i++) {
+    zones[i] = { ownUnits: 0, enemyUnits: 0, ownCities: 0, enemyCities: 0, threat: 0 };
+  }
+
+  /** Map a tile coordinate to a zone index. */
+  function toZone(gx, gy) {
+    const zx = Math.min(GRID_W - 1, Math.floor(gx / zoneW));
+    const zy = Math.min(GRID_H - 1, Math.floor(gy / zoneH));
+    return zy * GRID_W + zx;
+  }
+
+  // Count units per zone
+  const units = gameState.units || [];
+  for (const u of units) {
+    if (u.gx < 0) continue;
+    // Only count combat-capable units (ATK or DEF > 0)
+    if ((UNIT_ATK[u.type] || 0) === 0 && (UNIT_DEF[u.type] || 0) === 0) continue;
+    const zi = toZone(u.gx, u.gy);
+    if (u.owner === civSlot) {
+      zones[zi].ownUnits++;
+    } else if (u.owner > 0) {
+      zones[zi].enemyUnits++;
+    }
+  }
+
+  // Count cities per zone
+  const cities = gameState.cities || [];
+  for (const c of cities) {
+    if (!c || c.size <= 0 || c.gx < 0) continue;
+    const zi = toZone(c.gx, c.gy);
+    if (c.owner === civSlot) {
+      zones[zi].ownCities++;
+    } else if (c.owner > 0) {
+      zones[zi].enemyCities++;
+    }
+  }
+
+  // Compute threat levels per zone
+  for (let i = 0; i < zones.length; i++) {
+    const z = zones[i];
+    const enemyPresence = z.enemyUnits + z.enemyCities;
+    const ownPresence = z.ownUnits + z.ownCities;
+
+    if (enemyPresence === 0) {
+      z.threat = 0; // safe
+    } else if (enemyPresence > ownPresence * 2) {
+      z.threat = 3; // under attack
+    } else if (enemyPresence >= ownPresence) {
+      z.threat = 2; // threatened
+    } else {
+      z.threat = 1; // contested
+    }
+  }
+
+  return { zones, gridW: GRID_W, gridH: GRID_H, zoneW, zoneH };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Main strategic assessment (combines all 5 assessments)
 // ═══════════════════════════════════════════════════════════════════
 

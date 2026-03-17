@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  UNIT_PREREQS, UNIT_OBSOLETE, UNIT_DOMAIN,
+  UNIT_PREREQS, UNIT_OBSOLETE, UNIT_DOMAIN, UNIT_ROLE, UNIT_DEF, UNIT_ATK,
   IMPROVE_PREREQS, IMPROVE_COSTS, IMPROVE_REQUIRES_BUILDING,
   COASTAL_BUILDINGS, POWER_PLANT_BUILDINGS,
   SS_STRUCTURAL, SS_COMPONENT, SS_MODULE,
@@ -16,6 +16,11 @@ import {
   UNIT_COSTS, FANATIC_TYPES,
 } from './defs.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
+
+// Gunpowder tech ID and defense threshold for obsoleting weak defensive units
+// From binary: DAT_0064b251 (global defense threshold, standard Civ2 = 3)
+const GUNPOWDER_TECH_ID = 35;  // 0x23
+const GUNPOWDER_DEFENSE_THRESHOLD = 3;
 
 /**
  * Check if a civ can build a specific unit type.
@@ -54,6 +59,41 @@ export function canBuildUnitType(civSlot, cityIndex, unitTypeId, gameState, mapB
   if (FANATIC_TYPES.has(unitTypeId)) {
     const govt = getGovernment(null, gameState, civSlot);
     if (govt !== 'fundamentalism') return false;
+  }
+
+  // ── Gunpowder defense threshold ──
+  // Port of FUN_004bfe5a gunpowder check: if civ has Gunpowder tech and
+  // unit is a defensive ground unit (role==1) with defense < threshold,
+  // the unit is obsoleted (prevents building e.g. Phalanx, Pikemen after Gunpowder).
+  const role = UNIT_ROLE[unitTypeId];
+  if (role === 1 && hasTech(GUNPOWDER_TECH_ID)) {
+    const def = UNIT_DEF[unitTypeId] ?? 0;
+    if (def < GUNPOWDER_DEFENSE_THRESHOLD) return false;
+  }
+
+  // ── AI duplicate filtering ──
+  // Port of FUN_004bfe5a AI duplicate check: for AI civs, if another unit
+  // type exists with the same role and domain but strictly better stats
+  // (higher attack+defense) and the civ has its prereq tech, skip this
+  // weaker unit to avoid cluttering the build queue.
+  if (!isHumanCivForBuild(gameState, civSlot)) {
+    const atk = UNIT_ATK[unitTypeId] ?? 0;
+    const def2 = UNIT_DEF[unitTypeId] ?? 0;
+    for (let otherType = 0; otherType < UNIT_COSTS.length; otherType++) {
+      if (otherType === unitTypeId) continue;
+      if (UNIT_COSTS[otherType] == null) continue;
+      if ((UNIT_ROLE[otherType] ?? -1) !== role) continue;
+      if ((UNIT_DOMAIN[otherType] ?? -1) !== domain) continue;
+      const otherPrereq = UNIT_PREREQS[otherType] ?? -1;
+      if (otherPrereq <= -2) continue;
+      if (otherPrereq >= 0 && !hasTech(otherPrereq)) continue;
+      // Check obsolescence of the candidate replacement
+      const otherObs = UNIT_OBSOLETE[otherType] ?? -1;
+      if (otherObs >= 0 && hasTech(otherObs)) continue;
+      const otherAtk = UNIT_ATK[otherType] ?? 0;
+      const otherDef = UNIT_DEF[otherType] ?? 0;
+      if (otherAtk + otherDef > atk + def2) return false;
+    }
   }
 
   return true;
@@ -243,4 +283,19 @@ function isCityCoastal(city, mapBase) {
     if (mapBase.getTerrain(wx, ny) === 10) return true;
   }
   return false;
+}
+
+/**
+ * Check if a civ is human-controlled (has a seat assignment).
+ * Used by AI duplicate filtering to only filter AI build lists.
+ */
+function isHumanCivForBuild(gameState, civSlot) {
+  if (gameState.seatCivMap) {
+    for (const seat of Object.values(gameState.seatCivMap)) {
+      if (seat === civSlot) return true;
+    }
+    return false;
+  }
+  // Fallback: civ slot 1 is typically human in single-player
+  return civSlot === 1;
 }

@@ -1086,6 +1086,29 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
   if (prodResult.newWorked != null) newWorked = prodResult.newWorked;
   events.push(...prodResult.events);
 
+  // ── Step 3b: Unit support category pools for AI production prioritization ──
+  // Binary distributes shield surplus across unit support categories with
+  // different thresholds based on city size (COSMIC parameters).
+  // Categories: pools of surplus shields bucketed by citySize multiples.
+  // Used by AI to gauge how much production capacity is available for military.
+  // Only computed when surplus > city.size (excess production available).
+  {
+    const shieldResult = calcShieldProduction(cityAfterHap, cityIndex, state, mapBase, state.units || []);
+    const shieldSurplus = shieldResult.grossShields - shieldResult.support;
+    if (shieldSurplus > cityAfterHap.size) {
+      const excess = shieldSurplus - cityAfterHap.size;
+      // Category pools bucketed by citySize thresholds
+      const sz = Math.max(1, cityAfterHap.size);
+      const catPools = [
+        Math.min(excess, sz),                                    // cat 1: first citySize shields
+        Math.min(Math.max(0, excess - sz), sz),                  // cat 2: next citySize
+        Math.min(Math.max(0, excess - sz * 2), sz),              // cat 3: next citySize
+        Math.max(0, excess - sz * 3),                            // cat 4: remainder
+      ];
+      prodResult.supportCategoryPools = catPools;
+    }
+  }
+
   // ── Apply accumulated changes to city ──
   const soldThisTurn = false;
   if (newSize !== cityAfterHap.size || newFood !== cityAfterHap.foodInBox ||

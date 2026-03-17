@@ -2650,6 +2650,21 @@ const RUSH_BUY_BUILDINGS = new Set([
   23, // Sewer System
 ]);
 
+// ── Rush-buy urgency divisor tables (from Civ2 binary) ────────────
+// Lower divisor = higher urgency. The base priority is divided by
+// these values to produce the final urgency score. Ported from the
+// decompiled rush-buy evaluation in FUN_00498e8b.
+const URGENCY_DIVISORS = {
+  wonder: 4,          // Wonders: moderate urgency
+  spaceshipPart: 3,   // Spaceship parts: higher urgency (race to finish)
+  coastalDefense: 6,  // Coastal Fortress (building 28): low urgency
+  regularDefense: 8,  // Regular defense units: low urgency
+  palace: 2,          // Palace (building 1): high urgency
+};
+
+// Treasury threshold above which rush-buy urgency is doubled
+const DOUBLE_URGENCY_TREASURY_THRESHOLD = 2499;
+
 /**
  * Generate RUSH_BUY actions for cities where it makes economic sense.
  *
@@ -2739,8 +2754,9 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
     const buyCost = calcRushBuyCost(item.type, totalCost, shieldsStored);
     if (buyCost <= 0) continue;
 
-    // Determine urgency/priority
+    // Determine urgency/priority using Civ2 binary divisor tables
     let priority = 0;
+    let urgencyDivisor = 1;
 
     if (item.type === 'unit') {
       // Settlers/Engineers
@@ -2753,13 +2769,30 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
         const enemies = findNearbyEnemies(city.gx, city.gy, gameState, mapBase, civSlot, 5);
         if (enemies.length > 0 && defenders === 0) {
           priority = 8; // Emergency defense
+          urgencyDivisor = URGENCY_DIVISORS.regularDefense;
         } else if (defenders === 0) {
           priority = 3;
+          urgencyDivisor = URGENCY_DIVISORS.regularDefense;
         }
       }
     } else if (item.type === 'building') {
+      // Palace (building 1): high urgency
+      if (item.id === 1) {
+        priority = 6;
+        urgencyDivisor = URGENCY_DIVISORS.palace;
+      }
+      // Coastal Fortress (building 28): moderate urgency
+      else if (item.id === 28) {
+        priority = 4;
+        urgencyDivisor = URGENCY_DIVISORS.coastalDefense;
+      }
+      // Spaceship parts (buildings 30-38)
+      else if (item.id >= 30 && item.id <= 38) {
+        priority = 7;
+        urgencyDivisor = URGENCY_DIVISORS.spaceshipPart;
+      }
       // Aqueduct when near growth cap
-      if (item.id === 9 && city.size >= 7) {
+      else if (item.id === 9 && city.size >= 7) {
         priority = 7;
       }
       // Sewer when near growth cap
@@ -2770,6 +2803,18 @@ export function generateRushBuyActions(gameState, mapBase, civSlot, strategy) {
       else if (RUSH_BUY_BUILDINGS.has(item.id)) {
         priority = 4;
       }
+    } else if (item.type === 'wonder') {
+      urgencyDivisor = URGENCY_DIVISORS.wonder;
+    }
+
+    // Apply urgency divisor to priority
+    if (urgencyDivisor > 1) {
+      priority = Math.max(1, Math.ceil(priority * 8 / urgencyDivisor));
+    }
+
+    // Double urgency if treasury exceeds threshold (from Civ2 binary)
+    if (priority > 0 && treasury > DOUBLE_URGENCY_TREASURY_THRESHOLD) {
+      priority = Math.min(priority * 2, 16);
     }
 
     if (priority > 0) {
