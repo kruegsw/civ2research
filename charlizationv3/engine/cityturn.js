@@ -10,7 +10,7 @@
 
 import {
   FOOD_BOX_MULTIPLIER,
-  UNIT_DOMAIN, UNIT_COSTS,
+  UNIT_DOMAIN, UNIT_COSTS, UNIT_ROLE,
   IMPROVE_COSTS, IMPROVE_MAINTENANCE,
   SUPPORT_EXEMPT_TYPES, SETTLER_TYPES,
   CITY_RADIUS_DOUBLED,
@@ -19,11 +19,11 @@ import {
 import {
   calcFoodSurplus, calcShieldProduction, getProductionCost,
   calcGrossShields, calcUnitShieldSupport, calcCityTrade,
-  calcBuildingMaintenance,
+  calcBuildingMaintenance, calcSupplyDemand,
 } from './production.js';
 import { calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
-import { grantAdvance, getAvailableResearch } from './research.js';
+import { grantAdvance, getAvailableResearch, checkUnitAutoUpgrade } from './research.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Food processing (Wave 1 — unchanged)
@@ -222,24 +222,27 @@ export function assignCaravanCommodity(city, cityIndex, state, mapBase) {
     }
   }
 
-  // Determine city's terrain-based supply profile.
-  // Different terrain types favor different commodities.
-  // This approximates the original calc_supply_demand without the full model.
-  const cityTerrain = mapBase?.getTerrain?.(city.gx, city.gy) ?? 0;
+  // Use full supply/demand model (port of FUN_0043d400) to pick highest-supply commodity
+  const { supply } = calcSupplyDemand(city, cityIndex, state, mapBase);
 
-  // Base commodity: hash city position and terrain to get a deterministic starting point
-  // This ensures different cities produce different commodities
-  const baseHash = ((cityIndex * 7 + city.gx * 13 + city.gy * 19) & 0x7FFFFFFF) % numCommodities;
+  // Build a sorted list of commodities by supply value (descending)
+  const ranked = [];
+  for (let i = 0; i < numCommodities; i++) {
+    ranked.push({ id: i, val: supply[i] });
+  }
+  ranked.sort((a, b) => b.val - a.val);
 
-  // Try to pick a commodity not already carried by a trade unit from this city
-  for (let offset = 0; offset < numCommodities; offset++) {
-    const candidateId = (baseHash + offset) % numCommodities;
-    if (!usedCommodities.has(candidateId)) {
-      return candidateId;
-    }
+  // Pick the highest-supply commodity not already carried
+  for (const { id, val } of ranked) {
+    if (val < 0) continue; // -1 means unavailable (requires tech)
+    if (!usedCommodities.has(id)) return id;
   }
 
-  // All 16 commodities in use (extremely unlikely) — fallback to commodity 0
+  // All commodities in use or unavailable — fallback to first available
+  for (const { id, val } of ranked) {
+    if (val >= 0) return id;
+  }
+
   return 0;
 }
 
@@ -269,6 +272,14 @@ export function assignCaravanCommodity(city, cityIndex, state, mapBase) {
 export function processCityProduction(city, cityIndex, state, mapBase, callbacks) {
   const events = [];
   const activeCiv = city.owner;
+
+  // ── Auto-upgrade obsoleted unit production ──
+  const upgradeEvent = checkUnitAutoUpgrade(state, cityIndex);
+  if (upgradeEvent) {
+    events.push(upgradeEvent);
+    // Re-read city after production switch
+    city = state.cities[cityIndex];
+  }
 
   // No production during civil disorder
   if (city.civilDisorder) {
@@ -304,14 +315,26 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
 
     if (item.type === 'unit') {
       // ── Create unit ──
+      // Determine veteran status:
+      //   Barracks (building 2) or Sun Tzu's (wonder 7) → all land units
+      //   Airport (building 32) → air units
+      //   Port Facility (building 34) or Lighthouse (wonder 3) → sea units
+      //   Communism government + settler/engineer role (UNIT_ROLE 6) → veteran
+      const govt = getGovernment(city, state);
+      const unitRole = UNIT_ROLE[item.id] ?? 0;
+      const isVeteran = (
+        cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)
+        || (UNIT_DOMAIN[item.id] === 1 && cityHasBuilding(city, 32))
+        || (UNIT_DOMAIN[item.id] === 2 && (cityHasBuilding(city, 34) || hasWonderEffect(state, activeCiv, 3)))
+        || (govt === 'communism' && unitRole === 6)
+      );
+
       const newUnit = {
         type: item.id,
         owner: activeCiv,
         gx: city.gx, gy: city.gy,
         x: city.gx * 2 + (city.gy % 2), y: city.gy,
-        veteran: (cityHasBuilding(city, 2) || hasWonderEffect(state, activeCiv, 7)
-          || (UNIT_DOMAIN[item.id] === 1 && cityHasBuilding(city, 32))
-          || (UNIT_DOMAIN[item.id] === 2 && cityHasBuilding(city, 34))) ? 1 : 0,
+        veteran: isVeteran ? 1 : 0,
         movesRemain: 0,
         orders: 'none', movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
@@ -382,8 +405,23 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
             }
           }
           // Manhattan Project (23): enables nuclear weapons for ALL civs
+          // Also halves nuclear stockpile for all civs (FUN_004ec3fe lines 4957-4961)
+          // Binary: for each civ 1-7, nukeByte = clamp((nukeByte + 1) / 2, 0, 6)
           if (wi === 23) {
             state.nuclearEnabled = true;
+            // Halve nuclear stockpile for all civs
+            if (state.civs) {
+              state.civs = [...state.civs];
+              for (let ci = 1; ci < 8; ci++) {
+                const civ = state.civs[ci];
+                if (!civ) continue;
+                const nukeByte = civ.nukeStockpile || 0;
+                if (nukeByte > 0) {
+                  const halved = Math.min(6, Math.max(0, Math.floor((nukeByte + 1) / 2)));
+                  state.civs[ci] = { ...civ, nukeStockpile: halved };
+                }
+              }
+            }
             events.push({ type: 'manhattanProject', civSlot: activeCiv });
           }
           // Apollo Program (25): reveals entire map for the owner

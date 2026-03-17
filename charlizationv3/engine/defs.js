@@ -387,6 +387,14 @@ export const CITY_RADIUS_DOUBLED = [
   [0,0]
 ];
 
+// Extended city radius tile offsets (25 tiles = 21 city radius + 4 outer)
+// Used by SURROUNDING_TILE_ANALYSIS (FUN_004e7641) for AI threat assessment.
+// Indices 0-20: same as CITY_RADIUS_DOUBLED; 21-24: N/E/S/W at distance 4 (doubled coords)
+export const CITY_RADIUS_EXTENDED = [
+  ...CITY_RADIUS_DOUBLED,
+  [0,-4],[+4,0],[0,+4],[-4,0],
+];
+
 // Base terrain yields [food, shields, trade] (indexed by terrain type 0-10)
 export const TERRAIN_BASE = [
   [0, 1, 0], // 0 Desert

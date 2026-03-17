@@ -13,6 +13,7 @@ import {
   ADVANCE_PREREQS, ADVANCE_NAMES, COSMIC_TECH_MULTIPLIER, DIFFICULTY_KEYS,
   UNIT_PREREQS, UNIT_OBSOLETE, UNIT_DOMAIN, UNIT_ATK, UNIT_NAMES,
   WONDER_OBSOLETE, WONDER_NAMES, IMPROVE_MAINTENANCE,
+  GOVERNMENT_NAMES,
 } from './defs.js';
 
 /**
@@ -173,8 +174,23 @@ export function grantAdvance(state, civSlot, advanceId) {
 // ── TECH IDs referenced by name (standard MGE RULES.TXT order) ──
 const TECH_GUNPOWDER = 35;
 const TECH_AUTOMOBILE = 5;
+const TECH_MONARCHY = 54;
+const TECH_REPUBLIC = 71;
+const TECH_DEMOCRACY = 21;
+const TECH_COMMUNISM = 15;
+const TECH_FUNDAMENTALISM = 31;
+const TECH_PHILOSOPHY = 60;
 // Future Tech sentinel (techId 0x59 = 89 or >= 100)
 const FUTURE_TECH_ID = 89;
+
+// Government indices (matching GOVERNMENT_NAMES)
+const GOVT_ANARCHY = 0;
+const GOVT_DESPOTISM = 1;
+const GOVT_MONARCHY = 2;
+const GOVT_COMMUNISM = 3;
+const GOVT_FUNDAMENTALISM = 4;
+const GOVT_REPUBLIC = 5;
+const GOVT_DEMOCRACY = 6;
 
 /**
  * Handle tech discovery effects — ported from FUN_004bf05b.
@@ -268,6 +284,20 @@ export function handleTechDiscovery(state, civSlot, techId) {
   // ── Leonardo's Workshop: auto-upgrade units ──
   const upgradeEvents = upgradeUnitsForTech(state, civSlot, techId);
   events.push(...upgradeEvents);
+
+  // ── Government revolution prompt ──
+  const govtEvent = checkGovernmentRevolution(state, civSlot, techId);
+  if (govtEvent) events.push(govtEvent);
+
+  // ── Great Library cascade ──
+  const libEvents = checkGreatLibraryCascade(state, techId);
+  events.push(...libEvents);
+
+  // ── Golden Age: Philosophy first-discoverer bonus ──
+  if (techId === TECH_PHILOSOPHY && isFirstDiscoverer) {
+    const goldenEvent = triggerGoldenAge(state, civSlot);
+    if (goldenEvent) events.push(goldenEvent);
+  }
 
   return events;
 }
@@ -364,4 +394,290 @@ function hasLeonardosWorkshop(state, civSlot) {
   if (!w || w.cityIndex == null || w.destroyed) return false;
   const city = state.cities[w.cityIndex];
   return city && city.owner === civSlot;
+}
+
+/**
+ * Check if a wonder is active and owned by a specific civ.
+ * Inlined to avoid circular dependency with utils.js.
+ *
+ * @param {object} state
+ * @param {number} civSlot
+ * @param {number} wonderIdx
+ * @returns {boolean}
+ */
+function hasWonderEffectInline(state, civSlot, wonderIdx) {
+  const obsTech = WONDER_OBSOLETE[wonderIdx];
+  if (obsTech >= 0 && state.civTechs) {
+    for (let c = 0; c < 8; c++) {
+      if (state.civTechs[c]?.has(obsTech)) return false;
+    }
+  }
+  const w = state.wonders?.[wonderIdx];
+  if (!w || w.cityIndex == null || w.destroyed) return false;
+  const city = state.cities[w.cityIndex];
+  return city && city.owner === civSlot;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TECH_GOVERNMENT_REVOLUTION — prompt revolution on government-
+// unlocking techs (ported from binary auto-revolution logic)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Government-tech → new-government mapping.
+ * Binary triggers auto-revolution prompts when a tech unlocks a new
+ * government form and the civ's current government is "worse".
+ */
+const GOVT_UNLOCK_MAP = [
+  { techId: TECH_MONARCHY,        govtIndex: GOVT_MONARCHY,        promptIf: (g) => g === GOVT_DESPOTISM },
+  { techId: TECH_REPUBLIC,        govtIndex: GOVT_REPUBLIC,        promptIf: (g) => g !== GOVT_REPUBLIC },
+  { techId: TECH_DEMOCRACY,       govtIndex: GOVT_DEMOCRACY,       promptIf: (g) => g !== GOVT_DEMOCRACY },
+  { techId: TECH_COMMUNISM,       govtIndex: GOVT_COMMUNISM,       promptIf: (g) => g !== GOVT_COMMUNISM },
+  { techId: TECH_FUNDAMENTALISM,  govtIndex: GOVT_FUNDAMENTALISM,  promptIf: (g) => g !== GOVT_FUNDAMENTALISM },
+];
+
+/**
+ * Check if a discovered tech unlocks a new government and the civ
+ * should be prompted to revolt.
+ *
+ * Skip if current government is already Democracy (6) or Anarchy (0).
+ *
+ * @param {object} state
+ * @param {number} civSlot
+ * @param {number} techId
+ * @returns {object|null} event { type:'governmentUnlocked', civSlot, techId, newGovernment } or null
+ */
+export function checkGovernmentRevolution(state, civSlot, techId) {
+  const civ = state.civs?.[civSlot];
+  if (!civ) return null;
+
+  // Resolve current government to numeric index
+  const govtName = civ.government || 'despotism';
+  const govtIdx = GOVERNMENT_NAMES.indexOf(
+    govtName.charAt(0).toUpperCase() + govtName.slice(1)
+  );
+  const currentGovt = govtIdx >= 0 ? govtIdx : GOVT_DESPOTISM;
+
+  // Already in Democracy or Anarchy — no prompt
+  if (currentGovt === GOVT_DEMOCRACY || currentGovt === GOVT_ANARCHY) return null;
+
+  for (const entry of GOVT_UNLOCK_MAP) {
+    if (entry.techId !== techId) continue;
+    if (!entry.promptIf(currentGovt)) continue;
+    return {
+      type: 'governmentUnlocked',
+      civSlot,
+      techId,
+      newGovernment: GOVERNMENT_NAMES[entry.govtIndex].toLowerCase(),
+    };
+  }
+
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GOLDEN_AGE — Philosophy first-discoverer bonus
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Trigger a Golden Age for a civ: pick a random city weighted by size
+ * (Palace city doubles weight) and grant it a WeLoveKingDay bonus.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} civSlot
+ * @returns {object|null} event { type:'goldenAge', civSlot, cityIndex } or null
+ */
+export function triggerGoldenAge(state, civSlot) {
+  if (!state.cities) return null;
+
+  // Build weighted list of cities owned by this civ
+  const candidates = [];
+  let totalWeight = 0;
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    const city = state.cities[ci];
+    if (city.owner !== civSlot || city.size <= 0) continue;
+    let weight = city.size;
+    // Palace (building 1) doubles weight
+    if (city.buildings?.has(1)) weight *= 2;
+    candidates.push({ ci, weight });
+    totalWeight += weight;
+  }
+
+  if (candidates.length === 0) return null;
+
+  // Pick a random city weighted by size
+  const roll = state.rng
+    ? state.rng.nextInt(totalWeight)
+    : Math.floor(Math.random() * totalWeight);
+  let accum = 0;
+  let chosen = candidates[0].ci;
+  for (const c of candidates) {
+    accum += c.weight;
+    if (roll < accum) {
+      chosen = c.ci;
+      break;
+    }
+  }
+
+  // Grant WeLoveKingDay for next turn
+  state.cities[chosen] = { ...state.cities[chosen], weLoveKingDay: true };
+
+  return { type: 'goldenAge', civSlot, cityIndex: chosen };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GREAT LIBRARY CASCADE — grant techs known by 2+ civs
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if the Great Library owner should receive a newly-discovered tech.
+ *
+ * When a tech is known by 2+ civs, the Great Library owner (wonder 4)
+ * gets it free if they don't already have it.
+ *
+ * Called from handleTechDiscovery after granting a tech, so the
+ * techDiscoveredBitmask is already updated. We check the bitmask to
+ * see if 2+ civs now know this tech.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} techId - the advance just discovered
+ * @returns {object[]} array of events
+ */
+export function checkGreatLibraryCascade(state, techId) {
+  const events = [];
+  const GREAT_LIBRARY_IDX = 4;
+
+  // Find who owns the Great Library (and check it's not obsolete)
+  let libraryOwner = -1;
+  for (let c = 1; c < 8; c++) {
+    if (hasWonderEffectInline(state, c, GREAT_LIBRARY_IDX)) {
+      libraryOwner = c;
+      break;
+    }
+  }
+  if (libraryOwner < 0) return events;
+
+  // Already knows this tech?
+  if (state.civTechs?.[libraryOwner]?.has(techId)) return events;
+
+  // Count how many civs know this tech
+  let knownCount = 0;
+  for (let c = 1; c < 8; c++) {
+    if (state.civTechs?.[c]?.has(techId)) knownCount++;
+  }
+
+  if (knownCount >= 2) {
+    grantAdvance(state, libraryOwner, techId);
+    events.push({
+      type: 'freeAdvance',
+      civSlot: libraryOwner,
+      advanceId: techId,
+      source: 'Great Library',
+    });
+  }
+
+  return events;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TECH_PREREQUISITE_CHECK — recursive prereq tree search
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Recursive check: is techA anywhere in techB's prerequisite tree?
+ *
+ * Returns true if techA == techB, or if techA is a direct or indirect
+ * prerequisite of techB.
+ *
+ * Uses ADVANCE_PREREQS from defs.js. Handles cycles via a visited set.
+ *
+ * @param {number} techA - the potential ancestor tech
+ * @param {number} techB - the tech whose prereq tree to search
+ * @returns {boolean}
+ */
+export function isPrereqOf(techA, techB) {
+  if (techA === techB) return true;
+  if (techB < 0 || techB >= ADVANCE_PREREQS.length) return false;
+  if (techA < 0 || techA >= ADVANCE_PREREQS.length) return false;
+
+  const visited = new Set();
+  const stack = [techB];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (current === techA) return true;
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    if (current < 0 || current >= ADVANCE_PREREQS.length) continue;
+    const [p1, p2] = ADVANCE_PREREQS[current];
+    if (p1 >= 0) stack.push(p1);
+    if (p2 >= 0) stack.push(p2);
+  }
+
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// UNIT_AUTO_UPGRADE — switch obsoleted city production
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if a city is building a unit type that has been obsoleted by
+ * a tech the civ already knows. If so, auto-switch production to
+ * the replacement unit type.
+ *
+ * Replacement logic: find a unit type whose prereq tech matches the
+ * obsoleted unit's obsolete tech, same domain, and attack >= old unit.
+ * Take the last match (highest index = most advanced).
+ *
+ * Should be called at the start of processCityProduction.
+ *
+ * @param {object} state - game state (read-only for this check)
+ * @param {number} cityIndex
+ * @returns {object|null} event if production was switched, or null
+ */
+export function checkUnitAutoUpgrade(state, cityIndex) {
+  const city = state.cities?.[cityIndex];
+  if (!city || city.size <= 0) return null;
+
+  const item = city.itemInProduction;
+  if (!item || item.type !== 'unit') return null;
+
+  const unitTypeId = item.id;
+  const obsoleteTech = UNIT_OBSOLETE[unitTypeId];
+  if (obsoleteTech < 0) return null; // never obsolete
+
+  const civTechs = state.civTechs?.[city.owner];
+  if (!civTechs || !civTechs.has(obsoleteTech)) return null; // civ doesn't have obsoleting tech
+
+  // Find best replacement: same domain, prereq matches obsoleting tech,
+  // attack >= old unit. Last match = highest index = most advanced.
+  let bestUpgrade = -1;
+  for (let candidate = 0; candidate < UNIT_PREREQS.length; candidate++) {
+    if (candidate === unitTypeId) continue;
+    if (UNIT_PREREQS[candidate] !== obsoleteTech) continue;
+    if (UNIT_DOMAIN[candidate] !== UNIT_DOMAIN[unitTypeId]) continue;
+    if (UNIT_ATK[candidate] < UNIT_ATK[unitTypeId]) continue;
+    bestUpgrade = candidate;
+  }
+
+  if (bestUpgrade < 0) return null;
+
+  // Auto-switch production
+  state.cities[cityIndex] = {
+    ...city,
+    itemInProduction: { type: 'unit', id: bestUpgrade },
+  };
+
+  return {
+    type: 'productionAutoUpgrade',
+    civSlot: city.owner,
+    cityIndex,
+    cityName: city.name,
+    fromType: unitTypeId,
+    fromName: UNIT_NAMES[unitTypeId],
+    toType: bestUpgrade,
+    toName: UNIT_NAMES[bestUpgrade],
+  };
 }

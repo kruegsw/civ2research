@@ -163,14 +163,17 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // pressure value each turn. When counter exceeds 16, a warming event fires
   // and degrades terrain across the map.
   {
-    // Count pollution tiles and recycling centers across all cities
+    // Count pollution tiles, recycling centers, and solar plants across all cities
     let pollCount = 0;
     for (const tile of mapBase.tileData) {
       if (tile && tile.improvements && tile.improvements.pollution) pollCount++;
     }
     let recyclingCount = 0;
+    let solarPlantCount = 0;
     for (const c of state.cities) {
-      if (c.size > 0 && cityHasBuilding(c, 29)) recyclingCount++; // Recycling Center = 29
+      if (c.size <= 0) continue;
+      if (cityHasBuilding(c, 18)) recyclingCount++;   // Recycling Center = building 18
+      if (cityHasBuilding(c, 29)) solarPlantCount++;   // Solar Plant = building 29
     }
 
     // Count alive civs for multi-civ divisor
@@ -186,9 +189,10 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       pollLevel = Math.floor((aliveCivCount - 1 + pollLevel) / aliveCivCount);
     }
 
-    // Net pressure: pollution × 2 - warmingEvents × 4 - recyclingCenters
+    // Net pressure: pollution × 2 - warmingEvents × 4 - recyclingCenters - solarPlants
+    // Solar Plant cities reduce global warming pressure (binary: reduces counter)
     const warmingCount = state.globalWarmingCount || 0;
-    const netPressure = pollLevel * 2 - warmingCount * 4 - recyclingCount;
+    const netPressure = pollLevel * 2 - warmingCount * 4 - recyclingCount - solarPlantCount;
 
     // Drift counter toward net pressure (±1 per turn)
     let counter = state.pollutionCounter || 0;
@@ -197,10 +201,13 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     counter = Math.max(0, Math.min(99, counter));
     state.pollutionCounter = counter;
 
-    // Warning at counter == 12 if pollution > 6
-    if (counter === 12 && pollCount > 6) {
+    // Warnings: counter > 12 with pollution > 6, and counter > 6
+    if (counter > 12 && pollCount > 6) {
       if (!state.turnEvents) state.turnEvents = [];
-      state.turnEvents.push({ type: 'pollutionWarning' });
+      state.turnEvents.push({ type: 'pollutionWarning', severity: 'high' });
+    } else if (counter > 6 && pollCount > 0) {
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'pollutionWarning', severity: 'low' });
     }
 
     // Trigger global warming at counter > 16

@@ -8,10 +8,10 @@
 
 import {
   TERRAIN_BASE, IRRIGATION_BONUS, MINING_BONUS, SPECIAL_TOTAL,
-  CITY_RADIUS_DOUBLED, SETTLER_TYPES, SUPPORT_EXEMPT_TYPES,
+  CITY_RADIUS_DOUBLED, CITY_RADIUS_EXTENDED, SETTLER_TYPES, SUPPORT_EXEMPT_TYPES,
   SETTLER_FOOD_COST, FOOD_BOX_MULTIPLIER, FANATIC_TYPES,
   COSMIC_FREE_SUPPORT, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS,
-  IMPROVE_MAINTENANCE,
+  IMPROVE_MAINTENANCE, COMMODITY_NAMES, UNIT_ATK,
   GOVT_FACTOR, GOVT_CORRUPTION_DIVISOR, GOVT_WLTKD_BUMP,
   COSMIC_FUNDAMENTALISM_SCIENCE_PENALTY,
 } from './defs.js';
@@ -634,4 +634,518 @@ export function calcCityTrade(city, cityIndex, gameState, mapBase) {
   const { lux, tax, sci } = calcTradeDistribution(netTrade, city, cityIndex, gameState);
   const maintenance = calcBuildingMaintenance(city, gameState);
   return { grossTrade: totalGross, corruption, netTrade, lux, tax, sci, maintenance, tradeRouteIncome };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// D.5: Trade commodity supply/demand calculation
+// Port of FUN_0043d400 (calc_city_trade_desirability, 8227 bytes)
+//
+// Computes supply and demand values for 16 trade commodities per city.
+// Used to assign commodities to Caravans/Freight and determine trade
+// route profitability. Factors in: terrain in city radius, tech,
+// buildings, city size, map position, continent, and science rate.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate supply and demand arrays for 16 trade commodities.
+ * Port of FUN_0043d400 (calc_city_trade_desirability).
+ *
+ * @param {object} city - city object
+ * @param {number} cityIndex - index in state.cities
+ * @param {object} state - game state
+ * @param {object} mapBase - map accessor
+ * @returns {{ supply: number[], demand: number[] }} 16-element arrays
+ */
+export function calcSupplyDemand(city, cityIndex, state, mapBase) {
+  const supply = new Array(16).fill(0);
+  const demand = new Array(16).fill(0);
+
+  // Size tier: (city.size + 2) / 5 (integer division)
+  const sizeTier = Math.trunc((city.size + 2) / 5);
+
+  // Science rate (0-100 scale; binary uses tenths so we convert)
+  const civData = state.civs?.[city.owner];
+  const scienceRate = civData ? (civData.scienceRate || 0) * 10 : 0;
+
+  // Tech helper
+  const hasTech = (techId) => !!(state.civTechs?.[city.owner]?.has(techId));
+
+  // Count terrain types in city radius (21 tiles)
+  const terrainCount = new Array(11).fill(0);
+  let riverCount = 0;
+  let roadCount = 0;
+  for (let i = 0; i < 21; i++) {
+    const pos = _radiusTileToGxForSupply(city, i, mapBase);
+    if (!pos) continue;
+    const ter = mapBase.getTerrain(pos.gx, pos.gy);
+    if (ter >= 0 && ter <= 10) {
+      terrainCount[ter]++;
+      // River tiles add 3 to their terrain type count
+      if (mapBase.hasRiver && mapBase.hasRiver(pos.gx, pos.gy)) {
+        terrainCount[ter] += 3;
+        riverCount++;
+      }
+    }
+    // Count road tiles
+    const imp = mapBase.getImprovements(pos.gx, pos.gy);
+    if (imp.road || imp.railroad) roadCount++;
+  }
+
+  // Merge jungle into tundra (as per binary: terrainCount[6] += terrainCount[7]; terrainCount[7] = 0)
+  // NOTE: in binary terrain indices, tundra=6, glacier=7 — these map to our indices 6,7
+  // Actually the binary merges jungle(9) into tundra(6) differently. Checking reference:
+  // "jungleMerge: 'terrainCount[6] += terrainCount[7]; terrainCount[7] = 0'"
+  // This is tundra absorbing glacier count, then glacier count zeroed
+  terrainCount[6] += terrainCount[7];
+  terrainCount[7] = 0;
+
+  // Map position metrics
+  const distX = Math.abs(city.gx - (mapBase.mw >> 1));
+  const distY = Math.abs(city.gy - (mapBase.mh >> 1));
+  const mapH = mapBase.mh || 50;
+  const mapW = mapBase.mw || 80;
+
+  // Continent (body) ID
+  const continent = mapBase.getBodyId ? mapBase.getBodyId(city.gx, city.gy) : 0;
+
+  const t = terrainCount;
+
+  // ── Supply formulas (from TRADE_DESIRABILITY.supplyFormulas) ──
+
+  // [0] Hides: t[9]*3 + t[6]*6 + t[3]*4 + riverCount*3
+  supply[0] = t[9] * 3 + t[6] * 6 + t[3] * 4 + riverCount * 3;
+  if (scienceRate < 16) supply[0] *= 2;
+  if (scienceRate < 24) supply[0] *= 2;
+  if (scienceRate < 49 && city.size < 3) supply[0] *= 2;
+  else if (scienceRate >= 49) supply[0] = supply[0] >> 1;
+  if (city.size > 7) supply[0] = supply[0] >> 1;
+
+  // [1] Wool: (riverCount/2 + t[4]*2 + t[2]) * coastalBonus
+  {
+    let coastalBonus = t[6] + 2;
+    if (distY > Math.trunc(mapH / 3)) coastalBonus = t[6] + 3;
+    supply[1] = (Math.trunc(riverCount / 2) + t[4] * 2 + t[2]) * coastalBonus;
+  }
+
+  // [2] Beads: t[10]*8 - distY
+  supply[2] = t[10] * 8 - distY;
+  if (city.size > 9) supply[2] = supply[2] >> 1;
+  if (scienceRate > 32) supply[2] = supply[2] >> 1;
+
+  // [3] Cloth: (t[1]*3 + t[0] - riverCount) * clamp(scienceRate/10, 1, 2)
+  {
+    const clampedSci = Math.max(1, Math.min(2, Math.trunc(scienceRate / 10)));
+    supply[3] = (t[1] * 3 + t[0] - riverCount) * clampedSci;
+    if (hasTech(37)) supply[3] = Math.trunc(supply[3] * 3 / 2); // Industrialization: *3/2
+    if (scienceRate < 8) supply[3] = supply[3] >> 1;
+    if (scienceRate < 16) supply[3] = supply[3] >> 1;
+  }
+
+  // [4] Gems (supply): (t[10]*3 + t[0]*4 + t[8]*2) - scienceRate/6
+  supply[4] = t[10] * 3 + t[0] * 4 + t[8] * 2 - Math.trunc(scienceRate / 6);
+  if (!hasTech(65)) supply[4] = Math.trunc(supply[4] / 3); // no Pottery: /3
+  if (cityHasBuilding(city, 9)) supply[4] = Math.trunc(supply[4] * 3 / 2); // Aqueduct: +50%
+  if ((continent & 1) && continent < 6) supply[4] = Math.trunc(supply[4] * 3 / 2); // odd continent <6: +50%
+
+  // [5] Salt: (t[9]+t[1]+t[3]+t[8]+1) * t[4] * 5
+  {
+    supply[5] = (t[9] + t[1] + t[3] + t[8] + 1) * t[4] * 5;
+    const clampedTier = Math.max(1, Math.min(2, Math.trunc(sizeTier / 2)));
+    supply[5] = Math.trunc(supply[5] * clampedTier / 2);
+    if ((continent & 1) && continent > 1) supply[5] = Math.trunc(supply[5] * 3 / 2); // odd cont >1: +50%
+    if (scienceRate < 20) supply[5] = supply[5] >> 1;
+  }
+
+  // [6] Coal: t[5]*5 + t[4]*5
+  supply[6] = t[5] * 5 + t[4] * 5;
+  if (continent !== 0 && (continent & 1) === 0) supply[6] *= 2; // even non-zero continent: doubled
+
+  // [7] Copper/Wine: (t[2]*5 - t[1] + riverCount) * 2
+  supply[7] = (t[2] * 5 - t[1] + riverCount) * 2;
+  if (continent !== 0 && (continent & 3) === 0) supply[7] *= 4; // continent divisible by 4: *4
+
+  // [8] Dye/Spice: complex river/terrain formula + map position
+  {
+    const rv5 = riverCount * 5;
+    const t2v = t[2];
+    supply[8] = Math.max(rv5, t2v) + Math.trunc((Math.trunc(mapW / 2) - distX) / 2);
+    if (city.gy > Math.trunc(mapH / 2)) supply[8] = supply[8] >> 1; // southern hemisphere: halved
+    if (((continent - 2) & 3) === 0) supply[8] = Math.trunc(supply[8] * 3 / 2); // (cont-2)%4==0: +50%
+    // French (civStyle 9) or Fundamentalism bonus
+    const civStyle = state.civs?.[city.owner]?.rulesCivNumber;
+    if (civStyle === 9) supply[8] *= 2;
+    if (city.size > 10) supply[8] = supply[8] >> 1;
+  }
+
+  // [9] Gold: (t[3]*2 + t[9] + 1) * (t[4] + 1)
+  supply[9] = (t[3] * 2 + t[9] + 1) * (t[4] + 1);
+  if (supply[9] > 0) supply[9] += distX * 2;
+  if (continent % 5 === 0) supply[9] *= 2;
+  {
+    const civStyle = state.civs?.[city.owner]?.rulesCivNumber;
+    if (civStyle === 11) supply[9] *= 2; // Chinese: doubled
+    if (civStyle === 10) supply[9] *= 2; // Aztecs: doubled
+  }
+
+  // [10] Spice: t[5]*8
+  supply[10] = t[5] * 8;
+  if (supply[10] > 0) supply[10] += t[4] + distX;
+  if (!hasTech(39)) supply[10] = supply[10] >> 1; // no Iron Working: halved
+  if (continent > 8) supply[10] = Math.trunc(supply[10] * 3 / 2); // continent >8: +50%
+  if (city.size < 5) supply[10] = supply[10] >> 1;
+
+  // [11] Silver/Ivory: (t[9]*3+t[8]*2+t[0]*2) * ((t[10]+riverCount)/2)
+  supply[11] = (t[9] * 3 + t[8] * 2 + t[0] * 2) * Math.trunc((t[10] + riverCount) / 2);
+  if (supply[11] > 0 && distY < 10) supply[11] *= 2;
+  if (supply[11] > 0) supply[11] -= distY;
+  if (continent === 1) supply[11] = supply[11] >> 1;
+
+  // [12] Silk/Gold: (t[5]+1)*(t[8]+1)*(t[0]+1) + t[1]
+  supply[12] = (t[5] + 1) * (t[8] + 1) * (t[0] + 1) + t[1];
+  if (supply[12] > 0) {
+    const clampedTier = Math.max(1, Math.min(4, sizeTier));
+    supply[12] = Math.trunc(clampedTier * supply[12] / 2);
+  }
+  if (continent === 7) supply[12] = Math.trunc(supply[12] * 3 / 2); // continent 7: +50%
+
+  // [13] Gems/Dye: (t[5] + t[4]/2 + 1) * (riverCount + 2)
+  supply[13] = (t[5] + Math.trunc(t[4] / 2) + 1) * (riverCount + 2);
+  if (t[5] > 2) supply[13] *= 2;
+  if (city.size > 4) supply[13] *= 2;
+  if (city.size > 9) supply[13] *= 2;
+
+  // [14] Oil: t[6]*8 + t[0]*10 + t[8]*6 + t[7]*12
+  supply[14] = t[6] * 8 + t[0] * 10 + t[8] * 6 + t[7] * 12;
+  if (!hasTech(58)) supply[14] = Math.trunc(supply[14] / 8); // no Nuclear Fission: /8
+  if (supply[14] === 0) supply[14] = -1;
+  if (supply[14] !== -1) {
+    const clampedTier2 = Math.max(1, Math.min(2, Math.trunc(sizeTier / 2) - 2));
+    supply[14] = supply[14] * Math.max(1, clampedTier2);
+  }
+
+  // [15] Uranium-II: (t[6]+t[0]+1) * (t[4]+riverCount+1) * (t[5]+1)
+  if (hasTech(24)) { // has Electronics
+    supply[15] = (t[6] + t[0] + 1) * (t[4] + riverCount + 1) * (t[5] + 1);
+    if (continent % 10 === 0) supply[15] = Math.trunc(supply[15] * 3 / 2);
+    const capTier = Math.min(6, sizeTier);
+    supply[15] = Math.trunc(supply[15] * capTier / 6);
+  } else {
+    supply[15] = -1;
+  }
+
+  // ── Demand formulas (from TRADE_DESIRABILITY.demandFormulas) ──
+
+  // [0] Hides: (t[6]+t[7])*5 + distY*3/2 + t[5]*2 + t[3]
+  demand[0] = (t[6] + t[7]) * 5 + Math.trunc(distY * 3 / 2) + t[5] * 2 + t[3];
+  if (city.size < 3) demand[0] *= 2;
+  if (hasTech(37)) demand[0] = Math.trunc(demand[0] / 3); // Industrialization: /3
+  if (hasTech(48)) demand[0] = 1; // Mass Production: set to 1
+  if (scienceRate < 10) demand[0] *= 2;
+  if (scienceRate < 20) demand[0] *= 2;
+  if (scienceRate > 47) demand[0] = demand[0] >> 1;
+
+  // [1] Wool: abs(mapH/4 - distY)*2 + t[1]*2 + t[3]
+  demand[1] = Math.abs(Math.trunc(mapH / 4) - distY) * 2 + t[1] * 2 + t[3];
+  if (hasTech(37)) demand[1] *= 2; // Industrialization: doubled
+
+  // [2] Beads: distY + (21 - t[10])*3/2
+  demand[2] = distY + Math.trunc((21 - t[10]) * 3 / 2);
+  if (city.size < 4) demand[2] = Math.trunc(demand[2] * 3 / 2); // +50%
+  if (city.size > 11) demand[2] = demand[2] >> 1;
+  if (scienceRate > 47) demand[2] = demand[2] >> 1;
+
+  // [3] Cloth demand: t[4]*4 + t[3]*4 + (scienceRate/10 * demand[0]) / 8
+  demand[3] = t[4] * 4 + t[3] * 4 + Math.trunc((Math.trunc(scienceRate / 10) * demand[0]) / 8);
+
+  // [4] Salt demand: decaying weight loop
+  {
+    let weight = 8;
+    let remaining = city.size;
+    let saltDemand = 0;
+    for (let step = 0; step < 5 && weight > 0; step++) {
+      const portion = Math.max(0, Math.min(remaining, 5));
+      saltDemand += portion * weight;
+      remaining -= portion;
+      weight = weight >> 1;
+    }
+    demand[4] = saltDemand - Math.trunc(scienceRate / 2);
+  }
+
+  // [5] Coal: (distY + 10) * sizeTier + scienceRate
+  demand[5] = (distY + 10) * sizeTier + scienceRate;
+  if (city.size < 5) demand[5] = 0;
+  else if (city.size < 8) demand[5] = demand[5] >> 1;
+  if (hasTech(37)) demand[5] *= 2; // Industrialization: doubled
+  if (hasTech(23)) demand[5] *= 2; // Electricity: doubled
+  if (cityHasBuilding(city, 19)) demand[5] *= 2; // Power Plant: doubles
+  if (cityHasBuilding(city, 20) || cityHasBuilding(city, 21) || cityHasBuilding(city, 29)) {
+    demand[5] = Math.trunc(demand[5] / 8); // Hydro/Nuclear/Solar: /8
+  }
+
+  // [6] Wine: (riverCount + roadCount + 1) * sizeTier
+  demand[6] = (riverCount + roadCount + 1) * sizeTier;
+  if (demand[6] <= supply[6]) demand[6] = demand[6] >> 1;
+  if (cityHasBuilding(city, 5)) demand[6] = Math.trunc(demand[6] * 3 / 2); // Marketplace: +50%
+  if (cityHasBuilding(city, 10)) demand[6] = Math.trunc(demand[6] * 3 / 2); // Bank: +50%
+  if (hasTech(23)) demand[6] = Math.trunc(demand[6] * 3 / 2); // Electricity: +50%
+  if (hasTech(16)) demand[6] = Math.trunc(demand[6] / 4); // Computers: /4
+  if (city.size < 5) demand[6] = demand[6] >> 1;
+
+  // [7] Cloth demand: supply[3] + roadCount
+  demand[7] = supply[3] + roadCount;
+  if (hasTech(10)) demand[7] = demand[7] >> 1; // Chemistry (tech 10) — halved
+  if (hasTech(48)) demand[7] = demand[7] >> 1; // Mass Production (tech 48) — halved
+
+  // [8] demand: sizeTier*4 + 4 + abs(city.gx - city.gy)
+  demand[8] = sizeTier * 4 + 4 + Math.abs(city.gx - city.gy);
+
+  // [9] demand: map-position + terrain formula
+  demand[9] = (Math.trunc(mapH / 2) - distY) * 2 - distX + Math.trunc(mapW / 2)
+            + t[9] * 4 + Math.trunc(t[1] / 2) + t[8] * 2 + t[0] * 4;
+  {
+    const shift = Math.max(-1, Math.min(1, sizeTier - 1));
+    if (shift > 0) demand[9] = demand[9] << shift;
+    else if (shift < 0) demand[9] = demand[9] >> (-shift);
+  }
+  if (city.size < 7) demand[9] = demand[9] >> 1;
+
+  // [10-12] Special commodity demand: selected by (x+y) % 3
+  {
+    const slotPick = (city.gx + city.gy) % 3;
+    const targetSlot = slotPick === 0 ? 10 : slotPick === 1 ? 12 : 13;
+    const baseDemand = city.size * 8;
+    let val = baseDemand;
+    if (cityHasBuilding(city, 11)) val = Math.trunc(val * 3 / 2); // Cathedral: +50%
+    if (cityHasBuilding(city, 10)) val = Math.trunc(val * 3 / 2); // Bank: +50%
+    if (hasTech(22)) val = val >> 1; // Economics: halved
+    if (hasTech(16)) val = val >> 1; // Computers: halved
+    const civStyle = state.civs?.[city.owner]?.rulesCivNumber;
+    if (civStyle === 17) val *= 2; // Spanish: doubled
+    demand[targetSlot] = val;
+  }
+
+  // [11] Spice demand: continent_pop / 10 - max(scienceRate - 12, 0)
+  {
+    // Approximate continent population (sum of city sizes on same continent)
+    let contPop = 0;
+    if (mapBase.getBodyId) {
+      const myBody = mapBase.getBodyId(city.gx, city.gy);
+      for (const c of state.cities) {
+        if (c.size > 0 && mapBase.getBodyId(c.gx, c.gy) === myBody) contPop += c.size;
+      }
+    }
+    demand[11] = Math.trunc(contPop / 10) - Math.max(scienceRate - 12, 0);
+    if (city.size < 4) demand[11] = demand[11] >> 1;
+    if (contPop > 400 && city.size > 7) demand[11] *= 2;
+    if (hasTech(70)) demand[11] = demand[11] >> 1; // Refrigeration: halved
+  }
+
+  // [14] Oil demand: requires Industrialization (tech 37)
+  if (hasTech(37)) {
+    demand[14] = Math.trunc(scienceRate / 3) * (sizeTier + 2);
+    if (demand[14] <= supply[14]) demand[14] = demand[14] >> 1;
+    if (cityHasBuilding(city, 15)) demand[14] = Math.trunc(demand[14] * 3 / 2); // Factory: +50%
+    if (!cityHasBuilding(city, 15)) {
+      if (city.size < 5) demand[14] = demand[14] >> 1;
+      if (city.size < 10) demand[14] = demand[14] >> 1;
+      if (city.size < 20) demand[14] = demand[14] >> 1;
+    }
+    if (hasTech(5)) demand[14] *= 3; // Automobile: *3
+    if (cityHasBuilding(city, 25)) demand[14] *= 2; // Superhighways: doubled
+    if (cityHasBuilding(city, 13)) demand[14] = demand[14] >> 1; // Mass Transit: halved
+    if (cityHasBuilding(city, 18)) demand[14] = demand[14] >> 1; // Recycling Center: halved
+  } else {
+    demand[14] = -1;
+  }
+
+  // [15] Uranium demand: requires Electronics (tech 24)
+  if (hasTech(24)) {
+    demand[15] = scienceRate * scienceRate;
+    const shift = Math.max(-3, Math.min(0, sizeTier - 3));
+    if (shift < 0) demand[15] = demand[15] >> (-shift);
+    if (cityHasBuilding(city, 21) || cityHasBuilding(city, 17)) demand[15] *= 2; // Nuclear Plant or SDI: doubled
+  } else {
+    demand[15] = -1;
+  }
+
+  // Clamp all values to >= -1
+  for (let i = 0; i < 16; i++) {
+    if (supply[i] < -1) supply[i] = -1;
+    if (demand[i] < -1) demand[i] = -1;
+  }
+
+  return { supply, demand };
+}
+
+/**
+ * Resolve a city radius tile index to map coordinates (for supply/demand).
+ * Same logic as radiusTileToGx but accessible to calcSupplyDemand.
+ */
+function _radiusTileToGxForSupply(city, i, mapBase) {
+  const [ddx, ddy] = CITY_RADIUS_DOUBLED[i];
+  const parC = city.gy & 1;
+  const parT = ((city.gy + ddy) % 2 + 2) % 2;
+  const tgx = city.gx + ((parC + ddx - parT) >> 1);
+  const tgy = city.gy + ddy;
+  const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+  if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) return null;
+  return { gx: wgx, gy: tgy };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SURROUNDING_TILE_ANALYSIS — port of FUN_004e7641 (653 bytes)
+//
+// Scans 25 tiles around a city (21 city radius + 4 extended outer)
+// and computes per-tile threat/ownership flags for AI use.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Resolve an extended radius tile index (0-24) to map coordinates.
+ * Uses CITY_RADIUS_EXTENDED (21 standard + 4 extra outer tiles).
+ */
+function _extendedTileToGx(cityGx, cityGy, i, mapBase) {
+  const [ddx, ddy] = CITY_RADIUS_EXTENDED[i];
+  const parC = cityGy & 1;
+  const parT = ((cityGy + ddy) % 2 + 2) % 2;
+  const tgx = cityGx + ((parC + ddx - parT) >> 1);
+  const tgy = cityGy + ddy;
+  const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+  if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) return null;
+  return { gx: wgx, gy: tgy };
+}
+
+/**
+ * Analyze surrounding tiles around a city for threat assessment.
+ * Port of FUN_004e7641 (SURROUNDING_TILE_ANALYSIS).
+ *
+ * Scans 25 tiles (city radius + 4 extended outer tiles).
+ * For each tile, computes flags:
+ *   0x01: invalid/off-map/not visible to city owner
+ *   0x04: enemy military unit present
+ *   0x08: foreign city present on tile
+ *   0x10: tile claimed by nearby rival city (within distance 3)
+ *   0x20: enemy unit belongs to civ at war with us
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map accessor
+ * @param {number} cityGx - city gx coordinate
+ * @param {number} cityGy - city gy coordinate
+ * @param {number} ownerCiv - civ slot of the city owner
+ * @returns {number[]} array of 25 flag values
+ */
+export function analyzeSurroundingTiles(state, mapBase, cityGx, cityGy, ownerCiv) {
+  const flags = new Array(25).fill(0);
+  const fowBit = 1 << ownerCiv;
+
+  for (let i = 0; i < 25; i++) {
+    const pos = _extendedTileToGx(cityGx, cityGy, i, mapBase);
+    if (!pos) {
+      flags[i] = 0x01; // off-map
+      continue;
+    }
+
+    const { gx, gy } = pos;
+
+    // Check visibility
+    if (mapBase.tileData) {
+      const tileIdx = gy * mapBase.mw + gx;
+      const tile = mapBase.tileData[tileIdx];
+      if (!tile || !(tile.visibility & fowBit)) {
+        flags[i] = 0x01; // not visible to this civ
+        continue;
+      }
+    }
+
+    // Check for enemy military units
+    for (const u of state.units) {
+      if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+      if (u.owner === ownerCiv) continue;
+      if ((UNIT_ATK[u.type] || 0) <= 0) continue; // non-combat unit
+
+      flags[i] |= 0x04; // enemy military unit present
+
+      // Check if this enemy is at war with us
+      const a = Math.min(ownerCiv, u.owner);
+      const b = Math.max(ownerCiv, u.owner);
+      const treatyStatus = state.treaties?.[`${a}-${b}`];
+      if (treatyStatus === 'war') {
+        flags[i] |= 0x20; // at war
+      }
+      break; // one enemy unit is enough to set flags
+    }
+
+    // Check for foreign city
+    for (const c of state.cities) {
+      if (c.gx === gx && c.gy === gy && c.size > 0 && c.owner !== ownerCiv) {
+        flags[i] |= 0x08; // foreign city present
+        break;
+      }
+    }
+
+    // Check if tile is claimed by a nearby rival city (within distance 3)
+    for (const c of state.cities) {
+      if (c.size <= 0 || c.owner === ownerCiv) continue;
+      let dx = Math.abs(c.gx - gx);
+      if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+      const dy = Math.abs(c.gy - gy);
+      // Manhattan distance in gx/gy space
+      if (dx + dy <= 3) {
+        flags[i] |= 0x10; // claimed by rival city
+        break;
+      }
+    }
+  }
+
+  return flags;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GARRISON_PROXIMITY — port of FUN_004e7967 (1048 bytes)
+//
+// Finds the nearest city owned by a civ that has a military garrison.
+// Returns Manhattan distance. Default 32 if no garrison found.
+// Used in espionage cost calculations and AI decision-making.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate distance to nearest garrisoned city for a given civ.
+ * Port of FUN_004e7967 (GARRISON_PROXIMITY).
+ *
+ * A "garrison" is any military unit (attack > 0) stationed at a city.
+ *
+ * @param {object} state - game state (needs cities, units)
+ * @param {object} mapBase - map accessor (needs mw, wraps)
+ * @param {number} gx - reference tile gx coordinate
+ * @param {number} gy - reference tile gy coordinate
+ * @param {number} civSlot - civ slot to check for garrisons
+ * @returns {number} Manhattan distance to nearest garrisoned city (default 32)
+ */
+export function calcGarrisonDistance(state, mapBase, gx, gy, civSlot) {
+  const DEFAULT_DISTANCE = 32;
+  let minDist = DEFAULT_DISTANCE;
+
+  // Build a set of city locations that have military garrisons
+  const garrisonedCities = new Set();
+  for (const u of state.units) {
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    if ((UNIT_ATK[u.type] || 0) <= 0) continue; // non-combat
+    // Check if this unit is in one of our cities
+    for (const c of state.cities) {
+      if (c.owner === civSlot && c.size > 0 && c.gx === u.gx && c.gy === u.gy) {
+        garrisonedCities.add(c);
+        break;
+      }
+    }
+  }
+
+  // Find shortest Manhattan distance to any garrisoned city
+  for (const c of garrisonedCities) {
+    let dx = Math.abs(c.gx - gx);
+    if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+    const dy = Math.abs(c.gy - gy);
+    const dist = dx + dy;
+    if (dist < minDist) minDist = dist;
+  }
+
+  return minDist;
 }

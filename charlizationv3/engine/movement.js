@@ -5,7 +5,7 @@
 // 8-direction movement with proper wrapping.
 // ═══════════════════════════════════════════════════════════════════
 
-import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_ATK, UNIT_MOVE_POINTS, UNIT_HP, UNIT_FUEL, UNIT_CARRY_CAP } from './defs.js';
+import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_ATK, UNIT_MOVE_POINTS, UNIT_HP, UNIT_FUEL, UNIT_CARRY_CAP, UNIT_ROLE } from './defs.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // C.1: Damage-based movement reduction
@@ -351,4 +351,309 @@ function hasFriendlyPresence(gx, gy, owner, units, mapBase) {
     }
   }
   return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// C.6: Paradrop validation and scatter
+// Port of FUN_004ca39e (airdrop/paradrop mechanics)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Validate whether a paradrop is legal for the given unit and target.
+ * Checks range (Manhattan distance <= paradropRange), land tile,
+ * and no enemy units on target.
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map accessor
+ * @param {number} unitIndex - index of the paratroop unit
+ * @param {number} targetGx - target tile gx
+ * @param {number} targetGy - target tile gy
+ * @param {number} [paradropRange=10] - max Manhattan distance
+ * @returns {{ valid: boolean, reason: string }}
+ */
+export function validateParadrop(state, mapBase, unitIndex, targetGx, targetGy, paradropRange = 10) {
+  const unit = state.units?.[unitIndex];
+  if (!unit || unit.gx < 0) return { valid: false, reason: 'Unit does not exist' };
+
+  // Only Paratroopers (type 13) can paradrop
+  if (unit.type !== 13) return { valid: false, reason: 'Only Paratroopers can paradrop' };
+
+  // Must have moves remaining
+  if (unit.movesLeft <= 0) return { valid: false, reason: 'No moves remaining' };
+
+  // Range check: Manhattan distance with wrapping
+  let dx = Math.abs(unit.gx - targetGx);
+  if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+  const dy = Math.abs(unit.gy - targetGy);
+  if (dx + dy > paradropRange) return { valid: false, reason: 'Target out of range' };
+
+  // Target must be a land tile (terrain !== 10 = Ocean)
+  const terrain = mapBase.getTerrain(targetGx, targetGy);
+  if (terrain === 10) return { valid: false, reason: 'Cannot paradrop onto ocean' };
+
+  // No enemy units on target tile
+  const owner = unit.owner;
+  for (const u of state.units) {
+    if (u.gx === targetGx && u.gy === targetGy && u.owner !== owner && u.gx >= 0) {
+      // If enemy city present, check peace treaty
+      const enemyCity = state.cities?.find(
+        c => c.gx === targetGx && c.gy === targetGy && c.owner === u.owner && c.size > 0);
+      if (enemyCity && state.treatyFlags) {
+        const key = `${owner}-${u.owner}`;
+        const flags = state.treatyFlags[key] || 0;
+        // Peace treaty mask 0x0E = ceasefire(0x02) | peace(0x04) | alliance(0x08)
+        if (flags & 0x0E) {
+          return { valid: false, reason: 'Peace treaty prevents paradrop near enemy city' };
+        }
+      }
+      return { valid: false, reason: 'Enemy units at target' };
+    }
+  }
+
+  return { valid: true, reason: '' };
+}
+
+/**
+ * Resolve paradrop landing scatter — selects the best adjacent tile for landing.
+ * Port of FUN_004ca39e scatter logic:
+ *   Score 8 adjacent tiles: base = rand() % 6, +3 if diagonal, +200 if empty (no city).
+ *   Pick highest scoring tile. Returns landing coordinates.
+ *
+ * @param {object} state - game state (for city check)
+ * @param {object} mapBase - map accessor (getNeighbors, getTerrain)
+ * @param {number} targetGx - intended target tile gx
+ * @param {number} targetGy - intended target tile gy
+ * @param {{ nextInt: function }} rng - random number generator
+ * @returns {{ gx: number, gy: number }} landing coordinates
+ */
+export function resolveParadropScatter(state, mapBase, targetGx, targetGy, rng) {
+  const neighbors = mapBase.getNeighbors(targetGx, targetGy);
+  // Direction order: N, NE, E, SE, S, SW, W, NW
+  // Diagonal directions: NE, SE, SW, NW (both dx and dy offsets are nonzero)
+  const dirOrder = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const diagonalDirs = new Set(['NE', 'SE', 'SW', 'NW']);
+
+  let bestScore = -1;
+  let bestGx = targetGx;
+  let bestGy = targetGy;
+
+  for (const dir of dirOrder) {
+    const [nx, ny] = neighbors[dir];
+    if (ny < 0 || ny >= mapBase.mh) continue;
+
+    // Must be land (terrain !== 10)
+    const terrain = mapBase.getTerrain(nx, ny);
+    if (terrain === 10) continue;
+
+    // Base random score: rand() % 6
+    const baseScore = rng.nextInt(6);
+    let score = baseScore;
+
+    // Diagonal bonus: +3
+    if (diagonalDirs.has(dir)) score += 3;
+
+    // Empty city bonus: +200 if no city on this tile
+    const hasCity = state.cities?.some(
+      c => c.gx === nx && c.gy === ny && c.size > 0);
+    if (!hasCity) score += 200;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestGx = nx;
+      bestGy = ny;
+    }
+  }
+
+  return { gx: bestGx, gy: bestGy };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// C.7: Two-pass ship cargo loading
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Load ground and air units onto a ship using the Civ2 two-pass algorithm:
+ *   Pass 1: load air units first (domain === 1)
+ *   Pass 2: load ground units (domain === 0)
+ * Respects the ship's cargo capacity (UNIT_CARRY_CAP).
+ *
+ * Units that are loaded have their position set to the ship's position.
+ * Only loads units at the same tile owned by the same civ.
+ *
+ * @param {object} state - mutable game state (units array)
+ * @param {number} shipIndex - index of the transport ship in state.units
+ * @param {number} gx - tile gx to load from
+ * @param {number} gy - tile gy to load from
+ * @returns {{ loaded: number[] }} indices of units that were loaded
+ */
+export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
+  const ship = state.units[shipIndex];
+  if (!ship || ship.gx < 0) return { loaded: [] };
+
+  const cap = UNIT_CARRY_CAP[ship.type];
+  if (!cap || cap <= 0) return { loaded: [] };
+
+  const owner = ship.owner;
+  const loaded = [];
+
+  // Count current cargo already aboard (units at ship's position, owned by same civ,
+  // that are land or air domain and not the ship itself)
+  let currentCargo = 0;
+  for (let i = 0; i < state.units.length; i++) {
+    if (i === shipIndex) continue;
+    const u = state.units[i];
+    if (u.gx === ship.gx && u.gy === ship.gy && u.owner === owner && u.gx >= 0) {
+      const d = UNIT_DOMAIN[u.type] ?? 0;
+      if (d === 0 || d === 1) currentCargo++;
+    }
+  }
+
+  // Pass 1: load air units first (domain === 1)
+  for (let i = 0; i < state.units.length; i++) {
+    if (currentCargo >= cap) break;
+    if (i === shipIndex) continue;
+    const u = state.units[i];
+    if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) !== 1) continue;
+    // Load: move unit to ship's position
+    state.units[i] = {
+      ...u,
+      gx: ship.gx, gy: ship.gy,
+      x: ship.gx * 2 + (ship.gy % 2), y: ship.gy,
+    };
+    loaded.push(i);
+    currentCargo++;
+  }
+
+  // Pass 2: load ground units (domain === 0)
+  for (let i = 0; i < state.units.length; i++) {
+    if (currentCargo >= cap) break;
+    if (i === shipIndex) continue;
+    const u = state.units[i];
+    if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) !== 0) continue;
+    // Load: move unit to ship's position
+    state.units[i] = {
+      ...u,
+      gx: ship.gx, gy: ship.gy,
+      x: ship.gx * 2 + (ship.gy % 2), y: ship.gy,
+    };
+    loaded.push(i);
+    currentCargo++;
+  }
+
+  return { loaded };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ROAD_CONNECTIVITY — port of FUN_00488a45 (682 bytes)
+//
+// BFS/A* pathfinding using only road/railroad tiles to check if
+// two map positions are connected by road infrastructure.
+// Used for trade route validation (Caravans/Freight).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check road/railroad connectivity between two map positions.
+ * Port of FUN_00488a45 (ROAD_CONNECTIVITY).
+ *
+ * Uses BFS over road/railroad/city tiles with a maximum of 50 steps
+ * and a maximum tile distance of 23.
+ *
+ * @param {object} mapBase - map accessor { mw, mh, wraps, getImprovements, getTerrain }
+ * @param {number} fromGx - start gx
+ * @param {number} fromGy - start gy
+ * @param {number} toGx - destination gx
+ * @param {number} toGy - destination gy
+ * @returns {number} 0 = no connection, 1 = railroad only, 2 = road connection
+ */
+export function checkRoadConnection(mapBase, fromGx, fromGy, toGx, toGy) {
+  if (fromGx === toGx && fromGy === toGy) return 1; // same tile
+
+  const MAX_STEPS = 50;
+  const MAX_DISTANCE = 23;
+  const mw = mapBase.mw;
+  const mh = mapBase.mh;
+
+  // Distance check: reject if farther than 23 tiles
+  let initDx = Math.abs(toGx - fromGx);
+  if (mapBase.wraps) initDx = Math.min(initDx, mw - initDx);
+  const initDy = Math.abs(toGy - fromGy);
+  if (initDx + initDy > MAX_DISTANCE) return 0;
+
+  // Check that both endpoints have roads/railroads/city
+  function hasRoadOrCity(gx, gy) {
+    if (gy < 0 || gy >= mh) return false;
+    const imp = mapBase.getImprovements(gx, gy);
+    return imp.road || imp.railroad || imp.city;
+  }
+
+  if (!hasRoadOrCity(fromGx, fromGy) || !hasRoadOrCity(toGx, toGy)) return 0;
+
+  // BFS over road-connected tiles
+  const keyFn = (x, y) => y * mw + ((x % mw + mw) % mw);
+  const goalKey = keyFn(toGx, toGy);
+
+  const visited = new Map(); // key → true
+  const startKey = keyFn(fromGx, fromGy);
+  visited.set(startKey, true);
+
+  // Track whether the path uses any road (not just railroad)
+  const hasRoadOnPath = new Map(); // key → boolean (true if any step used road, not railroad)
+  hasRoadOnPath.set(startKey, false);
+
+  const queue = [{ x: fromGx, y: fromGy }];
+  let head = 0;
+  let steps = 0;
+
+  while (head < queue.length && steps < MAX_STEPS) {
+    const cur = queue[head++];
+    const curKey = keyFn(cur.x, cur.y);
+    steps++;
+
+    // Check if we reached the goal
+    if (curKey === goalKey) {
+      // Return 1 if railroad-only, 2 if any road segment used
+      return hasRoadOnPath.get(curKey) ? 2 : 1;
+    }
+
+    // Current tile improvements
+    const curImp = mapBase.getImprovements(cur.x, cur.y);
+    const curHasConnection = curImp.road || curImp.railroad || curImp.city;
+    if (!curHasConnection) continue;
+
+    // Expand 8 neighbors
+    const offsets = (cur.y % 2 === 0) ? DIR_OFFSETS_EVEN : DIR_OFFSETS_ODD;
+    for (const dir in offsets) {
+      const [ox, oy] = offsets[dir];
+      let nx = cur.x + ox;
+      const ny = cur.y + oy;
+
+      if (ny < 0 || ny >= mh) continue;
+      if (mapBase.wraps) {
+        nx = ((nx % mw) + mw) % mw;
+      } else if (nx < 0 || nx >= mw) {
+        continue;
+      }
+
+      const nKey = keyFn(nx, ny);
+      if (visited.has(nKey)) continue;
+
+      // Neighbor must have road/railroad/city
+      const nImp = mapBase.getImprovements(nx, ny);
+      const nHasRoad = nImp.road || nImp.railroad || nImp.city;
+      if (!nHasRoad) continue;
+
+      visited.set(nKey, true);
+
+      // Track if this step uses a road (not purely railroad)
+      const curRoad = hasRoadOnPath.get(curKey) || false;
+      const stepUsesRoad = !curImp.railroad || !nImp.railroad; // if either lacks railroad, it's a road step
+      hasRoadOnPath.set(nKey, curRoad || (stepUsesRoad && !nImp.city && !curImp.city));
+
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  return 0; // no road-connected path found
 }

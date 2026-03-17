@@ -1568,3 +1568,91 @@ export function calcAttitudeScore(state, aiCiv, targetCiv) {
 
   return score;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Kill Civ — fully remove a civilization from the game
+// Port of cheat_destroy_civ (FUN_00555a8b) + civ elimination logic
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Completely eliminate a civilization from the game.
+ * Records in destroyed civs list, kills all units, transfers/destroys cities,
+ * clears alive bitmask, and checks for game end.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} civSlot - civ slot to eliminate (1-7)
+ * @param {number} killerCiv - civ slot of the killer (0 for barbarians)
+ * @returns {{ events: object[] }}
+ */
+export function killCiv(state, mapBase, civSlot, killerCiv) {
+  const events = [];
+
+  if (civSlot <= 0 || civSlot > 7) return { events };
+  if (!(state.civsAlive & (1 << civSlot))) return { events };
+
+  // ── Record in destroyed civs list (up to 12 records) ──
+  // Matches parser killHistory structure: killTurns, killerCivIds,
+  // destroyedCivRulesIds, destroyedCivNames
+  if (!state.killHistory) {
+    state.killHistory = {
+      count: 0,
+      killTurns: new Array(12).fill(0),
+      killerCivIds: new Array(12).fill(0),
+      destroyedCivRulesIds: new Array(12).fill(0),
+      destroyedCivNames: new Array(12).fill(''),
+    };
+  }
+  const kh = state.killHistory;
+  const slot = kh.count < 12 ? kh.count : 11; // cap at 12 entries
+  kh.killTurns = [...kh.killTurns];
+  kh.killerCivIds = [...kh.killerCivIds];
+  kh.destroyedCivRulesIds = [...kh.destroyedCivRulesIds];
+  kh.destroyedCivNames = [...kh.destroyedCivNames];
+  kh.killTurns[slot] = state.turn?.number ?? 0;
+  kh.killerCivIds[slot] = killerCiv;
+  kh.destroyedCivRulesIds[slot] = civSlot;
+  kh.destroyedCivNames[slot] = state.civNames?.[civSlot] ?? `Civ ${civSlot}`;
+  if (kh.count < 12) kh.count++;
+
+  // ── Clear alive bitmask ──
+  state.civsAlive &= ~(1 << civSlot);
+
+  // ── Kill all remaining units (set gx = -1) ──
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.owner === civSlot && u.gx >= 0) {
+      state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+    }
+  }
+
+  // ── Transfer remaining cities to barbarians (owner=0) or destroy them ──
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    const c = state.cities[ci];
+    if (c.owner !== civSlot || c.size <= 0) continue;
+    // Transfer to barbarians (slot 0)
+    state.cities[ci] = { ...c, owner: 0 };
+    events.push({
+      type: 'cityTransferred', cityName: c.name, cityIndex: ci,
+      fromCiv: civSlot, toCiv: 0,
+    });
+  }
+
+  events.push({ type: 'civDestroyed', civSlot, killerCiv });
+
+  // ── Check if game should end (fewer than 2 non-barbarian alive civs) ──
+  let aliveCount = 0;
+  let lastAlive = -1;
+  for (let c = 1; c <= 7; c++) {
+    if (state.civsAlive & (1 << c)) {
+      aliveCount++;
+      lastAlive = c;
+    }
+  }
+  if (aliveCount <= 1 && lastAlive > 0 && !state.gameOver) {
+    state.gameOver = { winner: lastAlive };
+    events.push({ type: 'gameOver', winner: lastAlive });
+  }
+
+  return { events };
+}
