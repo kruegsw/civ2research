@@ -43,7 +43,74 @@ export const TF = {
   CAPTURE_NOTIFY:    0x10000,  // City captured notification
   NUCLEAR_ATTACK:    0x20000,  // Nuclear attack perpetrated
   TRIBUTE_DEMANDED:  0x40000,  // Tribute demanded
+  PERIODIC_FLAG_19:  0x80000,  // Periodic flag (cleared every 32 turns)
+  WAR_TRACKING:      0x200000, // War tracking (set when WAR is declared)
+  MULTI_CAPTURE_VENDETTA: 0x400000,  // Multi-city capture vendetta
+  DIPLOMACY_ACTIVE:  0x800000,  // Diplomacy session currently active
+  SPY_MISSION_ACTIVE: 0x1000000, // Spy/diplomat mission in progress
+  SPACESHIP_LAUNCHED: 0x100,     // Civ has launched spaceship
 };
+
+// ── D.2: Attitude Scoring Constants ──────────────────────────────
+export const ATTITUDE = {
+  LARGE_TECH_GAP: 8,
+  LATE_GAME_TURN: 200,
+  PERSONALITY_FLOOR: -2,
+  MIL_1_5X: 1.5,
+  MIL_2X: 2,
+  MIL_4X: 4,
+  ALLIANCE_VIOLATION_MAX: 100,
+  CEASEFIRE_VIOLATION: 50,
+  ALLIANCE_FLOOR: 0,
+  CEASEFIRE_PENALTY: -2,
+  NO_ALLIANCE_PENALTY: -1,
+};
+
+// ── D.3: Attitude Thresholds ────────────────────────────────────
+export const ATTITUDE_THRESHOLDS = {
+  MAX_HOSTILITY: 100,
+  CEASEFIRE_VIOLATION: 50,
+  ALLIANCE_FLOOR: 0,
+  ALLIANCE_PROPOSAL_GATE: 6,
+};
+
+// ── D.4a: Attitude Level ────────────────────────────────────────
+// Convert a raw attitude score to a discrete level 0-8.
+// Level names: 0=Enraged, 1=Furious, 2=Annoyed, 3=Uncooperative,
+//   4=Neutral, 5=Cordial, 6=Polite, 7=Enthusiastic, 8=Worshipful
+const ATTITUDE_BRACKETS = [
+  [  0, 0], // <0 → 0 (Enraged)
+  [ 10, 1], // 0-10 → 1 (Furious)
+  [ 25, 2], // 11-25 → 2 (Annoyed)
+  [ 38, 3], // 26-38 → 3 (Uncooperative)
+  [ 61, 4], // 39-61 → 4 (Neutral)
+  [ 74, 5], // 62-74 → 5 (Cordial)
+  [ 89, 6], // 75-89 → 6 (Polite)
+  [ 99, 7], // 90-99 → 7 (Enthusiastic)
+];
+
+/**
+ * Map a raw attitude score to a discrete level 0-8.
+ * @param {number} rawScore
+ * @returns {number} 0 (Enraged) through 8 (Worshipful)
+ */
+export function getAttitudeLevel(rawScore) {
+  if (rawScore < 0)   return 0;
+  if (rawScore <= 10)  return 1;
+  if (rawScore <= 25)  return 2;
+  if (rawScore <= 38)  return 3;
+  if (rawScore <= 61)  return 4;
+  if (rawScore <= 74)  return 5;
+  if (rawScore <= 89)  return 6;
+  if (rawScore <= 99)  return 7;
+  return 8;
+}
+
+/** Returns true if the attitude level is hostile (< Neutral). */
+export function isHostile(level) { return level < 4; }
+
+/** Returns true if the attitude level is friendly (> Neutral). */
+export function isFriendly(level) { return level > 4; }
 
 /** Convert string treaty status to flag bits. */
 export function statusToFlags(status) {
@@ -72,22 +139,106 @@ export function getTreatyFlags(state, civA, civB) {
   return state.treatyFlags[key] || 0;
 }
 
-/** Set treaty flags for a civ pair (directional). */
+// ── Cascade masks for treaty flag setting/clearing ──
+// When setting WAR, clear these treaty flags:
+const WAR_CLEARS = TF.CEASEFIRE | TF.PEACE | TF.ALLIANCE;
+// When setting PEACE or CEASEFIRE, clear these hostility flags:
+const PEACE_CLEARS = TF.WAR | TF.WAR_STARTED | TF.CAPTURE_VENDETTA | TF.HOSTILITY;
+
+/**
+ * Set treaty flags for a civ pair (directional).
+ * Low-level setter: writes raw flags for a single direction [A][B].
+ * For cascade-aware symmetric operations, use addTreatyFlag / clearTreatyFlag.
+ */
 export function setTreatyFlags(state, civA, civB, flags) {
   if (!state.treatyFlags) state.treatyFlags = {};
   state.treatyFlags = { ...state.treatyFlags, [`${civA}-${civB}`]: flags };
 }
 
-/** Add flag bits to a civ pair's treaty. */
+/**
+ * Add flag bits to a civ pair's treaty (cascade-aware, symmetric).
+ *
+ * Cascade rules when SETTING:
+ *   ALLIANCE  -> also set PEACE + CONTACT
+ *   PEACE     -> also set CONTACT; clear WAR, WAR_STARTED, CAPTURE_VENDETTA, HOSTILITY
+ *   CEASEFIRE -> also set CONTACT; clear WAR, WAR_STARTED, CAPTURE_VENDETTA, HOSTILITY
+ *   WAR       -> clear CEASEFIRE, PEACE, ALLIANCE; set WAR_TRACKING
+ */
 export function addTreatyFlag(state, civA, civB, flag) {
-  const current = getTreatyFlags(state, civA, civB);
-  setTreatyFlags(state, civA, civB, current | flag);
+  let ab = getTreatyFlags(state, civA, civB);
+  let ba = getTreatyFlags(state, civB, civA);
+
+  if (flag & TF.ALLIANCE) {
+    // Setting ALLIANCE: also set PEACE + CONTACT
+    ab = (ab | flag | TF.PEACE | TF.CONTACT);
+    ba = (ba | flag | TF.PEACE | TF.CONTACT);
+  } else if (flag & TF.PEACE) {
+    // Setting PEACE: also set CONTACT, clear war-related flags
+    ab = ((ab | flag | TF.CONTACT) & ~PEACE_CLEARS);
+    ba = ((ba | flag | TF.CONTACT) & ~PEACE_CLEARS);
+  } else if (flag & TF.CEASEFIRE) {
+    // Setting CEASEFIRE: also set CONTACT, clear war-related flags
+    ab = ((ab | flag | TF.CONTACT) & ~PEACE_CLEARS);
+    ba = ((ba | flag | TF.CONTACT) & ~PEACE_CLEARS);
+  } else if (flag & TF.WAR) {
+    // Setting WAR: clear treaty flags, set WAR_TRACKING
+    ab = ((ab | flag | TF.WAR_TRACKING) & ~WAR_CLEARS);
+    ba = ((ba | flag | TF.WAR_TRACKING) & ~WAR_CLEARS);
+  } else {
+    ab |= flag;
+    ba |= flag;
+  }
+
+  if (!state.treatyFlags) state.treatyFlags = {};
+  state.treatyFlags = {
+    ...state.treatyFlags,
+    [`${civA}-${civB}`]: ab,
+    [`${civB}-${civA}`]: ba,
+  };
 }
 
-/** Clear flag bits from a civ pair's treaty. */
+/**
+ * Clear flag bits from a civ pair's treaty (cascade-aware, symmetric).
+ *
+ * Cascade rules when CLEARING:
+ *   PEACE   -> also clear ALLIANCE
+ *   CONTACT -> clear everything (all flags to 0)
+ *   WAR     -> also clear WAR_STARTED + CAPTURE_VENDETTA
+ */
 export function clearTreatyFlag(state, civA, civB, flag) {
-  const current = getTreatyFlags(state, civA, civB);
-  setTreatyFlags(state, civA, civB, current & ~flag);
+  if (flag & TF.CONTACT) {
+    // Clearing CONTACT: clear everything
+    if (!state.treatyFlags) state.treatyFlags = {};
+    state.treatyFlags = {
+      ...state.treatyFlags,
+      [`${civA}-${civB}`]: 0,
+      [`${civB}-${civA}`]: 0,
+    };
+    return;
+  }
+
+  let ab = getTreatyFlags(state, civA, civB);
+  let ba = getTreatyFlags(state, civB, civA);
+
+  if (flag & TF.PEACE) {
+    // Clearing PEACE: also clear ALLIANCE
+    ab &= ~(flag | TF.ALLIANCE);
+    ba &= ~(flag | TF.ALLIANCE);
+  } else if (flag & TF.WAR) {
+    // Clearing WAR: also clear WAR_STARTED + CAPTURE_VENDETTA
+    ab &= ~(flag | TF.WAR_STARTED | TF.CAPTURE_VENDETTA);
+    ba &= ~(flag | TF.WAR_STARTED | TF.CAPTURE_VENDETTA);
+  } else {
+    ab &= ~flag;
+    ba &= ~flag;
+  }
+
+  if (!state.treatyFlags) state.treatyFlags = {};
+  state.treatyFlags = {
+    ...state.treatyFlags,
+    [`${civA}-${civB}`]: ab,
+    [`${civB}-${civA}`]: ba,
+  };
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -225,6 +376,18 @@ export function isReputationTooLow(state, civSlot) {
 }
 
 /**
+ * Get a civ's current patience value.
+ * Patience decays by 1 every 3 turns (min 0) and is incremented
+ * by treaty violations / provocations.
+ * @param {object} state
+ * @param {number} civSlot
+ * @returns {number} patience value (0+)
+ */
+export function getPatience(state, civSlot) {
+  return state.civs?.[civSlot]?.patience || 0;
+}
+
+/**
  * Process diplomacy timers for END_TURN. Called from reducer.js.
  *
  * Handles:
@@ -327,6 +490,112 @@ export function processDiplomacyTimers(state, mapBase, turnNumber) {
         if (rep < 100) {
           state.civs[c] = { ...civ, reputation: Math.min(100, rep + 1) };
         }
+      }
+    }
+  }
+
+  // Patience decay — every 3 turns, decrement patience by 1 for all civs (min 0)
+  if (turnNumber > 0 && (turnNumber % 3) === 0) {
+    if (state.civs) {
+      // Avoid re-spreading if already done above
+      if (!Array.isArray(state.civs) || Object.isFrozen(state.civs)) {
+        state.civs = [...state.civs];
+      }
+      for (let c = 1; c <= 7; c++) {
+        if (!(state.civsAlive & (1 << c))) continue;
+        const civ = state.civs[c];
+        if (!civ) continue;
+        const pat = civ.patience || 0;
+        if (pat > 0) {
+          state.civs[c] = { ...civ, patience: pat - 1 };
+        }
+      }
+    }
+  }
+
+  // ── Periodic treaty flag clearing ──
+  // Port of FUN_0055d8d8 periodic housekeeping: clear transient flags
+  // at different intervals to prevent stale state accumulation.
+  if (state.treatyFlags && turnNumber > 0) {
+    let flagsMutated = false;
+
+    // Every 8 turns: clear WAR_STARTED (0x800) for all civ pairs
+    if ((turnNumber % 8) === 0) {
+      for (let a = 1; a <= 7; a++) {
+        for (let b = a + 1; b <= 7; b++) {
+          if (!(state.civsAlive & (1 << a)) || !(state.civsAlive & (1 << b))) continue;
+          const kAB = `${a}-${b}`;
+          const kBA = `${b}-${a}`;
+          if ((state.treatyFlags[kAB] || 0) & TF.WAR_STARTED) {
+            if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+            state.treatyFlags[kAB] = (state.treatyFlags[kAB] || 0) & ~TF.WAR_STARTED;
+          }
+          if ((state.treatyFlags[kBA] || 0) & TF.WAR_STARTED) {
+            if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+            state.treatyFlags[kBA] = (state.treatyFlags[kBA] || 0) & ~TF.WAR_STARTED;
+          }
+        }
+      }
+    }
+
+    // Every 16 turns: clear RECENT_CONTACT (0x4000)
+    if ((turnNumber % 16) === 0) {
+      for (let a = 1; a <= 7; a++) {
+        for (let b = a + 1; b <= 7; b++) {
+          if (!(state.civsAlive & (1 << a)) || !(state.civsAlive & (1 << b))) continue;
+          const kAB = `${a}-${b}`;
+          const kBA = `${b}-${a}`;
+          if ((state.treatyFlags[kAB] || 0) & TF.RECENT_CONTACT) {
+            if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+            state.treatyFlags[kAB] = (state.treatyFlags[kAB] || 0) & ~TF.RECENT_CONTACT;
+          }
+          if ((state.treatyFlags[kBA] || 0) & TF.RECENT_CONTACT) {
+            if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+            state.treatyFlags[kBA] = (state.treatyFlags[kBA] || 0) & ~TF.RECENT_CONTACT;
+          }
+        }
+      }
+    }
+
+    // Every 32 turns: clear PERIODIC_FLAG_19 (0x80000) and TRIBUTE_DEMANDED (0x40000)
+    if ((turnNumber % 32) === 0) {
+      for (let a = 1; a <= 7; a++) {
+        for (let b = a + 1; b <= 7; b++) {
+          if (!(state.civsAlive & (1 << a)) || !(state.civsAlive & (1 << b))) continue;
+          const clearMask = TF.PERIODIC_FLAG_19 | TF.TRIBUTE_DEMANDED;
+          const kAB = `${a}-${b}`;
+          const kBA = `${b}-${a}`;
+          if ((state.treatyFlags[kAB] || 0) & clearMask) {
+            if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+            state.treatyFlags[kAB] = (state.treatyFlags[kAB] || 0) & ~clearMask;
+          }
+          if ((state.treatyFlags[kBA] || 0) & clearMask) {
+            if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+            state.treatyFlags[kBA] = (state.treatyFlags[kBA] || 0) & ~clearMask;
+          }
+        }
+      }
+    }
+  }
+
+  // ── Senate override toggle ──
+  // Every turn, 1/3 chance to toggle senate override flag on each civ.
+  // In the binary, the senate can block war declarations for democracies/republics;
+  // this random toggle simulates political instability events.
+  if (state.civs) {
+    for (let c = 1; c <= 7; c++) {
+      if (!(state.civsAlive & (1 << c))) continue;
+      const civ = state.civs[c];
+      if (!civ) continue;
+      const govt = civ.government;
+      if (govt !== 'republic' && govt !== 'democracy') continue;
+      // Use deterministic hash if no RNG to keep saves reproducible
+      const roll = ((turnNumber * 7 + c * 13) % 3);
+      if (roll === 0) {
+        if (!Array.isArray(state.civs) || Object.isFrozen(state.civs)) {
+          state.civs = [...state.civs];
+        }
+        state.civs[c] = { ...civ, senateOverride: !civ.senateOverride };
       }
     }
   }
@@ -1435,6 +1704,58 @@ export function transferCity(state, mapBase, cityIndex, fromCiv, toCiv) {
 // ═══════════════════════════════════════════════════════════════════
 // D.4: Attitude Scoring — 15-phase formula
 // Port of FUN_00560d95 (calc_attitude_score)
+//
+// MODIFIER_SUMMARY — All 29 attitude modifiers in the binary formula:
+//
+// Phase 2: Pre-scoring data collection
+//   1. techRankCount — count civs with more techs than target
+//   2. warCount — count of AI's active wars
+//   3. allianceStrength — target's alliance network strength
+//
+// Phase 3: Alliance modifiers (when allied)
+//   4. Treasury comparison: +1 if AI poorer than target
+//   5. Tech count (AI behind): +1 if AI has fewer techs (difficulty > 0)
+//   6. Tech count (AI ahead): -1 if target has fewer techs
+//   7. Military power (AI weaker): +1 if AI weaker
+//   8. Military power (AI stronger): -1 if AI stronger
+//   9. War front penalty: -(warCount - expansionism - 1) if at war
+//  10. Large tech gap bonus: +1 if AI 8+ techs behind target
+//
+// Phase 4: Treaty status modifiers
+//  11. Ceasefire penalty: -2 if ceasefire active
+//  12. Non-alliance penalty: -1 if not allied
+//
+// Phase 5: Late-game power penalties
+//  13. Power rank penalty: -(7 - targetPowerRank), halved before turn 400
+//  14. Rank-7 bonus: +floor(diffIdx/3)+1 if target is rank 7 with 3+ cities
+//
+// Phase 6: Spaceship penalties
+//  15. Spaceship flag: -1 if target building spaceship
+//  16. Spaceship race: -1 extra if AI is NOT building spaceship
+//
+// Phase 7+8: Personality + power differential
+//  17. Personality modifier: expansionism*3 + militarism*2 (floored at -2)
+//  18. Power rank differential: (targetRank - aiRank), halved
+//
+// Phase 9: Military power stacking penalties
+//  19. 4x inferior: -1 if AI mil*4 < target mil
+//  20. 2x inferior: -1 if AI mil*2 < target mil
+//  21. 1.5x inferior: -1 if AI mil*3 < target mil*2
+//
+// Phase 10: Peaceful strength bonus (non-allied)
+//  22. Target weaker: +1 if target mil < AI mil
+//  23. Target much weaker: +1 if target mil*2 < AI mil
+//
+// Phase 11: Wonder effects
+//  24. Great Wall / UN (target): score reduction + -10
+//  25. Eiffel Tower (AI): +1
+//  26. Eiffel Tower (target): score halved + penalty
+//
+// Phase 12-15: Final modifiers
+//  27. Tech leader bonus: +1 if no civ has more techs than target
+//  28. Tech count vs tolerance: +(1 - tolerance) if AI behind in techs
+//  29. Alliance floor: score clamped to 0 minimum if allied
+//
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -1727,4 +2048,51 @@ export function calcTributeDemand(state, aiCiv, targetCiv, techDesire) {
     tribute = Math.floor(treasury / 50) * 50;
   }
   return tribute;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Diplomacy Event Constants & Fire Function
+//
+// Used by AI diplomacy (diplomai.js) to push structured events into
+// the turn event queue. These correspond to the diplomacy text events
+// in the original Civ2 binary (DIPLOMACY.TXT dialog keys).
+// ═══════════════════════════════════════════════════════════════════
+
+export const DIPLO_EVENTS = {
+  WARENDS:       'WARENDS',       // War has ended (peace signed)
+  NEARCITY:      'NEARCITY',      // Foreign unit near our city (peace)
+  ADMIRECITY:    'ADMIRECITY',    // AI admires a city (positive event)
+  TERMS:         'TERMS',         // AI demands terms (treaty negotiation)
+  INTRUDER:      'INTRUDER',      // Single intruder detected in territory
+  INTRUDERS:     'INTRUDERS',     // Multiple intruders in territory
+  VIOLATOR:      'VIOLATOR',      // Single ceasefire violator
+  VIOLATORS:     'VIOLATORS',     // Multiple ceasefire violators
+  WITHDRAWN:     'WITHDRAWN',     // Units have withdrawn from territory
+  VIOLATE:       'VIOLATE',       // Alliance violation detected
+  SENATESCANDAL: 'SENATESCANDAL', // Senate scandal (espionage caught)
+  HELPME:        'HELPME',        // AI requests military alliance
+  CRUSADE:       'CRUSADE',       // Multi-civ coalition against dominant civ
+};
+
+/**
+ * Push a diplomacy event into the turn event queue.
+ *
+ * Events accumulate in state.turnEvents during AI processing and are
+ * consumed by the client for display (dialog popups, notifications).
+ *
+ * @param {object} state - mutable game state
+ * @param {string} eventKey - one of DIPLO_EVENTS keys
+ * @param {number} aiCiv - AI civ generating the event
+ * @param {number} targetCiv - civ the event is directed at
+ * @param {object} [data] - additional event-specific data
+ */
+export function fireDiplomacyEvent(state, eventKey, aiCiv, targetCiv, data) {
+  if (!state.turnEvents) state.turnEvents = [];
+  state.turnEvents.push({
+    type: 'diplomacyEvent',
+    event: eventKey,
+    aiCiv,
+    targetCiv,
+    ...data,
+  });
 }

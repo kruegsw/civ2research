@@ -25,9 +25,14 @@ import {
   UNIT_PREREQS, UNIT_ROLE,
   IMPROVE_PREREQS, GOVT_TECH_PREREQS, GOVT_INDEX,
   GOVERNMENT_NAMES,
+  LEADER_PERSONALITY as LEADER_PERSONALITY_3,
 } from '../defs.js';
 import { hasWonderEffect } from '../utils.js';
-import { calcAttitudeScore } from '../diplomacy.js';
+import {
+  calcAttitudeScore,
+  TF, getTreatyFlags, addTreatyFlag, clearTreatyFlag,
+  DIPLO_EVENTS, fireDiplomacyEvent,
+} from '../diplomacy.js';
 
 // ── Leader Personality Table ─────────────────────────────────────
 // Indexed by rulesCivNumber (0-20). Each entry: [expansionism, militarism]
@@ -464,6 +469,345 @@ function detectBorderIntrusions(gameState, mapBase, civSlot) {
   }
 
   return { intruders, intruderCivs };
+}
+
+// ── O.5b: Border Scoring (calc_war_readiness feed) ──────────────
+
+/**
+ * Calculate detailed border score for a target civ's units near our cities.
+ *
+ * Port of calc_war_readiness border scan from FUN_0055cbd5:
+ *   - Scan all units belonging to targetCiv
+ *   - For each unit near an aiCiv city (within 3 tiles):
+ *     - Base score: +1 per unit
+ *     - Tile improvement bonuses at unit position
+ *     - If 4+ units near same city: increment intruder count
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} aiCiv - AI civ whose borders are being evaluated
+ * @param {number} targetCiv - civ whose units are being scored
+ * @returns {{ borderScore: number, intruderCount: number, intruderDetailCnt: number, unitCount: number }}
+ */
+export function calcBorderScore(state, mapBase, aiCiv, targetCiv) {
+  let borderScore = 0;
+  let intruderCount = 0;
+  let intruderDetailCnt = 0;
+  let unitCount = 0;
+
+  if (!state.cities || !state.units || !mapBase) {
+    return { borderScore, intruderCount, intruderDetailCnt, unitCount };
+  }
+
+  const mw = mapBase.mw;
+
+  // Collect AI cities with their positions
+  const aiCities = [];
+  for (const city of state.cities) {
+    if (!city || city.owner !== aiCiv || city.size <= 0 || city.gx < 0) continue;
+    aiCities.push(city);
+  }
+
+  if (aiCities.length === 0) {
+    return { borderScore, intruderCount, intruderDetailCnt, unitCount };
+  }
+
+  // Track per-city intruder counts for the 4+ threshold
+  const cityIntruderCounts = new Map(); // cityIndex -> count
+
+  // Scan all units belonging to targetCiv
+  for (const u of state.units) {
+    if (!u || u.gx < 0 || u.owner !== targetCiv) continue;
+    unitCount++;
+
+    // Check proximity to each AI city (within 3 tiles)
+    for (let ci = 0; ci < aiCities.length; ci++) {
+      const city = aiCities[ci];
+      const dist = tileDist(u.gx, u.gy, city.gx, city.gy, mapBase);
+      if (dist > 3) continue;
+
+      // Base score: +1 per unit near a city
+      borderScore += 1;
+
+      // Check tile improvements at unit position for bonus scoring
+      if (mapBase.getImprovements) {
+        const imp = mapBase.getImprovements(u.gx, u.gy);
+        if (imp) {
+          if (imp.road) borderScore += 1;
+          if (imp.railroad) borderScore += 1;
+          if (imp.mining) borderScore += 1;
+          if (imp.irrigation) borderScore += 1;
+          if (imp.fortress) borderScore += 2;
+        }
+      }
+
+      // Track per-city intruder count
+      const prevCount = cityIntruderCounts.get(ci) || 0;
+      cityIntruderCounts.set(ci, prevCount + 1);
+
+      intruderDetailCnt++;
+      break; // only count once per unit (nearest city)
+    }
+  }
+
+  // If 4+ intruding units near the same city: increment intruderCount
+  for (const count of cityIntruderCounts.values()) {
+    if (count >= 4) intruderCount++;
+  }
+
+  return { borderScore, intruderCount, intruderDetailCnt, unitCount };
+}
+
+// ── Alliance Violation Detection ────────────────────────────────
+
+/**
+ * Check for alliance violations using treaty flags.
+ *
+ * Port of FUN_0055d8d8 alliance violation path:
+ *   - For each allied civ, check the INTRUDER flag (0x20)
+ *   - If set: break treaty to war, set attitude to max hostility
+ *   - If not set but HOSTILITY flag (0x40) exists: fire TERMS event
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} aiCiv - AI civ checking for violations
+ * @returns {Array<object>} actions/events generated
+ */
+export function checkAllianceViolations(state, mapBase, aiCiv) {
+  const actions = [];
+
+  if (!state.civs) return actions;
+
+  for (let other = 1; other < 8; other++) {
+    if (other === aiCiv) continue;
+    if (!(state.civsAlive & (1 << other))) continue;
+    if (getTreaty(state, aiCiv, other) !== 'alliance') continue;
+
+    const flags = getTreatyFlags(state, aiCiv, other);
+
+    // Check INTRUDER flag (0x20) — active violation
+    if (flags & TF.INTRUDER) {
+      // Break treaty to war, set attitude to max hostility
+      actions.push({ type: 'DECLARE_WAR', targetCiv: other });
+      actions.push(makeAttitudeAction(aiCiv, other, -100));
+
+      // Clear the violation flag
+      clearTreatyFlag(state, aiCiv, other, TF.INTRUDER);
+
+      fireDiplomacyEvent(state, DIPLO_EVENTS.VIOLATE, aiCiv, other, {
+        reason: 'alliance_violation',
+      });
+    }
+    // Check HOSTILITY flag (0x40) — previous violation warning
+    else if (flags & TF.HOSTILITY) {
+      // Fire TERMS event — demand the violator negotiate
+      fireDiplomacyEvent(state, DIPLO_EVENTS.TERMS, aiCiv, other, {
+        reason: 'hostility_flag',
+      });
+      // Clear the hostility flag after processing
+      clearTreatyFlag(state, aiCiv, other, TF.HOSTILITY);
+    }
+  }
+
+  return actions;
+}
+
+// ── Intruder System Gaps ────────────────────────────────────────
+
+/**
+ * Enhanced border intrusion detection with border score integration,
+ * timing gate, escalation roll, and treaty-based responses.
+ *
+ * Port of FUN_0045705e intruder detection with full escalation logic:
+ *   - Timing gate: only process when (turn + aiCiv) & 3 === 0
+ *   - Escalation roll: if rand() % (tolerance + 2) === 0, set violation flag
+ *   - Treaty-based response events:
+ *     - At peace: NEARCITY/INTRUDER events
+ *     - Ceasefire: VIOLATOR/VIOLATORS events
+ *     - No treaty: direct war consideration
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} aiCiv - AI civ processing intrusions
+ * @returns {Array<object>} actions generated
+ */
+export function processIntrusionEscalation(state, mapBase, aiCiv) {
+  const actions = [];
+  const turnNumber = state.turn?.number ?? 0;
+
+  // Timing gate: only process when (turn + aiCiv) & 3 === 0
+  if ((turnNumber + aiCiv) & 3) return actions;
+
+  if (!state.civs) return actions;
+
+  const aiCivData = state.civs[aiCiv];
+  if (!aiCivData) return actions;
+
+  // Get leader tolerance from the 3-element personality table in defs.js
+  const rcn = aiCivData.rulesCivNumber ?? 0;
+  const personality3 = LEADER_PERSONALITY_3[rcn] || [0, 0, 0];
+  const tolerance = personality3[2] ?? 0; // tolerance is index 2
+
+  for (let other = 1; other < 8; other++) {
+    if (other === aiCiv) continue;
+    if (!(state.civsAlive & (1 << other))) continue;
+    if (!haveContact(state, aiCiv, other)) continue;
+
+    const treaty = getTreaty(state, aiCiv, other);
+    if (treaty === 'war') continue; // war units are expected
+
+    // Get border score for this civ pair
+    const { borderScore, intruderCount } = calcBorderScore(state, mapBase, aiCiv, other);
+
+    if (borderScore === 0) continue;
+
+    // Escalation roll: random check against tolerance
+    // Higher tolerance = less likely to escalate (larger divisor)
+    const toleranceDivisor = Math.abs(tolerance) + 2;
+    const roll = ((turnNumber * 31 + aiCiv * 17 + other * 11) % toleranceDivisor);
+
+    if (roll === 0) {
+      // Set violation flag (0x20) on the treaty
+      addTreatyFlag(state, aiCiv, other, TF.INTRUDER);
+    }
+
+    // Fire appropriate events based on treaty status
+    if (treaty === 'peace') {
+      if (intruderCount > 0) {
+        fireDiplomacyEvent(state, DIPLO_EVENTS.INTRUDER, aiCiv, other, {
+          borderScore, intruderCount,
+        });
+      } else {
+        fireDiplomacyEvent(state, DIPLO_EVENTS.NEARCITY, aiCiv, other, {
+          borderScore,
+        });
+      }
+      // Attitude penalty for intrusion during peace
+      actions.push(makeAttitudeAction(aiCiv, other, -3));
+    } else if (treaty === 'ceasefire') {
+      if (intruderCount > 0) {
+        fireDiplomacyEvent(state, DIPLO_EVENTS.VIOLATORS, aiCiv, other, {
+          borderScore, intruderCount,
+        });
+      } else {
+        fireDiplomacyEvent(state, DIPLO_EVENTS.VIOLATOR, aiCiv, other, {
+          borderScore,
+        });
+      }
+      // Harsher attitude penalty during ceasefire
+      actions.push(makeAttitudeAction(aiCiv, other, -5));
+    } else {
+      // No treaty (uncontacted or bare contact) — direct war consideration
+      // Stronger attitude penalty; shouldDeclareWar will pick this up
+      actions.push(makeAttitudeAction(aiCiv, other, -8));
+    }
+  }
+
+  return actions;
+}
+
+// ── Military Aid ────────────────────────────────────────────────
+
+/**
+ * Consider gifting a military unit to an allied civ that is losing a war.
+ *
+ * Port of FUN_0055d8d8 military aid path:
+ *   - For each allied civ at war: if ally is weaker than their enemy
+ *   - Find a non-civilian unit in one of AI's cities
+ *   - Score: defense + attack*2 (prefer offensive units)
+ *   - Transfer the unit to the ally
+ *   - Gate: only consider if AI has 5+ military units, once per turn
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} aiCiv - AI civ considering aid
+ * @returns {Array<object>} actions generated
+ */
+export function considerMilitaryAid(state, mapBase, aiCiv) {
+  const actions = [];
+
+  if (!state.civs || !state.units) return actions;
+
+  // Gate: only consider if AI has 5+ military units
+  let milUnitCount = 0;
+  for (const u of state.units) {
+    if (!u || u.owner !== aiCiv || u.gx < 0) continue;
+    const atk = UNIT_ATK[u.type] || 0;
+    const def = UNIT_DEF[u.type] || 0;
+    if (atk > 0 || def > 1) milUnitCount++;
+  }
+  if (milUnitCount < 5) return actions;
+
+  let aided = false;
+
+  for (let ally = 1; ally < 8; ally++) {
+    if (ally === aiCiv || aided) continue;
+    if (!(state.civsAlive & (1 << ally))) continue;
+    if (getTreaty(state, aiCiv, ally) !== 'alliance') continue;
+
+    // Check if ally is at war with someone
+    let allyEnemy = -1;
+    let allyEnemyStr = 0;
+    for (let e = 1; e < 8; e++) {
+      if (e === ally || e === aiCiv) continue;
+      if (!(state.civsAlive & (1 << e))) continue;
+      if (getTreaty(state, ally, e) !== 'war') continue;
+      if (!haveContact(state, ally, e)) continue;
+      const eStr = calcMilitaryStrength(state, e);
+      if (eStr > allyEnemyStr) {
+        allyEnemyStr = eStr;
+        allyEnemy = e;
+      }
+    }
+    if (allyEnemy < 0) continue;
+
+    // Check if ally is weaker than their enemy
+    const allyStr = calcMilitaryStrength(state, ally);
+    if (allyStr >= allyEnemyStr) continue;
+
+    // Collect AI cities (to find units stationed in cities)
+    const aiCityPositions = new Set();
+    if (state.cities) {
+      for (const c of state.cities) {
+        if (c && c.owner === aiCiv && c.size > 0 && c.gx >= 0) {
+          aiCityPositions.add(c.gy * mapBase.mw + c.gx);
+        }
+      }
+    }
+
+    // Find best non-civilian unit in one of AI's cities
+    let bestUnit = -1;
+    let bestScore = 0;
+    for (let ui = 0; ui < state.units.length; ui++) {
+      const u = state.units[ui];
+      if (!u || u.owner !== aiCiv || u.gx < 0) continue;
+      const atk = UNIT_ATK[u.type] || 0;
+      const def = UNIT_DEF[u.type] || 0;
+      if (atk === 0 && def <= 1) continue; // skip non-combat
+
+      // Must be in one of our cities
+      const tileIdx = u.gy * mapBase.mw + u.gx;
+      if (!aiCityPositions.has(tileIdx)) continue;
+
+      const score = def + atk * 2;
+      if (score > bestScore) {
+        bestScore = score;
+        bestUnit = ui;
+      }
+    }
+
+    if (bestUnit >= 0) {
+      actions.push({
+        type: 'GIFT_UNIT',
+        unitIndex: bestUnit,
+        fromCiv: aiCiv,
+        toCiv: ally,
+      });
+      aided = true;
+    }
+  }
+
+  return actions;
 }
 
 // ── Per-Continent Military Analysis ─────────────────────────────
@@ -1361,7 +1705,53 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
   const personality = getPersonality(gameState, civSlot);
   const turnNumber = gameState.turn?.number ?? 0;
 
-  // Only consider alliances periodically (every 6 turns)
+  // ── Proactive alliance proposals (non-war) ──
+  // Exact timing gate: (turn & 0x1F) === (aiCiv << 2) — every 32 turns, staggered per civ
+  if ((turnNumber & 0x1F) === ((civSlot << 2) & 0x1F)) {
+    for (let target = 1; target < 8; target++) {
+      if (target === civSlot) continue;
+
+      // 6-condition target selection:
+      // 1. Target is alive
+      if (!(gameState.civsAlive & (1 << target))) continue;
+      // 2. Have contact
+      if (!haveContact(gameState, civSlot, target)) continue;
+      // 3. Not already allied
+      const targetTreaty = getTreaty(gameState, civSlot, target);
+      if (targetTreaty === 'alliance') continue;
+      // 4. Attitude > alliance proposal gate (tolerance - attitude < 6)
+      const attitude = getAttitude(gameState, civSlot, target);
+      const aiCivData = gameState.civs?.[civSlot];
+      const rcn = aiCivData?.rulesCivNumber ?? 0;
+      const pers3 = LEADER_PERSONALITY_3[rcn] || [0, 0, 0];
+      const tolerance = pers3[2] ?? 0;
+      if (tolerance - attitude >= 6) continue;
+      // 5. Target is not at war with us
+      if (targetTreaty === 'war' && haveContact(gameState, civSlot, target)) continue;
+      // 6. Target is not barbarian
+      if (target === 0) continue;
+
+      const hasPending = gameState.treatyProposals?.some(
+        p => (p.from === civSlot && p.to === target) && !p.resolved
+      );
+      if (hasPending) continue;
+
+      const action = { type: 'PROPOSE_TREATY', targetCiv: target, treaty: 'alliance' };
+      const err = validateAction(gameState, mapBase, action, civSlot);
+      if (!err) {
+        actions.push(action);
+        actions.push(makeAttitudeAction(civSlot, target, +5));
+        if (debugLog) {
+          const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+          const tgtName = gameState.civs?.[target]?.name || `Civ ${target}`;
+          debugLog.push(`DIPLO: ${civName} proactively proposes alliance with ${tgtName} (attitude=${attitude})`);
+        }
+        break; // one proactive proposal per turn
+      }
+    }
+  }
+
+  // Only consider HELPME/crusade alliances periodically (every 6 turns)
   if ((turnNumber + civSlot * 5) % 6 !== 0) return actions;
 
   // ── HELPME: Find our biggest war enemy ──
@@ -1795,6 +2185,25 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
     }
   }
 
+  // O.5b: Border score integration — additional per-civ border pressure
+  for (const intruderCiv of intruderCivs) {
+    const { borderScore, intruderCount } = calcBorderScore(gameState, mapBase, civSlot, intruderCiv);
+    if (borderScore > 0) {
+      // Scale attitude penalty by border score (1 per 3 border score points)
+      const scorePenalty = Math.min(10, Math.floor(borderScore / 3));
+      actions.push(makeAttitudeAction(civSlot, intruderCiv, -scorePenalty));
+      if (debugLog && scorePenalty > 0) {
+        const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+        const intName = gameState.civs?.[intruderCiv]?.name || `Civ ${intruderCiv}`;
+        debugLog.push(`DIPLO: ${civName} border score ${borderScore} against ${intName} (penalty -${scorePenalty})`);
+      }
+    }
+  }
+
+  // O.5c: Intrusion escalation processing (timing-gated)
+  const intrusionActions = processIntrusionEscalation(gameState, mapBase, civSlot);
+  actions.push(...intrusionActions);
+
   for (let other = 1; other < 8; other++) {
     if (other === civSlot) continue;
     if (!(gameState.civsAlive & (1 << other))) continue;
@@ -1953,6 +2362,10 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
     const housekeeping = diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog);
     actions.push(...housekeeping);
 
+    // ── 0a. Alliance violation detection ──
+    const violationActions = checkAllianceViolations(gameState, mapBase, civSlot);
+    actions.push(...violationActions);
+
     // ── 0b. O.5: Multi-factor attitude evaluation ──
     const attitudeActions = evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, debugLog);
     actions.push(...attitudeActions);
@@ -2091,6 +2504,19 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
     // ── 7. O.3: Alliance/crusade proposals ──
     const allianceActions = generateAllianceProposals(civSlot, gameState, mapBase, continentData, debugLog);
     actions.push(...allianceActions);
+
+    // ── 8. Military aid to allied civs ──
+    const aidActions = considerMilitaryAid(gameState, mapBase, civSlot);
+    actions.push(...aidActions);
+    if (debugLog && aidActions.length > 0) {
+      for (const a of aidActions) {
+        if (a.type === 'GIFT_UNIT') {
+          const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+          const allyName = gameState.civs?.[a.toCiv]?.name || `Civ ${a.toCiv}`;
+          debugLog.push(`DIPLO: ${civName} gifts unit #${a.unitIndex} to ally ${allyName}`);
+        }
+      }
+    }
 
   } catch (err) {
     console.error(`[diplomai] Error for civ ${civSlot}:`, err);

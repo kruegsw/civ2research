@@ -1157,6 +1157,21 @@ export const SS_STRUCTURAL = 35;
 export const SS_COMPONENT = 36;
 export const SS_MODULE = 37;
 
+// ── Civ record layout constants (binary save format) ──
+// CIV_RECORD_STRIDE: byte size of each civ record in the .sav binary.
+// Each civ occupies 0x594 (1428) bytes starting at the civs section offset.
+// Fields within a civ record include treasury (+0x00), government (+0x04),
+// attitudes array (+0x48), patience (+0x150), militaryPower (+0x154), etc.
+// state.humanPlayers bitmask (parsed from global header) tracks which civ
+// slots are controlled by human players (bit N = civ N is human).
+export const CIV_RECORD_STRIDE = 0x594;
+
+// patience field (civ record +0x150 / DAT_006554f8):
+// Tracks AI patience toward provocations. Decremented over time;
+// when it reaches 0, the AI becomes more willing to declare war.
+// Also used as a divisor for tribute demand calculations.
+// See calcPatienceThreshold() in diplomacy.js for the runtime equivalent.
+
 // ── Government-dependent leader titles ──
 // From Civ2 RULES.TXT @LEADERS section: title prefixes vary by government type.
 // Used for display strings like "President Lincoln" or "King Frederick".

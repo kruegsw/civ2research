@@ -563,3 +563,37 @@ export function checkGameEndConditions(state) {
 
   return null;
 }
+
+// ── Space Race Tech IDs ──
+const TECH_AUTOMOBILE  = 5;   // Automobile
+const TECH_ELECTRONICS = 24;  // Electronics
+const TECH_PHILOSOPHY  = 60;  // Philosophy
+const TECH_INVENTION   = 38;  // Invention
+
+/**
+ * Check a civ's space-race tech capability level.
+ *
+ * Level 0: no spaceship-relevant techs
+ * Level 1: has Automobile (5) OR Electronics (24)
+ * Level 2: has both Automobile AND Electronics, AND either Philosophy (60)
+ *          or Invention (38)
+ *
+ * @param {object} state - game state
+ * @param {number} civSlot
+ * @returns {number} 0, 1, or 2
+ */
+export function checkSpaceRaceCapability(state, civSlot) {
+  const techs = state.civTechs?.[civSlot];
+  if (!techs) return 0;
+
+  const hasAuto = techs.has(TECH_AUTOMOBILE);
+  const hasElec = techs.has(TECH_ELECTRONICS);
+
+  if (!hasAuto && !hasElec) return 0;
+
+  if (hasAuto && hasElec) {
+    if (techs.has(TECH_PHILOSOPHY) || techs.has(TECH_INVENTION)) return 2;
+  }
+
+  return 1;
+}
