@@ -22,10 +22,141 @@
 
 import { TERRAIN_NAMES, UNIT_NAMES, CIV_COLORS, ORDER_KEYS, getCityEpoch, CITY_SIZE_THRESHOLDS, CITY_CAPITAL_SIZE_BONUS } from '../engine/defs.js';
 
+// ═══════════════════════════════════════════════════════════════════
+// Binary-extracted viewport & rendering constants
+// Source: engine/reference/viewport.js (Ghidra decompilation + Civ2-clone)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Civ2 zoom system: integer level -7 to +8 (default 0).
+ * Formula: scaled_size = (zoomLevel + 8) * baseSize / 8
+ *
+ * Our web renderer uses continuous vp.scale instead, but the binary
+ * formula and limits are preserved here for reference and LOD thresholds.
+ *
+ * @ 0x00472cf0 — scale_sprite: return ((zoom_level + 8) * base_size) / 8
+ * @ 0x004135ab — zoom in: max 8, zoom out: min -7
+ */
+export const CIV2_ZOOM = {
+  min: -7,
+  max: 8,
+  default: 0,
+  scaleBase: 8,
+
+  // Large maps (>999 tiles) auto-start at zoom 2
+  // @ 0x00413717: if (999 < tile_count) zoom = 2
+  autoZoomThreshold: 999,
+  autoZoomLevel: 2,
+
+  /** Compute scaled pixel size at a given zoom level (binary port of FUN_00472cf0). */
+  scale(baseSize, zoomLevel) {
+    return Math.floor(((zoomLevel + 8) * baseSize) / 8);
+  },
+
+  // Precomputed scale ratios for each zoom level
+  table: [
+    { zoom: -7, ratio: 0.125 },  // 12.5%
+    { zoom: -6, ratio: 0.25  },  // 25%
+    { zoom: -5, ratio: 0.375 },  // 37.5%
+    { zoom: -4, ratio: 0.5   },  // 50%
+    { zoom: -3, ratio: 0.625 },  // 62.5%
+    { zoom: -2, ratio: 0.75  },  // 75%
+    { zoom: -1, ratio: 0.875 },  // 87.5%
+    { zoom:  0, ratio: 1.0   },  // 100%
+    { zoom:  1, ratio: 1.125 },  // 112.5%
+    { zoom:  2, ratio: 1.25  },  // 125%
+    { zoom:  3, ratio: 1.375 },  // 137.5%
+    { zoom:  4, ratio: 1.5   },  // 150%
+    { zoom:  5, ratio: 1.625 },  // 162.5%
+    { zoom:  6, ratio: 1.75  },  // 175%
+    { zoom:  7, ratio: 1.875 },  // 187.5%
+    { zoom:  8, ratio: 2.0   },  // 200%
+  ],
+};
+
+/**
+ * Zoom-dependent detail thresholds from render_tile (FUN_0047a747).
+ * At low zoom levels, the binary skips expensive detail rendering.
+ * Ratios map binary zoom levels to our continuous vp.scale.
+ *
+ * @ 0x0047a747 — render_tile detail switches
+ */
+export const ZOOM_DETAIL_THRESHOLDS = {
+  plainOcean:      { zoom: -3, ratio: 0.625 },  // zoom < -3: simple ocean (no detail)
+  hideDetails:     { zoom: -3, ratio: 0.625 },  // zoom < -3: skip improvements, forest, irrigation, city/unit labels
+  hideCitySprites: { zoom: -3, ratio: 0.625 },  // zoom < -3: skip city/unit sprite rendering
+  hideResources:   { zoom: -4, ratio: 0.5   },  // zoom < -4: skip resource icons
+  hideRoads:       { zoom: -4, ratio: 0.5   },  // zoom < -4: skip road/railroad overlays
+  overlayAll:      { zoom: -4, ratio: 0.5   },  // zoom < -4: overlay_mask = 0xF (all directions)
+  hideRivers:      { zoom: -6, ratio: 0.25  },  // zoom < -6: skip river overlay
+};
+
+/**
+ * City label font sizing — proportional to tile height.
+ * @ 0x00479fbe — end of recalc_viewport_geometry
+ *
+ * At zoom 0 (tileHeight=32): fontLarge = 19px, fontSmall = 8px
+ * Our renderer uses fixed 20px/14px since we don't zoom the canvas itself.
+ */
+export const CITY_LABEL_FONT = {
+  largeRatio: 3 / 5,    // city name font = (tileHeight * 3) / 5
+  smallRatio: 1 / 4,    // unit count font = tileHeight / 4
+  shadowColor: 10,       // palette index 10 (dark outline) — @ 0x0047c443
+};
+
+/**
+ * Text outline rendering for map numbers/labels.
+ * @ FUN_00472b0a — draw_number_on_map
+ */
+export const TEXT_OUTLINE = {
+  shadowColor: 10,       // palette index 10 (dark outline color)
+  passes: {
+    topLeft:  { dx: -1, dy: -1 },  // first shadow pass
+    botRight: { dx:  3, dy:  3 },  // second shadow pass
+    main:     { dx: -2, dy: -2 },  // main text draw offset
+  },
+};
+
+/**
+ * Viewport geometry computation formulas.
+ * Binary ref: FUN_00479fbe @ 0x00479FBE (recalc_viewport_geometry)
+ *
+ * Tile dimension at zoom:
+ *   tileWidth   = scale(64, zoom)    // (zoom+8)*64/8
+ *   tileHeight  = scale(32, zoom)    // (zoom+8)*32/8
+ *   halfTileW   = tileWidth / 2
+ *   halfTileH   = tileHeight / 2
+ *   strideX     = tileWidth
+ *   strideY     = tileHeight + halfTileHeight
+ *
+ * Viewport tile counts:
+ *   colsNarrow  = ceil(clientWidth / tileWidth)
+ *   rows        = ceil(clientHeight / tileHeight)
+ *   colsWide    = ceil((clientWidth + halfTileW*3 - 1) / tileWidth)
+ *   rowsWide    = ceil((clientHeight + halfTileH*3 - 1) / tileHeight)
+ *
+ * Clamped to map: if colsNarrow > mapWidth/2, compute centering margin.
+ */
+
+/**
+ * Map wrapping parity constraints (isometric grid alignment).
+ * Binary ref: FUN_00479fbe @ 0x00479fbe lines 3724-3734
+ *
+ *   - viewportLeftX must be even: if odd, subtract 1
+ *   - if viewportTopY is odd: add 1 to viewportLeftX
+ *   - X wraps via FUN_005ae052; Y never wraps (clamped)
+ *   - Flat earth flag: DAT_00655AE8 bit 0x8000
+ *     If set: clamp X to [0, mapWidth - 2*colsNarrow]
+ *     If clear: X wraps cylindrically
+ */
+export const MAP_WRAPPING = {
+  flatEarthBit: 0x8000,  // @ 0x00479fbe — (flags & 0x8000) != 0 means flat (no X wrapping)
+};
+
 const Civ2Renderer = {
 
-  TW: 64,  // Tile width in pixels
-  TH: 32,  // Tile height in pixels
+  TW: 64,  // Tile width in pixels  — @ 0x00479fbe: scale_sprite(0x40, zoom)
+  TH: 32,  // Tile height in pixels — @ 0x00479fbe: scale_sprite(0x20, zoom)
 
   // ── Sprite sheet layout constants (binary-verified) ──
   // Binary ref: engine/reference/sprite-tables.js

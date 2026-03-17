@@ -99,9 +99,10 @@ export async function quickRerender() {
 // Binary ref: Civ2-clone UnitReadyView.cs / WaitingView.cs
 // ═══════════════════════════════════════════════════════════════════
 
-// Blink intervals from Civ2-clone (binary-verified)
-const CURSOR_BLINK_UNIT_READY_MS = 150;    // UnitReadyView interval — active unit blink
-const CURSOR_BLINK_WAITING_VIEW_MS = 200;  // WaitingView interval — "view piece" cursor blink
+// Blink / timer intervals from binary (@ 0x00413717, block_00410000.c:2047-2048)
+const CURSOR_BLINK_UNIT_READY_MS = 150;    // @ 0x00413717: 0x96 = 150ms — cursor blink / unit flash
+const CURSOR_BLINK_WAITING_VIEW_MS = 200;  // Civ2-clone WaitingView.cs — "view piece" cursor blink
+export const GAME_TICK_INTERVAL_MS = 500;  // @ 0x00413717: 500ms — game tick / auto-advance timer
 
 export function startBlink() {
   stopBlink();

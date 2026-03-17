@@ -13,6 +13,47 @@ const TH = 32;
 // Binary ref: Civ2-clone MinimapPanel.cs
 const MINIMAP_GLOBE_ROTATION_STEP_MS = 1000; // _globeRotation_dt = 1000ms
 
+// ═══════════════════════════════════════════════════════════════════
+// Binary-extracted minimap layout constants
+// Source: engine/reference/viewport.js (FUN_00406b4c, FUN_0040785b, FUN_00406e61)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Minimap panel dimensions — determined at startup based on screen resolution.
+ * @ FUN_0040785b (block_00400000.c:555):
+ *   if (screenWidth + sidePanel > 1000): use large (240x150)
+ *   else: use base (160x100)
+ */
+export const MINIMAP_PANEL = {
+  resolutionThreshold: 1000,
+  base:  { width: 160, height: 100 },  // default for <=1000px
+  large: { width: 240, height: 150 },  // used for >1000px
+};
+
+/**
+ * Minimap tile palette colors (FUN_00406e61 @ 0x00406E61).
+ * Returns palette index per tile based on visibility/ownership.
+ */
+export const MINIMAP_TILE_COLORS = {
+  fogOfWar:       10,    // not visible -> palette 10 (black/dark)
+  cursorTile:     0x29,  // 41 — white/highlight on cursor position
+  land:           0x30,  // 48 — terrain green for visible land
+  ocean:          0x5d,  // 93 — ocean blue for visible ocean
+  cityOwnerStride: 0x10, // 16 bytes per civ in palette color table
+};
+
+/**
+ * Minimap viewport outline (FUN_0040701e @ 0x0040701E).
+ * The rectangle showing the main viewport's visible area.
+ */
+export const MINIMAP_VIEWPORT_OUTLINE_COLOR = 0x29;  // palette 41 (white)
+
+/**
+ * Minimap refresh threshold — only update minimap if change count > 2.
+ * @ 0x0047cb50: if (DAT_00655b02 > 2) refresh minimap
+ */
+export const MINIMAP_REFRESH_THRESHOLD = 2;
+
 // Terrain type → flat color for minimap rendering
 const TERRAIN_COLORS = [
   [200, 180, 100],  //  0 Desert     — sand
