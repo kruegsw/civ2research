@@ -86,6 +86,8 @@ const Civ2Parser = {
       // 0x000C
       bloodlust:               !!(savBuf[0x000C] & 0x80),
       simplifiedCombat:        !!(savBuf[0x000C] & 0x10),
+      barbariansPeaceful:      !!(savBuf[0x000C] & 0x04),
+      barbariansRaging:        !!(savBuf[0x000C] & 0x08),
       // 0x000D
       flatEarth:               !!(savBuf[0x000D] & 0x80),
       dontRestartEliminated:   !!(savBuf[0x000D] & 0x01),
@@ -626,13 +628,26 @@ const Civ2Parser = {
         // New fields
         x: ux, y: uy,    // raw doubled-X coordinates
         flags, movementFlags,
+        // movementFlags (low byte)
+        gotoArrived:     !!(movementFlags & 0x80),
         firstMoved:      !!(movementFlags & 0x40),
+        borderSeen:      !!(movementFlags & 0x20),
         paraLaunched:    !!(movementFlags & 0x10),
+        borderChecked:   !!(movementFlags & 0x04),
         immobile:        !!(movementFlags & 0x02),
+        // statusFlags (high byte)
         statusFlags,
+        settlerAutomate: !!(statusFlags & 0x80),
+        shipWakeSentries:!!(statusFlags & 0x40),
+        veteran:         !!(statusFlags & 0x20),
+        gotoNuclearTarget:!!(statusFlags & 0x10),
+        aiMobilized:     !!(statusFlags & 0x08),
+        aiAttackPath:    !!(statusFlags & 0x04),
+        aiSettlerRole:   !!(statusFlags & 0x02),
+        aiFortified:     !!(statusFlags & 0x01),
+        // backward-compat aliases
         automated:       !!(statusFlags & 0x80),
         waiting:         !!(statusFlags & 0x40),
-        veteran:         !!(statusFlags & 0x20),
         moveSpent,
         lastDirection,
         shieldCharge,
@@ -774,15 +789,29 @@ const Civ2Parser = {
           knownToTribes, believedSize, style,
           // Batch F: new fields
           attribs1, attribs2, attribs3, attribs4,
+          // attribs1 (byte +4)
           canBuildCoastal:     !!(attribs1 & 0x80),
+          aiSettlerNearby:     !!(attribs1 & 0x40),
           autoBuild:           !!(attribs1 & 0x10),
           techStolen:          !!(attribs1 & 0x08),
           improvementSold:     !!(attribs1 & 0x04),
           weLoveKingDay:       !!(attribs1 & 0x02),
           civilDisorder:       !!(attribs1 & 0x01),
+          // attribs2 (byte +5)
+          raptureGrowth:       !!(attribs2 & 0x80),
+          contentSurplus:      !!(attribs2 & 0x40),
+          disorderActive:      !!(attribs2 & 0x20),
           canBuildHydro:       !!(attribs2 & 0x08),
+          buildingWonder:      !!(attribs2 & 0x01),
+          // attribs3 (byte +6)
+          investigated:        !!(attribs3 & 0x40),
           canBuildShips:       !!(attribs3 & 0x20),
+          wasCelebrating:      !!(attribs3 & 0x10),
+          needsNewSettlerSite: !!(attribs3 & 0x08),
+          needsRecalc:         !!(attribs3 & 0x02),
+          // attribs4 (byte +7)
           objectiveX3:         !!(attribs4 & 0x10),
+          coastalFortressUsed: !!(attribs4 & 0x08),
           objectiveX1:         !!(attribs4 & 0x04),
           autoBuildDomestic:   !!(attribs4 & 0x02),
           autoBuildMilitary:   !!(attribs4 & 0x01),

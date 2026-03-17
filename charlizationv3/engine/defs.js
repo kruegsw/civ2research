@@ -1334,3 +1334,339 @@ export const SPECIALIST_MIN_CITY_SIZE = 5;
 export const LONG_MOVE_THRESHOLD = 47;   // distance above which AI switches to long-move path
 export const BACKTRACK_PENALTY = 15;     // pathfinder penalty for moving away from destination
 export const AI_STUCK_RESET_THRESHOLD = 19; // after 19 failed moves, AI resets unit goto
+
+// ═══════════════════════════════════════════════════════════════════
+// Game End Reasons (binary ref: DAT_0064B1AC)
+// Used by victory/defeat logic to determine end-game sequence
+// ═══════════════════════════════════════════════════════════════════
+export const GAME_END_REASON = {
+  NONE: 0,            // Game in progress
+  SPACESHIP_SELF: 1,  // Player launched winning spaceship
+  SPACESHIP_OTHER: 2, // Rival launched winning spaceship
+  DOMINATION: 3,      // Domination victory (2/3 population + land)
+  CONQUEST: 4,        // Conquest victory (all rivals eliminated)
+  RETIREMENT: 5,      // Player retired or game ended at turn limit
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Victory/Score constants (binary ref: render_retirement_score @ 0x00435DC4)
+// ═══════════════════════════════════════════════════════════════════
+export const SCORE_CONSTANTS = {
+  // Score multiplier by difficulty level:
+  //   scoreMult = difficulty + 4 + bonuses
+  //   bonuses: +1 if difficulty > 2, +1 if difficulty > 3, +2 if difficulty > 4
+  DIFFICULTY_MULTIPLIERS: [4, 5, 6, 8, 10, 12],
+  // Chieftain=4, Warlord=5, Prince=6, King=8, Emperor=10, Deity=12
+
+  // rawScore = (scoreMult * max(approval1, approval2)) / 100
+
+  // Rank thresholds: (level^2)/3 for level 1..24
+  // Rank = highest index where threshold <= rawScore
+  RANK_THRESHOLDS: [0, 1, 3, 5, 8, 12, 16, 21, 27, 33, 40, 48, 56, 65, 75, 85, 96, 108, 120, 133, 147, 161, 176, 192],
+  MAX_RANK: 23,
+
+  // Rank title sections in game.txt
+  MALE_FAME_SECTION: 'MALEFAME',
+  FEMALE_FAME_SECTION: 'FEMALEFAME',
+
+  // Keep-playing flag (game_flags bit)
+  KEEP_PLAYING_FLAG: 0x20,
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Hall of Fame (binary ref: render_hall_of_fame_list @ 0x004362E2)
+// ═══════════════════════════════════════════════════════════════════
+export const HALL_OF_FAME = {
+  RECORD_COUNT: 6,
+  RECORD_SIZE: 72,         // 0x48 bytes per record
+  FILE_NAME: 'HALLFAME.DAT',
+  // Record field offsets (within each 72-byte record)
+  FIELDS: {
+    SCORE: 0x00,           // int16 (negative = empty slot)
+    CIV_ID: 0x02,          // int16 (low nibble=difficulty, bit 7=scenario/AC victory)
+    TURN_NUMBER: 0x04,     // int16
+    YEAR: 0x06,            // int16
+    DATE_CALC: 0x08,       // int16
+    YEARS_PER_TURN: 0x0A,  // int16 (0xFFFF if no Oedo Year)
+    MONTHS_PER_TURN: 0x0C, // int16
+    MONTH_INDEX: 0x0E,     // int16
+    BLOODLUST_FLAG: 0x10,  // int16
+    POPULATION: 0x12,      // int16
+    GENDER: 0x14,           // int16 (0=male, nonzero=female)
+    RANK_LEVEL: 0x16,       // int16 (0..23)
+    LEADER_NAME: 0x18,     // char[24]
+    CIV_NAME: 0x30,        // char[24]
+  },
+  DIFFICULTY_MASK: 0x0F,    // lower nibble = difficulty level
+  SCENARIO_FLAG: 0x80,      // bit 7 = Alpha Centauri / scenario victory
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Spaceship Launch AI behavior (binary ref: spaceship_launch @ 0x005973FD)
+// ═══════════════════════════════════════════════════════════════════
+export const SPACESHIP_LAUNCH = {
+  LAUNCH_FLAG: 2,                 // civ_ss[civ].flags |= 2
+  AI_PRODUCTION_OVERRIDE: 99,    // all AI cities switch to capitalization
+  MP_NOTIFICATION_TYPE: 0x0B,    // multiplayer notification message type
+  // AI diplomacy reactions when human launches
+  DIFFICULTY_CEASEFIRE_MAX: 2,   // difficulties <= 2: AI offers ceasefire
+  DIFFICULTY_HATRED_MAX: 4,      // difficulties <= 4: AI sets hatred flag (0x20)
+  // difficulties > 4: AI declares war if not already at war
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// City status flags — full bitfield definitions
+// (binary ref: save-format.js CITY_FLAGS)
+// ═══════════════════════════════════════════════════════════════════
+export const CITY_FLAGS = {
+  // Byte +4 (attribs1)
+  CIVIL_DISORDER:         0x01,
+  WE_LOVE_KING_DAY:       0x02,
+  IMPROVEMENT_SOLD:       0x04,
+  TECH_STOLEN:            0x08,
+  AUTOBUILD_MILITARY:     0x10,
+  AI_SETTLER_NEARBY:      0x40,
+  CAN_BUILD_COASTAL:      0x80,
+  // Byte +5 (attribs2)
+  BUILDING_WONDER:        0x01,
+  CAN_BUILD_HYDRO:        0x08,
+  DISORDER_ACTIVE:        0x20,
+  CONTENT_SURPLUS:        0x40,
+  RAPTURE_GROWTH:         0x80,
+  // Byte +6 (attribs3)
+  NEEDS_RECALC:           0x02,
+  NEEDS_NEW_SETTLER_SITE: 0x08,
+  WAS_CELEBRATING:        0x10,
+  CAN_BUILD_SHIPS:        0x20,
+  INVESTIGATED:           0x40,
+  // Byte +7 (attribs4)
+  AUTOBUILD_MILITARY_ADV: 0x01,
+  AUTOBUILD_DOMESTIC_ADV: 0x02,
+  OBJECTIVE_X1:           0x04,
+  COASTAL_FORTRESS_USED:  0x08,
+  OBJECTIVE_X3:           0x10,
+};
+
+// City flag clear masks applied during specific events
+export const CITY_FLAG_MASKS = {
+  CLEAR_DISORDER:   0xffefdffe,  // clears CIVIL_DISORDER, DISORDER_ACTIVE, WAS_CELEBRATING
+  CLEAR_AUTOBUILD:  0xfcffffef,  // clears AUTOBUILD_MILITARY, AUTOBUILD_MILITARY_ADV, AUTOBUILD_DOMESTIC_ADV
+  CLEAR_TURN_START: 0xffbfffbb,  // clears IMPROVEMENT_SOLD, AI_SETTLER_NEARBY, INVESTIGATED
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Unit status flags — full bitfield definitions
+// (binary ref: save-format.js UNIT_STATUS_FLAGS)
+// ═══════════════════════════════════════════════════════════════════
+export const UNIT_STATUS_FLAGS = {
+  // Low byte (movement flags)
+  IMMOBILE:            0x02,
+  BORDER_CHECKED:      0x04,
+  PARADROP_USED:       0x10,
+  BORDER_SEEN:         0x20,
+  FIRST_MOVE:          0x40,
+  GOTO_ARRIVED:        0x80,
+  // High byte (status flags) — values as they appear in the high byte
+  AI_FORTIFIED:        0x01,
+  AI_SETTLER_ROLE:     0x02,
+  AI_ATTACK_PATH:      0x04,
+  AI_MOBILIZED:        0x08,
+  GOTO_NUCLEAR_TARGET: 0x10,
+  VETERAN:             0x20,
+  SHIP_WAKE_SENTRIES:  0x40,
+  SETTLER_AUTOMATE:    0x80,
+};
+
+// Unit flag clear masks applied at turn start
+export const UNIT_FLAG_MASKS = {
+  TURN_START_CLEAR:    0xFFAF,   // clears FIRST_MOVE(0x40) + PARADROP_USED(0x10)
+  AI_EVAL_CLEAR:       0xF3FF,   // clears AI_ATTACK_PATH(0x400) + AI_MOBILIZED(0x800)
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Civ state flags (per-civ, byte at civ record offset +0)
+// (binary ref: save-format.js CIV_STATE_FLAGS)
+// ═══════════════════════════════════════════════════════════════════
+export const CIV_STATE_FLAGS = {
+  SKIP_NEXT_OEDO_YEAR:  0x01,
+  AT_WAR:               0x02,
+  SENATE_OVERRIDE:      0x04,
+  RECOVERED_REVOLUTION: 0x08,
+  FREE_ADVANCE_PENDING: 0x20,
+  AI_EXPANSION_MODE:    0x80,
+  TECH_MILESTONE:       0x0100,
+  SCENARIO_CLEAR_MASK:  0xFF96,   // bits cleared when saving as scenario
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Unit limits (binary ref: save-format.js UNIT_LIMITS)
+// ═══════════════════════════════════════════════════════════════════
+export const UNIT_LIMITS = {
+  MAX_UNIT_SLOTS:    0x800,    // 2048 unit slots
+  HUMAN_SOFT_CAP:    0x7F7,   // 2039 units (human player soft cap)
+  AI_PER_CIV_CAP:    0x79C,   // 1948 units per AI civ
+  BARBARIAN_SLOT:    0x800,   // slot 2048 reserved for barbarian temp unit
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Throne Room Constants (binary ref: throne-room.js)
+// Cosmetic system — data constants for future rendering
+// ═══════════════════════════════════════════════════════════════════
+export const THRONE_ROOM = {
+  // 6 power ranking categories used for room decoration gating
+  POWER_CATEGORIES: ['military', 'culture', 'economy', 'technology', 'territory', 'population'],
+
+  // Scene dimensions
+  SCENE_WIDTH: 457,
+  SCENE_HEIGHT: 304,
+  DISPLAY_WIDTH: 640,
+  DISPLAY_HEIGHT: 480,
+
+  // Upgrade structure in civ record:
+  //   8 bytes at civ offset +0x93: standard category upgrade levels (0-4 each)
+  //   1 byte at civ offset +0x9B: special upgrade bitmask (bits 0-6)
+  MAX_UPGRADE_LEVEL: 4,
+  NUM_STANDARD_CATEGORIES: 8,
+  NUM_SPECIAL_SLOTS: 7,
+
+  // DLL resource formulas for rendering
+  STANDARD_RESOURCE_BASE: 0x69,     // category * 5 + level + 0x69
+  BASE_SCENE_RESOURCE: 100,          // resource ID for base throne room
+  STANDARD_HIGHLIGHT_BASE: 0xAA,    // highlight overlay: 0xAA + category
+  SPECIAL_HIGHLIGHT_BASE: 0xB2,     // special highlight: 0xB2 + slot
+  SPECIAL_FLOOR_RESOURCE: 0xA0,
+  SPECIAL_THRONE_RESOURCE: 0xA3,
+
+  // Upgrade selector: 34 interactive components
+  COMPONENT_COUNT: 34,
+
+  // Mutually exclusive special slots (4 and 5)
+  MUTUAL_EXCLUSIVE_SLOTS: [4, 5],
+
+  // Sounds
+  SOUND_THRONE_ROOM: 0x0D,
+  SOUND_INVALID_SELECTION: 0x5E,
+
+  // Pollution bar thresholds (also used in advance scene)
+  POLLUTION_THRESHOLDS: [
+    { max: 40,       color: 0xF9 },  // green
+    { max: 75,       color: 0xFB },  // yellow
+    { max: Infinity, color: 0xFA },  // red
+  ],
+
+  // Starfield animation (wonder mode background)
+  STARFIELD_PARTICLE_COUNT: 80,
+  STARFIELD_ANIM_INTERVAL_MS: 5,
+
+  // Typewriter text effect
+  TYPEWRITER_INTERVAL_MS: 60,
+  TYPEWRITER_FAST_INTERVAL_MS: 10,
+
+  // DLL files used by throne room system
+  DLL_SCENE: 'ss.dll',
+  DLL_ADVISOR: 'civ2_mk.dll',
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Wonder Movie Constants (binary ref: cutscenes.js WONDER_MOVIES)
+// Cosmetic system — data constants for future rendering
+// ═══════════════════════════════════════════════════════════════════
+export const WONDER_MOVIES = {
+  // Video path: "civ2_video_wonder" + paddedNumber + ".avi"
+  VIDEO_PATH_PREFIX: 'civ2_video_wonder',
+  VIDEO_PATH_SUFFIX: '.avi',
+
+  // Art DLL for wonder artwork
+  ART_DLL: 'civ2.wonder.dll',
+  ART_RESOURCE_BASE: 20000,   // GIF resource ID = wonderNumber + 20000
+  ART_FRAME_COUNT: 10,        // 10 animation frames per wonder
+  ART_WIDTH: 320,
+  ART_HEIGHT: 240,
+
+  // Scenario flags that prevent wonder video playback
+  PREVENT_VIDEO_FLAG_1: 0x40,
+  PREVENT_VIDEO_FLAG_2: 0x80,
+
+  // Multiplayer: wonder video completion effects skipped when game mode > 2
+  MP_VIDEO_SKIP_THRESHOLD: 2,
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Council Advisor Constants (binary ref: cutscenes.js COUNCIL_ADVISORS)
+// Cosmetic system — data constants for future rendering
+// ═══════════════════════════════════════════════════════════════════
+export const COUNCIL_ADVISORS = {
+  ADVISOR_SLOTS: 12,
+  MUSIC_BASE: 0x53,         // plays sound 0x53 + offset for each advisor
+  WAIT_MS: 7000,             // 7 seconds per advisor
+  SCROLL_SOUND: 0x6F,
+  SCROLL_PIXELS_PER_STEP: 15,
+  SCROLL_STEP_DELAY_MS: 22,
+  ART_DLL: 'civ2_mk.dll',
+  PANEL_RECT: { left: 208, top: 57, right: 433, bottom: 332 },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// Cosmic Rules Editor Parameters (binary ref: save-format.js COSMIC_EDITOR)
+// 22 byte-sized parameters from the cosmic rules block
+// ═══════════════════════════════════════════════════════════════════
+export const COSMIC_PARAMETER_RANGES = [
+  { min: 1, max: 100, desc: 'Road movement multiplier' },
+  { min: 1, max: 100, desc: 'Trade bonus base' },
+  { min: 0, max: 10,  desc: 'Food consumed per citizen per turn' },
+  { min: 4, max: 20,  desc: 'Settler food cost (food rows per settler, forced even)' },
+  { min: 4, max: 20,  desc: 'Shield rows multiplier' },
+  { min: 0, max: 10,  desc: 'Pollution multiplier' },
+  { min: 0, max: 10,  desc: 'Base unhappy citizens before content' },
+  { min: 4, max: 12,  desc: 'Riot factor / content citizens base' },
+  { min: 10, max: 100, desc: 'Tech paradigm / cost multiplier' },
+  { min: 4, max: 50,  desc: 'City size for aqueduct requirement' },
+  { min: 4, max: 50,  desc: 'City size for sewer system requirement' },
+  { min: 3, max: 10,  desc: 'Tech cost multiplier / paradigm scale' },
+  { min: 5, max: 100, desc: 'Trade route bonus multiplier' },
+  { min: 0, max: 8,   desc: 'Food trade route threshold' },
+  { min: 0, max: 8,   desc: 'Shield trade route threshold' },
+  { min: 0, max: 8,   desc: 'Trade trade route threshold' },
+  { min: 1, max: 20,  desc: 'Citizens per specialist' },
+  { min: 0, max: 100, desc: 'Government corruption percentage' },
+  { min: 0, max: 100, desc: 'Lost shields penalty threshold' },
+  { min: 4, max: 100, desc: 'Max effective city distance for trade routes' },
+  { min: 25, max: 200, desc: 'Science cost base' },
+  { min: 0, max: 10,  desc: 'Fundamentalism max science rate' },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// Save file format constants (binary ref: save-format.js)
+// ═══════════════════════════════════════════════════════════════════
+export const SAVE_FORMAT = {
+  // File header
+  MAGIC: 'CIVILIZE',
+  HEADER_SIZE: 12,
+  CURRENT_VERSION: 0x2C,
+  VERSION_MIN: 0x26,
+  VERSION_MAX: 0x2C,
+
+  // Record sizes
+  UNIT_RECORD_SIZE_SAV: 32,
+  UNIT_RECORD_SIZE_SCN: 26,
+  CITY_RECORD_SIZE_SAV: 88,
+  CITY_RECORD_SIZE_SCN: 84,
+  CIV_RECORD_STRIDE: 1428,
+
+  // File extensions by save format
+  EXTENSIONS: { 0: '.sav', 1: '.hot', 2: '.eml', 3: '.net', 4: '.net', 5: '.net', 6: '.net' },
+
+  // Tail sizes
+  TAIL_SIZE_SAV: 1807,
+  TAIL_SIZE_SCN: 1907,
+  TAIL_SIZE_NET: 2979,
+
+  // Event section
+  EVENT_MAGIC: 'EVNT',
+  EVENT_RECORD_SIZE: 444,
+
+  // Password storage
+  PASSWORD_OFFSET_FROM_TAIL: 720,
+  PASSWORD_SLOTS: 8,
+  PASSWORD_BYTES_PER_SLOT: 32,
+};
