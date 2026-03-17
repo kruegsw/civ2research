@@ -27,11 +27,14 @@ import {
   GOVERNMENT_NAMES,
   LEADER_PERSONALITY as LEADER_PERSONALITY_3,
 } from '../defs.js';
-import { hasWonderEffect } from '../utils.js';
+import { hasWonderEffect, civHasWonder } from '../utils.js';
 import {
   calcAttitudeScore,
   TF, getTreatyFlags, addTreatyFlag, clearTreatyFlag,
   DIPLO_EVENTS, fireDiplomacyEvent,
+  declareWar as diplomacyDeclareWar,
+  signCeasefire, signPeaceTreaty, formAlliance,
+  getReputation,
 } from '../diplomacy.js';
 
 // ── Leader Personality Table ─────────────────────────────────────
@@ -1206,6 +1209,17 @@ function shouldDemandTribute(civSlot, targetCiv, continentData, gameState) {
   const difficulty = getDifficultyIndex(gameState, civSlot);
   const personality = getPersonality(gameState, civSlot);
 
+  // ── Item 4: DEMAND_COOLDOWN — check demand cooldown timer (8 turns) ──
+  const diploKey = `${civSlot}-${targetCiv}`;
+  const cooldownExpiry = gameState.diplomacy?.[diploKey]?.demandCooldown ?? 0;
+  if (cooldownExpiry > 0 && turnNumber < cooldownExpiry) return null;
+
+  // ── Item 9: WONDER_DEMAND_SUPPRESSION ──
+  // Great Wall (wonder 6) or United Nations (wonder 24) suppress tribute demands
+  if (civHasWonder(gameState, targetCiv, 6) || civHasWonder(gameState, targetCiv, 24)) {
+    return null;
+  }
+
   // FUN_0055d685 at ~5442: check if last demand was less than 6 turns ago
   //   (DAT_0064ca82[target][us] - currentTurn) < 6 → too recent
   // We approximate with modular turn check
@@ -1254,6 +1268,28 @@ function shouldDemandTribute(civSlot, targetCiv, continentData, gameState) {
 
   // Aggressive leaders demand more
   if (personality.militarism > 0) amount = Math.min(200, Math.floor(amount * 1.5));
+
+  // ── Item 8: ERA_TRIBUTE_ADJUSTMENT — era scaling based on tech count ──
+  const ourTechCount = gameState.civTechs?.[civSlot]?.size ?? 0;
+  if (ourTechCount >= 30) {
+    amount *= 3; // Late game
+  } else if (ourTechCount >= 15) {
+    amount *= 2; // Mid game
+  }
+  // Early game (< 15): tribute x1 (no change)
+
+  // ── Item 4: DEMAND_COOLDOWN — half-demand period and ceasefire halving ──
+  // 16-turn half-demand period: if within 16 turns of last demand, halve amount
+  const lastDemandTurn = gameState.diplomacy?.[diploKey]?.lastDemandTurn ?? 0;
+  if (lastDemandTurn > 0 && turnNumber - lastDemandTurn < 16) {
+    amount = Math.floor(amount / 2);
+  }
+  // If ceasefire is active: halve tribute again
+  if (treaty === 'ceasefire') {
+    amount = Math.floor(amount / 2);
+  }
+
+  amount = Math.max(25, Math.min(1000, amount));
 
   // FUN_0055d685 ~5446: barbarian-like civs have 1-in-3 random gate
   // We apply a general random check for less aggressive leaders
@@ -2324,6 +2360,508 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// AI_WAR_DECISION — Exported shouldDeclareWar with full formula
+//
+// Port of FUN_0055cbd5 with attacked-flag fast-path, third-party
+// deterrent, power ranking, ally scoring, and final formula.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Determine whether an AI civ should declare war on a target.
+ * Exported entry point with full formula from decompiled binary.
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} aiCiv - AI civ considering war
+ * @param {number} targetCiv - potential target civ
+ * @returns {boolean} true if war should be declared
+ */
+export function shouldDeclareWarFull(state, mapBase, aiCiv, targetCiv) {
+  // Fast-path: if target attacked us (WAR_STARTED flag toward us), return true
+  const flagsTowardUs = getTreatyFlags(state, targetCiv, aiCiv);
+  if (flagsTowardUs & TF.WAR_STARTED) return true;
+
+  const treaty = getTreaty(state, aiCiv, targetCiv);
+  if (treaty === 'war') return false; // already at war
+  if (treaty === 'alliance') return false; // won't break alliance here
+
+  // Third-party deterrent: scan all alive civs allied with target;
+  // if any have stronger military than us, return false
+  const ourStr = calcMilitaryStrength(state, aiCiv);
+  for (let k = 1; k < 8; k++) {
+    if (k === aiCiv || k === targetCiv) continue;
+    if (!(state.civsAlive & (1 << k))) continue;
+    if (getTreaty(state, targetCiv, k) !== 'alliance') continue;
+    const allyStr = calcMilitaryStrength(state, k);
+    if (allyStr > ourStr) return false;
+  }
+
+  // Power ranking comparison: if target's power rank > ours + 2, return false
+  const ourRank = state.civs?.[aiCiv]?.powerRank ?? 3;
+  const theirRank = state.civs?.[targetCiv]?.powerRank ?? 3;
+  if (theirRank > ourRank + 2) return false;
+
+  // Ally scoring: count our allies, each adds +1; shared enemy adds +2
+  let allyScore = 0;
+  for (let k = 1; k < 8; k++) {
+    if (k === aiCiv || k === targetCiv) continue;
+    if (!(state.civsAlive & (1 << k))) continue;
+    if (getTreaty(state, aiCiv, k) === 'alliance') {
+      allyScore += 1;
+      // Shared enemy bonus: if our ally is also at war with target
+      if (getTreaty(state, k, targetCiv) === 'war' && haveContact(state, k, targetCiv)) {
+        allyScore += 2;
+      }
+    }
+  }
+
+  // Continent strength: approximate from unit counts near shared cities
+  const continentData = computeContinentData(state, mapBase);
+  let ourStrength = 0;
+  let theirStrength = 0;
+  let theirDefense = 0;
+
+  for (const [, cl] of continentData) {
+    const ourCities = cl.civCities.get(aiCiv);
+    const theirCities = cl.civCities.get(targetCiv);
+    if (!ourCities || !theirCities) continue;
+    ourStrength += cl.civMilitary.get(aiCiv) || 0;
+    theirStrength += cl.civMilitary.get(targetCiv) || 0;
+    // Approximate defense from city count (each city adds fortification value)
+    theirDefense += (theirCities.length || 0) * 2;
+  }
+
+  // If no shared continents, fall back to global strength
+  if (ourStrength === 0 && theirStrength === 0) {
+    ourStrength = ourStr;
+    theirStrength = calcMilitaryStrength(state, targetCiv);
+  }
+
+  // Leader patience
+  const patience = state.civs?.[aiCiv]?.patience ?? 2;
+
+  // Final formula: (ourStrength << 2) / (theirStrength + theirDefense) < (allyScore - patience + 4)
+  // If the left side is LESS than the right side, we are strong enough to declare war.
+  // (Higher allyScore or lower patience makes the threshold easier to meet.)
+  const denominator = Math.max(theirStrength + theirDefense, 1);
+  const lhs = (ourStrength << 2) / denominator;
+  const rhs = allyScore - patience + 4;
+
+  // The formula says: declare war when lhs >= rhs (we have sufficient strength ratio)
+  // The original binary: if (lhs < rhs) return false — meaning we need lhs >= rhs
+  return lhs >= rhs;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AI_VS_AI_DIPLOMACY — processAiVsAiDiplomacy
+//
+// Port of FUN_0055d1e2: AI-to-AI treaty progression/regression.
+// Runs every 4 turns per pair. Escalates through ceasefire → peace
+// → alliance based on attitude, or declares war on low attitude.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Process AI-vs-AI diplomacy for a pair of AI civs.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} aiCiv - first AI civ
+ * @param {number} otherAiCiv - second AI civ
+ * @returns {Array<object>} events generated
+ */
+function processAiVsAiDiplomacy(state, mapBase, aiCiv, otherAiCiv) {
+  const events = [];
+  const turnNumber = state.turn?.number ?? 0;
+
+  // Trigger: every 4 turns per pair
+  if ((turnNumber + aiCiv + otherAiCiv) & 3) return events;
+
+  const attitude = getAttitude(state, aiCiv, otherAiCiv);
+  const treaty = getTreaty(state, aiCiv, otherAiCiv);
+
+  // First contact: if no contact, establish ceasefire
+  if (!haveContact(state, aiCiv, otherAiCiv)) {
+    const result = signCeasefire(state, aiCiv, otherAiCiv);
+    events.push(...result.events);
+    // Set initial contact flags
+    addTreatyFlag(state, aiCiv, otherAiCiv, TF.CONTACT);
+    return events;
+  }
+
+  if (treaty === 'war') {
+    // If at war and attitude > 40: attempt ceasefire
+    if (attitude > 40) {
+      const result = signCeasefire(state, aiCiv, otherAiCiv);
+      events.push(...result.events);
+    }
+  } else if (treaty === 'ceasefire') {
+    // If ceasefire and attitude > 60: attempt peace
+    if (attitude > 60) {
+      const result = signPeaceTreaty(state, aiCiv, otherAiCiv);
+      events.push(...result.events);
+    }
+  } else if (treaty === 'peace') {
+    if (attitude > 80) {
+      // If peace and attitude > 80: attempt alliance
+      const result = formAlliance(state, mapBase, aiCiv, otherAiCiv);
+      events.push(...result.events);
+    } else if (attitude < 20) {
+      // If peace and attitude < 20: spontaneous war check
+      if (shouldDeclareWarFull(state, mapBase, aiCiv, otherAiCiv)) {
+        const result = diplomacyDeclareWar(state, mapBase, aiCiv, otherAiCiv);
+        events.push(...result.events);
+      }
+    }
+  }
+  // Alliance: no further escalation needed (already at max treaty level)
+
+  return events;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// JOIN_WAR — processJoinWar
+//
+// Port of FUN_0055d685: third-party "join war" requests.
+// An ally asks the AI to join a war against a shared enemy.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Process a request for an AI civ to join a war alongside an ally.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} aiCiv - AI civ being asked to join
+ * @param {number} allyCiv - civ requesting help
+ * @param {number} enemyCiv - civ to declare war on
+ * @returns {Array<object>} events generated
+ */
+export function processJoinWar(state, mapBase, aiCiv, allyCiv, enemyCiv) {
+  const events = [];
+
+  // Skip if already at war with enemy
+  if (getTreaty(state, aiCiv, enemyCiv) === 'war' && haveContact(state, aiCiv, enemyCiv)) {
+    return events;
+  }
+
+  // Skip if allied with enemy
+  if (getTreaty(state, aiCiv, enemyCiv) === 'alliance') {
+    return events;
+  }
+
+  // Check vendetta flag toward enemy
+  const flagsTowardEnemy = getTreatyFlags(state, aiCiv, enemyCiv);
+  const hasVendetta = !!(flagsTowardEnemy & TF.VENDETTA);
+
+  // Contact cooldown: don't join if contact with enemy < 6 turns ago
+  const flagsFromEnemy = getTreatyFlags(state, enemyCiv, aiCiv);
+  if (flagsFromEnemy & TF.RECENT_CONTACT) {
+    if (!hasVendetta) return events; // vendetta overrides cooldown
+  }
+
+  // Power rank gate: don't join if enemy rank > ours + 3
+  const ourRank = state.civs?.[aiCiv]?.powerRank ?? 3;
+  const enemyRank = state.civs?.[enemyCiv]?.powerRank ?? 3;
+  if (enemyRank > ourRank + 3) {
+    return events;
+  }
+
+  // Random decline: 1/3 chance to refuse (unless vendetta)
+  if (!hasVendetta) {
+    const turnNumber = state.turn?.number ?? 0;
+    const roll = ((turnNumber * 23 + aiCiv * 13 + enemyCiv * 7) % 3);
+    if (roll === 0) return events;
+  }
+
+  // Join the war: declare war on enemy
+  const warResult = diplomacyDeclareWar(state, mapBase, aiCiv, enemyCiv, allyCiv);
+  events.push(...warResult.events);
+
+  // Notify ally
+  fireDiplomacyEvent(state, DIPLO_EVENTS.HELPME, allyCiv, aiCiv, {
+    reason: 'join_war',
+    enemy: enemyCiv,
+  });
+
+  return events;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PEACE_ACCEPTANCE — evaluatePeaceProposal
+//
+// Evaluate whether an AI civ should accept a peace proposal.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Evaluate a peace proposal from proposerCiv.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ considering the proposal
+ * @param {number} proposerCiv - civ proposing peace
+ * @returns {{ accept: boolean, reason: string }}
+ */
+export function evaluatePeaceProposal(state, aiCiv, proposerCiv) {
+  const attitude = getAttitude(state, aiCiv, proposerCiv);
+  const flags = getTreatyFlags(state, aiCiv, proposerCiv);
+
+  // Vendetta override: if vendetta flag set, reject
+  if (flags & TF.VENDETTA) {
+    return { accept: false, reason: 'vendetta' };
+  }
+
+  // Hard reject: if attitude > 75, reject (we're strong, no need for peace)
+  if (attitude > 75) {
+    return { accept: false, reason: 'too_strong' };
+  }
+
+  // Wonder override: if proposer has Great Wall or UN, accept
+  if (civHasWonder(state, proposerCiv, 6) || civHasWonder(state, proposerCiv, 24)) {
+    return { accept: true, reason: 'wonder_protection' };
+  }
+
+  // Gold sweetener: if proposer offers gold, attitude boost before check
+  // (In the actual negotiation, gold would be part of the offer; here we
+  // approximate by checking if proposer has substantial treasury)
+  let effectiveAttitude = attitude;
+  const proposerTreasury = state.civs?.[proposerCiv]?.treasury ?? 0;
+  if (proposerTreasury > 200) {
+    effectiveAttitude -= 5; // gold makes acceptance more likely (lower attitude = more receptive)
+  }
+
+  // Primary accept: shouldDeclareWar returns false AND attitude < 51
+  const wouldDeclareWar = shouldDeclareWarFull(state, null, aiCiv, proposerCiv);
+  if (!wouldDeclareWar && effectiveAttitude < 51) {
+    return { accept: true, reason: 'military_balance' };
+  }
+
+  return { accept: false, reason: 'unfavorable_terms' };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CEASEFIRE_ACCEPTANCE — evaluateCeasefireProposal
+//
+// Evaluate whether an AI civ should accept a ceasefire proposal.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Evaluate a ceasefire proposal from proposerCiv.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ considering the proposal
+ * @param {number} proposerCiv - civ proposing ceasefire
+ * @returns {{ accept: boolean }}
+ */
+export function evaluateCeasefireProposal(state, aiCiv, proposerCiv) {
+  const attitude = getAttitude(state, aiCiv, proposerCiv);
+  const flags = getTreatyFlags(state, aiCiv, proposerCiv);
+  const hasVendetta = !!(flags & TF.VENDETTA);
+
+  // Random gate: rand() % 3 !== 0 (2/3 chance to even consider)
+  // Vendetta override: skip random gate if vendetta
+  if (!hasVendetta) {
+    const turnNumber = state.turn?.number ?? 0;
+    const roll = ((turnNumber * 19 + aiCiv * 11 + proposerCiv * 5) % 3);
+    if (roll === 0) {
+      return { accept: false };
+    }
+  }
+
+  // Attitude threshold: accept if attitude > 30
+  if (attitude > 30) {
+    return { accept: true };
+  }
+
+  return { accept: false };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NEGOTIATE_MENU_CHOICES — evaluateNegotiationChoice
+//
+// Evaluate a specific negotiation proposal type from a target civ.
+// Delegates to specialized evaluators for each proposal type.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Evaluate a negotiation choice for the AI.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ evaluating the proposal
+ * @param {number} targetCiv - civ making the proposal
+ * @param {string} proposalType - 'alliance' | 'peace' | 'ceasefire' | 'surrender'
+ * @returns {{ accept: boolean, counterOffer: string|null }}
+ */
+export function evaluateNegotiationChoice(state, aiCiv, targetCiv, proposalType) {
+  switch (proposalType) {
+    case 'alliance': {
+      const attitude = getAttitude(state, aiCiv, targetCiv);
+      if (attitude <= 70) {
+        return { accept: false, counterOffer: 'peace' };
+      }
+      // Check we're not at war with target's allies
+      for (let k = 1; k < 8; k++) {
+        if (k === aiCiv || k === targetCiv) continue;
+        if (!(state.civsAlive & (1 << k))) continue;
+        if (getTreaty(state, targetCiv, k) === 'alliance' &&
+            getTreaty(state, aiCiv, k) === 'war' &&
+            haveContact(state, aiCiv, k)) {
+          return { accept: false, counterOffer: 'peace' };
+        }
+      }
+      return { accept: true, counterOffer: null };
+    }
+
+    case 'peace': {
+      const result = evaluatePeaceProposal(state, aiCiv, targetCiv);
+      return { accept: result.accept, counterOffer: result.accept ? null : 'ceasefire' };
+    }
+
+    case 'ceasefire': {
+      const result = evaluateCeasefireProposal(state, aiCiv, targetCiv);
+      return { accept: result.accept, counterOffer: null };
+    }
+
+    case 'surrender': {
+      // Accept if military power < target x 3
+      const ourStr = calcMilitaryStrength(state, aiCiv);
+      const theirStr = calcMilitaryStrength(state, targetCiv);
+      const accept = ourStr < theirStr * 3;
+      return { accept, counterOffer: accept ? null : 'peace' };
+    }
+
+    default:
+      return { accept: false, counterOffer: null };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Item 5: PROVOCATION_CONDITIONS — immediate war on flag detection
+//
+// If INTRUDER_FLAG (0x20) or HOSTILITY_FLAG (0x40) is set toward a
+// civ, declare war immediately (skip patience/attitude checks).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check provocation flags and generate immediate war declarations.
+ * Wired into generateDiplomacyActions before normal war evaluation.
+ *
+ * @param {object} gameState - game state
+ * @param {object} mapBase - map data with accessors
+ * @param {number} civSlot - AI civ checking for provocations
+ * @returns {Array<object>} actions generated
+ */
+function checkProvocationConditions(gameState, mapBase, civSlot) {
+  const actions = [];
+  if (!gameState.civs) return actions;
+
+  for (let other = 1; other < 8; other++) {
+    if (other === civSlot) continue;
+    if (!(gameState.civsAlive & (1 << other))) continue;
+    if (!haveContact(gameState, civSlot, other)) continue;
+
+    const treaty = getTreaty(gameState, civSlot, other);
+    if (treaty === 'war') continue; // already at war
+
+    const flags = getTreatyFlags(gameState, civSlot, other);
+
+    // If INTRUDER (0x20) or HOSTILITY (0x40) flag is set: declare war immediately
+    if (flags & (TF.INTRUDER | TF.HOSTILITY)) {
+      const action = { type: 'DECLARE_WAR', targetCiv: other };
+      const err = validateAction(gameState, mapBase, action, civSlot);
+      if (!err) {
+        actions.push(action);
+        actions.push(makeAttitudeAction(civSlot, other, -30));
+        // Clear the flags after acting on them
+        if (flags & TF.INTRUDER) clearTreatyFlag(gameState, civSlot, other, TF.INTRUDER);
+        if (flags & TF.HOSTILITY) clearTreatyFlag(gameState, civSlot, other, TF.HOSTILITY);
+        break; // only one provocation war per turn
+      }
+    }
+  }
+
+  return actions;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Item 6: SPONTANEOUS_WAR — break peace when conditions are met
+//
+// If peace treaty exists, not allied, military power > 5,
+// and attitude < 26: break peace and declare war.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if conditions are met for a spontaneous war declaration.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ considering war
+ * @param {number} targetCiv - potential target
+ * @returns {object|null} war declaration action or null
+ */
+export function checkSpontaneousWar(state, aiCiv, targetCiv) {
+  const treaty = getTreaty(state, aiCiv, targetCiv);
+
+  // Must have peace treaty (not ceasefire, not alliance, not war)
+  if (treaty !== 'peace') return null;
+
+  // Must not be allied
+  // (already excluded by treaty check above, but explicit for clarity)
+
+  // Military power must be > 5
+  const aiMilPower = state.civs?.[aiCiv]?.militaryPower ?? 0;
+  if (aiMilPower <= 5) return null;
+
+  // Attitude must be < 26
+  const attitude = state.civs?.[aiCiv]?.attitudes?.[targetCiv] ?? 50;
+  if (attitude >= 26) return null;
+
+  return { type: 'DECLARE_WAR', targetCiv };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Item 7: ALLIANCE_BREAK_THRESHOLD — break alliance under conditions
+//
+// Break if: attitude < 76, military power > ally's * 2, no shared war.
+// Action: cancel alliance, set treaty to peace.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if conditions are met to break an alliance.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ considering alliance break
+ * @param {number} allyCiv - allied civ
+ * @returns {object|null} action to break alliance or null
+ */
+export function checkAllianceBreak(state, aiCiv, allyCiv) {
+  const treaty = getTreaty(state, aiCiv, allyCiv);
+  if (treaty !== 'alliance') return null;
+
+  // Attitude must be < 76
+  const attitude = state.civs?.[aiCiv]?.attitudes?.[allyCiv] ?? 50;
+  if (attitude >= 76) return null;
+
+  // Military power must be > ally's * 2
+  const aiMilPower = state.civs?.[aiCiv]?.militaryPower ?? 0;
+  const allyMilPower = state.civs?.[allyCiv]?.militaryPower ?? 0;
+  if (aiMilPower <= allyMilPower * 2) return null;
+
+  // Must not have a shared war (both fighting the same enemy)
+  let hasSharedWar = false;
+  for (let c = 1; c < 8; c++) {
+    if (c === aiCiv || c === allyCiv) continue;
+    if (!(state.civsAlive & (1 << c))) continue;
+    const aiWar = getTreaty(state, aiCiv, c) === 'war' && haveContact(state, aiCiv, c);
+    const allyWar = getTreaty(state, allyCiv, c) === 'war' && haveContact(state, allyCiv, c);
+    if (aiWar && allyWar) {
+      hasSharedWar = true;
+      break;
+    }
+  }
+  if (hasSharedWar) return null;
+
+  // Action: cancel alliance, set treaty to peace
+  return { type: 'BREAK_ALLIANCE', targetCiv: allyCiv, newTreaty: 'peace' };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Combined entry point
 // ═══════════════════════════════════════════════════════════════════
 
@@ -2335,8 +2873,12 @@ function evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, 
  *
  *   0. Per-turn housekeeping (O.4: patience, flags, anarchy govt)
  *   0b. Multi-factor attitude evaluation (O.5)
+ *   0c. Provocation conditions (immediate war on flag detection)
  *   1. Respond to incoming proposals/demands (O.1: full negotiation)
  *   2. Check for war declarations (most impactful proactive move)
+ *   2b. Spontaneous war checks
+ *   2c. Tribute demands (opportunistic)
+ *   2d. Alliance breaks (rare + threshold-based)
  *   3. Check for peace proposals (urgent if losing)
  *   4. Check for tribute demands (opportunistic)
  *   5. Check for alliance breaks (rare)
@@ -2369,6 +2911,10 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
     // ── 0b. O.5: Multi-factor attitude evaluation ──
     const attitudeActions = evaluateDiplomacyTowardAll(civSlot, gameState, mapBase, continentData, debugLog);
     actions.push(...attitudeActions);
+
+    // ── 0c. Item 5: PROVOCATION_CONDITIONS — immediate war on flag detection ──
+    const provocationActions = checkProvocationConditions(gameState, mapBase, civSlot);
+    actions.push(...provocationActions);
 
     // ── 1. Respond to incoming proposals/demands first ──
     const treatyResponses = respondToTreatyProposals(
@@ -2440,6 +2986,24 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
         }
       }
 
+      // 2a2. Spontaneous war — break peace when attitude is low enough
+      if (!declaredWar) {
+        const spontAction = checkSpontaneousWar(gameState, civSlot, i);
+        if (spontAction) {
+          const err = validateAction(gameState, mapBase, spontAction, civSlot);
+          if (!err) {
+            actions.push(spontAction);
+            actions.push(makeAttitudeAction(civSlot, i, -30));
+            declaredWar = true;
+            if (debugLog) {
+              const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+              const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
+              debugLog.push(`DIPLO: ${civName} spontaneously declares war on ${targetName} (low attitude)`);
+            }
+          }
+        }
+      }
+
       // 2b. Peace proposals (urgent if losing)
       if (shouldProposePeace(civSlot, i, continentData, gameState)) {
         // Don't propose if already have a pending proposal
@@ -2481,18 +3045,42 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
           const err = validateAction(gameState, mapBase, action, civSlot);
           if (!err) {
             actions.push(action);
+            // Item 4: DEMAND_COOLDOWN — set cooldown timer (8 turns) and record turn
+            actions.push({
+              type: 'SET_DEMAND_COOLDOWN',
+              civSlot,
+              targetCiv: tribute.targetCiv,
+              cooldownExpiry: (gameState.turn?.number ?? 0) + 8,
+            });
             break; // only one demand per turn
           }
         }
       }
 
-      // 2d. Alliance breaks (rare)
+      // 2d. Alliance breaks (rare — old heuristic)
       if (shouldBreakAlliance(civSlot, i, gameState)) {
         const action = { type: 'DECLARE_WAR', targetCiv: i };
         const err = validateAction(gameState, mapBase, action, civSlot);
         if (!err && !declaredWar) {
           actions.push(action);
           declaredWar = true;
+        }
+      }
+
+      // 2e. Alliance break threshold — attitude/military/shared-war check
+      if (!declaredWar) {
+        const breakAction = checkAllianceBreak(gameState, civSlot, i);
+        if (breakAction) {
+          // BREAK_ALLIANCE sets treaty to peace instead of declaring war
+          const err = validateAction(gameState, mapBase, { type: 'DECLARE_WAR', targetCiv: i }, civSlot);
+          if (!err) {
+            actions.push(breakAction);
+            if (debugLog) {
+              const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+              const allyName = gameState.civs?.[i]?.name || `Civ ${i}`;
+              debugLog.push(`DIPLO: ${civName} breaks alliance with ${allyName} (threshold)`);
+            }
+          }
         }
       }
     }
@@ -2514,6 +3102,33 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
           const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
           const allyName = gameState.civs?.[a.toCiv]?.name || `Civ ${a.toCiv}`;
           debugLog.push(`DIPLO: ${civName} gifts unit #${a.unitIndex} to ally ${allyName}`);
+        }
+      }
+    }
+
+    // ── 9. AI-vs-AI diplomacy (treaty progression/regression) ──
+    if (!isHumanCiv(gameState, civSlot)) {
+      for (let other = civSlot + 1; other < 8; other++) {
+        if (!(gameState.civsAlive & (1 << other))) continue;
+        if (isHumanCiv(gameState, other)) continue;
+        const aiAiEvents = processAiVsAiDiplomacy(gameState, mapBase, civSlot, other);
+        if (aiAiEvents.length > 0) {
+          // Convert events to actions that the reducer can process
+          for (const evt of aiAiEvents) {
+            if (evt.type === 'treatySigned' || evt.type === 'warDeclared') {
+              // These are informational events from the direct state mutations;
+              // push to turnEvents for client notification
+              if (!gameState.turnEvents) gameState.turnEvents = [];
+              gameState.turnEvents.push(evt);
+            }
+          }
+          if (debugLog) {
+            const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+            const otherName = gameState.civs?.[other]?.name || `Civ ${other}`;
+            for (const evt of aiAiEvents) {
+              debugLog.push(`DIPLO: AI-vs-AI ${civName}↔${otherName}: ${evt.type} (${evt.treatyType || evt.previousTreaty || ''})`);
+            }
+          }
         }
       }
     }

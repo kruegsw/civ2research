@@ -17,7 +17,7 @@
 //   FUN_004de0e2 — parley_transfer_city
 // ═══════════════════════════════════════════════════════════════════
 
-import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS } from './defs.js';
+import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS, ADVANCE_EPOCH, UNIT_COSTS } from './defs.js';
 import { hasWonderEffect, civHasWonder } from './utils.js';
 import { grantAdvance } from './research.js';
 import { updateVisibility } from './visibility.js';
@@ -855,6 +855,27 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     setTreaty(state, aggressor, target, 'war');
   }
 
+  // ── Item 8: Treaty-specific reputation penalties ──
+  // Smaller per-incident penalties on top of the G.5 reputation system:
+  //   Breaking alliance: -5, breaking peace/ceasefire: -3, no treaty: -1
+  if (currentTreaty === 'alliance') {
+    adjustReputation(state, aggressor, -5);
+  } else if (currentTreaty === 'peace' || currentTreaty === 'ceasefire') {
+    adjustReputation(state, aggressor, -3);
+  } else {
+    adjustReputation(state, aggressor, -1);
+  }
+
+  // ── Witness penalty: all contacted civs get -10 attitude toward aggressor ──
+  if (state.civs) {
+    for (let c = 1; c <= 7; c++) {
+      if (c === aggressor || c === target) continue;
+      if (!(state.civsAlive & (1 << c))) continue;
+      if (!haveContact(state, c, aggressor)) continue;
+      adjustAttitude(state, c, aggressor, -10);
+    }
+  }
+
   // Cancel trade routes between the two civs
   cancelTradeRoutes(state, aggressor, target);
 
@@ -971,6 +992,20 @@ export function signCeasefire(state, civA, civB) {
     state.diplomacy = newDiplo;
   }
 
+  // Clear war flags on all civs that were at war with BOTH civA and civB.
+  // When two civs sign a ceasefire, third parties that were at war with
+  // both should have their war-tracking flags cleared for the pair.
+  for (let c = 1; c <= 7; c++) {
+    if (c === civA || c === civB) continue;
+    if (!(state.civsAlive & (1 << c))) continue;
+    const cWarA = getTreaty(state, c, civA) === 'war' && haveContact(state, c, civA);
+    const cWarB = getTreaty(state, c, civB) === 'war' && haveContact(state, c, civB);
+    if (cWarA && cWarB) {
+      clearTreatyFlag(state, c, civA, TF.WAR_STARTED);
+      clearTreatyFlag(state, c, civB, TF.WAR_STARTED);
+    }
+  }
+
   events.push({
     type: 'treatySigned',
     treatyType: 'ceasefire',
@@ -1000,7 +1035,8 @@ export function signPeaceTreaty(state, civA, civB) {
 
   setTreaty(state, civA, civB, 'peace');
 
-  // Clamp attitude to [0, 50] — per pseudocode
+  // Clamp attitude to [0, 50] — per pseudocode (both directions)
+  clampAttitude(state, civA, civB, 0, 50);
   clampAttitude(state, civB, civA, 0, 50);
 
   // Reset patience
@@ -1081,6 +1117,25 @@ export function formAlliance(state, mapBase, civA, civB) {
     [embKeyAB]: { ...(state.diplomacy[embKeyAB] || {}), embassy: true },
     [embKeyBA]: { ...(state.diplomacy[embKeyBA] || {}), embassy: true },
   };
+
+  // Attitude adjustment toward other civs who are enemies of the new ally.
+  // Forming an alliance makes each civ view the OTHER's enemies more negatively
+  // (-25 per enemy, from binary diplo_form_alliance).
+  for (let c = 1; c <= 7; c++) {
+    if (c === civA || c === civB) continue;
+    if (!(state.civsAlive & (1 << c))) continue;
+    // civA adjusts attitude toward enemies of civB (the new ally)
+    if (haveContact(state, civA, c) && getTreaty(state, civB, c) === 'war' && haveContact(state, civB, c)) {
+      adjustAttitude(state, civA, c, -25);
+    }
+    // civB adjusts attitude toward enemies of civA (the new ally)
+    if (haveContact(state, civB, c) && getTreaty(state, civA, c) === 'war' && haveContact(state, civA, c)) {
+      adjustAttitude(state, civB, c, -25);
+    }
+  }
+
+  // Set nuke awareness flag (0x100) — alliance partners share nuclear intel
+  addTreatyFlag(state, civA, civB, TF.NUKE_AWARENESS);
 
   events.push({
     type: 'treatySigned',
@@ -2051,6 +2106,99 @@ export function calcTributeDemand(state, aiCiv, targetCiv, techDesire) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Gold-to-Attitude Conversion — bracketed diminishing returns
+//
+// Port of FUN_004dd285 gold gift attitude calculation:
+//   First 50 gold:  attitude += amount / 10
+//   Next 100 gold brackets: attitude += bracket / (10 + 5*n)
+//   Examples: 50g→5, 150g→11, 250g→16, 500g→25
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Convert a gold gift amount to an attitude change using
+ * bracketed diminishing returns.
+ *
+ * @param {number} amount - gold amount (non-negative)
+ * @returns {number} integer attitude change
+ */
+export function calcGoldToAttitude(amount) {
+  if (amount <= 0) return 0;
+  let attitude = 0;
+  let remaining = amount;
+
+  // First 50 gold: divisor 10
+  const first = Math.min(remaining, 50);
+  attitude += first / 10;
+  remaining -= first;
+
+  // Subsequent 100-gold brackets with increasing divisors
+  let n = 1;
+  while (remaining > 0) {
+    const bracket = Math.min(remaining, 100);
+    attitude += bracket / (10 + 5 * n);
+    remaining -= bracket;
+    n++;
+  }
+
+  return Math.floor(attitude);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Tech Price Calculation — diplomacy tech sale pricing
+//
+// Port of parley tech price computation from FUN_004dd285:
+//   base = techEpoch * 20
+//   buyer attitude > 50: base *= 2
+//   difficulty multiplier: (diffIdx + 1)
+//   epoch scaling: × (epoch + 1)
+//   treasury scaling: buyer treasury > 3000 → ×2, > 1500 → ×3/2
+//   alliance discount: ÷2
+//   clamped to [100, 30000]
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate the price of a technology in a diplomatic sale.
+ *
+ * @param {object} state - game state
+ * @param {number} sellerCiv - civ slot selling the tech
+ * @param {number} buyerCiv - civ slot buying the tech
+ * @param {number} techId - advance ID (0-88)
+ * @returns {number} price in gold, clamped to [100, 30000]
+ */
+export function calcTechPrice(state, sellerCiv, buyerCiv, techId) {
+  const epoch = ADVANCE_EPOCH[techId] ?? 0;
+  let price = epoch * 20;
+
+  // Buyer attitude toward seller: if friendly (> 50), double base
+  const buyerAttitude = state.civs?.[buyerCiv]?.attitudes?.[sellerCiv] ?? 0;
+  if (buyerAttitude > 50) price *= 2;
+
+  // Difficulty multiplier
+  const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
+  price *= (diffIdx >= 0 ? diffIdx : 0) + 1;
+
+  // Epoch scaling
+  price *= (epoch + 1);
+
+  // Treasury scaling
+  const buyerTreasury = state.civs?.[buyerCiv]?.treasury ?? 0;
+  if (buyerTreasury > 3000) {
+    price *= 2;
+  } else if (buyerTreasury > 1500) {
+    price = Math.floor(price * 3 / 2);
+  }
+
+  // Alliance discount
+  const treaty = getTreaty(state, sellerCiv, buyerCiv);
+  if (treaty === 'alliance') {
+    price = Math.floor(price / 2);
+  }
+
+  // Clamp to [100, 30000]
+  return Math.max(100, Math.min(30000, Math.floor(price)));
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Diplomacy Event Constants & Fire Function
 //
 // Used by AI diplomacy (diplomai.js) to push structured events into
@@ -2095,4 +2243,68 @@ export function fireDiplomacyEvent(state, eventKey, aiCiv, targetCiv, data) {
     targetCiv,
     ...data,
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Mercenary Pricing — calcMercenaryPrice
+//
+// Calculate the gold price for hiring a unit from another civ.
+// Modifiers: reputation, treasury ratio, alliance, superpower,
+// vendetta, and era (modern tech discount).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate the price a mercenary civ charges to hire out a unit.
+ *
+ * @param {object} state - game state
+ * @param {number} hirerCiv - civ slot of the hirer (buyer)
+ * @param {number} mercCiv - civ slot of the mercenary owner (seller)
+ * @param {number} unitIndex - index into state.units
+ * @returns {number} gold price, clamped to [50, 5000]
+ */
+export function calcMercenaryPrice(state, hirerCiv, mercCiv, unitIndex) {
+  const unit = state.units?.[unitIndex];
+  if (!unit || unit.gx < 0) return 50;
+
+  const shieldCost = UNIT_COSTS[unit.type] ?? 40;
+  let price = shieldCost * 10;
+
+  // Reputation modifier: untrustworthy hirer pays double
+  const hirerRep = state.civs?.[hirerCiv]?.reputation ?? 100;
+  if (hirerRep > 5) price *= 2;
+
+  // Treasury modifier: richer hirer pays +33%
+  const hirerTreasury = state.civs?.[hirerCiv]?.treasury ?? 0;
+  const mercTreasury = state.civs?.[mercCiv]?.treasury ?? 0;
+  if (hirerTreasury > mercTreasury) {
+    price = Math.floor(price * 1.33);
+  }
+
+  // Alliance modifier: premium for buying ally's units
+  const treaty = getTreaty(state, hirerCiv, mercCiv);
+  if (treaty === 'alliance') {
+    price *= 3;
+  }
+
+  // Superpower modifier: dominant hirer gets discount
+  const hirerMil = state.civs?.[hirerCiv]?.militaryPower ?? 0;
+  const mercMil = state.civs?.[mercCiv]?.militaryPower ?? 0;
+  if (hirerMil >= mercMil * 2) {
+    price = Math.floor(price / 2);
+  }
+
+  // Vendetta: discount if vendetta exists between them
+  const flags = getTreatyFlags(state, hirerCiv, mercCiv);
+  if (flags & TF.VENDETTA) {
+    price = Math.floor(price * 0.75);
+  }
+
+  // Era: modern era discount (techCount > 40)
+  const hirerTechCount = state.civTechCounts?.[hirerCiv] ?? (state.civTechs?.[hirerCiv]?.size ?? 0);
+  if (hirerTechCount > 40) {
+    price = Math.floor(price * 0.67);
+  }
+
+  // Clamp to [50, 5000]
+  return Math.max(50, Math.min(5000, price));
 }
