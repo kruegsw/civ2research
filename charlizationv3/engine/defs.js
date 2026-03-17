@@ -1322,3 +1322,15 @@ export const CITY_SIZE_THRESHOLDS = [4, 6, 8];
 
 // Capital city gets +1 size class (capped at 3)
 export const CITY_CAPITAL_SIZE_BONUS = 1;
+
+// ── Specialist cycling order (binary ref: FUN_0047E94E case 0x88) ──
+// When a citizen is toggled, cycle: entertainer → scientist → taxman → entertainer
+export const SPECIALIST_CYCLE = ['entertainer', 'scientist', 'taxman']; // 1→2→3→1
+// Cities below size 5 can only assign entertainers (no scientist/taxman)
+export const SPECIALIST_MIN_CITY_SIZE = 5;
+
+// ── AI / movement pathfinding constants ──
+// Port of binary movement cost constants used in AI goto and long-distance pathing
+export const LONG_MOVE_THRESHOLD = 47;   // distance above which AI switches to long-move path
+export const BACKTRACK_PENALTY = 15;     // pathfinder penalty for moving away from destination
+export const AI_STUCK_RESET_THRESHOLD = 19; // after 19 failed moves, AI resets unit goto

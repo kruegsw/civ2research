@@ -11,7 +11,7 @@ import { cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech } from '../research.js';
 import { checkGameEndConditions, recalcSpaceshipStats } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
-import { processDiplomacyTimers } from '../diplomacy.js';
+import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
 import { dispatchEvents, EVENT_TURN, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from '../events.js';
 import { completeWorkerOrder, autoAssignWorker, removeWorstWorker, discoverContacts, killUnit, checkCivElimination, findFirstAliveCiv } from './helpers.js';
 import { processBarbarianAI, processBarbCampProduction, spawnBarbarians } from './barbarians.js';
@@ -91,14 +91,19 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       const updCiv = { ...state.civs[activeCiv] };
       updCiv.anarchyTurns = updCiv.anarchyTurns - 1;
       if (updCiv.anarchyTurns <= 0) {
-        updCiv.government = updCiv.pendingGovernment || 'despotism';
+        const newGovt = updCiv.pendingGovernment || 'despotism';
+        updCiv.government = newGovt;
         delete updCiv.pendingGovernment;
         delete updCiv.anarchyTurns;
         if (!state.turnEvents) state.turnEvents = [];
         state.turnEvents.push({
           type: 'anarchyEnded', civSlot: activeCiv,
-          government: updCiv.government,
+          government: newGovt,
         });
+        // Apply government change side effects (Fanatics production switch, embassy clearing)
+        state.civs[activeCiv] = updCiv;
+        const govtChangeEvents = applyGovernmentChangeEffects(state, activeCiv, 'anarchy', newGovt);
+        for (const ev of govtChangeEvents) state.turnEvents.push(ev);
       }
       state.civs[activeCiv] = updCiv;
     }

@@ -597,3 +597,34 @@ export function checkSpaceRaceCapability(state, civSlot) {
 
   return 1;
 }
+
+// ── K.5: Spaceship part weight escalation ──
+// Port of binary weight table: parts 0-3 weigh 1, parts 4-5 weigh 2, parts 6+ weigh 3.
+// Used for mass/cost escalation when building multiple parts of the same type.
+/**
+ * Calculate the weight multiplier for a spaceship part by its index.
+ * @param {number} partIndex - 0-based index of the part within its type
+ * @returns {number} weight: 1 for parts 0-3, 2 for parts 4-5, 3 for parts 6+
+ */
+export function calcPartWeight(partIndex) {
+  return 1 + (partIndex > 3 ? 1 : 0) + (partIndex > 5 ? 1 : 0);
+}
+
+// ── K.6: Spaceship success rate (alternate detailed formula) ──
+// Port of binary success calculation using individual component sub-types
+// (lifeSupport, solarEnergy, fuel, propulsion) rather than aggregate counts.
+// Use this when the spaceship tracks individual sub-type counts.
+/**
+ * Calculate spaceship success rate from detailed component sub-types.
+ * @param {object} ship - { fuel, propulsion, lifeSupport, solarEnergy, structurals, components, modules }
+ * @returns {number} success probability 0-100
+ */
+export function calcSpaceshipSuccessRate(ship) {
+  let success = 100;
+  const totalFuelPropulsion = Math.max(1, (ship.fuel || 0) + (ship.propulsion || 0));
+  success = Math.min(success, Math.floor((ship.lifeSupport || 0) * 100 / totalFuelPropulsion));
+  success = Math.min(success, Math.floor((ship.solarEnergy || 0) * 200 / totalFuelPropulsion));
+  const totalMass = (ship.structurals || 0) * 4 + (ship.components || 0) * 6 + (ship.modules || 0) * 8;
+  if (totalMass > 150) success -= Math.floor((totalMass - 150) / 10);
+  return Math.max(0, Math.min(100, success));
+}

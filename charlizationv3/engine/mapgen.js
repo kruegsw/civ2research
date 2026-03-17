@@ -54,6 +54,14 @@ const T_DESERT = 0, T_PLAINS = 1, T_GRASSLAND = 2, T_FOREST = 3;
 const T_HILLS = 4, T_MOUNTAINS = 5, T_TUNDRA = 6, T_GLACIER = 7;
 const T_SWAMP = 8, T_JUNGLE = 9, T_OCEAN = 10;
 
+// ── Map generation terrain constants (from binary analysis) ──
+// Climate zone boundary: tiles within (mapHeight × 3) / 10 of equator get jungle/swamp
+export const CLIMATE_BOUNDARY_NUMERATOR = 3;
+export const CLIMATE_BOUNDARY_DENOMINATOR = 10;
+// Continent blob iteration counts (from binary random walk functions)
+export const CONTINENT_BLOB_MAX_STEPS = 48;   // placeLandLarge: rng.nextInt(48)
+export const ISLAND_BLOB_MAX_STEPS = 63;       // placeLandSmall: rng.next() & 0x3F (0-63)
+
 /**
  * Generate a map faithful to Civ2's algorithm.
  *

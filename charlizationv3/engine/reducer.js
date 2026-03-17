@@ -18,7 +18,7 @@ import { updateVisibility } from './visibility.js';
 import { getProductionCost, calcCityTrade } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect } from './utils.js';
-import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance, executeTransaction } from './diplomacy.js';
+import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, formAlliance, executeTransaction, applyGovernmentChangeEffects } from './diplomacy.js';
 import { grantAdvance } from './research.js';
 
 // ── Sub-module imports ──
@@ -273,16 +273,20 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { government } = action;
       state.civs = [...prev.civs];
       const civ = { ...state.civs[civSlot] };
+      const oldGovt = civ.government;
       if (hasWonderEffect(state, civSlot, 19)) {
         // Statue of Liberty: instant government switch, no anarchy
         civ.government = government;
+        state.civs[civSlot] = civ;
+        // Apply government change side effects (Fanatics production switch, embassy clearing)
+        applyGovernmentChangeEffects(state, civSlot, oldGovt, government);
       } else {
         civ.government = 'anarchy';
         // Binary: 1-4 random turns of anarchy (matches Civ2 MGE behavior)
         civ.anarchyTurns = 1 + state.rng.nextInt(4);
         civ.pendingGovernment = government;
+        state.civs[civSlot] = civ;
       }
-      state.civs[civSlot] = civ;
       break;
     }
 

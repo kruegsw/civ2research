@@ -2308,3 +2308,84 @@ export function calcMercenaryPrice(state, hirerCiv, mercCiv, unitIndex) {
   // Clamp to [50, 5000]
   return Math.max(50, Math.min(5000, price));
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Government Change Side Effects
+// Port of binary government transition logic (FUN_005b0f45)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Apply side effects when a civ changes government.
+ *
+ * Two effects ported from the binary:
+ *   1. Leaving Fundamentalism: any city producing Fanatics (unit type 8)
+ *      switches production to Riflemen (type 11). Fanatics can only be
+ *      built under Fundamentalism.
+ *   2. Embassy treaties are cleared on government change. The binary
+ *      removes the EMBASSY flag (0x80) from all treaty pairs involving
+ *      this civ, since the new government doesn't inherit the previous
+ *      government's diplomatic infrastructure.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} civSlot - civ whose government changed
+ * @param {string} oldGovt - previous government key
+ * @param {string} newGovt - new government key
+ * @returns {object[]} events generated
+ */
+export function applyGovernmentChangeEffects(state, civSlot, oldGovt, newGovt) {
+  const events = [];
+
+  // ── Effect 1: Leaving Fundamentalism → switch Fanatics production to Riflemen ──
+  if (oldGovt === 'fundamentalism' && newGovt !== 'fundamentalism') {
+    if (state.cities) {
+      let citiesMutated = false;
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const city = state.cities[ci];
+        if (city.owner !== civSlot || city.size <= 0) continue;
+        const item = city.itemInProduction;
+        if (item && item.type === 'unit' && item.id === 8) {
+          // Fanatics (type 8) → Riflemen (type 11)
+          if (!citiesMutated) { state.cities = [...state.cities]; citiesMutated = true; }
+          state.cities[ci] = {
+            ...city,
+            itemInProduction: { type: 'unit', id: 11, name: 'Riflemen' },
+            shieldsStored: 0,
+          };
+          events.push({
+            type: 'productionSwitched', civSlot, cityIndex: ci,
+            from: 'Fanatics', to: 'Riflemen',
+            reason: 'Left Fundamentalism',
+          });
+        }
+      }
+    }
+  }
+
+  // ── Effect 2: Clear embassy treaties on government change ──
+  // The EMBASSY flag (0x80) is removed from all treaty pairs involving this civ.
+  if (state.treatyFlags) {
+    let flagsMutated = false;
+    for (let other = 1; other <= 7; other++) {
+      if (other === civSlot) continue;
+      const kAB = `${civSlot}-${other}`;
+      const kBA = `${other}-${civSlot}`;
+      const ab = state.treatyFlags[kAB] || 0;
+      const ba = state.treatyFlags[kBA] || 0;
+      if ((ab & TF.EMBASSY) || (ba & TF.EMBASSY)) {
+        if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+        if (ab & TF.EMBASSY) {
+          state.treatyFlags[kAB] = ab & ~TF.EMBASSY;
+        }
+        if (ba & TF.EMBASSY) {
+          state.treatyFlags[kBA] = ba & ~TF.EMBASSY;
+        }
+        events.push({
+          type: 'embassyExpelled', civSlot, otherCiv: other,
+          reason: 'Government change',
+        });
+      }
+    }
+  }
+
+  return events;
+}
