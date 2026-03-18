@@ -12,11 +12,13 @@ import {
   UNIT_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES,
   ORDER_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN, CIV_CITY_NAMES,
   GOVERNMENT_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, CIV_COLORS,
+  DIFFICULTY_KEYS,
 } from '../engine/defs.js';
 import { getGameYear } from '../engine/year.js';
 import {
-  UNIT_ORDER, BUILD_CITY, CHANGE_RATES,
+  UNIT_ORDER, BUILD_CITY, CHANGE_RATES, LAUNCH_SPACESHIP,
 } from '../engine/actions.js';
+import { calcCivScore, calcRetirementScore, calcFinalScore } from '../engine/spaceship.js';
 
 // ── Preloaded images ──
 const _cityFoundedImg = new Image();
@@ -535,7 +537,13 @@ export function showTurnEvents(events) {
         break;
       }
 
-      case 'unitCrashed': {
+      case 'unitCrashed':
+      case 'unitLost': {
+        if (ev.type === 'unitLost' && ev.reason !== 'fuel') {
+          // Non-fuel unitLost events (e.g., triremeSinking) — skip silently for now
+          showNext();
+          break;
+        }
         sfx(getDeathSfx(ev.unitType));
         const uName = UNIT_NAMES[ev.unitType] || 'Unit';
         createCiv2Dialog('turn-event-dialog', 'Unit Lost', panel => {
@@ -817,6 +825,53 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'spaceshipLaunched': {
+        playTurnEventSound(6);
+        const launchCivName = S.mpGameState?.civNames?.[ev.civSlot] || `Civ ${ev.civSlot}`;
+        createCiv2Dialog('turn-event-dialog', 'Spaceship Launched!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.innerHTML = `The ${launchCivName} have launched their spaceship!<br>`
+            + `<span style="font-size:14px;color:#666">Success probability: ${ev.successProb}% &mdash; ETA: ${ev.flightTurns} turns</span>`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'spaceshipLost': {
+        sfx('BIGEXP');
+        const lostCivName = S.mpGameState?.civNames?.[ev.civSlot] || `Civ ${ev.civSlot}`;
+        createCiv2Dialog('turn-event-dialog', 'Spaceship Lost!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#990000';
+          msg.textContent = `The ${lostCivName}'s spaceship has been lost in space!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'year2000Warning': {
+        playTurnEventSound(9);
+        createCiv2Dialog('turn-event-dialog', 'Plan Your Retirement!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = ev.message || 'The year 2000 approaches! You may retire now or continue until 2020 AD.';
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'scenarioEndWarning': {
+        playTurnEventSound(9);
+        createCiv2Dialog('turn-event-dialog', 'Scenario Ending!', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
+          msg.textContent = ev.message || 'The scenario is about to end!';
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       default:
         showNext();
     }
@@ -976,4 +1031,411 @@ export function showGameOverDialog(winnerCivSlot, gameState) {
 
     panel.appendChild(content);
   }, [{ label: 'OK' }]);
+}
+
+// ── Retirement rank names (from binary, 0-23) ──
+const RETIREMENT_RANKS = [
+  'Chieftain',       // 0: Dan Quayle
+  'Warlord',         // 1
+  'Prince',          // 2
+  'King',            // 3
+  'Emperor',         // 4
+  'Deity',           // 5
+  'Settler',         // 6
+  'Minister',        // 7
+  'Consul',          // 8
+  'Magistrate',      // 9
+  'Ruler',           // 10
+  'Caesar',          // 11
+  'Augustus Caesar', // 12
+  'Hammurabi',       // 13
+  'Frederick the Great', // 14
+  'Alexander the Great', // 15
+  'Napoleon',        // 16
+  'Bismarck',        // 17
+  'Lincoln',         // 18
+  'Gandhi',          // 19
+  'Genghis Khan',    // 20
+  'Solomon',         // 21
+  'Charlemagne',     // 22
+  'Gilgamesh',       // 23
+];
+
+// ── Score / Endgame dialogs ──
+
+/**
+ * Show the score breakdown screen for a civilization.
+ * @param {object} state - game state
+ * @param {number} civSlot - civ slot (1-7)
+ */
+export function showScoreScreen(state, civSlot) {
+  const finalResult = calcFinalScore(state, civSlot);
+  const retResult = calcRetirementScore(state, civSlot);
+  const b = finalResult.breakdown;
+  const civName = state.civNames?.[civSlot] || `Civ ${civSlot}`;
+  const diffName = (state.difficulty || 'chieftain').charAt(0).toUpperCase()
+    + (state.difficulty || 'chieftain').slice(1);
+  const turnNum = state.turn?.number || 0;
+  const yearStr = getGameYear(turnNum);
+  const rankName = RETIREMENT_RANKS[retResult.rank] || `Rank ${retResult.rank}`;
+
+  // Check spaceship arrival
+  const ss = state.spaceships?.[civSlot];
+  const ssArrived = ss && ss.launched && ss.arrivalTurn <= turnNum && !ss.destroyed;
+
+  const textStyle = 'font:15px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+  const headStyle = 'font:bold 16px "Times New Roman",Georgia,serif;color:#1a1a6b;margin-top:8px;margin-bottom:4px';
+  const rowStyle = 'display:flex;justify-content:space-between;padding:1px 0';
+
+  createCiv2Dialog('score-screen', `${civName} — Score`, panel => {
+    panel.style.cssText += ';min-width:360px;max-width:440px;padding:12px 20px';
+
+    // Header: year and difficulty
+    const header = document.createElement('div');
+    header.style.cssText = 'text-align:center;margin-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.15);padding-bottom:6px';
+    header.innerHTML = `<div style="${textStyle};font-size:16px"><b>${yearStr}</b> &mdash; ${diffName} Level</div>`;
+    panel.appendChild(header);
+
+    // Score breakdown section
+    const secTitle = document.createElement('div');
+    secTitle.style.cssText = headStyle;
+    secTitle.textContent = 'Score Breakdown';
+    panel.appendChild(secTitle);
+
+    const rows = [
+      ['Population', b.population],
+      ['Territory (Map)', b.mapBonus],
+      ['Wonders', b.wonders],
+      ['Future Techs', b.futureTech],
+      ['Technology', b.technology],
+      ['Peace Bonus', b.peace],
+    ];
+    if (b.spaceship > 0) rows.push(['Spaceship', b.spaceship]);
+
+    for (const [label, val] of rows) {
+      const row = document.createElement('div');
+      row.style.cssText = rowStyle;
+      row.innerHTML = `<span style="${textStyle}">${label}</span><span style="${textStyle}">${val}</span>`;
+      panel.appendChild(row);
+    }
+
+    // Separator
+    const sep = document.createElement('div');
+    sep.style.cssText = 'border-top:1px solid rgba(0,0,0,0.2);margin:6px 0';
+    panel.appendChild(sep);
+
+    // Base score
+    const baseRow = document.createElement('div');
+    baseRow.style.cssText = rowStyle;
+    baseRow.innerHTML = `<span style="${textStyle};font-weight:bold">Base Score</span><span style="${textStyle};font-weight:bold">${finalResult.baseScore}</span>`;
+    panel.appendChild(baseRow);
+
+    // Difficulty multiplier
+    const diffRow = document.createElement('div');
+    diffRow.style.cssText = rowStyle;
+    diffRow.innerHTML = `<span style="${textStyle}">Difficulty Multiplier (${finalResult.difficultyPct}%)</span><span style="${textStyle}">&times;${(finalResult.difficultyPct / 100).toFixed(2)}</span>`;
+    panel.appendChild(diffRow);
+
+    // Alpha Centauri bonus
+    if (finalResult.acBonus > 0) {
+      const acRow = document.createElement('div');
+      acRow.style.cssText = rowStyle;
+      acRow.innerHTML = `<span style="${textStyle};color:#006600">Alpha Centauri Bonus</span><span style="${textStyle};color:#006600">+${finalResult.acBonus}</span>`;
+      panel.appendChild(acRow);
+    }
+
+    // Final score separator
+    const sep2 = document.createElement('div');
+    sep2.style.cssText = 'border-top:2px solid rgba(0,0,0,0.3);margin:6px 0';
+    panel.appendChild(sep2);
+
+    // Final score
+    const finalRow = document.createElement('div');
+    finalRow.style.cssText = rowStyle;
+    finalRow.innerHTML = `<span style="font:bold 18px 'Times New Roman',Georgia,serif;color:#1a1a6b">Final Score</span><span style="font:bold 18px 'Times New Roman',Georgia,serif;color:#1a1a6b">${finalResult.finalScore}</span>`;
+    panel.appendChild(finalRow);
+
+    // Retirement rank section
+    const rankSec = document.createElement('div');
+    rankSec.style.cssText = headStyle + ';margin-top:12px';
+    rankSec.textContent = 'Retirement';
+    panel.appendChild(rankSec);
+
+    const rankRow = document.createElement('div');
+    rankRow.style.cssText = 'text-align:center;padding:4px 0';
+    rankRow.innerHTML = `<div style="${textStyle};font-size:17px">You will be remembered as <b>${rankName}</b></div>`
+      + `<div style="${textStyle};font-size:13px;color:#666;margin-top:2px">Retirement Score: ${retResult.rawScore} (Rank ${retResult.rank}/23)</div>`;
+    panel.appendChild(rankRow);
+
+    // Alpha Centauri section
+    if (ssArrived) {
+      const acSec = document.createElement('div');
+      acSec.style.cssText = 'text-align:center;padding:8px 0;margin-top:6px;border-top:1px solid rgba(0,0,0,0.15)';
+      acSec.innerHTML = `<div style="font:bold 16px 'Times New Roman',Georgia,serif;color:#006600">Spaceship Arrived at Alpha Centauri!</div>`
+        + `<div style="${textStyle};font-size:13px;color:#006600;margin-top:2px">+${finalResult.acBonus} bonus points from ${ss.structurals} structurals, ${ss.components} components, ${ss.modules} modules</div>`;
+      panel.appendChild(acSec);
+    }
+
+  }, [{ label: 'Close' }]);
+}
+
+/**
+ * Show the retirement/game-end dialog.
+ * @param {object} state - game state
+ * @param {number} civSlot - the player's civ slot
+ * @param {string} reason - 'conquest', 'spaceship', 'retirement', 'scenarioEnd', 'extinction'
+ * @param {number} winnerCivSlot - the winning civ slot
+ */
+export function showRetirementDialog(state, civSlot, reason, winnerCivSlot) {
+  const civName = state.civNames?.[civSlot] || `Civ ${civSlot}`;
+  const winnerName = state.civNames?.[winnerCivSlot] || `Civ ${winnerCivSlot}`;
+  const isWinner = winnerCivSlot === civSlot;
+  const yearStr = getGameYear(state.turn?.number || 0);
+
+  // Title and message depend on reason
+  let title, headline, detail;
+  switch (reason) {
+    case 'conquest':
+      if (isWinner) {
+        title = 'Victory!';
+        headline = 'Your civilization stands triumphant!';
+        detail = `All rival civilizations have been vanquished by ${yearStr}.`;
+      } else {
+        title = 'Defeat';
+        headline = `The ${winnerName} have conquered the world!`;
+        detail = 'Your civilization has fallen.';
+      }
+      break;
+    case 'spaceship':
+      if (isWinner) {
+        title = 'Alpha Centauri!';
+        headline = 'Your spaceship has reached Alpha Centauri!';
+        detail = `A new era of space colonization begins in ${yearStr}.`;
+      } else {
+        title = 'Space Race Lost';
+        headline = `The ${winnerName} have reached Alpha Centauri!`;
+        detail = 'Their spaceship has arrived safely.';
+      }
+      break;
+    case 'retirement':
+      title = 'Retirement';
+      if (isWinner) {
+        headline = `You retire as the world's greatest leader!`;
+        detail = `In ${yearStr}, the time has come to step down.`;
+      } else {
+        headline = `The ${winnerName} have achieved the highest score.`;
+        detail = `The year ${yearStr} marks the end of your reign.`;
+      }
+      break;
+    case 'scenarioEnd':
+      title = 'Scenario Complete';
+      headline = isWinner ? 'You have won the scenario!' : `The ${winnerName} have won the scenario.`;
+      detail = `The scenario has ended in ${yearStr}.`;
+      break;
+    case 'extinction':
+      title = 'Extinction';
+      headline = 'All civilizations have been destroyed!';
+      detail = 'The world has returned to the barbarians.';
+      break;
+    default:
+      title = 'Game Over';
+      headline = 'The game has ended.';
+      detail = '';
+  }
+
+  const color = CIV_COLORS[winnerCivSlot] || '#fff';
+
+  sfx(isWinner ? 'FANFARE1' : 'FUNERAL');
+
+  const retResult = calcRetirementScore(state, civSlot);
+  const finalResult = calcFinalScore(state, civSlot);
+  const rankName = RETIREMENT_RANKS[retResult.rank] || `Rank ${retResult.rank}`;
+
+  // Can continue playing? Only if not forced retirement (year 2020) and not extinction
+  const canContinue = reason !== 'retirement' && reason !== 'extinction' && reason !== 'scenarioEnd';
+
+  const buttons = [];
+  buttons.push({ label: 'View Score', action: () => showScoreScreen(state, civSlot) });
+  if (canContinue) {
+    buttons.push({ label: 'Continue Playing' });
+  } else {
+    buttons.push({ label: 'OK' });
+  }
+
+  createCiv2Dialog('retirement-dialog', title, panel => {
+    panel.style.cssText += ';min-width:380px;max-width:460px;padding:16px 24px';
+
+    const content = document.createElement('div');
+    content.style.cssText = 'text-align:center';
+
+    const headEl = document.createElement('div');
+    headEl.style.cssText = `font:bold 20px "Times New Roman",Georgia,serif;color:${color};text-shadow:1px 1px 2px rgba(0,0,0,0.5);margin-bottom:8px`;
+    headEl.textContent = headline;
+    content.appendChild(headEl);
+
+    if (detail) {
+      const detailEl = document.createElement('div');
+      detailEl.style.cssText = 'font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-bottom:12px';
+      detailEl.textContent = detail;
+      content.appendChild(detailEl);
+    }
+
+    // Score summary
+    const scoreSec = document.createElement('div');
+    scoreSec.style.cssText = 'border-top:1px solid rgba(0,0,0,0.15);padding-top:10px;margin-top:6px';
+
+    const scoreRow = document.createElement('div');
+    scoreRow.style.cssText = 'font:17px "Times New Roman",Georgia,serif;color:#1a1a6b;margin-bottom:4px';
+    scoreRow.textContent = `Final Score: ${finalResult.finalScore}`;
+    scoreSec.appendChild(scoreRow);
+
+    const rankRow = document.createElement('div');
+    rankRow.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#333';
+    rankRow.textContent = `Rank: ${rankName}`;
+    scoreSec.appendChild(rankRow);
+
+    if (finalResult.acBonus > 0) {
+      const acRow = document.createElement('div');
+      acRow.style.cssText = 'font:14px "Times New Roman",Georgia,serif;color:#006600;margin-top:4px';
+      acRow.textContent = `Alpha Centauri Bonus: +${finalResult.acBonus}`;
+      scoreSec.appendChild(acRow);
+    }
+
+    content.appendChild(scoreSec);
+    panel.appendChild(content);
+  }, buttons);
+}
+
+/**
+ * Show the spaceship construction status dialog.
+ * @param {object} state - game state
+ * @param {number} civSlot - civ slot (1-7)
+ */
+export function showSpaceshipDialog(state, civSlot) {
+  // Read existing spaceship stats (already computed by end-turn processing)
+  const ss = state.spaceships?.[civSlot] || {
+    structurals: 0, components: 0, modules: 0,
+    mass: 0, successProb: 0, flightTurns: 0, arrivalTurn: 0,
+    launched: false, launchTurn: -1, canLaunch: false, hasApollo: false,
+  };
+  const civName = state.civNames?.[civSlot] || `Civ ${civSlot}`;
+  const yearStr = getGameYear(state.turn?.number || 0);
+
+  const textStyle = 'font:15px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+  const rowStyle = 'display:flex;justify-content:space-between;padding:2px 0';
+  const headStyle = 'font:bold 16px "Times New Roman",Georgia,serif;color:#1a1a6b;margin-top:8px;margin-bottom:4px';
+
+  const canLaunch = ss.canLaunch;
+  const buttons = [];
+  if (canLaunch) {
+    buttons.push({
+      label: 'Launch!',
+      action: () => {
+        S.transport.sendRaw({ type: 'ACTION', action: { type: LAUNCH_SPACESHIP } });
+      },
+    });
+  }
+  buttons.push({ label: 'Close' });
+
+  createCiv2Dialog('spaceship-dialog', `${civName} Spaceship`, panel => {
+    panel.style.cssText += ';min-width:340px;max-width:420px;padding:12px 20px';
+
+    // Status header
+    const header = document.createElement('div');
+    header.style.cssText = 'text-align:center;margin-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.15);padding-bottom:6px';
+    if (ss.launched) {
+      header.innerHTML = `<div style="${textStyle};color:#006600;font-size:16px"><b>Launched!</b> In flight...</div>`;
+    } else if (ss.destroyed) {
+      header.innerHTML = `<div style="${textStyle};color:#990000;font-size:16px"><b>Ship Lost!</b> The spaceship was destroyed.</div>`;
+    } else if (ss.structurals === 0 && ss.components === 0 && ss.modules === 0) {
+      header.innerHTML = `<div style="${textStyle};font-size:16px">No spaceship parts built yet.</div>`;
+    } else {
+      header.innerHTML = `<div style="${textStyle};font-size:16px">Under construction &mdash; ${yearStr}</div>`;
+    }
+    panel.appendChild(header);
+
+    // Parts section
+    const partsSec = document.createElement('div');
+    partsSec.style.cssText = headStyle;
+    partsSec.textContent = 'Components';
+    panel.appendChild(partsSec);
+
+    const partRows = [
+      ['SS Structural', ss.structurals, '800 tons each'],
+      ['SS Component', ss.components, '500 tons avg'],
+      ['SS Module', ss.modules, '867 tons avg'],
+    ];
+    for (const [label, count, weight] of partRows) {
+      const row = document.createElement('div');
+      row.style.cssText = rowStyle;
+      const countStyle = count > 0 ? 'color:#006600;font-weight:bold' : 'color:#666';
+      row.innerHTML = `<span style="${textStyle}">${label}</span><span style="${textStyle};${countStyle}">${count} <span style="font-size:12px;color:#888">(${weight})</span></span>`;
+      panel.appendChild(row);
+    }
+
+    // Stats section
+    const statsSec = document.createElement('div');
+    statsSec.style.cssText = headStyle;
+    statsSec.textContent = 'Ship Statistics';
+    panel.appendChild(statsSec);
+
+    const statRows = [
+      ['Total Mass', `${ss.mass.toLocaleString()} tons`],
+      ['Success Rate', `${ss.successProb}%`],
+      ['Flight Time', `${ss.flightTurns} turn${ss.flightTurns !== 1 ? 's' : ''}`],
+    ];
+
+    if (ss.launched) {
+      const turnsLeft = Math.max(0, ss.arrivalTurn - (state.turn?.number || 0));
+      statRows.push(['Arrival In', `${turnsLeft} turn${turnsLeft !== 1 ? 's' : ''}`]);
+    }
+
+    if (ss.hasApollo) {
+      statRows.push(['Apollo Bonus', 'Flight time reduced 25%']);
+    }
+
+    for (const [label, val] of statRows) {
+      const row = document.createElement('div');
+      row.style.cssText = rowStyle;
+      row.innerHTML = `<span style="${textStyle}">${label}</span><span style="${textStyle}">${val}</span>`;
+      panel.appendChild(row);
+    }
+
+    // Success rate bar
+    const barWrap = document.createElement('div');
+    barWrap.style.cssText = 'margin-top:8px;background:#ccc;border:1px inset #a08060;height:16px;position:relative;border-radius:2px;overflow:hidden';
+    const barFill = document.createElement('div');
+    const barColor = ss.successProb >= 80 ? '#006600' : ss.successProb >= 50 ? '#cc8800' : '#990000';
+    barFill.style.cssText = `height:100%;width:${ss.successProb}%;background:${barColor};transition:width 0.3s`;
+    barWrap.appendChild(barFill);
+    const barLabel = document.createElement('div');
+    barLabel.style.cssText = 'position:absolute;top:0;left:0;right:0;text-align:center;font:bold 12px "Times New Roman",serif;color:#fff;line-height:16px;text-shadow:0 0 2px rgba(0,0,0,0.7)';
+    barLabel.textContent = `${ss.successProb}% Success`;
+    barWrap.appendChild(barLabel);
+    panel.appendChild(barWrap);
+
+    // Launch requirements
+    if (!ss.launched && !ss.destroyed) {
+      const reqSec = document.createElement('div');
+      reqSec.style.cssText = 'margin-top:10px;border-top:1px solid rgba(0,0,0,0.15);padding-top:6px';
+      const reqTitle = document.createElement('div');
+      reqTitle.style.cssText = headStyle + ';margin-top:4px';
+      reqTitle.textContent = 'Launch Requirements';
+      reqSec.appendChild(reqTitle);
+
+      const reqs = [
+        [ss.structurals >= 1, 'At least 1 SS Structural'],
+        [ss.components >= 1, 'At least 1 SS Component'],
+        [ss.modules >= 1, 'At least 1 SS Module'],
+      ];
+      for (const [met, desc] of reqs) {
+        const reqRow = document.createElement('div');
+        reqRow.style.cssText = `${textStyle};font-size:14px;padding:1px 0;color:${met ? '#006600' : '#990000'}`;
+        reqRow.textContent = `${met ? '\u2713' : '\u2717'} ${desc}`;
+        reqSec.appendChild(reqRow);
+      }
+      panel.appendChild(reqSec);
+    }
+
+  }, buttons);
 }

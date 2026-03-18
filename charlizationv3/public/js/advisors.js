@@ -12,6 +12,7 @@ import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
 import { calcCityTrade, calcFoodSurplus, calcShieldProduction, getProductionCost } from '../engine/production.js';
 import { validateAction } from '../engine/rules.js';
 import { REVOLUTION, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, SET_RESEARCH } from '../engine/actions.js';
+import { openDiplomacyDialog } from './diplomacy-ui.js';
 
 // Late-bound dependencies (e.g. openCityDialog from app.js)
 let _deps = {};
@@ -589,6 +590,17 @@ export function showDiplomacyPanel() {
         showTributeDemandInput(c, name);
       };
       btnGroup.appendChild(demandBtn);
+      // Full negotiation dialog
+      const negoBtn = document.createElement('button');
+      negoBtn.textContent = 'Negotiate...';
+      negoBtn.className = 'civ2-btn';
+      negoBtn.style.cssText = 'font-size:11px;padding:2px 8px';
+      negoBtn.onclick = () => {
+        document.getElementById('diplomacy-dialog')?.remove();
+        const sendAction = (msg) => S.transport.sendRaw(msg);
+        openDiplomacyDialog(S.mpGameState, S.mpMapBase, S.mpCivSlot, c, sendAction);
+      };
+      btnGroup.appendChild(negoBtn);
       row.appendChild(btnGroup);
       panel.appendChild(row);
     }

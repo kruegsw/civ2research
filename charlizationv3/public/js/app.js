@@ -5,7 +5,7 @@
 
 import { S, SCROLL_STEP, getMinScale, VP_MAX_SCALE } from './state.js';
 import { sfx, menuLoop } from './sound.js';
-import { showOverlayMessage, showConfirmDialog, showNameCityDialog, showRateSliders, showUnitPresentDialog, showUnitSupportedDialog, registerDialogDeps } from './dialogs.js';
+import { showOverlayMessage, showConfirmDialog, showNameCityDialog, showRateSliders, showUnitPresentDialog, showUnitSupportedDialog, registerDialogDeps, showScoreScreen, showSpaceshipDialog } from './dialogs.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue } from './viewport.js';
 import {
   findNextMovableUnit, shiftMercenaryQueue,
@@ -42,6 +42,7 @@ import { NUMPAD_DIR } from '../engine/movement.js';
 import { getValidActions, validateAction } from '../engine/rules.js';
 import { UNIT_ORDER, WORKER_ORDER, PILLAGE, GOTO, BOMBARD, BUILD_CITY } from '../engine/actions.js';
 import { findPath } from '../engine/pathfinding.js';
+import { showDiplomacyNegotiationPicker } from './diplomacy-ui.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // DOM element initialization
@@ -770,6 +771,13 @@ const HAMBURGER_ACTIONS = {
   'advisor-taxrates': () => showRateSliders(),
   'view-techtree': () => showTechTree(),
   'view-diplomacy': () => showDiplomacyPanel(),
+  'view-negotiate': () => showDiplomacyNegotiationPicker(),
+  'view-spaceship': () => {
+    if (S.mpGameState && S.mpCivSlot) showSpaceshipDialog(S.mpGameState, S.mpCivSlot);
+  },
+  'view-score': () => {
+    if (S.mpGameState && S.mpCivSlot) showScoreScreen(S.mpGameState, S.mpCivSlot);
+  },
   'toggle-grid': () => {
     const el = document.getElementById('grid-toggle');
     el.checked = !el.checked;
@@ -1194,6 +1202,13 @@ window.addEventListener('keydown', e => {
     }
   }
 
+  // Shift+N: open diplomacy negotiation picker
+  if (e.key === 'N' && e.shiftKey) {
+    e.preventDefault();
+    showDiplomacyNegotiationPicker();
+    return;
+  }
+
   // Shift+T: tax rate sliders (allowed anytime)
   if ((e.key === 't' || e.key === 'T') && e.shiftKey) {
     e.preventDefault();
@@ -1206,6 +1221,16 @@ window.addEventListener('keydown', e => {
   if (e.key === 'F3') { e.preventDefault(); showTradeAdvisor(); return; }
   if (e.key === 'F4') { e.preventDefault(); showCityList(); return; }
   if (e.key === 'F5') { e.preventDefault(); showScienceAdvisor(); return; }
+  if (e.key === 'F7') {
+    e.preventDefault();
+    if (S.mpGameState && S.mpCivSlot) showSpaceshipDialog(S.mpGameState, S.mpCivSlot);
+    return;
+  }
+  if (e.key === 'F8') {
+    e.preventDefault();
+    if (S.mpGameState && S.mpCivSlot) showScoreScreen(S.mpGameState, S.mpCivSlot);
+    return;
+  }
   if (e.key === 'F11') { e.preventDefault(); showDemographics(); return; }
 });
 

@@ -5,7 +5,7 @@
 import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
 import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS, playTurnEventSound, playSoundForEvent } from './sound.js';
-import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog } from './dialogs.js';
+import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
 import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
@@ -1233,7 +1233,7 @@ function initNetwork(appCallbacks) {
 
             // Turn events: city growth, famine, production complete, civ eliminated
             if (statePayload.turnEvents) {
-              const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited']);
+              const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning']);
               const myEvents = statePayload.turnEvents.filter(e =>
                 e.civSlot === S.mpCivSlot || GLOBAL_EVENTS.has(e.type));
               if (myEvents.length > 0) {
@@ -1241,15 +1241,12 @@ function initNetwork(appCallbacks) {
               }
             }
 
-            // Game over: show victory/defeat dialog (do NOT close WebSocket)
+            // Game over: show retirement/victory dialog (do NOT close WebSocket)
             if (statePayload.gameOver) {
-              // Play appropriate end-game sound
-              if (statePayload.gameOver.reason === 'spaceship') {
-                playTurnEventSound(6); // SPACESHIP_ARRIVED
-              } else {
-                playTurnEventSound(9); // PLAN_RETIREMENT
-              }
-              setTimeout(() => showGameOverDialog(statePayload.gameOver.winner, S.mpGameState), 600);
+              const go = statePayload.gameOver;
+              setTimeout(() => showRetirementDialog(
+                S.mpGameState, S.mpCivSlot, go.reason, go.winner
+              ), 600);
             }
 
             // Auto-show diplomacy panel when there are pending proposals/demands for us
