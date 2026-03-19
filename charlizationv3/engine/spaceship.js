@@ -242,34 +242,29 @@ export function launchSpaceship(state, civSlot) {
 /**
  * Calculate a civ's score — ported from FUN_004a28b0.
  *
- * K.3: Fixed to match binary scoring formula:
- *   - Population: sum of citySize * (citySize + 1) / 2 * 10000 (Civ2 population formula)
- *     Score contribution = totalPopulation / 10000 (displayed as population in thousands)
- *   - Wonders: 20 points each (owned, not obsolete)
- *   - Future techs: 5 points per level
- *   - Peace bonus: 3 points per consecutive turn of peace
- *   - Technology: 2 points per tech discovered
- *   - Map exploration: (exploredTiles / totalTiles) * 300
- *   - Spaceship: arrival bonus scaled by year
+ * Binary scoring formula:
+ *   - Population: sum of city.size across all cities (happy citizens proxy)
+ *   - Wonders: count of active wonders owned by civ * 5
+ *   - Territory: count of tiles owned by civ (tileOwnership on mapBase)
+ *   - Pollution penalty: -(globalPollution count) * 10 / numAliveCivs
+ *   - Difficulty modifier: difficultyIdx * 25 - 50
+ *   - Spaceship bonus: spaceshipMult * 100 + max(0, (570 - turnNumber)) * 2 + 400
  *
  * @param {object} state - game state
  * @param {number} civSlot
- * @returns {{ total: number, population: number, wonders: number, futureTech: number, peace: number, technology: number, mapBonus: number, spaceship: number }}
+ * @param {object} [mapBase] - map data (needed for territory counting)
+ * @returns {{ total: number, population: number, wonders: number, territory: number, pollution: number, difficulty: number, spaceship: number }}
  */
-export function calcCivScore(state, civSlot) {
-  // ── Population score (binary formula: citySize * (citySize+1) / 2 * 10000) ──
-  // Civ2 population: each city has pop = size * (size+1) / 2 * 10000
-  // Score contribution is totalPop / 10000 (so effectively sum of size*(size+1)/2)
+export function calcCivScore(state, civSlot, mapBase) {
+  // ── Population score: sum of city.size across all owned cities ──
   let populationScore = 0;
   for (let ci = 0; ci < state.cities.length; ci++) {
     const city = state.cities[ci];
     if (city.owner !== civSlot || city.size <= 0) continue;
-    // Binary: sum of citySize * (citySize + 1) / 2 per city
-    // This gives population in units of 10000, so score = raw pop / 10000
-    populationScore += Math.floor(city.size * (city.size + 1) / 2);
+    populationScore += city.size;
   }
 
-  // ── Wonder score: 20 points per owned, non-obsolete wonder ──
+  // ── Wonder score: count active wonders owned by civ × 5 ──
   let wonderScore = 0;
   if (state.wonders) {
     for (let wi = 0; wi < state.wonders.length; wi++) {
@@ -285,27 +280,33 @@ export function calcCivScore(state, civSlot) {
           if (state.civTechs[c]?.has(obsTech)) { obsolete = true; break; }
         }
       }
-      if (!obsolete) wonderScore += 20;
+      if (!obsolete) wonderScore += 5;
     }
   }
 
-  // ── Future tech score: 5 points per level ──
-  const futureTechCount = state.futureTechCounts?.[civSlot] || 0;
-  const futureTechScore = futureTechCount * 5;
+  // ── Territory score: count tiles owned by this civ ──
+  let territoryScore = 0;
+  if (mapBase && mapBase.tileData) {
+    for (let i = 0; i < mapBase.tileData.length; i++) {
+      if (mapBase.tileData[i].tileOwnership === civSlot) territoryScore++;
+    }
+  }
 
-  // ── Peace bonus: 3 points per consecutive turn of peace ──
-  const peaceTurns = state.civPeaceTurns?.[civSlot] || 0;
-  const peaceScore = peaceTurns * 3;
+  // ── Pollution penalty: -(globalPollution count) * 10 / numAliveCivs ──
+  let pollutionPenalty = 0;
+  let numAliveCivs = 0;
+  for (let c = 1; c <= 7; c++) {
+    if (state.civsAlive & (1 << c)) numAliveCivs++;
+  }
+  if (numAliveCivs < 1) numAliveCivs = 1;
+  const globalPollution = state.globalPollutionCount || 0;
+  if (globalPollution > 0) {
+    pollutionPenalty = -Math.floor(globalPollution * 10 / numAliveCivs);
+  }
 
-  // ── Technology: 2 points per tech discovered ──
-  const techCount = state.civTechs?.[civSlot]?.size || 0;
-  const techScore = techCount * 2;
-
-  // ── Map exploration: (exploredTiles / totalTiles) * 300 ──
-  let mapBonus = 0;
-  const exploredPercent = state.mapExploredPercent?.[civSlot] || 0;
-  // exploredPercent is 0-100; score = percent * 3 (max 300)
-  mapBonus = Math.min(300, Math.max(0, Math.floor(exploredPercent * 3)));
+  // ── Difficulty modifier: difficultyIdx * 25 - 50 ──
+  const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain'));
+  const difficultyMod = diffIdx * 25 - 50;
 
   // ── Spaceship score ──
   const turnNum = state.turn?.number || 0;
@@ -314,27 +315,23 @@ export function calcCivScore(state, civSlot) {
   if (ss && ss.launched) {
     const arrived = ss.arrivalTurn <= turnNum;
     if (arrived) {
-      // Successful arrival: large bonus scaled by year
-      const yearFactor = turnNum;
-      spaceshipScore = Math.max(0, (570 - yearFactor) * 2 + 400);
-    } else {
-      // In-flight bonus proportional to parts
-      spaceshipScore = (ss.structurals + ss.components + ss.modules) * 10;
+      // Spaceship bonus: spaceshipMult * 100 + max(0, (570 - turnNumber)) * 2 + 400
+      const spaceshipMult = (ss.structurals || 0) + (ss.components || 0) + (ss.modules || 0);
+      spaceshipScore = spaceshipMult * 100 + Math.max(0, (570 - turnNum)) * 2 + 400;
     }
   }
 
   // ── Total score ──
   const baseScore = Math.max(0,
-    populationScore + wonderScore + futureTechScore + peaceScore + techScore + mapBonus + spaceshipScore);
+    populationScore + wonderScore + territoryScore + pollutionPenalty + difficultyMod + spaceshipScore);
 
   return {
     total: baseScore,
     population: populationScore,
     wonders: wonderScore,
-    futureTech: futureTechScore,
-    peace: peaceScore,
-    technology: techScore,
-    mapBonus,
+    territory: territoryScore,
+    pollution: pollutionPenalty,
+    difficulty: difficultyMod,
     spaceship: spaceshipScore,
   };
 }
@@ -627,4 +624,24 @@ export function calcSpaceshipSuccessRate(ship) {
   const totalMass = (ship.structurals || 0) * 4 + (ship.components || 0) * 6 + (ship.modules || 0) * 8;
   if (totalMass > 150) success -= Math.floor((totalMass - 150) / 10);
   return Math.max(0, Math.min(100, success));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// resetSpaceship — Zero out all spaceship fields for a civ
+// Called from killCiv and from new game init.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Reset (zero out) all spaceship fields for a given civ.
+ * Called when a civ is eliminated or at new game initialization.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} civSlot - civ slot to reset (0-7)
+ */
+export function resetSpaceship(state, civSlot) {
+  if (!state.spaceships) state.spaceships = {};
+  state.spaceships = {
+    ...state.spaceships,
+    [civSlot]: null,
+  };
 }

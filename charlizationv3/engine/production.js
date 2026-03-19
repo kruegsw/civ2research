@@ -1120,6 +1120,99 @@ export function analyzeSurroundingTiles(state, mapBase, cityGx, cityGy, ownerCiv
  * @param {number} civSlot - civ slot to check for garrisons
  * @returns {number} Manhattan distance to nearest garrisoned city (default 32)
  */
+// ═══════════════════════════════════════════════════════════════════
+// expandCityTerritory — Claim the best unowned tile in city radius
+// Port of FUN_004a0000 block territory expansion logic.
+// Called after city growth and after founding a city.
+// ═══════════════════════════════════════════════════════════════════
+
+// Terrain desirability scores for territory expansion (from binary)
+const TERRITORY_TERRAIN_SCORE = [
+  1, // 0 Desert
+  4, // 1 Plains
+  3, // 2 Grassland (base; +2 with shield → 5)
+  3, // 3 Forest
+  3, // 4 Hills
+  1, // 5 Mountains
+  1, // 6 Tundra
+  0, // 7 Glacier
+  2, // 8 Swamp
+  2, // 9 Jungle
+  0, // 10 Ocean
+];
+
+/**
+ * Expand a city's territory by claiming the single best-scoring unowned tile
+ * in the city's 20-tile radius (excluding center).
+ *
+ * Scoring: terrain base score + inner ring bonus (+1 for tiles 0-7) + river bonus (+3).
+ * Only unowned tiles are eligible (tileOwnership === 0 or 0x0F or undefined).
+ *
+ * @param {object} state - game state (for city lookup)
+ * @param {object} mapBase - map data + accessors
+ * @param {number} cityIndex - index into state.cities
+ * @returns {{ gx: number, gy: number }|null} the claimed tile, or null if none available
+ */
+export function expandCityTerritory(state, mapBase, cityIndex) {
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0) return null;
+
+  const { mw, mh, tileData, wraps } = mapBase;
+  const cityGx = city.gx;
+  const cityGy = city.gy;
+  const parC = cityGy & 1;
+
+  let bestScore = -1;
+  let bestGx = -1;
+  let bestGy = -1;
+
+  // Scan 20 tiles in city radius (indices 0-19, excluding center at 20)
+  for (let ri = 0; ri < 20; ri++) {
+    const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
+    const parT = ((cityGy + ddy) % 2 + 2) % 2;
+    const tgx = cityGx + ((parC + ddx - parT) >> 1);
+    const tgy = cityGy + ddy;
+    const wgx = wraps ? ((tgx % mw) + mw) % mw : tgx;
+    if (tgy < 0 || tgy >= mh || wgx < 0 || wgx >= mw) continue;
+
+    const tileIdx = tgy * mw + wgx;
+    const tile = tileData[tileIdx];
+    if (!tile) continue;
+
+    // Only claim UNOWNED tiles (not tiles owned by other civs)
+    const owner = tile.tileOwnership;
+    if (owner !== 0 && owner !== 0x0F && owner !== undefined && owner !== null) continue;
+
+    const ter = tile.terrain;
+    if (ter < 0 || ter > 10) continue;
+
+    let score = TERRITORY_TERRAIN_SCORE[ter];
+
+    // Grassland with shield bonus
+    if (ter === 2 && mapBase.hasShield && mapBase.hasShield(wgx, tgy)) {
+      score += 2;
+    }
+
+    // Inner ring bonus (tiles 0-7)
+    if (ri < 8) score += 1;
+
+    // River bonus
+    if (tile.river) score += 3;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestGx = wgx;
+      bestGy = tgy;
+    }
+  }
+
+  if (bestGx < 0) return null;
+
+  // Claim the tile
+  tileData[bestGy * mw + bestGx].tileOwnership = city.owner;
+  return { gx: bestGx, gy: bestGy };
+}
+
 export function calcGarrisonDistance(state, mapBase, gx, gy, civSlot) {
   const DEFAULT_DISTANCE = 32;
   let minDist = DEFAULT_DISTANCE;

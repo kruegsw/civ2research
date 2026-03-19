@@ -21,6 +21,7 @@ import {
   calcFoodSurplus, calcShieldProduction, getProductionCost,
   calcGrossShields, calcUnitShieldSupport, calcCityTrade,
   calcBuildingMaintenance, calcSupplyDemand,
+  expandCityTerritory,
 } from './production.js';
 import { calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
@@ -136,6 +137,11 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
       events.push({ type: growthBlocked, cityName: city.name, cityIndex, civSlot: activeCiv });
     } else {
       events.push({ type: 'cityGrowth', cityName: city.name, cityIndex, civSlot: activeCiv, newSize });
+      // Expand territory: claim one best unowned tile after city growth
+      const claimed = expandCityTerritory(state, mapBase, cityIndex);
+      if (claimed) {
+        events.push({ type: 'territoryClaimed', cityName: city.name, cityIndex, civSlot: activeCiv, gx: claimed.gx, gy: claimed.gy });
+      }
     }
   } else if (newFood < 0) {
     // ── A.7: Famine (binary-faithful path) ──

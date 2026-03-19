@@ -14,7 +14,7 @@ import { createAccessors } from './state.js';
 import {
   MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES, WONDER_NAMES,
   CIV_COLORS, ADVANCE_PREREQS, ADVANCE_NAMES, TERRAIN_BASE,
-  CITY_RADIUS_DOUBLED,
+  CITY_RADIUS_DOUBLED, ADVANCE_EPOCH,
 } from './defs.js';
 import { updateVisibility } from './visibility.js';
 import { assignContinentBodyIds } from './mapgen.js';
@@ -283,6 +283,58 @@ export function initNewGame(mapResult, seatList) {
 
     // Mark visibility for initial position (radius 2 = city-level LOS, matching real Civ2)
     updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, pos.gx, pos.gy, mapBase.wraps, 2);
+  }
+
+  // ── Settler position balancing: grant extra settler to civs with poor starts ──
+  // Score each civ's start position by counting desirable terrain in 2-tile radius.
+  // Scoring: grassland=3, plains=4, river=+3, hills=2, forest=2, desert/tundra/glacier=0
+  const startScores = [];
+  for (let i = 0; i < civCount; i++) {
+    const pos = placements[i];
+    let score = 0;
+    for (const [dx, dy] of CITY_RADIUS_DOUBLED) {
+      const ny = pos.gy + dy;
+      if (ny < 0 || ny >= mapBase.mh) continue;
+      const nx = mapBase.wraps
+        ? ((pos.gx + dx) % mapBase.mw + mapBase.mw) % mapBase.mw
+        : pos.gx + dx;
+      if (nx < 0 || nx >= mapBase.mw) continue;
+      const tile = mapBase.tileData[ny * mapBase.mw + nx];
+      if (!tile) continue;
+      const ter = tile.terrain;
+      // Terrain scoring
+      if (ter === 2) score += 3;       // grassland
+      else if (ter === 1) score += 4;  // plains
+      else if (ter === 4) score += 2;  // hills
+      else if (ter === 3) score += 2;  // forest
+      // desert(0), tundra(6), glacier(7) = 0
+      if (tile.river) score += 3;
+    }
+    startScores.push(score);
+  }
+  const avgScore = startScores.reduce((a, b) => a + b, 0) / Math.max(1, civCount);
+  for (let i = 0; i < civCount; i++) {
+    if (startScores[i] + 3 <= avgScore) {
+      // Grant an extra settler to this civ
+      const civSlot = i + 1;
+      const pos = placements[i];
+      units.push({
+        type: 0, // Settlers
+        owner: civSlot,
+        gx: pos.gx, gy: pos.gy,
+        x: pos.gx * 2 + (pos.gy % 2), y: pos.gy,
+        veteran: 0,
+        movesRemain: 0,
+        orders: 'none',
+        movesMade: 0,
+        movesLeft: UNIT_MOVE_POINTS[0] * MOVEMENT_MULTIPLIER,
+        homeCityId: 0xFFFF,
+        goToX: -1, goToY: -1,
+        hpLost: 0xFF,
+        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+        prevInStack: -1, nextInStack: -1,
+      });
+    }
   }
 
   // ── Civ alive bitmask: each seated player's civ ──
@@ -815,4 +867,56 @@ function buildHumanPlayersBitmask(seatCivMap, aiSeatIndices) {
     }
   }
   return mask;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// setupScenarioStart — Grant era-appropriate techs, cities, and units
+// Stub for scenario start setup. Full implementation needs complete
+// tech/city/unit lists per era from the binary.
+// ═══════════════════════════════════════════════════════════════════
+
+// Era tech cutoff advance IDs (approximate; based on ADVANCE_EPOCH values)
+// Epoch 0 = ancient, 1 = renaissance, 2 = industrial, 3 = modern
+const ERA_EPOCH_MAX = [0, 1, 2, 3];
+
+/**
+ * Set up a scenario start state by granting era-appropriate techs.
+ * Stub implementation — grants all techs whose epoch <= era level.
+ *
+ * Era levels:
+ *   0 = ancient:     grant techs up to Bronze Working era (epoch 0)
+ *   1 = renaissance: grant techs up to Gunpowder era (epoch 0-1)
+ *   2 = industrial:  grant techs up to Railroad era (epoch 0-2)
+ *   3 = modern:      grant techs up to Electronics era (epoch 0-3)
+ *
+ * Each era gives progressively more starting techs, cities, and units.
+ * Full implementation needs the complete tech/city/unit lists per era.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} era - era index (0=ancient, 1=renaissance, 2=industrial, 3=modern)
+ */
+export function setupScenarioStart(state, mapBase, era) {
+  const epochMax = ERA_EPOCH_MAX[Math.min(era, 3)];
+
+  // Grant all techs whose epoch <= epochMax to all alive civs
+  for (let c = 1; c <= 7; c++) {
+    if (!(state.civsAlive & (1 << c))) continue;
+    if (!state.civTechs) state.civTechs = Array.from({ length: 8 }, () => new Set());
+    if (!state.civTechCounts) state.civTechCounts = new Array(8).fill(0);
+
+    const techSet = state.civTechs[c];
+    for (let advId = 0; advId < ADVANCE_NAMES.length; advId++) {
+      // ADVANCE_EPOCH: 0=ancient, 1=renaissance, 2=industrial, 3=modern
+      const epoch = (advId < ADVANCE_EPOCH.length) ? ADVANCE_EPOCH[advId] : -1;
+      if (epoch >= 0 && epoch <= epochMax) {
+        techSet.add(advId);
+      }
+    }
+    state.civTechCounts[c] = techSet.size;
+  }
+
+  // Stub: cities and units per era not yet implemented.
+  // Full implementation would place starting cities with era-appropriate
+  // buildings, and grant era-appropriate military units.
 }

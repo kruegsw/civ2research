@@ -21,6 +21,8 @@ import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS, ADVANCE_EPOCH
 import { hasWonderEffect, civHasWonder } from './utils.js';
 import { grantAdvance } from './research.js';
 import { updateVisibility } from './visibility.js';
+import { resetSpaceship } from './spaceship.js';
+import { createNewCiv } from './init.js';
 
 // ── D.1: Treaty Flag Constants (binary convention) ────────────────
 // These match the 32-bit treaty flag word from the decompiled binary.
@@ -2002,8 +2004,9 @@ export function shouldBlockWarDeclaration(state, targetCiv) {
 
 /**
  * Completely eliminate a civilization from the game.
- * Records in destroyed civs list, kills all units, transfers/destroys cities,
- * clears alive bitmask, and checks for game end.
+ * Binary only kills when 0 cities remain. Records in destroyed civs list,
+ * kills all units, clears alive bitmask, destroys spaceship, clears
+ * visibility, and checks for game end.
  *
  * @param {object} state - mutable game state
  * @param {object} mapBase - map data + accessors
@@ -2016,6 +2019,12 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
 
   if (civSlot <= 0 || civSlot > 7) return { events };
   if (!(state.civsAlive & (1 << civSlot))) return { events };
+
+  // ── Guard: binary only kills when 0 cities remain ──
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    const c = state.cities[ci];
+    if (c.owner === civSlot && c.size > 0) return { events };
+  }
 
   // ── Record in destroyed civs list (up to 12 records) ──
   // Matches parser killHistory structure: killTurns, killerCivIds,
@@ -2052,16 +2061,18 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
     }
   }
 
-  // ── Transfer remaining cities to barbarians (owner=0) or destroy them ──
-  for (let ci = 0; ci < state.cities.length; ci++) {
-    const c = state.cities[ci];
-    if (c.owner !== civSlot || c.size <= 0) continue;
-    // Transfer to barbarians (slot 0)
-    state.cities[ci] = { ...c, owner: 0 };
-    events.push({
-      type: 'cityTransferred', cityName: c.name, cityIndex: ci,
-      fromCiv: civSlot, toCiv: 0,
-    });
+  // ── Destroy spaceship (Fix 6: resetSpaceship) ──
+  resetSpaceship(state, civSlot);
+
+  // ── Clear visibility: remove (1 << civSlot) bit from all map tiles ──
+  if (mapBase && mapBase.tileData) {
+    const visBit = ~(1 << civSlot);
+    for (let i = 0; i < mapBase.tileData.length; i++) {
+      const tile = mapBase.tileData[i];
+      if (tile.visibility !== undefined) {
+        tile.visibility &= visBit;
+      }
+    }
   }
 
   events.push({ type: 'civDestroyed', civSlot, killerCiv });
@@ -2081,6 +2092,132 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
   }
 
   return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Civ Respawn — recycle dead civ slots (binary mechanic)
+//
+// The binary recycles dead civ slots after 50+ turns. After killing
+// a civ, if the game has been running 50+ turns, attempt to respawn
+// a new AI civ in an available slot far from existing civs.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Attempt to respawn a new civ in a dead slot.
+ * Binary recycling mechanic: after 50+ turns, dead civ slots can be reused
+ * for a new AI civilization placed far from existing civs.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @returns {{ events: object[], respawnedCiv: number|null }}
+ */
+export function attemptCivRespawn(state, mapBase) {
+  const events = [];
+  const turnNumber = state.turn?.number || 0;
+
+  // Only respawn after 50+ turns
+  if (turnNumber < 50) return { events, respawnedCiv: null };
+
+  // Find a dead (non-alive) civ slot (1-7)
+  let deadSlot = -1;
+  for (let c = 1; c <= 7; c++) {
+    if (!(state.civsAlive & (1 << c))) {
+      deadSlot = c;
+      break;
+    }
+  }
+  if (deadSlot < 0) return { events, respawnedCiv: null };
+
+  // Find a suitable position far from all existing civs
+  const { mw, mh, tileData, wraps } = mapBase;
+  const existingPositions = [];
+  for (const city of state.cities) {
+    if (city.size > 0) existingPositions.push({ gx: city.gx, gy: city.gy });
+  }
+  for (const u of state.units) {
+    if (u.gx >= 0 && u.owner > 0) existingPositions.push({ gx: u.gx, gy: u.gy });
+  }
+
+  // Score land tiles by distance from existing civs
+  let bestGx = -1, bestGy = -1, bestMinDist = -1;
+  const edgeMargin = Math.max(2, Math.floor(mh / 10));
+  for (let y = edgeMargin; y < mh - edgeMargin; y++) {
+    for (let x = (y & 1); x < mw; x += 2) {
+      const tile = tileData[y * mw + x];
+      const ter = tile.terrain;
+      // Skip ocean, mountains, glacier
+      if (ter === 10 || ter === 5 || ter === 7) continue;
+
+      // Compute minimum distance to all existing civ positions
+      let minDist = Infinity;
+      for (const pos of existingPositions) {
+        let dx = Math.abs(x - pos.gx);
+        if (wraps) dx = Math.min(dx, mw - dx);
+        const dy = Math.abs(y - pos.gy);
+        const dist = Math.max(dx, dy);
+        if (dist < minDist) minDist = dist;
+      }
+
+      if (minDist > bestMinDist) {
+        bestMinDist = minDist;
+        bestGx = x;
+        bestGy = y;
+      }
+    }
+  }
+
+  if (bestGx < 0) return { events, respawnedCiv: null };
+
+  // Create the new civ using createNewCiv from init.js
+  const diffIdx = Math.max(0, (['chieftain', 'warlord', 'prince', 'king', 'emperor', 'deity']).indexOf(state.difficulty || 'chieftain'));
+  const rulesCivNumber = deadSlot - 1;
+  const aiSeat = { seatIndex: -1, name: `AI ${deadSlot}`, ai: true };
+
+  if (!state.civTechs) state.civTechs = Array.from({ length: 8 }, () => new Set());
+  if (!state.civTechCounts) state.civTechCounts = new Array(8).fill(0);
+
+  // Clear old tech data for this slot
+  state.civTechs[deadSlot] = new Set();
+  state.civTechCounts[deadSlot] = 0;
+
+  const newCiv = createNewCiv(deadSlot, rulesCivNumber, diffIdx, state.civTechs, state.civTechCounts, aiSeat, state.rng);
+  state.civs = [...state.civs];
+  state.civs[deadSlot] = newCiv;
+
+  // Mark alive
+  state.civsAlive |= (1 << deadSlot);
+
+  // Place a settler and warrior at the chosen position
+  const MOVEMENT_MULTIPLIER = 3; // from defs.js
+  state.units = [...state.units];
+  for (const unitType of [0, 2]) { // Settlers, Warriors
+    state.units.push({
+      type: unitType,
+      owner: deadSlot,
+      gx: bestGx, gy: bestGy,
+      x: bestGx * 2 + (bestGy % 2), y: bestGy,
+      veteran: 0,
+      movesRemain: 0,
+      orders: 'none',
+      movesMade: 0,
+      movesLeft: (unitType === 0 ? 1 : 1) * MOVEMENT_MULTIPLIER,
+      homeCityId: 0xFFFF,
+      goToX: -1, goToY: -1,
+      hpLost: 0xFF,
+      commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+      prevInStack: -1, nextInStack: -1,
+    });
+  }
+
+  // Update visibility for new civ's starting position
+  updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, deadSlot, bestGx, bestGy, wraps, 2);
+
+  events.push({
+    type: 'civRespawned', civSlot: deadSlot, civName: newCiv.name,
+    gx: bestGx, gy: bestGy,
+  });
+
+  return { events, respawnedCiv: deadSlot };
 }
 
 // ═══════════════════════════════════════════════════════════════════

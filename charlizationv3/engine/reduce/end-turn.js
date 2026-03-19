@@ -802,7 +802,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     state.civScores = [...state.civScores];
     for (let c = 1; c <= 7; c++) {
       if (!(state.civsAlive & (1 << c))) continue;
-      state.civScores[c] = calcCivScore(state, c);
+      state.civScores[c] = calcCivScore(state, c, mapBase);
     }
   }
 
