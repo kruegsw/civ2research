@@ -551,6 +551,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       atkOwner: unit.owner, defOwner: defender.owner,
       atkVeteran: !!attacker_preCombat_veteran, defVeteran: !!defender_preCombat_veteran,
       gx: dest.gx, gy: dest.gy,
+      atkGx: prev.units[unitIndex]?.gx ?? dest.gx, atkGy: prev.units[unitIndex]?.gy ?? dest.gy,
       atkHpLost: result.atkHpLost, defHpLost: result.defHpLost,
       rounds: result.rounds,
       atkMaxHp: result.atkMaxHp, defMaxHp: result.defMaxHp,
