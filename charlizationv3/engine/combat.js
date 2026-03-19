@@ -534,8 +534,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
 
     rounds.push(atkHit);
     if (atkHit) {
-      // Attacker hits
-      defHp -= atkFp * 10;
+      // Attacker hits — damage = raw firepower (NOT ×10)
+      // Binary FUN_00580341 line 807: damage += firepower (no multiplier)
+      defHp -= atkFp;
 
       // ── B.2: Submarine retreat on taking damage ─────────────────
       // Defending submarine has 50% chance to disengage when hit
@@ -547,8 +548,8 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
         }
       }
     } else {
-      // Defender hits
-      atkHp -= defFp * 10;
+      // Defender hits — damage = raw firepower (NOT ×10)
+      atkHp -= defFp;
     }
   }
 
@@ -564,9 +565,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // so the reducer knows NOT to kill the attacker.
   const attackerWins = !submarineRetreated && !fortressRetreat && atkHp > 0;
 
-  // HP lost in units of movesRemain field (each = 1 HP out of UNIT_HP max)
-  const atkHpLost = Math.max(0, Math.ceil((atkMaxHp - Math.max(0, atkHp)) / 10));
-  const defHpLost = Math.max(0, Math.ceil((defMaxHp - Math.max(0, defHp)) / 10));
+  // HP lost = raw damage taken (internal units, same scale as maxHp = UNIT_HP * 10)
+  const atkHpLost = Math.max(0, atkMaxHp - Math.max(0, atkHp));
+  const defHpLost = Math.max(0, defMaxHp - Math.max(0, defHp));
 
   // ── Veteran promotion: strength-weighted probability ─────────────
   // From FUN_00580341 lines 952-976:

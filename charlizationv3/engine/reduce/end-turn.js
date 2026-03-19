@@ -477,44 +477,34 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       const ownCity = state.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner && c.size > 0);
       let healAmt = 0;
 
+      // Healing amounts in internal HP units (1 bar = 10 internal)
       if (ownCity) {
-        // Domain-specific building: Barracks(2) for land, Port Facility(34) for sea, Airport(32) for air
         const matchingBuildingId = domain === 0 ? 2 : domain === 2 ? 34 : 32;
         if (cityHasBuilding(ownCity, matchingBuildingId)) {
-          // Full heal: matching building in own city
-          healAmt = u.movesRemain;
+          healAmt = u.movesRemain; // Full heal
         } else {
-          // Own city without matching building: 2 HP bars
-          healAmt = 2;
+          healAmt = 20; // Own city without matching building: 2 HP bars
         }
       } else {
-        // Check allied city (different owner, alliance treaty)
         const alliedCity = state.cities.find(c => {
           if (c.gx !== u.gx || c.gy !== u.gy || c.size <= 0) return false;
           if (c.owner === u.owner) return false;
-          // Check for alliance treaty
           const a = Math.min(u.owner, c.owner);
           const b = Math.max(u.owner, c.owner);
           return state.treaties?.[`${a}-${b}`] === 'alliance';
         });
 
         if (alliedCity) {
-          // Allied city: 1 HP bar
-          healAmt = 1;
+          healAmt = 10; // Allied city: 1 HP bar
         } else {
-          // Check fortress
           const tileIdx = u.gy * mapBase.mw + u.gx;
           const tile = mapBase.tileData?.[tileIdx];
           const onFortress = tile && tile.improvements && tile.improvements.fortress;
 
           if (onFortress) {
-            // Fortress: 1 HP bar
-            healAmt = 1;
-          } else {
-            // Field: 1 HP bar every other turn (heal on even turns only)
-            if (turnNumber % 2 === 0) {
-              healAmt = 1;
-            }
+            healAmt = 10; // Fortress: 1 HP bar
+          } else if (turnNumber % 2 === 0) {
+            healAmt = 10; // Field: 1 HP bar every other turn
           }
         }
       }

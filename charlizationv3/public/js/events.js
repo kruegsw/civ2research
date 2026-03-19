@@ -318,12 +318,12 @@ export function initEvents(canvas, vp, fns) {
         const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
         const vetStr = u.veteran ? ' Vet' : '';
         const ordStr = ORDER_NAMES[u.orders] || '';
-        // Detailed HP info for debugging
-        const maxHpBars = UNIT_HP[u.type] || 1;
-        const dmgBars = u.movesRemain || 0;
-        const curHpBars = Math.max(0, maxHpBars - dmgBars);
-        const hpStr = `, HP ${curHpBars}/${maxHpBars}`;
-        const dmgStr = dmgBars > 0 ? ` (dmg=${dmgBars}, movesRemain=${u.movesRemain})` : '';
+        // Detailed HP info for debugging (internal scale: UNIT_HP * 10)
+        const maxHpInternal = (UNIT_HP[u.type] || 1) * 10;
+        const dmgInternal = u.movesRemain || 0;
+        const curHpInternal = Math.max(0, maxHpInternal - dmgInternal);
+        const hpStr = `, HP ${curHpInternal}/${maxHpInternal}`;
+        const dmgStr = dmgInternal > 0 ? ` (dmg=${dmgInternal})` : '';
         const cargoStr = (u.type === 48 || u.type === 49) && u.commodityCarried >= 0 && u.commodityCarried <= 15
           ? `, cargo: ${COMMODITY_NAMES[u.commodityCarried]}` : '';
         info += `\n[Unit] ${name}${vetStr} (${owner}${hpStr}${dmgStr}${cargoStr}${ordStr ? ', ' + ordStr : ''})`;
