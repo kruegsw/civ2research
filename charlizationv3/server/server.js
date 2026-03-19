@@ -722,6 +722,8 @@ wss.on("connection", (ws) => {
 
         // Broadcast filtered state to each client (after all AI turns resolved)
         sendGameStateToAll(actionRoomId, room);
+        // Clear AI combat queue after broadcast
+        if (room.aiCombatQueue) room.aiCombatQueue = [];
 
         // Clear one-shot notifications AFTER broadcast so clients receive them
         clearOneshotNotifications(room);
@@ -949,12 +951,26 @@ function processAiTurns(roomId, room) {
     }
 
     // Apply each AI action through the reducer
+    // Accumulate combat results visible to human players for animation
+    if (!room.aiCombatQueue) room.aiCombatQueue = [];
     const t2 = Date.now();
     for (const action of aiActions) {
       const result = applyAction(room.gameState, room.mapBase, action, activeCiv);
       if (result !== room.gameState) {
         room.gameState = result;
-        // Emit logs for AI actions (combat, events, etc.)
+        // Queue combat results that are visible to any human player
+        if (room.gameState.combatResult) {
+          const cr = room.gameState.combatResult;
+          const gx = cr.gx, gy = cr.gy;
+          if (gx != null && room.mapBase.tileData) {
+            const tileIdx = gy * room.mapBase.mw + gx;
+            const tile = room.mapBase.tileData[tileIdx];
+            const humanMask = room.gameState.humanPlayers || 0;
+            if (tile && (tile.visibility & humanMask)) {
+              room.aiCombatQueue.push({ ...cr });
+            }
+          }
+        }
         emitGameLogs(roomId, room);
         clearOneshotNotifications(room);
       }
@@ -1441,7 +1457,8 @@ function buildStatePayload(room, civSlot) {
     difficulty: gs.difficulty,
     barbarianActivity: gs.barbarianActivity,
     discoveredAdvance: gs.discoveredAdvance,
-    combatResult: gs.combatResult,
+    combatResult: gs.combatResult || null,
+    aiCombatQueue: room.aiCombatQueue?.length > 0 ? room.aiCombatQueue : null,
     cityFounded: gs.cityFounded,
     goodyHutResult: gs.goodyHutResult,
     turnEvents: gs.turnEvents,

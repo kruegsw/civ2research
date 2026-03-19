@@ -1298,21 +1298,39 @@ function initNetwork(appCallbacks) {
             }
           };
 
-          // If combat occurred, play sounds and animation before slide/render
-          const cr = statePayload.combatResult;
-          if (cr && cr.gx != null && cr.type !== 'capture') {
-            if (S.mapSprites) {
-              // Full sprite animation — animateCombat handles its own sounds
-              animateCombat(cr, afterCombatAnim);
-            } else {
-              // No sprites: play attack + death sounds, brief delay so user
-              // hears sounds before the dead unit vanishes from the re-render
-              const atkSfx = UNIT_ATK_SFX[cr.attacker];
-              if (atkSfx) sfx(atkSfx);
-              const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
-              sfx(getDeathSfx(loser));
-              setTimeout(afterCombatAnim, 400);
+          // Collect all combat results: direct combat + AI combat queue
+          const allCombats = [];
+          if (statePayload.combatResult && statePayload.combatResult.gx != null) {
+            allCombats.push(statePayload.combatResult);
+          }
+          if (statePayload.aiCombatQueue) {
+            // AI combat in player's LOS — animate these too
+            for (const aiCr of statePayload.aiCombatQueue) {
+              if (aiCr && aiCr.gx != null) allCombats.push(aiCr);
             }
+          }
+
+          if (allCombats.length > 0) {
+            // Play combat animations sequentially
+            let combatIdx = 0;
+            function playNextCombat() {
+              if (combatIdx >= allCombats.length) {
+                afterCombatAnim();
+                return;
+              }
+              const cr = allCombats[combatIdx++];
+              if (S.mapSprites && isTileInViewport(cr.gx, cr.gy)) {
+                animateCombat(cr, playNextCombat);
+              } else {
+                // Not visible or no sprites — play sounds only
+                const atkSfx = UNIT_ATK_SFX[cr.attacker];
+                if (atkSfx) sfx(atkSfx);
+                const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;
+                sfx(getDeathSfx(loser));
+                setTimeout(playNextCombat, 200);
+              }
+            }
+            playNextCombat();
           } else {
             afterCombatAnim();
           }
