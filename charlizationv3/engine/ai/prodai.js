@@ -1772,12 +1772,18 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
     }
   }
 
-  // ── Base wonder score ──
+  // ── Base wonder score (lower=better) ──
   // Decompiled: iVar5 = (local_18 + local_8c + 8) - treasury / 200
   // where local_18 = wondersOwned, local_8c = wondersInCity
   const treasury = gameState.civs?.[civSlot]?.treasury ?? 0;
   let baseScore = (wondersOwned + wondersInCity + 8) - Math.floor(treasury / 200);
   if (baseScore < 2) baseScore = 1;
+
+  // Binary: small empires get heavy wonder penalty (local_234 factor)
+  // With 1 city, wonders are extremely expensive relative to expansion
+  const numOwnCities = cityCtx.numCities || 1;
+  if (numOwnCities <= 1) baseScore += 50;
+  else if (numOwnCities <= 2) baseScore += 20;
 
   // Era-based adjustment: wonder_era = wonderIndex / 7
   const wonderEra = Math.floor(wonderIndex / 7);
