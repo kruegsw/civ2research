@@ -934,9 +934,13 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
     }
   }
 
-  // ── Army balance: penalize role 1 (defend) when we have enough ──
-  if (role === 1) {
-    rawScore -= Math.floor((cityCtx.totalDefenders + 1) / 2);
+  // ── Army balance: defenders less needed when garrison is adequate ──
+  // Binary (line 5979): local_1c -= (local_3c + 1) >> 1
+  // local_3c = count of allied cities in trade network on same continent
+  // This LOWERS the score (more desirable in lower=better) when more allied cities exist.
+  // When we have MORE defenders, new defenders should be LESS desirable (higher rawScore).
+  if (role === 1 && cityCtx.totalDefenders > 0) {
+    rawScore += Math.floor((cityCtx.totalDefenders + 1) / 2);
   }
 
   // ── Late game: large civ needs more military ──
@@ -966,29 +970,33 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   }
 
   // ── Emergency: no defenders ──
+  // Binary (lines 6019-6026): when local_80 > 1 (0 defenders), the binary
+  // uses a HARD OVERRIDE in the final decision, not a score adjustment.
+  // The emergency override is handled in _finalProductionDecision.
+  // Here we only make defenders more attractive via lower rawScore (lower=better).
   if (cityCtx.defenders === 0 && def > 0 && domain === 0) {
-    rawScore += 20;
+    rawScore = Math.max(0, rawScore - 20);
     if (cityCtx.nearbyEnemies.length > 0) {
-      rawScore += 15;
+      rawScore = Math.max(0, rawScore - 15);
       const closestDist = Math.min(...cityCtx.nearbyEnemies.map(e => e.dist));
-      if (closestDist <= 3) rawScore += 10;
+      if (closestDist <= 3) rawScore = Math.max(0, rawScore - 10);
     }
   }
 
   // ── Surrounding tile threat boost for defenders ──
-  // Enemy military in surrounding tiles (flag 0x04) increases defender urgency
+  // Lower rawScore = more desirable in lower=better convention
   if (def > 0 && domain === 0 && cityCtx.surroundingEnemyMilCount > 0) {
-    rawScore += cityCtx.surroundingEnemyMilCount * 3;
-    // At-war enemies (flag 0x20) further boost urgency
+    rawScore = Math.max(0, rawScore - cityCtx.surroundingEnemyMilCount * 3);
     if (cityCtx.surroundingAtWarCount > 0) {
-      rawScore += cityCtx.surroundingAtWarCount * 5;
+      rawScore = Math.max(0, rawScore - cityCtx.surroundingAtWarCount * 5);
     }
   }
 
   // ── Frontier bonus ──
+  // Lower rawScore = more desirable in lower=better convention
   if (cityCtx.isFrontier && domain === 0) {
-    rawScore += 5;
-    if (def > atk) rawScore += 5;
+    rawScore = Math.max(0, rawScore - 5);
+    if (def > atk) rawScore = Math.max(0, rawScore - 5);
   }
 
   // ── Personality normalization (same pattern as buildings) ──
@@ -1657,7 +1665,11 @@ function scoreBuilding(buildingId, city, cityIndex, cityCtx, civTechs, gameState
     score = score + Math.floor(score / 3);
   }
 
-  return score < 0 ? -1 : score;
+  // Invert: decompiled uses lower=better, we use higher=better.
+  // Building raw scores after normalization range 0-300; use 300 as ceiling.
+  // Binary compares buildings, units, and wonders in the SAME lower=better
+  // variable (local_30). Units and wonders already invert; buildings must too.
+  return Math.max(0, 300 - Math.min(score, 300));
 }
 
 /**
@@ -2349,60 +2361,49 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
     }
   }
 
-  // ── Leader personality influences ──
-  const leaderIdx = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
-  const personality = LEADER_PERSONALITY[leaderIdx] || [0, 0, 0];
-  const expansionism = personality[0];
-  const militarism = personality[1];
-  const tolerance = personality[2] ?? 0;
+  // ── Personality is already factored into each scoring function ──
+  // via the normalization: coastalMul * score * 3 / (expansionism + 3)
+  // The binary does NOT apply additional personality multipliers in the
+  // final decision. Removing fabricated multipliers that caused double-counting.
 
-  // ── Apply personality-based weighting ──
-  // Militarist leaders prefer units, tolerant leaders prefer buildings/wonders
-  // Decompiled: the final decision uses attribs flags and personality
-  // to bias toward one category or another
-
-  // Militarist bonus to unit scores
-  if (militarism > 0) bestUnitScore = Math.floor(bestUnitScore * 1.15);
-  if (militarism < 0) bestUnitScore = Math.floor(bestUnitScore * 0.9);
-
-  // Civilized bonus to building/wonder scores
-  if (tolerance > 0) {
-    bestBuildingScore = Math.floor(bestBuildingScore * 1.1);
-    bestWonderScore = Math.floor(bestWonderScore * 1.15);
-  }
-  if (tolerance < 0) {
-    bestBuildingScore = Math.floor(bestBuildingScore * 0.9);
-    bestWonderScore = Math.floor(bestWonderScore * 0.85);
-  }
-
-  // Expansionist bonus to settler scoring is already applied in scoreUnit
-
-  // ── Settler priority override (ported from FUN_00498e8b lines 5695-5707) ──
-  // The binary's DAT_006a6608 gatekeeper ensures settlers compete with wonders
-  // in the early game. Without this, wonders (score 300-500) always beat
-  // settlers (score 25-145), causing zero expansion.
+  // ── Settler eligibility gate (binary lines 5701-5707: DAT_006a6608 gatekeeper) ──
+  // Binary: DAT_006a6608 is a cosmic parameter (settler food cost, typically 1).
+  // local_220 = totalFood - citySize*COSMIC - numSettlers*DAT_006a6608
+  // Settlers are only allowed when:
+  //   (a) DAT_006a6608 <= local_220 (food surplus can sustain settler), OR
+  //   (b) numSettlers == 0 AND few settlers on continent AND citySize > 1
+  // This prevents building settlers when food surplus is insufficient.
   const settlerCount = cityCtx.settlerCount;
   const numCities = cityCtx.numCities;
-  if (numCities < 4 && settlerCount === 0 && city.size > 1) {
-    // Cap wonder scores at settler level when expansion is critical
-    if (bestUnit && SETTLER_TYPES.has(bestUnit.id) && bestUnitScore > 0) {
-      bestWonderScore = Math.min(bestWonderScore, bestUnitScore);
-    }
-  }
-
-  // ── Food crisis: block settlers if city would starve ──
-  // Ported from FUN_00498e8b line 5701: DAT_006a6608 <= local_220
-  // The binary checks that food surplus can sustain a settler before allowing it.
   if (bestUnit && SETTLER_TYPES.has(bestUnit.id)) {
     const _fci = gameState.cities.indexOf(city);
     const actualSurplus = _fci >= 0
       ? estimateFoodSurplus(city, _fci, gameState, mapBase) : 0;
-    if (actualSurplus <= 0 && city.size <= 3) {
-      // City can't afford to lose pop — block settler, prefer granary
-      bestUnitScore = -1;
-      bestUnit = null;
+
+    // Binary gate: food surplus must support the settler, or no settlers exist
+    // DAT_006a6608 (settler food cost) is typically 1; local_220 is food surplus
+    // minus existing settler costs. If local_220 < DAT_006a6608, block settlers
+    // UNLESS no settlers exist globally AND few on continent AND size > 1.
+    const settlerFoodCost = 1; // DAT_006a6608 cosmic parameter
+    const foodMetric = actualSurplus - settlerCount * settlerFoodCost;
+    if (foodMetric < settlerFoodCost) {
+      // Food can't sustain another settler
+      if (settlerCount > 0 || city.size <= 1) {
+        // Block settler: existing settlers already draining food, or city too small
+        bestUnitScore = -1;
+        bestUnit = null;
+      }
+      // else: settlerCount === 0 AND city.size > 1 → allow (gate (b))
     }
   }
+
+  // ── Settler vs wonder priority (binary lines 5877, 6019-6026) ──
+  // In the binary, settlers and wonders compete in the SAME lower=better
+  // scoring variable. There is no special cap. The binary's settler scoring
+  // at line 5877 gives a bonus when DAT_006a6608 == local_220 (just enough
+  // food for one settler): local_1c -= local_1c / 2 (halves score = more desirable).
+  // Wonders are gated by garrison requirements (line 5136-5138), not by city count.
+  // With correct inversion on all three scoring functions, they now compete fairly.
 
   // ── Pick the overall best ──
   let bestItem = null;
@@ -2450,18 +2451,22 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
     }
   }
 
-  // ── Emergency defense override ──
-  // A city with 0 defenders should always prioritize building a defensive unit,
-  // regardless of whether enemies are nearby (lines 6019-6026 approximate conditions)
+  // ── Emergency defense override (binary lines 6019-6026) ──
+  // Binary: when local_80 > 1 (0 defenders = local_a8 < 1), the binary uses
+  // a HARD OVERRIDE that forces a defensive unit to be built regardless of
+  // building/wonder scores. This is NOT score-based — it's unconditional.
+  // Binary condition: local_58 < 0 (current best is building/wonder) AND
+  //                   local_80 > 1 (urgentDefense = 2, meaning 0 defenders)
+  //                   → force local_30 = unit score, local_58 = unit type
   if (cityCtx.defenders === 0) {
     const bestDefId = bestDefensiveUnit(civTechs, civSlot, cityIndex, gameState, mapBase);
     if (bestDefId >= 0) {
       const defScore = scoreUnit(bestDefId, city, cityCtx, civTechs,
         gameState, mapBase, civSlot, strategy);
       if (defScore > 0) {
-        // Override: emergency defense gets top priority
+        // Hard override: defender ALWAYS wins when 0 defenders (binary behavior)
         bestItem = { type: 'unit', id: bestDefId };
-        bestScore = Math.max(bestScore, defScore + 50); // guaranteed override
+        bestScore = defScore;
       }
     }
   }

@@ -102,6 +102,7 @@ export function spawnBarbarians(state, mapBase) {
       const unitType = getBarbUnitType(state);
       // I.1: Difficulty-scaled spawn count
       const baseCount = 1 + state.rng.nextInt(3); // 1-3
+      const diffMult = DIFFICULTY_BARB_MULTIPLIER[difficulty] || 1.0;
       const spawnCount = Math.max(1, Math.round(baseCount * diffMult));
 
       // Ensure units array is a fresh clone before pushing
