@@ -1358,7 +1358,7 @@ const Civ2Renderer = {
             ctx.drawImage(sprites.shieldFrontColored[frontKey], shieldX, shieldY);
 
             const maxHp = renderer.UNIT_MAX_HP[u.type] || 10;
-            const curHp = Math.max(0, maxHp - u.movesRemain);
+            const curHp = Math.max(0, maxHp - (u.movesRemain || 0) * 10);
             const barW = 12, barH = 3;
             const barX = shieldX, barY = shieldY + 2;
             const greenW = Math.floor((curHp / maxHp) * barW);
