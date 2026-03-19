@@ -119,7 +119,7 @@ export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targe
       }
     }
 
-    // ── Halve city population on this tile ──
+    // ── Halve city population + destroy ~50% buildings on this tile ──
     for (let ci = 0; ci < state.cities.length; ci++) {
       const c = state.cities[ci];
       if (c.gx !== nt.gx || c.gy !== nt.gy || c.size <= 0) continue;
@@ -128,8 +128,19 @@ export function handleNuclearAttack(state, mapBase, attackerCiv, targetGx, targe
       const newWorked = c.workedTiles && c.workedTiles.length > newSize
         ? c.workedTiles.slice(0, newSize) : (c.workedTiles || []);
 
+      // Destroy ~50% of buildings (wonders id >= 39 are exempt)
+      let nukeBuildings = new Set(c.buildings);
+      const buildingList = [...nukeBuildings];
+      for (const bid of buildingList) {
+        if (bid >= 39) continue; // wonders are never destroyed by nukes
+        if ((rand() & 1) === 0) nukeBuildings.delete(bid);
+      }
+
       state.cities[ci] = {
         ...c, size: newSize, workedTiles: newWorked,
+        buildings: nukeBuildings,
+        hasWalls: nukeBuildings.has(8),
+        hasPalace: nukeBuildings.has(1),
       };
 
       if (c.owner !== attackerCiv && c.owner > 0) {

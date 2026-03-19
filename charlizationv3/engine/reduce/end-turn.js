@@ -9,7 +9,7 @@ import { updateVisibility } from '../visibility.js';
 import { calcCityTrade, calcShieldProduction } from '../production.js';
 import { cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech } from '../research.js';
-import { checkGameEndConditions, recalcSpaceshipStats } from '../spaceship.js';
+import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
 import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
 import { dispatchEvents, EVENT_TURN, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from '../events.js';
@@ -730,6 +730,16 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         }
       }
       state.civPeaceTurns[c] = atWar ? 0 : (state.civPeaceTurns[c] || 0) + 1;
+    }
+  }
+
+  // ── K.4: Periodic civ score computation (every 10 turns) ──
+  if (turnNumber > 0 && turnNumber % 10 === 0) {
+    if (!state.civScores) state.civScores = new Array(8).fill(0);
+    state.civScores = [...state.civScores];
+    for (let c = 1; c <= 7; c++) {
+      if (!(state.civsAlive & (1 << c))) continue;
+      state.civScores[c] = calcCivScore(state, c);
     }
   }
 

@@ -34,7 +34,7 @@ import {
   DIPLO_EVENTS, fireDiplomacyEvent,
   declareWar as diplomacyDeclareWar,
   signCeasefire, signPeaceTreaty, formAlliance,
-  getReputation,
+  getReputation, isReputationTooLow,
   getAttitudeLevel, isHostile, isFriendly,
 } from '../diplomacy.js';
 
@@ -1421,7 +1421,10 @@ function respondToTreatyProposals(gameState, mapBase, civSlot, continentData) {
 
     let accept = false;
 
-    if (p.treaty === 'alliance') {
+    // Reject alliance/peace proposals from civs with bad reputation
+    if ((p.treaty === 'alliance' || p.treaty === 'peace') && isReputationTooLow(gameState, p.from)) {
+      accept = false;
+    } else if (p.treaty === 'alliance') {
       // O.1 Treaty evaluation: alliance if attitude > 74
       if (attitude > 74) accept = true;
       // Also accept if we share enemies and are relatively weak
@@ -1769,6 +1772,8 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
       if (targetTreaty === 'war' && haveContact(gameState, civSlot, target)) continue;
       // 6. Target is not barbarian
       if (target === 0) continue;
+      // 7. Our reputation is not too low (target won't trust us)
+      if (isReputationTooLow(gameState, civSlot)) continue;
 
       const hasPending = gameState.treatyProposals?.some(
         p => (p.from === civSlot && p.to === target) && !p.resolved
@@ -1836,6 +1841,9 @@ function generateAllianceProposals(civSlot, gameState, mapBase, continentData, d
         // Check attitude — need at least neutral
         const attitude = getAttitude(gameState, civSlot, ally);
         if (attitude < -10) continue;
+
+        // Skip if our reputation is too low (ally won't trust us)
+        if (isReputationTooLow(gameState, civSlot)) continue;
 
         // Propose alliance
         const hasPending = gameState.treatyProposals?.some(
@@ -2070,6 +2078,8 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
 
       const attitude = getAttitude(gameState, civSlot, i);
       if (attitude > 25) {
+        // Skip if our reputation is too low (target won't trust us)
+        if (isReputationTooLow(gameState, civSlot)) continue;
         const hasPending = gameState.treatyProposals?.some(
           p => (p.from === civSlot && p.to === i || p.from === i && p.to === civSlot) && !p.resolved
         );
@@ -3011,6 +3021,8 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
 
       // 2b. Peace proposals (urgent if losing)
       if (shouldProposePeace(civSlot, i, continentData, gameState)) {
+        // Skip if our reputation is too low (target won't trust us)
+        if (isReputationTooLow(gameState, civSlot)) continue;
         // Don't propose if already have a pending proposal
         const hasPending = gameState.treatyProposals?.some(
           p => p.from === civSlot && p.to === i && !p.resolved

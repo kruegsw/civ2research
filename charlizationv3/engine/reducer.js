@@ -12,6 +12,7 @@ import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER } from './actions.js';
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES } from './defs.js';
 import { launchSpaceship } from './spaceship.js';
+import { handleNuclearAttack, handleNuclearResponse } from './nuclear.js';
 import { resolveDirection, moveCost } from './movement.js';
 import { findPath, calcGotoDirection, findRoadPath } from './pathfinding.js';
 import { updateVisibility } from './visibility.js';
@@ -767,123 +768,30 @@ export function applyAction(prev, mapBase, action, civSlot) {
     }
 
     case NUKE: {
-      // ── Enhanced NUKE action (B.5) ──
-      // Ported from decompiled FUN_0057f9e3 (handle_nuke_attack, 1236 bytes)
+      // ── Nuclear attack (B.5) — delegated to nuclear.js ──
       const { unitIndex: nukeUi, targetGx: nukeTgx, targetGy: nukeTgy } = action;
       if (!state.turnEvents) state.turnEvents = [];
 
-      // ── SDI Defense interception check ──
-      // Any city within distance 4 of target with SDI Defense (building 17)
-      // owned by a different civ can intercept the nuke.
-      let sdiIntercepted = false;
-      for (let ci = 0; ci < state.cities.length; ci++) {
-        const sdiCity = state.cities[ci];
-        if (sdiCity.size <= 0 || sdiCity.owner === civSlot) continue;
-        if (!(sdiCity.buildings && sdiCity.buildings.has(17))) continue; // SDI Defense = building 17
-        let ddx = Math.abs(sdiCity.gx - nukeTgx);
-        if (mapBase.wraps) ddx = Math.min(ddx, mapBase.mw - ddx);
-        const ddy = Math.abs(sdiCity.gy - nukeTgy);
-        const dist = ddx + ddy;
-        if (dist < 4) {
-          sdiIntercepted = true;
-          state.turnEvents.push({
-            type: 'nukeIntercepted', civSlot, targetGx: nukeTgx, targetGy: nukeTgy,
-            interceptorCiv: sdiCity.owner, interceptorCity: sdiCity.name,
-          });
-          break;
-        }
-      }
+      // Ensure cities array is cloned before nuclear.js mutates it
+      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
 
       // Destroy the missile unit regardless of interception
       killUnit(state, nukeUi);
 
-      if (sdiIntercepted) {
-        // Nuke intercepted — no damage, but missile is consumed
-        break;
-      }
+      // SDI check, 9-tile destruction, fallout, diplomacy flags
+      const nukeResult = handleNuclearAttack(state, mapBase, civSlot, nukeTgx, nukeTgy);
+      for (const evt of nukeResult.events) state.turnEvents.push(evt);
 
-      // ── 3x3 area of effect: collect all 9 tiles ──
-      const nukeTiles = [{ gx: nukeTgx, gy: nukeTgy }];
-      const nukeDirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      for (const nd of nukeDirs) {
-        const nDest = resolveDirection(nukeTgx, nukeTgy, nd, mapBase);
-        if (nDest) nukeTiles.push(nDest);
-      }
+      if (!nukeResult.intercepted) {
+        // AI nuclear response (retaliation missiles + ground unit rally)
+        const responseResult = handleNuclearResponse(state, mapBase, nukeTgx, nukeTgy, civSlot);
+        for (const evt of responseResult.events) state.turnEvents.push(evt);
 
-      // ── Destroy all units on all 9 tiles ──
-      const affectedCivs = new Set();
-      for (const nt of nukeTiles) {
-        for (let i = 0; i < state.units.length; i++) {
-          const u = state.units[i];
-          if (u.gx === nt.gx && u.gy === nt.gy && u.gx >= 0) {
-            // Track affected civs for diplomatic consequences
-            if (u.owner !== civSlot && u.owner > 0) {
-              affectedCivs.add(u.owner);
-            }
-            killUnit(state, i);
-          }
+        // Check eliminations for all affected civs
+        for (const affectedCiv of nukeResult.affectedCivs) {
+          checkCivElimination(state, affectedCiv);
         }
       }
-
-      // ── City effects: halve population, destroy ~50% buildings ──
-      state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
-      for (const nt of nukeTiles) {
-        for (let ci = 0; ci < state.cities.length; ci++) {
-          const c = state.cities[ci];
-          if (c.gx !== nt.gx || c.gy !== nt.gy || c.size <= 0) continue;
-
-          const newSize = Math.max(1, Math.floor(c.size / 2));
-          // Destroy ~50% of buildings (seeded PRNG for determinism)
-          let nukeBuildings = new Set(c.buildings);
-          const buildingList = [...nukeBuildings];
-          let nukeSeed = ((nt.gx * 31 + nt.gy * 17 + ci * 13 + (state.turn?.number || 0)) & 0x7FFFFFFF) || 1;
-          const nukeRand = () => { nukeSeed = (nukeSeed * 1103515245 + 12345) & 0x7FFFFFFF; return nukeSeed; };
-          for (const bid of buildingList) {
-            // Wonders (building >= 39) are never destroyed by nukes
-            if (bid >= 39) continue;
-            if (nukeRand() % 2 === 0) nukeBuildings.delete(bid);
-          }
-
-          const newWorked = c.workedTiles && c.workedTiles.length > newSize
-            ? c.workedTiles.slice(0, newSize) : (c.workedTiles || []);
-          state.cities[ci] = {
-            ...c, size: newSize, workedTiles: newWorked,
-            buildings: nukeBuildings,
-            hasWalls: nukeBuildings.has(8),
-            hasPalace: nukeBuildings.has(1),
-          };
-
-          // Track affected civ
-          if (c.owner !== civSlot && c.owner > 0) {
-            affectedCivs.add(c.owner);
-          }
-        }
-      }
-
-      // ── Set pollution on all 9 tiles ──
-      for (const nt of nukeTiles) {
-        const nIdx = nt.gy * mapBase.mw + nt.gx;
-        const tile = mapBase.tileData[nIdx];
-        if (!tile) continue;
-        if (tile.terrain !== 10) {
-          tile.improvements = { ...tile.improvements, pollution: true };
-        }
-      }
-
-      // ── Diplomatic consequences: all affected civs gain max hostility ──
-      // From pseudocode: treaty flags 0x110 (attacked + nuke victim) and 0x20000 (we_nuked_them)
-      for (const affectedCiv of affectedCivs) {
-        state.turnEvents.push({
-          type: 'nukeVictim', attacker: civSlot, victim: affectedCiv,
-        });
-      }
-
-      // ── Check eliminations for affected civs ──
-      for (const affectedCiv of affectedCivs) {
-        checkCivElimination(state, affectedCiv);
-      }
-
-      state.turnEvents.push({ type: 'nuclearStrike', civSlot, targetGx: nukeTgx, targetGy: nukeTgy });
       break;
     }
 

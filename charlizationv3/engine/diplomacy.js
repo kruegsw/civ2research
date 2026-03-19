@@ -195,6 +195,14 @@ export function addTreatyFlag(state, civA, civB, flag) {
     [`${civA}-${civB}`]: ab,
     [`${civB}-${civA}`]: ba,
   };
+
+  // Sync string-based treaty to match the updated flags
+  // Use the higher-level status (flags determine the canonical treaty)
+  if (flag & (TF.ALLIANCE | TF.PEACE | TF.CEASEFIRE | TF.WAR)) {
+    const newStatus = flagsToStatus(ab);
+    if (!state.treaties) state.treaties = {};
+    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: newStatus };
+  }
 }
 
 /**
@@ -214,6 +222,9 @@ export function clearTreatyFlag(state, civA, civB, flag) {
       [`${civA}-${civB}`]: 0,
       [`${civB}-${civA}`]: 0,
     };
+    // Sync string-based treaty: no contact means war by default
+    if (!state.treaties) state.treaties = {};
+    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: 'war' };
     return;
   }
 
@@ -239,6 +250,13 @@ export function clearTreatyFlag(state, civA, civB, flag) {
     [`${civA}-${civB}`]: ab,
     [`${civB}-${civA}`]: ba,
   };
+
+  // Sync string-based treaty to match the updated flags
+  if (flag & (TF.ALLIANCE | TF.PEACE | TF.CEASEFIRE | TF.WAR)) {
+    const newStatus = flagsToStatus(ab);
+    if (!state.treaties) state.treaties = {};
+    state.treaties = { ...state.treaties, [treatyKey(civA, civB)]: newStatus };
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -267,6 +285,21 @@ function setTreaty(state, civA, civB, status) {
   // G.1: Record turn when treaty was signed (for ceasefire expiration)
   if (!state.treatyTurns) state.treatyTurns = {};
   state.treatyTurns = { ...state.treatyTurns, [treatyKey(civA, civB)]: state.turn?.number || 0 };
+  // Sync flag-based treaty to match the string status
+  // Preserve existing non-treaty flags (embassy, vendetta, etc.) while
+  // updating the treaty-level bits (ALLIANCE/PEACE/CEASEFIRE/WAR/CONTACT)
+  const TREATY_MASK = TF.ALLIANCE | TF.PEACE | TF.CEASEFIRE | TF.WAR | TF.CONTACT;
+  const newBits = statusToFlags(status);
+  let ab = getTreatyFlags(state, civA, civB);
+  let ba = getTreatyFlags(state, civB, civA);
+  ab = (ab & ~TREATY_MASK) | newBits;
+  ba = (ba & ~TREATY_MASK) | newBits;
+  if (!state.treatyFlags) state.treatyFlags = {};
+  state.treatyFlags = {
+    ...state.treatyFlags,
+    [`${civA}-${civB}`]: ab,
+    [`${civB}-${civA}`]: ba,
+  };
 }
 
 /** Ensure diplomacy tracking object exists for a civ pair. */
