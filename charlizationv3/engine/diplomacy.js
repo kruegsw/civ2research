@@ -17,7 +17,7 @@
 //   FUN_004de0e2 — parley_transfer_city
 // ═══════════════════════════════════════════════════════════════════
 
-import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS, ADVANCE_EPOCH, UNIT_COSTS } from './defs.js';
+import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS, ADVANCE_EPOCH, UNIT_COSTS, WONDER_PREREQS, GOVT_INDEX, UNIT_DOMAIN } from './defs.js';
 import { hasWonderEffect, civHasWonder } from './utils.js';
 import { grantAdvance } from './research.js';
 import { updateVisibility } from './visibility.js';
@@ -1681,16 +1681,96 @@ function transferTechs(state, fromCiv, toCiv, techIds) {
   return { events };
 }
 
-/** Transfer units from one civ to another. */
+/**
+ * Gap 90: Check if a unit type can exist on the terrain at (gx, gy).
+ * Ground units can't be on ocean; sea units can't be on land.
+ * Air units can go anywhere.
+ */
+function isTerrainCompatible(unitType, gx, gy, mapBase) {
+  const domain = UNIT_DOMAIN[unitType] ?? 0;
+  if (domain === 1) return true; // air units are always OK
+  const ter = mapBase.getTerrain ? mapBase.getTerrain(gx, gy) : mapBase.tileData?.[gy * mapBase.mw + gx]?.terrain;
+  if (ter == null) return false;
+  const isOcean = (ter === 10);
+  if (domain === 0 && isOcean) return false;  // ground on ocean
+  if (domain === 2 && !isOcean) return false;  // sea on land
+  return true;
+}
+
+/**
+ * Gap 90: Find a compatible tile near (gx, gy) using a 45-tile spiral.
+ * Returns { gx, gy } or null if no compatible tile found.
+ */
+function findCompatibleTile(unitType, gx, gy, mapBase) {
+  // 45-tile spiral: inner ring (8), mid ring (12), outer ring (24), plus center
+  // Use doubled-x offsets for the spiral
+  const spiralOffsets = [
+    // Ring 1 (8 tiles)
+    [+1,-1],[+2,0],[+1,+1],[0,+2],[-1,+1],[-2,0],[-1,-1],[0,-2],
+    // Ring 2 (12 tiles)
+    [+2,-2],[+2,+2],[-2,+2],[-2,-2],
+    [+1,-3],[+3,-1],[+3,+1],[+1,+3],[-1,+3],[-3,+1],[-3,-1],[-1,-3],
+    // Ring 3 (wider)
+    [+4,0],[0,+4],[-4,0],[0,-4],
+    [+3,-3],[+3,+3],[-3,+3],[-3,-3],
+    [+4,-2],[+4,+2],[-4,+2],[-4,-2],
+    [+2,-4],[+2,+4],[-2,+4],[-2,-4],
+    [+1,-5],[+5,-1],[+5,+1],[+1,+5],[-1,+5],[-5,+1],[-5,-1],[-1,-5],
+  ];
+
+  for (const [ddx, ddy] of spiralOffsets) {
+    const parC = gy & 1;
+    const parT = ((gy + ddy) % 2 + 2) % 2;
+    const tgx = gx + ((parC + ddx - parT) >> 1);
+    const tgy = gy + ddy;
+    if (tgy < 0 || tgy >= mapBase.mh) continue;
+    const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+    if (wgx < 0 || wgx >= mapBase.mw) continue;
+    if (isTerrainCompatible(unitType, wgx, tgy, mapBase)) {
+      return { gx: wgx, gy: tgy };
+    }
+  }
+  return null;
+}
+
+/** Transfer units from one civ to another.
+ *  Gap 89: Split stacks properly when transferring from a multi-unit stack.
+ *  Gap 90: Validate terrain compatibility; if unit can't exist on current terrain,
+ *  search 45-tile spiral for compatible terrain.
+ */
 function transferUnits(state, mapBase, fromCiv, toCiv, unitIndices) {
   const events = [];
   if (!state.units) return { events };
 
   state.units = [...state.units];
 
+  // Gap 89: Collect indices of units being transferred for stack splitting
+  const transferSet = new Set(unitIndices);
+
   for (const ui of unitIndices) {
     const u = state.units[ui];
     if (!u || u.gx < 0 || u.owner !== fromCiv) continue;
+
+    // Gap 89: Split stack — unlink this unit from its stack pointers
+    // Update prevInStack/nextInStack for remaining stack members
+    if (u.prevInStack >= 0 && !transferSet.has(u.prevInStack)) {
+      const prev = state.units[u.prevInStack];
+      if (prev) {
+        state.units[u.prevInStack] = {
+          ...prev,
+          nextInStack: u.nextInStack >= 0 && !transferSet.has(u.nextInStack) ? u.nextInStack : -1,
+        };
+      }
+    }
+    if (u.nextInStack >= 0 && !transferSet.has(u.nextInStack)) {
+      const next = state.units[u.nextInStack];
+      if (next) {
+        state.units[u.nextInStack] = {
+          ...next,
+          prevInStack: u.prevInStack >= 0 && !transferSet.has(u.prevInStack) ? u.prevInStack : -1,
+        };
+      }
+    }
 
     // Find nearest city of new owner for rehoming
     let bestCi = -1, bestDist = Infinity;
@@ -1704,17 +1784,33 @@ function transferUnits(state, mapBase, fromCiv, toCiv, unitIndices) {
       }
     }
 
+    // Gap 90: Validate terrain compatibility
+    let placeGx = u.gx, placeGy = u.gy;
+    if (!isTerrainCompatible(u.type, placeGx, placeGy, mapBase)) {
+      const found = findCompatibleTile(u.type, placeGx, placeGy, mapBase);
+      if (found) {
+        placeGx = found.gx;
+        placeGy = found.gy;
+      }
+    }
+
     state.units[ui] = {
       ...u,
       owner: toCiv,
+      gx: placeGx,
+      gy: placeGy,
+      x: placeGx * 2 + (placeGy % 2),
+      y: placeGy,
       homeCityId: bestCi >= 0 ? bestCi : 0xFFFF,
       orders: 'none',
       goToX: -1,
       goToY: -1,
+      prevInStack: -1,
+      nextInStack: -1,
     };
 
     // Update visibility for new owner
-    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, u.gx, u.gy, mapBase.wraps);
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, placeGx, placeGy, mapBase.wraps);
 
     events.push({
       type: 'unitTransferred',
@@ -1816,7 +1912,7 @@ export function transferCity(state, mapBase, cityIndex, fromCiv, toCiv) {
     resistanceTurns: 0,
     originalOwner: fromCiv,
     turnCaptured: state.turn?.number || 0,
-    tradeRoutes: [], // trade routes cancelled
+    tradeRoutes: city.tradeRoutes || [], // Gap 88: preserve trade routes, reassign to new owner
   };
 
   // ── Update tile ownership around city ──
@@ -2203,12 +2299,48 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
   kh.destroyedCivNames = [...kh.destroyedCivNames];
   kh.killTurns[slot] = state.turn?.number ?? 0;
   kh.killerCivIds[slot] = killerCiv;
-  kh.destroyedCivRulesIds[slot] = civSlot;
+  kh.destroyedCivRulesIds[slot] = state.civs?.[civSlot]?.rulesCivNumber ?? civSlot;
   kh.destroyedCivNames[slot] = state.civNames?.[civSlot] ?? `Civ ${civSlot}`;
   if (kh.count < 12) kh.count++;
 
   // ── Clear alive bitmask ──
   state.civsAlive &= ~(1 << civSlot);
+
+  // ── Repatriate bribed units: units owned by dying civ that were bribed from other civs ──
+  // Return them to their original owner (the civ they were bribed from).
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.gx < 0 || u.owner !== civSlot) continue;
+    if (u.bribed && u.returnToCiv != null && u.returnToCiv !== civSlot &&
+        (state.civsAlive & (1 << u.returnToCiv))) {
+      const returnTo = u.returnToCiv;
+      // Find nearest city of the original owner for rehoming
+      let bestCi = -1, bestDist = Infinity;
+      if (state.cities) {
+        for (let ci = 0; ci < state.cities.length; ci++) {
+          const c = state.cities[ci];
+          if (c.owner === returnTo && c.size > 0) {
+            let dx = Math.abs(u.gx - c.gx);
+            if (mapBase?.wraps) dx = Math.min(dx, (mapBase.mw || 1000) - dx);
+            const d = dx + Math.abs(u.gy - c.gy);
+            if (d < bestDist) { bestDist = d; bestCi = ci; }
+          }
+        }
+      }
+      state.units[i] = {
+        ...u,
+        owner: returnTo,
+        bribed: false,
+        returnToCiv: undefined,
+        homeCityId: bestCi >= 0 ? bestCi : 0xFFFF,
+        orders: 'none',
+      };
+      if (mapBase?.tileData) {
+        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, returnTo, u.gx, u.gy, mapBase.wraps);
+      }
+      events.push({ type: 'unitRepatriated', unitIndex: i, unitType: u.type, from: civSlot, to: returnTo });
+    }
+  }
 
   // ── Kill all remaining units (set gx = -1) ──
   for (let i = 0; i < state.units.length; i++) {
@@ -2441,6 +2573,146 @@ export function shouldProvoke(state, aiCiv, targetCiv) {
   // Only provoke if contact-only (no ceasefire, peace, alliance, or war)
   return (flags & TF.CONTACT) !== 0 &&
          !(flags & (TF.CEASEFIRE | TF.PEACE | TF.ALLIANCE | TF.WAR));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Tech Era Classification — binary FUN_00568861
+//
+// Returns 0 (ancient), 1 (industrial), or 2 (modern) based on
+// specific tech combinations the civ has researched.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Determine a civ's tech era for diplomacy modifiers.
+ * Binary FUN_00568861: checks specific tech pairs.
+ *
+ * @param {object} state - game state
+ * @param {number} civSlot - civ to evaluate
+ * @returns {number} 0=ancient, 1=industrial, 2=modern
+ */
+export function getTechEra(state, civSlot) {
+  const techs = state.civTechs?.[civSlot];
+  if (!techs) return 0;
+  // Modern: has Electricity (5) AND Future Tech (24 = 0x18)
+  if (techs.has(5) && techs.has(24)) return 2;
+  // Industrial: has Automobile (60 = 0x3C) AND Chemistry (38 = 0x26)
+  if (techs.has(60) && techs.has(38)) return 1;
+  // Ancient
+  return 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Wonder-blocking in Tech Exchange — binary handle_exchange_gift
+//
+// Checks if giving a tech to a civ would enable them to build an
+// unbuilt wonder. Used by AI to refuse disadvantageous tech trades.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if giving techId to civSlot would enable them to build a
+ * wonder they don't yet have. From binary handle_exchange_gift
+ * (FUN_0045950B) lines ~4387-4402.
+ *
+ * A trade is blocked if:
+ *   - The tech is a prerequisite for an unbuilt wonder
+ *   - The target civ is already building that wonder in a city
+ *
+ * @param {object} state - game state
+ * @param {number} civSlot - civ that would receive the tech
+ * @param {number} techId - tech being considered for trade
+ * @returns {boolean} true if giving this tech would enable wonder construction
+ */
+export function wouldEnableWonder(state, civSlot, techId) {
+  if (techId < 0) return false;
+  // Check each wonder (0-27)
+  for (let wi = 0; wi < WONDER_PREREQS.length; wi++) {
+    // Wonder's required tech must match the tech being traded
+    if (WONDER_PREREQS[wi] !== techId) continue;
+    // Wonder must not already be built (cityIndex === null means unbuilt)
+    const wonder = state.wonders?.[wi];
+    if (wonder && wonder.cityIndex != null) continue;
+    // Check if target civ has a city currently building this wonder
+    // Wonder build IDs are wonderIndex + 39
+    const wonderBuildId = wi + 39;
+    if (state.cities) {
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const city = state.cities[ci];
+        if (!city || city.owner !== civSlot || city.size <= 0) continue;
+        const item = city.itemInProduction;
+        if (item && item.type === 'wonder' && item.id === wonderBuildId) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Treaty Betrayal Check — binary FUN_0055bef9
+//
+// Determines whether an AI civ is willing to break a treaty.
+// Government type, vendetta status, UN wonder, and target's
+// patience counter all factor into the decision.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if an AI civ should betray (break) its current treaty.
+ * Port of binary FUN_0055bef9.
+ *
+ * Logic:
+ *   - Government < 5 (anarchy..fundamentalism): never betray
+ *   - If Alpha Centauri scenario flag + civ flag: never betray
+ *   - Build threshold: counter*15 + vendettaBonus + wonderBonus, clamped [0,75]
+ *   - If AI's aggressiveness seed < threshold: don't betray
+ *   - Republic (govt=5): betray only if civ has militaristic flag (civFlags & 4)
+ *   - Democracy (govt=6): always betray if threshold passes
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ considering betrayal
+ * @param {number} targetCiv - target civ
+ * @returns {boolean} true if AI should betray the treaty
+ */
+export function shouldBetrayTreaty(state, aiCiv, targetCiv) {
+  const aiCivData = state.civs?.[aiCiv];
+  if (!aiCivData) return false;
+
+  // Government check: only Republic (5) and Democracy (6) can betray
+  const govtKey = aiCivData.government || 'anarchy';
+  const govtIdx = GOVT_INDEX[govtKey] ?? 0;
+  if (govtIdx < 5) return false;
+
+  // Build betrayal threshold from target's patience counter
+  const targetCivData = state.civs?.[targetCiv];
+  const counter = targetCivData?.patience || 0;  // target's patience counter (off+30 in binary)
+  let bonus = 0;
+
+  // Vendetta: check if target has VENDETTA flag toward AI (0x10)
+  const targetFlagsTowardAi = getTreatyFlags(state, targetCiv, aiCiv);
+  if (targetFlagsTowardAi & TF.VENDETTA) {
+    bonus = 25;  // 0x19
+  }
+
+  // UN wonder (24): if AI has United Nations, override bonus to 50
+  if (civHasWonder(state, aiCiv, 24)) {
+    bonus = 50;  // 0x32
+  }
+
+  // Threshold: clamp(counter * 15 + bonus, 0, 75)
+  const threshold = Math.min(Math.max(counter * 15 + bonus, 0), 75);
+
+  // Compare against AI's aggressiveness seed (aiRandomSeed field, offset+22)
+  const aggressiveness = aiCivData.aiRandomSeed ?? 0;
+  if (aggressiveness < threshold) return false;
+
+  // Republic: needs militaristic flag (civFlags bit 2)
+  if (govtIdx === 5) {
+    const civFlags = aiCivData.civFlags ?? 0;
+    return (civFlags & 4) !== 0;
+  }
+
+  // Democracy: always betray if threshold passes
+  return true;
 }
 
 // ═══════════════════════════════════════════════════════════════════

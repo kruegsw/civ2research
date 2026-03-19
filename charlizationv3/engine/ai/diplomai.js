@@ -36,6 +36,8 @@ import {
   signCeasefire, signPeaceTreaty, formAlliance,
   getReputation, isReputationTooLow,
   getAttitudeLevel, isHostile, isFriendly,
+  calcPatienceThreshold, getPatience,
+  shouldBetrayTreaty, wouldEnableWonder,
 } from '../diplomacy.js';
 
 // ── Leader Personality Table ─────────────────────────────────────
@@ -1607,8 +1609,9 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
     if (treaty === 'war') continue;
 
     // Check per-pair frequency: trade every 4 turns per pair
+    // Binary: (DAT_00655af8 + param_1 + param_2) & 3 == 0
     const turnNumber = gameState.turn?.number ?? 0;
-    if ((turnNumber + civSlot * 7 + other * 3) % 4 !== 0) continue;
+    if ((turnNumber + civSlot + other) & 3) continue;
 
     // Find tradable techs in each direction
     const weCanGive = findTradableTechs(gameState, civSlot, other);
@@ -1619,12 +1622,15 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
       // Give our best tech to ally (one per turn)
       if (weCanGive.length > 0) {
         // Pick the tech with highest value for the recipient
-        let bestTech = weCanGive[0];
+        // Gap 48: Skip techs that would enable unbuilt wonders
+        let bestTech = -1;
         let bestVal = 0;
         for (const tid of weCanGive) {
+          if (wouldEnableWonder(gameState, other, tid)) continue;
           const val = valueTech(tid, other, gameState);
           if (val > bestVal) { bestVal = val; bestTech = tid; }
         }
+        if (bestTech < 0) continue; // all tradable techs blocked by wonder check
         actions.push({
           type: 'EXECUTE_TRADE',
           fromCiv: civSlot,
@@ -1663,19 +1669,25 @@ function generateAiTechExchange(civSlot, gameState, mapBase, continentData, debu
       if (attitude < 0) continue;
 
       // Evaluate mutual benefit: pick techs of similar value
-      let ourBestTech = weCanGive[0];
+      // Gap 48: Skip techs that would enable unbuilt wonders for the recipient
+      let ourBestTech = -1;
       let ourBestVal = 0;
       for (const tid of weCanGive) {
+        if (wouldEnableWonder(gameState, other, tid)) continue;
         const val = valueTech(tid, other, gameState);
         if (val > ourBestVal) { ourBestVal = val; ourBestTech = tid; }
       }
 
-      let theirBestTech = theyCanGive[0];
+      let theirBestTech = -1;
       let theirBestVal = 0;
       for (const tid of theyCanGive) {
+        if (wouldEnableWonder(gameState, civSlot, tid)) continue;
         const val = valueTech(tid, civSlot, gameState);
         if (val > theirBestVal) { theirBestVal = val; theirBestTech = tid; }
       }
+
+      // If all techs are blocked by wonder check, skip
+      if (ourBestTech < 0 || theirBestTech < 0) continue;
 
       // Only trade if values are within 2:1 ratio (fair trade)
       const valRatio = ourBestVal / Math.max(theirBestVal, 1);
@@ -2803,6 +2815,11 @@ function checkProvocationConditions(gameState, mapBase, civSlot) {
 /**
  * Check if conditions are met for a spontaneous war declaration.
  *
+ * Uses patience threshold (Gap 47) and betrayal threshold (Gap 50)
+ * from the binary to gate treaty breaks:
+ *   - Patience counter must exceed calcPatienceThreshold
+ *   - shouldBetrayTreaty (FUN_0055bef9) must return true
+ *
  * @param {object} state - game state
  * @param {number} aiCiv - AI civ considering war
  * @param {number} targetCiv - potential target
@@ -2811,11 +2828,8 @@ function checkProvocationConditions(gameState, mapBase, civSlot) {
 export function checkSpontaneousWar(state, aiCiv, targetCiv) {
   const treaty = getTreaty(state, aiCiv, targetCiv);
 
-  // Must have peace treaty (not ceasefire, not alliance, not war)
-  if (treaty !== 'peace') return null;
-
-  // Must not be allied
-  // (already excluded by treaty check above, but explicit for clarity)
+  // Must have peace or ceasefire treaty (not alliance, not war, not uncontacted)
+  if (treaty !== 'peace' && treaty !== 'ceasefire') return null;
 
   // Military power must be > 5
   const aiMilPower = state.civs?.[aiCiv]?.militaryPower ?? 0;
@@ -2825,6 +2839,19 @@ export function checkSpontaneousWar(state, aiCiv, targetCiv) {
   const attitude = state.civs?.[aiCiv]?.attitudes?.[targetCiv] ?? 50;
   const attitudeLevel = getAttitudeLevel(attitude);
   if (!isHostile(attitudeLevel)) return null;
+
+  // Gap 47: Patience threshold check — AI's patience counter must exceed
+  // the calcPatienceThreshold for this pair. Binary FUN_00456f8b: the AI
+  // compares its accumulated patience counter against the threshold, and
+  // only breaks the treaty when patience has been exhausted.
+  const patience = getPatience(state, aiCiv);
+  const threshold = calcPatienceThreshold(state, aiCiv, targetCiv);
+  if (patience < threshold) return null;
+
+  // Gap 50: Betrayal threshold — FUN_0055bef9 checks government type,
+  // vendetta flags, UN wonder, and target's patience counter to decide
+  // if the AI is willing to break the treaty.
+  if (!shouldBetrayTreaty(state, aiCiv, targetCiv)) return null;
 
   return { type: 'DECLARE_WAR', targetCiv };
 }

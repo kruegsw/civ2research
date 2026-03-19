@@ -2,7 +2,7 @@
 // reduce/move-unit.js — MOVE_UNIT action handler + goody hut logic
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
@@ -292,6 +292,98 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       }
     }
 
+    // ── Gap 38: SDI missile interception (from FUN_0057f9e3) ──
+    // When a missile unit (UNIT_DESTROYED_AFTER_ATTACK, attack < 99) attacks,
+    // check if any city NOT owned by the attacker has SDI Defense (building 17)
+    // within isometric distance < 4 of the target tile. If so, the missile is
+    // intercepted: destroy the missile, cancel combat, emit event.
+    // Nuclear missiles (attack=99) bypass SDI.
+    if (UNIT_DESTROYED_AFTER_ATTACK.has(unit.type) && (UNIT_ATK[unit.type] || 0) < 99) {
+      let sdiIntercepted = false;
+      let sdiCityName = '';
+      let sdiCityOwner = -1;
+      for (const city of state.cities) {
+        if (!city || city.size <= 0 || city.owner === civSlot) continue;
+        if (!city.buildings || !city.buildings.has(17)) continue;
+        // Compute isometric distance: convert gx/gy to doubled-X coords, then (abs_dx + abs_dy) >> 1
+        const cx1 = dest.gx * 2 + (dest.gy % 2);
+        const cy1 = dest.gy;
+        const cx2 = city.gx * 2 + (city.gy % 2);
+        const cy2 = city.gy;
+        let dx = Math.abs(cx1 - cx2);
+        if (mapBase.wraps) dx = Math.min(dx, mapBase.mw * 2 - dx);
+        const dy = Math.abs(cy1 - cy2);
+        const dist = (dx + dy) >> 1;
+        if (dist < 4) {
+          sdiIntercepted = true;
+          sdiCityName = city.name || '';
+          sdiCityOwner = city.owner;
+          break;
+        }
+      }
+      if (sdiIntercepted) {
+        // Destroy the missile
+        unit.gx = -1; unit.gy = -1; unit.x = -1; unit.y = -1; unit.movesLeft = 0;
+        state.units[unitIndex] = unit;
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'sdiIntercept',
+          unitType: unit.type,
+          unitName: UNIT_NAMES[unit.type],
+          owner: civSlot,
+          targetGx: dest.gx, targetGy: dest.gy,
+          sdiCityName, sdiCityOwner,
+        });
+        state.combatResult = {
+          type: 'sdiIntercept',
+          attacker: unit.type, atkOwner: civSlot,
+          gx: dest.gx, gy: dest.gy,
+          sdiCityName, sdiCityOwner,
+        };
+        return;
+      }
+    }
+
+    // ── Gap 39: Diplomat/spy intercept at target tile ──
+    // Binary FUN_00580341: when defender stack at target contains a diplomat (type 46)
+    // or spy (type 47), the diplomat/spy is consumed to cancel combat.
+    // The attacker is NOT destroyed; combat simply doesn't happen.
+    {
+      let diplomatIdx = -1;
+      for (const ei of enemiesAtDest) {
+        const eu = state.units[ei];
+        if (eu.gx >= 0 && (eu.type === 46 || eu.type === 47)) {
+          diplomatIdx = ei;
+          break;
+        }
+      }
+      if (diplomatIdx >= 0) {
+        const diplomat = state.units[diplomatIdx];
+        // Consume the diplomat/spy
+        killUnit(state, diplomatIdx);
+        // Attacker is not destroyed but combat is cancelled
+        unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
+        state.units[unitIndex] = unit;
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'diplomatIntercept',
+          diplomatType: diplomat.type,
+          diplomatName: UNIT_NAMES[diplomat.type],
+          diplomatOwner: diplomat.owner,
+          attackerType: unit.type,
+          attackerOwner: civSlot,
+          gx: dest.gx, gy: dest.gy,
+        });
+        state.combatResult = {
+          type: 'diplomatIntercept',
+          attacker: unit.type, atkOwner: civSlot,
+          defender: diplomat.type, defOwner: diplomat.owner,
+          gx: dest.gx, gy: dest.gy,
+        };
+        return;
+      }
+    }
+
     // Find best defender using calcStackBestDefender (FUN_0057e6e2)
     const defTerrain = mapBase.getTerrain(dest.gx, dest.gy);
     const defCity = state.cities.find(c => c.gx === dest.gx && c.gy === dest.gy && c.owner !== unit.owner);
@@ -543,6 +635,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       atkMaxHp: result.atkMaxHp, defMaxHp: result.defMaxHp,
       atkFp: result.atkFp, defFp: result.defFp,
       atkStartHp: result.atkStartHp, defStartHp: result.defStartHp,
+      effAtk: result.effAtk, effDef: result.effDef,
       defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver,
       defFortified: defender.orders === 'fortified',
       atkVeteranPromo: result.atkVeteranPromo,

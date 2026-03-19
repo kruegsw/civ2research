@@ -1141,7 +1141,7 @@ function initNetwork(appCallbacks) {
               cdRerender();
             }
 
-            // Combat result notification (attack/death sounds handled separately)
+            // Combat result notification with debug math
             if (statePayload.combatResult) {
               const cr = statePayload.combatResult;
               if (cr.type === 'capture') {
@@ -1150,11 +1150,30 @@ function initNetwork(appCallbacks) {
               } else {
                 const atkName = UNIT_NAMES[cr.attacker] || 'Unit';
                 const defName = UNIT_NAMES[cr.defender] || 'Unit';
-                if (cr.type === 'atkWin') {
-                  showOverlayMessage(`${atkName} defeated ${defName}`);
-                } else {
-                  showOverlayMessage(`${defName} repelled ${atkName}`);
-                }
+                const winner = cr.type === 'atkWin' ? atkName : defName;
+                const loser = cr.type === 'atkWin' ? defName : atkName;
+
+                // Survivor HP
+                const survHp = cr.type === 'atkWin'
+                  ? (cr.atkMaxHp - cr.atkHpLost)
+                  : (cr.defMaxHp - cr.defHpLost);
+                const survMax = cr.type === 'atkWin' ? cr.atkMaxHp : cr.defMaxHp;
+                const hpPct = survMax > 0 ? Math.round(survHp / survMax * 100) : 0;
+
+                // Build debug string
+                const rounds = cr.rounds ? cr.rounds.length : '?';
+                const atkVet = cr.atkVeteran ? ' ★' : '';
+                const defVet = cr.defVeteran ? ' ★' : '';
+                const debugLines = [
+                  `${winner} defeated ${loser}`,
+                  `ATK: ${atkName}${atkVet} (a=${cr.effAtk || '?'} fp=${cr.atkFp || '?'} hp=${cr.atkStartHp || '?'}/${cr.atkMaxHp || '?'})`,
+                  `DEF: ${defName}${defVet} (d=${cr.effDef || '?'} fp=${cr.defFp || '?'} hp=${cr.defStartHp || '?'}/${cr.defMaxHp || '?'})`,
+                  `${rounds} rounds — survivor: ${hpPct}% HP (${survHp}/${survMax})`,
+                ];
+                showOverlayMessage(debugLines.join('\n'));
+
+                // Also log to console for detailed inspection
+                console.log('[combat]', debugLines.join(' | '), cr);
               }
             }
 

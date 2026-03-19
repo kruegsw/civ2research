@@ -9,11 +9,12 @@
 
 import {
   UNIT_PREREQS, UNIT_OBSOLETE, UNIT_DOMAIN, UNIT_ROLE, UNIT_DEF, UNIT_ATK,
+  UNIT_RANGE,
   IMPROVE_PREREQS, IMPROVE_COSTS, IMPROVE_REQUIRES_BUILDING,
   COASTAL_BUILDINGS, POWER_PLANT_BUILDINGS,
   SS_STRUCTURAL, SS_COMPONENT, SS_MODULE,
   WONDER_PREREQS, WONDER_OBSOLETE,
-  UNIT_COSTS, FANATIC_TYPES,
+  UNIT_COSTS, FANATIC_TYPES, SETTLER_TYPES,
 } from './defs.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
 
@@ -55,10 +56,22 @@ export function canBuildUnitType(civSlot, cityIndex, unitTypeId, gameState, mapB
     if (city && !isCityCoastal(city, mapBase)) return false;
   }
 
+  // ── Gap 91: Range >= 99 requires SpaceFlight tech (76) ──
+  // Binary FUN_004bfe5a: units with range >= 99 need SpaceFlight tech to build
+  const range = UNIT_RANGE[unitTypeId] ?? 0;
+  if (range >= 99 && !hasTech(76)) return false;  // 76 = Space Flight
+
   // Fanatics require Fundamentalism government
   if (FANATIC_TYPES.has(unitTypeId)) {
     const govt = getGovernment(null, gameState, civSlot);
     if (govt !== 'fundamentalism') return false;
+  }
+
+  // ── Gap 92: Settler-type units require city size > 1 ──
+  // Settlers/Engineers consume a population point; can't build in size-1 cities
+  if (SETTLER_TYPES.has(unitTypeId) && cityIndex >= 0) {
+    const city = gameState.cities[cityIndex];
+    if (city && city.size <= 1) return false;
   }
 
   // ── Gunpowder defense threshold ──
@@ -179,6 +192,24 @@ export function canBuildImprovement(civSlot, cityIndex, buildingId, gameState, m
     if (!apollo || apollo.cityIndex == null || apollo.destroyed) return false;
     // Check spaceship not already launched
     if (gameState.spaceshipLaunched?.[civSlot]) return false;
+
+    // Gap 93: Spaceship part build order enforcement
+    // SS_COMPONENT (36) requires at least one SS_STRUCTURAL (35) built
+    // SS_MODULE (37) requires at least one SS_COMPONENT (36) built
+    if (buildingId === SS_COMPONENT) {
+      // Need at least one structural already built by this civ
+      const hasStructural = gameState.cities?.some(c =>
+        c.owner === civSlot && c.size > 0 && cityHasBuilding(c, SS_STRUCTURAL)
+      );
+      if (!hasStructural) return false;
+    }
+    if (buildingId === SS_MODULE) {
+      // Need at least one component already built by this civ
+      const hasComponent = gameState.cities?.some(c =>
+        c.owner === civSlot && c.size > 0 && cityHasBuilding(c, SS_COMPONENT)
+      );
+      if (!hasComponent) return false;
+    }
   }
 
   return true;

@@ -223,6 +223,19 @@ UNIT_FUEL[44] = 1;  // Cruise Missile
 UNIT_FUEL[45] = 1;  // Nuclear Missile
 // Helicopter (29) has unlimited fuel (no entry)
 
+// Unit range: operational range field from RULES.TXT (0=unlimited, >=99 requires SpaceFlight tech)
+// Standard units all have range 0; range >= 99 is used by modded scenarios
+export const UNIT_RANGE = [
+  0, 0, 0, 0, 0, 0, 0, 0,   // 0-7:  Settlers..Musketeers
+  0, 0, 0, 0, 0, 0, 0,       // 8-14: Fanatics..Mech.Inf.
+  0, 0, 0, 0, 0, 0, 0, 0,    // 15-22: Horsemen..Armor
+  0, 0, 0, 0, 0, 0, 0,       // 23-29: Catapult..Helicopter
+  0, 0, 0, 0, 0, 0, 0,       // 30-36: StealthF..Ironclad
+  0, 0, 0, 0, 0, 0, 0,       // 37-43: Destroyer..Transport
+  0, 0, 0, 0, 0, 0, 0,       // 44-50: CruiseMsl..Explorer
+  0,                          // 51: Extra Land
+];
+
 // Domain constants — matches binary convention (0=ground, 1=air, 2=sea)
 export const DOMAIN_GROUND = 0;
 export const DOMAIN_AIR = 1;

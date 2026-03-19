@@ -198,6 +198,12 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
 
   const atkDomain = UNIT_DOMAIN[attackerType] ?? 0;
 
+  // ── Gap 41: HP weighting gated on simplifiedCombat flag ──
+  // Binary FUN_0057e6e2: HP-ratio weighting only applied when DAT_00655ae8 & 0x10 is set.
+  // This flag corresponds to the "Simplified Combat" game option.
+  // Default to true for standard games (flag is set by default in binary: initial flags = 0x3F).
+  const useHpWeighting = state.simplifiedCombat !== false;
+
   let bestScore = -1;
   let bestIdx = -1;
 
@@ -216,11 +222,15 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
     // Compute raw defense strength
     let score = calcUnitDefenseStrength(u, terrain, inCity, defHasWalls, hasFortress, onRiver, cityBuildings, attackerType, state);
 
-    // ── HP ratio weighting (from pseudocode: game_flags & 0x10) ──
+    // ── HP ratio weighting (from binary FUN_0057e6e2: DAT_00655ae8 & 0x10) ──
+    // Only apply when simplifiedCombat flag is set (standard default).
+    // When disabled (scenario override), raw defense score is used without HP adjustment.
     const maxHp = (UNIT_HP[u.type] || 1) * 10;
     const curHp = maxHp - (u.movesRemain || 0) * 10;
     if (curHp <= 0) continue;
-    score = Math.floor(score * curHp / maxHp);
+    if (useHpWeighting) {
+      score = Math.floor(score * curHp / maxHp);
+    }
 
     // ── Pikeman/scramble bonus in defender selection ──
     // Binary: flagsB 0x04 gives +1 tiebreaker (not ×2, not limited to mounted)
@@ -329,6 +339,14 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // Effective attack: base × veteran bonus
   let effAtk = atkBase * 8; // ×8 for fixed-point
   if (attacker.veteran) effAtk += Math.floor(effAtk / 2); // +50% veteran
+
+  // ── Gap 40: On-ship attack bonus (+50%) ──
+  // Binary FUN_0057e2c3: unit status flag 0x10 (on_ship) gives +50% attack.
+  // In our engine, amphibious flag indicates the unit is attacking from a transport.
+  // This bonus partially offsets the amphibious defender FP doubling penalty.
+  if (amphibious) {
+    effAtk += Math.floor(effAtk / 2);
+  }
 
   // Partisan vs unarmed: ×8 attack multiplier
   if (partisanBonus) {
@@ -596,6 +614,7 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
 
   return { attackerWins, atkHpLost, defHpLost, atkVeteranPromo, defVeteranPromo,
     rounds, atkMaxHp, defMaxHp, atkFp, defFp, atkStartHp, defStartHp,
+    effAtk, effDef,
     submarineRetreated, fortressRetreat, barbarianGold, treatyViolation };
 }
 

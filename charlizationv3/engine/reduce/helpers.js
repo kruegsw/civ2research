@@ -2,7 +2,7 @@
 // reduce/helpers.js — Shared utility functions used by multiple handlers
 // ═══════════════════════════════════════════════════════════════════
 
-import { CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, UNIT_FUEL, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, UNIT_ATK, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM } from '../defs.js';
+import { CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, UNIT_FUEL, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, UNIT_ATK, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, UNIT_LIMITS } from '../defs.js';
 import { getTileYields } from '../production.js';
 import { getGovernment, cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { handleCityCapture } from '../citycapture.js';
@@ -11,8 +11,15 @@ import { dispatchEvents, EVENT_CITY_TAKEN } from '../events.js';
 /**
  * Apply completed worker improvement to the map tile data.
  * Mutates tileData[idx].improvements in place (authoritative source).
+ *
+ * @param {string} order - worker order type
+ * @param {number} gx - tile x
+ * @param {number} gy - tile y
+ * @param {number} terrain - terrain type at tile
+ * @param {object} mapBase - map data
+ * @param {object} [opts] - optional: { hasRefrigeration: bool } for farmland check
  */
-export function completeWorkerOrder(order, gx, gy, terrain, mapBase) {
+export function completeWorkerOrder(order, gx, gy, terrain, mapBase, opts) {
   const idx = gy * mapBase.mw + gx;
   const tile = mapBase.tileData?.[idx];
   if (!tile) return;
@@ -25,16 +32,33 @@ export function completeWorkerOrder(order, gx, gy, terrain, mapBase) {
     case 'railroad':  imp.railroad = true; break;
     case 'irrigation':
       if (CAN_IRRIGATE[terrain]) {
-        imp.irrigation = true;
+        // Gap 86: Farmland creation from re-irrigation
+        // If tile already has irrigation AND has a road, and civ has Refrigeration,
+        // create farmland instead of just setting irrigation again.
+        if (imp.irrigation && imp.road && opts?.hasRefrigeration) {
+          imp.farmland = true;
+        } else {
+          imp.irrigation = true;
+        }
       } else if (IRR_TRANSFORM[terrain] >= 0) {
+        // Gap 85: Negative work value → terrain type change (e.g., irrigating forest → plains)
         tile.terrain = IRR_TRANSFORM[terrain];
+        // Clear improvements that don't apply to new terrain
+        imp.irrigation = false;
+        imp.mining = false;
+        imp.farmland = false;
       }
       break;
     case 'mine':
       if (CAN_MINE[terrain]) {
         imp.mining = true;
       } else if (MINE_TRANSFORM[terrain] >= 0) {
+        // Gap 85: Negative work value → terrain type change (e.g., mining plains → forest)
         tile.terrain = MINE_TRANSFORM[terrain];
+        // Clear improvements that don't apply to new terrain
+        imp.irrigation = false;
+        imp.mining = false;
+        imp.farmland = false;
       }
       break;
     case 'fortress':  imp.fortress = true; break;
@@ -42,7 +66,7 @@ export function completeWorkerOrder(order, gx, gy, terrain, mapBase) {
     case 'pollution': imp.pollution = false; break;
   }
 
-  // Farmland: irrigation + mining both set
+  // Farmland: irrigation + mining both set (legacy check)
   if (imp.irrigation && imp.mining) imp.farmland = true;
 
   tile.improvements = imp;
@@ -242,8 +266,34 @@ export function discoverContacts(state, mapBase, civSlot, gx, gy, radius) {
   }
 }
 
-/** Make a new unit object at the given position. */
-export function makeUnit(type, owner, gx, gy, movesLeft) {
+/**
+ * Make a new unit object at the given position.
+ * Gap 74: Checks unit caps before creating — returns null if total units >= 2048
+ * or per-civ units >= 1948. Callers should check for null return.
+ *
+ * @param {number} type - unit type id
+ * @param {number} owner - civ slot
+ * @param {number} gx - map grid x
+ * @param {number} gy - map grid y
+ * @param {number} [movesLeft] - initial movement points
+ * @param {object} [state] - game state (for unit cap checks; if omitted, no cap check)
+ * @returns {object|null} unit object, or null if cap exceeded
+ */
+export function makeUnit(type, owner, gx, gy, movesLeft, state) {
+  // Gap 74: Unit cap enforcement (binary: 2048 max total, 1948 per civ)
+  if (state && state.units) {
+    let totalAlive = 0;
+    let civAlive = 0;
+    for (const u of state.units) {
+      if (u.gx >= 0) {
+        totalAlive++;
+        if (u.owner === owner) civAlive++;
+      }
+    }
+    if (totalAlive >= UNIT_LIMITS.MAX_UNIT_SLOTS || civAlive >= UNIT_LIMITS.AI_PER_CIV_CAP) {
+      return null;
+    }
+  }
   // C.3: Initialize fuel for air units based on UNIT_FUEL table
   const maxFuel = UNIT_FUEL[type];
   return {

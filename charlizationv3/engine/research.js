@@ -42,16 +42,11 @@ export function getAvailableResearch(gameState, civSlot) {
 /**
  * Calculate the science cost for a civ to research a tech.
  *
- * Q.1: Enhanced with AI difficulty-based cost scaling from the binary.
- * AI civs get costs multiplied by (14 - difficultyLevel) / 10:
- *   Chieftain AI (0): ×1.4 (slower — helps human)
- *   Warlord AI (1):   ×1.3
- *   Prince AI (2):    ×1.2
- *   King AI (3):      ×1.1
- *   Emperor AI (4):   ×1.0 (no change)
- *   Deity AI (5):     ×0.9 (faster — challenges human)
+ * Gap 94: Binary FUN_004c2788 uses different base costs for human vs AI:
+ *   Human: baseCost = difficultyLevel * 2 + 6 (harder = more expensive)
+ *   AI:    baseCost = 14 - difficultyLevel (harder = cheaper AI research)
  *
- * Based on FUN_004c2788.
+ * Gap 95: Bloodlust scenario flag scales cost by 4/5.
  *
  * @param {object} gameState
  * @param {number} civSlot
@@ -63,8 +58,11 @@ export function calcResearchCost(gameState, civSlot) {
 
   const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(gameState.difficulty || 'chieftain'));
 
-  // Base cost: human player formula
-  let baseCost = diffIdx * 2 + 6;
+  // Gap 94: Base cost differs for human vs AI (binary FUN_004c2788)
+  // Human: difficultyLevel * 2 + 6 (harder diff = more expensive = slower research)
+  // AI:    14 - difficultyLevel (harder diff = cheaper = faster AI research)
+  const isHumanCiv = !!(gameState.humanPlayers & (1 << civSlot));
+  let baseCost = isHumanCiv ? (diffIdx * 2 + 6) : (14 - diffIdx);
 
   // ── Leading-civ tech cost adjustment (FUN_004c2788, line 971) ──
   // Compare this civ's tech count to the leading civ's tech count.
@@ -126,28 +124,24 @@ export function calcResearchCost(gameState, civSlot) {
     }
   }
 
-  // Raging hordes penalty
+  // Raging hordes penalty (binary: DAT_00655af0 & 4)
   if (gameState.barbarianActivity === 'raging') {
     baseCost = Math.floor((baseCost * 5 + 3) / 4);
   }
 
-  // Human minimum floor
-  if (baseCost < 11 - totalTechs) {
+  // Gap 95: Bloodlust scenario flag (binary: DAT_00655af0 & 8)
+  // Scales research cost by 4/5 (makes research cheaper under bloodlust)
+  if (gameState.bloodlust || gameState.gameToggles?.bloodlust) {
+    baseCost = Math.floor((baseCost * 4) / 5);
+  }
+
+  // Human minimum floor (binary: only applies when civ is in humanMask)
+  if (isHumanCiv && baseCost < 11 - totalTechs) {
     baseCost = 11 - totalTechs;
   }
 
   // Final cost = baseCost × totalTechs
-  let cost = Math.max(1, Math.min(32000, baseCost * totalTechs));
-
-  // ── Q.1: AI difficulty-based cost scaling ──
-  // Binary: aiCost = baseCost * (14 - difficultyLevel) / 10
-  // Check if this civ is AI (not in humanPlayers bitmask)
-  const isHuman = gameState.humanPlayers & (1 << civSlot);
-  if (!isHuman && civSlot > 0) {
-    // AI cost modifier: (14 - diffIdx) / 10
-    // Chieftain(0): 14/10 = 1.4×, Deity(5): 9/10 = 0.9×
-    cost = Math.max(1, Math.floor(cost * (14 - diffIdx) / 10));
-  }
+  const cost = Math.max(1, Math.min(32000, baseCost * totalTechs));
 
   return cost;
 }

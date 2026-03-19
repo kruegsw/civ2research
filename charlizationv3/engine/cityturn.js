@@ -457,9 +457,13 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
           state.wonders[wi] = { cityIndex, destroyed: false };
 
           // Darwin's Voyage (18): 2 free advances on completion
+          // Gap 80: If completed during revolution (anarchy), set a flag
+          // so the second free tech is granted when anarchy ends.
           if (wi === 18) {
+            const govt = getGovernment(null, state, activeCiv);
             const avail = getAvailableResearch(state, activeCiv);
-            for (let n = 0; n < 2 && avail.length > 0; n++) {
+            const techsToGrant = (govt === 'anarchy') ? 1 : 2;
+            for (let n = 0; n < techsToGrant && avail.length > 0; n++) {
               const advId = avail.shift();
               grantAdvance(state, activeCiv, advId);
               events.push({
@@ -469,6 +473,15 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
               // Refresh available after granting (prereqs may unlock new techs)
               avail.length = 0;
               avail.push(...getAvailableResearch(state, activeCiv));
+            }
+            // If in anarchy, defer the second tech grant
+            if (govt === 'anarchy') {
+              if (!state.civs) state.civs = [];
+              state.civs = [...state.civs];
+              state.civs[activeCiv] = {
+                ...state.civs[activeCiv],
+                darwinPendingTech: true,
+              };
             }
           }
           // Manhattan Project (23): enables nuclear weapons for ALL civs

@@ -123,8 +123,8 @@ function resolveCivName(name, civNames) {
   if (!name) return ANYBODY;
   const upper = name.trim().toUpperCase();
   if (upper === 'ANYBODY') return ANYBODY;
-  if (upper === 'TRIGGERATTACKER' || upper === 'TRIGGERDEFENDER' ||
-      upper === 'TRIGGERRECEIVER') return -3; // placeholder resolved at dispatch
+  if (upper === 'TRIGGERATTACKER') return -3; // placeholder resolved at dispatch
+  if (upper === 'TRIGGERDEFENDER' || upper === 'TRIGGERRECEIVER') return -4; // placeholder resolved at dispatch
   const num = parseInt(upper, 10);
   if (!isNaN(num) && num >= 0 && num <= 7) return num;
   // Match against civ names
@@ -142,6 +142,7 @@ function resolveCivName(name, civNames) {
 function resolveUnitName(name) {
   if (!name) return -1;
   const upper = name.trim().toUpperCase();
+  if (upper === 'ANYUNIT') return -2; // wildcard: matches any unit type
   for (let i = 0; i < UNIT_NAMES.length; i++) {
     if (UNIT_NAMES[i].toUpperCase() === upper) return i;
   }
@@ -886,7 +887,7 @@ export function executeEventAction(state, mapBase, action, ctx) {
     }
 
     case 'moveUnit': {
-      // Teleport matching units within mapRect to moveTo destination
+      // Binary: only moves AI-owned units (not human) and issues goto orders
       const owner = resolveActionCiv(action.owner, ctx);
 
       // J.5: Resolve destination — either coordinates or city name
@@ -911,12 +912,18 @@ export function executeEventAction(state, mapBase, action, ctx) {
       let moved = 0;
       const maxMove = action.numberToMove === 'ALL' ? Infinity : (action.numberToMove || 1);
 
+      // Determine which civs are human (binary only moves AI units)
+      const humanMask = state.humanPlayers || 0;
+
       state.units = [...state.units];
       for (let i = 0; i < state.units.length && moved < maxMove; i++) {
         const u = state.units[i];
         if (u.gx < 0) continue;
         if (action.unitType >= 0 && u.type !== action.unitType) continue;
         if (owner >= 0 && u.owner !== owner) continue;
+
+        // Binary only moves AI-owned units
+        if ((1 << u.owner) & humanMask) continue;
 
         // Check if unit is within mapRect
         if (action.mapRect && action.mapRect.length >= 2) {
@@ -928,24 +935,21 @@ export function executeEventAction(state, mapBase, action, ctx) {
           if (ux < minX || ux > maxX || u.gy < minY || u.gy > maxY) continue;
         }
 
+        // Issue goto orders instead of teleporting (binary behavior)
         state.units[i] = {
           ...u,
-          gx: wDestGx, gy: destGy,
-          x: wDestGx * 2 + (destGy % 2), y: destGy,
-          orders: 'none',
+          orders: 'goto',
+          goToX: wDestGx,
+          goToY: destGy,
         };
         moved++;
-
-        if (mapBase.tileData) {
-          updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, u.owner, wDestGx, destGy, mapBase.wraps);
-        }
       }
 
       return moved > 0 ? { type: 'scenarioMoveUnit', moved } : null;
     }
 
     case 'changeTerrain': {
-      // Change terrain within mapRect
+      // Change terrain within mapRect — destroy cities and units first
       if (action.terrainType < 0 || action.terrainType > 10) return null;
       if (!action.mapRect || action.mapRect.length < 2) return null;
 
@@ -961,6 +965,29 @@ export function executeEventAction(state, mapBase, action, ctx) {
           const gx = Math.floor((dx - (y % 2)) / 2);
           const wgx = mapBase.wraps ? ((gx % mapBase.mw) + mapBase.mw) % mapBase.mw : gx;
           if (y < 0 || y >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
+
+          // Destroy cities at this tile
+          if (state.cities) {
+            for (let ci = 0; ci < state.cities.length; ci++) {
+              const c = state.cities[ci];
+              if (c.gx === wgx && c.gy === y && c.size > 0) {
+                state.cities = state.cities === mapBase._prevCities ? [...state.cities] : state.cities;
+                state.cities[ci] = { ...c, size: 0 };
+              }
+            }
+          }
+
+          // Destroy units at this tile
+          if (state.units) {
+            for (let ui = 0; ui < state.units.length; ui++) {
+              const u = state.units[ui];
+              if (u.gx === wgx && u.gy === y && u.gx >= 0) {
+                state.units = [...state.units];
+                state.units[ui] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+              }
+            }
+          }
+
           const idx = y * mapBase.mw + wgx;
           const tile = mapBase.tileData?.[idx];
           if (tile) {
@@ -995,7 +1022,7 @@ export function executeEventAction(state, mapBase, action, ctx) {
 
       state.civs = [...state.civs];
       const civ = { ...state.civs[receiver] };
-      civ.treasury = Math.max(0, (civ.treasury || 0) + (action.amount || 0));
+      civ.treasury = Math.max(0, Math.min(30000, (civ.treasury || 0) + (action.amount || 0)));
       state.civs[receiver] = civ;
 
       return { type: 'scenarioChangeMoney', receiver, amount: action.amount };
@@ -1126,8 +1153,12 @@ function substituteEventText(line, ctx, state) {
  */
 function resolveActionCiv(civRef, ctx) {
   if (civRef === -3) {
-    // Placeholder — try attacker then defender from context
-    return ctx.attacker ?? ctx.defender ?? ctx.civSlot ?? -1;
+    // TRIGGERATTACKER — resolve to attacker from context
+    return ctx.attacker ?? ctx.talker ?? ctx.civSlot ?? -1;
+  }
+  if (civRef === -4) {
+    // TRIGGERDEFENDER / TRIGGERRECEIVER — resolve to defender from context
+    return ctx.defender ?? ctx.listener ?? ctx.civSlot ?? -1;
   }
   if (civRef === ANYBODY) {
     return ctx.civSlot ?? ctx.attacker ?? -1;

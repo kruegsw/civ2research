@@ -38,7 +38,7 @@ export function showOverlayMessage(msg) {
   if (existing) existing.remove();
   const el = document.createElement('div');
   el.id = 'overlay-msg';
-  el.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:9999;background:#d4b896;border:3px outset #a08060;padding:12px 24px;font:16px "Times New Roman",serif;color:#333;text-align:center';
+  el.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:9999;background:#d4b896;border:3px outset #a08060;padding:12px 24px;font:14px monospace;color:#333;text-align:left;white-space:pre-line;line-height:1.4';
   el.textContent = msg;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 2500);

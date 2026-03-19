@@ -8,7 +8,7 @@ import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
 import { calcCityTrade, calcShieldProduction } from '../production.js';
 import { cityHasBuilding, hasWonderEffect } from '../utils.js';
-import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech } from '../research.js';
+import { calcResearchCost, grantAdvance, handleTechDiscovery, upgradeUnitsForTech, getAvailableResearch } from '../research.js';
 import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../spaceship.js';
 import { processCityTurn } from '../cityturn.js';
 import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
@@ -104,6 +104,40 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         state.civs[activeCiv] = updCiv;
         const govtChangeEvents = applyGovernmentChangeEffects(state, activeCiv, 'anarchy', newGovt);
         for (const ev of govtChangeEvents) state.turnEvents.push(ev);
+
+        // Gap 57: Government-change production reset for all cities
+        // When government changes, validate all cities' production.
+        // If the current production is no longer valid under the new government,
+        // reset it (e.g., Fanatics under non-Fundamentalism).
+        for (let ci = 0; ci < state.cities.length; ci++) {
+          const c = state.cities[ci];
+          if (c.owner !== activeCiv || c.size <= 0) continue;
+          const item = c.itemInProduction;
+          if (!item) continue;
+          // Fanatics (unit type 8) require Fundamentalism
+          if (item.type === 'unit' && item.id === 8 && newGovt !== 'fundamentalism') {
+            state.cities[ci] = {
+              ...state.cities[ci],
+              itemInProduction: { type: 'unit', id: 11 }, // Reset to Riflemen
+              shieldsInBox: 0,
+            };
+          }
+        }
+
+        // Gap 80: Darwin's Voyage revolution-pending flag
+        // If the civ had darwinPendingTech set during anarchy, grant the deferred tech now.
+        if (updCiv.darwinPendingTech) {
+          const darwinAvail = getAvailableResearch(state, activeCiv);
+          if (darwinAvail.length > 0) {
+            const advId = darwinAvail[0];
+            grantAdvance(state, activeCiv, advId);
+            state.turnEvents.push({
+              type: 'freeAdvance', civSlot: activeCiv,
+              advanceId: advId, source: "Darwin's Voyage (deferred)",
+            });
+          }
+          delete updCiv.darwinPendingTech;
+        }
       }
       state.civs[activeCiv] = updCiv;
     }
@@ -310,36 +344,37 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const civ = { ...state.civs[activeCiv] };
     civ.treasury = (civ.treasury || 0) + civTaxTotal - civMaintenanceTotal;
 
-    // If treasury goes negative, sell cheapest-maintenance building to cover deficit
+    // Gap 54: If treasury goes negative, iterate buildings 1-38 in order per city
+    // (matching binary FUN_004f0221) and sell whichever building's maintenance
+    // causes the treasury to go negative, rather than finding cheapest globally.
     while (civ.treasury < 0) {
-      let cheapestId = -1, cheapestCost = Infinity, cheapestCi = -1;
-      for (let sci = 0; sci < state.cities.length; sci++) {
+      let sold = false;
+      for (let sci = 0; sci < state.cities.length && civ.treasury < 0; sci++) {
         const sc = state.cities[sci];
         if (sc.owner !== activeCiv || sc.size <= 0 || !sc.buildings) continue;
-        for (const bid of sc.buildings) {
+        for (let bid = 1; bid <= 38 && civ.treasury < 0; bid++) {
           if (bid === 1) continue; // never sell Palace
+          if (!sc.buildings.has(bid)) continue;
           const maint = IMPROVE_MAINTENANCE[bid] || 0;
-          if (maint > 0 && maint < cheapestCost) {
-            cheapestCost = maint;
-            cheapestId = bid;
-            cheapestCi = sci;
-          }
+          if (maint <= 0) continue;
+          // Sell this building
+          const sellCity = { ...state.cities[sci] };
+          const sellBuildings = new Set(sellCity.buildings);
+          sellBuildings.delete(bid);
+          sellCity.buildings = sellBuildings;
+          sellCity.hasWalls = sellBuildings.has(8);
+          sellCity.hasPalace = sellBuildings.has(1);
+          state.cities[sci] = sellCity;
+          civ.treasury += IMPROVE_COSTS[bid] || 0;
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({
+            type: 'buildingSold', cityName: sellCity.name, cityIndex: sci,
+            civSlot: activeCiv, buildingId: bid,
+          });
+          sold = true;
         }
       }
-      if (cheapestId < 0) { civ.treasury = 0; break; }
-      const sellCity = { ...state.cities[cheapestCi] };
-      const sellBuildings = new Set(sellCity.buildings);
-      sellBuildings.delete(cheapestId);
-      sellCity.buildings = sellBuildings;
-      sellCity.hasWalls = sellBuildings.has(8);
-      sellCity.hasPalace = sellBuildings.has(1);
-      state.cities[cheapestCi] = sellCity;
-      civ.treasury += IMPROVE_COSTS[cheapestId] || 0;
-      if (!state.turnEvents) state.turnEvents = [];
-      state.turnEvents.push({
-        type: 'buildingSold', cityName: sellCity.name, cityIndex: cheapestCi,
-        civSlot: activeCiv, buildingId: cheapestId,
-      });
+      if (!sold) { civ.treasury = 0; break; }
     }
 
     // Binary FUN_004fa944: clamp treasury to [0, 30000]
@@ -623,7 +658,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
       if (newWorkTurns >= turnsNeeded) {
         // Complete the improvement
-        completeWorkerOrder(u.orders, u.gx, u.gy, terrain, mapBase);
+        // Gap 86: Pass Refrigeration tech status for farmland creation
+        const hasRefrigeration = !!(state.civTechs?.[activeCiv]?.has(70)); // Refrigeration = tech 70
+        completeWorkerOrder(u.orders, u.gx, u.gy, terrain, mapBase, { hasRefrigeration });
         state.units[ui] = { ...u, orders: 'none', workTurns: 0 };
       } else {
         state.units[ui] = { ...u, workTurns: newWorkTurns };
@@ -815,8 +852,8 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   }
 
   // ── Power ranking war trigger (FUN_004853e7 lines 1112-1153) ──
-  // If best AI civ is much stronger than worst human and has played 200+ turns:
-  // chance to declare war based on difficulty
+  // Gap 82: Binary checks vendettaCount * 3 + 3 < attacker.militarism,
+  // based on the AI's accumulated vendetta/militarism score, not city count.
   if (turnNumber > 200 && state.civScores) {
     const humanMask = state.humanPlayers || 0xFF;
     let bestAiCiv = -1, bestAiScore = -1;
@@ -831,10 +868,20 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       }
     }
     if (bestAiCiv > 0 && worstHumanCiv > 0) {
-      const aiCities = state.cities.filter(c => c.owner === bestAiCiv && c.size > 0).length;
-      const humanCities = state.cities.filter(c => c.owner === worstHumanCiv && c.size > 0).length;
+      // Binary: vendettaCount * 3 + 3 < militarism
+      // vendettaCount = number of civs at war with this AI
+      // militarism = leader personality trait (from LEADER_PERSONALITY in defs.js)
+      let vendettaCount = 0;
+      if (state.treaties) {
+        for (const [key, status] of Object.entries(state.treaties)) {
+          if (status !== 'war') continue;
+          const [a, b] = key.split('-').map(Number);
+          if (a === bestAiCiv || b === bestAiCiv) vendettaCount++;
+        }
+      }
+      const militarism = state.civs?.[bestAiCiv]?.militarism ?? 0;
       const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
-      if (aiCities * 3 + 3 > humanCities) {
+      if (vendettaCount * 3 + 3 < militarism) {
         // Random check: rand() % 32 <= difficulty
         const roll = state.rng ? state.rng.nextInt(32) : Math.floor(Math.random() * 32);
         if (roll <= diffIdx) {

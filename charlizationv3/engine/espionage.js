@@ -468,15 +468,19 @@ export function handleEspionageIncident(state, mapBase, attackerCiv, defenderCiv
     });
   }
 
-  // Senate scandal for democracies/republics
+  // Gap 77: Senate scandal for Republic/Democracy on espionage incidents.
+  // Binary FUN_004c59f0: Communism blocks the scandal entirely.
+  // Democracy always triggers, Republic has 50% chance.
   const attackerGovt = getGovernment(null, state, attackerCiv);
-  if (attackerGovt === 'democracy') {
-    // Democracy always triggers revolution on espionage incident
-    triggerRevolutionFromScandal(state, attackerCiv);
-  } else if (attackerGovt === 'republic') {
-    // 50% chance of scandal for republic
-    if ((state.rng ? state.rng.random() : Math.random()) < 0.5) {
+  if (attackerGovt !== 'communism') {
+    if (attackerGovt === 'democracy') {
+      // Democracy always triggers revolution on espionage incident
       triggerRevolutionFromScandal(state, attackerCiv);
+    } else if (attackerGovt === 'republic') {
+      // 50% chance of scandal for republic
+      if ((state.rng ? state.rng.random() : Math.random()) < 0.5) {
+        triggerRevolutionFromScandal(state, attackerCiv);
+      }
     }
   }
 }

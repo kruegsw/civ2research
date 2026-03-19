@@ -297,6 +297,21 @@ export function findBarbSpawnTile(state, mapBase, _land) {
     }
     if (nearCity) continue;
 
+    // Gap 81: Continent matching — spawn tile must share a continent/body
+    // with at least one non-barbarian city (so barbarians can reach targets)
+    if (mapBase.getBodyId) {
+      const spawnBody = mapBase.getBodyId(gx, gy);
+      let hasCityOnContinent = false;
+      for (const c of state.cities) {
+        if (c.owner === 0 || c.size <= 0) continue;
+        if (mapBase.getBodyId(c.gx, c.gy) === spawnBody) {
+          hasCityOnContinent = true;
+          break;
+        }
+      }
+      if (!hasCityOnContinent) continue;
+    }
+
     return { gx, gy };
   }
   return null;

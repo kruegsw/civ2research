@@ -508,14 +508,23 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
     }
   }
 
-  // Pass 1: load air units first (domain === 1)
+  // Gap 75: Two-pass loading — own units first, then allied units.
+  // Within each ownership pass, air units load before ground units.
+  // Helper to check if a unit's owner is allied with the ship owner
+  const isAllied = (unitOwner) => {
+    if (unitOwner === owner) return false; // handled in own-units pass
+    if (!state.treaties) return false;
+    const key = owner < unitOwner ? `${owner}-${unitOwner}` : `${unitOwner}-${owner}`;
+    return state.treaties[key] === 'alliance';
+  };
+
+  // Pass 1: Own air units (domain === 1)
   for (let i = 0; i < state.units.length; i++) {
     if (currentCargo >= cap) break;
     if (i === shipIndex) continue;
     const u = state.units[i];
     if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
     if ((UNIT_DOMAIN[u.type] ?? 0) !== 1) continue;
-    // Load: move unit to ship's position
     state.units[i] = {
       ...u,
       gx: ship.gx, gy: ship.gy,
@@ -525,14 +534,47 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
     currentCargo++;
   }
 
-  // Pass 2: load ground units (domain === 0)
+  // Pass 2: Own ground units (domain === 0)
   for (let i = 0; i < state.units.length; i++) {
     if (currentCargo >= cap) break;
     if (i === shipIndex) continue;
     const u = state.units[i];
     if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
     if ((UNIT_DOMAIN[u.type] ?? 0) !== 0) continue;
-    // Load: move unit to ship's position
+    state.units[i] = {
+      ...u,
+      gx: ship.gx, gy: ship.gy,
+      x: ship.gx * 2 + (ship.gy % 2), y: ship.gy,
+    };
+    loaded.push(i);
+    currentCargo++;
+  }
+
+  // Pass 3: Allied air units (domain === 1)
+  for (let i = 0; i < state.units.length; i++) {
+    if (currentCargo >= cap) break;
+    if (i === shipIndex) continue;
+    const u = state.units[i];
+    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+    if (u.owner === owner || !isAllied(u.owner)) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) !== 1) continue;
+    state.units[i] = {
+      ...u,
+      gx: ship.gx, gy: ship.gy,
+      x: ship.gx * 2 + (ship.gy % 2), y: ship.gy,
+    };
+    loaded.push(i);
+    currentCargo++;
+  }
+
+  // Pass 4: Allied ground units (domain === 0)
+  for (let i = 0; i < state.units.length; i++) {
+    if (currentCargo >= cap) break;
+    if (i === shipIndex) continue;
+    const u = state.units[i];
+    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+    if (u.owner === owner || !isAllied(u.owner)) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) !== 0) continue;
     state.units[i] = {
       ...u,
       gx: ship.gx, gy: ship.gy,

@@ -313,13 +313,16 @@ export function animateCombat(cr, onComplete) {
     }
   }
 
-  // Hit flash: brief white overlay on the damaged unit
+  // Hit flash: brief tinted overlay on the damaged unit (red tint, not white haze)
   function drawHitFlash(sprite, mx, my) {
     const sx = screenX(mx), sy = screenY(my);
     const w = sprite.width * pxPerMap, h = sprite.height * pxPerMap;
-    S.vCtx.globalAlpha = 0.5;
-    S.vCtx.fillStyle = '#fff';
-    S.vCtx.fillRect(sx, sy, w, h);
+    // Use a red flash instead of white haze — matches Civ2's damage indicator
+    S.vCtx.globalAlpha = 0.35;
+    S.vCtx.fillStyle = '#f00';
+    // Inset the flash slightly so it doesn't cover the whole tile
+    const inset = 2 * pxPerMap;
+    S.vCtx.fillRect(sx + inset, sy + inset, w - inset * 2, h - inset * 2);
     S.vCtx.globalAlpha = 1.0;
   }
 
