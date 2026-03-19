@@ -5,7 +5,7 @@
 // Called from app.js via initEvents(). No circular imports.
 // ═══════════════════════════════════════════════════════════════════
 import { Civ2Renderer } from './renderer.js';
-import { RESOURCE_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN } from '../engine/defs.js';
+import { RESOURCE_NAMES, COMMODITY_NAMES, ORDER_NAMES, UNIT_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN, UNIT_HP } from '../engine/defs.js';
 
 export function initEvents(canvas, vp, fns) {
   const {
@@ -318,10 +318,15 @@ export function initEvents(canvas, vp, fns) {
         const owner = (md.civNames && md.civNames[u.owner]) || `Civ ${u.owner}`;
         const vetStr = u.veteran ? ' Vet' : '';
         const ordStr = ORDER_NAMES[u.orders] || '';
-        const dmgStr = u.movesRemain > 0 ? `, dmg ${u.movesRemain}` : '';
+        // Detailed HP info for debugging
+        const maxHpBars = UNIT_HP[u.type] || 1;
+        const dmgBars = u.movesRemain || 0;
+        const curHpBars = Math.max(0, maxHpBars - dmgBars);
+        const hpStr = `, HP ${curHpBars}/${maxHpBars}`;
+        const dmgStr = dmgBars > 0 ? ` (dmg=${dmgBars}, movesRemain=${u.movesRemain})` : '';
         const cargoStr = (u.type === 48 || u.type === 49) && u.commodityCarried >= 0 && u.commodityCarried <= 15
           ? `, cargo: ${COMMODITY_NAMES[u.commodityCarried]}` : '';
-        info += `\n[Unit] ${name}${vetStr} (${owner}${dmgStr}${cargoStr}${ordStr ? ', ' + ordStr : ''})`;
+        info += `\n[Unit] ${name}${vetStr} (${owner}${hpStr}${dmgStr}${cargoStr}${ordStr ? ', ' + ordStr : ''})`;
       }
 
       tooltip.textContent = info;
