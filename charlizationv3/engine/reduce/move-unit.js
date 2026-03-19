@@ -513,23 +513,9 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         }
       }
 
-      // Attacker enters tile only if no more enemies remain
-      const moreEnemies = state.units.some(u =>
-        u.gx === dest.gx && u.gy === dest.gy && u.owner !== unit.owner && u.gx >= 0);
-      if (!moreEnemies) {
-        unit.gx = dest.gx; unit.gy = dest.gy;
-        unit.x = dest.gx * 2 + (dest.gy % 2); unit.y = dest.gy;
-
-        // City capture
-        if (defCity) {
-          state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
-          const ci = state.cities.findIndex(c => c === defCity);
-          if (ci >= 0) {
-            captureCity(state, prev, mapBase, ci, unit.owner, defOwner);
-            state.combatResult = { type: 'capture', cityName: defCity.name, civSlot };
-          }
-        }
-      }
+      // Attacker stays on its own tile after winning combat.
+      // To capture a city or occupy the tile, the player must move there manually.
+      // The attacker does NOT auto-advance.
 
       // Combat costs 1 MP (not all movement)
       unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
