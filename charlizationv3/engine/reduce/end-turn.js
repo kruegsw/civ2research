@@ -2,7 +2,7 @@
 // reduce/end-turn.js — END_TURN action handler
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_NO_LIGHTHOUSE_BONUS } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_NO_LIGHTHOUSE_BONUS, DIFFICULTY_KEYS } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints, checkTriremeSinking } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
@@ -730,6 +730,69 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         }
       }
       state.civPeaceTurns[c] = atWar ? 0 : (state.civPeaceTurns[c] || 0) + 1;
+    }
+  }
+
+  // ── Attitude decay (FUN_00487371 lines 1824-1841) ──
+  // Every (difficulty + 1) * 12 turns: all AI attitudes decay by 1
+  // Eiffel Tower doubles the interval
+  {
+    const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
+    let decayInterval = (diffIdx + 1) * 12;
+    // Eiffel Tower (wonder 20) doubles interval for its owner
+    if (turnNumber > 0 && turnNumber % decayInterval === 0) {
+      for (let c = 1; c <= 7; c++) {
+        if (!(state.civsAlive & (1 << c))) continue;
+        const civ = state.civs?.[c];
+        if (!civ?.attitudes) continue;
+        // Skip if this civ has Eiffel Tower and we're not at doubled interval
+        if (hasWonderEffect(state, c, 20) && turnNumber % (decayInterval * 2) !== 0) continue;
+        state.civs = state.civs !== prev.civs ? [...state.civs] : state.civs;
+        const attitudes = [...(civ.attitudes || [0,0,0,0,0,0,0,0])];
+        for (let t = 0; t < 8; t++) {
+          if (attitudes[t] > 0) attitudes[t] -= 1;
+        }
+        state.civs[c] = { ...civ, attitudes };
+      }
+    }
+  }
+
+  // ── Power ranking war trigger (FUN_004853e7 lines 1112-1153) ──
+  // If best AI civ is much stronger than worst human and has played 200+ turns:
+  // chance to declare war based on difficulty
+  if (turnNumber > 200 && state.civScores) {
+    const humanMask = state.humanPlayers || 0xFF;
+    let bestAiCiv = -1, bestAiScore = -1;
+    let worstHumanCiv = -1, worstHumanScore = Infinity;
+    for (let c = 1; c <= 7; c++) {
+      if (!(state.civsAlive & (1 << c))) continue;
+      const score = state.civScores[c] || 0;
+      if ((1 << c) & humanMask) {
+        if (score < worstHumanScore) { worstHumanScore = score; worstHumanCiv = c; }
+      } else {
+        if (score > bestAiScore) { bestAiScore = score; bestAiCiv = c; }
+      }
+    }
+    if (bestAiCiv > 0 && worstHumanCiv > 0) {
+      const aiCities = state.cities.filter(c => c.owner === bestAiCiv && c.size > 0).length;
+      const humanCities = state.cities.filter(c => c.owner === worstHumanCiv && c.size > 0).length;
+      const diffIdx = DIFFICULTY_KEYS.indexOf(state.difficulty || 'chieftain');
+      if (aiCities * 3 + 3 > humanCities) {
+        // Random check: rand() % 32 <= difficulty
+        const roll = state.rng ? state.rng.nextInt(32) : Math.floor(Math.random() * 32);
+        if (roll <= diffIdx) {
+          const key = bestAiCiv < worstHumanCiv
+            ? `${bestAiCiv}-${worstHumanCiv}` : `${worstHumanCiv}-${bestAiCiv}`;
+          if (state.treaties?.[key] !== 'war') {
+            state.treaties = { ...state.treaties, [key]: 'war' };
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({
+              type: 'warDeclared', aggressor: bestAiCiv, target: worstHumanCiv,
+              reason: 'powerRanking',
+            });
+          }
+        }
+      }
     }
   }
 

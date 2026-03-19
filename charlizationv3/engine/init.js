@@ -305,6 +305,19 @@ export function initNewGame(mapResult, seatList) {
     }
   }
 
+  // Binary FUN_0041F69F: establish bilateral diplomacy contact between all human players
+  const treaties = {};
+  for (let a = 1; a <= civCount; a++) {
+    for (let b = a + 1; b <= civCount; b++) {
+      const aHuman = !!((1 << a) & humanPlayers);
+      const bHuman = !!((1 << b) & humanPlayers);
+      if (aHuman && bHuman) {
+        const key = `${a}-${b}`;
+        treaties[key] = 'ceasefire';
+      }
+    }
+  }
+
   const gameState = {
     units,
     cities: [],
@@ -323,7 +336,7 @@ export function initNewGame(mapResult, seatList) {
     scenarioEvents: [],
     seatCivMap,
     humanPlayers,
-    treaties: {},
+    treaties,
     unitBySaveIndex: null,
     allUnits: null,
   };
