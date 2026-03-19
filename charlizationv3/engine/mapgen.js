@@ -97,6 +97,27 @@ export function generateMap(settings = {}) {
     climate *= 2;
   }
 
+  // ── Flat grassland mode: skip all terrain generation ──
+  if (settings.flatGrassland) {
+    const T_GRASS = 2;
+    const tileData = new Array(mw * mh);
+    for (let y = 0; y < mh; y++) {
+      for (let x = 0; x < mw; x++) {
+        const i = y * mw + x;
+        tileData[i] = {
+          terrain: T_GRASS,
+          river: false,
+          goodyHut: false,
+          hasResource: false,
+          visibility: 0,
+          tileOwnership: 0xFF,
+          improvements: { city: false, irrigation: false, mining: false, road: false, railroad: false, fortress: false, pollution: false, farmland: false, airbase: false },
+        };
+      }
+    }
+    return { mw, mh, mapShape, mapSeed, tileData, wraps };
+  }
+
   // ── Phase 1: Init tile array (all ocean) ──
   const tiles = new Array(mw * mh);      // byte[0]: terrain type (after assignment)
   const landCount = new Uint8Array(mw * mh); // byte[1]: cumulative land counter (persists)

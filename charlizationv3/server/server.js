@@ -753,6 +753,7 @@ wss.on("connection", (ws) => {
           if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i}`, ai: restartRoom.seats[i].ai || false, difficulty: restartRoom.seats[i].difficulty || null });
         }
 
+        sz.flatGrassland = true; // DEBUG: flat grassland map for testing
         const mapResult = generateMap(sz);
         const { mapBase, gameState } = initNewGame(mapResult, restartSeats);
         restartRoom.mapBase = mapBase;
