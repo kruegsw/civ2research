@@ -187,6 +187,27 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
             state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
           }
         }
+        // Trade route cleanup: remove routes pointing to this city from all other cities
+        state.cities = state.cities.length ? [...state.cities] : state.cities;
+        for (let ci = 0; ci < state.cities.length; ci++) {
+          if (ci === cityIndex) continue;
+          const c = state.cities[ci];
+          if (!c.tradeRoutes || c.tradeRoutes.length === 0) continue;
+          const filtered = c.tradeRoutes.filter(r => r.destCityIndex !== cityIndex);
+          if (filtered.length !== c.tradeRoutes.length) {
+            state.cities[ci] = { ...c, tradeRoutes: filtered };
+          }
+        }
+        // Wonder clearing: mark wonders in this city as destroyed
+        if (state.wonders) {
+          state.wonders = [...state.wonders];
+          for (let wi = 0; wi < state.wonders.length; wi++) {
+            const w = state.wonders[wi];
+            if (w && w.cityIndex === cityIndex && !w.destroyed) {
+              state.wonders[wi] = { ...w, cityIndex: null, destroyed: true };
+            }
+          }
+        }
       }
     }
   }

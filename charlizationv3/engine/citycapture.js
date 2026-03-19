@@ -527,6 +527,26 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   if (newSize <= 0) {
     // City destroyed
     state.cities[cityIndex] = { ...city, size: 0, owner: 0xFF };
+    // Trade route cleanup: remove routes pointing to this city from all other cities
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      if (ci === cityIndex) continue;
+      const c = state.cities[ci];
+      if (!c.tradeRoutes || c.tradeRoutes.length === 0) continue;
+      const filtered = c.tradeRoutes.filter(r => r.destCityIndex !== cityIndex);
+      if (filtered.length !== c.tradeRoutes.length) {
+        state.cities[ci] = { ...c, tradeRoutes: filtered };
+      }
+    }
+    // Wonder clearing: mark wonders in this city as destroyed
+    if (state.wonders) {
+      state.wonders = [...state.wonders];
+      for (let wi = 0; wi < state.wonders.length; wi++) {
+        const w = state.wonders[wi];
+        if (w && w.cityIndex === cityIndex && !w.destroyed) {
+          state.wonders[wi] = { ...w, cityIndex: null, destroyed: true };
+        }
+      }
+    }
     events.push({ type: 'cityDestroyed', cityName: city.name, gx: cityGx, gy: cityGy });
     return { events };
   }

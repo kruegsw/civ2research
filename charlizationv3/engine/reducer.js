@@ -10,7 +10,7 @@
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES, WONDER_NAMES } from './defs.js';
 import { launchSpaceship } from './spaceship.js';
 import { handleNuclearAttack, handleNuclearResponse } from './nuclear.js';
 import { resolveDirection, moveCost } from './movement.js';
@@ -159,6 +159,34 @@ export function applyAction(prev, mapBase, action, civSlot) {
         itemInProduction: { type: item.type, id: item.id },
         shieldsInBox: newShields,
       };
+
+      // ── Wonder production events (block_00440000) ──
+      if (!state.turnEvents) state.turnEvents = [];
+      const prevIsWonder = prevItem && prevItem.type === 'wonder';
+      const newIsWonder = item.type === 'wonder';
+      if (prevIsWonder && newIsWonder && prevItem.id !== item.id) {
+        // Switching between two wonders
+        state.turnEvents.push({
+          type: 'wonderSwitched', civSlot,
+          cityName: city.name, cityIndex,
+          oldWonderId: prevItem.id, oldWonderName: WONDER_NAMES[prevItem.id - 39] || `Wonder ${prevItem.id}`,
+          newWonderId: item.id, newWonderName: WONDER_NAMES[item.id - 39] || `Wonder ${item.id}`,
+        });
+      } else if (newIsWonder && !prevIsWonder) {
+        // Switching TO a wonder from non-wonder
+        state.turnEvents.push({
+          type: 'wonderStarted', civSlot,
+          cityName: city.name, cityIndex,
+          wonderId: item.id, wonderName: WONDER_NAMES[item.id - 39] || `Wonder ${item.id}`,
+        });
+      } else if (prevIsWonder && !newIsWonder) {
+        // Switching FROM a wonder to non-wonder
+        state.turnEvents.push({
+          type: 'wonderAbandoned', civSlot,
+          cityName: city.name, cityIndex,
+          wonderId: prevItem.id, wonderName: WONDER_NAMES[prevItem.id - 39] || `Wonder ${prevItem.id}`,
+        });
+      }
       break;
     }
 
@@ -347,6 +375,28 @@ export function applyAction(prev, mapBase, action, civSlot) {
         );
         if (!otherClaims) rTile.tileOwnership = 0;
       }
+      // ── Trade route cleanup (block_00440000 delete_city): remove routes pointing to this city ──
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        if (ci === razeCi) continue;
+        const c = state.cities[ci];
+        if (!c.tradeRoutes || c.tradeRoutes.length === 0) continue;
+        const filtered = c.tradeRoutes.filter(r => r.destCityIndex !== razeCi);
+        if (filtered.length !== c.tradeRoutes.length) {
+          state.cities[ci] = { ...c, tradeRoutes: filtered };
+        }
+      }
+
+      // ── Wonder clearing (block_00440000 delete_city): mark wonders in this city as destroyed ──
+      if (state.wonders) {
+        state.wonders = [...state.wonders];
+        for (let wi = 0; wi < state.wonders.length; wi++) {
+          const w = state.wonders[wi];
+          if (w && w.cityIndex === razeCi && !w.destroyed) {
+            state.wonders[wi] = { ...w, cityIndex: null, destroyed: true };
+          }
+        }
+      }
+
       state.cities[razeCi] = { ...razeCity, size: 0, owner: -1 };
       checkCivElimination(state, civSlot);
       break;
@@ -450,49 +500,62 @@ export function applyAction(prev, mapBase, action, civSlot) {
         if (!roadPath) break; // no road connection — reject
       }
 
-      // D.6: Full commodity matching one-time bonus formula
-      // Distance calculation
+      // ── Binary-faithful one-time trade revenue formula (block_00440000) ──
+      // Distance: Manhattan distance between home and dest
       let etDx = Math.abs(homeCity.gx - destCity.gx);
       if (mapBase.wraps && etDx > mapBase.mw / 2) etDx = mapBase.mw - etDx;
       const etDy = Math.abs(homeCity.gy - destCity.gy);
       const etDist = etDx + etDy;
 
-      // Supply/demand matching
+      // Base trade for each city (gross trade arrows)
+      const homeTrade = calcCityTrade(homeCity, etUnit.homeCityId, state, mapBase).grossTrade || 1;
+      const destTrade = calcCityTrade(destCity, etCi, state, mapBase).grossTrade || 1;
+
+      // Binary formula: revenue = (homeTrade + destTrade) * (distance + 10) / 24
+      let revenue = Math.floor((homeTrade + destTrade) * (etDist + 10) / 24);
+
+      // Intercontinental bonus: if different continent (bodyId), revenue *= 2
+      if (mapBase.getBodyId) {
+        const homeBody = mapBase.getBodyId(homeCity.gx, homeCity.gy);
+        const destBody = mapBase.getBodyId(destCity.gx, destCity.gy);
+        if (homeBody !== destBody) revenue *= 2;
+      }
+
+      // Same owner penalty: if same civ, revenue /= 2
+      if (homeCity.owner === destCity.owner) {
+        revenue = Math.floor(revenue / 2);
+      }
+
+      // Commodity-based modifiers
       const commodity = etUnit.commodityCarried ?? -1;
-      let supplyMatch = false;
       let demandMatch = false;
       if (commodity >= 0 && commodity < COMMODITY_NAMES.length) {
-        // Check if commodity is in home city's supply list
-        if (homeCity.supplyList && homeCity.supplyList.includes(commodity)) supplyMatch = true;
-        else supplyMatch = true; // assume supply if no list (city built it)
-        // Check if commodity is in dest city's demand list
+        // Check if commodity matches dest city's demand list
         if (destCity.demandList && destCity.demandList.includes(commodity)) demandMatch = true;
       }
 
-      // Base one-time bonus: (supply + demand) × distanceFactor × eraFactor
-      // supply/demand each contribute the distance to the bonus
-      const supplyVal = supplyMatch ? etDist : Math.floor(etDist / 2);
-      const demandVal = demandMatch ? etDist : Math.floor(etDist / 2);
+      // Commodity demand bonus tiers (binary ref: block_00440000)
+      //   commodities 3,5,8,10 = +50%
+      //   commodities 9,11,12,13 = +100%
+      //   commodity 14 = +150%
+      //   commodity 15 = +200%
+      const COMMODITY_TIER_50  = new Set([3, 5, 8, 10]);   // Cloth, Coal, Wine, Silk
+      const COMMODITY_TIER_100 = new Set([9, 11, 12, 13]); // Silk(9 overlap?), Spice, Gems, Gold
+      let commodityBonus = 0;
+      if (commodity === 15)                       commodityBonus = Math.floor(revenue * 2);     // +200%
+      else if (commodity === 14)                  commodityBonus = Math.floor(revenue * 3 / 2); // +150%
+      else if (COMMODITY_TIER_100.has(commodity))  commodityBonus = revenue;                     // +100%
+      else if (COMMODITY_TIER_50.has(commodity))   commodityBonus = Math.floor(revenue / 2);     // +50%
 
-      // Era factor based on civ's most advanced tech epoch
-      // Pre-Industrial (epoch 0,1) = ×2, Industrial (epoch 2) = ×1.5, Modern (epoch 3) = ×1
-      let maxEpoch = 0;
-      if (state.civTechs?.[civSlot]) {
-        for (const techId of state.civTechs[civSlot]) {
-          const ep = ADVANCE_EPOCH[techId] ?? 0;
-          if (ep > maxEpoch) maxEpoch = ep;
-        }
+      // Demand slot match: if dest demands this commodity, revenue doubles (+ commodity bonus)
+      if (demandMatch) {
+        revenue = revenue * 2 + commodityBonus;
+      } else {
+        revenue = revenue + commodityBonus;
       }
-      let eraFactor = 2; // pre-industrial default
-      if (maxEpoch >= 3) eraFactor = 1;
-      else if (maxEpoch >= 2) eraFactor = 1.5;
 
-      const isForeign = homeCity.owner !== destCity.owner;
-      let bonus = Math.floor((supplyVal + demandVal) * eraFactor);
-      // Foreign trade: ×2
-      if (isForeign) bonus *= 2;
-      // Minimum bonus: 1 gold
-      bonus = Math.max(1, bonus);
+      // Minimum revenue: 1
+      revenue = Math.max(1, revenue);
 
       // D.6: Food caravan special case — deliver food instead of gold
       // if commodity is Hides(0)/Wool(1)/Beads(2) (food commodities) and
@@ -501,42 +564,105 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const isFood = foodCommodities.has(commodity) &&
         (cityHasBuilding(destCity, 30) || cityHasBuilding(destCity, 3));
 
-      // Create ongoing trade route (D.5)
+      // ── 3-slot trade route limit with replacement (block_00440000) ──
+      const existingRoutes = homeCity.tradeRoutes || [];
       const route = { destCityIndex: etCi, commodity };
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
       const updHome = { ...state.cities[etUnit.homeCityId] };
-      updHome.tradeRoutes = [...(updHome.tradeRoutes || []), route];
+
+      if (existingRoutes.length >= 3) {
+        // Find lowest-value existing route for comparison
+        let lowestVal = Infinity;
+        let lowestIdx = -1;
+        for (let ri = 0; ri < existingRoutes.length; ri++) {
+          const er = existingRoutes[ri];
+          const erDest = state.cities[er.destCityIndex];
+          if (!erDest || erDest.size <= 0) {
+            // Dead route — always replaceable
+            lowestVal = 0;
+            lowestIdx = ri;
+            break;
+          }
+          let erDx = Math.abs(homeCity.gx - erDest.gx);
+          if (mapBase.wraps && erDx > mapBase.mw / 2) erDx = mapBase.mw - erDx;
+          const erDy = Math.abs(homeCity.gy - erDest.gy);
+          const erDist = erDx + erDy;
+          const erVal = erDist + (homeCity.owner !== erDest.owner ? 10 : 0);
+          if (erVal < lowestVal) { lowestVal = erVal; lowestIdx = ri; }
+        }
+
+        // New route value for comparison
+        const newVal = etDist + (homeCity.owner !== destCity.owner ? 10 : 0);
+        if (newVal > lowestVal && lowestIdx >= 0) {
+          // Replace lowest-value route
+          const newRoutes = [...existingRoutes];
+          newRoutes[lowestIdx] = route;
+          updHome.tradeRoutes = newRoutes;
+        } else {
+          // All existing routes are more valuable — reject
+          // Still consume unit and give one-time bonus, but no ongoing route
+          updHome.tradeRoutes = [...existingRoutes];
+        }
+      } else {
+        updHome.tradeRoutes = [...existingRoutes, route];
+      }
       state.cities[etUnit.homeCityId] = updHome;
 
       // Consume the caravan/freight
       killUnit(state, etUi);
 
-      // Apply one-time bonus
+      // ── Revenue split: add to BOTH treasury AND research (not just treasury) ──
+      const goldShare = Math.floor(revenue / 2);
+      const sciShare = revenue - goldShare;
+
+      if (!state.turnEvents) state.turnEvents = [];
+
       if (isFood) {
         // Food delivery: add food to destination city
         const updDest = { ...state.cities[etCi] };
-        updDest.foodInBox = (updDest.foodInBox || 0) + bonus * 2; // convert gold to food equivalent
+        updDest.foodInBox = (updDest.foodInBox || 0) + revenue * 2; // convert gold to food equivalent
         state.cities[etCi] = updDest;
-        if (!state.turnEvents) state.turnEvents = [];
         state.turnEvents.push({
           type: 'tradeEstablished', civSlot,
           homeCityName: homeCity.name, destCityName: destCity.name,
-          foodDelivered: bonus * 2, commodity,
+          foodDelivered: revenue * 2, commodity,
+          revenue, goldShare, sciShare,
         });
       } else {
-        // Gold bonus
+        // Gold + research split
         if (state.civs?.[civSlot]) {
           state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
           const civ = { ...state.civs[civSlot] };
-          civ.treasury = (civ.treasury || 0) + bonus;
+          civ.treasury = (civ.treasury || 0) + goldShare;
+          // Add science share to research progress
+          civ.researchProgress = (civ.researchProgress || 0) + sciShare;
           state.civs[civSlot] = civ;
         }
-        if (!state.turnEvents) state.turnEvents = [];
         state.turnEvents.push({
           type: 'tradeEstablished', civSlot,
           homeCityName: homeCity.name, destCityName: destCity.name,
-          bonus, commodity,
+          bonus: revenue, commodity,
+          revenue, goldShare, sciShare,
         });
+      }
+
+      // ── Diplomatic effect: adjust attitude between civs by -10 (improves relations) ──
+      if (homeCity.owner !== destCity.owner) {
+        state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
+        // Destination owner's attitude toward trade partner improves
+        const destOwner = destCity.owner;
+        if (state.civs[destOwner]) {
+          const updDestCiv = { ...state.civs[destOwner] };
+          const oldAtt = updDestCiv.attitudes;
+          const attitudes = Array.isArray(oldAtt) ? [...oldAtt] : [0, 0, 0, 0, 0, 0, 0, 0];
+          if (!Array.isArray(oldAtt) && oldAtt) {
+            for (const [k, v] of Object.entries(oldAtt)) attitudes[+k] = v;
+          }
+          // -10 means friendlier (negative = more friendly in Civ2 attitude scale)
+          attitudes[civSlot] = Math.max(-100, Math.min(100, (attitudes[civSlot] || 0) - 10));
+          updDestCiv.attitudes = attitudes;
+          state.civs[destOwner] = updDestCiv;
+        }
       }
       break;
     }

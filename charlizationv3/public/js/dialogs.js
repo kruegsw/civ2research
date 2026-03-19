@@ -12,7 +12,7 @@ import {
   UNIT_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES,
   ORDER_NAMES, UNIT_CARRY_CAP, UNIT_DOMAIN, CIV_CITY_NAMES,
   GOVERNMENT_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, CIV_COLORS,
-  DIFFICULTY_KEYS,
+  DIFFICULTY_KEYS, COMMODITY_NAMES,
 } from '../engine/defs.js';
 import { getGameYear } from '../engine/year.js';
 import {
@@ -594,13 +594,62 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'wonderStarted': {
+        sfx('NEWONDER');
+        const wsName = ev.wonderName || WONDER_NAMES[ev.wonderId - 39] || 'A wonder';
+        createCiv2Dialog('turn-event-dialog', 'Wonder Construction', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `Construction of ${wsName} has begun in ${ev.cityName}!`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'wonderAbandoned': {
+        sfx('NEG1');
+        const waName = ev.wonderName || WONDER_NAMES[ev.wonderId - 39] || 'A wonder';
+        createCiv2Dialog('turn-event-dialog', 'Wonder Abandoned', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `Construction of ${waName} has been abandoned.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
+      case 'wonderSwitched': {
+        sfx('NEWONDER');
+        const oldWName = ev.oldWonderName || 'a wonder';
+        const newWName = ev.newWonderName || 'a wonder';
+        createCiv2Dialog('turn-event-dialog', 'Wonder Switch', panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `${ev.cityName} switches from ${oldWName} to ${newWName}.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       case 'tradeEstablished': {
         sfx('MRKTPLCE');
+        const commodityName = (ev.commodity != null && ev.commodity >= 0)
+          ? (COMMODITY_NAMES[ev.commodity] || `Commodity ${ev.commodity}`)
+          : 'goods';
         createCiv2Dialog('turn-event-dialog', 'Trade Route', panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-          msg.innerHTML = `Trade route: ${ev.homeCityName} → ${ev.destCityName}<br>` +
-            `Revenue: ${ev.income} gold/turn<br>Bonus: ${ev.bonus} gold`;
+          if (ev.foodDelivered) {
+            msg.innerHTML = `Trade route: ${ev.homeCityName} → ${ev.destCityName}<br>`
+              + `Delivered: ${commodityName}<br>`
+              + `Food delivered: ${ev.foodDelivered}`;
+          } else {
+            const goldAmt = ev.goldShare ?? ev.bonus ?? 0;
+            const sciAmt = ev.sciShare ?? 0;
+            msg.innerHTML = `Trade route: ${ev.homeCityName} → ${ev.destCityName}<br>`
+              + `Delivered: ${commodityName}<br>`
+              + `Revenue: ${goldAmt} gold + ${sciAmt} research`;
+          }
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;
