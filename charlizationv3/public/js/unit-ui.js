@@ -438,41 +438,41 @@ export function animateCombat(cr, onComplete) {
       if (resSfx) sfx(resSfx);
 
       if (!expFrames || expFrames.length === 0) {
-        advanceWinner();
+        if (onComplete) onComplete();
         return;
       }
 
       let fi = 0;
-      const totalDeathFrames = loserDomain === 0 ? 8 : 6; // ground: 8 frames, air/sea: 6
+      const totalDeathFrames = loserDomain === 0 ? 8 : 6;
       const loserX = attackerWins ? defDrawX : atkDrawX;
 
       function deathFrame() {
         if (fi >= totalDeathFrames) {
-          advanceWinner();
+          // Animation complete — map will re-render with final game state positions
+          if (onComplete) onComplete();
           return;
         }
 
         S.vCtx.putImageData(bgSnapshot, 0, 0);
 
-        // Draw surviving unit
-        const winnerX = attackerWins ? atkDrawX : defDrawX;
-        const winnerSprite = attackerWins ? atkSprite : defSprite;
-        drawSpriteAt(winnerSprite, winnerX, combatY);
-
-        // Draw HP bar for winner only
+        // Draw surviving unit at its ORIGINAL position (not the combat tile)
         if (attackerWins) {
-          drawHpBar(atkBarX, barY, atkHp, atkMaxHp);
+          // Attacker wins: draw at attacker's origin tile
+          drawSpriteAt(atkSprite, atkTileX, atkTileY);
         } else {
-          drawHpBar(defBarX, barY, defHp, defMaxHp);
+          // Defender wins: draw at defender's tile
+          drawSpriteAt(defSprite, defTileX, defTileY);
         }
 
-        // Explosion over loser position (growing/fading based on domain)
+        // Explosion over loser position
         if (expFrames[fi]) {
-          drawSpriteAt(expFrames[fi], loserX + 8, combatY + 4);
-          // Sea units: also draw a "sinking" effect (darker, lower)
+          const expDrawX = attackerWins ? defTileX + 16 : atkTileX + 16;
+          const expDrawY = attackerWins ? defTileY + 8 : atkTileY + 8;
+          drawSpriteAt(expFrames[fi], expDrawX, expDrawY);
+          // Sea units: sinking effect
           if (loserDomain === 2 && fi > 2) {
             S.vCtx.globalAlpha = 0.3 + fi * 0.1;
-            drawSpriteAt(expFrames[Math.min(fi, 7)], loserX + 8, combatY + 8 + fi * 2);
+            drawSpriteAt(expFrames[Math.min(fi, 7)], expDrawX, expDrawY + fi * 2);
             S.vCtx.globalAlpha = 1.0;
           }
         }
@@ -482,38 +482,6 @@ export function animateCombat(cr, onComplete) {
       }
 
       deathFrame();
-    }
-
-    // ═══ PHASE 4: Winner advances to defender's tile ═══
-    function advanceWinner() {
-      if (!attackerWins) {
-        // Defender wins — no advance, just clean up
-        if (onComplete) onComplete();
-        return;
-      }
-
-      // Attacker slides from side-by-side position to center of defender's tile
-      let advFrame = 0;
-      const startX = atkDrawX;
-      const endX = defTileX;
-      const advDx = (endX - startX) / COMBAT_MOVE_FRAMES;
-
-      function advStep() {
-        if (advFrame >= COMBAT_MOVE_FRAMES) {
-          if (onComplete) onComplete();
-          return;
-        }
-
-        S.vCtx.putImageData(bgSnapshot, 0, 0);
-        const curX = startX + advDx * advFrame;
-        drawSpriteAt(atkSprite, curX, combatY);
-        drawHpBar(screenX(curX), barY, atkHp, atkMaxHp);
-
-        advFrame++;
-        setTimeout(advStep, COMBAT_MOVE_MS_PER_FRAME);
-      }
-
-      advStep();
     }
 
     // Start the 4-phase sequence
