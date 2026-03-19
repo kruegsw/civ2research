@@ -145,7 +145,8 @@ export function getTreatyFlags(state, civA, civB) {
 // When setting WAR, clear these treaty flags:
 const WAR_CLEARS = TF.CEASEFIRE | TF.PEACE | TF.ALLIANCE;
 // When setting PEACE or CEASEFIRE, clear these hostility flags:
-const PEACE_CLEARS = TF.WAR | TF.WAR_STARTED | TF.CAPTURE_VENDETTA | TF.HOSTILITY;
+// Binary uses 0x2a60: WAR | WAR_STARTED | 0x200 | HOSTILITY | INTRUDER
+const PEACE_CLEARS = TF.WAR | TF.WAR_STARTED | 0x200 | TF.HOSTILITY | TF.INTRUDER;
 
 /**
  * Set treaty flags for a civ pair (directional).
@@ -332,8 +333,30 @@ function adjustAttitude(state, civSlot, targetCiv, delta) {
     civ.attitudes = [...civ.attitudes];
   }
   const cur = civ.attitudes[targetCiv] ?? 0;
-  civ.attitudes[targetCiv] = Math.max(-100, Math.min(100, cur + delta));
+  // Binary clamps to [0, 100] — negative attitudes don't exist in Civ2
+  civ.attitudes[targetCiv] = Math.max(0, Math.min(100, cur + delta));
   state.civs[civSlot] = civ;
+}
+
+/**
+ * Convert gold amount to attitude delta using diminishing returns.
+ * Binary FUN_0045b472: first 50g → att/10, then 100g batches → att/(10+5n).
+ * E.g. 50g=5att, next 100g≈6.67att, next 100g=5att, etc.
+ * @param {number} gold - gold amount
+ * @returns {number} attitude delta (positive)
+ */
+export function goldToAttitude(gold) {
+  let result = 0;
+  let divisor = 10;
+  let threshold = 50;
+  while (gold > 0) {
+    const batch = Math.max(0, Math.min(gold, threshold));
+    result += Math.trunc(batch / divisor);
+    divisor += 5;
+    gold -= threshold;
+    threshold = 100;
+  }
+  return result;
 }
 
 /** Increment a civ's patience counter (reputation damage tracker). */
@@ -1617,9 +1640,9 @@ function transferGold(state, fromCiv, toCiv, amount) {
   state.civs[fromCiv] = fromData;
   state.civs[toCiv] = toData;
 
-  // Diplomacy goodwill from gold gift (from pseudocode: -(amount * 3 / 2))
-  // In our system positive = friendly, so we add goodwill to receiver toward giver
-  const attitudeBonus = Math.min(50, Math.floor(actual / 10));
+  // Binary FUN_0045f0b1: gold gift attitude uses diminishing returns × 3/2
+  // goldToAttitude gives the base, then ×3/2 for the gift context
+  const attitudeBonus = Math.trunc(goldToAttitude(actual) * 3 / 2);
   adjustAttitude(state, toCiv, fromCiv, attitudeBonus);
 
   events.push({
@@ -1642,6 +1665,10 @@ function transferTechs(state, fromCiv, toCiv, techIds) {
   for (const techId of techIds) {
     if (fromTechs.has(techId) && !toTechs.has(techId)) {
       grantAdvance(state, toCiv, techId);
+      // Binary FUN_0045f0b1: tech gift attitude = techValue * 4 (best) or * 2 (2nd)
+      const techValue = ADVANCE_EPOCH[techId] ?? 1;
+      const attBonus = techValue * 4;
+      adjustAttitude(state, toCiv, fromCiv, attBonus);
       events.push({
         type: 'techTransferred',
         from: fromCiv,
@@ -1716,6 +1743,18 @@ function shareMaps(state, mapBase, fromCiv, toCiv) {
     if ((tile.visibility & fromBit) && !(tile.visibility & toBit)) {
       tile.visibility |= toBit;
     }
+  }
+
+  // Binary FUN_004dd8ad: also share sight radius around units and cities
+  // Reveal tiles around fromCiv's units for toCiv
+  for (const u of state.units) {
+    if (u.owner !== fromCiv || u.gx < 0) continue;
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, u.gx, u.gy, mapBase.wraps);
+  }
+  // Reveal tiles around fromCiv's cities for toCiv (radius 2)
+  for (const c of state.cities) {
+    if (c.owner !== fromCiv || c.size <= 0) continue;
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, c.gx, c.gy, mapBase.wraps, 2);
   }
 
   events.push({
@@ -2179,6 +2218,22 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
     }
   }
 
+  // ── Clear diplomatic state (binary Step 3: clear all treaties/attitudes for dead civ) ──
+  if (state.treatyFlags) {
+    state.treatyFlags = { ...state.treatyFlags };
+    for (let c = 0; c <= 7; c++) {
+      delete state.treatyFlags[`${civSlot}-${c}`];
+      delete state.treatyFlags[`${c}-${civSlot}`];
+    }
+  }
+  if (state.treaties) {
+    state.treaties = { ...state.treaties };
+    for (let c = 0; c <= 7; c++) {
+      const k1 = civSlot < c ? `${civSlot}-${c}` : `${c}-${civSlot}`;
+      delete state.treaties[k1];
+    }
+  }
+
   // ── Destroy spaceship (Fix 6: resetSpaceship) ──
   resetSpaceship(state, civSlot);
 
@@ -2358,13 +2413,92 @@ export function attemptCivRespawn(state, mapBase) {
 export function calcPatienceThreshold(state, aiCiv, targetCiv) {
   let patience = 2;
   const attitude = getAttitude(state, aiCiv, targetCiv); // 0-100 scale
-  if (attitude < 25) patience += 1;
-  if (attitude > 60) patience -= 1;
-  if (civHasWonder(state, aiCiv, 20)) patience += 1; // Eiffel Tower
-  const treaty = getTreaty(state, aiCiv, targetCiv);
-  if (treaty === 'peace') patience += 1;
-  if (treaty === 'alliance') patience += 2;
+  if (attitude < 25) patience += 1;   // hostile: more patient (higher threshold)
+  if (attitude > 60) patience -= 1;   // friendly: less patient (lower threshold)
+  if (civHasWonder(state, aiCiv, 20)) patience += 1; // Eiffel Tower / Statue of Liberty
+  const flags = getTreatyFlags(state, aiCiv, targetCiv);
+  if (flags & TF.PEACE) patience += 1;
+  if (flags & TF.ALLIANCE) patience += 2;
+  // Binary FUN_00456f8b: at war resets patience to base (overrides all modifiers)
+  if (flags & TF.WAR) patience = 2;
   return Math.max(0, patience);
+}
+
+/**
+ * Check if an AI civ should provoke/confront a target civ.
+ * Binary: returns true when attitude > 49 AND only contact status (no treaty).
+ * Used to decide when to initiate diplomatic incidents.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ
+ * @param {number} targetCiv - target civ
+ * @returns {boolean}
+ */
+export function shouldProvoke(state, aiCiv, targetCiv) {
+  const attitude = getAttitude(state, aiCiv, targetCiv);
+  if (attitude <= 49) return false;
+  const flags = getTreatyFlags(state, aiCiv, targetCiv);
+  // Only provoke if contact-only (no ceasefire, peace, alliance, or war)
+  return (flags & TF.CONTACT) !== 0 &&
+         !(flags & (TF.CEASEFIRE | TF.PEACE | TF.ALLIANCE | TF.WAR));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Tech Sell Pricing — binary FUN_004591cb
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate the price an AI charges to sell a tech.
+ * Binary FUN_004591cb: techValue * 20, attitude/treasury/alliance scaling.
+ *
+ * @param {object} state - game state
+ * @param {number} sellerCiv - civ selling the tech
+ * @param {number} buyerCiv - civ buying the tech
+ * @param {number} techId - tech being sold
+ * @returns {number} price in gold (min 100), or 0 if tech invalid
+ */
+export function calcTechSellPrice(state, sellerCiv, buyerCiv, techId) {
+  if (techId < 0) return 0;
+
+  // Base: tech value * 20
+  const techValue = ADVANCE_EPOCH[techId] ?? 1;
+  let price = techValue * 20;
+
+  // Attitude scaling: if attitude > 50, reduce price proportionally
+  const attitude = getAttitude(state, sellerCiv, buyerCiv);
+  if (attitude > 50) {
+    price = Math.trunc((attitude * price) / 50);
+  }
+
+  // Count how many civs know this tech (more common = cheaper)
+  let knowers = 0;
+  for (let c = 1; c < 8; c++) {
+    if (!(state.civsAlive & (1 << c))) continue;
+    if (state.civTechs?.[c]?.has(techId)) knowers++;
+  }
+  const civDivisor = Math.max(1, knowers - 1);
+  price = Math.trunc(price / civDivisor) * 10;
+
+  // Treasury-based scaling: rich buyers pay more
+  const buyerTreasury = state.civs?.[buyerCiv]?.treasury || 0;
+  if (buyerTreasury > 1500) {
+    price = Math.trunc(price * 3 / 2);  // +50% for treasury > 1500
+  }
+  if (buyerTreasury > 3000) {
+    price = Math.trunc(price * 3 / 2);  // +50% again for treasury > 3000
+  }
+
+  // Alliance discount: allies get reduced price
+  const flags = getTreatyFlags(state, sellerCiv, buyerCiv);
+  if (flags & TF.ALLIANCE) {
+    price = Math.trunc(price / 2);  // allies: 50% off (or 75% if power advantage)
+  }
+
+  // Clamp
+  if (price < 100) price = 100;
+  if (price < 0) price = 30000;  // overflow protection
+
+  return price;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2649,8 +2783,8 @@ export function applyGovernmentChangeEffects(state, civSlot, oldGovt, newGovt) {
     }
   }
 
-  // ── Effect 2: Clear embassy treaties on government change ──
-  // The EMBASSY flag (0x80) is removed from all treaty pairs involving this civ.
+  // ── Effect 2: Clear VENDETTA flags on government change ──
+  // Binary FUN_0055c066: clears VENDETTA (0x10) from all treaty pairs involving this civ.
   if (state.treatyFlags) {
     let flagsMutated = false;
     for (let other = 1; other <= 7; other++) {
@@ -2659,13 +2793,13 @@ export function applyGovernmentChangeEffects(state, civSlot, oldGovt, newGovt) {
       const kBA = `${other}-${civSlot}`;
       const ab = state.treatyFlags[kAB] || 0;
       const ba = state.treatyFlags[kBA] || 0;
-      if ((ab & TF.EMBASSY) || (ba & TF.EMBASSY)) {
+      if ((ab & TF.VENDETTA) || (ba & TF.VENDETTA)) {
         if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
-        if (ab & TF.EMBASSY) {
-          state.treatyFlags[kAB] = ab & ~TF.EMBASSY;
+        if (ab & TF.VENDETTA) {
+          state.treatyFlags[kAB] = ab & ~TF.VENDETTA;
         }
-        if (ba & TF.EMBASSY) {
-          state.treatyFlags[kBA] = ba & ~TF.EMBASSY;
+        if (ba & TF.VENDETTA) {
+          state.treatyFlags[kBA] = ba & ~TF.VENDETTA;
         }
         events.push({
           type: 'embassyExpelled', civSlot, otherCiv: other,

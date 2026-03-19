@@ -210,9 +210,8 @@ export function calcBribeCostEnhanced(state, target, mapBase, spyCiv) {
   // Distance to nearest Palace of target civ
   let dist = calcCityRevoltDistance(state, mapBase, target.owner, target.gx, target.gy);
 
-  // Communism and Republic cap — checks the BRIBER's (spy's) government per binary
-  const govtCiv = spyCiv != null ? spyCiv : target.owner; // fallback for backward compat
-  const govt = getGovernment(null, state, govtCiv);
+  // Communism and Republic cap — binary checks the TARGET's government, not the spy's
+  const govt = getGovernment(null, state, target.owner);
   if (govt === 'communism') dist = Math.min(dist, 10);
   if (govt === 'republic' && dist > 9) dist = 10;
 

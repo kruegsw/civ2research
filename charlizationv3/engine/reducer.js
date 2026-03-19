@@ -218,8 +218,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const newBuildings = new Set(city.buildings);
       newBuildings.delete(buildingId);
 
-      // Refund: half shield cost in gold (binary returns cost / 2)
-      const refund = Math.floor((IMPROVE_COSTS[buildingId] || 0) / 2);
+      // Refund: full shield cost in gold (binary FUN_00505d3d gives full cost)
+      const refund = IMPROVE_COSTS[buildingId] || 0;
       state.civs = [...prev.civs];
       const civ = { ...state.civs[civSlot] };
       civ.treasury = (civ.treasury || 0) + refund;
@@ -512,7 +512,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const destTrade = calcCityTrade(destCity, etCi, state, mapBase).grossTrade || 1;
 
       // Binary formula: revenue = (homeTrade + destTrade) * (distance + 10) / 24
-      let revenue = Math.floor((homeTrade + destTrade) * (etDist + 10) / 24);
+      // D10: Difficulty modifier on trade distance (binary DAT_00655af0)
+      let adjDist = etDist;
+      const diffFlags = state.difficultyFlags || 0;
+      if (diffFlags & 4) adjDist = Math.floor(adjDist * 4 / 5);   // easier: reduce distance
+      if (diffFlags & 8) adjDist = Math.floor(adjDist * 5 / 4);   // harder: increase distance
+      let revenue = Math.floor((homeTrade + destTrade) * (adjDist + 10) / 24);
 
       // Intercontinental bonus: if different continent (bodyId), revenue *= 2
       if (mapBase.getBodyId) {
@@ -524,6 +529,31 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // Same owner penalty: if same civ, revenue /= 2
       if (homeCity.owner === destCity.owner) {
         revenue = Math.floor(revenue / 2);
+      }
+
+      // D11: Railroad/Airport trade distance bonus (binary FUN_00440750)
+      // Binary checks tile improvements for Railroad (0x20) and Airport (0x19)
+      {
+        let distFactor = 0;
+        const homeImp = mapBase.getImprovements ? mapBase.getImprovements(homeCity.gx, homeCity.gy) : null;
+        const destImp = mapBase.getImprovements ? mapBase.getImprovements(destCity.gx, destCity.gy) : null;
+        const homeRR = !!(homeImp && homeImp.railroad);
+        const destRR = !!(destImp && destImp.railroad);
+        if (homeRR && destRR) {
+          if (mapBase.getBodyId) {
+            const hb = mapBase.getBodyId(homeCity.gx, homeCity.gy);
+            const db = mapBase.getBodyId(destCity.gx, destCity.gy);
+            distFactor += (hb === db) ? 1 : 2; // same continent +1, different +2
+          } else {
+            distFactor += 1;
+          }
+        }
+        // Airport adds +1 each
+        if (homeCity.buildings?.has(25)) distFactor += 1; // Airport building
+        if (destCity.buildings?.has(25)) distFactor += 1;
+        if (distFactor > 0) {
+          revenue += (distFactor * revenue) >> 1;
+        }
       }
 
       // Commodity-based modifiers
@@ -548,8 +578,13 @@ export function applyAction(prev, mapBase, action, civSlot) {
       else if (COMMODITY_TIER_50.has(commodity))   commodityBonus = Math.floor(revenue / 2);     // +50%
 
       // Demand slot match: if dest demands this commodity, revenue doubles (+ commodity bonus)
+      // D18: Owner-dependent formula variant from binary FUN_00440750
       if (demandMatch) {
-        revenue = revenue * 2 + commodityBonus;
+        if (homeCity.owner === destCity.owner) {
+          revenue = revenue * 2 + commodityBonus;  // same owner: double then add bonus
+        } else {
+          revenue = (revenue + commodityBonus) * 2; // diff owner: add bonus then double
+        }
       } else {
         revenue = revenue + commodityBonus;
       }
@@ -583,16 +618,30 @@ export function applyAction(prev, mapBase, action, civSlot) {
             lowestIdx = ri;
             break;
           }
+          // D16: Binary route value formula — distance weighted by continent/owner
           let erDx = Math.abs(homeCity.gx - erDest.gx);
           if (mapBase.wraps && erDx > mapBase.mw / 2) erDx = mapBase.mw - erDx;
           const erDy = Math.abs(homeCity.gy - erDest.gy);
-          const erDist = erDx + erDy;
-          const erVal = erDist + (homeCity.owner !== erDest.owner ? 10 : 0);
+          let erVal = erDx + erDy;
+          // Same continent: halve value
+          if (mapBase.getBodyId) {
+            const hb = mapBase.getBodyId(homeCity.gx, homeCity.gy);
+            const db = mapBase.getBodyId(erDest.gx, erDest.gy);
+            if (hb === db) erVal = Math.trunc(erVal / 2);
+          }
+          // Same owner: halve value
+          if (homeCity.owner === erDest.owner) erVal = Math.trunc(erVal / 2);
           if (erVal < lowestVal) { lowestVal = erVal; lowestIdx = ri; }
         }
 
-        // New route value for comparison
-        const newVal = etDist + (homeCity.owner !== destCity.owner ? 10 : 0);
+        // D16: New route value using same formula
+        let newVal = etDist;
+        if (mapBase.getBodyId) {
+          const hb = mapBase.getBodyId(homeCity.gx, homeCity.gy);
+          const db = mapBase.getBodyId(destCity.gx, destCity.gy);
+          if (hb === db) newVal = Math.trunc(newVal / 2);
+        }
+        if (homeCity.owner === destCity.owner) newVal = Math.trunc(newVal / 2);
         if (newVal > lowestVal && lowestIdx >= 0) {
           // Replace lowest-value route
           const newRoutes = [...existingRoutes];
@@ -611,9 +660,22 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // Consume the caravan/freight
       killUnit(state, etUi);
 
-      // ── Revenue split: add to BOTH treasury AND research (not just treasury) ──
-      const goldShare = Math.floor(revenue / 2);
-      const sciShare = revenue - goldShare;
+      // D12: Pre-200AD revenue doubling if civ lacks both Alphabet(38) and Writing(57)
+      const gameYear = state.turn?.year ?? 0;
+      const civTechs = state.civTechs?.[civSlot];
+      if (gameYear < 200 && civTechs && !civTechs.has(38) && !civTechs.has(57)) {
+        revenue *= 2;
+      }
+
+      // D13: Communism tech -33% penalty on trade revenue
+      if (civTechs?.has(67)) revenue -= Math.floor(revenue / 3);
+
+      // D14: Democracy tech -33% penalty on trade revenue
+      if (civTechs?.has(30)) revenue -= Math.floor(revenue / 3);
+
+      // ── Revenue: binary adds FULL amount to BOTH treasury AND research ──
+      const goldShare = revenue;
+      const sciShare = revenue;
 
       if (!state.turnEvents) state.turnEvents = [];
 
@@ -646,11 +708,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
         });
       }
 
-      // ── Diplomatic effect: adjust attitude between civs by -10 (improves relations) ──
+      // ── D9: Diplomatic effect: adjust attitude in BOTH directions by -10 ──
+      // Binary FUN_00440750: calls adjustAttitude for both (destOwner→homeOwner) AND (homeOwner→destOwner)
       if (homeCity.owner !== destCity.owner) {
         state.civs = state.civs !== prev.civs ? state.civs : [...prev.civs];
-        // Destination owner's attitude toward trade partner improves
         const destOwner = destCity.owner;
+        // Destination owner's attitude toward trade partner improves
         if (state.civs[destOwner]) {
           const updDestCiv = { ...state.civs[destOwner] };
           const oldAtt = updDestCiv.attitudes;
@@ -658,10 +721,21 @@ export function applyAction(prev, mapBase, action, civSlot) {
           if (!Array.isArray(oldAtt) && oldAtt) {
             for (const [k, v] of Object.entries(oldAtt)) attitudes[+k] = v;
           }
-          // -10 means friendlier (negative = more friendly in Civ2 attitude scale)
           attitudes[civSlot] = Math.max(-100, Math.min(100, (attitudes[civSlot] || 0) - 10));
           updDestCiv.attitudes = attitudes;
           state.civs[destOwner] = updDestCiv;
+        }
+        // Home owner's attitude toward dest owner also improves
+        if (state.civs[civSlot]) {
+          const updHomeCiv = { ...state.civs[civSlot] };
+          const oldAtt2 = updHomeCiv.attitudes;
+          const attitudes2 = Array.isArray(oldAtt2) ? [...oldAtt2] : [0, 0, 0, 0, 0, 0, 0, 0];
+          if (!Array.isArray(oldAtt2) && oldAtt2) {
+            for (const [k, v] of Object.entries(oldAtt2)) attitudes2[+k] = v;
+          }
+          attitudes2[destOwner] = Math.max(-100, Math.min(100, (attitudes2[destOwner] || 0) - 10));
+          updHomeCiv.attitudes = attitudes2;
+          state.civs[civSlot] = updHomeCiv;
         }
       }
       break;

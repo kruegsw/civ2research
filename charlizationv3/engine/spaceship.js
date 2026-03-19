@@ -280,7 +280,7 @@ export function calcCivScore(state, civSlot, mapBase) {
           if (state.civTechs[c]?.has(obsTech)) { obsolete = true; break; }
         }
       }
-      if (!obsolete) wonderScore += 5;
+      if (!obsolete) wonderScore += 20; // Binary uses ×20, not ×5
     }
   }
 
@@ -292,16 +292,14 @@ export function calcCivScore(state, civSlot, mapBase) {
     }
   }
 
-  // ── Pollution penalty: -(globalPollution count) * 10 / numAliveCivs ──
+  // ── Pollution penalty: binary uses (pollutedTiles - cleanedTiles) * -10 per civ ──
   let pollutionPenalty = 0;
-  let numAliveCivs = 0;
-  for (let c = 1; c <= 7; c++) {
-    if (state.civsAlive & (1 << c)) numAliveCivs++;
-  }
-  if (numAliveCivs < 1) numAliveCivs = 1;
-  const globalPollution = state.globalPollutionCount || 0;
-  if (globalPollution > 0) {
-    pollutionPenalty = -Math.floor(globalPollution * 10 / numAliveCivs);
+  if (mapBase && mapBase.tileData) {
+    let pollutedCount = 0;
+    for (let i = 0; i < mapBase.tileData.length; i++) {
+      if (mapBase.tileData[i].improvements?.pollution) pollutedCount++;
+    }
+    pollutionPenalty = -pollutedCount * 10;
   }
 
   // ── Difficulty modifier: difficultyIdx * 25 - 50 ──
@@ -321,9 +319,17 @@ export function calcCivScore(state, civSlot, mapBase) {
     }
   }
 
+  // ── Late-game science bonus (binary: after turn 200, clamp(numAdvances * 3, 0, 100)) ──
+  const turnNum2 = state.turn?.number || 0;
+  let scienceBonus = 0;
+  if (turnNum2 > 200) {
+    const numAdvances = state.civTechs?.[civSlot]?.size || 0;
+    scienceBonus = Math.max(0, Math.min(100, numAdvances * 3));
+  }
+
   // ── Total score ──
   const baseScore = Math.max(0,
-    populationScore + wonderScore + territoryScore + pollutionPenalty + difficultyMod + spaceshipScore);
+    populationScore + wonderScore + territoryScore + pollutionPenalty + difficultyMod + spaceshipScore + scienceBonus);
 
   return {
     total: baseScore,
@@ -333,6 +339,7 @@ export function calcCivScore(state, civSlot, mapBase) {
     pollution: pollutionPenalty,
     difficulty: difficultyMod,
     spaceship: spaceshipScore,
+    science: scienceBonus,
   };
 }
 

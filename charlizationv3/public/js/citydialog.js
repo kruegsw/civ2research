@@ -875,6 +875,12 @@ const Civ2CityDialog = {
     // Harbor (building 30): +1 food on ocean
     if (ter === 10 && this._cityHasBuilding(city, 30)) food += 1;
 
+    // Railroad: +50% food (binary FUN_004e868f: food = food + food / 2)
+    const hasRailroad = imp.railroad ||
+      (isCenter && mapData.civTechs && mapData.civTechs[city.owner] &&
+       mapData.civTechs[city.owner].has(67));
+    if (hasRailroad) food = food + Math.floor(food / 2);
+
     // Despotism/Anarchy penalty: -1 if food > 2 (unless WLTKD)
     const gov = this._getCityGovernment(city, mapData);
     if ((gov === 'anarchy' || gov === 'despotism') && food > 2 && !city.weLoveKingDay) food -= 1;

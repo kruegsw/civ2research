@@ -30,7 +30,7 @@ function getTileResource(ter, gx, gy, mapBase) {
   return { hasSpecial: false, specialIdx: 0, grasslandShield: false };
 }
 
-export function calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, government) {
+export function calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, government, hasRailroad = false) {
   let food = hasSpecial ? SPECIAL_TOTAL[ter][specialIdx - 1][0] : TERRAIN_BASE[ter][0];
 
   // Irrigation / Farmland (non-ocean); city center counts as irrigated
@@ -43,6 +43,9 @@ export function calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, g
 
   // Harbor (30): +1 food on ocean
   if (ter === 10 && cityHasBuilding(city, 30)) food += 1;
+
+  // Railroad: +50% food (binary FUN_004e868f: food = food + food / 2)
+  if (hasRailroad) food = food + Math.floor(food / 2);
 
   // Despotism/Anarchy penalty: -1 if food > 2 (unless WLTKD)
   if ((government === 'anarchy' || government === 'despotism') && food > 2 && !city.weLoveKingDay)
@@ -139,7 +142,10 @@ export function getTileYields(gx, gy, isCenter, city, cityIndex, gameState, mapB
   const { hasSpecial, specialIdx, grasslandShield } = getTileResource(ter, gx, gy, mapBase);
   const government = getGovernment(city, gameState);
 
-  const food = calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, government);
+  const hasRailroad = imp.railroad ||
+    (isCenter && gameState.civTechs && gameState.civTechs[city.owner] &&
+     gameState.civTechs[city.owner].has(67));
+  const food = calcTileFood(ter, imp, hasSpecial, specialIdx, isCenter, city, government, hasRailroad);
   const shields = calcTileShields(gx, gy, ter, imp, hasSpecial, specialIdx, grasslandShield,
                                    isCenter, city, cityIndex, gameState, mapBase);
   const trade = calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
@@ -670,6 +676,16 @@ export function calcSupplyDemand(city, cityIndex, state, mapBase) {
   // Tech helper
   const hasTech = (techId) => !!(state.civTechs?.[city.owner]?.has(techId));
 
+  // Global tech helper: true if ANY alive civ has the tech (binary uses global flags)
+  const anyoneHasTech = (techId) => {
+    if (!state.civTechs) return false;
+    for (let c = 1; c < 8; c++) {
+      if (!(state.civsAlive & (1 << c))) continue;
+      if (state.civTechs[c]?.has(techId)) return true;
+    }
+    return false;
+  };
+
   // Count terrain types in city radius (21 tiles)
   const terrainCount = new Array(11).fill(0);
   let riverCount = 0;
@@ -816,9 +832,15 @@ export function calcSupplyDemand(city, cityIndex, state, mapBase) {
 
   // [14] Oil: t[6]*8 + t[0]*10 + t[8]*6 + t[7]*12
   supply[14] = t[6] * 8 + t[0] * 10 + t[8] * 6 + t[7] * 12;
-  if (!hasTech(58)) supply[14] = Math.trunc(supply[14] / 8); // no Nuclear Fission: /8
+  if (!anyoneHasTech(58)) supply[14] = supply[14] >> 3; // no Nuclear Fission globally: /8
   if (supply[14] === 0) supply[14] = -1;
   if (supply[14] !== -1) {
+    // D14: continent modifiers from binary
+    if (continent === 17) {
+      supply[14] = supply[14] * 3;                        // continent 17: ×3
+    } else if (continent > 1 && ((continent - 1) & 7) === 0) {
+      supply[14] = supply[14] + (supply[14] >> 1);        // (continent-1)%8==0: +50%
+    }
     const clampedTier2 = Math.max(1, Math.min(2, Math.trunc(sizeTier / 2) - 2));
     supply[14] = supply[14] * Math.max(1, clampedTier2);
   }

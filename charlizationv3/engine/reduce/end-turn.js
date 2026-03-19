@@ -234,17 +234,32 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
           // Hash-based selection: (x*3 - y*3) & 7 == severity
           if (((gx * 3 - gy * 3) & 7) !== (severity & 7)) continue;
 
-          // Degrade terrain
-          if (ter === 3) {
-            // Forest → Jungle
-            tile.terrain = 9;
-            tile.improvements = { ...tile.improvements, irrigation: false, mining: false };
-          } else if (ter === 2) {
-            // Grassland → Plains
-            tile.terrain = 1;
+          // D-WARM-1: Count adjacent land tiles for severe degradation branch
+          let adjacentLand = 0;
+          const dirs8 = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+          for (const [ddx, ddy] of dirs8) {
+            let nx = gx + ddx, ny = gy + ddy;
+            if (ny < 0 || ny >= mapBase.mh) continue;
+            if (mapBase.wraps) nx = ((nx % mapBase.mw) + mapBase.mw) % mapBase.mw;
+            else if (nx < 0 || nx >= mapBase.mw) continue;
+            const nt = mapBase.tileData[ny * mapBase.mw + nx];
+            if (nt && nt.terrain !== 10) adjacentLand++;
+          }
+
+          if (adjacentLand >= 7 - severity) {
+            // Severe degradation: swamp/desert + clear roads/fortress
+            tile.terrain = ter <= 1 ? 0 : 8; // desert/plains→desert, grassland/forest→swamp
+            tile.improvements = { ...tile.improvements, road: false, railroad: false, fortress: false, irrigation: false, mining: false };
           } else {
-            // Desert/Plains → Desert
-            tile.terrain = 0;
+            // Mild degradation (original hash-based)
+            if (ter === 3) {
+              tile.terrain = 9; // Forest → Jungle
+              tile.improvements = { ...tile.improvements, irrigation: false, mining: false };
+            } else if (ter === 2) {
+              tile.terrain = 1; // Grassland → Plains
+            } else {
+              tile.terrain = 0; // Desert/Plains → Desert
+            }
           }
         }
       }
@@ -326,6 +341,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         civSlot: activeCiv, buildingId: cheapestId,
       });
     }
+
+    // Binary FUN_004fa944: clamp treasury to [0, 30000]
+    civ.treasury = Math.max(0, Math.min(30000, civ.treasury));
 
     // Treasury warning — alert player when net income is negative and they have cities
     const netIncomeThisTurn = civTaxTotal - civMaintenanceTotal;
@@ -524,6 +542,22 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
             healBase = 1; // Field: 1 internal HP every other turn
           } else {
             healBase = 0; // Field: no healing on odd turns
+          }
+
+          // D-HEAL-2: Near-city healing bonus for ground units within distance 3
+          // Binary FUN_00488cef: ground units (domain 0) near own city get +1 (+2 with barracks)
+          if (domain === 0) {
+            for (const c of state.cities) {
+              if (c.owner !== u.owner || c.size <= 0) continue;
+              let cdx = Math.abs(u.gx - c.gx);
+              if (mapBase.wraps) cdx = Math.min(cdx, mapBase.mw - cdx);
+              const cdy = Math.abs(u.gy - c.gy);
+              if (cdx + cdy <= 3) {
+                const hasBarracks = cityHasBuilding(c, 2);
+                healBase += hasBarracks ? 2 : 1;
+                break;
+              }
+            }
           }
         }
         // Scale by max HP

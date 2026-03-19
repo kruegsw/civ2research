@@ -237,8 +237,9 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
       }
     }
 
-    // ── Submarine: ×2 score if attacker is also a submarine ──
-    if (UNIT_SUBMARINE.has(u.type) && atkDomain === 2) {
+    // ── Submarine: ×2 defender score vs air attackers ──
+    // Binary FUN_0057e6e2: submarine flag + attacker domain == air → score ×2
+    if (UNIT_SUBMARINE.has(u.type) && atkDomain === 1) {
       score *= 2;
     }
 

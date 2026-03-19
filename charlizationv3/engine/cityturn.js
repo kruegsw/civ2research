@@ -26,7 +26,7 @@ import {
 import { calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
 import { grantAdvance, getAvailableResearch, checkUnitAutoUpgrade, upgradeUnitsForTech } from './research.js';
-import { calcAttitudeScore } from './diplomacy.js';
+import { calcAttitudeScore, addTreatyFlag, TF } from './diplomacy.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Food processing (Wave 1 — unchanged)
@@ -133,6 +133,18 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
       newWorked = callbacks.autoAssignWorker(city, cityIndex, newWorked, state, mapBase);
     }
 
+    // Binary FUN_004e9719: if workers + specialists < expected, add entertainers
+    // This handles the case where no tiles are available for a new worker
+    if (!growthBlocked) {
+      const expectedCitizens = newSize - 1; // -1 for city center (always worked)
+      const currentAssigned = (newWorked || city.workedTiles).length + (newSpecs || city.specialists || []).length;
+      if (currentAssigned < expectedCitizens) {
+        const deficit = expectedCitizens - currentAssigned;
+        newSpecs = [...(newSpecs || city.specialists || [])];
+        for (let d = 0; d < deficit; d++) newSpecs.push('entertainer');
+      }
+    }
+
     if (growthBlocked) {
       events.push({ type: growthBlocked, cityName: city.name, cityIndex, civSlot: activeCiv });
     } else {
@@ -168,8 +180,16 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
       if (newSize > 1) {
         newSize--;
         // Remove a specialist first, then worst worker
+        // Binary FUN_004e9719: remove priority is scientist → taxman → entertainer
         if (newSpecs.length > 0) {
-          newSpecs = newSpecs.slice(0, -1);
+          newSpecs = [...newSpecs];
+          const sciIdx = newSpecs.lastIndexOf('scientist');
+          if (sciIdx >= 0) newSpecs.splice(sciIdx, 1);
+          else {
+            const taxIdx = newSpecs.lastIndexOf('taxman');
+            if (taxIdx >= 0) newSpecs.splice(taxIdx, 1);
+            else newSpecs.pop(); // entertainer (or any remaining)
+          }
         } else if (newWorked.length > 0 && callbacks?.removeWorstWorker) {
           newWorked = callbacks.removeWorstWorker(city, cityIndex, newWorked, state, mapBase);
         }
@@ -478,6 +498,16 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
               if (tile) tile.visibility |= bit;
             }
             events.push({ type: 'apolloProgram', civSlot: activeCiv });
+          }
+          // Marco Polo's Embassy (9): establish contact with all alive civs
+          // Binary ref: FUN_004e7270 — for each civ: set_contact(owner, civ)
+          if (wi === 9) {
+            for (let ci = 1; ci < 8; ci++) {
+              if (ci === activeCiv) continue;
+              if (!(state.civsAlive & (1 << ci))) continue;
+              addTreatyFlag(state, activeCiv, ci, TF.CONTACT);
+            }
+            events.push({ type: 'marcoPoloEmbassy', civSlot: activeCiv });
           }
           // A.4: SETI Program (26): halve remaining research cost, -25 attitude
           if (wi === 26) {

@@ -434,14 +434,19 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
   // Romans=0→European, Babylonians=1→Classical, Germans=2→Far-Eastern, Egyptians=3→Middle-Eastern
   const style = rulesCivNumber % 4;
 
-  // Initialize attitudes toward other civs (from pseudocode: rand() % 80 + 10)
+  // Initialize attitudes toward other civs
+  // Binary FUN_004a7ce9: rand()%80+10 for AI targets, clamp(diff*5+rand()%80+10, 10, 75) for human
   const attitudes = new Array(8).fill(0);
   for (let j = 0; j < 8; j++) {
     if (j === civSlot) { attitudes[j] = 0; continue; }
     if (j === 0) { attitudes[j] = 0; continue; } // barbarians
-    // Randomize: rand() % 80 + 10 → range [10, 89]
-    // For human targets: clamp(difficulty*5 + rand()%80 + 10, 10, 75)
-    attitudes[j] = (rng ? rng.nextInt(80) : Math.floor(Math.random() * 80)) + 10;
+    const baseAtt = (rng ? rng.nextInt(80) : Math.floor(Math.random() * 80)) + 10;
+    // Human targets get difficulty-scaled attitudes (higher diff = friendlier start)
+    if (seat && !seat.ai) {
+      attitudes[j] = Math.max(10, Math.min(75, difficultyIdx * 5 + baseAtt));
+    } else {
+      attitudes[j] = baseAtt;
+    }
   }
 
   // Q.3: Grant starting techs using seeded PRNG random selection from

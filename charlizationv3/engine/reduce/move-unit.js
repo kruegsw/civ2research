@@ -705,6 +705,32 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
     // Check for first contact with other civs now visible
     discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
+
+    // D5/D6: Cancel goto orders and wake sentries when enemies become visible
+    // Binary FUN_0042738c (cancel_goto_if_blocked) + FUN_004273e6 (cancel_goto_for_stack)
+    for (let ui = 0; ui < state.units.length; ui++) {
+      const u = state.units[ui];
+      if (u.owner !== civSlot || u.gx < 0) continue;
+      // Check if any enemy is now visible near this unit (radius 1 = 9 tiles)
+      let enemyVisible = false;
+      for (let ei = 0; ei < state.units.length; ei++) {
+        const e = state.units[ei];
+        if (e.owner === civSlot || e.owner === 0 || e.gx < 0) continue;
+        let dx = Math.abs(u.gx - e.gx);
+        if (mapBase.wraps) dx = Math.min(dx, mapBase.mw - dx);
+        const dy = Math.abs(u.gy - e.gy);
+        if (dx <= 2 && dy <= 2 && dx + dy <= 3) { enemyVisible = true; break; }
+      }
+      if (!enemyVisible) continue;
+      // D5: Cancel goto for non-air units
+      if (u.orders === 'goto' && (UNIT_DOMAIN[u.type] ?? 0) !== 1) {
+        state.units[ui] = { ...u, orders: 'none' };
+      }
+      // D6: Wake sentries (non-air land units or any sentry seeing enemies)
+      else if (u.orders === 'sentry') {
+        state.units[ui] = { ...u, orders: 'none' };
+      }
+    }
   }
 
   // ── Trespass check: entering another civ's territory during peace ──
