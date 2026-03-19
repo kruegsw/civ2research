@@ -17,6 +17,7 @@ import { updateVisibility } from './visibility.js';
 import { grantAdvance } from './research.js';
 import { isSchismBlocked } from './events.js';
 import { killCiv } from './diplomacy.js';
+import { ejectAirUnits } from './combat.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Constants
@@ -637,6 +638,14 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
 
   state.cities = state.cities.length ? [...state.cities] : state.cities;
   state.cities[cityIndex] = capturedCity;
+
+  // ── Eject stranded enemy air units at captured city ──
+  // Air units (domain 1) belonging to the old owner lose their base
+  // and are destroyed. The capturer's air units are excluded.
+  const ejectResult = ejectAirUnits(state, cityGx, cityGy, capturerCivSlot);
+  if (ejectResult.events.length > 0) {
+    events.push(...ejectResult.events);
+  }
 
   // ── Tile ownership: update city tile and radius ──
   const cityTileIdx = cityGy * mapBase.mw + cityGx;

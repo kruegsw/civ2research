@@ -41,6 +41,48 @@ import { hasWonderEffect, civHasWonder } from './utils.js';
 const SIEGE_DEFENDING_FP1 = new Set([23, 24, 25, 26]);
 
 // ═══════════════════════════════════════════════════════════════════
+// Stack Property Summation (ported from block 0x005B sum_stack_property)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Sum a property across all units at a given tile owned by a specific player.
+ * Ported from decompiled FUN_005Bxxxx (sum_stack_property).
+ *
+ * @param {object} state - game state { units }
+ * @param {number} gx - tile grid X
+ * @param {number} gy - tile grid Y
+ * @param {number} owner - civ slot to filter by
+ * @param {number} mode - property to sum:
+ *   0 = count units
+ *   1 = sum attack values (UNIT_ATK)
+ *   2 = sum defense values (UNIT_DEF)
+ *   3 = sum current HP (maxHP - damage)
+ * @returns {number} the summed value
+ */
+export function sumStackProperty(state, gx, gy, owner, mode) {
+  let sum = 0;
+  for (const u of state.units) {
+    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+    if (u.owner !== owner) continue;
+    switch (mode) {
+      case 0: // count
+        sum += 1;
+        break;
+      case 1: // attack
+        sum += (UNIT_ATK[u.type] || 0);
+        break;
+      case 2: // defense
+        sum += (UNIT_DEF[u.type] || 0);
+        break;
+      case 3: // current HP
+        sum += Math.max(1, (UNIT_HP[u.type] || 1) - (u.movesRemain || 0));
+        break;
+    }
+  }
+  return sum;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // B.1 — Defense Calculation (ported from FUN_0057e33a)
 // ═══════════════════════════════════════════════════════════════════
 
@@ -588,6 +630,50 @@ export function checkSenateOverride(state, attackerCiv) {
   // behavior — the full attitude-based check would require the
   // target civ parameter and attitude lookup.
   return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Air Unit Ejection — Kill stranded air units (block 0x005B)
+//
+// When a city is captured or a carrier is destroyed, any enemy air
+// units (domain === 1) at that position are killed — they have no
+// base to land at.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Eject (kill) all air units at a given position.
+ * Air units at a tile lose their base when a city changes hands or
+ * a carrier is destroyed. They are killed immediately.
+ *
+ * @param {object} state - mutable game state (units array)
+ * @param {number} gx - tile gx
+ * @param {number} gy - tile gy
+ * @param {number} [excludeOwner=-1] - civ slot to EXCLUDE (the new owner keeps their air units)
+ * @returns {{ ejected: number[], events: object[] }}
+ */
+export function ejectAirUnits(state, gx, gy, excludeOwner = -1) {
+  const ejected = [];
+  const events = [];
+
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) !== 1) continue; // air units only
+    if (u.owner === excludeOwner) continue; // new owner's air units stay
+
+    // Kill the air unit
+    state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+    ejected.push(i);
+    events.push({
+      type: 'airUnitEjected',
+      unitIndex: i,
+      unitType: u.type,
+      owner: u.owner,
+      gx, gy,
+    });
+  }
+
+  return { ejected, events };
 }
 
 // ═══════════════════════════════════════════════════════════════════

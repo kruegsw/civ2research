@@ -1057,30 +1057,60 @@ function placeResources(tileData, mw, mh, mapSeed) {
 }
 
 /**
- * Place goody huts on eligible land tiles using deterministic formula
- * with RNG fallback.
- * Binary formula: ((gx * 7 + gy * 11 + mapSeed * 3) & 0xFF) < hutThreshold
+ * Place goody huts on eligible land tiles using the binary's deterministic
+ * formula from block 0x0053 (check_tile_goody_hut).
+ *
+ * Binary formula (faithful to decompiled FUN_00530xxx):
+ *   index = (y + x) >> 1
+ *   offset = x - index
+ *   test = ((index & 3) + (offset & 3) * 4) ==
+ *          (((y + x) >> 3) * 0x0B + (offset >> 2) * 0x0D + seed + 8) & 0x1F
+ *
+ * This produces a sparse, reproducible pattern across the map with ~1/32
+ * probability per eligible tile (~3% density).
  *
  * @param {object[]} tileData - tile array
  * @param {number} mw - map width
  * @param {number} mh - map height
- * @param {object} rng - PRNG instance
+ * @param {object} rng - PRNG instance (unused — placement is deterministic)
  * @param {number} mapSeed - map seed for determinism
  */
 function placeGoodyHuts(tileData, mw, mh, rng, mapSeed) {
-  // Hut threshold: ~2% of eligible tiles (~5 out of 256)
-  const HUT_THRESHOLD = 5;
-
   for (let y = 0; y < mh; y++) {
     for (let x = 0; x < mw; x++) {
       const i = y * mw + x;
       const t = tileData[i];
       if (t.terrain === T_OCEAN || t.terrain === T_GLACIER || t.terrain === T_MOUNTAINS) continue;
 
-      const hash = ((x * 7 + y * 11 + mapSeed * 3) & 0xFF);
-      if (hash < HUT_THRESHOLD) {
+      // Binary goody hut formula (block 0x0053)
+      const sum = y + x;
+      const index = sum >> 1;
+      const offset = x - index;
+      const lhs = (index & 3) + (offset & 3) * 4;
+      const rhs = ((sum >> 3) * 0x0B + (offset >> 2) * 0x0D + mapSeed + 8) & 0x1F;
+      if (lhs === rhs) {
         t.goodyHut = true;
       }
     }
   }
+}
+
+/**
+ * Check if a specific tile should have a goody hut using the binary formula.
+ * Exported for use by runtime systems (e.g., when revealing new tiles).
+ *
+ * @param {number} x - tile x (gx)
+ * @param {number} y - tile y (gy)
+ * @param {number} mapSeed - map seed
+ * @param {number} terrain - terrain type at tile
+ * @returns {boolean} true if this tile should have a goody hut
+ */
+export function checkTileGoodyHut(x, y, mapSeed, terrain) {
+  if (terrain === T_OCEAN || terrain === T_GLACIER || terrain === T_MOUNTAINS) return false;
+  const sum = y + x;
+  const index = sum >> 1;
+  const offset = x - index;
+  const lhs = (index & 3) + (offset & 3) * 4;
+  const rhs = ((sum >> 3) * 0x0B + (offset >> 2) * 0x0D + mapSeed + 8) & 0x1F;
+  return lhs === rhs;
 }

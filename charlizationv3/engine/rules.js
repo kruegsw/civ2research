@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, CARAVAN_HELP_WONDER } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS, TRADE, SPECIALIST_CYCLE, SPECIALIST_MIN_CITY_SIZE } from './defs.js';
+import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS, TRADE, SPECIALIST_CYCLE, SPECIALIST_MIN_CITY_SIZE, CAN_IRRIGATE, CAN_MINE, FORTRESS_TURNS, AIRBASE_TURNS } from './defs.js';
 import { resolveDirection, getDirection, isZOCBlocked, checkRoadConnection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -19,6 +19,46 @@ import { canBuildUnitType, canBuildImprovement, canBuildWonder } from './buildch
 import { calcBribeCostEnhanced, calcInciteCostEnhanced } from './espionage.js';
 
 const VALID_SPECIALIST_TYPES = new Set(['entertainer', 'taxman', 'scientist']);
+
+/**
+ * Check if a tile has an adjacent water source for irrigation.
+ * Water sources: ocean, river, or existing irrigation on an adjacent tile.
+ * Matches binary FUN_0046xxxx check_unit_can_improve water source validation.
+ *
+ * @param {number} gx - tile gx
+ * @param {number} gy - tile gy
+ * @param {object} mapBase - map accessor object
+ * @returns {boolean} true if water source is adjacent
+ */
+function _hasWaterSource(gx, gy, mapBase) {
+  // River on current tile counts as water source
+  if (mapBase.hasRiver && mapBase.hasRiver(gx, gy)) return true;
+
+  // Check 8 adjacent tiles for ocean, river, or existing irrigation
+  const DIRS = [
+    [+1,-1],[+2,0],[+1,+1],[0,+2],[-1,+1],[-2,0],[-1,-1],[0,-2]
+  ];
+  const mw = mapBase.mw;
+  const mh = mapBase.mh;
+  const dx = gx * 2 + (gy % 2);
+  for (const [odx, ody] of DIRS) {
+    let ndx = dx + odx;
+    const ndy = gy + ody;
+    if (ndy < 0 || ndy >= mh) continue;
+    if (mapBase.wraps) {
+      ndx = ((ndx % (mw * 2)) + mw * 2) % (mw * 2);
+    } else if (ndx < 0 || ndx >= mw * 2) {
+      continue;
+    }
+    const ngx = ndx >> 1;
+    const terrain = mapBase.getTerrain(ngx, ndy);
+    if (terrain === 10) return true; // ocean
+    if (mapBase.hasRiver && mapBase.hasRiver(ngx, ndy)) return true;
+    const imp = mapBase.getImprovements(ngx, ndy);
+    if (imp && imp.irrigation) return true;
+  }
+  return false;
+}
 
 /**
  * Check if a tile is too close to an existing city.
@@ -342,11 +382,24 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const terrain = mapBase.getTerrain(unit.gx, unit.gy);
       // Can't build on ocean (except pollution cleanup)
       if (terrain === 10 && order !== 'pollution') return 'Cannot build improvements on ocean';
+      const civTechs = gameState.civTechs?.[civSlot];
       // Check specific orders
       if (order === 'irrigation') {
         if (IRRIGATION_TURNS[terrain] === 0) return 'Cannot irrigate this terrain';
         const imp = mapBase.getImprovements(unit.gx, unit.gy);
-        if (imp.irrigation && !imp.farmland) return 'Already irrigated';
+        // If terrain supports direct irrigation (CAN_IRRIGATE), check for existing
+        if (CAN_IRRIGATE[terrain]) {
+          if (imp.irrigation && !imp.farmland) return 'Already irrigated';
+          // Farmland upgrade requires Refrigeration tech (id 70)
+          if (imp.irrigation && imp.farmland) return 'Already has farmland';
+        }
+        // Mining and irrigation conflict: can't irrigate if already mined
+        // (irrigation replaces mine in Civ2 — this is handled by the reducer)
+        // Water source check: irrigation requires adjacent water source
+        // (river, ocean, or existing irrigation on an adjacent tile)
+        if (CAN_IRRIGATE[terrain] && !_hasWaterSource(unit.gx, unit.gy, mapBase)) {
+          return 'No adjacent water source for irrigation';
+        }
       }
       if (order === 'mine') {
         if (MINING_TURNS[terrain] === 0) return 'Cannot mine this terrain';
@@ -356,11 +409,37 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (order === 'road') {
         const imp = mapBase.getImprovements(unit.gx, unit.gy);
         if (imp.road) return 'Already has road';
+        // Road requires Bridge Building tech (id 7) on river tiles
+        if (mapBase.hasRiver && mapBase.hasRiver(unit.gx, unit.gy)) {
+          if (!civTechs || !civTechs.has(7)) return 'Bridge Building tech required for roads on rivers';
+        }
       }
       if (order === 'railroad') {
         const imp = mapBase.getImprovements(unit.gx, unit.gy);
         if (!imp.road) return 'Needs road first';
         if (imp.railroad) return 'Already has railroad';
+        // Railroad requires Railroad tech (id 67)
+        if (!civTechs || !civTechs.has(67)) return 'Railroad tech required';
+      }
+      if (order === 'fortress') {
+        const imp = mapBase.getImprovements(unit.gx, unit.gy);
+        if (imp.fortress) return 'Already has fortress';
+        // Fortress requires Construction tech (id 18)
+        if (!civTechs || !civTechs.has(18)) return 'Construction tech required for fortress';
+        // Can't build fortress in a city
+        if (gameState.cities.some(c => c.gx === unit.gx && c.gy === unit.gy && c.size > 0)) {
+          return 'Cannot build fortress in a city';
+        }
+      }
+      if (order === 'airbase') {
+        const imp = mapBase.getImprovements(unit.gx, unit.gy);
+        if (imp.airbase) return 'Already has airbase';
+        // Airbase requires Radio tech (id 66)
+        if (!civTechs || !civTechs.has(66)) return 'Radio tech required for airbase';
+        // Can't build airbase in a city
+        if (gameState.cities.some(c => c.gx === unit.gx && c.gy === unit.gy && c.size > 0)) {
+          return 'Cannot build airbase in a city';
+        }
       }
       if (order === 'pollution') {
         const imp = mapBase.getImprovements(unit.gx, unit.gy);

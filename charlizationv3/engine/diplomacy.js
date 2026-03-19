@@ -1221,6 +1221,124 @@ export function formAlliance(state, mapBase, civA, civB) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// 4b. recallUnitsFromTerritory
+//
+// When peace/ceasefire ends (transition to war) or alliance breaks,
+// recall all units of ownerCiv from territoryCiv's territory to the
+// nearest friendly city on the same continent.
+// Port of binary recall_units_from_territory (block 0x0046).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Recall all units owned by ownerCiv that are in territoryCiv's territory.
+ * Relocated units are moved to the nearest friendly city owned by ownerCiv
+ * on the same continent. If no such city exists, fall back to any nearest
+ * friendly city. Units have their orders cleared.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors (tileData, mw, mh, wraps, getBodyId)
+ * @param {number} ownerCiv - civ whose units are being recalled
+ * @param {number} territoryCiv - civ whose territory units must leave
+ * @returns {{ recalled: number }}
+ */
+export function recallUnitsFromTerritory(state, mapBase, ownerCiv, territoryCiv) {
+  if (!state.units || !mapBase.tileData) return { recalled: 0 };
+
+  let recalled = 0;
+  const mw = mapBase.mw;
+
+  for (let i = 0; i < state.units.length; i++) {
+    const u = state.units[i];
+    if (u.owner !== ownerCiv || u.gx < 0) continue;
+
+    // Check if unit is in territoryCiv's territory
+    const tileIdx = u.gy * mw + u.gx;
+    const tile = mapBase.tileData[tileIdx];
+    if (!tile || tile.tileOwnership !== territoryCiv) continue;
+
+    // Find nearest friendly city owned by ownerCiv, preferring same continent
+    const unitContinent = mapBase.getBodyId ? mapBase.getBodyId(u.gx, u.gy) : -1;
+    let bestCi = -1;
+    let bestDist = Infinity;
+    let bestSameContinent = false;
+
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      const c = state.cities[ci];
+      if (c.owner !== ownerCiv || c.size <= 0) continue;
+      const d = tileDist(u.gx, u.gy, c.gx, c.gy, mw, mapBase.wraps);
+      const sameContinent = mapBase.getBodyId ? mapBase.getBodyId(c.gx, c.gy) === unitContinent : false;
+
+      // Prefer same-continent cities; within same preference, pick closest
+      if (sameContinent && !bestSameContinent) {
+        bestCi = ci;
+        bestDist = d;
+        bestSameContinent = true;
+      } else if (sameContinent === bestSameContinent && d < bestDist) {
+        bestCi = ci;
+        bestDist = d;
+      }
+    }
+
+    if (bestCi >= 0) {
+      const dest = state.cities[bestCi];
+      state.units[i] = {
+        ...u,
+        gx: dest.gx, gy: dest.gy,
+        x: dest.gx * 2 + (dest.gy % 2), y: dest.gy,
+        orders: 'none',
+      };
+      recalled++;
+    }
+  }
+
+  return { recalled };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 4c. breakAlliance
+//
+// Breaks an alliance between two civs. Clears alliance flag for both
+// directions, recalls units from each other's territory, and sets the
+// treaty to 'peace' (alliance break does not mean war).
+// Port of binary break_alliance (block 0x0046).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Break an alliance between two civs.
+ * Clears the alliance flag, recalls units from each other's territory,
+ * and downgrades the treaty to 'peace'.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} civA - one ally
+ * @param {number} civB - the other ally
+ * @returns {{ events: object[] }}
+ */
+export function breakAlliance(state, mapBase, civA, civB) {
+  const events = [];
+
+  // Clear alliance flag for both directions
+  clearTreatyFlag(state, civA, civB, TF.ALLIANCE);
+
+  // Downgrade to peace (not war)
+  setTreaty(state, civA, civB, 'peace');
+
+  // Recall units from each other's territory
+  const recallA = recallUnitsFromTerritory(state, mapBase, civA, civB);
+  const recallB = recallUnitsFromTerritory(state, mapBase, civB, civA);
+
+  events.push({
+    type: 'allianceBroken',
+    civA,
+    civB,
+    unitsRecalledA: recallA.recalled,
+    unitsRecalledB: recallB.recalled,
+  });
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // 5. activateAllianceWars — FUN_0045a8e3 (diplo_activate_alliance_wars)
 //
 // When civA goes to war with civB, civA's allies are checked:

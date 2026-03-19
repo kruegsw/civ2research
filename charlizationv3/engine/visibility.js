@@ -331,3 +331,65 @@ function getLastSeen(gameState, civSlot, gx, gy) {
   if (!gameState.lastSeenCities || !gameState.lastSeenCities[civSlot]) return null;
   return gameState.lastSeenCities[civSlot][`${gx},${gy}`] || null;
 }
+
+// ── Terrain generation for newly-revealed tiles ──────────────────
+
+/**
+ * Generate terrain for tiles in a 2-tile radius that are ungenerated/unexplored.
+ * Called when a unit first reveals new territory (e.g., in fog-of-war games
+ * with incremental map generation).
+ *
+ * For fully pre-generated maps (standard Civ2 behavior), this is a no-op
+ * since all tiles are already populated by mapgen.js. This function exists
+ * for future support of incremental/lazy map generation where tiles beyond
+ * explored regions have placeholder terrain.
+ *
+ * Terrain is generated deterministically from coordinates + seed so that
+ * the same tile always gets the same terrain regardless of reveal order.
+ *
+ * @param {object} mapBase - map accessor { tileData, mw, mh, wraps }
+ * @param {number} gx - center tile gx
+ * @param {number} gy - center tile gy
+ * @param {number} seed - map seed for deterministic generation
+ */
+export function generateTerrainAround(mapBase, gx, gy, seed) {
+  const { tileData, mw, mh } = mapBase;
+  if (!tileData) return;
+
+  // 2-tile radius offsets in doubled-X coordinates
+  const OFFSETS = [
+    [0,0],
+    [-1,-1], [1,-1], [1,1], [-1,1], [0,-2], [0,2], [2,0], [-2,0],
+    [-1,-3], [1,-3], [-2,-2], [2,-2], [-3,-1], [3,-1],
+    [-3,1], [3,1], [-2,2], [2,2], [-1,3], [1,3],
+  ];
+
+  const dx = gx * 2 + (gy % 2);
+  const mw2 = mw * 2;
+  const wraps = mapBase.wraps ?? (mapBase.mapShape === 0);
+
+  for (const [odx, ody] of OFFSETS) {
+    let ndx = dx + odx;
+    const ndy = gy + ody;
+    if (ndy < 0 || ndy >= mh) continue;
+    if (wraps) {
+      ndx = ((ndx % mw2) + mw2) % mw2;
+    } else if (ndx < 0 || ndx >= mw2) {
+      continue;
+    }
+    const ngx = ndx >> 1;
+    const idx = ndy * mw + ngx;
+    const tile = tileData[idx];
+    if (!tile) continue;
+
+    // Only generate for tiles with terrain === -1 (ungenerated sentinel)
+    // Fully generated maps will never have terrain === -1
+    if (tile.terrain !== -1) continue;
+
+    // Deterministic terrain from coordinates + seed
+    // Formula: terrain = ((gx * 7 + gy * 11 + seed) % 11)
+    // This produces all 11 terrain types (0-10) with uniform distribution
+    const rawTerrain = ((ngx * 7 + ndy * 11 + seed) % 11);
+    tile.terrain = rawTerrain < 0 ? rawTerrain + 11 : rawTerrain;
+  }
+}

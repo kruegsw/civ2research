@@ -216,6 +216,9 @@ export function spawnBarbarians(state, mapBase) {
       break; // only one camp per cycle
     }
   }
+
+  // ── Barbarian ship spawning: land barbs at coast spawn transports ──
+  spawnBarbShipsAtCoast(state, mapBase);
 }
 
 /**
@@ -389,6 +392,90 @@ export function findBarbCoastalSpawnTile(state, mapBase) {
 
   // Direct fallback: use the first ocean tile we found adjacent to the city
   return { gx: pick.oceanGx, gy: pick.oceanGy };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Barbarian Ship Spawning — land barbs at coast spawn transports
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * When a barbarian land unit is adjacent to ocean AND no barbarian ship
+ * is already nearby (within 2 tiles), spawn a barbarian transport at the
+ * coast tile and load the land unit onto it.
+ *
+ * This models Civ2's behavior where barbarian land forces reaching the
+ * coast can embark on raiding expeditions across water.
+ *
+ * Called once per turn cycle during barbarian processing.
+ *
+ * @param {object} state - game state (mutated)
+ * @param {object} mapBase - map accessor
+ */
+export function spawnBarbShipsAtCoast(state, mapBase) {
+  const { mw, mh, tileData } = mapBase;
+  if (!tileData) return;
+
+  // Count existing barbarian units to respect cap
+  let barbCount = 0;
+  for (const u of state.units) {
+    if (u.owner === 0 && u.gx >= 0) barbCount++;
+  }
+  if (barbCount >= BARBARIAN_MAX_UNITS) return;
+
+  const turnNum = state.turn?.number || 0;
+  let spawned = false;
+
+  for (let ui = 0; ui < state.units.length; ui++) {
+    const u = state.units[ui];
+    if (u.owner !== 0 || u.gx < 0) continue;
+    if (UNIT_DOMAIN[u.type] !== 0) continue; // land units only
+
+    // Check if any adjacent tile is ocean
+    let oceanGx = -1, oceanGy = -1;
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    for (const dir of dirs) {
+      const dest = resolveDirection(u.gx, u.gy, dir, mapBase);
+      if (!dest) continue;
+      if (dest.gy < 0 || dest.gy >= mh) continue;
+      const wgx = mapBase.wraps ? ((dest.gx % mw) + mw) % mw : dest.gx;
+      if (wgx < 0 || wgx >= mw) continue;
+      const tile = tileData[dest.gy * mw + wgx];
+      if (tile && tile.terrain === 10) {
+        oceanGx = wgx;
+        oceanGy = dest.gy;
+        break;
+      }
+    }
+    if (oceanGx < 0) continue; // not adjacent to ocean
+
+    // Check if barbarian ship already nearby (within 2 tiles)
+    let shipNearby = false;
+    for (const su of state.units) {
+      if (su.owner !== 0 || su.gx < 0) continue;
+      if (UNIT_DOMAIN[su.type] !== 2) continue; // sea units only
+      let dx = Math.abs(su.gx - u.gx);
+      if (mapBase.wraps) dx = Math.min(dx, mw - dx);
+      const dy = Math.abs(su.gy - u.gy);
+      if (dx + dy <= 2) { shipNearby = true; break; }
+    }
+    if (shipNearby) continue;
+
+    // Spawn a barbarian transport at the ocean tile
+    const seaType = getBarbSeaUnitType(state);
+    if (!spawned) {
+      state.units = [...state.units];
+      spawned = true;
+    }
+    const newShip = makeUnit(
+      seaType, 0, oceanGx, oceanGy,
+      UNIT_MOVE_POINTS[seaType] * MOVEMENT_MULTIPLIER
+    );
+    newShip.barbSeaTurn = turnNum;
+    state.units.push(newShip);
+    barbCount++;
+
+    if (barbCount >= BARBARIAN_MAX_UNITS) break;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════

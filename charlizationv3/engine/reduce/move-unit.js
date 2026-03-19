@@ -3,9 +3,9 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL } from '../defs.js';
-import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip } from '../movement.js';
+import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
-import { resolveCombat, calcStackBestDefender } from '../combat.js';
+import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
 import { cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { grantAdvance, getAvailableResearch } from '../research.js';
 import { dispatchEvents, EVENT_UNIT_KILLED } from '../events.js';
@@ -465,6 +465,15 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       // Defender destroyed
       killUnit(state, bestDefIdx);
 
+      // Eject air units if a carrier (type 42) was destroyed
+      if (defender.type === 42) {
+        const ejectResult = ejectAirUnits(state, dest.gx, dest.gy, unit.owner);
+        if (ejectResult.events.length > 0) {
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push(...ejectResult.events);
+        }
+      }
+
       // Scenario events: unit killed
       if (state.scenarioEvents && state.scenarioEvents.length > 0) {
         dispatchEvents(state, mapBase, EVENT_UNIT_KILLED, {
@@ -709,6 +718,21 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, unit.gx, unit.gy, mapBase.wraps);
     // Check for first contact with other civs now visible
     discoverContacts(state, mapBase, civSlot, unit.gx, unit.gy, 1);
+  }
+
+  // ── Trespass check: entering another civ's territory during peace ──
+  if (unit.gx >= 0 && civSlot > 0) {
+    const trespassResult = checkTrespass(state, mapBase, civSlot, unit.gx, unit.gy);
+    if (trespassResult.trespass) {
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'trespass',
+        civSlot,
+        ownerCiv: trespassResult.ownerCiv,
+        gx: unit.gx,
+        gy: unit.gy,
+      });
+    }
   }
 
   // ── Goody hut check ──

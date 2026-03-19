@@ -546,6 +546,50 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// C.8: Tile trespass check (block 0x0053)
+//
+// When a unit moves into territory owned by another civ, check
+// if this constitutes a trespass (diplomatic incident).
+// Trespass occurs when: tile is owned by another civ AND we have
+// peace (not war, not alliance) with them.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if moving to (gx, gy) constitutes a trespass into another civ's territory.
+ *
+ * @param {object} state - game state (needs treaties)
+ * @param {object} mapBase - map accessor (tileData, mw)
+ * @param {number} civSlot - the moving unit's owner civ
+ * @param {number} gx - target tile gx
+ * @param {number} gy - target tile gy
+ * @returns {{ trespass: boolean, ownerCiv: number }}
+ */
+export function checkTrespass(state, mapBase, civSlot, gx, gy) {
+  if (!mapBase.tileData) return { trespass: false, ownerCiv: -1 };
+
+  const tileIdx = gy * mapBase.mw + gx;
+  const tile = mapBase.tileData[tileIdx];
+  if (!tile) return { trespass: false, ownerCiv: -1 };
+
+  const ownerCiv = tile.tileOwnership;
+  // No owner, same owner, or barbarian territory (0) — no trespass
+  if (ownerCiv == null || ownerCiv === civSlot || ownerCiv === 0 || ownerCiv === 0x0F) {
+    return { trespass: false, ownerCiv: -1 };
+  }
+
+  // Check treaty status: trespass only during peace or ceasefire (not war, not alliance)
+  if (!state.treaties) return { trespass: false, ownerCiv: -1 };
+  const key = civSlot < ownerCiv ? `${civSlot}-${ownerCiv}` : `${ownerCiv}-${civSlot}`;
+  const treaty = state.treaties[key];
+
+  if (treaty === 'peace' || treaty === 'ceasefire') {
+    return { trespass: true, ownerCiv };
+  }
+
+  return { trespass: false, ownerCiv: -1 };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // ROAD_CONNECTIVITY — port of FUN_00488a45 (682 bytes)
 //
 // BFS/A* pathfinding using only road/railroad tiles to check if
