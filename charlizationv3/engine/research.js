@@ -58,11 +58,12 @@ export function calcResearchCost(gameState, civSlot) {
 
   const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(gameState.difficulty || 'chieftain'));
 
-  // Gap 94: Base cost differs for human vs AI (binary FUN_004c2788)
-  // Human: difficultyLevel * 2 + 6 (harder diff = more expensive = slower research)
-  // AI:    14 - difficultyLevel (harder diff = cheaper = faster AI research)
+  // Binary FUN_004c2788: difficulty clamped to [0,4] (Deity treated as Emperor)
+  // Human: clampedDiff * 2 + 6 (Chieftain=6 fast, Deity=14 slow)
+  // AI:    14 - clampedDiff    (Chieftain=14 slow, Deity=10 fast)
   const isHumanCiv = !!(gameState.humanPlayers & (1 << civSlot));
-  let baseCost = isHumanCiv ? (diffIdx * 2 + 6) : (14 - diffIdx);
+  const clampedDiff = Math.min(diffIdx, 4);
+  let baseCost = isHumanCiv ? (clampedDiff * 2 + 6) : (14 - clampedDiff);
 
   // ── Leading-civ tech cost adjustment (FUN_004c2788, line 971) ──
   // Compare this civ's tech count to the leading civ's tech count.

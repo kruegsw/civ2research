@@ -972,8 +972,9 @@ export const ADVANCE_ICON = [
    3,  // 88: Writing            (0,3)
 ];
 
-// COSMIC parameter #11: tech cost multiplier (default 3, applied as baseCost * value / 10)
-export const COSMIC_TECH_MULTIPLIER = 3;
+// COSMIC parameter #11: tech paradigm (default 10 = no scaling, range [3,10] from RULES.TXT)
+// Applied as baseCost * value / 10 — so 10 means ×1.0, 3 means ×0.3
+export const COSMIC_TECH_MULTIPLIER = 10;
 
 // COSMIC parameter #17 (DAT_0064bcd9): Fundamentalism science penalty percentage (default 50).
 // Raw C FUN_004ea1f6 line 3900: science -= (DAT_0064bcd9 * science) / 100
