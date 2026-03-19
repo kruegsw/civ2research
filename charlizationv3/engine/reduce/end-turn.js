@@ -327,6 +327,17 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       });
     }
 
+    // Treasury warning — alert player when net income is negative and they have cities
+    const netIncomeThisTurn = civTaxTotal - civMaintenanceTotal;
+    const myCityCount = state.cities.filter(c => c.owner === activeCiv && c.size > 0).length;
+    if (netIncomeThisTurn < 0 && myCityCount > 1) {
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'treasuryWarning', civSlot: activeCiv,
+        treasury: civ.treasury, netIncome: netIncomeThisTurn,
+      });
+    }
+
     // A.3: Science doubling (FUN_004efbc6)
     // Chieftain difficulty: double all science output for human players
     // AI with difficulty > 1: double science while building spaceship parts (35-37)

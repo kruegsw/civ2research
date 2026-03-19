@@ -872,6 +872,12 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'treasuryWarning': {
+        sfx('NEG1');
+        showTaxAdvisoryDialog(ev.treasury ?? 0, ev.netIncome ?? 0, showNext);
+        break;
+      }
+
       default:
         showNext();
     }
@@ -993,6 +999,53 @@ export function showRateSliders() {
         action: { type: CHANGE_RATES, scienceRate: sciRate, taxRate: taxRate },
       });
     }},
+  ]);
+}
+
+// ── Tax Advisory dialog ──
+
+/**
+ * Show a warning dialog when the player's treasury is declining.
+ * Offers a direct shortcut to the tax rate sliders.
+ *
+ * @param {number} treasury - current treasury
+ * @param {number} netIncome - net gold per turn (negative = declining)
+ * @param {function} [onDismiss] - optional callback when dialog closes
+ */
+export function showTaxAdvisoryDialog(treasury, netIncome, onDismiss) {
+  if (document.getElementById('tax-advisory-dialog')) return;
+
+  createCiv2Dialog('tax-advisory-dialog', 'Treasury Warning', panel => {
+    panel.style.cssText += ';min-width:300px;max-width:400px;text-align:center';
+
+    const icon = document.createElement('div');
+    icon.style.cssText = 'font-size:36px;margin-bottom:8px';
+    icon.textContent = '\u26A0'; // warning triangle
+    panel.appendChild(icon);
+
+    const msg = document.createElement('div');
+    msg.style.cssText = 'font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);margin-bottom:12px';
+    msg.textContent = 'Your treasury is declining!';
+    panel.appendChild(msg);
+
+    const details = document.createElement('div');
+    details.style.cssText = 'font:14px "Times New Roman",Georgia,serif;color:#555;margin-bottom:12px';
+    details.innerHTML = `Current treasury: <strong>${treasury.toLocaleString()}</strong> gold<br>`
+      + `Net income: <strong style="color:#a00">${netIncome >= 0 ? '+' : ''}${netIncome}</strong> gold/turn`;
+    panel.appendChild(details);
+
+    if (treasury + netIncome <= 0) {
+      const urgentMsg = document.createElement('div');
+      urgentMsg.style.cssText = 'font:bold 13px "Times New Roman",Georgia,serif;color:#900;margin-bottom:8px';
+      urgentMsg.textContent = 'Warning: Treasury will be empty next turn! Units may be disbanded.';
+      panel.appendChild(urgentMsg);
+    }
+  }, [
+    { label: 'Adjust Tax Rates', action: () => {
+      if (onDismiss) onDismiss();
+      showRateSliders();
+    }},
+    { label: 'OK', action: onDismiss },
   ]);
 }
 

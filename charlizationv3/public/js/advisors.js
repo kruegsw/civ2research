@@ -6,13 +6,14 @@
 import { S } from './state.js';
 import { createCiv2Dialog, showOverlayMessage, showConfirmDialog } from './dialogs.js';
 import { sfx } from './sound.js';
-import { ADVANCE_NAMES, ADVANCE_PREREQS, ADVANCE_ICON, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_NAMES, IMPROVE_PREREQS, IMPROVE_COSTS, IMPROVE_MAINTENANCE, WONDER_NAMES, WONDER_PREREQS, WONDER_OBSOLETE, WONDER_COSTS, GOVERNMENT_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, UNIT_ATK, UNIT_DEF, UNIT_MOVE_POINTS, UNIT_HP, UNIT_COSTS, UNIT_DOMAIN, TERRAIN_NAMES, TERRAIN_BASE, TERRAIN_TRANSFORM } from '../engine/defs.js';
+import { ADVANCE_NAMES, ADVANCE_PREREQS, ADVANCE_ICON, UNIT_NAMES, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_NAMES, IMPROVE_PREREQS, IMPROVE_COSTS, IMPROVE_MAINTENANCE, WONDER_NAMES, WONDER_PREREQS, WONDER_OBSOLETE, WONDER_COSTS, GOVERNMENT_NAMES, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, GOVT_CORRUPTION_DIVISOR, UNIT_ATK, UNIT_DEF, UNIT_MOVE_POINTS, UNIT_HP, UNIT_COSTS, UNIT_DOMAIN, TERRAIN_NAMES, TERRAIN_BASE, TERRAIN_TRANSFORM } from '../engine/defs.js';
 import { Civ2Renderer } from './renderer.js';
 import { getAvailableResearch, calcResearchCost } from '../engine/research.js';
 import { calcCityTrade, calcFoodSurplus, calcShieldProduction, getProductionCost } from '../engine/production.js';
 import { validateAction } from '../engine/rules.js';
 import { REVOLUTION, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, SET_RESEARCH } from '../engine/actions.js';
 import { openDiplomacyDialog } from './diplomacy-ui.js';
+import { hasWonderEffect } from '../engine/utils.js';
 
 // Late-bound dependencies (e.g. openCityDialog from app.js)
 let _deps = {};
@@ -1848,58 +1849,137 @@ export function showCivpedia(initialTab) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// DEMOGRAPHICS — population, GNP, military, land area
+// DEMOGRAPHICS (F11) — comparative stats: your civ vs best/worst
 // ═══════════════════════════════════════════════════════════════════
+
+/** Gather demographic stats for a single civ. */
+function _calcCivDemographics(gs, mapBase, cSlot) {
+  const cities = gs.cities.filter(c => c.owner === cSlot && c.size > 0);
+  let population = 0;
+  for (const c of cities) population += c.size * 10000;
+
+  // GNP — net gold income per turn
+  let gnp = 0;
+  if (mapBase) {
+    for (let ci = 0; ci < gs.cities.length; ci++) {
+      const c = gs.cities[ci];
+      if (c.owner !== cSlot || c.size <= 0) continue;
+      const td = calcCityTrade(c, ci, gs, mapBase);
+      if (td) gnp += (td.tax || 0) - (td.maintenance || 0);
+    }
+  }
+
+  // Land area — tiles owned
+  let landArea = 0;
+  if (mapBase?.tileData) {
+    for (const tile of mapBase.tileData) {
+      if (tile && tile.tileOwnership === cSlot) landArea++;
+    }
+  }
+
+  // Literacy — tech fraction
+  const techCount = gs.civTechs?.[cSlot]?.size || 0;
+  const totalTechs = ADVANCE_NAMES.length; // 89
+  const literacy = totalTechs > 0 ? Math.round(techCount / totalTechs * 100) : 0;
+
+  // Military service — total units
+  const units = gs.units.filter(u => u.owner === cSlot && u.gx >= 0);
+  const militaryService = units.length;
+
+  // Pollution — count pollution tiles in owned territory
+  let pollution = 0;
+  if (mapBase?.tileData) {
+    for (const tile of mapBase.tileData) {
+      if (tile && tile.tileOwnership === cSlot && tile.improvements?.pollution) pollution++;
+    }
+  }
+
+  // Food surplus — sum across cities
+  let foodSurplus = 0;
+  if (mapBase) {
+    for (let ci = 0; ci < gs.cities.length; ci++) {
+      const c = gs.cities[ci];
+      if (c.owner !== cSlot || c.size <= 0) continue;
+      const fs = calcFoodSurplus(c, ci, gs, mapBase, gs.units);
+      if (fs) foodSurplus += fs.surplus || 0;
+    }
+  }
+
+  return { population, gnp, landArea, literacy, militaryService, pollution, foodSurplus, cityCount: cities.length };
+}
+
 export function showDemographics() {
   if (!S.mpGameState || S.mpCivSlot == null) return;
   if (document.getElementById('demographics-dialog')) return;
 
   const gs = S.mpGameState;
   const civSlot = S.mpCivSlot;
+  const mapBase = S.mpMapBase;
 
-  // Population: sum of city sizes × base (each pop = ~10,000)
-  const myCities = gs.cities.filter(c => c.owner === civSlot && c.size > 0);
-  let pop = 0;
-  for (const c of myCities) pop += c.size * 10000;
-
-  // GNP: sum of trade across cities
-  let gnp = 0;
-  if (S.mpMapBase) {
-    for (const c of myCities) {
-      const tradeData = calcCityTrade(c, gs, S.mpMapBase);
-      if (tradeData) gnp += tradeData.totalTrade || 0;
-    }
+  // Gather stats for all alive civs
+  const allStats = {};
+  for (let c = 1; c < 8; c++) {
+    if (!(gs.civsAlive & (1 << c))) continue;
+    allStats[c] = _calcCivDemographics(gs, mapBase, c);
   }
 
-  // Military: count live military units
-  const myUnits = gs.units.filter(u => u.owner === civSlot && u.gx >= 0);
-  const militaryUnits = myUnits.filter(u => (UNIT_ATK[u.type] || 0) > 0 || (UNIT_DEF[u.type] || 0) > 0);
-  let milStrength = 0;
-  for (const u of militaryUnits) milStrength += (UNIT_ATK[u.type] || 0) + (UNIT_DEF[u.type] || 0);
+  const myStats = allStats[civSlot] || _calcCivDemographics(gs, mapBase, civSlot);
 
-  // Land area: count explored tiles owned
-  let landArea = 0;
-  if (S.mpMapBase?.tileData) {
-    for (const tile of S.mpMapBase.tileData) {
-      if (tile && tile.tileOwnership === civSlot) landArea++;
+  // Category definitions
+  const categories = [
+    { key: 'population', label: 'Population', fmt: v => v.toLocaleString(), moreIsBetter: true },
+    { key: 'gnp', label: 'GNP', fmt: v => `${v} gold/turn`, moreIsBetter: true },
+    { key: 'landArea', label: 'Land Area', fmt: v => `${v} tiles`, moreIsBetter: true },
+    { key: 'literacy', label: 'Literacy', fmt: v => `${v}%`, moreIsBetter: true },
+    { key: 'militaryService', label: 'Mil. Service', fmt: v => `${v} units`, moreIsBetter: true },
+    { key: 'pollution', label: 'Pollution', fmt: v => `${v} tiles`, moreIsBetter: false },
+    { key: 'foodSurplus', label: 'Life Exp.', fmt: v => v > 0 ? 'Growing' : v === 0 ? 'Stable' : 'Declining', moreIsBetter: true },
+  ];
+
+  // Compute best/worst across all alive civs for each category
+  const civSlots = Object.keys(allStats).map(Number);
+  function findExtreme(key, compareFn) {
+    let best = civSlots[0], bestVal = allStats[civSlots[0]]?.[key] ?? 0;
+    for (const c of civSlots) {
+      const val = allStats[c]?.[key] ?? 0;
+      if (compareFn(val, bestVal)) { best = c; bestVal = val; }
     }
+    return { civSlot: best, value: bestVal };
   }
 
-  // Treasury
   const treasury = gs.civs?.[civSlot]?.treasury || 0;
 
   createCiv2Dialog('demographics-dialog', 'Demographics', panel => {
-    panel.innerHTML = `<table class="demo-table">
-      <tr><th>Category</th><th>Value</th></tr>
-      <tr><td>Population</td><td>${pop.toLocaleString()}</td></tr>
-      <tr><td>Cities</td><td>${myCities.length}</td></tr>
-      <tr><td>GNP (trade)</td><td>${gnp}</td></tr>
-      <tr><td>Treasury</td><td>${treasury} gold</td></tr>
-      <tr><td>Military Units</td><td>${militaryUnits.length}</td></tr>
-      <tr><td>Military Strength</td><td>${milStrength}</td></tr>
-      <tr><td>Total Units</td><td>${myUnits.length}</td></tr>
-      <tr><td>Land Area</td><td>${landArea} tiles</td></tr>
-    </table>`;
+    panel.style.cssText = 'max-height:70vh;overflow-y:auto;min-width:480px';
+
+    // Treasury header
+    const hdr = document.createElement('div');
+    hdr.className = 'advisor-summary';
+    hdr.style.cssText = 'margin:0 0 8px;text-align:center';
+    hdr.textContent = `Treasury: ${treasury.toLocaleString()} gold | Cities: ${myStats.cityCount}`;
+    panel.appendChild(hdr);
+
+    let html = '<table class="advisor-table"><thead><tr>';
+    html += '<th>Category</th><th>Your Value</th><th>Best Civ</th><th>Worst Civ</th>';
+    html += '</tr></thead><tbody>';
+
+    for (const cat of categories) {
+      const myVal = myStats[cat.key] ?? 0;
+      const best = findExtreme(cat.key, cat.moreIsBetter ? (a, b) => a > b : (a, b) => a < b);
+      const worst = findExtreme(cat.key, cat.moreIsBetter ? (a, b) => a < b : (a, b) => a > b);
+      const bestName = gs.civNames?.[best.civSlot] || `Civ ${best.civSlot}`;
+      const worstName = gs.civNames?.[worst.civSlot] || `Civ ${worst.civSlot}`;
+
+      html += '<tr>';
+      html += `<td>${cat.label}</td>`;
+      html += `<td class="num">${cat.fmt(myVal)}</td>`;
+      html += `<td class="num">${cat.fmt(best.value)}<br><span style="font-size:11px;color:#555">${bestName}</span></td>`;
+      html += `<td class="num">${cat.fmt(worst.value)}<br><span style="font-size:11px;color:#555">${worstName}</span></td>`;
+      html += '</tr>';
+    }
+
+    html += '</tbody></table>';
+    panel.innerHTML += html;
   });
 }
 
@@ -2219,4 +2299,115 @@ export function showScienceAdvisor() {
 
     panel.appendChild(wrapper);
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GOVERNMENT COUNCIL — pick a new government after revolution
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Show the Government Council dialog for selecting a new government.
+ * Typically called when anarchy ends and the player must choose.
+ * If the civ owns the Statue of Liberty (wonder 19), all governments
+ * are available regardless of tech prerequisites.
+ *
+ * @param {object} state - game state
+ * @param {number} civSlot - player's civ slot
+ * @param {string} [currentGovt] - current government (e.g. 'anarchy')
+ */
+export function showGovernmentCouncilDialog(state, civSlot, currentGovt) {
+  if (!state || civSlot == null) return;
+  if (document.getElementById('govt-council-dialog')) return;
+
+  const civ = state.civs?.[civSlot];
+  if (!civ) return;
+  const govt = currentGovt || civ.government || 'despotism';
+  const civTechs = state.civTechs?.[civSlot] || new Set();
+
+  // Statue of Liberty (wonder index 19) — all governments available
+  const hasStatueOfLiberty = hasWonderEffect(state, civSlot, 19);
+
+  // Build list of available governments
+  const available = GOVERNMENT_KEYS.filter(g => {
+    if (g === 'anarchy') return false;
+    if (g === govt && govt !== 'anarchy') return false; // skip current unless in anarchy
+    if (hasStatueOfLiberty) return true;
+    const prereq = GOVT_TECH_PREREQS[g] ?? -1;
+    return prereq < 0 || civTechs.has(prereq);
+  });
+
+  if (available.length === 0) {
+    showOverlayMessage('No government forms available');
+    return;
+  }
+
+  let selectedGovt = available[0];
+
+  // Government attribute descriptions
+  const govtAttrs = {
+    despotism:       'Low corruption, +1 food penalty above 2, martial law allowed',
+    monarchy:        'Moderate corruption, martial law up to 3, max rate 70%',
+    communism:       'Low waste, fixed corruption, martial law up to 3, max rate 80%',
+    fundamentalism:  'No unhappiness, tithes replace tax, science capped at 50%',
+    republic:        'Low corruption, +1 trade per tile, senate controls war, max rate 80%',
+    democracy:       'No corruption, +1 trade per tile, senate controls war, max rate 100%',
+  };
+
+  createCiv2Dialog('govt-council-dialog', 'Government Council', panel => {
+    panel.style.minWidth = '340px';
+    panel.style.maxWidth = '460px';
+
+    const desc = document.createElement('div');
+    desc.style.cssText = 'margin-bottom:10px;font:14px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);text-align:center';
+    desc.textContent = hasStatueOfLiberty
+      ? 'The Statue of Liberty grants you access to all forms of government!'
+      : 'Choose a new form of government:';
+    panel.appendChild(desc);
+
+    for (const g of available) {
+      const row = document.createElement('label');
+      row.style.cssText = 'display:block;padding:5px 8px;cursor:pointer;font:15px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);border-bottom:1px solid rgba(0,0,0,0.08)';
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'govt-council-choice';
+      radio.value = g;
+      radio.style.cssText = 'margin-right:8px;vertical-align:middle';
+      if (g === selectedGovt) radio.checked = true;
+      radio.addEventListener('change', () => { selectedGovt = g; });
+      row.appendChild(radio);
+
+      const nameSpan = document.createElement('strong');
+      nameSpan.textContent = g.charAt(0).toUpperCase() + g.slice(1);
+      row.appendChild(nameSpan);
+
+      // Attributes
+      const attrs = document.createElement('div');
+      attrs.style.cssText = 'font-size:12px;color:#555;margin:2px 0 0 24px';
+      const maxRate = (GOVT_MAX_RATE[g] ?? 10) * 10;
+      const maxSci = (GOVT_MAX_SCIENCE[g] ?? 10) * 10;
+      const corr = GOVT_CORRUPTION_DIVISOR[g] ?? 1;
+      attrs.textContent = `Max Rate: ${maxRate}% | Max Science: ${maxSci}% | Corruption: ${corr > 2 ? 'Low' : corr > 1 ? 'Moderate' : 'High'}`;
+      row.appendChild(attrs);
+
+      // Description
+      if (govtAttrs[g]) {
+        const tip = document.createElement('div');
+        tip.style.cssText = 'font-size:11px;color:#776;margin:1px 0 0 24px;font-style:italic';
+        tip.textContent = govtAttrs[g];
+        row.appendChild(tip);
+      }
+
+      panel.appendChild(row);
+    }
+  }, [
+    { label: 'Cancel' },
+    { label: 'Accept', action: () => {
+      sfx('NEWGOVT');
+      S.transport.sendRaw({
+        type: 'ACTION',
+        action: { type: REVOLUTION, government: selectedGovt },
+      });
+    }},
+  ]);
 }

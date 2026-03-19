@@ -21,6 +21,7 @@ import {
   showResearchPicker, showMapSizePicker,
   showCivpedia, showDemographics, showCityList,
   showMilitaryAdvisor, showTradeAdvisor, showScienceAdvisor,
+  showGovernmentCouncilDialog,
   registerAdvisorDeps,
 } from './advisors.js';
 import {
@@ -769,6 +770,9 @@ const HAMBURGER_ACTIONS = {
   'advisor-science': () => showScienceAdvisor(),
   'advisor-demographics': () => showDemographics(),
   'advisor-taxrates': () => showRateSliders(),
+  'advisor-govt-council': () => {
+    if (S.mpGameState && S.mpCivSlot) showGovernmentCouncilDialog(S.mpGameState, S.mpCivSlot);
+  },
   'view-techtree': () => showTechTree(),
   'view-diplomacy': () => showDiplomacyPanel(),
   'view-negotiate': () => showDiplomacyNegotiationPicker(),
@@ -1101,6 +1105,13 @@ window.addEventListener('keydown', e => {
   if (e.key === 'R' && e.shiftKey) {
     e.preventDefault();
     showRevolutionDialog();
+    return;
+  }
+
+  // Shift+G: government council (choose government with details)
+  if (e.key === 'G' && e.shiftKey) {
+    e.preventDefault();
+    if (S.mpGameState && S.mpCivSlot) showGovernmentCouncilDialog(S.mpGameState, S.mpCivSlot);
     return;
   }
 
