@@ -467,24 +467,41 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     if (u.owner !== activeCiv || u.gx < 0) continue;
 
     // HP recovery — ported from FUN_00488cef (heal_units)
+    // Binary: runs once at START of each civ's turn (FUN_00489553 line 2486)
     // Own city + Barracks/Port Facility/Airport = full heal
-    // Own city (no matching building) = 2 HP bars
-    // Allied city = 1 HP bar
-    // Fortress = 1 HP bar
-    // Field = 1 HP bar every other turn (even turns only)
+    // Own city (no matching building) = 2 HP bars (20 internal)
+    // Allied city = 1 HP bar (10 internal)
+    // Fortress = 1 HP bar (10 internal)
+    // Field = 1 HP bar every other turn (10 internal)
     if (u.movesRemain > 0) {
       const domain = UNIT_DOMAIN[u.type] ?? 0;
       const ownCity = state.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner && c.size > 0);
       let healAmt = 0;
 
-      // Healing amounts in internal HP units (1 bar = 10 internal)
+      // Binary FUN_00488cef healing formula (internal HP units):
+      // Base: local_8 = 1 (1 internal HP point, NOT 1 bar)
+      // Fortress: local_8 = 2
+      // Near own city (dist<4) + ground: local_8 += 1 (+2 with barracks)
+      // Domain-specific building in own city: local_8 <<= 1
+      // In own city: local_8 <<= 1
+      // Scale: local_8 = (maxHP / 10) * local_8
+      // Full heal with matching building in own city: local_8 = damage
+      const maxHp = (UNIT_HP[u.type] || 1) * 10;
+      let healBase = 1; // 1 internal HP per turn (field baseline)
+
       if (ownCity) {
         const matchingBuildingId = domain === 0 ? 2 : domain === 2 ? 34 : 32;
-        if (cityHasBuilding(ownCity, matchingBuildingId)) {
-          healAmt = u.movesRemain; // Full heal
-        } else {
-          healAmt = 20; // Own city without matching building: 2 HP bars
-        }
+        const hasMatchingBuilding = cityHasBuilding(ownCity, matchingBuildingId);
+
+        // In own city: base doubled twice (×4)
+        healBase = 1;
+        if (domain === 0) healBase += (hasMatchingBuilding ? 2 : 1); // barracks +2, else +1
+        healBase <<= 1; // domain building doubling
+        healBase <<= 1; // in-city doubling
+        // Scale by max HP
+        healBase = Math.floor(maxHp / 10) * healBase;
+        // Full heal with matching building
+        if (hasMatchingBuilding) healBase = u.movesRemain;
       } else {
         const alliedCity = state.cities.find(c => {
           if (c.gx !== u.gx || c.gy !== u.gy || c.size <= 0) return false;
@@ -495,19 +512,24 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         });
 
         if (alliedCity) {
-          healAmt = 10; // Allied city: 1 HP bar
+          healBase = 2; // Allied city: slightly better than field
         } else {
           const tileIdx = u.gy * mapBase.mw + u.gx;
           const tile = mapBase.tileData?.[tileIdx];
           const onFortress = tile && tile.improvements && tile.improvements.fortress;
 
           if (onFortress) {
-            healAmt = 10; // Fortress: 1 HP bar
+            healBase = 2; // Fortress
           } else if (turnNumber % 2 === 0) {
-            healAmt = 10; // Field: 1 HP bar every other turn
+            healBase = 1; // Field: 1 internal HP every other turn
+          } else {
+            healBase = 0; // Field: no healing on odd turns
           }
         }
+        // Scale by max HP
+        healBase = Math.floor(maxHp / 10) * healBase;
       }
+      healAmt = healBase;
 
       if (healAmt > 0) {
         const newHpLost = Math.max(0, u.movesRemain - healAmt);
