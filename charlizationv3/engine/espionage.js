@@ -18,6 +18,48 @@ import { getGovernment, cityHasBuilding, hasWonderEffect } from './utils.js';
 import { calcGarrisonDistance } from './production.js';
 
 // ═══════════════════════════════════════════════════════════════════
+// Intelligence access check
+//
+// Determines whether viewerCiv can see intelligence (city details,
+// unit info, etc.) about targetCiv. Conditions:
+//   - Has Espionage tech (advance 27)
+//   - Has Writing tech (advance 88)
+//   - Has an embassy with targetCiv
+//   - Map is revealed (cheat / scenario flag)
+//
+// Binary ref: FUN_00520000 block — intelligence visibility checks
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if viewerCiv can view intelligence about targetCiv.
+ *
+ * @param {object} state - game state
+ * @param {number} viewerCiv - civ slot that wants to view
+ * @param {number} targetCiv - civ slot being viewed
+ * @returns {boolean} true if viewer has intelligence access
+ */
+export function canViewIntelligence(state, viewerCiv, targetCiv) {
+  if (viewerCiv === targetCiv) return true;
+
+  // Check for Espionage tech (advance 27)
+  if (state.civTechs?.[viewerCiv]?.has(27)) return true;
+
+  // Check for Writing tech (advance 88)
+  if (state.civTechs?.[viewerCiv]?.has(88)) return true;
+
+  // Check for embassy
+  if (state.embassies) {
+    const embKey = `${viewerCiv}-${targetCiv}`;
+    if (state.embassies[embKey]) return true;
+  }
+
+  // Map revealed (scenario/cheat flag)
+  if (state.mapRevealed) return true;
+
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // calc_city_revolt_distance — FUN_004c65d2 (232B)
 //
 // Distance to nearest city with Palace (building 1) owned by

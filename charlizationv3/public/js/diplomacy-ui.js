@@ -16,6 +16,7 @@ import {
 import {
   CIV_COLORS, ADVANCE_NAMES, LEADERS_TXT_NAMES,
 } from '../engine/defs.js';
+import { showCivilopedia } from './civilopedia.js';
 import {
   getAttitudeLevel, calcTributeDemand, calcTechPrice, calcGoldToAttitude,
 } from '../engine/diplomacy.js';
@@ -280,7 +281,9 @@ function showGiveTechDialog(state, myCiv, targetCiv, sendAction) {
 
     for (const techId of giveableTechs) {
       const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
-      panel.appendChild(makeMenuBtn(name, () => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:4px';
+      row.appendChild(makeMenuBtn(name, () => {
         document.getElementById('diplo-tech-dialog')?.remove();
         sfx('POS1');
         sendAction({
@@ -294,6 +297,13 @@ function showGiveTechDialog(state, myCiv, targetCiv, sendAction) {
         });
         showOverlayMessage(`Gave ${name} to ${civName}`);
       }));
+      const infoBtn = document.createElement('button');
+      infoBtn.textContent = '?';
+      infoBtn.title = 'View in Civilopedia';
+      infoBtn.style.cssText = 'font:bold 11px serif;width:18px;height:18px;padding:0;border:1px solid #a08060;background:#d4b896;cursor:pointer;border-radius:2px;color:#555;flex-shrink:0';
+      infoBtn.addEventListener('click', e => { e.stopPropagation(); showCivilopedia('advances', techId); });
+      row.appendChild(infoBtn);
+      panel.appendChild(row);
     }
   }, [{ label: 'Cancel' }]);
 }
@@ -408,7 +418,9 @@ function showRequestTechDialog(state, myCiv, targetCiv, sendAction) {
     for (const techId of requestable) {
       const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
       const price = calcTechPrice(state, targetCiv, myCiv, techId);
-      panel.appendChild(makeMenuBtn(`${name} (value: ${price}g)`, () => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:4px';
+      row.appendChild(makeMenuBtn(`${name} (value: ${price}g)`, () => {
         document.getElementById('diplo-reqtech-dialog')?.remove();
         sfx('POS1');
         // Request tech: use EXECUTE_TRADE from them to us (AI will evaluate)
@@ -423,6 +435,13 @@ function showRequestTechDialog(state, myCiv, targetCiv, sendAction) {
         });
         showOverlayMessage(`Requested ${name} from ${civName}`);
       }));
+      const infoBtn = document.createElement('button');
+      infoBtn.textContent = '?';
+      infoBtn.title = 'View in Civilopedia';
+      infoBtn.style.cssText = 'font:bold 11px serif;width:18px;height:18px;padding:0;border:1px solid #a08060;background:#d4b896;cursor:pointer;border-radius:2px;color:#555;flex-shrink:0';
+      infoBtn.addEventListener('click', e => { e.stopPropagation(); showCivilopedia('advances', techId); });
+      row.appendChild(infoBtn);
+      panel.appendChild(row);
     }
   }, [{ label: 'Cancel' }]);
 }

@@ -19,7 +19,7 @@ import {
 import {
   showTechTree, showRevolutionDialog, showDiplomacyPanel,
   showResearchPicker, showMapSizePicker,
-  showCivpedia, showDemographics, showCityList,
+  showDemographics, showCityList,
   showMilitaryAdvisor, showTradeAdvisor, showScienceAdvisor,
   showGovernmentCouncilDialog,
   registerAdvisorDeps,
@@ -44,6 +44,7 @@ import { getValidActions, validateAction } from '../engine/rules.js';
 import { UNIT_ORDER, WORKER_ORDER, PILLAGE, GOTO, BOMBARD, BUILD_CITY } from '../engine/actions.js';
 import { findPath } from '../engine/pathfinding.js';
 import { showDiplomacyNegotiationPicker } from './diplomacy-ui.js';
+import { showCivilopedia } from './civilopedia.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // DOM element initialization
@@ -763,7 +764,7 @@ const HAMBURGER_ACTIONS = {
     document.getElementById('game-back-btn').click();
   },
   'new-map': () => showMapSizePicker(),
-  'advisor-civilopedia': () => showCivpedia(),
+  'advisor-civilopedia': () => showCivilopedia(),
   'advisor-military': () => showMilitaryAdvisor(),
   'advisor-trade': () => showTradeAdvisor(),
   'advisor-city': () => showCityList(),
@@ -1227,7 +1228,7 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  if (e.key === 'F1') { e.preventDefault(); showCivpedia(); return; }
+  if (e.key === 'F1') { e.preventDefault(); showCivilopedia(); return; }
   if (e.key === 'F2') { e.preventDefault(); showMilitaryAdvisor(); return; }
   if (e.key === 'F3') { e.preventDefault(); showTradeAdvisor(); return; }
   if (e.key === 'F4') { e.preventDefault(); showCityList(); return; }

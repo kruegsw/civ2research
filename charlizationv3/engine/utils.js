@@ -60,3 +60,33 @@ export function getGovernment(city, gameState, civSlot) {
 export function wrapGx(gx, mw) {
   return ((gx % mw) + mw) % mw;
 }
+
+/**
+ * Find last alive unit owned by a specific civ.
+ * Searches backwards through the unit array (matching binary convention).
+ *
+ * @param {object} state - game state
+ * @param {number} ownerCiv - civ slot to match
+ * @returns {number} unit index, or -1 if none found
+ */
+export function findUnitByIndex(state, ownerCiv) {
+  for (let i = state.units.length - 1; i >= 0; i--) {
+    if (state.units[i].gx >= 0 && state.units[i].owner === ownerCiv) return i;
+  }
+  return -1;
+}
+
+/**
+ * Find a city by its id field (not array index).
+ * Searches backwards through the city array (matching binary convention).
+ *
+ * @param {object} state - game state
+ * @param {number} cityId - city id to find
+ * @returns {number} city array index, or -1 if not found
+ */
+export function findCityById(state, cityId) {
+  for (let i = state.cities.length - 1; i >= 0; i--) {
+    if (state.cities[i].size > 0 && state.cities[i].id === cityId) return i;
+  }
+  return -1;
+}

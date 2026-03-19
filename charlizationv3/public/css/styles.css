@@ -1230,6 +1230,9 @@ html, body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', Tahom
 .civpedia-stat { display: flex; justify-content: space-between; padding: 1px 0; }
 .civpedia-stat-label { color: #555; }
 .civpedia-stat-value { font-weight: bold; color: #333; }
+.civpedia-stat-value a { color: #1a5276; }
+.civpedia-stat-value a:hover { color: #2980b9; }
+.civpedia-list-active { background: #b89c6a; font-weight: bold; }
 
 /* ═══════════════════════════════════════════════════════════════════
    Demographics Dialog
