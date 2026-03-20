@@ -1946,7 +1946,10 @@ const Civ2CityDialog = {
   },
 
   _drawCitizens(ctx, city, epoch, cdSprites, specs, computed) {
-    if (!(cdSprites && cdSprites.citizens)) return;
+    if (!(cdSprites && cdSprites.citizens)) {
+      console.warn('[citydialog] No citizen sprites — cdSprites:', !!cdSprites, 'citizens:', cdSprites?.citizens?.length);
+      return;
+    }
     const R = this.REGIONS.citizens;
     const eraRow = Math.min(epoch, 3);
     const happy = computed ? computed.happy : (city.happyCitizens || 0);
@@ -3479,6 +3482,7 @@ const Civ2CityDialog = {
       happiness = { happy: 0, unhappy: 0, civilDisorder: false, weLoveKingDay: false };
     }
 
+    console.log('[citydialog] render: citizens?', !!cdSprites?.citizens, 'rows:', cdSprites?.citizens?.length, 'city size:', city.size, 'happy:', happiness);
     try {
     this._drawBackground(ctx, cdSprites);
     this._drawLabels(ctx);
