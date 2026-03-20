@@ -1112,47 +1112,39 @@ function initNetwork(appCallbacks) {
           // populateFowCivSelector is called inside with forceCiv to ensure correct civ
           doRenderFromState({ silent: false, forceCiv: S.mpCivSlot });
 
-          // Show game introduction dialog with civ name and starting techs
+          // Show game introduction dialog (matches Civ2 @INTHEBEGINNING from Game.txt):
+          // "%STRING0, you have risen to become leader of the %STRING1.
+          //  May your reign be long and prosperous.
+          //  The %STRING1 have knowledge of Irrigation, Mining, %STRING2and Roads."
           {
             const gs = S.mpGameState;
-            const civName = gs.civNames?.[S.mpCivSlot] || 'Your civilization';
-            const difficulty = gs.difficulty || 'chieftain';
-            const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+            const civName = gs.civNames?.[S.mpCivSlot] || 'your people';
+            const leaderName = gs.civs?.[S.mpCivSlot]?.leaderName || 'Leader';
             const civTechs = gs.civTechs?.[S.mpCivSlot];
             const startingTechs = civTechs ? [...civTechs].map(id => ADVANCE_NAMES[id]).filter(Boolean) : [];
 
-            createCiv2Dialog('game-intro-dialog', `${civName}`, panel => {
-              panel.style.cssText += ';min-width:320px;max-width:440px;padding:12px 20px';
+            // Build tech list string (Civ2 always includes "Irrigation, Mining, and Roads" as base knowledge)
+            let techStr = '';
+            if (startingTechs.length > 0) {
+              techStr = startingTechs.join(', ') + ', ';
+            }
+
+            createCiv2Dialog('game-intro-dialog', 'In the Beginning . . .', panel => {
+              panel.style.cssText += ';min-width:320px;max-width:460px;padding:16px 24px';
               const FONT = '"Times New Roman", Georgia, serif';
-
-              const intro = document.createElement('div');
-              intro.style.cssText = `font:18px ${FONT};color:#333;text-align:center;margin-bottom:12px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
-              intro.textContent = `You are the leader of the ${civName}.`;
-              panel.appendChild(intro);
-
-              const diffDiv = document.createElement('div');
-              diffDiv.style.cssText = `font:15px ${FONT};color:#555;text-align:center;margin-bottom:12px`;
-              diffDiv.textContent = `Difficulty: ${diffLabel}`;
-              panel.appendChild(diffDiv);
+              const msg = document.createElement('div');
+              msg.style.cssText = `font:17px ${FONT};color:#333;line-height:1.6;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
 
               if (startingTechs.length > 0) {
-                const techHeader = document.createElement('div');
-                techHeader.style.cssText = `font:bold 15px ${FONT};color:#222;margin:8px 0 4px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
-                techHeader.textContent = 'Starting Knowledge:';
-                panel.appendChild(techHeader);
-
-                for (const techName of startingTechs) {
-                  const row = document.createElement('div');
-                  row.style.cssText = `font:14px ${FONT};color:#333;padding:2px 0 2px 16px`;
-                  row.textContent = `\u2022 ${techName}`;
-                  panel.appendChild(row);
-                }
+                msg.textContent = `${leaderName}, you have risen to become leader of the ${civName}. `
+                  + `May your reign be long and prosperous. `
+                  + `The ${civName} have knowledge of ${techStr}Irrigation, Mining, and Roads.`;
               } else {
-                const noTech = document.createElement('div');
-                noTech.style.cssText = `font:14px ${FONT};color:#555;text-align:center;margin-top:8px;font-style:italic`;
-                noTech.textContent = 'Your people begin with no knowledge of the ancients.';
-                panel.appendChild(noTech);
+                msg.textContent = `${leaderName}, you have risen to become leader of the ${civName}. `
+                  + `May your reign be long and prosperous. `
+                  + `The ${civName} have knowledge of Irrigation, Mining, and Roads.`;
               }
+              panel.appendChild(msg);
             }, [{ label: 'OK' }]);
           }
           break;
