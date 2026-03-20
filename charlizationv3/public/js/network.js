@@ -8,6 +8,7 @@ import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_D
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
+import { showCivilopedia } from './civilopedia.js';
 import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Parser } from '../engine/parser.js';
@@ -1169,14 +1170,28 @@ function initNetwork(appCallbacks) {
               }
             }
 
-            // Tech discovery notification — auto-show research picker
+            // Tech discovery notification — show discovery dialog, then research picker
             if (statePayload.discoveredAdvance && statePayload.discoveredAdvance.civSlot === S.mpCivSlot) {
               playSoundForEvent('techDiscovered');
               const da = statePayload.discoveredAdvance;
-              const ct = S.mpGameState.civTechs?.[da.civSlot];
-              console.log('[tech] Discovered advance', da.advanceId, ADVANCE_NAMES[da.advanceId],
-                'civTechs now=', ct ? [...ct] : null, 'has it=', ct?.has(da.advanceId));
-              setTimeout(() => showResearchPicker(statePayload.discoveredAdvance.advanceId), 300);
+              const advName = ADVANCE_NAMES[da.advanceId] || `Advance ${da.advanceId}`;
+              console.log('[tech] Discovered', advName, '(id=' + da.advanceId + ')');
+
+              createCiv2Dialog('tech-discovery-dialog', 'Discovery', panel => {
+                const msg = document.createElement('div');
+                msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+                msg.textContent = `You have discovered the secret of ${advName}!`;
+                panel.appendChild(msg);
+              }, [
+                { label: 'Civilopedia', action: () => {
+                  showCivilopedia('advances', da.advanceId);
+                  // After civilopedia closes, show research picker
+                  setTimeout(() => showResearchPicker(da.advanceId), 200);
+                }},
+                { label: 'OK', action: () => {
+                  setTimeout(() => showResearchPicker(da.advanceId), 100);
+                }},
+              ]);
             }
 
             // Goody hut result notification (exact Civ2 GAME.TXT messages)
