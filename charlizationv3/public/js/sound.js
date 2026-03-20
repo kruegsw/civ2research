@@ -26,13 +26,13 @@ export function sfx(name) {
 // ═══════════════════════════════════════════════════════════════════
 export const SOUND_ID_MAP = {
   // -- Combat sounds (0x00..0x1D) --
-  0x00: 'AIRCOMBT',  0x01: 'SWORDFGT', 0x02: 'SWRDHORS', 0x03: 'RIFLE',
+  0x00: 'AIRCOMBT',  0x01: 'SWORDFGT', 0x02: 'SWRDHORS', 0x03: 'INFANTRY',
   0x04: 'INFANTRY',  0x05: 'MCHNGUNS', 0x06: 'CAVALRY',  0x07: 'CATAPULT',
-  0x08: 'BIGGUN',    0x09: 'MEDGUN',   0x0A: 'TANKMOTR', 0x0B: 'NAVBTTLE',
-  0x0C: 'SUBMRINE',  0x0D: 'TORPEDOS', 0x0E: 'BOATSINK', 0x0F: 'HELICPTR',
+  0x08: 'BIGGUN',    0x09: 'MEDGUN',   0x0A: 'DIESEL',   0x0B: 'NAVBTTLE',
+  0x0C: 'TORPEDOS',  0x0D: 'TORPEDOS', 0x0E: 'BOATSINK', 0x0F: 'HELISHOT',
   0x10: 'HELISHOT',  0x11: 'DIVEBOMB', 0x12: 'DIVCRASH', 0x13: 'JETCOMBT',
-  0x14: 'JETPLANE',  0x15: 'JETBOMB',  0x16: 'JETCRASH', 0x17: 'JETSPUTR',
-  0x18: 'AIRPLANE',  0x19: 'MISSILE',  0x1A: 'SMALLEXP', 0x1B: 'MEDEXPL',
+  0x14: 'JETCOMBT',  0x15: 'JETBOMB',  0x16: 'JETCRASH', 0x17: 'JETSPUTR',
+  0x18: 'DIVEBOMB',  0x19: 'MISSILE',  0x1A: 'SMALLEXP', 0x1B: 'MEDEXPL',
   0x1C: 'LARGEXPL',  0x1D: 'NUKEXPLO',
 
   // -- City/Building sounds (0x1E..0x29) --
@@ -61,11 +61,11 @@ export const SOUND_ID_MAP = {
   0x42: 'FANFARE5',  0x43: 'FANFARE6', 0x44: 'FANFARE7', 0x45: 'FANFARE8',
 
   // -- Feedback sounds (0x46..0x4D) --
-  0x46: 'FEEDBK01',  0x47: 'FEEDBK02', 0x48: 'FEEDBK03', 0x49: 'FEEDBK04',
-  0x4A: 'FEEDBK05',  0x4B: 'FEEDBK06', 0x4C: 'FEEDBK07', 0x4D: 'FEEDBK08',
+  0x46: 'FEEDBKXX',  0x47: 'FEEDBKXX', 0x48: 'FEEDBK03', 0x49: 'FEEDBK04',
+  0x4A: 'FEEDBK03',  0x4B: 'FEEDBK04', 0x4C: 'FEEDBK03', 0x4D: 'FEEDBK04',
 
   // -- Duplicate/alternate refs (0x4E..0x52) --
-  0x4E: 'NUKEXPLO',  0x4F: 'JETSPUTR', 0x50: 'AIRPLANE', 0x51: 'NAVBTTLE',
+  0x4E: 'NUKEXPLO',  0x4F: 'JETSPUTR', 0x50: 'DIVEBOMB', 0x51: 'NAVBTTLE',
   0x52: 'BOATSINK',
 
   // -- Drum rolls (0x53..0x5E, combat animations) --
@@ -191,14 +191,15 @@ sfxLoad('JETSPUTR');
 sfxLoad('JETCOMBT');
 
 // Movement event sounds (binary ref: move_unit @ FUN_0059062c)
-sfxLoad('FEEDBK05');
-sfxLoad('FEEDBK08');
-sfxLoad('SUBMARINE');
-sfxLoad('RIFLE');
-sfxLoad('HELICPTR');
-sfxLoad('JETPLANE');
-sfxLoad('TANKMOTR');
-sfxLoad('AIRPLANE');
+// Corrected to actual MGE Sound/ filenames
+sfxLoad('FEEDBK03');
+sfxLoad('FEEDBK04');
+sfxLoad('TORPEDOS');   // submarine attack
+sfxLoad('INFANTRY');   // rifle/infantry attack
+sfxLoad('HELISHOT');   // helicopter
+sfxLoad('JETCOMBT');   // jet fighter
+sfxLoad('DIESEL');     // tank/motor
+sfxLoad('DIVEBOMB');   // propeller airplane
 
 // ═══════════════════════════════════════════════════════════════════
 // 5. UNIT_ATK_SFX — Unit type → attack sound name
