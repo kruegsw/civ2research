@@ -3471,8 +3471,15 @@ const Civ2CityDialog = {
     }
 
     // Compute happiness from first principles (FUN_004ea8e4 port)
-    const happiness = this._calcHappiness(city, cityIndex, mapData, civData, supported);
+    let happiness;
+    try {
+      happiness = this._calcHappiness(city, cityIndex, mapData, civData, supported);
+    } catch (e) {
+      console.error('[citydialog] _calcHappiness error:', e);
+      happiness = { happy: 0, unhappy: 0, civilDisorder: false, weLoveKingDay: false };
+    }
 
+    try {
     this._drawBackground(ctx, cdSprites);
     this._drawLabels(ctx);
     this._drawCitizens(ctx, city, epoch, cdSprites, specs, happiness);
@@ -3484,6 +3491,9 @@ const Civ2CityDialog = {
     this._drawImprovements(ctx, city, cityIndex, mapData, cdSprites);
     this._drawInfoPanel(ctx, city, mapData, cdSprites, mapSprites, computed, happiness);
     this._drawButtons(ctx, cdSprites);
+    } catch (renderErr) {
+      console.error('[citydialog] render error:', renderErr);
+    }
 
     ctx.restore();
     const regions = this._registerButtons();
