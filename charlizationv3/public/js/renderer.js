@@ -970,7 +970,9 @@ const Civ2Renderer = {
     // Build set of tiles that have units (for city flag rendering)
     // Source: Civ2-clone — flags drawn only when units are present at the city tile
     const garrisonedTiles = new Set();
-    for (const u of mapData.units) garrisonedTiles.add(u.gx + ',' + u.gy);
+    for (const u of mapData.units) {
+      if (u.gx >= 0) garrisonedTiles.add(u.gx + ',' + u.gy);
+    }
 
     ctx.textBaseline = 'top';
 
@@ -1107,6 +1109,7 @@ const Civ2Renderer = {
     const AIR_TYPES = new Set([27, 28, 29, 30, 31]);
     const airUnitTiles = new Set();
     for (const u of mapData.units) {
+      if (u.gx < 0) continue;
       if (AIR_TYPES.has(u.type)) airUnitTiles.add(u.gx + ',' + u.gy);
     }
 
@@ -1251,6 +1254,7 @@ const Civ2Renderer = {
       // Pre-build unit counts per tile (for stacked unit badge)
       const unitCounts = {};
       for (const u of mapData.units) {
+        if (u.gx < 0) continue; // skip dead/removed units
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
@@ -1269,6 +1273,7 @@ const Civ2Renderer = {
       bestUnit = {};
       const lookup = mapData.unitBySaveIndex || {};
       for (const u of mapData.units) {
+        if (u.gx < 0) continue; // skip dead/removed units
         const tileKey = u.gx + ',' + u.gy;
         if (cityTiles.has(tileKey)) continue;
         if (fowEnabled && !(mapData.getVisibility(u.gx, u.gy) & fowBit)) continue;
