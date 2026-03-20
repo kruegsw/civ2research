@@ -8,7 +8,15 @@ import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_D
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
-import { showCivilopedia } from './civilopedia.js';
+// Lazy import to avoid circular dependency issues
+let _showCivilopedia = null;
+async function getShowCivilopedia() {
+  if (!_showCivilopedia) {
+    const mod = await import('./civilopedia.js');
+    _showCivilopedia = mod.showCivilopedia;
+  }
+  return _showCivilopedia;
+}
 import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Parser } from '../engine/parser.js';
@@ -1183,9 +1191,9 @@ function initNetwork(appCallbacks) {
                 msg.textContent = `You have discovered the secret of ${advName}!`;
                 panel.appendChild(msg);
               }, [
-                { label: 'Civilopedia', action: () => {
-                  showCivilopedia('advances', da.advanceId);
-                  // After civilopedia closes, show research picker
+                { label: 'Civilopedia', action: async () => {
+                  const showCiv = await getShowCivilopedia();
+                  showCiv('advances', da.advanceId);
                   setTimeout(() => showResearchPicker(da.advanceId), 200);
                 }},
                 { label: 'OK', action: () => {
