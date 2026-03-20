@@ -6,17 +6,8 @@ import { S, BUSY_ORDERS } from './state.js';
 import { resizeViewport, clampViewport, drawViewport, invalidateFowCanvases, deferredRenderQueue, ensureFowCanvas, ensureFowLosCanvas, ensureLosCanvas } from './viewport.js';
 import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_DELAYS, playTurnEventSound, playSoundForEvent } from './sound.js';
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog } from './dialogs.js';
-import { showResearchPicker, showDiplomacyPanel, showMapSizePicker } from './advisors.js';
+import { showResearchPicker, showDiplomacyPanel, showMapSizePicker, showTechDetail } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
-// Lazy import to avoid circular dependency issues
-let _showCivilopedia = null;
-async function getShowCivilopedia() {
-  if (!_showCivilopedia) {
-    const mod = await import('./civilopedia.js');
-    _showCivilopedia = mod.showCivilopedia;
-  }
-  return _showCivilopedia;
-}
 import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Parser } from '../engine/parser.js';
@@ -1178,28 +1169,12 @@ function initNetwork(appCallbacks) {
               }
             }
 
-            // Tech discovery notification — show discovery dialog, then research picker
+            // Tech discovery notification — show tech detail dialog, then research picker
             if (statePayload.discoveredAdvance && statePayload.discoveredAdvance.civSlot === S.mpCivSlot) {
               playSoundForEvent('techDiscovered');
               const da = statePayload.discoveredAdvance;
-              const advName = ADVANCE_NAMES[da.advanceId] || `Advance ${da.advanceId}`;
-              console.log('[tech] Discovered', advName, '(id=' + da.advanceId + ')');
-
-              createCiv2Dialog('tech-discovery-dialog', 'Discovery', panel => {
-                const msg = document.createElement('div');
-                msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-                msg.textContent = `You have discovered the secret of ${advName}!`;
-                panel.appendChild(msg);
-              }, [
-                { label: 'Civilopedia', action: async () => {
-                  const showCiv = await getShowCivilopedia();
-                  showCiv('advances', da.advanceId);
-                  setTimeout(() => showResearchPicker(da.advanceId), 200);
-                }},
-                { label: 'OK', action: () => {
-                  setTimeout(() => showResearchPicker(da.advanceId), 100);
-                }},
-              ]);
+              console.log('[tech] Discovered', ADVANCE_NAMES[da.advanceId], '(id=' + da.advanceId + ')');
+              showTechDetail(da.advanceId, () => showResearchPicker(da.advanceId));
             }
 
             // Goody hut result notification (exact Civ2 GAME.TXT messages)
@@ -1215,14 +1190,14 @@ function initNetwork(appCallbacks) {
                   break;
                 case 'tech':
                   hutSfx = 'FANFARE1';
-                  hutText = `You have discovered scrolls of ancient wisdom.\n\n${hr.advanceName}`;
+                  hutText = `You have discovered scrolls of ancient wisdom.`;
                   hutPostAction = () => {
-                    setTimeout(() => {
+                    showTechDetail(hr.advanceId, () => {
                       const civ = S.mpGameState.civs?.[S.mpCivSlot];
                       if (civ && (civ.techBeingResearched == null || civ.techBeingResearched === 0xFF)) {
                         showResearchPicker(hr.advanceId);
                       }
-                    }, 300);
+                    });
                   };
                   break;
                 case 'unit':

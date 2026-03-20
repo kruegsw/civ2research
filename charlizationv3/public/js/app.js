@@ -18,7 +18,7 @@ import {
 } from './unit-ui.js';
 import {
   showTechTree, showRevolutionDialog, showDiplomacyPanel,
-  showResearchPicker, showMapSizePicker,
+  showResearchPicker, showMapSizePicker, showTechDetail,
   showDemographics, showCityList,
   showMilitaryAdvisor, showTradeAdvisor, showScienceAdvisor,
   showGovernmentCouncilDialog,
@@ -1256,6 +1256,7 @@ registerDialogDeps({
   centerOnTile,
   selectUnit,
   showProductionPicker,
+  showTechDetail,
 });
 
 registerUnitUiDeps({ renderAtomicSwap, updateUnitInfoStrip });

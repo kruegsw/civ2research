@@ -553,13 +553,11 @@ export function showTurnEvents(events) {
 
       case 'freeAdvance': {
         playSoundForEvent('techDiscovered');
-        const advName = ADVANCE_NAMES[ev.advanceId] || `Advance ${ev.advanceId}`;
-        createCiv2Dialog('turn-event-dialog', ev.source || 'Free Advance', panel => {
-          const msg = document.createElement('div');
-          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-          msg.textContent = `You have discovered the secret of ${advName}!`;
-          panel.appendChild(msg);
-        }, [{ label: 'OK', action: showNext }]);
+        if (_deps.showTechDetail) {
+          _deps.showTechDetail(ev.advanceId, showNext);
+        } else {
+          showNext();
+        }
         break;
       }
 

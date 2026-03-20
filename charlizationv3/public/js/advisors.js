@@ -421,7 +421,7 @@ export function showTechTree() {
           applySelection(clickedId);
           // Show tech detail dialog on top — tech tree stays visible underneath
           // Pass null as returnTo so closing detail doesn't destroy the tree
-          _showGoalDetail(clickedId, null);
+          showTechDetail(clickedId, null);
         }
       });
 
@@ -841,7 +841,7 @@ export function showResearchPicker(discovered) {
     const selRow = list.querySelector('.civ2-selected');
     if (selRow) requestAnimationFrame(() => selRow.scrollIntoView({ block: 'nearest' }));
   }, [
-    { label: 'Help', action: () => _showGoalDetail(selected, showResearchPicker) },
+    { label: 'Help', action: () => showTechDetail(selected, showResearchPicker) },
     { label: 'Goal', action: () => showGoalPicker() },
     { label: 'OK', action: commitSelection },
     { label: 'Cancel' },
@@ -989,7 +989,7 @@ export function showGoalPicker() {
 
     panel.appendChild(list);
   }, [
-    { label: 'Help', action: () => _showGoalDetail(goalSelected, showGoalPicker) },
+    { label: 'Help', action: () => showTechDetail(goalSelected, showGoalPicker) },
     { label: 'OK', action: () => _showGoalResearch(goalSelected) },
     { label: 'Cancel', action: () => showResearchPicker() },
   ]);
@@ -1025,7 +1025,7 @@ export function showGoalPicker() {
 }
 
 /** Show a Civilopedia-style detail dialog for a technology advance. */
-function _showGoalDetail(advId, returnTo) {
+export function showTechDetail(advId, returnTo) {
   const techName = ADVANCE_NAMES[advId] || `Advance ${advId}`;
   const DOMAIN_LABELS = ['Land', 'Air', 'Sea'];
 
@@ -1454,7 +1454,7 @@ export function showTechAdvisor() {
       if (known) nameSpan.textContent += ' \u2713';
       row.appendChild(nameSpan);
 
-      row.addEventListener('click', () => showTechDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings, techEnablesWonders, techEnablesGovts, techObsoletesUnits, techObsoletesWonders));
+      row.addEventListener('click', () => showTechTreeDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings, techEnablesWonders, techEnablesGovts, techObsoletesUnits, techObsoletesWonders));
       row.addEventListener('mouseenter', () => { row.style.background = '#0a246a'; row.style.color = '#fff'; });
       row.addEventListener('mouseleave', () => { row.style.background = ''; row.style.color = origColor; });
 
@@ -1467,7 +1467,7 @@ export function showTechAdvisor() {
   ]);
 }
 
-export function showTechDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings, techEnablesWonders, techEnablesGovts, techObsoletesUnits, techObsoletesWonders) {
+export function showTechTreeDetail(advId, civTechs, techEnablesUnits, techEnablesBuildings, techEnablesWonders, techEnablesGovts, techObsoletesUnits, techObsoletesWonders) {
   const known = civTechs.has(advId);
   const [p1, p2] = ADVANCE_PREREQS[advId] || [-1, -1];
 
