@@ -608,7 +608,6 @@ const Civ2CityDialog = {
     const difficulty = gs ? gs.difficulty : 'chieftain';
     const humanPlayers = gs ? gs.humanPlayers : 0;
     const isHuman = !!((1 << ownerSlot) & humanPlayers);
-    console.log('[citydialog] happiness inputs: difficulty=', difficulty, 'humanPlayers=', humanPlayers, 'isHuman=', isHuman, 'govt=', govt, 'pop=', pop, 'ownerSlot=', ownerSlot);
 
     const civTechs = mapData.civTechs && mapData.civTechs[ownerSlot];
     const hasTech = (id) => civTechs ? civTechs.has(id) : false;
@@ -659,7 +658,9 @@ const Civ2CityDialog = {
 
       // Empire size penalty (Communism exempt) — line 4094-4098
       if (govt !== 'communism') {
-        const cityCount = civData ? civData.cityCount : 1;
+        const cityCount = mapData.cities
+          ? mapData.cities.filter(c => c.owner === ownerSlot && c.size > 0).length
+          : 1;
         st.unhappy += Math.floor((cityCount - divisor + cityIndex % divisor) / divisor);
       }
     }

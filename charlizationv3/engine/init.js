@@ -198,8 +198,8 @@ export function initNewGame(mapResult, seatList) {
   // ── Phase 8 (enhanced): Assign continent body IDs via proper flood fill ──
   assignContinentBodyIds(mapBase);
 
-  // Determine game difficulty from seatList
-  const difficultyName = seatList[0]?.difficulty || 'chieftain';
+  // Determine game difficulty from seatList — check all seats (human seat may not have it set)
+  const difficultyName = seatList.find(s => s.difficulty)?.difficulty || 'chieftain';
   const difficultyIdx = DIFFICULTY_INDEX[difficultyName] ?? 0;
 
   const civCount = seatList.length;
