@@ -375,7 +375,7 @@ function showProductionPicker(city, cityIndex, onDismiss) {
   // Calculate net shield production for turns display
   let netShields = 0;
   try {
-    const shieldResult = calcShieldProduction(city, cityIndex, S.mpGameState, S.mapBase, S.mpGameState.units || []);
+    const shieldResult = calcShieldProduction(city, cityIndex, S.mpGameState, S.mpMapBase, S.mpGameState.units || []);
     netShields = shieldResult.netShields || 0;
   } catch (e) { /* fallback to 0 */ }
 
@@ -456,7 +456,9 @@ function showProductionPicker(city, cityIndex, onDismiss) {
         row.appendChild(labelEl);
         row.appendChild(costLabel);
 
-        row.addEventListener('click', () => {
+        row.addEventListener('click', (e) => {
+          e.stopPropagation();
+          console.log('[prodpicker] Clicked:', item.name, item.type, item.id);
           window.removeEventListener('keydown', ppKeyHandler, true);
           S.transport.sendRaw({
             type: 'ACTION',
@@ -469,6 +471,7 @@ function showProductionPicker(city, cityIndex, onDismiss) {
           dismiss();
           if (onDismiss) onDismiss();
         });
+        row._item = item;
         panel.appendChild(row);
         rows.push(row);
       }
@@ -481,8 +484,19 @@ function showProductionPicker(city, cityIndex, onDismiss) {
     { label: 'Cancel', action: onDismiss || undefined },
   ]);
 
-  // Auto-highlight first row so Enter works immediately
-  if (rows.length > 0) ppSetHighlight(0);
+  // Auto-highlight currently producing item (if found), otherwise first row
+  const currentItem = city.itemInProduction;
+  let foundCurrent = -1;
+  if (currentItem) {
+    for (let ri = 0; ri < rows.length; ri++) {
+      if (rows[ri]._item && rows[ri]._item.type === currentItem.type && rows[ri]._item.id === currentItem.id) {
+        foundCurrent = ri;
+        break;
+      }
+    }
+  }
+  if (foundCurrent >= 0) ppSetHighlight(foundCurrent);
+  else if (rows.length > 0) ppSetHighlight(0);
 
   // Arrow key navigation
   const ppKeyHandler = e => {
