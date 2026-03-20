@@ -492,6 +492,41 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
       const mcFlags = getTreatyFlags(state, capturerCivSlot, oldOwner);
       setTreatyFlags(state, capturerCivSlot, oldOwner, mcFlags | TF.MULTI_CAPTURE_VENDETTA);
     }
+
+    // ── #63: Nuclear capture diplomatic flags ──
+    // Binary ref FUN_0057b5df: when a city is captured after a nuclear strike
+    // (opts.nuclearCapture), set additional treaty flags:
+    //   victim→attacker: 0x110 (NUKE_AWARENESS | VENDETTA)
+    //   attacker→victim: 0x20000 (NUCLEAR_ATTACK)
+    //   victim attitude toward attacker: set to max hostility (100)
+    if (opts.nuclearCapture) {
+      // Victim→attacker: NUKE_AWARENESS (0x100) + VENDETTA (0x10)
+      const victimFlags = getTreatyFlags(state, oldOwner, capturerCivSlot);
+      setTreatyFlags(state, oldOwner, capturerCivSlot,
+        victimFlags | TF.NUKE_AWARENESS | TF.VENDETTA);
+
+      // Attacker→victim: NUCLEAR_ATTACK (0x20000)
+      const attackerFlags = getTreatyFlags(state, capturerCivSlot, oldOwner);
+      setTreatyFlags(state, capturerCivSlot, oldOwner,
+        attackerFlags | TF.NUCLEAR_ATTACK);
+
+      // Set victim's attitude toward attacker to max hostility
+      if (state.civs?.[oldOwner]?.attitudes) {
+        if (!state.civs) state.civs = [];
+        state.civs = [...state.civs];
+        const victimCiv = { ...state.civs[oldOwner] };
+        const attitudes = { ...(victimCiv.attitudes || {}) };
+        attitudes[capturerCivSlot] = -100; // max hostility
+        victimCiv.attitudes = attitudes;
+        state.civs[oldOwner] = victimCiv;
+      }
+
+      events.push({
+        type: 'nuclearCaptureFlags',
+        attacker: capturerCivSlot,
+        victim: oldOwner,
+      });
+    }
   }
 
   // ── #22: Civil war check with age rank gate ──
@@ -661,6 +696,46 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     }
   }
 
+  // ── #137: In-progress wonder handling ──
+  // When a city with an in-progress wonder is captured, the wonder construction
+  // is abandoned. Notify both old owner (abandonment) and capturer (opportunity
+  // to continue). Binary: shields are zeroed, but the item can be re-selected.
+  if (city.itemInProduction?.type === 'wonder') {
+    const wonderId = city.itemInProduction.id;
+    const wonderName = WONDER_NAMES[wonderId] || `Wonder ${wonderId}`;
+    const shieldsLost = city.shieldsInBox || 0;
+
+    // Check if any other city of the old owner was also building this wonder
+    let otherCityBuilding = false;
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      if (ci === cityIndex) continue;
+      const c = state.cities[ci];
+      if (c.owner === oldOwner && c.size > 0 &&
+          c.itemInProduction?.type === 'wonder' && c.itemInProduction?.id === wonderId) {
+        otherCityBuilding = true;
+        break;
+      }
+    }
+
+    events.push({
+      type: 'wonderConstructionAbandoned',
+      wonderIndex: wonderId,
+      wonderName,
+      cityName: city.name,
+      oldOwner,
+      shieldsLost,
+      otherCityBuilding,
+    });
+
+    events.push({
+      type: 'wonderConstructionAvailable',
+      wonderIndex: wonderId,
+      wonderName,
+      cityName: city.name,
+      capturer: capturerCivSlot,
+    });
+  }
+
   // ── Resistance turns ──
   // Cities in Republic/Democracy experience resistance after capture
   const capturerGovt = getGovt(state, capturerCivSlot);
@@ -766,7 +841,7 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   // ── #59: Rehome or DELETE old owner's units that were based here ──
   rehomeOrDisbandUnits(state, cityIndex, oldOwner, mapBase);
 
-  // ── #23: Palace relocation for old owner (capital escape scoring) ──
+  // ── #23/#61: Palace relocation for old owner (capital escape scoring) ──
   // Binary ref: FUN_0057b5df lines 4587-4694 — capital escape attempt
   // Score formula: size*3 - distance + stackCount*4
   // Bonuses: Cure for Cancer(27) -> x3/2
@@ -775,95 +850,81 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   //          Different continent -> /2 penalty
   // NO coastal bonus, NO same-continent +2 bonus (binary has neither)
   // #60: Deduct 1000 science points on successful capital escape
+  // #61: Complex decision tree: escape requires science > 999 AND cityCount > 11
+  //      If conditions not met, do NOT unconditionally relocate — use fallback logic.
   if (hadPalace && !civilWarResult?.success) {
     const remainingCount = countCities(state, oldOwner);
+    const oldOwnerCivData = state.civs?.[oldOwner] || {};
+    const escapeTreasury = oldOwnerCivData.treasury || 0;
+    const escapeScience = oldOwnerCivData.researchProgress || 0;
 
-    // Capital escape requires 4+ remaining cities, candidate size > 7
-    // and candidate size >= capturedSize/2
-    // Binary: 999 < treasury as precondition for escape attempt
+    // #61: Capital escape decision tree from binary FUN_0057b5df:
+    //   Branch 1: treasury > 999 AND science > 999 AND remainingCount > 11
+    //             → Full escape with scoring algorithm
+    //   Branch 2: treasury > 999 AND (science <= 999 OR remainingCount <= 11)
+    //             → Simple relocation to most central city (no escape bonus)
+    //   Branch 3: treasury <= 999
+    //             → Simple relocation to largest available city (no cost)
+    const canFullEscape = escapeTreasury > 999 && escapeScience > 999 && remainingCount > 11;
+    const canSimpleEscape = escapeTreasury > 999;
+
     let bestPalaceCi = -1;
     let bestScore = -Infinity;
     const capturedContinent = mapBase.getBodyId ? mapBase.getBodyId(cityGx, cityGy) : -1;
 
-    for (let ci = 0; ci < state.cities.length; ci++) {
-      const c = state.cities[ci];
-      if (c.owner !== oldOwner || c.size <= 0 || ci === cityIndex) continue;
+    if (canFullEscape) {
+      // Full escape scoring algorithm — binary lines 4598-4627
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (c.owner !== oldOwner || c.size <= 0 || ci === cityIndex) continue;
 
-      // Basic eligibility: size > 7 and size >= capturedSize/2
-      if (remainingCount >= 4 && c.size > 7 && c.size >= Math.floor(city.size / 2)) {
-        // Full scoring formula from binary (FUN_0057b5df lines 4598-4627)
-        const dist = tileDist(c.gx, c.gy, cityGx, cityGy, mapBase.mw, mapBase.wraps);
+        // Basic eligibility: size > 7 and size >= capturedSize/2
+        if (c.size > 7 && c.size >= Math.floor(city.size / 2)) {
+          const dist = tileDist(c.gx, c.gy, cityGx, cityGy, mapBase.mw, mapBase.wraps);
 
-        // Count military units stacked at this city
-        let stackCount = 0;
-        for (const u of state.units) {
-          if (u.owner === oldOwner && u.gx === c.gx && u.gy === c.gy && u.gx >= 0 &&
-              (UNIT_ATK[u.type] || 0) > 0) {
-            stackCount++;
+          // Count military units stacked at this city
+          let stackCount = 0;
+          for (const u of state.units) {
+            if (u.owner === oldOwner && u.gx === c.gx && u.gy === c.gy && u.gx >= 0 &&
+                (UNIT_ATK[u.type] || 0) > 0) {
+              stackCount++;
+            }
           }
-        }
 
-        let score = c.size * 3 - dist + stackCount * 4;
+          let score = c.size * 3 - dist + stackCount * 4;
 
-        // Cure for Cancer (wonder 27): x3/2
-        // Binary line 4606-4608: thunk_FUN_0043d20a(local_1c, 0x1b) -> x3/2
-        if (c.buildings && c.buildings.has(27 + 0x27 - 0x27)) {
-          // Wonder 27 = Cure for Cancer. Binary checks FUN_0043d20a which checks
-          // if this specific city has the wonder. Use civHasWonder for simplicity.
-        }
-        if (civHasWonder(state, oldOwner, 27)) {
-          score = Math.floor(score * 3 / 2);
-        }
-
-        // City Walls (building 8) or Great Wall (wonder 6): x2
-        // Binary line 4610-4612: FUN_0043d20a(city, 8) or FUN_00453e51(civ, 6)
-        if ((c.buildings && c.buildings.has(8)) || hasWonderEffect(state, oldOwner, 6)) {
-          score *= 2;
-        }
-
-        // #23 FIX: Building 17 (SDI Defense) in candidate city -> x3
-        // Binary line 4614-4616: FUN_0043d20a(local_1c, 0x11) -> score * 3
-        // 0x11 = 17 = SDI Defense BUILDING, NOT wonder 17 (Adam Smith)
-        if (c.buildings && c.buildings.has(17)) {
-          score *= 3;
-        }
-
-        // Different continent -> /2 penalty (NO same-continent bonus)
-        // Binary line 4618-4623: if continent differs, score /= 2
-        // No +2 bonus for same continent, no +3 coastal bonus
-        if (mapBase.getBodyId) {
-          const cContinent = mapBase.getBodyId(c.gx, c.gy);
-          if (cContinent !== capturedContinent) {
-            score = Math.floor(score / 2);
+          // Cure for Cancer (wonder 27): x3/2
+          if (civHasWonder(state, oldOwner, 27)) {
+            score = Math.floor(score * 3 / 2);
           }
-        }
 
-        if (score > bestScore) {
-          bestScore = score;
-          bestPalaceCi = ci;
-        }
-      } else {
-        // Simple fallback for cities that don't meet escape criteria:
-        // just pick the largest city
-        const simpleScore = c.size;
-        if (bestPalaceCi < 0 || simpleScore > bestScore) {
-          // Only use simple scoring if no escape-eligible candidate found yet
-          if (bestScore < 0) {
-            bestScore = simpleScore;
+          // City Walls (building 8) or Great Wall (wonder 6): x2
+          if ((c.buildings && c.buildings.has(8)) || hasWonderEffect(state, oldOwner, 6)) {
+            score *= 2;
+          }
+
+          // SDI Defense (building 17) in candidate city -> x3
+          if (c.buildings && c.buildings.has(17)) {
+            score *= 3;
+          }
+
+          // Different continent -> /2 penalty
+          if (mapBase.getBodyId) {
+            const cContinent = mapBase.getBodyId(c.gx, c.gy);
+            if (cContinent !== capturedContinent) {
+              score = Math.floor(score / 2);
+            }
+          }
+
+          if (score > bestScore) {
+            bestScore = score;
             bestPalaceCi = ci;
           }
         }
       }
-    }
 
-    if (bestPalaceCi >= 0) {
-      // Binary line 4631: escape requires treasury > 999 AND valid candidate AND no civil war
-      const escapeTreasury = state.civs?.[oldOwner]?.treasury || 0;
-      const canEscape = escapeTreasury > 999 && bestScore > 0;
-
-      if (canEscape) {
+      if (bestPalaceCi >= 0 && bestScore > 0) {
         // #60: Deduct 1000 science points from old owner's research progress
-        // Binary line 4673-4674: DAT_0064c6a2 -= 1000 (deducted from civ funds)
         if (!state.civs) state.civs = [];
         state.civs = [...state.civs];
         const ownerCiv = state.civs[oldOwner] || {};
@@ -872,7 +933,6 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
           researchProgress: Math.max(0, (ownerCiv.researchProgress || 0) - 1000),
         };
 
-        // Place palace in best city
         const palaceCity = state.cities[bestPalaceCi];
         const palaceBuildings = new Set(palaceCity.buildings);
         palaceBuildings.add(1);
@@ -884,11 +944,42 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
           escapeScore: bestScore,
         });
       } else {
-        // No escape — just place palace in best available city (simple relocation)
+        // Full escape scoring found no eligible candidate — fall through to simple
+        bestPalaceCi = findMostCentralCity(state, mapBase, oldOwner, cityIndex);
+        if (bestPalaceCi >= 0) {
+          const palaceCity = state.cities[bestPalaceCi];
+          const palaceBuildings = new Set(palaceCity.buildings);
+          palaceBuildings.add(1);
+          state.cities[bestPalaceCi] = { ...palaceCity, buildings: palaceBuildings, hasPalace: true };
+        }
+      }
+    } else if (canSimpleEscape) {
+      // #61 Branch 2: Simple relocation to most central city (treasury > 999 but
+      // science or city count insufficient for full escape)
+      bestPalaceCi = findMostCentralCity(state, mapBase, oldOwner, cityIndex);
+      if (bestPalaceCi >= 0) {
         const palaceCity = state.cities[bestPalaceCi];
         const palaceBuildings = new Set(palaceCity.buildings);
         palaceBuildings.add(1);
         state.cities[bestPalaceCi] = { ...palaceCity, buildings: palaceBuildings, hasPalace: true };
+      }
+    } else {
+      // #61 Branch 3: No treasury for escape — relocate to largest remaining city
+      // Binary: palace just moves to biggest city, no cost deducted
+      let largestCi = -1, largestSize = 0;
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const c = state.cities[ci];
+        if (c.owner !== oldOwner || c.size <= 0 || ci === cityIndex) continue;
+        if (c.size > largestSize) {
+          largestSize = c.size;
+          largestCi = ci;
+        }
+      }
+      if (largestCi >= 0) {
+        const palaceCity = state.cities[largestCi];
+        const palaceBuildings = new Set(palaceCity.buildings);
+        palaceBuildings.add(1);
+        state.cities[largestCi] = { ...palaceCity, buildings: palaceBuildings, hasPalace: true };
       }
     }
   }
@@ -908,6 +999,48 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
           addTreatyFlag(state, capturerCivSlot, ci, TF.CONTACT);
         }
         events.push({ type: 'marcoPoloRecalculated', civSlot: capturerCivSlot });
+      }
+    }
+  }
+
+  // ── #138: Eiffel Tower reputation recalculation ──
+  // When a city containing the Eiffel Tower (wonder 20) is captured,
+  // recalculate the capturer's reputation. The Eiffel Tower improves
+  // diplomatic reputation; gaining it grants a bonus, while the old
+  // owner who lost it may suffer a penalty.
+  // Binary ref: FUN_0057b5df wonder-specific post-capture effects.
+  if (state.wonders) {
+    const WONDER_EIFFEL = 20;
+    for (let wi = 0; wi < state.wonders.length; wi++) {
+      const w = state.wonders[wi];
+      if (w && w.cityIndex === cityIndex && !w.destroyed && wi === WONDER_EIFFEL) {
+        // Capturer gains Eiffel Tower — boost reputation toward 100
+        // Binary: Eiffel Tower sets reputation to max(current, 80)
+        if (state.civs?.[capturerCivSlot]) {
+          if (!state.civs) state.civs = [];
+          state.civs = [...state.civs];
+          const capCiv = { ...state.civs[capturerCivSlot] };
+          const curRep = capCiv.reputation ?? 100;
+          capCiv.reputation = Math.max(curRep, 80);
+          state.civs[capturerCivSlot] = capCiv;
+        }
+
+        // Old owner loses Eiffel Tower — reputation penalty
+        // Binary: losing Eiffel Tower reduces reputation by 20
+        if (state.civs?.[oldOwner]) {
+          state.civs = [...state.civs];
+          const oldCiv = { ...state.civs[oldOwner] };
+          const oldRep = oldCiv.reputation ?? 100;
+          oldCiv.reputation = Math.max(0, oldRep - 20);
+          state.civs[oldOwner] = oldCiv;
+        }
+
+        events.push({
+          type: 'eiffelTowerReputationRecalc',
+          capturer: capturerCivSlot,
+          oldOwner,
+        });
+        break;
       }
     }
   }

@@ -2,7 +2,7 @@
 // reduce/end-turn.js — END_TURN action handler
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_NO_LIGHTHOUSE_BONUS, DIFFICULTY_KEYS } from '../defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, UNIT_DEF, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_NO_LIGHTHOUSE_BONUS, DIFFICULTY_KEYS } from '../defs.js';
 import { resolveDirection, moveCost, calcEffectiveMovementPoints } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
@@ -49,6 +49,150 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // ── Once-per-full-turn-cycle processing (when turn number increments) ──
   const isNewTurnCycle = turnNumber > state.turn.number;
   if (isNewTurnCycle) {
+    // ── #77: Power rankings — calculate ONCE at cycle start using end-of-previous-turn state ──
+    // Binary FUN_004853e7: calc_power_graph_rankings() runs at start of turn cycle,
+    // computing raw power scores and ranking all alive civs before any civ processes.
+    {
+      const powerRanking = new Array(8).fill(0);
+      for (let c = 1; c < 8; c++) {
+        if (!(state.civsAlive & (1 << c))) continue;
+        const techCount = state.civTechs?.[c]?.size || 0;
+        const cityCount = state.cities.filter(ci => ci.owner === c && ci.size > 0).length;
+        const treasury = state.civs?.[c]?.treasury || 0;
+        // Unit strength: per unit, (atk+def+1)/2 * mp/2
+        let unitStrength = 0;
+        for (const u of state.units) {
+          if (u.owner !== c || u.gx < 0) continue;
+          const atk = UNIT_ATK[u.type] || 0;
+          const def = UNIT_DEF[u.type] || 0;
+          const mp = UNIT_MOVE_POINTS[u.type] || 1;
+          unitStrength += Math.floor((atk + def + 1) / 2) * Math.floor(mp / 2);
+        }
+        powerRanking[c] = techCount * 3 + cityCount * 8 + Math.floor(treasury / 32) + unitStrength;
+      }
+      // Sort into ranks: 1=weakest, 7=strongest
+      const powerRank = new Array(8).fill(0);
+      for (let c = 1; c < 8; c++) {
+        if (!(state.civsAlive & (1 << c))) continue;
+        let rank = 1;
+        for (let other = 1; other < 8; other++) {
+          if (other === c || !(state.civsAlive & (1 << other))) continue;
+          if (powerRanking[other] < powerRanking[c]) rank++;
+          else if (powerRanking[other] === powerRanking[c] && other < c) rank++;
+        }
+        powerRank[c] = rank;
+      }
+      state.powerRanking = powerRanking;
+      state.powerRank = powerRank;
+      // Store into per-civ data for diplomacy/AI use
+      if (state.civs) {
+        state.civs = [...state.civs];
+        for (let c = 1; c < 8; c++) {
+          if (state.civs[c]) {
+            state.civs[c] = { ...state.civs[c], powerRank: powerRank[c] };
+          }
+        }
+      }
+
+      // ── #174: Power graph war trigger ──
+      // Binary: when power disparity between two civs exceeds a threshold,
+      // the stronger AI civ may auto-declare war on a weaker neighbor.
+      // Conditions:
+      //   - Strong civ must be AI (not human)
+      //   - Strong civ's power >= 3x weak civ's power
+      //   - Civs must share a continent (have adjacent cities)
+      //   - Civs must not already be at war
+      //   - Strong civ must not be at war with 2+ other civs already
+      //   - Only triggers every 8 turns (timing gate)
+      // This simulates the "big fish eats little fish" mechanic from the binary.
+      if (turnNumber % 8 === 0 && turnNumber >= 20) {
+        const humanPlayersMask_ = state.humanPlayers || 0xFF;
+        for (let strong = 1; strong < 8; strong++) {
+          if (!(state.civsAlive & (1 << strong))) continue;
+          if ((1 << strong) & humanPlayersMask_) continue; // skip human civs
+          const strongPower = powerRanking[strong];
+          if (strongPower <= 0) continue;
+
+          // Count existing wars for strong civ
+          let warCount = 0;
+          for (let w = 1; w < 8; w++) {
+            if (w === strong || !(state.civsAlive & (1 << w))) continue;
+            if (state.treaties) {
+              const wKey = strong < w ? `${strong}-${w}` : `${w}-${strong}`;
+              if (state.treaties[wKey] === 'war') warCount++;
+            }
+          }
+          if (warCount >= 2) continue; // already fighting on multiple fronts
+
+          for (let weak = 1; weak < 8; weak++) {
+            if (weak === strong || !(state.civsAlive & (1 << weak))) continue;
+            const weakPower = powerRanking[weak];
+            if (weakPower <= 0) continue;
+
+            // Check power disparity: strong must be >= 3x weak
+            if (strongPower < weakPower * 3) continue;
+
+            // Check not already at war
+            if (state.treaties) {
+              const tKey = strong < weak ? `${strong}-${weak}` : `${weak}-${strong}`;
+              if (state.treaties[tKey] === 'war') continue;
+              // Must have contact
+              if (state.treaties[tKey] === undefined) continue;
+            } else {
+              continue; // no treaties means no contact
+            }
+
+            // Check shared continent (either has a city on same bodyId)
+            let sharedContinent = false;
+            if (mapBase.getBodyId) {
+              const strongBodies = new Set();
+              for (const c of state.cities) {
+                if (c.owner === strong && c.size > 0 && c.gx >= 0) {
+                  strongBodies.add(mapBase.getBodyId(c.gx, c.gy));
+                }
+              }
+              for (const c of state.cities) {
+                if (c.owner === weak && c.size > 0 && c.gx >= 0) {
+                  if (strongBodies.has(mapBase.getBodyId(c.gx, c.gy))) {
+                    sharedContinent = true;
+                    break;
+                  }
+                }
+              }
+            } else {
+              sharedContinent = true; // can't check, assume true
+            }
+            if (!sharedContinent) continue;
+
+            // Declare war: strong AI attacks weak neighbor
+            if (!state.treaties) state.treaties = {};
+            const warKey = strong < weak ? `${strong}-${weak}` : `${weak}-${strong}`;
+            state.treaties = { ...state.treaties, [warKey]: 'war' };
+
+            // Set treaty flags
+            if (state.treatyFlags) {
+              const kAB = `${strong}-${weak}`;
+              const kBA = `${weak}-${strong}`;
+              state.treatyFlags = { ...state.treatyFlags };
+              state.treatyFlags[kAB] = (state.treatyFlags[kAB] || 0) | 0x2801; // WAR + WAR_STARTED + CONTACT
+              state.treatyFlags[kBA] = (state.treatyFlags[kBA] || 0) | 0x2001; // WAR + CONTACT
+            }
+
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({
+              type: 'powerDisparityWar',
+              aggressor: strong,
+              victim: weak,
+              aggressorPower: strongPower,
+              victimPower: weakPower,
+              ratio: (strongPower / weakPower).toFixed(1),
+            });
+            break; // only one power-disparity war per strong civ per cycle
+          }
+        }
+      }
+    }
+
     // #76: Barbarian spawning BEFORE any civ processes (binary: FUN_00489553)
     spawnBarbarians(state, mapBase);
 
@@ -76,6 +220,31 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       }
       return { ...u, movesLeft: mp, orders };
     });
+
+    // ── #145: Future tech counter — increment after turn 199 ──
+    // Binary FUN_00487371: if turn > 199, late_game_counter++ (DAT_00655b14)
+    // This counter tracks turns in late game for scoring and AI decisions.
+    if (turnNumber > 199) {
+      state.lateGameCounter = (state.lateGameCounter || 0) + 1;
+    }
+
+    // ── #146: Random ozone/event timer ──
+    // Binary FUN_00487371: if next_random_event_turn < turn, schedule next
+    // random event at turn + rand()%40 + 20 (20-60 turns away).
+    // This drives random barbarian events and global events.
+    if (!state.nextRandomEventTurn || state.nextRandomEventTurn < turnNumber) {
+      const randOffset = state.rng
+        ? state.rng.nextInt(40) + 20
+        : Math.floor(Math.random() * 40) + 20;
+      state.nextRandomEventTurn = turnNumber + randOffset;
+      // Fire random event (barbarian incursion, ozone depletion, etc.)
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'randomEventTimer',
+        turn: turnNumber,
+        nextEventTurn: state.nextRandomEventTurn,
+      });
+    }
   }
 
   state.turn = { activeCiv: next, number: turnNumber };
@@ -393,34 +562,63 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   let civTaxTotal = 0;
   let civSciTotal = 0;
   let civMaintenanceTotal = 0;
-  let shieldOverflowBeakers = 0;
+  // #147: Per-civ score accumulators during city processing
+  let civPopulationTotal = 0;
+
+  // #123: Per-city science accumulation — precompute doubling conditions
+  // Binary FUN_004efbc6: science doubling is applied PER CITY before accumulation,
+  // not as a civ-level total doubling. This matters because shield overflow beakers
+  // from each city are also doubled per-city.
+  const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(state.difficulty || 'chieftain');
+  const isHumanCiv = !!((1 << activeCiv) & (state.humanPlayers || 0xFF));
+  const aiBuildingSpaceship = !isHumanCiv && diffIdx > 1 && state.cities.some(c =>
+    c.owner === activeCiv && c.size > 0 && c.itemInProduction &&
+    c.itemInProduction.type === 'building' &&
+    c.itemInProduction.id >= 35 && c.itemInProduction.id <= 37
+  );
+  const shouldDoubleScience = (diffIdx === 0 && isHumanCiv) || aiBuildingSpaceship;
+
   for (let ci = 0; ci < state.cities.length; ci++) {
     const city = state.cities[ci];
     if (city.owner !== activeCiv || city.size <= 0) continue;
+
+    // #147: Accumulate population for score tracking
+    civPopulationTotal += city.size;
+
     if (city.resistanceTurns > 0) continue; // no trade during resistance
     const { tax, sci, maintenance } = calcCityTrade(city, ci, state, mapBase);
     civTaxTotal += tax;
-    civSciTotal += sci;
-    // #12: Skip building maintenance for AI civs
-    if (isActiveCivHuman) {
-      civMaintenanceTotal += maintenance;
-    }
 
-    // A.6: Shield overflow → research beakers
+    // #123: Per-city science with per-city doubling and shield overflow
+    let citySci = sci;
+
+    // A.6: Shield overflow → research beakers (per-city)
     // Binary: clamp(shieldSurplus - freeUnitSupport, 0, citySize) → civ research pool
     const { grossShields, support } = calcShieldProduction(city, ci, state, mapBase, state.units);
     const shieldSurplus = grossShields - support;
     if (shieldSurplus > city.size) {
-      shieldOverflowBeakers += Math.min(shieldSurplus - city.size, city.size);
+      citySci += Math.min(shieldSurplus - city.size, city.size);
+    }
+
+    // #123: Apply doubling PER CITY (not civ-level total)
+    if (shouldDoubleScience) citySci *= 2;
+
+    civSciTotal += citySci;
+
+    // #12: Skip building maintenance for AI civs
+    if (isActiveCivHuman) {
+      civMaintenanceTotal += maintenance;
     }
   }
-  civSciTotal += shieldOverflowBeakers;
 
   // Update civ treasury and research progress
   if (state.civs && state.civs[activeCiv]) {
     state.civs = [...prev.civs];
     const civ = { ...state.civs[activeCiv] };
     civ.treasury = (civ.treasury || 0) + civTaxTotal - civMaintenanceTotal;
+
+    // #147: Store accumulated population for score computations
+    civ.totalPopulation = civPopulationTotal;
 
     // #71: Building upkeep per-city — when treasury goes negative, sell buildings
     // from the currently-processing city (binary FUN_004f0221 processes per-city).
@@ -471,22 +669,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       });
     }
 
-    // A.3: Science doubling (FUN_004efbc6)
-    // Chieftain difficulty: double all science output for human players
-    // AI with difficulty > 1: double science while building spaceship parts (35-37)
-    const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(state.difficulty || 'chieftain');
-    const isHumanCiv = !!((1 << activeCiv) & (state.humanPlayers || 0xFF));
-    if (diffIdx === 0 && isHumanCiv) {
-      civSciTotal *= 2;
-    } else if (!isHumanCiv && diffIdx > 1) {
-      // Check if any AI city is building spaceship parts
-      const buildingSpaceship = state.cities.some(c =>
-        c.owner === activeCiv && c.size > 0 && c.itemInProduction &&
-        c.itemInProduction.type === 'building' &&
-        c.itemInProduction.id >= 35 && c.itemInProduction.id <= 37
-      );
-      if (buildingSpaceship) civSciTotal *= 2;
-    }
+    // A.3: Science doubling now handled per-city in the loop above (#123)
 
     // Q.4: If scenario restricts tech advances, don't accumulate science
     if (!state.scenarioTechRestrictions?.noResearch) {
@@ -521,6 +704,46 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
 
     state.civs[activeCiv] = civ;
+
+    // ── #78: Population milestone check — call after each civ's turn ──
+    // Binary FUN_00489292: check_population_milestone(civ_id, prev_gold)
+    // Checks for 10K, 100K, 1M, 10M population milestones and emits events.
+    // Population is in "thousands" (city size × 10,000 in Civ2 display).
+    {
+      const prevMilestone = civ.populationMilestone || 0;
+      // Total population in game units (each citizen = 10,000 people)
+      const currentPop = civPopulationTotal;
+      let newMilestone = prevMilestone;
+      let milestonePop = 0;
+      if (currentPop < 100) {
+        // Track in units of 10 (10K people = 1 citizen)
+        if (prevMilestone * 10 < currentPop) {
+          milestonePop = Math.floor(currentPop / 10) * 10;
+          newMilestone = Math.floor(currentPop / 10);
+        }
+      } else {
+        // Track in units of 100 (100K people = 10 citizens)
+        if ((prevMilestone - 9) * 100 < currentPop) {
+          milestonePop = Math.floor(currentPop / 100) * 100;
+          newMilestone = Math.floor(currentPop / 100) + 9;
+        }
+      }
+      if (newMilestone > prevMilestone) {
+        state.civs = state.civs !== prev.civs ? [...state.civs] : state.civs;
+        state.civs[activeCiv] = {
+          ...state.civs[activeCiv],
+          populationMilestone: newMilestone,
+        };
+        if (isHumanCiv) {
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({
+            type: 'populationMilestone',
+            civSlot: activeCiv,
+            population: milestonePop,
+          });
+        }
+      }
+    }
   }
 
   // ── Q.2: Tech leak + Great Library ──

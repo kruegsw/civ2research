@@ -610,6 +610,15 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       // Defender destroyed
       killUnit(state, bestDefIdx);
 
+      // ── #133: Kill counter — increment attacker's per-civ kill count ──
+      // Binary ref: DAT_0064c7b6[owner*0x594 + unitType], capped at 255.
+      // Track per-civ total kills for power graph and score calculations.
+      if (!state.killCounters) state.killCounters = {};
+      const atkKillKey = `${unit.owner}`;
+      state.killCounters = { ...state.killCounters };
+      state.killCounters[atkKillKey] = Math.min(255,
+        (state.killCounters[atkKillKey] || 0) + 1);
+
       // Eject air units if a carrier (type 42) was destroyed
       if (defender.type === 42) {
         const ejectResult = ejectAirUnits(state, dest.gx, dest.gy, unit.owner);
@@ -670,6 +679,13 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     } else {
       // Attacker destroyed
       unit.gx = -1; unit.gy = -1; unit.x = -1; unit.y = -1; unit.movesLeft = 0;
+
+      // ── #133: Kill counter — increment defender's per-civ kill count ──
+      if (!state.killCounters) state.killCounters = {};
+      const defKillKey = `${defender.owner}`;
+      state.killCounters = { ...state.killCounters };
+      state.killCounters[defKillKey] = Math.min(255,
+        (state.killCounters[defKillKey] || 0) + 1);
 
       // Veteran promotion for defender
       state.units[bestDefIdx] = { ...defender,

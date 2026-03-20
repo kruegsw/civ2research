@@ -17,7 +17,7 @@
 //   FUN_004de0e2 — parley_transfer_city
 // ═══════════════════════════════════════════════════════════════════
 
-import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS, ADVANCE_EPOCH, UNIT_COSTS, WONDER_PREREQS, GOVT_INDEX, UNIT_DOMAIN } from './defs.js';
+import { CITY_RADIUS_DOUBLED, LEADER_PERSONALITY, DIFFICULTY_KEYS, ADVANCE_EPOCH, ADVANCE_PREREQS, ADVANCE_AI_INTEREST, UNIT_COSTS, WONDER_PREREQS, GOVT_INDEX, UNIT_DOMAIN } from './defs.js';
 import { hasWonderEffect, civHasWonder } from './utils.js';
 import { grantAdvance } from './research.js';
 import { updateVisibility } from './visibility.js';
@@ -1030,6 +1030,10 @@ export function signCeasefire(state, civA, civB) {
 
   setTreaty(state, civA, civB, 'ceasefire');
 
+  // #149: Set TRIBUTE_DEMANDED flag (0x40000) during ceasefire signing
+  // Binary FUN_0045a7a8: treaty[civA][civB] |= 0x40000
+  addTreatyFlag(state, civA, civB, TF.TRIBUTE_DEMANDED);
+
   // Clamp attitude to [0, 50] — per pseudocode
   clampAttitude(state, civB, civA, 0, 50);
 
@@ -1973,8 +1977,32 @@ export function transferCity(state, mapBase, cityIndex, fromCiv, toCiv) {
     tile.visibility |= (1 << toCiv);
   }
 
-  // ── Update visibility around city for new owner ──
+  // ── #118: Update visibility around city for new owner ──
+  // Binary FUN_004de0e2: reveal full 21-tile city radius + 8-tile adjacent scan
+  // (not just range 2). First reveal all 21 city radius tiles, then for each
+  // of the 8 adjacent tiles, call updateVisibility to reveal their sight radius.
   updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, cityGx, cityGy, mapBase.wraps, 2);
+  // Reveal each of the 21 city radius tiles directly
+  for (let r = 0; r < 21; r++) {
+    const pos = radiusTileCoords(cityGx, cityGy, r, mapBase);
+    if (!pos) continue;
+    const tIdx = pos.gy * mapBase.mw + pos.gx;
+    if (mapBase.tileData[tIdx]) {
+      mapBase.tileData[tIdx].visibility |= (1 << toCiv);
+    }
+  }
+  // 8-tile adjacent scan: reveal visibility around each adjacent tile
+  const adjOffsets = [[+1,-1],[+2,0],[+1,+1],[0,+2],[-1,+1],[-2,0],[-1,-1],[0,-2]];
+  for (const [ddx, ddy] of adjOffsets) {
+    const parC = cityGy & 1;
+    const parT = ((cityGy + ddy) % 2 + 2) % 2;
+    const tgx = cityGx + ((parC + ddx - parT) >> 1);
+    const tgy = cityGy + ddy;
+    if (tgy < 0 || tgy >= mapBase.mh) continue;
+    const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+    if (wgx < 0 || wgx >= mapBase.mw) continue;
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, wgx, tgy, mapBase.wraps);
+  }
 
   // ── Transfer units at the city tile ──
   state.units = [...state.units];
@@ -2005,19 +2033,18 @@ export function transferCity(state, mapBase, cityIndex, fromCiv, toCiv) {
 
       updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, toCiv, u.gx, u.gy, mapBase.wraps);
     } else if (u.homeCityId === cityIndex) {
-      // Unit is homed to this city but not physically there — rehome to nearest own city
-      let bestCi = -1, bestDist = Infinity;
-      for (let ci = 0; ci < state.cities.length; ci++) {
-        const c = state.cities[ci];
-        if (ci !== cityIndex && c.owner === fromCiv && c.size > 0) {
-          const d = tileDist(u.gx, u.gy, c.gx, c.gy, mapBase.mw, mapBase.wraps);
-          if (d < bestDist) { bestDist = d; bestCi = ci; }
-        }
-      }
-      state.units[ui] = {
-        ...u,
-        homeCityId: bestCi >= 0 ? bestCi : 0xFFFF,
-      };
+      // #117: Unit is homed to this city but NOT physically there — disband
+      // Binary FUN_004de0e2: units homed to transferred city but not at the
+      // city tile are disbanded (killed), not rehomed. Only units physically
+      // present at the city tile get transferred to the new owner.
+      state.units[ui] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+      events.push({
+        type: 'unitDisbanded',
+        unitIndex: ui,
+        unitType: u.type,
+        owner: fromCiv,
+        reason: 'cityTransferred',
+      });
     }
   }
 
@@ -2405,6 +2432,10 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
       }
     }
   }
+
+  // ── #129: Reassign eliminated civ's tile ownership ──
+  // Scan 45-tile radius per city and reassign tiles to nearest alive civ
+  reassignEliminatedCivTiles(state, mapBase, civSlot);
 
   events.push({ type: 'civDestroyed', civSlot, killerCiv });
 
@@ -3211,3 +3242,669 @@ export function checkAllianceViolations(state, mapBase, aiCiv) {
 // For now the dual interpretation is documented. A full normalization
 // would require auditing every attitude read/write across the codebase.
 // ═══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// #50: Mercenary Hiring — hire a civ to attack another
+//
+// Binary FUN_00459b2a: price based on military strength ratio,
+// reputation threshold, 50% betrayal chance, gold payment.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Hire a civ (mercenaryCiv) to attack a target civ.
+ * Price formula: baseCost * (targetMil / mercMil) clamped [100, 5000].
+ * Reputation gate: hirer reputation must be >= 40.
+ * 50% betrayal chance: mercenary may take gold but not attack.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} hirerCiv - civ paying for the attack
+ * @param {number} mercenaryCiv - civ being hired to attack
+ * @param {number} targetCiv - civ to be attacked
+ * @returns {{ events: object[], success: boolean, price: number, betrayed: boolean }}
+ */
+export function hireMercenary(state, mapBase, hirerCiv, mercenaryCiv, targetCiv) {
+  const events = [];
+
+  // Reputation gate: hirer must have >= 40 reputation
+  const hirerRep = getReputation(state, hirerCiv);
+  if (hirerRep < 40) {
+    events.push({ type: 'mercenaryRejected', hirerCiv, mercenaryCiv, targetCiv, reason: 'reputationTooLow' });
+    return { events, success: false, price: 0, betrayed: false };
+  }
+
+  // Calculate price based on military strength ratio
+  const mercMil = state.civs?.[mercenaryCiv]?.militaryPower || 1;
+  const targetMil = state.civs?.[targetCiv]?.militaryPower || 1;
+  const ratio = Math.max(1, Math.floor(targetMil / mercMil));
+  const baseCost = 200;
+  let price = baseCost * ratio;
+  price = Math.max(100, Math.min(5000, price));
+
+  // Check if hirer can afford
+  const treasury = state.civs?.[hirerCiv]?.treasury || 0;
+  if (treasury < price) {
+    events.push({ type: 'mercenaryRejected', hirerCiv, mercenaryCiv, targetCiv, reason: 'insufficientGold' });
+    return { events, success: false, price, betrayed: false };
+  }
+
+  // Deduct gold from hirer, add to mercenary
+  state.civs = [...state.civs];
+  const hirerData = { ...state.civs[hirerCiv] };
+  const mercData = { ...state.civs[mercenaryCiv] };
+  hirerData.treasury = (hirerData.treasury || 0) - price;
+  mercData.treasury = (mercData.treasury || 0) + price;
+  state.civs[hirerCiv] = hirerData;
+  state.civs[mercenaryCiv] = mercData;
+
+  // 50% betrayal chance: mercenary takes gold but does not attack
+  const rng = state.rng;
+  const roll = rng ? rng.nextInt(2) : Math.floor(Math.random() * 2);
+  if (roll === 0) {
+    // Betrayal: mercenary keeps gold, no war declaration
+    events.push({
+      type: 'mercenaryBetrayed', hirerCiv, mercenaryCiv, targetCiv, price,
+    });
+    return { events, success: false, price, betrayed: true };
+  }
+
+  // Success: mercenary declares war on target
+  const warResult = declareWar(state, mapBase, mercenaryCiv, targetCiv, hirerCiv);
+  events.push(...warResult.events);
+
+  events.push({
+    type: 'mercenaryHired', hirerCiv, mercenaryCiv, targetCiv, price,
+  });
+
+  return { events, success: true, price, betrayed: false };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #51: Tech/Military Gift Attitude Adjustment
+//
+// Binary FUN_0045f0b1: tech gift adjusts attitude by techValue * 4.
+// Military gift: 50% chance of AI tech breakthrough.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Process a military gift (units/gold earmarked for military).
+ * 50% chance the receiving AI achieves a tech breakthrough.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} fromCiv - civ giving the military gift
+ * @param {number} toCiv - civ receiving the military gift
+ * @returns {{ events: object[] }}
+ */
+export function processMilitaryGift(state, fromCiv, toCiv) {
+  const events = [];
+
+  // 50% chance of AI tech breakthrough for military gifts
+  const rng = state.rng;
+  const roll = rng ? rng.nextInt(2) : Math.floor(Math.random() * 2);
+  if (roll === 0) {
+    // Find an unresearched tech the AI could learn
+    const toTechs = state.civTechs?.[toCiv];
+    if (toTechs) {
+      for (let t = 0; t < 89; t++) {
+        if (toTechs.has(t)) continue;
+        // Check prerequisites
+        const [p1, p2] = ADVANCE_PREREQS[t] || [-1, -1];
+        if (p1 >= 0 && !toTechs.has(p1)) continue;
+        if (p2 >= 0 && !toTechs.has(p2)) continue;
+        if (p1 === -2 || p2 === -2) continue; // unresearchable
+        // Grant the breakthrough
+        grantAdvance(state, toCiv, t);
+        events.push({
+          type: 'militaryGiftBreakthrough',
+          fromCiv,
+          toCiv,
+          advanceId: t,
+        });
+        break;
+      }
+    }
+  }
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #52: Tech Exchange Negotiation
+//
+// AI evaluates tech value, selects best tech, applies attitude gates,
+// wonder blocking, difficulty-based restrictions.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * AI evaluates which tech to request in exchange for a given tech.
+ * Binary handle_exchange_gift (FUN_0045950B): AI picks highest-value
+ * tech the player has that the AI lacks, subject to attitude gates,
+ * wonder blocking, and difficulty restrictions.
+ *
+ * @param {object} state - game state
+ * @param {number} aiCiv - AI civ evaluating the exchange
+ * @param {number} playerCiv - player civ offering
+ * @param {number} offeredTechId - tech the player is offering
+ * @returns {{ acceptedTech: number, requestedTech: number, reason: string|null }}
+ */
+export function evaluateTechExchange(state, aiCiv, playerCiv, offeredTechId) {
+  const aiTechs = state.civTechs?.[aiCiv];
+  const playerTechs = state.civTechs?.[playerCiv];
+  if (!aiTechs || !playerTechs) return { acceptedTech: -1, requestedTech: -1, reason: 'noTechData' };
+
+  // Attitude gate: AI must have attitude level >= 3 (Uncooperative or better)
+  const attitude = getAttitude(state, aiCiv, playerCiv);
+  const attLevel = getAttitudeLevel(attitude);
+  if (attLevel < 3) {
+    return { acceptedTech: -1, requestedTech: -1, reason: 'attitudeTooLow' };
+  }
+
+  // Check offered tech is valid: player has it, AI doesn't
+  if (!playerTechs.has(offeredTechId) || aiTechs.has(offeredTechId)) {
+    return { acceptedTech: -1, requestedTech: -1, reason: 'invalidOffer' };
+  }
+
+  // Wonder blocking: reject if offered tech would enable AI to build an unbuilt wonder
+  // (AI doesn't want player getting wonder-enabling techs either)
+  // Check if any tech the AI could give would enable player wonder construction
+  const offeredValue = (ADVANCE_EPOCH[offeredTechId] ?? 0) + 1 + (ADVANCE_AI_INTEREST[offeredTechId] ?? 0);
+
+  // Difficulty restriction: on higher difficulties, AI won't trade modern techs
+  const diffIdx = getDifficultyIdx(state, aiCiv);
+  if (diffIdx >= 4) { // Emperor or Deity
+    const epoch = ADVANCE_EPOCH[offeredTechId] ?? 0;
+    if (epoch >= 3) {
+      return { acceptedTech: -1, requestedTech: -1, reason: 'difficultyRestriction' };
+    }
+  }
+
+  // Select best tech AI could request: highest value tech player has that AI lacks
+  let bestTech = -1;
+  let bestValue = -1;
+  for (let t = 0; t < 89; t++) {
+    if (!playerTechs.has(t) || aiTechs.has(t)) continue;
+    // Skip if AI already has this tech
+    // Check prerequisites: AI must have all prereqs to use this tech
+    const [p1, p2] = ADVANCE_PREREQS[t] || [-1, -1];
+    if (p1 >= 0 && !aiTechs.has(p1)) continue;
+    if (p2 >= 0 && !aiTechs.has(p2)) continue;
+    if (p1 === -2 || p2 === -2) continue;
+
+    // Wonder blocking: skip if giving this tech to AI enables wonder for player
+    if (wouldEnableWonder(state, playerCiv, t)) continue;
+
+    const techVal = (ADVANCE_EPOCH[t] ?? 0) + 1 + (ADVANCE_AI_INTEREST[t] ?? 0);
+    if (techVal > bestValue) {
+      bestValue = techVal;
+      bestTech = t;
+    }
+  }
+
+  if (bestTech < 0) {
+    return { acceptedTech: offeredTechId, requestedTech: -1, reason: 'noSuitableTech' };
+  }
+
+  // Value comparison: AI wants roughly equal or better value
+  if (bestValue < offeredValue - 1) {
+    return { acceptedTech: offeredTechId, requestedTech: bestTech, reason: 'valueMismatch' };
+  }
+
+  return { acceptedTech: offeredTechId, requestedTech: bestTech, reason: null };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #82: Auto-Alliance with Common Enemy
+//
+// Proactively seek common enemies for alliance formation.
+// Binary AI diplomacy: scan all civ pairs for mutual wars and
+// propose alliance if both civs are fighting the same enemy.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if two civs should auto-ally based on a common enemy.
+ * Binary AI logic: if civA and civB are both at war with the same
+ * third civ and have contact but no alliance, propose alliance.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} aiCiv - AI civ seeking alliance
+ * @returns {{ events: object[] }}
+ */
+export function seekCommonEnemyAlliance(state, mapBase, aiCiv) {
+  const events = [];
+  if (!state.civs?.[aiCiv] || state.civs[aiCiv].isHuman) return { events };
+
+  for (let candidate = 1; candidate <= 7; candidate++) {
+    if (candidate === aiCiv) continue;
+    if (!(state.civsAlive & (1 << candidate))) continue;
+    if (!haveContact(state, aiCiv, candidate)) continue;
+
+    // Skip if already allied
+    const treaty = getTreaty(state, aiCiv, candidate);
+    if (treaty === 'alliance') continue;
+
+    // Count common enemies
+    let commonEnemies = 0;
+    for (let e = 1; e <= 7; e++) {
+      if (e === aiCiv || e === candidate) continue;
+      if (!(state.civsAlive & (1 << e))) continue;
+      if (getTreaty(state, aiCiv, e) === 'war' && haveContact(state, aiCiv, e) &&
+          getTreaty(state, candidate, e) === 'war' && haveContact(state, candidate, e)) {
+        commonEnemies++;
+      }
+    }
+
+    if (commonEnemies >= 1) {
+      // Attitude gate: need at least Neutral (attLevel >= 4)
+      const attitude = getAttitude(state, aiCiv, candidate);
+      const attLevel = getAttitudeLevel(attitude);
+      if (attLevel >= 4) {
+        // Form alliance
+        const result = formAlliance(state, mapBase, aiCiv, candidate);
+        events.push(...result.events);
+        events.push({
+          type: 'autoAllianceCommonEnemy',
+          aiCiv,
+          alliedWith: candidate,
+          commonEnemies,
+        });
+        break; // Only one auto-alliance per turn
+      }
+    }
+  }
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #83: Auto-Alliance Break
+//
+// Break alliances when mutual enemy count exceeds patience threshold.
+// Binary: if ally is at war with too many of our friends, break alliance.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if an AI civ should break an existing alliance due to too
+ * many mutual enemies (ally is fighting our friends).
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} aiCiv - AI civ evaluating alliances
+ * @returns {{ events: object[] }}
+ */
+export function checkAutoAllianceBreak(state, mapBase, aiCiv) {
+  const events = [];
+  if (!state.civs?.[aiCiv] || state.civs[aiCiv].isHuman) return { events };
+
+  const patienceThreshold = calcPatienceThreshold(state, aiCiv, aiCiv);
+
+  for (let ally = 1; ally <= 7; ally++) {
+    if (ally === aiCiv) continue;
+    if (!(state.civsAlive & (1 << ally))) continue;
+    if (getTreaty(state, aiCiv, ally) !== 'alliance') continue;
+
+    // Count how many civs we're friendly with that the ally is at war with
+    let conflictCount = 0;
+    for (let c = 1; c <= 7; c++) {
+      if (c === aiCiv || c === ally) continue;
+      if (!(state.civsAlive & (1 << c))) continue;
+      // Our friend (peace or better) is at war with our ally
+      const ourTreaty = getTreaty(state, aiCiv, c);
+      if ((ourTreaty === 'peace' || ourTreaty === 'alliance') &&
+          getTreaty(state, ally, c) === 'war' && haveContact(state, ally, c)) {
+        conflictCount++;
+      }
+    }
+
+    if (conflictCount > patienceThreshold) {
+      const result = breakAlliance(state, mapBase, aiCiv, ally);
+      events.push(...result.events);
+      events.push({
+        type: 'autoAllianceBreak',
+        aiCiv,
+        brokenWith: ally,
+        conflictCount,
+        patienceThreshold,
+      });
+    }
+  }
+
+  return { events };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #88: Demand Ally Help
+//
+// Player-to-AI interaction for demanding military assistance from
+// an allied civ. AI evaluates attitude + military strength.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Demand military assistance from an allied AI civ.
+ * AI evaluates whether to help based on attitude and military strength.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} demander - civ requesting help
+ * @param {number} allyCiv - allied AI civ being asked for help
+ * @param {number} enemyCiv - civ the demander is at war with
+ * @returns {{ events: object[], accepted: boolean }}
+ */
+export function demandAllyHelp(state, mapBase, demander, allyCiv, enemyCiv) {
+  const events = [];
+
+  // Must be allied
+  if (getTreaty(state, demander, allyCiv) !== 'alliance') {
+    events.push({ type: 'allyHelpRejected', demander, allyCiv, enemyCiv, reason: 'notAllied' });
+    return { events, accepted: false };
+  }
+
+  // Must be at war with enemy
+  if (getTreaty(state, demander, enemyCiv) !== 'war') {
+    events.push({ type: 'allyHelpRejected', demander, allyCiv, enemyCiv, reason: 'notAtWar' });
+    return { events, accepted: false };
+  }
+
+  // Attitude check: ally's attitude toward demander must be >= 40
+  const attitude = getAttitude(state, allyCiv, demander);
+  if (attitude < 40) {
+    events.push({ type: 'allyHelpRejected', demander, allyCiv, enemyCiv, reason: 'attitudeTooLow' });
+    // Decrement patience for refusing
+    incrementPatience(state, allyCiv);
+    return { events, accepted: false };
+  }
+
+  // Military strength check: ally won't commit if enemy is 3x stronger
+  const allyMil = state.civs?.[allyCiv]?.militaryPower || 0;
+  const enemyMil = state.civs?.[enemyCiv]?.militaryPower || 0;
+  if (enemyMil > allyMil * 3) {
+    events.push({ type: 'allyHelpRejected', demander, allyCiv, enemyCiv, reason: 'enemyTooStrong' });
+    return { events, accepted: false };
+  }
+
+  // Accept: ally declares war on enemy if not already at war
+  if (getTreaty(state, allyCiv, enemyCiv) !== 'war') {
+    const warResult = declareWar(state, mapBase, allyCiv, enemyCiv, demander);
+    events.push(...warResult.events);
+  }
+
+  events.push({
+    type: 'allyHelpAccepted', demander, allyCiv, enemyCiv,
+  });
+
+  return { events, accepted: true };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #89: Unit Transfer (case 8) — handled by existing transferUnits
+// with stack splitting and terrain compatibility already implemented.
+// This section documents the integration point for the parley
+// executeTransaction case 8 dispatch.
+//
+// Already implemented in executeTransaction → transferUnits with:
+//   - Stack pointer splitting (prevInStack/nextInStack)
+//   - Terrain compatibility check + 45-tile spiral fallback
+//   - Rehoming to nearest city of new owner
+// ═══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// #90: Contact Sharing (case 9)
+//
+// Share knowledge of third civs: when one civ shares contact info
+// about a third civ, the receiving civ gains CONTACT flag with that
+// third civ (but no embassy or treaty).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Share knowledge of third-party civs between two civs.
+ * The sharer reveals all civs they have contacted to the receiver.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} sharerCiv - civ sharing contact knowledge
+ * @param {number} receiverCiv - civ receiving knowledge
+ * @returns {{ events: object[], sharedContacts: number[] }}
+ */
+export function shareContacts(state, sharerCiv, receiverCiv) {
+  const events = [];
+  const sharedContacts = [];
+
+  for (let c = 1; c <= 7; c++) {
+    if (c === sharerCiv || c === receiverCiv) continue;
+    if (!(state.civsAlive & (1 << c))) continue;
+
+    // Sharer must have contact with this civ
+    if (!haveContact(state, sharerCiv, c)) continue;
+
+    // Receiver must NOT already have contact
+    if (haveContact(state, receiverCiv, c)) continue;
+
+    // Grant contact: set CONTACT flag both ways
+    addTreatyFlag(state, receiverCiv, c, TF.CONTACT);
+
+    // Set initial treaty status (no treaty = at war by default in Civ2)
+    setTreaty(state, receiverCiv, c, 'war');
+
+    sharedContacts.push(c);
+
+    events.push({
+      type: 'contactShared',
+      sharerCiv,
+      receiverCiv,
+      revealedCiv: c,
+    });
+  }
+
+  return { events, sharedContacts };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #114: Map Exchange Prerequisites
+//
+// Check alliance status, attitude, and Alphabet/Writing tech before
+// allowing map exchange. Binary requires both civs to have Alphabet
+// (tech 1) and Writing (tech 88) before maps can be exchanged.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check if map exchange is allowed between two civs.
+ * Prerequisites:
+ *   1. Both civs must have Alphabet (tech 1) AND Writing (tech 88)
+ *   2. Must have alliance status OR attitude level >= 5 (Cordial)
+ *
+ * @param {object} state - game state
+ * @param {number} civA - first civ
+ * @param {number} civB - second civ
+ * @returns {{ allowed: boolean, reason: string|null }}
+ */
+export function canExchangeMaps(state, civA, civB) {
+  const TECH_ALPHABET = 1;
+  const TECH_WRITING = 88;
+
+  // Check tech prerequisites
+  const techsA = state.civTechs?.[civA];
+  const techsB = state.civTechs?.[civB];
+
+  if (!techsA || !techsA.has(TECH_ALPHABET) || !techsA.has(TECH_WRITING)) {
+    return { allowed: false, reason: 'missingTechCivA' };
+  }
+  if (!techsB || !techsB.has(TECH_ALPHABET) || !techsB.has(TECH_WRITING)) {
+    return { allowed: false, reason: 'missingTechCivB' };
+  }
+
+  // Check diplomatic prerequisites: alliance OR attitude >= Cordial
+  const treaty = getTreaty(state, civA, civB);
+  if (treaty === 'alliance') {
+    return { allowed: true, reason: null };
+  }
+
+  // Check attitude in both directions
+  const attA = getAttitude(state, civA, civB);
+  const attB = getAttitude(state, civB, civA);
+  const levelA = getAttitudeLevel(attA);
+  const levelB = getAttitudeLevel(attB);
+
+  if (levelA >= 5 && levelB >= 5) {
+    return { allowed: true, reason: null };
+  }
+
+  return { allowed: false, reason: 'insufficientDiplomacy' };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #129: Civ Elimination Tile Reassignment
+//
+// When a civ is eliminated, scan 45-tile radius per city and
+// reassign tiles to the nearest alive civ's city.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Reassign tile ownership after a civ is eliminated.
+ * For each tile owned by the dead civ, find the nearest alive civ's
+ * city within a 45-tile radius and assign ownership to that civ.
+ * Tiles with no nearby alive city become unowned (255).
+ *
+ * @param {object} state - game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} deadCiv - eliminated civ slot
+ */
+export function reassignEliminatedCivTiles(state, mapBase, deadCiv) {
+  if (!mapBase?.tileData || !state.cities) return;
+
+  const { mw, mh, wraps } = mapBase;
+  const SCAN_RADIUS = 45;
+
+  for (let i = 0; i < mapBase.tileData.length; i++) {
+    const tile = mapBase.tileData[i];
+    if (!tile || tile.tileOwnership !== deadCiv) continue;
+
+    const tileGx = i % mw;
+    const tileGy = Math.floor(i / mw);
+
+    // Find nearest alive civ's city
+    let bestCiv = 255; // unowned
+    let bestDist = Infinity;
+
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      const city = state.cities[ci];
+      if (!city || city.size <= 0) continue;
+      if (!(state.civsAlive & (1 << city.owner))) continue;
+
+      const d = tileDist(tileGx, tileGy, city.gx, city.gy, mw, wraps);
+      if (d <= SCAN_RADIUS && d < bestDist) {
+        bestDist = d;
+        bestCiv = city.owner;
+      }
+    }
+
+    tile.tileOwnership = bestCiv;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #170: Decrement Patience on Favor Menu Cancel
+//
+// When the player cancels the favor menu during diplomacy,
+// decrement the AI's patience counter.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Called when a player cancels the diplomatic favor menu.
+ * Decrements the AI civ's patience toward the player.
+ *
+ * @param {object} state - mutable game state
+ * @param {number} aiCiv - AI civ whose patience decreases
+ * @param {number} playerCiv - player who cancelled
+ */
+export function onFavorMenuCancel(state, aiCiv, playerCiv) {
+  incrementPatience(state, aiCiv);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// #175: Civ Slot Recycling for Barbarian Spawning
+//
+// Recycle eliminated civ slots for barbarian spawning via new_civ().
+// Binary mechanic: when barbarians need a city slot, check for dead
+// civ slots and reuse them rather than allocating new ones.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Find an available dead civ slot that can be recycled for barbarian use.
+ * Returns the slot index (1-7) or -1 if no slot is available.
+ * Binary new_civ() mechanic: searches for eliminated civ slots.
+ *
+ * @param {object} state - game state
+ * @returns {number} dead civ slot (1-7) or -1
+ */
+export function findRecyclableCivSlot(state) {
+  for (let c = 1; c <= 7; c++) {
+    if (!(state.civsAlive & (1 << c))) {
+      // Verify it's truly dead: no cities, no units
+      const hasCities = state.cities?.some(city => city.owner === c && city.size > 0);
+      const hasUnits = state.units?.some(u => u.owner === c && u.gx >= 0);
+      if (!hasCities && !hasUnits) return c;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Recycle an eliminated civ slot for barbarian spawning.
+ * Initializes the slot as a barbarian civ (slot 0 behavior) that
+ * can own cities captured by barbarians.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map data + accessors
+ * @param {number} slot - civ slot to recycle (1-7)
+ * @param {number} gx - x position for initial placement
+ * @param {number} gy - y position for initial placement
+ * @returns {{ events: object[], civSlot: number }}
+ */
+export function recycleCivSlotForBarbarian(state, mapBase, slot, gx, gy) {
+  const events = [];
+
+  if (slot < 1 || slot > 7) return { events, civSlot: -1 };
+  if (state.civsAlive & (1 << slot)) return { events, civSlot: -1 };
+
+  // Initialize the slot as a barbarian civ
+  state.civs = [...state.civs];
+  state.civs[slot] = {
+    name: 'Barbarians',
+    rulesCivNumber: 0,
+    government: 'despotism',
+    treasury: 0,
+    isHuman: false,
+    isBarbarian: true,
+    attitudes: [0, 0, 0, 0, 0, 0, 0, 0],
+    patience: 0,
+    reputation: 0,
+    militaryPower: 0,
+    difficulty: state.difficulty || 'chieftain',
+  };
+
+  // Clear old tech data
+  if (state.civTechs) {
+    state.civTechs = [...state.civTechs];
+    state.civTechs[slot] = new Set();
+  }
+  if (state.civTechCounts) {
+    state.civTechCounts = [...state.civTechCounts];
+    state.civTechCounts[slot] = 0;
+  }
+
+  // Mark alive
+  state.civsAlive |= (1 << slot);
+
+  // Update visibility
+  if (mapBase?.tileData) {
+    updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, slot, gx, gy, mapBase.wraps);
+  }
+
+  events.push({
+    type: 'civSlotRecycled',
+    civSlot: slot,
+    purpose: 'barbarian',
+    gx, gy,
+  });
+
+  return { events, civSlot: slot };
+}

@@ -3012,10 +3012,75 @@ export function checkAllianceBreak(state, aiCiv, allyCiv) {
  * @param {number} civSlot - civ slot (1-7) being played
  * @returns {Array<object>}
  */
+
+// ── #161: Scenario Hardcoded Overrides ───────────────────────────
+// Binary ref: FUN_0055d8d8 — when scenario flag is active, certain
+// civ pairs have forced diplomatic behavior (always at war).
+// These override normal AI diplomacy evaluation.
+
+/** Hardcoded scenario civ pair overrides: [aggressor, target] */
+const SCENARIO_FORCED_WARS = [
+  [3, 6],  // Civ 3 (Egyptians) always attacks civ 6 (Indians)
+  [3, 1],  // Civ 3 (Egyptians) always attacks civ 1 (Babylonians)
+  [6, 7],  // Civ 6 (Indians) always attacks civ 7 (Russians)
+];
+
+/**
+ * Apply scenario hardcoded diplomatic overrides.
+ * When the scenario flag is set, force specific civ pairs into war.
+ *
+ * @param {object} gameState - game state
+ * @param {number} civSlot - AI civ processing diplomacy
+ * @param {Array|null} debugLog - optional debug log
+ * @returns {Array<object>} actions to apply
+ */
+function applyScenarioOverrides(gameState, civSlot, debugLog) {
+  const actions = [];
+
+  for (const [aggressor, target] of SCENARIO_FORCED_WARS) {
+    if (civSlot !== aggressor) continue;
+    if (!(gameState.civsAlive & (1 << target))) continue;
+    if (!haveContact(gameState, civSlot, target)) continue;
+
+    const treaty = getTreaty(gameState, civSlot, target);
+    if (treaty === 'war') continue; // already at war
+
+    // Force war declaration
+    actions.push({ type: 'DECLARE_WAR', targetCiv: target });
+    // Set attitude to maximum hostility
+    actions.push(makeAttitudeAction(civSlot, target, -100));
+
+    if (debugLog) {
+      const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+      const targetName = gameState.civs?.[target]?.name || `Civ ${target}`;
+      debugLog.push(`DIPLO: SCENARIO OVERRIDE — ${civName} forced to declare war on ${targetName}`);
+    }
+  }
+
+  return actions;
+}
+
 export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog = null) {
   const actions = [];
 
   try {
+    // ── #161: Scenario hardcoded overrides ──
+    // Binary ref: FUN_0055d8d8 scenario override path — when the scenario
+    // flag is set (DAT_00655af0 & 0x80), certain civ pairs have forced
+    // diplomatic behavior that overrides normal AI evaluation:
+    //   (3, 6): Civ 3 always declares war on civ 6 (forced enemies)
+    //   (3, 1): Civ 3 always declares war on civ 1 (forced enemies)
+    //   (6, 7): Civ 6 always declares war on civ 7 (forced enemies)
+    // These represent hardcoded scenario rivalries (e.g., historical
+    // enemies in WW2 scenarios: Egyptians vs Indians, Egyptians vs
+    // Babylonians, Indians vs Russians).
+    if (gameState.isScenario) {
+      const scenarioOverrides = applyScenarioOverrides(gameState, civSlot, debugLog);
+      if (scenarioOverrides.length > 0) {
+        actions.push(...scenarioOverrides);
+      }
+    }
+
     // Compute continent-based military data once for all evaluations
     const continentData = computeContinentData(gameState, mapBase);
 

@@ -10,12 +10,13 @@
 
 import {
   FOOD_BOX_MULTIPLIER,
-  UNIT_DOMAIN, UNIT_COSTS, UNIT_ROLE,
+  UNIT_DOMAIN, UNIT_COSTS, UNIT_ROLE, UNIT_FP,
   IMPROVE_COSTS, IMPROVE_MAINTENANCE,
   SUPPORT_EXEMPT_TYPES, SETTLER_TYPES,
   CITY_RADIUS_DOUBLED,
   COMMODITY_NAMES,
   GROWTH_CAP_BUILDINGS,
+  LEADER_PERSONALITY,
 } from './defs.js';
 import {
   calcFoodSurplus, calcShieldProduction, getProductionCost,
@@ -27,6 +28,7 @@ import { calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
 import { grantAdvance, getAvailableResearch, checkUnitAutoUpgrade, upgradeUnitsForTech } from './research.js';
 import { addTreatyFlag, TF } from './diplomacy.js';
+import { expandTerritory } from './territory.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Food processing (Wave 1 — unchanged)
@@ -152,10 +154,17 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
       events.push({ type: growthBlocked, cityName: city.name, cityIndex, civSlot: activeCiv });
     } else {
       events.push({ type: 'cityGrowth', cityName: city.name, cityIndex, civSlot: activeCiv, newSize });
-      // Expand territory: claim one best unowned tile after city growth
+      // Expand territory: claim one best unowned tile after city growth (basic)
       const claimed = expandCityTerritory(state, mapBase, cityIndex);
       if (claimed) {
         events.push({ type: 'territoryClaimed', cityName: city.name, cityIndex, civSlot: activeCiv, gx: claimed.gx, gy: claimed.gy });
+      }
+      // #106: Enhanced territory expansion for larger cities (distance, terrain, auto-road)
+      if (newSize >= 3) {
+        const terrResult = expandTerritory(state, mapBase, cityIndex);
+        if (terrResult.events.length > 0) {
+          events.push(...terrResult.events);
+        }
       }
     }
   } else if (newFood < 0) {
@@ -285,7 +294,35 @@ export function assignCaravanCommodity(city, cityIndex, state, mapBase) {
   }
   ranked.sort((a, b) => b.val - a.val);
 
-  // Pick the highest-supply commodity not already carried
+  // #70: For human players, return top 3 commodities for player choice
+  // (AI auto-selects best). The caller should check the returned event
+  // and let the player pick from the 3 options.
+  const humanPlayers = state.humanPlayers || 0xFF;
+  const isHuman = !!((1 << city.owner) & humanPlayers);
+
+  // Get the city's 3 available commodities (for player choice or AI selection)
+  const topCommodities = [];
+  for (const { id, val } of ranked) {
+    if (val < 0) continue;
+    topCommodities.push(id);
+    if (topCommodities.length >= 3) break;
+  }
+  // Ensure at least one commodity
+  if (topCommodities.length === 0) topCommodities.push(0);
+
+  // Store the choices on the state for human player UI
+  if (isHuman && topCommodities.length > 1) {
+    if (!state.turnEvents) state.turnEvents = [];
+    state.turnEvents.push({
+      type: 'caravanCommodityChoice',
+      cityIndex,
+      cityName: city.name,
+      civSlot: city.owner,
+      commodities: topCommodities,
+    });
+  }
+
+  // Pick the highest-supply commodity not already carried (AI auto-select or human default)
   for (const { id, val } of ranked) {
     if (val < 0) continue; // -1 means unavailable (requires tech)
     if (!usedCommodities.has(id)) return id;
@@ -332,6 +369,37 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     events.push(upgradeEvent);
     // Re-read city after production switch
     city = state.cities[cityIndex];
+  }
+
+  // #142: Coast guard barbarian check — prevent barbarian cities on
+  // heavily improved coastal tiles from building sea units.
+  // Binary: if owner == 0 (barbarian) and city is coastal with 4+ improved
+  // tiles, block sea unit production (switch to land unit instead).
+  if (activeCiv === 0 && city.itemInProduction?.type === 'unit' &&
+      UNIT_DOMAIN[city.itemInProduction.id] === 2) {
+    // Count improved tiles in city radius
+    let improvedCount = 0;
+    const parC = city.gy & 1;
+    for (let ri = 0; ri < 21; ri++) {
+      const [ddx, ddy] = CITY_RADIUS_DOUBLED[ri];
+      const parT = ((city.gy + ddy) % 2 + 2) % 2;
+      const tgx = city.gx + ((parC + ddx - parT) >> 1);
+      const tgy = city.gy + ddy;
+      const wgx = mapBase.wraps ? ((tgx % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx;
+      if (tgy < 0 || tgy >= mapBase.mh || wgx < 0 || wgx >= mapBase.mw) continue;
+      const imp = mapBase.getImprovements(wgx, tgy);
+      if (imp && (imp.road || imp.irrigation || imp.mining || imp.fortress)) {
+        improvedCount++;
+      }
+    }
+    if (improvedCount >= 4) {
+      // Switch to Warriors (type 2) instead of sea unit
+      state.cities[cityIndex] = {
+        ...state.cities[cityIndex],
+        itemInProduction: { type: 'unit', id: 2 },
+      };
+      city = state.cities[cityIndex];
+    }
   }
 
   // No production during civil disorder
@@ -407,12 +475,23 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         || (govt === 'communism' && unitRole === 6)
       );
 
+      // #165: Additional veteran conditions based on Gunpowder tech
+      // Binary: if city's civ has Gunpowder (tech 35) and the produced unit
+      // requires Gunpowder or later, additional veteran check from government
+      const civTechs = state.civTechs?.[activeCiv];
+      const hasGunpowder = civTechs ? civTechs.has(35) : false;
+      let veteranStatus = isVeteran;
+      if (!veteranStatus && hasGunpowder && govt === 'fundamentalism') {
+        // Fundamentalism gives veteran to all ground units when Gunpowder known
+        if (UNIT_DOMAIN[item.id] === 0) veteranStatus = true;
+      }
+
       const newUnit = {
         type: item.id,
         owner: activeCiv,
         gx: city.gx, gy: city.gy,
         x: city.gx * 2 + (city.gy % 2), y: city.gy,
-        veteran: isVeteran ? 1 : 0,
+        veteran: veteranStatus ? 1 : 0,
         movesRemain: 0,
         orders: 'none', movesMade: 0, movesLeft: 0,
         homeCityId: cityIndex,
@@ -421,6 +500,30 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
         prevInStack: -1, nextInStack: -1,
       };
+
+      // #143: Diplomat/Spy initial target: encode home city into unit record
+      // Binary: when diplomat (46) or spy (47) is produced, the unit's
+      // diplomacyHomeCity field is set to cityIndex for espionage tracking
+      if (item.id === 46 || item.id === 47) {
+        newUnit.diplomacyHomeCity = cityIndex;
+      }
+
+      // #144: Firepower intel reset: when a unit with high firepower (FP >= 2)
+      // is produced, reset enemy intelligence on this civ (binary clears spy
+      // visibility flags since a powerful unit shifts military balance)
+      if ((UNIT_FP[item.id] || 1) >= 2) {
+        // Clear enemy intel flags for all civs that have spied on this civ
+        for (let ci = 1; ci < 8; ci++) {
+          if (ci === activeCiv) continue;
+          if (!(state.civsAlive & (1 << ci))) continue;
+          const keyAB = activeCiv < ci ? `${activeCiv}-${ci}` : `${ci}-${activeCiv}`;
+          const diplo = state.diplomacy?.[keyAB];
+          if (diplo?.spyIntel) {
+            state.diplomacy = { ...state.diplomacy };
+            state.diplomacy[keyAB] = { ...diplo, spyIntel: false };
+          }
+        }
+      }
 
       // #31: Settler/Engineer from size-1 city guardrails
       // Chieftain difficulty: block settler completion from size-1 cities
@@ -691,6 +794,13 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
                 civSlot: oc.owner, wonderIndex: wi,
               });
             }
+          }
+
+          // ── #106: Territory expansion on wonder completion ──
+          // Binary: wonders trigger enhanced territory claim around the city.
+          const wonderTerr = expandTerritory(state, mapBase, cityIndex, { wonderBonus: true });
+          if (wonderTerr.events.length > 0) {
+            events.push(...wonderTerr.events);
           }
         }
       }
@@ -1211,6 +1321,13 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   // Skip cities in resistance (no production, food, etc.)
   if (city.resistanceTurns > 0) return { events, cityDestroyed: false };
 
+  // ── #148: Clear "already processed" flag per city ──
+  // Binary: city[city_idx].flags &= 0xFFBFFFBB — clear per-turn processing flags
+  // at the start of each city's turn processing to prevent double-processing.
+  if (city.processedThisTurn) {
+    state.cities[cityIndex] = { ...state.cities[cityIndex], processedThisTurn: false };
+  }
+
   // ── Step 0a: City turn sync — adoption check (every 64 turns, staggered) ──
   // Binary ref: FUN_004f0a9c line 278
   // Formula: ((turnAge - 1) ^ (turnNumber & 0x3F)) & 0x3F == 0
@@ -1303,6 +1420,93 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
     }
   }
 
+  // ── #73: Second yield calculation pass (post-growth, post-production) ──
+  // Binary FUN_004f0a9c: runs calc_city_production TWICE per city turn —
+  // once before food/production processing, once after. The second pass
+  // recalculates yields with updated city size and completed buildings.
+  if (!cityDestroyed) {
+    const cityPost = state.cities[cityIndex];
+    // Recalculate happiness after production changes (buildings may have completed)
+    const hap2 = calcHappiness(cityPost, cityIndex, state, mapBase);
+    if (cityPost.civilDisorder !== hap2.civilDisorder ||
+        cityPost.weLoveKingDay !== hap2.weLoveKingDay) {
+      state.cities[cityIndex] = {
+        ...state.cities[cityIndex],
+        civilDisorder: hap2.civilDisorder,
+        weLoveKingDay: hap2.weLoveKingDay,
+      };
+    }
+  }
+
+  // ── #72: Wonder/attitude checks (binary FUN_004f0a9c lines 352-367) ──
+  // Check Women's Suffrage and Colosseum effects during city processing,
+  // calculate corruption/attitude modifiers per the leader personality.
+  if (!cityDestroyed && state.civs?.[activeCiv]) {
+    const cityNow = state.cities[cityIndex];
+    const hasSuffrage = hasWonderEffect(state, activeCiv, 21) ||
+                        cityHasBuilding(cityNow, 33); // Police Station
+    const leaderIdx = state.civs[activeCiv]?.leaderIndex ?? 0;
+    const leaderData = LEADER_PERSONALITY[leaderIdx];
+    const leaderAggression = leaderData ? leaderData[1] : 0; // militarism
+
+    // Corruption factor from leader aggression + buildings
+    let corruptionFactor = 7 - leaderAggression;
+    if (cityHasBuilding(cityNow, 7)) corruptionFactor = 5 - leaderAggression; // Courthouse
+    if (cityHasBuilding(cityNow, 22)) corruptionFactor -= 1; // Stock Exchange
+    if (cityHasBuilding(cityNow, 4)) { // Temple
+      if (cityHasBuilding(cityNow, 6) || hasWonderEffect(state, activeCiv, 5)) {
+        corruptionFactor -= 1; // Temple + Library or Oracle
+      }
+    }
+
+    // Accumulate attitude modifiers on the civ
+    if (corruptionFactor > 0) {
+      state.civs = state.civs.length ? [...state.civs] : state.civs;
+      const civ = { ...state.civs[activeCiv] };
+      const suffrageReduction = hasSuffrage ? 1 : 0;
+      const baseAggression = leaderData ? leaderData[1] : 0;
+      // Binary: partisan_sentiment -= clamp((2 - hasSuffrage) * (baseAggression + 1), 0, 99) * corruptionFactor
+      const partisanDelta = Math.max(0, Math.min(99,
+        (2 - suffrageReduction) * (Math.abs(baseAggression) + 1))) * corruptionFactor;
+      civ.partisanSentiment = (civ.partisanSentiment || 0) - partisanDelta;
+      // Binary: citizen_discontent -= clamp(baseAggression * (1 - hasSuffrage), 0, 99) * corruptionFactor
+      const discontentDelta = Math.max(0, Math.min(99,
+        Math.abs(baseAggression) * (1 - suffrageReduction))) * corruptionFactor;
+      civ.citizenDiscontent = (civ.citizenDiscontent || 0) - discontentDelta;
+      state.civs[activeCiv] = civ;
+    }
+  }
+
+  // ── #154: AI auto-settler at size 2 ──
+  // Binary: when an AI city reaches size 2 for the first time, create a
+  // free settler unit. This helps AI expand early game.
+  if (!cityDestroyed) {
+    const humanPlayers = state.humanPlayers || 0xFF;
+    const isAI = !((1 << activeCiv) & humanPlayers);
+    if (isAI && newSize === 2 && city.size < 2) {
+      // City just grew to size 2 — create a free settler
+      const freeSettler = {
+        type: 0, // Settlers
+        owner: activeCiv,
+        gx: city.gx, gy: city.gy,
+        x: city.gx * 2 + (city.gy % 2), y: city.gy,
+        veteran: 0,
+        movesRemain: 0,
+        orders: 'none', movesMade: 0, movesLeft: 0,
+        homeCityId: cityIndex,
+        goToX: -1, goToY: -1,
+        hpLost: 0xFF,
+        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+        prevInStack: -1, nextInStack: -1,
+      };
+      state.units = [...state.units, freeSettler];
+      events.push({
+        type: 'aiAutoSettler', cityName: city.name, cityIndex,
+        civSlot: activeCiv,
+      });
+    }
+  }
+
   // ── Apply accumulated changes to city ──
   const soldThisTurn = false;
   if (newSize !== cityAfterHap.size || newFood !== cityAfterHap.foodInBox ||
@@ -1367,6 +1571,11 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
         disorderTurns: disorderResult.disorderTurns,
       };
     }
+  }
+
+  // ── #148: Mark city as processed this turn ──
+  if (!cityDestroyed) {
+    state.cities[cityIndex] = { ...state.cities[cityIndex], processedThisTurn: true };
   }
 
   return { events, cityDestroyed };
