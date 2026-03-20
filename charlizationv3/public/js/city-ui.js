@@ -12,6 +12,7 @@ import { Civ2CityDialog } from './citydialog.js';
 import { UNIT_NAMES, IMPROVE_NAMES, IMPROVE_COSTS, WONDER_NAMES, WONDER_COSTS, UNIT_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, TERRAIN_BASE } from '../engine/defs.js';
 import { SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, RENAME_CITY } from '../engine/actions.js';
 import { getProductionCost, calcShieldProduction } from '../engine/production.js';
+import { canBuildUnitType, canBuildImprovement, canBuildWonder } from '../engine/buildcheck.js';
 import { calcRushBuyCost } from '../engine/happiness.js';
 import { wrapGx } from '../engine/utils.js';
 
@@ -379,24 +380,19 @@ function showProductionPicker(city, cityIndex, onDismiss) {
     netShields = shieldResult.netShields || 0;
   } catch (e) { /* fallback to 0 */ }
 
-  // Build list of available items by category
+  // Build list of available items using server-side buildcheck validation
+  // This ensures the picker only shows items the server will accept
   const unitItems = [];
   for (let id = 0; id < UNIT_NAMES.length; id++) {
     if (!UNIT_NAMES[id] || UNIT_COSTS[id] == null) continue;
-    const prereq = UNIT_PREREQS[id] ?? -1;
-    const obsolete = UNIT_OBSOLETE[id] ?? -1;
-    if (prereq === -2 || obsolete === -2) continue;
-    if (prereq >= 0 && !hasTech(prereq)) continue;
-    if (obsolete >= 0 && hasTech(obsolete)) continue;
+    if (!canBuildUnitType(city.owner, cityIndex, id, S.mpGameState, S.mpMapBase)) continue;
     unitItems.push({ type: 'unit', id, name: UNIT_NAMES[id], cost: UNIT_COSTS[id] });
   }
 
   const buildingItems = [];
   for (let id = 2; id <= 38; id++) {
     if (!IMPROVE_NAMES[id] || IMPROVE_COSTS[id] == null) continue;
-    if (hasBuilding(id)) continue;
-    const prereq = IMPROVE_PREREQS[id] ?? -1;
-    if (prereq >= 0 && !hasTech(prereq)) continue;
+    if (!canBuildImprovement(city.owner, cityIndex, id, S.mpGameState, S.mpMapBase)) continue;
     buildingItems.push({ type: 'building', id, name: IMPROVE_NAMES[id], cost: IMPROVE_COSTS[id] });
   }
 
@@ -404,10 +400,7 @@ function showProductionPicker(city, cityIndex, onDismiss) {
   for (let i = 0; i < WONDER_NAMES.length; i++) {
     const wid = i + 39;
     if (!WONDER_NAMES[i] || WONDER_COSTS[i] == null) continue;
-    if (S.mpGameState.wonders && S.mpGameState.wonders[i] &&
-        S.mpGameState.wonders[i].cityIndex != null) continue;
-    const prereq = WONDER_PREREQS[i] ?? -1;
-    if (prereq >= 0 && !hasTech(prereq)) continue;
+    if (!canBuildWonder(city.owner, i, S.mpGameState)) continue;
     wonderItems.push({ type: 'wonder', id: wid, name: WONDER_NAMES[i], cost: WONDER_COSTS[i] });
   }
 
