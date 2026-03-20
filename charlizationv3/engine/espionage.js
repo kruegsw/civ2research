@@ -218,7 +218,7 @@ export function calcBribeCostEnhanced(state, target, mapBase, spyCiv) {
   if (bribeGovt === 'communism') dist = Math.min(dist, 10);
   if (bribeGovt === 'republic' && dist > 9) dist = 10;
 
-  const unitCost = UNIT_COSTS[target.type] || 1; // raw shield cost
+  const unitCost = (UNIT_COSTS[target.type] || 10) / 10; // raw shield cost (costs are ×10 internal)
   let cost = Math.floor(unitCost * (treasury + 750) / (dist + 2));
   if (cost < 0) cost = 30000;
 

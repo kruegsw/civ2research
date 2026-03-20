@@ -1393,7 +1393,7 @@ function _evaluateDirections(unit, unitIndex, gameState, mapBase, spatialIdx, ci
         // Ported from lines 5125-5129:
         //   local_10 = ((countRole0AtTarget + 1) * combatScore) / (unitCost / 10)
         const atkUnitsAtTarget = _countRoleUnitsAtTile(spatialIdx, wnx, ny, civSlot, 0);
-        const unitCostDiv = Math.max(1, UNIT_COSTS[unit.type] ?? 4);
+        const unitCostDiv = Math.max(1, Math.floor((UNIT_COSTS[unit.type] ?? 40) / 10));
         let combatValue = Math.floor(((atkUnitsAtTarget + 1) * combatScore) / unitCostDiv);
 
         // ── City capture bonus (line 5131-5132) ──

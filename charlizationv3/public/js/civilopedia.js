@@ -189,7 +189,7 @@ function buildUnitDetail(container, itemId, navigate) {
   container.appendChild(makeStat('Hit Points', UNIT_HP[itemId] ?? 1));
   container.appendChild(makeStat('Firepower', UNIT_FP[itemId] ?? 1));
   container.appendChild(makeStat('Movement', UNIT_MOVE_POINTS[itemId] ?? 1));
-  container.appendChild(makeStat('Cost', (UNIT_COSTS[itemId] ?? 1) + ' shields'));
+  container.appendChild(makeStat('Cost', (UNIT_COSTS[itemId] ?? 10) / 10 + ' shields'));
   container.appendChild(makeStat('Domain', DOMAIN_LABELS[UNIT_DOMAIN[itemId] ?? 0]));
 
   // Prereq tech
@@ -218,7 +218,7 @@ function buildBuildingDetail(container, itemId, navigate) {
   title.style.cssText = 'margin:0 0 8px;font:bold 16px "Times New Roman",Georgia,serif;color:#333';
   container.appendChild(title);
 
-  container.appendChild(makeStat('Cost', (IMPROVE_COSTS[itemId] ?? 0) + ' shields'));
+  container.appendChild(makeStat('Cost', (IMPROVE_COSTS[itemId] ?? 0) / 10 + ' shields'));
   container.appendChild(makeStat('Maintenance', (IMPROVE_MAINTENANCE[itemId] ?? 0) + ' gold/turn'));
 
   // Prereq tech
@@ -240,7 +240,7 @@ function buildWonderDetail(container, itemId, navigate) {
   title.style.cssText = 'margin:0 0 8px;font:bold 16px "Times New Roman",Georgia,serif;color:#333';
   container.appendChild(title);
 
-  container.appendChild(makeStat('Cost', (WONDER_COSTS[itemId] ?? 0) + ' shields'));
+  container.appendChild(makeStat('Cost', (WONDER_COSTS[itemId] ?? 0) / 10 + ' shields'));
 
   // Prereq tech
   const prereq = WONDER_PREREQS[itemId];

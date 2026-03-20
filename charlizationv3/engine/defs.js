@@ -74,10 +74,12 @@ export const IMPROVE_NAMES = {
   35: 'SS Structural', 36: 'SS Component', 37: 'SS Module', 38: 'Capitalization',
 };
 
-// Standard MGE RULES.TXT costs (shield rows — same scale as tile production)
-export const UNIT_COSTS = [4,4,1,2,3,4,2,3,2,5,5,4,6,6,5,2,3,4,4,4,5,6,8,4,4,5,7,6,12,10,8,16,4,4,4,5,6,6,8,10,16,6,16,5,6,16,3,3,5,5,3,5,5,10,4,4,4,4,4,4,4,4,4];
-export const IMPROVE_COSTS = [1,10,4,6,4,8,8,8,8,8,12,12,16,16,10,20,32,20,20,16,24,16,16,12,8,20,16,10,8,32,6,16,16,6,8,8,16,32,60];
-export const WONDER_COSTS = [20,20,20,20,30,30,30,30,30,20,40,30,40,30,40,40,40,40,40,40,30,60,60,60,60,60,60,60];
+// Standard MGE RULES.TXT costs (×10 internal representation — matches binary)
+// Tile production yields 0-4 raw shields/turn; costs are in 10x scale.
+// Warriors=10 means ~5 turns at 2 shields/turn. Display divides by 10.
+export const UNIT_COSTS = [4,4,1,2,3,4,2,3,2,5,5,4,6,6,5,2,3,4,4,4,5,6,8,4,4,5,7,6,12,10,8,16,4,4,4,5,6,6,8,10,16,6,16,5,6,16,3,3,5,5,3,5,5,10,4,4,4,4,4,4,4,4,4].map(c => c * 10);
+export const IMPROVE_COSTS = [1,10,4,6,4,8,8,8,8,8,12,12,16,16,10,20,32,20,20,16,24,16,16,12,8,20,16,10,8,32,6,16,16,6,8,8,16,32,60].map(c => c * 10);
+export const WONDER_COSTS = [20,20,20,20,30,30,30,30,30,20,40,30,40,30,40,40,40,40,40,40,30,60,60,60,60,60,60,60].map(c => c * 10);
 
 // Building maintenance cost per turn (gold, indexed by building ID 1-38; index 0 unused)
 // From standard MGE RULES.TXT @IMPROVE section

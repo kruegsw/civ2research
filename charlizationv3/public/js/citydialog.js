@@ -2831,7 +2831,7 @@ const Civ2CityDialog = {
       const SG = R.shieldGrid;
       const cost = this._getProductionCost(item);
       const stored = city.shieldsInBox || 0;
-      const baseCost = cost;
+      const baseCost = Math.round(cost / 10);
       const shieldsPerRow = baseCost < 10 ? 10 : baseCost;
       const numRows = baseCost < 10 ? baseCost : 10;
 

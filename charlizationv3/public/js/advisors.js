@@ -1215,7 +1215,7 @@ function _showGoalDetail(advId, returnTo) {
         const stats = document.createElement('div');
         stats.style.cssText = STAT_CSS;
         const domain = DOMAIN_LABELS[UNIT_DOMAIN[uid] ?? 0];
-        stats.textContent = `ATK ${UNIT_ATK[uid] ?? 0} / DEF ${UNIT_DEF[uid] ?? 0} / Move ${UNIT_MOVE_POINTS[uid] ?? 1} / Cost ${UNIT_COSTS[uid]} (${domain})`;
+        stats.textContent = `ATK ${UNIT_ATK[uid] ?? 0} / DEF ${UNIT_DEF[uid] ?? 0} / Move ${UNIT_MOVE_POINTS[uid] ?? 1} / Cost ${UNIT_COSTS[uid] / 10} (${domain})`;
         info.appendChild(stats);
 
         row.appendChild(info);
@@ -1227,7 +1227,7 @@ function _showGoalDetail(advId, returnTo) {
         const item = document.createElement('div');
         item.style.cssText = ITEM_CSS;
         const maint = IMPROVE_MAINTENANCE[bid] ?? 0;
-        item.textContent = `${IMPROVE_NAMES[bid]} — Cost ${IMPROVE_COSTS[bid]}, Maintenance ${maint} gold/turn`;
+        item.textContent = `${IMPROVE_NAMES[bid]} — Cost ${IMPROVE_COSTS[bid] / 10}, Maintenance ${maint} gold/turn`;
         sec.appendChild(item);
       }
 
@@ -1235,7 +1235,7 @@ function _showGoalDetail(advId, returnTo) {
       for (const wid of enabledWonders) {
         const item = document.createElement('div');
         item.style.cssText = ITEM_CSS;
-        item.textContent = `${WONDER_NAMES[wid]} (Wonder) — Cost ${WONDER_COSTS[wid]}`;
+        item.textContent = `${WONDER_NAMES[wid]} (Wonder) — Cost ${WONDER_COSTS[wid] / 10}`;
         sec.appendChild(item);
       }
 
@@ -1783,7 +1783,7 @@ export function showCivpedia(initialTab) {
             `<div class="civpedia-stat"><span class="civpedia-stat-label">Defense</span><span class="civpedia-stat-value">${UNIT_DEF[i] ?? 0}</span></div>` +
             `<div class="civpedia-stat"><span class="civpedia-stat-label">Moves</span><span class="civpedia-stat-value">${UNIT_MOVE_POINTS[i] ?? 1}</span></div>` +
             `<div class="civpedia-stat"><span class="civpedia-stat-label">HP</span><span class="civpedia-stat-value">${UNIT_HP[i] ?? 10}</span></div>` +
-            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${UNIT_COSTS[i]}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${UNIT_COSTS[i] / 10}</span></div>` +
             `<div class="civpedia-stat"><span class="civpedia-stat-label">Domain</span><span class="civpedia-stat-value">${['Land','Air','Sea'][UNIT_DOMAIN[i] ?? 0]}</span></div>`;
           page.appendChild(entry);
         });
@@ -1794,7 +1794,7 @@ export function showCivpedia(initialTab) {
           const entry = document.createElement('div');
           entry.className = 'civpedia-entry';
           entry.innerHTML = `<strong>${name}</strong>` +
-            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${IMPROVE_COSTS[id]}</span></div>` +
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${IMPROVE_COSTS[id] / 10}</span></div>` +
             `<div class="civpedia-stat"><span class="civpedia-stat-label">Maintenance</span><span class="civpedia-stat-value">${IMPROVE_MAINTENANCE[id]} gold/turn</span></div>`;
           page.appendChild(entry);
         }
@@ -1803,7 +1803,7 @@ export function showCivpedia(initialTab) {
           const entry = document.createElement('div');
           entry.className = 'civpedia-entry';
           entry.innerHTML = `<strong>${name}</strong>` +
-            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${WONDER_COSTS[i]}</span></div>`;
+            `<div class="civpedia-stat"><span class="civpedia-stat-label">Cost</span><span class="civpedia-stat-value">${WONDER_COSTS[i] / 10}</span></div>`;
           page.appendChild(entry);
         });
       } else if (t.id === 'advances') {
