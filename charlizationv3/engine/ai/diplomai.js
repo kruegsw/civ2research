@@ -3110,14 +3110,23 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
     actions.push(...demandResponses);
 
     // ── 2. Proactive diplomacy: iterate all alive civs ──
+    // Binary: 6-turn minimum cooldown between AI diplomatic contacts (DAT_0064ca82)
+    const DIPLO_COOLDOWN_TURNS = 6;
     const civs = gameState.civs;
     if (!civs) return actions;
+    const currentTurn = gameState.turn?.number || 0;
 
     let declaredWar = false;
 
     for (let i = 1; i < civs.length; i++) {
       if (i === civSlot) continue;
       if (!(gameState.civsAlive & (1 << i))) continue;
+
+      // Enforce 6-turn cooldown (binary DAT_0064ca82[target][us])
+      // War declarations bypass cooldown (urgent)
+      const contactKey = `diplo_${Math.min(civSlot, i)}_${Math.max(civSlot, i)}`;
+      const lastContact = gameState._diploContactTurns?.[contactKey] || 0;
+      const onCooldown = (currentTurn - lastContact) < DIPLO_COOLDOWN_TURNS;
 
       // (#16) First contact: establish ceasefire with personality-based initial attitude
       if (!haveContact(gameState, civSlot, i)) {
@@ -3187,6 +3196,10 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
           }
         }
       }
+
+      // Skip non-urgent diplomacy if on cooldown (binary: 6-turn minimum)
+      // War declarations above bypass this — they're always urgent
+      if (onCooldown) continue;
 
       // 2b. Peace proposals (urgent if losing)
       if (shouldProposePeace(civSlot, i, continentData, gameState)) {
@@ -3370,6 +3383,24 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
             }
           }
         }
+      }
+    }
+
+    // Record cooldown for any human-targeted diplomacy actions
+    // (binary: DAT_0064ca82[target][us] = current turn)
+    const humanMask = gameState.humanPlayers || 0;
+    const diploTargets = new Set();
+    for (const a of actions) {
+      const target = a.targetCiv ?? a.to ?? a.toCiv;
+      if (target != null && (humanMask & (1 << target))) {
+        diploTargets.add(target);
+      }
+    }
+    if (diploTargets.size > 0) {
+      if (!gameState._diploContactTurns) gameState._diploContactTurns = {};
+      for (const t of diploTargets) {
+        const key = `diplo_${Math.min(civSlot, t)}_${Math.max(civSlot, t)}`;
+        gameState._diploContactTurns[key] = currentTurn;
       }
     }
 
