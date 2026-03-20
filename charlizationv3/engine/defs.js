@@ -998,6 +998,20 @@ export const POLLUTION_THRESHOLD = 20; // shields above this contribute to pollu
 export const UNIT_SUBMARINE = new Set([41]); // Submarine
 export const UNIT_SUB_DETECTOR = new Set([37, 39]); // Destroyer, AEGIS Cruiser
 
+// ── Unit special flags (from RULES.TXT bit flags) ──
+// Amphibious flag: unit can attack from ocean tiles (Marines)
+// From RULES.TXT flags — Marines (type 12) have this flag
+export const UNIT_AMPHIBIOUS = new Set([12]); // Marines
+
+// Alpine flag: unit treats ALL terrain as cost 1 MP (Alpine Troops)
+// From RULES.TXT flags bit 12 (0x1000)
+export const UNIT_ALPINE = new Set([10]); // Alpine Troops
+
+// Fighter flag: air units that can only attack ground units when target
+// has a city or airbase (fighters cannot strafe open-field ground units)
+// From binary FUN_0057f9e3: fighters check for city/airbase at target
+export const UNIT_FIGHTER = new Set([27, 30]); // Fighter, Stealth Fighter
+
 // ── Unit upgrade paths ──
 // Maps each unit type to its upgrade target (-1 = no upgrade).
 // Based on Civ2 obsolescence chain: when unit X is obsoleted by tech T,

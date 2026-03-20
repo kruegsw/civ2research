@@ -16,6 +16,8 @@
 import { UNIT_COSTS, UNIT_HP, ADVANCE_NAMES, DIFFICULTY_KEYS } from './defs.js';
 import { getGovernment, cityHasBuilding, hasWonderEffect } from './utils.js';
 import { calcGarrisonDistance } from './production.js';
+import { handleNuclearAttack } from './nuclear.js';
+import { TF, getTreatyFlags, setTreatyFlags, addTreatyFlag } from './diplomacy.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Intelligence access check
@@ -210,10 +212,11 @@ export function calcBribeCostEnhanced(state, target, mapBase, spyCiv) {
   // Distance to nearest Palace of target civ
   let dist = calcCityRevoltDistance(state, mapBase, target.owner, target.gx, target.gy);
 
-  // Communism and Republic cap — binary checks the TARGET's government, not the spy's
-  const govt = getGovernment(null, state, target.owner);
-  if (govt === 'communism') dist = Math.min(dist, 10);
-  if (govt === 'republic' && dist > 9) dist = 10;
+  // Communism and Republic cap — binary checks the BRIBER's (spy's) government, not target's
+  // Binary ref: FUN_004c9528 line 2953: checks param_2 (spy civ), NOT the target unit's owner
+  const bribeGovt = spyCiv != null ? getGovernment(null, state, spyCiv) : getGovernment(null, state, target.owner);
+  if (bribeGovt === 'communism') dist = Math.min(dist, 10);
+  if (bribeGovt === 'republic' && dist > 9) dist = 10;
 
   const unitCost = (UNIT_COSTS[target.type] || 10) / 10; // raw shield cost
   let cost = Math.floor(unitCost * (treasury + 750) / (dist + 2));
@@ -224,9 +227,11 @@ export function calcBribeCostEnhanced(state, target, mapBase, spyCiv) {
     cost = Math.floor(cost / 2);
   }
 
-  // Damaged units cost less
+  // Damaged units cost less — use hpLost (damage taken), not movesRemain
+  // Binary ref: FUN_004c9528 uses unit's actual HP damage field to discount bribe cost
   const maxHp = (UNIT_HP && UNIT_HP[target.type]) || 10;
-  const curHp = Math.max(1, maxHp - (target.movesRemain || 0));
+  const hpLost = target.hpLost || 0;
+  const curHp = Math.max(1, maxHp - hpLost);
   cost = Math.floor(cost * curHp / maxHp);
 
   // Garrison proximity discount: if nearest garrison is far (distance > 10),
@@ -742,7 +747,12 @@ export function investigateCity(state, mapBase, spyCiv, cityIndex) {
 
 /**
  * Mission 2: Steal Technology.
- * 1 detection check. On success, transfers a random tech from target to spy's civ.
+ * Binary ref: FUN_004c6bf5 case 2.
+ * 1 detection check for random steal; 2 checks for specific steal if city has walls.
+ * On success, transfers a tech from target to spy's civ.
+ * Spies (type 47) can choose a specific tech; diplomats steal randomly.
+ * After a successful steal, city is marked as "already stolen from" (stolenFrom flag).
+ * Subsequent steals from the same city require the STEALHARD dialog (specific only).
  * Triggers diplomatic incident.
  *
  * @param {object} state - mutable game state
@@ -751,9 +761,10 @@ export function investigateCity(state, mapBase, spyCiv, cityIndex) {
  * @param {number} targetCiv - civ owning the target city
  * @param {number} cityIndex - index of target city
  * @param {object} rng - random number generator
+ * @param {number} [targetTechId] - specific tech to steal (spy only)
  * @returns {object[]} events
  */
-export function stealTech(state, mapBase, spyCiv, targetCiv, cityIndex, rng) {
+export function stealTech(state, mapBase, spyCiv, targetCiv, cityIndex, rng, targetTechId) {
   const events = [];
   const city = state.cities[cityIndex];
   if (!city || city.owner !== targetCiv) {
@@ -768,19 +779,31 @@ export function stealTech(state, mapBase, spyCiv, targetCiv, cityIndex, rng) {
   }
   const spy = state.units[spyIdx];
   const effectiveRng = rng || state.rng;
+  const isSpecific = targetTechId != null && spy.type === 47;
 
-  // Detection check (case 2: 1 check)
-  const detectionResult = calcSpySuccessChance(spy, city, 'steal', state);
-  if (detectionResult === 0.0) {
-    // Spy caught
-    state.units = [...state.units];
-    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
-    events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'stealTech', cityName: city.name });
-    handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+  // Detection checks: 1 base, +1 if specific steal AND city has walls (building 8)
+  let numChecks = 1;
+  if (isSpecific && city.buildings && city.buildings.has(8)) {
+    numChecks = 2;
+  }
+  // If city was already stolen from and this is a random steal, block it
+  // (binary: city.flags & 0x08 means already stolen from — must use specific steal)
+  if (!isSpecific && city.stolenFrom) {
+    events.push({ type: 'stealTechFailed', spyCiv, targetCiv, reason: 'Already stolen from this city' });
     return events;
   }
 
-  // Find a tech the target has that spy's civ doesn't
+  for (let i = 0; i < numChecks; i++) {
+    if (spyCaughtCheck(spy, effectiveRng)) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+      events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'stealTech', cityName: city.name });
+      handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+      return events;
+    }
+  }
+
+  // Find stealable techs
   const spyTechs = state.civTechs?.[spyCiv] || new Set();
   const targetTechs = state.civTechs?.[targetCiv] || new Set();
   const stealable = [];
@@ -791,15 +814,31 @@ export function stealTech(state, mapBase, spyCiv, targetCiv, cityIndex, rng) {
   if (stealable.length === 0) {
     events.push({ type: 'stealTechFailed', spyCiv, targetCiv, reason: 'No stealable techs' });
   } else {
-    const techId = stealable[effectiveRng ? effectiveRng.nextInt(stealable.length) : Math.floor(Math.random() * stealable.length)];
+    let techId;
+    if (isSpecific && stealable.includes(targetTechId)) {
+      // Spy-specific steal: take the requested tech
+      techId = targetTechId;
+    } else if (isSpecific) {
+      // Requested tech not available — fall back to random
+      techId = stealable[effectiveRng ? effectiveRng.nextInt(stealable.length) : Math.floor(Math.random() * stealable.length)];
+    } else {
+      // Random steal (diplomat or spy without specific target)
+      techId = stealable[effectiveRng ? effectiveRng.nextInt(stealable.length) : Math.floor(Math.random() * stealable.length)];
+    }
     // Grant the tech to spy's civ
     if (!state.civTechs[spyCiv]) state.civTechs[spyCiv] = new Set();
     state.civTechs[spyCiv] = new Set(state.civTechs[spyCiv]);
     state.civTechs[spyCiv].add(techId);
+
+    // Mark city as "already stolen from" (binary: city.flags |= 0x08)
+    state.cities = [...state.cities];
+    state.cities[cityIndex] = { ...city, stolenFrom: true };
+
     events.push({
       type: 'techStolen', spyCiv, targetCiv, techId,
       techName: ADVANCE_NAMES[techId] || `Tech ${techId}`,
       cityName: city.name,
+      specific: isSpecific,
     });
   }
 
@@ -824,18 +863,24 @@ export function stealTech(state, mapBase, spyCiv, targetCiv, cityIndex, rng) {
 }
 
 /**
- * Mission 3: Sabotage Production.
- * 1 detection check. On success, resets target city's shields to 0.
- * Triggers diplomatic incident.
+ * Mission 3: Sabotage City.
+ * Binary ref: FUN_004c6bf5 case 3 — two modes:
+ *   1. Random sabotage (diplomat or spy without specific target):
+ *      Roll rand() % 39 to pick a building. If city has it, destroy it.
+ *      If no building hit, reset production shields to 0.
+ *   2. Specific sabotage (spy only, targetBuildingId provided):
+ *      Destroy the specific building. Extra detection checks for
+ *      Palace(1)/City Walls(8)/SDI Defense(17).
  *
  * @param {object} state - mutable game state
  * @param {object} mapBase - map accessor
  * @param {number} spyCiv - civ performing the action
  * @param {number} cityIndex - index of target city
  * @param {object} rng - random number generator
+ * @param {number} [targetBuildingId] - specific building to destroy (spy only)
  * @returns {object[]} events
  */
-export function sabotageProduction(state, mapBase, spyCiv, cityIndex, rng) {
+export function sabotageProduction(state, mapBase, spyCiv, cityIndex, rng, targetBuildingId) {
   const events = [];
   const city = state.cities[cityIndex];
   if (!city || city.size <= 0) {
@@ -851,26 +896,71 @@ export function sabotageProduction(state, mapBase, spyCiv, cityIndex, rng) {
   }
   const spy = state.units[spyIdx];
   const effectiveRng = rng || state.rng;
+  const isSpecific = targetBuildingId != null && targetBuildingId > 0 && spy.type === 47;
 
-  // Detection check (case 3: 1 check)
-  const detectionResult = calcSpySuccessChance(spy, city, 'sabotageProduction', state);
-  if (detectionResult === 0.0) {
-    state.units = [...state.units];
-    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
-    events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'sabotageProduction', cityName: city.name });
-    handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
-    return events;
+  // Detection checks (case 3): base 1, extra for specific targets
+  // Binary: Palace(1) or City Walls(8) → +1 check, SDI Defense(17) → +2 checks
+  let numChecks = 1;
+  if (isSpecific) {
+    if (targetBuildingId === 1 || targetBuildingId === 8) numChecks = 2;
+    else if (targetBuildingId === 17) numChecks = 3;
   }
 
-  // Sabotage: reset shields to 0
-  state.cities = [...state.cities];
-  state.cities[cityIndex] = { ...city, shieldsStored: 0 };
+  for (let i = 0; i < numChecks; i++) {
+    if (spyCaughtCheck(spy, effectiveRng)) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+      events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'sabotageProduction', cityName: city.name });
+      handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+      return events;
+    }
+  }
 
-  events.push({
-    type: 'productionSabotaged', spyCiv, targetCiv, cityIndex,
-    cityName: city.name,
-    production: city.itemInProduction,
-  });
+  state.cities = [...state.cities];
+  const updCity = { ...city };
+  let destroyedBuilding = null;
+
+  if (isSpecific) {
+    // Specific sabotage: destroy the targeted building
+    if (updCity.buildings && updCity.buildings.has(targetBuildingId)) {
+      const newBuildings = new Set(updCity.buildings);
+      newBuildings.delete(targetBuildingId);
+      updCity.buildings = newBuildings;
+      destroyedBuilding = targetBuildingId;
+    } else {
+      // Building not present — reset shields instead
+      updCity.shieldsStored = 0;
+    }
+  } else {
+    // Random sabotage: roll rand() % 39 to pick a random building
+    // Binary: scans building IDs 1-38 (39 slots), if city has the rolled building, destroy it
+    const roll = effectiveRng ? effectiveRng.nextInt(39) : Math.floor(Math.random() * 39);
+    const buildingId = roll; // 0-38, where 0 means no building hit
+    if (buildingId >= 1 && updCity.buildings && updCity.buildings.has(buildingId)) {
+      const newBuildings = new Set(updCity.buildings);
+      newBuildings.delete(buildingId);
+      updCity.buildings = newBuildings;
+      destroyedBuilding = buildingId;
+    } else {
+      // No building hit — reset production shields to 0
+      updCity.shieldsStored = 0;
+    }
+  }
+
+  state.cities[cityIndex] = updCity;
+
+  if (destroyedBuilding != null) {
+    events.push({
+      type: 'buildingDestroyed', spyCiv, targetCiv, cityIndex,
+      cityName: city.name, buildingId: destroyedBuilding,
+    });
+  } else {
+    events.push({
+      type: 'productionSabotaged', spyCiv, targetCiv, cityIndex,
+      cityName: city.name,
+      production: city.itemInProduction,
+    });
+  }
 
   // Diplomatic incident
   handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
@@ -1054,9 +1144,133 @@ export function inciteRevolt(state, mapBase, spyCiv, cityIndex, rng) {
 }
 
 /**
+ * Mission 5: Plant Nuclear Device.
+ * Binary ref: FUN_004c6bf5 case 5 — spy-only mission requiring:
+ *   - Spy type (not diplomat)
+ *   - Civ has Rocketry (tech 73 = 0x49)
+ *   - Civ has Nuclear Fission (tech 58 = 0x3A)
+ *   - Manhattan Project wonder (index 23 = 0x17) must exist
+ *
+ * 3-4 detection checks (3 base + 1 if city has defenders).
+ * On success: nuclear explosion at city, blame attacker, all-civ attitude penalty.
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} spyCiv - civ performing the action
+ * @param {number} cityIndex - index of target city
+ * @param {object} rng - random number generator
+ * @returns {object[]} events
+ */
+export function plantNuclearDevice(state, mapBase, spyCiv, cityIndex, rng) {
+  const events = [];
+  const city = state.cities[cityIndex];
+  if (!city || city.size <= 0) {
+    events.push({ type: 'espionageFailed', mission: 'plantNuke', reason: 'Invalid city' });
+    return events;
+  }
+
+  const targetCiv = city.owner;
+  const spyIdx = findSpyOnCity(state, spyCiv, cityIndex);
+  if (spyIdx < 0) {
+    events.push({ type: 'espionageFailed', mission: 'plantNuke', reason: 'No spy at city' });
+    return events;
+  }
+  const spy = state.units[spyIdx];
+  const effectiveRng = rng || state.rng;
+
+  // Must be a Spy (type 47), not a Diplomat
+  if (spy.type !== 47) {
+    events.push({ type: 'espionageFailed', mission: 'plantNuke', reason: 'Requires spy, not diplomat' });
+    return events;
+  }
+
+  // Tech requirements: Rocketry (73) and Nuclear Fission (58)
+  const spyTechs = state.civTechs?.[spyCiv];
+  if (!spyTechs || !spyTechs.has(73) || !spyTechs.has(58)) {
+    events.push({ type: 'espionageFailed', mission: 'plantNuke', reason: 'Missing required techs' });
+    return events;
+  }
+
+  // Manhattan Project (wonder index 23) must exist
+  const mpWonder = state.wonders?.[23];
+  if (!mpWonder || mpWonder.cityIndex == null) {
+    events.push({ type: 'espionageFailed', mission: 'plantNuke', reason: 'Manhattan Project not built' });
+    return events;
+  }
+
+  // 3 base detection checks + 1 if city has defenders (4 total max)
+  let numChecks = 3;
+  const hasDefenders = state.units.some(u =>
+    u.gx === city.gx && u.gy === city.gy && u.owner === targetCiv && u.gx >= 0 && u.type !== 46 && u.type !== 47
+  );
+  if (hasDefenders) numChecks = 4;
+
+  for (let i = 0; i < numChecks; i++) {
+    if (spyCaughtCheck(spy, effectiveRng)) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+      events.push({ type: 'spyCaught', spyCiv, targetCiv, mission: 'plantNuke', cityName: city.name });
+      handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+      return events;
+    }
+  }
+
+  // Nuclear explosion at city coordinates
+  // Uses the same handleNuclearAttack function as regular nukes
+  const nukeResult = handleNuclearAttack(state, mapBase, spyCiv, city.gx, city.gy);
+  events.push(...nukeResult.events);
+
+  // All-civ attitude penalty: +100 (max hostility) from ALL civs toward the spy's civ
+  // Binary: for (civ=1; civ<8; civ++) if (civ != spyCiv):
+  //   adjust_attitude(civ, spyCiv, 100)  — max hostility
+  //   set_treaty_flag(spyCiv, civ, 0x2000)  — WAR flag
+  for (let c = 1; c <= 7; c++) {
+    if (c === spyCiv) continue;
+    if (!(state.civsAlive & (1 << c))) continue;
+    // Set attitude to max hostility
+    adjustAttitudeHelper(state, c, spyCiv, +100);
+    // Set WAR flag between spy's civ and the affected civ
+    addTreatyFlag(state, spyCiv, c, TF.WAR);
+  }
+
+  events.push({
+    type: 'nuclearDevicePlanted', spyCiv, targetCiv, cityIndex,
+    cityName: city.name, intercepted: nukeResult.intercepted,
+  });
+
+  // Diplomatic incident
+  handleEspionageIncident(state, mapBase, spyCiv, targetCiv);
+
+  // Spy survival (hard mission, successLevel=1)
+  const survival = checkSpySurvival(spy, 1, effectiveRng);
+  if (!survival.survives) {
+    state.units = [...state.units];
+    state.units[spyIdx] = { ...spy, gx: -1, gy: -1 };
+    events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx });
+  } else {
+    if (survival.becomesVeteran && !spy.veteran) {
+      state.units = [...state.units];
+      state.units[spyIdx] = { ...spy, veteran: true };
+    }
+    spyEscapeTeleport(state, mapBase, spyIdx);
+  }
+
+  return events;
+}
+
+/**
  * Mission 7: Counter-Espionage.
- * Sets a flag on the city that increases spy detection for enemy spies.
- * No detection checks. Spy remains at city.
+ * Binary ref: FUN_004c6bf5 case 7 — numeric strength calculation.
+ * Spy stays alive at the city providing ongoing protection.
+ *
+ * Strength formula:
+ *   base = spy ? 10 : 5
+ *   base += difficultyTable[difficulty]   (5,4,3,2,1,0 for chieftain..deity)
+ *   if veteran: base += 2
+ *   base += rand() % 6
+ *
+ * The counter-espionage strength is stored on the city and affects
+ * enemy spy detection rolls while the protecting spy remains.
  *
  * @param {object} state - mutable game state
  * @param {object} mapBase - map accessor
@@ -1078,19 +1292,43 @@ export function counterEspionage(state, mapBase, spyCiv, cityIndex) {
     return events;
   }
   const spy = state.units[spyIdx];
+  const rng = state.rng;
 
-  // Set counter-espionage flag on the city
+  // Calculate counter-espionage strength (binary formula)
+  const isSpy = spy.type === 47;
+  let strength = isSpy ? 10 : 5;
+
+  // Difficulty table: [5, 4, 3, 2, 1, 0] for chieftain..deity
+  const diffKeys = ['chieftain', 'warlord', 'prince', 'king', 'emperor', 'deity'];
+  const diffTable = [5, 4, 3, 2, 1, 0];
+  const diffIdx = Math.max(0, diffKeys.indexOf(state.difficulty || 'chieftain'));
+  strength += diffTable[diffIdx] || 0;
+
+  // Veteran bonus
+  if (spy.veteran) strength += 2;
+
+  // Random component
+  strength += rng ? rng.nextInt(6) : Math.floor(Math.random() * 6);
+
+  // Set counter-espionage on the city with numeric strength
   state.cities = [...state.cities];
-  state.cities[cityIndex] = { ...city, counterEspionage: true, counterEspionageCiv: spyCiv };
+  state.cities[cityIndex] = {
+    ...city,
+    counterEspionage: true,
+    counterEspionageCiv: spyCiv,
+    counterEspionageStrength: strength,
+    counterEspionageSpyIdx: spyIdx,
+  };
 
   events.push({
     type: 'counterEspionageSet', spyCiv, cityIndex, cityName: city.name,
+    strength,
   });
 
-  // Spy is consumed (stationed for counter-espionage duty)
+  // Spy stays alive at the city — set orders to counterEspionage but keep position
+  // Binary: spy is NOT consumed; it remains stationed providing ongoing protection
   state.units = [...state.units];
-  state.units[spyIdx] = { ...spy, gx: -1, gy: -1, orders: 'counterEspionage' };
-  events.push({ type: 'spyConsumed', spyCiv, unitIndex: spyIdx, reason: 'counter-espionage duty' });
+  state.units[spyIdx] = { ...spy, orders: 'counterEspionage', movesLeft: 0 };
 
   return events;
 }

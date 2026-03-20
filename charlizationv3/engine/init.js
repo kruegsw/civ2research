@@ -14,7 +14,8 @@ import { createAccessors } from './state.js';
 import {
   MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, LEADERS_TXT_NAMES, WONDER_NAMES,
   CIV_COLORS, ADVANCE_PREREQS, ADVANCE_NAMES, TERRAIN_BASE,
-  CITY_RADIUS_DOUBLED, ADVANCE_EPOCH,
+  CITY_RADIUS_DOUBLED, ADVANCE_EPOCH, UNIT_PREREQS, UNIT_DOMAIN,
+  IMPROVE_COSTS, IMPROVE_MAINTENANCE,
 } from './defs.js';
 import { updateVisibility } from './visibility.js';
 import { assignContinentBodyIds } from './mapgen.js';
@@ -278,6 +279,27 @@ export function initNewGame(mapResult, seatList) {
       });
     }
 
+    // (#163) Place Explorer (type 50) if civ has Seafaring (tech 75)
+    // Binary FUN_004a7ce9: grants an Explorer unit when the civ starts with Seafaring
+    if (civTechs[civSlot] && civTechs[civSlot].has(75)) {
+      units.push({
+        type: 50, // Explorer
+        owner: civSlot,
+        gx: pos.gx, gy: pos.gy,
+        x: pos.gx * 2 + (pos.gy % 2), y: pos.gy,
+        veteran: 0,
+        movesRemain: 0,
+        orders: 'none',
+        movesMade: 0,
+        movesLeft: UNIT_MOVE_POINTS[50] * MOVEMENT_MULTIPLIER,
+        homeCityId: 0xFFFF,
+        goToX: -1, goToY: -1,
+        hpLost: 0xFF,
+        commodityCarried: -1, workTurns: 0, fuelRemaining: -1,
+        prevInStack: -1, nextInStack: -1,
+      });
+    }
+
     // Remove nearby goody huts (Civ2: clear huts in city radius of starting position)
     clearNearbyGoodyHuts(mapBase, pos.gx, pos.gy);
 
@@ -423,12 +445,12 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
   // Treasury: 0 at start (Chieftain bonus applied in initNewGame)
   const treasury = 0;
 
-  // Tax/science rates from pseudocode: scienceRate=4, taxRate=4, luxRate=1
+  // Tax/science rates from binary pseudocode: scienceRate=4, taxRate=4, luxRate=1
   // Civ2 uses a 0-10 scale where each unit = 10%. So sci=4 → 40%, tax=4 → 40%, lux=1 → 10%
-  // But our engine uses 0-10 direct. Default: 50/0/50 (sci=5, tax=5, lux=0)
-  const scienceRate = 5;
-  const taxRate = 5;
-  const luxuryRate = 0;
+  // (#162) Binary FUN_004a7ce9: initial rates are 40/40/10 (not 50/50/0)
+  const scienceRate = 4;
+  const taxRate = 4;
+  const luxuryRate = 1;
 
   // City style: based on rulesCivNumber (Civ2: 0-3 cycling through 4 styles)
   // Romans=0→European, Babylonians=1→Classical, Germans=2→Far-Eastern, Egyptians=3→Middle-Eastern
@@ -449,11 +471,12 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
     }
   }
 
-  // Q.3: Grant starting techs using seeded PRNG random selection from
-  // the no-prereq tech pool. Higher difficulty = fewer starting techs for
-  // human, more for AI on easier difficulties.
+  // (#45) Binary FUN_004a7ce9: grant techs that other civs already have.
+  // For each tech known by at least one other alive civ, grant it with
+  // probability rand()%(diff+1) > 0 (i.e. always on Chieftain, 50% on Deity).
+  // This is the real Civ2 algorithm: later civs catch up to earlier ones.
   const isHuman = seat && !seat.ai;
-  const techsToGrant = getStartingTechs(difficultyIdx, isHuman, rng);
+  const techsToGrant = getStartingTechs(difficultyIdx, isHuman, rng, civSlot, civTechs);
   for (const advId of techsToGrant) {
     civTechs[civSlot].add(advId);
   }
@@ -477,55 +500,76 @@ export function createNewCiv(civSlot, rulesCivNumber, difficultyIdx, civTechs, c
 }
 
 /**
- * Q.3: Determine starting techs using random selection from the no-prereq pool.
+ * (#45) Binary FUN_004a7ce9: Grant techs that other civs already have.
  *
- * Instead of a fixed list, randomly selects from all techs with no prerequisites
- * (ADVANCE_PREREQS[i] === [-1,-1]). The count depends on difficulty:
- *   Chieftain(0): 7 techs (all no-prereq)
- *   Warlord(1):   5 techs
- *   Prince(2):    3 techs
- *   King(3):      2 techs
- *   Emperor(4):   1 tech
- *   Deity(5):     0 techs
+ * For each tech known by any already-initialized civ, grant it with
+ * probability: rand() % (difficultyIdx + 1) > 0
+ *   - Chieftain (diff=0): rand()%1 > 0 → always false → NO free techs from this path
+ *   - Deity (diff=5): rand()%6 > 0 → 5/6 chance per tech
  *
- * Human civs get the count for their difficulty. AI civs on easier
- * difficulties get the same count as humans (the difficulty represents
- * the game setting, not per-civ difficulty).
- *
- * Uses seeded PRNG for determinism so all civs in a game draw from
- * the same RNG stream (ensuring reproducibility, not identical sets).
+ * For the first civ (no other civs initialized yet), fall back to granting
+ * random no-prereq techs scaled by difficulty.
  *
  * @param {number} difficultyIdx - 0=chieftain..5=deity
  * @param {boolean} isHuman - whether this civ is human-controlled
  * @param {object} [rng] - SeededRNG instance
+ * @param {number} civSlot - the civ slot being initialized
+ * @param {Array<Set>} civTechs - per-civ tech sets (already initialized for earlier civs)
  * @returns {number[]} array of advance IDs to grant
  */
-function getStartingTechs(difficultyIdx, isHuman, rng) {
-  // Build pool of all no-prereq techs dynamically
-  const pool = [];
-  for (let i = 0; i < ADVANCE_PREREQS.length; i++) {
-    const [p1, p2] = ADVANCE_PREREQS[i];
-    if (p1 === -1 && p2 === -1) pool.push(i);
+function getStartingTechs(difficultyIdx, isHuman, rng, civSlot, civTechs) {
+  // Collect all techs known by any already-initialized civ
+  const knownByOthers = new Set();
+  if (civTechs) {
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot) continue;
+      if (!civTechs[c] || civTechs[c].size === 0) continue;
+      for (const techId of civTechs[c]) {
+        knownByOthers.add(techId);
+      }
+    }
   }
 
-  // Number of free techs per difficulty level
-  const counts = [7, 5, 3, 2, 1, 0];
-  const count = Math.min(counts[Math.min(difficultyIdx, 5)], pool.length);
+  const granted = [];
 
-  if (count === 0) return [];
-  if (count >= pool.length) return [...pool]; // grant all
-
-  // Fisher-Yates shuffle the pool using seeded RNG, then take first `count`
-  const shuffled = [...pool];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = rng ? rng.nextInt(i + 1) : Math.floor(Math.random() * (i + 1));
-    const tmp = shuffled[i];
-    shuffled[i] = shuffled[j];
-    shuffled[j] = tmp;
+  if (knownByOthers.size > 0 && difficultyIdx > 0) {
+    // Binary algorithm: for each tech known by others, rand()%(diff+1) > 0
+    for (const techId of knownByOthers) {
+      const roll = rng ? rng.nextInt(difficultyIdx + 1) : Math.floor(Math.random() * (difficultyIdx + 1));
+      if (roll > 0) {
+        granted.push(techId);
+      }
+    }
   }
 
-  // Return the first `count` techs, sorted by ID for consistency
-  return shuffled.slice(0, count).sort((a, b) => a - b);
+  // If no techs granted from other civs (first civ or Chieftain), fall back
+  // to random no-prereq tech selection scaled by difficulty
+  if (granted.length === 0) {
+    const pool = [];
+    for (let i = 0; i < ADVANCE_PREREQS.length; i++) {
+      const [p1, p2] = ADVANCE_PREREQS[i];
+      if (p1 === -1 && p2 === -1) pool.push(i);
+    }
+
+    // Number of free techs per difficulty level
+    const counts = [7, 5, 3, 2, 1, 0];
+    const count = Math.min(counts[Math.min(difficultyIdx, 5)], pool.length);
+
+    if (count === 0) return [];
+    if (count >= pool.length) return [...pool];
+
+    // Fisher-Yates shuffle using seeded RNG, take first `count`
+    const shuffled = [...pool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = rng ? rng.nextInt(i + 1) : Math.floor(Math.random() * (i + 1));
+      const tmp = shuffled[i];
+      shuffled[i] = shuffled[j];
+      shuffled[j] = tmp;
+    }
+    return shuffled.slice(0, count).sort((a, b) => a - b);
+  }
+
+  return granted.sort((a, b) => a - b);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -880,22 +924,45 @@ function buildHumanPlayersBitmask(seatCivMap, aiSeatIndices) {
 // tech/city/unit lists per era from the binary.
 // ═══════════════════════════════════════════════════════════════════
 
+// (#107) AI late-game first city bonus buildings (Granary=3, Marketplace=5, Barracks=2)
+const AI_BONUS_BUILDINGS = [3, 5, 2];
+
+/**
+ * (#107) Apply AI late-game first city bonus.
+ * After turn 40, when an AI founds its first city, it gets bonus size
+ * (up to +10, min(10, turn/10)) and free buildings (Granary, Marketplace, Barracks).
+ * Binary FUN_004a7ce9 new_civ: late-game AI catch-up mechanic.
+ *
+ * @param {object} city - the newly founded city (mutable)
+ * @param {number} turnNumber - current game turn
+ * @param {boolean} isAI - whether this civ is AI-controlled
+ */
+export function applyAIFirstCityBonus(city, turnNumber, isAI) {
+  if (!isAI || turnNumber <= 40) return;
+  // Bonus size: min(10, turn / 10), floor
+  const bonusSize = Math.min(10, Math.floor(turnNumber / 10));
+  city.size = Math.max(city.size, 1 + bonusSize);
+  // Grant free buildings
+  if (!city.buildings) city.buildings = new Set();
+  for (const bid of AI_BONUS_BUILDINGS) {
+    city.buildings.add(bid);
+  }
+}
+
 // Era tech cutoff advance IDs (approximate; based on ADVANCE_EPOCH values)
 // Epoch 0 = ancient, 1 = renaissance, 2 = industrial, 3 = modern
 const ERA_EPOCH_MAX = [0, 1, 2, 3];
 
 /**
- * Set up a scenario start state by granting era-appropriate techs.
- * Stub implementation — grants all techs whose epoch <= era level.
+ * (#164) Set up an accelerated game start by granting era-appropriate techs.
+ * Grants all techs whose epoch <= era level AND whose prerequisites are
+ * also within that epoch (ensuring a valid tech tree state).
  *
  * Era levels:
  *   0 = ancient:     grant techs up to Bronze Working era (epoch 0)
  *   1 = renaissance: grant techs up to Gunpowder era (epoch 0-1)
  *   2 = industrial:  grant techs up to Railroad era (epoch 0-2)
  *   3 = modern:      grant techs up to Electronics era (epoch 0-3)
- *
- * Each era gives progressively more starting techs, cities, and units.
- * Full implementation needs the complete tech/city/unit lists per era.
  *
  * @param {object} state - mutable game state
  * @param {object} mapBase - map data + accessors
@@ -904,24 +971,38 @@ const ERA_EPOCH_MAX = [0, 1, 2, 3];
 export function setupScenarioStart(state, mapBase, era) {
   const epochMax = ERA_EPOCH_MAX[Math.min(era, 3)];
 
-  // Grant all techs whose epoch <= epochMax to all alive civs
+  // Build the set of eligible techs (epoch <= epochMax)
+  const eligible = new Set();
+  for (let advId = 0; advId < ADVANCE_NAMES.length; advId++) {
+    const epoch = (advId < ADVANCE_EPOCH.length) ? ADVANCE_EPOCH[advId] : -1;
+    if (epoch >= 0 && epoch <= epochMax) {
+      eligible.add(advId);
+    }
+  }
+
+  // Grant techs in dependency order: repeatedly add techs whose prereqs are met
+  // This ensures prerequisite chains are satisfied
   for (let c = 1; c <= 7; c++) {
     if (!(state.civsAlive & (1 << c))) continue;
     if (!state.civTechs) state.civTechs = Array.from({ length: 8 }, () => new Set());
     if (!state.civTechCounts) state.civTechCounts = new Array(8).fill(0);
 
     const techSet = state.civTechs[c];
-    for (let advId = 0; advId < ADVANCE_NAMES.length; advId++) {
-      // ADVANCE_EPOCH: 0=ancient, 1=renaissance, 2=industrial, 3=modern
-      const epoch = (advId < ADVANCE_EPOCH.length) ? ADVANCE_EPOCH[advId] : -1;
-      if (epoch >= 0 && epoch <= epochMax) {
-        techSet.add(advId);
+    let added = true;
+    while (added) {
+      added = false;
+      for (const advId of eligible) {
+        if (techSet.has(advId)) continue;
+        const [p1, p2] = ADVANCE_PREREQS[advId];
+        // No-prereq techs always qualify
+        const p1ok = (p1 === -1) || techSet.has(p1);
+        const p2ok = (p2 === -1) || techSet.has(p2);
+        if (p1ok && p2ok) {
+          techSet.add(advId);
+          added = true;
+        }
       }
     }
     state.civTechCounts[c] = techSet.size;
   }
-
-  // Stub: cities and units per era not yet implemented.
-  // Full implementation would place starting cities with era-appropriate
-  // buildings, and grant era-appropriate military units.
 }

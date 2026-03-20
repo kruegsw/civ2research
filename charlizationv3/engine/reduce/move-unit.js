@@ -2,8 +2,8 @@
 // reduce/move-unit.js — MOVE_UNIT action handler + goody hut logic
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK } from '../defs.js';
-import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass } from '../movement.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_CARRY_CAP, UNIT_NAMES, ADVANCE_NAMES, UNIT_FUEL, UNIT_DESTROYED_AFTER_ATTACK, UNIT_SUBMARINE, UNIT_SUB_DETECTOR, NON_COMBAT_TYPES, UNIT_HP } from '../defs.js';
+import { resolveDirection, moveCost, calcEffectiveMovementPoints, findAvailableTransport, loadUnitsOntoShip, checkTrespass, checkTriremeSinking, checkAirFuel } from '../movement.js';
 import { updateVisibility } from '../visibility.js';
 import { resolveCombat, calcStackBestDefender, ejectAirUnits } from '../combat.js';
 import { cityHasBuilding, hasWonderEffect } from '../utils.js';
@@ -13,6 +13,9 @@ import { declareWar as diplomacyDeclareWar } from '../diplomacy.js';
 import { getNumericYear } from '../year.js';
 import { makeUnit, killUnit, captureCity, checkCivElimination, discoverContacts, checkSenateVeto, getCityName, assignInitialWorkers, radiusTileCoords } from './helpers.js';
 import { spawnBarbarianUprising, getBarbUnitType } from './barbarians.js';
+
+// ── #139 LONGMOVE counter: binary threshold from FUN_0059062c ──
+const LONGMOVE_THRESHOLD = 0x2f; // 47 — after this many goto moves, cancel goto to prevent infinite loops
 
 // ── Goody hut (tribal village) outcomes ──
 // Faithful to decompiled FUN_0058f040 (process_goody_hut)
@@ -52,29 +55,17 @@ function getHutMercType(state) {
   }
 }
 
-// I.3: Difficulty-based goody hut outcome weights
-// [advancedTribe, mercenary, gold, tech, mapReveal, settler, barbarians]
-const GOODY_HUT_WEIGHTS = {
-  chieftain:     [15, 20, 25, 15, 10, 10, 5],
-  warlord:       [12, 18, 20, 15, 10, 10, 15],
-  prince:        [10, 15, 20, 15, 10,  8, 22],
-  king:          [ 8, 15, 15, 15, 10,  7, 30],
-  emperor:       [ 5, 12, 15, 13, 10,  5, 40],
-  deity:         [ 3, 10, 10, 12, 10,  5, 50],
-};
-
 /**
  * I.3: Resolve a goody hut encounter with full outcome table.
- * Outcomes:
+ * #48: Binary uses uniform rand()%5, NOT difficulty-weighted distribution.
+ * Outcomes (5 equal chances):
  *   0: Advanced Tribe (found city with some buildings)
  *   1: Mercenary unit (friendly unit joins, era-based)
  *   2: Gold (25-100g scaled by era)
  *   3: Technology (random no-prereq tech civ doesn't have)
- *   4: Map reveal (reveal area around hut)
- *   5: Settler (free settler unit)
- *   6: Barbarian uprising (spawn 4-8 hostile barbarians)
+ *   4: Barbarian uprising (spawn 4-8 hostile barbarians)
  *
- * Uses difficulty-based probability weights.
+ * Map reveal and settler are subsumed into the above outcomes via suppression rules.
  */
 export function resolveGoodyHut(state, mapBase, unit, civSlot) {
   const turnNum = state.turn?.number || 0;
@@ -82,25 +73,16 @@ export function resolveGoodyHut(state, mapBase, unit, civSlot) {
   const earlyNoCities = !hasCities && turnNum < 50;
 
   const rng = state.rng;
-  const difficulty = state.difficulty || 'chieftain';
-  const weights = GOODY_HUT_WEIGHTS[difficulty] || GOODY_HUT_WEIGHTS.prince;
 
-  // Weighted random selection
-  const totalWeight = weights.reduce((a, b) => a + b, 0);
-  let roll = rng.nextInt(totalWeight);
-  let outcome = 0;
-  for (let i = 0; i < weights.length; i++) {
-    roll -= weights[i];
-    if (roll < 0) { outcome = i; break; }
-  }
+  // #48: Uniform distribution — rand()%5 per binary FUN_0058f040
+  // 0=advancedTribe, 1=mercenary, 2=gold, 3=tech, 4=barbarians
+  let outcome = rng.nextInt(5);
 
-  // Suppression rules
-  if (outcome === 0 && turnNum < 100) outcome = 1;
-  if (outcome === 6 && earlyNoCities) outcome = 1;
-  if (outcome === 3 && anyoneHasTech(state, 38)) outcome = 2;
-  if (outcome === 5 && anyoneHasTech(state, 28)) outcome = 2;
-  const NONCOMBAT = new Set([0, 1, 46, 47, 48, 49, 50]);
-  if (outcome === 6 && NONCOMBAT.has(unit.type)) outcome = 2;
+  // Suppression rules (same as binary)
+  if (outcome === 0 && turnNum < 100) outcome = 1;       // too early for city
+  if (outcome === 4 && earlyNoCities) outcome = 1;        // no barbs when no cities early
+  if (outcome === 3 && anyoneHasTech(state, 38)) outcome = 2; // all techs known → gold
+  if (NON_COMBAT_TYPES.has(unit.type) && outcome === 4) outcome = 2; // noncombat unit → gold
 
   switch (outcome) {
     case 0: { // Advanced Tribe — found a city with some buildings
@@ -117,15 +99,25 @@ export function resolveGoodyHut(state, mapBase, unit, civSlot) {
       if (tooClose) return hutGiveMerc(state, civSlot, unit, rng);
 
       const cityName = getCityName(civSlot, state.cities, state.civs);
+      // #48: Late-game cities can be up to size 4 with multiple buildings
+      // (Granary, Temple, Marketplace, Library if tech allows)
       const buildings = new Set();
-      buildings.add(3); // Granary
-      if (turnNum > 150) buildings.add(4); // Temple after early game
+      buildings.add(3); // Granary — always present
+      if (turnNum > 100) buildings.add(4); // Temple after early game
+      if (turnNum > 200) buildings.add(5); // Marketplace in mid-game
+      const civTechs = state.civTechs?.[civSlot];
+      if (turnNum > 250 && civTechs && civTechs.has(84)) buildings.add(6); // Library if civ has Writing (tech 84)
       const isFirstCity = state.cities.filter(c => c.owner === civSlot && c.size > 0).length === 0;
       if (isFirstCity) buildings.add(1); // Palace
 
+      // #48: City size scales with era: 1-2 early, up to 4 late-game
+      let maxSize = 2;
+      if (turnNum > 150) maxSize = 3;
+      if (turnNum > 300) maxSize = 4;
+
       const newCity = {
         name: cityName, owner: civSlot, originalOwner: civSlot,
-        size: 1 + rng.nextInt(2),
+        size: 1 + rng.nextInt(maxSize),
         gx: unit.gx, gy: unit.gy,
         cx: unit.gx * 2 + (unit.gy % 2), cy: unit.gy,
         hasWalls: false, hasPalace: isFirstCity,
@@ -165,32 +157,7 @@ export function resolveGoodyHut(state, mapBase, unit, civSlot) {
 
     case 1: return hutGiveMerc(state, civSlot, unit, rng);
 
-    case 4: { // Map reveal
-      const bit = 1 << civSlot;
-      const { mw, mh, tileData } = mapBase;
-      const wraps = mapBase.wraps;
-      let tilesRevealed = 0;
-      for (let dy = -5; dy <= 5; dy++) {
-        for (let dx = -5; dx <= 5; dx++) {
-          if (Math.abs(dx) + Math.abs(dy) > 7) continue;
-          let gx = unit.gx + dx;
-          const gy = unit.gy + dy;
-          if (gy < 0 || gy >= mh) continue;
-          if (wraps) { gx = ((gx % mw) + mw) % mw; } else if (gx < 0 || gx >= mw) continue;
-          const tile = tileData[gy * mw + gx];
-          if (tile && !(tile.visibility & bit)) { tile.visibility |= bit; tilesRevealed++; }
-        }
-      }
-      return { type: 'mapReveal', tilesRevealed };
-    }
-
-    case 5: { // Settler
-      const settlerMoves = (UNIT_MOVE_POINTS[0] || 1) * MOVEMENT_MULTIPLIER;
-      state.units = [...state.units, makeUnit(0, civSlot, unit.gx, unit.gy, settlerMoves)];
-      return { type: 'settler', mercenaryIndices: [state.units.length - 1] };
-    }
-
-    case 6: { // Barbarian uprising (4-8 hostile barbarians)
+    case 4: { // Barbarian uprising (4-8 hostile barbarians)
       const barbType = getBarbUnitType(state);
       const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
       const count = 4 + rng.nextInt(5);
@@ -255,6 +222,66 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
   const { unitIndex, dir } = action;
   const unit = { ...state.units[unitIndex] };
   const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
+
+  // ── #139: LONGMOVE counter — prevent infinite goto loops ──
+  // Binary FUN_0059062c: counter increments each move, +0x0F if backtracking.
+  // If counter exceeds 47 (0x2F), cancel goto to prevent infinite loops.
+  if (unit.orders === 'goto') {
+    const prevCounter = unit.longMoveCounter || 0;
+    // Detect backtracking: if direction reversed from last move
+    let increment = 1;
+    if (unit.lastMoveDir) {
+      const oppDirs = { N: 'S', S: 'N', E: 'W', W: 'E', NE: 'SW', SW: 'NE', NW: 'SE', SE: 'NW' };
+      if (oppDirs[dir] === unit.lastMoveDir) increment += 0x0f; // backtrack penalty
+    }
+    const newCounter = prevCounter + increment;
+    unit.longMoveCounter = newCounter;
+    unit.lastMoveDir = dir;
+    if (newCounter > LONGMOVE_THRESHOLD) {
+      // Cancel goto — unit is stuck in a loop
+      unit.orders = 'none';
+      unit.goToX = undefined;
+      unit.goToY = undefined;
+      unit.longMoveCounter = 0;
+      state.units[unitIndex] = unit;
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'longMoveCancel',
+        unitIndex, unitType: unit.type, civSlot,
+        gx: unit.gx, gy: unit.gy,
+      });
+      return;
+    }
+  } else {
+    // Reset counter when not in goto mode
+    unit.longMoveCounter = 0;
+  }
+
+  // ── #140: Fatigue dialog — allow one-more-move at low MP instead of hard reject ──
+  // Binary FUN_0059062c: at 0 MP, unit can still attempt one more move with confirmation.
+  // The action.allowFatigue flag is set by the client when the player confirms.
+  // Without it, the server rejects moves at 0 MP for non-air units that have no free-move
+  // exceptions (railroads, roads, etc).
+  // NOTE: Air units always use all MP; this only applies to ground/sea.
+  if (unit.movesLeft <= 0 && !action.allowFatigue) {
+    const domain = UNIT_DOMAIN[unit.type] ?? 0;
+    if (domain !== 1) { // air units handled differently
+      // Check if the destination has a railroad or road (cost 0 or 1) — always allowed
+      const fatigueCost = moveCost(unit.type, mapBase, unit.gx, unit.gy, dest.gx, dest.gy);
+      if (fatigueCost > 1) {
+        // #141: Clear goto on failed move
+        if (unit.orders === 'goto') {
+          unit.orders = 'none';
+          unit.goToX = undefined;
+          unit.goToY = undefined;
+          state.units[unitIndex] = unit;
+        }
+        // Signal fatigue — client should prompt for confirmation
+        state.fatiguePrompt = { unitIndex, dir, gx: unit.gx, gy: unit.gy };
+        return;
+      }
+    }
+  }
 
   // Check for enemy units at destination
   const enemiesAtDest = [];
@@ -444,6 +471,9 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       treatyViolation: isTreatyViolation,
       attackerSunTzu,
       defenderSunTzu,
+      humanPlayers: state.humanPlayers ?? 0xFF,
+      defenderReputation: state.civs?.[defCivSlot]?.reputation ?? 100,
+      singleRoundCombat: state.singleRoundCombat || false,
     };
     const result = resolveCombat(unit, defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, combatSeed, state.difficulty || 'chieftain', unit.movesLeft, combatOpts);
 
@@ -466,6 +496,29 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       state.units[unitIndex] = unit;
       state.combatResult = {
         type: 'subRetreat',
+        attacker: unit.type, defender: defender.type,
+        atkOwner: unit.owner, defOwner: defender.owner,
+        gx: dest.gx, gy: dest.gy,
+        atkHpLost: result.atkHpLost, defHpLost: result.defHpLost,
+        rounds: result.rounds,
+        atkMaxHp: result.atkMaxHp, defMaxHp: result.defMaxHp,
+        atkFp: result.atkFp, defFp: result.defFp,
+        atkStartHp: result.atkStartHp, defStartHp: result.defStartHp,
+      };
+      return;
+    }
+
+    // ── Single-round draw handling (#131) ──
+    // Scenario flag: after one round of combat, both sides survive with damage.
+    // Neither is destroyed; attacker stays on its tile, defender stays on its tile.
+    if (result.singleRoundDraw) {
+      unit.movesRemain = result.atkHpLost;
+      unit.movesLeft = Math.max(0, unit.movesLeft - MOVEMENT_MULTIPLIER);
+      if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
+      state.units[bestDefIdx] = { ...defender, movesRemain: result.defHpLost };
+      state.units[unitIndex] = unit;
+      state.combatResult = {
+        type: 'singleRoundDraw',
         attacker: unit.type, defender: defender.type,
         atkOwner: unit.owner, defOwner: defender.owner,
         gx: dest.gx, gy: dest.gy,
@@ -593,8 +646,10 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       if (result.atkVeteranPromo) unit.veteran = 1;
       unit.movesRemain = result.atkHpLost;
 
-      // Stack wipe: on open ground (no city/fortress), kill ALL enemies
-      const hasProtection = defInCity || defHasFortress;
+      // Stack wipe: on open ground (no city), kill ALL enemies (#20)
+      // Binary: fortress without a city does NOT protect the stack from wipe.
+      // Only cities provide stack protection.
+      const hasProtection = defInCity;
       if (!hasProtection) {
         for (let i = 0; i < state.units.length; i++) {
           if (i !== bestDefIdx && state.units[i].gx === dest.gx &&
@@ -642,6 +697,52 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       defVeteranPromo: result.defVeteranPromo,
     };
 
+    // ── #134: Post-combat air fuel tracking ──
+    // After combat, if the surviving attacker is an air unit, decrement fuel
+    if (result.attackerWins && unit.gx >= 0) {
+      const atkMaxFuel = UNIT_FUEL[unit.type];
+      if (atkMaxFuel > 0) {
+        const fuelResult = checkAirFuel(unit, unitIndex, state, mapBase);
+        if (fuelResult.fuelRemaining >= 0) {
+          unit.fuelRemaining = fuelResult.fuelRemaining;
+          state.units[unitIndex] = unit;
+          if (fuelResult.crashed) {
+            killUnit(state, unitIndex);
+            if (!state.turnEvents) state.turnEvents = [];
+            state.turnEvents.push({ type: 'unitLost', unitType: unit.type, reason: 'fuel', civSlot });
+          }
+        }
+      }
+    }
+
+    // ── #134: Defender scramble — nearby fighter scrambles to intercept air attacker ──
+    // If the attacker is an air unit and defender wins, check for friendly fighters
+    // at adjacent cities/airbases that can scramble to counter-attack
+    if (!result.attackerWins && (UNIT_DOMAIN[unit.type] ?? 0) === 1) {
+      for (let si = 0; si < state.units.length; si++) {
+        const scrambleUnit = state.units[si];
+        if (scrambleUnit.gx < 0 || scrambleUnit.owner !== defOwner) continue;
+        // Only fighters (type 27) and stealth fighters (type 30) scramble
+        if (scrambleUnit.type !== 27 && scrambleUnit.type !== 30) continue;
+        if (scrambleUnit.movesLeft <= 0) continue;
+        // Must be at a city or airbase adjacent to the combat tile
+        let adjDx = Math.abs(scrambleUnit.gx - dest.gx);
+        if (mapBase.wraps) adjDx = Math.min(adjDx, mapBase.mw - adjDx);
+        const adjDy = Math.abs(scrambleUnit.gy - dest.gy);
+        if (adjDx + adjDy > 2) continue; // must be adjacent (iso distance <= 1)
+        // Emit scramble event
+        if (!state.turnEvents) state.turnEvents = [];
+        state.turnEvents.push({
+          type: 'scramble',
+          scrambleUnitIndex: si,
+          scrambleType: scrambleUnit.type,
+          scrambleOwner: scrambleUnit.owner,
+          gx: dest.gx, gy: dest.gy,
+        });
+        break; // only one scramble per combat
+      }
+    }
+
     // Check civ elimination for the losing side
     const eliminatedCiv = result.attackerWins ? defOwner : unit.owner;
     checkCivElimination(state, eliminatedCiv);
@@ -664,6 +765,11 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       const transportIdx = findAvailableTransport(dest.gx, dest.gy, unit.owner, state.units);
       if (transportIdx < 0) {
         // No transport available — can't enter ocean, reject move
+        // #141: Clear goto on failed move
+        if (unit.orders === 'goto') {
+          unit.orders = 'none'; unit.goToX = undefined; unit.goToY = undefined;
+          state.units[unitIndex] = unit;
+        }
         return;
       }
       // Board transport: move unit to transport's tile, costs 1 MP
@@ -712,6 +818,10 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
         if (unit.movesLeft <= roll) {
           // Failed: exhaust all remaining MP, do not move
           unit.movesLeft = 0;
+          // #141: Clear goto on failed move
+          if (unit.orders === 'goto') {
+            unit.orders = 'none'; unit.goToX = undefined; unit.goToY = undefined;
+          }
           state.units[unitIndex] = unit;
           return;
         }
@@ -724,8 +834,8 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     unit.x = dest.gx * 2 + (dest.gy % 2);
     unit.y = dest.gy;
 
-    // Deduct movement (minimum 1 third spent, even on railroad)
-    unit.movesLeft = Math.max(0, unit.movesLeft - Math.max(cost, 1));
+    // #119: Railroad cost is 0 (free movement), don't floor to 1
+    unit.movesLeft = Math.max(0, unit.movesLeft - cost);
 
     // Wake from sleep/fortify/sentry
     if (unit.orders === 'fortified' || unit.orders === 'sleep' || unit.orders === 'sentry') unit.orders = 'none';
@@ -790,7 +900,89 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       }
     }
 
+    // #64: Allied city repair — heal units entering an allied city
+    // Per binary block_00590000.c: heal maxHP/10 when entering allied city
+    if (unit.gx >= 0 && (unit.movesRemain || 0) > 0) {
+      const alliedCity = state.cities.find(c => {
+        if (c.gx !== unit.gx || c.gy !== unit.gy || c.size <= 0) return false;
+        if (c.owner === unit.owner) return false; // own city, not allied
+        const a = Math.min(unit.owner, c.owner);
+        const b = Math.max(unit.owner, c.owner);
+        return state.treaties?.[`${a}-${b}`] === 'alliance';
+      });
+      if (alliedCity) {
+        const maxHp = (UNIT_HP[unit.type] || 1) * 10;
+        const healAmount = Math.floor(maxHp / 10);
+        unit.movesRemain = Math.max(0, (unit.movesRemain || 0) - healAmount);
+      }
+    }
+
+    // ── #8: Air fuel per-move check ──
+    // Air units consume 1 fuel on each move (not once per turn).
+    // If fuel reaches 0 and unit is not on city/carrier/airbase, destroy immediately.
+    if ((UNIT_DOMAIN[unit.type] ?? 0) === 1) {
+      const maxFuel = UNIT_FUEL[unit.type];
+      if (maxFuel > 0) {
+        const fuelResult = checkAirFuel(unit, unitIndex, state, mapBase);
+        if (fuelResult.fuelRemaining >= 0) {
+          unit.fuelRemaining = fuelResult.fuelRemaining;
+        }
+        if (fuelResult.crashed) {
+          unit.gx = -1; unit.gy = -1; unit.x = -1; unit.y = -1; unit.movesLeft = 0;
+          state.units[unitIndex] = unit;
+          killUnit(state, unitIndex);
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({ type: 'unitLost', unitType: unit.type, reason: 'fuel', civSlot });
+          return;
+        }
+      }
+    }
+
     state.units[unitIndex] = unit;
+  }
+
+  // ── #67: Submarine stealth — submarines only visible to adjacent units ──
+  // After move, detect/reveal submarines based on adjacency to sub detectors.
+  if (unit.gx >= 0) {
+    if (UNIT_SUB_DETECTOR.has(unit.type)) {
+      // Sub detector moved — reveal any enemy subs in adjacent tiles
+      for (let si = 0; si < state.units.length; si++) {
+        const su = state.units[si];
+        if (su.gx < 0 || su.owner === civSlot) continue;
+        if (!UNIT_SUBMARINE.has(su.type)) continue;
+        let sdx = Math.abs(su.gx - unit.gx);
+        if (mapBase.wraps) sdx = Math.min(sdx, mapBase.mw - sdx);
+        const sdy = Math.abs(su.gy - unit.gy);
+        if (sdx <= 1 && sdy <= 2 && sdx + sdy <= 2) {
+          // Adjacent submarine detected — emit event and mark revealed
+          state.units[si] = { ...state.units[si], subRevealed: true };
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({
+            type: 'submarineDetected',
+            subIndex: si, subType: su.type, subOwner: su.owner,
+            detectorIndex: unitIndex, detectorType: unit.type, detectorOwner: civSlot,
+            gx: su.gx, gy: su.gy,
+          });
+        }
+      }
+    }
+    // Mark submarine stealth status on the moving unit
+    if (UNIT_SUBMARINE.has(unit.type)) {
+      let subRevealed = false;
+      for (let di = 0; di < state.units.length; di++) {
+        const du = state.units[di];
+        if (du.gx < 0 || du.owner === civSlot) continue;
+        if (!UNIT_SUB_DETECTOR.has(du.type)) continue;
+        let ddx = Math.abs(du.gx - unit.gx);
+        if (mapBase.wraps) ddx = Math.min(ddx, mapBase.mw - ddx);
+        const ddy = Math.abs(du.gy - unit.gy);
+        if (ddx <= 1 && ddy <= 2 && ddx + ddy <= 2) {
+          subRevealed = true;
+          break;
+        }
+      }
+      state.units[unitIndex] = { ...state.units[unitIndex], subRevealed };
+    }
   }
 
   // Update visibility for this civ around new position
@@ -841,8 +1033,92 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
     }
   }
 
+  // ── #65: Diplomat expulsion — 3-stage escalation when enemy diplomat enters territory ──
+  // Binary FUN_0059062c: when a diplomat/spy (type 46/47) enters territory of a civ
+  // that has peace/ceasefire, the territory owner can expel them.
+  // Stage 1: Warning (first offense) — event only
+  // Stage 2: Expel (second offense) — diplomat teleported to nearest own city
+  // Stage 3: War (third+ offense) — declare war on the trespassing civ
+  if (unit.gx >= 0 && civSlot > 0 && (unit.type === 46 || unit.type === 47)) {
+    const tileIdx65 = unit.gy * mapBase.mw + unit.gx;
+    const tile65 = mapBase.tileData?.[tileIdx65];
+    const tileOwner65 = tile65?.tileOwnership;
+    if (tileOwner65 != null && tileOwner65 !== civSlot && tileOwner65 !== 0 && tileOwner65 !== 0x0F) {
+      const dKey65 = civSlot < tileOwner65 ? `${civSlot}-${tileOwner65}` : `${tileOwner65}-${civSlot}`;
+      const treaty65 = state.treaties?.[dKey65];
+      if (treaty65 === 'peace' || treaty65 === 'ceasefire') {
+        // Track escalation state per civ pair
+        if (!state.diplomatExpulsions) state.diplomatExpulsions = {};
+        const expKey = `${civSlot}-${tileOwner65}`;
+        const stage = (state.diplomatExpulsions[expKey] || 0) + 1;
+        state.diplomatExpulsions = { ...state.diplomatExpulsions, [expKey]: stage };
+        if (!state.turnEvents) state.turnEvents = [];
+
+        if (stage === 1) {
+          // Warning
+          state.turnEvents.push({
+            type: 'diplomatExpulsionWarning',
+            civSlot, ownerCiv: tileOwner65,
+            unitIndex, unitType: unit.type,
+            gx: unit.gx, gy: unit.gy,
+          });
+        } else if (stage === 2) {
+          // Expel — teleport diplomat to nearest own city
+          let nearestCity = null;
+          let nearestDist = Infinity;
+          for (const c of state.cities) {
+            if (c.owner !== civSlot || c.size <= 0) continue;
+            let cdx = Math.abs(c.gx - unit.gx);
+            if (mapBase.wraps) cdx = Math.min(cdx, mapBase.mw - cdx);
+            const cdy = Math.abs(c.gy - unit.gy);
+            const dist = cdx + cdy;
+            if (dist < nearestDist) { nearestDist = dist; nearestCity = c; }
+          }
+          if (nearestCity) {
+            unit.gx = nearestCity.gx;
+            unit.gy = nearestCity.gy;
+            unit.x = nearestCity.gx * 2 + (nearestCity.gy % 2);
+            unit.y = nearestCity.gy;
+            unit.movesLeft = 0;
+            state.units[unitIndex] = unit;
+          }
+          state.turnEvents.push({
+            type: 'diplomatExpelled',
+            civSlot, ownerCiv: tileOwner65,
+            unitIndex, unitType: unit.type,
+            toGx: unit.gx, toGy: unit.gy,
+          });
+        } else {
+          // Stage 3+: Declare war
+          const warResult65 = diplomacyDeclareWar(state, mapBase, tileOwner65, civSlot);
+          for (const evt of warResult65.events) {
+            state.turnEvents.push(evt);
+          }
+          state.turnEvents.push({
+            type: 'diplomatExpulsionWar',
+            civSlot, ownerCiv: tileOwner65,
+            unitIndex, unitType: unit.type,
+            gx: unit.gx, gy: unit.gy,
+          });
+        }
+      }
+    }
+  }
+
+  // ── C.2: Per-move trireme sinking check ──
+  // Binary checks per-move, not per-turn. After each move, trireme in open ocean may sink.
+  if (unit.gx >= 0 && unit.type === 32) {
+    if (checkTriremeSinking(unit, unitIndex, state, mapBase, hasWonderEffect)) {
+      killUnit(state, unitIndex);
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({ type: 'unitLost', unitType: unit.type, reason: 'triremeSinking', civSlot });
+      return;
+    }
+  }
+
   // ── Goody hut check ──
-  if (unit.gx >= 0 && civSlot > 0) { // alive unit, non-barbarian
+  // #66: Only land units (domain 0) can trigger goody huts, per binary FUN_0058f040
+  if (unit.gx >= 0 && civSlot > 0 && (UNIT_DOMAIN[unit.type] ?? 0) === 0) {
     const tileIdx = unit.gy * mapBase.mw + unit.gx;
     const tile = mapBase.tileData[tileIdx];
     if (tile && tile.goodyHut) {

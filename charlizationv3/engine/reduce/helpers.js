@@ -2,7 +2,7 @@
 // reduce/helpers.js — Shared utility functions used by multiple handlers
 // ═══════════════════════════════════════════════════════════════════
 
-import { CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, UNIT_FUEL, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, UNIT_ATK, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, UNIT_LIMITS } from '../defs.js';
+import { CITY_RADIUS_DOUBLED, CIV_CITY_NAMES, BARBARIAN_CITY_NAMES, UNIT_FUEL, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER, UNIT_ATK, CAN_IRRIGATE, IRR_TRANSFORM, CAN_MINE, MINE_TRANSFORM, UNIT_LIMITS, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS } from '../defs.js';
 import { getTileYields } from '../production.js';
 import { getGovernment, cityHasBuilding, hasWonderEffect } from '../utils.js';
 import { handleCityCapture } from '../citycapture.js';
@@ -70,6 +70,75 @@ export function completeWorkerOrder(order, gx, gy, terrain, mapBase, opts) {
   if (imp.irrigation && imp.mining) imp.farmland = true;
 
   tile.improvements = imp;
+}
+
+/**
+ * Calculate effective work turns needed for a worker order, accounting for:
+ * - Per-terrain durations from defs.js (IRRIGATION_TURNS, MINING_TURNS, etc.)
+ * - Engineer double-speed (halve turns, min 1)
+ * - Settler/engineer cooperation (multiple workers on same tile pool work)
+ * - River penalty for railroad (+1 turn if tile has a river)
+ *
+ * @param {string} order - worker order type ('road','railroad','irrigation','mine','fortress','airbase','pollution')
+ * @param {number} terrain - terrain type at tile
+ * @param {boolean} isEngineer - true if the unit is an Engineer (type 1)
+ * @param {object} [opts] - optional: { hasRiver: bool, coopCount: number }
+ *   coopCount = number of settlers/engineers working on same tile and same order (including this one)
+ * @returns {number} effective turns needed for this worker
+ */
+export function getWorkerTurnsNeeded(order, terrain, isEngineer, opts) {
+  let baseTurns;
+  switch (order) {
+    case 'road':       baseTurns = ROAD_TURNS; break;
+    case 'railroad':   baseTurns = ROAD_TURNS; break;
+    case 'irrigation': baseTurns = IRRIGATION_TURNS[terrain] || 5; break;
+    case 'mine':       baseTurns = MINING_TURNS[terrain] || 5; break;
+    case 'fortress':   baseTurns = FORTRESS_TURNS; break;
+    case 'airbase':    baseTurns = AIRBASE_TURNS; break;
+    case 'pollution':  baseTurns = POLLUTION_TURNS; break;
+    default:           baseTurns = 999;
+  }
+
+  // River penalty: building railroad on a river tile costs +1 turn
+  if (order === 'railroad' && opts?.hasRiver) {
+    baseTurns += 1;
+  }
+
+  // Engineer double-speed: halve turns (minimum 1)
+  if (isEngineer) baseTurns = Math.max(1, Math.ceil(baseTurns / 2));
+
+  // Settler cooperation: multiple workers on same tile pool their work
+  // Each additional worker contributes 1 extra work-turn per turn, so
+  // effective turns = ceil(baseTurns / coopCount)
+  const coopCount = opts?.coopCount || 1;
+  if (coopCount > 1) {
+    baseTurns = Math.max(1, Math.ceil(baseTurns / coopCount));
+  }
+
+  return baseTurns;
+}
+
+/**
+ * Count how many settlers/engineers are working the same order on the same tile.
+ * Used for settler cooperation (pooling work).
+ *
+ * @param {object} state - game state
+ * @param {number} gx - tile gx
+ * @param {number} gy - tile gy
+ * @param {string} order - worker order type
+ * @param {number} owner - civ slot (only count same-civ workers)
+ * @returns {number} count of cooperating workers (min 1)
+ */
+export function countCooperatingWorkers(state, gx, gy, order, owner) {
+  let count = 0;
+  for (const u of state.units) {
+    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+    if (u.owner !== owner) continue;
+    // Only settlers (type 0) and engineers (type 1) do worker orders
+    if (u.type !== 0 && u.type !== 1) continue;
+    if (u.orders === order) count++;
+  }
+  return Math.max(1, count);
 }
 
 /**
@@ -152,25 +221,66 @@ export function getCityName(owner, cities, civs) {
 }
 
 /**
- * Assign initial workers for a new city. Evaluates all 20 radius tiles
- * (not 20=center, always worked) and picks the best N tiles.
+ * Assign initial workers for a new city using multi-phase algorithm.
+ * Binary-faithful: honor existing assignments, food-priority first, then surplus optimization.
+ *
+ * Phase 1: Honor existing tile assignments (from workedTiles if provided)
+ * Phase 2: Food-priority pass — assign tiles that produce food first
+ * Phase 3: Surplus optimization — fill remaining slots with best overall yield
+ *
+ * Evaluates all 20 radius tiles (not 20=center, always worked).
  * Uses full yield calculation (resources, improvements, government, rivers).
  * Returns workedTiles: number[] (tile indices 0-19).
  */
 export function assignInitialWorkers(gx, gy, size, city, cityIndex, gameState, mapBase) {
-  const scores = [];
+  // Gather all valid tiles with yields
+  const tileInfo = [];
   for (let i = 0; i < 20; i++) {
     const pos = radiusTileCoords(gx, gy, i, mapBase);
     if (!pos) continue;
     const ter = mapBase.getTerrain(pos.gx, pos.gy);
     if (ter < 0 || ter > 10) continue;
-    const score = scoreTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
-    scores.push({ i, score });
+    const [food, shields, trade] = getTileYields(pos.gx, pos.gy, false, city, cityIndex, gameState, mapBase);
+    const score = food * 3 + shields * 2 + trade;
+    tileInfo.push({ i, food, shields, trade, score });
   }
-  scores.sort((a, b) => b.score - a.score);
 
-  const toPlace = Math.min(size, scores.length);
-  return scores.slice(0, toPlace).map(s => s.i);
+  const toPlace = Math.min(size, tileInfo.length);
+  if (toPlace === 0) return [];
+
+  const assigned = new Set();
+  const result = [];
+
+  // Phase 1: Honor existing assignments (if city already had workedTiles)
+  if (city.workedTiles && city.workedTiles.length > 0) {
+    for (const idx of city.workedTiles) {
+      if (result.length >= toPlace) break;
+      if (tileInfo.some(t => t.i === idx) && !assigned.has(idx)) {
+        assigned.add(idx);
+        result.push(idx);
+      }
+    }
+  }
+
+  // Phase 2: Food-priority — assign tiles that produce food, sorted by food then overall score
+  const foodTiles = tileInfo.filter(t => t.food > 0 && !assigned.has(t.i));
+  foodTiles.sort((a, b) => b.food - a.food || b.score - a.score);
+  for (const t of foodTiles) {
+    if (result.length >= toPlace) break;
+    assigned.add(t.i);
+    result.push(t.i);
+  }
+
+  // Phase 3: Surplus optimization — fill remaining with best overall yield
+  const remaining = tileInfo.filter(t => !assigned.has(t.i));
+  remaining.sort((a, b) => b.score - a.score);
+  for (const t of remaining) {
+    if (result.length >= toPlace) break;
+    assigned.add(t.i);
+    result.push(t.i);
+  }
+
+  return result;
 }
 
 // ── Contact discovery ──
@@ -366,6 +476,26 @@ export function rehomeUnits(state, destroyedCityIdx, owner) {
         }
       }
       state.units[i] = { ...u, homeCityId: bestCi >= 0 ? bestCi : 0xFFFF };
+    }
+  }
+}
+
+/**
+ * Clean up trade route references from ALL other cities when a city is deleted.
+ * Removes any trade route whose destCityIndex points to the deleted city.
+ * This must be called whenever a city is destroyed/razed to prevent stale references.
+ *
+ * @param {object} state - mutable game state (state.cities will be mutated)
+ * @param {number} deletedCityIndex - index of the city being deleted
+ */
+export function cleanupTradeRoutes(state, deletedCityIndex) {
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    if (ci === deletedCityIndex) continue;
+    const c = state.cities[ci];
+    if (!c.tradeRoutes || c.tradeRoutes.length === 0) continue;
+    const filtered = c.tradeRoutes.filter(r => r.destCityIndex !== deletedCityIndex);
+    if (filtered.length !== c.tradeRoutes.length) {
+      state.cities[ci] = { ...c, tradeRoutes: filtered };
     }
   }
 }

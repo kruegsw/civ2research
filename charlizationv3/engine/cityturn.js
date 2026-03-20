@@ -26,7 +26,7 @@ import {
 import { calcHappiness } from './happiness.js';
 import { cityHasBuilding, hasWonderEffect, getGovernment } from './utils.js';
 import { grantAdvance, getAvailableResearch, checkUnitAutoUpgrade, upgradeUnitsForTech } from './research.js';
-import { calcAttitudeScore, addTreatyFlag, TF } from './diplomacy.js';
+import { addTreatyFlag, TF } from './diplomacy.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // Food processing (Wave 1 — unchanged)
@@ -108,7 +108,10 @@ export function processCityFood(city, cityIndex, state, mapBase, callbacks) {
     if (newFood >= growthThreshold) {
       // Normal growth: consume food box
       newSize++;
-      newFood = hasGranary ? Math.floor(growthThreshold / 2) : 0;
+      // #100: Granary half-fill formula from binary FUN_004e7eb1:
+      // food_in_box = (newSize + 1) * (FOOD_BOX_MULTIPLIER / 2)
+      // Note: uses the NEW size (post-growth) for the half-fill calculation
+      newFood = hasGranary ? (newSize + 1) * Math.floor(FOOD_BOX_MULTIPLIER / 2) : 0;
     } else {
       // WLTKD growth: grow without consuming food box
       newSize++;
@@ -348,6 +351,31 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
   let newShields = (city.shieldsInBox || 0) + netShields;
 
   const item = city.itemInProduction;
+
+  // ── #10: Capitalization (item index 38) — convert shields to gold ──
+  // Instead of accumulating shields, each turn's net shield production
+  // is converted directly to treasury gold. Shield box stays at 0.
+  if (item && item.type === 'building' && item.id === 38) {
+    if (netShields > 0 && state.civs?.[activeCiv]) {
+      state.civs = state.civs.length ? [...state.civs] : state.civs;
+      const civ = { ...state.civs[activeCiv] };
+      civ.treasury = Math.min(30000, (civ.treasury || 0) + netShields);
+      state.civs[activeCiv] = civ;
+      events.push({
+        type: 'capitalizationGold', cityName: city.name, cityIndex,
+        civSlot: activeCiv, gold: netShields,
+      });
+    }
+    return {
+      newShieldsInBox: 0, // Capitalization never accumulates shields
+      newBuildings: null,
+      completedItem: null,
+      newSize: null,
+      newWorked: null,
+      events,
+    };
+  }
+
   const cost = getProductionCost(item);
 
   let newBuildings = null;
@@ -394,13 +422,60 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         prevInStack: -1, nextInStack: -1,
       };
 
-      // Settler/Engineer: city shrinks by 1 (min size 1)
-      if (SETTLER_TYPES.has(item.id) && city.size > 1) {
-        newSize = city.size - 1;
-        const curWorked = newWorked || city.workedTiles;
-        if (curWorked.length > newSize && callbacks?.removeWorstWorker) {
-          newWorked = callbacks.removeWorstWorker(
-            { ...city, size: newSize }, cityIndex, curWorked, state, mapBase);
+      // #31: Settler/Engineer from size-1 city guardrails
+      // Chieftain difficulty: block settler completion from size-1 cities
+      // Other difficulties: settler consumes city (city destroyed)
+      if (SETTLER_TYPES.has(item.id)) {
+        const difficulty = state.difficulty || 'chieftain';
+        if (city.size <= 1) {
+          if (difficulty === 'chieftain') {
+            // Block: don't create the settler, keep shields just below completion
+            // Return early before the unit is added to state.units
+            return {
+              newShieldsInBox: cost - 1,
+              newBuildings: null,
+              completedItem: null,
+              newSize: null,
+              newWorked: null,
+              events: [...events, {
+                type: 'settlerBlocked', cityName: city.name, cityIndex,
+                civSlot: activeCiv, reason: 'size1Chieftain',
+              }],
+            };
+          } else {
+            // Non-Chieftain: settler consumes the city (settler still created)
+            newSize = 0;
+            events.push({
+              type: 'cityDestroyed', cityName: city.name, cityIndex,
+              civSlot: activeCiv, reason: 'settlerFromSize1',
+            });
+            // Disband all units homed to this city
+            for (let ui = 0; ui < state.units.length; ui++) {
+              const u = state.units[ui];
+              if (u && u.homeCityId === cityIndex && u.gx >= 0) {
+                state.units = state.units.length ? [...state.units] : state.units;
+                state.units[ui] = { ...u, gx: -1, gy: -1, movesLeft: 0 };
+              }
+            }
+            // Wonder clearing
+            if (state.wonders) {
+              state.wonders = [...state.wonders];
+              for (let wi = 0; wi < state.wonders.length; wi++) {
+                const w = state.wonders[wi];
+                if (w && w.cityIndex === cityIndex && !w.destroyed) {
+                  state.wonders[wi] = { ...w, cityIndex: null, destroyed: true };
+                }
+              }
+            }
+          }
+        } else {
+          // Normal case: city shrinks by 1
+          newSize = city.size - 1;
+          const curWorked = newWorked || city.workedTiles;
+          if (curWorked.length > newSize && callbacks?.removeWorstWorker) {
+            newWorked = callbacks.removeWorstWorker(
+              { ...city, size: newSize }, cityIndex, curWorked, state, mapBase);
+          }
         }
       }
 
@@ -412,6 +487,30 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
       state.units = [...state.units, newUnit];
     } else if (item.type === 'building') {
       // ── Add building ──
+
+      // #30: Apollo Program prerequisite check before SS part completion
+      // SS parts (35-37) require Apollo Program (wonder 25) to be built
+      if (item.id >= 35 && item.id <= 37) {
+        const apollo = state.wonders?.[25];
+        if (!apollo || apollo.cityIndex == null || apollo.destroyed) {
+          // Apollo not built — block completion, cap shields just below cost
+          completedItem = null;
+          newShields = cost - 1;
+          events.push({
+            type: 'ssPartBlocked', cityName: city.name, cityIndex,
+            civSlot: activeCiv, buildingId: item.id, reason: 'noApollo',
+          });
+          return {
+            newShieldsInBox: newShields,
+            newBuildings: null,
+            completedItem: null,
+            newSize: null,
+            newWorked: null,
+            events,
+          };
+        }
+      }
+
       newBuildings = new Set(city.buildings);
       // Check if already built (shouldn't happen, but guard)
       if (newBuildings.has(item.id)) {
@@ -445,9 +544,10 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         // Check if another civ already built it (wonder race lost)
         const existing = state.wonders[wi];
         if (existing && existing.cityIndex != null) {
-          // Wonder already built! Refund shields
-          newShields = cost;
+          // #32: Preserve shields on wonder race loss — don't zero shieldsInBox.
+          // The city keeps its accumulated shields for the next production item.
           completedItem = null;
+          // newShields stays at current accumulated value (NOT reset to 0 or cost)
           events.push({
             type: 'wonderBeaten', cityName: city.name, cityIndex,
             civSlot: activeCiv, wonderIndex: wi,
@@ -546,17 +646,27 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
               }
             }
           }
-          // Eiffel Tower (20): trigger attitude recalculation for all other civs
-          // Binary ref: FUN_004ec3fe line 5144 — thunk_FUN_004ec312(civId)
+          // #68: Eiffel Tower (20): espionage flag + defense halving
+          // Binary ref: FUN_00456f8b/FUN_0045ac71 — Eiffel Tower effects:
+          //   1. Grants espionage visibility (intelligence) with all civs
+          //   2. Increases patience threshold by 1 for all AI civs toward owner
+          //   3. Halves AI attitudes toward owner (makes them more friendly)
+          // The original code incorrectly just recalculated attitude scores.
           if (wi === 20) {
             if (state.civs) {
               state.civs = [...state.civs];
               for (let ci = 1; ci < 8; ci++) {
                 if (ci === activeCiv || !(state.civsAlive & (1 << ci))) continue;
-                const attScore = calcAttitudeScore(state, ci, activeCiv);
+                // Grant espionage/intelligence visibility
+                addTreatyFlag(state, activeCiv, ci, TF.CONTACT);
+                // Halve negative attitudes toward Eiffel Tower owner
                 const otherCiv = state.civs[ci];
-                if (otherCiv) {
-                  state.civs[ci] = { ...otherCiv, attitudeToward: { ...(otherCiv.attitudeToward || {}), [activeCiv]: attScore } };
+                if (otherCiv?.attitudes) {
+                  const attitudes = [...(otherCiv.attitudes || new Array(8).fill(0))];
+                  if (attitudes[activeCiv] > 0) {
+                    attitudes[activeCiv] = Math.floor(attitudes[activeCiv] / 2);
+                  }
+                  state.civs[ci] = { ...otherCiv, attitudes };
                 }
               }
             }
@@ -565,6 +675,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
 
           // Force reassign: all other cities building the SAME wonder get production reset
           // Binary ref: FUN_004ec3fe line 5156 — thunk_FUN_00441b11(citySlot, 99)
+          // #32: Preserve shields — don't zero shieldsInBox on wonder race loss
           for (let oci = 0; oci < state.cities.length; oci++) {
             if (oci === cityIndex) continue;
             const oc = state.cities[oci];
@@ -573,7 +684,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
               state.cities[oci] = {
                 ...oc,
                 itemInProduction: { type: 'unit', id: 2 }, // Reset to Warriors
-                shieldsInBox: 0,
+                // shieldsInBox preserved for next production item
               };
               events.push({
                 type: 'wonderRaceForceReassign', cityName: oc.name, cityIndex: oci,
@@ -1089,9 +1200,10 @@ export function processCityPollution(city, cityIndex, state, mapBase) {
  * @param {object} state - mutable game state
  * @param {object} mapBase
  * @param {object} callbacks - { autoAssignWorker, removeWorstWorker }
+ * @param {object} [options] - { skipPollution: boolean } for AI exemption (#12)
  * @returns {{ events: Array, cityDestroyed: boolean }}
  */
-export function processCityTurn(cityIndex, state, mapBase, callbacks) {
+export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   const city = state.cities[cityIndex];
   const activeCiv = city.owner;
   const events = [];
@@ -1111,32 +1223,48 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
     }
   }
 
-  // ── Step 1: Compute happiness ──
-  const hap = calcHappiness(city, cityIndex, state, mapBase);
-  if (city.civilDisorder !== hap.civilDisorder ||
-      city.weLoveKingDay !== hap.weLoveKingDay) {
-    state.cities[cityIndex] = {
-      ...state.cities[cityIndex],
-      civilDisorder: hap.civilDisorder,
-      weLoveKingDay: hap.weLoveKingDay,
-    };
-  }
+  // ── #74: Process food FIRST, then recalculate yields including happiness ──
+  // Binary order: food processing occurs before happiness recalculation,
+  // so that city size changes from growth/famine affect happiness computation.
 
-  // Re-read city after happiness update
-  const cityAfterHap = state.cities[cityIndex];
-
-  // ── Step 2: Food processing (delegates to processCityFood) ──
-  const foodResult = processCityFood(cityAfterHap, cityIndex, state, mapBase, callbacks);
+  // ── Step 1: Food processing FIRST (delegates to processCityFood) ──
+  const foodResult = processCityFood(city, cityIndex, state, mapBase, callbacks);
   let newFood = foodResult.newFoodInBox;
   let newSize = foodResult.newSize;
   let newWorked = foodResult.newWorked;
   let newSpecs = foodResult.newSpecs;
-  let newBuildings = cityAfterHap.buildings;
+  let newBuildings = city.buildings;
   let cityDestroyed = foodResult.cityDestroyed;
   events.push(...foodResult.events);
 
+  // ── Step 1b: Apply food-related size changes before happiness recalc ──
+  if (!cityDestroyed && (newSize !== city.size || newWorked !== city.workedTiles || newSpecs !== city.specialists)) {
+    state.cities[cityIndex] = {
+      ...state.cities[cityIndex],
+      size: newSize,
+      workedTiles: newWorked,
+      specialists: newSpecs,
+    };
+  }
+
+  // ── Step 2: Compute happiness AFTER food (city size changes are reflected) ──
+  if (!cityDestroyed) {
+    const cityForHap = state.cities[cityIndex];
+    const hap = calcHappiness(cityForHap, cityIndex, state, mapBase);
+    if (cityForHap.civilDisorder !== hap.civilDisorder ||
+        cityForHap.weLoveKingDay !== hap.weLoveKingDay) {
+      state.cities[cityIndex] = {
+        ...state.cities[cityIndex],
+        civilDisorder: hap.civilDisorder,
+        weLoveKingDay: hap.weLoveKingDay,
+      };
+    }
+  }
+
+  // Re-read city after food + happiness updates
+  const cityAfterHap = state.cities[cityIndex];
+
   // ── Step 2b: Food shortage 3-turn lookahead warning ──
-  // If food is decreasing (surplus < 0) and will hit 0 within 3 turns, emit warning
   if (!cityDestroyed) {
     const { surplus } = calcFoodSurplus(cityAfterHap, cityIndex, state, mapBase, state.units || []);
     if (surplus < 0 && newFood > 0) {
@@ -1159,23 +1287,17 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
   events.push(...prodResult.events);
 
   // ── Step 3b: Unit support category pools for AI production prioritization ──
-  // Binary distributes shield surplus across unit support categories with
-  // different thresholds based on city size (COSMIC parameters).
-  // Categories: pools of surplus shields bucketed by citySize multiples.
-  // Used by AI to gauge how much production capacity is available for military.
-  // Only computed when surplus > city.size (excess production available).
   {
     const shieldResult = calcShieldProduction(cityAfterHap, cityIndex, state, mapBase, state.units || []);
     const shieldSurplus = shieldResult.grossShields - shieldResult.support;
     if (shieldSurplus > cityAfterHap.size) {
       const excess = shieldSurplus - cityAfterHap.size;
-      // Category pools bucketed by citySize thresholds
       const sz = Math.max(1, cityAfterHap.size);
       const catPools = [
-        Math.min(excess, sz),                                    // cat 1: first citySize shields
-        Math.min(Math.max(0, excess - sz), sz),                  // cat 2: next citySize
-        Math.min(Math.max(0, excess - sz * 2), sz),              // cat 3: next citySize
-        Math.max(0, excess - sz * 3),                            // cat 4: remainder
+        Math.min(excess, sz),
+        Math.min(Math.max(0, excess - sz), sz),
+        Math.min(Math.max(0, excess - sz * 2), sz),
+        Math.max(0, excess - sz * 3),
       ];
       prodResult.supportCategoryPools = catPools;
     }
@@ -1213,7 +1335,8 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks) {
   // retained for potential future use but is not called by the orchestrator.
 
   // ── Step 4b: Pollution and Nuclear Meltdown (D.1) ──
-  if (!cityDestroyed) {
+  // #12: Skip pollution processing for AI civs
+  if (!cityDestroyed && !options?.skipPollution) {
     const pollResult = processCityPollution(state.cities[cityIndex], cityIndex, state, mapBase);
     events.push(...pollResult.events);
     if (pollResult.newSize != null || pollResult.newBuildings != null) {

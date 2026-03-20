@@ -100,10 +100,9 @@ export function spawnBarbarians(state, mapBase) {
     const spawnLoc = findBarbSpawnTile(state, mapBase, /* land */ true);
     if (spawnLoc) {
       const unitType = getBarbUnitType(state);
-      // I.1: Difficulty-scaled spawn count
-      const baseCount = 1 + state.rng.nextInt(3); // 1-3
-      const diffMult = DIFFICULTY_BARB_MULTIPLIER[difficulty] || 1.0;
-      const spawnCount = Math.max(1, Math.round(baseCount * diffMult));
+      // Binary spawn count formula: clamp(turn / (barbLevel * -50 + 250) + 1, 1, 5)
+      const spawnDivisor = barbLevel * -50 + 250;
+      const spawnCount = Math.max(1, Math.min(5, Math.floor(turnNum / spawnDivisor) + 1));
 
       // Ensure units array is a fresh clone before pushing
       state.units = [...state.units];
@@ -120,12 +119,12 @@ export function spawnBarbarians(state, mapBase) {
         actualSpawned++;
       }
 
-      // I.1: Spawn a barbarian leader unit carrying gold ransom (1 in 4 chance)
+      // Barbarian leader unit: Diplomat (type 46), carries gold ransom (1 in 4 chance)
       if (actualSpawned > 0 && state.rng.random() < 0.25 && barbCount + actualSpawned < BARBARIAN_MAX_UNITS) {
-        const leaderUnit = makeUnit(2, 0, spawnLoc.gx, spawnLoc.gy, UNIT_MOVE_POINTS[2] * MOVEMENT_MULTIPLIER); // Warriors as leader
+        const leaderUnit = makeUnit(46, 0, spawnLoc.gx, spawnLoc.gy, UNIT_MOVE_POINTS[46] * MOVEMENT_MULTIPLIER); // Diplomat as leader
         // Barbarian leaders carry gold: 25 × difficulty rank (1-6)
-        const diffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty);
-        leaderUnit.barbarianGold = 25 * (diffIdx + 1);
+        const leaderDiffIdx = ['chieftain','warlord','prince','king','emperor','deity'].indexOf(difficulty);
+        leaderUnit.barbarianGold = 25 * (leaderDiffIdx + 1);
         state.units.push(leaderUnit);
         actualSpawned++;
       }
@@ -134,6 +133,60 @@ export function spawnBarbarians(state, mapBase) {
         if (!state.turnEvents) state.turnEvents = [];
         state.turnEvents.push({ type: 'barbarianSpawn', count: actualSpawned, gx: spawnLoc.gx, gy: spawnLoc.gy });
         barbCount += actualSpawned;
+      }
+    }
+  }
+
+  // ── City-proximity spawn phase: spawn additional barbarians near non-barbarian cities ──
+  if (((turnNum + 1) & frequencyMask) === 0 && barbCount < BARBARIAN_MAX_UNITS) {
+    const proxDivisor = barbLevel * -50 + 250;
+    const proximitySpawnCount = Math.max(1, Math.min(3, Math.floor(turnNum / proxDivisor) + 1));
+    const candidateCities = [];
+    for (const c of state.cities) {
+      if (c.owner === 0 || c.size <= 0) continue;
+      candidateCities.push(c);
+    }
+    if (candidateCities.length > 0) {
+      const targetCity = candidateCities[state.rng.nextInt(candidateCities.length)];
+      // Find a spawn tile 3-5 tiles from the city (land, no other city)
+      let proxLoc = null;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const pdx = state.rng.nextInt(9) - 4; // -4 to 4
+        const pdy = state.rng.nextInt(9) - 4;
+        const dist = Math.abs(pdx) + Math.abs(pdy);
+        if (dist < 3 || dist > 5) continue;
+        let pgx = targetCity.gx + pdx;
+        const pgy = targetCity.gy + pdy;
+        if (pgy < 0 || pgy >= mapBase.mh) continue;
+        if (mapBase.wraps) {
+          pgx = ((pgx % mapBase.mw) + mapBase.mw) % mapBase.mw;
+        } else if (pgx < 0 || pgx >= mapBase.mw) {
+          continue;
+        }
+        const terrain = mapBase.getTerrain(pgx, pgy);
+        if (terrain === 10) continue; // skip ocean
+        if (state.cities.some(cc => cc.gx === pgx && cc.gy === pgy && cc.size > 0)) continue;
+        proxLoc = { gx: pgx, gy: pgy };
+        break;
+      }
+      if (proxLoc) {
+        const proxUnitType = getBarbUnitType(state);
+        state.units = [...state.units];
+        let proxSpawned = 0;
+        for (let s = 0; s < proximitySpawnCount && barbCount + proxSpawned < BARBARIAN_MAX_UNITS; s++) {
+          const proxUnit = makeUnit(
+            proxUnitType, 0, proxLoc.gx, proxLoc.gy,
+            UNIT_MOVE_POINTS[proxUnitType] * MOVEMENT_MULTIPLIER
+          );
+          if (state.rng.nextInt(2) === 0) proxUnit.veteran = 1;
+          state.units.push(proxUnit);
+          proxSpawned++;
+        }
+        if (proxSpawned > 0) {
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({ type: 'barbarianSpawn', count: proxSpawned, gx: proxLoc.gx, gy: proxLoc.gy });
+          barbCount += proxSpawned;
+        }
       }
     }
   }
@@ -631,6 +684,9 @@ export function processBarbarianAI(state, prev, mapBase) {
           defCityHasPalace: barbDefCityHasPalace,
           defCitySize: barbDefCitySize,
           defenderSunTzu: hasWonderEffect(state, defender.owner, 7),
+          humanPlayers: state.humanPlayers ?? 0xFF,
+          defenderReputation: state.civs?.[defender.owner]?.reputation ?? 100,
+          singleRoundCombat: state.singleRoundCombat || false,
         };
         const result = resolveCombat(attacker, defender, defTerrain, defInCity, defCityHasWalls,
           defHasFortress, defOnRiver, defCityBuildings, barbCombatSeed, difficulty, attacker.movesLeft, barbCombatOpts);
@@ -638,8 +694,8 @@ export function processBarbarianAI(state, prev, mapBase) {
         if (result.attackerWins) {
           killUnit(state, bestDefIdx);
 
-          // Stack wipe on open ground
-          if (!defInCity && !defHasFortress) {
+          // Stack wipe on open ground (#20: fortress without city does NOT protect stack)
+          if (!defInCity) {
             for (let si = 0; si < state.units.length; si++) {
               if (si !== bestDefIdx && state.units[si].gx === chosenDest.gx &&
                   state.units[si].gy === chosenDest.gy && state.units[si].owner !== 0 &&
@@ -704,7 +760,7 @@ export function processBarbarianAI(state, prev, mapBase) {
           ...state.units[ui],
           gx: chosenDest.gx, gy: chosenDest.gy,
           x: chosenDest.gx * 2 + (chosenDest.gy % 2), y: chosenDest.gy,
-          movesLeft: Math.max(0, state.units[ui].movesLeft - Math.max(cost, 1)),
+          movesLeft: Math.max(0, state.units[ui].movesLeft - cost), // #119: Railroad cost is 0 (free movement)
         };
       }
     }

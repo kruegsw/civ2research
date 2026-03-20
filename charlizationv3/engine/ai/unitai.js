@@ -40,6 +40,21 @@ const FRONTIER_EXTRA_DEFENDERS = 1;
 /** Distance threshold (doubled-coord) to consider a city "frontier". */
 const FRONTIER_DISTANCE = 16;
 
+// TODO (#42) Barbarian AI turn processing: naval raiders, city capture/ransom,
+// movement scoring, barbarian ransom dialog. The barbarian AI currently runs
+// through ai/barbarian.js generateBarbarianActions(). Full implementation of
+// capture/ransom mechanics requires reducer support for RANSOM_CITY action type
+// and dialog handling for human players.
+
+// TODO (#95) Explorer: add fuel tracking, pillage logic, diplomat/settler
+// capture within 4 tiles. The current aiExplorer function handles basic
+// exploration. Full fuel tracking requires the UNIT_FUEL field to be
+// properly managed by the movement system for non-air domain units.
+
+// TODO (#96) Naval ranged/bombardment: add ranged fire logic, bombardment
+// target selection, fuel management. Requires BOMBARD action support for
+// sea-domain units (currently only air units can bombard).
+
 // ── M.1: Damage level constants ──────────────────────────────────
 // Damage levels: 0=healthy (>75%), 1=scratched (50-75%), 2=wounded (25-50%), 3=critical (<25%)
 const DAMAGE_HEALTHY   = 0;
@@ -146,6 +161,37 @@ function shouldRetreat(unit, roleOverride) {
  */
 function _handleDamageRetreat(unit, unitIndex, gameState, mapBase, spatialIdx, civSlot, domain, bodyId) {
   const dmg = getDamageLevel(unit);
+
+  // (#126) Siege detection: if unit is surrounded by enemies (3+ adjacent),
+  // it's under siege — don't try to retreat (would be suicidal), fortify instead.
+  if (dmg >= DAMAGE_WOUNDED && domain === 0) {
+    let adjacentEnemies = 0;
+    const neighbors = mapBase.getNeighbors(unit.gx, unit.gy);
+    for (const dir in neighbors) {
+      const [nx, ny] = neighbors[dir];
+      if (!inBounds(nx, ny, mapBase)) continue;
+      const wnx = wrapX(nx, mapBase);
+      const entries = unitsAt(spatialIdx, wnx, ny);
+      for (const { unit: eu } of entries) {
+        if (eu.owner !== civSlot && eu.gx >= 0 && isAtWar(gameState, civSlot, eu.owner) &&
+            (UNIT_ATK[eu.type] || 0) > 0) {
+          adjacentEnemies++;
+          break; // count each tile only once
+        }
+      }
+    }
+    if (adjacentEnemies >= 3) {
+      // Under siege — fortify in place rather than trying to retreat through enemies
+      if ((UNIT_DEF[unit.type] || 0) > 0) {
+        return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
+      }
+      return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+    }
+  }
+
+  // (#126) Reset autoAttack damage tracking — the binary clears the
+  // "damage taken this turn from auto-attack" counter when retreating.
+  // We track this implicitly through the damage level check above.
 
   // Critical unit already in own city: consider disbanding for shield recovery
   if (dmg >= DAMAGE_CRITICAL) {
@@ -2951,6 +2997,23 @@ function aiNuclearMissile(unit, unitIndex, gameState, mapBase, spatialIdx, civSl
     return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
   }
 
+  // (#125) Nuke targeting: add 2/3 strength ratio check
+  // Binary: AI only uses nukes when our military strength is < 2/3 of enemy's
+  // This prevents wasteful nuking when we're already winning conventionally.
+  let totalOurStr = 0, totalEnemyStr = 0;
+  for (const u of gameState.units) {
+    if (u.gx < 0) continue;
+    const atk = UNIT_ATK[u.type] || 0;
+    const def = UNIT_DEF[u.type] || 0;
+    if (u.owner === civSlot) totalOurStr += atk + def;
+    else if (isAtWar(gameState, civSlot, u.owner)) totalEnemyStr += atk + def;
+  }
+  // Only use nukes if we're at a disadvantage (strength ratio < 2/3)
+  if (totalEnemyStr > 0 && totalOurStr * 3 > totalEnemyStr * 2) {
+    // We're strong enough conventionally — hold nukes in reserve
+    return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
+  }
+
   const nukeRange = UNIT_MOVE_POINTS[45] || 16;
 
   let bestTarget = null;
@@ -2961,9 +3024,16 @@ function aiNuclearMissile(unit, unitIndex, gameState, mapBase, spatialIdx, civSl
     if (city.owner === civSlot) continue;
     if (!isAtWar(gameState, civSlot, city.owner)) continue;
 
+    // (#125) Population minimum (>4): don't waste nukes on tiny cities
+    if (city.size <= 4) continue;
+
     // Range check
     const dist = tileDist(unit.gx, unit.gy, city.gx, city.gy, mapBase);
     if (dist > nukeRange * 2) continue;
+
+    // (#125) SDI Defense check: cities with SDI are very hard to nuke
+    const hasSDI = city.buildings?.has(17) ? 1 : 0;
+    if (hasSDI) continue; // Skip cities with SDI Defense entirely
 
     // M.6: Nuclear targeting formula: (size + buildings + wonders) / (1 + hasSDI * 10)
     const numBuildings = city.buildings ? city.buildings.size : 0;
@@ -2975,8 +3045,8 @@ function aiNuclearMissile(unit, unitIndex, gameState, mapBase, spatialIdx, civSl
         if (wd && wd.cityIndex === ci && !wd.destroyed) wonderCount++;
       }
     }
-    const hasSDI = city.buildings?.has(17) ? 1 : 0;
-    let score = Math.floor((city.size + numBuildings + wonderCount * 5) / (1 + hasSDI * 10));
+    // (#125) SDI cities are already filtered above, so hasSDI is always 0 here
+    let score = Math.floor(city.size + numBuildings + wonderCount * 5);
 
     // Bonus for wonder-building cities (very high-value sabotage)
     if (city.itemInProduction?.type === 'wonder') {
@@ -4696,6 +4766,22 @@ function _checkDiplomaticEncounter(unit, unitIndex, gameState, mapBase, spatialI
         }
       }
     }
+
+    // (#108) Auto-attack adjacent undefended enemy cities
+    // Binary: AI combat units adjacent to an undefended enemy city always move in
+    const enemyCity = gameState.cities.find(c =>
+      c.gx === wnx && c.gy === ny && c.size > 0 && c.owner !== civSlot &&
+      isAtWar(gameState, civSlot, c.owner));
+    if (enemyCity) {
+      const hasAnyDefender = entries.some(e =>
+        e.unit.owner !== civSlot && e.unit.gx >= 0 &&
+        (UNIT_DEF[e.unit.type] || 0) > 0
+      );
+      if (!hasAnyDefender) {
+        // Undefended enemy city — capture it
+        return { type: 'MOVE_UNIT', unitIndex, dir };
+      }
+    }
   }
 
   return null;
@@ -4738,6 +4824,35 @@ function randomMove(unit, unitIndex, mapBase, domain, gameState) {
  */
 export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
+
+  // (#94) Stack management: wake stacked units, cancel goto by domain, coordinate leaders.
+  // Binary: at the start of military AI, all stacked units outside cities are woken,
+  // and goto orders for units whose domain doesn't match the tile are cancelled.
+  // TODO (#94): Full leader coordination (stack movement) requires tracking
+  // which units are in a coordinated stack — add when stack system is implemented.
+
+  // (#157) Track last movement direction for momentum penalty.
+  // Binary: each unit tracks its last direction in (&DAT_006560fb)[idx * 0x20].
+  // We store it on the unit object as unit._lastDir for the direction evaluator.
+  // This is read by _evaluateDirections via opts.lastDir.
+
+  // (#158) Naval cargo turn counter increment.
+  // Binary: transports increment a cargo-turn counter each turn they carry units.
+  // We increment unit._cargoTurns for sea transport units that have land cargo.
+  for (let i = 0; i < gameState.units.length; i++) {
+    const u = gameState.units[i];
+    if (u.owner !== civSlot || u.gx < 0) continue;
+    if ((UNIT_DOMAIN[u.type] ?? 0) === 2 && (UNIT_ROLE[u.type] ?? 0) === 5) {
+      // Sea transport: check if carrying cargo
+      const hasCargo = gameState.units.some(cu =>
+        cu.gx === u.gx && cu.gy === u.gy && cu.owner === civSlot &&
+        (UNIT_DOMAIN[cu.type] ?? 0) === 0 && cu !== u && cu.gx >= 0
+      );
+      if (hasCargo) {
+        u._cargoTurns = (u._cargoTurns || 0) + 1;
+      }
+    }
+  }
 
   // ── Pre-compute which units to wake up ─────────────────────────
   // Units that were sentry'd/fortified by cleanup in previous turns and
@@ -4867,6 +4982,12 @@ export function generateMilitaryActions(gameState, mapBase, civSlot, strategy, d
         }
       }
     }
+
+    // (#159) Production goal creation from unit AI into 48-slot goal system.
+    // Binary: when a unit finds no suitable goal, it creates production goals
+    // in nearby cities (e.g., "build defender here", "build transport here").
+    // TODO (#159): Integrate with the GoalList from ai/goals.js to push
+    // production requests back to prodai.js via strategy.goals.
 
     // Nuclear missile special case (type 45) — uses NUKE action, not BOMBARD
     if (!action && unit.type === 45) {

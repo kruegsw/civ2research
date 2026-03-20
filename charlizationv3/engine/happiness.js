@@ -8,6 +8,7 @@
 import {
   NON_COMBAT_TYPES, SEA_COMBAT_TYPES, SUPPORT_EXEMPT_TYPES,
   GOVT_CORRUPTION_DIVISOR, DIFFICULTY_KEYS, GOVT_INDEX,
+  FOOD_BOX_MULTIPLIER,
 } from './defs.js';
 import { calcCityTrade } from './production.js';
 import { cityHasBuilding, hasWonderEffect, cityHasActiveWonder, getGovernment } from './utils.js';
@@ -216,6 +217,36 @@ export function calcHappiness(city, cityIndex, gameState, mapBase) {
     && pop > 2 && govt !== 'anarchy';
 
   return { happy, unhappy, civilDisorder, weLoveKingDay };
+}
+
+/**
+ * (#49) Calculate food needed to grow for AI cities.
+ * AI uses a different food-per-row formula: 13 - difficulty, plus bonuses
+ * at lower difficulties. This makes AI cities grow faster on easier settings.
+ *
+ * @param {number} citySize - current city size
+ * @param {object} gameState - game state (for difficulty, humanPlayers)
+ * @param {number} ownerSlot - city owner civ slot
+ * @returns {number} food needed to grow to next size
+ */
+export function foodToGrowAI(citySize, gameState, ownerSlot) {
+  const humanPlayers = gameState?.humanPlayers || 0xFF;
+  const isHuman = !!((1 << ownerSlot) & humanPlayers);
+
+  if (isHuman) {
+    // Human cities use standard formula
+    return (citySize + 1) * FOOD_BOX_MULTIPLIER;
+  }
+
+  // AI food box: 13 - difficulty (with bonuses at low difficulty)
+  const diffIdx = gameState?.difficulty
+    ? DIFFICULTY_KEYS.indexOf(gameState.difficulty) : 0;
+  let foodPerRow = 13 - diffIdx;
+  // Bonuses at low difficulty
+  if (diffIdx < 3) foodPerRow += 1;
+  if (diffIdx === 0) foodPerRow += 1;
+
+  return (citySize + 1) * foodPerRow;
 }
 
 /**

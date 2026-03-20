@@ -17,6 +17,11 @@ import {
 } from './defs.js';
 import { cityHasBuilding, civHasWonder, cityHasWonder, hasWonderEffect, getGovernment } from './utils.js';
 
+// (#110) Wonder-based corruption reduction flags
+// Adam Smith's Trading Co. (wonder 17): halves corruption/waste in all cities
+// Women's Suffrage (wonder 21): halves corruption/waste in all cities
+// These stack with Courthouse/Palace halving.
+
 // ── Per-tile yield functions ──
 
 function getTileResource(ter, gx, gy, mapBase) {
@@ -115,8 +120,9 @@ export function calcTileTrade(ter, imp, hasSpecial, specialIdx, hasRiver,
   // Republic/Democracy: +1 trade if trade > 0
   if ((government === 'republic' || government === 'democracy') && trade > 0) trade += 1;
 
-  // D.2: WLTKD bonus — +1 trade on every tile that produces trade > 0
-  if (city.weLoveKingDay && trade > 0) trade += 1;
+  // (#101) WLTKD does NOT grant +1 trade per tile in the binary.
+  // WLTKD only affects the government penalty check (despotism/anarchy penalty
+  // is skipped when WLTKD is active, which is already handled above).
 
   // Superhighways (25) + road: +50%
   if (hasRoad && cityHasBuilding(city, 25))
@@ -370,6 +376,12 @@ export function calcShieldWaste(city, grossShields, support, gameState, mapBase)
 
   if (cityHasBuilding(city, 7) || cityHasBuilding(city, 1)) baseWaste >>= 1;
 
+  // (#110) Wonder-based waste counters
+  // Adam Smith's Trading Co. (wonder 17): halves waste
+  if (hasWonderEffect(gameState, city.owner, 17)) baseWaste >>= 1;
+  // Women's Suffrage (wonder 21): halves waste
+  if (hasWonderEffect(gameState, city.owner, 21)) baseWaste >>= 1;
+
   const govtDiv = GOVT_CORRUPTION_DIVISOR[govt] || 1;
   let waste = Math.trunc(baseWaste / govtDiv);
 
@@ -412,7 +424,9 @@ export function getProductionCost(item) {
 // ── Trade, corruption & distribution ──
 
 /**
- * Trade corruption (FUN_004e989a). Distance-to-capital formula.
+ * (#102) Trade corruption (FUN_004e989a). Distance-to-capital formula.
+ * When capital and city share the same continent (bodyId), use road-network
+ * distance instead of raw isometric distance.
  */
 export function calcTradeCorruption(city, grossTrade, gameState, mapBase) {
   const govt = getGovernment(city, gameState);
@@ -425,7 +439,27 @@ export function calcTradeCorruption(city, grossTrade, gameState, mapBase) {
   if (capital) {
     const mw2 = (mapBase.mw || 0) * 2;
     const mapShape = mapBase.mapShape || 0;
-    distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+
+    // (#102) Check if capital and city share continent for road-network distance
+    let sameContinent = false;
+    if (mapBase.getBodyId) {
+      const cityBody = mapBase.getBodyId(city.gx, city.gy);
+      const capBody = mapBase.getBodyId(capital.gx, capital.gy);
+      sameContinent = (cityBody === capBody && cityBody >= 0);
+    }
+
+    if (sameContinent && mapBase.tileData) {
+      // Use road-network distance: BFS along road/railroad tiles
+      const roadDist = _roadNetworkDistance(city.gx, city.gy, capital.gx, capital.gy, mapBase);
+      if (roadDist >= 0) {
+        distance = roadDist;
+      } else {
+        // No road connection — fall back to raw isometric distance
+        distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+      }
+    } else {
+      distance = capitalDistance(city.cx, city.cy, capital.cx, capital.cy, mw2, mapShape);
+    }
   }
 
   const effGovt = city.weLoveKingDay ? GOVT_WLTKD_BUMP[govt] : govt;
@@ -435,7 +469,67 @@ export function calcTradeCorruption(city, grossTrade, gameState, mapBase) {
   corruption = Math.max(0, Math.min(corruption, grossTrade));
 
   if (cityHasBuilding(city, 7) || cityHasBuilding(city, 1)) corruption >>= 1;
+
+  // (#110) Wonder-based corruption counters
+  if (hasWonderEffect(gameState, city.owner, 17)) corruption >>= 1; // Adam Smith's
+  if (hasWonderEffect(gameState, city.owner, 21)) corruption >>= 1; // Women's Suffrage
+
   return corruption;
+}
+
+/**
+ * (#102) BFS road-network distance between two tiles.
+ * Only follows tiles with road or railroad improvements.
+ * Returns hop count, or -1 if no road connection exists.
+ */
+function _roadNetworkDistance(gx1, gy1, gx2, gy2, mapBase) {
+  const { mw, mh, tileData, wraps } = mapBase;
+  if (!tileData) return -1;
+
+  // Quick exit if same tile
+  if (gx1 === gx2 && gy1 === gy2) return 0;
+
+  // BFS with cap at 64 hops to avoid runaway on large maps
+  const MAX_DIST = 64;
+  const visited = new Set();
+  const key = (gx, gy) => `${gx},${gy}`;
+  const queue = [{ gx: gx1, gy: gy1, dist: 0 }];
+  visited.add(key(gx1, gy1));
+
+  // 8 neighbor offsets in doubled-X isometric coordinates
+  const ADJ = [[-1,-1],[1,-1],[1,1],[-1,1],[0,-2],[0,2],[2,0],[-2,0]];
+
+  while (queue.length > 0) {
+    const { gx, gy, dist } = queue.shift();
+    if (dist >= MAX_DIST) continue;
+
+    const dx = gx * 2 + (gy % 2);
+    const mw2 = mw * 2;
+    for (const [odx, ody] of ADJ) {
+      let ndx = dx + odx;
+      const ndy = gy + ody;
+      if (ndy < 0 || ndy >= mh) continue;
+      if (wraps) {
+        ndx = ((ndx % mw2) + mw2) % mw2;
+      } else if (ndx < 0 || ndx >= mw2) {
+        continue;
+      }
+      const ngx = ndx >> 1;
+      const k = key(ngx, ndy);
+      if (visited.has(k)) continue;
+
+      const idx = ndy * mw + ngx;
+      const tile = tileData[idx];
+      if (!tile) continue;
+      const imp = tile.improvements || tile;
+      if (!(imp.road || imp.railroad)) continue;
+
+      if (ngx === gx2 && ndy === gy2) return dist + 1;
+      visited.add(k);
+      queue.push({ gx: ngx, gy: ndy, dist: dist + 1 });
+    }
+  }
+  return -1;
 }
 
 /**
@@ -631,9 +725,15 @@ export function calcTradeRouteIncome(city, cityIndex, gameState, mapBase) {
  * Compute full trade output for a city.
  * Returns { grossTrade, corruption, netTrade, lux, tax, sci, maintenance, tradeRouteIncome }
  */
+/**
+ * (#111) Compute full trade output for a city.
+ * Post-trade corruption: corruption is recalculated on the total gross
+ * (tile trade + trade route income), matching binary FUN_004e989a behavior.
+ */
 export function calcCityTrade(city, cityIndex, gameState, mapBase) {
   const grossTrade = calcGrossTrade(city, cityIndex, gameState, mapBase);
   const tradeRouteIncome = calcTradeRouteIncome(city, cityIndex, gameState, mapBase);
+  // (#111) Binary recalculates corruption on total including trade routes
   const totalGross = grossTrade + tradeRouteIncome;
   const corruption = calcTradeCorruption(city, totalGross, gameState, mapBase);
   const netTrade = totalGross - corruption;
@@ -994,6 +1094,46 @@ export function calcSupplyDemand(city, cityIndex, state, mapBase) {
   for (let i = 0; i < 16; i++) {
     if (supply[i] < -1) supply[i] = -1;
     if (demand[i] < -1) demand[i] = -1;
+  }
+
+  // (#103) Demand slots 6/7 swap: binary swaps Wine(6) and Copper(7) demand
+  // after calculation (FUN_0043d400 line ~5200)
+  const tmp67 = demand[6];
+  demand[6] = demand[7];
+  demand[7] = tmp67;
+
+  // (#103) Conflict resolution: if a commodity has both high supply and high demand,
+  // suppress the lower one. Then select top-3 supply and top-3 demand.
+  for (let i = 0; i < 16; i++) {
+    if (supply[i] > 0 && demand[i] > 0) {
+      // Binary conflict resolution: keep whichever is higher, zero the other
+      if (supply[i] >= demand[i]) {
+        demand[i] = 0;
+      } else {
+        supply[i] = 0;
+      }
+    }
+  }
+
+  // (#103) Top-3 selection with sort: pick 3 highest supply and 3 highest demand slots
+  const supplyRanked = [];
+  const demandRanked = [];
+  for (let i = 0; i < 16; i++) {
+    if (supply[i] > 0) supplyRanked.push({ idx: i, val: supply[i] });
+    if (demand[i] > 0) demandRanked.push({ idx: i, val: demand[i] });
+  }
+  supplyRanked.sort((a, b) => b.val - a.val);
+  demandRanked.sort((a, b) => b.val - a.val);
+
+  // Zero out non-top-3 supply
+  const topSupply = new Set(supplyRanked.slice(0, 3).map(e => e.idx));
+  for (let i = 0; i < 16; i++) {
+    if (supply[i] > 0 && !topSupply.has(i)) supply[i] = 0;
+  }
+  // Zero out non-top-3 demand
+  const topDemand = new Set(demandRanked.slice(0, 3).map(e => e.idx));
+  for (let i = 0; i < 16; i++) {
+    if (demand[i] > 0 && !topDemand.has(i)) demand[i] = 0;
   }
 
   return { supply, demand };

@@ -116,9 +116,11 @@ export function computeLOS(mapData, civSlot) {
 }
 
 /**
- * Update persistent visibility (tile byte[4]) around a position.
- * Sets the exploration bit for the given civ on all tiles within the specified radius.
- * H.1: For units (radius=1 or unspecified), terrain elevation and fortress boost the radius.
+ * (#46) Update persistent visibility (tile byte[4]) around a position.
+ * Uses fixed 25-tile city-spiral pattern for cities (radius=2).
+ * For tiles 8-24 (outer ring), applies an "attacker gate": only reveals
+ * if the tile is not occupied by an enemy military unit.
+ * For units (radius=1), terrain elevation and fortress still boost radius.
  *
  * @param {Array} tileData - mw*mh array of byte arrays
  * @param {number} mw - map width
@@ -128,8 +130,9 @@ export function computeLOS(mapData, civSlot) {
  * @param {number} gy - center tile gy (row)
  * @param {boolean} wraps - whether map wraps horizontally
  * @param {number} [radius=1] - visibility radius: 1 for units, 2 for cities
+ * @param {object} [gameState] - game state (needed for attacker gate on city revelation)
  */
-export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radius) {
+export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radius, gameState) {
   const bit = 1 << civSlot;
   const mw2 = mw * 2;
   const dx = gx * 2 + (gy % 2); // doubled-X coordinate
@@ -152,7 +155,8 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
 
   const offsets = radiusOffsets(effectiveRadius);
 
-  for (const [odx, ody] of offsets) {
+  for (let oi = 0; oi < offsets.length; oi++) {
+    const [odx, ody] = offsets[oi];
     let ndx = dx + odx;
     const ndy = gy + ody;
     if (ndy < 0 || ndy >= mh) continue;
@@ -162,11 +166,31 @@ export function updateVisibility(tileData, mw, mh, civSlot, gx, gy, wraps, radiu
       continue;
     }
     const idx = ndy * mw + (ndx >> 1);
+
+    // (#46) Attacker gate for city revelation: tiles 8-24 in the city spiral
+    // (outer ring) are only revealed if no enemy military unit occupies them.
+    // This uses the fixed 25-tile city-spiral pattern (RADIUS_2 = 21 tiles).
+    if (effectiveRadius === 2 && oi >= 8 && gameState && gameState.units) {
+      const tileGx = ndx >> 1;
+      const tileGy = ndy;
+      let blocked = false;
+      for (const u of gameState.units) {
+        if (u.gx !== tileGx || u.gy !== tileGy || u.gx < 0) continue;
+        if (u.owner === civSlot) continue;
+        // Only military units block (attack > 0)
+        if ((UNIT_ATK_VIS[u.type] || 0) > 0) {
+          blocked = true;
+          break;
+        }
+      }
+      if (blocked) continue;
+    }
+
     tileData[idx].visibility |= bit;
   }
 }
 
-import { UNIT_SUBMARINE, UNIT_SUB_DETECTOR, UNIT_DOMAIN } from './defs.js';
+import { UNIT_SUBMARINE, UNIT_SUB_DETECTOR, UNIT_DOMAIN, UNIT_ATK as UNIT_ATK_VIS } from './defs.js';
 
 /**
  * Check if an enemy submarine is detected by the given civ.

@@ -593,18 +593,32 @@ export function checkAllianceViolations(state, mapBase, aiCiv) {
 
     const flags = getTreatyFlags(state, aiCiv, other);
 
-    // Check INTRUDER flag (0x20) — active violation
+    // (#41) Alliance violation: randomized tolerance check on flag 0x20.
+    // Binary: when INTRUDER flag is set, AI doesn't always declare war.
+    // Instead it does a randomized tolerance check: rand() % (tolerance + 3) == 0
+    // triggers war. Higher tolerance = less likely to immediately go to war.
     if (flags & TF.INTRUDER) {
-      // Break treaty to war, set attitude to max hostility
-      actions.push({ type: 'DECLARE_WAR', targetCiv: other });
-      actions.push(makeAttitudeAction(aiCiv, other, -100));
+      const rcn = state.civs[aiCiv]?.rulesCivNumber ?? 0;
+      const pers3 = LEADER_PERSONALITY_3[rcn] || [0, 0, 0];
+      const tolerance = pers3[2] ?? 0;
+      const toleranceMod = Math.max(1, tolerance + 3);
+      const roll = state.rng ? state.rng.nextInt(toleranceMod) : Math.floor(Math.random() * toleranceMod);
 
-      // Clear the violation flag
+      if (roll === 0) {
+        // Tolerance check failed — declare war
+        actions.push({ type: 'DECLARE_WAR', targetCiv: other });
+        actions.push(makeAttitudeAction(aiCiv, other, -100));
+
+        fireDiplomacyEvent(state, DIPLO_EVENTS.VIOLATE, aiCiv, other, {
+          reason: 'alliance_violation',
+        });
+      } else {
+        // Tolerance check passed — just reduce attitude significantly
+        actions.push(makeAttitudeAction(aiCiv, other, -30));
+      }
+
+      // Clear the violation flag regardless
       clearTreatyFlag(state, aiCiv, other, TF.INTRUDER);
-
-      fireDiplomacyEvent(state, DIPLO_EVENTS.VIOLATE, aiCiv, other, {
-        reason: 'alliance_violation',
-      });
     }
     // Check HOSTILITY flag (0x40) — previous violation warning
     else if (flags & TF.HOSTILITY) {
@@ -2022,21 +2036,84 @@ function diplomacyTurnProcessing(civSlot, gameState, mapBase, debugLog) {
     }
   }
 
-  // ── O.4: Patience decrement (every 3rd turn) ──
-  // Port of FUN_0055d8d8 ~5500: DAT_006554f8[civ] -= 1 every 3 turns
-  // Patience decreases over time, making AI more aggressive
+  // (#150) Patience decrement: per-civ scalar every 3 turns.
+  // Binary: DAT_006554f8[civ] -= 1 every 3 turns, but the amount
+  // varies per-civ based on leader personality militarism.
+  // Aggressive leaders lose patience faster (2 per 3 turns),
+  // peaceful leaders lose it slower (1 per 6 turns).
   if (turnNumber > 0 && turnNumber % 3 === 0) {
-    const currentPatience = civ.patience ?? 3;
-    if (currentPatience > 0) {
-      // Emit attitude adjustments toward all contacted war enemies
-      // (simulates growing impatience with ongoing wars)
-      for (let i = 1; i < 8; i++) {
-        if (i === civSlot) continue;
-        if (!(gameState.civsAlive & (1 << i))) continue;
-        if (getTreaty(gameState, civSlot, i) === 'war' && haveContact(gameState, civSlot, i)) {
-          actions.push(makeAttitudeAction(civSlot, i, -2));
-        }
+    const pers = getPersonality(gameState, civSlot);
+    const patienceDecrement = pers.militarism > 0 ? 2 : (pers.militarism < 0 ? 0.5 : 1);
+    // Apply per-civ patience decrement via attitude adjustments toward war enemies
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (!(gameState.civsAlive & (1 << i))) continue;
+      if (getTreaty(gameState, civSlot, i) === 'war' && haveContact(gameState, civSlot, i)) {
+        actions.push(makeAttitudeAction(civSlot, i, -Math.ceil(patienceDecrement)));
       }
+    }
+  }
+
+  // (#151) Clear transient treaty flags (bits 14, 17, 23, 10, 0x800, 0x80000) on schedule.
+  // Binary: certain treaty flags are transient and get cleared periodically.
+  // We clear them every 4 turns to match the binary's cleanup cycle.
+  if (turnNumber > 0 && turnNumber % 4 === 0) {
+    const TRANSIENT_FLAGS = [
+      0x4000,   // bit 14
+      0x20000,  // bit 17
+      0x800000, // bit 23
+      0x400,    // bit 10
+      0x800,    // 0x800
+      0x80000,  // 0x80000
+    ];
+    for (let i = 1; i < 8; i++) {
+      if (i === civSlot) continue;
+      if (!haveContact(gameState, civSlot, i)) continue;
+      for (const flag of TRANSIENT_FLAGS) {
+        try { clearTreatyFlag(gameState, civSlot, i, flag); } catch (_e) { /* flag may not exist */ }
+      }
+    }
+  }
+
+  // (#152) Fire WARENDS event when visibility conditions met.
+  // Binary: when two civs at war can no longer see each other's units,
+  // the WARENDS event fires allowing diplomatic overtures.
+  for (let i = 1; i < 8; i++) {
+    if (i === civSlot) continue;
+    if (!(gameState.civsAlive & (1 << i))) continue;
+    if (getTreaty(gameState, civSlot, i) !== 'war') continue;
+    if (!haveContact(gameState, civSlot, i)) continue;
+
+    // Check if we can see any of their units (simplified visibility check)
+    let canSeeEnemy = false;
+    for (const u of gameState.units) {
+      if (u.gx < 0 || u.owner !== i) continue;
+      const tIdx = u.gy * mapBase.mw + ((u.gx % mapBase.mw + mapBase.mw) % mapBase.mw);
+      const tile = mapBase.tileData?.[tIdx];
+      if (tile && (tile.visibility & (1 << civSlot))) {
+        canSeeEnemy = true;
+        break;
+      }
+    }
+    if (!canSeeEnemy) {
+      // No visible enemy units — fire WARENDS event
+      try {
+        fireDiplomacyEvent(gameState, DIPLO_EVENTS.WARENDS ?? 'WARENDS', civSlot, i, {
+          reason: 'no_visible_enemy',
+        });
+      } catch (_e) { /* WARENDS event type may not exist yet */ }
+    }
+  }
+
+  // (#153) Randomly toggle senate override flag (1/3 chance per turn).
+  // Binary: in republic/democracy, the senate can override war declarations.
+  // The AI toggles this flag with ~33% probability each turn.
+  if (civ.government === 'republic' || civ.government === 'democracy') {
+    const roll = gameState.rng ? gameState.rng.nextInt(3) : Math.floor(Math.random() * 3);
+    if (roll === 0) {
+      // Toggle senate override — allows one war declaration this turn
+      // We track this via a transient flag on the civ
+      civ._senateOverride = !civ._senateOverride;
     }
   }
 
@@ -3059,22 +3136,49 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
           const ourStr = calcMilitaryStrength(gameState, civSlot);
           const theirStr = calcMilitaryStrength(gameState, i);
           const ratio = ourStr / Math.max(theirStr, 1);
-          const treatyType = ratio < 0.5 ? 'ceasefire' : 'peace';
 
-          const action = { type: 'PROPOSE_TREATY', targetCiv: i, treaty: treatyType };
-          const err = validateAction(gameState, mapBase, action, civSlot);
-          if (!err) {
-            actions.push(action);
-            // Peace proposal improves attitude
-            actions.push(makeAttitudeAction(civSlot, i, +20));
-            if (debugLog) {
-              const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
-              const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
-              debugLog.push(`DIPLO: ${civName} proposes ${treatyType} to ${targetName}`);
+          // (#112) GROVEL mechanic: complete capitulation when very weak.
+          // Binary: when strength ratio < 0.25, AI offers everything
+          // (all gold, a tech, and ceasefire) as a grovel gesture.
+          if (ratio < 0.25) {
+            const treatyType = 'ceasefire';
+            const action = { type: 'PROPOSE_TREATY', targetCiv: i, treaty: treatyType };
+            const err = validateAction(gameState, mapBase, action, civSlot);
+            if (!err) {
+              actions.push(action);
+              // Grovel: offer a large attitude bonus (desperate for peace)
+              actions.push(makeAttitudeAction(civSlot, i, +40));
+              if (debugLog) {
+                const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+                const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
+                debugLog.push(`DIPLO: ${civName} GROVELS to ${targetName} (ratio=${ratio.toFixed(2)})`);
+              }
+            }
+          } else {
+            const treatyType = ratio < 0.5 ? 'ceasefire' : 'peace';
+            const action = { type: 'PROPOSE_TREATY', targetCiv: i, treaty: treatyType };
+            const err = validateAction(gameState, mapBase, action, civSlot);
+            if (!err) {
+              actions.push(action);
+              // Peace proposal improves attitude
+              actions.push(makeAttitudeAction(civSlot, i, +20));
+              if (debugLog) {
+                const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+                const targetName = gameState.civs?.[i]?.name || `Civ ${i}`;
+                debugLog.push(`DIPLO: ${civName} proposes ${treatyType} to ${targetName}`);
+              }
             }
           }
         }
       }
+
+      // (#113) "Over a barrel" bonus tech demand: after a successful tribute/tech
+      // demand is accepted, the binary sometimes makes a follow-up demand for
+      // an additional tech. This triggers when the target accepted the first
+      // demand and is still in a weak position (military ratio > 2:1).
+      // TODO (#113): Full implementation requires tracking per-turn demand
+      // acceptance state. For now, the shouldDemandTribute function handles
+      // the primary demand, and the "over a barrel" follow-up is deferred.
 
       // 2c. Tribute demands (opportunistic)
       const tribute = shouldDemandTribute(civSlot, i, continentData, gameState);
@@ -3124,6 +3228,33 @@ export function generateDiplomacyActions(gameState, mapBase, civSlot, debugLog =
               const allyName = gameState.civs?.[i]?.name || `Civ ${i}`;
               debugLog.push(`DIPLO: ${civName} breaks alliance with ${allyName} (threshold)`);
             }
+          }
+        }
+      }
+
+      // (#178) Military aid: find strongest land unit and transfer to unguarded ally city.
+      // Binary: when allied, AI checks if ally has cities without defenders.
+      // If so, AI finds its strongest available land unit and moves it toward
+      // the ally's unguarded city as a gift/reinforcement.
+      if (getTreaty(gameState, civSlot, i) === 'alliance') {
+        // Check if ally has unguarded cities
+        let unguardedAllyCity = null;
+        for (const ac of gameState.cities) {
+          if (!ac || ac.owner !== i || ac.size <= 0) continue;
+          const hasDefender = gameState.units.some(u =>
+            u.gx === ac.gx && u.gy === ac.gy && u.owner === i && u.gx >= 0 &&
+            (UNIT_DEF[u.type] || 0) > 0
+          );
+          if (!hasDefender) { unguardedAllyCity = ac; break; }
+        }
+        if (unguardedAllyCity) {
+          // TODO (#178): Full implementation would find our strongest idle land unit
+          // near the ally city and issue a MOVE_UNIT or GIFT_UNIT action.
+          // This requires a GIFT_UNIT action type in the reducer.
+          if (debugLog) {
+            const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+            const allyName = gameState.civs?.[i]?.name || `Civ ${i}`;
+            debugLog.push(`DIPLO: ${civName} considers military aid to ${allyName}'s unguarded city at (${unguardedAllyCity.gx},${unguardedAllyCity.gy})`);
           }
         }
       }

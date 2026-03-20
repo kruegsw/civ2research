@@ -154,7 +154,16 @@ export function calcResearchCost(gameState, civSlot) {
  * @param {number} civSlot
  * @param {number} advanceId
  */
-export function grantAdvance(state, civSlot, advanceId) {
+/**
+ * (#169) Grant an advance to a civ. Updates civTechs, civTechCounts,
+ * and tracks the source civ that provided the tech.
+ *
+ * @param {object} state - mutable game state (will be modified)
+ * @param {number} civSlot
+ * @param {number} advanceId
+ * @param {number} [sourceCiv] - which civ provided the tech (for tracking)
+ */
+export function grantAdvance(state, civSlot, advanceId, sourceCiv) {
   if (!state.civTechs) state.civTechs = [];
   if (!state.civTechs[civSlot]) state.civTechs[civSlot] = new Set();
   state.civTechs[civSlot] = new Set(state.civTechs[civSlot]);
@@ -164,6 +173,13 @@ export function grantAdvance(state, civSlot, advanceId) {
   if (!state.civTechCounts) state.civTechCounts = new Array(8).fill(0);
   state.civTechCounts = [...state.civTechCounts];
   state.civTechCounts[civSlot] = state.civTechs[civSlot].size;
+
+  // (#169) Track tech source: which civ provided each tech
+  if (sourceCiv != null && sourceCiv >= 0) {
+    if (!state.techSources) state.techSources = {};
+    if (!state.techSources[civSlot]) state.techSources[civSlot] = {};
+    state.techSources[civSlot] = { ...state.techSources[civSlot], [advanceId]: sourceCiv };
+  }
 }
 
 // ── TECH IDs referenced by name (standard MGE RULES.TXT order) ──
@@ -228,31 +244,35 @@ export function handleTechDiscovery(state, civSlot, techId) {
   state.techDiscoveredBitmask[techId] =
     (state.techDiscoveredBitmask[techId] || 0) | (1 << civSlot);
 
-  // ── Barracks obsolescence (Gunpowder chain) ──
-  // In Civ2, discovering Gunpowder (35) or the next barracks-obsoleting tech
-  // removes Barracks (building 2) from all cities and refunds maintenance.
-  // The chain: Gunpowder (35) → Automobile (5) can obsolete barracks.
-  // Simplified: Gunpowder destroys Barracks I, but we only have one Barracks type.
-  if (techId === TECH_GUNPOWDER) {
-    let barracksCount = 0;
-    for (let ci = 0; ci < state.cities.length; ci++) {
-      const city = state.cities[ci];
-      if (city.owner !== civSlot || city.size <= 0) continue;
-      if (!city.buildings || !city.buildings.has(2)) continue;
-      barracksCount++;
-      const newBuildings = new Set(city.buildings);
-      newBuildings.delete(2);
-      state.cities[ci] = { ...city, buildings: newBuildings };
-    }
-    if (barracksCount > 0) {
-      const refund = (IMPROVE_MAINTENANCE[2] || 1) * barracksCount;
-      const civ = { ...state.civs[civSlot] };
-      civ.treasury = (civ.treasury || 0) + refund;
-      state.civs[civSlot] = civ;
-      events.push({
-        type: 'barracksObsolete', civSlot,
-        count: barracksCount, refund,
-      });
+  // (#127) Barracks obsolescence: walk full chain from Gunpowder.
+  // Binary walks the tech chain from Gunpowder (35) to find the latest
+  // non-obsolete barracks tech. Each barracks-tier tech obsoletes the previous.
+  // Chain: Gunpowder(35) → Automobile(5) → (end). When any tech in this chain
+  // is discovered, Barracks (building 2) are removed and maintenance refunded.
+  {
+    const BARRACKS_CHAIN = [TECH_GUNPOWDER, TECH_AUTOMOBILE]; // extendable
+    if (BARRACKS_CHAIN.includes(techId)) {
+      let barracksCount = 0;
+      for (let ci = 0; ci < state.cities.length; ci++) {
+        const city = state.cities[ci];
+        if (city.owner !== civSlot || city.size <= 0) continue;
+        if (!city.buildings || !city.buildings.has(2)) continue;
+        barracksCount++;
+        const newBuildings = new Set(city.buildings);
+        newBuildings.delete(2);
+        state.cities[ci] = { ...city, buildings: newBuildings };
+      }
+      if (barracksCount > 0) {
+        const refund = (IMPROVE_MAINTENANCE[2] || 1) * barracksCount;
+        const civ = { ...state.civs[civSlot] };
+        civ.treasury = (civ.treasury || 0) + refund;
+        state.civs[civSlot] = civ;
+        events.push({
+          type: 'barracksObsolete', civSlot,
+          count: barracksCount, refund,
+          obsoletingTech: techId,
+        });
+      }
     }
   }
 
@@ -287,6 +307,31 @@ export function handleTechDiscovery(state, civSlot, techId) {
   // ── Great Library cascade ──
   const libEvents = checkGreatLibraryCascade(state, techId);
   events.push(...libEvents);
+
+  // (#128) Electronics discovery: set civ flag 0x20 and trigger WLTKD in all cities
+  // Binary FUN_004bf05b: discovering Electronics (tech 24) sets a special civ flag
+  // and grants We Love The King Day to all of the civ's cities.
+  const TECH_ELECTRONICS = 24;
+  if (techId === TECH_ELECTRONICS) {
+    // Set civ flag
+    if (state.civs?.[civSlot]) {
+      state.civs = [...state.civs];
+      const civ = { ...state.civs[civSlot] };
+      civ.electronicsFlag = true; // civ flag 0x20
+      state.civs[civSlot] = civ;
+    }
+    // Trigger WLTKD in all owned cities
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      const city = state.cities[ci];
+      if (city.owner !== civSlot || city.size <= 0) continue;
+      if (!city.weLoveKingDay) {
+        state.cities[ci] = { ...city, weLoveKingDay: true };
+      }
+    }
+    events.push({
+      type: 'electronicsDiscovered', civSlot,
+    });
+  }
 
   // ── Golden Age: Philosophy first-discoverer bonus ──
   if (techId === TECH_PHILOSOPHY && isFirstDiscoverer) {
@@ -336,14 +381,14 @@ export function upgradeUnitsForTech(state, civSlot, techId) {
     // The civ must have the obsoleting tech for the upgrade to trigger
     if (!techs.has(obsoleteTech)) continue;
 
-    // Find best upgrade: same domain, prereq matches the obsoleting tech,
-    // attack >= old unit's attack. Take the last match (highest index = most advanced).
+    // (#168) Find best upgrade: same domain, prereq matches the obsoleting tech.
+    // Binary matches by obsoleteTech and domain only — NO attack-power requirement.
+    // Take the last match (highest index = most advanced).
     let bestUpgrade = -1;
     for (let candidate = 0; candidate < UNIT_PREREQS.length; candidate++) {
       if (candidate === unitTypeId) continue;
       if (UNIT_PREREQS[candidate] !== obsoleteTech) continue;
       if (UNIT_DOMAIN[candidate] !== UNIT_DOMAIN[unitTypeId]) continue;
-      if (UNIT_ATK[candidate] < UNIT_ATK[unitTypeId]) continue;
       bestUpgrade = candidate;
     }
 
@@ -646,14 +691,14 @@ export function checkUnitAutoUpgrade(state, cityIndex) {
   const civTechs = state.civTechs?.[city.owner];
   if (!civTechs || !civTechs.has(obsoleteTech)) return null; // civ doesn't have obsoleting tech
 
-  // Find best replacement: same domain, prereq matches obsoleting tech,
-  // attack >= old unit. Last match = highest index = most advanced.
+  // (#168) Find best replacement: same domain, prereq matches obsoleting tech.
+  // Binary matches by obsoleteTech and domain only — NO attack-power requirement.
+  // Last match = highest index = most advanced.
   let bestUpgrade = -1;
   for (let candidate = 0; candidate < UNIT_PREREQS.length; candidate++) {
     if (candidate === unitTypeId) continue;
     if (UNIT_PREREQS[candidate] !== obsoleteTech) continue;
     if (UNIT_DOMAIN[candidate] !== UNIT_DOMAIN[unitTypeId]) continue;
-    if (UNIT_ATK[candidate] < UNIT_ATK[unitTypeId]) continue;
     bestUpgrade = candidate;
   }
 

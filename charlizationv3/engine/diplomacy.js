@@ -799,7 +799,8 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     }
 
     if (thirdParty >= 0) {
-      adjustAttitude(state, thirdParty, aggressor, -15);
+      // Binary FUN_0045ac71 alliance tier: thunk_FUN_00456f20(witness, declarer, -25)
+      adjustAttitude(state, thirdParty, aggressor, -25);
     }
 
     // G.5: Reputation penalty for breaking alliance (-60)
@@ -902,7 +903,8 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     }
 
     if (thirdParty >= 0) {
-      adjustAttitude(state, thirdParty, aggressor, -25);
+      // Binary FUN_0045ac71 no-treaty tier: thunk_FUN_00456f20(witness, declarer, -5)
+      adjustAttitude(state, thirdParty, aggressor, -5);
     }
 
     // G.5: Sneak attack reputation penalty (-80) if had contact but no treaty
@@ -924,15 +926,12 @@ export function declareWar(state, mapBase, aggressor, target, thirdParty = -1) {
     adjustReputation(state, aggressor, -1);
   }
 
-  // ── Witness penalty: all contacted civs get -10 attitude toward aggressor ──
-  if (state.civs) {
-    for (let c = 1; c <= 7; c++) {
-      if (c === aggressor || c === target) continue;
-      if (!(state.civsAlive & (1 << c))) continue;
-      if (!haveContact(state, c, aggressor)) continue;
-      adjustAttitude(state, c, aggressor, -10);
-    }
-  }
+  // ── Witness penalty: only the third-party witness on war declaration ──
+  // Binary FUN_0045ac71: the attitude penalty is applied per-tier only to
+  // the thirdParty (param_3), not broadcast to all civs. The per-tier
+  // penalties (-25 alliance / -15 peace/ceasefire / -5 no treaty) above
+  // already handle the witness. No additional broadcast penalty exists
+  // in the binary.
 
   // Cancel trade routes between the two civs
   cancelTradeRoutes(state, aggressor, target);
@@ -1050,17 +1049,19 @@ export function signCeasefire(state, civA, civB) {
     state.diplomacy = newDiplo;
   }
 
-  // Clear war flags on all civs that were at war with BOTH civA and civB.
-  // When two civs sign a ceasefire, third parties that were at war with
-  // both should have their war-tracking flags cleared for the pair.
-  for (let c = 1; c <= 7; c++) {
-    if (c === civA || c === civB) continue;
-    if (!(state.civsAlive & (1 << c))) continue;
-    const cWarA = getTreaty(state, c, civA) === 'war' && haveContact(state, c, civA);
-    const cWarB = getTreaty(state, c, civB) === 'war' && haveContact(state, c, civB);
-    if (cWarA && cWarB) {
-      clearTreatyFlag(state, c, civA, TF.WAR_STARTED);
-      clearTreatyFlag(state, c, civB, TF.WAR_STARTED);
+  // Binary FUN_0045a7a8: clear WAR_STARTED (0x800) on civA's flags toward ALL civs.
+  // rawC: for(k=1;k<8;k++) treaty[civA][k] &= 0xfffff7ff
+  // This is unconditional — clears WAR_STARTED from civA toward every other civ.
+  if (state.treatyFlags) {
+    let flagsMutated = false;
+    for (let c = 1; c <= 7; c++) {
+      if (c === civA) continue;
+      const kAC = `${civA}-${c}`;
+      const cur = state.treatyFlags[kAC] || 0;
+      if (cur & TF.WAR_STARTED) {
+        if (!flagsMutated) { state.treatyFlags = { ...state.treatyFlags }; flagsMutated = true; }
+        state.treatyFlags[kAC] = cur & ~TF.WAR_STARTED;
+      }
     }
   }
 
@@ -1093,8 +1094,9 @@ export function signPeaceTreaty(state, civA, civB) {
 
   setTreaty(state, civA, civB, 'peace');
 
-  // Clamp attitude to [0, 50] — per pseudocode (both directions)
-  clampAttitude(state, civA, civB, 0, 50);
+  // Binary FUN_0045a6ab: thunk_FUN_00467904(civB, civA, 0, 0x32) — only clamp
+  // the accepting civ's (civB) attitude toward the proposer (civA).
+  // The proposer's attitude is NOT clamped.
   clampAttitude(state, civB, civA, 0, 50);
 
   // Reset patience
@@ -1203,6 +1205,7 @@ export function formAlliance(state, mapBase, civA, civB) {
   });
 
   // Check if either civ is at war — the new ally should join those wars
+  // Binary FUN_0045a8e3: attitude set to +100 (max hostility) on alliance cascade
   for (let c = 1; c <= 7; c++) {
     if (c === civA || c === civB) continue;
     if (!(state.civsAlive & (1 << c))) continue;
@@ -1212,7 +1215,7 @@ export function formAlliance(state, mapBase, civA, civB) {
       const bTreaty = getTreaty(state, civB, c);
       if (bTreaty !== 'war' && haveContact(state, civB, c)) {
         setTreaty(state, civB, c, 'war');
-        adjustAttitude(state, civB, c, -50);
+        adjustAttitude(state, civB, c, +100);
         events.push({
           type: 'warDeclared',
           aggressor: civB,
@@ -1228,7 +1231,7 @@ export function formAlliance(state, mapBase, civA, civB) {
       const aTreaty = getTreaty(state, civA, c);
       if (aTreaty !== 'war' && haveContact(state, civA, c)) {
         setTreaty(state, civA, c, 'war');
-        adjustAttitude(state, civA, c, -50);
+        adjustAttitude(state, civA, c, +100);
         events.push({
           type: 'warDeclared',
           aggressor: civA,
@@ -1399,9 +1402,25 @@ export function activateAllianceWars(state, mapBase, civA, civB, processed) {
     // Must have contact with civB
     if (!haveContact(state, civ, civB)) continue;
 
-    // Must not already be at war or ceasefire with civB
-    const existingTreaty = getTreaty(state, civ, civB);
-    if (existingTreaty === 'war' || existingTreaty === 'ceasefire') continue;
+    // Must not already be at war or allied with civB
+    // Binary: !(treaty[ally][enemy] & 0x2008) — not at war or allied
+    const existingFlags = getTreatyFlags(state, civ, civB);
+    if (existingFlags & (TF.WAR | TF.ALLIANCE)) continue;
+
+    // 6-turn cooldown: skip if alliance was formed recently (within 6 turns)
+    const allyTreatyTurn = state.treatyTurns?.[treatyKey(civA, civ)] ?? 0;
+    const turnNum = state.turn?.number || 0;
+    if (turnNum - allyTreatyTurn < 6) continue;
+
+    // Attitude check: ally must have hostile attitude toward enemy
+    // (attitude score > 50 in binary's hostility scale = willing to fight)
+    const allyAttitude = getAttitude(state, civ, civB);
+    if (allyAttitude < 50) continue;
+
+    // 2/3 random gate: 33% chance the ally refuses to join
+    const rng = state.rng;
+    const roll = rng ? rng.nextInt(3) : Math.floor(Math.random() * 3);
+    if (roll === 0) continue; // 1 in 3 chance to skip
 
     // This ally joins the war
     setTreaty(state, civ, civB, 'war');
@@ -1418,8 +1437,12 @@ export function activateAllianceWars(state, mapBase, civA, civB, processed) {
       },
     };
 
-    // Adjust attitude
-    adjustAttitude(state, civ, civB, -50);
+    // Binary ref: FUN_0045a8e3 — alliance cascade sets attitude to 100
+    // (maximum hostility). In binary's 0-100 scale, 100 = max hostility.
+    // adjust_attitude(ally, enemy, 100) means SET to 100, not add 100.
+    // Using adjustAttitude with a large positive delta to reach cap.
+    // Binary: thunk_FUN_00456f20(ally, enemy, 100) — sets attitude to 100
+    adjustAttitude(state, civ, civB, +100);
 
     recordTributeTurn(state, civB, civ);
 
@@ -2152,8 +2175,11 @@ export function calcAttitudeScore(state, aiCiv, targetCiv) {
     }
   }
 
-  // Phase 3: Alliance modifiers
-  if (isAllied) {
+  // Phase 3: At-war modifiers (binary: these fire when AT WAR, not when allied)
+  // Reference: diplomacy-tables.js MODIFIER_SUMMARY — Phase 3 is "War-only modifiers"
+  // Binary FUN_00560d95: checks treaty for WAR status, then applies comparison modifiers
+  const isAtWar = treaty === 'war';
+  if (isAtWar) {
     if (warCount === 0) {
       if ((aiCivData.treasury || 0) < (targetCivData.treasury || 0)) score += 1;
       if (aiTechCount < targetTechCount && diffIdx > 0) score += 1;
@@ -3083,3 +3109,105 @@ export function applyGovernmentChangeEffects(state, civSlot, oldGovt, newGovt) {
 
   return events;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Alliance Violation Check — FUN_00560084 @ 0x005602D8
+//
+// Per-turn check: if treaty flag 0x20 (INTRUDER) is set between an
+// AI civ and another civ, evaluate alliance violation response.
+// Uses tolerance-based random roll to decide severity.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Check and handle alliance violations for an AI civ.
+ * Binary ref: FUN_00560084 @ 0x005602D8 — checks flag 0x20.
+ *
+ * If INTRUDER flag (0x20) is set on treatyFlags[otherCiv][aiCiv]:
+ *   - Roll tolerance check: clamp(3 - (tolerance >> 2), 1, 3)
+ *   - If roll triggers and allied: set attitude to 100 (max hostility)
+ *   - If roll triggers and NOT allied: break treaties, set hostility flags
+ *
+ * @param {object} state - mutable game state
+ * @param {object} mapBase - map accessor
+ * @param {number} aiCiv - AI civ performing the check
+ * @returns {object[]} events
+ */
+export function checkAllianceViolations(state, mapBase, aiCiv) {
+  const events = [];
+  if (!state.treatyFlags) return events;
+
+  const aiCivData = state.civs?.[aiCiv];
+  if (!aiCivData || aiCivData.isHuman) return events;
+
+  const tolerance = aiCivData.tolerance ?? 0;
+
+  for (let other = 1; other <= 7; other++) {
+    if (other === aiCiv) continue;
+    if (!(state.civsAlive & (1 << other))) continue;
+
+    const flagsOtherToAi = getTreatyFlags(state, other, aiCiv);
+    if (!(flagsOtherToAi & TF.INTRUDER)) continue;
+
+    // Tolerance-based random roll: clamp(3 - (tolerance >> 2), 1, 3)
+    let toleranceRolls = Math.max(1, Math.min(3, 3 - (tolerance >> 2)));
+    const rng = state.rng;
+    const roll = (toleranceRolls <= 1) ? 0 : (rng ? rng.nextInt(toleranceRolls) : Math.floor(Math.random() * toleranceRolls));
+
+    if (roll !== 0) continue; // Only triggers when roll == 0
+
+    const isAllied = !!(flagsOtherToAi & TF.ALLIANCE);
+
+    if (isAllied) {
+      // Allied: set attitude to 100 (maximum hostility), clear INTRUDER
+      adjustAttitude(state, aiCiv, other, +100);
+      // Clear INTRUDER flag
+      let newFlags = flagsOtherToAi & ~TF.INTRUDER;
+      setTreatyFlags(state, other, aiCiv, newFlags);
+      events.push({
+        type: 'allianceViolation', aiCiv, otherCiv: other,
+        response: 'maxHostility',
+      });
+    } else {
+      // Not allied: break treaties, set hostility flags, can trigger war
+      // Clear CEASEFIRE+PEACE+INTRUDER, set WAR_STARTED + PERIODIC_FLAG_19 + HOSTILITY
+      let newFlags = flagsOtherToAi;
+      newFlags &= ~(TF.CEASEFIRE | TF.PEACE | TF.INTRUDER);
+      newFlags |= TF.PERIODIC_FLAG_19 | TF.WAR_STARTED | TF.HOSTILITY;
+      setTreatyFlags(state, other, aiCiv, newFlags);
+
+      // Sync treaty string
+      const newStatus = flagsToStatus(newFlags);
+      if (!state.treaties) state.treaties = {};
+      state.treaties = { ...state.treaties, [treatyKey(aiCiv, other)]: newStatus };
+
+      events.push({
+        type: 'allianceViolation', aiCiv, otherCiv: other,
+        response: 'breakTreaties',
+      });
+    }
+  }
+
+  return events;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Attitude Scale Documentation
+//
+// NOTE (#109): The binary uses a 0-100 attitude scale where higher
+// values = more hostile in the AI decision-making context.
+// Our JS engine uses the same 0-100 scale:
+//   adjustAttitude clamps to [0, 100]
+//   In binary, thunk_FUN_00456f20(civ, other, +100) = max hostility
+//   In binary, thunk_FUN_00456f20(civ, other, -25) = more friendly
+//
+// The attitude brackets (getAttitudeLevel) map:
+//   0: Enraged, 1-10: Furious, ..., 90-99: Enthusiastic, 100: Worshipful
+//
+// This creates an APPARENT inversion: getAttitudeLevel says 100=Worshipful
+// (most friendly display) but the AI scoring treats high values as hostile.
+// This is because getAttitudeLevel is a DISPLAY function for the human
+// player's view, while the AI's raw attitude score is a hostility metric.
+//
+// For now the dual interpretation is documented. A full normalization
+// would require auditing every attitude read/write across the codebase.
+// ═══════════════════════════════════════════════════════════════════

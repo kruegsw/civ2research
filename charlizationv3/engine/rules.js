@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, CARAVAN_HELP_WONDER } from './actions.js';
-import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS, TRADE, SPECIALIST_CYCLE, SPECIALIST_MIN_CITY_SIZE, CAN_IRRIGATE, CAN_MINE, FORTRESS_TURNS, AIRBASE_TURNS } from './defs.js';
+import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS, TRADE, SPECIALIST_CYCLE, SPECIALIST_MIN_CITY_SIZE, CAN_IRRIGATE, CAN_MINE, FORTRESS_TURNS, AIRBASE_TURNS, UNIT_AMPHIBIOUS, UNIT_SUBMARINE, UNIT_FIGHTER } from './defs.js';
 import { resolveDirection, getDirection, isZOCBlocked, checkRoadConnection } from './movement.js';
 import { getProductionCost } from './production.js';
 import { calcRushBuyCost } from './happiness.js';
@@ -133,6 +133,8 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       }
       // C.4: Disembarkation (land unit on ocean → land) passes through — handled in reducer
       if (domain === 2 && terrain !== 10) {
+        // #28: Submarine-flagged units cannot enter non-ocean tiles at all
+        if (UNIT_SUBMARINE.has(unit.type)) return 'Submarine cannot enter non-ocean tiles';
         // Sea unit can enter coastal city tiles
         const hasDestCity = gameState.cities.some(c => c.gx === dest.gx && c.gy === dest.gy && c.size > 0);
         if (!hasDestCity) return 'Sea unit cannot enter land';
@@ -142,7 +144,27 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       const hasEnemy = gameState.units.some(u =>
         u.gx === dest.gx && u.gy === dest.gy && u.owner !== unit.owner && u.gx >= 0);
       if (hasEnemy && (UNIT_ATK[unit.type] || 0) === 0) return 'Non-combat unit cannot attack';
-      if (hasEnemy && domain === 0 && terrain === 10) return 'Cannot attack units at sea';
+      // #26: Land units cannot attack at sea, UNLESS they have the amphibious flag (Marines)
+      if (hasEnemy && domain === 0 && terrain === 10 && !UNIT_AMPHIBIOUS.has(unit.type)) {
+        return 'Cannot attack units at sea';
+      }
+
+      // #29: Fighters can only attack ground units when target tile has a city or airbase
+      // Per binary FUN_0057f9e3: fighters check for city/airbase at target before ground attack
+      if (hasEnemy && UNIT_FIGHTER.has(unit.type)) {
+        const destHasCity = gameState.cities.some(c =>
+          c.gx === dest.gx && c.gy === dest.gy && c.size > 0);
+        const destTileIdx = dest.gy * mapBase.mw + dest.gx;
+        const destTile = mapBase.tileData?.[destTileIdx];
+        const destHasAirbase = destTile && destTile.improvements && destTile.improvements.airbase;
+        // Check if target has only ground units (no air/sea units to dog-fight)
+        const hasAirTarget = gameState.units.some(u =>
+          u.gx === dest.gx && u.gy === dest.gy && u.owner !== unit.owner && u.gx >= 0
+          && (UNIT_DOMAIN[u.type] ?? 0) === 1);
+        if (!hasAirTarget && !destHasCity && !destHasAirbase) {
+          return 'Fighter cannot attack ground units without city or airbase at target';
+        }
+      }
 
       // Non-combat units (except Diplomats/Spies) cannot enter undefended enemy cities
       if (!hasEnemy && (UNIT_ATK[unit.type] || 0) === 0) {

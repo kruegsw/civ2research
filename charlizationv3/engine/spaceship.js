@@ -49,15 +49,17 @@ const SS_MASS_COMPONENT  = 500;   // avg of propulsion(400) + fuel(600)
 const SS_MASS_MODULE     = 867;   // avg of hab(1000) + life(800) + solar(800)
 
 /**
- * Count spaceship parts across all cities owned by a civ.
+ * (#99) Count spaceship parts across all cities owned by a civ.
+ * Tracks 6 individual part sub-types: structural, propulsion, fuel,
+ * habitation, life-support, solar-panel.
  *
- * Spaceship parts are buildings 35 (Structural), 36 (Component), 37 (Module)
- * that can exist in multiple cities. Each city can have at most one of each,
- * but the civ total counts across all cities.
+ * The binary tracks these individually via civ record fields.
+ * Since our building system uses 3 aggregate types (35/36/37),
+ * we also check the per-civ spaceship state for detailed counts.
  *
  * @param {object} state - game state
  * @param {number} civSlot
- * @returns {{ structurals: number, components: number, modules: number }}
+ * @returns {{ structurals: number, components: number, modules: number, propulsion: number, fuel: number, habitation: number, lifeSupport: number, solarPanel: number }}
  */
 function countSpaceshipParts(state, civSlot) {
   let structurals = 0, components = 0, modules = 0;
@@ -69,7 +71,16 @@ function countSpaceshipParts(state, civSlot) {
     if (city.buildings.has(SS_COMPONENT))  components++;
     if (city.buildings.has(SS_MODULE))     modules++;
   }
-  return { structurals, components, modules };
+
+  // (#99) Retrieve detailed sub-type counts from spaceship state if available
+  const existing = state.spaceships?.[civSlot] || {};
+  const propulsion = existing.propulsion ?? Math.ceil(components / 2);
+  const fuel = existing.fuel ?? Math.floor(components / 2);
+  const habitation = existing.habitation ?? Math.ceil(modules / 3);
+  const lifeSupport = existing.lifeSupport ?? Math.ceil((modules - Math.ceil(modules / 3)) / 2);
+  const solarPanel = existing.solarPanel ?? Math.max(0, modules - Math.ceil(modules / 3) - Math.ceil((modules - Math.ceil(modules / 3)) / 2));
+
+  return { structurals, components, modules, propulsion, fuel, habitation, lifeSupport, solarPanel };
 }
 
 /**
@@ -164,8 +175,15 @@ export function recalcSpaceshipStats(state, civSlot) {
   const canLaunch = !launched &&
     parts.structurals >= 1 && parts.components >= 1 && parts.modules >= 1;
 
+  // (#99) Store 6 individual part sub-types alongside aggregates
   const ss = {
     ...parts,
+    // Individual sub-types
+    propulsion: parts.propulsion,
+    fuel: parts.fuel,
+    habitation: parts.habitation,
+    lifeSupport: parts.lifeSupport,
+    solarPanel: parts.solarPanel,
     mass,
     successProb: success,
     flightTurns,

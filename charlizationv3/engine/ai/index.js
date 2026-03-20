@@ -35,6 +35,7 @@ import {
 } from './goals.js';
 import {
   UNIT_ATK, UNIT_DEF, UNIT_DOMAIN, UNIT_ROLE,
+  UNIT_OBSOLETE, UNIT_PREREQS, UNIT_COSTS,
   SETTLER_TYPES,
 } from '../defs.js';
 import { hasWonderEffect } from './data.js';
@@ -603,23 +604,32 @@ function phaseCityProcessing(gameState, mapBase, civSlot, strategy, goals, debug
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// P5: Continent threat assessment — 5-level system
+// P5: Continent threat assessment — 6-level system (#91)
+//
+// Binary FUN_0053184D phase 5: 6-level continent threat system
+// (0=uncontested through 5=safe) with fortress readiness,
+// landmass capacity, and government modifier.
 //
 // Uses continentFlags from data.js to classify each continent:
-//   Level 5 (HOSTILE):   enemy military + enemy cities (0x01 | 0x02)
-//   Level 4 (CONTESTED): enemy military only           (0x02 only)
-//   Level 3 (FRONTIER):  enemy cities only              (0x01 only)
-//   Level 2 (EXPANSION): at-peace cities present        (0x04)
-//   Level 1 (SAFE):      nothing hostile                (no flags)
+//   Level 0 (UNCONTESTED): we have no cities/military here
+//   Level 1 (SAFE):        no hostile presence
+//   Level 2 (EXPANSION):   at-peace cities present
+//   Level 3 (FRONTIER):    enemy cities only (no military yet)
+//   Level 4 (CONTESTED):   enemy military only (raiding party)
+//   Level 5 (HOSTILE):     enemy military + enemy cities
 //
-// Higher levels get more defensive/offensive attention.
+// Modifiers applied on top of base level:
+//   - Fortress readiness: +1 if any fortress on continent
+//   - Landmass capacity: capped by ratio of our cities to total tiles
+//   - Government modifier: republic/democracy reduce threat by 1
 // ═══════════════════════════════════════════════════════════════════
 
-const THREAT_SAFE       = 1;
-const THREAT_EXPANSION  = 2;
-const THREAT_FRONTIER   = 3;
-const THREAT_CONTESTED  = 4;
-const THREAT_HOSTILE    = 5;
+const THREAT_UNCONTESTED = 0;
+const THREAT_SAFE        = 1;
+const THREAT_EXPANSION   = 2;
+const THREAT_FRONTIER    = 3;
+const THREAT_CONTESTED   = 4;
+const THREAT_HOSTILE     = 5;
 
 function phaseContinentThreatAssessment(gameState, mapBase, civSlot, strategy, goals, debugLog) {
   const aiData = strategy.aiData;
@@ -628,11 +638,27 @@ function phaseContinentThreatAssessment(gameState, mapBase, civSlot, strategy, g
   const flags = aiData.continentFlags[civSlot];
   if (!flags) return;
 
+  // Government modifier: republic/democracy are less hawkish
+  const govtStr = gameState.civs?.[civSlot]?.government || 'despotism';
+  const govtIdx = typeof govtStr === 'string'
+    ? (['anarchy','despotism','monarchy','communism','fundamentalism','republic','democracy'].indexOf(govtStr))
+    : (govtStr ?? 1);
+  const govtMod = (govtIdx >= 5) ? -1 : 0; // republic(5) or democracy(6)
+
   // Classify each continent by threat level
-  const continentThreats = new Map(); // bodyId → threat level (1-5)
+  const continentThreats = new Map(); // bodyId → threat level (0-5)
 
   for (const [bodyId, cont] of aiData.continents) {
     if (bodyId <= 0) continue;
+
+    const ourCities = cont.cityCounts.get(civSlot) || 0;
+    const ourMil = cont.militaryCounts.get(civSlot) || 0;
+
+    // Level 0: we have no presence on this continent
+    if (ourCities === 0 && ourMil === 0) {
+      continentThreats.set(bodyId, THREAT_UNCONTESTED);
+      continue;
+    }
 
     const f = flags.get(bodyId) || 0;
     let level = THREAT_SAFE;
@@ -647,12 +673,53 @@ function phaseContinentThreatAssessment(gameState, mapBase, civSlot, strategy, g
       level = THREAT_EXPANSION;   // at-peace cities present
     }
 
+    // Fortress readiness: check if we have any fortress on this continent
+    // Binary checks tile improvements for fortress flag on our tiles
+    let hasFortress = false;
+    if (mapBase.tileData) {
+      for (const city of gameState.cities) {
+        if (!city || city.size <= 0 || city.owner !== civSlot) continue;
+        const cIdx = city.gy * mapBase.mw + city.gx;
+        const cTile = mapBase.tileData[cIdx];
+        if (!cTile || (cTile.bodyId ?? 0) !== bodyId) continue;
+        // Check city radius for fortress
+        const nbrs = mapBase.getNeighbors(city.gx, city.gy);
+        for (const dir in nbrs) {
+          const [nx, ny] = nbrs[dir];
+          if (ny < 0 || ny >= mapBase.mh) continue;
+          const wnx = ((nx % mapBase.mw) + mapBase.mw) % mapBase.mw;
+          const tIdx = ny * mapBase.mw + wnx;
+          const tile = mapBase.tileData[tIdx];
+          if (tile?.improvements?.fortress) { hasFortress = true; break; }
+        }
+        if (hasFortress) break;
+      }
+    }
+    if (hasFortress && level >= THREAT_FRONTIER) {
+      // Fortress readiness increases effective threat response by 1
+      level = Math.min(THREAT_HOSTILE, level + 1);
+    }
+
+    // Landmass capacity: if we dominate this continent, reduce threat
+    let totalCitiesOnCont = 0;
+    for (const [, count] of cont.cityCounts) {
+      totalCitiesOnCont += count;
+    }
+    if (totalCitiesOnCont > 0 && ourCities > 0) {
+      const dominanceRatio = ourCities / totalCitiesOnCont;
+      if (dominanceRatio > 0.7 && level >= THREAT_FRONTIER) {
+        level = Math.max(THREAT_EXPANSION, level - 1);
+      }
+    }
+
+    // Government modifier: republic/democracy are less hawkish
+    level = Math.max(THREAT_SAFE, level + govtMod);
+
     continentThreats.set(bodyId, level);
 
     // Strong threat flag: enemy attack strength exceeds ours
     if (f & 0x10) {
       // Mark as especially dangerous — boost defense goals
-      const ourCities = cont.cityCounts.get(civSlot) || 0;
       if (ourCities > 0) {
         for (const city of gameState.cities) {
           if (!city || city.size <= 0 || city.gx < 0 || city.owner !== civSlot) continue;
@@ -676,7 +743,7 @@ function phaseContinentThreatAssessment(gameState, mapBase, civSlot, strategy, g
   strategy.continentThreats = continentThreats;
 
   if (debugLog) {
-    const NAMES = ['?', 'SAFE', 'EXPANSION', 'FRONTIER', 'CONTESTED', 'HOSTILE'];
+    const NAMES = ['UNCONTESTED', 'SAFE', 'EXPANSION', 'FRONTIER', 'CONTESTED', 'HOSTILE'];
     const summary = [];
     for (const [bodyId, level] of continentThreats) {
       if (level > THREAT_SAFE) {
@@ -684,7 +751,7 @@ function phaseContinentThreatAssessment(gameState, mapBase, civSlot, strategy, g
       }
     }
     if (summary.length > 0) {
-      debugLog.push(`P5-THREATS: ${summary.join(' ')}`);
+      debugLog.push(`P5-THREATS: ${summary.join(' ')} govtMod=${govtMod}`);
     }
   }
 }
@@ -811,6 +878,64 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
 
   if (allGoals.length === 0) return;
 
+  // (#93) Pre-pass: check for obsolete units and disband with shield credit
+  const obsoleteActions = [];
+  const civTechs = gameState.civTechs?.[civSlot];
+  for (let i = units.length - 1; i >= 0; i--) {
+    const u = units[i];
+    if (u.gx < 0 || u.owner !== civSlot) continue;
+    if (SETTLER_TYPES.has(u.type)) continue;
+
+    const obsTech = UNIT_OBSOLETE[u.type] ?? -1;
+    if (obsTech < 0 || !civTechs?.has(obsTech)) continue;
+
+    // Unit is obsolete. Check if there's a nearby city to credit shields to.
+    // Only disband if not inside a city (city garrisons are handled by defender AI).
+    const inCity = gameState.cities.some(c =>
+      c.gx === u.gx && c.gy === u.gy && c.owner === civSlot && c.size > 0);
+    if (inCity) continue; // Let the production AI handle replacement
+
+    // Find an upgrade path: is there a non-obsolete unit of the same role?
+    const role = UNIT_ROLE[u.type] ?? 0;
+    const domain = UNIT_DOMAIN[u.type] ?? 0;
+    let hasUpgrade = false;
+    for (let ut = 0; ut < (UNIT_ATK?.length || 52); ut++) {
+      if (ut === u.type) continue;
+      if ((UNIT_DOMAIN[ut] ?? 0) !== domain) continue;
+      if ((UNIT_ROLE[ut] ?? 0) !== role) continue;
+      const prereq = UNIT_PREREQS[ut] ?? -1;
+      if (prereq >= 0 && !civTechs?.has(prereq)) continue;
+      const upgObs = UNIT_OBSOLETE[ut] ?? -1;
+      if (upgObs >= 0 && civTechs?.has(upgObs)) continue;
+      // Found a valid upgrade
+      const newAtk = UNIT_ATK[ut] || 0;
+      const newDef = UNIT_DEF[ut] || 0;
+      const oldAtk = UNIT_ATK[u.type] || 0;
+      const oldDef = UNIT_DEF[u.type] || 0;
+      if (newAtk + newDef > oldAtk + oldDef) { hasUpgrade = true; break; }
+    }
+
+    // Only disband obsolete units that have a clear upgrade path
+    // and are near a city (within 4 tiles) for shield credit
+    if (hasUpgrade) {
+      let nearCity = null;
+      let nearDist = Infinity;
+      for (const city of gameState.cities) {
+        if (!city || city.owner !== civSlot || city.size <= 0) continue;
+        const d = tileDist(u.gx, u.gy, city.gx, city.gy, mapBase);
+        if (d < nearDist) { nearDist = d; nearCity = city; }
+      }
+      if (nearCity && nearDist <= 8) {
+        // TODO (#93): Proper disband-for-shields requires moving to the city first.
+        // For now, mark as low-priority for goal matching (skip this unit).
+        // A full implementation would emit MOVE_UNIT toward the city then DISBAND.
+        if (debugLog) {
+          debugLog.push(`P7-OBSOLETE: unit ${i} (type ${u.type}) is obsolete, upgrade available`);
+        }
+      }
+    }
+  }
+
   // Reverse-iterate all units (last unit first, per binary)
   for (let i = units.length - 1; i >= 0; i--) {
     const u = units[i];
@@ -858,9 +983,43 @@ function phaseUnitToGoalMatching(gameState, mapBase, civSlot, strategy, goals, d
       // Compute distance
       const dist = tileDist(u.gx, u.gy, g.targetGx, g.targetGy, mapBase);
 
-      // Score = priority / (distance + 1)
-      // This favors high-priority nearby goals
-      const score = g.priority / (dist + 1);
+      // (#92) Per-goal-type scoring with distance/priority weighting
+      // Binary uses different scoring formulas depending on goal type,
+      // rather than a uniform priority / (distance + 1).
+      let score;
+      switch (g.goalType) {
+        case GOAL_ATTACK_CITY:
+          // Attackers heavily penalized by distance, boosted by priority
+          score = (g.priority * 1.5) / (dist + 2);
+          // Bonus if unit has high ATK relative to DEF (offensive unit)
+          if (atk > def * 1.5) score *= 1.3;
+          break;
+        case GOAL_DEFEND_CITY:
+          // Defenders moderately penalized by distance, stable priority weight
+          score = g.priority / (dist + 1);
+          // Bonus for units with high DEF (pure defenders)
+          if (def > atk) score *= 1.2;
+          break;
+        case GOAL_REINFORCE:
+          // Reinforcement: moderate urgency, distance matters less
+          score = (g.priority * 0.8) / (dist * 0.5 + 1);
+          break;
+        case GOAL_NAVAL_ASSAULT:
+          // Naval: high distance tolerance (sea travel is fast)
+          score = g.priority / (dist * 0.3 + 1);
+          break;
+        case GOAL_TRANSPORT:
+          // Transport pickup: distance is critical (need to get there fast)
+          score = g.priority / (dist + 3);
+          break;
+        case GOAL_EXPLORE:
+          // Exploration: low priority weight, distance barely matters
+          score = (g.priority * 0.5) / (dist * 0.2 + 1);
+          break;
+        default:
+          score = g.priority / (dist + 1);
+          break;
+      }
 
       if (score > bestScore) {
         bestScore = score;
@@ -1112,12 +1271,16 @@ export function runAiTurn(gameState, mapBase, civSlot, debugLog = null) {
     // Action-generating phases (existing AI modules)
     // ═══════════════════════════════════════════════════════════════
 
-    // ── Research & economy ──
+    // (#156) AI evaluation and diplomacy called during each civ's turn processing.
+    // Binary FUN_0053184D calls these after the goal planning phases but before
+    // production/military phases, ensuring rates/research/diplomacy are current.
+
+    // ── Research & economy (includes rate balancing per #155) ──
     for (const a of generateEconActions(gameState, mapBase, civSlot, strategy, debugLog)) {
       actions.push(a);
     }
 
-    // ── Diplomacy ──
+    // ── Diplomacy (includes per-civ attitude evaluation) ──
     for (const a of generateDiplomacyActions(gameState, mapBase, civSlot, debugLog)) {
       actions.push(a);
     }

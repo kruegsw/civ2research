@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_FUEL, UNIT_ATK, ADVANCE_NAMES, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ROAD_TURNS, IRRIGATION_TURNS, MINING_TURNS, FORTRESS_TURNS, AIRBASE_TURNS, POLLUTION_TURNS, TERRAIN_TRANSFORM, TRANSFORM_TURNS, UNIT_NO_LIGHTHOUSE_BONUS, DIFFICULTY_KEYS } from '../defs.js';
-import { resolveDirection, moveCost, calcEffectiveMovementPoints, checkTriremeSinking } from '../movement.js';
+import { resolveDirection, moveCost, calcEffectiveMovementPoints } from '../movement.js';
 import { calcGotoDirection } from '../pathfinding.js';
 import { updateVisibility } from '../visibility.js';
 import { calcCityTrade, calcShieldProduction } from '../production.js';
@@ -13,7 +13,7 @@ import { checkGameEndConditions, recalcSpaceshipStats, calcCivScore } from '../s
 import { processCityTurn } from '../cityturn.js';
 import { processDiplomacyTimers, applyGovernmentChangeEffects } from '../diplomacy.js';
 import { dispatchEvents, EVENT_TURN, EVENT_RECEIVED_TECH, EVENT_TURN_INTERVAL, EVENT_RANDOM_TURN } from '../events.js';
-import { completeWorkerOrder, autoAssignWorker, removeWorstWorker, discoverContacts, killUnit, checkCivElimination, findFirstAliveCiv } from './helpers.js';
+import { completeWorkerOrder, getWorkerTurnsNeeded, countCooperatingWorkers, autoAssignWorker, removeWorstWorker, discoverContacts, killUnit, checkCivElimination, findFirstAliveCiv } from './helpers.js';
 import { processBarbarianAI, processBarbCampProduction, spawnBarbarians } from './barbarians.js';
 // resolveGoodyHut is defined in move-unit.js but is also used in GOTO continuation within END_TURN.
 // We need the same function. Rather than exporting the local function from move-unit.js (which
@@ -46,42 +46,42 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     turnNumber++;
   }
 
-  // ── Barbarian AI movement phase (runs once per full turn cycle) ──
-  if (turnNumber > state.turn.number) {
+  // ── Once-per-full-turn-cycle processing (when turn number increments) ──
+  const isNewTurnCycle = turnNumber > state.turn.number;
+  if (isNewTurnCycle) {
+    // #76: Barbarian spawning BEFORE any civ processes (binary: FUN_00489553)
+    spawnBarbarians(state, mapBase);
+
+    // Barbarian AI movement phase
     processBarbarianAI(state, prev, mapBase);
     processBarbCampProduction(state, mapBase);
+
+    // #35: Reset ALL units for ALL civs at once at turn start (civ 0)
+    // Binary: FUN_005b2a39 resets all units at the start of the turn cycle,
+    // not per-civ. This ensures consistent state for all civs.
+    state.units = state.units.map(u => {
+      if (u.gx < 0) return u;
+      const ownerCiv = u.owner;
+      const ownerHasLighthouse = hasWonderEffect(state, ownerCiv, 3);
+      const ownerHasMagellan = hasWonderEffect(state, ownerCiv, 12);
+      const ownerHasNuclearPower = !!(state.civTechs?.[ownerCiv]?.has(59));
+      const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
+      let mp = calcEffectiveMovementPoints(u);
+      if (UNIT_DOMAIN[u.type] === 2) { // sea domain
+        if (ownerHasLighthouse && !UNIT_NO_LIGHTHOUSE_BONUS.has(u.type)) {
+          mp += MOVEMENT_MULTIPLIER;
+        }
+        if (ownerHasMagellan) mp += 2 * MOVEMENT_MULTIPLIER;
+        if (ownerHasNuclearPower) mp += MOVEMENT_MULTIPLIER;
+      }
+      return { ...u, movesLeft: mp, orders };
+    });
   }
 
   state.turn = { activeCiv: next, number: turnNumber };
 
   // ── Begin-of-turn processing for the NEW active civ ──
   const activeCiv = next;
-
-  // Reset movement for the new active civ's units + promote fortifying→fortified
-  // C.1: Use calcEffectiveMovementPoints for damage-based MP reduction
-  // Sea unit movement bonuses (Raw C FUN_005b2a39):
-  //   Lighthouse (wonder 3): +1x MP_PER_TURN, but NOT for units with flagsA & 0x20
-  //   Magellan (wonder 12): +2x MP_PER_TURN (DAT_0064bcc8 * 2)
-  //   Nuclear Power (tech 59/0x3B): +1x MP_PER_TURN
-  const hasLighthouse = hasWonderEffect(state, activeCiv, 3);
-  const hasMagellan = hasWonderEffect(state, activeCiv, 12);
-  const hasNuclearPower = !!(state.civTechs?.[activeCiv]?.has(59));
-  state.units = state.units.map(u => {
-    if (u.owner !== activeCiv) return u;
-    const orders = u.orders === 'fortifying' ? 'fortified' : u.orders;
-    let mp = calcEffectiveMovementPoints(u);
-    if (UNIT_DOMAIN[u.type] === 2) { // sea domain
-      // Lighthouse: +1 MP, but skip units with flagsA & 0x20 (transports/carriers)
-      if (hasLighthouse && !UNIT_NO_LIGHTHOUSE_BONUS.has(u.type)) {
-        mp += MOVEMENT_MULTIPLIER;
-      }
-      // Magellan's Expedition: +2 MP
-      if (hasMagellan) mp += 2 * MOVEMENT_MULTIPLIER;
-      // Nuclear Power tech: +1 MP
-      if (hasNuclearPower) mp += MOVEMENT_MULTIPLIER;
-    }
-    return { ...u, movesLeft: mp, orders };
-  });
 
   // ── Anarchy countdown ──
   if (state.civs?.[activeCiv]) {
@@ -143,6 +143,77 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
   }
 
+  // ── #34: Heal units BEFORE city processing (binary FUN_00488cef) ──
+  // Binary: healing runs at START of each civ's turn before cities process
+  for (let ui = 0; ui < state.units.length; ui++) {
+    const u = state.units[ui];
+    if (u.owner !== activeCiv || u.gx < 0) continue;
+    if (u.movesRemain <= 0) continue;
+
+    const domain = UNIT_DOMAIN[u.type] ?? 0;
+    const ownCity = state.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner && c.size > 0);
+
+    const maxHp = (UNIT_HP[u.type] || 1) * 10;
+    let healBase = 1;
+
+    if (ownCity) {
+      const matchingBuildingId = domain === 0 ? 2 : domain === 2 ? 34 : 32;
+      const hasMatchingBuilding = cityHasBuilding(ownCity, matchingBuildingId);
+      healBase = 1;
+      if (domain === 0) healBase += (hasMatchingBuilding ? 2 : 1);
+      healBase <<= 1;
+      healBase <<= 1;
+      healBase = Math.floor(maxHp / 10) * healBase;
+      if (hasMatchingBuilding) healBase = u.movesRemain;
+    } else {
+      const alliedCity = state.cities.find(c => {
+        if (c.gx !== u.gx || c.gy !== u.gy || c.size <= 0) return false;
+        if (c.owner === u.owner) return false;
+        const a = Math.min(u.owner, c.owner);
+        const b = Math.max(u.owner, c.owner);
+        return state.treaties?.[`${a}-${b}`] === 'alliance';
+      });
+
+      if (alliedCity) {
+        healBase = 2;
+      } else {
+        const tileIdx = u.gy * mapBase.mw + u.gx;
+        const tile = mapBase.tileData?.[tileIdx];
+        const onFortress = tile && tile.improvements && tile.improvements.fortress;
+
+        if (onFortress) {
+          healBase = 2;
+        } else if (turnNumber % 2 === 0) {
+          healBase = 1;
+        } else {
+          healBase = 0;
+        }
+
+        if (domain === 0) {
+          for (const c of state.cities) {
+            if (c.owner !== u.owner || c.size <= 0) continue;
+            let cdx = Math.abs(u.gx - c.gx);
+            if (mapBase.wraps) cdx = Math.min(cdx, mapBase.mw - cdx);
+            const cdy = Math.abs(u.gy - c.gy);
+            if (cdx + cdy <= 3) {
+              const hasBarracks = cityHasBuilding(c, 2);
+              healBase += hasBarracks ? 2 : 1;
+              break;
+            }
+          }
+        }
+      }
+      healBase = Math.floor(maxHp / 10) * healBase;
+    }
+
+    if (healBase > 0) {
+      const newHpLost = Math.max(0, u.movesRemain - healBase);
+      if (newHpLost !== u.movesRemain) {
+        state.units[ui] = { ...u, movesRemain: newHpLost };
+      }
+    }
+  }
+
   // ── Process city resistance for the active civ ──
   state.cities = [...prev.cities];
   for (let ci = 0; ci < state.cities.length; ci++) {
@@ -164,21 +235,26 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
   }
 
+  // ── #12: Check if active civ is AI — skip pollution/upkeep for AI civs ──
+  const humanPlayersMask = state.humanPlayers || 0xFF;
+  const isActiveCivHuman = !!((1 << activeCiv) & humanPlayersMask);
+
   // ── Process cities for the active civ (happiness, food, production, support, disorder) ──
   // Delegated to processCityTurn() in cityturn.js which orchestrates:
-  //   1. calcHappiness → update disorder/WLTKD
-  //   2. Food processing (growth, famine, granary, aqueduct/sewer gates)
+  //   1. Food processing FIRST (growth, famine, granary, aqueduct/sewer gates)
+  //   2. Recalculate yields including happiness
   //   3. Shield production & completion (units, buildings, wonders)
   //   4. Unit support deficit (disband most-distant units)
   //   5. Disorder check (democracy revolution risk)
-  for (let ci = 0; ci < state.cities.length; ci++) {
+  // #75: Process cities backwards (highest index to 0) to match binary behavior
+  for (let ci = state.cities.length - 1; ci >= 0; ci--) {
     const city = state.cities[ci];
     if (city.owner !== activeCiv || city.size <= 0) continue;
 
     const result = processCityTurn(ci, state, mapBase, {
       autoAssignWorker,
       removeWorstWorker,
-    });
+    }, { skipPollution: !isActiveCivHuman });
 
     // Emit all events from this city's turn processing
     if (result.events.length > 0) {
@@ -197,11 +273,10 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   // inside processCityTurn() (D.1), including nuclear meltdown. Only the global
   // warming check remains here.
 
-  // ── Global warming: cumulative counter system (FUN_00486c2e + FUN_004868fb) ──
-  // Binary uses a pollution pressure counter (0-99) that drifts toward a net
-  // pressure value each turn. When counter exceeds 16, a warming event fires
-  // and degrades terrain across the map.
-  {
+  // ── #11: Global warming: run pollution counter update ONCE per full turn cycle ──
+  // Binary processes this once when civ 0 (first alive) runs, not every civ.
+  // #13: When counter exceeds threshold, degrade terrain tiles.
+  if (isNewTurnCycle) {
     // Count pollution tiles, recycling centers, and solar plants across all cities
     let pollCount = 0;
     for (const tile of mapBase.tileData) {
@@ -326,7 +401,10 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const { tax, sci, maintenance } = calcCityTrade(city, ci, state, mapBase);
     civTaxTotal += tax;
     civSciTotal += sci;
-    civMaintenanceTotal += maintenance;
+    // #12: Skip building maintenance for AI civs
+    if (isActiveCivHuman) {
+      civMaintenanceTotal += maintenance;
+    }
 
     // A.6: Shield overflow → research beakers
     // Binary: clamp(shieldSurplus - freeUnitSupport, 0, citySize) → civ research pool
@@ -344,9 +422,9 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     const civ = { ...state.civs[activeCiv] };
     civ.treasury = (civ.treasury || 0) + civTaxTotal - civMaintenanceTotal;
 
-    // Gap 54: If treasury goes negative, iterate buildings 1-38 in order per city
-    // (matching binary FUN_004f0221) and sell whichever building's maintenance
-    // causes the treasury to go negative, rather than finding cheapest globally.
+    // #71: Building upkeep per-city — when treasury goes negative, sell buildings
+    // from the currently-processing city (binary FUN_004f0221 processes per-city).
+    // Iterate buildings 1-38 in order within each city, selling one at a time.
     while (civ.treasury < 0) {
       let sold = false;
       for (let sci = 0; sci < state.cities.length && civ.treasury < 0; sci++) {
@@ -354,10 +432,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
         if (sc.owner !== activeCiv || sc.size <= 0 || !sc.buildings) continue;
         for (let bid = 1; bid <= 38 && civ.treasury < 0; bid++) {
           if (bid === 1) continue; // never sell Palace
+          if (bid >= 35 && bid <= 37) continue; // never sell SS parts
           if (!sc.buildings.has(bid)) continue;
           const maint = IMPROVE_MAINTENANCE[bid] || 0;
           if (maint <= 0) continue;
-          // Sell this building
+          // Sell this building from THIS city
           const sellCity = { ...state.cities[sci] };
           const sellBuildings = new Set(sellCity.buildings);
           sellBuildings.delete(bid);
@@ -372,6 +451,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
             civSlot: activeCiv, buildingId: bid,
           });
           sold = true;
+          break; // sold one building from this city, re-evaluate treasury
         }
       }
       if (!sold) { civ.treasury = 0; break; }
@@ -514,99 +594,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
   }
 
-  // ── Process unit orders for active civ (worker progress, HP recovery) ──
+  // ── Process unit orders for active civ (worker progress, fuel, GOTO) ──
+  // NOTE: HP recovery has been moved above city processing (#34)
   for (let ui = 0; ui < state.units.length; ui++) {
     const u = state.units[ui];
     if (u.owner !== activeCiv || u.gx < 0) continue;
-
-    // HP recovery — ported from FUN_00488cef (heal_units)
-    // Binary: runs once at START of each civ's turn (FUN_00489553 line 2486)
-    // Own city + Barracks/Port Facility/Airport = full heal
-    // Own city (no matching building) = 2 HP bars (20 internal)
-    // Allied city = 1 HP bar (10 internal)
-    // Fortress = 1 HP bar (10 internal)
-    // Field = 1 HP bar every other turn (10 internal)
-    if (u.movesRemain > 0) {
-      const domain = UNIT_DOMAIN[u.type] ?? 0;
-      const ownCity = state.cities.find(c => c.gx === u.gx && c.gy === u.gy && c.owner === u.owner && c.size > 0);
-      let healAmt = 0;
-
-      // Binary FUN_00488cef healing formula (internal HP units):
-      // Base: local_8 = 1 (1 internal HP point, NOT 1 bar)
-      // Fortress: local_8 = 2
-      // Near own city (dist<4) + ground: local_8 += 1 (+2 with barracks)
-      // Domain-specific building in own city: local_8 <<= 1
-      // In own city: local_8 <<= 1
-      // Scale: local_8 = (maxHP / 10) * local_8
-      // Full heal with matching building in own city: local_8 = damage
-      const maxHp = (UNIT_HP[u.type] || 1) * 10;
-      let healBase = 1; // 1 internal HP per turn (field baseline)
-
-      if (ownCity) {
-        const matchingBuildingId = domain === 0 ? 2 : domain === 2 ? 34 : 32;
-        const hasMatchingBuilding = cityHasBuilding(ownCity, matchingBuildingId);
-
-        // In own city: base doubled twice (×4)
-        healBase = 1;
-        if (domain === 0) healBase += (hasMatchingBuilding ? 2 : 1); // barracks +2, else +1
-        healBase <<= 1; // domain building doubling
-        healBase <<= 1; // in-city doubling
-        // Scale by max HP
-        healBase = Math.floor(maxHp / 10) * healBase;
-        // Full heal with matching building
-        if (hasMatchingBuilding) healBase = u.movesRemain;
-      } else {
-        const alliedCity = state.cities.find(c => {
-          if (c.gx !== u.gx || c.gy !== u.gy || c.size <= 0) return false;
-          if (c.owner === u.owner) return false;
-          const a = Math.min(u.owner, c.owner);
-          const b = Math.max(u.owner, c.owner);
-          return state.treaties?.[`${a}-${b}`] === 'alliance';
-        });
-
-        if (alliedCity) {
-          healBase = 2; // Allied city: slightly better than field
-        } else {
-          const tileIdx = u.gy * mapBase.mw + u.gx;
-          const tile = mapBase.tileData?.[tileIdx];
-          const onFortress = tile && tile.improvements && tile.improvements.fortress;
-
-          if (onFortress) {
-            healBase = 2; // Fortress
-          } else if (turnNumber % 2 === 0) {
-            healBase = 1; // Field: 1 internal HP every other turn
-          } else {
-            healBase = 0; // Field: no healing on odd turns
-          }
-
-          // D-HEAL-2: Near-city healing bonus for ground units within distance 3
-          // Binary FUN_00488cef: ground units (domain 0) near own city get +1 (+2 with barracks)
-          if (domain === 0) {
-            for (const c of state.cities) {
-              if (c.owner !== u.owner || c.size <= 0) continue;
-              let cdx = Math.abs(u.gx - c.gx);
-              if (mapBase.wraps) cdx = Math.min(cdx, mapBase.mw - cdx);
-              const cdy = Math.abs(u.gy - c.gy);
-              if (cdx + cdy <= 3) {
-                const hasBarracks = cityHasBuilding(c, 2);
-                healBase += hasBarracks ? 2 : 1;
-                break;
-              }
-            }
-          }
-        }
-        // Scale by max HP
-        healBase = Math.floor(maxHp / 10) * healBase;
-      }
-      healAmt = healBase;
-
-      if (healAmt > 0) {
-        const newHpLost = Math.max(0, u.movesRemain - healAmt);
-        if (newHpLost !== u.movesRemain) {
-          state.units[ui] = { ...u, movesRemain: newHpLost };
-        }
-      }
-    }
 
     // Air unit fuel: decrement when away from city/carrier/airbase, crash at 0
     const maxFuel = UNIT_FUEL[u.type];
@@ -640,21 +632,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
       const terrain = mapBase.getTerrain(u.gx, u.gy);
       const isEngineer = u.type === 1;
       const newWorkTurns = (u.workTurns || 0) + 1;
-      let turnsNeeded;
 
-      switch (u.orders) {
-        case 'road': turnsNeeded = ROAD_TURNS; break;
-        case 'railroad': turnsNeeded = ROAD_TURNS; break;
-        case 'irrigation': turnsNeeded = IRRIGATION_TURNS[terrain] || 5; break;
-        case 'mine': turnsNeeded = MINING_TURNS[terrain] || 5; break;
-        case 'fortress': turnsNeeded = FORTRESS_TURNS; break;
-        case 'airbase': turnsNeeded = AIRBASE_TURNS; break;
-        case 'pollution': turnsNeeded = POLLUTION_TURNS; break;
-        default: turnsNeeded = 999;
-      }
-
-      // Engineers work at 2× speed
-      if (isEngineer) turnsNeeded = Math.max(1, Math.ceil(turnsNeeded / 2));
+      // #17: Per-terrain work-turns with settler cooperation, engineer double-speed, river penalty
+      const hasRiver = !!(mapBase.hasRiver && mapBase.hasRiver(u.gx, u.gy));
+      const coopCount = countCooperatingWorkers(state, u.gx, u.gy, u.orders, u.owner);
+      const turnsNeeded = getWorkerTurnsNeeded(u.orders, terrain, isEngineer, { hasRiver, coopCount });
 
       if (newWorkTurns >= turnsNeeded) {
         // Complete the improvement
@@ -713,7 +695,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
           if (!gtNextDest) break;
           const gtMoveCostVal = moveCost(gtCurUnit.type, mapBase, gtCurUnit.gx, gtCurUnit.gy, gtNextDest.gx, gtNextDest.gy);
           if (gtMoveCostVal < 0) break;
-          const gtActual = Math.max(gtMoveCostVal, 1);
+          const gtActual = gtMoveCostVal; // #119: Railroad cost is 0 (free movement)
           gtCurUnit = {
             ...gtCurUnit,
             gx: gtNextDest.gx, gy: gtNextDest.gy,
@@ -726,10 +708,10 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
             updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, activeCiv, gtNextDest.gx, gtNextDest.gy, mapBase.wraps);
             discoverContacts(state, mapBase, activeCiv, gtNextDest.gx, gtNextDest.gy, 1);
           }
-          // Check goody hut
+          // Check goody hut — only land units (domain 0) trigger huts (#66)
           const gtHutIdx = gtNextDest.gy * mapBase.mw + gtNextDest.gx;
           const gtHutTile = mapBase.tileData?.[gtHutIdx];
-          if (gtHutTile && gtHutTile.goodyHut && activeCiv > 0) {
+          if (gtHutTile && gtHutTile.goodyHut && activeCiv > 0 && (UNIT_DOMAIN[gtCurUnit.type] ?? 0) === 0) {
             gtHutTile.goodyHut = false;
             const gtHutResult = resolveGoodyHut(state, mapBase, gtCurUnit, activeCiv);
             if (gtHutResult) state.goodyHutResult = { ...gtHutResult, civSlot: activeCiv };
@@ -750,21 +732,11 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
   }
 
-  // ── C.2: Trireme sinking check for active civ ──
-  for (let ui = 0; ui < state.units.length; ui++) {
-    const u = state.units[ui];
-    if (u.owner !== activeCiv || u.gx < 0) continue;
-    if (checkTriremeSinking(u, ui, state, mapBase, hasWonderEffect)) {
-      killUnit(state, ui);
-      if (!state.turnEvents) state.turnEvents = [];
-      state.turnEvents.push({ type: 'unitLost', unitType: u.type, reason: 'triremeSinking', civSlot: activeCiv });
-    }
-  }
+  // C.2: Trireme sinking is now checked per-move in move-unit.js, not per-turn.
 
-  // ── Barbarian spawning phase (runs once per full turn cycle) ──
-  // turnNumber was incremented above when activeCiv wraps back to firstAlive
-  if (turnNumber > (prev.turn?.number || 0)) {
-    spawnBarbarians(state, mapBase);
+  // ── Once-per-full-turn-cycle: scenario events, diplomacy, council ──
+  // Note: barbarian spawning was moved to the top of the turn cycle (#76)
+  if (isNewTurnCycle) {
     // ── Scenario events: TURN, TURN_INTERVAL, RANDOM_TURN triggers ──
     if (state.scenarioEvents && state.scenarioEvents.length > 0) {
       dispatchEvents(state, mapBase, EVENT_TURN, { turn: turnNumber });
@@ -810,7 +782,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
 
   // ── K.3: Track consecutive peace turns per civ (for score formula) ──
   // A civ is "at peace" if no treaty with any other alive civ is 'war'.
-  if (turnNumber > (prev.turn?.number || 0)) {
+  if (isNewTurnCycle) {
     if (!state.civPeaceTurns) state.civPeaceTurns = new Array(8).fill(0);
     state.civPeaceTurns = [...state.civPeaceTurns];
     for (let c = 1; c <= 7; c++) {
@@ -907,6 +879,33 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     for (let c = 1; c <= 7; c++) {
       if (!(state.civsAlive & (1 << c))) continue;
       state.civScores[c] = calcCivScore(state, c, mapBase);
+    }
+  }
+
+  // ── #69: United Nations diplomatic victory check ──
+  // If the active civ has the United Nations wonder (wonder 24) and all
+  // other alive civs have peace or alliance treaties with them, trigger
+  // a diplomatic victory event (not an automatic game end, but a check).
+  if (!state.gameOver && hasWonderEffect(state, activeCiv, 24)) {
+    let allAtPeace = true;
+    let otherAlive = 0;
+    for (let c = 1; c <= 7; c++) {
+      if (c === activeCiv || !(state.civsAlive & (1 << c))) continue;
+      otherAlive++;
+      const a = Math.min(activeCiv, c);
+      const b = Math.max(activeCiv, c);
+      const treaty = state.treaties?.[`${a}-${b}`];
+      if (treaty !== 'peace' && treaty !== 'alliance') {
+        allAtPeace = false;
+        break;
+      }
+    }
+    if (allAtPeace && otherAlive >= 2) {
+      if (!state.turnEvents) state.turnEvents = [];
+      state.turnEvents.push({
+        type: 'diplomaticVictory', civSlot: activeCiv,
+        reason: 'United Nations',
+      });
     }
   }
 

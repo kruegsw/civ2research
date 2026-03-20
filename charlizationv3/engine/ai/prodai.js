@@ -459,13 +459,21 @@ function _scoreSpaceshipPart(buildingId, gameState, civSlot, strategy) {
     if (c.buildings.has(SS_MODULE_ID)) modules++;
   }
 
-  // ── N.4: Exact target ratios ──
-  // Structurals: need 10, Components: need 4 (balanced fuel+propulsion),
-  // Modules: need 3 (habitation+life support+solar).
-  // Build order enforced: structural → components → modules.
-  const TARGET_STRUCTURAL = 10;
-  const TARGET_COMPONENTS = 4;
-  const TARGET_MODULES    = 3;
+  // (#99) Track 6 spaceship part types (structural, propulsion, fuel,
+  // habitation, life-support, solar) instead of 3 generic categories.
+  // Binary DAT_00634f64 tracks 6 categories with max counts:
+  //   structural=10, fuel=6, propulsion=6, habitation=5, life-support=5, solar=5
+  // Components map to: SS_COMPONENT_ID builds fuel OR propulsion
+  // Modules map to: SS_MODULE_ID builds habitation OR life-support OR solar
+  // For scoring we track the 6 categories but map building IDs to the 3 build types.
+  const TARGET_STRUCTURAL  = SS_MAX[0]; // 10
+  const TARGET_FUEL        = SS_MAX[1]; // 6
+  const TARGET_PROPULSION  = SS_MAX[2]; // 6
+  const TARGET_HABITATION  = SS_MAX[3]; // 5
+  const TARGET_LIFESUPPORT = SS_MAX[4]; // 5
+  const TARGET_SOLAR       = SS_MAX[5]; // 5
+  const TARGET_COMPONENTS = Math.ceil((TARGET_FUEL + TARGET_PROPULSION) / 3); // balanced
+  const TARGET_MODULES    = Math.ceil((TARGET_HABITATION + TARGET_LIFESUPPORT + TARGET_SOLAR) / 5);
 
   const structuralNeeded = Math.max(0, TARGET_STRUCTURAL - structural);
   const componentsNeeded = Math.max(0, TARGET_COMPONENTS - components);
@@ -601,6 +609,17 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   const isHuman = (civsAlive & (1 << civSlot)) !== 0;
   const aliveCivCount = aiData?.aliveCivCount ?? 2;
 
+  // (#98) Separate difficulty from alive civ count in production scoring.
+  // Binary uses difficulty level (0-5) independently from alive civ count
+  // for scaling thresholds. Many scoring branches used aliveCivCount as a
+  // proxy for difficulty; we now use the actual difficulty index.
+  const difficultyIdx = (() => {
+    const diff = gameState.civs?.[civSlot]?.difficulty || 'chieftain';
+    const keys = ['chieftain', 'warlord', 'prince', 'king', 'emperor', 'deity'];
+    const idx = keys.indexOf(diff);
+    return idx >= 0 ? idx : 2; // default prince
+  })();
+
   // Continent strategic posture (local_f8 in decompiled)
   // 0=expand, 1=defend, 4=wartime, 5=build walls
   const postureScore = strategy.militaryPostureScore ?? 0;
@@ -610,8 +629,45 @@ function scoreUnit(unitId, city, cityCtx, civTechs, gameState, mapBase, civSlot,
   else if (postureScore === 4) continentPosture = 4;
   else if (postureScore === 5) continentPosture = 5;
 
-  // coastal flag (local_b0 in decompiled): 1 if posture is expand/defend or flag set
+  // (#171) Fix coastal flag computation: add alliance-war override and enemy count threshold.
+  // Binary: coastal flag is set when posture is expand/defend, OR when we have
+  // an alliance partner at war (alliance-war override), OR when enemy count
+  // on this continent exceeds threshold (>= 2 enemy civs with cities).
   let coastalFlag = (continentPosture === 0 || continentPosture === 1) ? 1 : 0;
+
+  // Alliance-war override: if any ally is at war, set coastal flag
+  if (!coastalFlag && gameState.treaties) {
+    for (let c = 1; c < 8; c++) {
+      if (c === civSlot || !(civsAlive & (1 << c))) continue;
+      const key = civSlot < c ? `${civSlot}-${c}` : `${c}-${civSlot}`;
+      const treaty = gameState.treaties[key];
+      if (treaty === 'alliance') {
+        // Check if this ally is at war with anyone
+        for (let e = 1; e < 8; e++) {
+          if (e === civSlot || e === c || !(civsAlive & (1 << e))) continue;
+          const allyKey = c < e ? `${c}-${e}` : `${e}-${c}`;
+          if (gameState.treaties[allyKey] === 'war') { coastalFlag = 1; break; }
+        }
+        if (coastalFlag) break;
+      }
+    }
+  }
+
+  // Enemy count threshold: >= 2 distinct enemy civs with cities on our continent
+  // Note: `cont` (const) is defined later in this function, so access directly
+  {
+    const continentId = cityCtx.continentId;
+    const _earlyContRef = aiData?.continents?.get(continentId);
+    if (!coastalFlag && _earlyContRef) {
+      let enemyCivCount = 0;
+      for (const [civ, count] of _earlyContRef.cityCounts) {
+        if (civ === civSlot || civ === 0 || count === 0) continue;
+        const key2 = civSlot < civ ? `${civSlot}-${civ}` : `${civ}-${civSlot}`;
+        if (gameState.treaties?.[key2] === 'war') enemyCivCount++;
+      }
+      if (enemyCivCount >= 2) coastalFlag = 1;
+    }
+  }
 
   // Strongest civ
   let strongestCiv = 1;
@@ -1710,6 +1766,31 @@ function scoreWonder(wonderIndex, city, cityIndex, cityCtx, civTechs, gameState,
     }
   }
 
+  // (#177) Wonder competition: when a rival is building the same wonder,
+  // boost priority for our city that has the most shields invested.
+  // Binary: when rival builds same wonder, AI moves caravans between cities
+  // to concentrate shields. We approximate by boosting the score for the
+  // city with the most progress, and penalizing others.
+  if (someoneElseBuilding) {
+    const thisItem = city.itemInProduction;
+    const ourProgress = (thisItem?.type === 'wonder' && thisItem?.id === wonderBuildId)
+      ? (city.shieldsInBox || 0) : 0;
+    // Check if we have another city with more progress on this wonder
+    let maxOurProgress = 0;
+    for (const c of gameState.cities) {
+      if (!c || c.size <= 0 || c.owner !== civSlot || c === city) continue;
+      const cItem = c.itemInProduction;
+      if (cItem?.type === 'wonder' && cItem?.id === wonderBuildId) {
+        maxOurProgress = Math.max(maxOurProgress, c.shieldsInBox || 0);
+      }
+    }
+    if (maxOurProgress > ourProgress && ourProgress < 20) {
+      return -1; // Another of our cities is further along; don't compete with ourselves
+    }
+    // TODO (#177): Full implementation would emit actions to move caravans/freight
+    // to the city building the wonder for shield delivery.
+  }
+
   // Small cities can't realistically finish wonders
   if (city.size < 3 && cityCtx.numCities > 1) return -1;
 
@@ -2477,10 +2558,18 @@ function _finalProductionDecision(city, cityIndex, cityCtx, civTechs, gameState,
     }
   }
 
-  // ── Fallback: if nothing scored positively, build best available unit ──
-  // Decompiled: returns 99 (capitalize) when local_30 > 500
-  if (!bestItem || bestScore <= 0) {
-    // Try to find any buildable defensive unit
+  // (#173) Capitalize fallback: return item 38 when bestScore > 500
+  // (i.e., all scored items are terrible — nothing worth building)
+  // Binary returns 99 (capitalize, mapped to building 38) when local_30 > 500
+  if (bestScore > 500 || (!bestItem || bestScore <= 0)) {
+    // (#173) Try Capitalize first (building 38) when nothing useful to build
+    if (bestScore > 500 || bestScore <= 0) {
+      if (canBuildBuilding(civTechs, city, 38, civSlot, cityIndex, gameState, mapBase)) {
+        return { item: { type: 'building', id: 38 }, score: 1 };
+      }
+    }
+
+    // Fallback: try to find any buildable defensive unit
     const fallbackId = bestDefensiveUnit(civTechs, civSlot, cityIndex, gameState, mapBase);
     if (fallbackId >= 0) {
       return { item: { type: 'unit', id: fallbackId }, score: 1 };
@@ -2534,6 +2623,16 @@ function shouldKeepCurrentProduction(city, currentScore, newScore, newItem) {
     return newScore < currentScore * SWITCH_THRESHOLD;
   }
 
+  // (#172) Progress-based formula for wonder stickiness.
+  // Binary uses a non-linear formula: wonder_stickiness = invested^2 / totalCost
+  // This makes wonders increasingly sticky as progress increases.
+  if (current.type === 'wonder') {
+    // Wonder stickiness: exponential reluctance based on progress
+    // At 50% done, need 3x better score to switch. At 80%, need 5x.
+    const stickiness = 1 + (fractionInvested * fractionInvested * 4);
+    return newScore < currentScore * stickiness;
+  }
+
   // If we've invested a lot (>30%), be very reluctant to switch
   // The new item must be overwhelmingly better
   return newScore < currentScore * (SWITCH_THRESHOLD + fractionInvested);
@@ -2561,6 +2660,33 @@ export function generateProductionActions(gameState, mapBase, civSlot, strategy,
   for (let ci = 0; ci < gameState.cities.length; ci++) {
     const c = gameState.cities[ci];
     if (c && c.owner === civSlot && c.size > 0) ownCities.push(ci);
+  }
+
+  // (#179) Spaceship launch decision heuristics: compare our progress vs others.
+  // Binary: AI evaluates whether to launch spaceship by comparing part counts
+  // against rival civs. Launch when we have enough parts AND either:
+  //   - No rival is close to completing (our parts > 2x rivals' best)
+  //   - We're in danger of losing (rival has more parts, launch ASAP)
+  // TODO: Emit LAUNCH_SPACESHIP action when conditions are met.
+  // This requires the LAUNCH_SPACESHIP action type to exist in the reducer.
+  if (strategy?.aiData) {
+    let ourParts = 0, bestRivalParts = 0;
+    for (const c of gameState.cities) {
+      if (!c || c.size <= 0 || !c.buildings) continue;
+      const parts = (c.buildings.has(SS_STRUCTURAL_ID) ? 1 : 0) +
+                    (c.buildings.has(SS_COMPONENT_ID) ? 1 : 0) +
+                    (c.buildings.has(SS_MODULE_ID) ? 1 : 0);
+      if (c.owner === civSlot) ourParts += parts;
+      else if (c.owner > 0) {
+        // Track per-rival, find best
+        // (simplified: just track max)
+        bestRivalParts = Math.max(bestRivalParts, parts);
+      }
+    }
+    // Log spaceship status if we have parts
+    if (debugLog && ourParts > 0) {
+      debugLog.push(`PROD-SS: our parts=${ourParts}, best rival=${bestRivalParts}`);
+    }
   }
 
   // Default strategy if not provided

@@ -5,12 +5,11 @@
 // resolution with terrain/fortification/veteran modifiers.
 //
 // Phase B.1: calcUnitDefenseStrength, calcStackBestDefender
-// Phase B.2: Palace/small-city double-roll, amphibious attack,
-//            submarine retreat, barbarian kill ransom, treaty
+// Phase B.2: Palace/small-city/Great Wall double-roll, amphibious
+//            attack, barbarian kill ransom (leaders only), treaty
 //            violation flags, sneak attack ×2
 //
 // Special unit interactions ported from decompiled FUN_00580341:
-//   - Scramble defense: +50% for flagsB 0x04 units vs ground attackers
 //   - Aegis Cruiser defense bonus vs air/missile attacks (flags bit 14)
 //   - Air vs unarmed ships: halved defense, FP capped to 1
 //   - Sea vs land: FP capped to 1 for both sides
@@ -20,13 +19,22 @@
 //   - Helicopter vs Fighter: defender (helicopter) FP = 1
 //   - Partisans vs unarmed: ×8 attack multiplier
 //   - Partial movement attack penalty (fractional MP)
-//   - Palace / small-city double-roll mechanic for defenders
+//   - Palace / small-city / Great Wall double-roll mechanic for defenders
 //   - Palace: halves barbarian attack (separate from double-roll)
 //   - Great Wall: halves barbarian attack, doubles attack vs barbarians
 //   - Sneak attack: ×2 attack bonus when breaking treaties
 //   - Amphibious attack: ×2 defender FP when attacking from ship
-//   - Submarine retreat: 50% chance to disengage when losing a round
-//   - Barbarian kill ransom: difficultyLevel × 50 gold
+//   - Barbarian kill ransom: difficultyLevel × 50 gold (leader units only)
+//   - Difficulty scaling: AI attack halved on Chieftain/Warlord vs human,
+//     human attack doubled on Chieftain vs AI
+//   - Barbarian difficulty: continuous (diffIdx+1)/4 formula
+//   - Barbarian attack halved vs AI (non-human) defenders
+//   - Barbarian attack zeroed vs cities with reputation < 2
+//   - Barbarian diplomat/spy defense halved
+//   - Coastal Fortress: ×4 defense for sea units in city
+//   - Single-round combat option (scenario flag)
+//   - Fortress: no stack retreat (stack wipe on defeat)
+//   - Pikeman bonus: +1 tiebreaker in defender selection only
 // ═══════════════════════════════════════════════════════════════════
 
 import {
@@ -36,6 +44,9 @@ import {
   UNIT_SUBMARINE, DIFFICULTY_KEYS, UNIT_FUEL, UNIT_NEGATES_WALLS,
 } from './defs.js';
 import { hasWonderEffect, civHasWonder } from './utils.js';
+
+// Diplomat/Spy unit types — barbarian versions get halved defense (#55)
+const DIPLOMAT_SPY_TYPES = new Set([46, 47]);
 
 // Siege units: FP forced to 1 when defending (Catapult=23, Cannon=24, Artillery=25, Howitzer=26)
 const SIEGE_DEFENDING_FP1 = new Set([23, 24, 25, 26]);
@@ -144,6 +155,9 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
     // Coastal Fortress (building 28): ×2 defense vs naval attackers when defender is NOT sea domain
     // Binary: attacker domain == sea AND defender domain != sea AND city has Coastal Fortress
     if (cityBuildings.has(28) && atkDomain === 2 && defDomain !== 2) defense *= 2;
+    // Coastal Fortress (#53): ×4 defense for sea-domain defenders in city with Coastal Fortress
+    // Binary: sea units in a city with Coastal Fortress get quadruple defense multiplier
+    if (cityBuildings.has(28) && defDomain === 2) defense *= 4;
     // SAM Battery (building 27): ×2 defense vs ALL air domain attackers (no missile exclusion)
     // Binary: attacker domain == air AND city has SAM Battery
     if (cityBuildings.has(27) && atkDomain === 1) {
@@ -156,6 +170,12 @@ export function calcUnitDefenseStrength(unit, terrain, inCity, hasWalls, hasFort
         UNIT_DESTROYED_AFTER_ATTACK.has(attackerType) && (UNIT_ATK[attackerType] || 0) < 99) {
       defense *= 2;
     }
+  }
+
+  // ── Barbarian diplomat/spy defense halving (#55) ──────────────
+  // Binary: barbarian diplomat/spy types have their defense halved
+  if (unit.owner === 0 && DIPLOMAT_SPY_TYPES.has(unit.type)) {
+    defense = Math.floor(defense / 2);
   }
 
   // ── Veteran bonus: ×1.5 ──
@@ -288,6 +308,9 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
  *   @param {boolean} [opts.defCityHasPalace] - true if defending city has Palace (building 1)
  *   @param {number}  [opts.defCitySize] - size of defending city (for double-roll: size < 8)
  *   @param {boolean} [opts.treatyViolation] - true if this combat violates a peace treaty/ceasefire
+ *   @param {number}  [opts.humanPlayers] - bitmask of human-controlled civs (bit N = civ N is human)
+ *   @param {number}  [opts.defenderReputation] - defender civ's reputation score (0-100)
+ *   @param {boolean} [opts.singleRoundCombat] - true if scenario uses single-round combat
  * @returns {{ attackerWins: boolean, atkHpLost: number, defHpLost: number,
  *             atkVeteranPromo: boolean, defVeteranPromo: boolean,
  *             rounds: boolean[], atkMaxHp: number, defMaxHp: number,
@@ -317,6 +340,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const defCityHasPalace = opts?.defCityHasPalace || false;
   const defCitySize = opts?.defCitySize ?? 0;
   const treatyViolation = opts?.treatyViolation || false;
+  const humanPlayers = opts?.humanPlayers ?? 0xFF; // default: all human
+  const defenderReputation = opts?.defenderReputation ?? 100;
+  const singleRoundCombat = opts?.singleRoundCombat || false;
 
   // ── Special interaction: Air attack vs unarmed ships ──────────
   // Ported from FUN_00580341 lines 124-129: role 3 (air attack) vs
@@ -365,13 +391,10 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // We do NOT re-apply those multipliers here (binary applies them once).
   let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type);
 
-  // ── Scramble defense: +50% when defender has flagsB 0x04 ──────
-  // Binary: flagsB 0x04 (pikeman-type) gives +50% defense when attacker is
-  // ground domain with full movement and standard HP (10). We check domain
-  // and approximate the other conditions.
-  if (UNIT_PIKEMAN_BONUS.has(defender.type) && atkDomain === 0) {
-    effDef = effDef + Math.floor(effDef / 2);
-  }
+  // ── Pikeman bonus: REMOVED from combat resolution (#2) ──────
+  // Binary only uses flagsB 0x04 as a +1 tiebreaker in defender SELECTION
+  // (calcStackBestDefender), NOT as a combat defense multiplier.
+  // The previous +50% defense bonus here was incorrect.
 
   // ── B.2: Anti-air defense bonus vs air/missiles (flagsB 0x20) ──
   // Any unit with anti-air flag gets ×3 defense vs non-missile air, ×5 vs missiles.
@@ -472,22 +495,63 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     effAtk *= 2;
   }
 
-  // ── B.2: Palace / small-city double-roll mechanic ─────────────
+  // ── B.2: Palace / small-city / Great Wall double-roll mechanic ─────
   // From FUN_00580341 lines 225-232, 786-804: bVar18 is set when
-  // defending city has Palace (building 1) OR city size < 8.
+  // defending city has Palace (building 1) OR city size < 8 OR
+  // defender's civ has Great Wall wonder (#3).
   // When active, attacker wins a round, a second pair of rolls is made.
   // If attacker loses the re-roll, the round is reversed.
   let doubleRoll = false;
-  if (defInCity && (defCityHasPalace || (defCitySize > 0 && defCitySize < 8))) {
+  if (defInCity && (defCityHasPalace || (defCitySize > 0 && defCitySize < 8) || defenderHasGreatWall)) {
     doubleRoll = true;
   }
 
-  // Difficulty modifier for barbarian attacks
-  if (attacker.owner === 0 && difficulty) {
-    if (difficulty === 'emperor') effAtk = Math.floor(effAtk * 5 / 4);   // +25%
-    if (difficulty === 'deity') effAtk = Math.floor(effAtk * 3 / 2);     // +50%
-    if (difficulty === 'chieftain') effAtk = Math.floor(effAtk / 2);     // -50%
-    if (difficulty === 'warlord') effAtk = Math.floor(effAtk * 3 / 4);   // -25%
+  // ── Difficulty-based combat modifiers ──────────────────────────
+  const diffIdx = difficulty ? Math.max(0, DIFFICULTY_KEYS.indexOf(difficulty)) : 0;
+  const atkIsHuman = !!(humanPlayers & (1 << attacker.owner));
+  const defIsHuman = !!(humanPlayers & (1 << defender.owner));
+
+  if (attacker.owner === 0) {
+    // ── Barbarian attack difficulty scaling (#19) ──────────────
+    // Binary continuous formula: effAtk = (diffIdx + 1) * effAtk / 4
+    // At Prince (idx 2): (2+1)/4 = 75%. At Deity (idx 5): (5+1)/4 = 150%.
+    effAtk = Math.floor((diffIdx + 1) * effAtk / 4);
+
+    // ── Halve barbarian attack vs AI defenders (#18) ──────────
+    // Binary: barbarians deal half damage to non-human civs
+    if (!defIsHuman && defender.owner !== 0) {
+      effAtk = Math.floor(effAtk / 2);
+    }
+
+    // ── Zero barbarian attack vs cities with defender reputation < 2 (#54) ──
+    // Binary: barbarians will not effectively attack cities belonging to
+    // civs with reputation score < 2
+    if (defInCity && defenderReputation < 2) {
+      effAtk = 0;
+    }
+  } else if (defender.owner === 0) {
+    // ── Non-barbarian difficulty scaling for attacker vs barbarian defender (#1) ──
+    // Chieftain: human attacker gets ×2 attack against barbarians
+    if (atkIsHuman && diffIdx === 0) {
+      effAtk *= 2;
+    }
+  }
+
+  // ── Non-barbarian AI vs human difficulty scaling (#1) ──────────
+  // Chieftain/Warlord: AI attack halved when attacking human defenders
+  // Chieftain: human attack doubled when attacking AI defenders
+  if (attacker.owner !== 0 && defender.owner !== 0) {
+    if (!atkIsHuman && defIsHuman) {
+      // AI attacking human
+      if (diffIdx <= 1) { // Chieftain or Warlord
+        effAtk = Math.floor(effAtk / 2);
+      }
+    } else if (atkIsHuman && !defIsHuman) {
+      // Human attacking AI
+      if (diffIdx === 0) { // Chieftain only
+        effAtk *= 2;
+      }
+    }
   }
 
   // B.1: Attack power clamping — prevent overflow with high-attack endgame units
@@ -510,14 +574,18 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const atkStartHp = atkHp;
   const defStartHp = defHp;
 
-  // ── B.2: Submarine retreat tracking ─────────────────────────────
-  // From FUN_00580341: Submarines (type 41) have a 50% chance to
-  // retreat (disengage) each time they lose a combat round.
-  const defenderIsSub = UNIT_SUBMARINE.has(defender.type);
+  // ── Submarine retreat removed from combat loop (#132) ──────────
+  // Binary does NOT have submarine retreat during combat rounds.
+  // Submarine stealth is handled by visibility (subs are invisible to
+  // non-detector units), not by mid-combat retreat mechanics.
   let submarineRetreated = false;
 
-  // ── B.3: Fortress retreat flag ─────────────────────────────────
-  // Defender on fortress retreats instead of dying
+  // ── Fortress retreat removed (#20) ────────────────────────────
+  // Binary: when attacker wins at a fortress tile (no city), the entire
+  // defending stack is killed — there is no retreat mechanic for fortress
+  // defenders. The fortress provides its ×2 defense bonus but does NOT
+  // grant retreat on defeat. Stack wipe occurs at unprotected tiles,
+  // and fortress without a city is treated as unprotected for stack wipe.
   let fortressRetreat = false;
 
   // Round-by-round combat using pseudo-random sequence.
@@ -539,10 +607,11 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
     const defenseRoll = effDef > 1 ? (rand() % effDef) : 0;
     let atkHit = defenseRoll < attackRoll;
 
-    // ── B.2: Palace / small-city double-roll mechanic ─────────────
+    // ── B.2: Palace / small-city / Great Wall double-roll mechanic ──
     // From FUN_00580341 lines 786-804: when bVar18 is true (Palace or
-    // city size < 8) and attacker wins a round, a second pair of rolls
-    // is made. If attacker LOSES the re-roll, the round is reversed.
+    // city size < 8 or Great Wall) and attacker wins a round, a second
+    // pair of rolls is made. If attacker LOSES the re-roll, the round
+    // is reversed.
     if (doubleRoll && atkHit) {
       const attackRoll2 = effAtk > 1 ? (rand() % effAtk) : 0;
       const defenseRoll2 = effDef > 1 ? (rand() % effDef) : 0;
@@ -556,33 +625,22 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
       // Attacker hits — damage = raw firepower (NOT ×10)
       // Binary FUN_00580341 line 807: damage += firepower (no multiplier)
       defHp -= atkFp;
-
-      // ── B.2: Submarine retreat on taking damage ─────────────────
-      // Defending submarine has 50% chance to disengage when hit
-      if (defenderIsSub && defHp > 0) {
-        const retreatRoll = rand() % 2;
-        if (retreatRoll === 0) {
-          submarineRetreated = true;
-          break; // submarine retreats — combat ends without a kill
-        }
-      }
     } else {
       // Defender hits — damage = raw firepower (NOT ×10)
       atkHp -= defFp;
     }
+
+    // ── Single-round combat (#131) ──────────────────────────────
+    // Scenario flag: only one round of combat is fought.
+    // After the first round, combat ends regardless of HP remaining.
+    if (singleRoundCombat) break;
   }
 
-  // B.3: Fortress retreat — defender on fortress retreats instead of dying
-  if (defHasFortress && !defInCity && defHp <= 0 && atkHp > 0 && defDomain === 0) {
-    fortressRetreat = true;
-    defHp = 10; // survive with 1 HP
-  }
+  const attackerWins = atkHp > 0 && defHp <= 0;
 
-  // If submarine retreated, neither side "wins" in the normal sense.
-  // The attacker doesn't advance, the defender survives with damage.
-  // We report attackerWins=false but with submarineRetreated=true
-  // so the reducer knows NOT to kill the attacker.
-  const attackerWins = !submarineRetreated && !fortressRetreat && atkHp > 0;
+  // Single-round draw: both sides survive after one round (#131)
+  // Neither side is destroyed; both take their damage and disengage.
+  const singleRoundDraw = singleRoundCombat && atkHp > 0 && defHp > 0;
 
   // HP lost = raw damage taken (internal units, same scale as maxHp = UNIT_HP * 10)
   const atkHpLost = Math.max(0, atkMaxHp - Math.max(0, atkHp));
@@ -603,19 +661,19 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   const atkVeteranPromo = attackerWins && atkCanPromote && (defBase > 0 && promoRoll <= effDef || attackerSunTzu);
   const defVeteranPromo = !attackerWins && !submarineRetreated && defCanPromote && (atkBase > 0 && promoRoll <= effAtk || defenderSunTzu);
 
-  // ── B.2: Barbarian kill ransom ──────────────────────────────────
-  // From FUN_00580341: when killing a barbarian, award gold based on
-  // difficulty level. Formula: difficulty_index × 50 gold.
+  // ── B.2: Barbarian kill ransom (#21) ────────────────────────────
+  // From FUN_00580341: gold ransom only awarded for barbarian LEADER
+  // units (role > 4), not all barbarian kills. Formula: diffIdx × 50.
   let barbarianGold = 0;
-  if (attackerWins && defender.owner === 0 && attacker.owner > 0 && difficulty) {
-    const diffIdx = Math.max(0, DIFFICULTY_KEYS.indexOf(difficulty));
+  const defRole = UNIT_ROLE[defender.type] ?? 0;
+  if (attackerWins && defender.owner === 0 && attacker.owner > 0 && difficulty && defRole > 4) {
     barbarianGold = diffIdx * 50;
   }
 
   return { attackerWins, atkHpLost, defHpLost, atkVeteranPromo, defVeteranPromo,
     rounds, atkMaxHp, defMaxHp, atkFp, defFp, atkStartHp, defStartHp,
     effAtk, effDef,
-    submarineRetreated, fortressRetreat, barbarianGold, treatyViolation };
+    submarineRetreated, fortressRetreat, singleRoundDraw, barbarianGold, treatyViolation };
 }
 
 // ═══════════════════════════════════════════════════════════════════

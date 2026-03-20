@@ -180,6 +180,11 @@ function barbarianUnitAI(unit, unitIndex, gameState, mapBase, debugLog) {
     return { type: 'UNIT_ORDER', unitIndex, order: 'disband' };
   }
 
+  // (#97) Naval barbarian AI: separate path for sea-domain units
+  if (domain === 2) {
+    return barbarianNavalAI(unit, unitIndex, gameState, mapBase, debugLog);
+  }
+
   // ── Non-combat units (settlers, engineers, etc.) ──
   // UNIT_ROLE != 0 means not a pure combat unit; in the decompiled code
   // this corresponds to (&DAT_0064b1c9)[type*0x14] != '\0'
@@ -193,17 +198,24 @@ function barbarianUnitAI(unit, unitIndex, gameState, mapBase, debugLog) {
 
 /**
  * Non-combat barbarian unit AI (settlers, etc.).
- * - Increment a counter; if counter > 30, disband.
+ * - Track turn counter via unit.aiCounter; if counter > 30, disband.
  * - Otherwise try to found a city (BUILD_CITY) if conditions are met.
  * - If not, try to move toward an empty tile to found.
  *
  * In the decompiled code this tracks (&DAT_006560fd)[idx * 0x20] as a
- * counter. We approximate this with a simple check: if no good spot
- * to build, disband.
+ * counter. We track via unit.aiCounter field.
  */
 function barbarianNonCombatAI(unit, unitIndex, gameState, mapBase, debugLog) {
   const gx = unit.gx;
   const gy = unit.gy;
+
+  // (#97) 30-turn timeout for barbarian settlers — disband if stuck too long
+  const counter = (unit.aiCounter ?? 0) + 1;
+  unit.aiCounter = counter;
+  if (counter > SETTLER_TIMEOUT) {
+    if (debugLog) debugLog.push(`[barb] settler ${unitIndex}: disbanding (${SETTLER_TIMEOUT}-turn timeout)`);
+    return { type: 'UNIT_ORDER', unitIndex, order: 'disband' };
+  }
 
   // Try to found a city at current location
   const buildAction = { type: 'BUILD_CITY', unitIndex };
@@ -235,6 +247,66 @@ function barbarianNonCombatAI(unit, unitIndex, gameState, mapBase, debugLog) {
   // No valid move found — disband (timeout equivalent)
   if (debugLog) debugLog.push(`[barb] settler ${unitIndex}: disbanding (stuck)`);
   return { type: 'UNIT_ORDER', unitIndex, order: 'disband' };
+}
+
+/**
+ * (#97) Naval barbarian AI: scuttle weak ships, 30-turn timeout,
+ * coastal raiding, city founding with ransom.
+ *
+ * Ported from FUN_005351aa naval barbarian section:
+ *   - Ships with ATK <= 1 and no cargo: scuttle (disband)
+ *   - Ships older than 30 turns: scuttle
+ *   - Ships near enemy coastal cities: attempt coastal raid
+ *   - Ships with settlers aboard: try to found coastal city
+ */
+function barbarianNavalAI(unit, unitIndex, gameState, mapBase, debugLog) {
+  const gx = unit.gx;
+  const gy = unit.gy;
+
+  // 30-turn timeout for naval barbarians
+  const counter = (unit.aiCounter ?? 0) + 1;
+  unit.aiCounter = counter;
+  if (counter > 30) {
+    if (debugLog) debugLog.push(`[barb] naval ${unitIndex}: scuttling (30-turn timeout)`);
+    return { type: 'UNIT_ORDER', unitIndex, order: 'disband' };
+  }
+
+  // Scuttle weak ships (ATK <= 1, no cargo)
+  const unitAtk = UNIT_ATK[unit.type] || 0;
+  if (unitAtk <= 1) {
+    // Check for cargo (other barbarian units on same tile)
+    const hasCargo = hasFriendlyUnits(gameState, gx, gy, unitIndex);
+    if (!hasCargo) {
+      if (debugLog) debugLog.push(`[barb] naval ${unitIndex}: scuttling weak ship`);
+      return { type: 'UNIT_ORDER', unitIndex, order: 'disband' };
+    }
+  }
+
+  // Try to attack adjacent enemies
+  const attackAction = tryAttackAdjacent(unit, unitIndex, gameState, mapBase);
+  if (attackAction) return attackAction;
+
+  // Coastal raiding: look for enemy coastal cities to attack
+  let bestRaidScore = 0;
+  let bestRaidCity = null;
+  for (const city of gameState.cities) {
+    if (!city || city.size <= 0 || city.owner === 0) continue;
+    if (!(gameState.civsAlive & (1 << city.owner))) continue;
+    const dist = tileDist(gx, gy, city.gx, city.gy, mapBase);
+    if (dist > 20) continue;
+    const score = (city.size + 30) / (dist + 1);
+    if (score > bestRaidScore) {
+      bestRaidScore = score;
+      bestRaidCity = city;
+    }
+  }
+
+  if (bestRaidCity) {
+    return scoredMovement(unit, unitIndex, gameState, mapBase, -1, bestRaidCity, debugLog);
+  }
+
+  // Wander: scored movement without specific target
+  return scoredMovement(unit, unitIndex, gameState, mapBase, -1, null, debugLog);
 }
 
 /**

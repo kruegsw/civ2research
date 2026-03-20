@@ -242,12 +242,14 @@ function getTechCount(gameState, civSlot) {
 export function getCivStyleTechBonus(rulesCivNumber, techId) {
   let bonus = 0;
   switch (rulesCivNumber) {
-    case 0: // Romans — militaristic: favor early military techs
+    case 0: // (#124) Romans — militaristic: favor early military techs, prefer Republic
       if (techId === 39 || techId === 8 || techId === 86) bonus += 2; // Iron Working(0x27), Bronze Working(0x08), Warrior Code(0x56)
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
+      if (techId === 71) bonus += 2; // The Republic (0x47) — Romans prefer Republic govt
       break;
     case 1: // Babylonians — civilized: favor law
       if (techId === 12) bonus += 1; // Code of Laws (0x0C)
+      if (techId === 54) bonus += 1; // (#124) Monarchy — Babylonians prefer Monarchy
       break;
     case 2: // Germans — balanced: favor economy and culture
       if (techId === 6) bonus += 1;  // Banking (0x06)
@@ -264,13 +266,14 @@ export function getCivStyleTechBonus(rulesCivNumber, techId) {
       if (techId === 16) bonus += 1; // Computers (0x10)
       if (techId === 42) bonus += 1; // Leadership (0x2A)
       break;
-    case 5: // Greeks — expansionist scholars: favor learning
+    case 5: // (#124) Greeks — expansionist scholars: favor learning, prefer Democracy
       if (techId === 64) bonus += 1; // Polytheism (0x40)
       if (techId === 8) bonus += 1;  // Bronze Working (0x08)
       if (techId === 1) bonus += 1;  // Alphabet (0x01)
       if (techId === 46) bonus += 1; // Map Making (0x2E)
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
       if (techId === 60) bonus += 2; // Philosophy (0x3C)
+      if (techId === 21) bonus += 2; // (#124) Democracy — Greeks prefer Democracy govt
       break;
     case 6: // Indians — peaceful polytheists
       if (techId === 64) bonus += 2; // Polytheism (0x40)
@@ -279,8 +282,8 @@ export function getCivStyleTechBonus(rulesCivNumber, techId) {
       if (techId === 9) bonus += 1;  // Ceremonial Burial (0x09)
       if (techId === 55) bonus -= 1; // Monotheism (0x37)
       break;
-    case 7: // Russians — communist philosophers
-      if (techId === 15) bonus += 2; // Communism (0x0F)
+    case 7: // (#124) Russians — communist philosophers, prefer Communism govt
+      if (techId === 15) bonus += 3; // Communism (0x0F) — extra bonus for govt preference
       if (techId === 60) bonus += 1; // Philosophy (0x3C)
       if (techId === 34) bonus += 1; // Guerrilla Warfare (0x22)
       break;
@@ -672,8 +675,18 @@ function pickResearchGoal(civSlot, gameState, mapBase) {
   // AND (techId - techCount) % 3 == 0 → skip (throttle for human display).
   // We skip this filter as it's a UI concern for the original game's advisor.
 
+  // (#43) AI tech cycling: force AI to only pick every 3rd available tech
+  // Binary: (techIndex - civRulesId) % 3 != 0 → skip
+  // This prevents AI civs from all researching the same techs simultaneously
+  const rulesCivId = gameState.civs?.[civSlot]?.rulesCivNumber ?? 0;
+
   for (const techId of available) {
     candidateCount++;
+
+    // (#43) AI tech cycling filter — skip techs that don't match this civ's cycle
+    if (!human && candidateCount > 1) {
+      if ((techId - rulesCivId) % 3 !== 0) continue;
+    }
 
     const techVal = calcTechValue(civSlot, techId, gameState, mapBase);
     let selectionScore;
@@ -1206,6 +1219,10 @@ export function considerRevolution(gameState, mapBase, civSlot) {
 export function generateEconActions(gameState, mapBase, civSlot, strategy, debugLog = null) {
   const actions = [];
   const civName = gameState.civs?.[civSlot]?.name || `Civ ${civSlot}`;
+
+  // (#155) AI rate calculation runs after city processing in the binary.
+  // We ensure rates are evaluated with current city state, including
+  // any disorder/WLTKD changes from this turn's production phase.
 
   // 1. Research selection
   const researchAction = chooseResearch(gameState, mapBase, civSlot);

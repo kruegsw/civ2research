@@ -283,6 +283,9 @@ export function parseEvents(eventsText, civNames) {
         currentEvent.triggerType = EVENT_TURN_INTERVAL;
       } else if (upper === 'NEGOTIATION') {
         currentEvent.triggerType = EVENT_NEGOTIATION;
+        // (#160) Auto-set TRANSPORT flag on NEGOTIATION events
+        // Binary FUN_004fc516: NEGOTIATION trigger automatically sets ACTION_TRANSPORT
+        currentEvent.actionFlags |= ACTION_TRANSPORT;
       } else if (upper === 'SCENARIOLOADED') {
         currentEvent.triggerType = EVENT_SCENARIO_LOADED;
       } else if (upper === 'RANDOMTURN') {

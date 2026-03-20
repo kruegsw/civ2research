@@ -10,7 +10,7 @@
 
 import { validateAction, calcBribeCost, calcInciteCost } from './rules.js';
 import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, ADJUST_ATTITUDE, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, LAUNCH_SPACESHIP, EXECUTE_TRADE, CARAVAN_HELP_WONDER } from './actions.js';
-import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES, WONDER_NAMES } from './defs.js';
+import { MOVEMENT_MULTIPLIER, UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_HP, UNIT_COSTS, UNIT_CARRY_CAP, UNIT_FUEL, CITY_RADIUS_DOUBLED, IMPROVE_COSTS, IMPROVE_MAINTENANCE, ADVANCE_NAMES, UNIT_NAMES, UNIT_DEF, UNIT_ATK, UNIT_DESTROYED_AFTER_ATTACK, UNIT_UPGRADE_TO, ADVANCE_EPOCH, COMMODITY_NAMES, WONDER_NAMES, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_NAMES } from './defs.js';
 import { launchSpaceship } from './spaceship.js';
 import { handleNuclearAttack, handleNuclearResponse } from './nuclear.js';
 import { resolveDirection, moveCost } from './movement.js';
@@ -23,11 +23,15 @@ import { declareWar as diplomacyDeclareWar, signCeasefire, signPeaceTreaty, form
 import { grantAdvance } from './research.js';
 
 // ── Sub-module imports ──
-import { getCityName, assignInitialWorkers, radiusTileCoords, discoverContacts, killUnit, checkCivElimination, rehomeUnits, checkSenateVeto } from './reduce/helpers.js';
+import { getCityName, assignInitialWorkers, radiusTileCoords, discoverContacts, killUnit, checkCivElimination, rehomeUnits, checkSenateVeto, cleanupTradeRoutes } from './reduce/helpers.js';
 import { spawnBarbarianUprising } from './reduce/barbarians.js';
 import { handleMoveUnit, resolveGoodyHut } from './reduce/move-unit.js';
 import { handleEndTurn } from './reduce/end-turn.js';
 import { handleBribeUnit, handleStealTech, handleSabotageCity, handleInciteRevolt, handleSpyPoisonWater, handleSpyPlantNuke, handleSpySabotageProduction, handleSpyInvestigateCity, handleSpyEstablishEmbassy, handleSpySabotageUnit, handleSpySubvertCity } from './reduce/espionage-actions.js';
+
+// (#176) Max unit limits from binary
+const MAX_UNITS_HARD = 2047;  // Absolute hard cap (data structure limit)
+const MAX_UNITS_AI_SOFT = 1948; // AI soft cap (binary: 2047 - 99)
 
 /**
  * Apply an action to the game state.
@@ -76,6 +80,28 @@ export function applyAction(prev, mapBase, action, civSlot) {
         foodInBox: 0, shieldsInBox: 0,
         itemInProduction: { type: 'unit', id: 2 }, // default: Warriors
       };
+      // (#167) Scan adjacent tiles to set coastal, river, mountain flags
+      {
+        let isCoastal = false, hasRiver = false, hasMountain = false;
+        // Check center tile for river
+        const centerTile = mapBase.tileData[unit.gy * mapBase.mw + unit.gx];
+        if (centerTile && centerTile.river) hasRiver = true;
+        // Scan inner ring (8 adjacent tiles) in city radius
+        for (let ri = 0; ri < 8; ri++) {
+          const adj = radiusTileCoords(unit.gx, unit.gy, ri, mapBase);
+          if (!adj) continue;
+          const adjIdx = adj.gy * mapBase.mw + adj.gx;
+          const adjTile = mapBase.tileData[adjIdx];
+          if (!adjTile) continue;
+          if (adjTile.terrain === 10) isCoastal = true;     // Ocean
+          if (adjTile.terrain === 5) hasMountain = true;     // Mountains
+          if (adjTile.river) hasRiver = true;
+        }
+        newCity.isCoastal = isCoastal;
+        newCity.hasRiver = hasRiver;
+        newCity.hasMountain = hasMountain;
+      }
+
       state.cities = [...prev.cities, newCity];
       const newCityIndex = state.cities.length - 1;
 
@@ -137,10 +163,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { cityIndex, item } = action;
       state.cities = [...prev.cities];
       const city = state.cities[cityIndex];
-      // D.7: Civ2 production change penalty (ported from binary):
-      //  - Same item (same type + same id): no penalty
-      //  - Same category (unit→unit, building→building, wonder→wonder): 50% shield loss
-      //  - Cross-category (unit↔building/wonder): 100% shield loss (all shields)
+      // (#47) Binary production switch penalty: cap shields at min(shields, new_cost).
+      // When switching to a MORE expensive item in the same category, shields are preserved.
+      // When switching to a LESS expensive item, shields are capped at the new item's cost.
+      // Cross-category still loses all shields.
       const prevItem = city.itemInProduction;
       const oldShields = city.shieldsInBox || 0;
       let newShields;
@@ -148,8 +174,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // No previous production or switching to same item — no penalty
         newShields = oldShields;
       } else if (prevItem.type === item.type) {
-        // Same category, different item — 50% penalty
-        newShields = Math.floor(oldShields / 2);
+        // Same category, different item — cap at new item's cost (preserves when switching up)
+        const newCost = getProductionCost(item);
+        newShields = Math.min(oldShields, newCost);
       } else {
         // Cross-category switch — 100% penalty (lose all shields)
         newShields = 0;
@@ -165,12 +192,32 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const prevIsWonder = prevItem && prevItem.type === 'wonder';
       const newIsWonder = item.type === 'wonder';
       if (prevIsWonder && newIsWonder && prevItem.id !== item.id) {
-        // Switching between two wonders
+        // (#130) Switching between two wonders: epoch-based shield penalty.
+        // If the new wonder is in a different epoch than the old one, apply additional penalty.
+        // Binary uses ADVANCE_EPOCH of the wonder's prerequisite tech.
+        const oldWonderIdx = prevItem.id - 39;
+        const newWonderIdx = item.id - 39;
+        let epochPenalty = false;
+        if (oldWonderIdx >= 0 && newWonderIdx >= 0) {
+          // Import WONDER_PREREQS indirectly through ADVANCE_EPOCH
+          const oldEpoch = (oldWonderIdx < ADVANCE_EPOCH.length) ? ADVANCE_EPOCH[oldWonderIdx] : 0;
+          const newEpoch = (newWonderIdx < ADVANCE_EPOCH.length) ? ADVANCE_EPOCH[newWonderIdx] : 0;
+          if (oldEpoch !== newEpoch) {
+            // Epoch mismatch: apply 50% penalty on top of normal cap
+            const capped = state.cities[cityIndex].shieldsInBox || 0;
+            state.cities[cityIndex] = {
+              ...state.cities[cityIndex],
+              shieldsInBox: Math.floor(capped / 2),
+            };
+            epochPenalty = true;
+          }
+        }
         state.turnEvents.push({
           type: 'wonderSwitched', civSlot,
           cityName: city.name, cityIndex,
           oldWonderId: prevItem.id, oldWonderName: WONDER_NAMES[prevItem.id - 39] || `Wonder ${prevItem.id}`,
           newWonderId: item.id, newWonderName: WONDER_NAMES[item.id - 39] || `Wonder ${item.id}`,
+          epochPenalty,
         });
       } else if (newIsWonder && !prevIsWonder) {
         // Switching TO a wonder from non-wonder
@@ -306,6 +353,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
       if (hasWonderEffect(state, civSlot, 19)) {
         // Statue of Liberty: instant government switch, no anarchy
         civ.government = government;
+        // (#120) Auto-clamp rates on government change
+        _autoClampRates(civ, government);
         state.civs[civSlot] = civ;
         // Apply government change side effects (Fanatics production switch, embassy clearing)
         applyGovernmentChangeEffects(state, civSlot, oldGovt, government);
@@ -314,6 +363,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
         // Binary: 1-4 random turns of anarchy (matches Civ2 MGE behavior)
         civ.anarchyTurns = 1 + state.rng.nextInt(4);
         civ.pendingGovernment = government;
+        // (#120) Auto-clamp rates for anarchy too
+        _autoClampRates(civ, 'anarchy');
         state.civs[civSlot] = civ;
       }
       break;
@@ -375,16 +426,8 @@ export function applyAction(prev, mapBase, action, civSlot) {
         );
         if (!otherClaims) rTile.tileOwnership = 0;
       }
-      // ── Trade route cleanup (block_00440000 delete_city): remove routes pointing to this city ──
-      for (let ci = 0; ci < state.cities.length; ci++) {
-        if (ci === razeCi) continue;
-        const c = state.cities[ci];
-        if (!c.tradeRoutes || c.tradeRoutes.length === 0) continue;
-        const filtered = c.tradeRoutes.filter(r => r.destCityIndex !== razeCi);
-        if (filtered.length !== c.tradeRoutes.length) {
-          state.cities[ci] = { ...c, tradeRoutes: filtered };
-        }
-      }
+      // #166: Trade route cleanup — remove routes pointing to this city from ALL other cities
+      cleanupTradeRoutes(state, razeCi);
 
       // ── Wonder clearing (block_00440000 delete_city): mark wonders in this city as destroyed ──
       if (state.wonders) {
@@ -660,6 +703,12 @@ export function applyAction(prev, mapBase, action, civSlot) {
       // Consume the caravan/freight
       killUnit(state, etUi);
 
+      // Freight bonus: Freight units (type 49) receive double one-time trade revenue
+      // compared to Caravans (type 48). Binary ref: block_00440000 applies ×2 for Freight.
+      if (etUnit.type === 49) {
+        revenue *= 2;
+      }
+
       // D12: Pre-200AD revenue doubling if civ lacks both Alphabet(38) and Writing(57)
       const gameYear = state.turn?.year ?? 0;
       const civTechs = state.civTechs?.[civSlot];
@@ -907,15 +956,42 @@ export function applyAction(prev, mapBase, action, civSlot) {
         if (gtCur.movesLeft <= 0) break;
         if (gtCur.gx < 0) break; // dead
 
+        // #139: LONGMOVE counter — prevent infinite goto loops after 47 moves
+        const gtPrevCounter = gtCur.longMoveCounter || 0;
+        let gtIncrement = 1;
+        if (gtCur.lastMoveDir) {
+          const gtOppDirs = { N: "S", S: "N", E: "W", W: "E", NE: "SW", SW: "NE", NW: "SE", SE: "NW" };
+          if (gtOppDirs[gtDir] === gtCur.lastMoveDir) gtIncrement += 0x0f;
+        }
+        const gtNewCounter = gtPrevCounter + gtIncrement;
+        if (gtNewCounter > 0x2f) { // LONGMOVE_THRESHOLD = 47
+          gtCur = { ...gtCur, orders: "none", goToX: undefined, goToY: undefined, longMoveCounter: 0 };
+          state.units[gtUi] = gtCur;
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push({ type: "longMoveCancel", unitIndex: gtUi, unitType: gtCur.type, civSlot, gx: gtCur.gx, gy: gtCur.gy });
+          break;
+        }
+        gtCur = { ...gtCur, longMoveCounter: gtNewCounter, lastMoveDir: gtDir };
+
         const gtDest = resolveDirection(gtCur.gx, gtCur.gy, gtDir, mapBase);
-        if (!gtDest) break;
+        if (!gtDest) {
+          // #141: Clear goto on failed move
+          gtCur = { ...gtCur, orders: "none", goToX: undefined, goToY: undefined };
+          state.units[gtUi] = gtCur;
+          break;
+        }
 
         // Check for enemies at destination (stop before combat)
         const gtHasEnemy = state.units.some(u => u.gx === gtDest.gx && u.gy === gtDest.gy && u.owner !== civSlot && u.gx >= 0 && (UNIT_ATK[u.type] || 0) > 0);
         if (gtHasEnemy) break;
 
         const gtCost = moveCost(gtCur.type, mapBase, gtCur.gx, gtCur.gy, gtDest.gx, gtDest.gy);
-        if (gtCost < 0) break;
+        if (gtCost < 0) {
+          // #141: Clear goto on failed move
+          gtCur = { ...gtCur, orders: "none", goToX: undefined, goToY: undefined };
+          state.units[gtUi] = gtCur;
+          break;
+        }
 
         // Probabilistic movement check for goto steps (same rule as single-step movement)
         const gtDomain = UNIT_DOMAIN[gtCur.type] ?? 0;
@@ -924,15 +1000,15 @@ export function applyAction(prev, mapBase, action, civSlot) {
           if (gtCur.movesLeft < gtTotalMP) {
             const gtRoll = state.rng.nextInt(gtCost);
             if (gtCur.movesLeft <= gtRoll) {
-              gtCur = { ...gtCur, movesLeft: 0 };
+              // #141: Clear goto on failed probabilistic move
+              gtCur = { ...gtCur, movesLeft: 0, orders: "none", goToX: undefined, goToY: undefined };
               state.units[gtUi] = gtCur;
               break;
             }
           }
         }
 
-        const gtActualCost = Math.max(gtCost, 1);
-        gtCur = { ...gtCur, gx: gtDest.gx, gy: gtDest.gy, x: gtDest.gx * 2 + (gtDest.gy % 2), y: gtDest.gy, movesLeft: Math.max(0, gtCur.movesLeft - gtActualCost) };
+        gtCur = { ...gtCur, gx: gtDest.gx, gy: gtDest.gy, x: gtDest.gx * 2 + (gtDest.gy % 2), y: gtDest.gy, movesLeft: Math.max(0, gtCur.movesLeft - gtCost) };
         state.units[gtUi] = gtCur;
 
         // Update visibility
@@ -941,10 +1017,10 @@ export function applyAction(prev, mapBase, action, civSlot) {
           discoverContacts(state, mapBase, civSlot, gtDest.gx, gtDest.gy, 1);
         }
 
-        // Check goody hut
+        // Check goody hut — only land units (domain 0) trigger huts (#66)
         const gtTileIdx = gtDest.gy * mapBase.mw + gtDest.gx;
         const gtTile = mapBase.tileData?.[gtTileIdx];
-        if (gtTile && gtTile.goodyHut && civSlot > 0) {
+        if (gtTile && gtTile.goodyHut && civSlot > 0 && (UNIT_DOMAIN[gtCur.type] ?? 0) === 0) {
           gtTile.goodyHut = false;
           const hutResult = resolveGoodyHut(state, mapBase, gtCur, civSlot);
           if (hutResult) state.goodyHutResult = { ...hutResult, civSlot };
@@ -953,7 +1029,7 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
         // Reached destination?
         if (gtDest.gx === gtTgx && gtDest.gy === gtTgy) {
-          state.units[gtUi] = { ...state.units[gtUi], orders: 'none', goToX: undefined, goToY: undefined };
+          state.units[gtUi] = { ...state.units[gtUi], orders: 'none', goToX: undefined, goToY: undefined, longMoveCounter: 0 };
           break;
         }
       }
@@ -998,6 +1074,41 @@ export function applyAction(prev, mapBase, action, civSlot) {
     case PARADROP: {
       const { unitIndex: pdUi, targetGx: pdTgx, targetGy: pdTgy } = action;
       const pdUnit = { ...state.units[pdUi] };
+
+      // ── #116: Paradrop treaty check — prompt war declaration if landing near allied city ──
+      // Binary FUN_004ca39e: check if target is near a city belonging to an allied/peaceful civ.
+      // If so, this constitutes a hostile act requiring war declaration.
+      let pdTreatyBlocker = null;
+      for (const pdCity of state.cities) {
+        if (!pdCity || pdCity.size <= 0 || pdCity.owner === civSlot || pdCity.owner === 0) continue;
+        let pdDx = Math.abs(pdCity.gx - pdTgx);
+        if (mapBase.wraps) pdDx = Math.min(pdDx, mapBase.mw - pdDx);
+        const pdDy = Math.abs(pdCity.gy - pdTgy);
+        if (pdDx + pdDy > 3) continue; // not "near" (within 3 manhattan tiles)
+        // Check if we have a non-war treaty with this city's owner
+        const pdCityOwner = pdCity.owner;
+        const pdWarKey = civSlot < pdCityOwner ? `${civSlot}-${pdCityOwner}` : `${pdCityOwner}-${civSlot}`;
+        const pdTreaty = state.treaties?.[pdWarKey];
+        if (pdTreaty && pdTreaty !== 'war') {
+          pdTreatyBlocker = { ownerCiv: pdCityOwner, cityName: pdCity.name, treaty: pdTreaty };
+          break;
+        }
+      }
+      if (pdTreatyBlocker && !action.confirmWarDeclaration) {
+        // Signal that client needs to prompt for war declaration
+        state.paradropTreatyPrompt = {
+          unitIndex: pdUi, targetGx: pdTgx, targetGy: pdTgy,
+          ...pdTreatyBlocker,
+        };
+        break; // don't execute paradrop until confirmed
+      }
+      if (pdTreatyBlocker && action.confirmWarDeclaration) {
+        // Player confirmed — declare war
+        const pdDeclareResult = diplomacyDeclareWar(state, mapBase, civSlot, pdTreatyBlocker.ownerCiv);
+        if (!state.turnEvents) state.turnEvents = [];
+        for (const evt of pdDeclareResult.events) state.turnEvents.push(evt);
+      }
+
       pdUnit.gx = pdTgx;
       pdUnit.gy = pdTgy;
       pdUnit.x = pdTgx * 2 + (pdTgy % 2);
@@ -1014,12 +1125,23 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { unitIndex: alUi, targetCityIndex: alTci } = action;
       const alUnit = { ...state.units[alUi] };
       const alTargetCity = state.cities[alTci];
-      // Mark source city as having airlifted
       state.cities = state.cities !== prev.cities ? state.cities : [...prev.cities];
+
+      // (#122) Enforce one-airlift-per-turn-per-city for BOTH source and destination
       const alSrcCi = state.cities.findIndex(c => c.gx === alUnit.gx && c.gy === alUnit.gy && c.owner === civSlot && c.size > 0);
+      if (alSrcCi >= 0 && state.cities[alSrcCi].airliftedThisTurn) {
+        break; // source city already airlifted this turn
+      }
+      if (state.cities[alTci].airliftedThisTurn) {
+        break; // destination city already airlifted this turn
+      }
+
+      // Mark both source and destination cities as having airlifted
       if (alSrcCi >= 0) {
         state.cities[alSrcCi] = { ...state.cities[alSrcCi], airliftedThisTurn: true };
       }
+      state.cities[alTci] = { ...state.cities[alTci], airliftedThisTurn: true };
+
       // Move unit to target city
       alUnit.gx = alTargetCity.gx;
       alUnit.gy = alTargetCity.gy;
@@ -1120,4 +1242,53 @@ export function applyAction(prev, mapBase, action, civSlot) {
 
   state.version = (prev.version || 0) + 1;
   return state;
+}
+
+/**
+ * (#176) Check if a new unit can be created, enforcing the hard cap (2047)
+ * and AI soft cap (1948).
+ * @param {object} state - game state
+ * @param {number} ownerCiv - civ slot of the unit's owner
+ * @returns {boolean} true if a new unit is allowed
+ */
+export function canCreateUnit(state, ownerCiv) {
+  // Count living units
+  let count = 0;
+  for (const u of state.units) {
+    if (u.gx >= 0) count++;
+  }
+  if (count >= MAX_UNITS_HARD) return false;
+  // AI soft cap
+  const isHuman = !!(state.humanPlayers & (1 << ownerCiv));
+  if (!isHuman && count >= MAX_UNITS_AI_SOFT) return false;
+  return true;
+}
+
+/**
+ * (#120) Auto-clamp tax/science/luxury rates when government changes.
+ * Binary auto-adjusts rates to fit within the new government's limits
+ * rather than rejecting the change.
+ * @param {object} civ - mutable civ object
+ * @param {string} newGovt - new government name (lowercase)
+ */
+function _autoClampRates(civ, newGovt) {
+  const maxRate = GOVT_MAX_RATE[newGovt] ?? 10;
+  const maxSci = GOVT_MAX_SCIENCE[newGovt] ?? 10;
+
+  let sci = civ.scienceRate || 0;
+  let tax = civ.taxRate || 0;
+
+  // Clamp science rate
+  if (sci > maxSci) sci = maxSci;
+  // Clamp tax rate
+  if (tax > maxRate) tax = maxRate;
+  // If total exceeds 10, reduce tax first, then science
+  if (sci + tax > 10) {
+    tax = 10 - sci;
+    if (tax < 0) { tax = 0; sci = 10; }
+  }
+
+  civ.scienceRate = sci;
+  civ.taxRate = tax;
+  civ.luxuryRate = 10 - sci - tax;
 }

@@ -235,7 +235,8 @@ export function findPath(unitType, sx, sy, gx, gy, mapBase, owner, units, cities
       const cost = moveCost(unitType, mapBase, cur.x, cur.y, nx, ny);
       if (cost < 0) continue; // impassable
 
-      const tentG = cur.g + Math.max(cost, 1);
+      // #119: Railroad cost is 0 in pathfinding — don't floor to 1
+      const tentG = cur.g + cost;
 
       // Don't exceed budget
       if (tentG > budget) continue;
@@ -353,7 +354,8 @@ export function calcGotoDirection(unit, targetGx, targetGy, mapBase, owner, unit
 
     // Score: weighted sum of remaining distance and step cost
     // Favor lower remaining distance; use cost as tiebreaker
-    const score = remDist * 100 + Math.max(cost, 1);
+    // #119: Railroad cost is 0, don't floor to 1
+    const score = remDist * 100 + cost;
 
     if (score < bestScore) {
       bestScore = score;

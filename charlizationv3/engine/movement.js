@@ -5,7 +5,7 @@
 // 8-direction movement with proper wrapping.
 // ═══════════════════════════════════════════════════════════════════
 
-import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_ATK, UNIT_MOVE_POINTS, UNIT_HP, UNIT_FUEL, UNIT_CARRY_CAP, UNIT_ROLE } from './defs.js';
+import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, UNIT_ATK, UNIT_MOVE_POINTS, UNIT_HP, UNIT_FUEL, UNIT_CARRY_CAP, UNIT_ROLE, UNIT_ALPINE } from './defs.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // C.1: Damage-based movement reduction
@@ -13,20 +13,35 @@ import { TERRAIN_MOVE_COST, MOVEMENT_MULTIPLIER, UNIT_DOMAIN, UNIT_IGNORE_ZOC, U
 
 /**
  * Calculate effective movement points for a unit, accounting for HP damage.
- * Damaged units have reduced MP: baseMP * currentHP / maxHP, rounded up.
- * Minimum floor: MOVEMENT_MULTIPLIER (1 full MP = 3 thirds).
+ * Damaged units have reduced MP: baseMP * currentHP / maxHP, rounded up
+ * to the nearest MOVEMENT_MULTIPLIER (3) multiple.
+ *
+ * Per binary FUN_005b2a39:
+ *   - Sea units (domain 2) are exempt from damage-based MP reduction.
+ *   - Air units (domain 1) have a minimum of 2 * MOVEMENT_MULTIPLIER (6).
+ *   - Ground units (domain 0) have a minimum of MOVEMENT_MULTIPLIER (3).
  *
  * @param {object} unit - unit object { type, movesRemain }
  * @returns {number} effective movement points in movement thirds
  */
 export function calcEffectiveMovementPoints(unit) {
   const baseMP = (UNIT_MOVE_POINTS[unit.type] || 1) * MOVEMENT_MULTIPLIER;
+  const domain = UNIT_DOMAIN[unit.type] ?? 0;
+
+  // Sea units are exempt from damage-based MP reduction
+  if (domain === 2) return baseMP;
+
   const maxHP = UNIT_HP[unit.type] || 1;
   const currentHP = maxHP - (unit.movesRemain || 0);
   if (currentHP >= maxHP) return baseMP;
-  // Damaged: scale proportionally, round up, floor at 1 full MP
-  const effectiveMP = Math.ceil(baseMP * currentHP / maxHP);
-  return Math.max(effectiveMP, MOVEMENT_MULTIPLIER);
+
+  // Damaged: scale proportionally, round up to nearest MOVEMENT_MULTIPLIER multiple
+  const rawMP = baseMP * currentHP / maxHP;
+  const effectiveMP = Math.ceil(rawMP / MOVEMENT_MULTIPLIER) * MOVEMENT_MULTIPLIER;
+
+  // Air units: minimum 2 full MP (6 thirds); ground units: minimum 1 full MP (3 thirds)
+  const minMP = domain === 1 ? 2 * MOVEMENT_MULTIPLIER : MOVEMENT_MULTIPLIER;
+  return Math.max(effectiveMP, minMP);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -34,10 +49,14 @@ export function calcEffectiveMovementPoints(unit) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Check if a Trireme should sink at end of turn.
- * Triremes (type 32) not adjacent to land, without Astronomy tech (ID 3),
- * and not protected by Lighthouse (wonder 3) or Magellan's (wonder 12),
- * have a 50% chance of sinking each turn.
+ * Check if a Trireme should sink (per-move check).
+ * Triremes (type 32) not adjacent to land have a chance of sinking each move.
+ *
+ * Per binary FUN_0059062c:
+ *   - Base chance: 1 / COSMIC[1] (default denominator = 2, i.e. 50%)
+ *   - Navigation (tech 57): doubles denominator (halves chance)
+ *   - Magnetism (tech 45): doubles denominator (halves chance)
+ *   - Lighthouse (wonder 3) or Magellan's (wonder 12): immune
  *
  * @param {object} unit - the unit to check
  * @param {number} unitIndex - index in units array
@@ -50,10 +69,6 @@ export function checkTriremeSinking(unit, unitIndex, state, mapBase, hasWonderEf
   // Only triremes (type 32)
   if (unit.type !== 32) return false;
   if (unit.gx < 0) return false;
-
-  // Check if civ has Astronomy (tech ID 3)
-  const civTechs = state.civTechs?.[unit.owner];
-  if (civTechs && civTechs.has(3)) return false;
 
   // Lighthouse (wonder 3) or Magellan's Expedition (wonder 12) protect
   if (hasWonderEffectFn(state, unit.owner, 3)) return false;
@@ -68,8 +83,18 @@ export function checkTriremeSinking(unit, unitIndex, state, mapBase, hasWonderEf
     if (terrain !== 10) return false; // adjacent to land — safe
   }
 
-  // Open ocean: 50% chance of sinking
-  const roll = state.rng ? state.rng.nextInt(2) : (Math.random() < 0.5 ? 0 : 1);
+  // Base denominator: COSMIC[1] (default 2)
+  let denominator = 2;
+
+  // Navigation (tech 57): 2x multiplier on denominator (halves sinking chance)
+  const civTechs = state.civTechs?.[unit.owner];
+  if (civTechs && civTechs.has(57)) denominator *= 2;
+
+  // Magnetism (tech 45): 2x multiplier on denominator (halves sinking chance)
+  if (civTechs && civTechs.has(45)) denominator *= 2;
+
+  // Open ocean: 1/denominator chance of sinking
+  const roll = state.rng ? state.rng.nextInt(denominator) : Math.floor(Math.random() * denominator);
   return roll === 0;
 }
 
@@ -236,8 +261,9 @@ export function moveCost(unitType, mapBase, fromGx, fromGy, toGx, toGy) {
   const terrain = mapBase.getTerrain(toGx, toGy);
   const baseCost = (TERRAIN_MOVE_COST[terrain] ?? 1) * MOVEMENT_MULTIPLIER;
 
-  // C.5: Alpine Troops (type 10) ignore terrain costs in hills (4) and mountains (5)
-  if (unitType === 10 && (terrain === 4 || terrain === 5)) {
+  // C.5: Alpine Troops (alpine flag) treat ALL terrain as cost 1 MP
+  // Per binary RULES.TXT flags bit 12: alpine units always pay 1 MP regardless of terrain
+  if (UNIT_ALPINE.has(unitType)) {
     return MOVEMENT_MULTIPLIER; // 1 MP regardless of terrain
   }
 
@@ -508,8 +534,8 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
     }
   }
 
-  // Gap 75: Two-pass loading — own units first, then allied units.
-  // Within each ownership pass, air units load before ground units.
+  // #121: Two-pass loading priority — goto-targeted units first, then non-sentried ground units.
+  // Within each pass, own units load before allied units.
   // Helper to check if a unit's owner is allied with the ship owner
   const isAllied = (unitOwner) => {
     if (unitOwner === owner) return false; // handled in own-units pass
@@ -518,13 +544,9 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
     return state.treaties[key] === 'alliance';
   };
 
-  // Pass 1: Own air units (domain === 1)
-  for (let i = 0; i < state.units.length; i++) {
-    if (currentCargo >= cap) break;
-    if (i === shipIndex) continue;
+  // Helper to load a unit onto the ship
+  const loadUnit = (i) => {
     const u = state.units[i];
-    if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
-    if ((UNIT_DOMAIN[u.type] ?? 0) !== 1) continue;
     state.units[i] = {
       ...u,
       gx: ship.gx, gy: ship.gy,
@@ -532,56 +554,57 @@ export function loadUnitsOntoShip(state, shipIndex, gx, gy) {
     };
     loaded.push(i);
     currentCargo++;
-  }
+  };
 
-  // Pass 2: Own ground units (domain === 0)
+  // Helper to check if a unit is a candidate for loading at this tile
+  const isCandidate = (i, u) => {
+    if (i === shipIndex) return false;
+    if (u.gx !== gx || u.gy !== gy || u.gx < 0) return false;
+    const d = UNIT_DOMAIN[u.type] ?? 0;
+    return d === 0 || d === 1; // ground or air
+  };
+
+  // Pass 1: Goto-targeted units (units with active goto orders) — prioritized for loading
+  // Own goto-targeted units first
   for (let i = 0; i < state.units.length; i++) {
     if (currentCargo >= cap) break;
-    if (i === shipIndex) continue;
     const u = state.units[i];
-    if (u.gx !== gx || u.gy !== gy || u.owner !== owner || u.gx < 0) continue;
-    if ((UNIT_DOMAIN[u.type] ?? 0) !== 0) continue;
-    state.units[i] = {
-      ...u,
-      gx: ship.gx, gy: ship.gy,
-      x: ship.gx * 2 + (ship.gy % 2), y: ship.gy,
-    };
-    loaded.push(i);
-    currentCargo++;
+    if (u.owner !== owner) continue;
+    if (!isCandidate(i, u)) continue;
+    if (u.orders !== 'goto' || u.goToX == null || u.goToY == null) continue;
+    loadUnit(i);
   }
-
-  // Pass 3: Allied air units (domain === 1)
+  // Allied goto-targeted units
   for (let i = 0; i < state.units.length; i++) {
     if (currentCargo >= cap) break;
-    if (i === shipIndex) continue;
     const u = state.units[i];
-    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
     if (u.owner === owner || !isAllied(u.owner)) continue;
-    if ((UNIT_DOMAIN[u.type] ?? 0) !== 1) continue;
-    state.units[i] = {
-      ...u,
-      gx: ship.gx, gy: ship.gy,
-      x: ship.gx * 2 + (ship.gy % 2), y: ship.gy,
-    };
-    loaded.push(i);
-    currentCargo++;
+    if (!isCandidate(i, u)) continue;
+    if (u.orders !== 'goto' || u.goToX == null || u.goToY == null) continue;
+    if (loaded.includes(i)) continue;
+    loadUnit(i);
   }
 
-  // Pass 4: Allied ground units (domain === 0)
+  // Pass 2: Non-sentried ground/air units (skip sentry units — they're waiting deliberately)
+  // Own non-sentried units first
   for (let i = 0; i < state.units.length; i++) {
     if (currentCargo >= cap) break;
-    if (i === shipIndex) continue;
     const u = state.units[i];
-    if (u.gx !== gx || u.gy !== gy || u.gx < 0) continue;
+    if (u.owner !== owner) continue;
+    if (!isCandidate(i, u)) continue;
+    if (loaded.includes(i)) continue;
+    if (u.orders === 'sentry') continue; // skip sentried units
+    loadUnit(i);
+  }
+  // Allied non-sentried units
+  for (let i = 0; i < state.units.length; i++) {
+    if (currentCargo >= cap) break;
+    const u = state.units[i];
     if (u.owner === owner || !isAllied(u.owner)) continue;
-    if ((UNIT_DOMAIN[u.type] ?? 0) !== 0) continue;
-    state.units[i] = {
-      ...u,
-      gx: ship.gx, gy: ship.gy,
-      x: ship.gx * 2 + (ship.gy % 2), y: ship.gy,
-    };
-    loaded.push(i);
-    currentCargo++;
+    if (!isCandidate(i, u)) continue;
+    if (loaded.includes(i)) continue;
+    if (u.orders === 'sentry') continue;
+    loadUnit(i);
   }
 
   return { loaded };

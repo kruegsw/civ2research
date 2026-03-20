@@ -16,7 +16,7 @@ import { hasWonderEffect, civHasWonder } from './utils.js';
 import { updateVisibility } from './visibility.js';
 import { grantAdvance } from './research.js';
 import { isSchismBlocked } from './events.js';
-import { killCiv } from './diplomacy.js';
+import { killCiv, addTreatyFlag, setTreatyFlags, getTreatyFlags, TF } from './diplomacy.js';
 import { ejectAirUnits } from './combat.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -37,17 +37,27 @@ const ALWAYS_DESTROYED_ON_CAPTURE = new Set([
 /** Partisan unit type. */
 const PARTISAN_TYPE = 9;
 
-/** Guerrilla Warfare tech ID. */
+/** Guerrilla Warfare tech ID (0x22 = 34). */
 const TECH_GUERRILLA_WARFARE = 34;
 
-/** Communism tech ID. */
+/** Communism tech ID (0x0F = 15). */
 const TECH_COMMUNISM = 15;
 
 /** Democracy tech ID. */
 const TECH_DEMOCRACY = 21;
 
-/** SDI Defense building ID. */
-const SDI_DEFENSE = 17;
+/** Conscription tech ID (0x11 = 17). */
+const TECH_CONSCRIPTION = 17;
+
+/** Gunpowder tech ID (0x23 = 35). */
+const TECH_GUNPOWDER = 35;
+
+/** Government indices for partisan trigger. */
+const GOVT_COMMUNISM = 3;
+const GOVT_DEMOCRACY = 6;
+
+/** Marco Polo's Embassy wonder ID. */
+const WONDER_MARCO_POLO = 9;
 
 // ═══════════════════════════════════════════════════════════════════
 // Helpers
@@ -147,6 +157,11 @@ function getGovt(state, civSlot) {
 /** Get government numeric index. */
 function govtIndex(govt) {
   return GOVT_INDEX[govt] ?? 1;
+}
+
+/** Get a civ's power rank (0-7, from DAT_00655c22). Defaults to 3. */
+function getPowerRank(state, civSlot) {
+  return state.civs?.[civSlot]?.powerRank ?? 3;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -392,6 +407,17 @@ export function handleCivilWar(state, mapBase, oldOwnerSlot, capturedCityIndex) 
     }
   }
 
+  // ── #25: Set civil war diplomacy flags between old and new civ ──
+  // Binary ref FUN_0057a904 / diplomacy-tables.js:
+  //   child→parent: 0x2001 = CONTACT(0x01) + WAR(0x2000)
+  //   parent→child: 0x82801 = CONTACT(0x01) + WAR_STARTED(0x800) + WAR(0x2000) + PERIODIC_FLAG_19(0x80000)
+  setTreatyFlags(state, newCivSlot, oldOwnerSlot, 0x2001);
+  setTreatyFlags(state, oldOwnerSlot, newCivSlot, 0x82801);
+  // Sync string-based treaty
+  if (!state.treaties) state.treaties = {};
+  const tkA = oldOwnerSlot < newCivSlot ? `${oldOwnerSlot}-${newCivSlot}` : `${newCivSlot}-${oldOwnerSlot}`;
+  state.treaties = { ...state.treaties, [tkA]: 'war' };
+
   events.push({
     type: 'civilWar',
     oldCivSlot: oldOwnerSlot,
@@ -441,35 +467,66 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   // ── Was this previously our city? (recapture) ──
   const wasOurs = (city.originalOwner === capturerCivSlot);
 
-  // ── Civil war check ──
-  // If old owner has palace in this city and has 5+ remaining cities
-  const hadPalace = !!(city.buildings && city.buildings.has(1));
-  let civilWarResult = null;
-  if (hadPalace && countCities(state, oldOwner) >= 6 && !isSchismBlocked(state, oldOwner)) {
-    // 6 because this city hasn't been transferred yet (it counts as 1 of the 6)
-    civilWarResult = handleCivilWar(state, mapBase, oldOwner, cityIndex);
-    if (civilWarResult.success) {
-      events.push(...civilWarResult.events);
+  // ── #62: Set treaty flags on capture ──
+  // Binary ref FUN_0057b5df: sets 0x10000 (CAPTURE_NOTIFY), 0x800 (WAR_STARTED),
+  // and conditionally 0x400000 (MULTI_CAPTURE_VENDETTA) and 0x10 (VENDETTA)
+  if (capturerCivSlot > 0 || oldOwner > 0) {
+    // 0x10000: capture notification flag
+    const abFlags = getTreatyFlags(state, capturerCivSlot, oldOwner);
+    setTreatyFlags(state, capturerCivSlot, oldOwner, abFlags | TF.CAPTURE_NOTIFY);
+    // 0x800: war started flag
+    const abFlags2 = getTreatyFlags(state, capturerCivSlot, oldOwner);
+    setTreatyFlags(state, capturerCivSlot, oldOwner, abFlags2 | TF.WAR_STARTED);
+
+    // 0x400000: multi-capture vendetta (count cities captured by attacker from defender)
+    let capturedCount = 0;
+    for (let ci = 0; ci < state.cities.length; ci++) {
+      if (ci === cityIndex) continue;
+      const c = state.cities[ci];
+      if (c.size > 0 && c.owner === capturerCivSlot && c.originalOwner === oldOwner) {
+        capturedCount++;
+      }
+    }
+    capturedCount++; // include this capture
+    if (capturedCount > 1 && (capturedCount & 1) === 0) {
+      const mcFlags = getTreatyFlags(state, capturerCivSlot, oldOwner);
+      setTreatyFlags(state, capturerCivSlot, oldOwner, mcFlags | TF.MULTI_CAPTURE_VENDETTA);
     }
   }
 
-  // ── B.4: Gold plunder (binary-faithful formula) ──
-  // Binary ref: FUN_00579DBB — gold = (citySize * treasury) / (totalPop + 1)
+  // ── #22: Civil war check with age rank gate ──
+  // Binary ref FUN_0057b5df lines 4566-4585:
+  //   Requires: old owner's capital, 4+ remaining cities, capturer's age rank < old owner's age rank
+  //   Age rank = DAT_00655c22 (powerRank byte array, higher = older/stronger)
+  const hadPalace = !!(city.buildings && city.buildings.has(1));
+  let civilWarResult = null;
+  if (hadPalace && countCities(state, oldOwner) >= 6 && !isSchismBlocked(state, oldOwner)) {
+    // #22: Age rank gate — capturer must be younger (lower rank) than old owner
+    const capturerRank = getPowerRank(state, capturerCivSlot);
+    const oldOwnerRank = getPowerRank(state, oldOwner);
+    if (capturerRank < oldOwnerRank) {
+      civilWarResult = handleCivilWar(state, mapBase, oldOwner, cityIndex);
+      if (civilWarResult.success) {
+        events.push(...civilWarResult.events);
+      }
+    }
+  }
+
+  // ── #4: Gold plunder (binary-faithful formula) ──
+  // Binary ref: FUN_00579DBB — gold = (citySize * treasury) / (numCities + 1)
+  // where numCities is the OLD owner's city count (DAT_0064c708, not totalPop)
   // with overflow protection: if treasury >= 32000/citySize, reorder to avoid overflow
   const oldOwnerCiv = state.civs?.[oldOwner];
   const oldTreasury = oldOwnerCiv?.treasury || 0;
-  let totalPop = 0;
-  for (const c of state.cities) {
-    if (c.owner === oldOwner && c.size > 0) totalPop += c.size;
-  }
+  const numCities = countCities(state, oldOwner);
   let plunder;
-  if (totalPop + 1 <= 0) {
+  if (numCities + 1 <= 0) {
     plunder = 0;
   } else if (oldTreasury >= Math.floor(32000 / Math.max(1, city.size))) {
-    // Overflow protection: reorder to (treasury / (totalPop+1)) * citySize
-    plunder = Math.floor(oldTreasury / (totalPop + 1)) * city.size;
+    // Overflow protection: reorder to (treasury / (numCities+1)) * citySize
+    plunder = Math.floor(oldTreasury / (numCities + 1)) * city.size;
   } else {
-    plunder = Math.floor((city.size * oldTreasury) / (totalPop + 1));
+    plunder = Math.floor((city.size * oldTreasury) / (numCities + 1));
   }
   if (plunder < 0) plunder = Math.min(32000, oldTreasury); // overflow cap
   plunder = Math.min(plunder, Math.max(0, oldTreasury));
@@ -487,8 +544,8 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     events.push({ type: 'goldPlundered', amount: plunder, from: oldOwner, to: capturerCivSlot });
   }
 
-  // ── Tech theft ──
-  // Small chance to steal a tech the capturer doesn't have
+  // ── #5: Tech theft — ALWAYS guaranteed on city capture ──
+  // Binary ref: FUN_0057a27a — always steals one tech, no probability check
   if (capturerCivSlot !== 0 && state.civTechs) {
     const theirTechs = state.civTechs[oldOwner];
     const myTechs = state.civTechs[capturerCivSlot];
@@ -498,18 +555,16 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
         if (!myTechs.has(techId)) stealable.push(techId);
       }
       if (stealable.length > 0) {
-        // ~33% chance to steal a random tech
-        if (rand() % 3 === 0) {
-          const stolenTech = stealable[rand() % stealable.length];
-          grantAdvance(state, capturerCivSlot, stolenTech);
-          events.push({
-            type: 'techStolen',
-            civSlot: capturerCivSlot,
-            from: oldOwner,
-            advanceId: stolenTech,
-            advanceName: ADVANCE_NAMES[stolenTech] || `Tech ${stolenTech}`,
-          });
-        }
+        // Always steal one random tech (no probability gate)
+        const stolenTech = stealable[rand() % stealable.length];
+        grantAdvance(state, capturerCivSlot, stolenTech);
+        events.push({
+          type: 'techStolen',
+          civSlot: capturerCivSlot,
+          from: oldOwner,
+          advanceId: stolenTech,
+          advanceName: ADVANCE_NAMES[stolenTech] || `Tech ${stolenTech}`,
+        });
       }
     }
   }
@@ -524,20 +579,19 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     newSize = Math.max(1, city.size - 1);
   }
 
-  // Check if city is destroyed (size reaches 0 — shouldn't happen with max(1) but safety check)
+  // ── #57: Size-1 city destruction on barbarian capture ──
+  // Binary: cities of size < 2 captured by barbarians (param_2 == 0) are destroyed
+  if (capturerCivSlot === 0 && newSize < 2) {
+    newSize = 0;
+  }
+
+  // Check if city is destroyed (size reaches 0)
   if (newSize <= 0) {
     // City destroyed
+    state.cities = state.cities.length ? [...state.cities] : state.cities;
     state.cities[cityIndex] = { ...city, size: 0, owner: 0xFF };
-    // Trade route cleanup: remove routes pointing to this city from all other cities
-    for (let ci = 0; ci < state.cities.length; ci++) {
-      if (ci === cityIndex) continue;
-      const c = state.cities[ci];
-      if (!c.tradeRoutes || c.tradeRoutes.length === 0) continue;
-      const filtered = c.tradeRoutes.filter(r => r.destCityIndex !== cityIndex);
-      if (filtered.length !== c.tradeRoutes.length) {
-        state.cities[ci] = { ...c, tradeRoutes: filtered };
-      }
-    }
+    // #58: Trade route cleanup: remove routes pointing to this city from all other cities
+    cleanupTradeRoutes(state, cityIndex);
     // Wonder clearing: mark wonders in this city as destroyed
     if (state.wonders) {
       state.wonders = [...state.wonders];
@@ -549,6 +603,16 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
       }
     }
     events.push({ type: 'cityDestroyed', cityName: city.name, gx: cityGx, gy: cityGy });
+
+    // Still check elimination even when city is destroyed
+    if (oldOwner > 0) {
+      const hasCity = state.cities.some(c => c.owner === oldOwner && c.size > 0);
+      const hasUnit = state.units.some(u => u.owner === oldOwner && u.gx >= 0);
+      if (!hasCity && !hasUnit) {
+        const killResult = killCiv(state, mapBase, oldOwner, capturerCivSlot);
+        events.push(...killResult.events);
+      }
+    }
     return { events };
   }
 
@@ -609,8 +673,10 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     resistanceTurns = Math.max(1, Math.floor(newSize / 2));
   }
 
-  // ── Production reset ──
-  // Reset shields, food, production queue
+  // ── City state reset on capture ──
+  // #56: Preserve food_in_box (only zero shields, not food)
+  // #135: Preserve production item on capture (don't force Warriors)
+  // Binary ref: DAT_0064f35c = 0 (shields cleared), but food is NOT zeroed
   const capturedCity = {
     ...city,
     owner: capturerCivSlot,
@@ -619,14 +685,18 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     hasWalls: buildings.has(8),
     hasPalace: buildings.has(1),
     shieldsInBox: 0,
-    foodInBox: 0,
-    itemInProduction: { type: 'unit', id: 2 }, // Warriors
+    // #56: Preserve food_in_box — binary does NOT zero food on capture
+    foodInBox: city.foodInBox || 0,
+    // #135: Preserve production item — binary does NOT reset production to Warriors
+    // The item stays; AI/human can change it next turn if desired
+    itemInProduction: city.itemInProduction,
     civilDisorder: false,
     weLoveKingDay: false,
     soldThisTurn: false,
     specialists: [],
     resistanceTurns,
-    tradeRoutes: [], // Trade routes cancelled on capture
+    // #58: Trade routes cancelled on capture (cleaned up below for other cities too)
+    tradeRoutes: [],
     originalOwner: oldOwner,
     turnCaptured: state.turn?.number || 0,
   };
@@ -638,6 +708,9 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
 
   state.cities = state.cities.length ? [...state.cities] : state.cities;
   state.cities[cityIndex] = capturedCity;
+
+  // ── #58: Clean up trade routes pointing TO captured city from other cities ──
+  cleanupTradeRoutes(state, cityIndex);
 
   // ── Eject stranded enemy air units at captured city ──
   // Air units (domain 1) belonging to the old owner lose their base
@@ -681,19 +754,33 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
   // ── Update visibility around captured city ──
   updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, capturerCivSlot, cityGx, cityGy, mapBase.wraps, 2);
 
-  // ── Rehome old owner's units that were based here ──
+  // ── Set CAPTURE_VENDETTA flag (0x1000) on city capture ──
+  // Binary ref: FUN_00579c40 — treaty[attacker][defender] |= 0x1000
+  // Also set CAPTURE_NOTIFY (0x10000) — FUN_0057b5df
+  addTreatyFlag(state, capturerCivSlot, oldOwner, TF.CAPTURE_VENDETTA);
+  // Set the notify flag directionally
+  let capFlags = getTreatyFlags(state, capturerCivSlot, oldOwner);
+  capFlags |= TF.CAPTURE_NOTIFY;
+  setTreatyFlags(state, capturerCivSlot, oldOwner, capFlags);
+
+  // ── #59: Rehome or DELETE old owner's units that were based here ──
   rehomeOrDisbandUnits(state, cityIndex, oldOwner, mapBase);
 
-  // ── Palace relocation for old owner (capital escape scoring) ──
-  // Binary ref: FUN_0057b5df — capital escape attempt
+  // ── #23: Palace relocation for old owner (capital escape scoring) ──
+  // Binary ref: FUN_0057b5df lines 4587-4694 — capital escape attempt
   // Score formula: size*3 - distance + stackCount*4
-  // Bonuses: Cure for Cancer(27)→×3/2, City Walls(8) or Great Wall(6)→×2,
-  //          same continent→+2, coastal→+3, Adam Smith(17)→×3
+  // Bonuses: Cure for Cancer(27) -> x3/2
+  //          City Walls (building 8) or Great Wall (wonder 6) -> x2
+  //          Building 17 (SDI Defense) in candidate city -> x3
+  //          Different continent -> /2 penalty
+  // NO coastal bonus, NO same-continent +2 bonus (binary has neither)
+  // #60: Deduct 1000 science points on successful capital escape
   if (hadPalace && !civilWarResult?.success) {
     const remainingCount = countCities(state, oldOwner);
 
     // Capital escape requires 4+ remaining cities, candidate size > 7
-    // and candidate size*3 > captured city size*2
+    // and candidate size >= capturedSize/2
+    // Binary: 999 < treasury as precondition for escape attempt
     let bestPalaceCi = -1;
     let bestScore = -Infinity;
     const capturedContinent = mapBase.getBodyId ? mapBase.getBodyId(cityGx, cityGy) : -1;
@@ -702,9 +789,9 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
       const c = state.cities[ci];
       if (c.owner !== oldOwner || c.size <= 0 || ci === cityIndex) continue;
 
-      // Basic eligibility: size > 7 and size*3 > capturedSize*2
-      if (remainingCount >= 4 && c.size > 7 && c.size * 3 > city.size * 2) {
-        // Full scoring formula from binary
+      // Basic eligibility: size > 7 and size >= capturedSize/2
+      if (remainingCount >= 4 && c.size > 7 && c.size >= Math.floor(city.size / 2)) {
+        // Full scoring formula from binary (FUN_0057b5df lines 4598-4627)
         const dist = tileDist(c.gx, c.gy, cityGx, cityGy, mapBase.mw, mapBase.wraps);
 
         // Count military units stacked at this city
@@ -718,42 +805,37 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
 
         let score = c.size * 3 - dist + stackCount * 4;
 
-        // Cure for Cancer (wonder 27): ×3/2
+        // Cure for Cancer (wonder 27): x3/2
+        // Binary line 4606-4608: thunk_FUN_0043d20a(local_1c, 0x1b) -> x3/2
+        if (c.buildings && c.buildings.has(27 + 0x27 - 0x27)) {
+          // Wonder 27 = Cure for Cancer. Binary checks FUN_0043d20a which checks
+          // if this specific city has the wonder. Use civHasWonder for simplicity.
+        }
         if (civHasWonder(state, oldOwner, 27)) {
           score = Math.floor(score * 3 / 2);
         }
-        // City Walls (building 8) or Great Wall (wonder 6): ×2
+
+        // City Walls (building 8) or Great Wall (wonder 6): x2
+        // Binary line 4610-4612: FUN_0043d20a(city, 8) or FUN_00453e51(civ, 6)
         if ((c.buildings && c.buildings.has(8)) || hasWonderEffect(state, oldOwner, 6)) {
           score *= 2;
         }
-        // Same continent bonus: +2; different continent: /2 penalty
+
+        // #23 FIX: Building 17 (SDI Defense) in candidate city -> x3
+        // Binary line 4614-4616: FUN_0043d20a(local_1c, 0x11) -> score * 3
+        // 0x11 = 17 = SDI Defense BUILDING, NOT wonder 17 (Adam Smith)
+        if (c.buildings && c.buildings.has(17)) {
+          score *= 3;
+        }
+
+        // Different continent -> /2 penalty (NO same-continent bonus)
+        // Binary line 4618-4623: if continent differs, score /= 2
+        // No +2 bonus for same continent, no +3 coastal bonus
         if (mapBase.getBodyId) {
           const cContinent = mapBase.getBodyId(c.gx, c.gy);
-          if (cContinent === capturedContinent) {
-            score += 2;
-          } else {
+          if (cContinent !== capturedContinent) {
             score = Math.floor(score / 2);
           }
-        }
-        // Coastal bonus: +3 (approximate — check if city is near ocean)
-        if (mapBase.getTerrain) {
-          const parC2 = c.gy & 1;
-          let isCoastal = false;
-          for (let ri = 0; ri < 8 && !isCoastal; ri++) {
-            const [ddx2, ddy2] = CITY_RADIUS_DOUBLED[ri];
-            const parT2 = ((c.gy + ddy2) % 2 + 2) % 2;
-            const tgx2 = c.gx + ((parC2 + ddx2 - parT2) >> 1);
-            const tgy2 = c.gy + ddy2;
-            const wgx2 = mapBase.wraps ? ((tgx2 % mapBase.mw) + mapBase.mw) % mapBase.mw : tgx2;
-            if (tgy2 >= 0 && tgy2 < mapBase.mh && wgx2 >= 0 && wgx2 < mapBase.mw) {
-              if (mapBase.getTerrain(wgx2, tgy2) === 10) isCoastal = true;
-            }
-          }
-          if (isCoastal) score += 3;
-        }
-        // Adam Smith's Trading Co. (wonder 17): ×3
-        if (civHasWonder(state, oldOwner, 17)) {
-          score *= 3;
         }
 
         if (score > bestScore) {
@@ -775,125 +857,181 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
     }
 
     if (bestPalaceCi >= 0) {
-      const palaceCity = state.cities[bestPalaceCi];
-      const palaceBuildings = new Set(palaceCity.buildings);
-      palaceBuildings.add(1);
-      state.cities[bestPalaceCi] = { ...palaceCity, buildings: palaceBuildings, hasPalace: true };
+      // Binary line 4631: escape requires treasury > 999 AND valid candidate AND no civil war
+      const escapeTreasury = state.civs?.[oldOwner]?.treasury || 0;
+      const canEscape = escapeTreasury > 999 && bestScore > 0;
 
-      if (bestScore >= 1000) {
+      if (canEscape) {
+        // #60: Deduct 1000 science points from old owner's research progress
+        // Binary line 4673-4674: DAT_0064c6a2 -= 1000 (deducted from civ funds)
+        if (!state.civs) state.civs = [];
+        state.civs = [...state.civs];
+        const ownerCiv = state.civs[oldOwner] || {};
+        state.civs[oldOwner] = {
+          ...ownerCiv,
+          researchProgress: Math.max(0, (ownerCiv.researchProgress || 0) - 1000),
+        };
+
+        // Place palace in best city
+        const palaceCity = state.cities[bestPalaceCi];
+        const palaceBuildings = new Set(palaceCity.buildings);
+        palaceBuildings.add(1);
+        state.cities[bestPalaceCi] = { ...palaceCity, buildings: palaceBuildings, hasPalace: true };
+
         events.push({
           type: 'capitalEscape', civSlot: oldOwner,
           cityName: palaceCity.name, cityIndex: bestPalaceCi,
           escapeScore: bestScore,
         });
-      }
-    }
-  }
-
-  // ── Partisan spawning ──
-  // Conditions: old owner had Communism or Democracy tech, AND Guerrilla Warfare
-  if (captureType === 0 && oldOwner > 0) {
-    const hasGuerrilla = hasTech(state, oldOwner, TECH_GUERRILLA_WARFARE);
-    const hasCommunism = hasTech(state, oldOwner, TECH_COMMUNISM);
-    const hasDemocracy = hasTech(state, oldOwner, TECH_DEMOCRACY);
-
-    if ((hasCommunism || hasDemocracy) && hasGuerrilla) {
-      // B.6: Partisan count formula (FUN_0057b5df lines 5103-5243)
-      // formula: ((citySize + 5) / 8) * (govtDiff + ageDiff + 1) / 2
-      const defGovt = govtIndex(getGovt(state, oldOwner));
-      const atkGovt = govtIndex(getGovt(state, capturerCivSlot));
-      const govtDiff = Math.abs(defGovt - atkGovt);
-      // Power rank approximation: use tech count as proxy
-      const defTechs = state.civTechCounts?.[oldOwner] || 0;
-      const atkTechs = state.civTechCounts?.[capturerCivSlot] || 0;
-      const ageDiff = Math.abs(defTechs - atkTechs) >> 3; // scale down
-      let partisanCount = Math.floor(((city.size + 5) / 8) * (govtDiff + ageDiff + 1) / 2);
-
-      // Conscription (tech 17) prerequisite: if no Conscription, count -= 1
-      if (!hasTech(state, oldOwner, 17)) partisanCount -= 1;
-
-      // Guerrilla Warfare interaction with attacker
-      if (hasTech(state, capturerCivSlot, TECH_GUERRILLA_WARFARE)) {
-        partisanCount += 1;
       } else {
-        partisanCount *= 2;
-      }
-
-      // Minimum 1, cap at reasonable limit
-      partisanCount = Math.max(1, Math.min(partisanCount, 8));
-
-      // Find suitable tiles for partisans (nearby land tiles with good defense)
-      const partisanTiles = [];
-      for (let dy = -3; dy <= 3; dy++) {
-        for (let dx = -3; dx <= 3; dx++) {
-          if (dx === 0 && dy === 0) continue; // not on city tile
-          let gx = cityGx + dx;
-          const gy = cityGy + dy;
-          if (gy < 0 || gy >= mapBase.mh) continue;
-          if (mapBase.wraps) {
-            gx = ((gx % mapBase.mw) + mapBase.mw) % mapBase.mw;
-          } else if (gx < 0 || gx >= mapBase.mw) {
-            continue;
-          }
-          const ter = mapBase.getTerrain(gx, gy);
-          if (ter === 10) continue; // skip ocean
-          // Skip tiles with enemy cities
-          if (state.cities.some(c => c.gx === gx && c.gy === gy &&
-              c.owner !== oldOwner && c.size > 0)) continue;
-          // Skip tiles with enemy units
-          if (state.units.some(u => u.gx === gx && u.gy === gy &&
-              u.owner !== oldOwner && u.gx >= 0)) continue;
-
-          const defValue = TERRAIN_DEFENSE[ter] || 2;
-          const imp = mapBase.getImprovements(gx, gy);
-          let score = defValue;
-          if (imp.road || imp.railroad) score += 1;
-          if (imp.farmland) score *= 2;
-          if (imp.fortress) score += 2;
-          partisanTiles.push({ gx, gy, score });
-        }
-      }
-
-      // Sort by defense value descending
-      partisanTiles.sort((a, b) => b.score - a.score);
-
-      // Spawn partisans
-      let spawned = 0;
-      state.units = [...state.units];
-      for (let i = 0; i < partisanCount && i < partisanTiles.length; i++) {
-        const loc = partisanTiles[i];
-        const partisan = makeUnit(
-          PARTISAN_TYPE, oldOwner, loc.gx, loc.gy,
-          UNIT_MOVE_POINTS[PARTISAN_TYPE] * MOVEMENT_MULTIPLIER
-        );
-        partisan.orders = 'fortified';
-        // Veterans based on difficulty
-        if (rand() % 2 === 0) partisan.veteran = 1;
-        state.units.push(partisan);
-        updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, oldOwner, loc.gx, loc.gy, mapBase.wraps);
-        spawned++;
-      }
-
-      if (spawned > 0) {
-        events.push({
-          type: 'partisansSpawned',
-          count: spawned,
-          civSlot: oldOwner,
-          cityName: city.name,
-          gx: cityGx,
-          gy: cityGy,
-        });
+        // No escape — just place palace in best available city (simple relocation)
+        const palaceCity = state.cities[bestPalaceCi];
+        const palaceBuildings = new Set(palaceCity.buildings);
+        palaceBuildings.add(1);
+        state.cities[bestPalaceCi] = { ...palaceCity, buildings: palaceBuildings, hasPalace: true };
       }
     }
   }
 
-  // ── Civ elimination check ──
+  // ── #136: Recalculate Marco Polo contacts on capture ──
+  // If the captured city contained Marco Polo's Embassy, the new owner
+  // (or potentially the old owner who lost it) may need contact recalculation.
+  // If capturer now has Marco Polo, grant contact with all alive civs.
+  if (state.wonders) {
+    for (let wi = 0; wi < state.wonders.length; wi++) {
+      const w = state.wonders[wi];
+      if (w && w.cityIndex === cityIndex && !w.destroyed && wi === WONDER_MARCO_POLO) {
+        // Marco Polo transferred to capturer — grant contacts
+        for (let ci = 1; ci < 8; ci++) {
+          if (ci === capturerCivSlot) continue;
+          if (!(state.civsAlive & (1 << ci))) continue;
+          addTreatyFlag(state, capturerCivSlot, ci, TF.CONTACT);
+        }
+        events.push({ type: 'marcoPoloRecalculated', civSlot: capturerCivSlot });
+      }
+    }
+  }
+
+  // ── #6: Civ elimination check FIRST, then partisans only if civ SURVIVES ──
+  // Binary ref: FUN_0057b5df line 5104 calls kill_civ BEFORE partisan spawning (lines 5105+)
+  let civEliminated = false;
   if (oldOwner > 0) {
     const hasCity = state.cities.some(c => c.owner === oldOwner && c.size > 0);
     const hasUnit = state.units.some(u => u.owner === oldOwner && u.gx >= 0);
     if (!hasCity && !hasUnit) {
       const killResult = killCiv(state, mapBase, oldOwner, capturerCivSlot);
       events.push(...killResult.events);
+      civEliminated = true;
+    }
+  }
+
+  // ── #6 + #24: Partisan spawning (only if civ survived) ──
+  // Binary ref: FUN_0057b5df lines 5104-5218
+  // Conditions: iVar6 == 0 (kill_civ returned 0 = NOT eliminated)
+  //   AND city still exists AND not recapture
+  //   AND (defender govt == Communism(3) OR Democracy(6) OR scenario flag OR has Communism tech)
+  if (!civEliminated && captureType === 0 && oldOwner > 0 && !wasOurs) {
+    // #24: Use old owner's GOVERNMENT type first, then fall back to tech
+    const defGovtIdx = govtIndex(getGovt(state, oldOwner));
+    const hasGovtTrigger = (defGovtIdx === GOVT_COMMUNISM || defGovtIdx === GOVT_DEMOCRACY);
+    const hasCommunismTech = hasTech(state, oldOwner, TECH_COMMUNISM);
+    const partisanTrigger = hasGovtTrigger || hasCommunismTech;
+
+    if (partisanTrigger) {
+      // Partisan count formula from binary (lines 5108-5156)
+      // govtDiff = abs(defender.govt - attacker.govt)
+      // ageDiff = abs(defender.powerRank - attacker.powerRank)
+      // count = ((citySize + 5) / 8) * (govtDiff + ageDiff + 1) / 2
+      const atkGovtIdx = govtIndex(getGovt(state, capturerCivSlot));
+      const govtDiff = Math.abs(defGovtIdx - atkGovtIdx);
+      const defRank = getPowerRank(state, oldOwner);
+      const atkRank = getPowerRank(state, capturerCivSlot);
+      const ageDiff = Math.abs(defRank - atkRank);
+      let partisanCount = Math.floor(((city.size + 5) >> 3) * (govtDiff + ageDiff + 1) / 2);
+
+      // param_3 != 0 (subvert/bribe): halve count
+      if (captureType !== 0) {
+        partisanCount = Math.floor(partisanCount / 2);
+      }
+
+      // Tech prerequisites (binary lines 5133-5156):
+      // Conscription (0x11=17): if missing, count -= 1
+      if (!hasTech(state, oldOwner, TECH_CONSCRIPTION)) partisanCount -= 1;
+
+      // Guerrilla Warfare (0x22=34): primary partisan tech
+      if (!hasTech(state, oldOwner, TECH_GUERRILLA_WARFARE)) {
+        // No Guerrilla Warfare: need both Communism tech AND Gunpowder, else 0 partisans
+        if (!hasTech(state, oldOwner, TECH_COMMUNISM)) partisanCount = 0;
+        if (!hasTech(state, oldOwner, TECH_GUNPOWDER)) partisanCount = 0;
+      } else {
+        // Has Guerrilla Warfare: check if attacker also has it
+        if (hasTech(state, capturerCivSlot, TECH_GUERRILLA_WARFARE)) {
+          partisanCount += 1;
+        } else {
+          partisanCount *= 2;
+        }
+      }
+
+      // Cap partisans (binary doesn't explicitly cap but terrain limits apply)
+      partisanCount = Math.max(0, partisanCount);
+
+      if (partisanCount > 0) {
+        // Find suitable tiles for partisans (city radius: 20 tiles)
+        const partisanTiles = [];
+        for (let ri = 0; ri < 20; ri++) {
+          const pos = radiusTileCoords(cityGx, cityGy, ri, mapBase);
+          if (!pos) continue;
+          const ter = mapBase.getTerrain(pos.gx, pos.gy);
+          if (ter === 10) continue; // skip ocean
+          // Skip tiles with enemy units (binary: FUN_005b8da4 < 0 means no enemy)
+          if (state.units.some(u => u.gx === pos.gx && u.gy === pos.gy &&
+              u.owner !== oldOwner && u.gx >= 0)) continue;
+          // Skip tiles with cities (binary: FUN_005b89e4 == 0)
+          if (state.cities.some(c => c.gx === pos.gx && c.gy === pos.gy && c.size > 0)) continue;
+
+          // Score: terrain defense * 2, +1 road, +1 railroad, *2 fortress
+          const defValue = (TERRAIN_DEFENSE[ter] || 2) * 2;
+          const imp = mapBase.getImprovements(pos.gx, pos.gy);
+          let score = defValue;
+          if (imp.road) score += 1;
+          if (imp.railroad) score += 1;
+          if (imp.fortress) score *= 2;
+          partisanTiles.push({ gx: pos.gx, gy: pos.gy, score });
+        }
+
+        // Sort by defense value descending
+        partisanTiles.sort((a, b) => b.score - a.score);
+
+        // Spawn partisans
+        let spawned = 0;
+        if (partisanTiles.length > 0) {
+          state.units = [...state.units];
+          for (let i = 0; i < partisanCount && i < partisanTiles.length; i++) {
+            const loc = partisanTiles[i];
+            const partisan = makeUnit(
+              PARTISAN_TYPE, oldOwner, loc.gx, loc.gy,
+              UNIT_MOVE_POINTS[PARTISAN_TYPE] * MOVEMENT_MULTIPLIER
+            );
+            partisan.orders = 'fortified';
+            // Veterans based on defender tolerance and trespass flag (binary lines 5207-5218)
+            if (rand() % 2 === 0) partisan.veteran = 1;
+            state.units.push(partisan);
+            updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, oldOwner, loc.gx, loc.gy, mapBase.wraps);
+            spawned++;
+          }
+        }
+
+        if (spawned > 0) {
+          events.push({
+            type: 'partisansSpawned',
+            count: spawned,
+            civSlot: oldOwner,
+            cityName: city.name,
+            gx: cityGx,
+            gy: cityGy,
+          });
+        }
+      }
     }
   }
 
@@ -915,20 +1053,49 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
 
 
 // ═══════════════════════════════════════════════════════════════════
+// Helper: Clean up trade routes pointing to a captured/destroyed city
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * #58: Remove trade routes pointing TO the specified city from all other cities.
+ * Called on both city capture and city destruction.
+ */
+function cleanupTradeRoutes(state, targetCityIdx) {
+  for (let ci = 0; ci < state.cities.length; ci++) {
+    if (ci === targetCityIdx) continue;
+    const c = state.cities[ci];
+    if (!c.tradeRoutes || c.tradeRoutes.length === 0) continue;
+    const filtered = c.tradeRoutes.filter(r => r.destCityIndex !== targetCityIdx);
+    if (filtered.length !== c.tradeRoutes.length) {
+      state.cities[ci] = { ...c, tradeRoutes: filtered };
+    }
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
 // Helper: Rehome or disband old owner's units homed to captured city
 // ═══════════════════════════════════════════════════════════════════
 
 /**
  * Rehome units whose home city was captured.
- * Diplomats/spies get set to no-home (0xFFFF); other units get reassigned
- * to the nearest own city, or disbursed if no cities remain.
+ * Partisans (type 9) get set to no-home (0xFF); Diplomats/spies get 0xFFFF.
+ * Other units get reassigned to the nearest own city.
+ * #59: Units that can't be rehomed (no cities remain) are DELETED, not left homeless.
  *
- * From pseudocode FUN_0057b5df lines 1784-1795.
+ * From pseudocode FUN_0057b5df lines 5002-5028.
  */
 function rehomeOrDisbandUnits(state, capturedCityIdx, oldOwner, mapBase) {
+  state.units = [...state.units];
   for (let i = 0; i < state.units.length; i++) {
     const u = state.units[i];
     if (u.homeCityId !== capturedCityIdx || u.owner !== oldOwner || u.gx < 0) continue;
+
+    // Partisans: set to no home (binary: type 9 -> home = 0xFF)
+    if (u.type === PARTISAN_TYPE) {
+      state.units[i] = { ...u, homeCityId: 0xFFFF };
+      continue;
+    }
 
     // Diplomats/spies: set to no home
     if (u.type === 46 || u.type === 47) {
@@ -945,6 +1112,14 @@ function rehomeOrDisbandUnits(state, capturedCityIdx, oldOwner, mapBase) {
         if (d < bestDist) { bestDist = d; bestCi = ci; }
       }
     }
-    state.units[i] = { ...u, homeCityId: bestCi >= 0 ? bestCi : 0xFFFF };
+
+    if (bestCi >= 0) {
+      // Rehome to nearest city
+      state.units[i] = { ...u, homeCityId: bestCi };
+    } else {
+      // #59: No cities remain — delete unit (don't leave homeless)
+      // Binary: FUN_005b6042 disbands the unit
+      state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
+    }
   }
 }
