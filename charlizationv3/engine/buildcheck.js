@@ -67,11 +67,16 @@ export function canBuildUnitType(civSlot, cityIndex, unitTypeId, gameState, mapB
     if (govt !== 'fundamentalism') return false;
   }
 
-  // ── Gap 92: Settler-type units require city size > 1 ──
-  // Settlers/Engineers consume a population point; can't build in size-1 cities
+  // ── Gap 92: Settler-type units at size 1 — Chieftain only blocks ──
+  // Binary FUN_004ec3fe: Chieftain difficulty blocks settler completion from
+  // size-1 cities. Other difficulties allow it (city is destroyed).
+  // The build check only blocks on Chieftain; other difficulties show it
+  // as available and handle the city destruction on completion.
   if (SETTLER_TYPES.has(unitTypeId) && cityIndex >= 0) {
     const city = gameState.cities[cityIndex];
-    if (city && city.size <= 1) return false;
+    if (city && city.size <= 1 && (gameState.difficulty === 0 || gameState.difficulty === 'chieftain')) {
+      return false;
+    }
   }
 
   // ── Gunpowder defense threshold ──
