@@ -248,36 +248,71 @@ function drawViewport() {
   }
 
   // Territory overlay: semi-transparent civ colors on owned tiles
+  // Uses same coordinate transform as blitToViewport — map-pixel to screen-pixel
   const territoryOn = document.getElementById('territory-toggle')?.checked;
   if (territoryOn && !minimapOn && md.getTileOwnership) {
     const dpr = window.devicePixelRatio || 1;
     const pxPerMap = S.vp.scale * dpr;
     const TW = 64, TH = 32;
-    const vw = S.viewportCanvas.width / pxPerMap;
-    const vh = S.viewportCanvas.height / pxPerMap;
-    const startGx = Math.floor(S.vp.x / TW) - 1;
-    const startGy = Math.floor(S.vp.y / (TH / 2)) - 1;
-    const endGx = Math.ceil((S.vp.x + vw) / TW) + 1;
-    const endGy = Math.ceil((S.vp.y + vh) / (TH / 2)) + 1;
+
+    // Viewport visible range in map-pixel space
+    const vpX = S.vp.x;
+    const vpY = S.vp.y;
+    const visW = S.vp.logicalW / S.vp.scale;
+    const visH = S.vp.logicalH / S.vp.scale;
+
+    // Convert to tile range
+    const startGy = Math.max(0, Math.floor(vpY / (TH / 2)) - 1);
+    const endGy = Math.min(md.mh, Math.ceil((vpY + visH) / (TH / 2)) + 1);
 
     S.vCtx.save();
     S.vCtx.globalAlpha = 0.3;
-    for (let gy = Math.max(0, startGy); gy < Math.min(md.mh, endGy); gy++) {
-      const xMax = S.vp.wraps ? md.mw : Math.min(md.mw, endGx);
-      for (let gx = Math.max(0, startGx); gx < xMax; gx++) {
+
+    for (let gy = startGy; gy < endGy; gy++) {
+      // Tile x range depends on wrapping
+      let startGx, endGx;
+      if (S.vp.wraps) {
+        startGx = Math.floor(vpX / TW) - 1;
+        endGx = Math.ceil((vpX + visW) / TW) + 1;
+      } else {
+        startGx = Math.max(0, Math.floor(vpX / TW) - 1);
+        endGx = Math.min(md.mw, Math.ceil((vpX + visW) / TW) + 1);
+      }
+
+      for (let gx = startGx; gx < endGx; gx++) {
         const wgx = S.vp.wraps ? ((gx % md.mw) + md.mw) % md.mw : gx;
+        if (wgx < 0 || wgx >= md.mw) continue;
         const owner = md.getTileOwnership(wgx, gy);
         if (owner == null || owner <= 0 || owner > 7) continue;
-        const color = CIV_COLORS[owner] || '#888';
-        const px = (gx * TW + ((gy % 2) ? (TW >> 1) : 0) - S.vp.x) * pxPerMap;
-        const py = (gy * (TH >> 1) - S.vp.y) * pxPerMap;
 
-        S.vCtx.fillStyle = color;
+        // Map-pixel position of this tile
+        const mapPx = gx * TW + ((gy % 2) ? (TW >> 1) : 0);
+        const mapPy = gy * (TH / 2);
+
+        // Screen-pixel position (same transform as blitToViewport)
+        let screenX;
+        if (S.vp.wraps) {
+          const x1 = ((vpX % S.vp.wrapW) + S.vp.wrapW) % S.vp.wrapW;
+          screenX = ((mapPx - x1) % S.vp.wrapW + S.vp.wrapW) % S.vp.wrapW * pxPerMap;
+          // Only draw if visible
+          if (screenX > S.viewportCanvas.width + TW * pxPerMap) continue;
+        } else {
+          screenX = (mapPx - vpX) * pxPerMap;
+        }
+        const screenY = (mapPy - vpY) * pxPerMap;
+
+        // Skip if off-screen
+        if (screenX + TW * pxPerMap < 0 || screenX > S.viewportCanvas.width) continue;
+        if (screenY + TH * pxPerMap < 0 || screenY > S.viewportCanvas.height) continue;
+
+        const tw = TW * pxPerMap;
+        const th = TH * pxPerMap;
+        S.vCtx.fillStyle = CIV_COLORS[owner] || '#888';
         S.vCtx.beginPath();
-        S.vCtx.moveTo(px + TW * pxPerMap / 2, py);
-        S.vCtx.lineTo(px + TW * pxPerMap, py + TH * pxPerMap / 2);
-        S.vCtx.lineTo(px + TW * pxPerMap / 2, py + TH * pxPerMap);
-        S.vCtx.lineTo(px, py + TH * pxPerMap / 2);
+        S.vCtx.moveTo(screenX + tw / 2, screenY);
+        S.vCtx.lineTo(screenX + tw, screenY + th / 2);
+        S.vCtx.lineTo(screenX + tw / 2, screenY + th);
+        S.vCtx.lineTo(screenX, screenY + th / 2);
         S.vCtx.closePath();
         S.vCtx.fill();
       }
