@@ -961,18 +961,10 @@ function processAiTurns(roomId, room) {
       const result = applyAction(room.gameState, room.mapBase, action, activeCiv);
       if (result !== room.gameState) {
         room.gameState = result;
-        // Queue combat results that are visible to any human player
+        // Queue all AI combat results — client decides whether to animate
+        // based on its FOW/LOS settings
         if (room.gameState.combatResult) {
-          const cr = room.gameState.combatResult;
-          const gx = cr.gx, gy = cr.gy;
-          if (gx != null && room.mapBase.tileData) {
-            const tileIdx = gy * room.mapBase.mw + gx;
-            const tile = room.mapBase.tileData[tileIdx];
-            const humanMask = room.gameState.humanPlayers || 0;
-            if (tile && (tile.visibility & humanMask)) {
-              room.aiCombatQueue.push({ ...cr });
-            }
-          }
+          room.aiCombatQueue.push({ ...room.gameState.combatResult });
         }
         emitGameLogs(roomId, room);
         clearOneshotNotifications(room);
