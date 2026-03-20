@@ -225,6 +225,7 @@ document.getElementById('fow-toggle').addEventListener('change', () => { if (S.c
 document.getElementById('grid-toggle').addEventListener('change', () => { if (S.currentMapData) drawViewport(); });
 document.getElementById('minimap-toggle').addEventListener('change', () => { if (S.currentMapData) drawViewport(); });
 document.getElementById('los-toggle').addEventListener('change', () => { if (S.currentMapData) drawViewport(); });
+document.getElementById('territory-toggle').addEventListener('change', () => { if (S.currentMapData) drawViewport(); });
 document.getElementById('fow-civ').addEventListener('change', () => {
   if (!S.currentMapData) return;
   const val = document.getElementById('fow-civ').value;
@@ -737,6 +738,8 @@ function updateHamburgerChecks() {
   if (fowCk) fowCk.classList.toggle('checked', document.getElementById('fow-toggle').checked);
   if (losCk) losCk.classList.toggle('checked', document.getElementById('los-toggle').checked);
   if (mmCk) mmCk.classList.toggle('checked', document.getElementById('minimap-toggle').checked);
+  const terrCk = document.getElementById('menu-territory-check');
+  if (terrCk) terrCk.classList.toggle('checked', document.getElementById('territory-toggle').checked);
 }
 
 hamburgerBtn.addEventListener('click', () => {
@@ -806,6 +809,13 @@ const HAMBURGER_ACTIONS = {
   },
   'toggle-minimap': () => {
     const el = document.getElementById('minimap-toggle');
+    el.checked = !el.checked;
+    el.dispatchEvent(new Event('change'));
+    updateHamburgerChecks();
+    return true; // don't close menu
+  },
+  'toggle-territory': () => {
+    const el = document.getElementById('territory-toggle');
     el.checked = !el.checked;
     el.dispatchEvent(new Event('change'));
     updateHamburgerChecks();

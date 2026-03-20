@@ -6,6 +6,7 @@ import { S, getMinScale, VP_MAX_SCALE } from './state.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Minimap } from './minimap.js';
 import { computeLOS } from '../engine/visibility.js';
+import { CIV_COLORS } from '../engine/defs.js';
 
 function resizeViewport() {
   const dpr = window.devicePixelRatio || 1;
@@ -244,6 +245,44 @@ function drawViewport() {
   if (gridOn && !minimapOn) {
     ensureGridCanvas(md);
     blitToViewport(S.gridCanvas);
+  }
+
+  // Territory overlay: semi-transparent civ colors on owned tiles
+  const territoryOn = document.getElementById('territory-toggle')?.checked;
+  if (territoryOn && !minimapOn && md.getTileOwnership) {
+    const dpr = window.devicePixelRatio || 1;
+    const pxPerMap = S.vp.scale * dpr;
+    const TW = 64, TH = 32;
+    const vw = S.viewportCanvas.width / pxPerMap;
+    const vh = S.viewportCanvas.height / pxPerMap;
+    const startGx = Math.floor(S.vp.x / TW) - 1;
+    const startGy = Math.floor(S.vp.y / (TH / 2)) - 1;
+    const endGx = Math.ceil((S.vp.x + vw) / TW) + 1;
+    const endGy = Math.ceil((S.vp.y + vh) / (TH / 2)) + 1;
+
+    S.vCtx.save();
+    S.vCtx.globalAlpha = 0.3;
+    for (let gy = Math.max(0, startGy); gy < Math.min(md.mh, endGy); gy++) {
+      const xMax = S.vp.wraps ? md.mw : Math.min(md.mw, endGx);
+      for (let gx = Math.max(0, startGx); gx < xMax; gx++) {
+        const wgx = S.vp.wraps ? ((gx % md.mw) + md.mw) % md.mw : gx;
+        const owner = md.getTileOwnership(wgx, gy);
+        if (owner == null || owner <= 0 || owner > 7) continue;
+        const color = CIV_COLORS[owner] || '#888';
+        const px = (gx * TW + ((gy % 2) ? (TW >> 1) : 0) - S.vp.x) * pxPerMap;
+        const py = (gy * (TH >> 1) - S.vp.y) * pxPerMap;
+
+        S.vCtx.fillStyle = color;
+        S.vCtx.beginPath();
+        S.vCtx.moveTo(px + TW * pxPerMap / 2, py);
+        S.vCtx.lineTo(px + TW * pxPerMap, py + TH * pxPerMap / 2);
+        S.vCtx.lineTo(px + TW * pxPerMap / 2, py + TH * pxPerMap);
+        S.vCtx.lineTo(px, py + TH * pxPerMap / 2);
+        S.vCtx.closePath();
+        S.vCtx.fill();
+      }
+    }
+    S.vCtx.restore();
   }
 
   // Save the region under the unit overlay (small area, not full viewport)
