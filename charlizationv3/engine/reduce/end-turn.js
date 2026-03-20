@@ -586,6 +586,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     civPopulationTotal += city.size;
 
     if (city.resistanceTurns > 0) continue; // no trade during resistance
+    if (city.civilDisorder) continue; // no trade/science during civil disorder
     const { tax, sci, maintenance } = calcCityTrade(city, ci, state, mapBase);
     civTaxTotal += tax;
 

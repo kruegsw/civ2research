@@ -1018,12 +1018,13 @@ export function payBuildingUpkeep(cityIndex, state) {
  * @param {object} mapBase
  * @returns {{ events: Array, civilDisorder: boolean, weLoveKingDay: boolean }}
  */
-export function handleCityDisorder(city, cityIndex, state, mapBase) {
+export function handleCityDisorder(city, cityIndex, state, mapBase, wasInDisorderBeforeTurn) {
   const events = [];
   const activeCiv = city.owner;
   const govt = getGovernment(city, state);
 
-  const wasInDisorder = city.civilDisorder;
+  // Use pre-turn disorder state (before happiness recalc set it in step 2)
+  const wasInDisorder = wasInDisorderBeforeTurn ?? city.civilDisorder;
 
   // Recalculate happiness
   const hap = calcHappiness(city, cityIndex, state, mapBase);
@@ -1343,6 +1344,9 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
     }
   }
 
+  // Save pre-turn disorder state for onset detection in handleCityDisorder
+  const wasInDisorderBeforeTurn = !!city.civilDisorder;
+
   // ── #74: Process food FIRST, then recalculate yields including happiness ──
   // Binary order: food processing occurs before happiness recalculation,
   // so that city size changes from growth/famine affect happiness computation.
@@ -1560,7 +1564,7 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
 
   // ── Step 5: Disorder check (post-production) ──
   if (!cityDestroyed) {
-    const disorderResult = handleCityDisorder(state.cities[cityIndex], cityIndex, state, mapBase);
+    const disorderResult = handleCityDisorder(state.cities[cityIndex], cityIndex, state, mapBase, wasInDisorderBeforeTurn);
     events.push(...disorderResult.events);
     // Apply disorder state changes
     const curCity = state.cities[cityIndex];
