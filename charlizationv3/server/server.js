@@ -752,7 +752,7 @@ wss.on("connection", (ws) => {
         // Re-build seat list from current seats
         const restartSeats = [];
         for (let i = 0; i < 8; i++) {
-          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i}`, ai: restartRoom.seats[i].ai || false, difficulty: restartRoom.seats[i].difficulty || null });
+          if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i + 1}`, ai: restartRoom.seats[i].ai || false, difficulty: restartRoom.seats[i].difficulty || null });
         }
 
         sz.flatGrassland = true; // DEBUG: flat grassland map for testing
@@ -1344,7 +1344,7 @@ function startGame(roomId, room, occupiedSeats) {
 
   const seatList = occupiedSeats.map(i => ({
     seatIndex: i,
-    name: room.seats[i]?.name || `Player ${i}`,
+    name: room.seats[i]?.name || `Player ${i + 1}`,
     ai: room.seats[i]?.ai || false,
     difficulty: room.seats[i]?.difficulty || null,
   }));

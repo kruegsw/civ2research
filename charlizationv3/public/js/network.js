@@ -230,7 +230,7 @@ function renderRoomDetail(msg) {
         diffHtml = ` <span class="seat-difficulty-label">${currentDiff.charAt(0).toUpperCase() + currentDiff.slice(1)}</span>`;
       }
       html += `<div class="room-seat ai occupied">
-        <span class="seat-num">${s.seat}</span>
+        <span class="seat-num">${s.seat + 1}</span>
         <span class="seat-name"><span class="seat-ai-tag">[AI]</span> ${s.name || 'Computer'}${diffHtml}${removeBtnHtml}</span>
       </div>`;
     } else if (s.occupied) {
@@ -240,7 +240,7 @@ function renderRoomDetail(msg) {
       const readyMark = (msg.ready && msg.ready[s.seat]) ? ' <span style="color:#4caf50">&#10003;</span>' : '';
       html += `<div class="room-seat occupied">
         <span class="activity-dot" style="background:${dotColor}"></span>
-        <span class="seat-num">${s.seat}</span>
+        <span class="seat-num">${s.seat + 1}</span>
         <span class="seat-name">${s.name || 'Player'}${you}${readyMark}</span>
       </div>`;
     } else {
@@ -250,7 +250,7 @@ function renderRoomDetail(msg) {
         : '';
       html += `<div class="room-seat empty">
         <span class="activity-dot" style="background:#444"></span>
-        <span class="seat-num">${s.seat}</span>
+        <span class="seat-num">${s.seat + 1}</span>
         <span class="seat-name">Open${addAiBtnHtml}</span>
       </div>`;
     }
