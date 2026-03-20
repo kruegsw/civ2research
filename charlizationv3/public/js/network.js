@@ -1344,15 +1344,26 @@ function initNetwork(appCallbacks) {
             }
           };
 
-          // Collect all combat results: direct combat + AI combat queue
+          // Collect combat results, filtered by client's current LOS/FOW setting
+          const fowOn = document.getElementById('fow-toggle')?.checked;
           const allCombats = [];
           if (statePayload.combatResult && statePayload.combatResult.gx != null) {
+            // Player's own combat — always show
             allCombats.push(statePayload.combatResult);
           }
           if (statePayload.aiCombatQueue) {
-            // AI combat in player's LOS — animate these too
             for (const aiCr of statePayload.aiCombatQueue) {
-              if (aiCr && aiCr.gx != null) allCombats.push(aiCr);
+              if (!aiCr || aiCr.gx == null) continue;
+              if (!fowOn) {
+                // FOW off — show all battles
+                allCombats.push(aiCr);
+              } else {
+                // FOW on — only show if tile is explored by our civ
+                const tile = S.mpMapBase?.tileData?.[aiCr.gy * S.mpMapBase.mw + aiCr.gx];
+                if (tile && (tile.visibility & (1 << S.mpCivSlot))) {
+                  allCombats.push(aiCr);
+                }
+              }
             }
           }
 
