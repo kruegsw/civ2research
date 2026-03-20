@@ -7,7 +7,7 @@ import { clampViewport, drawViewport, blitPatchToViewport, invalidateFowCanvases
 import { sfx, getDeathSfx, UNIT_ATK_SFX, getCombatAttackSound, getCombatResolutionSound } from './sound.js';
 import { showOverlayMessage, showConfirmDialog, showNameCityDialog } from './dialogs.js';
 import { Civ2Renderer } from './renderer.js';
-import { UNIT_NAMES, ORDER_KEYS, ORDER_NAMES, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_CARRY_CAP, TERRAIN_NAMES, TERRAIN_TRANSFORM } from '../engine/defs.js';
+import { UNIT_NAMES, ORDER_KEYS, ORDER_NAMES, UNIT_DOMAIN, UNIT_ATK, UNIT_DEF, UNIT_CARRY_CAP, UNIT_MOVE_POINTS, TERRAIN_NAMES, TERRAIN_TRANSFORM } from '../engine/defs.js';
 import { getValidActions, validateAction, calcBribeCost, calcInciteCost } from '../engine/rules.js';
 import { MOVE_UNIT, BUILD_CITY, UNIT_ORDER, WORKER_ORDER, PILLAGE, ESTABLISH_TRADE, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN } from '../engine/actions.js';
 import { findPath } from '../engine/pathfinding.js';
@@ -203,15 +203,19 @@ export function applyImprovementsUpdate(tileImprovements) {
 
 // ── Combat movement animation (moving units during combat) ──
 // Binary ref: FUN_0057ed3f @ block_00570000.c
-const COMBAT_MOVE_FRAMES = 8;        // outer loop count @ 0x0057ed3f
-const COMBAT_MOVE_MS_PER_FRAME = 64; // timeGetTime comparison: < 0x40 @ 0x0057f4e6
-const COMBAT_MOVE_TOTAL_MS = 512;    // 8 × 64ms
+// Binary FUN_0057ed3f: 8 slide frames × 64ms = 512ms attacker slide-in
+const COMBAT_MOVE_FRAMES = 8;
+const COMBAT_MOVE_MS_PER_FRAME = 64;
 const COMBAT_POST_ANIM_DELAY = 10;   // play_delay_animation(10) @ 0x0057f5e6
 
 // ── Battle explosion animation ──
 // Binary ref: FUN_00580341 @ block_00580000.c, Civ2-clone AttackAnimation.cs
-const COMBAT_BATTLE_MS_PER_FRAME = 70;    // Civ2-clone: AttackAnimation interval = 70ms
-const COMBAT_BATTLE_FRAMES_PER_EXPLOSION = 5; // explosion += 5 per round
+// Binary FUN_00580341: 70ms per visual update frame
+const COMBAT_BATTLE_MS_PER_FRAME = 70;
+// Binary: framesPerRound = 10 >> (bothAncient ? 1 : 0)
+// Ancient era threshold: both units have movement < 30 (0x1E)
+const ANCIENT_ERA_MOVE_THRESHOLD = 30; // 0x1E from binary
+const COMBAT_DEATH_MS_PER_FRAME = 70;
 // Ancient era: both units with move < 30 → halved frame count
 const COMBAT_ANCIENT_ERA_THRESHOLD = 0x1E; // 30 movement points (pre-gunpowder boundary)
 const COMBAT_FRAMES_MODERN = 10;           // 10 >> 0 = 10 frames per combat round
@@ -261,17 +265,15 @@ export function animateCombat(cr, onComplete) {
   const TW = 64, TH = 32;
   const defGx = cr.gx, defGy = cr.gy;
 
-  // Map-space position of defender's tile (combat tile)
+  // Map-space positions
   const defTileX = defGx * TW + ((defGy % 2) ? (TW >> 1) : 0);
   const defTileY = defGy * (TH >> 1) - 16;
-
-  // Attacker's origin tile (from combatResult data or estimate from direction)
   const atkGx = cr.atkGx ?? defGx;
   const atkGy = cr.atkGy ?? defGy;
   const atkTileX = atkGx * TW + ((atkGy % 2) ? (TW >> 1) : 0);
   const atkTileY = atkGy * (TH >> 1) - 16;
 
-  // Get both unit sprites
+  // Get unit sprites
   const atkSprite = S.mapSprites?.unitColored?.[cr.attacker + '-' + cr.atkOwner];
   const defSprite = S.mapSprites?.unitColored?.[cr.defender + '-' + cr.defOwner];
   if (!atkSprite || !defSprite) {
@@ -313,14 +315,11 @@ export function animateCombat(cr, onComplete) {
     }
   }
 
-  // Hit flash: brief tinted overlay on the damaged unit (red tint, not white haze)
   function drawHitFlash(sprite, mx, my) {
     const sx = screenX(mx), sy = screenY(my);
     const w = sprite.width * pxPerMap, h = sprite.height * pxPerMap;
-    // Use a red flash instead of white haze — matches Civ2's damage indicator
     S.vCtx.globalAlpha = 0.35;
     S.vCtx.fillStyle = '#f00';
-    // Inset the flash slightly so it doesn't cover the whole tile
     const inset = 2 * pxPerMap;
     S.vCtx.fillRect(sx + inset, sy + inset, w - inset * 2, h - inset * 2);
     S.vCtx.globalAlpha = 1.0;
@@ -333,20 +332,25 @@ export function animateCombat(cr, onComplete) {
   }
 
   // HP tracking
-  let atkHp = cr.atkStartHp;
-  let defHp = cr.defStartHp;
+  let atkDamage = 0;  // accumulated damage on attacker
+  let defDamage = 0;  // accumulated damage on defender
   const atkMaxHp = cr.atkMaxHp;
   const defMaxHp = cr.defMaxHp;
-  const atkFp = cr.atkFp;
-  const defFp = cr.defFp;
+  const atkFp = cr.atkFp || 1;
+  const defFp = cr.defFp || 1;
   const attackerWins = cr.type === 'atkWin';
 
-  // Attacker drawn offset left, defender offset right on combat tile
+  // Binary: framesPerRound = 10 >> (bothAncient ? 1 : 0)
+  // Ancient = both units have move < 30 (0x1E). UNIT_MOVE_POINTS * MOVEMENT_MULTIPLIER(3)
+  const atkMove = (UNIT_MOVE_POINTS[cr.attacker] || 1) * 3;
+  const defMove = (UNIT_MOVE_POINTS[cr.defender] || 1) * 3;
+  const bothAncient = atkMove < ANCIENT_ERA_MOVE_THRESHOLD && defMove < ANCIENT_ERA_MOVE_THRESHOLD;
+  const framesPerHpTick = bothAncient ? 5 : 10;
+
+  // Combat display positions
   const atkDrawX = defTileX - 8;
   const defDrawX = defTileX + 8;
   const combatY = defTileY;
-
-  // HP bar positions
   const barY = screenY(combatY) - 6 * pxPerMap;
   const atkBarX = screenX(atkDrawX);
   const defBarX = screenX(defDrawX) + 40 * pxPerMap;
@@ -356,52 +360,77 @@ export function animateCombat(cr, onComplete) {
   if (atkSfx) sfx(atkSfx);
 
   _ensureExplosionFrames().then(expFrames => {
-    // ═══ PHASE 1: Attacker slides toward defender ═══
+
+    // ═══ PHASE 1: Attacker slides toward defender (8 frames × 64ms = 512ms) ═══
     let slideFrame = 0;
     const slideDx = (defTileX - atkTileX) / COMBAT_MOVE_FRAMES;
     const slideDy = (defTileY - atkTileY) / COMBAT_MOVE_FRAMES;
 
     function slideStep() {
       if (slideFrame >= COMBAT_MOVE_FRAMES) {
-        // Slide complete → start combat rounds
         startCombatRounds();
         return;
       }
-
       S.vCtx.putImageData(bgSnapshot, 0, 0);
-      // Defender stays at its tile
       drawSpriteAt(defSprite, defTileX, defTileY);
-      // Attacker interpolates from origin toward defender
       const curX = atkTileX + slideDx * slideFrame;
       const curY = atkTileY + slideDy * slideFrame;
       drawSpriteAt(atkSprite, curX, curY);
-
       slideFrame++;
       setTimeout(slideStep, COMBAT_MOVE_MS_PER_FRAME);
     }
 
     // ═══ PHASE 2: Round-by-round combat ═══
+    // Binary FUN_00580341: each round accumulates damage. When damage crosses
+    // a framesPerHpTick boundary, trigger a visual update with hit flash.
+    // Rounds without a boundary crossing are batched (no delay).
     function startCombatRounds() {
       let roundIdx = 0;
+      let expFrameIdx = 0;
+      let animTriggered = false;
 
-      function playNextRound() {
-        if (roundIdx >= rounds.length) {
-          // All rounds done → death explosion
-          playDeathExplosion();
-          return;
+      function processRoundsUntilVisualUpdate() {
+        // Process rounds until we hit a damage boundary crossing or run out
+        while (roundIdx < rounds.length) {
+          const atkWon = rounds[roundIdx];
+          const prevAtkFrame = Math.floor(atkDamage / framesPerHpTick);
+          const prevDefFrame = Math.floor(defDamage / framesPerHpTick);
+
+          if (atkWon) {
+            defDamage += atkFp;
+          } else {
+            atkDamage += defFp;
+          }
+          roundIdx++;
+
+          const newAtkFrame = Math.floor(atkDamage / framesPerHpTick);
+          const newDefFrame = Math.floor(defDamage / framesPerHpTick);
+
+          // Check if damage crossed a visual frame boundary
+          if (newAtkFrame !== prevAtkFrame || newDefFrame !== prevDefFrame) {
+            // Trigger visual update
+            animTriggered = true;
+            drawCombatFrame(atkWon, expFrames);
+            expFrameIdx++;
+            // Wait then continue
+            setTimeout(processRoundsUntilVisualUpdate, COMBAT_BATTLE_MS_PER_FRAME);
+            return;
+          }
         }
-
-        const atkWon = rounds[roundIdx];
-        // Apply damage
-        if (atkWon) {
-          defHp -= atkFp * 10;
+        // All rounds processed — go to death explosion
+        if (!animTriggered) {
+          // No animation triggered during combat — draw final state once
+          drawCombatFrame(rounds[rounds.length - 1], expFrames);
+          setTimeout(playDeathExplosion, COMBAT_BATTLE_MS_PER_FRAME);
         } else {
-          atkHp -= defFp * 10;
+          playDeathExplosion();
         }
-        if (atkHp < 0) atkHp = 0;
-        if (defHp < 0) defHp = 0;
+      }
 
-        // Draw both units side by side with HP bars
+      function drawCombatFrame(atkWonThisRound, expF) {
+        const atkHp = Math.max(0, atkMaxHp - atkDamage * 10);
+        const defHp = Math.max(0, defMaxHp - defDamage * 10);
+
         S.vCtx.putImageData(bgSnapshot, 0, 0);
         drawSpriteAt(atkSprite, atkDrawX, combatY);
         drawSpriteAt(defSprite, defDrawX, combatY);
@@ -409,25 +438,19 @@ export function animateCombat(cr, onComplete) {
         drawHpBar(defBarX, barY, defHp, defMaxHp);
 
         // Hit flash on the damaged unit
-        if (atkWon) {
+        if (atkWonThisRound) {
           drawHitFlash(defSprite, defDrawX, combatY);
         } else {
           drawHitFlash(atkSprite, atkDrawX, combatY);
         }
 
-        // Small explosion every 5 rounds
-        if (roundIdx % COMBAT_BATTLE_FRAMES_PER_EXPLOSION === 0 && expFrames) {
-          const expFrame = Math.min(Math.floor(roundIdx / COMBAT_BATTLE_FRAMES_PER_EXPLOSION) % 8, 7);
-          if (expFrames[expFrame]) {
-            drawSpriteAt(expFrames[expFrame], defTileX + 16, combatY + 8);
-          }
+        // Explosion sprite at combat tile (cycles through frames)
+        if (expF && expF[expFrameIdx % 8]) {
+          drawSpriteAt(expF[expFrameIdx % 8], defTileX + 16, combatY + 8);
         }
-
-        roundIdx++;
-        setTimeout(playNextRound, COMBAT_BATTLE_MS_PER_FRAME);
       }
 
-      playNextRound();
+      processRoundsUntilVisualUpdate();
     }
 
     // ═══ PHASE 3: Death explosion on loser ═══
@@ -435,7 +458,6 @@ export function animateCombat(cr, onComplete) {
       const loser = attackerWins ? cr.defender : cr.attacker;
       const loserDomain = UNIT_DOMAIN[loser] ?? 0;
 
-      // Domain-specific death sound
       sfx(getDeathSfx(loser));
       const resSfx = getCombatResolutionSound(loser, loserDomain !== 0);
       if (resSfx) sfx(resSfx);
@@ -447,41 +469,39 @@ export function animateCombat(cr, onComplete) {
 
       let fi = 0;
       const totalDeathFrames = loserDomain === 0 ? 8 : 6;
-      const loserX = attackerWins ? defDrawX : atkDrawX;
 
       function deathFrame() {
         if (fi >= totalDeathFrames) {
-          // Animation complete — map will re-render with final game state positions
           if (onComplete) onComplete();
           return;
         }
 
         S.vCtx.putImageData(bgSnapshot, 0, 0);
 
-        // Draw surviving unit at its ORIGINAL position (not the combat tile)
+        // Draw surviving unit at its position
         if (attackerWins) {
-          // Attacker wins: draw at attacker's origin tile
           drawSpriteAt(atkSprite, atkTileX, atkTileY);
         } else {
-          // Defender wins: draw at defender's tile
           drawSpriteAt(defSprite, defTileX, defTileY);
         }
 
-        // Explosion over loser position
+        // Explosion over loser
         if (expFrames[fi]) {
           const expDrawX = attackerWins ? defTileX + 16 : atkTileX + 16;
           const expDrawY = attackerWins ? defTileY + 8 : atkTileY + 8;
-          drawSpriteAt(expFrames[fi], expDrawX, expDrawY);
-          // Sea units: sinking effect
+
           if (loserDomain === 2 && fi > 2) {
+            // Sea unit sinking effect
             S.vCtx.globalAlpha = 0.3 + fi * 0.1;
             drawSpriteAt(expFrames[Math.min(fi, 7)], expDrawX, expDrawY + fi * 2);
             S.vCtx.globalAlpha = 1.0;
+          } else {
+            drawSpriteAt(expFrames[fi], expDrawX, expDrawY);
           }
         }
 
         fi++;
-        setTimeout(deathFrame, COMBAT_BATTLE_MS_PER_FRAME);
+        setTimeout(deathFrame, COMBAT_DEATH_MS_PER_FRAME);
       }
 
       deathFrame();
