@@ -845,6 +845,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       // Else: fresh unit (full MP) or roll succeeded — proceed with move
     }
 
+    console.log(`[move] Unit #${unitIndex} type=${unit.type} moving from (${unit.gx},${unit.gy}) to (${dest.gx},${dest.gy}), total units: ${state.units.length}`);
     unit.gx = dest.gx;
     unit.gy = dest.gy;
     unit.x = dest.gx * 2 + (dest.gy % 2);

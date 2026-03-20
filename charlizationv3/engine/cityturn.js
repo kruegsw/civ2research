@@ -588,6 +588,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
       }
 
       state.units = [...state.units, newUnit];
+      console.log(`[prod] Created unit type=${item.id} at (${city.gx},${city.gy}) for civ ${activeCiv}, total units now: ${state.units.length}, index: ${state.units.length - 1}`);
     } else if (item.type === 'building') {
       // ── Add building ──
 
