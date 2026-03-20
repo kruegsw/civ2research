@@ -459,13 +459,9 @@ export function showTurnEvents(events) {
     const ev = events[i++];
     switch (ev.type) {
       case 'cityGrowth':
+        // Skip population increase announcements — just play sound and continue
         playSoundForEvent('cityGrowth');
-        createCiv2Dialog('turn-event-dialog', 'City Growth', panel => {
-          const msg = document.createElement('div');
-          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-          msg.textContent = `${ev.cityName} has grown to size ${ev.newSize}.`;
-          panel.appendChild(msg);
-        }, [{ label: 'OK', action: showNext }]);
+        showNext();
         break;
 
       case 'famine':
@@ -500,9 +496,13 @@ export function showTurnEvents(events) {
 
       case 'productionComplete': {
         const item = ev.item;
+        // Skip announcement for unit production — only show for buildings and wonders
+        if (item.type === 'unit') {
+          showNext();
+          break;
+        }
         let itemName;
-        if (item.type === 'unit') { itemName = UNIT_NAMES[item.id] || 'Unit'; }
-        else if (item.type === 'building') { itemName = IMPROVE_NAMES[item.id] || 'Building'; }
+        if (item.type === 'building') { itemName = IMPROVE_NAMES[item.id] || 'Building'; }
         else if (item.type === 'wonder') { itemName = WONDER_NAMES[item.id - 39] || 'Wonder'; }
         else itemName = 'Item';
         const prodSnd = getProductionSound(item.type, item.type === 'wonder' ? item.id - 39 : item.id);

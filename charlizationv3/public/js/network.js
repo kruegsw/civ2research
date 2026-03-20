@@ -1141,7 +1141,7 @@ function initNetwork(appCallbacks) {
               cdRerender();
             }
 
-            // Combat result notification with debug math
+            // Combat result notification — log to console only (animation shows it visually)
             if (statePayload.combatResult) {
               const cr = statePayload.combatResult;
               if (cr.type === 'capture') {
@@ -1152,28 +1152,13 @@ function initNetwork(appCallbacks) {
                 const defName = UNIT_NAMES[cr.defender] || 'Unit';
                 const winner = cr.type === 'atkWin' ? atkName : defName;
                 const loser = cr.type === 'atkWin' ? defName : atkName;
-
-                // Survivor HP
                 const survHp = cr.type === 'atkWin'
                   ? (cr.atkMaxHp - cr.atkHpLost)
                   : (cr.defMaxHp - cr.defHpLost);
                 const survMax = cr.type === 'atkWin' ? cr.atkMaxHp : cr.defMaxHp;
                 const hpPct = survMax > 0 ? Math.round(survHp / survMax * 100) : 0;
-
-                // Build debug string
                 const rounds = cr.rounds ? cr.rounds.length : '?';
-                const atkVet = cr.atkVeteran ? ' ★' : '';
-                const defVet = cr.defVeteran ? ' ★' : '';
-                const debugLines = [
-                  `${winner} defeated ${loser}`,
-                  `ATK: ${atkName}${atkVet} (a=${cr.effAtk || '?'} fp=${cr.atkFp || '?'} hp=${cr.atkStartHp || '?'}/${cr.atkMaxHp || '?'})`,
-                  `DEF: ${defName}${defVet} (d=${cr.effDef || '?'} fp=${cr.defFp || '?'} hp=${cr.defStartHp || '?'}/${cr.defMaxHp || '?'})`,
-                  `${rounds} rounds — survivor: ${hpPct}% HP (${survHp}/${survMax})`,
-                ];
-                showOverlayMessage(debugLines.join('\n'));
-
-                // Also log to console for detailed inspection
-                console.log('[combat]', debugLines.join(' | '), cr);
+                console.log(`[combat] ${winner} defeated ${loser} — ${rounds} rounds, survivor ${hpPct}% HP`, cr);
               }
             }
 
@@ -1334,7 +1319,8 @@ function initNetwork(appCallbacks) {
             let combatIdx = 0;
             function playNextCombat() {
               if (combatIdx >= allCombats.length) {
-                afterCombatAnim();
+                // Brief pause after last combat animation before showing notifications
+                setTimeout(afterCombatAnim, 400);
                 return;
               }
               const cr = allCombats[combatIdx++];
