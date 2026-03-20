@@ -608,6 +608,7 @@ const Civ2CityDialog = {
     const difficulty = gs ? gs.difficulty : 'chieftain';
     const humanPlayers = gs ? gs.humanPlayers : 0;
     const isHuman = !!((1 << ownerSlot) & humanPlayers);
+    console.log('[citydialog] happiness inputs: difficulty=', difficulty, 'humanPlayers=', humanPlayers, 'isHuman=', isHuman, 'govt=', govt, 'pop=', pop, 'ownerSlot=', ownerSlot);
 
     const civTechs = mapData.civTechs && mapData.civTechs[ownerSlot];
     const hasTech = (id) => civTechs ? civTechs.has(id) : false;
