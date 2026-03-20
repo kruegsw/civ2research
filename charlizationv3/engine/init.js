@@ -207,7 +207,8 @@ export function initNewGame(mapResult, seatList) {
   }
   const difficultyName = ['chieftain','warlord','prince','king','emperor','deity'][difficultyIdx] || 'chieftain';
 
-  const civCount = seatList.length;
+  // Civ2 supports max 7 civilizations (slots 1-7; slot 0 = barbarians)
+  const civCount = Math.min(seatList.length, 7);
 
   // ── Seeded RNG: create early so createNewCiv can use it ──
   const rng = new SeededRNG(mapResult.mapSeed ?? 42);

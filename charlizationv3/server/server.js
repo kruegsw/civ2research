@@ -48,6 +48,7 @@ import { Civ2Parser } from "../engine/parser.js";
 import { initFromSav, initNewGame } from "../engine/init.js";
 import { generateMap } from "../engine/mapgen.js";
 import { applyAction } from "../engine/reducer.js";
+import { resetAIState } from "../engine/ai/index.js";
 import { filterStateForCiv, computeLOS } from "../engine/visibility.js";
 import { createAccessors, tileToBytes } from "../engine/state.js";
 import { UNIT_NAMES, UNIT_ATK, UNIT_DEF, UNIT_HP, TERRAIN_DEFENSE, TERRAIN_NAMES, IMPROVE_NAMES, WONDER_NAMES, ADVANCE_NAMES, DIFFICULTY_KEYS, BUSY_ORDERS } from "../engine/defs.js";
@@ -565,16 +566,17 @@ wss.on("connection", (ws) => {
         }
 
         // Find target seat: specified seat or first open
+        // Civ2 supports max 7 civs (slots 1-7), so max 7 seats
         let targetSeat = typeof msg.seat === "number" ? msg.seat : -1;
-        if (targetSeat >= 0 && targetSeat < 8) {
+        if (targetSeat >= 0 && targetSeat < 7) {
           if (room.seats[targetSeat]) {
             ws.send(JSON.stringify({ type: "ERROR", message: `Seat ${targetSeat} is already occupied` }));
             break;
           }
         } else {
-          // Find first open seat
+          // Find first open seat (max 7 seats for Civ2's 7 civ slots)
           targetSeat = -1;
-          for (let i = 0; i < room.seats.length; i++) {
+          for (let i = 0; i < Math.min(room.seats.length, 7); i++) {
             if (!room.seats[i]) { targetSeat = i; break; }
           }
           if (targetSeat < 0) {
@@ -1337,6 +1339,9 @@ function formatTurnEvent(ev, gs) {
 // -----------------------------------------------------------------------------
 
 function startGame(roomId, room, occupiedSeats) {
+  // Reset AI module-level state from any previous game
+  resetAIState();
+
   const seatList = occupiedSeats.map(i => ({
     seatIndex: i,
     name: room.seats[i]?.name || `Player ${i}`,

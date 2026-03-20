@@ -45,6 +45,13 @@ import { hasWonderEffect } from './data.js';
 const _civGoals = new Map();
 
 /**
+ * Reset all AI state for a new game. Must be called when starting/restarting.
+ */
+export function resetAIState() {
+  _civGoals.clear();
+}
+
+/**
  * Get or create the GoalList for a civ.
  * @param {number} civSlot
  * @returns {GoalList}
