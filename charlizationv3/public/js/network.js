@@ -8,7 +8,7 @@ import { sfx, menuLoop, getDeathSfx, UNIT_ATK_SFX, MOVE_UNIT_SOUNDS, MOVE_UNIT_D
 import { showOverlayMessage, showTurnEvents, showCityFoundedDialog, showRateSliders, createCiv2Dialog, showGameOverDialog, showRetirementDialog } from './dialogs.js';
 import { showResearchPicker, showDiplomacyPanel, showMapSizePicker, showTechDetail } from './advisors.js';
 import { openCityDialog, closeCityDialog, cdRerender, showProductionPicker } from './city-ui.js';
-import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
+import { findFirstOwnUnit, findNextMovableUnit, shiftMercenaryQueue, centerOnUnit, centerOnTile, isTileInViewport, selectUnit, startBlink, stopBlink, animateCombat, applyVisibilityUpdate, applyImprovementsUpdate, applyTerrainUpdate, applyGoodyHutUpdate, applyOwnershipUpdate, renderUnitThumbnail } from './unit-ui.js';
 import { Civ2Renderer } from './renderer.js';
 import { Civ2Parser } from '../engine/parser.js';
 import { Civ2Minimap } from './minimap.js';
@@ -1356,6 +1356,15 @@ function initNetwork(appCallbacks) {
           }
 
           if (allCombats.length > 0) {
+            // Ensure the combat tile is visible before animating
+            // (state update may have already advanced to next unit)
+            const firstCr = allCombats[0];
+            if (firstCr && !isTileInViewport(firstCr.gx, firstCr.gy)) {
+              centerOnTile(firstCr.gx, firstCr.gy);
+            }
+            // Render current state so sprites are on screen for the animation
+            doRenderFromState({ skipCenter: true, deferAutoAdvance: true });
+
             // Play combat animations sequentially
             let combatIdx = 0;
             function playNextCombat() {
@@ -1365,10 +1374,14 @@ function initNetwork(appCallbacks) {
                 return;
               }
               const cr = allCombats[combatIdx++];
-              if (S.mapSprites && isTileInViewport(cr.gx, cr.gy)) {
+              // Center on combat tile if not visible
+              if (!isTileInViewport(cr.gx, cr.gy)) {
+                centerOnTile(cr.gx, cr.gy);
+              }
+              if (S.mapSprites) {
                 animateCombat(cr, playNextCombat);
               } else {
-                // Not visible or no sprites — play sounds only
+                // No sprites loaded — play sounds only
                 const atkSfx = UNIT_ATK_SFX[cr.attacker];
                 if (atkSfx) sfx(atkSfx);
                 const loser = cr.type === 'atkWin' ? cr.defender : cr.attacker;

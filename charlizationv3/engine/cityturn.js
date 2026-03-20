@@ -402,16 +402,25 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
     }
   }
 
-  // No production during civil disorder
+  // No NEW production during civil disorder — but if shields already
+  // meet the cost, the item should still complete (binary behavior:
+  // disorder blocks shield accumulation, not completion of ready items)
   if (city.civilDisorder) {
-    return {
-      newShieldsInBox: city.shieldsInBox || 0,
-      newBuildings: null,
-      completedItem: null,
-      newSize: null,
-      newWorked: null,
-      events,
-    };
+    const item = city.itemInProduction;
+    const cost = item ? getProductionCost(item) : Infinity;
+    const storedShields = city.shieldsInBox || 0;
+    if (storedShields < cost) {
+      // Not ready — skip production entirely
+      return {
+        newShieldsInBox: storedShields,
+        newBuildings: null,
+        completedItem: null,
+        newSize: null,
+        newWorked: null,
+        events,
+      };
+    }
+    // Otherwise fall through to complete the already-ready item
   }
 
   // Calculate net shield production
