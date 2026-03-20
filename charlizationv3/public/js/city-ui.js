@@ -11,7 +11,7 @@ import { Civ2CityView } from './cityview.js';
 import { Civ2CityDialog } from './citydialog.js';
 import { UNIT_NAMES, IMPROVE_NAMES, IMPROVE_COSTS, WONDER_NAMES, WONDER_COSTS, UNIT_COSTS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, TERRAIN_BASE } from '../engine/defs.js';
 import { SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, RENAME_CITY } from '../engine/actions.js';
-import { getProductionCost } from '../engine/production.js';
+import { getProductionCost, calcShieldProduction } from '../engine/production.js';
 import { calcRushBuyCost } from '../engine/happiness.js';
 import { wrapGx } from '../engine/utils.js';
 
@@ -372,6 +372,13 @@ function showProductionPicker(city, cityIndex, onDismiss) {
   const hasTech = (id) => id < 0 || (civTechs ? civTechs.has(id) : id === -1);
   console.log('[prodpicker] city.owner=', city.owner, 'civTechs=', civTechs, 'isSet=', civTechs instanceof Set, 'techs=', civTechs ? [...civTechs] : null);
 
+  // Calculate net shield production for turns display
+  let netShields = 0;
+  try {
+    const shieldResult = calcShieldProduction(city, cityIndex, S.mpGameState, S.mapBase, S.mpGameState.units || []);
+    netShields = shieldResult.netShields || 0;
+  } catch (e) { /* fallback to 0 */ }
+
   // Build list of available items by category
   const unitItems = [];
   for (let id = 0; id < UNIT_NAMES.length; id++) {
@@ -441,7 +448,10 @@ function showProductionPicker(city, cityIndex, onDismiss) {
         const labelEl = document.createElement('span');
         labelEl.textContent = item.name;
         const costLabel = document.createElement('span');
-        costLabel.textContent = `${item.cost / 10} shields`;
+        // Show turns to produce instead of raw shield cost
+        const shieldsRemaining = Math.max(0, item.cost - (city.shieldsInBox || 0));
+        const turnsText = netShields > 0 ? Math.ceil(shieldsRemaining / netShields) : '∞';
+        costLabel.textContent = `${turnsText} turns`;
         costLabel.style.cssText = 'opacity:0.7';
         row.appendChild(labelEl);
         row.appendChild(costLabel);

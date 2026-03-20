@@ -2824,14 +2824,14 @@ const Civ2CityDialog = {
 
     // Shield grid — production progress display
     // Binary: FUN_0050503e lines 2327-2376. DAT_006a657c = shields_per_row (10 for human, standard COSMIC)
-    // baseCost = RULES.TXT raw cost (before ×10 shield_box_factor)
+    // baseCost = RULES.TXT raw cost (shield rows, same scale as production)
     // baseCost < 10: rows=baseCost, cols=10. baseCost >= 10: rows=10, cols=baseCost
     // Only filled shields drawn; short items bottom-aligned in fixed 10-row frame
     if (cdSprites && cdSprites.shields) {
       const SG = R.shieldGrid;
       const cost = this._getProductionCost(item);
       const stored = city.shieldsInBox || 0;
-      const baseCost = Math.round(cost / 10);
+      const baseCost = cost;
       const shieldsPerRow = baseCost < 10 ? 10 : baseCost;
       const numRows = baseCost < 10 ? baseCost : 10;
 
