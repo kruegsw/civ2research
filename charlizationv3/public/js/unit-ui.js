@@ -598,6 +598,18 @@ export function buildOrderMenuItems(unitIdx) {
   // Note: "Wake Up" is added by the caller (app.js) when contextually appropriate,
   // so we don't add it here to avoid duplicates.
 
+  // Open City (if unit is on a city tile)
+  if (S.mpGameState?.cities) {
+    const cityIdx = S.mpGameState.cities.findIndex(c => c.gx === u.gx && c.gy === u.gy && c.size > 0 && c.owner === civSlot);
+    if (cityIdx >= 0) {
+      const city = S.mpGameState.cities[cityIdx];
+      items.push({ label: `Open ${city.name}`, action: () => {
+        // Lazy import to avoid circular dep
+        import('./city-ui.js').then(mod => mod.openCityDialog(city, cityIdx));
+      }});
+    }
+  }
+
   // Unit orders
   const unitOrders = [
     { order: 'fortify', label: 'Fortify' },
