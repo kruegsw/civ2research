@@ -496,13 +496,9 @@ export function showTurnEvents(events) {
 
       case 'productionComplete': {
         const item = ev.item;
-        // Skip announcement for unit production — only show for buildings and wonders
-        if (item.type === 'unit') {
-          showNext();
-          break;
-        }
         let itemName;
-        if (item.type === 'building') { itemName = IMPROVE_NAMES[item.id] || 'Building'; }
+        if (item.type === 'unit') { itemName = UNIT_NAMES[item.id] || 'Unit'; }
+        else if (item.type === 'building') { itemName = IMPROVE_NAMES[item.id] || 'Building'; }
         else if (item.type === 'wonder') { itemName = WONDER_NAMES[item.id - 39] || 'Wonder'; }
         else itemName = 'Item';
         const prodSnd = getProductionSound(item.type, item.type === 'wonder' ? item.id - 39 : item.id);

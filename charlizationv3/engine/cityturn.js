@@ -10,7 +10,7 @@
 
 import {
   FOOD_BOX_MULTIPLIER,
-  UNIT_DOMAIN, UNIT_COSTS, UNIT_ROLE, UNIT_FP,
+  UNIT_DOMAIN, UNIT_COSTS, UNIT_ROLE, UNIT_FP, UNIT_MOVE_POINTS, MOVEMENT_MULTIPLIER,
   IMPROVE_COSTS, IMPROVE_MAINTENANCE,
   SUPPORT_EXEMPT_TYPES, SETTLER_TYPES,
   CITY_RADIUS_DOUBLED,
@@ -486,6 +486,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         if (UNIT_DOMAIN[item.id] === 0) veteranStatus = true;
       }
 
+      const unitMP = (UNIT_MOVE_POINTS[item.id] || 1) * MOVEMENT_MULTIPLIER;
       const newUnit = {
         type: item.id,
         owner: activeCiv,
@@ -493,7 +494,7 @@ export function processCityProduction(city, cityIndex, state, mapBase, callbacks
         x: city.gx * 2 + (city.gy % 2), y: city.gy,
         veteran: veteranStatus ? 1 : 0,
         movesRemain: 0,
-        orders: 'none', movesMade: 0, movesLeft: 0,
+        orders: 'none', movesMade: 0, movesLeft: unitMP,
         homeCityId: cityIndex,
         goToX: -1, goToY: -1,
         hpLost: 0xFF,
