@@ -1111,6 +1111,50 @@ function initNetwork(appCallbacks) {
           // Build mapData object compatible with existing renderer
           // populateFowCivSelector is called inside with forceCiv to ensure correct civ
           doRenderFromState({ silent: false, forceCiv: S.mpCivSlot });
+
+          // Show game introduction dialog with civ name and starting techs
+          {
+            const gs = S.mpGameState;
+            const civName = gs.civNames?.[S.mpCivSlot] || 'Your civilization';
+            const difficulty = gs.difficulty || 'chieftain';
+            const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+            const civTechs = gs.civTechs?.[S.mpCivSlot];
+            const startingTechs = civTechs ? [...civTechs].map(id => ADVANCE_NAMES[id]).filter(Boolean) : [];
+
+            createCiv2Dialog('game-intro-dialog', `${civName}`, panel => {
+              panel.style.cssText += ';min-width:320px;max-width:440px;padding:12px 20px';
+              const FONT = '"Times New Roman", Georgia, serif';
+
+              const intro = document.createElement('div');
+              intro.style.cssText = `font:18px ${FONT};color:#333;text-align:center;margin-bottom:12px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+              intro.textContent = `You are the leader of the ${civName}.`;
+              panel.appendChild(intro);
+
+              const diffDiv = document.createElement('div');
+              diffDiv.style.cssText = `font:15px ${FONT};color:#555;text-align:center;margin-bottom:12px`;
+              diffDiv.textContent = `Difficulty: ${diffLabel}`;
+              panel.appendChild(diffDiv);
+
+              if (startingTechs.length > 0) {
+                const techHeader = document.createElement('div');
+                techHeader.style.cssText = `font:bold 15px ${FONT};color:#222;margin:8px 0 4px;text-shadow:1px 1px 0 rgba(191,191,191,0.4)`;
+                techHeader.textContent = 'Starting Knowledge:';
+                panel.appendChild(techHeader);
+
+                for (const techName of startingTechs) {
+                  const row = document.createElement('div');
+                  row.style.cssText = `font:14px ${FONT};color:#333;padding:2px 0 2px 16px`;
+                  row.textContent = `\u2022 ${techName}`;
+                  panel.appendChild(row);
+                }
+              } else {
+                const noTech = document.createElement('div');
+                noTech.style.cssText = `font:14px ${FONT};color:#555;text-align:center;margin-top:8px;font-style:italic`;
+                noTech.textContent = 'Your people begin with no knowledge of the ancients.';
+                panel.appendChild(noTech);
+              }
+            }, [{ label: 'OK' }]);
+          }
           break;
         }
 
