@@ -354,8 +354,8 @@ wss.on("connection", (ws) => {
         const roomId = `room_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
         const room = {
           clients: new Set([ws]),
-          seats: [null, null, null, null, null, null, null, null],  // 8 civ slots
-          ready: [false, false, false, false, false, false, false, false],
+          seats: [null, null, null, null, null, null, null],  // 7 civ slots (Civ2 max: slots 1-7)
+          ready: [false, false, false, false, false, false, false],
           state: null,        // game state set when .sav is loaded
           version: 0,
           name: msg.name || `Game ${roomId.slice(-4)}`,
@@ -751,7 +751,7 @@ wss.on("connection", (ws) => {
 
         // Re-build seat list from current seats
         const restartSeats = [];
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 7; i++) {
           if (restartRoom.seats[i]) restartSeats.push({ seatIndex: i, name: restartRoom.seats[i].name || `Player ${i + 1}`, ai: restartRoom.seats[i].ai || false, difficulty: restartRoom.seats[i].difficulty || null });
         }
 
