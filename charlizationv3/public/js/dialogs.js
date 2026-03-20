@@ -823,6 +823,23 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'firstContact': {
+        // Matches Civ2 Game.txt @EMISSARY:
+        // "An emissary from %STRING1 %STRING2 of the %STRING3
+        //  wishes to speak with you. Will you receive %STRING4?"
+        sfx('FANFARE1');
+        const otherCiv = ev.civA === S.mpCivSlot ? ev.civB : ev.civA;
+        const otherName = S.mpGameState?.civNames?.[otherCiv] || `Civ ${otherCiv}`;
+        const leaderName = S.mpGameState?.civs?.[otherCiv]?.leaderName || 'their leader';
+        createCiv2Dialog('turn-event-dialog', `${otherName} Emissary`, panel => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = `An emissary from ${leaderName} of the ${otherName} wishes to speak with you.`;
+          panel.appendChild(msg);
+        }, [{ label: 'OK', action: showNext }]);
+        break;
+      }
+
       case 'cityCapture': {
         playSoundForEvent('combatVictoryFanfare');
         const capName = ev.cityName || 'City';

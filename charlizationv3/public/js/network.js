@@ -1278,9 +1278,9 @@ function initNetwork(appCallbacks) {
 
             // Turn events: city growth, famine, production complete, civ eliminated
             if (statePayload.turnEvents) {
-              const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning']);
+              const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning', 'firstContact']);
               const myEvents = statePayload.turnEvents.filter(e =>
-                e.civSlot === S.mpCivSlot || GLOBAL_EVENTS.has(e.type));
+                e.civSlot === S.mpCivSlot || e.civA === S.mpCivSlot || e.civB === S.mpCivSlot || GLOBAL_EVENTS.has(e.type));
               if (myEvents.length > 0) {
                 showTurnEvents(myEvents);
               }

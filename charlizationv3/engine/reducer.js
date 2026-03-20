@@ -137,10 +137,9 @@ export function applyAction(prev, mapBase, action, civSlot) {
         }
       }
 
-      // Update visibility with city radius (cities have radius 2)
-      updateVisibility(mapBase.tileData, mapBase.mw, mapBase.mh, civSlot, newCity.gx, newCity.gy, mapBase.wraps, 2);
-      // Check for first contact with other civs now visible from the new city
-      discoverContacts(state, mapBase, civSlot, newCity.gx, newCity.gy, 2);
+      // No visibility update — the settler that founded the city already revealed
+      // surrounding tiles. Cities don't have independent sight range in Civ2.
+      // Contact discovery also already happened during settler movement.
 
       // Notify client
       state.cityFounded = { name: newCity.name, cityIndex: newCityIndex, civSlot };
