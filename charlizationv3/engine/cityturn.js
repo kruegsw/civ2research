@@ -1028,10 +1028,11 @@ export function handleCityDisorder(city, cityIndex, state, mapBase) {
   // Recalculate happiness
   const hap = calcHappiness(city, cityIndex, state, mapBase);
 
-  // ── Disorder onset ──
-  if (!wasInDisorder && hap.civilDisorder) {
+  // ── Disorder announcement — every turn the city is in disorder ──
+  if (hap.civilDisorder) {
     events.push({
       type: 'civilDisorder', cityName: city.name, cityIndex, civSlot: activeCiv,
+      ongoing: wasInDisorder,
     });
 
     // Democracy: track disorder turns for revolution risk

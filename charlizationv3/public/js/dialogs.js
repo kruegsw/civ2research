@@ -759,8 +759,10 @@ export function showTurnEvents(events) {
         playCityStatusSound('civilDisorder');
         createCiv2Dialog('turn-event-dialog', 'Civil Disorder!', panel => {
           const msg = document.createElement('div');
-          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333';
-          msg.textContent = `Civil disorder in ${ev.cityName}!`;
+          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
+          msg.textContent = ev.ongoing
+            ? `Civil disorder continues in ${ev.cityName}! Production has ceased.`
+            : `Civil disorder in ${ev.cityName}! Citizens are rioting in the streets.`;
           panel.appendChild(msg);
         }, [{ label: 'OK', action: showNext }]);
         break;

@@ -198,9 +198,14 @@ export function initNewGame(mapResult, seatList) {
   // ── Phase 8 (enhanced): Assign continent body IDs via proper flood fill ──
   assignContinentBodyIds(mapBase);
 
-  // Determine game difficulty from seatList — check all seats (human seat may not have it set)
-  const difficultyName = seatList.find(s => s.difficulty)?.difficulty || 'chieftain';
-  const difficultyIdx = DIFFICULTY_INDEX[difficultyName] ?? 0;
+  // Determine game difficulty: use highest difficulty among all seats
+  // (human seat may not have difficulty set; AI seats get it from lobby dropdown)
+  let difficultyIdx = 0;
+  for (const seat of seatList) {
+    const idx = DIFFICULTY_INDEX[seat.difficulty] ?? -1;
+    if (idx > difficultyIdx) difficultyIdx = idx;
+  }
+  const difficultyName = ['chieftain','warlord','prince','king','emperor','deity'][difficultyIdx] || 'chieftain';
 
   const civCount = seatList.length;
 

@@ -3484,7 +3484,6 @@ const Civ2CityDialog = {
       happiness = { happy: 0, unhappy: 0, civilDisorder: false, weLoveKingDay: false };
     }
 
-    console.log('[citydialog] render: citizens?', !!cdSprites?.citizens, 'rows:', cdSprites?.citizens?.length, 'city size:', city.size, 'happy:', happiness);
     try {
     this._drawBackground(ctx, cdSprites);
     this._drawLabels(ctx);
