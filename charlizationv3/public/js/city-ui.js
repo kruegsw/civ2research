@@ -475,7 +475,7 @@ function showProductionPicker(city, cityIndex, onDismiss) {
     addCategory('Wonders', wonderItems);
   }, [
     { label: 'Cancel', action: onDismiss || undefined },
-  ]);
+  ], { suppressKeyboard: true });
 
   // Auto-highlight currently producing item (if found), otherwise first row
   const currentItem = city.itemInProduction;

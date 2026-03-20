@@ -365,7 +365,7 @@ export function showCityFoundedDialog(cityName, year, onDismiss) {
  * @returns {{ overlay, dismiss }} - DOM element and dismiss function
  */
 export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'OK' }], opts = {}) {
-  const { showClose = true } = opts;
+  const { showClose = true, suppressKeyboard = false } = opts;
   const existing = document.getElementById(id);
   if (existing) existing.remove();
 
@@ -422,6 +422,7 @@ export function createCiv2Dialog(id, title, buildContent, buttons = [{ label: 'O
   overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
 
   const keyHandler = e => {
+    if (suppressKeyboard && e.key !== 'Escape') return; // let custom handler deal with it
     if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); dismiss(); if (okBtn?.action) okBtn.action(); }
     else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismiss(); if (cancelBtn?.action) cancelBtn.action(); }
     else if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
