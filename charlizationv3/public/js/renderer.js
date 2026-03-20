@@ -863,17 +863,8 @@ const Civ2Renderer = {
           }
         }
 
-        // ── Rivers (land tiles) — ocean neighbors count as connections ──
-        if (hasRiver(gx, gy)) {
-          let rm = 0;
-          if (hasRiver(nb.NE[0], nb.NE[1]) || getTerrain(nb.NE[0], nb.NE[1]) === 10) rm |= 1;
-          if (hasRiver(nb.SE[0], nb.SE[1]) || getTerrain(nb.SE[0], nb.SE[1]) === 10) rm |= 2;
-          if (hasRiver(nb.SW[0], nb.SW[1]) || getTerrain(nb.SW[0], nb.SW[1]) === 10) rm |= 4;
-          if (hasRiver(nb.NW[0], nb.NW[1]) || getTerrain(nb.NW[0], nb.NW[1]) === 10) rm |= 8;
-          ctx.drawImage(rivers[rm], px, py);
-        }
-
         // ── Terrain overlays (forest/mountains/hills) ──
+        // Drawn BEFORE rivers so rivers render on top of forest/hills/mountains
         // Variant index is a 4-bit neighbor connectivity bitmask:
         // NE=1, SE=2, SW=4, NW=8 — bit set when diagonal neighbor is same terrain
         if (ter === 3 || ter === 4 || ter === 5) {
@@ -885,6 +876,16 @@ const Civ2Renderer = {
           if (ter === 3) ctx.drawImage(forest[ovi], px, py);
           else if (ter === 5) ctx.drawImage(mountains[ovi], px, py);
           else ctx.drawImage(hills[ovi], px, py);
+        }
+
+        // ── Rivers (land tiles) — drawn after terrain overlays so they show on top ──
+        if (hasRiver(gx, gy)) {
+          let rm = 0;
+          if (hasRiver(nb.NE[0], nb.NE[1]) || getTerrain(nb.NE[0], nb.NE[1]) === 10) rm |= 1;
+          if (hasRiver(nb.SE[0], nb.SE[1]) || getTerrain(nb.SE[0], nb.SE[1]) === 10) rm |= 2;
+          if (hasRiver(nb.SW[0], nb.SW[1]) || getTerrain(nb.SW[0], nb.SW[1]) === 10) rm |= 4;
+          if (hasRiver(nb.NW[0], nb.NW[1]) || getTerrain(nb.NW[0], nb.NW[1]) === 10) rm |= 8;
+          ctx.drawImage(rivers[rm], px, py);
         }
 
         // When FOW is enabled and tile is dimmed, use last-known improvements (Block 1)
