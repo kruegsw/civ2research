@@ -432,10 +432,15 @@ export function checkCivElimination(state, civSlot) {
   const hasUnit = state.units.some(u => u.owner === civSlot && u.gx >= 0);
   const hasCity = state.cities.some(c => c.owner === civSlot && c.size > 0);
   if (!hasUnit && !hasCity) {
+    const aliveBefore = state.civsAlive.toString(2);
     state.civsAlive &= ~(1 << civSlot);
-    console.log(`[elim] Civ ${civSlot} eliminated. civsAlive=${state.civsAlive.toString(2)}, alive count=${[1,2,3,4,5,6,7].filter(c => state.civsAlive & (1 << c)).length}`);
+    const aliveAfter = state.civsAlive.toString(2);
+    const aliveList = [1,2,3,4,5,6,7].filter(c => state.civsAlive & (1 << c));
     if (!state.turnEvents) state.turnEvents = [];
-    state.turnEvents.push({ type: 'civEliminated', civSlot });
+    state.turnEvents.push({
+      type: 'civEliminated', civSlot,
+      _debug: `before=${aliveBefore} after=${aliveAfter} remaining=[${aliveList}]`,
+    });
     // Check if only one non-barbarian civ remains → game over
     checkGameOver(state);
   }
@@ -456,12 +461,12 @@ export function checkGameOver(state) {
     }
   }
   if (aliveCount === 1 && lastAlive > 0) {
-    console.log(`[gameOver] Only 1 civ alive (civ ${lastAlive}), game over. civsAlive=${state.civsAlive.toString(2)}`);
     state.gameOver = { winner: lastAlive, reason: 'conquest' };
     if (!state.turnEvents) state.turnEvents = [];
-    state.turnEvents.push({ type: 'gameOver', winner: lastAlive, reason: 'conquest' });
-  } else {
-    console.log(`[gameOver] ${aliveCount} civs still alive, game continues. civsAlive=${state.civsAlive.toString(2)}`);
+    state.turnEvents.push({
+      type: 'gameOver', winner: lastAlive, reason: 'conquest',
+      _debug: `aliveCount=${aliveCount} civsAlive=${state.civsAlive.toString(2)}`,
+    });
   }
 }
 

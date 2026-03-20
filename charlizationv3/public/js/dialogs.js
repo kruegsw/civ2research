@@ -658,11 +658,20 @@ export function showTurnEvents(events) {
         const text = isMe
           ? 'Your civilization has been destroyed!'
           : `The ${civName} have been destroyed!`;
+        if (ev._debug) console.log(`[civEliminated] civ=${ev.civSlot} ${ev._debug}`);
         createCiv2Dialog('turn-event-dialog', title, panel => {
           const msg = document.createElement('div');
           msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
           msg.textContent = text;
-          panel.appendChild(msg);
+          if (ev._debug) {
+            const dbg = document.createElement('div');
+            dbg.style.cssText = 'font:11px monospace;color:#999;margin-top:8px;text-align:center';
+            dbg.textContent = ev._debug;
+            panel.appendChild(msg);
+            panel.appendChild(dbg);
+          } else {
+            panel.appendChild(msg);
+          }
         }, [{ label: 'OK', action: showNext }]);
         break;
       }

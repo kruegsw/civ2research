@@ -1289,6 +1289,7 @@ function initNetwork(appCallbacks) {
             // Game over: show retirement/victory dialog (do NOT close WebSocket)
             if (statePayload.gameOver) {
               const go = statePayload.gameOver;
+              console.warn(`[gameOver] winner=${go.winner} reason=${go.reason} civsAlive=${S.mpGameState.civsAlive?.toString(2)} debug=${go._debug || 'none'}`);
               setTimeout(() => showRetirementDialog(
                 S.mpGameState, S.mpCivSlot, go.reason, go.winner
               ), 600);
