@@ -472,7 +472,14 @@ export function animateCombat(cr, onComplete) {
 
       function deathFrame() {
         if (fi >= totalDeathFrames) {
-          if (onComplete) onComplete();
+          // Show survivor for 1 second before continuing
+          S.vCtx.putImageData(bgSnapshot, 0, 0);
+          if (attackerWins) {
+            drawSpriteAt(atkSprite, atkTileX, atkTileY);
+          } else {
+            drawSpriteAt(defSprite, defTileX, defTileY);
+          }
+          setTimeout(() => { if (onComplete) onComplete(); }, 1000);
           return;
         }
 
