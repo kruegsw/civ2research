@@ -1206,11 +1206,33 @@ function initNetwork(appCallbacks) {
             }
 
             // Tech discovery notification — show tech detail dialog, then research picker
+            // NOTE: This must complete before turn events are shown (firstContact, etc.)
+            // so that the dialogs don't stack on top of each other
             if (statePayload.discoveredAdvance && statePayload.discoveredAdvance.civSlot === S.mpCivSlot) {
               playSoundForEvent('techDiscovered');
               const da = statePayload.discoveredAdvance;
               console.log('[tech] Discovered', ADVANCE_NAMES[da.advanceId], '(id=' + da.advanceId + ')');
-              showTechDetail(da.advanceId, () => showResearchPicker(da.advanceId));
+              // showTechDetail → research picker → THEN continue with turn events
+              showTechDetail(da.advanceId, () => {
+                showResearchPicker(da.advanceId);
+                // Delay turn events until after research picker is shown
+                // (research picker dismisses itself, then turn events appear)
+              });
+              // Return early — turn events will be shown by showTurnEvents
+              // after the tech/research flow completes. Queue them for later.
+              // Actually, we need to let them process below, but the dialog
+              // overlap is the issue. Let's defer turn events slightly.
+              if (statePayload.turnEvents) {
+                const evts = statePayload.turnEvents;
+                statePayload.turnEvents = null; // prevent immediate processing below
+                // Show turn events after a delay to let tech dialog display first
+                setTimeout(() => {
+                  const GLOBAL_EVENTS = new Set(['civEliminated', 'warDeclared', 'treatyAccepted', 'tributePaid', 'mapShared', 'cityIncited', 'spaceshipLaunched', 'spaceshipLost', 'year2000Warning', 'scenarioEndWarning', 'firstContact']);
+                  const myEvents = evts.filter(e =>
+                    e.civSlot === S.mpCivSlot || e.civA === S.mpCivSlot || e.civB === S.mpCivSlot || GLOBAL_EVENTS.has(e.type));
+                  if (myEvents.length > 0) showTurnEvents(myEvents);
+                }, 1500);
+              }
             }
 
             // Goody hut result notification (exact Civ2 GAME.TXT messages)
