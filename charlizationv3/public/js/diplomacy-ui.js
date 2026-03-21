@@ -1,9 +1,12 @@
 /**
  * diplomacy-ui.js — Civ2-styled diplomacy negotiation dialog.
  *
- * Provides a rich negotiation interface with sub-menus for treaties,
- * gifts, demands, and war declarations. Replaces the simpler inline
- * buttons in advisors.js showDiplomacyPanel.
+ * Multi-screen flow matching the real Civ2 Game.txt diplomacy sequence:
+ *   Screen 1: Emissary Arrival (accept/refuse audience)
+ *   Screen 2: Greeting + Main Menu (attitude-based greeting, then @DIPLOMACYMENU)
+ *   Screen 3: Sub-menus for proposals, gifts, demands
+ *   Screen 4: AI response screens (accept/reject/counter)
+ *   Screen 5: Dismissal (@OUTAHERE / @OUTAHEREALLY)
  *
  * Entry point: openDiplomacyDialog(state, mapBase, myCiv, targetCiv, sendAction)
  */
@@ -15,6 +18,7 @@ import {
 } from './dialogs.js';
 import {
   CIV_COLORS, ADVANCE_NAMES, LEADERS_TXT_NAMES,
+  LEADER_TITLES, LEADER_TITLES_FEMALE,
 } from '../engine/defs.js';
 import { showCivilopedia } from './civilopedia.js';
 import {
@@ -65,11 +69,36 @@ const DIPLO_MENU_ITEMS = {
   offerGift: 'Wish to offer you a gift...',
 };
 
+// Game.txt @OUTAHERE / @OUTAHEREALLY
+const DISMISSALS = {
+  hostile: 'You have wasted enough of our valuable time. Now begone!',
+  allied: 'Pressing matters of state prevent us from granting an audience.',
+};
+
+// AI response text (Game.txt @ACCEPT / @REJECT style)
+const AI_ACCEPT_TEXTS = [
+  'We accept your proposal. Let there be peace between our peoples.',
+  'Very well. We agree to your terms.',
+  'Your offer is acceptable.',
+];
+const AI_REJECT_HOSTILE = [
+  'Your weak civilization has nothing to offer us. Begone!',
+  'We would sooner feed our dogs than accept your pathetic proposal!',
+  'Do not waste our time with such foolishness.',
+];
+const AI_REJECT_NEUTRAL = [
+  'We are not interested in your proposal at this time.',
+  'Perhaps another time. We must decline.',
+  'Your terms are unacceptable.',
+];
+
 // Throne room styled dialog
 const STYLE_MSG = 'text-align:center;padding:12px 20px;font:16px "Times New Roman",Georgia,serif;color:#f0e8d0;text-shadow:1px 1px 2px rgba(0,0,0,0.8)';
 const STYLE_ITEM = 'display:block;width:100%;text-align:left;padding:6px 12px;margin:3px 0;font:14px "Times New Roman",Georgia,serif;cursor:pointer;border:none;background:none;color:#f0e8d0';
 const THRONE_BG = 'background:linear-gradient(180deg, #2a1a0a 0%, #3d2815 20%, #4a3020 50%, #3d2815 80%, #2a1a0a 100%);border:3px solid #8b6914;box-shadow:inset 0 0 30px rgba(0,0,0,0.5)';
 const STYLE_ITEM_HOVER = 'background:rgba(139,105,20,0.4)';
+
+const DIALOG_ID = 'diplo-main-dialog';
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -85,6 +114,26 @@ function getLeaderName(state, civSlot) {
   return LEADERS_TXT_NAMES[rulesNum] || `Leader ${civSlot}`;
 }
 
+function getLeaderTitle(state, civSlot) {
+  const civ = state.civs?.[civSlot];
+  const govt = civ?.government || 'despotism';
+  const isFemale = civ?.gender && civ.gender !== 0;
+  const titles = isFemale ? LEADER_TITLES_FEMALE : LEADER_TITLES;
+  return titles[govt] || 'Leader';
+}
+
+function getLeaderPronoun(state, civSlot) {
+  const civ = state.civs?.[civSlot];
+  const isFemale = civ?.gender && civ.gender !== 0;
+  return isFemale ? 'her' : 'him';
+}
+
+function getLeaderPronounSubject(state, civSlot) {
+  const civ = state.civs?.[civSlot];
+  const isFemale = civ?.gender && civ.gender !== 0;
+  return isFemale ? 'she' : 'he';
+}
+
 function getTreatyStatus(state, myCiv, targetCiv) {
   if (!state.treaties) return 'war';
   const k = myCiv < targetCiv ? `${myCiv}-${targetCiv}` : `${targetCiv}-${myCiv}`;
@@ -93,6 +142,22 @@ function getTreatyStatus(state, myCiv, targetCiv) {
 
 function getRawAttitude(state, targetCiv, myCiv) {
   return state.civs?.[targetCiv]?.attitudes?.[myCiv] ?? 50;
+}
+
+/** Substitute Game.txt placeholders in greeting strings. */
+function substGreeting(text, state, myCiv, targetCiv) {
+  const leaderName = getLeaderName(state, targetCiv);
+  const title = getLeaderTitle(state, targetCiv);
+  const civName = getTargetName(state, targetCiv);
+  const myLeader = getLeaderName(state, myCiv);
+  const myTitle = getLeaderTitle(state, myCiv);
+  const pronoun = getLeaderPronounSubject(state, targetCiv);
+  return text
+    .replace(/%LEADER/g, leaderName)
+    .replace(/%TITLE/g, title)
+    .replace(/%CIV/g, civName)
+    .replace(/%PLAYER/g, myLeader)
+    .replace(/%PRONOUN/g, pronoun);
 }
 
 /** Create a styled menu button for the diplomacy menu. */
@@ -106,474 +171,875 @@ function makeMenuBtn(label, onClick) {
   return btn;
 }
 
-/** Build throne room header with Game.txt-style greeting. */
-function buildHeader(panel, state, myCiv, targetCiv) {
-  const civName = getTargetName(state, targetCiv);
-  const leaderName = getLeaderName(state, targetCiv);
-  const myName = getTargetName(state, myCiv);
-  const myLeader = getLeaderName(state, myCiv);
-  const civColor = CIV_COLORS[targetCiv] || '#c8a040';
-  const rawAtt = getRawAttitude(state, targetCiv, myCiv);
-  const attLevel = getAttitudeLevel(rawAtt);
-  const attName = ATTITUDE_LEVEL_NAMES[attLevel] || 'Unknown';
-  const treaty = getTreatyStatus(state, myCiv, targetCiv);
-  const treatyLabel = treaty.charAt(0).toUpperCase() + treaty.slice(1);
-
-  // Pick greeting based on attitude and treaty (Game.txt style)
-  let greeting;
-  if (treaty !== 'war' && TREATY_GREETINGS[treaty]) {
-    greeting = TREATY_GREETINGS[treaty];
-  } else if (attLevel <= 3) {
-    greeting = HOSTILE_GREETINGS[attLevel % HOSTILE_GREETINGS.length];
-  } else {
-    greeting = FRIENDLY_GREETINGS[(attLevel - 4) % FRIENDLY_GREETINGS.length];
-  }
-  // Substitute placeholders
-  greeting = greeting
-    .replace(/%LEADER/g, leaderName)
-    .replace(/%TITLE/g, 'leader')
-    .replace(/%CIV/g, civName)
-    .replace(/%PLAYER/g, myLeader)
-    .replace(/%PRONOUN/g, 'one');
-
-  const header = document.createElement('div');
-  header.style.cssText = 'padding:12px 20px;border-bottom:2px solid #8b6914';
-
-  // Civ emblem bar
-  const nameRow = document.createElement('div');
-  nameRow.style.cssText = `font:bold 20px "Times New Roman",Georgia,serif;color:${civColor};text-shadow:2px 2px 4px rgba(0,0,0,0.7);text-align:center`;
-  nameRow.textContent = `${civName}`;
-  header.appendChild(nameRow);
-
-  const leaderRow = document.createElement('div');
-  leaderRow.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#c8b080;text-align:center;margin-top:2px';
-  leaderRow.textContent = leaderName;
-  header.appendChild(leaderRow);
-
-  // Attitude + Treaty status
-  const attRow = document.createElement('div');
-  attRow.style.cssText = 'font:12px "Times New Roman",Georgia,serif;color:#a09070;margin-top:4px;text-align:center';
-  const attColor = attLevel <= 2 ? '#e55' : attLevel >= 6 ? '#5e5' : '#c8b080';
-  attRow.innerHTML = `<span style="color:${attColor};font-weight:bold">${attName}</span> &nbsp;\u2022&nbsp; ${treatyLabel}`;
-  header.appendChild(attRow);
-
-  // Greeting text
-  const greetEl = document.createElement('div');
-  greetEl.style.cssText = 'font:italic 15px "Times New Roman",Georgia,serif;color:#e0d8c0;margin-top:10px;text-align:center;line-height:1.5';
-  greetEl.textContent = `\u201C${greeting}\u201D`;
-  header.appendChild(greetEl);
-
-  panel.appendChild(header);
+/** Pick a random element from an array. */
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ── Sub-Dialogs ────────────────────────────────────────────────────
+// ── Diplomacy Session ─────────────────────────────────────────────
+// Manages the multi-screen flow as a sequence of screen replacements
+// within a single dialog overlay.
 
-function showTreatySubMenu(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-  const treaty = getTreatyStatus(state, myCiv, targetCiv);
+class DiplomacySession {
+  constructor(state, mapBase, myCiv, targetCiv, sendAction) {
+    this.state = state;
+    this.mapBase = mapBase;
+    this.myCiv = myCiv;
+    this.targetCiv = targetCiv;
+    this.sendAction = sendAction;
 
-  const options = [];
-  if (treaty === 'war') {
-    options.push({ label: 'Propose Ceasefire', treaty: 'ceasefire' });
-    options.push({ label: 'Propose Peace Treaty', treaty: 'peace' });
-  } else if (treaty === 'ceasefire') {
-    options.push({ label: 'Propose Peace Treaty', treaty: 'peace' });
-  } else if (treaty === 'peace') {
-    options.push({ label: 'Propose Alliance', treaty: 'alliance' });
+    this.civName = getTargetName(state, targetCiv);
+    this.leaderName = getLeaderName(state, targetCiv);
+    this.title = getLeaderTitle(state, targetCiv);
+    this.treaty = getTreatyStatus(state, myCiv, targetCiv);
+    this.rawAtt = getRawAttitude(state, targetCiv, myCiv);
+    this.attLevel = getAttitudeLevel(this.rawAtt);
+    this.pronoun = getLeaderPronoun(state, targetCiv);
+
+    this.overlay = null;
+    this.frame = null;
+    this.panel = null;
+    this.btnRow = null;
+    this.titleSpan = null;
+    this.keyHandler = null;
   }
-  // alliance: nothing higher to propose
 
-  if (options.length === 0) {
-    showOverlayMessage(treaty === 'alliance'
-      ? `Already allied with ${civName}`
-      : `No treaties available with ${civName}`);
-    return;
+  /** Create the persistent dialog container (called once). */
+  createContainer() {
+    const existing = document.getElementById(DIALOG_ID);
+    if (existing) existing.remove();
+
+    this.overlay = document.createElement('div');
+    this.overlay.id = DIALOG_ID;
+    this.overlay.className = 'civ2-dialog-overlay';
+
+    this.frame = document.createElement('div');
+    this.frame.className = 'civ2-dialog-frame';
+
+    // Titlebar
+    const titlebar = document.createElement('div');
+    titlebar.className = 'civ2-dialog-titlebar';
+    titlebar.style.position = 'relative';
+    this.titleSpan = document.createElement('span');
+    this.titleSpan.className = 'civ2-dialog-title';
+    this.titleSpan.textContent = `${this.civName} Emissary`;
+    titlebar.appendChild(this.titleSpan);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'civ2-dialog-close';
+    closeBtn.textContent = '\u2715';
+    closeBtn.title = 'Close';
+    closeBtn.addEventListener('click', () => this.dismiss());
+    titlebar.appendChild(closeBtn);
+
+    this.frame.appendChild(titlebar);
+
+    // Panel (content area — replaced on each screen)
+    this.panel = document.createElement('div');
+    this.panel.className = 'civ2-dialog-panel';
+    this.panel.style.cssText = `min-width:380px;max-width:520px;${THRONE_BG}`;
+    this.frame.appendChild(this.panel);
+
+    // Button row (replaced on each screen)
+    this.btnRow = document.createElement('div');
+    this.btnRow.className = 'civ2-dialog-btn-row';
+    this.frame.appendChild(this.btnRow);
+
+    this.overlay.appendChild(this.frame);
+    this.overlay.addEventListener('click', e => { if (e.target === this.overlay) this.dismiss(); });
+
+    // Keyboard handler
+    this.keyHandler = e => {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.dismiss(); }
+    };
+    window.addEventListener('keydown', this.keyHandler, true);
+
+    document.body.appendChild(this.overlay);
   }
 
-  createCiv2Dialog('diplo-treaty-dialog', 'Propose Treaty', panel => {
-    panel.style.minWidth = '280px';
-    const msg = document.createElement('div');
-    msg.style.cssText = STYLE_MSG;
-    msg.textContent = `Select a treaty to propose to ${civName}:`;
-    panel.appendChild(msg);
+  dismiss() {
+    if (this.overlay) this.overlay.remove();
+    if (this.keyHandler) window.removeEventListener('keydown', this.keyHandler, true);
+    this.overlay = null;
+  }
 
-    for (const opt of options) {
-      panel.appendChild(makeMenuBtn(opt.label, () => {
-        document.getElementById('diplo-treaty-dialog')?.remove();
-        sfx('POS1');
-        sendAction({
-          type: 'ACTION',
-          action: { type: PROPOSE_TREATY, targetCiv, treaty: opt.treaty },
-        });
-        showOverlayMessage(`${opt.label} sent to ${civName}`);
-      }));
+  /** Replace the panel content and buttons for a new screen. */
+  setScreen(titleText, buildContent, buttons) {
+    if (!this.overlay) return;
+    this.titleSpan.textContent = titleText;
+
+    // Clear panel
+    this.panel.innerHTML = '';
+    buildContent(this.panel);
+
+    // Clear and rebuild buttons
+    this.btnRow.innerHTML = '';
+    for (const b of buttons) {
+      const btn = document.createElement('button');
+      btn.textContent = b.label;
+      btn.className = 'civ2-btn';
+      btn.addEventListener('click', () => { if (b.action) b.action(); else this.dismiss(); });
+      this.btnRow.appendChild(btn);
     }
-  }, [{ label: 'Cancel' }]);
-}
-
-function showGiveGoldDialog(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-  const treasury = state.civs?.[myCiv]?.treasury || 0;
-
-  if (treasury <= 0) {
-    showOverlayMessage('You have no gold to give.');
-    return;
   }
 
-  // Offer preset amounts: 25%, 50%, 75%, 100% of treasury, rounded to nearest 50
-  const presets = [0.25, 0.5, 0.75, 1.0]
-    .map(pct => Math.max(50, Math.round(treasury * pct / 50) * 50))
-    .filter((v, i, a) => a.indexOf(v) === i); // dedupe
+  // ── Screen 1: Emissary Arrival ──────────────────────────────────
 
-  createCiv2Dialog('diplo-gold-dialog', 'Give Gold', panel => {
-    panel.style.minWidth = '280px';
-    const msg = document.createElement('div');
-    msg.style.cssText = STYLE_MSG;
-    msg.textContent = `Give gold to ${civName} (Treasury: ${treasury})`;
-    panel.appendChild(msg);
+  showEmissaryArrival() {
+    const pronounObj = this.pronoun; // "him" or "her"
 
-    for (const amount of presets) {
-      const attGain = calcGoldToAttitude(amount);
-      panel.appendChild(makeMenuBtn(`${amount} gold (attitude +${attGain})`, () => {
-        document.getElementById('diplo-gold-dialog')?.remove();
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG + ';line-height:1.6;padding:20px 24px';
+      msg.textContent = `An emissary from ${this.leaderName} ${this.title} of the ${this.civName} wishes to speak with you. Will you receive ${pronounObj}?`;
+      panel.appendChild(msg);
+    }, [
+      { label: `No. Send ${pronounObj} away.`, action: () => {
+        // AI may force audience (hostile AI with low attitude)
+        if (this.attLevel <= 2 && Math.random() < 0.6) {
+          this.showForcedAudience();
+        } else {
+          this.dismiss();
+        }
+      }},
+      { label: 'Yes. I will grant an audience.', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
+  }
+
+  /** AI forces audience after player refuses. */
+  showForcedAudience() {
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG + ';line-height:1.6;padding:20px 24px';
+      msg.textContent = `The ${this.civName} emissary has nonetheless demanded an audience!`;
+      panel.appendChild(msg);
+    }, [
+      { label: 'Very well...', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
+  }
+
+  // ── Screen 2: Greeting + Main Menu ──────────────────────────────
+
+  showGreetingAndMenu() {
+    // Refresh treaty/attitude in case state changed
+    this.treaty = getTreatyStatus(this.state, this.myCiv, this.targetCiv);
+    this.rawAtt = getRawAttitude(this.state, this.targetCiv, this.myCiv);
+    this.attLevel = getAttitudeLevel(this.rawAtt);
+
+    const treaty = this.treaty;
+    const attLevel = this.attLevel;
+
+    // Pick greeting based on attitude and treaty (Game.txt style)
+    let greeting;
+    if (treaty !== 'war' && TREATY_GREETINGS[treaty]) {
+      greeting = TREATY_GREETINGS[treaty];
+    } else if (attLevel <= 3) {
+      greeting = HOSTILE_GREETINGS[attLevel % HOSTILE_GREETINGS.length];
+    } else {
+      greeting = FRIENDLY_GREETINGS[(attLevel - 4) % FRIENDLY_GREETINGS.length];
+    }
+    greeting = substGreeting(greeting, this.state, this.myCiv, this.targetCiv);
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      // Greeting text
+      const greetEl = document.createElement('div');
+      greetEl.style.cssText = 'font:italic 15px "Times New Roman",Georgia,serif;color:#e0d8c0;padding:16px 20px;text-align:center;line-height:1.5;border-bottom:1px solid rgba(139,105,20,0.4)';
+      greetEl.textContent = `\u201C${greeting}\u201D`;
+      panel.appendChild(greetEl);
+
+      // Attitude + Treaty status bar
+      const attName = ATTITUDE_LEVEL_NAMES[attLevel] || 'Unknown';
+      const treatyLabel = treaty.charAt(0).toUpperCase() + treaty.slice(1);
+      const attColor = attLevel <= 2 ? '#e55' : attLevel >= 6 ? '#5e5' : '#c8b080';
+      const statusBar = document.createElement('div');
+      statusBar.style.cssText = 'font:12px "Times New Roman",Georgia,serif;color:#a09070;padding:4px 20px;text-align:center;border-bottom:1px solid rgba(139,105,20,0.3)';
+      statusBar.innerHTML = `<span style="color:${attColor};font-weight:bold">${attName}</span> &nbsp;\u2022&nbsp; ${treatyLabel}`;
+      panel.appendChild(statusBar);
+
+      // Menu section — Game.txt @DIPLOMACYMENU
+      const menu = document.createElement('div');
+      menu.style.cssText = 'padding:8px 8px 4px';
+
+      const menuLabel = document.createElement('div');
+      menuLabel.style.cssText = 'font:13px "Times New Roman",Georgia,serif;color:#a09070;text-align:center;padding:4px 0 6px;font-style:italic';
+      menuLabel.textContent = 'We...';
+      menu.appendChild(menuLabel);
+
+      // 1. Done
+      menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.done, () => {
+        this.showDismissal();
+      }));
+
+      // 2. Suggest alliance (only if peace or ceasefire — not when already allied or at war)
+      if (treaty === 'peace' || treaty === 'ceasefire') {
+        menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.alliance, () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: PROPOSE_TREATY, targetCiv: this.targetCiv, treaty: 'alliance' },
+          });
+          this.showAIResponse('alliance');
+        }));
+      }
+
+      // 3. Suggest peace (only if war or ceasefire — not when already at peace/allied)
+      if (treaty === 'war' || treaty === 'ceasefire') {
+        menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.peace, () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: PROPOSE_TREATY, targetCiv: this.targetCiv, treaty: 'peace' },
+          });
+          this.showAIResponse('peace');
+        }));
+      }
+
+      // 4. Request gift (only if allied)
+      if (treaty === 'alliance') {
+        menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.requestGift, () => {
+          this.showRequestGiftSubMenu();
+        }));
+      }
+
+      // 5. Demand tribute (only if not allied)
+      if (treaty !== 'alliance') {
+        menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.demandTribute, () => {
+          this.showDemandTributeInline();
+        }));
+      }
+
+      // 6. Withdraw troops (not when allied)
+      if (treaty !== 'alliance') {
+        menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.withdrawTroops, () => {
+          this.showAIResponse('withdraw');
+        }));
+      }
+
+      // 7. Cancel alliance (only if allied)
+      if (treaty === 'alliance') {
+        const cancelBtn = makeMenuBtn(DIPLO_MENU_ITEMS.cancelAlliance, () => {
+          sfx('NEG1');
+          // Cancel alliance = declare war (breaks treaty)
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: DECLARE_WAR, targetCiv: this.targetCiv },
+          });
+          this.showAllianceCancelled();
+        });
+        cancelBtn.style.color = '#d88';
+        menu.appendChild(cancelBtn);
+      }
+
+      // 8. Proposal sub-menu
+      menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.propose, () => {
+        this.showProposalSubMenu();
+      }));
+
+      // 9. Offer gift
+      menu.appendChild(makeMenuBtn(DIPLO_MENU_ITEMS.offerGift, () => {
+        this.showGiftSubMenu();
+      }));
+
+      panel.appendChild(menu);
+    }, []); // No bottom buttons — menu items serve as buttons
+  }
+
+  // ── AI Response Screens ─────────────────────────────────────────
+
+  showAIResponse(proposalType) {
+    // Simulate AI response based on attitude
+    const attLevel = this.attLevel;
+    let accepted = false;
+    let responseText;
+
+    switch (proposalType) {
+      case 'alliance':
+        accepted = attLevel >= 5; // friendly or better
+        break;
+      case 'peace':
+        accepted = attLevel >= 3; // not outright hostile
+        break;
+      case 'withdraw':
+        accepted = attLevel >= 6; // only very friendly
+        break;
+      default:
+        accepted = attLevel >= 4;
+    }
+
+    if (accepted) {
+      responseText = pick(AI_ACCEPT_TEXTS);
+    } else if (attLevel <= 2) {
+      responseText = pick(AI_REJECT_HOSTILE);
+    } else {
+      responseText = pick(AI_REJECT_NEUTRAL);
+    }
+
+    const statusText = accepted ? 'Proposal Accepted' : 'Proposal Rejected';
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const statusEl = document.createElement('div');
+      statusEl.style.cssText = `font:bold 16px "Times New Roman",Georgia,serif;text-align:center;padding:12px 20px 4px;color:${accepted ? '#8d8' : '#d88'}`;
+      statusEl.textContent = statusText;
+      panel.appendChild(statusEl);
+
+      const msg = document.createElement('div');
+      msg.style.cssText = 'font:italic 15px "Times New Roman",Georgia,serif;color:#e0d8c0;padding:12px 20px;text-align:center;line-height:1.5';
+      msg.textContent = `\u201C${responseText}\u201D`;
+      panel.appendChild(msg);
+    }, [
+      { label: 'Continue', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
+  }
+
+  showAllianceCancelled() {
+    this.treaty = 'war';
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#d88;padding:20px 24px;text-align:center;line-height:1.5';
+      msg.textContent = `The alliance with the ${this.civName} has been cancelled!`;
+      panel.appendChild(msg);
+    }, [
+      { label: 'Continue', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
+  }
+
+  // ── Dismissal Screens ───────────────────────────────────────────
+
+  showDismissal() {
+    const isAllied = this.treaty === 'alliance';
+    const dismissText = isAllied ? DISMISSALS.allied : DISMISSALS.hostile;
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'font:italic 15px "Times New Roman",Georgia,serif;color:#e0d8c0;padding:24px 20px;text-align:center;line-height:1.5';
+      msg.textContent = `\u201C${dismissText}\u201D`;
+      panel.appendChild(msg);
+    }, [
+      { label: 'Farewell', action: () => {
+        this.dismiss();
+      }},
+    ]);
+  }
+
+  // ── Sub-Menus (replace panel content in-place) ──────────────────
+
+  /** @DIPLOMACYMENU option 8: "Have a proposal to make..." */
+  showProposalSubMenu() {
+    const treaty = this.treaty;
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG;
+      msg.textContent = 'What do you propose?';
+      panel.appendChild(msg);
+
+      const menu = document.createElement('div');
+      menu.style.cssText = 'padding:4px 8px 8px';
+
+      // Treaty proposals
+      if (treaty === 'war') {
+        menu.appendChild(makeMenuBtn('Propose Ceasefire', () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: PROPOSE_TREATY, targetCiv: this.targetCiv, treaty: 'ceasefire' },
+          });
+          this.showAIResponse('ceasefire');
+        }));
+        menu.appendChild(makeMenuBtn('Propose Peace Treaty', () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: PROPOSE_TREATY, targetCiv: this.targetCiv, treaty: 'peace' },
+          });
+          this.showAIResponse('peace');
+        }));
+      } else if (treaty === 'ceasefire') {
+        menu.appendChild(makeMenuBtn('Propose Peace Treaty', () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: PROPOSE_TREATY, targetCiv: this.targetCiv, treaty: 'peace' },
+          });
+          this.showAIResponse('peace');
+        }));
+        menu.appendChild(makeMenuBtn('Propose Alliance', () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: PROPOSE_TREATY, targetCiv: this.targetCiv, treaty: 'alliance' },
+          });
+          this.showAIResponse('alliance');
+        }));
+      } else if (treaty === 'peace') {
+        menu.appendChild(makeMenuBtn('Propose Alliance', () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: PROPOSE_TREATY, targetCiv: this.targetCiv, treaty: 'alliance' },
+          });
+          this.showAIResponse('alliance');
+        }));
+      }
+
+      // Share maps (not at war)
+      if (treaty !== 'war') {
+        menu.appendChild(makeMenuBtn('Exchange Maps', () => {
+          sfx('POS1');
+          this.sendAction({
+            type: 'ACTION',
+            action: { type: SHARE_MAP, targetCiv: this.targetCiv },
+          });
+          this.showAIResponse('maps');
+        }));
+      }
+
+      // Declare war (not if already at war)
+      if (treaty !== 'war') {
+        const warBtn = makeMenuBtn('Declare War!', () => {
+          this.showDeclareWarConfirm();
+        });
+        warBtn.style.color = '#d88';
+        menu.appendChild(warBtn);
+      }
+
+      panel.appendChild(menu);
+    }, [
+      { label: 'Back', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
+  }
+
+  /** Declare war confirmation within the session. */
+  showDeclareWarConfirm() {
+    const treaty = this.treaty;
+    let warningText = `Declare war on the ${this.civName}?`;
+    if (treaty === 'alliance') {
+      warningText = `Break your ALLIANCE and declare war on the ${this.civName}? This will severely damage your reputation!`;
+    } else if (treaty === 'peace') {
+      warningText = `Break the peace treaty and declare war on the ${this.civName}? This will damage your reputation.`;
+    } else if (treaty === 'ceasefire') {
+      warningText = `Break the ceasefire and declare war on the ${this.civName}? This will damage your reputation.`;
+    }
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#d88;padding:20px 24px;text-align:center;line-height:1.5';
+      msg.textContent = warningText;
+      panel.appendChild(msg);
+    }, [
+      { label: 'No, reconsider', action: () => {
+        this.showGreetingAndMenu();
+      }},
+      { label: 'Declare War!', action: () => {
+        sfx('NEG1');
+        this.sendAction({
+          type: 'ACTION',
+          action: { type: DECLARE_WAR, targetCiv: this.targetCiv },
+        });
+        showOverlayMessage(`War declared on ${this.civName}!`);
+        this.dismiss();
+      }},
+    ]);
+  }
+
+  /** @DIPLOMACYMENU option 5: "Demand tribute for our patience." */
+  showDemandTributeInline() {
+    const suggestedTribute = calcTributeDemand(this.state, this.myCiv, this.targetCiv, 16);
+    const defaultAmount = Math.max(50, suggestedTribute || 50);
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG;
+      msg.textContent = `Demand gold tribute from the ${this.civName}:`;
+      panel.appendChild(msg);
+
+      const inputRow = document.createElement('div');
+      inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 16px;justify-content:center';
+      const label = document.createElement('span');
+      label.textContent = 'Amount:';
+      label.style.cssText = 'font:14px "Times New Roman",serif;color:#e0d8c0';
+      inputRow.appendChild(label);
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '1';
+      input.max = '10000';
+      input.value = String(defaultAmount);
+      input.style.cssText = 'width:80px;font:14px "Times New Roman",serif;padding:4px 6px;border:2px inset #8b6914;background:#3d2815;color:#f0e8d0';
+      inputRow.appendChild(input);
+      panel.appendChild(inputRow);
+
+      // Store reference for the button handler
+      panel._tributeInput = input;
+      setTimeout(() => { input.focus(); input.select(); }, 0);
+    }, [
+      { label: 'Back', action: () => {
+        this.showGreetingAndMenu();
+      }},
+      { label: 'Demand!', action: () => {
+        const input = this.panel._tributeInput;
+        const amount = Math.max(1, Math.min(10000, parseInt(input?.value) || defaultAmount));
+        sfx('NEG1');
+        this.sendAction({
+          type: 'ACTION',
+          action: { type: DEMAND_TRIBUTE, targetCiv: this.targetCiv, amount },
+        });
+        this.showAIResponse('tribute');
+      }},
+    ]);
+  }
+
+  /** @DIPLOMACYMENU option 4: "Request a gift from you, our gracious allies." */
+  showRequestGiftSubMenu() {
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG;
+      msg.textContent = `What gift do you request from the ${this.civName}?`;
+      panel.appendChild(msg);
+
+      const menu = document.createElement('div');
+      menu.style.cssText = 'padding:4px 8px 8px';
+
+      menu.appendChild(makeMenuBtn('Request Gold', () => {
+        this.showRequestGoldInline();
+      }));
+      menu.appendChild(makeMenuBtn('Request Technology', () => {
+        this.showRequestTechInline();
+      }));
+
+      panel.appendChild(menu);
+    }, [
+      { label: 'Back', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
+  }
+
+  showRequestGoldInline() {
+    const suggestedAmount = Math.max(50, calcTributeDemand(this.state, this.myCiv, this.targetCiv, 16) || 50);
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG;
+      msg.textContent = `Request gold from our allies the ${this.civName}:`;
+      panel.appendChild(msg);
+
+      const inputRow = document.createElement('div');
+      inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 16px;justify-content:center';
+      const label = document.createElement('span');
+      label.textContent = 'Amount:';
+      label.style.cssText = 'font:14px "Times New Roman",serif;color:#e0d8c0';
+      inputRow.appendChild(label);
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '1';
+      input.max = '10000';
+      input.value = String(suggestedAmount);
+      input.style.cssText = 'width:80px;font:14px "Times New Roman",serif;padding:4px 6px;border:2px inset #8b6914;background:#3d2815;color:#f0e8d0';
+      inputRow.appendChild(input);
+      panel.appendChild(inputRow);
+
+      panel._requestGoldInput = input;
+      setTimeout(() => { input.focus(); input.select(); }, 0);
+    }, [
+      { label: 'Back', action: () => {
+        this.showRequestGiftSubMenu();
+      }},
+      { label: 'Request', action: () => {
+        const input = this.panel._requestGoldInput;
+        const amount = Math.max(1, Math.min(10000, parseInt(input?.value) || suggestedAmount));
+        sfx('POS1');
+        this.sendAction({
+          type: 'ACTION',
+          action: { type: DEMAND_TRIBUTE, targetCiv: this.targetCiv, amount },
+        });
+        this.showAIResponse('requestGold');
+      }},
+    ]);
+  }
+
+  showRequestTechInline() {
+    const myTechs = this.state.civTechs?.[this.myCiv];
+    const theirTechs = this.state.civTechs?.[this.targetCiv];
+
+    // Find techs they have that we don't
+    const requestable = [];
+    if (theirTechs) {
+      for (const techId of theirTechs) {
+        if (!myTechs || !myTechs.has(techId)) {
+          requestable.push(techId);
+        }
+      }
+    }
+    requestable.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      if (requestable.length === 0) {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = `The ${this.civName} have no technologies you lack.`;
+        panel.appendChild(msg);
+      } else {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = `Select a technology to request from the ${this.civName}:`;
+        panel.appendChild(msg);
+
+        const list = document.createElement('div');
+        list.style.cssText = 'padding:4px 8px 8px;max-height:250px;overflow-y:auto';
+
+        for (const techId of requestable) {
+          const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:4px';
+          row.appendChild(makeMenuBtn(name, () => {
+            sfx('POS1');
+            this.sendAction({
+              type: 'ACTION',
+              action: {
+                type: EXECUTE_TRADE,
+                fromCiv: this.targetCiv,
+                toCiv: this.myCiv,
+                transaction: { from: this.targetCiv, to: this.myCiv, techs: [techId] },
+              },
+            });
+            this.showAIResponse('requestTech');
+          }));
+          const infoBtn = document.createElement('button');
+          infoBtn.textContent = '?';
+          infoBtn.title = 'View in Civilopedia';
+          infoBtn.style.cssText = 'font:bold 11px serif;width:18px;height:18px;padding:0;border:1px solid #8b6914;background:#4a3020;cursor:pointer;border-radius:2px;color:#c8b080;flex-shrink:0';
+          infoBtn.addEventListener('click', e => { e.stopPropagation(); showCivilopedia('advances', techId); });
+          row.appendChild(infoBtn);
+          list.appendChild(row);
+        }
+
+        panel.appendChild(list);
+      }
+    }, [
+      { label: 'Back', action: () => {
+        this.showRequestGiftSubMenu();
+      }},
+    ]);
+  }
+
+  /** @DIPLOMACYMENU option 9: "Wish to offer you a gift..." */
+  showGiftSubMenu() {
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG;
+      msg.textContent = `What gift would you like to offer the ${this.civName}?`;
+      panel.appendChild(msg);
+
+      const menu = document.createElement('div');
+      menu.style.cssText = 'padding:4px 8px 8px';
+
+      menu.appendChild(makeMenuBtn('Give Gold', () => {
+        this.showGiveGoldInline();
+      }));
+      menu.appendChild(makeMenuBtn('Give Technology', () => {
+        this.showGiveTechInline();
+      }));
+
+      panel.appendChild(menu);
+    }, [
+      { label: 'Back', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
+  }
+
+  showGiveGoldInline() {
+    const treasury = this.state.civs?.[this.myCiv]?.treasury || 0;
+
+    if (treasury <= 0) {
+      this.setScreen(`${this.civName} Emissary`, panel => {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = 'You have no gold to give.';
+        panel.appendChild(msg);
+      }, [
+        { label: 'Back', action: () => { this.showGiftSubMenu(); }},
+      ]);
+      return;
+    }
+
+    // Offer preset amounts: 25%, 50%, 75%, 100% of treasury, rounded to nearest 50
+    const presets = [0.25, 0.5, 0.75, 1.0]
+      .map(pct => Math.max(50, Math.round(treasury * pct / 50) * 50))
+      .filter((v, i, a) => a.indexOf(v) === i); // dedupe
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG;
+      msg.textContent = `Give gold to the ${this.civName} (Treasury: ${treasury})`;
+      panel.appendChild(msg);
+
+      const menu = document.createElement('div');
+      menu.style.cssText = 'padding:4px 8px 8px';
+
+      for (const amount of presets) {
+        const attGain = calcGoldToAttitude(amount);
+        menu.appendChild(makeMenuBtn(`${amount} gold (attitude +${attGain})`, () => {
+          sfx('SELL');
+          this.sendAction({
+            type: 'ACTION',
+            action: {
+              type: EXECUTE_TRADE,
+              fromCiv: this.myCiv,
+              toCiv: this.targetCiv,
+              transaction: { from: this.myCiv, to: this.targetCiv, gold: amount },
+            },
+          });
+          this.showGiftConfirmation(`Gave ${amount} gold to the ${this.civName}.`);
+        }));
+      }
+
+      // Custom amount input
+      const customRow = document.createElement('div');
+      customRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 12px;margin-top:4px';
+      const label = document.createElement('span');
+      label.textContent = 'Custom:';
+      label.style.cssText = 'font:14px "Times New Roman",serif;color:#e0d8c0';
+      customRow.appendChild(label);
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '1';
+      input.max = String(treasury);
+      input.value = String(Math.min(100, treasury));
+      input.style.cssText = 'width:80px;font:14px "Times New Roman",serif;padding:3px 6px;border:2px inset #8b6914;background:#3d2815;color:#f0e8d0';
+      customRow.appendChild(input);
+      const sendBtn = document.createElement('button');
+      sendBtn.textContent = 'Give';
+      sendBtn.className = 'civ2-btn';
+      sendBtn.style.cssText = 'font-size:12px;padding:3px 10px';
+      sendBtn.addEventListener('click', () => {
+        const amt = Math.max(1, Math.min(treasury, parseInt(input.value) || 0));
         sfx('SELL');
-        sendAction({
+        this.sendAction({
           type: 'ACTION',
           action: {
             type: EXECUTE_TRADE,
-            fromCiv: myCiv,
-            toCiv: targetCiv,
-            transaction: { from: myCiv, to: targetCiv, gold: amount },
+            fromCiv: this.myCiv,
+            toCiv: this.targetCiv,
+            transaction: { from: this.myCiv, to: this.targetCiv, gold: amt },
           },
         });
-        showOverlayMessage(`Gave ${amount} gold to ${civName}`);
-      }));
-    }
-
-    // Custom amount input
-    const customRow = document.createElement('div');
-    customRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 12px;margin-top:4px';
-    const label = document.createElement('span');
-    label.textContent = 'Custom:';
-    label.style.cssText = 'font:14px "Times New Roman",serif;color:#333';
-    customRow.appendChild(label);
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.min = '1';
-    input.max = String(treasury);
-    input.value = String(Math.min(100, treasury));
-    input.style.cssText = 'width:80px;font:14px "Times New Roman",serif;padding:3px 6px;border:2px inset #a08060';
-    customRow.appendChild(input);
-    const sendBtn = document.createElement('button');
-    sendBtn.textContent = 'Give';
-    sendBtn.className = 'civ2-btn';
-    sendBtn.style.cssText = 'font-size:12px;padding:3px 10px';
-    sendBtn.addEventListener('click', () => {
-      const amt = Math.max(1, Math.min(treasury, parseInt(input.value) || 0));
-      document.getElementById('diplo-gold-dialog')?.remove();
-      sfx('SELL');
-      sendAction({
-        type: 'ACTION',
-        action: {
-          type: EXECUTE_TRADE,
-          fromCiv: myCiv,
-          toCiv: targetCiv,
-          transaction: { from: myCiv, to: targetCiv, gold: amt },
-        },
+        this.showGiftConfirmation(`Gave ${amt} gold to the ${this.civName}.`);
       });
-      showOverlayMessage(`Gave ${amt} gold to ${civName}`);
-    });
-    customRow.appendChild(sendBtn);
-    panel.appendChild(customRow);
-  }, [{ label: 'Cancel' }]);
-}
-
-function showGiveTechDialog(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-  const myTechs = state.civTechs?.[myCiv];
-  const theirTechs = state.civTechs?.[targetCiv];
-
-  if (!myTechs) {
-    showOverlayMessage('No technology data available.');
-    return;
+      customRow.appendChild(sendBtn);
+      panel.appendChild(customRow);
+    }, [
+      { label: 'Back', action: () => { this.showGiftSubMenu(); }},
+    ]);
   }
 
-  // Find techs we have that they don't
-  const giveableTechs = [];
-  for (const techId of myTechs) {
-    if (!theirTechs || !theirTechs.has(techId)) {
-      giveableTechs.push(techId);
+  showGiveTechInline() {
+    const myTechs = this.state.civTechs?.[this.myCiv];
+    const theirTechs = this.state.civTechs?.[this.targetCiv];
+
+    // Find techs we have that they don't
+    const giveableTechs = [];
+    if (myTechs) {
+      for (const techId of myTechs) {
+        if (!theirTechs || !theirTechs.has(techId)) {
+          giveableTechs.push(techId);
+        }
+      }
     }
+    giveableTechs.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      if (giveableTechs.length === 0) {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = `The ${this.civName} already know all your technologies.`;
+        panel.appendChild(msg);
+      } else {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = `Select a technology to give to the ${this.civName}:`;
+        panel.appendChild(msg);
+
+        const list = document.createElement('div');
+        list.style.cssText = 'padding:4px 8px 8px;max-height:250px;overflow-y:auto';
+
+        for (const techId of giveableTechs) {
+          const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:4px';
+          row.appendChild(makeMenuBtn(name, () => {
+            sfx('POS1');
+            this.sendAction({
+              type: 'ACTION',
+              action: {
+                type: EXECUTE_TRADE,
+                fromCiv: this.myCiv,
+                toCiv: this.targetCiv,
+                transaction: { from: this.myCiv, to: this.targetCiv, techs: [techId] },
+              },
+            });
+            this.showGiftConfirmation(`Gave ${name} to the ${this.civName}.`);
+          }));
+          const infoBtn = document.createElement('button');
+          infoBtn.textContent = '?';
+          infoBtn.title = 'View in Civilopedia';
+          infoBtn.style.cssText = 'font:bold 11px serif;width:18px;height:18px;padding:0;border:1px solid #8b6914;background:#4a3020;cursor:pointer;border-radius:2px;color:#c8b080;flex-shrink:0';
+          infoBtn.addEventListener('click', e => { e.stopPropagation(); showCivilopedia('advances', techId); });
+          row.appendChild(infoBtn);
+          list.appendChild(row);
+        }
+
+        panel.appendChild(list);
+      }
+    }, [
+      { label: 'Back', action: () => { this.showGiftSubMenu(); }},
+    ]);
   }
 
-  if (giveableTechs.length === 0) {
-    showOverlayMessage(`${civName} already knows all your technologies.`);
-    return;
+  /** Confirmation screen after a gift is given. */
+  showGiftConfirmation(text) {
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#8d8;padding:20px 24px;text-align:center;line-height:1.5';
+      msg.textContent = text;
+      panel.appendChild(msg);
+
+      // AI thanks (attitude-based)
+      const thanks = this.attLevel >= 4
+        ? `\u201CYour generosity is most appreciated, wise ${getLeaderTitle(this.state, this.myCiv)} of the ${getTargetName(this.state, this.myCiv)}.\u201D`
+        : `\u201CWe accept your tribute.\u201D`;
+      const thanksEl = document.createElement('div');
+      thanksEl.style.cssText = 'font:italic 14px "Times New Roman",Georgia,serif;color:#e0d8c0;padding:8px 20px;text-align:center;line-height:1.4';
+      thanksEl.textContent = thanks;
+      panel.appendChild(thanksEl);
+    }, [
+      { label: 'Continue', action: () => {
+        this.showGreetingAndMenu();
+      }},
+    ]);
   }
-
-  // Sort by name
-  giveableTechs.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
-
-  createCiv2Dialog('diplo-tech-dialog', 'Give Technology', panel => {
-    panel.style.cssText += ';min-width:300px;max-height:400px;overflow-y:auto';
-    const msg = document.createElement('div');
-    msg.style.cssText = STYLE_MSG;
-    msg.textContent = `Select a technology to give to ${civName}:`;
-    panel.appendChild(msg);
-
-    for (const techId of giveableTechs) {
-      const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:4px';
-      row.appendChild(makeMenuBtn(name, () => {
-        document.getElementById('diplo-tech-dialog')?.remove();
-        sfx('POS1');
-        sendAction({
-          type: 'ACTION',
-          action: {
-            type: EXECUTE_TRADE,
-            fromCiv: myCiv,
-            toCiv: targetCiv,
-            transaction: { from: myCiv, to: targetCiv, techs: [techId] },
-          },
-        });
-        showOverlayMessage(`Gave ${name} to ${civName}`);
-      }));
-      const infoBtn = document.createElement('button');
-      infoBtn.textContent = '?';
-      infoBtn.title = 'View in Civilopedia';
-      infoBtn.style.cssText = 'font:bold 11px serif;width:18px;height:18px;padding:0;border:1px solid #a08060;background:#d4b896;cursor:pointer;border-radius:2px;color:#555;flex-shrink:0';
-      infoBtn.addEventListener('click', e => { e.stopPropagation(); showCivilopedia('advances', techId); });
-      row.appendChild(infoBtn);
-      panel.appendChild(row);
-    }
-  }, [{ label: 'Cancel' }]);
-}
-
-function showShareMapDialog(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-  const treaty = getTreatyStatus(state, myCiv, targetCiv);
-
-  if (treaty === 'war') {
-    showOverlayMessage(`Cannot share maps while at war with ${civName}.`);
-    return;
-  }
-
-  showConfirmDialog(
-    `Exchange maps with ${civName}? Both civilizations will share their explored territory.`,
-    () => {
-      sfx('POS1');
-      sendAction({
-        type: 'ACTION',
-        action: { type: SHARE_MAP, targetCiv },
-      });
-      showOverlayMessage(`Maps exchanged with ${civName}`);
-    },
-    'Share Map',
-  );
-}
-
-function showDemandTributeDialog(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-
-  // Calculate suggested tribute amount
-  const suggestedTribute = calcTributeDemand(state, myCiv, targetCiv, 16);
-  const defaultAmount = Math.max(50, suggestedTribute || 50);
-
-  createCiv2Dialog('diplo-tribute-dialog', 'Demand Tribute', panel => {
-    panel.style.minWidth = '280px';
-    const msg = document.createElement('div');
-    msg.style.cssText = STYLE_MSG;
-    msg.textContent = `Demand gold tribute from ${civName}:`;
-    panel.appendChild(msg);
-
-    const inputRow = document.createElement('div');
-    inputRow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 16px;justify-content:center';
-    const label = document.createElement('span');
-    label.textContent = 'Amount:';
-    label.style.cssText = 'font:14px "Times New Roman",serif;color:#333';
-    inputRow.appendChild(label);
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.min = '1';
-    input.max = '10000';
-    input.value = String(defaultAmount);
-    input.id = 'diplo-tribute-amount';
-    input.style.cssText = 'width:80px;font:14px "Times New Roman",serif;padding:4px 6px;border:2px inset #a08060';
-    inputRow.appendChild(input);
-    panel.appendChild(inputRow);
-
-    setTimeout(() => { input.focus(); input.select(); }, 0);
-  }, [
-    { label: 'Cancel' },
-    { label: 'Demand', action: () => {
-      const el = document.getElementById('diplo-tribute-amount');
-      const amount = Math.max(1, Math.min(10000, parseInt(el?.value) || defaultAmount));
-      sfx('NEG1');
-      sendAction({
-        type: 'ACTION',
-        action: { type: DEMAND_TRIBUTE, targetCiv, amount },
-      });
-      showOverlayMessage(`Demanded ${amount} gold from ${civName}`);
-    }},
-  ]);
-}
-
-function showRequestTechDialog(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-  const myTechs = state.civTechs?.[myCiv];
-  const theirTechs = state.civTechs?.[targetCiv];
-
-  if (!theirTechs) {
-    showOverlayMessage('No technology data available for target.');
-    return;
-  }
-
-  // Find techs they have that we don't
-  const requestable = [];
-  for (const techId of theirTechs) {
-    if (!myTechs || !myTechs.has(techId)) {
-      requestable.push(techId);
-    }
-  }
-
-  if (requestable.length === 0) {
-    showOverlayMessage(`${civName} has no technologies you lack.`);
-    return;
-  }
-
-  // Sort by name
-  requestable.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
-
-  createCiv2Dialog('diplo-reqtech-dialog', 'Request Technology', panel => {
-    panel.style.cssText += ';min-width:300px;max-height:400px;overflow-y:auto';
-    const msg = document.createElement('div');
-    msg.style.cssText = STYLE_MSG;
-    msg.textContent = `Request a technology from ${civName}:`;
-    panel.appendChild(msg);
-
-    const note = document.createElement('div');
-    note.style.cssText = 'font:12px "Times New Roman",serif;color:#888;text-align:center;padding:0 16px 6px';
-    note.textContent = '(This is a gift request — the AI may refuse based on attitude.)';
-    panel.appendChild(note);
-
-    for (const techId of requestable) {
-      const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
-      const price = calcTechPrice(state, targetCiv, myCiv, techId);
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:4px';
-      row.appendChild(makeMenuBtn(`${name} (value: ${price}g)`, () => {
-        document.getElementById('diplo-reqtech-dialog')?.remove();
-        sfx('POS1');
-        // Request tech: use EXECUTE_TRADE from them to us (AI will evaluate)
-        sendAction({
-          type: 'ACTION',
-          action: {
-            type: EXECUTE_TRADE,
-            fromCiv: targetCiv,
-            toCiv: myCiv,
-            transaction: { from: targetCiv, to: myCiv, techs: [techId] },
-          },
-        });
-        showOverlayMessage(`Requested ${name} from ${civName}`);
-      }));
-      const infoBtn = document.createElement('button');
-      infoBtn.textContent = '?';
-      infoBtn.title = 'View in Civilopedia';
-      infoBtn.style.cssText = 'font:bold 11px serif;width:18px;height:18px;padding:0;border:1px solid #a08060;background:#d4b896;cursor:pointer;border-radius:2px;color:#555;flex-shrink:0';
-      infoBtn.addEventListener('click', e => { e.stopPropagation(); showCivilopedia('advances', techId); });
-      row.appendChild(infoBtn);
-      panel.appendChild(row);
-    }
-  }, [{ label: 'Cancel' }]);
-}
-
-function showDeclareWarDialog(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-  const treaty = getTreatyStatus(state, myCiv, targetCiv);
-
-  if (treaty === 'war') {
-    showOverlayMessage(`Already at war with ${civName}.`);
-    return;
-  }
-
-  let warningText = `Declare war on ${civName}?`;
-  if (treaty === 'alliance') {
-    warningText = `Break your ALLIANCE and declare war on ${civName}? This will severely damage your reputation!`;
-  } else if (treaty === 'peace') {
-    warningText = `Break the peace treaty and declare war on ${civName}? This will damage your reputation.`;
-  } else if (treaty === 'ceasefire') {
-    warningText = `Break the ceasefire and declare war on ${civName}? This will damage your reputation.`;
-  }
-
-  showConfirmDialog(warningText, () => {
-    sfx('NEG1');
-    sendAction({
-      type: 'ACTION',
-      action: { type: DECLARE_WAR, targetCiv },
-    });
-    showOverlayMessage(`War declared on ${civName}!`);
-  }, 'Declare War?');
-}
-
-// ── Gift Sub-Menu ──────────────────────────────────────────────────
-
-function showGiftSubMenu(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-
-  createCiv2Dialog('diplo-gift-dialog', 'Give Gift', panel => {
-    panel.style.minWidth = '260px';
-    const msg = document.createElement('div');
-    msg.style.cssText = STYLE_MSG;
-    msg.textContent = `What would you like to give ${civName}?`;
-    panel.appendChild(msg);
-
-    panel.appendChild(makeMenuBtn('Give Gold', () => {
-      document.getElementById('diplo-gift-dialog')?.remove();
-      showGiveGoldDialog(state, myCiv, targetCiv, sendAction);
-    }));
-    panel.appendChild(makeMenuBtn('Give Technology', () => {
-      document.getElementById('diplo-gift-dialog')?.remove();
-      showGiveTechDialog(state, myCiv, targetCiv, sendAction);
-    }));
-    panel.appendChild(makeMenuBtn('Share Map', () => {
-      document.getElementById('diplo-gift-dialog')?.remove();
-      showShareMapDialog(state, myCiv, targetCiv, sendAction);
-    }));
-  }, [{ label: 'Cancel' }]);
-}
-
-// ── Favor Sub-Menu ─────────────────────────────────────────────────
-
-function showFavorSubMenu(state, myCiv, targetCiv, sendAction) {
-  const civName = getTargetName(state, targetCiv);
-
-  createCiv2Dialog('diplo-favor-dialog', 'Ask Favor', panel => {
-    panel.style.minWidth = '260px';
-    const msg = document.createElement('div');
-    msg.style.cssText = STYLE_MSG;
-    msg.textContent = `What would you like to ask of ${civName}?`;
-    panel.appendChild(msg);
-
-    panel.appendChild(makeMenuBtn('Demand Tribute', () => {
-      document.getElementById('diplo-favor-dialog')?.remove();
-      showDemandTributeDialog(state, myCiv, targetCiv, sendAction);
-    }));
-    panel.appendChild(makeMenuBtn('Request Technology', () => {
-      document.getElementById('diplo-favor-dialog')?.remove();
-      showRequestTechDialog(state, myCiv, targetCiv, sendAction);
-    }));
-    panel.appendChild(makeMenuBtn('Request Map', () => {
-      document.getElementById('diplo-favor-dialog')?.remove();
-      showShareMapDialog(state, myCiv, targetCiv, sendAction);
-    }));
-  }, [{ label: 'Cancel' }]);
 }
 
 // ── Main Entry Point ───────────────────────────────────────────────
 
 /**
  * Open the main diplomacy negotiation dialog with a target civ.
+ * Follows the real Civ2 multi-screen flow:
+ *   1. Emissary arrival (accept/refuse)
+ *   2. Greeting + main menu
+ *   3. Sub-menus for proposals/gifts/demands
+ *   4. AI responses
+ *   5. Dismissal
  *
  * @param {object} state    - current game state (S.mpGameState)
  * @param {object} mapBase  - map terrain base data (S.mpMapBase)
@@ -588,50 +1054,11 @@ export function openDiplomacyDialog(state, mapBase, myCiv, targetCiv, sendAction
     return;
   }
 
-  const civName = getTargetName(state, targetCiv);
-  const treaty = getTreatyStatus(state, myCiv, targetCiv);
-
   sfx('FANFARE1');
-  createCiv2Dialog('diplo-main-dialog', `${civName} Emissary`, panel => {
-    panel.style.cssText += `;min-width:380px;max-width:500px;${THRONE_BG}`;
 
-    // Build header with attitude, greeting, etc.
-    buildHeader(panel, state, myCiv, targetCiv);
-
-    // Menu section — Game.txt @DIPLOMACYMENU style
-    const menu = document.createElement('div');
-    menu.style.cssText = 'padding:12px 8px';
-
-    // Propose Treaty
-    menu.appendChild(makeMenuBtn('Propose Treaty', () => {
-      document.getElementById('diplo-main-dialog')?.remove();
-      showTreatySubMenu(state, myCiv, targetCiv, sendAction);
-    }));
-
-    // Give Gift (only if not at war, or allow anyway for goodwill)
-    menu.appendChild(makeMenuBtn('Give Gift', () => {
-      document.getElementById('diplo-main-dialog')?.remove();
-      showGiftSubMenu(state, myCiv, targetCiv, sendAction);
-    }));
-
-    // Ask Favor
-    menu.appendChild(makeMenuBtn('Ask Favor', () => {
-      document.getElementById('diplo-main-dialog')?.remove();
-      showFavorSubMenu(state, myCiv, targetCiv, sendAction);
-    }));
-
-    // Declare War (only if not already at war)
-    if (treaty !== 'war') {
-      const warBtn = makeMenuBtn('Declare War', () => {
-        document.getElementById('diplo-main-dialog')?.remove();
-        showDeclareWarDialog(state, myCiv, targetCiv, sendAction);
-      });
-      warBtn.style.color = '#a33';
-      menu.appendChild(warBtn);
-    }
-
-    panel.appendChild(menu);
-  }, [{ label: 'Leave' }]);
+  const session = new DiplomacySession(state, mapBase, myCiv, targetCiv, sendAction);
+  session.createContainer();
+  session.showEmissaryArrival();
 }
 
 // ── Civ Picker (used from the keyboard shortcut / menu) ────────────
