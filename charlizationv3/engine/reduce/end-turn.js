@@ -747,54 +747,26 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
     }
   }
 
-  // ── Q.2: Tech leak + Great Library ──
+  // ── Q.2: Great Library ──
   // Great Library (wonder 4): immediately grant techs known by 2+ other civs.
-  // Tech leak (no wonder needed): if 2+ other civs already know a tech,
-  // civ gets it free on the NEXT turn (tracked via pendingLeakedTechs).
+  // Binary FUN_004bf05b: ONLY the Great Library owner gets free techs.
+  // There is no general "tech leak" mechanic in Civ2.
   {
     const hasGreatLibrary = hasWonderEffect(state, activeCiv, 4);
-    const myTechs = state.civTechs?.[activeCiv];
-    if (myTechs) {
-      // First, grant any pending leaked techs from last turn
-      if (state.pendingLeakedTechs?.[activeCiv]?.length > 0) {
-        for (const advId of state.pendingLeakedTechs[activeCiv]) {
-          if (!myTechs.has(advId)) {
-            grantAdvance(state, activeCiv, advId);
-            if (!state.turnEvents) state.turnEvents = [];
-            state.turnEvents.push({ type: 'freeAdvance', civSlot: activeCiv, advanceId: advId, source: 'tech leak' });
+    if (hasGreatLibrary) {
+      const myTechs = state.civTechs?.[activeCiv];
+      if (myTechs) {
+        for (let advId = 0; advId < ADVANCE_NAMES.length; advId++) {
+          if (myTechs.has(advId)) continue;
+          let count = 0;
+          for (let c = 1; c < 8; c++) {
+            if (c === activeCiv || !(state.civsAlive & (1 << c))) continue;
+            if (state.civTechs[c]?.has(advId)) count++;
           }
-        }
-        // Clear pending
-        if (!state.pendingLeakedTechs) state.pendingLeakedTechs = {};
-        state.pendingLeakedTechs = { ...state.pendingLeakedTechs, [activeCiv]: [] };
-      }
-
-      // Now check for techs known by 2+ other civs
-      for (let advId = 0; advId < ADVANCE_NAMES.length; advId++) {
-        if (myTechs.has(advId)) continue;
-        let count = 0;
-        for (let c = 1; c < 8; c++) {
-          if (c === activeCiv || !(state.civsAlive & (1 << c))) continue;
-          if (state.civTechs[c]?.has(advId)) count++;
-        }
-        if (count >= 2) {
-          if (hasGreatLibrary) {
-            // Great Library: grant immediately
+          if (count >= 2) {
             grantAdvance(state, activeCiv, advId);
             if (!state.turnEvents) state.turnEvents = [];
             state.turnEvents.push({ type: 'freeAdvance', civSlot: activeCiv, advanceId: advId, source: 'Great Library' });
-          } else {
-            // Tech leak: queue for next turn
-            if (!state.pendingLeakedTechs) state.pendingLeakedTechs = {};
-            state.pendingLeakedTechs = { ...state.pendingLeakedTechs };
-            if (!state.pendingLeakedTechs[activeCiv]) {
-              state.pendingLeakedTechs[activeCiv] = [];
-            } else {
-              state.pendingLeakedTechs[activeCiv] = [...state.pendingLeakedTechs[activeCiv]];
-            }
-            if (!state.pendingLeakedTechs[activeCiv].includes(advId)) {
-              state.pendingLeakedTechs[activeCiv].push(advId);
-            }
           }
         }
       }

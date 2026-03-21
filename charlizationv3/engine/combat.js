@@ -246,7 +246,7 @@ export function calcStackBestDefender(gx, gy, attackerType, state, mapBase) {
     // Only apply when simplifiedCombat flag is set (standard default).
     // When disabled (scenario override), raw defense score is used without HP adjustment.
     const maxHp = (UNIT_HP[u.type] || 1) * 10;
-    const curHp = maxHp - (u.movesRemain || 0) * 10;
+    const curHp = maxHp - (u.movesRemain || 0);
     if (curHp <= 0) continue;
     if (useHpWeighting) {
       score = Math.floor(score * curHp / maxHp);
@@ -565,9 +565,9 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   if (effAtk < 1) effAtk = 1;
   if (effDef < 1) effDef = 1;
 
-  // Current HP
-  let atkHp = atkMaxHp - (attacker.movesRemain || 0) * 10;
-  let defHp = defMaxHp - (defender.movesRemain || 0) * 10;
+  // Current HP — movesRemain is already in internal HP scale (UNIT_HP * 10)
+  let atkHp = atkMaxHp - (attacker.movesRemain || 0);
+  let defHp = defMaxHp - (defender.movesRemain || 0);
   if (atkHp <= 0) atkHp = 10;
   if (defHp <= 0) defHp = 10;
 

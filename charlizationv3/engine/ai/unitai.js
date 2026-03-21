@@ -182,7 +182,9 @@ function _handleDamageRetreat(unit, unitIndex, gameState, mapBase, spatialIdx, c
     }
     if (adjacentEnemies >= 3) {
       // Under siege — fortify in place rather than trying to retreat through enemies
-      if ((UNIT_DEF[unit.type] || 0) > 0) {
+      // Settlers/engineers (role 5/6) cannot fortify — skip instead
+      const role = UNIT_ROLE[unit.type] ?? 0;
+      if (role !== 5 && role !== 6 && (UNIT_DEF[unit.type] || 0) > 0) {
         return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
       }
       return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };
@@ -229,8 +231,9 @@ function _handleDamageRetreat(unit, unitIndex, gameState, mapBase, spatialIdx, c
     }
   }
 
-  // Can't retreat — fortify or skip
-  if (domain === 0 && (UNIT_DEF[unit.type] || 0) > 0) {
+  // Can't retreat — fortify or skip (settlers/engineers cannot fortify)
+  const fallbackRole = UNIT_ROLE[unit.type] ?? 0;
+  if (domain === 0 && fallbackRole !== 5 && fallbackRole !== 6 && (UNIT_DEF[unit.type] || 0) > 0) {
     return { type: 'UNIT_ORDER', unitIndex, order: 'fortify' };
   }
   return { type: 'UNIT_ORDER', unitIndex, order: 'skip' };

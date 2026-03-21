@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, MOVEMENT_MULTIPLIER,
+  UNIT_MOVE_POINTS, UNIT_DOMAIN, UNIT_ATK, UNIT_ROLE, MOVEMENT_MULTIPLIER,
   CITY_RADIUS_DOUBLED, ADVANCE_NAMES, GOVT_INDEX, TERRAIN_DEFENSE,
   WONDER_NAMES, IMPROVE_NAMES,
 } from './defs.js';
@@ -1047,11 +1047,11 @@ export function handleCityCapture(state, mapBase, cityIndex, capturerCivSlot, ol
 
   // ── #6: Civ elimination check FIRST, then partisans only if civ SURVIVES ──
   // Binary ref: FUN_0057b5df line 5104 calls kill_civ BEFORE partisan spawning (lines 5105+)
+  // Binary checks only for cities (not units) — killCiv cleans up remaining units.
   let civEliminated = false;
   if (oldOwner > 0) {
     const hasCity = state.cities.some(c => c.owner === oldOwner && c.size > 0);
-    const hasUnit = state.units.some(u => u.owner === oldOwner && u.gx >= 0);
-    if (!hasCity && !hasUnit) {
+    if (!hasCity) {
       const killResult = killCiv(state, mapBase, oldOwner, capturerCivSlot);
       events.push(...killResult.events);
       civEliminated = true;
@@ -1211,32 +1211,33 @@ function cleanupTradeRoutes(state, targetCityIdx) {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Rehome units whose home city was captured.
- * Partisans (type 9) get set to no-home (0xFF); Diplomats/spies get 0xFFFF.
- * Other units get reassigned to the nearest own city.
- * #59: Units that can't be rehomed (no cities remain) are DELETED, not left homeless.
- *
- * From pseudocode FUN_0057b5df lines 5002-5028.
+ * Rehome or disband units whose home city was captured.
+ * Binary FUN_0057b5df lines 5002-5028:
+ *  - Diplomat (type 9) → set homeCityId to 0xFF (no home)
+ *  - AI civs: role-1 (defense) units → try rehome to nearest city; rest → delete
+ *  - Human civs: ALL non-diplomat units → delete
+ *  - No cities remain → delete
  */
 function rehomeOrDisbandUnits(state, capturedCityIdx, oldOwner, mapBase) {
+  const isHuman = !!((state.humanPlayers || 0) & (1 << oldOwner));
   state.units = [...state.units];
   for (let i = 0; i < state.units.length; i++) {
     const u = state.units[i];
     if (u.homeCityId !== capturedCityIdx || u.owner !== oldOwner || u.gx < 0) continue;
 
-    // Partisans: set to no home (binary: type 9 -> home = 0xFF)
-    if (u.type === PARTISAN_TYPE) {
+    // Diplomats/spies: set to no home (binary: type 9 -> home = 0xFF)
+    if (u.type === PARTISAN_TYPE || u.type === 46 || u.type === 47) {
       state.units[i] = { ...u, homeCityId: 0xFFFF };
       continue;
     }
 
-    // Diplomats/spies: set to no home
-    if (u.type === 46 || u.type === 47) {
-      state.units[i] = { ...u, homeCityId: 0xFFFF };
+    // Human civs: delete all non-diplomat units (binary behavior)
+    if (isHuman) {
+      state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
       continue;
     }
 
-    // Find nearest own city for rehoming
+    // AI civs: try to rehome role-1 (defense) units to nearest own city
     let bestCi = -1, bestDist = Infinity;
     for (let ci = 0; ci < state.cities.length; ci++) {
       const c = state.cities[ci];
@@ -1246,12 +1247,11 @@ function rehomeOrDisbandUnits(state, capturedCityIdx, oldOwner, mapBase) {
       }
     }
 
-    if (bestCi >= 0) {
-      // Rehome to nearest city
+    if (bestCi >= 0 && UNIT_ROLE[u.type] === 1) {
+      // Role 1 (defense units): rehome to nearest city
       state.units[i] = { ...u, homeCityId: bestCi };
     } else {
-      // #59: No cities remain — delete unit (don't leave homeless)
-      // Binary: FUN_005b6042 disbands the unit
+      // All other units or no city available: delete
       state.units[i] = { ...u, gx: -1, gy: -1, x: -1, y: -1, movesLeft: 0 };
     }
   }

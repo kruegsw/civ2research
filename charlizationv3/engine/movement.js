@@ -319,6 +319,11 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   // Units that ignore ZOC
   if (UNIT_IGNORE_ZOC[unitType]) return false;
 
+  // Binary FUN_005b4d8c: city at tile → no ZOC. Move is rejected only if
+  // BOTH source AND destination are ZOC'd. City at source always passes,
+  // so units leaving a city are never ZOC-blocked.
+  if (hasCityAt(fromGx, fromGy, mapBase)) return false;
+
   const domain = UNIT_DOMAIN[unitType] ?? 0;
 
   // Check if 'from' tile is adjacent to enemy combat unit of same domain

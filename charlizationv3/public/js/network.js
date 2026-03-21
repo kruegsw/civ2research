@@ -795,6 +795,122 @@ function toggleChat(forceClose) {
   }
 }
 
+// ── Pending diplomatic requests in chat ──
+let _pendingDiploFlashInterval = null;
+
+function updatePendingDiploInChat() {
+  // Remove any existing pending diplo elements
+  const existing = chatMessages.querySelectorAll('.diplo-pending');
+  existing.forEach(el => el.remove());
+
+  if (!S.mpGameState || S.mpCivSlot == null) return;
+
+  const pendingProposals = (S.mpGameState.treatyProposals || [])
+    .map((p, i) => ({ ...p, index: i }))
+    .filter(p => p.to === S.mpCivSlot && !p.resolved);
+  const pendingDemands = (S.mpGameState.tributeDemands || [])
+    .map((d, i) => ({ ...d, index: i }))
+    .filter(d => d.to === S.mpCivSlot && !d.resolved);
+
+  const hasPending = pendingProposals.length > 0 || pendingDemands.length > 0;
+
+  // Start/stop flash interval
+  if (hasPending && !_pendingDiploFlashInterval) {
+    _pendingDiploFlashInterval = setInterval(() => {
+      if (!S.chatOpen) {
+        sfx('FEEDBK03');
+        chatBadge.textContent = '!';
+        chatBadge.classList.remove('hidden');
+      }
+    }, 5000);
+    // Immediately show chat + play sound
+    if (!S.chatOpen) toggleChat();
+    sfx('LETTER');
+  } else if (!hasPending && _pendingDiploFlashInterval) {
+    clearInterval(_pendingDiploFlashInterval);
+    _pendingDiploFlashInterval = null;
+  }
+
+  // Add pending proposals to chat
+  for (const p of pendingProposals) {
+    const fromName = S.mpGameState.civNames?.[p.from] || `Civ ${p.from}`;
+    const fromColor = CIV_COLORS[p.from] || '#fff';
+    const treatyLabel = (p.treaty || 'peace').charAt(0).toUpperCase() + (p.treaty || 'peace').slice(1);
+
+    const el = document.createElement('div');
+    el.className = 'diplo-pending';
+    el.style.cssText = 'padding:6px 8px;margin:4px 0;background:rgba(139,105,20,0.3);border:1px solid #8b6914;border-radius:4px;font:13px "Times New Roman",serif';
+
+    const text = document.createElement('div');
+    text.innerHTML = `<span style="color:${fromColor};font-weight:bold">${fromName}</span> proposes <b>${treatyLabel}</b>`;
+    el.appendChild(text);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:6px;margin-top:4px';
+    const acceptBtn = document.createElement('button');
+    acceptBtn.textContent = 'Accept';
+    acceptBtn.className = 'civ2-btn';
+    acceptBtn.style.cssText = 'font-size:11px;padding:2px 10px';
+    acceptBtn.onclick = () => {
+      transport.sendRaw({ type: 'ACTION', action: { type: 'RESPOND_TREATY', proposalIndex: p.index, accept: true } });
+      el.remove();
+    };
+    const declineBtn = document.createElement('button');
+    declineBtn.textContent = 'Decline';
+    declineBtn.className = 'civ2-btn';
+    declineBtn.style.cssText = 'font-size:11px;padding:2px 10px';
+    declineBtn.onclick = () => {
+      transport.sendRaw({ type: 'ACTION', action: { type: 'RESPOND_TREATY', proposalIndex: p.index, accept: false } });
+      el.remove();
+    };
+    btnRow.appendChild(acceptBtn);
+    btnRow.appendChild(declineBtn);
+    el.appendChild(btnRow);
+    chatMessages.appendChild(el);
+  }
+
+  // Add pending demands to chat
+  for (const d of pendingDemands) {
+    const fromName = S.mpGameState.civNames?.[d.from] || `Civ ${d.from}`;
+    const fromColor = CIV_COLORS[d.from] || '#fff';
+
+    const el = document.createElement('div');
+    el.className = 'diplo-pending';
+    el.style.cssText = 'padding:6px 8px;margin:4px 0;background:rgba(139,40,20,0.3);border:1px solid #8b3014;border-radius:4px;font:13px "Times New Roman",serif';
+
+    const text = document.createElement('div');
+    text.innerHTML = `<span style="color:${fromColor};font-weight:bold">${fromName}</span> demands <b>${d.amount} gold</b> in tribute`;
+    el.appendChild(text);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:6px;margin-top:4px';
+    const payBtn = document.createElement('button');
+    payBtn.textContent = `Pay ${d.amount}g`;
+    payBtn.className = 'civ2-btn';
+    payBtn.style.cssText = 'font-size:11px;padding:2px 10px';
+    payBtn.onclick = () => {
+      transport.sendRaw({ type: 'ACTION', action: { type: 'RESPOND_DEMAND', demandIndex: d.index, accept: true } });
+      el.remove();
+    };
+    const refuseBtn = document.createElement('button');
+    refuseBtn.textContent = 'Refuse';
+    refuseBtn.className = 'civ2-btn';
+    refuseBtn.style.cssText = 'font-size:11px;padding:2px 10px';
+    refuseBtn.onclick = () => {
+      transport.sendRaw({ type: 'ACTION', action: { type: 'RESPOND_DEMAND', demandIndex: d.index, accept: false } });
+      el.remove();
+    };
+    btnRow.appendChild(payBtn);
+    btnRow.appendChild(refuseBtn);
+    el.appendChild(btnRow);
+    chatMessages.appendChild(el);
+  }
+
+  if (hasPending) {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+}
+
 function sendChat() {
   const text = chatInput.value.trim();
   if (!text) return;
@@ -1088,8 +1204,11 @@ function initNetwork(appCallbacks) {
           );
           S.mpGameState = deserializeState(msg.state);
 
+          // Track whether this is the first GAME_START (from lobby) vs a reconnect
+          const isInitialStart = S.currentScene === 'lobby';
+
           // Play transition sound only on initial game start (not reconnect)
-          if (S.currentScene === 'lobby') {
+          if (isInitialStart) {
             menuLoop.pause();
             menuLoop.currentTime = 0;
             sfx('MENUEND');
@@ -1112,11 +1231,8 @@ function initNetwork(appCallbacks) {
           // populateFowCivSelector is called inside with forceCiv to ensure correct civ
           doRenderFromState({ silent: false, forceCiv: S.mpCivSlot });
 
-          // Show game introduction dialog (matches Civ2 @INTHEBEGINNING from Game.txt):
-          // "%STRING0, you have risen to become leader of the %STRING1.
-          //  May your reign be long and prosperous.
-          //  The %STRING1 have knowledge of Irrigation, Mining, %STRING2and Roads."
-          {
+          // Show game introduction dialog only on initial start (not reconnect)
+          if (isInitialStart) {
             const gs = S.mpGameState;
             const civName = gs.civNames?.[S.mpCivSlot] || 'your people';
             const leaderName = gs.civs?.[S.mpCivSlot]?.leaderName || 'Leader';
@@ -1320,12 +1436,8 @@ function initNetwork(appCallbacks) {
               ), 600);
             }
 
-            // Auto-show diplomacy panel when there are pending proposals/demands for us
-            if (S.mpGameState.treatyProposals?.some(p => p.to === S.mpCivSlot && !p.resolved) ||
-                S.mpGameState.tributeDemands?.some(d => d.to === S.mpCivSlot && !d.resolved)) {
-              sfx('LETTER');
-              setTimeout(() => showDiplomacyPanel(), 400);
-            }
+            // Show pending human proposals/demands in the chat panel
+            updatePendingDiploInChat();
 
             // Prompt to pick research at start of turn if nothing selected and science > 0
             if (S.mpGameState.turn.activeCiv === S.mpCivSlot && !statePayload.discoveredAdvance) {
@@ -1595,6 +1707,16 @@ function initNetwork(appCallbacks) {
   // ── End Turn button ──
   document.getElementById('end-turn-btn').addEventListener('click', () => {
     if (!S.mpGameState || S.mpGameState.turn.activeCiv !== S.mpCivSlot) return;
+    // Block END_TURN if there are pending proposals/demands to respond to
+    const hasPendingProposal = S.mpGameState.treatyProposals?.some(p => p.to === S.mpCivSlot && !p.resolved);
+    const hasPendingDemand = S.mpGameState.tributeDemands?.some(d => d.to === S.mpCivSlot && !d.resolved);
+    if (hasPendingProposal || hasPendingDemand) {
+      sfx('FEEDBK03');
+      showOverlayMessage('You must respond to pending diplomatic requests before ending your turn.');
+      // Flash the chat panel to draw attention
+      if (!S.chatOpen) toggleChat();
+      return;
+    }
     sfx('ENDOTURN');
     transport.sendRaw({ type: 'ACTION', action: { type: 'END_TURN' } });
   });

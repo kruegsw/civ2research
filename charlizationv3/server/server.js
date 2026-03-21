@@ -1486,17 +1486,20 @@ function sendGameStateToAll(roomId, room) {
 }
 
 function buildStatePayload(room, civSlot) {
-  // For now, send full state (FOW filtering can be enabled later)
-  // Convert non-JSON-serializable types (Sets → arrays)
   const gs = room.gameState;
-  const cities = gs.cities.map(c => ({
+
+  // Apply FOW filtering: only send units/cities visible to this civ
+  const filtered = filterStateForCiv(room.mapBase, gs, civSlot);
+
+  // Convert non-JSON-serializable types (Sets → arrays)
+  const cities = filtered.cities.map(c => ({
     ...c,
     buildings: c.buildings instanceof Set ? [...c.buildings] : c.buildings,
   }));
   return {
-    units: gs.units,
+    units: filtered.units,
     cities,
-    civs: gs.civs,
+    civs: filtered.civs,
     civTechCounts: gs.civTechCounts,
     civTechs: gs.civTechs ? gs.civTechs.map(s => s instanceof Set ? [...s] : s) : null,
     civsAlive: gs.civsAlive,
