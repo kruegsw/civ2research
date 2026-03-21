@@ -1178,6 +1178,92 @@ export function openDiplomacyDialog(state, mapBase, myCiv, targetCiv, sendAction
  * for the chosen civ. This is the entry point from the hamburger menu
  * and keyboard shortcut.
  */
+/**
+ * Human-to-human async diplomacy menu.
+ * Sends proposals/demands via WebSocket. The other player responds
+ * asynchronously (no later than end of their next turn).
+ */
+function showHumanDiplomacyMenu(state, myCiv, targetCiv, sendAction) {
+  const civName = getTargetName(state, targetCiv);
+  const treaty = getTreatyStatus(state, myCiv, targetCiv);
+
+  createCiv2Dialog('diplo-human-dialog', `Message to ${civName}`, panel => {
+    panel.style.cssText += `;min-width:320px;${THRONE_BG}`;
+    const msg = document.createElement('div');
+    msg.style.cssText = STYLE_MSG;
+    msg.textContent = `Send a diplomatic proposal to ${civName}. They will respond by the end of their next turn.`;
+    panel.appendChild(msg);
+
+    const menu = document.createElement('div');
+    menu.style.cssText = 'padding:8px 8px 4px';
+
+    // Treaty proposals (based on current treaty status)
+    if (treaty === 'war') {
+      menu.appendChild(makeMenuBtn('Propose Ceasefire', () => {
+        sendAction({ type: 'ACTION', action: { type: PROPOSE_TREATY, targetCiv, treaty: 'ceasefire' } });
+        document.getElementById('diplo-human-dialog')?.remove();
+        showOverlayMessage(`Ceasefire proposal sent to ${civName}`);
+      }));
+      menu.appendChild(makeMenuBtn('Propose Peace Treaty', () => {
+        sendAction({ type: 'ACTION', action: { type: PROPOSE_TREATY, targetCiv, treaty: 'peace' } });
+        document.getElementById('diplo-human-dialog')?.remove();
+        showOverlayMessage(`Peace proposal sent to ${civName}`);
+      }));
+    } else if (treaty === 'ceasefire') {
+      menu.appendChild(makeMenuBtn('Propose Peace Treaty', () => {
+        sendAction({ type: 'ACTION', action: { type: PROPOSE_TREATY, targetCiv, treaty: 'peace' } });
+        document.getElementById('diplo-human-dialog')?.remove();
+        showOverlayMessage(`Peace proposal sent to ${civName}`);
+      }));
+      menu.appendChild(makeMenuBtn('Propose Alliance', () => {
+        sendAction({ type: 'ACTION', action: { type: PROPOSE_TREATY, targetCiv, treaty: 'alliance' } });
+        document.getElementById('diplo-human-dialog')?.remove();
+        showOverlayMessage(`Alliance proposal sent to ${civName}`);
+      }));
+    } else if (treaty === 'peace') {
+      menu.appendChild(makeMenuBtn('Propose Alliance', () => {
+        sendAction({ type: 'ACTION', action: { type: PROPOSE_TREATY, targetCiv, treaty: 'alliance' } });
+        document.getElementById('diplo-human-dialog')?.remove();
+        showOverlayMessage(`Alliance proposal sent to ${civName}`);
+      }));
+    }
+
+    // Share maps (not at war)
+    if (treaty !== 'war') {
+      menu.appendChild(makeMenuBtn('Exchange Maps', () => {
+        sendAction({ type: 'ACTION', action: { type: SHARE_MAP, targetCiv } });
+        document.getElementById('diplo-human-dialog')?.remove();
+        showOverlayMessage(`Maps exchanged with ${civName}`);
+      }));
+    }
+
+    // Demand tribute (always available)
+    menu.appendChild(makeMenuBtn('Demand Tribute', () => {
+      document.getElementById('diplo-human-dialog')?.remove();
+      // Simple amount input
+      const amount = prompt(`Demand how much gold from ${civName}?`, '100');
+      if (amount && parseInt(amount) > 0) {
+        sendAction({ type: 'ACTION', action: { type: DEMAND_TRIBUTE, targetCiv, amount: parseInt(amount) } });
+        showOverlayMessage(`Tribute demand of ${amount} gold sent to ${civName}`);
+      }
+    }));
+
+    // Declare war (not if already at war)
+    if (treaty !== 'war') {
+      const warBtn = makeMenuBtn('Declare War!', () => {
+        document.getElementById('diplo-human-dialog')?.remove();
+        sfx('NEG1');
+        sendAction({ type: 'ACTION', action: { type: DECLARE_WAR, targetCiv } });
+        showOverlayMessage(`War declared on ${civName}!`);
+      });
+      warBtn.style.color = '#d88';
+      menu.appendChild(warBtn);
+    }
+
+    panel.appendChild(menu);
+  }, [{ label: 'Cancel' }]);
+}
+
 export function showDiplomacyNegotiationPicker() {
   if (!S.mpGameState || S.mpCivSlot == null) return;
   const state = S.mpGameState;
@@ -1197,8 +1283,10 @@ export function showDiplomacyNegotiationPicker() {
 
   const sendAction = (msg) => S.transport.sendRaw(msg);
 
-  createCiv2Dialog('diplo-picker-dialog', 'Foreign Minister', panel => {
-    panel.style.minWidth = '300px';
+  const humanMask = state.humanPlayers || 0;
+
+  createCiv2Dialog('diplo-picker-dialog', 'Diplomacy', panel => {
+    panel.style.cssText += ';min-width:340px;' + THRONE_BG;
     const msg = document.createElement('div');
     msg.style.cssText = STYLE_MSG;
     msg.textContent = 'Which civilization would you like to contact?';
@@ -1206,33 +1294,37 @@ export function showDiplomacyNegotiationPicker() {
 
     for (const c of targets) {
       const civName = getTargetName(state, c);
-      const civColor = CIV_COLORS[c] || '#fff';
+      const civColor = CIV_COLORS[c] || '#c8a040';
       const treaty = getTreatyStatus(state, myCiv, c);
       const treatyLabel = treaty.charAt(0).toUpperCase() + treaty.slice(1);
-      const rawAtt = getRawAttitude(state, c, myCiv);
-      const attLevel = getAttitudeLevel(rawAtt);
-      const attName = ATTITUDE_LEVEL_NAMES[attLevel] || 'Unknown';
+      const isHuman = !!(humanMask & (1 << c));
+      const typeLabel = isHuman ? 'Human' : 'AI';
 
       const btn = document.createElement('button');
       btn.style.cssText = STYLE_ITEM + ';display:flex;align-items:center;justify-content:space-between';
-      btn.addEventListener('mouseenter', () => { btn.style.background = '#c4a876'; });
+      btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(139,105,20,0.4)'; });
       btn.addEventListener('mouseleave', () => { btn.style.background = 'none'; });
 
       const nameSpan = document.createElement('span');
-      nameSpan.style.cssText = `color:${civColor};font-weight:bold;text-shadow:1px 1px 1px rgba(0,0,0,0.4)`;
+      nameSpan.style.cssText = `color:${civColor};font-weight:bold;text-shadow:1px 1px 2px rgba(0,0,0,0.5)`;
       nameSpan.textContent = civName;
       btn.appendChild(nameSpan);
 
       const infoSpan = document.createElement('span');
-      const attColor = attLevel <= 2 ? '#a33' : attLevel >= 6 ? '#3a3' : '#666';
-      const treatyColor = treaty === 'war' ? '#a33' : '#3a3';
-      infoSpan.style.cssText = 'font-size:12px;color:#555';
-      infoSpan.innerHTML = `<span style="color:${treatyColor}">${treatyLabel}</span> | <span style="color:${attColor}">${attName}</span>`;
+      const treatyColor = treaty === 'war' ? '#e55' : '#5e5';
+      infoSpan.style.cssText = 'font-size:12px;color:#a09070';
+      infoSpan.innerHTML = `<span style="color:${treatyColor}">${treatyLabel}</span> \u2022 ${typeLabel}`;
       btn.appendChild(infoSpan);
 
       btn.addEventListener('click', () => {
         document.getElementById('diplo-picker-dialog')?.remove();
-        openDiplomacyDialog(state, S.mpMapBase, myCiv, c, sendAction);
+        if (isHuman) {
+          // Human player — show async proposal menu
+          showHumanDiplomacyMenu(state, myCiv, c, sendAction);
+        } else {
+          // AI player — open full throne room dialog
+          openDiplomacyDialog(state, S.mpMapBase, myCiv, c, sendAction);
+        }
       });
 
       panel.appendChild(btn);

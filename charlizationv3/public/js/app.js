@@ -778,7 +778,6 @@ const HAMBURGER_ACTIONS = {
     if (S.mpGameState && S.mpCivSlot) showGovernmentCouncilDialog(S.mpGameState, S.mpCivSlot);
   },
   'view-techtree': () => showTechTree(),
-  'view-diplomacy': () => showDiplomacyPanel(),
   'view-negotiate': () => showDiplomacyNegotiationPicker(),
   'view-spaceship': () => {
     if (S.mpGameState && S.mpCivSlot) showSpaceshipDialog(S.mpGameState, S.mpCivSlot);
@@ -1215,17 +1214,8 @@ window.addEventListener('keydown', e => {
   // F6: tech tree viewer (view-only)
   if (e.key === 'F6') { e.preventDefault(); showTechTree(); return; }
 
-  // Shift+D (no unit selected): open diplomacy panel (view-only)
+  // Shift+D: open diplomacy/negotiation picker
   if (e.key === 'D' && e.shiftKey) {
-    if (!S.mpSelectedUnit && S.mpGameState) {
-      e.preventDefault();
-      showDiplomacyPanel();
-      return;
-    }
-  }
-
-  // Shift+N: open diplomacy negotiation picker
-  if (e.key === 'N' && e.shiftKey) {
     e.preventDefault();
     showDiplomacyNegotiationPicker();
     return;
