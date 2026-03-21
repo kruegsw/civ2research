@@ -31,29 +31,45 @@ const ATTITUDE_LEVEL_NAMES = [
   'Neutral', 'Cordial', 'Polite', 'Enthusiastic', 'Worshipful',
 ];
 
-const ATTITUDE_GREETINGS = [
-  // 0 Enraged
-  'Our warriors are sharpening their blades. Speak quickly!',
-  // 1 Furious
-  'We are not pleased to see you. State your business!',
-  // 2 Annoyed
-  'What do you want? Make it quick.',
-  // 3 Uncooperative
-  'We are listening... reluctantly.',
-  // 4 Neutral
-  'Greetings. What brings you here today?',
-  // 5 Cordial
-  'Welcome, friend. How may we be of service?',
-  // 6 Polite
-  'It is always a pleasure to receive your emissary.',
-  // 7 Enthusiastic
-  'Our people celebrate your visit! What can we do for you?',
-  // 8 Worshipful
-  'We are honored beyond words by your presence!',
+// Game.txt @GREETINGS — hostile (attitude 0-3) and friendly (4-8) variants
+const HOSTILE_GREETINGS = [
+  'O most untrustworthy leader of the infidels, hear now the words of %LEADER, %TITLE of the %CIV...',
+  'O treacherous one, hear now the words of %LEADER, ruler and %TITLE of the %CIV...',
+  'Treacherous %PLAYER! Prepare yourself for a message from our most wise %TITLE: %LEADER of the %CIV...',
+  'Beware, most untrustworthy %PLAYER. I speak for %PRONOUN who makes mortals tremble: %TITLE %LEADER of the %CIV...',
 ];
+const FRIENDLY_GREETINGS = [
+  'Greetings from the most exalted %LEADER: %TITLE of the %CIV...',
+  'I bring tidings from %LEADER, ruler and %TITLE of the %CIV...',
+  'I bear a message from our most wise %TITLE: %LEADER of the %CIV...',
+  'I speak for %PRONOUN who makes mortals tremble: %TITLE %LEADER of the %CIV...',
+];
+// Game.txt @WELCOME/@WELCOMEPEACE/@WELCOMEALLY — treaty-based greetings
+const TREATY_GREETINGS = {
+  war: 'Our warriors are sharpening their blades. Speak quickly!',
+  ceasefire: 'We appreciate this period of understanding between our two peoples.',
+  peace: 'We welcome the friendship of the %CIV people and their most wise leader: %TITLE %PLAYER.',
+  alliance: 'We celebrate our eternal alliance with the %CIV people and their most wise and munificent leader: %TITLE %PLAYER.',
+};
 
-const STYLE_MSG = 'text-align:center;padding:12px 20px;font:16px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-const STYLE_ITEM = 'display:block;width:100%;text-align:left;padding:6px 12px;margin:3px 0;font:14px "Times New Roman",Georgia,serif;cursor:pointer;border:none;background:none;color:#333';
+// Game.txt @DIPLOMACYMENU options
+const DIPLO_MENU_ITEMS = {
+  done: 'Consider this discussion complete.',
+  alliance: 'Suggest a permanent strategic alliance.',
+  peace: 'Suggest a permanent peace treaty.',
+  requestGift: 'Request a gift from you, our gracious allies.',
+  demandTribute: 'Demand tribute for our patience.',
+  withdrawTroops: 'Insist that you withdraw your troops.',
+  cancelAlliance: 'Cancel this worthless alliance.',
+  propose: 'Have a proposal to make...',
+  offerGift: 'Wish to offer you a gift...',
+};
+
+// Throne room styled dialog
+const STYLE_MSG = 'text-align:center;padding:12px 20px;font:16px "Times New Roman",Georgia,serif;color:#f0e8d0;text-shadow:1px 1px 2px rgba(0,0,0,0.8)';
+const STYLE_ITEM = 'display:block;width:100%;text-align:left;padding:6px 12px;margin:3px 0;font:14px "Times New Roman",Georgia,serif;cursor:pointer;border:none;background:none;color:#f0e8d0';
+const THRONE_BG = 'background:linear-gradient(180deg, #2a1a0a 0%, #3d2815 20%, #4a3020 50%, #3d2815 80%, #2a1a0a 100%);border:3px solid #8b6914;box-shadow:inset 0 0 30px rgba(0,0,0,0.5)';
+const STYLE_ITEM_HOVER = 'background:rgba(139,105,20,0.4)';
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -84,41 +100,67 @@ function makeMenuBtn(label, onClick) {
   const btn = document.createElement('button');
   btn.textContent = label;
   btn.style.cssText = STYLE_ITEM;
-  btn.addEventListener('mouseenter', () => { btn.style.background = '#c4a876'; });
+  btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(139,105,20,0.4)'; });
   btn.addEventListener('mouseleave', () => { btn.style.background = 'none'; });
   btn.addEventListener('click', onClick);
   return btn;
 }
 
-/** Build a header section for the diplomacy dialog. */
+/** Build throne room header with Game.txt-style greeting. */
 function buildHeader(panel, state, myCiv, targetCiv) {
   const civName = getTargetName(state, targetCiv);
   const leaderName = getLeaderName(state, targetCiv);
-  const civColor = CIV_COLORS[targetCiv] || '#fff';
+  const myName = getTargetName(state, myCiv);
+  const myLeader = getLeaderName(state, myCiv);
+  const civColor = CIV_COLORS[targetCiv] || '#c8a040';
   const rawAtt = getRawAttitude(state, targetCiv, myCiv);
   const attLevel = getAttitudeLevel(rawAtt);
   const attName = ATTITUDE_LEVEL_NAMES[attLevel] || 'Unknown';
   const treaty = getTreatyStatus(state, myCiv, targetCiv);
   const treatyLabel = treaty.charAt(0).toUpperCase() + treaty.slice(1);
-  const greeting = ATTITUDE_GREETINGS[attLevel] || 'Greetings.';
+
+  // Pick greeting based on attitude and treaty (Game.txt style)
+  let greeting;
+  if (treaty !== 'war' && TREATY_GREETINGS[treaty]) {
+    greeting = TREATY_GREETINGS[treaty];
+  } else if (attLevel <= 3) {
+    greeting = HOSTILE_GREETINGS[attLevel % HOSTILE_GREETINGS.length];
+  } else {
+    greeting = FRIENDLY_GREETINGS[(attLevel - 4) % FRIENDLY_GREETINGS.length];
+  }
+  // Substitute placeholders
+  greeting = greeting
+    .replace(/%LEADER/g, leaderName)
+    .replace(/%TITLE/g, 'leader')
+    .replace(/%CIV/g, civName)
+    .replace(/%PLAYER/g, myLeader)
+    .replace(/%PRONOUN/g, 'one');
 
   const header = document.createElement('div');
-  header.style.cssText = 'padding:8px 16px;border-bottom:2px solid #a08060';
+  header.style.cssText = 'padding:12px 20px;border-bottom:2px solid #8b6914';
 
+  // Civ emblem bar
   const nameRow = document.createElement('div');
-  nameRow.style.cssText = `font:bold 18px "Times New Roman",Georgia,serif;color:${civColor};text-shadow:1px 1px 2px rgba(0,0,0,0.5)`;
-  nameRow.textContent = `${civName} — ${leaderName}`;
+  nameRow.style.cssText = `font:bold 20px "Times New Roman",Georgia,serif;color:${civColor};text-shadow:2px 2px 4px rgba(0,0,0,0.7);text-align:center`;
+  nameRow.textContent = `${civName}`;
   header.appendChild(nameRow);
 
+  const leaderRow = document.createElement('div');
+  leaderRow.style.cssText = 'font:15px "Times New Roman",Georgia,serif;color:#c8b080;text-align:center;margin-top:2px';
+  leaderRow.textContent = leaderName;
+  header.appendChild(leaderRow);
+
+  // Attitude + Treaty status
   const attRow = document.createElement('div');
-  attRow.style.cssText = 'font:13px "Times New Roman",Georgia,serif;color:#555;margin-top:2px';
-  const attColor = attLevel <= 2 ? '#a33' : attLevel >= 6 ? '#3a3' : '#666';
-  attRow.innerHTML = `Attitude: <span style="color:${attColor};font-weight:bold">${attName}</span> &nbsp;|&nbsp; Treaty: <span style="font-weight:bold">${treatyLabel}</span>`;
+  attRow.style.cssText = 'font:12px "Times New Roman",Georgia,serif;color:#a09070;margin-top:4px;text-align:center';
+  const attColor = attLevel <= 2 ? '#e55' : attLevel >= 6 ? '#5e5' : '#c8b080';
+  attRow.innerHTML = `<span style="color:${attColor};font-weight:bold">${attName}</span> &nbsp;\u2022&nbsp; ${treatyLabel}`;
   header.appendChild(attRow);
 
+  // Greeting text
   const greetEl = document.createElement('div');
-  greetEl.style.cssText = 'font:italic 14px "Times New Roman",Georgia,serif;color:#444;margin-top:6px';
-  greetEl.textContent = `"${greeting}"`;
+  greetEl.style.cssText = 'font:italic 15px "Times New Roman",Georgia,serif;color:#e0d8c0;margin-top:10px;text-align:center;line-height:1.5';
+  greetEl.textContent = `\u201C${greeting}\u201D`;
   header.appendChild(greetEl);
 
   panel.appendChild(header);
@@ -549,15 +591,16 @@ export function openDiplomacyDialog(state, mapBase, myCiv, targetCiv, sendAction
   const civName = getTargetName(state, targetCiv);
   const treaty = getTreatyStatus(state, myCiv, targetCiv);
 
-  createCiv2Dialog('diplo-main-dialog', `Audience with ${civName}`, panel => {
-    panel.style.minWidth = '340px';
+  sfx('FANFARE1');
+  createCiv2Dialog('diplo-main-dialog', `${civName} Emissary`, panel => {
+    panel.style.cssText += `;min-width:380px;max-width:500px;${THRONE_BG}`;
 
     // Build header with attitude, greeting, etc.
     buildHeader(panel, state, myCiv, targetCiv);
 
-    // Menu section
+    // Menu section — Game.txt @DIPLOMACYMENU style
     const menu = document.createElement('div');
-    menu.style.cssText = 'padding:8px 4px';
+    menu.style.cssText = 'padding:12px 8px';
 
     // Propose Treaty
     menu.appendChild(makeMenuBtn('Propose Treaty', () => {
