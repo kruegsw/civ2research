@@ -1373,9 +1373,16 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy, de
       }
     }
 
-    // In a city with nothing to do — skip turn
-    actions.push({ type: 'UNIT_ORDER', unitIndex: i, order: 'skip' });
-    if (debugLog) debugLog.push(`CITY: Settler #${i} at (${unit.gx},${unit.gy}): idle, skipping`);
+    // In a city with nothing to do — disband to return shields
+    // In real Civ2, AI disbands unnecessary settlers rather than
+    // leaving them idle near cities consuming support
+    if (inCity) {
+      actions.push({ type: 'UNIT_ORDER', unitIndex: i, order: 'disband' });
+      if (debugLog) debugLog.push(`CITY: Settler #${i} at (${unit.gx},${unit.gy}): no work, disbanding`);
+    } else {
+      actions.push({ type: 'UNIT_ORDER', unitIndex: i, order: 'skip' });
+      if (debugLog) debugLog.push(`CITY: Settler #${i} at (${unit.gx},${unit.gy}): stranded, skipping`);
+    }
   }
 
   return actions;

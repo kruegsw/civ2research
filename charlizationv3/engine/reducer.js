@@ -162,23 +162,18 @@ export function applyAction(prev, mapBase, action, civSlot) {
       const { cityIndex, item } = action;
       state.cities = [...prev.cities];
       const city = state.cities[cityIndex];
-      // (#47) Binary production switch penalty: cap shields at min(shields, new_cost).
-      // When switching to a MORE expensive item in the same category, shields are preserved.
-      // When switching to a LESS expensive item, shields are capped at the new item's cost.
-      // Cross-category still loses all shields.
+      // Binary production switch: shields = min(shields, new_cost)
+      // Same rule for ALL switches (same category, cross-category, unit↔building↔wonder).
+      // Switching to more expensive → keep all shields.
+      // Switching to cheaper → cap at new cost (lose excess only).
       const prevItem = city.itemInProduction;
       const oldShields = city.shieldsInBox || 0;
       let newShields;
       if (!prevItem || (prevItem.type === item.type && prevItem.id === item.id)) {
-        // No previous production or switching to same item — no penalty
         newShields = oldShields;
-      } else if (prevItem.type === item.type) {
-        // Same category, different item — cap at new item's cost (preserves when switching up)
+      } else {
         const newCost = getProductionCost(item);
         newShields = Math.min(oldShields, newCost);
-      } else {
-        // Cross-category switch — 100% penalty (lose all shields)
-        newShields = 0;
       }
       state.cities[cityIndex] = {
         ...city,
