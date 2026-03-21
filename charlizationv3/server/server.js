@@ -689,7 +689,14 @@ wss.on("connection", (ws) => {
         }
 
         // Apply action through reducer (validates internally)
-        const next = applyAction(room.gameState, room.mapBase, msg.action, civSlot);
+        let next;
+        try {
+          next = applyAction(room.gameState, room.mapBase, msg.action, civSlot);
+        } catch (err) {
+          console.error(`[CRASH] applyAction threw for ${msg.action.type}:`, err);
+          ws.send(JSON.stringify({ type: "ERROR", message: `Server error: ${err.message}` }));
+          break;
+        }
         if (next === room.gameState) {
           if (roomHasDebugClient(room)) {
             sendDebugLog(room, 'action', `REJECTED: ${msg.action.type} — invalid`, room.gameState.turn?.number ?? 0, civSlot);
@@ -940,8 +947,15 @@ function processAiTurns(roomId, room) {
     const wantDebug = roomHasDebugClient(room);
     const debugLog = wantDebug ? [] : null;
     const t0 = Date.now();
-    const aiResult = runAiTurn(room.gameState, room.mapBase, activeCiv, debugLog);
-    const aiActions = aiResult.actions;
+    let aiResult, aiActions;
+    try {
+      aiResult = runAiTurn(room.gameState, room.mapBase, activeCiv, debugLog);
+      aiActions = aiResult.actions;
+    } catch (err) {
+      console.error(`[CRASH] runAiTurn threw for civ ${activeCiv}:`, err);
+      aiActions = []; // skip this AI's turn
+      aiResult = { actions: [], debugLog: [] };
+    }
     const t1 = Date.now();
     console.log(`[ai] Room ${roomId}: civ ${activeCiv} (${room.gameState.civNames?.[activeCiv] || '?'}) — ${aiActions.length} actions planned in ${t1 - t0}ms`);
 
@@ -958,7 +972,13 @@ function processAiTurns(roomId, room) {
     if (!room.aiCombatQueue) room.aiCombatQueue = [];
     const t2 = Date.now();
     for (const action of aiActions) {
-      const result = applyAction(room.gameState, room.mapBase, action, activeCiv);
+      let result;
+      try {
+        result = applyAction(room.gameState, room.mapBase, action, activeCiv);
+      } catch (err) {
+        console.error(`[CRASH] AI applyAction threw for civ ${activeCiv}, action ${action.type}:`, err);
+        continue; // skip this action
+      }
       if (result !== room.gameState) {
         room.gameState = result;
         // Queue all AI combat results — client decides whether to animate
@@ -973,7 +993,13 @@ function processAiTurns(roomId, room) {
     console.log(`[ai]   applied ${aiActions.length} actions in ${Date.now() - t2}ms`);
 
     // End the AI civ's turn
-    let endResult = applyAction(room.gameState, room.mapBase, { type: 'END_TURN' }, activeCiv);
+    let endResult;
+    try {
+      endResult = applyAction(room.gameState, room.mapBase, { type: 'END_TURN' }, activeCiv);
+    } catch (err) {
+      console.error(`[CRASH] END_TURN threw for civ ${activeCiv}:`, err);
+      break; // bail out of AI loop
+    }
     if (endResult === room.gameState) {
       // END_TURN rejected — force-skip units that still need orders
       const unitsNeedingOrders = [];
