@@ -727,6 +727,12 @@ export function showTurnEvents(events) {
         break;
       }
 
+      case 'tributeDebug': {
+        console.warn(`[tributeDebug] ${ev._debug}`);
+        showNext();
+        break;
+      }
+
       case 'tributePaid': {
         sfx('SELL');
         const payerName = S.mpGameState?.civNames?.[ev.from] || `Civ ${ev.from}`;

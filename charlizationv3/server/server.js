@@ -928,6 +928,12 @@ function processImmediateAiDiplomacy(roomId, room, action) {
       if (responses.length === 0) {
         console.log(`[diplo] No RESPOND_DEMAND generated — AI may not have found the pending demand`);
       }
+      // Send debug info to client via turnEvents
+      if (!room.gameState.turnEvents) room.gameState.turnEvents = [];
+      room.gameState.turnEvents.push({
+        type: 'tributeDebug', civSlot: action.targetCiv || targetCiv,
+        _debug: `demands=${pending.length} responses=${responses.length} accepted=${responses.filter(r => r.accept).length}`,
+      });
     }
   }
 }
