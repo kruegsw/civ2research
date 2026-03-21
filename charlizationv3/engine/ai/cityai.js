@@ -1348,6 +1348,34 @@ export function generateSettlerActions(gameState, mapBase, civSlot, strategy, de
         continue;
       }
     }
+
+    // Last resort: if settler has no action and is NOT in a city,
+    // try to move toward the nearest own city (so it's not stuck in the wild).
+    // If it IS in a city and has nothing to do, skip its turn.
+    const inCity = ownCities.some(c => c.gx === unit.gx && c.gy === unit.gy);
+    if (!inCity && ownCities.length > 0) {
+      // Move toward nearest city
+      let bestCity = null, bestDist = Infinity;
+      for (const c of ownCities) {
+        const dx = Math.abs(unit.gx - c.gx);
+        const dy = Math.abs(unit.gy - c.gy);
+        const d = dx + dy;
+        if (d < bestDist) { bestDist = d; bestCity = c; }
+      }
+      if (bestCity) {
+        const gotoAction = { type: 'GOTO', unitIndex: i, targetGx: bestCity.gx, targetGy: bestCity.gy, path: [] };
+        const err = validateAction(gameState, mapBase, gotoAction, civSlot);
+        if (!err) {
+          actions.push(gotoAction);
+          if (debugLog) debugLog.push(`CITY: Settler #${i} at (${unit.gx},${unit.gy}): returning to city ${bestCity.name}`);
+          continue;
+        }
+      }
+    }
+
+    // In a city with nothing to do — skip turn
+    actions.push({ type: 'UNIT_ORDER', unitIndex: i, order: 'skip' });
+    if (debugLog) debugLog.push(`CITY: Settler #${i} at (${unit.gx},${unit.gy}): idle, skipping`);
   }
 
   return actions;
