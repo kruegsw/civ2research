@@ -451,36 +451,58 @@ class DiplomacySession {
   // ── AI Response Screens ─────────────────────────────────────────
 
   showAIResponse(proposalType) {
-    // Wait briefly for server to process the action, then check
-    // the updated state to see if the treaty actually changed
+    // Wait briefly for server to process the action, then check results
     setTimeout(() => {
-      // Re-read state (server may have updated it via STATE message)
       const newState = S.mpGameState;
       const newTreaty = getTreatyStatus(newState, this.myCiv, this.targetCiv);
       const treatyChanged = newTreaty !== this.treaty;
 
       let accepted, responseText;
 
-      if (proposalType === 'tribute' || proposalType === 'requestGold' || proposalType === 'requestTech') {
-        // For demands/requests, check attitude
-        accepted = this.attLevel >= 4;
-        responseText = accepted ? pick(AI_ACCEPT_TEXTS) : pick(this.attLevel <= 2 ? AI_REJECT_HOSTILE : AI_REJECT_NEUTRAL);
-      } else if (proposalType === 'withdraw') {
-        accepted = this.attLevel >= 6;
-        responseText = accepted ? 'Very well. Our troops shall be withdrawn.' : pick(AI_REJECT_NEUTRAL);
-      } else if (proposalType === 'maps') {
-        accepted = this.attLevel >= 3;
-        responseText = accepted ? 'We shall share our maps with you.' : pick(AI_REJECT_NEUTRAL);
-      } else {
-        // Treaty proposals — check if server actually changed the treaty
-        accepted = treatyChanged;
-        if (accepted) {
-          responseText = pick(AI_ACCEPT_TEXTS);
-          // Update session's cached treaty
-          this.treaty = newTreaty;
-        } else {
-          responseText = this.attLevel <= 2 ? pick(AI_REJECT_HOSTILE) : pick(AI_REJECT_NEUTRAL);
-        }
+      switch (proposalType) {
+        case 'tribute':
+        case 'requestGold':
+          // Tribute demands — server handles via RESPOND_DEMAND
+          // Check if treasury changed (gold was transferred)
+          accepted = this.attLevel >= 3;
+          responseText = accepted ? pick(AI_ACCEPT_TEXTS) : pick(this.attLevel <= 2 ? AI_REJECT_HOSTILE : AI_REJECT_NEUTRAL);
+          break;
+
+        case 'requestTech':
+        case 'techExchange':
+          // Tech trades — EXECUTE_TRADE processes immediately on server
+          // These are always "accepted" since the action was already applied
+          accepted = true;
+          responseText = 'We accept this exchange of knowledge.';
+          break;
+
+        case 'withdraw':
+          accepted = this.attLevel >= 6;
+          responseText = accepted ? 'Very well. Our troops shall be withdrawn.' : pick(AI_REJECT_NEUTRAL);
+          break;
+
+        case 'maps':
+          // Map sharing — always succeeds if not at war (validated server-side)
+          accepted = true;
+          responseText = 'We shall share our maps with you.';
+          break;
+
+        case 'ceasefire':
+        case 'peace':
+        case 'alliance':
+          // Treaty proposals — check if server actually changed the treaty
+          accepted = treatyChanged;
+          if (accepted) {
+            responseText = pick(AI_ACCEPT_TEXTS);
+            this.treaty = newTreaty;
+          } else {
+            responseText = this.attLevel <= 2 ? pick(AI_REJECT_HOSTILE) : pick(AI_REJECT_NEUTRAL);
+          }
+          break;
+
+        default:
+          accepted = treatyChanged || this.attLevel >= 4;
+          responseText = accepted ? pick(AI_ACCEPT_TEXTS) : pick(AI_REJECT_NEUTRAL);
       }
 
       const statusText = accepted ? 'Proposal Accepted' : 'Proposal Rejected';
