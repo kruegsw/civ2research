@@ -1205,7 +1205,7 @@ export function openDiplomacyDialog(state, mapBase, myCiv, targetCiv, sendAction
  * Sends proposals/demands via WebSocket. The other player responds
  * asynchronously (no later than end of their next turn).
  */
-function showHumanDiplomacyMenu(state, myCiv, targetCiv, sendAction) {
+export function showHumanDiplomacyMenu(state, myCiv, targetCiv, sendAction) {
   const civName = getTargetName(state, targetCiv);
   const treaty = getTreatyStatus(state, myCiv, targetCiv);
 

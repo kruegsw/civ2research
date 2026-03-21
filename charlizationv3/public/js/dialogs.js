@@ -842,16 +842,39 @@ export function showTurnEvents(events) {
       }
 
       case 'firstContact': {
-        // Open the full diplomacy dialog for first contact with AI civ
         const otherCiv = ev.civA === S.mpCivSlot ? ev.civB : ev.civA;
         const isAI = !(S.mpGameState.humanPlayers & (1 << otherCiv));
+        const otherName = S.mpGameState?.civNames?.[otherCiv] || `Civ ${otherCiv}`;
+        const leaderName = S.mpGameState?.civs?.[otherCiv]?.leaderName || 'their leader';
+
         if (isAI && _deps.openDiplomacyDialog) {
+          // AI — open full throne room dialog
           _deps.openDiplomacyDialog(
             S.mpGameState, S.mpMapBase, S.mpCivSlot, otherCiv,
             (msg) => S.transport?.sendRaw(msg),
           );
+          showNext();
+        } else {
+          // Human — show announcement, then open human diplomacy menu
+          sfx('FANFARE1');
+          createCiv2Dialog('turn-event-dialog', 'First Contact!', panel => {
+            const msg = document.createElement('div');
+            msg.style.cssText = 'text-align:center;padding:16px 24px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4);line-height:1.6';
+            msg.textContent = `Our scouts have encountered the ${otherName}, led by ${leaderName}! A ceasefire has been established. Would you like to open diplomatic communications?`;
+            panel.appendChild(msg);
+          }, [
+            { label: 'Not now', action: showNext },
+            { label: 'Open Diplomacy', action: () => {
+              if (_deps.openHumanDiplomacyMenu) {
+                _deps.openHumanDiplomacyMenu(
+                  S.mpGameState, S.mpCivSlot, otherCiv,
+                  (msg) => S.transport?.sendRaw(msg),
+                );
+              }
+              showNext();
+            }},
+          ]);
         }
-        showNext();
         break;
       }
 
