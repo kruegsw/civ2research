@@ -222,6 +222,9 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
   const { unitIndex, dir } = action;
   const unit = { ...state.units[unitIndex] };
   const dest = resolveDirection(unit.gx, unit.gy, dir, mapBase);
+  // Save attacker origin for combat animation (before position changes)
+  const atkOriginGx = unit.gx;
+  const atkOriginGy = unit.gy;
 
   // ── #139: LONGMOVE counter — prevent infinite goto loops ──
   // Binary FUN_0059062c: counter increments each move, +0x0F if backtracking.
@@ -362,6 +365,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
           sdiCityName, sdiCityOwner,
         });
         state.combatResult = {
+        atkGx: atkOriginGx, atkGy: atkOriginGy,
           type: 'sdiIntercept',
           attacker: unit.type, atkOwner: civSlot,
           gx: dest.gx, gy: dest.gy,
@@ -402,6 +406,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
           gx: dest.gx, gy: dest.gy,
         });
         state.combatResult = {
+        atkGx: atkOriginGx, atkGy: atkOriginGy,
           type: 'diplomatIntercept',
           attacker: unit.type, atkOwner: civSlot,
           defender: diplomat.type, defOwner: diplomat.owner,
@@ -495,6 +500,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       state.units[bestDefIdx] = { ...defender, movesRemain: result.defHpLost };
       state.units[unitIndex] = unit;
       state.combatResult = {
+        atkGx: atkOriginGx, atkGy: atkOriginGy,
         type: 'subRetreat',
         attacker: unit.type, defender: defender.type,
         atkOwner: unit.owner, defOwner: defender.owner,
@@ -518,6 +524,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       state.units[bestDefIdx] = { ...defender, movesRemain: result.defHpLost };
       state.units[unitIndex] = unit;
       state.combatResult = {
+        atkGx: atkOriginGx, atkGy: atkOriginGy,
         type: 'singleRoundDraw',
         attacker: unit.type, defender: defender.type,
         atkOwner: unit.owner, defOwner: defender.owner,
@@ -585,6 +592,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       }
       state.units[unitIndex] = unit;
       state.combatResult = {
+        atkGx: atkOriginGx, atkGy: atkOriginGy,
         type: 'fortressRetreat',
         attacker: unit.type, defender: defender.type,
         atkOwner: unit.owner, defOwner: defender.owner,
@@ -905,6 +913,7 @@ export function handleMoveUnit(state, prev, mapBase, action, civSlot) {
       if (cityIdx >= 0) {
         captureCity(state, prev, mapBase, cityIdx, civSlot, defOwner);
         state.combatResult = {
+        atkGx: atkOriginGx, atkGy: atkOriginGy,
           type: 'capture', cityName: enemyCity.name, civSlot,
           gx: dest.gx, gy: dest.gy,
         };

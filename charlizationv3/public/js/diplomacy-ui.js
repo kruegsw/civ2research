@@ -451,50 +451,56 @@ class DiplomacySession {
   // ── AI Response Screens ─────────────────────────────────────────
 
   showAIResponse(proposalType) {
-    // Simulate AI response based on attitude
-    const attLevel = this.attLevel;
-    let accepted = false;
-    let responseText;
+    // Wait briefly for server to process the action, then check
+    // the updated state to see if the treaty actually changed
+    setTimeout(() => {
+      // Re-read state (server may have updated it via STATE message)
+      const newState = S.mpGameState;
+      const newTreaty = getTreatyStatus(newState, this.myCiv, this.targetCiv);
+      const treatyChanged = newTreaty !== this.treaty;
 
-    switch (proposalType) {
-      case 'alliance':
-        accepted = attLevel >= 5; // friendly or better
-        break;
-      case 'peace':
-        accepted = attLevel >= 3; // not outright hostile
-        break;
-      case 'withdraw':
-        accepted = attLevel >= 6; // only very friendly
-        break;
-      default:
-        accepted = attLevel >= 4;
-    }
+      let accepted, responseText;
 
-    if (accepted) {
-      responseText = pick(AI_ACCEPT_TEXTS);
-    } else if (attLevel <= 2) {
-      responseText = pick(AI_REJECT_HOSTILE);
-    } else {
-      responseText = pick(AI_REJECT_NEUTRAL);
-    }
+      if (proposalType === 'tribute' || proposalType === 'requestGold' || proposalType === 'requestTech') {
+        // For demands/requests, check attitude
+        accepted = this.attLevel >= 4;
+        responseText = accepted ? pick(AI_ACCEPT_TEXTS) : pick(this.attLevel <= 2 ? AI_REJECT_HOSTILE : AI_REJECT_NEUTRAL);
+      } else if (proposalType === 'withdraw') {
+        accepted = this.attLevel >= 6;
+        responseText = accepted ? 'Very well. Our troops shall be withdrawn.' : pick(AI_REJECT_NEUTRAL);
+      } else if (proposalType === 'maps') {
+        accepted = this.attLevel >= 3;
+        responseText = accepted ? 'We shall share our maps with you.' : pick(AI_REJECT_NEUTRAL);
+      } else {
+        // Treaty proposals — check if server actually changed the treaty
+        accepted = treatyChanged;
+        if (accepted) {
+          responseText = pick(AI_ACCEPT_TEXTS);
+          // Update session's cached treaty
+          this.treaty = newTreaty;
+        } else {
+          responseText = this.attLevel <= 2 ? pick(AI_REJECT_HOSTILE) : pick(AI_REJECT_NEUTRAL);
+        }
+      }
 
-    const statusText = accepted ? 'Proposal Accepted' : 'Proposal Rejected';
+      const statusText = accepted ? 'Proposal Accepted' : 'Proposal Rejected';
 
-    this.setScreen(`${this.civName} Emissary`, panel => {
-      const statusEl = document.createElement('div');
-      statusEl.style.cssText = `font:bold 16px "Times New Roman",Georgia,serif;text-align:center;padding:12px 20px 4px;color:${accepted ? '#8d8' : '#d88'}`;
-      statusEl.textContent = statusText;
-      panel.appendChild(statusEl);
+      this.setScreen(`${this.civName} Emissary`, panel => {
+        const statusEl = document.createElement('div');
+        statusEl.style.cssText = `font:bold 16px "Times New Roman",Georgia,serif;text-align:center;padding:12px 20px 4px;color:${accepted ? '#8d8' : '#d88'}`;
+        statusEl.textContent = statusText;
+        panel.appendChild(statusEl);
 
-      const msg = document.createElement('div');
-      msg.style.cssText = 'font:italic 15px "Times New Roman",Georgia,serif;color:#e0d8c0;padding:12px 20px;text-align:center;line-height:1.5';
-      msg.textContent = `\u201C${responseText}\u201D`;
-      panel.appendChild(msg);
-    }, [
-      { label: 'Continue', action: () => {
-        this.showGreetingAndMenu();
-      }},
-    ]);
+        const msg = document.createElement('div');
+        msg.style.cssText = 'font:italic 15px "Times New Roman",Georgia,serif;color:#e0d8c0;padding:12px 20px;text-align:center;line-height:1.5';
+        msg.textContent = `\u201C${responseText}\u201D`;
+        panel.appendChild(msg);
+      }, [
+        { label: 'Continue', action: () => {
+          this.showGreetingAndMenu();
+        }},
+      ]);
+    }, 500); // wait for server STATE response
   }
 
   showAllianceCancelled() {
@@ -590,6 +596,13 @@ class DiplomacySession {
         }));
       }
 
+      // Exchange knowledge / tech trade (not at war)
+      if (treaty !== 'war') {
+        menu.appendChild(makeMenuBtn('Exchange Knowledge', () => {
+          this.showTechExchangeInline();
+        }));
+      }
+
       // Share maps (not at war)
       if (treaty !== 'war') {
         menu.appendChild(makeMenuBtn('Exchange Maps', () => {
@@ -616,6 +629,100 @@ class DiplomacySession {
       { label: 'Back', action: () => {
         this.showGreetingAndMenu();
       }},
+    ]);
+  }
+
+  /** @FAVORMENU option 2: "Ask to exchange knowledge." */
+  showTechExchangeInline() {
+    const myTechs = this.state.civTechs?.[this.myCiv];
+    const theirTechs = this.state.civTechs?.[this.targetCiv];
+
+    // Find techs we can offer (we have, they don't)
+    const canOffer = [];
+    if (myTechs) {
+      for (const t of myTechs) {
+        if (!theirTechs || !theirTechs.has(t)) canOffer.push(t);
+      }
+    }
+    // Find techs we can request (they have, we don't)
+    const canRequest = [];
+    if (theirTechs) {
+      for (const t of theirTechs) {
+        if (!myTechs || !myTechs.has(t)) canRequest.push(t);
+      }
+    }
+    canOffer.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+    canRequest.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      if (canOffer.length === 0 && canRequest.length === 0) {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = 'Neither civilization has knowledge the other lacks.';
+        panel.appendChild(msg);
+      } else {
+        const msg = document.createElement('div');
+        msg.style.cssText = STYLE_MSG;
+        msg.textContent = 'Select a technology to offer in exchange:';
+        panel.appendChild(msg);
+
+        const list = document.createElement('div');
+        list.style.cssText = 'padding:4px 8px 8px;max-height:200px;overflow-y:auto';
+
+        for (const techId of canOffer) {
+          const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
+          list.appendChild(makeMenuBtn(`Offer: ${name}`, () => {
+            // After selecting what to offer, pick what to request
+            this.showTechExchangeRequest(techId, canRequest);
+          }));
+        }
+        panel.appendChild(list);
+      }
+    }, [
+      { label: 'Back', action: () => { this.showProposalSubMenu(); }},
+    ]);
+  }
+
+  showTechExchangeRequest(offerTechId, canRequest) {
+    const offerName = ADVANCE_NAMES[offerTechId] || `Advance ${offerTechId}`;
+
+    this.setScreen(`${this.civName} Emissary`, panel => {
+      const msg = document.createElement('div');
+      msg.style.cssText = STYLE_MSG;
+      msg.textContent = `Offering ${offerName}. What do you want in return?`;
+      panel.appendChild(msg);
+
+      if (canRequest.length === 0) {
+        const noTech = document.createElement('div');
+        noTech.style.cssText = 'font:14px "Times New Roman",serif;color:#a09070;text-align:center;padding:8px';
+        noTech.textContent = `The ${this.civName} have no technologies you lack.`;
+        panel.appendChild(noTech);
+      } else {
+        const list = document.createElement('div');
+        list.style.cssText = 'padding:4px 8px 8px;max-height:200px;overflow-y:auto';
+        for (const techId of canRequest) {
+          const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
+          list.appendChild(makeMenuBtn(`Request: ${name}`, () => {
+            sfx('POS1');
+            // Send both techs as a trade
+            this.sendAction({
+              type: 'ACTION',
+              action: {
+                type: EXECUTE_TRADE,
+                fromCiv: this.myCiv, toCiv: this.targetCiv,
+                transaction: {
+                  give: { techs: [offerTechId] },
+                  receive: { techs: [techId] },
+                },
+              },
+            });
+            this.showAIResponse('techExchange');
+          }));
+        }
+        panel.appendChild(list);
+      }
+    }, [
+      { label: 'Back', action: () => { this.showTechExchangeInline(); }},
     ]);
   }
 
