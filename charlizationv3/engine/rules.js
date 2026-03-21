@@ -9,7 +9,7 @@
 // Returns null if valid, or an error string explaining why not.
 // ═══════════════════════════════════════════════════════════════════
 
-import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, CARAVAN_HELP_WONDER } from './actions.js';
+import { MOVE_UNIT, END_TURN, BUILD_CITY, SET_WORKERS, CHANGE_PRODUCTION, RUSH_BUY, SELL_BUILDING, CHANGE_RATES, SET_RESEARCH, UNIT_ORDER, WORKER_ORDER, REVOLUTION, PILLAGE, DESTROY_CITY, PROPOSE_TREATY, RESPOND_TREATY, DECLARE_WAR, ESTABLISH_TRADE, RENAME_CITY, BRIBE_UNIT, STEAL_TECH, SABOTAGE_CITY, INCITE_REVOLT, DEMAND_TRIBUTE, RESPOND_DEMAND, SHARE_MAP, EXECUTE_TRADE, BOMBARD, REBASE, GOTO, TRANSFORM_TERRAIN, NUKE, PARADROP, AIRLIFT, UPGRADE_UNIT, SPY_POISON_WATER, SPY_PLANT_NUKE, SPY_SABOTAGE_PRODUCTION, SPY_INVESTIGATE_CITY, SPY_ESTABLISH_EMBASSY, SPY_SABOTAGE_UNIT, SPY_SUBVERT_CITY, CARAVAN_HELP_WONDER } from './actions.js';
 import { UNIT_DOMAIN, UNIT_ATK, UNIT_HP, CITY_RADIUS_DOUBLED, UNIT_COSTS, IMPROVE_COSTS, WONDER_COSTS, IMPROVE_MAINTENANCE, ADVANCE_PREREQS, UNIT_PREREQS, UNIT_OBSOLETE, IMPROVE_PREREQS, WONDER_PREREQS, WONDER_OBSOLETE, IRRIGATION_TURNS, MINING_TURNS, ROAD_TURNS, GOVERNMENT_KEYS, GOVT_TECH_PREREQS, UNIT_CARRY_CAP, GOVT_MAX_RATE, GOVT_MAX_SCIENCE, TERRAIN_TRANSFORM, UNIT_MOVE_POINTS, UNIT_UPGRADE_TO, BUSY_ORDERS, TRADE, SPECIALIST_CYCLE, SPECIALIST_MIN_CITY_SIZE, CAN_IRRIGATE, CAN_MINE, FORTRESS_TURNS, AIRBASE_TURNS, UNIT_AMPHIBIOUS, UNIT_SUBMARINE, UNIT_FIGHTER } from './defs.js';
 import { resolveDirection, getDirection, isZOCBlocked, checkRoadConnection } from './movement.js';
 import { getProductionCost } from './production.js';
@@ -517,10 +517,14 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
       if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
       if (!haveContact(gameState, civSlot, targetCiv)) return 'No contact with target civ';
-      if (!treaty || !['peace', 'ceasefire'].includes(treaty)) return 'Invalid treaty type';
+      if (!treaty || !['peace', 'ceasefire', 'alliance'].includes(treaty)) return 'Invalid treaty type';
       const current = getTreaty(gameState, civSlot, targetCiv);
       if (current === treaty) return `Already at ${treaty}`;
-      if (current !== 'war') return 'Must be at war to propose peace';
+      // Treaty upgrade hierarchy: war → ceasefire → peace → alliance
+      const TREATY_RANK = { war: 0, ceasefire: 1, peace: 2, alliance: 3 };
+      const curRank = TREATY_RANK[current] ?? 0;
+      const newRank = TREATY_RANK[treaty] ?? 0;
+      if (newRank <= curRank) return `Cannot propose ${treaty} — already at ${current}`;
       // Check for duplicate pending proposals
       if (gameState.treatyProposals?.some(p => p.from === civSlot && p.to === targetCiv && !p.resolved))
         return 'Proposal already pending';
@@ -675,7 +679,7 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (targetCiv == null || targetCiv === civSlot) return 'Invalid target';
       if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
       if (!haveContact(gameState, civSlot, targetCiv)) return 'No contact with target civ';
-      if (!amount || amount < 1 || amount > 1000) return 'Invalid amount';
+      if (!amount || amount < 1 || amount > 30000) return 'Invalid amount';
       if (gameState.tributeDemands?.some(d => d.from === civSlot && d.to === targetCiv && !d.resolved))
         return 'Demand already pending';
       return null;
@@ -697,6 +701,12 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (!(gameState.civsAlive & (1 << targetCiv))) return 'Target civ is dead';
       const treaty = getTreaty(gameState, civSlot, targetCiv);
       if (treaty === 'war') return 'Must be at peace to share maps';
+      return null;
+    }
+
+    case EXECUTE_TRADE: {
+      const { transaction } = action;
+      if (!transaction) return 'Missing transaction';
       return null;
     }
 

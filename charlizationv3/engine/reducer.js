@@ -1210,9 +1210,14 @@ export function applyAction(prev, mapBase, action, civSlot) {
     }
 
     case EXECUTE_TRADE: {
-      // Wire executeTransaction from diplomacy.js
-      const { fromCiv, toCiv, transaction } = action;
-      executeTransaction(state, fromCiv, toCiv, transaction);
+      const { transaction } = action;
+      if (transaction) {
+        const result = executeTransaction(state, mapBase, transaction);
+        if (result.events?.length > 0) {
+          if (!state.turnEvents) state.turnEvents = [];
+          state.turnEvents.push(...result.events);
+        }
+      }
       break;
     }
 

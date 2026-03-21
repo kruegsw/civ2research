@@ -704,16 +704,19 @@ class DiplomacySession {
           const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
           list.appendChild(makeMenuBtn(`Request: ${name}`, () => {
             sfx('POS1');
-            // Send both techs as a trade
+            // Two one-way transactions: give our tech, receive their tech
             this.sendAction({
               type: 'ACTION',
               action: {
                 type: EXECUTE_TRADE,
-                fromCiv: this.myCiv, toCiv: this.targetCiv,
-                transaction: {
-                  give: { techs: [offerTechId] },
-                  receive: { techs: [techId] },
-                },
+                transaction: { from: this.myCiv, to: this.targetCiv, techs: [offerTechId] },
+              },
+            });
+            this.sendAction({
+              type: 'ACTION',
+              action: {
+                type: EXECUTE_TRADE,
+                transaction: { from: this.targetCiv, to: this.myCiv, techs: [techId] },
               },
             });
             this.showAIResponse('techExchange');
