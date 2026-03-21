@@ -70,6 +70,7 @@ export function showUnitPresentDialog(unitIndex) {
   const options = [
     { id: 'nochange', label: 'No Changes', enabled: true },
     { id: 'wake', label: 'Clear Orders', enabled: isOwner && unit.orders && unit.orders !== 'none' },
+    { id: 'fortify', label: 'Fortify', enabled: isOwner && unit.orders !== 'fortified' && unit.orders !== 'fortifying' },
     { id: 'sentry', label: 'Sleep', enabled: isOwner },
     { id: 'disband', label: 'Disband', enabled: isOwner },
     { id: 'activate', label: 'Activate Unit', enabled: isOwner },
@@ -134,6 +135,8 @@ export function showUnitPresentDialog(unitIndex) {
       if (selected === 'nochange') return;
       if (selected === 'wake') {
         S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'wake' } });
+      } else if (selected === 'fortify') {
+        S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'fortify' } });
       } else if (selected === 'sentry') {
         S.transport.sendRaw({ type: 'ACTION', action: { type: UNIT_ORDER, unitIndex, order: 'sentry' } });
       } else if (selected === 'disband') {
