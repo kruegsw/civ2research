@@ -336,8 +336,10 @@ export function isZOCBlocked(unitType, owner, fromGx, fromGy, toGx, toGy, mapBas
   // If not adjacent to enemy, ZOC doesn't restrict
   if (!fromAdjacentToEnemy) return false;
 
-  // We're adjacent to enemy — check if destination is friendly or not adjacent to enemy
-  // Friendly = has own unit or own city
+  // We're adjacent to enemy — check if destination is a city (any city bypasses ZOC)
+  // or has friendly presence (own unit or own city)
+  // In Civ2, units can always enter any city tile regardless of ZOC
+  if (hasCityAt(toGx, toGy, mapBase)) return false;
   if (hasFriendlyPresence(toGx, toGy, owner, units, mapBase)) return false;
 
   // Check if destination is adjacent to enemy combat unit
@@ -361,6 +363,14 @@ function hasEnemyCombatUnit(gx, gy, owner, domain, units) {
     }
   }
   return false;
+}
+
+/** Check if any city exists at the given tile (any owner). */
+function hasCityAt(gx, gy, mapBase) {
+  if (!mapBase.tileData) return false;
+  const idx = gy * mapBase.mw + gx;
+  const tile = mapBase.tileData[idx];
+  return tile && tile.improvements && tile.improvements.city;
 }
 
 function hasFriendlyPresence(gx, gy, owner, units, mapBase) {
