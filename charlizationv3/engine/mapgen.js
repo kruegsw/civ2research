@@ -1097,21 +1097,43 @@ function placeResources(tileData, mw, mh, mapSeed) {
  * @param {number} mapSeed - map seed for determinism
  */
 function placeGoodyHuts(tileData, mw, mh, rng, mapSeed) {
+  // Phase 1: Mark candidates using binary formula
+  const candidates = [];
   for (let y = 0; y < mh; y++) {
     for (let x = 0; x < mw; x++) {
       const i = y * mw + x;
       const t = tileData[i];
       if (t.terrain === T_OCEAN || t.terrain === T_GLACIER || t.terrain === T_MOUNTAINS) continue;
 
-      // Binary goody hut formula (block 0x0053)
+      // Binary goody hut formula (FUN_005b8ffa)
       const sum = y + x;
       const index = sum >> 1;
       const offset = x - index;
       const lhs = (index & 3) + (offset & 3) * 4;
       const rhs = ((sum >> 3) * 0x0B + (offset >> 2) * 0x0D + mapSeed + 8) & 0x1F;
       if (lhs === rhs) {
-        t.goodyHut = true;
+        candidates.push({ x, y, i });
       }
+    }
+  }
+
+  // Phase 2: Filter — enforce minimum spacing (no huts within 3 tiles of each other)
+  // This matches the observed Civ2 distribution where huts are noticeably spread out
+  const MIN_DIST_SQ = 3 * 3; // minimum 3 tiles apart
+  const placed = [];
+  for (const c of candidates) {
+    let tooClose = false;
+    for (const p of placed) {
+      const dx = Math.abs(c.x - p.x);
+      const dy = Math.abs(c.y - p.y);
+      if (dx * dx + dy * dy < MIN_DIST_SQ) {
+        tooClose = true;
+        break;
+      }
+    }
+    if (!tooClose) {
+      tileData[c.i].goodyHut = true;
+      placed.push(c);
     }
   }
 }
