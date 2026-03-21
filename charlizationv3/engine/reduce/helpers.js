@@ -461,11 +461,15 @@ export function checkGameOver(state) {
     }
   }
   if (aliveCount === 1 && lastAlive > 0) {
-    state.gameOver = { winner: lastAlive, reason: 'conquest' };
+    const trace = new Error().stack.split('\n').slice(1, 4).map(s => s.trim()).join(' | ');
+    state.gameOver = {
+      winner: lastAlive, reason: 'conquest',
+      _debug: `checkGameOver → aliveCount=${aliveCount} civsAlive=${state.civsAlive.toString(2)} trace=${trace}`,
+    };
     if (!state.turnEvents) state.turnEvents = [];
     state.turnEvents.push({
       type: 'gameOver', winner: lastAlive, reason: 'conquest',
-      _debug: `aliveCount=${aliveCount} civsAlive=${state.civsAlive.toString(2)}`,
+      _debug: state.gameOver._debug,
     });
   }
 }

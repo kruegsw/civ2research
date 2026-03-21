@@ -1137,7 +1137,7 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
   if (!state.gameOver) {
     const endResult = checkGameEndConditions(state);
     if (endResult && endResult.ended) {
-      state.gameOver = { winner: endResult.winner, reason: endResult.reason };
+      state.gameOver = { winner: endResult.winner, reason: endResult.reason, _debug: `checkGameEndConditions → civsAlive=${state.civsAlive.toString(2)}` };
       if (!state.turnEvents) state.turnEvents = [];
       state.turnEvents.push({
         type: 'gameOver', winner: endResult.winner,

@@ -2449,8 +2449,12 @@ export function killCiv(state, mapBase, civSlot, killerCiv) {
     }
   }
   if (aliveCount <= 1 && lastAlive > 0 && !state.gameOver) {
-    state.gameOver = { winner: lastAlive };
-    events.push({ type: 'gameOver', winner: lastAlive });
+    const trace = new Error().stack.split('\n').slice(1, 4).map(s => s.trim()).join(' | ');
+    state.gameOver = {
+      winner: lastAlive, reason: 'conquest',
+      _debug: `killCiv(${civSlot}) → aliveCount=${aliveCount} civsAlive=${state.civsAlive.toString(2)} trace=${trace}`,
+    };
+    events.push({ type: 'gameOver', winner: lastAlive, reason: 'conquest', _debug: state.gameOver._debug });
   }
 
   return { events };
