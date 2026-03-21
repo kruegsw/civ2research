@@ -901,20 +901,32 @@ function processImmediateAiDiplomacy(roomId, room, action) {
   // ── Fix #8: Tribute demand — immediate AI response ──
   if (action.type === 'DEMAND_TRIBUTE') {
     const targetCiv = action.targetCiv;
+    console.log(`[diplo] DEMAND_TRIBUTE from civ ${action.from || '?'} to civ ${targetCiv}, amount=${action.amount}`);
     if (targetCiv != null && !(humanPlayers & (1 << targetCiv)) && (room.gameState.civsAlive & (1 << targetCiv))) {
+      // Check pending demands
+      const pending = (room.gameState.tributeDemands || []).filter(d => !d.resolved && d.to === targetCiv);
+      console.log(`[diplo] Pending demands for civ ${targetCiv}: ${pending.length}`, pending.map(d => `from=${d.from} amt=${d.amount}`));
+
       // Target is an AI civ — run its diplomacy to get RESPOND_DEMAND actions
       const diploActions = generateDiplomacyActions(room.gameState, room.mapBase, targetCiv);
       const responses = diploActions.filter(a => a.type === 'RESPOND_DEMAND');
+      console.log(`[diplo] AI generated ${diploActions.length} total actions, ${responses.length} RESPOND_DEMAND`);
       for (const ra of responses) {
-        const result = applyAction(room.gameState, room.mapBase, ra, targetCiv);
-        if (result !== room.gameState) {
-          room.gameState = result;
-          emitGameLogs(roomId, room);
-          clearOneshotNotifications(room);
+        console.log(`[diplo] Applying RESPOND_DEMAND: accept=${ra.accept} demandIndex=${ra.demandIndex}`);
+        try {
+          const result = applyAction(room.gameState, room.mapBase, ra, targetCiv);
+          if (result !== room.gameState) {
+            room.gameState = result;
+            console.log(`[diplo] Treasury after: demander=${room.gameState.civs?.[pending[0]?.from]?.treasury} target=${room.gameState.civs?.[targetCiv]?.treasury}`);
+            emitGameLogs(roomId, room);
+            clearOneshotNotifications(room);
+          }
+        } catch (err) {
+          console.error(`[CRASH] RESPOND_DEMAND threw:`, err);
         }
       }
-      if (responses.length > 0) {
-        console.log(`[ai] Room ${roomId}: tribute demand — AI civ ${targetCiv} responded with ${responses.length} actions`);
+      if (responses.length === 0) {
+        console.log(`[diplo] No RESPOND_DEMAND generated — AI may not have found the pending demand`);
       }
     }
   }
