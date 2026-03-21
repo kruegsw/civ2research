@@ -980,9 +980,16 @@ export function applyAction(prev, mapBase, action, civSlot) {
           break;
         }
 
-        // Check for enemies at destination (stop before combat)
-        const gtHasEnemy = state.units.some(u => u.gx === gtDest.gx && u.gy === gtDest.gy && u.owner !== civSlot && u.gx >= 0 && (UNIT_ATK[u.type] || 0) > 0);
-        if (gtHasEnemy) break;
+        // Check for any foreign unit at destination — cancel goto (binary: cancel_goto_if_blocked)
+        const gtHasForeign = state.units.some(u =>
+          u.gx === gtDest.gx && u.gy === gtDest.gy && u.gx >= 0 &&
+          u.owner !== civSlot && u.owner !== 0
+        );
+        if (gtHasForeign) {
+          gtCur = { ...gtCur, orders: 'none', goToX: undefined, goToY: undefined };
+          state.units[gtUi] = gtCur;
+          break;
+        }
 
         const gtCost = moveCost(gtCur.type, mapBase, gtCur.gx, gtCur.gy, gtDest.gx, gtDest.gy);
         if (gtCost < 0) {

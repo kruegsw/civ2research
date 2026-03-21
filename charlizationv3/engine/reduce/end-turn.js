@@ -917,6 +917,19 @@ export function handleEndTurn(state, prev, mapBase, action, civSlot) {
           const gtDir = gtResult.dir;
           const gtNextDest = resolveDirection(gtCurUnit.gx, gtCurUnit.gy, gtDir, mapBase);
           if (!gtNextDest) break;
+
+          // Binary: cancel goto if next tile has enemy/foreign units
+          // FUN_0042738c (cancel_goto_if_blocked) + FUN_004273e6 (cancel_goto_for_stack)
+          const enemyOnTile = state.units.some(eu =>
+            eu.gx === gtNextDest.gx && eu.gy === gtNextDest.gy && eu.gx >= 0 &&
+            eu.owner !== activeCiv && eu.owner !== 0
+          );
+          if (enemyOnTile) {
+            // Cancel goto — enemy/foreign unit blocks path
+            gtCurUnit = { ...gtCurUnit, orders: 'none', goToX: undefined, goToY: undefined };
+            break;
+          }
+
           const gtMoveCostVal = moveCost(gtCurUnit.type, mapBase, gtCurUnit.gx, gtCurUnit.gy, gtNextDest.gx, gtNextDest.gy);
           if (gtMoveCostVal < 0) break;
           const gtActual = gtMoveCostVal; // #119: Railroad cost is 0 (free movement)
