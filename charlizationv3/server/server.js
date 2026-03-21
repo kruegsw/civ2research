@@ -58,6 +58,14 @@ import { generateDiplomacyActions } from "../engine/ai/diplomai.js";
 const PORT = Number(process.env.PORT || 8788);
 const DEBUG = process.env.DEBUG === "1";
 
+// Prevent uncaught exceptions from killing the server process
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception (server still running):', err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('[FATAL] Unhandled promise rejection:', err);
+});
+
 // -----------------------------------------------------------------------------
 // Static hosting config
 // -----------------------------------------------------------------------------
@@ -707,30 +715,40 @@ wss.on("connection", (ws) => {
 
         room.gameState = next;
 
-        if (roomHasDebugClient(room)) {
-          const actionDesc = `${msg.action.type}` + (msg.action.unitIndex != null ? ` unit #${msg.action.unitIndex}` : '') + (msg.action.dir != null ? ` dir=${msg.action.dir}` : '');
-          sendDebugLog(room, 'action', `Applied: ${actionDesc}`, room.gameState.turn?.number ?? 0, civSlot);
-          // Combat debug
-          if (room.gameState.combatResult) {
-            const cr = room.gameState.combatResult;
-            const detail = `Combat: ${cr.attackerName || 'attacker'} atk=${cr.attackerStrength || '?'} vs ${cr.defenderName || 'defender'} def=${cr.defenderStrength || '?'} → ${cr.type}`;
-            sendDebugLog(room, 'combat', detail, room.gameState.turn?.number ?? 0, civSlot);
+        try {
+          if (roomHasDebugClient(room)) {
+            const actionDesc = `${msg.action.type}` + (msg.action.unitIndex != null ? ` unit #${msg.action.unitIndex}` : '') + (msg.action.dir != null ? ` dir=${msg.action.dir}` : '');
+            sendDebugLog(room, 'action', `Applied: ${actionDesc}`, room.gameState.turn?.number ?? 0, civSlot);
+            if (room.gameState.combatResult) {
+              const cr = room.gameState.combatResult;
+              const detail = `Combat: ${cr.attackerName || 'attacker'} atk=${cr.attackerStrength || '?'} vs ${cr.defenderName || 'defender'} def=${cr.defenderStrength || '?'} → ${cr.type}`;
+              sendDebugLog(room, 'combat', detail, room.gameState.turn?.number ?? 0, civSlot);
+            }
           }
+
+          // Emit structured GAME_LOG messages for combat, turn events, tech, etc.
+          emitGameLogs(actionRoomId, room);
+
+          // ── Immediate AI responses to first contact and tribute demands ──
+          processImmediateAiDiplomacy(actionRoomId, room, msg.action);
+
+          // ── AI turn loop: auto-process consecutive AI civs after END_TURN ──
+          if (msg.action.type === 'END_TURN') {
+            processAiTurns(actionRoomId, room);
+          }
+        } catch (postActionErr) {
+          console.error(`[CRASH] Post-action processing failed for ${msg.action.type}:`, postActionErr);
+          // Send error to client so they know something went wrong
+          try { ws.send(JSON.stringify({ type: "ERROR", message: `Server error after ${msg.action.type}: ${postActionErr.message}` })); } catch (_) {}
         }
 
-        // Emit structured GAME_LOG messages for combat, turn events, tech, etc.
-        emitGameLogs(actionRoomId, room);
-
-        // ── Immediate AI responses to first contact and tribute demands ──
-        processImmediateAiDiplomacy(actionRoomId, room, msg.action);
-
-        // ── AI turn loop: auto-process consecutive AI civs after END_TURN ──
-        if (msg.action.type === 'END_TURN') {
-          processAiTurns(actionRoomId, room);
+        // Broadcast state regardless of post-action errors (game state is valid)
+        try {
+          sendGameStateToAll(actionRoomId, room);
+        } catch (broadcastErr) {
+          console.error(`[CRASH] sendGameStateToAll failed:`, broadcastErr);
+          try { ws.send(JSON.stringify({ type: "ERROR", message: `Broadcast error: ${broadcastErr.message}` })); } catch (_) {}
         }
-
-        // Broadcast filtered state to each client (after all AI turns resolved)
-        sendGameStateToAll(actionRoomId, room);
         // Clear AI combat queue after broadcast
         if (room.aiCombatQueue) room.aiCombatQueue = [];
 
