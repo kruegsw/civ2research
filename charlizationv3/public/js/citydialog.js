@@ -3476,13 +3476,14 @@ const Civ2CityDialog = {
     }
 
     // Compute happiness from first principles (FUN_004ea8e4 port)
-    let happiness;
-    try {
-      happiness = this._calcHappiness(city, cityIndex, mapData, civData, supported);
-    } catch (e) {
-      console.error('[citydialog] _calcHappiness error:', e);
-      happiness = { happy: 0, unhappy: 0, civilDisorder: false, weLoveKingDay: false };
-    }
+    // Use server-computed happiness values (stored on city by cityturn.js)
+    // instead of the client's local _calcHappiness which can diverge
+    const happiness = {
+      happy: city.happyCitizens ?? 0,
+      unhappy: city.unhappyCitizens ?? 0,
+      civilDisorder: city.civilDisorder ?? false,
+      weLoveKingDay: city.weLoveKingDay ?? false,
+    };
 
     try {
     this._drawBackground(ctx, cdSprites);

@@ -1384,14 +1384,15 @@ export function processCityTurn(cityIndex, state, mapBase, callbacks, options) {
   if (!cityDestroyed) {
     const cityForHap = state.cities[cityIndex];
     const hap = calcHappiness(cityForHap, cityIndex, state, mapBase);
-    if (cityForHap.civilDisorder !== hap.civilDisorder ||
-        cityForHap.weLoveKingDay !== hap.weLoveKingDay) {
-      state.cities[cityIndex] = {
-        ...state.cities[cityIndex],
-        civilDisorder: hap.civilDisorder,
-        weLoveKingDay: hap.weLoveKingDay,
-      };
-    }
+    // Store happy/unhappy counts on city so client can display them
+    // without needing its own (potentially divergent) happiness calc
+    state.cities[cityIndex] = {
+      ...state.cities[cityIndex],
+      civilDisorder: hap.civilDisorder,
+      weLoveKingDay: hap.weLoveKingDay,
+      happyCitizens: hap.happy,
+      unhappyCitizens: hap.unhappy,
+    };
   }
 
   // Re-read city after food + happiness updates
