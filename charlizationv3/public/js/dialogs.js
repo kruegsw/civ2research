@@ -833,19 +833,16 @@ export function showTurnEvents(events) {
       }
 
       case 'firstContact': {
-        // Matches Civ2 Game.txt @EMISSARY:
-        // "An emissary from %STRING1 %STRING2 of the %STRING3
-        //  wishes to speak with you. Will you receive %STRING4?"
-        sfx('FANFARE1');
+        // Open the full diplomacy dialog for first contact with AI civ
         const otherCiv = ev.civA === S.mpCivSlot ? ev.civB : ev.civA;
-        const otherName = S.mpGameState?.civNames?.[otherCiv] || `Civ ${otherCiv}`;
-        const leaderName = S.mpGameState?.civs?.[otherCiv]?.leaderName || 'their leader';
-        createCiv2Dialog('turn-event-dialog', `${otherName} Emissary`, panel => {
-          const msg = document.createElement('div');
-          msg.style.cssText = 'text-align:center;padding:12px 20px;font:18px "Times New Roman",Georgia,serif;color:#333;text-shadow:1px 1px 0 rgba(191,191,191,0.4)';
-          msg.textContent = `An emissary from ${leaderName} of the ${otherName} wishes to speak with you.`;
-          panel.appendChild(msg);
-        }, [{ label: 'OK', action: showNext }]);
+        const isAI = !(S.mpGameState.humanPlayers & (1 << otherCiv));
+        if (isAI && _deps.openDiplomacyDialog) {
+          _deps.openDiplomacyDialog(
+            S.mpGameState, S.mpMapBase, S.mpCivSlot, otherCiv,
+            (msg) => S.transport?.sendRaw(msg),
+          );
+        }
+        showNext();
         break;
       }
 

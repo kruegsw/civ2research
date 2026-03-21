@@ -43,7 +43,7 @@ import { NUMPAD_DIR } from '../engine/movement.js';
 import { getValidActions, validateAction } from '../engine/rules.js';
 import { UNIT_ORDER, WORKER_ORDER, PILLAGE, GOTO, BOMBARD, BUILD_CITY } from '../engine/actions.js';
 import { findPath } from '../engine/pathfinding.js';
-import { showDiplomacyNegotiationPicker } from './diplomacy-ui.js';
+import { showDiplomacyNegotiationPicker, openDiplomacyDialog } from './diplomacy-ui.js';
 import { showCivilopedia } from './civilopedia.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1267,6 +1267,7 @@ registerDialogDeps({
   selectUnit,
   showProductionPicker,
   showTechDetail,
+  openDiplomacyDialog,
 });
 
 registerUnitUiDeps({ renderAtomicSwap, updateUnitInfoStrip });
