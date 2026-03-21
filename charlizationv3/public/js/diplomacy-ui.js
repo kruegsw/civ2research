@@ -1259,10 +1259,99 @@ export function showHumanDiplomacyMenu(state, myCiv, targetCiv, sendAction) {
       }));
     }
 
+    // Give gold (not at war)
+    if (treaty !== 'war') {
+      menu.appendChild(makeMenuBtn('Give Gold', () => {
+        document.getElementById('diplo-human-dialog')?.remove();
+        const treasury = state.civs?.[myCiv]?.treasury || 0;
+        const amount = prompt(`Give how much gold to ${civName}? (Treasury: ${treasury})`, '50');
+        if (amount && parseInt(amount) > 0 && parseInt(amount) <= treasury) {
+          sendAction({ type: 'ACTION', action: { type: EXECUTE_TRADE, transaction: { from: myCiv, to: targetCiv, gold: parseInt(amount) } } });
+          showOverlayMessage(`Gave ${amount} gold to ${civName}`);
+        }
+      }));
+    }
+
+    // Give technology (not at war)
+    if (treaty !== 'war') {
+      const myTechs = state.civTechs?.[myCiv];
+      const theirTechs = state.civTechs?.[targetCiv];
+      const canGive = [];
+      if (myTechs) {
+        for (const t of myTechs) {
+          if (!theirTechs || !theirTechs.has(t)) canGive.push(t);
+        }
+      }
+      if (canGive.length > 0) {
+        menu.appendChild(makeMenuBtn('Give Technology', () => {
+          document.getElementById('diplo-human-dialog')?.remove();
+          canGive.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+          createCiv2Dialog('diplo-human-tech', `Give Technology to ${civName}`, techPanel => {
+            techPanel.style.cssText += `;min-width:300px;max-height:60vh;overflow-y:auto;${THRONE_BG}`;
+            for (const techId of canGive) {
+              const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
+              techPanel.appendChild(makeMenuBtn(name, () => {
+                document.getElementById('diplo-human-tech')?.remove();
+                sendAction({ type: 'ACTION', action: { type: EXECUTE_TRADE, transaction: { from: myCiv, to: targetCiv, techs: [techId] } } });
+                showOverlayMessage(`Gave ${name} to ${civName}`);
+              }));
+            }
+          }, [{ label: 'Cancel' }]);
+        }));
+      }
+    }
+
+    // Exchange knowledge (not at war)
+    if (treaty !== 'war') {
+      const myTechs2 = state.civTechs?.[myCiv];
+      const theirTechs2 = state.civTechs?.[targetCiv];
+      const canOffer = [];
+      const canRequest = [];
+      if (myTechs2) for (const t of myTechs2) { if (!theirTechs2 || !theirTechs2.has(t)) canOffer.push(t); }
+      if (theirTechs2) for (const t of theirTechs2) { if (!myTechs2 || !myTechs2.has(t)) canRequest.push(t); }
+      if (canOffer.length > 0 && canRequest.length > 0) {
+        menu.appendChild(makeMenuBtn('Exchange Knowledge', () => {
+          document.getElementById('diplo-human-dialog')?.remove();
+          canOffer.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+          canRequest.sort((a, b) => (ADVANCE_NAMES[a] || '').localeCompare(ADVANCE_NAMES[b] || ''));
+          // Step 1: pick tech to offer
+          createCiv2Dialog('diplo-human-exchange1', 'Exchange Knowledge — Offer', offerPanel => {
+            offerPanel.style.cssText += `;min-width:300px;max-height:60vh;overflow-y:auto;${THRONE_BG}`;
+            const hdr = document.createElement('div');
+            hdr.style.cssText = STYLE_MSG;
+            hdr.textContent = 'Select a technology to offer:';
+            offerPanel.appendChild(hdr);
+            for (const techId of canOffer) {
+              const name = ADVANCE_NAMES[techId] || `Advance ${techId}`;
+              offerPanel.appendChild(makeMenuBtn(name, () => {
+                document.getElementById('diplo-human-exchange1')?.remove();
+                // Step 2: pick tech to request
+                createCiv2Dialog('diplo-human-exchange2', 'Exchange Knowledge — Request', reqPanel => {
+                  reqPanel.style.cssText += `;min-width:300px;max-height:60vh;overflow-y:auto;${THRONE_BG}`;
+                  const hdr2 = document.createElement('div');
+                  hdr2.style.cssText = STYLE_MSG;
+                  hdr2.textContent = `Offering ${name}. Select what you want in return:`;
+                  reqPanel.appendChild(hdr2);
+                  for (const reqId of canRequest) {
+                    const reqName = ADVANCE_NAMES[reqId] || `Advance ${reqId}`;
+                    reqPanel.appendChild(makeMenuBtn(reqName, () => {
+                      document.getElementById('diplo-human-exchange2')?.remove();
+                      sendAction({ type: 'ACTION', action: { type: EXECUTE_TRADE, transaction: { from: myCiv, to: targetCiv, techs: [techId] } } });
+                      sendAction({ type: 'ACTION', action: { type: EXECUTE_TRADE, transaction: { from: targetCiv, to: myCiv, techs: [reqId] } } });
+                      showOverlayMessage(`Exchanged ${name} for ${reqName} with ${civName}`);
+                    }));
+                  }
+                }, [{ label: 'Cancel' }]);
+              }));
+            }
+          }, [{ label: 'Cancel' }]);
+        }));
+      }
+    }
+
     // Demand tribute (always available)
     menu.appendChild(makeMenuBtn('Demand Tribute', () => {
       document.getElementById('diplo-human-dialog')?.remove();
-      // Simple amount input
       const amount = prompt(`Demand how much gold from ${civName}?`, '100');
       if (amount && parseInt(amount) > 0) {
         sendAction({ type: 'ACTION', action: { type: DEMAND_TRIBUTE, targetCiv, amount: parseInt(amount) } });
