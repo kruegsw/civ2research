@@ -2925,7 +2925,7 @@ const s__SOUND__0062f2b8 = '\\SOUND\\';
 
 
 // External function stubs
-function FUN_CSplitterWnd_IsTracking(p1) { return 0; }
+function FUN_CSplitterWnd_IsTracking(p1) { return -1; } // C: reads this+0x15a4 (city index being displayed, -1 = none)
 function citywin_9429() {}
 function handle_city_disorder_004ef578(p1) {}
 function handle_city_disorder_00509590(p1) {}

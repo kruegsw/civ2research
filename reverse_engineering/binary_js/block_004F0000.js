@@ -3086,7 +3086,7 @@ function FUN_005b8da4(p1, p2) { return -1; }
 function FUN_005b8dec(p1, p2, p3) { return -1; }
 function FUN_004087c0(p1, p2) { return 0; }
 function FUN_0049301b(p1, p2, p3, p4, p5) {}
-function FUN_CSplitterWnd_IsTracking(p1) { return 0; }
+function FUN_CSplitterWnd_IsTracking(p1) { return -1; } // C: reads this+0x15a4 (city index being displayed, -1 = none)
 function FUN_004ebbde(p1) { return 0; }
 function FUN_004eb4ed(p1, p2) {}
 function citywin_9429() {}
