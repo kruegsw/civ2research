@@ -71,7 +71,7 @@ const IRRIGATION_PRIORITY = [
   7,  // 1 Plains: 1 base food → +1 irrigation, good food boost
   5,  // 2 Grassland: 2 base food already, but +1 is still valuable
   0,  // 3 Forest: cannot irrigate (transforms to plains)
-  0,  // 4 Hills: MINE instead — +3 shields >> +1 food from irrigation
+  4,  // 4 Hills: binary irrigates first (+1 food), mines later after Refrigeration
   0,  // 5 Mountains: cannot irrigate
   3,  // 6 Tundra: 1 base food → +1, marginal terrain
   0,  // 7 Glacier: cannot irrigate
@@ -779,26 +779,33 @@ function getWorkerOrder(unit, unitIndex, gameState, mapBase, civSlot) {
     if (!err) return action;
   }
 
-  // ── Priority 3b: Mine hills/mountains (only with existing road) ──
-  // Civ2 AI pattern: mine before irrigating lower-priority terrains.
-  // Hills get +3 shields from mining — much better than +1 food from irrigation.
-  // Mountains get +1 shield. Require road so production is network-connected.
-  if (!imp.mining && imp.road && CAN_MINE[terrain] && MINING_TURNS[terrain] > 0) {
-    if (terrain === 4 || terrain === 5) {
-      const action = { type: 'WORKER_ORDER', unitIndex, order: 'mine' };
-      const err = validateAction(gameState, mapBase, action, civSlot);
-      if (!err) return action;
-    }
-  }
-
-  // ── Priority 4: Irrigate lower-priority terrains (now that road is done) ──
-  // Grassland (5), Tundra (3) — irrigate after road and after mining check.
+  // ── Priority 3b: Irrigate lower-priority terrains (now that road is done) ──
+  // Binary check_unit_can_improve (FUN_005b68f6) checks irrigation FIRST,
+  // mining SECOND, returns the first valid option. So irrigate before mine.
+  // Grassland (5), Hills (4), Tundra (3) — irrigate after road is built.
   if (!imp.irrigation && CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0) {
     const irrPri = IRRIGATION_PRIORITY[terrain] || 0;
     if (irrPri > 0 && irrPri < 6 && checkWaterSource(unit.gx, unit.gy, mapBase)) {
       const action = { type: 'WORKER_ORDER', unitIndex, order: 'irrigation' };
       const err = validateAction(gameState, mapBase, action, civSlot);
       if (!err) return action;
+    }
+  }
+
+  // ── Priority 4: Mine hills/mountains (only with existing road) ──
+  // Binary: mining requires Refrigeration (tech 70) if tile already has irrigation.
+  // Mountains (no irrigation possible) can be mined anytime.
+  // Hills: irrigate first for early food, then mine after Refrigeration for shields.
+  if (!imp.mining && imp.road && CAN_MINE[terrain] && MINING_TURNS[terrain] > 0) {
+    if (terrain === 4 || terrain === 5) {
+      // Hills with irrigation: only mine if civ has Refrigeration (binary tech 0x46 = 70)
+      if (terrain === 4 && imp.irrigation && !hasTech(gameState, civSlot, 70)) {
+        // Skip — need Refrigeration to replace irrigation with mining
+      } else {
+        const action = { type: 'WORKER_ORDER', unitIndex, order: 'mine' };
+        const err = validateAction(gameState, mapBase, action, civSlot);
+        if (!err) return action;
+      }
     }
   }
 
