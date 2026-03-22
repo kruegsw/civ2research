@@ -4867,6 +4867,10 @@ export function FUN_00538a29() {
       flag_LAB_005435ca = true;
     }
   }
+      } // close LAB_005414d7 handler
+    } // close do-while inner block
+    } // close inner condition (C line 2718 / JS line 2637)
+  } // close flag_LAB_005392a6 guard (JS line 2629)
 
   // ════════════════════════════════════════════════════
   // LAB_005435ca — Final move execution
@@ -4945,11 +4949,6 @@ export function FUN_00538a29() {
       }
     }
   }
-
-        } // close inner nesting
-      } // close if at line 2797 (flag_LAB_005435ca guard)
-    } // close if at line 2718 (damage/role guard)
-  } // close if at line 2710 (flag_LAB_005392a6 guard)
 
   return 0;
 }

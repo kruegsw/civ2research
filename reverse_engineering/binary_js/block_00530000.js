@@ -32,15 +32,6 @@ function stub(name) {
 }
 
 // External function stubs — replace with real imports as available
-const FUN_005b8ee1 = stub('FUN_005b8ee1'); // tile_special_resource
-const FUN_005b68f6 = stub('FUN_005b68f6'); // ai_improvement_needed
-const FUN_005b3863 = stub('FUN_005b3863'); // unload_transport
-const FUN_00492e60 = stub('FUN_00492e60'); // ai_check_need
-const FUN_004ca39e = stub('FUN_004ca39e'); // unit_bribe
-const FUN_0047ce1e = stub('FUN_0047ce1e'); // refresh_area
-const FUN_0044263f = stub('FUN_0044263f'); // city_route_check
-const FUN_004429af = stub('FUN_004429af'); // city_connected_check
-const FUN_00442885 = stub('FUN_00442885'); // continent_route_check
 const FUN_kill_civ = stub('kill_civ');
 const FUN_00598d45 = stub('FUN_00598d45'); // ai_threat_level
 const FUN_004c9528 = stub('pick_up_unit_004c9528');
@@ -4886,6 +4877,10 @@ export function FUN_00538a29() {
       flag_LAB_005435ca = true;
     }
   }
+      } // close LAB_005414d7 handler
+    } // close do-while inner block
+    } // close inner condition (C line 2718 / JS line 2637)
+  } // close flag_LAB_005392a6 guard (JS line 2629)
 
   // ════════════════════════════════════════════════════
   // LAB_005435ca — Final move execution
@@ -4964,11 +4959,6 @@ export function FUN_00538a29() {
       }
     }
   }
-
-        } // close inner nesting
-      } // close if at line 2797 (flag_LAB_005435ca guard)
-    } // close if at line 2718 (damage/role guard)
-  } // close if at line 2710 (flag_LAB_005392a6 guard)
 
   return 0;
 }
