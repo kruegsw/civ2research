@@ -3267,8 +3267,9 @@ export function FUN_004de990(param_1, param_2) {
 // FUN_004ded07 — diplomacy_find_valid_tile_for_unit
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004ded07(param_1, param_2, param_3, param_4, param_5) {
-  let iVar1 = G.DAT_006560f0[param_1 * 0x10];
-  let iVar2 = G.DAT_006560f2[param_1 * 0x10];
+  // C: *(short*)(&G.DAT_006560f0 + param_1 * 0x20), *(short*)(&G.DAT_006560f2 + param_1 * 0x20)
+  let iVar1 = s16(G.DAT_006560f0, param_1 * 0x20);
+  let iVar2 = s16(G.DAT_006560f2, param_1 * 0x20);
   if (param_2) param_2[0] = iVar1;
   if (param_3) param_3[0] = iVar2;
   let local_8 = 1;
