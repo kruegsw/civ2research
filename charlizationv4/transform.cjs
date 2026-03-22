@@ -127,7 +127,12 @@ for (const [name, val] of allGlobals) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Step 3: Generate globals.js
+// Step 3: Skip globals.js generation — use build-globals.cjs instead
+// (build-globals.cjs creates the flat memory model globals.js)
+// ═══════════════════════════════════════════════════════════════════
+if (true) { // skip to step 4
+  console.log('Skipping globals.js (use build-globals.cjs for flat memory model)');
+} else {
 // ═══════════════════════════════════════════════════════════════════
 
 const specialArrays = ['DAT_0062833c', 'DAT_00628344', 'DAT_00628350', 'DAT_00628360', 'DAT_006d1188'];
@@ -180,8 +185,10 @@ for (const [name, info] of sortedViews) {
   globalsCode += `G.${name} = new Uint8Array(G.${info.parent}.buffer, ${info.offset});\n`;
 }
 
-fs.writeFileSync(path.join(dstDir, 'globals.js'), globalsCode);
-console.log(`Generated globals.js: ${Object.keys(bufferBases).length} buffers, ${sortedViews.length} sub-views, ${sortedGlobals.filter(([n]) => !specialAndBase.has(n)).length} scalars`);
+// globals.js generation disabled — use build-globals.cjs instead
+// fs.writeFileSync(path.join(dstDir, 'globals.js'), globalsCode);
+// console.log(`Generated globals.js`);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // Step 4: Transform block files
@@ -235,9 +242,8 @@ for (const blockFile of blockFiles) {
       continue;
     }
 
-    // Skip multi-line imports from mem.js (detect by opening brace without from)
+    // Skip multi-line imports from mem.js or fn_utils.js
     if (trimmed.startsWith('import {') && !trimmed.includes('from ')) {
-      // Check if next lines contain 'from ./mem.js'
       let j = i + 1;
       let block = trimmed;
       while (j < lines.length && !lines[j].includes('from ')) {
@@ -245,19 +251,14 @@ for (const blockFile of blockFiles) {
         j++;
       }
       if (j < lines.length) block += lines[j].trim();
-      if (block.includes("'./mem.js'")) {
-        // Skip all lines of this import
+      if (block.includes("'./mem.js'") || block.includes("'./fn_utils.js'")) {
         i = j;
         continue;
       }
     }
 
-    // Skip `import ... from './fn_utils.js'` (we'll re-add with correct path)
+    // Skip single-line `import ... from './fn_utils.js'`
     if (trimmed.startsWith('import ') && trimmed.includes("'./fn_utils.js'")) {
-      if (trimmed.includes('{') && !trimmed.includes('}')) {
-        inMultiLineImport = true;
-        braceDepth = (trimmed.match(/\{/g) || []).length - (trimmed.match(/\}/g) || []).length;
-      }
       continue;
     }
 

@@ -9,6 +9,21 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
+
+
+// ═══════════════════════════════════════════════════════════════════
+// STUB: Global DAT_ variables referenced but not defined in mem.js.
+// ═══════════════════════════════════════════════════════════════════
+
+
+// ── Dialog/UI state (stubs) ──
+
+// ── Large data arrays (stubs) ──
+
+
+// ═══════════════════════════════════════════════════════════════════
+// FUN_0057075c — SEH_cleanup_1
+// ═══════════════════════════════════════════════════════════════════
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -47,22 +62,6 @@ import { FUN_005dcc10 } from './block_005D0000.js';
 import { FUN_005e0f2a, FUN_005e10fb, FUN_005e1118, FUN_005e11be, FUN_005e1226, FUN_005e14c8 } from './block_005E0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
 
-function stub(name) { return function (...args) { return 0; }; }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// STUB: Global DAT_ variables referenced but not defined in mem.js.
-// ═══════════════════════════════════════════════════════════════════
-
-
-// ── Dialog/UI state (stubs) ──
-
-// ── Large data arrays (stubs) ──
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_0057075c — SEH_cleanup_1
-// ═══════════════════════════════════════════════════════════════════
 export function FUN_0057075c() {
   FUN_005c656b();
 }

@@ -9,17 +9,6 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
-import { G } from '../globals.js';
-import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
-import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
-// ── Cross-block imports (auto-wired) ──
-import { FUN_005bb574, FUN_005bd630, FUN_005bf071 } from './block_005B0000.js';
-import { FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c0f57, FUN_005c19ad, FUN_005c61b0 } from './block_005C0000.js';
-import { FUN_005c62ee, FUN_005c64da, FUN_005c656b, FUN_005cde4d, FUN_005cdea1, FUN_005cef66 } from './block_005C0000.js';
-import { FUN_005d268e, FUN_005db0d0, FUN_005dba95, FUN_005dbab8 } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
-
-function stub(name) { return function (...args) { return 0; }; }
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -31,6 +20,16 @@ function stub(name) { return function (...args) { return 0; }; }
 // NOTE: Many globals below are network/UI-only state. They are
 // declared here as module-level variables for mechanical correctness.
 // Game-logic globals should eventually migrate to mem.js.
+
+import { G } from '../globals.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
+import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
+// ── Cross-block imports (auto-wired) ──
+import { FUN_005bb574, FUN_005bd630, FUN_005bf071 } from './block_005B0000.js';
+import { FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c0f57, FUN_005c19ad, FUN_005c61b0 } from './block_005C0000.js';
+import { FUN_005c62ee, FUN_005c64da, FUN_005c656b, FUN_005cde4d, FUN_005cdea1, FUN_005cef66 } from './block_005C0000.js';
+import { FUN_005d268e, FUN_005db0d0, FUN_005dba95, FUN_005dbab8 } from './block_005D0000.js';
+import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
 
 let _DAT_00655b1c = 0;
 let _DAT_0064bc12 = 0;

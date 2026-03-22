@@ -9,6 +9,14 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
+
+
+// ============================================================
+// Function: FUN_00543b80 @ 0x00543B80
+// Size: 322 bytes
+// ai_try_settle_unit
+// ============================================================
+
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -33,12 +41,6 @@ import { FUN_005b2c3d, FUN_005b49cf, FUN_005b50ad, FUN_005b6458, FUN_005b6787, F
 import { FUN_005c61b0, FUN_005c64da, FUN_005c656b, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d2550, FUN_005d2568, FUN_005d2590, FUN_005d25a8, FUN_005d268e } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
-
-// ============================================================
-// Function: FUN_00543b80 @ 0x00543B80
-// Size: 322 bytes
-// ai_try_settle_unit
-// ============================================================
 
 export function FUN_00543b80() {
   let iVar1;

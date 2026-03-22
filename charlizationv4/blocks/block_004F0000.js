@@ -2869,7 +2869,7 @@ const s_Could_not_find_unit_0062f258 = 'Could not find unit %s';
 const s_Could_not_find_terraintype_0062f280 = 'Could not find terraintype %s';
 const s_BADEVENTSFILE_00630868 = 'BADEVENTSFILE';
 
-// Helper functions for 16-bit read/write (little-endian on Uint8Array)
+// Helper stubs for 16-bit read/write
 function s16_read(arr, off) {
   if (!arr) return 0;
   const v = (arr[off + 1] << 8) | arr[off];

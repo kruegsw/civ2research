@@ -9,6 +9,19 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
+
+
+// ═══════════════════════════════════════════════════════════════════
+// STUB: Global DAT_ variables referenced but not defined in mem.js.
+// These are placeholders — in a full integration they would be
+// imported from mem.js or from the appropriate block module.
+// ═══════════════════════════════════════════════════════════════════
+
+
+
+// ═══════════════════════════════════════════════════════════════════
+// C runtime / Win32 stubs
+// ═══════════════════════════════════════════════════════════════════
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -56,17 +69,6 @@ import { FUN_005bd270 } from './block_005B0000.js';
 import { FUN_005c61b0, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
 
-// ═══════════════════════════════════════════════════════════════════
-// STUB: Global DAT_ variables referenced but not defined in mem.js.
-// These are placeholders — in a full integration they would be
-// imported from mem.js or from the appropriate block module.
-// ═══════════════════════════════════════════════════════════════════
-
-
-
-// ═══════════════════════════════════════════════════════════════════
-// C runtime / Win32 stubs
-// ═══════════════════════════════════════════════════════════════════
 function _rand() { return Math.floor(Math.random() * 32768); }
 function _strlen(s) { return typeof s === 'string' ? s.length : 0; }
 function _strcmp(a, b) { return a === b ? 0 : (a < b ? -1 : 1); }

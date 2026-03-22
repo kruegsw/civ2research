@@ -9,6 +9,24 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
+
+
+// ═══════════════════════════════════════════════════════════════════
+// STUB: Global DAT_ variables referenced in this block.
+// These are placeholders — in a full integration they would be
+// imported from mem.js or from the appropriate block module.
+// ═══════════════════════════════════════════════════════════════════
+
+
+// Per-civ data block
+
+// Per-city data block
+
+// Game state
+
+// Direction tables
+
+// Pointer/string references (stubs)
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -54,22 +72,6 @@ import { FUN_005dd2e3, FUN_005dd377, FUN_005dd3f1, FUN_005dd45d, FUN_005dd4c2, F
 import { FUN_005dd761, FUN_005dea9e } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
 
-// ═══════════════════════════════════════════════════════════════════
-// STUB: Global DAT_ variables referenced in this block.
-// These are placeholders — in a full integration they would be
-// imported from mem.js or from the appropriate block module.
-// ═══════════════════════════════════════════════════════════════════
-
-
-// Per-civ data block
-
-// Per-city data block
-
-// Game state
-
-// Direction tables
-
-// Pointer/string references (stubs)
 let PTR_DAT_0062c9e0 = new Array(16).fill(null);
 let PTR_FUN_0061d6c0 = 0;
 let PTR_DAT_00637e60 = 0;

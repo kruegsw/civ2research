@@ -9,6 +9,14 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
+
+
+// ============================================================
+// Function: FUN_00550017 @ 0x00550017
+// Size: 12 bytes
+// thunk_destructor_wrapper
+// ============================================================
+
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -54,12 +62,6 @@ import { FUN_005c0034, FUN_005c0073, FUN_005c0f57, FUN_005c19ad, FUN_005c62ee, F
 import { FUN_005c656b, FUN_005cd775, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d1f50, FUN_005d2004 } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
-
-// ============================================================
-// Function: FUN_00550017 @ 0x00550017
-// Size: 12 bytes
-// thunk_destructor_wrapper
-// ============================================================
 
 export function FUN_00550017() {
   FUN_004183d0();

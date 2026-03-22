@@ -89,13 +89,15 @@ export function loadSav(buf) {
   initMapTiles(tileData);
 
   // ── Load unit records (direct byte copy) ──
+  // NOTE: Do NOT use .fill(0) on flat buffer views — they extend to end of buffer
+  // and would wipe data at higher addresses. Only clear the bytes we'll use.
   const unitDataSize = totalUnits * SAV_UNIT_REC;
-  G.DAT_006560f0.fill(0); // clear
+  G.DAT_006560f0.fill(0, 0, 2048 * SAV_UNIT_REC); // clear only unit slots
   G.DAT_006560f0.set(buf.slice(unitOff, unitOff + unitDataSize));
 
   // ── Load city records (direct byte copy) ──
   const cityDataSize = totalCities * SAV_CITY_REC;
-  G.DAT_0064f340.fill(0); // clear
+  G.DAT_0064f340.fill(0, 0, 256 * SAV_CITY_REC); // clear only city slots
   G.DAT_0064f340.set(buf.slice(cityOff, cityOff + cityDataSize));
 
   // ── Load civ data with +0xA0 shift ──
@@ -107,7 +109,7 @@ export function loadSav(buf) {
   const CIV_SHIFT = 0xA0; // 160 bytes
   const civDataStart = 0x08E6; // SAV civ data block start
   const civNameStart = 0x0156; // SAV civ name block start
-  G.DAT_0064c600.fill(0); // clear
+  G.DAT_0064c600.fill(0, 0, NUM_CIVS * 0x594); // clear only civ data slots
   for (let slot = 0; slot < NUM_CIVS; slot++) {
     const memOff = slot * 0x594;
     // Copy name block into first 0xA0 bytes

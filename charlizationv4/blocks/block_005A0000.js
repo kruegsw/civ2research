@@ -9,6 +9,22 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GLOBAL VARIABLES (DAT_ references used in this block)
+//
+// Many of these are UI framework state pointers and are stubbed as
+// simple mutable variables. Game-logic globals that appear in mem.js
+// are imported above.
+// ═══════════════════════════════════════════════════════════════════
+
+
+
+// ═══════════════════════════════════════════════════════════════════
+// STUBS: Win32 API and MFC calls — no-ops in JS
+// ═══════════════════════════════════════════════════════════════════
+
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -68,20 +84,6 @@ import { FUN_005cd775, FUN_005cda06, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d23bb, FUN_005d25a8, FUN_005d25c0, FUN_005d268e, FUN_005d4014, FUN_005d4167 } from './block_005D0000.js';
 import { FUN_005d8236, FUN_005dae6b, FUN_005db0d0 } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
-
-// ═══════════════════════════════════════════════════════════════════
-// GLOBAL VARIABLES (DAT_ references used in this block)
-//
-// Many of these are UI framework state pointers and are stubbed as
-// simple mutable variables. Game-logic globals that appear in mem.js
-// are imported above.
-// ═══════════════════════════════════════════════════════════════════
-
-
-
-// ═══════════════════════════════════════════════════════════════════
-// STUBS: Win32 API and MFC calls — no-ops in JS
-// ═══════════════════════════════════════════════════════════════════
 
 function IsIconic() { return 0; }
 function SetRect() {}
@@ -1210,9 +1212,7 @@ export function FUN_005ae006(param_1) {
 // ============================================================
 // Already in fn_utils.js — re-export for completeness
 
-// FUN_005ae052 available via fn_utils import
-
-
+// (re-export removed)
 // ============================================================
 // Function: FUN_005ae0b0 @ 0x005AE0B0
 // Size: 94 bytes

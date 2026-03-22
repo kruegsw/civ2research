@@ -66,9 +66,6 @@ import { FUN_005d25a8, FUN_005d268e, FUN_005d7c6e, FUN_005d8236, FUN_005d83d6, F
 import { FUN_005d8721, FUN_005dae6b, FUN_005db0d0 } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_00600000.js';
 
-function stub(name) { return function (...args) { return 0; }; }
-
-
 let _DAT_006ad674 = 0;
 let _DAT_006cec80 = 0;
 let PTR_DAT_00635a48 = null;

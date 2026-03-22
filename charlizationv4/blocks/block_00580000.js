@@ -73,9 +73,6 @@ import { FUN_005b633f, FUN_005b6787, FUN_005b6aea, FUN_005b8a81, FUN_005b8b1a, F
 import { FUN_005b8d62, FUN_005b9ec6, FUN_005b9f1c, FUN_005bb574, FUN_005bd630, FUN_005bd915 } from './block_005B0000.js';
 import { FUN_005c656b } from './block_005C0000.js';
 
-function stub(name) { return function (...args) { return 0; }; }
-
-
 function _rand() {
   return Math.floor(Math.random() * 0x7FFF);
 }

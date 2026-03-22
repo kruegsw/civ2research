@@ -9,6 +9,14 @@
 // ═══════════════════════════════════════════════════════════════════
 
 
+
+
+// ═══════════════════════════════════════════════════════════════════
+// STUB: Global DAT_ variables referenced but not defined in mem.js.
+// These are placeholders — in a full integration they would be
+// imported from mem.js or from the appropriate block module.
+// ═══════════════════════════════════════════════════════════════════
+
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -64,15 +72,6 @@ import { FUN_005c656b, FUN_005cd775, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d22b7, FUN_005d22f9, FUN_005d687b, FUN_005dae6b, FUN_005dd010, FUN_005dd1a0 } from './block_005D0000.js';
 import { FUN_005dd27e, FUN_005dd377, FUN_005dd3c2, FUN_005dd64c, FUN_005dd71e } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
-
-function stub(name) { return function (...args) { return 0; }; }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// STUB: Global DAT_ variables referenced but not defined in mem.js.
-// These are placeholders — in a full integration they would be
-// imported from mem.js or from the appropriate block module.
-// ═══════════════════════════════════════════════════════════════════
 
 let _DAT_006c90a0 = 0;
 let _DAT_0066c990 = 0;

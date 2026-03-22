@@ -55,9 +55,6 @@ import { FUN_005dce4f, FUN_005dce96, FUN_005dfa4d } from './block_005D0000.js';
 import { FUN_005f01ad, FUN_005f029e, FUN_005f0391, FUN_005f04c0, FUN_005f0520 } from './block_005F0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
 
-function stub(name) { return function (...args) { return 0; }; }
-
-
 let _DAT_006e5098 = 0;       // AVI format struct fields (overlapping globals)
 let _DAT_006e509c = 0;
 let _DAT_006e50a0 = 0;
