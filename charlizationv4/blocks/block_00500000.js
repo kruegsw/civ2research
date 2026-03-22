@@ -926,8 +926,6 @@ export function FUN_00501e63(param_1, param_2, param_3, param_4, param_5, param_
 
 // citywin_draw_citizen_row — draw citizen/happiness row in city window
 export function FUN_0050207f(param_1, param_1b, in_ECX) {
-  // in_ECX is a register (city window dialog pointer) — guard against cross-block thunk callers
-  if (in_ECX == null) return;
   let iVar1;
   let uVar2;
   let iVar3;
@@ -1896,8 +1894,6 @@ function local_30_fits() { return false; } // helper for while loop trimming
 
 // citywin_draw_production_pane — draw city production (what is being built)
 export function FUN_00504c05(param_1, in_ECX) {
-  // in_ECX is a register (city window dialog pointer) — guard against cross-block thunk callers
-  if (in_ECX == null) return;
   let uVar1, uVar2, uVar3, uVar4;
   let iVar5, iVar6, iVar7;
   let local_2c, local_24, local_1c, local_14 = new Array(16), local_10, local_c, local_8;
@@ -1987,8 +1983,6 @@ export function FUN_00504c05(param_1, in_ECX) {
 
 // citywin_draw_unit_support_pane — draw unit support/maintenance pane
 export function FUN_0050503e(param_1, in_ECX) {
-  // in_ECX is a register (city window dialog pointer) — guard against cross-block thunk callers
-  if (in_ECX == null) return;
   let iVar1, iVar2;
   let uVar3, uVar4, uVar5, uVar6;
   let local_6c = new Array(16);
@@ -2363,8 +2357,6 @@ export function FUN_00505d3d(param_1) {
 
 // citywin_draw_improvements_pane — draw city improvements/buildings list
 export function FUN_00505ffa(param_1, in_ECX) {
-  // in_ECX is a register (city window dialog pointer) — guard against cross-block thunk callers
-  if (in_ECX == null) return;
   let uVar1;
   let iVar2, iVar3;
   let local_78 = new Array(16), local_68 = new Array(16), local_58 = new Array(16);
@@ -3392,8 +3384,6 @@ export function citywin_8552(in_ECX) {
 
 // citywin_draw_lower_pane — dispatch to draw garrison/minimap/info view
 export function citywin_8ADC(param_1, in_ECX) {
-  // in_ECX is a register (city window dialog pointer) — guard against cross-block thunk callers
-  if (in_ECX == null) return;
   if (((in_ECX[0x15a4] === 0) && (in_ECX[0x15a0] === 0)) &&
       (in_ECX[0x15a8] === 0) && (-1 < in_ECX[0x159c])) {
     FUN_00501733(in_ECX + 0x164c, in_ECX);
