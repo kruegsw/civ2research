@@ -1488,18 +1488,23 @@ function sendGameStateToAll(roomId, room) {
 function buildStatePayload(room, civSlot) {
   const gs = room.gameState;
 
-  // Apply FOW filtering: only send units/cities visible to this civ
-  const filtered = filterStateForCiv(room.mapBase, gs, civSlot);
+  // Apply FOW filtering only when 2+ human players (prevents cheating in multiplayer).
+  // For single-player / 1-human games, send full state so client-side FOW toggle works.
+  const humanMask = gs.humanPlayers || 0;
+  const humanCount = humanMask.toString(2).split('').filter(b => b === '1').length;
+  const useServerFow = humanCount >= 2;
+
+  const source = useServerFow ? filterStateForCiv(room.mapBase, gs, civSlot) : gs;
 
   // Convert non-JSON-serializable types (Sets → arrays)
-  const cities = filtered.cities.map(c => ({
+  const cities = source.cities.map(c => ({
     ...c,
     buildings: c.buildings instanceof Set ? [...c.buildings] : c.buildings,
   }));
   return {
-    units: filtered.units,
+    units: source.units,
     cities,
-    civs: filtered.civs,
+    civs: useServerFow ? source.civs : gs.civs,
     civTechCounts: gs.civTechCounts,
     civTechs: gs.civTechs ? gs.civTechs.map(s => s instanceof Set ? [...s] : s) : null,
     civsAlive: gs.civsAlive,

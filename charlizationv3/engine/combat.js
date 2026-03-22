@@ -38,7 +38,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE,
+  UNIT_ATK, UNIT_DEF, UNIT_HP, UNIT_FP, UNIT_DOMAIN, UNIT_ROLE, UNIT_MOVE_POINTS,
   UNIT_DESTROYED_AFTER_ATTACK, TERRAIN_DEFENSE, MOVEMENT_MULTIPLIER,
   UNIT_PIKEMAN_BONUS, UNIT_AEGIS_BONUS, UNIT_ANTI_AIR,
   UNIT_SUBMARINE, DIFFICULTY_KEYS, UNIT_FUEL, UNIT_NEGATES_WALLS,
@@ -391,10 +391,15 @@ export function resolveCombat(attacker, defender, defTerrain, defInCity, defCity
   // We do NOT re-apply those multipliers here (binary applies them once).
   let effDef = calcUnitDefenseStrength(defender, defTerrain, defInCity, defCityHasWalls, defHasFortress, defOnRiver, defCityBuildings, attacker.type);
 
-  // ── Pikeman bonus: REMOVED from combat resolution (#2) ──────
-  // Binary only uses flagsB 0x04 as a +1 tiebreaker in defender SELECTION
-  // (calcStackBestDefender), NOT as a combat defense multiplier.
-  // The previous +50% defense bonus here was incorrect.
+  // ── Pikeman bonus vs mounted units (flagsB 0x04) ──────────────
+  // Binary FUN_00580341 lines 130-140: defender with pikeman flag gets
+  // +50% defense when attacker is a land unit with exactly 2 base movement
+  // (mounted units: Horsemen, Knights, Crusaders, Dragoons, Cavalry, etc.)
+  // Check: calc_unit_movement_points(atk) == COSMIC_MULTIPLIER * 2
+  if (UNIT_PIKEMAN_BONUS.has(defender.type) && atkDomain === 0 &&
+      (UNIT_MOVE_POINTS[attacker.type] || 0) === 2) {
+    effDef += effDef >> 1; // ×1.5 defense
+  }
 
   // ── B.2: Anti-air defense bonus vs air/missiles (flagsB 0x20) ──
   // Any unit with anti-air flag gets ×3 defense vs non-missile air, ×5 vs missiles.
