@@ -2272,7 +2272,7 @@ export function FUN_0040bc80(param_1) {
 // FUN_0040bcb0 — is_even_tile (checkerboard pattern)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040bcb0(param_1, param_2) {
-  return ((-((param_2 + param_1) >> 1) - param_1) & 2) === 0;
+  return (((-((param_2 + param_1) >> 1) - param_1) & 2) === 0) ? 1 : 0; // C: bool return = int 0/1
 }
 
 

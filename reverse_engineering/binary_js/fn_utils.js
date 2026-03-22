@@ -135,7 +135,7 @@ export function FUN_005b89bb(param_1, param_2) {
 
 export function FUN_005b89e4(param_1, param_2) {
   const cVar1 = FUN_005b89bb(param_1, param_2);
-  return cVar1 === 10;
+  return (cVar1 === 10) ? 1 : 0; // C: bool return = int 0/1
 }
 
 

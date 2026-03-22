@@ -782,7 +782,7 @@ export function FUN_00564470(param_1) {
 // ============================================================
 
 export function FUN_00564549() {
-  return DAT_006ab680 === 0;
+  return (DAT_006ab680 === 0) ? 1 : 0; // C: bool return = int 0/1
 }
 
 

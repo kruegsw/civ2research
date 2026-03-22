@@ -2287,7 +2287,7 @@ export function FUN_005b9431(param_1, param_2) {
   // FUN_005ae3bf converts tech ID to byte_index and bit_mask
   let local_c = param_2 >> 3;      // byte index
   let local_8 = 1 << (param_2 & 7); // bit mask
-  return (local_8 & DAT_00666137[local_c + param_1 * 0x10]) !== 0;
+  return ((local_8 & DAT_00666137[local_c + param_1 * 0x10]) !== 0) ? 1 : 0; // C: bool return = int 0/1
 }
 
 
