@@ -147,6 +147,8 @@ if (turns > 0) {
   // ── Phase 4: Run AI turns ──
   // Import turn pipeline functions
   const { FUN_00489553 } = await import('./blocks/block_00480000.js');
+  // C: block_00480000.c:3460 — FUN_00543cd6 dispatches per-unit AI after each civ's turn
+  const { FUN_00543cd6 } = await import('./blocks/block_00540000.js');
 
   console.log(`\n═══ Running ${turns} turns (all AI) ═══`);
 
@@ -183,7 +185,13 @@ if (turns > 0) {
     for (let civ = 1; civ < 8; civ++) {
       if (!(info.civsAlive & (1 << civ))) continue;
       try {
+        // C: block_00480000.c:3319 — set active civ for AI dispatch
+        G.DAT_00655b05 = civ;
         FUN_00489553(civ);
+        // C: block_00480000.c:3458-3460 — for AI civs, dispatch per-unit AI
+        if (((1 << (civ & 0x1f)) & G.DAT_00655b0b) === 0) {
+          FUN_00543cd6();
+        }
       } catch (e) {
         console.error(`  Turn ${t+1}, civ ${civ}: ERROR — ${e.message}`);
         if (e.stack) console.error(e.stack.split('\n').slice(0,3).join('\n'));

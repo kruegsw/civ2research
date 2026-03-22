@@ -33,13 +33,13 @@ import { FUN_0040f480, FUN_0040f610, FUN_0040f730, FUN_0040ff60 } from './block_
 import { FUN_004105f8 } from './block_00410000.js';
 import { FUN_00421da0 } from './block_00420000.js';
 import { FUN_0043cf76, FUN_0043d07a, FUN_0043d20a } from './block_00430000.js';
-import { FUN_00442541, FUN_0044272d, FUN_004442e0 } from './block_00440000.js';
+import { FUN_00442541, FUN_0044263f, FUN_0044272d, FUN_00442885, FUN_004429af, FUN_004442e0 } from './block_00440000.js';
 import { FUN_00453e51, FUN_00456f20 } from './block_00450000.js';
 import { FUN_00467825, FUN_00467904, FUN_00467af0 } from './block_00460000.js';
-import { FUN_0047cea6, FUN_0047e94e } from './block_00470000.js';
-import { FUN_00492c15, FUN_0049301b, FUN_004933f2, FUN_00493602 } from './block_00490000.js';
+import { FUN_0047ce1e, FUN_0047cea6, FUN_0047e94e } from './block_00470000.js';
+import { FUN_00492c15, FUN_00492e60, FUN_0049301b, FUN_004933f2, FUN_00493602 } from './block_00490000.js';
 import { FUN_004a2379, FUN_004a23fc, FUN_004adafc } from './block_004A0000.js';
-import { FUN_004c4d1e, FUN_004c50d0, FUN_004c54da } from './block_004C0000.js';
+import { FUN_004c4d1e, FUN_004c50d0, FUN_004c54da, FUN_004ca39e } from './block_004C0000.js';
 import { FUN_004e80b1 } from './block_004E0000.js';
 import { FUN_00511880 } from './block_00510000.js';
 import { FUN_0055f5a3 } from './block_00550000.js';
@@ -49,11 +49,11 @@ import { FUN_00580341 } from './block_00580000.js';
 import { FUN_0059a791 } from './block_00590000.js';
 import { FUN_005adfa0, FUN_005ae1b0, FUN_005ae31d } from './block_005A0000.js';
 import { FUN_005b29aa, FUN_005b29d7, FUN_005b2a39, FUN_005b2c3d, FUN_005b2c82, FUN_005b2d39 } from './block_005B0000.js';
-import { FUN_005b2e69, FUN_005b2f50, FUN_005b36df, FUN_005b47fa, FUN_005b496e, FUN_005b4b66 } from './block_005B0000.js';
-import { FUN_005b4c63, FUN_005b4d8c, FUN_005b50ad, FUN_005b53b6, FUN_005b5d93, FUN_005b6042 } from './block_005B0000.js';
-import { FUN_005b6787, FUN_005b67af, FUN_005b8a81, FUN_005b8aa8, FUN_005b8af0, FUN_005b8b65 } from './block_005B0000.js';
-import { FUN_005b8c18, FUN_005b8c42, FUN_005b8d15, FUN_005b8d62, FUN_005b8da4, FUN_005b8ffa } from './block_005B0000.js';
-import { FUN_005b9431 } from './block_005B0000.js';
+import { FUN_005b2e69, FUN_005b2f50, FUN_005b36df, FUN_005b3863, FUN_005b47fa, FUN_005b496e } from './block_005B0000.js';
+import { FUN_005b4b66, FUN_005b4c63, FUN_005b4d8c, FUN_005b50ad, FUN_005b53b6, FUN_005b5d93 } from './block_005B0000.js';
+import { FUN_005b6042, FUN_005b6787, FUN_005b67af, FUN_005b8a81, FUN_005b8aa8, FUN_005b8af0 } from './block_005B0000.js';
+import { FUN_005b8b65, FUN_005b8c18, FUN_005b8c42, FUN_005b8d15, FUN_005b8d62, FUN_005b8da4 } from './block_005B0000.js';
+import { FUN_005b8ffa, FUN_005b9431 } from './block_005B0000.js';
 import { FUN_005dcdf9 } from './block_005D0000.js';
 
 function stub(name) { return function (...args) { return 0; }; }
@@ -4960,3 +4960,5 @@ function uVar8_to_u32(val) {
 }
 
 // Cross-block stubs
+
+// Cross-block stubs added for AI tactics

@@ -5060,3 +5060,14 @@ function FUN_005b8ffa() { return 0; }
 function FUN_005b9431() { return 0; }
 function FUN_005b94d5() { return 0; }
 function FUN_005dcdf9() { return 0; }
+
+// Cross-block stubs added for AI tactics
+function FUN_0044263f() { return 0; }
+function FUN_00442885() { return 0; }
+function FUN_004429af() { return 0; }
+function FUN_0047ce1e() { return 0; }
+function FUN_00492e60() { return 0; }
+function FUN_004ca39e() { return 0; }
+function FUN_005b3863() { return 0; }
+function FUN_005b68f6() { return 0; }
+function FUN_005b8ee1() { return 0; }

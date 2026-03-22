@@ -1142,10 +1142,11 @@ export function FUN_0044272d(param_1, param_2_ref, param_3_ref) {
       local_c = local_c + (2 - (local_c & 1));
     }
   }
-  if (param_2_ref !== null) {
+  // C: if (param_2 != (int *)0x0) — callers pass 0 for NULL
+  if (param_2_ref != null && param_2_ref !== 0) {
     param_2_ref.value = local_8;
   }
-  if (param_3_ref !== null) {
+  if (param_3_ref != null && param_3_ref !== 0) {
     param_3_ref.value = local_c;
   }
   return local_20;
