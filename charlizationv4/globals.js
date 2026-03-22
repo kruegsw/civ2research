@@ -72,6 +72,7 @@ export const G = {
   DAT_00627cd2: new Uint8Array(_BUF, 47474),  // 0x627cd2
   DAT_00627cd3: new Uint8Array(_BUF, 47475),  // 0x627cd3
   DAT_00627cd4: new Uint8Array(_BUF, 47476),  // 0x627cd4
+  DAT_00627cd5: new Uint8Array(_BUF, 47477),  // 0x627cd5
   DAT_00627fe0: new Uint8Array(_BUF, 48256),  // 0x627fe0
   DAT_00628010: new Uint8Array(_BUF, 48304),  // 0x628010
   DAT_00628338: new Uint8Array(_BUF, 49112),  // 0x628338
