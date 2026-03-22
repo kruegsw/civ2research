@@ -1714,11 +1714,11 @@ export function FUN_004d8bc0() {
     let _Source = FUN_00428b0c(DAT_0064c488[local_8]);
     FUN_005f22d0_strncpy(DAT_006a1d88, local_8 * 0x28, _Source, 0x28);
     DAT_006a1daf[local_8 * 0x28] = 0;
-    DAT_006a2d28[local_8 * 0x16] = u8(DAT_0064c48c[local_8 * 8]);
-    DAT_006a2d2c[local_8 * 0x16] = u8(DAT_0064c48d[local_8 * 8]);
-    DAT_006a2d30[local_8 * 0x16] = s8(DAT_0064c48e[local_8 * 8]);
+    w32(DAT_006a2d28, local_8 * 0x58, u8(DAT_0064c48c[local_8 * 8]));
+    w32(DAT_006a2d2c, local_8 * 0x58, u8(DAT_0064c48d[local_8 * 8]));
+    w32(DAT_006a2d30, local_8 * 0x58, s8(DAT_0064c48e[local_8 * 8]));
     if (0x27 < local_8) {
-      DAT_006a2d34[local_8 * 0x16] = s8(DAT_0064ba01[local_8]);
+      w32(DAT_006a2d34, local_8 * 0x58, s8(DAT_0064ba01[local_8]));
     }
   }
 }
@@ -1731,11 +1731,11 @@ export function FUN_004d8caa() {
   for (let local_8 = 0; local_8 < 0x43; local_8 = local_8 + 1) {
     let _Dest = FUN_00428b0c(DAT_0064c488[local_8]);
     FUN_005f22d0_strncpy(_Dest, 0, DAT_006a1d88, local_8 * 0x28, 0x19);
-    DAT_0064c48c[local_8 * 8] = DAT_006a2d28[local_8 * 0x16];
-    DAT_0064c48d[local_8 * 8] = DAT_006a2d2c[local_8 * 0x16];
-    DAT_0064c48e[local_8 * 8] = DAT_006a2d30[local_8 * 0x16];
+    DAT_0064c48c[local_8 * 8] = s32(DAT_006a2d28, local_8 * 0x58);
+    DAT_0064c48d[local_8 * 8] = s32(DAT_006a2d2c, local_8 * 0x58);
+    DAT_0064c48e[local_8 * 8] = s32(DAT_006a2d30, local_8 * 0x58);
     if (0x27 < local_8) {
-      DAT_0064ba01[local_8] = DAT_006a2d34[local_8 * 0x16];
+      DAT_0064ba01[local_8] = s32(DAT_006a2d34, local_8 * 0x58);
     }
   }
 }
@@ -1752,7 +1752,7 @@ export function FUN_004d8d80() {
       FUN_00418a30(local_10);
     } else if (DAT_0062e3c0[local_14] === 0xc) {
       let iVar1 = FUN_00418740();
-      let local_8 = DAT_006a2a00[iVar1 + DAT_006a4f88[0x2ec] * 0x16] + 2;
+      let local_8 = s32(DAT_006a2a00, iVar1 * 4 + DAT_006a4f88[0x2ec] * 0x58) + 2;
       FUN_00418d90(local_8);
     }
   }
@@ -3144,11 +3144,11 @@ export function FUN_004dde9e(param_1, param_2) {
 // FUN_004ddf04 — diplomacy_transfer_gold
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004ddf04(param_1, param_2, param_3) {
-  if (DAT_0064c6a2[param_2 * 0x165] < param_3) {
-    param_3 = DAT_0064c6a2[param_2 * 0x165];
+  if (s32(DAT_0064c6a2, param_2 * 0x594) < param_3) {
+    param_3 = s32(DAT_0064c6a2, param_2 * 0x594);
   }
-  DAT_0064c6a2[param_2 * 0x165] = DAT_0064c6a2[param_2 * 0x165] - param_3;
-  DAT_0064c6a2[param_1 * 0x165] = DAT_0064c6a2[param_1 * 0x165] + param_3;
+  s32(DAT_0064c6a2, param_2 * 0x594) = s32(DAT_0064c6a2, param_2 * 0x594) - param_3;
+  s32(DAT_0064c6a2, param_1 * 0x594) = s32(DAT_0064c6a2, param_1 * 0x594) + param_3;
   let iVar1 = FUN_0045b472(param_3);
   FUN_00456f20(param_1, param_2, -((iVar1 * 3) / 2) | 0);
 }
@@ -3181,7 +3181,7 @@ export function FUN_004de049(param_1, param_2) {
   let local_14 = 3;
   for (let local_c = 0; local_c < iVar1; local_c = local_c + 1) {
     let iVar2 = FUN_0052ed95(param_2[local_14]);
-    if (-1 < iVar2 && DAT_0064f394[iVar2 * 0x16] !== 0) {
+    if (-1 < iVar2 && s32(DAT_0064f394, iVar2 * 0x58) !== 0) {
       FUN_004de0e2(iVar2, param_1);
     }
     local_14 = local_14 + 2;

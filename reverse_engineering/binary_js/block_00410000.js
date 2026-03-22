@@ -2270,11 +2270,11 @@ export function FUN_0041541a() {
     if (DAT_00625160[local_14 * 2] === 9) {
       let iVar1 = FUN_00418740();
       let local_10 = '';
-      _sprintf(local_10, '%d', DAT_006a2a00[iVar1 + DAT_006a4f90 * 0x16]); // approximation
+      _sprintf(local_10, '%d', s32(DAT_006a2a00, iVar1 * 4 + DAT_006a4f90 * 0x58)); // approximation
       FUN_00418a30(local_10);
     } else if (DAT_00625160[local_14 * 2] === 0xc) {
       let iVar1 = FUN_00418740();
-      let local_8 = DAT_006a2a00[iVar1 + DAT_006a4f90 * 0x16];
+      let local_8 = s32(DAT_006a2a00, iVar1 * 4 + DAT_006a4f90 * 0x58);
       if (local_14 < 3) {
         local_8 = local_8 + 2;
       }
@@ -2296,7 +2296,7 @@ export function FUN_0041557b() {
       let uVar2 = FUN_005adfa0(local_8, DAT_00625188[iVar1], DAT_00625190[iVar1]);
       // DAT_006a2d28[DAT_006a4f90 * 0x16 + iVar1] = uVar2;
       iVar1 = FUN_00418740();
-      if (DAT_006a2a00[iVar1 + DAT_006a4f90 * 0x16] !== local_8) {
+      if (s32(DAT_006a2a00, iVar1 * 4 + DAT_006a4f90 * 0x58) !== local_8) {
         local_14 = local_14 + 1;
       }
     } else if (DAT_00625160[local_18 * 2] === 0xc) {
