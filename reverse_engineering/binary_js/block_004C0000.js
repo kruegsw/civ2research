@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  s8, u8,
+  s8, u8, s16, u16, w16,
 } from './mem.js';
 
 import {
@@ -1138,27 +1138,29 @@ export function FUN_004c2788(param_1) {
 // Source: block_004C0000.c line 1038
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004c2b73 (458 bytes)
 export function FUN_004c2b73(param_1, param_2) {
   let sVar1;
   let iVar2;
 
   if (0 < param_2) {
-    DAT_0064c6a8[param_1 * 0x2CA] =
-         DAT_0064c6a8[param_1 * 0x2CA] + param_2;
-    if (-1 < DAT_0064c6aa[param_1 * 0x2CA]) {
-      sVar1 = DAT_0064c6a8[param_1 * 0x2CA];
+    // C: *(short *)(&DAT_0064c6a8 + param_1 * 0x594) += (short)param_2
+    w16(DAT_0064c6a8, param_1 * 0x594,
+         s16(DAT_0064c6a8, param_1 * 0x594) + (param_2 & 0xFFFF));
+    if (-1 < s16(DAT_0064c6aa, param_1 * 0x594)) {
+      sVar1 = s16(DAT_0064c6a8, param_1 * 0x594);
       iVar2 = FUN_004c2788(param_1);
       if (iVar2 <= sVar1) {
         FUN_004c21d5(param_1, 0);
       }
-      if ((DAT_0064c6a0[param_1 * 0x2CA] & 0x20) !== 0) {
-        DAT_0064c6a0[param_1 * 0x2CA] =
-             DAT_0064c6a0[param_1 * 0x2CA] & 0xffdf;
+      if ((u16(DAT_0064c6a0, param_1 * 0x594) & 0x20) !== 0) {
+        w16(DAT_0064c6a0, param_1 * 0x594,
+             u16(DAT_0064c6a0, param_1 * 0x594) & 0xffdf);
         FUN_004c21d5(param_1, 0);
       }
     }
-    if ((DAT_0064c6a8[param_1 * 0x2CA] !== 0) &&
-       (DAT_0064c6aa[param_1 * 0x2CA] < 0)) {
+    if ((s16(DAT_0064c6a8, param_1 * 0x594) !== 0) &&
+       (s16(DAT_0064c6aa, param_1 * 0x594) < 0)) {
       if (((DAT_00655aea[1] & 1) !== 0) &&
          (((u8(DAT_0064c6b0[param_1 * 0x594]) < 2 &&
           ((1 << (u8(param_1) & 0x1f) & DAT_00655b0b) !== 0))))) {
