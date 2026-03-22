@@ -386,6 +386,8 @@ export function validateAction(gameState, mapBase, action, civSlot) {
       if (unit.gx < 0) return 'Unit is dead';
       // Can't fortify sea/air units
       if (order === 'fortify' && UNIT_DOMAIN[unit.type] !== 0) return 'Only land units can fortify';
+      // Settlers/engineers cannot fortify (binary: only in city/fortress, and AI should never issue this)
+      if (order === 'fortify' && (unit.type === 0 || unit.type === 1)) return 'Settlers cannot fortify';
       // Can only wake units that have active orders
       if (order === 'wake' && (!unit.orders || unit.orders === 'none')) return 'Unit has no orders to clear';
       return null;

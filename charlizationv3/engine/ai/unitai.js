@@ -5111,6 +5111,11 @@ export function generateCleanupActions(gameState, mapBase, civSlot, strategy, de
     if (unit.movesLeft <= 0) continue;
     if (BUSY_ORDERS.has(unit.orders)) continue;
 
+    // Skip settlers/engineers — already handled by generateSettlerActions.
+    // Cleanup runs on stale state snapshot so it can't see the settler
+    // actions already queued, and would overwrite them with fortify.
+    if (unit.type === 0 || unit.type === 1) continue;
+
     const domain = UNIT_DOMAIN[unit.type] ?? 0;
 
     // For land units in cities: fortify (better than skip for defense bonus)
