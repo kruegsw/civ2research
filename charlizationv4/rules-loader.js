@@ -33,7 +33,11 @@ const TERRAIN_MAP = {
 };
 
 function techIndex(abbr) {
-  if (!abbr || abbr === 'nil' || abbr === 'no') return 0xFE; // binary uses 0xFE for "none"
+  // C: FUN_004b0720 (block_004B0000.c:86-93)
+  // "no" (DAT_0062d0a4) → -2 (0xFE) = disabled/can't build
+  // "nil" (DAT_0062d0a8) → -1 (0xFF) = no prerequisite needed
+  if (!abbr || abbr === 'nil') return 0xFF;
+  if (abbr === 'no') return 0xFE;
   const idx = TECH_MAP[abbr];
   return idx !== undefined ? idx : 0xFE;
 }
