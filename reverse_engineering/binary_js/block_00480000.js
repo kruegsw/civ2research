@@ -2720,7 +2720,7 @@ export function FUN_00489553(param_1) {
   FUN_00488cef(param_1);
   FUN_00487a41(param_1);
   FUN_00560084(param_1);
-  // FUN_0053184d(param_1); // research processing
+  FUN_0053184d(param_1);
   FUN_00489292(param_1, uVar1);
   if ((1 << (param_1 & 0x1f) & DAT_00655b0b) !== 0) {
     iVar2 = FUN_004a75a6(param_1);
