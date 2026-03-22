@@ -2793,7 +2793,7 @@ export function pick_up_unit_004c9528(param_1, param_2) {
 
   // LAB_004c99a0
   if ((G.DAT_00655b02 < 3) || (G.DAT_006ad2f7 !== 0)) {
-    w32(G.DAT_0064c6a2, param_2 * 0x594, s32(G.DAT_0064c6a2, param_2 * 0x594) - local_18;
+    w32(G.DAT_0064c6a2, param_2 * 0x594, s32(G.DAT_0064c6a2, param_2 * 0x594) - local_18);
     G.DAT_0064c778[iVar2 * 0x594 + u8(G.DAT_006560f6[param_1 * 0x20])] =
          G.DAT_0064c778[iVar2 * 0x594 + u8(G.DAT_006560f6[param_1 * 0x20])] + -1;
     G.DAT_0064c778[param_2 * 0x594 + u8(G.DAT_006560f6[param_1 * 0x20])] =
