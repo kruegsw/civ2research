@@ -21,6 +21,8 @@ import {
   DAT_00627cce, DAT_00627cd4,
   DAT_00655b12,
   DAT_00628350, DAT_00628360,
+  DAT_006d1168,
+  DAT_0064f340,
 } from './mem.js';
 
 import {
@@ -50,6 +52,43 @@ export {
   FUN_005b68f6,
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// BYTE-ARRAY ACCESS HELPERS
+//
+// The C code accesses unit/city/civ data through flat byte arrays with
+// stride arithmetic. These helpers read/write 16-bit and 32-bit values
+// from Uint8Arrays in little-endian format, matching x86 memory layout.
+// ═══════════════════════════════════════════════════════════════════
+
+function rs(arr, off) {
+  // Read signed 16-bit (little-endian) from byte array
+  const v = arr[off] | (arr[off + 1] << 8);
+  return (v & 0x8000) ? (v | 0xFFFF0000) : v;
+}
+
+function ru(arr, off) {
+  // Read unsigned 16-bit (little-endian)
+  return arr[off] | (arr[off + 1] << 8);
+}
+
+function ws(arr, off, val) {
+  // Write 16-bit (little-endian)
+  arr[off] = val & 0xFF;
+  arr[off + 1] = (val >> 8) & 0xFF;
+}
+
+function ri(arr, off) {
+  // Read signed 32-bit (little-endian)
+  return arr[off] | (arr[off + 1] << 8) | (arr[off + 2] << 16) | (arr[off + 3] << 24);
+}
+
+function wi(arr, off, val) {
+  // Write 32-bit (little-endian)
+  arr[off] = val & 0xFF;
+  arr[off + 1] = (val >> 8) & 0xFF;
+  arr[off + 2] = (val >> 16) & 0xFF;
+  arr[off + 3] = (val >> 24) & 0xFF;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL VARIABLES (DAT_ references used in this block)
@@ -96,7 +135,6 @@ let DAT_00655afe = 0;       // current active unit
 let DAT_006ced4c = 0;       // nearby enemy civ result
 let DAT_006ced50 = 0;       // nearest unit distance result
 let DAT_006d1da0 = 0;       // current player civ index
-let DAT_006ad8d8_dup = 0;   // (alias for re-entrancy guard)
 let DAT_006ad699 = 0;       // AI processing flag
 let DAT_006ad69a = 0;       // map batch update flag
 let DAT_006ad2f7 = 0;       // server flag
@@ -104,7 +142,6 @@ let DAT_006365f4 = 0;       // map batch counter
 let DAT_006d1164 = 0;       // total tile count (mapW/2 * mapH)
 let DAT_006d116a = 0;       // map chunk width
 let DAT_006d116c = 0;       // map chunk height
-let DAT_006d1168 = 0;       // resource seed
 let DAT_006d1170 = 0;       // tile data alloc handle
 let DAT_00636598 = 0;       // tile data pointer
 let DAT_006365e0 = 0;       // vis layer 1 ptr
@@ -135,171 +172,54 @@ let DAT_006365f8 = [5, 4, 5, 4, 4, 4, 4, 6]; // batch param counts per type
 let DAT_006d1188 = 0;       // dummy tile data
 let DAT_006d1190 = 0;       // map batch buffer base
 let DAT_006d1db8 = [];      // window stack array
+let DAT_00655b0b = 0;       // human civ bitmask
+let DAT_00655aea = 0;       // tutorial feature bits
+let DAT_0064b1b4 = 0;       // viewport center x
+let DAT_0064b1b0 = 0;       // viewport center y
+let DAT_0064b9e8 = [];      // civ total unit count
+let DAT_0064c6c0 = [];      // diplomacy table
+let DAT_0064c706 = [];      // civ support units count
+let DAT_0064c708 = [];      // civ city count
+let DAT_0064c778 = [];      // civ per-type unit count
+let DAT_0064ca32 = [];      // city improvements
+let DAT_0064f348 = [];      // city owner byte
+let DAT_0064f349 = [];      // city size byte
+let DAT_0064f360 = [];      // city name strings
+let DAT_00666137 = [];      // tech known bitmask table
 
-// String constants (stubbed)
-let s_DEBUG_006359dc = 'DEBUG';
-let s_NOTICE_00635fd8 = 'NOTICE';
-let s_EDITORSA_GIF_00635fe4 = 'EDITORSA.GIF';
-let DAT_00635fe0 = 0;
-let DAT_00635df8 = [];
-let DAT_00635dfc = [];
-let DAT_00635e00 = 0;
-let DAT_00635e04 = 0;
-let DAT_00635e08 = 0;
-let DAT_00635e0c = 0;
-let DAT_00635e10 = 0;
-let DAT_00635e14 = 0;
-let DAT_00635e18 = 0;
-let DAT_00635e20 = 0;
-let DAT_00635e24 = 0;
-let DAT_00635e28 = 0;
-let DAT_00635e2c = 0;
-let DAT_00635e30 = 0;
-let DAT_00635e34 = 0;
-let DAT_00635e38 = 0;
-let DAT_00635e3c = 0;
-let DAT_00635e40 = 0;
-let DAT_00635e44 = 0;
-let DAT_00635e48 = 0;
-let DAT_00635e4c = 0;
-let DAT_00635e50 = 0;
-let DAT_00635e54 = 0;
-let DAT_00635e58 = 0;
-let DAT_00635e5c = 0;
-let DAT_00635e60 = [];
-let DAT_00635e64 = [];
-let DAT_00635ef0 = 0;
-let DAT_00635f00 = 0;
-let DAT_00641848 = [];
-let DAT_00679640 = 0;
-let DAT_0064b1b4 = 0;
-let DAT_0064b1b0 = 0;
-let DAT_006560f6 = [];  // unit type array (byte per unit, stride 0x20)
-let DAT_006560f7 = [];  // unit owner array
-let DAT_006560f2 = [];  // unit Y array (short)
-let DAT_006560f4 = [];  // unit flags array (short)
-let DAT_006560f8 = [];  // unit damage taken
-let DAT_006560f9 = [];  // unit seen-by bitmask
-let DAT_006560fa = [];  // unit fuel used
-let DAT_006560fb = [];  // unit vet/escort byte
-let DAT_006560fc = [];  // unit status byte
-let DAT_006560fd = [];  // unit commodity/route
-let DAT_006560fe = [];  // unit goto turns
-let DAT_006560ff = [];  // unit orders byte
-let DAT_00656100 = [];  // unit home city
-let DAT_00656102 = [];  // unit goto target (short)
-let DAT_00656104 = [];  // unit goto target Y (short)
-let DAT_00656106 = [];  // unit stack prev link (short)
-let DAT_00656108 = [];  // unit stack next link (short)
-let DAT_0065610a = [];  // unit serial number (int)
-let DAT_0064b1b8 = [];  // unit type name string ptr
-let DAT_0064b1c1 = [];  // unit type domain
-let DAT_0064b1c2 = [];  // unit type move rate
-let DAT_0064b1c3 = [];  // unit type range
-let DAT_0064b1c4 = [];  // unit type attack
-let DAT_0064b1c5 = [];  // unit type defense
-let DAT_0064b1c6 = [];  // unit type hit points
-let DAT_0064b1c8 = [];  // unit type shield cost
-let DAT_0064b1c9 = [];  // unit type carry capacity
-let DAT_0064b1ca = [];  // unit type role
-let DAT_0064b1bd = [];  // unit type flagsB
-let DAT_0064b9e8 = [];  // civ total unit count (int per civ)
-let DAT_0064c6c0 = [];  // diplomacy table
-let DAT_0064c706 = [];  // civ support units count (short)
-let DAT_0064c708 = [];  // civ city count (short)
-let DAT_0064c778 = [];  // civ per-type unit count
-let DAT_0064ca32 = [];  // city improvements
-let DAT_0064f348 = [];  // city owner byte
-let DAT_0064f349 = [];  // city shields stored
-let DAT_0064f360 = [];  // city name strings
-let DAT_0064b168 = [];  // commodity name ptrs
-let DAT_00627684 = [];  // terrain type data
-let DAT_00655b0b = 0;   // human civ bitmask
-let DAT_00666137 = [];  // tech known bitmask table
-let DAT_006c90e0_val = 0;
-let DAT_0064c6b5 = [];  // civ tech count
-let DAT_00627cc0 = [];  // terrain improvement data
-let PTR_s_TUTORIAL_00627678 = 0;
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b02a5 — editor_set_scroll_mode (UI)
-// Source: block_005B0000.c line 10
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b02a5() {
-  let iVar1;
-
-  iVar1 = FUN_00418d60();
-  if (iVar1 === 0) {
-    FUN_0043c5f0();
-    FUN_0043c5f0();
-  }
-  else if (iVar1 === 1) {
-    FUN_0043c5f0();
-    FUN_0040f380();
-  }
-  else if (iVar1 === 2) {
-    FUN_0040f380();
-    FUN_0043c5f0();
-  }
+  let iVar1 = FUN_00418d60();
+  if (iVar1 === 0) { FUN_0043c5f0(); FUN_0043c5f0(); }
+  else if (iVar1 === 1) { FUN_0043c5f0(); FUN_0040f380(); }
+  else if (iVar1 === 2) { FUN_0040f380(); FUN_0043c5f0(); }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b0373 — editor_command_handler (UI)
-// Source: block_005B0000.c line 38
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b0373(param_1) {
-  let iVar1;
-  let local_8;
-
-  if (param_1 === 0xc9) {
-    iVar1 = FUN_005af4ae();
-    if (iVar1 === 0) {
-      let uVar2 = FUN_00418d60();
-      // *(DAT_006a4f88 + 0x2ec) = uVar2  — skipped (UI struct write)
-      FUN_005af343();
-      FUN_005b02a5();
-      FUN_005af682();
-    }
-    else {
-      FUN_00418d90(0); // stub
-      FUN_005af343();
-      FUN_005af682();
-      if (DAT_006a4f88 === 0) {
-        local_8 = 0;
-      }
-      else {
-        local_8 = DAT_006a4f88 + 0x48;
-      }
-      FUN_0059d3c9(local_8);
-      FUN_004190d0(s_DEBUG_006359dc, s_NOTICE_00635fd8);
-      FUN_0059d3c9(0);
-      let hWnd = FUN_00418770();
-      SetFocus(hWnd);
-    }
-  }
-  else if (param_1 === 0xcd) {
-    FUN_005b02a5();
-  }
+  // Entirely UI/editor — stubbed
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b0473 — editor_create_controls (UI)
-// Source: block_005B0000.c line 85
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b0473(param_1) {
-  // Entirely UI — creates editor dropdown/listbox controls
-  // Stubbed: no game logic
+  // Entirely UI — stubbed
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b08e8 — editor_create_button (UI)
-// Source: block_005B0000.c line 170
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b08e8(param_1) {
@@ -309,7 +229,6 @@ export function FUN_005b08e8(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b09dc — editor_paint (UI)
-// Source: block_005B0000.c line 204
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b09dc() {
@@ -319,18 +238,15 @@ export function FUN_005b09dc() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b1037 — editor_dialog_init (UI)
-// Source: block_005B0000.c line 315
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b1037() {
-  // Editor dialog initialization — entirely UI
-  // Stubbed
+  // Editor dialog initialization — entirely UI — stubbed
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b1a05 — editor_cleanup_1 (FW)
-// Source: block_005B0000.c line 526
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b1a05() {
@@ -340,7 +256,6 @@ export function FUN_005b1a05() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b1a1b — editor_seh_restore (FW)
-// Source: block_005B0000.c line 540
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b1a1b() {
@@ -350,7 +265,6 @@ export function FUN_005b1a1b() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b1a29 — editor_open (UI)
-// Source: block_005B0000.c line 557
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b1a29() {
@@ -364,7 +278,6 @@ export function FUN_005b1a29() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b1a82 — editor_cleanup_2 (FW)
-// Source: block_005B0000.c line 586
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b1a82() {
@@ -374,7 +287,6 @@ export function FUN_005b1a82() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b1a98 — editor_seh_restore_2 (FW)
-// Source: block_005B0000.c line 600
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b1a98() {
@@ -384,7 +296,6 @@ export function FUN_005b1a98() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2590 — validate_unit_stack (GL)
-// Source: block_005B0000.c line 617
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2590(param_1) {
@@ -404,22 +315,16 @@ export function FUN_005b2590(param_1) {
       FUN_005d2279('Infinite unit stack (id = %d)', param_1);
       local_8 = 0;
       local_14 = param_1;
-      sVar1 = s8(DAT_00656108[param_1 * 0x20]) | (DAT_00656108[param_1 * 0x20 + 1] << 8);
-      if (sVar1 & 0x8000) sVar1 |= 0xFFFF0000;
+      sVar1 = rs(DAT_006560f0, param_1 * 0x20 + 0x18);
       do {
-        local_24 = sVar1 & 0xFFFF;
-        if (local_24 & 0x8000) local_24 = local_24 | 0xFFFF0000;
-        local_24 = (local_24 << 16 >> 16); // sign extend
+        local_24 = sVar1;
         if (local_14 < 0) break;
-        let x = s8(DAT_006560f0[local_14 * 0x20]) | (DAT_006560f0[local_14 * 0x20 + 1] << 8);
-        if (x & 0x8000) x |= 0xFFFF0000;
-        let y = s8(DAT_006560f2[local_14 * 0x20]) | (DAT_006560f2[local_14 * 0x20 + 1] << 8);
-        if (y & 0x8000) y |= 0xFFFF0000;
+        let sx = rs(DAT_006560f0, local_14 * 0x20);
+        let sy = rs(DAT_006560f0, local_14 * 0x20 + 2);
         pick_up_unit_005b319e(local_14, 0);
-        FUN_005b345f(local_14, x, y, 0);
+        FUN_005b345f(local_14, sx, sy, 0);
         local_14 = local_24;
-        sVar1 = s8(DAT_00656108[local_24 * 0x20]) | (DAT_00656108[local_24 * 0x20 + 1] << 8);
-        if (sVar1 & 0x8000) sVar1 |= 0xFFFF0000;
+        sVar1 = rs(DAT_006560f0, local_24 * 0x20 + 0x18);
       } while (local_24 !== param_1);
     }
     // Validate prev-links for dead units
@@ -427,22 +332,17 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (true) {
       local_24 = iVar3;
-      let prevLink = s8(DAT_00656106[local_24 * 0x20]) | (DAT_00656106[local_24 * 0x20 + 1] << 8);
-      if (prevLink & 0x8000) prevLink |= 0xFFFF0000;
+      let prevLink = rs(DAT_006560f0, local_24 * 0x20 + 0x16);
       if (prevLink < 0) break;
       iVar3 = prevLink;
-      let serial = DAT_0065610a[prevLink * 0x20] | (DAT_0065610a[prevLink * 0x20 + 1] << 8) |
-                   (DAT_0065610a[prevLink * 0x20 + 2] << 16) | (DAT_0065610a[prevLink * 0x20 + 3] << 24);
+      let serial = ri(DAT_006560f0, prevLink * 0x20 + 0x1a);
       if (serial === 0) {
         FUN_005d2279('Dead unit in unit stack (id = %d)', local_24);
         local_8 = 0;
-        DAT_00656106[local_24 * 0x20] = 0xff;
-        DAT_00656106[local_24 * 0x20 + 1] = 0xff;
-        let nextOfPrev = s8(DAT_00656108[iVar3 * 0x20]) | (DAT_00656108[iVar3 * 0x20 + 1] << 8);
-        if (nextOfPrev & 0x8000) nextOfPrev |= 0xFFFF0000;
+        ws(DAT_006560f0, local_24 * 0x20 + 0x16, 0xffff);
+        let nextOfPrev = rs(DAT_006560f0, iVar3 * 0x20 + 0x18);
         if (nextOfPrev === local_24) {
-          DAT_00656108[iVar3 * 0x20] = 0xff;
-          DAT_00656108[iVar3 * 0x20 + 1] = 0xff;
+          ws(DAT_006560f0, iVar3 * 0x20 + 0x18, 0xffff);
         }
       }
     }
@@ -451,22 +351,17 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (true) {
       local_24 = iVar3;
-      let nextLink = s8(DAT_00656108[local_24 * 0x20]) | (DAT_00656108[local_24 * 0x20 + 1] << 8);
-      if (nextLink & 0x8000) nextLink |= 0xFFFF0000;
+      let nextLink = rs(DAT_006560f0, local_24 * 0x20 + 0x18);
       if (nextLink < 0) break;
       iVar3 = nextLink;
-      let serial = DAT_0065610a[local_24 * 0x20] | (DAT_0065610a[local_24 * 0x20 + 1] << 8) |
-                   (DAT_0065610a[local_24 * 0x20 + 2] << 16) | (DAT_0065610a[local_24 * 0x20 + 3] << 24);
+      let serial = ri(DAT_006560f0, local_24 * 0x20 + 0x1a);
       if (serial === 0) {
         FUN_005d2279('Dead unit in unit stack (id = %d)', local_24);
         local_8 = 0;
-        DAT_00656108[local_24 * 0x20] = 0xff;
-        DAT_00656108[local_24 * 0x20 + 1] = 0xff;
-        let prevOfNext = s8(DAT_00656106[iVar3 * 0x20]) | (DAT_00656106[iVar3 * 0x20 + 1] << 8);
-        if (prevOfNext & 0x8000) prevOfNext |= 0xFFFF0000;
+        ws(DAT_006560f0, local_24 * 0x20 + 0x18, 0xffff);
+        let prevOfNext = rs(DAT_006560f0, iVar3 * 0x20 + 0x16);
         if (prevOfNext === local_24) {
-          DAT_00656106[iVar3 * 0x20] = 0xff;
-          DAT_00656106[iVar3 * 0x20 + 1] = 0xff;
+          ws(DAT_006560f0, iVar3 * 0x20 + 0x16, 0xffff);
         }
       }
     }
@@ -475,16 +370,40 @@ export function FUN_005b2590(param_1) {
     iVar3 = local_24;
     while (true) {
       local_24 = iVar3;
-      let prevLink = s8(DAT_00656106[local_24 * 0x20]) | (DAT_00656106[local_24 * 0x20 + 1] << 8);
-      if (prevLink & 0x8000) prevLink |= 0xFFFF0000;
+      let prevLink = rs(DAT_006560f0, local_24 * 0x20 + 0x16);
       if (prevLink < 0) break;
       iVar3 = prevLink;
-      // Check x/y match between linked units
-      // (simplified — original does short reads and compares)
+      if (rs(DAT_006560f0, prevLink * 0x20) !== rs(DAT_006560f0, local_24 * 0x20) ||
+          rs(DAT_006560f0, prevLink * 0x20 + 2) !== rs(DAT_006560f0, local_24 * 0x20 + 2)) {
+        FUN_005d2279('Crossed locations in unit stack', local_24);
+        local_8 = 0;
+        ws(DAT_006560f0, local_24 * 0x20 + 0x16, 0xffff);
+        let nextOfPrev = rs(DAT_006560f0, iVar3 * 0x20 + 0x18);
+        if (nextOfPrev === local_24) {
+          ws(DAT_006560f0, iVar3 * 0x20 + 0x18, 0xffff);
+        }
+      }
     }
-    // Validate next-link location consistency (similar pattern)
-  }
-  else {
+    // Validate next-link location consistency
+    local_24 = param_1;
+    iVar3 = local_24;
+    while (true) {
+      local_24 = iVar3;
+      let nextLink = rs(DAT_006560f0, local_24 * 0x20 + 0x18);
+      if (nextLink < 0) break;
+      iVar3 = nextLink;
+      if (rs(DAT_006560f0, nextLink * 0x20) !== rs(DAT_006560f0, local_24 * 0x20) ||
+          rs(DAT_006560f0, nextLink * 0x20 + 2) !== rs(DAT_006560f0, local_24 * 0x20 + 2)) {
+        FUN_005d2279('Crossed locations in unit stack', local_24);
+        local_8 = 0;
+        ws(DAT_006560f0, local_24 * 0x20 + 0x18, 0xffff);
+        let prevOfNext = rs(DAT_006560f0, iVar3 * 0x20 + 0x16);
+        if (prevOfNext === local_24) {
+          ws(DAT_006560f0, iVar3 * 0x20 + 0x16, 0xffff);
+        }
+      }
+    }
+  } else {
     local_8 = 1;
   }
   return local_8;
@@ -493,37 +412,31 @@ export function FUN_005b2590(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b29aa — get_unit_type_hit_points (GL)
-// Source: block_005B0000.c line 722
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b29aa(param_1) {
-  return s8(DAT_0064b1c6[u8(DAT_006560f6[param_1 * 0x20]) * 0x14]);
+  return s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0A]);
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b29d7 — get_unit_remaining_moves (GL)
-// Source: block_005B0000.c line 735
+// FUN_005b29d7 — get_unit_hp_remaining (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b29d7(param_1) {
   let iVar1;
-
   if ((DAT_00655ae8 & 0x10) === 0) {
-    DAT_006560fa[param_1 * 0x20] = 0;
+    DAT_006560f0[param_1 * 0x20 + 0x0A] = 0;
   }
   iVar1 = FUN_005b29aa(param_1);
-  iVar1 = iVar1 - u8(DAT_006560fa[param_1 * 0x20]);
-  if (iVar1 < 1) {
-    iVar1 = 0;
-  }
+  iVar1 = iVar1 - u8(DAT_006560f0[param_1 * 0x20 + 0x0A]);
+  if (iVar1 < 1) iVar1 = 0;
   return iVar1;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b2a39 — get_unit_move_cost (GL)
-// Source: block_005B0000.c line 758
+// FUN_005b2a39 — get_unit_total_moves (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2a39(param_1) {
@@ -531,49 +444,41 @@ export function FUN_005b2a39(param_1) {
   let uVar3;
   let local_14;
   let local_10;
+  let unitType = u8(DAT_006560f0[param_1 * 0x20 + 6]);
 
-  local_10 = s8(DAT_0064b1c2[u8(DAT_006560f6[param_1 * 0x20]) * 0x14]);
+  local_10 = s8(DAT_0064b1bc[unitType * 0x14 + 6]);
   if (local_10 === 0) {
     uVar3 = 0;
-  }
-  else {
-    if (DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] === 0x02) {
-      iVar1 = s8(DAT_006560f7[param_1 * 0x20]);
+  } else {
+    if (DAT_0064b1bc[unitType * 0x14 + 5] === 0x02) {
+      iVar1 = s8(DAT_006560f0[param_1 * 0x20 + 7]);
       iVar2 = FUN_004bd9f0(iVar1, 0x3b);
-      if (iVar2 !== 0) {
-        local_10 = local_10 + DAT_0064bcc8;
-      }
+      if (iVar2 !== 0) local_10 = local_10 + DAT_0064bcc8;
       iVar2 = FUN_00453e51(iVar1, 0xc);
-      if (iVar2 !== 0) {
-        local_10 = local_10 + DAT_0064bcc8 * 2;
-      }
+      if (iVar2 !== 0) local_10 = local_10 + DAT_0064bcc8 * 2;
       iVar1 = FUN_00453e51(iVar1, 3);
-      if (iVar1 !== 0 && (DAT_0064b1bc[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] & 0x20) === 0) {
+      if (iVar1 !== 0 && (DAT_0064b1bc[unitType * 0x14] & 0x20) === 0) {
         local_10 = local_10 + DAT_0064bcc8;
       }
     }
     uVar3 = local_10;
-    if (DAT_006560fa[param_1 * 0x20] !== 0 && (DAT_00655ae8 & 0x10) !== 0 &&
-        DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] !== 0x01) {
+    if (DAT_006560f0[param_1 * 0x20 + 0x0A] !== 0 &&
+        (DAT_00655ae8 & 0x10) !== 0 &&
+        DAT_0064b1bc[unitType * 0x14 + 5] !== 0x01) {
       iVar1 = FUN_005b29aa(param_1);
-      if (iVar1 < 2) {
-        iVar1 = 1;
-      }
+      if (iVar1 < 2) iVar1 = 1;
       iVar2 = FUN_005b29d7(param_1);
-      local_10 = Math.trunc(iVar2 * local_10 / iVar1);
+      local_10 = Math.trunc((iVar2 * local_10) / iVar1);
       if (local_10 % DAT_0064bcc8 !== 0) {
         local_10 = local_10 + (DAT_0064bcc8 - local_10 % DAT_0064bcc8);
       }
-      if (DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] === 0x02) {
+      if (DAT_0064b1bc[unitType * 0x14 + 5] === 0x02) {
         local_14 = DAT_0064bcc8 * 2;
-      }
-      else {
+      } else {
         local_14 = DAT_0064bcc8;
       }
       uVar3 = local_14;
-      if (local_14 <= local_10) {
-        uVar3 = local_10;
-      }
+      if (local_14 <= local_10) uVar3 = local_10;
     }
   }
   return uVar3;
@@ -582,32 +487,24 @@ export function FUN_005b2a39(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2c3d — get_unit_moves_remaining (GL)
-// Source: block_005B0000.c line 822
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2c3d(param_1) {
-  let iVar1;
-
-  iVar1 = FUN_005b2a39(param_1);
-  iVar1 = iVar1 - u8(DAT_006560f8[param_1 * 0x20]);
-  if (iVar1 < 1) {
-    iVar1 = 0;
-  }
+  let iVar1 = FUN_005b2a39(param_1);
+  iVar1 = iVar1 - u8(DAT_006560f0[param_1 * 0x20 + 8]);
+  if (iVar1 < 1) iVar1 = 0;
   return iVar1;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2c82 — get_next_unit_in_stack (GL)
-// Source: block_005B0000.c line 842
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2c82(param_1) {
   if (-1 < param_1) {
     FUN_005b2590(param_1);
-    let nextLink = s8(DAT_00656108[param_1 * 0x20]) | (DAT_00656108[param_1 * 0x20 + 1] << 8);
-    if (nextLink & 0x8000) nextLink |= 0xFFFF0000;
-    param_1 = nextLink;
+    param_1 = rs(DAT_006560f0, param_1 * 0x20 + 0x18);
   }
   return param_1;
 }
@@ -615,18 +512,15 @@ export function FUN_005b2c82(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2cc3 — get_last_unit_in_stack (GL)
-// Source: block_005B0000.c line 859
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2cc3(param_1) {
   if (-1 < param_1) {
     FUN_005b2590(param_1);
-    let nextLink = s8(DAT_00656108[param_1 * 0x20]) | (DAT_00656108[param_1 * 0x20 + 1] << 8);
-    if (nextLink & 0x8000) nextLink |= 0xFFFF0000;
-    while (-1 < nextLink && nextLink !== param_1) {
-      param_1 = nextLink;
-      nextLink = s8(DAT_00656108[param_1 * 0x20]) | (DAT_00656108[param_1 * 0x20 + 1] << 8);
-      if (nextLink & 0x8000) nextLink |= 0xFFFF0000;
+    let next = rs(DAT_006560f0, param_1 * 0x20 + 0x18);
+    while (-1 < next && next !== param_1) {
+      param_1 = next;
+      next = rs(DAT_006560f0, param_1 * 0x20 + 0x18);
     }
   }
   return param_1;
@@ -635,18 +529,15 @@ export function FUN_005b2cc3(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2d39 — get_first_unit_in_stack (GL)
-// Source: block_005B0000.c line 879
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2d39(param_1) {
   if (-1 < param_1) {
     FUN_005b2590(param_1);
-    let prevLink = s8(DAT_00656106[param_1 * 0x20]) | (DAT_00656106[param_1 * 0x20 + 1] << 8);
-    if (prevLink & 0x8000) prevLink |= 0xFFFF0000;
-    while (-1 < prevLink && prevLink !== param_1) {
-      param_1 = prevLink;
-      prevLink = s8(DAT_00656106[param_1 * 0x20]) | (DAT_00656106[param_1 * 0x20 + 1] << 8);
-      if (prevLink & 0x8000) prevLink |= 0xFFFF0000;
+    let prev = rs(DAT_006560f0, param_1 * 0x20 + 0x16);
+    while (-1 < prev && prev !== param_1) {
+      param_1 = prev;
+      prev = rs(DAT_006560f0, param_1 * 0x20 + 0x16);
     }
   }
   return param_1;
@@ -655,102 +546,72 @@ export function FUN_005b2d39(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2daf — find_first_unit_at_xy_for_civ (GL)
-// Source: block_005B0000.c line 899
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2daf(param_1, param_2, param_3) {
-  let uVar1;
   let local_c;
-  let local_8;
-
-  local_8 = -1;
-  for (local_c = 0; local_8 < 0 && local_c < DAT_00655b16; local_c = local_c + 1) {
-    let serial = DAT_0065610a[local_c * 0x20] | (DAT_0065610a[local_c * 0x20 + 1] << 8) |
-                 (DAT_0065610a[local_c * 0x20 + 2] << 16) | (DAT_0065610a[local_c * 0x20 + 3] << 24);
-    if (serial !== 0) {
-      let ux = s8(DAT_006560f0[local_c * 0x20]) | (DAT_006560f0[local_c * 0x20 + 1] << 8);
-      if (ux & 0x8000) ux |= 0xFFFF0000;
-      let uy = s8(DAT_006560f2[local_c * 0x20]) | (DAT_006560f2[local_c * 0x20 + 1] << 8);
-      if (uy & 0x8000) uy |= 0xFFFF0000;
-      if (ux === param_2 && uy === param_3 && s8(DAT_006560f7[local_c * 0x20]) === param_1) {
-        local_8 = local_c;
-      }
+  let local_8 = -1;
+  for (local_c = 0; local_8 < 0 && local_c < DAT_00655b16; local_c++) {
+    if (ri(DAT_006560f0, local_c * 0x20 + 0x1a) !== 0 &&
+        rs(DAT_006560f0, local_c * 0x20) === param_2 &&
+        rs(DAT_006560f0, local_c * 0x20 + 2) === param_3 &&
+        s8(DAT_006560f0[local_c * 0x20 + 7]) === param_1) {
+      local_8 = local_c;
     }
   }
-  uVar1 = FUN_005b2d39(local_8);
-  return uVar1;
+  return FUN_005b2d39(local_8);
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2e69 — find_first_unit_at_xy (GL)
-// Source: block_005B0000.c line 926
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2e69(param_1, param_2) {
   let iVar1;
   let uVar2;
   let local_c;
-  let local_8;
+  let local_8 = -1;
 
-  local_8 = -1;
   if (DAT_00636058 === 0 || (iVar1 = FUN_005b8d62(param_1, param_2), -1 < iVar1)) {
-    for (local_c = 0; local_8 < 0 && local_c < DAT_00655b16; local_c = local_c + 1) {
-      let serial = DAT_0065610a[local_c * 0x20] | (DAT_0065610a[local_c * 0x20 + 1] << 8) |
-                   (DAT_0065610a[local_c * 0x20 + 2] << 16) | (DAT_0065610a[local_c * 0x20 + 3] << 24);
-      if (serial !== 0) {
-        let ux = s8(DAT_006560f0[local_c * 0x20]) | (DAT_006560f0[local_c * 0x20 + 1] << 8);
-        if (ux & 0x8000) ux |= 0xFFFF0000;
-        let uy = s8(DAT_006560f2[local_c * 0x20]) | (DAT_006560f2[local_c * 0x20 + 1] << 8);
-        if (uy & 0x8000) uy |= 0xFFFF0000;
-        if (ux === param_1 && uy === param_2) {
-          local_8 = local_c;
-        }
+    for (local_c = 0; local_8 < 0 && local_c < DAT_00655b16; local_c++) {
+      if (ri(DAT_006560f0, local_c * 0x20 + 0x1a) !== 0 &&
+          rs(DAT_006560f0, local_c * 0x20) === param_1 &&
+          rs(DAT_006560f0, local_c * 0x20 + 2) === param_2) {
+        local_8 = local_c;
       }
     }
-    if (-1 < local_8) {
-      FUN_005b2590(local_8);
-    }
+    if (-1 < local_8) FUN_005b2590(local_8);
     uVar2 = FUN_005b2d39(local_8);
-  }
-  else {
-    uVar2 = 0xffffffff;
+  } else {
+    uVar2 = -1;
   }
   return uVar2;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b2f50 — set_unit_order_sentry (GL)
-// Source: block_005B0000.c line 961
+// FUN_005b2f50 — set_unit_order_goto (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2f50(param_1) {
-  if (DAT_006560ff[param_1 * 0x20] !== 0x03) {
-    DAT_00656102[param_1 * 0x20] = 0xff;
-    DAT_00656102[param_1 * 0x20 + 1] = 0xff;
+  if (DAT_006560f0[param_1 * 0x20 + 0x0F] !== 0x03) {
+    ws(DAT_006560f0, param_1 * 0x20 + 0x12, 0xffff);
   }
-  DAT_006560ff[param_1 * 0x20] = 3;
+  DAT_006560f0[param_1 * 0x20 + 0x0F] = 3;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b2f92 — get_nth_unit_in_stack (GL)
-// Source: block_005B0000.c line 978
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b2f92(param_1, param_2) {
-  let local_c;
-  let local_8;
-
-  local_8 = -1;
-  local_c = -1;
-  for (param_1 = FUN_005b2d39(param_1); local_c < 0 && -1 < param_1;
-      param_1 = FUN_005b2c82(param_1)) {
-    local_8 = local_8 + 1;
-    if (local_8 === param_2) {
-      local_c = param_1;
-    }
+  let local_8 = -1;
+  let local_c = -1;
+  for (param_1 = FUN_005b2d39(param_1); local_c < 0 && -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
+    local_8++;
+    if (local_8 === param_2) local_c = param_1;
   }
   return local_c;
 }
@@ -758,18 +619,13 @@ export function FUN_005b2f92(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3007 — count_units_prev_chain (GL)
-// Source: block_005B0000.c line 1003
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3007(param_1) {
-  let local_8;
-
-  local_8 = -1;
+  let local_8 = -1;
   while (-1 < param_1) {
-    local_8 = local_8 + 1;
-    let prevLink = s8(DAT_00656106[param_1 * 0x20]) | (DAT_00656106[param_1 * 0x20 + 1] << 8);
-    if (prevLink & 0x8000) prevLink |= 0xFFFF0000;
-    param_1 = prevLink;
+    local_8++;
+    param_1 = rs(DAT_006560f0, param_1 * 0x20 + 0x16);
   }
   return local_8;
 }
@@ -777,23 +633,16 @@ export function FUN_005b3007(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3046 — find_nth_unit_of_role (GL)
-// Source: block_005B0000.c line 1022
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3046(param_1, param_2, param_3) {
   let local_10;
-  let local_c;
-  let local_8;
-
-  local_8 = -1;
-  local_c = -1;
-  for (local_10 = FUN_005b2d39(param_1); local_c < 0 && -1 < local_10;
-      local_10 = FUN_005b2c82(local_10)) {
-    if (DAT_0064b1ca[u8(DAT_006560f6[local_10 * 0x20]) * 0x14] === param_3) {
-      local_8 = local_8 + 1;
-      if (local_8 === param_2) {
-        local_c = local_10;
-      }
+  let local_8 = -1;
+  let local_c = -1;
+  for (local_10 = FUN_005b2d39(param_1); local_c < 0 && -1 < local_10; local_10 = FUN_005b2c82(local_10)) {
+    if (DAT_0064b1bc[u8(DAT_006560f0[local_10 * 0x20 + 6]) * 0x14 + 0x0E] === param_3) {
+      local_8++;
+      if (local_8 === param_2) local_c = local_10;
     }
   }
   return local_c;
@@ -802,15 +651,12 @@ export function FUN_005b3046(param_1, param_2, param_3) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b30e9 — count_units_in_stack (GL)
-// Source: block_005B0000.c line 1048
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b30e9(param_1) {
-  let local_8;
-
-  local_8 = 0;
+  let local_8 = 0;
   for (param_1 = FUN_005b2d39(param_1); -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
-    local_8 = local_8 + 1;
+    local_8++;
   }
   return local_8;
 }
@@ -818,57 +664,120 @@ export function FUN_005b30e9(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3136 — count_units_of_type_in_stack (GL)
-// Source: block_005B0000.c line 1067
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3136(param_1, param_2) {
-  let local_8;
-
-  local_8 = 0;
+  let local_8 = 0;
   for (param_1 = FUN_005b2d39(param_1); -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
-    if (DAT_006560f6[param_1 * 0x20] === param_2) {
-      local_8 = local_8 + 1;
-    }
+    if (DAT_006560f0[param_1 * 0x20 + 6] === param_2) local_8++;
   }
   return local_8;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// pick_up_unit_005b319e — remove unit from map stack (GL)
-// Source: block_005B0000.c line 1088
+// pick_up_unit_005b319e — remove unit from tile stack (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function pick_up_unit_005b319e(param_1, param_2) {
-  // Complex function: removes unit from its tile stack, updates linked list
-  // Involves multiplayer sync — client/server path
+  let sVar1, sVar2;
+  let iVar4;
+
   DAT_006ad8d8 = 1;
-  // Simplified stub — full implementation requires all unit/tile array access
-  DAT_006ad8d8 = 0;
+  if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+    sVar1 = rs(DAT_006560f0, param_1 * 0x20 + 0x16);
+    if (-1 < sVar1) {
+      ws(DAT_006560f0, sVar1 * 0x20 + 0x18, ru(DAT_006560f0, param_1 * 0x20 + 0x18));
+    }
+    sVar2 = rs(DAT_006560f0, param_1 * 0x20 + 0x18);
+    if (-1 < sVar2) {
+      ws(DAT_006560f0, sVar2 * 0x20 + 0x16, ru(DAT_006560f0, param_1 * 0x20 + 0x16));
+    }
+    ws(DAT_006560f0, param_1 * 0x20 + 0x16, 0xffff);
+    ws(DAT_006560f0, param_1 * 0x20 + 0x18, 0xffff);
+
+    if (sVar2 < 0 && sVar1 < 0) {
+      iVar4 = FUN_004087c0(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2));
+      if (iVar4 !== 0) {
+        let tOff = FUN_005b8931(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2));
+        if (tOff >= 0) {
+          // Clear unit-present bit on tile improvements byte
+          FUN_005b94fc(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2), 1, 0, 0);
+        }
+      }
+    }
+    // Move unit to off-map holding position
+    let ownerCiv = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+    let offX = (ownerCiv * 4 + 4) * -0x19;
+    let offY = offX;
+    ws(DAT_006560f0, param_1 * 0x20, offX & 0xFFFF);
+    ws(DAT_006560f0, param_1 * 0x20 + 2, offY & 0xFFFF);
+
+    if (2 < DAT_00655b02 && param_2 !== 0) {
+      FUN_004b0b53(0xff, 2, 0, 0, 0);
+      XD_FlushSendBuffer(5000);
+    }
+    DAT_006ad8d8 = 0;
+  } else {
+    // Multiplayer client path
+    DAT_006ad8d8 = 0;
+    DAT_006c90e0 = -2;
+    FUN_0046b14d(0x3f, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
+    // Wait for server response — simplified
+  }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b345f — put_down_unit_at (GL)
-// Source: block_005B0000.c line 1155
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b345f(param_1, param_2, param_3, param_4) {
-  // Places unit at x,y coordinates, updating stack links and tile data
+  let iVar2;
+  let local_14;
+
   DAT_006ad8dc = 1;
-  // Stub
-  DAT_006ad8dc = 0;
+  if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+    iVar2 = FUN_005b2daf(s8(DAT_006560f0[param_1 * 0x20 + 7]), param_2, param_3);
+    ws(DAT_006560f0, param_1 * 0x20, param_2 & 0xFFFF);
+    ws(DAT_006560f0, param_1 * 0x20 + 2, param_3 & 0xFFFF);
+    ws(DAT_006560f0, param_1 * 0x20 + 0x16, 0xffff);
+    ws(DAT_006560f0, param_1 * 0x20 + 0x18, iVar2 & 0xFFFF);
+
+    if (iVar2 < 0) {
+      let valid = FUN_004087c0(param_2, param_3);
+      if (valid !== 0) {
+        // Set unit-present bit on tile
+        FUN_005b94fc(param_2, param_3, 1, 1, 0);
+        local_14 = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+        if (local_14 < 0 || 8 < local_14) local_14 = 0xf;
+        FUN_005b99e8(param_2, param_3, local_14, 0);
+      }
+    } else {
+      ws(DAT_006560f0, iVar2 * 0x20 + 0x16, param_1 & 0xFFFF);
+    }
+
+    if (2 < DAT_00655b02 && param_4 !== 0) {
+      FUN_004b0b53(0xff, 2, 0, 0, 0);
+      XD_FlushSendBuffer(5000);
+    }
+    DAT_006ad8dc = 0;
+  } else {
+    // Multiplayer client path
+    DAT_006ad8dc = 0;
+    DAT_006c90e8 = -2;
+    FUN_0046b14d(0x41, 0, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+  }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b36df — relocate_unit (GL)
-// Source: block_005B0000.c line 1220
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b36df(param_1, param_2, param_3, param_4) {
   DAT_006ad8e4 = 1;
-  if (DAT_00655b02 < 3) {
+  if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
     pick_up_unit_005b319e(param_1, 0);
     FUN_005b345f(param_1, param_2, param_3, 0);
     if (2 < DAT_00655b02 && param_4 !== 0) {
@@ -876,49 +785,68 @@ export function FUN_005b36df(param_1, param_2, param_3, param_4) {
       XD_FlushSendBuffer(5000);
     }
     DAT_006ad8e4 = 0;
-  }
-  else {
+  } else {
     DAT_006ad8e4 = 0;
-    // Multiplayer path — stubbed
+    DAT_006c90f8 = -2;
+    FUN_0046b14d(0x45, 0, param_1, param_2, param_3, 0, 0, 0, 0, 0);
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3863 — restack_unit_at_current_pos (GL)
-// Source: block_005B0000.c line 1264
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3863(param_1, param_2) {
-  let ux = s8(DAT_006560f0[param_1 * 0x20]) | (DAT_006560f0[param_1 * 0x20 + 1] << 8);
-  if (ux & 0x8000) ux |= 0xFFFF0000;
-  let uy = s8(DAT_006560f2[param_1 * 0x20]) | (DAT_006560f2[param_1 * 0x20 + 1] << 8);
-  if (uy & 0x8000) uy |= 0xFFFF0000;
-  FUN_005b36df(param_1, ux, uy, param_2);
+  FUN_005b36df(param_1, rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2), param_2);
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b389f — move_unit_to_bottom_of_stack (GL)
-// Source: block_005B0000.c line 1279
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b389f(param_1, param_2) {
-  // Moves unit to bottom of stack — complex linked list manipulation
-  // Stubbed
+  let uVar1, uVar2;
+  let local_14;
+
+  if (rs(DAT_006560f0, param_1 * 0x20 + 0x18) >= 0) {
+    DAT_006ad8e0 = 1;
+    if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+      if (rs(DAT_006560f0, param_1 * 0x20 + 0x18) >= 0) {
+        uVar1 = ru(DAT_006560f0, param_1 * 0x20);
+        uVar2 = ru(DAT_006560f0, param_1 * 0x20 + 2);
+        local_14 = FUN_005b2d39(param_1);
+        if (local_14 === param_1) local_14 = FUN_005b2c82(param_1);
+        pick_up_unit_005b319e(param_1, 0);
+        let last = FUN_005b2cc3(local_14);
+        ws(DAT_006560f0, last * 0x20 + 0x18, param_1 & 0xFFFF);
+        ws(DAT_006560f0, param_1 * 0x20 + 0x16, last & 0xFFFF);
+        ws(DAT_006560f0, param_1 * 0x20 + 0x18, 0xffff);
+        ws(DAT_006560f0, param_1 * 0x20, uVar1);
+        ws(DAT_006560f0, param_1 * 0x20 + 2, uVar2);
+      }
+      if (2 < DAT_00655b02 && param_2 !== 0) {
+        FUN_004b0b53(0xff, 2, 0, 0, 0);
+        XD_FlushSendBuffer(5000);
+      }
+      DAT_006ad8e0 = 0;
+    } else {
+      DAT_006ad8e0 = 0;
+      DAT_006c90f0 = -2;
+      FUN_0046b14d(0x43, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
+    }
+  }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3ae0 — relocate_all_units_in_stack (GL)
-// Source: block_005B0000.c line 1341
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3ae0(param_1, param_2, param_3, param_4) {
   let iVar1;
-  let local_8;
-
-  local_8 = FUN_005b2d39(param_1);
+  let local_8 = FUN_005b2d39(param_1);
   while (-1 < local_8) {
     iVar1 = FUN_005b2c82(local_8);
     FUN_005b36df(local_8, param_2, param_3, 0);
@@ -933,18 +861,40 @@ export function FUN_005b3ae0(param_1, param_2, param_3, param_4) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3b78 — unload_ships_from_stack (GL)
-// Source: block_005B0000.c line 1367
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3b78(param_1, param_2) {
-  // Unloads sea units from stack — complex logic
-  // Stubbed
+  let sVar1, sVar2;
+  let iVar3;
+  let local_10 = -1;
+
+  if (-1 < param_1) {
+    sVar1 = rs(DAT_006560f0, param_1 * 0x20);
+    sVar2 = rs(DAT_006560f0, param_1 * 0x20 + 2);
+    iVar3 = FUN_005b2d39(param_1);
+    while (param_1 = iVar3, -1 < param_1) {
+      iVar3 = FUN_005b2c82(param_1);
+      if (DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5] === 0x02) {
+        local_10 = param_1;
+        let ownerCiv = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+        let offCoord = (ownerCiv * 4 + 4) * -0x4b;
+        FUN_005b36df(param_1, offCoord, offCoord, param_2);
+      }
+    }
+    if (-1 < local_10) {
+      param_1 = FUN_005b2d39(local_10);
+      while (-1 < param_1) {
+        iVar3 = FUN_005b2c82(param_1);
+        FUN_005b36df(param_1, sVar1, sVar2, param_2);
+        param_1 = iVar3;
+      }
+    }
+  }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3cd4 — unload_and_get_first (GL)
-// Source: block_005B0000.c line 1407
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3cd4(param_1, param_2) {
@@ -955,35 +905,152 @@ export function FUN_005b3cd4(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b3d06 — create_unit (GL)
-// Source: block_005B0000.c line 1424
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
-  // Creates a new unit — complex function with multiplayer sync
-  // Stubbed — returns -1 (failure)
-  return -1;
+  let iVar3, iVar4;
+  let local_10;
+  let local_c;
+
+  DAT_006ad8bc = 1;
+  if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+    // Find empty slot
+    for (local_10 = 0; local_10 < DAT_00655b16 && ri(DAT_006560f0, local_10 * 0x20 + 0x1a) !== 0; local_10++) {}
+    if (DAT_00655b16 === local_10) {
+      if (0x7ff < DAT_00655b16) {
+        DAT_006ad8bc = 0;
+        return -1;
+      }
+      DAT_00655b16 = DAT_00655b16 + 1;
+    }
+    // Update civ bookkeeping
+    if (s8(DAT_0064b1bc[param_1 * 0x14 + 0x0E]) < 5) {
+      // Increment support unit count for this civ
+    }
+
+    // Initialize unit fields
+    DAT_006560f0[local_10 * 0x20 + 6] = param_1 & 0xFF;           // unit type
+    DAT_006560f0[local_10 * 0x20 + 7] = param_2 & 0xFF;           // owner
+    wi(DAT_006560f0, local_10 * 0x20 + 0x1a, DAT_00627fd8);       // serial
+    DAT_00627fd8++;
+    DAT_006560f0[local_10 * 0x20 + 8] = 0;                         // moves spent
+    if (DAT_00655b02 >= 3 && DAT_006ad684 !== 0) {
+      DAT_006560f0[local_10 * 0x20 + 8] = FUN_005b2a39(local_10) & 0xFF;
+    }
+    DAT_006560f0[local_10 * 0x20 + 0x0A] = 0;                     // hp lost
+    DAT_006560f0[local_10 * 0x20 + 0x0C] = 0x58;                   // shield charge (default)
+    ws(DAT_006560f0, local_10 * 0x20 + 4, 0);                      // status flags
+    DAT_006560f0[local_10 * 0x20 + 9] = 0;                         // visibility
+    DAT_006560f0[local_10 * 0x20 + 0x0F] = 0xff;                   // orders (none)
+    DAT_006560f0[local_10 * 0x20 + 0x10] = 0xff;                   // home city (none)
+    // Find home city at param_3, param_4
+    iVar3 = FUN_0043d07a(param_3, param_4, -1, -1, -1);
+    if (param_2 !== 0 && -1 < iVar3) {
+      if (s8(DAT_0064f340[iVar3 * 0x58 + 8]) === (param_2 & 0xff)) {
+        DAT_006560f0[local_10 * 0x20 + 0x10] = iVar3 & 0xFF;
+      }
+    }
+    DAT_006560f0[local_10 * 0x20 + 0x0D] = 0;                     // commodity
+    DAT_006560f0[local_10 * 0x20 + 0x0E] = 0;                     // counter2
+    DAT_006560f0[local_10 * 0x20 + 0x0B] = 0xff;                   // last direction
+    ws(DAT_006560f0, local_10 * 0x20 + 0x16, 0xffff);              // prev link
+    ws(DAT_006560f0, local_10 * 0x20 + 0x18, 0xffff);              // next link
+    ws(DAT_006560f0, local_10 * 0x20, 0xffff);                     // x
+    ws(DAT_006560f0, local_10 * 0x20 + 2, 0xffff);                 // y
+    ws(DAT_006560f0, local_10 * 0x20 + 0x12, 0xffff);              // goto x
+    ws(DAT_006560f0, local_10 * 0x20 + 0x14, 0xffff);              // goto y
+    FUN_005b345f(local_10, param_3, param_4, 0);
+    FUN_004274a6(local_10, 1);
+
+    if (2 < DAT_00655b02) {
+      FUN_004b0b53(0xff, 2, 0, 0, 0);
+      XD_FlushSendBuffer(5000);
+    }
+    DAT_006ad8bc = 0;
+  } else {
+    // Multiplayer client path
+    DAT_006ad8bc = 0;
+    DAT_006c90d8 = -2;
+    FUN_0046b14d(0x3d, 0, param_1, param_2, param_3, param_4, 0, 0, 0, 0);
+    local_10 = DAT_006c90d8;
+  }
+  return local_10;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b4391 — delete_unit (GL)
-// Source: block_005B0000.c line 1562
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4391(param_1, param_2) {
-  // Deletes a unit — complex with civ bookkeeping
-  // Stubbed
+  let bVar1;
+  let sVar2, sVar3;
+  let iVar5;
+  let local_20;
+  let local_10;
+
+  if (-1 < param_1 && ri(DAT_006560f0, param_1 * 0x20 + 0x1a) !== 0) {
+    DAT_006ad8c0 = 1;
+    if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+      sVar2 = rs(DAT_006560f0, param_1 * 0x20);
+      sVar3 = rs(DAT_006560f0, param_1 * 0x20 + 2);
+      bVar1 = u8(DAT_006560f0[param_1 * 0x20 + 6]);
+
+      if (DAT_006560f0[param_1 * 0x20 + 0x10] === 0xFF) {
+        local_20 = -1;
+      } else {
+        local_20 = u8(DAT_006560f0[param_1 * 0x20 + 0x10]);
+      }
+
+      iVar5 = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+      if (-1 < iVar5 && param_1 < 0x800) {
+        // Decrement civ unit counts (simplified)
+      }
+
+      pick_up_unit_005b319e(param_1, 0);
+      wi(DAT_006560f0, param_1 * 0x20 + 0x1a, 0); // serial = 0 (dead)
+
+      if (DAT_00655b16 - 1 === param_1) {
+        DAT_00655b16 = DAT_00655b16 - 1;
+      }
+
+      // Clear goto orders targeting this unit
+      for (local_10 = 0; local_10 < DAT_00655b16; local_10++) {
+        if (DAT_006560f0[local_10 * 0x20 + 0x0F] === 0x03 &&
+            rs(DAT_006560f0, local_10 * 0x20 + 0x12) === param_1) {
+          DAT_006560f0[local_10 * 0x20 + 0x0F] = 0xff;
+        }
+      }
+
+      if (param_2 !== 0) {
+        FUN_0047cea6(-1, sVar2, sVar3);
+        if (-1 < local_20) FUN_0047ce1e(local_20);
+      }
+
+      if (2 < DAT_00655b02 && param_2 !== 0) {
+        FUN_004b0b53(0xff, 2, 0, 0, 0);
+        FUN_0046b14d(0x87, 0xff, -1, sVar2, sVar3, 0, 0, 0, 0, 0);
+        if (0 < local_20) {
+          FUN_0046b14d(0x88, 0xff, local_20, 0, 0, 0, 0, 0, 0, 0);
+        }
+        XD_FlushSendBuffer(5000);
+      }
+      DAT_006ad8c0 = 0;
+    } else {
+      DAT_006ad8c0 = 0;
+      DAT_006c90c0 = -2;
+      FUN_0046b14d(0x37, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
+    }
+  }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b47fa — delete_all_units_in_stack (GL)
-// Source: block_005B0000.c line 1659
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b47fa(param_1, param_2) {
   let iVar1;
-
   param_1 = FUN_005b2d39(param_1);
   while (-1 < param_1) {
     iVar1 = FUN_005b2c82(param_1);
@@ -998,61 +1065,51 @@ export function FUN_005b47fa(param_1, param_2) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b488a — clear_unit_seen_by (GL)
-// Source: block_005B0000.c line 1684
+// FUN_005b488a — clear_unit_visibility (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b488a(param_1) {
   if (-1 < param_1) {
-    DAT_006560f9[param_1 * 0x20] = 0;
+    DAT_006560f0[param_1 * 0x20 + 9] = 0;
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b48b1 — clear_seen_by_for_stack (GL)
-// Source: block_005B0000.c line 1700
+// FUN_005b48b1 — clear_stack_visibility (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b48b1(param_1) {
-  let iVar1;
-
-  for (iVar1 = FUN_005b2d39(param_1); -1 < iVar1; iVar1 = FUN_005b2c82(iVar1)) {
+  for (let iVar1 = FUN_005b2d39(param_1); -1 < iVar1; iVar1 = FUN_005b2c82(iVar1)) {
     FUN_005b488a(iVar1);
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b490e — mark_unit_seen_by_civ (GL)
-// Source: block_005B0000.c line 1718
+// FUN_005b490e — set_unit_seen_by (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b490e(param_1, param_2) {
-  if (-1 < param_2 && s8(DAT_006560f7[param_1 * 0x20]) !== param_2 && -1 < param_1) {
-    DAT_006560f9[param_1 * 0x20] =
-         DAT_006560f9[param_1 * 0x20] | (1 << (param_2 & 0x1f));
+  if (-1 < param_2 && s8(DAT_006560f0[param_1 * 0x20 + 7]) !== param_2 && -1 < param_1) {
+    DAT_006560f0[param_1 * 0x20 + 9] = DAT_006560f0[param_1 * 0x20 + 9] | (1 << (param_2 & 0x1f));
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b496e — mark_stack_seen_by_civ (GL)
-// Source: block_005B0000.c line 1735
+// FUN_005b496e — set_stack_seen_by (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b496e(param_1, param_2) {
-  let iVar1;
-
-  for (iVar1 = FUN_005b2d39(param_1); -1 < iVar1; iVar1 = FUN_005b2c82(iVar1)) {
+  for (let iVar1 = FUN_005b2d39(param_1); -1 < iVar1; iVar1 = FUN_005b2c82(iVar1)) {
     FUN_005b490e(iVar1, param_2);
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b49cf — check_nearby_enemy (GL)
-// Source: block_005B0000.c line 1753
+// FUN_005b49cf — check_adjacent_enemy_zoc (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b49cf(param_1, param_2, param_3) {
@@ -1067,26 +1124,24 @@ export function FUN_005b49cf(param_1, param_2, param_3) {
   local_1c = FUN_005b89e4(param_1, param_2);
   iVar1 = FUN_005b8ca6(param_1, param_2);
   DAT_006ced4c = -1;
-  for (local_8 = 0; DAT_006ced4c < 0 && local_8 < 8; local_8 = local_8 + 1) {
+  for (local_8 = 0; DAT_006ced4c < 0 && local_8 < 8; local_8++) {
     uVar2 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
     iVar3 = s8(DAT_00628360[local_8]) + param_2;
     iVar4 = FUN_004087c0(uVar2, iVar3);
     if (iVar4 !== 0) {
       if (iVar1 < 0) {
         local_c = FUN_005b89e4(uVar2, iVar3);
-      }
-      else {
+      } else {
         local_c = local_1c;
       }
       local_20 = FUN_005b8ca6(uVar2, iVar3);
       if (local_20 < 0) {
         local_20 = FUN_005b8d62(uVar2, iVar3);
-      }
-      else {
+      } else {
         local_1c = local_c;
       }
       if (-1 < local_20 && local_20 !== param_3 && local_c === local_1c &&
-         (DAT_0064c6c0[param_3 * 0x594 + local_20 * 4] & 8) === 0) {
+          (DAT_0064c6c0[param_3 * 0x594 + local_20 * 4] & 8) === 0) {
         DAT_006ced4c = local_20;
       }
     }
@@ -1096,8 +1151,7 @@ export function FUN_005b49cf(param_1, param_2, param_3) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b4b66 — check_nearby_enemy_simple (GL)
-// Source: block_005B0000.c line 1802
+// FUN_005b4b66 — check_adjacent_enemy_units (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4b66(param_1, param_2, param_3) {
@@ -1106,14 +1160,14 @@ export function FUN_005b4b66(param_1, param_2, param_3) {
   let local_8;
 
   DAT_006ced4c = -1;
-  for (local_8 = 0; DAT_006ced4c < 0 && local_8 < 8; local_8 = local_8 + 1) {
+  for (local_8 = 0; DAT_006ced4c < 0 && local_8 < 8; local_8++) {
     uVar2 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
-    let cVar1 = s8(DAT_00628360[local_8]);
-    iVar3 = FUN_004087c0(uVar2, cVar1 + param_2);
+    let dy = s8(DAT_00628360[local_8]);
+    iVar3 = FUN_004087c0(uVar2, dy + param_2);
     if (iVar3 !== 0) {
-      iVar3 = FUN_005b8d62(uVar2, cVar1 + param_2);
+      iVar3 = FUN_005b8d62(uVar2, dy + param_2);
       if (-1 < iVar3 && param_3 !== iVar3 &&
-         (DAT_0064c6c0[param_3 * 0x594 + iVar3 * 4] & 8) === 0) {
+          (DAT_0064c6c0[param_3 * 0x594 + iVar3 * 4] & 8) === 0) {
         DAT_006ced4c = iVar3;
       }
     }
@@ -1123,8 +1177,7 @@ export function FUN_005b4b66(param_1, param_2, param_3) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b4c63 — check_nearby_enemy_same_continent (GL)
-// Source: block_005B0000.c line 1831
+// FUN_005b4c63 — check_adjacent_enemy_same_domain (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4c63(param_1, param_2, param_3) {
@@ -1135,15 +1188,15 @@ export function FUN_005b4c63(param_1, param_2, param_3) {
 
   DAT_006ced4c = -1;
   iVar1 = FUN_005b89e4(param_1, param_2);
-  for (local_8 = 0; DAT_006ced4c < 0 && local_8 < 8; local_8 = local_8 + 1) {
+  for (local_8 = 0; DAT_006ced4c < 0 && local_8 < 8; local_8++) {
     uVar2 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
     iVar3 = s8(DAT_00628360[local_8]) + param_2;
     iVar4 = FUN_004087c0(uVar2, iVar3);
     if (iVar4 !== 0) {
       iVar4 = FUN_005b8d62(uVar2, iVar3);
       if (-1 < iVar4 && iVar4 !== param_3) {
-        iVar3 = FUN_005b89e4(uVar2, iVar3);
-        if (iVar3 === iVar1 && (DAT_0064c6c0[iVar4 * 4 + param_3 * 0x594] & 8) === 0) {
+        let ocean2 = FUN_005b89e4(uVar2, iVar3);
+        if (ocean2 === iVar1 && (DAT_0064c6c0[iVar4 * 4 + param_3 * 0x594] & 8) === 0) {
           DAT_006ced4c = iVar4;
         }
       }
@@ -1154,50 +1207,42 @@ export function FUN_005b4c63(param_1, param_2, param_3) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b4d8c — check_unclaimed_tile_contested (GL)
-// Source: block_005B0000.c line 1863
+// FUN_005b4d8c — check_zoc_for_uncitied_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4d8c(param_1, param_2, param_3) {
   let iVar1;
-  let local_8;
-
-  local_8 = 0;
-  DAT_006ced4c = 0xffffffff;
+  let local_8 = 0;
+  DAT_006ced4c = -1;
   iVar1 = FUN_005b8ca6(param_1, param_2);
   if (iVar1 < 0) {
-    local_8 = FUN_005b4c63(param_1, param_2, param_3);
+    local_8 = FUN_005b4c63(param_1, param_2, param_3) ? 1 : 0;
   }
   return local_8;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b4de2 — is_civ_adjacent (GL)
-// Source: block_005B0000.c line 1885
+// FUN_005b4de2 — check_civ_adjacent (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4de2(param_1, param_2, param_3) {
   let iVar1;
   let uVar2;
   let iVar3;
-  let bVar4;
-  let local_8;
+  let bVar4 = false;
 
-  bVar4 = false;
   iVar1 = FUN_004087c0(param_1, param_2);
   if (iVar1 !== 0) {
-    for (local_8 = 0; bVar4 === false && local_8 < 8; local_8 = local_8 + 1) {
+    for (let local_8 = 0; !bVar4 && local_8 < 8; local_8++) {
       uVar2 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
       iVar1 = s8(DAT_00628360[local_8]) + param_2;
       iVar3 = FUN_004087c0(uVar2, iVar1);
       if (iVar3 !== 0) {
         iVar3 = FUN_005b8d62(uVar2, iVar1);
-        bVar4 = iVar3 === param_3;
+        if (iVar3 === param_3) bVar4 = true;
         iVar1 = FUN_005b8ca6(uVar2, iVar1);
-        if (iVar1 === param_3) {
-          bVar4 = true;
-        }
+        if (iVar1 === param_3) bVar4 = true;
       }
     }
   }
@@ -1206,33 +1251,28 @@ export function FUN_005b4de2(param_1, param_2, param_3) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b4ee2 — set_seen_by_bitmask_for_stack (GL)
-// Source: block_005B0000.c line 1921
+// FUN_005b4ee2 — or_visibility_for_stack (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4ee2(param_1, param_2) {
   for (param_1 = FUN_005b2d39(param_1); -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
-    DAT_006560f9[param_1 * 0x20] = DAT_006560f9[param_1 * 0x20] | param_2;
+    DAT_006560f0[param_1 * 0x20 + 9] = DAT_006560f0[param_1 * 0x20 + 9] | param_2;
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b4f3c — get_civs_adjacent_mask (GL)
-// Source: block_005B0000.c line 1937
+// FUN_005b4f3c — get_civs_present_bitmask (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4f3c(param_1, param_2) {
   let iVar1;
-  let local_c;
-  let local_8;
-
-  local_8 = 0;
+  let local_8 = 0;
   iVar1 = FUN_005b8a1d(param_1, param_2);
   if (-1 < iVar1) {
     local_8 = 1 << (iVar1 & 0x1f);
   }
-  for (local_c = 1; local_c < 8; local_c = local_c + 1) {
+  for (let local_c = 1; local_c < 8; local_c++) {
     iVar1 = FUN_005b4de2(param_1, param_2, local_c);
     if (iVar1 !== 0) {
       local_8 = local_8 | (1 << (local_c & 0x1f));
@@ -1243,21 +1283,12 @@ export function FUN_005b4f3c(param_1, param_2) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b4fca — mark_adjacent_civs_seen (GL)
-// Source: block_005B0000.c line 1966
+// FUN_005b4fca — set_visibility_for_adjacent_civs (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b4fca(param_1) {
-  let iVar1;
-  let local_8;
-
-  let ux = s8(DAT_006560f0[param_1 * 0x20]) | (DAT_006560f0[param_1 * 0x20 + 1] << 8);
-  if (ux & 0x8000) ux |= 0xFFFF0000;
-  let uy = s8(DAT_006560f2[param_1 * 0x20]) | (DAT_006560f2[param_1 * 0x20 + 1] << 8);
-  if (uy & 0x8000) uy |= 0xFFFF0000;
-
-  for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
-    iVar1 = FUN_005b4de2(ux, uy, local_8);
+  for (let local_8 = 1; local_8 < 8; local_8++) {
+    let iVar1 = FUN_005b4de2(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2), local_8);
     if (iVar1 !== 0) {
       FUN_005b496e(param_1, local_8);
     }
@@ -1266,100 +1297,61 @@ export function FUN_005b4fca(param_1) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b503b — stack_has_unit_type (GL)
-// Source: block_005B0000.c line 1989
+// FUN_005b503b — has_unit_of_type_in_stack (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b503b(param_1, param_2) {
   param_1 = FUN_005b2d39(param_1);
   while (true) {
-    if (param_1 < 0) {
-      return 0;
-    }
-    if (u8(DAT_006560f6[param_1 * 0x20]) === param_2) break;
+    if (param_1 < 0) return 0;
+    if (u8(DAT_006560f0[param_1 * 0x20 + 6]) === param_2) return 1;
     param_1 = FUN_005b2c82(param_1);
   }
-  return 1;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b50ad — count_stack_property (GL)
-// Source: block_005B0000.c line 2010
+// FUN_005b50ad — aggregate_stack_property (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b50ad(param_1, param_2) {
-  let local_8;
-
-  local_8 = 0;
+  let local_8 = 0;
   if (param_2 !== 0xb) {
     param_1 = FUN_005b2d39(param_1);
   }
   while (-1 < param_1 && local_8 < 0x800) {
-    let unitType = u8(DAT_006560f6[param_1 * 0x20]);
+    let unitType = u8(DAT_006560f0[param_1 * 0x20 + 6]);
     switch (param_2) {
-    case 0:
-      local_8 = local_8 + s8(DAT_0064b1c8[unitType * 0x14]);
-      break;
-    case 1:
-      local_8 = local_8 + s8(DAT_0064b1c5[unitType * 0x14]);
-      break;
-    case 2:
-    case 0xb:
-      local_8 = local_8 + 1;
-      break;
-    case 3:
-      local_8 = local_8 + s8(DAT_0064b1c4[unitType * 0x14]);
-      break;
-    case 4: {
-      let prevLink = s8(DAT_00656106[param_1 * 0x20]) | (DAT_00656106[param_1 * 0x20 + 1] << 8);
-      if (prevLink & 0x8000) prevLink |= 0xFFFF0000;
-      if (-1 < prevLink && DAT_0064b1ca[unitType * 0x14] === 0x01) {
-        local_8 = local_8 + 1;
-      }
-      break;
-    }
-    case 5:
-      if (DAT_0064b1c1[unitType * 0x14] === 0x02) {
-        local_8 = local_8 + 1;
-      }
-      break;
-    case 6:
-      if (DAT_0064b1c1[unitType * 0x14] === 0x02) {
-        local_8 = local_8 + s8(DAT_0064b1c9[unitType * 0x14]);
-      }
-      else if (DAT_0064b1c1[unitType * 0x14] === 0x00) {
-        local_8 = local_8 + -1;
-      }
-      break;
-    case 7:
-      if (DAT_0064b1c1[unitType * 0x14] === 0x01 &&
-          0x01 < s8(DAT_0064b1c3[unitType * 0x14])) {
-        local_8 = local_8 + 1;
-      }
-      break;
-    case 8:
-      if ((DAT_0064b1bd[unitType * 0x14] & 0x10) !== 0) {
-        local_8 = local_8 + 1;
-      }
-      break;
-    case 9:
-      if ((DAT_0064b1bc[unitType * 0x14] & 0x80) !== 0) {
-        local_8 = local_8 + 1;
-      }
-      break;
-    case 10:
-      if ((DAT_0064b1bc[unitType * 0x14] & 8) !== 0) {
-        local_8 = local_8 + 1;
-      }
-      break;
+      case 0: local_8 += s8(DAT_0064b1bc[unitType * 0x14 + 0x0C]); break;
+      case 1: local_8 += s8(DAT_0064b1bc[unitType * 0x14 + 9]); break;
+      case 2: case 0xb: local_8++; break;
+      case 3: local_8 += s8(DAT_0064b1bc[unitType * 0x14 + 8]); break;
+      case 4:
+        if (rs(DAT_006560f0, param_1 * 0x20 + 0x16) >= 0 && DAT_0064b1bc[unitType * 0x14 + 0x0E] === 0x01) local_8++;
+        break;
+      case 5:
+        if (DAT_0064b1bc[unitType * 0x14 + 5] === 0x02) local_8++;
+        break;
+      case 6:
+        if (DAT_0064b1bc[unitType * 0x14 + 5] === 0x02) local_8 += s8(DAT_0064b1bc[unitType * 0x14 + 0x0D]);
+        else if (DAT_0064b1bc[unitType * 0x14 + 5] === 0x00) local_8 += -1;
+        break;
+      case 7:
+        if (DAT_0064b1bc[unitType * 0x14 + 5] === 0x01 && s8(DAT_0064b1bc[unitType * 0x14 + 7]) > 1) local_8++;
+        break;
+      case 8:
+        if ((DAT_0064b1bc[unitType * 0x14 + 1] & 0x10) !== 0) local_8++;
+        break;
+      case 9:
+        if ((DAT_0064b1bc[unitType * 0x14] & 0x80) !== 0) local_8++;
+        break;
+      case 10:
+        if ((DAT_0064b1bc[unitType * 0x14] & 8) !== 0) local_8++;
+        break;
     }
     if (param_2 === 0xb) {
-      let nextLink = s8(DAT_00656108[param_1 * 0x20]) | (DAT_00656108[param_1 * 0x20 + 1] << 8);
-      if (nextLink & 0x8000) nextLink |= 0xFFFF0000;
-      param_1 = nextLink;
-    }
-    else {
+      param_1 = rs(DAT_006560f0, param_1 * 0x20 + 0x18);
+    } else {
       param_1 = FUN_005b2c82(param_1);
     }
   }
@@ -1369,17 +1361,12 @@ export function FUN_005b50ad(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b53b6 — count_units_of_role_in_stack (GL)
-// Source: block_005B0000.c line 2092
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b53b6(param_1, param_2) {
-  let local_8;
-
-  local_8 = 0;
+  let local_8 = 0;
   for (param_1 = FUN_005b2d39(param_1); -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
-    if (s8(DAT_0064b1ca[u8(DAT_006560f6[param_1 * 0x20]) * 0x14]) === param_2) {
-      local_8 = local_8 + 1;
-    }
+    if (s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0E]) === param_2) local_8++;
   }
   return local_8;
 }
@@ -1387,137 +1374,306 @@ export function FUN_005b53b6(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b542e — stack_ship (GL)
-// Source: block_005B0000.c line 2113
+// Very complex — loads units onto ships with goto orders
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b542e(param_1, param_2, param_3) {
-  // Very complex function: loads units onto ships from a stack
-  // Contains goto/labeled block pattern. Stubbed.
-  return 0;
+  let iVar3, iVar4, iVar5;
+  let uVar6;
+  let bVar1, bVar9;
+  let local_3c;
+  let local_38;
+  let local_30;
+  let local_28;
+  let local_18;
+  let local_10 = 0;
+  let iVar7;
+  let cVar2;
+
+  if (param_1 < -1 || 0x801 < param_1) {
+    FUN_005dae6b(7, 'ship > -1 && ship < MAX_UNITS + 2', 'Unit.cpp', 0x61d);
+  }
+  DAT_006ad8f8 = 1;
+  if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+    if (param_2 !== 0) FUN_005b3b78(param_1, 0);
+    local_30 = FUN_005b2d39(param_1);
+    if (local_30 === param_1) local_30 = FUN_005b2c82(param_1);
+
+    iVar3 = rs(DAT_006560f0, param_1 * 0x20);
+    iVar4 = rs(DAT_006560f0, param_1 * 0x20 + 2);
+    iVar5 = FUN_004087c0(iVar3, iVar4);
+    if (iVar5 !== 0) local_10 = FUN_005b89e4(iVar3, iVar4) ? 1 : 0;
+
+    if (param_2 === 0) {
+      for (local_38 = local_30; -1 < local_38; local_38 = FUN_005b2c82(local_38)) {
+        let flags = ru(DAT_006560f0, local_38 * 0x20 + 4);
+        ws(DAT_006560f0, local_38 * 0x20 + 4, flags & 0xefff);
+      }
+    } else {
+      let ownerCiv = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+      let offCoord = (ownerCiv * 5 + 5) * -0x28;
+      FUN_005b36df(param_1, offCoord, offCoord, 0);
+    }
+
+    let unitType = u8(DAT_006560f0[param_1 * 0x20 + 6]);
+    local_28 = s8(DAT_0064b1bc[unitType * 0x14 + 0x0D]);
+    uVar6 = DAT_0064b1bc[unitType * 0x14] & 0x80;
+    bVar1 = false;
+    if (local_28 === 0 && uVar6 === 0 && (DAT_0064b1bc[unitType * 0x14] & 8) !== 0) bVar1 = true;
+    if (uVar6 !== 0 || bVar1) local_28 = 0x14;
+    if (DAT_006560f0[param_1 * 0x20 + 7] === 0) local_28 = 0x14;
+
+    local_18 = 0;
+    while (true) {
+      let domain;
+      if (uVar6 !== 0 || bVar1) {
+        local_3c = 1;
+      } else {
+        local_3c = 2;
+      }
+      if (local_3c <= local_18 || (local_38 = local_30, iVar7 = local_38, local_28 === 0)) break;
+
+      // Inner loop over units in stack
+      while (true) {
+        local_38 = iVar7;
+        if (local_38 < 0 || local_28 === 0) break;
+        iVar7 = FUN_005b2c82(local_38);
+        bVar9 = false;
+
+        let expectedDomain;
+        if (uVar6 !== 0 || bVar1) {
+          expectedDomain = 0x01;
+        } else {
+          expectedDomain = 0x00;
+        }
+
+        let unitDomain = DAT_0064b1bc[u8(DAT_006560f0[local_38 * 0x20 + 6]) * 0x14 + 5];
+        if (unitDomain === expectedDomain) {
+          // Check eligibility based on pass (local_18)
+          if (bVar1 && (DAT_0064b1bc[u8(DAT_006560f0[local_38 * 0x20 + 6]) * 0x14 + 1] & 0x10) === 0) {
+            // Not eligible — skip
+          } else if (local_18 === 0) {
+            if (uVar6 !== 0 || bVar1) {
+              bVar9 = true;
+            } else if (DAT_006560f0[local_38 * 0x20 + 0x0F] === 0x03 &&
+                       rs(DAT_006560f0, local_38 * 0x20 + 0x12) === param_1) {
+              bVar9 = true;
+            }
+          } else if (local_18 === 1) {
+            if ((DAT_00655b0b & (1 << (DAT_006560f0[local_38 * 0x20 + 7] & 0x1f))) === 0) {
+              bVar9 = true;
+            } else if (local_10 !== 0) {
+              bVar9 = true;
+            }
+          }
+        }
+
+        if (param_2 === 0 && (ru(DAT_006560f0, local_38 * 0x20 + 4) & 0x1000) !== 0) {
+          bVar9 = false;
+        }
+
+        if (bVar9) {
+          if (local_30 === local_38) local_30 = iVar7;
+          if (uVar6 !== 0 || bVar1) {
+            if (DAT_006560f0[local_38 * 0x20 + 0x0F] !== 0x03) {
+              DAT_006560f0[local_38 * 0x20 + 0x0F] = 0xff;
+            }
+          } else {
+            FUN_005b2f50(local_38);
+            ws(DAT_006560f0, local_38 * 0x20 + 0x12, param_1 & 0xFFFF);
+          }
+          if (param_2 === 0) {
+            let flags = ru(DAT_006560f0, local_38 * 0x20 + 4);
+            ws(DAT_006560f0, local_38 * 0x20 + 4, flags | 0x1000);
+          } else {
+            let ownerCiv = s8(DAT_006560f0[local_38 * 0x20 + 7]);
+            let offCoord = (ownerCiv * 5 + 5) * -0x28;
+            FUN_005b36df(local_38, offCoord, offCoord, 0);
+          }
+          local_28--;
+        }
+      }
+      local_18++;
+    }
+
+    if (2 < DAT_00655b02 && param_3 !== 0) {
+      FUN_004b0b53(0xff, 2, 0, 0, 0);
+      XD_FlushSendBuffer(5000);
+    }
+    DAT_006ad8f8 = 0;
+  } else {
+    DAT_006ad8f8 = 0;
+    DAT_006c9108 = -2;
+    FUN_0046b14d(0x49, 0, param_1, param_2, 0, 0, 0, 0, 0, 0);
+    local_28 = DAT_006c9108;
+  }
+  return local_28;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b5bab — stack_unit (GL)
-// Source: block_005B0000.c line 2302
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b5bab(param_1, param_2) {
-  // Stacks a unit onto a ship or into sentry
-  // Stubbed
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005b5d93 — delete_unit_safely (GL)
-// Source: block_005B0000.c line 2353
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005b5d93(param_1, param_2) {
-  // Deletes unit, unloading cargo first if needed
-  // Stubbed
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005b6042 — delete_unit_visible (GL)
-// Source: block_005B0000.c line 2425
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005b6042(param_1, param_2) {
-  // Deletes unit and updates tile visibility
-  // Stubbed
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005b620a — unload_all_ships_in_stack (GL)
-// Source: block_005B0000.c line 2475
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005b620a(param_1, param_2) {
-  // Unloads all ships and returns max capacity
-  // Stubbed
-  return 0;
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005b62ee — set_order_for_stack (GL)
-// Source: block_005B0000.c line 2507
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005b62ee(param_1, param_2) {
-  for (param_1 = FUN_005b2d39(param_1); -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
-    DAT_006560ff[param_1 * 0x20] = param_2;
+  if (-1 < param_1) {
+    DAT_006ad8fc = 1;
+    if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+      if (DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5] === 0x02) {
+        FUN_005b542e(param_1, 1, 0);
+      } else {
+        let ownerCiv = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+        let offCoord = (ownerCiv * 5 + 5) * -0x28;
+        FUN_005b36df(param_1, offCoord, offCoord, 0);
+      }
+      if (2 < DAT_00655b02 && param_2 !== 0) {
+        FUN_004b0b53(0xff, 2, 0, 0, 0);
+        XD_FlushSendBuffer(5000);
+      }
+      DAT_006ad8fc = 0;
+    } else {
+      DAT_006ad8fc = 0;
+      DAT_006c9110 = -2;
+      FUN_0046b14d(0x4b, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
+    }
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b633f — is_unit_needs_orders (GL)
-// Source: block_005B0000.c line 2523
+// FUN_005b5d93 — delete_safely (GL)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005b633f(param_1) {
-  let iVar1;
-  let local_8;
+export function FUN_005b5d93(param_1, param_2) {
+  let iVar2;
+  let bVar4 = false;
 
-  local_8 = 0;
-  if (-1 < param_1 && param_1 < DAT_00655b16) {
-    let serial = DAT_0065610a[param_1 * 0x20] | (DAT_0065610a[param_1 * 0x20 + 1] << 8) |
-                 (DAT_0065610a[param_1 * 0x20 + 2] << 16) | (DAT_0065610a[param_1 * 0x20 + 3] << 24);
-    if (serial !== 0) {
-      let ux = s8(DAT_006560f0[param_1 * 0x20]) | (DAT_006560f0[param_1 * 0x20 + 1] << 8);
-      if (ux & 0x8000) ux |= 0xFFFF0000;
-      let uy = s8(DAT_006560f2[param_1 * 0x20]) | (DAT_006560f2[param_1 * 0x20 + 1] << 8);
-      if (uy & 0x8000) uy |= 0xFFFF0000;
-      iVar1 = FUN_004087c0(ux, uy);
-      if (iVar1 !== 0) {
-        if (s8(DAT_006560f7[param_1 * 0x20]) === DAT_00655b05 &&
-            DAT_006560ff[param_1 * 0x20] !== 0x03 &&
-            DAT_006560ff[param_1 * 0x20] !== 0x02) {
-          iVar1 = FUN_005b2c3d(param_1);
-          let flags = (DAT_006560f4[param_1 * 0x20]) | (DAT_006560f4[param_1 * 0x20 + 1] << 8);
-          if (iVar1 !== 0 && (flags & 2) === 0) {
-            local_8 = 1;
-          }
-          else {
-            local_8 = 0;
-          }
+  DAT_006ad900 = 1;
+  if (2 < DAT_00655b02 && FUN_00421f40() === 0) {
+    DAT_006ad900 = 0;
+    DAT_006c9118 = -2;
+    FUN_0046b14d(0x4d, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
+    return;
+  }
+
+  let local_10 = rs(DAT_006560f0, param_1 * 0x20);
+  let local_14 = rs(DAT_006560f0, param_1 * 0x20 + 2);
+
+  if (DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5] === 0x02) {
+    iVar2 = FUN_004087c0(local_10, local_14);
+    if (iVar2 === 0) {
+      let ownerCiv = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+      if (-local_10 === (ownerCiv * 5 + 5) * 0x28) {
+        FUN_005b47fa(param_1, 0);
+        // goto cleanup
+        if (2 < DAT_00655b02 && param_2 !== 0) {
+          FUN_004b0b53(0xff, 2, 0, 0, 0);
+          XD_FlushSendBuffer(5000);
         }
-        else {
-          local_8 = 0;
-        }
+        DAT_006ad900 = 0;
+        return;
       }
+      bVar4 = true;
+    } else {
+      iVar2 = FUN_005b89e4(local_10, local_14);
+      bVar4 = iVar2 !== 0;
     }
+  }
+
+  if (bVar4) {
+    FUN_005b542e(param_1, 0, 0);
+    FUN_005b47fa(param_1, 0);
+    FUN_0047cea6(-1, local_10, local_14);
+  } else {
+    FUN_005b4391(param_1, 0);
+  }
+
+  if (2 < DAT_00655b02 && param_2 !== 0) {
+    FUN_004b0b53(0xff, 2, 0, 0, 0);
+    XD_FlushSendBuffer(5000);
+  }
+  DAT_006ad900 = 0;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// FUN_005b6042 — delete_visible (GL)
+// ═══════════════════════════════════════════════════════════════════
+
+export function FUN_005b6042(param_1, param_2) {
+  DAT_006ad904 = 1;
+  if (DAT_00655b02 < 3 || FUN_00421f40() !== 0) {
+    let iVar2 = rs(DAT_006560f0, param_1 * 0x20);
+    let iVar3 = rs(DAT_006560f0, param_1 * 0x20 + 2);
+    FUN_005b5d93(param_1, 0);
+    let iVar4 = FUN_004087c0(iVar2, iVar3);
+    if (iVar4 !== 0) {
+      FUN_0047cea6(iVar2, iVar3);
+    }
+    if (2 < DAT_00655b02 && param_2 !== 0) {
+      FUN_004b0b53(0xff, 2, 0, 0, 0);
+      FUN_0046b14d(0x72, 0xff, iVar2, iVar3, 0, 0, 0, 0, 0, 0);
+    }
+    DAT_006ad904 = 0;
+  } else {
+    DAT_006ad904 = 0;
+    DAT_006c9120 = -2;
+    FUN_0046b14d(0x4f, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// FUN_005b620a — embark_all_ships (GL)
+// ═══════════════════════════════════════════════════════════════════
+
+export function FUN_005b620a(param_1, param_2) {
+  let iVar1;
+  let local_10;
+  let local_8 = 0;
+
+  FUN_005b3b78(param_1, 0);
+  for (local_10 = FUN_005b2d39(param_1); -1 < local_10; local_10 = FUN_005b2c82(local_10)) {
+    if (DAT_0064b1bc[u8(DAT_006560f0[local_10 * 0x20 + 6]) * 0x14 + 5] === 0x02) {
+      iVar1 = FUN_005b542e(local_10, 0, 0);
+      if (local_8 < iVar1) local_8 = iVar1;
+    }
+  }
+  if (2 < DAT_00655b02 && param_2 !== 0) {
+    FUN_004b0b53(0xff, 2, 0, 0, 0);
+    XD_FlushSendBuffer(5000);
   }
   return local_8;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6458 — is_unit_can_move (GL)
-// Source: block_005B0000.c line 2555
+// FUN_005b62ee — set_orders_for_stack (GL)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005b6458(param_1) {
-  let iVar1;
-  let local_8;
+export function FUN_005b62ee(param_1, param_2) {
+  for (param_1 = FUN_005b2d39(param_1); -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
+    DAT_006560f0[param_1 * 0x20 + 0x0F] = param_2;
+  }
+}
 
-  local_8 = 0;
-  if (-1 < param_1 && param_1 < DAT_00655b16) {
-    let serial = DAT_0065610a[param_1 * 0x20] | (DAT_0065610a[param_1 * 0x20 + 1] << 8) |
-                 (DAT_0065610a[param_1 * 0x20 + 2] << 16) | (DAT_0065610a[param_1 * 0x20 + 3] << 24);
-    if (serial !== 0) {
-      let ux = s8(DAT_006560f0[param_1 * 0x20]) | (DAT_006560f0[param_1 * 0x20 + 1] << 8);
-      if (ux & 0x8000) ux |= 0xFFFF0000;
-      if (-1 < ux) {
-        if (DAT_006560ff[param_1 * 0x20] === 0x03 ||
-           (iVar1 = FUN_005b2c3d(param_1), iVar1 === 0)) {
-          local_8 = 0;
-        }
-        else {
+
+// ═══════════════════════════════════════════════════════════════════
+// FUN_005b633f — is_unit_active_for_player (GL)
+// ═══════════════════════════════════════════════════════════════════
+
+export function FUN_005b633f(param_1) {
+  let iVar1;
+  let local_8 = 0;
+  if (-1 < param_1 && param_1 < DAT_00655b16 &&
+      ri(DAT_006560f0, param_1 * 0x20 + 0x1a) !== 0) {
+    iVar1 = FUN_004087c0(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2));
+    if (iVar1 !== 0) {
+      if (s8(DAT_006560f0[param_1 * 0x20 + 7]) === DAT_00655b05 &&
+          DAT_006560f0[param_1 * 0x20 + 0x0F] !== 0x03 &&
+          DAT_006560f0[param_1 * 0x20 + 0x0F] !== 0x02) {
+        iVar1 = FUN_005b2c3d(param_1);
+        if (iVar1 !== 0 && (ru(DAT_006560f0, param_1 * 0x20 + 4) & 2) === 0) {
           local_8 = 1;
         }
       }
@@ -1528,57 +1684,109 @@ export function FUN_005b6458(param_1) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6512 — find_next_active_unit (GL)
-// Source: block_005B0000.c line 2583
+// FUN_005b6458 — is_unit_movable (GL)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005b6512(param_1, param_2) {
-  // Complex: finds next unit needing orders, cycling through all units
-  // Stubbed
-  return -1;
+export function FUN_005b6458(param_1) {
+  let iVar1;
+  let local_8 = 0;
+  if (-1 < param_1 && param_1 < DAT_00655b16 &&
+      ri(DAT_006560f0, param_1 * 0x20 + 0x1a) !== 0 &&
+      rs(DAT_006560f0, param_1 * 0x20) >= 0) {
+    if (DAT_006560f0[param_1 * 0x20 + 0x0F] === 0x03) {
+      local_8 = 0;
+    } else {
+      iVar1 = FUN_005b2c3d(param_1);
+      local_8 = iVar1 === 0 ? 0 : 1;
+    }
+  }
+  return local_8;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6787 — refresh_unit_move_points (GL)
-// Source: block_005B0000.c line 2651
+// FUN_005b6512 — find_next_active_unit (GL)
+// ═══════════════════════════════════════════════════════════════════
+
+export function FUN_005b6512(param_1, param_2) {
+  let iVar1;
+  let local_20 = -1;
+  let local_1c;
+  let local_18;
+  let local_14;
+  let local_10;
+  let local_c = -1;
+  let local_8 = 9999;
+
+  local_18 = DAT_0064b1b4;
+  local_1c = DAT_0064b1b0;
+  if (-1 < param_1 && param_1 < DAT_00655b16 &&
+      ri(DAT_006560f0, param_1 * 0x20 + 0x1a) !== 0 && DAT_00655b05 !== 0) {
+    local_18 = rs(DAT_006560f0, param_1 * 0x20);
+    local_1c = rs(DAT_006560f0, param_1 * 0x20 + 2);
+    local_c = DAT_00655afe;
+  }
+
+  for (local_14 = 0; local_14 < 3; local_14++) {
+    if (-1 < local_20) break;
+    for (param_1 = 0; param_1 < DAT_00655b16; param_1++) {
+      if (ri(DAT_006560f0, param_1 * 0x20 + 0x1a) !== 0) {
+        iVar1 = FUN_005b633f(param_1);
+        if (iVar1 !== 0 && (ru(DAT_006560f0, param_1 * 0x20 + 4) & 0x4000) === 0) {
+          if (param_2 !== 1 || s8(DAT_006560f0[param_1 * 0x20 + 7]) === DAT_006d1da0) {
+            iVar1 = FUN_005ae31d(local_18, local_1c, rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2));
+            local_10 = iVar1 * 2 + 1;
+            if (DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5] !== 0x02) {
+              local_10 = iVar1 * 2;
+            }
+            if (local_10 < local_8) {
+              local_8 = local_10;
+              local_20 = param_1;
+            } else if (local_10 === local_8 && DAT_00655afe === param_1) {
+              local_20 = param_1;
+            }
+          }
+        }
+      }
+    }
+    if (-1 < local_20) break;
+    for (param_1 = 0; param_1 < DAT_00655b16; param_1++) {
+      if (ri(DAT_006560f0, param_1 * 0x20 + 0x1a) !== 0 && (local_14 !== 0 || param_1 !== local_c)) {
+        let flags = ru(DAT_006560f0, param_1 * 0x20 + 4);
+        ws(DAT_006560f0, param_1 * 0x20 + 4, flags & 0xbfff);
+      }
+    }
+  }
+  return local_20;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// FUN_005b6787 — reset_unit_moves_spent (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6787(param_1) {
-  let uVar1;
-
-  uVar1 = FUN_005b2a39(param_1);
-  DAT_006560f8[param_1 * 0x20] = uVar1;
+  DAT_006560f0[param_1 * 0x20 + 8] = FUN_005b2a39(param_1) & 0xFF;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b67af — find_nearest_unit (GL)
-// Source: block_005B0000.c line 2668
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b67af(param_1, param_2, param_3, param_4) {
   let iVar1;
   let local_10;
-  let local_c;
-
-  local_c = -1;
+  let local_c = -1;
   DAT_006ced50 = 9999;
-  for (local_10 = 0; local_10 < DAT_00655b16; local_10 = local_10 + 1) {
-    let serial = DAT_0065610a[local_10 * 0x20] | (DAT_0065610a[local_10 * 0x20 + 1] << 8) |
-                 (DAT_0065610a[local_10 * 0x20 + 2] << 16) | (DAT_0065610a[local_10 * 0x20 + 3] << 24);
-    if (serial !== 0) {
-      if ((param_3 < 0 || s8(DAT_006560f7[local_10 * 0x20]) === (param_3 & 0xff)) &&
-         local_10 !== param_4) {
-        let ux = s8(DAT_006560f0[local_10 * 0x20]) | (DAT_006560f0[local_10 * 0x20 + 1] << 8);
-        if (ux & 0x8000) ux |= 0xFFFF0000;
-        let uy = s8(DAT_006560f2[local_10 * 0x20]) | (DAT_006560f2[local_10 * 0x20 + 1] << 8);
-        if (uy & 0x8000) uy |= 0xFFFF0000;
-        iVar1 = FUN_005ae31d(param_1, param_2, ux, uy);
-        if (iVar1 <= DAT_006ced50) {
-          local_c = local_10;
-          DAT_006ced50 = iVar1;
-        }
+  for (local_10 = 0; local_10 < DAT_00655b16; local_10++) {
+    if (ri(DAT_006560f0, local_10 * 0x20 + 0x1a) !== 0 &&
+        (param_3 < 0 || s8(DAT_006560f0[local_10 * 0x20 + 7]) === (param_3 & 0xff)) &&
+        local_10 !== param_4) {
+      iVar1 = FUN_005ae31d(param_1, param_2, rs(DAT_006560f0, local_10 * 0x20), rs(DAT_006560f0, local_10 * 0x20 + 2));
+      if (iVar1 <= DAT_006ced50) {
+        local_c = local_10;
+        DAT_006ced50 = iVar1;
       }
     }
   }
@@ -1587,40 +1795,34 @@ export function FUN_005b67af(param_1, param_2, param_3, param_4) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6898 — get_unit_home_city_name (GL)
-// Source: block_005B0000.c line 2698
+// FUN_005b6898 — get_unit_home_city_name (MIXED)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6898(param_1) {
-  if (s8(DAT_00656100[param_1 * 0x20]) === -1) {
-    return FUN_00428b0c(DAT_00628420 + 0x38);
-  }
-  else {
-    return DAT_0064f360[u8(DAT_00656100[param_1 * 0x20]) * 0x58];
+  if (DAT_006560f0[param_1 * 0x20 + 0x10] === 0xFF) {
+    return 'NONE';
+  } else {
+    return u8(DAT_006560f0[param_1 * 0x20 + 0x10]);
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b6a58 — clear_unit_orders (GL)
-// Source: block_005B0000.c line 2760
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6a58(param_1) {
   if (-1 < param_1) {
-    DAT_006560ff[param_1 * 0x20] = 0xff;
-    let flags = (DAT_006560f4[param_1 * 0x20]) | (DAT_006560f4[param_1 * 0x20 + 1] << 8);
-    flags = flags & 0x7fff;
-    DAT_006560f4[param_1 * 0x20] = flags & 0xff;
-    DAT_006560f4[param_1 * 0x20 + 1] = (flags >> 8) & 0xff;
+    DAT_006560f0[param_1 * 0x20 + 0x0F] = 0xff;
+    let flags = ru(DAT_006560f0, param_1 * 0x20 + 4);
+    ws(DAT_006560f0, param_1 * 0x20 + 4, flags & 0x7fff);
   }
   return 0;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6aa0 — always_returns_one (FW)
-// Source: block_005B0000.c line 2778
+// FUN_005b6aa0 — always_returns_1 (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6aa0() {
@@ -1629,8 +1831,7 @@ export function FUN_005b6aa0() {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6ab5 — draw_unit_name_text (UI)
-// Source: block_005B0000.c line 2791
+// FUN_005b6ab5 — draw_unit_name (UI)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6ab5(param_1, param_2, param_3, param_4, param_5, param_6) {
@@ -1639,18 +1840,16 @@ export function FUN_005b6ab5(param_1, param_2, param_3, param_4, param_5, param_
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6aea — show_unit_list_popup (UI)
-// Source: block_005B0000.c line 2806
+// FUN_005b6aea — show_unit_list_dialog (UI)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6aea(param_1, param_2, param_3) {
-  // UI popup for unit list — stubbed
+  // UI dialog — stubbed
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6d9f — close_text_popup (UI)
-// Source: block_005B0000.c line 2889
+// FUN_005b6d9f — cleanup_unit_dialog_1 (FW)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6d9f() {
@@ -1659,8 +1858,7 @@ export function FUN_005b6d9f() {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6dab — cleanup_dialog (FW)
-// Source: block_005B0000.c line 2903
+// FUN_005b6dab — cleanup_unit_dialog_2 (FW)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6dab() {
@@ -1669,78 +1867,74 @@ export function FUN_005b6dab() {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b6dbe — seh_restore_3 (FW)
-// Source: block_005B0000.c line 2917
+// FUN_005b6dbe — seh_restore (FW)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6dbe() {
-  // SEH chain restore — no-op
+  // SEH restore — no-op
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b7fe0 — allocate_map_data (GL)
-// Source: block_005B0000.c line 2934
+// FUN_005b7fe0 — allocate_map_tiles (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b7fe0() {
-  // Allocates all map tile data arrays
-  // Heavy Win32 memory allocation — stubbed
+  // Map memory allocation — uses OS memory functions
+  // In JS, tile data is managed via mem.js initMapTiles
+  // Stubbed — map allocation handled by engine init
+  DAT_006d116a = (DAT_006d1160 + 3) >> 2;
+  DAT_006d116c = (DAT_006d1162 + 3) >> 2;
+  DAT_006d1164 = (DAT_006d1160 / 2) * DAT_006d1162;
+  DAT_006365f0 = 1;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8416 — free_map_data (GL)
-// Source: block_005B0000.c line 3032
+// FUN_005b8416 — deallocate_map_tiles (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8416() {
-  // Frees all map tile data arrays
-  // Win32 memory deallocation — stubbed
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005b85fe — init_resource_seed (GL)
-// Source: block_005B0000.c line 3091
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005b85fe() {
-  let uVar1;
-
-  uVar1 = FUN_00421bb0();
-  DAT_006d1168 = uVar1 & 0x7fff;
-  if (DAT_006d1168 === 0) {
-    DAT_006d1168 = 1;
+  if (DAT_006365f0 !== 0) {
+    // Free map memory — no-op in JS (GC handles it)
+    DAT_006365f0 = 0;
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
+// FUN_005b85fe — generate_resource_seed (GL)
+// ═══════════════════════════════════════════════════════════════════
+
+export function FUN_005b85fe() {
+  let uVar1 = FUN_00421bb0();
+  DAT_006d1168 = uVar1 & 0x7fff;
+  if (DAT_006d1168 === 0) DAT_006d1168 = 1;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
 // FUN_005b8635 — save_map_data (GL)
-// Source: block_005B0000.c line 3111
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8635(param_1, param_2) {
-  // File I/O: writes map data to save file — stubbed
+  // File I/O — stubbed (save handled by engine)
   return 0;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b8783 — load_map_data (GL)
-// Source: block_005B0000.c line 3154
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8783(param_1, param_2) {
-  // File I/O: reads map data from save file — stubbed
+  // File I/O — stubbed (load handled by engine)
   return 0;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b898b — get_vis_layer_offset (GL)
-// Source: block_005B0000.c line 3232
+// FUN_005b898b — get_visibility_offset (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b898b(param_1, param_2, param_3) {
@@ -1749,30 +1943,24 @@ export function FUN_005b898b(param_1, param_2, param_3) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8a81 — get_tile_city_id (GL)
-// Source: block_005B0000.c line 3305
+// FUN_005b8a81 — get_tile_continent_id (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8a81(param_1, param_2) {
-  let iVar1;
-
-  iVar1 = FUN_005b8931(param_1, param_2);
-  // Return byte at offset +3 in tile data
-  return 0; // stub — needs tile data array access
+  // Returns tile byte[3] (continent ID)
+  // In JS, tile data is accessed via FUN_005b8931 offset + tileRead
+  // Simplified — returns 0 (full implementation needs tileRead from mem.js)
+  return 0;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8aa8 — get_city_id_if_not_ocean (GL)
-// Source: block_005B0000.c line 3321
+// FUN_005b8aa8 — get_continent_for_land_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8aa8(param_1, param_2) {
-  let iVar1;
-  let local_8;
-
-  local_8 = 0xffffffff;
-  iVar1 = FUN_005b89e4(param_1, param_2);
+  let local_8 = -1;
+  let iVar1 = FUN_005b89e4(param_1, param_2);
   if (iVar1 === 0) {
     local_8 = FUN_005b8a81(param_1, param_2);
   }
@@ -1781,60 +1969,47 @@ export function FUN_005b8aa8(param_1, param_2) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8af0 — get_tile_improvements_high (GL)
-// Source: block_005B0000.c line 3342
+// FUN_005b8af0 — get_tile_river_group (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8af0(param_1, param_2) {
-  let iVar1;
-
-  iVar1 = FUN_005b8931(param_1, param_2);
-  // Return (byte at offset +2) >> 5
-  return 0; // stub
+  // Returns bits 7-5 of tile byte[2] (river/continent group)
+  // Simplified — returns 0
+  return 0;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8b1a — update_visibility_for_civ (GL)
-// Source: block_005B0000.c line 3358
+// FUN_005b8b1a — update_visibility_for_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8b1a(param_1, param_2, param_3) {
   if (param_3 !== 0) {
-    let iVar1 = FUN_005b8931(param_1, param_2);
-    FUN_005b9d81(param_1, param_2, 0); // stub — needs tile byte read
+    FUN_005b9d81(param_1, param_2, FUN_005b94d5(param_1, param_2), 0, 1, 0);
   }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8b65 — is_tile_visible_to_civ (GL)
-// Source: block_005B0000.c line 3377
+// FUN_005b8b65 — check_tile_visibility (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8b65(param_1, param_2, param_3) {
-  if (param_3 < 0) {
-    return 1;
-  }
-  else {
-    let iVar2 = FUN_005b8931(param_1, param_2);
-    // return (byte at offset +4) & (1 << param_3)
-    return 0; // stub
-  }
+  if (param_3 < 0) return 1;
+  // Read byte[4] from tile and check bit
+  return 0; // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b8bac — set_tile_visibility (GL)
-// Source: block_005B0000.c line 3400
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8bac(param_1, param_2, param_3, param_4) {
   if (-1 < param_3) {
     if (param_4 === 0) {
       FUN_005b976d(param_1, param_2, 1 << (param_3 & 0x1f), 0, 1);
-    }
-    else {
+    } else {
       FUN_005b976d(param_1, param_2, 1 << (param_3 & 0x1f), 1, 1);
     }
   }
@@ -1842,114 +2017,79 @@ export function FUN_005b8bac(param_1, param_2, param_3, param_4) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8c18 — get_tile_river_mask (GL)
-// Source: block_005B0000.c line 3421
+// FUN_005b8c18 — get_tile_owner_low_nibble (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8c18(param_1, param_2) {
-  let iVar1;
-
-  iVar1 = FUN_005b8931(param_1, param_2);
-  // return (byte at offset +5) & 0xf
-  return 0; // stub
+  // Returns byte[5] & 0x0F from tile
+  return 0; // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8c42 — get_tile_combined_improvement (GL)
-// Source: block_005B0000.c line 3437
+// FUN_005b8c42 — get_tile_effective_owner (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8c42(param_1, param_2) {
-  let local_8;
-
-  local_8 = FUN_005b8af0(param_1, param_2);
+  let local_8 = FUN_005b8af0(param_1, param_2);
   if (local_8 === 0) {
     local_8 = FUN_005b8c18(param_1, param_2);
-    if (local_8 !== 0 && local_8 < 9) {
-      local_8 = 8;
-    }
+    if (local_8 !== 0 && local_8 < 9) local_8 = 8;
   }
   return local_8;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8d15 — get_tile_fortress_owner (GL)
-// Source: block_005B0000.c line 3487
+// FUN_005b8d15 — find_fortress_owner (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8d15(param_1, param_2) {
-  let bVar1;
-  let uVar2;
-
-  bVar1 = FUN_005b94d5(param_1, param_2);
+  let bVar1 = FUN_005b94d5(param_1, param_2);
   if ((bVar1 & 0x42) === 0x42) {
-    uVar2 = FUN_005b8a1d(param_1, param_2);
+    return FUN_005b8a1d(param_1, param_2);
   }
-  else {
-    uVar2 = 0xffffffff;
-  }
-  return uVar2;
+  return -1;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8d62 — get_tile_unit_owner (GL)
-// Source: block_005B0000.c line 3510
+// FUN_005b8d62 — get_unit_owner_at_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8d62(param_1, param_2) {
-  let uVar1;
-  let uVar2;
-
-  uVar1 = FUN_005b94d5(param_1, param_2);
+  let uVar1 = FUN_005b94d5(param_1, param_2);
   if ((uVar1 & 1) === 0) {
-    uVar2 = 0xffffffff;
+    return -1;
   }
-  else {
-    uVar2 = FUN_005b8a1d(param_1, param_2);
-  }
-  return uVar2;
+  return FUN_005b8a1d(param_1, param_2);
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8da4 — get_tile_owner (GL)
-// Source: block_005B0000.c line 3533
+// FUN_005b8da4 — get_owner_at_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8da4(param_1, param_2) {
-  let iVar1;
-
-  iVar1 = FUN_005b8ca6(param_1, param_2);
-  if (iVar1 < 0) {
-    iVar1 = FUN_005b8d62(param_1, param_2);
-  }
+  let iVar1 = FUN_005b8ca6(param_1, param_2);
+  if (iVar1 < 0) iVar1 = FUN_005b8d62(param_1, param_2);
   return iVar1;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8dec — get_zone_of_control_owner (GL)
-// Source: block_005B0000.c line 3552
+// FUN_005b8dec — check_tile_diplomacy (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8dec(param_1, param_2, param_3) {
-  let iVar1;
-
-  iVar1 = FUN_004087c0(param_1, param_2);
+  let iVar1 = FUN_004087c0(param_1, param_2);
   if (iVar1 !== 0 && 0 < param_3) {
     iVar1 = FUN_005b89e4(param_1, param_2);
     if (iVar1 === 0) {
       iVar1 = FUN_005b8af0(param_1, param_2);
       if (0 < iVar1 && iVar1 !== param_3) {
-        if ((DAT_0064c6c0[param_3 * 0x594 + iVar1 * 4] & 8) !== 0) {
-          return -1;
-        }
-        if ((DAT_0064c6c0[param_3 * 0x594 + iVar1 * 4] & 4) !== 0) {
-          return iVar1;
-        }
+        if ((DAT_0064c6c0[param_3 * 0x594 + iVar1 * 4] & 8) !== 0) return -1;
+        if ((DAT_0064c6c0[param_3 * 0x594 + iVar1 * 4] & 4) !== 0) return iVar1;
       }
     }
   }
@@ -1958,50 +2098,36 @@ export function FUN_005b8dec(param_1, param_2, param_3) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8ffa — has_hut_on_tile (GL)
-// Source: block_005B0000.c line 3627
+// FUN_005b8ffa — check_hut_at_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8ffa(param_1, param_2) {
-  let iVar1;
-
-  iVar1 = FUN_004087c0(param_1, param_2);
-  if (iVar1 === 0) {
-    return 0;
-  }
+  let iVar1 = FUN_004087c0(param_1, param_2);
+  if (iVar1 === 0) return 0;
   iVar1 = FUN_005b89e4(param_1, param_2);
-  if (iVar1 === 0) {
-    iVar1 = FUN_005b8a1d(param_1, param_2);
-    if (iVar1 < 0) {
-      let uVar3 = param_1 - ((param_1 + param_2) >> 1);
-      if (((param_1 + param_2) >> 1 & 3) + (uVar3 & 3) * 4 ===
-          (((param_1 + param_2) >> 3) * 0xb + (uVar3 >> 2) * 0xd + DAT_006d1168 + 8 & 0x1f)) {
-        return 1;
-      }
-      return 0;
-    }
-    return 0;
+  if (iVar1 !== 0) return 0;
+  iVar1 = FUN_005b8a1d(param_1, param_2);
+  if (iVar1 >= 0) return 0;
+  let uVar3 = param_1 - ((param_1 + param_2) >> 1);
+  if (((param_1 + param_2) >> 1 & 3) + (uVar3 & 3) * 4 ===
+      (((param_1 + param_2) >> 3) * 0xb + (uVar3 >> 2) * 0xd + DAT_006d1168 + 8 & 0x1f)) {
+    return 1;
   }
   return 0;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b90df — reveal_tile_and_neighbors (GL)
-// Source: block_005B0000.c line 3671
+// FUN_005b90df — add_pollution_to_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b90df(param_1, param_2) {
-  let iVar1;
-  let uVar2;
-  let local_8;
-
-  iVar1 = FUN_004087c0(param_1, param_2);
+  let iVar1 = FUN_004087c0(param_1, param_2);
   if (iVar1 !== 0) {
-    uVar2 = FUN_005b94d5(param_1, param_2);
+    let uVar2 = FUN_005b94d5(param_1, param_2);
     if ((uVar2 & 0x80) === 0) {
       FUN_005b94fc(param_1, param_2, 0x80, 1, 1);
-      for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
+      for (let local_8 = 1; local_8 < 8; local_8++) {
         FUN_005b8b1a(param_1, param_2, local_8);
       }
       DAT_00655b12 = DAT_00655b12 + 1;
@@ -2011,148 +2137,157 @@ export function FUN_005b90df(param_1, param_2) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b9179 — nuke_tile (GL)
-// Source: block_005B0000.c line 3696
+// FUN_005b9179 — global_warming_effect (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9179(param_1, param_2) {
-  // Nuclear detonation effects on tile and neighbors
-  // Stubbed — very complex with random terrain changes
+  // Complex global warming terrain modification
+  // Simplified stub — full implementation requires rand() and full tile data access
+  let iVar2 = FUN_004087c0(param_1, param_2);
+  if (iVar2 !== 0) {
+    FUN_005b9ec6();
+    // Process 9 neighboring tiles (8 directions + center)
+    for (let local_8 = 0; local_8 < 9; local_8++) {
+      let uVar3 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
+      iVar2 = s8(DAT_00628360[local_8]) + param_2;
+      let iVar4 = FUN_004087c0(uVar3, iVar2);
+      if (iVar4 !== 0) {
+        let cityIdx = FUN_0043cf76(uVar3, iVar2);
+        if (cityIdx < 0) {
+          let isOcean = FUN_005b89e4(uVar3, iVar2);
+          if (isOcean === 0) {
+            // Randomly damage terrain improvements
+            // Full implementation uses _rand() — simplified
+          }
+        } else {
+          // Reduce city size
+          DAT_0064f340[cityIdx * 0x58 + 9] =
+            DAT_0064f340[cityIdx * 0x58 + 9] - (s8(DAT_0064f340[cityIdx * 0x58 + 9]) >> 1);
+          FUN_0047ce1e(uVar3, iVar2, 0, DAT_006d1da0, 1);
+        }
+      }
+    }
+    FUN_005b9f1c();
+  }
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b9431 — has_tech_bit (GL)
-// Source: block_005B0000.c line 3778
+// FUN_005b9431 — check_tech_known_for_city (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9431(param_1, param_2) {
   let local_c = 0;
   let local_8 = 0;
-  FUN_005ae3bf(param_2, { val: local_c }, { val: local_8 });
-  return (local_8 & DAT_00666137[local_c + param_1 * 0x10]) !== 0;
+  FUN_005ae3bf(param_2, local_c, local_8);
+  // Simplified — full version checks DAT_00666137
+  return false;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b947f — count_techs_known (GL)
-// Source: block_005B0000.c line 3795
+// FUN_005b947f — count_cities_with_tech (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b947f(param_1) {
-  let iVar1;
-  let local_8;
-
-  local_8 = 0;
-  for (let local_c = 1; local_c < 0x3f; local_c = local_c + 1) {
-    iVar1 = FUN_005b9431(local_c, param_1);
-    if (iVar1 !== 0) {
-      local_8 = local_8 + 1;
-    }
+  let local_8 = 0;
+  for (let local_c = 1; local_c < 0x3f; local_c++) {
+    let iVar1 = FUN_005b9431(local_c, param_1);
+    if (iVar1 !== 0) local_8++;
   }
   return local_8;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b94fc — set_tile_status_bit (GL)
-// Source: block_005B0000.c line 3835
+// FUN_005b94fc — set_tile_improvement_bits (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b94fc(param_1, param_2, param_3, param_4, param_5) {
-  // Sets/clears bits in tile status byte (+1), with multiplayer sync
-  // Stubbed
+  // Sets/clears bits in tile byte[1] (improvements)
+  // Full implementation requires direct tile data access
+  // Simplified — network sync omitted
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b9646 — set_tile_terrain_type (GL)
-// Source: block_005B0000.c line 3872
+// FUN_005b9646 — set_tile_terrain (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9646(param_1, param_2, param_3, param_4) {
-  // Sets terrain type in tile byte 0, with multiplayer sync
-  // Stubbed
+  // Sets terrain type in tile byte[0] low nibble
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b976d — set_tile_vis_bit (GL)
-// Source: block_005B0000.c line 3905
+// FUN_005b976d — set_tile_visibility_bits (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b976d(param_1, param_2, param_3, param_4, param_5) {
-  // Sets/clears bits in tile vis byte (+4), with multiplayer sync
-  // Stubbed
+  // Sets/clears bits in tile byte[4] (visibility)
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b98b7 — set_tile_river_bits (GL)
-// Source: block_005B0000.c line 3942
+// FUN_005b98b7 — set_tile_owner_low_nibble (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b98b7(param_1, param_2, param_3, param_4) {
-  // Sets river/resource bits in tile byte +5 low nibble
-  // Stubbed
+  // Sets low nibble of tile byte[5]
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b99e8 — set_tile_owner (GL)
-// Source: block_005B0000.c line 3975
+// FUN_005b99e8 — set_tile_owner_high_nibble (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b99e8(param_1, param_2, param_3, param_4) {
-  // Sets tile owner in byte +5 high nibble
-  // Stubbed
+  // Sets high nibble of tile byte[5]
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b9b35 — set_tile_city_id (GL)
-// Source: block_005B0000.c line 4011
+// FUN_005b9b35 — set_tile_continent (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9b35(param_1, param_2, param_3, param_4) {
-  // Sets city ID in tile byte +3
-  // Stubbed
+  // Sets tile byte[3] (continent ID)
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b9c49 — set_tile_improvements (GL)
-// Source: block_005B0000.c line 4043
+// FUN_005b9c49 — set_tile_river_group (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9c49(param_1, param_2, param_3, param_4) {
-  // Sets improvement bits in tile byte +2 high 3 bits
-  // Stubbed
+  // Sets bits 7-5 of tile byte[2]
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b9d81 — set_vis_layer_byte (GL)
-// Source: block_005B0000.c line 4076
+// FUN_005b9d81 — set_vis_layer_data (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9d81(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Sets a byte in vis layer array
-  // Stubbed
+  // Sets data in visibility layer arrays
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b9ec6 — begin_map_batch_update (GL)
-// Source: block_005B0000.c line 4116
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9ec6() {
   if (2 < DAT_00655b02) {
     DAT_006ad699 = 0;
     DAT_006ad69a = 1;
-    // memset batch buffer
-    DAT_006d1190 = 0;
     DAT_006365f4 = 1;
   }
 }
@@ -2160,7 +2295,6 @@ export function FUN_005b9ec6() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005b9f1c — end_map_batch_update (GL)
-// Source: block_005B0000.c line 4136
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9f1c() {
@@ -2171,11 +2305,9 @@ export function FUN_005b9f1c() {
       if (1 < DAT_006365f4) {
         FUN_0046b14d(0x59, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         XD_FlushSendBuffer(5000);
-        DAT_006d1190 = 0;
         DAT_006365f4 = 1;
       }
-    }
-    else {
+    } else {
       FUN_004b0b53(0xff, 2, 0, 0, 0);
       XD_FlushSendBuffer(5000);
     }
@@ -2184,377 +2316,142 @@ export function FUN_005b9f1c() {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b9fde — queue_map_batch_change (GL)
-// Source: block_005B0000.c line 4170
+// FUN_005b9fde — queue_map_batch_entry (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9fde(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Queues tile changes into batch buffer for multiplayer sync
-  // Stubbed
+  // Queues a batched map update for network sync
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005ba206 — apply_map_batch_update (GL)
-// Source: block_005B0000.c line 4233
+// FUN_005ba206 — apply_map_batch (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005ba206(param_1) {
-  // Applies queued map changes from batch buffer
-  // Stubbed
+  // Applies batched map updates received from network
+  // Simplified
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005bad40 — parse_binary_string (FW)
-// Source: block_005B0000.c line 4298
+// FUN_005bad40 — parse_binary_string (GL)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005bad40(param_1) {
-  // Parses a binary string (0s and 1s) into an integer
-  // Stubbed
-  return 0;
+  let local_8 = 0;
+  for (let i = 0; i < param_1.length; i++) {
+    let c = param_1.charCodeAt(i);
+    let upper = c >= 0x61 && c <= 0x7a ? c - 0x20 : c;
+    if (upper === 0x30 || upper === 0x31) {
+      local_8 = local_8 * 2 + upper - 0x30;
+    } else {
+      break;
+    }
+  }
+  return local_8;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005badf0 — build_file_path (FW)
-// Source: block_005B0000.c line 4328
+// FUN_005badf0 — build_path (FW)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005badf0(param_1, param_2, param_3) {
-  // Builds file path with directory separator
-  // Stubbed
-  return param_1;
+  // Builds a file path from directory + filename
+  return param_2 + '\\' + param_3;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005baeb0 — set_text_render_self (UI)
-// Source: block_005B0000.c line 4353
+// FUN_005baeb0 — set_text_render_target (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005baeb0(param_1) {
-  DAT_006366a8 = param_1;
-}
+export function FUN_005baeb0(param_1) { DAT_006366a8 = param_1; }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005baec8 — set_text_render_dest (UI)
-// Source: block_005B0000.c line 4367
+// FUN_005baec8 — set_text_render_psheet (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005baec8(param_1) {
-  DAT_006366ac = param_1;
-}
+export function FUN_005baec8(param_1) { DAT_006366ac = param_1; }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005baee0 — set_text_render_colors (UI)
-// Source: block_005B0000.c line 4381
+// FUN_005baee0 — set_text_render_params (UI)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005baee0(param_1, param_2, param_3, param_4) {
   DAT_006366b0 = param_1;
   DAT_006366b4 = param_2;
-  if (-1 < param_3) {
-    DAT_006366b8 = param_3;
-  }
-  if (-1 < param_4) {
-    DAT_006366bc = param_4;
-  }
+  if (-1 < param_3) DAT_006366b8 = param_3;
+  if (-1 < param_4) DAT_006366bc = param_4;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005baf24 — set_text_bold (UI)
-// Source: block_005B0000.c line 4402
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005baf24(param_1) {
-  DAT_006366c0 = (param_1 !== 0) ? 1 : 0;
+  DAT_006366c0 = param_1 !== 0 ? 1 : 0;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005baf57 — draw_text_with_shadow (UI)
-// Source: block_005B0000.c line 4416
+// FUN_005baf57 — draw_text (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005baf57(param_1, param_2, param_3, param_4) {
-  // UI text rendering with shadow — stubbed
-  return param_3;
-}
+export function FUN_005baf57(param_1, param_2, param_3, param_4) { return param_3; /* UI — stubbed */ }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005bb024 — draw_text_centered (UI)
-// Source: block_005B0000.c line 4444
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb024(param_1, param_2, param_3, param_4, param_5) {
-  // UI centered text — stubbed
-  return 0;
-}
+export function FUN_005bb024(param_1, param_2, param_3, param_4, param_5) { return 0; /* UI — stubbed */ }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005bb0af — draw_text_right_aligned (UI)
-// Source: block_005B0000.c line 4470
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb0af(param_1, param_2, param_3, param_4, param_5) {
-  // UI right-aligned text — stubbed
-  return param_3;
-}
+export function FUN_005bb0af(param_1, param_2, param_3, param_4, param_5) { return param_3; /* UI — stubbed */ }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005bb3f0 — create_port_with_blit (UI)
-// Source: block_005B0000.c line 4496
+// Remaining functions: UI/GDI/Window management — all stubbed
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb3f0(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // UI: create offscreen port — stubbed
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb463 — create_port_with_blit_and_pal (UI)
-// Source: block_005B0000.c line 4518
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb463(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  FUN_005bb3f0(param_1, param_2, param_3, param_4, param_5, param_6, param_7);
-  FUN_00579b40(param_8);
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb4ae — create_port_with_blit_2 (UI)
-// Source: block_005B0000.c line 4534
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb4ae(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // UI port creation — stubbed
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb525 — create_port_with_blit_2_and_pal (UI)
-// Source: block_005B0000.c line 4556
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb525(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
-  FUN_005bb4ae(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8);
-  FUN_00579b40(param_9);
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb574 — refresh_window (UI)
-// Source: block_005B0000.c line 4573
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb574() {
-  // UI window refresh — stubbed
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb5be — handle_scroll_input (UI)
-// Source: block_005B0000.c line 4596
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb5be(param_1) {
-  // UI scroll handler — stubbed
-  return false;
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb621 — resize_window (UI/Win32)
-// Source: block_005B0000.c line 4619
-// ═══════════════════════════════════════════════════════════════════
-
+export function FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7) { /* UI — stubbed */ }
+export function FUN_005bb463(p1, p2, p3, p4, p5, p6, p7, p8) { /* UI — stubbed */ }
+export function FUN_005bb4ae(p1, p2, p3, p4, p5, p6, p7, p8) { /* UI — stubbed */ }
+export function FUN_005bb525(p1, p2, p3, p4, p5, p6, p7, p8, p9) { /* UI — stubbed */ }
+export function FUN_005bb574() { /* UI — stubbed */ }
+export function FUN_005bb5be(param_1) { return false; /* UI — stubbed */ }
 export function FUN_005bb621(param_1, param_2) { /* Win32 UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb6c7 — clamp_scroll_position (UI)
-// Source: block_005B0000.c line 4654
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bb6c7(param_1, param_2) { /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb760 — create_map_port (UI)
-// Source: block_005B0000.c line 4687
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb760(param_1, param_2, param_3, param_4, param_5, param_6) { /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb7c3 — create_map_port_with_pal (UI)
-// Source: block_005B0000.c line 4708
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb7c3(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  FUN_005bb760(param_1, param_2, param_3, param_4, param_5, param_6);
-  FUN_00579b40(param_7);
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb80a — create_map_port_2 (UI)
-// Source: block_005B0000.c line 4724
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb80a(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb871 — create_map_port_2_with_pal (UI)
-// Source: block_005B0000.c line 4745
-// ═══════════════════════════════════════════════════════════════════
-
-export function FUN_005bb871(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  FUN_005bb80a(param_1, param_2, param_3, param_4, param_5, param_6, param_7);
-  FUN_00579b40(param_8);
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb8c0 — get_viewport_ptr (UI)
-// Source: block_005B0000.c line 4761
-// ═══════════════════════════════════════════════════════════════════
-
+export function FUN_005bb760(p1, p2, p3, p4, p5, p6) { /* UI — stubbed */ }
+export function FUN_005bb7c3(p1, p2, p3, p4, p5, p6, p7) { /* UI — stubbed */ }
+export function FUN_005bb80a(p1, p2, p3, p4, p5, p6, p7) { /* UI — stubbed */ }
+export function FUN_005bb871(p1, p2, p3, p4, p5, p6, p7, p8) { /* UI — stubbed */ }
 export function FUN_005bb8c0() { return 0; /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb8e0 — set_scroll_pos (UI)
-// Source: block_005B0000.c line 4776
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bb8e0(param_1, param_2) { /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb910 — get_scroll_min (UI)
-// Source: block_005B0000.c line 4792
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bb910(param_1, param_2) { /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb950 — get_scroll_max (UI)
-// Source: block_005B0000.c line 4809
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bb950(param_1, param_2) { /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb990 — call_repaint_callback (UI)
-// Source: block_005B0000.c line 4826
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bb990() { /* UI — stubbed */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bb9c0 — flush_mouse_and_keyboard_messages (UI/Win32)
-// Source: block_005B0000.c line 4844
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bb9c0() { /* Win32 PeekMessage — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bba1d — flush_all_messages (UI/Win32)
-// Source: block_005B0000.c line 4866
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bba1d() { /* Win32 PeekMessage — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// gdi_BA4F — process_one_message (UI/Win32)
-// Source: block_005B0000.c line 4885
-// ═══════════════════════════════════════════════════════════════════
-
 export function gdi_BA4F() { return 0; /* Win32 message pump — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// gdi_BAB8 — process_paint_message (UI/Win32)
-// Source: block_005B0000.c line 4915
-// ═══════════════════════════════════════════════════════════════════
-
 export function gdi_BAB8() { return false; /* Win32 — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bbb0a — flush_all_and_gdi_flush (UI/Win32)
-// Source: block_005B0000.c line 4936
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bbb0a() { /* Win32 — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bbb32 — flush_paint_and_gdi_flush (UI/Win32)
-// Source: block_005B0000.c line 4955
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bbb32() { /* Win32 — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bbb5a — launch_external_program (UI/Win32)
-// Source: block_005B0000.c line 4974
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bbb5a(param_1) { /* WinExec — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// gdi_BB76 — process_timer_message (UI/Win32)
-// Source: block_005B0000.c line 4988
-// ═══════════════════════════════════════════════════════════════════
-
 export function gdi_BB76() { return false; /* Win32 — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bbbce — flush_timer_messages (UI/Win32)
-// Source: block_005B0000.c line 5009
-// ═══════════════════════════════════════════════════════════════════
-
 export function FUN_005bbbce() { /* Win32 — no-op */ }
-
-
-// ═══════════════════════════════════════════════════════════════════
-// create_window_BC10 — create game window (UI/Win32)
-// Source: block_005B0000.c line 5030
-// ═══════════════════════════════════════════════════════════════════
-
-export function create_window_BC10(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  return null; // Win32 CreateWindowExA — no-op
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005bbfee — enable_window (UI/Win32)
-// Source: block_005B0000.c line 5203
-// ═══════════════════════════════════════════════════════════════════
-
+export function create_window_BC10(p1, p2, p3, p4, p5, p6, p7) { return null; /* Win32 CreateWindow — no-op */ }
 export function FUN_005bbfee(param_1, param_2) { /* EnableWindow — no-op */ }
-
 export function FUN_005bc019(param_1, param_2) { /* SetWindowLong — no-op */ }
 export function FUN_005bc032(param_1) { return 0; /* IsWindowVisible — no-op */ }
 export function send_msg_C07E(param_1) { /* SendMessage WM_CLOSE — no-op */ }
@@ -2563,7 +2460,7 @@ export function FUN_005bc173() { /* window stack iteration — no-op */ }
 export function FUN_005bc1b5(param_1) { /* push window stack — no-op */ }
 export function FUN_005bc1db(param_1) { /* pop window stack — no-op */ }
 export function update_palette_C280(param_1, param_2) { /* palette update — no-op */ }
-export function invalidate_C35E(param_1, param_2, param_3, param_4) { /* brush creation — no-op */ }
+export function invalidate_C35E(p1, p2, p3, p4) { /* brush creation — no-op */ }
 export function FUN_005bc3bf(param_1, param_2) { /* set field +0x24 — no-op */ }
 export function FUN_005bc3d8(param_1, param_2) { /* set field +0x28 — no-op */ }
 export function FUN_005bc3f1(param_1, param_2) { /* set field +0x2c — no-op */ }
@@ -2587,8 +2484,8 @@ export function FUN_005bc9a3(param_1, param_2) { /* GetWindowRect — no-op */ }
 export function FUN_005bc9d3(param_1) { return 0; /* get window border width — no-op */ }
 export function FUN_005bca3d(param_1) { return 0; /* get window border height — no-op */ }
 export function FUN_005bcaa7(param_1) { /* get screen rect — no-op */ }
-export function FUN_005bcad7(param_1, param_2, param_3, param_4, param_5) { /* ClientToScreen — no-op */ }
-export function FUN_005bcb26(param_1, param_2, param_3, param_4, param_5) { /* MapWindowPoints — no-op */ }
+export function FUN_005bcad7(p1, p2, p3, p4, p5) { /* ClientToScreen — no-op */ }
+export function FUN_005bcb26(p1, p2, p3, p4, p5) { /* MapWindowPoints — no-op */ }
 export function FUN_005bcb85(param_1, param_2) { /* GetWindowRect + MapWindowPoints — no-op */ }
 export function update_palette_CC11(p1, p2, p3, p4, p5, p6, p7, p8) { /* BitBlt — no-op */ }
 export function blit_CC8D(p1, p2, p3, p4, p5, p6, p7, p8) { /* BitBlt — no-op */ }
@@ -2612,7 +2509,7 @@ export function FUN_005bd14c(param_1, param_2) { /* disable parent window — no
 export function FUN_005bd1c5(param_1, param_2) { /* enable parent window — no-op */ }
 export function FUN_005bd248(param_1, param_2) { /* set field +0x38 — no-op */ }
 export function FUN_005bd270(param_1, param_2) { /* set field +0x3c — no-op */ }
-export function FUN_005bd298(param_1, param_2, param_3, param_4) { return 0; /* wait for mouse click — no-op */ }
+export function FUN_005bd298(p1, p2, p3, p4) { return 0; /* wait for mouse click — no-op */ }
 export function gdi_D39E(param_1) { return 0; /* check key state — no-op */ }
 export function FUN_005bd48f(param_1, param_2, param_3) { /* GetCursorPos — no-op */ }
 export function FUN_005bd4cd() { return false; /* GetAsyncKeyState LMB — no-op */ }
@@ -2624,27 +2521,27 @@ export function FUN_005bd610() { return 0; /* get vtable ptr — no-op */ }
 export function FUN_005bd630() { return null; /* port vtable init — no-op */ }
 export function FUN_005bd65c(param_1, param_2) { /* set port rect — no-op */ }
 export function FUN_005bd696(param_1) { return 1; /* port allocate DIB — no-op */ }
-export function FUN_005bd7db(param_1, param_2, param_3, param_4) { /* load CvPic image — no-op */ }
+export function FUN_005bd7db(p1, p2, p3, p4) { /* load CvPic image — no-op */ }
 export function FUN_005bd813(param_1) { /* port init fields — no-op */ }
 export function FUN_005bd915() { /* port destructor — no-op */ }
-export function FUN_005bd987(param_1, param_2, param_3, param_4) { return 0; /* load LBM image — no-op */ }
-export function FUN_005bdf7f(param_1, param_2, param_3, param_4, param_5) { /* decode image row — no-op */ }
-export function FUN_005be1b3(param_1, param_2, param_3, param_4) { /* decode planar row — no-op */ }
-export function FUN_005be2c4(param_1, param_2, param_3, param_4) { return 0; /* load TGA resource — no-op */ }
-export function FUN_005be595(param_1, param_2, param_3, param_4) { /* load TGA file — no-op */ }
+export function FUN_005bd987(p1, p2, p3, p4) { return 0; /* load LBM image — no-op */ }
+export function FUN_005bdf7f(p1, p2, p3, p4, p5) { /* decode image row — no-op */ }
+export function FUN_005be1b3(p1, p2, p3, p4) { /* decode planar row — no-op */ }
+export function FUN_005be2c4(p1, p2, p3, p4) { return 0; /* load TGA resource — no-op */ }
+export function FUN_005be595(p1, p2, p3, p4) { /* load TGA file — no-op */ }
 export function FUN_005be940() { FUN_005d7c6e(); }
 export function FUN_005be956() { /* SEH restore — no-op */ }
-export function FUN_005be967(param_1, param_2, param_3, param_4) { return 0; /* load PCX resource — no-op */ }
-export function FUN_005bec8c(param_1, param_2, param_3, param_4) { /* load PCX file — no-op */ }
+export function FUN_005be967(p1, p2, p3, p4) { return 0; /* load PCX resource — no-op */ }
+export function FUN_005bec8c(p1, p2, p3, p4) { /* load PCX file — no-op */ }
 export function FUN_005bf04a() { FUN_005d7c6e(); }
 export function FUN_005bf060() { /* SEH restore — no-op */ }
-export function FUN_005bf071(param_1, param_2, param_3, param_4) { /* load GIF file — no-op */ }
+export function FUN_005bf071(p1, p2, p3, p4) { /* load GIF file — no-op */ }
 export function FUN_005bf5ba() { FUN_005d7c6e(); }
 export function FUN_005bf5d0() { /* SEH restore — no-op */ }
-export function FUN_005bf5e1(param_1, param_2, param_3, param_4) { return 0; /* load GIF resource — no-op */ }
-export function FUN_005bf930(param_1, param_2, param_3, param_4) { return 0; /* load CvPic resource — no-op */ }
-export function FUN_005bfad9(param_1, param_2, param_3, param_4) { return 0; /* load BMP resource — no-op */ }
-export function FUN_005bfcff(param_1, param_2, param_3, param_4) { /* load BMP file — no-op */ }
+export function FUN_005bf5e1(p1, p2, p3, p4) { return 0; /* load GIF resource — no-op */ }
+export function FUN_005bf930(p1, p2, p3, p4) { return 0; /* load CvPic resource — no-op */ }
+export function FUN_005bfad9(p1, p2, p3, p4) { return 0; /* load BMP resource — no-op */ }
+export function FUN_005bfcff(p1, p2, p3, p4) { /* load BMP file — no-op */ }
 export function FUN_005c000d() { FUN_005d7c6e(); }
 export function FUN_005c0023() { /* SEH restore — no-op */ }
 
@@ -2652,117 +2549,43 @@ export function FUN_005c0023() { /* SEH restore — no-op */ }
 // ═══════════════════════════════════════════════════════════════════
 // EXTERNAL FUNCTION STUBS
 //
-// Functions called from this block but defined in other blocks.
-// Stubbed as no-ops or simple returns.
+// Functions called from other blocks that are not yet transpiled.
+// These are no-ops or return sensible defaults.
 // ═══════════════════════════════════════════════════════════════════
 
-function FUN_00418d60() { return 0; } // MFC dialog — get selected radio
-function FUN_0043c5f0() { /* UI callback */ }
-function FUN_0040f380() { /* UI callback */ }
-function FUN_005af4ae() { return 0; } // editor check state
-function FUN_005af343() { /* editor update */ }
-function FUN_005af682() { /* editor refresh */ }
-function FUN_00418d90(v) { /* MFC set radio selection */ }
-function FUN_0059d3c9(v) { /* set active window */ }
-function FUN_004190d0(a, b) { /* MFC show text */ }
-function FUN_00418770() { return 0; } // MFC get HWND
-function SetFocus(h) { /* Win32 — no-op */ }
-function FUN_00417fa0() { /* MFC begin wait cursor */ }
-function FUN_004183d0() { /* MFC end wait cursor */ }
-function FUN_005dae6b(a, b, c, d) { /* assert/error handler */ }
-function FUN_005d2279(fmt, ...args) { /* debug_log printf */ }
-function debug_log(s) { /* debug log */ }
-function FUN_004bd9f0(a, b) { return 0; } // has_wonder
-function FUN_00453e51(a, b) { return 0; } // has_tech_advance
-function FUN_005ae31d(a, b, c, d) { return 9999; } // map_distance
-function FUN_005ae3bf(a, b, c) { /* decode tech index to byte/bit */ }
-function FUN_004b0b53(a, b, c, d, e) { /* sync unit data */ }
-function XD_FlushSendBuffer(t) { /* network flush */ }
-function FUN_0046b14d(a, b, c, d, e, f, g, h, i, j) { /* send network message */ }
-function FUN_00421f40() { return 1; } // is_server
-function FUN_00421bb0() { return Date.now() & 0xFFFF; } // GetTickCount
-function FUN_0047e94e(a, b) { /* pump messages while waiting */ }
-function FUN_00410030(a, b, c) { /* show error dialog */ }
-function FUN_00428b0c(v) { return 0; } // load string resource
-function FUN_0043cf76(a, b) { return -1; } // find city at xy
-function FUN_0043d07a(a, b, c, d, e) { return -1; } // find city near xy
-function FUN_004274a6(a, b) { /* unit sprite update */ }
-function FUN_00490530(a, b, c) { /* tutorial event */ }
-function FUN_0047cea6(a, b) { /* refresh tile display */ }
-function FUN_0047ce1e(a, b, c, d, e) { /* update city display */ }
-function FUN_005c656b() { /* cleanup resources */ }
-function FUN_005cde4d() { /* cleanup dialog */ }
-function FUN_005bb574_ext() { /* refresh window */ }
-function FUN_005c64da() { /* init resources */ }
-function FUN_005bd630_ext() { return 0; } // port init
-function FUN_005d268e(v) { /* property sheet init */ }
-function FUN_005d25a8(v) { /* property sheet setup */ }
-function FUN_005d2550(v) { /* property sheet config */ }
-function FUN_005d2568(a, b, c) { /* property sheet config */ }
-function FUN_005d2590(v) { /* property sheet config */ }
-function FUN_005bf071_ext(a, b, c, d) { /* load GIF */ }
-function FUN_005b9fde_ext(a, b, c, d, e, f) { /* queue batch change */ }
-function FUN_005ba206_ext(v) { /* apply batch */ }
-function FUN_0059df8a() { /* close text popup */ }
-function FUN_0056baff(a, b, c, d, e, f, g) { /* draw text string */ }
-function FUN_00579b40(v) { /* apply palette */ }
-function FUN_005c5760(a, b, c, d, e, f, g) { /* create port */ }
-function FUN_005bd65c_ext(a, b) { /* set port size */ }
-function FUN_005c0cc5(v) { /* finalize port */ }
-function FUN_005e1880(a, b) { /* port set title */ }
-function FUN_005c57f9(a, b, c, d, e, f, g, h) { /* create port variant */ }
-function FUN_005c589a(a, b, c, d, e, f) { /* create map port */ }
-function FUN_005c1b0d(a, b) { /* map port size */ }
-function FUN_005c592b(a, b, c, d, e, f, g) { /* create map port variant */ }
-function FUN_005c0105(v) { return 0; } // check scroll
-function FUN_005bb8e0_ext(a, b) { /* set scroll position */ }
-function FUN_005bb910_ext(a, b) { /* get scroll min */ }
-function FUN_005bb950_ext(a, b) { /* get scroll max */ }
-function FUN_005bc505_ext(a, b, c) { /* resize window */ }
-function FUN_005bc9d3_ext(v) { return 0; } // window border
-function FUN_005bca3d_ext(v) { return 0; } // window border
-function FUN_005c019d(v) { return 1; } // port allocate
-function FUN_005c019d_ext(v) { return 1; }
-function FUN_005c01c1() { /* port finalize */ }
-function FUN_005c02e0() { /* port cleanup */ }
-function FUN_005c54f0() { return 0; } // port check
-function FUN_005c5410(v) { return v; } // byte swap short
-function FUN_005c5430(v) { return v; } // byte swap long
-function FUN_005c5470() { return 0; } // get file data ptr
-function FUN_005c54a0() { /* close file */ }
-function FUN_005c54d0(v) { return v; } // byte swap ushort
-function FUN_005c5520(v) { /* free resource */ }
-function FUN_005c5540(a, b) { return 0; } // find resource
-function FUN_005c5560(v) { return 0; } // lock resource
-function FUN_005c5580(v) { /* unlock resource */ }
-function FUN_005c55a0(v) { return v; } // align to 4 bytes
-function FUN_005c6b93(a, b, c, d) { /* set palette entry */ }
-function FUN_005c6da8(a, b, c) { /* load palette range */ }
-function FUN_005c19ad(v) { /* set font color */ }
-function FUN_005c0f57(a, b, c, d, e) { /* draw text at position */ }
-function FUN_005c19d3(a, b) { return 0; } // get scanline ptr
-function FUN_005d7c00() { /* file open */ }
-function FUN_005d7c6e() { /* file close */ }
-function Realloc(v) { return 0; } // file load
-function FUN_005db2f8(v) { return 0; } // find bitmap resource
-function FUN_005db5e9(v) { return 0; } // get resource size
-function FUN_005dced3(a, b, c) { /* memcpy */ }
-function FUN_005dce4f(v) { return 0; } // malloc
-function FUN_005dcdf9(v) { return 0; } // lock memory
-function FUN_005dce29(v) { return 0; } // unlock memory
-function FUN_005dce96(v) { /* free memory */ }
-function FUN_005e388f(v) { return 0; } // release DIB
-function FUN_005e392a(v) { return 0; } // get DIB pitch
-function FUN_005e395a(v) { return 0; } // is DIB bottom-up
-function FUN_005e3988(v) { /* flip DIB */ }
-function FUN_005e4d60(a, b, c, d, e, f, g) { /* LZW decode GIF */ }
-function FUN_005e1c70() { /* idle handler */ }
-function FUN_005d237d(fmt, ...args) { /* debug log printf */ }
-function FUN_005f22d0(a, b) { /* strcpy */ }
-function FUN_005f22e0(a, b) { /* strcat */ }
-function FUN_005c0d12(v) { /* set port clip */ }
-function FUN_005bb990_ext() { /* repaint callback */ }
-function thunk_citywin_C494(a, b, c) { /* city window refresh */ }
-function thunk_citywin_C679(v) { /* city window update */ }
-function thunk_kill_civ(a, b) { /* eliminate civilization */ }
-function FUN_005b8a81_ext(a, b) { return 0; }
+function FUN_00418d60() { return 0; }
+function FUN_0043c5f0() {}
+function FUN_0040f380() {}
+function FUN_005af4ae() { return 0; }
+function FUN_00418d90(a) {}
+function FUN_005af343() {}
+function FUN_005af682() {}
+function FUN_0059d3c9(a) {}
+function FUN_004190d0(a, b) {}
+function FUN_00418770() { return 0; }
+function SetFocus(a) {}
+function FUN_00417fa0() {}
+function FUN_004183d0() {}
+function FUN_005c656b() {}
+function FUN_005dae6b(a, b, c, d) {}
+function FUN_005d2279(a, b) {}
+function FUN_004bd9f0(a, b) { return 0; }
+function FUN_00453e51(a, b) { return 0; }
+function FUN_00421f40() { return 1; }  // Return 1 = "is server"
+function FUN_004b0b53(a, b, c, d, e) {}
+function XD_FlushSendBuffer(a) {}
+function FUN_0046b14d(a, b, c, d, e, f, g, h, i, j) {}
+function FUN_00421bb0() { return Date.now(); }
+function FUN_0047e94e(a, b) {}
+function FUN_004274a6(a, b) {}
+function FUN_0043d07a(a, b, c, d, e) { return -1; }
+function FUN_005ae31d(a, b, c, d) { return Math.abs(a - c) + Math.abs(b - d); }
+function FUN_005ae3bf(a, b, c) {}
+function FUN_0043cf76(a, b) { return -1; }
+function FUN_0047cea6(a, b, c) {}
+function FUN_0047ce1e(a, b, c, d, e) {}
+function FUN_0056baff(a, b, c, d, e, f, g) {}
+function FUN_0059df8a() {}
+function FUN_005cde4d() {}
+function FUN_005d7c6e() {}
+function debug_log(a) {}
