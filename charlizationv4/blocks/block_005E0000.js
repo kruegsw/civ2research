@@ -48,11 +48,11 @@ import { FUN_005c54d0, FUN_005c5520, FUN_005c5540, FUN_005c5560, FUN_005c5580, F
 import { FUN_005c55d0, FUN_005c5640, FUN_005c5660, FUN_005c56a0, FUN_005c5740, FUN_005c5c86 } from './block_005C0000.js';
 import { FUN_005c5e60, FUN_005c5e80, FUN_005c5ec0, FUN_005c5ee0, FUN_005c61b0, FUN_005c63af } from './block_005C0000.js';
 import { FUN_005c64da, FUN_005c656b, FUN_005c6b63, FUN_005c6b93, FUN_005c6da8, FUN_005cac22 } from './block_005C0000.js';
-import { FUN_005cbdd0 } from './block_005C0000.js';
+import { FUN_005cbdd0, gdi_D149 } from './block_005C0000.js';
 import { FUN_005d2279, FUN_005d268e, FUN_005d4167, FUN_005d52a2, FUN_005d5643, FUN_005d57b1 } from './block_005D0000.js';
 import { FUN_005d5b88, FUN_005d5d11, FUN_005d5f91, FUN_005d6c99, FUN_005d8236, FUN_005dab5a } from './block_005D0000.js';
 import { FUN_005dabe5, FUN_005dac39, FUN_005dae6b, FUN_005db2f8, FUN_005dcdf9, FUN_005dce29 } from './block_005D0000.js';
-import { FUN_005dce4f, FUN_005dce96, FUN_005dfa4d } from './block_005D0000.js';
+import { FUN_005dce4f, FUN_005dce96, FUN_005dfa4d, debug_log } from './block_005D0000.js';
 import { FUN_005f01ad, FUN_005f029e, FUN_005f0391, FUN_005f04c0, FUN_005f0520 } from './block_005F0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
 
@@ -1815,9 +1815,7 @@ function measure_text_858E(font, str) { return 0; }
 function gdi_847F(font) { return 0; }
 function gdi_8514(font) { return 0; }
 function create_window_931B() { return 0; }
-function debug_log(msg) {}
 function fill_rect_BE88() { return 0; }
-function gdi_D149() {}
 function FUN_005eb447_deviation_win32() { return 0; }
 function FUN_005eed76_deviation_win32() { return 0; }
 function FUN_005eedec_deviation_win32() { return 0; }

@@ -16,7 +16,8 @@ const blockFiles = fs.readdirSync(blocksDir)
 
 for (const file of blockFiles) {
   const src = fs.readFileSync(path.join(blocksDir, file), 'utf8');
-  const re = /^export function (FUN_[0-9a-fA-F]+)\s*\(/gm;
+  // Match both FUN_hex and Ghidra-named exports
+  const re = /^export function (\w+)\s*\(/gm;
   let m;
   while ((m = re.exec(src)) !== null) {
     registry.set(m[1], file);
@@ -27,7 +28,7 @@ console.log(`Registry: ${registry.size} exported functions across ${blockFiles.l
 // fn_utils functions (already imported — skip)
 const fnUtilsFns = new Set();
 const fnSrc = fs.readFileSync(fnUtilsPath, 'utf8');
-const fnRe = /^export function (FUN_[0-9a-fA-F]+)\s*\(/gm;
+const fnRe = /^export function (\w+)\s*\(/gm;
 let fm;
 while ((fm = fnRe.exec(fnSrc)) !== null) fnUtilsFns.add(fm[1]);
 
@@ -43,7 +44,12 @@ for (const file of blockFiles) {
   const stubLines = new Set();
 
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^function (FUN_[0-9a-fA-F]+)\s*\(/);
+    // Match FUN_hex stubs (any body) AND non-FUN_ stubs (only empty bodies)
+    let m = lines[i].match(/^function (FUN_[0-9a-fA-F]+)\s*\(/);
+    if (!m) {
+      // For non-FUN_ names, only wire if the stub body is empty: function name(...) {}
+      m = lines[i].match(/^function (\w+)\s*\([^)]*\)\s*\{\s*\}\s*$/);
+    }
     if (!m) continue;
     const fnName = m[1];
     if (fnUtilsFns.has(fnName)) continue;

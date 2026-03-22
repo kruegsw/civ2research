@@ -30,10 +30,10 @@ import { FUN_00410030, FUN_00410070, FUN_00414d70, FUN_00415133, FUN_00417ef0, F
 import { FUN_00417fa0, FUN_004183d0, FUN_00418bf0, FUN_00418c70, FUN_00418ce0, FUN_00418d60 } from './block_00410000.js';
 import { FUN_00418d90, FUN_00418dd0, FUN_004190d0, FUN_00419100, FUN_00419b80, FUN_00419ba0 } from './block_00410000.js';
 import { FUN_00419be0, FUN_00419c8b, FUN_0041e864 } from './block_00410000.js';
-import { FUN_0043c260, FUN_0043c3f0, FUN_0043c460, FUN_0043c4c0, FUN_0043c520, FUN_0043c5c0 } from './block_00430000.js';
-import { FUN_0043c5f0, FUN_0043c790, FUN_0043c7c0, FUN_0043c870, FUN_0043c8a0, FUN_0043c8d0 } from './block_00430000.js';
-import { FUN_0043c910, FUN_0043ca80, FUN_0043cab0, FUN_0043cb30, FUN_0043cc00, FUN_0043cf76 } from './block_00430000.js';
-import { FUN_0043d20a } from './block_00430000.js';
+import { CDaoFieldInfo_destructor, FUN_0043c260, FUN_0043c3f0, FUN_0043c460, FUN_0043c4c0, FUN_0043c520 } from './block_00430000.js';
+import { FUN_0043c5c0, FUN_0043c5f0, FUN_0043c790, FUN_0043c7c0, FUN_0043c870, FUN_0043c8a0 } from './block_00430000.js';
+import { FUN_0043c8d0, FUN_0043c910, FUN_0043ca80, FUN_0043cab0, FUN_0043cb30, FUN_0043cc00 } from './block_00430000.js';
+import { FUN_0043cf76, FUN_0043d20a } from './block_00430000.js';
 import { FUN_00445e46, FUN_00448f92 } from './block_00440000.js';
 import { FUN_00453e51, FUN_0045705e } from './block_00450000.js';
 import { FUN_004679ab, FUN_0046b14d, FUN_0046e020, FUN_0046e6a9 } from './block_00460000.js';
@@ -52,22 +52,24 @@ import { FUN_00548b70, FUN_00548c78 } from './block_00540000.js';
 import { FUN_00552112, FUN_00552ed2, FUN_00553379, FUN_005534bc, FUN_0055d8d8 } from './block_00550000.js';
 import { FUN_00566584, FUN_0056baff, FUN_0056d289 } from './block_00560000.js';
 import { FUN_00573e59 } from './block_00570000.js';
-import { FUN_0059baf0, FUN_0059c276, FUN_0059d3c9, FUN_0059db08, FUN_0059db65, FUN_0059df8a } from './block_00590000.js';
-import { FUN_0059dfb9, FUN_0059e0eb, FUN_0059e18b, FUN_0059e356, FUN_0059e585, FUN_0059e5c9 } from './block_00590000.js';
-import { FUN_0059e6a9, FUN_0059e6ff, FUN_0059ea99, FUN_0059ec88, FUN_0059edf0, FUN_0059fb78 } from './block_00590000.js';
-import { FUN_0059fc19, FUN_0059fd2a } from './block_00590000.js';
+import { CPropertySheet_EnableStackedTabs, FUN_0059baf0, FUN_0059c276, FUN_0059d3c9, FUN_0059db08, FUN_0059db65 } from './block_00590000.js';
+import { FUN_0059df8a, FUN_0059dfb9, FUN_0059e0eb, FUN_0059e18b, FUN_0059e356, FUN_0059e585 } from './block_00590000.js';
+import { FUN_0059e5c9, FUN_0059e6a9, FUN_0059e6ff, FUN_0059ea99, FUN_0059ec88, FUN_0059edf0 } from './block_00590000.js';
+import { FUN_0059fb78, FUN_0059fc19, FUN_0059fd2a } from './block_00590000.js';
 import { FUN_005a1c52, FUN_005a577e, FUN_005a5f34, FUN_005a632a, FUN_005a9abf, FUN_005a9afe } from './block_005A0000.js';
 import { FUN_005adfa0 } from './block_005A0000.js';
 import { FUN_005b2c82, FUN_005b2d39, FUN_005b2e69, FUN_005b496e, FUN_005b50ad, FUN_005b898b } from './block_005B0000.js';
 import { FUN_005b8b1a, FUN_005b8b65, FUN_005b8da4, FUN_005b976d, FUN_005b9d81, FUN_005b9ec6 } from './block_005B0000.js';
 import { FUN_005b9f1c, FUN_005baeb0, FUN_005baec8, FUN_005baee0, FUN_005bb024, FUN_005bb574 } from './block_005B0000.js';
-import { FUN_005bb9c0, FUN_005bd630, FUN_005bf071, FUN_005bf5e1 } from './block_005B0000.js';
+import { FUN_005bb9c0, FUN_005bd630, FUN_005bf071, FUN_005bf5e1, manage_window_C5DA } from './block_005B0000.js';
 import { FUN_005c5aeb, FUN_005c61b0, FUN_005c62ee, FUN_005c64da, FUN_005c656b, FUN_005cef31 } from './block_005C0000.js';
-import { FUN_005cef66 } from './block_005C0000.js';
+import { FUN_005cef66, ios_delbuf } from './block_005C0000.js';
 import { FUN_005d1f50, FUN_005d2004, FUN_005d2279, FUN_005d2550, FUN_005d2568, FUN_005d2590 } from './block_005D0000.js';
 import { FUN_005d25a8, FUN_005d268e, FUN_005d7c6e, FUN_005d8236, FUN_005d83d6, FUN_005d8476 } from './block_005D0000.js';
-import { FUN_005d8721, FUN_005dae6b, FUN_005db0d0 } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_00600000.js';
+import { FUN_005d8721, FUN_005dae6b, FUN_005db0d0, debug_log, invalidate_ABC7 } from './block_005D0000.js';
+import { operator_delete } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, __ltoa, __strupr, _atexit } from './block_00600000.js';
+import { _memset, _strncpy } from './block_00600000.js';
 
 let _DAT_006ad674 = 0;
 let _DAT_006cec80 = 0;
@@ -103,29 +105,19 @@ let s_DEBUG_006359dc = "DEBUG";
 // These are no-ops unless hooked up to actual implementations.
 // ═══════════════════════════════════════════════════════════════════
 
-function invalidate_ABC7(p1) {}
 function operator_new(size) { return new Uint8Array(size); }
-function operator_delete(p) {}
 function XD_OpenConnection(p1, p2) { return 0; }
 function XD_FlushSendBuffer(p1) {}
 function XD_CloseConnection() {}
 function XD_LobbySendMessage(p1) { return 0; }
-function debug_log() {}
 function _strlen(s) { return typeof s === 'string' ? s.length : 0; }
 function _strcmp(a, b) { return a === b ? 0 : 1; }
 function __strnicmp(a, b, n) { return 0; }
 function _strncmp(a, b, n) { return 0; }
 function _strchr(s, c) { return null; }
 function _atoi(s) { return 0; }
-function __ltoa(val, buf, radix) {}
-function __strupr(s) {}
 function __chdir(p) { return 0; }
-function _atexit(fn) {}
-function _memset(p, v, n) {}
-function _strncpy(dst, src, n) {}
 function GetSystemMetrics(p) { return 0; }
-function ios_delbuf(p1, p2) {}
-function CPropertySheet_EnableStackedTabs(p1, p2) {}
 function CRichEditDoc_InvalidateObjectCache(p1) {}
 
 // Thunk stubs — these all delegate to other functions
@@ -133,8 +125,6 @@ function FUN_0040bbb0_2() {}
 function FUN_00509590(p1) {}
 function FUN_00456e46(...args) {}
 function FUN_005cef66_stub(...args) {}
-function manage_window_C5DA(p1) {}
-function CDaoFieldInfo_destructor(p1) {}
 function Timevec_destructor(p1) { return 0; }
 function COleClientItem_GetActiveView(p1) { return 0; }
 

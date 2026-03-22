@@ -37,7 +37,8 @@ import { FUN_004d8af0 } from './block_004D0000.js';
 import { FUN_00511320 } from './block_00510000.js';
 import { FUN_00579b40 } from './block_00570000.js';
 import { FUN_005bb8c0, FUN_005bd14c, FUN_005bd1c5, FUN_005bd4cd, FUN_005bd630, FUN_005bd65c } from './block_005B0000.js';
-import { FUN_005bd696, FUN_005bd7db, FUN_005bd813, FUN_005bd915, FUN_005bf930 } from './block_005B0000.js';
+import { FUN_005bd696, FUN_005bd7db, FUN_005bd813, FUN_005bd915, FUN_005bf930, blit_CC8D } from './block_005B0000.js';
+import { stretch_blit_CD66, update_palette_CC11, update_palette_CCE2 } from './block_005B0000.js';
 import { FUN_005d056c, FUN_005d080d, FUN_005d0aac, FUN_005d0dbf, FUN_005d10cd, FUN_005d1372 } from './block_005D0000.js';
 import { FUN_005d1612, FUN_005d1b38, FUN_005d1cb0, FUN_005d1cd0, FUN_005d1ef0, FUN_005d1f20 } from './block_005D0000.js';
 import { FUN_005d2279, FUN_005d22b7, FUN_005d233f, FUN_005d4204, FUN_005d7c00, FUN_005d7c6e } from './block_005D0000.js';
@@ -45,12 +46,14 @@ import { FUN_005d89e8, FUN_005d8ab8, FUN_005dae6b, FUN_005db1e0, FUN_005db1fa, F
 import { FUN_005db531, FUN_005db54b, FUN_005db67b, FUN_005db704, FUN_005db893, FUN_005db923 } from './block_005D0000.js';
 import { FUN_005dcdf9, FUN_005dce29, FUN_005dce4f, FUN_005dce96, FUN_005dced3, FUN_005dcef7 } from './block_005D0000.js';
 import { FUN_005de984, FUN_005de9e0, FUN_005dea9e, FUN_005deadb, FUN_005deb12, FUN_005dec4e } from './block_005D0000.js';
-import { FUN_005dec8a, FUN_005decb1, FUN_005deced, FUN_005ded12 } from './block_005D0000.js';
+import { FUN_005dec8a, FUN_005decb1, FUN_005deced, FUN_005ded12, gdi_E780, invalidate_9A9A } from './block_005D0000.js';
+import { update_palette_EA62 } from './block_005D0000.js';
 import { FUN_005e388f, FUN_005e392a, FUN_005e395a, FUN_005e3988, FUN_005e3a81, FUN_005e3aa8 } from './block_005E0000.js';
 import { FUN_005e3bdc, FUN_005e3cb4, FUN_005e47a5, FUN_005e49a0, FUN_005e4aa6, FUN_005e4b9b } from './block_005E0000.js';
 import { FUN_005e4c3f, FUN_005e4cc8, FUN_005e4d60, FUN_005e4e60, FUN_005e4ef8, FUN_005e4f9b } from './block_005E0000.js';
 import { FUN_005e511c, FUN_005e5869, FUN_005e58e7, FUN_005e6188, FUN_005e7028, FUN_005e92c9 } from './block_005E0000.js';
-import { FUN_005ea7a0, FUN_005eabcc, FUN_005eb393, FUN_005ed710 } from './block_005E0000.js';
+import { FUN_005ea7a0, FUN_005eabcc, FUN_005eb393, FUN_005ed710, blit_9838, handle_colortable_3ECA } from './block_005E0000.js';
+import { handle_colortable_3FEB, handle_colortable_40FB, stretch_blit_98BA } from './block_005E0000.js';
 import { FUN_005f7120 } from './block_005F0000.js';
 import { FUN_005f22d0 } from './block_00600000.js';
 
@@ -146,19 +149,7 @@ function create_dib_35B0() { return 0; }
 function create_dib_41BA() { return 0; }
 function create_dib_43C5() { return 0; }
 function create_dib_45B5() { return 0; }
-function handle_colortable_3ECA() {}
-function handle_colortable_3FEB() {}
-function handle_colortable_40FB() {}
-function update_palette_CC11() {}
-function update_palette_CCE2() {}
-function update_palette_EA62() {}
-function stretch_blit_CD66() {}
-function stretch_blit_98BA() {}
-function blit_CC8D() {}
-function blit_9838() {}
-function invalidate_9A9A() {}
 function gdi_847F() { return 1; }
-function gdi_E780() {}
 
 // thunk functions — DEVIATION
 

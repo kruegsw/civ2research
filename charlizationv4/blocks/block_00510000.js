@@ -69,13 +69,15 @@ import { FUN_005a9b5d, FUN_005adfa0 } from './block_005A0000.js';
 import { FUN_005baeb0, FUN_005baec8, FUN_005baee0, FUN_005bb024, FUN_005bb4ae, FUN_005bb574 } from './block_005B0000.js';
 import { FUN_005bc4a1, FUN_005bcaa7, FUN_005bd630, FUN_005bd65c, FUN_005bd915, FUN_005bf071 } from './block_005B0000.js';
 import { FUN_005bf5e1 } from './block_005B0000.js';
-import { FUN_005c0333, FUN_005c041f, FUN_005c0593, FUN_005c0cc5, FUN_005c0f57, FUN_005c1167 } from './block_005C0000.js';
-import { FUN_005c19ad, FUN_005c5fc4, FUN_005c61b0, FUN_005c64da, FUN_005c656b, FUN_005c6b63 } from './block_005C0000.js';
-import { FUN_005c6da8, FUN_005cb6db, FUN_005cde4d, FUN_005cedad, FUN_005cef31, FUN_005cef66 } from './block_005C0000.js';
+import { CString_CString, FUN_005c0333, FUN_005c041f, FUN_005c0593, FUN_005c0cc5, FUN_005c0f57 } from './block_005C0000.js';
+import { FUN_005c1167, FUN_005c19ad, FUN_005c5fc4, FUN_005c61b0, FUN_005c64da, FUN_005c656b } from './block_005C0000.js';
+import { FUN_005c6b63, FUN_005c6da8, FUN_005cb6db, FUN_005cde4d, FUN_005cedad, FUN_005cef31 } from './block_005C0000.js';
+import { FUN_005cef66 } from './block_005C0000.js';
 import { FUN_005d22b7, FUN_005d268e, FUN_005d6a2c, FUN_005d8236, FUN_005dae6b, FUN_005dd010 } from './block_005D0000.js';
 import { FUN_005dd1a0, FUN_005dd2e3, FUN_005dd377, FUN_005dd3c2, FUN_005dd3f1, FUN_005dd45d } from './block_005D0000.js';
 import { FUN_005dd51d, FUN_005dd561, FUN_005dd64c } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_00600000.js';
+import { _fputs } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0, _strncpy } from './block_00600000.js';
 
 export function FUN_00511320() {
   let in_ECX;
@@ -2884,8 +2886,6 @@ function _atoi(s) { return parseInt(s, 10) || 0; }
 function _atol(s) { return parseInt(s, 10) || 0; }
 function _rand() { return Math.floor(Math.random() * 0x7fff); }
 function _sprintf() { return ''; }
-function _strncpy() { }
-function _fputs() { }
 
 // Win32 API stubs
 function SetRect() { }
@@ -2902,7 +2902,6 @@ function CSocket_Create() { return 0; }
 function CCheckListBox_GetCheckStyle() { return 0; }
 
 // MFC stubs
-function CString_CString() { }
 function COleClientItem_GetActiveView() { return 0; }
 function COleControlSite_SetDlgCtrlID() { }
 

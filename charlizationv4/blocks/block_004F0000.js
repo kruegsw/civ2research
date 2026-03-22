@@ -24,17 +24,18 @@ import { FUN_0040fb00, FUN_0040fbb0, FUN_0040fcf0 } from './block_00400000.js';
 import { FUN_00415133, FUN_004187a0, FUN_00418870, FUN_00419b80 } from './block_00410000.js';
 import { FUN_00421da0, FUN_00421dd0, FUN_00421ea0, FUN_004271e8, FUN_00428b0c, FUN_00428cb0 } from './block_00420000.js';
 import { FUN_0043c260, FUN_0043cf76, FUN_0043d20a, FUN_0043d289, FUN_0043f7a7 } from './block_00430000.js';
-import { FUN_0044c5a0, FUN_0044cba0 } from './block_00440000.js';
+import { FUN_0044c5a0, FUN_0044cba0, delete_city } from './block_00440000.js';
 import { FUN_004503d0, FUN_00451890, FUN_004518d0, FUN_00451900, FUN_00451af0, FUN_00451bf0 } from './block_00450000.js';
 import { FUN_00452315, FUN_00452a67, FUN_00453aa0, FUN_00453e18, FUN_00453e51 } from './block_00450000.js';
 import { FUN_0046b14d, FUN_0046e571 } from './block_00460000.js';
 import { FUN_0047cea6, FUN_0047cf9e, FUN_0047e94e } from './block_00470000.js';
 import { FUN_00484d52 } from './block_00480000.js';
 import { FUN_004906fd, FUN_0049301b, FUN_00493c7d, FUN_00497ea0, FUN_004980ec, FUN_00498159 } from './block_00490000.js';
-import { FUN_004a2020, FUN_004a2379, FUN_004a23fc, FUN_004a2534, FUN_004abfe5 } from './block_004A0000.js';
+import { FUN_004a2020, FUN_004a2379, FUN_004a23fc, FUN_004a2534, FUN_004abfe5, new_civ } from './block_004A0000.js';
 import { FUN_004b0b53, FUN_004bf05b } from './block_004B0000.js';
 import { FUN_004e1763, FUN_004e7492, FUN_004eb4ed, FUN_004eb571, FUN_004ebbde, FUN_004ec3fe } from './block_004E0000.js';
-import { FUN_004eef23, FUN_004efbc6, FUN_004efd44 } from './block_004E0000.js';
+import { FUN_004eef23, FUN_004efbc6, FUN_004efd44, handle_city_disorder_004ef578 } from './block_004E0000.js';
+import { citywin_9429, handle_city_disorder_00509590 } from './block_00500000.js';
 import { FUN_00511880 } from './block_00510000.js';
 import { FUN_0052630d } from './block_00520000.js';
 import { FUN_00564bf0, FUN_00564e6d } from './block_00560000.js';
@@ -2926,13 +2927,8 @@ const s__SOUND__0062f2b8 = '\\SOUND\\';
 
 // External function stubs
 function FUN_CSplitterWnd_IsTracking(p1) { return -1; } // C: reads this+0x15a4 (city index being displayed, -1 = none)
-function citywin_9429() {}
-function handle_city_disorder_004ef578(p1) {}
-function handle_city_disorder_00509590(p1) {}
 function FUN_InvalidateObjectCache(p1) {}
 function FUN_004f6244_inner() {}
-function delete_city(p1, p2) {}
-function new_civ(p1) {}
 function FUN_toupper(p1) { return p1; }
 function FUN_strcmpi(p1, p2) { return p1 === p2 ? 0 : 1; }
 function FUN_strcmp(p1, p2) { return p1 === p2 ? 0 : (p1 < p2 ? -1 : 1); }

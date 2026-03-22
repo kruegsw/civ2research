@@ -82,8 +82,9 @@ import { FUN_005c0034, FUN_005c0073, FUN_005c00ce, FUN_005c0333, FUN_005c041f, F
 import { FUN_005c0d69, FUN_005c0f57, FUN_005c1167, FUN_005c11b2, FUN_005c19ad, FUN_005c61b0 } from './block_005C0000.js';
 import { FUN_005cd775, FUN_005cda06, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d23bb, FUN_005d25a8, FUN_005d25c0, FUN_005d268e, FUN_005d4014, FUN_005d4167 } from './block_005D0000.js';
-import { FUN_005d8236, FUN_005dae6b, FUN_005db0d0 } from './block_005D0000.js';
-import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
+import { FUN_005d8236, FUN_005dae6b, FUN_005db0d0, send_msg_3CFF, send_msg_3D62 } from './block_005D0000.js';
+import { __chdir, _fputs, _sprintf } from './block_005F0000.js';
+import { FUN_005f22d0, FUN_005f22e0, _memset, _strncpy } from './block_00600000.js';
 
 function IsIconic() { return 0; } // DEVIATION: Win32 API
 function SetRect() {} // DEVIATION: Win32 API
@@ -98,15 +99,10 @@ function _strchr() { return 0; }
 function _strcmp() { return 0; }
 function __strcmpi() { return 0; }
 function __strnicmp() { return 0; }
-function _strncpy() {}
-function _sprintf() {}
-function _fputs() {}
 function _atoi() { return 0; }
 function _rand() { return Math.floor(Math.random() * 32768); }
 function _isalpha() { return 0; }
 function _isdigit() { return 0; }
-function _memset() {}
-function __chdir() {}
 function FID_conflict___toupper_lk(c) { return c; }
 function _eh_vector_constructor_iterator_() {} // DEVIATION: MFC
 function _eh_vector_destructor_iterator_() {} // DEVIATION: MFC
@@ -136,8 +132,6 @@ function FUN_005aed0d() { FUN_0059df8a(); }
 // Stubs for functions from many other blocks
 function thunk_load_verify_units() { return 0; }
 function thunk_show_messagebox_CF2D() { return 0; }
-function send_msg_3CFF() {}
-function send_msg_3D62() {}
 function FUN_005a9640_impl() {}
 
 

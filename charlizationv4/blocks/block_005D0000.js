@@ -54,8 +54,9 @@ import { FUN_005e28cd, FUN_005e30a1, FUN_005e32b2, FUN_005e395a, FUN_005e518e, F
 import { FUN_005e6188, FUN_005e7f85, FUN_005eb370, FUN_005eb3ed, FUN_005ed710, FUN_005ed920 } from './block_005E0000.js';
 import { FUN_005eda65, FUN_005edb15, FUN_005edbb2, FUN_005edc6c, FUN_005edcac, FUN_005eddaa } from './block_005E0000.js';
 import { FUN_005ee0b1, FUN_005eeca0, FUN_005eed1b } from './block_005E0000.js';
-import { FUN_005f2260 } from './block_005F0000.js';
-import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
+import { FUN_005f2260, __getcwd, _sprintf, operator_delete } from './block_005F0000.js';
+import { FID_conflict__memcpy, FUN_005f22d0, FUN_005f22e0, __strlwr, _atexit, _memset } from './block_00600000.js';
+import { _strncpy } from './block_00600000.js';
 import { FUN_0061a000, FUN_0061a759 } from './block_00610000.js';
 
 let PTR_DAT_00637e68 = null; // sprite draw callback
@@ -198,29 +199,21 @@ function AVIStreamRead() {}
 function AVIStreamReadFormat() {}
 function AVIStreamTimeToSample() { return 0; }
 function PeekMessageA() { return 0; }
-function _memset() {}
-function _sprintf() {}
 function _strlen() { return 0; }
 function _strchr() { return null; }
 function _strcmp() { return 0; }
 function _strncmp() { return 0; }
-function _strncpy() {}
-function __strlwr() {}
 function __strupr(s) { return s; }
-function __getcwd() {}
 function __ftol() { return 0; }
 function __msize() { return 0; }
 function _time() { return 0; }
 function _hread() { return 0; }
 function _llseek() {}
-function _atexit() {}
 function operator_new() { return 0; }
-function operator_delete() {}
 function CONCAT22() { return 0; }
 function CONCAT12() { return 0; }
 function CONCAT11() { return 0; }
 function CONCAT31() { return 0; }
-function FID_conflict__memcpy() {}
 function FID_conflict___expand() { return null; }
 
 

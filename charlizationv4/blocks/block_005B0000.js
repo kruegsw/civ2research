@@ -29,7 +29,7 @@ import { FUN_0056baff } from './block_00560000.js';
 import { FUN_0059d3c9, FUN_0059df8a } from './block_00590000.js';
 import { FUN_005ae31d, FUN_005ae3bf, FUN_005af343, FUN_005af4ae, FUN_005af682 } from './block_005A0000.js';
 import { FUN_005c656b, FUN_005cde4d } from './block_005C0000.js';
-import { FUN_005d2279, FUN_005d7c6e, FUN_005dae6b } from './block_005D0000.js';
+import { FUN_005d2279, FUN_005d7c6e, FUN_005dae6b, debug_log } from './block_005D0000.js';
 
 export {
   FUN_004087c0,
@@ -2786,4 +2786,3 @@ function SetFocus(a) {}
 function XD_FlushSendBuffer(a) {}
 function FUN_004a3db0(a, b) {} // kill_civ
 function _rand() { return (Math.random() * 0x7FFF) | 0; }
-function debug_log(a) {}
