@@ -487,7 +487,6 @@ export const G = {
   DAT_006a6530: new Uint8Array(_BUF, 565712),  // 0x6a6530
   DAT_006a6590: new Uint8Array(_BUF, 565808),  // 0x6a6590
   DAT_006a65b8: new Uint8Array(_BUF, 565848),  // 0x6a65b8
-  DAT_006a65c8: new Uint8Array(_BUF, 565864),  // 0x6a65c8
   DAT_006a65f0: new Uint8Array(_BUF, 565904),  // 0x6a65f0
   DAT_006a6620: new Uint8Array(_BUF, 565952),  // 0x6a6620
   DAT_006a6628: new Uint8Array(_BUF, 565960),  // 0x6a6628
@@ -1777,6 +1776,7 @@ export const G = {
   DAT_006a65bc: 0,
   DAT_006a65c0: 0,
   DAT_006a65c4: 0,
+  DAT_006a65c8: 0,
   DAT_006a65cc: 0,
   DAT_006a65d0: 0,
   DAT_006a65d4: 0,
