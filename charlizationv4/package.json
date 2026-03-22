@@ -1,0 +1,7 @@
+{
+  "name": "charlizationv4",
+  "version": "0.1.0",
+  "description": "Civ2 MGE binary-on-JS-rails: headless game engine from transpiled binary code",
+  "type": "module",
+  "private": true
+}
