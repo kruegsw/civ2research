@@ -14,7 +14,7 @@ import { G } from './globals.js';
 import { s8, u8, s16, u16, s32, u32, getTileOffset, tileRead } from './mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b89bb } from './fn_utils.js';
 import { loadSav } from './sav-loader.js';
-import { loadRules } from './rules-loader.js';
+import { loadRules, initBinaryConstants } from './rules-loader.js';
 
 // ── Parse CLI args ──
 const args = process.argv.slice(2);
@@ -38,6 +38,7 @@ if (!savPath) {
 const defaultRulesPath = '/home/kruegsw/Games/Civilization II Multiplayer Gold Edition/RULES.TXT';
 const rPath = rulesPath || defaultRulesPath;
 if (existsSync(rPath)) {
+  initBinaryConstants();
   const rulesInfo = loadRules(readFileSync(rPath, 'utf8'));
   console.log(`Rules: ${rulesInfo.unitCount} units, ${rulesInfo.terrainCount} terrains`);
 } else {

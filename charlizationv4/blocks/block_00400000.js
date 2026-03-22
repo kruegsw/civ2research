@@ -664,9 +664,9 @@ export function FUN_00407b31() {
 // FUN_00407f90 — get_rect_width
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00407f90(param_1, param_2) {
-  // Original: return param_1[2] - *param_1
-  // In JS, param_1 is treated as a struct-like with array indexing
-  return 0; // stub: requires pointer arithmetic
+  // Source: decompiled/block_00400000.c FUN_00407f90
+  // get_rect_width: returns right - left (param_1[2] - param_1[0])
+  return param_1[2] - param_1[0];
 }
 
 
@@ -674,8 +674,9 @@ export function FUN_00407f90(param_1, param_2) {
 // FUN_00407fc0 — get_rect_height
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00407fc0(param_1) {
-  // Original: return *(int *)(param_1 + 0xc) - *(int *)(param_1 + 4)
-  return 0; // stub: requires pointer arithmetic
+  // Source: decompiled/block_00400000.c FUN_00407fc0
+  // get_rect_height: returns bottom - top (param_1[3] - param_1[1])
+  return param_1[3] - param_1[1];
 }
 
 

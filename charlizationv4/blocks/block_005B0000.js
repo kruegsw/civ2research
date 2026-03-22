@@ -84,6 +84,8 @@ function wi(arr, off, val) {
 // GLOBAL VARIABLES (DAT_ references used in this block)
 // ═══════════════════════════════════════════════════════════════════
 
+function _rand() { return Math.floor(Math.random() * 0x7FFF); }
+
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1845,10 +1847,9 @@ export function FUN_005b898b(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8a81(param_1, param_2) {
-  // Returns tile byte[3] (continent ID)
-  // In JS, tile data is accessed via FUN_005b8931 offset + tileRead
-  // Simplified — returns 0 (full implementation needs tileRead from mem.js)
-  return 0;
+  // Source: decompiled/block_005B0000.c FUN_005b8a81 (39 bytes)
+  const iVar1 = FUN_005b8931(param_1, param_2);
+  return tileRead(iVar1, 3);
 }
 
 
@@ -1871,9 +1872,9 @@ export function FUN_005b8aa8(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8af0(param_1, param_2) {
-  // Returns bits 7-5 of tile byte[2] (river/continent group)
-  // Simplified — returns 0
-  return 0;
+  // Source: decompiled/block_005B0000.c FUN_005b8af0 (42 bytes)
+  const iVar1 = FUN_005b8931(param_1, param_2);
+  return (tileRead(iVar1, 2) & 0xFF) >> 5;
 }
 
 
@@ -1893,9 +1894,10 @@ export function FUN_005b8b1a(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8b65(param_1, param_2, param_3) {
+  // Source: decompiled/block_005B0000.c FUN_005b8b65 (71 bytes)
   if (param_3 < 0) return 1;
-  // Read byte[4] from tile and check bit
-  return 0; // Simplified
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  return tileRead(iVar2, 4) & (1 << (param_3 & 0x1f));
 }
 
 
@@ -1919,8 +1921,9 @@ export function FUN_005b8bac(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8c18(param_1, param_2) {
-  // Returns byte[5] & 0x0F from tile
-  return 0; // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b8c18 (42 bytes)
+  const iVar1 = FUN_005b8931(param_1, param_2);
+  return tileRead(iVar1, 5) & 0x0F;
 }
 
 
@@ -2039,28 +2042,51 @@ export function FUN_005b90df(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9179(param_1, param_2) {
-  // Complex global warming terrain modification
-  // Simplified stub — full implementation requires rand() and full tile data access
+  // Source: decompiled/block_005B0000.c FUN_005b9179 (696 bytes)
   let iVar2 = FUN_004087c0(param_1, param_2);
   if (iVar2 !== 0) {
     FUN_005b9ec6();
-    // Process 9 neighboring tiles (8 directions + center)
     for (let local_8 = 0; local_8 < 9; local_8++) {
       let uVar3 = FUN_005ae052(s8(G.DAT_00628350[local_8]) + param_1);
       iVar2 = s8(G.DAT_00628360[local_8]) + param_2;
       let iVar4 = FUN_004087c0(uVar3, iVar2);
       if (iVar4 !== 0) {
-        let cityIdx = FUN_0043cf76(uVar3, iVar2);
-        if (cityIdx < 0) {
+        iVar4 = FUN_0043cf76(uVar3, iVar2);
+        if (iVar4 < 0) {
           let isOcean = FUN_005b89e4(uVar3, iVar2);
           if (isOcean === 0) {
-            // Randomly damage terrain improvements
-            // Full implementation uses _rand() — simplified
+            iVar4 = FUN_005b8931(uVar3, iVar2);
+            let bVar1 = FUN_005b94d5(uVar3, iVar2);
+            if ((bVar1 & 0x42) === 0x40) {
+              FUN_005b94fc(uVar3, iVar2, 0x40, 0, 1);
+            }
+            if (_rand() & 1) {
+              FUN_005b94fc(uVar3, iVar2, 0x20, 0, 1);
+            }
+            if (((tileRead(iVar4, 1) & 8) === 0) || ((tileRead(iVar4, 1) & 4) === 0)) {
+              if (_rand() & 1) {
+                FUN_005b94fc(uVar3, iVar2, 8, 0, 1);
+              }
+              if (_rand() & 1) {
+                FUN_005b94fc(uVar3, iVar2, 4, 0, 1);
+              }
+            } else {
+              if (_rand() & 1) {
+                FUN_005b94fc(uVar3, iVar2, 8, 0, 1);
+              }
+            }
+            for (let local_18 = 1; local_18 < 8; local_18++) {
+              FUN_005b8b1a(uVar3, iVar2, local_18);
+            }
+            iVar4 = _rand();
+            if (iVar4 % 3 !== 0) {
+              FUN_005b90df(uVar3, iVar2);
+            }
+            FUN_0047cea6(uVar3, iVar2);
           }
         } else {
-          // Reduce city size
-          G.DAT_0064f340[cityIdx * 0x58 + 9] =
-            G.DAT_0064f340[cityIdx * 0x58 + 9] - (s8(G.DAT_0064f340[cityIdx * 0x58 + 9]) >> 1);
+          G.DAT_0064f349[iVar4 * 0x58] =
+            G.DAT_0064f349[iVar4 * 0x58] - (s8(G.DAT_0064f349[iVar4 * 0x58]) >> 1);
           FUN_0047ce1e(uVar3, iVar2, 0, G.DAT_006d1da0, 1);
         }
       }
@@ -2075,11 +2101,11 @@ export function FUN_005b9179(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9431(param_1, param_2) {
-  let local_c = 0;
-  let local_8 = 0;
+  // Source: decompiled/block_005B0000.c FUN_005b9431 (78 bytes)
+  let local_c = [0];
+  let local_8 = [0];
   FUN_005ae3bf(param_2, local_c, local_8);
-  // Simplified — full version checks G.DAT_00666137
-  return false;
+  return (local_8[0] & (G.DAT_00666137[local_c[0] + param_1 * 0x10] & 0xFF)) !== 0;
 }
 
 
@@ -2102,9 +2128,25 @@ export function FUN_005b947f(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b94fc(param_1, param_2, param_3, param_4, param_5) {
-  // Sets/clears bits in tile byte[1] (improvements)
-  // Full implementation requires direct tile data access
-  // Simplified — network sync omitted
+  // Source: decompiled/block_005B0000.c FUN_005b94fc (330 bytes)
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  const cVar1 = tileRead(iVar2, 1);
+  if (param_4 === 0) {
+    tileWrite(iVar2, 1, tileRead(iVar2, 1) & ~(param_3 & 0xFF));
+  } else {
+    tileWrite(iVar2, 1, tileRead(iVar2, 1) | (param_3 & 0xFF));
+  }
+  if (param_5 !== 0 && tileRead(iVar2, 1) !== cVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(0, param_1, param_2, param_3, param_4, 0);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x90, 0, param_1, param_2, param_3, param_4, 1, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x90, 0xff, param_1, param_2, param_3, param_4, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2113,8 +2155,23 @@ export function FUN_005b94fc(param_1, param_2, param_3, param_4, param_5) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9646(param_1, param_2, param_3, param_4) {
-  // Sets terrain type in tile byte[0] low nibble
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b9646 (295 bytes)
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  const bVar1 = tileRead(iVar2, 0);
+  let val = tileRead(iVar2, 0) & 0xF0;
+  val = val | (param_3 & 0xFF);
+  tileWrite(iVar2, 0, val);
+  if (param_4 !== 0 && tileRead(iVar2, 0) !== bVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(1, param_1, param_2, param_3, 0, 0);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x91, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x91, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2123,8 +2180,25 @@ export function FUN_005b9646(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b976d(param_1, param_2, param_3, param_4, param_5) {
-  // Sets/clears bits in tile byte[4] (visibility)
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b976d (330 bytes)
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  const cVar1 = tileRead(iVar2, 4);
+  if (param_4 === 0) {
+    tileWrite(iVar2, 4, tileRead(iVar2, 4) & ~(param_3 & 0xFF));
+  } else {
+    tileWrite(iVar2, 4, tileRead(iVar2, 4) | (param_3 & 0xFF));
+  }
+  if (param_5 !== 0 && tileRead(iVar2, 4) !== cVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(2, param_1, param_2, param_3, param_4, 0);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x92, 0, param_1, param_2, param_3, param_4, 1, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x92, 0xff, param_1, param_2, param_3, param_4, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2133,8 +2207,23 @@ export function FUN_005b976d(param_1, param_2, param_3, param_4, param_5) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b98b7(param_1, param_2, param_3, param_4) {
-  // Sets low nibble of tile byte[5]
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b98b7 (305 bytes)
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  const cVar1 = tileRead(iVar2, 5);
+  let val = tileRead(iVar2, 5) & 0xF0;
+  val = val | (param_3 & 0x0F);
+  tileWrite(iVar2, 5, val);
+  if (param_4 !== 0 && tileRead(iVar2, 5) !== cVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(3, param_1, param_2, param_3, 0, 0);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x93, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x93, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2143,8 +2232,26 @@ export function FUN_005b98b7(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b99e8(param_1, param_2, param_3, param_4) {
-  // Sets high nibble of tile byte[5]
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b99e8 (333 bytes)
+  if (param_3 < 0 || 8 < param_3) {
+    param_3 = 0x0F;
+  }
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  const cVar1 = tileRead(iVar2, 5);
+  let val = tileRead(iVar2, 5) & 0x0F;
+  val = val | ((param_3 << 4) & 0xFF);
+  tileWrite(iVar2, 5, val);
+  if (param_4 !== 0 && tileRead(iVar2, 5) !== cVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(4, param_1, param_2, param_3, 0, 0);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x94, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x94, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2153,8 +2260,21 @@ export function FUN_005b99e8(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9b35(param_1, param_2, param_3, param_4) {
-  // Sets tile byte[3] (continent ID)
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b9b35 (276 bytes)
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  const cVar1 = tileRead(iVar2, 3);
+  tileWrite(iVar2, 3, param_3 & 0xFF);
+  if (param_4 !== 0 && tileRead(iVar2, 3) !== cVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(5, param_1, param_2, param_3, 0, 0);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x95, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x95, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2163,8 +2283,23 @@ export function FUN_005b9b35(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9c49(param_1, param_2, param_3, param_4) {
-  // Sets bits 7-5 of tile byte[2]
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b9c49 (312 bytes)
+  const iVar2 = FUN_005b8931(param_1, param_2);
+  const cVar1 = tileRead(iVar2, 2);
+  let val = tileRead(iVar2, 2) & 0x1F;
+  val = ((param_3 & 7) << 5) | val;
+  tileWrite(iVar2, 2, val);
+  if (param_4 !== 0 && tileRead(iVar2, 2) !== cVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(6, param_1, param_2, param_3, 0, 0);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x96, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x96, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2173,8 +2308,27 @@ export function FUN_005b9c49(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b9d81(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Sets data in visibility layer arrays
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b9d81 (325 bytes)
+  // Uses FUN_005b898b to get offset into visibility layer buffer (param_4 = layer)
+  const visOffset = FUN_005b898b(param_1, param_2, param_4);
+  if (!G._visData) return; // vis layer buffer not initialized
+  const bVar1 = G._visData[visOffset] || 0;
+  if (param_5 === 0) {
+    G._visData[visOffset] = param_3 & 0xFF;
+  } else {
+    G._visData[visOffset] = ((G._visData[visOffset] || 0) | (param_3 & 0xFF));
+  }
+  if (param_6 !== 0 && (G._visData[visOffset] || 0) !== bVar1 && 2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0 && G.DAT_006ad69a !== 0) {
+      FUN_005b9fde(7, param_1, param_2, param_3, param_4, param_5);
+    } else if (G.DAT_006ad699 !== 0) {
+      if (G.DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x97, 0, param_1, param_2, param_3, param_4, param_5, 1, 0, 0);
+      } else {
+        FUN_0046b14d(0x97, 0xff, param_1, param_2, param_3, param_4, param_5, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2217,9 +2371,51 @@ export function FUN_005b9f1c() {
 // FUN_005b9fde — queue_map_batch_entry (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// DAT_006365f8 lookup: number of int32 words per batch operation type (types 0-7)
+const _DAT_006365f8 = [5, 4, 5, 4, 4, 4, 4, 6];
+
+// Batch buffer: DAT_006d1190 is a flat int32 array, _DAT_006d1190 (word 0) is the entry count
+if (!G._batchBuf) G._batchBuf = new Int32Array(0x100);
+
 export function FUN_005b9fde(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Queues a batched map update for network sync
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005b9fde (515 bytes)
+  if (G.DAT_006ad2f7 !== 0) {
+    FUN_005dae6b(7, 0, 0, 0x3de);
+  }
+  if (0x100 - G.DAT_006365f4 < _DAT_006365f8[param_1] + 1) {
+    FUN_0046b14d(0x59, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    // XD_FlushSendBuffer(5000) — network flush, no-op in JS
+    G._batchBuf[0] = 0;
+    G.DAT_006365f4 = 1;
+  }
+  G._batchBuf[0] = G._batchBuf[0] + 1;
+  G._batchBuf[G.DAT_006365f4] = param_1;
+  G.DAT_006365f4 = G.DAT_006365f4 + 1;
+  switch (param_1) {
+    case 0:
+    case 2:
+      G._batchBuf[G.DAT_006365f4] = param_2; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_3; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_4; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_5; G.DAT_006365f4++;
+      break;
+    case 1:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+      G._batchBuf[G.DAT_006365f4] = param_2; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_3; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_4; G.DAT_006365f4++;
+      break;
+    case 7:
+      G._batchBuf[G.DAT_006365f4] = param_2; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_3; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_4; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_5; G.DAT_006365f4++;
+      G._batchBuf[G.DAT_006365f4] = param_6; G.DAT_006365f4++;
+      break;
+  }
 }
 
 
@@ -2228,8 +2424,59 @@ export function FUN_005b9fde(param_1, param_2, param_3, param_4, param_5, param_
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005ba206(param_1) {
-  // Applies batched map updates received from network
-  // Simplified
+  // Source: decompiled/block_005B0000.c FUN_005ba206 (510 bytes)
+  // param_1 is a batch buffer (Int32Array or array-like with int32 entries)
+  let local_8 = 0;
+  if (2 < G.DAT_00655b02) {
+    if (G.DAT_006ad2f7 === 0) {
+      FUN_005dae6b(7, 0, 0, 0x416);
+    }
+    const uVar2 = G.DAT_006ad699;
+    G.DAT_006ad699 = 0;
+    // Read entry count from first int32 slot
+    let entryCount = param_1[local_8];
+    local_8 = local_8 + 1;
+    for (let local_28 = entryCount; 0 < local_28; local_28--) {
+      let iVar1 = param_1[local_8];
+      local_8++;
+      const local_20 = [];
+      let local_24 = 0;
+      const numParams = _DAT_006365f8[iVar1] - 1;
+      for (; local_24 < numParams; local_24++) {
+        local_20[local_24] = param_1[local_8];
+        local_8++;
+      }
+      switch (iVar1) {
+        case 0:
+          FUN_005b94fc(local_20[0], local_20[1], local_20[2], local_20[3], 1);
+          break;
+        case 1:
+          FUN_005b9646(local_20[0], local_20[1], local_20[2], 1);
+          break;
+        case 2:
+          FUN_005b976d(local_20[0], local_20[1], local_20[2], local_20[3], 1);
+          break;
+        case 3:
+          FUN_005b98b7(local_20[0], local_20[1], local_20[2], 1);
+          break;
+        case 4:
+          FUN_005b99e8(local_20[0], local_20[1], local_20[2], 1);
+          break;
+        case 5:
+          FUN_005b9b35(local_20[0], local_20[1], local_20[2], 1);
+          break;
+        case 6:
+          FUN_005b9c49(local_20[0], local_20[1], local_20[2], 1);
+          break;
+        case 7:
+          // local_20[4] overflows into local_10 on the C stack
+          FUN_005b9d81(local_20[0], local_20[1], local_20[2], local_20[3], local_20[4], 1);
+          break;
+      }
+    }
+    G.DAT_006ad699 = uVar2;
+    FUN_004b0b53(0xff, 2, 0, 0, 0);
+  }
 }
 
 

@@ -163,6 +163,24 @@ export function loadCityNames(text) {
 }
 
 /**
+ * Initialize constant tables from the binary's data segment.
+ * These values are hardcoded in civ2.exe, not parsed from any file.
+ * Values verified against charlizationv3/engine/defs.js (CITY_RADIUS_DOUBLED).
+ */
+export function initBinaryConstants() {
+  // City radius tile offsets (doubled-X coordinates, relative to city center)
+  // 25 entries: 21 city radius tiles + 4 extended (N/E/S/W at distance 4)
+  // Order matches city worker bitmask layout.
+  // DAT_00628370 = dx offsets, DAT_006283a0 = dy offsets
+  const cityDx = [+1,+2,+1, 0,-1,-2,-1, 0, +2,+2,-2,-2, +1,+3,+3,+1,-1,-3,-3,-1, 0, 0,+4,0,-4];
+  const cityDy = [-1, 0,+1,+2,+1, 0,-1,-2, -2,+2,+2,-2, -3,-1,+1,+3,+3,+1,-1,-3, 0, -4,0,+4,0];
+  for (let i = 0; i < 25; i++) {
+    G.DAT_00628370[i] = cityDx[i] & 0xFF; // signed byte
+    G.DAT_006283a0[i] = cityDy[i] & 0xFF;
+  }
+}
+
+/**
  * Parse RULES.TXT content and populate flat memory arrays.
  * All field offsets verified against decompiled/block_00410000.c
  */
