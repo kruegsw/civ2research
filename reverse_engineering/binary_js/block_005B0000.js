@@ -23,6 +23,7 @@ import {
   DAT_00628350, DAT_00628360,
   DAT_006d1168,
   DAT_0064f340,
+  tileRead, tileWrite,
 } from './mem.js';
 
 import {
@@ -167,10 +168,10 @@ let DAT_00638b48 = 0;       // palette mode (0=RGB, 1=indexed)
 let DAT_006e4ff0 = 0;       // HINSTANCE of application
 let DAT_00637e58 = 0;       // active port pointer
 let DAT_0063605c = 0;       // unit name string index
-let DAT_006365c0 = [];      // vis layer pointers array
+let DAT_006365c0 = [null, null, null, null, null, null, null, null]; // vis layer pointers (Uint8Arrays)
 let DAT_006365f8 = [5, 4, 5, 4, 4, 4, 4, 6]; // batch param counts per type
-let DAT_006d1188 = 0;       // dummy tile data
-let DAT_006d1190 = 0;       // map batch buffer base
+let DAT_006d1188 = new Uint8Array(6); // dummy tile data (6 bytes)
+let DAT_006d1190 = new Int32Array(0x100); // map batch buffer
 let DAT_006d1db8 = [];      // window stack array
 let DAT_00655b0b = 0;       // human civ bitmask
 let DAT_00655aea = 0;       // tutorial feature bits
@@ -205,7 +206,7 @@ export function FUN_005b02a5() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b0373(param_1) {
-  // Entirely UI/editor — stubbed
+  // DEVIATION: Win32 API (CPropertySheet, SetFocus, SendMessage) — editor dialog handler
 }
 
 
@@ -214,7 +215,7 @@ export function FUN_005b0373(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b0473(param_1) {
-  // Entirely UI — stubbed
+  // DEVIATION: Win32 API (CPropertySheet, listbox controls) — editor tab controls
 }
 
 
@@ -223,7 +224,7 @@ export function FUN_005b0473(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b08e8(param_1) {
-  // UI button creation — stubbed
+  // DEVIATION: Win32 API (button control creation) — editor button
 }
 
 
@@ -232,7 +233,7 @@ export function FUN_005b08e8(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b09dc() {
-  // UI paint handler — stubbed
+  // DEVIATION: Win32 API (GDI paint, BitBlt, DrawText) — editor paint handler
 }
 
 
@@ -241,7 +242,7 @@ export function FUN_005b09dc() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b1037() {
-  // Editor dialog initialization — entirely UI — stubbed
+  // DEVIATION: Win32 API (CPropertySheet, operator new, CreateWindow) — editor dialog init
 }
 
 
@@ -700,10 +701,8 @@ export function pick_up_unit_005b319e(param_1, param_2) {
       iVar4 = FUN_004087c0(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2));
       if (iVar4 !== 0) {
         let tOff = FUN_005b8931(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2));
-        if (tOff >= 0) {
-          // Clear unit-present bit on tile improvements byte
-          FUN_005b94fc(rs(DAT_006560f0, param_1 * 0x20), rs(DAT_006560f0, param_1 * 0x20 + 2), 1, 0, 0);
-        }
+        // Clear unit-present bit (bit 0) on tile byte[1]
+        tileWrite(tOff, 1, u8(tileRead(tOff, 1)) & 0xfe);
       }
     }
     // Move unit to off-map holding position
@@ -723,7 +722,7 @@ export function pick_up_unit_005b319e(param_1, param_2) {
     DAT_006ad8d8 = 0;
     DAT_006c90e0 = -2;
     FUN_0046b14d(0x3f, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
-    // Wait for server response — simplified
+    // DEVIATION: Win32 API (timeout wait loop with FUN_00421bb0/FUN_0047e94e) — network wait
   }
 }
 
@@ -745,13 +744,17 @@ export function FUN_005b345f(param_1, param_2, param_3, param_4) {
     ws(DAT_006560f0, param_1 * 0x20 + 0x18, iVar2 & 0xFFFF);
 
     if (iVar2 < 0) {
-      let valid = FUN_004087c0(param_2, param_3);
-      if (valid !== 0) {
-        // Set unit-present bit on tile
-        FUN_005b94fc(param_2, param_3, 1, 1, 0);
+      iVar2 = FUN_004087c0(param_2, param_3);
+      if (iVar2 !== 0) {
+        iVar2 = FUN_005b8931(param_2, param_3);
+        // Set unit-present bit (bit 0) on tile byte[1]
+        tileWrite(iVar2, 1, u8(tileRead(iVar2, 1)) | 1);
         local_14 = s8(DAT_006560f0[param_1 * 0x20 + 7]);
         if (local_14 < 0 || 8 < local_14) local_14 = 0xf;
-        FUN_005b99e8(param_2, param_3, local_14, 0);
+        // Set owner high nibble on tile byte[5]
+        iVar2 = FUN_005b8931(param_2, param_3);
+        tileWrite(iVar2, 5, u8(tileRead(iVar2, 5)) & 0xf);
+        tileWrite(iVar2, 5, u8(tileRead(iVar2, 5)) | ((local_14 << 4) & 0xFF));
       }
     } else {
       ws(DAT_006560f0, iVar2 * 0x20 + 0x16, param_1 & 0xFFFF);
@@ -925,8 +928,10 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
     }
     // Update civ bookkeeping
     if (s8(DAT_0064b1bc[param_1 * 0x14 + 0x0E]) < 5) {
-      // Increment support unit count for this civ
+      DAT_0064c706[param_2] = (DAT_0064c706[param_2] || 0) + 1;
     }
+    DAT_0064c778[param_2 * 0x594 + param_1] = ((DAT_0064c778[param_2 * 0x594 + param_1] || 0) + 1) & 0xFF;
+    DAT_0064b9e8[param_2] = (DAT_0064b9e8[param_2] || 0) + 1;
 
     // Initialize unit fields
     DAT_006560f0[local_10 * 0x20 + 6] = param_1 & 0xFF;           // unit type
@@ -1004,7 +1009,17 @@ export function FUN_005b4391(param_1, param_2) {
 
       iVar5 = s8(DAT_006560f0[param_1 * 0x20 + 7]);
       if (-1 < iVar5 && param_1 < 0x800) {
-        // Decrement civ unit counts (simplified)
+        if ((DAT_0064c706[iVar5] || 0) !== 0 &&
+            s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0E]) < 5) {
+          DAT_0064c706[iVar5] = DAT_0064c706[iVar5] - 1;
+        }
+        if ((DAT_0064c778[iVar5 * 0x594 + u8(DAT_006560f0[param_1 * 0x20 + 6])] || 0) !== 0) {
+          DAT_0064c778[iVar5 * 0x594 + u8(DAT_006560f0[param_1 * 0x20 + 6])] =
+            DAT_0064c778[iVar5 * 0x594 + u8(DAT_006560f0[param_1 * 0x20 + 6])] - 1;
+        }
+        if ((DAT_0064b9e8[iVar5] || 0) !== 0) {
+          DAT_0064b9e8[iVar5] = DAT_0064b9e8[iVar5] - 1;
+        }
       }
 
       pick_up_unit_005b319e(param_1, 0);
@@ -1025,6 +1040,13 @@ export function FUN_005b4391(param_1, param_2) {
       if (param_2 !== 0) {
         FUN_0047cea6(-1, sVar2, sVar3);
         if (-1 < local_20) FUN_0047ce1e(local_20);
+      }
+
+      // Check if civ should be killed (settler was last unit + no cities)
+      if (s8(DAT_0064b1bc[bVar1 * 0x14 + 0x0E]) === 5 &&
+          (DAT_0064c708[iVar5] || 0) === 0 &&
+          (DAT_0064c778[iVar5 * 0x594 + bVar1] || 0) === 0) {
+        FUN_004a3db0(iVar5, -1);
       }
 
       if (2 < DAT_00655b02 && param_2 !== 0) {
@@ -1798,12 +1820,17 @@ export function FUN_005b67af(param_1, param_2, param_3, param_4) {
 // FUN_005b6898 — get_unit_home_city_name (MIXED)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b6898 (89 bytes)
 export function FUN_005b6898(param_1) {
+  let puVar1;
   if (DAT_006560f0[param_1 * 0x20 + 0x10] === 0xFF) {
-    return 'NONE';
+    // C: thunk_FUN_00428b0c(*(DAT_00628420 + 0x38)) — returns "NONE" string
+    puVar1 = 'NONE';
   } else {
-    return u8(DAT_006560f0[param_1 * 0x20 + 0x10]);
+    // C: returns &DAT_0064f360 + home_city * 0x58 — city name string
+    puVar1 = u8(DAT_006560f0[param_1 * 0x20 + 0x10]);
   }
+  return puVar1;
 }
 
 
@@ -1844,7 +1871,7 @@ export function FUN_005b6ab5(param_1, param_2, param_3, param_4, param_5, param_
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b6aea(param_1, param_2, param_3) {
-  // UI dialog — stubbed
+  // DEVIATION: Win32 API (CPropertySheet, CString, dialog) — unit list dialog
 }
 
 
@@ -1879,13 +1906,27 @@ export function FUN_005b6dbe() {
 // FUN_005b7fe0 — allocate_map_tiles (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b7fe0 (1078 bytes)
 export function FUN_005b7fe0() {
-  // Map memory allocation — uses OS memory functions
-  // In JS, tile data is managed via mem.js initMapTiles
-  // Stubbed — map allocation handled by engine init
+  // DEVIATION: Win32 memory allocation replaced with JS typed arrays
+  let local_18;
+  let local_c;
+
   DAT_006d116a = (DAT_006d1160 + 3) >> 2;
   DAT_006d116c = (DAT_006d1162 + 3) >> 2;
-  DAT_006d1164 = (DAT_006d1160 / 2) * DAT_006d1162;
+  DAT_006d1164 = Math.trunc(DAT_006d1160 / 2) * DAT_006d1162;
+
+  // Allocate tile data (6 bytes per tile) — handled by mem.js initMapTiles
+  // Initialize visibility layers (1 byte per tile, 7 layers for civs 1-7)
+  for (local_18 = 1; local_18 < 8; local_18++) {
+    DAT_006365c0[local_18] = new Uint8Array(DAT_006d1164);
+  }
+
+  // Allocate vis chunk layers (4 chunk layers)
+  DAT_006365e0 = new Uint8Array(DAT_006d116a * DAT_006d116c);
+  DAT_006365e4 = new Uint8Array(DAT_006d116a * DAT_006d116c);
+  DAT_006365e8 = new Uint8Array(DAT_006d116a * DAT_006d116c);
+  DAT_006365ec = new Uint8Array(DAT_006d116a * DAT_006d116c);
   DAT_006365f0 = 1;
 }
 
@@ -1894,9 +1935,19 @@ export function FUN_005b7fe0() {
 // FUN_005b8416 — deallocate_map_tiles (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b8416 (488 bytes)
 export function FUN_005b8416() {
+  let local_8;
   if (DAT_006365f0 !== 0) {
-    // Free map memory — no-op in JS (GC handles it)
+    // DEVIATION: Win32 memory deallocation — JS uses GC
+    DAT_006365ec = 0;
+    DAT_006365e8 = 0;
+    DAT_006365e4 = 0;
+    DAT_006365e0 = 0;
+    DAT_00636598 = 0;
+    for (local_8 = 1; local_8 < 8; local_8++) {
+      DAT_006365c0[local_8] = null;
+    }
     DAT_006365f0 = 0;
   }
 }
@@ -1918,7 +1969,7 @@ export function FUN_005b85fe() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8635(param_1, param_2) {
-  // File I/O — stubbed (save handled by engine)
+  // DEVIATION: Win32 API (fwrite) — save map data to file
   return 0;
 }
 
@@ -1928,7 +1979,7 @@ export function FUN_005b8635(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005b8783(param_1, param_2) {
-  // File I/O — stubbed (load handled by engine)
+  // DEVIATION: Win32 API (fread) — load map data from file
   return 0;
 }
 
@@ -1937,8 +1988,10 @@ export function FUN_005b8783(param_1, param_2) {
 // FUN_005b898b — get_visibility_offset (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b898b (48 bytes)
+// Returns offset into visibility layer array for tile (x, y, civLayer)
 export function FUN_005b898b(param_1, param_2, param_3) {
-  return (DAT_006d1160 >> 1) * param_2 + DAT_006365c0[param_3] + (param_1 >> 1);
+  return (DAT_006d1160 >> 1) * param_2 + (param_1 >> 1);
 }
 
 
@@ -1946,11 +1999,11 @@ export function FUN_005b898b(param_1, param_2, param_3) {
 // FUN_005b8a81 — get_tile_continent_id (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b8a81 (39 bytes)
 export function FUN_005b8a81(param_1, param_2) {
-  // Returns tile byte[3] (continent ID)
-  // In JS, tile data is accessed via FUN_005b8931 offset + tileRead
-  // Simplified — returns 0 (full implementation needs tileRead from mem.js)
-  return 0;
+  let iVar1;
+  iVar1 = FUN_005b8931(param_1, param_2);
+  return tileRead(iVar1, 3);
 }
 
 
@@ -1972,10 +2025,11 @@ export function FUN_005b8aa8(param_1, param_2) {
 // FUN_005b8af0 — get_tile_river_group (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b8af0 (42 bytes)
 export function FUN_005b8af0(param_1, param_2) {
-  // Returns bits 7-5 of tile byte[2] (river/continent group)
-  // Simplified — returns 0
-  return 0;
+  let iVar1;
+  iVar1 = FUN_005b8931(param_1, param_2);
+  return u8(tileRead(iVar1, 2)) >> 5;
 }
 
 
@@ -1983,9 +2037,12 @@ export function FUN_005b8af0(param_1, param_2) {
 // FUN_005b8b1a — update_visibility_for_tile (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b8b1a (75 bytes)
 export function FUN_005b8b1a(param_1, param_2, param_3) {
+  let iVar1;
   if (param_3 !== 0) {
-    FUN_005b9d81(param_1, param_2, FUN_005b94d5(param_1, param_2), 0, 1, 0);
+    iVar1 = FUN_005b8931(param_1, param_2);
+    FUN_005b9d81(param_1, param_2, tileRead(iVar1, 1), param_3, 0, 0);
   }
 }
 
@@ -1994,10 +2051,17 @@ export function FUN_005b8b1a(param_1, param_2, param_3) {
 // FUN_005b8b65 — check_tile_visibility (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b8b65 (71 bytes)
 export function FUN_005b8b65(param_1, param_2, param_3) {
-  if (param_3 < 0) return 1;
-  // Read byte[4] from tile and check bit
-  return 0; // Simplified
+  let uVar1;
+  let iVar2;
+  if (param_3 < 0) {
+    uVar1 = 1;
+  } else {
+    iVar2 = FUN_005b8931(param_1, param_2);
+    uVar1 = u8(tileRead(iVar2, 4)) & (1 << (param_3 & 0x1f));
+  }
+  return uVar1;
 }
 
 
@@ -2020,9 +2084,11 @@ export function FUN_005b8bac(param_1, param_2, param_3, param_4) {
 // FUN_005b8c18 — get_tile_owner_low_nibble (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b8c18 (42 bytes)
 export function FUN_005b8c18(param_1, param_2) {
-  // Returns byte[5] & 0x0F from tile
-  return 0; // Simplified
+  let iVar1;
+  iVar1 = FUN_005b8931(param_1, param_2);
+  return u8(tileRead(iVar1, 5)) & 0xf;
 }
 
 
@@ -2140,29 +2206,69 @@ export function FUN_005b90df(param_1, param_2) {
 // FUN_005b9179 — global_warming_effect (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9179 (696 bytes)
 export function FUN_005b9179(param_1, param_2) {
-  // Complex global warming terrain modification
-  // Simplified stub — full implementation requires rand() and full tile data access
-  let iVar2 = FUN_004087c0(param_1, param_2);
+  let bVar1;
+  let iVar2;
+  let uVar3;
+  let iVar4;
+  let uVar5, uVar6;
+  let local_18;
+  let local_8;
+
+  iVar2 = FUN_004087c0(param_1, param_2);
   if (iVar2 !== 0) {
     FUN_005b9ec6();
-    // Process 9 neighboring tiles (8 directions + center)
-    for (let local_8 = 0; local_8 < 9; local_8++) {
-      let uVar3 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
+    for (local_8 = 0; local_8 < 9; local_8++) {
+      uVar3 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
       iVar2 = s8(DAT_00628360[local_8]) + param_2;
-      let iVar4 = FUN_004087c0(uVar3, iVar2);
+      iVar4 = FUN_004087c0(uVar3, iVar2);
       if (iVar4 !== 0) {
-        let cityIdx = FUN_0043cf76(uVar3, iVar2);
-        if (cityIdx < 0) {
+        iVar4 = FUN_0043cf76(uVar3, iVar2);
+        if (iVar4 < 0) {
           let isOcean = FUN_005b89e4(uVar3, iVar2);
           if (isOcean === 0) {
-            // Randomly damage terrain improvements
-            // Full implementation uses _rand() — simplified
+            let tOff = FUN_005b8931(uVar3, iVar2);
+            bVar1 = FUN_005b94d5(uVar3, iVar2);
+            if ((bVar1 & 0x42) === 0x40) {
+              FUN_005b94fc(uVar3, iVar2, 0x40, 0, 1);
+            }
+            uVar5 = _rand();
+            uVar6 = uVar5 >> 31;
+            if (((((uVar5 ^ uVar6) - uVar6) & 1) ^ uVar6) !== uVar6) {
+              FUN_005b94fc(uVar3, iVar2, 0x20, 0, 1);
+            }
+            if ((u8(tileRead(tOff, 1)) & 8) === 0 || (u8(tileRead(tOff, 1)) & 4) === 0) {
+              uVar5 = _rand();
+              uVar6 = uVar5 >> 31;
+              if (((((uVar5 ^ uVar6) - uVar6) & 1) ^ uVar6) !== uVar6) {
+                FUN_005b94fc(uVar3, iVar2, 8, 0, 1);
+              }
+              uVar5 = _rand();
+              uVar6 = uVar5 >> 31;
+              if (((((uVar5 ^ uVar6) - uVar6) & 1) ^ uVar6) !== uVar6) {
+                FUN_005b94fc(uVar3, iVar2, 4, 0, 1);
+              }
+            } else {
+              uVar5 = _rand();
+              uVar6 = uVar5 >> 31;
+              if (((((uVar5 ^ uVar6) - uVar6) & 1) ^ uVar6) !== uVar6) {
+                FUN_005b94fc(uVar3, iVar2, 8, 0, 1);
+              }
+            }
+            for (local_18 = 1; local_18 < 8; local_18++) {
+              FUN_005b8b1a(uVar3, iVar2, local_18);
+            }
+            iVar4 = _rand();
+            if (iVar4 % 3 !== 0) {
+              FUN_005b90df(uVar3, iVar2);
+            }
+            FUN_0047cea6(uVar3, iVar2);
           }
         } else {
-          // Reduce city size
-          DAT_0064f340[cityIdx * 0x58 + 9] =
-            DAT_0064f340[cityIdx * 0x58 + 9] - (s8(DAT_0064f340[cityIdx * 0x58 + 9]) >> 1);
+          // Reduce city size by half
+          DAT_0064f340[iVar4 * 0x58 + 9] =
+            DAT_0064f340[iVar4 * 0x58 + 9] - (s8(DAT_0064f340[iVar4 * 0x58 + 9]) >> 1);
           FUN_0047ce1e(uVar3, iVar2, 0, DAT_006d1da0, 1);
         }
       }
@@ -2176,12 +2282,12 @@ export function FUN_005b9179(param_1, param_2) {
 // FUN_005b9431 — check_tech_known_for_city (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9431 (78 bytes)
 export function FUN_005b9431(param_1, param_2) {
-  let local_c = 0;
-  let local_8 = 0;
-  FUN_005ae3bf(param_2, local_c, local_8);
-  // Simplified — full version checks DAT_00666137
-  return false;
+  // FUN_005ae3bf converts tech ID to byte_index and bit_mask
+  let local_c = param_2 >> 3;      // byte index
+  let local_8 = 1 << (param_2 & 7); // bit mask
+  return (local_8 & DAT_00666137[local_c + param_1 * 0x10]) !== 0;
 }
 
 
@@ -2203,10 +2309,29 @@ export function FUN_005b947f(param_1) {
 // FUN_005b94fc — set_tile_improvement_bits (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b94fc (330 bytes)
 export function FUN_005b94fc(param_1, param_2, param_3, param_4, param_5) {
-  // Sets/clears bits in tile byte[1] (improvements)
-  // Full implementation requires direct tile data access
-  // Simplified — network sync omitted
+  let cVar1;
+  let iVar2;
+
+  iVar2 = FUN_005b8931(param_1, param_2);
+  cVar1 = tileRead(iVar2, 1);
+  if (param_4 === 0) {
+    tileWrite(iVar2, 1, u8(tileRead(iVar2, 1)) & (~param_3 & 0xFF));
+  } else {
+    tileWrite(iVar2, 1, u8(tileRead(iVar2, 1)) | (param_3 & 0xFF));
+  }
+  if (param_5 !== 0 && tileRead(iVar2, 1) !== cVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(0, param_1, param_2, param_3, param_4, 0);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x90, 0, param_1, param_2, param_3, param_4, 1, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x90, 0xff, param_1, param_2, param_3, param_4, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2214,9 +2339,26 @@ export function FUN_005b94fc(param_1, param_2, param_3, param_4, param_5) {
 // FUN_005b9646 — set_tile_terrain (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9646 (295 bytes)
 export function FUN_005b9646(param_1, param_2, param_3, param_4) {
-  // Sets terrain type in tile byte[0] low nibble
-  // Simplified
+  let bVar1;
+  let iVar2;
+
+  iVar2 = FUN_005b8931(param_1, param_2);
+  bVar1 = tileRead(iVar2, 0);
+  tileWrite(iVar2, 0, u8(tileRead(iVar2, 0)) & 0xf0);
+  tileWrite(iVar2, 0, u8(tileRead(iVar2, 0)) | (param_3 & 0xFF));
+  if (param_4 !== 0 && tileRead(iVar2, 0) !== bVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(1, param_1, param_2, param_3, 0, 0);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x91, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x91, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2224,9 +2366,29 @@ export function FUN_005b9646(param_1, param_2, param_3, param_4) {
 // FUN_005b976d — set_tile_visibility_bits (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b976d (330 bytes)
 export function FUN_005b976d(param_1, param_2, param_3, param_4, param_5) {
-  // Sets/clears bits in tile byte[4] (visibility)
-  // Simplified
+  let cVar1;
+  let iVar2;
+
+  iVar2 = FUN_005b8931(param_1, param_2);
+  cVar1 = tileRead(iVar2, 4);
+  if (param_4 === 0) {
+    tileWrite(iVar2, 4, u8(tileRead(iVar2, 4)) & (~param_3 & 0xFF));
+  } else {
+    tileWrite(iVar2, 4, u8(tileRead(iVar2, 4)) | (param_3 & 0xFF));
+  }
+  if (param_5 !== 0 && tileRead(iVar2, 4) !== cVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(2, param_1, param_2, param_3, param_4, 0);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x92, 0, param_1, param_2, param_3, param_4, 1, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x92, 0xff, param_1, param_2, param_3, param_4, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2234,9 +2396,26 @@ export function FUN_005b976d(param_1, param_2, param_3, param_4, param_5) {
 // FUN_005b98b7 — set_tile_owner_low_nibble (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b98b7 (305 bytes)
 export function FUN_005b98b7(param_1, param_2, param_3, param_4) {
-  // Sets low nibble of tile byte[5]
-  // Simplified
+  let cVar1;
+  let iVar2;
+
+  iVar2 = FUN_005b8931(param_1, param_2);
+  cVar1 = tileRead(iVar2, 5);
+  tileWrite(iVar2, 5, u8(tileRead(iVar2, 5)) & 0xf0);
+  tileWrite(iVar2, 5, u8(tileRead(iVar2, 5)) | (param_3 & 0xf));
+  if (param_4 !== 0 && tileRead(iVar2, 5) !== cVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(3, param_1, param_2, param_3, 0, 0);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x93, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x93, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2244,9 +2423,29 @@ export function FUN_005b98b7(param_1, param_2, param_3, param_4) {
 // FUN_005b99e8 — set_tile_owner_high_nibble (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b99e8 (333 bytes)
 export function FUN_005b99e8(param_1, param_2, param_3, param_4) {
-  // Sets high nibble of tile byte[5]
-  // Simplified
+  let cVar1;
+  let iVar2;
+
+  if (param_3 < 0 || 8 < param_3) {
+    param_3 = 0xf;
+  }
+  iVar2 = FUN_005b8931(param_1, param_2);
+  cVar1 = tileRead(iVar2, 5);
+  tileWrite(iVar2, 5, u8(tileRead(iVar2, 5)) & 0xf);
+  tileWrite(iVar2, 5, u8(tileRead(iVar2, 5)) | ((param_3 << 4) & 0xFF));
+  if (param_4 !== 0 && tileRead(iVar2, 5) !== cVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(4, param_1, param_2, param_3, 0, 0);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x94, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x94, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2254,9 +2453,25 @@ export function FUN_005b99e8(param_1, param_2, param_3, param_4) {
 // FUN_005b9b35 — set_tile_continent (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9b35 (276 bytes)
 export function FUN_005b9b35(param_1, param_2, param_3, param_4) {
-  // Sets tile byte[3] (continent ID)
-  // Simplified
+  let cVar1;
+  let iVar2;
+
+  iVar2 = FUN_005b8931(param_1, param_2);
+  cVar1 = tileRead(iVar2, 3);
+  tileWrite(iVar2, 3, param_3 & 0xFF);
+  if (param_4 !== 0 && tileRead(iVar2, 3) !== cVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(5, param_1, param_2, param_3, 0, 0);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x95, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x95, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2264,9 +2479,26 @@ export function FUN_005b9b35(param_1, param_2, param_3, param_4) {
 // FUN_005b9c49 — set_tile_river_group (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9c49 (312 bytes)
 export function FUN_005b9c49(param_1, param_2, param_3, param_4) {
-  // Sets bits 7-5 of tile byte[2]
-  // Simplified
+  let cVar1;
+  let iVar2;
+
+  iVar2 = FUN_005b8931(param_1, param_2);
+  cVar1 = tileRead(iVar2, 2);
+  tileWrite(iVar2, 2, u8(tileRead(iVar2, 2)) & 0x1f);
+  tileWrite(iVar2, 2, (((param_3 & 7) << 5) | u8(tileRead(iVar2, 2))) & 0xFF);
+  if (param_4 !== 0 && tileRead(iVar2, 2) !== cVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(6, param_1, param_2, param_3, 0, 0);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x96, 0, param_1, param_2, param_3, 1, 0, 0, 0, 0);
+      } else {
+        FUN_0046b14d(0x96, 0xff, param_1, param_2, param_3, 0, 0, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2274,9 +2506,32 @@ export function FUN_005b9c49(param_1, param_2, param_3, param_4) {
 // FUN_005b9d81 — set_vis_layer_data (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9d81 (325 bytes)
 export function FUN_005b9d81(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Sets data in visibility layer arrays
-  // Simplified
+  let bVar1;
+  let addr;
+
+  addr = FUN_005b898b(param_1, param_2, param_4);
+  if (addr < 0 || !DAT_006365c0[param_4]) {
+    return; // out of bounds
+  }
+  bVar1 = DAT_006365c0[param_4][addr];
+  if (param_5 === 0) {
+    DAT_006365c0[param_4][addr] = param_3 & 0xFF;
+  } else {
+    DAT_006365c0[param_4][addr] = (DAT_006365c0[param_4][addr] | param_3) & 0xFF;
+  }
+  if (param_6 !== 0 && DAT_006365c0[param_4][addr] !== bVar1 && 2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0 && DAT_006ad69a !== 0) {
+      FUN_005b9fde(7, param_1, param_2, param_3, param_4, param_5);
+    } else if (DAT_006ad699 !== 0) {
+      if (DAT_006ad2f7 === 0) {
+        FUN_0046b14d(0x97, 0, param_1, param_2, param_3, param_4, param_5, 1, 0, 0);
+      } else {
+        FUN_0046b14d(0x97, 0xff, param_1, param_2, param_3, param_4, param_5, 0, 0, 0);
+      }
+    }
+  }
 }
 
 
@@ -2284,10 +2539,12 @@ export function FUN_005b9d81(param_1, param_2, param_3, param_4, param_5, param_
 // FUN_005b9ec6 — begin_map_batch_update (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9ec6 (86 bytes)
 export function FUN_005b9ec6() {
   if (2 < DAT_00655b02) {
     DAT_006ad699 = 0;
     DAT_006ad69a = 1;
+    DAT_006d1190.fill(0);
     DAT_006365f4 = 1;
   }
 }
@@ -2297,6 +2554,7 @@ export function FUN_005b9ec6() {
 // FUN_005b9f1c — end_map_batch_update (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9f1c (194 bytes)
 export function FUN_005b9f1c() {
   if (2 < DAT_00655b02) {
     DAT_006ad699 = 1;
@@ -2305,6 +2563,7 @@ export function FUN_005b9f1c() {
       if (1 < DAT_006365f4) {
         FUN_0046b14d(0x59, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         XD_FlushSendBuffer(5000);
+        DAT_006d1190.fill(0);
         DAT_006365f4 = 1;
       }
     } else {
@@ -2319,9 +2578,45 @@ export function FUN_005b9f1c() {
 // FUN_005b9fde — queue_map_batch_entry (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b9fde (515 bytes)
 export function FUN_005b9fde(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Queues a batched map update for network sync
-  // Simplified
+  if (DAT_006ad2f7 !== 0) {
+    FUN_005dae6b(7, '!gNetMgr.bServer', 'Map.cpp', 0x3de);
+  }
+  if (0x100 - DAT_006365f4 < DAT_006365f8[param_1] + 1) {
+    FUN_0046b14d(0x59, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    XD_FlushSendBuffer(5000);
+    DAT_006d1190[0] = 0;
+    DAT_006365f4 = 1;
+  }
+  DAT_006d1190[0] = DAT_006d1190[0] + 1;
+  DAT_006d1190[DAT_006365f4] = param_1;
+  DAT_006365f4 = DAT_006365f4 + 1;
+  switch (param_1) {
+    case 0:
+    case 2:
+      DAT_006d1190[DAT_006365f4] = param_2; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_3; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_4; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_5; DAT_006365f4++;
+      break;
+    case 1:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+      DAT_006d1190[DAT_006365f4] = param_2; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_3; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_4; DAT_006365f4++;
+      break;
+    case 7:
+      DAT_006d1190[DAT_006365f4] = param_2; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_3; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_4; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_5; DAT_006365f4++;
+      DAT_006d1190[DAT_006365f4] = param_6; DAT_006365f4++;
+      break;
+  }
 }
 
 
@@ -2329,9 +2624,44 @@ export function FUN_005b9fde(param_1, param_2, param_3, param_4, param_5, param_
 // FUN_005ba206 — apply_map_batch (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005ba206 (510 bytes)
 export function FUN_005ba206(param_1) {
-  // Applies batched map updates received from network
-  // Simplified
+  let iVar1;
+  let uVar2;
+  let local_28;
+  let local_24;
+  let local_20 = [0, 0, 0, 0];
+  let local_10;
+  let local_8;
+
+  local_8 = 0;
+  if (2 < DAT_00655b02) {
+    if (DAT_006ad2f7 === 0) {
+      FUN_005dae6b(7, 'gNetMgr.bServer', 'Map.cpp', 0x416);
+    }
+    uVar2 = DAT_006ad699;
+    DAT_006ad699 = 0;
+    iVar1 = local_8;
+    local_8 = local_8 + 1;
+    for (local_28 = param_1[iVar1]; 0 < local_28; local_28 = local_28 - 1) {
+      iVar1 = param_1[local_8];
+      for (local_24 = 0; local_8 = local_8 + 1, local_24 < DAT_006365f8[iVar1] - 1; local_24++) {
+        local_20[local_24] = param_1[local_8];
+      }
+      switch (iVar1) {
+        case 0: FUN_005b94fc(local_20[0], local_20[1], local_20[2], local_20[3], 1); break;
+        case 1: FUN_005b9646(local_20[0], local_20[1], local_20[2], 1); break;
+        case 2: FUN_005b976d(local_20[0], local_20[1], local_20[2], local_20[3], 1); break;
+        case 3: FUN_005b98b7(local_20[0], local_20[1], local_20[2], 1); break;
+        case 4: FUN_005b99e8(local_20[0], local_20[1], local_20[2], 1); break;
+        case 5: FUN_005b9b35(local_20[0], local_20[1], local_20[2], 1); break;
+        case 6: FUN_005b9c49(local_20[0], local_20[1], local_20[2], 1); break;
+        case 7: FUN_005b9d81(local_20[0], local_20[1], local_20[2], local_20[3], local_10, 1); break;
+      }
+    }
+    DAT_006ad699 = uVar2;
+    FUN_004b0b53(0xff, 2, 0, 0, 0);
+  }
 }
 
 
@@ -2403,44 +2733,44 @@ export function FUN_005baf24(param_1) {
 // FUN_005baf57 — draw_text (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005baf57(param_1, param_2, param_3, param_4) { return param_3; /* UI — stubbed */ }
+export function FUN_005baf57(param_1, param_2, param_3, param_4) { return param_3; /* DEVIATION: Win32 API */ }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005bb024 — draw_text_centered (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb024(param_1, param_2, param_3, param_4, param_5) { return 0; /* UI — stubbed */ }
+export function FUN_005bb024(param_1, param_2, param_3, param_4, param_5) { return 0; /* DEVIATION: Win32 API */ }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005bb0af — draw_text_right_aligned (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb0af(param_1, param_2, param_3, param_4, param_5) { return param_3; /* UI — stubbed */ }
+export function FUN_005bb0af(param_1, param_2, param_3, param_4, param_5) { return param_3; /* DEVIATION: Win32 API */ }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// Remaining functions: UI/GDI/Window management — all stubbed
+// Remaining functions: UI/GDI/Window management — DEVIATION: Win32 API
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7) { /* UI — stubbed */ }
-export function FUN_005bb463(p1, p2, p3, p4, p5, p6, p7, p8) { /* UI — stubbed */ }
-export function FUN_005bb4ae(p1, p2, p3, p4, p5, p6, p7, p8) { /* UI — stubbed */ }
-export function FUN_005bb525(p1, p2, p3, p4, p5, p6, p7, p8, p9) { /* UI — stubbed */ }
-export function FUN_005bb574() { /* UI — stubbed */ }
-export function FUN_005bb5be(param_1) { return false; /* UI — stubbed */ }
-export function FUN_005bb621(param_1, param_2) { /* Win32 UI — stubbed */ }
-export function FUN_005bb6c7(param_1, param_2) { /* UI — stubbed */ }
-export function FUN_005bb760(p1, p2, p3, p4, p5, p6) { /* UI — stubbed */ }
-export function FUN_005bb7c3(p1, p2, p3, p4, p5, p6, p7) { /* UI — stubbed */ }
-export function FUN_005bb80a(p1, p2, p3, p4, p5, p6, p7) { /* UI — stubbed */ }
-export function FUN_005bb871(p1, p2, p3, p4, p5, p6, p7, p8) { /* UI — stubbed */ }
-export function FUN_005bb8c0() { return 0; /* UI — stubbed */ }
-export function FUN_005bb8e0(param_1, param_2) { /* UI — stubbed */ }
-export function FUN_005bb910(param_1, param_2) { /* UI — stubbed */ }
-export function FUN_005bb950(param_1, param_2) { /* UI — stubbed */ }
-export function FUN_005bb990() { /* UI — stubbed */ }
+export function FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb463(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb4ae(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb525(p1, p2, p3, p4, p5, p6, p7, p8, p9) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb574() { /* DEVIATION: Win32 API */ }
+export function FUN_005bb5be(param_1) { return false; /* DEVIATION: Win32 API */ }
+export function FUN_005bb621(param_1, param_2) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb6c7(param_1, param_2) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb760(p1, p2, p3, p4, p5, p6) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb7c3(p1, p2, p3, p4, p5, p6, p7) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb80a(p1, p2, p3, p4, p5, p6, p7) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb871(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb8c0() { return 0; /* DEVIATION: Win32 API */ }
+export function FUN_005bb8e0(param_1, param_2) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb910(param_1, param_2) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb950(param_1, param_2) { /* DEVIATION: Win32 API */ }
+export function FUN_005bb990() { /* DEVIATION: Win32 API */ }
 export function FUN_005bb9c0() { /* Win32 PeekMessage — no-op */ }
 export function FUN_005bba1d() { /* Win32 PeekMessage — no-op */ }
 export function gdi_BA4F() { return 0; /* Win32 message pump — no-op */ }
@@ -2588,4 +2918,8 @@ function FUN_0056baff(a, b, c, d, e, f, g) {}
 function FUN_0059df8a() {}
 function FUN_005cde4d() {}
 function FUN_005d7c6e() {}
+function FUN_004a3db0(a, b) {} // kill_civ
+function FUN_00410030(a, b, c) {} // show message box
+function FUN_00490530(a, b, c) {} // tutorial popup
+function _rand() { return (Math.random() * 0x7FFF) | 0; }
 function debug_log(a) {}

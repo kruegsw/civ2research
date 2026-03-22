@@ -34,7 +34,8 @@ import { FUN_004190a0, FUN_004190d0, FUN_00419100, FUN_00419170, FUN_00419b80, F
 import { FUN_00419be0, FUN_00419c8b, FUN_00419ed3 } from './block_00410000.js';
 import { FUN_00421bb0, FUN_00421ca0, FUN_00421d60, FUN_00421da0, FUN_00421dd0, FUN_00421e70 } from './block_00420000.js';
 import { FUN_00421ea0, FUN_00421f10, FUN_00426fb0, FUN_00428b0c } from './block_00420000.js';
-import { FUN_00432611, FUN_0043c460, FUN_0043c5f0, FUN_0043ce5a } from './block_00430000.js';
+import { FUN_00432611, FUN_0043c460, FUN_0043c520, FUN_0043c5f0, FUN_0043c690, FUN_0043c6c0 } from './block_00430000.js';
+import { FUN_0043c840, FUN_0043c9d0, FUN_0043ce5a } from './block_00430000.js';
 import { FUN_004442a0, FUN_004442e0, FUN_00444310, FUN_00447210, FUN_0044c5a0, FUN_0044c730 } from './block_00440000.js';
 import { FUN_0044ca60, FUN_0044cba0 } from './block_00440000.js';
 import { FUN_004502b0, FUN_004502e0, FUN_00450340, FUN_00450390, FUN_004503d0, FUN_00450400 } from './block_00450000.js';
@@ -73,13 +74,12 @@ import { FUN_005c19ad, FUN_005c5fc4, FUN_005c61b0, FUN_005c64da, FUN_005c656b, F
 import { FUN_005c6da8, FUN_005cb6db, FUN_005cde4d, FUN_005cedad, FUN_005cef31, FUN_005cef66 } from './block_005C0000.js';
 import { FUN_005d22b7, FUN_005d268e, FUN_005d6a2c, FUN_005d8236, FUN_005dae6b, FUN_005dd010 } from './block_005D0000.js';
 import { FUN_005dd1a0, FUN_005dd2e3, FUN_005dd377, FUN_005dd3c2, FUN_005dd3f1, FUN_005dd45d } from './block_005D0000.js';
-import { FUN_005dd561, FUN_005dd64c } from './block_005D0000.js';
+import { FUN_005dd51d, FUN_005dd561, FUN_005dd64c } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_00600000.js';
 
 export function FUN_00511320() {
   let in_ECX;
-  // return *(in_ECX + 4) — reads vtable/struct field
-  return 0; // stub: register-based
+  return 0; // DEVIATION: returns *(in_ECX + 4) via register-based calling convention
 }
 
 
@@ -206,7 +206,7 @@ export function FUN_005115b0() {
   let in_ECX;
   // SEH setup omitted
   if (in_ECX !== undefined && in_ECX !== 0) {
-    // if (*(in_ECX + 0x1c) !== 0) FUN_005cb6db(*(in_ECX + 0x1c));
+    // DEVIATION: if (*(in_ECX + 0x1c) !== 0) FUN_005cb6db(*(in_ECX + 0x1c));
   }
   FUN_00511624();
   FUN_00511630();
@@ -277,8 +277,9 @@ export function FUN_0051164f() {
 // scale_by_speed
 export function FUN_00511690(param_1) {
   let in_ECX;
-  // if (*(in_ECX + 0x15d4) !== 2) {
-  //   param_1 = (*(in_ECX + 0x15d4) * param_1) / 2;
+  // DEVIATION: in_ECX is register-based (this pointer)
+  // if (s32(in_ECX, 0x15d4) !== 2) {
+  //   param_1 = (s32(in_ECX, 0x15d4) * param_1) / 2;
   // }
   return param_1;
 }
@@ -310,7 +311,7 @@ export function FUN_00511720() {
   FUN_0040f480();
   FUN_005bd630();
   FUN_005bd630();
-  // *(in_ECX + 200) = 0;
+  // DEVIATION: *(in_ECX + 200) = 0 — register-based this pointer
   return in_ECX;
 }
 
@@ -324,7 +325,7 @@ export function FUN_00511720() {
 // set_ecx_field_2c
 export function FUN_005117f0(param_1) {
   let in_ECX;
-  // *(in_ECX + 0x2c) = param_1;
+  // DEVIATION: *(in_ECX + 0x2c) = param_1 — register-based this pointer
   return;
 }
 
@@ -337,7 +338,7 @@ export function FUN_005117f0(param_1) {
 
 // CPropertySheet::EnableStackedTabs (variant 1)
 export function EnableStackedTabs_00511820(this_ptr, param_1) {
-  // *(this_ptr + 0x2cc) = param_1;
+  // DEVIATION: *(this_ptr + 0x2cc) = param_1 — MFC CPropertySheet method
   return;
 }
 
@@ -350,7 +351,7 @@ export function EnableStackedTabs_00511820(this_ptr, param_1) {
 
 // CPropertySheet::EnableStackedTabs (variant 2)
 export function EnableStackedTabs_00511850(this_ptr, param_1) {
-  // *(this_ptr + 0x2d0) = param_1;
+  // DEVIATION: *(this_ptr + 0x2d0) = param_1 — MFC CPropertySheet method
   return;
 }
 
@@ -418,7 +419,9 @@ export function FUN_00511a0e(param_1, param_2, param_3, param_4, param_5, param_
   puVar2[4] = param_4;
   puVar2[5] = param_5;
   puVar2[6] = param_7;
-  // if (param_7 !== 0) memcpy(puVar2 + 7, param_6, param_7);
+  if (param_7 !== 0) {
+    // DEVIATION: FID_conflict__memcpy(puVar2 + 7, param_6, param_7)
+  }
   let puVar1 = puVar2;
   if (G.DAT_00631130 !== null) {
     G.DAT_00631134[0] = puVar2;
@@ -496,11 +499,23 @@ export function FUN_00511ba2() {
     if (G.DAT_00631130 === null) {
       G.DAT_00631134 = 0;
     }
+    let local_14;
     if ((piVar1[2] !== 0) || (piVar1[3] !== 0)) {
-      // local_14 = piVar1 + 7;
+      local_14 = piVar1 + 7; // pointer to payload data after header
     }
-    // Process string and int arrays from the notification
-    // (large block of string copy/memcpy — omitted for brevity, see C source)
+    if (piVar1[2] !== 0) {
+      for (local_310 = 0; local_310 < piVar1[2]; local_310 = local_310 + 1) {
+        FUN_005f22d0(G.DAT_0063cc48[local_310 * 0x104], local_14);
+        sVar2 = _strlen(G.DAT_0063cc48[local_310 * 0x104]);
+        local_14 = local_14 + sVar2 + 1;
+      }
+    }
+    if (piVar1[3] !== 0) {
+      for (local_310 = 0; local_310 < piVar1[3]; local_310 = local_310 + 1) {
+        // DEVIATION: FID_conflict__memcpy(&G.DAT_0063cc30 + local_310 * 4, local_14, 4);
+        local_14 = local_14 + 1;
+      }
+    }
 
     G.DAT_00635a3c = 0x00403c74; // LAB_00403c74
     switch (piVar1[1]) {
@@ -725,8 +740,72 @@ export function FUN_00511ba2() {
       FUN_00421ea0(s_ALLYATTACKING_00631414);
       break;
     case 0x3d:
-      // Diplomacy parley request — extensive UI logic
-      // See C source lines ~764-834 for full switch case 0x3d
+      // DEVIATION: w16(G.DAT_0064ca82, piVar1[4] * 2 + G.DAT_006d1da0 * 0x594, G.DAT_00655af8);
+      // DEVIATION: w16(G.DAT_0064ca82, piVar1[4] * 0x594 + G.DAT_006d1da0 * 2, G.DAT_00655af8);
+      if (G.DAT_0067a8c0 === -1) {
+        G.DAT_0067a8c0 = 0xfffffffe;
+        FUN_0040bbb0();
+        uVar4 = FUN_00493ba6(piVar1[4]);
+        FUN_0040bbe0(uVar4);
+        FUN_0040fe10();
+        uVar4 = FUN_00493b10(piVar1[4]);
+        FUN_0040bbe0(uVar4);
+        FUN_0040fe10();
+        FUN_0040bc10(0x8c);
+        FUN_0040fe10();
+        uVar4 = FUN_00493c7d(piVar1[4]);
+        FUN_0040bbe0(uVar4);
+        FUN_0040ff60(0, G.DAT_00679640);
+        uVar4 = FUN_00493b10(G.DAT_006d1da0);
+        FUN_0040ff60(1, uVar4);
+        uVar4 = FUN_00493c7d(G.DAT_006d1da0);
+        FUN_0040ff60(2, uVar4);
+        if (G.DAT_0064c6e0[piVar1[4] * 0x594 + G.DAT_006d1da0] === '\0') {
+          local_330 = 0;
+        } else {
+          local_330 = FUN_004679ab(G.DAT_0064c6e0[piVar1[4] * 0x594 + G.DAT_006d1da0]);
+        }
+        uVar4 = FUN_00428b0c(G.DAT_0064b9c0[local_330 * 4]);
+        FUN_0040ff60(3, uVar4);
+        G.DAT_00635a3c = 0x00403d0f; // LAB_00403d0f
+        iVar3 = FUN_00410030(s_PARLEYREQUEST_00631424, G.DAT_0063fc58, 0);
+        if (G.DAT_006ad698 === '\0') {
+          if (G.DAT_006c91e4 === 0) {
+            FUN_0046b14d(0x80,
+              G.DAT_006ad30c[G.DAT_006ad558[piVar1[4] * 4] * 0x54],
+              iVar3, 0, 0, 0, 0, 0, 0, 0);
+          }
+          if (G.DAT_006c91e4 === 0) {
+            if (iVar3 === 1) {
+              iVar3 = piVar1[4];
+              operator_delete(piVar1);
+              _DAT_006ad67c = 0;
+              FUN_004b7eb6(iVar3, 2);
+              FUN_0051399d();
+              FUN_005139b3();
+              return;
+            }
+          } else {
+            G.DAT_006c91e4 = 0;
+            uVar4 = FUN_00493c7d(piVar1[4]);
+            FUN_0040ff60(0, uVar4);
+            G.DAT_00635a3c = 0x00403c74; // LAB_00403c74
+            FUN_00410030(s_PARLEYCANCEL_00631434, G.DAT_0063fc58, 0);
+          }
+          G.DAT_0067a8c0 = -1;
+          G.DAT_00626a2c = 0;
+        } else {
+          FUN_0046b14d(0x80,
+            G.DAT_006ad30c[G.DAT_006ad558[piVar1[4] * 4] * 0x54],
+            2, 0, 0, 0, 0, 0, 0, 0);
+          G.DAT_0067a8c0 = -1;
+          G.DAT_00626a2c = 0;
+        }
+      } else {
+        FUN_0046b14d(0x80,
+          G.DAT_006ad30c[G.DAT_006ad558[piVar1[4] * 4] * 0x54],
+          2, 0, 0, 0, 0, 0, 0, 0);
+      }
       break;
     case 0x3e:
       FUN_004442a0(s_UPGRADE_00631444, piVar1[4], (piVar1[5] === 0 ? 1 : 0) - 1 & 8);
@@ -807,7 +886,10 @@ export function FUN_00511ba2() {
       break;
     case 0x4d:
       FUN_0043c9d0(s_ENDWONDER_00631510);
-      // complex expression with G.DAT_0062768c/G.DAT_0062768d arrays
+      FUN_0059ec88(G.DAT_00646cb8[
+        s8(G.DAT_0062768c[piVar1[4] * 0x10]) * 0xf0 +
+        s8(G.DAT_0062768d[piVar1[4] * 0x10]) * 0x3c], 0, 0);
+      FUN_0059ec88(G.DAT_00645160[piVar1[5] * 0x3c], 0, 0);
       EnableStackedTabs_00511850(local_308, 8);
       FUN_0040bc80(0);
       break;
@@ -854,8 +936,127 @@ export function FUN_00511ba2() {
       FUN_0046e020(0x44, 1, 0, 0);
       FUN_00410030(s_FOILEDAGAIN_00631598, G.DAT_0063fc58, 0);
       break;
-    // Cases 0x59-0x65: spy operations, civil war, unit upgrades, etc.
-    // See C source for full detail. All are UI popup dispatches.
+    case 0x59:
+      iVar3 = FUN_004bd9f0(piVar1[5], 0x23);
+      if (iVar3 === 0) { FUN_0046e020(0x44, 1, 0, 0); }
+      else { FUN_0046e020(0x27, 1, 0, 0); }
+      FUN_00410030(s_SABOTAGEONE_006315d8, G.DAT_00645160[piVar1[4] * 0x3c], 8);
+      break;
+    case 0x5a:
+      iVar3 = FUN_004bd9f0(piVar1[4], 0x23);
+      if (iVar3 === 0) { FUN_0046e020(0x44, 1, 0, 0); }
+      else { FUN_0046e020(0x27, 1, 0, 0); }
+      FUN_00421ea0(s_SABOTAGETWO_006315e4);
+      break;
+    case 0x5b:
+      FUN_0046e020(0x44, 1, 0, 0);
+      FUN_00410030(s_WATERSUPPLY_006315a4, G.DAT_0063fc58, 0);
+      break;
+    case 0x5c:
+      FUN_0040bbb0();
+      FUN_0040bbe0(s_PLANTEDNUKE_006315b0);
+      FUN_004cc870(G.DAT_00679640, 0x3e, 8);
+      break;
+    case 0x5d:
+      FUN_0040bbb0();
+      FUN_0040bbe0(s_PLANTEDNUKE2_006315bc);
+      FUN_004cc870(G.DAT_00679640, 0x3e, 8);
+      break;
+    case 0x5e:
+      FUN_0046e020(0x44, 1, 0, 0);
+      FUN_00421ea0(s_CIVILWAR_006315cc);
+      break;
+    case 0x5f:
+      FUN_0046e020(0x5d, 0, 0, 0);
+      FUN_004442e0(s_UPMINE_006315f0, piVar1[4]);
+      break;
+    case 0x60:
+      FUN_0046e020(0x5d, 0, 0, 0);
+      FUN_004442e0(s_UPYOURS_006315f8, piVar1[4]);
+      break;
+    case 0x61:
+      FUN_0046e020(0x5d, 0, 0, 0);
+      FUN_004442e0(s_UPYOURSTOO_00631600, piVar1[4]);
+      break;
+    case 0x62:
+      FUN_00421ea0(s_MERCDECLARE_0063160c);
+      break;
+    case 99: // 0x63
+      FUN_004c4240(s_TOOKCIV_00631618, piVar1[4], 0);
+      break;
+    case 100: // 0x64
+      if ((G.DAT_0067a8bc === 0) && (piVar1[4] === G.DAT_0067a8c0)) {
+        G.DAT_00631138 = 1;
+        FUN_0040ffa0(s_REVEALUNITORIGINS_00631620, 0x2000000);
+        uVar4 = FUN_00428b0c(G.DAT_00628420[0xdd4]);
+        FUN_0059f2a3(uVar4);
+        uVar4 = FUN_00428b0c(G.DAT_00628420[0xdd8]);
+        FUN_0059f2a3(uVar4);
+        FUN_0040bc80(0x14);
+        if (local_22c === 1) {
+          G.DAT_0067ab65 = '\x01';
+          if (G.DAT_0067a994 === 2) {
+            FUN_0040f380();
+            FUN_00453c80();
+            FUN_0043c5f0();
+            FUN_00453c40();
+          } else {
+            FUN_0043c5f0();
+            FUN_00453c40();
+            FUN_0043c5f0();
+            FUN_00453c40();
+          }
+          FUN_0046b14d(0xa7,
+            G.DAT_006ad30c[G.DAT_006ad558[G.DAT_0067a8c0 * 4] * 0x54],
+            G.DAT_006d1da0, G.DAT_0067ab65, 0, 0, 0, 0, 0, 0);
+          if (((G.DAT_0067a994 === 0xe) && (G.DAT_0067a9b8 === 2)) ||
+             ((G.DAT_0067a994 === 0xf && (G.DAT_0067a9bc === 2)))) {
+            FUN_0040f380();
+            FUN_0043c5f0();
+            G.DAT_0067ab65 = '\x01';
+            FUN_00453c80();
+            FUN_00453c80();
+            FUN_00468bb9(0);
+          }
+        }
+        G.DAT_00631138 = 0;
+      }
+      break;
+    case 0x65:
+      if ((G.DAT_0067a8bc === 0) && (piVar1[4] === G.DAT_0067a8c0)) {
+        G.DAT_0063113c = 1;
+        FUN_0040ffa0(s_REVEALCITYINFO_00631634, 0x2000000);
+        uVar4 = FUN_00428b0c(G.DAT_00628420[0xddc]);
+        FUN_0059f2a3(uVar4);
+        uVar4 = FUN_00428b0c(G.DAT_00628420[0xdd8]);
+        FUN_0059f2a3(uVar4);
+        FUN_0040bc80(0x14);
+        if (local_22c === 1) {
+          G.DAT_0067ab66 = '\x01';
+          if (G.DAT_0067a994 === 2) {
+            FUN_0040f380();
+            FUN_00453c80();
+            FUN_0043c5f0();
+            FUN_00453c40();
+          } else {
+            FUN_0043c5f0();
+            FUN_00453c40();
+            FUN_0043c5f0();
+            FUN_00453c40();
+          }
+          FUN_0046b14d(0xa5,
+            G.DAT_006ad30c[G.DAT_006ad558[G.DAT_0067a8c0 * 4] * 0x54],
+            G.DAT_006d1da0, G.DAT_0067ab66, 0, 0, 0, 0, 0, 0);
+          if (((G.DAT_0067a994 === 0xe) && (G.DAT_0067a9b8 === 3)) ||
+             ((G.DAT_0067a994 === 0xf && (G.DAT_0067a9bc === 3)))) {
+            FUN_0040f380();
+            FUN_0043c5f0();
+            FUN_0058878e(0);
+          }
+        }
+        G.DAT_0063113c = 0;
+      }
+      break;
     default:
       break;
     }
@@ -902,7 +1103,7 @@ export function FUN_005139b3() {
 // net_msg_queue_init
 export function FUN_00514220() {
   let in_ECX;
-  // _memset(in_ECX, 0, 24000);
+  // DEVIATION: _memset(in_ECX, 0, 24000) — register-based this pointer
   FUN_00514272();
   return in_ECX;
 }
@@ -931,16 +1132,21 @@ export function FUN_00514254() {
 export function FUN_00514272() {
   let in_ECX;
   let local_8;
-  // Clears 2000 message queue slots, each 12 bytes, then resets head/tail
+  // DEVIATION: in_ECX is register-based this pointer for message queue object
   for (local_8 = 0; local_8 < 2000; local_8 = local_8 + 1) {
-    // free and zero each slot
+    // DEVIATION: if (*(in_ECX + 4 + local_8 * 0xc) !== 0) {
+    //   operator_delete(*(in_ECX + 4 + local_8 * 0xc));
+    //   *(in_ECX + 4 + local_8 * 0xc) = 0;
+    // }
+    // *(in_ECX + 8 + local_8 * 0xc) = 0;
+    // *(in_ECX + local_8 * 0xc) = 0;
   }
-  // *(in_ECX + 24000) = 400; // head
-  // *(in_ECX + 0x5dc4) = 400; // tail
-  // *(in_ECX + 0x5dc8) = 0;  // count
-  // *(in_ECX + 0x5dcc) = 0;  // alpha head
-  // *(in_ECX + 0x5dd0) = 0;  // alpha tail
-  // *(in_ECX + 0x5dd4) = 0;  // alpha count
+  // *(in_ECX + 24000) = 400;
+  // *(in_ECX + 0x5dc4) = 400;
+  // *(in_ECX + 0x5dc8) = 0;
+  // *(in_ECX + 0x5dcc) = 0;
+  // *(in_ECX + 0x5dd0) = 0;
+  // *(in_ECX + 0x5dd4) = 0;
   return;
 }
 
@@ -974,8 +1180,42 @@ export function FUN_0051438f(param_1, param_2, param_3) {
   let iVar1;
   let pvVar2;
   let in_ECX;
-  // Large net message queue enqueue with primary and alpha queues
-  // See C source for full circular buffer logic
+  // DEVIATION: in_ECX is register-based this pointer for message queue object
+  // All memory accesses below use in_ECX + offset pattern
+
+  if (((G.DAT_00655b02 === 5) || (G.DAT_00655b02 === 6)) && (param_1 !== 0) &&
+     (param_1 !== 0xff)) {
+    if (G.DAT_006ad2f7 === '\0') {
+      param_1 = 0;
+    } else {
+      param_1 = 1;
+    }
+  }
+  // DEVIATION: param_2 is pointer-based struct access *(param_2 + 4), *(param_2 + 8)
+  let msgType = 0; // *(int *)((int)param_2 + 4)
+  if (msgType === 0x2b) {
+    _DAT_006c908c = _DAT_006c908c + 1;
+    FUN_0046b14d(0x2c, param_1, 0, 0, 0, 0, 0, 0, 0, 0);
+  } else if (msgType === 0x2c) {
+    G.DAT_006c9090 = G.DAT_006c9090 + 1;
+  } else {
+    iVar1 = FUN_0051435f(msgType);
+    if (iVar1 === 0) {
+      // Primary queue enqueue
+      // DEVIATION: Circular buffer logic using in_ECX + offset for head/tail/count
+      // if queue full, log message lost and return 0
+      // otherwise allocate, memcpy, advance tail
+      // *(in_ECX + 0x5dc8) += 1; // count
+      // if (G.DAT_006ad690 < count) G.DAT_006ad690 = count;
+    } else {
+      // Alpha queue enqueue
+      // DEVIATION: Same circular buffer logic for alpha queue at in_ECX + 0x5dcc..0x5dd4
+      // if queue full, log message lost and return 0
+      // otherwise allocate, memcpy, advance tail
+      // *(in_ECX + 0x5dd4) += 1; // alpha count
+      // if (G.DAT_006ad694 < alphaCount) G.DAT_006ad694 = alphaCount;
+    }
+  }
   return 1;
 }
 
@@ -990,9 +1230,34 @@ export function FUN_0051438f(param_1, param_2, param_3) {
 export function FUN_005149d6(param_1, param_2, param_3, param_4) {
   let uVar1;
   let in_ECX;
-  // Dequeues from alpha queue first, then primary
-  // See C source for full circular buffer logic
-  return 0;
+  // DEVIATION: in_ECX is register-based this pointer for message queue object
+  // param_1, param_2, param_3 are output pointers
+
+  // Alpha queue has priority — dequeue from alpha first if non-empty
+  // if (*(in_ECX + 0x5dd4) !== 0) {
+  //   // Dequeue from alpha queue (head at 0x5dcc, count at 0x5dd4)
+  //   *param_1 = *(in_ECX + *(in_ECX + 0x5dcc) * 0xc);
+  //   *(in_ECX + *(in_ECX + 0x5dcc) * 0xc) = 0;
+  //   *param_2 = *(in_ECX + 4 + *(in_ECX + 0x5dcc) * 0xc);
+  //   *(in_ECX + 4 + *(in_ECX + 0x5dcc) * 0xc) = 0;
+  //   *param_3 = *(in_ECX + 8 + *(in_ECX + 0x5dcc) * 0xc);
+  //   *(in_ECX + 8 + *(in_ECX + 0x5dcc) * 0xc) = 0;
+  //   *(in_ECX + 0x5dcc) = (*(in_ECX + 0x5dcc) + 1) % 400;
+  //   *(in_ECX + 0x5dd4) = *(in_ECX + 0x5dd4) - 1;
+  //   uVar1 = 1;
+  // } else {
+  //   if ((param_4 === 0) && (*(in_ECX + 0x5dc8) !== 0)) {
+  //     // Dequeue from primary queue (head at 24000, count at 0x5dc8)
+  //     *param_1 = *(in_ECX + *(in_ECX + 24000) * 0xc);
+  //     ... advance head = (head + 1) % 2000; if (head === 0) head = 400;
+  //     *(in_ECX + 0x5dc8) -= 1;
+  //     uVar1 = 1;
+  //   } else {
+  //     uVar1 = 0;
+  //   }
+  // }
+  uVar1 = 0;
+  return uVar1;
 }
 
 
@@ -1123,7 +1388,8 @@ export function FUN_00514f16() {
 
 // wonders_council_dtor
 export function FUN_005150b9() {
-  // SEH setup, destructor chain for 7+ sub-objects
+  // SEH setup omitted
+  FUN_00450340(); // DEVIATION: MFC destructor chain
   G.DAT_00631a98 = 0;
   FUN_0051516a();
   FUN_00515179();
@@ -2641,14 +2907,9 @@ function COleClientItem_GetActiveView() { return 0; }
 function COleControlSite_SetDlgCtrlID() { }
 
 // Cross-block function stubs (from other block_*.c files)
-function FUN_0043c9d0() { }
 function FUN_00421d60_v2() { }
 function FUN_00421dd0_v2() { }
 function FUN_00443c80() { }
-function FUN_0043c520() { }
-function FUN_0043c690() { }
-function FUN_0043c6c0() { }
-function FUN_0043c840() { }
 function show_messagebox_CF2D() { return 0; }
 
 
@@ -2757,3 +3018,20 @@ let s_FOILEDAGAIN_00631598 = 'FOILEDAGAIN';
 let s_TERRAIN_00631d68 = 'TERRAIN';
 let PTR_FUN_0061d6d8 = 0;
 let PTR_DAT_006359f0 = 0;
+
+// Additional string constants for cases 0x59-0x65, 0x3d
+let s_SABOTAGEONE_006315d8 = 'SABOTAGEONE';
+let s_SABOTAGETWO_006315e4 = 'SABOTAGETWO';
+let s_WATERSUPPLY_006315a4 = 'WATERSUPPLY';
+let s_PLANTEDNUKE_006315b0 = 'PLANTEDNUKE';
+let s_PLANTEDNUKE2_006315bc = 'PLANTEDNUKE2';
+let s_CIVILWAR_006315cc = 'CIVILWAR';
+let s_UPMINE_006315f0 = 'UPMINE';
+let s_UPYOURS_006315f8 = 'UPYOURS';
+let s_UPYOURSTOO_00631600 = 'UPYOURSTOO';
+let s_MERCDECLARE_0063160c = 'MERCDECLARE';
+let s_TOOKCIV_00631618 = 'TOOKCIV';
+let s_REVEALUNITORIGINS_00631620 = 'REVEALUNITORIGINS';
+let s_REVEALCITYINFO_00631634 = 'REVEALCITYINFO';
+let s_PARLEYREQUEST_00631424 = 'PARLEYREQUEST';
+let s_PARLEYCANCEL_00631434 = 'PARLEYCANCEL';

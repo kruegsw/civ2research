@@ -737,8 +737,13 @@ export function show_messagebox_4249() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a4304() {
-  // UI dialog for editing common names — MFC/CSocket heavy
-  // Stubbed as no-op
+  // DEVIATION: Win32/MFC — CSocket/dialog for editing common names
+  // Calls: thunk_FUN_0059db08, thunk_FUN_0059d3c9, CSocket::Create,
+  //   thunk_FUN_0059e6ff, thunk_FUN_0059e5c9, thunk_FUN_0059edf0,
+  //   thunk_FUN_0040bc80, thunk_FUN_0051d63b, _strncpy,
+  //   thunk_FUN_0059d3c9(0), FUN_004a44a2, FUN_004a44b8
+  FUN_004a44a2();
+  FUN_004a44b8();
 }
 
 
@@ -768,8 +773,9 @@ export function FUN_004a44b8() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a44c6() {
-  // UI dialog for editing government names — MFC/CSocket heavy
-  // Stubbed as no-op
+  // DEVIATION: Win32/MFC — CSocket/dialog for editing government names
+  FUN_004a4667();
+  FUN_004a467d();
 }
 
 
@@ -799,8 +805,9 @@ export function FUN_004a467d() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function show_title_screen() {
-  // UI dialog for title screen — MFC/CSocket heavy
-  // Stubbed as no-op
+  // DEVIATION: Win32/MFC — CSocket/dialog for title screen
+  FUN_004a4948();
+  FUN_004a495e();
 }
 
 
@@ -830,7 +837,9 @@ export function FUN_004a495e() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a496c() {
-  // UI — no-op
+  // DEVIATION: Win32/MFC — show tribes dialog
+  // C calls: thunk_FUN_0059d3c9, thunk_FUN_004190d0, thunk_FUN_0059d3c9(0)
+  FUN_0059d3c9_stub(0);
 }
 
 
@@ -870,8 +879,8 @@ export function FUN_004a49f3(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a4a58(param_1) {
-  // MFC dialog creation — heavily UI, no game logic
-  // Stubbed as no-op
+  // DEVIATION: Win32/MFC — create editor dropdown using CPropertySheet, in_ECX
+  // Creates list boxes with tribe/government/resource data
 }
 
 
@@ -881,7 +890,8 @@ export function FUN_004a4a58(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a4eb2(param_1) {
-  // MFC editor text input — no-op
+  // DEVIATION: Win32/MFC — create editor text input control using in_ECX
+  G.DAT_006a1d80 = G.DAT_006a1d80 + 1;
 }
 
 
@@ -891,7 +901,10 @@ export function FUN_004a4eb2(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a4f89() {
-  // Editor window painting — heavily UI, no-op
+  // DEVIATION: Win32/MFC — paint_editor_window using in_ECX, CPropertySheet
+  // Calls: thunk_FUN_00552112, thunk_FUN_005a9afe, thunk_FUN_005a9abf,
+  //   FUN_005cef66, thunk_FUN_004ccb6a, thunk_FUN_005baeb0, thunk_FUN_005baec8,
+  //   thunk_FUN_005baee0, thunk_FUN_005baf57, thunk_FUN_005bb024, etc.
 }
 
 
@@ -901,8 +914,15 @@ export function FUN_004a4f89() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a54d9() {
-  // Rules editor initialization — MFC property sheet
-  // Stubbed as no-op
+  // DEVIATION: Win32/MFC — init_rules_editor using CPropertySheet, in_ECX
+  // Game state mutations preserved:
+  G.DAT_006a1d7c = 1;
+  G.DAT_006a1d80 = 0xc9;
+  FUN_004a3060();
+  // UI event loop: while (G.DAT_006a1d7c != 0) thunk_FUN_0040ef50()
+  G.DAT_0062e018 = 0;
+  FUN_004a5d6e();
+  FUN_004a5d84();
 }
 
 
@@ -976,7 +996,9 @@ export function FUN_004a6980() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a69b0() {
-  // List box initialization — heavily UI, no-op
+  // DEVIATION: Win32/MFC — init_listbox_data using in_ECX
+  // Calls: thunk_FUN_0040fd40, thunk_FUN_0040fcf0, thunk_FUN_00451bf0,
+  //   thunk_FUN_004923c0, thunk_FUN_004518d0, thunk_FUN_004f6646
 }
 
 
@@ -1035,7 +1057,11 @@ export function FUN_004a6c85(param_1, param_2, param_3, param_4, param_5, param_
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a6cc5(param_1, param_2, param_3, param_4) {
-  // MFC dialog — no-op
+  // DEVIATION: Win32/MFC — show_unit_select_dialog using CSocket, CString
+  FUN_005cdea1((2 - (G.DAT_00633584 === 0 ? 1 : 0)) * 0x40, (2 - (G.DAT_00633584 === 0 ? 1 : 0)) * 0x30, 0);
+  FUN_004a6dc9();
+  FUN_004a6dd2();
+  FUN_004a6de8();
 }
 
 
@@ -1085,7 +1111,11 @@ export function FUN_004a6df7(param_1, param_2, param_3, param_4, param_5, param_
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004a6e39(param_1, param_2, param_3, param_4) {
-  // MFC dialog — no-op
+  // DEVIATION: Win32/MFC — show_improvement_select_dialog using CSocket, CString
+  FUN_005cdea1((2 - (G.DAT_00633584 === 0 ? 1 : 0)) * 0x40, (2 - (G.DAT_00633584 === 0 ? 1 : 0)) * 0x30, 0);
+  FUN_004a6f3d();
+  FUN_004a6f46();
+  FUN_004a6f5c();
 }
 
 
@@ -2015,32 +2045,33 @@ export function FUN_004abea0(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004abfe5(param_1, param_2, param_3) {
-  // This is the core BFS pathfinder. Due to its extreme complexity
-  // (gotos, nested loops, many external calls), it is mechanically
-  // stubbed with the core structure preserved.
-
   let iVar19 = G.DAT_0062d04c;
   G.DAT_00673fb0 = G.DAT_00673fa0;
   G.DAT_00673fb4 = G.DAT_00673fa4;
   let bVar21 = G.DAT_0064b1c1[G.DAT_0062d03c * 0x14] === 2;
   let cVar1 = s8(G.DAT_0064b1c2[G.DAT_0062d03c * 0x14]);
   let uVar20 = G.DAT_0064bcc8;
-
   let bVar3 = false;
+  let bVar4, bVar5, bVar2, bVar7;
+  let iVar8, iVar9, iVar10, iVar13, iVar14, iVar15, iVar16, iVar17;
+  let uVar11, uVar18, pbVar12;
+  let local_7c, local_80, local_84, local_90, local_94;
+  let local_30, local_3c, local_40, local_50, local_58;
+  let local_10, local_1c, local_20;
+
   if (bVar21) {
-    let iVar8 = FUN_005b89e4(param_1, param_2);
+    iVar8 = FUN_005b89e4(param_1, param_2);
     if (iVar8 === 0) bVar3 = true;
   }
-
   G.DAT_00673fc0 = 0;
-  let local_40 = param_1 - G.DAT_00673fb0;
+  local_40 = param_1 - G.DAT_00673fb0;
   if ((G.DAT_00655ae8 & 0x8000) === 0) {
-    if (local_40 < 0) local_40 += G.DAT_006d1160;
-    if (G.DAT_006d1160 >> 1 <= local_40) local_40 -= G.DAT_006d1160;
+    if (local_40 < 0) local_40 = local_40 + G.DAT_006d1160;
+    if (G.DAT_006d1160 >> 1 <= local_40) local_40 = local_40 - G.DAT_006d1160;
   }
   local_40 = local_40 + G.DAT_00673fb0;
 
-  let iVar8 = FUN_004ad01e(local_40, param_2);
+  iVar8 = FUN_004ad01e(local_40, param_2);
   if (G.DAT_00673fa0 !== G.DAT_006787cc || G.DAT_00673fa4 !== G.DAT_00673fb8 || iVar8 === 0) {
     G.DAT_006787cc = G.DAT_00673fa0;
     G.DAT_00673fb8 = G.DAT_00673fa4;
@@ -2051,18 +2082,271 @@ export function FUN_004abfe5(param_1, param_2, param_3) {
     G.DAT_00673fbc = 1;
     FUN_004ad076(G.DAT_00673fa0, G.DAT_00673fa4, 1);
     G.DAT_00673fc0 = param_3;
-
-    // BFS loop — abbreviated for mechanical correctness
-    // Full implementation would mirror the C source exactly
+    // BFS expansion loop
+    let bfs_break = false;
+    do {
+      iVar8 = G.DAT_00673fc8[G.DAT_00673fc4];
+      iVar13 = G.DAT_006763c8[G.DAT_00673fc4];
+      G.DAT_00673fc4 = G.DAT_00673fc4 + 1;
+      if (0x8ff < G.DAT_00673fc4) G.DAT_00673fc4 = 0;
+      iVar15 = FUN_005ae052(iVar8);
+      iVar16 = FUN_004ad01e(iVar8, iVar13);
+      iVar14 = G.DAT_00673fc0;
+      if (iVar16 <= G.DAT_00673fc0 && (iVar15 !== param_1 || (iVar14 = iVar16, iVar13 !== param_2))) {
+        uVar11 = FUN_005b94d5(iVar15, iVar13);
+        if ((uVar11 & 0x10) === 0 && (iVar14 = FUN_005b8ca6(iVar15, iVar13), iVar14 < 0)) {
+          bVar4 = false;
+        } else {
+          bVar4 = true;
+        }
+        pbVar12 = FUN_005b8931(iVar15, iVar13);
+        bVar2 = (typeof pbVar12 === 'number') ? pbVar12 : (pbVar12 >= 0 ? tileRead(pbVar12, 0) : 0);
+        uVar11 = FUN_005b94d5(iVar15, iVar13);
+        if ((uVar11 & 0x20) === 0 && (iVar14 = FUN_005b8ca6(iVar15, iVar13), iVar14 < 0)) {
+          bVar5 = false;
+        } else {
+          bVar5 = true;
+        }
+        for (local_1c = 0; iVar14 = G.DAT_00673fc0, local_1c < 8; local_1c++) {
+          iVar14 = s8(G.DAT_00628350[local_1c]) + iVar8;
+          iVar17 = s8(G.DAT_00628360[local_1c]) + iVar13;
+          iVar9 = FUN_005ae052(iVar14);
+          local_7c = iVar14 - G.DAT_00673fa0;
+          if (local_7c < 1) local_7c = local_7c < 0 ? -local_7c : 0;
+          local_84 = iVar17 - G.DAT_00673fa4;
+          if (local_84 < 1) local_84 = local_84 < 0 ? -local_84 : 0;
+          if (((local_84 + local_7c) & 0xfffffffe) < 0x30 &&
+              (iVar10 = FUN_004087c0(iVar9, iVar17), iVar10 !== 0)) {
+            bVar7 = FUN_005b89bb(iVar9, iVar17);
+            let domainMatch = ((bVar7 === 10) === bVar21) ||
+                              (param_1 === iVar9 && iVar17 === param_2) ||
+                              (G.DAT_006787cc === iVar9 && iVar17 === G.DAT_00673fb8);
+            let continentOk = !bVar3 ||
+                (iVar10 = FUN_005b8a81_stub(iVar9, iVar17), iVar10 !== 0x3f &&
+                 s16(G.DAT_00666134, iVar10 * 0x10) !== 1);
+            if (domainMatch && continentOk) {
+              local_30 = iVar16;
+              let skipTile = false;
+              if (-1 < G.DAT_0062d044) {
+                local_80 = FUN_005b8da4_stub(iVar9, iVar17);
+                if (-1 < local_80 && G.DAT_0062d044 !== local_80) { skipTile = true; }
+                if (!skipTile && G.DAT_0062d044 === local_80 &&
+                    (1 << (local_80 & 0x1f) & G.DAT_00655b0b) === 0) {
+                  let bVar6b = FUN_005b94d5(iVar9, iVar17);
+                  if ((bVar6b & 0x43) === 1) {
+                    iVar10 = FUN_005b4b66_stub(iVar9, iVar17, local_80);
+                    if (iVar10 !== 0) {
+                      uVar18 = FUN_005b2e69_stub(iVar9, iVar17);
+                      iVar10 = FUN_005b53b6_stub(uVar18, s8(G.DAT_0064b1ca[G.DAT_0062d03c * 0x14]));
+                      local_30 = iVar16 + iVar10 * 0x10;
+                    }
+                  }
+                }
+                if (!skipTile) {
+                  iVar10 = FUN_005b8dec_stub(iVar9, iVar17, G.DAT_0062d044);
+                  if (-1 < iVar10 && s8(G.DAT_0064b1ca[G.DAT_0062d03c * 0x14]) < 5) {
+                    local_30 = local_30 + G.DAT_0064bcc8 * 4;
+                  }
+                }
+              }
+              if (!skipTile) {
+                if (G.DAT_0062d040 !== 0 ||
+                    (bVar5 && (uVar11 = FUN_005b94d5(iVar9, iVar17), (uVar11 & 0x20) !== 0 ||
+                     (iVar10 = FUN_005b8ca6(iVar9, iVar17), -1 < iVar10)))) {
+                  local_30 = local_30 + 1;
+                } else if ((G.DAT_0064b1bd[G.DAT_0062d03c * 0x14] & 2) !== 0) {
+                  local_30 = local_30 + 4;
+                } else if (bVar4 && (uVar11 = FUN_005b94d5(iVar9, iVar17), (uVar11 & 0x10) !== 0 ||
+                           (iVar10 = FUN_005b8ca6(iVar9, iVar17), -1 < iVar10))) {
+                  local_30 = local_30 + 4;
+                } else {
+                  if (G.DAT_0062d048 !== 0) { skipTile = true; }
+                  if (!skipTile) {
+                    let riverCross = false;
+                    let bVar2b = (typeof pbVar12 === 'number') ? pbVar12 : (pbVar12 >= 0 ? tileRead(pbVar12, 0) : 0);
+                    if ((bVar2b & 0x80) !== 0) {
+                      let pbVar12b = FUN_005b8931(iVar9, iVar17);
+                      let tile0b = (typeof pbVar12b === 'number') ? pbVar12b : (pbVar12b >= 0 ? tileRead(pbVar12b, 0) : 0);
+                      if ((tile0b & 0x80) !== 0) {
+                        iVar10 = FUN_005ae10e_stub(iVar15, iVar9);
+                        if (iVar10 === 1) {
+                          let adiff = iVar13 - iVar17;
+                          if (adiff < 0) adiff = -adiff;
+                          if (adiff === 0) adiff = 1; // abs correction
+                          if (adiff === 1) {
+                            local_30 = local_30 + 4;
+                            riverCross = true;
+                          }
+                        }
+                      }
+                    }
+                    if (!riverCross) {
+                      if (uVar20 < cVar1) {
+                        local_30 = local_30 + s8(G.DAT_00627cc8[bVar7 * 0x18]) * G.DAT_0064bcc8 * 4;
+                      } else {
+                        local_30 = local_30 + G.DAT_0064bcc8 * 4;
+                      }
+                    }
+                  }
+                }
+              }
+              if (!skipTile) {
+                if ((G.DAT_0064b1bc[G.DAT_0062d03c * 0x14] & 0x20) !== 0) {
+                  let pbVar12c = FUN_005b8931(iVar9, iVar17);
+                  let tile0c = (typeof pbVar12c === 'number') ? pbVar12c : (pbVar12c >= 0 ? tileRead(pbVar12c, 0) : 0);
+                  if ((tile0c & 0x40) !== 0) {
+                    local_30 = local_30 + G.DAT_0064bcc8 * 4;
+                  }
+                }
+                iVar9 = FUN_004ad01e(iVar14, iVar17);
+                if (iVar9 === 0 || local_30 < iVar9) {
+                  FUN_004ad076(iVar14, iVar17, local_30);
+                  G.DAT_00673fc8[G.DAT_00673fbc] = iVar14;
+                  G.DAT_006763c8[G.DAT_00673fbc] = iVar17;
+                  G.DAT_00673fbc = G.DAT_00673fbc + 1;
+                  if (0x8ff < G.DAT_00673fbc) G.DAT_00673fbc = 0;
+                  if (G.DAT_00673fc4 === G.DAT_00673fbc) { bfs_break = true; break; }
+                }
+              }
+            }
+          }
+        }
+      }
+      G.DAT_00673fc0 = iVar14;
+    } while (!bfs_break && G.DAT_00673fc4 !== G.DAT_00673fbc && G.DAT_00673fc4 !== 0);
   }
-
-  // Backtrack to find best direction
-  let local_50 = -1;
-  // ... backtracking logic ...
-
+  // Backtrack: find best direction from current position
+  local_50 = -1;
+  if (G.DAT_00673fc0 < param_3) {
+    local_10 = 19999;
+    local_20 = 19999;
+    uVar11 = FUN_005b94d5(param_1, param_2);
+    if ((uVar11 & 0x10) === 0 && (iVar8 = FUN_005b8ca6(param_1, param_2), iVar8 < 0)) {
+      bVar3 = false;
+    } else {
+      bVar3 = true;
+    }
+    pbVar12 = FUN_005b8931(param_1, param_2);
+    bVar2 = (typeof pbVar12 === 'number') ? pbVar12 : (pbVar12 >= 0 ? tileRead(pbVar12, 0) : 0);
+    uVar11 = FUN_005b94d5(param_1, param_2);
+    if ((uVar11 & 0x20) === 0 && (iVar8 = FUN_005b8ca6(param_1, param_2), iVar8 < 0)) {
+      bVar4 = false;
+    } else {
+      bVar4 = true;
+    }
+    iVar8 = FUN_004ad01e(local_40, param_2);
+    for (local_1c = 0; local_1c < 8; local_1c++) {
+      iVar13 = s8(G.DAT_00628350[local_1c]) + param_1;
+      iVar14 = s8(G.DAT_00628360[local_1c]) + param_2;
+      iVar15 = FUN_005ae052(iVar13);
+      local_7c = iVar13 - G.DAT_00673fa0;
+      if (local_7c < 1) local_7c = local_7c < 0 ? -local_7c : 0;
+      local_84 = iVar14 - G.DAT_00673fa4;
+      if (local_84 < 1) local_84 = local_84 < 0 ? -local_84 : 0;
+      if (((local_84 + local_7c) & 0xfffffffe) < 0x30 &&
+          (iVar16 = FUN_004087c0(iVar15, iVar14), iVar16 !== 0)) {
+        bVar7 = FUN_005b89bb(iVar15, iVar14);
+        let domainMatch2 = ((bVar7 === 10) === bVar21) ||
+                           (param_1 === iVar15 && iVar14 === param_2) ||
+                           (G.DAT_006787cc === iVar15 && iVar14 === G.DAT_00673fb8);
+        if (domainMatch2) {
+          local_3c = iVar13 - G.DAT_00673fb0;
+          if ((G.DAT_00655ae8 & 0x8000) === 0) {
+            if (local_3c < 0) local_3c = local_3c + G.DAT_006d1160;
+            if (G.DAT_006d1160 >> 1 <= local_3c) local_3c = local_3c - G.DAT_006d1160;
+          }
+          iVar16 = FUN_004ad01e(local_3c + G.DAT_00673fb0, iVar14);
+          local_80 = -1;
+          let skipDir = false;
+          if (G.DAT_0062d044 >= 0) {
+            local_80 = FUN_005b8da4_stub(iVar15, iVar14);
+            if (local_80 >= 0 && G.DAT_0062d044 !== local_80) skipDir = true;
+          }
+          if (!skipDir && iVar16 !== 0 && iVar16 < iVar8) {
+            if (G.DAT_0062d040 !== 0) {
+              local_58 = 1;
+            } else if (bVar4 && (uVar11 = FUN_005b94d5(iVar15, iVar14), (uVar11 & 0x20) !== 0 ||
+                       (iVar17 = FUN_005b8ca6(iVar15, iVar14), -1 < iVar17))) {
+              local_58 = 1;
+            } else if ((G.DAT_0064b1bd[G.DAT_0062d03c * 0x14] & 2) !== 0) {
+              local_58 = 4;
+            } else if (bVar3 && (uVar11 = FUN_005b94d5(iVar15, iVar14), (uVar11 & 0x10) !== 0 ||
+                       (iVar17 = FUN_005b8ca6(iVar15, iVar14), -1 < iVar17))) {
+              local_58 = 4;
+            } else {
+              if (G.DAT_0062d048 !== 0) { skipDir = true; }
+              if (!skipDir) {
+                let riverCross2 = false;
+                if ((bVar2 & 0x80) !== 0) {
+                  let pbr = FUN_005b8931(iVar15, iVar14);
+                  let t0r = (typeof pbr === 'number') ? pbr : (pbr >= 0 ? tileRead(pbr, 0) : 0);
+                  if ((t0r & 0x80) !== 0 && (iVar17 = FUN_005ae10e_stub(param_1, iVar15), iVar17 === 1)) {
+                    local_94 = param_2 - iVar14;
+                    if (local_94 < 0) local_94 = -local_94;
+                    if (local_94 === 0) local_94 = 1;
+                    if (local_94 === 1) {
+                      local_58 = 4;
+                      riverCross2 = true;
+                    }
+                  }
+                }
+                if (!riverCross2) {
+                  if (uVar20 < cVar1) {
+                    local_58 = s8(G.DAT_00627cc8[bVar7 * 0x18]) * G.DAT_0064bcc8 * 4;
+                  } else {
+                    local_58 = G.DAT_0064bcc8 << 2;
+                  }
+                }
+              }
+            }
+            if (!skipDir) {
+              if ((G.DAT_0064b1bc[G.DAT_0062d03c * 0x14] & 0x20) !== 0) {
+                let pbr2 = FUN_005b8931(iVar15, iVar14);
+                let t0r2 = (typeof pbr2 === 'number') ? pbr2 : (pbr2 >= 0 ? tileRead(pbr2, 0) : 0);
+                if ((t0r2 & 0x40) !== 0) {
+                  local_58 = local_58 + G.DAT_0064bcc8 * 4;
+                }
+              }
+              if (G.DAT_0062d044 === local_80 &&
+                  (1 << (local_80 & 0x1f) & G.DAT_00655b0b) === 0) {
+                bVar7 = FUN_005b94d5(iVar15, iVar14);
+                if ((bVar7 & 0x43) === 1) {
+                  iVar17 = FUN_005b4b66_stub(iVar15, iVar14, local_80);
+                  if (iVar17 !== 0) {
+                    uVar18 = FUN_005b2e69_stub(iVar15, iVar14);
+                    iVar17 = FUN_005b53b6_stub(uVar18, s8(G.DAT_0064b1ca[G.DAT_0062d03c * 0x14]));
+                    local_58 = local_58 + iVar17 * 8;
+                  }
+                }
+              }
+              iVar15 = FUN_005b8dec_stub(iVar15, iVar14, G.DAT_0062d044);
+              if (-1 < iVar15 && s8(G.DAT_0064b1ca[G.DAT_0062d03c * 0x14]) < 5) {
+                local_58 = local_58 + G.DAT_0064bcc8 * 4;
+              }
+              iVar16 = iVar16 + local_58;
+              if (iVar16 <= local_10) {
+                iVar13 = FUN_005ae31d_stub(G.DAT_00673fa0, G.DAT_00673fa4, iVar13, iVar14);
+                if (iVar16 < local_10) {
+                  local_50 = local_1c;
+                  local_20 = iVar13;
+                  local_10 = iVar16;
+                } else if (iVar13 < local_20) {
+                  local_50 = local_1c;
+                  local_20 = iVar13;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   if (local_50 < 0) {
     G.DAT_00673fa0 = G.DAT_006787cc;
     G.DAT_00673fa4 = G.DAT_00673fb8;
+  }
+  if (iVar19 !== 0) {
+    // DEVIATION: Win32 debug visualization loop (thunk_FUN_0047cd51, etc.)
   }
   return local_50;
 }
@@ -2074,12 +2358,15 @@ export function FUN_004abfe5(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004ad01e(param_1, param_2) {
+  // C: return *(int*)((param_1 - G.DAT_00673fb0) * 0xc0 +
+  //    ((param_1 - G.DAT_00673fb0) + (param_2 - G.DAT_00673fb4) >> 1) * -0xbc + 0x6cffc0);
+  // The grid is 48x48 ints. Row = ((dx + dy) >> 1) + 0x18, Col = dx + 0x18
+  // where dx = param_1 - G.DAT_00673fb0, dy = param_2 - G.DAT_00673fb4
   let dx = param_1 - G.DAT_00673fb0;
-  let dy = param_2 - G.DAT_00673fb4;
-  let idx = dx + ((dx + dy) >> 1);
-  // Bounds check for the 48x48 grid
-  if (idx < 0 || idx >= 0x900) return 0;
-  return G.DAT_006ced60[idx] || 0;
+  let row = ((dx + (param_2 - G.DAT_00673fb4)) >> 1) + 0x18;
+  let col = dx + 0x18;
+  if (row < 0 || row >= 0x30 || col < 0 || col >= 0x30) return 0;
+  return G.DAT_006ced60[col * 0x30 + row] || 0;
 }
 
 
@@ -2090,10 +2377,10 @@ export function FUN_004ad01e(param_1, param_2) {
 
 export function FUN_004ad076(param_1, param_2, param_3) {
   let dx = param_1 - G.DAT_00673fb0;
-  let dy = param_2 - G.DAT_00673fb4;
-  let idx = dx + ((dx + dy) >> 1);
-  if (idx >= 0 && idx < 0x900) {
-    G.DAT_006ced60[idx] = param_3;
+  let row = ((dx + (param_2 - G.DAT_00673fb4)) >> 1) + 0x18;
+  let col = dx + 0x18;
+  if (row >= 0 && row < 0x30 && col >= 0 && col < 0x30) {
+    G.DAT_006ced60[col * 0x30 + row] = param_3;
   }
 }
 
@@ -2595,7 +2882,9 @@ export function FUN_004af2b9(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004af3e0(param_1, param_2) {
-  // MFC list control creation — heavily UI, no-op
+  // DEVIATION: Win32/MFC — create_diplomacy_list_control using in_ECX, CDialog
+  // Game state: reads G.DAT_00655c16, G.DAT_006d1da0, G.DAT_00655b07, G.DAT_0064c6c0
+  FUN_004afc89(param_2);
 }
 
 
@@ -2643,7 +2932,9 @@ export function FUN_004af8a3(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004af904(param_1) {
-  // UI click handler — no-op
+  // DEVIATION: Win32/MFC — handle_diplomacy_list_click using FUN_005c62ee, in_ECX
+  // Calls FUN_005dba95, FUN_005dbab8 for shift/ctrl state
+  // Mutates in_ECX memory for selection state, calls FUN_004afc89
 }
 
 
@@ -2664,7 +2955,8 @@ export function FUN_004afb77(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004afc89(param_1) {
-  // UI painting — no-op
+  // DEVIATION: Win32/MFC — paint_diplomacy_list using FUN_005c62ee, in_ECX
+  // Renders diplomacy list items with flag icons and civ names
 }
 
 

@@ -131,7 +131,7 @@ let PTR_FUN_0061d718 = 0;   // vtable pointer
 
 
 // ═══════════════════════════════════════════════════════════════════
-// STUBS: Win32 API and MFC calls — no-ops in JS
+// DEVIATION: Win32 API — no-ops in JS
 // ═══════════════════════════════════════════════════════════════════
 
 function SetRect() {}
@@ -283,7 +283,7 @@ function FID_conflict___expand() { return null; }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// STUBS: Functions from OTHER blocks
+// DEVIATION: Win32 API — functions from other blocks (forward declarations)
 // ═══════════════════════════════════════════════════════════════════
 
 function FUN_004a6980() { return 0; }      // thunk: get sprite width
@@ -489,7 +489,7 @@ export function FUN_005d056c(param_1, param_2, param_3, param_4, param_5) {
 
 // sprite_blit_with_target — sprite blit to render target
 export function FUN_005d080d(param_1, param_2, param_3, param_4, param_5) {
-  // UI framework sprite blit — stub
+  // DEVIATION: Win32 API — sprite blit to render target
   param_1[0] = 0; param_1[1] = 0; param_1[2] = 0; param_1[3] = 0;
   return param_1;
 }

@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_004F0000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8 } from './mem.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';
 
 
 // ============================================================
@@ -105,8 +105,8 @@ export function FUN_004f03b7(param_1) {
   let local_18;
   let local_14;
 
-  iVar2 = FUN_005b8aa8(s16_read(DAT_0064f340, param_1 * 0x58),
-                        s16_read(DAT_0064f342, param_1 * 0x58));
+  iVar2 = FUN_005b8aa8(s16(DAT_0064f340, param_1 * 0x58),
+                        s16(DAT_0064f342, param_1 * 0x58));
   iVar3 = s8(DAT_0064f348[param_1 * 0x58]);
   if (1 < u8(DAT_0064c932[iVar3 * 0x594 + iVar2])) {
     for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {
@@ -116,10 +116,10 @@ export function FUN_004f03b7(param_1) {
             ((local_14 !== 0 &&
              (((DAT_0064c6c0[s8(DAT_0064f348[local_38 * 0x58]) * 4 + iVar3 * 0x594]) & 0xc) !==
               0)))))) {
-          iVar4 = s16_read(DAT_0064f340, local_38 * 0x58);
-          iVar5 = s16_read(DAT_0064f342, local_38 * 0x58);
-          local_18 = s16_read(DAT_0064f340, param_1 * 0x58);
-          local_24 = s16_read(DAT_0064f342, param_1 * 0x58);
+          iVar4 = s16(DAT_0064f340, local_38 * 0x58);
+          iVar5 = s16(DAT_0064f342, local_38 * 0x58);
+          local_18 = s16(DAT_0064f340, param_1 * 0x58);
+          local_24 = s16(DAT_0064f342, param_1 * 0x58);
           local_34 = 0;
           iVar6 = FUN_005b8aa8(iVar4, iVar5);
           if ((iVar2 === iVar6) &&
@@ -193,8 +193,8 @@ export function FUN_004f080d(param_1) {
   iVar3 = s8(bVar1);
   for (local_8 = 0; local_8 < 0x14; local_8 = local_8 + 1) {
     uVar4 = FUN_005ae052(s8(DAT_00628370[local_8]) +
-                           s16_read(DAT_0064f340, param_1 * 0x58));
-    iVar5 = s16_read(DAT_0064f342, param_1 * 0x58) + s8(DAT_006283a0[local_8]);
+                           s16(DAT_0064f340, param_1 * 0x58));
+    iVar5 = s16(DAT_0064f342, param_1 * 0x58) + s8(DAT_006283a0[local_8]);
     iVar6 = FUN_004087c0(uVar4, iVar5);
     if ((iVar6 !== 0) && (uVar7 = FUN_005b94d5(uVar4, iVar5), (uVar7 & 0x80) !== 0)) {
       FUN_0049301b(iVar3, uVar4, iVar5, 0x15, 6);
@@ -282,7 +282,7 @@ export function FUN_004f0a9c(param_1) {
   iVar6 = FUN_CSplitterWnd_IsTracking(DAT_006a91b8);
   DAT_0062ee00 = (iVar6 === param_1) ? 1 : 0;
   DAT_0062ee04 = 0;
-  sVar3 = s16_read(DAT_0064f35a, param_1 * 0x58);
+  sVar3 = s16(DAT_0064f35a, param_1 * 0x58);
   iVar6 = FUN_004ebbde(param_1);
   if (iVar6 === 0) {
     FUN_004eb4ed(param_1, 1);
@@ -294,10 +294,10 @@ export function FUN_004f0a9c(param_1) {
     }
     DAT_006a661c = (DAT_006a65c8 - s8(DAT_0064f349[param_1 * 0x58]) * DAT_0064bcca)
                    - DAT_006a65d8 * DAT_006a6608;
-    s16_write(DAT_0064f35a, param_1 * 0x58,
-         s16_read(DAT_0064f35a, param_1 * 0x58) + DAT_006a661c);
-    if ((((0 < sVar3) && (s16_read(DAT_0064f35a, param_1 * 0x58) < sVar3)) &&
-        (s16_read(DAT_0064f35a, param_1 * 0x58) + DAT_006a661c * 3 < 0)) &&
+    w16(DAT_0064f35a, param_1 * 0x58,
+         s16(DAT_0064f35a, param_1 * 0x58) + DAT_006a661c);
+    if ((((0 < sVar3) && (s16(DAT_0064f35a, param_1 * 0x58) < sVar3)) &&
+        (s16(DAT_0064f35a, param_1 * 0x58) + DAT_006a661c * 3 < 0)) &&
        (((DAT_00655af2 & 0x80) === 0 && (DAT_00654fa8 === 0)))) {
       FUN_004eb571(s_FOODSHORTAGE_0062ef90, param_1, 0, 0);
     }
@@ -310,13 +310,13 @@ export function FUN_004f0a9c(param_1) {
     FUN_004eb4ed(param_1, 1);
     DAT_0062edfc = 0;
     if (DAT_006a65cc < DAT_006a6568) {
-      s16_write(DAT_0064ca74, iVar5 * 0x594,
-           s16_read(DAT_0064ca74, iVar5 * 0x594) +
+      w16(DAT_0064ca74, iVar5 * 0x594,
+           s16(DAT_0064ca74, iVar5 * 0x594) +
            (DAT_006a6568 - DAT_006a65cc) * 5);
     }
     sVar3 = FUN_005adfa0(DAT_006a660c - DAT_0064bcd5, 0,
                          s8(DAT_0064f349[param_1 * 0x58]));
-    s16_write(DAT_0064ca74, iVar5 * 0x594, sVar3 + s16_read(DAT_0064ca74, iVar5 * 0x594));
+    w16(DAT_0064ca74, iVar5 * 0x594, sVar3 + s16(DAT_0064ca74, iVar5 * 0x594));
     for (local_24 = 1; local_24 < 7; local_24 = local_24 + 1) {
       local_1c = 0;
       switch(local_24) {
@@ -334,8 +334,8 @@ export function FUN_004f0a9c(param_1) {
         break;
       }
       if (local_1c < DAT_006a660c) {
-        s16_write(DAT_0064ca74, iVar5 * 0x594 + local_24 * 2,
-             s16_read(DAT_0064ca74, iVar5 * 0x594 + local_24 * 2) -
+        w16(DAT_0064ca74, iVar5 * 0x594 + local_24 * 2,
+             s16(DAT_0064ca74, iVar5 * 0x594 + local_24 * 2) -
              (DAT_006a660c - local_1c));
       }
     }
@@ -346,7 +346,7 @@ export function FUN_004f0a9c(param_1) {
     else {
       local_8 = 1;
     }
-    cVar2 = DAT_006554fa[s16_read(DAT_0064c6a6, iVar5 * 0x594) * 0x30];
+    cVar2 = DAT_006554fa[s16(DAT_0064c6a6, iVar5 * 0x594) * 0x30];
     local_c = -s8(cVar2) + 7;
     iVar6 = FUN_0043d20a(param_1, 5);
     if (iVar6 !== 0) {
@@ -364,13 +364,13 @@ export function FUN_004f0a9c(param_1) {
     }
     iVar6 = FUN_00453e18(0xd);
     if (iVar6 !== param_1) {
-      iVar6 = s8(DAT_006554f8[s16_read(DAT_0064c6a6, iVar5 * 0x594) * 0x30]) + DAT_006a65e4;
-      sVar3 = s16_read(DAT_0064ca80, iVar5 * 0x594);
+      iVar6 = s8(DAT_006554f8[s16(DAT_0064c6a6, iVar5 * 0x594) * 0x30]) + DAT_006a65e4;
+      sVar3 = s16(DAT_0064ca80, iVar5 * 0x594);
       sVar4 = FUN_005adfa0((2 - local_8) * (iVar6 + 1), 0, 99);
-      s16_write(DAT_0064ca80, iVar5 * 0x594, sVar3 - sVar4 * local_c);
-      sVar3 = s16_read(DAT_0064ca7e, iVar5 * 0x594);
+      w16(DAT_0064ca80, iVar5 * 0x594, sVar3 - sVar4 * local_c);
+      sVar3 = s16(DAT_0064ca7e, iVar5 * 0x594);
       sVar4 = FUN_005adfa0(iVar6 * (1 - local_8), 0, 99);
-      s16_write(DAT_0064ca7e, iVar5 * 0x594, sVar3 - sVar4 * local_c);
+      w16(DAT_0064ca7e, iVar5 * 0x594, sVar3 - sVar4 * local_c);
     }
     FUN_handle_city_disorder_004ef578(param_1);
     FUN_004efbc6(param_1);
@@ -380,8 +380,8 @@ export function FUN_004f0a9c(param_1) {
     }
     FUN_004f080d(param_1);
     iVar6 = DAT_006a65cc * 2 - DAT_006a6568;
-    if (s16_read(DAT_0064ca72, iVar5 * 0x594) <= iVar6) {
-      s16_write(DAT_0064ca72, iVar5 * 0x594, iVar6);
+    if (s16(DAT_0064ca72, iVar5 * 0x594) <= iVar6) {
+      w16(DAT_0064ca72, iVar5 * 0x594, iVar6);
     }
     DAT_006aa760 = 0;
     DAT_0062ee08 = 0xffffffff;
@@ -436,8 +436,8 @@ export function FUN_004f1220() {
         for (local_14 = 0; local_14 < 8; local_14 = local_14 + 1) {
           DAT_0064f34d[local_10 * 0x58 + local_14] = DAT_0064f349[local_10 * 0x58];
         }
-        FUN_005b976d(s16_read(DAT_0064f340, local_10 * 0x58),
-                     s16_read(DAT_0064f342, local_10 * 0x58), 0xff, 1, 1);
+        FUN_005b976d(s16(DAT_0064f340, local_10 * 0x58),
+                     s16(DAT_0064f342, local_10 * 0x58), 0xff, 1, 1);
       }
     }
     FUN_005b9f1c();
@@ -476,7 +476,7 @@ export function FUN_004f3d30(param_1, param_2) {
 
 export function FUN_004f3d60() {
   // MFC framework constructor — SEH setup, thunk calls
-  // Stubbed: no game logic
+  // DEVIATION: MFC framework — no game logic
   FUN_0043c260();
   FUN_0059db08(0x4000);
   return;
@@ -512,7 +512,7 @@ export function FUN_004f3e70() {
 // ============================================================
 
 export function FUN_004f3ebb() {
-  // MFC framework helper — stubbed
+  // DEVIATION: MFC framework helper
   FUN_0059df8a();
   return;
 }
@@ -523,7 +523,7 @@ export function FUN_004f3ebb() {
 // ============================================================
 
 export function FUN_004f3ee5() {
-  // CDaoFieldInfo destructor — stubbed
+  // DEVIATION: CDaoFieldInfo destructor — Win32/MFC
   return;
 }
 
@@ -533,7 +533,7 @@ export function FUN_004f3ee5() {
 // ============================================================
 
 export function FUN_004f3ef8() {
-  // SEH frame restore — stubbed
+  // DEVIATION: SEH frame restore — Win32
   return;
 }
 
@@ -584,7 +584,7 @@ export function FUN_004f3f9a() {
 // ============================================================
 
 export function FUN_004f3fb4() {
-  // _atexit(FUN_004f3fd1) — stubbed
+  // DEVIATION: _atexit(FUN_004f3fd1) — Win32 CRT
   return;
 }
 
@@ -605,7 +605,7 @@ export function FUN_004f3fd1() {
 
 export function FUN_004f3feb() {
   // MFC constructor with SEH + many child object inits
-  // Stubbed: UI only, no game logic
+  // DEVIATION: MFC UI constructor — no game logic
   FUN_0044c5a0();
   for (let i = 0; i < 16; i++) {
     FUN_0040f3e0();
@@ -833,7 +833,7 @@ export function FUN_004f4772() {
 // ============================================================
 
 export function FUN_004f4785() {
-  // SEH frame restore — stubbed
+  // DEVIATION: SEH frame restore — Win32
   return;
 }
 
@@ -843,7 +843,7 @@ export function FUN_004f4785() {
 // ============================================================
 
 export function FUN_004f4793() {
-  // Frees linked list of UI display objects — stubbed
+  // DEVIATION: Frees linked list of UI display objects — in_ECX-based
   FUN_00419b80();
   return;
 }
@@ -854,7 +854,7 @@ export function FUN_004f4793() {
 // ============================================================
 
 export function FUN_004f4809() {
-  // Frees 7 linked lists of allocated strings — stubbed (UI memory management)
+  // DEVIATION: Frees 7 linked lists of allocated strings — in_ECX-based UI memory
   return;
 }
 
@@ -865,7 +865,7 @@ export function FUN_004f4809() {
 
 export function FUN_004f4b9f() {
   // Complex MFC UI setup: buttons, layout rects, bitmaps
-  // Stubbed: pure UI code with SetRect, OffsetRect, operator_new, etc.
+  // DEVIATION: pure UI code — SetRect, OffsetRect, operator_new, etc.
   FUN_004f4809();
   FUN_004f4793();
   FUN_004f7c99();
@@ -1090,7 +1090,7 @@ export function FUN_004f5f23() {
 
 export function FUN_004f6244() {
   // Complex UI rendering — text layout, bitmap drawing, etc.
-  // Stubbed: pure UI code
+  // DEVIATION: pure UI rendering code
   return;
 }
 
@@ -1100,7 +1100,7 @@ export function FUN_004f6244() {
 // ============================================================
 
 export function FUN_004f6564(param_1, param_2) {
-  // UI border rendering with background bitmaps — stubbed
+  // DEVIATION: UI border rendering with background bitmaps
   return;
 }
 
@@ -1111,7 +1111,7 @@ export function FUN_004f6564(param_1, param_2) {
 
 export function FUN_004f6646() {
   // UI: in_ECX[0x11c] dispatch
-  // Stubbed: references in_ECX state
+  // DEVIATION: references in_ECX state
   FUN_004f66c6();
   return;
 }
@@ -1123,7 +1123,7 @@ export function FUN_004f6646() {
 
 export function FUN_004f66c6() {
   // Complex UI rendering — list items, icons, text layout
-  // Stubbed: pure UI code
+  // DEVIATION: pure UI rendering code
   return;
 }
 
@@ -1451,7 +1451,7 @@ export function FUN_004f7c99() {
   // Parses DESCRIBE sections from help text files
   // Builds linked lists of sorted entries for 7 categories:
   //   advances, improvements, wonders, units, governments, terrain, concepts
-  // Stubbed: complex file parsing + UI data structure setup
+  // DEVIATION: complex file parsing + UI data structure setup — uses in_ECX
   let iVar2;
   let local_18;
 
@@ -1575,7 +1575,11 @@ export function FUN_004f8a9b(param_1, param_2) {
 
 export function FUN_004f8af9() {
   // Pushes current civilopedia navigation state onto history stack
-  // Uses in_ECX offsets — stubbed (UI state management)
+  // C uses in_ECX for civilopedia object state — in_ECX + 0x128 (stack depth),
+  // in_ECX + 0x118/0x11c/0x120 (current category/subcategory/entry),
+  // in_ECX + 0x12c..0x2b8/0x2bc..0x448/0x44c..0x5d8 (history stacks).
+  // All in_ECX-relative writes are DEVIATION (UI object state).
+  // Only global DAT_ writes preserved:
   DAT_0062f010 = 0xffffffff;
   DAT_0062f00c = 0;
   return;
@@ -1642,7 +1646,7 @@ export function FUN_004fa17e() {
 // ============================================================
 
 export function FUN_004fa194() {
-  // SEH frame restore — stubbed
+  // DEVIATION: SEH frame restore — Win32
   return;
 }
 
@@ -1673,7 +1677,7 @@ export function FUN_004fa1da() {
 // ============================================================
 
 export function FUN_004fa1f4() {
-  // _atexit(FUN_004fa211) — stubbed
+  // DEVIATION: _atexit(FUN_004fa211) — Win32 CRT
   return;
 }
 
@@ -1795,7 +1799,7 @@ export function FUN_004fa403(param_1) {
 // ============================================================
 
 export function FUN_004fa47e(param_1) {
-  // in_ECX-based pool operations — stubbed
+  // DEVIATION: in_ECX-based pool operations
   FUN_004980ec(/* in_ECX + 0x2f4 */ 0);
   FUN_00497ea0(/* in_ECX + 0x2f4 */ 0, 0xc, param_1);
   return;
@@ -1807,7 +1811,7 @@ export function FUN_004fa47e(param_1) {
 // ============================================================
 
 export function FUN_004fa4be(param_1) {
-  // Constructor with SEH, pool init — stubbed
+  // DEVIATION: Constructor with SEH, pool init — Win32
   FUN_0059db08(0x4000);
   FUN_00428cb0();
   FUN_004fa5d9(param_1);
@@ -1820,7 +1824,7 @@ export function FUN_004fa4be(param_1) {
 // ============================================================
 
 export function FUN_004fa569() {
-  // Destructor with SEH — stubbed
+  // DEVIATION: Destructor with SEH — Win32
   FUN_004980ec(/* in_ECX + 0x2f4 */ 0);
   FUN_004fa5b8();
   FUN_004fa5cb();
@@ -1843,7 +1847,7 @@ export function FUN_004fa5b8() {
 // ============================================================
 
 export function FUN_004fa5cb() {
-  // SEH frame restore — stubbed
+  // DEVIATION: SEH frame restore — Win32
   return;
 }
 
@@ -1864,8 +1868,11 @@ export function FUN_004fa5d9(param_1) {
 // ============================================================
 
 export function FUN_004fa617() {
-  // Allocates and links a new event structure from pool
-  // Stubbed: memory pool management
+  // Allocates and links a new event structure from in_ECX pool.
+  // C: walks linked list at in_ECX+0x30c to find tail, allocates 0x1c4 bytes
+  // via FUN_00498159, memsets to 0, links into list, increments in_ECX+0x308.
+  // DEVIATION: in_ECX-based pool management not available in JS.
+  // Returns null (allocation fails) — scenario events will not fire.
   return null;
 }
 
@@ -1876,12 +1883,31 @@ export function FUN_004fa617() {
 
 export function FUN_004fa707(param_1) {
   let uVar1;
+  let iVar2;
+  let local_f4 = '';
 
   if ((DAT_00655aea & 0x10) === 0) {
     uVar1 = 0;
   }
   else {
-    // Sound file lookup and playback — stubbed
+    if (param_1[0x184 / 4] !== 0) {
+      FUN_005f22d0(local_f4, DAT_0064bb08);
+      FUN_005f22e0(local_f4, s__SOUND__0062f2b0);
+      FUN_005f22e0(local_f4, param_1[0x184 / 4]);
+      iVar2 = FUN_00415133(local_f4);
+      if (iVar2 === 0) {
+        FUN_005f22d0(local_f4, DAT_00655020);
+        FUN_005f22e0(local_f4, s__SOUND__0062f2b8);
+        FUN_005f22e0(local_f4, param_1[0x184 / 4]);
+        iVar2 = FUN_00415133(local_f4);
+        if (iVar2 !== 0) {
+          FUN_005d6038(local_f4, 0, 0, 0);
+        }
+      }
+      else {
+        FUN_005d6038(local_f4, 0, 0, 0);
+      }
+    }
     uVar1 = 1;
   }
   return uVar1;
@@ -1903,8 +1929,30 @@ export function FUN_004fa82d() {
 // ============================================================
 
 export function FUN_004fa854(param_1) {
-  // CD track playback — stubbed
-  return 0;
+  let uVar1;
+  let local_c;
+  let local_8;
+
+  local_8 = 0;
+  while (local_8 < 10) {
+    local_8 = local_8 + 1;
+    local_c = FUN_005ddeff();  // DEVIATION: CD detection
+    if (((local_c === 0x18) || (local_c === 0x12)) || (local_c === 0xc) || (local_c === 10)) break;
+    FUN_005dde57();  // DEVIATION: CD seek
+  }
+  if (((local_c === 10) || (local_c === 0x12)) || ((local_c === 0x18 || (local_c === 0xc)))) {
+    if ((param_1[0x188 / 4] < 2) || (local_c < param_1[0x188 / 4])) {
+      uVar1 = 0;
+    }
+    else {
+      FUN_0046e571(param_1[0x188 / 4], 1);
+      uVar1 = 1;
+    }
+  }
+  else {
+    uVar1 = 0;
+  }
+  return uVar1;
 }
 
 
@@ -2254,8 +2302,8 @@ export function FUN_004fb29f(param_1) {
           (0x03 < s8(DAT_006560ff[local_3c * 0x20])) ||
           (DAT_006560ff[local_3c * 0x20] === 0x03)
         );
-        iVar1 = s16_read(DAT_006560f0, local_3c * 0x20);
-        iVar2 = s16_read(DAT_006560f2, local_3c * 0x20);
+        iVar1 = s16(DAT_006560f0, local_3c * 0x20);
+        iVar2 = s16(DAT_006560f2, local_3c * 0x20);
         iVar3 = FUN_004087c0(iVar1, iVar2);
       } while ((((iVar3 === 0) || (iVar1 < local_14[0])) ||
                ((local_14[1] < iVar1 ||
@@ -2263,8 +2311,8 @@ export function FUN_004fb29f(param_1) {
               (((iVar2 < local_24[1] || (local_24[2] < iVar2)) || (local_24[3] < iVar2))));
       DAT_006560ff[local_3c * 0x20] = 0xb;
       DAT_006560fc[local_3c * 0x20] = 0x37;
-      s16_write(DAT_00656102, local_3c * 0x20, param_1[0xbc / 4]);
-      s16_write(DAT_00656104, local_3c * 0x20, param_1[0xc0 / 4]);
+      w16(DAT_00656102, local_3c * 0x20, param_1[0xbc / 4]);
+      w16(DAT_00656104, local_3c * 0x20, param_1[0xc0 / 4]);
       local_38 = local_38 + 1;
     } while ((local_38 < param_1[0x98 / 4]) || (param_1[0x98 / 4] === -2));
   }
@@ -2718,43 +2766,47 @@ export function FUN_004fc2bb(param_1, param_2, param_3) {
 
 export function FUN_004fc3ae(param_1) {
   let uVar1;
+  // C uses *(byte*)(param_1+4) and *(byte*)(param_1+5) for action flag bytes.
+  // In JS with int-array model: byte4 = param_1[1] & 0xFF, byte5 = (param_1[1] >> 8) & 0xFF
+  // Since bit tests on byte4 with mask<256 work directly on param_1[1],
+  // byte5 tests need mask shifted left by 8.
 
-  if (((param_1[4 / 4] & 0x40) === 0) || ((param_1[5] & 0x20) === 0)) {
-    if ((param_1[4 / 4] & 0x10) !== 0) {
+  if (((param_1[1] & 0x40) === 0) || ((param_1[1] & 0x2000) === 0)) {
+    if ((param_1[1] & 0x10) !== 0) {
       FUN_004fa707(param_1);
     }
-    if ((param_1[4 / 4] & 0x80) !== 0) {
+    if ((param_1[1] & 0x80) !== 0) {
       FUN_004fa854(param_1);
     }
-    if ((param_1[4 / 4] & 4) !== 0) {
+    if ((param_1[1] & 4) !== 0) {
       FUN_004faed4(param_1);
     }
-    if ((param_1[4 / 4] & 2) !== 0) {
+    if ((param_1[1] & 2) !== 0) {
       FUN_004fb29f(param_1);
     }
-    if ((param_1[5] & 2) !== 0) {
+    if ((param_1[1] & 0x200) !== 0) {  // byte5 & 2 → 0x200
       FUN_004fb5b2(param_1);
     }
-    if ((param_1[4 / 4] & 0x20) !== 0) {
+    if ((param_1[1] & 0x20) !== 0) {
       FUN_004faba6(param_1);
     }
-    if ((param_1[4 / 4] & 8) !== 0) {
+    if ((param_1[1] & 8) !== 0) {
       FUN_004fa944(param_1);
     }
-    if ((param_1[5] & 4) !== 0) {
+    if ((param_1[1] & 0x400) !== 0) {  // byte5 & 4 → 0x400
       FUN_004fad02(param_1);
     }
-    if ((param_1[5] & 8) !== 0) {
+    if ((param_1[1] & 0x800) !== 0) {  // byte5 & 8 → 0x800
       FUN_004fadfb(param_1);
     }
-    if ((param_1[4 / 4] & 1) !== 0) {
+    if ((param_1[1] & 1) !== 0) {
       FUN_004faab0(param_1);
     }
-    if ((param_1[5] & 1) !== 0) {
+    if ((param_1[1] & 0x100) !== 0) {  // byte5 & 1 → 0x100
       FUN_004fa82d(param_1);
     }
-    if ((param_1[4 / 4] & 0x40) !== 0) {
-      param_1[4 / 4] = param_1[4 / 4] | 0x2000;
+    if ((param_1[1] & 0x40) !== 0) {
+      param_1[1] = param_1[1] | 0x2000;
     }
     uVar1 = 1;
   }
@@ -2790,7 +2842,7 @@ export function FUN_004fc516(param_1, param_2) {
     // Each event is allocated via FUN_004fa617 and linked into the event list
 
     // ... (massive parsing state machine, 5000+ lines of C)
-    // The actual parsing is stubbed since it requires file I/O and
+    // DEVIATION: actual parsing requires file I/O and
     // the full memory pool infrastructure
 
     local_44 = 0;
@@ -2804,7 +2856,7 @@ export function FUN_004fc516(param_1, param_2) {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// STUB DECLARATIONS — External functions referenced by this block
+// EXTERNAL FUNCTION DECLARATIONS — Referenced by this block
 // ═══════════════════════════════════════════════════════════════════
 
 // Memory / globals — these would be imported from mem.js in a full implementation
@@ -2987,7 +3039,7 @@ let PTR_s_DESERT_0062f168 = [];
 let DAT_0069b018 = 0;
 let DAT_00627684 = [];
 
-// String constants — stubbed
+// String constants
 const s_INHOCK_0062ef7c = 'INHOCK';
 const s_DECREASE_0062ef84 = 'DECREASE';
 const s_FOODSHORTAGE_0062ef90 = 'FOODSHORTAGE';
@@ -3011,10 +3063,9 @@ const s_ANYUNIT_0062f250 = 'ANYUNIT';
 const s_Could_not_find_unit_0062f258 = 'Could not find unit %s';
 const s_Could_not_find_terraintype_0062f280 = 'Could not find terraintype %s';
 const s_BADEVENTSFILE_00630868 = 'BADEVENTSFILE';
+const s__SOUND__0062f2b0 = '\\SOUND\\';
+const s__SOUND__0062f2b8 = '\\SOUND\\';
 
-// Helper stubs for 16-bit read/write
-function s16_read(arr, off) { return arr ? (arr[off] || 0) : 0; }
-function s16_write(arr, off, val) { if (arr) arr[off] = val; }
 
 // External function stubs
 function FUN_004bd9f0(p1, p2) { return 0; }
@@ -3139,3 +3190,5 @@ function FUN_printf(p1, ...args) {}
 function FUN_005c64da() {}
 function FUN_005c656b() {}
 function FUN_00452a67() {}
+function FUN_005ddeff() { return 0; }  // DEVIATION: CD detection
+function FUN_005dde57() {}  // DEVIATION: CD seek

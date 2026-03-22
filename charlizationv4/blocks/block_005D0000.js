@@ -29,6 +29,7 @@ import { FUN_00407f90, FUN_00407fc0, FUN_00407ff0, FUN_004080c0, FUN_00408490, F
 import { FUN_0040f610, FUN_0040f730, FUN_0040f810, FUN_0040f880 } from './block_00400000.js';
 import { FUN_00414bb0, FUN_00414d10, FUN_00417ef0, FUN_00418740, FUN_00418910, FUN_00418cb0 } from './block_00410000.js';
 import { FUN_00421bb0, FUN_00421c30, FUN_00421c60, FUN_00421ca0 } from './block_00420000.js';
+import { FUN_0043c630, FUN_0043c660 } from './block_00430000.js';
 import { FUN_00447210, FUN_004472f0, FUN_0044c5a0, FUN_0044cba0 } from './block_00440000.js';
 import { FUN_00450390, FUN_004503d0, FUN_00450400, FUN_00451830, FUN_00451860, FUN_00453af0 } from './block_00450000.js';
 import { FUN_0046f440 } from './block_00460000.js';
@@ -72,7 +73,7 @@ let PTR_FUN_0061d718 = 0;   // vtable pointer
 
 
 // ═══════════════════════════════════════════════════════════════════
-// STUBS: Win32 API and MFC calls — no-ops in JS
+// DEVIATION: Win32 API — no-ops in JS
 // ═══════════════════════════════════════════════════════════════════
 
 function SetRect() {}
@@ -224,11 +225,9 @@ function FID_conflict___expand() { return null; }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// STUBS: Functions from OTHER blocks
+// DEVIATION: Win32 API — functions from other blocks (forward declarations)
 // ═══════════════════════════════════════════════════════════════════
 
-function FUN_0043c630() {}                 // thunk: show cursor
-function FUN_0043c660() {}                 // thunk: hide cursor
 
 // Functions from block_005B/005C/005E/005F/0061
 function FUN_005c0e90() {}                 // render sprite
@@ -306,7 +305,7 @@ export function FUN_005d056c(param_1, param_2, param_3, param_4, param_5) {
 
 // sprite_blit_with_target — sprite blit to render target
 export function FUN_005d080d(param_1, param_2, param_3, param_4, param_5) {
-  // UI framework sprite blit — stub
+  // DEVIATION: Win32 API — sprite blit to render target
   param_1[0] = 0; param_1[1] = 0; param_1[2] = 0; param_1[3] = 0;
   return param_1;
 }

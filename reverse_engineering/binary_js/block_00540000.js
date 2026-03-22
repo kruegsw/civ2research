@@ -747,10 +747,109 @@ export function FUN_00549aee(param_1) {
 // ============================================================
 
 export function FUN_0054a4c4() {
-  // This function saves the events file (EVENTS.TXT).
-  // It is heavily UI/file-I/O dependent (Win32 file operations).
-  // Stubbed — not relevant to game logic engine.
-  return 0;
+  let iVar1;
+  let pcVar2;
+  let local_228;
+  let local_224;
+  let local_220;
+  let local_21c;
+  let local_118;
+  let local_108;
+
+  local_224 = null;
+  local_220 = null;
+  // DEVIATION: Win32 API (strcpy/strcat for filename construction)
+  local_118 = "EVENTS.";
+  local_118 = local_118 + DAT_0062cd24;
+  local_228 = 0;
+  // DEVIATION: Win32 API (_getcwd, _chdir)
+  local_21c = "";
+  iVar1 = FUN_00415133("EVENTS.BAK");
+  if (((iVar1 === 0) || (iVar1 = FID_conflict__remove("EVENTS.BAK"), iVar1 === 0)) &&
+     ((iVar1 = FUN_00415133(local_118), iVar1 === 0 ||
+      (iVar1 = FID_conflict___wrename(local_118, "EVENTS.BAK"), iVar1 === 0)))) {
+    local_224 = FUN_0041508c("EVENTS.BAK", "r");
+    local_220 = FUN_0041508c(local_118, "w");
+    if (local_220 !== null) {
+      if (local_224 === null) {
+        iVar1 = local_220.fputs("@BEGINEVENTS\n");
+        if (iVar1 === -1) {
+          // goto LAB_0054a7eb
+          if (local_224 !== null) {
+            // DEVIATION: Win32 API (_fclose)
+          }
+          if (local_220 !== null) {
+            // DEVIATION: Win32 API (_fclose)
+          }
+          // DEVIATION: Win32 API (_chdir)
+          return local_228;
+        }
+      }
+      else {
+        do {
+          pcVar2 = local_224.fgets(local_108, 0x100);
+          if ((pcVar2 === null) || (iVar1 = local_220.fputs(local_108), iVar1 === -1)) {
+            // goto LAB_0054a7eb
+            if (local_224 !== null) {
+              // DEVIATION: Win32 API (_fclose)
+            }
+            if (local_220 !== null) {
+              // DEVIATION: Win32 API (_fclose)
+            }
+            // DEVIATION: Win32 API (_chdir)
+            return local_228;
+          }
+          FUN_0056b810(local_108);
+          FUN_004d007e(local_108);
+          iVar1 = local_108.localeCompare("@BEGINEVENTS");
+        } while (iVar1 !== 0);
+      }
+      FUN_00549aee(local_220);
+      if (local_224 === null) {
+        iVar1 = local_220.fputs("@ENDEVENTS\n");
+        if (iVar1 !== -1) {
+          local_228 = 1;
+        }
+      }
+      else {
+        do {
+          pcVar2 = local_224.fgets(local_108, 0x100);
+          if (pcVar2 === null) {
+            // goto LAB_0054a7eb
+            if (local_224 !== null) {
+              // DEVIATION: Win32 API (_fclose)
+            }
+            if (local_220 !== null) {
+              // DEVIATION: Win32 API (_fclose)
+            }
+            // DEVIATION: Win32 API (_chdir)
+            return local_228;
+          }
+          FUN_0056b810(local_108);
+          FUN_004d007e(local_108);
+          iVar1 = local_108.localeCompare("@ENDEVENTS");
+        } while (iVar1 !== 0);
+        iVar1 = local_220.fputs("@ENDEVENTS\n");
+        while (iVar1 !== -1) {
+          pcVar2 = local_224.fgets(local_108, 0x100);
+          if (pcVar2 === null) {
+            local_228 = 1;
+            break;
+          }
+          iVar1 = local_220.fputs(local_108);
+        }
+      }
+    }
+  }
+  // LAB_0054a7eb
+  if (local_224 !== null) {
+    // DEVIATION: Win32 API (_fclose)
+  }
+  if (local_220 !== null) {
+    // DEVIATION: Win32 API (_fclose)
+  }
+  // DEVIATION: Win32 API (_chdir)
+  return local_228;
 }
 
 
@@ -810,12 +909,117 @@ export function FUN_0054a8d3(param_1, param_2) {
 // ============================================================
 
 export function FUN_0054a912(param_1, param_2, param_3) {
-  // This function shows a UI dialog for picking event parameters
-  // (civs, unit types, techs, terrains, etc.).
-  // Heavily UI dependent (MFC dialog, list box, etc.).
-  // Stubbed — not relevant to game logic engine.
-  // Returns param_1 unchanged as default.
-  return param_1;
+  let uVar1;
+  let iVar2;
+  let uVar3;
+  let local_318;
+  let local_310;
+  let local_30c;
+
+  // DEVIATION: Win32 API (SEH setup)
+  // DEVIATION: Win32 API (dialog init: FUN_0059db08, FUN_0040bc40, FUN_0059e6a9, FUN_0059e6ff, FUN_0059e5c9)
+  FUN_0059db08(0x4000);
+  FUN_0040bc40(0x1001);
+  FUN_0059e6a9(param_2);
+  FUN_0059e6ff(0xdc);
+  FUN_0059e5c9(8, 0xdc, 0);
+  switch(param_3) {
+  case 0:
+    if (param_1 === 0) {
+      param_1 = 1;
+    }
+    for (local_30c = 1; local_30c < 8; local_30c = local_30c + 1) {
+      uVar3 = 0;
+      iVar2 = local_30c;
+      uVar1 = FUN_00493c7d(local_30c, local_30c, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+    break;
+  case 1:
+    for (local_30c = 0; local_30c < 0x3e; local_30c = local_30c + 1) {
+      uVar3 = 0;
+      iVar2 = local_30c;
+      uVar1 = FUN_00428b0c(DAT_0064b1b8[local_30c * 0x14], local_30c, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+    break;
+  case 2:
+    for (local_310 = 0; local_310 < 100; local_310 = local_310 + 1) {
+      uVar3 = 0;
+      iVar2 = local_310;
+      uVar1 = FUN_00428b0c(DAT_00627684[local_310 * 0x10], local_310, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+    break;
+  case 3:
+    FUN_0059edf0("ANYUNIT", 0xfffffffe, 0);
+    for (local_30c = 0; local_30c < 0x3e; local_30c = local_30c + 1) {
+      uVar3 = 0;
+      iVar2 = local_30c;
+      uVar1 = FUN_00428b0c(DAT_0064b1b8[local_30c * 0x14], local_30c, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+    break;
+  case 4:
+    if (param_1 === 0) {
+      param_1 = -2;
+    }
+    FUN_0059edf0("ANYBODY", 0xfffffffe, 0);
+    for (local_30c = 1; local_30c < 8; local_30c = local_30c + 1) {
+      uVar3 = 0;
+      iVar2 = local_30c;
+      uVar1 = FUN_00493c7d(local_30c, local_30c, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+    break;
+  case 5:
+    if (param_1 === 0) {
+      param_1 = -3;
+    }
+    FUN_0059edf0("TRIGGERATTACKER", 0xfffffffd, 0);
+    FUN_0059edf0("TRIGGERDEFENDER", 0xfffffffc, 0);
+    for (local_30c = 1; local_30c < 8; local_30c = local_30c + 1) {
+      uVar3 = 0;
+      iVar2 = local_30c;
+      uVar1 = FUN_00493c7d(local_30c, local_30c, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+    break;
+  case 6:
+    if (param_1 === 0) {
+      param_1 = -4;
+    }
+    FUN_0059edf0("TRIGGERRECEIVER", 0xfffffffc, 0);
+    for (local_30c = 1; local_30c < 8; local_30c = local_30c + 1) {
+      uVar3 = 0;
+      iVar2 = local_30c;
+      uVar1 = FUN_00493c7d(local_30c, local_30c, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+    break;
+  case 7:
+    for (local_30c = 0; local_30c < 0xb; local_30c = local_30c + 1) {
+      uVar3 = 0;
+      iVar2 = local_30c;
+      uVar1 = FUN_00428b0c(DAT_00627cc4[local_30c * 0x18], local_30c, 0);
+      FUN_0059edf0(uVar1, iVar2, uVar3);
+    }
+  }
+  FUN_0059ea99(param_1);
+  if (DAT_006a4f88 === 0) {
+    local_318 = 0;
+  }
+  else {
+    local_318 = DAT_006a4f88 + 0x48;
+  }
+  FUN_0059d3c9(local_318);
+  // DEVIATION: Win32 API (FUN_0040bc80 — run modal dialog)
+  FUN_0040bc80(0);
+  FUN_0059d3c9(0);
+  // DEVIATION: Win32 API (SEH cleanup)
+  FUN_0054ada1();
+  FUN_0054adb7();
+  return;
 }
 
 
@@ -1528,10 +1732,381 @@ export function FUN_0054c36e() {
 // ============================================================
 
 export function FUN_0054c4a1() {
-  // This is the main "edit trigger" UI function for the scenario events editor.
-  // Heavily UI-dependent (dialogs, list boxes, text inputs).
-  // Stubbed — not relevant to game logic engine.
-  return 0;
+  let sVar1;
+  let iVar2;
+  let uVar3;
+  let uVar4;
+  let bVar5;
+  let local_148;
+  let local_144;
+  let local_140;
+  let local_13c;
+  let local_138;
+  let local_134;
+  let local_130;
+  let local_128;
+  let local_124;
+  let local_120;
+  let local_11c;
+  let local_18;
+  let local_14;
+  let local_10;
+  let local_c;
+  let local_8;
+
+  local_124 = 0;
+  if (DAT_006a4f88 === 0) {
+    local_128 = 0;
+  }
+  else {
+    local_128 = DAT_006a4f88 + 0x48;
+  }
+  FUN_0059d3c9(local_128);
+  local_10 = FUN_00551d50();
+  local_120 = DAT_0064b99c;
+  local_18 = local_10;
+  while ((local_120 !== null &&
+         (iVar2 = local_18 + -1, bVar5 = local_18 !== 0, local_18 = iVar2, bVar5))) {
+    local_120 = local_120[0x6f];
+  }
+  uVar4 = local_120[0];
+  if (uVar4 < 9) {
+    if (uVar4 === 8) {
+      if (DAT_006a4f88 === 0) {
+        local_138 = 0;
+      }
+      else {
+        local_138 = DAT_006a4f88 + 0x48;
+      }
+      FUN_0059d3c9(local_138);
+      local_c = FUN_0051d75d("DEBUG", "TURNINTERVAL", local_120[0xb], [local_14]);
+      if (DAT_006a4f88 === 0) {
+        local_13c = 0;
+      }
+      else {
+        local_13c = DAT_006a4f88 + 0x48;
+      }
+      FUN_0059d3c9(local_13c);
+      if (local_c === 0) {
+        uVar4 = FUN_004cdf4b(local_14, 0, 0x7fff);
+        local_120[0xb] = uVar4;
+        local_124 = 1;
+      }
+    }
+    else if (uVar4 === 1) {
+      uVar3 = FUN_00428b0c(DAT_00628420 + 0x890, 1);
+      local_c = FUN_0054a912(local_120[3], uVar3);
+      if (local_c !== 0xffffffff) {
+        if (local_c < 0) {
+          local_120[3] = 0xfffffffe;
+          local_8 = "ANYUNIT";
+        }
+        else {
+          local_120[3] = local_c;
+          local_8 = FUN_00428b0c(DAT_0064b1b8[local_120[3] * 0x14]);
+        }
+        sVar1 = local_8.length;
+        uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+        local_120[2] = uVar4;
+        if (local_120[2] !== 0) {
+          FUN_005f22d0(local_120[2], local_8);
+          uVar3 = FUN_00428b0c(DAT_00628420 + 0x894, 4);
+          local_c = FUN_0054a912(local_120[6], uVar3);
+          if (local_c !== 0xffffffff) {
+            if (local_c < 0) {
+              local_120[6] = 0xfffffffe;
+              local_8 = "ANYBODY";
+            }
+            else {
+              local_120[6] = local_c;
+              local_8 = FUN_00493c7d(local_120[6]);
+            }
+            sVar1 = local_8.length;
+            uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+            local_120[5] = uVar4;
+            if (local_120[5] !== 0) {
+              FUN_005f22d0(local_120[5], local_8);
+              uVar3 = FUN_00428b0c(DAT_00628420 + 0x898, 4);
+              local_c = FUN_0054a912(local_120[9], uVar3);
+              if (local_c !== 0xffffffff) {
+                if (local_c < 0) {
+                  local_120[9] = 0xfffffffe;
+                  local_8 = "ANYBODY";
+                }
+                else {
+                  local_120[9] = local_c;
+                  local_8 = FUN_00493c7d(local_120[9]);
+                }
+                sVar1 = local_8.length;
+                uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+                local_120[8] = uVar4;
+                if (local_120[8] !== 0) {
+                  FUN_005f22d0(local_120[8], local_8);
+                  local_124 = 1;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    else if (uVar4 === 2) {
+      do {
+        if (local_120[4] === 0) {
+          local_120[4] = "";
+        }
+        if (DAT_006a4f88 === 0) {
+          local_130 = 0;
+        }
+        else {
+          local_130 = DAT_006a4f88 + 0x48;
+        }
+        FUN_0059d3c9(local_130);
+        local_c = FUN_0051d63b("DEBUG", "CITYNAME", 0x17, local_120[4], local_11c);
+        FUN_0059d3c9(0);
+      } while ((-1 < local_c) &&
+              ((sVar1 = local_11c.length, sVar1 === 0 ||
+               (iVar2 = FUN_004ce71b(local_11c), iVar2 === 0))));
+      if ((-1 < local_c) && (sVar1 = local_11c.length, sVar1 !== 0)) {
+        sVar1 = local_11c.length;
+        uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+        local_120[4] = uVar4;
+        if (local_120[4] !== 0) {
+          FUN_005f22d0(local_120[4], local_11c);
+          uVar3 = FUN_00428b0c(DAT_00628420 + 0x894, 4);
+          local_c = FUN_0054a912(local_120[6], uVar3);
+          if (local_c !== 0xffffffff) {
+            if (local_c < 0) {
+              local_120[6] = 0xfffffffe;
+              local_8 = "ANYBODY";
+            }
+            else {
+              local_120[6] = local_c;
+              local_8 = FUN_00493c7d(local_120[6]);
+            }
+            sVar1 = local_8.length;
+            uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+            local_120[5] = uVar4;
+            if (local_120[5] !== 0) {
+              FUN_005f22d0(local_120[5], local_8);
+              uVar3 = FUN_00428b0c(DAT_00628420 + 0x898, 4);
+              local_c = FUN_0054a912(local_120[9], uVar3);
+              if (local_c !== 0xffffffff) {
+                if (local_c < 0) {
+                  local_120[9] = 0xfffffffe;
+                  local_8 = "ANYBODY";
+                }
+                else {
+                  local_120[9] = local_c;
+                  local_8 = FUN_00493c7d(local_120[9]);
+                }
+                sVar1 = local_8.length;
+                uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+                local_120[8] = uVar4;
+                if (local_120[8] !== 0) {
+                  FUN_005f22d0(local_120[8], local_8);
+                  local_124 = 1;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    else if (uVar4 === 4) {
+      if (DAT_006a4f88 === 0) {
+        local_134 = 0;
+      }
+      else {
+        local_134 = DAT_006a4f88 + 0x48;
+      }
+      FUN_0059d3c9(local_134);
+      local_c = FUN_0051d75d("DEBUG", "TURNCOUNT", local_120[0xb], [local_14]);
+      FUN_0059d3c9(0);
+      if (local_c === 0) {
+        uVar4 = FUN_004cdf4b(local_14, 0xffffffff, 0x7fff);
+        local_120[0xb] = uVar4;
+        local_124 = 1;
+      }
+    }
+  }
+  else {
+    switch(uVar4) {
+    case 0x10:
+      uVar3 = FUN_00428b0c(DAT_00628420 + 0x89c, 4);
+      local_c = FUN_0054a912(local_120[6], uVar3);
+      if (local_c !== 0xffffffff) {
+        if (local_c < 0) {
+          local_120[6] = 0xfffffffe;
+          local_8 = "ANYBODY";
+        }
+        else {
+          local_120[6] = local_c;
+          local_8 = FUN_00493c7d(local_120[6]);
+        }
+        sVar1 = local_8.length;
+        uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+        local_120[5] = uVar4;
+        if (local_120[5] !== 0) {
+          FUN_005f22d0(local_120[5], local_8);
+          if ((local_120[7] === 0) || (local_120[7] === 1)) {
+            local_c = 0;
+          }
+          else if (local_120[7] === 2) {
+            local_c = 1;
+          }
+          else {
+            local_c = 2;
+          }
+          if (DAT_006a4f88 === 0) {
+            local_140 = 0;
+          }
+          else {
+            local_140 = DAT_006a4f88 + 0x48;
+          }
+          FUN_0059d3c9(local_140);
+          local_c = FUN_0051d3e0("DEBUG", "TALKERTYPE", local_c, 0, 0, 0, 1);
+          FUN_0059d3c9(0);
+          if (-1 < local_c) {
+            if (local_c === 0) {
+              local_120[7] = 1;
+            }
+            else if (local_c === 1) {
+              local_120[7] = 2;
+            }
+            else {
+              local_120[7] = 4;
+            }
+            uVar3 = FUN_00428b0c(DAT_00628420 + 0x8a0, 4);
+            local_c = FUN_0054a912(local_120[9], uVar3);
+            if (local_c !== 0xffffffff) {
+              if (local_c < 0) {
+                local_120[9] = 0xfffffffe;
+                local_8 = "ANYBODY";
+              }
+              else {
+                local_120[9] = local_c;
+                local_8 = FUN_00493c7d(local_120[9]);
+              }
+              sVar1 = local_8.length;
+              uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+              local_120[8] = uVar4;
+              if (local_120[8] !== 0) {
+                FUN_005f22d0(local_120[8], local_8);
+                if ((local_120[10] === 0) || (local_120[10] === 1)) {
+                  local_c = 0;
+                }
+                else if (local_120[10] === 2) {
+                  local_c = 1;
+                }
+                else {
+                  local_c = 2;
+                }
+                if (DAT_006a4f88 === 0) {
+                  local_144 = 0;
+                }
+                else {
+                  local_144 = DAT_006a4f88 + 0x48;
+                }
+                FUN_0059d3c9(local_144);
+                local_c = FUN_0051d3e0("DEBUG", "TALKERTYPE", local_c, 0, 0, 0, 1);
+                FUN_0059d3c9(0);
+                if (-1 < local_c) {
+                  if (local_c === 0) {
+                    local_120[10] = 1;
+                  }
+                  else if (local_c === 1) {
+                    local_120[10] = 2;
+                  }
+                  else {
+                    local_120[10] = 4;
+                  }
+                  local_124 = 1;
+                }
+              }
+            }
+          }
+        }
+      }
+      break;
+    default:
+      break;
+    case 0x20:
+      local_124 = 1;
+      break;
+    case 0x40:
+      uVar4 = FUN_004cdf4b(local_120[0xc], 1, 1000);
+      local_120[0xc] = uVar4;
+      if (DAT_006a4f88 === 0) {
+        local_148 = 0;
+      }
+      else {
+        local_148 = DAT_006a4f88 + 0x48;
+      }
+      FUN_0059d3c9(local_148);
+      local_c = FUN_0051d75d("DEBUG", "RANDOMDENOM", local_120[0xc], [local_14]);
+      FUN_0059d3c9(0);
+      if (local_c === 0) {
+        uVar4 = FUN_004cdf4b(local_14, 1, 1000);
+        local_120[0xc] = uVar4;
+        local_124 = 1;
+      }
+      break;
+    case 0x80:
+      uVar3 = FUN_00428b0c(DAT_00628420 + 0x8a4, 4);
+      local_c = FUN_0054a912(local_120[9], uVar3);
+      if (local_c !== 0xffffffff) {
+        if (local_c < 0) {
+          local_120[9] = 0xfffffffe;
+          local_8 = "ANYBODY";
+        }
+        else {
+          local_120[9] = local_c;
+          local_8 = FUN_00493c7d(local_120[9]);
+        }
+        sVar1 = local_8.length;
+        uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+        local_120[8] = uVar4;
+        if (local_120[8] !== 0) {
+          FUN_005f22d0(local_120[8], local_8);
+          local_124 = 1;
+        }
+      }
+      break;
+    case 0x100:
+      uVar3 = FUN_00428b0c(DAT_00628420 + 0x8a8, 4);
+      local_c = FUN_0054a912(local_120[9], uVar3);
+      if (local_c !== 0xffffffff) {
+        if (local_c < 0) {
+          local_120[9] = 0xfffffffe;
+          local_8 = "ANYBODY";
+        }
+        else {
+          local_120[9] = local_c;
+          local_8 = FUN_00493c7d(local_120[9]);
+        }
+        sVar1 = local_8.length;
+        uVar4 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
+        local_120[8] = uVar4;
+        if (local_120[8] !== 0) {
+          FUN_005f22d0(local_120[8], local_8);
+          uVar3 = FUN_00428b0c(DAT_00628420 + 0x8ac, 2);
+          local_c = FUN_0054a912(local_120[0xd], uVar3);
+          if (local_c !== 0xffffffff) {
+            local_120[0xd] = local_c;
+            local_124 = 1;
+          }
+        }
+      }
+    }
+  }
+  FUN_004cef35();
+  FUN_0054b635();
+  FUN_00551d80(local_10);
+  FUN_0054ae93(0);
+  FUN_00548df0();
+  FUN_0059d3c9(0);
+  return local_124;
 }
 
 
@@ -1556,9 +2131,64 @@ export function FUN_0054d4ca(param_1) {
 // ============================================================
 
 export function show_messagebox_D4E6() {
-  // This is the "add new trigger" UI function for the scenario events editor.
-  // Heavily UI-dependent (dialogs, list boxes, message boxes).
-  // Stubbed — not relevant to game logic engine.
+  let piVar1;
+  let lpCaption;
+  let lpText;
+  let iVar2;
+  let pcVar3;
+  let uType;
+  let local_14;
+  let local_10;
+  let local_c;
+
+  local_c = 0;
+  while (true) {
+    if (DAT_006a4f88 === 0) {
+      local_14 = 0;
+    }
+    else {
+      local_14 = DAT_006a4f88 + 0x48;
+    }
+    FUN_0059d3c9(local_14);
+    DAT_00631edc = 0;
+    local_c = FUN_00551e20("TRIGGERS", local_c, 1);
+    FUN_0059d3c9(0);
+    if (DAT_00631edc === 0) break;
+    FUN_0054b1d5(local_c);
+  }
+  if (local_c !== -1) {
+    if ((DAT_0064b994 < 0x1c4) || (piVar1 = FUN_004fa617(), piVar1 === null)) {
+      uType = 0;
+      lpCaption = FUN_00428b0c(DAT_00628420 + 0x8d0);
+      lpText = FUN_00428b0c(DAT_00628420 + 0x8e8);
+      // DEVIATION: Win32 API (MessageBoxA)
+      iVar2 = FUN_00414d10();
+    }
+    else {
+      piVar1[0] = 1 << (local_c & 0x1f);
+      FUN_0054b635();
+      FUN_0054bc1a(0);
+      // DEVIATION: Win32 API (streambuf::egptr for listbox count)
+      pcVar3 = FUN_00551e60_egptr(DAT_006a4f88 + 0xad0);
+      FUN_00551d80(pcVar3 + -1);
+      iVar2 = FUN_0054c4a1(0);
+      if (iVar2 === 0) {
+        for (local_10 = DAT_0064b99c; local_10[0x6f] !== 0;
+            local_10 = local_10[0x6f]) {
+        }
+        if (local_10[0x70] === 0) {
+          DAT_0064b99c = local_10[0x6f];
+        }
+        else {
+          local_10[0x70][0x6f] = local_10[0x6f];
+        }
+        FUN_004cef35();
+        FUN_0054b635();
+        FUN_0054bc1a(0);
+      }
+      FUN_0054ae93(0);
+    }
+  }
   FUN_00548df0();
   return;
 }
@@ -1617,14 +2247,447 @@ export function FUN_0054d6da() {
 // ============================================================
 
 export function FUN_0054d7ef() {
-  // This is the main "edit action" UI function for the scenario events editor.
-  // Extremely large, heavily UI-dependent (dialogs, text inputs, file pickers).
-  // Stubbed — not relevant to game logic engine.
+  let uVar1;
+  let uVar2;
+  let sVar3;
+  let iVar4;
+  let pcVar5;
+  let lVar6;
+  let bVar7;
+  let local_1f8;
+  let local_1f4;
+  let local_1f0;
+  let local_1ec;
+  let local_1e8;
+  let local_1e4;
+  let local_1e0;
+  let local_1dc;
+  let local_1d8;
+  let local_1d4;
+  let local_1d0;
+  let local_1cc;
+  let local_1c4;
+  let local_1b8;
+  let local_1b0;
+  let local_ac;
+  let local_60;
+  let local_5c;
+  let local_58;
+  let local_18;
+  let local_14;
+
+  // DEVIATION: Win32 API (SEH setup, FUN_004187a0)
+  FUN_004187a0();
+  if (DAT_006a4f88 === 0) {
+    local_1c4 = 0;
+  }
+  else {
+    local_1c4 = DAT_006a4f88 + 0x48;
+  }
+  FUN_0059d3c9(local_1c4);
+  local_ac = FUN_00551d50();
+  local_1b8 = DAT_0064b99c;
+  while ((local_1b8 !== null &&
+         (iVar4 = local_ac + -1, bVar7 = local_ac !== 0, local_ac = iVar4, bVar7))) {
+    local_1b8 = local_1b8[0x6f];
+  }
+  uVar1 = FUN_00551d50(local_1b8[1]);
+  uVar2 = FUN_0054a874(uVar1);
+  if (uVar2 < 9) {
+    if (uVar2 === 8) {
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x8a8, local_1b8[0], [local_14]);
+      local_18 = FUN_0054adc6(local_1b8[0x5e], uVar1);
+      if (local_18 !== -1) {
+        local_1b8[0x5e] = local_18;
+        sVar3 = local_14.length;
+        uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+        local_1b8[0x5d] = uVar1;
+        if (local_1b8[0x5d] !== 0) {
+          FUN_005f22d0(local_1b8[0x5d], local_14);
+          if (DAT_006a4f88 === 0) {
+            local_1ec = 0;
+          }
+          else {
+            local_1ec = DAT_006a4f88 + 0x48;
+          }
+          FUN_0059d3c9(local_1ec);
+          local_18 = FUN_004ce8a4("DEBUG", "AMOUNT", local_1b8[0x5f], [local_60]);
+          FUN_0059d3c9(0);
+          if (local_18 === 0) {
+            uVar1 = FUN_004cdf4b(local_60, 0xffff8ad0, 30000);
+            local_1b8[0x5f] = uVar1;
+          }
+        }
+      }
+    }
+    else if (uVar2 === 1) {
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x8b0);
+      FUN_004ce38a(local_1b8[0x0e], uVar1);
+    }
+    else if (uVar2 === 2) {
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x8b4, 3);
+      local_18 = FUN_0054a912(local_1b8[0x25], uVar1);
+      if (local_18 !== -1) {
+        if (local_18 < 0) {
+          local_1b8[0x25] = 0xfffffffe;
+          local_14 = "ANYUNIT";
+        }
+        else {
+          local_1b8[0x25] = local_18;
+          local_14 = FUN_00428b0c(DAT_0064b1b8[local_1b8[0x25] * 0x14]);
+        }
+        sVar3 = local_14.length;
+        uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+        local_1b8[0x24] = uVar1;
+        if (local_1b8[0x24] !== 0) {
+          FUN_005f22d0(local_1b8[0x24], local_14);
+          uVar1 = FUN_00428b0c(DAT_00628420 + 0x8b8, local_1b8[0], [local_14]);
+          local_18 = FUN_0054adc6(local_1b8[0x23], uVar1);
+          if (local_18 !== -1) {
+            local_1b8[0x23] = local_18;
+            sVar3 = local_14.length;
+            uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+            local_1b8[0x22] = uVar1;
+            if (local_1b8[0x22] !== 0) {
+              FUN_005f22d0(local_1b8[0x22], local_14);
+              local_58 = `${local_1b8[0x27]},${local_1b8[0x28]},${local_1b8[0x29]},${local_1b8[0x2a]},${local_1b8[0x2b]},${local_1b8[0x2c]},${local_1b8[0x2d]},${local_1b8[0x2e]}`;
+              if (DAT_006a4f88 === 0) {
+                local_1cc = 0;
+              }
+              else {
+                local_1cc = DAT_006a4f88 + 0x48;
+              }
+              FUN_0059d3c9(local_1cc);
+              do {
+                local_18 = FUN_0051d63b("DEBUG", "MAPRECT", 0x1f, local_58, local_1b0);
+                if (local_18 === -1) break;
+                sVar3 = local_1b0.length;
+              } while (sVar3 === 0);
+              FUN_0059d3c9(0);
+              if (local_18 !== -1) {
+                sVar3 = local_1b0.length;
+                if (sVar3 !== 0) {
+                  FUN_005f22d0(DAT_00679640, local_1b0);
+                  for (local_ac = 0; local_ac < 4; local_ac = local_ac + 1) {
+                    pcVar5 = FUN_004a24b1(0, 0x7fff);
+                    lVar6 = parseInt(pcVar5);
+                    uVar1 = FUN_004cdf4b(lVar6);
+                    local_1b8[local_ac * 2 + 0x27] = uVar1;
+                    pcVar5 = FUN_004a24b1(0, 0x7fff);
+                    lVar6 = parseInt(pcVar5);
+                    uVar1 = FUN_004cdf4b(lVar6);
+                    local_1b8[local_ac * 2 + 0x28] = uVar1;
+                  }
+                }
+                local_58 = `${local_1b8[0x2f]},${local_1b8[0x30]}`;
+                if (DAT_006a4f88 === 0) {
+                  local_1d0 = 0;
+                }
+                else {
+                  local_1d0 = DAT_006a4f88 + 0x48;
+                }
+                FUN_0059d3c9(local_1d0);
+                local_18 = FUN_0051d63b("DEBUG", "LOCATION", 8, local_58, local_1b0);
+                if (DAT_006a4f88 === 0) {
+                  local_1d4 = 0;
+                }
+                else {
+                  local_1d4 = DAT_006a4f88 + 0x48;
+                }
+                FUN_0059d3c9(local_1d4);
+                if (local_18 !== -1) {
+                  sVar3 = local_1b0.length;
+                  if (sVar3 !== 0) {
+                    FUN_005f22d0(DAT_00679640, local_1b0);
+                    pcVar5 = FUN_004a24b1(0, 0x7fff);
+                    lVar6 = parseInt(pcVar5);
+                    uVar1 = FUN_004cdf4b(lVar6);
+                    local_1b8[0x2f] = uVar1;
+                    pcVar5 = FUN_004a24b1(0, 0x7fff);
+                    lVar6 = parseInt(pcVar5);
+                    uVar1 = FUN_004cdf4b(lVar6);
+                    local_1b8[0x30] = uVar1;
+                  }
+                  if (DAT_006a4f88 === 0) {
+                    local_1d8 = 0;
+                  }
+                  else {
+                    local_1d8 = DAT_006a4f88 + 0x48;
+                  }
+                  FUN_0059d3c9(local_1d8);
+                  if (local_1b8[0x26] === -2) {
+                    local_1dc = 0xffffffff;
+                  }
+                  else {
+                    local_1dc = local_1b8[0x26];
+                  }
+                  local_18 = FUN_0051d75d("DEBUG", "NUMUNITS", local_1dc, [local_60]);
+                  FUN_0059d3c9(0);
+                  if (local_18 === 0) {
+                    if (local_60 === -1) {
+                      local_1b8[0x26] = 0xfffffffe;
+                    }
+                    else {
+                      uVar1 = FUN_004cdf4b(local_60, 0, 0x7fff);
+                      local_1b8[0x26] = uVar1;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    else if (uVar2 === 4) {
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x8bc, 1);
+      local_18 = FUN_0054a912(local_1b8[0x38], uVar1);
+      if (local_18 !== -1) {
+        local_1b8[0x38] = local_18;
+        local_14 = FUN_00428b0c(DAT_0064b1b8[local_1b8[0x38] * 0x14]);
+        sVar3 = local_14.length;
+        uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+        local_1b8[0x37] = uVar1;
+        if (local_1b8[0x37] !== 0) {
+          FUN_005f22d0(local_1b8[0x37], local_14);
+          uVar1 = FUN_00428b0c(DAT_00628420 + 0x8b8, local_1b8[0], [local_14]);
+          local_18 = FUN_0054adc6(local_1b8[0x36], uVar1);
+          if (local_18 !== -1) {
+            local_1b8[0x36] = local_18;
+            sVar3 = local_14.length;
+            uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+            local_1b8[0x35] = uVar1;
+            if (local_1b8[0x35] !== 0) {
+              FUN_005f22d0(local_1b8[0x35], local_14);
+              if (DAT_006a4f88 === 0) {
+                local_1e0 = 0;
+              }
+              else {
+                local_1e0 = DAT_006a4f88 + 0x48;
+              }
+              FUN_0059d3c9(local_1e0);
+              local_5c = FUN_00551e60("VETERAN", local_1b8[0x4e], 0);
+              FUN_0059d3c9(0);
+              if (-1 < local_5c) {
+                local_1b8[0x4e] = local_5c;
+                do {
+                  if (local_1b8[0x4f] === 0) {
+                    local_1b8[0x4f] = "";
+                  }
+                  if (DAT_006a4f88 === 0) {
+                    local_1e4 = 0;
+                  }
+                  else {
+                    local_1e4 = DAT_006a4f88 + 0x48;
+                  }
+                  FUN_0059d3c9(local_1e4);
+                  local_18 = FUN_0051d63b("DEBUG", "HOMECITYNAME", 0x17, local_1b8[0x4f], local_1b0);
+                  FUN_0059d3c9(0);
+                } while ((-1 < local_18) &&
+                        ((sVar3 = local_1b0.length, sVar3 === 0 ||
+                         (iVar4 = FUN_004ce71b(local_1b0), iVar4 === 0))));
+                if ((-1 < local_18) && (sVar3 = local_1b0.length, sVar3 !== 0)) {
+                  sVar3 = local_1b0.length;
+                  uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+                  local_1b8[0x4f] = uVar1;
+                  if (local_1b8[0x4f] !== 0) {
+                    FUN_005f22d0(local_1b8[0x4f], local_1b0);
+                    for (local_ac = 0; local_ac < 10; local_ac = local_ac + 1) {
+                      local_1b8[0x4d] = local_ac;
+                      local_58 = `${local_1b8[local_ac * 2 + 0x39]},${local_1b8[local_ac * 2 + 0x3a]}`;
+                      if (DAT_006a4f88 === 0) {
+                        local_1e8 = 0;
+                      }
+                      else {
+                        local_1e8 = DAT_006a4f88 + 0x48;
+                      }
+                      FUN_0059d3c9(local_1e8);
+                      FUN_00421da0(0, local_ac + 1);
+                      local_18 = FUN_0051d63b("DEBUG", "LOCATIONNUM", 8, local_58, local_1b0);
+                      FUN_0059d3c9(0);
+                      if (local_18 === -1) {
+                        if (local_ac === 0) break;
+                        do {
+                          local_1b8[local_ac * 2 + 0x39] = 0;
+                          local_1b8[local_ac * 2 + 0x3a] = 0;
+                          local_ac = local_ac + 1;
+                        } while (local_ac < 10);
+                      }
+                      else {
+                        sVar3 = local_1b0.length;
+                        if (sVar3 !== 0) {
+                          FUN_005f22d0(DAT_00679640, local_1b0);
+                          pcVar5 = FUN_004a24b1(0, 0x7fff);
+                          lVar6 = parseInt(pcVar5);
+                          uVar1 = FUN_004cdf4b(lVar6);
+                          local_1b8[local_ac * 2 + 0x39] = uVar1;
+                          pcVar5 = FUN_004a24b1(0, 0x7fff);
+                          lVar6 = parseInt(pcVar5);
+                          uVar1 = FUN_004cdf4b(lVar6);
+                          local_1b8[local_ac * 2 + 0x3a] = uVar1;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  else if (uVar2 < 0x21) {
+    if (uVar2 === 0x20) {
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x8c0, 0);
+      local_18 = FUN_0054a912(local_1b8[0x34], uVar1);
+      if (local_18 !== -1) {
+        local_1b8[0x34] = local_18;
+        local_14 = FUN_00493c7d(local_1b8[0x34]);
+        sVar3 = local_14.length;
+        uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+        local_1b8[0x33] = uVar1;
+        if (local_1b8[0x33] !== 0) {
+          FUN_005f22d0(local_1b8[0x33], local_14);
+          uVar1 = FUN_00428b0c(DAT_00628420 + 0x8c4, 0);
+          local_18 = FUN_0054a912(local_1b8[0x32], uVar1);
+          if (local_18 !== -1) {
+            local_1b8[0x32] = local_18;
+            local_14 = FUN_00493c7d(local_1b8[0x32]);
+            sVar3 = local_14.length;
+            uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+            local_1b8[0x31] = uVar1;
+            if (local_1b8[0x31] !== 0) {
+              FUN_005f22d0(local_1b8[0x31], local_14);
+            }
+          }
+        }
+      }
+    }
+    else if (uVar2 === 0x10) {
+      if (local_1b8[0x61] === 0) {
+        local_1b8[0x61] = "";
+      }
+      if (DAT_006a4f88 === 0) {
+        local_1f0 = 0;
+      }
+      else {
+        local_1f0 = DAT_006a4f88 + 0x48;
+      }
+      FUN_0059d3c9(local_1f0);
+      do {
+        local_18 = FUN_0051d63b("DEBUG", "WAVFILE", 10, local_1b8[0x61], local_1b0);
+        if (local_18 === -1) break;
+        sVar3 = local_1b0.length;
+      } while (sVar3 === 0);
+      FUN_0059d3c9(0);
+      if ((-1 < local_18) && (sVar3 = local_1b0.length, sVar3 !== 0)) {
+        // DEVIATION: Win32 API (_strchr, _strupr for filename extension handling)
+        if (local_1b0.indexOf(".") === -1) {
+          local_1b0 = local_1b0 + ".WAV";
+        }
+        local_1b0 = local_1b0.toUpperCase();
+        sVar3 = local_1b0.length;
+        uVar1 = show_messagebox_CA35(DAT_0064b984, sVar3 + 1);
+        local_1b8[0x61] = uVar1;
+        if (local_1b8[0x61] !== 0) {
+          FUN_005f22d0(local_1b8[0x61], local_1b0);
+        }
+      }
+    }
+  }
+  else if (uVar2 < 0x81) {
+    if (uVar2 === 0x80) {
+      uVar1 = FUN_004cdf4b(local_1b8[0x62], 2, 0x18);
+      local_1b8[0x62] = uVar1;
+      FUN_00421da0(0, 2);
+      FUN_00421da0(1, 0x18);
+      if (DAT_006a4f88 === 0) {
+        local_1f4 = 0;
+      }
+      else {
+        local_1f4 = DAT_006a4f88 + 0x48;
+      }
+      FUN_0059d3c9(local_1f4);
+      local_18 = FUN_0051d75d("DEBUG", "CDTRACK", local_1b8[0x62], [local_60]);
+      FUN_0059d3c9(0);
+      if (local_18 === 0) {
+        uVar1 = FUN_004cdf4b(local_60, 2, 0x18);
+        local_1b8[0x62] = uVar1;
+      }
+    }
+  }
+  else if (uVar2 < 0x201) {
+    if (uVar2 === 0x200) {
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x970, 7);
+      local_18 = FUN_0054a912(local_1b8[99], uVar1);
+      if (local_18 === -1) {
+        local_18 = -1;
+      }
+      else {
+        local_1b8[99] = local_18;
+        local_58 = `${local_1b8[100]},${local_1b8[0x65]},${local_1b8[0x66]},${local_1b8[0x67]},${local_1b8[0x68]},${local_1b8[0x69]},${local_1b8[0x6a]},${local_1b8[0x6b]}`;
+        if (DAT_006a4f88 === 0) {
+          local_1f8 = 0;
+        }
+        else {
+          local_1f8 = DAT_006a4f88 + 0x48;
+        }
+        FUN_0059d3c9(local_1f8);
+        do {
+          local_18 = FUN_0051d63b("DEBUG", "MAPRECT", 0x1f, local_58, local_1b0);
+          if (local_18 === -1) break;
+          sVar3 = local_1b0.length;
+        } while (sVar3 === 0);
+        FUN_0059d3c9(0);
+        if ((local_18 !== -1) && (sVar3 = local_1b0.length, sVar3 !== 0)) {
+          FUN_005f22d0(DAT_00679640, local_1b0);
+          for (local_ac = 0; local_ac < 4; local_ac = local_ac + 1) {
+            pcVar5 = FUN_004a24b1(0, 0x7fff);
+            lVar6 = parseInt(pcVar5);
+            uVar1 = FUN_004cdf4b(lVar6);
+            local_1b8[local_ac * 2 + 100] = uVar1;
+            pcVar5 = FUN_004a24b1(0, 0x7fff);
+            lVar6 = parseInt(pcVar5);
+            uVar1 = FUN_004cdf4b(lVar6);
+            local_1b8[local_ac * 2 + 0x65] = uVar1;
+          }
+        }
+      }
+    }
+  }
+  else if (uVar2 === 0x400) {
+    uVar1 = FUN_00428b0c(DAT_00628420 + 0x8c8, local_1b8[0], [local_14]);
+    local_18 = FUN_0054adc6(local_1b8[0x6c], uVar1);
+    if (local_18 !== -1) {
+      local_1b8[0x6c] = local_18;
+    }
+  }
+  else if (uVar2 === 0x800) {
+    uVar1 = FUN_00428b0c(DAT_00628420 + 0x8a8, local_1b8[0], [local_14]);
+    local_18 = FUN_0054adc6(local_1b8[0x6e], uVar1);
+    if (local_18 === -1) {
+      local_18 = -1;
+    }
+    else {
+      local_1b8[0x6e] = local_18;
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x8ac, 2);
+      local_18 = FUN_0054a912(local_1b8[0x6d], uVar1);
+      if (local_18 !== -1) {
+        local_1b8[0x6d] = local_18;
+      }
+    }
+  }
   FUN_004cef35();
   FUN_0054bc1a(0);
+  local_5c = FUN_0054a8d3(uVar2, local_1b8[1]);
+  FUN_00551d80(local_5c);
   FUN_0054ae93(0);
   FUN_00548df0();
   FUN_0059d3c9(0);
+  // DEVIATION: Win32 API (SEH cleanup)
+  FUN_0054ee8f();
+  FUN_0054eea5();
   return;
 }
 
@@ -1676,9 +2739,78 @@ export function FUN_0054eeb4(param_1) {
 // ============================================================
 
 export function show_messagebox_EED0() {
-  // This is the "add action to trigger" UI function for the scenario events editor.
-  // Heavily UI-dependent (dialogs, list boxes, message boxes).
-  // Stubbed — not relevant to game logic engine.
+  let lpCaption;
+  let lpText;
+  let uVar1;
+  let iVar2;
+  let uType;
+  let local_20;
+  let local_18;
+  let local_14;
+  let local_8;
+
+  local_14 = FUN_00551d50();
+  local_18 = DAT_0064b99c;
+  while ((local_18 !== null && (local_14 !== 0))) {
+    local_18 = local_18[0x6f];
+    local_14 = local_14 + -1;
+  }
+  if (local_18[0] === 0x20) {
+    local_14 = 0;
+    while ((1 << (local_14 & 0x1f) & (local_18[1] | 0xfffffe6f)) !== 0) {
+      local_14 = local_14 + 1;
+    }
+  }
+  else {
+    local_14 = 0;
+    while ((local_18[1] & 1 << (local_14 & 0x1f)) !== 0) {
+      local_14 = local_14 + 1;
+    }
+  }
+  if (local_14 < 0xd) {
+    while (true) {
+      if (DAT_006a4f88 === 0) {
+        local_20 = 0;
+      }
+      else {
+        local_20 = DAT_006a4f88 + 0x48;
+      }
+      FUN_0059d3c9(local_20);
+      DAT_00631edc = 0;
+      if (local_18[0] === 0x20) {
+        local_14 = FUN_004cdd3d("ACTIONS", local_14, local_18[1] | 0xfffffe6f, 1);
+      }
+      else {
+        local_14 = FUN_004cdd3d("ACTIONS", local_14, local_18[1], 1);
+      }
+      FUN_0059d3c9(0);
+      if (DAT_00631edc === 0) break;
+      FUN_0054b2ec(local_14);
+    }
+    if (local_14 !== -1) {
+      local_18[1] = local_18[1] | 1 << (local_14 & 0x1f);
+      uVar1 = FUN_0054a8d3(1 << (local_14 & 0x1f), local_18[1]);
+      FUN_0054bc1a(0);
+      FUN_00551d80(uVar1);
+      iVar2 = FUN_0054d7ef(0);
+      if (iVar2 === 0) {
+        local_8 = FUN_00551d50();
+        local_18 = DAT_0064b99c;
+        while ((local_18 !== null && (local_8 !== 0))) {
+          local_18 = local_18[0x6f];
+          local_8 = local_8 + -1;
+        }
+        local_18[1] = local_18[1] & ~(1 << (local_14 & 0x1f));
+        FUN_0054bc1a(0);
+      }
+    }
+  }
+  else {
+    uType = 0;
+    lpCaption = FUN_00428b0c(DAT_00628420 + 0x8d0);
+    lpText = FUN_00428b0c(DAT_00628420 + 0x8cc);
+    // DEVIATION: Win32 API (MessageBoxA)
+  }
   FUN_00548df0();
   return;
 }
@@ -1692,9 +2824,48 @@ export function show_messagebox_EED0() {
 // ============================================================
 
 export function FUN_0054f16b() {
-  // Events editor paint/render function.
-  // Purely UI — draws buttons, progress bars, labels.
-  // Stubbed — not relevant to game logic engine.
+  let iVar1;
+  let uVar2;
+  let iVar3;
+  let uVar4;
+  let in_ECX;
+  let iVar5;
+
+  // DEVIATION: Win32 API (FUN_00552112 — begin paint)
+  FUN_00552112();
+  // DEVIATION: Win32 API (FUN_0040fdb0 — set font)
+  FUN_0040fdb0(in_ECX, in_ECX + 700, 0x1a);
+  FUN_005baeb0(in_ECX);
+  FUN_005baec8(DAT_006a4f90);
+  FUN_005baee0(0x29, 0x12, 1, 1);
+  iVar5 = in_ECX + 0x124 + in_ECX + 300 / 2;  // *(int *)(in_ECX + 0x124) + *(int *)(in_ECX + 300) / 2
+  iVar1 = in_ECX + 0x128;  // *(int *)(in_ECX + 0x128)
+  iVar3 = in_ECX + 0x2e8;  // *(int *)(in_ECX + 0x2e8)
+  // DEVIATION: Win32 API (FUN_0040bbb0 — get DC)
+  FUN_0040bbb0();
+  uVar2 = FUN_00428b0c(DAT_00628420 + 0x8d4);
+  // DEVIATION: Win32 API (FUN_00414d70 — set text)
+  FUN_00414d70(uVar2);
+  FUN_005bb024(in_ECX, DAT_00679640, iVar5, (iVar1 - iVar3) + 0x19, 0);
+  iVar1 = in_ECX + 0x128;
+  iVar3 = in_ECX + 0x2e8;
+  FUN_0040bbb0();
+  uVar2 = FUN_00428b0c(DAT_00628420 + 0x8d8);
+  FUN_00414d70(uVar2);
+  FUN_005bb024(in_ECX, DAT_00679640, iVar5, (iVar1 - iVar3) + 0xc3, 0);
+  iVar1 = in_ECX + 0x124;
+  iVar3 = iVar1 + 0x211;
+  iVar5 = in_ECX + 0x128 + 0x1a;
+  FUN_0040bbb0();
+  DAT_00679640 = `${DAT_0064b994}`;
+  FUN_005bb024(in_ECX, DAT_00679640, iVar1 + 0x216, (iVar5 - (in_ECX + 0x2e8)) + -2, 0);
+  uVar4 = Math.trunc((DAT_0064b994 * 0x13b) / DAT_0064b992);
+  FUN_005a9abf(in_ECX, iVar3, iVar5, 10, uVar4, 0x2a);
+  FUN_005a9abf(in_ECX, iVar3, uVar4 + iVar5, 10, 0x13b - uVar4, 0x6a);
+  FUN_005a9964(in_ECX, iVar3, iVar5, 10, 0x13b, 10);
+  FUN_005a9964(in_ECX, iVar3, iVar5, 10, uVar4, 10);
+  // DEVIATION: Win32 API (FUN_00408460 — end paint)
+  FUN_00408460();
   return;
 }
 
@@ -1707,9 +2878,108 @@ export function FUN_0054f16b() {
 // ============================================================
 
 export function FUN_0054f3b9() {
-  // Events editor initialization and main loop.
-  // Creates MFC property sheets, buttons, list boxes, runs message loop.
-  // Stubbed — not relevant to game logic engine.
+  let iVar1;
+  let pvVar2;
+  let uVar3;
+  let uVar4;
+  let extraout_EAX;
+  let iVar5;
+  let in_ECX;
+  let uVar6;
+  let uVar7;
+  let uVar8;
+  let uVar9;
+  let uVar10;
+  let uVar11;
+  let uVar12;
+  let local_4a0;
+  let local_49c;
+  let local_498;
+  let local_494;
+  let local_48c;
+  let local_484;
+  let local_480;
+  let local_47c;
+  let local_478;
+  let local_474;
+  let local_470;
+  let local_464;
+  let local_454;
+
+  // DEVIATION: Win32 API (SEH setup)
+  FUN_005c64da();
+  DAT_006a1d7c = 1;
+  DAT_006a4f88 = in_ECX;
+  // DEVIATION: Win32 API (operator_new for event data backup)
+  pvVar2 = {};
+  if (pvVar2 === null) {
+    local_464 = 0;
+  }
+  else {
+    local_464 = FUN_004fa4be(50000);
+  }
+  DAT_00632578 = local_464;
+  FUN_004fa5d9(50000);
+  FUN_004ce98e(DAT_00632578, DAT_0064b690);
+  FUN_00417ef0(0, DAT_0062e01c);
+  FUN_005d268e(DAT_006a4f90);
+  FUN_005d25a8(DAT_006a4f90);
+  FUN_005d2550(0x29);
+  FUN_005d2568(0x12, 1, 1);
+  FUN_005d2590(0x25);
+  // DEVIATION: Win32 API (property sheet layout: window sizes, control creation)
+  // *(int *)(in_ECX + 0x2d8) = 0x230;
+  // *(int *)(in_ECX + 0x2dc) = 0x17c;
+  // *(int *)(in_ECX + 0x2ec) = 0;
+  DAT_006a1d80 = 0xc9;
+  uVar3 = FUN_0040ef70();
+  // *(int *)(in_ECX + 0x2e8) = uVar3;
+  // DEVIATION: Win32 API (button/listbox creation: FUN_005534bc, FUN_0040f680, FUN_0040f880, FUN_004086c0, FUN_00418f40, FUN_00418fe0)
+  uVar4 = FUN_00428b0c(DAT_00628420 + 0x73c, 0xd, 0, 0);
+  FUN_005534bc(uVar4, 0xd, 0, 0);
+  // DEVIATION: Win32 API (_Timevec::~_Timevec)
+  // Button creation for trigger list
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x8dc);
+  // DEVIATION: Win32 API (FUN_0040f680 — create button)
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x8e0);
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x8e4);
+  // Button creation for action list
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x8dc);
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x8e0);
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x8e4);
+  // Trigger listbox creation
+  iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  // DEVIATION: Win32 API (FUN_00418f40 — create listbox, FUN_00418fe0 — set listbox font)
+  // DEVIATION: Win32 API (FUN_00551df0 — set listbox callback, FUN_00551dc0 — set listbox double-click handler)
+  FUN_0054b635();
+  FUN_00551d80(0);
+  // Action listbox creation
+  iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  FUN_0054bc1a(0);
+  FUN_0054ae93(0);
+  // Bottom buttons
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x3f8);
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x8ec);
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x3fc);
+  // DEVIATION: Win32 API (FUN_0040f840 — finalize buttons, FUN_0040f350 — show window)
+  DAT_0062e014 = 0;
+  // DEVIATION: Win32 API (CPropertySheet::EnableStackedTabs)
+  FUN_005bb574();
+  // DEVIATION: Win32 API (FUN_004085f0 — show window)
+  FUN_005c61b0();
+  // DEVIATION: Win32 API (message loop — FUN_0040ef50)
+  while (DAT_006a1d7c !== 0) {
+    FUN_0040ef50();
+  }
+  if (DAT_00632578 !== 0) {
+    FUN_00551cd0(1);
+  }
+  DAT_00632578 = 0;
+  // DEVIATION: Win32 API (SEH cleanup)
+  FUN_0054ffa4();
+  FUN_0054ffba();
   return;
 }
 
@@ -1824,6 +3094,55 @@ function FUN_005d2550() { /* FUN_005d2550 */ }
 function FUN_005d2568() { /* FUN_005d2568 */ }
 function FUN_005d2590() { /* FUN_005d2590 */ }
 
+// -- File I/O stubs (FUN_0054a4c4) --
+function FUN_00415133() { return 0; /* thunk_FUN_00415133 — file_exists */ }
+function FID_conflict__remove() { return 0; /* FID_conflict__remove */ }
+function FID_conflict___wrename() { return 0; /* FID_conflict___wrename */ }
+function FUN_0041508c() { return null; /* thunk_FUN_0041508c — fopen */ }
+function FUN_0056b810() { /* thunk_FUN_0056b810 — trim_string */ }
+function FUN_004d007e() { /* thunk_FUN_004d007e — strip_whitespace */ }
+
+// -- Dialog stubs (FUN_0054a912) --
+function FUN_0059db08() { /* thunk_FUN_0059db08 — dialog_init */ }
+function FUN_0040bc40() { /* thunk_FUN_0040bc40 — dialog_create */ }
+function FUN_0059e6a9() { /* thunk_FUN_0059e6a9 — dialog_set_title */ }
+function FUN_0059e6ff() { /* thunk_FUN_0059e6ff — dialog_set_width */ }
+function FUN_0059e5c9() { /* thunk_FUN_0059e5c9 — dialog_set_columns */ }
+function FUN_0059edf0() { /* thunk_FUN_0059edf0 — dialog_add_item */ }
+function FUN_0059ea99() { /* thunk_FUN_0059ea99 — dialog_set_selection */ }
+function FUN_0040bc80() { /* thunk_FUN_0040bc80 — dialog_run_modal */ }
+
+// -- Edit trigger/action stubs --
+function show_messagebox_CA35() { return 0; /* thunk_show_messagebox_CA35 — memory_alloc */ }
+function FUN_00414d10() { return 0; /* thunk_FUN_00414d10 — get_main_window */ }
+function FUN_00551e60_egptr() { return 0; /* streambuf::egptr wrapper */ }
+function FUN_00551e60() { return -1; /* thunk_FUN_00551e60 — checkbox dialog */ }
+function FUN_004187a0() { /* thunk_FUN_004187a0 — init_dialog_resource */ }
+function FUN_004ce8a4() { return -1; /* thunk_FUN_004ce8a4 — number_input_dialog */ }
+function FUN_004ce38a() { /* thunk_FUN_004ce38a — text_edit_dialog */ }
+function FUN_00421da0() { /* thunk_FUN_00421da0 — set_dialog_range */ }
+
+// -- Paint stubs (FUN_0054f16b) --
+function FUN_00552112() { /* thunk_FUN_00552112 — begin_paint */ }
+function FUN_0040fdb0() { /* thunk_FUN_0040fdb0 — set_font */ }
+function FUN_005baeb0() { /* FUN_005baeb0 — init_draw_context */ }
+function FUN_005baec8() { /* FUN_005baec8 — set_draw_palette */ }
+function FUN_005baee0() { /* FUN_005baee0 — set_draw_params */ }
+function FUN_0040bbb0() { /* thunk_FUN_0040bbb0 — get_dc */ }
+function FUN_00414d70() { /* thunk_FUN_00414d70 — set_text_color */ }
+function FUN_005bb024() { /* FUN_005bb024 — draw_text */ }
+function FUN_005a9abf() { /* FUN_005a9abf — draw_filled_rect */ }
+function FUN_005a9964() { /* FUN_005a9964 — draw_rect_border */ }
+function FUN_00408460() { /* thunk_FUN_00408460 — end_paint */ }
+
+// -- Editor init stubs (FUN_0054f3b9) --
+function FUN_004fa4be() { return 0; /* thunk_FUN_004fa4be — alloc_event_data */ }
+function FUN_00417ef0() { /* thunk_FUN_00417ef0 — set_editor_param */ }
+function FUN_005534bc() { /* FUN_005534bc — create_window_ex */ }
+function FUN_0040ef70() { return 0; /* thunk_FUN_0040ef70 — get_system_metric */ }
+function FUN_0040ef50() { /* thunk_FUN_0040ef50 — process_message */ }
+function FUN_00551cd0() { /* thunk_FUN_00551cd0 — destroy_listbox */ }
+
 // -- Globals used by this block (not in mem.js yet) --
 let DAT_00655afe = 0;     // current unit index
 let DAT_00655b05 = 0;     // current civ
@@ -1853,3 +3172,6 @@ let DAT_00627cc4 = [];    // terrain name table
 let DAT_0062e01c = 0;     // events editor param
 let DAT_006560ff = 0;     // (alias, used inline)
 let DAT_00679640 = "";    // string buffer
+let DAT_006a4f90 = 0;     // events editor draw context
+let DAT_0064b1b8 = [];    // unit type name table
+let DAT_0064bb08 = "";    // game directory path

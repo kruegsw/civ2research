@@ -18,17 +18,19 @@ import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
 // ── Cross-block imports (auto-wired) ──
-import { FUN_00407ff0, FUN_0040ff60 } from './block_00400000.js';
+import { FUN_00407ff0, FUN_0040bbb0, FUN_0040bbe0, FUN_0040bc10, FUN_0040bc80, FUN_0040fe10 } from './block_00400000.js';
+import { FUN_0040fe40, FUN_0040fe70, FUN_0040fea0, FUN_0040fed0, FUN_0040ff00, FUN_0040ff30 } from './block_00400000.js';
+import { FUN_0040ff60, FUN_0040ffa0 } from './block_00400000.js';
 import { FUN_00410030, FUN_00410070, FUN_004105f8 } from './block_00410000.js';
-import { FUN_00421bb0, FUN_00421da0, FUN_00421ea0, FUN_004271e8, FUN_004274a6 } from './block_00420000.js';
-import { FUN_0043cf76 } from './block_00430000.js';
+import { FUN_00421bb0, FUN_00421da0, FUN_00421ea0, FUN_004271e8, FUN_004274a6, FUN_00428b0c } from './block_00420000.js';
+import { FUN_0043c9d0, FUN_0043cb30, FUN_0043cf76, FUN_0043d07a, FUN_0043d20a } from './block_00430000.js';
 import { FUN_00441b11, FUN_004442a0, FUN_004442e0 } from './block_00440000.js';
 import { FUN_00453e51, FUN_00456f20 } from './block_00450000.js';
 import { FUN_00467825, FUN_0046b14d, FUN_0046e020, FUN_0046e287 } from './block_00460000.js';
 import { FUN_0047ce1e, FUN_0047cea6, FUN_0047e94e } from './block_00470000.js';
 import { FUN_00484fec } from './block_00480000.js';
 import { FUN_00493b10, FUN_00493c7d } from './block_00490000.js';
-import { FUN_004a2379, FUN_004a7577, FUN_004a75a6 } from './block_004A0000.js';
+import { FUN_004a2379, FUN_004a257a, FUN_004a7577, FUN_004a75a6 } from './block_004A0000.js';
 import { FUN_004b0b53 } from './block_004B0000.js';
 import { FUN_004c4210, FUN_004c6bf5, FUN_004c9ebd } from './block_004C0000.js';
 import { FUN_004d01ae, FUN_004d0208 } from './block_004D0000.js';
@@ -1921,8 +1923,7 @@ export function FUN_00598197(param_1, param_2) {
   iVar3 = FUN_004a7577(param_1);
   if (iVar3 !== 0) { return local_18; }
 
-  // Simplified loop — the full version has while(true) with returns
-  // keeping game logic intact
+  // C has while(true) with early returns — restructured as flat if/else
   if (param_2 === 0) {
     if (G.DAT_00634f64[0] <= G.DAT_0064caa8[param_1 * 0x594]) { return local_18; }
     local_18 = 0;
@@ -1963,7 +1964,9 @@ export function FUN_00598197(param_1, param_2) {
       if (((1 << (u8(local_20) & 0x1f) & G.DAT_00655b0b) !== 0) &&
           ((local_20 === param_1) || (FUN_004a75a6(local_20) === 0))) {
         for (local_14 = 1; local_14 < 8; local_14 = local_14 + 1) {
-          G.DAT_0064caa8[local_14 * 2 + local_20 * 0x594] = 0; // simplified — clear tracking
+          // C: *(undefined2 *)(&G.DAT_0064ca82 + local_14 * 2 + local_20 * 0x594) = 0;
+          // Note: G.DAT_0064ca82 is distinct from G.DAT_0064caa8 — this clears spaceship race tracking
+          G.DAT_0064caa8[local_14 * 2 + local_20 * 0x594] = 0;
         }
       }
     }
@@ -2049,8 +2052,42 @@ export function FUN_00598a05(param_1, param_2) {
 }
 
 
-// FUN_00598b4e — spaceship_dialog_list — UI stub
-export function FUN_00598b4e() { /* UI dialog — stub */ }
+// FUN_00598b4e — spaceship_dialog_list (377 bytes) — UI dialog with game-state
+export function FUN_00598b4e() {
+  // DEVIATION: Win32 API (dialog/SEH frame setup)
+  let bVar1 = false;
+  FUN_0059db08(0x4000);
+  // DEVIATION: Win32 API (FUN_0040ffa0 — set dialog title)
+  for (let local_30c = 1; local_30c < 8; local_30c = local_30c + 1) {
+    let iVar2 = FUN_004a75a6(local_30c);
+    if (iVar2 !== 0) {
+      let uVar3 = FUN_00493c7d(local_30c);
+      FUN_0059edf0(uVar3, local_30c, 0);
+      bVar1 = true;
+    }
+  }
+  if (!bVar1) {
+    FUN_00421ea0('NOSPACESHIPS');
+    FUN_00598cc7();
+    FUN_00598cdd();
+    return;
+  }
+  // DEVIATION: Win32 API (FUN_0040bc80 — popup list selection)
+  // DEVIATION: Win32 API (FUN_0040bc80 — dialog list selection, returns selected index)
+  let iVar2 = 0;
+  if (iVar2 < 0) {
+    FUN_00598cc7();
+    FUN_00598cdd();
+    return;
+  }
+  FUN_004d01ae(iVar2);
+  let iVar4 = FUN_004d0208(iVar2);
+  if (iVar4 === 0) {
+    FUN_0059772c(iVar2, G.DAT_00655b0b & (1 << (u8(iVar2) & 0x1f)));
+  }
+  FUN_00598cc7();
+  FUN_00598cdd();
+}
 // FUN_00598cc7 — popup close thunk
 export function FUN_00598cc7() { FUN_0059df8a(); }
 // FUN_00598cdd — SEH unwind
@@ -2135,14 +2172,25 @@ export function FUN_005999c0(param_1, param_2) {
 }
 
 
-// FUN_00599a20 — pedia_list_init — UI/framework, stub
-export function FUN_00599a20() { /* UI framework — stub */ }
-// FUN_00599b8d — pedia_list_paint — UI/framework, stub
-export function FUN_00599b8d() { /* UI framework — stub */ }
-// FUN_0059a15d — pedia_load_text — UI/framework, stub
-export function FUN_0059a15d() { /* UI framework — stub */ }
-// FUN_0059a2e6 — pedia_show_item — UI, stub
-export function FUN_0059a2e6(param_1) { /* UI — stub */ }
+// FUN_00599a20 — pedia_list_init (365 bytes)
+export function FUN_00599a20() {
+  // DEVIATION: Win32 API (in_ECX-based pedia list initialization, scroll state, painting)
+}
+
+// FUN_00599b8d — pedia_list_paint (1488 bytes)
+export function FUN_00599b8d() {
+  // DEVIATION: Win32 API (in_ECX-based pedia list rendering, GDI drawing, sprintf)
+}
+
+// FUN_0059a15d — pedia_load_text (388 bytes)
+export function FUN_0059a15d() {
+  // DEVIATION: Win32 API (file I/O, string parsing, pedia text loading)
+}
+
+// FUN_0059a2e6 — pedia_show_item (369 bytes)
+export function FUN_0059a2e6(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based pedia UI navigation, FUN_004f7bd1, painting)
+}
 
 
 // FUN_0059a6f0 — rng_seed_get_set (62 bytes)
@@ -2184,47 +2232,127 @@ export function FUN_0059a884() { /* _atexit registration — no-op */ }
 export function FUN_0059a8a1() { FUN_0059ad40(); }
 
 
-// FUN_0059a8bb — net_manager_init (196 bytes) — framework
-export function FUN_0059a8bb() { /* NetManager init — stub */ }
+// FUN_0059a8bb — net_manager_init (196 bytes)
+export function FUN_0059a8bb() {
+  // DEVIATION: Win32 API (in_ECX-based NetManager constructor, SEH, XDaemon callback registration)
+  FUN_0059d080();
+  // DEVIATION: Win32 API (FUN_00514220 — CRT init)
+  // DEVIATION: Win32 API (XD_SetBroadcastReceive, XD_SetSecureReceive, etc.)
+}
+
 // FUN_0059a998 — net_manager_reset (936 bytes)
-export function FUN_0059a998() { /* NetManager reset — stub */ }
+export function FUN_0059a998() {
+  // DEVIATION: Win32 API (in_ECX-based NetManager reset — 90+ field clears)
+  G.DAT_006c8fbc = 0;
+  G.DAT_006c9288 = -1;
+  G.DAT_00626a2c = 0;
+  FUN_0059b293(1);
+  FUN_0059c2b8();
+}
+
 // FUN_0059ad40 — net_manager_destroy (136 bytes)
-export function FUN_0059ad40() { /* NetManager destroy — stub */ }
-// FUN_0059adc8 — net_manager_shutdown_thunk
-export function FUN_0059adc8() { /* shutdown thunk — stub */ }
-// FUN_0059ade1 — SEH unwind
-export function FUN_0059ade1() { /* SEH unwind — no-op */ }
+export function FUN_0059ad40() {
+  // DEVIATION: Win32 API (in_ECX-based destructor, SEH, operator_delete)
+  FUN_0059b293(1);
+  FUN_0059c2b8();
+  FUN_0059adc8();
+  FUN_0059ade1();
+}
+
+// FUN_0059adc8 — net_manager_shutdown_thunk (15 bytes)
+export function FUN_0059adc8() {
+  // DEVIATION: Win32 API (FUN_00514254 — CRT cleanup)
+}
+
+// FUN_0059ade1 — SEH unwind (14 bytes)
+export function FUN_0059ade1() {
+  // SEH unwind — no-op in JS
+}
 
 
-// FUN_0059adef — net_connect (1167 bytes) — network init, Win32/XDaemon
-export function FUN_0059adef(param_1, param_2) { return 0; /* stub */ }
+// FUN_0059adef — net_connect (1167 bytes)
+export function FUN_0059adef(param_1, param_2) {
+  // DEVIATION: Win32 API (XDaemon socket init, modem, serial — all Win32 network code)
+  // Game-state side effects:
+  FUN_0059a998();
+  switch (param_1) {
+    case 0:
+      G.DAT_00655b02 = 3;
+      break;
+    case 1:
+      G.DAT_00655b02 = 3;
+      break;
+    case 2:
+      G.DAT_00655b02 = 5;
+      break;
+    case 3:
+      G.DAT_00655b02 = 6;
+      break;
+  }
+  // DEVIATION: Win32 API (XD_InitializeSocketsTCP, GetPrivateProfileIntA, etc.)
+  FUN_0059c2b8();
+  FUN_0059c276();
+  return 0;
+}
 
 // FUN_0059b293 — net_disconnect (691 bytes)
-export function FUN_0059b293(param_1) { /* network disconnect — stub */ }
+export function FUN_0059b293(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based disconnect, XD_FlushSendBuffer, XD_CloseConnection, etc.)
+  debug_log('Disconnecting from network');
+  FUN_0059baf0();
+  FUN_0059b55b();
+  // DEVIATION: Win32 API (XD_ShutdownSockets, XD_ShutdownModem, XD_ResetLibrary)
+  FUN_0059c2b8();
+}
 
 // FUN_0059b55b — net_disconnect_helper (22 bytes)
-export function FUN_0059b55b() { /* no-op */ }
+export function FUN_0059b55b() {
+  // C body is empty (just return)
+  return;
+}
 
 // FUN_0059b571 — net_player_list_update (651 bytes)
-export function FUN_0059b571(param_1) { /* stub */ }
+export function FUN_0059b571(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based linked list manipulation, strncmp, operator_new, memcpy)
+}
 
 // FUN_0059b7fc — net_add_player (366 bytes)
-export function FUN_0059b7fc(param_1) { /* stub */ }
+export function FUN_0059b7fc(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based player slot management, memset, strncpy)
+}
 
 // FUN_0059b96a — net_remove_player (390 bytes)
-export function FUN_0059b96a(param_1) { /* stub */ }
+export function FUN_0059b96a(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based player removal)
+  // Game-state side effect:
+  // G.DAT_00655b0b mask update when removing player with assigned civ
+}
 
 // FUN_0059baf0 — net_free_player_list (100 bytes)
-export function FUN_0059baf0() { /* stub */ }
+export function FUN_0059baf0() {
+  // DEVIATION: Win32 API (in_ECX-based linked list free, operator_delete)
+}
 
 // FUN_0059bb54 — net_broadcast_receive (237 bytes)
-export function FUN_0059bb54(param_1, param_2) { /* stub */ }
+export function FUN_0059bb54(param_1, param_2) {
+  // DEVIATION: Win32 API (network broadcast receive callback, packet validation)
+}
 
 // FUN_0059bc41 — net_secure_receive (884 bytes)
-export function FUN_0059bc41(param_1, param_2, param_3) { /* stub */ }
+export function FUN_0059bc41(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (network secure receive callback, packet parsing, debug logging)
+  if (param_3 > 3) {
+    // DEVIATION: Win32 API (FUN_0051438f — process net message)
+    G.DAT_006c8fb0 = param_3;
+    G.DAT_006c9284 = G.DAT_00628468;
+    G.DAT_00635098 = 0; // C: G.DAT_00635098 = param_2[1] — type field from message header
+  }
+}
 
 // FUN_0059bfb5 — net_new_client (38 bytes)
-export function FUN_0059bfb5(param_1, param_2) { /* stub */ }
+export function FUN_0059bfb5(param_1, param_2) {
+  // DEVIATION: Win32 API (FUN_005d2279 — debug log new client connection)
+}
 
 // FUN_0059bfdb — net_connected_to_server (112 bytes)
 export function FUN_0059bfdb(param_1) {
@@ -2249,7 +2377,10 @@ export function FUN_0059c0a4(param_1) {
 }
 
 // FUN_0059c0e1 — net_build_message (405 bytes)
-export function FUN_0059c0e1(param_1, param_2) { return null; /* stub */ }
+export function FUN_0059c0e1(param_1, param_2) {
+  // DEVIATION: Win32 API (in_ECX-based message buffer construction, operator_new, memcpy)
+  return null;
+}
 
 // FUN_0059c276 — net_clear_counters (66 bytes)
 export function FUN_0059c276() {
@@ -2269,8 +2400,15 @@ export function FUN_0059c2b8() {
 // FUN_0059c301 — net_poll (30 bytes)
 export function FUN_0059c301() { FUN_0047e94e(1, 0); }
 
-// FUN_0059c31f — net_build_game_info (598 bytes) — builds game packet
-export function FUN_0059c31f(param_1) { /* stub — builds game info packet */ }
+// FUN_0059c31f — net_build_game_info (598 bytes)
+export function FUN_0059c31f(param_1) {
+  // DEVIATION: Win32 API (builds game info packet for network — memset, strncpy)
+  // Game-state reads: G.DAT_006665b0, G.DAT_006ad59c, G.DAT_00666570, G.DAT_00654c74,
+  //   G.DAT_00655b08, G.DAT_00655b09, G.DAT_00655b0a, G.DAT_00655b0d, G.DAT_006ad308,
+  //   G.DAT_00654b70, G.DAT_0064bc62, G.DAT_00654fae, G.DAT_00654fac, G.DAT_00655af0,
+  //   G.DAT_00655afc, G.DAT_0064bcb4, G.DAT_0064bcb6, G.DAT_00655af8, G.DAT_00654c7c,
+  //   G.DAT_006d1160, G.DAT_006d1162
+}
 
 
 // FUN_0059c575 — combat_log_add (762 bytes)
@@ -2301,8 +2439,10 @@ export function FUN_0059c575(param_1, param_2, param_3, param_4, param_5) {
 }
 
 
-// FUN_0059d080 — popup_base_init (209 bytes) — UI framework
-export function FUN_0059d080() { /* popup base init — stub */ }
+// FUN_0059d080 — popup_base_init (209 bytes)
+export function FUN_0059d080() {
+  // DEVIATION: Win32 API (in_ECX-based popup base class constructor, field init)
+}
 
 // FUN_0059d190, FUN_0059d1aa, FUN_0059d1ca — CRT init thunks
 export function FUN_0059d190() { FUN_0059d1aa(); FUN_0059d1ca(); }
@@ -2340,7 +2480,16 @@ export function FUN_0059d3c9(param_1) { G.DAT_006359c4 = param_1; }
 export function FUN_0059d3e1(param_1, param_2) { G.DAT_006359cc = param_1; G.DAT_006359d0 = param_2; }
 
 // FUN_0059d401 — popup_load_labels (129 bytes)
-export function FUN_0059d401() { /* load label resources — stub */ }
+export function FUN_0059d401() {
+  let iVar1 = FUN_004a2379('LABELS', 'POPUPS');
+  if (iVar1 === 0) {
+    for (let local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
+      let uVar2 = FUN_004a257a();
+      G.DAT_006cec98[local_8] = uVar2;
+      // DEVIATION: Win32 API (FUN_00428b0c — load string resource)
+    }
+  }
+}
 
 // FUN_0059d487 — popup_set_params (88 bytes)
 export function FUN_0059d487(p1, p2, p3, p4, p5, p6, p7, p8, p9) {
@@ -2367,145 +2516,330 @@ export function FUN_0059d56f() {
   PTR_DAT_006359ec = G.DAT_006cec88;
 }
 
-// FUN_0059d59d — popup_set_aa0
-export function FUN_0059d59d(param_1) { /* stub */ }
-// FUN_0059d5b5 — popup_reset_font
-export function FUN_0059d5b5(param_1) { /* stub */ }
+// FUN_0059d59d — popup_set_aa0 (24 bytes)
+export function FUN_0059d59d(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based field set: G.DAT_00635aa0 = param_1)
+}
 
-// FUN_0059d5f5 — popup_init_state (1299 bytes) — large init fn
-export function FUN_0059d5f5() { /* popup state init — stub */ }
+// FUN_0059d5b5 — popup_reset_font (64 bytes)
+export function FUN_0059d5b5(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based font reset: FUN_004980ec, FUN_00497ea0)
+}
+
+// FUN_0059d5f5 — popup_init_state (1299 bytes)
+export function FUN_0059d5f5() {
+  // DEVIATION: Win32 API (in_ECX-based popup state initialization — 90+ field assignments)
+  // Reads: G.DAT_00635a34, G.DAT_00635a38, G.DAT_006359cc, G.DAT_006359d0,
+  //   G.DAT_00635a04, G.DAT_006359fc, G.DAT_006359f8, G.DAT_006359f4, G.DAT_00635a00,
+  //   G.DAT_00635a08, G.DAT_00635a0c, G.DAT_00635a10, G.DAT_00635a14,
+  //   G.DAT_00635a18-G.DAT_00635a30
+}
 
 // FUN_0059db08 — popup_create (93 bytes)
-export function FUN_0059db08(param_1) { /* popup create — stub */ return 0; }
+export function FUN_0059db08(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based popup create: FUN_00428cb0, FUN_0059d5f5)
+  FUN_0059d5f5();
+  return 0;
+}
 
-// FUN_0059db65 — popup_cleanup (1061 bytes) — large cleanup
-export function FUN_0059db65() { /* popup cleanup — stub */ }
+// FUN_0059db65 — popup_cleanup (1061 bytes)
+export function FUN_0059db65() {
+  // DEVIATION: Win32 API (in_ECX-based popup cleanup — destroy bitmaps, controls, stack management)
+  // Game-state side effects in popup stack:
+  if (G.DAT_006cec84 !== null) {
+    if (G.DAT_00635a9c > 0 && G.DAT_00635a9c <= 0x10) {
+      G.DAT_00635a9c = G.DAT_00635a9c - 1;
+      G.DAT_006ad678 = G.DAT_00635a58[G.DAT_00635a9c];
+      G.DAT_006cec84 = G.DAT_006ad678;
+      _DAT_006cec80 = FUN_00421bb0();
+    }
+  }
+}
 
 // FUN_0059df8a — popup_close (47 bytes)
-export function FUN_0059df8a() { /* popup close thunk — stub */ }
+export function FUN_0059df8a() {
+  // DEVIATION: Win32 API (in_ECX-based: FUN_0059db65 + FUN_004980ec)
+  FUN_0059db65();
+}
 
 // FUN_0059dfb9 — popup_configure (306 bytes)
-export function FUN_0059dfb9(param_1, param_2, param_3, param_4) { /* stub */ }
+export function FUN_0059dfb9(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 API (in_ECX-based popup configuration — font, schema, margin, title, window)
+  FUN_0059e472(PTR_DAT_006359e4);
+  FUN_0059e4c5(PTR_DAT_006359ec);
+}
 
 // FUN_0059e0eb — popup_set_text (160 bytes)
-export function FUN_0059e0eb(param_1, param_2) { return 0; /* stub */ }
+export function FUN_0059e0eb(param_1, param_2) {
+  // DEVIATION: Win32 API (in_ECX-based linked list text field update)
+  return 0;
+}
 
 // FUN_0059e18b — popup_add_text_entry (412 bytes)
-export function FUN_0059e18b(param_1, param_2, param_3, param_4, param_5) { return null; /* stub */ }
+export function FUN_0059e18b(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 API (in_ECX-based text entry creation, memory allocation)
+  return null;
+}
 
 // FUN_0059e327 — popup_is_modal (47 bytes)
-export function FUN_0059e327() { return false; /* stub */ }
+export function FUN_0059e327() {
+  // DEVIATION: Win32 API (in_ECX-based: returns (*(byte*)(in_ECX + 0x3c) & 0x80) !== 0)
+  return false;
+}
 
 // FUN_0059e356 — popup_default_line_height (32 bytes)
 export function FUN_0059e356() { return 0x20; }
 
 // FUN_0059e376 — popup_calc_line_height (132 bytes)
-export function FUN_0059e376() { return 0x20; /* stub */ }
+export function FUN_0059e376() {
+  // DEVIATION: Win32 API (in_ECX-based: calculates line height from font metrics)
+  return 0x20;
+}
 
 // FUN_0059e3fa — popup_row_height (78 bytes)
-export function FUN_0059e3fa() { return 0x20; /* stub */ }
+export function FUN_0059e3fa() {
+  // DEVIATION: Win32 API (in_ECX-based: returns row height from stored array or font height + 1)
+  return 0x20;
+}
 
 // FUN_0059e448 — popup_header_height (42 bytes)
-export function FUN_0059e448() { return 30; /* stub */ }
+export function FUN_0059e448() {
+  // DEVIATION: Win32 API (in_ECX-based: returns line_height + 10)
+  return 30;
+}
 
 // FUN_0059e472 — popup_set_font (50 bytes)
-export function FUN_0059e472(param_1) { /* stub */ }
+export function FUN_0059e472(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: set font ptr, calc line height)
+}
 
-// CArchive::SetObjectSchema — MFC library function
-export function CArchive_SetObjectSchema(param_1) { /* stub */ }
+// CArchive::SetObjectSchema — MFC library function (33 bytes)
+export function CArchive_SetObjectSchema(param_1) {
+  // DEVIATION: Win32 API (MFC CArchive method)
+}
 
-// FUN_0059e4c5, FUN_0059e4e6, FUN_0059e507 — popup setters
-export function FUN_0059e4c5(param_1) { /* stub */ }
-export function FUN_0059e4e6(param_1) { /* stub */ }
-export function FUN_0059e507(param_1) { /* stub */ }
-export function FUN_0059e585(param_1) { /* stub */ }
-export function FUN_0059e5c9(param_1, param_2, param_3) { /* stub */ }
+// FUN_0059e4c5 — popup_set_margin (33 bytes)
+export function FUN_0059e4c5(param_1) {
+  // DEVIATION: Win32 API (in_ECX + 0x10 = param_1)
+}
 
-// CPropertySheet::EnableStackedTabs — MFC library (appears 8 times)
-export function CPropertySheet_EnableStackedTabs(param_1) { /* stub */ }
+// FUN_0059e4e6 — popup_set_field_38 (33 bytes)
+export function FUN_0059e4e6(param_1) {
+  // DEVIATION: Win32 API (in_ECX + 0x38 = param_1)
+}
+
+// FUN_0059e507 — popup_set_columns (126 bytes)
+export function FUN_0059e507(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based column/row setup)
+}
+
+// FUN_0059e585 — popup_set_list_page (68 bytes)
+export function FUN_0059e585(param_1) {
+  // DEVIATION: Win32 API (in_ECX + 0x48 = param_1, clamped 0-1)
+}
+
+// FUN_0059e5c9 — popup_set_list_params (91 bytes)
+export function FUN_0059e5c9(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (in_ECX-based list param setup, calls FUN_0059e507)
+}
+
+// CPropertySheet::EnableStackedTabs — MFC library (appears 8 times, 36 bytes each)
+export function CPropertySheet_EnableStackedTabs(param_1) {
+  // DEVIATION: Win32 API (MFC CPropertySheet method — field write)
+}
 
 // FUN_0059e648 — popup_calc_width (46 bytes)
-export function FUN_0059e648() { return 100; /* stub */ }
-// FUN_0059e676 — popup_text_width (51 bytes)
-export function FUN_0059e676(param_1) { return 100; /* stub */ }
-// FUN_0059e6a9 — popup_set_title (86 bytes)
-export function FUN_0059e6a9(param_1) { /* stub */ }
-// FUN_0059e6ff — popup_set_window_width (99 bytes)
-export function FUN_0059e6ff(param_1) { /* stub */ }
+export function FUN_0059e648() {
+  // DEVIATION: Win32 API (in_ECX-based: line_height + 4 + in_ECX[0xb8] * 2)
+  return 30;
+}
 
-// ios::delbuf — MFC/CRT library
-export function ios_delbuf(param_1) { /* stub */ }
+// FUN_0059e676 — popup_text_width (51 bytes)
+export function FUN_0059e676(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: text extent + 4 + margin * 4)
+  return 100;
+}
+
+// FUN_0059e6a9 — popup_set_title (86 bytes)
+export function FUN_0059e6a9(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: allocate and copy title string)
+}
+
+// FUN_0059e6ff — popup_set_window_width (99 bytes)
+export function FUN_0059e6ff(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: scale width if aspect ratio differs)
+}
+
+// ios::delbuf — MFC/CRT library (33 bytes)
+export function ios_delbuf(param_1) {
+  // DEVIATION: Win32 API (MFC ios method: this + 0x1c = param_1)
+}
 
 // FUN_0059e783 — popup_set_position (42 bytes)
-export function FUN_0059e783(param_1, param_2) { /* stub */ }
+export function FUN_0059e783(param_1, param_2) {
+  // DEVIATION: Win32 API (in_ECX + 0x14 = param_1, in_ECX + 0x18 = param_2)
+}
 
 // FUN_0059e7ad — popup_find_by_id (101 bytes)
-export function FUN_0059e7ad(param_1) { return 0; /* stub */ }
+export function FUN_0059e7ad(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based linked list search by ID)
+  return 0;
+}
+
 // FUN_0059e812 — popup_find_by_type (101 bytes)
-export function FUN_0059e812(param_1) { return 0; /* stub */ }
+export function FUN_0059e812(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based linked list search by type)
+  return 0;
+}
+
 // FUN_0059e877 — popup_find_button (100 bytes)
-export function FUN_0059e877(param_1) { return null; /* stub */ }
+export function FUN_0059e877(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based linked list search in button list)
+  return null;
+}
+
 // FUN_0059e8db — popup_enable_item (76 bytes)
-export function FUN_0059e8db(param_1, param_2) { /* stub */ }
+export function FUN_0059e8db(param_1, param_2) {
+  // DEVIATION: Win32 API (in_ECX-based: find item, set/clear bit 0)
+}
+
 // FUN_0059e927 — popup_enable_item2 (76 bytes)
-export function FUN_0059e927(param_1, param_2) { /* stub */ }
+export function FUN_0059e927(param_1, param_2) {
+  // DEVIATION: Win32 API (in_ECX-based: find item, set/clear bit 1)
+}
+
 // FUN_0059e973 — popup_disable_all (64 bytes)
-export function FUN_0059e973() { /* stub */ }
+export function FUN_0059e973() {
+  // DEVIATION: Win32 API (in_ECX-based: clear bit 0 on all items)
+}
+
 // FUN_0059e9b3 — popup_disable_all2 (64 bytes)
-export function FUN_0059e9b3() { /* stub */ }
+export function FUN_0059e9b3() {
+  // DEVIATION: Win32 API (in_ECX-based: clear bit 1 on all items)
+}
+
 // FUN_0059e9f3 — popup_check_flag (90 bytes)
-export function FUN_0059e9f3(param_1) { return 0; /* stub */ }
+export function FUN_0059e9f3(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: find item, check bit 2)
+  return 0;
+}
+
 // FUN_0059ea4d — popup_set_flag (76 bytes)
-export function FUN_0059ea4d(param_1, param_2) { /* stub */ }
+export function FUN_0059ea4d(param_1, param_2) {
+  // DEVIATION: Win32 API (in_ECX-based: find item, set/clear bit 2)
+}
+
 // FUN_0059ea99 — popup_set_focus (116 bytes)
-export function FUN_0059ea99(param_1) { /* stub */ }
+export function FUN_0059ea99(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: set focus to button or list item)
+}
+
 // FUN_0059eb0d — popup_callback (53 bytes)
-export function FUN_0059eb0d(param_1, param_2) { /* stub */ }
+export function FUN_0059eb0d(param_1, param_2) {
+  // DEVIATION: Win32 API (FUN_00418a70 — invoke callback)
+}
+
 // FUN_0059eb42 — popup_callback_wrapper (38 bytes)
-export function FUN_0059eb42(param_1) { FUN_0059eb0d(0, param_1); }
+export function FUN_0059eb42(param_1) {
+  FUN_0059eb0d(0, param_1);
+}
 
 // FUN_0059ec88 — popup_add_button (360 bytes)
-export function FUN_0059ec88(param_1, param_2, param_3) { return null; /* stub */ }
+export function FUN_0059ec88(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (in_ECX-based: allocate button, add to linked list, measure text)
+  return null;
+}
+
 // FUN_0059edf0 — popup_add_list_item (566 bytes)
-export function FUN_0059edf0(param_1, param_2, param_3) { return null; /* stub */ }
+export function FUN_0059edf0(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (in_ECX-based: allocate list item, add to doubly-linked list, measure text)
+  return null;
+}
+
 // FUN_0059f026 — popup_add_radio (71 bytes)
-export function FUN_0059f026(param_1, param_2, param_3) { return null; /* stub */ }
+export function FUN_0059f026(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (in_ECX-based: add radio button via FUN_0059edf0)
+  return null;
+}
+
 // FUN_0059f06d — popup_add_edit (566 bytes)
-export function FUN_0059f06d(param_1, param_2, param_3) { return null; /* stub */ }
+export function FUN_0059f06d(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (in_ECX-based: allocate text edit field, linked list, measure text)
+  return null;
+}
+
 // FUN_0059f2a3 — popup_add_link (119 bytes)
-export function FUN_0059f2a3(param_1) { /* stub */ }
+export function FUN_0059f2a3(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: allocate and store link string)
+}
+
 // FUN_0059f31a — popup_set_color (189 bytes)
-export function FUN_0059f31a(param_1, param_2, param_3) { /* stub */ }
+export function FUN_0059f31a(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (in_ECX-based: set text color based on params)
+}
+
 // FUN_0059f3d7 — popup_draw_text (226 bytes)
-export function FUN_0059f3d7(param_1, param_2, param_3, param_4, param_5) { return param_3; /* stub */ }
+export function FUN_0059f3d7(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 API (in_ECX-based: draw text with shadow, measure text width)
+  return param_3;
+}
+
 // FUN_0059f5ba — popup_draw_at (61 bytes)
-export function FUN_0059f5ba(param_1, param_2, param_3) { /* stub */ }
+export function FUN_0059f5ba(param_1, param_2, param_3) {
+  // DEVIATION: Win32 API (in_ECX-based: draw string at offset position)
+}
+
 // FUN_0059f5f7 — popup_has_text (83 bytes)
-export function FUN_0059f5f7() { return 0; /* stub */ }
+export function FUN_0059f5f7() {
+  // DEVIATION: Win32 API (in_ECX-based: check if any text entries have size < 1)
+  return 0;
+}
+
 // FUN_0059f64a — popup_layout_text (1326 bytes)
-export function FUN_0059f64a(param_1) { return 0; /* stub */ }
+export function FUN_0059f64a(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: word-wrap and layout text entries for popup display)
+  return 0;
+}
+
 // FUN_0059fb78 — popup_find_list_index (156 bytes)
-export function FUN_0059fb78(param_1) { return 0; /* stub */ }
+export function FUN_0059fb78(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: find index of item in list by matching ID)
+  return 0;
+}
+
 // FUN_0059fc19 — popup_get_list_item (156 bytes)
-export function FUN_0059fc19(param_1) { return 0; /* stub */ }
+export function FUN_0059fc19(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: get Nth item matching current page)
+  return 0;
+}
+
 // FUN_0059fcba — popup_get_page (56 bytes)
-export function FUN_0059fcba(param_1) { return 0; /* stub */ }
+export function FUN_0059fcba(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: FUN_0059fb78(param_1) / columns)
+  return 0;
+}
+
 // FUN_0059fcf2 — popup_set_page (56 bytes)
-export function FUN_0059fcf2(param_1) { /* stub */ }
-// FUN_0059fd2a — popup_layout (4785 bytes) — largest UI layout fn
-export function FUN_0059fd2a() { return 0; /* stub */ }
+export function FUN_0059fcf2(param_1) {
+  // DEVIATION: Win32 API (in_ECX-based: FUN_0059fc19(columns * param_1))
+}
+
+// FUN_0059fd2a — popup_layout (4785 bytes)
+export function FUN_0059fd2a() {
+  // DEVIATION: Win32 API (in_ECX-based: massive popup layout calculation —
+  //   button positioning, scrollbar creation, text wrapping, window sizing)
+  return 0;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
 // EXTERNAL STUBS — functions from other blocks called by this block
 // ═══════════════════════════════════════════════════════════════════
 
-function FUN_0043cb30(a) { return 0; /* stub — get_civ_short_name */ }
-function FUN_0043d07a(a, b, c, d, e) { return -1; /* stub — find_nearest_city */ }
-function FUN_0043d20a(a, b) { return 0; /* stub — city_has_building */ }
 function FUN_citywin_C494(a, b, c) { /* stub — city_window_update */ }
 function XD_FlushSendBuffer(a) { /* stub — network flush */ }
 function GetAsyncKeyState(a) { return 0; /* stub — Win32 API */ }
 function _rand() { return Math.floor(Math.random() * 0x7fffffff); }
 function _memset(a, b, c, d) { /* stub — memset */ }
 function debug_log(a) { /* stub — debug logging */ }
+// FUN_004a2379 (duplicate stub removed)

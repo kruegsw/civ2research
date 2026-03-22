@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  s8, u8, s16, u16,
+  s8, u8, s16, u16, s32, u32, w16, w32,
   DAT_006560f0, DAT_0064b1bc, DAT_0064c600, DAT_0064f340,
   DAT_00627cc0,
   getTileOffset, tileRead, tileWrite,
@@ -987,9 +987,8 @@ export function FUN_00579c40(param_1, param_2) {
 
     if (((DAT_0064c6c0[param_1 * 4 + param_2 * 0x594 + 1] & 0x10) === 0) &&
        ((DAT_0064c6c0[param_2 * 4 + param_1 * 0x594 + 1] & 0x10) === 0)) {
-      DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] =
-           DAT_0064c6c0[param_2 * 4 + param_1 * 0x594] | 0x10;
-      // set bits for 0x1000 (upper byte of uint32)
+      let off = param_2 * 4 + param_1 * 0x594;
+      w32(DAT_0064c6c0, off, u32(DAT_0064c6c0, off) | 0x1000);
       local_8 = 1;
     }
   }
@@ -1005,17 +1004,15 @@ export function FUN_00579dbb(param_1) {
   let iVar1;
   let local_8;
 
-  iVar1 = s8(DAT_0064f340[param_1 * 0x58 + 8]); // DAT_0064f348[param_1 * 0x58]
-  const civIdx = iVar1;
-
-  const treasury = s16(DAT_0064c600, civIdx * 0x594 + 0xa2); // DAT_0064c6a2
-  const population = s8(DAT_0064f340[param_1 * 0x58 + 9]); // DAT_0064f349
-  const popLimit = s16(DAT_0064c600, civIdx * 0x594 + 0x10c); // DAT_0064c70c
-
-  if (treasury < ((32000 / population) | 0)) {
-    local_8 = ((population * treasury) / (popLimit + 1)) | 0;
+  iVar1 = s8(DAT_0064f340[param_1 * 0x58 + 8]);
+  if (s32(DAT_0064c600, iVar1 * 0x594 + 0xa2) <
+      ((32000 / s8(DAT_0064f340[param_1 * 0x58 + 9])) | 0)) {
+    local_8 = (s8(DAT_0064f340[param_1 * 0x58 + 9]) * s32(DAT_0064c600, iVar1 * 0x594 + 0xa2)) /
+              (s16(DAT_0064c600, iVar1 * 0x594 + 0x10c) + 1) | 0;
   } else {
-    local_8 = (((treasury / (popLimit + 1)) | 0) * population) | 0;
+    local_8 = (s32(DAT_0064c600, iVar1 * 0x594 + 0xa2) /
+              (s16(DAT_0064c600, iVar1 * 0x594 + 0x10c) + 1) | 0) *
+              s8(DAT_0064f340[param_1 * 0x58 + 9]);
   }
   if (local_8 < 0) {
     local_8 = 32000;
@@ -1030,12 +1027,14 @@ export function FUN_00579dbb(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00579ed0(param_1, param_2, param_3) {
   let uVar1;
+  let iVar2;
+  let local_8;
 
   if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4 + 1] & 0x20) !== 0) {
     return 0;
   }
 
-  if ((param_3 & DAT_0064c6c0[param_1 * 0x594 + param_2 * 4]) === 0) {
+  if ((param_3 & u32(DAT_0064c6c0, param_1 * 0x594 + param_2 * 4)) === 0) {
     return 0;
   }
 
@@ -1043,9 +1042,55 @@ export function FUN_00579ed0(param_1, param_2, param_3) {
     return 0;
   }
 
-  // In the original, this function shows war-declaration dialogs.
-  // For the mechanical transpilation, we return 1 (war is possible).
-  return 1;
+  uVar1 = FUN_00493c7d(param_2);
+  FUN_0040ff60(1, uVar1);
+  if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4] & 8) === 0) {
+    if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4] & 4) === 0) {
+      if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4] & 2) === 0) {
+        // DEVIATION: Win32 API (show dialog s_ANNOY)
+        local_8 = 1;
+      } else if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4 + 2] & 4) === 0) {
+        // DEVIATION: Win32 API (show dialog s_ANNOYCEASE)
+        local_8 = 1;
+      } else {
+        // DEVIATION: Win32 API (show dialog s_ANNOYVASSAL)
+        local_8 = 1;
+      }
+    } else {
+      // DEVIATION: Win32 API (show dialog s_ANNOYPEACE)
+      local_8 = 1;
+    }
+    if (local_8 === 1) {
+      iVar2 = FUN_0055bef9(param_1, param_2);
+      if (iVar2 === 0) {
+        if (4 < u8(DAT_0064c600[param_1 * 0x594 + 0xb5])) {
+          iVar2 = FUN_00453e51(param_2, 0x18);
+          if (iVar2 === 0) {
+            if (((DAT_0064c6c0[param_2 * 0x594 + param_1 * 4 + 1] & 0x10) === 0) &&
+               (DAT_0064c600[param_2 * 0x594 + 0xbe] === 0)) {
+              // DEVIATION: Win32 API (show dialog s_ALLOWHAWKS)
+            } else {
+              uVar1 = FUN_00410070(param_2);
+              FUN_0040ff60(0, uVar1);
+              // DEVIATION: Win32 API (show dialog s_ALLOWAGGRESSOR)
+            }
+          } else {
+            // DEVIATION: Win32 API (show dialog s_ALLOWUN)
+          }
+        }
+        uVar1 = 0;
+      } else {
+        // DEVIATION: Win32 API (show dialog s_OVERRULE)
+        uVar1 = 1;
+      }
+    } else {
+      uVar1 = 1;
+    }
+  } else {
+    // DEVIATION: Win32 API (show dialog s_ANNOYALLIED)
+    uVar1 = 1;
+  }
+  return uVar1;
 }
 
 
@@ -1152,16 +1197,16 @@ export function FUN_0057a685(param_1) {
 // Transfer a city from one civ to another (used in civil war/schism)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0057a7e9(param_1, param_2, param_3) {
-  // Decrement old civ city count, increment new civ city count
-  // DAT_0064c708[param_2 * 0x594] -= 1 (short)
-  // DAT_0064c708[param_3 * 0x594] += 1 (short)
-  // DAT_0064c70c population adjustments
-  // Set city owner
-  DAT_0064f340[param_1 * 0x58 + 8] = u8(param_3); // DAT_0064f348
-
+  w16(DAT_0064c600, param_2 * 0x594 + 0x108, s16(DAT_0064c600, param_2 * 0x594 + 0x108) - 1);
+  w16(DAT_0064c600, param_3 * 0x594 + 0x108, s16(DAT_0064c600, param_3 * 0x594 + 0x108) + 1);
+  w16(DAT_0064c600, param_2 * 0x594 + 0x10c,
+      s16(DAT_0064c600, param_2 * 0x594 + 0x10c) - s8(DAT_0064f340[param_1 * 0x58 + 9]));
+  w16(DAT_0064c600, param_3 * 0x594 + 0x10c,
+      s8(DAT_0064f340[param_1 * 0x58 + 9]) + s16(DAT_0064c600, param_3 * 0x594 + 0x10c));
+  DAT_0064f340[param_1 * 0x58 + 8] = u8(param_3);
   FUN_005b99e8(
-    s16(DAT_0064f340, param_1 * 0x58),     // x
-    s16(DAT_0064f340, param_1 * 0x58 + 2), // y
+    s16(DAT_0064f340, param_1 * 0x58),
+    s16(DAT_0064f340, param_1 * 0x58 + 2),
     param_3, 1);
 }
 
@@ -1172,16 +1217,41 @@ export function FUN_0057a7e9(param_1, param_2, param_3) {
 // Returns 1 on success, 0 on failure
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0057a904(param_1) {
-  let iVar2 = FUN_004fc20d(param_1);
+  let cVar1;
+  let iVar2;
+  let uVar3;
+  let local_15c;
+  let local_158;
+  let local_154;
+  let local_150;
+  let local_14c;
+  let local_148;
+  let local_144;
+  let local_140;
+  let local_3c;
+  let local_38;
+  let local_34;
+  let local_30;
+  let local_2c;
+  let local_28;
+  let local_24;
+  let local_20;
+  let local_1c;
+  let local_18;
+  let local_14;
+  let local_10;
+  let local_c;
+  let local_8;
+
+  iVar2 = FUN_004fc20d(param_1);
   if (iVar2 === 0) {
     return 0;
   }
 
-  // Find empty civ slot
-  let local_24 = -1;
-  for (let local_148 = 1; local_148 < 8; local_148 = local_148 + 1) {
-    if ((s16(DAT_0064c600, local_148 * 0x594 + 0x106) === 0) && // DAT_0064c706
-       (s16(DAT_0064c600, local_148 * 0x594 + 0x108) === 0)) { // DAT_0064c708
+  local_24 = -1;
+  for (local_148 = 1; local_148 < 8; local_148 = local_148 + 1) {
+    if ((s16(DAT_0064c600, local_148 * 0x594 + 0x106) === 0) &&
+       (s16(DAT_0064c600, local_148 * 0x594 + 0x108) === 0)) {
       local_24 = local_148;
     }
   }
@@ -1189,23 +1259,12 @@ export function FUN_0057a904(param_1) {
     return 0;
   }
 
-  // Complex civil war logic — continent grouping, city assignment, etc.
-  // This is heavily simplified; the full binary version is ~500 lines
-  // of continent analysis, city partition, and unit reassignment.
-
-  // For the mechanical transpilation we preserve the structure but
-  // many of the deeply-nested calls are stubbed.
-
   let aiStack_13c = new Array(64).fill(0);
-  let local_154 = -1;
-  let local_15c = 0;
-  let local_8 = 0;
-  let local_144 = 0;
-
-  for (let local_140 = 0; local_140 < DAT_00655b18; local_140 = local_140 + 1) {
-    if ((s16(DAT_0064f340, local_140 * 0x58 + 0x54) !== 0) &&
+  local_154 = -1;
+  for (local_140 = 0; local_140 < DAT_00655b18; local_140 = local_140 + 1) {
+    if ((s32(DAT_0064f340, local_140 * 0x58 + 0x54) !== 0) &&
        (s8(DAT_0064f340[local_140 * 0x58 + 8]) === param_1)) {
-      let local_3c = FUN_005b8a81(
+      local_3c = FUN_005b8a81(
         s16(DAT_0064f340, local_140 * 0x58),
         s16(DAT_0064f340, local_140 * 0x58 + 2));
       aiStack_13c[local_3c] =
@@ -1227,7 +1286,6 @@ export function FUN_0057a904(param_1) {
     return 0;
   }
 
-  // Clear alive bit, create new civ
   DAT_00655b0a = DAT_00655b0a & ~(1 << (u8(local_24) & 0x1f));
   iVar2 = FUN_new_civ(local_24);
   if (iVar2 === 0) {
@@ -1235,30 +1293,181 @@ export function FUN_0057a904(param_1) {
   }
   DAT_00655b0a = DAT_00655b0a | (1 << (u8(local_24) & 0x1f));
 
-  // Transfer treasury, government, techs, etc.
-  // (Highly condensed — the full binary does extensive data copying)
+  uVar3 = FUN_00410070(param_1);
+  FUN_0040ff60(0, uVar3);
+  uVar3 = FUN_00410070(local_24);
+  FUN_0040ff60(1, uVar3);
+  // DEVIATION: Win32 API (FUN_00421ea0 s_SCHISM)
+  if (2 < DAT_00655b02) {
+    FUN_00511880(0x16, 0xff, 2, 0, 0, 0);
+  }
 
-  // Set diplomacy relations
-  DAT_0064c6c0[local_24 * 0x594 + param_1 * 4] = 0x01; // 0x2001 as uint32
-  DAT_0064c6c0[local_24 * 4 + param_1 * 0x594] = 0x01; // 0x82801 as uint32
+  // Transfer treasury (half)
+  w32(DAT_0064c600, local_24 * 0x594 + 0xa2,
+      (s32(DAT_0064c600, param_1 * 0x594 + 0xa2) / 2) | 0);
+  w32(DAT_0064c600, param_1 * 0x594 + 0xa2,
+      s32(DAT_0064c600, param_1 * 0x594 + 0xa2) - s32(DAT_0064c600, local_24 * 0x594 + 0xa2));
 
-  // Partition cities and units between old and new civ
-  // ... (complex continent-based partition logic omitted for brevity)
+  // Transfer science beakers (half)
+  w16(DAT_0064c600, local_24 * 0x594 + 0x10e,
+      (u16(DAT_0064c600, param_1 * 0x594 + 0x10e) >> 1) & 0xffff);
+
+  // Copy government type
+  DAT_0064c600[local_24 * 0x594 + 0xb5] = DAT_0064c600[param_1 * 0x594 + 0xb5];
+  // Copy tax rate
+  w16(DAT_0064c600, local_24 * 0x594 + 0xa8, u16(DAT_0064c600, param_1 * 0x594 + 0xa8));
+  // Copy government count/type
+  DAT_0064c600[local_24 * 0x594 + 0xb0] = DAT_0064c600[param_1 * 0x594 + 0xb0];
+
+  // Copy tech flags (13 bytes)
+  for (local_18 = 0; local_18 < 0xd; local_18 = local_18 + 1) {
+    DAT_0064c600[local_24 * 0x594 + 0xf8 + local_18] =
+         DAT_0064c600[param_1 * 0x594 + 0xf8 + local_18];
+  }
+
+  // Set contact turns for all civs
+  for (local_148 = 1; local_148 < 8; local_148 = local_148 + 1) {
+    w16(DAT_0064c600, local_148 * 0x594 + 0x482 + local_24 * 2, DAT_00655af8 - 8);
+  }
+
+  // Set diplomacy: alliance + peace between old and new
+  w32(DAT_0064c6c0, local_24 * 0x594 + param_1 * 4, 0x2001);
+  w32(DAT_0064c6c0, local_24 * 4 + param_1 * 0x594, 0x82801);
+
+  // Copy visibility from old civ to new civ
+  local_30 = 1 << (u8(param_1) & 0x1f);
+  local_38 = 1 << (u8(local_24) & 0x1f);
+  local_158 = 0;
+  local_34 = 0;
+  FUN_005b9ec6();
+  for (local_18 = 0; local_18 < DAT_006d1164; local_18 = local_18 + 1) {
+    iVar2 = FUN_005b8931(local_34, local_158);
+    if ((local_30 & tileRead(iVar2, 4)) !== 0) {
+      FUN_005b976d(local_34, local_158, local_38, 1, 1);
+    }
+    local_34 = local_34 + 2;
+    if (DAT_006d1160 <= local_34) {
+      local_158 = local_158 + 1;
+      local_34 = local_158 & 1;
+    }
+  }
+  FUN_005b9f1c();
+
+  // Partition cities between old and new civ based on continents
+  local_14 = aiStack_13c[local_154];
+  local_20 = 0;
+  for (local_3c = 0; local_3c < 0x40; local_3c = local_3c + 1) {
+    if (aiStack_13c[local_3c] !== 0) {
+      if ((local_14 < local_20) || (local_154 === local_3c)) {
+        if (local_154 !== local_3c) {
+          local_14 = local_14 + aiStack_13c[local_3c];
+        }
+        aiStack_13c[local_3c] = 1;
+      } else {
+        local_20 = local_20 + aiStack_13c[local_3c];
+        aiStack_13c[local_3c] = 2;
+      }
+    }
+  }
+
+  if ((local_14 < local_20 * 2) && (local_20 <= local_14)) {
+    // Continent-based partition
+    for (local_140 = 0; local_140 < DAT_00655b18; local_140 = local_140 + 1) {
+      if ((s32(DAT_0064f340, local_140 * 0x58 + 0x54) !== 0) &&
+         (s8(DAT_0064f340[local_140 * 0x58 + 8]) === param_1)) {
+        local_3c = FUN_005b8a81(
+          s16(DAT_0064f340, local_140 * 0x58),
+          s16(DAT_0064f340, local_140 * 0x58 + 2));
+        if (aiStack_13c[local_3c] === 2) {
+          FUN_0043cc00(local_140, param_1);
+          FUN_0057a7e9(local_140, param_1, local_24);
+        } else {
+          FUN_0043cc00(local_140, local_24);
+        }
+      }
+    }
+  } else {
+    // Distance-based partition
+    local_20 = 0;
+    local_10 = s16(DAT_0064c600, param_1 * 0x594 + 0x10c);
+    while (local_20 * 3 < local_10) {
+      local_c = 1;
+      local_14c = -1;
+      for (local_140 = 0; local_140 < DAT_00655b18; local_140 = local_140 + 1) {
+        if ((s32(DAT_0064f340, local_140 * 0x58 + 0x54) !== 0) &&
+           (s8(DAT_0064f340[local_140 * 0x58 + 8]) === param_1)) {
+          FUN_0043cc00(local_140, local_24);
+          FUN_0043cc00(local_140, param_1);
+          local_1c = FUN_005ae31d(local_15c, local_8,
+            s16(DAT_0064f340, local_140 * 0x58),
+            s16(DAT_0064f340, local_140 * 0x58 + 2));
+          if (local_c < local_1c) {
+            local_14c = local_140;
+            local_c = local_1c;
+          }
+        }
+      }
+      if (local_14c < 0) break;
+      local_20 = local_20 + s8(DAT_0064f340[local_14c * 0x58 + 9]);
+      FUN_0057a7e9(local_14c, param_1, local_24);
+    }
+  }
+
+  // Reassign units to new civ based on city ownership
+  for (local_150 = 0; local_150 < DAT_00655b16; local_150 = local_150 + 1) {
+    if ((s16(DAT_006560f0, local_150 * 0x20 + 0x1a) !== 0) &&
+       (s8(DAT_006560f0[local_150 * 0x20 + 7]) === param_1)) {
+      local_140 = FUN_0043cf76(
+        s16(DAT_006560f0, local_150 * 0x20),
+        s16(DAT_006560f0, local_150 * 0x20 + 2));
+      if ((local_140 < 0) && (DAT_006560f0[local_150 * 0x20 + 0x10] !== 0xff)) {
+        local_140 = u8(DAT_006560f0[local_150 * 0x20 + 0x10]);
+      }
+      if (-1 < local_140) {
+        cVar1 = s8(DAT_0064f340[local_140 * 0x58 + 8]);
+        iVar2 = cVar1;
+        if ((iVar2 === param_1) || (iVar2 === local_24)) {
+          FUN_005b99e8(
+            s16(DAT_006560f0, local_150 * 0x20),
+            s16(DAT_006560f0, local_150 * 0x20 + 2), iVar2, 1);
+          local_2c = local_150;
+          for (local_150 = FUN_005b2d39(local_150); -1 < local_150;
+              local_150 = FUN_005b2c82(local_150)) {
+            DAT_006560f0[local_150 * 0x20 + 7] = u8(cVar1);
+            if ((DAT_006560f0[local_150 * 0x20 + 0x10] !== 0xff) &&
+               (s8(DAT_0064f340[u8(DAT_006560f0[local_150 * 0x20 + 0x10]) * 0x58 + 8])
+                !== iVar2)) {
+              DAT_006560f0[local_150 * 0x20 + 0x10] = u8(local_140);
+            }
+          }
+          local_150 = local_2c;
+        }
+      }
+    }
+  }
 
   // Find capital for new civ
   iVar2 = FUN_0057a685(local_24);
   if (-1 < iVar2) {
     FUN_0043d289(iVar2, 1, 1);
+    w16(DAT_0064c600, local_24 * 0x594 + 0xac,
+        u16(DAT_0064f340, iVar2 * 0x58));
   }
 
-  // Restore original city's owner temporarily
+  // Temporarily mark original city as unowned to find old capital
   DAT_0064f340[local_144 * 0x58 + 8] = 0xff;
   iVar2 = FUN_0057a685(param_1);
   if (-1 < iVar2) {
     FUN_0043d289(iVar2, 1, 1);
+    w16(DAT_0064c600, param_1 * 0x594 + 0xac,
+        u16(DAT_0064f340, iVar2 * 0x58));
   }
   DAT_0064f340[local_144 * 0x58 + 8] = u8(param_1);
 
+  if (2 < DAT_00655b02) {
+    FUN_004b0b53(0xff, 2, 0, 0, 0);
+    FUN_0046b14d(0x74, 0xff, 0, 0, 0, 0, 0, 0, 0, 0);
+  }
   FUN_0047cf9e(DAT_006d1da0, 1);
   return 1;
 }
@@ -1354,24 +1563,23 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
           }
         }
         if ((1 < local_88) && ((local_88 & 1) === 0)) {
-          // Set reputation damage flag (0x400000)
           let off = param_2 * 4 + local_84 * 0x594;
-          // DAT_0064c6c0 |= 0x400000 (set bit in uint32)
+          w32(DAT_0064c6c0, off, u32(DAT_0064c6c0, off) | 0x400000);
         }
       }
     } else {
-      // Democracy capturing less advanced civ — always reputation hit
-      // DAT_0064c6c0 |= 0x400000
+      let off = param_2 * 4 + local_84 * 0x594;
+      w32(DAT_0064c6c0, off, u32(DAT_0064c6c0, off) | 0x400000);
     }
   }
 
   // Remove cease-fire flags
   FUN_00467750(param_2, local_84, 0x800);
 
-  // Large city captured by AI — set subjugation flag
   if (((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) === 0 &&
-     s8(DAT_0064f340[param_1 * 0x58 + 9]) > 14 && local_7c === 0) {
-    // set 0x10 flag in diplomacy
+     (s8(DAT_0064f340[param_1 * 0x58 + 9]) > 14) && (local_7c === 0)) {
+    let off = param_2 * 4 + local_84 * 0x594;
+    w32(DAT_0064c6c0, off, u32(DAT_0064c6c0, off) | 0x10);
   }
 
   // ── Civil war check ──
@@ -1453,7 +1661,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
 
     // Decide if capital escapes
     local_3c4 = 0;
-    if ((999 < s16(DAT_0064c600, local_84 * 0x594 + 0xa2)) && // treasury > 999
+    if ((999 < s32(DAT_0064c600, local_84 * 0x594 + 0xa2)) &&
        (0 < local_3c8) && (local_398 < 0)) {
       local_1c = local_3c8;
 
@@ -1463,8 +1671,8 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
            (DAT_00655b02 < 3) || (DAT_00654fa8 !== 0)) {
           if ((2 < DAT_00655b08) &&
              ((iVar6 = FUN_004a75a6(local_84), iVar6 !== 0) ||
-              s16(DAT_0064c600, local_84 * 0x594 + 0x108) > 11 ||
-              s16(DAT_0064c600, local_84 * 0x594 + 0xa2) > 1999)) {
+              s16(DAT_0064c600, local_84 * 0x594 + 0x108) > 0xb ||
+              s32(DAT_0064c600, local_84 * 0x594 + 0xa2) > 1999)) {
             local_3c4 = 1;
           }
         } else {
@@ -1475,33 +1683,32 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
           if (DAT_006acb38 === -1) {
             local_3c4 = 0;
             iVar6 = FUN_004a75a6(local_84);
-            if ((iVar6 !== 0) || s16(DAT_0064c600, local_84 * 0x594 + 0x108) > 11 ||
-               s16(DAT_0064c600, local_84 * 0x594 + 0xa2) > 1999) {
+            if ((iVar6 !== 0) || s16(DAT_0064c600, local_84 * 0x594 + 0x108) > 0xb ||
+               s32(DAT_0064c600, local_84 * 0x594 + 0xa2) > 1999) {
               local_3c4 = 1;
             }
           }
         }
       } else {
         // Human player captures own civ's capital — show dialog
-        local_3c4 = 1; // Simplified: always allow escape
+        // DEVIATION: Win32 API (FUN_00410030 s_CANESCAPE dialog)
+        local_3c4 = FUN_00410030("CANESCAPE", 0, 0);
       }
     }
 
     // Execute capital escape or destroy capital
     if (local_3c4 === 1) {
-      // Deduct 1000 gold
-      let treasury_off = local_84 * 0x594 + 0xa2;
-      // DAT_0064c6a2 -= 1000 (simplified)
-
-      FUN_0043d289(local_1c, 1, 1); // Make new capital
-
+      w32(DAT_0064c600, local_84 * 0x594 + 0xa2,
+          s32(DAT_0064c600, local_84 * 0x594 + 0xa2) - 1000);
+      FUN_0043d289(local_1c, 1, 1);
+      // DEVIATION: Win32 API (FUN_00414dd0 s_ESCAPE notification)
       if (((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) === 0) {
         FUN_00441b11(local_3c8, 99);
       }
     } else {
-      FUN_004a762d(local_84); // Destroy government
+      FUN_004a762d(local_84);
       if (-1 < local_398) {
-        DAT_0064f340[local_398 * 0x58 + 0x39] = 0xff; // DAT_0064f379
+        DAT_0064f340[local_398 * 0x58 + 0x39] = 0xff;
       }
     }
   }
@@ -1532,24 +1739,26 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     }
   }
 
-  // ── Transfer gold ──
-  local_74 = FUN_005adfa0(local_74, 0, s16(DAT_0064c600, local_84 * 0x594 + 0xa2));
-  // Subtract from old owner, add to new owner
-  // DAT_0064c6a2[local_84] -= local_74
-  // DAT_0064c6a2[param_2] += local_74
+  local_74 = FUN_005adfa0(local_74, 0, s32(DAT_0064c600, local_84 * 0x594 + 0xa2));
+  w32(DAT_0064c600, local_84 * 0x594 + 0xa2,
+      s32(DAT_0064c600, local_84 * 0x594 + 0xa2) - local_74);
+  if (param_2 !== 0) {
+    w32(DAT_0064c600, param_2 * 0x594 + 0xa2,
+        s32(DAT_0064c600, param_2 * 0x594 + 0xa2) + local_74);
+  }
 
   if ((DAT_006d1da0 === param_2) || (DAT_006d1da0 === local_84)) {
     FUN_00569363(1);
   }
 
-  // ── Reset city production ──
-  // DAT_0064f35c[param_1] = 0 (shields stored)
-  // Clear city flags
-  // DAT_0064f344[param_1] &= 0xffffffc4
+  w16(DAT_0064f340, param_1 * 0x58 + 0x1c, 0);
+  w32(DAT_0064f340, param_1 * 0x58 + 4,
+      u32(DAT_0064f340, param_1 * 0x58 + 4) & 0xffffffc4);
 
-  // ── Decrement building count for old owner ──
   if (s8(DAT_0064f340[param_1 * 0x58 + 0x39]) >= 0) {
-    // DAT_0064c7f4[local_84 * 0x594 + building] -= 1
+    let bldg = s8(DAT_0064f340[param_1 * 0x58 + 0x39]);
+    DAT_0064c600[local_84 * 0x594 + 0x1f4 + bldg] =
+         DAT_0064c600[local_84 * 0x594 + 0x1f4 + bldg] - 1;
   }
 
   // ── Remove capital-related improvements if not original city ──
@@ -1562,11 +1771,12 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
 
   // ── Population reduction ──
   if ((param_3 === 0) && (local_7c === 0)) {
-    // Random chance to destroy population records
-    iVar6 = Math.floor(Math.random() * 0x7fff);
+    iVar6 = _rand();
     bVar3 = u8(iVar6 >> 31);
     for (local_70 = 0; local_70 < 5; local_70 = local_70 + 1) {
-      // Destroy some specialists based on random bit
+      DAT_0064f340[param_1 * 0x58 + 0x34 + local_70] =
+           DAT_0064f340[param_1 * 0x58 + 0x34 + local_70] &
+           u8(0xaa >> ((((u8(iVar6) ^ bVar3) - bVar3 & 1 ^ bVar3) - bVar3) & 0x1f));
     }
   }
 
@@ -1576,11 +1786,11 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     local_78 = 0;
 
     if (param_2 === 0) {
-      // Barbarians — check if any human civ has visibility
       iVar6 = FUN_005b8a81(iVar4, iVar5);
       for (local_3bc = 1; local_3bc < 8; local_3bc = local_3bc + 1) {
-        if (((1 << (u8(local_3bc) & 0x1f)) & u8(DAT_00655b0b)) !== 0) {
-          local_78 = 1; // simplified
+        if (((1 << (u8(local_3bc) & 0x1f)) & u8(DAT_00655b0b)) !== 0 &&
+           (DAT_0064c600[local_3bc * 0x594 + 0x332 + iVar6] !== 0)) {
+          local_78 = 1;
         }
       }
     }
@@ -1612,12 +1822,8 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     }
   }
 
-  // ── If city survived, transfer ownership ──
   if (param_1 >= 0 && param_1 !== 0xffffffff) {
-    // Set last contact turn for new owner
-    // DAT_0064c6ae[param_2] = DAT_00655af8
-
-    // Place exploring unit near city
+    w16(DAT_0064c600, param_2 * 0x594 + 0xae, DAT_00655af8);
     FUN_00492c15(param_2, 5, iVar4, iVar5, 4);
 
     // Update visibility
@@ -1709,16 +1915,16 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
               s16(DAT_006560f0, local_3cc * 0x20),
               s16(DAT_006560f0, local_3cc * 0x20 + 2));
             if (nearby_city >= 0 && nearby_city !== param_1) {
-              // Try to reassign to nearby city
-              if (u8(DAT_0064b1bc[u8(DAT_006560f0[local_3cc * 0x20 + 6]) * 0x14 + 0x0e]) === 1) {
-                let iVar6_check = FUN_005b53b6(local_3cc, 1);
-                if (iVar6_check === 1) {
+              if (s8(DAT_0064b1bc[u8(DAT_006560f0[local_3cc * 0x20 + 6]) * 0x14 + 0x0e]) === 1) {
+                iVar6 = FUN_005b53b6(local_3cc, 1);
+                if (iVar6 === 1) {
                   DAT_006560f0[local_3cc * 0x20 + 0x10] = u8(nearby_city);
                   local_3cc = DAT_00655b16;
                   continue;
                 }
               }
-              // Mark city needs rebuilding
+              w32(DAT_0064f340, nearby_city * 0x58 + 4,
+                  u32(DAT_0064f340, nearby_city * 0x58 + 4) | 0x20);
             }
           }
           FUN_005b6042(local_3cc, 1); // Kill unit
@@ -1730,24 +1936,26 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       }
     }
 
-    // ── Set "we love the king" eligibility ──
     if (((1 << (u8(param_2) & 0x1f)) & u8(DAT_00655b0b)) !== 0 &&
        ((u8(DAT_0064c600[param_2 * 0x594 + 0xb5]) > 4 ||
          u8(DAT_0064c600[local_84 * 0x594 + 0xb5]) > 4) &&
         DAT_00655b08 !== 0)) {
-      // Set disorder flag
+      w32(DAT_0064f340, param_1 * 0x58 + 4,
+          u32(DAT_0064f340, param_1 * 0x58 + 4) | 1);
     }
 
     // ── Assign production for AI ──
     if (((1 << (u8(param_2) & 0x1f)) & u8(DAT_00655b0b)) === 0) {
-      DAT_0064f340[param_1 * 0x58 + 0x39] = 0; // reset production
+      DAT_0064f340[param_1 * 0x58 + 0x39] = 0;
       if (param_2 === 0) {
         DAT_0064f340[param_1 * 0x58 + 0x39] = 5;
         local_3cc = FUN_005b2e69(iVar4, iVar5);
-        if (local_3cc >= 0) {
+        if (-1 < local_3cc) {
           DAT_0064f340[param_1 * 0x58 + 0x39] = DAT_006560f0[local_3cc * 0x20 + 6];
         }
       }
+      DAT_0064c600[param_2 * 0x594 + 0x1f4 + s8(DAT_0064f340[param_1 * 0x58 + 0x39])] =
+           DAT_0064c600[param_2 * 0x594 + 0x1f4 + s8(DAT_0064f340[param_1 * 0x58 + 0x39])] + 1;
       FUN_00441b11(param_1, 99);
     } else {
       // ── Human player: assign best available production ──
@@ -2220,29 +2428,27 @@ export function FUN_0057e6e2(param_1, param_2) {
 // Handles killing a unit (updating stats, calling events, etc.)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0057e9f9(param_1, param_2, param_3, param_4) {
-  // Update kill statistics
   let unitOwner = s8(DAT_006560f0[param_1 * 0x20 + 7]);
   let unitType = u8(DAT_006560f0[param_1 * 0x20 + 6]);
 
-  // Increment kill counter for unit type
-  // DAT_0064c7b6[unitOwner * 0x594 + unitType] += 1
+  if (DAT_0064c600[unitOwner * 0x594 + 0x1b6 + unitType] !== 0xff) {
+    DAT_0064c600[unitOwner * 0x594 + 0x1b6 + unitType] =
+         DAT_0064c600[unitOwner * 0x594 + 0x1b6 + unitType] + 1;
+  }
 
-  // Show combat animation / play sound
-  if (unitOwner === DAT_006d1da0 || DAT_00655b02 < 3) {
+  if ((unitOwner === DAT_006d1da0) || (DAT_00655b02 < 3)) {
     FUN_0059c575(param_1, param_2, DAT_00655afa, param_3, param_4);
-  } else if (2 < DAT_00655b02 &&
-            ((u8(DAT_00655b0b) & (1 << (u8(unitOwner) & 0x1f))) !== 0)) {
+  } else if ((2 < DAT_00655b02) &&
+            ((u8(DAT_00655b0b) & (1 << (DAT_006560f0[param_1 * 0x20 + 7] & 0x1f))) !== 0)) {
     FUN_0046b14d(100, 0, param_1, param_2, DAT_00655afa, param_3, param_4, 0, 0, 0);
   }
 
   DAT_006acb0c = DAT_006acb0c + 1;
 
-  // Fire game events
   if (DAT_00627670 !== 0) {
     FUN_004fbd9d(unitType, s8(DAT_006560f0[param_2 * 0x20 + 7]), unitOwner);
   }
 
-  // Delete the unit
   FUN_005b4391(param_1, 1);
 }
 
@@ -2267,20 +2473,15 @@ export function FUN_0057eb94(param_1, param_2, param_3, param_4) {
 // Promotes a unit to veteran status
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0057ebfd(param_1) {
-  // Check if already veteran or has "no promotion" flag
   if (((u16(DAT_006560f0, param_1 * 0x20 + 4) & 0x2000) === 0) &&
-     ((u8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 1]) & 0x10) === 0)) {
-    // Set veteran flag
-    let flags = u16(DAT_006560f0, param_1 * 0x20 + 4);
-    flags = flags | 0x2000;
-    DAT_006560f0[param_1 * 0x20 + 4] = flags & 0xff;
-    DAT_006560f0[param_1 * 0x20 + 5] = (flags >> 8) & 0xff;
-
-    // Show promotion notification
-    let owner = s8(DAT_006560f0[param_1 * 0x20 + 7]);
-    if (((u8(DAT_00655b0b) & (1 << (u8(owner) & 0x1f))) !== 0) && (DAT_00654fa8 === 0)) {
-      if (owner === DAT_006d1da0) {
-        // Show local promotion message
+     ((DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 1] & 0x10) === 0)) {
+    w16(DAT_006560f0, param_1 * 0x20 + 4,
+        u16(DAT_006560f0, param_1 * 0x20 + 4) | 0x2000);
+    if (((u8(DAT_00655b0b) & (1 << (DAT_006560f0[param_1 * 0x20 + 7] & 0x1f))) !== 0) &&
+       (DAT_00654fa8 === 0)) {
+      FUN_004271e8(0, u32(DAT_0064b1bc, u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 - 4));
+      if (s8(DAT_006560f0[param_1 * 0x20 + 7]) === DAT_006d1da0) {
+        FUN_004442e0("PROMOTED", param_1);
       } else if (2 < DAT_00655b02) {
         FUN_00511880(0x20, 0, 1, 0, param_1, 0);
       }
@@ -2367,9 +2568,14 @@ export function FUN_0057f9e3(param_1, param_2, param_3, param_4) {
     uVar3 = FUN_005ae052(s8(DAT_0064f340[0x28350 + local_8]) + param_2);
     cVar1 = s8(DAT_0064f340[0x28360 + local_8]);
     iVar2 = FUN_004087c0(uVar3, cVar1 + param_3);
-    if ((iVar2 !== 0) && (iVar2 = FUN_005b2e69(uVar3, cVar1 + param_3), iVar2 >= 0)) {
+    if ((iVar2 !== 0) && (iVar2 = FUN_005b2e69(uVar3, cVar1 + param_3), -1 < iVar2)) {
       if (s8(DAT_006560f0[iVar2 * 0x20 + 7]) !== param_1) {
-        // Set war flags
+        let unitOwner = s8(DAT_006560f0[iVar2 * 0x20 + 7]);
+        let off1 = unitOwner * 0x594 + param_1 * 4;
+        w32(DAT_0064c6c0, off1, u32(DAT_0064c6c0, off1) | 0x110);
+        let off2 = unitOwner * 4 + param_1 * 0x594;
+        w32(DAT_0064c6c0, off2, u32(DAT_0064c6c0, off2) | 0x20000);
+        FUN_00456f20(unitOwner, param_1, 100);
       }
       FUN_005b47fa(iVar2, 1);
     }
@@ -2463,6 +2669,7 @@ export function FUN_0057febc(param_1, param_2, param_3) {
 // returning default values until fully transpiled.
 // ═══════════════════════════════════════════════════════════════════
 
+function _rand() { return Math.floor(Math.random() * 0x7fff); }
 function FUN_005c656b() { /* bitmap cleanup */ }
 function FUN_005c64da() { /* bitmap init */ }
 function FUN_005cde4d() { /* CString cleanup */ }

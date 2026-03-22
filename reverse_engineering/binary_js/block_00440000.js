@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_00440000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8 } from './mem.js';
+import { s8, u8, s16, u16 } from './mem.js';
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -260,22 +260,19 @@ export function FUN_00440325(param_1, param_2) {
   let local_8;
 
   for (local_8 = param_2; local_8 < s8(DAT_0064f37a[param_1 * 0x58]) + -1; local_8 = local_8 + 1) {
-    // shift trade route partner ID down
     DAT_0064f384[local_8 * 2 + param_1 * 0x58] = DAT_0064f386[local_8 * 2 + param_1 * 0x58];
     DAT_0064f384[local_8 * 2 + param_1 * 0x58 + 1] = DAT_0064f386[local_8 * 2 + param_1 * 0x58 + 1];
-    // shift trade route commodity down
     DAT_0064f381[param_1 * 0x58 + local_8] = DAT_0064f382[param_1 * 0x58 + local_8];
   }
   DAT_0064f37a[param_1 * 0x58] = DAT_0064f37a[param_1 * 0x58] + -1;
-  // set city flag 0x20000
-  let off344 = param_1 * 0x58;
-  let v = (DAT_0064f344[off344] | (DAT_0064f344[off344+1] << 8) |
-           (DAT_0064f344[off344+2] << 16) | (DAT_0064f344[off344+3] << 24));
-  v = v | 0x20000;
-  DAT_0064f344[off344] = v & 0xff;
-  DAT_0064f344[off344+1] = (v >> 8) & 0xff;
-  DAT_0064f344[off344+2] = (v >> 16) & 0xff;
-  DAT_0064f344[off344+3] = (v >> 24) & 0xff;
+  let _off = param_1 * 0x58;
+  let _v = (DAT_0064f344[_off] | (DAT_0064f344[_off+1] << 8) |
+            (DAT_0064f344[_off+2] << 16) | (DAT_0064f344[_off+3] << 24));
+  _v = _v | 0x20000;
+  DAT_0064f344[_off] = _v & 0xff;
+  DAT_0064f344[_off+1] = (_v >> 8) & 0xff;
+  DAT_0064f344[_off+2] = (_v >> 16) & 0xff;
+  DAT_0064f344[_off+3] = (_v >> 24) & 0xff;
   return;
 }
 
@@ -287,20 +284,18 @@ export function FUN_00440325(param_1, param_2) {
 export function FUN_004403ec(param_1, param_2, param_3, param_4) {
   let uVar1;
 
-  // store partner city id (16-bit)
   DAT_0064f384[param_2 * 2 + param_1 * 0x58] = param_3 & 0xff;
   DAT_0064f384[param_2 * 2 + param_1 * 0x58 + 1] = (param_3 >> 8) & 0xff;
   uVar1 = FUN_005adfa0(param_4, 0xffffffff, 0xf);
   DAT_0064f381[param_1 * 0x58 + param_2] = uVar1;
-  // set city flag 0x20000
-  let off344 = param_1 * 0x58;
-  let v = (DAT_0064f344[off344] | (DAT_0064f344[off344+1] << 8) |
-           (DAT_0064f344[off344+2] << 16) | (DAT_0064f344[off344+3] << 24));
-  v = v | 0x20000;
-  DAT_0064f344[off344] = v & 0xff;
-  DAT_0064f344[off344+1] = (v >> 8) & 0xff;
-  DAT_0064f344[off344+2] = (v >> 16) & 0xff;
-  DAT_0064f344[off344+3] = (v >> 24) & 0xff;
+  let _off = param_1 * 0x58;
+  let _v = (DAT_0064f344[_off] | (DAT_0064f344[_off+1] << 8) |
+            (DAT_0064f344[_off+2] << 16) | (DAT_0064f344[_off+3] << 24));
+  _v = _v | 0x20000;
+  DAT_0064f344[_off] = _v & 0xff;
+  DAT_0064f344[_off+1] = (_v >> 8) & 0xff;
+  DAT_0064f344[_off+2] = (_v >> 16) & 0xff;
+  DAT_0064f344[_off+3] = (_v >> 24) & 0xff;
   return;
 }
 
@@ -321,8 +316,7 @@ export function FUN_00440453(param_1, param_2, param_3) {
   let local_8;
 
   for (local_10 = 0; local_10 < s8(DAT_0064f37a[param_1 * 0x58]); local_10 = local_10 + 1) {
-    let partner = DAT_0064f384[param_1 * 0x58 + local_10 * 2] | (DAT_0064f384[param_1 * 0x58 + local_10 * 2 + 1] << 8);
-    if ((partner === param_2) &&
+    if ((s16(DAT_0064f384, param_1 * 0x58 + local_10 * 2) === param_2) &&
        (s8(DAT_0064f381[param_1 * 0x58 + local_10]) === param_3)) {
       return;
     }
@@ -340,15 +334,13 @@ export function FUN_00440453(param_1, param_2, param_3) {
       if ((s8(DAT_0064f381[param_1 * 0x58 + local_10]) < 0) && (param_3 < 0)) {
         return;
       }
-      iVar2 = DAT_0064f384[param_1 * 0x58 + local_10 * 2] | (DAT_0064f384[param_1 * 0x58 + local_10 * 2 + 1] << 8);
-      iVar2 = (iVar2 << 16 >> 16); // sign-extend short
-      local_8 = DAT_0064f35e[iVar2 * 0x58] | (DAT_0064f35e[iVar2 * 0x58 + 1] << 8);
-      local_8 = (local_8 << 16 >> 16); // sign-extend short
+      iVar2 = s16(DAT_0064f384, param_1 * 0x58 + local_10 * 2);
+      local_8 = s16(DAT_0064f35e, iVar2 * 0x58);
       local_14 = FUN_00488a45(s8(DAT_0064f348[param_1 * 0x58]),
-                              (DAT_0064f340[param_1 * 0x58] | (DAT_0064f340[param_1 * 0x58 + 1] << 8)) << 16 >> 16,
-                              (DAT_0064f342[param_1 * 0x58] | (DAT_0064f342[param_1 * 0x58 + 1] << 8)) << 16 >> 16,
-                              (DAT_0064f340[iVar2 * 0x58] | (DAT_0064f340[iVar2 * 0x58 + 1] << 8)) << 16 >> 16,
-                              (DAT_0064f342[iVar2 * 0x58] | (DAT_0064f342[iVar2 * 0x58 + 1] << 8)) << 16 >> 16);
+                              s16(DAT_0064f340, param_1 * 0x58),
+                              s16(DAT_0064f342, param_1 * 0x58),
+                              s16(DAT_0064f340, iVar2 * 0x58),
+                              s16(DAT_0064f342, iVar2 * 0x58));
       iVar3 = FUN_0043d20a(param_1, 0x20);
       if (((iVar3 !== 0) && (iVar3 = FUN_0043d20a(iVar2, 0x20), iVar3 !== 0)) && (local_14 < 2)) {
         local_14 = 1;
@@ -364,8 +356,7 @@ export function FUN_00440453(param_1, param_2, param_3) {
         local_20 = local_10;
       }
     }
-    let paramPop = (DAT_0064f35e[param_2 * 0x58] | (DAT_0064f35e[param_2 * 0x58 + 1] << 8)) << 16 >> 16;
-    if (local_1c <= paramPop) {
+    if (local_1c <= s16(DAT_0064f35e, param_2 * 0x58)) {
       FUN_004403ec(param_1, local_20, param_2, param_3);
       FUN_0043d400(param_1);
       FUN_0043d400(param_2);
@@ -416,33 +407,32 @@ export function FUN_00440750(param_1, param_2) {
   }
   if (local_14 < 0) {
     local_14 = FUN_0043d07a(
-      (DAT_006560f0[param_1 * 0x20] | (DAT_006560f0[param_1 * 0x20 + 1] << 8)) << 16 >> 16,
-      (DAT_006560f2[param_1 * 0x20] | (DAT_006560f2[param_1 * 0x20 + 1] << 8)) << 16 >> 16,
+      s16(DAT_006560f0, param_1 * 0x20),
+      s16(DAT_006560f2, param_1 * 0x20),
       iVar4, 0xffffffff, 0xffffffff);
     if (local_14 < 0) {
       local_14 = 0;
     }
   }
   local_1c = FUN_005ae31d(
-    (DAT_0064f340[param_2 * 0x58] | (DAT_0064f340[param_2 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f342[param_2 * 0x58] | (DAT_0064f342[param_2 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f340[local_14 * 0x58] | (DAT_0064f340[local_14 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f342[local_14 * 0x58] | (DAT_0064f342[local_14 * 0x58 + 1] << 8)) << 16 >> 16);
+    s16(DAT_0064f340, param_2 * 0x58),
+    s16(DAT_0064f342, param_2 * 0x58),
+    s16(DAT_0064f340, local_14 * 0x58),
+    s16(DAT_0064f342, local_14 * 0x58));
   if ((DAT_00655af0 & 4) !== 0) {
     local_1c = (local_1c << 2) / 5;
   }
   if ((DAT_00655af0 & 8) !== 0) {
     local_1c = (local_1c * 5 + ((local_1c * 5) >> 0x1f & 3)) >> 2;
   }
-  let pop14 = (DAT_0064f35e[local_14 * 0x58] | (DAT_0064f35e[local_14 * 0x58 + 1] << 8)) << 16 >> 16;
-  let popP2 = (DAT_0064f35e[param_2 * 0x58] | (DAT_0064f35e[param_2 * 0x58 + 1] << 8)) << 16 >> 16;
-  local_1c = ((pop14 + popP2) * (local_1c + 10)) / 0x18;
+  local_1c = ((s16(DAT_0064f35e, local_14 * 0x58) +
+              s16(DAT_0064f35e, param_2 * 0x58)) * (local_1c + 10)) / 0x18;
   iVar6 = FUN_005b8a81(
-    (DAT_0064f340[param_2 * 0x58] | (DAT_0064f340[param_2 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f342[param_2 * 0x58] | (DAT_0064f342[param_2 * 0x58 + 1] << 8)) << 16 >> 16);
+    s16(DAT_0064f340, param_2 * 0x58),
+    s16(DAT_0064f342, param_2 * 0x58));
   iVar7 = FUN_005b8a81(
-    (DAT_0064f340[local_14 * 0x58] | (DAT_0064f340[local_14 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f342[local_14 * 0x58] | (DAT_0064f342[local_14 * 0x58 + 1] << 8)) << 16 >> 16);
+    s16(DAT_0064f340, local_14 * 0x58),
+    s16(DAT_0064f342, local_14 * 0x58));
   if (iVar7 !== iVar6) {
     local_1c = local_1c << 1;
   }
@@ -455,10 +445,10 @@ export function FUN_00440750(param_1, param_2) {
     local_1c = local_1c + (local_1c >> 1);
   }
   local_34 = FUN_00488a45(iVar4,
-    (DAT_0064f340[param_2 * 0x58] | (DAT_0064f340[param_2 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f342[param_2 * 0x58] | (DAT_0064f342[param_2 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f340[local_14 * 0x58] | (DAT_0064f340[local_14 * 0x58 + 1] << 8)) << 16 >> 16,
-    (DAT_0064f342[local_14 * 0x58] | (DAT_0064f342[local_14 * 0x58 + 1] << 8)) << 16 >> 16);
+    s16(DAT_0064f340, param_2 * 0x58),
+    s16(DAT_0064f342, param_2 * 0x58),
+    s16(DAT_0064f340, local_14 * 0x58),
+    s16(DAT_0064f342, local_14 * 0x58));
   iVar9 = FUN_0043d20a(param_2, 0x20);
   if ((iVar9 !== 0) && (iVar9 = FUN_0043d20a(local_14, 0x20), iVar9 !== 0)) {
     if (iVar7 === iVar6) {
@@ -567,29 +557,25 @@ export function FUN_00440750(param_1, param_2) {
   FUN_00456f20(iVar5, iVar4, 0xfffffff6);
   FUN_00456f20(iVar4, iVar5, 0xfffffff6);
   if (uVar8 < 0) {
-    // food caravan: add food to city
     FUN_004eb4ed(param_2, 0);
-    let off35a = param_2 * 0x58;
-    let cur35a = (DAT_0064f35a[off35a] | (DAT_0064f35a[off35a + 1] << 8)) << 16 >> 16;
-    let add = (((s8(DAT_0064f349[param_2 * 0x58]) + 1) * DAT_006a6560) / 2) | 0;
-    cur35a = cur35a + add;
-    DAT_0064f35a[off35a] = cur35a & 0xff;
-    DAT_0064f35a[off35a + 1] = (cur35a >> 8) & 0xff;
+    let _off35a = param_2 * 0x58;
+    let _cur35a = s16(DAT_0064f35a, _off35a);
+    _cur35a = _cur35a + (((s8(DAT_0064f349[param_2 * 0x58]) + 1) * DAT_006a6560) / 2);
+    DAT_0064f35a[_off35a] = _cur35a & 0xff;
+    DAT_0064f35a[_off35a + 1] = (_cur35a >> 8) & 0xff;
   } else {
-    // trade caravan: add gold
-    let off6a2 = iVar4 * 0x594;
-    let curGold = DAT_0064c6a2[off6a2] | (DAT_0064c6a2[off6a2+1] << 8) |
-                  (DAT_0064c6a2[off6a2+2] << 16) | (DAT_0064c6a2[off6a2+3] << 24);
-    curGold = curGold + iVar6;
-    DAT_0064c6a2[off6a2] = curGold & 0xff;
-    DAT_0064c6a2[off6a2+1] = (curGold >> 8) & 0xff;
-    DAT_0064c6a2[off6a2+2] = (curGold >> 16) & 0xff;
-    DAT_0064c6a2[off6a2+3] = (curGold >> 24) & 0xff;
-    let off6a8 = iVar4 * 0x594;
-    let curTradeGold = (DAT_0064c6a8[off6a8] | (DAT_0064c6a8[off6a8+1] << 8)) << 16 >> 16;
-    curTradeGold = curTradeGold + (iVar6 & 0xffff);
-    DAT_0064c6a8[off6a8] = curTradeGold & 0xff;
-    DAT_0064c6a8[off6a8+1] = (curTradeGold >> 8) & 0xff;
+    let _off6a2 = iVar4 * 0x594;
+    let _curGold = DAT_0064c6a2[_off6a2] | (DAT_0064c6a2[_off6a2+1] << 8) |
+                   (DAT_0064c6a2[_off6a2+2] << 16) | (DAT_0064c6a2[_off6a2+3] << 24);
+    _curGold = _curGold + iVar6;
+    DAT_0064c6a2[_off6a2] = _curGold & 0xff;
+    DAT_0064c6a2[_off6a2+1] = (_curGold >> 8) & 0xff;
+    DAT_0064c6a2[_off6a2+2] = (_curGold >> 16) & 0xff;
+    DAT_0064c6a2[_off6a2+3] = (_curGold >> 24) & 0xff;
+    let _cur6a8 = s16(DAT_0064c6a8, _off6a2);
+    _cur6a8 = _cur6a8 + (iVar6 & 0xffff);
+    DAT_0064c6a8[_off6a2] = _cur6a8 & 0xff;
+    DAT_0064c6a8[_off6a2+1] = (_cur6a8 >> 8) & 0xff;
     if (DAT_006d1da0 === iVar4) {
       FUN_00569363(1);
     }
@@ -683,14 +669,14 @@ export function delete_city(param_1, param_2) {
     if ((DAT_00655b02 < 3) || (cVar1 = FUN_00421f40(), cVar1 !== 0)) {
       iVar2 = DAT_006aa760;
       DAT_006aa760 = 1;
-      iVar3 = (DAT_0064f340[param_1 * 0x58] | (DAT_0064f340[param_1 * 0x58+1] << 8)) << 16 >> 16;
-      iVar4 = (DAT_0064f342[param_1 * 0x58] | (DAT_0064f342[param_1 * 0x58+1] << 8)) << 16 >> 16;
+      iVar3 = s16(DAT_0064f340, param_1 * 0x58);
+      iVar4 = s16(DAT_0064f342, param_1 * 0x58);
       iVar5 = s8(DAT_0064f348[param_1 * 0x58]);
-      let off708 = iVar5 * 0x594;
-      let curCities = (DAT_0064c708[off708] | (DAT_0064c708[off708+1] << 8)) << 16 >> 16;
-      curCities = curCities + -1;
-      DAT_0064c708[off708] = curCities & 0xff;
-      DAT_0064c708[off708+1] = (curCities >> 8) & 0xff;
+      let _off708 = iVar5 * 0x594;
+      let _curCities = s16(DAT_0064c708, _off708);
+      _curCities = _curCities + -1;
+      DAT_0064c708[_off708] = _curCities & 0xff;
+      DAT_0064c708[_off708+1] = (_curCities >> 8) & 0xff;
 
       // Main unit reassignment loop
       let _done = false;
@@ -715,9 +701,7 @@ export function delete_city(param_1, param_2) {
                   DAT_0064f394[local_10 * 0x58+2] !== 0 || DAT_0064f394[local_10 * 0x58+3] !== 0) {
                 local_30 = s8(DAT_0064f37a[local_10 * 0x58]);
                 while (local_30 = local_30 + -1, -1 < local_30) {
-                  let trP = (DAT_0064f384[local_10 * 0x58 + local_30 * 2] |
-                             (DAT_0064f384[local_10 * 0x58 + local_30 * 2 + 1] << 8)) << 16 >> 16;
-                  if (trP === param_1) {
+                  if (s16(DAT_0064f384, local_10 * 0x58 + local_30 * 2) === param_1) {
                     FUN_00440325(local_10, local_30);
                   }
                 }
@@ -725,8 +709,7 @@ export function delete_city(param_1, param_2) {
             }
             // Remove wonder references
             for (local_10 = 0; local_10 < 0x1c; local_10 = local_10 + 1) {
-              let wRef = (DAT_00655be6[local_10 * 2] | (DAT_00655be6[local_10 * 2 + 1] << 8)) << 16 >> 16;
-              if (wRef === param_1) {
+              if (s16(DAT_00655be6, local_10 * 2) === param_1) {
                 DAT_00655be6[local_10 * 2] = 0xfe;
                 DAT_00655be6[local_10 * 2 + 1] = 0xff;
               }
@@ -797,8 +780,8 @@ export function delete_city(param_1, param_2) {
           // Check if unit can be reassigned to another city
           if (((DAT_00655b0b & (1 << (DAT_006560f7[local_30 * 0x20] & 0x1f))) !== 0) ||
               (uVar6 = FUN_0043cf76(
-                (DAT_006560f0[local_30 * 0x20] | (DAT_006560f0[local_30 * 0x20+1] << 8)) << 16 >> 16,
-                (DAT_006560f2[local_30 * 0x20] | (DAT_006560f2[local_30 * 0x20+1] << 8)) << 16 >> 16),
+                s16(DAT_006560f0, local_30 * 0x20),
+                s16(DAT_006560f2, local_30 * 0x20)),
               uVar6 < 0) || (param_1 === uVar6)) {
             // Kill the unit
             FUN_005b6042(local_30, 1);
@@ -932,7 +915,7 @@ export function FUN_00441b11(param_1, param_2) {
     if (s8(DAT_0064f379[param_1 * 0x58]) < -0x26) {
       if (-0x27 < s8(cVar1)) {
         let off35c = param_1 * 0x58;
-        let curShields = (DAT_0064f35c[off35c] | (DAT_0064f35c[off35c+1] << 8)) << 16 >> 16;
+        let curShields = s16(DAT_0064f35c, off35c);
         curShields = (curShields / 2) | 0;
         DAT_0064f35c[off35c] = curShields & 0xff;
         DAT_0064f35c[off35c+1] = (curShields >> 8) & 0xff;
@@ -952,7 +935,7 @@ export function FUN_00441b11(param_1, param_2) {
       FUN_0040ff60(1, uVar5);
       if (local_2c === 0) {
         if ((s8(cVar1) < -0x26) &&
-           ((local_330 === 0 || ((DAT_00655be6[local_324 * 2] | (DAT_00655be6[local_324 * 2+1] << 8)) << 16 >> 16 !== -1)))) {
+           ((local_330 === 0 || (s16(DAT_00655be6, local_324 * 2) !== -1)))) {
           if (local_330 !== 0) {
             for (local_1c = 0; local_1c < DAT_00655b18; local_1c = local_1c + 1) {
               if (((DAT_0064f394[local_1c * 0x58] !== 0 || DAT_0064f394[local_1c * 0x58+1] !== 0 ||
@@ -993,7 +976,7 @@ export function FUN_00441b11(param_1, param_2) {
       }
       // Wonder completion check
       let off35c2 = param_1 * 0x58;
-      let shields35c = (DAT_0064f35c[off35c2] | (DAT_0064f35c[off35c2+1] << 8)) << 16 >> 16;
+      let shields35c = s16(DAT_0064f35c, off35c2);
       if ((shields35c === 0) &&
          (local_18 = ((local_328 + -0x27) / 7) | 0, DAT_0064c6b7[iVar4 * 0x594 + local_18] === 0)) {
         local_20 = 1;
@@ -1025,7 +1008,7 @@ export function FUN_00441b11(param_1, param_2) {
         local_328 = s8(cVar1);
       }
       local_28 = local_328 + -0x27;
-      let wonderCity = (DAT_00655b98[local_328 * 2] | (DAT_00655b98[local_328 * 2+1] << 8)) << 16 >> 16;
+      let wonderCity = s16(DAT_00655b98, local_328 * 2);
       if (((wonderCity !== param_1) &&
           (iVar6 = FUN_00453e51(iVar4, local_328 + -0x27), iVar6 === 0)) &&
          (((DAT_0063f580[iVar4 * 0x1c + local_28] & 2) === 0 &&
@@ -1087,8 +1070,8 @@ export function FUN_00442541(param_1, param_2) {
           (s8(DAT_0064f348[local_8 * 0x58]) === (param_1 & 0xff))) &&
          ((param_2 < 0 ||
           (iVar1 = FUN_005b8a81(
-            (DAT_0064f340[local_8 * 0x58] | (DAT_0064f340[local_8 * 0x58+1] << 8)) << 16 >> 16,
-            (DAT_0064f342[local_8 * 0x58] | (DAT_0064f342[local_8 * 0x58+1] << 8)) << 16 >> 16),
+            s16(DAT_0064f340, local_8 * 0x58),
+            s16(DAT_0064f342, local_8 * 0x58)),
           iVar1 === param_2)))) {
         FUN_00441b11(local_8, 99);
       }
@@ -1110,11 +1093,8 @@ export function FUN_0044263f(param_1, param_2) {
 
   if (param_2 < 0x3f) {
     for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-      uVar1 = FUN_005ae052(
-        ((DAT_0064f340[param_1 * 0x58] | (DAT_0064f340[param_1 * 0x58+1] << 8)) << 16 >> 16) +
-        s8(DAT_00628350[local_8]));
-      iVar2 = ((DAT_0064f342[param_1 * 0x58] | (DAT_0064f342[param_1 * 0x58+1] << 8)) << 16 >> 16) +
-              s8(DAT_00628360[local_8]);
+      uVar1 = FUN_005ae052(s16(DAT_0064f340, param_1 * 0x58) + s8(DAT_00628350[local_8]));
+      iVar2 = s16(DAT_0064f342, param_1 * 0x58) + s8(DAT_00628360[local_8]);
       iVar3 = FUN_004087c0(uVar1, iVar2);
       if (((iVar3 !== 0) && (iVar3 = FUN_005b89e4(uVar1, iVar2), iVar3 !== 0)) &&
          (iVar2 = FUN_005b8a81(uVar1, iVar2), iVar2 === param_2)) {
@@ -1144,15 +1124,15 @@ export function FUN_0044272d(param_1, param_2_ref, param_3_ref) {
 
   local_8 = 0;
   local_20 = 0;
-  sVar1 = (DAT_0064f340[param_1 * 0x58] | (DAT_0064f340[param_1 * 0x58+1] << 8)) << 16 >> 16;
-  sVar2 = (DAT_0064f342[param_1 * 0x58] | (DAT_0064f342[param_1 * 0x58+1] << 8)) << 16 >> 16;
+  sVar1 = s16(DAT_0064f340, param_1 * 0x58);
+  sVar2 = s16(DAT_0064f342, param_1 * 0x58);
   for (local_c = 0; local_c < 8; local_c = local_c + 1) {
     uVar3 = FUN_005ae052(s8(DAT_00628350[local_c]) + sVar1);
     iVar4 = s8(DAT_00628360[local_c]) + sVar2;
     iVar5 = FUN_004087c0(uVar3, iVar4);
     if ((iVar5 !== 0) && (iVar5 = FUN_005b89e4(uVar3, iVar4), iVar5 !== 0)) {
       local_20 = FUN_005b8a81(uVar3, iVar4);
-      local_24 = (DAT_00666134[local_20 * 0x10] | (DAT_00666134[local_20 * 0x10 + 1] << 8)) << 16 >> 16;
+      local_24 = s16(DAT_00666134, local_20 * 0x10);
       if (0x3e < local_20) {
         local_24 = 1;
       }
@@ -1184,8 +1164,8 @@ export function FUN_00442885(param_1, param_2) {
   let iVar5;
   let local_8;
 
-  sVar1 = (DAT_0064f340[param_1 * 0x58] | (DAT_0064f340[param_1 * 0x58+1] << 8)) << 16 >> 16;
-  sVar2 = (DAT_0064f342[param_1 * 0x58] | (DAT_0064f342[param_1 * 0x58+1] << 8)) << 16 >> 16;
+  sVar1 = s16(DAT_0064f340, param_1 * 0x58);
+  sVar2 = s16(DAT_0064f342, param_1 * 0x58);
   iVar3 = FUN_005b8a81(sVar1, sVar2);
   if (iVar3 === param_2) {
     uVar4 = 1;
@@ -1226,11 +1206,8 @@ export function FUN_004429af(param_1, param_2) {
     if (7 < local_8) {
       return 0;
     }
-    uVar1 = FUN_005ae052(
-      ((DAT_0064f340[param_1 * 0x58] | (DAT_0064f340[param_1 * 0x58+1] << 8)) << 16 >> 16) +
-      s8(DAT_00628350[local_8]));
-    iVar2 = ((DAT_0064f342[param_1 * 0x58] | (DAT_0064f342[param_1 * 0x58+1] << 8)) << 16 >> 16) +
-            s8(DAT_00628360[local_8]);
+    uVar1 = FUN_005ae052(s16(DAT_0064f340, param_1 * 0x58) + s8(DAT_00628350[local_8]));
+    iVar2 = s16(DAT_0064f342, param_1 * 0x58) + s8(DAT_00628360[local_8]);
     iVar3 = FUN_004087c0(uVar1, iVar2);
     if ((((iVar3 !== 0) && (iVar3 = FUN_005b89e4(uVar1, iVar2), iVar3 !== 0)) &&
         (iVar2 = FUN_005b8a81(uVar1, iVar2), iVar2 !== local_c)) &&

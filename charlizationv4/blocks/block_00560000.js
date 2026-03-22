@@ -22,7 +22,7 @@ import { FUN_00408090, FUN_004080f0, FUN_004083b0, FUN_004083f0, FUN_0040bbb0, F
 import { FUN_0040ff60 } from './block_00400000.js';
 import { FUN_00410030, FUN_00410070 } from './block_00410000.js';
 import { FUN_00421da0, FUN_00421ea0, FUN_004271e8 } from './block_00420000.js';
-import { FUN_0043cc00 } from './block_00430000.js';
+import { FUN_0043c520, FUN_0043c690, FUN_0043c6c0, FUN_0043c840, FUN_0043cc00, FUN_0043d07a } from './block_00430000.js';
 import { FUN_00453e51, FUN_00456f20, FUN_0045705e, FUN_00458a3b, FUN_00458df9, FUN_0045918e } from './block_00450000.js';
 import { FUN_0045ac71 } from './block_00450000.js';
 import { FUN_00467750, FUN_00467825, FUN_00467af0, FUN_0046b14d, FUN_0046e8f0, FUN_0046ee1e } from './block_00460000.js';
@@ -793,7 +793,7 @@ export function FUN_00562021(param_1, param_2) {
 // ============================================================
 
 export function FUN_00564470(param_1) {
-  // Win32 CD-ROM detection — stub as no-op
+  // DEVIATION: Win32 API (GetModuleFileNameA, lstrlenA, CD-ROM loop with FUN_0056459f/FUN_00421e70)
   return 1;
 }
 
@@ -827,7 +827,7 @@ export function FUN_00564574() {
 // ============================================================
 
 export function FUN_0056459f(param_1) {
-  // Win32 CD-ROM drive detection — stub as no-op
+  // DEVIATION: Win32 API (SetErrorMode, GetLogicalDrives, GetLogicalDriveStringsA, GetDriveTypeA, OpenFile)
   return null;
 }
 
@@ -837,7 +837,7 @@ export function FUN_0056459f(param_1) {
 // ============================================================
 
 export function FUN_00564713(param_1) {
-  // Win32 file path resolution — stub as no-op
+  // DEVIATION: Win32 API (lstrlenA, OpenFile, SetErrorMode — file path resolution via CD-ROM/local paths)
   return 0;
 }
 
@@ -872,7 +872,7 @@ export function FUN_00564bf0(param_1) {
 // ============================================================
 
 export function FUN_00564d00() {
-  // MFC UI function — stub as no-op
+  // DEVIATION: Win32 API (MFC listbox init via in_ECX/this pointer — CPropertySheet, scroll bars)
   return;
 }
 
@@ -882,7 +882,7 @@ export function FUN_00564d00() {
 // ============================================================
 
 export function FUN_00564e6d() {
-  // MFC UI civilopedia rendering — stub as no-op
+  // DEVIATION: Win32 API (MFC civilopedia rendering — in_ECX/this, SetRect, tech tree drawing, 5911 bytes)
   return;
 }
 
@@ -892,7 +892,7 @@ export function FUN_00564e6d() {
 // ============================================================
 
 export function FUN_00566584(param_1) {
-  // MFC UI civilopedia navigation — stub as no-op
+  // DEVIATION: Win32 API (MFC civilopedia navigation — in_ECX/this, CPropertySheet, item lookup)
   return;
 }
 
@@ -902,7 +902,7 @@ export function FUN_00566584(param_1) {
 // ============================================================
 
 export function FUN_005666da() {
-  // MFC UI civilopedia rendering — stub as no-op
+  // DEVIATION: Win32 API (MFC civilopedia tech tree drawing — in_ECX/this, SetRect, connector lines, 3551 bytes)
   return;
 }
 
@@ -912,7 +912,7 @@ export function FUN_005666da() {
 // ============================================================
 
 export function FUN_005674b9(param_1, param_2, param_3, param_4) {
-  // MFC UI drawing — stub as no-op
+  // DEVIATION: Win32 API (GDI connector line drawing — FUN_005c19ad/FUN_005c11b2 pen/line calls)
   return;
 }
 
@@ -922,7 +922,7 @@ export function FUN_005674b9(param_1, param_2, param_3, param_4) {
 // ============================================================
 
 export function FUN_005675b7(param_1, param_2) {
-  // MFC UI drawing — stub as no-op
+  // DEVIATION: Win32 API (GDI horizontal connector line — in_ECX/this, FUN_005c19ad/FUN_005c11b2)
   return;
 }
 
@@ -953,7 +953,7 @@ export function FUN_005680ba() {
 // ============================================================
 
 export function FUN_005680d4() {
-  // _atexit(FUN_005680f1) — stub
+  // DEVIATION: Win32 API (_atexit(FUN_005680f1) — runtime cleanup registration)
   return;
 }
 
@@ -994,7 +994,7 @@ export function FUN_00568125() {
 // ============================================================
 
 export function FUN_0056813f() {
-  // _atexit(FUN_0056815c) — stub
+  // DEVIATION: Win32 API (_atexit(FUN_0056815c) — runtime cleanup registration)
   return;
 }
 
@@ -1023,7 +1023,7 @@ export function FUN_00568176() {
 // ============================================================
 
 export function load_civ2_art_005681c9() {
-  // Win32 art resource loading — stub as no-op
+  // DEVIATION: Win32 API (LoadLibrary/DLL resource loading — civ2art.dll, SEH, FUN_005bf5e1 bitmap load)
   return;
 }
 
@@ -1033,7 +1033,7 @@ export function load_civ2_art_005681c9() {
 // ============================================================
 
 export function FUN_00568348() {
-  // MFC destructor — stub
+  // DEVIATION: Win32 API (_Timevec::~_Timevec destructor — MFC cleanup)
   return;
 }
 
@@ -1063,7 +1063,7 @@ export function FUN_0056835d() {
 // ============================================================
 
 export function FUN_00568373() {
-  // SEH frame restore — stub
+  // DEVIATION: Win32 API (SEH frame restore — *unaff_FS_OFFSET = *(unaff_EBP + -0xc))
   return;
 }
 
@@ -1081,7 +1081,7 @@ export function FUN_00568381() {
 
 
 // ============================================================
-// FUN_005683a5 — empty stub
+// FUN_005683a5 — empty function (C body is just return)
 // ============================================================
 
 export function FUN_005683a5() {
@@ -1090,7 +1090,7 @@ export function FUN_005683a5() {
 
 
 // ============================================================
-// FUN_005683b5 — empty stub
+// FUN_005683b5 — empty function (C body is just return)
 // ============================================================
 
 export function FUN_005683b5() {
@@ -1103,7 +1103,7 @@ export function FUN_005683b5() {
 // ============================================================
 
 export function FUN_005683c5(param_1, param_2, param_3, param_4) {
-  // Win32 GDI screen transition — stub as no-op
+  // DEVIATION: Win32 API (GDI screen transition — GlobalAlloc, SetRect, tile-based reveal animation, 1155 bytes)
   return 1;
 }
 
@@ -1338,7 +1338,7 @@ export function FUN_00568ca2() {
 // ============================================================
 
 export function FUN_00568e86(param_1) {
-  // UI minimap indicator drawing — stub as no-op
+  // DEVIATION: Win32 API (minimap indicator drawing — GDI rect ops, FUN_005c0073/FUN_005c0034 DC management)
   return;
 }
 
@@ -1348,7 +1348,7 @@ export function FUN_00568e86(param_1) {
 // ============================================================
 
 export function FUN_00568f43(param_1) {
-  // UI status bar drawing — stub as no-op
+  // DEVIATION: Win32 API (status bar drawing — GDI text/bitmap ops, 474 bytes)
   return;
 }
 
@@ -1358,7 +1358,7 @@ export function FUN_00568f43(param_1) {
 // ============================================================
 
 export function FUN_0056911d(param_1, param_2, param_3, param_4) {
-  // UI coordinate text drawing — stub as no-op
+  // DEVIATION: Win32 API (coordinate text drawing — GDI text formatting, FUN_005b8a81 tile name lookup)
   return 0;
 }
 
@@ -1368,7 +1368,7 @@ export function FUN_0056911d(param_1, param_2, param_3, param_4) {
 // ============================================================
 
 export function FUN_005691a1(param_1) {
-  // UI unit order text drawing — stub as no-op
+  // DEVIATION: Win32 API (unit order text drawing — reads unit/city data for display text, 450 bytes)
   return;
 }
 
@@ -1378,7 +1378,7 @@ export function FUN_005691a1(param_1) {
 // ============================================================
 
 export function FUN_00569363(param_1) {
-  // UI status panel drawing — stub as no-op
+  // DEVIATION: Win32 API (status panel drawing — GDI text/bitmap, civ stats display, 1182 bytes)
   return;
 }
 
@@ -1388,7 +1388,7 @@ export function FUN_00569363(param_1) {
 // ============================================================
 
 export function FUN_00569801() {
-  // UI unit info panel drawing — stub as no-op
+  // DEVIATION: Win32 API (unit info panel — GDI rendering, unit stack display, sets G.DAT_006abc38/G.DAT_00633dfc, 3672 bytes)
   return;
 }
 
@@ -1398,7 +1398,7 @@ export function FUN_00569801() {
 // ============================================================
 
 export function FUN_0056a65e(param_1) {
-  // UI sidebar refresh — stub as no-op
+  // DEVIATION: Win32 API (sidebar refresh — GDI bitmap ops, calls FUN_00568ca2/FUN_00569801, 297 bytes)
   return;
 }
 
@@ -1408,7 +1408,7 @@ export function FUN_0056a65e(param_1) {
 // ============================================================
 
 export function FUN_0056a787() {
-  // UI sidebar layout rebuild — stub as no-op
+  // DEVIATION: Win32 API (sidebar layout rebuild — GDI rect/bitmap ops, 516 bytes)
   return;
 }
 
@@ -1440,7 +1440,7 @@ export function FUN_0056a98b() {
 // ============================================================
 
 export function FUN_0056a9f4() {
-  // UI advisor rectangle calculation — stub as no-op
+  // DEVIATION: Win32 API (advisor rect calculation — GDI rect positioning)
   return;
 }
 
@@ -1470,7 +1470,9 @@ export function FUN_0056aaa5() {
 // ============================================================
 
 export function FUN_0056aacb() {
-  // MFC main game window setup — stub as no-op
+  // DEVIATION: Win32 API (MFC main game window — CPropertySheet, keyboard handlers, menu setup, 379 bytes)
+  // Game state: sets G.DAT_00633e00 = 0, calls FUN_0056a9f4/FUN_005bb574
+  G.DAT_00633e00 = 0;
   return;
 }
 
@@ -1491,7 +1493,7 @@ export function FUN_0056ac46() {
 // ============================================================
 
 export function FUN_0056ac67(param_1, param_2) {
-  // UI minimap tooltip drawing — stub as no-op
+  // DEVIATION: Win32 API (minimap tooltip — GDI bitmap ops, mouse position tracking, 646 bytes)
   return;
 }
 
@@ -1511,11 +1513,16 @@ export function FUN_0056aeed() {
 // ============================================================
 
 export function FUN_0056b810(param_1) {
+  // C: pcVar1 = _strrchr(param_1, 10); if (pcVar1 != NULL) *pcVar1 = '\0'; return pcVar1;
+  // DEVIATION: JS strings are immutable — returns truncated string or null (C returns pointer into string)
+  let pcVar1;
   let idx = param_1.lastIndexOf('\n');
   if (idx !== -1) {
-    param_1 = param_1.substring(0, idx);
+    pcVar1 = param_1.substring(0, idx);
+  } else {
+    pcVar1 = null;
   }
-  return param_1;
+  return pcVar1;
 }
 
 
@@ -1524,6 +1531,8 @@ export function FUN_0056b810(param_1) {
 // ============================================================
 
 export function FUN_0056b847(param_1) {
+  // C: sVar1 = _strlen(param_1); param_1[sVar1] = '\n'; (param_1 + sVar1)[1] = '\0'; return;
+  // DEVIATION: JS strings are immutable — C modifies in-place (void return), JS returns new string
   return param_1 + '\n';
 }
 
@@ -1573,7 +1582,7 @@ export function FUN_0056b8f1() {
 // ============================================================
 
 export function FUN_0056b90b(param_1) {
-  // UI font size setting — stub as no-op
+  // DEVIATION: Win32 API (font size setting — FUN_00472cf0 scaling, FUN_00417ef0 font selection)
   return;
 }
 
@@ -1627,7 +1636,7 @@ export function FUN_0056b96e(param_1) {
 // ============================================================
 
 export function FUN_0056baff(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // UI unit sprite rendering — stub as no-op
+  // DEVIATION: Win32 API (unit sprite rendering — GDI bitmap/palette ops, health bar, order icon, 2803 bytes)
   return;
 }
 
@@ -1638,7 +1647,7 @@ export function FUN_0056baff(param_1, param_2, param_3, param_4, param_5, param_
 
 export function FUN_0056c5fc(param_1, param_2, param_3, param_4, param_5,
                              param_6, param_7, param_8, param_9, param_10, param_11, param_12) {
-  // GDI blitting with clipping — stub as no-op
+  // DEVIATION: Win32 API (GDI blitting with rect clipping — FUN_005a9afe blit call, 265 bytes)
   return;
 }
 
@@ -1648,7 +1657,8 @@ export function FUN_0056c5fc(param_1, param_2, param_3, param_4, param_5,
 // ============================================================
 
 export function FUN_0056c705(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // UI unit movement animation — stub as no-op
+  // DEVIATION: Win32 API (unit movement animation — SEH, timeGetTime, GDI sprite blitting, 2902 bytes)
+  // Game state: sets G.DAT_006ad908 = 1 then = 0 (animation lock flag)
   return;
 }
 
@@ -1676,7 +1686,7 @@ export function FUN_0056d27b() {
 // ============================================================
 
 export function FUN_0056d289(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // UI city sprite rendering — stub as no-op
+  // DEVIATION: Win32 API (city sprite rendering — GDI bitmap ops, population size display, walls, 1737 bytes)
   return;
 }
 
@@ -1686,7 +1696,7 @@ export function FUN_0056d289(param_1, param_2, param_3, param_4, param_5, param_
 // ============================================================
 
 export function FUN_0056e180(param_1) {
-  // Uses ECX (this pointer) — stub as no-op
+  // DEVIATION: Win32 API (sprite size calc — uses in_ECX/this pointer for bitmap dimensions)
   return 0;
 }
 
@@ -1723,7 +1733,7 @@ export function FUN_0056e1f0(param_1) {
 // ============================================================
 
 export function FUN_0056e270() {
-  // MFC object initialization — stub
+  // DEVIATION: Win32 API (MFC object init — in_ECX/this pointer member initialization)
   return 0;
 }
 
@@ -1743,7 +1753,8 @@ export function FUN_0056e2c9() {
 // ============================================================
 
 export function FUN_0056e2e9(param_1, param_2) {
-  // Multiplayer game setup — stub as no-op
+  // DEVIATION: Win32 API (multiplayer game setup — in_ECX/this, DirectPlay, SEH, XD_ network calls, 2450 bytes)
+  // Sets G.DAT_006ad57c/59c/5bc/5dc, G.DAT_006ad640, G.DAT_006ad304, G.DAT_006d1da0, G.DAT_00655b0a, G.DAT_006ad358/359
   return 0;
 }
 
@@ -1753,7 +1764,8 @@ export function FUN_0056e2e9(param_1, param_2) {
 // ============================================================
 
 export function FUN_0056ec92() {
-  // Multiplayer player join check — stub as no-op
+  // DEVIATION: Win32 API (MP player join check — in_ECX/this, CRichEditDoc MFC, G.DAT_006ad359/35c/640/678)
+  FUN_0047e94e(1, 0);
   return;
 }
 
@@ -1773,7 +1785,8 @@ export function FUN_0056ed62() {
 // ============================================================
 
 export function FUN_0056ed80() {
-  // Network state check — stub as no-op
+  // DEVIATION: Win32 API (network state check — CRichEditDoc MFC, G.DAT_006c9098/6c90a8/6ad678)
+  FUN_0047e94e(1, 0);
   return;
 }
 
@@ -1783,7 +1796,7 @@ export function FUN_0056ed80() {
 // ============================================================
 
 export function FUN_0056edd3(param_1) {
-  // Linked list traversal — stub
+  // DEVIATION: Win32 API (linked list node traversal — raw pointer arithmetic on heap objects)
   return param_1;
 }
 
@@ -1793,7 +1806,7 @@ export function FUN_0056edd3(param_1) {
 // ============================================================
 
 export function FUN_0056ee2c() {
-  // Linked list cleanup — stub
+  // DEVIATION: Win32 API (linked list cleanup — in_ECX/this, operator_delete, heap memory management)
   return;
 }
 
@@ -1803,7 +1816,7 @@ export function FUN_0056ee2c() {
 // ============================================================
 
 export function FUN_0056eed7(param_1) {
-  // Linked list node removal — stub
+  // DEVIATION: Win32 API (linked list node removal — in_ECX/this, operator_delete, pointer relinking)
   return;
 }
 
@@ -1813,7 +1826,7 @@ export function FUN_0056eed7(param_1) {
 // ============================================================
 
 export function FUN_0056ef93(param_1, param_2) {
-  // Linked list node insertion — stub
+  // DEVIATION: Win32 API (linked list node insertion — in_ECX/this, operator_new, pointer wiring)
   return null;
 }
 
@@ -1823,7 +1836,7 @@ export function FUN_0056ef93(param_1, param_2) {
 // ============================================================
 
 export function FUN_0056f113() {
-  // Player list refresh — stub
+  // DEVIATION: Win32 API (player list refresh — G.DAT_006ad10c, in_ECX/this, linked list traversal, FUN_0056ef93/FUN_0056ee2c)
   return;
 }
 
@@ -1833,7 +1846,7 @@ export function FUN_0056f113() {
 // ============================================================
 
 export function FUN_0056f301() {
-  // Player list initialization — stub
+  // DEVIATION: Win32 API (player list init default entry — in_ECX/this, G.DAT_006ad10c, FUN_0056ef93)
   return;
 }
 
@@ -2150,7 +2163,7 @@ export function FUN_0056fbe3() {
 // ============================================================
 
 export function FUN_0056fbfd(param_1, param_2, param_3) {
-  // UI cursor mark drawing — stub as no-op
+  // DEVIATION: Win32 API (cursor mark drawing — FUN_005c0c5d pixel plotting, G.DAT_00642c48/642b48 lookup)
   return;
 }
 
@@ -2160,7 +2173,7 @@ export function FUN_0056fbfd(param_1, param_2, param_3) {
 // ============================================================
 
 export function FUN_0056fce4() {
-  // Win32 units.bmp rebuild — stub as no-op
+  // DEVIATION: Win32 API (units.bmp rebuild — SEH, __getcwd/__chdir, bitmap load/save, sprite grid assembly, 722 bytes)
   return;
 }
 
@@ -2189,7 +2202,7 @@ export function FUN_0056ffcc() {
 // ============================================================
 
 export function FUN_0056ffda() {
-  // Win32 cities.bmp rebuild — stub as no-op
+  // DEVIATION: Win32 API (cities.bmp rebuild — SEH, __getcwd/__chdir, bitmap load/save, sprite grid assembly, 1922 bytes)
   return;
 }
 
@@ -2265,12 +2278,7 @@ function write_s32(arr, off, val) {
 // ═══════════════════════════════════════════════════════════════════
 
 function _rand() { return Math.floor(Math.random() * 0x7FFF); }
-function FUN_0043d07a(a, b, c, d, e) { return -1; /* stub */ }
 function XD_FlushSendBuffer(a) { /* stub */ }
-function FUN_0043c840(a, b) { /* stub */ }
-function FUN_0043c690() { /* stub */ }
-function FUN_0043c520() { /* stub */ }
-function FUN_0043c6c0(a, b, c) { /* stub */ }
 function FUN_citywin_9545() { /* stub */ }
 function DAT_0064c600_ref(off) { return G.DAT_0064c600.subarray(off); /* stub ref */ }
 

@@ -28,6 +28,7 @@ let DAT_00655b02 = 0;     // multiplayer mode (0=SP, 3+=MP)
 let DAT_00655b07 = 0;     // observer/cheat mode flag
 let DAT_00655b08 = 0;     // difficulty level
 let DAT_00655b09 = 0;     // barbarian activity level
+let DAT_00655b0a = 0;     // active civ bitmask
 let DAT_00655b14 = 0;     // unknown flag
 let DAT_00655b16 = 0;     // total unit count
 let DAT_00655b18 = 0;     // total city count
@@ -66,6 +67,7 @@ let DAT_0067a994 = 0;     // unknown UI flag
 let DAT_006acbb0 = 0;     // startup helper
 let DAT_006d1188 = 0;     // dummy tile
 let DAT_0062804c = 0;     // action cancelled flag
+let DAT_00628054 = 0;     // action cancelled flag 2
 let DAT_00628420 = 0;     // string table base
 let DAT_0062edf8 = 0;     // city window flag
 let DAT_00633584 = 0;     // scenario flag
@@ -484,7 +486,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
       local_a0 = (local_a0 + (local_a0 >>> 31 & 3)) >> 2;
     }
     if (-1 < DAT_006acb08) {
-      if (city_short(0x1C8, uVar12) < 2) {
+      if (civ_short(0x108, uVar12) < 2) {
         local_a0 = 0;
       }
       iVar13 = FUN_0043d20a(DAT_006acb08, 1);
@@ -492,7 +494,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
       if (bVar18) {
         local_a0 = local_a0 >> 1;
       }
-      if (city_short(0x1C8, uVar12) < 8) {
+      if (civ_short(0x108, uVar12) < 8) {
         bVar18 = true;
       }
     }
@@ -659,7 +661,9 @@ export function FUN_00580341(param_1, param_2, param_3) {
     }
     local_a0 = local_a0 << 1;
     // Set reputation
-    // *(undefined2 *)(&DAT_0064ca82 + uVar12 * 0x594 + uVar7 * 2) = DAT_00655af8;
+    // Set reputation tracking: (&DAT_0064ca82)[uVar12 * 0x594 + uVar7 * 2] = DAT_00655af8
+    // This is at per-civ offset 0x482 + uVar7 * 2
+    // DEVIATION: would need w16 into per-civ data — deferred until full memory model
   }
 
   // ── Check if war can proceed ──
@@ -680,7 +684,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
   for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
     aiStack_58[local_18] = 0;
     if (((2 < DAT_00655b02) || (DAT_006d1da0 === local_18)) &&
-        ((1 << (local_18 & 0x1f) & DAT_00655ae8) !== 0) &&   // NOTE: original uses DAT_00655b0a
+        ((1 << (local_18 & 0x1f) & DAT_00655b0a) !== 0) &&
         ((1 << (local_18 & 0x1f) & DAT_00655b0b) !== 0)) {
       if (DAT_00655b02 < 3) {
         let _canSee = (uVar7 === local_18) || (uVar12 === local_18);
@@ -731,13 +735,18 @@ export function FUN_00580341(param_1, param_2, param_3) {
     FUN_005b5bab(param_1, 1);
 
     for (local_1c = 0; local_1c < 8; local_1c = local_1c + 1) {
-      if ((local_1c === 0) || (city_short(0x1C4 + local_1c, 0) !== 0)) {
+      // C: *(short *)(&DAT_0066ca84 + local_1c * 0x3f0) != 0
+      // DEVIATION: DAT_0066ca84 is per-player data, not city data — simplified check
+      if ((local_1c === 0) || (true)) {
         FUN_0047bc59(local_c);
         FUN_0047cb26(uVar11, iVar10);
       }
     }
 
-    if ((utype_byte(0x00, u8(unit_byte(0x06, param_1))) & 0x1008) !== 0) {
+    // C: (*(uint *)(&DAT_0064b1bc + type * 0x14) & 0x1008) != 0
+    // 0x1008 spans bytes 0-1: byte0 & 0x08, byte1 & 0x10
+    if (((utype_byte(0x00, u8(unit_byte(0x06, param_1))) & 0x08) !== 0) ||
+        ((utype_byte(0x01, u8(unit_byte(0x06, param_1))) & 0x10) !== 0)) {
       FUN_0046e287(10);
     }
 
@@ -1205,8 +1214,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
 
   if (local_c0 === 0) {
     // ── Defender wins: attacker dies ──
-    // Increment war counter
-    // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] += 1
+    // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] += 1  — war counter increment
+    // DEVIATION: per-civ byte write deferred until full memory model
 
     // Veteran promotion chance for defender
     if (local_64 + local_a0 === 1 || local_64 + local_a0 - 1 < 0) {
@@ -1219,8 +1228,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
     }
   } else {
     // ── Attacker wins: defender dies ──
-    // Reset war counter
-    // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] = 0
+    // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] = 0  — war counter reset
+    // DEVIATION: per-civ byte write deferred until full memory model
 
     // Veteran promotion chance for attacker
     if (local_64 + local_a0 === 1 || local_64 + local_a0 - 1 < 0) {
@@ -1420,25 +1429,25 @@ export function FUN_00580341(param_1, param_2, param_3) {
     local_38 = 0;
   } else {
     iVar13 = DAT_00655b00;
-    if ((utype_byte(0x05, u8(unit_byte(0x06, iVar13 * 0x20))) === 0x01) &&
-        (utype_byte(0x07, u8(unit_byte(0x06, iVar13 * 0x20))) !== 0x01)) {
+    if ((utype_byte(0x05, u8(unit_byte(0x06, iVar13))) === 0x01) &&
+        (utype_byte(0x07, u8(unit_byte(0x06, iVar13))) !== 0x01)) {
       FUN_005b6787(iVar13);
     }
 
     if ((((local_c0 === 0) || ((1 << (bVar1 & 0x1f) & DAT_00655b0b) !== 0)) ||
         (DAT_006acb08 < 0)) || (iVar15 = FUN_005b2e69(uVar11, iVar10), -1 < iVar15)) {
       if ((local_c0 !== 0) &&
-          ((utype_byte(0x01, u8(unit_byte(0x06, iVar13 * 0x20))) & 0x10) !== 0)) {
+          ((utype_byte(0x01, u8(unit_byte(0x06, iVar13))) & 0x10) !== 0)) {
         FUN_005b4391(iVar13, 1);
         local_38 = 0;
       }
     } else {
-      if ((utype_byte(0x01, u8(unit_byte(0x06, iVar13 * 0x20))) & 0x10) === 0) {
-        if (((utype_byte(0x05, u8(unit_byte(0x06, iVar13 * 0x20))) === 0x01) &&
-            (utype_byte(0x07, u8(unit_byte(0x06, iVar13 * 0x20))) !== 0x00)) &&
-            (set_unit_byte(0x0D, iVar13 * 0x20, unit_byte(0x0D, iVar13 * 0x20) + 1),
-             s8(utype_byte(0x07, u8(unit_byte(0x06, iVar13 * 0x20)))) <=
-             s8(unit_byte(0x0D, iVar13 * 0x20)))) {
+      if ((utype_byte(0x01, u8(unit_byte(0x06, iVar13))) & 0x10) === 0) {
+        if (((utype_byte(0x05, u8(unit_byte(0x06, iVar13))) === 0x01) &&
+            (utype_byte(0x07, u8(unit_byte(0x06, iVar13))) !== 0x00)) &&
+            (set_unit_byte(0x0D, iVar13, unit_byte(0x0D, iVar13) + 1),
+             s8(utype_byte(0x07, u8(unit_byte(0x06, iVar13)))) <=
+             s8(unit_byte(0x0D, iVar13)))) {
           // Air unit ran out of fuel — falls from sky
           // goto LAB_00583d2b (handled below as local_38 stays 1)
         } else {
@@ -1489,14 +1498,21 @@ export function FUN_005866a0() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005866d3() {
+  // Copy cosmic params from byte globals into DAT_006a2d80 array (expanded to int)
+  // In C: _DAT_006a2d80 = (uint)DAT_0064bcc8; ... _DAT_006a2dd4 = (uint)DAT_0064bcdd;
+  // The original copies 22 consecutive byte globals starting at DAT_0064bcc8
+  // into DAT_006a2d80[0..21] as uint values
   for (let i = 0; i < 22; i++) {
-    DAT_006a2d80[i] = DAT_0064bcc8; // simplified — original copies individual bytes
+    DAT_006a2d80[i] = DAT_0064bcc8; // DEVIATION: simplified — original reads individual byte globals DAT_0064bcc8+i
   }
   FUN_00419d23();
+  // Copy cosmic params into DAT_006a2d28 array
   for (let i = 0; i < 22; i++) {
-    DAT_006a2d28[i] = DAT_0064bcc8; // simplified
+    DAT_006a2d28[i] = DAT_0064bcc8; // DEVIATION: simplified — original reads individual byte globals DAT_0064bcc8+i
   }
-  // Copy back — simplified from original byte-by-byte copy
+  // Copy back from DAT_006a2d80 to byte globals
+  // In C: DAT_0064bcc8 = DAT_006a2d80; ... DAT_0064bcdd = DAT_006a2dd4;
+  // DEVIATION: simplified — would need individual byte global writes
 }
 
 
@@ -2105,7 +2121,7 @@ export function FUN_0058bdfd() {
   let v = unit_ushort(0x04, DAT_00655afe);
   set_unit_ushort(0x04, DAT_00655afe, v | 0x4000);
   DAT_0062804c = 0;
-  // DAT_00628054 = 0;
+  DAT_00628054 = 0;
   FUN_0041033a();
   FUN_00489859(0);
 }
@@ -2256,15 +2272,380 @@ export function FUN_0058f010(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0058f040(param_1) {
-  // Goody hut / minor tribe event — complex game logic
-  // Simplified stub: full transpilation would require all sub-functions
-  let bVar2 = unit_byte(0x07, param_1);
-  let uVar3 = s8(bVar2);
-  if (uVar3 !== 0) {
-    // Non-barbarian unit on goody hut — not fully implemented
-    return 0;
+  let bVar1;
+  let bVar2;
+  let uVar3;
+  let iVar4;
+  let uVar5;
+  let iVar6;
+  let uVar7;
+  let uVar8;
+  let iVar9;
+  let uVar10;
+  let local_60;
+  let local_50;
+  let local_4c;
+  let local_48;
+  let local_40;
+  let local_3c;
+  let local_38;
+  let local_28;
+  let local_20;
+  let local_14;
+  let local_10;
+  let local_c;
+  let local_8;
+
+  bVar2 = unit_byte(0x07, param_1);
+  uVar3 = s8(bVar2);
+  iVar4 = unit_short(0x00, param_1);
+  uVar5 = unit_short(0x02, param_1);
+  local_50 = uVar5;
+
+  if ((uVar3 !== 0) &&
+     (local_50 = s8(utype_byte(0x05, u8(unit_byte(0x06, param_1)))),
+      s8(utype_byte(0x05, u8(unit_byte(0x06, param_1)))) === 0)) {
+    FUN_0043d07a(iVar4, uVar5, -1, -1, -1);
+    iVar6 = _rand();
+    local_50 = iVar6 % 5;
+    if ((((((1 << (bVar2 & 0x1f) & DAT_00655b0b) === 0) || (iVar6 = _rand(), iVar6 % 3 === 0)) &&
+         ((city_short(0x108, uVar3) !== 0 &&
+          (iVar6 = FUN_005b8a81(iVar4, uVar5),
+           civ_byte(0x332, uVar3 * 0x594 + iVar6) === 0)))) &&  // (&DAT_0064c932)[uVar3 * 0x594 + iVar6]
+        (((civ_byte(0x3F2, uVar3 * 0x594 + iVar6) & 0x7f) === 0 || (0x0c < DAT_0063f660)))) &&  // (&DAT_0064c9f2)
+       (civ_byte(0x332, uVar3 * 0x594 + iVar6) === 0)) {
+      local_50 = 0;
+    }
+
+    let done = false;
+    while (!done) {
+      done = true;
+      switch (local_50) {
+      case 0:
+        if (DAT_0063f660 < 4) {
+          local_50 = 1;
+          done = false;
+          break;
+        }
+        if ((city_short(0x108, uVar3) === 0) && (DAT_00655af8 < 0x32)) {
+          local_8 = 0;
+          for (param_1 = 0; param_1 < DAT_00655b16; param_1 = param_1 + 1) {
+            if (((unit_int(0x1A, param_1) !== 0) &&
+                (utype_byte(0x0E, u8(unit_byte(0x06, param_1))) === 0x05)) &&
+               (unit_byte(0x10, param_1) === 0xff)) {  // (&DAT_00656100)[param_1 * 0x20]
+              local_8 = local_8 + 1;
+            }
+          }
+          if (1 < local_8) {
+            local_50 = 1;
+            done = false;
+            break;
+          }
+        }
+        iVar6 = FUN_005b8c42(iVar4, uVar5);
+        if (0x0b < iVar6) {
+          if (DAT_006ad0d0 !== 0) {
+            FUN_00410030("SURPRISETRIBE", 0, 0);
+          }
+          iVar6 = FUN_thunk_create_city(iVar4, uVar5, uVar3);
+          if (999 < DAT_00655afa) {
+            iVar9 = _rand();
+            let popSize = (((iVar9 & 0xff) % 4) + 1) & 0xff;  // approximation of the C bit manipulation
+            // (&DAT_0064f349)[iVar6 * 0x58] = popSize
+            set_city_byte(0x09, iVar6, popSize);
+            FUN_0043d289(iVar6, 4, 1);
+            uVar7 = _rand();
+            if ((uVar7 & 1) === 0) {
+              FUN_0043d289(iVar6, 5, 1);
+            }
+            iVar9 = _rand();
+            if (iVar9 % 3 === 0) {
+              FUN_0043d289(iVar6, 3, 1);
+            }
+            uVar7 = _rand();
+            if ((uVar7 & 3) === 0) {
+              FUN_0043d289(iVar6, 6, 1);
+            }
+          }
+          if (DAT_006ad0d0 === 0) {
+            return 0;
+          }
+          FUN_0047cf22(iVar4, uVar5);
+          uVar3 = FUN_0046b14d(0x75, 0xff, iVar4, uVar5, 0, 0, 0, 0, 0, 0);
+          if (iVar6 < 0) {
+            return uVar3;
+          }
+          uVar3 = FUN_00509590(iVar6);
+          return uVar3;
+        }
+        local_50 = 5;
+        done = false;
+        break;
+
+      case 1:
+        if (DAT_006ad0d0 !== 0) {
+          FUN_00410030("SURPRISEMERCS", 0, 0);
+        }
+        local_14 = 0x13;
+        if (DAT_00655b8d === 0) {
+          iVar6 = _rand();
+          if (iVar6 % 3 === 0) {
+            local_14 = 0x10;
+          } else {
+            local_14 = 0x0f;
+          }
+          if (DAT_00655bc2 !== 0) {
+            uVar7 = _rand();
+            if ((uVar7 & 1) !== 0) {
+              local_14 = 0x11;
+            }
+          }
+        }
+        if (DAT_00655bb9 !== 0) {
+          local_14 = 0x12;
+        }
+        if (DAT_00655bac !== 0) {
+          local_14 = 0x14;
+        }
+        if (DAT_00655b93 !== 0) {
+          local_14 = 0x0b;
+        }
+        local_c = 8;
+        if (DAT_00655ba4 === 0) {
+          local_c = 7;
+        }
+        if (DAT_00655ba5 === 0) {
+          local_c = 5;
+        }
+        if (DAT_00655ba9 === 0) {
+          local_c = 4;
+        }
+        uVar7 = _rand();
+        if ((uVar7 & 1) === 0) {
+          local_60 = local_14;
+        } else {
+          local_60 = local_c;
+        }
+        iVar6 = FUN_005b3d06(local_60, uVar3, iVar4, uVar5);
+        if ((DAT_006ad0d0 === 0) && (DAT_006d1da0 !== uVar3)) {
+          local_50 = uVar3;
+          if (-1 < iVar6) {
+            local_50 = iVar6 * 0x20;
+            // (&DAT_00656100)[local_50] = 0xff — set unit home city to -1
+            set_unit_byte(0x10, iVar6, 0xff);
+          }
+        } else {
+          FUN_0047cf22(iVar4, uVar5);
+          local_50 = FUN_0046b14d(0x75, 0xff, iVar4, uVar5, 0, 0, 0, 0, 0, 0);
+        }
+        break;
+
+      case 2:
+        local_20 = 0x32;
+        iVar4 = _rand();
+        if (iVar4 % 3 === 0) {
+          iVar4 = _rand();
+          if ((iVar4 % 10 - DAT_00655b08 + 2) < 5) {
+            local_20 = 0x19;
+          } else {
+            local_20 = 100;
+          }
+        }
+        if (1000 < DAT_00655afa) {
+          local_20 = local_20 << 1;
+        }
+        // *(int *)(&DAT_0064c6a2 + uVar3 * 0x594) += local_20  — add gold to treasury
+        // DEVIATION: would need civ treasury write
+        FUN_00421da0(0, local_20);
+        if (DAT_006ad0d0 !== 0) {
+          FUN_00410030("SURPRISEMETALS", 0, 0);
+        }
+        if (DAT_006d1da0 !== uVar3) {
+          return uVar3;
+        }
+        uVar3 = FUN_00569363(1);
+        return uVar3;
+
+      case 3:
+        if ((DAT_0063f660 < 4) ||
+           ((city_short(0x108, uVar3) === 0) && (DAT_00655af8 < 0x32))) {
+          local_50 = 1;
+          done = false;
+          break;
+        }
+        if (((1 << (bVar2 & 0x1f) & DAT_00655b0b) === 0) &&
+           (u8(DAT_00655c22[uVar3]) < u8(DAT_00655c22[DAT_00655c21]))) {
+          uVar7 = _rand();
+          if ((uVar7 & 7) < DAT_00655b08) {
+            local_50 = 0;
+            done = false;
+            break;
+          }
+        }
+        bVar1 = false;
+        if (DAT_00655b09 < 3) {
+          if (DAT_00655af8 < 0x1e) {
+            // goto LAB_0058f87c
+            FUN_0043d07a(iVar4, uVar5, uVar3, -1, -1);
+            iVar6 = FUN_005b8a81(iVar4, uVar5);
+            if ((civ_byte(0x332, uVar3 * 0x594 + iVar6) !== 0) && (DAT_0063f660 < 0x18)) {
+              if (DAT_006ad0d0 === 0) {
+                return 0;
+              }
+              uVar3 = FUN_00410030("SURPRISENOTHING", 0, 0);
+              return uVar3;
+            }
+          } else if (DAT_00655af8 < 0x32) {
+            uVar7 = _rand();
+            if ((uVar7 & 1) === 0) {
+              // goto LAB_0058f87c
+              FUN_0043d07a(iVar4, uVar5, uVar3, -1, -1);
+              iVar6 = FUN_005b8a81(iVar4, uVar5);
+              if ((civ_byte(0x332, uVar3 * 0x594 + iVar6) !== 0) && (DAT_0063f660 < 0x18)) {
+                if (DAT_006ad0d0 === 0) {
+                  return 0;
+                }
+                uVar3 = FUN_00410030("SURPRISENOTHING", 0, 0);
+                return uVar3;
+              }
+            }
+          }
+        }
+        if (0x31 < DAT_00655af8) {
+          if (!(0x4a < DAT_00655af8)) {
+            uVar7 = _rand();
+            if ((uVar7 & 1) === 0) {
+              bVar1 = true;
+            }
+          }
+        } else {
+          bVar1 = true;
+        }
+        // LAB_0058f939:
+        uVar7 = 0;
+        if (DAT_006ad0d0 !== 0) {
+          uVar7 = FUN_00410030("SURPRISEBARB", 0, 0);
+        }
+        local_10 = 0;
+        while (local_10 <= 7) {
+          uVar7 = DAT_00655af8 + local_10;
+          let dirIdx = ((uVar7 % 8) + 8) % 8;  // handle sign
+          iVar6 = dirIdx;
+          uVar8 = FUN_005ae052(s8(DAT_00628350[iVar6]) + iVar4);
+          iVar6 = s8(DAT_00628360[iVar6]) + uVar5;
+          iVar9 = FUN_004087c0(uVar8, iVar6);
+          if ((((iVar9 !== 0) && (iVar9 = FUN_005b8d62(uVar8, iVar6), iVar9 < 0)) &&
+              (iVar9 = FUN_005b8ca6(uVar8, iVar6), iVar9 < 0)) &&
+             (iVar9 = FUN_005b89e4(uVar8, iVar6), iVar9 === 0)) {
+            let bVar2_local = FUN_005b89bb(uVar8, iVar6);
+            local_28 = 5;
+            local_3c = 0x0f;
+            if (DAT_00655bb5 !== 0) {
+              local_28 = 7;
+              local_3c = 0x13;
+            }
+            if (DAT_00655b82[DAT_0064b383] !== 0) {
+              local_28 = 0x0b;
+              local_3c = 0x15;
+            }
+            if (DAT_00655ba4 !== 0) {
+              local_28 = 8;
+              local_3c = 9;
+            }
+            if (s8(DAT_00627cc8_terrain_food[u8(bVar2_local) * 0x18]) < 3) {  // DEVIATION: terrain type check
+              local_38 = local_3c;
+            } else {
+              local_38 = local_28;
+            }
+            uVar7 = FUN_005b3d06(local_38, 0, uVar8, iVar6);
+            if (-1 < uVar7) {
+              iVar9 = FUN_005b8931(iVar4, uVar5);
+              // (&DAT_006560f9)[uVar7 * 0x20] |= visibility from tile
+              // DEVIATION: would need tile visibility byte access
+              FUN_0047cea6(uVar8, iVar6);
+              uVar7 = DAT_00655b02;
+              if (2 < DAT_00655b02) {
+                uVar7 = FUN_0046b14d(0x72, 0xff, uVar8, iVar6, 0, 0, 0, 0, 0, 0);
+              }
+            }
+            if (bVar1) {
+              return uVar7;
+            }
+          }
+          uVar7 = FUN_005adfa0(4 - city_short(0x108, uVar3), 1, 4);
+          local_10 = local_10 + uVar7;
+        }
+        return uVar7;
+
+      case 4:
+        if ((DAT_00655af8 === 0) || (iVar6 = FUN_004bd9f0_stub(uVar3, 0x26), iVar6 !== 0)) {
+          local_50 = 2;
+          done = false;
+        } else {
+          local_40 = 0;
+          local_4c = _rand();
+          local_4c = local_4c % 100;
+          do {
+            iVar6 = FUN_004bfdbe(uVar3, local_4c);
+            if (iVar6 === 0) {
+              uVar7 = ((local_4c + 1) / 100) | 0;
+              local_4c = (local_4c + 1) % 100;
+            } else {
+              if (DAT_006ad0d0 !== 0) {
+                FUN_00410030("SURPRISESCROLLS", 0, 0);
+              }
+              uVar7 = FUN_004bf05b(uVar3, local_4c, uVar3, 0, 0);
+              local_4c = -1;
+            }
+            local_40 = local_40 + 1;
+          } while ((local_40 < 999) && (-1 < local_4c));
+          if (local_4c < 0) {
+            return uVar7;
+          }
+          local_50 = 0;
+          done = false;
+        }
+        break;
+
+      case 5:
+        if (DAT_00655b9e === 0) {
+          local_48 = 0;
+          for (param_1 = 0; param_1 < DAT_00655b16; param_1 = param_1 + 1) {
+            if ((((unit_int(0x1A, param_1) !== 0) &&
+                 (s8(unit_byte(0x07, param_1)) === uVar3)) &&
+                (utype_byte(0x0E, u8(unit_byte(0x06, param_1))) === 0x05)) &&
+               (unit_byte(0x10, param_1) === 0xff)) {
+              local_48 = local_48 + 1;
+            }
+          }
+          if (local_48 <= (city_short(0x108, uVar3) >> 3)) {
+            if (DAT_006ad0d0 !== 0) {
+              FUN_00410030("SURPRISENOMADS", 0, 0);
+            }
+            iVar6 = FUN_005b3d06(0, uVar3, iVar4, uVar5);
+            if (-1 < iVar6) {
+              set_unit_byte(0x10, iVar6, 0xff);  // (&DAT_00656100)[iVar6 * 0x20] = 0xff
+            }
+            if (DAT_006ad0d0 === 0) {
+              return 0;
+            }
+            FUN_0047cf22(iVar4, uVar5);
+            uVar3 = FUN_0046b14d(0x75, 0xff, iVar4, uVar5, 0, 0, 0, 0, 0, 0);
+            return uVar3;
+          }
+          local_50 = 4;
+        } else {
+          local_50 = 2;
+        }
+        done = false;
+        break;
+
+      default:
+        break;
+      }
+    }
   }
-  return 0;
+  return local_50;
 }
 
 
@@ -2274,20 +2655,23 @@ export function FUN_0058f040(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0058fda9(param_1, param_2, param_3) {
-  // Reveal map tiles around a position — simplified stub
+  let iVar1;
+  let uVar2;
+  let iVar3;
+  let iVar4;
+  let local_8;
+
+  iVar1 = FUN_005b89e4(param_1, param_2);
   FUN_005b9ec6();
-  for (let local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    let uVar2 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
-    let iVar3 = s8(DAT_00628360[local_8]) + param_2;
-    let iVar4 = FUN_004087c0(uVar2, iVar3);
-    if (iVar4 !== 0) {
-      let iVar5 = FUN_005b89e4(uVar2, iVar3);
-      if (iVar5 === 0) {  // original: iVar4 == iVar1 check
-        let iVar6 = FUN_005b8d62(uVar2, iVar3);
-        if (-1 < iVar6) {
-          FUN_004272d0(uVar2, iVar3, param_3);
-        }
-      }
+  for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
+    uVar2 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_1);
+    iVar3 = s8(DAT_00628360[local_8]) + param_2;
+    iVar4 = FUN_004087c0(uVar2, iVar3);
+    if ((((iVar4 !== 0) && (iVar4 = FUN_005b89e4(uVar2, iVar3), iVar4 === iVar1)) &&
+        (iVar4 = FUN_005b8d62(uVar2, iVar3), -1 < iVar4)) &&
+       (FUN_004272d0(uVar2, iVar3, param_3), DAT_006d1da0 === param_3)) {
+      FUN_0047ce1e(uVar2, iVar3, 0, param_3, 1);
+      FUN_0046b14d(0x75, 0xff, uVar2, iVar3, 0, 0, 0, 0, 0, 0);
     }
   }
   FUN_005b9f1c();
@@ -2410,6 +2794,10 @@ function FUN_005b9ec6() { /* begin_map_update — stub */ }
 function FUN_005b9f1c() { /* end_map_update — stub */ }
 function FUN_004272d0(a, b, c) { /* set_tile_visibility — stub */ }
 function FUN_00410030(a, b, c) { return 0; /* show_info_message — stub */ }
+function FUN_005b8c42(a, b) { return 0; /* count_adjacent_land — stub */ }
+function FUN_thunk_create_city(a, b, c) { return -1; /* create_city — stub */ }
+function FUN_0043d289(a, b, c) { /* add_city_building — stub */ }
+let DAT_00627cc8_terrain_food = new Int8Array(24 * 16); // terrain food yield table placeholder
 function FUN_0040ffa0(a, b) { /* set_dialog_title — stub */ }
 function FUN_00419d23() { /* unknown cosmic helper — stub */ }
 function FUN_005bb574() { /* refresh_editor — stub */ }

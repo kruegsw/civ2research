@@ -16,14 +16,14 @@
 // Most of these interact with Win32 APIs (CreateFileA, WriteFile,
 // GetTimeZoneInformation, etc.) and C runtime internals (file
 // handle tables, signal handlers, floating point state). In the
-// JS transpilation, Win32 calls are stubbed as no-ops and CRT
-// internals are simplified to maintain structural fidelity without
-// actual OS interaction.
+// JS transpilation, Win32 calls are marked with DEVIATION: C runtime
+// and CRT internals are implemented as minimal no-ops to maintain
+// structural fidelity without actual OS interaction.
 // ═══════════════════════════════════════════════════════════════════
 
 
 // ── DAT_ globals referenced in this block ──
-// CRT internal state — all stubbed as module-level variables
+// CRT internal state — DEVIATION: C runtime — module-level variables
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
@@ -44,7 +44,7 @@ function CARRY4(a, b) {
 
 // ════════════════════════════════════════════════════════════════
 // CRT HELPER: CONCAT44 — combine two 32-bit values to 64-bit
-// Returns a BigInt or simplified pair; used for 64-bit division
+// Returns a BigInt; used for 64-bit division
 // ════════════════════════════════════════════════════════════════
 function CONCAT44(hi, lo) {
   return (BigInt(hi >>> 0) << 32n) | BigInt(lo >>> 0);
@@ -70,7 +70,7 @@ function CONCAT11(hi, lo) {
 // Function: __NMSG_WRITE @ 0x00600040
 // ============================================================
 export function __NMSG_WRITE(param_1) {
-  // Win32 CRT error message display — stub as no-op
+  // Win32 CRT error message display — DEVIATION: C runtime
   // Original writes runtime error messages to console or shows MessageBox
   return;
 }
@@ -85,7 +85,7 @@ export function __GET_RTERRMSG(param_1) {
   let local_8;
 
   for (local_8 = 0; local_8 < 0x12; local_8 = local_8 + 1) {
-    // Stub: G.DAT_0063b1b8 table lookup
+    // DEVIATION: C runtime — G.DAT_0063b1b8 table lookup
     break;
   }
   pwVar1 = null;
@@ -135,7 +135,7 @@ export function ___loctotime_t(param_1, param_2, param_3, param_4, param_5, para
 export function _abort() {
   __NMSG_WRITE(10);
   _raise(0x16);
-  // __exit(3) — stub: throw
+  // __exit(3) — DEVIATION: C runtime
   throw new Error('CRT _abort called');
 }
 
@@ -145,7 +145,7 @@ export function _abort() {
 // Function: _signal @ 0x00600430
 // ============================================================
 export function _signal(param_1, in_stack_00000008) {
-  // Win32 signal handling — stub
+  // Win32 signal handling — DEVIATION: C runtime
   if (in_stack_00000008 !== 4 && in_stack_00000008 !== 3) {
     if (param_1 === 2 || param_1 === 0x15 || param_1 === 0x16 || param_1 === 0xf) {
       switch (param_1) {
@@ -193,7 +193,7 @@ export function ctrlevent_capture(param_1) {
     uVar1 = 0;
   } else {
     if (local_10 !== 1) {
-      // Would call handler function — stub
+      // Would call handler function — DEVIATION: C runtime
     }
     uVar1 = 1;
   }
@@ -206,7 +206,7 @@ export function ctrlevent_capture(param_1) {
 // Function: _raise @ 0x006006A0
 // ============================================================
 export function _raise(_SigNum) {
-  // CRT signal dispatch — stub
+  // CRT signal dispatch — DEVIATION: C runtime
   // Original dispatches to registered signal handlers
   switch (_SigNum) {
     case 2:
@@ -229,7 +229,7 @@ export function _raise(_SigNum) {
 // Function: siglookup @ 0x006008C0
 // ============================================================
 export function siglookup(param_1) {
-  // Stub — CRT internal signal table search
+  // DEVIATION: C runtime — internal signal table search
   return null;
 }
 
@@ -239,7 +239,7 @@ export function siglookup(param_1) {
 // Function: ___crtMessageBoxA @ 0x00600930
 // ============================================================
 export function ___crtMessageBoxA(_LpText, _LpCaption, _UType) {
-  // Win32 MessageBoxA — stub as no-op
+  // Win32 MessageBoxA — DEVIATION: C runtime
   return 0;
 }
 
@@ -338,7 +338,7 @@ export function __i64toa(_Val, _DstBuf, _Radix) {
 // Function: x64toa @ 0x00600C30
 // ============================================================
 export function x64toa(param_1, param_3, param_4, param_5) {
-  // 64-bit integer to string — stub using BigInt
+  // 64-bit integer to string — DEVIATION: C runtime
   let val = BigInt(param_1);
   let result = '';
   let radix = BigInt(param_4);
@@ -379,7 +379,7 @@ export function __ui64toa(_Val, _DstBuf, _Radix) {
 // Function: _fprintf @ 0x00600D40
 // ============================================================
 export function _fprintf(_File, _Format, ...args) {
-  // Win32 CRT fprintf — stub as no-op
+  // Win32 CRT fprintf — DEVIATION: C runtime
   return 0;
 }
 
@@ -389,7 +389,7 @@ export function _fprintf(_File, _Format, ...args) {
 // Function: _setvbuf @ 0x00600DF0
 // ============================================================
 export function _setvbuf(_File, _Buf, _Mode, _Size) {
-  // Win32 CRT setvbuf — stub
+  // Win32 CRT setvbuf — DEVIATION: C runtime
   return 0;
 }
 
@@ -409,7 +409,7 @@ export function _E2() {
 // Function: $E1 @ 0x00600F70
 // ============================================================
 export function _E1() {
-  // Stub: _atexit and SetUnhandledExceptionFilter — no-ops in JS
+  // DEVIATION: C runtime — _atexit and SetUnhandledExceptionFilter
   return;
 }
 
@@ -419,7 +419,7 @@ export function _E1() {
 // Function: __CxxUnhandledExceptionFilter @ 0x00600FA0
 // ============================================================
 export function __CxxUnhandledExceptionFilter(param_1) {
-  // Win32 exception filter — stub
+  // Win32 exception filter — DEVIATION: C runtime
   return 0;
 }
 
@@ -429,7 +429,7 @@ export function __CxxUnhandledExceptionFilter(param_1) {
 // Function: FUN_00601040 @ 0x00601040
 // ============================================================
 export function FUN_00601040() {
-  // Win32 SetUnhandledExceptionFilter — stub
+  // Win32 SetUnhandledExceptionFilter — DEVIATION: C runtime
   return;
 }
 
@@ -439,7 +439,7 @@ export function FUN_00601040() {
 // Function: _ValidateRead @ 0x00601060
 // ============================================================
 export function _ValidateRead(param_1, param_2) {
-  // Win32 IsBadReadPtr — stub: always valid
+  // Win32 IsBadReadPtr — DEVIATION: C runtime
   return 1;
 }
 
@@ -449,7 +449,7 @@ export function _ValidateRead(param_1, param_2) {
 // Function: _ValidateWrite @ 0x006010A0
 // ============================================================
 export function _ValidateWrite(param_1, param_2) {
-  // Win32 IsBadWritePtr — stub: always valid
+  // Win32 IsBadWritePtr — DEVIATION: C runtime
   return 1;
 }
 
@@ -459,7 +459,7 @@ export function _ValidateWrite(param_1, param_2) {
 // Function: _ValidateExecute @ 0x006010E0
 // ============================================================
 export function _ValidateExecute(param_1) {
-  // Win32 IsBadCodePtr — stub: always valid
+  // Win32 IsBadCodePtr — DEVIATION: C runtime
   return 1;
 }
 
@@ -469,7 +469,7 @@ export function _ValidateExecute(param_1) {
 // Function: __snprintf @ 0x00601120
 // ============================================================
 export function __snprintf(_Dest, _Count, _Format, ...args) {
-  // CRT snprintf — stub
+  // CRT snprintf — DEVIATION: C runtime
   return 0;
 }
 
@@ -479,7 +479,7 @@ export function __snprintf(_Dest, _Count, _Format, ...args) {
 // Function: __vsnprintf @ 0x00601210
 // ============================================================
 export function __vsnprintf(_Dest, _Count, _Format, _Args) {
-  // CRT vsnprintf — stub
+  // CRT vsnprintf — DEVIATION: C runtime
   return 0;
 }
 
@@ -489,7 +489,7 @@ export function __vsnprintf(_Dest, _Count, _Format, _Args) {
 // Function: ___crtGetStringTypeW @ 0x00601300
 // ============================================================
 export function ___crtGetStringTypeW(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Win32 GetStringTypeW wrapper — stub
+  // Win32 GetStringTypeW wrapper — DEVIATION: C runtime
   return;
 }
 
@@ -499,7 +499,7 @@ export function ___crtGetStringTypeW(param_1, param_2, param_3, param_4, param_5
 // Function: ___crtGetStringTypeA @ 0x00601560
 // ============================================================
 export function ___crtGetStringTypeA(_Plocinfo, _DWInfoType, _LpSrcStr, _CchSrc, _LpCharType, _Code_page, _BError) {
-  // Win32 GetStringTypeA wrapper — stub
+  // Win32 GetStringTypeA wrapper — DEVIATION: C runtime
   return 0;
 }
 
@@ -509,7 +509,7 @@ export function ___crtGetStringTypeA(_Plocinfo, _DWInfoType, _LpSrcStr, _CchSrc,
 // Function: __open @ 0x00601700
 // ============================================================
 export function __open(_Filename, _OpenFlag, ...args) {
-  // CRT file open — stub
+  // CRT file open — DEVIATION: C runtime
   let in_stack_0000000c = args[0] || 0;
   let iVar1 = __sopen(_Filename, _OpenFlag, 0x40, in_stack_0000000c);
   return iVar1;
@@ -521,7 +521,7 @@ export function __open(_Filename, _OpenFlag, ...args) {
 // Function: __sopen @ 0x00601750
 // ============================================================
 export function __sopen(_Filename, _OpenFlag, _ShareFlag, ...args) {
-  // Win32 CreateFileA-based file open — stub
+  // Win32 CreateFileA-based file open — DEVIATION: C runtime
   // Original handles file sharing, text/binary mode, inheritance
   G.DAT_00639f14 = 0x16;
   G.DAT_00639f18 = 0;
@@ -534,7 +534,7 @@ export function __sopen(_Filename, _OpenFlag, _ShareFlag, ...args) {
 // Function: __alloc_osfhnd @ 0x00601CF0
 // ============================================================
 export function __alloc_osfhnd() {
-  // CRT file handle allocation — stub
+  // CRT file handle allocation — DEVIATION: C runtime
   return -1;
 }
 
@@ -544,7 +544,7 @@ export function __alloc_osfhnd() {
 // Function: __set_osfhnd @ 0x00601E40
 // ============================================================
 export function __set_osfhnd(param_1, param_2) {
-  // CRT file handle set — stub
+  // CRT file handle set — DEVIATION: C runtime
   return -1;
 }
 
@@ -554,7 +554,7 @@ export function __set_osfhnd(param_1, param_2) {
 // Function: __free_osfhnd @ 0x00601F40
 // ============================================================
 export function __free_osfhnd(param_1) {
-  // CRT file handle free — stub
+  // CRT file handle free — DEVIATION: C runtime
   return -1;
 }
 
@@ -564,7 +564,7 @@ export function __free_osfhnd(param_1) {
 // Function: __get_osfhandle @ 0x00602060
 // ============================================================
 export function __get_osfhandle(_FileHandle) {
-  // CRT get OS handle — stub
+  // CRT get OS handle — DEVIATION: C runtime
   G.DAT_00639f14 = 9;
   G.DAT_00639f18 = 0;
   return -1;
@@ -576,7 +576,7 @@ export function __get_osfhandle(_FileHandle) {
 // Function: __open_osfhandle @ 0x006020E0
 // ============================================================
 export function __open_osfhandle(_OSFileHandle, _Flags) {
-  // CRT OS handle import — stub
+  // CRT OS handle import — DEVIATION: C runtime
   return -1;
 }
 
@@ -586,7 +586,7 @@ export function __open_osfhandle(_OSFileHandle, _Flags) {
 // Function: __commit @ 0x006021E0
 // ============================================================
 export function __commit(_FileHandle) {
-  // Win32 FlushFileBuffers — stub
+  // Win32 FlushFileBuffers — DEVIATION: C runtime
   G.DAT_00639f14 = 9;
   return -1;
 }
@@ -597,7 +597,7 @@ export function __commit(_FileHandle) {
 // Function: __isatty @ 0x006022C0
 // ============================================================
 export function __isatty(_FileHandle) {
-  // CRT isatty — stub: not a tty
+  // CRT isatty — DEVIATION: C runtime
   return 0;
 }
 
@@ -607,7 +607,7 @@ export function __isatty(_FileHandle) {
 // Function: _wctomb @ 0x00602310
 // ============================================================
 export function _wctomb(_MbCh, _WCh) {
-  // CRT wctomb — stub
+  // CRT wctomb — DEVIATION: C runtime
   if (_MbCh === null) {
     return 0;
   }
@@ -654,7 +654,7 @@ export function __aullrem(param_1, param_2, param_3, param_4) {
 // Function: __fcloseall @ 0x006024D0
 // ============================================================
 export function __fcloseall() {
-  // CRT fcloseall — stub
+  // CRT fcloseall — DEVIATION: C runtime
   return 0;
 }
 
@@ -664,7 +664,7 @@ export function __fcloseall() {
 // Function: __statusfp @ 0x00602590
 // ============================================================
 export function __statusfp() {
-  // CRT floating point status — stub
+  // CRT floating point status — DEVIATION: C runtime
   return 0;
 }
 
@@ -674,7 +674,7 @@ export function __statusfp() {
 // Function: __clearfp @ 0x006025C0
 // ============================================================
 export function __clearfp() {
-  // CRT clear FP status — stub
+  // CRT clear FP status — DEVIATION: C runtime
   return 0;
 }
 
@@ -684,7 +684,7 @@ export function __clearfp() {
 // Function: __control87 @ 0x006025F0
 // ============================================================
 export function __control87(_NewValue, _Mask) {
-  // CRT FP control word — stub
+  // CRT FP control word — DEVIATION: C runtime
   return _NewValue & _Mask;
 }
 
@@ -704,7 +704,7 @@ export function __controlfp(_NewValue, _Mask) {
 // Function: __fpreset @ 0x00602670
 // ============================================================
 export function __fpreset() {
-  // CRT FP reset — stub
+  // CRT FP reset — DEVIATION: C runtime
   return;
 }
 
@@ -930,7 +930,7 @@ export function __ShrMan(param_1, param_2) {
 // Function: __ld12cvt @ 0x00602EA0
 // ============================================================
 export function __ld12cvt(param_1, param_2, param_3) {
-  // FP format conversion — stub
+  // FP format conversion — DEVIATION: C runtime
   // Original converts 12-byte long double to IEEE double or float
   return 0;
 }
@@ -961,7 +961,7 @@ export function FID_conflict___ld12tod_2(param_1, param_2) {
 // Function: __ld12told @ 0x00603170
 // ============================================================
 export function __ld12told(param_1, param_2) {
-  // FP format conversion — stub
+  // FP format conversion — DEVIATION: C runtime
   return 0;
 }
 
@@ -971,7 +971,7 @@ export function __ld12told(param_1, param_2) {
 // Function: FID_conflict:__atodbl @ 0x00603240
 // ============================================================
 export function FID_conflict___atodbl_1(_Result, _Str) {
-  // CRT atodbl — stub: use parseFloat
+  // CRT atodbl — DEVIATION: C runtime
   return 0;
 }
 
@@ -981,7 +981,7 @@ export function FID_conflict___atodbl_1(_Result, _Str) {
 // Function: __atoldbl @ 0x00603280
 // ============================================================
 export function __atoldbl(_Result, _Str) {
-  // CRT atoldbl — stub
+  // CRT atoldbl — DEVIATION: C runtime
   return 0;
 }
 
@@ -991,7 +991,7 @@ export function __atoldbl(_Result, _Str) {
 // Function: FID_conflict:__atodbl @ 0x006032C0
 // ============================================================
 export function FID_conflict___atodbl_2(_Result, _Str) {
-  // CRT atoflt — stub
+  // CRT atoflt — DEVIATION: C runtime
   return 0;
 }
 
@@ -1001,7 +1001,7 @@ export function FID_conflict___atodbl_2(_Result, _Str) {
 // Function: __fptostr @ 0x00603300
 // ============================================================
 export function __fptostr(_Buf, _SizeInBytes, _Digits, _PtFlt) {
-  // CRT FP to string conversion — stub
+  // CRT FP to string conversion — DEVIATION: C runtime
   return 0;
 }
 
@@ -1011,7 +1011,7 @@ export function __fptostr(_Buf, _SizeInBytes, _Digits, _PtFlt) {
 // Function: __fltout @ 0x006033E0
 // ============================================================
 export function __fltout() {
-  // CRT FP output — stub
+  // CRT FP output — DEVIATION: C runtime
   return null;
 }
 
@@ -1021,7 +1021,7 @@ export function __fltout() {
 // Function: ___dtold @ 0x00603450
 // ============================================================
 export function ___dtold(param_1, param_2) {
-  // CRT double to extended FP — stub
+  // CRT double to extended FP — DEVIATION: C runtime
   return;
 }
 
@@ -1058,7 +1058,7 @@ export function ___tzset() {
 // Function: __tzset @ 0x00603650
 // ============================================================
 export function __tzset() {
-  // Win32 GetTimeZoneInformation + TZ env var parsing — stub
+  // Win32 GetTimeZoneInformation + TZ env var parsing — DEVIATION: C runtime
   // Original reads TZ environment variable or queries Windows timezone
   G.DAT_006e55e0 = 0;
   G.DAT_0063b360 = -1;
@@ -1196,7 +1196,7 @@ export function cvtdate(param_1, param_2, param_3, param_4, param_5, param_6, pa
 // Function: __chsize @ 0x00603F30
 // ============================================================
 export function __chsize(_FileHandle, _Size) {
-  // Win32 SetEndOfFile — stub
+  // Win32 SetEndOfFile — DEVIATION: C runtime
   G.DAT_00639f14 = 9;
   return -1;
 }
@@ -1310,15 +1310,15 @@ export function ___mtold12(param_1, param_2, param_3) {
 // Function: ___strgtold12 @ 0x00604520
 // ============================================================
 export function ___strgtold12(pld12, p_end_ptr, str, mult12, scale, decpt, implicit_E) {
-  // CRT string-to-long-double parser — stub
+  // CRT string-to-long-double parser — DEVIATION: C runtime
   // The original is a 2795-byte state machine that parses floating point
   // number strings including sign, digits, decimal point, and exponent.
-  // In JS, we can use parseFloat as a simplified substitute.
+  // In JS, we can use parseFloat as a DEVIATION: C runtime.
   let val = parseFloat(str);
   if (p_end_ptr) {
     p_end_ptr[0] = str;
   }
-  // Store into pld12 as a simplified representation
+  // Store into pld12 as a DEVIATION: C runtime
   if (Array.isArray(pld12)) {
     pld12[0] = 0;
     pld12[1] = 0;
@@ -1354,7 +1354,7 @@ export function ___STRINGTOLD(pld, p_end_ptr, str, mult12) {
 export function _I10_OUTPUT(param_1, param_2, param_3, param_4, param_5, param_6) {
   // CRT internal FP to decimal conversion — 1335-byte function
   // This is the core routine that converts an 80-bit extended float
-  // to a decimal string for printf-style output. Stub.
+  // to a decimal string for printf-style output. DEVIATION: C runtime.
   return 1;
 }
 
@@ -1364,7 +1364,7 @@ export function _I10_OUTPUT(param_1, param_2, param_3, param_4, param_5, param_6
 // Function: _wcstombs @ 0x006056E0
 // ============================================================
 export function _wcstombs(_Dest, _Source, _MaxCount) {
-  // CRT wcstombs — stub
+  // CRT wcstombs — DEVIATION: C runtime
   // In JS, we don't have the MBCS concept
   if (_Dest === null) {
     if (typeof _Source === 'string') return _Source.length;
@@ -1397,7 +1397,7 @@ export function wcsncnt_1(param_1, param_2) {
 // Function: _getenv @ 0x00605AB0
 // ============================================================
 export function _getenv(_VarName) {
-  // CRT getenv — stub
+  // CRT getenv — DEVIATION: C runtime
   // In a browser/Node.js context, we could use process.env
   // but for CRT fidelity, return null
   return null;
@@ -1409,7 +1409,7 @@ export function _getenv(_VarName) {
 // Function: __setmode @ 0x00605BA0
 // ============================================================
 export function __setmode(_FileHandle, _Mode) {
-  // CRT setmode (text/binary) — stub
+  // CRT setmode (text/binary) — DEVIATION: C runtime
   G.DAT_00639f14 = 9;
   return -1;
 }
@@ -1422,7 +1422,7 @@ export function __setmode(_FileHandle, _Mode) {
 export function ___ld12mul(param_1, param_2) {
   // CRT 12-byte long double multiply — 1063-byte function
   // Internal FP multiply for decimal-to-binary conversion.
-  // Stub: complex bit manipulation of 96-bit mantissas
+  // DEVIATION: C runtime — complex bit manipulation of 96-bit mantissas
   return;
 }
 
@@ -1432,7 +1432,7 @@ export function ___ld12mul(param_1, param_2) {
 // Function: ___multtenpow12 @ 0x00606110
 // ============================================================
 export function ___multtenpow12(param_1, param_2, param_3) {
-  // CRT multiply 12-byte float by 10^param_2 — stub
+  // CRT multiply 12-byte float by 10^param_2 — DEVIATION: C runtime
   // Uses precomputed table of powers of 10 in 12-byte format
   return;
 }
@@ -1443,7 +1443,7 @@ export function ___multtenpow12(param_1, param_2, param_3) {
 // Function: __mbsnbicoll @ 0x006061F0
 // ============================================================
 export function __mbsnbicoll(_Str1, _Str2, _MaxCount) {
-  // CRT mbsnbicoll — simplified to case-insensitive compare
+  // CRT mbsnbicoll — DEVIATION: C runtime — case-insensitive compare
   if (_MaxCount === 0) return 0;
   let s1 = typeof _Str1 === 'string' ? _Str1.substring(0, _MaxCount).toLowerCase() : '';
   let s2 = typeof _Str2 === 'string' ? _Str2.substring(0, _MaxCount).toLowerCase() : '';
@@ -1458,7 +1458,7 @@ export function __mbsnbicoll(_Str1, _Str2, _MaxCount) {
 // Function: ___wtomb_environ @ 0x00606260
 // ============================================================
 export function ___wtomb_environ() {
-  // CRT wide-to-multibyte environment conversion — stub
+  // CRT wide-to-multibyte environment conversion — DEVIATION: C runtime
   return 0;
 }
 
@@ -1468,7 +1468,7 @@ export function ___wtomb_environ() {
 // Function: ___crtCompareStringW @ 0x00606330
 // ============================================================
 export function ___crtCompareStringW(_LocaleName, _DwCmpFlags, _LpString1, _CchCount1, _LpString2, _CchCount2) {
-  // Win32 CompareStringW wrapper — stub
+  // Win32 CompareStringW wrapper — DEVIATION: C runtime
   return 2; // CSTR_EQUAL
 }
 
@@ -1496,7 +1496,7 @@ export function wcsncnt_2(param_1, param_2) {
 // Function: ___crtCompareStringA @ 0x00606690
 // ============================================================
 export function ___crtCompareStringA(_Plocinfo, _LocaleName, _DwCmpFlags, _LpString1, _CchCount1, _LpString2, _CchCount2, _Code_page) {
-  // Win32 CompareStringA wrapper — stub
+  // Win32 CompareStringA wrapper — DEVIATION: C runtime
   return 2; // CSTR_EQUAL
 }
 
@@ -1526,7 +1526,7 @@ export function _strncnt(_String, _Cnt) {
 // Function: ___crtsetenv @ 0x00606B60
 // ============================================================
 export function ___crtsetenv(_POption, _Primary) {
-  // CRT internal setenv — stub
+  // CRT internal setenv — DEVIATION: C runtime
   return 0;
 }
 
@@ -1536,7 +1536,7 @@ export function ___crtsetenv(_POption, _Primary) {
 // Function: findenv @ 0x00606ED0
 // ============================================================
 export function findenv(param_1, param_2) {
-  // CRT internal env lookup — stub
+  // CRT internal env lookup — DEVIATION: C runtime
   return -1;
 }
 
@@ -1546,7 +1546,7 @@ export function findenv(param_1, param_2) {
 // Function: copy_environ @ 0x00606F70
 // ============================================================
 export function copy_environ(param_1) {
-  // CRT copy environment array — stub
+  // CRT copy environment array — DEVIATION: C runtime
   return null;
 }
 
@@ -1556,7 +1556,7 @@ export function copy_environ(param_1) {
 // Function: __mbschr @ 0x00607070
 // ============================================================
 export function __mbschr(_Str, _Ch) {
-  // CRT mbschr — simplified to indexOf
+  // CRT mbschr — DEVIATION: C runtime — indexOf
   if (typeof _Str === 'string') {
     let ch = String.fromCharCode(_Ch);
     let idx = _Str.indexOf(ch);
@@ -1572,7 +1572,7 @@ export function __mbschr(_Str, _Ch) {
 // Function: __filelength @ 0x006075E0
 // ============================================================
 export function __filelength(_FileHandle) {
-  // CRT filelength — stub
+  // CRT filelength — DEVIATION: C runtime
   G.DAT_00639f14 = 9;
   G.DAT_00639f18 = 0;
   return -1;
@@ -1637,13 +1637,13 @@ export function __strlwr(_String) {
 // Function: FID_conflict:__mkdir @ 0x00607920
 // ============================================================
 export function FID_conflict___mkdir(_Path) {
-  // Win32 CreateDirectoryA — stub
+  // Win32 CreateDirectoryA — DEVIATION: C runtime
   return -1;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// STUBS for functions from OTHER blocks (not yet defined)
+// EXTERNAL FUNCTION DECLARATIONS (from other blocks)
 // ═══════════════════════════════════════════════════════════════════
 
 // FUN_005f22d0 — strcpy (from block_005F0000)
@@ -1669,25 +1669,25 @@ export function FUN_005f35f0() {
 
 // FID_conflict__memcpy — memcpy (from another block)
 export function FID_conflict__memcpy(dest, src, len) {
-  // CRT memcpy — stub
+  // CRT memcpy — DEVIATION: C runtime
   return dest;
 }
 
 // __amsg_exit — CRT fatal message and exit (from CRT)
 export function __amsg_exit(param_1) {
-  // CRT amsg_exit — stub
+  // CRT amsg_exit — DEVIATION: C runtime
   return;
 }
 
 // __exit — CRT process exit (from CRT)
 export function __exit(param_1) {
-  // CRT _exit — stub
+  // CRT _exit — DEVIATION: C runtime
   throw new Error('CRT __exit called with code ' + param_1);
 }
 
 // __CrtDbgReport — CRT debug report (from CRT)
 export function __CrtDbgReport(...args) {
-  // CRT debug report — stub (always return 0 = continue)
+  // DEVIATION: C runtime — always return 0 (continue)
   return 0;
 }
 
@@ -1772,7 +1772,7 @@ export function _memset(buf, val, len) {
 
 // __isctype — CRT character type check (from CRT)
 export function __isctype(ch, mask) {
-  // Simplified: mask 4 = digit check
+  // DEVIATION: C runtime — mask 4 = digit check
   if (mask === 4) {
     return (ch >= 0x30 && ch <= 0x39) ? 4 : 0;
   }

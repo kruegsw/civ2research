@@ -27,7 +27,7 @@ import { FUN_0040ff00, FUN_0040ff30, FUN_0040ff60 } from './block_00400000.js';
 import { FUN_00410030, FUN_00410070, FUN_00414ce0, FUN_00414d40, FUN_00414d70, FUN_00415133 } from './block_00410000.js';
 import { FUN_004190d0, FUN_00419b80, FUN_00419ba0 } from './block_00410000.js';
 import { FUN_00421da0, FUN_00421ea0, FUN_004271e8, FUN_00428a95, FUN_00428b0c } from './block_00420000.js';
-import { FUN_0043c5f0 } from './block_00430000.js';
+import { FUN_0043060b, FUN_0043c5f0, FUN_0043c840, FUN_0043d07a } from './block_00430000.js';
 import { FUN_0044263f, FUN_004442a0, FUN_0044c730, FUN_0044ca60 } from './block_00440000.js';
 import { FUN_004502b0, FUN_004502e0, FUN_00450340, FUN_004503d0, FUN_00450400, FUN_00451830 } from './block_00450000.js';
 import { FUN_00451860, FUN_00451890, FUN_004518d0, FUN_00451930, FUN_004519b0, FUN_00451a60 } from './block_00450000.js';
@@ -183,10 +183,7 @@ function __filbuf() { return -1; }
 
 function handle_exchange_gift(p1, p2, p3, p4, p5, p6) { /* stub */ }
 function show_gift_menu(p1, p2) { /* stub */ }
-function FUN_0043060b(p1, p2) { /* stub */ }
-function FUN_0043d07a(p1, p2, p3, p4, p5) { return -1; /* stub */ }
 function FUN_00467580_store(p1, p2) { /* stub */ }
-function FUN_0043c840(p1, p2) { /* stub */ }
 function FUN_005c19d3_write(p1, p2) { return null; /* stub */ }
 function FID_conflict__memcpy(dst, src, len) { /* stub */ }
 function FID_conflict___toupper_lk(c) { return c >= 0x61 && c <= 0x7a ? c - 0x20 : c; }
@@ -1846,7 +1843,9 @@ export function FUN_00467ef2(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004683f0(param_1, param_2, param_3) {
-  // Heavy MFC/Win32 dialog code — stubbed for JS
+  // DEVIATION: MFC dialog list panel init (uses in_ECX this pointer, GetSystemMetrics, operator_new)
+  // Sets up scrollable list panels for unit/city selection dialogs
+  // In C: allocates CScrollBar and CListBox objects, sets panel rects, calls FUN_00469bdc/FUN_00468bb9
 }
 
 
@@ -1876,7 +1875,8 @@ export function FUN_004687b5(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004687d3(param_1, param_2) {
-  // MFC dialog scroll — stubbed for JS
+  // DEVIATION: MFC dialog scroll handler (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: FUN_005c62ee() to get this ptr, FUN_004518d0(), stores param_2 in scroll offset, calls FUN_00468bb9
 }
 
 
@@ -1886,7 +1886,9 @@ export function FUN_004687d3(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00468834(param_1) {
-  // MFC list click handling — stubbed for JS
+  // DEVIATION: MFC list click handler (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: gets this ptr, subtracts 0x3fc from param_1 to get panel index, calls FUN_00468aa7 for hit test,
+  // handles shift/ctrl selection, toggles selection bits, calls FUN_00468bb9 to repaint
 }
 
 
@@ -1896,7 +1898,9 @@ export function FUN_00468834(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00468aa7(param_1, param_2, param_3) {
-  // MFC list hit testing — stubbed for JS
+  // DEVIATION: MFC list hit test (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: computes which list row was clicked based on x/y coords and panel rect
+  // Returns row index or negative error code (-1=above, -2=below, -3=left, -4=right)
   return -1;
 }
 
@@ -1907,7 +1911,9 @@ export function FUN_00468aa7(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00468bb9(param_1) {
-  // MFC list repaint — stubbed for JS
+  // DEVIATION: MFC list repaint (uses in_ECX this pointer via FUN_005c62ee, GDI drawing, SetRect)
+  // In C: iterates visible list rows, draws unit sprites and names with colored selection highlighting
+  // Calls FUN_005c0073, FUN_005c0333, FUN_005c0f57, FUN_005cd775, FUN_005cef31, etc.
 }
 
 
@@ -1917,7 +1923,9 @@ export function FUN_00468bb9(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004692ea() {
-  // MFC list sort handler — stubbed for JS
+  // DEVIATION: MFC list sort ascending handler (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: sets sort flag byte to 1, calls FUN_00453c80 twice, sends network msg 0xa7,
+  // calls FUN_0046968b to sort, then FUN_00468bb9 to repaint
 }
 
 
@@ -1927,7 +1935,9 @@ export function FUN_004692ea() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004693c5() {
-  // MFC list sort handler — stubbed for JS
+  // DEVIATION: MFC list sort descending handler (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: sets sort flag byte to 0, calls FUN_00453c40 twice, sends network msg 0xa8,
+  // calls FUN_0046990a to alpha-sort, calls FUN_0046968b, then FUN_00468bb9 to repaint
 }
 
 
@@ -1937,7 +1947,8 @@ export function FUN_004693c5() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004694b7() {
-  // MFC dialog handler — stubbed for JS
+  // DEVIATION: MFC list info button handler (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: calls FUN_00493c7d(G.DAT_006d1da0), FUN_00511880 for unit info dialog
 }
 
 
@@ -1967,7 +1978,8 @@ export function FUN_00469561() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046957b(param_1) {
-  // MFC list sort — stubbed for JS
+  // DEVIATION: MFC list sort by type (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: FUN_004518d0(), FUN_0046990a(0, count-1, param_1), FUN_00468bb9(param_1)
 }
 
 
@@ -1997,7 +2009,8 @@ export function FUN_00469603() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046961d(param_1) {
-  // MFC list alpha sort — stubbed for JS
+  // DEVIATION: MFC list alphabetical sort (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: FUN_004518d0(), FUN_0046968b(0, count-1, param_1), FUN_00468bb9(param_1)
 }
 
 
@@ -2007,7 +2020,9 @@ export function FUN_0046961d(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046968b(param_1, param_2, param_3) {
-  // MFC list sort implementation — stubbed for JS
+  // DEVIATION: MFC list sort by unit type (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: bubble sort on unit list arrays at offsets 0x3f0, 0x43f8, 0x8400 from this pointer
+  // Compares via G.DAT_0066be90 civ name strings indexed by G.DAT_006560f6 unit owner
 }
 
 
@@ -2017,7 +2032,9 @@ export function FUN_0046968b(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046990a(param_1, param_2, param_3) {
-  // MFC list alpha sort implementation — stubbed for JS
+  // DEVIATION: MFC list alphabetical sort (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: bubble sort on unit list arrays at offsets 0x3f0, 0x43f8, 0x8400 from this pointer
+  // Compares via FUN_005b6898 unit name strings, sets G.DAT_0066be78=1
 }
 
 
@@ -2027,7 +2044,10 @@ export function FUN_0046990a(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00469bdc(param_1, param_2) {
-  // MFC list population — stubbed for JS
+  // DEVIATION: MFC list populate from units (uses in_ECX this pointer via FUN_005c62ee)
+  // In C: iterates G.DAT_00655b16 units, checks ownership and visibility, populates list arrays
+  // at offsets 0x3f0, 0x43f8, 0x8400. Calls FUN_005ae052, FUN_004087c0, FUN_005b89e4, FUN_005b50ad
+  // then sorts via FUN_0046968b or FUN_0046990a based on G.DAT_0066be78
 }
 
 
@@ -2165,7 +2185,7 @@ export function FUN_0046ab49() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function InvalidateObjectCache() {
-  // MFC method — no-op in JS
+  // DEVIATION: MFC CRichEditDoc::InvalidateObjectCache (uses this pointer at offset 0x12c0)
 }
 
 
@@ -2175,7 +2195,8 @@ export function InvalidateObjectCache() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046ab82(param_1) {
-  // MFC cache management — stubbed for JS
+  // DEVIATION: MFC CRichEditDoc cache entry removal (uses in_ECX this pointer)
+  // In C: shifts entries down in 0x18-byte cache array, decrements count at offset 0x12c0
 }
 
 
@@ -2185,7 +2206,8 @@ export function FUN_0046ab82(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046abed(param_1, param_2) {
-  // MFC cache management — stubbed for JS
+  // DEVIATION: MFC find-and-remove cache entry (uses in_ECX this pointer)
+  // In C: searches cache for entry matching param_1/param_2, removes via FUN_0046ab82
 }
 
 
@@ -2195,7 +2217,8 @@ export function FUN_0046abed(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046ac89(param_1) {
-  // MFC cache management — stubbed for JS
+  // DEVIATION: MFC remove cache entries by ID (uses in_ECX this pointer)
+  // In C: iterates cache backwards, removes entries where offset 0x10 matches param_1
 }
 
 
@@ -2205,7 +2228,8 @@ export function FUN_0046ac89(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046ace7(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // MFC cache management — stubbed for JS
+  // DEVIATION: MFC add cache entry (uses in_ECX this pointer)
+  // In C: if count < 200, stores rect (param_3-6), param_1/param_2 in next slot, increments count
   return -1;
 }
 
@@ -2216,7 +2240,8 @@ export function FUN_0046ace7(param_1, param_2, param_3, param_4, param_5, param_
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046ad85(param_1, param_2, param_3, param_4) {
-  // MFC cache hit-test — stubbed for JS
+  // DEVIATION: MFC cache hit-test at point (uses in_ECX this pointer)
+  // In C: searches cache for entry containing (param_1,param_2), returns index, optionally fills param_3/param_4
   return -1;
 }
 
@@ -2227,7 +2252,8 @@ export function FUN_0046ad85(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046af70(param_1, param_2) {
-  // Network send — stubbed for JS
+  // DEVIATION: binary network send to connections (uses in_ECX, XD_SendSecureData)
+  // In C: validates param_1 range, sets sequence number, calls XD_SendSecureData, logs errors
   return 1;
 }
 
@@ -2238,7 +2264,8 @@ export function FUN_0046af70(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046b0a1(param_1) {
-  // Network broadcast — stubbed for JS
+  // DEVIATION: binary network broadcast (uses in_ECX, XD_SendBroadcastData)
+  // In C: sets sequence number, calls XD_SendBroadcastData, returns success/failure
   return true;
 }
 
@@ -2263,9 +2290,12 @@ export function FUN_0046b11d(param_1, param_2) {
 
 export function FUN_0046b14d(param_1, param_2, param_3, param_4, param_5,
                              param_6, param_7, param_8, param_9, param_10) {
-  // Network message dispatcher — stubbed for JS
-  // The original has ~160 cases, all constructing network packets.
-  // Not relevant for game logic transpilation.
+  // DEVIATION: binary network message dispatcher (~160 switch cases)
+  // In C: giant switch on param_1, each case constructs a binary message struct
+  // via FUN_0046d5a0/FUN_0046d5f0/FUN_0046d6a0/FUN_0046d720/etc., then sends
+  // via FUN_0046af70 (point-to-point) or FUN_0046b0a1 (broadcast).
+  // Some cases have side effects (G.DAT_006c9088++, G.DAT_00654fb0 updates for cases 0x30/0x31).
+  // Not relevant for game logic transpilation — uses binary network protocol.
   return 0;
 }
 
@@ -2276,7 +2306,8 @@ export function FUN_0046b14d(param_1, param_2, param_3, param_4, param_5,
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d5a0(param_1) {
-  // Network message header init — stubbed for JS
+  // DEVIATION: init network message header (uses in_ECX this pointer)
+  // In C: sets header magic 0x66606660, stores param_1 as msg type, size=0x10
   return null;
 }
 
@@ -2287,7 +2318,8 @@ export function FUN_0046d5a0(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d5f0(param_1, param_2) {
-  // Network message header init — stubbed for JS
+  // DEVIATION: init network message with name (uses in_ECX this pointer)
+  // In C: calls FUN_0046d6a0(0), sets msg type, copies name strings, size=0x74
   return 0;
 }
 
@@ -2298,7 +2330,8 @@ export function FUN_0046d5f0(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d6a0(param_1) {
-  // Network message header — stubbed for JS
+  // DEVIATION: init extended network message (uses in_ECX this pointer)
+  // In C: calls FUN_0046d5a0, copies name string, size=0x30
   return 0;
 }
 
@@ -2309,7 +2342,8 @@ export function FUN_0046d6a0(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d720() {
-  // Network join message — stubbed for JS
+  // DEVIATION: init join network message (uses in_ECX this pointer)
+  // In C: calls FUN_0046d5f0(2,...), FUN_0059c31f, size=0x198
   return 0;
 }
 
@@ -2320,7 +2354,8 @@ export function FUN_0046d720() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d780(param_1) {
-  // Network chat message — stubbed for JS
+  // DEVIATION: init chat network message (uses in_ECX this pointer)
+  // In C: calls FUN_0046d5a0(0x2f), copies chat text, size=100
   return 0;
 }
 
@@ -2331,7 +2366,7 @@ export function FUN_0046d780(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d860() {
-  // Network message — stubbed for JS
+  // DEVIATION: init rules data network message (uses in_ECX, size=0x280)
   return 0;
 }
 
@@ -2342,7 +2377,7 @@ export function FUN_0046d860() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d8a0() {
-  // Network message — stubbed for JS
+  // DEVIATION: init scenario network message (uses in_ECX, size=0x21c)
   return 0;
 }
 
@@ -2353,7 +2388,7 @@ export function FUN_0046d8a0() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d8e0() {
-  // Network message — stubbed for JS
+  // DEVIATION: init save data network message (uses in_ECX, FUN_0059c31f, size=0x134)
   return 0;
 }
 
@@ -2364,7 +2399,7 @@ export function FUN_0046d8e0() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d930(param_1) {
-  // Network message — stubbed for JS
+  // DEVIATION: init turn network message (uses in_ECX, size=0x14)
   return 0;
 }
 
@@ -2375,7 +2410,8 @@ export function FUN_0046d930(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046d980(param_1, param_2) {
-  // Network UI popup — stubbed for JS
+  // DEVIATION: display network popup (Win32 UI — FUN_005bb3f0, FUN_005c041f, FUN_005c0d69)
+  // In C: creates popup window with G.DAT_00628420 label text, calls FUN_00484d52, FUN_00450400
 }
 
 
@@ -2385,7 +2421,9 @@ export function FUN_0046d980(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function load_civ2_art_0046da40() {
-  // Win32 art/video DLL loading — stubbed for JS
+  // DEVIATION: Win32 video/art DLL loading (MFC CPropertySheet, SEH frames, FUN_005dd010, FUN_005c5f20)
+  // In C: loads civ2art.dll, plays opening.avi, initializes graphics subsystem
+  // Uses CPropertySheet::EnableStackedTabs, COleControlSite::SetDlgCtrlID, SEH cleanup chain
 }
 
 
@@ -2487,7 +2525,7 @@ export function FUN_0046dea1() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function EnableStackedTabs(param_1) {
-  // MFC property sheet method — no-op in JS
+  // DEVIATION: MFC CPropertySheet::EnableStackedTabs (uses this pointer at offset 0x114)
 }
 
 
@@ -2497,9 +2535,11 @@ export function EnableStackedTabs(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046e020(param_1, param_2, param_3, param_4) {
+  // DEVIATION: play sound effect (Win32 sndPlaySoundA, file I/O)
+  // In C: stores params, looks up sound name from s_AIRCOMBT table, resolves .WAV path,
+  // plays via sndPlaySoundA or FUN_005d6038, calls FUN_00407ff0
   G.DAT_0066bfc4 = param_1;
   G.DAT_0066bfc0 = param_2;
-  // Sound playback via sndPlaySoundA / custom sound system — stubbed for JS
 }
 
 
@@ -2509,7 +2549,9 @@ export function FUN_0046e020(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046e287(param_1) {
-  // Timer-based animation delay — stubbed for JS
+  // DEVIATION: timer-based animation delay (Win32 timeGetTime busy-wait loop)
+  // In C: loops calling FUN_00407ff0 + timeGetTime until (param_1 * 0x32 / 3) ms elapsed
+  // Also calls FUN_0047e94e(1,0) if G.DAT_00655b02 > 2
 }
 
 
@@ -2741,7 +2783,9 @@ export function FUN_0046ea21() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function handle_palette() {
-  // Win32 GDI palette creation and color mapping — stubbed for JS
+  // DEVIATION: Win32 GDI palette initialization (CreatePalette, GetNearestPaletteIndex, DeleteObject)
+  // In C: allocates palette data, creates 32-color LOGPALETTE, maps 236 greyscale entries,
+  // stores index mapping in G.DAT_0066c408 memory handle
 }
 
 
@@ -2859,7 +2903,9 @@ export function FUN_0046f06f() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046f108() {
-  // Win32 palette flag setting — stubbed for JS
+  // DEVIATION: Win32 palette flag setting (uses in_ECX via FUN_0046f440, GDI palette API)
+  // In C: gets palette ptr via FUN_0046f440, sets peFlags=4 for all 256 entries,
+  // calls FUN_005c6480(10, 0xec)
 }
 
 
@@ -2899,7 +2945,9 @@ export function FUN_0046f440() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function load_bitmap(param_1, param_2, param_3, param_4, param_5) {
-  // Win32 BMP file loading with RLE decompression — stubbed for JS
+  // DEVIATION: Win32 BMP file loading (fopen/fread, RLE decompression, palette extraction)
+  // In C: opens .BMP file, reads 14-byte header, info header, 1024-byte palette,
+  // validates 640x480x8bit format, optionally reads pixel data with RLE decompression
   return 0;
 }
 
@@ -2910,6 +2958,7 @@ export function load_bitmap(param_1, param_2, param_3, param_4, param_5) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function write_bitmap_data(param_1, param_2, param_3, param_4, param_5) {
-  // Win32 BMP file writing — stubbed for JS
+  // DEVIATION: Win32 BMP file writing (fopen/fwrite)
+  // In C: writes BMP header, info header, palette, and pixel data to file
   return 0;
 }

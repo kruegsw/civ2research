@@ -26,7 +26,13 @@ const files = [
 
 for (const file of files) {
   const src = fs.readFileSync(file, 'utf8');
+  // Detect array usage: G.DAT_XXX[ (bracket access)
   for (const m of src.matchAll(/G\.(DAT_[0-9a-fA-F]+(?:_val)?)\[/g)) {
+    if (!allRefs.has(m[1])) allRefs.set(m[1], { isArray: false, isScalar: false });
+    allRefs.get(m[1]).isArray = true;
+  }
+  // Detect array usage: s16/u16/s32/u32/w16/w32(G.DAT_XXX, ...) — passed to mem helpers
+  for (const m of src.matchAll(/(?:s8|u8|s16|u16|s32|u32|w16|w32)\(G\.(DAT_[0-9a-fA-F]+(?:_val)?)\s*,/g)) {
     if (!allRefs.has(m[1])) allRefs.set(m[1], { isArray: false, isScalar: false });
     allRefs.get(m[1]).isArray = true;
   }

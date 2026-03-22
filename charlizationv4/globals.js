@@ -103,6 +103,9 @@ export const G = {
   DAT_0062cd68: new Uint8Array(_BUF, 68104),  // 0x62cd68
   DAT_0062cd6c: new Uint8Array(_BUF, 68108),  // 0x62cd6c
   DAT_0062ced0: new Uint8Array(_BUF, 68464),  // 0x62ced0
+  DAT_0062d0bc: new Uint8Array(_BUF, 68956),  // 0x62d0bc
+  DAT_0062d7d0: new Uint8Array(_BUF, 70768),  // 0x62d7d0
+  DAT_0062d7d4: new Uint8Array(_BUF, 70772),  // 0x62d7d4
   DAT_0062e250: new Uint8Array(_BUF, 73456),  // 0x62e250
   DAT_0062e254: new Uint8Array(_BUF, 73460),  // 0x62e254
   DAT_0062e258: new Uint8Array(_BUF, 73464),  // 0x62e258
@@ -129,8 +132,13 @@ export const G = {
   DAT_00634f60: new Uint8Array(_BUF, 101376),  // 0x634f60
   DAT_00634f64: new Uint8Array(_BUF, 101380),  // 0x634f64
   DAT_00634f68: new Uint8Array(_BUF, 101384),  // 0x634f68
+  DAT_00635a58: new Uint8Array(_BUF, 104184),  // 0x635a58
+  DAT_00635e60: new Uint8Array(_BUF, 105216),  // 0x635e60
+  DAT_00635eb8: new Uint8Array(_BUF, 105304),  // 0x635eb8
+  DAT_00635ed8: new Uint8Array(_BUF, 105336),  // 0x635ed8
   DAT_00636598: new Uint8Array(_BUF, 107064),  // 0x636598
   DAT_006365c0: new Uint8Array(_BUF, 107104),  // 0x6365c0
+  DAT_006365f8: new Uint8Array(_BUF, 107160),  // 0x6365f8
   DAT_00637eb0: new Uint8Array(_BUF, 113488),  // 0x637eb0
   DAT_006397e8: new Uint8Array(_BUF, 119944),  // 0x6397e8
   DAT_00639e60: new Uint8Array(_BUF, 121600),  // 0x639e60
@@ -159,13 +167,14 @@ export const G = {
   DAT_0063f540: new Uint8Array(_BUF, 143840),  // 0x63f540
   DAT_0063f580: new Uint8Array(_BUF, 143904),  // 0x63f580
   DAT_0063f668: new Uint8Array(_BUF, 144136),  // 0x63f668
-  DAT_0063fe50: new Uint8Array(_BUF, 146160),  // 0x63fe50
   DAT_00641848: new Uint8Array(_BUF, 152808),  // 0x641848
   DAT_00643798: new Uint8Array(_BUF, 160824),  // 0x643798
-  DAT_00644fb4: new Uint8Array(_BUF, 166996),  // 0x644fb4
   DAT_00645160: new Uint8Array(_BUF, 167424),  // 0x645160
+  DAT_006451d8: new Uint8Array(_BUF, 167544),  // 0x6451d8
   DAT_00645a84: new Uint8Array(_BUF, 169764),  // 0x645a84
   DAT_00646878: new Uint8Array(_BUF, 173336),  // 0x646878
+  DAT_006468f0: new Uint8Array(_BUF, 173456),  // 0x6468f0
+  DAT_00646cb8: new Uint8Array(_BUF, 174424),  // 0x646cb8
   DAT_00648018: new Uint8Array(_BUF, 179384),  // 0x648018
   DAT_0064a730: new Uint8Array(_BUF, 189392),  // 0x64a730
   DAT_0064b168: new Uint8Array(_BUF, 192008),  // 0x64b168
@@ -198,6 +207,7 @@ export const G = {
   DAT_0064ba58: new Uint8Array(_BUF, 194296),  // 0x64ba58
   DAT_0064ba5c: new Uint8Array(_BUF, 194300),  // 0x64ba5c
   DAT_0064bc2a: new Uint8Array(_BUF, 194762),  // 0x64bc2a
+  DAT_0064bc60: new Uint8Array(_BUF, 194816),  // 0x64bc60
   DAT_0064bcbc: new Uint8Array(_BUF, 194908),  // 0x64bcbc
   DAT_0064bcf8: new Uint8Array(_BUF, 194968),  // 0x64bcf8
   DAT_0064bcfa: new Uint8Array(_BUF, 194970),  // 0x64bcfa
@@ -247,6 +257,8 @@ export const G = {
   DAT_0064c712: new Uint8Array(_BUF, 197554),  // 0x64c712
   DAT_0064c714: new Uint8Array(_BUF, 197556),  // 0x64c714
   DAT_0064c778: new Uint8Array(_BUF, 197656),  // 0x64c778
+  DAT_0064c779: new Uint8Array(_BUF, 197657),  // 0x64c779
+  DAT_0064c785: new Uint8Array(_BUF, 197669),  // 0x64c785
   DAT_0064c793: new Uint8Array(_BUF, 197683),  // 0x64c793
   DAT_0064c794: new Uint8Array(_BUF, 197684),  // 0x64c794
   DAT_0064c795: new Uint8Array(_BUF, 197685),  // 0x64c795
@@ -264,17 +276,18 @@ export const G = {
   DAT_0064c7a5: new Uint8Array(_BUF, 197701),  // 0x64c7a5
   DAT_0064c7a8: new Uint8Array(_BUF, 197704),  // 0x64c7a8
   DAT_0064c7a9: new Uint8Array(_BUF, 197705),  // 0x64c7a9
-  DAT_0064c7b6: new Uint8Array(_BUF, 197718),  // 0x64c7b6
   DAT_0064c7f4: new Uint8Array(_BUF, 197780),  // 0x64c7f4
   DAT_0064c80f: new Uint8Array(_BUF, 197807),  // 0x64c80f
   DAT_0064c812: new Uint8Array(_BUF, 197810),  // 0x64c812
   DAT_0064c832: new Uint8Array(_BUF, 197842),  // 0x64c832
   DAT_0064c8b2: new Uint8Array(_BUF, 197970),  // 0x64c8b2
   DAT_0064c932: new Uint8Array(_BUF, 198098),  // 0x64c932
+  DAT_0064c971: new Uint8Array(_BUF, 198161),  // 0x64c971
   DAT_0064c972: new Uint8Array(_BUF, 198162),  // 0x64c972
   DAT_0064c9b2: new Uint8Array(_BUF, 198226),  // 0x64c9b2
   DAT_0064c9f2: new Uint8Array(_BUF, 198290),  // 0x64c9f2
   DAT_0064ca32: new Uint8Array(_BUF, 198354),  // 0x64ca32
+  DAT_0064ca71: new Uint8Array(_BUF, 198417),  // 0x64ca71
   DAT_0064ca72: new Uint8Array(_BUF, 198418),  // 0x64ca72
   DAT_0064ca74: new Uint8Array(_BUF, 198420),  // 0x64ca74
   DAT_0064ca76: new Uint8Array(_BUF, 198422),  // 0x64ca76
@@ -347,6 +360,7 @@ export const G = {
   DAT_0064f392: new Uint8Array(_BUF, 208946),  // 0x64f392
   DAT_0064f393: new Uint8Array(_BUF, 208947),  // 0x64f393
   DAT_0064f394: new Uint8Array(_BUF, 208948),  // 0x64f394
+  DAT_00654b40: new Uint8Array(_BUF, 231392),  // 0x654b40
   DAT_00654b50: new Uint8Array(_BUF, 231408),  // 0x654b50
   DAT_00654b60: new Uint8Array(_BUF, 231424),  // 0x654b60
   DAT_00654b74: new Uint8Array(_BUF, 231444),  // 0x654b74
@@ -413,7 +427,6 @@ export const G = {
   DAT_0066be80: new Uint8Array(_BUF, 326432),  // 0x66be80
   DAT_0066be90: new Uint8Array(_BUF, 326448),  // 0x66be90
   DAT_0066c4e8: new Uint8Array(_BUF, 328072),  // 0x66c4e8
-  DAT_0066c4e9: new Uint8Array(_BUF, 328073),  // 0x66c4e9
   DAT_0066c600: new Uint8Array(_BUF, 328352),  // 0x66c600
   DAT_0066c720: new Uint8Array(_BUF, 328640),  // 0x66c720
   DAT_0066c7a8: new Uint8Array(_BUF, 328776),  // 0x66c7a8
@@ -443,8 +456,11 @@ export const G = {
   DAT_0067a420: new Uint8Array(_BUF, 385216),  // 0x67a420
   DAT_0067a424: new Uint8Array(_BUF, 385220),  // 0x67a424
   DAT_0067a98c: new Uint8Array(_BUF, 386604),  // 0x67a98c
+  DAT_0067ab90: new Uint8Array(_BUF, 387120),  // 0x67ab90
   DAT_00682ba8: new Uint8Array(_BUF, 419912),  // 0x682ba8
   DAT_00684bac: new Uint8Array(_BUF, 428108),  // 0x684bac
+  DAT_0068ae90: new Uint8Array(_BUF, 453424),  // 0x68ae90
+  DAT_0068aeb0: new Uint8Array(_BUF, 453456),  // 0x68aeb0
   DAT_0068aee8: new Uint8Array(_BUF, 453512),  // 0x68aee8
   DAT_0068af08: new Uint8Array(_BUF, 453544),  // 0x68af08
   DAT_006a1880: new Uint8Array(_BUF, 546080),  // 0x6a1880
@@ -471,6 +487,7 @@ export const G = {
   DAT_006a6530: new Uint8Array(_BUF, 565712),  // 0x6a6530
   DAT_006a6590: new Uint8Array(_BUF, 565808),  // 0x6a6590
   DAT_006a65b8: new Uint8Array(_BUF, 565848),  // 0x6a65b8
+  DAT_006a65c8: new Uint8Array(_BUF, 565864),  // 0x6a65c8
   DAT_006a65f0: new Uint8Array(_BUF, 565904),  // 0x6a65f0
   DAT_006a6620: new Uint8Array(_BUF, 565952),  // 0x6a6620
   DAT_006a6628: new Uint8Array(_BUF, 565960),  // 0x6a6628
@@ -482,8 +499,10 @@ export const G = {
   DAT_006acae8: new Uint8Array(_BUF, 591752),  // 0x6acae8
   DAT_006acb10: new Uint8Array(_BUF, 591792),  // 0x6acb10
   DAT_006acb58: new Uint8Array(_BUF, 591864),  // 0x6acb58
+  DAT_006ad108: new Uint8Array(_BUF, 593320),  // 0x6ad108
   DAT_006ad30c: new Uint8Array(_BUF, 593836),  // 0x6ad30c
   DAT_006ad354: new Uint8Array(_BUF, 593908),  // 0x6ad354
+  DAT_006ad358: new Uint8Array(_BUF, 593912),  // 0x6ad358
   DAT_006ad359: new Uint8Array(_BUF, 593913),  // 0x6ad359
   DAT_006ad35c: new Uint8Array(_BUF, 593916),  // 0x6ad35c
   DAT_006ad558: new Uint8Array(_BUF, 594424),  // 0x6ad558
@@ -511,9 +530,11 @@ export const G = {
   DAT_006c3188: new Uint8Array(_BUF, 683560),  // 0x6c3188
   DAT_006c8fc0: new Uint8Array(_BUF, 707680),  // 0x6c8fc0
   DAT_006c8fe0: new Uint8Array(_BUF, 707712),  // 0x6c8fe0
+  DAT_006cec84: new Uint8Array(_BUF, 731428),  // 0x6cec84
   DAT_006cec98: new Uint8Array(_BUF, 731448),  // 0x6cec98
   DAT_006ced20: new Uint8Array(_BUF, 731584),  // 0x6ced20
   DAT_006ced60: new Uint8Array(_BUF, 731648),  // 0x6ced60
+  DAT_006d1190: new Uint8Array(_BUF, 740912),  // 0x6d1190
   DAT_006d1db8: new Uint8Array(_BUF, 744024),  // 0x6d1db8
   DAT_006d4700: new Uint8Array(_BUF, 754592),  // 0x6d4700
   DAT_006d4704: new Uint8Array(_BUF, 754596),  // 0x6d4704
@@ -539,6 +560,7 @@ export const G = {
   DAT_00624f5c: 0,
   DAT_00624f60: 0,
   DAT_00624f68: 0,
+  DAT_00625090: 0,
   DAT_006250d8: 0,
   DAT_00625114: 0,
   DAT_00625114_val: 0,
@@ -556,6 +578,11 @@ export const G = {
   DAT_006252c0: 0,
   DAT_006252c4: 0,
   DAT_006252c8: 0,
+  DAT_00625d14: 0,
+  DAT_00625d34: 0,
+  DAT_00625e50: 0,
+  DAT_00625e54: 0,
+  DAT_00625e58: 0,
   DAT_00625e60: 0,
   DAT_00625e64: 0,
   DAT_00625e78: 0,
@@ -616,6 +643,10 @@ export const G = {
   DAT_0062c5b8: 0,
   DAT_0062c5bc: 0,
   DAT_0062c5c0: 0,
+  DAT_0062c608: 0,
+  DAT_0062c60c: 0,
+  DAT_0062c610: 0,
+  DAT_0062c614: 0,
   DAT_0062c990: 0,
   DAT_0062c994: 0,
   DAT_0062c998: 0,
@@ -672,11 +703,8 @@ export const G = {
   DAT_0062d0ac: 0,
   DAT_0062d0b0: 0,
   DAT_0062d0b8: 0,
-  DAT_0062d0bc: 0,
   DAT_0062d0c0: 0,
   DAT_0062d0c4: 0,
-  DAT_0062d7d0: 0,
-  DAT_0062d7d4: 0,
   DAT_0062d7e0: 0,
   DAT_0062d7e4: 0,
   DAT_0062d7e8: 0,
@@ -691,6 +719,8 @@ export const G = {
   DAT_0062d86c: 0,
   DAT_0062d870: 0,
   DAT_0062db00: 0,
+  DAT_0062db88: 0,
+  DAT_0062db8c: 0,
   DAT_0062dbd8: 0,
   DAT_0062dbdc: 0,
   DAT_0062dcf4: 0,
@@ -753,6 +783,36 @@ export const G = {
   DAT_0062e61c: 0,
   DAT_0062e6ec: 0,
   DAT_0062e854: 0,
+  DAT_0062e8ac: 0,
+  DAT_0062e8b4: 0,
+  DAT_0062e8b8: 0,
+  DAT_0062e8c0: 0,
+  DAT_0062e8c4: 0,
+  DAT_0062e8cc: 0,
+  DAT_0062e8d0: 0,
+  DAT_0062e8d8: 0,
+  DAT_0062e8dc: 0,
+  DAT_0062e8e4: 0,
+  DAT_0062e8f4: 0,
+  DAT_0062e8fc: 0,
+  DAT_0062e900: 0,
+  DAT_0062e908: 0,
+  DAT_0062e910: 0,
+  DAT_0062e918: 0,
+  DAT_0062e91c: 0,
+  DAT_0062e92c: 0,
+  DAT_0062e930: 0,
+  DAT_0062e934: 0,
+  DAT_0062e938: 0,
+  DAT_0062e93c: 0,
+  DAT_0062e940: 0,
+  DAT_0062e944: 0,
+  DAT_0062e948: 0,
+  DAT_0062e958: 0,
+  DAT_0062e95c: 0,
+  DAT_0062e960: 0,
+  DAT_0062e964: 0,
+  DAT_0062e968: 0,
   DAT_0062eb30: 0,
   DAT_0062eb34: 0,
   DAT_0062eb88: 0,
@@ -780,6 +840,17 @@ export const G = {
   DAT_00630d30: 0,
   DAT_00630d34: 0,
   DAT_00630d68: 0,
+  DAT_00630d90: 0,
+  DAT_00630dd4: 0,
+  DAT_00630dd8: 0,
+  DAT_00630f28: 0,
+  DAT_00630f2c: 0,
+  DAT_00630f30: 0,
+  DAT_00630f34: 0,
+  DAT_00630f38: 0,
+  DAT_00630f3c: 0,
+  DAT_00630f40: 0,
+  DAT_00630f44: 0,
   DAT_00631138: 0,
   DAT_0063113c: 0,
   DAT_00631320: 0,
@@ -805,6 +876,13 @@ export const G = {
   DAT_00632334: 0,
   DAT_00632338: 0,
   DAT_00632428: 0,
+  DAT_006324dc: 0,
+  DAT_00632528: 0,
+  DAT_00632538: 0,
+  DAT_00632544: 0,
+  DAT_0063254c: 0,
+  DAT_00632558: 0,
+  DAT_00632560: 0,
   DAT_00632578: 0,
   DAT_0063357c: 0,
   DAT_00633580: 0,
@@ -831,6 +909,7 @@ export const G = {
   DAT_00633cdc: 0,
   DAT_00633df4: 0,
   DAT_00633df8: 0,
+  DAT_00633dfc: 0,
   DAT_00633e00: 0,
   DAT_00633e40: 0,
   DAT_00633e44: 0,
@@ -889,11 +968,11 @@ export const G = {
   DAT_00635a3c: 0,
   DAT_00635a40: 0,
   DAT_00635a44: 0,
-  DAT_00635a58: 0,
   DAT_00635a9c: 0,
   DAT_00635aa0: 0,
   DAT_00635aa4: 0,
   DAT_00635c64: 0,
+  DAT_00635f0c: 0,
   DAT_00636058: 0,
   DAT_0063605c: 0,
   DAT_006365c4: 0,
@@ -909,7 +988,6 @@ export const G = {
   DAT_006365ec: 0,
   DAT_006365f0: 0,
   DAT_006365f4: 0,
-  DAT_006365f8: 0,
   DAT_006366a8: 0,
   DAT_006366ac: 0,
   DAT_006366b0: 0,
@@ -1132,9 +1210,13 @@ export const G = {
   DAT_0063cbd0: 0,
   DAT_0063cd4c: 0,
   DAT_0063ce50: 0,
+  DAT_0063cf54: 0,
+  DAT_0063d670: 0,
+  DAT_0063d774: 0,
   DAT_0063e4b8: 0,
   DAT_0063e4c0: 0,
   DAT_0063e4c8: 0,
+  DAT_0063e4e8: 0,
   DAT_0063e4ec: 0,
   DAT_0063e4f0: 0,
   DAT_0063e4f4: 0,
@@ -1184,19 +1266,30 @@ export const G = {
   DAT_0063fc58: 0,
   DAT_0063fc98: 0,
   DAT_0063fe08: 0,
+  DAT_0063fe50: 0,
   DAT_00640990: 0,
   DAT_006409d8: 0,
   DAT_00640b98: 0,
+  DAT_00642c48: 0,
   DAT_00643af8: 0,
+  DAT_00644770: 0,
   DAT_00644e48: 0,
   DAT_00644f3c: 0,
+  DAT_00644fb4: 0,
+  DAT_00645120: 0,
   DAT_00645fe8: 0,
   DAT_00646598: 0,
+  DAT_006465d8: 0,
+  DAT_00646650: 0,
   DAT_006466c8: 0,
   DAT_006469e0: 0,
-  DAT_00646cb8: 0,
   DAT_00647168: 0,
   DAT_00647748: 0,
+  DAT_00647788: 0,
+  DAT_00647fa0: 0,
+  DAT_00647fdc: 0,
+  DAT_006480d8: 0,
+  DAT_00648820: 0,
   DAT_006488d8: 0,
   DAT_0064b0d0: 0,
   DAT_0064b0d4: 0,
@@ -1261,6 +1354,7 @@ export const G = {
   DAT_0064b994: 0,
   DAT_0064b998: 0,
   DAT_0064b99c: 0,
+  DAT_0064b9b0: 0,
   DAT_0064b9bc: 0,
   DAT_0064bb08: 0,
   DAT_0064bc10: 0,
@@ -1279,7 +1373,6 @@ export const G = {
   DAT_0064bc34: 0,
   DAT_0064bc54: 0,
   DAT_0064bc56: 0,
-  DAT_0064bc60: 0,
   DAT_0064bc62: 0,
   DAT_0064bcb2: 0,
   DAT_0064bcb4: 0,
@@ -1313,21 +1406,25 @@ export const G = {
   DAT_0064bcdd: 0,
   DAT_0064bcf4: 0,
   DAT_0064c49c: 0,
+  DAT_0064c4a4: 0,
   DAT_0064c4b6: 0,
   DAT_0064c4be: 0,
   DAT_0064c4d6: 0,
   DAT_0064c4de: 0,
+  DAT_0064c4e4: 0,
   DAT_0064c4ee: 0,
   DAT_0064c506: 0,
   DAT_0064c546: 0,
   DAT_0064c54e: 0,
+  DAT_0064c55c: 0,
   DAT_0064c58e: 0,
+  DAT_0064c594: 0,
   DAT_0064c59e: 0,
   DAT_0064c5ae: 0,
   DAT_0064c5b6: 0,
   DAT_0064c5e0: 0,
   DAT_0064c630: 0,
-  DAT_00654b40: 0,
+  DAT_0064c7b6: 0,
   DAT_00654b70: 0,
   DAT_00654c73: 0,
   DAT_00654c74: 0,
@@ -1476,6 +1573,7 @@ export const G = {
   DAT_0066bfc4: 0,
   DAT_0066bfd0: 0,
   DAT_0066c408: 0,
+  DAT_0066c4e9: 0,
   DAT_0066c4f8: 0,
   DAT_0066c602: 0,
   DAT_0066c60a: 0,
@@ -1535,6 +1633,8 @@ export const G = {
   DAT_00673fc4: 0,
   DAT_006787cc: 0,
   DAT_00679641: 0,
+  DAT_00679642: 0,
+  DAT_00679643: 0,
   DAT_00679fe8: 0,
   DAT_00679fec: 0,
   DAT_00679ff0: 0,
@@ -1546,15 +1646,31 @@ export const G = {
   DAT_0067a404: 0,
   DAT_0067a408: 0,
   DAT_0067a428: 0,
+  DAT_0067a434: 0,
   DAT_0067a438: 0,
+  DAT_0067a43c: 0,
   DAT_0067a440: 0,
+  DAT_0067a44c: 0,
+  DAT_0067a454: 0,
   DAT_0067a458: 0,
+  DAT_0067a464: 0,
+  DAT_0067a46c: 0,
   DAT_0067a4b8: 0,
+  DAT_0067a4c4: 0,
+  DAT_0067a4cc: 0,
   DAT_0067a4e8: 0,
+  DAT_0067a4f4: 0,
+  DAT_0067a4fc: 0,
   DAT_0067a518: 0,
+  DAT_0067a524: 0,
+  DAT_0067a52c: 0,
   DAT_0067a530: 0,
+  DAT_0067a53c: 0,
+  DAT_0067a544: 0,
   DAT_0067a588: 0,
   DAT_0067a638: 0,
+  DAT_0067a644: 0,
+  DAT_0067a64c: 0,
   DAT_0067a798: 0,
   DAT_0067a7a0: 0,
   DAT_0067a7a8: 0,
@@ -1580,10 +1696,10 @@ export const G = {
   DAT_0067ab65: 0,
   DAT_0067ab66: 0,
   DAT_0067ab67: 0,
-  DAT_0067ab90: 0,
   DAT_0067ab94: 0,
   DAT_0068abd0: 0,
   DAT_0068abd4: 0,
+  DAT_0068abd8: 0,
   DAT_0068abe0: 0,
   DAT_0068acfc: 0,
   DAT_0068ad04: 0,
@@ -1598,9 +1714,13 @@ export const G = {
   DAT_0068aee0: 0,
   DAT_0068aee4: 0,
   DAT_0069b018: 0,
+  DAT_0069b020: 0,
+  DAT_0069b028: 0,
+  DAT_0069b030: 0,
   DAT_0069b03c: 0,
   DAT_006a1864: 0,
   DAT_006a1870: 0,
+  DAT_006a18c0: 0,
   DAT_006a1908: 0,
   DAT_006a19d4: 0,
   DAT_006a19d8: 0,
@@ -1610,13 +1730,16 @@ export const G = {
   DAT_006a19e8: 0,
   DAT_006a19ec: 0,
   DAT_006a19f0: 0,
+  DAT_006a1b7c: 0,
   DAT_006a1d78: 0,
   DAT_006a1d7c: 0,
   DAT_006a1d80: 0,
   DAT_006a2d40: 0,
   DAT_006a2d44: 0,
   DAT_006a2d48: 0,
+  DAT_006a2d58: 0,
   DAT_006a2d5c: 0,
+  DAT_006a2dd4: 0,
   DAT_006a4798: 0,
   DAT_006a4f90: 0,
   DAT_006a4f98: 0,
@@ -1654,7 +1777,6 @@ export const G = {
   DAT_006a65bc: 0,
   DAT_006a65c0: 0,
   DAT_006a65c4: 0,
-  DAT_006a65c8: 0,
   DAT_006a65cc: 0,
   DAT_006a65d0: 0,
   DAT_006a65d4: 0,
@@ -1804,7 +1926,6 @@ export const G = {
   DAT_006ad0ec: 0,
   DAT_006ad0f0: 0,
   DAT_006ad0f4: 0,
-  DAT_006ad108: 0,
   DAT_006ad10c: 0,
   DAT_006ad110: 0,
   DAT_006ad120: 0,
@@ -1831,7 +1952,6 @@ export const G = {
   DAT_006ad308: 0,
   DAT_006ad310: 0,
   DAT_006ad330: 0,
-  DAT_006ad358: 0,
   DAT_006ad578: 0,
   DAT_006ad57c: 0,
   DAT_006ad59c: 0,
@@ -1918,6 +2038,7 @@ export const G = {
   DAT_006c907c: 0,
   DAT_006c9088: 0,
   DAT_006c9090: 0,
+  DAT_006c9098: 0,
   DAT_006c90b4: 0,
   DAT_006c90c0: 0,
   DAT_006c90c8: 0,
@@ -1953,7 +2074,6 @@ export const G = {
   DAT_006c9288: 0,
   DAT_006cec78: 0,
   DAT_006cec80: 0,
-  DAT_006cec84: 0,
   DAT_006cec88: 0,
   DAT_006cec90: 0,
   DAT_006ceca8: 0,
@@ -1972,7 +2092,6 @@ export const G = {
   DAT_006d117c: 0,
   DAT_006d1180: 0,
   DAT_006d1188: 0,
-  DAT_006d1190: 0,
   DAT_006d1da0: 0,
   DAT_006d1da4: 0,
   DAT_006d1da8: 0,

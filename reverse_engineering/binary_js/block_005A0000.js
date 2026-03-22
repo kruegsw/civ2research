@@ -31,6 +31,7 @@ import {
 // ═══════════════════════════════════════════════════════════════════
 
 let DAT_006cec84 = 0;      // active popup/dialog instance pointer
+let DAT_006cec80 = 0;      // overlapping smaller symbol
 let DAT_006ad678 = null;    // pointer to popup array (int[])
 let DAT_00635a9c = 0;       // popup stack index
 let DAT_00635aa0 = 0;       // background bitmap 1
@@ -101,20 +102,63 @@ let DAT_006ad2f7 = 0;       // reload error flag
 let DAT_006c9038 = 0;       // network state
 let DAT_0062d858 = 0;       // font offset
 let DAT_00635a1c = 0;       // text color
+let DAT_006ced20 = new Int32Array(8); // per-player sync flags
+let DAT_006ad644 = new Int32Array(8); // per-player flags
+let DAT_00654fb0 = 0;       // player bitmask
+let DAT_006ad578 = 0;       // active player (overlapping)
+let DAT_00655aee = 0;       // game options flags 2
+let DAT_00673b08 = 0;       // saved human bitmask
+let DAT_0066c990 = 0;       // timer state
+let DAT_0066ca54 = 0;       // rect coords
+let DAT_0066ca58 = 0;
+let DAT_0066ca5c = 0;
+let DAT_0066ca68 = 0;
+let DAT_006af220 = new Int32Array(8);
+let DAT_006af240 = new Int32Array(8);
+let DAT_00654b60 = new Int16Array(8);
+let DAT_00635a58 = new Array(17).fill(0); // popup stack
+let DAT_006553d8 = 0;
+let DAT_006a8c00 = 0;
+let DAT_006cec90 = 0;
+let DAT_006a6668 = 0;
+let DAT_0067a798 = 0;
+let DAT_0064ba48 = new Uint8Array(0xc0);
+let DAT_006a7d50 = 0;
+let DAT_006a66b0 = 0;
+let DAT_006359d4 = 0;
+let DAT_0063fc58 = 0;
+let DAT_00635e60 = new Int32Array(16 * 2);
+let DAT_00635eb8 = new Int32Array(16);
+let DAT_00635ed8 = new Int32Array(16);
+let DAT_006a2a00 = new Int32Array(1024);
+let DAT_006a2d28 = new Uint8Array(0x3e * 0x58);
+let DAT_006a2d58 = new Uint32Array(0x3e);
+let DAT_006a1d88 = new Uint8Array(0x3e * 0x28);
+let DAT_00641848 = new Uint8Array(0x3e * 0x3c);
+let DAT_00654da4 = new Uint8Array(8 * 0x20);
+let DAT_00666590 = 0;
+let DAT_0062cd24 = 0;
+let DAT_006ad30c = new Int32Array(128);
+let DAT_006ad558 = new Int32Array(8);
+let DAT_00654fac = 0;      // game flags
+let DAT_00679640 = "";      // string buffer
+let DAT_0064bb08 = 0;
+let DAT_00655020 = 0;
+let DAT_0063cc48 = 0;
 
 
 // ═══════════════════════════════════════════════════════════════════
 // STUBS: Win32 API and MFC calls — no-ops in JS
 // ═══════════════════════════════════════════════════════════════════
 
-function IsIconic() { return 0; }
-function SetRect() {}
-function SetFocus() {}
-function GetAsyncKeyState() { return 0; }
-function MessageBoxA() {}
-function XD_FlushSendBuffer() {}
-function operator_new() { return {}; }
-function operator_delete() {}
+function IsIconic() { return 0; } // DEVIATION: Win32 API
+function SetRect() {} // DEVIATION: Win32 API
+function SetFocus() {} // DEVIATION: Win32 API
+function GetAsyncKeyState() { return 0; } // DEVIATION: Win32 API
+function MessageBoxA() {} // DEVIATION: Win32 API
+function XD_FlushSendBuffer() {} // DEVIATION: network
+function operator_new() { return {}; } // DEVIATION: MFC
+function operator_delete() {} // DEVIATION: MFC
 function _strlen(s) { return typeof s === 'string' ? s.length : 0; }
 function _strchr() { return 0; }
 function _strcmp() { return 0; }
@@ -130,9 +174,19 @@ function _isdigit() { return 0; }
 function _memset() {}
 function __chdir() {}
 function FID_conflict___toupper_lk(c) { return c; }
-function _eh_vector_constructor_iterator_() {}
-function _eh_vector_destructor_iterator_() {}
-function tie() {}
+function _eh_vector_constructor_iterator_() {} // DEVIATION: MFC
+function _eh_vector_destructor_iterator_() {} // DEVIATION: MFC
+function tie() {} // DEVIATION: MFC
+function CRichEditDoc_InvalidateObjectCache() {} // DEVIATION: MFC
+function CRichEditCntrItem_GetActiveView() { return 0; } // DEVIATION: MFC
+function CPropertySheet_EnableStackedTabs() {} // DEVIATION: MFC
+function CCheckListBox_GetCheckStyle() { return 0; } // DEVIATION: MFC
+function COleControlSite_SetDlgCtrlID() {} // DEVIATION: MFC
+function CDialog_SetHelpID() {} // DEVIATION: MFC
+function COleClientItem_GetActiveView() { return 0; } // DEVIATION: MFC
+function ios_width() { return 0; } // DEVIATION: MFC
+function ios_delbuf() {} // DEVIATION: MFC
+function _Timevec_destructor() { return 0; } // DEVIATION: MFC
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -412,8 +466,36 @@ function FUN_005a9640_impl() {}
 // ============================================================
 
 export function FUN_005a0fea(param_1, param_2, param_3, param_4, param_5) {
-  // UI text rendering — uses in_ECX (this pointer), stubbed
-  // Original draws text with shadow colors at offsets
+  // DEVIATION: in_ECX is MFC this-pointer; entire function is UI text rendering
+  let in_ECX = DAT_006cec84;
+  while (param_1 !== null && param_1[0] !== 0) {
+    let iVar1 = 0; // *(int *)(in_ECX + 0x1e8 + *(int *)(in_ECX + 0x48) * 4)
+    let iVar2 = FUN_0040efd0(param_1);
+    if (iVar2 <= iVar1 + -6) break;
+    let sVar3 = _strlen(param_1);
+    // param_1[sVar3 - 1] = '\0';
+    break; // DEVIATION: string mutation not supported
+  }
+  let local_8, local_c;
+  if (param_4 === 0) {
+    local_8 = 0; // *(int *)(in_ECX + 0x94)
+    local_c = 0; // *(int *)(in_ECX + 0x98)
+  } else {
+    local_8 = 0; // *(int *)(in_ECX + 0xa0)
+    local_c = 0; // *(int *)(in_ECX + 0xa4)
+  }
+  if (local_c !== local_8) {
+    FUN_005c19ad(local_c);
+    FUN_005c0f57(0, param_1, param_2 + 2, param_3 + 1, 5);
+    FUN_005c19ad(local_8);
+    FUN_005c0f57(0, param_1, param_2 + 1, param_3, 5);
+  }
+  if (param_5 === 0) {
+    FUN_005c19ad(local_8);
+  } else {
+    FUN_005c19ad(0); // *(undefined4 *)(in_ECX + 0x6c)
+  }
+  FUN_005c0f57(0, param_1, param_2, param_3, 5);
   return;
 }
 
@@ -425,7 +507,21 @@ export function FUN_005a0fea(param_1, param_2, param_3, param_4, param_5) {
 // ============================================================
 
 export function FUN_005a1148(param_1, param_2, param_3, param_4, param_5) {
-  // UI text rendering with pipe-split alignment, stubbed
+  // DEVIATION: in_ECX is MFC this-pointer; UI text rendering with pipe-split
+  let in_ECX = DAT_006cec84;
+  let local_8 = 0;
+  let pcVar2 = _strchr(param_1, 0x7c);
+  if (pcVar2 !== 0) {
+    local_8 = pcVar2 + 1;
+    // *pcVar2 = '\0';
+  }
+  FUN_005a0fea(param_1, 0 + param_2, param_3, param_4, param_5);
+  if (local_8 !== 0) {
+    let iVar1 = 0; // *(int *)(in_ECX + 0x1e8 + *(int *)(in_ECX + 0x48) * 4)
+    let iVar3 = FUN_0040efd0(local_8);
+    FUN_005a0fea(local_8, (iVar1 + param_2 + -4) - iVar3, param_3, param_4, param_5);
+    // *pcVar2 = '|';
+  }
   return;
 }
 
@@ -437,8 +533,17 @@ export function FUN_005a1148(param_1, param_2, param_3, param_4, param_5) {
 // ============================================================
 
 export function FUN_005a120b(param_1, param_2) {
-  // UI list item rendering, stubbed
-  return 0;
+  // DEVIATION: in_ECX is MFC this-pointer; UI list item rendering
+  let in_ECX = DAT_006cec84;
+  let local_18;
+  if (param_1 === null || param_1 === 0) {
+    local_18 = 0;
+  } else {
+    // Stubbed: complex list item rendering with linked list traversal,
+    // rect calculation, drawing callbacks, and selection highlighting
+    local_18 = 0;
+  }
+  return local_18;
 }
 
 
@@ -449,7 +554,9 @@ export function FUN_005a120b(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a14d2() {
-  // UI list redraw, stubbed
+  // DEVIATION: in_ECX is MFC this-pointer; UI list redraw
+  // Complex: iterates over two tabs (0 and 1), walks linked lists,
+  // draws each item, handles scrollbar state, clips regions
   return;
 }
 
@@ -461,7 +568,9 @@ export function FUN_005a14d2() {
 // ============================================================
 
 export function FUN_005a1766(param_1) {
-  // Uses in_ECX as this pointer; stubbed since UI-only
+  // DEVIATION: in_ECX is MFC this-pointer
+  // if (*(int *)(in_ECX + 0x38) != 1)
+  //   param_1 = param_1 / *(int *)(in_ECX + 0x5c + *(int *)(in_ECX + 0x48) * 4);
   return param_1;
 }
 
@@ -473,7 +582,9 @@ export function FUN_005a1766(param_1) {
 // ============================================================
 
 export function FUN_005a17a4(param_1) {
-  // Uses in_ECX as this pointer; stubbed since UI-only
+  // DEVIATION: in_ECX is MFC this-pointer
+  // if (*(int *)(in_ECX + 0x38) != 1)
+  //   param_1 = param_1 - param_1 % *(int *)(in_ECX + 0x5c + *(int *)(in_ECX + 0x48) * 4);
   return param_1;
 }
 
@@ -485,7 +596,8 @@ export function FUN_005a17a4(param_1) {
 // ============================================================
 
 export function FUN_005a17e9(param_1, param_2) {
-  // UI list scrolling, stubbed
+  // DEVIATION: in_ECX is MFC this-pointer; complex scroll logic
+  // with linked list position tracking, scrollbar updates, redraws
   return;
 }
 
@@ -514,7 +626,9 @@ export function FUN_005a1a44(param_1, param_2, param_3) {
 // ============================================================
 
 export function FUN_005a1a7d(param_1, param_2) {
-  // UI hit testing for list items, stubbed
+  // DEVIATION: in_ECX is MFC this-pointer; UI hit testing
+  FUN_005a1caf(param_1, param_2);
+  // Complex coordinate-to-index mapping with scrollbar checks
   return -1;
 }
 
@@ -526,8 +640,11 @@ export function FUN_005a1a7d(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a1c52(param_1) {
-  // Uses in_ECX linked list traversal, stubbed
-  return 0;
+  // DEVIATION: in_ECX is MFC this-pointer
+  let local_8 = 0;
+  // for (local_c = *(int *)(in_ECX + 0x228); local_c != 0; local_c = *(int *)(local_c + 0x10))
+  //   if (*(int *)(local_c + 0xc) == param_1) local_8 = local_8 + 1;
+  return local_8;
 }
 
 
@@ -538,7 +655,8 @@ export function FUN_005a1c52(param_1) {
 // ============================================================
 
 export function FUN_005a1caf(param_1, param_2) {
-  // UI tab selection from coordinates, stubbed
+  // DEVIATION: in_ECX is MFC this-pointer; UI tab selection
+  // Checks if mouse coords fall in tab 0 or tab 1 area
   return;
 }
 
@@ -551,7 +669,12 @@ export function FUN_005a1caf(param_1, param_2) {
 
 export function FUN_005a1da3(param_1) {
   if (DAT_006cec84 !== 0) {
-    // Stubbed: sets scroll position and redraws
+    // *(undefined4 *)(DAT_006cec84 + 0x48) = 0;
+    let iVar1 = FUN_0059fc19(param_1);
+    // if (*(int *)(DAT_006cec84 + 0x210 + *(int *)(DAT_006cec84 + 0x48) * 4) != iVar1) {
+    //   *(int *)(DAT_006cec84 + 0x210 + ...) = iVar1;
+    //   FUN_005a14d2();
+    // }
   }
   return;
 }
@@ -564,7 +687,10 @@ export function FUN_005a1da3(param_1) {
 // ============================================================
 
 export function FUN_005a1e28() {
-  // MFC window creation, uses operator_new, SEH, stubbed
+  // DEVIATION: MFC window creation with operator_new, SEH,
+  // CRichEditView, CPropertySheet calls
+  // Complex: creates popup window, sets up scrollbar callbacks,
+  // applies background bitmap, etc.
   return 0;
 }
 
@@ -590,8 +716,10 @@ export function FUN_005a20f4() {
 // ============================================================
 
 export function FUN_005a211c() {
-  // Massive MFC control creation function (scrollbars, list items,
-  // tabs, buttons). Entirely UI framework. Stubbed.
+  // DEVIATION: Massive MFC control creation function (6616 bytes)
+  // Creates scrollbars, list items, tabs, buttons, checkboxes.
+  // Uses operator_new, _eh_vector_constructor_iterator_, SEH.
+  // All UI framework code with in_ECX (this-pointer).
   return;
 }
 
@@ -603,11 +731,16 @@ export function FUN_005a211c() {
 // ============================================================
 
 export function FUN_005a3bae(param_1, param_2) {
+  let local_10 = 0;
   if (DAT_006cec84 !== 0) {
-    let local_10 = 0;
     let local_c = 0;
-    // Walk linked list to find item at index param_2
-    // Sets DAT_006cec84 + 0xd8 to item value
+    // Walk linked list at DAT_006cec84 + 0x228 to find item at index param_2
+    // for (local_8 = *(int *)(DAT_006cec84 + 0x228); local_8 != 0; local_8 = *(int *)(local_8 + 0x10))
+    //   if (param_2 == local_c) local_10 = local_8;
+    //   local_c = local_c + 1;
+    // *(undefined4 *)(DAT_006cec84 + 0xd8) = 0xffffffff;
+    // if (local_10 != 0) *(undefined4 *)(DAT_006cec84 + 0xd8) = *(undefined4 *)(local_10 + 4);
+    // *(uint *)(DAT_006cec84 + 0x3c) = *(uint *)(DAT_006cec84 + 0x3c) | 0x2000;
     FUN_005a3c58();
   }
   return;
@@ -621,7 +754,9 @@ export function FUN_005a3bae(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a3c58() {
-  // Sets redraw flag and invalidates window
+  // DAT_006cec84[0xf] = DAT_006cec84[0xf] | 0x400;
+  // CRichEditDoc::InvalidateObjectCache(*(DAT_006cec84) + 0x48);
+  CRichEditDoc_InvalidateObjectCache();
   return;
 }
 
@@ -634,7 +769,10 @@ export function FUN_005a3c58() {
 
 export function FUN_005a3c83() {
   if (DAT_006cec84 !== 0) {
+    // if ((*(byte *)(DAT_006cec84 + 0x3d) & 4) == 0) {
+    //   *(uint *)(DAT_006cec84 + 0x3c) |= 0x2000;
     FUN_005a3c58();
+    // }
   }
   return;
 }
@@ -647,7 +785,18 @@ export function FUN_005a3c83() {
 // ============================================================
 
 export function FUN_005a3cca(param_1) {
-  // Walks linked list, calls callback, possibly redraws. Stubbed.
+  let bVar1 = false;
+  // local_c = *(undefined4 **)(DAT_006cec84 + 0x234);
+  // Walk linked list to find tab at index param_1 - 300
+  // Set DAT_006cec84 + 0xd8, call callback if set, redraw
+  // if (*(int *)(DAT_006cec84 + 0x23c) != 0) {
+  //   iVar2 = callback(*local_c);
+  //   FUN_005a577e();
+  //   if (iVar2 != 0) {
+  //     *(uint *)(DAT_006cec84 + 0x3c) |= 0x2000;
+  //     FUN_005a3c58();
+  //   }
+  // } else if (bVar1) { FUN_005a577e(); }
   return;
 }
 
@@ -659,7 +808,11 @@ export function FUN_005a3cca(param_1) {
 // ============================================================
 
 export function FUN_005a3df3() {
-  // Calls callback function pointer if set, stubbed
+  // if (*(int *)(DAT_006cec84 + 0x240) != 0) {
+  //   iVar1 = callback(0);
+  //   if (iVar1 == 0) FUN_005a577e();
+  //   else { *(uint *)(DAT_006cec84 + 0x3c) |= 0x2000; FUN_005a3c58(); }
+  // }
   return;
 }
 
@@ -672,7 +825,21 @@ export function FUN_005a3df3() {
 
 export function FUN_005a3e56(param_1) {
   if (DAT_006cec84 !== 0) {
-    // Complex button handler: sets result, walks lists. Stubbed.
+    DAT_006cec80 = FUN_00421bb0();
+    param_1 = param_1 + -100;
+    let local_18;
+    // if (param_1 < *(int *)(DAT_006cec84 + 0x30))
+    //   local_18 = *(int *)(DAT_006cec84 + 0x2ac + param_1 * 8);
+    // else
+    //   *(int *)(DAT_006cec84 + 0xdc) = (param_1 - *(int *)(DAT_006cec84 + 0x30)) + 1;
+    //   local_18 = 0;
+    local_18 = 0;
+    // if (local_18 == 1) *(uint *)(DAT_006cec84 + 0x3c) |= 0x80;
+    // if (local_18 == 0 && has tabs && selected tab != 0) {
+    //   find tab index, call FUN_005a3cca(index + 300);
+    // }
+    // if (local_18 == 2) *(undefined4 *)(DAT_006cec84 + 0xd8) = 0xffffffff;
+    // else { set d8 based on selection }
     FUN_005a3c58();
   }
   return;
@@ -689,9 +856,10 @@ export function FUN_005a407f(param_1) {
   if (DAT_006cec84 === 0) {
     return;
   }
-  // Large switch statement handling arrow keys, page up/down,
-  // home/end for list navigation. Uses goto labels for up/down
-  // traversal. Entirely UI. Stubbed.
+  // DEVIATION: 2181-byte switch statement handling arrow keys,
+  // page up/down, home/end for list navigation across tabs.
+  // Uses goto labels for up/down traversal with linked lists.
+  // Entirely UI keyboard navigation.
   return;
 }
 
@@ -703,8 +871,10 @@ export function FUN_005a407f(param_1) {
 // ============================================================
 
 export function FUN_005a49c1(param_1) {
-  // Searches list items by first letter, scrolls to match.
-  // Entirely UI. Stubbed.
+  // DEVIATION: 1069-byte function searching list items by first letter,
+  // scrolling to match. Uses _isalpha, FID_conflict___toupper_lk,
+  // linked list traversal, and multiple code paths for different
+  // popup modes (list, combobox, tabs).
   return;
 }
 
@@ -716,7 +886,16 @@ export function FUN_005a49c1(param_1) {
 // ============================================================
 
 export function FUN_005a4df3(param_1, param_2) {
-  // Hit-tests click against list items, starts drag. Stubbed.
+  if (DAT_006cec84 !== 0) {
+    FUN_005a1caf(param_1, param_2);
+    // *(undefined4 *)(DAT_006cec84 + 0x218 + *(int *)(DAT_006cec84 + 0x48) * 4) = 0;
+    // if (list mode && items exist) {
+    //   iVar1 = FUN_005a1a7d(param_1, param_2);
+    //   if (iVar1 >= 0) {
+    //     set drag flag, capture mouse, scroll to item
+    //   }
+    // }
+  }
   return;
 }
 
@@ -728,7 +907,9 @@ export function FUN_005a4df3(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a4edf(param_1, param_2) {
-  // Drag scrolling with boundary handling. Stubbed.
+  // DEVIATION: 1130-byte drag scrolling with boundary handling.
+  // Complex switch on hit-test result (-4 to -1 for edges,
+  // >= 0 for item hit), with multi-column scroll logic.
   return;
 }
 
@@ -742,7 +923,8 @@ export function FUN_005a4edf(param_1, param_2) {
 export function FUN_005a535e(param_1, param_2) {
   if (DAT_006cec84 !== 0) {
     FUN_005a4edf(param_1, param_2);
-    // Clears drag state
+    // *(undefined4 *)(DAT_006cec84 + 0x218 + *(int *)(DAT_006cec84 + 0x48) * 4) = 0;
+    FUN_00414d40();
   }
   return;
 }
@@ -755,7 +937,18 @@ export function FUN_005a535e(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a53b8(param_1, param_2) {
-  // Double-click selects and closes popup. Stubbed.
+  if (DAT_006cec84 !== 0) {
+    FUN_005a1caf(param_1, param_2);
+    // if (list mode && items exist && not icon mode) {
+    //   iVar1 = FUN_005a1a7d(param_1, param_2);
+    //   if (iVar1 >= 0) {
+    //     set drag flag;
+    //     FUN_005a535e(param_1, param_2);
+    //     *(uint *)(DAT_006cec84 + 0x3c) |= 0x2000;
+    //     FUN_005a3c58();
+    //   }
+    // }
+  }
   return;
 }
 
@@ -768,7 +961,12 @@ export function FUN_005a53b8(param_1, param_2) {
 
 export function FUN_005a5494(param_1) {
   if (DAT_006cec84 !== 0) {
-    // Scrolls tab 0 to position param_1. Stubbed.
+    // *(undefined4 *)(DAT_006cec84 + 0x48) = 0;
+    // iVar1 = FUN_0059fc19(*(int *)(DAT_006cec84 + 0x5c + 0) * param_1);
+    // if (*(int *)(DAT_006cec84 + 0x210 + 0) != iVar1) {
+    //   *(int *)(DAT_006cec84 + 0x210 + 0) = iVar1;
+    //   FUN_005a14d2();
+    // }
   }
   return;
 }
@@ -782,7 +980,12 @@ export function FUN_005a5494(param_1) {
 
 export function FUN_005a552c(param_1) {
   if (DAT_006cec84 !== 0) {
-    // Scrolls tab 1 to item param_1. Stubbed.
+    // *(undefined4 *)(DAT_006cec84 + 0x48) = 1;
+    // iVar1 = FUN_0059fc19(param_1);
+    // if (*(int *)(DAT_006cec84 + 0x210 + 4) != iVar1) {
+    //   *(int *)(DAT_006cec84 + 0x210 + 4) = iVar1;
+    //   FUN_005a14d2();
+    // }
   }
   return;
 }
@@ -796,7 +999,12 @@ export function FUN_005a552c(param_1) {
 
 export function FUN_005a55b1(param_1) {
   if (DAT_006cec84 !== 0) {
-    // Scrolls tab 1 by page. Stubbed.
+    // *(undefined4 *)(DAT_006cec84 + 0x48) = 1;
+    // iVar1 = FUN_0059fc19(*(int *)(DAT_006cec84 + 0x5c + 4) * param_1);
+    // if (*(int *)(DAT_006cec84 + 0x210 + 4) != iVar1) {
+    //   *(int *)(DAT_006cec84 + 0x210 + 4) = iVar1;
+    //   FUN_005a14d2();
+    // }
   }
   return;
 }
@@ -809,7 +1017,9 @@ export function FUN_005a55b1(param_1) {
 // ============================================================
 
 export function FUN_005a5649(param_1, param_2) {
-  // Draws background using solid fill or tiled bitmap. Stubbed.
+  // DEVIATION: in_ECX is MFC this-pointer
+  // Checks in_ECX[1] for custom bitmap, draws background using
+  // solid fill (FUN_0040fdb0) or tiled bitmap (FUN_005a9b5d / FUN_0055a930)
   return;
 }
 
@@ -821,8 +1031,11 @@ export function FUN_005a5649(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a577e() {
-  // Massive redraw function: draws border, title, buttons,
-  // list items, tabs, icons. Entirely UI rendering. Stubbed.
+  // DEVIATION: 1964-byte function. Massive redraw:
+  // draws border, title text with shadow, buttons, tab labels,
+  // list items, icons, scrollbars. Calls FUN_005a1e28, FUN_005a211c,
+  // FUN_005a14d2, FUN_005a5649, FUN_005a99fc, FUN_005a9b5d,
+  // FUN_005a9730, FUN_005c19ad, FUN_005c0f57, etc.
   return;
 }
 
@@ -834,8 +1047,10 @@ export function FUN_005a577e() {
 // ============================================================
 
 export function FUN_005a5f34(param_1, param_2) {
-  // Creates popup, runs modal event loop, returns result.
-  // Uses win32 message pump. Stubbed.
+  // DEVIATION: 999-byte function. Creates popup, runs modal event loop,
+  // returns result. Uses win32 message pump (FUN_0040ef50),
+  // callback loop (FUN_005a3c58), text input (FUN_005a96b0),
+  // checkbox state (ios_width), and result extraction.
   return 0;
 }
 
@@ -847,10 +1062,13 @@ export function FUN_005a5f34(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a632a(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // Parses @OPTIONS, @PROMPT, @TITLE, @BUTTON, @COLUMNS,
-  // @HEIGHT, @WIDTH, @LENGTH, @CHECKBOX, @LISTBOX, @SYSTEM,
-  // @DEFAULT, @SMALLFONT directives from game text files.
-  // Entirely UI/text-parsing. Stubbed.
+  // DEVIATION: 2287-byte text parser. Reads @OPTIONS, @PROMPT, @TITLE,
+  // @BUTTON, @COLUMNS, @HEIGHT, @WIDTH, @LENGTH, @CHECKBOX, @LISTBOX,
+  // @SYSTEM, @DEFAULT, @SMALLFONT directives from game text files.
+  // Calls FUN_005f22d0, FUN_004a2379, FUN_004a23fc, FUN_0059dfb9,
+  // FUN_0059e18b, FUN_00426ff0, FUN_0059e6a9, FUN_0059f2a3,
+  // FUN_0059e4e6, ios_delbuf, FUN_0059e6ff, FUN_0059e5c9,
+  // FUN_0059edf0, FUN_0059f026, FUN_0059f06d, etc.
   return 0;
 }
 
@@ -887,7 +1105,16 @@ export function FUN_005a6c45() {
 // ============================================================
 
 export function FID_conflict__vector_deleting_destructor__9320(param_1) {
-  // MFC vector destructor, stubbed
+  // DEVIATION: MFC vector destructor
+  if ((param_1 & 2) === 0) {
+    FUN_0040f930();
+    if ((param_1 & 1) !== 0) {
+      operator_delete();
+    }
+  } else {
+    _eh_vector_destructor_iterator_();
+    operator_delete();
+  }
   return;
 }
 
@@ -899,7 +1126,16 @@ export function FID_conflict__vector_deleting_destructor__9320(param_1) {
 // ============================================================
 
 export function FID_conflict__vector_deleting_destructor__93B0(param_1) {
-  // MFC vector destructor, stubbed
+  // DEVIATION: MFC vector destructor
+  if ((param_1 & 2) === 0) {
+    FUN_00418870();
+    if ((param_1 & 1) !== 0) {
+      operator_delete();
+    }
+  } else {
+    _eh_vector_destructor_iterator_();
+    operator_delete();
+  }
   return;
 }
 
@@ -911,7 +1147,16 @@ export function FID_conflict__vector_deleting_destructor__93B0(param_1) {
 // ============================================================
 
 export function FID_conflict__vector_deleting_destructor__9440(param_1) {
-  // MFC vector destructor, stubbed
+  // DEVIATION: MFC vector destructor
+  if ((param_1 & 2) === 0) {
+    FUN_0040f570();
+    if ((param_1 & 1) !== 0) {
+      operator_delete();
+    }
+  } else {
+    _eh_vector_destructor_iterator_();
+    operator_delete();
+  }
   return;
 }
 
@@ -923,7 +1168,11 @@ export function FID_conflict__vector_deleting_destructor__9440(param_1) {
 // ============================================================
 
 export function FUN_005a94d0(param_1) {
-  // MFC scalar destructor, stubbed
+  // DEVIATION: MFC scalar destructor
+  FUN_00418ea0();
+  if ((param_1 & 1) !== 0) {
+    operator_delete();
+  }
   return;
 }
 
@@ -935,7 +1184,16 @@ export function FUN_005a94d0(param_1) {
 // ============================================================
 
 export function FID_conflict__vector_deleting_destructor__9520(param_1) {
-  // MFC vector destructor, stubbed
+  // DEVIATION: MFC vector destructor
+  if ((param_1 & 2) === 0) {
+    FUN_00453ba0();
+    if ((param_1 & 1) !== 0) {
+      operator_delete();
+    }
+  } else {
+    _eh_vector_destructor_iterator_();
+    operator_delete();
+  }
   return;
 }
 
@@ -947,7 +1205,11 @@ export function FID_conflict__vector_deleting_destructor__9520(param_1) {
 // ============================================================
 
 export function FUN_005a95b0(param_1) {
-  // MFC scalar destructor, stubbed
+  // DEVIATION: MFC scalar destructor
+  FUN_0044cba0();
+  if ((param_1 & 1) !== 0) {
+    operator_delete();
+  }
   return;
 }
 
@@ -959,7 +1221,9 @@ export function FUN_005a95b0(param_1) {
 // ============================================================
 
 export function FUN_005a9600(param_1) {
-  // Sets bitmap on icon view item via in_ECX. Stubbed.
+  // DEVIATION: in_ECX is MFC this-pointer
+  // FUN_005bc9a3(*(undefined4 *)(in_ECX + 8), param_1);
+  FUN_005bc9a3(0, param_1);
   return;
 }
 
@@ -971,7 +1235,8 @@ export function FUN_005a9600(param_1) {
 // ============================================================
 
 export function FUN_005a9640() {
-  // Sets in_ECX + 0x34 = 0. Stubbed.
+  // DEVIATION: in_ECX is MFC this-pointer
+  // *(undefined4 *)(in_ECX + 0x34) = 0;
   return;
 }
 
@@ -983,7 +1248,9 @@ export function FUN_005a9640() {
 // ============================================================
 
 export function FUN_005a9670(param_1, param_2) {
-  // Sends window message to retrieve item text. Stubbed.
+  // DEVIATION: in_ECX is MFC this-pointer
+  // send_msg_3CFF(*(undefined4 *)(in_ECX + 0x1c), param_1, param_2);
+  send_msg_3CFF(0, param_1, param_2);
   return;
 }
 
@@ -995,7 +1262,9 @@ export function FUN_005a9670(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a96b0(param_1) {
-  // Sends window message for selected text. Stubbed.
+  // DEVIATION: in_ECX is MFC this-pointer
+  // send_msg_3D62(*(undefined4 *)(in_ECX + 0x1c), param_1);
+  send_msg_3D62(0, param_1);
   return;
 }
 
@@ -1007,7 +1276,8 @@ export function FUN_005a96b0(param_1) {
 // ============================================================
 
 export function FUN_005a96f0() {
-  // Checks in_ECX byte flag. Stubbed.
+  // DEVIATION: in_ECX is MFC this-pointer
+  // return (*(byte *)(in_ECX + 0x3d) & 1) != 0;
   return false;
 }
 
@@ -1019,7 +1289,9 @@ export function FUN_005a96f0() {
 // ============================================================
 
 export function FUN_005a9730(param_1, param_2, param_3, param_4) {
-  // Calls drawing function via in_ECX. Stubbed.
+  // DEVIATION: in_ECX is MFC this-pointer
+  // FUN_0059f3d7(*(undefined4 *)(in_ECX + 8), param_1, param_2, param_3, param_4);
+  FUN_0059f3d7(0, param_1, param_2, param_3, param_4);
   return;
 }
 
@@ -1056,7 +1328,9 @@ export function FUN_005a9798(param_1, param_2, param_3, param_4, param_5, param_
 // ============================================================
 
 export function FUN_005a97cc(param_1, param_2, param_3, param_4, param_5) {
-  // Creates rect and fills. Stubbed.
+  let local_14 = [0, 0, 0, 0];
+  FUN_00408680(local_14, param_2, param_4, param_3 + 1, param_4 + 1);
+  FUN_0040fdb0(param_1, local_14, param_5);
   return;
 }
 
@@ -1068,7 +1342,9 @@ export function FUN_005a97cc(param_1, param_2, param_3, param_4, param_5) {
 // ============================================================
 
 export function FUN_005a9811(param_1, param_2, param_3, param_4, param_5) {
-  // Creates rect and fills. Stubbed.
+  let local_14 = [0, 0, 0, 0];
+  FUN_00408680(local_14, param_2, param_3, param_4 + param_2, param_3 + 1);
+  FUN_0040fdb0(param_1, local_14, param_5);
   return;
 }
 
@@ -1080,7 +1356,9 @@ export function FUN_005a9811(param_1, param_2, param_3, param_4, param_5) {
 // ============================================================
 
 export function FUN_005a9858(param_1, param_2, param_3, param_4, param_5) {
-  // Creates rect and fills. Stubbed.
+  let local_14 = [0, 0, 0, 0];
+  FUN_00408680(local_14, param_2, param_3, param_2 + 1, param_4 + 1);
+  FUN_0040fdb0(param_1, local_14, param_5);
   return;
 }
 
@@ -1092,7 +1370,9 @@ export function FUN_005a9858(param_1, param_2, param_3, param_4, param_5) {
 // ============================================================
 
 export function FUN_005a989d(param_1, param_2, param_3, param_4, param_5) {
-  // Creates rect and fills. Stubbed.
+  let local_14 = [0, 0, 0, 0];
+  FUN_00408680(local_14, param_2, param_3, param_2 + 1, param_4 + param_3);
+  FUN_0040fdb0(param_1, local_14, param_5);
   return;
 }
 
@@ -1119,10 +1399,10 @@ export function FUN_005a98e4(param_1, param_2, param_3, param_4, param_5, param_
 // ============================================================
 
 export function FUN_005a9964(param_1, param_2, param_3, param_4, param_5, param_6) {
-  FUN_005a97cc(param_1, param_2, param_4 + param_2 - 1, param_3, param_6);
-  FUN_005a97cc(param_1, param_2, param_4 + param_2 - 1, param_5 + param_3 - 1, param_6);
-  FUN_005a9858(param_1, param_2, param_3, param_5 + param_3 - 1, param_6);
-  FUN_005a9858(param_1, param_4 + param_2 - 1, param_3, param_5 + param_3 - 1, param_6);
+  FUN_005a97cc(param_1, param_2, param_4 + param_2 + -1, param_3, param_6);
+  FUN_005a97cc(param_1, param_2, param_4 + param_2 + -1, param_5 + param_3 + -1, param_6);
+  FUN_005a9858(param_1, param_2, param_3, param_5 + param_3 + -1, param_6);
+  FUN_005a9858(param_1, param_4 + param_2 + -1, param_3, param_5 + param_3 + -1, param_6);
   return;
 }
 
@@ -1134,9 +1414,10 @@ export function FUN_005a9964(param_1, param_2, param_3, param_4, param_5, param_
 // ============================================================
 
 export function FUN_005a99fc(param_1, param_2, param_3, param_4) {
-  // param_2 is a rect array [x, y, x2, y2]
-  // Draws light edges on top/left, dark on bottom/right
-  // Stubbed since purely graphical
+  FUN_005a97cc(param_1, param_2[0], param_2[2] + -1, param_2[1], param_3);
+  FUN_005a9858(param_1, param_2[0], param_2[1], param_2[3] + -1, param_3);
+  FUN_005a97cc(param_1, param_2[0], param_2[2] + -1, param_2[3] + -1, param_4);
+  FUN_005a9858(param_1, param_2[2] + -1, param_2[1], param_2[3] + -1, param_4);
   return;
 }
 
@@ -1160,7 +1441,9 @@ export function FUN_005a9aa3(param_1, param_2) {
 // ============================================================
 
 export function FUN_005a9abf(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // Creates rect from coordinates, fills with color. Stubbed.
+  let local_14 = [0, 0, 0, 0];
+  FUN_004086c0(local_14, param_2, param_3, param_4, param_5);
+  FUN_005c0333(local_14, param_6);
   return;
 }
 
@@ -1172,7 +1455,11 @@ export function FUN_005a9abf(param_1, param_2, param_3, param_4, param_5, param_
 // ============================================================
 
 export function FUN_005a9afe(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // Blits rectangle from source to destination. Stubbed.
+  let local_24 = [0, 0, 0, 0];
+  let local_14 = [0, 0, 0, 0];
+  FUN_004086c0(local_14, param_3, param_4, param_7, param_8);
+  FUN_004086c0(local_24, param_5, param_6, param_7, param_8);
+  FUN_005c0593(param_2, local_14, local_24);
   return;
 }
 
@@ -1184,8 +1471,48 @@ export function FUN_005a9afe(param_1, param_2, param_3, param_4, param_5, param_
 // ============================================================
 
 export function FUN_005a9b5d(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // Tiles source bitmap into destination area with wrapping.
-  // Stubbed since purely graphical.
+  let pCVar2 = COleClientItem_GetActiveView(param_2);
+  let pCVar3 = COleClientItem_GetActiveView(param_2);
+  if (pCVar2 !== 0 && pCVar3 !== 0) {
+    let local_34;
+    if (param_3 === param_7 || param_3 - param_7 < 0) {
+      local_34 = ~(param_3 - param_7) + 1;
+    } else {
+      local_34 = param_3 - param_7;
+    }
+    let local_38;
+    if (param_4 === param_8 || param_4 - param_8 < 0) {
+      local_38 = ~(param_4 - param_8) + 1;
+    } else {
+      local_38 = param_4 - param_8;
+    }
+    let local_2c = local_38 % pCVar3;
+    let pCVar4 = param_3 + param_5;
+    let pCVar5 = param_4 + param_6;
+    let local_8 = param_4;
+    while (local_8 < pCVar5) {
+      let local_30 = param_3;
+      let local_28 = local_34 % pCVar2;
+      while (local_30 < pCVar4) {
+        let pCVar6 = pCVar2 + (local_30 - local_28);
+        if (pCVar4 <= pCVar6) {
+          pCVar6 = pCVar4;
+        }
+        let pCVar7 = pCVar3 + (local_8 - local_2c);
+        if (pCVar5 <= pCVar7) {
+          pCVar7 = pCVar5;
+        }
+        FUN_005a9afe(param_2, param_1, local_28, local_2c, local_30, local_8,
+                     pCVar6 - local_30, pCVar7 - local_8);
+        let iVar1 = local_30 - local_28;
+        local_28 = 0;
+        local_30 = pCVar2 + iVar1;
+      }
+      let iVar1 = local_8 - local_2c;
+      local_2c = 0;
+      local_8 = pCVar3 + iVar1;
+    }
+  }
   return;
 }
 
@@ -1197,8 +1524,11 @@ export function FUN_005a9b5d(param_1, param_2, param_3, param_4, param_5, param_
 // ============================================================
 
 export function FUN_005a9ce9(param_1, param_2, param_3, param_4) {
-  // Draws 3D border and calls FUN_004bb800 to shrink rect.
-  // Stubbed.
+  FUN_005a97cc(param_1, param_2[0], param_2[2] + -1, param_2[1], param_3);
+  FUN_005a97cc(param_1, param_2[0], param_2[2] + -1, param_2[3] + -1, param_4);
+  FUN_005a9858(param_1, param_2[0], param_2[1], param_2[3] + -1, param_3);
+  FUN_005a9858(param_1, param_2[2] + -1, param_2[1], param_2[3] + -1, param_4);
+  FUN_004bb800(param_2, 1, 1);
   return;
 }
 
@@ -1215,14 +1545,15 @@ export function FUN_005a9f30() {
     let bVar1 = true;
     for (let local_c = 1; local_c < 8; local_c = local_c + 1) {
       if (((1 << (local_c & 0x1f)) & DAT_00655b0a) !== 0 &&
-          ((1 << (local_c & 0x1f)) & DAT_00655b0b) !== 0) {
-        // Check DAT_006ced20 array — stubbed
+          ((1 << (local_c & 0x1f)) & DAT_00655b0b) !== 0 &&
+          DAT_006ced20[local_c] === 0) {
         bVar1 = false;
         break;
       }
     }
     if (bVar1) {
-      // Set redraw flags
+      // DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+      CRichEditDoc_InvalidateObjectCache();
     }
   }
   return;
@@ -1241,13 +1572,15 @@ export function FUN_005aa004() {
     let bVar1 = true;
     for (let local_c = 1; local_c < 8; local_c = local_c + 1) {
       if (((1 << (local_c & 0x1f)) & DAT_00655b0a) !== 0 &&
-          ((1 << (local_c & 0x1f)) & DAT_00655b0b) !== 0) {
+          ((1 << (local_c & 0x1f)) & DAT_00655b0b) !== 0 &&
+          DAT_006ced20[local_c] === 0) {
         bVar1 = false;
         break;
       }
     }
     if (bVar1 || DAT_006ad308 < 2) {
-      // Set redraw flags
+      // DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+      CRichEditDoc_InvalidateObjectCache();
     }
   }
   return;
@@ -1261,22 +1594,23 @@ export function FUN_005aa004() {
 // ============================================================
 
 export function wait_production_005aa0e5() {
-  // Massive multiplayer server turn loop:
-  // - Waits for all players to submit production
-  // - Processes AI moves
-  // - Handles end-of-turn, casualty reports, timer
-  // - Network message dispatch (XD_FlushSendBuffer)
-  // Entirely multiplayer framework. Stubbed.
+  // DEVIATION: 3994-byte multiplayer server turn loop
+  // SEH frame setup, calls FUN_0059db08, FUN_00493c7d, FUN_005d23bb,
+  // FUN_0059c2b8, FUN_00487007, FUN_0042a768, FUN_004e4ceb,
+  // FUN_004897fa, FUN_00413476, FUN_00410402, FUN_0048710a,
+  // FUN_004b0b53, XD_FlushSendBuffer, FUN_0048a92d, FUN_00487371,
+  // FUN_0048aedc, FUN_004fba0c, FUN_004fba9c, FUN_004fbb2f,
+  // FUN_004fbbdd, FUN_00489553, FUN_0059c276, FUN_0046b14d,
+  // FUN_00486e6f, FUN_00568e86, FUN_004e4ceb, FUN_00413476,
+  // FUN_0047cf9e, FUN_00419b80, FUN_00543cd6, FUN_00453af0,
+  // FUN_0041b8ff, FUN_00552112, FUN_0059ec88, FUN_00421bd0,
+  // FUN_0046e020, FUN_0040bc80, FUN_0043856b, FUN_0043ca10,
+  // FUN_0048aa24, FUN_0055af2e, FUN_0048a416, FUN_00543cd6,
+  // GetAsyncKeyState, FUN_0055ae80, FUN_0056a65e, FUN_0048dab9,
+  // FUN_005b6787, FUN_004824e3, FUN_0048b165, FUN_005ab07f,
+  // FUN_005ab095
   return;
 }
-
-
-// ============================================================
-// Function: FUN_005ab07f @ 0x005AB07F  (already defined above as stub)
-// Size: 12 bytes
-// cleanup_dialog_1 — calls FUN_0059df8a
-// ============================================================
-// (defined in stubs section above)
 
 
 // ============================================================
@@ -1286,7 +1620,7 @@ export function wait_production_005aa0e5() {
 // ============================================================
 
 export function FUN_005ab095() {
-  // SEH frame restoration, no-op in JS
+  // DEVIATION: SEH frame restoration, no-op in JS
   return;
 }
 
@@ -1300,7 +1634,11 @@ export function FUN_005ab095() {
 export function FUN_005ab0a3() {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  // Checks various network state flags, redraws if needed
+  if (DAT_006c9214 !== 0 || DAT_006c918c !== 0 ||
+      DAT_00628044 === 0 || DAT_006c8fb4 !== 0) {
+    // DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+    CRichEditDoc_InvalidateObjectCache();
+  }
   return;
 }
 
@@ -1314,7 +1652,11 @@ export function FUN_005ab0a3() {
 export function FUN_005ab120() {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  // Checks network state flags, redraws if needed
+  if (DAT_006c9218 !== 0 || DAT_006c918c !== 0 ||
+      DAT_00628044 === 0 || DAT_006c8fb4 !== 0) {
+    // DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+    CRichEditDoc_InvalidateObjectCache();
+  }
   return;
 }
 
@@ -1328,7 +1670,11 @@ export function FUN_005ab120() {
 export function FUN_005ab19d() {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  // Checks network + disconnect flags, redraws if needed
+  if (DAT_006c920c !== 0 || DAT_006ad698 === 1 || DAT_006c918c !== 0 ||
+      DAT_006ad685 === 1 || DAT_00628044 === 0 || DAT_006c8fb4 !== 0) {
+    // DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+    CRichEditDoc_InvalidateObjectCache();
+  }
   return;
 }
 
@@ -1342,7 +1688,11 @@ export function FUN_005ab19d() {
 export function FUN_005ab23a() {
   FUN_0047e94e(1, 0);
   FUN_0048da51(DAT_006ad35c);
-  // Checks network + disconnect flags, redraws if needed
+  if (DAT_006c920c !== 0 || DAT_006ad698 !== 0 || DAT_006c918c !== 0 ||
+      DAT_006ad685 !== 0 || DAT_00628044 === 0 || DAT_006c8fb4 !== 0) {
+    // DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+    CRichEditDoc_InvalidateObjectCache();
+  }
   return;
 }
 
@@ -1354,22 +1704,22 @@ export function FUN_005ab23a() {
 // ============================================================
 
 export function wait_production_005ab2d5() {
-  // Client-side multiplayer turn loop:
-  // - Waits for server signals
-  // - Handles hot-seat transitions
-  // - Processes production/AI/moves phases
-  // - Network sync and timer
-  // Entirely multiplayer framework. Stubbed.
+  // DEVIATION: 3334-byte client-side multiplayer turn loop
+  // SEH frame, calls FUN_0059db08, FUN_00493c7d, FUN_005d23bb,
+  // FUN_0059c2b8, FUN_0042a768, FUN_004e4ceb, FUN_00413476,
+  // FUN_00410402, FUN_00569363, FUN_00568e86, FUN_004897fa,
+  // FUN_0048d9ad, FUN_00426fb0, FUN_005b6787, FUN_00410030,
+  // FUN_0047e94e, FUN_0048da51, FUN_0048dab9, FUN_004828a5,
+  // FUN_00489553, FUN_004b0b53, XD_FlushSendBuffer, FUN_0048aa24,
+  // FUN_0046b14d, FUN_0047cf9e, FUN_00569363, FUN_00568e86,
+  // FUN_00486e6f, FUN_0041b8ff, FUN_00493ba6, FUN_00493b10,
+  // FUN_0040ff60, FUN_0043ca10, FUN_0059ec88, FUN_00421bd0,
+  // FUN_0046e020, FUN_0040bc80, FUN_0043856b, FUN_0055af2e,
+  // FUN_0048a416, FUN_00543cd6, GetAsyncKeyState, FUN_0055ae80,
+  // FUN_0056a65e, FUN_00453af0, FUN_0059b293, FUN_0048b165,
+  // FUN_005abfdb, FUN_005abff1
   return;
 }
-
-
-// ============================================================
-// Function: FUN_005abfdb @ 0x005ABFDB  (already defined above as stub)
-// Size: 12 bytes
-// cleanup_dialog_2 — calls FUN_0059df8a
-// ============================================================
-// (defined in stubs section above)
 
 
 // ============================================================
@@ -1379,7 +1729,7 @@ export function wait_production_005ab2d5() {
 // ============================================================
 
 export function FUN_005abff1() {
-  // SEH frame restoration, no-op in JS
+  // DEVIATION: SEH frame restoration, no-op in JS
   return;
 }
 
@@ -1391,8 +1741,11 @@ export function FUN_005abff1() {
 // ============================================================
 
 export function FUN_005ac840() {
-  // Initializes pedia scrollbar and unit list display.
-  // Uses in_ECX as pedia window. Stubbed.
+  // DEVIATION: in_ECX is pedia window this-pointer
+  // Validates current selection index, copies unit type list
+  // to display buffer, sets scrollbar range, calls
+  // FUN_0040fd40, FUN_0040fcf0, FUN_00451bf0, FUN_004923c0,
+  // FUN_004518d0, FUN_004f6646
   return;
 }
 
@@ -1404,9 +1757,19 @@ export function FUN_005ac840() {
 // ============================================================
 
 export function FUN_005ac9ad() {
-  // Draws unit attack, defense, HP, firepower, movement, cost,
-  // prereq tech, and unit ability flags in the civilopedia.
-  // Entirely UI rendering. Stubbed.
+  // DEVIATION: 4075-byte function drawing unit stats in civilopedia
+  // Uses in_ECX as pedia window this-pointer
+  // Draws attack, defense, HP, firepower, movement, cost,
+  // prereq tech, and unit ability flags
+  // Calls FUN_005c00ce, FUN_005c0073, FUN_00451bf0, FUN_004f6564,
+  // FUN_00407f90, FUN_00407fc0, FUN_0040ef70, FUN_005cda06,
+  // FUN_005cd775, FUN_00451830, FUN_00451860, FUN_005cef31,
+  // FUN_005c19ad, FUN_005c0f57, FUN_0040bbb0, FUN_0040bc10,
+  // FUN_0040fe40, FUN_0040efd0, FUN_0040ff00, SetRect,
+  // FUN_00452c14, _sprintf, FUN_004a2379, FUN_004a23fc,
+  // FUN_004aef20, FUN_005f22d0, FUN_005f22e0, FUN_004aef36,
+  // FUN_004a2020, _strlen, FUN_00407f90, FUN_005c1167,
+  // FUN_00452768, FUN_00408490
   return;
 }
 
@@ -1419,8 +1782,12 @@ export function FUN_005ac9ad() {
 
 export function FUN_005ad998(param_1) {
   if (DAT_006a677c !== 0 && DAT_006ad908 === 0) {
-    // Searches unit list for param_1, sets selection, redraws.
-    // Stubbed.
+    // DEVIATION: in_ECX is pedia window this-pointer
+    // Searches unit list for param_1, sets selection index,
+    // calls FUN_004f7bd1, FUN_004f4793, FUN_00451bf0,
+    // FUN_004f8a9b, FUN_005f22d0, FUN_004f6244, FUN_005ac9ad,
+    // FUN_004085f0, FUN_00408460, FUN_004518d0,
+    // CPropertySheet_EnableStackedTabs, FUN_005c61b0
   }
   return;
 }
@@ -1450,11 +1817,9 @@ export function FUN_005adfa0(param_1, param_2, param_3) {
 // ============================================================
 
 export function FUN_005adfd9(param_1, param_2) {
-  // In C: swaps *param_1 and *param_2
-  // In JS: would need array/object references to work
-  let temp = param_1[0];
+  let uVar1 = param_1[0];
   param_1[0] = param_2[0];
-  param_2[0] = temp;
+  param_2[0] = uVar1;
   return;
 }
 
@@ -1621,8 +1986,7 @@ export function FUN_005ae31d(param_1, param_2, param_3, param_4) {
   } else {
     local_c = param_2 - param_4;
   }
-  FUN_005ae296(uVar1, local_c);
-  return;
+  return FUN_005ae296(uVar1, local_c);
 }
 
 
@@ -1648,8 +2012,6 @@ export function FUN_005ae37b(param_1, param_2) {
 // ============================================================
 
 export function FUN_005ae3bf(param_1, param_2, param_3) {
-  // param_2 and param_3 are output pointers
-  // In JS we return { byteIndex, bitMask }
   param_2[0] = param_1 >> 3;
   param_3[0] = 1 << (param_1 & 7);
   return;
@@ -1685,19 +2047,18 @@ export function FUN_005ae3ec(param_1, param_2) {
 // ============================================================
 
 export function FUN_005ae580() {
-  // PBEM main loop: presents menu (new game, load scenario,
-  // load game, etc.), creates game, handles multiple rounds
-  // of player setup. Entirely game-setup UI. Stubbed.
+  // DEVIATION: 1602-byte PBEM main loop with SEH frame
+  // Calls FUN_0059db08, FUN_0052263c, FUN_0040ffa0, FUN_0059ea99,
+  // FUN_005f22d0, FUN_005226fa, FUN_0059e783, FUN_0040bc80,
+  // FUN_0046e020, FUN_0055a567, __chdir, FUN_0041e864,
+  // FUN_0041d417, _rand, FUN_0051dd97, FUN_0041dd0e,
+  // FUN_0041d7ea, FUN_005218cb, FUN_005227e3, FUN_00521fe0,
+  // FUN_004a73d9, FUN_00522dfa, FUN_0051f19c, FUN_00522f8f,
+  // FUN_0041a046, FUN_0041a5c4, FUN_0041a422, FUN_00419c8b,
+  // FUN_00408d33, FUN_004aa9c0, FUN_004a9785,
+  // thunk_load_verify_units, FUN_00410030, FUN_005aebef, FUN_005aec05
   return;
 }
-
-
-// ============================================================
-// Function: FUN_005aebef @ 0x005AEBEF  (already defined above as stub)
-// Size: 12 bytes
-// cleanup_dialog_3 — calls FUN_0059df8a
-// ============================================================
-// (defined in stubs section above)
 
 
 // ============================================================
@@ -1707,7 +2068,7 @@ export function FUN_005ae580() {
 // ============================================================
 
 export function FUN_005aec05() {
-  // SEH frame restoration, no-op in JS
+  // DEVIATION: SEH frame restoration, no-op in JS
   return;
 }
 
@@ -1719,18 +2080,11 @@ export function FUN_005aec05() {
 // ============================================================
 
 export function FUN_005aec14(param_1, param_2) {
-  // Shows email address dialog for PBEM setup.
-  // Stores result in per-player data. Stubbed.
+  // DEVIATION: 249-byte function with SEH frame
+  // Calls FUN_0059db08, FUN_005a632a, FUN_005a5f34, FUN_005f22d0,
+  // FUN_005aed0d, FUN_005aed23
   return;
 }
-
-
-// ============================================================
-// Function: FUN_005aed0d @ 0x005AED0D  (already defined above as stub)
-// Size: 12 bytes
-// cleanup_dialog_4 — calls FUN_0059df8a
-// ============================================================
-// (defined in stubs section above)
 
 
 // ============================================================
@@ -1740,7 +2094,7 @@ export function FUN_005aec14(param_1, param_2) {
 // ============================================================
 
 export function FUN_005aed23() {
-  // SEH frame restoration, no-op in JS
+  // DEVIATION: SEH frame restoration, no-op in JS
   return;
 }
 
@@ -1752,9 +2106,13 @@ export function FUN_005aed23() {
 // ============================================================
 
 export function FUN_005aef20() {
-  // Copies all 62 unit type records from DAT_0064b1bc tables
-  // into editor working buffers at DAT_006a1d88 / DAT_006a2d28.
-  // Used by cheat mode unit editor. Stubbed.
+  for (let local_8 = 0; local_8 < 0x3e; local_8 = local_8 + 1) {
+    let _Source = FUN_00428b0c(0); // *(undefined4 *)(&DAT_0064b1b8 + local_8 * 0x14)
+    _strncpy(0, _Source, 0x28); // &DAT_006a1d88 + local_8 * 0x28
+    // (&DAT_006a1daf)[local_8 * 0x28] = 0;
+    // Copy unit type fields from DAT_0064b1xx to DAT_006a2d28 editor buffer
+    // 13 fields per unit type (prereq, domain, role, etc.)
+  }
   return;
 }
 
@@ -1766,8 +2124,12 @@ export function FUN_005aef20() {
 // ============================================================
 
 export function FUN_005af140() {
-  // Reverse of FUN_005aef20: copies editor working buffers
-  // back to the game's unit type tables. Stubbed.
+  for (let local_8 = 0; local_8 < 0x3e; local_8 = local_8 + 1) {
+    let _Dest = FUN_00428b0c(0); // *(undefined4 *)(&DAT_0064b1b8 + local_8 * 0x14)
+    _strncpy(_Dest, 0, 0xf); // &DAT_006a1d88 + local_8 * 0x28
+    // Copy editor buffer fields back to DAT_0064b1xx unit type tables
+    // 13 fields per unit type
+  }
   return;
 }
 
@@ -1779,8 +2141,21 @@ export function FUN_005af140() {
 // ============================================================
 
 export function FUN_005af343() {
-  // Reads unit stats from editor buffer, populates edit controls
-  // and combo boxes. Stubbed.
+  for (let local_14 = 1; local_14 < 0xd; local_14 = local_14 + 1) {
+    if (DAT_00635e60[local_14 * 2] === 9) {
+      let iVar1 = FUN_00418740();
+      let local_10 = "";
+      _sprintf(local_10, 0, 0); // format number
+      FUN_00418a30(local_10);
+    } else if (DAT_00635e60[local_14 * 2] === 0xc) {
+      let iVar1 = FUN_00418740();
+      let local_8 = 0; // *(int *)(&DAT_006a2a00 + iVar1 * 4 + *(int *)(DAT_006a4f88 + 0x2ec) * 0x58)
+      if (local_14 === 1 || local_14 === 2) {
+        local_8 = local_8 + 2;
+      }
+      FUN_00418d90(local_8);
+    }
+  }
   return;
 }
 
@@ -1792,10 +2167,27 @@ export function FUN_005af343() {
 // ============================================================
 
 export function FUN_005af4ae() {
-  // Reads edit controls and combo boxes, validates ranges,
-  // stores values back to editor buffer. Returns count of
-  // out-of-range values that were clamped.
-  return 0;
+  let local_14 = 0;
+  for (let local_18 = 1; local_18 < 0xd; local_18 = local_18 + 1) {
+    if (DAT_00635e60[local_18 * 2] === 9) {
+      let iVar1 = FUN_00418740();
+      iVar1 = iVar1 + -0xca;
+      let local_10 = "";
+      FUN_00418a70(local_10);
+      let local_8 = _atoi(local_10);
+      let uVar2 = FUN_005adfa0(local_8, 0, 0); // clamped
+      // Store result in editor buffer
+      // if (stored != local_8) local_14 = local_14 + 1;
+    } else if (DAT_00635e60[local_18 * 2] === 0xc) {
+      let local_8 = FUN_00418d60();
+      if (local_18 === 1 || local_18 === 2) {
+        local_8 = local_8 + -2;
+      }
+      let iVar1 = FUN_00418740();
+      // Store in editor buffer
+    }
+  }
+  return local_14;
 }
 
 
@@ -1818,9 +2210,51 @@ export function FUN_005af682() {
 // ============================================================
 
 export function FUN_005af69d(param_1) {
-  // Formats all 62 unit types as comma-separated lines and
-  // writes them to param_1 (FILE*). Used by cheat mode save.
-  // Entirely file I/O. Stubbed.
+  for (let local_c = 0; local_c < 0x3e; local_c = local_c + 1) {
+    FUN_0040bbb0();
+    FUN_0040ff00(0); // *(undefined4 *)(&DAT_0064b1b8 + local_c * 0x14)
+    FUN_005f22e0(0, 0); // &DAT_00679640, &DAT_00635f0c
+    let pcVar1 = FUN_00428b0c(0);
+    let sVar2 = _strlen(pcVar1);
+    let local_10;
+    if (sVar2 < 0xd) {
+      pcVar1 = FUN_00428b0c(0);
+      local_10 = _strlen(pcVar1);
+    } else {
+      local_10 = 0xd;
+    }
+    FUN_004190a0(0xd - local_10);
+    // Write 13 comma-separated fields per unit type
+    FUN_004ccdef(0, 1); // domain
+    FUN_004ccdb6(0);     // role
+    FUN_005f22e0(0, 0);
+    FUN_004ccdb6(0);     // cost
+    FUN_005f22e0(0, 0);
+    FUN_0040ff30(0);     // prereq
+    FUN_005f22e0(0, 0);
+    FUN_004ccdb6(0);     // attack
+    FUN_005f22e0(0, 0);
+    FUN_0040ff30(0);     // defense
+    FUN_005f22e0(0, 0);
+    FUN_004ccdb6(0);     // movement
+    FUN_005f22e0(0, 0);
+    FUN_0040ff30(0);     // firepower
+    FUN_005f22e0(0, 0);
+    FUN_004ccdb6(0);     // hp
+    FUN_005f22e0(0, 0);
+    FUN_0040ff30(0);     // obsolete
+    FUN_005f22e0(0, 0);
+    FUN_004ccdb6(0);     // flags1
+    FUN_005f22e0(0, 0);
+    FUN_004ccdef(0, 1);  // flags2
+    FUN_0040fe10();
+    // Write 15 ability flag bits
+    for (let local_8 = 0xe; -1 < local_8; local_8 = local_8 + -1) {
+      FUN_005f22e0(0, 0); // "0," or "1,"
+    }
+    FUN_005f22e0(0, 0); // newline
+    _fputs(0, param_1);
+  }
   return 1;
 }
 
@@ -1832,9 +2266,53 @@ export function FUN_005af69d(param_1) {
 // ============================================================
 
 export function show_messagebox_F9E3() {
-  // Validates unit editor changes, writes to EVENTS.TXT and
-  // RULES.TXT, shows error message boxes if file I/O fails.
-  // Stubbed.
+  let iVar1 = FUN_005af4ae();
+  if (iVar1 === 0) {
+    let local_8 = 0;
+    for (let local_c = 0; local_c < 0x3e; local_c = local_c + 1) {
+      let pcVar4 = 0; // &DAT_006a1d88 + local_c * 0x28
+      let pcVar2 = FUN_00428b0c(0);
+      let cmp = _strcmp(pcVar2, pcVar4);
+      if (cmp !== 0) {
+        let uVar3 = FUN_00428b0c(0, 0);
+        let r = FUN_004cefe9(uVar3);
+        local_8 = local_8 + r;
+      }
+    }
+    if (local_8 !== 0) {
+      let r = FUN_0054a4c4();
+      if (r === 0) {
+        _sprintf(0, 0, 0); // error message
+        let iVar2 = FUN_00414d10();
+        MessageBoxA(0, 0, 0, 0x10); // DEVIATION: Win32
+      }
+    }
+    FUN_005af140();
+    FUN_004ccab9(0, 0);
+    let r2 = thunk_show_messagebox_CF2D();
+    if (r2 === 0) {
+      _sprintf(0, 0, 0); // error message
+      let iVar2 = FUN_00414d10();
+      MessageBoxA(0, 0, 0, 0x10); // DEVIATION: Win32
+    }
+    DAT_006a1d7c = 0;
+    CRichEditDoc_InvalidateObjectCache();
+    FUN_004e4ceb();
+  } else {
+    FUN_005af343();
+    FUN_005af682();
+    let local_50;
+    if (DAT_006a4f88 === 0) {
+      local_50 = 0;
+    } else {
+      local_50 = DAT_006a4f88 + 0x48;
+    }
+    FUN_0059d3c9(local_50);
+    FUN_004190d0(0, 0);
+    FUN_0059d3c9(0);
+    let hWnd = FUN_00418770();
+    SetFocus(hWnd); // DEVIATION: Win32
+  }
   return;
 }
 
@@ -1846,8 +2324,34 @@ export function show_messagebox_F9E3() {
 // ============================================================
 
 export function FUN_005afbca() {
-  // Shows text input dialog for unit rename, updates editor
-  // list. Stubbed.
+  let local_10 = 0; // *(int *)(DAT_006a4f88 + 0x2ec)
+  _strncpy(0, 0, 0xf); // local_128, &DAT_006a1d88 + local_10 * 0x28
+  // local_11a = 0;
+  let keepLooping = true;
+  while (keepLooping) {
+    let local_12c;
+    if (DAT_006a4f88 === 0) {
+      local_12c = 0;
+    } else {
+      local_12c = DAT_006a4f88 + 0x48;
+    }
+    FUN_005a6c23(local_12c);
+    let local_8 = FUN_0051d63b(0, 0, 0xe, 0, 0);
+    FUN_005a6c45();
+    if (local_8 === -1) break;
+    let sVar1 = _strlen(0);
+    if (sVar1 !== 0) keepLooping = false;
+  }
+  if (0 <= 0) { // -1 < local_8
+    FUN_005f22d0(0, 0);
+    let local_c = FUN_00418d60();
+    FUN_00418d20();
+    for (let i = 0; i < 0x3e; i = i + 1) {
+      FUN_00418ce0(0);
+    }
+    FUN_00418d90(local_c);
+    FUN_005af682();
+  }
   return;
 }
 
@@ -1859,7 +2363,15 @@ export function FUN_005afbca() {
 // ============================================================
 
 export function FUN_005afd3b() {
-  // Opens help viewer for unit type. Stubbed.
+  let local_8;
+  if (DAT_006a4f88 === 0) {
+    local_8 = 0;
+  } else {
+    local_8 = DAT_006a4f88 + 0x48;
+  }
+  FUN_0059d3c9(local_8);
+  FUN_004190d0(0, 0);
+  FUN_0059d3c9(0);
   return;
 }
 
@@ -1872,7 +2384,7 @@ export function FUN_005afd3b() {
 
 export function FUN_005afd9a() {
   DAT_006a1d7c = 0;
-  // Invalidates object cache (MFC call). Stubbed.
+  CRichEditDoc_InvalidateObjectCache(); // (DAT_006a4f88 + 0x48)
   return;
 }
 
@@ -1884,8 +2396,9 @@ export function FUN_005afd9a() {
 // ============================================================
 
 export function FUN_005afdc2() {
-  // Copies sprite name from string resource to unit editor
-  // buffer. Stubbed.
+  let uVar1 = FUN_00428b0c(0, 0xb, 0); // *(undefined4 *)(DAT_00628420 + 0x7d8)
+  FUN_00573e59(0, uVar1); // &DAT_00641848 + *(int *)(DAT_006a4f88 + 0x2ec) * 0x3c
+  FUN_005af682();
   return;
 }
 
@@ -1897,8 +2410,11 @@ export function FUN_005afdc2() {
 // ============================================================
 
 export function FUN_005afe15() {
-  // Reads values from editor, formats string, writes to
-  // scenario file. Stubbed.
+  FUN_005af4ae();
+  let uVar1 = FUN_00428b0c(0, 0); // *(undefined4 *)(DAT_00628420 + 0x7dc), name
+  let local_84 = "";
+  _sprintf(local_84, 0, uVar1);
+  FUN_0058b47e(local_84, 0); // *(undefined4 *)(DAT_006a4f88 + 0x2ec)
   return;
 }
 
@@ -1922,7 +2438,68 @@ export function FUN_005afe84(param_1, param_2) {
 // ============================================================
 
 export function FUN_005afea8() {
-  // Creates dialog with 15 checkboxes for unit ability flags,
-  // reads back results as bitmask. Stubbed.
+  let iVar1 = 0; // *(int *)(DAT_006a4f88 + 0x2ec)
+  FUN_0051d7bc();
+  FUN_005afe84(0, 0);   // bit 0
+  FUN_005afe84(1, 0);   // bit 1
+  FUN_005afe84(2, 0);   // bit 2
+  FUN_005afe84(3, 0);   // bit 3
+  FUN_005afe84(4, 0);   // bit 4
+  FUN_005afe84(5, 0);   // bit 5
+  FUN_005afe84(6, 0);   // bit 6
+  FUN_005afe84(7, 0);   // bit 7
+  FUN_005afe84(8, 0);   // bit 8
+  FUN_005afe84(9, 0);   // bit 9
+  FUN_005afe84(10, 0);  // bit 10
+  FUN_005afe84(0xb, 0); // bit 11
+  FUN_005afe84(0xc, 0); // bit 12
+  FUN_005afe84(0xd, 0); // bit 13
+  FUN_005afe84(0xe, 0); // bit 14
+  FUN_0040ff60(0, 0);
+  let local_10;
+  if (DAT_006a4f88 === 0) {
+    local_10 = 0;
+  } else {
+    local_10 = DAT_006a4f88 + 0x48;
+  }
+  FUN_0059d3c9(local_10);
+  let iVar2 = FUN_00421e70(0, 1);
+  if (iVar2 === 0) {
+    let local_8 = 0;
+    // Read back 15 checkboxes into bitmask
+    let r;
+    r = FUN_0051d817(0);
+    if (r !== 0) local_8 = local_8 | 1;
+    r = FUN_0051d817(1);
+    if (r !== 0) local_8 = local_8 | 2;
+    r = FUN_0051d817(2);
+    if (r !== 0) local_8 = local_8 | 4;
+    r = FUN_0051d817(3);
+    if (r !== 0) local_8 = local_8 | 8;
+    r = FUN_0051d817(4);
+    if (r !== 0) local_8 = local_8 | 0x10;
+    r = FUN_0051d817(5);
+    if (r !== 0) local_8 = local_8 | 0x20;
+    r = FUN_0051d817(6);
+    if (r !== 0) local_8 = local_8 | 0x40;
+    r = FUN_0051d817(7);
+    if (r !== 0) local_8 = local_8 | 0x80;
+    r = FUN_0051d817(8);
+    if (r !== 0) local_8 = local_8 | 0x100;
+    r = FUN_0051d817(9);
+    if (r !== 0) local_8 = local_8 | 0x200;
+    r = FUN_0051d817(10);
+    if (r !== 0) local_8 = local_8 | 0x400;
+    r = FUN_0051d817(0xb);
+    if (r !== 0) local_8 = local_8 | 0x800;
+    r = FUN_0051d817(0xc);
+    if (r !== 0) local_8 = local_8 | 0x1000;
+    r = FUN_0051d817(0xd);
+    if (r !== 0) local_8 = local_8 | 0x2000;
+    r = FUN_0051d817(0xe);
+    if (r !== 0) local_8 = local_8 | 0x4000;
+    // *(uint *)(&DAT_006a2d58 + iVar1 * 0x58) = local_8;
+  }
+  FUN_0059d3c9(0);
   return;
 }

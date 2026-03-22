@@ -28,6 +28,15 @@ import {
 // imported from mem.js or from the appropriate block module.
 // ═══════════════════════════════════════════════════════════════════
 
+let DAT_0062833c = new Int8Array(4);   // river direction deltas x
+let DAT_00628344 = new Int8Array(4);   // river direction deltas y
+let DAT_00628350 = new Int8Array(8);   // 8-direction dx offsets
+let DAT_00628360 = new Int8Array(8);   // 8-direction dy offsets
+let DAT_00655ae8 = 0;   // map flags (0x8000 = flat earth)
+let DAT_006d1160 = 0;   // map width
+let DAT_006d1162 = 0;   // map height
+let DAT_00627cce = new Int8Array(0x16 * 0x18);  // terrain data array
+
 let DAT_00624ee0 = 0;   // map view disabled flag
 let DAT_00624ee8 = 0;   // land mass setting
 let DAT_00624eec = 0;   // landform setting
@@ -52,7 +61,6 @@ let DAT_00628048 = 0;
 let DAT_0062804c = 0;
 let DAT_00628054 = 0;
 let DAT_00628060 = 0;
-// DAT_00628350 / DAT_00628360 imported from mem.js
 let DAT_00628351 = new Int8Array(8);  // offset by 1 from DAT_00628350
 let DAT_00628361 = new Int8Array(8);  // offset by 1 from DAT_00628360
 let DAT_00628370 = new Int8Array(0x15);
@@ -163,42 +171,42 @@ let PTR_FUN_0061c054 = 0;
 // Win32 API stubs (no-ops in JS)
 // ═══════════════════════════════════════════════════════════════════
 
-function SetRect(rect, l, t, r, b) { /* stub */ }
-function GetSystemMetrics(idx) { return 0; /* stub */ }
-function _atexit(fn) { /* stub */ }
+function SetRect(rect, l, t, r, b) { /* DEVIATION */ }
+function GetSystemMetrics(idx) { return 0; /* DEVIATION */ }
+function _atexit(fn) { /* DEVIATION */ }
 function _rand() { return Math.floor(Math.random() * 0x7FFF); }
-function operator_new(size) { return {}; /* stub */ }
-function operator_delete(ptr) { /* stub */ }
-function FID_conflict__memcpy(dst, src, len) { /* stub */ }
+function operator_new(size) { return {}; /* DEVIATION */ }
+function operator_delete(ptr) { /* DEVIATION */ }
+function FID_conflict__memcpy(dst, src, len) { /* DEVIATION */ }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // MFC / C++ library stubs (no-ops)
 // ═══════════════════════════════════════════════════════════════════
 
-function COleCntrFrameWnd_dtor(ptr) { /* stub */ }
-function CPropertySheet_EnableStackedTabs(thisPtr, param_1) { /* stub */ }
-function COleControlSite_SetDlgCtrlID(thisPtr, param_1) { return 0; /* stub */ }
-function _Timevec_dtor(thisPtr) { /* stub */ }
-function CRichEditDoc_InvalidateObjectCache(ptr) { /* stub */ }
-function _eh_vector_constructor_iterator_(ptr, size, count, ctor, dtor) { /* stub */ }
-function _eh_vector_destructor_iterator_(ptr, size, count, dtor) { /* stub */ }
+function COleCntrFrameWnd_dtor(ptr) { /* DEVIATION */ }
+function CPropertySheet_EnableStackedTabs(thisPtr, param_1) { /* DEVIATION */ }
+function COleControlSite_SetDlgCtrlID(thisPtr, param_1) { return 0; /* DEVIATION */ }
+function _Timevec_dtor(thisPtr) { /* DEVIATION */ }
+function CRichEditDoc_InvalidateObjectCache(ptr) { /* DEVIATION */ }
+function _eh_vector_constructor_iterator_(ptr, size, count, ctor, dtor) { /* DEVIATION */ }
+function _eh_vector_destructor_iterator_(ptr, size, count, dtor) { /* DEVIATION */ }
 
 // GDI / window management stubs
-function manage_window_C636(p) { /* stub */ }
-function manage_window_C0AB(p) { return 0; /* stub */ }
-function manage_window_C40A(p) { /* stub */ }
-function manage_window_944B(p) { /* stub */ }
-function manage_window_8B2D(p) { /* stub */ }
-function invalidate_8B00(p) { /* stub */ }
-function invalidate_CE5F(p1, p2) { /* stub */ }
-function measure_text_858E(p1, p2) { return 0; /* stub */ }
-function measure_text_BF40(p1, p2, p3, p4, p5) { /* stub */ }
-function draw_text_9740(p1, p2, p3, p4, p5) { return 0; /* stub */ }
-function create_window_C0F0(p1, p2, p3, p4) { return 0; /* stub */ }
-function register_wndclass_CF17(p1, p2, p3, p4) { return 0; /* stub */ }
-function gdi_BA4F() { /* stub */ }
-function gdi_8514(p) { /* stub */ }
+function manage_window_C636(p) { /* DEVIATION */ }
+function manage_window_C0AB(p) { return 0; /* DEVIATION */ }
+function manage_window_C40A(p) { /* DEVIATION */ }
+function manage_window_944B(p) { /* DEVIATION */ }
+function manage_window_8B2D(p) { /* DEVIATION */ }
+function invalidate_8B00(p) { /* DEVIATION */ }
+function invalidate_CE5F(p1, p2) { /* DEVIATION */ }
+function measure_text_858E(p1, p2) { return 0; /* DEVIATION */ }
+function measure_text_BF40(p1, p2, p3, p4, p5) { /* DEVIATION */ }
+function draw_text_9740(p1, p2, p3, p4, p5) { return 0; /* DEVIATION */ }
+function create_window_C0F0(p1, p2, p3, p4) { return 0; /* DEVIATION */ }
+function register_wndclass_CF17(p1, p2, p3, p4) { return 0; /* DEVIATION */ }
+function gdi_BA4F() { /* DEVIATION */ }
+function gdi_8514(p) { /* DEVIATION */ }
 function CONCAT31(a, b) { return (a << 8) | b; }
 
 
@@ -760,10 +768,9 @@ export function FUN_00407b31() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00407f90 — get_rect_width
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_00407f90(param_1, param_2) {
-  // Original: return param_1[2] - *param_1
-  // In JS, param_1 is treated as a struct-like with array indexing
-  return 0; // stub: requires pointer arithmetic
+export function FUN_00407f90(param_1) {
+  // DEVIATION: param_1 is int* in C; param_1[2] - *param_1
+  return 0; // DEVIATION: pointer arithmetic on int*
 }
 
 
@@ -771,8 +778,8 @@ export function FUN_00407f90(param_1, param_2) {
 // FUN_00407fc0 — get_rect_height
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00407fc0(param_1) {
-  // Original: return *(int *)(param_1 + 0xc) - *(int *)(param_1 + 4)
-  return 0; // stub: requires pointer arithmetic
+  // DEVIATION: return *(int *)(param_1 + 0xc) - *(int *)(param_1 + 4)
+  return 0; // DEVIATION: pointer arithmetic
 }
 
 
@@ -788,7 +795,7 @@ export function FUN_00407ff0() {
 // FUN_00408010 — set_window_style
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408010(param_1) {
-  // Original uses in_ECX (this pointer), stub
+  // DEVIATION: in_ECX (this pointer) — FUN_005bd05f(*(in_ECX + 8), param_1)
   FUN_005bd05f(0, param_1);
 }
 
@@ -797,7 +804,7 @@ export function FUN_00408010(param_1) {
 // FUN_00408050 — invalidate_window
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408050(param_1) {
-  // Original uses in_ECX (this pointer), stub
+  // DEVIATION: in_ECX (this pointer) — invalidate_CE5F(*(in_ECX + 8), param_1)
   invalidate_CE5F(0, param_1);
 }
 
@@ -806,7 +813,7 @@ export function FUN_00408050(param_1) {
 // FUN_00408090 — manage_window
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408090() {
-  // Original uses in_ECX (this pointer), stub
+  // DEVIATION: in_ECX (this pointer) — manage_window_C636(*(in_ECX + 8))
   manage_window_C636(0);
 }
 
@@ -815,7 +822,7 @@ export function FUN_00408090() {
 // FUN_004080c0 — get_window_extent
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004080c0() {
-  // Original uses in_ECX (this pointer), stub
+  // DEVIATION: in_ECX (this pointer) — FUN_005bc933(*(in_ECX + 8))
   FUN_005bc933(0);
   return 0;
 }
@@ -825,7 +832,7 @@ export function FUN_004080c0() {
 // FUN_004080f0 — invalidate_rect
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004080f0(param_1) {
-  // Original uses in_ECX (this pointer), stub
+  // DEVIATION: in_ECX (this pointer) — FUN_005bcb85(*(in_ECX + 8), param_1)
   FUN_005bcb85(0, param_1);
 }
 
@@ -834,7 +841,7 @@ export function FUN_004080f0(param_1) {
 // FUN_00408130 — set_callback_0c
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408130(param_1) {
-  // Original: swaps in_ECX + 0xc with param_1
+  // DEVIATION: uVar1 = *(in_ECX + 0xc); *(in_ECX + 0xc) = param_1; return uVar1;
   return 0;
 }
 
@@ -843,7 +850,7 @@ export function FUN_00408130(param_1) {
 // FUN_00408170 — set_callback_18
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408170(param_1) {
-  // Original: swaps in_ECX + 0x18 with param_1
+  // DEVIATION: uVar1 = *(in_ECX + 0x18); *(in_ECX + 0x18) = param_1; return uVar1;
   return 0;
 }
 
@@ -852,6 +859,7 @@ export function FUN_00408170(param_1) {
 // FUN_00408230 — set_callback_30
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408230(param_1) {
+  // DEVIATION: uVar1 = *(in_ECX + 0x30); *(in_ECX + 0x30) = param_1; return uVar1;
   return 0;
 }
 
@@ -860,6 +868,7 @@ export function FUN_00408230(param_1) {
 // FUN_00408270 — set_callback_34
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408270(param_1) {
+  // DEVIATION: uVar1 = *(in_ECX + 0x34); *(in_ECX + 0x34) = param_1; return uVar1;
   return 0;
 }
 
@@ -868,6 +877,7 @@ export function FUN_00408270(param_1) {
 // FUN_004082b0 — set_callback_38
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004082b0(param_1) {
+  // DEVIATION: uVar1 = *(in_ECX + 0x38); *(in_ECX + 0x38) = param_1; return uVar1;
   return 0;
 }
 
@@ -876,6 +886,7 @@ export function FUN_004082b0(param_1) {
 // FUN_004082f0 — set_callback_40
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004082f0(param_1) {
+  // DEVIATION: uVar1 = *(in_ECX + 0x40); *(in_ECX + 0x40) = param_1; return uVar1;
   return 0;
 }
 
@@ -884,6 +895,7 @@ export function FUN_004082f0(param_1) {
 // FUN_00408330 — set_callback_44
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408330(param_1) {
+  // DEVIATION: uVar1 = *(in_ECX + 0x44); *(in_ECX + 0x44) = param_1; return uVar1;
   return 0;
 }
 
@@ -892,8 +904,7 @@ export function FUN_00408330(param_1) {
 // FUN_00408370 — set_tile_dimensions
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408370(param_1, param_2) {
-  // Original: in_ECX + 0x7c = param_1; in_ECX + 0x80 = param_2
-  // stub - uses this pointer
+  // DEVIATION: *(in_ECX + 0x7c) = param_1; *(in_ECX + 0x80) = param_2;
 }
 
 
@@ -918,9 +929,8 @@ export function FUN_004083f0() {
 // FUN_00408420 — swap_window_buffer
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408420() {
-  // Original uses in_ECX (this pointer), stub
-  // uVar1 = manage_window_C0AB(*(in_ECX + 8))
-  // *(in_ECX + 8) = uVar1
+  // DEVIATION: uVar1 = manage_window_C0AB(*(in_ECX + 8)); *(in_ECX + 8) = uVar1;
+  let uVar1 = manage_window_C0AB(0);
 }
 
 
@@ -936,9 +946,18 @@ export function FUN_00408460() {
 // FUN_00408490 — blit_display
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408490(param_1) {
-  // Original uses in_ECX (this pointer)
-  // Involves FUN_005c0979 and FUN_00408580
-  // stub — UI display logic
+  // DEVIATION: in_ECX (this pointer) used throughout
+  let local_c;
+  let local_8;
+  if (param_1 === 0) {
+    local_c = 0; // DEVIATION: in_ECX == 0 ? 0 : in_ECX + 0x48
+    FUN_005c0979(local_c, 0, 0); // DEVIATION: in_ECX + 0x24
+    FUN_00408580(0); // DEVIATION: in_ECX + 0x24
+  } else {
+    local_8 = 0; // DEVIATION: in_ECX == 0 ? 0 : in_ECX + 0x48
+    FUN_005c0979(local_8, param_1, param_1);
+    FUN_00408580(param_1);
+  }
 }
 
 
@@ -946,7 +965,7 @@ export function FUN_00408490(param_1) {
 // FUN_00408580 — blit_rect
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408580(param_1) {
-  // Original uses in_ECX (this pointer)
+  // DEVIATION: FUN_005bc6bb(*(in_ECX + 8), param_1)
   FUN_005bc6bb(0, param_1);
 }
 
@@ -972,7 +991,7 @@ export function FUN_00408620() {
 // FUN_00408650 — manage_window_C40A_wrapper
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00408650() {
-  // Original uses in_ECX (this pointer), stub
+  // DEVIATION: manage_window_C40A(*(in_ECX + 8))
   manage_window_C40A(0);
 }
 
@@ -2490,10 +2509,14 @@ export function FUN_0040c3cd(param_1, param_2) {
 // FUN_0040c480 — recalc_tax_preview (large function)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040c480() {
-  // This function recalculates the tax preview in the tax dialog.
-  // It iterates all cities, calls production/maintenance functions,
-  // and updates the dialog state. Heavily UI-dependent.
-  // stub — too dependent on in_ECX (this pointer)
+  // DEVIATION: Entire function uses in_ECX (this pointer) for dialog state
+  // C: *(in_ECX + 0x308) = 0; *(in_ECX + 0x310) = 0; *(in_ECX + 0x30c) = 0;
+  // iVar3 = *(in_ECX + 0x2d8);
+  // Iterates DAT_00655b18 cities, calls FUN_004ea1f6, FUN_0043d20a, FUN_004f00f0
+  // Accumulates *(in_ECX + 0x308), *(in_ECX + 0x30c), *(in_ECX + 0x310)
+  // Temporarily swaps DAT_0064c6b4/DAT_0064c6b3 with *(in_ECX + 0x2e0/0x2e8)
+  // then restores them.
+  // DEVIATION: Cannot translate — requires in_ECX this pointer
 }
 
 
@@ -2501,9 +2524,14 @@ export function FUN_0040c480() {
 // FUN_0040c7d0 — draw_tax_dialog (large function)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040c7d0() {
-  // This function draws the entire tax rate dialog.
-  // Heavily UI-dependent (drawing bars, labels, etc.)
-  // stub
+  // DEVIATION: Entire function uses in_ECX (this pointer) for dialog layout
+  // C: FUN_00552112(); draws background, draws tax/luxury/science bars/labels
+  // Calls: FUN_005baeb0, FUN_005baec8, FUN_005baee0, FUN_0040bbb0, FUN_0040bc10,
+  // FUN_0040fe40, FUN_0040ff00, FUN_0040fe10, FUN_005bb024, FUN_005baf57,
+  // FUN_005bb0af, FUN_0040ff30, FUN_0040fe70, FUN_004c2788, FUN_00408460
+  // DEVIATION: Cannot translate — requires in_ECX this pointer
+  FUN_00552112();
+  FUN_00408460();
 }
 
 
@@ -2511,9 +2539,16 @@ export function FUN_0040c7d0() {
 // FUN_0040cd64 — open_tax_dialog (very large function)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040cd64(param_1) {
-  // This function opens and manages the tax rate dialog.
-  // Heavily UI-dependent with window creation, event loops, etc.
-  // stub
+  // DEVIATION: Entire function uses in_ECX (CPropertySheet this pointer)
+  // C: Opens tax dialog, creates sliders for tax/luxury/science,
+  // creates checkboxes for lock toggles, runs event loop while DAT_0063cbb0 != 0,
+  // applies final rates to DAT_0064c6b4/DAT_0064c6b3, updates cities.
+  // Key game state mutations at end:
+  // DAT_0064c6b4[param_1 * 0x594] = *(in_ECX + 0x2e0)  (tax rate)
+  // DAT_0064c6b3[param_1 * 0x594] = *(in_ECX + 0x2e8)  (luxury rate)
+  // If rates changed: DAT_00655aee &= ~4, recalc all cities via FUN_004eb4ed
+  // Calls: FUN_00501780(0), FUN_0056a65e(1), FUN_00436287(4/5/6)
+  // DEVIATION: Cannot translate — requires in_ECX this pointer and Win32 event loop
 }
 
 
@@ -2601,7 +2636,15 @@ export function FUN_0040decc(param_1) {
 // FUN_0040e017 — find_city_dialog
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040e017() {
-  // Find city dialog — heavily UI dependent. stub
+  // DEVIATION: Find city dialog — Win32 UI dependent
+  // C: Opens FINDCITY list dialog, populates with cities visible to current player,
+  // handles selection to navigate to city via FUN_00410402, opens city screen.
+  // Key logic: iterates DAT_00655b18 cities, checks visibility (DAT_0064f34c bitmask),
+  // calls FUN_0059db08(0x4000), FUN_0040ffa0(s_FINDCITY, 0x800001),
+  // populates with FUN_0040bbb0/FUN_0040bbe0, appends civ name for foreign cities,
+  // calls FUN_0059edf0. On selection: FUN_00410402 + FUN_handle_city_disorder_00509590.
+  // DEVIATION: Cannot translate — requires Win32 dialog/event loop
+  FUN_0059db08(0x4000);
 }
 
 
@@ -2625,7 +2668,34 @@ export function FUN_0040e3a3() {
 // FUN_0040e3b1 — revolution_dialog
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040e3b1() {
-  // Revolution dialog — UI dependent. stub
+  // DEVIATION: Revolution dialog — Win32 UI dependent
+  let iVar1;
+  let uVar2;
+  let iVar3;
+
+  iVar1 = DAT_006d1da0;
+  if (((DAT_00655af0 & 0x80) === 0) || ((DAT_0064bc60 & 0x10) === 0)) {
+    if ((DAT_0064c6a0[DAT_006d1da0 * 0x594] | (DAT_0064c6a0[DAT_006d1da0 * 0x594 + 1] << 8) & 8) === 0) {
+      if (DAT_0064c6b5[DAT_006d1da0 * 0x594] !== 0) {
+        uVar2 = FUN_00410070(DAT_006d1da0);
+        FUN_0040ff60(0, uVar2);
+        FUN_004271e8(1, DAT_0064b9a0[u8(DAT_0064c6b5[iVar1 * 0x594])]);
+        iVar3 = FUN_00410030(s_REVOLUTION_00624f34,
+                             DAT_00646878 + u8(DAT_0064c6b5[iVar1 * 0x594]) * 0x3c,
+                             (DAT_00633584 === 0) ? 0 : 8); // DEVIATION: (DAT_00633584 == 0) - 1U & 8
+        if (iVar3 === 0) {
+          FUN_0046e020(0x3e, 1, 0, 0);
+          uVar2 = FUN_00493c7d(iVar1);
+          FUN_0040ff60(0, uVar2);
+          FUN_00410030(s_STARTREV_00624f40, DAT_0063fc58, 0);
+          FUN_0055c066(iVar1, 0);
+          FUN_004e4ceb();
+        }
+      }
+    } else {
+      FUN_0055c69d(DAT_006d1da0, 1);
+    }
+  }
 }
 
 
@@ -2641,7 +2711,7 @@ export function FUN_0040ef50() {
 // FUN_0040ef70 — get_font_height
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040ef70() {
-  // Original: return *(in_ECX + 4)
+  // DEVIATION: return *(in_ECX + 4)
   return 0;
 }
 
@@ -2650,7 +2720,7 @@ export function FUN_0040ef70() {
 // FUN_0040efd0 — measure_text
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040efd0(param_1) {
-  // Original uses in_ECX (this pointer)
+  // DEVIATION: measure_text_858E(*in_ECX, param_1)
   measure_text_858E(0, param_1);
   return 0;
 }
@@ -2672,7 +2742,14 @@ export function FUN_0040f010(param_1) {
 // FUN_0040f060 — init_dialog_controls
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f060() {
-  // Complex initialization with SEH. stub
+  // DEVIATION: in_ECX (this pointer), SEH, MFC constructors
+  // C: FUN_0055339f(); FUN_0040fb00() x3; _eh_vector_constructor_iterator_(...);
+  //    FUN_0040f3e0(); *in_ECX = &PTR_FUN_0061c054;
+  FUN_0055339f();
+  FUN_0040fb00();
+  FUN_0040fb00();
+  FUN_0040fb00();
+  FUN_0040f3e0();
 }
 
 
@@ -2702,7 +2779,7 @@ export function FUN_0040f25f() {
 // FUN_0040f26e — destroy_vector_controls
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f26e() {
-  // _eh_vector_destructor_iterator_ — stub
+  // DEVIATION: _eh_vector_destructor_iterator_(*(unaff_EBP-0x10)+0x418, 0x3c, 3, FUN_0040f930)
 }
 
 
@@ -2734,7 +2811,8 @@ export function FUN_0040f2a4() {
 // FUN_0040f2b3 — destroy_frame_window
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f2b3() {
-  // COleCntrFrameWnd::~COleCntrFrameWnd — stub
+  // DEVIATION: COleCntrFrameWnd::~COleCntrFrameWnd(*(unaff_EBP - 0x10))
+  COleCntrFrameWnd_dtor(0);
 }
 
 
@@ -2750,7 +2828,7 @@ export function FUN_0040f2c6() {
 // FUN_0040f350 — set_control_flag
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f350(param_1) {
-  // *(in_ECX + 0xc4) = param_1; — this pointer, stub
+  // DEVIATION: *(in_ECX + 0xc4) = param_1;
 }
 
 
@@ -2758,7 +2836,7 @@ export function FUN_0040f350(param_1) {
 // FUN_0040f380 — invalidate_control
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f380() {
-  // This pointer based. stub
+  // DEVIATION: if (*(in_ECX + 0x1c) != 0) { manage_window_8B2D(*(in_ECX + 0x1c)); invalidate_8B00(*(in_ECX + 0x1c)); }
 }
 
 
@@ -2775,7 +2853,9 @@ export function FUN_0040f3e0() {
 // FUN_0040f480 — init_control_fields
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f480() {
-  // Initializes control fields to zero. This pointer based. stub
+  // DEVIATION: in_ECX this pointer — sets fields to 0
+  // *(in_ECX+4)=0; *(in_ECX+8)=0; SetRect(in_ECX+0xc,0,0,0,0);
+  // *(in_ECX+0x1c)=0; *(in_ECX+0x20)=0; *(in_ECX+0x24)=0; *(in_ECX+0x25)=0; *(in_ECX+0x28)=0xffffffff;
   return 0;
 }
 
@@ -2784,7 +2864,8 @@ export function FUN_0040f480() {
 // FUN_0040f510 — destroy_control_window
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f510() {
-  // This pointer based. stub
+  // DEVIATION: if (*(in_ECX+8) != 0) { FUN_005c5a27(*(in_ECX+4)); }
+  // *(in_ECX+0x20) = 0; manage_window_944B(in_ECX);
 }
 
 
@@ -2817,7 +2898,10 @@ export function FUN_0040f5d6() {
 // FUN_0040f610 — destroy_control_if_exists
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f610() {
-  // This pointer based. stub
+  // DEVIATION: if (*(in_ECX+0x1c) != 0) {
+  //   if (*(in_ECX+8) != 0) { FUN_005c5a27(*(in_ECX+4)); }
+  //   *(in_ECX+0x20) = 0; manage_window_944B(in_ECX);
+  // }
 }
 
 
@@ -2825,7 +2909,13 @@ export function FUN_0040f610() {
 // FUN_0040f680 — create_text_control
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f680(param_1, param_2, param_3, param_4) {
-  // This pointer based. stub
+  // DEVIATION: in_ECX this pointer
+  // if (*(in_ECX+0x1c) != 0) FUN_0040f610();
+  // *(in_ECX+0x38) = PTR_DAT_00637e60;
+  FUN_0040f730(param_1, 6, param_2, param_3);
+  // DEVIATION: *(in_ECX+0x30) = 0;
+  // uVar1 = draw_text_9740(param_3, in_ECX, param_4, 1, *(in_ECX+0x38));
+  // *(in_ECX+0x1c) = uVar1; *(in_ECX+0x2c) = 1;
 }
 
 
@@ -2833,7 +2923,10 @@ export function FUN_0040f680(param_1, param_2, param_3, param_4) {
 // FUN_0040f730 — init_control_params
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f730(param_1, param_2, param_3, param_4) {
-  // This pointer based. stub
+  // DEVIATION: in_ECX this pointer — sets fields from params
+  // in_ECX[2]=param_1; *in_ECX=param_2; in_ECX[1]=param_3;
+  // copies param_4 rect to in_ECX[3..6]; in_ECX[8]=0; in_ECX[7]=0; *(in_ECX+9)=0;
+  FUN_005c59c4(0); // DEVIATION: FUN_005c59c4(in_ECX)
 }
 
 
@@ -2841,7 +2934,8 @@ export function FUN_0040f730(param_1, param_2, param_3, param_4) {
 // FUN_0040f7d0 — set_control_owner_A
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f7d0() {
-  // This pointer based. stub
+  // DEVIATION: iVar1 = FUN_0040f810(); *(iVar1 + 0xbc) = in_ECX;
+  let iVar1 = FUN_0040f810();
 }
 
 
@@ -2849,6 +2943,7 @@ export function FUN_0040f7d0() {
 // FUN_0040f810 — get_control_window
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f810() {
+  // DEVIATION: return *(in_ECX + 8);
   return 0;
 }
 
@@ -2857,7 +2952,8 @@ export function FUN_0040f810() {
 // FUN_0040f840 — set_control_owner_B
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f840() {
-  // This pointer based. stub
+  // DEVIATION: iVar1 = FUN_0040f810(); *(iVar1 + 0xc0) = in_ECX;
+  let iVar1 = FUN_0040f810();
 }
 
 
@@ -2865,7 +2961,7 @@ export function FUN_0040f840() {
 // FUN_0040f880 — set_control_callback
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f880(param_1) {
-  // *(in_ECX + 0x30) = param_1; stub
+  // DEVIATION: *(in_ECX + 0x30) = param_1;
 }
 
 
@@ -2907,7 +3003,14 @@ export function FUN_0040f99d() {
 // FUN_0040f9d0 — create_checkbox_control
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040f9d0(param_1, param_2, param_3, param_4, param_5) {
-  // This pointer based. stub
+  // DEVIATION: in_ECX this pointer
+  // *(in_ECX+0x38) = PTR_DAT_00637e68;
+  // measure_text_BF40(param_5, param_3, param_4, local_14, *(in_ECX+0x38));
+  // if (*(in_ECX+0x1c) != 0) FUN_0040f610();
+  FUN_0040f730(param_1, 2, param_2, 0);
+  // DEVIATION: *(in_ECX+0x2c)=0; *(in_ECX+0x34)=1; *(in_ECX+0x30)=0;
+  // uVar1 = create_window_C0F0(local_14, in_ECX, param_5, 1);
+  // *(in_ECX+0x1c) = uVar1;
 }
 
 
@@ -2915,7 +3018,7 @@ export function FUN_0040f9d0(param_1, param_2, param_3, param_4, param_5) {
 // FUN_0040faa0 — set_control_value_A
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040faa0(param_1) {
-  // *(in_ECX + 0x2c) = param_1; stub
+  // DEVIATION: *(in_ECX + 0x2c) = param_1;
 }
 
 
@@ -2923,7 +3026,7 @@ export function FUN_0040faa0(param_1) {
 // FUN_0040fad0 — set_control_value_B
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040fad0(param_1) {
-  // *(in_ECX + 0x30) = param_1; stub
+  // DEVIATION: *(in_ECX + 0x30) = param_1;
 }
 
 
@@ -2965,7 +3068,13 @@ export function FUN_0040fc1d() {
 // FUN_0040fc50 — create_slider_control
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040fc50(param_1, param_2, param_3, param_4) {
-  // This pointer based. stub
+  // DEVIATION: in_ECX this pointer
+  // if (*(in_ECX+0x1c) != 0) FUN_0040f610();
+  FUN_0040f730(param_1, 8, param_2, param_3);
+  // DEVIATION: uVar1 = register_wndclass_CF17(param_3, in_ECX, param_4, 1);
+  // *(in_ECX+0x1c) = uVar1;
+  // FUN_005cd4c7(*(in_ECX+0x1c), 1, 100);
+  // *(in_ECX+0x38) = 1;
 }
 
 
@@ -2973,7 +3082,9 @@ export function FUN_0040fc50(param_1, param_2, param_3, param_4) {
 // FUN_0040fcf0 — set_slider_position
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040fcf0(param_1) {
-  // This pointer based. stub
+  // DEVIATION: *(in_ECX + 0x3c) = param_1;
+  // FUN_005cd559(*(in_ECX + 0x1c), param_1);
+  FUN_005cd559(0, param_1);
 }
 
 
@@ -2981,7 +3092,8 @@ export function FUN_0040fcf0(param_1) {
 // FUN_0040fd40 — set_slider_range
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040fd40(param_1, param_2) {
-  // This pointer based. stub
+  // DEVIATION: FUN_005cd4c7(*(in_ECX + 0x1c), param_1, param_2);
+  FUN_005cd4c7(0, param_1, param_2);
 }
 
 
@@ -2989,7 +3101,7 @@ export function FUN_0040fd40(param_1, param_2) {
 // FUN_0040fd80 — set_slider_callback
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0040fd80(param_1) {
-  // *(in_ECX + 0x2c) = param_1; stub
+  // DEVIATION: *(in_ECX + 0x2c) = param_1;
 }
 
 
@@ -3088,102 +3200,102 @@ export function FUN_0040ffe0(param_1, param_2, param_3, param_4) {
 // STUBS: Functions from OTHER blocks not yet defined
 // ═══════════════════════════════════════════════════════════════════
 
-function FUN_citywin_9545() { /* stub */ }
-function FUN_citywin_9429() { /* stub */ }
-function FUN_0055339f() { /* stub */ }
-function FUN_005bd05f(p1, p2) { /* stub */ }
-function FUN_005bc933(p1) { /* stub */ return 0; }
-function FUN_005bcb85(p1, p2) { /* stub */ }
-function FUN_005bd65c(p1, p2) { /* stub */ }
-function FUN_005bbbce() { /* stub */ }
-function FUN_005c0979(p1, p2, p3) { /* stub */ }
-function FUN_005bc6bb(p1, p2) { /* stub */ }
-function FUN_005c5b7f() { /* stub */ }
-function FUN_005bb574() { /* stub */ }
-function FUN_005a9780(p1) { /* stub */ }
-function FUN_005a98e4(p1, p2, p3, p4, p5, p6) { /* stub */ }
-function FUN_005a9aa3(p1, p2) { /* stub */ }
-function FUN_005a9abf(p1, p2, p3, p4, p5, p6) { /* stub */ }
-function FUN_005a9afe(p1, p2, p3, p4, p5, p6, p7, p8) { /* stub */ }
-function FUN_005ae24d(p1, p2) { return 0; /* stub */ }
+function FUN_citywin_9545() { /* DEVIATION */ }
+function FUN_citywin_9429() { /* DEVIATION */ }
+function FUN_0055339f() { /* DEVIATION */ }
+function FUN_005bd05f(p1, p2) { /* DEVIATION */ }
+function FUN_005bc933(p1) { /* DEVIATION */ return 0; }
+function FUN_005bcb85(p1, p2) { /* DEVIATION */ }
+function FUN_005bd65c(p1, p2) { /* DEVIATION */ }
+function FUN_005bbbce() { /* DEVIATION */ }
+function FUN_005c0979(p1, p2, p3) { /* DEVIATION */ }
+function FUN_005bc6bb(p1, p2) { /* DEVIATION */ }
+function FUN_005c5b7f() { /* DEVIATION */ }
+function FUN_005bb574() { /* DEVIATION */ }
+function FUN_005a9780(p1) { /* DEVIATION */ }
+function FUN_005a98e4(p1, p2, p3, p4, p5, p6) { /* DEVIATION */ }
+function FUN_005a9aa3(p1, p2) { /* DEVIATION */ }
+function FUN_005a9abf(p1, p2, p3, p4, p5, p6) { /* DEVIATION */ }
+function FUN_005a9afe(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION */ }
+function FUN_005ae24d(p1, p2) { return 0; /* DEVIATION */ }
 function FUN_005adfa0(val, min, max) {
   if (val < min) return min;
   if (val > max) return max;
   return val;
 }
-function FUN_005b8b65(p1, p2, p3) { return 0; /* stub */ }
-function FUN_005b8a81(p1, p2) { return -1; /* stub */ }
-function FUN_0043cf76(p1, p2) { return -1; /* stub */ }
-function FUN_00552ed2() { /* stub */ }
-function FUN_00552112() { /* stub */ }
-function FUN_00410402(p1, p2) { /* stub */ }
-function FUN_005013bc() { /* stub */ }
-function FUN_00413717() { /* stub */ }
-function FUN_005534bc(p1, p2, p3, p4, p5, p6, p7, p8, p9) { /* stub */ }
-function FUN_00428b0c(...args) { return 0; /* stub */ }
-function FUN_0047e94e(p1, p2) { /* stub */ }
-function FUN_004b32fe() { /* stub */ }
-function FUN_005b85fe() { /* stub */ }
-function FUN_005b7fe0() { /* stub */ }
-function FUN_0055a980() { /* stub */ }
-function FUN_0059db08(p1) { /* stub */ }
-function FUN_0059e783(p1, p2) { /* stub */ }
-function FUN_0059e6a9(p1) { /* stub */ }
-function FUN_0059e6ff(p1) { /* stub */ }
-function FUN_0059e18b(p1, p2, p3, p4, p5) { /* stub */ }
-function FUN_0059df8a() { /* stub */ }
-function FUN_0059dfb9(p1, p2, p3, p4) { /* stub */ }
-function FUN_005a5f34(p1, p2) { return 0; /* stub */ }
-function FUN_005a632a(p1, p2, p3, p4, p5, p6, p7, p8) { /* stub */ }
-function FUN_00484d52() { /* stub */ }
-function FUN_005f22e0(p1, p2) { /* stub */ }
-function FUN_005f22d0(p1, p2) { /* stub */ }
-function FUN_004aef20(p1) { /* stub */ }
-function FUN_004aef36(p1) { /* stub */ }
-function FUN_004aefb7(p1) { /* stub */ }
-function FUN_004aeff9(p1) { /* stub */ }
-function FUN_004af01a(p1) { /* stub */ }
-function FUN_004af03b(p1) { /* stub */ }
-function FUN_004af122(p1, p2) { /* stub */ }
-function FUN_004af14b(p1, p2) { /* stub */ }
-function FUN_004af1d5(p1, p2) { /* stub */ }
-function FUN_005bd630() { return 0; /* stub */ }
-function FUN_005bd915() { /* stub */ }
-function FUN_005bf5e1(p1, p2, p3, p4) { /* stub */ }
-function FUN_005c59c4(p1) { /* stub */ }
-function FUN_005c5a27(p1) { /* stub */ }
-function FUN_005c61b0() { /* stub */ }
-function FUN_005c64da() { /* stub */ }
-function FUN_005c656b() { /* stub */ }
-function FUN_005cc248(p1) { /* stub */ }
-function FUN_005cd139(p1) { /* stub */ }
-function FUN_005cd4c7(p1, p2, p3) { /* stub */ }
-function FUN_005cd559(p1, p2) { /* stub */ }
-function FUN_004ea1f6(p1, p2, p3, p4) { /* stub */ }
-function FUN_0043d20a(p1, p2) { return 0; /* stub */ }
-function FUN_004f00f0(p1, p2) { return 0; /* stub */ }
-function FUN_005baeb0(p1) { /* stub */ }
-function FUN_005baec8(p1) { /* stub */ }
-function FUN_005baee0(p1, p2, p3, p4) { /* stub */ }
-function FUN_005baf57(p1, p2, p3, p4) { /* stub */ }
-function FUN_005bb024(p1, p2, p3, p4, p5) { /* stub */ }
-function FUN_005bb0af(p1, p2, p3, p4, p5) { /* stub */ }
-function FUN_004c2788(p1) { return 1; /* stub */ }
-function FUN_0046b14d(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) { /* stub */ }
-function FUN_0046e020(p1, p2, p3, p4) { /* stub */ }
-function FUN_00410030(p1, p2, p3) { return 0; /* stub */ }
-function FUN_00410070(p1) { return 0; /* stub */ }
-function FUN_004271e8(p1, p2) { /* stub */ }
-function FUN_00493c7d(p1) { return 0; /* stub */ }
-function FUN_00493d13(p1) { return 0; /* stub */ }
-function FUN_004a73d9() { /* stub */ }
-function FUN_0055c066(p1, p2) { /* stub */ }
-function FUN_0055c69d(p1, p2) { /* stub */ }
-function FUN_004e4ceb() { /* stub */ }
-function FUN_004eb4ed(p1, p2) { /* stub */ }
-function FUN_00501780(p1) { /* stub */ }
-function FUN_0056a65e(p1) { /* stub */ }
-function FUN_00436287(p1) { /* stub */ }
-function FUN_0043cef9(p1) { return 0; /* stub */ }
-function FUN_0059edf0(p1, p2, p3) { /* stub */ }
-function FUN_handle_city_disorder_00509590(p1) { /* stub */ }
+function FUN_005b8b65(p1, p2, p3) { return 0; /* DEVIATION */ }
+function FUN_005b8a81(p1, p2) { return -1; /* DEVIATION */ }
+function FUN_0043cf76(p1, p2) { return -1; /* DEVIATION */ }
+function FUN_00552ed2() { /* DEVIATION */ }
+function FUN_00552112() { /* DEVIATION */ }
+function FUN_00410402(p1, p2) { /* DEVIATION */ }
+function FUN_005013bc() { /* DEVIATION */ }
+function FUN_00413717() { /* DEVIATION */ }
+function FUN_005534bc(p1, p2, p3, p4, p5, p6, p7, p8, p9) { /* DEVIATION */ }
+function FUN_00428b0c(...args) { return 0; /* DEVIATION */ }
+function FUN_0047e94e(p1, p2) { /* DEVIATION */ }
+function FUN_004b32fe() { /* DEVIATION */ }
+function FUN_005b85fe() { /* DEVIATION */ }
+function FUN_005b7fe0() { /* DEVIATION */ }
+function FUN_0055a980() { /* DEVIATION */ }
+function FUN_0059db08(p1) { /* DEVIATION */ }
+function FUN_0059e783(p1, p2) { /* DEVIATION */ }
+function FUN_0059e6a9(p1) { /* DEVIATION */ }
+function FUN_0059e6ff(p1) { /* DEVIATION */ }
+function FUN_0059e18b(p1, p2, p3, p4, p5) { /* DEVIATION */ }
+function FUN_0059df8a() { /* DEVIATION */ }
+function FUN_0059dfb9(p1, p2, p3, p4) { /* DEVIATION */ }
+function FUN_005a5f34(p1, p2) { return 0; /* DEVIATION */ }
+function FUN_005a632a(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION */ }
+function FUN_00484d52() { /* DEVIATION */ }
+function FUN_005f22e0(p1, p2) { /* DEVIATION */ }
+function FUN_005f22d0(p1, p2) { /* DEVIATION */ }
+function FUN_004aef20(p1) { /* DEVIATION */ }
+function FUN_004aef36(p1) { /* DEVIATION */ }
+function FUN_004aefb7(p1) { /* DEVIATION */ }
+function FUN_004aeff9(p1) { /* DEVIATION */ }
+function FUN_004af01a(p1) { /* DEVIATION */ }
+function FUN_004af03b(p1) { /* DEVIATION */ }
+function FUN_004af122(p1, p2) { /* DEVIATION */ }
+function FUN_004af14b(p1, p2) { /* DEVIATION */ }
+function FUN_004af1d5(p1, p2) { /* DEVIATION */ }
+function FUN_005bd630() { return 0; /* DEVIATION */ }
+function FUN_005bd915() { /* DEVIATION */ }
+function FUN_005bf5e1(p1, p2, p3, p4) { /* DEVIATION */ }
+function FUN_005c59c4(p1) { /* DEVIATION */ }
+function FUN_005c5a27(p1) { /* DEVIATION */ }
+function FUN_005c61b0() { /* DEVIATION */ }
+function FUN_005c64da() { /* DEVIATION */ }
+function FUN_005c656b() { /* DEVIATION */ }
+function FUN_005cc248(p1) { /* DEVIATION */ }
+function FUN_005cd139(p1) { /* DEVIATION */ }
+function FUN_005cd4c7(p1, p2, p3) { /* DEVIATION */ }
+function FUN_005cd559(p1, p2) { /* DEVIATION */ }
+function FUN_004ea1f6(p1, p2, p3, p4) { /* DEVIATION */ }
+function FUN_0043d20a(p1, p2) { return 0; /* DEVIATION */ }
+function FUN_004f00f0(p1, p2) { return 0; /* DEVIATION */ }
+function FUN_005baeb0(p1) { /* DEVIATION */ }
+function FUN_005baec8(p1) { /* DEVIATION */ }
+function FUN_005baee0(p1, p2, p3, p4) { /* DEVIATION */ }
+function FUN_005baf57(p1, p2, p3, p4) { /* DEVIATION */ }
+function FUN_005bb024(p1, p2, p3, p4, p5) { /* DEVIATION */ }
+function FUN_005bb0af(p1, p2, p3, p4, p5) { /* DEVIATION */ }
+function FUN_004c2788(p1) { return 1; /* DEVIATION */ }
+function FUN_0046b14d(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) { /* DEVIATION */ }
+function FUN_0046e020(p1, p2, p3, p4) { /* DEVIATION */ }
+function FUN_00410030(p1, p2, p3) { return 0; /* DEVIATION */ }
+function FUN_00410070(p1) { return 0; /* DEVIATION */ }
+function FUN_004271e8(p1, p2) { /* DEVIATION */ }
+function FUN_00493c7d(p1) { return 0; /* DEVIATION */ }
+function FUN_00493d13(p1) { return 0; /* DEVIATION */ }
+function FUN_004a73d9() { /* DEVIATION */ }
+function FUN_0055c066(p1, p2) { /* DEVIATION */ }
+function FUN_0055c69d(p1, p2) { /* DEVIATION */ }
+function FUN_004e4ceb() { /* DEVIATION */ }
+function FUN_004eb4ed(p1, p2) { /* DEVIATION */ }
+function FUN_00501780(p1) { /* DEVIATION */ }
+function FUN_0056a65e(p1) { /* DEVIATION */ }
+function FUN_00436287(p1) { /* DEVIATION */ }
+function FUN_0043cef9(p1) { return 0; /* DEVIATION */ }
+function FUN_0059edf0(p1, p2, p3) { /* DEVIATION */ }
+function FUN_handle_city_disorder_00509590(p1) { /* DEVIATION */ }

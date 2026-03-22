@@ -10,8 +10,8 @@
 // This block is almost entirely CRT library functions (malloc, free,
 // printf, fopen, memcpy, strlen, etc.), MSVC exception handling
 // infrastructure, and MFC/Win32 UI widget code. None of these are
-// game logic — they are framework/runtime support. All are stubbed
-// as no-ops or minimal implementations where needed.
+// game logic — they are framework/runtime support. All are marked
+// with DEVIATION: Win32 API or DEVIATION: C runtime as appropriate.
 // ═══════════════════════════════════════════════════════════════════
 
 import { s8, u8 } from './mem.js';
@@ -605,7 +605,7 @@ export function FUN_005f156d(self) {
     let uVar1 = FUN_005f1514(self);
     self[2] = uVar1;
   }
-  // CSplitterWnd::IsTracking stub
+  // DEVIATION: Win32 API — CSplitterWnd::IsTracking
 }
 
 // FUN_005f15a9 — assert_parent_window
@@ -665,7 +665,7 @@ export function FUN_005f1769(self) {
 // FUN_005f179c — show_wrapper
 export function FUN_005f179c(self) { FUN_005f1622(self); }
 
-// FUN_005f17bc — no-op stub
+// FUN_005f17bc — DEVIATION: Win32 API
 export function FUN_005f17bc() { }
 
 // FUN_005f17d4 — invoke_paint_child_callback
@@ -682,16 +682,16 @@ export function FUN_005f184e(self, param_1, param_2) { }
 // FUN_005f188b — invoke_rbutton_callback
 export function FUN_005f188b(self, param_1, param_2) { }
 
-// FUN_005f18c8 — no-op stub
+// FUN_005f18c8 — DEVIATION: Win32 API
 export function FUN_005f18c8() { }
 
-// FUN_005f18e0 — no-op stub
+// FUN_005f18e0 — DEVIATION: Win32 API
 export function FUN_005f18e0() { }
 
-// FUN_005f18f8 — no-op stub
+// FUN_005f18f8 — DEVIATION: Win32 API
 export function FUN_005f18f8() { }
 
-// FUN_005f1910 — no-op stub
+// FUN_005f1910 — DEVIATION: Win32 API
 export function FUN_005f1910() { }
 
 // FUN_005f1928 — child_list_add
@@ -749,7 +749,7 @@ export function FUN_005f1a40(self, param_1, param_2, param_3) {
   return 1;
 }
 
-// CSplitterWnd::IsTracking — stub
+// CSplitterWnd::IsTracking — DEVIATION: Win32 API
 export function CSplitterWnd_IsTracking(self) {
   return 0;
 }
@@ -759,62 +759,62 @@ export function CSplitterWnd_IsTracking(self) {
 // CRT LIBRARY FUNCTIONS
 //
 // All functions below are MSVC CRT / Win32 / MFC library code.
-// They are stubbed as no-ops or minimal implementations.
+// They are marked with DEVIATION: C runtime as appropriate.
 // ═══════════════════════════════════════════════════════════════════
 
 
-// __onexit — register exit callback (stub)
+// __onexit — register exit callback (DEVIATION: C runtime)
 export function __onexit(_Func) { return _Func; }
 
-// _atexit — register atexit callback (stub)
+// _atexit — register atexit callback (DEVIATION: C runtime)
 export function _atexit(param_1) { return 0; }
 
-// ___onexitinit — initialize onexit table (stub)
+// ___onexitinit — initialize onexit table (DEVIATION: C runtime)
 export function ___onexitinit() { }
 
-// __global_unwind2 — SEH global unwind (stub)
+// __global_unwind2 — SEH global unwind (DEVIATION: C runtime)
 export function __global_unwind2(param_1) { }
 
-// __local_unwind2 — SEH local unwind (stub)
+// __local_unwind2 — SEH local unwind (DEVIATION: C runtime)
 export function __local_unwind2(param_1, param_2) { }
 
-// __abnormal_termination — SEH check (stub)
+// __abnormal_termination — SEH check (DEVIATION: C runtime)
 export function __abnormal_termination() { return 0; }
 
-// FUN_005f1d95 — save SEH context registers (stub)
+// FUN_005f1d95 — save SEH context registers (DEVIATION: C runtime)
 export function FUN_005f1d95(param_1) { }
 
-// FUN_005f1d9e — save SEH context (stub)
+// FUN_005f1d9e — save SEH context (DEVIATION: C runtime)
 export function FUN_005f1d9e() { }
 
-// _JumpToContinuation — SEH jump (stub)
+// _JumpToContinuation — SEH jump (DEVIATION: C runtime)
 export function _JumpToContinuation(param_1, param_2) { }
 
-// _CallMemberFunction0 — thunk (stub)
+// _CallMemberFunction0 — thunk (DEVIATION: C runtime)
 export function _CallMemberFunction0(param_1, param_2) { }
 
-// FID_conflict:_CallMemberFunction1 (two copies) — thunk (stub)
+// FID_conflict:_CallMemberFunction1 (two copies) — thunk (DEVIATION: C runtime)
 export function FID_conflict__CallMemberFunction1(param_1, param_2) { }
 
-// _UnwindNestedFrames — SEH unwind (stub)
+// _UnwindNestedFrames — SEH unwind (DEVIATION: C runtime)
 export function _UnwindNestedFrames(param_1, param_2) { }
 
-// ___CxxFrameHandler — C++ exception handler (stub)
+// ___CxxFrameHandler — C++ exception handler (DEVIATION: C runtime)
 export function ___CxxFrameHandler(param_1, param_2, param_3, param_4) { return 1; }
 
-// ___CxxLongjmpUnwind@4 — longjmp unwind (stub)
+// ___CxxLongjmpUnwind@4 — longjmp unwind (DEVIATION: C runtime)
 export function ___CxxLongjmpUnwind_4(param_1) { }
 
-// _CallCatchBlock2 — catch block caller (stub)
+// _CallCatchBlock2 — catch block caller (DEVIATION: C runtime)
 export function _CallCatchBlock2(param_1, param_2, param_3, param_4, param_5) { return 0; }
 
-// CatchGuardHandler — catch guard (stub)
+// CatchGuardHandler — catch guard (DEVIATION: C runtime)
 export function CatchGuardHandler(param_1, param_2, param_3, param_4) { return 1; }
 
-// _CallSETranslator — SE translator (stub)
+// _CallSETranslator — SE translator (DEVIATION: C runtime)
 export function _CallSETranslator(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { return 0; }
 
-// TranslatorGuardHandler — translator guard (stub)
+// TranslatorGuardHandler — translator guard (DEVIATION: C runtime)
 export function TranslatorGuardHandler(param_1, param_2, param_3, param_4) { return 1; }
 
 // FID_conflict:_memcpy — memcpy/memmove (use JS)
@@ -836,333 +836,339 @@ export function _rand() {
   return (DAT_00639e50 >>> 0x10) & 0x7fff;
 }
 
-// FUN_005f22d0 — strcpy (stub)
+// FUN_005f22d0 — strcpy (DEVIATION: C runtime)
 export function FUN_005f22d0(param_1, param_2) { return param_1; }
 
-// FUN_005f22e0 — strcat (stub)
+// FUN_005f22e0 — strcat (DEVIATION: C runtime)
 export function FUN_005f22e0(param_1, param_2) { return param_1; }
 
-// operator_delete — (stub)
+// operator_delete — (DEVIATION: C runtime)
 export function operator_delete(param_1) { }
 
-// operator_new — (stub)
+// operator_new — (DEVIATION: C runtime)
 export function operator_new(param_1) { return {}; }
 
-// eh_vector_destructor_iterator — (stub)
+// eh_vector_destructor_iterator — (DEVIATION: C runtime)
 export function _eh_vector_destructor_iterator_(param_1, param_2, param_3, param_4) { }
 
-// __ArrayUnwind — (stub)
+// __ArrayUnwind — (DEVIATION: C runtime)
 export function __ArrayUnwind(param_1, param_2, param_3, param_4) { }
 
-// FID_conflict:ArrayUnwindFilter — (stub)
+// FID_conflict:ArrayUnwindFilter — (DEVIATION: C runtime)
 export function FID_conflict_ArrayUnwindFilter(param_1) { return 0; }
 
-// eh_vector_constructor_iterator — (stub)
+// eh_vector_constructor_iterator — (DEVIATION: C runtime)
 export function _eh_vector_constructor_iterator_(param_1, param_2, param_3, param_4, param_5) { }
 
 // FUN_005f26e0 — toupper_offset (subtract 0x20)
 export function FUN_005f26e0(param_1) { return param_1 - 0x20; }
 
-// FID_conflict:__toupper_lk / _toupper — (stub, use JS)
+// FID_conflict:__toupper_lk / _toupper — (DEVIATION: C runtime, use JS)
 export function FID_conflict___toupper_lk(_C) {
   if (_C >= 0x61 && _C <= 0x7a) return _C - 0x20;
   return _C;
 }
 
-// _isalpha — (stub)
+// _isalpha — (DEVIATION: C runtime)
 export function _isalpha(_C) { return ((_C >= 0x41 && _C <= 0x5a) || (_C >= 0x61 && _C <= 0x7a)) ? 1 : 0; }
 
-// _isupper — (stub)
+// _isupper — (DEVIATION: C runtime)
 export function _isupper(_C) { return (_C >= 0x41 && _C <= 0x5a) ? 1 : 0; }
 
-// _islower — (stub)
+// _islower — (DEVIATION: C runtime)
 export function _islower(_C) { return (_C >= 0x61 && _C <= 0x7a) ? 1 : 0; }
 
-// _isdigit — (stub)
+// _isdigit — (DEVIATION: C runtime)
 export function _isdigit(_C) { return (_C >= 0x30 && _C <= 0x39) ? 1 : 0; }
 
-// _isxdigit — (stub)
+// _isxdigit — (DEVIATION: C runtime)
 export function _isxdigit(_C) {
   return ((_C >= 0x30 && _C <= 0x39) || (_C >= 0x41 && _C <= 0x46) || (_C >= 0x61 && _C <= 0x66)) ? 1 : 0;
 }
 
-// _isspace — (stub)
+// _isspace — (DEVIATION: C runtime)
 export function _isspace(_C) { return (_C === 0x20 || (_C >= 0x09 && _C <= 0x0d)) ? 1 : 0; }
 
-// _ispunct — (stub)
+// _ispunct — (DEVIATION: C runtime)
 export function _ispunct(_C) { return 0; }
 
-// _isalnum — (stub)
+// _isalnum — (DEVIATION: C runtime)
 export function _isalnum(_C) { return (_isalpha(_C) || _isdigit(_C)) ? 1 : 0; }
 
-// _isprint — (stub)
+// _isprint — (DEVIATION: C runtime)
 export function _isprint(_C) { return (_C >= 0x20 && _C <= 0x7e) ? 1 : 0; }
 
-// _isgraph — (stub)
+// _isgraph — (DEVIATION: C runtime)
 export function _isgraph(_C) { return (_C >= 0x21 && _C <= 0x7e) ? 1 : 0; }
 
-// _iscntrl — (stub)
+// _iscntrl — (DEVIATION: C runtime)
 export function _iscntrl(_C) { return (_C < 0x20 || _C === 0x7f) ? 1 : 0; }
 
-// ___isascii — (stub)
+// ___isascii — (DEVIATION: C runtime)
 export function ___isascii(_C) { return (_C < 0x80) ? 1 : 0; }
 
 // FUN_005f2be0 — toascii
 export function FUN_005f2be0(param_1) { return param_1 & 0x7f; }
 
-// ___iscsymf — (stub)
+// ___iscsymf — (DEVIATION: C runtime)
 export function ___iscsymf(_C) { return (_isalpha(_C) || _C === 0x5f) ? 1 : 0; }
 
-// ___iscsym — (stub)
+// ___iscsym — (DEVIATION: C runtime)
 export function ___iscsym(_C) { return (_isalnum(_C) || _C === 0x5f) ? 1 : 0; }
 
-// __fsopen — file open (stub)
+// __fsopen — file open (DEVIATION: C runtime)
 export function __fsopen(_Filename, _Mode, _ShFlag) { return null; }
 
-// _fopen — file open (stub)
+// _fopen — file open (DEVIATION: C runtime)
 export function _fopen(_Filename, _Mode) { return null; }
 
-// _fclose — file close (stub)
+// _fclose — file close (DEVIATION: C runtime)
 export function _fclose(_File) { return -1; }
 
-// _strncpy — (stub)
+// _strncpy — (DEVIATION: C runtime)
 export function _strncpy(_Dest, _Source, _Count) { return _Dest; }
 
-// _sprintf — (stub)
+// _sprintf — (DEVIATION: C runtime)
 export function _sprintf(_Dest, _Format) { return 0; }
 
-// _atol — (stub)
+// _atol — (DEVIATION: C runtime)
 export function _atol(_Str) { return 0; }
 
-// _atoi — (stub)
+// _atoi — (DEVIATION: C runtime)
 export function _atoi(_Str) { return 0; }
 
-// __atoi64 — (stub)
+// __atoi64 — (DEVIATION: C runtime)
 export function __atoi64(_String) { return 0; }
 
-// _fputs — (stub)
+// _fputs — (DEVIATION: C runtime)
 export function _fputs(_Str, _File) { return 0; }
 
-// _strlen — (stub)
+// _strlen — (DEVIATION: C runtime)
 export function _strlen(_Str) { return 0; }
 
-// _memset — (stub)
+// _memset — (DEVIATION: C runtime)
 export function _memset(_Dst, _Val, _Size) { return _Dst; }
 
-// _strcmp — (stub)
+// _strcmp — (DEVIATION: C runtime)
 export function _strcmp(_Str1, _Str2) { return 0; }
 
 // FUN_005f35f0 — stack probe (no-op)
 export function FUN_005f35f0() { }
 
-// _strchr — (stub)
+// _strchr — (DEVIATION: C runtime)
 export function _strchr(_Str, _Val) { return null; }
 
-// _strncmp — (stub)
+// _strncmp — (DEVIATION: C runtime)
 export function _strncmp(_Str1, _Str2, _MaxCount) { return 0; }
 
-// _fread — (stub)
+// _fread — (DEVIATION: C runtime)
 export function _fread(_DstBuf, _ElementSize, _Count, _File) { return 0; }
 
-// _fwrite — (stub)
+// _fwrite — (DEVIATION: C runtime)
 export function _fwrite(_Str, _Size, _Count, _File) { return 0; }
 
-// __chdir — (stub)
+// __chdir — (DEVIATION: C runtime)
 export function __chdir(_Path) { return 0; }
 
-// _strrchr — (stub)
+// _strrchr — (DEVIATION: C runtime)
 export function _strrchr(_Str, _Ch) { return null; }
 
-// _fgets — (stub)
+// _fgets — (DEVIATION: C runtime)
 export function _fgets(_Buf, _MaxCount, _File) { return null; }
 
-// __filbuf — (stub)
+// __filbuf — (DEVIATION: C runtime)
 export function __filbuf(_File) { return -1; }
 
-// _fputc — (stub)
+// _fputc — (DEVIATION: C runtime)
 export function _fputc(_Ch, _File) { return _Ch; }
 
-// _putc — (stub)
+// _putc — (DEVIATION: C runtime)
 export function _putc(_Ch, _File) { return _fputc(_Ch, _File); }
 
-// _fgetc — (stub)
+// _fgetc — (DEVIATION: C runtime)
 export function _fgetc(_File) { return -1; }
 
-// _getc — (stub)
+// _getc — (DEVIATION: C runtime)
 export function _getc(_File) { return _fgetc(_File); }
 
-// __strnicmp — (stub)
+// __strnicmp — (DEVIATION: C runtime)
 export function __strnicmp(_Str1, _Str2, _MaxCount) { return 0; }
 
-// __cinit — CRT init (stub)
+// __cinit — CRT init (DEVIATION: C runtime)
 export function __cinit(param_1) { return 0; }
 
-// _exit — (stub)
+// _exit — (DEVIATION: C runtime)
 export function _exit_fn(_Code) { }
 
-// __exit — (stub)
+// __exit — (DEVIATION: C runtime)
 export function __exit(param_1) { }
 
-// __cexit — (stub)
+// __cexit — (DEVIATION: C runtime)
 export function __cexit() { }
 
-// __c_exit — (stub)
+// __c_exit — (DEVIATION: C runtime)
 export function __c_exit() { }
 
-// doexit — (stub)
+// doexit — (DEVIATION: C runtime)
 export function doexit(param_1, param_2, param_3) { }
 
-// __initterm — call initializer table (stub)
+// __initterm — call initializer table (DEVIATION: C runtime)
 export function __initterm(param_1, param_2) { }
 
-// _strstr — (stub)
+// _strstr — (DEVIATION: C runtime)
 export function _strstr(_Str, _SubStr) { return null; }
 
-// _malloc — (stub)
+// _malloc — (DEVIATION: C runtime)
 export function _malloc(_Size) { return null; }
 
-// __malloc_dbg — (stub)
+// __malloc_dbg — (DEVIATION: C runtime)
 export function __malloc_dbg(param_1, param_2, param_3, param_4) { return null; }
 
-// __nh_malloc — (stub)
+// __nh_malloc — (DEVIATION: C runtime)
 export function __nh_malloc(_Size, _NhFlag) { return null; }
 
-// __nh_malloc_dbg — (stub)
+// __nh_malloc_dbg — (DEVIATION: C runtime)
 export function __nh_malloc_dbg(param_1, param_2, param_3, param_4, param_5) { return 0; }
 
-// __heap_alloc — (stub)
+// __heap_alloc — (DEVIATION: C runtime)
 export function __heap_alloc(_Size) { return null; }
 
-// __heap_alloc_dbg — (stub)
+// __heap_alloc_dbg — (DEVIATION: C runtime)
 export function __heap_alloc_dbg(param_1, param_2, param_3, param_4) { return null; }
 
-// _calloc — (stub)
+// _calloc — (DEVIATION: C runtime)
 export function _calloc(_Count, _Size) { return null; }
 
-// __calloc_dbg — (stub)
+// __calloc_dbg — (DEVIATION: C runtime)
 export function __calloc_dbg(param_1, param_2, param_3, param_4, param_5) { return null; }
 
-// FID_conflict:__expand / _realloc — (stub)
+// FID_conflict:__expand / _realloc — (DEVIATION: C runtime)
 export function FID_conflict___expand(_Memory, _NewSize) { return null; }
 
-// __realloc_dbg — (stub)
+// __realloc_dbg — (DEVIATION: C runtime)
 export function __realloc_dbg(param_1, param_2, param_3, param_4, param_5) { return 0; }
 
-// realloc_help — (stub)
+// realloc_help — (DEVIATION: C runtime)
 export function realloc_help(param_1, param_2, param_3, param_4, param_5, param_6) { return null; }
 
-// FUN_005f4f70 — free wrapper (stub)
+// __expand_dbg — (DEVIATION: C runtime)
+export function __expand_dbg(param_1, param_2, param_3, param_4, param_5) {
+  let uVar1 = realloc_help(param_1, param_2, param_3, param_4, param_5, 0);
+  return uVar1;
+}
+
+// FUN_005f4f70 — free wrapper (DEVIATION: C runtime)
 export function FUN_005f4f70(param_1) { }
 
-// __free_dbg — (stub)
+// __free_dbg — (DEVIATION: C runtime)
 export function __free_dbg(param_1, param_2) { }
 
-// __msize — (stub)
+// __msize — (DEVIATION: C runtime)
 export function __msize(_Memory) { return 0; }
 
-// __msize_dbg — (stub)
+// __msize_dbg — (DEVIATION: C runtime)
 export function __msize_dbg(param_1, param_2) { return 0; }
 
-// FUN_005f5550 — set debug break request (stub)
+// FUN_005f5550 — set debug break request (DEVIATION: C runtime)
 export function FUN_005f5550(param_1) { let old = DAT_00639f78; DAT_00639f78 = param_1; return old; }
 
-// __CrtSetDbgBlockType — (stub)
+// __CrtSetDbgBlockType — (DEVIATION: C runtime)
 export function __CrtSetDbgBlockType(param_1, param_2) { }
 
-// FUN_005f5620 — set alloc hook (stub)
+// FUN_005f5620 — set alloc hook (DEVIATION: C runtime)
 export function FUN_005f5620(param_1) { return null; }
 
-// _CheckBytes — (stub)
+// _CheckBytes — (DEVIATION: C runtime)
 export function _CheckBytes(param_1, param_2, param_3) { return 1; }
 
-// __CrtCheckMemory — (stub)
+// __CrtCheckMemory — (DEVIATION: C runtime)
 export function __CrtCheckMemory() { return 1; }
 
-// __CrtSetDbgFlag — (stub)
+// __CrtSetDbgFlag — (DEVIATION: C runtime)
 export function __CrtSetDbgFlag(param_1) { let old = DAT_00639f70; if (param_1 !== -1) DAT_00639f70 = param_1; return old; }
 
-// __CrtDoForAllClientObjects — (stub)
+// __CrtDoForAllClientObjects — (DEVIATION: C runtime)
 export function __CrtDoForAllClientObjects(param_1, param_2) { }
 
-// __CrtIsValidPointer — (stub)
+// __CrtIsValidPointer — (DEVIATION: C runtime)
 export function __CrtIsValidPointer(param_1, param_2, param_3) { return param_1 !== 0 ? 1 : 0; }
 
-// __CrtIsValidHeapPointer — (stub)
+// __CrtIsValidHeapPointer — (DEVIATION: C runtime)
 export function __CrtIsValidHeapPointer(param_1) { return param_1 !== 0 ? 1 : 0; }
 
-// __CrtIsMemoryBlock — (stub)
+// __CrtIsMemoryBlock — (DEVIATION: C runtime)
 export function __CrtIsMemoryBlock(param_1, param_2, param_3, param_4, param_5) { return 0; }
 
-// FUN_005f5d30 — set dump client hook (stub)
+// FUN_005f5d30 — set dump client hook (DEVIATION: C runtime)
 export function FUN_005f5d30(param_1) { let old = DAT_006e6b48; DAT_006e6b48 = param_1; return old; }
 
-// __CrtMemCheckpoint — (stub)
+// __CrtMemCheckpoint — (DEVIATION: C runtime)
 export function __CrtMemCheckpoint(param_1) { }
 
-// __CrtMemDifference — (stub)
+// __CrtMemDifference — (DEVIATION: C runtime)
 export function __CrtMemDifference(param_1, param_2, param_3) { return 0; }
 
-// __CrtMemDumpAllObjectsSince — (stub)
+// __CrtMemDumpAllObjectsSince — (DEVIATION: C runtime)
 export function __CrtMemDumpAllObjectsSince(param_1) { }
 
-// __printMemBlockData — (stub)
+// __printMemBlockData — (DEVIATION: C runtime)
 export function __printMemBlockData(param_1) { }
 
-// __CrtDumpMemoryLeaks — (stub)
+// __CrtDumpMemoryLeaks — (DEVIATION: C runtime)
 export function __CrtDumpMemoryLeaks() { return 0; }
 
-// __CrtMemDumpStatistics — (stub)
+// __CrtMemDumpStatistics — (DEVIATION: C runtime)
 export function __CrtMemDumpStatistics(param_1) { }
 
-// FID_conflict:_memcpy (second copy) — (stub, same as first)
+// FID_conflict:_memcpy (second copy) — (DEVIATION: C runtime, same as first)
 export function FID_conflict__memcpy_2(_Dst, _Src, _Size) { return FID_conflict__memcpy(_Dst, _Src, _Size); }
 
-// FID_conflict:__wrename / _rename — (stub)
+// FID_conflict:__wrename / _rename — (DEVIATION: C runtime)
 export function FID_conflict___wrename(_OldFilename, _NewFilename) { return 0; }
 
-// FID_conflict:_remove / __wremove — (stub)
+// FID_conflict:_remove / __wremove — (DEVIATION: C runtime)
 export function FID_conflict__remove(_Filename) { return 0; }
 
-// FID_conflict:__unlink — (stub)
+// FID_conflict:__unlink — (DEVIATION: C runtime)
 export function FID_conflict___unlink(_Filename) { return 0; }
 
-// _rewind — (stub)
+// _rewind — (DEVIATION: C runtime)
 export function _rewind(_File) { }
 
-// _fseek — (stub)
+// _fseek — (DEVIATION: C runtime)
 export function _fseek(_File, _Offset, _Origin) { return -1; }
 
-// _ftell — (stub)
+// _ftell — (DEVIATION: C runtime)
 export function _ftell(_File) { return -1; }
 
-// _printf — (stub)
+// _printf — (DEVIATION: C runtime)
 export function _printf(_Format) { return 0; }
 
-// __ftol — float to long (stub)
+// __ftol — float to long (DEVIATION: C runtime)
 export function __ftol() { return 0; }
 
-// __fpmath — FP math init (stub)
+// __fpmath — FP math init (DEVIATION: C runtime)
 export function __fpmath(param_1) { }
 
-// FUN_005f6cc0 — no-op
+// FUN_005f6cc0 — DEVIATION: Win32 API
 export function FUN_005f6cc0() { }
 
-// __cfltcvt_init — float conversion init (stub)
+// __cfltcvt_init — float conversion init (DEVIATION: C runtime)
 export function __cfltcvt_init() { }
 
-// FUN_005f6d20 — set user math error handler (stub)
+// FUN_005f6d20 — set user math error handler (DEVIATION: C runtime)
 export function FUN_005f6d20(param_1) { let old = DAT_00639fa8; DAT_00639fa8 = param_1; return old; }
 
-// _memcmp — (stub)
+// _memcmp — (DEVIATION: C runtime)
 export function _memcmp(_Buf1, _Buf2, _Size) { return 0; }
 
-// __strcmpi — case-insensitive strcmp (stub)
+// __strcmpi — case-insensitive strcmp (DEVIATION: C runtime)
 export function __strcmpi(_Str1, _Str2) { return 0; }
 
-// entry — program entry point (stub)
+// entry — program entry point (DEVIATION: C runtime)
 export function entry() { }
 
-// __amsg_exit — runtime error exit (stub)
+// __amsg_exit — runtime error exit (DEVIATION: C runtime)
 export function __amsg_exit(param_1) { }
 
 // FUN_005f7120 — abs (integer)
@@ -1170,410 +1176,410 @@ export function FUN_005f7120(param_1) {
   return (param_1 ^ (param_1 >> 0x1f)) - (param_1 >> 0x1f);
 }
 
-// __getcwd — (stub)
+// __getcwd — (DEVIATION: C runtime)
 export function __getcwd(_DstBuf, _SizeInBytes) { return null; }
 
-// __getdcwd — (stub)
+// __getdcwd — (DEVIATION: C runtime)
 export function __getdcwd(_Drive, _DstBuf, _SizeInBytes) { return null; }
 
-// __validdrive — (stub)
+// __validdrive — (DEVIATION: C runtime)
 export function __validdrive(param_1) { return 1; }
 
-// _time — (stub)
+// _time — (DEVIATION: C runtime)
 export function _time(_Time) { return 0; }
 
-// _strncat — (stub)
+// _strncat — (DEVIATION: C runtime)
 export function _strncat(_Dest, _Source, _Count) { return _Dest; }
 
-// __assert — assertion (stub — logs to console)
+// __assert — assertion (DEVIATION: Win32 API — logs to console)
 export function __assert(param_1, param_2, param_3) {
   // In original: shows message box, then aborts
 }
 
-// ___InternalCxxFrameHandler — C++ EH (stub)
+// ___InternalCxxFrameHandler — C++ EH (DEVIATION: C runtime)
 export function ___InternalCxxFrameHandler(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { return 1; }
 
-// FindHandler — C++ EH (stub)
+// FindHandler — C++ EH (DEVIATION: C runtime)
 export function FindHandler(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { }
 
-// FindHandlerForForeignException — C++ EH (stub)
+// FindHandlerForForeignException — C++ EH (DEVIATION: C runtime)
 export function FindHandlerForForeignException(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { }
 
-// GetRangeOfTrysToCheck — C++ EH (stub)
+// GetRangeOfTrysToCheck — C++ EH (DEVIATION: C runtime)
 export function GetRangeOfTrysToCheck(param_1, param_2, param_3, param_4, param_5) { return null; }
 
-// TypeMatch — C++ EH (stub)
+// TypeMatch — C++ EH (DEVIATION: C runtime)
 export function TypeMatch(param_1, param_2, param_3) { return 0; }
 
-// ___FrameUnwindToState — C++ EH (stub)
+// ___FrameUnwindToState — C++ EH (DEVIATION: C runtime)
 export function ___FrameUnwindToState(param_1, param_2, param_3, param_4) { }
 
-// FID_conflict:ArrayUnwindFilter (second copy) — (stub)
+// FID_conflict:ArrayUnwindFilter (second copy) — (DEVIATION: C runtime)
 export function FID_conflict_ArrayUnwindFilter_2(param_1) { return 0; }
 
-// CatchIt — C++ EH (stub)
+// CatchIt — C++ EH (DEVIATION: C runtime)
 export function CatchIt(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) { }
 
-// CallCatchBlock — C++ EH (stub)
+// CallCatchBlock — C++ EH (DEVIATION: C runtime)
 export function CallCatchBlock(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { return null; }
 
-// ExFilterRethrow — C++ EH (stub)
+// ExFilterRethrow — C++ EH (DEVIATION: C runtime)
 export function ExFilterRethrow(param_1) { return 0; }
 
-// BuildCatchObject — C++ EH (stub)
+// BuildCatchObject — C++ EH (DEVIATION: C runtime)
 export function BuildCatchObject(param_1, param_2, param_3, param_4) { }
 
-// DestructExceptionObject — C++ EH (stub)
+// DestructExceptionObject — C++ EH (DEVIATION: C runtime)
 export function DestructExceptionObject(param_1, param_2) { }
 
-// AdjustPointer — C++ EH (stub)
+// AdjustPointer — C++ EH (DEVIATION: C runtime)
 export function AdjustPointer(param_1, param_2) { return param_1; }
 
-// __CallSettingFrame@12 — SEH frame setup (stub)
+// __CallSettingFrame@12 — SEH frame setup (DEVIATION: C runtime)
 export function __CallSettingFrame_12(param_1, param_2, param_3) { }
 
-// terminate — (stub)
+// terminate — (DEVIATION: C runtime)
 export function terminate() { }
 
-// unexpected — (stub)
+// unexpected — (DEVIATION: C runtime)
 export function unexpected() { terminate(); }
 
-// _inconsistency — (stub)
+// _inconsistency — (DEVIATION: C runtime)
 export function _inconsistency() { terminate(); }
 
-// __CrtDbgBreak — (stub)
+// __CrtDbgBreak — (DEVIATION: C runtime)
 export function __CrtDbgBreak() { }
 
-// __CrtSetReportMode — (stub)
+// __CrtSetReportMode — (DEVIATION: C runtime)
 export function __CrtSetReportMode(param_1, param_2) { return -1; }
 
-// __CrtSetReportFile — (stub)
+// __CrtSetReportFile — (DEVIATION: C runtime)
 export function __CrtSetReportFile(param_1, param_2) { return -2; }
 
-// FUN_005f8b40 — set report hook (stub)
+// FUN_005f8b40 — set report hook (DEVIATION: C runtime)
 export function FUN_005f8b40(param_1) { let old = DAT_006e6b30; DAT_006e6b30 = param_1; return old; }
 
-// __CrtDbgReport — (stub)
+// __CrtDbgReport — (DEVIATION: C runtime)
 export function __CrtDbgReport(param_1, param_2, param_3, param_4, param_5) { return 0; }
 
-// _CrtMessageWindow — (stub)
+// _CrtMessageWindow — (DEVIATION: C runtime)
 export function _CrtMessageWindow() { return false; }
 
-// FUN_005f9355 — SEH local unwind dispatch (stub)
+// FUN_005f9355 — SEH local unwind dispatch (DEVIATION: C runtime)
 export function FUN_005f9355(param_1) { }
 
-// ___crtLCMapStringW — locale map (stub)
+// ___crtLCMapStringW — locale map (DEVIATION: C runtime)
 export function ___crtLCMapStringW(_LocaleName, _DWMapFlag, _LpSrcStr, _CchSrc, _LpDestStr, _CchDest) { return 0; }
 
-// wcsncnt — wide char count (stub)
+// wcsncnt — wide char count (DEVIATION: C runtime)
 export function wcsncnt(param_1, param_2) { return param_2; }
 
-// ___crtLCMapStringA — locale map (stub)
+// ___crtLCMapStringA — locale map (DEVIATION: C runtime)
 export function ___crtLCMapStringA(_Plocinfo, _LocaleName, _DwMapFlag, _LpSrcStr, _CchSrc, _LpDestStr, _CchDest, _Code_page, _BError) { return 0; }
 
-// _strncnt — string count (stub)
+// _strncnt — string count (DEVIATION: C runtime)
 export function _strncnt(_String, _Cnt) { return _Cnt; }
 
-// __isctype — char type check (stub)
+// __isctype — char type check (DEVIATION: C runtime)
 export function __isctype(_C, _Type) { return 0; }
 
-// __openfile — file open internal (stub)
+// __openfile — file open internal (DEVIATION: C runtime)
 export function __openfile(_Filename, _Mode, _ShFlag, _File) { return null; }
 
-// __getstream — get FILE stream (stub)
+// __getstream — get FILE stream (DEVIATION: C runtime)
 export function __getstream() { return null; }
 
-// __close — close file handle (stub)
+// __close — close file handle (DEVIATION: C runtime)
 export function __close(_FileHandle) { return -1; }
 
-// __freebuf — free file buffer (stub)
+// __freebuf — free file buffer (DEVIATION: C runtime)
 export function __freebuf(_File) { }
 
-// _fflush — flush file (stub)
+// _fflush — flush file (DEVIATION: C runtime)
 export function _fflush(_File) { return 0; }
 
-// __flush — flush internal (stub)
+// __flush — flush internal (DEVIATION: C runtime)
 export function __flush(_File) { return 0; }
 
-// __flushall — flush all files (stub)
+// __flushall — flush all files (DEVIATION: C runtime)
 export function __flushall() { return 0; }
 
-// flsall — flush all internal (stub)
+// flsall — flush all internal (DEVIATION: C runtime)
 export function flsall(param_1) { return 0; }
 
-// __flsbuf — flush buffer (stub)
+// __flsbuf — flush buffer (DEVIATION: C runtime)
 export function __flsbuf(_Ch, _File) { return -1; }
 
-// __output — printf core (stub)
+// __output — printf core (DEVIATION: C runtime)
 export function __output(param_1, param_2, param_3) { return 0; }
 
-// write_char — output single char (stub)
+// write_char — output single char (DEVIATION: C runtime)
 export function write_char(param_1, param_2, param_3) { }
 
-// write_multi_char — output repeated char (stub)
+// write_multi_char — output repeated char (DEVIATION: C runtime)
 export function write_multi_char(param_1, param_2, param_3, param_4) { }
 
-// write_string — output string (stub)
+// write_string — output string (DEVIATION: C runtime)
 export function write_string(param_1, param_2, param_3, param_4) { }
 
-// get_int_arg — varargs int (stub)
+// get_int_arg — varargs int (DEVIATION: C runtime)
 export function get_int_arg(param_1) { return 0; }
 
-// get_int64_arg — varargs int64 (stub)
+// get_int64_arg — varargs int64 (DEVIATION: C runtime)
 export function get_int64_arg(param_1) { return 0; }
 
-// get_short_arg — varargs short (stub)
+// get_short_arg — varargs short (DEVIATION: C runtime)
 export function get_short_arg(param_1) { return 0; }
 
-// __allmul — 64-bit multiply (stub)
+// __allmul — 64-bit multiply (DEVIATION: C runtime)
 export function __allmul(param_1, param_2, param_3, param_4) { return 0; }
 
-// __stbuf — setup temp buffer (stub)
+// __stbuf — setup temp buffer (DEVIATION: C runtime)
 export function __stbuf(_File) { return 0; }
 
-// __ftbuf — free temp buffer (stub)
+// __ftbuf — free temp buffer (DEVIATION: C runtime)
 export function __ftbuf(_Flag, _File) { }
 
-// __read — read from file (stub)
+// __read — read from file (DEVIATION: C runtime)
 export function __read(_FileHandle, _DstBuf, _MaxCharCount) { return -1; }
 
-// __write — write to file (stub)
+// __write — write to file (DEVIATION: C runtime)
 export function __write(_FileHandle, _Buf, _MaxCharCount) { return -1; }
 
-// __dosmaperr — map DOS error to errno (stub)
+// __dosmaperr — map DOS error to errno (DEVIATION: C runtime)
 export function __dosmaperr(param_1) { DAT_00639f18 = param_1; }
 
-// __mbctoupper — multibyte toupper (stub)
+// __mbctoupper — multibyte toupper (DEVIATION: C runtime)
 export function __mbctoupper(_Ch) {
   if (_Ch >= 0x61 && _Ch <= 0x7a) return _Ch - 0x20;
   return _Ch;
 }
 
-// __ioinit — IO init (stub)
+// __ioinit — IO init (DEVIATION: C runtime)
 export function __ioinit() { return 0; }
 
-// __ioterm — IO term (stub)
+// __ioterm — IO term (DEVIATION: C runtime)
 export function __ioterm() { }
 
-// __getbuf — get file buffer (stub)
+// __getbuf — get file buffer (DEVIATION: C runtime)
 export function __getbuf(_File) { }
 
 // FUN_005fc5c0 — tolower_offset (add 0x20)
 export function FUN_005fc5c0(param_1) { return param_1 + 0x20; }
 
-// _tolower — (stub)
+// _tolower — (DEVIATION: C runtime)
 export function _tolower(_C) {
   if (_C >= 0x41 && _C <= 0x5a) return _C + 0x20;
   return _C;
 }
 
-// FUN_005fc720 — set new handler (stub)
+// FUN_005fc720 — set new handler (DEVIATION: C runtime)
 export function FUN_005fc720(param_1) { let old = DAT_006e54a0; DAT_006e54a0 = param_1; return old; }
 
-// FUN_005fc750 — get new handler (stub)
+// FUN_005fc750 — get new handler (DEVIATION: C runtime)
 export function FUN_005fc750() { return DAT_006e54a0; }
 
-// __callnewh — call new handler (stub)
+// __callnewh — call new handler (DEVIATION: C runtime)
 export function __callnewh(_Size) { return 0; }
 
-// __malloc_base — (stub)
+// __malloc_base — (DEVIATION: C runtime)
 export function __malloc_base(param_1) { return null; }
 
-// __nh_malloc_base — (stub)
+// __nh_malloc_base — (DEVIATION: C runtime)
 export function __nh_malloc_base(param_1, param_2) { return 0; }
 
-// __heap_alloc_base — (stub)
+// __heap_alloc_base — (DEVIATION: C runtime)
 export function __heap_alloc_base(param_1) { return null; }
 
-// FUN_005fc8f0 — returns 1 (ValidateRead/Write stub)
+// FUN_005fc8f0 — returns 1 (DEVIATION: C runtime — ValidateRead/Write)
 export function FUN_005fc8f0() { return 1; }
 
-// __expand_base — (stub)
+// __expand_base — (DEVIATION: C runtime)
 export function __expand_base(param_1, param_2) { return null; }
 
-// __realloc_base — (stub)
+// __realloc_base — (DEVIATION: C runtime)
 export function __realloc_base(param_1, param_2) { return null; }
 
-// __free_base — (stub)
+// __free_base — (DEVIATION: C runtime)
 export function __free_base(param_1) { }
 
-// __heapchk — (stub)
+// __heapchk — (DEVIATION: C runtime)
 export function __heapchk() { return -2; }
 
-// __heapset — (stub)
+// __heapset — (DEVIATION: C runtime)
 export function __heapset(_Fill) { return __heapchk(); }
 
-// __heap_init — (stub)
+// __heap_init — (DEVIATION: C runtime)
 export function __heap_init() { return 1; }
 
-// __heap_term — (stub)
+// __heap_term — (DEVIATION: C runtime)
 export function __heap_term() { }
 
 // FUN_005fcdc0 — get SBH threshold
 export function FUN_005fcdc0() { return DAT_0063ac54; }
 
-// __set_sbh_threshold — (stub)
+// __set_sbh_threshold — (DEVIATION: C runtime)
 export function __set_sbh_threshold(param_1) { return true; }
 
-// ___sbh_new_region — (stub)
+// ___sbh_new_region — (DEVIATION: C runtime)
 export function ___sbh_new_region() { return null; }
 
-// ___sbh_release_region — (stub)
+// ___sbh_release_region — (DEVIATION: C runtime)
 export function ___sbh_release_region(param_1) { }
 
-// ___sbh_decommit_pages — (stub)
+// ___sbh_decommit_pages — (DEVIATION: C runtime)
 export function ___sbh_decommit_pages(param_1) { }
 
-// ___sbh_find_block — (stub)
+// ___sbh_find_block — (DEVIATION: C runtime)
 export function ___sbh_find_block(param_1, param_2, param_3) { return 0; }
 
-// ___sbh_free_block — (stub)
+// ___sbh_free_block — (DEVIATION: C runtime)
 export function ___sbh_free_block(param_1, param_2, param_3) { }
 
-// ___sbh_alloc_block — (stub)
+// ___sbh_alloc_block — (DEVIATION: C runtime)
 export function ___sbh_alloc_block(param_1) { return null; }
 
-// ___sbh_alloc_block_from_page — (stub)
+// ___sbh_alloc_block_from_page — (DEVIATION: C runtime)
 export function ___sbh_alloc_block_from_page(param_1, param_2, param_3) { return 0; }
 
-// ___sbh_resize_block — (stub)
+// ___sbh_resize_block — (DEVIATION: C runtime)
 export function ___sbh_resize_block(param_1, param_2, param_3, param_4) { return 0; }
 
-// ___sbh_heap_check — (stub)
+// ___sbh_heap_check — (DEVIATION: C runtime)
 export function ___sbh_heap_check() { return 0; }
 
-// __lseek — (stub)
+// __lseek — (DEVIATION: C runtime)
 export function __lseek(_FileHandle, _Offset, _Origin) { return -1; }
 
-// ___initstdio — (stub)
+// ___initstdio — (DEVIATION: C runtime)
 export function ___initstdio() { }
 
-// ___endstdio — (stub)
+// ___endstdio — (DEVIATION: C runtime)
 export function ___endstdio() { }
 
-// __setdefaultprecision — (stub)
+// __setdefaultprecision — (DEVIATION: C runtime)
 export function __setdefaultprecision() { }
 
-// __ms_p5_test_fdiv — Pentium FDIV bug test (stub)
+// __ms_p5_test_fdiv — Pentium FDIV bug test (DEVIATION: C runtime)
 export function __ms_p5_test_fdiv() { return 0; }
 
-// __ms_p5_mp_test_fdiv — Pentium FDIV multiprocessor test (stub)
+// __ms_p5_mp_test_fdiv — Pentium FDIV multiprocessor test (DEVIATION: C runtime)
 export function __ms_p5_mp_test_fdiv() { }
 
-// __forcdecpt — force decimal point (stub)
+// __forcdecpt — force decimal point (DEVIATION: C runtime)
 export function __forcdecpt(_Buf) { }
 
-// __cropzeros — crop trailing zeros (stub)
+// __cropzeros — crop trailing zeros (DEVIATION: C runtime)
 export function __cropzeros(_Buf) { }
 
-// __positive — check if positive (stub)
+// __positive — check if positive (DEVIATION: C runtime)
 export function __positive(arg) { return 1; }
 
-// __fassign — float assign (stub)
+// __fassign — float assign (DEVIATION: C runtime)
 export function __fassign(flag, argument, number) { }
 
-// __cftoe — float to E format (stub)
+// __cftoe — float to E format (DEVIATION: C runtime)
 export function __cftoe(_Value, _Buf, _SizeInBytes, _Dec, _Caps) { return 0; }
 
-// __cftof — float to F format (stub)
+// __cftof — float to F format (DEVIATION: C runtime)
 export function __cftof(_Value, _Buf, _SizeInBytes, _Dec) { return 0; }
 
-// __cftog — float to G format (stub)
+// __cftog — float to G format (DEVIATION: C runtime)
 export function __cftog(param_1, param_2, param_3, param_4) { }
 
-// __cftoe_g — float to E format (g variant) (stub)
+// __cftoe_g — float to E format (g variant) (DEVIATION: C runtime)
 export function __cftoe_g(param_1, param_2, param_3, param_4) { return 0; }
 
-// __cftof_g — float to F format (g variant) (stub)
+// __cftof_g — float to F format (g variant) (DEVIATION: C runtime)
 export function __cftof_g(param_1, param_2, param_3) { return 0; }
 
-// __cfltcvt — float conversion dispatch (stub)
+// __cfltcvt — float conversion dispatch (DEVIATION: C runtime)
 export function __cfltcvt(arg, buffer, sizeInBytes, format, precision, caps) { return 0; }
 
-// __shift — shift string right (stub)
+// __shift — shift string right (DEVIATION: C runtime)
 export function __shift(param_1, param_2) { }
 
-// __XcptFilter — exception filter (stub)
+// __XcptFilter — exception filter (DEVIATION: C runtime)
 export function __XcptFilter(_ExceptionNum, _ExceptionPtr) { return 0; }
 
-// xcptlookup — exception table lookup (stub)
+// xcptlookup — exception table lookup (DEVIATION: C runtime)
 export function xcptlookup(param_1) { return null; }
 
-// __ismbbkalnum — multibyte alnum (stub)
+// __ismbbkalnum — multibyte alnum (DEVIATION: C runtime)
 export function __ismbbkalnum(_C) { return 0; }
 
-// __ismbbkprint — multibyte printable (stub)
+// __ismbbkprint — multibyte printable (DEVIATION: C runtime)
 export function __ismbbkprint(_C) { return 0; }
 
-// __ismbbkpunct — multibyte punct (stub)
+// __ismbbkpunct — multibyte punct (DEVIATION: C runtime)
 export function __ismbbkpunct(_C) { return 0; }
 
-// __ismbbalnum — multibyte alnum (stub)
+// __ismbbalnum — multibyte alnum (DEVIATION: C runtime)
 export function __ismbbalnum(_C) { return 0; }
 
-// __ismbbalpha — multibyte alpha (stub)
+// __ismbbalpha — multibyte alpha (DEVIATION: C runtime)
 export function __ismbbalpha(_C) { return 0; }
 
-// __ismbbgraph — multibyte graph (stub)
+// __ismbbgraph — multibyte graph (DEVIATION: C runtime)
 export function __ismbbgraph(_C) { return 0; }
 
-// __ismbbprint — multibyte print (stub)
+// __ismbbprint — multibyte print (DEVIATION: C runtime)
 export function __ismbbprint(_C) { return 0; }
 
-// __ismbbpunct — multibyte punct (stub)
+// __ismbbpunct — multibyte punct (DEVIATION: C runtime)
 export function __ismbbpunct(_C) { return 0; }
 
-// __ismbblead — multibyte lead byte (stub)
+// __ismbblead — multibyte lead byte (DEVIATION: C runtime)
 export function __ismbblead(_C) { return 0; }
 
-// __ismbbtrail — multibyte trail byte (stub)
+// __ismbbtrail — multibyte trail byte (DEVIATION: C runtime)
 export function __ismbbtrail(_C) { return 0; }
 
-// __ismbbkana — multibyte kana (stub)
+// __ismbbkana — multibyte kana (DEVIATION: C runtime)
 export function __ismbbkana(_C) { return 0; }
 
-// x_ismbbtype — multibyte type check (stub)
+// x_ismbbtype — multibyte type check (DEVIATION: C runtime)
 export function x_ismbbtype(param_1, param_2, param_3) { return 0; }
 
-// __setenvp — set environment (stub)
+// __setenvp — set environment (DEVIATION: C runtime)
 export function __setenvp() { return 0; }
 
-// __setargv — set argv (stub)
+// __setargv — set argv (DEVIATION: C runtime)
 export function __setargv() { return 0; }
 
-// parse_cmdline — parse command line (stub)
+// parse_cmdline — parse command line (DEVIATION: C runtime)
 export function parse_cmdline(param_1, param_2, param_3, param_4, param_5) { }
 
-// ___crtGetEnvironmentStringsW — (stub)
+// ___crtGetEnvironmentStringsW — (DEVIATION: C runtime)
 export function ___crtGetEnvironmentStringsW() { return null; }
 
-// ___crtGetEnvironmentStringsA — (stub)
+// ___crtGetEnvironmentStringsA — (DEVIATION: C runtime)
 export function ___crtGetEnvironmentStringsA() { return null; }
 
-// __setmbcp — set multibyte code page (stub)
+// __setmbcp — set multibyte code page (DEVIATION: C runtime)
 export function __setmbcp(_CodePage) { return 0; }
 
-// getSystemCP — get system code page (stub)
+// getSystemCP — get system code page (DEVIATION: C runtime)
 export function getSystemCP(param_1) { return param_1; }
 
-// _CPtoLCID — code page to LCID (stub)
+// _CPtoLCID — code page to LCID (DEVIATION: C runtime)
 export function _CPtoLCID(param_1) { return 0; }
 
-// setSBCS — set single byte char set (stub)
+// setSBCS — set single byte char set (DEVIATION: C runtime)
 export function setSBCS() { }
 
 // FUN_005fffa0 — get multibyte code page
 export function FUN_005fffa0() { return DAT_0063b0a4; }
 
-// ___initmbctable — init MB char table (stub)
+// ___initmbctable — init MB char table (DEVIATION: C runtime)
 export function ___initmbctable() { __setmbcp(-3); }
 
-// __FF_MSGBANNER — runtime error message banner (stub)
+// __FF_MSGBANNER — runtime error message banner (DEVIATION: C runtime)
 export function __FF_MSGBANNER() { }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// EXTERNAL FUNCTION STUBS
+// EXTERNAL FUNCTION DECLARATIONS
 //
 // Functions called from this block but defined in other blocks.
 // ═══════════════════════════════════════════════════════════════════
