@@ -293,7 +293,8 @@ export function FUN_004d0160() {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004d01ae(param_1) {
   for (let local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    DAT_006a5b10[local_8] = DAT_0064caa8[local_8 + param_1 * 0x2CA];
+    // C: *(int*)(&DAT_006a5b10 + local_8*4) = (int)*(short*)(&DAT_0064caa8 + local_8*2 + param_1*0x594)
+    w32(DAT_006a5b10, local_8 * 4, s16(DAT_0064caa8, local_8 * 2 + param_1 * 0x594));
   }
 }
 
@@ -613,7 +614,7 @@ export function FUN_004d0b58() {
   FUN_00408010(0x1fc);
   FUN_00596eec(in_ECX[0x1cc], 1);
   FUN_004d4a7b();
-  if (DAT_0064caae[in_ECX[0x1cc] * 0x2CA] !== 0 && DAT_006ad0ec !== 0) {
+  if (s16(DAT_0064caae, in_ECX[0x1cc] * 0x594) !== 0 && DAT_006ad0ec !== 0) {
     in_ECX[0xae0] = 1;
   }
   let iVar1b = FUN_004a7577(in_ECX[0x1cc]);
@@ -977,7 +978,7 @@ export function FUN_004d4a7b() {
   let bVar2 = false;
   FUN_004aef20(in_ECX[0x638]);
   for (let local_c = 0; local_c < 6; local_c = local_c + 1) {
-    let sVar1 = DAT_0064caa8[in_ECX[0x1cc] * 0x2CA + local_c];
+    let sVar1 = s16(DAT_0064caa8, in_ECX[0x1cc] * 0x594 + local_c * 2);
     let iVar3 = FUN_00596b00(in_ECX[0x1cc], local_c);
     if (iVar3 < sVar1) {
       bVar2 = true;
@@ -986,7 +987,7 @@ export function FUN_004d4a7b() {
   for (let local_c = 0; local_c < 6; local_c = local_c + 1) {
     FUN_004af122(in_ECX[0x638], DAT_00628420 + DAT_00634f60[local_c * 3] * 4);
     FUN_004aefb7(in_ECX[0x638]);
-    FUN_004af1d5(in_ECX[0x638], DAT_0064caa8[in_ECX[0x1cc] * 0x2CA + local_c]);
+    FUN_004af1d5(in_ECX[0x638], s16(DAT_0064caa8, in_ECX[0x1cc] * 0x594 + local_c * 2));
     if (bVar2 && local_c === 0) {
       FUN_0043c840(in_ECX[0x638], DAT_0062e2f4);
     }
@@ -994,7 +995,7 @@ export function FUN_004d4a7b() {
   }
   FUN_004af14b(in_ECX[0x638], 0x22);
   FUN_004aefb7(in_ECX[0x638]);
-  FUN_004af1d5(in_ECX[0x638], DAT_0064caae[in_ECX[0x1cc] * 0x2CA]);
+  FUN_004af1d5(in_ECX[0x638], s16(DAT_0064caae, in_ECX[0x1cc] * 0x594));
   FUN_0043c840(in_ECX[0x638], 0);  // s_0_000
   FUN_0043c840(in_ECX[0x638], DAT_0062e304);
   FUN_004af14b(in_ECX[0x638], 0x42);
@@ -1224,7 +1225,7 @@ export function FUN_004d570b() {
   FUN_0043c840(in_ECX[0x838], uVar1);
   FUN_004aefb7(in_ECX[0x838]);
   FUN_004aef36(in_ECX[0x838]);
-  FUN_00485208(in_ECX[0x838], DAT_0064caa2[in_ECX[0x1cc] * 0x2CA]);
+  FUN_00485208(in_ECX[0x838], s16(DAT_0064caa2, in_ECX[0x1cc] * 0x594));
   SetRect(/*in_ECX + 0x8dc*/ 0, 0, 0x1c1, 0x27f, 0x1df);
   FUN_0043c790(0, 1, 1);
   FUN_005c19ad(10);
