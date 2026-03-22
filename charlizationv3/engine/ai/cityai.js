@@ -71,7 +71,7 @@ const IRRIGATION_PRIORITY = [
   7,  // 1 Plains: 1 base food → +1 irrigation, good food boost
   5,  // 2 Grassland: 2 base food already, but +1 is still valuable
   0,  // 3 Forest: cannot irrigate (transforms to plains)
-  4,  // 4 Hills: 1 base food → +1, decent
+  0,  // 4 Hills: MINE instead — +3 shields >> +1 food from irrigation
   0,  // 5 Mountains: cannot irrigate
   3,  // 6 Tundra: 1 base food → +1, marginal terrain
   0,  // 7 Glacier: cannot irrigate
@@ -779,25 +779,24 @@ function getWorkerOrder(unit, unitIndex, gameState, mapBase, civSlot) {
     if (!err) return action;
   }
 
-  // ── Priority 2b: Irrigate lower-priority terrains (now that road is done) ──
-  // Grassland (5), Hills (4), Tundra (3) — irrigate after road is built.
-  if (!imp.irrigation && CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0) {
-    const irrPri = IRRIGATION_PRIORITY[terrain] || 0;
-    if (irrPri > 0 && irrPri < 6 && checkWaterSource(unit.gx, unit.gy, mapBase)) {
-      const action = { type: 'WORKER_ORDER', unitIndex, order: 'irrigation' };
+  // ── Priority 3b: Mine hills/mountains (only with existing road) ──
+  // Civ2 AI pattern: mine before irrigating lower-priority terrains.
+  // Hills get +3 shields from mining — much better than +1 food from irrigation.
+  // Mountains get +1 shield. Require road so production is network-connected.
+  if (!imp.mining && imp.road && CAN_MINE[terrain] && MINING_TURNS[terrain] > 0) {
+    if (terrain === 4 || terrain === 5) {
+      const action = { type: 'WORKER_ORDER', unitIndex, order: 'mine' };
       const err = validateAction(gameState, mapBase, action, civSlot);
       if (!err) return action;
     }
   }
 
-  // ── Priority 4: Mine hills/mountains (only with existing road) ──
-  // Civ2 AI pattern: only mine terrain types 4 (Hills) and 5 (Mountains).
-  // Require existing road so the production boost is connected to the network.
-  // Hills get +3 shields from mining, Mountains get +1 — very valuable.
-  if (!imp.mining && imp.road && CAN_MINE[terrain] && MINING_TURNS[terrain] > 0) {
-    // Only mine hills and mountains (Civ2 AI ignores desert mining in most cases)
-    if (terrain === 4 || terrain === 5) {
-      const action = { type: 'WORKER_ORDER', unitIndex, order: 'mine' };
+  // ── Priority 4: Irrigate lower-priority terrains (now that road is done) ──
+  // Grassland (5), Tundra (3) — irrigate after road and after mining check.
+  if (!imp.irrigation && CAN_IRRIGATE[terrain] && IRRIGATION_TURNS[terrain] > 0) {
+    const irrPri = IRRIGATION_PRIORITY[terrain] || 0;
+    if (irrPri > 0 && irrPri < 6 && checkWaterSource(unit.gx, unit.gy, mapBase)) {
+      const action = { type: 'WORKER_ORDER', unitIndex, order: 'irrigation' };
       const err = validateAction(gameState, mapBase, action, civSlot);
       if (!err) return action;
     }
