@@ -182,6 +182,24 @@ export function initBinaryConstants() {
     G.DAT_00628370[i] = cityDx[i] & 0xFF; // signed byte
     G.DAT_006283a0[i] = cityDy[i] & 0xFF;
   }
+
+  // 8-direction movement offsets (C: binary constants at 0x00628350, 0x00628360)
+  // Used by AI tactics (FUN_00538a29) and movement execution (FUN_004c4e6d)
+  // Source: reverse_engineering/binary_js/mem.js (verified against C usage)
+  const dirDx = [-1, 1, 2, 1, -1, -1, -2, -1]; // DAT_00628350
+  const dirDy = [-1, -1, 0, 1, 1, 1, 0, -1];   // DAT_00628360
+  for (let i = 0; i < 8; i++) {
+    G.DAT_00628350[i] = dirDx[i] & 0xFF;
+    G.DAT_00628360[i] = dirDy[i] & 0xFF;
+  }
+
+  // 4+1 direction offsets (C: binary constants at 0x0062833c, 0x00628344)
+  const dir4Dx = [0, 2, 0, -2, 0]; // DAT_0062833c
+  const dir4Dy = [-2, 0, 2, 0, 0]; // DAT_00628344
+  for (let i = 0; i < 5; i++) {
+    G.DAT_0062833c[i] = dir4Dx[i] & 0xFF;
+    G.DAT_00628344[i] = dir4Dy[i] & 0xFF;
+  }
 }
 
 /**
