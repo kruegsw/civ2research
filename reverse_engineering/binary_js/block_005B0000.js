@@ -365,8 +365,47 @@ export function FUN_005b09dc() {
 // FUN_005b1037 — editor_dialog_init (UI)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b1037 (2484 bytes)
 export function FUN_005b1037() {
-  // DEVIATION: Win32 API (CPropertySheet, operator new, CreateWindow) — editor dialog init
+  let iVar4, iVar5;
+  let local_468;
+
+  // DEVIATION: SEH, GDI init
+  FUN_005c64da(); // DEVIATION: GDI init
+  DAT_006a1d7c = 1;
+  // DAT_006a4f88 = in_ECX; // DEVIATION: MFC
+  // local_468 = FUN_005bd630(); // DEVIATION: MFC — create DC (operator_new 0x48)
+  local_468 = 0;
+  DAT_0062e018 = local_468;
+  // FUN_00417ef0(0, DAT_0062e01c); // DEVIATION: MFC
+  // FUN_005d268e, FUN_005d25a8, FUN_005d2550, FUN_005d2568, FUN_005d2590 — font/palette init
+  // in_ECX[0x2d8] = 0x230; in_ECX[0x2dc] = 0x17c; in_ECX[0x2ec] = 0; // DEVIATION: MFC
+  DAT_006a1d80 = 0xc9;
+  FUN_005bf071("EDITORSA.GIF", 10, 0xc0, new Uint8Array(1076)); // DEVIATION: load editor bitmap
+  // in_ECX[0x2e8] = FUN_0040ef70(); // DEVIATION: MFC — font height
+  // Dialog setup via FUN_00428b0c + FUN_005534bc (title bar)
+  // FUN_004086c0 — calculate rectangles for controls
+  // 5 tab pages created via FUN_005b0473(0..4) + FUN_005b08e8(0..12)
+  iVar4 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  for (let tabIdx = 0; tabIdx < 5; tabIdx++) {
+    FUN_005b0473(tabIdx); // create tab content
+  }
+  for (let btnIdx = 0; btnIdx < 13; btnIdx++) {
+    FUN_005b08e8(btnIdx); // create parameter buttons
+  }
+  FUN_005b09dc(); // paint editor
+  FUN_005869d4(); // DEVIATION: display params (from block_00580000)
+  // Button layout: OK, Cancel buttons via FUN_0040f680/FUN_0040f880
+  // FUN_0040f840(); FUN_0040f350(0); // DEVIATION: MFC — default/show
+  // CPropertySheet_EnableStackedTabs(in_ECX, 0x401c0d); // DEVIATION: MFC
+  // FUN_005bb574(); FUN_004085f0(); FUN_005c61b0(); // DEVIATION: MFC — show dialog
+  // while (DAT_006a1d7c !== 0) { FUN_0040ef50(); } // DEVIATION: MFC — message loop
+  if (DAT_0062e018 !== 0) {
+    // FUN_0040f010(1); // DEVIATION: MFC — destroy DC
+  }
+  DAT_0062e018 = 0;
+  // DEVIATION: SEH cleanup chain
 }
 
 
