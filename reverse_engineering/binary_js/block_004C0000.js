@@ -3780,17 +3780,88 @@ export function FUN_004cd3d7(param_1, param_2, param_3) {
 
 // Source: decompiled/block_004C0000.c FUN_004cd8a6 (1069 bytes)
 export function FUN_004cd8a6() {
-  // DEVIATION: File I/O — updates CITY.TXT section markers
-  // C: Opens CITY.TXT, renames to CITY.TMP as backup
-  // C: Reads line by line, for each @SECTION line (not @RAND):
-  //    Looks up section name in 21 personality slots (DAT_0064c6a6 stride 0x594)
-  //    If personality found, gets civ name from DAT_0064bd12 (stride 0xF2)
-  //    Otherwise gets default name from DAT_00655504 resource table
-  //    Replaces @SECTION header with updated name from DAT_006a1d88
-  // C: Writes remaining content, cleans up CITY.TMP
-  // Game state reads: DAT_0064c6a6, DAT_0064bd12, DAT_00655504, DAT_006a1d88
-  // DEVIATION: Cannot perform file I/O — returns 0 (failure)
-  return 0;
+  let iVar1;
+  let pcVar2;
+  let local_234, local_230 = 0, local_22c;
+  let local_228 = null; // DEVIATION: FILE*
+  let local_224 = null; // DEVIATION: FILE*
+  let local_220 = '';
+  let local_11c = 0;
+  let local_118 = '';
+  let local_117 = '';
+  let local_18 = '';
+  let local_8;
+
+  local_230 = 0;
+  local_228 = null;
+  local_224 = null;
+  FUN_005f22d0(local_18, "CITY."); // DEVIATION: string build
+  FUN_005f22e0(local_18, DAT_0062cd24); // DEVIATION: append ext
+  _getcwd(local_220, 0x104); // DEVIATION: save dir
+  _chdir(DAT_0064bb08); // DEVIATION: chdir
+  iVar1 = _strcmp(DAT_0064bb08, DAT_00655020);
+  if (iVar1 !== 0) {
+    iVar1 = FUN_00415133(local_18);
+    if (iVar1 === 0) {
+      local_230 = 1; // no file to update
+    } else {
+      iVar1 = FUN_00415133("CITY.TMP");
+      if ((iVar1 === 0 || (iVar1 = FID_conflict__remove("CITY.TMP"), iVar1 === 0)) &&
+         (iVar1 = FID_conflict___wrename(local_18, "CITY.TMP"), iVar1 === 0)) {
+        local_224 = FUN_0041508c("CITY.TMP", "r"); // DEVIATION: fopen
+        local_228 = FUN_0041508c(local_18, "w"); // DEVIATION: fopen
+        if (local_224 !== null && local_228 !== null) {
+          do {
+            while (true) {
+              pcVar2 = _fgets(local_118, 0x100, local_224); // DEVIATION: fgets
+              if (pcVar2 === null) { local_230 = 1; break; }
+              if (local_118[0] !== '@' || (iVar1 = _strnicmp(local_117, "RAND", 4), iVar1 === 0)) {
+                break; // not a section header or is @RAND — write as-is
+              }
+              // It's a @SECTION line (not @RAND) — look up personality
+              for (local_11c = 0; local_11c < 0x15; local_11c = local_11c + 1) {
+                local_22c = 1;
+                while (local_22c < 8 && s16(DAT_0064c6a6, local_22c * 0x594) !== local_11c) {
+                  local_22c = local_22c + 1;
+                }
+                if (local_22c < 8) {
+                  local_8 = DAT_0064bd12 + local_22c * 0xf2;
+                } else {
+                  if (s16(DAT_00655504, local_11c * 0x30) < 1) {
+                    local_234 = -(s16(DAT_00655504, local_11c * 0x30));
+                  } else {
+                    local_234 = s16(DAT_00655504, local_11c * 0x30);
+                  }
+                  local_8 = FUN_00428b0c(local_234);
+                }
+                let _MaxCount = _strlen(local_8);
+                iVar1 = _strnicmp(local_117, local_8, _MaxCount);
+                if (iVar1 === 0) {
+                  _sprintf(local_118, "@%s", DAT_006a1d88 + (local_11c * 5 + 0xd2) * 8);
+                  _strupr(local_118); // DEVIATION: uppercase
+                  iVar1 = _fputs(local_118, local_228); // DEVIATION: fputs
+                  if (iVar1 === -1) { break; } // goto cleanup
+                  break;
+                }
+              }
+              if (local_11c === 0x15) {
+                iVar1 = _fputs(local_118, local_228); // write unchanged
+                if (iVar1 === -1) { break; }
+              }
+            }
+            iVar1 = _fputs(local_118, local_228); // DEVIATION: fputs
+          } while (iVar1 !== -1);
+        }
+      }
+    }
+  }
+  // Cleanup
+  if (local_224 !== null) { _fclose(local_224); } // DEVIATION: fclose
+  if (local_228 !== null) { _fclose(local_228); } // DEVIATION: fclose
+  iVar1 = FUN_00415133("CITY.TMP");
+  if (iVar1 !== 0) { FID_conflict__remove("CITY.TMP"); } // DEVIATION: delete temp
+  _chdir(local_220); // DEVIATION: restore dir
+  return local_230;
 }
 
 
