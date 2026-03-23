@@ -21,16 +21,18 @@ const args = process.argv.slice(2);
 let savPath = null;
 let rulesPath = null;
 let turns = 0;
+let outPath = null;
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--sav' && i + 1 < args.length) savPath = args[++i];
   else if (args[i] === '--rules' && i + 1 < args.length) rulesPath = args[++i];
   else if (args[i] === '--turns' && i + 1 < args.length) turns = parseInt(args[++i]);
+  else if (args[i] === '--save' && i + 1 < args.length) outPath = args[++i];
   else if (!savPath && !args[i].startsWith('--')) savPath = args[i];
 }
 
 if (!savPath) {
-  console.error('Usage: node run.js --sav path/to/file.sav [--rules path/to/RULES.TXT] [--turns N]');
+  console.error('Usage: node run.js --sav path/to/file.sav [--rules path/to/RULES.TXT] [--turns N] [--save output.sav]');
   process.exit(1);
 }
 
@@ -218,6 +220,15 @@ if (turns > 0) {
       console.log(`    "${a.name}" (no change)`);
     }
   }
+}
+
+// ── Save output ──
+if (outPath && turns > 0) {
+  const { saveSav } = await import('./sav-writer.js');
+  const { writeFileSync } = await import('fs');
+  const outBuf = saveSav(savBuf);
+  writeFileSync(outPath, outBuf);
+  console.log(`\nSaved to: ${outPath} (${outBuf.length} bytes, turn ${G.DAT_00655af8})`);
 }
 
 console.log('\nDone.');
