@@ -410,11 +410,60 @@ export function FUN_00571902() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_00571910 (666 bytes)
 export function FUN_00571910() {
-  // C: Loads additional sprite sheet (ICONS.GIF or similar)
-  // C: __getcwd/__chdir, thunk_load_bitmap/FUN_005bf071
-  // C: Extracts sprites, stores via FUN_005a9abf
-  // C: No game state DAT_ writes — all local/GDI operations
-  // DEVIATION: GDI bitmap loading
+  let uVar1, iVar2, uVar3;
+  let local_568 = new Uint8Array(16);
+  let local_554 = new Uint8Array(1076);
+  let local_558, local_120;
+  let local_18, local_14;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  FUN_005c64da(); // DEVIATION: GDI init
+  _getcwd(0, 0x104); // DEVIATION: save dir
+  _chdir(DAT_0064bb08); // DEVIATION: chdir
+  iVar2 = load_bitmap(DAT_006ac0a8, "ICONS.BMP", 10, 0xc0, local_554); // DEVIATION: Win32
+  if (iVar2 === 0) {
+    iVar2 = FUN_005bf071("ICONS.GIF", 10, 0xc0, local_554); // DEVIATION: GIF
+    if (iVar2 === 0) {
+      _chdir(DAT_00655020);
+      FUN_005bf071("ICONS.GIF", 10, 0xc0, local_554);
+    } else {
+      _chdir(DAT_00655020);
+    }
+  } else {
+    _chdir(DAT_00655020);
+  }
+  // Extract 4x5 grid of icon sprites
+  local_558 = 0xd3;
+  for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
+    local_120 = 0x157;
+    for (local_18 = 0; local_18 < 5; local_18 = local_18 + 1) {
+      uVar1 = FUN_00417f70();
+      uVar3 = FUN_004bb540(uVar1);
+      uVar3 = FUN_004a6980(uVar3);
+      FUN_005a9abf(DAT_006ac0a8, local_120, local_558, uVar3);
+      FUN_005cef31(local_568, DAT_006ac0a8, local_120, local_558);
+      local_120 = local_120 + 0x25;
+    }
+    local_558 = local_558 + 0x15;
+  }
+  // Save modified bitmap
+  _chdir(DAT_0064bb08);
+  iVar2 = FUN_00415133("ICONS.BMP");
+  if (iVar2 !== 0) {
+    iVar2 = FID_conflict__remove("ICONS.BMP");
+    if (iVar2 !== 0) {
+      _chdir(0);
+      FUN_004083f0();
+      FUN_00571baa();
+      FUN_00571bc0();
+      return;
+    }
+  }
+  FUN_write_bitmap_data(DAT_006ac0a8, "ICONS.BMP", 10, 0xc0, local_554); // DEVIATION: save BMP
+  _chdir(0);
+  FUN_004083f0();
+  FUN_00571baa();
+  FUN_00571bc0();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -436,12 +485,100 @@ export function FUN_00571bc0() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_00571bce (1175 bytes)
 export function FUN_00571bce() {
-  // C: Loads PEOPLE.GIF/BMP sprite sheet for happiness display
-  // C: __getcwd/__chdir, thunk_load_bitmap/FUN_005bf071
-  // C: Extracts 11 rows x 4 columns of sprites
-  // C: Stores via FUN_005a9abf, recolors via FUN_004a6980
-  // C: No game state DAT_ writes
-  // DEVIATION: GDI bitmap loading
+  let uVar1, iVar2, uVar3;
+  let local_568 = new Uint8Array(16), local_578 = new Uint8Array(16);
+  let local_588 = new Uint8Array(16), local_598 = new Uint8Array(16);
+  let local_550 = new Uint8Array(1076);
+  let local_558, local_554, local_11c;
+  let local_14;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  FUN_005c64da(); // DEVIATION: GDI init
+  _getcwd(0, 0x104); // DEVIATION: save dir
+  _chdir(DAT_0064bb08); // DEVIATION: chdir
+  iVar2 = load_bitmap(DAT_006ac0a8, "ICONS.BMP", 10, 0xc0, local_550); // DEVIATION: Win32
+  if (iVar2 === 0) {
+    iVar2 = FUN_005bf071("ICONS.GIF", 10, 0xc0, local_550);
+    if (iVar2 === 0) {
+      _chdir(DAT_00655020);
+      FUN_005bf071("ICONS.GIF", 10, 0xc0, local_550);
+    } else {
+      _chdir(DAT_00655020);
+    }
+  } else {
+    _chdir(DAT_00655020);
+  }
+  // Extract 0x27 (39) sprites — 8 per row, wrapping
+  local_11c = 0x157;
+  local_554 = 1;
+  local_558 = 0;
+  for (local_14 = 1; local_14 < 0x27; local_14 = local_14 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_11c, local_554, uVar3);
+    FUN_005cef31(local_568, DAT_006ac0a8, local_11c, local_554);
+    local_11c = local_11c + 0x25;
+    local_558 = local_558 + 1;
+    if (7 < local_558) {
+      local_558 = 0;
+      local_554 = local_554 + 0x15;
+      local_11c = 0x157;
+    }
+  }
+  // Extract 0x1c (28) more sprites — 7 per row
+  local_11c = 0x157;
+  local_554 = 0x6a;
+  local_558 = 0;
+  for (local_14 = 0; local_14 < 0x1c; local_14 = local_14 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_11c, local_554, uVar3);
+    FUN_005cef31(local_578, DAT_006ac0a8, local_11c, local_554);
+    local_11c = local_11c + 0x25;
+    local_558 = local_558 + 1;
+    if (6 < local_558) {
+      local_558 = 0;
+      local_554 = local_554 + 0x15;
+      local_11c = 0x157;
+    }
+  }
+  // Extract 1 individual sprite
+  uVar1 = FUN_00417f70();
+  uVar3 = FUN_004bb540(uVar1);
+  uVar3 = FUN_004a6980(uVar3);
+  FUN_005a9abf(DAT_006ac0a8, 199, 0x100, uVar3);
+  FUN_005cef31(local_588, DAT_006ac0a8, 199, 0x100);
+  // Extract 8 direction sprites
+  local_11c = 1;
+  local_554 = 0x164;
+  for (local_14 = 0; local_14 < 8; local_14 = local_14 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_11c, local_554, uVar3);
+    FUN_005cef31(local_598, DAT_006ac0a8, local_11c, local_554);
+    local_11c = local_11c + 0x21;
+  }
+  // Save modified bitmap
+  _chdir(DAT_0064bb08);
+  iVar2 = FUN_00415133("ICONS.BMP");
+  if (iVar2 !== 0) {
+    iVar2 = FID_conflict__remove("ICONS.BMP");
+    if (iVar2 !== 0) {
+      _chdir(0);
+      FUN_004083f0();
+      FUN_00572065();
+      FUN_0057207b();
+      return;
+    }
+  }
+  FUN_write_bitmap_data(DAT_006ac0a8, "ICONS.BMP", 10, 0xc0, local_550); // DEVIATION: save BMP
+  _chdir(0);
+  FUN_004083f0();
+  FUN_00572065();
+  FUN_0057207b();
 }
 
 // ═══════════════════════════════════════════════════════════════════
