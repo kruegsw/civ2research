@@ -205,8 +205,33 @@ export function FUN_005b02a5() {
 // FUN_005b0373 — editor_command_handler (UI)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b0373 (256 bytes)
 export function FUN_005b0373(param_1) {
-  // DEVIATION: Win32 API (CPropertySheet, SetFocus, SendMessage) — editor dialog handler
+  let iVar1;
+  let local_8;
+
+  if (param_1 === 0xc9) {
+    iVar1 = FUN_005af4ae(); // check if multi-player
+    if (iVar1 === 0) {
+      // let uVar2 = FUN_00418d60(); // DEVIATION: MFC — get selected tab index
+      // wi(DAT_006a4f88, 0x2ec, uVar2); // DEVIATION: MFC — store tab index
+      FUN_005af343(); // update display
+      FUN_005b02a5(); // refresh view
+      FUN_005af682(); // finalize
+    } else {
+      // FUN_00418d90(ri(DAT_006a4f88, 0x2ec)); // DEVIATION: MFC — set tab
+      FUN_005af343(); // update display
+      FUN_005af682(); // finalize
+      local_8 = (DAT_006a4f88 === 0) ? 0 : DAT_006a4f88 + 0x48;
+      FUN_0059d3c9(local_8); // DEVIATION: sound
+      FUN_004190d0("DEBUG", "NOTICE"); // DEVIATION: Win32 — show dialog
+      FUN_0059d3c9(0); // DEVIATION: sound off
+      // let hWnd = FUN_00418770(); // DEVIATION: MFC — get HWND
+      // SetFocus(hWnd); // DEVIATION: Win32 — SetFocus
+    }
+  } else if (param_1 === 0xcd) {
+    FUN_005b02a5(); // refresh view
+  }
 }
 
 
@@ -214,8 +239,59 @@ export function FUN_005b0373(param_1) {
 // FUN_005b0473 — editor_create_controls (UI)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b0473 (1111 bytes)
 export function FUN_005b0473(param_1) {
-  // DEVIATION: Win32 API (CPropertySheet, listbox controls) — editor tab controls
+  let iVar1, iVar2;
+  let uVar3;
+  let local_20, local_24;
+  let local_14 = new Uint8Array(16);
+
+  // iVar1 = ri(DAT_00635df8, param_1 * 8) + ri(in_ECX, 0x124); // DEVIATION: MFC
+  // iVar2 = ri(DAT_00635dfc, param_1 * 8) + ri(in_ECX, 0x128); // DEVIATION: MFC
+  if (param_1 === 0) {
+    // FUN_004086c0(local_14, iVar1 - 0xf, iVar2, 0x82, ri(in_ECX, 0x2e8) << 3); // DEVIATION: MFC
+  } else {
+    // FUN_004086c0(local_14, iVar1 - 0x1e, iVar2, 0xa0, ri(in_ECX, 0x2e8) << 3); // DEVIATION: MFC
+  }
+  iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  // let local_2c = (in_ECX === 0) ? 0 : in_ECX + 0x48; // DEVIATION: MFC
+  // FUN_00418bf0(local_2c, iVar1, local_14); // DEVIATION: MFC — create listbox
+  // FUN_00418c70(DAT_006a4f90); // DEVIATION: MFC — set font
+  // FUN_00418dd0(0x0040326f); // DEVIATION: MFC — set handler
+  switch (param_1) {
+  case 0: // unit types
+    for (local_20 = 0; local_20 < 0x3e; local_20 = local_20 + 1) {
+      uVar3 = FUN_00428b0c(DAT_0064b1b8[local_20 * 0x14]); // unit name
+      // FUN_00418ce0(uVar3); // DEVIATION: MFC — add listbox item
+    }
+    break;
+  case 1: // techs (part 1)
+  case 2: // techs (part 2)
+    uVar3 = FUN_00428b0c(DAT_00628420[0x7c0 / 4]); // header 1
+    // FUN_00418ce0(uVar3); // DEVIATION: MFC
+    uVar3 = FUN_00428b0c(DAT_00628420[0x7c4 / 4]); // header 2
+    // FUN_00418ce0(uVar3); // DEVIATION: MFC
+    for (local_24 = 0; local_24 < 100; local_24 = local_24 + 1) {
+      uVar3 = FUN_00428b0c(DAT_00627684[local_24 * 0x10]); // tech name
+      // FUN_00418ce0(uVar3); // DEVIATION: MFC
+    }
+    break;
+  case 3: // governments
+    let govResources = [0x794, 0x798, 0x7e0, 0x7e4, 0x7e8, 0x7ec, 0x7f0, 0x7f4];
+    for (let r of govResources) {
+      uVar3 = FUN_00428b0c(DAT_00628420[r / 4]);
+      // FUN_00418ce0(uVar3); // DEVIATION: MFC
+    }
+    break;
+  case 4: // misc
+    let miscResources = [0x7f8, 0x7fc, 0x800];
+    for (let r of miscResources) {
+      uVar3 = FUN_00428b0c(DAT_00628420[r / 4]);
+      // FUN_00418ce0(uVar3); // DEVIATION: MFC
+    }
+    break;
+  }
 }
 
 
@@ -223,8 +299,19 @@ export function FUN_005b0473(param_1) {
 // FUN_005b08e8 — editor_create_button (UI)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b08e8 (244 bytes)
 export function FUN_005b08e8(param_1) {
-  // DEVIATION: Win32 API (button control creation) — editor button
+  let local_14 = new Uint8Array(16);
+
+  // FUN_004086c0(local_14, DAT_00635e20[param_1 * 2] + ri(in_ECX, 0x124),
+  //              DAT_00635e24[param_1 * 2] + ri(in_ECX, 0x128), 0x30,
+  //              ri(in_ECX, 0x2e8) + 6); // DEVIATION: MFC — calc button rect
+  let iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  // let local_24 = (in_ECX === 0) ? 0 : in_ECX + 0x48; // DEVIATION: MFC
+  // FUN_00418910(local_24, iVar1, local_14, DAT_00635fe0); // DEVIATION: MFC — create button
+  // FUN_004189c0(3); // DEVIATION: MFC — set button type
+  // FUN_00418a00(0x00401019); // DEVIATION: MFC — set handler
 }
 
 
