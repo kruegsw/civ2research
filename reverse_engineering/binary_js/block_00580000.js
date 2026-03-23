@@ -734,8 +734,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
 
     for (local_1c = 0; local_1c < 8; local_1c = local_1c + 1) {
       // C: *(short *)(&DAT_0066ca84 + local_1c * 0x3f0) != 0
-      // DEVIATION: DAT_0066ca84 is per-player data, not city data — simplified check
-      if ((local_1c === 0) || (true)) {
+      if (local_1c === 0 || s16(DAT_0066ca84, local_1c * 0x3f0) !== 0) {
         FUN_0047bc59(local_c);
         FUN_0047cb26(uVar11, iVar10);
       }
@@ -3727,8 +3726,8 @@ export function FUN_0058f040(param_1) {
         if (1000 < DAT_00655afa) {
           local_20 = local_20 << 1;
         }
-        // *(int *)(&DAT_0064c6a2 + uVar3 * 0x594) += local_20  — add gold to treasury
-        // DEVIATION: would need civ treasury write
+        // C: *(int *)(&DAT_0064c6a2 + uVar3 * 0x594) += local_20 — add gold to treasury
+        w32(DAT_0064c6a2, uVar3 * 0x594, s32(DAT_0064c6a2, uVar3 * 0x594) + local_20);
         FUN_00421da0(0, local_20);
         if (DAT_006ad0d0 !== 0) {
           FUN_00410030("SURPRISEMETALS", 0, 0);
