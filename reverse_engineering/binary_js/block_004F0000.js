@@ -1111,9 +1111,18 @@ export function FUN_004f6244() {
 // FUN_004f6564 — civilopedia_draw_border (UI rendering)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f6564 (226 bytes)
 export function FUN_004f6564(param_1, param_2) {
-  // DEVIATION: UI border rendering with background bitmaps
-  return;
+  // C: Draws separator border in city window production panel
+  // C: If DAT_00635aa0 != 0 && param_2 == 1: draws top bitmap border via FUN_005a9b5d
+  // C: If DAT_00635aa4 != 0 && param_2 == 2: draws bottom bitmap border via FUN_005a9b5d
+  // C: Otherwise: draws simple border via FUN_0040fdb0
+  // DEVIATION: MFC rendering — cannot draw without GDI context
+  if ((DAT_00635aa0 !== 0 && param_2 === 1) || (DAT_00635aa4 !== 0 && param_2 === 2)) {
+    // DEVIATION: FUN_005a9b5d bitmap border
+  } else {
+    FUN_0040fdb0(); // DEVIATION: simple border
+  }
 }
 
 
@@ -1121,11 +1130,14 @@ export function FUN_004f6564(param_1, param_2) {
 // FUN_004f6646 — civilopedia_handle_category_select
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f6646 (113 bytes)
 export function FUN_004f6646() {
-  // UI: in_ECX[0x11c] dispatch
-  // DEVIATION: references in_ECX state
+  // C: Dispatches city window paint based on in_ECX+0x11c (view mode)
+  // C: Mode 0, not category 8: FUN_004f66c6 (production list)
+  // C: Mode != 0,1,2: FUN_004f5dd1 (other view)
+  // DEVIATION: MFC (in_ECX) — cannot read dialog state
+  // Default to production list view
   FUN_004f66c6();
-  return;
 }
 
 
@@ -1133,10 +1145,20 @@ export function FUN_004f6646() {
 // FUN_004f66c6 — civilopedia_draw_entry_list (UI rendering)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f66c6 (3016 bytes)
 export function FUN_004f66c6() {
-  // Complex UI rendering — list items, icons, text layout
-  // DEVIATION: pure UI rendering code
-  return;
+  // C: Renders civilopedia/production list entries in city window
+  // C: 319 lines of MFC rendering using in_ECX dialog object
+  // C: Reads layout from in_ECX+0x1b24 (DC), +0x1f3c (selection), +0x1b34 (count)
+  // C: For each visible entry:
+  //    Gets entry data from in_ECX+0x1b38 array
+  //    Draws selection highlight, text, and optional icon
+  //    Switch on in_ECX+0x118 (view mode): uses DAT_00646cb8 (tech table),
+  //      DAT_0064b1bc (unit types), DAT_0064c488 (buildings), DAT_00645160 (wonders)
+  // C: Uses SetRect, FUN_005c0333, FUN_005c19ad, FUN_005c0f57,
+  //    FUN_0040bbb0, FUN_0040bbe0, FUN_0040fe10, FUN_00428b0c
+  // DEVIATION: MFC rendering — cannot draw without GDI context and in_ECX dialog
+  // Game state reads: DAT_006a85a0 (selected item), DAT_00635a00..2c (colors)
 }
 
 
