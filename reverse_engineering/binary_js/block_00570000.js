@@ -754,14 +754,71 @@ export function FUN_005727d8() {
 // FUN_00572887 — get_map_editor_tile_rect
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_00572887 (1295 bytes)
+// Source: decompiled/block_00570000.c FUN_00572887 (1295 bytes)
 export function FUN_00572887(param_1, param_2) {
-  // C: Renders a map tile at (param_1, param_2) with terrain bitmap
-  // C: Uses DAT_006ac124 (scroll mode), DAT_006ac894/006ac874 (bitmap handles)
-  // C: Calls FUN_005c0c5d (draw terrain), FUN_004086c0 (calc rect),
-  //    FUN_005cd5ba/FUN_005cd775 (scale/blit bitmap), FUN_005cdb33 (transparent blit)
-  // C: Writes to DAT_006ac108 (tile rect buffer)
-  // DEVIATION: GDI rendering — cannot draw without device context
-  return 0;
+  let local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_38, local_3c;
+  let local_14 = new Uint8Array(16);
+
+  if (DAT_006ac124 === 0) {
+    // Mode 0: single pixel tile
+    local_18 = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_005c0c5d(param_1, param_2, local_18); // DEVIATION: draw terrain pixel
+    FUN_004086c0(DAT_006ac108, param_1 * 4 + DAT_006ac2d4 + 0x10,
+                 DAT_006ac2d8 + param_2 * 4 + 0x10, 4, 4);
+    local_1c = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_0040fdb0(DAT_006ac1b0, DAT_006ac108, local_1c); // DEVIATION: fill rect
+  } else if (DAT_006ac124 === 1) {
+    // Mode 1: 3-pixel wide brush
+    FUN_005c00ce(local_14); // DEVIATION: save DC
+    FUN_004086c0(DAT_006ac108, DAT_006ac2d4 + 0x10, DAT_006ac2d8 + 0x10,
+                 DAT_006ac878 << 2, DAT_006ac87c << 2);
+    FUN_005c0073(DAT_006ac108); // DEVIATION: clip to map
+    // Horizontal stroke
+    FUN_004086c0(DAT_006ac108, param_1 - 1, param_2, 3, 1);
+    local_20 = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_005c0333(DAT_006ac108, local_20); // DEVIATION: fill rect
+    FUN_004086c0(DAT_006ac108, param_1 * 4 + DAT_006ac2d4 + 0xc,
+                 DAT_006ac2d8 + param_2 * 4 + 0x10, 0xc, 4);
+    local_24 = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_0040fdb0(DAT_006ac1b0, DAT_006ac108, local_24); // DEVIATION: fill
+    // Vertical stroke
+    FUN_004086c0(DAT_006ac108, param_1, param_2 - 1, 1, 3);
+    local_28 = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_005c0333(DAT_006ac108, local_28); // DEVIATION: fill
+    FUN_004086c0(DAT_006ac108, param_1 * 4 + DAT_006ac2d4 + 0x10,
+                 param_2 * 4 + DAT_006ac2d8 + 0xc, 4, 0xc);
+    local_2c = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_0040fdb0(DAT_006ac1b0, DAT_006ac108, local_2c); // DEVIATION: fill
+    FUN_005c0073(local_14); // DEVIATION: restore DC
+    FUN_004086c0(DAT_006ac108, param_1 * 4 + DAT_006ac2d4 + 0xc,
+                 param_2 * 4 + DAT_006ac2d8 + 0xc, 0xc, 0xc);
+  } else if (DAT_006ac124 === 2) {
+    // Mode 2: 4-pixel wide brush (diamond)
+    FUN_005c00ce(local_14); // DEVIATION: save DC
+    FUN_004086c0(DAT_006ac108, DAT_006ac2d4 + 0x10, DAT_006ac2d8 + 0x10,
+                 DAT_006ac878 << 2, DAT_006ac87c << 2);
+    FUN_005c0073(DAT_006ac108); // DEVIATION: clip
+    // Horizontal stroke (wider)
+    FUN_004086c0(DAT_006ac108, param_1 - 1, param_2, 4, 2);
+    local_30 = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_005c0333(DAT_006ac108, local_30); // DEVIATION: fill
+    FUN_004086c0(DAT_006ac108, param_1 * 4 + DAT_006ac2d4 + 0xc,
+                 DAT_006ac2d8 + param_2 * 4 + 0x10, 0x10, 8);
+    local_34 = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_0040fdb0(DAT_006ac1b0, DAT_006ac108, local_34); // DEVIATION: fill
+    // Vertical stroke (wider)
+    FUN_004086c0(DAT_006ac108, param_1, param_2 - 1, 2, 4);
+    local_38 = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_005c0333(DAT_006ac108, local_38); // DEVIATION: fill
+    FUN_004086c0(DAT_006ac108, param_1 * 4 + DAT_006ac2d4 + 0x10,
+                 param_2 * 4 + DAT_006ac2d8 + 0xc, 8, 0x10);
+    local_3c = (DAT_006ac894 === 0) ? DAT_006ac874 : DAT_006ac894;
+    FUN_0040fdb0(DAT_006ac1b0, DAT_006ac108, local_3c); // DEVIATION: fill
+    FUN_005c0073(local_14); // DEVIATION: restore DC
+    FUN_004086c0(DAT_006ac108, param_1 * 4 + DAT_006ac2d4 + 0xc,
+                 param_2 * 4 + DAT_006ac2d8 + 0xc, 0x10, 0x10);
+  }
+  return DAT_006ac108;
 }
 
 // ═══════════════════════════════════════════════════════════════════
