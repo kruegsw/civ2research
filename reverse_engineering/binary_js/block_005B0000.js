@@ -3350,7 +3350,22 @@ export function FUN_005bc1db(param_1) {
     debug_log("Error: MS window stack inaccurate");
   }
 }
-export function update_palette_C280(param_1, param_2) { /* palette update — no-op */ }
+// Source: decompiled/block_005B0000.c update_palette_C280 (222 bytes)
+export function update_palette_C280(param_1, param_2) {
+  // if (ri(param_1, 0x14) !== 0) { DeleteObject(ri(param_1, 0x14)); } // DEVIATION: Win32
+  if (DAT_00638b48 === 0) {
+    // let local_10 = GetWindowLongA(ri(param_1, 4), 0); // DEVIATION: Win32
+    // FUN_00511320(); // DEVIATION: MFC
+    // FUN_00497c40(param_2, local_c, local_14, local_8); // get RGB from palette index
+    // let pHVar1 = CreateSolidBrush(local_c[0] | (local_14[0] << 8) | (local_8[0] << 16)); // DEVIATION: Win32
+    // wi(param_1, 0x14, pHVar1);
+  } else {
+    // if (ri(param_1, 0x18) !== 0) { RealizePalette(ri(param_1, 8)); } // DEVIATION: Win32
+    // let pHVar1 = CreateSolidBrush(param_2 | 0x1000000); // DEVIATION: Win32
+    // wi(param_1, 0x14, pHVar1);
+  }
+  // InvalidateRect(ri(param_1, 4), 0, 0); // DEVIATION: Win32
+}
 export function invalidate_C35E(p1, p2, p3, p4) { /* brush creation — no-op */ }
 export function FUN_005bc3bf(param_1, param_2) { /* set field +0x24 — no-op */ }
 export function FUN_005bc3d8(param_1, param_2) { /* set field +0x28 — no-op */ }
@@ -3358,8 +3373,25 @@ export function FUN_005bc3f1(param_1, param_2) { /* set field +0x2c — no-op */
 export function manage_window_C40A(param_1) { /* ShowWindow SW_SHOW — no-op */ }
 export function manage_window_C44D(param_1) { /* ShowWindow SW_HIDE — no-op */ }
 export function FUN_005bc476(param_1, param_2) { /* SetWindowTextA — no-op */ }
-export function FUN_005bc4a1(param_1, param_2, param_3) { /* MoveWindow — no-op */ }
-export function FUN_005bc505(param_1, param_2, param_3) { /* resize window — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bc4a1 (100 bytes)
+export function FUN_005bc4a1(param_1, param_2, param_3) {
+  if (param_1 !== 0) {
+    // GetWindowRect(ri(param_1, 4), &local_14); // DEVIATION: Win32
+    // let nHeight = FUN_00407fc0(&local_14); // DEVIATION: MFC — get height
+    // let nWidth = FUN_00407f90(&local_14); // DEVIATION: MFC — get width
+    // MoveWindow(ri(param_1, 4), param_2, param_3, nWidth, nHeight, 1); // DEVIATION: Win32
+  }
+}
+
+// Source: decompiled/block_005B0000.c FUN_005bc505 (213 bytes)
+export function FUN_005bc505(param_1, param_2, param_3) {
+  if (param_1 !== 0) {
+    // GetWindowRect(ri(param_1, 4), &local_24); // DEVIATION: Win32
+    // MapWindowPoints(0, GetParent(ri(param_1, 4)), &local_24, 2); // DEVIATION: Win32
+    // MoveWindow(ri(param_1, 4), local_24.left, local_24.top, param_2, param_3, 1); // DEVIATION: Win32
+    // FUN_005bc621(param_2, param_3); // DEVIATION: resize handler
+  }
+}
 export function manage_window_C5DA(param_1) { /* ShowWindow SW_MAXIMIZE — no-op */ }
 export function FUN_005bc603(param_1) { return 0; /* IsZoomed — no-op */ }
 export function manage_window_C636(param_1) { /* ShowWindow SW_MINIMIZE — no-op */ }
@@ -3368,23 +3400,84 @@ export function manage_window_C692(param_1) { /* ShowWindow SW_RESTORE — no-op
 export function FUN_005bc6bb(param_1, param_2) { /* ValidateRect — no-op */ }
 export function invalidate_C6E6(param_1, param_2) { /* InvalidateRect — no-op */ }
 export function FUN_005bc713(param_1, param_2) { /* MoveWindow with rect — no-op */ }
-export function gdi_C763(param_1, param_2, param_3) { /* center window — no-op */ }
+// Source: decompiled/block_005B0000.c gdi_C763 (464 bytes)
+export function gdi_C763(param_1, param_2, param_3) {
+  if (param_1 !== 0) {
+    // GetWindowRect(ri(param_1, 4), &local_34); // DEVIATION: Win32
+    // let hWnd = GetParent(ri(param_1, 4)); // DEVIATION: Win32
+    // if (hWnd === 0) {
+    //   // Center on screen
+    //   let iVar1 = GetSystemMetrics(0); // screen width // DEVIATION: Win32
+    //   let iVar2 = GetSystemMetrics(1); // screen height // DEVIATION: Win32
+    //   let iVar3 = FUN_00407f90(&local_34); // window width
+    //   local_20 = (iVar1 - iVar3) >> 1;
+    //   iVar1 = FUN_00407fc0(&local_34); // window height
+    //   local_24 = (iVar2 - iVar1) >> 1;
+    // } else {
+    //   // Center on parent
+    //   GetWindowRect(hWnd, &local_14); // DEVIATION: Win32
+    //   local_20 = (FUN_00407f90(&local_14) - FUN_00407f90(&local_34)) >> 1;
+    //   local_24 = (FUN_00407fc0(&local_14) - FUN_00407fc0(&local_34)) >> 1;
+    //   MapWindowPoints(hWnd, 0, &local_1c, 1); // DEVIATION: Win32
+    //   local_20 = local_20 + local_1c.x;
+    //   local_24 = local_24 + local_1c.y;
+    // }
+    // if (param_2 !== -1) { local_20 = param_2; }
+    // if (param_3 !== -1) { local_24 = param_3; }
+    // MoveWindow(ri(param_1, 4), local_20, local_24, width, height, 1); // DEVIATION: Win32
+  }
+}
 export function FUN_005bc933(param_1) { return 0; /* GetClientRect width — no-op */ }
 export function FUN_005bc96b(param_1) { return 0; /* GetClientRect height — no-op */ }
 export function FUN_005bc9a3(param_1, param_2) { /* GetWindowRect — no-op */ }
-export function FUN_005bc9d3(param_1) { return 0; /* get window border width — no-op */ }
-export function FUN_005bca3d(param_1) { return 0; /* get window border height — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bc9d3 (106 bytes)
+export function FUN_005bc9d3(param_1) {
+  if (param_1 === 0) { return 0; }
+  // let windowWidth = FUN_00407f90(GetWindowRect(ri(param_1, 4))); // DEVIATION: Win32
+  // let clientWidth = FUN_00407f90(GetClientRect(ri(param_1, 4))); // DEVIATION: Win32
+  // return windowWidth - clientWidth; // border width
+  return 0;
+}
+
+// Source: decompiled/block_005B0000.c FUN_005bca3d (106 bytes)
+export function FUN_005bca3d(param_1) {
+  if (param_1 === 0) { return 0; }
+  // let windowHeight = FUN_00407fc0(GetWindowRect(ri(param_1, 4))); // DEVIATION: Win32
+  // let clientHeight = FUN_00407fc0(GetClientRect(ri(param_1, 4))); // DEVIATION: Win32
+  // return windowHeight - clientHeight; // border height
+  return 0;
+}
 export function FUN_005bcaa7(param_1) { /* get screen rect — no-op */ }
 export function FUN_005bcad7(p1, p2, p3, p4, p5) { /* ClientToScreen — no-op */ }
 export function FUN_005bcb26(p1, p2, p3, p4, p5) { /* MapWindowPoints — no-op */ }
-export function FUN_005bcb85(param_1, param_2) { /* GetWindowRect + MapWindowPoints — no-op */ }
-export function update_palette_CC11(p1, p2, p3, p4, p5, p6, p7, p8) { /* BitBlt — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bcb85 (140 bytes)
+export function FUN_005bcb85(param_1, param_2) {
+  // GetWindowRect(ri(param_1, 4), param_2); // DEVIATION: Win32
+  // MapWindowPoints(0, GetParent(ri(param_1, 4)), param_2, 2); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c update_palette_CC11 (124 bytes)
+export function update_palette_CC11(p1, p2, p3, p4, p5, p6, p7, p8) {
+  // BitBlt(ri(p1, 8), p2, p3, p4, p5, ri(p6, 8), p7, p8, 0xcc0020); // DEVIATION: Win32 BitBlt
+}
 export function blit_CC8D(p1, p2, p3, p4, p5, p6, p7, p8) { /* BitBlt — no-op */ }
-export function update_palette_CCE2(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) { /* StretchBlt — no-op */ }
+// Source: decompiled/block_005B0000.c update_palette_CCE2 (132 bytes)
+export function update_palette_CCE2(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) {
+  // StretchBlt(ri(p1, 8), p2, p3, p4, p5, ri(p6, 8), p7, p8, p9, p10, 0xcc0020); // DEVIATION: Win32 StretchBlt
+}
 export function stretch_blit_CD66(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) { /* StretchBlt — no-op */ }
 export function FUN_005bcdc3(param_1, param_2) { /* SelectPalette — no-op */ }
 export function FUN_005bcdfc(param_1, param_2) { /* SetMenu — no-op */ }
-export function invalidate_CE5F(param_1, param_2) { /* LoadIcon + InvalidateRect — no-op */ }
+// Source: decompiled/block_005B0000.c invalidate_CE5F (143 bytes)
+export function invalidate_CE5F(param_1, param_2) {
+  // if (param_2 === 0) {
+  //   let hIcon = LoadIconA(DAT_006e4ff0, 0x65); // DEVIATION: Win32 — load app icon
+  //   SendMessageA(ri(param_1, 4), 0x80, 0, hIcon); // DEVIATION: Win32 — WM_SETICON
+  // } else {
+  //   let hIcon = LoadIconA(DAT_006e4ff0, param_2); // DEVIATION: Win32
+  //   SendMessageA(ri(param_1, 4), 0x80, 0, hIcon); // DEVIATION: Win32
+  // }
+  // InvalidateRect(ri(param_1, 4), 0, 1); // DEVIATION: Win32 — repaint
+}
 export function FUN_005bceee(param_1) { return null; /* LoadCursorA — no-op */ }
 export function FUN_005bcf1c(param_1) { /* DestroyCursor — no-op */ }
 export function FUN_005bcf40(param_1) { /* SetCursor — no-op */ }
