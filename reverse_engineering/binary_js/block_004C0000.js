@@ -3560,23 +3560,97 @@ export function FUN_004ccdef(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_004C0000.c show_messagebox_CF2D (1149 bytes)
+// Source: decompiled/block_004C0000.c show_messagebox_CF2D (1149 bytes)
 export function show_messagebox_CF2D() {
-  // DEVIATION: File I/O — saves modified RULES.TXT
-  // C: Constructs filename "RULES." + DAT_0062cd24 extension
-  // C: __getcwd saves current dir, __chdir to game dir (DAT_0064bb08)
-  // C: If same dir as install (DAT_00655020), backs up to RULES.BAK
-  // C: Opens original RULES file for reading, new file for writing
-  // C: Iterates DAT_006a1880 section table (8-byte entries: name + callback)
-  // C: For each section: copies lines until @SECTION marker found,
-  //    calls section callback to write modified data,
-  //    skips old section content until empty line
-  // C: Copies remaining file content, closes files, restores dir
-  // DEVIATION: Cannot perform file I/O in headless JS — returns 0 (failure)
-  // All file operations: _fgets, _fputs, _fclose, __getcwd, __chdir,
-  //   __strcmpi, __strupr, FID_conflict__remove, FID_conflict___wrename,
-  //   FUN_0041508c (fopen wrapper), FUN_00415133 (file exists check),
-  //   MessageBoxA (backup notification)
-  return 0;
+  let iVar1;
+  let pcVar2;
+  let local_278 = 0;
+  let local_274 = '';
+  let local_224 = null; // DEVIATION: FILE*
+  let local_220 = null; // DEVIATION: FILE*
+  let local_21c = '';
+  let local_118 = '';
+  let local_108 = 0;
+  let local_104 = '';
+
+  local_108 = 0;
+  local_278 = 0;
+  local_224 = null;
+  local_220 = null;
+  FUN_005f22d0(local_118, "RULES."); // DEVIATION: string build
+  FUN_005f22e0(local_118, DAT_0062cd24); // DEVIATION: append extension
+  _getcwd(local_21c, 0x104); // DEVIATION: save current dir
+  _chdir(DAT_0064bb08); // DEVIATION: chdir to game dir
+  iVar1 = _strcmp(DAT_0064bb08, DAT_00655020);
+  if (iVar1 === 0 || (iVar1 = FUN_00415133(local_118), iVar1 === 0)) {
+    _chdir(DAT_00655020); // DEVIATION: chdir to install dir
+    local_220 = FUN_0041508c(local_118, "r"); // DEVIATION: fopen read
+    iVar1 = _strcmp(DAT_0064bb08, DAT_00655020);
+    if (iVar1 === 0) {
+      iVar1 = FUN_00415133("RULES.BAK");
+      if (iVar1 !== 0 && (iVar1 = FID_conflict__remove("RULES.BAK"), iVar1 !== 0)) {
+        // goto cleanup
+      } else {
+        local_224 = FUN_0041508c("RULES.BAK", "w"); // DEVIATION: fopen write
+        // DEVIATION: MessageBoxA — "Saving changes in file RULES.BAK"
+      }
+    } else {
+      _chdir(DAT_0064bb08); // DEVIATION: chdir
+      local_224 = FUN_0041508c(local_118, "w"); // DEVIATION: fopen write
+    }
+  } else {
+    iVar1 = FUN_00415133("RULES.BAK");
+    if ((iVar1 !== 0 && (iVar1 = FID_conflict__remove("RULES.BAK"), iVar1 !== 0)) ||
+       (iVar1 = FID_conflict___wrename(local_118, "RULES.BAK"), iVar1 !== 0)) {
+      // goto cleanup
+    } else {
+      local_220 = FUN_0041508c("RULES.BAK", "r"); // DEVIATION: fopen
+      local_224 = FUN_0041508c(local_118, "w"); // DEVIATION: fopen
+    }
+  }
+  if (local_220 !== null && local_224 !== null) {
+    // Iterate section table
+    for (; ri(DAT_006a1880, local_108 * 8) !== 0; local_108 = local_108 + 1) {
+      local_274 = '@';
+      FUN_005f22e0(local_274, ri(DAT_006a1880, local_108 * 8)); // DEVIATION: append section name
+      _strupr(local_274); // DEVIATION: uppercase
+      do {
+        pcVar2 = _fgets(local_104, 0x100, local_220); // DEVIATION: fgets
+        if (pcVar2 === null || (iVar1 = _fputs(local_104, local_224), iVar1 === -1)) {
+          // goto cleanup
+          break;
+        }
+        FUN_0056b810(local_104); // trim
+        FUN_004d007e(local_104); // trim
+        iVar1 = _strcmpi(local_104, local_274);
+      } while (iVar1 !== 0);
+      if (ri(DAT_006a1880, local_108 * 8 + 4) !== 0) {
+        // Call section callback: (*(code*)(DAT_006a1884 + local_108 * 8))(local_224, local_220)
+        // DEVIATION: function pointer callback
+      }
+      do {
+        pcVar2 = _fgets(local_104, 0x100, local_220);
+        if (pcVar2 === null) break;
+        let sVar3 = _strlen(local_104);
+      } while (1 < _strlen(local_104));
+      iVar1 = _fputs(local_104, local_224);
+      if (iVar1 === -1) break;
+    }
+    // Copy remaining content
+    do {
+      pcVar2 = _fgets(local_104, 0x100, local_220);
+      if (pcVar2 === null) {
+        local_278 = 1;
+        break;
+      }
+      iVar1 = _fputs(local_104, local_224);
+    } while (iVar1 !== -1);
+  }
+  // Cleanup
+  if (local_220 !== null) { _fclose(local_220); } // DEVIATION: fclose
+  if (local_224 !== null) { _fclose(local_224); } // DEVIATION: fclose
+  _chdir(local_21c); // DEVIATION: restore dir
+  return local_278;
 }
 
 
