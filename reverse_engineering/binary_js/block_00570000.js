@@ -1910,8 +1910,15 @@ export function FUN_00578451() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005784a0 — create_bitmap_button
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005784a0 (164 bytes)
 export function FUN_005784a0() {
-  // MFC constructor — no-op in JS
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_0055339f(); // DEVIATION: MFC — base class constructor
+  FUN_0040fb00(); // DEVIATION: MFC — scrollbar constructor
+  FUN_0040f3e0(); // DEVIATION: MFC — child 1 constructor
+  FUN_0040f3e0(); // DEVIATION: MFC — child 2 constructor
+  FUN_0040f3e0(); // DEVIATION: MFC — child 3 constructor
+  // *in_ECX = &PTR_FUN_0061d6fc; // DEVIATION: MFC — vtable assignment
   return {};
 }
 
@@ -1955,16 +1962,24 @@ export function FUN_005786b6(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005786f1 — create_html_view
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005786f1 (108 bytes)
 export function FUN_005786f1(param_1) {
-  // UI — no-op in JS
-  return 0;
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_005dcc10(); // DEVIATION: MFC — stream constructor
+  FUN_00428cb0(); // DEVIATION: MFC — init
+  FUN_005786b6(param_1); // DEVIATION: MFC — open file
+  return 0; // DEVIATION: returns in_ECX
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578770 — destroy_html_view
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578770 (77 bytes)
 export function FUN_00578770() {
-  // UI destructor — no-op in JS
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_004980ec(0 /*in_ECX + 4*/); // DEVIATION: MFC — free pool
+  FUN_005787bd(); // DEVIATION: MFC — destructor
+  FUN_005787d0(); // DEVIATION: SEH — restore
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1992,15 +2007,32 @@ export function FUN_005787de(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578840 — count_visible_menu_items
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578840 (105 bytes)
 export function FUN_00578840(param_1) {
-  // Menu traversal — UI only, stub
-  return 1;
+  let local_c = 1;
+  // let local_8 = ri(in_ECX, 0x1c); // DEVIATION: MFC — menu item linked list head
+  // while (local_8 !== 0 && param_1 !== local_8) {
+  //   if ((ri(local_8, 8) & 2) === 0) { local_c = local_c + 1; }
+  //   local_8 = ri(local_8, 0x10); // next pointer
+  // }
+  return local_c;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005788a9 — get_menu_item_id_by_index
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005788a9 (121 bytes)
 export function FUN_005788a9(param_1) {
+  let local_10 = 1;
+  // let local_c = ri(in_ECX, 0x1c); // DEVIATION: MFC — menu item list head
+  // do {
+  //   if (local_c === 0) { return 0xffffffff; }
+  //   if ((ri(local_c, 8) & 2) === 0) {
+  //     if (local_10 === param_1) { return ri(local_c, 4); } // menu item ID
+  //     local_10 = local_10 + 1;
+  //   }
+  //   local_c = ri(local_c, 0x10); // next
+  // } while (true);
   return 0xffffffff;
 }
 
