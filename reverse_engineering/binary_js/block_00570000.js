@@ -856,10 +856,20 @@ export function FUN_00572fff(param_1, param_2) {
   case 0: // color palette click
     if (DAT_006ac120 === 3) { FUN_005bb574(); }
     DAT_006ac120 = DAT_006ac118;
-    // DEVIATION: GetKeyState — check mouse buttons
-    // C: swaps DAT_00634004/00634008 or DAT_00634000/0063400c based on button
+    // SVar3 = GetKeyState(1); // DEVIATION: Win32 GetKeyState — left button
+    // if ((SVar3 & 0x8000) !== 0) {
+    //   DAT_00634008 = DAT_00634004;
+    //   local_70 = DAT_00634004;
+    //   DAT_00634004 = 0;
+    // }
+    // SVar3 = GetKeyState(2); // DEVIATION: Win32 GetKeyState — right button
+    // if ((SVar3 & 0x8000) !== 0) {
+    //   DAT_0063400c = DAT_00634000;
+    //   local_70 = DAT_00634000;
+    //   DAT_00634000 = 0;
+    // }
     FUN_005723ee();
-    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0 /*local_70*/);
     param_2 = 0; param_1 = 0;
     break;
   case 1: // left panel
@@ -874,7 +884,12 @@ export function FUN_00572fff(param_1, param_2) {
     local_68 = DAT_006ac0f4; local_6c = DAT_006ac0f0;
     DAT_006ac0f4 = DAT_006ac0a4; DAT_006ac0f0 = DAT_006ac0a0;
     DAT_006ac0a4 = uVar2; DAT_006ac0a0 = uVar1;
-    // DEVIATION: GDI — FUN_005cdf50, FUN_005cec44, FUN_005cef66, FUN_005cf23f rendering
+    // FUN_005cdf50(); // DEVIATION: GDI select bitmap
+    // FUN_004086c0(local_5c, 0, 0, DAT_006ac878, DAT_006ac87c); // calc rect
+    // FUN_005cec44(DAT_006ac128, 0xfe, local_5c); // DEVIATION: GDI blit
+    // FUN_005cef66(local_80, DAT_006ac128, 0xfe, 0, 0); // DEVIATION: GDI draw
+    // FUN_005cdf50(); // DEVIATION: GDI select
+    // FUN_005cf23f(DAT_006ac8a8); // DEVIATION: GDI composite
     FUN_00574239();
     if (DAT_006ac120 === 3) { FUN_00572da0(); }
     break;
@@ -921,10 +936,27 @@ export function FUN_00572fff(param_1, param_2) {
   case 12: // color swap forward
     if (DAT_006ac120 === 3) { FUN_005bb574(); }
     DAT_006ac120 = DAT_006ac118;
-    // DEVIATION: GetKeyState — swap DAT_00634004/00634008 or DAT_00634000/0063400c
+    // SVar3 = GetKeyState(1); // DEVIATION: Win32 GetKeyState
+    // iVar4 = DAT_00634004;
+    // if ((SVar3 & 0x8000) !== 0) {
+    //   local_70 = DAT_00634004;
+    //   DAT_00634004 = DAT_00634008;
+    //   local_60 = DAT_00634008;
+    //   DAT_00634008 = iVar4;
+    // }
+    // SVar3 = GetKeyState(2); // DEVIATION: Win32 GetKeyState
+    // iVar4 = DAT_00634000;
+    // if ((SVar3 & 0x8000) !== 0) {
+    //   local_70 = DAT_00634000;
+    //   DAT_00634000 = DAT_00634008;
+    //   local_60 = DAT_00634008;
+    //   DAT_0063400c = iVar4;
+    // }
     FUN_005723ee();
-    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
-    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+    iVar4 = DAT_006ac2d4 + 10;
+    iVar6 = DAT_006ac2d8 + 0xe0;
+    FUN_0057261a(0, iVar4, iVar6, 0 /*local_70*/);
+    FUN_0057261a(0, iVar4, iVar6, 0 /*local_60*/);
     param_2 = 0; param_1 = 0;
     break;
   case 13: // no action
@@ -941,7 +973,22 @@ export function FUN_00572fff(param_1, param_2) {
     } else {
       if (DAT_006ac120 === 3) { FUN_005bb574(); }
       DAT_006ac120 = DAT_006ac118;
-      // DEVIATION: GetKeyState color swap
+      // SVar3 = GetKeyState(1); // DEVIATION: Win32 GetKeyState
+      // iVar4 = DAT_00634004;
+      // if ((SVar3 & 0x8000) !== 0) {
+      //   local_70 = DAT_00634004;
+      //   DAT_00634004 = DAT_0063400c;
+      //   local_60 = DAT_0063400c;
+      //   DAT_00634008 = iVar4;
+      // }
+      // SVar3 = GetKeyState(2); // DEVIATION: Win32 GetKeyState
+      // iVar4 = DAT_00634000;
+      // if ((SVar3 & 0x8000) !== 0) {
+      //   local_70 = DAT_00634000;
+      //   DAT_00634000 = DAT_0063400c;
+      //   local_60 = DAT_0063400c;
+      //   DAT_0063400c = iVar4;
+      // }
       FUN_005723ee();
       FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
       FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
@@ -963,7 +1010,19 @@ export function FUN_00572fff(param_1, param_2) {
     switch (DAT_006ac120) {
     case 0: // select tile color
       local_60 = FUN_005c0bf2((param_1 - 0x10) >> 2, (param_2 - 0x10) >> 2);
-      // DEVIATION: GetKeyState
+      // SVar3 = GetKeyState(1); // DEVIATION: Win32 GetKeyState
+      // if ((SVar3 & 0x8000) === 0) {
+      //   SVar3 = GetKeyState(2); // DEVIATION: Win32 GetKeyState
+      //   if ((SVar3 & 0x8000) !== 0) {
+      //     DAT_0063400c = DAT_00634000;
+      //     local_70 = DAT_00634000;
+      //     DAT_00634000 = local_60;
+      //   }
+      // } else {
+      //   DAT_00634008 = DAT_00634004;
+      //   local_70 = DAT_00634004;
+      //   DAT_00634004 = local_60;
+      // }
       FUN_005723ee();
       if (DAT_006ac120 === 3) { FUN_005bb574(); }
       DAT_006ac120 = DAT_006ac118;
@@ -979,8 +1038,15 @@ export function FUN_00572fff(param_1, param_2) {
       iVar6 = (param_2 - 0x10) >> 2;
       DAT_006ac880 = iVar4;
       DAT_006ac884 = iVar6;
-      // DEVIATION: GetKeyState — sets DAT_006ac894
+      // SVar3 = GetKeyState(1); // DEVIATION: Win32 GetKeyState
+      // if ((SVar3 & 0x8000) === 0) {
+      //   SVar3 = GetKeyState(2); // DEVIATION: Win32 GetKeyState
+      //   if ((SVar3 & 0x8000) !== 0) {
+      //     DAT_006ac894 = DAT_00634000;
+      //   }
+      // } else {
       DAT_006ac894 = DAT_00634004;
+      // }
       local_64 = FUN_00572887(iVar4, iVar6);
       FUN_00408490(local_64); // DEVIATION: MFC
       break;
