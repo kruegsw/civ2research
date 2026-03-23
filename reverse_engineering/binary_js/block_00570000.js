@@ -563,8 +563,88 @@ export function FUN_00573afd() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00573b1d — handle_map_editor_mouse_move
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00573b1d (813 bytes)
 export function FUN_00573b1d(param_1, param_2) {
-  // UI interaction handler — no-op in JS
+  let iVar1, iVar2, iVar4, iVar5, iVar6, iVar7;
+  let uVar3;
+  let local_18, local_14, local_10, local_8;
+
+  param_1 = param_1 - DAT_006ac2d4;
+  param_2 = param_2 - DAT_006ac2d8;
+  if (param_1 < 9 || 0x187 < param_1 || param_2 < 0xdf || 0x125 < param_2) {
+    if (param_1 < 0x10 || DAT_006ac878 * 4 + 0x10 <= param_1 ||
+       param_2 < 0x10 || DAT_006ac87c * 4 + 0x10 <= param_2) {
+      // Outside map area — set default cursor
+      if (DAT_006ac898 !== 0x201) {
+        DAT_006ac898 = 0x201;
+        FUN_00408010(0x201); // DEVIATION: SetCursor
+        FUN_00484d52();
+      }
+      DAT_006ac884 = -1;
+      DAT_006ac880 = -1;
+      iVar1 = DAT_006ac880;
+      iVar2 = DAT_006ac884;
+    } else {
+      // Inside map area — set appropriate cursor based on mode
+      if (DAT_006ac120 === 0) {
+        if (DAT_006ac898 !== 0x205) {
+          DAT_006ac898 = 0x205;
+          FUN_00408010(0x205); FUN_00484d52();
+        }
+      } else if (0 < DAT_006ac120 && DAT_006ac120 < 3 && DAT_006ac898 !== 0x204) {
+        DAT_006ac898 = 0x204;
+        FUN_00408010(0x204); FUN_00484d52();
+      }
+      iVar1 = DAT_006ac880;
+      iVar2 = DAT_006ac884;
+      // C: DAT_006ac8a4 — drawing in progress
+      if (DAT_006ac8a4 !== 0) {
+        iVar1 = (param_1 - 0x10) >> 2;
+        iVar2 = (param_2 - 0x10) >> 2;
+        if (DAT_006ac120 === 1) {
+          // Line drawing mode — draw tiles from last position to current
+          if (DAT_006ac880 < 0 || DAT_006ac884 < 0) {
+            DAT_006ac880 = iVar1;
+            DAT_006ac884 = iVar2;
+          }
+          iVar4 = iVar1 - DAT_006ac880;
+          iVar5 = iVar2 - DAT_006ac884;
+          local_8 = -1; local_18 = -1;
+          local_10 = DAT_006ac880 << 8;
+          local_14 = DAT_006ac884 << 8;
+          while (true) {
+            iVar6 = local_10 >> 8;
+            iVar7 = local_14 >> 8;
+            if (iVar6 === iVar1 && iVar7 === iVar2) break;
+            if (iVar6 !== local_18 || iVar7 !== local_8) {
+              FUN_00572887(iVar6, iVar7);
+              local_18 = iVar6;
+              local_8 = iVar7;
+            }
+            local_10 = local_10 + iVar4;
+            local_14 = local_14 + iVar5;
+          }
+          FUN_00408460(); // DEVIATION: MFC invalidate
+        } else if (DAT_006ac120 === 2) {
+          // Point drawing mode
+          uVar3 = FUN_00572887(iVar1, iVar2);
+          FUN_00408490(uVar3); // DEVIATION: MFC
+        }
+      }
+    }
+  } else {
+    // Palette area — set palette cursor
+    iVar1 = DAT_006ac880;
+    iVar2 = DAT_006ac884;
+    if (DAT_006ac898 !== 0x205) {
+      DAT_006ac898 = 0x205;
+      FUN_00408010(0x205); FUN_00484d52();
+      iVar1 = DAT_006ac880;
+      iVar2 = DAT_006ac884;
+    }
+  }
+  DAT_006ac884 = iVar2;
+  DAT_006ac880 = iVar1;
 }
 
 // ═══════════════════════════════════════════════════════════════════
