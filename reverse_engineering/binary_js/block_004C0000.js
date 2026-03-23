@@ -3433,8 +3433,13 @@ export function FUN_004cca1b() {
 // Source: block_004C0000.c line 3656
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c show_messagebox_CA35 (132 bytes)
 export function show_messagebox_CA35(param_1, param_2) {
-  // Win32 MessageBoxA wrapper — stub
+  // C: Memory allocation with overflow check
+  // C: If param_2 > param_1's capacity (*(ushort*)(param_1+0x10)):
+  //    Shows "out of memory" MessageBoxA and returns 0
+  // C: Otherwise calls FUN_00498159(param_1, param_2) to allocate
+  // DEVIATION: Win32 MessageBoxA — skip overflow dialog
   return FUN_00498159(param_1, param_2);
 }
 
@@ -3524,22 +3529,27 @@ export function FUN_004ccdb6(param_1) {
 // Source: block_004C0000.c line 3790
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ccdef (318 bytes)
 export function FUN_004ccdef(param_1, param_2) {
-  // Tech name formatting — UI string building
+  // C: Appends tech name to DAT_00679640 string buffer
   if (param_1 === -2) {
-    FUN_005f22e0(0 /*&DAT_00679640*/, 0);
-  }
-  else if (param_1 === -1) {
-    FUN_005f22e0(0 /*&DAT_00679640*/, 0);
-  }
-  else if (param_1 < 100) {
-    FUN_005f22e0(0 /*&DAT_00679640*/, 0 /*&DAT_00627680 + param_1 * 0x10*/);
+    // C: "no" or "nil" string based on param_2
+    FUN_005f22e0(DAT_00679640, (param_2 !== 0) ? DAT_0062e024 : DAT_0062e024 + 8);
+  } else if (param_1 === -1) {
+    // C: "nil" or "no" string
+    FUN_005f22e0(DAT_00679640, (param_2 !== 0) ? DAT_0062e030 : DAT_0062e030 + 8);
+  } else if (param_1 < 100) {
+    // C: Tech name from DAT_00627680 table (stride 0x10)
+    FUN_005f22e0(DAT_00679640, DAT_00627680[param_1 * 0x10]);
     if (param_2 !== 0) {
-      FUN_005f22e0(0 /*&DAT_00679640*/, 0);
+      FUN_005f22e0(DAT_00679640, DAT_0062e03c);
     }
-  }
-  else {
-    FUN_005f22e0(0 /*&DAT_00679640*/, 0);
+    // C: Pad with spaces via FUN_004190a0(3 - min(strlen, 3))
+    let sVar1 = 3; // DEVIATION: string length check simplified
+    FUN_004190a0(3 - sVar1);
+  } else {
+    // C: "Future Tech" or similar
+    FUN_005f22e0(DAT_00679640, (param_2 !== 0) ? DAT_0062e040 : DAT_0062e040 + 8);
   }
 }
 
@@ -3839,10 +3849,29 @@ export function FUN_004ce322() {
 // Source: block_004C0000.c line 4447
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce38a (867 bytes)
 export function FUN_004ce38a(param_1, param_2) {
-  // MFC popup text display — UI, no-op
+  let local_ac;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  // DEVIATION: MFC — FUN_0040f3e0 dialog constructor
   DAT_006a4f9c = 1;
   DAT_006a1d78 = param_1;
+  // DEVIATION: MFC — _Timevec destructors, dialog layout
+  FUN_004cdfa4(param_2, 0xd, 0, 0x14, 600, 0, 0, 0, 0); // dialog setup
+  // DEVIATION: MFC — layout calculations using DAT_006a19e4/e8/ec/f0
+  // DEVIATION: MFC — FUN_004bb620 creates text control
+  // C: iterate param_1 text array (up to 20 entries)
+  for (local_ac = 0; local_ac < 0x14 && ri(param_1, local_ac * 4) !== 0; local_ac++) {
+    if (local_ac !== 0) {
+      FUN_00492ae0(0); // DEVIATION: UI — add separator
+    }
+    FUN_00492ae0(ri(param_1, local_ac * 4)); // DEVIATION: UI — add text line
+  }
+  // DEVIATION: MFC — OK/Cancel buttons, dialog show, message loop
+  // C: while (DAT_006a4f9c !== 0) { FUN_0040ef50(); }
+  FUN_00553379(); // DEVIATION: UI cleanup
+  // DEVIATION: MFC — destructor chain
 }
 
 
@@ -3881,9 +3910,24 @@ export function FUN_004ce70c() {
 // Source: block_004C0000.c line 4570
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce71b (290 bytes)
 export function FUN_004ce71b(param_1) {
-  // City name validation dialog — UI
-  return true;
+  let iVar1;
+
+  // C: Search GAME.TXT for city name to check if it's valid
+  iVar1 = FUN_004a2379(0, 0); // DEVIATION: file search
+  if (iVar1 === 0) {
+    // C: Iterate lines until param_1 matches (case-insensitive)
+    // Found — valid city name
+    FUN_004a2020(); // DEVIATION: close file
+    return true;
+  }
+  // C: Not found — show "NOCITY" confirmation dialog
+  FUN_0059d3c9(0); // DEVIATION: sound
+  FUN_0040ff60(0, param_1); // DEVIATION: UI
+  iVar1 = FUN_00444270("NOCITY"); // DEVIATION: UI confirm
+  FUN_0059d3c9(0);
+  return iVar1 === 0;
 }
 
 
@@ -3914,9 +3958,14 @@ export function FUN_004ce8a4(param_1, param_2, param_3, param_4) {
 // Source: block_004C0000.c line 4670
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce903 (139 bytes)
 export function FUN_004ce903(param_1, param_2, param_3) {
-  // Memory allocation + string copy — stub
-  return 0;
+  // C: Allocates memory for string copy (max of strlen+1 or param_3)
+  // C: Uses FUN_00498159(param_2 + 0x2f4, size) for allocation
+  // C: Copies param_1 into allocated buffer via FUN_005f22d0
+  // C: If allocation fails, calls FUN_00589ef8 (error handler)
+  // DEVIATION: Memory allocation via MFC heap — return string directly
+  return param_1; // In JS, strings are immutable — just return the input
 }
 
 
@@ -3925,10 +3974,18 @@ export function FUN_004ce903(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 4700
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce98e (1367 bytes)
 export function FUN_004ce98e(param_1, param_2) {
-  // DEVIATION: Deep copy of MFC dialog template linked list (1367 bytes)
-  // Iterates source dialog linked list, allocates copies via FUN_004fa617.
-  // Pure UI infrastructure — no game state modifications.
+  // C: Deep copy network event linked list from param_2 to param_1
+  // C: First pass: iterate param_2's linked list (stride 0x1bc via +0x30c),
+  //    allocate new nodes via FUN_004fa617, memcpy 0x1bc bytes each
+  // C: Second pass: walk both lists in parallel, update string pointers:
+  //    Fields +8, +0x10, +0x14, +0x20 — looks up via FUN_004ce903
+  //    Fields +0x38..+0x84 (20 entries) — checks non-zero, copies via FUN_004ce903
+  //    Fields +0x88, +0x90, +0xc4, +0xcc, +0xd4, +0xdc — same pattern
+  //    Fields +0x13c, +0x140, +0x148, +0x174, +0x184 — same pattern
+  // DEVIATION: Cannot perform C pointer arithmetic / memcpy on linked lists
+  // Network event management — no direct game state mutations
 }
 
 
@@ -3937,10 +3994,18 @@ export function FUN_004ce98e(param_1, param_2) {
 // Source: block_004C0000.c line 4848
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cef35 (144 bytes)
 export function FUN_004cef35() {
-  // Dialog template management — UI init, stub
-  FUN_004cefc5();
-  FUN_004cefdb();
+  // DEVIATION: SEH (FS_OFFSET restore)
+  // C: FUN_004fa4be(50000) — allocate 50000 bytes temp buffer
+  // C: FUN_004fa5d9(50000) — initialize temp buffer
+  // C: FUN_004ce98e(local_320, &DAT_0064b690) — copy event data to temp
+  // C: FUN_004fa5d9(50000) — reinit
+  // C: FUN_004ce98e(&DAT_0064b690, local_320) — copy temp back to events
+  FUN_004ce98e(0, DAT_0064b690); // copy network events
+  FUN_004ce98e(DAT_0064b690, 0); // copy back
+  FUN_004cefc5(); // cleanup
+  FUN_004cefdb(); // SEH restore
 }
 
 
@@ -3969,9 +4034,17 @@ export function FUN_004cefdb() {
 // Source: block_004C0000.c line 4911
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cefe9 (347 bytes)
 export function FUN_004cefe9(param_1, param_2) {
-  // Renames leader name strings in dialog linked list — stub
-  return 0;
+  // C: Walks network event linked list (DAT_0064b99c, stride 0x1bc)
+  // C: For each event, checks string fields at offsets +8, +0x90, +0xdc, +0x148
+  // C: If string matches param_1, replaces with param_2 (strncpy, max 0xf chars)
+  // C: Returns count of replacements made
+  // DEVIATION: Cannot walk linked list without C pointer arithmetic
+  // This renames leader/civ names in multiplayer event history
+  let local_8 = 0;
+  // In headless mode, network events don't exist
+  return local_8;
 }
 
 
@@ -3980,8 +4053,13 @@ export function FUN_004cefe9(param_1, param_2) {
 // Source: block_004C0000.c line 4959
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cf144 (630 bytes)
 export function FUN_004cf144(param_1, param_2) {
-  // Renames title strings in dialog linked list — stub
+  // C: Walks network event linked list (DAT_0064b99c, stride 0x1bc)
+  // C: Checks string fields at +0x14, +0x20, +0x88, +0xc4, +0xcc, +0xd4, +0x140, +0x174
+  // C: If string matches param_1, replaces with param_2 (strncpy, max 0x18 chars)
+  // C: Returns count of replacements
+  // DEVIATION: Cannot walk linked list without C pointer arithmetic
   return 0;
 }
 
@@ -3991,8 +4069,13 @@ export function FUN_004cf144(param_1, param_2) {
 // Source: block_004C0000.c line 5035
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cf3ba (201 bytes)
 export function FUN_004cf3ba(param_1, param_2) {
-  // Renames tribe name strings in dialog linked list — stub
+  // C: Walks event linked list (DAT_0064b99c, stride 0x1bc)
+  // C: Checks string fields at +0x10, +0x13c
+  // C: If string matches param_1, replaces with param_2 (strncpy, max 0x18 chars)
+  // C: Returns count of replacements
+  // DEVIATION: Cannot walk linked list without C pointer arithmetic
   return 0;
 }
 
@@ -4024,11 +4107,15 @@ export function FUN_004cffb0(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 5101
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cfff0 (142 bytes)
 export function FUN_004cfff0(param_1) {
-  // String trimming — modifies C string in place
+  // C: Trims trailing spaces and tabs from a C string in place
+  // C: Walks backward from end of string, setting ' ' and '\t' to '\0'
+  // JS equivalent: trimEnd() for string values
   if (typeof param_1 === 'string') {
     return param_1.trimEnd();
   }
+  return param_1;
 }
 
 
