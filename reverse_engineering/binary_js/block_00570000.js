@@ -98,6 +98,12 @@ let DAT_0063359c = 0;
 let DAT_006ab198 = 0;
 let DAT_006ab19c = 0;
 let DAT_00628420 = 0;
+let DAT_006ad30c = 0;    // leader name table base
+let DAT_006ad558 = new Uint8Array(8 * 4);  // civ leader index table
+let DAT_0062d044 = 0;    // pathfinding: target civ
+let DAT_0062d03c = 0;    // pathfinding: unit type
+let DAT_00673fa0 = 0;    // pathfinding: target x
+let DAT_00673fa4 = 0;    // pathfinding: target y
 
 // ── Large data arrays (stubs) ──
 let DAT_0064c6c0 = new Uint8Array(8 * 0x594);  // diplomacy array
@@ -105,6 +111,7 @@ let DAT_0064f348 = new Uint8Array(256 * 0x58);  // city data
 let DAT_006560f6 = new Uint8Array(2048 * 0x20); // unit data (type/owner)
 let DAT_00655c22 = new Uint8Array(8);            // civ epoch/era
 let DAT_0064c488 = new Uint32Array(256);         // improvement data
+let DAT_00627680 = new Uint8Array(100 * 0x10);   // tech data (prereqs at +0x0e, +0x0f)
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2686,7 +2693,9 @@ export function FUN_0057a27a(param_1, param_2) {
       if ((iVar1 === 0) && (iVar1 = FUN_004bd9f0(param_2, local_314), iVar1 !== 0) &&
          (((DAT_00655af0 & 0x80) === 0 || ((DAT_0064bc60 & 0x10) === 0)) ||
           (local_314 !== 0x1f && local_314 !== 0x36 && local_314 !== 0xf &&
-           local_314 !== 0x47 && local_314 !== 0x15))) {
+           local_314 !== 0x47 && local_314 !== 0x15)) &&
+         (s8(DAT_00627680[local_314 * 0x10 + 0x0e]) !== -2 ||
+          s8(DAT_00627680[local_314 * 0x10 + 0x0f]) !== -2)) {
         let iVar1_check = FUN_004bdb2c(param_1, local_314);
         if (local_18 <= iVar1_check) {
           local_318 = local_314;
@@ -3428,6 +3437,12 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     FUN_0046e020(5, 0, 0, 0);
   }
 
+  FUN_0040ff60(0, local_6c);
+  FUN_004271e8(3, DAT_00628420 + 700 + (local_7c === 0 ? -4 : 0));
+  FUN_004271e8(4, DAT_00628420 + 0x2c4 + (local_7c === 0 ? -4 : 0));
+  FUN_005b8b1a(iVar4, iVar5, param_2);
+  FUN_005b8b1a(iVar4, iVar5, local_84);
+
   // ── Notify multiplayer ──
   if (2 < DAT_00655b02) {
     FUN_004b0b53(0xff, 2, 0, 0, 0);
@@ -3671,8 +3686,14 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       }
     }
 
-    // Check capturer's government
-    // ...simplified...
+    // Calculate veteran chance from government type and alliance flag
+    // C: iVar6 = (((alliance_flag & 0x10) == 0) - 1 & 2) + (government - 4)
+    // flag NOT set → (1 - 1) & 2 = 0; flag SET → (0 - 1) & 2 = 2
+    iVar6 = (((u32(DAT_0064c6c0, local_84 * 0x594 + param_2 * 4) & 0x10) === 0 ? 1 : 0) - 1 & 2) +
+            (u8(DAT_0064c600[param_2 * 0x594 + 0xbe]) - 4);
+    if (iVar6 < 1) {
+      iVar6 = 0;
+    }
 
     local_394 = 0;
     for (local_90 = 0; local_90 < local_3b4; local_90 = local_90 + 1) {
@@ -3705,14 +3726,39 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
           }
         }
       }
-      if (local_18 !== 0) {
-        local_3cc = FUN_005b3d06(9, local_84, local_98, local_390);
-        if (local_3cc >= 0) {
-          local_394 = local_394 + 1;
-          // Set unit to fortified
-          DAT_006560f0[local_3cc * 0x20 + 0x0f] = 2;
-          FUN_005b490e(local_3cc, param_2);
-          FUN_0047cea6(local_98, local_390);
+      if ((local_18 !== 0) &&
+         (local_3cc = FUN_005b3d06(9, local_84, local_98, local_390), local_3cc >= 0)) {
+        if (local_394 === 0) {
+          if ((DAT_006d1da0 === param_2) || (DAT_006d1da0 === local_84)) {
+            FUN_0046e020(0x22, 1, 0, 0);
+          }
+          if ((2 < DAT_00655b02) &&
+             (((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) !== 0) &&
+             (DAT_006d1da0 !== local_84)) {
+            FUN_0046b14d(0x7a, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                         0x22, 1, 0, 0, 0, 0, 0, 0);
+          }
+        }
+        local_394 = local_394 + 1;
+        // Set unit to fortified
+        DAT_006560f0[local_3cc * 0x20 + 0x0f] = 2;
+        // Veteran upgrade random roll
+        if (iVar6 !== 0) {
+          if (iVar6 < 1) {
+            local_3ec = 0;
+          } else {
+            local_3ec = _rand();
+            local_3ec = local_3ec % (iVar6 + 1);
+          }
+          if (local_3ec !== 0) {
+            w16(DAT_006560f0, local_3cc * 0x20 + 4,
+                u16(DAT_006560f0, local_3cc * 0x20 + 4) | 0x2000);
+          }
+        }
+        FUN_005b490e(local_3cc, param_2);
+        FUN_0047cea6(local_98, local_390);
+        if ((DAT_006d1da0 === param_2) || (DAT_006d1da0 === local_84)) {
+          FUN_0046e287(1);
         }
       }
     }
@@ -3850,7 +3896,7 @@ export function FUN_0057e33a(param_1, param_2, param_3) {
         } else {
           DAT_006acb34 = DAT_006acb34 << 1; // x2
         }
-        // Skip city wall check
+        // goto LAB_0057e694 — skip non-land-unit reset below
       } else {
         // Check for city walls improvement
         iVar3 = FUN_0043d20a(DAT_006acb08, 8); // city walls
@@ -3863,6 +3909,10 @@ export function FUN_0057e33a(param_1, param_2, param_3) {
                     ((u8(DAT_0064b1bc[u8(DAT_006560f0[param_3 * 0x20 + 6]) * 0x14]) & 0x40) === 0)) { // doesn't ignore walls
             DAT_006acb34 = 6; // walls bonus
           }
+        }
+        // Non-land units don't get terrain multiplier (only on non-SAM path)
+        if (s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5]) !== 0) {
+          DAT_006acb34 = 2; // reset to base
         }
       }
     } else {
@@ -3878,12 +3928,16 @@ export function FUN_0057e33a(param_1, param_2, param_3) {
           DAT_006acb34 = 6;
         }
       }
+      // Non-land units don't get terrain multiplier (only on non-SAM path)
+      if (s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5]) !== 0) {
+        DAT_006acb34 = 2; // reset to base
+      }
     }
-  }
-
-  // Non-land units don't get terrain multiplier
-  if (s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5]) !== 0) {
-    DAT_006acb34 = 2; // reset to base
+  } else {
+    // No city — non-land units don't get terrain multiplier
+    if (s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 5]) !== 0) {
+      DAT_006acb34 = 2; // reset to base
+    }
   }
 
   // Apply defense multiplier
@@ -4243,18 +4297,33 @@ export function FUN_0057febc(param_1, param_2, param_3) {
              (iVar3 = FUN_005b8ca6(
                s16(DAT_006560f0, local_14 * 0x20),
                s16(DAT_006560f0, local_14 * 0x20 + 2)), iVar3 < 0)) {
+            // V23: distance constraint
             iVar3 = FUN_005ae1b0(
               param_2, param_3,
               s16(DAT_006560f0, local_14 * 0x20),
               s16(DAT_006560f0, local_14 * 0x20 + 2));
-            iVar3 = FUN_005b8a81(
-              s16(DAT_006560f0, local_14 * 0x20),
-              s16(DAT_006560f0, local_14 * 0x20 + 2));
-            if (iVar3 === iVar2) {
-              // Set unit to intercept
-              DAT_006560f0[local_14 * 0x20 + 0x0f] = 0x0b; // goto order
-              // Set target coords
-              // DAT_00656102[local_14] = param_2, DAT_00656104[local_14] = param_3
+            if (iVar3 < 7) {
+              iVar3 = FUN_005b8a81(
+                s16(DAT_006560f0, local_14 * 0x20),
+                s16(DAT_006560f0, local_14 * 0x20 + 2));
+              if (iVar3 === iVar2) {
+                // V22: set pathfinding globals before FUN_004abfe5 call
+                DAT_0062d044 = s8(DAT_006560f0[local_14 * 0x20 + 7]);
+                DAT_0062d03c = u8(DAT_006560f0[local_14 * 0x20 + 6]);
+                DAT_00673fa0 = param_2;
+                DAT_00673fa4 = param_3;
+                iVar3 = FUN_005b2c3d(local_14);
+                iVar3 = FUN_004abfe5(
+                  s16(DAT_006560f0, local_14 * 0x20),
+                  s16(DAT_006560f0, local_14 * 0x20 + 2),
+                  iVar3 * 2);
+                if ((iVar3 > 0) && (iVar3 !== 8)) {
+                  DAT_006560f0[local_14 * 0x20 + 0x0f] = 0x0b; // goto order
+                  w16(DAT_006560f0, local_14 * 0x20 + 0x12, param_2); // goto x
+                  w16(DAT_006560f0, local_14 * 0x20 + 0x14, param_3); // goto y
+                  DAT_006560f0[local_14 * 0x20 + 0x0c] = 0x4b; // goto type
+                }
+              }
             }
           }
         }

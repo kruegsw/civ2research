@@ -2047,11 +2047,36 @@ export function FUN_00436f5a(param_1) {
       local_8 = local_8 + 1;
     }
     if (local_8 <= 5) {
-      // Shift entries down and insert
+      // Shift entries down: copy entry (local_10-1) to entry (local_10)
+      // C: FID_conflict__memcpy(&DAT_0063f0c8 + local_10 * 0x48, &DAT_0063f0c8 + (local_10-1) * 0x48, 0x48)
       for (local_10 = 5; local_8 < local_10; local_10 = local_10 - 1) {
-        // memcpy equivalent
+        DAT_0063f0c8[local_10 * 0x48] = DAT_0063f0c8[(local_10 - 1) * 0x48];
+        DAT_0063f0ca[local_10 * 0x48] = DAT_0063f0ca[(local_10 - 1) * 0x48];
+        DAT_0063f0cc[local_10 * 0x48] = DAT_0063f0cc[(local_10 - 1) * 0x48];
+        DAT_0063f0ce[local_10 * 0x48] = DAT_0063f0ce[(local_10 - 1) * 0x48];
+        DAT_0063f0d0[local_10 * 0x48] = DAT_0063f0d0[(local_10 - 1) * 0x48];
+        DAT_0063f0d2[local_10 * 0x48] = DAT_0063f0d2[(local_10 - 1) * 0x48];
+        DAT_0063f0d4[local_10 * 0x48] = DAT_0063f0d4[(local_10 - 1) * 0x48];
+        DAT_0063f0d6[local_10 * 0x48] = DAT_0063f0d6[(local_10 - 1) * 0x48];
+        DAT_0063f0d8[local_10 * 0x48] = DAT_0063f0d8[(local_10 - 1) * 0x48];
+        DAT_0063f0da[local_10 * 0x48] = DAT_0063f0da[(local_10 - 1) * 0x48];
+        DAT_0063f0dc[local_10 * 0x48] = DAT_0063f0dc[(local_10 - 1) * 0x48];
+        DAT_0063f0de[local_10 * 0x48] = DAT_0063f0de[(local_10 - 1) * 0x48];
       }
-      // Insert new entry
+      // Insert new entry at position local_8
+      // C: FID_conflict__memcpy(&DAT_0063f0c8 + local_8 * 0x48, &DAT_0063eac8, 0x48)
+      DAT_0063f0c8[local_8 * 0x48] = _DAT_0063eac8;
+      DAT_0063f0ca[local_8 * 0x48] = DAT_0063eaca;
+      DAT_0063f0cc[local_8 * 0x48] = _DAT_0063eacc;
+      DAT_0063f0ce[local_8 * 0x48] = _DAT_0063eace;
+      DAT_0063f0d0[local_8 * 0x48] = _DAT_0063ead0;
+      DAT_0063f0d2[local_8 * 0x48] = _DAT_0063ead2;
+      DAT_0063f0d4[local_8 * 0x48] = _DAT_0063ead4;
+      DAT_0063f0d6[local_8 * 0x48] = _DAT_0063ead6;
+      DAT_0063f0d8[local_8 * 0x48] = _DAT_0063ead8;
+      DAT_0063f0da[local_8 * 0x48] = DAT_0063eada;
+      DAT_0063f0dc[local_8 * 0x48] = _DAT_0063eadc;
+      DAT_0063f0de[local_8 * 0x48] = _DAT_0063eade;
       local_c = local_8;
       FUN_00436ed2();
       iVar2 = FUN_00436bb7(local_c);
@@ -3732,6 +3757,7 @@ export function FUN_0043f444(param_1, param_2) {
 export function FUN_0043f493(param_1) {
   let iVar1;
   let iVar2;
+  let sVar3;
   let local_2c;
   let local_24;
   let local_20 = 0;
@@ -3746,9 +3772,11 @@ export function FUN_0043f493(param_1) {
   }
   FUN_004af122(local_1c, local_2c);
 
+  // LAB_0043f557:
   do {
     local_20 = local_20 + 1;
     if (2 < local_20) {
+      // LAB_0043f78e:
       FUN_004a2020();
       return;
     }
@@ -3756,27 +3784,75 @@ export function FUN_0043f493(param_1) {
          DAT_006554fd[DAT_0064c6a6[iVar1 * 0x594] * 0x30] + 1;
     local_24 = u8(DAT_006554fd[DAT_0064c6a6[iVar1 * 0x594] * 0x30]);
 
-    iVar2 = FUN_004a2379(null, local_1c);
+    // C: __chdir(&DAT_0064bb08);
+    // C: iVar2 = thunk_FUN_004a2379(&DAT_00626258, local_1c);  // try CITY.TXT in scenario dir
+    iVar2 = FUN_004a2379(DAT_0064bb08, local_1c);
     if (iVar2 !== 0) {
-      iVar2 = FUN_004a2379(null, local_1c);
+      // C: __chdir(&DAT_00655020);
+      // C: iVar2 = thunk_FUN_004a2379(&DAT_00626260, local_1c);  // try CITY.TXT in game dir
+      iVar2 = FUN_004a2379(DAT_00655020, local_1c);
       if (iVar2 !== 0) {
+        // goto LAB_0043f78e
         FUN_004a2020();
         return;
       }
+    }
+    // C: __chdir(&DAT_00655020);
+
+    // Skip forward local_24 entries, checking for empty lines and _STOP marker
+    for (; 0 < local_24; local_24 = local_24 - 1) {
+      FUN_004a23fc(1);
+      sVar3 = DAT_00679640.length;
+      if (sVar3 === 0 || DAT_00679640.substring(0, 5).toUpperCase() === '_STOP') break;
     }
 
-    for (; local_24 > 0; local_24 = local_24 - 1) {
-      FUN_004a23fc(1);
-      if (DAT_00679640.length === 0) break;
-    }
     if (local_24 < 1) {
+      // LAB_0043f714: (reached from first loop exhaustion or EXTRA fallback)
       if (local_24 < 1) {
-        // Assign the city name
+        // C: _memset(&DAT_0064f360 + param_1 * 0x58, 0, 0x10);
+        DAT_0064f360.fill(0, param_1 * 0x58, param_1 * 0x58 + 0x10);
+        // C: _strncpy(&DAT_0064f360 + param_1 * 0x58, &DAT_00679640, 0xf);
+        for (let _i = 0; _i < 0xf && _i < DAT_00679640.length; _i++) {
+          DAT_0064f360[param_1 * 0x58 + _i] = DAT_00679640.charCodeAt(_i);
+        }
+        // goto LAB_0043f78e
         FUN_004a2020();
         return;
       }
+      // C: (&DAT_006554fd)[...] = 0;  — reset counter on wrap-around
       DAT_006554fd[DAT_0064c6a6[iVar1 * 0x594] * 0x30] = 0;
+      // goto LAB_0043f557 (continue do-while)
+      continue;
     }
+
+    // C: iVar2 = thunk_FUN_004a2379(0, s_EXTRA_00626270);  // search for EXTRA section
+    iVar2 = FUN_004a2379(0, 'EXTRA');
+    if (iVar2 === 0) {
+      // Found EXTRA section — skip forward again
+      for (; 0 < local_24; local_24 = local_24 - 1) {
+        FUN_004a23fc(1);
+        sVar3 = DAT_00679640.length;
+        if (sVar3 === 0 || DAT_00679640.substring(0, 5).toUpperCase() === '_STOP') break;
+      }
+      // goto LAB_0043f714
+      if (local_24 < 1) {
+        // C: _memset(&DAT_0064f360 + param_1 * 0x58, 0, 0x10);
+        DAT_0064f360.fill(0, param_1 * 0x58, param_1 * 0x58 + 0x10);
+        // C: _strncpy(&DAT_0064f360 + param_1 * 0x58, &DAT_00679640, 0xf);
+        for (let _i = 0; _i < 0xf && _i < DAT_00679640.length; _i++) {
+          DAT_0064f360[param_1 * 0x58 + _i] = DAT_00679640.charCodeAt(_i);
+        }
+        // goto LAB_0043f78e
+        FUN_004a2020();
+        return;
+      }
+      // C: (&DAT_006554fd)[...] = 0;  — reset counter on wrap-around
+      DAT_006554fd[DAT_0064c6a6[iVar1 * 0x594] * 0x30] = 0;
+      // goto LAB_0043f557 (continue do-while)
+      continue;
+    }
+    // C: (&DAT_006554fd)[...] = 0;  — EXTRA not found, reset counter
+    DAT_006554fd[DAT_0064c6a6[iVar1 * 0x594] * 0x30] = 0;
   } while (true);
 }
 
