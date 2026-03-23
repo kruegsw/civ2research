@@ -275,8 +275,14 @@ export function FUN_005727d8() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00572887 — get_map_editor_tile_rect
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00572887 (1295 bytes)
 export function FUN_00572887(param_1, param_2) {
-  // UI rect calculation — no-op in JS, returns stub
+  // C: Renders a map tile at (param_1, param_2) with terrain bitmap
+  // C: Uses DAT_006ac124 (scroll mode), DAT_006ac894/006ac874 (bitmap handles)
+  // C: Calls FUN_005c0c5d (draw terrain), FUN_004086c0 (calc rect),
+  //    FUN_005cd5ba/FUN_005cd775 (scale/blit bitmap), FUN_005cdb33 (transparent blit)
+  // C: Writes to DAT_006ac108 (tile rect buffer)
+  // DEVIATION: GDI rendering — cannot draw without device context
   return 0;
 }
 
