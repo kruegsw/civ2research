@@ -153,13 +153,13 @@ let DAT_00655324 = 0;
 let DAT_00655334 = 0;
 let DAT_00655344 = 0;
 let DAT_00655490 = new Uint8Array(0x68);
-let DAT_006554f8 = new Uint8Array(256);
+let DAT_006554f8 = new Uint8Array(1024);
 let DAT_006554fb = new Uint8Array(256);
-let DAT_006554fc = new Uint8Array(256);
+let DAT_006554fc = new Uint8Array(1024);
 let DAT_006554fd = new Uint8Array(256);
-let DAT_00655502 = new Int16Array(256);
-let DAT_00655504 = new Int16Array(256);
-let DAT_00655506 = new Int16Array(256);
+let DAT_00655502 = new Int16Array(512);
+let DAT_00655504 = new Int16Array(512);
+let DAT_00655506 = new Int16Array(512);
 let DAT_0065550c = new Int16Array(256);
 let DAT_00655ae8 = 0;
 let DAT_00655aea = 0;
@@ -214,8 +214,8 @@ let DAT_006560f8 = new Uint8Array(4096 * 0x20);
 let DAT_006560f9 = new Uint8Array(4096 * 0x20);
 let DAT_006560ff = new Uint8Array(4096 * 0x20);
 let DAT_00656100 = new Uint8Array(4096 * 0x20);
-let DAT_00656106 = new Int16Array(4096);
-let DAT_00656108 = new Int16Array(4096);
+let DAT_00656106 = new Int16Array(2048 * 16);
+let DAT_00656108 = new Int16Array(2048 * 16);
 let DAT_0065610a = new Int32Array(2048 * 8); // 2048 units * stride 8 (0x20 bytes / 4 bytes-per-int32)
 let DAT_006558e8 = new Uint8Array(260);
 let DAT_00655020_str = '';
@@ -1207,19 +1207,19 @@ export function FUN_004741be(param_1, param_2) {
   }
   if ((param_2 !== 0) || ((DAT_00655af0 & 0x80) !== 0)) {
     for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
-      let civSlot = s16(DAT_0064c6a6[local_128 * (0x594 / 2)]);
-      if (DAT_00655506[civSlot * 0x30] >= 0) {
+      let civSlot = DAT_0064c6a6[local_128 * (0x594 / 2)];
+      if (DAT_00655506[civSlot * 0x18] >= 0) {
         // FUN_004aef20 clears string, FUN_004af122 writes civ name by tech ID
         FUN_004aef20(DAT_0064bd2a.subarray(local_128 * 0xf2));
-        FUN_004af122(DAT_0064bd2a.subarray(local_128 * 0xf2), DAT_00655506[civSlot * 0x30]);
+        FUN_004af122(DAT_0064bd2a.subarray(local_128 * 0xf2), DAT_00655506[civSlot * 0x18]);
       }
-      if (DAT_00655504[civSlot * 0x30] >= 0) {
+      if (DAT_00655504[civSlot * 0x18] >= 0) {
         FUN_004aef20(DAT_0064bd12.subarray(local_128 * 0xf2));
-        FUN_004af122(DAT_0064bd12.subarray(local_128 * 0xf2), DAT_00655504[civSlot * 0x30]);
+        FUN_004af122(DAT_0064bd12.subarray(local_128 * 0xf2), DAT_00655504[civSlot * 0x18]);
       }
-      if (DAT_00655502[civSlot * 0x30] >= 0) {
+      if (DAT_00655502[civSlot * 0x18] >= 0) {
         FUN_004aef20(DAT_0064bcfa.subarray(local_128 * 0xf2));
-        FUN_004af122(DAT_0064bcfa.subarray(local_128 * 0xf2), DAT_00655502[civSlot * 0x30]);
+        FUN_004af122(DAT_0064bcfa.subarray(local_128 * 0xf2), DAT_00655502[civSlot * 0x18]);
       }
     }
   }
@@ -1437,14 +1437,14 @@ export function FUN_00475666(param_1) {
     if ((local_220 === 0) && ((DAT_00655af0 & 0x80) === 0)) {
       if (DAT_00655b02 === 0) {
         // Single player: negate DAT_00655502 for current civ
-        let civSlot = s16(DAT_0064c6a6[cVar1 * (0x594 / 2)]);
-        DAT_00655502[civSlot * 0x30] = -DAT_00655502[civSlot * 0x30];
+        let civSlot = DAT_0064c6a6[cVar1 * (0x594 / 2)];
+        DAT_00655502[civSlot * 0x18] = -DAT_00655502[civSlot * 0x18];
         // local_71c[0] = local_728[6], local_71c[1] = local_728[7]
         if (local_728[6] < 0) {
-          DAT_00655504[civSlot * 0x30] = -DAT_00655504[civSlot * 0x30];
+          DAT_00655504[civSlot * 0x18] = -DAT_00655504[civSlot * 0x18];
         }
         if (local_728[7] < 0) {
-          DAT_00655506[civSlot * 0x30] = -DAT_00655506[civSlot * 0x30];
+          DAT_00655506[civSlot * 0x18] = -DAT_00655506[civSlot * 0x18];
         }
         // DAT_0065550c negation loop: local_71c[local_738 + local_21c * 2 + 4]
         // = local_728[6 + local_738 + local_21c * 2 + 4] = local_728[10 + local_21c * 2 + local_738]
@@ -1463,15 +1463,15 @@ export function FUN_00475666(param_1) {
         for (let local_748 = 0; DAT_00655b03 = cVar1, local_748 < 8; local_748 = local_748 + 1) {
           if ((1 << (local_748 & 0x1f) & DAT_00655b0b) !== 0) {
             DAT_00655b03 = local_748;
-            let civSlot = s16(DAT_0064c6a6[local_748 * (0x594 / 2)]);
-            DAT_00655502[civSlot * 0x30] = -DAT_00655502[civSlot * 0x30];
+            let civSlot = DAT_0064c6a6[local_748 * (0x594 / 2)];
+            DAT_00655502[civSlot * 0x18] = -DAT_00655502[civSlot * 0x18];
             // local_71c[civSlot * 0x18] = local_728[6 + civSlot * 0x18]
             if (local_728[6 + civSlot * 0x18] < 0) {
-              DAT_00655504[civSlot * 0x30] = -DAT_00655504[civSlot * 0x30];
+              DAT_00655504[civSlot * 0x18] = -DAT_00655504[civSlot * 0x18];
             }
             // local_71c[civSlot * 0x18 + 1] = local_728[6 + civSlot * 0x18 + 1]
             if (local_728[6 + civSlot * 0x18 + 1] < 0) {
-              DAT_00655506[civSlot * 0x30] = -DAT_00655506[civSlot * 0x30];
+              DAT_00655506[civSlot * 0x18] = -DAT_00655506[civSlot * 0x18];
             }
             // DAT_0065550c negation loop
             // local_71c[local_21c * 2 + local_738 + civSlot * 0x18 + 4]
@@ -1505,10 +1505,10 @@ export function FUN_00475666(param_1) {
         }
         // Compare civ name to determine if defaults apply
         let absLeader;
-        if (DAT_00655504[civIdx * 0x30] < 1) {
-          absLeader = -DAT_00655504[civIdx * 0x30];
+        if (DAT_00655504[civIdx * 0x18] < 1) {
+          absLeader = -DAT_00655504[civIdx * 0x18];
         } else {
-          absLeader = DAT_00655504[civIdx * 0x30];
+          absLeader = DAT_00655504[civIdx * 0x18];
         }
         let pcVar2 = FUN_00428b0c(absLeader);
         // Compare civ leader name to default — if match, copy default diplomacy values
@@ -1523,9 +1523,9 @@ export function FUN_00475666(param_1) {
         }
 
         // Negate discovery entries
-        DAT_00655502[civIdx * 0x30] = -DAT_00655502[civIdx * 0x30];
-        DAT_00655504[civIdx * 0x30] = -DAT_00655504[civIdx * 0x30];
-        DAT_00655506[civIdx * 0x30] = -DAT_00655506[civIdx * 0x30];
+        DAT_00655502[civIdx * 0x18] = -DAT_00655502[civIdx * 0x18];
+        DAT_00655504[civIdx * 0x18] = -DAT_00655504[civIdx * 0x18];
+        DAT_00655506[civIdx * 0x18] = -DAT_00655506[civIdx * 0x18];
       }
     }
 
@@ -1739,8 +1739,8 @@ export function load_verify_units(param_1, param_2, param_3) {
       // Verify unit positions
       for (let local_868 = 0; local_868 < DAT_00655b16; local_868 = local_868 + 1) {
         if (DAT_0065610a[local_868 * 8] === 0) {
-          DAT_00656108[local_868] = 0xffff;
-          DAT_00656106[local_868] = 0xffff;
+          DAT_00656108[local_868 * 16] = 0xffff;
+          DAT_00656106[local_868 * 16] = 0xffff;
         } else {
           FUN_005b2590(local_868);
           let unitX = s16(DAT_006560f0[local_868 * 0x20], DAT_006560f0[local_868 * 0x20 + 1]);
