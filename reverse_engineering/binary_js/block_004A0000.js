@@ -2653,7 +2653,7 @@ export function kill_civ(param_1, param_2) {
           DAT_00655142[iVar1] = param_2 & 0xFF;
           DAT_0065514e[iVar1] = DAT_0064ca92[param_1 * 0x594];
           let uVar3_name = FUN_00493c7d(param_1);
-          FUN_005f22d0(DAT_0065515a /* + iVar1 * 0x18 */, uVar3_name);
+          FUN_005f22d0(DAT_0065515a + iVar1 * 0x18, uVar3_name); // C: &DAT_0065515a + iVar1 * 0x18
         }
         FUN_004a762d(param_1);
       }
