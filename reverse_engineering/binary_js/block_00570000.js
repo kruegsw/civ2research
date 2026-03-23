@@ -2199,22 +2199,83 @@ export function FUN_00578e38(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578e60 — toggle_menu_item_check
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578e60 (103 bytes)
 export function FUN_00578e60(param_1) {
-  // UI — no-op in JS
+  let iVar1 = FUN_00578922(param_1); // find submenu item
+  if (iVar1 !== 0) {
+    let uVar2 = (~ri(iVar1, 8)) & 1; // toggle enabled state
+    let uVar3 = FUN_005789aa(iVar1); // get submenu index
+    let uVar4 = FUN_00578840(ri(iVar1, 0x18)); // get parent index
+    FUN_00579ac0(uVar4, uVar3, uVar2); // DEVIATION: MFC — enable/disable menu item
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_00578ec7 — toggle_menu_item_grayed
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578ec7 (101 bytes)
 export function FUN_00578ec7(param_1) {
-  // UI — no-op in JS
+  let iVar1 = FUN_00578922(param_1); // find submenu item
+  if (iVar1 !== 0) {
+    let uVar2 = ri(iVar1, 8) & 4; // get checked state
+    let uVar3 = FUN_005789aa(iVar1); // get submenu index
+    let uVar4 = FUN_00578840(ri(iVar1, 0x18)); // get parent index
+    FUN_00579b00(uVar4, uVar3, uVar2); // DEVIATION: MFC — check/uncheck menu item
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_00578f2c — build_full_menu
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578f2c (686 bytes)
 export function FUN_00578f2c(param_1) {
-  // Menu building — UI only, stub
+  let local_104 = '';
+  // let local_118 = ri(in_ECX, 0x1c); // DEVIATION: MFC — menu list head
+  let local_114 = 1;
+
+  // if ((ri(in_ECX, 0x19) & 0x80) !== 0) { // already built
+  //   if (DAT_00634304 !== 0) { FUN_00579bf0(); } // DEVIATION: MFC — draw menu bar
+  //   return;
+  // }
+
+  // First pass: build menu text string and optionally clear subitems
+  // for (; local_118 !== 0; local_118 = ri(local_118, 0x10)) {
+  //   if ((ri(local_118, 8) & 2) === 0) {
+  //     FUN_005f22e0(local_104, ri(local_118, 0)); // append menu label
+  //     FUN_005f22e0(local_104, "\t"); // separator
+  //   }
+  //   if (param_1 === 0) {
+  //     for (let local_108 = 0x1e; 0 < local_108; local_108--) {
+  //       FUN_00579a40(local_114, local_108); // DEVIATION: MFC — remove menu items
+  //     }
+  //     wi(local_118, 0x0c, 0); // reset subitem count
+  //   }
+  //   local_114 = local_114 + 1;
+  // }
+  // if (param_1 !== 0) { FUN_005799c0(local_104); } // DEVIATION: MFC — set menu text
+
+  // Second pass: add subitems
+  // local_118 = ri(in_ECX, 0x1c);
+  // local_114 = 1;
+  // for (; local_118 !== 0; local_118 = ri(local_118, 0x10)) {
+  //   if ((ri(local_118, 8) & 2) === 0) {
+  //     if (param_1 !== 0) { FUN_00579a40(local_114, 1); } // DEVIATION: MFC — add submenu
+  //     let local_10c = ri(local_118, 0x18); // submenu list
+  //     let local_110 = 1;
+  //     for (; local_10c !== 0; local_10c = ri(local_10c, 0x10)) {
+  //       if ((ri(local_10c, 8) & 2) === 0) {
+  //         wi(local_118, 0x0c, ri(local_118, 0x0c) + 1); // increment subcount
+  //         FUN_00579a00(local_114, local_110, ri(local_10c, 0)); // DEVIATION: MFC — add item
+  //         if ((ri(local_10c, 8) & 1) !== 0) { FUN_00578e60(ri(local_10c, 4)); } // enable
+  //         if ((ri(local_10c, 8) & 4) !== 0) { FUN_00578ec7(ri(local_10c, 4)); } // check
+  //         local_110 = local_110 + 1;
+  //       }
+  //     }
+  //     local_114 = local_114 + 1;
+  //   }
+  // }
+  // wi(in_ECX, 0x18, ri(in_ECX, 0x18) | 0x8000); // set "built" flag
+  // FUN_00578de8(param_1); // DEVIATION: MFC — finalize menu
+
+  if (DAT_00634304 !== 0) {
+    FUN_00579bf0(); // DEVIATION: MFC — draw menu bar
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
