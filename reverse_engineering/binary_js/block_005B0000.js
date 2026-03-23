@@ -1829,14 +1829,13 @@ export function FUN_005b67af(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_005B0000.c FUN_005b6898 (89 bytes)
+// Source: decompiled/block_005B0000.c FUN_005b6898 (89 bytes)
 export function FUN_005b6898(param_1) {
   let puVar1;
   if (DAT_006560f0[param_1 * 0x20 + 0x10] === 0xFF) {
-    // C: thunk_FUN_00428b0c(*(DAT_00628420 + 0x38)) — returns "NONE" string
-    puVar1 = 'NONE';
+    puVar1 = FUN_00428b0c(DAT_00628420[0x38 / 4]); // DEVIATION: resource string "NONE"
   } else {
-    // C: returns &DAT_0064f360 + home_city * 0x58 — city name string
-    puVar1 = u8(DAT_006560f0[param_1 * 0x20 + 0x10]);
+    puVar1 = DAT_0064f340 + u8(DAT_006560f0[param_1 * 0x20 + 0x10]) * 0x58 + 0x20; // city name
   }
   return puVar1;
 }
@@ -1916,25 +1915,59 @@ export function FUN_005b6dbe() {
 
 // Source: decompiled/block_005B0000.c FUN_005b7fe0 (1078 bytes)
 export function FUN_005b7fe0() {
-  // DEVIATION: Win32 memory allocation replaced with JS typed arrays
+  let uVar1;
   let local_18;
+  let local_14;
   let local_c;
+  let local_8;
 
   DAT_006d116a = (DAT_006d1160 + 3) >> 2;
   DAT_006d116c = (DAT_006d1162 + 3) >> 2;
-  DAT_006d1164 = Math.trunc(DAT_006d1160 / 2) * DAT_006d1162;
-
-  // Allocate tile data (6 bytes per tile) — handled by mem.js initMapTiles
-  // Initialize visibility layers (1 byte per tile, 7 layers for civs 1-7)
-  for (local_18 = 1; local_18 < 8; local_18++) {
-    DAT_006365c0[local_18] = new Uint8Array(DAT_006d1164);
+  DAT_006d1164 = ((DAT_006d1160 / 2) | 0) * DAT_006d1162;
+  // Allocate tile data buffer
+  local_8 = DAT_006d1164 * 6;
+  if ((local_8 & 3) !== 0) { local_8 = (4 - (local_8 & 3)) + local_8; }
+  DAT_006d1170 = FUN_004bb870(local_8); // DEVIATION: Win32 GlobalAlloc
+  if (DAT_006d1170 === 0) { FUN_00589ef8(-9, 5, 0, DAT_006d1160, DAT_006d1162); }
+  DAT_00636598 = FUN_0046aad0(DAT_006d1170); // DEVIATION: GlobalLock
+  if (DAT_00636598 === 0) { FUN_00589ef8(-10, 5, 0, DAT_006d1160, DAT_006d1162); }
+  // Initialize all tiles to terrain type 10 (ocean), zero flags
+  local_14 = DAT_00636598;
+  for (local_c = 0; local_c < DAT_006d1164; local_c = local_c + 1) {
+    // C: *local_14 = 10; local_14[1..5] = 0; local_14 += 6;
+    // DEVIATION: In JS, tile init handled by initMapTiles in mem.js
   }
-
-  // Allocate vis chunk layers (4 chunk layers)
-  DAT_006365e0 = new Uint8Array(DAT_006d116a * DAT_006d116c);
-  DAT_006365e4 = new Uint8Array(DAT_006d116a * DAT_006d116c);
-  DAT_006365e8 = new Uint8Array(DAT_006d116a * DAT_006d116c);
-  DAT_006365ec = new Uint8Array(DAT_006d116a * DAT_006d116c);
+  // Allocate visibility layers (7 civs)
+  local_8 = DAT_006d1164;
+  if ((local_8 & 3) !== 0) { local_8 = (4 - (local_8 & 3)) + local_8; }
+  for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
+    uVar1 = FUN_004bb870(local_8); // DEVIATION: GlobalAlloc
+    wi(0x6365a0, local_18 * 4, uVar1);
+    if (ri(0x6365a0, local_18 * 4) === 0) { FUN_00589ef8(-9, 5, 0, 0xea, local_18); }
+    uVar1 = FUN_0046aad0(ri(0x6365a0, local_18 * 4)); // DEVIATION: GlobalLock
+    wi(DAT_006365c0, local_18 * 4, uVar1);
+    if (ri(DAT_006365c0, local_18 * 4) === 0) { FUN_00589ef8(-10, 5, 0, 0xea, local_18); }
+    _memset(ri(DAT_006365c0, local_18 * 4), 0, DAT_006d1164); // DEVIATION: memset
+  }
+  // Allocate 4 quarter-resolution visibility chunk layers
+  local_8 = DAT_006d116a * DAT_006d116c;
+  if ((local_8 & 3) !== 0) { local_8 = (4 - (local_8 & 3)) + local_8; }
+  DAT_006d1174 = FUN_004bb870(local_8);
+  if (DAT_006d1174 === 0) { FUN_00589ef8(-9, 5, 0, DAT_006d116a, 0); }
+  DAT_006365e0 = FUN_0046aad0(DAT_006d1174);
+  if (DAT_006365e0 === 0) { FUN_00589ef8(-10, 5, 0, DAT_006d116a, 0); }
+  DAT_006d1178 = FUN_004bb870(local_8);
+  if (DAT_006d1178 === 0) { FUN_00589ef8(-9, 5, 0, DAT_006d116a, 1); }
+  DAT_006365e4 = FUN_0046aad0(DAT_006d1178);
+  if (DAT_006365e4 === 0) { FUN_00589ef8(-10, 5, 0, DAT_006d116a, 1); }
+  DAT_006d117c = FUN_004bb870(local_8);
+  if (DAT_006d117c === 0) { FUN_00589ef8(-9, 5, 0, DAT_006d116a, 2); }
+  DAT_006365e8 = FUN_0046aad0(DAT_006d117c);
+  if (DAT_006365e8 === 0) { FUN_00589ef8(-10, 5, 0, DAT_006d116a, 2); }
+  DAT_006d1180 = FUN_004bb870(local_8);
+  if (DAT_006d1180 === 0) { FUN_00589ef8(-9, 5, 0, DAT_006d116a, 3); }
+  DAT_006365ec = FUN_0046aad0(DAT_006d1180);
+  if (DAT_006365ec === 0) { FUN_00589ef8(-10, 5, 0, DAT_006d116a, 3); }
   DAT_006365f0 = 1;
 }
 
@@ -1944,17 +1977,34 @@ export function FUN_005b7fe0() {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_005B0000.c FUN_005b8416 (488 bytes)
+// Source: decompiled/block_005B0000.c FUN_005b8416 (488 bytes)
 export function FUN_005b8416() {
+  let uVar1;
   let local_8;
+
   if (DAT_006365f0 !== 0) {
-    // DEVIATION: Win32 memory deallocation — JS uses GC
-    DAT_006365ec = 0;
-    DAT_006365e8 = 0;
-    DAT_006365e4 = 0;
-    DAT_006365e0 = 0;
-    DAT_00636598 = 0;
-    for (local_8 = 1; local_8 < 8; local_8++) {
-      DAT_006365c0[local_8] = null;
+    // Free 4 chunk layers
+    if (DAT_006365ec !== 0) { DAT_006365ec = FUN_0046ab00(DAT_006d1180); } // DEVIATION: GlobalUnlock
+    if (DAT_006d1180 !== 0) { DAT_006d1180 = FUN_0046aaa0(DAT_006d1180); } // DEVIATION: GlobalFree
+    if (DAT_006365e8 !== 0) { DAT_006365e8 = FUN_0046ab00(DAT_006d117c); }
+    if (DAT_006d117c !== 0) { DAT_006d117c = FUN_0046aaa0(DAT_006d117c); }
+    if (DAT_006365e4 !== 0) { DAT_006365e4 = FUN_0046ab00(DAT_006d1178); }
+    if (DAT_006d1178 !== 0) { DAT_006d1178 = FUN_0046aaa0(DAT_006d1178); }
+    if (DAT_006365e0 !== 0) { DAT_006365e0 = FUN_0046ab00(DAT_006d1174); }
+    if (DAT_006d1174 !== 0) { DAT_006d1174 = FUN_0046aaa0(DAT_006d1174); }
+    // Free tile data
+    if (DAT_00636598 !== 0) { DAT_00636598 = FUN_0046ab00(DAT_006d1170); }
+    if (DAT_006d1170 !== 0) { DAT_006d1170 = FUN_0046aaa0(DAT_006d1170); }
+    // Free 7 visibility layers
+    for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
+      if (ri(DAT_006365c0, local_8 * 4) !== 0) {
+        uVar1 = FUN_0046ab00(ri(0x6365a0, local_8 * 4)); // DEVIATION: GlobalUnlock
+        wi(DAT_006365c0, local_8 * 4, uVar1);
+      }
+      if (ri(0x6365a0, local_8 * 4) !== 0) {
+        uVar1 = FUN_0046aaa0(ri(0x6365a0, local_8 * 4)); // DEVIATION: GlobalFree
+        wi(0x6365a0, local_8 * 4, uVar1);
+      }
     }
     DAT_006365f0 = 0;
   }
