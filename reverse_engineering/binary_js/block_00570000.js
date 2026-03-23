@@ -1573,8 +1573,89 @@ export function FUN_00574e98() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00574f50 — debug_export_sprites
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00574f50 (3562 bytes)
 export function FUN_00574f50() {
-  // UI/debug function — no-op in JS
+  let uVar1;
+  let local_3c = new Uint8Array(16);
+  let local_2c, local_28, local_24;
+  let local_20, local_c;
+  let local_1c = [0], local_18 = [0], local_14 = [0], local_10 = [0];
+  let local_8;
+
+  FUN_005a6c23(DAT_006ac4d0); // DEVIATION: Win32 — disable parent
+  local_8 = FUN_00419100("DEBUG", "RUSURE", 1); // DEVIATION: Win32 — "are you sure" dialog
+  FUN_005a6c45(); // DEVIATION: Win32 — enable parent
+  if (local_8 === 0) {
+    switch (DAT_006ac924) {
+    case 0: // terrain sprites
+      for (local_20 = 0; local_20 < DAT_006ac89c; local_20 = local_20 + 1) {
+        FUN_005746a1(local_20, local_18, local_1c, local_10, local_14);
+        FUN_005cdf50(); // DEVIATION: GDI — select bitmap
+        uVar1 = local_20 >> 31;
+        FUN_00575d89(DAT_00646cb8 + ((local_20 + (uVar1 & 3)) >> 2) * 0xf0 +
+                     (((local_20 ^ uVar1) - uVar1 & 3 ^ uVar1) - uVar1) * 0x3c,
+                     local_18[0], local_1c[0], local_10[0], local_14[0]); // DEVIATION: export sprite
+      }
+      break;
+    case 1: // improvement sprites
+      for (local_20 = 0; local_20 < DAT_006ac89c; local_20 = local_20 + 1) {
+        FUN_005746a1(local_20, local_18, local_1c, local_10, local_14);
+        local_c = local_20 % 0x18;
+        uVar1 = local_c >> 31;
+        local_24 = (local_c + (uVar1 & 3)) >> 2;
+        local_28 = ((local_c ^ uVar1) - uVar1 & 3 ^ uVar1) - uVar1;
+        local_2c = (local_20 / 0x18) | 0;
+        FUN_005cdf50(); // DEVIATION: GDI
+        FUN_00575d89(DAT_0063fe50 + local_24 * 0x1e0 + local_2c * 0x3c + local_28 * 0x78,
+                     local_18[0], local_1c[0], local_10[0], local_14[0]); // DEVIATION: export
+      }
+      break;
+    case 2: // unit sprites
+      for (local_20 = 0; local_20 < DAT_006ac89c; local_20 = local_20 + 1) {
+        FUN_005746a1(local_20, local_18, local_1c, local_10, local_14);
+        FUN_005cdf50(); // DEVIATION: GDI
+        FUN_00575d89(DAT_00641848 + local_20 * 0x3c,
+                     local_18[0], local_1c[0], local_10[0], local_14[0]); // DEVIATION: export
+      }
+      break;
+    case 3: // people sprites
+      for (local_20 = 0; local_20 < DAT_006ac89c; local_20 = local_20 + 1) {
+        FUN_005746a1(local_20, local_18, local_1c, local_10, local_14);
+        FUN_005cdf50(); // DEVIATION: GDI
+        FUN_00575d89(DAT_00645a84 + local_20 * 0x3c,
+                     local_18[0], local_1c[0], local_10[0], local_14[0]); // DEVIATION: export
+      }
+      break;
+    case 4: // icon sprites
+      for (local_20 = 0; local_20 < DAT_006ac89c; local_20 = local_20 + 1) {
+        FUN_005746a1(local_20, local_18, local_1c, local_10, local_14);
+        FUN_005cdf50(); // DEVIATION: GDI
+        FUN_00575d89(DAT_00645160 + local_20 * 0x3c,
+                     local_18[0], local_1c[0], local_10[0], local_14[0]); // DEVIATION: export
+      }
+      break;
+    case 5: // city sprites
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+      for (local_20 = 0; local_20 < DAT_006ac89c; local_20 = local_20 + 1) {
+        FUN_005746a1(local_20, local_18, local_1c, local_10, local_14);
+        // DEVIATION: various sprite tables based on DAT_006ac924
+      }
+      break;
+    case 0xb: // map tiles
+      for (local_20 = 0; local_20 < DAT_006ac89c; local_20 = local_20 + 1) {
+        FUN_005746a1(local_20, local_18, local_1c, local_10, local_14);
+        FUN_005cdf50(); // DEVIATION: GDI
+        FUN_00575d89(0, local_18[0], local_1c[0], local_10[0], local_14[0]); // DEVIATION: export
+      }
+      break;
+    }
+    DAT_006ac890 = 0;
+    // CRichEditDoc_InvalidateObjectCache(DAT_006ac11c + 0x48); // DEVIATION: MFC
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
