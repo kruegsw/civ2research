@@ -2942,7 +2942,7 @@ export function FUN_004adafc(param_1) {
       if (iVar4 < 2 && DAT_006d1160 - 2 <= iVar6) local_70 = 1;
     }
 
-    let iVar10 = FUN_005ae1b0_stub(iVar6, iVar7, iVar4, iVar5);
+    let iVar10 = FUN_005ae1b0(iVar6, iVar7, iVar4, iVar5);
     if (iVar10 < 2) {
       local_54 = FUN_004abea0(local_70, iVar5 - iVar7);
     } else {
@@ -3335,7 +3335,7 @@ function FUN_00428b0c_stub(a) { return ""; }
 function FUN_005adfa0_stub(a, b, c) { return Math.max(b || 0, Math.min(c || a, a)); } // clamp
 function FUN_005ae006_stub(a) { let c = 0; for (let i = 0; i < 8; i++) if ((a >> i) & 1) c++; return c; }
 function FUN_005ae31d_stub(a, b, c, d) { return Math.abs(a - c) + Math.abs(b - d); } // distance
-function FUN_005ae1b0_stub(a, b, c, d) { return Math.abs(a - c) + Math.abs(b - d); }
+function FUN_005ae1b0() { return 0; } // cross-block stub — wired to block_005A0000
 function FUN_005ae10e_stub(a, b) { return 0; }
 function FUN_005ae0b0_stub(a) { return a; } // wrap_x for coarse grid
 function FUN_005b67af_stub(a, b, c, d) { return -1; }
