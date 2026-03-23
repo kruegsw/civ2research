@@ -2281,50 +2281,103 @@ export function FUN_00578f2c(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005791df — set_menu_item_visibility
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005791df (129 bytes)
 export function FUN_005791df(param_1, param_2) {
-  // UI — no-op in JS
+  let iVar1 = FUN_005787de(param_1); // find top-level menu item
+  if (iVar1 !== 0) {
+    if (param_2 === 0) {
+      // if ((ri(iVar1, 8) & 2) !== 0) { wi(in_ECX, 0x18, ri(in_ECX, 0x18) & 0xffff7fff); } // DEVIATION: MFC
+      // wi(iVar1, 8, ri(iVar1, 8) & 0xfffffffd); // clear hidden flag // DEVIATION: MFC
+    } else {
+      // if ((ri(iVar1, 8) & 2) === 0) { wi(in_ECX, 0x18, ri(in_ECX, 0x18) & 0xffff7fff); } // DEVIATION: MFC
+      // wi(iVar1, 8, ri(iVar1, 8) | 2); // set hidden flag // DEVIATION: MFC
+    }
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// FUN_00579260 — set_submenu_item_visibility
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579260 (129 bytes)
 export function FUN_00579260(param_1, param_2) {
-  // UI — no-op in JS
+  let iVar1 = FUN_00578922(param_1); // find submenu item
+  if (iVar1 !== 0) {
+    if (param_2 === 0) {
+      // if ((ri(iVar1, 8) & 2) !== 0) { wi(in_ECX, 0x18, ri(in_ECX, 0x18) & 0xffff7fff); } // DEVIATION: MFC
+      // wi(iVar1, 8, ri(iVar1, 8) & 0xfffffffd); // clear hidden // DEVIATION: MFC
+    } else {
+      // if ((ri(iVar1, 8) & 2) === 0) { wi(in_ECX, 0x18, ri(in_ECX, 0x18) & 0xffff7fff); } // DEVIATION: MFC
+      // wi(iVar1, 8, ri(iVar1, 8) | 2); // set hidden // DEVIATION: MFC
+    }
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005792e1 — set_submenu_item_checked
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005792e1 (194 bytes)
 export function FUN_005792e1(param_1, param_2) {
-  // UI — no-op in JS
+  let iVar2 = FUN_00578922(param_1); // find submenu item
+  if (iVar2 !== 0) {
+    // let bVar1 = ri(iVar2, 8); // DEVIATION: MFC — save old flags
+    if (param_2 !== 0) {
+      // wi(iVar2, 8, ri(iVar2, 8) | 1); // set enabled // DEVIATION: MFC
+    } else {
+      // wi(iVar2, 8, ri(iVar2, 8) & 0xfffffffe); // clear enabled // DEVIATION: MFC
+    }
+    // if ((ri(in_ECX, 0x19) & 0x80) !== 0 && (ri(iVar2, 8) & 2) === 0 &&
+    //    ((bVar1 & 1) !== 0) !== (param_2 !== 0)) {
+    //   FUN_00578e60(param_1); // DEVIATION: MFC — update visual
+    // }
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005793a3 — remove_submenu_item
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005793a3 (106 bytes)
 export function FUN_005793a3(param_1) {
-  // UI — no-op in JS
+  let iVar1 = FUN_00578922(param_1); // find submenu item
+  if (iVar1 !== 0) {
+    let uVar2 = FUN_005789aa(iVar1); // get submenu index
+    let uVar3 = FUN_00578840(ri(iVar1, 0x18)); // get parent index
+    FUN_00579a40(uVar3, uVar2); // DEVIATION: MFC — remove menu item
+    // wi(ri(iVar1, 0x14), 0x10, ri(iVar1, 0x10)); // unlink from list // DEVIATION: MFC
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// FUN_0057940d — set_submenu_item_grayed
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057940d (194 bytes)
 export function FUN_0057940d(param_1, param_2) {
-  // UI — no-op in JS
+  let iVar2 = FUN_00578922(param_1); // find submenu item
+  if (iVar2 !== 0) {
+    // let bVar1 = ri(iVar2, 8); // DEVIATION: MFC
+    if (param_2 !== 0) {
+      // wi(iVar2, 8, ri(iVar2, 8) | 4); // set checked // DEVIATION: MFC
+    } else {
+      // wi(iVar2, 8, ri(iVar2, 8) & 0xfffffffb); // clear checked // DEVIATION: MFC
+    }
+    // if ((ri(in_ECX, 0x19) & 0x80) !== 0 && (ri(iVar2, 8) & 2) === 0 &&
+    //    ((bVar1 & 4) !== 0) !== (param_2 !== 0)) {
+    //   FUN_00578ec7(param_1); // DEVIATION: MFC — update visual
+    // }
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// FUN_005794cf — set_all_subitems_checked
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005794cf (111 bytes)
 export function FUN_005794cf(param_1, param_2) {
-  // UI — no-op in JS
+  let iVar1 = FUN_005787de(param_1); // find top-level menu
+  if (iVar1 !== 0) {
+    // for (let local_8 = ri(iVar1, 0x18); local_8 !== 0; local_8 = ri(local_8, 0x10)) {
+    //   FUN_005792e1(ri(local_8, 4), param_2); // enable/disable each subitem
+    // } // DEVIATION: MFC — linked list walk
+    // JS: call for each subitem if list were available
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// FUN_0057953e — update_submenu_item_text
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057953e (155 bytes)
 export function FUN_0057953e(param_1, param_2) {
-  // UI — no-op in JS
+  let iVar1 = FUN_00578922(param_1); // find submenu item
+  if (iVar1 !== 0) {
+    // let sVar2 = _strlen(param_2); // DEVIATION: MFC
+    // let uVar3 = FUN_00498159(in_ECX + 4, sVar2 + 1); // DEVIATION: MFC — alloc
+    // ri(iVar1, 0) = uVar3; // set new label
+    // FUN_005f22d0(ri(iVar1, 0), param_2); // copy string
+    // FUN_00578abd(ri(iVar1, 0)); // pipe → tab
+    let uVar4 = FUN_005789aa(iVar1); // get submenu index
+    let uVar5 = FUN_00578840(ri(iVar1, 0x18)); // get parent index
+    FUN_00579a80(uVar5, uVar4, param_2); // DEVIATION: MFC — update menu text
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
