@@ -3307,10 +3307,49 @@ export function FUN_005bbfee(param_1, param_2) { /* EnableWindow — no-op */ }
 export function FUN_005bc019(param_1, param_2) { /* SetWindowLong — no-op */ }
 export function FUN_005bc032(param_1) { return 0; /* IsWindowVisible — no-op */ }
 export function send_msg_C07E(param_1) { /* SendMessage WM_CLOSE — no-op */ }
-export function manage_window_C0AB(param_1) { return 0; /* DestroyWindow — no-op */ }
+// Source: decompiled/block_005B0000.c manage_window_C0AB (200 bytes)
+export function manage_window_C0AB(param_1) {
+  if (param_1 !== null && param_1 !== 0) {
+    FUN_005bc1db(param_1[1]); // unregister window from stack
+    if (param_1[0x11] === 0) {
+      if (param_1[1] !== 0) {
+        // SetWindowLongA(param_1[1], 4, 0); // DEVIATION: Win32
+        // ShowWindow(param_1[1], 0); // DEVIATION: Win32 — hide
+        // SetMenu(param_1[1], 0); // DEVIATION: Win32 — remove menu
+        // DestroyWindow(param_1[1]); // DEVIATION: Win32 — destroy
+      }
+      param_1[1] = 0;
+    }
+    if (param_1[5] !== 0) {
+      // DeleteObject(param_1[5]); // DEVIATION: Win32 — delete bitmap
+    }
+    let uVar1 = param_1[0];
+    FUN_005dce29(uVar1); // DEVIATION: Win32 — unlock memory
+    FUN_005dce96(uVar1); // DEVIATION: Win32 — free memory
+  }
+  return 0;
+}
 export function FUN_005bc173() { /* window stack iteration — no-op */ }
 export function FUN_005bc1b5(param_1) { /* push window stack — no-op */ }
-export function FUN_005bc1db(param_1) { /* pop window stack — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bc1db (165 bytes)
+export function FUN_005bc1db(param_1) {
+  let local_8;
+
+  // Find window in stack
+  for (local_8 = 0; local_8 < DAT_006366cc && ri(DAT_006d1db8, local_8 * 4) !== param_1;
+      local_8 = local_8 + 1) {
+  }
+  // Shift remaining entries down
+  if (local_8 < DAT_006366cc - 1) {
+    for (; local_8 < DAT_006366cc - 1; local_8 = local_8 + 1) {
+      wi(DAT_006d1db8, local_8 * 4, ri(DAT_006d1db8, (local_8 + 1) * 4));
+    }
+  }
+  DAT_006366cc = DAT_006366cc - 1;
+  if (DAT_006366cc < 0) {
+    debug_log("Error: MS window stack inaccurate");
+  }
+}
 export function update_palette_C280(param_1, param_2) { /* palette update — no-op */ }
 export function invalidate_C35E(p1, p2, p3, p4) { /* brush creation — no-op */ }
 export function FUN_005bc3bf(param_1, param_2) { /* set field +0x24 — no-op */ }
