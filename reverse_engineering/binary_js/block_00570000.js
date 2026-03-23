@@ -273,13 +273,122 @@ export function FUN_00570fb8() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_00570fc6 (2342 bytes)
 export function FUN_00570fc6() {
-  // C: Loads CITIES.GIF/BMP and UNITS.GIF/BMP sprite sheets
-  // C: __getcwd/__chdir to game dir (DAT_0064bb08)
-  // C: Loads first sprite sheet via thunk_load_bitmap/FUN_005bf071
-  // C: Extracts individual sprites via FUN_005cef31, recolors via FUN_004a6980
-  // C: Loads second sprite sheet, same extraction pattern
-  // C: Stores sprites in local arrays, no game state DAT_ writes
-  // DEVIATION: GDI bitmap loading — cannot execute without Win32
+  let uVar1, iVar2, uVar3;
+  let local_570 = new Uint8Array(16), local_580 = new Uint8Array(16);
+  let local_590 = new Uint8Array(16), local_5a0 = new Uint8Array(16);
+  let local_5b0 = new Uint8Array(16), local_5c0 = new Uint8Array(16);
+  let local_5d0 = new Uint8Array(16), local_5e0 = new Uint8Array(16);
+  let local_5f0 = new Uint8Array(16), local_600 = new Uint8Array(16);
+  let local_610 = new Uint8Array(16), local_620 = new Uint8Array(16);
+  let local_630 = new Uint8Array(16), local_640 = new Uint8Array(16);
+  let local_54c = new Uint8Array(1076);
+  let local_560, local_55c, local_558, local_554, local_550;
+  let local_14;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  FUN_005c64da(); // DEVIATION: GDI init
+  _getcwd(0, 0x104); // DEVIATION: save dir
+  _chdir(DAT_0064bb08); // DEVIATION: chdir
+  iVar2 = load_bitmap(DAT_006ac0a8, "TERRAIN2.BMP", 10, 0xc0, local_54c); // DEVIATION: Win32
+  if (iVar2 === 0) {
+    iVar2 = FUN_005bf071("TERRAIN2.GIF", 10, 0xc0, local_54c); // DEVIATION: GIF
+    if (iVar2 === 0) {
+      _chdir(DAT_00655020); // DEVIATION: chdir
+      FUN_005bf071("TERRAIN2.GIF", 10, 0xc0, local_54c); // DEVIATION: GIF fallback
+    } else {
+      _chdir(DAT_00655020); // DEVIATION: chdir
+    }
+  } else {
+    _chdir(DAT_00655020); // DEVIATION: chdir
+  }
+  // Extract 16 terrain2 sprites — 8 per row, 4 columns per sprite
+  local_550 = 1;
+  local_55c = 0x43;
+  for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {
+    local_554 = (local_14 & 7) * 0x41;
+    local_558 = (local_14 >> 3) * 0x21;
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550 + local_554, local_55c + local_558, uVar3);
+    FUN_005cef31(local_570, DAT_006ac0a8, local_550 + local_554, local_55c + local_558);
+    FUN_005cef31(local_580, DAT_006ac0a8, local_550 + local_554, local_55c + local_558);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0x42, uVar3);
+    FUN_005cef31(local_590, DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0x42);
+    FUN_005cef31(local_5a0, DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0x42);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0x84, uVar3);
+    FUN_005cef31(local_5b0, DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0x84);
+    FUN_005cef31(local_5c0, DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0x84);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0xc6, uVar3);
+    FUN_005cef31(local_5d0, DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0xc6);
+    FUN_005cef31(local_5e0, DAT_006ac0a8, local_550 + local_554, local_55c + local_558 + 0xc6);
+  }
+  // Extract 4 additional sprites
+  local_550 = 1;
+  local_55c = 0x14b;
+  for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550, local_55c, uVar3);
+    FUN_005cef31(local_5f0, DAT_006ac0a8, local_550, local_55c);
+    FUN_005cef31(local_600, DAT_006ac0a8, local_550, local_55c);
+    local_550 = local_550 + 0x41;
+  }
+  // Extract 8 directional overlay sprites (4 per direction)
+  local_550 = 1;
+  local_55c = 0x1ad;
+  for (local_560 = 0; local_560 < 8; local_560 = local_560 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550, local_55c, uVar3);
+    FUN_005cef31(local_610, DAT_006ac0a8, local_550, local_55c);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550 + 0x21, local_55c + 0x22, uVar3);
+    FUN_005cef31(local_620, DAT_006ac0a8, local_550 + 0x21, local_55c + 0x22);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550, local_55c + 0x11, uVar3);
+    FUN_005cef31(local_630, DAT_006ac0a8, local_550, local_55c + 0x11);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_550, local_55c + 0x22, uVar3);
+    FUN_005cef31(local_640, DAT_006ac0a8, local_550, local_55c + 0x22);
+    local_550 = local_550 + 0x42;
+  }
+  // Save modified bitmap
+  _chdir(DAT_0064bb08); // DEVIATION: chdir
+  iVar2 = FUN_00415133("TERRAIN2.BMP"); // DEVIATION: file exists
+  if (iVar2 !== 0) {
+    iVar2 = FID_conflict__remove("TERRAIN2.BMP"); // DEVIATION: delete
+    if (iVar2 !== 0) {
+      _chdir(0); // DEVIATION: restore dir
+      FUN_004083f0();
+      FUN_005718ec();
+      FUN_00571902();
+      return;
+    }
+  }
+  FUN_write_bitmap_data(DAT_006ac0a8, "TERRAIN2.BMP", 10, 0xc0, local_54c); // DEVIATION: save BMP
+  _chdir(0); // DEVIATION: restore dir
+  FUN_004083f0();
+  // DEVIATION: SEH cleanup
+  FUN_005718ec();
+  FUN_00571902();
 }
 
 // ═══════════════════════════════════════════════════════════════════
