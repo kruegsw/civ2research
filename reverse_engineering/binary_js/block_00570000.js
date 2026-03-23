@@ -643,8 +643,22 @@ export function FUN_00572089(param_1, param_2, param_3, param_4, param_5, param_
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005722ab — invalidate_map_display
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005722ab (185 bytes)
 export function FUN_005722ab() {
-  // UI display invalidation — no-op in JS
+  let local_14 = new Uint8Array(16);
+
+  FUN_004086c0(local_14, 0, 0, DAT_006ac878, DAT_006ac87c);
+  FUN_005c044a(0x109, 0x107); // DEVIATION: GDI — set palette
+  FUN_005cebb4(DAT_006ac128, local_14); // DEVIATION: GDI — stretch blit
+  // C: save scroll position to per-player array
+  // wi(DAT_00642c48, ri(DAT_006a4f88, 0x2ec) * 4, DAT_006ac0f4); // DEVIATION: MFC (DAT_006a4f88)
+  // wi(DAT_00642b48, ri(DAT_006a4f88, 0x2ec) * 4, DAT_006ac0f0); // DEVIATION: MFC
+  if (DAT_006ac888 !== 0) {
+    // (*DAT_006ac888)(); // DEVIATION: function pointer callback
+  }
+  DAT_006ac88c = 0;
+  // CRichEditDoc_InvalidateObjectCache(DAT_006ac1f8); // DEVIATION: MFC
+  FUN_005bb574(); // DEVIATION: MFC
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -658,8 +672,15 @@ export function FUN_00572364() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00572389 — refresh_map_view
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00572389 (101 bytes)
 export function FUN_00572389() {
-  // UI map refresh — no-op in JS
+  let local_14 = new Uint8Array(16);
+
+  FUN_005cdf50(); // DEVIATION: GDI — select bitmap into DC
+  FUN_004086c0(local_14, 0, 0, DAT_006ac878, DAT_006ac87c);
+  FUN_005cec44(DAT_006ac128, 0xfe, local_14); // DEVIATION: GDI — blit map to buffer
+  DAT_006ac0a4 = DAT_006ac0f4;
+  DAT_006ac0a0 = DAT_006ac0f0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -746,8 +767,30 @@ export function FUN_00572740(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005727d8 — setup_map_editor_colors
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005727d8 (135 bytes)
 export function FUN_005727d8() {
-  // UI setup — no-op in JS
+  let local_24 = new Uint8Array(16);
+  let local_14 = new Uint8Array(16);
+
+  FUN_005c041f(DAT_006ac874); // DEVIATION: GDI — set zoom level
+  switch (DAT_006ac924) {
+  case 1:
+  case 2:
+  case 0xb:
+    FUN_005cef31(local_14, DAT_006ac128, 0, 0); // DEVIATION: GDI — extract sprite
+    break;
+  case 5:
+  case 7:
+  case 8:
+  case 10:
+    FUN_005cef31(local_24, DAT_006ac128, 0, 0); // DEVIATION: GDI — extract sprite
+    // fall through
+  case 3:
+  case 4:
+  case 6:
+  case 9:
+    break;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1552,8 +1595,57 @@ export function FUN_00575dc4() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00575dec — open_sprite_editor
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00575dec (1121 bytes)
 export function FUN_00575dec() {
-  // UI dialog — no-op in JS
+  let uVar1;
+  let local_24 = [0];
+  let local_20, local_1c, local_8;
+  let local_18 = new Uint8Array(16);
+
+  // DAT_006ac11c = in_ECX; // DEVIATION: MFC (in_ECX)
+  // in_ECX[0x2d8] = 0xf0; // DEVIATION: MFC — dialog width
+  // in_ECX[0x2dc] = 0xf0; // DEVIATION: MFC — dialog height
+  uVar1 = FUN_00428b0c(DAT_00628420[0x950 / 4], 0xd, 0, 0, 0xf0, 0xf0, 0, 0, 0);
+  FUN_00574ca6(uVar1); // create dialog
+  // _Timevec_destructor(PTR_DAT_006359f0); // DEVIATION: MFC
+  // in_ECX[0x2f4] = extraout_EAX + 8; // DEVIATION: MFC layout
+  // in_ECX[0x2f0] = in_ECX[300] - 4; // DEVIATION: MFC layout
+  // local_8 = GetSystemMetrics(3) + 2; // DEVIATION: Win32 — scrollbar width
+  // in_ECX[0x2e8] = in_ECX[300] - 4; // DEVIATION: MFC
+  DAT_006ac89c = FUN_005746a1(0, local_24, local_24, local_24, local_24);
+  // FUN_004086c0(local_18, local_1c, local_20, in_ECX[0x2e8], local_8); // DEVIATION: MFC
+  // let local_28 = (in_ECX === 0) ? 0 : in_ECX + 0x48; // DEVIATION: MFC
+  // FUN_0040fc50(local_28, 0x65, local_18, 0); // DEVIATION: MFC — create scrollbar
+  // FUN_0040fd40(0, DAT_006ac89c - 1); // DEVIATION: MFC — set range
+  // FUN_0040fcf0(0); // DEVIATION: MFC — set position
+  // FUN_0040fd80(FUN_00574c47); // DEVIATION: MFC — set scroll handler
+  FUN_00574c47(0); // initialize scroll state
+  // FUN_0040f380(); // DEVIATION: MFC
+  // in_ECX[0x2f0] = (in_ECX[300] - 8) / 3; // DEVIATION: MFC — button width
+  // 3 button layout blocks: OK (0x3f8), Apply (0x954), Cancel (0x3fc)
+  // Each: FUN_004086c0 → FUN_0040f680 → FUN_0040f880
+  // let uVar1_ok = FUN_00428b0c(DAT_00628420[0x3f8 / 4]); // DEVIATION: OK string
+  // FUN_0040f680(local_2c, 0xc9, local_18, uVar1_ok); // DEVIATION: MFC — OK button
+  // FUN_0040f880(0x004013c5); // DEVIATION: MFC — OK handler
+  // FUN_0040f7d0(); // DEVIATION: MFC — set default
+  // let uVar1_apply = FUN_00428b0c(DAT_00628420[0x954 / 4]); // DEVIATION: Apply string
+  // FUN_0040f680(local_30, 0xc9, local_18, uVar1_apply); // DEVIATION: MFC — Apply button
+  // FUN_0040f880(0x004029a5); // DEVIATION: MFC — Apply handler
+  if (DAT_006ac924 === 5) {
+    FUN_00453c40(); // hide apply button for mode 5
+  }
+  // let uVar1_cancel = FUN_00428b0c(DAT_00628420[0x3fc / 4]); // DEVIATION: Cancel string
+  // FUN_0040f680(local_34, 0xca, local_18, uVar1_cancel); // DEVIATION: MFC — Cancel button
+  // FUN_0040f880(0x00402cde); // DEVIATION: MFC — Cancel handler
+  // FUN_0040f840(); // DEVIATION: MFC — set default button
+  // CPropertySheet_EnableStackedTabs(in_ECX, 0x403887); // DEVIATION: MFC
+  // FUN_005bb574(); // DEVIATION: MFC
+  // FUN_004085f0(); // DEVIATION: MFC — init
+  // FUN_005c61b0(); // DEVIATION: MFC — show
+  // while (DAT_006ac890 !== 0) { // DEVIATION: MFC — message loop
+  //   FUN_0040ef50(); // DEVIATION: MFC — process messages
+  // }
+  FUN_00553379(); // cleanup
 }
 
 // ═══════════════════════════════════════════════════════════════════
