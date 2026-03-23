@@ -1522,8 +1522,16 @@ export function FUN_005866d3() {
 // UI dialog for editing cosmic parameters — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_005869d4 (482 bytes)
 export function FUN_005869d4() {
-  // Debug cosmic editor — UI only, no-op in transpilation
+  // DEVIATION: UI — populates cosmic parameter editor list
+  // C: iterates 0..0x15, formats DAT_006a2d80[i] and DAT_006a2d28[i] values as text
+  // Calls FUN_004a2379 to show menu, FUN_004a23fc to add items, FUN_00419020 to display
+  // All reads from DAT_006a2d80 and DAT_006a2d28 (cosmic parameters)
+  // No game state writes — purely display
+  FUN_00419060(); // DEVIATION: MFC
+  FUN_004a2379(0, "EDITCOSMIC"); // DEVIATION: UI
+  FUN_004a2020(); // DEVIATION: UI cleanup
 }
 
 
@@ -1533,8 +1541,28 @@ export function FUN_005869d4() {
 // UI for editing a single cosmic parameter — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00586bb6 (340 bytes)
 export function FUN_00586bb6() {
-  // Debug cosmic parameter edit — UI only, no-op
+  let iVar1, iVar3;
+  let uVar4, uVar5;
+
+  iVar1 = FUN_00551d50(); // DEVIATION: MFC — get selected cosmic param index
+  // DEVIATION: UI — FUN_0059d3c9, FUN_00421da0 — display param name/range
+  // DEVIATION: UI — FUN_0051d63b — show input dialog for new value
+  iVar3 = -1; // DEVIATION: UI dialog returns -1 (no input in headless)
+  if (-1 < iVar3) {
+    // C: clamp user input to valid range, write to cosmic params
+    uVar5 = ri(DAT_00634590, iVar1 * 4); // min value
+    uVar4 = ri(DAT_006345e8, iVar1 * 4); // max value
+    // C: iVar3 = _atoi(local_118); uVar4 = FUN_005adfa0(iVar3, uVar5, uVar4);
+    // C: *(DAT_006a2d28 + iVar1 * 4) = uVar4; — WRITES cosmic parameter
+    wi(DAT_006a2d28, iVar1 * 4, FUN_005adfa0(iVar3, uVar5, uVar4));
+    FUN_005869d4(); // refresh cosmic editor display
+    FUN_00551d80(iVar1); // DEVIATION: MFC — select item in list
+  }
+  FUN_004bb5e0(); // DEVIATION: UI
+  FUN_0059d3c9(0); // DEVIATION: sound
+  FUN_005866a0(); // refresh
 }
 
 
@@ -1544,7 +1572,11 @@ export function FUN_00586bb6() {
 // File I/O for cosmic parameters — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00586d0a (151 bytes)
 export function FUN_00586d0a(param_1, param_2) {
+  // DEVIATION: File I/O — writes cosmic parameters to RULES.TXT file
+  // C: for 0..0x16: reads line from param_2 (template), writes DAT_006a2d28[i] + comment to param_1
+  // In headless mode, file I/O is not available
   return 1;
 }
 
@@ -1555,8 +1587,17 @@ export function FUN_00586d0a(param_1, param_2) {
 // Win32 MessageBox — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c show_messagebox_6DA1 (131 bytes)
 export function show_messagebox_6DA1() {
-  // Win32 UI stub
+  let iVar1;
+
+  FUN_004ccab9("COSMIC"); // DEVIATION: UI — save cosmic params to RULES.TXT
+  iVar1 = FUN_show_messagebox_CF2D(); // DEVIATION: file I/O — save rules file
+  if (iVar1 === 0) {
+    // DEVIATION: Win32 — MessageBoxA error dialog
+  }
+  DAT_006a1d7c = 0; // close cosmic editor
+  // DEVIATION: MFC — InvalidateObjectCache
 }
 
 
@@ -1566,8 +1607,13 @@ export function show_messagebox_6DA1() {
 // UI stub
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00586e24 (100 bytes)
 export function FUN_00586e24() {
-  // UI dialog stub
+  // DEVIATION: UI — show effects dialog
+  // C: FUN_0059d3c9(local_8), FUN_004190d0("EFFECTS"), FUN_0059d3c9(0), FUN_005866a0()
+  FUN_0059d3c9(0); // DEVIATION: sound
+  // DEVIATION: MFC — FUN_004190d0 shows effects text
+  FUN_005866a0(); // refresh
 }
 
 
@@ -1587,8 +1633,14 @@ export function FUN_00586e88() {
 // UI setup — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00586eb0 (102 bytes)
 export function FUN_00586eb0() {
-  // UI stub
+  // DEVIATION: MFC — cosmic editor window paint/resize handler
+  // C: FUN_00552112, FUN_0040fdb0(in_ECX, in_ECX+700, 0x1a), FUN_005baeb0, FUN_005baec8,
+  //    FUN_005baee0(0x29, 0x12, 1, 1), FUN_00408460
+  // All MFC window operations, no game state writes
+  FUN_00552112(); // DEVIATION: MFC
+  FUN_00408460(); // DEVIATION: MFC
 }
 
 
@@ -1690,8 +1742,17 @@ export function FUN_0058767c() {
 // UI setup — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00587a90 (849 bytes)
 export function FUN_00587a90(param_1, param_2, param_3) {
-  // City list panel setup — UI only
+  // DEVIATION: SEH (FS_OFFSET restore)
+  // C: *(DAT_006acb58 + param_2 * 4) = param_3 — set city list mode
+  wi(DAT_006acb58, param_2 * 4, param_3);
+  FUN_00588f36(param_2, 0); // populate city list
+  // DEVIATION: MFC (in_ECX) — dialog list panel setup, scrollbar creation,
+  //   GetSystemMetrics, operator_new, FUN_0040fb00, FUN_0040fc50, FUN_0040fd40,
+  //   FUN_0040fcf0, FUN_005db0d0, FUN_0040fd80, FUN_00451ac0
+  // DEVIATION: MFC — right-side panel: operator_new, FUN_00451930, FUN_004519b0, FUN_00451a60
+  FUN_0058878e(param_2); // render city list
 }
 
 
@@ -1759,8 +1820,15 @@ export function FUN_0058804f(param_1, param_2) {
 // Source: block_00580000.c @ 0x005880B0, 637 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_005880b0 (637 bytes)
 export function FUN_005880b0(param_1) {
-  // City list click handler — UI stub
+  // DEVIATION: MFC — city list click/selection handler
+  // C: local_8 = FUN_005c62ee() (dialog pointer), local_c = param_1 - 0x422
+  // Handles click/shift-click/ctrl-click selection in city list
+  // Reads mouse state via FUN_005dba95/FUN_005dbab8 (shift/ctrl keys)
+  // Writes to dialog arrays at local_8 + 0x8400, + 0x10418 (selection state)
+  // Calls FUN_0058878e(local_c) to refresh display
+  // All writes to MFC dialog memory, no game state changes
 }
 
 
@@ -1769,8 +1837,14 @@ export function FUN_005880b0(param_1) {
 // Source: block_00580000.c @ 0x0058832D, 274 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058832d (274 bytes)
 export function FUN_0058832d(param_1, param_2, param_3) {
-  return -1; // stub
+  // DEVIATION: MFC — hit-test for city list: returns list index at (param_1, param_2) coordinates
+  // C: local_8 = FUN_005c62ee() dialog pointer
+  // Checks if coordinates fall within list panel bounds at param_3 * 0x10 + local_8 + 0x3c0
+  // Returns: -1 (above), -2 (below), -3 (left), -4 (right), or list index
+  // Cannot function without MFC dialog pointer
+  return -1;
 }
 
 
@@ -1779,8 +1853,15 @@ export function FUN_0058832d(param_1, param_2, param_3) {
 // Source: block_00580000.c @ 0x0058843F, 847 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058843f (847 bytes)
 export function FUN_0058843f(param_1, param_2, param_3) {
-  // City list sorting — UI stub
+  // DEVIATION: MFC — sorts city list in dialog object
+  // C: local_8 = FUN_005c62ee() (get dialog pointer)
+  // Sorts entries in dialog arrays at local_8 + 0x3f0, + 0x8400, + 0xc408, + 0x43f8
+  // Sort key: capital cities first, then alphabetical by city name (DAT_0064f360)
+  // Uses FUN_0043d20a to check for palace building, _strcmp for names
+  // All writes are to MFC dialog object memory, not game state
+  // Cannot function without MFC dialog pointer
 }
 
 
@@ -1829,8 +1910,19 @@ export function FUN_00588e47(param_1, param_2, param_3, param_4, param_5, param_
 // Source: block_00580000.c @ 0x00588F36, 1138 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00588f36 (1138 bytes)
 export function FUN_00588f36(param_1, param_2) {
-  // City list population — UI stub
+  // DEVIATION: MFC — entire function populates city list in dialog object
+  // C: local_8 = FUN_005c62ee() (get dialog pointer), operates on dialog member fields
+  // Iterates DAT_00655b18 cities, filters by ownership/visibility,
+  // counts units per city, stores in dialog arrays at local_8 + 0x3f0, + 0x43f8, + 0x8400, + 0xc408
+  // Calls FUN_0058843f at end to set scroll position
+  // All writes are to MFC dialog object memory, not to game state
+  // Game state reads: DAT_00655b18, DAT_0064f394 (city serials), DAT_0064f348 (city owners),
+  //   DAT_006d1da0 (human player), DAT_00655b16, DAT_006560f0 (units), DAT_006acb58
+  let local_8 = 0; // DEVIATION: MFC dialog pointer
+  // DEVIATION: Cannot populate dialog arrays without MFC object
+  FUN_0058843f(0, -1, param_1); // set scroll position
 }
 
 
@@ -1978,9 +2070,27 @@ export function FUN_00589fc9(param_1, param_2, param_3) {
 // Error handling with DebugBreak — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058a0ee (778 bytes)
 export function FUN_0058a0ee(param_1, param_2, param_3, param_4) {
-  // Fatal error — would call DebugBreak() + _exit(3)
-  throw new Error('Fatal error in Civ2 binary');
+  // C: Error handler — logs error details, calls debug callbacks, then DebugBreak + _exit(3)
+  // DEVIATION: OutputDebugStringA, debug_log — replaced with console.error
+  console.error('Civ2 fatal error:', param_1, 'in module', param_2, 'data:', param_3, param_4);
+  if (DAT_00634814 !== 0) {
+    console.error('Tried to allocate', DAT_00634818, 'bytes');
+  }
+  if (DAT_00634810 !== 0) {
+    console.error('File open failed');
+  }
+  console.error('Most recent DOS error:', DAT_00639f14);
+  // C: thunk_FUN_00589dc5("_warn0.dat") — save warning file
+  FUN_00589dc5("_warn0.dat");
+  // C: call registered error callbacks
+  let local_108 = DAT_00634768;
+  while (local_108 = local_108 - 1, -1 < local_108) {
+    // DEVIATION: function pointer callbacks — cannot execute in JS
+  }
+  // DEVIATION: DebugBreak() + _exit(3) — throw instead
+  throw new Error('Civ2 fatal error: ' + param_1 + ' in ' + param_2);
 }
 
 
@@ -2047,8 +2157,18 @@ export function show_messagebox_A80D(param_1, param_2) {
 // Sound import dialog — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058a905 (709 bytes)
 export function FUN_0058a905(param_1) {
-  // Sound import — UI stub
+  // DEVIATION: SEH, Win32 — sound file assignment dialog
+  // C: Shows file open dialog for WAV files, previews sound, copies to SOUND folder
+  // Uses: GetFileAttributesA, CSocket::Create, show_open_dialog, FID_conflict__remove
+  // Reads: DAT_006aca14 (sound slot mapping), DAT_0064bb08 (game directory)
+  // No game state writes — operates on sound files only
+  FUN_0059db08(0x4000);
+  if (ri(DAT_006aca14, param_1 * 4) < 0) {
+    return;
+  }
+  // DEVIATION: Cannot show file dialog or play sounds in headless mode
 }
 
 
@@ -2214,7 +2334,27 @@ export function FUN_0058afb6(param_1) {
 // Source: block_00580000.c @ 0x0058B47E, 987 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058b47e(param_1, param_2) { /* sound editor dialog — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058b47e (987 bytes)
+export function FUN_0058b47e(param_1, param_2) {
+  let local_214;
+
+  // DEVIATION: SEH, MFC — dialog setup
+  DAT_006acd50 = 1;
+  FUN_0058a61b(param_1, 0xd, 0, 0, 0x21c, 0x118, 0, 0, 0); // DEVIATION: MFC dialog init
+  // DEVIATION: MFC — _Timevec destructor, layout calculations
+  for (local_214 = 0; local_214 < 6; local_214 = local_214 + 1) {
+    // DEVIATION: MFC — button/label layout using DAT_006ace7c/80/84
+    FUN_00428b0c(DAT_00628420[ri(DAT_00634930, local_214 * 4)]); // DEVIATION: resource string
+    // DEVIATION: MFC — FUN_0040f680, FUN_0040f880 — create button controls
+  }
+  FUN_0058afb6(param_2); // advisor icon mapping — calls game state
+  // DEVIATION: MFC — OK/Cancel button layout
+  // DEVIATION: MFC — FUN_005bb574, FUN_004085f0, FUN_005c61b0 — show dialog
+  // DEVIATION: MFC — message loop: while (DAT_006acd50 !== 0) { FUN_0040ef50(); }
+  FUN_0059d3c9(0); // DEVIATION: sound
+  FUN_00553379(); // DEVIATION: UI cleanup
+  // DEVIATION: MFC — destructor chain
+}
 
 export function FUN_0058b859() { /* destructor iterator — no-op */ }
 export function FUN_0058b86f() { /* destructor — no-op */ }
@@ -2362,7 +2502,69 @@ export function FUN_0058be56() {
 // Player command to disband a unit — stubbed (UI-heavy)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058c295() { /* disband command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058c295 (722 bytes)
+export function FUN_0058c295() {
+  let cVar1;
+  let sVar2, sVar3;
+  let iVar4, iVar5;
+  let local_14;
+  let local_c;
+  let local_8;
+
+  if (DAT_006d1da8 === 1) {
+    local_14 = DAT_00655afe & 0xFFFF;
+  } else {
+    local_8 = DAT_0064b1b4 & 0xFFFF;
+    local_c = DAT_0064b1b0 & 0xFFFF;
+    local_14 = FUN_005b2e69(local_8, local_c);
+  }
+  if (DAT_00655b02 < 3 || s8(DAT_006560f0[local_14 * 0x20 + 7]) === DAT_006d1da0) {
+    if (local_14 < 0) {
+      // Disband city
+      if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) {
+        iVar4 = FUN_0043cf76(local_8, local_c);
+        if (-1 < iVar4) {
+          cVar1 = s8(DAT_0064f340[iVar4 * 0x58 + 8]);
+          FUN_00421d60(0, 0 /*&DAT_0064f360 + iVar4 * 0x58*/); // DEVIATION: UI
+          iVar5 = FUN_00414dd0("DISBAND", iVar4); // DEVIATION: UI confirm
+          if (iVar5 === 1) {
+            delete_city(iVar4, 0);
+            kill_civ(cVar1, 0);
+            FUN_0047cf9e(DAT_006d1da0, 1);
+          }
+        }
+      }
+    } else if (s8(DAT_006560f0[local_14 * 0x20 + 7]) === DAT_006d1da0 || DAT_00655b07 !== 0) {
+      // Disband unit
+      DAT_0062804c = 0;
+      FUN_004271e8(0, DAT_0064b1bc[u8(DAT_006560f0[local_14 * 0x20 + 6]) * 0x14 + 0x0C]); // DEVIATION: UI
+      iVar4 = FUN_004442e0("DISBAND", local_14); // DEVIATION: UI confirm
+      if (iVar4 === 1) {
+        sVar2 = rs(DAT_006560f0, local_14 * 0x20);
+        sVar3 = rs(DAT_006560f0, local_14 * 0x20 + 2);
+        iVar4 = FUN_0043cf76(sVar2, sVar3);
+        if (-1 < iVar4) {
+          // C: add half unit cost to city shields
+          let unitCost = s8(DAT_0064b1bc[u8(DAT_006560f0[local_14 * 0x20 + 6]) * 0x14 + 0x0C]);
+          let shields = rs(DAT_0064f340, iVar4 * 0x58 + 0x1C);
+          shields = shields + ((unitCost * DAT_0064bccc) / 2) | 0;
+          ws(DAT_0064f340, iVar4 * 0x58 + 0x1C, shields);
+          iVar5 = CSplitterWnd_IsTracking();
+          if (iVar5 === iVar4) {
+            FUN_004e7492(iVar4);
+          }
+          iVar5 = CSplitterWnd_IsTracking();
+          if (iVar5 === iVar4) {
+            citywin_9429();
+          }
+        }
+        FUN_005b5d93(local_14, 1);
+        FUN_0047ce1e(sVar2, sVar3, 0, DAT_006d1da0, 1);
+      }
+    }
+  }
+  return;
+}
 
 
 // NOTE: FUN_0058c56c (check_adjacent_water) is already in fn_utils.js
@@ -2529,7 +2731,28 @@ export function FUN_0058c65e(param_1) {
 // Source: block_00580000.c @ 0x0058CBE1, 261 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058cbe1() { /* assign home city — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058cbe1 (261 bytes)
+export function FUN_0058cbe1() {
+  let uVar1;
+  let iVar2, iVar3;
+
+  DAT_0062804c = 0;
+  iVar2 = DAT_00655afe & 0xFFFF;
+  iVar3 = FUN_0043cf76(rs(DAT_006560f0, iVar2 * 0x20), rs(DAT_006560f0, iVar2 * 0x20 + 2));
+  if (iVar3 < 0) {
+    FUN_004c54da(iVar2);
+  } else if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar2 * 0x20 + 6]) * 0x14 + 0x0E]) === 7 &&
+            DAT_006560f0[iVar2 * 0x20 + 0x10] !== 0xFF) {
+    FUN_004442e0("CARAVANHOME", iVar2); // DEVIATION: UI message
+  } else {
+    // Assign unit to this city as home
+    uVar1 = DAT_006560f0[iVar2 * 0x20 + 0x10]; // old home city
+    DAT_006560f0[iVar2 * 0x20 + 0x10] = iVar3 & 0xFF; // new home city
+    FUN_0047ce1e(uVar1); // DEVIATION: UI — refresh old home city  // citywin_C679
+    FUN_0047ce1e(iVar3); // DEVIATION: UI — refresh new home city  // citywin_C679
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2537,7 +2760,37 @@ export function FUN_0058cbe1() { /* assign home city — UI stub */ }
 // Source: block_00580000.c @ 0x0058CCE6, 255 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058cce6() { /* fortify command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058cce6 (255 bytes)
+export function FUN_0058cce6() {
+  let iVar1, iVar2, iVar3, iVar4;
+
+  DAT_0062804c = 0;
+  iVar1 = DAT_00655afe & 0xFFFF;
+  iVar2 = rs(DAT_006560f0, iVar1 * 0x20);
+  iVar3 = rs(DAT_006560f0, iVar1 * 0x20 + 2);
+  iVar4 = FUN_005b89e4(iVar2, iVar3);
+  if (iVar4 === 0) {
+    // C: air unit on land — check for city/airbase
+    if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar1 * 0x20 + 6]) * 0x14 + 5]) === 1) {
+      iVar4 = FUN_005b8ca6(iVar2, iVar3);
+      if (iVar4 < 0) {
+        iVar4 = FUN_005b8d15(iVar2, iVar3);
+        if (iVar4 < 0) {
+          FUN_00421ea0("CANTDO"); // DEVIATION: UI
+          return;
+        }
+      }
+    }
+    // Set fortify order
+    DAT_006560f0[iVar1 * 0x20 + 0x0F] = 1; // order = fortify
+    FUN_005b6787(iVar1);
+    FUN_0047cea6(iVar2, iVar3);
+    FUN_0047ce1e(iVar1, -99, -99); // DEVIATION: UI — citywin_C494
+  } else {
+    FUN_00421ea0("CANTDO"); // DEVIATION: UI
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2545,7 +2798,52 @@ export function FUN_0058cce6() { /* fortify command — UI stub */ }
 // Source: block_00580000.c @ 0x0058CDE5, 488 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058cde5() { /* explore command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058cde5 (488 bytes)
+export function FUN_0058cde5() {
+  let cVar1;
+  let bVar2;
+  let iVar3, iVar4, iVar5, iVar6;
+  let uVar7;
+  let local_8;
+
+  DAT_0062804c = 0;
+  iVar3 = DAT_00655afe & 0xFFFF;
+  iVar4 = rs(DAT_006560f0, iVar3 * 0x20);
+  iVar5 = rs(DAT_006560f0, iVar3 * 0x20 + 2);
+  // C: air unit check
+  if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar3 * 0x20 + 6]) * 0x14 + 5]) === 1) {
+    bVar2 = false;
+    iVar6 = FUN_005b89e4(iVar4, iVar5);
+    if (iVar6 !== 0 &&
+       (iVar6 = FUN_005b50ad(iVar3, 9), iVar6 !== 0 ||
+        ((DAT_0064b1bc[u8(DAT_006560f0[iVar3 * 0x20 + 6]) * 0x14 + 1] & 0x10) !== 0 &&
+         (iVar6 = FUN_005b50ad(iVar3, 10), iVar6 !== 0)))) {
+      bVar2 = true;
+    }
+    if (!bVar2 && (iVar6 = FUN_005b8ca6(iVar4, iVar5), iVar6 < 0)) {
+      FUN_00421ea0("CANTDO"); // DEVIATION: UI
+      return;
+    }
+  }
+  // C: naval unit — check if adjacent land exists
+  if ((DAT_0064b1bc[u8(DAT_006560f0[iVar3 * 0x20 + 6]) * 0x14] & 0x20) !== 0) {
+    bVar2 = false;
+    for (local_8 = 0; local_8 < 9; local_8 = local_8 + 1) {
+      uVar7 = FUN_005ae052(s8(DAT_00628350[local_8]) + iVar4);
+      cVar1 = s8(DAT_00628360[local_8]);
+      iVar6 = FUN_004087c0(uVar7, cVar1 + iVar5);
+      if (iVar6 !== 0 && (iVar6 = FUN_005b89e4(uVar7, cVar1 + iVar5), iVar6 === 0)) {
+        bVar2 = true;
+      }
+    }
+    if (!bVar2) {
+      FUN_00421ea0("CANTDO"); // DEVIATION: UI
+      return;
+    }
+  }
+  FUN_005b2f50(iVar3);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2660,7 +2958,69 @@ export function FUN_0058d434() { /* SEH unwind */ }
 // Source: block_00580000.c @ 0x0058D442, 451 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058d442() { /* goto command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058d442 (451 bytes)
+export function FUN_0058d442() {
+  let iVar1;
+  let uVar2;
+  let local_8;
+
+  DAT_0062804c = 0;
+  if (DAT_006d1da8 === 1) {
+    local_8 = DAT_00655afe & 0xFFFF;
+    if (ri(DAT_006560f0, local_8 * 0x20 + 0x1a) === 0) {
+      DAT_0062804c = 0;
+      return;
+    }
+    if (s8(DAT_006560f0[local_8 * 0x20 + 7]) !== DAT_006d1da0) {
+      DAT_0062804c = 0;
+      return;
+    }
+    iVar1 = FUN_005b50ad(local_8, 2);
+    if (iVar1 === 1) {
+      // goto LAB_0058d58e — activate unit
+      DAT_00655afe = local_8 & 0xFFFF;
+      DAT_006560f0[local_8 * 0x20 + 0x0F] = 0xFF; // clear order
+      ws(DAT_006560f0, local_8 * 0x20 + 4, ru(DAT_006560f0, local_8 * 0x20 + 4) & 0x7FFF);
+      DAT_006d1da8 = 0;
+      FUN_00489a0d(0);
+      if (DAT_006560f0[local_8 * 0x20 + 8] === 0) {
+        FUN_004274a6(local_8, 1);
+      }
+      return;
+    }
+  } else {
+    local_8 = FUN_005b2e69(DAT_0064b1b4 & 0xFFFF, DAT_0064b1b0 & 0xFFFF);
+    if (local_8 < 0) return;
+    if (s8(DAT_006560f0[local_8 * 0x20 + 7]) !== DAT_006d1da0) return;
+    if (DAT_006560f0[local_8 * 0x20 + 7] !== DAT_00655b05 && DAT_00655b07 === 0) return;
+    iVar1 = FUN_005b50ad(local_8, 2);
+    if (iVar1 === 1) {
+      // goto LAB_0058d58e — activate unit
+      DAT_00655afe = local_8 & 0xFFFF;
+      DAT_006560f0[local_8 * 0x20 + 0x0F] = 0xFF;
+      ws(DAT_006560f0, local_8 * 0x20 + 4, ru(DAT_006560f0, local_8 * 0x20 + 4) & 0x7FFF);
+      DAT_006d1da8 = 0;
+      FUN_00489a0d(0);
+      if (DAT_006560f0[local_8 * 0x20 + 8] === 0) {
+        FUN_004274a6(local_8, 1);
+      }
+      return;
+    }
+  }
+  uVar2 = FUN_00428b0c(DAT_00628420[0xf8 / 4], 1); // DEVIATION: resource string
+  local_8 = FUN_005b6aea(local_8, uVar2);
+  if (local_8 < 0) return;
+  // LAB_0058d58e: activate unit
+  DAT_00655afe = local_8 & 0xFFFF;
+  DAT_006560f0[local_8 * 0x20 + 0x0F] = 0xFF;
+  ws(DAT_006560f0, local_8 * 0x20 + 4, ru(DAT_006560f0, local_8 * 0x20 + 4) & 0x7FFF);
+  DAT_006d1da8 = 0;
+  FUN_00489a0d(0);
+  if (DAT_006560f0[local_8 * 0x20 + 8] === 0) {
+    FUN_004274a6(local_8, 1);
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2668,7 +3028,25 @@ export function FUN_0058d442() { /* goto command — UI stub */ }
 // Source: block_00580000.c @ 0x0058D60A, 165 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058d60a() { /* paradrop command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058d60a (165 bytes)
+export function FUN_0058d60a() {
+  let iVar1;
+  let uVar2;
+
+  iVar1 = DAT_00655afe & 0xFFFF;
+  if (DAT_006560f0[iVar1 * 0x20 + 8] === 0 &&
+     (ru(DAT_006560f0, iVar1 * 0x20 + 4) & 0x10) === 0) {
+    uVar2 = FUN_005b94d5(rs(DAT_006560f0, iVar1 * 0x20), rs(DAT_006560f0, iVar1 * 0x20 + 2));
+    if ((uVar2 & 2) === 0) {
+      FUN_004442e0("PARADROPRULES2", iVar1); // DEVIATION: UI
+    } else {
+      FUN_00410e46(); // initiate paradrop mode
+    }
+  } else {
+    FUN_004442e0("PARADROPRULES1", iVar1); // DEVIATION: UI
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2816,7 +3194,39 @@ export function FUN_0058ddc0() { /* SEH unwind */ }
 // Source: block_00580000.c @ 0x0058DDCE, 326 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058ddce() { /* unload transport — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058ddce (326 bytes)
+export function FUN_0058ddce() {
+  let iVar1;
+  let local_c;
+  let local_8;
+
+  local_c = -1;
+  if (-1 < (DAT_00655afe & 0xFFFF)) {
+    iVar1 = DAT_00655afe & 0xFFFF;
+    // C: naval unit — set 0x4000 flag
+    if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar1 * 0x20 + 6]) * 0x14 + 5]) === 2) {
+      ws(DAT_006560f0, iVar1 * 0x20 + 4, ru(DAT_006560f0, iVar1 * 0x20 + 4) | 0x4000);
+    }
+    // Iterate units in stack, wake up land units with goto-transport order
+    for (local_8 = FUN_005b2d39(DAT_00655afe & 0xFFFF); -1 < local_8;
+        local_8 = FUN_005b2c82(local_8)) {
+      if (s8(DAT_0064b1bc[u8(DAT_006560f0[local_8 * 0x20 + 6]) * 0x14 + 5]) === 0 &&
+         DAT_006560f0[local_8 * 0x20 + 0x0F] === 3) {
+        DAT_006560f0[local_8 * 0x20 + 0x0F] = 0xFF; // clear goto-transport order
+        iVar1 = FUN_005b633f(local_8);
+        if (iVar1 !== 0) {
+          local_c = local_8;
+        }
+      }
+    }
+    if (-1 < local_c) {
+      DAT_00655afe = local_c & 0xFFFF;
+      DAT_006d1da8 = 0;
+      FUN_00489a0d(0);
+    }
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
