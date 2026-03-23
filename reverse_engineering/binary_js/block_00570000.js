@@ -2039,21 +2039,49 @@ export function FUN_005788a9(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578922 — find_submenu_item_by_id
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578922 (136 bytes)
 export function FUN_00578922(param_1) {
-  return 0;
+  let local_8 = 0;
+  // let local_10 = ri(in_ECX, 0x1c); // DEVIATION: MFC — top-level menu list
+  // do {
+  //   if (local_10 === 0) { return local_8; }
+  //   for (let local_c = ri(local_10, 0x18); local_c !== 0; local_c = ri(local_c, 0x10)) {
+  //     if (ri(local_c, 4) === param_1) { local_8 = local_c; break; }
+  //   }
+  //   local_10 = ri(local_10, 0x10); // next top-level menu
+  // } while (true);
+  return local_8;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005789aa — count_visible_submenu_items
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005789aa (114 bytes)
 export function FUN_005789aa(param_1) {
-  return 1;
+  let local_c = 1;
+  // let local_8 = ri(ri(param_1, 0x18), 0x18); // DEVIATION: MFC — submenu list
+  // while (local_8 !== 0 && param_1 !== local_8) {
+  //   if ((ri(local_8, 8) & 2) === 0) { local_c = local_c + 1; }
+  //   local_8 = ri(local_8, 0x10);
+  // }
+  return local_c;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578a1c — get_submenu_item_id_by_index
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578a1c (156 bytes)
 export function FUN_00578a1c(param_1, param_2) {
+  let local_10 = 1;
+  let iVar1 = FUN_005787de(param_1); // find menu item by ID
+  if (iVar1 !== 0) {
+    // for (let local_c = ri(iVar1, 0x18); local_c !== 0; local_c = ri(local_c, 0x10)) {
+    //   if ((ri(local_c, 8) & 2) === 0) {
+    //     if (local_10 === param_2) { return ri(local_c, 4); }
+    //     local_10 = local_10 + 1;
+    //   }
+    // } // DEVIATION: MFC linked list traversal
+  }
   return 0xffffffff;
 }
 
