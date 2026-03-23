@@ -2043,7 +2043,7 @@ export function FUN_00433434() {
   for (local_e8 = 1; local_e8 < 8; local_e8 = local_e8 + 1) {
     local_e4[local_e8] = aiStack_1f0[local_e8];
     aiStack_4c[local_e8] =
-         aiStack_4c[local_e8] - ((aiStack_1f0[local_e8] * 10) / aiStack_6c[local_e8]) | 0;
+         aiStack_4c[local_e8] - (((aiStack_1f0[local_e8] * 10) / aiStack_6c[local_e8]) | 0);
     if (local_e8 === iVar1) {
       FUN_0040bbb0();
       FUN_0043c870(local_e4[local_e8]);
@@ -2316,13 +2316,14 @@ export function FUN_00434e39() {
       local_38 = local_6c;
 
       // Wonder display section
+      let local_54_w; // declared before loop to avoid temporal dead zone
       for (let local_28 = 0; local_28 < 0x1c; local_28 = local_28 + 1) {
         if (((s16(DAT_00655be6[local_28]) >= 0) &&
              (s16(DAT_00655be6[local_28]) < DAT_00655b18)) &&
             (DAT_0064f394[s16(DAT_00655be6[local_28]) * 0x58] !== 0) &&
             (local_54_w = s16(DAT_00655be6[local_28]),
              s8(DAT_0064f348[local_54_w * 0x58]) === local_70)) {
-          let local_54_w = s16(DAT_00655be6[local_28]);
+          local_54_w = s16(DAT_00655be6[local_28]);
           FUN_005cef31({}, null, local_34, local_38);
           let local_40 = local_34 + 0x26;
           FUN_005baee0(0x5e, 0x12, -1, -1);
