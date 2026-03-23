@@ -4205,12 +4205,23 @@ export function FUN_004ce8a4(param_1, param_2, param_3, param_4) {
 
 // Source: decompiled/block_004C0000.c FUN_004ce903 (139 bytes)
 export function FUN_004ce903(param_1, param_2, param_3) {
-  // C: Allocates memory for string copy (max of strlen+1 or param_3)
-  // C: Uses FUN_00498159(param_2 + 0x2f4, size) for allocation
-  // C: Copies param_1 into allocated buffer via FUN_005f22d0
-  // C: If allocation fails, calls FUN_00589ef8 (error handler)
-  // DEVIATION: Memory allocation via MFC heap — return string directly
-  return param_1; // In JS, strings are immutable — just return the input
+  let sVar1;
+  let iVar2;
+  let local_c;
+
+  sVar1 = _strlen(param_1);
+  if (param_3 < sVar1 + 1) {
+    sVar1 = _strlen(param_1);
+    local_c = sVar1 + 1;
+  } else {
+    local_c = param_3;
+  }
+  iVar2 = FUN_00498159(param_2 + 0x2f4, local_c); // DEVIATION: MFC heap alloc
+  if (iVar2 === 0) {
+    FUN_00589ef8(-9, 3, 0, 0, 0); // DEVIATION: error handler
+  }
+  FUN_005f22d0(iVar2, param_1); // DEVIATION: string copy
+  return iVar2;
 }
 
 
@@ -4220,17 +4231,62 @@ export function FUN_004ce903(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_004C0000.c FUN_004ce98e (1367 bytes)
+// Source: decompiled/block_004C0000.c FUN_004ce98e (1367 bytes)
 export function FUN_004ce98e(param_1, param_2) {
-  // C: Deep copy network event linked list from param_2 to param_1
-  // C: First pass: iterate param_2's linked list (stride 0x1bc via +0x30c),
-  //    allocate new nodes via FUN_004fa617, memcpy 0x1bc bytes each
-  // C: Second pass: walk both lists in parallel, update string pointers:
-  //    Fields +8, +0x10, +0x14, +0x20 — looks up via FUN_004ce903
-  //    Fields +0x38..+0x84 (20 entries) — checks non-zero, copies via FUN_004ce903
-  //    Fields +0x88, +0x90, +0xc4, +0xcc, +0xd4, +0xdc — same pattern
-  //    Fields +0x13c, +0x140, +0x148, +0x174, +0x184 — same pattern
-  // DEVIATION: Cannot perform C pointer arithmetic / memcpy on linked lists
-  // Network event management — no direct game state mutations
+  let _Dst;
+  let uVar1;
+  let local_10;
+  let local_c;
+
+  // First pass: copy linked list nodes
+  for (local_c = ri(param_2, 0x30c); local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    _Dst = FUN_004fa617(); // DEVIATION: allocate event struct
+    if (_Dst === 0 || _Dst === null) {
+      FUN_00589ef8(-9, 3, 0, 0, 0); // DEVIATION: error
+    }
+    FID_conflict__memcpy(_Dst, local_c, 0x1bc); // DEVIATION: memcpy
+  }
+  // Second pass: update string pointers in parallel
+  local_c = ri(param_2, 0x30c);
+  local_10 = ri(param_1, 0x30c);
+  do {
+    if (local_c === 0) { return; }
+    // Copy string fields via FUN_004ce903
+    if (ri(local_c, 8) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 8), param_1, 0xf);
+      wi(local_10, 8, uVar1);
+    }
+    if (ri(local_c, 0x10) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 0x10), param_1, 0x18);
+      wi(local_10, 0x10, uVar1);
+    }
+    if (ri(local_c, 0x14) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 0x14), param_1, 0x18);
+      wi(local_10, 0x14, uVar1);
+    }
+    if (ri(local_c, 0x20) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 0x20), param_1, 0x18);
+      wi(local_10, 0x20, uVar1);
+    }
+    // Copy 20 entries at +0x38..+0x84
+    for (let local_8 = 0; local_8 < 0x14; local_8 = local_8 + 1) {
+      if (ri(local_c, local_8 * 4 + 0x38) !== 0) {
+        uVar1 = FUN_004ce903(ri(local_c, local_8 * 4 + 0x38), param_1, 1);
+        wi(local_10, local_8 * 4 + 0x38, uVar1);
+      }
+    }
+    // Copy remaining string fields
+    let offsets = [0x88, 0x90, 0xc4, 0xcc, 0xd4, 0xdc, 0x13c, 0x140, 0x148, 0x174, 0x184];
+    let sizes =   [0x18, 0xf,  0x18, 0x18, 0x18, 0xf,  0x18,  0x18,  0xf,   0x18,  1];
+    for (let idx = 0; idx < offsets.length; idx++) {
+      if (ri(local_c, offsets[idx]) !== 0) {
+        uVar1 = FUN_004ce903(ri(local_c, offsets[idx]), param_1, sizes[idx]);
+        wi(local_10, offsets[idx], uVar1);
+      }
+    }
+    local_c = ri(local_c, 0x1bc); // next in source list
+    local_10 = ri(local_10, 0x1bc); // next in dest list
+  } while (true);
 }
 
 
@@ -4280,15 +4336,30 @@ export function FUN_004cefdb() {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_004C0000.c FUN_004cefe9 (347 bytes)
+// Source: decompiled/block_004C0000.c FUN_004cefe9 (347 bytes)
 export function FUN_004cefe9(param_1, param_2) {
-  // C: Walks network event linked list (DAT_0064b99c, stride 0x1bc)
-  // C: For each event, checks string fields at offsets +8, +0x90, +0xdc, +0x148
-  // C: If string matches param_1, replaces with param_2 (strncpy, max 0xf chars)
-  // C: Returns count of replacements made
-  // DEVIATION: Cannot walk linked list without C pointer arithmetic
-  // This renames leader/civ names in multiplayer event history
+  let iVar1;
+  let local_c;
   let local_8 = 0;
-  // In headless mode, network events don't exist
+
+  for (local_c = DAT_0064b99c; local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    if (ri(local_c, 8) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 8), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 8), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0x90) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x90), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x90), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0xdc) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0xdc), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0xdc), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0x148) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x148), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x148), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+  }
   return local_8;
 }
 
@@ -4300,12 +4371,23 @@ export function FUN_004cefe9(param_1, param_2) {
 
 // Source: decompiled/block_004C0000.c FUN_004cf144 (630 bytes)
 export function FUN_004cf144(param_1, param_2) {
-  // C: Walks network event linked list (DAT_0064b99c, stride 0x1bc)
-  // C: Checks string fields at +0x14, +0x20, +0x88, +0xc4, +0xcc, +0xd4, +0x140, +0x174
-  // C: If string matches param_1, replaces with param_2 (strncpy, max 0x18 chars)
-  // C: Returns count of replacements
-  // DEVIATION: Cannot walk linked list without C pointer arithmetic
-  return 0;
+  let iVar1;
+  let local_c;
+  let local_8 = 0;
+
+  for (local_c = DAT_0064b99c; local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    let offsets = [0x14, 0x20, 0x88, 0xc4, 0xcc, 0xd4, 0x140, 0x174];
+    for (let idx = 0; idx < offsets.length; idx++) {
+      if (ri(local_c, offsets[idx]) !== 0) {
+        iVar1 = _strcmp(ri(local_c, offsets[idx]), param_1);
+        if (iVar1 === 0) {
+          _strncpy(ri(local_c, offsets[idx]), param_2, 0x18);
+          local_8 = local_8 + 1;
+        }
+      }
+    }
+  }
+  return local_8;
 }
 
 
@@ -4316,12 +4398,21 @@ export function FUN_004cf144(param_1, param_2) {
 
 // Source: decompiled/block_004C0000.c FUN_004cf3ba (201 bytes)
 export function FUN_004cf3ba(param_1, param_2) {
-  // C: Walks event linked list (DAT_0064b99c, stride 0x1bc)
-  // C: Checks string fields at +0x10, +0x13c
-  // C: If string matches param_1, replaces with param_2 (strncpy, max 0x18 chars)
-  // C: Returns count of replacements
-  // DEVIATION: Cannot walk linked list without C pointer arithmetic
-  return 0;
+  let iVar1;
+  let local_c;
+  let local_8 = 0;
+
+  for (local_c = DAT_0064b99c; local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    if (ri(local_c, 0x10) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x10), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x10), param_2, 0x18); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0x13c) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x13c), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x13c), param_2, 0x18); local_8 = local_8 + 1; }
+    }
+  }
+  return local_8;
 }
 
 
@@ -4354,9 +4445,19 @@ export function FUN_004cffb0(param_1, param_2, param_3) {
 
 // Source: decompiled/block_004C0000.c FUN_004cfff0 (142 bytes)
 export function FUN_004cfff0(param_1) {
-  // C: Trims trailing spaces and tabs from a C string in place
-  // C: Walks backward from end of string, setting ' ' and '\t' to '\0'
-  // JS equivalent: trimEnd() for string values
+  let sVar1;
+  let local_8;
+
+  sVar1 = _strlen(param_1);
+  if (sVar1 !== 0) {
+    for (local_8 = param_1 + (sVar1 - 1);
+        param_1 <= local_8 &&
+        ((local_8 === ' ' || local_8 === '\t') && local_8 !== param_1);
+        local_8 = local_8 - 1) {
+      // C: *local_8 = '\0' — truncate string at trailing whitespace
+    }
+  }
+  // JS equivalent for string types:
   if (typeof param_1 === 'string') {
     return param_1.trimEnd();
   }
