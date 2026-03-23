@@ -124,8 +124,17 @@ export function FUN_00570772() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00570780 — load_terrain1_bitmap
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00570780 (2082 bytes)
 export function FUN_00570780() {
-  // UI bitmap loading — no-op in JS
+  // C: Loads TERRAIN1.BMP/GIF and extracts 11 terrain tile sprites
+  // C: __getcwd/__chdir to game dir (DAT_0064bb08)
+  // C: Tries thunk_load_bitmap(DAT_006ac0a8, "TERRAIN1.BMP"), falls back to FUN_005bf071 (GIF)
+  // C: For each terrain type (0-10): extracts sprite via FUN_005cef31,
+  //    recolors via FUN_004a6980/FUN_004bb540, stores in local arrays
+  // C: Then loads TERRAIN2.BMP/GIF with same pattern, extracts 11 more sprites
+  // C: Each sprite stored via FUN_005a9abf at calculated offsets
+  // C: All operations use local variables — no game state DAT_ writes
+  // DEVIATION: GDI bitmap loading — cannot execute without Win32
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -145,8 +154,15 @@ export function FUN_00570fb8() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00570fc6 — load_terrain2_bitmap
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00570fc6 (2342 bytes)
 export function FUN_00570fc6() {
-  // UI bitmap loading — no-op in JS
+  // C: Loads CITIES.GIF/BMP and UNITS.GIF/BMP sprite sheets
+  // C: __getcwd/__chdir to game dir (DAT_0064bb08)
+  // C: Loads first sprite sheet via thunk_load_bitmap/FUN_005bf071
+  // C: Extracts individual sprites via FUN_005cef31, recolors via FUN_004a6980
+  // C: Loads second sprite sheet, same extraction pattern
+  // C: Stores sprites in local arrays, no game state DAT_ writes
+  // DEVIATION: GDI bitmap loading — cannot execute without Win32
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -166,8 +182,13 @@ export function FUN_00571902() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00571910 — load_icons_bitmap
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00571910 (666 bytes)
 export function FUN_00571910() {
-  // UI bitmap loading — no-op in JS
+  // C: Loads additional sprite sheet (ICONS.GIF or similar)
+  // C: __getcwd/__chdir, thunk_load_bitmap/FUN_005bf071
+  // C: Extracts sprites, stores via FUN_005a9abf
+  // C: No game state DAT_ writes — all local/GDI operations
+  // DEVIATION: GDI bitmap loading
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -187,8 +208,14 @@ export function FUN_00571bc0() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00571bce — load_icons_bitmap_2
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00571bce (1175 bytes)
 export function FUN_00571bce() {
-  // UI bitmap loading — no-op in JS
+  // C: Loads PEOPLE.GIF/BMP sprite sheet for happiness display
+  // C: __getcwd/__chdir, thunk_load_bitmap/FUN_005bf071
+  // C: Extracts 11 rows x 4 columns of sprites
+  // C: Stores via FUN_005a9abf, recolors via FUN_004a6980
+  // C: No game state DAT_ writes
+  // DEVIATION: GDI bitmap loading
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -208,8 +235,46 @@ export function FUN_0057207b() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00572089 — setup_dialog_window
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00572089 (546 bytes)
 export function FUN_00572089(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
-  // UI dialog setup — no-op in JS
+  // C: Map view dialog setup — initializes dialog state globals
+  if (param_1 === 0) {
+    // C: FUN_005f22d0(&DAT_006ac2e4, ""); — empty title
+  } else {
+    // C: FUN_005f22d0(&DAT_006ac2e4, param_1); — set title
+  }
+  // C: Set dialog pointers
+  DAT_006ac2c4 = param_2;
+  DAT_006ac2c8 = param_8;
+  DAT_006ac2cc = param_9;
+  DAT_006ac2d0 = param_7;
+  DAT_006ac3ac = 0;
+  DAT_006ac458 = 0;
+  // C: Override with default sounds if flag 4
+  if ((param_2 & 4) !== 0) {
+    DAT_006ac2c8 = DAT_00633598;
+    DAT_006ac2cc = DAT_0063359c;
+  }
+  // C: Window style flags
+  let local_8 = ((param_2 & 8) === 0) ? 0x202 : 0x802;
+  if (DAT_006ac2c8 !== 0) { local_8 = local_8 | 0x400; }
+  if (param_7 !== 0) { local_8 = local_8 | 0x1000; }
+  // C: Position adjustments
+  if ((param_2 & 2) === 0) {
+    param_5 = param_5 + DAT_006ac2cc * 2;
+    param_6 = param_6 + DAT_006ac2c8 + DAT_006ac2cc;
+  }
+  if ((param_2 & 1) !== 0) {
+    param_3 = (DAT_006ab198 >> 1) - (param_5 >> 1);
+    param_4 = (DAT_006ab19c >> 1) - (param_6 >> 1);
+  }
+  let local_c = (DAT_006a4f88 === 0) ? 0 : DAT_006a4f88 + 0x48;
+  // DEVIATION: MFC — FUN_005bb4ae creates window
+  FUN_005bb4ae(0, local_8, param_3, param_4, param_5, param_6, 0, local_c);
+  if (DAT_006ac2c8 !== 0) { FUN_00497d00(DAT_006ac2c8); }
+  if (DAT_006ac2d0 !== 0) { FUN_004cff70(DAT_006ac2d0); }
+  FUN_00552ed2(); // DEVIATION: MFC — show dialog
+  FUN_0059d3c9(0); // DEVIATION: sound
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -237,15 +302,26 @@ export function FUN_00572389() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005723ee — draw_map_controls
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005723ee (556 bytes)
 export function FUN_005723ee() {
-  // UI drawing — no-op in JS
+  // C: Draws map control buttons (zoom, scroll indicators)
+  // C: Uses FUN_005cd775 (scale bitmap), FUN_005cdb33 (transparent blit),
+  //    FUN_005c0c5d (draw tile), FUN_005cef31 (draw icon)
+  // C: Reads DAT_006ac874, DAT_006ac2d4/d8 (viewport position)
+  // C: No game state DAT_ writes
+  // DEVIATION: GDI rendering
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057261a — draw_color_swatch
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057261a (294 bytes)
 export function FUN_0057261a(param_1, param_2, param_3, param_4) {
-  // UI drawing — no-op in JS
+  // C: Draws colored rectangle for civilization indicator
+  // C: Uses FUN_005c0333 (fill rect), FUN_005c19ad (set color)
+  // C: Reads DAT_006ac108 (rect buffer), param_1-4 for position/size
+  // C: No game state DAT_ writes
+  // DEVIATION: GDI rendering
 }
 
 // ═══════════════════════════════════════════════════════════════════
