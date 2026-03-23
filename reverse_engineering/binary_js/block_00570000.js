@@ -999,10 +999,24 @@ export function FUN_00572fff(param_1, param_2) {
   // C line 1335: handle clicks in map area
   if (param_1 >= 9 && param_1 <= 0x187 && param_2 >= 0xdf && param_2 <= 0x125) {
     // C: minimap palette click — calculate color index from position
-    // DEVIATION: GetKeyState
-    // C: DAT_00634004/DAT_00634000 = calculated color from click position
+    // SVar3 = GetKeyState(1); // DEVIATION: Win32 GetKeyState
+    // if ((SVar3 & 0x8000) === 0) {
+    //   SVar3 = GetKeyState(2); // DEVIATION: Win32 GetKeyState
+    //   if ((SVar3 & 0x8000) !== 0) {
+    //     DAT_0063400c = DAT_00634000;
+    //     local_70 = DAT_00634000;
+    //     DAT_00634000 = (((param_2 - 0xdf) / 0xc) | 0) * 0x20 + (((param_1 - 9) / 0xc) | 0) + 10;
+    //     local_60 = DAT_00634000;
+    //   }
+    // } else {
+    //   DAT_00634008 = DAT_00634004;
+    //   local_70 = DAT_00634004;
+    //   DAT_00634004 = (((param_2 - 0xdf) / 0xc) | 0) * 0x20 + (((param_1 - 9) / 0xc) | 0) + 10;
+    //   local_60 = DAT_00634004;
+    // }
     FUN_005723ee();
-    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0 /*local_70*/);
+    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0 /*local_60*/);
     if (DAT_006ac120 === 3) { FUN_005bb574(); }
     DAT_006ac120 = DAT_006ac118;
   } else if (param_1 > 0xf && param_1 < DAT_006ac878 * 4 + 0x10 &&
@@ -2022,18 +2036,14 @@ export function FUN_00579ed0(param_1, param_2, param_3) {
   if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4] & 8) === 0) {
     if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4] & 4) === 0) {
       if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4] & 2) === 0) {
-        // DEVIATION: Win32 API (show dialog s_ANNOY)
-        local_8 = 1;
+        local_8 = FUN_00410030("ANNOY", DAT_00644e48, 0); // DEVIATION: Win32 dialog
       } else if ((DAT_0064c6c0[param_1 * 0x594 + param_2 * 4 + 2] & 4) === 0) {
-        // DEVIATION: Win32 API (show dialog s_ANNOYCEASE)
-        local_8 = 1;
+        local_8 = FUN_00410030("ANNOYCEASE", DAT_00647748, 0); // DEVIATION: Win32 dialog
       } else {
-        // DEVIATION: Win32 API (show dialog s_ANNOYVASSAL)
-        local_8 = 1;
+        local_8 = FUN_00410030("ANNOYVASSAL", DAT_00647748, 0); // DEVIATION: Win32 dialog
       }
     } else {
-      // DEVIATION: Win32 API (show dialog s_ANNOYPEACE)
-      local_8 = 1;
+      local_8 = FUN_00410030("ANNOYPEACE", DAT_006409d8, 0); // DEVIATION: Win32 dialog
     }
     if (local_8 === 1) {
       iVar2 = FUN_0055bef9(param_1, param_2);
@@ -2043,14 +2053,14 @@ export function FUN_00579ed0(param_1, param_2, param_3) {
           if (iVar2 === 0) {
             if (((DAT_0064c6c0[param_2 * 0x594 + param_1 * 4 + 1] & 0x10) === 0) &&
                (DAT_0064c600[param_2 * 0x594 + 0xbe] === 0)) {
-              // DEVIATION: Win32 API (show dialog s_ALLOWHAWKS)
+              FUN_00410030("ALLOWHAWKS", DAT_00646878 + u8(DAT_0064c600[param_1 * 0x594 + 0xb5]) * 0x3c, 0); // DEVIATION: Win32 dialog
             } else {
               uVar1 = FUN_00410070(param_2);
               FUN_0040ff60(0, uVar1);
-              // DEVIATION: Win32 API (show dialog s_ALLOWAGGRESSOR)
+              FUN_00410030("ALLOWAGGRESSOR", DAT_00646878 + u8(DAT_0064c600[param_1 * 0x594 + 0xb5]) * 0x3c, 0); // DEVIATION: Win32 dialog
             }
           } else {
-            // DEVIATION: Win32 API (show dialog s_ALLOWUN)
+            FUN_00410030("ALLOWUN", DAT_00646878 + u8(DAT_0064c600[param_1 * 0x594 + 0xb5]) * 0x3c, 0); // DEVIATION: Win32 dialog
           }
         }
         uVar1 = 0;
@@ -2676,7 +2686,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       w32(DAT_0064c600, local_84 * 0x594 + 0xa2,
           s32(DAT_0064c600, local_84 * 0x594 + 0xa2) - 1000);
       FUN_0043d289(local_1c, 1, 1);
-      // DEVIATION: Win32 API (FUN_00414dd0 s_ESCAPE notification)
+      FUN_00414dd0("ESCAPE", local_1c); // DEVIATION: Win32 — notification dialog
       if (((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) === 0) {
         FUN_00441b11(local_3c8, 99);
       }
