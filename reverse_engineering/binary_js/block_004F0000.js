@@ -620,10 +620,13 @@ export function FUN_004f3feb() {
 // FUN_004f44a7 — civilopedia_destructor
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f44a7 (460 bytes)
 export function FUN_004f44a7() {
-  // MFC destructor chain — UI only
-  FUN_004f4809();
-  FUN_004f4793();
+  // C: MFC destructor — frees lists, bitmap resources, child windows
+  // C: Frees bitmap resources at in_ECX[0x5c4] and in_ECX[0x6c8] via FUN_00453aa0
+  // DEVIATION: MFC (in_ECX) — resource handles not available
+  FUN_004f4809(); // free string lists
+  FUN_004f4793(); // free page items
   FUN_004083b0();
   FUN_004f4673();
   FUN_004f4682();
@@ -1618,16 +1621,18 @@ export function FUN_004f8a9b(param_1, param_2) {
 // FUN_004f8af9 — civilopedia_push_history
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f8af9 (523 bytes)
 export function FUN_004f8af9() {
-  // Pushes current civilopedia navigation state onto history stack
-  // C uses in_ECX for civilopedia object state — in_ECX + 0x128 (stack depth),
-  // in_ECX + 0x118/0x11c/0x120 (current category/subcategory/entry),
-  // in_ECX + 0x12c..0x2b8/0x2bc..0x448/0x44c..0x5d8 (history stacks).
-  // All in_ECX-relative writes are DEVIATION (UI object state).
-  // Only global DAT_ writes preserved:
-  DAT_0062f010 = 0xffffffff;
+  // C: Pushes current civilopedia navigation state onto history stack
+  // C: Reads in_ECX+0x128 (stack depth), +0x118 (category), +0x11c (subcategory),
+  //    +0x120 (entry), DAT_0062f010, DAT_006a85b0, DAT_006a85ac, DAT_006a6790
+  // C: Writes history to in_ECX+0x12c..0x2b8 (entry stack),
+  //    +0x2bc..0x448 (subcategory stack), +0x44c..0x5d8 (category stack)
+  // C: Increments in_ECX+0x128 stack pointer
+  // DEVIATION: MFC (in_ECX) — all history writes are to dialog object
+  // Game state writes only:
+  DAT_0062f010 = -1;
   DAT_0062f00c = 0;
-  return;
 }
 
 
@@ -1855,12 +1860,14 @@ export function FUN_004fa47e(param_1) {
 // FUN_004fa4be — scenario_events_constructor
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fa4be (152 bytes)
 export function FUN_004fa4be(param_1) {
-  // DEVIATION: Constructor with SEH, pool init — Win32
+  // C: Event pool constructor — SEH setup, initializes pool at in_ECX
+  // C: Sets in_ECX+0x2f5=0, in_ECX+0x30c=0, in_ECX+0x308=0
+  // DEVIATION: SEH (FS_OFFSET), MFC (in_ECX)
   FUN_0059db08(0x4000);
   FUN_00428cb0();
   FUN_004fa5d9(param_1);
-  return;
 }
 
 
@@ -1868,12 +1875,13 @@ export function FUN_004fa4be(param_1) {
 // FUN_004fa569 — scenario_events_destructor
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fa569 (79 bytes)
 export function FUN_004fa569() {
-  // DEVIATION: Destructor with SEH — Win32
-  FUN_004980ec(/* in_ECX + 0x2f4 */ 0);
+  // C: Event pool destructor — calls FUN_004980ec(in_ECX+0x2f4) to free pool
+  // DEVIATION: SEH, MFC (in_ECX)
+  FUN_004980ec(0);
   FUN_004fa5b8();
   FUN_004fa5cb();
-  return;
 }
 
 
@@ -1901,10 +1909,12 @@ export function FUN_004fa5cb() {
 // FUN_004fa5d9 — scenario_events_init
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fa5d9 (62 bytes)
 export function FUN_004fa5d9(param_1) {
-  // in_ECX state init + pool setup
+  // C: Clears event pool — sets in_ECX+0x30c=0, in_ECX+0x308=0
+  // C: Calls FUN_004fa47e(param_1) to resize pool buffer
+  // DEVIATION: MFC (in_ECX)
   FUN_004fa47e(param_1);
-  return;
 }
 
 
@@ -1912,12 +1922,15 @@ export function FUN_004fa5d9(param_1) {
 // FUN_004fa617 — scenario_alloc_event_struct
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fa617 (240 bytes)
 export function FUN_004fa617() {
-  // Allocates and links a new event structure from in_ECX pool.
-  // C: walks linked list at in_ECX+0x30c to find tail, allocates 0x1c4 bytes
-  // via FUN_00498159, memsets to 0, links into list, increments in_ECX+0x308.
-  // DEVIATION: in_ECX-based pool management not available in JS.
-  // Returns null (allocation fails) — scenario events will not fire.
+  // C: Allocates and links a new 0x1c4-byte event structure
+  // C: Walks linked list at in_ECX+0x30c to find tail node (via +0x1bc next ptr)
+  // C: Allocates via FUN_00498159(in_ECX+0x2f4, 0x1c4), memsets to 0
+  // C: Links: if first node, sets in_ECX+0x30c = new; else tail->next = new, new->prev = tail
+  // C: Sets new->next (+0x1bc) = 0, new->prev (+0x1c0) = tail
+  // C: Increments in_ECX+0x308 (event count)
+  // DEVIATION: MFC (in_ECX) — pool allocation not available in JS
   return null;
 }
 
@@ -2866,14 +2879,51 @@ export function FUN_004fc3ae(param_1) {
 // FUN_004fc516 — scenario_parse_events_file
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fc516 (12813 bytes)
 export function FUN_004fc516(param_1, param_2) {
-  // Massive event file parser (12,813 bytes in binary)
-  // Parses @IF/@THEN/@ENDIF event blocks from scenario event files
-  // Supports: UNITKILLED, NEGOTIATION, NOSCHISM, RECEIVEDTECHNOLOGY,
-  //           CITYTAKEN, TURN, TURNINTERVAL, RANDOMTURN, SCENARIOLOADED
-  // Actions: TEXT, CHANGETERRAIN, CREATEUNIT, CHANGEMONEY, JUSTONCE,
-  //          DONTPLAYWONDERS, MAKEAGGRESSION, DESTROYACIVILIZATION,
-  //          GIVETECHNOLOGY, MOVEUNIT, PLAYCDTRACK, PLAYWAVEFILE
+  // C: Scenario event file parser — 1414 lines
+  // C: Parses @IF/@THEN/@ENDIF event blocks from events.txt
+  // C: Main loop reads lines via FUN_004a23fc, dispatches on @ keywords
+  //
+  // Trigger keywords (C lines 4576-4816):
+  //   @IF — creates new event struct via FUN_004fa617
+  //   @UNITKILLED — sets trigger type, parses unit/civ params
+  //   @CITYTAKEN — sets trigger type, parses city/civ params
+  //   @TURN — sets trigger type, parses turn number
+  //   @TURNINTERVAL — sets trigger type, parses interval
+  //   @RANDOMTURN — sets trigger type, parses probability
+  //   @NEGOTIATION — sets trigger type, parses civ pairs + HUMAN/COMPUTER/HUMANORCOMPUTER
+  //   @NOSCHISM — sets trigger type
+  //   @RECEIVEDTECHNOLOGY — sets trigger type, parses tech name
+  //   @SCENARIOLOADED — sets trigger type
+  //
+  // Action keywords (C lines 4816-5700):
+  //   @THEN — switches to action parsing mode
+  //   @TEXT — parses text block until @ENDTEXT
+  //   @CREATEUNIT — parses unit type, owner, location, count, HUMAN/COMPUTER
+  //   @MOVEUNIT — parses unit type, owner, @maprect/@locations/@moveto/@endlocations
+  //   @CHANGETERRAIN — parses location, terrain type
+  //   @CHANGEMONEY — parses amount, target civ
+  //   @GIVETECHNOLOGY — parses tech name, target civ
+  //   @MAKEAGGRESSION — parses aggressor/target civs
+  //   @DESTROYACIVILIZATION — parses target civ
+  //   @DONTPLAYWONDERS — sets flag
+  //   @JUSTONCE — sets one-shot flag
+  //   @PLAYCDTRACK — parses track number
+  //   @PLAYWAVEFILE — parses filename
+  //   @ENDIF — finalizes event, validates, links into event list
+  //   @ENDEVENTS — ends parsing
+  //   @DEBUG — toggles debug output (DAT_0062f160)
+  //   @EVERY — sets interval for repeating events
+  //
+  // Game state writes:
+  //   DAT_0062f160 (debug flag)
+  //   Event structures via FUN_004fa617 — linked list of scenario triggers/actions
+  //   Each event stores: trigger type, parameters, action list, text, flags
+  //
+  // DEVIATION: Requires file I/O (FUN_004a2379/FUN_004a23fc) and
+  //   memory pool (FUN_004fa617/FUN_004fa569) — cannot parse without filesystem
+  //   Full C logic at block_004F0000.c lines 4529-5939
 
   let iVar1;
   let local_44 = 1;
@@ -2882,19 +2932,16 @@ export function FUN_004fc516(param_1, param_2) {
 
   iVar1 = FUN_004a2379(param_1, param_2);
   if (iVar1 === 0) {
-    // Main parse loop — reads lines, dispatches on @ keywords
-    // Builds event structures with trigger conditions and actions
-    // Each event is allocated via FUN_004fa617 and linked into the event list
-
-    // ... (massive parsing state machine, 5000+ lines of C)
-    // DEVIATION: actual parsing requires file I/O and
-    // the full memory pool infrastructure
-
+    // C: Main parse loop (lines 4571-5920)
+    // Each iteration reads a line, strips whitespace, checks for @ prefix
+    // Dispatches to keyword handler based on __strcmpi comparison
+    // Event structures are allocated and populated field by field
+    // DEVIATION: Cannot execute without file I/O and memory pool
     local_44 = 0;
   }
 
   if (local_44 !== 0) {
-    FUN_00421ea0(s_BADEVENTSFILE_00630868);
+    FUN_00421ea0("BADEVENTSFILE"); // DEVIATION: UI error message
   }
   return local_44;
 }
