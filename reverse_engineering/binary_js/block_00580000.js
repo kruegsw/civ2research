@@ -660,10 +660,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
       }
     }
     local_a0 = local_a0 << 1;
-    // Set reputation
-    // Set reputation tracking: (&DAT_0064ca82)[uVar12 * 0x594 + uVar7 * 2] = DAT_00655af8
-    // This is at per-civ offset 0x482 + uVar7 * 2
-    // DEVIATION: would need w16 into per-civ data — deferred until full memory model
+    // C: *(short *)(&DAT_0064ca82 + uVar12 * 0x594 + uVar7 * 2) = DAT_00655af8
+    w16(DAT_0064ca82, uVar12 * 0x594 + uVar7 * 2, DAT_00655af8);
   }
 
   // ── Check if war can proceed ──
@@ -1214,8 +1212,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
 
   if (local_c0 === 0) {
     // ── Defender wins: attacker dies ──
-    // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] += 1  — war counter increment
-    // DEVIATION: per-civ byte write deferred until full memory model
+    // C: (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] += 1 — war counter increment
+    DAT_0064c6f0[uVar7 * 0x594 + uVar12] = (DAT_0064c6f0[uVar7 * 0x594 + uVar12] + 1) & 0xFF;
 
     // Veteran promotion chance for defender
     if (local_64 + local_a0 === 1 || local_64 + local_a0 - 1 < 0) {
@@ -1228,8 +1226,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
     }
   } else {
     // ── Attacker wins: defender dies ──
-    // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] = 0  — war counter reset
-    // DEVIATION: per-civ byte write deferred until full memory model
+    // C: (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12] = 0 — war counter reset
+    DAT_0064c6f0[uVar7 * 0x594 + uVar12] = 0;
 
     // Veteran promotion chance for attacker
     if (local_64 + local_a0 === 1 || local_64 + local_a0 - 1 < 0) {
@@ -3977,7 +3975,8 @@ export function FUN_0058fedb(param_1, param_2) {
   // DEVIATION: SEH (FS_OFFSET restore)
   FUN_0059db08(0x4000);
   if (DAT_00654fa8 !== 0) {
-    // DEVIATION: SEH cleanup
+    // FUN_00590607(); // DEVIATION: SEH — exception frame cleanup
+    // FUN_0059061d(); // DEVIATION: SEH — FS_OFFSET restore
     return;
   }
   bVar1 = u8(DAT_006560f0[param_1 * 0x20 + 7]);
