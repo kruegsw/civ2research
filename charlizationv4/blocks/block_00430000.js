@@ -2556,13 +2556,16 @@ export function FUN_0043d07a(param_1, param_2, param_3, param_4, param_5) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043d20a — check if city has building
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00430000.c FUN_0043d20a (122 bytes)
 export function FUN_0043d20a(param_1, param_2) {
-  let local_10;
+  // C: thunk_FUN_005ae3bf(param_2, &local_10, local_c)
+  let local_10_ref = [0];
   let local_c = [0];
   let local_8 = 0;
 
   if (((0 < param_2) && (param_2 < 0x23))) {
-    FUN_005ae3bf(param_2, { value: local_10 }, local_c);
+    FUN_005ae3bf(param_2, local_10_ref, local_c);
+    let local_10 = local_10_ref[0];
     if ((local_c[0] & G.DAT_0064f374[param_1 * 0x58 + local_10]) !== 0) {
       local_8 = 1;
     }
@@ -2574,12 +2577,16 @@ export function FUN_0043d20a(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043d289 — set or clear city building
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00430000.c FUN_0043d289 (186 bytes)
 export function FUN_0043d289(param_1, param_2, param_3) {
-  let local_c;
+  // C: thunk_FUN_005ae3bf(param_2, &local_c, local_8)
+  // local_c gets byte index, local_8[0] gets bit mask
+  let local_c_ref = [0];
   let local_8 = [0];
 
   if ((0 < param_2) && (param_2 < 0x23)) {
-    FUN_005ae3bf(param_2, { value: local_c }, local_8);
+    FUN_005ae3bf(param_2, local_c_ref, local_8);
+    let local_c = local_c_ref[0];
     if (param_3 === 0) {
       G.DAT_0064f374[param_1 * 0x58 + local_c] =
            G.DAT_0064f374[param_1 * 0x58 + local_c] & ~local_8[0];
