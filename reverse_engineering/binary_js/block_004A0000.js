@@ -1258,11 +1258,42 @@ export function FUN_004a4eb2(param_1) {
 // Source: block_004A0000.c line 1465, 1360 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004A0000.c FUN_004a4f89 (1360 bytes)
 export function FUN_004a4f89() {
-  // DEVIATION: Win32/MFC — paint_editor_window using in_ECX, CPropertySheet
-  // Calls: thunk_FUN_00552112, thunk_FUN_005a9afe, thunk_FUN_005a9abf,
-  //   FUN_005cef66, thunk_FUN_004ccb6a, thunk_FUN_005baeb0, thunk_FUN_005baec8,
-  //   thunk_FUN_005baee0, thunk_FUN_005baf57, thunk_FUN_005bb024, etc.
+  let uVar1;
+  let local_28 = new Uint8Array(16);
+  let local_18, local_14, local_10, local_c, local_8;
+
+  FUN_00552112(); // DEVIATION: MFC begin paint
+  if (DAT_0062e018 === 0 || DAT_006a1d7c === 0) {
+    FUN_0040fdb0(0 /*in_ECX*/, 0 /*in_ECX + 700*/, 0x1d); // DEVIATION: fill background
+  } else {
+    FUN_005a9afe(DAT_0062e018, 0 /*in_ECX*/, 0, 0, 0, 0, 0, 0); // DEVIATION: draw bitmap
+  }
+  local_8 = 0x20; // DEVIATION: in_ECX+0x124 + 0x20
+  local_c = 0x20; // DEVIATION: in_ECX+0x128 + 0x20
+  // DEVIATION: local_18 = terrain bitmap index from DAT_006a2d28
+  uVar1 = FUN_00417f70(); // DEVIATION: get tile size
+  FUN_005a9abf(0 /*in_ECX*/, local_8, local_c, 0x40, 0x40, uVar1); // DEVIATION: blit
+  FUN_005cef66(local_28, 0 /*in_ECX*/, 0, local_8, local_c + 8); // DEVIATION: draw
+  FUN_004ccb6a(0 /*in_ECX*/, local_8, local_c, 0x40, 0x40, 6); // DEVIATION: border
+  // DEVIATION: second icon at right side of dialog
+  FUN_005a9abf(0 /*in_ECX*/, 0, 0, 0x40, 0x40, 0); // DEVIATION: blit flag
+  FUN_005a9abf(0 /*in_ECX*/, 0x10, 0x10, 0x20, 0x20, 0); // DEVIATION: overlay
+  FUN_004ccb6a(0 /*in_ECX*/, 0, 0, 0x40, 0x40, 6); // DEVIATION: border
+  FUN_005baeb0(0 /*in_ECX*/); // DEVIATION: MFC
+  FUN_005baec8(DAT_006a4f90); // DEVIATION: MFC
+  FUN_005baee0(10, 10, 0, 0); // DEVIATION: MFC
+  // DEVIATION: cosmic parameter display area
+  local_8 = DAT_0062cd60;
+  local_c = DAT_0062cd64;
+  FUN_005a9abf(0 /*in_ECX*/, local_8, local_c, 100, 0, 0x29); // DEVIATION: fill
+  FUN_005a9964(0 /*in_ECX*/, local_8, local_c, 100, 0, 10); // DEVIATION: border
+  // DEVIATION: remaining layout — loops for cosmic parameter rows
+  // C: iterates DAT_006a1d80 cosmic parameters, draws text via FUN_005c0f57
+  FUN_005baf57(0 /*in_ECX*/); // DEVIATION: MFC
+  FUN_005bb024(0 /*in_ECX*/); // DEVIATION: MFC
+  FUN_00408460(); // DEVIATION: MFC invalidate
 }
 
 
