@@ -3415,7 +3415,50 @@ export function FUN_005bd696(param_1) { return 1; /* port allocate DIB — no-op
 export function FUN_005bd7db(p1, p2, p3, p4) { /* load CvPic image — no-op */ }
 export function FUN_005bd813(param_1) { /* port init fields — no-op */ }
 export function FUN_005bd915() { /* port destructor — no-op */ }
-export function FUN_005bd987(p1, p2, p3, p4) { return 0; /* load LBM image — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bd987 (1508 bytes)
+export function FUN_005bd987(param_1, param_2, param_3, param_4) {
+  let iVar5;
+  let local_40, local_1c;
+  let local_5c = '';
+
+  // C: local_38 = "LBMS" (magic bytes)
+  local_40 = FUN_005c5540("LBMS", param_1); // find LBM resource
+  if (local_40 === 0) {
+    FUN_005d2279("Error: LBM resource not found.", param_1);
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0xfa);
+    return 0;
+  }
+  local_1c = FUN_005c5560(local_40); // DEVIATION: get resource data
+  FUN_005dced3(local_1c, local_5c, 8); // DEVIATION: read 8-byte header
+  iVar5 = _strncmp(local_5c, "FORM", 4); // check IFF magic
+  if (iVar5 === 0) {
+    local_1c = local_1c + 8; // skip FORM header
+    FUN_005dced3(local_1c, local_5c, 4); // read format type
+    let local_14 = (_strncmp(local_5c, "ILBM", 4) === 0) ? 1 : 0; // is ILBM?
+    let local_10 = (_strncmp(local_5c, "PBM ", 4) === 0) ? 1 : 0; // is PBM?
+    if (local_14 !== 0 || local_10 !== 0) {
+      // C: Parse IFF chunks — BMHD, CMAP, BODY
+      // Iterates chunks by reading 4-byte type + 4-byte size
+      // BMHD chunk: reads width, height, bit depth, compression flag
+      // CMAP chunk: reads RGB palette entries via FUN_005c6da8
+      // BODY chunk: decompresses image data
+      // C lines 6855-6980 — chunk iteration loop with _strncmp checks
+      // FUN_005c019d — create bitmap surface
+      // FUN_005e3aa0 / FUN_005e3b0a — decompress RLE/raw image data
+      // FUN_005c0cc5(param_4) — set palette
+      // FUN_005e395a / FUN_005e3988 — finalize bitmap
+      // DEVIATION: Full LBM/IFF parsing requires binary resource access
+    } else {
+      FUN_005d2279("Error: Resource is not IFF ILBM/PBM.", param_1);
+      FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x109);
+    }
+  } else {
+    FUN_005d2279("Error: Resource is not IFF.", param_1);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x104);
+  }
+  FUN_005c5580(local_40); // DEVIATION: free resource
+  return 0;
+}
 export function FUN_005bdf7f(p1, p2, p3, p4, p5) { /* decode image row — no-op */ }
 export function FUN_005be1b3(p1, p2, p3, p4) { /* decode planar row — no-op */ }
 export function FUN_005be2c4(p1, p2, p3, p4) { return 0; /* load TGA resource — no-op */ }
@@ -3426,7 +3469,92 @@ export function FUN_005be967(p1, p2, p3, p4) { return 0; /* load PCX resource �
 export function FUN_005bec8c(p1, p2, p3, p4) { /* load PCX file — no-op */ }
 export function FUN_005bf04a() { FUN_005d7c6e(); }
 export function FUN_005bf060() { /* SEH restore — no-op */ }
-export function FUN_005bf071(p1, p2, p3, p4) { /* load GIF file — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bf071 (1353 bytes)
+export function FUN_005bf071(param_1, param_2, param_3, param_4) {
+  let iVar1;
+  let uVar2, uVar3;
+  let local_cc, local_c8, local_c4;
+  let local_28, local_24;
+  let local_20, local_1c, local_18, local_14;
+
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_005d7c00(); // DEVIATION: MFC — lock critical section
+  iVar1 = Realloc(param_1); // DEVIATION: Win32 — find GIF resource
+  if (iVar1 === 0) {
+    // FUN_005bf5ba(); FUN_005bf5d0(); // DEVIATION: cleanup
+    return;
+  }
+  uVar2 = FUN_00492a80(); // DEVIATION: get resource size
+  local_cc = FUN_005dce4f(uVar2); // DEVIATION: Win32 — GlobalAlloc
+  // FUN_00407ff0(); // DEVIATION: MFC — message pump
+  if (local_cc === 0) { return; }
+  local_c8 = FUN_005dcdf9(local_cc); // DEVIATION: Win32 — GlobalLock
+  uVar2 = FUN_00492a80(); // DEVIATION: get resource size
+  FUN_004bb370(local_c8, uVar2); // DEVIATION: copy resource data
+  local_c8 = FUN_005dce29(local_cc); // DEVIATION: Win32 — GlobalUnlock
+  if (local_cc === 0) {
+    FUN_005d237d("Error: GIF resource not found.", param_1);
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x382);
+    return;
+  }
+  local_20 = FUN_005dcdf9(local_cc); // DEVIATION: Win32 — GlobalLock (get data ptr)
+  // Validate GIF header
+  iVar1 = _strncmp(local_20, "GIF", 3);
+  if (iVar1 !== 0) {
+    FUN_005d237d("Error: Resource is not a GIF.", param_1);
+    FUN_005dce29(local_cc); FUN_005dce96(local_cc); // DEVIATION: unlock + free
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x38d);
+    return;
+  }
+  // Check for global color table
+  if ((local_20[10] & 0x80) === 0) {
+    FUN_005d237d("Error: GIF contains no global color table.", param_1);
+    FUN_005dce29(local_cc); FUN_005dce96(local_cc);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x396);
+    return;
+  }
+  // Read color table
+  uVar3 = 1 << ((local_20[10] & 7) + 1); // number of colors
+  local_1c = local_20 + 0xd; // color table start (after 13-byte header)
+  if (param_4 !== 0) {
+    if (0x100 < param_3 + param_2) { param_3 = 0x100 - param_2; }
+    if (uVar3 <= param_3) { param_3 = uVar3; }
+    FUN_005c6da8(param_2, param_3, local_1c); // DEVIATION: set palette entries
+  }
+  // Skip to image data
+  local_1c = local_20 + uVar3 * 3 + 0xd;
+  while (local_1c[0] === 0) { local_1c = local_1c + 1; } // skip zero bytes
+  if (local_1c[0] !== 0x2c && local_1c[0] !== 0x21) { // ',' = image block, '!' = extension
+    FUN_005d237d("Error: GIF Image Block not found.", param_1);
+    FUN_005dce29(local_cc); FUN_005dce96(local_cc);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x3b3);
+    return;
+  }
+  // Parse image descriptor
+  local_18 = local_1c + 1;
+  local_28 = FUN_005c54d0(local_1c[5] | (local_1c[6] << 8)); // image width
+  local_c4 = FUN_005c54d0(local_18[6] | (local_18[7] << 8)); // image height
+  if ((local_18[8] & 0x80) !== 0) {
+    debug_log("Warning: Skipping local color table");
+  }
+  // SetRect(&local_dc, 0, 0, local_28, local_c4); // DEVIATION: Win32
+  iVar1 = FUN_005c019d(0 /*&local_dc*/); // DEVIATION: create bitmap surface
+  if (iVar1 === 0) {
+    FUN_005dce29(local_cc); FUN_005dce96(local_cc);
+    return;
+  }
+  // Decompress LZW image data
+  local_24 = local_18[9]; // minimum code size
+  local_14 = local_18 + 10; // start of LZW data
+  // FUN_005e4d60(local_14, param_2, local_24, 0, local_28, local_c4, 0); // DEVIATION: LZW decompress
+  FUN_005c0cc5(param_4); // DEVIATION: set palette
+  // iVar1 = FUN_005e395a(0); // DEVIATION: finalize bitmap
+  // if (iVar1 === 0) { FUN_005e3988(0); } // DEVIATION: cleanup
+  FUN_005dce29(local_cc); FUN_005dce96(local_cc); // DEVIATION: unlock + free
+  // FUN_00421c30(); // DEVIATION: MFC — update display
+  // DEVIATION: SEH cleanup
+  // FUN_005bf5ba(); FUN_005bf5d0();
+}
 export function FUN_005bf5ba() { FUN_005d7c6e(); }
 export function FUN_005bf5d0() { /* SEH restore — no-op */ }
 export function FUN_005bf5e1(p1, p2, p3, p4) { return 0; /* load GIF resource — no-op */ }
