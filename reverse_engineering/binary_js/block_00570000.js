@@ -4002,8 +4002,59 @@ export function FUN_0057f648() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057f657 — show_nuke_animation (UI)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057f657 (885 bytes)
 export function FUN_0057f657(param_1, param_2) {
-  // Nuclear explosion animation — UI only, no-op in JS
+  let iVar1;
+  let local_50, local_4c, local_48, local_44, local_40, local_3c;
+  let local_38, local_34, local_30, local_2c, local_28, local_24, local_20, local_1c;
+
+  // DEVIATION: SEH (FS_OFFSET)
+  iVar1 = FUN_004087c0(param_1, param_2); // bounds check
+  if (iVar1 !== 0 && (iVar1 = FUN_005b8b65(param_1, param_2, DAT_006d1da0), iVar1 !== 0)) {
+    DAT_006ad908 = 1;
+    // local_4c = operator_new(0x48); // DEVIATION: MFC — create bitmap
+    // if (local_4c === 0) { local_50 = 0; }
+    // else { local_50 = FUN_005bd630(); } // DEVIATION: MFC — create DC
+    local_24 = 0; // DEVIATION: local_50
+    FUN_004105f8(param_1, param_2, DAT_006d1da0); // DEVIATION: Win32 — show notification
+    FUN_00484d52(); // DEVIATION: MFC
+    FUN_0046e020(0x32, 0, 0, 0); // play sound
+    // if ((DAT_00655aea & 0x10) !== 0) { // animation enabled
+    //   FUN_00407ff0(); // DEVIATION: MFC — message pump
+    //   local_3c = timeGetTime(); // DEVIATION: Win32 — get time
+    //   do {
+    //     FUN_00407ff0();
+    //     if (2 < DAT_00655b02) { FUN_0047e94e(1, 0); }
+    //     local_2c = timeGetTime();
+    //   } while (local_2c - local_3c < 0x157c); // wait 5500ms
+    // }
+    local_38 = FUN_0047dfb0(0x5b); // DEVIATION: get tile width
+    local_44 = FUN_0047dfb0(0x48); // DEVIATION: get tile height
+    FUN_005bd65c(local_38, local_44); // DEVIATION: GDI — create sized bitmap
+    FUN_0047a6b0(0 /*&local_48*/, 0 /*&local_28*/, param_1, param_2); // get screen coords
+    local_30 = (DAT_0066cab8 + 0 /*local_48*/) - (local_38 >> 1);
+    local_40 = (DAT_0066cabc + 0 /*local_28*/) - (local_44 >> 1);
+    // FUN_0056c5fc(DAT_0066c7a8, local_24, local_30, local_40, DAT_0066c8cc, DAT_0066c8d0,
+    //              0, 0, 0, 0, local_38, local_44); // DEVIATION: GDI — save background
+    FUN_004086c0(0 /*&local_20*/, local_30, local_40, local_38, local_44);
+    // Animation loop: 11 frames at 100ms intervals
+    // for (local_34 = 0; local_34 < 0xb; local_34++) {
+    //   FUN_005cef31(local_60, DAT_0066c7a8, local_30, local_40); // DEVIATION: GDI draw frame
+    //   FUN_00408490(0 /*&local_20*/); // DEVIATION: MFC invalidate
+    //   do {
+    //     FUN_00407ff0(); // DEVIATION: MFC — pump
+    //     if (2 < DAT_00655b02) { FUN_0047e94e(1, 0); }
+    //     local_2c = timeGetTime();
+    //   } while (local_2c - local_3c < 100);
+    //   local_3c = local_2c;
+    //   FUN_0056c5fc(local_24, DAT_0066c7a8, 0, 0, 0, 0, local_30, local_40,
+    //                DAT_0066c8cc, DAT_0066c8d0, local_38, local_44); // DEVIATION: GDI restore
+    // }
+    // FUN_0047df50(); // DEVIATION: MFC — end animation
+    // FUN_00408490(0 /*&local_20*/); // DEVIATION: MFC invalidate
+    // if (local_24 !== 0) { FUN_0040f010(1); } // DEVIATION: MFC — destroy bitmap
+    DAT_006ad908 = 0;
+  }
 }
 
 
