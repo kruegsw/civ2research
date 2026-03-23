@@ -860,13 +860,22 @@ export function FUN_004f4793() {
 // ============================================================
 
 // Source: decompiled/block_004F0000.c FUN_004f4809 (918 bytes)
+// Source: decompiled/block_004F0000.c FUN_004f4809 (918 bytes)
 export function FUN_004f4809() {
-  // C: Frees 10 linked lists of allocated strings from MFC dialog object (in_ECX)
-  // C: For each list at offsets +0x16dc, +0x16e0, +0x16e4, +0x16e8, +0x16ec,
-  //    +0x16f0, +0x16f4, +0x16f8, +0x16fc, +0x1700:
-  //    Walk list (next pointer at node+8), free string (*node), free node, advance
-  // DEVIATION: Cannot free C heap memory — JS has garbage collection
-  // No game state modifications
+  let uVar1;
+  // DEVIATION: MFC (in_ECX) — operates on dialog object
+  // C: Free 10 linked lists at in_ECX offsets
+  let offsets = [0x16dc, 0x16e0, 0x16e4, 0x16e8, 0x16ec,
+                 0x16f0, 0x16f4, 0x16f8, 0x16fc, 0x1700];
+  for (let listIdx = 0; listIdx < offsets.length; listIdx++) {
+    // C: while (*(int*)(in_ECX + offset) != 0) {
+    //      uVar1 = *(*(in_ECX + offset) + 8); // next ptr
+    //      if (**(in_ECX + offset) != 0) { operator_delete(**(in_ECX + offset)); } // free string
+    //      operator_delete(*(in_ECX + offset)); // free node
+    //      *(in_ECX + offset) = uVar1; // advance
+    //    }
+    // DEVIATION: operator_delete — JS garbage collection handles this
+  }
 }
 
 
@@ -1106,15 +1115,36 @@ export function FUN_004f5f23() {
 
 // Source: decompiled/block_004F0000.c FUN_004f6244 (800 bytes)
 export function FUN_004f6244() {
-  // C: Renders city window production panel — draws borders, icons, text
-  // C: Uses FUN_005c0034 (begin paint), FUN_005a99fc (draw border),
-  //    FUN_004bb800 (adjust rect), FUN_004f6564 (draw separator),
-  //    FUN_005cd775 (scale bitmap), FUN_005cef31 (draw icon),
-  //    FUN_005c19ad (set text color), FUN_005c0f57 (draw text),
-  //    SetRect, _Timevec::~_Timevec, FUN_005c0073 (end paint)
-  // C: Game state reads: DAT_0062d860/64/68/5c (layout constants)
-  // C: Writes to in_ECX+0x5dc, +0x5e0 (computed layout dimensions)
-  // DEVIATION: MFC rendering — cannot draw without GDI context
+  let iVar1, iVar2;
+  let local_34 = new Uint8Array(16);
+  let local_24, local_20, local_1c, local_18;
+
+  FUN_005c0034(); // DEVIATION: begin paint
+  // DEVIATION: FID_conflict__memcpy(&local_14, in_ECX + 0x5e8, 0x10)
+  for (local_18 = 0; local_18 < DAT_0062d864; local_18 = local_18 + 1) {
+    FUN_005a99fc(0 /*in_ECX*/, 0 /*&local_14*/, DAT_00635a08, DAT_00635a0c); // DEVIATION: draw border
+    FUN_004bb800(0 /*&local_14*/, 1, 1); // DEVIATION: adjust rect
+  }
+  FUN_004f6564(0 /*&local_14*/, 1); // draw top separator
+  FUN_004bb800(0 /*&local_14*/, DAT_0062d860 + DAT_0062d864 * -2, 0); // DEVIATION: adjust
+  // DEVIATION: local_14.top adjustment, _Timevec destructor
+  iVar1 = FUN_00407fc0(0 /*in_ECX + 0x5e8*/); // DEVIATION: get height
+  for (local_18 = 0; local_18 < DAT_0062d864; local_18 = local_18 + 1) {
+    FUN_005a99fc(0 /*in_ECX*/, 0 /*&local_14*/, DAT_00635a0c, DAT_00635a08); // DEVIATION: draw border
+    FUN_004bb800(0 /*&local_14*/, 1, 1);
+  }
+  FUN_004f6564(0 /*&local_14*/, 2); // draw bottom separator
+  // C: compute layout dimensions
+  // DEVIATION: writes to in_ECX+0x5dc, +0x5e0 — MFC dialog state
+  // DEVIATION: SetRect, FUN_005cd775 (scale), FUN_005cef31 (draw icon)
+  // DEVIATION: FUN_005c19ad (text color), FUN_005c0f57 (draw text) with shadow
+  FUN_0047df50(); // DEVIATION: MFC
+  FUN_005c19ad(10); // DEVIATION: set text color
+  FUN_005c0f57(0, 0, 0, 0, 5); // DEVIATION: draw text shadow
+  FUN_005c19ad(0x1a); // DEVIATION: set text color
+  FUN_005c0f57(0, 0, 0, 0, 5); // DEVIATION: draw text
+  FUN_005c0f57(0, 0, 0, 0, 5); // DEVIATION: draw text
+  FUN_005c0073(0 /*in_ECX + 0x5f8*/); // DEVIATION: end paint
 }
 
 
@@ -1158,18 +1188,65 @@ export function FUN_004f6646() {
 
 // Source: decompiled/block_004F0000.c FUN_004f66c6 (3016 bytes)
 export function FUN_004f66c6() {
-  // C: Renders civilopedia/production list entries in city window
-  // C: 319 lines of MFC rendering using in_ECX dialog object
-  // C: Reads layout from in_ECX+0x1b24 (DC), +0x1f3c (selection), +0x1b34 (count)
-  // C: For each visible entry:
-  //    Gets entry data from in_ECX+0x1b38 array
-  //    Draws selection highlight, text, and optional icon
-  //    Switch on in_ECX+0x118 (view mode): uses DAT_00646cb8 (tech table),
-  //      DAT_0064b1bc (unit types), DAT_0064c488 (buildings), DAT_00645160 (wonders)
-  // C: Uses SetRect, FUN_005c0333, FUN_005c19ad, FUN_005c0f57,
-  //    FUN_0040bbb0, FUN_0040bbe0, FUN_0040fe10, FUN_00428b0c
-  // DEVIATION: MFC rendering — cannot draw without GDI context and in_ECX dialog
-  // Game state reads: DAT_006a85a0 (selected item), DAT_00635a00..2c (colors)
+  let iVar1, iVar2, iVar3;
+  let local_3c = 0;
+  let local_50, local_4c, local_74, local_1c, local_7c;
+  let local_64, local_60, local_5c, local_58;
+  let local_78, local_30, local_34, local_48, local_38;
+  let local_18 = new Uint8Array(16);
+
+  FUN_004f8af9(); // push navigation state
+  FUN_005c00ce(local_18); // DEVIATION: save DC
+  FUN_005c0073(0 /*in_ECX + 0x1b24*/); // DEVIATION: select DC
+  FUN_005c0333(0 /*in_ECX + 0x1b24*/, DAT_00635a18); // DEVIATION: fill background
+  // DEVIATION: reads in_ECX+0x1b24 (DC), in_ECX+0x1b28 (top), in_ECX+0x1b34 (count)
+  local_50 = 0; // DEVIATION: in_ECX+0x1b24
+  local_4c = FUN_00407f90(0 /*in_ECX + 0x1b24*/); // DEVIATION: get width
+  local_74 = (local_4c / 2) | 0;
+  local_1c = FUN_00407fc0(0 /*in_ECX + 0x1b24*/); // DEVIATION: get height
+  local_1c = (local_1c / 9) | 0;
+  iVar1 = (local_1c / 2) | 0;
+  iVar2 = FUN_0040ef70(); // DEVIATION: get font height
+  local_7c = iVar1 - ((iVar2 / 2) | 0);
+  local_64 = 0;
+  do {
+    if (1 < local_64) {
+      FUN_005c0073(local_18); // DEVIATION: restore DC
+      FUN_0040f380(); // DEVIATION: release DC
+      return;
+    }
+    local_60 = local_64 * 9;
+    for (local_5c = 0; local_5c < 9; local_5c = local_5c + 1) {
+      local_58 = 0 + local_1c * local_5c; // DEVIATION: in_ECX+0x1b28
+      SetRect(0 /*&local_2c*/, local_50, local_58, local_74 + local_50 - 2, local_1c + local_58);
+      // DEVIATION: check if entry visible via in_ECX+0x1f3c, in_ECX+0x1b34
+      local_78 = 0; // DEVIATION: entry index from in_ECX+0x1b38 array
+      local_30 = 0; // DEVIATION: selection state vs DAT_006a85a0
+      if (local_30 === 0) {
+        local_34 = DAT_00635a1c; // normal text color
+        local_48 = DAT_00635a20; // normal bg color
+      } else {
+        local_34 = DAT_00635a28; // selected text color
+        local_48 = DAT_00635a2c; // selected bg color
+      }
+      FUN_005cda06(0, 0); // DEVIATION: get icon dimensions
+      // Switch on view mode: in_ECX+0x118
+      // case 1: tech — DAT_00646cb8 table
+      // case 2: wonder — DAT_00645160 table
+      // case 3: improvement — DAT_00645160 table
+      // case 4: unit — DAT_0064b1bc table
+      // case 5: terrain
+      // case 6: government
+      // case 7: concept
+      // DEVIATION: each case draws icon via FUN_005cd775 + FUN_005cdb33, text via FUN_005c0f57
+      FUN_005c0333(0 /*&local_2c*/, local_48); // DEVIATION: fill entry background
+      FUN_0040bbb0(); // DEVIATION: text setup
+      FUN_0040bbe0(0); // DEVIATION: set text
+      FUN_005c19ad(local_34); // DEVIATION: set text color
+      FUN_005c0f57(0, 0, 0, local_58 + local_7c, 5); // DEVIATION: draw text
+    }
+    local_64 = local_64 + 1;
+  } while (true);
 }
 
 
@@ -1623,14 +1700,26 @@ export function FUN_004f8a9b(param_1, param_2) {
 
 // Source: decompiled/block_004F0000.c FUN_004f8af9 (523 bytes)
 export function FUN_004f8af9() {
-  // C: Pushes current civilopedia navigation state onto history stack
-  // C: Reads in_ECX+0x128 (stack depth), +0x118 (category), +0x11c (subcategory),
-  //    +0x120 (entry), DAT_0062f010, DAT_006a85b0, DAT_006a85ac, DAT_006a6790
-  // C: Writes history to in_ECX+0x12c..0x2b8 (entry stack),
-  //    +0x2bc..0x448 (subcategory stack), +0x44c..0x5d8 (category stack)
-  // C: Increments in_ECX+0x128 stack pointer
-  // DEVIATION: MFC (in_ECX) — all history writes are to dialog object
-  // Game state writes only:
+  // DEVIATION: MFC (in_ECX) — reads/writes dialog navigation history
+  // C: if (in_ECX+0x128 < 99 && DAT_0062f00c === 0) {
+  //      Complex condition checking current state vs history:
+  //      if (stack empty || different state || mode 8) {
+  //        if (different category/subcategory/entry) {
+  //          if (DAT_0062f010 >= 0) {
+  //            push DAT_0062f010 to in_ECX+0x12c[depth]
+  //            push DAT_006a85b0 to in_ECX+0x2bc[depth]
+  //            push DAT_006a85ac to in_ECX+0x44c[depth]
+  //            in_ECX+0x128++
+  //          }
+  //          push in_ECX+0x120 to in_ECX+0x12c[depth]
+  //          push in_ECX+0x11c to in_ECX+0x2bc[depth]
+  //          push in_ECX+0x118 to in_ECX+0x44c[depth]
+  //          in_ECX+0x128++
+  //        }
+  //      } else {
+  //        overwrite current entry at depth
+  //      }
+  //    }
   DAT_0062f010 = -1;
   DAT_0062f00c = 0;
 }
@@ -1924,14 +2013,36 @@ export function FUN_004fa5d9(param_1) {
 
 // Source: decompiled/block_004F0000.c FUN_004fa617 (240 bytes)
 export function FUN_004fa617() {
-  // C: Allocates and links a new 0x1c4-byte event structure
-  // C: Walks linked list at in_ECX+0x30c to find tail node (via +0x1bc next ptr)
-  // C: Allocates via FUN_00498159(in_ECX+0x2f4, 0x1c4), memsets to 0
-  // C: Links: if first node, sets in_ECX+0x30c = new; else tail->next = new, new->prev = tail
-  // C: Sets new->next (+0x1bc) = 0, new->prev (+0x1c0) = tail
-  // C: Increments in_ECX+0x308 (event count)
-  // DEVIATION: MFC (in_ECX) — pool allocation not available in JS
-  return null;
+  let _Dst;
+  let local_8;
+  // DEVIATION: MFC (in_ECX) — reads/writes dialog event pool
+
+  // C: Find tail of linked list at in_ECX+0x30c
+  local_8 = 0; // DEVIATION: ri(in_ECX, 0x30c)
+  if (local_8 !== 0) {
+    for (; ri(local_8, 0x1bc) !== 0; local_8 = ri(local_8, 0x1bc)) {}
+  }
+  // C: Allocate 0x1c4 bytes from pool
+  _Dst = FUN_00498159(0 /*in_ECX + 0x2f4*/, 0x1c4); // DEVIATION: MFC heap alloc
+  if (_Dst === 0 || _Dst === null) {
+    return null;
+  }
+  _memset(_Dst, 0, 0x1c4); // DEVIATION: memset
+  // C: Link into list
+  if (local_8 === 0) {
+    // First node
+    // DEVIATION: wi(in_ECX, 0x30c, _Dst)
+    wi(_Dst, 0x1bc, 0); // next = null
+    wi(_Dst, 0x1c0, 0); // prev = null
+  } else {
+    // Append to tail
+    wi(local_8, 0x1bc, _Dst); // tail->next = new
+    wi(_Dst, 0x1c0, local_8); // new->prev = tail
+    wi(_Dst, 0x1bc, 0); // new->next = null
+  }
+  // DEVIATION: wi(in_ECX, 0x308, ri(in_ECX, 0x308) + 1) — increment count
+  return _Dst;
+}
 }
 
 
