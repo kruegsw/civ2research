@@ -3818,6 +3818,11 @@ export function FUN_004ec3fe(param_1) {
                 FUN_004eb571(s_BUILT_0062eee8, param_1, 1, local_970);
               }
             }
+            // C line 5093: tech adviser prompt after wonder completion (human player)
+            if (local_5c !== 0 && -1 < local_3c && DAT_006d1da0 === local_84 &&
+               DAT_00654fa8 === 0 && (DAT_00655ae8 & 0x20000) !== 0) {
+              FUN_004bb8e0(local_3c);
+            }
             if (((1 << (local_84 & 0x1f)) & DAT_00655b0b) !== 0) {
               DAT_006a6610 = local_24;
             }
