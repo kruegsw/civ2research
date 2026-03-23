@@ -319,8 +319,45 @@ export function FUN_005b08e8(param_1) {
 // FUN_005b09dc — editor_paint (UI)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b09dc (1627 bytes)
 export function FUN_005b09dc() {
-  // DEVIATION: Win32 API (GDI paint, BitBlt, DrawText) — editor paint handler
+  let uVar1;
+  let local_28 = new Uint8Array(16);
+  let local_18;
+  let local_14, local_10, local_c, local_8;
+
+  FUN_00552112(); // DEVIATION: MFC — begin paint
+  if (DAT_0062e018 === 0 || DAT_006a1d7c === 0) {
+    // FUN_0040fdb0(in_ECX, in_ECX + 700, 0x1d); // DEVIATION: MFC — fill background
+  } else {
+    // FUN_005a9afe(DAT_0062e018, in_ECX, 0, 0, ri(in_ECX, 0x124), ri(in_ECX, 0x128),
+    //             ri(in_ECX, 0x2d8), ri(in_ECX, 0x2dc)); // DEVIATION: MFC — draw bitmap
+  }
+  local_8 = 0x20; // DEVIATION: ri(in_ECX, 0x124) + 0x20
+  local_c = 0x20; // DEVIATION: ri(in_ECX, 0x128) + 0x20
+  // local_18 = DAT_00641848 + ri(in_ECX, 0x2ec) * 0x3c; // DEVIATION: MFC — sprite ptr
+  uVar1 = FUN_00417f70(); // get tile size
+  // FUN_005a9abf(in_ECX, local_8, local_c, 0x40, 0x40, uVar1); // DEVIATION: blit
+  // FUN_005cef66(local_28, in_ECX, 0, local_8, local_c + 8); // DEVIATION: draw
+  // FUN_004ccb6a(in_ECX, local_8, local_c, 0x40, 0x40, 6); // DEVIATION: border
+  // FUN_004ccb6a(in_ECX, 0x79, 0x4f, 0x14d, 0x47, 6); // DEVIATION: border for parameter area
+  // FUN_005baeb0(in_ECX); // DEVIATION: MFC
+  // FUN_005baec8(DAT_006a4f90); // DEVIATION: MFC
+  // FUN_005baee0(0x29, 0x12, 1, 1); // DEVIATION: MFC
+  // Draw 13 parameter labels using FUN_0040bbb0/FUN_0040bc10/FUN_005bb024
+  let labelCodes = [0x1e9, 0x7e, 0x1de, 0x1df, 0x1e0, 0x1e1, 0x1e2, 0x1e3, 0x1e4, 0x1e5, 0x1e6, 0x1e7, 0x1e8];
+  let labelOffsets = [
+    [0x00635e04, 0], [0x00635e00, 0x32], [0x00635e08, 0x32], [0x00635e10, 0x32],
+    [0x00635e18, 0x32], [0x00635e20, 0x18], [0x00635e28, 0x18], [0x00635e30, 0x18],
+    [0x00635e38, 0x18], [0x00635e40, 0x18], [0x00635e48, 0x18], [0x00635e50, 0x18],
+    [0x00635e58, 0x18]
+  ];
+  for (let li = 0; li < 13; li++) {
+    FUN_0040bbb0(); // DEVIATION: MFC — begin text
+    FUN_0040bc10(labelCodes[li]); // DEVIATION: MFC — load text by resource ID
+    // FUN_005bb024(in_ECX, DAT_00679640, local_10, local_14, 0); // DEVIATION: MFC — draw text
+  }
+  FUN_00408460(); // DEVIATION: MFC — invalidate
 }
 
 
