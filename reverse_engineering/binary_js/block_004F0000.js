@@ -842,10 +842,13 @@ export function FUN_004f4785() {
 // FUN_004f4793 — free_linked_list_entries
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f4793 (118 bytes)
 export function FUN_004f4793() {
-  // DEVIATION: Frees linked list of UI display objects — in_ECX-based
+  // C: Frees linked list at in_ECX+8000 (page items)
+  // C: While node exists: save next (node+0x44), delete node, advance
+  // C: Then calls FUN_00419b80 to finalize
+  // DEVIATION: MFC (in_ECX) — cannot access dialog object
   FUN_00419b80();
-  return;
 }
 
 
@@ -868,13 +871,18 @@ export function FUN_004f4809() {
 // FUN_004f4b9f — civilopedia_setup_ui (UI layout)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f4b9f (3950 bytes)
 export function FUN_004f4b9f() {
-  // Complex MFC UI setup: buttons, layout rects, bitmaps
-  // DEVIATION: pure UI code — SetRect, OffsetRect, operator_new, etc.
-  FUN_004f4809();
-  FUN_004f4793();
-  FUN_004f7c99();
-  return;
+  // C: Main civilopedia/production dialog setup — 310 lines of MFC layout
+  // C: Creates scrollbar (operator_new, FUN_0040fb00), tab buttons (FUN_0040f680),
+  //    list control (FUN_004bb620), search field, help button
+  // C: Uses SetRect, OffsetRect, GetSystemMetrics for layout
+  // C: Calls FUN_004f4809 (free old lists), FUN_004f4793 (free old pages),
+  //    FUN_004f7c99 (populate entries)
+  // DEVIATION: MFC dialog setup — cannot create Win32 controls
+  FUN_004f4809(); // free old string lists
+  FUN_004f4793(); // free old page items
+  FUN_004f7c99(); // populate entry arrays
 }
 
 
