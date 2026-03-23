@@ -1243,11 +1243,13 @@ export function FUN_004b3080(param_1, param_2, param_3) {
 // FUN_004b3110 — continent_set_adjacency_bit
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: C FUN_004b3110 — set continent tech flag
 export function FUN_004b3110(param_1, param_2) {
-  let local_c;
+  let local_c_ref = [0];
   let local_8 = new Uint8Array(4);
 
-  FUN_005ae3bf(param_2, { val: 0 }, local_8);
+  FUN_005ae3bf(param_2, local_c_ref, local_8);
+  let local_c = local_c_ref[0];
   DAT_00666137[param_1 * 0x10 + local_c] = DAT_00666137[param_1 * 0x10 + local_c] | local_8[0];
   return;
 }
