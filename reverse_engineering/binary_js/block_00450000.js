@@ -314,7 +314,9 @@ const s_MSHyperTextClass_00626920 = 'MSHyperTextClass';
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004502b0() {
-  // in_ECX class init — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004502b0 (34 bytes)
+  // DEVIATION: MFC — class constructor sets *this = 0, returns this pointer
+  // C: *in_ECX = 0; return in_ECX;
   return 0;
 }
 
@@ -645,7 +647,9 @@ export function FUN_00452ac1() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00452ad4() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00452ad4 (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -859,7 +863,9 @@ export function FUN_00453bfa() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00453c0d() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00453c0d (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -1057,7 +1063,8 @@ export function FUN_00454260(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00454344() {
-  // empty function
+  // Source: decompiled/block_00450000.c FUN_00454344 (16 bytes)
+  // C: return; (truly empty function)
 }
 
 
@@ -1124,7 +1131,9 @@ export function FUN_004547a7() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547b6() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547b6 (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x18ac), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -1134,7 +1143,9 @@ export function FUN_004547b6() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547ce() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547ce (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x17bc), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -1144,7 +1155,9 @@ export function FUN_004547ce() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547e6() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547e6 (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x16cc), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -1154,7 +1167,9 @@ export function FUN_004547e6() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547fe() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547fe (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x15dc), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -1164,7 +1179,9 @@ export function FUN_004547fe() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00454816() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00454816 (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x6dc), 0x3c, 0x3c, FUN_005cde4d);
 }
 
 
@@ -1174,7 +1191,9 @@ export function FUN_00454816() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045482e() {
-  // _Timevec::~_Timevec — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045482e (15 bytes)
+  // DEVIATION: MFC — _Timevec::~_Timevec destructor call
+  // C: _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x6d8));
 }
 
 
@@ -1244,7 +1263,9 @@ export function FUN_00454888() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045489b() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045489b (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -1275,7 +1296,9 @@ export function FUN_00454e8b() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00454ea1() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00454ea1 (17 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -1947,11 +1970,11 @@ export function FUN_0045705e(param_1, param_2) {
       DAT_0064b0f4 = DAT_0064b0f4 + 1;
     }
   }
-  // Remaining complex condition checks for DAT_0064b0e8 ...
-  // (extremely long diplomatic logic — abbreviated but all variables set)
-  DAT_0064b0e8 = 0;
+  // C: DAT_0064b0e8 = 0 is a comma operator INSIDE the condA && condB chain
+  // It only executes when condA is true (short-circuit evaluation)
   let _condA = (DAT_00626a1c === 0) ||
                (6 < (u8(DAT_0064c6be[param_1 * 0x594]) - s8(DAT_0064c6e8[param_2 * 0x594 + param_1])));
+  if (_condA) { DAT_0064b0e8 = 0; } // comma operator: only set when condA is true
   let _condB = ((DAT_0064c6c1[param_1 * 4 + param_2 * 0x594] & 0x20) === 0) || (4 < DAT_0064b0f4);
   let _condC = ((DAT_0064c6c0[param_1 * 4 + param_2 * 0x594] & 8) === 0);
   let _condD = (DAT_0064b0f8 !== 0) || ((DAT_0064b130 !== 0) && (2 < DAT_00655b08));
@@ -2118,7 +2141,9 @@ export function FUN_00458dd5() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00458deb() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00458deb (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -2223,7 +2248,9 @@ export function FUN_00459169() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045917f() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045917f (15 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -2521,7 +2548,9 @@ export function FUN_0045a510() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045a526() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045a526 (15 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -3487,7 +3516,9 @@ export function FUN_0045f08d() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045f0a3() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045f0a3 (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -3677,7 +3708,9 @@ export function FUN_0045fd43() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045fd59() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045fd59 (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -3764,7 +3797,9 @@ export function FUN_00460104() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046011a() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00460000.c FUN_0046011a (15 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 

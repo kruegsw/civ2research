@@ -25,6 +25,23 @@ export function s16(arr, off) {
   return (v & 0x8000) ? (v | 0xFFFF0000) : v;
 }
 export function u16(arr, off) { return (arr[off + 1] << 8) | arr[off]; }
+export function s32(arr, off) {
+  const v = arr[off] | (arr[off + 1] << 8) | (arr[off + 2] << 16) | (arr[off + 3] << 24);
+  return v | 0;  // sign-extend via bitwise OR
+}
+export function u32(arr, off) {
+  return (arr[off] | (arr[off + 1] << 8) | (arr[off + 2] << 16) | (arr[off + 3] << 24)) >>> 0;
+}
+export function w16(arr, off, val) {
+  arr[off] = val & 0xFF;
+  arr[off + 1] = (val >> 8) & 0xFF;
+}
+export function w32(arr, off, val) {
+  arr[off] = val & 0xFF;
+  arr[off + 1] = (val >> 8) & 0xFF;
+  arr[off + 2] = (val >> 16) & 0xFF;
+  arr[off + 3] = (val >> 24) & 0xFF;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // MEMORY REGIONS

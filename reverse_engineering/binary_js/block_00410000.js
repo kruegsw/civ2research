@@ -953,9 +953,10 @@ export function FUN_004102e1() {
   FUN_005cde4d();
 }
 
+// Source: decompiled/block_00410000.c FUN_004102f4 (14 bytes)
 // FUN_004102f4 — restore_seh_frame (no-op in JS)
 export function FUN_004102f4() {
-  /* SEH frame restore — no-op */
+  // DEVIATION: Win32 — *unaff_FS_OFFSET = *(unaff_EBP + -0xc) — SEH frame restore
 }
 
 // FUN_00410302 — redraw_map_window
@@ -2124,17 +2125,45 @@ export function FUN_00414bb0() {
   return FUN_005bc96b(0);
 }
 
+// Source: decompiled/block_00410000.c FUN_00414be0 (43 bytes)
 // FUN_00414be0 — set_paint_callback
-export function FUN_00414be0(param_1) { return 0; }
+export function FUN_00414be0(param_1) {
+  // DEVIATION: Win32 — thiscall: in_ECX is 'this' pointer
+  // let uVar1 = *in_ECX;
+  // *in_ECX = param_1;
+  // return uVar1;
+  return 0;
+}
 
+// Source: decompiled/block_00410000.c FUN_00414c20 (45 bytes)
 // FUN_00414c20 — set_resize_callback
-export function FUN_00414c20(param_1) { return 0; }
+export function FUN_00414c20(param_1) {
+  // DEVIATION: Win32 — thiscall: swaps in_ECX[1] with param_1
+  // let uVar1 = *(in_ECX + 4);
+  // *(in_ECX + 4) = param_1;
+  // return uVar1;
+  return 0;
+}
 
+// Source: decompiled/block_00410000.c FUN_00414c60 (45 bytes)
 // FUN_00414c60 — set_key_callback
-export function FUN_00414c60(param_1) { return 0; }
+export function FUN_00414c60(param_1) {
+  // DEVIATION: Win32 — thiscall: swaps in_ECX[2] with param_1
+  // let uVar1 = *(in_ECX + 8);
+  // *(in_ECX + 8) = param_1;
+  // return uVar1;
+  return 0;
+}
 
+// Source: decompiled/block_00410000.c FUN_00414ca0 (45 bytes)
 // FUN_00414ca0 — set_dblclick_callback
-export function FUN_00414ca0(param_1) { return 0; }
+export function FUN_00414ca0(param_1) {
+  // DEVIATION: Win32 — thiscall: swaps in_ECX[7] (offset 0x1c) with param_1
+  // let uVar1 = *(in_ECX + 0x1c);
+  // *(in_ECX + 0x1c) = param_1;
+  // return uVar1;
+  return 0;
+}
 
 // FUN_00414ce0 — start_cursor_blink
 export function FUN_00414ce0() {
@@ -2142,8 +2171,12 @@ export function FUN_00414ce0() {
   FUN_005bd533(uVar1);
 }
 
+// Source: decompiled/block_00410000.c FUN_00414d10 (28 bytes)
 // FUN_00414d10 — get_window_handle
-export function FUN_00414d10() { return 0; }
+export function FUN_00414d10() {
+  // DEVIATION: Win32 — thiscall: returns *(in_ECX + 8)
+  return 0;
+}
 
 // FUN_00414d40 — stop_cursor_blink
 export function FUN_00414d40() {
@@ -2156,16 +2189,24 @@ export function FUN_00414d70(param_1) {
   FUN_004af174(DAT_00679640, param_1);
 }
 
-// EnableStackedTabs — MFC library function (no-op)
-export function EnableStackedTabs(param_1) { /* MFC no-op */ }
+// Source: decompiled/block_00410000.c EnableStackedTabs (36 bytes)
+// EnableStackedTabs — CPropertySheet::EnableStackedTabs
+export function EnableStackedTabs(param_1) {
+  // DEVIATION: MFC — sets this->m_bStacked (offset 0x2a8) = param_1
+  // *(this + 0x2a8) = param_1;
+}
 
 // FUN_00414dd0 — show_city_info_text
 export function FUN_00414dd0(param_1, param_2) {
   FUN_004a6cc5(DAT_006359d4, param_1, 0, param_2);
 }
 
-// IsTracking — MFC CSplitterWnd::IsTracking (stub)
-export function IsTracking() { return 0; }
+// Source: decompiled/block_00410000.c IsTracking (31 bytes)
+// IsTracking — CSplitterWnd::IsTracking
+export function IsTracking() {
+  // DEVIATION: MFC — returns *(this + 0x15a4)
+  return 0;
+}
 
 // FUN_00414e30 — bubble_sort_bytes
 export function FUN_00414e30(param_1, param_2, param_3) {
@@ -2224,9 +2265,12 @@ export function FUN_0041508c(param_1, param_2) {
   return pFVar1;
 }
 
+// Source: decompiled/block_00410000.c FUN_00415105 (46 bytes)
 // FUN_00415105 — get_file_length
 export function FUN_00415105(param_1) {
-  return 0; // __filelength stub
+  let _FileHandle = FUN_006076a0(param_1);
+  // DEVIATION: Win32 — __filelength(_FileHandle)
+  return 0;
 }
 
 // FUN_00415133 — check_file_exists
@@ -2314,8 +2358,41 @@ export function FUN_0041557b() {
 // FUN_00415765 — refresh_editor_display
 export function FUN_00415765() { FUN_00416828(); }
 
-// FUN_00415780 — export_tech_tree_to_file (UI stub)
-export function FUN_00415780(param_1) { return 1; }
+// Source: decompiled/block_00410000.c FUN_00415780 (466 bytes)
+// FUN_00415780 — export_tech_tree_to_file
+export function FUN_00415780(param_1) {
+  for (let local_8 = 0; local_8 < 100; local_8 = local_8 + 1) {
+    FUN_0040bbb0();
+    FUN_0040ff00(DAT_00627684[local_8 * 0x10]);
+    FUN_005f22e0(DAT_00679640, DAT_006251ac);
+    let pcVar1 = FUN_00428b0c(DAT_00627684[local_8 * 0x10]);
+    let sVar2 = _strlen(pcVar1);
+    let local_c;
+    if (sVar2 < 0x13) {
+      pcVar1 = FUN_00428b0c(DAT_00627684[local_8 * 0x10]);
+      local_c = _strlen(pcVar1);
+    } else {
+      local_c = 0x13;
+    }
+    FUN_004190a0(0x13 - local_c);
+    FUN_0040ff30(s8(DAT_0062768a[local_8 * 0x10]));
+    FUN_005f22e0(DAT_00679640, DAT_006251b0);
+    FUN_004ccdb6(s8(DAT_0062768b[local_8 * 0x10]));
+    FUN_005f22e0(DAT_00679640, DAT_006251b4);
+    FUN_004ccdef(s8(DAT_0062768e[local_8 * 0x10]), 1);
+    FUN_0040fe10();
+    FUN_004ccdef(s8(DAT_0062768f[local_8 * 0x10]), 1);
+    FUN_0040fe10();
+    FUN_0040ff30(s8(DAT_0062768d[local_8 * 0x10]));
+    FUN_005f22e0(DAT_00679640, DAT_006251b8);
+    FUN_0040ff30(s8(DAT_0062768c[local_8 * 0x10]));
+    FUN_005f22e0(DAT_00679640, s___006251bc);
+    FUN_004ccdef(local_8, 0);
+    FUN_005f22e0(DAT_00679640, DAT_006251c4);
+    _fputs(DAT_00679640, param_1);
+  }
+  return 1;
+}
 
 // FUN_00415952 — count_active_techs
 export function FUN_00415952() {
@@ -2350,24 +2427,47 @@ export function show_messagebox_5A40() {
   }
 }
 
-// FUN_00415b52 — show_tech_prerequisites
+// Source: decompiled/block_00410000.c FUN_00415b52 (769 bytes)
+// FUN_00415b52 — show_tech_prerequisites (rules editor treeview population)
 export function FUN_00415b52() {
-  // DEVIATION: Win32/MFC — rules editor tech prerequisites display
-  // Calls: FUN_004ccb6a, FUN_0040bbb0, FUN_0040ff00, FUN_0040fe10,
-  // FUN_004ccdef, FUN_00410030, FUN_005f22d0, FUN_005f22e0
+  // DEVIATION: Win32 — populates treeview with tech prerequisites
+  // Reads: DAT_0064b1cb (improvements), DAT_0062768e/f (tech prereqs), DAT_00627684 (tech names)
+  // Reads: *(DAT_006a4f88 + 0x2ec) for current selected tech index
+  // Reads: *(DAT_00628420 + 0x808), *(DAT_00628420 + 0x80c), *(DAT_00628420 + 0x1ec) for string table
+  // Calls: FUN_00419060, FUN_00419020, FUN_00428b0c, _sprintf
+  let bVar2 = false;
+  let bVar1 = false;
+  FUN_00419060();
+  // for (local_60 = 0; local_60 < 0x3e; local_60++) — iterates improvements
+  //   checks if improvement's tech req matches selected tech
+  //   adds improvement name to treeview via FUN_00419020
+  // for (local_64 = 0; local_64 < 100; local_64++) — iterates techs
+  //   checks if tech's prereq1/prereq2 matches selected tech
+  //   adds tech name to treeview via FUN_00419020
 }
 
+// Source: decompiled/block_00410000.c FUN_00415e53 (731 bytes)
 // FUN_00415e53 — rename_tech_dialog
 export function FUN_00415e53() {
   // DEVIATION: Win32/MFC — rules editor tech rename dialog
-  // Calls: FUN_0040bbb0, FUN_0040ff00, show_messagebox_CF2D,
-  // FUN_00428b0c, FUN_0040bc40, FUN_0059edf0, FUN_005f22d0
+  // Reads: *(DAT_006a4f88 + 0x2ec) for current tech index
+  // Writes: DAT_006a1d88[iVar1 * 0x28] — renames tech name string
+  // let iVar1 = *(DAT_006a4f88 + 0x2ec);
+  // _strncpy(local_12c, DAT_006a1d88 + iVar1 * 0x28, 0x14);
+  // Shows input dialog via FUN_0051d63b, then:
+  // FUN_005f22d0(DAT_006a1d88 + iVar1 * 0x28, local_118);  // game state write
+  // Refreshes combo boxes: FUN_00418d60, FUN_00418d20, FUN_00418ce0, FUN_00418d90
+  // Calls: FUN_00415b52, FUN_00415765
 }
 
+// Source: decompiled/block_00410000.c FUN_0041612e (95 bytes)
 // FUN_0041612e — show_advances_help
 export function FUN_0041612e() {
-  // DEVIATION: Win32/MFC — advances help display
-  // Calls: FUN_00419100, FUN_00419130
+  // DEVIATION: Win32 — shows advances help in rules editor
+  // let local_8 = (DAT_006a4f88 === 0) ? 0 : DAT_006a4f88 + 0x48;
+  // FUN_0059d3c9(local_8);
+  // FUN_004190d0(&DAT_0062523c, "ADVANCES");
+  // FUN_0059d3c9(0);
 }
 
 // FUN_0041618d — invalidate_editor_cache
@@ -2376,30 +2476,67 @@ export function FUN_0041618d() {
   CRichEditDoc_InvalidateObjectCache();
 }
 
+// Source: decompiled/block_00410000.c FUN_004161b5 (136 bytes)
 // FUN_004161b5 — show_tech_icon
 export function FUN_004161b5() {
-  // DEVIATION: Win32/MFC — tech icon display in rules editor
-  // Calls: FUN_0040ef50, FUN_0040ef70, FUN_0040f010, FUN_005baeb0, FUN_005baec8, FUN_005baee0
+  // DEVIATION: Win32 — displays tech icon in rules editor
+  // Reads: *(DAT_006a4f88 + 0x2ec) — selected tech index
+  // Reads: DAT_006a2d34, DAT_006a2d30 — tech icon positions (stride 0x58)
+  // Renders: DAT_00646cb8 + row*0xf0 + col*0x3c — tech icon bitmap
+  // let uVar1 = FUN_00428b0c(*(DAT_00628420 + 0x7d8), 0, &LAB_00401d8e);
+  // FUN_00573e59(DAT_00646cb8 + DAT_006a2d34[selected*0x58]*0xf0 + DAT_006a2d30[selected*0x58]*0x3c, uVar1);
+  // FUN_00415765();
 }
 
+// Source: decompiled/block_00410000.c FUN_0041623d (279 bytes)
 // FUN_0041623d — handle_editor_list_selection
 export function FUN_0041623d(param_1) {
-  // DEVIATION: Win32/MFC — rules editor list selection handler
-  // Calls: FUN_00418740, FUN_004190a0, FUN_0041541a, FUN_00415765,
-  // FUN_004161b5, FUN_0041612e
+  // DEVIATION: Win32 — rules editor list selection handler
+  // if (param_1 === 0xc9) {
+  //   if (FUN_0041557b() === 0) {
+  //     *(DAT_006a4f88 + 0x2ec) = FUN_00418d60();  // set selected tech
+  //     FUN_0041541a(); FUN_00415b52(); FUN_00415765();
+  //   } else {
+  //     FUN_00418d90(*(DAT_006a4f88 + 0x2ec));
+  //     FUN_0041541a(); FUN_00415765();
+  //     FUN_0059d3c9(...); FUN_004190d0("DEBUG","NOTICE"); FUN_0059d3c9(0);
+  //     SetFocus(FUN_00418770());
+  //   }
+  // } else if (param_1 === 0xcc || param_1 === 0xcd) {
+  //   FUN_0041557b(); FUN_00415b52(); FUN_00415765();
+  // }
 }
 
+// Source: decompiled/block_00410000.c FUN_00416354 (962 bytes)
 // FUN_00416354 — create_editor_dropdown
 export function FUN_00416354(param_1) {
   // DEVIATION: Win32/MFC — creates dropdown controls for rules editor
-  // Calls: FUN_00418bf0, FUN_00418ce0, FUN_00418d90, FUN_00418dd0,
-  // FUN_004a26bf, FUN_0040bbb0, FUN_0040ff00
+  // Reads: DAT_00625128, DAT_0062512c — control position offsets
+  // Reads: in_ECX + 0x124, in_ECX + 0x128, in_ECX + 0x2e8 — window dimensions
+  // Writes: DAT_006a1d80 = DAT_006a1d80 + 1 — control ID counter
+  let iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  // DEVIATION: Win32 — FUN_004086c0 creates RECT, FUN_00418bf0 creates combo control
+  // FUN_00418c70, FUN_00418dd0 set combo callbacks
+  // switch(param_1) populates combo items via FUN_00418ce0:
+  //   case 0: 100 tech names from DAT_00627684
+  //   case 1,2: "None"/"All" + 100 tech names
+  //   case 3: 4 government-related strings from DAT_00628420
+  //   case 4: 5 category strings from DAT_00628420
 }
 
+// Source: decompiled/block_00410000.c FUN_00416734 (244 bytes)
 // FUN_00416734 — create_editor_spinner
 export function FUN_00416734(param_1) {
-  // DEVIATION: Win32/MFC — creates spinner controls for rules editor
-  // Calls: FUN_00418910, FUN_004189c0, FUN_00418a00, FUN_00418a30
+  // DEVIATION: Win32 — creates spinner (edit+updown) controls for rules editor
+  // Reads: DAT_00625150/DAT_00625154 — control position offsets
+  // Reads: in_ECX + 0x124, in_ECX + 0x128, in_ECX + 0x2e8 — window dimensions
+  // Writes: DAT_006a1d80 = DAT_006a1d80 + 1 — control ID counter
+  let iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  // DEVIATION: Win32 — FUN_004086c0 creates RECT
+  // FUN_00418910 creates listbox control
+  // FUN_004189c0(4) sets style, FUN_00418a00 sets callback
 }
 
 // FUN_00416828 — paint_rules_editor (UI stub)
@@ -2408,22 +2545,38 @@ export function FUN_00416828() {
   FUN_00408460();
 }
 
+// Source: decompiled/block_00410000.c FUN_00416c9e (2186 bytes)
 // FUN_00416c9e — create_rules_editor_window
 export function FUN_00416c9e() {
-  // DEVIATION: Win32/MFC — creates the rules editor window with tabs, controls,
-  // list boxes, spinners, dropdowns for editing advances, units, improvements, terrain, etc.
-  // Calls: FUN_005c64da, FUN_0059db08, FUN_0040bc40, FUN_005badf0,
-  // FUN_005bb024, FUN_004151e0, FUN_004a2379, FUN_004a23fc, FUN_004a2534,
-  // FUN_0059edf0, FUN_0059e8db, FUN_005a632a, FUN_0040bc80,
-  // FUN_0041623d, FUN_00416354, FUN_00416734, FUN_00416828
-  // Key game state: DAT_006a1d7c, DAT_006a1d80, DAT_006a4f88, DAT_006a4f90
+  // DEVIATION: Win32/MFC — creates the rules editor window and all controls
+  FUN_005c64da();
+  DAT_006a1d7c = 1;
+  DAT_006a4f88 = 0; // DEVIATION: Win32 — C sets DAT_006a4f88 = in_ECX (CPropertySheet*)
+  // DEVIATION: Win32 — operator_new(0x48), FUN_005bd630() creates sub-object
+  DAT_0062e018 = 0; // DEVIATION: Win32 — C sets to FUN_005bd630() result
+  // DEVIATION: Win32 — FUN_00417ef0(0, DAT_0062e01c) creates font
+  // DEVIATION: Win32 — FUN_005d268e, FUN_005d25a8, FUN_005d2550, FUN_005d2568, FUN_005d2590
+  DAT_006a1d80 = 0xc9;
+  // DEVIATION: Win32 — FUN_005bf071 loads EDITORPT.GIF
+  // DEVIATION: Win32 — FUN_005534bc creates main dialog
+  // Creates 7 controls via FUN_00416734/FUN_00416354, treeview via FUN_00418f40
+  // Creates 5 buttons via FUN_0040f680/FUN_0040f880, FUN_0040f840
+  // FUN_0040f350(0), FUN_004151e0, FUN_00418d90, FUN_0041541a
+  // EnableStackedTabs, FUN_0041623d(0xc9), FUN_005bb574, FUN_004085f0
+  // FUN_005c61b0 — enters message loop
+  // while (DAT_006a1d7c !== 0) { FUN_0040ef50(); }
+  // if (DAT_0062e018 !== 0) { FUN_0040f010(1); }
+  DAT_0062e018 = 0;
+  FUN_00417542();
+  // DEVIATION: Win32 — FUN_00417558() SEH restore
 }
 
 // FUN_00417542 — close_modal_dialog
 export function FUN_00417542() { FUN_005c656b(); }
 
-// FUN_00417558 — restore_seh_2 (no-op)
-export function FUN_00417558() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_00417558 (14 bytes)
+// FUN_00417558 — restore_seh_2
+export function FUN_00417558() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_00417566 — open_rules_editor
 export function FUN_00417566() {
@@ -2437,35 +2590,74 @@ export function FUN_00417566() {
 // FUN_004175bf — destroy_editor_controls
 export function FUN_004175bf() { FUN_004183d0(); }
 
-// FUN_004175d5 — restore_seh_3 (no-op)
-export function FUN_004175d5() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_004175d5 (14 bytes)
+// FUN_004175d5 — restore_seh_3
+export function FUN_004175d5() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
+// Source: decompiled/block_00410000.c FUN_00417ef0 (93 bytes)
 // FUN_00417ef0 — create_or_replace_font
 export function FUN_00417ef0(param_1, param_2) {
-  // DEVIATION: Win32 — CreateFontA
+  // DEVIATION: Win32 — thiscall: operates on in_ECX (font handle pair)
+  // if (*in_ECX !== 0) { FUN_005c841d(*in_ECX); }
+  // *in_ECX = create_font_8200(param_1, param_2, 0);
+  // in_ECX[1] = gdi_847F(*in_ECX);
 }
 
-// FUN_00417f70 — get_editor_color (stub)
-export function FUN_00417f70() { return 0; }
+// Source: decompiled/block_00410000.c FUN_00417f70 (28 bytes)
+// FUN_00417f70 — get_editor_color
+export function FUN_00417f70() {
+  // DEVIATION: Win32 — thiscall: returns *(in_ECX + 0x30) (color byte)
+  return 0;
+}
 
-// FUN_00417fa0 — construct_editor_controls (UI stub)
-export function FUN_00417fa0() { return 0; }
+// Source: decompiled/block_00410000.c FUN_00417fa0 (498 bytes)
+// FUN_00417fa0 — construct_editor_controls
+export function FUN_00417fa0() {
+  // DEVIATION: MFC — constructs CPropertySheet-derived object with embedded controls
+  // Calls _eh_vector_constructor_iterator_ to init arrays of dropdown/spinner/edit controls
+  // Calls FUN_0040f3e0 x16 to init 16 embedded CWnd objects
+  // Calls FUN_00418e00 x3 to init 3 edit controls
+  // Sets *in_ECX = &PTR_FUN_0061c058 (vtable pointer)
+  return 0;
+}
 
-// FUN_004183d0 — destruct_editor_controls (UI stub)
+// Source: decompiled/block_00410000.c FUN_004183d0 (335 bytes)
+// FUN_004183d0 — destruct_editor_controls
 export function FUN_004183d0() {
-  // DEVIATION: Win32 — MFC destructor chain
+  // DEVIATION: Win32 — MFC destructor chain, SEH protected
+  // Destroys 3 edit controls, 16 CWnd objects, 2 control arrays, 1 base frame
+  FUN_0041851f();
+  FUN_0041852e();
+  FUN_0041853d();
+  FUN_0041854c();
+  FUN_0041855b();
+  FUN_0041856a();
+  FUN_00418579();
+  FUN_00418588();
+  FUN_00418597();
+  FUN_004185a6();
+  FUN_004185b5();
+  FUN_004185c4();
+  FUN_004185d3();
+  FUN_004185e2();
+  FUN_004185f1();
+  FUN_00418600();
+  FUN_0041860f();
+  FUN_0041861e();
+  FUN_0041862d();
+  FUN_0041863c();
+  FUN_00418654();
+  FUN_0041866c();
+  // DEVIATION: Win32 — FUN_0041867f() SEH restore
 }
 
 // FUN_0041851f..FUN_0041863c — destructor chain helpers
-export function FUN_0041851f() {
-  // DEVIATION: Win32 — CString destructor
-}
-export function FUN_0041852e() {
-  // DEVIATION: Win32 — CString destructor
-}
-export function FUN_0041853d() {
-  // DEVIATION: Win32 — CString destructor
-}
+// Source: decompiled/block_00410000.c FUN_0041851f (15 bytes)
+export function FUN_0041851f() { FUN_00418ea0(); }
+// Source: decompiled/block_00410000.c FUN_0041852e (15 bytes)
+export function FUN_0041852e() { FUN_00418ea0(); }
+// Source: decompiled/block_00410000.c FUN_0041853d (15 bytes)
+export function FUN_0041853d() { FUN_00418ea0(); }
 export function FUN_0041854c() { FUN_0040f570(); }
 export function FUN_0041855b() { FUN_0040f570(); }
 export function FUN_0041856a() { FUN_0040f570(); }
@@ -2485,135 +2677,228 @@ export function FUN_0041862d() { FUN_0040f570(); }
 export function FUN_0041863c() { _eh_vector_destructor_iterator_(); }
 export function FUN_00418654() { _eh_vector_destructor_iterator_(); }
 export function FUN_0041866c() { COleCntrFrameWnd_destroy(); }
-export function FUN_0041867f() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041867f (14 bytes)
+export function FUN_0041867f() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
+// Source: decompiled/block_00410000.c FUN_00418740 (28 bytes)
 // FUN_00418740 — get_control_id
-export function FUN_00418740() { return 0; }
+export function FUN_00418740() {
+  // DEVIATION: Win32 — thiscall: returns *(in_ECX + 4)
+  return 0;
+}
 
+// Source: decompiled/block_00410000.c FUN_00418770 (28 bytes)
 // FUN_00418770 — get_hwnd
-export function FUN_00418770() { return 0; }
+export function FUN_00418770() {
+  // DEVIATION: Win32 — thiscall: returns *(in_ECX + 0x1c)
+  return 0;
+}
 
-// FUN_004187a0 — construct_dropdown_control (UI stub)
-export function FUN_004187a0() { return 0; }
+// Source: decompiled/block_00410000.c FUN_004187a0 (137 bytes)
+// FUN_004187a0 — construct_dropdown_control
+export function FUN_004187a0() {
+  // DEVIATION: Win32 — thiscall constructor, SEH protected
+  // FUN_0040f480() — base class constructor
+  // *(in_ECX + 0x30) = 0; *(in_ECX + 0x2c) = 0;
+  // *(in_ECX + 0x44) = 0; *(in_ECX + 0x34) = 0;
+  // *(in_ECX + 0x38) = 0; *(in_ECX + 0x39) = 0;
+  return 0;
+}
 
+// Source: decompiled/block_00410000.c FUN_00418870 (90 bytes)
 // FUN_00418870 — destruct_dropdown_control
 export function FUN_00418870() {
-  // DEVIATION: Win32 — MFC control destructor
+  // DEVIATION: Win32 — MFC control destructor, SEH protected
+  // if (*(in_ECX + 0x1c) !== 0) { FUN_005d2d3d(*(in_ECX + 0x1c)); }
+  FUN_004188ca();
+  // DEVIATION: Win32 — FUN_004188dd() SEH restore
 }
 
 // FUN_004188ca — destroy_base_control
 export function FUN_004188ca() { FUN_0040f510(); }
 
-// FUN_004188dd — restore_seh_4 (no-op)
-export function FUN_004188dd() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_004188dd (14 bytes)
+// FUN_004188dd — restore_seh_4
+export function FUN_004188dd() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
-// FUN_00418910 — create_listbox_control (UI stub)
+// Source: decompiled/block_00410000.c FUN_00418910 (130 bytes)
+// FUN_00418910 — create_listbox_control
 export function FUN_00418910(param_1, param_2, param_3, param_4) {
-  // DEVIATION: Win32 — CreateWindowExA
+  // DEVIATION: Win32 — thiscall: creates listbox control
+  // if (*(in_ECX + 0x1c) !== 0) { FUN_0040f610(); }
+  // *(in_ECX + 0x40) = PTR_DAT_00637e6c;
+  // FUN_0040f730(param_1, 4, param_2, param_3);
+  // *(in_ECX + 0x1c) = register_wndclass_2740(param_3, in_ECX, 1, 1, *(in_ECX + 0x40));
+  // send_msg_2D7F(*(in_ECX + 0x1c), param_4);
 }
 
+// Source: decompiled/block_00410000.c FUN_004189c0 (43 bytes)
 // FUN_004189c0 — set_listbox_style
 export function FUN_004189c0(param_1) {
-  // DEVIATION: Win32 — SetWindowLongA
+  // DEVIATION: Win32 — send_msg_2DA1(*(in_ECX + 0x1c), param_1)
 }
 
+// Source: decompiled/block_00410000.c FUN_00418a00 (33 bytes)
 // FUN_00418a00 — set_listbox_callback
 export function FUN_00418a00(param_1) {
-  // DEVIATION: Win32 — thiscall callback setter
+  // DEVIATION: Win32 — thiscall: *(in_ECX + 0x34) = param_1
 }
 
+// Source: decompiled/block_00410000.c FUN_00418a30 (43 bytes)
 // FUN_00418a30 — set_listbox_text
 export function FUN_00418a30(param_1) {
-  // DEVIATION: Win32 — SetWindowTextA
+  // DEVIATION: Win32 — send_msg_2D7F(*(in_ECX + 0x1c), param_1)
 }
 
+// Source: decompiled/block_00410000.c FUN_00418a70 (43 bytes)
 // FUN_00418a70 — get_listbox_text
 export function FUN_00418a70(param_1) {
-  // DEVIATION: Win32 — GetWindowTextA
+  // DEVIATION: Win32 — send_msg_2D4D(*(in_ECX + 0x1c), param_1)
 }
 
-// FUN_00418ab0 — construct_spinner_control (UI stub)
-export function FUN_00418ab0() { return 0; }
+// Source: decompiled/block_00410000.c FUN_00418ab0 (103 bytes)
+// FUN_00418ab0 — construct_spinner_control
+export function FUN_00418ab0() {
+  // DEVIATION: Win32 — thiscall constructor, SEH protected
+  // FUN_0040f480() — base class constructor
+  // *(in_ECX + 0x30) = 0; *(in_ECX + 0x34) = 0;
+  return 0;
+}
 
+// Source: decompiled/block_00410000.c FUN_00418b50 (90 bytes)
 // FUN_00418b50 — destruct_spinner_control
 export function FUN_00418b50() {
-  // DEVIATION: Win32 — MFC control destructor
+  // DEVIATION: Win32 — MFC control destructor, SEH protected
+  // if (*(in_ECX + 0x1c) !== 0) { FUN_005d356e(*(in_ECX + 0x1c)); }
+  FUN_00418baa();
+  // DEVIATION: Win32 — FUN_00418bbd() SEH restore
 }
 
 // FUN_00418baa — destroy_base_control_2
 export function FUN_00418baa() { FUN_0040f510(); }
 
-// FUN_00418bbd — restore_seh_5 (no-op)
-export function FUN_00418bbd() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_00418bbd (14 bytes)
+// FUN_00418bbd — restore_seh_5
+export function FUN_00418bbd() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
-// FUN_00418bf0 — create_combo_control (UI stub)
+// Source: decompiled/block_00410000.c FUN_00418bf0 (101 bytes)
+// FUN_00418bf0 — create_combo_control
 export function FUN_00418bf0(param_1, param_2, param_3) {
-  // DEVIATION: Win32 — CreateWindowExA
+  // DEVIATION: Win32 — thiscall: creates combo box control
+  // if (*(in_ECX + 0x1c) !== 0) { FUN_0040f610(); }
+  // FUN_0040f730(param_1, 10, param_2, param_3);
+  // *(in_ECX + 0x1c) = register_wndclass_3130(param_3, in_ECX, 1);
+  // *(in_ECX + 0x2c) = 0;
 }
 
+// Source: decompiled/block_00410000.c FUN_00418c70 (48 bytes)
 // FUN_00418c70 — refresh_combo_data
 export function FUN_00418c70() {
-  // DEVIATION: Win32 — SendMessageA CB_RESETCONTENT
+  // DEVIATION: Win32 — thiscall
+  // let uVar1 = FUN_00418cb0();
+  // send_msg_35C8(*(in_ECX + 0x1c), uVar1);
 }
 
+// Source: decompiled/block_00410000.c FUN_00418cb0 (27 bytes)
 // FUN_00418cb0 — get_combo_data_ptr
-export function FUN_00418cb0() { return 0; }
-
-// FUN_00418ce0 — add_combo_item (UI stub)
-export function FUN_00418ce0(param_1) {
-  // DEVIATION: Win32 — SendMessageA CB_ADDSTRING
+export function FUN_00418cb0() {
+  // DEVIATION: Win32 — thiscall: returns *in_ECX
+  return 0;
 }
 
+// Source: decompiled/block_00410000.c FUN_00418ce0 (49 bytes)
+// FUN_00418ce0 — add_combo_item
+export function FUN_00418ce0(param_1) {
+  // DEVIATION: Win32 — thiscall
+  // send_msg_357E(*(in_ECX + 0x1c), param_1);
+  // *(in_ECX + 0x2c) = *(in_ECX + 0x2c) + 1;
+}
+
+// Source: decompiled/block_00410000.c FUN_00418d20 (47 bytes)
 // FUN_00418d20 — reset_combo
 export function FUN_00418d20() {
-  // DEVIATION: Win32 — SendMessageA CB_RESETCONTENT
+  // DEVIATION: Win32 — thiscall
+  // send_msg_360A(*(in_ECX + 0x1c));
+  // *(in_ECX + 0x2c) = 0;
 }
 
+// Source: decompiled/block_00410000.c FUN_00418d60 (37 bytes)
 // FUN_00418d60 — get_combo_selection
-export function FUN_00418d60() { return 0; }
-
-// FUN_00418d90 — set_combo_selection (UI stub)
-export function FUN_00418d90(param_1) {
-  // DEVIATION: Win32 — SendMessageA CB_SETCURSEL
+export function FUN_00418d60() {
+  // DEVIATION: Win32 — thiscall: send_msg_36B1(*(in_ECX + 0x1c))
+  return 0;
 }
 
+// Source: decompiled/block_00410000.c FUN_00418d90 (43 bytes)
+// FUN_00418d90 — set_combo_selection
+export function FUN_00418d90(param_1) {
+  // DEVIATION: Win32 — thiscall: send_msg_36F6(*(in_ECX + 0x1c), param_1)
+}
+
+// Source: decompiled/block_00410000.c FUN_00418dd0 (33 bytes)
 // FUN_00418dd0 — set_combo_callback
 export function FUN_00418dd0(param_1) {
-  // DEVIATION: Win32 — thiscall callback setter
+  // DEVIATION: Win32 — thiscall: *(in_ECX + 0x34) = param_1
 }
 
-// FUN_00418e00 — construct_edit_control (UI stub)
-export function FUN_00418e00() { return 0; }
+// Source: decompiled/block_00410000.c FUN_00418e00 (103 bytes)
+// FUN_00418e00 — construct_edit_control
+export function FUN_00418e00() {
+  // DEVIATION: Win32 — thiscall constructor, SEH protected
+  // FUN_0040f480() — base class constructor
+  // *(in_ECX + 0x30) = 0; *(in_ECX + 0x34) = 0;
+  return 0;
+}
 
+// Source: decompiled/block_00410000.c FUN_00418ea0 (90 bytes)
 // FUN_00418ea0 — destruct_edit_control
 export function FUN_00418ea0() {
-  // DEVIATION: Win32 — MFC control destructor
+  // DEVIATION: Win32 — MFC control destructor, SEH protected
+  // if (*(in_ECX + 0x1c) !== 0) { FUN_005d3c40(*(in_ECX + 0x1c)); }
+  FUN_00418efa();
+  // DEVIATION: Win32 — FUN_00418f0d() SEH restore
 }
 
 // FUN_00418efa — destroy_base_control_3
 export function FUN_00418efa() { FUN_0040f510(); }
 
-// FUN_00418f0d — restore_seh_6 (no-op)
-export function FUN_00418f0d() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_00418f0d (14 bytes)
+// FUN_00418f0d — restore_seh_6
+export function FUN_00418f0d() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
-// FUN_00418f40 — create_treeview_control (UI stub)
+// Source: decompiled/block_00410000.c FUN_00418f40 (121 bytes)
+// FUN_00418f40 — create_treeview_control
 export function FUN_00418f40(param_1, param_2, param_3) {
-  // DEVIATION: Win32 — CreateWindowExA
+  // DEVIATION: Win32 — thiscall: creates treeview control
+  // if (*(in_ECX + 0x1c) !== 0) { FUN_0040f610(); }
+  // *(in_ECX + 0x38) = PTR_DAT_00637e70;
+  // FUN_0040f730(param_1, 7, param_2, param_3);
+  // *(in_ECX + 0x1c) = register_wndclass_37A0(param_3, in_ECX, 1, 0, *(in_ECX + 0x38));
+  // *(in_ECX + 0x2c) = 0;
 }
 
+// Source: decompiled/block_00410000.c FUN_00418fe0 (48 bytes)
 // FUN_00418fe0 — refresh_treeview_data
 export function FUN_00418fe0() {
-  // DEVIATION: Win32 — SendMessageA TVM_DELETEITEM
+  // DEVIATION: Win32 — thiscall
+  // let uVar1 = FUN_00418cb0();
+  // send_msg_3C9A(*(in_ECX + 0x1c), uVar1);
 }
 
+// Source: decompiled/block_00410000.c FUN_00419020 (49 bytes)
 // FUN_00419020 — add_treeview_item
 export function FUN_00419020(param_1) {
-  // DEVIATION: Win32 — SendMessageA TVM_INSERTITEM
+  // DEVIATION: Win32 — thiscall
+  // send_msg_3C50(*(in_ECX + 0x1c), param_1);
+  // *(in_ECX + 0x2c) = *(in_ECX + 0x2c) + 1;
 }
 
+// Source: decompiled/block_00410000.c FUN_00419060 (47 bytes)
 // FUN_00419060 — reset_treeview
 export function FUN_00419060() {
-  // DEVIATION: Win32 — SendMessageA TVM_DELETEITEM
+  // DEVIATION: Win32 — thiscall
+  // send_msg_3CDC(*(in_ECX + 0x1c));
+  // *(in_ECX + 0x2c) = 0;
 }
 
 // FUN_004190a0 — append_padding_spaces
@@ -2667,8 +2952,9 @@ export function FUN_00419940() { FUN_005c656b(); }
 // FUN_0041994c — cleanup_hotseat_buffer
 export function FUN_0041994c() { FUN_0059df8a(); }
 
-// FUN_00419962 — restore_seh_hotseat (no-op)
-export function FUN_00419962() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_00419962 (15 bytes)
+// FUN_00419962 — restore_seh_hotseat
+export function FUN_00419962() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_00419b80 — init_palette_subsystem
 export function FUN_00419b80() { FUN_005bbb32(); }
@@ -3171,8 +3457,9 @@ export function FUN_0041b177() {
 // FUN_0041b46a — cleanup_language_buffer
 export function FUN_0041b46a() { FUN_0059df8a(); }
 
-// FUN_0041b480 — restore_seh_language (no-op)
-export function FUN_0041b480() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041b480 (15 bytes)
+// FUN_0041b480 — restore_seh_language
+export function FUN_0041b480() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_0041b48f — shutdown_game
 export function FUN_0041b48f() {
@@ -3278,8 +3565,9 @@ export function FUN_0041ba52(param_1) {
 // FUN_0041d3f2 — cleanup_setup_buffer
 export function FUN_0041d3f2() { FUN_0059df8a(); }
 
-// FUN_0041d408 — restore_seh_setup (no-op)
-export function FUN_0041d408() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041d408 (15 bytes)
+// FUN_0041d408 — restore_seh_setup
+export function FUN_0041d408() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_0041d417 — map_size_dialog
 export function FUN_0041d417() {
@@ -3295,8 +3583,9 @@ export function FUN_0041d417() {
 // FUN_0041d7c5 — cleanup_mapsize_buffer
 export function FUN_0041d7c5() { FUN_0059df8a(); }
 
-// FUN_0041d7db — restore_seh_mapsize (no-op)
-export function FUN_0041d7db() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041d7db (15 bytes)
+// FUN_0041d7db — restore_seh_mapsize
+export function FUN_0041d7db() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_0041d7ea — custom_world_params_dialog
 export function FUN_0041d7ea() {
@@ -3312,8 +3601,9 @@ export function FUN_0041d7ea() {
 // FUN_0041dc9e — cleanup_custom_buffer
 export function FUN_0041dc9e() { FUN_0059df8a(); }
 
-// FUN_0041dcb4 — restore_seh_custom (no-op)
-export function FUN_0041dcb4() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041dcb4 (15 bytes)
+// FUN_0041dcb4 — restore_seh_custom
+export function FUN_0041dcb4() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_0041dcc3 — clear_start_positions
 export function FUN_0041dcc3() {
@@ -3353,8 +3643,9 @@ export function FUN_0041e7b2() { FUN_005c656b(); }
 // FUN_0041e7be — cleanup_scenario_buffer
 export function FUN_0041e7be() { FUN_0059df8a(); }
 
-// FUN_0041e7d4 — restore_seh_scenario (no-op)
-export function FUN_0041e7d4() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041e7d4 (15 bytes)
+// FUN_0041e7d4 — restore_seh_scenario
+export function FUN_0041e7d4() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_0041e7e3 — reload_labels_and_strings
 export function FUN_0041e7e3() {
@@ -3400,8 +3691,9 @@ export function FUN_0041e8fb(param_1) {
 // FUN_0041eec6 — cleanup_pick_buffer
 export function FUN_0041eec6() { FUN_0059df8a(); }
 
-// FUN_0041eedc — restore_seh_pick (no-op)
-export function FUN_0041eedc() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041eedc (15 bytes)
+// FUN_0041eedc — restore_seh_pick
+export function FUN_0041eedc() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_0041eeeb — single_player_main_menu
 export function FUN_0041eeeb() {
@@ -3426,8 +3718,9 @@ export function FUN_0041f66e() { FUN_005c656b(); }
 // FUN_0041f67a — cleanup_sp_buffer
 export function FUN_0041f67a() { FUN_0059df8a(); }
 
-// FUN_0041f690 — restore_seh_sp (no-op)
-export function FUN_0041f690() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0041f690 (15 bytes)
+// FUN_0041f690 — restore_seh_sp
+export function FUN_0041f690() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // FUN_0041f69f — setup_initial_game_state
 export function FUN_0041f69f() {
@@ -3645,9 +3938,10 @@ export function FUN_0041f8d9() {
   FUN_0042021d();
 }
 
+// Source: decompiled/block_00420000.c FUN_004201ef (12 bytes)
 // FUN_004201ef — cleanup_mp_chat_log (referenced but out-of-block)
 export function FUN_004201ef() {
-  // DEVIATION: Win32 — chat log cleanup
+  // DEVIATION: Win32 — FUN_005d7c6e() -> FUN_00421c30()
 }
 
 // FUN_004201fb — close_mp_modal (referenced but out-of-block)
@@ -3656,8 +3950,9 @@ export function FUN_004201fb() { FUN_005c656b(); }
 // FUN_00420207 — cleanup_mp_buffer
 export function FUN_00420207() { FUN_0059df8a(); }
 
-// FUN_0042021d — restore_seh_mp (no-op)
-export function FUN_0042021d() { /* SEH frame restore — no-op */ }
+// Source: decompiled/block_00410000.c FUN_0042021d (15 bytes)
+// FUN_0042021d — restore_seh_mp
+export function FUN_0042021d() { /* DEVIATION: Win32 — SEH frame restore, no-op in JS */ }
 
 // Stub for FUN_00589c79 referenced from FUN_0041b8b0
 function FUN_00589c79() { /* stub */ }

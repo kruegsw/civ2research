@@ -347,15 +347,27 @@ export function FUN_00490590(in_ECX) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004906fd — science_advisor_draw (UI rendering)
-// Source: block_00490000.c @ 0x004906FD, 5344 bytes
-// This is a large UI drawing function. Stubbed for brevity but
-// present for completeness.
+// Source: decompiled/block_00490000.c FUN_004906fd (5411 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004906fd() {
-  // Very large UI rendering function for the science advisor dialog.
-  // Contains extensive drawing calls, string formatting, and dialog
-  // element positioning. No game state mutations.
-  // Stub: UI only
+  // DEVIATION: Win32 — entire function is UI rendering (science advisor dialog).
+  // Draws tech tree info, government stats, research progress icons.
+  // All calls are Win32 GDI/MFC drawing primitives (SetRect, sprintf, text output,
+  // bitmap blitting) operating on dialog device contexts. No game state mutations.
+  //
+  // C body: 457 lines of Win32 drawing calls including:
+  //   FUN_005c00ce, FUN_005c0073, thunk_FUN_00451bf0, thunk_FUN_004f6564,
+  //   thunk_FUN_00407f90, thunk_FUN_00407fc0, thunk_FUN_0040ef70,
+  //   FUN_005cda06, FUN_005cd775, thunk_FUN_00451860, thunk_FUN_00451830,
+  //   FUN_005cef31, FUN_005c0f57, thunk_FUN_0040efd0, FUN_005c19ad,
+  //   thunk_FUN_0040bbb0, thunk_FUN_0040bc10, thunk_FUN_0040fe40,
+  //   thunk_FUN_0040bbe0, thunk_FUN_0040fe10, FUN_005f22d0, FUN_005f22e0,
+  //   thunk_FUN_00452c14, thunk_FUN_00452768, thunk_FUN_00408490,
+  //   thunk_FUN_00491d61, thunk_FUN_004f8a9b, thunk_FUN_00428b0c,
+  //   thunk_FUN_004aef20, SetRect, _sprintf, _Timevec::~_Timevec
+  // Reads: DAT_0067a798, DAT_0062d858, DAT_006a6668, DAT_00635a1c,
+  //   DAT_006a7d58, DAT_00679640, DAT_00628420, DAT_00627cc8-DAT_00627cd2,
+  //   DAT_0062c944-DAT_0062c980
   return;
 }
 
@@ -1133,7 +1145,8 @@ export function FUN_004941ee(param_1) {
       DAT_0062ca34 + 0x1074 &&
       (DAT_0062ca34 + 0x1074 <
         DAT_0061d2b4[u8(DAT_0062ca34 + 0x1084) * 0x28])))) {
-    // *(param_1) stored at offset 0x1088
+    // C: *(undefined1 *)(DAT_0062ca34 + 0x1088) = (undefined1)param_1;
+    if (DAT_0062ca34) { DAT_0062ca34[0x1088] = param_1 & 0xFF; }
     FUN_00496125();
   }
   return;
@@ -1166,14 +1179,48 @@ export function FUN_004943c9() {
   return;
 }
 
-// Small destructor/cleanup helpers
-export function FUN_0049444f() { return; } // FUN_005dd1a0 stub
-export function FUN_0049445e() { return; } // _Timevec dtor stub
-export function FUN_0049446d() { return; } // FUN_005c656b stub
-export function FUN_0049447c() { return; } // FUN_005bd915 stub
-export function FUN_0049448b() { return; } // FUN_0044cba0 stub
-export function FUN_0049449a() { return; } // FUN_0044ca60 stub
-export function FUN_004944ad() { return; } // SEH restore stub
+// Source: decompiled/block_00490000.c FUN_0049444f (15 bytes)
+export function FUN_0049444f() {
+  // DEVIATION: MFC — calls FUN_005dd1a0 (MFC cleanup)
+  // FUN_005dd1a0();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_0049445e (15 bytes)
+export function FUN_0049445e() {
+  // DEVIATION: C++ destructor — _Timevec::~_Timevec on dialog member
+  // _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x658));
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_0049446d (15 bytes)
+export function FUN_0049446d() {
+  // DEVIATION: MFC — calls FUN_005c656b (MFC cleanup)
+  // FUN_005c656b();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_0049447c (15 bytes)
+export function FUN_0049447c() {
+  // DEVIATION: MFC — calls FUN_005bd915 (MFC cleanup)
+  // FUN_005bd915();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_0049448b (15 bytes)
+export function FUN_0049448b() {
+  // DEVIATION: MFC — calls thunk_FUN_0044cba0 (MFC cleanup)
+  // FUN_0044cba0();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_0049449a (19 bytes)
+export function FUN_0049449a() {
+  // DEVIATION: MFC — calls thunk_FUN_0044ca60 (MFC cleanup)
+  // FUN_0044ca60();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_004944ad (14 bytes)
+export function FUN_004944ad() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1234,9 +1281,18 @@ export function FUN_00494949() {
   return;
 }
 
-// Cleanup helpers for FUN_00494949
-export function FUN_00494b3a() { return; }
-export function FUN_00494b50() { return; }
+// Source: decompiled/block_00490000.c FUN_00494b3a (22 bytes)
+export function FUN_00494b3a() {
+  // DEVIATION: MFC — calls FUN_005c656b (MFC cleanup)
+  // FUN_005c656b();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00494b50 (15 bytes)
+export function FUN_00494b50() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00494b5f — init_throne_military_art
@@ -1247,11 +1303,30 @@ export function FUN_00494b5f() {
   return;
 }
 
-// Cleanup helpers for FUN_00494b5f
-export function FUN_00494d71() { return; }
-export function FUN_00494d7d() { return; }
-export function FUN_00494d89() { return; }
-export function FUN_00494d9f() { return; }
+// Source: decompiled/block_00490000.c FUN_00494d71 (12 bytes)
+export function FUN_00494d71() {
+  // DEVIATION: MFC — calls FUN_005bd915 (MFC cleanup)
+  // FUN_005bd915();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00494d7d (12 bytes)
+export function FUN_00494d7d() {
+  // DEVIATION: MFC — calls FUN_005c656b (MFC cleanup)
+  // FUN_005c656b();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00494d89 (22 bytes)
+export function FUN_00494d89() {
+  // DEVIATION: MFC — calls FUN_005cde4d (MFC cleanup)
+  // FUN_005cde4d();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00494d9f (15 bytes)
+export function FUN_00494d9f() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00494dae — count_tech_tree_depth (recursive)
@@ -1283,12 +1358,36 @@ export function FUN_00494e2a() {
   return;
 }
 
-// Cleanup helpers for FUN_00494e2a
-export function FUN_00495be2() { return; }
-export function FUN_00495bee() { return; }
-export function FUN_00495bfa() { return; }
-export function FUN_00495c10() { return; }
-export function FUN_00495c26() { return; }
+// Source: decompiled/block_00490000.c FUN_00495be2 (12 bytes)
+export function FUN_00495be2() {
+  // DEVIATION: MFC — calls FUN_005bd915 (MFC cleanup)
+  // FUN_005bd915();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00495bee (12 bytes)
+export function FUN_00495bee() {
+  // DEVIATION: MFC — calls FUN_005c656b (MFC cleanup)
+  // FUN_005c656b();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00495bfa (22 bytes)
+export function FUN_00495bfa() {
+  // DEVIATION: MFC — calls _eh_vector_destructor_iterator_ (MFC cleanup)
+  // _eh_vector_destructor_iterator_((void *)(unaff_EBP + -0x600), 0x3c, 5, FUN_005cde4d);
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00495c10 (22 bytes)
+export function FUN_00495c10() {
+  // DEVIATION: MFC — calls thunk_FUN_0043c520 (MFC cleanup)
+  // FUN_0043c520();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00495c26 (15 bytes)
+export function FUN_00495c26() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1300,11 +1399,30 @@ export function FUN_00495c35() {
   return;
 }
 
-// Cleanup helpers
-export function FUN_00495dcf() { return; }
-export function FUN_00495ddb() { return; }
-export function FUN_00495de7() { return; }
-export function FUN_00495dfd() { return; }
+// Source: decompiled/block_00490000.c FUN_00495dcf (12 bytes)
+export function FUN_00495dcf() {
+  // DEVIATION: MFC — calls FUN_005bd915 (MFC cleanup)
+  // FUN_005bd915();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00495ddb (12 bytes)
+export function FUN_00495ddb() {
+  // DEVIATION: MFC — calls FUN_005c656b (MFC cleanup)
+  // FUN_005c656b();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00495de7 (22 bytes)
+export function FUN_00495de7() {
+  // DEVIATION: MFC — calls FUN_005cde4d (MFC cleanup)
+  // FUN_005cde4d();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00495dfd (15 bytes)
+export function FUN_00495dfd() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1316,9 +1434,18 @@ export function FUN_00495e0c() {
   return 0;
 }
 
-// Cleanup helpers
-export function FUN_00496100() { return; }
-export function FUN_00496116() { return; }
+// Source: decompiled/block_00490000.c FUN_00496100 (22 bytes)
+export function FUN_00496100() {
+  // DEVIATION: MFC — calls FUN_005c656b (MFC cleanup)
+  // FUN_005c656b();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00496116 (15 bytes)
+export function FUN_00496116() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1350,13 +1477,42 @@ export function CCommandLineInfo_dtor() {
   return;
 }
 
-// Destructor helper stubs
-export function FUN_004963a5() { return; }
-export function FUN_004963b4() { return; }
-export function FUN_004963c3() { return; }
-export function FUN_004963d2() { return; }
-export function FUN_004963e1() { return; }
-export function FUN_004963f4() { return; }
+// Source: decompiled/block_00490000.c FUN_004963a5 (15 bytes)
+export function FUN_004963a5() {
+  // DEVIATION: C++ destructor — _Timevec::~_Timevec on dialog member
+  // _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x1d4));
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_004963b4 (15 bytes)
+export function FUN_004963b4() {
+  // DEVIATION: MFC — calls thunk_FUN_0040f570 (MFC cleanup)
+  // FUN_0040f570();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_004963c3 (15 bytes)
+export function FUN_004963c3() {
+  // DEVIATION: MFC — calls thunk_FUN_0040f570 (MFC cleanup)
+  // FUN_0040f570();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_004963d2 (15 bytes)
+export function FUN_004963d2() {
+  // DEVIATION: MFC — calls FUN_005bd915 (MFC cleanup)
+  // FUN_005bd915();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_004963e1 (19 bytes)
+export function FUN_004963e1() {
+  // DEVIATION: MFC — calls thunk_FUN_0044cba0 (MFC cleanup)
+  // FUN_0044cba0();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_004963f4 (14 bytes)
+export function FUN_004963f4() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1704,15 +1860,26 @@ export function FUN_00498310(param_1) {
 // Source: block_00490000.c @ 0x0049836A, 614 bytes
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0049836a(param_1) {
-  // Password entry dialog — UI stub with some game state mutations
+  // Password entry dialog — UI stub with game state mutations
+  // DEVIATION: Win32 — dialog UI for password entry omitted
   DAT_00673d18[param_1] = 0;
+  DAT_00673d38[param_1] = 0; // C: *(undefined4 *)(&DAT_00673d38 + param_1 * 4) = 0
   return;
 }
 
 
-// Cleanup helpers
-export function FUN_004985d0() { return; }
-export function FUN_004985e6() { return; }
+// Source: decompiled/block_00490000.c FUN_004985d0 (22 bytes)
+export function FUN_004985d0() {
+  // DEVIATION: MFC — calls thunk_FUN_0059df8a (MFC cleanup)
+  // FUN_0059df8a();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_004985e6 (14 bytes)
+export function FUN_004985e6() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1724,9 +1891,18 @@ export function FUN_004985f4(param_1) {
   return 0;
 }
 
-// Cleanup helpers
-export function FUN_0049875f() { return; }
-export function FUN_00498775() { return; }
+// Source: decompiled/block_00490000.c FUN_0049875f (22 bytes)
+export function FUN_0049875f() {
+  // DEVIATION: MFC — calls thunk_FUN_0059df8a (MFC cleanup)
+  // FUN_0059df8a();
+  return;
+}
+// Source: decompiled/block_00490000.c FUN_00498775 (15 bytes)
+export function FUN_00498775() {
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════

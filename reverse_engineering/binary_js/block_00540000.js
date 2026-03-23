@@ -1043,9 +1043,9 @@ export function FUN_0054ada1() {
 // event_picker_seh_cleanup
 // ============================================================
 
+// Source: decompiled/block_00540000.c FUN_0054adb7 (14 bytes)
 export function FUN_0054adb7() {
-  // SEH (structured exception handling) cleanup — no-op in JS
-  return;
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -2712,9 +2712,9 @@ export function FUN_0054ee8f() {
 // event_editor_action_seh_cleanup
 // ============================================================
 
+// Source: decompiled/block_00540000.c FUN_0054eea5 (14 bytes)
 export function FUN_0054eea5() {
-  // SEH (structured exception handling) cleanup — no-op in JS
-  return;
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -3004,9 +3004,9 @@ export function FUN_0054ffa4() {
 // events_editor_init_seh_cleanup
 // ============================================================
 
+// Source: decompiled/block_00540000.c FUN_0054ffba (14 bytes)
 export function FUN_0054ffba() {
-  // SEH (structured exception handling) cleanup — no-op in JS
-  return;
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 

@@ -8,9 +8,7 @@
 // Source: reverse_engineering/decompiled/block_004B0000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8, s16 } from './mem.js';
-
-// s32, w16, w32 imported from mem.js above
+import { s8, u8, s16, s32, w16, w32 } from './mem.js';
 
 import { FUN_004bd9f0 as _FUN_004bd9f0 } from './fn_utils.js';
 // Re-export FUN_004bd9f0 (already defined in fn_utils.js)
@@ -428,8 +426,9 @@ export function _E2() {
 // _E1 — CRT init no-op
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004B0000.c _E1 (6 bytes)
 export function _E1() {
-  return;
+  // C: return; (truly empty CRT init function)
 }
 
 
@@ -458,7 +457,7 @@ export function FUN_004b0905() {
     if (DAT_006ad2f7 !== 0) {
       sVar1 = DAT_0067a400;
     }
-    DAT_0067a408 = sVar1;
+    DAT_0067a408 = sVar1 + DAT_0062d0bc;
     FUN_004b0a41();
     uVar2 = 1;
   }
@@ -489,7 +488,7 @@ export function FUN_004b0a41() {
   for (local_c = 0; local_c < 0x17; local_c = local_c + 1) {
     // FID_conflict__memcpy(local_8, DAT_0067a424[local_c * 6], DAT_0067a410[local_c * 0x18])
     let src = DAT_0067a424[local_c * 6];
-    let size = DAT_0067a410[local_c * 0x18];
+    let size = ri(DAT_0067a410, local_c * 0x18); // C: *(int *)(&DAT_0067a410 + ...)
     if (src && DAT_0062d0bc) {
       for (let i = 0; i < size; i++) {
         DAT_0062d0bc[local_8_offset + i] = src[i] || 0;
@@ -670,7 +669,7 @@ export function FUN_004b14a4() {
     } else if (local_c === 6) {
       local_8 = DAT_00655b18 * 0x58 + local_8;
     } else {
-      local_8 = local_8 + DAT_0067a410[local_c * 0x18];
+      local_8 = local_8 + ri(DAT_0067a410, local_c * 0x18); // C: *(int *)(&DAT_0067a410 + ...)
     }
   }
   return local_8 + 0x1e0;
@@ -803,7 +802,7 @@ export function FUN_004b1a15(param_1) {
       let local_24 = new Int32Array(5);
       // memcpy(local_24, &DAT_0067a410 + local_28 * 0x18, 0x14)
       for (let i = 0; i < 5; i++) {
-        local_24[i] = DAT_0067a410[local_28 * 0x18 + i * 4] || 0;
+        local_24[i] = ri(DAT_0067a410, local_28 * 0x18 + i * 4); // C: *(int *)(&DAT_0067a410 + ...)
       }
       if (local_28 === 5) {
         local_24[0] = DAT_00655b16 << 5;
@@ -853,7 +852,7 @@ export function FUN_004b1c11(param_1) {
     for (local_2c = 0; local_2c < 0x18; local_2c = local_2c + 1) {
       let local_28 = new Int32Array(5);
       for (let i = 0; i < 5; i++) {
-        local_28[i] = DAT_0067a410[local_2c * 0x18 + i * 4] || 0;
+        local_28[i] = ri(DAT_0067a410, local_2c * 0x18 + i * 4); // C: *(int *)(&DAT_0067a410 + ...)
       }
       if (local_2c === 5) {
         local_28[0] = DAT_00655b16 << 5;
@@ -1460,8 +1459,9 @@ export function FUN_004b32fe() {
               }
             }
             // Write to continent/body data
-            // DAT_00636598[local_10 * 6 + 3] = label
+            DAT_00636598[local_38_offset] = label & 0xFF;
           }
+          local_38_offset = local_38_offset + 6;
           FUN_0040894c();
         }
         for (local_20 = 0; local_20 < 0x40; local_20 = local_20 + 1) {
@@ -1650,8 +1650,11 @@ export function FUN_004b4593() {
 export function FUN_004b4705() { FUN_005d7c6e(); }
 // FUN_004b4711 — parleywin_base_dtor
 export function FUN_004b4711() { FUN_0044cba0(); }
+// Source: decompiled/block_004B0000.c FUN_004b4727 (14 bytes)
 // FUN_004b4727 — parleywin_seh_cleanup
-export function FUN_004b4727() { return; }
+export function FUN_004b4727() {
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1669,8 +1672,11 @@ export function FUN_004b4735(param_1) {
 
 // FUN_004b4be3 — parleywin_close_chatfile_2
 export function FUN_004b4be3() { FUN_005d7c6e(); }
+// Source: decompiled/block_004B0000.c FUN_004b4bf9 (14 bytes)
 // FUN_004b4bf9 — parleywin_seh_cleanup_2
-export function FUN_004b4bf9() { return; }
+export function FUN_004b4bf9() {
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2041,8 +2047,12 @@ export function FUN_004bb540() { FUN_00407fc0(); return; }
 // FUN_004bb570 — widget_set_size
 export function FUN_004bb570(param_1) { FUN_005bc713(0, param_1); return; }
 
+// Source: decompiled/block_004B0000.c FUN_004bb5b0 (28 bytes)
 // FUN_004bb5b0 — widget_set_readonly
-export function FUN_004bb5b0() { return; }
+export function FUN_004bb5b0() {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // *(in_ECX + 0x24) = 1; // DEVIATION: MFC — set readonly flag
+}
 
 // FUN_004bb5e0 — widget_focus_hwnd
 export function FUN_004bb5e0() { FUN_005c90b0(0); return; }
@@ -2075,8 +2085,11 @@ export function FUN_004bb740() {
 
 // FUN_004bb7b0 — scrollbar_base_dtor
 export function FUN_004bb7b0() { FUN_0040f510(); return; }
+// Source: decompiled/block_004B0000.c FUN_004bb7c3 (14 bytes)
 // FUN_004bb7c3 — scrollbar_seh_cleanup
-export function FUN_004bb7c3() { return; }
+export function FUN_004bb7c3() {
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
+}
 
 // FUN_004bb800 — widget_inflate_rect_neg
 export function FUN_004bb800(param_1, param_2, param_3) {
@@ -2114,8 +2127,11 @@ export function FUN_004bb8e0(param_1) {
 
 // FUN_004bb97b — wonder_view_cleanup_call
 export function FUN_004bb97b() { FUN_004bba79(); return; }
+// Source: decompiled/block_004B0000.c FUN_004bb991 (14 bytes)
 // FUN_004bb991 — wonder_view_seh_cleanup
-export function FUN_004bb991() { return; }
+export function FUN_004bb991() {
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2148,10 +2164,16 @@ export function FUN_004bbaf1() { FUN_005c656b(); return; }
 export function FUN_004bbb00() { FUN_005bd915(); return; }
 // FUN_004bbb0f — wonder_view_destroy_child3
 export function FUN_004bbb0f() { FUN_005dd1a0(); return; }
+// Source: decompiled/block_004B0000.c FUN_004bbb1e (19 bytes)
 // FUN_004bbb1e — wonder_view_destroy_base
-export function FUN_004bbb1e() { return; }
+export function FUN_004bbb1e() {
+  // COleCntrFrameWnd::~COleCntrFrameWnd(*(EBP-0x10)); // DEVIATION: MFC destructor
+}
+// Source: decompiled/block_004B0000.c FUN_004bbb31 (14 bytes)
 // FUN_004bbb31 — wonder_view_seh_cleanup_2
-export function FUN_004bbb31() { return; }
+export function FUN_004bbb31() {
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2163,14 +2185,20 @@ export function load_civ2_art_004bbb3f(param_1) {
   return;
 }
 
+// Source: decompiled/block_004B0000.c FUN_004bbdbd (14 bytes)
 // FUN_004bbdbd — wonder_art_cleanup_dll
-export function FUN_004bbdbd() { return; }
+export function FUN_004bbdbd() {
+  // _Timevec::~_Timevec(EBP-0x120); // DEVIATION: C++ destructor
+}
 // FUN_004bbdc9 — wonder_art_cleanup_surface
 export function FUN_004bbdc9() { FUN_005bd915(); return; }
 // FUN_004bbdd5 — wonder_art_cleanup_cstring
 export function FUN_004bbdd5() { FUN_005cde4d(); return; }
+// Source: decompiled/block_004B0000.c FUN_004bbdeb (14 bytes)
 // FUN_004bbdeb — wonder_art_seh_cleanup
-export function FUN_004bbdeb() { return; }
+export function FUN_004bbdeb() {
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2187,7 +2215,9 @@ export function FUN_004bbdfb() {
 // FUN_004bc0bb — wonder_view_always_false
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004B0000.c FUN_004bc0bb (14 bytes)
 export function FUN_004bc0bb() {
+  // C: return 0; (always returns false)
   return 0;
 }
 
@@ -2212,11 +2242,17 @@ export function FUN_004bc10f() {
 }
 
 
+// Source: decompiled/block_004B0000.c FUN_004bc193 (30 bytes)
 // FUN_004bc193 — wonder_view_invalidate_1
-export function FUN_004bc193() { return; }
+export function FUN_004bc193() {
+  // CRichEditDoc::InvalidateObjectCache(DAT_006a1864 + 0x48); // DEVIATION: MFC
+}
 
+// Source: decompiled/block_004B0000.c FUN_004bc1b1 (30 bytes)
 // FUN_004bc1b1 — wonder_view_invalidate_2
-export function FUN_004bc1b1() { return; }
+export function FUN_004bc1b1() {
+  // CRichEditDoc::InvalidateObjectCache(DAT_006a1864 + 0x48); // DEVIATION: MFC
+}
 
 // FUN_004bc1cf — wonder_view_conditional_invalidate
 export function FUN_004bc1cf(param_1) {
@@ -2561,12 +2597,12 @@ export function FUN_004bcfcf(param_1, param_2) {
     if (iVar1 === 0) {
       uVar2 = 3;
     } else if ((((local_8 < 2) || (1 < u8(DAT_0064c6be[param_1 * 0x594]))) || (local_10 !== 0)) ||
-              ((DAT_0064c6a0[param_1 * 0x594] & 0x100) !== 0 ||
+              ((s16(DAT_0064c6a0, param_1 * 0x594) & 0x100) !== 0 ||
                (6 < u8(DAT_00655c22[param_1])))) {
       if (u8(DAT_0064c6be[param_1 * 0x594]) < 3) {
         if ((local_14 === local_8) && (1 < u8(DAT_0064c6be[param_1 * 0x594]))) {
           uVar2 = 4;
-        } else if ((DAT_0064c6a0[param_1 * 0x594] & 0x80) === 0) {
+        } else if ((s16(DAT_0064c6a0, param_1 * 0x594) & 0x80) === 0) {
           uVar2 = 6;
         } else if ((local_1c === 0) || ((local_14 === local_8 && (local_1c < local_8)))) {
           uVar2 = 5;
@@ -3017,7 +3053,7 @@ export function FUN_004be6ba(param_1) {
               }
             }
             DAT_006560f6[local_54 * 0x20] = local_4c & 0xFF;
-            DAT_006560f4[local_54 * 0x20] = DAT_006560f4[local_54 * 0x20] & 0xDF; // & 0xdfff as ushort
+            w16(DAT_006560f4, local_54 * 0x20, s16(DAT_006560f4, local_54 * 0x20) & 0xdfff);
             FUN_0047cea6(s16(DAT_006560f0, local_54 * 0x20), s16(DAT_006560f2, local_54 * 0x20));
             if (2 < DAT_00655b02) {
               FUN_004b0b53(0xff, 2, 0, 0, 0);
@@ -3269,16 +3305,17 @@ export function FUN_004bf05b(param_1, param_2, param_3, param_4, param_5) {
       FUN_0040bbb0();
       if ((DAT_006d1da0 !== param_1) ||
          ((1 << (DAT_006d1da0 & 0x1f) & DAT_00655b0b) === 0)) {
+        let local_14 = { 0: 0 }; // C: local_14 = 0, shared across both loops
         for (local_334 = 0; local_334 < 0x43; local_334 = local_334 + 1) {
           if (s8(DAT_0064c48e[local_334 * 8]) === param_2) {
             FUN_004befd1(0, DAT_0064c488[local_334 * 8], { 0: local_328, get [0]() { return local_328; }, set [0](v) { local_328 = v; } },
-                         { 0: 0 });
+                         local_14);
           }
         }
         for (local_320 = 0; local_320 < 0x3e; local_320 = local_320 + 1) {
           if (s8(DAT_0064b1cb[local_320 * 0x14]) === param_2) {
             FUN_004befd1(0, DAT_0064b1b8[local_320 * 0x14], { 0: local_328, get [0]() { return local_328; }, set [0](v) { local_328 = v; } },
-                         { 0: 0 });
+                         local_14);
           }
         }
         if (local_328 !== 0) {
@@ -3411,7 +3448,10 @@ export function FUN_004bf05b(param_1, param_2, param_3, param_4, param_5) {
 // FUN_004bfd9a — tech_discovery_cleanup
 export function FUN_004bfd9a() { FUN_0059df8a(); return; }
 // FUN_004bfdb0 — tech_discovery_seh_cleanup
-export function FUN_004bfdb0() { return; }
+// Source: decompiled/block_004B0000.c FUN_004bfdb0 (14 bytes)
+export function FUN_004bfdb0() {
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════

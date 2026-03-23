@@ -80,9 +80,9 @@ export function FUN_00560084(param_1) {
         FUN_0047e94e(1, 0);
       }
       if ((DAT_0064c600[local_10 * 4 + param_1 * 0x594 + 0xC1] & 0x40) === 0) {
-        DAT_006ab5c0[local_10 * 4] = 0;
+        wi(DAT_006ab5c0, local_10 * 4, 0);
       } else {
-        DAT_006ab5c0[local_10 * 4] = 1;
+        wi(DAT_006ab5c0, local_10 * 4, 1);
       }
       // Clear bits in diplomacy flags
       let dip_flags = read_u32(DAT_0064c600, local_10 * 4 + param_1 * 0x594 + 0xC0);
@@ -173,7 +173,7 @@ export function FUN_00560084(param_1) {
                           FUN_0040ff60(0, uVar2);
                           uVar2 = FUN_00493c7d(local_10);
                           FUN_0040ff60(1, uVar2);
-                          FUN_00511880(0x50, DAT_006ad30c[DAT_006ad558[local_c] * 0x54], 2, 0, 0, 0);
+                          FUN_00511880(0x50, ri(DAT_006ad30c, DAT_006ad558[local_c] * 0x54), 2, 0, 0, 0);
                         }
                       }
                     }
@@ -214,7 +214,7 @@ export function FUN_00560084(param_1) {
           if (DAT_006d1da0 === local_10) {
             FUN_00560d95(param_1, local_10);
           } else if (2 < DAT_00655b02) {
-            FUN_0046b14d(0xa0, DAT_006ad30c[DAT_006ad558[local_10] * 0x54],
+            FUN_0046b14d(0xa0, ri(DAT_006ad30c, DAT_006ad558[local_10] * 0x54),
                          param_1, local_10, 0, 0, 0, 0, 0, 0);
           }
         }
@@ -228,7 +228,7 @@ export function FUN_00560084(param_1) {
           if (DAT_006d1da0 === local_14) {
             FUN_00562021(param_1, local_14);
           } else if (2 < DAT_00655b02) {
-            FUN_0046b14d(0xa1, DAT_006ad30c[DAT_006ad558[local_14] * 0x54],
+            FUN_0046b14d(0xa1, ri(DAT_006ad30c, DAT_006ad558[local_14] * 0x54),
                          param_1, local_14, 0, 0, 0, 0, 0, 0);
           }
         }
@@ -262,6 +262,7 @@ export function FUN_00560d95(param_1, param_2) {
   let local_c;
   let local_8;
 
+  let skipUnitLoop = false; // flag for goto LAB_00561668 restructuring
   FUN_0055bbc0(param_1, param_2);
   iVar6 = DAT_006ab5e4;
 
@@ -271,8 +272,8 @@ export function FUN_00560d95(param_1, param_2) {
     iVar2 = read_s16(DAT_0064c600, DAT_006ab5e4 * 0x58 + 0x2D42);
 
     if ((DAT_0064c600[param_2 * 4 + param_1 * 0x594 + 0xC0] & 4) === 0) {
-      if (DAT_006ab5c0[param_2 * 4] !== 0) {
-        // goto LAB_00561668
+      if (ri(DAT_006ab5c0, param_2 * 4) !== 0) {
+        skipUnitLoop = true; // goto LAB_00561668
       } else {
         local_34 = DAT_006ab5e8;
         uVar4 = _rand();
@@ -313,18 +314,18 @@ export function FUN_00560d95(param_1, param_2) {
         }
       }
     } else {
-      if (DAT_006ab5c0[param_2 * 4] !== 0) {
+      if (ri(DAT_006ab5c0, param_2 * 4) !== 0) {
         FUN_0040ff60(1, DAT_0064c600_ref(DAT_006ab5e4 * 0x58 + 0x2D60));
         uVar3 = FUN_00493c7d(param_1);
         FUN_0040ff60(2, uVar3);
         uVar3 = FUN_00410070(param_1);
         FUN_0040ff60(3, uVar3);
         FUN_00410030(s_TERMS_00633c54, DAT_006409d8, 0);
-        // goto LAB_00561668
+        skipUnitLoop = true; // goto LAB_00561668
       } else {
         if ((read_s16(DAT_0064c600, param_1 * 2 + param_2 * 0x594 + 0x482) < DAT_00655af8) &&
            (DAT_00655af8 - read_s16(DAT_0064c600, param_1 * 2 + param_2 * 0x594 + 0x482) < 3)) {
-          // goto LAB_00561668
+          skipUnitLoop = true; // goto LAB_00561668
         } else {
           if (DAT_006ab5ec === 0) {
             FUN_0045705e(param_2, param_1);
@@ -342,7 +343,7 @@ export function FUN_00560d95(param_1, param_2) {
             } else {
               FUN_00410030(s_INTRUDERS_00633c5c, DAT_006409d8, 0);
             }
-            // goto LAB_00561668
+            skipUnitLoop = true; // goto LAB_00561668
           } else {
             FUN_0045705e(param_2, param_1);
             FUN_00458a3b(param_2, param_1);
@@ -423,7 +424,8 @@ export function FUN_00560d95(param_1, param_2) {
     }
   }
 
-  // Clear unit territory violation flags
+  // Clear unit territory violation flags (skipped if goto LAB_00561668 was taken)
+  if (!skipUnitLoop)
   for (local_30 = 0; local_30 < DAT_00655b16; local_30 = local_30 + 1) {
     if (read_u32(DAT_006560f0, local_30 * 0x20 + 0x1A) !== 0) {
       let flags = read_u16(DAT_006560f0, local_30 * 0x20 + 0x04);
@@ -675,7 +677,7 @@ export function FUN_00562021(param_1, param_2) {
               }
               if (-1 < local_60) {
                 FUN_0043c840(local_5c, DAT_00633cdc);
-                FUN_004271e8(2, DAT_00627684[local_60 * 0x10]);
+                FUN_004271e8(2, ri(DAT_00627684, local_60 * 0x10));
               }
               iVar2 = FUN_00410030(local_5c, DAT_0063fc98, 0);
               if (iVar2 === 0) {
@@ -725,8 +727,8 @@ export function FUN_00562021(param_1, param_2) {
             } else {
               uVar3 = FUN_00493c7d(local_64);
               FUN_0040ff60(1, uVar3);
-              FUN_004271e8(2, DAT_00628420[
-                (((read_u32(DAT_0064c600, param_1 * 0x594 + param_2 * 4 + 0xC0) & 8) === 0 ? 1 : 0) + 0x73) * 4]);
+              FUN_004271e8(2, ri(DAT_00628420,
+                (((read_u32(DAT_0064c600, param_1 * 0x594 + param_2 * 4 + 0xC0) & 8) === 0 ? 1 : 0) + 0x73) * 4));
               FUN_005f22d0(local_5c, s_CRUSADE_00633ce0);
               if ((DAT_0064c600[local_64 * 4 + param_2 * 0x594 + 0xC0] & 8) !== 0) {
                 FUN_005f22d0(local_5c, s_JIHAD_00633ce8);
@@ -805,8 +807,9 @@ export function FUN_00564574() {
 // FUN_0056459f — detect_cdrom_drive (Win32 API)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056459f (354 bytes)
 export function FUN_0056459f(param_1) {
-  // DEVIATION: Win32 API (SetErrorMode, GetLogicalDrives, GetLogicalDriveStringsA, GetDriveTypeA, OpenFile)
+  // DEVIATION: Win32 SetErrorMode/GetLogicalDrives/GetDriveTypeA/OpenFile — CD-ROM detection
   return null;
 }
 
@@ -815,8 +818,9 @@ export function FUN_0056459f(param_1) {
 // FUN_00564713 — find_file_on_cdrom (Win32 API)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00564713 (831 bytes)
 export function FUN_00564713(param_1) {
-  // DEVIATION: Win32 API (lstrlenA, OpenFile, SetErrorMode — file path resolution via CD-ROM/local paths)
+  // DEVIATION: Win32 lstrlenA/OpenFile/SetErrorMode — CD-ROM file path resolution
   return 0;
 }
 
@@ -850,8 +854,9 @@ export function FUN_00564bf0(param_1) {
 // FUN_00564d00 — UI listbox init (MFC, uses ECX/this pointer)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00564d00 (365 bytes)
 export function FUN_00564d00() {
-  // DEVIATION: Win32 API (MFC listbox init via in_ECX/this pointer — CPropertySheet, scroll bars)
+  // DEVIATION: MFC in_ECX/this — listbox/scroll bar init via CPropertySheet
   return;
 }
 
@@ -860,8 +865,9 @@ export function FUN_00564d00() {
 // FUN_00564e6d — pedia_draw_tech_tree (MFC UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00564e6d (5911 bytes)
 export function FUN_00564e6d() {
-  // DEVIATION: Win32 API (MFC civilopedia rendering — in_ECX/this, SetRect, tech tree drawing, 5911 bytes)
+  // DEVIATION: MFC in_ECX/this + Win32 SetRect — civilopedia tech tree page rendering
   return;
 }
 
@@ -870,8 +876,9 @@ export function FUN_00564e6d() {
 // FUN_00566584 — pedia_navigate_to_item (MFC UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00566584 (342 bytes)
 export function FUN_00566584(param_1) {
-  // DEVIATION: Win32 API (MFC civilopedia navigation — in_ECX/this, CPropertySheet, item lookup)
+  // DEVIATION: MFC in_ECX/this + CPropertySheet — civilopedia item navigation
   return;
 }
 
@@ -880,8 +887,9 @@ export function FUN_00566584(param_1) {
 // FUN_005666da — pedia_draw_tech_tree_2 (MFC UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_005666da (3551 bytes)
 export function FUN_005666da() {
-  // DEVIATION: Win32 API (MFC civilopedia tech tree drawing — in_ECX/this, SetRect, connector lines, 3551 bytes)
+  // DEVIATION: MFC in_ECX/this + Win32 SetRect — civilopedia tech tree diagram drawing
   return;
 }
 
@@ -890,8 +898,9 @@ export function FUN_005666da() {
 // FUN_005674b9 — draw_connector_lines (MFC UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_005674b9 (254 bytes)
 export function FUN_005674b9(param_1, param_2, param_3, param_4) {
-  // DEVIATION: Win32 API (GDI connector line drawing — FUN_005c19ad/FUN_005c11b2 pen/line calls)
+  // DEVIATION: Win32 GDI — connector line drawing via FUN_005c19ad/FUN_005c11b2 pen/line calls
   return;
 }
 
@@ -900,8 +909,9 @@ export function FUN_005674b9(param_1, param_2, param_3, param_4) {
 // FUN_005675b7 — draw_horizontal_connector (MFC UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_005675b7 (138 bytes)
 export function FUN_005675b7(param_1, param_2) {
-  // DEVIATION: Win32 API (GDI horizontal connector line — in_ECX/this, FUN_005c19ad/FUN_005c11b2)
+  // DEVIATION: MFC in_ECX/this + Win32 GDI — horizontal connector line via FUN_005c19ad/FUN_005c11b2
   return;
 }
 
@@ -931,8 +941,9 @@ export function FUN_005680ba() {
 // FUN_005680d4 — register atexit handler
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_005680d4 (29 bytes)
 export function FUN_005680d4() {
-  // DEVIATION: Win32 API (_atexit(FUN_005680f1) — runtime cleanup registration)
+  // DEVIATION: Win32 _atexit(FUN_005680f1) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -972,8 +983,9 @@ export function FUN_00568125() {
 // FUN_0056813f — register atexit handler
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056813f (29 bytes)
 export function FUN_0056813f() {
-  // DEVIATION: Win32 API (_atexit(FUN_0056815c) — runtime cleanup registration)
+  // DEVIATION: Win32 _atexit(FUN_0056815c) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1011,8 +1023,9 @@ export function load_civ2_art_005681c9() {
 // FUN_00568348 — destructor wrapper (MFC)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568348 (12 bytes)
 export function FUN_00568348() {
-  // DEVIATION: Win32 API (_Timevec::~_Timevec destructor — MFC cleanup)
+  // DEVIATION: MFC _Timevec::~_Timevec destructor — C++ cleanup, no-op in JS
   return;
 }
 
@@ -1041,8 +1054,9 @@ export function FUN_0056835d() {
 // FUN_00568373 — SEH cleanup (Win32)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568373 (14 bytes)
 export function FUN_00568373() {
-  // DEVIATION: Win32 API (SEH frame restore — *unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // DEVIATION: Win32 SEH frame restore (*unaff_FS_OFFSET = ...) — no-op in JS
   return;
 }
 
@@ -1063,7 +1077,9 @@ export function FUN_00568381() {
 // FUN_005683a5 — empty function (C body is just return)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_005683a5 (16 bytes)
 export function FUN_005683a5() {
+  // C source body is empty (just return) — intentional no-op
   return;
 }
 
@@ -1072,7 +1088,9 @@ export function FUN_005683a5() {
 // FUN_005683b5 — empty function (C body is just return)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_005683b5 (16 bytes)
 export function FUN_005683b5() {
+  // C source body is empty (just return) — intentional no-op
   return;
 }
 
@@ -1131,7 +1149,9 @@ export function FUN_00568b1a() {
 // FUN_00568b34 — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568b34 (29 bytes)
 export function FUN_00568b34() {
+  // DEVIATION: Win32 _atexit(FUN_00568b51) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1140,7 +1160,9 @@ export function FUN_00568b34() {
 // FUN_00568b51 — atexit cleanup (MFC destructor)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568b51 (26 bytes)
 export function FUN_00568b51() {
+  // DEVIATION: MFC COleCntrFrameWnd::~COleCntrFrameWnd(DAT_006abc68) — C++ destructor, no-op in JS
   return;
 }
 
@@ -1170,7 +1192,9 @@ export function FUN_00568b85() {
 // FUN_00568b9f — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568b9f (29 bytes)
 export function FUN_00568b9f() {
+  // DEVIATION: Win32 _atexit(FUN_00568bbc) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1210,7 +1234,9 @@ export function FUN_00568bf0() {
 // FUN_00568c0a — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568c0a (29 bytes)
 export function FUN_00568c0a() {
+  // DEVIATION: Win32 _atexit(FUN_00568c27) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1316,8 +1342,9 @@ export function FUN_00568ca2() {
 // FUN_00568e86 — draw_minimap_indicator (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568e86 (189 bytes)
 export function FUN_00568e86(param_1) {
-  // DEVIATION: Win32 API (minimap indicator drawing — GDI rect ops, FUN_005c0073/FUN_005c0034 DC management)
+  // DEVIATION: Win32 GDI — minimap indicator drawing, DC management via FUN_005c0073/FUN_005c0034
   return;
 }
 
@@ -1326,8 +1353,9 @@ export function FUN_00568e86(param_1) {
 // FUN_00568f43 — draw_status_bar (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00568f43 (474 bytes)
 export function FUN_00568f43(param_1) {
-  // DEVIATION: Win32 API (status bar drawing — GDI text/bitmap ops, 474 bytes)
+  // DEVIATION: Win32 GDI — status bar text/bitmap drawing, FUN_005baeb0/FUN_005baec8 bitmap ops
   return;
 }
 
@@ -1336,8 +1364,9 @@ export function FUN_00568f43(param_1) {
 // FUN_0056911d — draw_coordinate_text (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056911d (132 bytes)
 export function FUN_0056911d(param_1, param_2, param_3, param_4) {
-  // DEVIATION: Win32 API (coordinate text drawing — GDI text formatting, FUN_005b8a81 tile name lookup)
+  // DEVIATION: Win32 GDI — coordinate text drawing, FUN_005b8a81 tile name + FUN_0043c8d0 text render
   return 0;
 }
 
@@ -1346,8 +1375,9 @@ export function FUN_0056911d(param_1, param_2, param_3, param_4) {
 // FUN_005691a1 — draw_unit_order_text (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_005691a1 (450 bytes)
 export function FUN_005691a1(param_1) {
-  // DEVIATION: Win32 API (unit order text drawing — reads unit/city data for display text, 450 bytes)
+  // DEVIATION: Win32 GDI — unit order text display, reads unit/city data for status text
   return;
 }
 
@@ -1356,8 +1386,9 @@ export function FUN_005691a1(param_1) {
 // FUN_00569363 — draw_status_panel (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00569363 (1182 bytes)
 export function FUN_00569363(param_1) {
-  // DEVIATION: Win32 API (status panel drawing — GDI text/bitmap, civ stats display, 1182 bytes)
+  // DEVIATION: Win32 GDI — status panel rendering, civ stats display with bitmap ops
   return;
 }
 
@@ -1366,8 +1397,9 @@ export function FUN_00569363(param_1) {
 // FUN_00569801 — draw_unit_info_panel (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00569801 (3672 bytes)
 export function FUN_00569801() {
-  // DEVIATION: Win32 API (unit info panel — GDI rendering, unit stack display, sets DAT_006abc38/DAT_00633dfc, 3672 bytes)
+  // DEVIATION: Win32 GDI — unit info panel rendering with unit stack display. Game state: sets DAT_006abc38, DAT_006abc18-24, DAT_00633dfc
   return;
 }
 
@@ -1376,8 +1408,9 @@ export function FUN_00569801() {
 // FUN_0056a65e — refresh_sidebar_display
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056a65e (297 bytes)
 export function FUN_0056a65e(param_1) {
-  // DEVIATION: Win32 API (sidebar refresh — GDI bitmap ops, calls FUN_00568ca2/FUN_00569801, 297 bytes)
+  // DEVIATION: Win32 GDI — sidebar refresh via bitmap ops, calls FUN_00568ca2/FUN_00569801
   return;
 }
 
@@ -1386,8 +1419,9 @@ export function FUN_0056a65e(param_1) {
 // FUN_0056a787 — rebuild_sidebar_layout
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056a787 (516 bytes)
 export function FUN_0056a787() {
-  // DEVIATION: Win32 API (sidebar layout rebuild — GDI rect/bitmap ops, 516 bytes)
+  // DEVIATION: Win32 GDI — sidebar layout rebuild via rect/bitmap ops, calls FUN_0056a65e
   return;
 }
 
@@ -1418,8 +1452,9 @@ export function FUN_0056a98b() {
 // FUN_0056a9f4 — calculate_advisor_rect (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056a9f4 (139 bytes)
 export function FUN_0056a9f4() {
-  // DEVIATION: Win32 API (advisor rect calculation — GDI rect positioning)
+  // DEVIATION: Win32 GDI — advisor window rect calculation via FUN_00407fc0/FUN_00407f90
   return;
 }
 
@@ -1471,8 +1506,9 @@ export function FUN_0056ac46() {
 // FUN_0056ac67 — draw_minimap_tooltip (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056ac67 (646 bytes)
 export function FUN_0056ac67(param_1, param_2) {
-  // DEVIATION: Win32 API (minimap tooltip — GDI bitmap ops, mouse position tracking, 646 bytes)
+  // DEVIATION: Win32 GDI — minimap tooltip rendering with mouse tracking. Game state: sets DAT_00633e04/e08/e0c, DAT_006abfb8-c4
   return;
 }
 
@@ -1541,7 +1577,9 @@ export function FUN_0056b8ba() {
 // FUN_0056b8d4 — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056b8d4 (29 bytes)
 export function FUN_0056b8d4() {
+  // DEVIATION: Win32 _atexit(FUN_0056b8f1) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1560,8 +1598,9 @@ export function FUN_0056b8f1() {
 // FUN_0056b90b — set_font_size_for_unit (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056b90b (99 bytes)
 export function FUN_0056b90b(param_1) {
-  // DEVIATION: Win32 API (font size setting — FUN_00472cf0 scaling, FUN_00417ef0 font selection)
+  // DEVIATION: Win32 GDI — font size calculation via FUN_00472cf0/FUN_00417ef0, sets DAT_00633e3c
   return;
 }
 
@@ -1614,8 +1653,9 @@ export function FUN_0056b96e(param_1) {
 // FUN_0056baff — draw_unit_sprite (UI rendering)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056baff (2803 bytes)
 export function FUN_0056baff(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // DEVIATION: Win32 API (unit sprite rendering — GDI bitmap/palette ops, health bar, order icon, 2803 bytes)
+  // DEVIATION: Win32 GDI — unit sprite rendering with health bar, order icon, palette ops
   return;
 }
 
@@ -1624,9 +1664,10 @@ export function FUN_0056baff(param_1, param_2, param_3, param_4, param_5, param_
 // FUN_0056c5fc — blit_with_clipping (GDI rendering)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056c5fc (265 bytes)
 export function FUN_0056c5fc(param_1, param_2, param_3, param_4, param_5,
                              param_6, param_7, param_8, param_9, param_10, param_11, param_12) {
-  // DEVIATION: Win32 API (GDI blitting with rect clipping — FUN_005a9afe blit call, 265 bytes)
+  // DEVIATION: Win32 GDI — bitmap blit with rect clipping, calls FUN_005a9afe
   return;
 }
 
@@ -1635,9 +1676,9 @@ export function FUN_0056c5fc(param_1, param_2, param_3, param_4, param_5,
 // FUN_0056c705 — animate_unit_movement (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056c705 (2902 bytes)
 export function FUN_0056c705(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // DEVIATION: Win32 API (unit movement animation — SEH, timeGetTime, GDI sprite blitting, 2902 bytes)
-  // Game state: sets DAT_006ad908 = 1 then = 0 (animation lock flag)
+  // DEVIATION: Win32 GDI + SEH + timeGetTime — unit movement animation. Game state: sets DAT_006ad908 = 1 then 0
   return;
 }
 
@@ -1646,7 +1687,9 @@ export function FUN_0056c705(param_1, param_2, param_3, param_4, param_5, param_
 // FUN_0056d25b — vector destructor wrapper
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056d25b (22 bytes)
 export function FUN_0056d25b() {
+  // DEVIATION: Win32 _eh_vector_destructor_iterator_ — C++ runtime cleanup, no-op in JS
   return;
 }
 
@@ -1655,7 +1698,9 @@ export function FUN_0056d25b() {
 // FUN_0056d27b — SEH cleanup
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056d27b (14 bytes)
 export function FUN_0056d27b() {
+  // DEVIATION: Win32 SEH frame restore (*unaff_FS_OFFSET = ...) — no-op in JS
   return;
 }
 
@@ -1664,8 +1709,9 @@ export function FUN_0056d27b() {
 // FUN_0056d289 — draw_city_sprite (UI rendering)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056d289 (1737 bytes)
 export function FUN_0056d289(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // DEVIATION: Win32 API (city sprite rendering — GDI bitmap ops, population size display, walls, 1737 bytes)
+  // DEVIATION: Win32 GDI — city sprite rendering with population size, walls indicator, diplomacy flags
   return;
 }
 
@@ -1674,8 +1720,9 @@ export function FUN_0056d289(param_1, param_2, param_3, param_4, param_5, param_
 // FUN_0056e180 — calculate_sprite_size
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056e180 (47 bytes)
 export function FUN_0056e180(param_1) {
-  // DEVIATION: Win32 API (sprite size calc — uses in_ECX/this pointer for bitmap dimensions)
+  // DEVIATION: MFC in_ECX/this — sprite size calculation using *(in_ECX + 0x2e4) bitmap dimension
   return 0;
 }
 
@@ -1703,7 +1750,7 @@ export function FUN_0056e1f0(param_1) {
   } else {
     local_8 = read_s16(DAT_006554f8, read_s16(DAT_0064c600, param_1 * 0x594 + 0xA6) * 0x30 + 6);
   }
-  return DAT_0065535c[local_8 * 0x10];
+  return ri(DAT_0065535c, local_8 * 0x10); // C: *(undefined4 *) — 4-byte read
 }
 
 
@@ -1711,8 +1758,9 @@ export function FUN_0056e1f0(param_1) {
 // FUN_0056e270 — init_object_instance (uses ECX)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056e270 (89 bytes)
 export function FUN_0056e270() {
-  // DEVIATION: Win32 API (MFC object init — in_ECX/this pointer member initialization)
+  // DEVIATION: MFC in_ECX/this — object instance initialization (member fields via this pointer)
   return 0;
 }
 
@@ -1731,9 +1779,9 @@ export function FUN_0056e2c9() {
 // FUN_0056e2e9 — multiplayer_game_setup
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056e2e9 (2450 bytes)
 export function FUN_0056e2e9(param_1, param_2) {
-  // DEVIATION: Win32 API (multiplayer game setup — in_ECX/this, DirectPlay, SEH, XD_ network calls, 2450 bytes)
-  // Sets DAT_006ad57c/59c/5bc/5dc, DAT_006ad640, DAT_006ad304, DAT_006d1da0, DAT_00655b0a, DAT_006ad358/359
+  // DEVIATION: MFC in_ECX/this + Win32 DirectPlay — multiplayer game setup. Game state: sets DAT_006ad57c/59c/5bc/5dc, DAT_006ad640, DAT_006ad304, DAT_006d1da0, DAT_00655b0a, DAT_006ad358/359
   return 0;
 }
 
@@ -1784,8 +1832,9 @@ export function FUN_0056edd3(param_1) {
 // FUN_0056ee2c — cleanup_player_list (uses ECX)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056ee2c (171 bytes)
 export function FUN_0056ee2c() {
-  // DEVIATION: Win32 API (linked list cleanup — in_ECX/this, operator_delete, heap memory management)
+  // DEVIATION: MFC in_ECX/this — linked list cleanup with operator_delete, heap memory management
   return;
 }
 
@@ -1794,8 +1843,9 @@ export function FUN_0056ee2c() {
 // FUN_0056eed7 — remove_player_node (uses ECX)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056eed7 (188 bytes)
 export function FUN_0056eed7(param_1) {
-  // DEVIATION: Win32 API (linked list node removal — in_ECX/this, operator_delete, pointer relinking)
+  // DEVIATION: MFC in_ECX/this — linked list node removal with operator_delete, pointer relinking
   return;
 }
 
@@ -1804,8 +1854,9 @@ export function FUN_0056eed7(param_1) {
 // FUN_0056ef93 — add_player_to_list (uses ECX)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056ef93 (384 bytes)
 export function FUN_0056ef93(param_1, param_2) {
-  // DEVIATION: Win32 API (linked list node insertion — in_ECX/this, operator_new, pointer wiring)
+  // DEVIATION: MFC in_ECX/this — linked list node insertion with operator_new, pointer wiring
   return null;
 }
 
@@ -1814,8 +1865,9 @@ export function FUN_0056ef93(param_1, param_2) {
 // FUN_0056f113 — refresh_player_list
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056f113 (494 bytes)
 export function FUN_0056f113() {
-  // DEVIATION: Win32 API (player list refresh — DAT_006ad10c, in_ECX/this, linked list traversal, FUN_0056ef93/FUN_0056ee2c)
+  // DEVIATION: MFC in_ECX/this — player list refresh using DAT_006ad10c, linked list + FUN_0056ef93
   return;
 }
 
@@ -1824,8 +1876,9 @@ export function FUN_0056f113() {
 // FUN_0056f301 — init_player_list_default
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056f301 (113 bytes)
 export function FUN_0056f301() {
-  // DEVIATION: Win32 API (player list init default entry — in_ECX/this, DAT_006ad10c, FUN_0056ef93)
+  // DEVIATION: MFC in_ECX/this — player list default entry init via DAT_006ad10c + FUN_0056ef93
   return;
 }
 
@@ -1834,7 +1887,9 @@ export function FUN_0056f301() {
 // FUN_0056f372 — check_player_name_match
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056f372 (110 bytes)
 export function FUN_0056f372() {
+  // DEVIATION: MFC in_ECX/this — player name match via linked list + _strcmp
   return 0;
 }
 
@@ -1843,7 +1898,9 @@ export function FUN_0056f372() {
 // FUN_0056f3e0 — find_player_by_id
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056f3e0 (75 bytes)
 export function FUN_0056f3e0(param_1) {
+  // DEVIATION: MFC in_ECX/this — find player by ID via linked list traversal
   return 0;
 }
 
@@ -1855,7 +1912,7 @@ export function FUN_0056f3e0(param_1) {
 export function FUN_0056f42b(param_1) {
   let local_8;
 
-  for (local_8 = 0; (local_8 < 7 && (DAT_006ad354[local_8 * 0x54] !== param_1));
+  for (local_8 = 0; (local_8 < 7 && (ri(DAT_006ad354, local_8 * 0x54) !== param_1));
       local_8 = local_8 + 1) {
   }
   return local_8;
@@ -1887,7 +1944,9 @@ export function FUN_0056f92a() {
 // FUN_0056f944 — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056f944 (29 bytes)
 export function FUN_0056f944() {
+  // DEVIATION: Win32 _atexit(FUN_0056f961) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1917,7 +1976,9 @@ export function FID_conflict___E31_0056f97b() {
 // FUN_0056f995 — CString constructor wrapper
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056f995 (26 bytes)
 export function FUN_0056f995() {
+  // DEVIATION: MFC CString::CString(DAT_006ac170) — C++ constructor, no-op in JS
   return;
 }
 
@@ -1926,7 +1987,9 @@ export function FUN_0056f995() {
 // FUN_0056f9af — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056f9af (29 bytes)
 export function FUN_0056f9af() {
+  // DEVIATION: Win32 _atexit(FUN_0056f9cc) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1956,7 +2019,9 @@ export function FID_conflict___E31_0056f9e6() {
 // FUN_0056fa00 — CString constructor wrapper
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fa00 (26 bytes)
 export function FUN_0056fa00() {
+  // DEVIATION: MFC CString::CString(DAT_006ac8a8) — C++ constructor, no-op in JS
   return;
 }
 
@@ -1965,7 +2030,9 @@ export function FUN_0056fa00() {
 // FUN_0056fa1a — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fa1a (29 bytes)
 export function FUN_0056fa1a() {
+  // DEVIATION: Win32 _atexit(FUN_0056fa37) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -1995,7 +2062,9 @@ export function FID_conflict___E31_0056fa51() {
 // FUN_0056fa6b — CString constructor wrapper
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fa6b (26 bytes)
 export function FUN_0056fa6b() {
+  // DEVIATION: MFC CString::CString(DAT_006ac8e8) — C++ constructor, no-op in JS
   return;
 }
 
@@ -2004,7 +2073,9 @@ export function FUN_0056fa6b() {
 // FUN_0056fa85 — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fa85 (29 bytes)
 export function FUN_0056fa85() {
+  // DEVIATION: Win32 _atexit(FUN_0056faa2) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -2044,7 +2115,9 @@ export function FUN_0056fad6() {
 // FUN_0056faf0 — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056faf0 (29 bytes)
 export function FUN_0056faf0() {
+  // DEVIATION: Win32 _atexit(FUN_0056fb0d) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -2084,7 +2157,9 @@ export function FUN_0056fb41() {
 // FUN_0056fb5b — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fb5b (29 bytes)
 export function FUN_0056fb5b() {
+  // DEVIATION: Win32 _atexit(FUN_0056fb78) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -2093,7 +2168,9 @@ export function FUN_0056fb5b() {
 // FUN_0056fb78 — atexit cleanup (MFC destructor)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fb78 (26 bytes)
 export function FUN_0056fb78() {
+  // DEVIATION: MFC COleCntrFrameWnd::~COleCntrFrameWnd(DAT_006ac1b0) — C++ destructor, no-op in JS
   return;
 }
 
@@ -2123,7 +2200,9 @@ export function FUN_0056fbac() {
 // FUN_0056fbc6 — register atexit
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fbc6 (29 bytes)
 export function FUN_0056fbc6() {
+  // DEVIATION: Win32 _atexit(FUN_0056fbe3) — C runtime cleanup registration, no-op in JS
   return;
 }
 
@@ -2132,7 +2211,9 @@ export function FUN_0056fbc6() {
 // FUN_0056fbe3 — atexit cleanup (MFC destructor)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fbe3 (26 bytes)
 export function FUN_0056fbe3() {
+  // DEVIATION: MFC CBitmapButton::~CBitmapButton(DAT_006ac488) — C++ destructor, no-op in JS
   return;
 }
 
@@ -2141,8 +2222,9 @@ export function FUN_0056fbe3() {
 // FUN_0056fbfd — draw_unit_type_cursor_marks (UI)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fbfd (231 bytes)
 export function FUN_0056fbfd(param_1, param_2, param_3) {
-  // DEVIATION: Win32 API (cursor mark drawing — FUN_005c0c5d pixel plotting, DAT_00642c48/642b48 lookup)
+  // DEVIATION: Win32 GDI — unit cursor mark drawing via FUN_005c0c5d pixel ops, DAT_00642c48/642b48 lookup
   return;
 }
 
@@ -2151,8 +2233,9 @@ export function FUN_0056fbfd(param_1, param_2, param_3) {
 // FUN_0056fce4 — rebuild_units_bmp (Win32 file I/O)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056fce4 (722 bytes)
 export function FUN_0056fce4() {
-  // DEVIATION: Win32 API (units.bmp rebuild — SEH, __getcwd/__chdir, bitmap load/save, sprite grid assembly, 722 bytes)
+  // DEVIATION: Win32 file I/O + GDI — UNITS.BMP rebuild via SEH, __getcwd/__chdir, bitmap load/save
   return;
 }
 
@@ -2171,7 +2254,9 @@ export function FUN_0056ffb6() {
 // FUN_0056ffcc — SEH cleanup
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056ffcc (14 bytes)
 export function FUN_0056ffcc() {
+  // DEVIATION: Win32 SEH frame restore (*unaff_FS_OFFSET = ...) — no-op in JS
   return;
 }
 
@@ -2180,8 +2265,9 @@ export function FUN_0056ffcc() {
 // FUN_0056ffda — rebuild_cities_bmp (Win32 file I/O)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_0056ffda (1922 bytes)
 export function FUN_0056ffda() {
-  // DEVIATION: Win32 API (cities.bmp rebuild — SEH, __getcwd/__chdir, bitmap load/save, sprite grid assembly, 1922 bytes)
+  // DEVIATION: Win32 file I/O + GDI — CITIES.BMP rebuild via SEH, __getcwd/__chdir, bitmap load/save
   return;
 }
 
@@ -2200,7 +2286,9 @@ export function FUN_0057075c() {
 // FUN_00570772 — SEH cleanup (referenced at end of FUN_0056ffda)
 // ============================================================
 
+// Source: decompiled/block_00560000.c FUN_00570772 (referenced by FUN_0056ffda)
 export function FUN_00570772() {
+  // DEVIATION: Win32 SEH frame restore — no-op in JS
   return;
 }
 

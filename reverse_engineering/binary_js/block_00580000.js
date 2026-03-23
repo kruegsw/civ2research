@@ -40,7 +40,28 @@ let DAT_00655afa = 0;     // year
 let DAT_006ad0cc = 0;     // ceasefire/war flag
 let DAT_00654fa8 = 0;     // replay/no-UI flag
 let DAT_00654fae = 0;     // unknown game flag
-let DAT_0064bcc8 = 3;     // movement multiplier
+let DAT_0064bcc8 = 3;     // cosmic param 0: movement multiplier
+let DAT_0064bcc9 = 0;     // cosmic param 1: road movement multiplier
+let DAT_0064bcca = 0;     // cosmic param 2: food per citizen
+let DAT_0064bccb = 0;     // cosmic param 3: rows in food box
+let DAT_0064bccc = 0;     // cosmic param 4: settler food cost
+let DAT_0064bccd = 0;     // cosmic param 5: shield rows per type
+let DAT_0064bcce = 0;     // cosmic param 6: trade rows per type
+let DAT_0064bccf = 0;     // cosmic param 7: citizen base content
+let DAT_0064bcd0 = 0;     // cosmic param 8: citizen palace content
+let DAT_0064bcd1 = 0;     // cosmic param 9: city size limit
+let DAT_0064bcd2 = 0;     // cosmic param 10
+let DAT_0064bcd3 = 0;     // cosmic param 11
+let DAT_0064bcd4 = 0;     // cosmic param 12
+let DAT_0064bcd5 = 0;     // cosmic param 13
+let DAT_0064bcd6 = 0;     // cosmic param 14
+let DAT_0064bcd7 = 0;     // cosmic param 15
+let DAT_0064bcd8 = 0;     // cosmic param 16
+let DAT_0064bcd9 = 0;     // cosmic param 17
+let DAT_0064bcda = 0;     // cosmic param 18
+let DAT_0064bcdb = 0;     // cosmic param 19
+let DAT_0064bcdc = 0;     // cosmic param 20
+let DAT_0064bcdd = 0;     // cosmic param 21
 let DAT_0062c5bc = 0;     // defender won flag
 let DAT_006d1da8 = 0;     // unit selection mode
 let DAT_0063f660 = 0;     // epoch / era
@@ -78,11 +99,16 @@ let DAT_00639f14 = 0;     // last DOS error
 // ── Unit data array base (stride 0x20 per unit) ──
 let DAT_006560f0 = new Uint8Array(2048 * 0x20);
 // ── Unit type table (stride 0x14 per type) ──
+let DAT_0064b1b8 = new Uint8Array(62 * 0x14); // unit type icon pointers (base, 4 bytes before DAT_0064b1bc)
 let DAT_0064b1bc = new Uint8Array(62 * 0x14);
 // ── Per-civ data (stride 0x594 per civ) ──
 let DAT_0064c600 = new Uint8Array(8 * 0x594);
+// ── Building data (icon pointers, stride 8 per building) ──
+let DAT_0064c488 = new Uint8Array(68 * 8); // building icon table
+let DAT_0064c510 = 0;                       // SDI defense icon pointer
 // ── City data (stride 0x58 per city) ──
 let DAT_0064f340 = new Uint8Array(256 * 0x58);
+let DAT_0064f360 = new Uint8Array(256 * 0x58); // city name strings (DAT_0064f340 + 0x20)
 // ── Direction offsets (8 directions) ──
 let DAT_00628350 = new Int8Array([-1, 1, 2, 1, -1, -1, -2, -1]);
 let DAT_00628360 = new Int8Array([-1, -1, 0, 1, 1, 1, 0, -1]);
@@ -120,6 +146,35 @@ let DAT_00655c22 = new Uint8Array(8);
 let DAT_0064b1b4 = 0;
 let DAT_0064b1b0 = 0;
 let DAT_00655b05 = 0;
+
+// ── Dialog/window setup globals (FUN_0058a61b) ──
+let DAT_006ace6c = 0;     // dialog flags
+let DAT_006ace70 = 0;     // dialog menu handle
+let DAT_006ace74 = 0;     // dialog toolbar handle
+let DAT_006ace78 = 0;     // dialog statusbar handle
+let DAT_006ace8c = "";    // dialog title string (char[])
+let DAT_006acf54 = 0;     // dialog button count
+let DAT_006ad000 = 0;     // dialog control count
+let DAT_006ad024 = 0;     // dialog button array ptr
+let DAT_006ad028 = 0;     // dialog listbox ptr
+let DAT_006ad02c = 0;     // dialog edit ctrl ptr
+let DAT_006ab178 = 0;     // window layout rect ptr
+let DAT_006ab190 = 0;     // window layout rect ptr 2
+let DAT_006ab198 = 0;     // screen width
+let DAT_006ab19c = 0;     // screen height
+let DAT_006ab1a0 = 0;     // window layout rect ptr 3
+let DAT_006a8c00 = 0;     // window class handle
+let DAT_006acbb4 = 0;     // startup helper 2
+let DAT_006acb68 = 0;     // app instance data
+let DAT_006acbf8 = "";    // debug string buffer (char[])
+let DAT_00634770 = "";    // error context string (char[])
+let DAT_006347c0 = "";    // file path buffer (char[])
+let DAT_006553e8 = 0;     // OLE control site
+let DAT_00679640 = "";    // window name string (char[])
+let DAT_006ad30c = 0;     // civ names base ptr (stride 0x54)
+let DAT_006ad558 = new Int32Array(8); // civ index map
+let DAT_0067a8c0 = 0;     // active player slot
+let DAT_006acbd0 = new Int32Array(10); // error callback ptrs
 
 
 // ── Random number generator (C runtime _rand) ──
@@ -646,7 +701,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
         if (DAT_006d1da0 === uVar12) {
           FUN_004442e0("SNEAK", param_1);
         } else if (2 < DAT_00655b02) {
-          FUN_00511880(0x2e, 0, 1, 0, param_1, 0);
+          FUN_00511880(0x2e, DAT_006ad30c + DAT_006ad558[uVar12] * 0x54, 1, 0, param_1, 0);
         }
       }
     } else if ((DAT_00654fa8 === 0) && ((1 << (bVar2 & 0x1f) & DAT_00655b0b) !== 0)) {
@@ -656,7 +711,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
       if (DAT_006d1da0 === uVar12) {
         FUN_004442e0("BREAKCEASE", param_1);
       } else if (2 < DAT_00655b02) {
-        FUN_00511880(0x2d, 0, 1, 0, param_1, 0);
+        FUN_00511880(0x2d, DAT_006ad30c + DAT_006ad558[uVar12] * 0x54, 1, 0, param_1, 0);
       }
     }
     local_a0 = local_a0 << 1;
@@ -725,8 +780,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
           if (uVar7 === local_18) {
             local_c8 = uVar7;
           }
-          FUN_0046b14d(0x71, 0, uVar11, iVar10, local_c8, 0, 0, 0, 0, 0);
-          FUN_0046b14d(0x72, 0, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
+          FUN_0046b14d(0x71, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, local_c8, 0, 0, 0, 0, 0);
+          FUN_0046b14d(0x72, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
         }
       }
     }
@@ -752,14 +807,14 @@ export function FUN_00580341(param_1, param_2, param_3) {
         (s8(utype_byte(0x08, u8(unit_byte(0x06, param_1)))) < 99) &&
         ((1 << (bVar2 & 0x1f) & DAT_00655b0b) !== 0) &&
         (iVar15 = FUN_0043d07a(uVar11, iVar10, -1, -1, -1), -1 < iVar15)) {
-      FUN_0040ff60(0, 0);
+      FUN_0040ff60(0, DAT_0064f360[iVar15 * 0x58]);
       if (DAT_00654fa8 === 0) {
         for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
           if (aiStack_58[local_18] !== 0) {
             if (DAT_006d1da0 === local_18) {
               FUN_004442e0("MISSILEATTACK", param_1);
             } else {
-              FUN_00511880(0x2f, 0, 1, 0, param_1, 0);
+              FUN_00511880(0x2f, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 1, 0, param_1, 0);
             }
           }
         }
@@ -770,7 +825,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
     if (local_10 !== 0) {
       uVar14 = FUN_00410070(uVar7);
       FUN_0040ff60(0, uVar14);
-      FUN_004271e8(1, 0);
+      FUN_004271e8(1, DAT_0064b1b8[u8(unit_byte(0x06, param_1)) * 0x14]);
       uVar14 = FUN_00410070(uVar12);
       FUN_0040ff60(2, uVar14);
       if (DAT_00654fa8 === 0) {
@@ -779,7 +834,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
             if (DAT_006d1da0 === local_18) {
               FUN_004442e0("PEARLHARBOR", param_1);
             } else {
-              FUN_00511880(0x30, 0, 3, 0, param_1, 0);
+              FUN_00511880(0x30, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 3, 0, param_1, 0);
             }
           }
         }
@@ -788,8 +843,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
 
     // ── City improvement defense notifications ──
     if (local_b8 !== 0) {
-      FUN_004271e8(1, 0);
-      FUN_0040ff60(2, 0);
+      FUN_004271e8(1, DAT_0064c488[local_b8 * 8]);
+      FUN_0040ff60(2, DAT_0064f360[DAT_006acb08 * 0x58]);
       if ((local_24 === 0) || (local_b8 === 0x11)) {
         if (DAT_00654fa8 === 0) {
           for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
@@ -797,20 +852,20 @@ export function FUN_00580341(param_1, param_2, param_3) {
               if (DAT_006d1da0 === local_18) {
                 FUN_004cc870("BATTERY", local_b8, 8);
               } else {
-                FUN_00511880(0x32, 0, 3, 0, local_b8, 0);
+                FUN_00511880(0x32, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 3, 0, local_b8, 0);
               }
             }
           }
         }
       } else {
-        FUN_004271e8(3, 0);
+        FUN_004271e8(3, DAT_0064c510);
         if (DAT_00654fa8 === 0) {
           for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
             if (aiStack_58[local_18] !== 0) {
               if (DAT_006d1da0 === local_18) {
                 FUN_004cc870("BATTERY2", local_b8, 8);
               } else {
-                FUN_00511880(0x31, 0, 4, 0, local_b8, 0);
+                FUN_00511880(0x31, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 4, 0, local_b8, 0);
               }
             }
           }
@@ -822,15 +877,15 @@ export function FUN_00580341(param_1, param_2, param_3) {
     if (local_28 !== 0) {
       uVar14 = FUN_00493c7d(uVar12);
       FUN_0040ff60(0, uVar14);
-      FUN_004271e8(1, 0);
-      FUN_0040ff60(2, 0);
+      FUN_004271e8(1, DAT_0064b1b8[u8(DAT_006560f0[local_c * 0x20 + 6]) * 0x14]);
+      FUN_0040ff60(2, DAT_0064f360[DAT_006acb08 * 0x58]);
       if (DAT_00654fa8 === 0) {
         for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
           if (aiStack_58[local_18] !== 0) {
             if (DAT_006d1da0 === local_18) {
               FUN_004442e0("SCRAMBLE", local_c);
             } else {
-              FUN_00511880(0x33, 0, 3, 0, local_c, 0);
+              FUN_00511880(0x33, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 3, 0, local_c, 0);
             }
           }
         }
@@ -842,14 +897,14 @@ export function FUN_00580341(param_1, param_2, param_3) {
         (iVar15 = FUN_005b89e4(iVar8, iVar9), iVar15 !== 0)) {
       uVar14 = FUN_00410070(uVar7);
       FUN_0040ff60(1, uVar14);
-      FUN_004271e8(2, 0);
+      FUN_004271e8(2, DAT_0064b1b8[u8(unit_byte(0x06, param_1)) * 0x14]);
       if (DAT_00654fa8 === 0) {
         for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
           if (aiStack_58[local_18] !== 0) {
             if (DAT_006d1da0 === local_18) {
               FUN_004442e0("AMPHIBMOTIZE", param_1);
             } else {
-              FUN_00511880(0x34, 0, 3, 0, param_1, 0);
+              FUN_00511880(0x34, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 3, 0, param_1, 0);
             }
           }
         }
@@ -931,8 +986,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
     if (2 < DAT_00655b02) {
       for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
         if ((DAT_006d1da0 !== local_18) && (aiStack_58[local_18] !== 0)) {
-          FUN_0046b14d(0x9a, 0, DAT_0066bfc4, DAT_0066bfc0, 0, 0, 0, 0, 0, 0);
-          FUN_0046b14d(0x70, 0, param_1, iVar8, iVar9, param_2, DAT_00633e48, 0, 0, 0);
+          FUN_0046b14d(0x9a, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, DAT_0066bfc4, DAT_0066bfc0, 0, 0, 0, 0, 0, 0);
+          FUN_0046b14d(0x70, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, param_1, iVar8, iVar9, param_2, DAT_00633e48, 0, 0, 0);
         }
       }
     }
@@ -946,7 +1001,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
       FUN_004b0b53(0xff, 2, 0, 0, 0);
       for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
         if ((DAT_006d1da0 !== local_18) && (aiStack_58[local_18] !== 0)) {
-          FUN_0046b14d(0x73, 0, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
+          FUN_0046b14d(0x73, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
         }
       }
     }
@@ -966,13 +1021,13 @@ export function FUN_00580341(param_1, param_2, param_3) {
         FUN_004b0b53(0xff, 2, 0, 0, 0);
         for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
           if ((DAT_006d1da0 !== local_18) && (aiStack_58[local_18] !== 0)) {
-            FUN_0046b14d(0x72, 0, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
+            FUN_0046b14d(0x72, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
           }
         }
       }
     } else {
       // Failed to nuke — reset war counter
-      set_civ_byte(0xF0 - 0xC0, uVar7, 0); // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12]
+      set_civ_byte(0xF0 + uVar12, uVar7, 0); // (&DAT_0064c6f0)[uVar7 * 0x594 + uVar12]
     }
     if (((iVar13 !== 0) && ((1 << (bVar1 & 0x1f) & DAT_00655b0b) === 0)) && (-1 < DAT_006acb08)) {
       FUN_0057febc(uVar7, uVar11, iVar10);
@@ -1005,7 +1060,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
           if (DAT_006d1da0 === local_18) {
             FUN_0057ed3f(uVar11, iVar10, local_ac);
           } else {
-            FUN_0046b14d(0x7c, 0, uVar11, iVar10, local_ac, 0, 0, 0, 0, 0);
+            FUN_0046b14d(0x7c, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, local_ac, 0, 0, 0, 0, 0);
           }
         }
       }
@@ -1078,10 +1133,10 @@ export function FUN_00580341(param_1, param_2, param_3) {
                   FUN_005802fd(uVar11, iVar10, iVar8, iVar9);
                 }
               } else {
-                FUN_0046b14d(0x7c, 0, uVar11, iVar10, local_ac, 0, 0, 0, 0, 0);
+                FUN_0046b14d(0x7c, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, local_ac, 0, 0, 0, 0, 0);
                 iVar15 = FUN_005b29d7(local_c);
                 if (iVar15 !== 0) {
-                  FUN_0046b14d(0x73, 0, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
+                  FUN_0046b14d(0x73, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
                 }
               }
             }
@@ -1115,10 +1170,10 @@ export function FUN_00580341(param_1, param_2, param_3) {
                 FUN_005802fd(uVar11, iVar10, iVar8, iVar9);
               }
             } else {
-              FUN_0046b14d(0x7c, 0, iVar8, iVar9, local_ac, 0, 0, 0, 0, 0);
+              FUN_0046b14d(0x7c, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, iVar8, iVar9, local_ac, 0, 0, 0, 0, 0);
               iVar15 = FUN_005b29d7(param_1);
               if (iVar15 !== 0) {
-                FUN_0046b14d(0x73, 0, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
+                FUN_0046b14d(0x73, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
               }
             }
           }
@@ -1167,7 +1222,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
     if ((2 < DAT_00655b02) && (DAT_0066bfc4 !== -1)) {
       for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
         if ((DAT_006d1da0 !== local_18) && (aiStack_58[local_18] !== 0)) {
-          FUN_0046b14d(0x7a, 0, DAT_0066bfc4, DAT_0066bfc0, 0, 0, 0, 0, 0, 0);
+          FUN_0046b14d(0x7a, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, DAT_0066bfc4, DAT_0066bfc0, 0, 0, 0, 0, 0, 0);
         }
       }
     }
@@ -1189,13 +1244,13 @@ export function FUN_00580341(param_1, param_2, param_3) {
             FUN_0057ed3f(uVar11, iVar10, 0);
           }
         } else {
-          FUN_0046b14d(0x73, 0, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
+          FUN_0046b14d(0x73, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
           if (local_c0 === 0) {
             if (!bVar4) {
-              FUN_0046b14d(0x7c, 0, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
+              FUN_0046b14d(0x7c, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
             }
           } else if (!bVar4) {
-            FUN_0046b14d(0x7c, 0, uVar11, iVar10, 0, 0, 0, 0, 0, 0);
+            FUN_0046b14d(0x7c, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, 0, 0, 0, 0, 0, 0);
           }
         }
       }
@@ -1315,7 +1370,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
     if (2 < DAT_00655b02) {
       for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
         if ((DAT_006d1da0 !== local_18) && (aiStack_58[local_18] !== 0)) {
-          FUN_0046b14d(0x73, 0, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
+          FUN_0046b14d(0x73, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar11, iVar10, iVar8, iVar9, 0, 0, 0, 0);
         }
       }
     }
@@ -1334,18 +1389,18 @@ export function FUN_00580341(param_1, param_2, param_3) {
         (DAT_006d1da0 === local_60)) {
       if (((2 < DAT_00655b02) && ((1 << (local_20 & 0x1f) & DAT_00655b0b) !== 0)) &&
           (DAT_006d1da0 !== local_20)) {
-        FUN_00511880(0x36, 0, 0, 1, 0, 0);
+        FUN_00511880(0x36, DAT_006ad30c + DAT_006ad558[local_20] * 0x54, 0, 1, 0, 0);
       }
     } else {
-      FUN_00511880(0x35, 0, 0, 1, 0, 0);
+      FUN_00511880(0x35, DAT_006ad30c + DAT_006ad558[local_60] * 0x54, 0, 1, 0, 0);
     }
   }
 
   // ── Barbarian ransom ──
   if (bVar5) {
     uVar17 = ((DAT_00655b09 * 100) / 2) >>> 0;
-    // Add gold
-    // *(int *)(&DAT_0064c6a2 + uVar7 * 0x594) += uVar17;
+    // Add gold — C: *(int *)(&DAT_0064c6a2 + uVar7 * 0x594) += uVar17
+    set_civ_int(0xA2, uVar7, civ_int(0xA2, uVar7) + uVar17);
     FUN_00421da0(0, uVar17);
     if ((DAT_006d1da0 === uVar7) && (DAT_00654fa8 === 0)) {
       FUN_004442a0("RANSOM", 0x3e, 0);
@@ -1354,8 +1409,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
       FUN_004b0b53(0xff, 2, 0, 0, 0);
       for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
         if ((aiStack_58[local_18] !== 0) && (DAT_006d1da0 !== local_18)) {
-          FUN_00511880(0x37, 0, 1, 0, 0x3e, 0);
-          FUN_0046b14d(0x78, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+          FUN_00511880(0x37, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 1, 0, 0x3e, 0);
+          FUN_0046b14d(0x78, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 0, 0, 0, 0, 0, 0, 0, 0);
         }
       }
     }
@@ -1389,7 +1444,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
           if (DAT_006d1da0 === local_18) {
             FUN_00421ea0("CANCELPEACE");
           } else {
-            FUN_00511880(0x3a, 0, 2, 0, 0, 0);
+            FUN_00511880(0x3a, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 2, 0, 0, 0);
           }
         }
         if ((DAT_006acae8[local_18] !== 0) && (DAT_00654fa8 === 0)) {
@@ -1401,12 +1456,12 @@ export function FUN_00580341(param_1, param_2, param_3) {
               FUN_00421ea0("ALLYATTACKING");
             }
           } else if (DAT_006acae8[local_18] === 1) {
-            FUN_00511880(0x3b, 0, 2, 0, 0, 0);
+            FUN_00511880(0x3b, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 2, 0, 0, 0);
             if ((1 << (bVar2 & 0x1f) & DAT_00655b0b) === 0) {
-              FUN_0046b14d(0x7e, 0, uVar12, uVar7, 0, 0, 0, 0, 0, 0);
+              FUN_0046b14d(0x7e, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, uVar12, uVar7, 0, 0, 0, 0, 0, 0);
             }
           } else {
-            FUN_00511880(0x3c, 0, 2, 0, 0, 0);
+            FUN_00511880(0x3c, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 2, 0, 0, 0);
           }
         }
       }
@@ -1466,8 +1521,8 @@ export function FUN_00580341(param_1, param_2, param_3) {
     FUN_004b0b53(0xff, 2, 0, 0, 0);
     for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
       if ((DAT_006d1da0 !== local_18) && (aiStack_58[local_18] !== 0)) {
-        FUN_0046b14d(0xa3, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        FUN_0046b14d(0x75, 0, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
+        FUN_0046b14d(0xa3, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, 0, 0, 0, 0, 0, 0, 0, 0);
+        FUN_0046b14d(0x75, DAT_006ad30c + DAT_006ad558[local_18] * 0x54, iVar8, iVar9, 0, 0, 0, 0, 0, 0);
       }
     }
   }
@@ -1495,21 +1550,82 @@ export function FUN_005866a0() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_005866d3() {
-  // Copy cosmic params from byte globals into DAT_006a2d80 array (expanded to int)
-  // In C: _DAT_006a2d80 = (uint)DAT_0064bcc8; ... _DAT_006a2dd4 = (uint)DAT_0064bcdd;
-  // The original copies 22 consecutive byte globals starting at DAT_0064bcc8
-  // into DAT_006a2d80[0..21] as uint values
-  for (let i = 0; i < 22; i++) {
-    DAT_006a2d80[i] = DAT_0064bcc8; // DEVIATION: simplified — original reads individual byte globals DAT_0064bcc8+i
-  }
+  // Copy cosmic params from byte globals into DAT_006a2d80 array (expanded to uint)
+  // C: _DAT_006a2d80 = (uint)DAT_0064bcc8; ... _DAT_006a2dd4 = (uint)DAT_0064bcdd;
+  DAT_006a2d80[0]  = DAT_0064bcc8 & 0xFF;
+  DAT_006a2d80[1]  = DAT_0064bcc9 & 0xFF;
+  DAT_006a2d80[2]  = DAT_0064bcca & 0xFF;
+  DAT_006a2d80[3]  = DAT_0064bccb & 0xFF;
+  DAT_006a2d80[4]  = DAT_0064bccc & 0xFF;
+  DAT_006a2d80[5]  = DAT_0064bccd & 0xFF;
+  DAT_006a2d80[6]  = DAT_0064bcce & 0xFF;
+  DAT_006a2d80[7]  = DAT_0064bccf & 0xFF;
+  DAT_006a2d80[8]  = DAT_0064bcd0 & 0xFF;
+  DAT_006a2d80[9]  = DAT_0064bcd1 & 0xFF;
+  DAT_006a2d80[10] = DAT_0064bcd2 & 0xFF;
+  DAT_006a2d80[11] = DAT_0064bcd3 & 0xFF;
+  DAT_006a2d80[12] = DAT_0064bcd4 & 0xFF;
+  DAT_006a2d80[13] = DAT_0064bcd5 & 0xFF;
+  DAT_006a2d80[14] = DAT_0064bcd6 & 0xFF;
+  DAT_006a2d80[15] = DAT_0064bcd7 & 0xFF;
+  DAT_006a2d80[16] = DAT_0064bcd8 & 0xFF;
+  DAT_006a2d80[17] = DAT_0064bcd9 & 0xFF;
+  DAT_006a2d80[18] = DAT_0064bcda & 0xFF;
+  DAT_006a2d80[19] = DAT_0064bcdb & 0xFF;
+  DAT_006a2d80[20] = DAT_0064bcdc & 0xFF;
+  DAT_006a2d80[21] = DAT_0064bcdd & 0xFF;
+
   FUN_00419d23();
-  // Copy cosmic params into DAT_006a2d28 array
-  for (let i = 0; i < 22; i++) {
-    DAT_006a2d28[i] = DAT_0064bcc8; // DEVIATION: simplified — original reads individual byte globals DAT_0064bcc8+i
-  }
-  // Copy back from DAT_006a2d80 to byte globals
-  // In C: DAT_0064bcc8 = DAT_006a2d80; ... DAT_0064bcdd = DAT_006a2dd4;
-  // DEVIATION: simplified — would need individual byte global writes
+
+  // Copy cosmic params into DAT_006a2d28 array (post-edit snapshot)
+  // C: _DAT_006a2d28 = (uint)DAT_0064bcc8; ... _DAT_006a2d7c = (uint)DAT_0064bcdd;
+  DAT_006a2d28[0]  = DAT_0064bcc8 & 0xFF;
+  DAT_006a2d28[1]  = DAT_0064bcc9 & 0xFF;
+  DAT_006a2d28[2]  = DAT_0064bcca & 0xFF;
+  DAT_006a2d28[3]  = DAT_0064bccb & 0xFF;
+  DAT_006a2d28[4]  = DAT_0064bccc & 0xFF;
+  DAT_006a2d28[5]  = DAT_0064bccd & 0xFF;
+  DAT_006a2d28[6]  = DAT_0064bcce & 0xFF;
+  DAT_006a2d28[7]  = DAT_0064bccf & 0xFF;
+  DAT_006a2d28[8]  = DAT_0064bcd0 & 0xFF;
+  DAT_006a2d28[9]  = DAT_0064bcd1 & 0xFF;
+  DAT_006a2d28[10] = DAT_0064bcd2 & 0xFF;
+  DAT_006a2d28[11] = DAT_0064bcd3 & 0xFF;
+  DAT_006a2d28[12] = DAT_0064bcd4 & 0xFF;
+  DAT_006a2d28[13] = DAT_0064bcd5 & 0xFF;
+  DAT_006a2d28[14] = DAT_0064bcd6 & 0xFF;
+  DAT_006a2d28[15] = DAT_0064bcd7 & 0xFF;
+  DAT_006a2d28[16] = DAT_0064bcd8 & 0xFF;
+  DAT_006a2d28[17] = DAT_0064bcd9 & 0xFF;
+  DAT_006a2d28[18] = DAT_0064bcda & 0xFF;
+  DAT_006a2d28[19] = DAT_0064bcdb & 0xFF;
+  DAT_006a2d28[20] = DAT_0064bcdc & 0xFF;
+  DAT_006a2d28[21] = DAT_0064bcdd & 0xFF;
+
+  // Write back from DAT_006a2d80 to byte globals
+  // C: DAT_0064bcc8 = DAT_006a2d80; ... DAT_0064bcdd = DAT_006a2dd4;
+  DAT_0064bcc8 = DAT_006a2d80[0];
+  DAT_0064bcc9 = DAT_006a2d80[1];
+  DAT_0064bcca = DAT_006a2d80[2];
+  DAT_0064bccb = DAT_006a2d80[3];
+  DAT_0064bccc = DAT_006a2d80[4];
+  DAT_0064bccd = DAT_006a2d80[5];
+  DAT_0064bcce = DAT_006a2d80[6];
+  DAT_0064bccf = DAT_006a2d80[7];
+  DAT_0064bcd0 = DAT_006a2d80[8];
+  DAT_0064bcd1 = DAT_006a2d80[9];
+  DAT_0064bcd2 = DAT_006a2d80[10];
+  DAT_0064bcd3 = DAT_006a2d80[11];
+  DAT_0064bcd4 = DAT_006a2d80[12];
+  DAT_0064bcd5 = DAT_006a2d80[13];
+  DAT_0064bcd6 = DAT_006a2d80[14];
+  DAT_0064bcd7 = DAT_006a2d80[15];
+  DAT_0064bcd8 = DAT_006a2d80[16];
+  DAT_0064bcd9 = DAT_006a2d80[17];
+  DAT_0064bcda = DAT_006a2d80[18];
+  DAT_0064bcdb = DAT_006a2d80[19];
+  DAT_0064bcdc = DAT_006a2d80[20];
+  DAT_0064bcdd = DAT_006a2d80[21];
 }
 
 
@@ -1725,8 +1841,9 @@ export function FUN_005875e9() {
 // Source: block_00580000.c @ 0x005875FF, 14 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_005875ff (9 bytes)
 export function FUN_005875ff() {
-  // SEH unwind — no-op
+  // DEVIATION: Win32 — SEH epilog
 }
 
 
@@ -1746,8 +1863,9 @@ export function FUN_0058760d() {
 // Source: block_00580000.c @ 0x00587666, 12 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00587666 (12 bytes)
 export function FUN_00587666() {
-  // thunk_FUN_004183d0() — no-op
+  // DEVIATION: MFC — thunk_FUN_004183d0() destructor call
 }
 
 
@@ -1756,8 +1874,9 @@ export function FUN_00587666() {
 // Source: block_00580000.c @ 0x0058767C, 14 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058767c (14 bytes)
 export function FUN_0058767c() {
-  // SEH unwind — no-op
+  // DEVIATION: Win32 — SEH epilog
 }
 
 
@@ -1806,8 +1925,24 @@ export function FUN_00587e23(param_1) {
 // Source: block_00580000.c @ 0x00587E41, 191 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00587e41 (191 bytes)
 export function FUN_00587e41() {
-  // UI toggle — stub
+  let local_8;
+
+  local_8 = FUN_005c62ee(); // DEVIATION: MFC — get dialog pointer
+  if (local_8 === 0) {
+    local_8 = 0;
+  } else {
+    local_8 = local_8 - 0x48;
+  }
+  // DEVIATION: MFC — thunk_FUN_004518d0() CPropertySheet handler
+  // DEVIATION: MFC — thunk_FUN_0040f380() CDialog handler
+  // DEVIATION: MFC — thunk_FUN_0043c5f0() CWnd handler
+  // C: *(local_8 + 0x3be) = 1 — set filter flag to 1
+  // DEVIATION: MFC — local_8 is dialog object memory, cannot write without MFC
+  // C: thunk_FUN_0046b14d(0xa5, ...) — send MP message with filter state
+  // DEVIATION: MFC — network message send
+  FUN_0058878e(0); // render city list
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1815,8 +1950,24 @@ export function FUN_00587e41() {
 // Source: block_00580000.c @ 0x00587F00, 191 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00587f00 (191 bytes)
 export function FUN_00587f00() {
-  // UI toggle — stub
+  let local_8;
+
+  local_8 = FUN_005c62ee(); // DEVIATION: MFC — get dialog pointer
+  if (local_8 === 0) {
+    local_8 = 0;
+  } else {
+    local_8 = local_8 - 0x48;
+  }
+  // DEVIATION: MFC — thunk_FUN_004518d0() CPropertySheet handler
+  // DEVIATION: MFC — thunk_FUN_0040f380() CDialog handler
+  // DEVIATION: MFC — thunk_FUN_0043c5f0() CWnd handler
+  // C: *(local_8 + 0x3be) = 0 — set filter flag to 0
+  // DEVIATION: MFC — local_8 is dialog object memory, cannot write without MFC
+  // C: thunk_FUN_0046b14d(0xa6, ...) — send MP message with filter state
+  // DEVIATION: MFC — network message send
+  FUN_0058878e(0); // render city list
 }
 
 
@@ -1825,8 +1976,16 @@ export function FUN_00587f00() {
 // Source: block_00580000.c @ 0x00587FBF, 144 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00587fbf (144 bytes)
 export function FUN_00587fbf() {
-  // MP city status request — stub
+  let uVar1;
+
+  FUN_005c62ee(); // DEVIATION: MFC — get dialog pointer (result unused)
+  // DEVIATION: MFC — thunk_FUN_004518d0() CPropertySheet handler
+  // C: uVar1 = thunk_FUN_00493c7d(DAT_006d1da0) — get civ name for player
+  // DEVIATION: MFC — thunk_FUN_0040ff60(0, uVar1) — set window text
+  // C: thunk_FUN_00511880(0x65, DAT_006ad30c + DAT_006ad558[DAT_0067a8c0] * 0x54, 1, 0, DAT_006d1da0, 0)
+  // DEVIATION: MFC — send MP city status request message
 }
 
 
@@ -1835,8 +1994,20 @@ export function FUN_00587fbf() {
 // Source: block_00580000.c @ 0x0058804F, 97 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058804f (97 bytes)
 export function FUN_0058804f(param_1, param_2) {
-  // City list scroll — UI stub
+  let local_8;
+
+  local_8 = FUN_005c62ee(); // DEVIATION: MFC — get dialog pointer
+  if (local_8 === 0) {
+    local_8 = 0;
+  } else {
+    local_8 = local_8 - 0x48;
+  }
+  // DEVIATION: MFC — thunk_FUN_004518d0() CPropertySheet handler
+  // C: *(local_8 + 0x10410 + param_1 * 4) = param_2 — set scroll position
+  // DEVIATION: MFC — local_8 is dialog object memory, cannot write without MFC
+  FUN_0058878e(param_1); // render city list
 }
 
 
@@ -2027,8 +2198,32 @@ export function FUN_0058878e(param_1) {
 // Source: block_00580000.c @ 0x00588E47, 239 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00588e47 (184 bytes)
 export function FUN_00588e47(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // City list entry rendering — UI stub
+  let iVar1;
+  let local_20;
+  let local_18, local_10;
+  let local_c;
+
+  local_c = FUN_005c62ee(); // DEVIATION: MFC — get dialog pointer
+  if (local_c === 0) {
+    local_c = 0;
+  } else {
+    local_c = local_c - 0x48;
+  }
+  // C: check *(local_c + 0x154) — dialog type flag
+  // DEVIATION: MFC — local_c is dialog object memory, cannot read without MFC
+  // Assume 0 for default path
+  local_20 = -4; // 0xfffffffc
+  local_18 = param_3;
+  local_10 = 0x18;
+  // C: if ((param_2 & 1) != 0) local_18 = param_3 + local_10 + 2
+  if ((param_2 & 1) !== 0) {
+    local_18 = param_3 + local_10 + 2;
+  }
+  // DEVIATION: MFC — iVar1 = thunk_FUN_00472cf0(0x30, local_20) — get font height
+  iVar1 = 0; // DEVIATION: MFC — font height unavailable
+  // DEVIATION: MFC — thunk_FUN_0056d289(DAT_0067a7a8, param_1, param_6, local_18, param_4 - (iVar1 - param_5) / 2, local_20) — draw text
 }
 
 
@@ -2079,8 +2274,9 @@ export function FUN_00589a0a() {
 // Source: block_00580000.c @ 0x00589A24, 29 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00589a24 (29 bytes)
 export function FUN_00589a24() {
-  // _atexit(FUN_00589a41) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00589a41) — process exit handler registration
 }
 
 
@@ -2100,8 +2296,47 @@ export function FUN_00589a41() {
 // Application startup — stubbed (Win32 window creation, art loading)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00589a5b (505 bytes)
 export function FUN_00589a5b() {
-  // App startup — no-op in JS transpilation
+  let iVar1;
+  // DEVIATION: Win32 — SEH frame setup (unaff_FS_OFFSET, uStack_10, puStack_c, local_8)
+  // C: local_708[708], local_444[1076] — stack buffers for palette/art loading
+
+  FUN_005c64da(); // DEVIATION: MFC — app initialization helper
+  // DEVIATION: MFC — thunk_FUN_0040bbb0() — CWinApp init
+  // DEVIATION: MFC — thunk_FUN_0040bc10(2) — CWinApp command line parse
+  // DEVIATION: Win32 — WritePrivateProfileStringA("Civilization Gold", "Window Name", DAT_00679640, "CIV.INI")
+  // DEVIATION: Win32 — FUN_005c5f20(DAT_00679640, 0x7c, 0, 0, 600, 400, DAT_006a8c00) — create window
+  // DEVIATION: Win32 — iVar1 = thunk_FUN_00564470("civ2\\civ2.exe") — check exe existence
+  iVar1 = 1; // DEVIATION: Win32 — assume exe found
+  if (iVar1 === 0) {
+    // C: early return — exe not found
+    FUN_00589c54();
+    // DEVIATION: Win32 — SEH epilog (FUN_00589c6a)
+    return;
+  }
+  // DEVIATION: MFC — iVar1 = thunk_FUN_00414d10(0x10000, 8) — create document template
+  // DEVIATION: MFC — FUN_005d48f0(*(iVar1 + 4)) — register document
+  // DEVIATION: MFC — thunk_FUN_004e3a86() — parse command line
+  // DEVIATION: MFC — FUN_005bf5e1(0x5a, 10, 0xc0, local_444) — load palette
+  // DEVIATION: MFC — thunk_FUN_00419be0(DAT_006acb68) — init app instance data
+  // DEVIATION: MFC — thunk_FUN_00419ba0(0x9e) — set cursor
+  // DEVIATION: MFC — thunk_FUN_00408050(1) — show window
+  DAT_006acbb0 = FUN_00589d50(); // init startup helper
+  // DEVIATION: MFC — DAT_006acbb4 = thunk_FUN_0043c5c0() — get toolbar handle
+  // DEVIATION: MFC — thunk_FUN_00426f80() — update frame
+  // DEVIATION: MFC — FUN_005c6b63(local_708, 10, 0xec) — save palette
+  // DEVIATION: MFC — thunk_load_civ2_art_0046da40() — load game art
+  // DEVIATION: MFC — FUN_005c6da8(10, 0xec, local_708) — restore palette
+  // DEVIATION: MFC — FUN_005c6480(10, 0xec) — set palette
+  // DEVIATION: MFC — thunk_FUN_00408230(0x00402446) — set message map
+  // DEVIATION: MFC — COleControlSite::SetDlgCtrlID(DAT_006553e8, 0x402cd4)
+  // DEVIATION: MFC — tie(thunk_map_ascii) — register ASCII map handler
+  // DEVIATION: MFC — thunk_FUN_00419ba0(0x9e) — set cursor
+  // DEVIATION: MFC — thunk_FUN_00419b80() — restore cursor
+  DAT_00634718 = 1; // set startup complete flag
+  FUN_00589c54(); // cleanup
+  // DEVIATION: Win32 — SEH epilog (FUN_00589c6a)
 }
 
 
@@ -2128,7 +2363,9 @@ export function FUN_00589c6a() { /* SEH unwind */ }
 // Source: block_00580000.c @ 0x00589C79, 36 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00589c79 (26 bytes)
 export function FUN_00589c79() {
+  FUN_00408420(); // DEVIATION: MFC — thunk call
   DAT_00634718 = 0;
 }
 
@@ -2138,8 +2375,11 @@ export function FUN_00589c79() {
 // Source: block_00580000.c @ 0x00589D50, 37 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00589d50 (37 bytes)
 export function FUN_00589d50() {
-  // FUN_005bc9d3 — no-op
+  // DEVIATION: MFC — in_ECX is 'this' pointer
+  // C: FUN_005bc9d3(*(in_ECX + 8)) — init helper with member field
+  // DEVIATION: MFC — cannot access in_ECX member without MFC object
 }
 
 
@@ -2149,10 +2389,13 @@ export function FUN_00589d50() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00589d80(param_1) {
+  let iVar1 = DAT_00634768;
   let local_8 = -1;
   if (DAT_00634768 < 10) {
     local_8 = DAT_00634768;
     DAT_00634768 = DAT_00634768 + 1;
+    // C: *(undefined4 *)(&DAT_006acbd0 + iVar1 * 4) = param_1
+    DAT_006acbd0[iVar1] = param_1;
   }
   return local_8;
 }
@@ -2164,8 +2407,28 @@ export function FUN_00589d80(param_1) {
 // File I/O — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00589dc5 (297 bytes)
 export function FUN_00589dc5(param_1) {
-  // File I/O stub
+  // C: FILE *_File = thunk_FUN_0041508c(param_1, "r") — open file for reading
+  // DEVIATION: Win32 — file I/O (fopen, fgets, fclose)
+  // C: if (_File != NULL) {
+  //   local_8 = 1;
+  //   while (local_8 != 0 && !feof(_File) && fgets(local_58, 0x4f, _File) != NULL) {
+  //     // strip control chars below ' '
+  //     for (local_5c = 0; local_5c < strlen(local_58); local_5c++) {
+  //       if (local_58[local_5c] < ' ') local_58[local_5c] = '\0';
+  //     }
+  //     // check for "END" marker
+  //     if (strncmp(local_58, "END", 3) == 0) {
+  //       local_8 = 0;
+  //     } else {
+  //       sprintf(DAT_006acbf8, "%s\n", local_58);
+  //       OutputDebugStringA(DAT_006acbf8);
+  //     }
+  //   }
+  // }
+  // if (_File != NULL) fclose(_File);
+  // DEVIATION: Win32 — OutputDebugStringA, file I/O — entire function is debug file reading
 }
 
 
@@ -2175,8 +2438,31 @@ export function FUN_00589dc5(param_1) {
 // Error reporting — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00589ef8 (209 bytes)
 export function FUN_00589ef8(param_1, param_2, param_3, param_4, param_5) {
-  // Error reporting stub
+  let local_bc = "";  // C: char local_bc[12]
+  let local_b0 = "";  // C: char local_b0[80]
+  let local_60 = "";  // C: char local_60[80]
+  let local_10 = "";  // C: char local_10[12]
+
+  // C: if (param_3 != 0) FUN_005f22d0(&DAT_00634770, param_3)
+  if (param_3 !== 0) {
+    DAT_00634770 = String(param_3); // DEVIATION: strcpy equivalent
+  }
+  // C: __itoa(param_1, local_b0, 10)
+  local_b0 = String(param_1);
+  // C: __itoa(param_2, local_60, 10)
+  local_60 = String(param_2);
+  // C: __ltoa(param_4, local_10, 10)
+  local_10 = String(param_4);
+  // C: __ltoa(param_5, local_bc, 10)
+  local_bc = String(param_5);
+  // C: FUN_00589fc9(local_b0, "ERRORS.DB", ~param_1 + 1)
+  FUN_00589fc9(local_b0, "ERRORS.DB", (~param_1 + 1) | 0);
+  // C: FUN_00589fc9(local_60, "MODULES.DB", param_2)
+  FUN_00589fc9(local_60, "MODULES.DB", param_2);
+  // C: FUN_0058a0ee(local_b0, local_60, local_10, local_bc, param_1)
+  FUN_0058a0ee(local_b0, local_60, local_10, local_bc, param_1);
 }
 
 
@@ -2264,8 +2550,71 @@ export function FUN_0058a601() { /* destructor stub */ }
 // Dialog setup — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058a61b (498 bytes)
 export function FUN_0058a61b(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
-  // Dialog window creation — UI stub
+  let local_c;
+  let local_8;
+
+  // C: set dialog title string
+  if (param_1 === 0) {
+    DAT_006ace8c = ""; // C: FUN_005f22d0(&DAT_006ace8c, &DAT_00634948) — empty string
+  } else {
+    DAT_006ace8c = param_1; // C: FUN_005f22d0(&DAT_006ace8c, param_1)
+  }
+  // C: set dialog layout pointers
+  DAT_006ad02c = DAT_006ab1a0;
+  DAT_006ad024 = DAT_006ab190;
+  DAT_006ad028 = DAT_006ab178;
+  // C: set dialog params
+  DAT_006ace6c = param_2;
+  DAT_006ace70 = param_8;
+  DAT_006ace74 = param_9;
+  DAT_006ace78 = param_7;
+  DAT_006acf54 = 0;
+  DAT_006ad000 = 0;
+  // C: if ((param_2 & 4) != 0) use center coords
+  if ((param_2 & 4) !== 0) {
+    DAT_006ace70 = DAT_00633598;
+    DAT_006ace74 = DAT_0063359c;
+  }
+  // C: determine window style flags
+  if ((param_2 & 8) === 0) {
+    local_8 = 0x202;
+  } else {
+    local_8 = 0x802;
+  }
+  if (DAT_006ace70 !== 0) {
+    local_8 = local_8 | 0x400;
+  }
+  if (param_7 !== 0) {
+    local_8 = local_8 | 0x1000;
+  }
+  // C: adjust size for toolbar/statusbar
+  if ((param_2 & 2) === 0) {
+    param_5 = param_5 + DAT_006ace74 * 2;
+    param_6 = param_6 + DAT_006ace70 + DAT_006ace74;
+  }
+  // C: center on screen if flag set
+  if ((param_2 & 1) !== 0) {
+    param_3 = (DAT_006ab198 >> 1) - (param_5 >> 1);
+    param_4 = (DAT_006ab19c >> 1) - (param_6 >> 1);
+  }
+  // C: get parent window handle
+  if (DAT_006a4f88 === 0) {
+    local_c = 0;
+  } else {
+    local_c = DAT_006a4f88 + 0x48;
+  }
+  // DEVIATION: MFC — FUN_005bb4ae(0, local_8, param_3, param_4, param_5, param_6, DAT_006a8c00, local_c) — create window
+  // C: if menu handle set, attach menu
+  if (DAT_006ace70 !== 0) {
+    // DEVIATION: MFC — thunk_FUN_00497d00(DAT_006ace70) — set menu
+  }
+  // C: if statusbar handle set, attach statusbar
+  if (DAT_006ace78 !== 0) {
+    // DEVIATION: MFC — thunk_FUN_004cff70(DAT_006ace78) — set statusbar
+  }
+  // DEVIATION: MFC — thunk_FUN_00552ed2() — update window
 }
 
 
@@ -2275,8 +2624,24 @@ export function FUN_0058a61b(param_1, param_2, param_3, param_4, param_5, param_
 // File copy utility — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c show_messagebox_A80D (248 bytes)
 export function show_messagebox_A80D(param_1, param_2) {
-  // File copy — stub
+  let iVar1;
+  // C: char local_410[1024] — copy buffer
+  // C: FILE *local_10, *local_8 — file handles
+  // C: size_t local_c — bytes read
+
+  // C: iVar1 = _strcmp(param_1, param_2)
+  // C: if (iVar1 != 0) — only copy if src != dst
+  if (param_1 !== param_2) {
+    // DEVIATION: Win32 — _fopen(param_1, "rb") — open source file
+    // DEVIATION: Win32 — _fopen(param_2, "wb") — open dest file
+    // DEVIATION: Win32 — if open fails: MessageBoxA(NULL, "Error copying file", NULL, 0x10)
+    // DEVIATION: Win32 — file copy loop: while (fread(buf, 1, 0x400, src) != 0) fwrite(buf, 1, count, dst)
+    // DEVIATION: Win32 — fclose(src), fclose(dst)
+    // Note: Despite the function name, this is actually a file copy utility,
+    // not a message box display function. The name is a Ghidra artifact.
+  }
 }
 
 
@@ -2362,7 +2727,40 @@ export function FUN_0058ae20(param_1, param_2, param_3, param_4, param_5, param_
 // Source: block_00580000.c @ 0x0058AE6C, 330 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058ae6c(param_1, param_2) { /* UI click stub */ }
+// Source: decompiled/block_00580000.c FUN_0058ae6c (328 bytes)
+export function FUN_0058ae6c(param_1, param_2) {
+  let iVar1, iVar2, iVar3, iVar4;
+  let local_2c;
+  let local_18, local_14, local_10, local_c;
+  let local_8;
+
+  param_2 = param_2 - DAT_006ace80;
+  param_1 = param_1 - DAT_006ace7c;
+  // _Timevec::~_Timevec(PTR_DAT_006359f0); // DEVIATION: C++ destructor
+  iVar1 = 0 + 8; // C: extraout_EAX + 8 (button height from destructor return)
+  iVar2 = DAT_006ace84 + ((DAT_006ace84 >> 31) & 3);
+  iVar3 = iVar2 >> 2;
+  local_2c = 0;
+  while (true) {
+    if (5 < local_2c) {
+      return;
+    }
+    iVar4 = (local_2c % 3) * iVar3 * 5;
+    // FUN_004086c0(&local_18, ...) — compute button rect // DEVIATION: Win32 — rect calc
+    let btnX = ((iVar4 + ((iVar4 >> 31) & 3)) >> 2) + ((iVar3 + ((iVar2 >> 31) & 3)) >> 2);
+    let btnY = (iVar1 * 3 / 2) + ((local_2c / 3) | 0) * iVar1 * 4;
+    // hit test: check if click is within button rect
+    if (ri(DAT_006acd38, local_2c * 4) >= 0) {
+      // iVar4 = FUN_0058ae20(param_1, param_2, local_18, local_14, local_10, local_c); // DEVIATION: Win32 — hit test
+      // if (iVar4 !== 0) break;
+    }
+    local_2c = local_2c + 1;
+  }
+  local_8 = DAT_00655aea;
+  DAT_00655aea = DAT_00655aea | 0x10;
+  FUN_0046e020(ri(DAT_006acd38, local_2c * 4), 0, 0, 0);
+  DAT_00655aea = local_8;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2513,10 +2911,25 @@ export function FUN_0058b47e(param_1, param_2) {
   // FUN_0058b88e(); // DEVIATION: MFC — SEH cleanup
 }
 
-export function FUN_0058b859() { /* destructor iterator — no-op */ }
-export function FUN_0058b86f() { /* destructor — no-op */ }
-export function FUN_0058b87b() { /* destructor — no-op */ }
-export function FUN_0058b88e() { /* SEH unwind */ }
+// Source: decompiled/block_00580000.c FUN_0058b859 (22 bytes)
+export function FUN_0058b859() {
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_(local_1d0, 0x3c, 6, thunk_FUN_0040f570)
+}
+
+// Source: decompiled/block_00580000.c FUN_0058b86f (12 bytes)
+export function FUN_0058b86f() {
+  // DEVIATION: MFC — thunk_FUN_0040f570() destructor
+}
+
+// Source: decompiled/block_00580000.c FUN_0058b87b (9 bytes)
+export function FUN_0058b87b() {
+  // DEVIATION: MFC — thunk_FUN_0040f570() destructor
+}
+
+// Source: decompiled/block_00580000.c FUN_0058b88e (14 bytes)
+export function FUN_0058b88e() {
+  // DEVIATION: Win32 SEH — *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2694,7 +3107,7 @@ export function FUN_0058c295() {
     } else if (s8(DAT_006560f0[local_14 * 0x20 + 7]) === DAT_006d1da0 || DAT_00655b07 !== 0) {
       // Disband unit
       DAT_0062804c = 0;
-      FUN_004271e8(0, DAT_0064b1bc[u8(DAT_006560f0[local_14 * 0x20 + 6]) * 0x14 + 0x0C]); // DEVIATION: UI
+      FUN_004271e8(0, DAT_0064b1b8[u8(DAT_006560f0[local_14 * 0x20 + 6]) * 0x14]);
       iVar4 = FUN_004442e0("DISBAND", local_14); // DEVIATION: UI confirm
       if (iVar4 === 1) {
         sVar2 = rs(DAT_006560f0, local_14 * 0x20);
@@ -3106,8 +3519,15 @@ export function FUN_0058cfcd() {
   return;
 }
 
-export function FUN_0058d41e() { /* cleanup stub */ }
-export function FUN_0058d434() { /* SEH unwind */ }
+// Source: decompiled/block_00580000.c FUN_0058d41e (12 bytes)
+export function FUN_0058d41e() {
+  // DEVIATION: MFC — thunk_FUN_0059df8a() cleanup
+}
+
+// Source: decompiled/block_00580000.c FUN_0058d434 (14 bytes)
+export function FUN_0058d434() {
+  // DEVIATION: Win32 SEH — *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3238,7 +3658,7 @@ export function FUN_0058d6af() {
   cVar1 = s8(DAT_0064b1bc[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14 + 0x0E]);
   bVar5 = false;
   do {
-    FUN_004271e8(0, DAT_0064b1bc[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14 + 0x0C]); // DEVIATION: UI
+    FUN_004271e8(0, DAT_0064b1b8[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14]);
     FUN_0040ffa0("GOTO_TARGET", 0x800001); // DEVIATION: UI
     local_32c = 0;
     for (local_330 = 0; local_330 < DAT_00655b18; local_330 = local_330 + 1) {
@@ -3342,8 +3762,15 @@ export function FUN_0058d6af() {
   } while (true);
 }
 
-export function FUN_0058ddaa() { /* cleanup stub */ }
-export function FUN_0058ddc0() { /* SEH unwind */ }
+// Source: decompiled/block_00580000.c FUN_0058ddaa (12 bytes)
+export function FUN_0058ddaa() {
+  // DEVIATION: MFC — thunk_FUN_0059df8a() cleanup
+}
+
+// Source: decompiled/block_00580000.c FUN_0058ddc0 (14 bytes)
+export function FUN_0058ddc0() {
+  // DEVIATION: Win32 SEH — *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3520,8 +3947,15 @@ export function FUN_0058df7b() {
   } while (true);
 }
 
-export function FUN_0058e5c4() { /* cleanup stub */ }
-export function FUN_0058e5da() { /* SEH unwind */ }
+// Source: decompiled/block_00580000.c FUN_0058e5c4 (12 bytes)
+export function FUN_0058e5c4() {
+  // DEVIATION: MFC — thunk_FUN_0059df8a() cleanup
+}
+
+// Source: decompiled/block_00580000.c FUN_0058e5da (14 bytes)
+export function FUN_0058e5da() {
+  // DEVIATION: Win32 SEH — *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3583,9 +4017,9 @@ export function FUN_0058f040(param_1) {
     if ((((((1 << (bVar2 & 0x1f) & DAT_00655b0b) === 0) || (iVar6 = _rand(), iVar6 % 3 === 0)) &&
          ((city_short(0x108, uVar3) !== 0 &&
           (iVar6 = FUN_005b8a81(iVar4, uVar5),
-           civ_byte(0x332, uVar3 * 0x594 + iVar6) === 0)))) &&  // (&DAT_0064c932)[uVar3 * 0x594 + iVar6]
-        (((civ_byte(0x3F2, uVar3 * 0x594 + iVar6) & 0x7f) === 0 || (0x0c < DAT_0063f660)))) &&  // (&DAT_0064c9f2)
-       (civ_byte(0x332, uVar3 * 0x594 + iVar6) === 0)) {
+           civ_byte(0x332 + iVar6, uVar3) === 0)))) &&  // (&DAT_0064c932)[uVar3 * 0x594 + iVar6]
+        (((civ_byte(0x3F2 + iVar6, uVar3) & 0x7f) === 0 || (0x0c < DAT_0063f660)))) &&  // (&DAT_0064c9f2)
+       (civ_byte(0x332 + iVar6, uVar3) === 0)) {
       local_50 = 0;
     }
 
@@ -3760,7 +4194,7 @@ export function FUN_0058f040(param_1) {
             // goto LAB_0058f87c
             FUN_0043d07a(iVar4, uVar5, uVar3, -1, -1);
             iVar6 = FUN_005b8a81(iVar4, uVar5);
-            if ((civ_byte(0x332, uVar3 * 0x594 + iVar6) !== 0) && (DAT_0063f660 < 0x18)) {
+            if ((civ_byte(0x332 + iVar6, uVar3) !== 0) && (DAT_0063f660 < 0x18)) {
               if (DAT_006ad0d0 === 0) {
                 return 0;
               }
@@ -3773,7 +4207,7 @@ export function FUN_0058f040(param_1) {
               // goto LAB_0058f87c
               FUN_0043d07a(iVar4, uVar5, uVar3, -1, -1);
               iVar6 = FUN_005b8a81(iVar4, uVar5);
-              if ((civ_byte(0x332, uVar3 * 0x594 + iVar6) !== 0) && (DAT_0063f660 < 0x18)) {
+              if ((civ_byte(0x332 + iVar6, uVar3) !== 0) && (DAT_0063f660 < 0x18)) {
                 if (DAT_006ad0d0 === 0) {
                   return 0;
                 }
@@ -3832,8 +4266,8 @@ export function FUN_0058f040(param_1) {
             uVar7 = FUN_005b3d06(local_38, 0, uVar8, iVar6);
             if (-1 < uVar7) {
               iVar9 = FUN_005b8931(iVar4, uVar5);
-              // (&DAT_006560f9)[uVar7 * 0x20] |= visibility from tile
-              // DEVIATION: would need tile visibility byte access
+              // C: (&DAT_006560f9)[uVar7 * 0x20] = *(byte *)(iVar9 + 4) | (&DAT_006560f9)[uVar7 * 0x20]
+              set_unit_byte(0x09, uVar7, tileRead(iVar9, 4) | unit_byte(0x09, uVar7));
               FUN_0047cea6(uVar8, iVar6);
               uVar7 = DAT_00655b02;
               if (2 < DAT_00655b02) {
@@ -3850,7 +4284,7 @@ export function FUN_0058f040(param_1) {
         return uVar7;
 
       case 4:
-        if ((DAT_00655af8 === 0) || (iVar6 = FUN_004bd9f0_stub(uVar3, 0x26), iVar6 !== 0)) {
+        if ((DAT_00655af8 === 0) || (iVar6 = FUN_004bd9f0(uVar3, 0x26), iVar6 !== 0)) {
           local_50 = 2;
           done = false;
         } else {
@@ -4114,8 +4548,15 @@ export function FUN_0058fedb(param_1, param_2) {
   return;
 }
 
-export function FUN_00590607() { /* cleanup stub */ }
-export function FUN_0059061d() { /* SEH unwind */ }
+// Source: decompiled/block_00590000.c FUN_00590607 (12 bytes)
+export function FUN_00590607() {
+  // DEVIATION: MFC — thunk_FUN_0059df8a() cleanup
+}
+
+// Source: decompiled/block_00590000.c FUN_0059061d (15 bytes)
+export function FUN_0059061d() {
+  // DEVIATION: Win32 SEH — *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -4214,7 +4655,7 @@ function FUN_00440750(a, b) { /* establish_trade_route — stub */ }
 function FUN_004e7492(a) { /* refresh_city_window — stub */ }
 function FUN_004c54da(a) { /* unit_homecoming — stub */ }
 function FUN_004c4210(a, b) { /* show_city_full_msg — stub */ }
-function FUN_004bd9f0_stub(a, b) { return 0; /* has_tech — stub */ }
+function FUN_004bd9f0(a, b) { return 0; /* has_tech — stub */ }
 function FUN_005b9ec6() { /* begin_map_update — stub */ }
 function FUN_005b9f1c() { /* end_map_update — stub */ }
 function FUN_004272d0(a, b, c) { /* set_tile_visibility — stub */ }

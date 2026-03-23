@@ -39,9 +39,9 @@ export function FUN_00521807() {
 // Size: 15 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00520000.c FUN_0052181d (15 bytes)
 export function FUN_0052181d() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -271,9 +271,9 @@ export function FUN_00521fbb() {
 // Size: 15 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00520000.c FUN_00521fd1 (15 bytes)
 export function FUN_00521fd1() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -427,9 +427,9 @@ export function FUN_00522617() {
 // Size: 15 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00520000.c FUN_0052262d (15 bytes)
 export function FUN_0052262d() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -601,9 +601,9 @@ export function FUN_00522b06() {
 // Size: 15 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00520000.c FUN_00522b1c (15 bytes)
 export function FUN_00522b1c() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -705,9 +705,9 @@ export function FUN_00522dd6() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00520000.c FUN_00522dec (14 bytes)
 export function FUN_00522dec() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -868,9 +868,9 @@ export function FUN_005233d8() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00520000.c FUN_005233ee (14 bytes)
 export function FUN_005233ee() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -1234,9 +1234,9 @@ export function FUN_005246bf() {
 // Size: 15 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00520000.c FUN_005246d5 (15 bytes)
 export function FUN_005246d5() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 

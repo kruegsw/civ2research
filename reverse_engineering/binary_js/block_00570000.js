@@ -117,8 +117,9 @@ export function FUN_0057075c() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00570772 — SEH_epilog_1
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00570772 (14 bytes)
 export function FUN_00570772() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -264,8 +265,9 @@ export function FUN_00570fa2() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00570fb8 — SEH_epilog_2
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00570fb8 (14 bytes)
 export function FUN_00570fb8() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -401,8 +403,9 @@ export function FUN_005718ec() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00571902 — SEH_epilog_3
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00571902 (14 bytes)
 export function FUN_00571902() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -476,8 +479,9 @@ export function FUN_00571baa() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00571bc0 — SEH_epilog_4
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00571bc0 (14 bytes)
 export function FUN_00571bc0() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -591,8 +595,9 @@ export function FUN_00572065() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057207b — SEH_epilog_5
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057207b (14 bytes)
 export function FUN_0057207b() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1130,8 +1135,9 @@ export function FUN_00573adc() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00573aef — SEH_epilog_6
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00573aef (14 bytes)
 export function FUN_00573aef() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1284,8 +1290,9 @@ export function FUN_00574218() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057422b — SEH_epilog_7
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057422b (14 bytes)
 export function FUN_0057422b() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1512,8 +1519,18 @@ export function FUN_005746a1(param_1, param_2, param_3, param_4, param_5) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00574c47 — show_sprite_editor_item
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00574c47 (95 bytes)
 export function FUN_00574c47(param_1) {
-  // UI sprite display — no-op in JS
+  let local_14, local_10, local_c, local_8;
+  let _out = {};
+  FUN_005746a1(param_1, _out); // C: thunk_FUN_005746a1(param_1, &local_10, &local_14, &local_8, &local_c)
+  local_10 = _out.local_10 || 0;
+  local_14 = _out.local_14 || 0;
+  local_8 = _out.local_8 || 0;
+  local_c = _out.local_c || 0;
+  FUN_005cdf50();
+  FUN_005cedad(/*&DAT_006ac0a8,*/ 7, local_10, local_14, local_8, local_c);
+  FUN_00574686();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1661,8 +1678,10 @@ export function FUN_00574f50() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00575d89 — export_single_sprite
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00575d89 (59 bytes)
 export function FUN_00575d89(param_1, param_2, param_3, param_4, param_5) {
-  // UI/debug function — no-op in JS
+  FUN_005cedad(/*&DAT_006ac0a8,*/ 7, param_2, param_3, param_4, param_5);
+  FUN_005cf467(9, 7);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1854,15 +1873,24 @@ export function FUN_005767b3() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005767c9 — SEH_epilog_8
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005767c9 (14 bytes)
 export function FUN_005767c9() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // CBitmapButton::~CBitmapButton — destructor (MFC library)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c ~CBitmapButton (114 bytes)
 export function CBitmapButton_destructor() {
-  // MFC destructor — no-op in JS
+  // DEVIATION: Win32 — SEH setup: puStack_c = &LAB_00578447; uStack_10 = *unaff_FS_OFFSET; *unaff_FS_OFFSET = &uStack_10
+  // DEVIATION: MFC — CBitmapButton::~CBitmapButton destructor chain
+  FUN_00578402();
+  FUN_00578411();
+  FUN_00578420();
+  FUN_0057842f();
+  FUN_0057843e();
+  FUN_00578451();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1896,15 +1924,17 @@ export function FUN_0057842f() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057843e — destroy_frame_window
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057843e (9 bytes)
 export function FUN_0057843e() {
-  // MFC destructor — no-op in JS
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(unaff_EBP + -0x10))
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578451 — SEH_epilog_9
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578451 (14 bytes)
 export function FUN_00578451() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1925,38 +1955,46 @@ export function FUN_005784a0() {
 // ═══════════════════════════════════════════════════════════════════
 // ios_base::precision — library function
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c ios_base_precision (30 bytes)
 export function ios_base_precision(thisObj, param_1) {
-  // MFC library — no-op in JS
+  // DEVIATION: MFC — ios_base::precision, sets stream precision
   return 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // ios_base::width — library function
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c ios_base_width (30 bytes)
 export function ios_base_width(thisObj, param_1) {
-  // MFC library — no-op in JS
+  // DEVIATION: MFC — ios_base::width, sets stream width
   return 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578650 — setup_html_stream_lines
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578650 (60 bytes)
 export function FUN_00578650(param_1) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — thunk_FUN_004980ec(in_ECX + 4)
+  // DEVIATION: MFC — thunk_FUN_00497ea0(in_ECX + 4, 0xb, param_1)
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // CHtmlStream::Reset — library function
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c Reset (42 bytes)
 export function CHtmlStream_Reset() {
-  // MFC library — no-op in JS
+  // DEVIATION: MFC — CHtmlStream::Reset: *(this + 0x1c) = 0; *(this + 0x18) = 0
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005786b6 — reset_and_setup_html
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005786b6 (59 bytes)
 export function FUN_005786b6(param_1) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — thunk_FUN_0049805e(in_ECX + 4)
+  CHtmlStream_Reset(); // DEVIATION: MFC — CHtmlStream::Reset(in_ECX)
+  FUN_00578650(param_1); // DEVIATION: MFC — thunk_FUN_00578650(param_1)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1985,23 +2023,33 @@ export function FUN_00578770() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005787bd — destroy_timevec
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005787bd (9 bytes)
 export function FUN_005787bd() {
-  // C++ destructor — no-op in JS
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(unaff_EBP + -0x10))
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005787d0 — SEH_epilog_10
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005787d0 (14 bytes)
 export function FUN_005787d0() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005787de — find_menu_item_by_id
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005787de (62 bytes)
 export function FUN_005787de(param_1) {
-  // Menu traversal — UI only, stub
-  return 0;
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // let local_c = ri(in_ECX, 0x1c); // head of menu item linked list
+  // while (true) {
+  //   if (local_c === 0) return 0;
+  //   if (ri(local_c, 4) === param_1) break; // found matching ID
+  //   local_c = ri(local_c, 0x10); // next in list
+  // }
+  // return local_c;
+  return 0; // DEVIATION: MFC — menu item lookup requires this pointer
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2178,15 +2226,28 @@ export function FUN_00578c12(param_1, param_2, param_3, param_4) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578d8a — dispatch_menu_callback
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578d8a (94 bytes)
 export function FUN_00578d8a(param_1, param_2) {
-  // Menu callback dispatch — UI only, stub
+  if (DAT_0063430c !== null) {
+    let uVar1 = FUN_005788a9(param_1);
+    let uVar2 = FUN_00578a1c(uVar1, param_2);
+    DAT_0063430c(uVar1, uVar2); // callback invocation
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578de8 — set_menu_parent_window
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578de8 (80 bytes)
 export function FUN_00578de8(param_1) {
-  // UI — no-op in JS
+  if (param_1 !== 0) {
+    DAT_00634304 = param_1;
+    DAT_00634308 = 0; // C: in_ECX — implicit this pointer, no JS equivalent
+    // DEVIATION: MFC — thunk_FUN_00579b40(in_ECX)
+    FUN_00579b40(0);
+    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(param_1, 0x40341d)
+    CPropertySheet_EnableStackedTabs(param_1, 0x40341d);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2383,71 +2444,95 @@ export function FUN_0057953e(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005799c0 — set_tab_control_text
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_005799c0 (41 bytes)
 export function FUN_005799c0(param_1) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — uVar1 = FUN_005e0f2a(param_1); *in_ECX = uVar1
+  let uVar1 = FUN_005e0f2a(param_1);
+  // C: *in_ECX = uVar1 — thiscall store to object field
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579a00 — insert_menu_entry
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579a00 (50 bytes)
 export function FUN_00579a00(param_1, param_2, param_3) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — build_menu_128C(*in_ECX, param_1, param_2, param_3)
+  build_menu_128C(0, param_1, param_2, param_3);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579a40 — remove_menu_entry
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579a40 (46 bytes)
 export function FUN_00579a40(param_1, param_2) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — FUN_005e1226(*in_ECX, param_1, param_2)
+  FUN_005e1226(0, param_1, param_2);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579a80 — update_menu_entry_text
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579a80 (50 bytes)
 export function FUN_00579a80(param_1, param_2, param_3) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — FUN_005e14c8(*in_ECX, param_1, param_2, param_3)
+  FUN_005e14c8(0, param_1, param_2, param_3);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579ac0 — check_menu_entry
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579ac0 (50 bytes)
 export function FUN_00579ac0(param_1, param_2, param_3) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — FUN_005e1118(*in_ECX, param_1, param_2, param_3)
+  FUN_005e1118(0, param_1, param_2, param_3);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579b00 — gray_menu_entry
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579b00 (50 bytes)
 export function FUN_00579b00(param_1, param_2, param_3) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — FUN_005e11be(*in_ECX, param_1, param_2, param_3)
+  FUN_005e11be(0, param_1, param_2, param_3);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579b40 — set_menu_window
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579b40 (59 bytes)
 export function FUN_00579b40(param_1) {
-  // UI — no-op in JS
+  // DEVIATION: MFC — uVar1 = thunk_FUN_00579b90()
+  let uVar1 = FUN_00579b90();
+  // DEVIATION: MFC — uVar1 = thunk_FUN_00414d10(uVar1)
+  FUN_005bcdfc(uVar1);
+  // C: *(in_ECX + 0x78) = param_1 — thiscall store
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579b90 — get_menu_handle
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579b90 (22 bytes)
 export function FUN_00579b90() {
+  // return *in_ECX; // DEVIATION: MFC — get menu handle from this pointer
   return 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // CPropertySheet::EnableStackedTabs — library function
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c EnableStackedTabs (36 bytes)
 export function CPropertySheet_EnableStackedTabs(thisObj, param_1) {
-  // MFC library — no-op in JS
+  // DEVIATION: MFC — CPropertySheet::EnableStackedTabs: *(this + 0x98) = param_1
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00579bf0 — flush_menu_updates
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00579bf0 (52 bytes)
 export function FUN_00579bf0() {
-  // UI — no-op in JS
+  // C: if (*(in_ECX + 0x78) != 0) { uVar1 = thunk_FUN_00414d10(); FUN_005e10fb(uVar1); }
+  // DEVIATION: MFC — conditional DrawMenuBar via FUN_005e10fb
+  FUN_005e10fb(0);
 }
 
 
@@ -2638,8 +2723,9 @@ export function FUN_0057a661() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057a677 — SEH_epilog_11
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057a677 (14 bytes)
 export function FUN_0057a677() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 
@@ -3662,8 +3748,9 @@ export function FUN_0057e29f() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057e2b5 — SEH_epilog_12
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057e2b5 (14 bytes)
 export function FUN_0057e2b5() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 
@@ -3987,15 +4074,17 @@ export function FUN_0057ed3f(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057f628 — destroy_combat_animation_data
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057f628 (22 bytes)
 export function FUN_0057f628() {
-  // C++ destructor — no-op in JS
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_((unaff_EBP + -0x314), 0x48, 8, FUN_005bd915)
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057f648 — SEH_epilog_13
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057f648 (15 bytes)
 export function FUN_0057f648() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 

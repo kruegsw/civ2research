@@ -474,6 +474,7 @@ function gdi_847F(_a) { return 0; /* get_font_height */ }
 function FUN_005db140(_a) { return 0; /* load_resource */ }
 function FUN_005db55b(_a) { /* free_resource */ }
 function FUN_00448f92(_a) { return 0; /* get_government_name */ }
+function FUN_004aefd8(_a) { /* append_ordinal_suffix */ }
 // FUN_0043ca10 defined as export below
 
 
@@ -592,9 +593,11 @@ export function FUN_004305e7() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004305fd — SEH cleanup (no-op in JS)
+// Source: decompiled/block_00430000.c FUN_004305fd (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004305fd() {
-  // SEH frame restore - no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
   return;
 }
 
@@ -939,8 +942,11 @@ export function FUN_0043154f() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00431565 — SEH cleanup (no-op in JS)
+// Source: decompiled/block_00430000.c FUN_00431565 (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00431565() {
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
   return;
 }
 
@@ -1228,16 +1234,21 @@ export function FUN_004325e1() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004325ed — destructor helper (no-op in JS)
+// Source: decompiled/block_00430000.c FUN_004325ed (12 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004325ed() {
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd((unaff_EBP + -0x61c))
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00432603 — SEH cleanup (no-op in JS)
+// Source: decompiled/block_00430000.c FUN_00432603 (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00432603() {
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
   return;
 }
 
@@ -1366,8 +1377,11 @@ export function FUN_00432bf8() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00432c0e — SEH cleanup (no-op in JS)
+// Source: decompiled/block_00430000.c FUN_00432c0e (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00432c0e() {
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
   return;
 }
 
@@ -1805,7 +1819,7 @@ export function FUN_00435dc4() {
   let iVar3 = ((local_68 * local_8) / 100) | 0;
   local_74 = 0;
   for (let local_64 = 1; local_64 < 0x19; local_64 = local_64 + 1) {
-    if (((local_64 * local_64) / 3) | 0 <= iVar3) {
+    if ((((local_64 * local_64) / 3) | 0) <= iVar3) {
       local_74 = local_64 - 1;
     }
   }
@@ -1958,9 +1972,19 @@ export function FUN_00436e28() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00436ed2 — save hall of fame to file
+// Source: decompiled/block_00430000.c FUN_00436ed2 (136 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00436ed2() {
-  // File I/O stubbed - would write HALLFAME.DAT
+  // DEVIATION: Win32 — file I/O (fopen/fwrite/fclose HALLFAME.DAT)
+  // C: _File = _fopen(s_HALLFAME_DAT_00626138, &DAT_00626134);
+  // C: if (_File != (FILE *)0x0) {
+  // C:   local_8 = 0;
+  // C:   while ((local_8 < 6 &&
+  // C:          (sVar1 = _fwrite(&DAT_0063f0c8 + local_8 * 0x48, 0x48, 1, _File), sVar1 != 0))) {
+  // C:     local_8 = local_8 + 1;
+  // C:   }
+  // C:   _fclose(_File);
+  // C: }
   return;
 }
 
@@ -2352,49 +2376,76 @@ export function FUN_004386b8(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // CDaoFieldInfo::~CDaoFieldInfo — MFC destructor (no-op in JS)
+// Source: decompiled/block_00430000.c ~CDaoFieldInfo (140 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function CDaoFieldInfo_destructor() {
-  // MFC library destructor - no-op
+  // DEVIATION: MFC — CDaoFieldInfo::~CDaoFieldInfo destructor chain
+  // C: *unaff_FS_OFFSET = &uStack_10;  (SEH setup)
+  // C: local_8._0_1_ = 5; FUN_0043c19c();
+  // C: local_8._0_1_ = 4; FUN_0043c1ab();
+  // C: local_8._0_1_ = 3; FUN_0043c1ba();
+  // C: local_8._0_1_ = 2; FUN_0043c1c9();
+  // C: local_8._0_1_ = 1; FUN_0043c1d8();
+  // C: local_8 = (uint)local_8._1_3_ << 8; FUN_0043c1e7();
+  // C: local_8 = 0xffffffff; FUN_0043c1f6(); FUN_0043c209();
+  FUN_0043c19c();
+  FUN_0043c1ab();
+  FUN_0043c1ba();
+  FUN_0043c1c9();
+  FUN_0043c1d8();
+  FUN_0043c1e7();
+  FUN_0043c1f6();
+  FUN_0043c209();
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c19c — cleanup string helper
+// Source: decompiled/block_00430000.c FUN_0043c19c (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c19c() {
+  // DEVIATION: MFC — thunk_FUN_0040fbb0() (CString destructor)
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c1ab — cleanup string helper
+// Source: decompiled/block_00430000.c FUN_0043c1ab (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c1ab() {
+  // DEVIATION: MFC — thunk_FUN_0040f570() (CString destructor)
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c1ba — cleanup string helper
+// Source: decompiled/block_00430000.c FUN_0043c1ba (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c1ba() {
+  // DEVIATION: MFC — thunk_FUN_0040f570() (CString destructor)
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c1c9 — cleanup string helper
+// Source: decompiled/block_00430000.c FUN_0043c1c9 (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c1c9() {
+  // DEVIATION: MFC — thunk_FUN_0040f570() (CString destructor)
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c1d8 — cleanup string helper
+// Source: decompiled/block_00430000.c FUN_0043c1d8 (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c1d8() {
+  // DEVIATION: MFC — thunk_FUN_0040f570() (CString destructor)
   return;
 }
 
@@ -2410,24 +2461,37 @@ export function FUN_0043c1e7() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c1f6 — destructor helper (no-op in JS)
+// Source: decompiled/block_00430000.c FUN_0043c1f6 (9 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c1f6() {
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(unaff_EBP + -0x10))
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c209 — SEH cleanup (no-op in JS)
+// Source: decompiled/block_00430000.c FUN_0043c209 (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c209() {
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_0043c260 — CDaoFieldInfo constructor (MFC, no-op)
+// Source: decompiled/block_00430000.c FUN_0043c260 (200 bytes)
+// FUN_0043c260 — CDaoFieldInfo constructor (MFC)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c260() {
+  // DEVIATION: MFC — SEH frame + MFC class constructor chain
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // FUN_0055339f(); // DEVIATION: MFC — base class init
+  // FUN_005bd630(); // port vtable init
+  // FUN_0040f3e0(); // DEVIATION: MFC — CString init (x4)
+  // FUN_0040fb00(); // DEVIATION: MFC — CStringArray init
+  // *in_ECX = &PTR_FUN_0061c05c; // DEVIATION: MFC — set vtable
   return null;
 }
 
@@ -2471,10 +2535,14 @@ export function FUN_0043c4c0(param_1, param_2, param_3) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c520 — destroy font object
+// Source: decompiled/block_00430000.c FUN_0043c520 (48 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c520() {
-  // in_ECX pattern - operates on 'this' pointer
-  // Stubbed: destroys font GDI object
+  // DEVIATION: Win32 — GDI font object destruction via in_ECX (this pointer)
+  // C: int *in_ECX;
+  // C: if (*in_ECX != 0) {
+  // C:   FUN_005c841d(*in_ECX);
+  // C: }
   return;
 }
 
@@ -2497,89 +2565,125 @@ export function GetActiveView_C590(thisPtr) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c5c0 — release surface
+// Source: decompiled/block_00430000.c FUN_0043c5c0 (37 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c5c0() {
-  // in_ECX based - release drawing surface
+  // DEVIATION: Win32 — release drawing surface via in_ECX (this pointer)
+  // C: int in_ECX;
+  // C: FUN_005bca3d(*(undefined4 *)(in_ECX + 8));
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c5f0 — manage window
+// Source: decompiled/block_00430000.c FUN_0043c5f0 (50 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c5f0() {
-  // in_ECX based - manage window handle
+  // DEVIATION: Win32 — manage window handle via in_ECX (this pointer)
+  // C: int in_ECX;
+  // C: if (*(int *)(in_ECX + 0x1c) != 0) {
+  // C:   manage_window_8B58(*(undefined4 *)(in_ECX + 0x1c));
+  // C: }
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c630 — scroll list to top
+// Source: decompiled/block_00430000.c FUN_0043c630 (39 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c630() {
-  // in_ECX based
+  // DEVIATION: Win32 — toggle list scroll via in_ECX (this pointer)
+  // C: int in_ECX;
+  // C: FUN_005bbfee(*(undefined4 *)(in_ECX + 8), 0);
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c660 — scroll list to bottom
+// Source: decompiled/block_00430000.c FUN_0043c660 (39 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c660() {
-  // in_ECX based
+  // DEVIATION: Win32 — toggle list scroll via in_ECX (this pointer)
+  // C: int in_ECX;
+  // C: FUN_005bbfee(*(undefined4 *)(in_ECX + 8), 1);
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00430000.c FUN_0043c690 (34 bytes)
 // FUN_0043c690 — initialize null pointer
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c690() {
+  // *in_ECX = 0; // DEVIATION: MFC — clear font pointer
   return null;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c6c0 — create/replace font
+// Source: decompiled/block_00430000.c FUN_0043c6c0 (95 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c6c0(param_1, param_2, param_3) {
-  // in_ECX based - create font with destroy of old
+  // DEVIATION: Win32 — GDI font create/replace via in_ECX (this pointer)
+  // C: int *in_ECX;
+  // C: if (*in_ECX != 0) {
+  // C:   FUN_005c841d(*in_ECX);
+  // C: }
+  // C: iVar1 = create_font_8200(param_1, param_2, param_3);
+  // C: *in_ECX = iVar1;
+  // C: iVar1 = gdi_847F(*in_ECX);
+  // C: in_ECX[1] = iVar1;
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c740 — destructor with optional delete
+// Source: decompiled/block_00430000.c FUN_0043c740 (57 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c740(param_1) {
-  // in_ECX based - cleanup and optional delete
+  // DEVIATION: Win32 — destructor with optional heap delete via in_ECX (this pointer)
+  // C: void *in_ECX;
+  // C: FUN_005c656b();
+  // C: if ((param_1 & 1) != 0) {
+  // C:   operator_delete(in_ECX);
+  // C: }
+  // C: return in_ECX;
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c790 — offset rect (Win32 OffsetRect wrapper)
+// Source: decompiled/block_00430000.c FUN_0043c790 (34 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c790(param_1, param_2, param_3) {
-  // OffsetRect stub
+  // DEVIATION: Win32 — OffsetRect(param_1, param_2, param_3)
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c7c0 — draw rect border
+// Source: decompiled/block_00430000.c FUN_0043c7c0 (61 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c7c0(param_1, param_2, param_3) {
-  // Drawing stub
+  // DEVIATION: Win32 — draw rectangle border
+  // C: thunk_FUN_005a98e4(param_1, *param_2, param_2[1], param_2[2] + -1, param_2[3] + -1, param_3);
   return;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c810 — append ordinal suffix to text buffer
+// Source: decompiled/block_00430000.c FUN_0043c810 (29 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c810() {
-  // appends "st"/"nd"/"rd"/"th" to DAT_00679640
+  FUN_004aefd8(DAT_00679640);
   return;
 }
 
@@ -2640,9 +2744,12 @@ export function FUN_0043c950(param_1, param_2, param_3, param_4) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043c990 — set dialog item value
+// Source: decompiled/block_00430000.c FUN_0043c990 (40 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043c990(param_1, param_2) {
-  // in_ECX based - set item at offset 0x208 + param_2*4
+  // DEVIATION: Win32 — set dialog item via in_ECX (this pointer)
+  // C: int in_ECX;
+  // C: *(undefined4 *)(in_ECX + 0x208 + param_2 * 4) = param_1;
   return;
 }
 
@@ -2658,9 +2765,12 @@ export function FUN_0043c9d0(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0043ca10 — setup text section (CSocket::Create wrapper)
+// Source: decompiled/block_00430000.c FUN_0043ca10 (42 bytes)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0043ca10(param_1, param_2) {
-  // CSocket::Create stub - repurposed for text loading
+  // DEVIATION: MFC — CSocket::Create via in_ECX (this pointer)
+  // C: CSocket *in_ECX;
+  // C: CSocket::Create(in_ECX, param_1, param_2, (char *)0x0);
   return;
 }
 

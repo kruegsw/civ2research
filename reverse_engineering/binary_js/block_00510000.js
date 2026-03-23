@@ -201,9 +201,9 @@ export function FUN_0051163c() {
 // Size: 14 bytes
 // ============================================================
 
-// seh_epilog_restore
+// Source: decompiled/block_00510000.c FUN_0051164f (14 bytes)
 export function FUN_0051164f() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -1028,8 +1028,9 @@ export function FUN_0051399d() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00510000.c FUN_005139b3 (14 bytes)
 export function FUN_005139b3() {
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -1234,9 +1235,9 @@ export function FUN_00514e2a() {
 // Size: 29 bytes
 // ============================================================
 
-// register_atexit
+// Source: decompiled/block_00510000.c FUN_00514e44 (29 bytes)
 export function FUN_00514e44() {
-  // _atexit(FUN_00514e61) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00514e61)
   return;
 }
 
@@ -1297,8 +1298,9 @@ export function FUN_00514ef2() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op)
+// Source: decompiled/block_00510000.c FUN_00514f08 (14 bytes)
 export function FUN_00514f08() {
+  // DEVIATION: Win32 — SEH epilog
   return;
 }
 
@@ -1414,8 +1416,8 @@ export function FUN_005151d3() { FUN_0044ca60(); return; }
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op)
-export function FUN_005151e6() { return; }
+// Source: decompiled/block_00510000.c FUN_005151e6 (14 bytes)
+export function FUN_005151e6() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -1467,8 +1469,8 @@ export function FUN_00515978() { FUN_0043c520(); return; }
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op)
-export function FUN_0051598b() { return; }
+// Source: decompiled/block_00510000.c FUN_0051598b (14 bytes)
+export function FUN_0051598b() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -1520,8 +1522,8 @@ export function FUN_00515da2() { FUN_005bd915(); return; }
 // Function: FUN_00515db8 @ 0x00515DB8
 // Size: 16 bytes
 // ============================================================
-// SEH epilog (no-op)
-export function FUN_00515db8() { return; }
+// Source: decompiled/block_00510000.c FUN_00515db8 (16 bytes)
+export function FUN_00515db8() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -1631,8 +1633,8 @@ export function FUN_005165f6() { FUN_005167d9(); return; }
 // Function: FUN_0051660c @ 0x0051660C
 // Size: 14 bytes
 // ============================================================
-// SEH epilog (no-op)
-export function FUN_0051660c() { return; }
+// Source: decompiled/block_00510000.c FUN_0051660c (14 bytes)
+export function FUN_0051660c() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -1687,7 +1689,8 @@ export function FUN_005168f9() { /* _Timevec::~_Timevec */ return; }
 export function FUN_00516908() { FUN_0059df8a(); return; }
 export function FUN_00516917() { FUN_005dd1a0(); return; }
 export function FUN_00516926() { FUN_0044cba0(); return; }
-export function FUN_00516939() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_00516939 (14 bytes)
+export function FUN_00516939() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -1802,7 +1805,8 @@ export function FUN_00517fe4() { FUN_0043c520(); return; }
 // Function: FUN_00517ff7 @ 0x00517FF7
 // Size: 16 bytes
 // ============================================================
-export function FUN_00517ff7() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_00517ff7 (16 bytes)
+export function FUN_00517ff7() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -1824,7 +1828,8 @@ export function FUN_00518007() {
 
 export function FUN_005181ab() { FUN_005cde4d(); return; }
 export function FUN_005181b4() { FUN_005bd915(); return; }
-export function FUN_005181ca() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_005181ca (14 bytes)
+export function FUN_005181ca() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2436,7 +2441,8 @@ export function FUN_0051bba1() {
 }
 
 export function FUN_0051c611() { FUN_005c656b(); return; }
-export function FUN_0051c627() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051c627 (14 bytes)
+export function FUN_0051c627() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2457,7 +2463,8 @@ export function FUN_0051c635() {
 }
 
 export function FUN_0051c68e() { FUN_004183d0(); return; }
-export function FUN_0051c6a4() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051c6a4 (14 bytes)
+export function FUN_0051c6a4() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2500,7 +2507,8 @@ export function FUN_0051d3e0(param_1, param_2, param_3, param_4, param_5, param_
 }
 
 export function FUN_0051d53f() { FUN_0059df8a(); return; }
-export function FUN_0051d555() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051d555 (15 bytes)
+export function FUN_0051d555() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2525,7 +2533,8 @@ export function FUN_0051d564(param_1, param_2, param_3, param_4, param_5) {
 }
 
 export function FUN_0051d616() { FUN_0059df8a(); return; }
-export function FUN_0051d62c() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051d62c (15 bytes)
+export function FUN_0051d62c() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2556,7 +2565,8 @@ export function FUN_0051d63b(param_1, param_2, param_3, param_4, param_5) {
 }
 
 export function FUN_0051d738() { FUN_0059df8a(); return; }
-export function FUN_0051d74e() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051d74e (15 bytes)
+export function FUN_0051d74e() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2663,7 +2673,8 @@ export function FUN_0051d9a0() {
 }
 
 export function FUN_0051dd72() { FUN_0059df8a(); return; }
-export function FUN_0051dd88() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051dd88 (15 bytes)
+export function FUN_0051dd88() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2690,7 +2701,8 @@ export function FUN_0051dd97(param_1, param_2) {
 }
 
 export function FUN_0051e9e7() { FUN_0059df8a(); return; }
-export function FUN_0051e9fd() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051e9fd (15 bytes)
+export function FUN_0051e9fd() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 
@@ -2740,7 +2752,8 @@ export function FUN_0051ea8e(param_1) {
 }
 
 export function FUN_0051f0f5() { FUN_0059df8a(); return; }
-export function FUN_0051f10b() { return; } // SEH epilog
+// Source: decompiled/block_00510000.c FUN_0051f10b (15 bytes)
+export function FUN_0051f10b() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 
 

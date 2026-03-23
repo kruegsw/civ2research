@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_004F0000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32, tileRead, tileWrite } from './mem.js';
 
 
 // ============================================================
@@ -422,7 +422,7 @@ export function FUN_004f1220() {
       FUN_005b976d(local_c, local_18, 0xff, 1, 1);
       for (local_14 = 1; local_14 < 8; local_14 = local_14 + 1) {
         iVar1 = FUN_005b8931(local_c, local_18, local_14, 0, 1);
-        FUN_005b9d81(local_c, local_18, iVar1);
+        FUN_005b9d81(local_c, local_18, tileRead(iVar1, 1));
       }
       local_c = local_c + 2;
       if (DAT_006d1160 <= local_c) {
@@ -511,8 +511,15 @@ export function FUN_004f3e70() {
 // FUN_004f3ebb — destructor_helper_ebb (MFC framework)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f3ebb (42 bytes)
 export function FUN_004f3ebb() {
-  // DEVIATION: MFC framework helper
+  // DEVIATION: Win32 — unaff_EBP-relative stack frame access
+  // C: if (*(int *)(unaff_EBP + -0x14) == 0) {
+  // C:   *(unaff_EBP + -0x10) = 0;
+  // C: } else {
+  // C:   *(unaff_EBP + -0x10) = *(unaff_EBP + -0x14) + 0x4a4;
+  // C: }
+  // DEVIATION: MFC — thunk_FUN_0059df8a()
   FUN_0059df8a();
   return;
 }
@@ -522,8 +529,9 @@ export function FUN_004f3ebb() {
 // FUN_004f3ee5 — destructor_helper_ee5 (MFC framework)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f3ee5 (9 bytes)
 export function FUN_004f3ee5() {
-  // DEVIATION: CDaoFieldInfo destructor — Win32/MFC
+  // DEVIATION: MFC — CDaoFieldInfo::~CDaoFieldInfo(*(unaff_EBP + -0x14))
   return;
 }
 
@@ -532,8 +540,9 @@ export function FUN_004f3ee5() {
 // FUN_004f3ef8 — seh_cleanup_ef8 (MFC framework)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f3ef8 (14 bytes)
 export function FUN_004f3ef8() {
-  // DEVIATION: SEH frame restore — Win32
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -583,8 +592,9 @@ export function FUN_004f3f9a() {
 // FUN_004f3fb4 — register_atexit_3fd1
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f3fb4 (29 bytes)
 export function FUN_004f3fb4() {
-  // DEVIATION: _atexit(FUN_004f3fd1) — Win32 CRT
+  // DEVIATION: Win32 — _atexit(FUN_004f3fd1)
   return;
 }
 
@@ -835,8 +845,9 @@ export function FUN_004f4772() {
 // FUN_004f4785 — seh_cleanup_4785 (MFC framework)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f4785 (14 bytes)
 export function FUN_004f4785() {
-  // DEVIATION: SEH frame restore — Win32
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1793,8 +1804,9 @@ export function FUN_004fa17e() {
 // FUN_004fa194 — seh_cleanup_a194 (MFC framework)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fa194 (14 bytes)
 export function FUN_004fa194() {
-  // DEVIATION: SEH frame restore — Win32
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1824,8 +1836,9 @@ export function FUN_004fa1da() {
 // FUN_004fa1f4 — register_atexit_fa211
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fa1f4 (29 bytes)
 export function FUN_004fa1f4() {
-  // DEVIATION: _atexit(FUN_004fa211) — Win32 CRT
+  // DEVIATION: Win32 — _atexit(FUN_004fa211)
   return;
 }
 
@@ -1997,8 +2010,9 @@ export function FUN_004fa5b8() {
 // FUN_004fa5cb — seh_cleanup_5cb
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004fa5cb (14 bytes)
 export function FUN_004fa5cb() {
-  // DEVIATION: SEH frame restore — Win32
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -2544,13 +2558,13 @@ export function FUN_004fb5b2(param_1) {
       iVar2 = FUN_004087c0(local_30, local_38);
       if (iVar2 !== 0) {
         puVar3 = FUN_005b8931(local_30, local_38);
-        // *puVar3 = param_1[0x18c/4] — set terrain byte
+        tileWrite(puVar3, 0, u8(param_1[0x18c / 4])); // terrain type byte
         iVar2 = FUN_005b8931(local_30, local_38);
-        // *(iVar2 + 1) = 0
+        tileWrite(iVar2, 1, 0); // improvement byte
         iVar2 = FUN_005b8931(local_30, local_38);
-        // *(iVar2 + 2) = 0
+        tileWrite(iVar2, 2, 0); // resource byte
         iVar2 = FUN_005b8931(local_30, local_38);
-        // *(iVar2 + 3) = 0
+        tileWrite(iVar2, 3, 0); // visibility byte
         for (local_48 = 0; local_48 < 8; local_48 = local_48 + 1) {
           FUN_005b8b1a(local_30, local_38, local_48);
         }
@@ -2587,7 +2601,7 @@ export function FUN_004fb5b2(param_1) {
       for (local_30 = 0; local_30 < DAT_006d1160; local_30 = local_30 + 1) {
         for (local_38 = 0; local_38 < DAT_006d1162; local_38 = local_38 + 1) {
           iVar2 = FUN_005b8931(local_30, local_38);
-          // *(iVar2 + 4) &= ~(1 << (local_48 & 0x1f))
+          tileWrite(iVar2, 4, tileRead(iVar2, 4) & ~(1 << (u8(local_48) & 0x1f)));
         }
       }
       new_civ(local_48);
@@ -3000,70 +3014,1473 @@ export function FUN_004fc3ae(param_1) {
 // ============================================================
 
 // Source: decompiled/block_004F0000.c FUN_004fc516 (12813 bytes)
+// Scenario event file parser — parses @IF/@THEN/@ENDIF event blocks from events.txt
+// Trigger keywords: @UNITKILLED, @CITYTAKEN, @TURN, @TURNINTERVAL, @RANDOMTURN,
+//   @NEGOTIATION, @NOSCHISM, @RECEIVEDTECHNOLOGY, @SCENARIOLOADED
+// Action keywords: @TEXT, @CREATEUNIT, @MOVEUNIT, @CHANGETERRAIN, @CHANGEMONEY,
+//   @GIVETECHNOLOGY, @MAKEAGGRESSION, @DESTROYACIVILIZATION, @DONTPLAYWONDERS,
+//   @JUSTONCE, @PLAYCDTRACK, @PLAYWAVEFILE
+// Control: @IF, @THEN, @ENDIF, @ENDEVENTS, @DEBUG
 export function FUN_004fc516(param_1, param_2) {
-  // C: Scenario event file parser — 1414 lines
-  // C: Parses @IF/@THEN/@ENDIF event blocks from events.txt
-  // C: Main loop reads lines via FUN_004a23fc, dispatches on @ keywords
-  //
-  // Trigger keywords (C lines 4576-4816):
-  //   @IF — creates new event struct via FUN_004fa617
-  //   @UNITKILLED — sets trigger type, parses unit/civ params
-  //   @CITYTAKEN — sets trigger type, parses city/civ params
-  //   @TURN — sets trigger type, parses turn number
-  //   @TURNINTERVAL — sets trigger type, parses interval
-  //   @RANDOMTURN — sets trigger type, parses probability
-  //   @NEGOTIATION — sets trigger type, parses civ pairs + HUMAN/COMPUTER/HUMANORCOMPUTER
-  //   @NOSCHISM — sets trigger type
-  //   @RECEIVEDTECHNOLOGY — sets trigger type, parses tech name
-  //   @SCENARIOLOADED — sets trigger type
-  //
-  // Action keywords (C lines 4816-5700):
-  //   @THEN — switches to action parsing mode
-  //   @TEXT — parses text block until @ENDTEXT
-  //   @CREATEUNIT — parses unit type, owner, location, count, HUMAN/COMPUTER
-  //   @MOVEUNIT — parses unit type, owner, @maprect/@locations/@moveto/@endlocations
-  //   @CHANGETERRAIN — parses location, terrain type
-  //   @CHANGEMONEY — parses amount, target civ
-  //   @GIVETECHNOLOGY — parses tech name, target civ
-  //   @MAKEAGGRESSION — parses aggressor/target civs
-  //   @DESTROYACIVILIZATION — parses target civ
-  //   @DONTPLAYWONDERS — sets flag
-  //   @JUSTONCE — sets one-shot flag
-  //   @PLAYCDTRACK — parses track number
-  //   @PLAYWAVEFILE — parses filename
-  //   @ENDIF — finalizes event, validates, links into event list
-  //   @ENDEVENTS — ends parsing
-  //   @DEBUG — toggles debug output (DAT_0062f160)
-  //   @EVERY — sets interval for repeating events
-  //
-  // Game state writes:
-  //   DAT_0062f160 (debug flag)
-  //   Event structures via FUN_004fa617 — linked list of scenario triggers/actions
-  //   Each event stores: trigger type, parameters, action list, text, flags
-  //
-  // DEVIATION: Requires file I/O (FUN_004a2379/FUN_004a23fc) and
-  //   memory pool (FUN_004fa617/FUN_004fa569) — cannot parse without filesystem
-  //   Full C logic at block_004F0000.c lines 4529-5939
-
   let iVar1;
-  let local_44 = 1;
-  let local_4c = 1;
-  DAT_0062f160 = 0;
+  let sVar2;
+  let pcVar3;
+  let iVar4;
+  // in_ECX — MFC this pointer (event manager object)
+  let local_84;
+  let local_80;
+  let local_78;
+  let local_74;
+  let local_70;
+  let local_6c;
+  let local_68; // event struct (int array)
+  let local_64;
+  let local_60;
+  let local_5c;
+  let local_58;
+  let local_54;
+  let local_50;
+  let local_4c;
+  let local_48;
+  let local_44;
+  let local_3c; // current line
+  let local_38;
+  let local_34;
+  let local_2c;
+  let local_28;
+  let local_24;
+  let local_20;
+  let local_1c;
+  let local_18;
+  let local_14;
+  let local_c;
+  let local_8;
 
+  local_44 = 1;
+  local_4c = 1;
+  DAT_0062f160 = 0;
+  let _parseError = false;
   iVar1 = FUN_004a2379(param_1, param_2);
   if (iVar1 === 0) {
-    // C: Main parse loop (lines 4571-5920)
-    // Each iteration reads a line, strips whitespace, checks for @ prefix
-    // Dispatches to keyword handler based on __strcmpi comparison
-    // Event structures are allocated and populated field by field
-    // DEVIATION: Cannot execute without file I/O and memory pool
-    local_44 = 0;
-  }
+    do {
+      local_3c = FUN_004a23fc(1);
+      if (local_3c === null || local_3c === 0) {
+        local_4c = 10;
+      }
+      else if (local_3c.charAt(0) === '@') {
+        local_3c = local_3c.substring(1);
+        iVar1 = _strcmpi(local_3c, 'IF');
+        if (iVar1 === 0) {
+          if (DAT_0062f160 !== 0) {
+            _printf('IF found - creating new event structure');
+          }
+          local_68 = FUN_004fa617();
+          if (local_68 === null || local_68 === 0) {
+            if (DAT_0062f160 !== 0) {
+              _printf('Failed to create new event structure');
+            }
+            _parseError = true; break; // goto LAB_004ff6f7
+          }
+          if (DAT_0062f160 !== 0) {
+            _printf('New event structure created');
+          }
+          local_78 = 0;
+          local_34 = 0;
+          local_c = 0;
+          local_60 = 0;
+          local_1c = 0;
+          local_5c = 0;
+          local_74 = 0;
+          local_84 = 0;
+          local_70 = 0;
+          local_18 = 0;
+          local_58 = 0;
+          local_28 = 0;
+          local_8 = 0;
+          local_14 = 0;
+          local_6c = 0;
+          local_64 = 0;
+          local_2c = 0;
+          local_54 = 0;
+          local_80 = 0;
+          local_50 = 0;
+          local_48 = 0;
+          local_4c = 2;
+        }
+        else if (local_4c !== 6) {
+          iVar1 = _strcmpi(local_3c, 'THEN');
+          if (iVar1 === 0) {
+            if (DAT_0062f160 !== 0) {
+              _printf('THEN found');
+            }
+            local_4c = 3;
+          }
+          else {
+            iVar1 = _strcmpi(local_3c, 'ENDIF');
+            if (iVar1 === 0) {
+              if (DAT_0062f160 !== 0) {
+                _printf('ENDIF found');
+              }
+              local_4c = 5;
+            }
+            else {
+              iVar1 = _strcmpi(local_3c, 'DEBUG');
+              if (iVar1 === 0) {
+                DAT_0062f160 = 1;
+                _printf('Debugging filename: %s', param_1);
+              }
+              else {
+                iVar1 = _strcmpi(local_3c, 'ENDEVENTS');
+                if (iVar1 === 0) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('ENDEVENTS found');
+                  }
+                  local_4c = 10;
+                }
+              }
+            }
+          }
+        }
+      }
+      else if (local_4c === 2) {
+        // ======== TRIGGER PARSING ========
 
+        // --- UNITKILLED ---
+        iVar1 = _strcmpi(local_3c, 'UNITKILLED');
+        if (iVar1 === 0) {
+          if (DAT_0062f160 !== 0) {
+            _printf('IF UNITKILLED found, looking for params');
+          }
+          while ((local_60 === 0 || local_34 === 0) || local_c === 0) {
+            local_3c = FUN_004a23fc(1);
+            if (local_3c === null || local_3c === 0) {
+              if (DAT_0062f160 !== 0) {
+                _printf('Got early end of file.');
+              }
+              _parseError = true; break; // goto LAB_004ff6f7
+            }
+            if (local_3c.charAt(0) === '@') {
+              if (DAT_0062f160 !== 0) {
+                _printf('Illegal UNITKILLED statement');
+              }
+              _parseError = true; break; // goto LAB_004ff6f7
+            }
+            iVar1 = _strnicmp(local_3c, 'unit=', 5);
+            if (iVar1 === 0) {
+              pcVar3 = local_3c.substring(5);
+              iVar1 = FUN_004fa359(pcVar3);
+              if (iVar1 === -1 || iVar1 === -2) {
+                if (DAT_0062f160 !== 0) {
+                  _printf('found unit=%s, but %s is not valid', pcVar3, pcVar3);
+                }
+              }
+              else {
+                sVar2 = pcVar3.length;
+                iVar4 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                local_68[2] = iVar4;
+                if (local_68[2] === 0) { _parseError = true; break; }
+                FUN_005f22d0(local_68[2], pcVar3);
+                local_68[3] = iVar1;
+                if (DAT_0062f160 !== 0) {
+                  _printf('found unit=%s, id=%d', pcVar3, iVar1);
+                }
+                local_60 = 1;
+              }
+            }
+            else {
+              iVar1 = _strnicmp(local_3c, 'attacker=', 9);
+              if (iVar1 === 0) {
+                pcVar3 = local_3c.substring(9);
+                local_20 = FUN_004fa250(pcVar3);
+                if (local_20 === -1) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('found attacker=%s, but %s is not valid', pcVar3, pcVar3);
+                  }
+                }
+                else {
+                  sVar2 = pcVar3.length;
+                  iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                  local_68[5] = iVar1;
+                  if (local_68[5] === 0) { _parseError = true; break; }
+                  FUN_005f22d0(local_68[5], pcVar3);
+                  local_68[6] = local_20;
+                  if (DAT_0062f160 !== 0) {
+                    _printf('found attacker=%s, king id=%d', pcVar3, local_20);
+                  }
+                  local_c = 1;
+                }
+              }
+              else {
+                iVar1 = _strnicmp(local_3c, 'defender=', 9);
+                if (iVar1 === 0) {
+                  pcVar3 = local_3c.substring(9);
+                  local_20 = FUN_004fa250(pcVar3);
+                  if (local_20 === -1) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found defender=%s, but %s is not valid', pcVar3, pcVar3);
+                    }
+                  }
+                  else {
+                    sVar2 = pcVar3.length;
+                    iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                    local_68[8] = iVar1;
+                    if (local_68[8] === 0) { _parseError = true; break; }
+                    FUN_005f22d0(local_68[8], pcVar3);
+                    local_68[9] = local_20;
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found defender=%s, king id=%d', pcVar3, local_20);
+                    }
+                    local_34 = 1;
+                  }
+                }
+              }
+            }
+          }
+          if (_parseError) break;
+          local_68[0] = 1;
+        }
+
+        // --- NEGOTIATION ---
+        iVar1 = _strcmpi(local_3c, 'NEGOTIATION');
+        if (iVar1 === 0) {
+          if (DAT_0062f160 !== 0) {
+            _printf('IF NEGOTIATION found, looking for params');
+          }
+          while ((local_34 === 0 || local_c === 0) || (local_2c === 0 || local_64 === 0)) {
+            local_3c = FUN_004a23fc(1);
+            if (local_3c === null || local_3c === 0) {
+              if (DAT_0062f160 !== 0) {
+                _printf('Got early end of file.');
+              }
+              _parseError = true; break;
+            }
+            if (local_3c.charAt(0) === '@') {
+              if (DAT_0062f160 !== 0) {
+                _printf('Illegal NEGOTIATION statement');
+              }
+              _parseError = true; break;
+            }
+            iVar1 = _strnicmp(local_3c, 'talker=', 7);
+            if (iVar1 === 0) {
+              pcVar3 = local_3c.substring(7);
+              local_20 = FUN_004fa250(pcVar3);
+              if (local_20 === -1) {
+                if (DAT_0062f160 !== 0) {
+                  _printf('found talker=%s, but %s is not valid', pcVar3, pcVar3);
+                }
+              }
+              else {
+                sVar2 = pcVar3.length;
+                iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                local_68[5] = iVar1;
+                if (local_68[5] === 0) { _parseError = true; break; }
+                FUN_005f22d0(local_68[5], pcVar3);
+                local_68[6] = local_20;
+                if (DAT_0062f160 !== 0) {
+                  _printf('found talker=%s, king id=%d', pcVar3, local_20);
+                }
+                local_c = 1;
+              }
+            }
+            else {
+              iVar1 = _strnicmp(local_3c, 'talkertype=', 0xb);
+              if (iVar1 === 0) {
+                pcVar3 = local_3c.substring(0xb);
+                iVar1 = _strcmpi(pcVar3, 'HUMAN');
+                if (iVar1 === 0) {
+                  local_68[7] = 1;
+                  local_2c = 1;
+                }
+                else {
+                  iVar1 = _strcmpi(pcVar3, 'COMPUTER');
+                  if (iVar1 === 0) {
+                    local_68[7] = 2;
+                    local_2c = 1;
+                  }
+                  else {
+                    iVar1 = _strcmpi(pcVar3, 'HUMANORCOMPUTER');
+                    if (iVar1 === 0) {
+                      local_68[7] = 4;
+                      local_2c = 1;
+                    }
+                  }
+                }
+                if (DAT_0062f160 !== 0) {
+                  if (local_2c === 0) {
+                    _printf('found talkertype=%s, but %s is not valid', pcVar3, pcVar3);
+                  }
+                  else {
+                    _printf('found talkertype=%s', pcVar3);
+                  }
+                }
+              }
+              else {
+                iVar1 = _strnicmp(local_3c, 'listener=', 9);
+                if (iVar1 === 0) {
+                  pcVar3 = local_3c.substring(9);
+                  local_20 = FUN_004fa250(pcVar3);
+                  if (local_20 === -1) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found listener=%s, but %s is not valid', pcVar3, pcVar3);
+                    }
+                  }
+                  else {
+                    sVar2 = pcVar3.length;
+                    iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                    local_68[8] = iVar1;
+                    if (local_68[8] === 0) { _parseError = true; break; }
+                    FUN_005f22d0(local_68[8], pcVar3);
+                    local_68[9] = local_20;
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found listener=%s, king id=%d', pcVar3, local_20);
+                    }
+                    local_34 = 1;
+                  }
+                }
+                else {
+                  iVar1 = _strnicmp(local_3c, 'listenertype=', 0xd);
+                  if (iVar1 === 0) {
+                    pcVar3 = local_3c.substring(0xd);
+                    iVar1 = _strcmpi(pcVar3, 'HUMAN');
+                    if (iVar1 === 0) {
+                      local_68[10] = 1;
+                      local_64 = 1;
+                    }
+                    else {
+                      iVar1 = _strcmpi(pcVar3, 'COMPUTER');
+                      if (iVar1 === 0) {
+                        local_68[10] = 2;
+                        local_64 = 1;
+                      }
+                      else {
+                        iVar1 = _strcmpi(pcVar3, 'HUMANORCOMPUTER');
+                        if (iVar1 === 0) {
+                          local_68[10] = 4;
+                          local_64 = 1;
+                        }
+                      }
+                    }
+                    if (DAT_0062f160 !== 0) {
+                      if (local_2c === 0) {
+                        _printf('found listenertype=%s, but %s is not valid', pcVar3, pcVar3);
+                      }
+                      else {
+                        _printf('found listenertype=%s', pcVar3);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (_parseError) break;
+          local_68[0] = 0x10;
+          local_68[0x60] = 0x1000;
+        }
+
+        // --- NOSCHISM ---
+        iVar1 = _strcmpi(local_3c, 'NOSCHISM');
+        if (iVar1 === 0) {
+          if (DAT_0062f160 !== 0) {
+            _printf('IF NOSCHISM found, looking for who');
+          }
+          while (local_34 === 0) {
+            pcVar3 = FUN_004a23fc(1);
+            if (pcVar3 === null || pcVar3 === 0) {
+              if (DAT_0062f160 !== 0) {
+                _printf('Got early end of file.');
+              }
+              _parseError = true; break;
+            }
+            if (pcVar3.charAt(0) === '@') {
+              if (DAT_0062f160 !== 0) {
+                _printf('Illegal NOSCHISM statement');
+              }
+              _parseError = true; break;
+            }
+            iVar1 = _strnicmp(pcVar3, 'defender=', 9);
+            if (iVar1 === 0) {
+              pcVar3 = pcVar3.substring(9);
+              local_20 = FUN_004fa250(pcVar3);
+              if (local_20 === -1) {
+                if (DAT_0062f160 !== 0) {
+                  _printf('found defender=%s, but %s is not valid', pcVar3, pcVar3);
+                }
+              }
+              else {
+                sVar2 = pcVar3.length;
+                iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                local_68[8] = iVar1;
+                if (local_68[8] === 0) { _parseError = true; break; }
+                FUN_005f22d0(local_68[8], pcVar3);
+                local_68[9] = local_20;
+                if (DAT_0062f160 !== 0) {
+                  _printf('found defender=%s, king id=%d', pcVar3, local_20);
+                }
+                local_34 = 1;
+              }
+            }
+          }
+          if (_parseError) break;
+          local_68[0] = 0x80;
+        }
+        else {
+          // --- RECEIVEDTECHNOLOGY ---
+          iVar1 = _strcmpi(local_3c, 'RECEIVEDTECHNOLOGY');
+          if (iVar1 === 0) {
+            if (DAT_0062f160 !== 0) {
+              _printf('IF RECEIVEDTECHNOLOGY found, looking for params');
+            }
+            while (local_6c === 0 || local_34 === 0) {
+              pcVar3 = FUN_004a23fc(1);
+              if (pcVar3 === null || pcVar3 === 0) {
+                if (DAT_0062f160 !== 0) {
+                  _printf('Got early end of file.');
+                }
+                _parseError = true; break;
+              }
+              if (pcVar3.charAt(0) === '@') {
+                if (DAT_0062f160 !== 0) {
+                  _printf('Illegal RECEIVEDTECHNOLOGY statement');
+                }
+                _parseError = true; break;
+              }
+              iVar1 = _strnicmp(pcVar3, 'receiver=', 9);
+              if (iVar1 === 0) {
+                pcVar3 = pcVar3.substring(9);
+                iVar1 = FUN_004fa250(pcVar3);
+                if (iVar1 === -1) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('found receiver=%s, but %s is not valid', pcVar3, pcVar3);
+                  }
+                }
+                else {
+                  sVar2 = pcVar3.length;
+                  iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                  local_68[8] = iVar1;
+                  if (local_68[8] === 0) { _parseError = true; break; }
+                  FUN_005f22d0(local_68[8], pcVar3);
+                  iVar1 = FUN_004fa250(pcVar3);
+                  local_68[9] = iVar1;
+                  if (DAT_0062f160 !== 0) {
+                    _printf('found receiver=%s, king id=%d', pcVar3, local_20);
+                  }
+                  local_34 = 1;
+                }
+              }
+              else {
+                iVar1 = _strnicmp(pcVar3, 'technology=', 0xb);
+                if (iVar1 === 0) {
+                  pcVar3 = pcVar3.substring(0xb);
+                  if (pcVar3.charAt(0) < '0' || pcVar3.charAt(0) > '9') {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found technology=%s, but %s is not valid', pcVar3, pcVar3);
+                    }
+                  }
+                  else {
+                    iVar1 = FUN_00564bf0(pcVar3);
+                    local_68[0xd] = iVar1;
+                    local_6c = 1;
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found technology=%s, technology id=%d', pcVar3, local_68[0xd]);
+                    }
+                  }
+                }
+              }
+            }
+            if (_parseError) break;
+            local_68[0] = 0x100;
+          }
+          else {
+            // --- CITYTAKEN ---
+            iVar1 = _strcmpi(local_3c, 'CITYTAKEN');
+            if (iVar1 === 0) {
+              if (DAT_0062f160 !== 0) {
+                _printf('IF CITYTAKEN found, looking for city/civ params');
+              }
+              while ((local_78 === 0 || local_c === 0) || local_34 === 0) {
+                pcVar3 = FUN_004a23fc(1);
+                if (pcVar3 === null || pcVar3 === 0) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('Got early end of file.');
+                  }
+                  _parseError = true; break;
+                }
+                if (pcVar3.charAt(0) === '@') {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('Illegal CITYTAKEN statement');
+                  }
+                  _parseError = true; break;
+                }
+                iVar1 = _strnicmp(pcVar3, 'attacker=', 9);
+                if (iVar1 === 0) {
+                  pcVar3 = pcVar3.substring(9);
+                  iVar1 = FUN_004fa250(pcVar3);
+                  if (iVar1 === -1) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found attacker=%s, but %s is not valid', pcVar3, pcVar3);
+                    }
+                  }
+                  else {
+                    sVar2 = pcVar3.length;
+                    iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                    local_68[5] = iVar1;
+                    if (local_68[5] === 0) { _parseError = true; break; }
+                    FUN_005f22d0(local_68[5], pcVar3);
+                    iVar1 = FUN_004fa250(pcVar3);
+                    local_68[6] = iVar1;
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found attacker=%s, king id=%d', pcVar3, local_20);
+                    }
+                    local_c = 1;
+                  }
+                }
+                else {
+                  iVar1 = _strnicmp(pcVar3, 'defender=', 9);
+                  if (iVar1 === 0) {
+                    pcVar3 = pcVar3.substring(9);
+                    local_20 = FUN_004fa250(pcVar3);
+                    if (local_20 === -1) {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('found defender=%s, but %s is not valid', pcVar3, pcVar3);
+                      }
+                    }
+                    else {
+                      sVar2 = pcVar3.length;
+                      iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                      local_68[8] = iVar1;
+                      if (local_68[8] === 0) { _parseError = true; break; }
+                      FUN_005f22d0(local_68[8], pcVar3);
+                      local_68[9] = local_20;
+                      if (DAT_0062f160 !== 0) {
+                        _printf('found defender=%s, king id=%d', pcVar3, local_20);
+                      }
+                      local_34 = 1;
+                    }
+                  }
+                  else {
+                    iVar1 = _strnicmp(pcVar3, 'city=', 5);
+                    if (iVar1 === 0) {
+                      pcVar3 = pcVar3.substring(5);
+                      sVar2 = pcVar3.length;
+                      iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                      local_68[4] = iVar1;
+                      if (local_68[4] === 0) { _parseError = true; break; }
+                      FUN_005f22d0(local_68[4], pcVar3);
+                      if (DAT_0062f160 !== 0) {
+                        _printf('found city=%s', pcVar3, local_20);
+                      }
+                      local_78 = 1;
+                    }
+                  }
+                }
+              }
+              if (_parseError) break;
+              local_68[0] = 2;
+            }
+            else {
+              // --- TURN ---
+              iVar1 = _strcmpi(local_3c, 'TURN');
+              if (iVar1 === 0) {
+                if (DAT_0062f160 !== 0) {
+                  _printf('IF TURN found, looking for turn number');
+                }
+                do {
+                  do {
+                    pcVar3 = FUN_004a23fc(1);
+                    if (pcVar3 === null || pcVar3 === 0) {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('Got early end of file.');
+                      }
+                      _parseError = true; break;
+                    }
+                    if (pcVar3.charAt(0) === '@') {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('Illegal TURN statement');
+                      }
+                      _parseError = true; break;
+                    }
+                    iVar1 = _strnicmp(pcVar3, 'turn=', 5);
+                  } while (iVar1 !== 0);
+                  if (_parseError) break;
+                  pcVar3 = pcVar3.substring(5);
+                  iVar1 = _strcmpi(pcVar3, 'EVERY');
+                  if (iVar1 === 0) {
+                    local_68[0xb] = -1;
+                    local_68[0] = 4;
+                  }
+                  else if ((_isDigitOrSign(pcVar3.charAt(0)))) {
+                    iVar1 = FUN_00564bf0(pcVar3);
+                    local_68[0xb] = iVar1;
+                    local_68[0] = 4;
+                  }
+                  if (DAT_0062f160 !== 0) {
+                    if (local_68[0] === 4) {
+                      _printf('found turn=%s', pcVar3);
+                    }
+                    else {
+                      _printf('found turn=%s, but %s is not valid', pcVar3, pcVar3);
+                    }
+                  }
+                } while (local_68[0] !== 4);
+                if (_parseError) break;
+              }
+              else {
+                // --- TURNINTERVAL ---
+                iVar1 = _strcmpi(local_3c, 'TURNINTERVAL');
+                if (iVar1 === 0) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('IF TURNINTERVAL found, looking for interval');
+                  }
+                  do {
+                    pcVar3 = FUN_004a23fc(1);
+                    if (pcVar3 === null || pcVar3 === 0) {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('Got early end of file.');
+                      }
+                      _parseError = true; break;
+                    }
+                    if (pcVar3.charAt(0) === '@') {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('Illegal TURNINTERVAL statement');
+                      }
+                      _parseError = true; break;
+                    }
+                    iVar1 = _strnicmp(pcVar3, 'interval=', 9);
+                    if (iVar1 === 0) {
+                      pcVar3 = pcVar3.substring(9);
+                      if (!_isDigitOrSign(pcVar3.charAt(0))) {
+                        if (DAT_0062f160 !== 0) {
+                          _printf('found interval=%s, but %s is not valid', pcVar3, pcVar3);
+                        }
+                      }
+                      else {
+                        iVar1 = FUN_00564bf0(pcVar3);
+                        local_68[0xb] = iVar1;
+                        if (DAT_0062f160 !== 0) {
+                          _printf('found interval=%s', pcVar3);
+                        }
+                        local_68[0] = 8;
+                      }
+                    }
+                  } while (local_68[0] !== 8);
+                  if (_parseError) break;
+                }
+                else {
+                  // --- RANDOMTURN ---
+                  iVar1 = _strcmpi(local_3c, 'RANDOMTURN');
+                  if (iVar1 === 0) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('IF RANDOMTURN found, looking for probability');
+                    }
+                    do {
+                      pcVar3 = FUN_004a23fc(1);
+                      if (pcVar3 === null || pcVar3 === 0) {
+                        if (DAT_0062f160 !== 0) {
+                          _printf('Got early end of file.');
+                        }
+                        _parseError = true; break;
+                      }
+                      if (pcVar3.charAt(0) === '@') {
+                        if (DAT_0062f160 !== 0) {
+                          _printf('Illegal RANDOMTURN statement');
+                        }
+                        _parseError = true; break;
+                      }
+                      iVar1 = _strnicmp(pcVar3, 'denominator=', 0xc);
+                      if (iVar1 === 0) {
+                        pcVar3 = pcVar3.substring(0xc);
+                        if (pcVar3.charAt(0) < '0' || pcVar3.charAt(0) > '9') {
+                          if (DAT_0062f160 !== 0) {
+                            _printf('found denominator=%s, but %s is not valid', pcVar3, pcVar3);
+                          }
+                        }
+                        else {
+                          iVar1 = FUN_00564bf0(pcVar3);
+                          local_68[0xc] = iVar1;
+                          if (local_68[0xc] < 1 || 1000 < local_68[0xc]) {
+                            _printf('found denominator=%s, but %s is not valid (range)', pcVar3, pcVar3);
+                            _parseError = true; break;
+                          }
+                          if (DAT_0062f160 !== 0) {
+                            _printf('found denominator=%s', pcVar3);
+                          }
+                          local_68[0] = 0x40;
+                        }
+                      }
+                    } while (local_68[0] !== 0x40);
+                    if (_parseError) break;
+                  }
+                  else {
+                    // --- SCENARIOLOADED ---
+                    iVar1 = _strcmpi(local_3c, 'SCENARIOLOADED');
+                    if (iVar1 === 0) {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('IF SCENARIOLOADED');
+                      }
+                      local_68[0] = 0x20;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      else if (local_4c === 3) {
+        // ======== ACTION PARSING ========
+
+        // --- TEXT ---
+        iVar1 = _strcmpi(local_3c, 'TEXT');
+        if (iVar1 === 0) {
+          if (DAT_0062f160 !== 0) {
+            _printf('THEN TEXT found, looking for ENDTEXT');
+          }
+          local_38 = 0;
+          local_3c = FUN_004a23fc(1);
+          if (local_3c === null || local_3c === 0) { _parseError = true; break; }
+          while (iVar1 = _strcmpi(local_3c, 'ENDTEXT'), iVar1 !== 0) {
+            if (local_38 !== 0x14) {
+              sVar2 = local_3c.length;
+              iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+              local_68[local_38 + 0xe] = iVar1;
+              if (local_68[local_38 + 0xe] === 0) { _parseError = true; break; }
+              FUN_005f22d0(local_68[local_38 + 0xe], local_3c);
+              local_38 = local_38 + 1;
+            }
+            local_3c = FUN_004a23fc(1);
+            if (local_3c === null || local_3c === 0) {
+              if (DAT_0062f160 !== 0) {
+                _printf('Got early end of file.');
+              }
+              _parseError = true; break;
+            }
+            if (local_3c.charAt(0) === '@') {
+              if (DAT_0062f160 !== 0) {
+                _printf('Illegal TEXT statement');
+              }
+              _parseError = true; break;
+            }
+          }
+          if (_parseError) break;
+          if (DAT_0062f160 !== 0) {
+            _printf('found ENDTEXT');
+          }
+          local_68[1] = local_68[1] | 1;
+        }
+        else {
+          // --- CHANGETERRAIN ---
+          iVar1 = _strcmpi(local_3c, 'CHANGETERRAIN');
+          if (iVar1 === 0) {
+            if (DAT_0062f160 !== 0) {
+              _printf('THEN CHANGETERRAIN found, looking for params');
+            }
+            local_24 = 0;
+            while (local_1c === 0 || local_24 !== 4) {
+              pcVar3 = FUN_004a23fc(1);
+              if (pcVar3 === null || pcVar3 === 0) {
+                if (DAT_0062f160 !== 0) {
+                  _printf('Got early end of file.');
+                }
+                _parseError = true; break;
+              }
+              if (pcVar3.charAt(0) === '@') {
+                if (DAT_0062f160 !== 0) {
+                  _printf('Illegal CHANGETERRAIN statement');
+                }
+                _parseError = true; break;
+              }
+              iVar1 = _strnicmp(pcVar3, 'terraintype=', 0xc);
+              if (iVar1 === 0) {
+                pcVar3 = pcVar3.substring(0xc);
+                if (pcVar3.charAt(0) < '0' || pcVar3.charAt(0) > '9') {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('found terraintype=%s, but %s is not valid', pcVar3, pcVar3);
+                  }
+                }
+                else {
+                  iVar1 = FUN_00564bf0(pcVar3);
+                  if (-1 < iVar1 || iVar1 < 0xb) { // C: (-1 < iVar1) || (iVar1 < 0xb)
+                    local_68[99] = iVar1;
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found terraintype=%s, terrainid=%d', pcVar3, iVar1);
+                    }
+                    local_1c = 1;
+                  }
+                }
+              }
+              else {
+                iVar1 = _strcmpi(pcVar3, 'maprect');
+                if (iVar1 === 0) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('found maprect');
+                  }
+                  iVar1 = FUN_004a23fc(1);
+                  if (iVar1 === 0 || iVar1 === null) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('Got early end of file.');
+                    }
+                    _parseError = true; break;
+                  }
+                  for (local_38 = 0; local_38 < 4; local_38 = local_38 + 1) {
+                    iVar1 = FUN_004a2534();
+                    local_68[local_38 * 2 + 100] = iVar1;
+                    iVar1 = FUN_004a2534();
+                    local_68[local_38 * 2 + 0x65] = iVar1;
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found location #%d: %d, %d', local_24,
+                              local_68[local_38 * 2 + 100], local_68[local_38 * 2 + 0x65]);
+                    }
+                    local_24 = local_24 + 1;
+                  }
+                }
+              }
+            }
+            if (_parseError) break;
+            local_68[1] = local_68[1] | 0x200;
+          }
+          else {
+            // --- CREATEUNIT ---
+            iVar1 = _strcmpi(local_3c, 'CREATEUNIT');
+            if (iVar1 === 0) {
+              if (DAT_0062f160 !== 0) {
+                _printf('THEN CREATEUNIT found, looking for params');
+              }
+              local_24 = 0;
+              // LAB_004fe0af: loop until all params found
+              while (local_74 === 0 || local_84 === 0 ||
+                     local_80 === 0 || local_54 === 0 || local_24 === 0) {
+                pcVar3 = FUN_004a23fc(1);
+                if (pcVar3 === null || pcVar3 === 0) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('Got early end of file.');
+                  }
+                  _parseError = true; break;
+                }
+                if (pcVar3.charAt(0) === '@') {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('Illegal CREATEUNIT statement');
+                  }
+                  _parseError = true; break;
+                }
+                iVar1 = _strnicmp(pcVar3, 'unit=', 5);
+                if (iVar1 === 0) {
+                  pcVar3 = pcVar3.substring(5);
+                  iVar1 = FUN_004fa359(pcVar3);
+                  if (iVar1 === -1) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found unit=%s, but %s is not valid', pcVar3, pcVar3);
+                    }
+                  }
+                  else {
+                    sVar2 = pcVar3.length;
+                    iVar4 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                    local_68[0x37] = iVar4;
+                    if (local_68[0x37] === 0) { _parseError = true; break; }
+                    FUN_005f22d0(local_68[0x37], pcVar3);
+                    local_68[0x38] = iVar1;
+                    if (DAT_0062f160 !== 0) {
+                      _printf('found unit=%s, unit id=%d', pcVar3, iVar1);
+                    }
+                    local_74 = 1;
+                  }
+                }
+                else {
+                  iVar1 = _strnicmp(pcVar3, 'owner=', 6);
+                  if (iVar1 === 0) {
+                    pcVar3 = pcVar3.substring(6);
+                    local_20 = FUN_004fa250(pcVar3);
+                    if (local_20 === -1) {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('found owner=%s, but %s is not valid', pcVar3, pcVar3);
+                      }
+                    }
+                    else {
+                      sVar2 = pcVar3.length;
+                      iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                      local_68[0x35] = iVar1;
+                      if (local_68[0x35] === 0) { _parseError = true; break; }
+                      FUN_005f22d0(local_68[0x35], pcVar3);
+                      local_68[0x36] = local_20;
+                      if (DAT_0062f160 !== 0) {
+                        _printf('found owner=%s, king id=%d', pcVar3, local_20);
+                      }
+                      local_84 = 1;
+                    }
+                  }
+                  else {
+                    iVar1 = _strnicmp(pcVar3, 'veteran=', 8);
+                    if (iVar1 === 0) {
+                      pcVar3 = pcVar3.substring(8);
+                      iVar1 = _strcmpi(pcVar3, 'yes');
+                      if (iVar1 === 0 || (iVar1 = _strcmpi(pcVar3, 'true'), iVar1 === 0)) {
+                        local_68[0x4e] = 1;
+                        local_54 = 1;
+                      }
+                      else {
+                        iVar1 = _strcmpi(pcVar3, 'no');
+                        if (iVar1 === 0 || (iVar1 = _strcmpi(pcVar3, 'false'), iVar1 === 0)) {
+                          local_68[0x4e] = 0;
+                          local_54 = 1;
+                        }
+                        else if (DAT_0062f160 !== 0) {
+                          _printf('found veteran=%s, but %s is not valid', pcVar3, pcVar3);
+                        }
+                      }
+                    }
+                    else {
+                      iVar1 = _strnicmp(pcVar3, 'homecity=', 9);
+                      if (iVar1 === 0) {
+                        pcVar3 = pcVar3.substring(9);
+                        sVar2 = pcVar3.length;
+                        iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                        local_68[0x4f] = iVar1;
+                        if (local_68[0x4f] === 0) { _parseError = true; break; }
+                        FUN_005f22d0(local_68[0x4f], pcVar3);
+                        if (DAT_0062f160 !== 0) {
+                          _printf('found homecity=%s', pcVar3);
+                        }
+                        local_80 = 1;
+                      }
+                      else {
+                        iVar1 = _strcmpi(pcVar3, 'locations');
+                        if (iVar1 === 0) {
+                          if (DAT_0062f160 !== 0) {
+                            _printf('found locations');
+                          }
+                          for (local_38 = 0; local_38 < 10; local_38 = local_38 + 1) {
+                            pcVar3 = FUN_004a23fc(1);
+                            if (pcVar3 === null || pcVar3 === 0) {
+                              if (DAT_0062f160 !== 0) {
+                                _printf('Got early end of file.');
+                              }
+                              _parseError = true; break;
+                            }
+                            if (!_isDigitOrSign(pcVar3.charAt(0))) {
+                              iVar1 = _strcmpi(pcVar3, 'endlocations');
+                              if (iVar1 === 0) {
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('found endlocations');
+                                }
+                                break;
+                              }
+                            }
+                            else {
+                              iVar1 = FUN_004a2534();
+                              local_68[local_38 * 2 + 0x39] = iVar1;
+                              iVar1 = FUN_004a2534();
+                              local_68[local_38 * 2 + 0x3a] = iVar1;
+                              if (DAT_0062f160 !== 0) {
+                                _printf('found location #%d: %d, %d', local_24,
+                                        local_68[local_38 * 2 + 0x39], local_68[local_38 * 2 + 0x3a]);
+                              }
+                              local_24 = local_24 + 1;
+                            }
+                          }
+                          if (_parseError) break;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              if (_parseError) break;
+              local_68[0x4d] = local_24;
+              local_68[1] = local_68[1] | 4;
+            }
+            else {
+              // --- CHANGEMONEY ---
+              iVar1 = _strcmpi(local_3c, 'CHANGEMONEY');
+              if (iVar1 === 0) {
+                if (DAT_0062f160 !== 0) {
+                  _printf('THEN CHANGEMONEY found, looking for params');
+                }
+                while (local_58 === 0 || local_18 === 0) {
+                  pcVar3 = FUN_004a23fc(1);
+                  if (pcVar3 === null || pcVar3 === 0) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('Got early end of file.');
+                    }
+                    _parseError = true; break;
+                  }
+                  if (pcVar3.charAt(0) === '@') {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('Illegal CHANGEMONEY statement');
+                    }
+                    _parseError = true; break;
+                  }
+                  iVar1 = _strnicmp(pcVar3, 'receiver=', 9);
+                  if (iVar1 === 0) {
+                    pcVar3 = pcVar3.substring(9);
+                    local_20 = FUN_004fa250(pcVar3);
+                    if (local_20 === -1) {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('found receiver=%s, but %s is not valid', pcVar3, pcVar3);
+                      }
+                    }
+                    else {
+                      sVar2 = pcVar3.length;
+                      iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                      local_68[0x5d] = iVar1;
+                      if (local_68[0x5d] === 0) { _parseError = true; break; }
+                      FUN_005f22d0(local_68[0x5d], pcVar3);
+                      local_68[0x5e] = local_20;
+                      if (DAT_0062f160 !== 0) {
+                        _printf('found receiver=%s, king id=%d', pcVar3, local_20);
+                      }
+                      local_58 = 1;
+                    }
+                  }
+                  else {
+                    iVar1 = _strnicmp(pcVar3, 'amount=', 7);
+                    if (iVar1 === 0) {
+                      pcVar3 = pcVar3.substring(7);
+                      if (_isDigitOrSign(pcVar3.charAt(0))) {
+                        iVar1 = FUN_00564bf0(pcVar3);
+                        local_68[0x5f] = iVar1;
+                        if (DAT_0062f160 !== 0) {
+                          _printf('found amount=%s, integer=%d', pcVar3, local_68[0x5f]);
+                        }
+                        local_18 = 1;
+                      }
+                    }
+                  }
+                }
+                if (_parseError) break;
+                local_68[1] = local_68[1] | 8;
+              }
+              else {
+                // --- JUSTONCE ---
+                iVar1 = _strcmpi(local_3c, 'JUSTONCE');
+                if (iVar1 === 0) {
+                  if (DAT_0062f160 !== 0) {
+                    _printf('THEN JUSTONCE found, not looking for more');
+                  }
+                  local_68[1] = local_68[1] | 0x40;
+                }
+                else {
+                  // --- DONTPLAYWONDERS ---
+                  iVar1 = _strcmpi(local_3c, 'DONTPLAYWONDERS');
+                  if (iVar1 === 0) {
+                    if (DAT_0062f160 !== 0) {
+                      _printf('THEN DONTPLAYWONDERS found, not looking for more');
+                    }
+                    local_68[1] = local_68[1] | 0x100;
+                  }
+                  else {
+                    // --- MAKEAGGRESSION ---
+                    iVar1 = _strcmpi(local_3c, 'MAKEAGGRESSION');
+                    if (iVar1 === 0) {
+                      if (DAT_0062f160 !== 0) {
+                        _printf('THEN MAKEAGGRESSION found, looking for params');
+                      }
+                      while (local_14 === 0 || local_8 === 0) {
+                        pcVar3 = FUN_004a23fc(1);
+                        if (pcVar3 === null || pcVar3 === 0) {
+                          if (DAT_0062f160 !== 0) {
+                            _printf('Got early end of file.');
+                          }
+                          _parseError = true; break;
+                        }
+                        if (pcVar3.charAt(0) === '@') {
+                          if (DAT_0062f160 !== 0) {
+                            _printf('Illegal MAKEAGGRESSION statement');
+                          }
+                          _parseError = true; break;
+                        }
+                        iVar1 = _strnicmp(pcVar3, 'who=', 4);
+                        if (iVar1 === 0) {
+                          pcVar3 = pcVar3.substring(4);
+                          local_20 = FUN_004fa250(pcVar3);
+                          if (local_20 === -1) {
+                            if (DAT_0062f160 !== 0) {
+                              _printf('found who=%s, but %s is not valid', pcVar3, pcVar3);
+                            }
+                          }
+                          else {
+                            sVar2 = pcVar3.length;
+                            iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                            local_68[0x33] = iVar1;
+                            if (local_68[0x33] === 0) { _parseError = true; break; }
+                            FUN_005f22d0(local_68[0x33], pcVar3);
+                            local_68[0x34] = local_20;
+                            if (DAT_0062f160 !== 0) {
+                              _printf('found who=%s, king id=%d', pcVar3, local_20);
+                            }
+                            local_14 = 1;
+                          }
+                        }
+                        else {
+                          iVar1 = _strnicmp(pcVar3, 'whom=', 5);
+                          if (iVar1 === 0) {
+                            pcVar3 = pcVar3.substring(5);
+                            local_20 = FUN_004fa250(pcVar3);
+                            if (local_20 === -1) {
+                              if (DAT_0062f160 !== 0) {
+                                _printf('found whom=%s, but %s is not valid', pcVar3, pcVar3);
+                              }
+                            }
+                            else {
+                              sVar2 = pcVar3.length;
+                              iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                              local_68[0x31] = iVar1;
+                              if (local_68[0x31] === 0) { _parseError = true; break; }
+                              FUN_005f22d0(local_68[0x31], pcVar3);
+                              local_68[0x32] = local_20;
+                              if (DAT_0062f160 !== 0) {
+                                _printf('found whom=%s, king id=%d', pcVar3, local_20);
+                              }
+                              local_8 = 1;
+                            }
+                          }
+                        }
+                      }
+                      if (_parseError) break;
+                      local_68[1] = local_68[1] | 0x20;
+                    }
+                    else {
+                      // --- DESTROYACIVILIZATION ---
+                      iVar1 = _strcmpi(local_3c, 'DESTROYACIVILIZATION');
+                      if (iVar1 === 0) {
+                        if (DAT_0062f160 !== 0) {
+                          _printf('THEN DESTROYACIVILIZATION found, looking for whom');
+                        }
+                        while (local_28 === 0) {
+                          pcVar3 = FUN_004a23fc(1);
+                          if (pcVar3 === null || pcVar3 === 0) {
+                            if (DAT_0062f160 !== 0) {
+                              _printf('Got early end of file.');
+                            }
+                            _parseError = true; break;
+                          }
+                          if (pcVar3.charAt(0) === '@') {
+                            if (DAT_0062f160 !== 0) {
+                              _printf('Illegal DESTROYACIVILIZATION statement');
+                            }
+                            _parseError = true; break;
+                          }
+                          iVar1 = _strnicmp(pcVar3, 'whom=', 5);
+                          if (iVar1 === 0) {
+                            pcVar3 = pcVar3.substring(5);
+                            local_20 = FUN_004fa250(pcVar3);
+                            if (local_20 === -1) {
+                              if (DAT_0062f160 !== 0) {
+                                _printf('found whom=%s, but %s is not valid', pcVar3, pcVar3);
+                              }
+                            }
+                            else {
+                              local_68[0x6c] = local_20;
+                              if (DAT_0062f160 !== 0) {
+                                _printf('found whom=%s, king id=%d', pcVar3, local_20);
+                              }
+                              local_28 = 1;
+                            }
+                          }
+                        }
+                        if (_parseError) break;
+                        local_68[1] = local_68[1] | 0x400;
+                      }
+                      else {
+                        // --- GIVETECHNOLOGY ---
+                        iVar1 = _strcmpi(local_3c, 'GIVETECHNOLOGY');
+                        if (iVar1 === 0) {
+                          if (DAT_0062f160 !== 0) {
+                            _printf('THEN GIVETECHNOLOGY found, looking for params');
+                          }
+                          while (local_48 === 0 || local_50 === 0) {
+                            pcVar3 = FUN_004a23fc(1);
+                            if (pcVar3 === null || pcVar3 === 0) {
+                              if (DAT_0062f160 !== 0) {
+                                _printf('Got early end of file.');
+                              }
+                              _parseError = true; break;
+                            }
+                            if (pcVar3.charAt(0) === '@') {
+                              if (DAT_0062f160 !== 0) {
+                                _printf('Illegal GIVETECHNOLOGY statement');
+                              }
+                              _parseError = true; break;
+                            }
+                            iVar1 = _strnicmp(pcVar3, 'receiver=', 9);
+                            if (iVar1 === 0) {
+                              pcVar3 = pcVar3.substring(9);
+                              local_20 = FUN_004fa250(pcVar3);
+                              if (local_20 === -1) {
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('found receiver=%s, but %s is not valid', pcVar3, pcVar3);
+                                }
+                              }
+                              else {
+                                local_68[0x6e] = local_20;
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('found receiver=%s, king id=%d', pcVar3, local_20);
+                                }
+                                local_50 = 1;
+                              }
+                            }
+                            else {
+                              iVar1 = _strnicmp(pcVar3, 'technology=', 0xb);
+                              if (iVar1 === 0) {
+                                pcVar3 = pcVar3.substring(0xb);
+                                if (pcVar3.charAt(0) > '/' && pcVar3.charAt(0) < ':') {
+                                  iVar1 = FUN_00564bf0(pcVar3);
+                                  local_68[0x6d] = iVar1;
+                                  if (DAT_0062f160 !== 0) {
+                                    _printf('found technology=%s, integer=%d', pcVar3, local_68[0x6d]);
+                                  }
+                                  local_48 = 1;
+                                }
+                              }
+                            }
+                          }
+                          if (_parseError) break;
+                          local_68[1] = local_68[1] | 0x800;
+                        }
+                        else {
+                          // --- MOVEUNIT ---
+                          iVar1 = _strcmpi(local_3c, 'MOVEUNIT');
+                          if (iVar1 === 0) {
+                            if (DAT_0062f160 !== 0) {
+                              _printf('THEN MOVEUNIT found, looking for params');
+                            }
+                            local_24 = 0;
+                            while ((local_74 === 0 || local_84 === 0) || local_24 !== 4 ||
+                                   (local_5c === 0 || local_70 === 0)) {
+                              pcVar3 = FUN_004a23fc(1);
+                              if (pcVar3 === null || pcVar3 === 0) {
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('Got early end of file.');
+                                }
+                                _parseError = true; break;
+                              }
+                              if (pcVar3.charAt(0) === '@') {
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('Illegal MOVEUNIT statement');
+                                }
+                                _parseError = true; break;
+                              }
+                              iVar1 = _strnicmp(pcVar3, 'unit=', 5);
+                              if (iVar1 === 0) {
+                                pcVar3 = pcVar3.substring(5);
+                                iVar1 = FUN_004fa359(pcVar3);
+                                if (iVar1 === -1) {
+                                  if (DAT_0062f160 !== 0) {
+                                    _printf('found unit=%s, but %s is not valid', pcVar3, pcVar3);
+                                  }
+                                }
+                                else {
+                                  sVar2 = pcVar3.length;
+                                  iVar4 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                                  local_68[0x24] = iVar4;
+                                  if (local_68[0x24] === 0) { _parseError = true; break; }
+                                  FUN_005f22d0(local_68[0x24], pcVar3);
+                                  local_68[0x25] = iVar1;
+                                  if (DAT_0062f160 !== 0) {
+                                    _printf('found unit=%s, unit id=%d', pcVar3, iVar1);
+                                  }
+                                  local_74 = 1;
+                                }
+                              }
+                              else {
+                                iVar1 = _strnicmp(pcVar3, 'owner=', 6);
+                                if (iVar1 === 0) {
+                                  pcVar3 = pcVar3.substring(6);
+                                  local_20 = FUN_004fa250(pcVar3);
+                                  if (local_20 === -1) {
+                                    if (DAT_0062f160 !== 0) {
+                                      _printf('found owner=%s, but %s is not valid', pcVar3, pcVar3);
+                                    }
+                                  }
+                                  else {
+                                    sVar2 = pcVar3.length;
+                                    iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                                    local_68[0x22] = iVar1;
+                                    if (local_68[0x22] === 0) { _parseError = true; break; }
+                                    FUN_005f22d0(local_68[0x22], pcVar3);
+                                    local_68[0x23] = local_20;
+                                    if (DAT_0062f160 !== 0) {
+                                      _printf('found owner=%s, king id=%d', pcVar3, local_20);
+                                    }
+                                    local_84 = 1;
+                                  }
+                                }
+                                else {
+                                  iVar1 = _strcmpi(pcVar3, 'maprect');
+                                  if (iVar1 === 0) {
+                                    if (DAT_0062f160 !== 0) {
+                                      _printf('found maprect');
+                                    }
+                                    iVar1 = FUN_004a23fc(1);
+                                    if (iVar1 === 0 || iVar1 === null) {
+                                      if (DAT_0062f160 !== 0) {
+                                        _printf('Got early end of file.');
+                                      }
+                                      _parseError = true; break;
+                                    }
+                                    for (local_38 = 0; local_38 < 4; local_38 = local_38 + 1) {
+                                      iVar1 = FUN_004a2534();
+                                      local_68[local_38 * 2 + 0x27] = iVar1;
+                                      iVar1 = FUN_004a2534();
+                                      local_68[local_38 * 2 + 0x28] = iVar1;
+                                      if (DAT_0062f160 !== 0) {
+                                        _printf('found location #%d: %d, %d', local_24,
+                                                local_68[local_38 * 2 + 0x27],
+                                                local_68[local_38 * 2 + 0x28]);
+                                      }
+                                      local_24 = local_24 + 1;
+                                    }
+                                  }
+                                  else {
+                                    iVar1 = _strcmpi(pcVar3, 'moveto');
+                                    if (iVar1 === 0) {
+                                      if (DAT_0062f160 !== 0) {
+                                        _printf('found moveto');
+                                      }
+                                      pcVar3 = FUN_004a23fc(1);
+                                      if (pcVar3 === null || pcVar3 === 0) {
+                                        if (DAT_0062f160 !== 0) {
+                                          _printf('Got early end of file.');
+                                        }
+                                        _parseError = true; break;
+                                      }
+                                      if (_isDigitOrSign(pcVar3.charAt(0))) {
+                                        iVar1 = FUN_004a2534();
+                                        local_68[0x2f] = iVar1;
+                                        iVar1 = FUN_004a2534();
+                                        local_68[0x30] = iVar1;
+                                        if (DAT_0062f160 !== 0) {
+                                          _printf('found moveto: %d, %d', local_68[0x2f], local_68[0x30]);
+                                        }
+                                        local_5c = 1;
+                                      }
+                                    }
+                                    else {
+                                      iVar1 = _strnicmp(pcVar3, 'numbertomove=', 0xd);
+                                      if (iVar1 === 0) {
+                                        pcVar3 = pcVar3.substring(0xd);
+                                        if (pcVar3.charAt(0) < '0' || pcVar3.charAt(0) > '9') {
+                                          iVar1 = _strcmpi(pcVar3, 'ALL');
+                                          if (iVar1 === 0) {
+                                            local_68[0x26] = -2;
+                                            if (DAT_0062f160 !== 0) {
+                                              _printf('found numbertomove=%s', pcVar3);
+                                            }
+                                            local_70 = 1;
+                                          }
+                                          else if (DAT_0062f160 !== 0) {
+                                            _printf('found numbertomove=%s, but %s is not valid', pcVar3, pcVar3);
+                                          }
+                                        }
+                                        else {
+                                          iVar1 = FUN_00564bf0(pcVar3);
+                                          local_68[0x26] = iVar1;
+                                          if (DAT_0062f160 !== 0) {
+                                            _printf('found numbertomove=%s, integer=%d', pcVar3, local_68[0x26]);
+                                          }
+                                          local_70 = 1;
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                            if (_parseError) break;
+                            local_68[1] = local_68[1] | 2;
+                          }
+                          else {
+                            // --- PLAYCDTRACK ---
+                            iVar1 = _strcmpi(local_3c, 'PLAYCDTRACK');
+                            if (iVar1 === 0) {
+                              if (DAT_0062f160 !== 0) {
+                                _printf('THEN PLAYCDTRACK found, looking for track');
+                              }
+                              iVar1 = FUN_004a23fc(1);
+                              if (iVar1 === 0 || iVar1 === null) {
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('Got early end of file.');
+                                }
+                                _parseError = true; break;
+                              }
+                              iVar1 = FUN_004a2534();
+                              local_68[0x62] = iVar1;
+                              if (0 < local_68[0x62]) {
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('found cd track %d', local_68[0x62]);
+                                }
+                                local_68[1] = local_68[1] | 0x80;
+                              }
+                            }
+                            else {
+                              // --- PLAYWAVEFILE ---
+                              iVar1 = _strcmpi(local_3c, 'PLAYWAVEFILE');
+                              if (iVar1 === 0) {
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('THEN PLAYWAVEFILE found, looking for filename');
+                                }
+                                pcVar3 = FUN_004a23fc(1);
+                                if (pcVar3 === null || pcVar3 === 0) {
+                                  if (DAT_0062f160 !== 0) {
+                                    _printf('Got early end of file.');
+                                  }
+                                  _parseError = true; break;
+                                }
+                                sVar2 = pcVar3.length;
+                                iVar1 = FUN_00498159(0 /*in_ECX + 0x2f4*/, sVar2 + 1);
+                                local_68[0x61] = iVar1;
+                                if (local_68[0x61] === 0) { _parseError = true; break; }
+                                FUN_005f22d0(local_68[0x61], pcVar3);
+                                if (DAT_0062f160 !== 0) {
+                                  _printf('found wave file name %s', local_68[0x61]);
+                                }
+                                local_68[1] = local_68[1] | 0x10;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } while (local_4c < 10);
+    if (!_parseError) {
+      local_44 = 0;
+    }
+  }
+  // LAB_004ff6f7:
   if (local_44 !== 0) {
-    FUN_00421ea0("BADEVENTSFILE"); // DEVIATION: UI error message
+    // C: __chdir(&DAT_00655020)
+    FUN_00421ea0(s_BADEVENTSFILE_00630868);
+    // C: __chdir(&DAT_0064bb08)
   }
   return local_44;
+}
+
+// Helper: case-insensitive string compare (C __strcmpi)
+function _strcmpi(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return 1;
+  return a.toLowerCase() === b.toLowerCase() ? 0 : 1;
+}
+
+// Helper: case-insensitive prefix compare (C __strnicmp)
+function _strnicmp(str, prefix, len) {
+  if (typeof str !== 'string' || typeof prefix !== 'string') return 1;
+  return str.substring(0, len).toLowerCase() === prefix.substring(0, len).toLowerCase() ? 0 : 1;
+}
+
+// Helper: check if char is digit, '-', or '+'
+function _isDigitOrSign(ch) {
+  return (ch >= '0' && ch <= '9') || ch === '-' || ch === '+';
+}
+
+// Helper: printf stub for debug output
+function _printf(fmt, ...args) {
+  // Debug output — no-op in headless mode
 }
 
 

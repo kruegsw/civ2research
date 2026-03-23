@@ -43,9 +43,10 @@ export function FUN_00500e1a() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500e38 (26 bytes)
 // register atexit cleanup
 export function FUN_00500e38() {
-  // _atexit(FUN_00500e55) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500e55);
   return;
 }
 
@@ -96,9 +97,10 @@ export function FUN_00500e89() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500ea7 (26 bytes)
 // register atexit cleanup
 export function FUN_00500ea7() {
-  // _atexit(FUN_00500ec4) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500ec4);
   return;
 }
 
@@ -149,9 +151,10 @@ export function FUN_00500ef8() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500f12 (26 bytes)
 // register atexit cleanup
 export function FUN_00500f12() {
-  // _atexit(FUN_00500f2f) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500f2f);
   return;
 }
 
@@ -202,9 +205,10 @@ export function FUN_00500f63() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500f7d (26 bytes)
 // register atexit cleanup
 export function FUN_00500f7d() {
-  // _atexit(FUN_00500f9a) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500f9a);
   return;
 }
 
@@ -255,9 +259,10 @@ export function FUN_00500fce() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500fe8 (26 bytes)
 // register atexit cleanup
 export function FUN_00500fe8() {
-  // _atexit(FUN_00501005) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00501005);
   return;
 }
 
@@ -363,9 +368,11 @@ export function FUN_00501190() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog — restore FS chain (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_005011a6 (26 bytes)
+// SEH epilog — restore FS chain
 export function FUN_005011a6() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -589,9 +596,10 @@ export function FUN_00501682() {
 // Size: 9 bytes
 // ============================================================
 
-// cleanup wrapper — COleCntrFrameWnd destructor (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_00501691 (26 bytes)
+// cleanup wrapper — COleCntrFrameWnd destructor
 export function FUN_00501691() {
-  // COleCntrFrameWnd::~COleCntrFrameWnd — no-op in JS
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(unaff_EBP + -0x10));
   return;
 }
 
@@ -602,9 +610,11 @@ export function FUN_00501691() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog — restore FS chain (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_005016a4 (26 bytes)
+// SEH epilog — restore FS chain
 export function FUN_005016a4() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -2522,6 +2532,8 @@ export function FUN_00506637(param_1) {
           iVar2 = FUN_005b633f(param_1);
           if (iVar2 === 0) {
             FUN_004897fa(0);
+            FUN_00410d98(s16(DAT_006560f0, param_1 * 0x20), s16(DAT_006560f2, param_1 * 0x20));
+            FUN_00410402(s16(DAT_006560f0, param_1 * 0x20), s16(DAT_006560f2, param_1 * 0x20));
           }
           else {
             DAT_00655afe = param_1;
@@ -2580,9 +2592,11 @@ export function FUN_00506a1e() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_00506a34 (26 bytes)
+// SEH epilog — restore FS chain
 export function FUN_00506a34() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -2760,9 +2774,11 @@ export function citywin_70C1() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c citywin_70D7 (26 bytes)
+// SEH epilog — restore FS chain
 export function citywin_70D7() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -3387,10 +3403,10 @@ export function citywin_8BC5(param_1, in_ECX) {
 // citywin_calc_pane_rect — calculate pane rectangle from grid coords
 export function citywin_8C84(param_1, param_2, param_3, param_4, param_5, in_ECX) {
   FUN_004086c0(param_1, in_ECX[0x15c4] +
-                         ((in_ECX[0x15d4] * param_2 + 1) / 2) | 0 +
+                         (((in_ECX[0x15d4] * param_2 + 1) / 2) | 0) +
                          in_ECX[0x124],
-                   in_ECX[0x128] + ((in_ECX[0x15d4] * param_3 + 1) / 2) | 0 +
-                   in_ECX[0x15c8], ((in_ECX[0x15d4] * param_4 + 1) / 2) | 0,
+                   in_ECX[0x128] + (((in_ECX[0x15d4] * param_3 + 1) / 2) | 0) +
+                   in_ECX[0x15c8], (((in_ECX[0x15d4] * param_4 + 1) / 2) | 0),
                    ((in_ECX[0x15d4] * param_5 + 1) / 2) | 0);
   return;
 }
@@ -3877,7 +3893,7 @@ export function city_button_buy(param_1) {
     uVar6 = DAT_0064bccc;
     iVar5 = CSplitterWnd_IsTracking(DAT_006a91b8);
     iVar5 = FUN_005adfa0(uVar6 * local_368 - s16(DAT_0064f35c, iVar5 * 0x58), uVar7, uVar8);
-    local_35c = ((iVar5 * iVar5) / 0x14) | 0 + iVar5 * 2;
+    local_35c = (((iVar5 * iVar5) / 0x14) | 0) + iVar5 * 2;
     FUN_004271e8(0, DAT_0064b1b8[iVar3 * 0x14]);
   }
   iVar5 = CSplitterWnd_IsTracking(DAT_006a91b8);
@@ -3944,9 +3960,11 @@ export function citywin_A1B2() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c citywin_A1C8 (26 bytes)
+// SEH epilog — restore FS chain
 export function citywin_A1C8() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -4266,9 +4284,11 @@ export function citywin_B650() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c citywin_B666 (26 bytes)
+// SEH epilog — restore FS chain
 export function citywin_B666() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 

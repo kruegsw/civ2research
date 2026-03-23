@@ -394,7 +394,7 @@ export function FUN_004e02cb() {
 
 // SEH_restore
 export function FUN_004e02e1() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 // setup_city_windows_and_map_views
@@ -403,7 +403,7 @@ export function FUN_004e02ef() {
   let local_20, local_1c, local_18, local_14, local_8;
 
   FUN_00426f80();
-  FUN_0049994f(); // thunk_citywin_994F
+  FUN_00499a49(); // thunk_citywin_9A49
   FUN_004e7240();
   FUN_004bb570(DAT_00655344);
   FUN_0049994f();
@@ -871,7 +871,7 @@ export function FUN_004e1763(param_1, param_2, param_3) {
               DAT_0065610a[local_34 * 0x20 + 2] = 0;
               DAT_0065610a[local_34 * 0x20 + 3] = 0;
               if (DAT_00655b16 + -1 === local_34) {
-                // DAT_00655b16 is imported, may need setter
+                DAT_00655b16 = DAT_00655b16 + -1;
               }
               for (local_18 = 0; local_18 < DAT_00655b16; local_18 = local_18 + 1) {
                 if (DAT_006560ff[local_18 * 0x20] === 0x03 &&
@@ -1171,7 +1171,7 @@ export function FUN_004e27df() {
 
 // SEH_restore_2
 export function FUN_004e27f5() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 // main_menu_command_handler (massive switch dispatch)
@@ -1259,7 +1259,15 @@ export function FUN_004e2803(param_1, param_2) {
         else if (param_2 === 0x480) { FUN_0058bd60(); }
         else if (param_2 === 0x490) { FUN_0058bd84(); }
         // Advisors
-        else if (param_2 === 0x500) { FUN_00516570(DAT_006d1da0, 0); }
+        else if (param_2 === 0x500) {
+          // DEVIATION: C checks GetAsyncKeyState(0x10) — shift+click passes param 1 instead of 0
+          // if (((DAT_00655aea & 0x8000) === 0) || (DAT_00655b02 !== 0) || !GetAsyncKeyState(0x10)) {
+          //   FUN_00516570(DAT_006d1da0, 0);
+          // } else {
+          //   FUN_00516570(DAT_006d1da0, 1);
+          // }
+          FUN_00516570(DAT_006d1da0, 0);
+        }
         else if (param_2 === 0x501) { FUN_0042d71e(DAT_006d1da0); }
         else if (param_2 === 0x502) { FUN_0042f079(DAT_006d1da0); }
         else if (param_2 === 0x503) { FUN_004308ae(DAT_006d1da0); }
@@ -1269,14 +1277,60 @@ export function FUN_004e2803(param_1, param_2) {
         else if (param_2 === 0x507) { FUN_004b7eb6(0, 4); }
         else if (param_2 === 0x508) { FUN_0043856b(DAT_006d1da0); }
         // World
-        else if (param_2 === 0x601) { FUN_00431c73(DAT_006d1da0); }
-        else if (param_2 === 0x602) { FUN_00433122(DAT_006d1da0); }
-        else if (param_2 === 0x603) { FUN_00435d15(DAT_006d1da0); }
-        else if (param_2 === 0x605) { FUN_00434d8a(DAT_006d1da0); }
-        else if (param_2 === 0x606) { FUN_00598b4e(DAT_006d1da0); }
+        else if (param_2 === 0x601) {
+          // DEVIATION: C checks GetAsyncKeyState(0x10) for shift-key cheat
+          // SVar1 = GetAsyncKeyState(0x10);
+          // if (((SVar1 >> 8) & 0xff) === 0 || (DAT_00655aea & 0x8000) === 0 || DAT_00655b02 !== 0) {
+          //   FUN_00431c73(DAT_006d1da0);
+          // } else {
+          //   FUN_004e01b0();
+          // }
+          FUN_00431c73(DAT_006d1da0);
+        }
+        else if (param_2 === 0x602) {
+          // DEVIATION: C checks GetAsyncKeyState(0x10) for shift-key cheat
+          // SVar1 = GetAsyncKeyState(0x10);
+          // if (((SVar1 >> 8) & 0xff) === 0 || (DAT_00655aea & 0x8000) === 0 || DAT_00655b02 !== 0) {
+          //   FUN_00433122(DAT_006d1da0);
+          // } else {
+          //   FUN_004702e0(DAT_006d1da0);
+          // }
+          FUN_00433122(DAT_006d1da0);
+        }
+        else if (param_2 === 0x603) {
+          // DEVIATION: C checks GetAsyncKeyState(0x10) for shift-key cheat
+          // SVar1 = GetAsyncKeyState(0x10);
+          // if (((SVar1 >> 8) & 0xff) === 0 || (DAT_00655aea & 0x8000) === 0 || DAT_00655b02 !== 0) {
+          //   FUN_00435d15(DAT_006d1da0);
+          //   if (DAT_00655b07 !== 0) { FUN_004361cc(DAT_006d1da0); FUN_00431d22(); }
+          // } else {
+          //   FUN_00514e7b(DAT_006d1da0);
+          // }
+          FUN_00435d15(DAT_006d1da0);
+        }
+        else if (param_2 === 0x605) {
+          // DEVIATION: C checks GetAsyncKeyState(0x10) for shift-key cheat
+          // SVar1 = GetAsyncKeyState(0x10);
+          // if (((SVar1 >> 8) & 0xff) === 0 || (DAT_00655aea & 0x8000) === 0 || DAT_00655b02 !== 0) {
+          //   FUN_00434d8a(DAT_006d1da0);
+          // } else {
+          //   FUN_004710d0(-(DAT_006d1da0 + 1 & 7));
+          // }
+          FUN_00434d8a(DAT_006d1da0);
+        }
+        else if (param_2 === 0x606) {
+          // DEVIATION: C checks GetAsyncKeyState(0x10) for shift-key cheat
+          // SVar1 = GetAsyncKeyState(0x10);
+          // if (((SVar1 >> 8) & 0xff) === 0 || (DAT_00655aea & 0x8000) === 0 || DAT_00655b02 !== 0) {
+          //   FUN_00598b4e(DAT_006d1da0);
+          // } else {
+          //   FUN_004710d0(DAT_006d1da0);
+          // }
+          FUN_00598b4e(DAT_006d1da0);
+        }
         // Cheats (C lines 1434-1568 — all require cheat mode + single player)
         else if (param_2 === 0x701) { if (DAT_00655b02 === 0 || DAT_0062eb30 !== 0) FUN_00554297(); }
-        else if (param_2 === 0x702) { /* C: toggle cheat mode — handled elsewhere */ }
+        // NOTE: No case 0x702 in C — param_2 < 0x702 is only used as a boundary check
         else if (param_2 === 0x711) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_005551b3(); }
         else if (param_2 === 0x712) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_0055560f(); }
         else if (param_2 === 0x713) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_0055583f(); }
@@ -1935,9 +1989,10 @@ export function FUN_004e4ceb() {
 }
 
 // manage_window_wrapper
+// Source: decompiled/block_004E0000.c FUN_004e7240 (48 bytes)
 export function FUN_004e7240() {
-  // Wraps manage_window_C692 — no-op in JS
-  // manage_window_C692(*(in_ECX + 8));
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // manage_window_C692(ri(in_ECX, 8)); // DEVIATION: MFC — ShowWindow SW_RESTORE
 }
 
 // acquire_wonder
@@ -3386,7 +3441,7 @@ export function FUN_004eb7e5() {
 
 // SEH_restore_3
 export function FUN_004eb7fb() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 // Source: decompiled/block_004E0000.c FUN_004eb80a (915 bytes)
@@ -3468,7 +3523,7 @@ export function FUN_004ebbb9() {
 
 // SEH_restore_4
 export function FUN_004ebbcf() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 // Source: decompiled/block_004E0000.c FUN_004ebbde (1512 bytes)
@@ -4222,7 +4277,7 @@ export function FUN_004eeeff() {
 
 // SEH_restore_5
 export function FUN_004eef15() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 // Source: decompiled/block_004E0000.c FUN_004eef23 (1621 bytes)
@@ -4631,6 +4686,7 @@ function FUN_004bb8e0() {}
 function FUN_0059df8a() {}
 function FUN_00426f80() {}
 function FUN_0049994f() {} // thunk_citywin_994F
+function FUN_00499a49() {} // thunk_citywin_9A49
 function FUN_004bb570() {}
 function FUN_0040785b() {}
 function FUN_005bb574() {}

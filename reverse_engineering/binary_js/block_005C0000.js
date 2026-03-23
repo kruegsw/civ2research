@@ -2608,8 +2608,9 @@ export function create_window_B601(param_1, param_2, param_3, param_4, param_5, 
 }
 
 // FUN_005cb6db — empty function (placeholder)
+// Source: decompiled/block_005C0000.c FUN_005cb6db (6 bytes)
 export function FUN_005cb6db() {
-  // empty in C source
+  // C: return; (truly empty function)
 }
 
 // blit_B6EB — sprite button window proc
@@ -2739,8 +2740,9 @@ export function register_wndclass_CF17(param_1, param_2, param_3, param_4) {
 }
 
 // FUN_005cd139 — empty function (placeholder)
+// Source: decompiled/block_005C0000.c FUN_005cd139 (6 bytes)
 export function FUN_005cd139() {
-  // empty in C source
+  // C: return; (truly empty function)
 }
 
 // gdi_D149 — scrollbar message handler
@@ -3043,9 +3045,10 @@ export function FUN_005cdf50() {
   FUN_005d1b38();
 }
 
+// Source: decompiled/block_005C0000.c FUN_005cdfb2 (6 bytes)
 // FUN_005cdfb2 — empty function (placeholder)
 export function FUN_005cdfb2() {
-  // empty in C source
+  // C: return; (truly empty function)
 }
 
 // FUN_005cdfc2 — load sprite from resource

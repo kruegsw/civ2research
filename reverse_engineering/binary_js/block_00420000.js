@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_00420000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8, s16, u16 } from './mem.js';
+import { s8, u8, s16, u16, s32, tileRead } from './mem.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // STUB: Global DAT_ variables referenced in this block.
@@ -95,9 +95,11 @@ let DAT_00655b02 = 0;
 let DAT_006c31a9 = 0;
 let DAT_006ad308 = 0;
 let DAT_006d1da8 = 0;
-let DAT_00628420 = 0;
+let DAT_00628420 = new Uint8Array(0x800); // base pointer for string table offsets
 let DAT_006a1d7c = 0;
 let DAT_006a4f88 = 0;
+let DAT_006a4f88_buf = new Uint8Array(0x300); // backing buffer for struct writes
+let DAT_006365c0 = [null, null, null, null, null, null, null, null]; // vis layer pointers
 let DAT_006a4f90 = 0;
 let DAT_006a1d80 = 0;
 let DAT_0062e018 = 0;
@@ -200,13 +202,12 @@ let DAT_0063e4c8 = "";
 let DAT_0063e4f4 = 0;
 let DAT_0063efac = 0;
 let DAT_0063fe50 = new Uint8Array(0x2000);
-let DAT_0063eb10 = 0;
+let DAT_0063eb10 = new Uint8Array(0x200);
 let DAT_0063eb58 = 0;
 let DAT_0063eac0 = 0;
 let DAT_0063eab8 = 0;
 let DAT_0063e4f0 = 0;
 let DAT_0063e4f8 = 0;
-let DAT_0063eb10 = new Uint8Array(0x200);
 let PTR_DAT_006359f0 = 0;
 let DAT_00628370 = new Uint8Array(0x40);
 let DAT_006283a0 = new Uint8Array(0x40);
@@ -238,6 +239,9 @@ let DAT_00625e7c = 0;
 let DAT_00625e80 = 0;
 let DAT_00625e84 = 0;
 let DAT_00625e90 = 0;
+let DAT_00625d6c = ""; // separator string for restarts/bloodlust
+let DAT_00625d70 = ""; // separator string for timer ":"
+let DAT_0063fc58 = 0; // dialog layout data
 
 // ═══════════════════════════════════════════════════════════════════
 // STUB: External functions referenced from other blocks.
@@ -519,8 +523,9 @@ export function FUN_00420207() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0042021d — SEH cleanup (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00420000.c FUN_0042021d (14 bytes)
 export function FUN_0042021d() {
-  // SEH frame cleanup — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -729,8 +734,9 @@ export function FUN_00424135() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0042414b — SEH cleanup (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00420000.c FUN_0042414b (17 bytes)
 export function FUN_0042414b() {
-  // SEH frame cleanup — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1008,42 +1014,91 @@ export function FUN_004259a6(param_1) {
   // DEVIATION: Win32 API — game profile dialog (1423 bytes)
   let local_3c = [0, 1, 3, 7, 0xf, 0x1f, 0x3f, 0x7f, 0xff, 0];
 
-  // Format string 0: game name
+  // String 0: game name (C line 2161-2162)
   FUN_004aef20(DAT_0063cc48);
   FUN_005f22e0(DAT_0063cc48, DAT_006ad59c);
 
-  // Format string 1: password status
-  // FUN_004aef20(&DAT_0063cd4c);
-  // FUN_004af14b(&DAT_0063cd4c, (DAT_00654c74 == 0) + 0x277);
+  // String 1: password status (C line 2163-2164)
+  let _str1 = DAT_0063cc48 + 0x104;  // &DAT_0063cd4c
+  FUN_004aef20(_str1);
+  FUN_004af14b(_str1, (DAT_00654c74 === 0 ? 1 : 0) + 0x277);
 
-  // Format string 2: scenario name
-  // FUN_004aef20(&DAT_0063ce50);
-  // FUN_005f22e0(&DAT_0063ce50, &DAT_006ad5dc);
+  // String 2: scenario name (C line 2165-2166)
+  let _str2 = DAT_0063cc48 + 0x208;  // &DAT_0063ce50
+  FUN_004aef20(_str2);
+  FUN_005f22e0(_str2, DAT_006ad5dc);
 
-  // Format string 3: game description + year
-  // FUN_004aef20(&DAT_0063cf54);
-  // ... strlen check, FUN_004af14b/FUN_00484fec/FUN_00485208
+  // String 3: game description + year (C lines 2167-2179)
+  let _str3 = DAT_0063cc48 + 0x30c;  // &DAT_0063cf54
+  FUN_004aef20(_str3);
+  let sVar1 = _strlen(DAT_0064bc62);
+  if (sVar1 === 0) {
+    FUN_004af14b(_str3, 0x34c);
+  } else {
+    FUN_005f22d0(_str3, DAT_0064bc62);
+  }
+  FUN_004aef36(_str3);
+  FUN_004af01a(_str3);
+  let uVar2_year = FUN_00484fec(DAT_00655af8 | 0);
+  FUN_00485208(_str3, uVar2_year);
+  FUN_004af03b(_str3);
 
-  // Format string 4: difficulty + barbarians
-  // Format string 5: map size
-  // FUN_004aef20(&DAT_0063d670); FUN_004af1d5(&DAT_0063d670, DAT_006d1160/2);
-  // FUN_004aef20(&DAT_0063d774); FUN_004af1d5(&DAT_0063d774, DAT_006d1162);
+  // String 4: difficulty + barbarians (C lines 2180-2185)
+  let _str4 = DAT_0063cc48 + 0x410;  // &DAT_0063d058
+  FUN_004aef20(_str4);
+  FUN_004af14b(_str4, DAT_00655b08 + 0x279);
+  FUN_004aef36(_str4);
+  FUN_004af01a(_str4);
+  FUN_004af14b(_str4, 0x34e - (DAT_00654c7c === 0 ? 1 : 0));
+  FUN_004af03b(_str4);
 
-  // Format string 6: restarts + bloodlust
-  // Format string 7: barbarian level
-  // Format string 8: timer
+  // String 5: restarts + bloodlust (C lines 2190-2193)
+  let _str5 = DAT_0063cc48 + 0x514;  // &DAT_0063d15c
+  FUN_004aef20(_str5);
+  FUN_004af14b(_str5, 0x350 - (DAT_00654fac === 0 ? 1 : 0));
+  FUN_005f22e0(_str5, DAT_00625d6c);
+  FUN_004af14b(_str5, 0x352 - (DAT_00654fae === 0 ? 1 : 0));
 
-  // Format string 9: player count
-  local_3c[9] = DAT_00655b0a;
+  // String 6: barbarian level (C lines 2194-2195)
+  let _str6 = DAT_0063cc48 + 0x618;  // &DAT_0063d260
+  FUN_004aef20(_str6);
+  FUN_004af14b(_str6, DAT_00655b09 + 0x27f);
+
+  // String 7: timer (C lines 2196-2212)
+  let _str7 = DAT_0063cc48 + 0x71c;  // &DAT_0063d364
+  FUN_004aef20(_str7);
+  if (DAT_00654b70 === 0) {
+    FUN_004af14b(_str7, 0x285);
+  } else {
+    let iVar3 = ((DAT_00654b70 / 1000) | 0) / 0x3c | 0;
+    let local_c = ((DAT_00654b70 / 1000) | 0) % 0x3c;
+    if (iVar3 < 10) {
+      FUN_004af1d5(_str7, 0);
+    }
+    FUN_004af1d5(_str7, iVar3);
+    FUN_005f22e0(_str7, DAT_00625d70);
+    if (local_c < 10) {
+      FUN_004af1d5(_str7, 0);
+    }
+    FUN_004af1d5(_str7, local_c);
+  }
+
+  // String 8: player count (C lines 2213-2221)
+  let _str8 = DAT_0063cc48 + 0x820;  // &DAT_0063d468
+  FUN_004aef20(_str8);
   let local_14 = 0;
+  local_3c[9] = DAT_00655b0a;
   let local_10;
   for (local_10 = 1; local_3c[9] = local_3c[9] >> 1, local_10 < 8; local_10 = local_10 + 1) {
     if ((local_3c[9] & 1) !== 0) {
       local_14 = local_14 + 1;
     }
   }
+  FUN_004af1d5(_str8, local_14);
 
-  // Format string 10: slot count
+  // String 9: slot count (C lines 2222-2244)
+  let _str9 = DAT_0063cc48 + 0x924;  // &DAT_0063d56c
+  FUN_004aef20(_str9);
   let local_8 = 0;
   if (DAT_00655b02 === 0) {
     local_8 = 1;
@@ -1063,10 +1118,21 @@ export function FUN_004259a6(param_1) {
   if (param_1 !== 0) {
     local_14 = local_14 - 1;
   }
+  FUN_004af1d5(_str9, local_14);
+
+  // String 10: map width / 2 (C lines 2186-2187)
+  let _str10 = DAT_0063cc48 + 0xa28;  // &DAT_0063d670
+  FUN_004aef20(_str10);
+  FUN_004af1d5(_str10, (DAT_006d1160 | 0) / 2 | 0);
+
+  // String 11: map height (C lines 2188-2189)
+  let _str11 = DAT_0063cc48 + 0xb2c;  // &DAT_0063d774
+  FUN_004aef20(_str11);
+  FUN_004af1d5(_str11, DAT_006d1162 | 0);
 
   // DEVIATION: Win32 API — show dialog
   DAT_00635a3c = 0; // &LAB_00403c74
-  let uVar2 = FUN_0051d564(DAT_006359d4, s_GAMEPROFILE_00625d74, param_1 !== 0, 0, 0);
+  let uVar2 = FUN_0051d564(DAT_006359d4, s_GAMEPROFILE_00625d74, param_1 !== 0, DAT_0063fc58, 0);
   return uVar2;
 }
 
@@ -1174,7 +1240,7 @@ export function FUN_004271e8(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00427211(param_1, param_2) {
   // C: FUN_004271e8(param_1, *(undefined4 *)(DAT_00628420 + param_2 * 4));
-  FUN_004271e8(param_1, DAT_00628420 + param_2 * 4);
+  FUN_004271e8(param_1, s32(DAT_00628420, param_2 * 4));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1266,15 +1332,20 @@ export function FUN_004274a6(param_1, param_2) {
       iVar16 = FUN_005b8931(uVar15, iVar14);
       if (uVar10 !== 0) {
         let pcVar18 = FUN_005b898b(uVar15, iVar14, uVar10);
+        // C: *(char *)(iVar16 + 1) != *pcVar18 — dereference both sides
+        // C: uVar23 & *(byte *)(iVar16 + 4) — dereference tile byte 4
+        let _tileByte1 = tileRead(iVar16, 1);
+        let _visByte = (DAT_006365c0[uVar10] !== null) ? DAT_006365c0[uVar10][pcVar18] : 0;
         if ((bVar24) && (!bVar5) &&
-           ((iVar16 + 1 !== pcVar18) || ((uVar23 & u8(iVar16 + 4)) === 0))) {
+           ((_tileByte1 !== _visByte) || ((uVar23 & tileRead(iVar16, 4)) === 0))) {
           if (local_10 < 8) {
             local_30 = local_30 | 5;
           } else {
             local_30 = local_30 | 10;
           }
         }
-        FUN_005b9d81(uVar15, iVar14, iVar16 + 1, uVar10, 0, 1);
+        // C: *(undefined1 *)(iVar16 + 1) — pass dereferenced byte, not offset
+        FUN_005b9d81(uVar15, iVar14, tileRead(iVar16, 1), uVar10, 0, 1);
       }
       FUN_005b976d(uVar15, iVar14, uVar23, 1, 1);
     }
@@ -1289,6 +1360,14 @@ export function FUN_004274a6(param_1, param_2) {
       iVar16 = FUN_0043cf76(uVar15, iVar14);
       if ((-1 < iVar16) && (s8(DAT_0064f348[iVar16 * 0x58]) !== uVar10)) {
         let uVar17 = s8(DAT_0064f348[iVar16 * 0x58]);
+        // C lines 2571-2577: visibility check before FUN_0043cc00
+        if ((bVar24) && (!bVar5)) {
+          if ((uVar23 & s8(DAT_0064f34c[iVar16 * 0x58])) === 0) {
+            local_30 = local_30 | 5;
+          } else if (DAT_0064f34d[iVar16 * 0x58 + uVar10] !== DAT_0064f349[iVar16 * 0x58]) {
+            local_30 = local_30 | 1;
+          }
+        }
         FUN_0043cc00(iVar16, uVar10);
         if (uVar12 === 0) {
           FUN_005b496e(param_1, uVar17);
@@ -1666,9 +1745,12 @@ export function FUN_00428dcf() {
   //                *(int *)(DAT_006a4f88 + 0x2ec) * 0x1e0 +
   //                *(int *)(DAT_006a4f88 + 0x2f0) * 0x78, uVar1);
   //    FUN_00428d00();
-  let uVar1 = FUN_00428b0c(DAT_00628420 + 0x7d8);
-  // DEVIATION: Win32 API — FUN_00573e59 is MFC string edit dialog
-  FUN_00573e59(DAT_0063fe50, uVar1);
+  let uVar1 = FUN_00428b0c(s32(DAT_00628420, 0x7d8), 1, 0x0040123a);
+  // C: first arg = &DAT_0063fe50 + offset calc from DAT_006a4f88 struct fields
+  let _off573 = s32(DAT_006a4f88_buf, 0x2f4) * 0x3c +
+                s32(DAT_006a4f88_buf, 0x2ec) * 0x1e0 +
+                s32(DAT_006a4f88_buf, 0x2f0) * 0x78;
+  FUN_00573e59(DAT_0063fe50 + _off573, uVar1);
   FUN_00428d00();
 }
 
@@ -1711,7 +1793,7 @@ export function FUN_00428e50() {
       break;
     }
     if (local_10 !== null) {
-      let uVar2 = FUN_00428b0c(DAT_00628420 + 0x7d8);
+      let uVar2 = FUN_00428b0c(s32(DAT_00628420, 0x7d8), local_8, 0x0040123a);
       // DEVIATION: Win32 API — FUN_00573e59 edits city data
       FUN_00573e59(local_10, uVar2);
     }
@@ -1726,10 +1808,22 @@ export function FUN_00428fd2() {
   // DEVIATION: Win32 API — uses MFC FUN_00418d60 for dropdown selection
   let uVar1 = FUN_00418d60();
   // C: *(undefined4 *)(DAT_006a4f88 + 0x2ec) = uVar1;
+  DAT_006a4f88_buf[0x2ec] = uVar1 & 0xFF;
+  DAT_006a4f88_buf[0x2ed] = (uVar1 >>> 8) & 0xFF;
+  DAT_006a4f88_buf[0x2ee] = (uVar1 >>> 16) & 0xFF;
+  DAT_006a4f88_buf[0x2ef] = (uVar1 >>> 24) & 0xFF;
   let uVar1b = FUN_00418d60();
   // C: *(undefined4 *)(DAT_006a4f88 + 0x2f0) = uVar1b;
+  DAT_006a4f88_buf[0x2f0] = uVar1b & 0xFF;
+  DAT_006a4f88_buf[0x2f1] = (uVar1b >>> 8) & 0xFF;
+  DAT_006a4f88_buf[0x2f2] = (uVar1b >>> 16) & 0xFF;
+  DAT_006a4f88_buf[0x2f3] = (uVar1b >>> 24) & 0xFF;
   let uVar1c = FUN_00418d60();
   // C: *(undefined4 *)(DAT_006a4f88 + 0x2f4) = uVar1c;
+  DAT_006a4f88_buf[0x2f4] = uVar1c & 0xFF;
+  DAT_006a4f88_buf[0x2f5] = (uVar1c >>> 8) & 0xFF;
+  DAT_006a4f88_buf[0x2f6] = (uVar1c >>> 16) & 0xFF;
+  DAT_006a4f88_buf[0x2f7] = (uVar1c >>> 24) & 0xFF;
   FUN_00428d00();
 }
 
@@ -1785,8 +1879,9 @@ export function FUN_00429e53() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00429e69 — SEH cleanup (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00420000.c FUN_00429e69 (14 bytes)
 export function FUN_00429e69() {
-  // SEH frame cleanup — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1813,8 +1908,9 @@ export function FUN_00429ed0() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00429ee6 — SEH cleanup (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00420000.c FUN_00429ee6 (14 bytes)
 export function FUN_00429ee6() {
-  // SEH frame cleanup — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2081,17 +2177,20 @@ export function FUN_0042a74e() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0042a768 — close_credits_window
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0042a768() {
-  // DEVIATION: Win32 API — uses in_ECX as this pointer
+export function FUN_0042a768(in_ECX) {
+  // C: uses in_ECX as this pointer (__thiscall)
   // C: if (-1 < *(int *)(in_ECX + 0x450)) {
   //      *(undefined4 *)(in_ECX + 0x450) = 0xffffffff;
   //      FUN_005c5aeb();
   //      FUN_004083f0();
   //      FUN_00553379();
   //    }
-  FUN_005c5aeb();
-  FUN_004083f0();
-  FUN_00553379();
+  if (in_ECX && -1 < s32(in_ECX, 0x450)) {
+    in_ECX[0x450] = 0xff; in_ECX[0x451] = 0xff; in_ECX[0x452] = 0xff; in_ECX[0x453] = 0xff;
+    FUN_005c5aeb();
+    FUN_004083f0();
+    FUN_00553379();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2118,8 +2217,9 @@ export function FUN_0042ab9b() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0042abb1 — SEH cleanup (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00420000.c FUN_0042abb1 (16 bytes)
 export function FUN_0042abb1() {
-  // SEH frame cleanup — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2267,8 +2367,9 @@ export function FUN_0042bc22() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0042bc38 — SEH cleanup (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00420000.c FUN_0042bc38 (15 bytes)
 export function FUN_0042bc38() {
-  // SEH frame cleanup — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2301,8 +2402,9 @@ export function FUN_0042bd6b() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0042bd81 — SEH cleanup (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00420000.c FUN_0042bd81 (14 bytes)
 export function FUN_0042bd81() {
-  // SEH frame cleanup — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2404,13 +2506,20 @@ export function FUN_0042d71e(param_1) {
 // FUN_0042d781 — draw_citizen_icons
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0042d781(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  let local_54 = new Uint8Array(16);
+  let local_44 = new Uint8Array(16);
+  let local_34 = new Uint8Array(16);
+  let local_24 = new Uint8Array(16);
   let local_10 = FUN_00548b70(s8(DAT_0064f349[param_1 * 0x58]), 0x1c, param_4, 0, 0);
   let local_8 = 0;
-  DAT_006a6604 = (DAT_0064f370[param_1 * 0x58] >>> 0) >>> 0x1a;
+  // C: DAT_006a6604 = *(uint *)(&DAT_0064f370 + param_1 * 0x58) >> 0x1a;
+  // Must read 4 bytes as little-endian uint32, not a single byte
+  let _off = param_1 * 0x58;
+  DAT_006a6604 = (DAT_0064f370[_off] | (DAT_0064f370[_off+1]<<8) | (DAT_0064f370[_off+2]<<16) | (DAT_0064f370[_off+3]<<24)) >>> 0x1a;
 
   for (let local_c = 0; local_c < param_5; local_c = local_c + 1) {
-    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), 0, DAT_0063eb10, param_2, param_3);
-    FUN_005cef31(0, DAT_0063eb10, param_2, param_3);
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), local_24, DAT_0063eb10, param_2, param_3);
+    FUN_005cef31(local_24, DAT_0063eb10, param_2, param_3);
     param_2 = param_2 + local_10;
     local_8 = local_8 + 1;
   }
@@ -2418,24 +2527,24 @@ export function FUN_0042d781(param_1, param_2, param_3, param_4, param_5, param_
   for (let local_c = 0;
       local_c < (s8(DAT_0064f349[param_1 * 0x58]) - (param_6 + DAT_006a6604 + param_5));
       local_c = local_c + 1) {
-    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), 0, DAT_0063eb10, param_2, param_3);
-    FUN_005cef31(0, DAT_0063eb10, param_2, param_3);
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), local_34, DAT_0063eb10, param_2, param_3);
+    FUN_005cef31(local_34, DAT_0063eb10, param_2, param_3);
     param_2 = param_2 + local_10;
     local_8 = local_8 + 1;
   }
 
   for (let local_c = 0; local_c < param_6; local_c = local_c + 1) {
     let local_14 = (local_c < param_6 - param_7) ? 4 : 6;
-    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), 0, DAT_0063eb10, param_2, param_3);
-    FUN_005cef31(0, DAT_0063eb10, param_2, param_3);
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), local_44, DAT_0063eb10, param_2, param_3);
+    FUN_005cef31(local_44, DAT_0063eb10, param_2, param_3);
     param_2 = param_2 + local_10;
     local_8 = local_8 + 1;
   }
 
   for (let local_c = 0; local_c < DAT_006a6604; local_c = local_c + 1) {
-    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), 0, DAT_0063eb10, param_2, param_3);
+    FUN_00448f92(s8(DAT_0064f348[param_1 * 0x58]), local_54, DAT_0063eb10, param_2, param_3);
     FUN_004e75a6(param_1, local_c);
-    FUN_005cef31(0, DAT_0063eb10, param_2, param_3);
+    FUN_005cef31(local_54, DAT_0063eb10, param_2, param_3);
     param_2 = param_2 + local_10;
   }
   return local_10;

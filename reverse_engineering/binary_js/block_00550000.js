@@ -133,9 +133,10 @@ export function FUN_00550017() {
 // Size: 14 bytes
 // seh_epilog_restore_fs
 // ============================================================
+// Source: decompiled/block_00550000.c FUN_0055002d (14 bytes)
 
 export function FUN_0055002d() {
-  // SEH epilog — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -161,8 +162,9 @@ export function FUN_00551cd0(param_1) {
 // streambuf_egptr (library)
 // ============================================================
 
+// Source: decompiled/block_00550000.c egptr (28 bytes)
 export function egptr(thisObj) {
-  // Library function — no-op
+  // DEVIATION: MFC — streambuf::egptr() returns *(this + 0x2c)
   return 0;
 }
 
@@ -174,8 +176,9 @@ export function egptr(thisObj) {
 // send_msg_3DBF_wrapper
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00551d50 (37 bytes)
 export function FUN_00551d50() {
-  // in_ECX + 0x1c → send_msg_3DBF — network/UI, no-op
+  // DEVIATION: Win32 — send_msg_3DBF(*(in_ECX + 0x1c)); network message send
   return;
 }
 
@@ -187,8 +190,9 @@ export function FUN_00551d50() {
 // send_msg_3E92_wrapper
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00551d80 (43 bytes)
 export function FUN_00551d80(param_1) {
-  // network/UI message send — no-op
+  // DEVIATION: Win32 — send_msg_3E92(*(in_ECX + 0x1c), param_1); network message send
   return;
 }
 
@@ -200,8 +204,9 @@ export function FUN_00551d80(param_1) {
 // set_ecx_offset_0x30
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00551dc0 (33 bytes)
 export function FUN_00551dc0(param_1) {
-  // in_ECX + 0x30 = param_1 — UI object setter, no-op
+  // DEVIATION: MFC — *(in_ECX + 0x30) = param_1; UI object member setter
   return;
 }
 
@@ -213,8 +218,9 @@ export function FUN_00551dc0(param_1) {
 // set_ecx_offset_0x34
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00551df0 (33 bytes)
 export function FUN_00551df0(param_1) {
-  // in_ECX + 0x34 = param_1 — UI object setter, no-op
+  // DEVIATION: MFC — *(in_ECX + 0x34) = param_1; UI object member setter
   return;
 }
 
@@ -279,8 +285,9 @@ export function FUN_00551eba() {
 // register_atexit_551ef5
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00551ed8 (29 bytes)
 export function FUN_00551ed8() {
-  // _atexit(FUN_00551ef5) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00551ef5); C runtime shutdown hook
   return;
 }
 
@@ -332,8 +339,9 @@ export function FUN_00551f29() {
 // register_atexit_551f64
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00551f47 (29 bytes)
 export function FUN_00551f47() {
-  // _atexit — no-op
+  // DEVIATION: Win32 — _atexit(FUN_00551f64); C runtime shutdown hook
   return;
 }
 
@@ -385,8 +393,9 @@ export function FUN_00551f98() {
 // register_atexit_551fd3
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00551fb6 (29 bytes)
 export function FUN_00551fb6() {
-  // _atexit — no-op
+  // DEVIATION: Win32 — _atexit(FUN_00551fd3); C runtime shutdown hook
   return;
 }
 
@@ -525,8 +534,11 @@ export function FUN_00552e5b(param_1) {
 // dialog_create_buttons
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00552ed2 (675 bytes)
 export function FUN_00552ed2() {
-  // MFC CRichEditCntrItem dialog setup — UI, no-op
+  // DEVIATION: MFC — CRichEditCntrItem dialog setup: creates button windows,
+  // positions controls relative to in_ECX object members, calls operator_new,
+  // FUN_00451930, FUN_004519b0, FUN_00451a60 for each button. All UI layout.
   return;
 }
 
@@ -538,8 +550,10 @@ export function FUN_00552ed2() {
 // dialog_add_button
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055318c (192 bytes)
 export function FUN_0055318c(param_1, param_2) {
-  // Dialog button creation — UI, no-op
+  // DEVIATION: MFC — Adds a button to dialog if count < 6. Stores callback (param_1),
+  // text (param_2) in in_ECX object fields at offsets 0x200+. All UI layout.
   return;
 }
 
@@ -551,8 +565,10 @@ export function FUN_0055318c(param_1, param_2) {
 // dialog_set_title
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055324c (139 bytes)
 export function FUN_0055324c(param_1) {
-  // Set dialog title text — UI, no-op
+  // DEVIATION: MFC — memset(in_ECX+0x134, 0, 0x84), strncpy(in_ECX+0x134, param_1, 0x83),
+  // then calls FUN_00552112 to redraw title bar. All UI layout.
   return;
 }
 
@@ -564,8 +580,10 @@ export function FUN_0055324c(param_1) {
 // dialog_destroy_buttons
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_005532d7 (162 bytes)
 export function FUN_005532d7() {
-  // Destroy 6 dialog buttons — UI, no-op
+  // DEVIATION: MFC — Loops 0..5, destroys button windows at in_ECX+0x218+i*0x1c
+  // via FUN_00453aa0(1), then zeros the pointer. All UI cleanup.
   return;
 }
 
@@ -591,8 +609,10 @@ export function FUN_00553379() {
 // COleCntrFrameWnd_constructor
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055339f (146 bytes)
 export function FUN_0055339f() {
-  // MFC COleCntrFrameWnd constructor — UI, no-op
+  // DEVIATION: MFC — COleCntrFrameWnd constructor: calls FUN_0044c5a0(),
+  // sets vtable pointer, zeros 6 button slots at in_ECX[i*7+0x86]. All UI init.
   return;
 }
 
@@ -604,8 +624,11 @@ export function FUN_0055339f() {
 // ~COleCntrFrameWnd
 // ============================================================
 
+// Source: decompiled/block_00550000.c ~COleCntrFrameWnd (87 bytes)
 export function COleCntrFrameWnd_destructor() {
-  // MFC destructor — UI, no-op
+  // DEVIATION: MFC — ~COleCntrFrameWnd destructor: sets vtable to PTR_FUN_0061d6dc,
+  // calls FUN_005532d7 (destroy buttons), FUN_004083b0 (base cleanup),
+  // FUN_0055349b (FUN_0044cba0), then SEH epilog FUN_005534ae. All UI teardown.
   return;
 }
 
@@ -630,8 +653,9 @@ export function FUN_0055349b() {
 // seh_epilog_2
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_005534ae (14 bytes)
 export function FUN_005534ae() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -643,8 +667,13 @@ export function FUN_005534ae() {
 // create_dialog_window
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_005534bc (588 bytes)
 export function FUN_005534bc(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
-  // Creates and positions a dialog window with MFC — UI, no-op
+  // DEVIATION: MFC — Creates and positions a dialog window. Sets title from param_1
+  // or DAT_006335e0, stores display params in in_ECX members (0x114..0x2d4),
+  // computes window flags, calls FUN_005bb4ae to create window, FUN_00497d00/FUN_004cff70
+  // for sizing, then FUN_00552ed2 (button setup), FUN_00553d30/FUN_00553d70 (callbacks).
+  // All UI/window creation — no game state globals written.
   return;
 }
 
@@ -656,8 +685,9 @@ export function FUN_005534bc(param_1, param_2, param_3, param_4, param_5, param_
 // set_dialog_proc_at_0x60
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00553d30 (45 bytes)
 export function FUN_00553d30(param_1) {
-  // Swaps function pointer at in_ECX + 0x60 — UI callback, no-op
+  // DEVIATION: MFC — Swaps function pointer: old = *(in_ECX + 0x60); *(in_ECX + 0x60) = param_1; return old;
   return 0;
 }
 
@@ -669,8 +699,9 @@ export function FUN_00553d30(param_1) {
 // set_dialog_proc_at_0x64
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00553d70 (45 bytes)
 export function FUN_00553d70(param_1) {
-  // Swaps function pointer at in_ECX + 100 — UI callback, no-op
+  // DEVIATION: MFC — Swaps function pointer: old = *(in_ECX + 100); *(in_ECX + 100) = param_1; return old;
   return 0;
 }
 
@@ -785,8 +816,9 @@ export function FUN_00554272() {
 // seh_epilog_3
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00554288 (15 bytes)
 export function FUN_00554288() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -949,8 +981,9 @@ export function FUN_0055493e() {
 // seh_epilog_4
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00554954 (14 bytes)
 export function FUN_00554954() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -980,9 +1013,18 @@ export function FUN_00554962() {
 // cheat_edit_terrain_dialog
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055499f (2032 bytes)
 export function FUN_0055499f() {
-  // Complex terrain editing dialog with checkboxes for tile properties
-  // UI-only, no-op in JS
+  // Cheat terrain editor dialog — interactive UI that modifies tile properties.
+  // Reads current tile at (DAT_0064b1b4, DAT_0064b1b0) via FUN_005b8931,
+  // presents terrain type list (CSocket::Create) and checkbox properties,
+  // then writes modified tile bytes (terrain type, special bits, visibility).
+  // Modifies: tile bytes (*pbVar3, pbVar3[1], pbVar3[3]),
+  //   DAT_00655b12 (visible tile count), DAT_00631ed8/DAT_00633678 (terrain state).
+  // DEVIATION: MFC — All UI dialog creation/interaction (CSocket::Create,
+  //   FUN_0059db08, FUN_0059edf0, FUN_0040bc80, FUN_0051d7d6, FUN_0051d817,
+  //   FUN_00419100, FUN_005b8b65, FUN_005b8b1a, FUN_0047ce1e, FUN_0047cea6)
+  //   requires interactive user input, cannot be transpiled headlessly.
   return;
 }
 
@@ -1007,8 +1049,9 @@ export function FUN_0055518f() {
 // seh_epilog_5
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_005551a5 (14 bytes)
 export function FUN_005551a5() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1048,8 +1091,9 @@ export function FUN_005555eb() {
 // seh_epilog_6
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00555601 (14 bytes)
 export function FUN_00555601() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1094,8 +1138,9 @@ export function FUN_0055581b() {
 // seh_epilog_7
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00555831 (14 bytes)
 export function FUN_00555831() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1140,8 +1185,9 @@ export function FUN_005559de() {
 // seh_epilog_8
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_005559f4 (14 bytes)
 export function FUN_005559f4() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1209,8 +1255,9 @@ export function FUN_00555c8d() {
 // seh_epilog_9
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00555ca3 (14 bytes)
 export function FUN_00555ca3() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1271,9 +1318,16 @@ export function FUN_00555ced(param_1) {
 // cheat_show_foreign_affairs_map
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00555d70 (857 bytes)
 export function FUN_00555d70() {
-  // Draws foreign affairs map overlay showing trade routes and unit positions
-  // UI/rendering — no-op
+  // Cheat foreign affairs map: draws trade route markers and unit assignment grid.
+  // Reads DAT_0064cab4/cab6/cab8/cab9 (trade route data per civ),
+  // DAT_0064ca32 (unit type assignments), DAT_006d1da0 (current civ).
+  // Clears duplicate trade route overlaps: (&DAT_0064cab8)[...] = 0xff
+  // Renders via FUN_00472b0a (place marker), FUN_005baeb0/FUN_005baec8/
+  // FUN_005baee0/FUN_0043c8d0 (grid rendering).
+  // DEVIATION: MFC — All rendering calls require GDI/canvas context.
+  // Game state write: dedup sets (&DAT_0064cab8)[idx] = 0xff for overlapping routes.
   return;
 }
 
@@ -1347,9 +1401,14 @@ export function FUN_0055615c() {
 // cheat_edit_unit_dialog
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055625b (1892 bytes)
 export function FUN_0055625b() {
-  // Complex unit editing dialog — toggle veteran, set HP, change home city,
-  // set cargo type, etc. All UI-driven, no-op
+  // Cheat unit editor dialog — interactive UI loop (FUN_00421ea0 "UNITEDIT").
+  // Modifies unit data: DAT_006560f4 (flags, toggle veteran 0x2000),
+  // DAT_006560f8 (move points), DAT_006560fa (HP), DAT_00656100 (home city),
+  // DAT_006560ff (cargo type), DAT_006560fd (supply route).
+  // DEVIATION: MFC — All dialog creation/interaction requires Win32 UI.
+  // Interactive loop driven by user button presses (cases 0-6).
   return;
 }
 
@@ -1374,8 +1433,9 @@ export function FUN_005569bf() {
 // seh_epilog_10
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_005569d5 (14 bytes)
 export function FUN_005569d5() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1387,9 +1447,14 @@ export function FUN_005569d5() {
 // cheat_edit_city_dialog
 // ============================================================
 
+// Source: decompiled/block_00550000.c set_city_shields (1357 bytes)
 export function set_city_shields() {
-  // Complex city editing dialog — set size, shields, buildings, copy city,
-  // toggle capital, etc. All UI-driven, no-op
+  // Cheat city editor dialog — interactive UI loop (FUN_00421ea0 "CITYEDIT").
+  // Modifies city data: DAT_0064f349 (city size), DAT_0064f35c (shields),
+  // DAT_0064f344 (flags, toggle capital 0x4000000), DAT_0064f374 (buildings),
+  // DAT_00655be6 (wonder assignments).
+  // DEVIATION: MFC — All dialog creation/interaction requires Win32 UI.
+  // Interactive loop driven by user button presses (cases 0-6).
   return;
 }
 
@@ -1414,8 +1479,9 @@ export function FUN_00556f30() {
 // seh_epilog_11
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00556f46 (14 bytes)
 export function FUN_00556f46() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1427,10 +1493,18 @@ export function FUN_00556f46() {
 // cheat_edit_king_dialog
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00556f54 (3764 bytes)
 export function FUN_00556f54() {
-  // Large dialog for editing civ properties — treaties, attitudes,
-  // research progress, leader names, tech copying, etc.
-  // All UI-driven, no-op
+  // Cheat king/civ editor dialog — interactive UI loop (FUN_00421ea0 "EDITKING").
+  // Modifies civ data: DAT_0064c6c0 (treaties, flags 0x10/0x80),
+  // DAT_0064ca82 (last contact year), DAT_0064c6e0 (attitudes),
+  // DAT_0064c6be/c6bf (betrayal), DAT_0064c6a8 (research progress),
+  // DAT_0064c6aa (current research), DAT_0064c6a0 (civ flags, toggle 0x200),
+  // DAT_006554fc (female leader), DAT_0064ca92 (leader personality),
+  // DAT_0064bcfa/bd12/bd2a (leader names), DAT_0064c6f8/c6b0 (tech counts).
+  // Uses FUN_00467750/FUN_00467825 for treaty manipulation.
+  // DEVIATION: MFC — All dialog creation/interaction requires Win32 UI.
+  // Interactive loop with 13 cases (0-12).
   return;
 }
 
@@ -1455,8 +1529,9 @@ export function FUN_00557e08() {
 // seh_epilog_12
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00557e1e (14 bytes)
 export function FUN_00557e1e() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1468,10 +1543,14 @@ export function FUN_00557e1e() {
 // cheat_edit_victory_dialog
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00557e2c (843 bytes)
 export function FUN_00557e2c() {
-  // Victory conditions editing dialog — change victory civ,
-  // toggle conquest/space flags, edit objectives
-  // UI-driven, no-op
+  // Cheat victory conditions editor — interactive UI loop (FUN_00421ea0 "EDITVICTORY").
+  // Modifies: DAT_0064bc60 (victory flags, toggle bits 2/4),
+  // DAT_0064bcba (victory civ selection), DAT_0064bcbc..DAT_0064bcc2 (objective flags),
+  // DAT_0064bcb4 (victory objective values via FUN_00518ec0).
+  // DEVIATION: MFC — All dialog creation/interaction requires Win32 UI.
+  // Interactive loop with cases 1-7.
   return;
 }
 
@@ -1496,8 +1575,9 @@ export function FUN_00558177() {
 // seh_epilog_13
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055818d (14 bytes)
 export function FUN_0055818d() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1728,8 +1808,9 @@ export function FUN_00559c3a() {
 // register_atexit_miniframe
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559c54 (29 bytes)
 export function FUN_00559c54() {
-  // _atexit — no-op
+  // DEVIATION: Win32 — _atexit(FUN_00559c71); registers CMiniFrameWnd destructor at exit
   return;
 }
 
@@ -1741,8 +1822,9 @@ export function FUN_00559c54() {
 // atexit_destroy_miniframe
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559c71 (26 bytes)
 export function FUN_00559c71() {
-  // CMiniFrameWnd destructor — no-op
+  // DEVIATION: MFC — CMiniFrameWnd::~CMiniFrameWnd(&DAT_006ab1b8); static object destructor
   return;
 }
 
@@ -1781,8 +1863,9 @@ export function FUN_00559ca5() {
 // register_atexit_intro
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559cbf (29 bytes)
 export function FUN_00559cbf() {
-  // _atexit — no-op
+  // DEVIATION: Win32 — _atexit(FUN_00559cdc); registers FUN_005bd915 destructor at exit
   return;
 }
 
@@ -1807,8 +1890,14 @@ export function FUN_00559cdc() {
 // play_intro_video
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559cf6 (199 bytes)
 export function FUN_00559cf6(param_1, param_2) {
-  // Plays intro video sequence — multimedia, no-op
+  // DEVIATION: MFC — Intro video/animation setup: calls FUN_005bd630 (init video),
+  // FUN_005c64da (create surface), FUN_00407ff0 (get DC), FUN_005bf5e1 (load bitmap
+  // from DAT_006ab498+900), FUN_005bd65c(param_1, param_2) (set playback params),
+  // FUN_0055a930 (blit setup with DAT_006ab4b8), FUN_004083f0 (release DC).
+  // Then cleanup: FUN_00559dbd (FUN_005c656b), FUN_00559dc9 (FUN_005bd915).
+  // All multimedia/rendering — no game state globals written.
   return;
 }
 
@@ -1846,8 +1935,9 @@ export function FUN_00559dc9() {
 // seh_epilog_14
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559ddf (14 bytes)
 export function FUN_00559ddf() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1859,8 +1949,11 @@ export function FUN_00559ddf() {
 // init_intro_display_defaults
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559ded (79 bytes)
 export function FUN_00559ded() {
-  // Sets default display dimensions (100x100) and flags — UI, no-op
+  // DEVIATION: MFC — Sets default display dimensions on in_ECX object:
+  // *(in_ECX + 0x2dc) = 100; *(in_ECX + 0x2d8) = 100;
+  // *(in_ECX + 0x2e0) = 1; *(in_ECX + 0x2e4) = 0;
   return;
 }
 
@@ -1872,8 +1965,11 @@ export function FUN_00559ded() {
 // CMiniFrameWnd_constructor
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559e3c (118 bytes)
 export function FUN_00559e3c() {
-  // MFC CMiniFrameWnd constructor — UI, no-op
+  // DEVIATION: MFC — CMiniFrameWnd constructor: calls FUN_0055339f (COleCntrFrameWnd ctor),
+  // FUN_004502b0 (init bitmap/palette), sets vtable to PTR_FUN_0061d6e0,
+  // calls FUN_00559ded (set default display dims 100x100). All UI init.
   return;
 }
 
@@ -1885,8 +1981,11 @@ export function FUN_00559e3c() {
 // ~CMiniFrameWnd
 // ============================================================
 
+// Source: decompiled/block_00550000.c ~CMiniFrameWnd (92 bytes)
 export function CMiniFrameWnd_destructor() {
-  // MFC destructor — no-op
+  // DEVIATION: MFC — ~CMiniFrameWnd destructor: sets vtable to PTR_FUN_0061d6e0,
+  // calls FUN_00559ded (reset display dims), FUN_00559f30 (_Timevec destructor),
+  // FUN_00559f3f (~COleCntrFrameWnd), then SEH epilog FUN_00559f52. All UI teardown.
   return;
 }
 
@@ -1898,8 +1997,9 @@ export function CMiniFrameWnd_destructor() {
 // destroy_timevec_sub
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559f30 (15 bytes)
 export function FUN_00559f30() {
-  // Destructor helper — no-op
+  // DEVIATION: MFC — _Timevec::~_Timevec(*(unaff_EBP + -0x10) + 0x2f8); bitmap cleanup
   return;
 }
 
@@ -1911,8 +2011,9 @@ export function FUN_00559f30() {
 // destroy_olecntr_sub
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559f3f (9 bytes)
 export function FUN_00559f3f() {
-  // Destructor helper — no-op
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(unaff_EBP + -0x10)); base destructor
   return;
 }
 
@@ -1924,8 +2025,9 @@ export function FUN_00559f3f() {
 // seh_epilog_15
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559f52 (14 bytes)
 export function FUN_00559f52() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 
@@ -1937,8 +2039,11 @@ export function FUN_00559f52() {
 // blit_intro_rect
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_00559f60 (111 bytes)
 export function FUN_00559f60(param_1) {
-  // BitBlt wrapper for intro display — UI, no-op
+  // DEVIATION: MFC — BitBlt wrapper: computes source rect from param_1 and
+  // in_ECX offsets (0x124, 0x128), calls FUN_005a9afe(&DAT_006ab4b8, ...)
+  // to blit intro display. All rendering.
   return;
 }
 
@@ -1965,8 +2070,11 @@ export function FUN_00559fcf(param_1) {
 // set_rect_from_offset
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055a00b (70 bytes)
 export function FUN_0055a00b(param_1, param_2, param_3, param_4, param_5) {
-  // Sets a RECT relative to stored offset — UI, no-op
+  // DEVIATION: MFC — Sets RECT: FUN_004086c0(param_1,
+  //   *(in_ECX + 0x124) + param_2, *(in_ECX + 0x128) + param_3,
+  //   param_4, param_5). UI layout helper.
   return;
 }
 
@@ -2166,8 +2274,13 @@ export function FUN_0055a329(param_1, param_2) {
 // open_advisor_dialog
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055a41d (330 bytes)
 export function FUN_0055a41d(param_1, param_2, param_3) {
-  // Opens an advisor/info dialog with dynamic sizing — UI, no-op
+  // DEVIATION: MFC — Opens advisor/info dialog: if in_ECX+0x2e4 != 0,
+  // computes display size via FUN_0055a329, position via FUN_0055a192,
+  // creates bordered rect via FUN_0055a10d, creates dialog via FUN_005534bc,
+  // then calls FUN_00408230/CPropertySheet::EnableStackedTabs/FUN_004082b0/
+  // FUN_005bb574/FUN_004085f0 for tab setup. All UI/window creation.
   return;
 }
 
@@ -2179,8 +2292,11 @@ export function FUN_0055a41d(param_1, param_2, param_3) {
 // close_advisor_dialog_if_open
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055a567 (61 bytes)
 export function FUN_0055a567() {
-  // Closes advisor dialog — UI, no-op
+  // DEVIATION: MFC — Closes advisor dialog: if *(in_ECX + 0x2e4) != 0,
+  // calls FUN_004083b0 (destroy window), FUN_004083f0 (release DC),
+  // FUN_00484d52 (cleanup palette). All UI teardown.
   return;
 }
 
@@ -2192,8 +2308,10 @@ export function FUN_0055a567() {
 // close_and_unload_advisor
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055a5a4 (64 bytes)
 export function FUN_0055a5a4() {
-  // Closes advisor and unloads DLL — UI, no-op
+  // DEVIATION: MFC — Closes advisor and unloads DLL: if *(in_ECX + 0x2e4) != 0,
+  // calls FUN_004083b0, FUN_004083f0, then FUN_0055a64a (unload DLL). All UI teardown.
   return;
 }
 
@@ -2205,8 +2323,11 @@ export function FUN_0055a5a4() {
 // load_intro_dll
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055a5e4 (102 bytes)
 export function FUN_0055a5e4() {
-  // Loads civ2_intro.dll for advisor animations — UI, no-op
+  // DEVIATION: Win32 — Loads civ2_intro.dll: calls FUN_005f22d0 to build path
+  // "civ2_intro.dll", FUN_00564713 to check existence, FUN_004502e0 to load,
+  // then sets *(in_ECX + 0x2e4) = 1. All DLL loading.
   return;
 }
 
@@ -2218,8 +2339,10 @@ export function FUN_0055a5e4() {
 // unload_intro_dll
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055a64a (65 bytes)
 export function FUN_0055a64a() {
-  // Unloads intro DLL — UI, no-op
+  // DEVIATION: Win32 — Unloads intro DLL: if *(in_ECX + 0x2e4) != 0,
+  // calls FUN_00450340 (FreeLibrary wrapper), then *(in_ECX + 0x2e4) = 0.
   return;
 }
 
@@ -2346,8 +2469,14 @@ export function FUN_0055ac37(param_1, param_2, param_3, param_4, param_5) {
 // app_main_entry
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055add0 (140 bytes)
 export function FUN_0055add0(param_1, param_2) {
-  // Win32 entry point — CreateMutex, FindWindow, etc. — no-op
+  // DEVIATION: Win32 — App entry point:
+  // CreateMutexA(NULL, 1, "Civilization II Once Only") — single instance check
+  // If GetLastError() == 0xb7 (already exists): FindWindowA("MSWindowClass"),
+  //   BringWindowToTop(hWnd)
+  // Else: FUN_005dbb20(param_1, param_2) (app init), FUN_004c4280() (main loop),
+  //   FUN_005dbb4f() (cleanup)
   return 0;
 }
 
@@ -3049,8 +3178,9 @@ export function FUN_0055c679() {
 // seh_epilog_16
 // ============================================================
 
+// Source: decompiled/block_00550000.c FUN_0055c68f (14 bytes)
 export function FUN_0055c68f() {
-  // SEH epilog — no-op
+  // DEVIATION: Win32 — SEH epilog: *unaff_FS_OFFSET = *(unaff_EBP + -0xc)
   return;
 }
 

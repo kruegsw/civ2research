@@ -218,15 +218,16 @@ export function FUN_005e083e() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e0854 — SEH frame restore (no-op in JS)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e0854 (15 bytes)
 export function FUN_005e0854() {
-  // SEH frame teardown — no-op
+  // DEVIATION: Win32 — SEH epilog
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e0863 — show modal dialog (advisor/help style)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e0863 (442 bytes)
 export function FUN_005e0863() {
-  // UI dialog setup with buttons — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -274,8 +275,9 @@ export function FUN_005e0a6a() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e0a80 — SEH frame restore (no-op)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e0a80 (15 bytes)
 export function FUN_005e0a80() {
-  // SEH frame teardown — no-op
+  // DEVIATION: Win32 — SEH epilog
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -333,9 +335,9 @@ export function FUN_005e0ba0(in_ECX) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e0bc0 — init list control widget
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e0bc0 (194 bytes)
 export function FUN_005e0bc0(param_1, param_2, param_3, param_4, param_5) {
-  // UI list control initialization — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -363,190 +365,194 @@ export function FUN_005e0ce0(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e0f2a — create menu bar from format string
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e0f2a (376 bytes)
 export function FUN_005e0f2a(param_1) {
-  // Win32 CreateMenu — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — CreateMenu + menu construction
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e10a2 — load menu resource
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e10a2 (37 bytes)
 export function FUN_005e10a2(param_1) {
-  // Win32 LoadMenuA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — LoadMenuA resource
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e10c7 — destroy menu
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e10c7 (36 bytes)
 export function FUN_005e10c7(param_1) {
-  // Win32 DestroyMenu — DEVIATION: Win32 API
+  // DEVIATION: Win32 — DestroyMenu
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e10eb — empty function (no-op)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e10eb (16 bytes)
 export function FUN_005e10eb() {
-  // no-op
+  // C: return; (truly empty function)
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e10fb — draw menu bar
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e10fb (29 bytes)
 export function FUN_005e10fb(param_1) {
-  // Win32 DrawMenuBar — DEVIATION: Win32 API
+  // DEVIATION: Win32 — DrawMenuBar
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e1118 — enable/disable menu item by position
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e1118 (166 bytes)
 export function FUN_005e1118(param_1, param_2, param_3, param_4) {
-  // Win32 EnableMenuItem — DEVIATION: Win32 API
+  // DEVIATION: Win32 — EnableMenuItem
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e11be — check/uncheck menu item
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e11be (104 bytes)
 export function FUN_005e11be(param_1, param_2, param_3, param_4) {
-  // Win32 CheckMenuItem — DEVIATION: Win32 API
+  // DEVIATION: Win32 — CheckMenuItem
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e1226 — remove/delete menu item
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e1226 (102 bytes)
 export function FUN_005e1226(param_1, param_2, param_3) {
-  // Win32 RemoveMenu/DeleteMenu — DEVIATION: Win32 API
+  // DEVIATION: Win32 — DeleteMenu/RemoveMenu
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // build_menu_128C — insert menu item with auto column break
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c build_menu_128C (293 bytes)
 export function build_menu_128C(param_1, param_2, param_3, param_4) {
-  // Win32 InsertMenuA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — InsertMenuA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // build_menu_13B1 — insert menu item with explicit ID
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c build_menu_13B1 (279 bytes)
 export function build_menu_13B1(param_1, param_2, param_3, param_4, param_5) {
-  // Win32 InsertMenuA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — InsertMenuA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e14c8 — modify menu item text
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e14c8 (130 bytes)
 export function FUN_005e14c8(param_1, param_2, param_3, param_4) {
-  // Win32 ModifyMenuA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ModifyMenuA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // show_popup_menu_154A — show popup/context menu
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c show_popup_menu_154A (79 bytes)
 export function show_popup_menu_154A(param_1, param_2, param_3, param_4) {
-  // Win32 TrackPopupMenu — DEVIATION: Win32 API
+  // DEVIATION: Win32 — TrackPopupMenu
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e1599 — get submenu by index
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e1599 (48 bytes)
 export function FUN_005e1599(param_1, param_2) {
-  // Win32 GetSubMenu — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — GetSubMenu
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e15ce — enable/disable menu item by command ID
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e15ce (75 bytes)
 export function FUN_005e15ce(param_1, param_2, param_3) {
-  // Win32 EnableMenuItem — DEVIATION: Win32 API
+  // DEVIATION: Win32 — EnableMenuItem
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e1619 — check/uncheck menu item by command ID
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e1619 (75 bytes)
 export function FUN_005e1619(param_1, param_2, param_3) {
-  // Win32 CheckMenuItem — DEVIATION: Win32 API
+  // DEVIATION: Win32 — CheckMenuItem
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e1664 — delete menu item by command ID
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e1664 (42 bytes)
 export function FUN_005e1664(param_1, param_2) {
-  // Win32 DeleteMenu — DEVIATION: Win32 API
+  // DEVIATION: Win32 — DeleteMenu/RemoveMenu
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e168e — modify menu item text by command ID
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e168e (50 bytes)
 export function FUN_005e168e(param_1, param_2, param_3) {
-  // Win32 ModifyMenuA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ModifyMenuA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e16c0 — empty function (no-op)
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_005e16c0() {}
+// Source: decompiled/block_005E0000.c FUN_005e16c0 (16 bytes)
+export function FUN_005e16c0() {
+  // C: return; (truly empty function)
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e16d0 — empty function (no-op)
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_005e16d0() {}
+// Source: decompiled/block_005E0000.c FUN_005e16d0 (16 bytes)
+export function FUN_005e16d0() {
+  // C: return; (truly empty function)
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // build_menu_16E0 — append menu item to submenu with column break
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c build_menu_16E0 (136 bytes)
 export function build_menu_16E0(param_1, param_2, param_3, param_4) {
-  // Win32 AppendMenuA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — AppendMenuA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // build_menu_1768 — append menu item with column break
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c build_menu_1768 (115 bytes)
 export function build_menu_1768(param_1, param_2, param_3) {
-  // Win32 AppendMenuA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — AppendMenuA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e17db — delete menu item by command (duplicate of 1664)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e17db (42 bytes)
 export function FUN_005e17db(param_1, param_2) {
-  // Win32 DeleteMenu — DEVIATION: Win32 API
+  // DEVIATION: Win32 — DeleteMenu/RemoveMenu
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // build_menu_1805 — append separator to menu
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c build_menu_1805 (111 bytes)
 export function build_menu_1805(param_1) {
-  // Win32 AppendMenuA separator — DEVIATION: Win32 API
+  // DEVIATION: Win32 — AppendMenuA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e1880 — set window long (timer proc install)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e1880 (55 bytes)
 export function FUN_005e1880(param_1, param_2) {
-  // Win32 SetWindowLongA — DEVIATION: Win32 API
+  // DEVIATION: Win32 — SetWindowLongA
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e18b7 — set timer
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e18b7 (39 bytes)
 export function FUN_005e18b7(param_1, param_2, param_3) {
-  // Win32 SetTimer — DEVIATION: Win32 API
+  // DEVIATION: Win32 — SetTimer
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e18de — kill timer
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e18de (33 bytes)
 export function FUN_005e18de(param_1, param_2) {
-  // Win32 KillTimer — DEVIATION: Win32 API
+  // DEVIATION: Win32 — KillTimer
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e18ff — main window WndProc (paint, resize, close)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e18ff (861 bytes)
 export function FUN_005e18ff(param_1, param_2, param_3, param_4) {
-  // Win32 WndProc — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — SetWindowLongA
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -558,122 +564,121 @@ export function FUN_005e1c70() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e1c8e — open AVI file for playback
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e1c8e (1631 bytes)
 export function FUN_005e1c8e(param_1, param_2) {
-  // AVI file open + ICM codec setup — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — AVI file open + codec setup
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e22ed — start AVI playback
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e22ed (543 bytes)
 export function FUN_005e22ed(param_1) {
-  // AVI playback start — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ICM decompression message
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e250c — ICDecompressEx begin wrapper
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e250c (119 bytes)
 export function FUN_005e250c(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12, param_13, param_14) {
-  // ICSendMessage 0x403c — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ICM decompression message
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e2583 — ICDecompressEx query wrapper
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e2583 (119 bytes)
 export function FUN_005e2583(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12, param_13, param_14) {
-  // ICSendMessage 0x403d — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ICM decompression message
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e25fa — play AVI range
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e25fa (123 bytes)
 export function FUN_005e25fa(param_1, param_2, param_3) {
-  // AVI play range — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e2675 — stop AVI playback
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e2675 (129 bytes)
 export function FUN_005e2675(param_1) {
-  // AVI stop playback — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e26f6 — reset AVI to beginning
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e26f6 (163 bytes)
 export function FUN_005e26f6(param_1) {
-  // AVI reset — DEVIATION: Win32 API
+  // DEVIATION: Win32 — AVI playback control
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e2799 — close/cleanup AVI resources
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e2799 (308 bytes)
 export function FUN_005e2799(param_1) {
-  // AVI close — DEVIATION: Win32 API
+  // DEVIATION: Win32 — AVI/ICM resource cleanup
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e28cd — seek AVI to specific frame
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e28cd (202 bytes)
 export function FUN_005e28cd(param_1, param_2, param_3) {
-  // AVI seek — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // show_messagebox_2997 — decompress and display AVI frame
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c show_messagebox_2997 (702 bytes)
 export function show_messagebox_2997(param_1, param_2) {
-  // AVI frame decompress + display — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — MessageBoxA dialog
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e2c5a — ICDecompressEx wrapper
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e2c5a (119 bytes)
 export function FUN_005e2c5a(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12, param_13, param_14) {
-  // ICSendMessage 0x403e — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ICM decompression message
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e2cd1 — AVI frame timer/sync handler
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e2cd1 (976 bytes)
 export function FUN_005e2cd1(param_1) {
-  // AVI frame sync — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e30a1 — update AVI palette from codec
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e30a1 (529 bytes)
 export function FUN_005e30a1(param_1) {
-  // AVI palette update — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ICM decompression message
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e32b2 — set AVI display mode (normal/doubled)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e32b2 (666 bytes)
 export function FUN_005e32b2(param_1, param_2) {
-  // AVI display mode — DEVIATION: Win32 API
+  // DEVIATION: Win32 — ICM decompression message
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e3550 — call video-end callback (vtable dispatch)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e3550 (47 bytes)
 export function FUN_005e3550(in_ECX) {
-  // callback dispatch — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e3580 — call frame-reached callback (vtable dispatch)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e3580 (47 bytes)
 export function FUN_005e3580(in_ECX) {
-  // callback dispatch — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // create_dib_35B0 — create 8-bit DIB section
 // ═══════════════════════════════════════════════════════════════════
 export function create_dib_35B0(param_1) {
+  // DEVIATION: Win32 — GDI/DirectDraw API
   // Win32 CreateDIBSection (8-bit) — DEVIATION: Win32 API
   return null;
 }
@@ -687,10 +692,9 @@ export function FUN_005e3877(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e388f — destroy DIB surface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e388f (155 bytes)
 export function FUN_005e388f(param_1) {
-  // Win32 DeleteObject/DeleteDC — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — GDI resource cleanup
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -710,9 +714,9 @@ export function FUN_005e395a(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e3988 — flip DIB vertically
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e3988 (249 bytes)
 export function FUN_005e3988(param_1) {
-  // pixel row flip — DEVIATION: Win32 API
+  // DEVIATION: Win32 — memory copy/set operations
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -726,22 +730,23 @@ export function FUN_005e3a81(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e3aa8 — returns 0 (DEVIATION: Win32 API)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e3aa8 (35 bytes)
 export function FUN_005e3aa8() {
   return 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // handle_colortable_3ACB — read DIB color table entries
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c handle_colortable_3ACB (129 bytes)
 export function handle_colortable_3ACB(param_1, param_2, param_3, param_4) {
-  // Win32 GetDIBColorTable — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GetDIBColorTable
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // handle_colortable_3B4C — write DIB color table entries
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c handle_colortable_3B4C (144 bytes)
 export function handle_colortable_3B4C(param_1, param_2, param_3, param_4) {
-  // Win32 SetDIBColorTable — DEVIATION: Win32 API
+  // DEVIATION: Win32 — SetDIBColorTable
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -753,43 +758,44 @@ export function FUN_005e3bdc(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // handle_colortable_3C03 — set DIB color table from HPALETTE
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c handle_colortable_3C03 (177 bytes)
 export function handle_colortable_3C03(param_1, param_2) {
-  // Win32 GetPaletteEntries + SetDIBColorTable — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GetPaletteEntries + SetDIBColorTable
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e3cb4 — draw string on 8-bit DIB surface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e3cb4 (534 bytes)
 export function FUN_005e3cb4(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // GDI DrawTextA on DIB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GetDIBColorTable
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // handle_colortable_3ECA — draw formatted text on 8-bit DIB
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c handle_colortable_3ECA (289 bytes)
 export function handle_colortable_3ECA(param_1, param_2, param_3, param_4, param_5) {
-  // GDI DrawTextA on DIB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GetDIBColorTable
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // handle_colortable_3FEB — draw single-line text on 8-bit DIB
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c handle_colortable_3FEB (272 bytes)
 export function handle_colortable_3FEB(param_1, param_2, param_3, param_4, param_5) {
-  // GDI DrawTextA on DIB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GetDIBColorTable
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // handle_colortable_40FB — draw line on 8-bit DIB
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c handle_colortable_40FB (191 bytes)
 export function handle_colortable_40FB(param_1, param_2, param_3, param_4, param_5) {
-  // GDI LineTo on DIB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GetDIBColorTable
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // create_dib_41BA — create 16-bit (555) DIB section
 // ═══════════════════════════════════════════════════════════════════
 export function create_dib_41BA(param_1) {
+  // DEVIATION: Win32 — GDI/DirectDraw API
   // Win32 CreateDIBSection (16-bit) — DEVIATION: Win32 API
   return null;
 }
@@ -798,6 +804,7 @@ export function create_dib_41BA(param_1) {
 // create_dib_43C5 — create 24-bit DIB section
 // ═══════════════════════════════════════════════════════════════════
 export function create_dib_43C5(param_1) {
+  // DEVIATION: Win32 — GDI/DirectDraw API
   // Win32 CreateDIBSection (24-bit) — DEVIATION: Win32 API
   return null;
 }
@@ -806,171 +813,170 @@ export function create_dib_43C5(param_1) {
 // create_dib_45B5 — create 32-bit DIB section
 // ═══════════════════════════════════════════════════════════════════
 export function create_dib_45B5(param_1) {
+  // DEVIATION: Win32 — GDI/DirectDraw API
   // Win32 CreateDIBSection (32-bit) — DEVIATION: Win32 API
   return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e47a5 — draw string with explicit RGB on DIB
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e47a5 (507 bytes)
 export function FUN_005e47a5(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
-  // GDI DrawTextA with RGB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GDI text drawing with color
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e49a0 — draw formatted text with explicit RGB
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e49a0 (262 bytes)
 export function FUN_005e49a0(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // GDI DrawTextA with RGB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GDI text drawing with color
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4aa6 — draw single-line text with explicit RGB
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4aa6 (245 bytes)
 export function FUN_005e4aa6(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // GDI DrawTextA with RGB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GDI text drawing with color
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4b9b — draw line with explicit RGB on DIB
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4b9b (164 bytes)
 export function FUN_005e4b9b(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // GDI LineTo with RGB — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GDI line drawing
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4c3f — fill rect with solid brush (RGB)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4c3f (137 bytes)
 export function FUN_005e4c3f(param_1, param_2, param_3, param_4, param_5) {
-  // Win32 FillRect — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GDI FillRect
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4cc8 — get pixel value for RGB on surface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4cc8 (141 bytes)
 export function FUN_005e4cc8(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // GDI GetPixel/SetPixel — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — GDI pixel operations
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4d60 — LZW GIF decompressor setup
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4d60 (250 bytes)
 export function FUN_005e4d60(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // GIF LZW decompression — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4e60 — fill rect on 8-bit raw buffer
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4e60 (152 bytes)
 export function FUN_005e4e60(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // raw pixel fill — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4ef8 — fill rect on 16-bit raw buffer
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4ef8 (163 bytes)
 export function FUN_005e4ef8(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
-  // raw 16-bit pixel fill — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e4f9b — copy rect between 8-bit raw buffers
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e4f9b (187 bytes)
 export function FUN_005e4f9b(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12) {
-  // raw pixel copy — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5056 — copy rect between 16-bit raw buffers
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5056 (198 bytes)
 export function FUN_005e5056(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12) {
-  // raw 16-bit pixel copy — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e511c — transpose pixel copy (column → row)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e511c (114 bytes)
 export function FUN_005e511c(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12) {
-  // pixel transpose — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e518e — sprite blit with transparency (8-bit, RLE)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e518e (305 bytes)
 export function FUN_005e518e(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12, param_13, param_14, param_15, param_16) {
-  // sprite blit — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e52bf — sprite blit mask fill (8-bit, RLE)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e52bf (308 bytes)
 export function FUN_005e52bf(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, param_12, param_13, param_14, param_15, param_16, param_17) {
-  // sprite mask blit — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e53f3 — LZW GIF decode core
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e53f3 (1142 bytes)
 export function FUN_005e53f3(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // GIF LZW decode core — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5869 — fill horizontal line on raw buffer
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5869 (126 bytes)
 export function FUN_005e5869(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // horizontal line fill — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e58e7 — fill vertical line on raw buffer
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e58e7 (83 bytes)
 export function FUN_005e58e7(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
-  // vertical line fill — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e593a — copy with palette offset (top-down)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e593a (121 bytes)
 export function FUN_005e593a(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // palette offset copy — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e59b3 — copy with palette offset (bottom-up)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e59b3 (134 bytes)
 export function FUN_005e59b3(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // palette offset copy (flipped) — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5a39 — RLE decode with palette offset (top-down)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5a39 (229 bytes)
 export function FUN_005e5a39(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // RLE decode + palette — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5b1e — RLE decode with palette offset (bottom-up)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5b1e (242 bytes)
 export function FUN_005e5b1e(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // RLE decode + palette (flipped) — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5c10 — 16-bit RLE decode with palette offset (top-down)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5c10 (319 bytes)
 export function FUN_005e5c10(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // 16-bit RLE decode — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5d4f — 16-bit RLE decode with palette offset (bottom-up)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5d4f (332 bytes)
 export function FUN_005e5d4f(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // 16-bit RLE decode (flipped) — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -984,20 +990,23 @@ export function FUN_005e5ea0(in_ECX) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5ee0 — DDSurface destructor (no-op body)
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_005e5ee0() {}
+// Source: decompiled/block_005E0000.c FUN_005e5ee0 (22 bytes)
+export function FUN_005e5ee0() {
+  // C: return; (truly empty function)
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5ef6 — release DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5ef6 (130 bytes)
 export function FUN_005e5ef6(in_ECX) {
-  // DDSurface release — DEVIATION: Win32 API
+  // DEVIATION: Win32 — C++ memory management
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5f78 — create DDSurface from width/height
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5f78 (60 bytes)
 export function FUN_005e5f78(param_1, param_2) {
-  // DDSurface create — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1009,9 +1018,9 @@ export function FUN_005e5fb4(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e5fda — create DDSurface with system memory flag
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e5fda (62 bytes)
 export function FUN_005e5fda(param_1, param_2, param_3) {
-  // DDSurface create w/ sysmem — DEVIATION: Win32 API
+  // DEVIATION: Win32 — framework API
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1024,17 +1033,16 @@ export function FUN_005e6018(param_1, param_2) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6188 — lock DDSurface for pixel access
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6188 (97 bytes)
 export function FUN_005e6188(in_ECX) {
-  // DDSurface lock — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e61e9 — restore lost DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e61e9 (92 bytes)
 export function FUN_005e61e9(in_ECX) {
-  // DDSurface restore — DEVIATION: Win32 API
+  // DEVIATION: Win32 — vtable callback dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1055,22 +1063,23 @@ export function FUN_005e626c(param_1, param_2, param_3) {
 // FUN_005e6297 — create DDSurface from primary (flip chain)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_005e6297(param_1, param_2) {
+  // DEVIATION: Win32 — GDI/DirectDraw API
   // DDSurface from primary — DEVIATION: Win32 API
   return false;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e635f — attach existing DDSurface pointer
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e635f (241 bytes)
 export function FUN_005e635f(param_1, param_2, param_3) {
-  // DDSurface attach — DEVIATION: Win32 API
+  // DEVIATION: Win32 — C++ memory management
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6450 — reset DDSurface dimensions and clip
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6450 (278 bytes)
 export function FUN_005e6450(param_1) {
-  // DDSurface dimension reset — DEVIATION: Win32 API
+  // DEVIATION: Win32 — C++ memory management
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1083,358 +1092,611 @@ export function FUN_005e6566(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e658a — get pixel value from DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e658a (103 bytes)
 export function FUN_005e658a(param_1, param_2) {
-  // DDSurface get pixel — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e65f1 — set pixel value on DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e65f1 (96 bytes)
 export function FUN_005e65f1(param_1, param_2, param_3) {
-  // DDSurface set pixel — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6651 — load bitmap resource into DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6651 (578 bytes)
 export function FUN_005e6651(param_1, param_2, param_3, param_4) {
-  // bitmap resource load — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — memory copy/set operations
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6893 — load GIF resource into DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6893 (818 bytes)
 export function FUN_005e6893(param_1, param_2, param_3, param_4) {
-  // GIF resource load — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6bc5 — load CvPic resource into DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6bc5 (391 bytes)
 export function FUN_005e6bc5(param_1, param_2, param_3, param_4) {
-  // CvPic resource load — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6d4c — load 24-bit bitmap as 16-bit DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6d4c (453 bytes)
 export function FUN_005e6d4c(param_1) {
-  // 24→16 bit bitmap load — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6f25 — set DDSurface fill color
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6f25 (50 bytes)
 export function FUN_005e6f25(param_1, param_2, param_3) {
-  // DDSurface fill color set — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6f57 — reset clip rect to full surface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6f57 (63 bytes)
 export function FUN_005e6f57(in_ECX) {
-  // DDSurface clip reset — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6f96 — set clip rect (intersected with full rect)
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6f96 (91 bytes)
 export function FUN_005e6f96(param_1) {
-  // DDSurface set clip — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e6ff1 — get current clip rect
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e6ff1 (55 bytes)
 export function FUN_005e6ff1(param_1) {
-  // DDSurface get clip — DEVIATION: Win32 API
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e7028 — compute pixel address in DDSurface
-// ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_005E0000.c FUN_005e7028 (42 bytes)
 export function FUN_005e7028(param_1, param_2, param_3) {
-  // pixel address calc — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — object method dispatch
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005e7052 — fill rect on DDSurface (clipped)
-// ═══════════════════════════════════════════════════════════════════
-export function FUN_005e7052(param_1, param_2) { /* DDraw fill — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7052 (133 bytes)
+export function FUN_005e7052(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e70d7 — fill current clip rect
-export function FUN_005e70d7(param_1) { /* DDraw fill clip — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e70d7 (43 bytes)
+export function FUN_005e70d7(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7102 — fill rect with RGB color (dispatches by bpp)
-export function FUN_005e7102(param_1, param_2, param_3, param_4) { /* DDraw fill RGB — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7102 (308 bytes)
+export function FUN_005e7102(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7257 — fill current clip rect with RGB
-export function FUN_005e7257(param_1, param_2, param_3) { /* DDraw fill clip RGB — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7257 (51 bytes)
+export function FUN_005e7257(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e728a — blt between DDSurfaces (clipped)
-export function FUN_005e728a(param_1, param_2, param_3) { /* DDraw blt — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e728a (198 bytes)
+export function FUN_005e728a(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7355 — blt with flip detection
-export function FUN_005e7355(param_1, param_2, param_3) { /* DDraw blt flip — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7355 (290 bytes)
+export function FUN_005e7355(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e747c — blt with source surface pointer
-export function FUN_005e747c(param_1, param_2, param_3) { /* DDraw blt src — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e747c (76 bytes)
+export function FUN_005e747c(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e74c8 — transparent blt between DDSurfaces
-export function FUN_005e74c8(param_1, param_2, param_3) { /* DDraw transparent blt — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e74c8 (198 bytes)
+export function FUN_005e74c8(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7593 — transparent blt with source pointer
-export function FUN_005e7593(param_1, param_2, param_3) { /* DDraw transparent blt src — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7593 (76 bytes)
+export function FUN_005e7593(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e75df — draw string on DDSurface (current font)
-export function FUN_005e75df(param_1, param_2, param_3, param_4) { /* DDraw drawstring — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e75df (254 bytes)
+export function FUN_005e75df(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e76dd — draw text in rect on DDSurface
-export function FUN_005e76dd(param_1, param_2, param_3) { /* DDraw drawtext rect — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e76dd (272 bytes)
+export function FUN_005e76dd(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e77ed — draw string on DDSurface (explicit font)
-export function FUN_005e77ed(param_1, param_2, param_3, param_4, param_5) { /* DDraw drawstring font — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e77ed (217 bytes)
+export function FUN_005e77ed(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e78c6 — draw text in rect (explicit font)
-export function FUN_005e78c6(param_1, param_2, param_3, param_4) { /* DDraw drawtext font — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e78c6 (235 bytes)
+export function FUN_005e78c6(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e79b1 — draw single-line text on DDSurface
-export function FUN_005e79b1(param_1, param_2, param_3) { /* DDraw drawtext single — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e79b1 (127 bytes)
+export function FUN_005e79b1(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7a30 — draw single-line text (explicit font)
-export function FUN_005e7a30(param_1, param_2, param_3, param_4) { /* DDraw drawtext single font — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7a30 (94 bytes)
+export function FUN_005e7a30(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7a8e — draw string with shadow on DDSurface
-export function FUN_005e7a8e(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { /* DDraw shadow string — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7a8e (266 bytes)
+export function FUN_005e7a8e(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7b98 — draw text in rect with shadow
-export function FUN_005e7b98(param_1, param_2, param_3, param_4, param_5, param_6) { /* DDraw shadow rect — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7b98 (284 bytes)
+export function FUN_005e7b98(param_1, param_2, param_3, param_4, param_5, param_6) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7cb4 — draw string with shadow (explicit font)
-export function FUN_005e7cb4(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { /* DDraw shadow font — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7cb4 (229 bytes)
+export function FUN_005e7cb4(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7d99 — draw text rect with shadow (explicit font)
-export function FUN_005e7d99(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { /* DDraw shadow rect font — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7d99 (247 bytes)
+export function FUN_005e7d99(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7e90 — draw single-line text with shadow
-export function FUN_005e7e90(param_1, param_2, param_3, param_4, param_5, param_6) { /* DDraw shadow single — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7e90 (139 bytes)
+export function FUN_005e7e90(param_1, param_2, param_3, param_4, param_5, param_6) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7f1b — draw single-line text with shadow (explicit font)
-export function FUN_005e7f1b(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { /* DDraw shadow single font — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7f1b (106 bytes)
+export function FUN_005e7f1b(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e7f85 — draw line on DDSurface
-export function FUN_005e7f85(param_1, param_2, param_3, param_4) { /* DDraw line — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e7f85 (232 bytes)
+export function FUN_005e7f85(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e806d — draw rect outline on DDSurface
-export function FUN_005e806d(param_1) { /* DDraw rect outline — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e806d (181 bytes)
+export function FUN_005e806d(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e8122 — draw line with RGB on DDSurface
-export function FUN_005e8122(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { /* DDraw line RGB — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8122 (244 bytes)
+export function FUN_005e8122(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e8216 — draw rect outline with RGB
-export function FUN_005e8216(param_1, param_2, param_3, param_4) { /* DDraw rect outline RGB — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8216 (229 bytes)
+export function FUN_005e8216(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
 // CReObject — MFC CReObject constructor
-export function CReObject(obj) { return obj; }
+// Source: decompiled/block_005E0000.c CReObject (64 bytes)
+export function CReObject(obj) {
+  // DEVIATION: MFC — CReObject::CReObject constructor
+  // C: *(uint*)(this) = 0; *(uint*)(this+0x20) = 0; *(uint*)(this+0x24) = 0; *(uint*)(this+0x28) = 0;
+  if (obj) {
+    obj[0] = 0;
+    obj[0x20 / 4] = 0;
+    obj[0x24 / 4] = 0;
+    obj[0x28 / 4] = 0;
+  }
+  return obj;
+}
 
-// FUN_005e833b — font cleanup
-export function FUN_005e833b() { /* font cleanup — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e833b (141 bytes)
+export function FUN_005e833b() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e83c8 — font release (partial)
-export function FUN_005e83c8() { /* font release — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e83c8 (57 bytes)
+export function FUN_005e83c8() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e8401 — rotate palette entries
-export function FUN_005e8401(param_1, param_2, param_3) { /* palette rotate — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8401 (619 bytes)
+export function FUN_005e8401(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e866c — save palette range for scaling
-export function FUN_005e866c(param_1, param_2, param_3) { /* palette save — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e866c (134 bytes)
+export function FUN_005e866c(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e86f2 — save palette with background color
-export function FUN_005e86f2(param_1, param_2, param_3, param_4, param_5, param_6) { /* palette save bg — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e86f2 (71 bytes)
+export function FUN_005e86f2(param_1, param_2, param_3, param_4, param_5, param_6) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e8739 — restore saved palette
-export function FUN_005e8739() { /* palette restore — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8739 (105 bytes)
+export function FUN_005e8739() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e87a2 — scale palette toward background
-export function FUN_005e87a2(param_1) { /* palette scale — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e87a2 (484 bytes)
+export function FUN_005e87a2(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005e8990 — set palette entries on DDPalette
-export function FUN_005e8990(param_1, param_2, param_3) { /* DDPalette set — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8990 (50 bytes)
+export function FUN_005e8990(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// register_wndclass_89D0 — register window class + DirectDraw init
-export function register_wndclass_89D0() { /* DDraw init — DEVIATION: Win32 API */ return 1; }
+// Source: decompiled/block_005E0000.c register_wndclass_89D0 (308 bytes)
+export function register_wndclass_89D0() {
+  // DEVIATION: Win32 — RegisterClassA
+}
 
-// FUN_005e8b04 — DirectDraw shutdown
-export function FUN_005e8b04() { /* DDraw shutdown — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8b04 (80 bytes)
+export function FUN_005e8b04() {
+  // DEVIATION: Win32 — COM vtable call
+}
 
-// FUN_005e8b54 — create DDPalette from RGB data
-export function FUN_005e8b54(param_1, param_2, param_3) { /* DDPalette create — DEVIATION: Win32 API */ return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e8b54 (213 bytes)
+export function FUN_005e8b54(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — palette operations
+}
 
-// FUN_005e8c29 — release COM object (IUnknown::Release)
-export function FUN_005e8c29(param_1) { /* COM release — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8c29 (43 bytes)
+export function FUN_005e8c29(param_1) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
-// FUN_005e8c54 — set DDPalette entries
-export function FUN_005e8c54(param_1, param_2, param_3, param_4) { /* DDPalette set entries — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8c54 (260 bytes)
+export function FUN_005e8c54(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
-// FUN_005e8d58 — get DDPalette entries
-export function FUN_005e8d58(param_1, param_2, param_3, param_4) { /* DDPalette get entries — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8d58 (174 bytes)
+export function FUN_005e8d58(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
-// FUN_005e8e06 — set DDSurface color key
-export function FUN_005e8e06(param_1, param_2) { /* DDSurface colorkey — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e8e06 (73 bytes)
+export function FUN_005e8e06(param_1, param_2) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
 // FUN_005e8e4f — get DDSurface palette
-export function FUN_005e8e4f(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e8e4f (97 bytes)
+export function FUN_005e8e4f(param_1) {
+  // DEVIATION: Win32 — DDSurface GetPalette via COM vtable
+  return 0;
+}
 
 // FUN_005e8eb0 — create primary DDSurface
-export function FUN_005e8eb0(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e8eb0 (155 bytes)
+export function FUN_005e8eb0(param_1) {
+  // DEVIATION: Win32 — DDraw CreatePrimarySurface via COM vtable
+  return 0;
+}
 
 // FUN_005e8f4b — get attached back buffer
-export function FUN_005e8f4b(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e8f4b (108 bytes)
+export function FUN_005e8f4b(param_1) {
+  // DEVIATION: Win32 — DDraw GetAttachedSurface (back buffer) via COM vtable
+  return 0;
+}
 
 // FUN_005e8fb7 — create offscreen DDSurface (low-level)
-export function FUN_005e8fb7(param_1, param_2) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e8fb7 (180 bytes)
+export function FUN_005e8fb7(param_1, param_2) {
+  // DEVIATION: Win32 — DDraw CreateOffscreenSurface via COM vtable
+  return 0;
+}
 
-// FUN_005e906b — release DDSurface (IUnknown::Release)
-export function FUN_005e906b(param_1) { /* DDSurface release — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e906b (38 bytes)
+export function FUN_005e906b(param_1) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
 // FUN_005e9091 — restore lost DDSurface
-export function FUN_005e9091(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9091 (122 bytes)
+export function FUN_005e9091(param_1) {
+  // DEVIATION: Win32 — DDSurface Restore via COM vtable
+  return 0;
+}
 
 // FUN_005e910b — get DDSurface pitch
-export function FUN_005e910b(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e910b (69 bytes)
+export function FUN_005e910b(param_1) {
+  // DEVIATION: Win32 — DDSurface GetPitch via COM vtable
+  return 0;
+}
 
 // FUN_005e9150 — detect DDSurface pixel format
-export function FUN_005e9150(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9150 (249 bytes)
+export function FUN_005e9150(param_1) {
+  // DEVIATION: Win32 — DDSurface detect pixel format via COM vtable
+  return 0;
+}
 
 // FUN_005e924e — lock DDSurface (low-level)
-export function FUN_005e924e(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e924e (123 bytes)
+export function FUN_005e924e(param_1) {
+  // DEVIATION: Win32 — DDSurface Lock via COM vtable
+  return 0;
+}
 
 // FUN_005e92c9 — unlock DDSurface
-export function FUN_005e92c9(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e92c9 (52 bytes)
+export function FUN_005e92c9(param_1) {
+  // DEVIATION: Win32 — DDSurface Unlock via COM vtable
+  return 0;
+}
 
-// FUN_005e92fd — set dirty rect on DDSurface
-export function FUN_005e92fd(param_1, param_2, param_3) { /* DDSurface dirty rect — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e92fd (52 bytes)
+export function FUN_005e92fd(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
 // FUN_005e9331 — map RGB to DDSurface native pixel value
-export function FUN_005e9331(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9331 (292 bytes)
+export function FUN_005e9331(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — DDSurface map RGB to native pixel via GetDC/SetPixel/Lock
+  return 0;
+}
 
 // FUN_005e9455 — blt DDSurface to DDSurface (retry on busy)
-export function FUN_005e9455(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9455 (167 bytes)
+export function FUN_005e9455(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — DDSurface Blt with retry on DDERR_WASSTILLDRAWING
+  return 0;
+}
 
 // FUN_005e9506 — transparent blt (retry on busy)
-export function FUN_005e9506(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9506 (148 bytes)
+export function FUN_005e9506(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — DDSurface transparent Blt with retry
+  return 0;
+}
 
 // FUN_005e95a4 — fast blt (BltFast, retry on busy)
-export function FUN_005e95a4(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e95a4 (174 bytes)
+export function FUN_005e95a4(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — DDSurface BltFast with retry
+  return 0;
+}
 
 // FUN_005e965c — transparent fast blt
-export function FUN_005e965c(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e965c (152 bytes)
+export function FUN_005e965c(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — DDSurface transparent BltFast with retry
+  return 0;
+}
 
 // FUN_005e96fe — flip DDSurface (page flip)
-export function FUN_005e96fe(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e96fe (123 bytes)
+export function FUN_005e96fe(param_1) {
+  // DEVIATION: Win32 — DDSurface Flip (page flip) with retry
+  return 0;
+}
 
 // FUN_005e9783 — color fill DDSurface (retry on busy)
-export function FUN_005e9783(param_1, param_2, param_3) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9783 (171 bytes)
+export function FUN_005e9783(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — DDSurface color fill via Blt with retry
+  return 0;
+}
 
-// blit_9838 — blit DIB to DDSurface via GDI BitBlt
-export function blit_9838(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { /* GDI→DD blit — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c blit_9838 (130 bytes)
+export function blit_9838(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  // DEVIATION: Win32 — GDI BitBlt
+}
 
-// stretch_blit_98BA — stretch blit DIB to DDSurface
-export function stretch_blit_98BA(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) { /* GDI→DD stretchblit — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c stretch_blit_98BA (138 bytes)
+export function stretch_blit_98BA(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
+  // DEVIATION: Win32 — GDI StretchBlt
+}
 
-// FUN_005e9944 — set DDPalette entry (single)
-export function FUN_005e9944(param_1, param_2) { /* DDPalette single — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005e9944 (56 bytes)
+export function FUN_005e9944(param_1, param_2) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
 // FUN_005e997c — draw string on DDSurface via GetDC
-export function FUN_005e997c(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e997c (598 bytes)
+export function FUN_005e997c(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — draw string on DDSurface via GetDC + DrawTextA
+  return 0;
+}
 
 // FUN_005e9bd7 — draw formatted text on DDSurface via GetDC
-export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9bd7 (341 bytes)
+export function FUN_005e9bd7(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — draw formatted text on DDSurface via GetDC + DrawTextA
+  return 0;
+}
 
 // FUN_005e9d31 — draw single-line text on DDSurface via GetDC
-export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9d31 (337 bytes)
+export function FUN_005e9d31(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — draw single-line text on DDSurface via GetDC + DrawTextA
+  return 0;
+}
 
 // FUN_005e9e87 — draw line on DDSurface via GetDC
-export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9e87 (254 bytes)
+export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — draw line on DDSurface via GetDC + LineTo
+  return 0;
+}
 
 // FUN_005e9f8a — draw string with RGB on DDSurface via GetDC
-export function FUN_005e9f8a(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005e9f8a (590 bytes)
+export function FUN_005e9f8a(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
+  // DEVIATION: Win32 — draw string with RGB on DDSurface via GetDC
+  return 0;
+}
 
 // FUN_005ea1dd — draw formatted text with RGB via GetDC
-export function FUN_005ea1dd(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea1dd (333 bytes)
+export function FUN_005ea1dd(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  // DEVIATION: Win32 — draw formatted text with RGB via GetDC
+  return 0;
+}
 
 // FUN_005ea32f — draw single-line text with RGB via GetDC
-export function FUN_005ea32f(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea32f (329 bytes)
+export function FUN_005ea32f(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  // DEVIATION: Win32 — draw single-line text with RGB via GetDC
+  return 0;
+}
 
 // FUN_005ea47d — draw line with RGB on DDSurface via GetDC
-export function FUN_005ea47d(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea47d (246 bytes)
+export function FUN_005ea47d(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  // DEVIATION: Win32 — draw line with RGB on DDSurface via GetDC
+  return 0;
+}
 
 // FUN_005ea578 — check DDSurface valid
-export function FUN_005ea578(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea578 (72 bytes)
+export function FUN_005ea578(param_1) {
+  // DEVIATION: Win32 — DDSurface check valid via COM IsLost
+  return 0;
+}
 
 // FUN_005ea5c5 — check DDSurface lost
-export function FUN_005ea5c5(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea5c5 (70 bytes)
+export function FUN_005ea5c5(param_1) {
+  // DEVIATION: Win32 — DDSurface check lost via COM IsLost
+  return 0;
+}
 
-// FUN_005ea610 — set DirectDraw exclusive/normal mode
-export function FUN_005ea610(param_1) { /* DDraw mode — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ea610 (103 bytes)
+export function FUN_005ea610(param_1) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
 // FUN_005ea677 — get display bit depth
-export function FUN_005ea677() { return 8; }
+// Source: decompiled/block_005E0000.c FUN_005ea677 (77 bytes)
+export function FUN_005ea677() {
+  // DEVIATION: Win32 — DDraw GetDisplayBitDepth via COM vtable
+  // C: Queries DAT_006394c0 COM interface for display caps, returns bit depth byte
+  return 8;
+}
 
 // FUN_005ea6c4 — get DirectDraw vertical blank status
-export function FUN_005ea6c4() { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea6c4 (77 bytes)
+export function FUN_005ea6c4() {
+  // DEVIATION: Win32 — DDraw GetVerticalBlankStatus via COM vtable
+  return 0;
+}
 
 // FUN_005ea711 — get monitor refresh frequency
-export function FUN_005ea711() { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea711 (104 bytes)
+export function FUN_005ea711() {
+  // DEVIATION: Win32 — DDraw GetMonitorFrequency via COM vtable
+  return 0;
+}
 
 // FUN_005ea779 — empty function (no-op)
-export function FUN_005ea779() {}
+// Source: decompiled/block_005E0000.c FUN_005ea779 (34 bytes)
+export function FUN_005ea779() {
+  // C: return; (truly empty function)
+}
 
-// FUN_005ea7a0 — set window long (panel attach)
-export function FUN_005ea7a0(param_1, param_2) { /* SetWindowLongA — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ea7a0 (55 bytes)
+export function FUN_005ea7a0(param_1, param_2) {
+  // DEVIATION: Win32 — SetWindowLongA
+}
 
 // FUN_005ea7d7 — find child window by class type
-export function FUN_005ea7d7(param_1, param_2) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea7d7 (78 bytes)
+export function FUN_005ea7d7(param_1, param_2) {
+  // DEVIATION: Win32 — find child window by class type via GetClassName loop
+  return 0;
+}
 
 // FUN_005ea825 — get next sibling window (wrap around)
-export function FUN_005ea825(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea825 (87 bytes)
+export function FUN_005ea825(param_1) {
+  // DEVIATION: Win32 — get next sibling window via GetWindow(GW_HWNDNEXT) with wrap
+  return 0;
+}
 
 // FUN_005ea87c — get previous sibling window (wrap around)
-export function FUN_005ea87c(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ea87c (87 bytes)
+export function FUN_005ea87c(param_1) {
+  // DEVIATION: Win32 — get prev sibling window via GetWindow(GW_HWNDPREV) with wrap
+  return 0;
+}
 
-// FUN_005ea8d3 — tab-navigate between child windows
-export function FUN_005ea8d3(param_1, param_2, param_3) { /* tab nav — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ea8d3 (756 bytes)
+export function FUN_005ea8d3(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — window enumeration
+}
 
-// FUN_005eabcc — handle tab key in dialog
-export function FUN_005eabcc(param_1) { /* tab handler — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eabcc (161 bytes)
+export function FUN_005eabcc(param_1) {
+  // DEVIATION: Win32 — framework API
+}
 
 // FUN_005eac6d — find scrollbar child window
-export function FUN_005eac6d(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005eac6d (83 bytes)
+export function FUN_005eac6d(param_1) {
+  // DEVIATION: Win32 — find scrollbar child window via GetClassName loop
+  return 0;
+}
 
 // FUN_005eacc0 — panel window WndProc
-export function FUN_005eacc0(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005eacc0 (1566 bytes)
+export function FUN_005eacc0(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — panel WndProc — dispatches WM_SIZE/WM_COMMAND/WM_KEYDOWN/scroll/mouse/etc.
+  return 0;
+}
 
-// FUN_005eb2f0 — dispatch scroll-end callback
-export function FUN_005eb2f0(in_ECX) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eb2f0 (51 bytes)
+export function FUN_005eb2f0(in_ECX) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005eb330 — dispatch scroll-start callback
-export function FUN_005eb330(in_ECX) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eb330 (51 bytes)
+export function FUN_005eb330(in_ECX) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005eb370 — set window user data
-export function FUN_005eb370(param_1, param_2) { /* SetWindowLongA — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eb370 (35 bytes)
+export function FUN_005eb370(param_1, param_2) {
+  // DEVIATION: Win32 — SetWindowLongA
+}
 
-// FUN_005eb393 — set window user data + WndProc
-export function FUN_005eb393(param_1, param_2) { /* SetWindowLongA — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eb393 (55 bytes)
+export function FUN_005eb393(param_1, param_2) {
+  // DEVIATION: Win32 — SetWindowLongA
+}
 
-// FUN_005eb3ca — set window user data (slot 4)
-export function FUN_005eb3ca(param_1, param_2) { /* SetWindowLongA — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eb3ca (35 bytes)
+export function FUN_005eb3ca(param_1, param_2) {
+  // DEVIATION: Win32 — SetWindowLongA
+}
 
 // FUN_005eb3ed — translate virtual key to internal code
 export function FUN_005eb3ed(param_1) {
@@ -1449,371 +1711,682 @@ export function FUN_005eb3ed(param_1) {
 }
 
 // FUN_005eb447 — subpanel window WndProc (scrollbars, menus, input)
-export function FUN_005eb447(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005eb447 (3277 bytes)
+export function FUN_005eb447(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — subpanel WndProc — scrollbars, menus, mouse input, keyboard dispatch
+  return 0;
+}
 
-// FUN_005ec1a1 — menu command dispatch
-export function FUN_005ec1a1(param_1, param_2) { /* menu dispatch — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ec1a1 (153 bytes)
+export function FUN_005ec1a1(param_1, param_2) {
+  // DEVIATION: Win32 — window enumeration
+}
 
 // FUN_005ec23a — recursive menu item ID search
-export function FUN_005ec23a(param_1, param_2) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ec23a (221 bytes)
+export function FUN_005ec23a(param_1, param_2) {
+  // DEVIATION: Win32 — recursive menu item ID search via GetMenuItemCount/GetMenuItemID
+  return 0;
+}
 
 // FUN_005ec317 — child panel WndProc (scrollbar variant)
-export function FUN_005ec317(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ec317 (2883 bytes)
+export function FUN_005ec317(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — child panel WndProc — scroll, input dispatch, MCI notify
+  return 0;
+}
 
 // FUN_005eceda — empty function (no-op)
-export function FUN_005eceda() {}
+// Source: decompiled/block_005E0000.c FUN_005eceda (16 bytes)
+export function FUN_005eceda() {
+  // C: return; (truly empty function)
+}
 
 // FUN_005ecef0 — is shift key pressed
-export function FUN_005ecef0() { return false; }
+// Source: decompiled/block_005E0000.c FUN_005ecef0 (48 bytes)
+export function FUN_005ecef0() {
+  // DEVIATION: Win32 — GetKeyState(VK_SHIFT)
+  // C: SVar1 = GetKeyState(0x10); return ((int)SVar1 & 0x8000) != 0;
+  return false;
+}
 
 // FUN_005ecf20 — is control key pressed
-export function FUN_005ecf20() { return false; }
+// Source: decompiled/block_005E0000.c FUN_005ecf20 (48 bytes)
+export function FUN_005ecf20() {
+  // DEVIATION: Win32 — GetKeyState(VK_CONTROL)
+  // C: SVar1 = GetKeyState(0x11); return ((int)SVar1 & 0x8000) != 0;
+  return false;
+}
 
-// FUN_005ecf50 — dispatch mouse move callback
-export function FUN_005ecf50(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ecf50 (52 bytes)
+export function FUN_005ecf50(param_1, param_2) {
+  // DEVIATION: Win32 — vtable callback dispatch
+}
 
-// FUN_005ecf90 — dispatch left mouse down callback
-export function FUN_005ecf90(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ecf90 (54 bytes)
+export function FUN_005ecf90(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ecfd0 — dispatch left mouse up callback (release)
-export function FUN_005ecfd0(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ecfd0 (54 bytes)
+export function FUN_005ecfd0(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed010 — dispatch left click callback
-export function FUN_005ed010(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed010 (54 bytes)
+export function FUN_005ed010(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed050 — dispatch right mouse down callback
-export function FUN_005ed050(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed050 (54 bytes)
+export function FUN_005ed050(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed090 — dispatch right mouse up callback (release)
-export function FUN_005ed090(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed090 (54 bytes)
+export function FUN_005ed090(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed0d0 — dispatch right click callback
-export function FUN_005ed0d0(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed0d0 (54 bytes)
+export function FUN_005ed0d0(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed110 — dispatch double-click callback
-export function FUN_005ed110(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed110 (54 bytes)
+export function FUN_005ed110(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed150 — dispatch key down callback
-export function FUN_005ed150(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed150 (50 bytes)
+export function FUN_005ed150(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed190 — dispatch key up callback
-export function FUN_005ed190(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed190 (50 bytes)
+export function FUN_005ed190(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed1d0 — dispatch key repeat callback
-export function FUN_005ed1d0(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed1d0 (50 bytes)
+export function FUN_005ed1d0(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed210 — dispatch char callback
-export function FUN_005ed210(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed210 (50 bytes)
+export function FUN_005ed210(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
 // FUN_005ed250 — dispatch close query callback
-export function FUN_005ed250() { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ed250 (48 bytes)
+export function FUN_005ed250() {
+  // DEVIATION: Win32 — dispatch close query callback via in_ECX+0x30 vtable
+  return 0;
+}
 
-// FUN_005ed290 — dispatch maximize callback
-export function FUN_005ed290() { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed290 (41 bytes)
+export function FUN_005ed290() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed2c0 — dispatch restore callback
-export function FUN_005ed2c0() { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed2c0 (41 bytes)
+export function FUN_005ed2c0() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed2f0 — dispatch activate callback
-export function FUN_005ed2f0() { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed2f0 (41 bytes)
+export function FUN_005ed2f0() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed320 — dispatch size callback
-export function FUN_005ed320(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed320 (50 bytes)
+export function FUN_005ed320(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed360 — dispatch move callback
-export function FUN_005ed360(param_1, param_2) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed360 (54 bytes)
+export function FUN_005ed360(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed3a0 — dispatch timer callback
-export function FUN_005ed3a0(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed3a0 (50 bytes)
+export function FUN_005ed3a0(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed3e0 — dispatch horizontal scroll callback
-export function FUN_005ed3e0(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed3e0 (50 bytes)
+export function FUN_005ed3e0(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed420 — dispatch horizontal scroll thumb callback
-export function FUN_005ed420(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed420 (50 bytes)
+export function FUN_005ed420(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed460 — dispatch vertical scroll callback
-export function FUN_005ed460(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed460 (50 bytes)
+export function FUN_005ed460(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed4a0 — dispatch vertical scroll thumb callback
-export function FUN_005ed4a0(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed4a0 (50 bytes)
+export function FUN_005ed4a0(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed4e0 — dispatch custom message callback
-export function FUN_005ed4e0(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed4e0 (50 bytes)
+export function FUN_005ed4e0(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed520 — dispatch palette changed callback
-export function FUN_005ed520() { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed520 (41 bytes)
+export function FUN_005ed520() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ed550 — dispatch query new palette callback
-export function FUN_005ed550() { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed550 (41 bytes)
+export function FUN_005ed550() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
 // FUN_005ed580 — empty function (no-op for resize)
-export function FUN_005ed580() {}
+// Source: decompiled/block_005E0000.c FUN_005ed580 (24 bytes)
+export function FUN_005ed580() {
+  // C: return; (truly empty function)
+}
 
 // FUN_005ed5a0 — dispatch menu select callback
-export function FUN_005ed5a0(param_1, param_2) { return false; }
+// Source: decompiled/block_005E0000.c FUN_005ed5a0 (69 bytes)
+export function FUN_005ed5a0(param_1, param_2) {
+  // DEVIATION: Win32 — dispatch menu select callback via in_ECX+0x98 vtable
+  return false;
+}
 
 // FUN_005ed5f0 — dispatch menu command callback
-export function FUN_005ed5f0(param_1) { return false; }
+// Source: decompiled/block_005E0000.c FUN_005ed5f0 (65 bytes)
+export function FUN_005ed5f0(param_1) {
+  // DEVIATION: Win32 — dispatch menu command callback via in_ECX+0x9c vtable
+  return false;
+}
 
 // CSplitterWnd_IsTracking (multiple overloads at different offsets)
+// Source: decompiled/block_005E0000.c IsTracking@0x005ED640 (31 bytes)
 export function CSplitterWnd_IsTracking_b0(obj) { return obj ? obj[0xb0 / 4] : 0; }
+// Source: decompiled/block_005E0000.c IsTracking@0x005ED660 (31 bytes)
 export function CSplitterWnd_IsTracking_b4(obj) { return obj ? obj[0xb4 / 4] : 0; }
+// Source: decompiled/block_005E0000.c IsTracking@0x005ED680 (31 bytes)
 export function CSplitterWnd_IsTracking_90(obj) { return obj ? obj[0x90 / 4] : 0; }
+// Source: decompiled/block_005E0000.c IsTracking@0x005ED6A0 (31 bytes)
 export function CSplitterWnd_IsTracking_94(obj) { return obj ? obj[0x94 / 4] : 0; }
+// Source: decompiled/block_005E0000.c IsTracking@0x005ED6C0 (31 bytes)
 export function CSplitterWnd_IsTracking_b8(obj) { return obj ? obj[0xb8 / 4] : 0; }
 
 // FUN_005ed6e0 — dispatch MCI notify callback
-export function FUN_005ed6e0() { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ed6e0 (47 bytes)
+export function FUN_005ed6e0() {
+  // DEVIATION: Win32 — dispatch MCI notify callback via in_ECX+0xbc vtable
+}
 
-// FUN_005ed710 — transparent sprite blit via GDI (mask method)
+// Source: decompiled/block_005E0000.c FUN_005ed710 (517 bytes)
 export function FUN_005ed710(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
-  // GDI transparent blit via mask — DEVIATION: Win32 API
+  // DEVIATION: Win32 — GDI resource cleanup
 }
 
 // FUN_005ed920 — open debug log file
-export function FUN_005ed920() { return 1; }
+// Source: decompiled/block_005E0000.c FUN_005ed920 (325 bytes)
+export function FUN_005ed920() {
+  // DEVIATION: Win32 — CreateFileA("smeds.log"), WriteFile, OutputDebugStringA
+  // C: Opens smeds.log, writes SMEDS32 version header, sets DAT_00639be8 flag
+  DAT_00639be8 = '\x01';
+  return 1;
+}
 
 // FUN_005eda65 — close debug log file
-export function FUN_005eda65() { return 1; }
+// Source: decompiled/block_005E0000.c FUN_005eda65 (176 bytes)
+export function FUN_005eda65() {
+  // DEVIATION: Win32 — CreateFileA("smeds.log"), WriteFile "LOG CLOSED", CloseHandle
+  return 1;
+}
 
 // FUN_005edb15 — write string to debug log
-export function FUN_005edb15(param_1) { return 1; }
+// Source: decompiled/block_005E0000.c FUN_005edb15 (157 bytes)
+export function FUN_005edb15(param_1) {
+  // DEVIATION: Win32 — CreateFileA("smeds.log"), SetFilePointer, WriteFile(param_1), CloseHandle
+  return 1;
+}
 
 // FUN_005edbb2 — output debug string
-export function FUN_005edbb2(param_1) { return 1; }
+// Source: decompiled/block_005E0000.c FUN_005edbb2 (39 bytes)
+export function FUN_005edbb2(param_1) {
+  // DEVIATION: Win32 — OutputDebugStringA(param_1)
+  return 1;
+}
 
 // FUN_005edc6c — ADPCM-style audio decode (replace)
-export function FUN_005edc6c(param_1, param_2, param_3, param_4, param_5) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005edc6c (64 bytes)
+export function FUN_005edc6c(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — ADPCM-style audio decode (replace mode), byte-level XOR+copy
+  return 0;
+}
 
 // FUN_005edcac — ADPCM-style audio decode (add with clamp)
-export function FUN_005edcac(param_1, param_2, param_3, param_4, param_5) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005edcac (80 bytes)
+export function FUN_005edcac(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — ADPCM-style audio decode (add with clamp), byte-level XOR+add
+  return 0;
+}
 
-// show_messagebox_DD00 — fatal error messagebox + DebugBreak
+// Source: decompiled/block_005E0000.c show_messagebox_DD00 (43 bytes)
 export function show_messagebox_DD00(param_1, param_2) {
-  // MessageBoxA + DebugBreak — DEVIATION: Win32 API
+  // DEVIATION: Win32 — MessageBoxA + DebugBreak fatal error
 }
 
 // FUN_005edd2b — read line from memory buffer
-export function FUN_005edd2b(param_1, param_2) { return null; }
+// Source: decompiled/block_005E0000.c FUN_005edd2b (127 bytes)
+export function FUN_005edd2b(param_1, param_2) {
+  // DEVIATION: Win32 — reads line from memory buffer until \n or \r, uses IsBadHugeReadPtr
+  return null;
+}
 
-// FUN_005eddaa — stack trace placeholder
+// Source: decompiled/block_005E0000.c FUN_005eddaa (33 bytes)
 export function FUN_005eddaa(param_1) {
-  // sprintf "Stack trace not yet available" — DEVIATION: Win32 API
+  // DEVIATION: Win32 — sprintf
 }
 
 // FUN_005eddd0 — check if AVI video driver available
-export function FUN_005eddd0() { return false; }
+// Source: decompiled/block_005E0000.c FUN_005eddd0 (107 bytes)
+export function FUN_005eddd0() {
+  // DEVIATION: Win32 — mciSendCommandA(0, MCI_OPEN, ..., "avivideo") to check driver
+  return false;
+}
 
-// FUN_005ede3b — close MCI AVI device
-export function FUN_005ede3b() { /* MCI close — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ede3b (89 bytes)
+export function FUN_005ede3b() {
+  // DEVIATION: Win32 — MCI command
+}
 
-// FUN_005ede94 — close MCI device by handle
-export function FUN_005ede94(param_1) { /* MCI close — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ede94 (43 bytes)
+export function FUN_005ede94(param_1) {
+  // DEVIATION: Win32 — MCI command
+}
 
 // FUN_005edebf — open MCI AVI device for playback
-export function FUN_005edebf(param_1, param_2) { return null; }
+// Source: decompiled/block_005E0000.c FUN_005edebf (270 bytes)
+export function FUN_005edebf(param_1, param_2) {
+  // DEVIATION: Win32 — mciSendCommandA MCI_OPEN avivideo, allocate player struct
+  return null;
+}
 
-// FUN_005edfcd — set MCI playback mode (normal/fullscreen)
-export function FUN_005edfcd(param_1, param_2) { /* MCI mode — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005edfcd (53 bytes)
+export function FUN_005edfcd(param_1, param_2) {
+  // DEVIATION: Win32 — framework API
+}
 
-// FUN_005ee002 — MCI play command
-export function FUN_005ee002(param_1, param_2) { /* MCI play — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee002 (74 bytes)
+export function FUN_005ee002(param_1, param_2) {
+  // DEVIATION: Win32 — MCI command
+}
 
-// FUN_005ee04c — MCI get source rect
-export function FUN_005ee04c(param_1, param_2) { /* MCI get rect — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee04c (60 bytes)
+export function FUN_005ee04c(param_1, param_2) {
+  // DEVIATION: Win32 — MCI command
+}
 
-// FUN_005ee088 — MCI stop command
-export function FUN_005ee088(param_1) { /* MCI stop — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee088 (41 bytes)
+export function FUN_005ee088(param_1) {
+  // DEVIATION: Win32 — MCI command
+}
 
 // FUN_005ee0b1 — create movie player window
-export function FUN_005ee0b1(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { return null; }
+// Source: decompiled/block_005E0000.c FUN_005ee0b1 (927 bytes)
+export function FUN_005ee0b1(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — CreateWindowExA("MSMovieClass"), GetDC, LoadCursorA, setup player struct
+  return null;
+}
 
-// FUN_005ee450 — destroy movie player
-export function FUN_005ee450(param_1) { /* movie destroy — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee450 (74 bytes)
+export function FUN_005ee450(param_1) {
+  // DEVIATION: Win32 — framework API
+}
 
-// FUN_005ee49a — set MCI playback to 2x size
-export function FUN_005ee49a(param_1) { /* MCI 2x — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee49a (99 bytes)
+export function FUN_005ee49a(param_1) {
+  // DEVIATION: Win32 — MCI command
+}
 
-// FUN_005ee4fd — MCI resume playback
-export function FUN_005ee4fd(param_1) { /* MCI resume — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee4fd (43 bytes)
+export function FUN_005ee4fd(param_1) {
+  // DEVIATION: Win32 — MCI command
+}
 
-// FUN_005ee528 — MCI seek to position
-export function FUN_005ee528(param_1, param_2) { /* MCI seek — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee528 (49 bytes)
+export function FUN_005ee528(param_1, param_2) {
+  // DEVIATION: Win32 — MCI command
+}
 
 // FUN_005ee559 — MCI get current position
-export function FUN_005ee559(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ee559 (56 bytes)
+export function FUN_005ee559(param_1) {
+  // DEVIATION: Win32 — mciSendCommandA(MCI_STATUS, MCI_STATUS_POSITION)
+  return 0;
+}
 
-// FUN_005ee591 — set MCI palette from HPALETTE
-export function FUN_005ee591(param_1, param_2) { /* MCI palette — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee591 (288 bytes)
+export function FUN_005ee591(param_1, param_2) {
+  // DEVIATION: Win32 — MCI command
+}
 
-// FUN_005ee6b1 — MCIWnd close current
-export function FUN_005ee6b1() { /* MCIWnd close — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee6b1 (50 bytes)
+export function FUN_005ee6b1() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005ee6e3 — MCIWnd open file
-export function FUN_005ee6e3(param_1, param_2) { /* MCIWnd open — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee6e3 (116 bytes)
+export function FUN_005ee6e3(param_1, param_2) {
+  // DEVIATION: Win32 — MCIWnd create
+}
 
-// FUN_005ee757 — MCIWnd create (no file)
-export function FUN_005ee757() { /* MCIWnd create — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee757 (90 bytes)
+export function FUN_005ee757() {
+  // DEVIATION: Win32 — MCIWnd create
+}
 
-// FUN_005ee7b1 — MCIWnd open file (child of parent)
-export function FUN_005ee7b1(param_1, param_2) { /* MCIWnd open child — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee7b1 (116 bytes)
+export function FUN_005ee7b1(param_1, param_2) {
+  // DEVIATION: Win32 — MCIWnd create
+}
 
-// FUN_005ee825 — MCIWnd create (child, no file)
-export function FUN_005ee825(param_1) { /* MCIWnd create child — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee825 (90 bytes)
+export function FUN_005ee825(param_1) {
+  // DEVIATION: Win32 — MCIWnd create
+}
 
-// FUN_005ee87f — MCIWnd open device
-export function FUN_005ee87f(param_1) { /* MCIWnd device — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee87f (71 bytes)
+export function FUN_005ee87f(param_1) {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005ee8c6 — MCIWnd play
-export function FUN_005ee8c6() { /* MCIWnd play — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee8c6 (43 bytes)
+export function FUN_005ee8c6() {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005ee8f1 — MCIWnd stop
-export function FUN_005ee8f1() { /* MCIWnd stop — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee8f1 (43 bytes)
+export function FUN_005ee8f1() {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005ee91c — MCIWnd seek
-export function FUN_005ee91c(param_1) { /* MCIWnd seek — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee91c (47 bytes)
+export function FUN_005ee91c(param_1) {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005ee94b — MCIWnd close and destroy
-export function FUN_005ee94b() { /* MCIWnd destroy — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee94b (70 bytes)
+export function FUN_005ee94b() {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005ee991 — MCIWnd seek to end
-export function FUN_005ee991() { /* MCIWnd seek end — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee991 (43 bytes)
+export function FUN_005ee991() {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005ee9bc — MCIWnd pause
-export function FUN_005ee9bc() { /* MCIWnd pause — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee9bc (43 bytes)
+export function FUN_005ee9bc() {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005ee9e7 — MCIWnd step
-export function FUN_005ee9e7() { /* MCIWnd step — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ee9e7 (43 bytes)
+export function FUN_005ee9e7() {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005eea12 — MCIWnd get client rect
-export function FUN_005eea12(param_1) { /* GetClientRect — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eea12 (40 bytes)
+export function FUN_005eea12(param_1) {
+  // DEVIATION: Win32 — GetClientRect
+}
 
-// FUN_005eea3a — MCIWnd center in parent
-export function FUN_005eea3a() { /* MCIWnd center — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eea3a (163 bytes)
+export function FUN_005eea3a() {
+  // DEVIATION: Win32 — GetClientRect
+}
 
-// FUN_005eeadd — MCIWnd set size
-export function FUN_005eeadd(param_1, param_2) { /* MCIWnd size — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eeadd (52 bytes)
+export function FUN_005eeadd(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005eeb11 — MCIWnd set position
-export function FUN_005eeb11(param_1, param_2) { /* MCIWnd pos — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eeb11 (52 bytes)
+export function FUN_005eeb11(param_1, param_2) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005eeb45 — MCIWnd show and realize
-export function FUN_005eeb45() { /* MCIWnd show — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eeb45 (57 bytes)
+export function FUN_005eeb45() {
+  // DEVIATION: Win32 — ShowWindow
+}
 
-// FUN_005eeb7e — MCIWnd hide
-export function FUN_005eeb7e() { /* MCIWnd hide — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eeb7e (36 bytes)
+export function FUN_005eeb7e() {
+  // DEVIATION: Win32 — ShowWindow
+}
 
-// FUN_005eeba2 — MCIWnd set volume
-export function FUN_005eeba2(param_1) { /* MCIWnd volume — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eeba2 (52 bytes)
+export function FUN_005eeba2(param_1) {
+  // DEVIATION: Win32 — SendMessageA
+}
 
-// FUN_005eebd6 — MCIWnd read palette
-export function FUN_005eebd6() { /* MCIWnd palette — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eebd6 (159 bytes)
+export function FUN_005eebd6() {
+  // DEVIATION: Win32 — SendMessageA
+}
 
 // CSplitterWnd_IsTracking_EC80 (at 0x5EEC80)
+// Source: decompiled/block_005E0000.c IsTracking@0x005EEC80 (31 bytes)
 export function CSplitterWnd_IsTracking_EC80(obj) { return obj ? obj[0xb0 / 4] : 0; }
 
 // FUN_005eeca0 — init sound object
-export function FUN_005eeca0(in_ECX) { return in_ECX; }
+// Source: decompiled/block_005E0000.c FUN_005eeca0 (35 bytes)
+export function FUN_005eeca0(in_ECX) {
+  // C: *(uint*)(in_ECX + 4) = 0; return in_ECX;
+  if (in_ECX) in_ECX[1] = 0;
+  return in_ECX;
+}
 
-// FUN_005eecc3 — open sound file
-export function FUN_005eecc3(param_1) { /* sound open — DEVIATION: Win32 API */ return null; }
+// Source: decompiled/block_005E0000.c FUN_005eecc3 (88 bytes)
+export function FUN_005eecc3(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
-// FUN_005eed1b — close sound file
-export function FUN_005eed1b() { /* sound close — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eed1b (40 bytes)
+export function FUN_005eed1b() {
+  // DEVIATION: Win32 — object method dispatch
+}
 
 // FUN_005eed43 — is sound playing
-export function FUN_005eed43() { return false; }
+// Source: decompiled/block_005E0000.c FUN_005eed43 (51 bytes)
+export function FUN_005eed43() {
+  // DEVIATION: Win32 — checks in_ECX flags: (*in_ECX & 4) != 0
+  return false;
+}
 
 // FUN_005eed76 — open audio stream
-export function FUN_005eed76(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005eed76 (91 bytes)
+export function FUN_005eed76(param_1) {
+  // DEVIATION: Win32 — open audio stream via FUN_005d52a2
+  return 0;
+}
 
 // FUN_005eedd1 — get audio position
-export function FUN_005eedd1() { FUN_005d5643(); }
+// Source: decompiled/block_005E0000.c FUN_005eedd1 (27 bytes)
+export function FUN_005eedd1() {
+  FUN_005d5643();
+}
 
 // FUN_005eedec — play audio range
-export function FUN_005eedec(param_1, param_2) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005eedec (99 bytes)
+export function FUN_005eedec(param_1, param_2) {
+  // DEVIATION: Win32 — play audio range via FUN_005d5d11
+  return 0;
+}
 
 // FUN_005eee4f — start audio playback
-export function FUN_005eee4f() { FUN_005d5f91(); return 0; }
+// Source: decompiled/block_005E0000.c FUN_005eee4f (30 bytes)
+export function FUN_005eee4f() {
+  FUN_005d5f91();
+  return 0;
+}
 
 // FUN_005eee6d — returns 0 (DEVIATION: Win32 API — audio)
-export function FUN_005eee6d() { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005eee6d (25 bytes)
+export function FUN_005eee6d() {
+  return 0;
+}
 
 // FUN_005eee86 — empty function (no-op)
-export function FUN_005eee86() {}
+// Source: decompiled/block_005E0000.c FUN_005eee86 (22 bytes)
+export function FUN_005eee86() {
+  // C: return; (truly empty function)
+}
 
-// show_messagebox_EEB0 — show message box with icon/buttons mapping
+// Source: decompiled/block_005E0000.c show_messagebox_EEB0 (402 bytes)
 export function show_messagebox_EEB0(param_1, param_2, param_3) {
-  // MessageBoxA with icon/button translation — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — MessageBoxA dialog
 }
 
-// show_messagebox_F0B9 — show message box with custom title
+// Source: decompiled/block_005E0000.c show_messagebox_F0B9 (401 bytes)
 export function show_messagebox_F0B9(param_1, param_2, param_3, param_4) {
-  // MessageBoxA with custom title — DEVIATION: Win32 API
-  return 0;
+  // DEVIATION: Win32 — MessageBoxA dialog
 }
 
-// FUN_005ef320 — set class long (attach panel to window)
-export function FUN_005ef320(param_1, param_2) { /* SetClassLongA — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005ef320 (54 bytes)
+export function FUN_005ef320(param_1, param_2) {
+  // DEVIATION: Win32 — SetClassLongA
+}
 
 // FUN_005ef356 — create DirectDraw fullscreen window
-export function FUN_005ef356(param_1, param_2, param_3, param_4) { return null; }
+// Source: decompiled/block_005E0000.c FUN_005ef356 (200 bytes)
+export function FUN_005ef356(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — CreateWindowExA("MSDirectWindow"), allocate DDWindow struct
+  return null;
+}
 
 // FUN_005ef41e — set DirectDraw cooperative level
-export function FUN_005ef41e(param_1, param_2) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ef41e (192 bytes)
+export function FUN_005ef41e(param_1, param_2) {
+  // DEVIATION: Win32 — DDraw SetCooperativeLevel via COM vtable
+  return 0;
+}
 
 // FUN_005ef4e3 — set display mode
-export function FUN_005ef4e3(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ef4e3 (171 bytes)
+export function FUN_005ef4e3(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — DDraw SetDisplayMode via COM vtable + MoveWindow
+  return 0;
+}
 
 // FUN_005ef58e — restore display mode
-export function FUN_005ef58e() { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ef58e (77 bytes)
+export function FUN_005ef58e() {
+  // DEVIATION: Win32 — DDraw RestoreDisplayMode via COM vtable
+  return 0;
+}
 
 // FUN_005ef5db — destroy DirectDraw window
-export function FUN_005ef5db(param_1) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ef5db (127 bytes)
+export function FUN_005ef5db(param_1) {
+  // DEVIATION: Win32 — ShowWindow(0), DestroyWindow, free DDWindow struct
+  return 0;
+}
 
 // FUN_005ef65a — show window
-export function FUN_005ef65a(param_1) { return param_1 !== 0; }
+// Source: decompiled/block_005E0000.c FUN_005ef65a (63 bytes)
+export function FUN_005ef65a(param_1) {
+  // DEVIATION: Win32 — ShowWindow(SW_SHOW), UpdateWindow
+  return param_1 !== 0;
+}
 
 // FUN_005ef699 — hide window
-export function FUN_005ef699(param_1) { return param_1 !== 0; }
+// Source: decompiled/block_005E0000.c FUN_005ef699 (50 bytes)
+export function FUN_005ef699(param_1) {
+  // DEVIATION: Win32 — ShowWindow(SW_HIDE)
+  return param_1 !== 0;
+}
 
 // FUN_005ef6cb — DirectDraw window WndProc
-export function FUN_005ef6cb(param_1, param_2, param_3, param_4) { return 0; }
+// Source: decompiled/block_005E0000.c FUN_005ef6cb (1456 bytes)
+export function FUN_005ef6cb(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — DirectDraw window WndProc: handles WM_DESTROY/WM_CLOSE/WM_TIMER/WM_KEYDOWN/mouse/paint/palette
+  return 0;
+}
 
 // FUN_005efca3 — call display mode callback
-export function FUN_005efca3(param_1, param_2) { return 1; }
+// Source: decompiled/block_005E0000.c FUN_005efca3 (59 bytes)
+export function FUN_005efca3(param_1, param_2) {
+  // DEVIATION: Win32 — display mode enumeration callback (stores mode info)
+  return 1;
+}
 
-// FUN_005efcde — enumerate display modes
-export function FUN_005efcde(param_1, param_2) { /* DDraw enum modes — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005efcde (133 bytes)
+export function FUN_005efcde(param_1, param_2) {
+  // DEVIATION: Win32 — COM vtable call
+}
 
-// FUN_005efd70 — dispatch activate/deactivate callback
-export function FUN_005efd70(param_1) { /* callback — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005efd70 (56 bytes)
+export function FUN_005efd70(param_1) {
+  // DEVIATION: Win32 — object method dispatch
+}
 
 // FUN_005efdc0 — game screen object constructor
-export function FUN_005efdc0(in_ECX) { return in_ECX; }
+// Source: decompiled/block_005E0000.c FUN_005efdc0 (194 bytes)
+export function FUN_005efdc0(in_ECX) {
+  // DEVIATION: Win32 — game screen object constructor, initializes 20+ fields to 0/null
+  return in_ECX;
+}
 
+// Source: decompiled/block_005E0000.c FUN_005efeb0 (123 bytes)
 // FUN_005efeb0 — game screen object destructor
-export function FUN_005efeb0() { /* destructor — DEVIATION: Win32 API */ }
+export function FUN_005efeb0() {
+  // DEVIATION: Win32 — game screen destructor: releases DDSurfaces, fonts, palette
+}
 
 // FUN_005eff2b — font cleanup thunk
-export function FUN_005eff2b() { FUN_005f04c0(); }
+// Source: decompiled/block_005E0000.c FUN_005eff2b (15 bytes)
+export function FUN_005eff2b() {
+  FUN_005f04c0();
+}
 
-// FUN_005eff3a — CString cleanup thunk
-export function FUN_005eff3a() { /* CString cleanup — DEVIATION: Win32 API */ }
+// Source: decompiled/block_005E0000.c FUN_005eff3a (40 bytes)
+export function FUN_005eff3a() {
+  // DEVIATION: Win32 — framework API
+}
 
 // FUN_005eff62 — DDSurface cleanup thunk
-export function FUN_005eff62() { FUN_005e5ee0(); }
+// Source: decompiled/block_005E0000.c FUN_005eff62 (9 bytes)
+export function FUN_005eff62() {
+  FUN_005e5ee0();
+}
 
 // FUN_005eff75 — SEH frame restore (no-op)
-export function FUN_005eff75() {}
+// Source: decompiled/block_005E0000.c FUN_005eff75 (14 bytes)
+export function FUN_005eff75() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // FUN_005eff83 — create fullscreen game screen
-export function FUN_005eff83(param_1, param_2, param_3, param_4, param_5, param_6) { return 1; }
+// Source: decompiled/block_005E0000.c FUN_005eff83 (105 bytes)
+export function FUN_005eff83(param_1, param_2, param_3, param_4, param_5, param_6) {
+  // DEVIATION: Win32 — create fullscreen game screen via FUN_005ef356/FUN_005ef41e/FUN_005ef4e3
+  return 1;
+}
 
 // FUN_005effec — create windowed game screen
-export function FUN_005effec(param_1, param_2, param_3, param_4, param_5) { return 1; }
+// Source: decompiled/block_005E0000.c FUN_005effec (106 bytes)
+export function FUN_005effec(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — create windowed game screen via FUN_005ef356/FUN_005ef41e
+  return 1;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════

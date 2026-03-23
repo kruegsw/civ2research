@@ -10,6 +10,7 @@
 
 import {
   s8, u8, s16, u16, w16,
+  tileRead, DAT_00627cce,
 } from './mem.js';
 
 import {
@@ -153,6 +154,7 @@ let DAT_00628350 = new Int8Array(16);
 let DAT_00628360 = new Int8Array(16);
 let DAT_00628370 = new Int8Array(0x15);
 let DAT_006283a0 = new Int8Array(0x15);
+let DAT_00646cb8 = 0;  // sprite/image base address
 let DAT_006ad30c = new Uint8Array(256);
 let DAT_006ad558 = new Int32Array(64);
 let DAT_006ad8b8 = 0;
@@ -724,11 +726,12 @@ export function FUN_004c193a() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c1950 — cleanup_research_dialog_2 (SEH cleanup)
-// Source: block_004C0000.c line 544
+// Source: decompiled/block_004C0000.c FUN_004c1950 (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c1950() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -801,7 +804,13 @@ export function FUN_004c195e(param_1, param_2) {
         FUN_0040bbe0(0 /*s_SCIENCE*/);
         FUN_0040ff30(local_630);
         // CSocket::Create — UI stub
-        FUN_0059ec88(0, 0, 0);
+        // C: FUN_0059ec88(&DAT_00646cb8 + (char)DAT_0062768d[iVar1*0x10]*0x3c +
+        //                 (char)DAT_0062768c[iVar1*0x10]*0xf0, (DAT_00633584==0)-1 & 8, 0)
+        FUN_0059ec88(DAT_00646cb8 +
+                     s8(DAT_0062768d[iVar1 * 0x10]) * 0x3c +
+                     s8(DAT_0062768c[iVar1 * 0x10]) * 0xf0,
+                     (DAT_00633584 !== 0) ? 8 : 0,
+                     0);
         if (local_630 !== 0) {
           FUN_0040bbb0();
           for (local_14 = 0; local_14 < local_620; local_14 = local_14 + 1) {
@@ -839,7 +848,8 @@ export function FUN_004c195e(param_1, param_2) {
         FUN_005a5f34(0, iVar1 + -300);
       }
       iVar1 = FUN_004bd9f0(param_1, 0x26);
-      FUN_004271e8(0, 0 /*icon ptr*/);
+      // C: FUN_004271e8(0, *(undefined4*)(DAT_00628420 + 0xc4 + (uint)(iVar1==0)*-4))
+      FUN_004271e8(0, DAT_00628420 + 0xc4 + ((iVar1 === 0) ? -4 : 0));
       FUN_0043c9d0(0 /*s_RESEARCH*/);
       if ((DAT_00655aea[1] & 2) !== 0) {
         FUN_0059e783(5, 0xfffffc19);
@@ -914,11 +924,12 @@ export function FUN_004c2188() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c219e — cleanup_choose_research_3 (SEH)
-// Source: block_004C0000.c line 769
+// Source: decompiled/block_004C0000.c FUN_004c219e (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c219e() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -965,7 +976,8 @@ export function FUN_004c21d5(param_1, param_2) {
       let uVar3 = FUN_00493d13(param_1);
       FUN_00421d60(0, uVar3);
       iVar2 = FUN_004bd9f0(param_1, 0x26);
-      FUN_004271e8(1, 0 /*icon ptr*/);
+      // C: FUN_004271e8(1, *(undefined4*)(DAT_00628420 + 0xc4 + (uint)(iVar2==0)*-4))
+      FUN_004271e8(1, DAT_00628420 + 0xc4 + ((iVar2 === 0) ? -4 : 0));
       FUN_0040bbb0();
       FUN_0040ff00(DAT_00627684[local_30c]);
       if (local_30c === 0x59) {
@@ -974,7 +986,12 @@ export function FUN_004c21d5(param_1, param_2) {
       }
       FUN_00421d60(2, 0 /*&DAT_00679640*/);
       FUN_0043c9d0(0 /*s_CIVADVANCE*/);
-      FUN_0059ec88(0, 0, 0);
+      // C: FUN_0059ec88(&DAT_00646cb8 + (char)DAT_0062768c[local_30c*0x10]*0xf0 +
+      //                 (char)DAT_0062768d[local_30c*0x10]*0x3c, 0, 0)
+      FUN_0059ec88(DAT_00646cb8 +
+                   s8(DAT_0062768c[local_30c * 0x10]) * 0xf0 +
+                   s8(DAT_0062768d[local_30c * 0x10]) * 0x3c,
+                   0, 0);
       // CPropertySheet::EnableStackedTabs — UI stub
       FUN_0040bc80(0);
       if ((DAT_00655aea[2] & 8) !== 0) {
@@ -1043,11 +1060,12 @@ export function FUN_004c2763() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c2779 — cleanup_complete_research_2 (SEH)
-// Source: block_004C0000.c line 933
+// Source: decompiled/block_004C0000.c FUN_004c2779 (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c2779() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -1240,13 +1258,9 @@ export function FUN_004c42a0(param_1, param_2) {
     local_8 = (((uVar7 & 0x10) === 0 ? -2 : 0) + 4) *
               s8(DAT_00627cc8[uVar10 * 0x18]);
     pbVar8 = FUN_005b8931(iVar5, iVar6);
-    // In C, *pbVar8 reads byte 0 from tile. In JS we approximate:
-    // Checking if tile byte 0 has bit 0x80 set
-    if (pbVar8 >= 0) {
-      let tileB0 = 0; // would be tileRead(pbVar8, 0)
-      if ((tileB0 & 0x80) !== 0) {
-        local_8 = local_8 + 2;
-      }
+    // C: if ((*pbVar8 & 0x80) != 0) — reads tile byte 0 via pointer
+    if ((tileRead(pbVar8, 0) & 0x80) !== 0) {
+      local_8 = local_8 + 2;
     }
     break;
   case 6:
@@ -1356,7 +1370,7 @@ export function FUN_004c42a0(param_1, param_2) {
           else {
             FUN_005b9646(iVar5, iVar6, s8(DAT_00627cc8[uVar10 * 0x18 + param_2]), 1);
             cVar1 = s8(DAT_00627cc8[uVar10 * 0x18 + param_2]);
-            if ((s8(DAT_00627cce_fn(cVar1 * 0x18)) !== -2) &&
+            if ((s8(DAT_00627cce[cVar1 * 0x18]) !== -2) &&
                (uVar10 = FUN_005b94d5(iVar5, iVar6), (uVar10 & 4) !== 0)) {
               FUN_005b94fc(iVar5, iVar6, 0xc, 0, 1);
             }
@@ -1369,7 +1383,7 @@ export function FUN_004c42a0(param_1, param_2) {
         case 8:
           FUN_005b9646(iVar5, iVar6, s8(DAT_00627ccd[uVar10 * 0x18]), 1);
           cVar1 = s8(DAT_00627ccd[uVar10 * 0x18]);
-          if ((s8(DAT_00627cce_fn(cVar1 * 0x18)) !== -2) &&
+          if ((s8(DAT_00627cce[cVar1 * 0x18]) !== -2) &&
              (uVar10 = FUN_005b94d5(iVar5, iVar6), (uVar10 & 4) !== 0)) {
             FUN_005b94fc(iVar5, iVar6, 0xc, 0, 1);
           }
@@ -1575,8 +1589,8 @@ export function FUN_004c50d0(param_1, param_2) {
      (iVar4 = FUN_00579ed0(s8(bVar1), s8(DAT_0064f348[iVar4 * 0x58]), 0xe),
      iVar4 === 0)) {
     iVar4 = FUN_005b8931(iVar2, iVar3);
-    // pbVar5 = iVar4 + 1 — tile byte[1] = improvements
-    let improv = 0; // would be tileRead(iVar4, 1)
+    // C: pbVar5 = (byte *)(iVar4 + 1) — tile byte[1] = improvements
+    let improv = tileRead(iVar4, 1);
     if (param_2 < 1) {
       if ((s8(DAT_006560f6[param_1 * 0x20]) === 9) && ((improv & 0x10) !== 0)) {
         if ((improv & 0x20) === 0) {
@@ -1764,8 +1778,8 @@ export function FUN_004c54da(param_1) {
     }
     else {
       DAT_006560ff[iVar5 * 0x20] = 0xb;
-      s16(DAT_00656102, iVar5 * 0x20) = local_34;
-      s16(DAT_00656104, iVar5 * 0x20) = local_3c;
+      w16(DAT_00656102, iVar5 * 0x20, local_34);
+      w16(DAT_00656104, iVar5 * 0x20, local_3c);
     }
   }
 }
@@ -2080,7 +2094,34 @@ export function FUN_004c66ba(param_1, param_2, param_3) {
       }
     }
     FUN_005b9f1c();
-    // UI notifications omitted for brevity — they are no-ops in JS context
+    // C lines 2051-2079: UI notification + network message block
+    if ((DAT_00654fa8 === 0) &&
+       (((((((1 << (u8(param_2) & 0x1f) & DAT_00655b0b) !== 0 ||
+            ((1 << (bVar1 & 0x1f) & DAT_00655b0b) !== 0)) ||
+           ((DAT_0064c6c0[DAT_006d1da0 * 0x594 + param_2 * 4] & 0x80) !== 0)) ||
+          ((iVar6 = FUN_00453e51(DAT_006d1da0, 0x18), iVar6 !== 0 ||
+           (iVar6 = FUN_00453e51(DAT_006d1da0, 9), iVar6 !== 0)))) ||
+         (((DAT_0064c6c0[DAT_006d1da0 * 0x594 + iVar4 * 4] & 0x80) !== 0 ||
+          ((iVar6 = FUN_00453e51(DAT_006d1da0, 0x18), iVar6 !== 0 ||
+           (iVar6 = FUN_00453e51(DAT_006d1da0, 9), iVar6 !== 0)))))) || (DAT_00655b07 !== 0)))
+       )) {
+      if (((DAT_00655b07 !== 0) ||
+          ((1 << (u8(DAT_006d1da0) & 0x1f) & s8(DAT_0064f34c[param_1 * 0x58])) !== 0)) ||
+         (s8(DAT_0064f348[param_1 * 0x58]) === (DAT_006d1da0 & 0xff))) {
+        FUN_004105f8(s16(DAT_0064f340, param_1 * 0x58),
+                           s16(DAT_0064f342, param_1 * 0x58),
+                           s8(DAT_0064f348[param_1 * 0x58]));
+      }
+      let uVar5_n = FUN_00493c7d(iVar4);
+      FUN_0040ff60(0, uVar5_n);
+      FUN_0040ff60(1, 0 /*&DAT_0064f360 + param_1 * 0x58*/);
+      uVar5_n = FUN_00410070(param_2);
+      FUN_0040ff60(2, uVar5_n);
+      FUN_00421ea0(0 /*s_CIVILWAR_0062dd84*/);
+      if (((1 << (bVar1 & 0x1f) & DAT_00655b0b) !== 0) && (2 < DAT_00655b02)) {
+        FUN_00511880(0x5e, DAT_006ad30c[DAT_006ad558[iVar4] * 0x54], 3, 0, 0, 0);
+      }
+    }
     local_20 = DAT_00655b16;
     while (local_20 = local_20 + -1, -1 < local_20) {
       if (((DAT_0065610a[local_20 * 8] !== 0) &&
@@ -2530,7 +2571,7 @@ export function FUN_004c6bf5(param_1, param_2) {
           }
         }
         if (local_74 === 0) {
-          s16(DAT_0064f35c, param_2 * 0x58) = 0;
+          w16(DAT_0064f35c, param_2 * 0x58, 0);
           FUN_citywin_C679(param_2);
           FUN_0040ff60(0, 0 /*local_70*/);
           if (((DAT_00654fa8 === 0) && ((1 << (u8(local_80) & 0x1f) & DAT_00655b0b) !== 0)) &&
@@ -2567,7 +2608,7 @@ export function FUN_004c6bf5(param_1, param_2) {
       iVar3 = FUN_004c654d(local_3b0, local_80);
       if (iVar3 === 0) {
         if (s8(DAT_0064f349[param_2 * 0x58]) < 2) {
-          s16(DAT_0064f35a, param_2 * 0x58) = 0;
+          w16(DAT_0064f35a, param_2 * 0x58, 0);
         }
         else {
           DAT_0064f349[param_2 * 0x58] = DAT_0064f349[param_2 * 0x58] + -1;
@@ -2717,8 +2758,8 @@ export function FUN_004c6bf5(param_1, param_2) {
           local_3ac = 1;
         }
         if (0 < local_3ac) {
-          s32(DAT_0064c6a2, local_3b0 * 0x594) =
-               s32(DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac;
+          w32(DAT_0064c6a2, local_3b0 * 0x594,
+               s32(DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac);
           w16(DAT_0064c6bc, local_3b0 * 0x594,
                s16(DAT_0064c6bc, local_3b0 * 0x594) + 2);
           if (DAT_006d1da0 === local_3b0) {
@@ -2746,8 +2787,8 @@ export function FUN_004c6bf5(param_1, param_2) {
         // goto LAB_004c8f6f — same as above human player path
         local_3ac = 1; // AI always incites
         if (0 < local_3ac) {
-          s32(DAT_0064c6a2, local_3b0 * 0x594) =
-               s32(DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac;
+          w32(DAT_0064c6a2, local_3b0 * 0x594,
+               s32(DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac);
           w16(DAT_0064c6bc, local_3b0 * 0x594,
                s16(DAT_0064c6bc, local_3b0 * 0x594) + 2);
           if (DAT_006d1da0 === local_3b0) {
@@ -2822,11 +2863,12 @@ export function FUN_004c9504() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c951a — cleanup_spy_mission_2 (SEH)
-// Source: block_004C0000.c line 2895
+// Source: decompiled/block_004C0000.c FUN_004c951a (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c951a() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -3328,21 +3370,23 @@ export function FUN_004cc90a() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc924 — library atexit registration_a
-// Source: block_004C0000.c line 3497
+// Source: decompiled/block_004C0000.c FUN_004cc924 (29 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc924() {
-  // _atexit(FUN_004cc941) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_004cc941)
+  // CRT process-exit callback registration — no game state affected
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc941 — library destructor_a
-// Source: block_004C0000.c line 3511
+// Source: decompiled/block_004C0000.c FUN_004cc941 (26 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc941() {
-  // COleCntrFrameWnd::~COleCntrFrameWnd — MFC destructor, no-op
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(&DAT_006a18c0)
+  // MFC OLE container frame destructor — no game state affected
 }
 
 
@@ -3369,11 +3413,12 @@ export function FUN_004cc975() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc98f — library atexit registration_b
-// Source: block_004C0000.c line 3562
+// Source: decompiled/block_004C0000.c FUN_004cc98f (29 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc98f() {
-  // _atexit(FUN_004cc9ac) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_004cc9ac)
+  // CRT process-exit callback registration — no game state affected
 }
 
 
@@ -3410,11 +3455,12 @@ export function FUN_004cc9e0() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc9fe — library atexit registration_c
-// Source: block_004C0000.c line 3628
+// Source: decompiled/block_004C0000.c FUN_004cc9fe (29 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc9fe() {
-  // _atexit(FUN_004cca1b) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_004cca1b)
+  // CRT process-exit callback registration — no game state affected
 }
 
 
@@ -3943,11 +3989,12 @@ export function FUN_004cdf26() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cdf3c — cleanup_checkbox_dialog_2 (SEH)
-// Source: block_004C0000.c line 4249
+// Source: decompiled/block_004C0000.c FUN_004cdf3c (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cdf3c() {
-  // SEH cleanup — no-op
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -4142,11 +4189,12 @@ export function FUN_004ce6f9() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004ce70c — cleanup_popup_3 (SEH)
-// Source: block_004C0000.c line 4553
+// Source: decompiled/block_004C0000.c FUN_004ce70c (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004ce70c() {
-  // SEH cleanup — no-op
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -4189,11 +4237,18 @@ export function FUN_004ce83d() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004ce8a4 — read_profile_int
-// Source: block_004C0000.c line 4648
+// Source: decompiled/block_004C0000.c FUN_004ce8a4 (95 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004ce8a4(param_1, param_2, param_3, param_4) {
-  // Registry/INI read — stub
+  // DEVIATION: Win32 — reads INI/registry profile integer value
+  // C source:
+  //   __itoa(param_3, local_1c, 10);
+  //   local_8 = thunk_FUN_0051d63b(param_1, param_2, 6, local_1c, local_120);
+  //   lVar1 = _atol(local_120);
+  //   *param_4 = lVar1;
+  //   return local_8;
+  // Entire function is Win32 GetPrivateProfileString wrapper — no game state
   return 0;
 }
 
@@ -4322,11 +4377,12 @@ export function FUN_004cefc5() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cefdb — cleanup_dialog_template_2 (SEH)
-// Source: block_004C0000.c line 4894
+// Source: decompiled/block_004C0000.c FUN_004cefdb (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cefdb() {
-  // SEH cleanup — no-op
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -4429,12 +4485,12 @@ export function FUN_004cff70(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cffb0 — get_dialog_text
-// Source: block_004C0000.c line 5085
+// Source: decompiled/block_004C0000.c FUN_004cffb0 (51 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cffb0(param_1, param_2, param_3) {
-  // send_msg_2DED — MFC dialog text retrieval, no-op
-  return 0;
+  // DEVIATION: MFC — send_msg_2DED(*(in_ECX + 0x1c), param_1, param_2, param_3)
+  // MFC dialog text retrieval via Windows message dispatch — no game state affected
 }
 
 
@@ -4663,7 +4719,7 @@ function FUN_00589ef8() { /* error handler */ }
 function FUN_00418770() { return 0; /* get listbox hwnd */ }
 function FUN_005b8d15_fn() { return -1; }
 function FUN_004c4210_fn() { }
-function FUN_00627cce_fn() { return 0; /* DAT_00627cce accessor */ }
+// FUN_00627cce_fn removed — replaced by direct DAT_00627cce[...] array access from mem.js
 function create_city() {}
 function send_msg_2DED() { /* network msg stub */ }
 function FUN_005b8b65() { return 0; /* check_tile_visible */ }

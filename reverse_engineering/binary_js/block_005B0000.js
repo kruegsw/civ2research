@@ -422,8 +422,9 @@ export function FUN_005b1a05() {
 // FUN_005b1a1b — editor_seh_restore (FW)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b1a1b (14 bytes)
 export function FUN_005b1a1b() {
-  // SEH chain restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -453,8 +454,9 @@ export function FUN_005b1a82() {
 // FUN_005b1a98 — editor_seh_restore_2 (FW)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b1a98 (14 bytes)
 export function FUN_005b1a98() {
-  // SEH chain restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -1086,7 +1088,15 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
     // Find empty slot
     for (local_10 = 0; local_10 < DAT_00655b16 && ri(DAT_006560f0, local_10 * 0x20 + 0x1a) !== 0; local_10++) {}
     if (DAT_00655b16 === local_10) {
-      if (0x7ff < DAT_00655b16) {
+      // C: if (((0x7ff < DAT_00655b16) || (0x79c < *(short *)(&DAT_0064c706 + param_2 * 0x594))) ||
+      //       (((1 << ((byte)param_2 & 0x1f) & (uint)DAT_00655b0b) == 0 && (0x7f7 < DAT_00655b16))))
+      if ((0x7ff < DAT_00655b16) ||
+          (0x79c < rs(DAT_0064c706, param_2 * 0x594)) ||
+          (((1 << ((param_2 & 0xFF) & 0x1f)) & DAT_00655b0b) === 0 && (0x7f7 < DAT_00655b16))) {
+        // C: if (((1 << ((byte)param_2 & 0x1f) & (uint)DAT_00655b0b) != 0) && (DAT_00655b02 < 3))
+        if (((1 << ((param_2 & 0xFF) & 0x1f)) & DAT_00655b0b) !== 0 && DAT_00655b02 < 3) {
+          FUN_00410030('TOOMANYUNITS', 0, 0);
+        }
         DAT_006ad8bc = 0;
         return -1;
       }
@@ -1136,6 +1146,48 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
     ws(DAT_006560f0, local_10 * 0x20 + 0x14, 0xffff);              // goto y
     FUN_005b345f(local_10, param_3, param_4, 0);
     FUN_004274a6(local_10, 1);
+
+    // Tutorial popups (C lines 1493-1528)
+    // C: if (((DAT_00655af8 != 0) && ((1 << ((byte)param_2 & 0x1f) & (uint)DAT_00655b0b) != 0)) &&
+    //       (DAT_00655b02 == 0))
+    if (DAT_00655af8 !== 0 &&
+        ((1 << ((param_2 & 0xFF) & 0x1f)) & DAT_00655b0b) !== 0 &&
+        DAT_00655b02 === 0) {
+      // C: (&DAT_0064b1c1)[param_1 * 0x14] — unit domain (offset 5 from DAT_0064b1bc)
+      if (DAT_0064b1bc[param_1 * 0x14 + 5] === 0x02) {
+        // Sea unit
+        if ((DAT_00655af4 & 4) === 0) {
+          if ((DAT_00655aea & 0x100) !== 0) {
+            FUN_00490530('TUTORIAL', 'SHIPS', local_10);
+          }
+          DAT_00655af4 = DAT_00655af4 | 4;
+        }
+      } else if (DAT_0064b1bc[param_1 * 0x14 + 5] === 0x01) {
+        // Air unit
+        if ((DAT_00655af4 & 2) === 0) {
+          if ((DAT_00655aea & 0x100) !== 0) {
+            FUN_00490530('TUTORIAL', 'AIRUNIT', local_10);
+          }
+          DAT_00655af4 = DAT_00655af4 | 2;
+        }
+      } else if (s8(DAT_0064b1bc[param_1 * 0x14 + 0x0E]) === 7) {
+        // Caravan/trade unit (role == 7)
+        if ((DAT_00655af4 & 0x10) === 0) {
+          if ((DAT_00655aea & 0x100) !== 0) {
+            FUN_00490530('TUTORIAL', 'CARAVAN', local_10);
+          }
+          DAT_00655af4 = DAT_00655af4 | 0x10;
+        }
+      } else if ((DAT_00655aea & 0x100) !== 0 && s8(DAT_0064b1bc[param_1 * 0x14 + 0x0E]) < 5) {
+        // Regular ground unit — show FIRSTUNIT hints based on support count
+        if (rs(DAT_0064c706, param_2 * 0x594) === 1) {
+          FUN_00490530('TUTORIAL', 'FIRSTUNIT1', local_10);
+        }
+        if (rs(DAT_0064c706, param_2 * 0x594) === 2) {
+          FUN_00490530('TUTORIAL', 'FIRSTUNIT2', local_10);
+        }
+      }
+    }
 
     if (2 < DAT_00655b02) {
       FUN_004b0b53(0xff, 2, 0, 0, 0);
@@ -1656,10 +1708,36 @@ export function FUN_005b542e(param_1, param_2, param_3) {
               bVar9 = true;
             }
           } else if (local_18 === 1) {
+            // C: ((uint)DAT_00655b0b & 1 << ((&DAT_006560f7)[local_38 * 0x20] & 0x1f)) == 0
             if ((DAT_00655b0b & (1 << (DAT_006560f0[local_38 * 0x20 + 7] & 0x1f))) === 0) {
-              bVar9 = true;
-            } else if (local_10 !== 0) {
-              bVar9 = true;
+              // AI unit path
+              // C: skip if orders == sentry(1) or fortified(2), UNLESS ship is at sea (local_10 != 0)
+              if ((DAT_006560f0[local_38 * 0x20 + 0x0F] !== 0x01 &&
+                   DAT_006560f0[local_38 * 0x20 + 0x0F] !== 0x02) || local_10 !== 0) {
+                // C: if ((iVar5 != 0) && (local_10 == 0)) — in city, not at sea
+                if (iVar5 !== 0 && local_10 === 0) {
+                  // Check city improvements to avoid stripping defenders
+                  let cVar2_ai = s8(DAT_006560f0[local_38 * 0x20 + 7]);
+                  let iVar8 = FUN_005b8a81(iVar3, iVar4);
+                  // C: (&DAT_0064ca32)[cVar2 * 0x594 + iVar8] != '\x01' ||
+                  //    '\x04' < (char)(&DAT_0064b1ca)[(uint)(byte)(&DAT_006560f6)[local_38 * 0x20] * 0x14]
+                  if (DAT_0064ca32[cVar2_ai * 0x594 + iVar8] !== 0x01 ||
+                      s8(DAT_0064b1bc[u8(DAT_006560f0[local_38 * 0x20 + 6]) * 0x14 + 0x0E]) > 4) {
+                    bVar9 = true;
+                  }
+                } else {
+                  bVar9 = true;
+                }
+              }
+            } else {
+              // Human unit path
+              // C: (&DAT_006560ff)[local_38 * 0x20] == '\x03' — orders == goto
+              if (DAT_006560f0[local_38 * 0x20 + 0x0F] === 0x03) {
+                // C: bVar9 = *(short *)(&DAT_00656102 + local_38 * 0x20) < 0
+                bVar9 = rs(DAT_006560f0, local_38 * 0x20 + 0x12) < 0;
+              } else if (local_10 !== 0) {
+                bVar9 = true;
+              }
             }
           }
         }
@@ -2122,8 +2200,9 @@ export function FUN_005b6dab() {
 // FUN_005b6dbe — seh_restore (FW)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b6dbe (14 bytes)
 export function FUN_005b6dbe() {
-  // SEH restore — no-op
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -3154,15 +3233,42 @@ export function FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7) {
   let uVar1 = FUN_00414d10(); // DEVIATION: MFC — get main window
   FUN_005e1880(0 /*in_ECX*/, uVar1); // DEVIATION: MFC — register window
 }
-export function FUN_005bb463(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb463 (75 bytes)
+export function FUN_005bb463(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  FUN_005bb3f0(param_1, param_2, param_3, param_4, param_5, param_6, param_7);
+  // FUN_00579b40(param_8); // DEVIATION: MFC — set title
+}
 // Source: decompiled/block_005B0000.c FUN_005bb4ae (119 bytes)
 export function FUN_005bb4ae(p1, p2, p3, p4, p5, p6, p7, p8) {
   FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7); // create window class
   FUN_00579b40(p8); // DEVIATION: MFC — set parent window
 }
-export function FUN_005bb525(p1, p2, p3, p4, p5, p6, p7, p8, p9) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb574() { /* DEVIATION: Win32 API */ }
-export function FUN_005bb5be(param_1) { return false; /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb525 (79 bytes)
+export function FUN_005bb525(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
+  FUN_005bb4ae(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8);
+  // FUN_00579b40(param_9); // DEVIATION: MFC — set title
+}
+// Source: decompiled/block_005B0000.c FUN_005bb574 (74 bytes)
+export function FUN_005bb574() {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // if (in_ECX === 0) {
+  //   DAT_00637ea4 = 0;
+  // } else {
+  //   DAT_00637ea4 = in_ECX + 0x48;
+  // }
+  FUN_005bb990();
+  // FUN_00408460(); // DEVIATION: MFC
+}
+// Source: decompiled/block_005B0000.c FUN_005bb5be (94 bytes)
+export function FUN_005bb5be(param_1) {
+  let iVar1 = FUN_005c0105(param_1); // DEVIATION: check surface size
+  if (iVar1 === 1) {
+    // let uVar2 = FUN_00407fc0(param_1); // DEVIATION: rect height
+    // let uVar3 = FUN_00407f90(param_1, uVar2); // DEVIATION: rect width
+    // FUN_005bb8e0(uVar3, uVar2); // DEVIATION: MFC — resize
+  }
+  return iVar1 === 1;
+}
 // Source: decompiled/block_005B0000.c FUN_005bb621 (166 bytes)
 export function FUN_005bb621(param_1, param_2) {
   // let pCVar1 = CRichEditCntrItem_GetActiveView(in_ECX); // DEVIATION: MFC
@@ -3189,8 +3295,19 @@ export function FUN_005bb6c7(param_1, param_2) {
   if (local_c[0] < param_2) { param_2 = local_c[0]; }
   FUN_005bb8e0(param_1, param_2); // set scroll position
 }
-export function FUN_005bb760(p1, p2, p3, p4, p5, p6) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb7c3(p1, p2, p3, p4, p5, p6, p7) { /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb760 (99 bytes)
+export function FUN_005bb760(param_1, param_2, param_3, param_4, param_5, param_6) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  FUN_005c589a(param_1, param_2, param_3, param_4, param_5, param_6); // DEVIATION: GDI — create surface
+  FUN_005c1b0d(param_5, param_6); // DEVIATION: GDI — init surface
+  // let uVar1 = FUN_00414d10(); // DEVIATION: MFC — get main window
+  // FUN_005e1880(in_ECX, uVar1); // DEVIATION: MFC — register
+}
+// Source: decompiled/block_005B0000.c FUN_005bb7c3 (71 bytes)
+export function FUN_005bb7c3(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  FUN_005bb760(param_1, param_2, param_3, param_4, param_5, param_6);
+  // FUN_00579b40(param_7); // DEVIATION: MFC — set title
+}
 // Source: decompiled/block_005B0000.c FUN_005bb80a (103 bytes)
 export function FUN_005bb80a(p1, p2, p3, p4, p5, p6, p7) {
   FUN_005c592b(p1, p2, p3, p4, p5, p6, p7); // DEVIATION: GDI — create sprite window class
@@ -3198,14 +3315,56 @@ export function FUN_005bb80a(p1, p2, p3, p4, p5, p6, p7) {
   let uVar1 = FUN_00414d10(); // DEVIATION: MFC — get main window
   FUN_005e1880(0 /*in_ECX*/, uVar1); // DEVIATION: MFC — register window
 }
-export function FUN_005bb871(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb8c0() { return 0; /* DEVIATION: Win32 API */ }
-export function FUN_005bb8e0(param_1, param_2) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb910(param_1, param_2) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb950(param_1, param_2) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb990() { /* DEVIATION: Win32 API */ }
-export function FUN_005bb9c0() { /* Win32 PeekMessage — no-op */ }
-export function FUN_005bba1d() { /* Win32 PeekMessage — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bb871 (75 bytes)
+export function FUN_005bb871(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  FUN_005bb80a(param_1, param_2, param_3, param_4, param_5, param_6, param_7);
+  // FUN_00579b40(param_8); // DEVIATION: MFC — set title
+}
+// Source: decompiled/block_005B0000.c FUN_005bb8c0 (28 bytes)
+export function FUN_005bb8c0() {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // return ri(in_ECX, 4); // field +0x4
+  return 0;
+}
+// Source: decompiled/block_005B0000.c FUN_005bb8e0 (47 bytes)
+export function FUN_005bb8e0(param_1, param_2) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // FUN_005bc505(ri(in_ECX, 8), param_1, param_2); // DEVIATION: MFC — resize window
+}
+// Source: decompiled/block_005B0000.c FUN_005bb910 (49 bytes)
+export function FUN_005bb910(param_1, param_2) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // *param_1 = ri(in_ECX, 0x7c); // min width
+  // *param_2 = ri(in_ECX, 0x80); // min height
+}
+// Source: decompiled/block_005B0000.c FUN_005bb950 (52 bytes)
+export function FUN_005bb950(param_1, param_2) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // *param_1 = ri(in_ECX, 0x84); // max width
+  // *param_2 = ri(in_ECX, 0x88); // max height
+}
+// Source: decompiled/block_005B0000.c FUN_005bb990 (47 bytes)
+export function FUN_005bb990() {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // if (ri(in_ECX, 0x110) !== 0) {
+  //   (ri(in_ECX, 0x110))(); // DEVIATION: MFC — callback
+  // }
+}
+// Source: decompiled/block_005B0000.c FUN_005bb9c0 (93 bytes)
+export function FUN_005bb9c0() {
+  // do {
+  //   BVar1 = PeekMessageA(local_20, 0, 0x200, 0x209, 1); // DEVIATION: Win32 — flush mouse messages
+  // } while (BVar1 !== 0);
+  // do {
+  //   BVar1 = PeekMessageA(local_20, 0, 0x100, 0x108, 1); // DEVIATION: Win32 — flush keyboard messages
+  // } while (BVar1 !== 0);
+}
+// Source: decompiled/block_005B0000.c FUN_005bba1d (50 bytes)
+export function FUN_005bba1d() {
+  // do {
+  //   BVar1 = PeekMessageA(local_20, 0, 0, 0, 1); // DEVIATION: Win32 — flush all messages
+  // } while (BVar1 !== 0);
+}
 // Source: decompiled/block_005B0000.c gdi_BA4F (100 bytes)
 export function gdi_BA4F() {
   // let BVar1 = PeekMessageA(local_20, 0, 0, 0, 1); // DEVIATION: Win32 — check message queue
@@ -3220,12 +3379,55 @@ export function gdi_BA4F() {
   // }
   return 0;
 }
-export function gdi_BAB8() { return false; /* Win32 — no-op */ }
-export function FUN_005bbb0a() { /* Win32 — no-op */ }
-export function FUN_005bbb32() { /* Win32 — no-op */ }
-export function FUN_005bbb5a(param_1) { /* WinExec — no-op */ }
-export function gdi_BB76() { return false; /* Win32 — no-op */ }
-export function FUN_005bbbce() { /* Win32 — no-op */ }
+// Source: decompiled/block_005B0000.c gdi_BAB8 (77 bytes)
+export function gdi_BAB8() {
+  // let BVar1 = PeekMessageA(local_20, 0, 0xf, 0xf, 1); // DEVIATION: Win32 — check WM_PAINT
+  // if (BVar1 !== 0) {
+  //   TranslateMessage(local_20); // DEVIATION: Win32
+  //   DispatchMessageA(local_20); // DEVIATION: Win32
+  // }
+  // return BVar1 !== 0;
+  return false;
+}
+// Source: decompiled/block_005B0000.c FUN_005bbb0a (40 bytes)
+// Source: decompiled/block_005B0000.c FUN_005bbb0a (40 bytes)
+export function FUN_005bbb0a() {
+  // do {
+  //   let iVar1 = gdi_BA4F(); // DEVIATION: Win32 — process messages
+  // } while (iVar1 !== 0);
+  // GdiFlush(); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bbb32 (40 bytes)
+export function FUN_005bbb32() {
+  // do {
+  //   let iVar1 = gdi_BAB8();
+  // } while (iVar1 !== 0);
+  // GdiFlush(); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bbb5a (28 bytes)
+export function FUN_005bbb5a(param_1) {
+  // WinExec(param_1, 1); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c gdi_BB76 (83 bytes)
+export function gdi_BB76() {
+  // let BVar1 = PeekMessageA(local_20, 0, 0x3bd, 0x3bd, 1); // DEVIATION: Win32 — check palette change
+  // if (BVar1 !== 0) {
+  //   TranslateMessage(local_20); // DEVIATION: Win32
+  //   DispatchMessageA(local_20); // DEVIATION: Win32
+  // }
+  // return BVar1 !== 0;
+  return false;
+}
+// Source: decompiled/block_005B0000.c FUN_005bbbce (52 bytes)
+export function FUN_005bbbce() {
+  // let iVar1;
+  // do {
+  //   iVar1 = gdi_BB76();
+  // } while (iVar1 !== 0);
+  if (DAT_00637efc !== 0) {
+    FUN_005e1c70();
+  }
+}
 // Source: decompiled/block_005B0000.c create_window_BC10 (990 bytes)
 export function create_window_BC10(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
   let uVar1;
@@ -3303,10 +3505,32 @@ export function create_window_BC10(param_1, param_2, param_3, param_4, param_5, 
   puVar2[0x10] = 8; // bit depth
   return puVar2;
 }
-export function FUN_005bbfee(param_1, param_2) { /* EnableWindow — no-op */ }
-export function FUN_005bc019(param_1, param_2) { /* SetWindowLong — no-op */ }
-export function FUN_005bc032(param_1) { return 0; /* IsWindowVisible — no-op */ }
-export function send_msg_C07E(param_1) { /* SendMessage WM_CLOSE — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bbfee (43 bytes)
+export function FUN_005bbfee(param_1, param_2) {
+  if (param_1 !== 0) {
+    // EnableWindow(ri(param_1, 4), param_2); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc019 (25 bytes)
+export function FUN_005bc019(param_1, param_2) {
+  // C: *(param_1 + 0x40) = param_2;
+  // DEVIATION: MFC — set window long field
+}
+// Source: decompiled/block_005B0000.c FUN_005bc032 (66 bytes)
+export function FUN_005bc032(param_1) {
+  if (param_1 === 0) {
+    return 0;
+  }
+  // let BVar1 = IsWindowVisible(ri(param_1, 4)); // DEVIATION: Win32
+  // return BVar1 !== 0 ? 1 : 0;
+  return 0;
+}
+// Source: decompiled/block_005B0000.c send_msg_C07E (45 bytes)
+export function send_msg_C07E(param_1) {
+  if (param_1 !== 0) {
+    // SendMessageA(ri(param_1, 4), 0x10, 0, 0); // DEVIATION: Win32 — WM_CLOSE
+  }
+}
 // Source: decompiled/block_005B0000.c manage_window_C0AB (200 bytes)
 export function manage_window_C0AB(param_1) {
   if (param_1 !== null && param_1 !== 0) {
@@ -3329,8 +3553,20 @@ export function manage_window_C0AB(param_1) {
   }
   return 0;
 }
-export function FUN_005bc173() { /* window stack iteration — no-op */ }
-export function FUN_005bc1b5(param_1) { /* push window stack — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bc173 (66 bytes)
+export function FUN_005bc173() {
+  // C: iterates window stack (DAT_006366cc count, no body in loop)
+  if (DAT_006366cc !== 0) {
+    for (let local_8 = 0; local_8 < DAT_006366cc; local_8 = local_8 + 1) {
+    }
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc1b5 (38 bytes)
+export function FUN_005bc1b5(param_1) {
+  // C: push onto window stack
+  // DAT_006d1db8[DAT_006366cc * 4] = param_1;
+  DAT_006366cc = DAT_006366cc + 1;
+}
 // Source: decompiled/block_005B0000.c FUN_005bc1db (165 bytes)
 export function FUN_005bc1db(param_1) {
   let local_8;
@@ -3351,6 +3587,7 @@ export function FUN_005bc1db(param_1) {
   }
 }
 // Source: decompiled/block_005B0000.c update_palette_C280 (222 bytes)
+// Source: decompiled/block_005B0000.c update_palette_C280 (222 bytes)
 export function update_palette_C280(param_1, param_2) {
   // if (ri(param_1, 0x14) !== 0) { DeleteObject(ri(param_1, 0x14)); } // DEVIATION: Win32
   if (DAT_00638b48 === 0) {
@@ -3366,13 +3603,53 @@ export function update_palette_C280(param_1, param_2) {
   }
   // InvalidateRect(ri(param_1, 4), 0, 0); // DEVIATION: Win32
 }
-export function invalidate_C35E(p1, p2, p3, p4) { /* brush creation — no-op */ }
-export function FUN_005bc3bf(param_1, param_2) { /* set field +0x24 — no-op */ }
-export function FUN_005bc3d8(param_1, param_2) { /* set field +0x28 — no-op */ }
-export function FUN_005bc3f1(param_1, param_2) { /* set field +0x2c — no-op */ }
-export function manage_window_C40A(param_1) { /* ShowWindow SW_SHOW — no-op */ }
-export function manage_window_C44D(param_1) { /* ShowWindow SW_HIDE — no-op */ }
-export function FUN_005bc476(param_1, param_2) { /* SetWindowTextA — no-op */ }
+// Source: decompiled/block_005B0000.c invalidate_C35E (97 bytes)
+export function invalidate_C35E(param_1, param_2, param_3, param_4) {
+  if (param_1 !== 0) {
+    // if (ri(param_1, 0x14) !== 0) {
+    //   DeleteObject(ri(param_1, 0x14)); // DEVIATION: Win32
+    // }
+    // let pHVar1 = CreateSolidBrush((param_4 << 16) | (param_3 << 8) | param_2); // DEVIATION: Win32
+    // wi(param_1, 0x14, pHVar1);
+    // InvalidateRect(ri(param_1, 4), 0, 0); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc3bf (25 bytes)
+export function FUN_005bc3bf(param_1, param_2) {
+  // C: *(param_1 + 0x24) = param_2;
+  // DEVIATION: MFC — set window struct field +0x24
+}
+// Source: decompiled/block_005B0000.c FUN_005bc3d8 (25 bytes)
+export function FUN_005bc3d8(param_1, param_2) {
+  // C: *(param_1 + 0x28) = param_2;
+  // DEVIATION: MFC — set window struct field +0x28
+}
+// Source: decompiled/block_005B0000.c FUN_005bc3f1 (25 bytes)
+export function FUN_005bc3f1(param_1, param_2) {
+  // C: *(param_1 + 0x2c) = param_2;
+  // DEVIATION: MFC — set window struct field +0x2c
+}
+// Source: decompiled/block_005B0000.c manage_window_C40A (67 bytes)
+export function manage_window_C40A(param_1) {
+  if (param_1 !== 0) {
+    // ShowWindow(ri(param_1, 4), 5); // DEVIATION: Win32 — SW_SHOW
+    // if ((u8(param_1 + 0x49) & 2) !== 0) {
+    //   BringWindowToTop(ri(param_1, 4)); // DEVIATION: Win32
+    // }
+  }
+}
+// Source: decompiled/block_005B0000.c manage_window_C44D (41 bytes)
+export function manage_window_C44D(param_1) {
+  if (param_1 !== 0) {
+    // ShowWindow(ri(param_1, 4), 0); // DEVIATION: Win32 — SW_HIDE
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc476 (43 bytes)
+export function FUN_005bc476(param_1, param_2) {
+  if (param_1 !== 0) {
+    // SetWindowTextA(ri(param_1, 4), param_2); // DEVIATION: Win32
+  }
+}
 // Source: decompiled/block_005B0000.c FUN_005bc4a1 (100 bytes)
 export function FUN_005bc4a1(param_1, param_2, param_3) {
   if (param_1 !== 0) {
@@ -3392,14 +3669,58 @@ export function FUN_005bc505(param_1, param_2, param_3) {
     // FUN_005bc621(param_2, param_3); // DEVIATION: resize handler
   }
 }
-export function manage_window_C5DA(param_1) { /* ShowWindow SW_MAXIMIZE — no-op */ }
-export function FUN_005bc603(param_1) { return 0; /* IsZoomed — no-op */ }
-export function manage_window_C636(param_1) { /* ShowWindow SW_MINIMIZE — no-op */ }
-export function FUN_005bc65f(param_1) { return 0; /* IsIconic — no-op */ }
-export function manage_window_C692(param_1) { /* ShowWindow SW_RESTORE — no-op */ }
-export function FUN_005bc6bb(param_1, param_2) { /* ValidateRect — no-op */ }
-export function invalidate_C6E6(param_1, param_2) { /* InvalidateRect — no-op */ }
-export function FUN_005bc713(param_1, param_2) { /* MoveWindow with rect — no-op */ }
+// Source: decompiled/block_005B0000.c manage_window_C5DA (41 bytes)
+export function manage_window_C5DA(param_1) {
+  if (param_1 !== 0) {
+    // ShowWindow(ri(param_1, 4), 3); // DEVIATION: Win32 — SW_MAXIMIZE
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc603 (46 bytes)
+export function FUN_005bc603(param_1) {
+  if (param_1 === 0) { return 0; }
+  // let BVar1 = IsZoomed(ri(param_1, 4)); // DEVIATION: Win32
+  // return BVar1;
+  return 0;
+}
+// Source: decompiled/block_005B0000.c manage_window_C636 (41 bytes)
+export function manage_window_C636(param_1) {
+  if (param_1 !== 0) {
+    // ShowWindow(ri(param_1, 4), 6); // DEVIATION: Win32 — SW_MINIMIZE
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc65f (46 bytes)
+export function FUN_005bc65f(param_1) {
+  if (param_1 === 0) { return 0; }
+  // let BVar1 = IsIconic(ri(param_1, 4)); // DEVIATION: Win32
+  // return BVar1;
+  return 0;
+}
+// Source: decompiled/block_005B0000.c manage_window_C692 (41 bytes)
+export function manage_window_C692(param_1) {
+  if (param_1 !== 0) {
+    // ShowWindow(ri(param_1, 4), 9); // DEVIATION: Win32 — SW_RESTORE
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc6bb (43 bytes)
+export function FUN_005bc6bb(param_1, param_2) {
+  if (param_1 !== 0) {
+    // ValidateRect(ri(param_1, 4), param_2); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c invalidate_C6E6 (45 bytes)
+export function invalidate_C6E6(param_1, param_2) {
+  if (param_1 !== 0) {
+    // InvalidateRect(ri(param_1, 4), param_2, 0); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bc713 (80 bytes)
+export function FUN_005bc713(param_1, param_2) {
+  if (param_1 !== 0) {
+    // let nHeight = FUN_00407fc0(param_2); // DEVIATION: rect height
+    // let nWidth = FUN_00407f90(param_2); // DEVIATION: rect width
+    // MoveWindow(ri(param_1, 4), param_2[0], param_2[1], nWidth, nHeight, 1); // DEVIATION: Win32
+  }
+}
 // Source: decompiled/block_005B0000.c gdi_C763 (464 bytes)
 export function gdi_C763(param_1, param_2, param_3) {
   if (param_1 !== 0) {
@@ -3427,9 +3748,28 @@ export function gdi_C763(param_1, param_2, param_3) {
     // MoveWindow(ri(param_1, 4), local_20, local_24, width, height, 1); // DEVIATION: Win32
   }
 }
-export function FUN_005bc933(param_1) { return 0; /* GetClientRect width — no-op */ }
-export function FUN_005bc96b(param_1) { return 0; /* GetClientRect height — no-op */ }
-export function FUN_005bc9a3(param_1, param_2) { /* GetWindowRect — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bc933 (56 bytes)
+export function FUN_005bc933(param_1) {
+  if (param_1 === 0) { return 0; }
+  // let local_14 = {}; // tagRECT
+  // GetClientRect(ri(param_1, 4), local_14); // DEVIATION: Win32
+  // return local_14.right;
+  return 0;
+}
+// Source: decompiled/block_005B0000.c FUN_005bc96b (56 bytes)
+export function FUN_005bc96b(param_1) {
+  if (param_1 === 0) { return 0; }
+  // let local_14 = {}; // tagRECT
+  // GetClientRect(ri(param_1, 4), local_14); // DEVIATION: Win32
+  // return local_14.bottom;
+  return 0;
+}
+// Source: decompiled/block_005B0000.c FUN_005bc9a3 (48 bytes)
+export function FUN_005bc9a3(param_1, param_2) {
+  if (param_1 !== 0) {
+    // GetWindowRect(ri(param_1, 4), param_2); // DEVIATION: Win32
+  }
+}
 // Source: decompiled/block_005B0000.c FUN_005bc9d3 (106 bytes)
 export function FUN_005bc9d3(param_1) {
   if (param_1 === 0) { return 0; }
@@ -3447,9 +3787,31 @@ export function FUN_005bca3d(param_1) {
   // return windowHeight - clientHeight; // border height
   return 0;
 }
-export function FUN_005bcaa7(param_1) { /* get screen rect — no-op */ }
-export function FUN_005bcad7(p1, p2, p3, p4, p5) { /* ClientToScreen — no-op */ }
-export function FUN_005bcb26(p1, p2, p3, p4, p5) { /* MapWindowPoints — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bcaa7 (48 bytes)
+export function FUN_005bcaa7(param_1) {
+  // let yBottom = GetSystemMetrics(1); // DEVIATION: Win32 — screen height
+  // let xRight = GetSystemMetrics(0); // DEVIATION: Win32 — screen width
+  // SetRect(param_1, 0, 0, xRight, yBottom); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bcad7 (79 bytes)
+export function FUN_005bcad7(param_1, param_2, param_3, param_4, param_5) {
+  if (param_1 !== 0) {
+    // let local_c = { x: param_2, y: param_3 };
+    // ClientToScreen(ri(param_1, 4), local_c); // DEVIATION: Win32
+    // *param_4 = local_c.x;
+    // *param_5 = local_c.y;
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bcb26 (95 bytes)
+export function FUN_005bcb26(param_1, param_2, param_3, param_4, param_5) {
+  if (param_1 !== 0) {
+    // let local_c = { x: param_2, y: param_3 };
+    // let hWndTo = GetParent(ri(param_1, 4)); // DEVIATION: Win32
+    // MapWindowPoints(ri(param_1, 4), hWndTo, local_c, 1); // DEVIATION: Win32
+    // *param_4 = local_c.x;
+    // *param_5 = local_c.y;
+  }
+}
 // Source: decompiled/block_005B0000.c FUN_005bcb85 (140 bytes)
 export function FUN_005bcb85(param_1, param_2) {
   // GetWindowRect(ri(param_1, 4), param_2); // DEVIATION: Win32
@@ -3459,14 +3821,42 @@ export function FUN_005bcb85(param_1, param_2) {
 export function update_palette_CC11(p1, p2, p3, p4, p5, p6, p7, p8) {
   // BitBlt(ri(p1, 8), p2, p3, p4, p5, ri(p6, 8), p7, p8, 0xcc0020); // DEVIATION: Win32 BitBlt
 }
-export function blit_CC8D(p1, p2, p3, p4, p5, p6, p7, p8) { /* BitBlt — no-op */ }
+// Source: decompiled/block_005B0000.c blit_CC8D (85 bytes)
+export function blit_CC8D(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  if (param_1 !== 0 && param_6 !== 0) {
+    // BitBlt(ri(param_6, 4), param_7, param_8, param_4, param_5,
+    //        ri(param_1, 4), param_2, param_3, 0xcc0020); // DEVIATION: Win32 — SRCCOPY
+  }
+}
 // Source: decompiled/block_005B0000.c update_palette_CCE2 (132 bytes)
 export function update_palette_CCE2(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) {
   // StretchBlt(ri(p1, 8), p2, p3, p4, p5, ri(p6, 8), p7, p8, p9, p10, 0xcc0020); // DEVIATION: Win32 StretchBlt
 }
-export function stretch_blit_CD66(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) { /* StretchBlt — no-op */ }
-export function FUN_005bcdc3(param_1, param_2) { /* SelectPalette — no-op */ }
-export function FUN_005bcdfc(param_1, param_2) { /* SetMenu — no-op */ }
+// Source: decompiled/block_005B0000.c stretch_blit_CD66 (93 bytes)
+export function stretch_blit_CD66(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
+  if (param_1 !== 0 && param_6 !== 0) {
+    // StretchBlt(ri(param_6, 4), param_7, param_8, param_9, param_10,
+    //            ri(param_1, 4), param_2, param_3, param_4, param_5, 0xcc0020); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bcdc3 (57 bytes)
+export function FUN_005bcdc3(param_1, param_2) {
+  if (DAT_00638b48 === 1) {
+    // wi(param_1, 0x18, param_2); // store palette handle
+    // SelectPalette(ri(param_1, 8), param_2, 0); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bcdfc (99 bytes)
+export function FUN_005bcdfc(param_1, param_2) {
+  if (param_1 !== 0) {
+    // SetMenu(ri(param_1, 4), param_2); // DEVIATION: Win32
+    let iVar1 = FUN_005bc96b(param_1);
+    // let iVar2 = GetSystemMetrics(0xf); // DEVIATION: Win32 — menu bar height
+    let iVar2 = 0;
+    let uVar3 = FUN_005bc933(param_1, iVar1 + iVar2 + 1);
+    FUN_005bc505(param_1, uVar3);
+  }
+}
 // Source: decompiled/block_005B0000.c invalidate_CE5F (143 bytes)
 export function invalidate_CE5F(param_1, param_2) {
   // if (param_2 === 0) {
@@ -3478,88 +3868,833 @@ export function invalidate_CE5F(param_1, param_2) {
   // }
   // InvalidateRect(ri(param_1, 4), 0, 1); // DEVIATION: Win32 — repaint
 }
-export function FUN_005bceee(param_1) { return null; /* LoadCursorA — no-op */ }
-export function FUN_005bcf1c(param_1) { /* DestroyCursor — no-op */ }
-export function FUN_005bcf40(param_1) { /* SetCursor — no-op */ }
-export function FUN_005bcf5a(param_1, param_2, param_3) { /* SetCursor with save — no-op */ }
-export function FUN_005bcfa0() { /* ShowCursor(1) — no-op */ }
-export function FUN_005bcfb8() { /* ShowCursor(0) loop — no-op */ }
-export function FUN_005bcfdd(param_1, param_2, param_3) { /* set cursor by ID — no-op */ }
-export function FUN_005bd023(param_1, param_2) { /* set + apply cursor — no-op */ }
-export function FUN_005bd05f(param_1, param_2) { /* load cursor by ID — no-op */ }
-export function FUN_005bd0e7(param_1) { /* SetFocus + BringWindowToTop — no-op */ }
-export function FUN_005bd120(param_1) { /* SetFocus — no-op */ }
-export function FUN_005bd14c(param_1, param_2) { /* disable parent window — no-op */ }
-export function FUN_005bd1c5(param_1, param_2) { /* enable parent window — no-op */ }
-export function FUN_005bd248(param_1, param_2) { /* set field +0x38 — no-op */ }
-export function FUN_005bd270(param_1, param_2) { /* set field +0x3c — no-op */ }
-export function FUN_005bd298(p1, p2, p3, p4) { return 0; /* wait for mouse click — no-op */ }
-export function gdi_D39E(param_1) { return 0; /* check key state — no-op */ }
-export function FUN_005bd48f(param_1, param_2, param_3) { /* GetCursorPos — no-op */ }
-export function FUN_005bd4cd() { return false; /* GetAsyncKeyState LMB — no-op */ }
-export function FUN_005bd500() { return false; /* GetAsyncKeyState RMB — no-op */ }
-export function FUN_005bd533(param_1) { /* SetCapture — no-op */ }
-export function FUN_005bd550() { /* ReleaseCapture — no-op */ }
-export function FUN_005bd566(param_1, param_2) { /* set topmost child window — no-op */ }
-export function FUN_005bd610() { return 0; /* get vtable ptr — no-op */ }
-export function FUN_005bd630() { return null; /* port vtable init — no-op */ }
-export function FUN_005bd65c(param_1, param_2) { /* set port rect — no-op */ }
-export function FUN_005bd696(param_1) { return 1; /* port allocate DIB — no-op */ }
-export function FUN_005bd7db(p1, p2, p3, p4) { /* load CvPic image — no-op */ }
-export function FUN_005bd813(param_1) { /* port init fields — no-op */ }
-export function FUN_005bd915() { /* port destructor — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bceee (46 bytes)
+export function FUN_005bceee(param_1) {
+  // let pHVar1 = LoadCursorA(DAT_006e4ff0, param_1 & 0xffff); // DEVIATION: Win32
+  // return pHVar1;
+  return null;
+}
+// Source: decompiled/block_005B0000.c FUN_005bcf1c (36 bytes)
+export function FUN_005bcf1c(param_1) {
+  if (param_1 !== null && param_1 !== 0) {
+    // DestroyCursor(param_1); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bcf40 (26 bytes)
+export function FUN_005bcf40(param_1) {
+  // SetCursor(param_1); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bcf5a (70 bytes)
+export function FUN_005bcf5a(param_1, param_2, param_3) {
+  if (param_1 !== 0 && param_2 !== null && param_2 !== 0) {
+    // wi(param_1, 0x1c, param_2); // store cursor handle
+    if (param_3 !== 0) {
+      // SetCursor(param_2); // DEVIATION: Win32
+    }
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bcfa0 (24 bytes)
+export function FUN_005bcfa0() {
+  // ShowCursor(1); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bcfb8 (37 bytes)
+export function FUN_005bcfb8() {
+  // let iVar1;
+  // do {
+  //   iVar1 = ShowCursor(0); // DEVIATION: Win32 — hide cursor until count < 0
+  // } while (iVar1 >= 0);
+}
+// Source: decompiled/block_005B0000.c FUN_005bcfdd (70 bytes)
+export function FUN_005bcfdd(param_1, param_2, param_3) {
+  if (param_1 !== 0) {
+    FUN_005bd05f(param_1, param_2);
+    if (param_3 !== 0) {
+      // SetCursor(ri(param_1, 0x1c)); // DEVIATION: Win32
+    }
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bd023 (60 bytes)
+export function FUN_005bd023(param_1, param_2) {
+  if (param_1 !== 0 && param_2 !== null && param_2 !== 0) {
+    // wi(param_1, 0x1c, param_2); // store cursor handle
+    // SetCursor(param_2); // DEVIATION: Win32
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bd05f (136 bytes)
+export function FUN_005bd05f(param_1, param_2) {
+  if (param_1 !== 0) {
+    if (param_2 < 0) {
+      // if (param_2 === -1) { wi(param_1, 0x1c, LoadCursorA(0, 0x7f00)); } // DEVIATION: Win32 — arrow
+      // else if (param_2 === -2) { wi(param_1, 0x1c, LoadCursorA(0, 0x7f02)); } // DEVIATION: Win32 — crosshair
+    } else {
+      // wi(param_1, 0x1c, LoadCursorA(DAT_006e4ff0, param_2 & 0xffff)); // DEVIATION: Win32 — custom cursor
+    }
+  }
+}
+
+// Source: decompiled/block_005B0000.c FUN_005bd0e7 (57 bytes)
+export function FUN_005bd0e7(param_1) {
+  if (param_1 !== 0) {
+    // SetFocus(ri(param_1, 4)); // DEVIATION: Win32
+    // BringWindowToTop(ri(param_1, 4)); // DEVIATION: Win32
+  }
+}
+
+// Source: decompiled/block_005B0000.c FUN_005bd120 (44 bytes)
+export function FUN_005bd120(param_1) {
+  if (param_1 !== 0) {
+    // SetFocus(ri(param_1, 4)); // DEVIATION: Win32
+  }
+}
+
+// Source: decompiled/block_005B0000.c FUN_005bd14c (121 bytes)
+export function FUN_005bd14c(param_1, param_2) {
+  if (param_2 === 0 && param_1 !== 0) {
+    // let pHVar1 = GetParent(ri(param_1, 4)); // DEVIATION: Win32
+    // if (IsWindow(pHVar1)) { EnableWindow(pHVar1, 0); } // DEVIATION: Win32 — disable parent
+  } else if (param_2 !== 0) {
+    // EnableWindow(ri(param_2, 4), 0); // DEVIATION: Win32 — disable specified
+  }
+}
+
+// Source: decompiled/block_005B0000.c FUN_005bd1c5 (126 bytes)
+export function FUN_005bd1c5(param_1, param_2) {
+  if (param_2 === 0 && param_1 !== 0) {
+    // let pHVar1 = GetParent(ri(param_1, 4)); // DEVIATION: Win32
+    // if (IsWindow(pHVar1)) { EnableWindow(pHVar1, 1); } // DEVIATION: Win32 — enable parent
+  } else if (param_2 !== 0) {
+    // EnableWindow(ri(param_2, 4), 1); // DEVIATION: Win32 — enable specified
+  }
+  // SetFocus(ri(param_1, 4)); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bd248 (40 bytes)
+export function FUN_005bd248(param_1, param_2) {
+  if (param_1 !== 0) {
+    // C: *(param_1 + 0x38) = param_2;
+    // DEVIATION: MFC — set port struct field +0x38
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bd270 (40 bytes)
+export function FUN_005bd270(param_1, param_2) {
+  if (param_1 !== 0) {
+    // C: *(param_1 + 0x3c) = param_2;
+    // DEVIATION: MFC — set port struct field +0x3c
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bd298 (262 bytes)
+export function FUN_005bd298(param_1, param_2, param_3, param_4) {
+  let local_28 = 0;
+  // let local_8;
+  // if (param_1 === 0) { local_8 = 0; }
+  // else { local_8 = ri(param_1, 4); } // DEVIATION: HWND
+  // let local_2c = (param_3 === 0) ? 0 : 1;
+  // do {
+  //   while (true) {
+  //     let BVar1 = PeekMessageA(local_48, local_8, 0x200, 0x209, local_2c); // DEVIATION: Win32 — mouse
+  //     if (BVar1 === 0) {
+  //       BVar1 = PeekMessageA(local_24, local_8, 0xa2, 0xa5, local_2c); // DEVIATION: Win32 — NC mouse
+  //     }
+  //     if (BVar1 === 0) break;
+  //     if (param_2 !== 0 && (local_48.message === 0x202 || local_24.message === 0xa2)) {
+  //       local_28 = 1; param_4 = 0;
+  //     }
+  //     if (param_2 === 0 && (local_48.message === 0x205 || local_24.message === 0xa5)) {
+  //       local_28 = 1; param_4 = 0;
+  //     }
+  //   }
+  // } while (param_4 !== 0);
+  return local_28;
+}
+// Source: decompiled/block_005B0000.c gdi_D39E (241 bytes)
+export function gdi_D39E(param_1) {
+  let local_8 = 0;
+  if (param_1 === 0x200) {
+    // let SVar1 = GetKeyState(0x11); // DEVIATION: Win32 — VK_CONTROL
+    // local_8 = (SVar1 & 0x8000) !== 0 ? 1 : 0;
+  } else if (param_1 === 0x100) {
+    // let SVar1 = GetKeyState(0x10); // DEVIATION: Win32 — VK_SHIFT
+    // local_8 = (SVar1 & 0x8000) !== 0 ? 1 : 0;
+  } else if (param_1 === 0x400) {
+    // while (true) {
+    //   let BVar2 = PeekMessageA(local_24, 0, 0, 0, 1); // DEVIATION: Win32
+    //   if (BVar2 === 0) break;
+    //   if (local_24.message === 0x106 || local_24.message === 0x104 || local_24.message === 0x105) {
+    //     local_8 = 1;
+    //   } else {
+    //     TranslateMessage(local_24); // DEVIATION: Win32
+    //     DispatchMessageA(local_24); // DEVIATION: Win32
+    //   }
+    // }
+  }
+  return local_8;
+}
+// Source: decompiled/block_005B0000.c FUN_005bd48f (62 bytes)
+// Source: decompiled/block_005B0000.c FUN_005bd48f (62 bytes)
+export function FUN_005bd48f(param_1, param_2, param_3) {
+  // let local_c = {};
+  // GetCursorPos(local_c); // DEVIATION: Win32
+  // ScreenToClient(ri(param_1, 4), local_c); // DEVIATION: Win32
+  // *param_2 = local_c.x;
+  // *param_3 = local_c.y;
+}
+// Source: decompiled/block_005B0000.c FUN_005bd4cd (51 bytes)
+export function FUN_005bd4cd() {
+  // let SVar1 = GetAsyncKeyState(1); // DEVIATION: Win32 — VK_LBUTTON
+  // return ((SVar1 >>> 8) & 0xff) !== 0;
+  return false;
+}
+// Source: decompiled/block_005B0000.c FUN_005bd500 (51 bytes)
+export function FUN_005bd500() {
+  // let SVar1 = GetAsyncKeyState(2); // DEVIATION: Win32 — VK_RBUTTON
+  // return ((SVar1 >>> 8) & 0xff) !== 0;
+  return false;
+}
+// Source: decompiled/block_005B0000.c FUN_005bd533 (29 bytes)
+export function FUN_005bd533(param_1) {
+  // SetCapture(ri(param_1, 4)); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bd550 (22 bytes)
+export function FUN_005bd550() {
+  // ReleaseCapture(); // DEVIATION: Win32
+}
+// Source: decompiled/block_005B0000.c FUN_005bd566 (167 bytes)
+export function FUN_005bd566(param_1, param_2) {
+  if (param_1 !== 0) {
+    if (param_2 === 0) {
+      // wi(param_1, 0x10, 0); // DEVIATION: MFC — clear topmost child
+    } else {
+      // let pHVar1 = GetParent(ri(param_2, 4)); // DEVIATION: Win32
+      // if (pHVar1 === ri(param_1, 4)) {
+      //   GetWindowLongA(ri(param_2, 4), 0); // DEVIATION: Win32
+      //   let uVar2 = FUN_005bd610(); // get vtable ptr
+      //   if ((uVar2 & 0x200) === 0) {
+      //     debug_log("Window not SWS_ATTACHED in MSSetTopMost");
+      //   } else {
+      //     wi(param_1, 0x10, ri(param_2, 4)); // store child HWND
+      //   }
+      // } else {
+      //   debug_log("Window not a child in MSSetTopMost");
+      // }
+    }
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bd610 (27 bytes)
+export function FUN_005bd610() {
+  // C: return *in_ECX; // DEVIATION: MFC — get vtable ptr from this
+  return 0;
+}
+// Source: decompiled/block_005B0000.c FUN_005bd630 (44 bytes)
+export function FUN_005bd630() {
+  // C: *in_ECX = &PTR_FUN_0061d70c; // DEVIATION: MFC — set vtable
+  FUN_005bd813(0);
+  // return in_ECX; // DEVIATION: MFC — return this
+  return null;
+}
+// Source: decompiled/block_005B0000.c FUN_005bd65c (58 bytes)
+export function FUN_005bd65c(param_1, param_2) {
+  // C: SetRect(&local_14, 0, 0, param_1, param_2); // DEVIATION: Win32
+  FUN_005bd696(null); // C: FUN_005bd696(&local_14)
+}
+// Source: decompiled/block_005B0000.c FUN_005bd696 (325 bytes)
+export function FUN_005bd696(param_1) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // if (ri(in_ECX, 0x40) !== 0) {
+  //   let cVar1 = FUN_005c54f0();
+  //   if (cVar1 !== 0) { FUN_005c02e0(); }
+  //   let uVar2 = FUN_005e388f(ri(in_ECX, 0x40));
+  //   wi(in_ECX, 0x40, uVar2);
+  // }
+  // if (param_1 !== null && FUN_00407f90(param_1) !== 0 && FUN_00407fc0(param_1) !== 0) {
+  //   FUN_005bd813(param_1);
+  //   let uVar2 = create_dib_35B0(in_ECX + 0x24); // DEVIATION: GDI — create DIB
+  //   wi(in_ECX, 0x40, uVar2);
+  //   if (ri(in_ECX, 0x40) !== 0) {
+  //     let uVar2 = FUN_005e392a(ri(in_ECX, 0x40));
+  //     wi(in_ECX, 0xc, uVar2);
+  //     let iVar3 = FUN_005e395a(ri(in_ECX, 0x40));
+  //     if (iVar3 === 0) {
+  //       wi(in_ECX, 0x10, -ri(in_ECX, 0xc));
+  //     } else {
+  //       wi(in_ECX, 0x10, ri(in_ECX, 0xc));
+  //     }
+  //     FUN_005c01c1();
+  //     return 1;
+  //   }
+  //   FUN_005dae6b(2, "ERR_PORTALLOCFAILED", "Port.cpp", 0x71);
+  //   return 0;
+  // }
+  // FUN_005bd813(0);
+  return 1;
+}
+// Source: decompiled/block_005B0000.c FUN_005bd7db (56 bytes)
+export function FUN_005bd7db(param_1, param_2, param_3, param_4) {
+  // FUN_004083f0(); // DEVIATION: MFC
+  FUN_005bf930(param_1, param_2, param_3, param_4);
+}
+// Source: decompiled/block_005B0000.c FUN_005bd813 (258 bytes)
+export function FUN_005bd813(param_1) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // wi(in_ECX, 0x34, 0);
+  // wi(in_ECX, 0x40, 0);
+  // wi(in_ECX, 0x3c, 0);
+  // wi(in_ECX, 0xc, 0);
+  // wi(in_ECX, 0x10, 0);
+  // wi(in_ECX, 0x44, 1);
+  // if (param_1 === 0) {
+  //   wi(in_ECX, 8, 0);
+  //   wi(in_ECX, 4, 0);
+  //   SetRect(in_ECX + 0x24, 0, 0, 0, 0); // DEVIATION: Win32
+  //   SetRect(in_ECX + 0x14, 0, 0, 0, 0); // DEVIATION: Win32
+  // } else {
+  //   wi(in_ECX, 8, ri(param_1, 12) - ri(param_1, 4)); // height = bottom - top
+  //   wi(in_ECX, 4, ri(param_1, 8) - ri(param_1, 0)); // width = right - left
+  //   SetRect(in_ECX + 0x24, 0, 0, ri(in_ECX, 4), ri(in_ECX, 8)); // DEVIATION: Win32
+  //   SetRect(in_ECX + 0x14, 0, 0, ri(in_ECX, 4), ri(in_ECX, 8)); // DEVIATION: Win32
+  // }
+}
+// Source: decompiled/block_005B0000.c FUN_005bd915 (114 bytes)
+export function FUN_005bd915() {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // *in_ECX = &PTR_FUN_0061d70c; // DEVIATION: MFC — set vtable
+  // let cVar1 = FUN_005c54f0();
+  // if (cVar1 !== 0) { FUN_005c02e0(); }
+  // let uVar2 = FUN_005e388f(in_ECX[0x10]); // DEVIATION: GDI — free DIB
+  // in_ECX[0x10] = uVar2;
+  FUN_005bd813(0);
+  // if (DAT_00637e58 === in_ECX) {
+  //   DAT_00637e58 = 0;
+  // }
+}
 // Source: decompiled/block_005B0000.c FUN_005bd987 (1508 bytes)
 export function FUN_005bd987(param_1, param_2, param_3, param_4) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
   let iVar5;
   let local_40, local_1c;
-  let local_5c = '';
+  let local_5c = new Uint8Array(8);
+  let local_58 = 0;
+  let local_34 = 0, local_30 = 0, local_28 = 0, local_24 = 0;
+  let local_2c = 0, local_2a = 0;
 
-  // C: local_38 = "LBMS" (magic bytes)
-  local_40 = FUN_005c5540("LBMS", param_1); // find LBM resource
+  local_40 = FUN_005c5540("LBMS", param_1); // C: find LBM resource
   if (local_40 === 0) {
     FUN_005d2279("Error: LBM resource not found.", param_1);
     FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0xfa);
-    return 0;
-  }
-  local_1c = FUN_005c5560(local_40); // DEVIATION: get resource data
-  FUN_005dced3(local_1c, local_5c, 8); // DEVIATION: read 8-byte header
-  iVar5 = _strncmp(local_5c, "FORM", 4); // check IFF magic
-  if (iVar5 === 0) {
-    local_1c = local_1c + 8; // skip FORM header
-    FUN_005dced3(local_1c, local_5c, 4); // read format type
-    let local_14 = (_strncmp(local_5c, "ILBM", 4) === 0) ? 1 : 0; // is ILBM?
-    let local_10 = (_strncmp(local_5c, "PBM ", 4) === 0) ? 1 : 0; // is PBM?
-    if (local_14 !== 0 || local_10 !== 0) {
-      // C: Parse IFF chunks — BMHD, CMAP, BODY
-      // Iterates chunks by reading 4-byte type + 4-byte size
-      // BMHD chunk: reads width, height, bit depth, compression flag
-      // CMAP chunk: reads RGB palette entries via FUN_005c6da8
-      // BODY chunk: decompresses image data
-      // C lines 6855-6980 — chunk iteration loop with _strncmp checks
-      // FUN_005c019d — create bitmap surface
-      // FUN_005e3aa0 / FUN_005e3b0a — decompress RLE/raw image data
-      // FUN_005c0cc5(param_4) — set palette
-      // FUN_005e395a / FUN_005e3988 — finalize bitmap
-      // DEVIATION: Full LBM/IFF parsing requires binary resource access
-    } else {
-      FUN_005d2279("Error: Resource is not IFF ILBM/PBM.", param_1);
-      FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x109);
-    }
   } else {
-    FUN_005d2279("Error: Resource is not IFF.", param_1);
-    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x104);
+    local_1c = FUN_005c5560(local_40); // DEVIATION: get resource data
+    FUN_005dced3(local_1c, local_5c, 8);
+    iVar5 = _strncmp(local_5c, "FORM", 4);
+    if (iVar5 === 0) {
+      local_1c = local_1c + 8;
+      FUN_005dced3(local_1c, local_5c, 4);
+      let local_14 = (_strncmp(local_5c, "ILBM", 4) === 0) ? 1 : 0;
+      let local_10 = (_strncmp(local_5c, "PBM ", 4) === 0) ? 1 : 0;
+      if (local_14 === 0 && local_10 === 0) {
+        FUN_005d2279("Error: LBM Resource is not a ILBM/PBM.", param_1);
+        FUN_005c5580(local_40);
+        FUN_005c5520(local_40);
+        FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x111);
+      } else {
+        local_1c = local_1c + 4;
+        do {
+          while (true) {
+            FUN_005dced3(local_1c, local_5c, 8);
+            local_1c = local_1c + 8;
+            iVar5 = FUN_005c5430(local_58); // byte-swap chunk size
+            local_58 = (iVar5 + 1) & 0xfffffffe; // align to even
+            // Check for BODY chunk
+            iVar5 = _strncmp(local_5c, "BODY", 4);
+            if (iVar5 === 0) break;
+            // Check for CMAP chunk
+            iVar5 = _strncmp(local_5c, "CMAP", 4);
+            if (iVar5 === 0) {
+              if (param_4 !== 0) {
+                if (0x100 < param_3 + param_2) { param_3 = 0x100 - param_2; }
+                FUN_005c6da8(param_2, param_3, local_1c); // DEVIATION: set palette
+                local_1c = local_1c + local_58;
+              }
+            } else {
+              // Check for BMHD chunk
+              iVar5 = _strncmp(local_5c, "BMHD", 4);
+              if (iVar5 === 0) {
+                // C: decode BMHD — width/height in local_34, planes in local_2c, compression in local_2a
+                let width = (local_34 & 0xffff);
+                let height = (local_34 >>> 16) & 0xffff;
+                if (width === 1 && height === 1) { local_34 = 0; }
+                let local_20;
+                if (local_10 === 0) {
+                  // ILBM: scanline = ((width + 15) >> 4) * 2
+                  local_20 = (((local_34 & 0xffff) + 0xf) >> 4) * 2;
+                } else {
+                  // PBM: scanline = (width + 1) & ~1
+                  local_20 = ((local_34 & 0xffff) + 1) & 0xfffffffe;
+                }
+                let local_c = local_34 & 0xffff;
+                let local_8 = local_34 >>> 16;
+                if (local_2c < 5) {
+                  local_c = (local_c + 1) & 0xfffffffe;
+                }
+                let local_18 = local_8 * local_c;
+                // SetRect(&local_54, 0, 0, local_c, local_8); // DEVIATION: Win32
+                FUN_005c019d(null); // DEVIATION: create bitmap surface
+                // let local_44 = ri(in_ECX, 0x34); // DEVIATION: MFC — save bitmap ptr
+                for (let local_3c = 0; local_3c < local_18; local_3c = local_3c + local_c) {
+                  if (local_10 !== 0) {
+                    // PBM: decode row
+                    let local_64 = 0;
+                    let cVar3 = param_2 & 0xff;
+                    if (local_2a === 0) {
+                      // Uncompressed
+                      for (; local_64 < local_20; local_64 = local_64 + 1) {
+                        // C: *(in_ECX[0x34] + local_64) = *local_1c + cVar3;
+                        local_1c = local_1c + 1;
+                      }
+                    } else if (local_2a === 1) {
+                      // RLE compressed
+                      let pcVar1 = local_1c;
+                      while (local_64 < local_20) {
+                        local_1c = pcVar1;
+                        let local_68 = local_1c[0];
+                        if (local_68 > 127) local_68 = local_68 - 256; // signed
+                        pcVar1 = local_1c + 1;
+                        if (local_68 < 0) {
+                          if (local_68 > -128) {
+                            let cVar2 = pcVar1[0];
+                            while (local_68 < 1) {
+                              // C: *(in_ECX[0x34] + local_64) = cVar2 + cVar3;
+                              local_64 = local_64 + 1;
+                              local_68 = local_68 + 1;
+                            }
+                            pcVar1 = local_1c + 2;
+                          }
+                        } else {
+                          while (local_68 >= 0) {
+                            local_1c = pcVar1;
+                            // C: *(in_ECX[0x34] + local_64) = *local_1c + cVar3;
+                            local_64 = local_64 + 1;
+                            local_68 = local_68 - 1;
+                            pcVar1 = local_1c + 1;
+                          }
+                        }
+                      }
+                    }
+                  }
+                  // C: *(in_ECX + 0x34) += *(in_ECX + 0xc); // advance scanline
+                }
+                FUN_005c0cc5(param_4);
+                // iVar5 = FUN_005e395a(ri(in_ECX, 0x40)); // DEVIATION: check orientation
+                // if (iVar5 === 0) { FUN_005e3988(ri(in_ECX, 0x40)); } // DEVIATION: flip
+                // wi(in_ECX, 0x34, local_44); // restore bitmap ptr
+                FUN_005c5580(local_40);
+                FUN_005c5520(local_40);
+                return 1;
+              }
+              local_1c = local_1c + local_58; // skip unknown chunk
+            }
+          }
+          // BODY chunk found — read BMHD data
+          FUN_005dced3(local_1c, { ref: local_34 }, local_58); // DEVIATION: read BMHD struct
+          local_1c = local_1c + local_58;
+          // C: byte-swap all BMHD fields (big-endian → little-endian)
+          let uVar4;
+          uVar4 = FUN_005c5410(local_34 & 0xffff);
+          local_34 = ((local_34 >>> 16) << 16) | (uVar4 & 0xffff);
+          uVar4 = FUN_005c5410((local_34 >>> 16) & 0xffff);
+          local_34 = (uVar4 << 16) | (local_34 & 0xffff);
+          uVar4 = FUN_005c5410(local_30 & 0xffff);
+          local_30 = ((local_30 >>> 16) << 16) | (uVar4 & 0xffff);
+          uVar4 = FUN_005c5410((local_30 >>> 16) & 0xffff);
+          local_30 = (uVar4 << 16) | (local_30 & 0xffff);
+          uVar4 = FUN_005c5410(local_28 & 0xffff);
+          local_28 = ((local_28 >>> 16) << 16) | (uVar4 & 0xffff);
+          uVar4 = FUN_005c5410(local_24 & 0xffff);
+          local_24 = ((local_24 >>> 16) << 16) | (uVar4 & 0xffff);
+          uVar4 = FUN_005c5410((local_24 >>> 16) & 0xffff);
+          local_24 = (uVar4 << 16) | (local_24 & 0xffff);
+        } while (local_2c < 9);
+        FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x12a);
+      }
+    } else {
+      FUN_005d2279("Error: LBM Resource must have FORM header.", param_1);
+      FUN_005c5580(local_40);
+      FUN_005c5520(local_40);
+      FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x104);
+    }
   }
-  FUN_005c5580(local_40); // DEVIATION: free resource
   return 0;
 }
-export function FUN_005bdf7f(p1, p2, p3, p4, p5) { /* decode image row — no-op */ }
-export function FUN_005be1b3(p1, p2, p3, p4) { /* decode planar row — no-op */ }
-export function FUN_005be2c4(p1, p2, p3, p4) { return 0; /* load TGA resource — no-op */ }
-export function FUN_005be595(p1, p2, p3, p4) { /* load TGA file — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bdf7f (559 bytes)
+export function FUN_005bdf7f(param_1, param_2, param_3, param_4, param_5) {
+  if (param_5 === 0) {
+    // Planar mode (ILBM)
+    let local_14;
+    for (local_14 = 0; local_14 < (param_2[0] & 0xffff); local_14 = local_14 + 1) {
+      // C: *(param_1 + local_14) = 0;
+    }
+    let local_6c;
+    for (local_6c = 0; local_6c < (param_2[4] & 0xff); local_6c = local_6c + 1) {
+      let local_68 = new Uint8Array(80);
+      FUN_005be1b3(local_68, param_2, param_3, param_4);
+      let local_70 = 0; // index into local_68
+      let local_18;
+      for (local_14 = 0; local_14 < (param_2[0] & 0xffff); local_14 = local_14 + 1) {
+        let uVar3 = local_14 >>> 31;
+        if (((local_14 ^ uVar3) - uVar3 & 7 ^ uVar3) === uVar3) {
+          local_18 = local_68[local_70];
+          local_70 = local_70 + 1;
+        }
+        if ((local_18 & 0x80) !== 0) {
+          let local_74 = (1 << (local_6c & 0x1f)) & 0xff;
+          // C: *(param_1 + local_14) |= local_74;
+        }
+        local_18 = (local_18 << 1) & 0xff;
+      }
+    }
+    // C: if (*(param_2 + 9) == 1) { FUN_005be1b3(local_68, param_2, param_3, param_4); }
+  } else {
+    // Packed mode (PBM)
+    let local_c = 0;
+    let compression = (param_2[5] >>> 8) & 0xff; // C: (char)param_2[5]
+    if (compression === 0) {
+      // Uncompressed
+      for (; local_c < param_4; local_c = local_c + 1) {
+        // C: *(param_1 + local_c) = *param_3; param_3++;
+      }
+    } else if (compression === 1) {
+      // RLE compressed
+      let pcVar1 = param_3;
+      while (local_c < param_4) {
+        param_3 = pcVar1;
+        let local_10 = param_3[0]; // signed byte
+        if (local_10 > 127) local_10 = local_10 - 256;
+        pcVar1 = param_3 + 1;
+        if (local_10 < 0) {
+          if (local_10 > -128) {
+            let cVar2 = pcVar1[0];
+            while (local_10 < 1) {
+              // C: *(param_1 + local_c) = cVar2;
+              local_c = local_c + 1;
+              local_10 = local_10 + 1;
+            }
+            pcVar1 = param_3 + 2;
+          }
+        } else {
+          while (local_10 >= 0) {
+            param_3 = pcVar1;
+            // C: *(param_1 + local_c) = *param_3;
+            local_c = local_c + 1;
+            local_10 = local_10 - 1;
+            pcVar1 = param_3 + 1;
+          }
+        }
+      }
+    }
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005be1b3 (268 bytes)
+export function FUN_005be1b3(param_1, param_2, param_3, param_4) {
+  let local_c = 0;
+  let compression = (param_2[10] !== undefined) ? param_2[10] : 0; // C: *(param_2 + 10)
+  if (compression === 0) {
+    // Uncompressed
+    for (; local_c < param_4; local_c = local_c + 1) {
+      // C: *(param_1 + local_c) = *param_3; param_3++;
+    }
+  } else if (compression === 1) {
+    // RLE compressed
+    let pcVar1 = param_3;
+    while (local_c < param_4) {
+      param_3 = pcVar1;
+      let local_10 = param_3[0]; // signed byte
+      if (local_10 > 127) local_10 = local_10 - 256;
+      pcVar1 = param_3 + 1;
+      if (local_10 < 0) {
+        if (local_10 > -128) {
+          let cVar2 = pcVar1[0];
+          while (local_10 < 1) {
+            // C: *(param_1 + local_c) = cVar2;
+            local_c = local_c + 1;
+            local_10 = local_10 + 1;
+          }
+          pcVar1 = param_3 + 2;
+        }
+      } else {
+        while (local_10 >= 0) {
+          param_3 = pcVar1;
+          // C: *(param_1 + local_c) = *param_3;
+          local_c = local_c + 1;
+          local_10 = local_10 - 1;
+          pcVar1 = param_3 + 1;
+        }
+      }
+    }
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005be2c4 (701 bytes)
+export function FUN_005be2c4(param_1, param_2, param_3, param_4) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  let local_28 = FUN_005c5540("TARG", param_1); // C: find TGA resource
+  if (local_28 === 0) {
+    debug_log("Error: Targa file not found.");
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 499);
+    return 0;
+  }
+  let local_10 = FUN_005c5560(local_28); // DEVIATION: get resource data ptr
+  let local_18 = (local_10[0xc] | (local_10[0xd] << 8)) & 0xffff; // width
+  let local_1c = (local_10[0xe] | (local_10[0xf] << 8)) & 0xffff; // height
+  let local_8 = local_10;
+  // SetRect(&local_40, 0, 0, local_18, local_1c); // DEVIATION: Win32
+  // let iVar2 = (*in_ECX[0])(&local_40); // DEVIATION: MFC — vtable call to allocate
+  let iVar2 = FUN_005c019d(null); // DEVIATION: create surface
+  if (iVar2 === 0) {
+    FUN_005c5520(local_28); // DEVIATION: free resource
+    return 0;
+  }
+  local_10 = local_10 + local_8[0] + 0x12; // skip header
+  // C: if color map present and 24-bit, load palette
+  if (local_8[1] !== 0 && local_8[7] === 0x18) {
+    let local_c = local_10;
+    for (let local_24 = param_2; local_24 < param_3 + param_2; local_24 = local_24 + 1) {
+      FUN_005c6b93(local_24, local_c[2], local_c[1], local_c[0]); // DEVIATION: set palette RGB
+      local_c = local_c + 3;
+    }
+    local_10 = local_10 + ((local_8[5] | (local_8[6] << 8)) & 0xffff) * 3;
+  }
+  // C: decode uncompressed TGA image data
+  if (local_8[2] === 1) {
+    // let local_14, local_44;
+    // if ((local_8[0x11] & 0x20) === 0) {
+    //   local_14 = FUN_005c19d3(0, local_1c - 1); // bottom-up
+    //   local_44 = -in_ECX[4];
+    // } else {
+    //   local_14 = FUN_005c19d3(0, 0); // top-down
+    //   local_44 = in_ECX[4];
+    // }
+    // if (local_8[0x10] === 8) { // 8-bit
+    //   for (let local_24 = 0; local_24 < local_1c; local_24 = local_24 + 1) {
+    //     let local_30 = local_14;
+    //     for (let local_2c = 0; local_2c < local_18; local_2c = local_2c + 1) {
+    //       *local_30 = *local_10 + param_2; // add palette offset
+    //       local_10 = local_10 + 1;
+    //       local_30 = local_30 + 1;
+    //     }
+    //     local_14 = local_14 + local_44;
+    //   }
+    // }
+  } else if (local_8[2] === 0xa) {
+    debug_log("Targa Compression Not Implemented");
+  }
+  if ((local_8[0x11] & 0x10) !== 0) {
+    debug_log("Why The hell would anyone want to flip TGA?");
+  }
+  FUN_005c0cc5(param_4); // DEVIATION: finalize palette
+  FUN_005c5580(local_28); // DEVIATION: unlock resource
+  FUN_005c5520(local_28); // DEVIATION: free resource
+  return 1;
+}
+// Source: decompiled/block_005B0000.c FUN_005be595 (919 bytes)
+export function FUN_005be595(param_1, param_2, param_3, param_4) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_005d7c00(); // DEVIATION: MFC — lock
+  let iVar1 = Realloc(param_1); // DEVIATION: Win32 — open file
+  if (iVar1 === 0) {
+    debug_log("Error: Targa file not found.");
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x24c);
+    FUN_005be940(); FUN_005be956(); // DEVIATION: cleanup
+    return;
+  }
+  let local_1c = FUN_005c5470(); // DEVIATION: get file data
+  let local_bc = (local_1c[0xc] | (local_1c[0xd] << 8)) & 0xffff; // width
+  let local_c0 = (local_1c[0xe] | (local_1c[0xf] << 8)) & 0xffff; // height
+  let local_14 = local_1c;
+  // SetRect(&local_dc, 0, 0, local_bc, local_c0); // DEVIATION: Win32
+  // let iVar1 = (*in_ECX[0])(&local_dc); // DEVIATION: MFC vtable
+  iVar1 = FUN_005c019d(null); // DEVIATION: create surface
+  if (iVar1 !== 0) {
+    local_1c = local_1c + local_14[0] + 0x12; // skip header
+    if (local_14[1] !== 0 && local_14[7] === 0x18) {
+      let local_18 = local_1c;
+      for (let local_c4 = param_2; local_c4 < param_3 + param_2; local_c4 = local_c4 + 1) {
+        FUN_005c6b93(local_c4, local_18[2], local_18[1], local_18[0]); // DEVIATION: set palette
+        local_18 = local_18 + 3;
+      }
+      local_1c = local_1c + ((local_14[5] | (local_14[6] << 8)) & 0xffff) * 3;
+    }
+    if (local_14[2] === 1) {
+      // let local_b8, local_e0;
+      // if ((local_14[0x11] & 0x20) === 0) {
+      //   local_b8 = FUN_005c19d3(0, local_c0 - 1); local_e0 = -in_ECX[4];
+      // } else {
+      //   local_b8 = FUN_005c19d3(0, 0); local_e0 = in_ECX[4];
+      // }
+      // if (local_14[0x10] === 8) {
+      //   for (let local_c4 = 0; local_c4 < local_c0; local_c4++) {
+      //     let local_cc = local_b8;
+      //     for (let local_c8 = 0; local_c8 < local_bc; local_c8++) {
+      //       *local_cc = *local_1c + param_2;
+      //       local_1c++; local_cc++;
+      //     }
+      //     local_b8 = local_b8 + local_e0;
+      //   }
+      // }
+    } else if (local_14[2] === 0xa) {
+      debug_log("Targa Compression Not Implemented");
+    }
+    if ((local_14[0x11] & 0x10) !== 0) {
+      debug_log("Why The hell would anyone want to flip TGA?");
+    }
+    FUN_005c0cc5(param_4);
+    FUN_005c54a0(); // DEVIATION: close file
+    // FUN_00421c30(); // DEVIATION: MFC — release
+    FUN_005be940(); FUN_005be956(); // DEVIATION: SEH cleanup
+    return;
+  }
+  FUN_005c54a0(); // DEVIATION: close file
+  // FUN_00421c30(); // DEVIATION: MFC
+  FUN_005be940(); FUN_005be956(); // DEVIATION: SEH cleanup
+}
 export function FUN_005be940() { FUN_005d7c6e(); }
 export function FUN_005be956() { /* SEH restore — no-op */ }
-export function FUN_005be967(p1, p2, p3, p4) { return 0; /* load PCX resource — no-op */ }
-export function FUN_005bec8c(p1, p2, p3, p4) { /* load PCX file — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005be967 (805 bytes)
+export function FUN_005be967(param_1, param_2, param_3, param_4) {
+  let local_30 = FUN_005c5540("PCXS", param_1); // C: find PCX resource
+  if (local_30 === 0) {
+    FUN_005d2279("Error: PCX resource not found.", param_1);
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x2ac);
+    return 0;
+  }
+  let local_14 = FUN_005c5560(local_30); // DEVIATION: get resource data
+  let local_8 = local_14;
+  let local_10 = FUN_005db5e9(local_30); // DEVIATION: get resource size
+  // C: read 128-byte PCX header
+  let local_c4 = new Uint8Array(0x80);
+  FUN_005dced3(local_14, local_c4, 0x80);
+  local_14 = local_14 + 0x80;
+  // Validate PCX header
+  if (local_c4[0] !== 0x0a && local_c4[2] === 0) {
+    FUN_005d2279("Error: Not a PCX file.", param_1);
+    FUN_005c5580(local_30); FUN_005c5520(local_30);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 699);
+    return 0;
+  }
+  if (local_c4[3] !== 8 && local_c4[0x41] !== 1) { // C: bits_per_pixel != 8 && num_planes != 1
+    FUN_005d2279("Error: Not a 256 color or 1plane PCX.", param_1);
+    FUN_005c5580(local_30); FUN_005c5520(local_30);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x2c4);
+    return 0;
+  }
+  // C: local_c = width+1, local_20 = height+1
+  let local_c = (local_c4[8] | (local_c4[9] << 8)) + 1; // local_bc in C (short at offset 8)
+  let local_20 = (local_c4[0xa] | (local_c4[0xb] << 8)) + 1; // local_ba (short at offset 0xa)
+  // SetRect(&local_44, 0, 0, local_c, local_20); // DEVIATION: Win32
+  let iVar2 = FUN_005c019d(null); // DEVIATION: create surface
+  if (iVar2 === 0) { return 0; }
+  // PCX RLE decode
+  let local_1c = 0; // run count
+  let local_18 = 0; // current byte
+  let bytes_per_line = (local_c4[0x42] | (local_c4[0x43] << 8)); // local_82 in C (short at offset 0x42)
+  for (let local_2c = 0; local_2c < local_20; local_2c = local_2c + 1) {
+    let local_34 = FUN_005c19d3(0, local_2c); // DEVIATION: get scanline ptr
+    for (let local_24 = 0; local_24 < bytes_per_line; local_24 = local_24 + 1) {
+      if (local_1c === 0) {
+        local_18 = local_14[0];
+        if ((local_18 & 0xc0) === 0xc0) {
+          local_1c = local_18 & 0x3f;
+          local_18 = local_14[1];
+          local_14 = local_14 + 2;
+        } else {
+          local_1c = 1;
+          local_14 = local_14 + 1;
+        }
+      }
+      // C: *(local_24 + local_34) = local_18 + (char)param_2;
+      local_1c = local_1c - 1;
+    }
+  }
+  // C: check for palette after image data
+  let pad = bytes_per_line - local_c;
+  local_18 = local_14[-pad]; // C: local_14[-local_10] where local_10 = bytes_per_line - local_c
+  local_14 = local_14 - pad + 1;
+  if (local_18 === 0x0c) { // palette marker
+    if (0x100 < param_3 + param_2) { param_3 = 0x100 - param_2; }
+    FUN_005c6da8(param_2, param_3, local_14); // DEVIATION: load palette
+    local_14 = local_14 + 0x300;
+  }
+  FUN_005c0cc5(param_4); // DEVIATION: finalize palette
+  FUN_005c5580(local_30); FUN_005c5520(local_30); // DEVIATION: free resource
+  return 1;
+}
+// Source: decompiled/block_005B0000.c FUN_005bec8c (958 bytes)
+export function FUN_005bec8c(param_1, param_2, param_3, param_4) {
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_005d7c00(); // DEVIATION: MFC — lock
+  let iVar1 = Realloc(param_1); // DEVIATION: Win32 — open file
+  if (iVar1 === 0) {
+    debug_log("Error: PCX file not found.");
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x30c);
+    FUN_005bf04a(); FUN_005bf060(); // DEVIATION: SEH cleanup
+    return;
+  }
+  let local_1c = FUN_00492a80(); // DEVIATION: get file size
+  let local_20 = FUN_005c5470(); // DEVIATION: get file data
+  let local_14 = local_20;
+  // Read 128-byte PCX header
+  let local_160 = new Uint8Array(0x80);
+  FUN_005dced3(local_20, local_160, 0x80);
+  local_20 = local_20 + 0x80;
+  if (local_160[0] !== 0x0a && local_160[2] === 0) {
+    debug_log("Error: Not a PCX file.");
+    FUN_005c54a0(); // FUN_00421c30(); // DEVIATION: MFC
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 799);
+    FUN_005bf04a(); FUN_005bf060(); return;
+  }
+  if (local_160[3] !== 8 && local_160[0x41] !== 1) {
+    debug_log("Error: Not a 256 color or 1plane PCX.");
+    FUN_005c54a0(); // FUN_00421c30();
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x328);
+    FUN_005bf04a(); FUN_005bf060(); return;
+  }
+  let local_18 = (local_160[8] | (local_160[9] << 8)) + 1; // width
+  let local_2c = (local_160[0xa] | (local_160[0xb] << 8)) + 1; // height
+  // SetRect(&local_e0, 0, 0, local_18, local_2c); // DEVIATION: Win32
+  iVar1 = FUN_005c019d(null); // DEVIATION: create surface
+  if (iVar1 === 0) {
+    FUN_005bf04a(); FUN_005bf060(); return;
+  }
+  // PCX RLE decode
+  let local_28 = 0;
+  let local_24 = 0;
+  let bytes_per_line = (local_160[0x42] | (local_160[0x43] << 8));
+  for (let local_cc = 0; local_cc < local_2c; local_cc = local_cc + 1) {
+    let local_d0 = FUN_005c19d3(0, local_cc);
+    for (let local_c8 = 0; local_c8 < bytes_per_line; local_c8 = local_c8 + 1) {
+      if (local_28 === 0) {
+        local_24 = local_20[0];
+        if ((local_24 & 0xc0) === 0xc0) {
+          local_28 = local_24 & 0x3f;
+          local_24 = local_20[1];
+          local_20 = local_20 + 2;
+        } else {
+          local_28 = 1;
+          local_20 = local_20 + 1;
+        }
+      }
+      // C: *(local_c8 + local_d0) = local_24 + (char)param_2;
+      local_28 = local_28 - 1;
+    }
+  }
+  // C: check palette at end of file (offset from start: local_1c + local_14 - 0x301)
+  // local_24 = *(local_1c + local_14 - 0x301);
+  // local_20 = local_1c + local_14 - 0x300;
+  // if (local_24 === 0x0c) {
+  //   if (0x100 < param_3 + param_2) { param_3 = 0x100 - param_2; }
+  //   FUN_005c6da8(param_2, param_3, local_20);
+  // }
+  FUN_005c0cc5(param_4);
+  FUN_005c54a0(); // DEVIATION: close file
+  // FUN_00421c30(); // DEVIATION: MFC
+  FUN_005bf04a(); FUN_005bf060(); // DEVIATION: SEH cleanup
+}
 export function FUN_005bf04a() { FUN_005d7c6e(); }
 export function FUN_005bf060() { /* SEH restore — no-op */ }
 // Source: decompiled/block_005B0000.c FUN_005bf071 (1353 bytes)
@@ -3650,12 +4785,209 @@ export function FUN_005bf071(param_1, param_2, param_3, param_4) {
 }
 export function FUN_005bf5ba() { FUN_005d7c6e(); }
 export function FUN_005bf5d0() { /* SEH restore — no-op */ }
-export function FUN_005bf5e1(p1, p2, p3, p4) { return 0; /* load GIF resource — no-op */ }
-export function FUN_005bf930(p1, p2, p3, p4) { return 0; /* load CvPic resource — no-op */ }
-export function FUN_005bfad9(p1, p2, p3, p4) { return 0; /* load BMP resource — no-op */ }
-export function FUN_005bfcff(p1, p2, p3, p4) { /* load BMP file — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005bf5e1 (847 bytes)
+export function FUN_005bf5e1(param_1, param_2, param_3, param_4) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  let local_28 = FUN_005c5540("GIFS", param_1); // C: find GIF resource
+  if (local_28 === 0) {
+    FUN_005d2279("Error: GIF resource not found.", param_1);
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x3f4);
+    return 0;
+  }
+  let local_14 = FUN_005c5560(local_28); // DEVIATION: get resource data
+  let iVar2 = _strcmp(local_14, ""); // C: check if empty/invalid
+  if (iVar2 === 0) {
+    FUN_005d2279("Error: Resource is not a GIF.", param_1);
+    FUN_005c5580(local_28); FUN_005c5520(local_28);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x3ff);
+    return 0;
+  }
+  if ((local_14[10] & 0x80) === 0) {
+    FUN_005d2279("Error: GIF contains no global color table.", param_1);
+    FUN_005c5580(local_28); FUN_005c5520(local_28);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x408);
+    return 0;
+  }
+  let uVar3 = 1 << ((local_14[10] & 7) + 1); // number of colors
+  let local_10 = local_14 + 0xd; // color table start
+  if (param_4 !== 0) {
+    if (0x100 < param_3 + param_2) { param_3 = 0x100 - param_2; }
+    if (uVar3 <= param_3) { param_3 = uVar3; }
+    FUN_005c6da8(param_2, param_3, local_10); // DEVIATION: set palette
+  }
+  // FUN_00407ff0(); // DEVIATION: MFC
+  // Skip to image data
+  local_10 = local_14 + uVar3 * 3 + 0xd;
+  while (local_10[0] === 0) { local_10 = local_10 + 1; }
+  if (local_10[0] === 0x2c || local_10[0] === 0x21) { // ',' image, '!' extension
+    let local_c = local_10 + 1;
+    let local_1c = FUN_005c54d0(local_10[5] | (local_10[6] << 8)); // image width
+    let local_20 = FUN_005c54d0(local_c[6] | (local_c[7] << 8)); // image height
+    if ((local_c[8] & 0x80) !== 0) {
+      debug_log("Warning: Skipping local color table");
+    }
+    // SetRect(&local_38, 0, 0, local_1c, local_20); // DEVIATION: Win32
+    FUN_005c019d(null); // DEVIATION: create surface
+    let local_18 = local_c[9]; // minimum code size
+    let local_8 = local_c + 10; // LZW data start
+    // FUN_00407ff0(); // DEVIATION: MFC
+    // FUN_005e4d60(local_8, param_2, local_18, in_ECX[0xc], local_1c, local_20, in_ECX[0x34]); // DEVIATION: LZW decode
+    // FUN_00407ff0(); // DEVIATION: MFC
+    FUN_005c0cc5(param_4); // DEVIATION: finalize palette
+    // iVar2 = FUN_005e395a(in_ECX[0x40]); // DEVIATION: check bitmap orientation
+    // if (iVar2 === 0) { FUN_005e3988(in_ECX[0x40]); } // DEVIATION: flip bitmap
+    FUN_005c5580(local_28); FUN_005c5520(local_28); // DEVIATION: free resource
+    return 1;
+  } else {
+    FUN_005d2279("Error: GIF Image Block not found.", param_1);
+    FUN_005c5580(local_28); FUN_005c5520(local_28);
+    FUN_005dae6b(4, "ERR_BADPICFORMAT", "Port.cpp", 0x424);
+    return 0;
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bf930 (425 bytes)
+export function FUN_005bf930(param_1, param_2, param_3, param_4) {
+  // let in_ECX = 0; // DEVIATION: MFC (in_ECX this pointer)
+  let local_20 = FUN_005c5540("CvPc", param_1); // C: find CvPic resource
+  if (local_20 === 0) {
+    FUN_005d2279("Error: Picture resource not found.", param_1);
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x459);
+    return 0;
+  }
+  let local_c = FUN_005c5560(local_20); // DEVIATION: get resource data
+  let local_14 = FUN_005c5410(local_c[0] | (local_c[1] << 8)); // width (byte-swapped short)
+  let local_18 = FUN_005c5410(local_c[2] | (local_c[3] << 8)); // height (byte-swapped short)
+  // SetRect(&local_30, 0, 0, local_14, local_18); // DEVIATION: Win32
+  let iVar3 = FUN_005c019d(null); // DEVIATION: create surface
+  if (iVar3 === 0) {
+    FUN_005c5520(local_20); // DEVIATION: free resource
+    return 0;
+  }
+  let bVar1 = local_c[5]; // C: *(byte *)(local_c + 5)
+  let local_10 = local_c + 6; // palette data starts at offset 6
+  if (param_4 !== 0) {
+    FUN_005c6da8(param_2, param_3, local_10); // DEVIATION: set palette
+  }
+  let local_8 = local_c + (bVar1 + 1) * 3 + 6; // image data after palette
+  // FUN_005e4d60(local_8, param_2, (local_c[4] & 0xff), in_ECX[0xc], local_14, local_18, in_ECX[0x34]); // DEVIATION: LZW decode
+  FUN_005c0cc5(param_4); // DEVIATION: finalize palette
+  // iVar3 = FUN_005e395a(in_ECX[0x40]); // DEVIATION: check orientation
+  // if (iVar3 === 0) { FUN_005e3988(in_ECX[0x40]); } // DEVIATION: flip
+  FUN_005c5580(local_20); FUN_005c5520(local_20); // DEVIATION: free resource
+  return 1;
+}
+// Source: decompiled/block_005B0000.c FUN_005bfad9 (550 bytes)
+export function FUN_005bfad9(param_1, param_2, param_3, param_4) {
+  let local_24 = FUN_005db2f8(param_1); // DEVIATION: find BMP resource
+  if (local_24 === 0) {
+    FUN_005d2279("Error: Bitmap resource not found.", param_1);
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x495);
+    return 0;
+  }
+  let local_c = FUN_005c5560(local_24); // DEVIATION: get resource data
+  let local_18 = ri(local_c, 4); // C: *(local_c + 4) — width
+  let local_1c = ri(local_c, 8); // C: *(local_c + 8) — height (unsigned)
+  // SetRect(&local_38, 0, 0, local_18, local_1c); // DEVIATION: Win32
+  let iVar2 = FUN_005c019d(null); // DEVIATION: create surface
+  if (iVar2 === 0) {
+    FUN_005c5520(local_24); return 0;
+  }
+  if ((local_c[0xe] | (local_c[0xf] << 8)) === 8) { // C: *(short *)(local_c + 0xe) == 8 — 8bpp
+    if (ri(local_c, 0x10) === 0) { // C: uncompressed
+      let local_10 = local_c + 0x28; // palette data (after BITMAPINFOHEADER)
+      if (param_4 !== 0) {
+        for (let local_20 = param_2; local_20 < param_3 + param_2; local_20 = local_20 + 1) {
+          FUN_005c6b93(local_20, local_10[2], local_10[1], local_10[0]); // DEVIATION: BGRA → RGB
+          local_10 = local_10 + 4;
+        }
+      }
+      local_18 = FUN_005c55a0(local_18); // DEVIATION: align scanline width
+      let local_8 = local_c + 0x428; // image data (after 256*4 palette + 0x28 header)
+      for (let local_20 = 1; local_20 <= local_1c; local_20 = local_20 + 1) {
+        let local_14 = FUN_005c19d3(0, local_1c - local_20); // DEVIATION: scanline (bottom-up)
+        local_10 = local_8;
+        for (let local_28 = 0; local_28 < local_18; local_28 = local_28 + 1) {
+          // C: *local_14 = *local_10 + (char)param_2;
+          local_10 = local_10 + 1;
+          local_14 = local_14 + 1;
+        }
+        local_8 = local_8 + local_18;
+      }
+      FUN_005c0cc5(param_4);
+      FUN_005c5580(local_24); FUN_005c5520(local_24);
+      return 1;
+    } else {
+      FUN_005d2279("Error: Bitmap compression not supported.", param_1);
+      return 0;
+    }
+  } else {
+    FUN_005d2279("Error: Bitmap resource not supported (not 8bpp).", param_1);
+    return 0;
+  }
+}
+// Source: decompiled/block_005B0000.c FUN_005bfcff (782 bytes)
+export function FUN_005bfcff(param_1, param_2, param_3, param_4) {
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_005d7c00(); // DEVIATION: MFC — lock
+  let iVar1 = Realloc(param_1); // DEVIATION: Win32 — open file
+  if (iVar1 === 0) {
+    debug_log("Error: Bitmap file not found.");
+    FUN_005dae6b(3, "ERR_RESOURCENOTFOUND", "Port.cpp", 0x4e1);
+    FUN_005c000d(); FUN_005c0023(); // DEVIATION: SEH cleanup
+    return;
+  }
+  iVar1 = FUN_005c5470(); // DEVIATION: get file data
+  let local_18 = iVar1 + 0xe; // BITMAPINFOHEADER (skip 14-byte file header)
+  let local_24 = ri(iVar1, 0x12); // width (at file offset 0x12)
+  let local_c0 = ri(iVar1, 0x16); // height (at file offset 0x16)
+  // SetRect(&local_dc, 0, 0, local_24, local_c0); // DEVIATION: Win32
+  iVar1 = FUN_005c019d(null); // DEVIATION: create surface
+  if (iVar1 === 0) {
+    // FUN_005c5520(local_c8); // DEVIATION: free
+    FUN_005c000d(); FUN_005c0023(); return;
+  }
+  // C: check 8bpp
+  if ((local_18[0xe] | (local_18[0xf] << 8)) !== 8) {
+    debug_log("Error: Bitmap resource not supported (not 8bpp).");
+    FUN_005c000d(); FUN_005c0023(); return;
+  }
+  // C: check uncompressed
+  if (ri(local_18, 0x10) !== 0) {
+    debug_log("Error: Bitmap compression not supported.");
+    FUN_005c000d(); FUN_005c0023(); return;
+  }
+  // Load palette
+  let local_1c = local_18 + 0x28; // palette after BITMAPINFOHEADER
+  if (param_4 !== 0) {
+    for (let local_c4 = param_2; local_c4 < param_3 + param_2; local_c4 = local_c4 + 1) {
+      FUN_005c6b93(local_c4, local_1c[2], local_1c[1], local_1c[0]); // DEVIATION: BGRA → RGB
+      local_1c = local_1c + 4;
+    }
+  }
+  local_24 = FUN_005c55a0(local_24); // DEVIATION: align scanline
+  let local_14 = local_18 + 0x428; // image data
+  for (let local_c4 = 1; local_c4 <= local_c0; local_c4 = local_c4 + 1) {
+    let local_20 = FUN_005c19d3(0, local_c0 - local_c4); // DEVIATION: scanline (bottom-up)
+    local_1c = local_14;
+    for (let local_cc = 0; local_cc < local_24; local_cc = local_cc + 1) {
+      // C: *local_20 = *local_1c + (char)param_2;
+      local_1c = local_1c + 1;
+      local_20 = local_20 + 1;
+    }
+    // C: local_14 = local_14 + in_ECX[0xc]; // stride
+    local_14 = local_14 + local_24; // use aligned width as stride
+  }
+  FUN_005c0cc5(param_4);
+  FUN_005c54a0(); // DEVIATION: close file
+  // FUN_00421c30(); // DEVIATION: MFC
+  FUN_005c000d(); FUN_005c0023(); // DEVIATION: SEH cleanup
+}
+// Source: decompiled/block_005B0000.c FUN_005c000d (12 bytes)
 export function FUN_005c000d() { FUN_005d7c6e(); }
-export function FUN_005c0023() { /* SEH restore — no-op */ }
+// Source: decompiled/block_005B0000.c FUN_005c0023 (17 bytes)
+export function FUN_005c0023() {
+  // DEVIATION: SEH — FS_OFFSET restore (no-op in JS)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
