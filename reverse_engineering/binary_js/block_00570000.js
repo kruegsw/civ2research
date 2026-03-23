@@ -2138,9 +2138,41 @@ export function FUN_00578b06(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578c12 — add_submenu_item
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578c12 (371 bytes)
 export function FUN_00578c12(param_1, param_2, param_3, param_4) {
-  // Menu building — UI only, stub
-  return null;
+  let local_c = null;
+  let iVar1 = FUN_005787de(param_1); // find parent menu item
+  if (iVar1 !== 0) {
+    // local_c = FUN_00498159(in_ECX + 4, 0x1c); // DEVIATION: MFC — alloc submenu node
+    local_c = new Array(7).fill(0);
+    // Link into submenu linked list at iVar1 + 0x18
+    // if (ri(iVar1, 0x18) === 0) { // first subitem
+    //   wi(iVar1, 0x18, local_c);
+    //   local_c[5] = 0;
+    // } else { // append
+    //   let local_8 = ri(iVar1, 0x18);
+    //   while (ri(local_8, 0x10) !== 0) { local_8 = ri(local_8, 0x10); }
+    //   wi(local_8, 0x10, local_c);
+    //   local_c[5] = local_8;
+    // }
+    local_c[6] = iVar1; // parent pointer
+    local_c[4] = 0; // next = null
+    local_c[2] = 0; // flags
+    local_c[1] = param_2; // submenu item code
+    local_c[3] = 0; // subcount
+    if (param_3 === null || param_3 === 0) {
+      local_c[0] = 0; // no label
+    } else {
+      let sVar2 = _strlen(param_3);
+      let local_10 = (sVar2 < param_4) ? param_4 : sVar2;
+      // let uVar3 = FUN_00498159(in_ECX + 4, local_10 + 1); // DEVIATION: MFC alloc string
+      local_c[0] = param_3; // label
+      FUN_005f22d0(local_c[0], param_3); // DEVIATION: copy
+      FUN_00578abd(local_c[0]); // pipe → tab
+    }
+    // wi(in_ECX, 0x18, ri(in_ECX, 0x18) & 0xffff7fff); // DEVIATION: MFC flag
+  }
+  return local_c;
 }
 
 // ═══════════════════════════════════════════════════════════════════
