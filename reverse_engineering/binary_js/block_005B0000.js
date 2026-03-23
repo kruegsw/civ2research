@@ -2250,19 +2250,73 @@ export function FUN_005b85fe() {
 // FUN_005b8635 — save_map_data (GL)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b8635 (309 bytes)
 export function FUN_005b8635(param_1, param_2) {
-  // DEVIATION: Win32 API (fwrite) — save map data to file
-  return 0;
+  let sVar1;
+  let local_10;
+  let local_c = 1;
+
+  sVar1 = _fwrite(DAT_006d1160, 0xe, 1, param_1); // DEVIATION: fwrite — map header (14 bytes)
+  if (sVar1 !== 0) {
+    if (param_2 === 0) {
+      // Save visibility layers (7 civs)
+      for (local_10 = 1; local_10 < 8; local_10 = local_10 + 1) {
+        sVar1 = _fwrite(ri(DAT_006365c0, local_10 * 4), DAT_006d1164, 1, param_1); // DEVIATION: fwrite
+        if (sVar1 === 0) { return 1; }
+      }
+    } else {
+      // Save starting positions
+      sVar1 = _fwrite(DAT_00627fe0, 0x2a, 1, param_1); // DEVIATION: fwrite — starting positions X
+      if (sVar1 === 0) { return 1; }
+      sVar1 = _fwrite(DAT_00628010, 0x2a, 1, param_1); // DEVIATION: fwrite — starting positions Y
+      if (sVar1 === 0) { return 1; }
+    }
+    // Save tile data
+    sVar1 = _fwrite(DAT_00636598, DAT_006d1164 * 6, 1, param_1); // DEVIATION: fwrite — all tiles
+    if (sVar1 !== 0) { local_c = 0; }
+  }
+  return local_c;
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
-// FUN_005b8783 — load_map_data (GL)
-// ═══════════════════════════════════════════════════════════════════
-
+// Source: decompiled/block_005B0000.c FUN_005b8783 (405 bytes)
 export function FUN_005b8783(param_1, param_2) {
-  // DEVIATION: Win32 API (fread) — load map data from file
-  return 0;
+  let sVar1;
+  let local_34;
+  let local_30 = 1;
+  let local_28 = new Uint8Array(36);
+
+  sVar1 = _fread(local_28, 0xe, 1, param_1); // DEVIATION: fread — map header
+  if (sVar1 !== 0) {
+    if (param_2 === 0) {
+      // Initialize starting positions to -1
+      for (local_34 = 0; local_34 < 0x15; local_34 = local_34 + 1) {
+        w16(DAT_00627fe0, local_34 * 2, 0xffff);
+        w16(DAT_00628010, local_34 * 2, 0xffff);
+      }
+    } else {
+      // Read starting positions
+      sVar1 = _fread(DAT_00627fe0, 0x2a, 1, param_1); // DEVIATION: fread
+      if (sVar1 === 0) { return 1; }
+      sVar1 = _fread(DAT_00628010, 0x2a, 1, param_1); // DEVIATION: fread
+      if (sVar1 === 0) { return 1; }
+    }
+    FUN_005b8416(); // deallocate old map
+    FID_conflict__memcpy(DAT_006d1160, local_28, 0xe); // DEVIATION: memcpy — copy header
+    FUN_005b7fe0(); // allocate new map
+    if (param_2 === 0) {
+      // Read visibility layers
+      for (local_34 = 1; local_34 < 8; local_34 = local_34 + 1) {
+        sVar1 = _fread(ri(DAT_006365c0, local_34 * 4), DAT_006d1164, 1, param_1); // DEVIATION: fread
+        if (sVar1 === 0) { return 1; }
+      }
+    }
+    // Read tile data
+    sVar1 = _fread(DAT_00636598, DAT_006d1164 * 6, 1, param_1); // DEVIATION: fread
+    if (sVar1 !== 0) { local_30 = 0; }
+  }
+  return local_30;
 }
 
 
@@ -2970,9 +3024,22 @@ export function FUN_005bad40(param_1) {
 // FUN_005badf0 — build_path (FW)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005badf0 (145 bytes)
 export function FUN_005badf0(param_1, param_2, param_3) {
-  // Builds a file path from directory + filename
-  return param_2 + '\\' + param_3;
+  let local_58;
+  let local_54 = '';
+
+  FUN_005f22d0(local_54, param_2); // copy directory
+  // Walk to end of string
+  for (local_58 = local_54; local_58.length > 0 && local_58[local_58.length - 1] !== '\0'; ) { break; }
+  // Add backslash if not present
+  if (local_54.length === 0 || local_54[local_54.length - 1] !== '\\') {
+    FUN_005f22e0(local_54, "\\"); // append backslash
+  }
+  FUN_005f22d0(param_1, local_54); // copy to output
+  FUN_005f22e0(param_1, param_3); // append filename
+  _strupr(param_1); // DEVIATION: uppercase
+  return param_1;
 }
 
 
@@ -3015,38 +3082,122 @@ export function FUN_005baf24(param_1) {
 // FUN_005baf57 — draw_text (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005baf57(param_1, param_2, param_3, param_4) { return param_3; /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005baf57 (205 bytes)
+export function FUN_005baf57(param_1, param_2, param_3, param_4) {
+  let iVar1;
+
+  if (-1 < DAT_006366b4) {
+    FUN_005c19ad(DAT_006366b4); // DEVIATION: GDI — set shadow color
+    FUN_005c0f57(DAT_006366ac, param_2, DAT_006366b8 + DAT_006366c0 + param_3, DAT_006366bc + param_4, 5); // DEVIATION: GDI — draw text shadow
+  }
+  if (-1 < DAT_006366b0) {
+    FUN_005c19ad(DAT_006366b0); // DEVIATION: GDI — set text color
+    if (DAT_006366c0 !== 0) {
+      FUN_005c0f57(DAT_006366ac, param_2, param_3 + 1, param_4, 5); // DEVIATION: GDI — draw outline
+    }
+    FUN_005c0f57(DAT_006366ac, param_2, param_3, param_4, 5); // DEVIATION: GDI — draw text
+  }
+  iVar1 = FUN_0040efd0(param_2); // DEVIATION: MFC — get text width
+  return param_3 + iVar1;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005bb024 — draw_text_centered (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb024(param_1, param_2, param_3, param_4, param_5) { return 0; /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb024 (139 bytes)
+export function FUN_005bb024(param_1, param_2, param_3, param_4, param_5) {
+  let local_8 = FUN_0040efd0(param_2); // DEVIATION: MFC — get text width
+  if (-1 < DAT_006366b4) {
+    if (DAT_006366b8 < 1) {
+      local_8 = local_8 + (~DAT_006366b8 + 1); // abs(shadow offset)
+    } else {
+      local_8 = local_8 + DAT_006366b8;
+    }
+  }
+  local_8 = local_8 + DAT_006366c0;
+  FUN_005baf57(param_1, param_2, param_3 + ((param_5 >> 1) - (local_8 >> 1)), param_4); // centered text
+  return local_8;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_005bb0af — draw_text_right_aligned (UI)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb0af(param_1, param_2, param_3, param_4, param_5) { return param_3; /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb0af (131 bytes)
+export function FUN_005bb0af(param_1, param_2, param_3, param_4, param_5) {
+  let local_8 = FUN_0040efd0(param_2); // DEVIATION: MFC — get text width
+  if (-1 < DAT_006366b4) {
+    if (DAT_006366b8 < 1) {
+      local_8 = local_8 + (~DAT_006366b8 + 1);
+    } else {
+      local_8 = local_8 + DAT_006366b8;
+    }
+  }
+  param_3 = param_3 + (param_5 - (local_8 + DAT_006366c0)); // right-aligned text
+  FUN_005baf57(param_1, param_2, param_3, param_4);
+  return param_3;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
 // Remaining functions: UI/GDI/Window management — DEVIATION: Win32 API
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7) { /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb3f0 (115 bytes)
+export function FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7) {
+  FUN_005c5760(p1, p2, p3, p4, p5, p6, p7); // DEVIATION: GDI — create window class
+  FUN_005bd65c(p5, p6); // DEVIATION: GDI — create bitmap
+  FUN_005c0cc5(p7); // DEVIATION: GDI — set palette
+  let uVar1 = FUN_00414d10(); // DEVIATION: MFC — get main window
+  FUN_005e1880(0 /*in_ECX*/, uVar1); // DEVIATION: MFC — register window
+}
 export function FUN_005bb463(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb4ae(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb4ae (119 bytes)
+export function FUN_005bb4ae(p1, p2, p3, p4, p5, p6, p7, p8) {
+  FUN_005bb3f0(p1, p2, p3, p4, p5, p6, p7); // create window class
+  FUN_00579b40(p8); // DEVIATION: MFC — set parent window
+}
 export function FUN_005bb525(p1, p2, p3, p4, p5, p6, p7, p8, p9) { /* DEVIATION: Win32 API */ }
 export function FUN_005bb574() { /* DEVIATION: Win32 API */ }
 export function FUN_005bb5be(param_1) { return false; /* DEVIATION: Win32 API */ }
-export function FUN_005bb621(param_1, param_2) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb6c7(param_1, param_2) { /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb621 (166 bytes)
+export function FUN_005bb621(param_1, param_2) {
+  // let pCVar1 = CRichEditCntrItem_GetActiveView(in_ECX); // DEVIATION: MFC
+  // if (pCVar1 === param_1 && CRichEditCntrItem_GetActiveView(in_ECX) === param_2) { return; }
+  // SetRect(&local_14, 0, 0, param_1, param_2); // DEVIATION: Win32
+  // (*(code *)**(in_ECX))(&local_14); // DEVIATION: MFC — vtable call
+  let uVar2 = FUN_005bb8c0(); // DEVIATION: MFC
+  FUN_005c0d12(uVar2); // DEVIATION: GDI — set palette
+  // DAT_00637ea4 = (in_ECX === 0) ? 0 : in_ECX + 0x48; // DEVIATION: MFC
+  FUN_005bb990(); // DEVIATION: MFC — repaint
+  FUN_00408460(); // DEVIATION: MFC — invalidate
+}
+
+// Source: decompiled/block_005B0000.c FUN_005bb6c7 (153 bytes)
+export function FUN_005bb6c7(param_1, param_2) {
+  let local_14 = [0], local_10 = [0], local_c = [0], local_8 = [0];
+  FUN_005bb910(local_10, local_14); // get min scroll position
+  FUN_005bb950(local_8, local_c); // get max scroll position
+  // Clamp param_1 to [local_10, local_8]
+  if (param_1 < local_10[0]) { param_1 = local_10[0]; }
+  if (local_8[0] < param_1) { param_1 = local_8[0]; }
+  // Clamp param_2 to [local_14, local_c]
+  if (param_2 < local_14[0]) { param_2 = local_14[0]; }
+  if (local_c[0] < param_2) { param_2 = local_c[0]; }
+  FUN_005bb8e0(param_1, param_2); // set scroll position
+}
 export function FUN_005bb760(p1, p2, p3, p4, p5, p6) { /* DEVIATION: Win32 API */ }
 export function FUN_005bb7c3(p1, p2, p3, p4, p5, p6, p7) { /* DEVIATION: Win32 API */ }
-export function FUN_005bb80a(p1, p2, p3, p4, p5, p6, p7) { /* DEVIATION: Win32 API */ }
+// Source: decompiled/block_005B0000.c FUN_005bb80a (103 bytes)
+export function FUN_005bb80a(p1, p2, p3, p4, p5, p6, p7) {
+  FUN_005c592b(p1, p2, p3, p4, p5, p6, p7); // DEVIATION: GDI — create sprite window class
+  FUN_005c1b0d(p5, p6); // DEVIATION: GDI — create surface
+  let uVar1 = FUN_00414d10(); // DEVIATION: MFC — get main window
+  FUN_005e1880(0 /*in_ECX*/, uVar1); // DEVIATION: MFC — register window
+}
 export function FUN_005bb871(p1, p2, p3, p4, p5, p6, p7, p8) { /* DEVIATION: Win32 API */ }
 export function FUN_005bb8c0() { return 0; /* DEVIATION: Win32 API */ }
 export function FUN_005bb8e0(param_1, param_2) { /* DEVIATION: Win32 API */ }
