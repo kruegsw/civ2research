@@ -1468,20 +1468,23 @@ export function FUN_004f7ac7(param_1) {
 // FUN_004f7bd1 — civilopedia_open_category
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f7bd1 (200 bytes)
 export function FUN_004f7bd1(param_1, param_2) {
-  // in_ECX setup
-  DAT_0062f010 = 0xffffffff;
+  // C: Initializes civilopedia dialog for category param_1
+  // DEVIATION: MFC (in_ECX) — sets in_ECX+0x114=0, +0x11c=0, +0x120=0,
+  //   +0x118=param_1, +0x128=0
+  DAT_0062f010 = -1;
   DAT_0062f00c = 0;
   FUN_004f7ac7(param_1);
-  FUN_00451bf0();
-  FUN_005bb574();
+  FUN_00451bf0(); // DEVIATION: MFC
+  // DEVIATION: MFC — sets in_ECX+0x118 = param_1 again
+  FUN_005bb574(); // DEVIATION: MFC
   if (param_2 !== 0) {
-    FUN_004085f0();
+    FUN_004085f0(); // DEVIATION: MFC
   }
-  FUN_0040f350(0);
-  FUN_004518d0();
-  FUN_004f8af9();
-  return;
+  FUN_0040f350(0); // DEVIATION: MFC
+  FUN_004518d0(); // DEVIATION: MFC
+  FUN_004f8af9(); // DEVIATION: MFC
 }
 
 
