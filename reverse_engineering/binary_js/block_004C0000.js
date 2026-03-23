@@ -3575,8 +3575,16 @@ export function show_messagebox_CF2D() {
 // Source: block_004C0000.c line 3935
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cd3d7 (1171 bytes)
 export function FUN_004cd3d7(param_1, param_2, param_3) {
-  // File I/O: edits CITY.TXT entries. Not applicable in JS — stub.
+  // DEVIATION: File I/O — edits CITY.TXT entries
+  // C: Constructs filename "CITY." + extension from DAT_0062cd24
+  // C: __getcwd saves dir, __chdir to game dir (DAT_0064bb08)
+  // C: Opens CITY.TXT (or CITY.BAK/CITY.TMP as backup), reads line by line
+  // C: Finds section "@" + param_1 (section name), then searches for line
+  //    starting with param_2 (key), replaces with param_3 (new value)
+  // C: Copies remaining content, manages backup files, restores dir
+  // DEVIATION: Cannot perform file I/O — returns 0 (failure)
   return 0;
 }
 
@@ -3586,8 +3594,18 @@ export function FUN_004cd3d7(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 4046
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cd8a6 (1069 bytes)
 export function FUN_004cd8a6() {
-  // File I/O: updates CITY.TXT leader names. Stub.
+  // DEVIATION: File I/O — updates CITY.TXT section markers
+  // C: Opens CITY.TXT, renames to CITY.TMP as backup
+  // C: Reads line by line, for each @SECTION line (not @RAND):
+  //    Looks up section name in 21 personality slots (DAT_0064c6a6 stride 0x594)
+  //    If personality found, gets civ name from DAT_0064bd12 (stride 0xF2)
+  //    Otherwise gets default name from DAT_00655504 resource table
+  //    Replaces @SECTION header with updated name from DAT_006a1d88
+  // C: Writes remaining content, cleans up CITY.TMP
+  // Game state reads: DAT_0064c6a6, DAT_0064bd12, DAT_00655504, DAT_006a1d88
+  // DEVIATION: Cannot perform file I/O — returns 0 (failure)
   return 0;
 }
 
@@ -3703,9 +3721,45 @@ export function FUN_004cdf4b(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 4291
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cdfa4 (498 bytes)
 export function FUN_004cdfa4(param_1, param_2, param_3, param_4, param_5, param_6,
                              param_7, param_8, param_9) {
-  // Cheat/scenario editor dialog setup — UI, no-op in JS
+  // C: Dialog setup function — initializes dialog state globals
+  if (param_1 === 0) {
+    // C: FUN_005f22d0(&DAT_006a19f4, ""); — empty title
+  } else {
+    // C: FUN_005f22d0(&DAT_006a19f4, param_1); — set title
+  }
+  // C: Set dialog pointers
+  DAT_006a19d4 = param_2;
+  DAT_006a19d8 = param_8;
+  DAT_006a19dc = param_9;
+  DAT_006a19e0 = param_7;
+  DAT_006a1abc = 0;
+  DAT_006a1b68 = 0;
+  // C: Override with default sounds if flag 4
+  if ((param_2 & 4) !== 0) {
+    DAT_006a19d8 = DAT_00633598;
+    DAT_006a19dc = DAT_0063359c;
+  }
+  // C: Window style flags
+  let local_8 = ((param_2 & 8) === 0) ? 0x202 : 0x802;
+  if (DAT_006a19d8 !== 0) { local_8 = local_8 | 0x400; }
+  if (param_7 !== 0) { local_8 = local_8 | 0x1000; }
+  // C: Position adjustments
+  if ((param_2 & 2) === 0) {
+    param_5 = param_5 + DAT_006a19dc * 2;
+    param_6 = param_6 + DAT_006a19d8 + DAT_006a19dc;
+  }
+  if ((param_2 & 1) !== 0) {
+    param_3 = (DAT_006ab198 >> 1) - (param_5 >> 1);
+    param_4 = (DAT_006ab19c >> 1) - (param_6 >> 1);
+  }
+  // DEVIATION: MFC — FUN_005bb4ae creates window, FUN_00497d00 loads sound, FUN_004cff70 loads icon
+  FUN_005bb4ae(0, local_8, param_3, param_4, param_5, param_6, 0, 0);
+  if (DAT_006a19d8 !== 0) { FUN_00497d00(DAT_006a19d8); }
+  if (DAT_006a19e0 !== 0) { FUN_004cff70(DAT_006a19e0); }
+  FUN_00552ed2(); // DEVIATION: MFC — show dialog
 }
 
 
@@ -3714,10 +3768,42 @@ export function FUN_004cdfa4(param_1, param_2, param_3, param_4, param_5, param_
 // Source: block_004C0000.c line 4361
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce196 (349 bytes)
 export function FUN_004ce196() {
-  // Loads text strings for popup dialogs — UI init
-  DAT_006a4f98 = 1;
-  DAT_006a4f9c = 0;
+  let iVar1;
+  let local_108;
+  let local_104 = '';
+
+  // C: Clear popup text array
+  for (local_108 = 0; local_108 < 0x14; local_108 = local_108 + 1) {
+    wi(DAT_006a1d78, local_108 * 4, 0);
+  }
+  FUN_004cef35(); // load popup menu items
+  local_108 = 0;
+  do {
+    if (0x13 < local_108) {
+      DAT_006a4f98 = 1;
+      DAT_006a4f9c = 0;
+      // DEVIATION: MFC — InvalidateObjectCache
+      return;
+    }
+    iVar1 = FUN_004cffb0(local_108, local_104, 0x100);
+    if (iVar1 === 0) {
+      wi(DAT_006a1d78, local_108 * 4, 0);
+    } else {
+      // DEVIATION: MFC — allocate string buffer via show_messagebox_CA35
+      let uVar3 = show_messagebox_CA35(0, local_104.length + 1);
+      wi(DAT_006a1d78, local_108 * 4, uVar3);
+      if (ri(DAT_006a1d78, local_108 * 4) === 0) {
+        wi(DAT_006a1d78, local_108 * 4, 0);
+        DAT_006a4f98 = 1;
+        DAT_006a4f9c = 0;
+        return;
+      }
+      // DEVIATION: MFC — copy string to allocated buffer
+    }
+    local_108 = local_108 + 1;
+  } while (true);
 }
 
 
