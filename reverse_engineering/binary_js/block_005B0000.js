@@ -3206,14 +3206,103 @@ export function FUN_005bb950(param_1, param_2) { /* DEVIATION: Win32 API */ }
 export function FUN_005bb990() { /* DEVIATION: Win32 API */ }
 export function FUN_005bb9c0() { /* Win32 PeekMessage — no-op */ }
 export function FUN_005bba1d() { /* Win32 PeekMessage — no-op */ }
-export function gdi_BA4F() { return 0; /* Win32 message pump — no-op */ }
+// Source: decompiled/block_005B0000.c gdi_BA4F (100 bytes)
+export function gdi_BA4F() {
+  // let BVar1 = PeekMessageA(local_20, 0, 0, 0, 1); // DEVIATION: Win32 — check message queue
+  // if (BVar1 === 0) {
+  //   FUN_00407ff0(); // DEVIATION: MFC — idle processing
+  //   if (DAT_00637efc !== 0) { FUN_005e1c70(); } // DEVIATION: timer callback
+  //   return 0;
+  // } else {
+  //   TranslateMessage(local_20); // DEVIATION: Win32
+  //   DispatchMessageA(local_20); // DEVIATION: Win32
+  //   return 1;
+  // }
+  return 0;
+}
 export function gdi_BAB8() { return false; /* Win32 — no-op */ }
 export function FUN_005bbb0a() { /* Win32 — no-op */ }
 export function FUN_005bbb32() { /* Win32 — no-op */ }
 export function FUN_005bbb5a(param_1) { /* WinExec — no-op */ }
 export function gdi_BB76() { return false; /* Win32 — no-op */ }
 export function FUN_005bbbce() { /* Win32 — no-op */ }
-export function create_window_BC10(p1, p2, p3, p4, p5, p6, p7) { return null; /* Win32 CreateWindow — no-op */ }
+// Source: decompiled/block_005B0000.c create_window_BC10 (990 bytes)
+export function create_window_BC10(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  let uVar1;
+  let puVar2;
+  let iVar3;
+  let local_34, local_30, local_2c, local_28, local_24;
+  let local_20 = 0;
+  let local_18 = 0x2000000;
+  let local_14, local_10 = 0, local_c = 0;
+
+  uVar1 = FUN_005dce4f(0x4c); // DEVIATION: Win32 — allocate window struct (76 bytes)
+  puVar2 = FUN_005dcdf9(uVar1); // DEVIATION: Win32 — lock memory
+  // puVar2[0] = uVar1; // store handle
+  local_14 = 0; // GetSystemMetrics(4); // DEVIATION: Win32 — caption height
+
+  // Compute window style from param_2 flags
+  if ((param_2 & 4) !== 0) {
+    local_18 = 0x2040000;
+    // local_c = GetSystemMetrics(0x20) * 2; // DEVIATION: Win32 — dialog frame width
+    // local_10 = GetSystemMetrics(0x21) * 2; // DEVIATION: Win32 — dialog frame height
+  } else if ((param_2 & 2) !== 0 && (param_2 & 0x40) === 0) {
+    local_18 = 0x2400000;
+    // local_c = GetSystemMetrics(7) * 2; // DEVIATION: Win32 — border width
+    // local_10 = GetSystemMetrics(8) * 2; // DEVIATION: Win32 — border height
+  } else if ((param_2 & 2) !== 0 && (param_2 & 0x40) !== 0) {
+    local_18 = 0x2800000;
+    // local_c = GetSystemMetrics(7) * 2;
+    // local_10 = GetSystemMetrics(8) * 2;
+  } else if ((param_2 & 1) !== 0) {
+    local_18 = 0x2800000;
+    // local_c = GetSystemMetrics(7) * 2;
+    // local_10 = GetSystemMetrics(8) * 2;
+    local_14 = local_14 + 1;
+  }
+  if ((param_2 & 8) !== 0) { local_18 = local_18 | 0x20000; param_2 = param_2 | 0x40; }
+  if ((param_2 & 0x10) !== 0) { local_18 = local_18 | 0x10000; param_2 = param_2 | 0x40; }
+  if ((param_2 & 0x20) !== 0) { local_18 = local_18 | 0x80000; param_2 = param_2 | 0x40; }
+  if ((param_2 & 0x40) === 0) { local_14 = 0; }
+  else { local_18 = local_18 | 0xc00000; }
+  if ((param_2 & 0x80) !== 0) {
+    local_18 = local_18 | 0x200000;
+    // iVar3 = GetSystemMetrics(2); local_c = local_c + iVar3 - 1; // DEVIATION: Win32 — scrollbar
+  }
+  if ((param_2 & 0x100) !== 0) {
+    local_18 = local_18 | 0x100000;
+    // iVar3 = GetSystemMetrics(3); local_10 = local_10 + iVar3 - 1; // DEVIATION: Win32 — scrollbar
+  }
+  if ((param_2 & 0x200) !== 0 && param_7 !== 0) { local_18 = local_18 | 0x44000000; local_20 = 4; }
+  if ((param_2 & 0x800) !== 0) { local_18 = (local_18 & 0xbfffffff) | 0x80000000; }
+
+  // Window struct fields
+  puVar2 = new Array(19).fill(0);
+  puVar2[0xc] = ((param_2 & 0x400) !== 0) ? 1 : 0;
+  puVar2[0xd] = ((param_2 & 0x1000) !== 0) ? 1 : 0;
+
+  // Calculate window position
+  local_24 = (param_7 === 0) ? 0 : param_7; // DEVIATION: parent HWND
+  local_28 = (param_6 === -1) ? -0x80000000 : local_10 + local_14 + param_6 - 1;
+  local_2c = (param_5 === -1) ? -0x80000000 : local_c + param_5;
+  local_30 = (param_4 === -1) ? -0x80000000 : param_4;
+  local_34 = (param_3 === -1) ? -0x80000000 : param_3;
+
+  // pHVar4 = CreateWindowExA(local_20, "MSWindowClass", param_1, local_18,
+  //                          local_34, local_30, local_2c, local_28,
+  //                          local_24, 0, DAT_006e4ff0, 0); // DEVIATION: Win32 CreateWindowEx
+  // puVar2[1] = pHVar4; // HWND
+  // FUN_005bc1b5(puVar2[1]); // DEVIATION: register window
+  // puVar2[2] = GetDC(puVar2[1]); // DEVIATION: Win32 — get device context
+  // puVar2[7] = LoadCursorA(0, 0x7f00); // DEVIATION: Win32 — load arrow cursor
+  puVar2[6] = 0; puVar2[8] = 0; puVar2[0x11] = 0;
+  puVar2[5] = 0; puVar2[3] = 0; puVar2[9] = 0;
+  puVar2[10] = 0; puVar2[0xb] = 0;
+  puVar2[0x12] = param_2; // store flags
+  puVar2[0xe] = 0; puVar2[0xf] = 0; puVar2[4] = 0;
+  puVar2[0x10] = 8; // bit depth
+  return puVar2;
+}
 export function FUN_005bbfee(param_1, param_2) { /* EnableWindow — no-op */ }
 export function FUN_005bc019(param_1, param_2) { /* SetWindowLong — no-op */ }
 export function FUN_005bc032(param_1) { return 0; /* IsWindowVisible — no-op */ }
