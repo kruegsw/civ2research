@@ -1206,6 +1206,12 @@ export function FUN_004e2803(param_1, param_2) {
         else if (param_2 === 0x132) { FUN_0055b2c6(); }
         else if (param_2 === 0x1f0) { FUN_004e22c9(1); }
         else if (param_2 === 0x1f1) { FUN_004e22c9(0); }
+        // C line 1219: quit multiplayer
+        else if (param_2 === 0x1f2 && DAT_00655b02 === 1) {
+          iVar2 = FUN_00410030("REALLYQUIT", 0, 0);
+          if (iVar2 === 0) return;
+          FUN_0046e6a9(); FUN_00484d3b(); return;
+        }
         else if (param_2 === 0x201) { FUN_0040ddc6(DAT_006d1da0); }
         else if (param_2 === 0x205) { FUN_0044cd9b(DAT_006d1da0); }
         else if (param_2 === 0x210) { FUN_0040e017(); }
@@ -1268,8 +1274,30 @@ export function FUN_004e2803(param_1, param_2) {
         else if (param_2 === 0x603) { FUN_00435d15(DAT_006d1da0); }
         else if (param_2 === 0x605) { FUN_00434d8a(DAT_006d1da0); }
         else if (param_2 === 0x606) { FUN_00598b4e(DAT_006d1da0); }
-        // Cheats
+        // Cheats (C lines 1434-1568 — all require cheat mode + single player)
         else if (param_2 === 0x701) { if (DAT_00655b02 === 0 || DAT_0062eb30 !== 0) FUN_00554297(); }
+        else if (param_2 === 0x702) { /* C: toggle cheat mode — handled elsewhere */ }
+        else if (param_2 === 0x711) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_005551b3(); }
+        else if (param_2 === 0x712) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_0055560f(); }
+        else if (param_2 === 0x713) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_0055583f(); }
+        else if (param_2 === 0x721) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_00555a02(); }
+        else if (param_2 === 0x722) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_00555a8b(); }
+        else if (param_2 === 0x731) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_00554423(); }
+        else if (param_2 === 0x732) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_005545d3(); }
+        else if (param_2 === 0x740) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_00554962(); }
+        else if (param_2 === 0x741) { /* C: scenario — DEVIATION */ }
+        else if (param_2 === 0x748) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) { DAT_00633678 = -1; FUN_0055499f(); } }
+        else if (param_2 === 0x750) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) { FUN_00555cb1(); FUN_00489a0d(0); } }
+        else if (param_2 === 0x751) { /* C: scenario — DEVIATION */ }
+        else if (param_2 === 0x752) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_0055615c(); }
+        else if (param_2 === 0x755) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_0055625b(); }
+        else if (param_2 === 0x756) { /* C: scenario — DEVIATION */ }
+        else if (param_2 === 0x760) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_set_city_shields(); }
+        else if (param_2 === 0x765) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_00556f54(); }
+        else if (param_2 === 0x766) { /* C: scenario — DEVIATION */ }
+        else if (param_2 === 0x768) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_005582ad(); }
+        else if (param_2 === 0x770) { if ((DAT_00655ae8 & 0x8000) !== 0 && DAT_00655b02 === 0) FUN_0055891d(); }
+        else if (param_2 === 0x771) { /* C: scenario — DEVIATION */ }
         // Civilopedia
         else if (param_2 === 0x801) { FUN_00553ff6(); }
         else if (param_2 === 0x802) { FUN_00417566(); }
