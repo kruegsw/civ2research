@@ -1573,10 +1573,18 @@ export function FUN_00586bb6() {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_00580000.c FUN_00586d0a (151 bytes)
+// Source: decompiled/block_00580000.c FUN_00586d0a (151 bytes)
 export function FUN_00586d0a(param_1, param_2) {
-  // DEVIATION: File I/O — writes cosmic parameters to RULES.TXT file
-  // C: for 0..0x16: reads line from param_2 (template), writes DAT_006a2d28[i] + comment to param_1
-  // In headless mode, file I/O is not available
+  let pcVar1;
+  let local_88;
+  let local_84 = '';
+
+  for (local_88 = 0; local_88 < 0x16; local_88 = local_88 + 1) {
+    local_84 = _fgets(local_84, 0x80, param_2); // DEVIATION: fgets
+    pcVar1 = _strchr(local_84, 0x3b); // DEVIATION: find ';' comment
+    _sprintf(DAT_00679640, "%8d%s", ri(DAT_006a2d28, local_88 * 4), pcVar1); // DEVIATION: sprintf
+    _fputs(DAT_00679640, param_1); // DEVIATION: fputs
+  }
   return 1;
 }
 
@@ -1821,14 +1829,61 @@ export function FUN_0058804f(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_00580000.c FUN_005880b0 (637 bytes)
+// Source: decompiled/block_00580000.c FUN_005880b0 (637 bytes)
 export function FUN_005880b0(param_1) {
-  // DEVIATION: MFC — city list click/selection handler
-  // C: local_8 = FUN_005c62ee() (dialog pointer), local_c = param_1 - 0x422
-  // Handles click/shift-click/ctrl-click selection in city list
-  // Reads mouse state via FUN_005dba95/FUN_005dbab8 (shift/ctrl keys)
-  // Writes to dialog arrays at local_8 + 0x8400, + 0x10418 (selection state)
-  // Calls FUN_0058878e(local_c) to refresh display
-  // All writes to MFC dialog memory, no game state changes
+  let iVar2, iVar3;
+  let local_1c, local_18;
+  let local_14 = [0], local_10 = [0];
+  let local_c, local_8;
+
+  local_8 = FUN_005c62ee(); // DEVIATION: get MFC dialog pointer
+  if (local_8 === 0) { local_8 = 0; }
+  else { local_8 = local_8 - 0x48; }
+  FUN_004518d0(); // DEVIATION: MFC
+  local_c = param_1 - 0x422;
+  FUN_00451890(local_10, local_14); // DEVIATION: get mouse position
+  if (ri(local_8, 1000 + local_c * 4) !== 0 &&
+     (iVar2 = FUN_0058832d(local_10[0], local_14[0], local_c), 0 < iVar2) &&
+     iVar2 < ri(local_8, 1000 + local_c * 4)) {
+    iVar3 = FUN_005dba95(); // DEVIATION: check shift key
+    if (iVar3 === 0) {
+      iVar3 = FUN_005dbab8(); // DEVIATION: check ctrl key
+      if (iVar3 === 0) {
+        // No modifier — clear all, toggle clicked
+        for (local_18 = 0; local_18 < ri(local_8, 1000 + local_c * 4); local_18++) {
+          if (local_18 !== iVar2) {
+            wi(local_8, local_c * 0x2004 + local_18 * 4 + 0x8400, 0);
+          }
+        }
+        wi(local_8, 0x10418 + local_c * 4, iVar2);
+        let v = ri(local_8, local_c * 0x2004 + iVar2 * 4 + 0x8400);
+        wi(local_8, local_c * 0x2004 + iVar2 * 4 + 0x8400, v ^ 1);
+      } else {
+        // Ctrl — toggle clicked item
+        wi(local_8, 0x10418 + local_c * 4, iVar2);
+        let v = ri(local_8, local_c * 0x2004 + iVar2 * 4 + 0x8400);
+        wi(local_8, local_c * 0x2004 + iVar2 * 4 + 0x8400, v ^ 1);
+      }
+    } else {
+      // Shift — select range
+      for (local_18 = 0; local_18 < ri(local_8, 1000 + local_c * 4); local_18++) {
+        wi(local_8, local_c * 0x2004 + local_18 * 4 + 0x8400, 0);
+      }
+      if (ri(local_8, 0x10418 + local_c * 4) < iVar2) {
+        local_18 = ri(local_8, 0x10418 + local_c * 4);
+        local_1c = iVar2;
+      } else {
+        local_1c = ri(local_8, 0x10418 + local_c * 4);
+        local_18 = iVar2;
+      }
+      for (; local_18 <= local_1c; local_18++) {
+        if (0 < local_18) {
+          wi(local_8, local_c * 0x2004 + local_18 * 4 + 0x8400, 1);
+        }
+      }
+    }
+    FUN_0058878e(local_c); // refresh display
+  }
 }
 
 
@@ -1838,13 +1893,31 @@ export function FUN_005880b0(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_00580000.c FUN_0058832d (274 bytes)
+// Source: decompiled/block_00580000.c FUN_0058832d (274 bytes)
 export function FUN_0058832d(param_1, param_2, param_3) {
-  // DEVIATION: MFC — hit-test for city list: returns list index at (param_1, param_2) coordinates
-  // C: local_8 = FUN_005c62ee() dialog pointer
-  // Checks if coordinates fall within list panel bounds at param_3 * 0x10 + local_8 + 0x3c0
-  // Returns: -1 (above), -2 (below), -3 (left), -4 (right), or list index
-  // Cannot function without MFC dialog pointer
-  return -1;
+  let iVar1, iVar2;
+  let local_8;
+
+  local_8 = FUN_005c62ee(); // DEVIATION: get MFC dialog pointer
+  if (local_8 === 0) { local_8 = 0; }
+  else { local_8 = local_8 - 0x48; }
+  if (param_2 < ri(local_8, param_3 * 0x10 + 0x3c4)) {
+    iVar1 = -1;
+  } else if (param_2 < ri(local_8, param_3 * 0x10 + 0x3cc)) {
+    if (param_1 < ri(local_8, param_3 * 0x10 + 0x3c0)) {
+      iVar1 = -3;
+    } else if (param_1 < ri(local_8, param_3 * 0x10 + 0x3c8)) {
+      iVar1 = ri(local_8, param_3 * 0x10 + 0x3c4);
+      iVar2 = FUN_00407fc0(param_3 * 0x10 + local_8 + 0x3c0); // DEVIATION: MFC get height
+      iVar1 = ((param_2 - iVar1) / (iVar2 / ri(local_8, 0x10420 + param_3 * 4))) +
+              ri(local_8, 0x10410 + param_3 * 4);
+    } else {
+      iVar1 = -4;
+    }
+  } else {
+    iVar1 = -2;
+  }
+  return iVar1;
 }
 
 
@@ -1854,14 +1927,51 @@ export function FUN_0058832d(param_1, param_2, param_3) {
 // ═══════════════════════════════════════════════════════════════════
 
 // Source: decompiled/block_00580000.c FUN_0058843f (847 bytes)
+// Source: decompiled/block_00580000.c FUN_0058843f (847 bytes)
 export function FUN_0058843f(param_1, param_2, param_3) {
-  // DEVIATION: MFC — sorts city list in dialog object
-  // C: local_8 = FUN_005c62ee() (get dialog pointer)
-  // Sorts entries in dialog arrays at local_8 + 0x3f0, + 0x8400, + 0xc408, + 0x43f8
-  // Sort key: capital cities first, then alphabetical by city name (DAT_0064f360)
-  // Uses FUN_0043d20a to check for palace building, _strcmp for names
-  // All writes are to MFC dialog object memory, not game state
-  // Cannot function without MFC dialog pointer
+  let uVar1;
+  let iVar2;
+  let local_14, local_10;
+  let local_8;
+
+  local_8 = FUN_005c62ee(); // DEVIATION: get MFC dialog pointer
+  if (local_8 === 0) { local_8 = 0; }
+  else { local_8 = local_8 - 0x48; }
+  if (1 < ri(local_8, 1000 + param_3 * 4)) {
+    for (local_10 = param_1; local_10 < param_2; local_10 = local_10 + 1) {
+      let local_14 = local_10;
+      while (true) {
+        local_14 = local_14 + 1;
+        if (local_14 > param_2) break;
+        iVar2 = FUN_0043d20a(ri(local_8, local_14 * 4 + param_3 * 0x2004 + 0x3f0), 1);
+        if (iVar2 !== 0 ||
+           (iVar2 = FUN_0043d20a(ri(local_8, local_10 * 4 + param_3 * 0x2004 + 0x3f0), 1),
+            iVar2 === 0 &&
+            (iVar2 = _strcmp(
+              DAT_0064f360 + ri(local_8, local_10 * 4 + param_3 * 0x2004 + 0x3f0) * 0x58,
+              DAT_0064f360 + ri(local_8, local_14 * 4 + param_3 * 0x2004 + 0x3f0) * 0x58),
+            0 < iVar2))) {
+          // Swap entries in all 4 parallel arrays
+          uVar1 = ri(local_8, local_10 * 4 + param_3 * 0x2004 + 0x3f0);
+          wi(local_8, local_10 * 4 + param_3 * 0x2004 + 0x3f0,
+             ri(local_8, local_14 * 4 + param_3 * 0x2004 + 0x3f0));
+          wi(local_8, local_14 * 4 + param_3 * 0x2004 + 0x3f0, uVar1);
+          uVar1 = ri(local_8, local_10 * 4 + param_3 * 0x2004 + 0x8400);
+          wi(local_8, local_10 * 4 + param_3 * 0x2004 + 0x8400,
+             ri(local_8, local_14 * 4 + param_3 * 0x2004 + 0x8400));
+          wi(local_8, local_14 * 4 + param_3 * 0x2004 + 0x8400, uVar1);
+          uVar1 = ri(local_8, local_10 * 4 + param_3 * 0x2004 + 0xc408);
+          wi(local_8, local_10 * 4 + param_3 * 0x2004 + 0xc408,
+             ri(local_8, local_14 * 4 + param_3 * 0x2004 + 0xc408));
+          wi(local_8, local_14 * 4 + param_3 * 0x2004 + 0xc408, uVar1);
+          uVar1 = ri(local_8, local_10 * 4 + param_3 * 0x2004 + 0x43f8);
+          wi(local_8, local_10 * 4 + param_3 * 0x2004 + 0x43f8,
+             ri(local_8, local_14 * 4 + param_3 * 0x2004 + 0x43f8));
+          wi(local_8, local_14 * 4 + param_3 * 0x2004 + 0x43f8, uVar1);
+        }
+      }
+    }
+  }
 }
 
 
