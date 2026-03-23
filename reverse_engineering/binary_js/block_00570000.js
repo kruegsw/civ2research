@@ -97,6 +97,16 @@ let DAT_00633598 = 0;
 let DAT_0063359c = 0;
 let DAT_006ab198 = 0;
 let DAT_006ab19c = 0;
+let DAT_006ab1a0 = 0;    // dialog pointer 1
+let DAT_006ab190 = 0;    // dialog pointer 2
+let DAT_006ab178 = 0;    // dialog pointer 3
+let DAT_006ac484 = 0;    // dialog callback ptr 1
+let DAT_006ac47c = 0;    // dialog callback ptr 2
+let DAT_006ac480 = 0;    // dialog callback ptr 3
+let DAT_006a8c00 = 0;    // dialog parent handle
+let DAT_006ac1f8 = 0;    // dialog/sound resource
+let DAT_006ac2e4 = 0;    // dialog title buffer
+let DAT_006341f0 = "";   // empty string constant
 let DAT_00628420 = 0;
 let DAT_006ad30c = 0;    // leader name table base
 let DAT_006ad558 = new Uint8Array(8 * 4);  // civ leader index table
@@ -112,6 +122,10 @@ let DAT_006560f6 = new Uint8Array(2048 * 0x20); // unit data (type/owner)
 let DAT_00655c22 = new Uint8Array(8);            // civ epoch/era
 let DAT_0064c488 = new Uint32Array(256);         // improvement data
 let DAT_00627680 = new Uint8Array(100 * 0x10);   // tech data (prereqs at +0x0e, +0x0f)
+let DAT_00679640 = "";    // text buffer (for dialog messages)
+let DAT_00645160 = 0;     // wonder video/sound table base
+let DAT_00634440 = "";    // SDI defense string 1
+let DAT_00634444 = "";    // SDI defense string 2
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -614,11 +628,14 @@ export function FUN_0057207b() {
 export function FUN_00572089(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
   // C: Map view dialog setup — initializes dialog state globals
   if (param_1 === 0) {
-    // C: FUN_005f22d0(&DAT_006ac2e4, ""); — empty title
+    FUN_005f22d0(DAT_006ac2e4, DAT_006341f0); // empty title
   } else {
-    // C: FUN_005f22d0(&DAT_006ac2e4, param_1); — set title
+    FUN_005f22d0(DAT_006ac2e4, param_1); // set title
   }
   // C: Set dialog pointers
+  DAT_006ac484 = DAT_006ab1a0;
+  DAT_006ac47c = DAT_006ab190;
+  DAT_006ac480 = DAT_006ab178;
   DAT_006ac2c4 = param_2;
   DAT_006ac2c8 = param_8;
   DAT_006ac2cc = param_9;
@@ -645,11 +662,11 @@ export function FUN_00572089(param_1, param_2, param_3, param_4, param_5, param_
   }
   let local_c = (DAT_006a4f88 === 0) ? 0 : DAT_006a4f88 + 0x48;
   // DEVIATION: MFC — FUN_005bb4ae creates window
-  FUN_005bb4ae(0, local_8, param_3, param_4, param_5, param_6, 0, local_c);
+  FUN_005bb4ae(0, local_8, param_3, param_4, param_5, param_6, DAT_006a8c00, local_c);
   if (DAT_006ac2c8 !== 0) { FUN_00497d00(DAT_006ac2c8); }
   if (DAT_006ac2d0 !== 0) { FUN_004cff70(DAT_006ac2d0); }
   FUN_00552ed2(); // DEVIATION: MFC — show dialog
-  FUN_0059d3c9(0); // DEVIATION: sound
+  FUN_0059d3c9(DAT_006ac1f8); // sound
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2678,7 +2695,11 @@ export function FUN_0057a27a(param_1, param_2) {
   let local_318 = -1;
   let local_18 = -999;
 
+  FUN_0059db08(0x4000);
+
   if ((param_1 === 0) || (param_2 === 0)) {
+    FUN_0057a661();
+    FUN_0057a677();
     return;
   }
 
@@ -2688,6 +2709,9 @@ export function FUN_0057a27a(param_1, param_2) {
   }
 
   while (true) {
+    if (bVar3) {
+      FUN_0043c9d0("TAKECIV");
+    }
     for (let local_314 = 0; local_314 < 100; local_314 = local_314 + 1) {
       let iVar1 = FUN_004bd9f0(param_1, local_314);
       if ((iVar1 === 0) && (iVar1 = FUN_004bd9f0(param_2, local_314), iVar1 !== 0) &&
@@ -2696,6 +2720,10 @@ export function FUN_0057a27a(param_1, param_2) {
            local_314 !== 0x47 && local_314 !== 0x15)) &&
          (s8(DAT_00627680[local_314 * 0x10 + 0x0e]) !== -2 ||
           s8(DAT_00627680[local_314 * 0x10 + 0x0f]) !== -2)) {
+        if (bVar3) {
+          let uVar2 = FUN_00428b0c(u32(DAT_00627680, local_314 * 0x10 + 4), local_314, 0);
+          FUN_0059edf0(uVar2, local_314, 0);
+        }
         let iVar1_check = FUN_004bdb2c(param_1, local_314);
         if (local_18 <= iVar1_check) {
           local_318 = local_314;
@@ -2706,19 +2734,35 @@ export function FUN_0057a27a(param_1, param_2) {
     if (local_318 < 0) break;
 
     let local_314 = local_318;
-    if (((1 << (u8(param_1) & 0x1f)) & u8(DAT_00655b0b)) === 0) {
-      // AI civ — auto-steal
-    } else {
-      // Human civ — would show dialog, we just proceed
+    // C: if AI, or if human dialog was cancelled (local_230 == 0)
+    // DEVIATION: Win32 — FUN_0040bc80 is dialog; assume dialog confirmed (local_230 != 0) for human
+    if (((1 << (u8(param_1) & 0x1f)) & u8(DAT_00655b0b)) === 0 ||
+       (local_314 = FUN_0040bc80(0), local_314 === 0)) {
+      // Notify defender of tech steal
+      if (((1 << (u8(param_2) & 0x1f)) & u8(DAT_00655b0b)) !== 0) {
+        let uVar2 = FUN_00493c7d(param_1);
+        FUN_0040ff60(0, uVar2);
+        FUN_004271e8(1, u32(DAT_00627680, local_314 * 0x10 + 4));
+        if ((DAT_00654fa8 === 0) && (((1 << (u8(param_2) & 0x1f)) & u8(DAT_00655b0b)) !== 0)) {
+          if (DAT_006d1da0 === param_2) {
+            FUN_004c4240("TOOKCIV", local_314, 0);
+          } else if (2 < DAT_00655b02) {
+            FUN_00511880(99, DAT_006ad30c + s32(DAT_006ad558, param_2 * 4) * 0x54, 2, 0, local_314, 0);
+          }
+        }
+      }
+      FUN_004bf05b(param_1, local_314, param_2, 0, 0);
+      if (((1 << (u8(param_1) & 0x1f)) & u8(DAT_00655b0b)) === 0) {
+        FUN_00442541(param_1, 0xffffffff);
+      }
+      FUN_0057a661();
+      FUN_0057a677();
+      return;
     }
-
-    FUN_004bf05b(param_1, local_314, param_2, 0, 0);
-
-    if (((1 << (u8(param_1) & 0x1f)) & u8(DAT_00655b0b)) === 0) {
-      FUN_00442541(param_1, 0xffffffff);
-    }
-    return;
+    FUN_004c0cf7(param_1, 0, param_2);
   }
+  FUN_0057a661();
+  FUN_0057a677();
 }
 
 
@@ -3119,7 +3163,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
   local_7c = (s8(DAT_0064f340[param_1 * 0x58 + 0xa]) === param_2) ? 1 : 0; // DAT_0064f34a
 
   // Save city name
-  FUN_005f22d0(local_6c, param_1 * 0x58 + 0x20); // DAT_0064f360 + offset
+  FUN_005f22d0(local_6c, DAT_0064f340.subarray(param_1 * 0x58 + 0x20)); // &DAT_0064f360 + param_1*0x58
 
   // ── Reputation/diplomacy effects ──
   if ((((1 << (u8(param_2) & 0x1f)) & u8(DAT_00655b0b)) !== 0 ||
@@ -3243,6 +3287,10 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     if ((999 < s32(DAT_0064c600, local_84 * 0x594 + 0xa2)) &&
        (0 < local_3c8) && (local_398 < 0)) {
       local_1c = local_3c8;
+      FUN_0040ff60(1, DAT_0064f340.subarray(local_3c8 * 0x58 + 0x20)); // &DAT_0064f360 + local_3c8*0x58
+      uVar8 = FUN_00410070(local_84);
+      FUN_0040ff60(2, uVar8);
+      FUN_00421da0(0, 1000);
 
       if ((((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) === 0) ||
          (DAT_006d1da0 !== local_84) || (DAT_00654fa8 !== 0)) {
@@ -3257,7 +3305,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
         } else {
           // Multiplayer: ask other player
           DAT_006acb38 = -1;
-          FUN_00511880(0x17, 0, 3, 1, DAT_006d1da0, 0);
+          FUN_00511880(0x17, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54, 3, 1, DAT_006d1da0, 0);
           // Wait for response... (simplified)
           if (DAT_006acb38 === -1) {
             local_3c4 = 0;
@@ -3280,7 +3328,12 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       w32(DAT_0064c600, local_84 * 0x594 + 0xa2,
           s32(DAT_0064c600, local_84 * 0x594 + 0xa2) - 1000);
       FUN_0043d289(local_1c, 1, 1);
-      FUN_00414dd0("ESCAPE", local_1c); // DEVIATION: Win32 — notification dialog
+      if (((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) === 0 ||
+         (DAT_00655b02 < 3) || (DAT_006d1da0 === local_84)) {
+        FUN_00414dd0("ESCAPE", local_1c); // notification dialog
+      } else {
+        FUN_00511880(0x18, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54, 3, 0, local_1c, 0);
+      }
       if (((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) === 0) {
         FUN_00441b11(local_3c8, 99);
       }
@@ -3294,13 +3347,47 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
 
   // ── Handle wonders in captured city ──
   if ((s8(DAT_0064f340[param_1 * 0x58 + 0x39]) < -0x26) && (DAT_00654fa8 === 0)) {
-    // Wonder was being built — announce abandonment
     if (s8(DAT_0064f340[param_1 * 0x58 + 0x39]) < 1) {
       local_3c0 = ~s8(DAT_0064f340[param_1 * 0x58 + 0x39]) + 1;
     } else {
       local_3c0 = s8(DAT_0064f340[param_1 * 0x58 + 0x39]);
     }
-    // Show wonder notification...
+    // Count other cities building the same wonder
+    local_94 = 0;
+    for (local_1c = 0; local_1c < DAT_00655b18; local_1c = local_1c + 1) {
+      if (((s16(DAT_0064f340, local_1c * 0x58 + 0x54) !== 0) && (local_1c !== param_1)) &&
+         ((s8(DAT_0064f340[local_1c * 0x58 + 8]) === local_84) &&
+          (DAT_0064f340[local_1c * 0x58 + 0x39] === DAT_0064f340[param_1 * 0x58 + 0x39]))) {
+        local_94 = local_94 + 1;
+      }
+    }
+    uVar8 = FUN_00493c7d(local_84);
+    FUN_0040ff60(1, uVar8);
+    FUN_004271e8(2, u32(DAT_0064c488, local_3c0 * 2));
+    FUN_00421da0(0, local_94);
+    if (local_94 === 0) {
+      FUN_0043c9d0("ABANDONWONDER");
+      if (2 < DAT_00655b02) {
+        FUN_00511880(0x14, 0xff, 3, 0, local_3c0, 8);
+      }
+    } else {
+      FUN_0040bbb0();
+      FUN_0040bbe0("STILLWONDER");
+      uVar8 = FUN_005adfa0(local_94, 1, 2);
+      FUN_0040ff30(uVar8);
+      FUN_0043c9d0(DAT_00679640);
+      iVar6 = FUN_005adfa0(local_94, 1, 2);
+      if (iVar6 === 1) {
+        if (DAT_00655b02 < 3) {
+          FUN_00511880(0x4c, 0xff, 3, 0, local_3c0, 0);
+        } else {
+          FUN_00511880(0x4b, 0xff, 3, 0, local_3c0, 0);
+        }
+      }
+    }
+    FUN_0059ec88(DAT_00645160 + local_3c0 * 0x3c, 0, 0);
+    // DEVIATION: CPropertySheet::EnableStackedTabs(local_38c, 8) — MFC
+    FUN_0040bc80(0);
   }
 
   // ── Check for wonder captures ──
@@ -3310,7 +3397,28 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       uVar9 = FUN_00453e18(local_8c);
       if (uVar9 === param_1) {
         iVar6 = local_8c + 0x27;
-        // Show wonder capture/loss notifications
+        FUN_004271e8(1, u32(DAT_0064c488, iVar6 * 2));
+        FUN_0040bbb0();
+        if (((local_8c < 7) || (local_8c === 0x13)) || ((local_8c === 0x14 || (0x16 < local_8c)))) {
+          FUN_0040bc10(0xf3);
+          FUN_0040fe10();
+        }
+        FUN_0040ff60(2, DAT_00679640);
+        if ((((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) !== 0) && (2 < DAT_00655b02) &&
+           (DAT_006d1da0 !== local_84)) {
+          FUN_00511880(0x1a, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54, 3, 0, iVar6, 0);
+        }
+        if ((DAT_006d1da0 === param_2) && (DAT_00654fa8 === 0)) {
+          FUN_0043c9d0("CAPTUREWONDER");
+          FUN_0059ec88(DAT_00645160 + iVar6 * 0x3c, 0, 0);
+          // DEVIATION: CPropertySheet::EnableStackedTabs(local_38c, 8) — MFC
+          FUN_0040bc80(0);
+        } else if ((DAT_006d1da0 === local_84) && (DAT_00654fa8 === 0)) {
+          FUN_0043c9d0("LOSTWONDER");
+          FUN_0059ec88(DAT_00645160 + iVar6 * 0x3c, 0, 0);
+          // DEVIATION: CPropertySheet::EnableStackedTabs(local_38c, 8) — MFC
+          FUN_0040bc80(0);
+        }
         if (local_8c === 0x14) { // Great Library
           FUN_004ec312(param_2);
         }
@@ -3460,19 +3568,93 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
            ((1 << (u8(local_3d8) & 0x1f)) & u8(DAT_00655b0b)) !== 0) {
           if (DAT_006d1da0 === local_3d8) {
             FUN_0047cea6(iVar4, iVar5);
+          } else if (2 < DAT_00655b02) {
+            FUN_0046b14d(0x72, DAT_006ad30c + s32(DAT_006ad558, local_3d8 * 4) * 0x54,
+                         iVar4, iVar5, 0, 0, 0, 0, 0, 0);
           }
-          // Check alliance notifications...
+          if (((DAT_0064c6c0[local_3d8 * 0x594 + param_2 * 4] & 8) === 0) &&
+             (((DAT_0064c6c0[param_2 * 0x594 + local_3d8 * 4 + 2] & 0x10) === 0) ||
+              ((DAT_0064c6c0[param_2 * 0x594 + local_84 * 4 + 1] & 8) === 0))) {
+            if (((DAT_0064c6c0[local_3d8 * 0x594 + local_84 * 4] & 8) === 0) &&
+               (((DAT_0064c6c0[local_84 * 0x594 + local_3d8 * 4 + 2] & 0x10) === 0) ||
+                ((DAT_0064c6c0[local_84 * 0x594 + param_2 * 4 + 1] & 8) === 0))) {
+              if (((((DAT_0064c6c0[local_3d8 * 0x594 + param_2 * 4] & 0x80) !== 0) ||
+                   (iVar6 = FUN_00453e51(local_3d8, 0x18), iVar6 !== 0)) ||
+                  (iVar6 = FUN_00453e51(local_3d8, 9), iVar6 !== 0)) ||
+                 ((((DAT_0064c6c0[local_3d8 * 0x594 + local_84 * 4] & 0x80) !== 0) ||
+                   (iVar6 = FUN_00453e51(local_3d8, 0x18), iVar6 !== 0)) ||
+                  (iVar6 = FUN_00453e51(local_3d8, 9), iVar6 !== 0))) {
+                uVar8 = FUN_00493c7d(param_2);
+                FUN_0040ff60(1, uVar8);
+                uVar8 = FUN_00410070(local_84);
+                FUN_0040ff60(2, uVar8);
+                if (DAT_006d1da0 === local_3d8) {
+                  FUN_004eb80a("CITYCAPTURE2", param_1, 0x46, 1, param_2);
+                } else if (2 < DAT_00655b02) {
+                  FUN_00511880(0x1e, DAT_006ad30c + s32(DAT_006ad558, local_3d8 * 4) * 0x54, 4, 1, param_2, param_1);
+                }
+              }
+            } else {
+              uVar8 = FUN_00493c7d(param_2);
+              FUN_0040ff60(1, uVar8);
+              uVar8 = FUN_00493c7d(local_84);
+              FUN_0040ff60(2, uVar8);
+              if (DAT_006d1da0 === local_3d8) {
+                FUN_004eb80a("CITYLOSEALLY", param_1, 0x46, 1, param_2);
+              } else if (2 < DAT_00655b02) {
+                FUN_00511880(0x1d, DAT_006ad30c + s32(DAT_006ad558, local_3d8 * 4) * 0x54, 4, 1, param_2, param_1);
+              }
+            }
+          } else {
+            uVar8 = FUN_00493c7d(param_2);
+            FUN_0040ff60(1, uVar8);
+            uVar8 = FUN_00410070(local_84);
+            FUN_0040ff60(2, uVar8);
+            if (DAT_006d1da0 === local_3d8) {
+              FUN_004eb80a("CITYWINALLY", param_1, 0x46, 1, param_2);
+            } else if (2 < DAT_00655b02) {
+              FUN_00511880(0x1c, DAT_006ad30c + s32(DAT_006ad558, local_3d8 * 4) * 0x54, 5, 1, param_2, param_1);
+            }
+          }
         }
       }
     }
   } else {
     // Human player involved — show city capture dialog
+    uVar8 = FUN_00493c7d(param_2);
+    FUN_0040ff60(1, uVar8);
+    FUN_00421da0(0, local_74);
     if ((DAT_006d1da0 === param_2) || (DAT_006d1da0 === local_84)) {
       FUN_004105f8(iVar4, iVar5, param_2);
       FUN_0047cea6(iVar4, iVar5);
       FUN_004eb80a("CITYCAPTURE", param_1, 0x46, 1, param_2);
     }
-    // Send multiplayer notifications if needed
+    if ((((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) !== 0) && (2 < DAT_00655b02) &&
+       (DAT_006d1da0 !== local_84)) {
+      FUN_0046b14d(0x89, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                   param_1, 0, 0, 0, 0, 0, 0, 0);
+      FUN_0046b14d(0x8a, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                   0, 0, 0, 0, 0, 0, 0, 0);
+      FUN_0046b14d(0x71, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                   iVar4, iVar5, param_2, 0, 0, 0, 0, 0);
+      FUN_0046b14d(0x72, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                   iVar4, iVar5, 0, 0, 0, 0, 0, 0);
+      FUN_00511880(0x1b, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                   4, 1, param_2, param_1);
+    }
+    if ((((1 << (u8(param_2) & 0x1f)) & u8(DAT_00655b0b)) !== 0) && (2 < DAT_00655b02) &&
+       (DAT_006d1da0 !== param_2)) {
+      FUN_0046b14d(0x89, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                   param_1, 0, 0, 0, 0, 0, 0, 0);
+      FUN_0046b14d(0x8a, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54,
+                   0, 0, 0, 0, 0, 0, 0, 0);
+      FUN_0046b14d(0x71, DAT_006ad30c + s32(DAT_006ad558, param_2 * 4) * 0x54,
+                   iVar4, iVar5, param_2, 0, 0, 0, 0, 0);
+      FUN_0046b14d(0x72, DAT_006ad30c + s32(DAT_006ad558, param_2 * 4) * 0x54,
+                   iVar4, iVar5, 0, 0, 0, 0, 0, 0);
+      FUN_00511880(0x1b, DAT_006ad30c + s32(DAT_006ad558, param_2 * 4) * 0x54,
+                   4, 1, param_2, param_1);
+    }
   }
 
   // ── Steal technology ──
@@ -3760,6 +3942,21 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
         if ((DAT_006d1da0 === param_2) || (DAT_006d1da0 === local_84)) {
           FUN_0046e287(1);
         }
+      }
+    }
+    // Partisan count notification
+    if (((local_394 !== 0) &&
+        (((1 << (u8(param_2) & 0x1f)) & u8(DAT_00655b0b)) !== 0 ||
+         ((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) !== 0)) && (DAT_00654fa8 === 0)) {
+      uVar8 = FUN_00410070(local_84);
+      FUN_0040ff60(0, uVar8);
+      FUN_0040ff60(1, local_6c);
+      if ((DAT_006d1da0 === param_2) || (DAT_006d1da0 === local_84)) {
+        FUN_004442e0("PARTISANS", local_3cc);
+      }
+      if ((((1 << (u8(local_84) & 0x1f)) & u8(DAT_00655b0b)) !== 0) && (2 < DAT_00655b02) &&
+         (DAT_006d1da0 !== local_84)) {
+        FUN_00511880(0x1f, DAT_006ad30c + s32(DAT_006ad558, local_84 * 4) * 0x54, 2, 0, local_3cc, 0);
       }
     }
   }
@@ -4065,7 +4262,8 @@ export function FUN_0057e9f9(param_1, param_2, param_3, param_4) {
     FUN_0059c575(param_1, param_2, DAT_00655afa, param_3, param_4);
   } else if ((2 < DAT_00655b02) &&
             ((u8(DAT_00655b0b) & (1 << (DAT_006560f0[param_1 * 0x20 + 7] & 0x1f))) !== 0)) {
-    FUN_0046b14d(100, 0, param_1, param_2, DAT_00655afa, param_3, param_4, 0, 0, 0);
+    FUN_0046b14d(100, DAT_006ad30c + s32(DAT_006ad558, unitOwner * 4) * 0x54,
+                 param_1, param_2, DAT_00655afa, param_3, param_4, 0, 0, 0);
   }
 
   DAT_006acb0c = DAT_006acb0c + 1;
@@ -4121,6 +4319,7 @@ export function FUN_0057ebfd(param_1) {
 export function FUN_0057ed3f(param_1, param_2, param_3) {
   // Combat animation — UI only, no-op in JS
   DAT_006ad908 = 1;
+  DAT_006c926c = 0;
   // ... animation frames ...
   DAT_006ad908 = 0;
 }
@@ -4220,7 +4419,19 @@ export function FUN_0057f9e3(param_1, param_2, param_3, param_4) {
   let local_8;
 
   iVar2 = FUN_005b8da4(param_2, param_3);
+  uVar3 = FUN_00493c7d(param_1);
+  FUN_0040ff60(0, uVar3);
   local_c = u8(iVar2);
+
+  // ── Nuclear warning dialog ──
+  if (((DAT_00655b02 < 3) || ((1 << (local_c & 0x1f) & u8(DAT_00655b0b)) === 0)) ||
+     (DAT_006d1da0 === iVar2)) {
+    if (((1 << (local_c & 0x1f)) & u8(DAT_00655b0b)) !== 0) {
+      FUN_004cc870("USEWEAPONS", 0x3e, 8);
+    }
+  } else {
+    FUN_00511880(0x29, DAT_006ad30c + s32(DAT_006ad558, iVar2 * 4) * 0x54, 1, 0, 0, 0);
+  }
 
   // ── Check for SDI defense ──
   if (param_4 !== 0) {
@@ -4232,10 +4443,36 @@ export function FUN_0057f9e3(param_1, param_2, param_3, param_4) {
             s16(DAT_0064f340, local_14 * 0x58),
             s16(DAT_0064f340, local_14 * 0x58 + 2),
             param_2, param_3), iVar4 < 4))) {
-        // SDI within range — nuke intercepted
+        // SDI within range — nuke intercepted, notify
+        FUN_0040ff60(0, DAT_0064f340.subarray(local_14 * 0x58 + 0x20)); // &DAT_0064f360 + local_14*0x58
+        if (((DAT_00655b02 < 3) ||
+            ((u8(DAT_00655b0b) & (1 << (DAT_0064f340[local_14 * 0x58 + 8] & 0x1f))) === 0)) ||
+           (s8(DAT_0064f340[local_14 * 0x58 + 8]) === DAT_006d1da0)) {
+          if ((u8(DAT_00655b0b) & (1 << (DAT_0064f340[local_14 * 0x58 + 8] & 0x1f))) !== 0) {
+            FUN_004cc870(DAT_00634440, 0x11, 8);
+          }
+        } else {
+          FUN_00511880(0x2a, DAT_006ad30c +
+                       s32(DAT_006ad558, s8(DAT_0064f340[local_14 * 0x58 + 8]) * 4) * 0x54, 1, 0, 0, 0);
+        }
+        if (((DAT_00655b02 < 3) || (((1 << (u8(param_1) & 0x1f)) & u8(DAT_00655b0b)) === 0)) ||
+           (DAT_006d1da0 === param_1)) {
+          if (((1 << (u8(param_1) & 0x1f)) & u8(DAT_00655b0b)) !== 0) {
+            FUN_004cc870(DAT_00634444, 0x11, 8);
+          }
+        } else {
+          FUN_00511880(0x2a, DAT_006ad30c + s32(DAT_006ad558, param_1 * 4) * 0x54, 1, 0, 0, 0);
+        }
         return 0;
       }
     }
+  }
+
+  // ── Multiplayer routing ──
+  if (((2 < DAT_00655b02) && (((1 << (local_c & 0x1f)) & u8(DAT_00655b0b)) !== 0)) &&
+     (DAT_006d1da0 !== iVar2)) {
+    FUN_0046b14d(0x7d, DAT_006ad30c + s32(DAT_006ad558, iVar2 * 4) * 0x54,
+                 param_2, param_3, 0, 0, 0, 0, 0, 0);
   }
 
   // ── Execute nuclear strike ──
