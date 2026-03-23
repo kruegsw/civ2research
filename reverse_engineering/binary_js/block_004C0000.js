@@ -4039,15 +4039,15 @@ export function FUN_004ce196() {
     if (0x13 < local_108) {
       DAT_006a4f98 = 1;
       DAT_006a4f9c = 0;
-      // DEVIATION: MFC — InvalidateObjectCache
+      // CRichEditDoc_InvalidateObjectCache(DAT_006a1908); // DEVIATION: MFC
       return;
     }
     iVar1 = FUN_004cffb0(local_108, local_104, 0x100);
     if (iVar1 === 0) {
       wi(DAT_006a1d78, local_108 * 4, 0);
     } else {
-      // DEVIATION: MFC — allocate string buffer via show_messagebox_CA35
-      let uVar3 = show_messagebox_CA35(0, local_104.length + 1);
+      let sVar1 = _strlen(local_104);
+      let uVar3 = show_messagebox_CA35(DAT_0064b984, sVar1 + 1);
       wi(DAT_006a1d78, local_108 * 4, uVar3);
       if (ri(DAT_006a1d78, local_108 * 4) === 0) {
         wi(DAT_006a1d78, local_108 * 4, 0);
@@ -4055,7 +4055,7 @@ export function FUN_004ce196() {
         DAT_006a4f9c = 0;
         return;
       }
-      // DEVIATION: MFC — copy string to allocated buffer
+      FUN_005f22d0(ri(DAT_006a1d78, local_108 * 4), local_104); // DEVIATION: string copy
     }
     local_108 = local_108 + 1;
   } while (true);

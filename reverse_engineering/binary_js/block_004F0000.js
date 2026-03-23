@@ -1160,10 +1160,18 @@ export function FUN_004f6564(param_1, param_2) {
   // C: If DAT_00635aa4 != 0 && param_2 == 2: draws bottom bitmap border via FUN_005a9b5d
   // C: Otherwise: draws simple border via FUN_0040fdb0
   // DEVIATION: MFC rendering — cannot draw without GDI context
-  if ((DAT_00635aa0 !== 0 && param_2 === 1) || (DAT_00635aa4 !== 0 && param_2 === 2)) {
-    // DEVIATION: FUN_005a9b5d bitmap border
+  if (DAT_00635aa0 === 0 || param_2 !== 1) {
+    if (DAT_00635aa4 === 0 || param_2 !== 2) {
+      FUN_0040fdb0(); // DEVIATION: simple border
+    } else {
+      let uVar1 = FUN_00407fc0(param_1, 0, 0); // DEVIATION: get rect width
+      uVar1 = FUN_00407f90(param_1, uVar1); // DEVIATION: get rect height
+      // FUN_005a9b5d(in_ECX, DAT_00635aa4, param_1[0], param_1[1], uVar1); // DEVIATION: MFC bitmap border
+    }
   } else {
-    FUN_0040fdb0(); // DEVIATION: simple border
+    let uVar1 = FUN_00407fc0(param_1, 0, 0); // DEVIATION: get rect width
+    uVar1 = FUN_00407f90(param_1, uVar1); // DEVIATION: get rect height
+    // FUN_005a9b5d(in_ECX, DAT_00635aa0, param_1[0], param_1[1], uVar1); // DEVIATION: MFC bitmap border
   }
 }
 
