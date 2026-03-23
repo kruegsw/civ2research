@@ -1739,8 +1739,102 @@ export function FUN_0057624d() {
 // ═══════════════════════════════════════════════════════════════════
 // show_messagebox_6267 — show_import_sprite_dialog
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c show_messagebox_6267 (1303 bytes)
 export function show_messagebox_6267() {
-  // UI dialog — no-op in JS
+  let uVar1;
+  let iVar2;
+  let pcVar3;
+  let local_9d0 = '';
+  let local_94c;
+  let local_948 = '';
+  let local_844;
+  let local_840 = '';
+  let local_73c = new Uint8Array(1832);
+  let local_14;
+
+  // DEVIATION: SEH (FS_OFFSET)
+  FUN_005c64da(); // DEVIATION: GDI init
+  FUN_0059db08(0x4000);
+  // Determine sprite sheet name based on editor mode
+  switch (DAT_006ac924) {
+  case 0: case 4: case 5: case 6:
+    local_844 = "ICONS"; break;
+  case 1: case 2: case 3:
+    local_844 = "CITIES"; break;
+  case 7: case 8: case 9: case 10:
+    local_844 = "TERRAIN"; break;
+  case 0xb:
+    local_844 = "UNITS"; break;
+  }
+  do {
+    uVar1 = FUN_00428b0c(DAT_00628420[0x958 / 4], 0, local_844, local_844, 0, 0);
+    _sprintf(local_840, "%s.%s", local_844, uVar1); // DEVIATION: sprintf
+    _sprintf(local_948, "%s.BMP;%s.GIF", local_844, local_844); // DEVIATION: sprintf
+    uVar1 = FUN_00428b0c(DAT_00628420[0x95c / 4], local_844);
+    _sprintf(local_9d0, "%s", uVar1); // DEVIATION: sprintf
+    iVar2 = FUN_show_open_dialog_31D2(DAT_006ac1f8, local_9d0, local_948, local_840, "BMP;GIF", 1, 0); // DEVIATION: Win32 file dialog
+    if (iVar2 === 0) {
+      // goto cleanup
+      FUN_004083f0();
+      FUN_005767a7(); FUN_005767b3(); FUN_005767c9(); // DEVIATION: SEH cleanup
+      return;
+    }
+    _strupr(local_948); // DEVIATION: uppercase
+    local_94c = 1;
+    local_14 = _strrchr(local_948, 0x5c); // DEVIATION: find last backslash
+    if (local_14 === null) { local_14 = local_948; }
+    else { local_14 = local_14 + 1; }
+    let _MaxCount = _strlen(local_844);
+    iVar2 = _strncmp(local_14, local_844, _MaxCount);
+    if (iVar2 === 0) {
+      // Filename matches expected pattern
+      if ((DAT_006ac924 === 7 || DAT_006ac924 === 10) &&
+         (_isdigit(local_14[7]) && (local_14[7] & 1) === 0)) {
+        // Odd terrain number — show warning
+        FUN_005a6c23(DAT_006ac4d0); // DEVIATION: disable parent
+        FUN_00444270("ODDTERRAIN"); // DEVIATION: Win32 dialog
+        FUN_005a6c45(); // DEVIATION: enable parent
+      } else if ((DAT_006ac924 === 8 || DAT_006ac924 === 9) &&
+                (!_isdigit(local_14[7]) || (local_14[7] & 1) !== 0)) {
+        FUN_005a6c23(DAT_006ac4d0);
+        FUN_00444270("EVENTERRAIN"); // DEVIATION: Win32 dialog
+        FUN_005a6c45();
+      } else {
+        // Try to load as BMP
+        pcVar3 = _strstr(local_948, ".BMP");
+        if (pcVar3 !== null) {
+          iVar2 = load_bitmap(DAT_006ac0a8, local_948, 10, 0xc0, local_73c); // DEVIATION: Win32
+          if (iVar2 !== 0) { local_94c = 0; }
+          else {
+            // let pCVar4 = FUN_00428b0c(DAT_00628420[0x964 / 4]); // DEVIATION: error string
+            // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
+          }
+        } else {
+          pcVar3 = _strstr(local_948, ".GIF");
+          if (pcVar3 !== null) {
+            iVar2 = FUN_005bf071(local_948, 10, 0xc0, local_73c); // DEVIATION: GIF loader
+            if (iVar2 !== 0) { local_94c = 0; }
+            else {
+              // let pCVar4 = FUN_00428b0c(DAT_00628420[0x964 / 4]); // DEVIATION: error
+              // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
+            }
+          } else {
+            // let pCVar4 = FUN_00428b0c(DAT_00628420[0x968 / 4]); // DEVIATION: format error
+            // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
+          }
+        }
+      }
+    } else {
+      // Filename doesn't match — show warning
+      uVar1 = FUN_00428b0c(DAT_00628420[0x960 / 4], local_844);
+      _sprintf(local_9d0, "%s", uVar1);
+      // MessageBoxA(0, local_9d0, null, 0x40); // DEVIATION: Win32 warning
+    }
+  } while (local_94c !== 0);
+  FUN_0057624d(); // reinit editor
+  FUN_00574239(); // repaint
+  FUN_004083f0(); // DEVIATION: cleanup
+  FUN_005767a7(); FUN_005767b3(); FUN_005767c9(); // DEVIATION: SEH cleanup
 }
 
 // ═══════════════════════════════════════════════════════════════════
