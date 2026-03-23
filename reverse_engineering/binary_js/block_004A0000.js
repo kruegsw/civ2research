@@ -2735,7 +2735,15 @@ export function FUN_004abfe5(param_1, param_2, param_3) {
     DAT_00673fa4 = DAT_00673fb8;
   }
   if (iVar19 !== 0) {
-    // DEVIATION: Win32 debug visualization loop (thunk_FUN_0047cd51, etc.)
+    // FUN_0047cd51(-1, 1); // DEVIATION: Win32 — refresh map display
+    // for (let local_54 = 0; local_54 < 0x30; local_54++) {
+    //   for (let local_60 = 0; local_60 < 0x30; local_60++) {
+    //     if (ri(DAT_006ced60, local_60 * 4 + local_54 * 0xc0) !== 0) {
+    //       FUN_0047c0ab(local_60 + DAT_00673fb0, local_54 + DAT_00673fb4, 0x29); // DEVIATION: draw tile
+    //     }
+    //   }
+    // }
+    // FUN_0047cd51(-1, 1); // DEVIATION: Win32 — refresh
   }
   return local_50;
 }

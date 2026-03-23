@@ -722,7 +722,10 @@ export function pick_up_unit_005b319e(param_1, param_2) {
     DAT_006ad8d8 = 0;
     DAT_006c90e0 = -2;
     FUN_0046b14d(0x3f, 0, param_1, 0, 0, 0, 0, 0, 0, 0);
-    // DEVIATION: Win32 API (timeout wait loop with FUN_00421bb0/FUN_0047e94e) — network wait
+    // while (DAT_006c90e0 === -2) { // DEVIATION: Win32 — network wait loop
+    //   FUN_00421bb0(); // DEVIATION: Win32 — message pump
+    //   FUN_0047e94e(1, 0); // DEVIATION: Win32 — process messages
+    // }
   }
 }
 
@@ -1934,7 +1937,13 @@ export function FUN_005b7fe0() {
   // Initialize all tiles to terrain type 10 (ocean), zero flags
   local_14 = DAT_00636598;
   for (local_c = 0; local_c < DAT_006d1164; local_c = local_c + 1) {
-    // C: *local_14 = 10; local_14[1..5] = 0; local_14 += 6;
+    // local_14[0] = 10; // terrain type = ocean
+    // local_14[1] = 0;  // improvements
+    // local_14[2] = 0;  // improvements2
+    // local_14[3] = 0;  // continent
+    // local_14[4] = 0;  // visibility
+    // local_14[5] = 0;  // site quality
+    // local_14 = local_14 + 6; // advance to next tile
     // DEVIATION: In JS, tile init handled by initMapTiles in mem.js
   }
   // Allocate visibility layers (7 civs)
