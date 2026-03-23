@@ -3015,10 +3015,10 @@ export function FUN_004dd285(param_1) {
     FUN_0046b14d(0x79, s32(DAT_006ad30c, s32(DAT_006ad558, iVar1 * 4) * 0x54), 0, 0, 0, 0, 0, 0, 0, 0);
   }
   if (s32(DAT_0064b9e8, iVar2 * 4) === 0 && s16(DAT_0064c708, iVar2 * 0x594) === 0) {
-    FUN_kill_civ(iVar2, iVar1);
+    kill_civ(iVar2, iVar1);
   }
   if (s32(DAT_0064b9e8, iVar1 * 4) === 0 && s16(DAT_0064c708, iVar1 * 0x594) === 0) {
-    FUN_kill_civ(iVar1, iVar2);
+    kill_civ(iVar1, iVar2);
   }
   FUN_005d2279('End ExecuteParleyTransaction', DAT_00628468);
 }
@@ -3734,7 +3734,7 @@ function FUN_00467750() { /* stub — clear diplomatic status */ }
 function FUN_004b0b53() { /* stub — refresh all displays */ }
 function FUN_0056a65e() { /* stub — update status bar */ }
 function FUN_0046b14d() { /* stub — send network message */ }
-function FUN_kill_civ() { /* stub — kill_civ */ }
+function kill_civ() { /* stub — kill_civ */ }
 function FUN_0047cf9e() { /* stub — refresh map for civ */ }
 function FUN_0047cf22() { /* stub — refresh tile */ }
 function FUN_0047cea6() { /* stub — refresh adjacent tiles */ }

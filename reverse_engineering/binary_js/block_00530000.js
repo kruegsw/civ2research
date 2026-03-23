@@ -32,7 +32,7 @@ function stub(name) {
 }
 
 // External function stubs — replace with real imports as available
-const FUN_kill_civ = stub('kill_civ');
+const kill_civ = stub('kill_civ');
 const FUN_00598d45 = stub('FUN_00598d45'); // ai_threat_level
 const FUN_004c9528 = stub('pick_up_unit_004c9528');
 // (duplicate stubs removed: FUN_005b8d15, FUN_00442885, FUN_00598d45 already declared above)
@@ -989,7 +989,7 @@ export function FUN_0053184d(param_1) {
     local_27c = u32(DAT_00655b0b) & (1 << (u8(param_1) & 0x1f));
     if (local_27c === 0) {
       if (local_144 === 0 && s16(DAT_0064c708, param_1 * 0x594) === 0) {
-        FUN_kill_civ(param_1, 0);
+        kill_civ(param_1, 0);
       }
       if ((DAT_00655af8 + param_1 & 7) === 0) {
         FUN_0055f5a3(param_1, 0);

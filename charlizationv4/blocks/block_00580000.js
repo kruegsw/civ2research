@@ -49,13 +49,14 @@ import { FUN_00410030, FUN_00410070, FUN_0041033a, FUN_004105f8, FUN_00410e46, F
 import { FUN_00421da0, FUN_00421ea0, FUN_00421ed0, FUN_00421f10, FUN_004271e8, FUN_004272d0 } from './block_00420000.js';
 import { FUN_004274a6 } from './block_00420000.js';
 import { FUN_00436287, FUN_0043c810, FUN_0043c9d0, FUN_0043cc00, FUN_0043d07a, FUN_0043d20a } from './block_00430000.js';
-import { FUN_0043d289 } from './block_00430000.js';
+import { FUN_0043d289, create_city } from './block_00430000.js';
 import { FUN_00440750, FUN_00442541, FUN_004442a0, FUN_004442e0 } from './block_00440000.js';
 import { FUN_00453e51, FUN_0045a8e3, FUN_0045ac71, FUN_0045b0d6 } from './block_00450000.js';
 import { FUN_00467825, FUN_0046b14d, FUN_0046e020, FUN_0046e287 } from './block_00460000.js';
 import { FUN_0047bc59, FUN_0047cb26, FUN_0047ce1e, FUN_0047cea6, FUN_0047cf22 } from './block_00470000.js';
 import { FUN_00489859, FUN_00489a0d } from './block_00480000.js';
 import { FUN_004904c0, FUN_00492c15, FUN_004933f2, FUN_00493c7d } from './block_00490000.js';
+import { kill_civ } from './block_004A0000.js';
 import { FUN_004b0b53, FUN_004bf05b, FUN_004bfdbe } from './block_004B0000.js';
 import { FUN_004c4210, FUN_004c42a0, FUN_004c4d1e, FUN_004c50d0, FUN_004c54da, FUN_004ca1cd } from './block_004C0000.js';
 import { FUN_004cc870 } from './block_004C0000.js';
@@ -1232,12 +1233,12 @@ export function FUN_00580341(param_1, param_2, param_3) {
         set_city_byte(0x09, iVar15, s8(city_byte(0x09, iVar15)) - 1);
         if (city_byte(0x09, iVar15) === 0) {
           // City destroyed
-          FUN_thunk_delete_city(iVar15, 0);
+          delete_city(iVar15, 0);
           for (local_bc = 1; local_bc < 8; local_bc = local_bc + 1) {
             FUN_005b8b1a(uVar11, iVar10, local_bc);
           }
           FUN_0047cf22(uVar11, iVar10);
-          iVar16 = FUN_thunk_kill_civ(uVar12, uVar7);
+          iVar16 = kill_civ(uVar12, uVar7);
           if (iVar16 !== 0) {
             local_30 = 0;
             for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
@@ -2296,7 +2297,7 @@ export function FUN_0058f040(param_1) {
           if (G.DAT_006ad0d0 !== 0) {
             FUN_00410030("SURPRISETRIBE", 0, 0);
           }
-          iVar6 = FUN_thunk_create_city(iVar4, uVar5, uVar3);
+          iVar6 = create_city(iVar4, uVar5, uVar3);
           if (999 < G.DAT_00655afa) {
             iVar9 = _rand();
             let popSize = (((iVar9 & 0xff) % 4) + 1) & 0xff;  // approximation of the C bit manipulation
@@ -2649,8 +2650,6 @@ export function FUN_0059061d() { /* SEH unwind */ }
 // They are stubbed here as no-ops until their blocks are transpiled.
 // ═══════════════════════════════════════════════════════════════════
 
-function FUN_thunk_delete_city(a, b) { /* delete_city — stub */ }
-function FUN_thunk_kill_civ(a, b) { return 0; /* kill_civ — stub */ }
+function delete_city(a, b) { /* delete_city — stub */ }
 function FUN_00509590(a) { /* handle_city_disorder — stub */ }
 function FUN_004bd9f0_stub(a, b) { return 0; /* has_tech — stub */ }
-function FUN_thunk_create_city(a, b, c) { return -1; /* create_city — stub */ }

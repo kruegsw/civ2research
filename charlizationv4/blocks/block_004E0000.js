@@ -42,7 +42,7 @@ import { FUN_0042f079 } from './block_00420000.js';
 import { FUN_004308ae, FUN_00431c73, FUN_00431d22, FUN_00433122, FUN_00434d8a, FUN_00435d15 } from './block_00430000.js';
 import { FUN_004361cc, FUN_00436f5a, FUN_00437a4a, FUN_0043856b, FUN_0043c9d0, FUN_0043cf76 } from './block_00430000.js';
 import { FUN_0043d20a, FUN_0043d289, FUN_0043d400 } from './block_00430000.js';
-import { FUN_00440325, FUN_00441a79, FUN_00441b11, FUN_0044cd9b } from './block_00440000.js';
+import { FUN_00440325, FUN_00441a79, FUN_00441b11, FUN_0044cd9b, delete_city } from './block_00440000.js';
 import { FUN_00453e18, FUN_00453e51, FUN_00456f20 } from './block_00450000.js';
 import { FUN_0046b14d, FUN_0046e020, FUN_0046e4a9, FUN_0046e571, FUN_0046e6a9, FUN_0046e6c8 } from './block_00460000.js';
 import { FUN_004702e0, FUN_004710d0, FUN_0047cd51, FUN_0047ce1e, FUN_0047cea6, FUN_0047cf9e } from './block_00470000.js';
@@ -51,7 +51,7 @@ import { FUN_00484d3b, FUN_00484d52, FUN_00488a45, FUN_004897fa, FUN_00489a0d } 
 import { FUN_00493b10, FUN_00493ba6, FUN_00493c7d, FUN_00493d13, FUN_0049836a, FUN_004988b8 } from './block_00490000.js';
 import { FUN_00498943, FUN_00498a5c } from './block_00490000.js';
 import { FUN_004a2020, FUN_004a2379, FUN_004a23fc, FUN_004a5d92, FUN_004a73d9, FUN_004a74bc } from './block_004A0000.js';
-import { FUN_004a7577, FUN_004a75a6, FUN_004aef20, FUN_004af14b } from './block_004A0000.js';
+import { FUN_004a7577, FUN_004a75a6, FUN_004aef20, FUN_004af14b, kill_civ, new_civ } from './block_004A0000.js';
 import { FUN_004b0b53, FUN_004b7645, FUN_004b768d, FUN_004b7eb6, FUN_004bb570, FUN_004bb8e0 } from './block_004B0000.js';
 import { FUN_004be6ba, FUN_004bfe5a } from './block_004B0000.js';
 import { FUN_004c21d5, FUN_004c2b73, FUN_004c4210, FUN_004c5fae } from './block_004C0000.js';
@@ -741,7 +741,7 @@ export function FUN_004e1763(param_1, param_2, param_3) {
       G.DAT_006ad8ec = 0;
     } else {
       if (param_3 !== 0) {
-        FUN_new_civ(param_1);
+        new_civ(param_1);
       }
       if (2 < G.DAT_00655b02) {
         FUN_004b0b53(0xff, 2, 0, 0, 0);
@@ -2658,8 +2658,8 @@ export function FUN_004ebbde(param_1) {
         local_20 = s16(G.DAT_0064f340, param_1 * 0x58);
         local_24 = s16(G.DAT_0064f342, param_1 * 0x58);
         if (s8(G.DAT_0064f349[param_1 * 0x58]) < 1) {
-          FUN_delete_city(param_1, 0);
-          FUN_kill_civ(iVar2, 0);
+          delete_city(param_1, 0);
+          kill_civ(iVar2, 0);
           return 1;
         }
       } else if (((1 << (bVar1 & 0x1f)) & G.DAT_00655b0b) !== 0 ||
@@ -3090,8 +3090,8 @@ export function FUN_004ec3fe(param_1) {
           FUN_0040ff60(0, G.DAT_0064f360[param_1 * 0x58]);
           FUN_004271e8(1, G.DAT_0064b1b8[local_64 * 0x14]);
           FUN_004271e8(3, G.DAT_00628420 + 0x2ec);
-          FUN_delete_city(param_1, 0);
-          iVar3 = FUN_kill_civ(local_84, 0);
+          delete_city(param_1, 0);
+          iVar3 = kill_civ(local_84, 0);
           if (iVar3 === 0) {
             FUN_005b3d06(local_64, local_84, local_50, local_54);
             if ((G.DAT_00655af2 & 4) === 0 && G.DAT_006a65ac !== 0) {
@@ -3618,11 +3618,8 @@ function FUN_0049994f() {} // thunk_citywin_994F
 function FUN_load_verify_units() { return 0; }
 function FUN_save_game() {}
 function FUN_set_city_shields() {}
-function FUN_new_civ() {}
 function FUN_004e9849_stub() { return 4; }
 function FUN_005b94d5_stub() { return 0; }
 function FUN_005b8931_stub() { return 0; }
 function FUN_004eb571_stub() {}
 function FUN_citywin_8ADC() {}
-function FUN_delete_city() {}
-function FUN_kill_civ() { return 0; }

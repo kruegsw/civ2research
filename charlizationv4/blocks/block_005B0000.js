@@ -826,11 +826,15 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
       G.DAT_00655b16 = G.DAT_00655b16 + 1;
     }
     // Update civ bookkeeping
+    // C: (char)(&G.DAT_0064b1ca)[param_1 * 0x14] < '\x05'
     if (s8(G.DAT_0064b1bc[param_1 * 0x14 + 0x0E]) < 5) {
-      G.DAT_0064c706[param_2] = (G.DAT_0064c706[param_2] || 0) + 1;
+      // C: *(short *)(&G.DAT_0064c706 + param_2 * 0x594) += 1
+      ws(G.DAT_0064c706, param_2 * 0x594, rs(G.DAT_0064c706, param_2 * 0x594) + 1);
     }
-    G.DAT_0064c778[param_2 * 0x594 + param_1] = ((G.DAT_0064c778[param_2 * 0x594 + param_1] || 0) + 1) & 0xFF;
-    G.DAT_0064b9e8[param_2] = (G.DAT_0064b9e8[param_2] || 0) + 1;
+    // C: (&G.DAT_0064c778)[param_2 * 0x594 + param_1] += 1
+    G.DAT_0064c778[param_2 * 0x594 + param_1] = (G.DAT_0064c778[param_2 * 0x594 + param_1] + 1) & 0xFF;
+    // C: *(int *)(&G.DAT_0064b9e8 + param_2 * 4) += 1
+    wi(G.DAT_0064b9e8, param_2 * 4, ri(G.DAT_0064b9e8, param_2 * 4) + 1);
 
     // Initialize unit fields
     G.DAT_006560f0[local_10 * 0x20 + 6] = param_1 & 0xFF;           // unit type
@@ -908,16 +912,19 @@ export function FUN_005b4391(param_1, param_2) {
 
       iVar5 = s8(G.DAT_006560f0[param_1 * 0x20 + 7]);
       if (-1 < iVar5 && param_1 < 0x800) {
-        if ((G.DAT_0064c706[iVar5] || 0) !== 0 &&
+        // C: *(short *)(&G.DAT_0064c706 + iVar5 * 0x594) -= 1
+        if (rs(G.DAT_0064c706, iVar5 * 0x594) !== 0 &&
             s8(G.DAT_0064b1bc[u8(G.DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0E]) < 5) {
-          G.DAT_0064c706[iVar5] = G.DAT_0064c706[iVar5] - 1;
+          ws(G.DAT_0064c706, iVar5 * 0x594, rs(G.DAT_0064c706, iVar5 * 0x594) - 1);
         }
-        if ((G.DAT_0064c778[iVar5 * 0x594 + u8(G.DAT_006560f0[param_1 * 0x20 + 6])] || 0) !== 0) {
+        // C: (&G.DAT_0064c778)[iVar5 * 0x594 + unitType] -= 1
+        if (G.DAT_0064c778[iVar5 * 0x594 + u8(G.DAT_006560f0[param_1 * 0x20 + 6])] !== 0) {
           G.DAT_0064c778[iVar5 * 0x594 + u8(G.DAT_006560f0[param_1 * 0x20 + 6])] =
             G.DAT_0064c778[iVar5 * 0x594 + u8(G.DAT_006560f0[param_1 * 0x20 + 6])] - 1;
         }
-        if ((G.DAT_0064b9e8[iVar5] || 0) !== 0) {
-          G.DAT_0064b9e8[iVar5] = G.DAT_0064b9e8[iVar5] - 1;
+        // C: *(int *)(&G.DAT_0064b9e8 + iVar5 * 4) -= 1
+        if (ri(G.DAT_0064b9e8, iVar5 * 4) !== 0) {
+          wi(G.DAT_0064b9e8, iVar5 * 4, ri(G.DAT_0064b9e8, iVar5 * 4) - 1);
         }
       }
 
@@ -942,10 +949,11 @@ export function FUN_005b4391(param_1, param_2) {
       }
 
       // Check if civ should be killed (settler was last unit + no cities)
+      // C: *(short *)(&G.DAT_0064c708 + iVar5 * 0x594) == 0
       if (s8(G.DAT_0064b1bc[bVar1 * 0x14 + 0x0E]) === 5 &&
-          (G.DAT_0064c708[iVar5] || 0) === 0 &&
-          (G.DAT_0064c778[iVar5 * 0x594 + bVar1] || 0) === 0) {
-        FUN_004a3db0(iVar5, -1);
+          rs(G.DAT_0064c708, iVar5 * 0x594) === 0 &&
+          G.DAT_0064c778[iVar5 * 0x594 + bVar1] === 0) {
+        kill_civ(iVar5, -1);
       }
 
       if (2 < G.DAT_00655b02 && param_2 !== 0) {
@@ -2784,5 +2792,5 @@ export function FUN_005c0023() { /* SEH restore — no-op */ }
 
 function SetFocus(a) {}
 function XD_FlushSendBuffer(a) {}
-function FUN_004a3db0(a, b) {} // kill_civ
+function kill_civ(a, b) {} // kill_civ
 function _rand() { return (Math.random() * 0x7FFF) | 0; }

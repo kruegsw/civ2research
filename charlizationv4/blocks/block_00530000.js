@@ -58,7 +58,7 @@ import { FUN_005dcdf9 } from './block_005D0000.js';
 
 function stub(name) { return function (...args) { return 0; }; }
 
-const FUN_kill_civ = stub('kill_civ');
+const kill_civ = stub('kill_civ');
 // (duplicate stubs removed: FUN_005b8d15, FUN_00442885, FUN_00598d45 already declared above)
 const FUN_citywin_C679 = stub('citywin_C679');
 const _rand = stub('_rand');
@@ -979,7 +979,7 @@ export function FUN_0053184d(param_1) {
     local_27c = u32(G.DAT_00655b0b) & (1 << (u8(param_1) & 0x1f));
     if (local_27c === 0) {
       if (local_144 === 0 && s16(G.DAT_0064c708, param_1 * 0x594) === 0) {
-        FUN_kill_civ(param_1, 0);
+        kill_civ(param_1, 0);
       }
       if ((G.DAT_00655af8 + param_1 & 7) === 0) {
         FUN_0055f5a3(param_1, 0);

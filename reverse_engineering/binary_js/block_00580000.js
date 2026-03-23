@@ -1283,12 +1283,12 @@ export function FUN_00580341(param_1, param_2, param_3) {
         set_city_byte(0x09, iVar15, s8(city_byte(0x09, iVar15)) - 1);
         if (city_byte(0x09, iVar15) === 0) {
           // City destroyed
-          FUN_thunk_delete_city(iVar15, 0);
+          delete_city(iVar15, 0);
           for (local_bc = 1; local_bc < 8; local_bc = local_bc + 1) {
             FUN_005b8b1a(uVar11, iVar10, local_bc);
           }
           FUN_0047cf22(uVar11, iVar10);
-          iVar16 = FUN_thunk_kill_civ(uVar12, uVar7);
+          iVar16 = kill_civ(uVar12, uVar7);
           if (iVar16 !== 0) {
             local_30 = 0;
             for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
@@ -1598,8 +1598,38 @@ export function FUN_00586eb0() {
 // Main cosmic parameter editor window — stubbed
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_00586f16 (1731 bytes)
 export function FUN_00586f16() {
-  // Cosmic editor main — UI only, no-op
+  let iVar1;
+  let iVar5;
+  let local_464;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  // DEVIATION: MFC — FUN_005c64da() init
+  DAT_006a1d7c = 1;
+  // DEVIATION: MFC (in_ECX) — DAT_006a4f88 = in_ECX
+  // DEVIATION: MFC — operator_new(0x48), CPropertySheet setup
+  local_464 = 0; // C: pvVar2 == null → local_464 = 0; else local_464 = FUN_005bd630()
+  DAT_0062e018 = local_464;
+  // DEVIATION: MFC — thunk_FUN_00417ef0, FUN_005d268e, FUN_005d25a8, FUN_005d2550, FUN_005d2568, FUN_005d2590
+  // DEVIATION: MFC (in_ECX + 0x2d8..0x2ec) — dialog window layout setup
+  DAT_006a1d80 = 0xc9;
+  // DEVIATION: MFC — thunk_FUN_0040ef70, thunk_FUN_00428b0c, thunk_FUN_005534bc
+  // DEVIATION: MFC — thunk_FUN_004086c0, thunk_FUN_00418f40, thunk_FUN_00418fe0
+  // DEVIATION: MFC — thunk_FUN_00551dc0, thunk_FUN_00551d80, _Timevec destructor
+  iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  // DEVIATION: MFC — dialog controls setup (buttons, rectangles, labels)
+  FUN_005866d3(); // called from C — combat stats display
+  FUN_005869d4(); // called from C — unit stats display
+  // DEVIATION: MFC — FUN_005bb574, thunk_FUN_004085f0, FUN_005c61b0
+  // DEVIATION: MFC — dialog message loop: while (DAT_006a1d7c !== 0) { thunk_FUN_0040ef50(); }
+  // In headless mode, skip the dialog loop
+  if (DAT_0062e018 !== 0) {
+    // DEVIATION: MFC — thunk_FUN_0040f010(1) — destroy dialog
+  }
+  DAT_0062e018 = 0;
+  // DEVIATION: SEH cleanup
 }
 
 
@@ -1759,8 +1789,28 @@ export function FUN_0058843f(param_1, param_2, param_3) {
 // Source: block_00580000.c @ 0x0058878E, 1721 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058878e (1721 bytes)
 export function FUN_0058878e(param_1) {
-  // City list rendering — UI stub
+  // DEVIATION: MFC — entire function is dialog list rendering
+  // C: reads/writes MFC dialog object fields via local_38 (CPropertySheet pointer)
+  // Renders unit/city list items with icons, text, and selection highlighting
+  // Key game-state reads:
+  //   DAT_00655b18 (city count), DAT_0064f340 (city data), DAT_0064f360 (city names)
+  //   DAT_0064b1bc (unit type data)
+  // Key game-state writes:
+  //   local_38 + 0x1e4 + param_1*4 — list has entries flag
+  //   local_38 + 0x10410 + param_1*4 — scroll position
+  // DEVIATION: Cannot function without MFC CPropertySheet object (in_ECX)
+  // Full C body preserved in decompiled/block_00580000.c lines 2210-2385
+  let local_38 = 0; // DEVIATION: MFC — FUN_005c62ee() returns dialog pointer
+  // C: FUN_005c00ce, FUN_005c0073, FUN_005c0333 — GDI device context setup
+  // C: SetRect, FUN_005c0f57, FUN_005c19ad — rectangle/color drawing
+  // C: thunk_FUN_0040bbb0, thunk_FUN_0040bbe0 — text buffer ops
+  // C: thunk_FUN_0052ed95 — find city for list entry
+  // C: thunk_FUN_00588e47 — draw unit icon
+  // C: thunk_FUN_0043d20a — check if city has building
+  // C: thunk_FUN_00428b0c — load resource string
+  // C: FUN_005c0073(local_18), thunk_FUN_0052e971, thunk_FUN_0040f380 — cleanup
 }
 
 
@@ -2071,7 +2121,92 @@ export function FUN_0058ae6c(param_1, param_2) { /* UI click stub */ }
 // Source: block_00580000.c @ 0x0058AFB6, 1224 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058afb6(param_1) { /* sound slot population — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058afb6 (1224 bytes)
+export function FUN_0058afb6(param_1) {
+  let local_10;
+  let local_8;
+
+  local_10 = -1;
+  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
+    wi(DAT_006acd38, local_8 * 4, -1);
+  }
+  if (ri(DAT_006a2d48, param_1 * 0x58) !== 0) {
+    if (param_1 === 0x36) { wi(DAT_006acd38, 0, 0x7d); }
+    else if (param_1 === 0x37) { wi(DAT_006acd38, 0, 0x7e); }
+    else if (param_1 === 0x38) { wi(DAT_006acd38, 0, 0x7f); }
+    else if (param_1 === 0x39) { wi(DAT_006acd38, 0, 0x80); }
+    else if (param_1 === 0x3a) { wi(DAT_006acd38, 0, 0x81); }
+    else if (param_1 === 0x3b) { wi(DAT_006acd38, 0, 0x82); }
+    else if (param_1 === 0x3c) { wi(DAT_006acd38, 0, 0x83); }
+    else if (param_1 === 0x3d) { wi(DAT_006acd38, 0, 0x84); }
+    else if (param_1 === 0x33) { wi(DAT_006acd38, 0, 0x65); }
+    else if (param_1 === 0x34) { wi(DAT_006acd38, 0, 0x66); }
+    else if (param_1 === 0x35) { wi(DAT_006acd38, 0, 0x67); }
+    else if ((DAT_006a2d48[param_1 * 0x58 + 0x11] & 0x10) === 0) {
+      if (ri(DAT_006a2d48, param_1 * 0x58 - 0x14) === 1) {
+        if (ri(DAT_006a2d48, param_1 * 0x58 - 4) === 0) {
+          wi(DAT_006acd38, 0, 0x21);
+          if (param_1 < 0x1e) { wi(DAT_006acd38, 0x10, 0x17); }
+          else { wi(DAT_006acd38, 0x10, 0x4f); }
+        } else if (param_1 < 0x1e) {
+          wi(DAT_006acd38, 0, 0);
+          wi(DAT_006acd38, 0x0C, 0x18);
+          wi(DAT_006acd38, 0x10, 0x17);
+          wi(DAT_006acd38, 0x14, 0x1a);
+        } else {
+          wi(DAT_006acd38, 0, 0x52);
+          wi(DAT_006acd38, 0x0C, 0x50);
+          wi(DAT_006acd38, 0x10, 0x4f);
+          wi(DAT_006acd38, 0x14, 0x4e);
+        }
+      } else if (ri(DAT_006a2d48, param_1 * 0x58 - 0x14) === 2) {
+        if ((DAT_006a2d48[param_1 * 0x58 + 0x10] & 8) === 0) {
+          local_10 = 6;
+          if (param_1 === 0x28 || param_1 === 0x26 || param_1 === 0x27 || param_1 === 0x25) {
+            local_10 = 0x2e;
+          }
+        } else {
+          wi(DAT_006acd38, 0, 0x4d);
+        }
+      } else if (param_1 === 0x11) {
+        wi(DAT_006acd38, 0, 0x19);
+      } else if (param_1 === 0x0f || param_1 === 0x10 || param_1 === 0x13 || param_1 === 0x12) {
+        wi(DAT_006acd38, 0, 0x4a);
+      } else if (param_1 === 0x14 || param_1 === 0x15) {
+        wi(DAT_006acd38, 0, 0x0c);
+      } else if (param_1 === 7 || param_1 === 0x0b || param_1 === 10 || param_1 === 9) {
+        wi(DAT_006acd38, 0, 0x22);
+      } else if (param_1 === 8 || param_1 === 0x0d || param_1 === 0x0c || param_1 === 0x0e) {
+        wi(DAT_006acd38, 0, 0x26);
+      } else if (param_1 < 0x16 || 0x1a < param_1) {
+        wi(DAT_006acd38, 0, 0x49);
+      } else if (param_1 === 0x17) {
+        wi(DAT_006acd38, 0, 10);
+      } else {
+        local_10 = 0x28;
+        if (0x17 < param_1) {
+          wi(DAT_006acd38, 0, 0x1c);
+        }
+      }
+    } else if (ri(DAT_006a2d48, param_1 * 0x58) < 99) {
+      wi(DAT_006acd38, 0, 0x29);
+    } else {
+      wi(DAT_006acd38, 0, 0x32);
+    }
+  }
+  DAT_006acd3c = local_10;
+  if (-1 < local_10) {
+    wi(DAT_006acd38, 8, 0x23);
+  }
+  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
+    if (ri(DAT_006acd38, local_8 * 4) < 0) {
+      FUN_00453c40(); // DEVIATION: UI — hide advisor icon
+    } else {
+      FUN_00453c80(); // DEVIATION: UI — show advisor icon
+    }
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2133,7 +2268,92 @@ export function FUN_0058bdfd() {
 // Player command to build a city with a settler — stubbed (UI-heavy)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058be56() { /* build city command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058be56 (1087 bytes)
+export function FUN_0058be56() {
+  let iVar1, iVar2, iVar3, iVar5;
+  let uVar4;
+  let local_118 = new Uint8Array(260);
+  let local_14;
+  let local_10;
+  let local_c;
+  let local_8;
+
+  DAT_0062804c = 0;
+  iVar1 = DAT_00655afe & 0xFFFF;
+  local_10 = rs(DAT_006560f0, iVar1 * 0x20);
+  local_14 = rs(DAT_006560f0, iVar1 * 0x20 + 2);
+  iVar2 = s8(DAT_006560f0[iVar1 * 0x20 + 7]);
+  // C: (&DAT_0064b1ca)[unitType * 0x14] == 5 — is settler
+  if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar1 * 0x20 + 6]) * 0x14 + 0x0E]) === 5) {
+    iVar3 = FUN_005b89e4(local_10, local_14);
+    if (iVar3 === 0) {
+      // Not ocean — check for existing city
+      iVar3 = FUN_0043cf76(local_10, local_14);
+      if (iVar3 < 0) {
+        // No city here — check adjacent cities
+        for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
+          uVar4 = FUN_005ae052(s8(DAT_00628350[local_8]) + local_10);
+          local_c = s8(DAT_00628360[local_8]) + local_14;
+          iVar3 = FUN_004087c0(uVar4, local_c);
+          if (iVar3 !== 0) {
+            iVar3 = FUN_005b8ca6(uVar4, local_c);
+            if (-1 < iVar3) {
+              uVar4 = FUN_0043cf76(uVar4, local_c);
+              FUN_00414dd0("ADJACENTCITY", uVar4); // DEVIATION: UI
+              return;
+            }
+          }
+        }
+        // Found a valid site — create city
+        iVar3 = create_city(local_10, local_14, iVar2);
+        if (-1 < iVar3) {
+          // DEVIATION: UI — FUN_00421ed0 shows name city dialog
+          iVar5 = 0; // Assume user accepts default name (iVar5 = 0 means OK)
+          if (iVar5 === 0) {
+            FUN_004c4d1e(iVar1, iVar3, 0);
+            FUN_0040ff60(0, 0 /*&DAT_0064f360 + iVar3 * 0x58*/); // DEVIATION: UI
+            FUN_0040bbb0(); // DEVIATION: UI
+            FUN_00421f10(DAT_00655afa); // DEVIATION: UI
+            FUN_0040ff60(1, 0); // DEVIATION: UI
+            FUN_0046e020(7, 1, 0, 0);
+            FUN_004eb80a("FOUNDED", iVar3, 0x4c, 1, iVar2); // DEVIATION: UI
+            // C: tutorial check for first city
+            if ((DAT_00655ae8 & 0x200) !== 0 &&
+               rs(DAT_0064c708, iVar2 * 0x594) === 1) {
+              FUN_004904c0(0 /*PTR_s_TUTORIAL*/, "FIRSTPRODUCT", 0, 0); // DEVIATION: UI
+            }
+            DAT_0062edf8 = 1;
+            citywin_DADA();
+            handle_city_disorder_00509590(iVar3);
+            citywin_DB36();
+            DAT_0062edf8 = 0;
+          } else {
+            // User cancelled — delete the city
+            delete_city(iVar3, 0);
+            // C: decrement personality city name counter
+            let personalityIdx = rs(DAT_0064c600, iVar2 * 0x594 + 0xA6);
+            DAT_006554fa[personalityIdx * 0x30 + 3] = DAT_006554fa[personalityIdx * 0x30 + 3] - 1;
+          }
+        }
+      } else {
+        // City exists: add settler population
+        if (s8(DAT_0064f340[iVar3 * 0x58 + 9]) < DAT_0064bcd1) {
+          DAT_0064f340[iVar3 * 0x58 + 9] = DAT_0064f340[iVar3 * 0x58 + 9] + 1;
+          FUN_005b4391(iVar1, 1);
+          FUN_0047ce1e(local_10, local_14, 1, DAT_006d1da0, 1); // DEVIATION: UI refresh
+        } else {
+          FUN_004c4210(0, DAT_0064bcd1); // DEVIATION: UI
+          FUN_00414dd0("ONLY10", iVar3); // DEVIATION: UI
+        }
+      }
+    } else {
+      FUN_00421ea0("CITYATSEA"); // DEVIATION: UI message
+    }
+  } else {
+    FUN_004442a0("ONLYSETTLERS", 0, (DAT_00633584 === 0) ? 0 : 8); // DEVIATION: UI
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2154,7 +2374,154 @@ export function FUN_0058c295() { /* disband command — UI stub */ }
 // Handle settler/engineer build orders — stubbed (UI-heavy)
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058c65e(param_1) { /* settler order — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058c65e (1411 bytes)
+export function FUN_0058c65e(param_1) {
+  let bVar1;
+  let bVar2;
+  let iVar3, iVar4, iVar5, iVar6, iVar7;
+  let pbVar8;
+  let uVar9;
+
+  iVar3 = DAT_00655afe & 0xFFFF;
+  iVar4 = rs(DAT_006560f0, iVar3 * 0x20);
+  iVar5 = rs(DAT_006560f0, iVar3 * 0x20 + 2);
+  iVar6 = s8(DAT_006560f0[iVar3 * 0x20 + 7]);
+  bVar1 = FUN_005b89bb(iVar4, iVar5);
+  DAT_0062804c = 0;
+  // C: (&DAT_0064b1ca)[unitType * 0x14] != 5 — not a settler
+  if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar3 * 0x20 + 6]) * 0x14 + 0x0E]) !== 5) {
+    FUN_004cc870("ONLYSETTLERS", 0, 8); // DEVIATION: UI message
+    return;
+  }
+  if (param_1 === 10) {
+    // Airstrip: needs Radio tech (0x42)
+    iVar7 = FUN_004bd9f0(iVar6, 0x42);
+    if (iVar7 === 0) {
+      FUN_004c4240("RADIO", 0x42, 8); // DEVIATION: UI
+      return;
+    }
+    iVar7 = FUN_005b8ca6(iVar4, iVar5);
+    if (-1 < iVar7 || (bVar2 = FUN_005b94d5(iVar4, iVar5), (bVar2 & 0x42) === 0x40) ||
+       (iVar7 = FUN_005b89e4(iVar4, iVar5), iVar7 !== 0)) {
+      FUN_004442e0("CANTIMPROVE", iVar3); // DEVIATION: UI
+      return;
+    }
+    iVar7 = FUN_005b8d15(iVar4, iVar5);
+    if (-1 < iVar7) {
+      FUN_004442e0("ALREADYAIR", iVar3); // DEVIATION: UI
+      return;
+    }
+  }
+  if (param_1 === 4) {
+    // Fortress: needs Construction tech (0x12)
+    iVar7 = FUN_004bd9f0(iVar6, 0x12);
+    if (iVar7 === 0) {
+      FUN_004c4240("CONSTRUCTION", 0x12, 8); // DEVIATION: UI
+      return;
+    }
+    iVar7 = FUN_005b8ca6(iVar4, iVar5);
+    if (-1 < iVar7 || (iVar7 = FUN_005b89e4(iVar4, iVar5), iVar7 !== 0) ||
+       (bVar2 = FUN_005b94d5(iVar4, iVar5), (bVar2 & 0x42) === 0x40)) {
+      FUN_004442e0("CANTIMPROVE", iVar3); // DEVIATION: UI
+      return;
+    }
+    bVar2 = FUN_005b94d5(iVar4, iVar5);
+    if ((bVar2 & 0x42) === 0x40) {
+      FUN_004442e0("ALREADYFORT", iVar3); // DEVIATION: UI
+      return;
+    }
+  }
+  if (param_1 === 5) {
+    // Road/Railroad
+    iVar7 = FUN_005b8ca6(iVar4, iVar5);
+    if (-1 < iVar7 || (iVar7 = FUN_005b89e4(iVar4, iVar5), iVar7 !== 0)) {
+      FUN_004442e0("CANTIMPROVE", iVar3); // DEVIATION: UI
+      return;
+    }
+    // C: check river + Bridge Building tech
+    pbVar8 = FUN_005b8931(iVar4, iVar5);
+    if ((tileRead(pbVar8, 0) & 0x80) !== 0) {
+      iVar7 = FUN_004bd9f0(iVar6, 7);
+      if (iVar7 === 0) {
+        FUN_004c4240("BRIDGEBUILDING", 7, 8); // DEVIATION: UI
+        return;
+      }
+    }
+    uVar9 = FUN_005b94d5(iVar4, iVar5);
+    if ((uVar9 & 0x20) !== 0) {
+      FUN_004442e0("ALREADYROAD", iVar3); // DEVIATION: UI
+      return;
+    }
+    uVar9 = FUN_005b94d5(iVar4, iVar5);
+    if ((uVar9 & 0x10) !== 0) {
+      iVar7 = FUN_004bd9f0(iVar6, 0x43);
+      if (iVar7 === 0) {
+        FUN_004c4240("RAILROADS", 0x43, 8); // DEVIATION: UI
+        return;
+      }
+    }
+  }
+  if ((param_1 === 6 || param_1 === 7) &&
+     s8(DAT_00627cc0[bVar1 * 0x18 + param_1]) < 0) {
+    if (s8(DAT_00627cc0[bVar1 * 0x18 + param_1]) === -1) {
+      FUN_004442e0("CANTIMPROVE", iVar3); // DEVIATION: UI
+      return;
+    }
+    iVar7 = FUN_005b8ca6(iVar4, iVar5);
+    if (-1 < iVar7) {
+      FUN_004442e0("CANTIMPROVE", iVar3); // DEVIATION: UI
+      return;
+    }
+    if (param_1 === 7) {
+      // Mining
+      bVar1 = FUN_005b94d5(iVar4, iVar5);
+      if ((bVar1 & 0xc) === 8) {
+        FUN_00410030("ALREADYMINING", 0, 0); // DEVIATION: UI
+        return;
+      }
+    } else {
+      // Irrigation
+      iVar7 = FUN_0058c56c(iVar4, iVar5);
+      if (iVar7 === 0) {
+        FUN_004442e0("NOWATER", iVar3); // DEVIATION: UI
+        return;
+      }
+      bVar1 = FUN_005b94d5(iVar4, iVar5);
+      if ((bVar1 & 0xc) === 0xc) {
+        FUN_004442e0("ALREADYFARMLAND", iVar3); // DEVIATION: UI
+        return;
+      }
+      uVar9 = FUN_005b94d5(iVar4, iVar5);
+      if ((uVar9 & 4) !== 0) {
+        iVar6 = FUN_004bd9f0(iVar6, 0x46);
+        if (iVar6 === 0) {
+          FUN_004c4240("FARMLAND", 0x46, 8); // DEVIATION: UI
+          return;
+        }
+      }
+    }
+  }
+  if (param_1 === 8) {
+    // Transform terrain
+    iVar6 = FUN_005b89e4(iVar4, iVar5);
+    if (iVar6 !== 0) {
+      FUN_004442e0("CANTIMPROVE", iVar3); // DEVIATION: UI
+      return;
+    }
+    if (DAT_006560f0[iVar3 * 0x20 + 6] !== 1) {
+      // Not an Engineer
+      FUN_004442a0("ENGINEERS", 1, (DAT_00633584 === 0) ? 0 : 8); // DEVIATION: UI
+      return;
+    }
+  }
+  if (param_1 === 9 && (uVar9 = FUN_005b94d5(iVar4, iVar5), (uVar9 & 0x80) === 0)) {
+    FUN_00410030("NOPOLLUTION", 0, 8); // DEVIATION: UI
+  } else {
+    FUN_0047cea6(iVar4, iVar5);
+    FUN_004c42a0(iVar3, param_1);
+  }
+  return;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2186,7 +2553,103 @@ export function FUN_0058cde5() { /* explore command — UI stub */ }
 // Source: block_00580000.c @ 0x0058CFCD, 1105 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058cfcd() { /* pillage command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058cfcd (1105 bytes)
+export function FUN_0058cfcd() {
+  let bVar1;
+  let iVar2, iVar3, iVar4, iVar5, iVar6;
+  let bVar7;
+  let local_18;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  local_18 = 0;
+  FUN_0059db08(0x4000);
+  iVar2 = DAT_00655afe & 0xFFFF;
+  iVar3 = s8(DAT_006560f0[iVar2 * 0x20 + 7]);
+  iVar4 = rs(DAT_006560f0, iVar2 * 0x20);
+  iVar5 = rs(DAT_006560f0, iVar2 * 0x20 + 2);
+  // C: (&DAT_0064b1c4)[unitType * 0x14] == 0 — no attack ability
+  if (DAT_0064b1bc[u8(DAT_006560f0[iVar2 * 0x20 + 6]) * 0x14 + 8] === 0) {
+    return;
+  }
+  // C: (&DAT_0064b1c1)[unitType * 0x14] != 0 — not a land unit
+  if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar2 * 0x20 + 6]) * 0x14 + 5]) !== 0) {
+    return;
+  }
+  iVar6 = FUN_005b8ca6(iVar4, iVar5);
+  if (-1 < iVar6) {
+    FUN_00421ea0("CANTDO"); // DEVIATION: UI message
+    return;
+  }
+  iVar6 = FUN_005b8931(iVar4, iVar5);
+  bVar1 = tileRead(iVar6, 1);
+  if ((bVar1 & 0x5c) !== 0) {
+    FUN_0040ffa0("PILLAGEWHAT", 1); // DEVIATION: UI
+    iVar6 = FUN_004a2379(0 /*&DAT_006558e8*/, "PILLAGEMENU"); // DEVIATION: UI
+    if (iVar6 === 0) {
+      FUN_004a23fc(1); // DEVIATION: UI
+      bVar7 = ((bVar1 & 0xc) === 0xc) ? 1 : 0;
+      if (bVar7) {
+        FUN_0059edf0(0, 0xc, 0); // DEVIATION: UI
+      }
+      FUN_004a23fc(1); // DEVIATION: UI
+      if ((bVar1 & 0xc) === 4) {
+        FUN_0059edf0(0, 4, 0); // DEVIATION: UI
+        bVar7 = bVar7 + 1;
+      }
+      FUN_004a23fc(1); // DEVIATION: UI
+      if ((bVar1 & 0xc) === 8) {
+        FUN_0059edf0(0, 8, 0); // DEVIATION: UI
+        bVar7 = bVar7 + 1;
+      }
+      FUN_004a23fc(1); // DEVIATION: UI
+      if ((bVar1 & 0x42) === 0x42) {
+        FUN_0059edf0(0, 0x42, 0); // DEVIATION: UI
+        bVar7 = bVar7 + 1;
+      }
+      FUN_004a23fc(1); // DEVIATION: UI
+      if ((bVar1 & 0x42) === 0x40) {
+        FUN_0059edf0(0, 0x40, 0); // DEVIATION: UI
+        bVar7 = bVar7 + 1;
+      }
+      FUN_004a23fc(1); // DEVIATION: UI
+      if ((bVar1 & 0x20) === 0) {
+        FUN_004a23fc(1); // DEVIATION: UI
+        if ((bVar1 & 0x10) !== 0) {
+          FUN_0059edf0(0, 0x10, 0); // DEVIATION: UI
+          bVar7 = bVar7 + 1;
+        }
+      } else {
+        FUN_0059edf0(0, 0x20, 0); // DEVIATION: UI
+        bVar7 = bVar7 + 1;
+      }
+      if (1 < bVar7) {
+        local_18 = FUN_0040bc80(0); // DEVIATION: UI dialog choice
+        if (local_18 < 0) {
+          return;
+        }
+      }
+    }
+    // Check if pillaging enemy city tile triggers diplomacy
+    iVar4 = FUN_0043d07a(iVar4, iVar5, -1, -1, -1);
+    if (0 < iVar4) {
+      iVar4 = s8(DAT_0064f340[iVar4 * 0x58 + 8]);
+      if (-1 < iVar4 && iVar4 !== iVar3) {
+        DAT_006ad0cc = 1;
+        iVar5 = FUN_00579ed0(iVar3, iVar4, 0xe);
+        if (iVar5 !== 0) {
+          return;
+        }
+        if ((DAT_0064c600[iVar4 * 4 + iVar3 * 0x594 + 0xC1] & 0x20) === 0) {
+          FUN_0045ac71(iVar3, iVar4, -1);
+        }
+      }
+    }
+    FUN_004c50d0(iVar2, local_18);
+    return;
+  }
+  FUN_00421ea0("CANTDO"); // DEVIATION: UI message
+  return;
+}
 
 export function FUN_0058d41e() { /* cleanup stub */ }
 export function FUN_0058d434() { /* SEH unwind */ }
@@ -2213,7 +2676,136 @@ export function FUN_0058d60a() { /* paradrop command — UI stub */ }
 // Source: block_00580000.c @ 0x0058D6AF, 1787 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058d6af() { /* caravan goto — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058d6af (1787 bytes)
+export function FUN_0058d6af() {
+  let cVar1;
+  let cVar2;
+  let cVar3;
+  let sVar4;
+  let bVar5;
+  let iVar6, iVar7, iVar8, iVar9, iVar10, iVar11, iVar12, iVar13, iVar14;
+  let uVar15;
+  let uVar16;
+  let local_330;
+  let local_32c;
+  let local_320;
+  let local_23c;
+  let local_18;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  FUN_0059db08(0x2000);
+  iVar6 = DAT_00655afe & 0xFFFF;
+  iVar7 = s8(DAT_006560f0[iVar6 * 0x20 + 7]);
+  iVar8 = rs(DAT_006560f0, iVar6 * 0x20);
+  iVar9 = rs(DAT_006560f0, iVar6 * 0x20 + 2);
+  iVar10 = FUN_005b8a81(iVar8, iVar9);
+  iVar11 = FUN_005b89e4(iVar8, iVar9);
+  cVar1 = s8(DAT_0064b1bc[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14 + 0x0E]);
+  bVar5 = false;
+  do {
+    FUN_004271e8(0, DAT_0064b1bc[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14 + 0x0C]); // DEVIATION: UI
+    FUN_0040ffa0("GOTO_TARGET", 0x800001); // DEVIATION: UI
+    local_32c = 0;
+    for (local_330 = 0; local_330 < DAT_00655b18; local_330 = local_330 + 1) {
+      if (ri(DAT_0064f340, local_330 * 0x58 + 0x54) !== 0 &&
+         (s8(DAT_0064f340[local_330 * 0x58 + 8]) === iVar7 || bVar5)) {
+        iVar12 = FUN_005b8a81(rs(DAT_0064f340, local_330 * 0x58),
+                              rs(DAT_0064f340, local_330 * 0x58 + 2));
+        // C: (&DAT_0064b1c1)[unitType * 0x14]
+        let unitDomain = s8(DAT_0064b1bc[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14 + 5]);
+        if (unitDomain === 2) {
+          // Naval unit: check port reachability
+          if (iVar11 === 0) {
+            uVar15 = FUN_0043cf76(iVar8, iVar9);
+            if (local_330 < 0) { /* goto LAB_0058daa2 — skip to city display */ }
+            else {
+              iVar12 = FUN_004429af(uVar15, local_330);
+            }
+          } else {
+            iVar12 = FUN_0044263f(local_330, iVar10);
+          }
+          if (iVar12 === 0) continue; // goto LAB_0058d80c
+        } else if (unitDomain === 0) {
+          // Land unit: check same continent
+          if (iVar12 !== iVar10) continue; // goto LAB_0058d80c
+        } else if (unitDomain === 1 &&
+                   s8(DAT_0064b1bc[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14 + 7]) !== 0) {
+          // Air unit with fuel limit: check range
+          cVar3 = s8(DAT_0064b1bc[u8(DAT_006560f0[iVar6 * 0x20 + 6]) * 0x14 + 7]);
+          cVar2 = s8(DAT_006560f0[iVar6 * 0x20 + 0x0D]);
+          iVar12 = FUN_005b2a39(iVar6);
+          iVar13 = FUN_005b2c3d(iVar6);
+          uVar16 = DAT_0064bcc8;
+          iVar14 = FUN_005ae1b0(iVar8, iVar9, rs(DAT_0064f340, local_330 * 0x58),
+                                rs(DAT_0064f340, local_330 * 0x58 + 2));
+          if (((iVar13 + (cVar3 - (cVar2 + 1)) * iVar12) / uVar16) < iVar14) continue;
+        }
+        // LAB_0058daa2: Check if city is visible/reachable
+        if (s8(DAT_0064f340[local_330 * 0x58 + 8]) === iVar7 ||
+           DAT_0064f340[local_330 * 0x58 + 0x0D + iVar7] !== 0 || DAT_00655b07 !== 0) {
+          FUN_0040bbb0(); // DEVIATION: UI
+          FUN_0040bbe0(0 /*&DAT_0064f360 + local_330 * 0x58*/); // DEVIATION: UI
+          if (cVar1 === 5) {
+            // Settler: count pollution tiles around city
+            local_320 = 0;
+            for (local_18 = 0; local_18 < 0x14; local_18 = local_18 + 1) {
+              uVar15 = FUN_005ae052(rs(DAT_0064f340, local_330 * 0x58) +
+                                    s8(DAT_00628370[local_18]));
+              sVar4 = rs(DAT_0064f340, local_330 * 0x58 + 2);
+              cVar3 = s8(DAT_006283a0[local_18]);
+              iVar12 = FUN_004087c0(uVar15, sVar4 + cVar3);
+              if (iVar12 !== 0) {
+                uVar16 = FUN_005b94d5(uVar15, sVar4 + cVar3);
+                if ((uVar16 & 0x80) !== 0) {
+                  local_320 = local_320 + 1;
+                }
+              }
+            }
+            if (local_320 !== 0) {
+              FUN_0040fe10(); // DEVIATION: UI
+              FUN_0040fea0(); // DEVIATION: UI
+              FUN_0040ff30(local_320); // DEVIATION: UI
+              FUN_0040fe10(); // DEVIATION: UI
+              FUN_0040bc10(0x2f); // DEVIATION: UI
+              FUN_0040fed0(); // DEVIATION: UI
+            }
+          }
+          if (s8(DAT_0064f340[local_330 * 0x58 + 8]) === iVar7) {
+            iVar12 = FUN_0043d20a(local_330, 0x20);
+            if (iVar12 !== 0) {
+              FUN_0040fe10(); // DEVIATION: UI
+              FUN_0040fea0(); // DEVIATION: UI
+              FUN_0040ff00(DAT_0064c588); // DEVIATION: UI
+              FUN_0040fed0(); // DEVIATION: UI
+            }
+          }
+          FUN_0059edf0(0, local_330, 0); // DEVIATION: UI
+          local_32c = local_32c + 1;
+        }
+      }
+      // LAB_0058d80c: continue
+    }
+    if (local_32c === 0) {
+      if (bVar5) {
+        return;
+      }
+      bVar5 = true;
+    } else {
+      iVar12 = FUN_0040bc80(0); // DEVIATION: UI dialog choice
+      if (iVar12 < 0) {
+        return;
+      }
+      if (local_23c === 0) {
+        // Set goto order to selected city
+        DAT_006560f0[iVar6 * 0x20 + 0x0F] = 0x0B; // order = goto
+        ws(DAT_006560f0, iVar6 * 0x20 + 0x12, rs(DAT_0064f340, iVar12 * 0x58));     // goto x
+        ws(DAT_006560f0, iVar6 * 0x20 + 0x14, rs(DAT_0064f340, iVar12 * 0x58 + 2)); // goto y
+        return;
+      }
+      bVar5 = !bVar5;
+    }
+  } while (true);
+}
 
 export function FUN_0058ddaa() { /* cleanup stub */ }
 export function FUN_0058ddc0() { /* SEH unwind */ }
@@ -2246,7 +2838,120 @@ export function FUN_0058df14() {
 // Source: block_00580000.c @ 0x0058DF7B, 1609 bytes
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_0058df7b() { /* airlift command — UI stub */ }
+// Source: decompiled/block_00580000.c FUN_0058df7b (1609 bytes)
+export function FUN_0058df7b() {
+  let iVar1, iVar2, iVar3, iVar4, iVar5, iVar6, iVar7;
+  let uVar8;
+  let local_320;
+  let local_31c;
+  let local_314;
+  let local_18;
+  let local_14;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  FUN_0059db08(0x2000);
+  iVar2 = DAT_00655afe & 0xFFFF;
+  if (iVar2 < 0) {
+    return;
+  }
+  iVar3 = s8(DAT_006560f0[iVar2 * 0x20 + 7]);
+  // C: (&DAT_0064b1c1)[unitType * 0x14] — unit domain
+  if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar2 * 0x20 + 6]) * 0x14 + 5]) === 2) {
+    FUN_004442e0("LIFTSHIP", iVar2); // DEVIATION: UI message
+    return;
+  }
+  if (s8(DAT_0064b1bc[u8(DAT_006560f0[iVar2 * 0x20 + 6]) * 0x14 + 5]) === 1) {
+    FUN_004442e0("LIFTPLANE", iVar2); // DEVIATION: UI message
+    return;
+  }
+  iVar4 = FUN_0043cf76(rs(DAT_006560f0, iVar2 * 0x20), rs(DAT_006560f0, iVar2 * 0x20 + 2));
+  if (iVar4 < 0) {
+    FUN_00410030("NOAIRPORT", 0, 0); // DEVIATION: UI message
+    return;
+  }
+  iVar5 = FUN_0043d20a(iVar4, 0x20); // has airport?
+  if (iVar5 === 0) {
+    FUN_00414dd0("NOAIRPORT", iVar4); // DEVIATION: UI message
+    return;
+  }
+  // C: ((&DAT_0064f346)[iVar4 * 0x58] & 1) — already airlifted this turn
+  if ((DAT_0064f340[iVar4 * 0x58 + 6] & 1) !== 0) {
+    FUN_0040ff60(0, 0 /*&DAT_0064f360 + iVar4 * 0x58*/); // DEVIATION: UI
+    FUN_00414dd0("ALREADYAIRLIFT", iVar4); // DEVIATION: UI
+    return;
+  }
+  FUN_0040ffa0("AIRLIFTSELECT", 1); // DEVIATION: UI
+  local_314 = 0;
+  for (local_14 = 0; local_14 < DAT_00655b18; local_14 = local_14 + 1) {
+    if (ri(DAT_0064f340, local_14 * 0x58 + 0x54) !== 0 &&
+       s8(DAT_0064f340[local_14 * 0x58 + 8]) === iVar3 && local_14 !== iVar4) {
+      iVar5 = FUN_0043d20a(local_14, 0x20); // has airport?
+      if (iVar5 !== 0) {
+        local_314 = local_314 + 1;
+        FUN_0059edf0(0 /*&DAT_0064f360 + local_14 * 0x58*/, local_14, 0); // DEVIATION: UI
+      }
+    }
+  }
+  if (local_314 === 0) {
+    FUN_004cc870("NOAIRPORT2", 0x20, 8); // DEVIATION: UI
+    return;
+  }
+  iVar5 = FUN_0040bc80(0); // DEVIATION: UI dialog choice
+  if (iVar5 < 0) {
+    return;
+  }
+  // C: ((&DAT_0064f346)[iVar5 * 0x58] & 1) — target already airlifted
+  if ((DAT_0064f340[iVar5 * 0x58 + 6] & 1) !== 0) {
+    FUN_0040ff60(0, 0); // DEVIATION: UI
+    FUN_00414dd0("ALREADYAIRLIFT", iVar4); // DEVIATION: UI
+    return;
+  }
+  // Check for enemy interceptors
+  local_31c = 0;
+  local_320 = 0;
+  do {
+    if (DAT_00655b16 <= local_320) {
+      if (local_31c !== 0) {
+        iVar3 = FUN_004442a0("ENEMYFIGHTERS", 0x1b, (DAT_00633584 === 0) ? 0 : 8); // DEVIATION: UI confirm
+        if (iVar3 === 0) {
+          return;
+        }
+      }
+      // Execute airlift
+      FUN_004ca1cd(iVar2, iVar4, iVar5, local_31c, local_18);
+      return;
+    }
+    iVar1 = local_31c;
+    // Check for enemy fighter units in range
+    if (ri(DAT_006560f0, local_320 * 0x20 + 0x1a) !== 0 &&
+       s8(DAT_006560f0[local_320 * 0x20 + 7]) !== iVar3 &&
+       s8(DAT_0064b1bc[u8(DAT_006560f0[local_320 * 0x20 + 6]) * 0x14 + 0x0E]) === 3 &&
+       (DAT_0064c600[s8(DAT_006560f0[local_320 * 0x20 + 7]) * 4 + iVar3 * 0x594 + 0xC1] & 0x20) !== 0) {
+      iVar6 = FUN_005b2a39(local_320);
+      uVar8 = DAT_0064bcc8;
+      iVar7 = FUN_005ae1b0(rs(DAT_0064f340, iVar4 * 0x58), rs(DAT_0064f340, iVar4 * 0x58 + 2),
+                            rs(DAT_006560f0, local_320 * 0x20), rs(DAT_006560f0, local_320 * 0x20 + 2));
+      if (!((iVar6 / uVar8) < iVar7)) {
+        iVar6 = FUN_005b2a39(local_320);
+        uVar8 = DAT_0064bcc8;
+        iVar7 = FUN_005ae1b0(rs(DAT_0064f340, iVar5 * 0x58), rs(DAT_0064f340, iVar5 * 0x58 + 2),
+                              rs(DAT_006560f0, local_320 * 0x20), rs(DAT_006560f0, local_320 * 0x20 + 2));
+        if ((iVar6 / uVar8) < iVar7) {
+          local_31c = iVar1;
+          local_320 = local_320 + 1;
+          continue;
+        }
+      }
+      local_18 = s8(DAT_006560f0[local_320 * 0x20 + 7]);
+      iVar1 = local_31c + 1;
+      if ((ru(DAT_006560f0, local_320 * 0x20 + 4) & 0x2000) !== 0) {
+        iVar1 = local_31c + 2;
+      }
+    }
+    local_31c = iVar1;
+    local_320 = local_320 + 1;
+  } while (true);
+}
 
 export function FUN_0058e5c4() { /* cleanup stub */ }
 export function FUN_0058e5da() { /* SEH unwind */ }
@@ -2347,7 +3052,7 @@ export function FUN_0058f040(param_1) {
           if (DAT_006ad0d0 !== 0) {
             FUN_00410030("SURPRISETRIBE", 0, 0);
           }
-          iVar6 = FUN_thunk_create_city(iVar4, uVar5, uVar3);
+          iVar6 = create_city(iVar4, uVar5, uVar3);
           if (999 < DAT_00655afa) {
             iVar9 = _rand();
             let popSize = (((iVar9 & 0xff) % 4) + 1) & 0xff;  // approximation of the C bit manipulation
@@ -2685,8 +3390,160 @@ export function FUN_0058fda9(param_1, param_2, param_3) {
 // wonder contribution. UI-heavy.
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00580000.c FUN_0058fedb (1831 bytes)
 export function FUN_0058fedb(param_1, param_2) {
-  // Caravan arrival — UI-heavy, stubbed
+  let bVar1;
+  let bVar2;
+  let iVar3;
+  let uVar4;
+  let cVar5;
+  let uVar6;
+  let uVar7;
+  let local_31c;
+  let local_318;
+  let local_310;
+  let local_18;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  FUN_0059db08(0x4000);
+  if (DAT_00654fa8 !== 0) {
+    // DEVIATION: SEH cleanup
+    return;
+  }
+  bVar1 = u8(DAT_006560f0[param_1 * 0x20 + 7]);
+  iVar3 = s8(DAT_006560f0[param_1 * 0x20 + 7]);
+  local_31c = 1;
+  // C: (char)(&DAT_00656100)[param_1 * 0x20] == param_2 && AI civ
+  if (s8(DAT_006560f0[param_1 * 0x20 + 0x10]) === param_2 &&
+     ((1 << (bVar1 & 0x1f)) & DAT_00655b0b) === 0) {
+    local_31c = 0;
+  }
+  // C: (char)(&DAT_0064f348)[param_2 * 0x58] == iVar3
+  if (s8(DAT_0064f340[param_2 * 0x58 + 8]) === iVar3) {
+    if (((1 << (bVar1 & 0x1f)) & DAT_00655b0b) === 0 &&
+       (DAT_0064f340[param_2 * 0x58 + 5] & 2) !== 0) {
+      local_31c = 0;
+    }
+    // C: (&DAT_006560ff)[param_1 * 0x20] == '\v'
+    if (DAT_006560f0[param_1 * 0x20 + 0x0F] === 0x0B &&
+       (rs(DAT_0064f340, param_2 * 0x58) !== rs(DAT_006560f0, param_1 * 0x20 + 0x12) ||
+        rs(DAT_0064f340, param_2 * 0x58 + 2) !== rs(DAT_006560f0, param_1 * 0x20 + 0x14))) {
+      local_31c = 0;
+    }
+  }
+  // C: human civ, own city, local_31c != 0 → show caravan menu
+  if (((1 << (bVar1 & 0x1f)) & DAT_00655b0b) !== 0 && DAT_006d1da0 === iVar3 &&
+     s8(DAT_0064f340[param_2 * 0x58 + 8]) === iVar3 && local_31c !== 0) {
+    // DEVIATION: UI dialog — show caravan menu options
+    if (s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) < 0) {
+      FUN_004271e8(0, DAT_00628420[0x100 / 4]); // DEVIATION: Win32 resource
+    } else {
+      FUN_004271e8(0, DAT_0064b168[s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) * 4]); // DEVIATION
+    }
+    FUN_0043c9d0("CARAVANMENU"); // DEVIATION: UI dialog
+    FUN_0059ec88(DAT_00641848[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x3c], 0, 0); // DEVIATION: display
+    if (-1 < s8(DAT_006560f0[param_1 * 0x20 + 0x0D])) {
+      FUN_0040bbb0(); // DEVIATION: UI
+      FUN_0040bbe0(0 /*&DAT_0064f360 + param_2 * 0x58*/); // DEVIATION: UI
+      FUN_0040fe10(); // DEVIATION: UI
+      bVar2 = false;
+      for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {
+        if (DAT_0064f340[param_2 * 0x58 + 0x3E + local_18] === DAT_006560f0[param_1 * 0x20 + 0x0D]) {
+          bVar2 = true;
+        }
+      }
+      if (bVar2) {
+        FUN_0040bc10(0x133); // DEVIATION: UI
+      } else {
+        FUN_0040bc10(0x134); // DEVIATION: UI
+      }
+      FUN_0040fe10(); // DEVIATION: UI
+      FUN_0040ff00(DAT_0064b168[s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) * 4]); // DEVIATION: UI
+      FUN_0043c810(); // DEVIATION: UI
+      FUN_0059e18b(0, -1, -1, -1, 0); // DEVIATION: UI
+    }
+    uVar7 = 0;
+    uVar6 = 0;
+    uVar4 = FUN_00428b0c(DAT_00628420[0x284 / 4], 0, 0); // DEVIATION: resource string
+    FUN_0059edf0(uVar4, uVar6, uVar7); // DEVIATION: UI button
+    cVar5 = (DAT_006560f0[param_1 * 0x20 + 0x10] !== param_2) ? 1 : 0;
+    if (cVar5) {
+      uVar7 = 0;
+      uVar6 = 1;
+      uVar4 = FUN_00428b0c(DAT_00628420[0x288 / 4], 1, 0); // DEVIATION: resource string
+      FUN_0059edf0(uVar4, uVar6, uVar7); // DEVIATION: UI button
+    }
+    // C: (char)(&DAT_0064f379)[param_2 * 0x58] < -0x26
+    if (s8(DAT_0064f340[param_2 * 0x58 + 0x39]) < -0x26) {
+      uVar7 = 0;
+      uVar6 = 2;
+      uVar4 = FUN_00428b0c(DAT_00628420[0x28c / 4], 2, 0); // DEVIATION: resource string
+      FUN_0059edf0(uVar4, uVar6, uVar7); // DEVIATION: UI button
+      cVar5 = cVar5 + 1;
+    }
+    local_31c = 0;
+    if (cVar5 !== 0) {
+      local_31c = FUN_0040bc80(0); // DEVIATION: UI dialog choice
+    }
+  }
+  // Process caravan action based on local_31c
+  if (local_31c !== 1) {
+    if (local_31c !== 2) {
+      // Cancel / no action
+      return;
+    }
+    // local_31c === 2: contribute to wonder
+    // C: (&DAT_006560f6)[param_1 * 0x20] == '1' (unit type 0x31 = 49)
+    if (DAT_006560f0[param_1 * 0x20 + 6] === 0x31) {
+      FUN_0046e020(0x16, 1, 0, 0);
+    } else {
+      FUN_0046e020(0x2c, 1, 0, 0);
+    }
+    // C: *(ushort *)(&DAT_0064f35c + param_2 * 0x58) += cost * multiplier
+    let shields = ru(DAT_0064f340, param_2 * 0x58 + 0x1C);
+    let unitCost = s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0C]);
+    shields = shields + unitCost * DAT_0064bccc;
+    ws(DAT_0064f340, param_2 * 0x58 + 0x1C, shields & 0xFFFF);
+    // DEVIATION: UI display of shields contributed
+    FUN_0040ff60(0, 0 /*&DAT_0064f360 + param_2 * 0x58*/);
+    FUN_00421da0(0, unitCost * DAT_0064bccc);
+    // C: compute remaining cost
+    if (s8(DAT_0064f340[param_2 * 0x58 + 0x39]) < 1) {
+      local_318 = -(s8(DAT_0064f340[param_2 * 0x58 + 0x39])) + 1 - 1;
+    } else {
+      local_318 = s8(DAT_0064f340[param_2 * 0x58 + 0x39]);
+    }
+    local_310 = u8(DAT_0064c48c[local_318 * 8]) * DAT_0064bccc -
+                rs(DAT_0064f340, param_2 * 0x58 + 0x1C);
+    if (local_310 < 0) {
+      local_310 = 0;
+    }
+    FUN_00421da0(1, local_310); // DEVIATION: UI
+    FUN_00421ea0("ADDTOWONDER"); // DEVIATION: UI
+    // C: mark home city as having contributed
+    if (DAT_006560f0[param_1 * 0x20 + 0x10] !== 0xFF) {
+      let cityOff = u8(DAT_006560f0[param_1 * 0x20 + 0x10]) * 0x58;
+      let flags = (DAT_0064f340[cityOff + 4] | (DAT_0064f340[cityOff + 5] << 8) |
+                   (DAT_0064f340[cityOff + 6] << 16) | (DAT_0064f340[cityOff + 7] << 24)) >>> 0;
+      flags = flags | 0x20000;
+      DAT_0064f340[cityOff + 4] = flags & 0xFF;
+      DAT_0064f340[cityOff + 5] = (flags >> 8) & 0xFF;
+      DAT_0064f340[cityOff + 6] = (flags >> 16) & 0xFF;
+      DAT_0064f340[cityOff + 7] = (flags >> 24) & 0xFF;
+    }
+    // C: thunk_FUN_005b6042(param_1,1) — disband unit
+    FUN_005b6042(param_1, 1);
+    if (2 < DAT_00655b02) {
+      FUN_004b0b53(0xff, 2, 0, 0, 0);
+    }
+    return;
+  }
+  // local_31c === 1: establish trade route
+  FUN_00440750(param_1, param_2);
+  if (2 < DAT_00655b02) {
+    FUN_004b0b53(0xff, 2, 0, 0, 0);
+  }
+  return;
 }
 
 export function FUN_00590607() { /* cleanup stub */ }
@@ -2743,10 +3600,10 @@ function FUN_005b8a81(a, b) { return 0; /* get_continent_id — stub */ }
 function FUN_0043cc00(a, b) { /* transfer_city — stub */ }
 function FUN_00442541(a, b) { /* auto_manage_city — stub */ }
 function FUN_005369f3(a) { /* city_celebration_check — stub */ }
-function FUN_thunk_delete_city(a, b) { /* delete_city — stub */ }
+function delete_city(a, b) { /* delete_city — stub */ }
 function FUN_005b8b1a(a, b, c) { /* update_tile_ownership — stub */ }
 function FUN_0047cf22(a, b) { /* refresh_map_area — stub */ }
-function FUN_thunk_kill_civ(a, b) { return 0; /* kill_civ — stub */ }
+function kill_civ() {}
 function FUN_00421da0(a, b) { /* set_dialog_number — stub */ }
 function FUN_00421ea0(a) { /* show_message — stub */ }
 function FUN_004442a0(a, b, c) { return 0; /* show_confirm — stub */ }
@@ -2795,7 +3652,7 @@ function FUN_005b9f1c() { /* end_map_update — stub */ }
 function FUN_004272d0(a, b, c) { /* set_tile_visibility — stub */ }
 function FUN_00410030(a, b, c) { return 0; /* show_info_message — stub */ }
 function FUN_005b8c42(a, b) { return 0; /* count_adjacent_land — stub */ }
-function FUN_thunk_create_city(a, b, c) { return -1; /* create_city — stub */ }
+function create_city() {}
 function FUN_0043d289(a, b, c) { /* add_city_building — stub */ }
 let DAT_00627cc8_terrain_food = new Int8Array(24 * 16); // terrain food yield table placeholder
 function FUN_0040ffa0(a, b) { /* set_dialog_title — stub */ }

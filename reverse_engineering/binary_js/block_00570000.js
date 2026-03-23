@@ -1287,7 +1287,7 @@ export function FUN_0057a904(param_1) {
   }
 
   DAT_00655b0a = DAT_00655b0a & ~(1 << (u8(local_24) & 0x1f));
-  iVar2 = FUN_new_civ(local_24);
+  iVar2 = new_civ(local_24);
   if (iVar2 === 0) {
     return 0;
   }
@@ -1817,7 +1817,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
 
     // If city reaches size 0, destroy it
     if (DAT_0064f340[param_1 * 0x58 + 9] === 0) {
-      FUN_delete_city(param_1, 0);
+      delete_city(param_1, 0);
       param_1 = 0xffffffff;
     }
   }
@@ -2043,7 +2043,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
   }
 
   // ── Check if old owner is eliminated ──
-  iVar6 = FUN_kill_civ(local_84, param_2);
+  iVar6 = kill_civ(local_84, param_2);
 
   // ── Partisan generation ──
   if ((iVar6 === 0) && (param_1 >= 0 && param_1 !== 0xffffffff) && (local_7c === 0) &&
@@ -2780,9 +2780,9 @@ function FUN_00456f20() { /* set attitude toward civ */ }
 function FUN_004ca39e() { /* order unit to intercept */ }
 function FUN_004abfe5() { return 0; /* pathfind */ }
 function XD_FlushSendBuffer() { /* flush network */ }
-function FUN_delete_city() { /* destroy city */ }
-function FUN_kill_civ() { return 0; /* check if civ eliminated */ }
-function FUN_new_civ() { return 1; /* create new civ */ }
+function delete_city() { /* destroy city */ }
+function kill_civ() {}
+function new_civ() {}
 function FUN_005b99e8() { /* update tile ownership */ }
 function FUN_005b9ec6() { /* begin visibility update */ }
 function FUN_005b9f1c() { /* end visibility update */ }

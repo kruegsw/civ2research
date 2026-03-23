@@ -927,11 +927,15 @@ export function FUN_005b3d06(param_1, param_2, param_3, param_4) {
       DAT_00655b16 = DAT_00655b16 + 1;
     }
     // Update civ bookkeeping
+    // C: (char)(&DAT_0064b1ca)[param_1 * 0x14] < '\x05'
     if (s8(DAT_0064b1bc[param_1 * 0x14 + 0x0E]) < 5) {
-      DAT_0064c706[param_2] = (DAT_0064c706[param_2] || 0) + 1;
+      // C: *(short *)(&DAT_0064c706 + param_2 * 0x594) += 1
+      ws(DAT_0064c706, param_2 * 0x594, rs(DAT_0064c706, param_2 * 0x594) + 1);
     }
-    DAT_0064c778[param_2 * 0x594 + param_1] = ((DAT_0064c778[param_2 * 0x594 + param_1] || 0) + 1) & 0xFF;
-    DAT_0064b9e8[param_2] = (DAT_0064b9e8[param_2] || 0) + 1;
+    // C: (&DAT_0064c778)[param_2 * 0x594 + param_1] += 1
+    DAT_0064c778[param_2 * 0x594 + param_1] = (DAT_0064c778[param_2 * 0x594 + param_1] + 1) & 0xFF;
+    // C: *(int *)(&DAT_0064b9e8 + param_2 * 4) += 1
+    wi(DAT_0064b9e8, param_2 * 4, ri(DAT_0064b9e8, param_2 * 4) + 1);
 
     // Initialize unit fields
     DAT_006560f0[local_10 * 0x20 + 6] = param_1 & 0xFF;           // unit type
@@ -1009,16 +1013,19 @@ export function FUN_005b4391(param_1, param_2) {
 
       iVar5 = s8(DAT_006560f0[param_1 * 0x20 + 7]);
       if (-1 < iVar5 && param_1 < 0x800) {
-        if ((DAT_0064c706[iVar5] || 0) !== 0 &&
+        // C: *(short *)(&DAT_0064c706 + iVar5 * 0x594) -= 1
+        if (rs(DAT_0064c706, iVar5 * 0x594) !== 0 &&
             s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0E]) < 5) {
-          DAT_0064c706[iVar5] = DAT_0064c706[iVar5] - 1;
+          ws(DAT_0064c706, iVar5 * 0x594, rs(DAT_0064c706, iVar5 * 0x594) - 1);
         }
-        if ((DAT_0064c778[iVar5 * 0x594 + u8(DAT_006560f0[param_1 * 0x20 + 6])] || 0) !== 0) {
+        // C: (&DAT_0064c778)[iVar5 * 0x594 + unitType] -= 1
+        if (DAT_0064c778[iVar5 * 0x594 + u8(DAT_006560f0[param_1 * 0x20 + 6])] !== 0) {
           DAT_0064c778[iVar5 * 0x594 + u8(DAT_006560f0[param_1 * 0x20 + 6])] =
             DAT_0064c778[iVar5 * 0x594 + u8(DAT_006560f0[param_1 * 0x20 + 6])] - 1;
         }
-        if ((DAT_0064b9e8[iVar5] || 0) !== 0) {
-          DAT_0064b9e8[iVar5] = DAT_0064b9e8[iVar5] - 1;
+        // C: *(int *)(&DAT_0064b9e8 + iVar5 * 4) -= 1
+        if (ri(DAT_0064b9e8, iVar5 * 4) !== 0) {
+          wi(DAT_0064b9e8, iVar5 * 4, ri(DAT_0064b9e8, iVar5 * 4) - 1);
         }
       }
 
@@ -1043,10 +1050,11 @@ export function FUN_005b4391(param_1, param_2) {
       }
 
       // Check if civ should be killed (settler was last unit + no cities)
+      // C: *(short *)(&DAT_0064c708 + iVar5 * 0x594) == 0
       if (s8(DAT_0064b1bc[bVar1 * 0x14 + 0x0E]) === 5 &&
-          (DAT_0064c708[iVar5] || 0) === 0 &&
-          (DAT_0064c778[iVar5 * 0x594 + bVar1] || 0) === 0) {
-        FUN_004a3db0(iVar5, -1);
+          rs(DAT_0064c708, iVar5 * 0x594) === 0 &&
+          DAT_0064c778[iVar5 * 0x594 + bVar1] === 0) {
+        kill_civ(iVar5, -1);
       }
 
       if (2 < DAT_00655b02 && param_2 !== 0) {
@@ -2918,7 +2926,7 @@ function FUN_0056baff(a, b, c, d, e, f, g) {}
 function FUN_0059df8a() {}
 function FUN_005cde4d() {}
 function FUN_005d7c6e() {}
-function FUN_004a3db0(a, b) {} // kill_civ
+function kill_civ(a, b) {} // kill_civ
 function FUN_00410030(a, b, c) {} // show message box
 function FUN_00490530(a, b, c) {} // tutorial popup
 function _rand() { return (Math.random() * 0x7FFF) | 0; }

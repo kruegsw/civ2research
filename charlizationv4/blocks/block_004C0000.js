@@ -35,7 +35,7 @@ import { FUN_00418770, FUN_004187a0, FUN_00418870, FUN_004190a0, FUN_0041f8d9 } 
 import { FUN_00421bb0, FUN_00421d30, FUN_00421d60, FUN_00421da0, FUN_00421ea0, FUN_00426fb0 } from './block_00420000.js';
 import { FUN_004271e8, FUN_004274a6, FUN_00428b0c } from './block_00420000.js';
 import { FUN_0043060b, FUN_0043c460, FUN_0043c520, FUN_0043c810, FUN_0043c990, FUN_0043c9d0 } from './block_00430000.js';
-import { FUN_0043cc00, FUN_0043cf76, FUN_0043d07a, FUN_0043d20a, FUN_0043d289 } from './block_00430000.js';
+import { FUN_0043cc00, FUN_0043cf76, FUN_0043d07a, FUN_0043d20a, FUN_0043d289, create_city } from './block_00430000.js';
 import { FUN_00442541, FUN_00444270, FUN_004442a0, FUN_004442e0 } from './block_00440000.js';
 import { FUN_00453e18, FUN_00453e51, FUN_00456f20, FUN_0045705e, FUN_00458a3b, FUN_0045ac71 } from './block_00450000.js';
 import { FUN_00467750, FUN_00467825, FUN_0046b14d, FUN_0046e020, FUN_0046e287 } from './block_00460000.js';
@@ -1356,7 +1356,7 @@ export function FUN_004c4d1e(param_1, param_2, param_3) {
     FUN_004105f8(iVar1, iVar2, s8(G.DAT_006560f7[param_1 * 0x20]));
   }
   if ((-1 < param_2) ||
-     (param_2 = FUN_create_city(iVar1, iVar2, s8(G.DAT_006560f7[param_1 * 0x20])),
+     (param_2 = create_city(iVar1, iVar2, s8(G.DAT_006560f7[param_1 * 0x20])),
      -1 < param_2)) {
     if (param_3 !== 0) {
       FUN_005f22d0(0 /*&G.DAT_0064f360 + param_2 * 0x58*/, param_3);
@@ -3819,7 +3819,6 @@ function FUN_004440d6() { /* unknown */ }
 function FUN_005b8d15_fn() { return -1; }
 function FUN_004c4210_fn() { }
 function FUN_00627cce_fn() { return 0; /* G.DAT_00627cce accessor */ }
-function FUN_create_city() { return -1; /* create_city */ }
 function send_msg_2DED() { /* network msg stub */ }
 // FUN_004274a6 (duplicate stub removed)
 // FUN_005b48b1 (duplicate stub removed)

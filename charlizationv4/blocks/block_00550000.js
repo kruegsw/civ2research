@@ -3795,13 +3795,18 @@ export function FUN_0055f5a3(param_1, param_2) {
   if (((G.DAT_00655af0 & 1) !== 0) &&
      (bVar1 = G.DAT_0064c6b0[G.DAT_00655b03 * 0x594], u8(G.DAT_00655c22[param_1]) < 6)) {
     if (6 < (bVar1 - u8(G.DAT_0064c6b0[param_1 * 0x594]))) {
-      G.DAT_0064ca80[param_1 * 0x594] = 0xfffe;
+      // C: *(undefined2 *)(&G.DAT_0064ca80 + param_1 * 0x594) = 0xfffe;
+      G.DAT_0064ca80[param_1 * 0x594] = 0xFE;
+      G.DAT_0064ca80[param_1 * 0x594 + 1] = 0xFF;
     }
     if (8 < (bVar1 - u8(G.DAT_0064c6b0[param_1 * 0x594]))) {
-      G.DAT_0064ca7e[param_1 * 0x594] = 0xffff;
+      // C: *(undefined2 *)(&G.DAT_0064ca7e + param_1 * 0x594) = 0xffff;
+      G.DAT_0064ca7e[param_1 * 0x594] = 0xFF;
+      G.DAT_0064ca7e[param_1 * 0x594 + 1] = 0xFF;
     }
   }
-  if ((0 < G.DAT_0064ca74[param_1 * 0x594]) &&
+  // C: *(short *)(&G.DAT_0064ca74 + param_1 * 0x594) — must read as signed 16-bit
+  if ((0 < s16(G.DAT_0064ca74, param_1 * 0x594)) &&
      (local_8 = 3, u8(G.DAT_0064c6b5[param_1 * 0x594]) < 6)) {
     local_8 = 1;
   }
@@ -3809,8 +3814,9 @@ export function FUN_0055f5a3(param_1, param_2) {
   local_18 = 1;
   for (local_14 = 1; local_14 <= local_8; local_14 = local_14 + 1) {
     iVar3 = FUN_0055c277(param_1, local_14);
-    if ((iVar3 !== 0) && (sVar2 <= G.DAT_0064ca74[local_14 * 2 + param_1 * 0x594])) {
-      sVar2 = G.DAT_0064ca74[local_14 * 2 + param_1 * 0x594];
+    // C: *(short *)(&G.DAT_0064ca74 + local_14 * 2 + param_1 * 0x594)
+    if ((iVar3 !== 0) && (sVar2 <= s16(G.DAT_0064ca74, local_14 * 2 + param_1 * 0x594))) {
+      sVar2 = s16(G.DAT_0064ca74, local_14 * 2 + param_1 * 0x594);
       local_18 = local_14;
     }
   }
@@ -4002,6 +4008,6 @@ function FUN_00559cf6_wrapper() { /* stub */ }
 function FUN_00559ded_wrapper() { /* stub */ }
 function FUN_0040ff60_wrapper() { /* stub */ }
 function FUN_00421da0_wrapper() { /* stub */ }
-function FUN_thunk_delete_city() { /* stub */ }
-function FUN_thunk_kill_civ() { /* stub */ }
-function FUN_thunk_pick_up_unit_005b319e() { /* stub */ }
+function delete_city() { /* stub */ }
+function kill_civ() { /* stub */ }
+function pick_up_unit_005b319e() { /* stub */ }

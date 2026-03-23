@@ -2847,10 +2847,10 @@ export function FUN_004dd285(param_1) {
     FUN_0046b14d(0x79, s32(G.DAT_006ad30c, s32(G.DAT_006ad558, iVar1 * 4) * 0x54), 0, 0, 0, 0, 0, 0, 0, 0);
   }
   if (s32(G.DAT_0064b9e8, iVar2 * 4) === 0 && s16(G.DAT_0064c708, iVar2 * 0x594) === 0) {
-    FUN_kill_civ(iVar2, iVar1);
+    kill_civ(iVar2, iVar1);
   }
   if (s32(G.DAT_0064b9e8, iVar1 * 4) === 0 && s16(G.DAT_0064c708, iVar1 * 0x594) === 0) {
-    FUN_kill_civ(iVar1, iVar2);
+    kill_civ(iVar1, iVar2);
   }
   FUN_005d2279('End ExecuteParleyTransaction', G.DAT_00628468);
 }
@@ -3366,7 +3366,7 @@ function FUN_strcmpi() { return 0; /* stub — strcmpi */ }
 function FUN_fputs() { /* stub — fputs */ }
 function FUN_show_messagebox_CF2D() { return 1; /* stub — save rules file */ }
 function FUN_004087c0_fn() { return 0; /* stub — is valid tile */ }
-function FUN_kill_civ() { /* stub — kill_civ */ }
+function kill_civ() { /* stub — kill_civ */ }
 function FUN_XD_FlushSendBuffer() { /* stub — flush send buffer */ }
 function debug_log() { /* stub — debug log */ }
 function _Timevec_dtor_ptr() { /* stub — timevec destructor via pointer */ }

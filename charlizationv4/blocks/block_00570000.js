@@ -39,7 +39,7 @@ import { FUN_00467750, FUN_00467825, FUN_00467933, FUN_0046b14d, FUN_0046e020, F
 import { FUN_0047a6b0, FUN_0047c3e0, FUN_0047cea6, FUN_0047cf22, FUN_0047cf9e, FUN_0047df20 } from './block_00470000.js';
 import { FUN_0047df50, FUN_0047dfb0, FUN_0047dff0, FUN_0047e94e } from './block_00470000.js';
 import { FUN_00492c15, FUN_00493c7d } from './block_00490000.js';
-import { FUN_004a7577, FUN_004a75a6, FUN_004a762d, FUN_004abfe5 } from './block_004A0000.js';
+import { FUN_004a7577, FUN_004a75a6, FUN_004a762d, FUN_004abfe5, kill_civ, new_civ } from './block_004A0000.js';
 import { FUN_004b0b53, FUN_004bdb2c, FUN_004be6ba, FUN_004bf05b, FUN_004bfe5a } from './block_004B0000.js';
 import { FUN_004c03ae, FUN_004c0cf7, FUN_004c4240, FUN_004ca39e, FUN_004cc870 } from './block_004C0000.js';
 import { FUN_004eb80a, FUN_004ec312 } from './block_004E0000.js';
@@ -1239,7 +1239,7 @@ export function FUN_0057a904(param_1) {
   }
 
   G.DAT_00655b0a = G.DAT_00655b0a & ~(1 << (u8(local_24) & 0x1f));
-  iVar2 = FUN_new_civ(local_24);
+  iVar2 = new_civ(local_24);
   if (iVar2 === 0) {
     return 0;
   }
@@ -1769,7 +1769,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
 
     // If city reaches size 0, destroy it
     if (G.DAT_0064f340[param_1 * 0x58 + 9] === 0) {
-      FUN_delete_city(param_1, 0);
+      delete_city(param_1, 0);
       param_1 = 0xffffffff;
     }
   }
@@ -1995,7 +1995,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
   }
 
   // ── Check if old owner is eliminated ──
-  iVar6 = FUN_kill_civ(local_84, param_2);
+  iVar6 = kill_civ(local_84, param_2);
 
   // ── Partisan generation ──
   if ((iVar6 === 0) && (param_1 >= 0 && param_1 !== 0xffffffff) && (local_7c === 0) &&
@@ -2624,9 +2624,7 @@ export function FUN_0057febc(param_1, param_2, param_3) {
 function _rand() { return Math.floor(Math.random() * 0x7fff); }
 function FUN_004bd9f0_stub() { return 0; }
 function XD_FlushSendBuffer() { /* flush network */ }
-function FUN_delete_city() { /* destroy city */ }
-function FUN_kill_civ() { return 0; /* check if civ eliminated */ }
-function FUN_new_civ() { return 1; /* create new civ */ }
+function delete_city() { /* destroy city */ }
 function FUN_citywin_DADA() { /* city window update 1 */ }
 function FUN_handle_city_disorder_00509590() { /* check city disorder */ }
 function FUN_citywin_DB36() { /* city window update 2 */ }

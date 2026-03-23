@@ -1485,7 +1485,7 @@ export function FUN_004c4d1e(param_1, param_2, param_3) {
     FUN_004105f8(iVar1, iVar2, s8(DAT_006560f7[param_1 * 0x20]));
   }
   if ((-1 < param_2) ||
-     (param_2 = FUN_create_city(iVar1, iVar2, s8(DAT_006560f7[param_1 * 0x20])),
+     (param_2 = create_city(iVar1, iVar2, s8(DAT_006560f7[param_1 * 0x20])),
      -1 < param_2)) {
     if (param_3 !== 0) {
       FUN_005f22d0(0 /*&DAT_0064f360 + param_2 * 0x58*/, param_3);
@@ -4132,7 +4132,7 @@ function FUN_00418770() { return 0; /* get listbox hwnd */ }
 function FUN_005b8d15_fn() { return -1; }
 function FUN_004c4210_fn() { }
 function FUN_00627cce_fn() { return 0; /* DAT_00627cce accessor */ }
-function FUN_create_city() { return -1; /* create_city */ }
+function create_city() {}
 function send_msg_2DED() { /* network msg stub */ }
 function FUN_005b8b65() { return 0; /* check_tile_visible */ }
 function FUN_005b8da4() { return -1; /* get_tile_owner_2 */ }

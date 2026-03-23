@@ -36,7 +36,7 @@ import { FUN_00417ef0, FUN_00417f70, FUN_00417fa0, FUN_004183d0, FUN_00418740, F
 import { FUN_004189c0, FUN_00418a30, FUN_00418a70, FUN_00418bf0, FUN_00418c70, FUN_00418ce0 } from './block_00410000.js';
 import { FUN_00418d60, FUN_00418d90, FUN_00418dd0, FUN_004190a0, FUN_004190d0 } from './block_00410000.js';
 import { FUN_00421bb0, FUN_00421d60, FUN_00421ea0, FUN_00428a95, FUN_00428b0c, FUN_00428b68 } from './block_00420000.js';
-import { FUN_0043cef9, FUN_0043d07a, FUN_0043d289 } from './block_00430000.js';
+import { FUN_0043cef9, FUN_0043d07a, FUN_0043d289, create_city } from './block_00430000.js';
 import { FUN_00444270 } from './block_00440000.js';
 import { FUN_00451890, FUN_004518d0, FUN_00451930, FUN_004519b0, FUN_00451a60, FUN_00451ac0 } from './block_00450000.js';
 import { FUN_00451bf0, FUN_00453e51 } from './block_00450000.js';
@@ -1812,7 +1812,7 @@ export function FUN_004a9785(param_1) {
           G.DAT_0064c6b0[local_a0 * 0x594] = G.DAT_0064c6b0[local_a0 * 0x594] + 1;
         }
       }
-      let iVar5c = FUN_create_city_stub(iVar11, iVar3, local_a0);
+      let iVar5c = create_city(iVar11, iVar3, local_a0);
       if (-1 < iVar5c) {
         let iVar6 = _rand();
         G.DAT_0064c6a2[local_a0 * 0x594] = (iVar6 % 0x32 + 0x19) * (param_1 + 1);
@@ -3279,6 +3279,5 @@ export function FUN_004afc89(param_1) {
 // other block_*.c files. Stubbed as no-ops or returning defaults.
 // ═══════════════════════════════════════════════════════════════════
 
-function FUN_create_city_stub(a, b, c) { return -1; }
 function FUN_show_messagebox_CF2D_stub() { return 1; }
 function debug_log(msg) { /* console.log(msg); */ }

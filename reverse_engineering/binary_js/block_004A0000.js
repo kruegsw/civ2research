@@ -2131,7 +2131,7 @@ export function FUN_004a9785(param_1) {
           DAT_0064c6b0[local_a0 * 0x594] = DAT_0064c6b0[local_a0 * 0x594] + 1;
         }
       }
-      let iVar5c = FUN_create_city_stub(iVar11, iVar3, local_a0);
+      let iVar5c = create_city(iVar11, iVar3, local_a0);
       if (-1 < iVar5c) {
         let iVar6 = _rand();
         DAT_0064c6a2[local_a0 * 0x594] = (iVar6 % 0x32 + 0x19) * (param_1 + 1);
@@ -3656,7 +3656,7 @@ function FUN_004c5fae(a, b, c) { /* no-op */ }
 function FUN_0043cef9(a) { return 0; }
 function FUN_0043d07a(a, b, c, d, e) { return 0; }
 function FUN_0043d289(a, b, c) { /* no-op */ }
-function FUN_create_city_stub(a, b, c) { return -1; }
+function create_city() {}
 function FUN_00421ea0(a) { /* no-op */ }
 function FUN_00421bb0() { return 0; }
 function FUN_00421d60(a, b) { /* no-op */ }
