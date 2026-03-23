@@ -365,15 +365,177 @@ export function FUN_00572887(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00572da0 — draw_map_editor_cursor
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00572da0 (607 bytes)
 export function FUN_00572da0() {
-  // UI drawing — no-op in JS
+  // C: Draws map view overlay — cursor rectangle + border lines
+  // C: FUN_005bb574 init, reads DAT_006ac0f0/f4 (cursor pos), DAT_006ac2d4/d8 (viewport)
+  // C: Draws border rectangles around map area via FUN_004086c0 + FUN_0040fdb0
+  // C: Draws cursor highlight with different colors (0x6a, 10, 0x29)
+  // C: FUN_005c00ce/005c0073 (begin/end paint), FUN_00408460 (invalidate)
+  // C: No game state DAT_ writes — pure rendering
+  // DEVIATION: GDI rendering
+  FUN_005bb574(); // DEVIATION: MFC init
+  FUN_00408460(); // DEVIATION: MFC invalidate
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00572fff — handle_map_editor_click
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00572fff (2685 bytes)
 export function FUN_00572fff(param_1, param_2) {
-  // UI interaction handler — no-op in JS
+  let uVar1, uVar2, uVar5;
+  let iVar4, iVar6;
+  let local_70, local_68, local_6c, local_64, local_60;
+
+  // DEVIATION: SEH, CString, SetCapture
+  param_1 = param_1 - DAT_006ac2d4;
+  param_2 = param_2 - DAT_006ac2d8;
+  uVar5 = FUN_00572740(param_1, param_2); // hit test
+  uVar2 = DAT_006ac0f4;
+  uVar1 = DAT_006ac0f0;
+  switch (uVar5) {
+  case 0: // color palette click
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+    // DEVIATION: GetKeyState — check mouse buttons
+    // C: swaps DAT_00634004/00634008 or DAT_00634000/0063400c based on button
+    FUN_005723ee();
+    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+    param_2 = 0; param_1 = 0;
+    break;
+  case 1: // left panel
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = 1; DAT_006ac118 = 1;
+    break;
+  case 2: // right panel
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = 2; DAT_006ac118 = 2;
+    break;
+  case 3: // map area — scroll/pan
+    local_68 = DAT_006ac0f4; local_6c = DAT_006ac0f0;
+    DAT_006ac0f4 = DAT_006ac0a4; DAT_006ac0f0 = DAT_006ac0a0;
+    DAT_006ac0a4 = uVar2; DAT_006ac0a0 = uVar1;
+    // DEVIATION: GDI — FUN_005cdf50, FUN_005cec44, FUN_005cef66, FUN_005cf23f rendering
+    FUN_00574239();
+    if (DAT_006ac120 === 3) { FUN_00572da0(); }
+    break;
+  case 4: // cancel
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = 0;
+    break;
+  case 5: // zoom in
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+    FUN_00572389(); FUN_005727d8(); FUN_00574239();
+    break;
+  case 6: // zoom out
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+    FUN_00572389(); FUN_005c044a(DAT_00634000, DAT_00634004); FUN_00574239();
+    break;
+  case 7: // rotate
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+    FUN_00572389();
+    FUN_005c044a(DAT_00634004, 1);
+    FUN_005c044a(DAT_00634000, DAT_00634004);
+    FUN_005c044a(1, DAT_00634000);
+    FUN_00574239();
+    break;
+  case 8: // settings
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+    show_messagebox_6267();
+    break;
+  case 9: // toggle mode 0
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118; DAT_006ac124 = 0;
+    break;
+  case 10: // toggle mode 1
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118; DAT_006ac124 = 1;
+    break;
+  case 11: // toggle mode 2
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118; DAT_006ac124 = 2;
+    break;
+  case 12: // color swap forward
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+    // DEVIATION: GetKeyState — swap DAT_00634004/00634008 or DAT_00634000/0063400c
+    FUN_005723ee();
+    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+    param_2 = 0; param_1 = 0;
+    break;
+  case 13: // no action
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+    break;
+  case 14: // minimap select
+    if (DAT_006ac924 === 0xb) {
+      FUN_00572389();
+      DAT_006ac120 = 3;
+      DAT_006ac0f4 = FUN_005adfa0(DAT_006ac0f4, 5, 0x2f);
+      DAT_006ac0f0 = FUN_005adfa0(DAT_006ac0f0, 0, 0xe);
+      FUN_00572da0();
+    } else {
+      if (DAT_006ac120 === 3) { FUN_005bb574(); }
+      DAT_006ac120 = DAT_006ac118;
+      // DEVIATION: GetKeyState color swap
+      FUN_005723ee();
+      FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+      FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+      param_2 = 0; param_1 = 0;
+    }
+    break;
+  }
+  // C line 1335: handle clicks in map area
+  if (param_1 >= 9 && param_1 <= 0x187 && param_2 >= 0xdf && param_2 <= 0x125) {
+    // C: minimap palette click — calculate color index from position
+    // DEVIATION: GetKeyState
+    // C: DAT_00634004/DAT_00634000 = calculated color from click position
+    FUN_005723ee();
+    FUN_0057261a(0, DAT_006ac2d4 + 10, DAT_006ac2d8 + 0xe0, 0);
+    if (DAT_006ac120 === 3) { FUN_005bb574(); }
+    DAT_006ac120 = DAT_006ac118;
+  } else if (param_1 > 0xf && param_1 < DAT_006ac878 * 4 + 0x10 &&
+            param_2 > 0xf && param_2 < DAT_006ac87c * 4 + 0x10) {
+    switch (DAT_006ac120) {
+    case 0: // select tile color
+      local_60 = FUN_005c0bf2((param_1 - 0x10) >> 2, (param_2 - 0x10) >> 2);
+      // DEVIATION: GetKeyState
+      FUN_005723ee();
+      if (DAT_006ac120 === 3) { FUN_005bb574(); }
+      DAT_006ac120 = DAT_006ac118;
+      DAT_006ac898 = 0x204;
+      FUN_00408010(0x204); // DEVIATION: MFC
+      FUN_00484d52();
+      break;
+    case 1:
+    case 2: // draw tile
+      FUN_00572389();
+      DAT_006ac8a4 = 1;
+      iVar4 = (param_1 - 0x10) >> 2;
+      iVar6 = (param_2 - 0x10) >> 2;
+      DAT_006ac880 = iVar4;
+      DAT_006ac884 = iVar6;
+      // DEVIATION: GetKeyState — sets DAT_006ac894
+      DAT_006ac894 = DAT_00634004;
+      local_64 = FUN_00572887(iVar4, iVar6);
+      FUN_00408490(local_64); // DEVIATION: MFC
+      break;
+    case 3: // move cursor
+      FUN_00572389();
+      DAT_006ac0f4 = FUN_005adfa0((param_1 - 0x10) >> 2, 5, 0x2f);
+      DAT_006ac0f0 = FUN_005adfa0((param_2 - 0x10) >> 2, 0, 0xe);
+      FUN_00572da0();
+      break;
+    }
+  }
+  // DEVIATION: SEH cleanup
+  FUN_00573adc();
+  FUN_00573aef();
 }
 
 // ═══════════════════════════════════════════════════════════════════
