@@ -3549,10 +3549,23 @@ export function FUN_004ccdef(param_1, param_2) {
 // Source: block_004C0000.c line 3829
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c show_messagebox_CF2D (1149 bytes)
 export function show_messagebox_CF2D() {
-  // File I/O function that saves RULES.TXT changes.
-  // Uses _fgets, _fputs, _fclose, __getcwd, __chdir etc.
-  // Not applicable in browser JS context — stub.
+  // DEVIATION: File I/O — saves modified RULES.TXT
+  // C: Constructs filename "RULES." + DAT_0062cd24 extension
+  // C: __getcwd saves current dir, __chdir to game dir (DAT_0064bb08)
+  // C: If same dir as install (DAT_00655020), backs up to RULES.BAK
+  // C: Opens original RULES file for reading, new file for writing
+  // C: Iterates DAT_006a1880 section table (8-byte entries: name + callback)
+  // C: For each section: copies lines until @SECTION marker found,
+  //    calls section callback to write modified data,
+  //    skips old section content until empty line
+  // C: Copies remaining file content, closes files, restores dir
+  // DEVIATION: Cannot perform file I/O in headless JS — returns 0 (failure)
+  // All file operations: _fgets, _fputs, _fclose, __getcwd, __chdir,
+  //   __strcmpi, __strupr, FID_conflict__remove, FID_conflict___wrename,
+  //   FUN_0041508c (fopen wrapper), FUN_00415133 (file exists check),
+  //   MessageBoxA (backup notification)
   return 0;
 }
 
