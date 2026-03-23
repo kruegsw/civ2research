@@ -853,9 +853,14 @@ export function FUN_004f4793() {
 // FUN_004f4809 — free_civilopedia_string_lists
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f4809 (918 bytes)
 export function FUN_004f4809() {
-  // DEVIATION: Frees 7 linked lists of allocated strings — in_ECX-based UI memory
-  return;
+  // C: Frees 10 linked lists of allocated strings from MFC dialog object (in_ECX)
+  // C: For each list at offsets +0x16dc, +0x16e0, +0x16e4, +0x16e8, +0x16ec,
+  //    +0x16f0, +0x16f4, +0x16f8, +0x16fc, +0x1700:
+  //    Walk list (next pointer at node+8), free string (*node), free node, advance
+  // DEVIATION: Cannot free C heap memory — JS has garbage collection
+  // No game state modifications
 }
 
 
@@ -1088,10 +1093,17 @@ export function FUN_004f5f23() {
 // FUN_004f6244 — civilopedia_draw_page (UI rendering)
 // ============================================================
 
+// Source: decompiled/block_004F0000.c FUN_004f6244 (800 bytes)
 export function FUN_004f6244() {
-  // Complex UI rendering — text layout, bitmap drawing, etc.
-  // DEVIATION: pure UI rendering code
-  return;
+  // C: Renders city window production panel — draws borders, icons, text
+  // C: Uses FUN_005c0034 (begin paint), FUN_005a99fc (draw border),
+  //    FUN_004bb800 (adjust rect), FUN_004f6564 (draw separator),
+  //    FUN_005cd775 (scale bitmap), FUN_005cef31 (draw icon),
+  //    FUN_005c19ad (set text color), FUN_005c0f57 (draw text),
+  //    SetRect, _Timevec::~_Timevec, FUN_005c0073 (end paint)
+  // C: Game state reads: DAT_0062d860/64/68/5c (layout constants)
+  // C: Writes to in_ECX+0x5dc, +0x5e0 (computed layout dimensions)
+  // DEVIATION: MFC rendering — cannot draw without GDI context
 }
 
 
