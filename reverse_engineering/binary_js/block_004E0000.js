@@ -1208,7 +1208,7 @@ export function FUN_004e2803(param_1, param_2) {
         else if (param_2 === 0x1f1) { FUN_004e22c9(0); }
         // C line 1219: quit multiplayer
         else if (param_2 === 0x1f2 && DAT_00655b02 === 1) {
-          iVar2 = FUN_00410030("REALLYQUIT", 0, 0);
+          iVar2 = FUN_00410030("REALLYQUIT", DAT_0063fc58, 0);
           if (iVar2 === 0) return;
           FUN_0046e6a9(); FUN_00484d3b(); return;
         }
@@ -1307,6 +1307,10 @@ export function FUN_004e2803(param_1, param_2) {
           //   FUN_00514e7b(DAT_006d1da0);
           // }
           FUN_00435d15(DAT_006d1da0);
+          if (DAT_00655b07 !== 0) {
+            FUN_004361cc(DAT_006d1da0);
+            FUN_00431d22();
+          }
         }
         else if (param_2 === 0x605) {
           // DEVIATION: C checks GetAsyncKeyState(0x10) for shift-key cheat

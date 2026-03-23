@@ -130,6 +130,7 @@ let DAT_0066ca8c = 0;
 let DAT_0063f660 = 0;
 let DAT_00654fa8 = 0;
 let DAT_00628044 = 0;
+let DAT_0063fc58 = 0;
 let DAT_00631edc = 0;
 let DAT_00633584 = 0;
 let DAT_00635a18 = 0;
@@ -139,8 +140,8 @@ let DAT_00635a24 = 0;
 let DAT_00635a28 = 0;
 let DAT_00635a2c = 0;
 let DAT_0062d858 = 0;
-let DAT_006365e0 = 0;
-let DAT_006365e4 = 0;
+let DAT_006365e0 = new Array(4096).fill(0);  // coarse-grid land connectivity
+let DAT_006365e4 = new Array(4096).fill(0);  // coarse-grid sea connectivity
 let DAT_006365e8 = new Array(4096).fill(0);  // coarse-grid BFS visited array
 let DAT_006d116a = 0;
 let DAT_006d116c = 0;
@@ -1940,7 +1941,7 @@ export function new_civ(param_1) {
       if (DAT_00655af8 < 0xb) {
         sVar3 = 10;
       }
-      DAT_0064c6ae[param_1 * 0x594] = sVar3 & 0xFF;
+      w16(DAT_0064c6ae, param_1 * 0x594, sVar3);
       DAT_0064c6b5[param_1 * 0x594] = 1;
       DAT_0064c6b4[param_1 * 0x594] = 4;
       DAT_0064c6b3[param_1 * 0x594] = 4;
@@ -2006,7 +2007,7 @@ export function new_civ(param_1) {
         DAT_0064c6b7[param_1 * 0x594 + local_1c] = 0;
       }
       for (let local_24 = 0; local_24 < 8; local_24++) {
-        DAT_0064ca82[param_1 * 2 + local_24 * 0x594] = 0xFF;
+        w16(DAT_0064ca82, param_1 * 2 + local_24 * 0x594, 0xFFFF);
       }
 
       let local_148 = ~(1 << (param_1 & 0x1f));
@@ -2249,8 +2250,7 @@ export function new_civ(param_1) {
             w16(DAT_0064c6ac, param_1 * 0x594, local_3c & 0xffff);
             if (0x14 < DAT_00655af8 && local_158 === 0) {
               iVar4 = FUN_005b8931(local_3c, local_140);
-              let tileOwner = (typeof iVar4 === 'number') ? iVar4 : 0;
-              if ((DAT_00655b0b & u8(tileOwner >> 32)) === 0) {
+              if ((DAT_00655b0b & tileRead(iVar4, 4)) === 0) {
                 FUN_005b3d06(0, param_1, local_3c, local_140);
                 if (0x28 < DAT_00655af8) {
                   iVar4 = FUN_004bfe5a(param_1, -1, 3);
@@ -2467,7 +2467,7 @@ export function FUN_004a9785(param_1) {
             FUN_0043d289(iVar5c, 5, 1);
           }
         }
-        FUN_004a93b3(iVar5c, (param_1 === 0 ? 0xfffffffe : 0) + 4);
+        FUN_004a93b3(iVar5c, param_1 === 0 ? 2 : 4);
         if (param_1 !== 0) {
           let local_c = -1;
           let local_94 = -1;
@@ -2510,8 +2510,7 @@ export function FUN_004a9785(param_1) {
                     }
                     if (local_8 !== 0) {
                       let pbVar9 = FUN_005b8931(uVar8, local_1c);
-                      let tileVal = (typeof pbVar9 === 'number') ? pbVar9 : 0;
-                      if ((tileVal & 0x80) !== 0) {
+                      if ((tileRead(pbVar9, 0) & 0x80) !== 0) {
                         local_8 = local_8 + 1;
                       }
                       if (local_c < local_8) {
@@ -2576,8 +2575,7 @@ export function FUN_004a9785(param_1) {
                   let uVar10b = FUN_005b94d5(local_64, local_70);
                   if ((uVar10b & 0x10) === 0) {
                     let pbVar9b = FUN_005b8931(local_64, local_70);
-                    let tileValB = (typeof pbVar9b === 'number') ? pbVar9b : 0;
-                    let canBuild = (tileValB & 0x80) === 0;
+                    let canBuild = (tileRead(pbVar9b, 0) & 0x80) === 0;
                     if (!canBuild) {
                       let bridgeCheck = FUN_004bd9f0(local_a0, 7);
                       canBuild = bridgeCheck !== 0;
@@ -2654,7 +2652,8 @@ export function kill_civ(param_1, param_2) {
           DAT_0065512a[iVar1 * 2] = DAT_00655af8 & 0xFFFF;
           DAT_00655142[iVar1] = param_2 & 0xFF;
           DAT_0065514e[iVar1] = DAT_0064ca92[param_1 * 0x594];
-          // strncpy tribe name — no-op
+          let uVar3_name = FUN_00493c7d(param_1);
+          FUN_005f22d0(DAT_0065515a /* + iVar1 * 0x18 */, uVar3_name);
         }
         FUN_004a762d(param_1);
       }
@@ -2730,7 +2729,23 @@ export function kill_civ(param_1, param_2) {
       DAT_006c9168 = -0x1b;
       FUN_0046b14d(0x60, 0, param_1, param_2, 0, 0, 0, 0, 0, 0);
       iVar1 = FUN_00421bb0();
-      // Wait for server response — stubbed
+      // Wait for server response with timeout (0xe10 ticks)
+      while (DAT_006c9168 === -0x1b) {
+        let iVar2 = FUN_00421bb0();
+        if (iVar2 - iVar1 >= 0xe10) break;
+        FUN_0047e94e(1, 1);
+      }
+      if (DAT_006c9168 === -0x1b) {
+        debug_log("kill_civ: Connection to server timed out");
+        FUN_00410030("SERVERCONNECTTIME", DAT_0063fc58, 0);
+        DAT_00628044 = 0;
+      } else {
+        debug_log("kill_civ: Received NM_NEW_CIV_ACK");
+      }
+      // Drain pending messages
+      while (DAT_006c8fac !== 0 || DAT_006c8fa0 !== 0) {
+        FUN_0047e94e(1, 0);
+      }
       iVar1 = DAT_006c9168;
     }
   }
@@ -3328,9 +3343,9 @@ export function FUN_004ad20f(param_1, param_2, param_3, param_4) {
       local_20 = Array.isArray(DAT_006365e8) ? DAT_006365e8[pbVar6] : 0;
       let bVar1;
       if (local_24 === 0) {
-        bVar1 = FUN_004aee90(local_34, local_3c);
+        bVar1 = DAT_006365e0[FUN_004aee90(local_34, local_3c)];
       } else {
-        bVar1 = FUN_004aeec0(local_34, local_3c);
+        bVar1 = DAT_006365e4[FUN_004aeec0(local_34, local_3c)];
       }
       let local_58 = bVar1 & 0xff;
       local_18 = local_58;
@@ -3361,9 +3376,9 @@ export function FUN_004ad20f(param_1, param_2, param_3, param_4) {
       let local_30 = -1;
       let bVar1b;
       if (local_24 === 0) {
-        bVar1b = FUN_004aee90(iVar7, iVar2);
+        bVar1b = DAT_006365e0[FUN_004aee90(iVar7, iVar2)];
       } else {
-        bVar1b = FUN_004aeec0(iVar7, iVar2);
+        bVar1b = DAT_006365e4[FUN_004aeec0(iVar7, iVar2)];
       }
       let local_60 = bVar1b & 0xff;
       local_18 = local_60;
@@ -3454,10 +3469,10 @@ export function FUN_004ad822(param_1, param_2, param_3) {
   let iVar2 = param_2 >> 2;
 
   if (param_3 === 0) {
-    let val = FUN_004aee90(iVar1, iVar2);
+    let val = DAT_006365e0[FUN_004aee90(iVar1, iVar2)];
     if (val !== 0) local_24 = 8;
   } else {
-    let val = FUN_004aeec0(iVar1, iVar2);
+    let val = DAT_006365e4[FUN_004aeec0(iVar1, iVar2)];
     if (val !== 0) local_24 = 8;
   }
 
@@ -3480,11 +3495,11 @@ export function FUN_004ad822(param_1, param_2, param_3) {
       if (iVar4 >= 0 && iVar4 < DAT_006d116a && iVar5 >= 0 && iVar5 < DAT_006d116c) {
         let hasPath = false;
         if (param_3 !== 0) {
-          let val = FUN_004aeec0(iVar4, iVar5);
+          let val = DAT_006365e4[FUN_004aeec0(iVar4, iVar5)];
           if (val !== 0) hasPath = true;
         }
         if (param_3 === 0) {
-          let val = FUN_004aee90(iVar4, iVar5);
+          let val = DAT_006365e0[FUN_004aee90(iVar4, iVar5)];
           if (val !== 0) hasPath = true;
         }
         if (hasPath) {
@@ -3836,7 +3851,7 @@ export function FUN_004adafc(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004aee90(param_1, param_2) {
-  return DAT_006d116a * param_2 + param_1 + DAT_006365e0;
+  return DAT_006d116a * param_2 + param_1;
 }
 
 
@@ -3846,7 +3861,7 @@ export function FUN_004aee90(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004aeec0(param_1, param_2) {
-  return DAT_006d116a * param_2 + param_1 + DAT_006365e4;
+  return DAT_006d116a * param_2 + param_1;
 }
 
 
@@ -3856,7 +3871,7 @@ export function FUN_004aeec0(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004aeef0(param_1, param_2) {
-  return DAT_006d116a * param_2 + param_1 + DAT_006365e8;
+  return DAT_006d116a * param_2 + param_1;
 }
 
 
