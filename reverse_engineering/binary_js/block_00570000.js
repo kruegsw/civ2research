@@ -126,15 +126,132 @@ export function FUN_00570772() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_00570780 (2082 bytes)
 export function FUN_00570780() {
-  // C: Loads TERRAIN1.BMP/GIF and extracts 11 terrain tile sprites
-  // C: __getcwd/__chdir to game dir (DAT_0064bb08)
-  // C: Tries thunk_load_bitmap(DAT_006ac0a8, "TERRAIN1.BMP"), falls back to FUN_005bf071 (GIF)
-  // C: For each terrain type (0-10): extracts sprite via FUN_005cef31,
-  //    recolors via FUN_004a6980/FUN_004bb540, stores in local arrays
-  // C: Then loads TERRAIN2.BMP/GIF with same pattern, extracts 11 more sprites
-  // C: Each sprite stored via FUN_005a9abf at calculated offsets
-  // C: All operations use local variables — no game state DAT_ writes
-  // DEVIATION: GDI bitmap loading — cannot execute without Win32
+  let uVar1, iVar2, uVar3;
+  let local_570 = new Uint8Array(16), local_580 = new Uint8Array(16);
+  let local_590 = new Uint8Array(16), local_5a0 = new Uint8Array(16);
+  let local_5b0 = new Uint8Array(16), local_5c0 = new Uint8Array(16);
+  let local_5d0 = new Uint8Array(16), local_5e0 = new Uint8Array(16);
+  let local_5f0 = new Uint8Array(16), local_600 = new Uint8Array(16);
+  let local_610 = new Uint8Array(16), local_620 = new Uint8Array(16);
+  let local_630 = new Uint8Array(16), local_640 = new Uint8Array(16);
+  let local_650 = new Uint8Array(16), local_660 = new Uint8Array(16);
+  let local_670 = new Uint8Array(16), local_680 = new Uint8Array(16);
+  let local_550 = new Uint8Array(1076);
+  let local_560, local_55c, local_558, local_554;
+  let local_18, local_14;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  FUN_005c64da(); // DEVIATION: GDI init
+  _getcwd(0, 0x104); // DEVIATION: save current dir
+  _chdir(DAT_0064bb08); // DEVIATION: change to game dir
+  iVar2 = load_bitmap(DAT_006ac0a8, "TERRAIN1.BMP", 10, 0xc0, local_550); // DEVIATION: Win32
+  if (iVar2 === 0) {
+    iVar2 = FUN_005bf071("TERRAIN1.GIF", 10, 0xc0, local_550); // DEVIATION: GIF loader
+    if (iVar2 === 0) {
+      _chdir(DAT_00655020); // DEVIATION: chdir to install dir
+      FUN_005bf071("TERRAIN1.GIF", 10, 0xc0, local_550); // DEVIATION: GIF fallback
+    } else {
+      _chdir(DAT_00655020); // DEVIATION: chdir
+    }
+  } else {
+    _chdir(DAT_00655020); // DEVIATION: chdir
+  }
+  // Extract 11 terrain sprites — 3 columns per row
+  local_554 = 1;
+  local_55c = 0x83;
+  local_560 = 0xc4;
+  local_558 = 1;
+  for (local_18 = 0; local_18 < 0xb; local_18 = local_18 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_554, local_558, uVar3);
+    FUN_005cef31(local_570, DAT_006ac0a8, local_554, local_558);
+    FUN_005cef31(local_580, DAT_006ac0a8, local_554, local_558);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_55c, local_558, uVar3);
+    FUN_005cef31(local_590, DAT_006ac0a8, local_55c, local_558);
+    FUN_005cef31(local_5a0, DAT_006ac0a8, local_55c, local_558);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_560, local_558, uVar3);
+    FUN_005cef31(local_5b0, DAT_006ac0a8, local_560, local_558);
+    FUN_005cef31(local_5c0, DAT_006ac0a8, local_560, local_558);
+    local_558 = local_558 + 0x21;
+  }
+  // Extract 3 resource sprites
+  local_554 = 0x1c8;
+  local_558 = 100;
+  for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_554, local_558, uVar3);
+    FUN_005cef31(local_5d0, DAT_006ac0a8, local_554, local_558);
+    FUN_005cef31(local_5e0, DAT_006ac0a8, local_554, local_558);
+    local_558 = local_558 + 0x21;
+  }
+  // Extract 3 individual sprites
+  uVar1 = FUN_00417f70();
+  uVar3 = FUN_004bb540(uVar1);
+  uVar3 = FUN_004a6980(uVar3);
+  FUN_005a9abf(DAT_006ac0a8, local_554, local_558, uVar3);
+  FUN_005cef31(local_5f0, DAT_006ac0a8, local_554, local_558);
+  FUN_005cef31(local_600, DAT_006ac0a8, local_554, local_558);
+  local_558 = local_558 + 0x21;
+  uVar1 = FUN_00417f70();
+  uVar3 = FUN_004bb540(uVar1);
+  uVar3 = FUN_004a6980(uVar3);
+  FUN_005a9abf(DAT_006ac0a8, local_554, local_558, uVar3);
+  FUN_005cef31(local_610, DAT_006ac0a8, local_554, local_558);
+  FUN_005cef31(local_620, DAT_006ac0a8, local_554, local_558);
+  local_558 = local_558 + 0x21;
+  uVar1 = FUN_00417f70();
+  uVar3 = FUN_004bb540(uVar1);
+  uVar3 = FUN_004a6980(uVar3);
+  FUN_005a9abf(DAT_006ac0a8, local_554, local_558, uVar3);
+  FUN_005cef31(local_630, DAT_006ac0a8, local_554, local_558);
+  FUN_005cef31(local_640, DAT_006ac0a8, local_554, local_558);
+  // Extract 9 pairs of overlay sprites
+  local_558 = 0x16c;
+  local_554 = 1;
+  for (local_14 = 0; local_14 < 9; local_14 = local_14 + 1) {
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_554, local_558, uVar3);
+    FUN_005cef31(local_650, DAT_006ac0a8, local_554, local_558);
+    FUN_005cef31(local_660, DAT_006ac0a8, local_554, local_558);
+    uVar1 = FUN_00417f70();
+    uVar3 = FUN_004bb540(uVar1);
+    uVar3 = FUN_004a6980(uVar3);
+    FUN_005a9abf(DAT_006ac0a8, local_554, local_558 + 0x21, uVar3);
+    FUN_005cef31(local_670, DAT_006ac0a8, local_554, local_558 + 0x21);
+    FUN_005cef31(local_680, DAT_006ac0a8, local_554, local_558 + 0x21);
+    local_554 = local_554 + 0x41;
+  }
+  // Save modified bitmap back to file
+  _chdir(DAT_0064bb08); // DEVIATION: chdir
+  iVar2 = FUN_00415133("TERRAIN1.BMP"); // DEVIATION: file exists check
+  if (iVar2 !== 0) {
+    iVar2 = FID_conflict__remove("TERRAIN1.BMP"); // DEVIATION: delete
+    if (iVar2 !== 0) {
+      _chdir(0); // DEVIATION: restore dir
+      FUN_004083f0();
+      FUN_00570fa2();
+      FUN_00570fb8();
+      return;
+    }
+  }
+  FUN_write_bitmap_data(DAT_006ac0a8, "TERRAIN1.BMP", 10, 0xc0, local_550); // DEVIATION: save BMP
+  _chdir(0); // DEVIATION: restore dir
+  FUN_004083f0();
+  // DEVIATION: SEH cleanup
+  FUN_00570fa2();
+  FUN_00570fb8();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -709,15 +826,32 @@ export function FUN_0057422b() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00574239 — redraw_map_editor_full
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00574239 (745 bytes)
 export function FUN_00574239() {
-  // UI redraw — no-op in JS
+  // C: Map editor paint — draws map tiles, color palette, terrain preview
+  // C: Reads DAT_006ac2d4/d8 (viewport), DAT_006ac878/87c (dimensions)
+  // C: Writes DAT_006ac874 = FUN_00417f70() (tile size)
+  // C: Draws 0xC0 palette colors via FUN_0057261a in a loop
+  // C: Draws 3x5 grid of terrain preview tiles via FUN_005a9abf + FUN_005cef31
+  // C: Calls FUN_005723ee (map controls), FUN_005baeb0/ec8/ee0 (MFC repaint)
+  // DEVIATION: GDI rendering — all draw calls are Win32
+  DAT_006ac874 = FUN_00417f70(); // tile size
+  FUN_005723ee(); // draw map controls
+  FUN_00408460(); // DEVIATION: MFC invalidate
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00574522 — draw_preview_window
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00574522 (356 bytes)
 export function FUN_00574522() {
-  // UI drawing — no-op in JS
+  // C: Minimap paint handler — renders scaled minimap in dialog
+  // C: Writes DAT_006ac874 = FUN_00417f70() (tile size)
+  // C: Reads in_ECX layout (dialog rect), GetSystemMetrics(3) for scrollbar
+  // C: Draws via FUN_005a9abf, FUN_005cd775 (scale), FUN_005cef66, FUN_004ccb6a (border)
+  // DEVIATION: MFC (in_ECX), GDI rendering
+  DAT_006ac874 = FUN_00417f70();
+  FUN_00408460(); // DEVIATION: MFC invalidate
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -882,15 +1016,55 @@ export function FUN_00574c47(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00574ca6 — setup_sprite_editor_dialog
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00574ca6 (498 bytes)
 export function FUN_00574ca6(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9) {
-  // UI dialog setup — no-op in JS
+  // C: Scenario editor dialog setup — same pattern as FUN_00572089
+  if (param_1 === 0) {
+    // C: FUN_005f22d0(&DAT_006ac5bc, ""); — empty title
+  } else {
+    // C: FUN_005f22d0(&DAT_006ac5bc, param_1);
+  }
+  DAT_006ac59c = param_2;
+  DAT_006ac5a0 = param_8;
+  DAT_006ac5a4 = param_9;
+  DAT_006ac5a8 = param_7;
+  DAT_006ac684 = 0;
+  DAT_006ac730 = 0;
+  if ((param_2 & 4) !== 0) {
+    DAT_006ac5a0 = DAT_00633598;
+    DAT_006ac5a4 = DAT_0063359c;
+  }
+  let local_8 = ((param_2 & 8) === 0) ? 0x202 : 0x802;
+  if (DAT_006ac5a0 !== 0) { local_8 = local_8 | 0x400; }
+  if (param_7 !== 0) { local_8 = local_8 | 0x1000; }
+  if ((param_2 & 2) === 0) {
+    param_5 = param_5 + DAT_006ac5a4 * 2;
+    param_6 = param_6 + DAT_006ac5a0 + DAT_006ac5a4;
+  }
+  if ((param_2 & 1) !== 0) {
+    param_3 = (DAT_006ab198 >> 1) - (param_5 >> 1);
+    param_4 = (DAT_006ab19c >> 1) - (param_6 >> 1);
+  }
+  FUN_005bb4ae(0, local_8, param_3, param_4, param_5, param_6, 0, 0);
+  if (DAT_006ac5a0 !== 0) { FUN_00497d00(DAT_006ac5a0); }
+  if (DAT_006ac5a8 !== 0) { FUN_004cff70(DAT_006ac5a8); }
+  FUN_00552ed2(); // DEVIATION: MFC show dialog
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00574e98 — init_sprite_preview
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00574e98 (184 bytes)
 export function FUN_00574e98() {
-  // UI initialization — no-op in JS
+  // C: Map editor refresh — reinitializes tile sprites after resolution change
+  // C: Writes DAT_006ac874 = FUN_00417f70() (tile size)
+  // C: Writes DAT_006ac890 = 0 (refresh flag)
+  // C: Calls FUN_005cf467(9,7) (set sprite grid), FUN_005727d8 (zoom init)
+  // C: FUN_005cef31, FUN_005cdf50, FUN_005cebb4 — bitmap recalc
+  // DEVIATION: GDI bitmap operations
+  DAT_006ac874 = FUN_00417f70();
+  FUN_005727d8();
+  DAT_006ac890 = 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
