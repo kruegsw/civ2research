@@ -650,8 +650,39 @@ export function FUN_00573b1d(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00573e59 — open_map_editor_dialog
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00573e59 (947 bytes)
 export function FUN_00573e59(param_1, param_2, param_3, param_4) {
-  // UI dialog — no-op in JS
+  // C: Map editor main setup — initializes all map editor state
+  // DEVIATION: SEH, MFC constructors
+  DAT_006ac924 = param_3;
+  DAT_006ac8a0 = param_1;
+  DAT_006ac878 = FUN_004a6980(); // map width
+  DAT_006ac87c = FUN_004bb540(); // map height
+  DAT_006ac874 = FUN_00417f70(); // tile size
+  DAT_006ac888 = param_4;
+  // DEVIATION: GDI — FUN_005cdf50, FUN_005cf23f, FUN_005bd65c bitmap setup
+  FUN_005727d8(); // DEVIATION: zoom init
+  // C: Set initial scroll position from DAT_006a4f88 viewport
+  DAT_006ac0a4 = 0; // C: reads from DAT_00642c48[*(DAT_006a4f88+0x2ec)*4]
+  DAT_006ac0a0 = 0; // C: reads from DAT_00642b48[*(DAT_006a4f88+0x2ec)*4]
+  DAT_006ac0f0 = DAT_006ac0a0;
+  DAT_006ac0f4 = DAT_006ac0a4;
+  FUN_00572389(); // DEVIATION: refresh
+  DAT_006ac120 = 1;   // draw mode
+  DAT_006ac118 = 1;   // previous mode
+  DAT_006ac124 = 0;   // sub-mode
+  DAT_006ac898 = 0x201; // cursor type
+  DAT_006ac88c = 1;   // dialog active flag
+  DAT_006ac8a4 = 0;   // not drawing
+  // C: FUN_00572089 creates dialog window
+  FUN_00572089(param_2, 0xd, 0, 0, 0x192, 0x14e, 0, 0, 0);
+  // DEVIATION: MFC — button layout, dialog loop
+  // C: while (DAT_006ac88c !== 0) { FUN_0040ef50(); }
+  FUN_0059d3c9(0); // DEVIATION: sound
+  FUN_00553379(); // DEVIATION: cleanup
+  FUN_0057420c(); // DEVIATION: destructor
+  FUN_00574218(); // DEVIATION: destructor
+  FUN_0057422b(); // DEVIATION: SEH
 }
 
 // ═══════════════════════════════════════════════════════════════════
