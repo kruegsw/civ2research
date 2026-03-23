@@ -1602,10 +1602,15 @@ export function show_messagebox_6DA1() {
   FUN_004ccab9("COSMIC"); // DEVIATION: UI — save cosmic params to RULES.TXT
   iVar1 = FUN_show_messagebox_CF2D(); // DEVIATION: file I/O — save rules file
   if (iVar1 === 0) {
-    // DEVIATION: Win32 — MessageBoxA error dialog
+    // _sprintf(local_24, "Error updating RULES.%s", DAT_0062cd24);
+    // let uType = 0x10;
+    // let lpCaption = "File I/O Error";
+    // let lpText = local_24;
+    // iVar1 = FUN_00414d10();
+    // MessageBoxA(ri(iVar1, 4), lpText, lpCaption, uType); // DEVIATION: Win32 MessageBoxA
   }
-  DAT_006a1d7c = 0; // close cosmic editor
-  // DEVIATION: MFC — InvalidateObjectCache
+  DAT_006a1d7c = 0;
+  // CRichEditDoc_InvalidateObjectCache(DAT_006a4f88 + 0x48); // DEVIATION: MFC
 }
 
 
@@ -1679,17 +1684,32 @@ export function FUN_00586f16() {
   // DEVIATION: MFC — thunk_FUN_00551dc0, thunk_FUN_00551d80, _Timevec destructor
   iVar1 = DAT_006a1d80;
   DAT_006a1d80 = DAT_006a1d80 + 1;
-  // DEVIATION: MFC — dialog controls setup (buttons, rectangles, labels)
-  FUN_005866d3(); // called from C — combat stats display
-  FUN_005869d4(); // called from C — unit stats display
-  // DEVIATION: MFC — FUN_005bb574, thunk_FUN_004085f0, FUN_005c61b0
-  // DEVIATION: MFC — dialog message loop: while (DAT_006a1d7c !== 0) { thunk_FUN_0040ef50(); }
-  // In headless mode, skip the dialog loop
+  // let local_474 = (in_ECX === 0) ? 0 : in_ECX + 0x48; // DEVIATION: MFC
+  // FUN_00418f40(local_474, iVar1, local_454); // DEVIATION: MFC — add tab page
+  // FUN_00418fe0(DAT_006a4f90); // DEVIATION: MFC — set font
+  // FUN_00551dc0(0x004038a5); // DEVIATION: MFC — set handler
+  FUN_005866d3(); // cosmic editor stats display
+  FUN_005869d4(); // cosmic editor param list
+  // FUN_00551d80(0); // DEVIATION: MFC — set handler
+  // _Timevec_destructor(PTR_DAT_006359f0); // DEVIATION: MFC
+  // in_ECX[0x2e4] = extraout_EAX + 8; // DEVIATION: MFC layout
+  // in_ECX[0x2e0] = ((in_ECX[300] - 10) + ((in_ECX[300] - 10) >> 31 & 3)) >> 2; // DEVIATION: MFC
+  // ... (4 more button layout blocks using FUN_004086c0/FUN_0040f680/FUN_0040f880) // DEVIATION: MFC
+  // FUN_0040f840(); // DEVIATION: MFC — set default button
+  // FUN_0040f350(0); // DEVIATION: MFC — show
+  // CPropertySheet_EnableStackedTabs(in_ECX, 0x401c0d); // DEVIATION: MFC
+  // FUN_005bb574(); // DEVIATION: MFC
+  // FUN_004085f0(); // DEVIATION: MFC — init
+  // FUN_005c61b0(); // DEVIATION: MFC — show window
+  // while (DAT_006a1d7c !== 0) { // DEVIATION: MFC — dialog message loop
+  //   FUN_0040ef50(); // DEVIATION: MFC — process messages
+  // }
   if (DAT_0062e018 !== 0) {
-    // DEVIATION: MFC — thunk_FUN_0040f010(1) — destroy dialog
+    // FUN_0040f010(1); // DEVIATION: MFC — destroy dialog window
   }
   DAT_0062e018 = 0;
-  // DEVIATION: SEH cleanup
+  // FUN_005875e9(); // DEVIATION: SEH cleanup
+  // FUN_005875ff(); // DEVIATION: SEH cleanup
 }
 
 
@@ -2197,7 +2217,9 @@ export function FUN_0058a0ee(param_1, param_2, param_3, param_4) {
   // C: call registered error callbacks
   let local_108 = DAT_00634768;
   while (local_108 = local_108 - 1, -1 < local_108) {
-    // DEVIATION: function pointer callbacks — cannot execute in JS
+    // if (ri(DAT_006acbd0, local_108 * 4) !== 0) {
+    //   (*(ri(DAT_006acbd0, local_108 * 4)))(); // DEVIATION: function pointer callback
+    // }
   }
   // DEVIATION: DebugBreak() + _exit(3) — throw instead
   throw new Error('Civ2 fatal error: ' + param_1 + ' in ' + param_2);
@@ -2448,22 +2470,50 @@ export function FUN_0058afb6(param_1) {
 export function FUN_0058b47e(param_1, param_2) {
   let local_214;
 
-  // DEVIATION: SEH, MFC — dialog setup
+  // FUN_0040f3e0(); // DEVIATION: MFC — dialog constructor
+  // FUN_0040f3e0(); // DEVIATION: MFC
+  // _eh_vector_constructor_iterator_(local_1d0, 0x3c, 6, FUN_0040f3e0, FUN_0040f570); // DEVIATION: MFC
   DAT_006acd50 = 1;
-  FUN_0058a61b(param_1, 0xd, 0, 0, 0x21c, 0x118, 0, 0, 0); // DEVIATION: MFC dialog init
-  // DEVIATION: MFC — _Timevec destructor, layout calculations
+  FUN_0058a61b(param_1, 0xd, 0, 0, 0x21c, 0x118, 0, 0, 0);
+  // _Timevec_destructor(PTR_DAT_006359f0); // DEVIATION: MFC
+  // local_68 = extraout_EAX + 8; // DEVIATION: MFC layout height
+  // local_60 = (DAT_006ace84 + (DAT_006ace84 >> 31 & 3)) >> 2; // DEVIATION: MFC layout width
   for (local_214 = 0; local_214 < 6; local_214 = local_214 + 1) {
-    // DEVIATION: MFC — button/label layout using DAT_006ace7c/80/84
-    FUN_00428b0c(DAT_00628420[ri(DAT_00634930, local_214 * 4)]); // DEVIATION: resource string
-    // DEVIATION: MFC — FUN_0040f680, FUN_0040f880 — create button controls
+    // iVar2 = (local_214 % 3) * local_60 * 5; // DEVIATION: MFC layout
+    // local_64 = ((iVar2 + (iVar2 >> 31 & 3)) >> 2) + ((local_60 + (local_60 >> 31 & 3)) >> 2) + DAT_006ace7c;
+    // FUN_004086c0(local_5c, local_64, local_68 * 3 + ((local_214 / 3) | 0) * local_68 * 4 + DAT_006ace80, local_60, local_68);
+    let uVar1 = FUN_00428b0c(DAT_00628420[ri(DAT_00634930, local_214 * 4) * 4]);
+    // FUN_0040f680(DAT_006acda0, local_214 + 0xc9, local_5c, uVar1); // DEVIATION: MFC — create button
+    // FUN_0040f880(0x00403b4d); // DEVIATION: MFC — set handler
   }
-  FUN_0058afb6(param_2); // advisor icon mapping — calls game state
-  // DEVIATION: MFC — OK/Cancel button layout
-  // DEVIATION: MFC — FUN_005bb574, FUN_004085f0, FUN_005c61b0 — show dialog
-  // DEVIATION: MFC — message loop: while (DAT_006acd50 !== 0) { FUN_0040ef50(); }
-  FUN_0059d3c9(0); // DEVIATION: sound
-  FUN_00553379(); // DEVIATION: UI cleanup
-  // DEVIATION: MFC — destructor chain
+  FUN_0058afb6(param_2); // advisor icon mapping
+  // local_60 = (DAT_006ace84 - 6) / 2; // DEVIATION: MFC layout
+  // iVar2 = (DAT_006ace80 + DAT_006ace88) - (local_68 + 2); // DEVIATION: MFC
+  // local_64 = DAT_006ace7c + 2; // DEVIATION: MFC
+  // FUN_004086c0(local_5c, local_64, iVar2, local_60, local_68); // DEVIATION: MFC
+  // uVar1 = FUN_00428b0c(DAT_00628420[0x3f8 / 4]); // DEVIATION: MFC — OK string
+  // FUN_0040f680(DAT_006acda0, 0x65, local_5c, uVar1); // DEVIATION: MFC — OK button
+  // FUN_0040f880(0x004022c0); // DEVIATION: MFC — OK handler
+  // local_64 = local_64 + local_60 + 2; // DEVIATION: MFC
+  // FUN_004086c0(local_5c, local_64, iVar2, local_60, local_68); // DEVIATION: MFC
+  // uVar1 = FUN_00428b0c(DAT_00628420[0x3fc / 4]); // DEVIATION: MFC — Cancel string
+  // FUN_0040f680(DAT_006acda0, 0x66, local_5c, uVar1); // DEVIATION: MFC — Cancel button
+  // FUN_0040f880(0x00402da1); // DEVIATION: MFC — Cancel handler
+  // FUN_0040f840(); // DEVIATION: MFC — set default button
+  // FUN_00414ca0(0x00402559); // DEVIATION: MFC — set help handler
+  // CPropertySheet_EnableStackedTabs(DAT_006acd58, 0x4017d5); // DEVIATION: MFC
+  // FUN_005bb574(); // DEVIATION: MFC
+  // FUN_004085f0(); // DEVIATION: MFC — init
+  // FUN_005c61b0(); // DEVIATION: MFC — show
+  // while (DAT_006acd50 !== 0) { // DEVIATION: MFC — message loop
+  //   FUN_0040ef50(); // DEVIATION: MFC — process messages
+  // }
+  FUN_0059d3c9(0);
+  FUN_00553379();
+  // FUN_0058b859(); // DEVIATION: MFC — destructor
+  // FUN_0058b86f(); // DEVIATION: MFC — destructor
+  // FUN_0058b87b(); // DEVIATION: MFC — SEH cleanup
+  // FUN_0058b88e(); // DEVIATION: MFC — SEH cleanup
 }
 
 export function FUN_0058b859() { /* destructor iterator — no-op */ }
