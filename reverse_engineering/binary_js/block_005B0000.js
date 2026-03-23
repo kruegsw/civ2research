@@ -2043,8 +2043,60 @@ export function FUN_005b6ab5(param_1, param_2, param_3, param_4, param_5, param_
 // FUN_005b6aea — show_unit_list_dialog (UI)
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_005B0000.c FUN_005b6aea (693 bytes)
 export function FUN_005b6aea(param_1, param_2, param_3) {
-  // DEVIATION: Win32 API (CPropertySheet, CString, dialog) — unit list dialog
+  let uVar1;
+  let local_34c;
+  let local_344;
+
+  // DEVIATION: SEH, CString constructor
+  FUN_0059db08(0x4000);
+  FUN_005cdea1(0x42, 0x30, 0); // DEVIATION: GDI
+  DAT_0063605c = -1;
+  FUN_0040bc40(0x20001 - (param_3 === 0 ? 1 : 0)); // DEVIATION: MFC — dialog flags
+  FUN_0059e6a9(param_2); // DEVIATION: set title
+  FUN_0059e6ff(0x154); // DEVIATION: set height
+  // CPropertySheet::EnableStackedTabs — 4 handlers // DEVIATION: MFC
+  local_344 = 0;
+  // Walk unit stack via linked list
+  for (param_1 = FUN_005b2d39(param_1); -1 < param_1; param_1 = FUN_005b2c82(param_1)) {
+    local_344 = local_344 + 1;
+    if (local_344 < 10) {
+      FUN_0040bbb0(); // DEVIATION: MFC — begin text
+      uVar1 = FUN_00493d13(s8(DAT_006560f0[param_1 * 0x20 + 7])); // get civ name
+      FUN_00414d70(uVar1); // DEVIATION: MFC — set title
+      FUN_0040fe10(); // DEVIATION: MFC — newline
+      if ((ru(DAT_006560f0, param_1 * 0x20 + 4) & 0x2000) !== 0) {
+        FUN_0040bc10(0xd); // DEVIATION: MFC — "veteran" text
+        FUN_0040fe10();
+      }
+      FUN_0040ff00(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0C]); // unit type icon
+      FUN_0040fe10();
+      FUN_0040fea0(); // DEVIATION: MFC
+      if (DAT_006560f0[param_1 * 0x20 + 0x10] === 0xFF) {
+        local_34c = 0xFFFFFFFF;
+      } else {
+        local_34c = u8(DAT_006560f0[param_1 * 0x20 + 0x10]);
+      }
+      FUN_0043ca80(local_34c); // DEVIATION: MFC — show home city
+      if (s8(DAT_0064b1bc[u8(DAT_006560f0[param_1 * 0x20 + 6]) * 0x14 + 0x0E]) === 7) {
+        // Caravan — show cargo
+        FUN_00421d30(); // DEVIATION: MFC
+        if (s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) < 0) {
+          FUN_0040ff00(DAT_00628420[0x300 / 4]); // "no cargo"
+        } else {
+          FUN_0040ff00(DAT_0064b168[s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) * 4]); // cargo name
+        }
+      }
+      FUN_0040fed0(); // DEVIATION: MFC — end line
+      FUN_0059ec88(0 /*local_4c*/, param_1, 0); // DEVIATION: display
+    }
+  }
+  FUN_0040bc80(0); // DEVIATION: MFC — show dialog
+  // DEVIATION: SEH cleanup
+  FUN_005b6d9f();
+  FUN_005b6dab();
+  FUN_005b6dbe();
 }
 
 
