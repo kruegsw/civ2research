@@ -907,14 +907,16 @@ export function FUN_0048308f() {
       }
       local_10 = local_10 + 0x1c4;
     }
-    for (local_10 = DAT_0064b99c; local_10 !== 0; local_10 = local_10 + 0x1bc) {
-      // DEVIATION: Win32 API (string pointer reassignment in raw memory)
-      // Each block walks event structure fields and reassigns string pointers
-      // Offsets checked: 0x8, 0x10, 0x14, 0x20, 0x38-0x88 (20 entries),
-      // 0x88, 0x90, 0xc4, 0xcc, 0xd4, 0xdc, 0x13c, 0x140, 0x148, 0x174, 0x184
-      // Each one advances local_14 by the string length (with min sizes)
-      break; // Cannot iterate linked list in JS without real memory
-    }
+    // DEVIATION: Network event linked list — pointer-based string reassignment
+    // C: Walks each event structure via linked list (local_10 + 0x1bc = next pointer)
+    // For each event, reassigns string fields at these offsets to packed string area:
+    //   +0x08 (min 0x0F), +0x10 (min 0x18), +0x14 (min 0x18), +0x20 (min 0x18),
+    //   +0x38..+0x84 (20 entries, min 1 each), +0x88 (min 0x18), +0x90 (min 0x0F),
+    //   +0xC4 (min 0x18), +0xCC (min 0x18), +0xD4 (min 0x18), +0xDC (min 0x0F),
+    //   +0x13C (min 0x18), +0x140 (min 0x18), +0x148 (min 0x0F),
+    //   +0x174 (min 0x18), +0x184 (min 1)
+    // Each field is checked for non-zero, then pointer is set to local_14, local_14 advances
+    // Cannot function without C pointer arithmetic on raw event buffer
   }
   return;
 }
