@@ -863,18 +863,19 @@ export function FUN_004f4793() {
 // Source: decompiled/block_004F0000.c FUN_004f4809 (918 bytes)
 export function FUN_004f4809() {
   let uVar1;
-  // DEVIATION: MFC (in_ECX) — operates on dialog object
-  // C: Free 10 linked lists at in_ECX offsets
+  // DEVIATION: MFC (in_ECX) — free 10 linked lists at dialog offsets
   let offsets = [0x16dc, 0x16e0, 0x16e4, 0x16e8, 0x16ec,
                  0x16f0, 0x16f4, 0x16f8, 0x16fc, 0x1700];
   for (let listIdx = 0; listIdx < offsets.length; listIdx++) {
-    // C: while (*(int*)(in_ECX + offset) != 0) {
-    //      uVar1 = *(*(in_ECX + offset) + 8); // next ptr
-    //      if (**(in_ECX + offset) != 0) { operator_delete(**(in_ECX + offset)); } // free string
-    //      operator_delete(*(in_ECX + offset)); // free node
-    //      *(in_ECX + offset) = uVar1; // advance
-    //    }
-    // DEVIATION: operator_delete — JS garbage collection handles this
+    // DEVIATION: in_ECX not available — walk would be:
+    // while (ri(in_ECX, offsets[listIdx]) !== 0) {
+    //   uVar1 = ri(ri(in_ECX, offsets[listIdx]), 8);
+    //   if (ri(ri(in_ECX, offsets[listIdx]), 0) !== 0) {
+    //     operator_delete(ri(ri(in_ECX, offsets[listIdx]), 0));
+    //   }
+    //   operator_delete(ri(in_ECX, offsets[listIdx]));
+    //   wi(in_ECX, offsets[listIdx], uVar1);
+    // }
   }
 }
 
