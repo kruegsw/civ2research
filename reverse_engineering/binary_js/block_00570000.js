@@ -2104,9 +2104,35 @@ export function FUN_00578abd(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_00578b06 — add_menu_item
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_00578b06 (268 bytes)
 export function FUN_00578b06(param_1, param_2) {
-  // Menu building — UI only, stub
-  return null;
+  let puVar1;
+  let sVar2;
+  let uVar3;
+
+  // puVar1 = FUN_00498159(in_ECX + 4, 0x1c); // DEVIATION: MFC — allocate menu node (28 bytes)
+  puVar1 = new Array(7).fill(0);
+  // if (ri(in_ECX, 0x1c) === 0) { // first item
+  //   wi(in_ECX, 0x1c, puVar1); // set as head
+  //   puVar1[5] = 0; // prev = null
+  // } else { // append to end
+  //   let local_c = ri(in_ECX, 0x1c);
+  //   while (ri(local_c, 0x10) !== 0) { local_c = ri(local_c, 0x10); } // find tail
+  //   wi(local_c, 0x10, puVar1); // tail->next = new
+  //   puVar1[5] = local_c; // new->prev = tail
+  // }
+  puVar1[4] = 0; // next = null
+  puVar1[6] = 0; // submenu head = null
+  puVar1[2] = 0; // flags = 0
+  puVar1[1] = param_1; // menu item ID
+  puVar1[3] = 0; // subitem count = 0
+  sVar2 = _strlen(param_2);
+  // uVar3 = FUN_00498159(in_ECX + 4, sVar2 + 1); // DEVIATION: MFC — allocate string
+  puVar1[0] = param_2; // label text
+  FUN_005f22d0(puVar1[0], param_2); // DEVIATION: copy string
+  FUN_00578abd(puVar1[0]); // replace pipes with tabs
+  // wi(in_ECX, 0x18, ri(in_ECX, 0x18) & 0xffff7fff); // DEVIATION: MFC — clear flag
+  return puVar1;
 }
 
 // ═══════════════════════════════════════════════════════════════════
