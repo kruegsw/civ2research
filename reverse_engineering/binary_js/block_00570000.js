@@ -667,12 +667,37 @@ export function FUN_00572389() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_005723ee (556 bytes)
 export function FUN_005723ee() {
-  // C: Draws map control buttons (zoom, scroll indicators)
-  // C: Uses FUN_005cd775 (scale bitmap), FUN_005cdb33 (transparent blit),
-  //    FUN_005c0c5d (draw tile), FUN_005cef31 (draw icon)
-  // C: Reads DAT_006ac874, DAT_006ac2d4/d8 (viewport position)
-  // C: No game state DAT_ writes
-  // DEVIATION: GDI rendering
+  let local_24, local_20, local_1c, local_18;
+  let local_14 = new Uint8Array(16);
+
+  // Draw primary color swatch
+  if (DAT_00634000 === 0) { local_18 = DAT_006ac874; }
+  else { local_18 = DAT_00634000; }
+  FUN_005a9abf(DAT_006ac1b0, DAT_006ac2d4 + 0x142, DAT_006ac2d8 + 0xac, 0x20, 0x20, local_18); // DEVIATION: blit
+  FUN_005a9964(DAT_006ac1b0, DAT_006ac2d4 + 0x142, DAT_006ac2d8 + 0xac, 0x20, 0x20, 10); // DEVIATION: border
+
+  // Draw secondary color swatch
+  if (DAT_00634004 === 0) { local_1c = DAT_006ac874; }
+  else { local_1c = DAT_00634004; }
+  FUN_005a9abf(DAT_006ac1b0, DAT_006ac2d4 + 0x14a, DAT_006ac2d8 + 0xb4, 0x10, 0x10, local_1c);
+  FUN_005a9964(DAT_006ac1b0, DAT_006ac2d4 + 0x14a, DAT_006ac2d8 + 0xb4, 0x10, 0x10, 10);
+
+  // Draw tertiary color swatch
+  if (DAT_00634008 === 0) { local_20 = DAT_006ac874; }
+  else { local_20 = DAT_00634008; }
+  FUN_005a9abf(DAT_006ac1b0, DAT_006ac2d4 + 0x11e, DAT_006ac2d8 + 0xac, 0x20, 0x20, local_20);
+  FUN_005a9964(DAT_006ac1b0, DAT_006ac2d4 + 0x11e, DAT_006ac2d8 + 0xac, 0x20, 0x20, 10);
+
+  // Draw quaternary color swatch (if not in mode 0xb)
+  if (DAT_006ac924 !== 0xb) {
+    if (DAT_0063400c === 0) { local_24 = DAT_006ac874; }
+    else { local_24 = DAT_0063400c; }
+    FUN_005a9abf(DAT_006ac1b0, DAT_006ac2d4 + 0x166, DAT_006ac2d8 + 0xac, 0x20, 0x20, local_24);
+    FUN_005a9964(DAT_006ac1b0, DAT_006ac2d4 + 0x166, DAT_006ac2d8 + 0xac, 0x20, 0x20, 10);
+  }
+  // Invalidate the color swatch area
+  FUN_004086c0(local_14, DAT_006ac2d4 + 0x11e, DAT_006ac2d8 + 0xac, 0x68, 0x20);
+  FUN_00408490(local_14); // DEVIATION: MFC invalidate rect
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -680,11 +705,25 @@ export function FUN_005723ee() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_0057261a (294 bytes)
 export function FUN_0057261a(param_1, param_2, param_3, param_4) {
-  // C: Draws colored rectangle for civilization indicator
-  // C: Uses FUN_005c0333 (fill rect), FUN_005c19ad (set color)
-  // C: Reads DAT_006ac108 (rect buffer), param_1-4 for position/size
-  // C: No game state DAT_ writes
-  // DEVIATION: GDI rendering
+  let iVar1, iVar2;
+  let uVar3;
+  let local_14 = new Uint8Array(16);
+
+  if (9 < param_4 && param_4 < 0xca) {
+    uVar3 = (param_4 - 10) >> 31;
+    iVar1 = ((((param_4 - 10) ^ uVar3) - uVar3) & 0x1f ^ uVar3) - uVar3;
+    iVar2 = (param_4 - 10 + ((param_4 - 10) >> 31 & 0x1f)) >> 5;
+    FUN_004086c0(local_14, iVar1 * 0xc + param_2, iVar2 * 0xc + param_3, 10, 10);
+    FUN_0040fdb0(DAT_006ac1b0, local_14, param_4); // DEVIATION: fill rect
+    FUN_005a99fc(DAT_006ac1b0, local_14, 10, 10); // DEVIATION: draw border
+    FUN_004086c0(local_14, iVar1 * 0xc + param_2 - 1, iVar2 * 0xc + param_3 - 1, 0xc, 0xc);
+    if (param_4 === DAT_00634000 || param_4 === DAT_00634004) {
+      FUN_005a99fc(param_1, local_14, 0x29, 0x29); // DEVIATION: highlight border
+    } else {
+      FUN_005a99fc(param_1, local_14, 0x1d, 0x1d); // DEVIATION: normal border
+    }
+    FUN_00408490(local_14); // DEVIATION: MFC invalidate
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1074,15 +1113,53 @@ export function FUN_0057422b() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00570000.c FUN_00574239 (745 bytes)
 export function FUN_00574239() {
-  // C: Map editor paint — draws map tiles, color palette, terrain preview
-  // C: Reads DAT_006ac2d4/d8 (viewport), DAT_006ac878/87c (dimensions)
-  // C: Writes DAT_006ac874 = FUN_00417f70() (tile size)
-  // C: Draws 0xC0 palette colors via FUN_0057261a in a loop
-  // C: Draws 3x5 grid of terrain preview tiles via FUN_005a9abf + FUN_005cef31
-  // C: Calls FUN_005723ee (map controls), FUN_005baeb0/ec8/ee0 (MFC repaint)
-  // DEVIATION: GDI rendering — all draw calls are Win32
-  DAT_006ac874 = FUN_00417f70(); // tile size
-  FUN_005723ee(); // draw map controls
+  let bVar1;
+  let local_50 = new Uint8Array(16), local_40 = new Uint8Array(16);
+  let local_14 = new Uint8Array(16);
+  let local_30, local_2c, local_28, local_24, local_20, local_1c, local_18;
+
+  FUN_00552112(); // DEVIATION: MFC begin paint
+  FUN_0040fdb0(DAT_006ac1b0, DAT_006ac46c, 0x1d); // DEVIATION: fill background
+  local_20 = DAT_006ac2d4 + 0x10;
+  local_24 = DAT_006ac2d8 + 0x10;
+  local_18 = DAT_006ac878 << 2;
+  local_1c = DAT_006ac87c << 2;
+  FUN_004086c0(local_14, 0, 0, DAT_006ac878, DAT_006ac87c);
+  FUN_005cebb4(DAT_006ac128, local_14); // DEVIATION: stretch blit
+  bVar1 = FUN_00417f70();
+  DAT_006ac874 = bVar1 & 0xFF;
+  FUN_005a9abf(DAT_006ac1b0, local_20, local_24, local_18, local_1c, DAT_006ac874); // DEVIATION: blit
+  FUN_005cd775(4, 1); // DEVIATION: scale
+  FUN_005cef66(local_40, DAT_006ac1b0, 0, local_20, local_24); // DEVIATION: draw
+  FUN_005cd775(1, 1); // DEVIATION: scale reset
+  FUN_004ccb6a(DAT_006ac1b0, local_20, local_24, local_18, local_1c, 6); // DEVIATION: border
+  // Draw color palette (0xC0 colors)
+  local_20 = DAT_006ac2d4 + 10;
+  local_24 = DAT_006ac2d8 + 0xe0;
+  for (local_28 = 0; local_28 < 0xc0; local_28 = local_28 + 1) {
+    FUN_0057261a(DAT_006ac1b0, local_20, local_24, local_28 + 10);
+  }
+  // Draw 3x5 terrain preview grid
+  local_20 = DAT_006ac2d4 + 0x11e;
+  local_24 = DAT_006ac2d8 + 0x14;
+  for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
+    for (local_30 = 0; local_30 < 5; local_30 = local_30 + 1) {
+      if (local_30 === 0 && local_2c === 0) {
+        FUN_005a9abf(DAT_006ac1b0, local_2c * 0x24 + local_20, local_30 * 0x26 + local_24,
+                     0x20, 0x20, DAT_006ac874);
+      } else {
+        FUN_005a9abf(DAT_006ac1b0, local_2c * 0x24 + local_20, local_30 * 0x26 + local_24,
+                     0x20, 0x20, 0x29);
+        FUN_005cef31(local_50, DAT_006ac1b0, local_2c * 0x24 + local_20, local_30 * 0x26 + local_24);
+      }
+      FUN_005a9964(DAT_006ac1b0, local_2c * 0x24 + local_20, local_30 * 0x26 + local_24,
+                   0x20, 0x20, 10); // DEVIATION: border
+    }
+  }
+  FUN_005723ee(); // draw color swatches
+  FUN_005baeb0(DAT_006ac1b0); // DEVIATION: MFC
+  FUN_005baec8(DAT_006a4f90); // DEVIATION: MFC
+  FUN_005baee0(0x29, 0x12, 1, 1); // DEVIATION: MFC
   FUN_00408460(); // DEVIATION: MFC invalidate
 }
 
