@@ -1697,15 +1697,213 @@ export function FUN_004e4c92(param_1, param_2, param_3) {
 }
 
 // update_menu_state — large function updating all menu enables/disables
+// Source: decompiled/block_004E0000.c FUN_004e4ceb (3761 bytes)
 export function FUN_004e4ceb() {
-  // This is a massive menu state updater (lines 2119-2437).
-  // It calls FUN_005792e1, FUN_005794cf, FUN_00579260, FUN_004e4c92,
-  // FUN_0057940d extensively. All are UI-only stubs.
-  // Mechanical transpilation abbreviated — calls are all stubs.
+  let cVar1, cVar2, bVar3, bVar4;
+  let iVar5, iVar6, iVar7, iVar8, iVar11, iVar13;
+  let uVar9, uVar10, uVar14, bVar15;
+  let local_3c, local_40, local_44, local_48, local_4c;
+  let local_50, local_54, local_58, local_5c, local_60;
+  let local_64, local_68, local_6c, local_70;
+  let local_8;
+
+  // C line 2153: menu mode flags
   FUN_005792e1(0x606, DAT_00655ae8 & 0x80);
+  if (DAT_00655b02 === 0) {
+    FUN_005792e1(0x130, 1); FUN_005792e1(0x132, 1); FUN_005792e1(0x507, 1);
+    FUN_005792e1(0x104, 1); FUN_005792e1(0x105, 1);
+    FUN_005792e1(0x120, 0); FUN_005792e1(0x9f0, 0);
+  } else {
+    FUN_005792e1(0x9f0, 1); FUN_005792e1(0x104, 0); FUN_005792e1(0x105, 0);
+    if (DAT_0062eb30 === 0) { FUN_005792e1(0x701, 1); }
+    FUN_005792e1(0x120, 1);
+    if ((DAT_00654c74 === 0) || (DAT_00655b02 !== 1)) { FUN_005792e1(0x130, 1); }
+    else { FUN_005792e1(0x130, 0); }
+    if (DAT_00655b02 === 1) { FUN_005792e1(0x205, 1); }
+    else { FUN_005792e1(0x205, 0); }
+    FUN_005792e1(0x507, DAT_00655b02 < 3 ? 1 : 0);
+    if (DAT_00655b02 === 2) {
+      FUN_005792e1(0x132, 1); FUN_005792e1(0x110, 1);
+    } else {
+      if (DAT_006ad2f7 === 0) { FUN_005792e1(0x132, 1); }
+      else { FUN_005792e1(0x132, 0); }
+      FUN_005792e1(0x110, 0);
+    }
+    FUN_005792e1(0x1f1, 0); FUN_005792e1(0x1f0, 0);
+  }
+  // C line 2200: unit presence flags
   FUN_005792e1(0x302, DAT_006d1da8 === 0 ? 1 : 0);
   FUN_005792e1(0x301, DAT_006d1da8 === 1 ? 1 : 0);
+  // C line 2202: revolution menu enabled if gov is Anarchy or scenario bypass
+  if (((DAT_00655af0 & 0x80) === 0 || (DAT_0064bc60 & 0x10) === 0) &&
+     DAT_0064c6b5[DAT_006d1da0 * 0x594] !== 0) {
+    local_3c = 0;
+  } else { local_3c = 1; }
+  FUN_005792e1(0x220, local_3c);
+  // C line 2210: active unit menu
+  if (DAT_006d1da8 === 0 || DAT_00655b16 === 0 || DAT_00655afe < 0 ||
+     DAT_00655b16 < DAT_00655afe ||
+     ri(DAT_006560f0, (DAT_00655afe & 0xFFFF) * 0x20 + 0x1a) === 0) {
+    FUN_005794cf(4, 1); FUN_005792e1(0x460, 0); FUN_005792e1(0x468, 0);
+  } else {
+    iVar13 = DAT_00655afe & 0xFFFF;
+    iVar5 = rs(DAT_006560f0, iVar13 * 0x20);
+    iVar6 = rs(DAT_006560f0, iVar13 * 0x20 + 2);
+    iVar7 = s8(DAT_006560f0[iVar13 * 0x20 + 7]);
+    bVar4 = FUN_005b89bb(iVar5, iVar6);
+    uVar14 = u8(bVar4);
+    bVar15 = uVar14 === 10;
+    cVar1 = s8(DAT_0064b1bc[u8(DAT_006560f0[iVar13 * 0x20 + 6]) * 0x14 + 0x0E]);
+    FUN_005794cf(4, 0);
+    FUN_00579260(0x401, cVar1 !== 5 ? 1 : 0);
+    FUN_004e4c92(0x401, 0x32, cVar1 !== 5 ? 1 : 0);
+    FUN_004e4c92(0x410, 0x34, cVar1 !== 5 ? 1 : 0);
+    FUN_004e4c92(0x411, 0x36, cVar1 !== 5 ? 1 : 0);
+    FUN_004e4c92(0x412, 0x38, cVar1 !== 5 ? 1 : 0);
+    FUN_00579260(0x450, cVar1 === 5 ? 1 : 0);
+    // C line 2233: fortress enable
+    if (cVar1 === 5 && (iVar8 = FUN_004bd9f0(iVar7, 0x12), iVar8 !== 0)) { local_40 = 0; }
+    else { local_40 = 1; }
+    FUN_00579260(0x418, local_40);
+    // C line 2240: airstrip enable
+    if (cVar1 === 5 && (iVar8 = FUN_004bd9f0(iVar7, 0x42), iVar8 !== 0)) { local_44 = 0; }
+    else { local_44 = 1; }
+    FUN_00579260(0x417, local_44);
+    FUN_00579260(0x430, cVar1 === 5 ? 1 : 0);
+    FUN_00579260(0x41b, cVar1 !== 5 ? 1 : 0);
+    // C line 2249: automation
+    iVar8 = FUN_004bd9f0(iVar7, 0xd);
+    if (iVar8 === 0 && (DAT_0064b1bc[u8(DAT_006560f0[iVar13 * 0x20 + 6]) * 0x14 + 1] & 1) === 0) {
+      local_48 = 1;
+    } else { local_48 = 0; }
+    FUN_00579260(0x441, local_48);
+    FUN_005792e1(0x441, (DAT_0064b1bc[u8(DAT_006560f0[iVar13 * 0x20 + 6]) * 0x14] & 0x01) === 0 ? 1 : 0);
+    // C line 2261: airlift
+    iVar8 = FUN_004bd9f0(iVar7, 0x42);
+    FUN_00579260(0x442, iVar8 === 0 ? 1 : 0);
+    iVar8 = FUN_005b8ca6(iVar5, iVar6);
+    FUN_005792e1(0x442, iVar8 < 0 ? 1 : 0);
+    if (cVar1 === 5) {
+      // C line 2266: settler-specific menu logic
+      bVar3 = true;
+      for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
+        uVar9 = FUN_005ae052(s8(DAT_00628350[local_8]) + iVar5);
+        cVar2 = s8(DAT_00628360[local_8]);
+        iVar8 = FUN_004087c0(uVar9, cVar2 + iVar6);
+        if (iVar8 !== 0 && (iVar8 = FUN_005b8ca6(uVar9, cVar2 + iVar6), -1 < iVar8)) {
+          bVar3 = false;
+        }
+      }
+      iVar8 = FUN_0043cf76(iVar5, iVar6);
+      if (iVar8 < 0) {
+        iVar11 = FUN_005b89e4(iVar5, iVar6);
+        if (iVar11 === 0 && bVar3) { local_4c = 0; } else { local_4c = 1; }
+        FUN_005792e1(0x401, local_4c);
+      } else {
+        FUN_004e4c92(0x401, 0x33, s8(DAT_0064f340[iVar8 * 0x58 + 9]) > 9 ? 1 : 0);
+      }
+      uVar10 = FUN_005b94d5(iVar5, iVar6);
+      if ((uVar10 & 0x80) === 0) { FUN_005792e1(0x420, 1); }
+      bVar4 = FUN_005b94d5(iVar5, iVar6);
+      if ((bVar4 & 0x42) === 0x40 || (iVar11 = FUN_005b8d15(iVar5, iVar6), -1 < iVar11) ||
+         bVar15 || -1 < iVar8) {
+        FUN_005792e1(0x418, 1);
+      }
+      bVar4 = FUN_005b94d5(iVar5, iVar6);
+      if ((bVar4 & 0x42) === 0x40 || (iVar11 = FUN_005b8d15(iVar5, iVar6), -1 < iVar11) ||
+         bVar15 || -1 < iVar8) {
+        FUN_005792e1(0x417, 1);
+      }
+      uVar10 = FUN_005b94d5(iVar5, iVar6);
+      if ((uVar10 & 0x10) === 0 || (iVar11 = FUN_004bd9f0(iVar7, 0x43), iVar11 === 0)) {
+        if (bVar15 || -1 < iVar8 ||
+           (uVar10 = FUN_005b94d5(iVar5, iVar6), (uVar10 & 0x10) !== 0) ||
+           (iVar11 = FUN_005b8931(iVar5, iVar6),
+            (tileRead(iVar11, 0) & 0x80) !== 0 &&
+            (iVar11 = FUN_004bd9f0(iVar7, 7), iVar11 === 0))) {
+          local_54 = 1;
+        } else { local_54 = 0; }
+        FUN_005792e1(0x410, local_54);
+      } else {
+        uVar10 = FUN_005b94d5(iVar5, iVar6);
+        if ((uVar10 & 0x20) !== 0 || -1 < iVar8 || bVar15) { local_50 = 1; }
+        else { local_50 = 0; }
+        FUN_004e4c92(0x410, 0x35, local_50);
+      }
+      // C line 2326: irrigate/mine/transform menu labels
+      iVar11 = s8(DAT_00627cc0[uVar14 * 0x18 + 0x0E]);
+      if (iVar11 < 0) {
+        uVar10 = FUN_005b94d5(iVar5, iVar6);
+        if ((uVar10 & 4) === 0) {
+          if (iVar11 === -1 || bVar15 || -1 < iVar8) { local_5c = 1; } else { local_5c = 0; }
+          FUN_005792e1(0x411, local_5c);
+        } else {
+          iVar11 = FUN_004bd9f0(iVar7, 0x46);
+          if (iVar11 === 0 || bVar15 || -1 < iVar8) { local_58 = 1; } else { local_58 = 0; }
+          FUN_004e4c92(0x411, 0x3d, local_58);
+        }
+      } else {
+        FUN_004271e8(0, DAT_00627cc0[iVar11 * 0x18 + 4]);
+        FUN_004e4c92(0x411, 0x37, 0);
+      }
+      iVar11 = s8(DAT_00627cc0[uVar14 * 0x18 + 0x0F]);
+      if (iVar11 < 0) {
+        if (iVar11 === -1 || bVar15 || -1 < iVar8) { local_60 = 1; } else { local_60 = 0; }
+        FUN_005792e1(0x412, local_60);
+      } else {
+        FUN_004271e8(0, DAT_00627cc0[iVar11 * 0x18 + 4]);
+        FUN_004e4c92(0x412, 0x39, 0);
+      }
+      iVar7 = FUN_004bfe5a(iVar7, -1, 1);
+      FUN_00579260(0x413, iVar7 === 0 ? 1 : 0);
+      if (s8(DAT_00627cc0[uVar14 * 0x18 + 0x0D]) < 0) {
+        FUN_005792e1(0x413, 1);
+      } else {
+        FUN_004271e8(0, DAT_00627cc0[s8(DAT_00627cc0[uVar14 * 0x18 + 0x0D]) * 0x18 + 4]);
+        FUN_004e4c92(0x413, 0x3c, DAT_006560f0[iVar13 * 0x20 + 6] !== 1 ? 1 : 0);
+      }
+    } else {
+      FUN_005792e1(0x413, 1); FUN_005792e1(0x418, 1); FUN_005792e1(0x420, 1);
+    }
+    // C line 2383: home city
+    iVar7 = FUN_005b8ca6(iVar5, iVar6);
+    if (iVar7 < 0) { FUN_004e4c92(0x445, 0x3b, 0); }
+    else {
+      iVar5 = FUN_005b8ca6(iVar5, iVar6);
+      FUN_004e4c92(0x445, 0x3a, iVar5 < 0 ? 1 : 0);
+    }
+    // C line 2391: clean pollution
+    FUN_005792e1(0x430, DAT_0064b1bc[u8(DAT_006560f0[iVar13 * 0x20 + 6]) * 0x14 + 0x0D] === 0 ? 1 : 0);
+    FUN_00579260(0x421, cVar1 === 5 ? 1 : 0);
+    if (DAT_0064b1bc[u8(DAT_006560f0[iVar13 * 0x20 + 6]) * 0x14 + 8] === 0 ||
+       s8(DAT_0064b1bc[u8(DAT_006560f0[iVar13 * 0x20 + 6]) * 0x14 + 5]) !== 0) {
+      FUN_005792e1(0x421, 1);
+    }
+  }
+  // C line 2399: cheat/scenario menus
+  if ((DAT_00655ae8 & 0x8000) === 0 || DAT_00655b02 !== 0) { local_64 = 1; }
+  else { local_64 = 0; }
+  FUN_005794cf(7, local_64);
+  if ((DAT_00655ae8 & 0x8000) === 0 || DAT_00655b02 !== 0) { local_68 = 0; }
+  else { local_68 = 1; }
+  FUN_0057940d(0x701, local_68);
+  FUN_005792e1(0x701, DAT_00655b02 !== 0 && DAT_0062eb30 === 0 ? 1 : 0);
+  if (2 < DAT_00655b02 && DAT_006ad558[0] !== DAT_006d1da0) {
+    FUN_005794cf(4, 1);
+  }
+  // C line 2417: scenario editor menu
+  if ((DAT_00655ae8 & 0x8000) === 0 || DAT_00655b02 !== 0 || (DAT_00655af0 & 0x80) === 0) {
+    local_6c = 0;
+  } else { local_6c = 1; }
+  FUN_0057940d(0x801, local_6c);
+  if ((DAT_00655ae8 & 0x8000) === 0 || DAT_00655b02 !== 0 ||
+     (DAT_00655af0 & 0x80) === 0) {
+    local_70 = 1;
+  } else { local_70 = 0; }
+  FUN_005794cf(8, local_70);
+  FUN_005792e1(0x801, DAT_00655b02 !== 0 ? 1 : 0);
   FUN_00578f2c(0);
+  return;
 }
 
 // manage_window_wrapper
