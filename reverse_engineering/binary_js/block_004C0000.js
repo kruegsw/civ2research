@@ -3661,15 +3661,115 @@ export function show_messagebox_CF2D() {
 
 // Source: decompiled/block_004C0000.c FUN_004cd3d7 (1171 bytes)
 export function FUN_004cd3d7(param_1, param_2, param_3) {
-  // DEVIATION: File I/O — edits CITY.TXT entries
-  // C: Constructs filename "CITY." + extension from DAT_0062cd24
-  // C: __getcwd saves dir, __chdir to game dir (DAT_0064bb08)
-  // C: Opens CITY.TXT (or CITY.BAK/CITY.TMP as backup), reads line by line
-  // C: Finds section "@" + param_1 (section name), then searches for line
-  //    starting with param_2 (key), replaces with param_3 (new value)
-  // C: Copies remaining content, manages backup files, restores dir
-  // DEVIATION: Cannot perform file I/O — returns 0 (failure)
-  return 0;
+  let iVar1;
+  let pcVar2;
+  let local_274 = 0;
+  let local_270 = '';
+  let local_220 = null; // DEVIATION: FILE*
+  let local_21c = null; // DEVIATION: FILE*
+  let local_218 = '';
+  let local_114 = '';
+  let local_14 = '';
+
+  local_220 = null;
+  local_21c = null;
+  local_274 = 0;
+  FUN_005f22d0(local_14, "CITY."); // DEVIATION: string build
+  FUN_005f22e0(local_14, DAT_0062cd24); // DEVIATION: append extension
+  _getcwd(local_218, 0x104); // DEVIATION: save dir
+  _chdir(DAT_0064bb08); // DEVIATION: chdir
+  iVar1 = _strcmp(DAT_0064bb08, DAT_00655020);
+  if (iVar1 !== 0 &&
+     (iVar1 = FUN_00415133("CITY.TMP"), iVar1 === 0 ||
+      (iVar1 = FID_conflict__remove("CITY.TMP"), iVar1 === 0))) {
+    iVar1 = FUN_00415133(local_14);
+    if (iVar1 === 0) {
+      iVar1 = FUN_00415133("CITY.BAK");
+      if (iVar1 === 0) {
+        _chdir(DAT_00655020); // DEVIATION: chdir
+        local_21c = FUN_0041508c(local_14, "r"); // DEVIATION: fopen
+        _chdir(DAT_0064bb08); // DEVIATION: chdir
+        local_220 = FUN_0041508c(local_14, "w"); // DEVIATION: fopen
+      } else {
+        local_21c = FUN_0041508c("CITY.BAK", "r"); // DEVIATION: fopen
+        local_220 = FUN_0041508c(local_14, "w"); // DEVIATION: fopen
+      }
+    } else {
+      iVar1 = FID_conflict___wrename(local_14, "CITY.TMP"); // DEVIATION: rename
+      if (iVar1 !== 0) {
+        // goto cleanup
+        if (local_21c !== null) { _fclose(local_21c); }
+        if (local_220 !== null) { _fclose(local_220); }
+        iVar1 = FUN_00415133("CITY.TMP");
+        if (iVar1 !== 0) { FID_conflict__remove("CITY.TMP"); }
+        _chdir(local_218);
+        return local_274;
+      }
+      local_21c = FUN_0041508c("CITY.TMP", "r"); // DEVIATION: fopen
+      local_220 = FUN_0041508c(local_14, "w"); // DEVIATION: fopen
+    }
+    if (local_21c !== null && local_220 !== null) {
+      // Build section marker "@" + param_1
+      local_270 = '@';
+      FUN_005f22e0(local_270, param_1); // DEVIATION: append section name
+      _strupr(local_270); // DEVIATION: uppercase
+      // Copy lines until section found
+      do {
+        pcVar2 = _fgets(local_114, 0x100, local_21c); // DEVIATION: fgets
+        if (pcVar2 === null || (iVar1 = _fputs(local_114, local_220), iVar1 === -1)) {
+          break; // goto cleanup
+        }
+        FUN_0056b810(local_114); // trim
+        FUN_004d007e(local_114); // trim
+        iVar1 = _strcmpi(local_114, local_270);
+      } while (iVar1 !== 0);
+      // Search for matching key line, replace with param_3
+      do {
+        pcVar2 = _fgets(local_114, 0x100, local_21c); // DEVIATION: fgets
+        if (pcVar2 === null) break;
+        if (local_114[0] === '@') {
+          iVar1 = _fputs(local_114, local_220); // DEVIATION: fputs
+          // goto copy_remaining
+          if (iVar1 !== -1) {
+            // Copy remaining file content
+            while (true) {
+              pcVar2 = _fgets(local_114, 0x100, local_21c);
+              if (pcVar2 === null) { local_274 = 1; break; }
+              iVar1 = _fputs(local_114, local_220);
+              if (iVar1 === -1) break;
+            }
+          }
+          break;
+        }
+        let _MaxCount = _strlen(param_2);
+        iVar1 = _strnicmp(local_114, param_2, _MaxCount);
+        if (iVar1 === 0) {
+          iVar1 = _fputs(param_3, local_220); // DEVIATION: write replacement
+          if (iVar1 !== -1) {
+            iVar1 = _fputs("\n", local_220); // DEVIATION: newline
+            // goto copy_remaining
+            if (iVar1 !== -1) {
+              while (true) {
+                pcVar2 = _fgets(local_114, 0x100, local_21c);
+                if (pcVar2 === null) { local_274 = 1; break; }
+                iVar1 = _fputs(local_114, local_220);
+                if (iVar1 === -1) break;
+              }
+            }
+          }
+          break;
+        }
+        iVar1 = _fputs(local_114, local_220); // DEVIATION: copy unchanged line
+      } while (iVar1 !== -1);
+    }
+  }
+  // Cleanup
+  if (local_21c !== null) { _fclose(local_21c); } // DEVIATION: fclose
+  if (local_220 !== null) { _fclose(local_220); } // DEVIATION: fclose
+  iVar1 = FUN_00415133("CITY.TMP");
+  if (iVar1 !== 0) { FID_conflict__remove("CITY.TMP"); } // DEVIATION: delete temp
+  _chdir(local_218); // DEVIATION: restore dir
+  return local_274;
 }
 
 
