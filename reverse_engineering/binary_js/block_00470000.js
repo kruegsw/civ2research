@@ -94,14 +94,14 @@ let DAT_0064bc60 = 0;
 let DAT_0064bc62 = new Uint8Array(100);
 let DAT_0064bcb4 = 0;
 let DAT_0064bcf8 = new Uint8Array(0x790);
-let DAT_0064bcfa = new Uint8Array(256);
-let DAT_0064bd12 = new Uint8Array(256);
-let DAT_0064bd2a = new Uint8Array(256);
+let DAT_0064bcfa = new Uint8Array(8 * 0xf2); // per-civ name strings, stride 0xf2
+let DAT_0064bd12 = new Uint8Array(8 * 0xf2); // per-civ leader strings, stride 0xf2
+let DAT_0064bd2a = new Uint8Array(8 * 0xf2); // per-civ tribe strings, stride 0xf2
 let DAT_0064c488 = new Uint8Array(0x218);
 let DAT_0064c600 = new Uint8Array(8 * 0x594);
 let DAT_0064c6a0 = new Uint8Array(8 * 0x594);
 let DAT_0064c6a2 = new Int32Array(8 * 0x594);
-let DAT_0064c6a6 = new Int16Array(256);
+let DAT_0064c6a6 = new Int16Array(8 * (0x594 / 2)); // 8 civs * stride 0x2CA (0x594 bytes / 2 bytes-per-int16)
 let DAT_0064c6bc = new Int16Array(256);
 let DAT_0064c6c0 = new Uint8Array(8 * 0x594);
 let DAT_0064c6e0 = new Uint8Array(8 * 0x594);
@@ -123,7 +123,7 @@ let DAT_0064f34c = new Uint8Array(256 * 0x58);
 let DAT_0064f34d = new Uint8Array(256 * 0x58);
 let DAT_0064f360 = new Uint8Array(256 * 0x58);
 let DAT_0064f379 = new Uint8Array(256 * 0x58);
-let DAT_0064f394 = new Int32Array(256);
+let DAT_0064f394 = new Int32Array(128 * 22); // 128 cities * stride 22 (0x58 bytes / 4 bytes-per-int32)
 let DAT_0064c5a6 = 0;
 let DAT_00654b40 = new Uint8Array(0x494);
 let DAT_00654b70 = 0;
@@ -216,7 +216,7 @@ let DAT_006560ff = new Uint8Array(4096 * 0x20);
 let DAT_00656100 = new Uint8Array(4096 * 0x20);
 let DAT_00656106 = new Int16Array(4096);
 let DAT_00656108 = new Int16Array(4096);
-let DAT_0065610a = new Int32Array(4096);
+let DAT_0065610a = new Int32Array(2048 * 8); // 2048 units * stride 8 (0x20 bytes / 4 bytes-per-int32)
 let DAT_006558e8 = new Uint8Array(260);
 let DAT_00655020_str = '';
 let DAT_00666100 = 0;
@@ -978,18 +978,133 @@ export function show_open_dialog_31D2(param_1, param_2, param_3, param_4, param_
 
 // FUN_004732a6 — read_unit_and_city_data
 export function FUN_004732a6(param_1, param_2) {
-  // DEVIATION: Reads unit/city records from binary save file via _fread
-  // Handles version < 0x2a, == 0x29, >= 0x2a formats for DAT_006560f0 (units) and
-  // DAT_0064f340 (cities), assigns sequential IDs to DAT_0065610a and DAT_0064f394
+  if (param_1 < 0x2a) {
+    if (param_1 === 0x29) {
+      for (let local_8 = 0; local_8 < DAT_00655b16; local_8 = local_8 + 1) {
+        // DEVIATION: File I/O — _fread(&DAT_006560f0 + local_8 * 0x20, 0x1e, 1, param_2)
+      }
+      if (DAT_00655b18 !== 0) {
+        // DEVIATION: File I/O — _fread(&DAT_0064f340, DAT_00655b18 * 0x58, 1, param_2)
+      }
+      for (let local_8 = 0; local_8 < DAT_00655b16; local_8 = local_8 + 1) {
+        if (DAT_0065610a[local_8 * 8] !== 0) {
+          DAT_0065610a[local_8 * 8] = DAT_00627fd8;
+          DAT_00627fd8 = DAT_00627fd8 + 1;
+        }
+      }
+      for (let local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
+        if (DAT_0064f394[local_8 * 22] !== 0) {
+          DAT_0064f394[local_8 * 22] = DAT_00627fdc;
+          DAT_00627fdc = DAT_00627fdc + 1;
+        }
+      }
+    } else {
+      for (let local_8 = 0; local_8 < DAT_00655b16; local_8 = local_8 + 1) {
+        // DEVIATION: File I/O — _fread(&DAT_006560f0 + local_8 * 0x20, 0x1a, 1, param_2)
+      }
+      for (let local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
+        // DEVIATION: File I/O — _fread(&DAT_0064f340 + local_8 * 0x58, 0x54, 1, param_2)
+      }
+      for (let local_8 = 0; local_8 < DAT_00655b16; local_8 = local_8 + 1) {
+        DAT_0065610a[local_8 * 8] = DAT_00627fd8;
+        DAT_00627fd8 = DAT_00627fd8 + 1;
+      }
+      for (let local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
+        DAT_0064f394[local_8 * 22] = DAT_00627fdc;
+        DAT_00627fdc = DAT_00627fdc + 1;
+      }
+    }
+  } else {
+    if (DAT_00655b16 !== 0) {
+      // DEVIATION: File I/O — _fread(&DAT_006560f0, DAT_00655b16 << 5, 1, param_2)
+    }
+    if (DAT_00655b18 !== 0) {
+      // DEVIATION: File I/O — _fread(&DAT_0064f340, DAT_00655b18 * 0x58, 1, param_2)
+    }
+    for (let local_8 = 0; local_8 < DAT_00655b16; local_8 = local_8 + 1) {
+      if (DAT_0065610a[local_8 * 8] !== 0) {
+        DAT_0065610a[local_8 * 8] = DAT_00627fd8;
+        DAT_00627fd8 = DAT_00627fd8 + 1;
+      }
+    }
+    for (let local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
+      if (DAT_0064f394[local_8 * 22] !== 0) {
+        DAT_0064f394[local_8 * 22] = DAT_00627fdc;
+        DAT_00627fdc = DAT_00627fdc + 1;
+      }
+    }
+  }
   return 1;
 }
 
 // load_game_file — load_game_state_from_file
 export function load_game_file(param_1, param_2) {
-  // DEVIATION: Reads all game state sections from binary save file via _fread
-  // Sections: DAT_00655ae8 (game header), DAT_00655b1e/DAT_00655b82 (unit ownership),
-  // DAT_00655be6 (events), DAT_0064bcf8 (tech), DAT_0064c6a0 (civ data 0x594 per civ),
-  // DAT_0064c6f8/DAT_0064c706/DAT_0064c714/DAT_0064c778/DAT_0064c7b6/DAT_0064c7f4/DAT_0064c832
+  if (param_1 < 0x28) {
+    if ((param_1 !== 0x26) && (param_1 !== 0x27)) {
+      return 0;
+    }
+    // Zero out per-civ diplomacy arrays
+    for (let local_c = 0; local_c < 8; local_c = local_c + 1) {
+      for (let local_10 = 0; local_10 < 0x3e; local_10 = local_10 + 1) {
+        DAT_0064c778[local_c * 0x594 + local_10] = 0;
+        DAT_0064c7b6[local_c * 0x594 + local_10] = 0;
+        DAT_0064c7f4[local_c * 0x594 + local_10] = 0;
+      }
+    }
+    // Zero out per-tech ownership arrays
+    for (let local_10 = 0; local_10 < 100; local_10 = local_10 + 1) {
+      DAT_00655b1e[local_10] = 0;
+      DAT_00655b82[local_10] = 0;
+      for (let local_c = 0; local_c < 8; local_c = local_c + 1) {
+        DAT_0064c714[local_c * 0x594 + local_10] = 0;
+      }
+    }
+    // Zero out per-civ government arrays
+    for (let local_c = 0; local_c < 8; local_c = local_c + 1) {
+      for (let local_10 = 0; local_10 < 0xd; local_10 = local_10 + 1) {
+        DAT_0064c6f8[local_c * 0x594 + local_10] = 0;
+      }
+    }
+    // DEVIATION: File I/O — _fread(&DAT_00655ae8, 0x36, 1, param_2) game header (short format)
+    // DEVIATION: File I/O — _fread(&DAT_00655b1e, 0x5d, 1, param_2) tech ownership
+    // DEVIATION: File I/O — _fread(&DAT_00655b82, 0x5d, 1, param_2) tech discovery mask
+    // DEVIATION: File I/O — _fread(&DAT_00655be6, 0x4c, 1, param_2) event flags
+    let iVar2 = FUN_005ae006(DAT_00655b0a);
+    let local_14 = iVar2 - 1;
+    if ((DAT_00655b0a & 1) !== 0) {
+      local_14 = iVar2 - 2;
+    }
+    if (DAT_00655b0d !== local_14) {
+      FUN_005d22b7(/* "load_gpk: Fixing up game enemies" */, DAT_00655b0d, DAT_00655b0a);
+      DAT_00655b0d = local_14 & 0xff;
+    }
+    // DEVIATION: File I/O — _fread(&DAT_0064bcf8, 0x790, 1, param_2) tech data
+    for (let local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {
+      // DEVIATION: File I/O — _fread(&DAT_0064c6a0 + local_10 * 0x594, 0x58, 1, param_2) civ header
+      // DEVIATION: File I/O — _fread(&DAT_0064c6f8 + local_10 * 0x594, 0xc, 1, param_2) government data
+      // DEVIATION: File I/O — _fread(&DAT_0064c706 + local_10 * 0x594, 0xe, 1, param_2) diplomacy data
+      // DEVIATION: File I/O — _fread(&DAT_0064c714 + local_10 * 0x594, 0x5d, 1, param_2) tech known
+      // DEVIATION: File I/O — _fread(&DAT_0064c778 + local_10 * 0x594, 0x36, 1, param_2) unit type counts
+      // DEVIATION: File I/O — _fread(&DAT_0064c7b6 + local_10 * 0x594, 0x36, 1, param_2) improvement counts
+      // DEVIATION: File I/O — _fread(&DAT_0064c7f4 + local_10 * 0x594, 0x36, 1, param_2) building counts
+      // DEVIATION: File I/O — _fread(local_8, 1, 1, param_2) padding byte
+      // DEVIATION: File I/O — _fread(&DAT_0064c832 + local_10 * 0x594, 0x402, 1, param_2) contact/treaty data
+    }
+  } else {
+    // Version >= 0x28: single bulk read for game header + tech ownership
+    // DEVIATION: File I/O — _fread(&DAT_00655ae8, 0x14a, 1, param_2) game header (full format)
+    let iVar2 = FUN_005ae006(DAT_00655b0a);
+    let local_14 = iVar2 - 1;
+    if ((DAT_00655b0a & 1) !== 0) {
+      local_14 = iVar2 - 2;
+    }
+    if (DAT_00655b0d !== local_14) {
+      FUN_005d22b7(/* "load_gpk: Fixing up game enemies" */, DAT_00655b0d, DAT_00655b0a);
+      DAT_00655b0d = local_14 & 0xff;
+    }
+    // DEVIATION: File I/O — _fread(&DAT_0064bcf8, 0x790, 1, param_2) tech data
+    // DEVIATION: File I/O — _fread(&DAT_0064c6a0, 0x2ca0, 1, param_2) all civ data (8 * 0x594)
+  }
   return 1;
 }
 
@@ -1052,110 +1167,110 @@ export function FUN_004741be(param_1, param_2) {
   // DEVIATION: File I/O — pcVar1 = _strchr(local_108, 0x2e)
   // DEVIATION: File I/O — if (pcVar1 == null) FUN_005f22e0(local_108, &DAT_0066c4e8) append extension
   // DEVIATION: File I/O — local_11c = _fopen(local_108, &DAT_0062bad4) open file for write
-  let local_11c = null; // file handle — N/A in JS
-  if (local_11c !== null) {
-    // DEVIATION: File I/O — FUN_00497e0f(PTR_s_CIVILIZE_0062b990, local_11c) write file header
-    DAT_00655b04 = DAT_006d1da0 & 0xff;
-    // DEVIATION: File I/O — local_110[0] = 0x2c; _fwrite(local_110, 2, 1, local_11c) write version
-    if (param_2 === 0) {
-      DAT_00655af0 = DAT_00655af0 & 0xffbf;
-    } else {
-      DAT_00655af0 = DAT_00655af0 | 0x40;
-      for (let local_124 = 0; local_124 < 100; local_124 = local_124 + 1) {
-        DAT_00655b82[local_124] = 0;
-        for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
-          let iVar3 = FUN_004bd9f0(local_128, local_124);
-          if (iVar3 !== 0) {
-            DAT_00655b82[local_124] = DAT_00655b82[local_124] | (1 << (local_128 & 0x1f));
-          }
+  // NOTE: File I/O skipped in JS, but state mutations below must still execute.
+  // DEVIATION: File I/O — FUN_00497e0f(PTR_s_CIVILIZE_0062b990, local_11c) write file header
+  DAT_00655b04 = DAT_006d1da0 & 0xff;
+  // DEVIATION: File I/O — local_110[0] = 0x2c; _fwrite(local_110, 2, 1, local_11c) write version
+  if (param_2 === 0) {
+    DAT_00655af0 = DAT_00655af0 & 0xffbf;
+  } else {
+    DAT_00655af0 = DAT_00655af0 | 0x40;
+    for (let local_124 = 0; local_124 < 100; local_124 = local_124 + 1) {
+      DAT_00655b82[local_124] = 0;
+      for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
+        let iVar3 = FUN_004bd9f0(local_128, local_124);
+        if (iVar3 !== 0) {
+          DAT_00655b82[local_124] = DAT_00655b82[local_124] | (1 << (local_128 & 0x1f));
         }
-        if (DAT_00655b82[local_124] !== 0) {
-          let iVar3 = FUN_005ae006(s8(DAT_00655b82[local_124]));
-          if (iVar3 === 1) {
-            for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
-              let iVar3_inner = FUN_004bd9f0(local_128, local_124);
-              if (iVar3_inner !== 0) {
-                DAT_00655b1e[local_124] = local_128 & 0xff;
-              }
+      }
+      if (DAT_00655b82[local_124] !== 0) {
+        let iVar3 = FUN_005ae006(s8(DAT_00655b82[local_124]));
+        if (iVar3 === 1) {
+          for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
+            let iVar3_inner = FUN_004bd9f0(local_128, local_124);
+            if (iVar3_inner !== 0) {
+              DAT_00655b1e[local_124] = local_128 & 0xff;
             }
-          } else {
-            DAT_00655b1e[local_124] = 8;
           }
-        }
-      }
-      for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
-        // DAT_0064c6a0[local_128 * 0x594] &= 0xff96 — clear certain civ flags
-        let val = u16(DAT_0064c6a0[local_128 * 0x594], DAT_0064c6a0[local_128 * 0x594 + 1]);
-        val = val & 0xff96;
-        DAT_0064c6a0[local_128 * 0x594] = val & 0xff;
-        DAT_0064c6a0[local_128 * 0x594 + 1] = (val >> 8) & 0xff;
-      }
-    }
-    if ((param_2 !== 0) || ((DAT_00655af0 & 0x80) !== 0)) {
-      for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
-        if (DAT_00655506[DAT_0064c6a6[local_128 * 0x594] * 0x30] >= 0) {
-          FUN_004aef20(/* &DAT_0064bd2a + local_128 * 0xf2 */);
-          FUN_004af122(/* &DAT_0064bd2a + local_128 * 0xf2, DAT_00655506[...] */);
-        }
-        if (DAT_00655504[DAT_0064c6a6[local_128 * 0x594] * 0x30] >= 0) {
-          FUN_004aef20(/* &DAT_0064bd12 + local_128 * 0xf2 */);
-          FUN_004af122(/* &DAT_0064bd12 + local_128 * 0xf2, DAT_00655504[...] */);
-        }
-        if (DAT_00655502[DAT_0064c6a6[local_128 * 0x594] * 0x30] >= 0) {
-          FUN_004aef20(/* &DAT_0064bcfa + local_128 * 0xf2 */);
-          FUN_004af122(/* &DAT_0064bcfa + local_128 * 0xf2, DAT_00655502[...] */);
+        } else {
+          DAT_00655b1e[local_124] = 8;
         }
       }
     }
-    // DEVIATION: File I/O — _fwrite(&DAT_00655ae8, 0x14a, 1, local_11c) game header
-    // DEVIATION: File I/O — _fwrite(&DAT_0064bcf8, 0x790, 1, local_11c) tech data
-    // DEVIATION: File I/O — _fwrite(&DAT_0064c6a0, 0x2ca0, 1, local_11c) civ data
-    // DEVIATION: File I/O — FUN_005b8635(local_11c, 0) write map data
-    // DEVIATION: File I/O — _fwrite(DAT_006365e0, DAT_006d116a * DAT_006d116c, 1, local_11c) visibility layer 1
-    // DEVIATION: File I/O — _fwrite(DAT_006365e4, DAT_006d116a * DAT_006d116c, 1, local_11c) visibility layer 2
-    // DEVIATION: File I/O — _fwrite(&DAT_00666130, 0x400, 1, local_11c) city names
-    // DEVIATION: File I/O — _fwrite(&DAT_006560f0, DAT_00655b16 << 5, 1, local_11c) units
-    // DEVIATION: File I/O — _fwrite(&DAT_0064f340, DAT_00655b18 * 0x58, 1, local_11c) cities
-    // DEVIATION: File I/O — wonder data loop: _fwrite DAT_006554fb/fd/fc per wonder
-    // DEVIATION: File I/O — _fwrite(&DAT_0064b1b4, 2, 1, local_11c) cursor x
-    // DEVIATION: File I/O — _fwrite(&DAT_0064b1b0, 2, 1, local_11c) cursor y
-    // DEVIATION: File I/O — transport data write (single or multi-player)
-    if (DAT_00655b02 === 0) {
-      // single player: write one transport block
-      // DEVIATION: File I/O — _fwrite(&DAT_006554f8 + ... * 0x30, 0x30, 1, local_11c)
-    } else {
-      let local_128_saved = DAT_00655b03;
-      for (let local_10c = 0; local_10c < 8; local_10c = local_10c + 1) {
-        if ((1 << (local_10c & 0x1f) & DAT_00655b0b) !== 0) {
-          DAT_00655b03 = local_10c;
-          // DEVIATION: File I/O — _fwrite transport block per player
-        }
-      }
-      DAT_00655b03 = local_128_saved;
+    for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
+      // DAT_0064c6a0[local_128 * 0x594] &= 0xff96 — clear certain civ flags
+      let val = u16(DAT_0064c6a0[local_128 * 0x594], DAT_0064c6a0[local_128 * 0x594 + 1]);
+      val = val & 0xff96;
+      DAT_0064c6a0[local_128 * 0x594] = val & 0xff;
+      DAT_0064c6a0[local_128 * 0x594 + 1] = (val >> 8) & 0xff;
     }
-    // DEVIATION: File I/O — _fwrite(&DAT_00655c38, 0x4b0, 1, local_11c) replay data
-    DAT_00655284 = DAT_006ab180;
-    DAT_00655288 = DAT_006ab184;
-    DAT_0065528c = DAT_006ab188;
-    DAT_00655290 = DAT_006ab18c;
-    FUN_00472f7b();
-    // DEVIATION: File I/O — _fwrite(&DAT_0066c600, 0x6a, 1, local_11c) scroll params
-    // DEVIATION: File I/O — per-view scroll data loop (8 views)
-    // DEVIATION: File I/O — _fwrite(&DAT_0064bc60, 100, 1, local_11c) scenario data (if applicable)
-    // DEVIATION: File I/O — _fwrite(&DAT_00655128, 0x152, 1, local_11c) wonder effects
-    if (DAT_00655b02 !== 0) {
-      let local_12c = DAT_00654fa4;
-      DAT_00654fa4 = DAT_006ad578;
-      // DEVIATION: File I/O — _fwrite(&DAT_00654b40, 0x494, 1, local_11c) MP state
-      DAT_00654fa4 = local_12c;
-    }
-    if ((DAT_00627670 !== 0) && (param_2 === 0)) {
-      // DEVIATION: File I/O — _fputs(&DAT_0062bad8, local_11c) event marker
-      // DEVIATION: File I/O — count events, _fwrite count, _fwrite each event (0x1bc bytes)
-      // DEVIATION: File I/O — write event strings via FUN_00473c12 for each event field
-    }
-    local_118 = 0;
   }
+  if ((param_2 !== 0) || ((DAT_00655af0 & 0x80) !== 0)) {
+    for (let local_128 = 1; local_128 < 8; local_128 = local_128 + 1) {
+      let civSlot = s16(DAT_0064c6a6[local_128 * (0x594 / 2)]);
+      if (DAT_00655506[civSlot * 0x30] >= 0) {
+        // FUN_004aef20 clears string, FUN_004af122 writes civ name by tech ID
+        FUN_004aef20(DAT_0064bd2a.subarray(local_128 * 0xf2));
+        FUN_004af122(DAT_0064bd2a.subarray(local_128 * 0xf2), DAT_00655506[civSlot * 0x30]);
+      }
+      if (DAT_00655504[civSlot * 0x30] >= 0) {
+        FUN_004aef20(DAT_0064bd12.subarray(local_128 * 0xf2));
+        FUN_004af122(DAT_0064bd12.subarray(local_128 * 0xf2), DAT_00655504[civSlot * 0x30]);
+      }
+      if (DAT_00655502[civSlot * 0x30] >= 0) {
+        FUN_004aef20(DAT_0064bcfa.subarray(local_128 * 0xf2));
+        FUN_004af122(DAT_0064bcfa.subarray(local_128 * 0xf2), DAT_00655502[civSlot * 0x30]);
+      }
+    }
+  }
+  // DEVIATION: File I/O — _fwrite(&DAT_00655ae8, 0x14a, 1, local_11c) game header
+  // DEVIATION: File I/O — _fwrite(&DAT_0064bcf8, 0x790, 1, local_11c) tech data
+  // DEVIATION: File I/O — _fwrite(&DAT_0064c6a0, 0x2ca0, 1, local_11c) civ data
+  // DEVIATION: File I/O — FUN_005b8635(local_11c, 0) write map data
+  // DEVIATION: File I/O — _fwrite(DAT_006365e0, DAT_006d116a * DAT_006d116c, 1, local_11c) visibility layer 1
+  // DEVIATION: File I/O — _fwrite(DAT_006365e4, DAT_006d116a * DAT_006d116c, 1, local_11c) visibility layer 2
+  // DEVIATION: File I/O — _fwrite(&DAT_00666130, 0x400, 1, local_11c) city names
+  // DEVIATION: File I/O — _fwrite(&DAT_006560f0, DAT_00655b16 << 5, 1, local_11c) units
+  // DEVIATION: File I/O — _fwrite(&DAT_0064f340, DAT_00655b18 * 0x58, 1, local_11c) cities
+  // DEVIATION: File I/O — wonder data loop: _fwrite DAT_006554fb/fd/fc per wonder
+  // DEVIATION: File I/O — _fwrite(&DAT_0064b1b4, 2, 1, local_11c) cursor x
+  // DEVIATION: File I/O — _fwrite(&DAT_0064b1b0, 2, 1, local_11c) cursor y
+  // DEVIATION: File I/O — transport data write (single or multi-player)
+  if (DAT_00655b02 === 0) {
+    // single player: write one transport block
+    // DEVIATION: File I/O — _fwrite(&DAT_006554f8 + ... * 0x30, 0x30, 1, local_11c)
+  } else {
+    let local_128_saved = DAT_00655b03;
+    for (let local_10c = 0; local_10c < 8; local_10c = local_10c + 1) {
+      if ((1 << (local_10c & 0x1f) & DAT_00655b0b) !== 0) {
+        DAT_00655b03 = local_10c;
+        // DEVIATION: File I/O — _fwrite transport block per player
+      }
+    }
+    DAT_00655b03 = local_128_saved;
+  }
+  // DEVIATION: File I/O — _fwrite(&DAT_00655c38, 0x4b0, 1, local_11c) replay data
+  DAT_00655284 = DAT_006ab180;
+  DAT_00655288 = DAT_006ab184;
+  DAT_0065528c = DAT_006ab188;
+  DAT_00655290 = DAT_006ab18c;
+  FUN_00472f7b();
+  // DEVIATION: File I/O — _fwrite(&DAT_0066c600, 0x6a, 1, local_11c) scroll params
+  // DEVIATION: File I/O — per-view scroll data loop (8 views)
+  // DEVIATION: File I/O — _fwrite(&DAT_0064bc60, 100, 1, local_11c) scenario data (if applicable)
+  // DEVIATION: File I/O — _fwrite(&DAT_00655128, 0x152, 1, local_11c) wonder effects
+  if (DAT_00655b02 !== 0) {
+    let local_12c = DAT_00654fa4;
+    DAT_00654fa4 = DAT_006ad578;
+    // DEVIATION: File I/O — _fwrite(&DAT_00654b40, 0x494, 1, local_11c) MP state
+    DAT_00654fa4 = local_12c;
+  }
+  if ((DAT_00627670 !== 0) && (param_2 === 0)) {
+    // DEVIATION: File I/O — _fputs(&DAT_0062bad8, local_11c) event marker
+    // DEVIATION: File I/O — count events, _fwrite count, _fwrite each event (0x1bc bytes)
+    // DEVIATION: File I/O — write event strings via FUN_00473c12 for each event field
+  }
+  local_118 = 0;
   if (DAT_00655b02 === 1) {
     DAT_00655b0b = local_114;
   }
@@ -1239,13 +1354,21 @@ export function FUN_00475666(param_1) {
     let cVar1 = DAT_00655b03;
     DAT_00655b03 = cVar1;
 
+    // local_728 is a 0x30-byte-per-civ transport buffer on the C stack.
+    // local_71c is at local_728 + 12 (as shorts), so local_71c[i] = short at local_728[12 + i*2].
+    // For multiplayer, local_728 + civIdx * 0x30 is per-civ transport data,
+    // and local_71c[civIdx * 0x18 + i] reads short at that civ's transport[12 + i*2].
+    let local_728 = new Int16Array(21 * 0x18 + 6); // max civSlot (up to 21) * 0x18 shorts + offset 6
+    // local_71c starts at short index 6 within each 0x18-short (0x30-byte) block
+    // For single player: local_71c[i] = local_728[6 + i]
+    // For multiplayer: local_71c[civIdx * 0x18 + i] = local_728[civIdx * 0x18 + 6 + i]
     if (DAT_00655b02 === 0) {
       // DEVIATION: File I/O — _fread(local_728, 0x30, 1, _File) single player transport
     } else {
       for (let local_21c = 0; DAT_00655b03 = cVar1, local_21c < 8; local_21c = local_21c + 1) {
         if ((1 << (local_21c & 0x1f) & DAT_00655b0b) !== 0) {
           DAT_00655b03 = local_21c;
-          // DEVIATION: File I/O — _fread per player transport block
+          // DEVIATION: File I/O — _fread(local_728 + DAT_0064c6a6[local_21c * (0x594 / 2)] * 0x30, 0x30, 1, _File)
           DAT_00655b03 = cVar1;
         }
       }
@@ -1308,35 +1431,75 @@ export function FUN_00475666(param_1) {
     FUN_00484d52();
     FUN_00419ed3();
 
-    // Fix up visibility/technology data
+    // Fix up visibility/technology data — negate tech discovery to mark as "known"
+    // local_71c references: local_71c[i] = local_728 short at index (6 + i)
+    // where 6 = 12 bytes / 2 bytes-per-short (local_71c is at local_728 + 0xC)
     if ((local_220 === 0) && ((DAT_00655af0 & 0x80) === 0)) {
-      // Negate tech discovery status to mark as "known" for display
       if (DAT_00655b02 === 0) {
-        DAT_00655502[DAT_0064c6a6[cVar1 * 0x594] * 0x30] =
-          -DAT_00655502[DAT_0064c6a6[cVar1 * 0x594] * 0x30];
-        // Additional negation of DAT_00655504, DAT_00655506 based on local_71c checks
-        // (local_71c is the per-player transport data read from file)
+        // Single player: negate DAT_00655502 for current civ
+        let civSlot = s16(DAT_0064c6a6[cVar1 * (0x594 / 2)]);
+        DAT_00655502[civSlot * 0x30] = -DAT_00655502[civSlot * 0x30];
+        // local_71c[0] = local_728[6], local_71c[1] = local_728[7]
+        if (local_728[6] < 0) {
+          DAT_00655504[civSlot * 0x30] = -DAT_00655504[civSlot * 0x30];
+        }
+        if (local_728[7] < 0) {
+          DAT_00655506[civSlot * 0x30] = -DAT_00655506[civSlot * 0x30];
+        }
+        // DAT_0065550c negation loop: local_71c[local_738 + local_21c * 2 + 4]
+        // = local_728[6 + local_738 + local_21c * 2 + 4] = local_728[10 + local_21c * 2 + local_738]
+        // C byte offset: local_21c * 4 + civSlot * 0x30 + local_738 * 2
+        // Int16Array element index: local_21c * 2 + civSlot * 0x18 + local_738
+        for (let local_21c = 0; local_21c < 7; local_21c = local_21c + 1) {
+          for (let local_738 = 0; local_738 < 2; local_738 = local_738 + 1) {
+            if (local_728[6 + local_738 + local_21c * 2 + 4] < 0) {
+              let elemIdx = local_21c * 2 + civSlot * 0x18 + local_738;
+              DAT_0065550c[elemIdx] = -DAT_0065550c[elemIdx];
+            }
+          }
+        }
       } else {
+        // Multiplayer: negate per active player
         for (let local_748 = 0; DAT_00655b03 = cVar1, local_748 < 8; local_748 = local_748 + 1) {
           if ((1 << (local_748 & 0x1f) & DAT_00655b0b) !== 0) {
             DAT_00655b03 = local_748;
-            DAT_00655502[DAT_0064c6a6[local_748 * 0x594] * 0x30] =
-              -DAT_00655502[DAT_0064c6a6[local_748 * 0x594] * 0x30];
-            // Additional negation logic per player
+            let civSlot = s16(DAT_0064c6a6[local_748 * (0x594 / 2)]);
+            DAT_00655502[civSlot * 0x30] = -DAT_00655502[civSlot * 0x30];
+            // local_71c[civSlot * 0x18] = local_728[6 + civSlot * 0x18]
+            if (local_728[6 + civSlot * 0x18] < 0) {
+              DAT_00655504[civSlot * 0x30] = -DAT_00655504[civSlot * 0x30];
+            }
+            // local_71c[civSlot * 0x18 + 1] = local_728[6 + civSlot * 0x18 + 1]
+            if (local_728[6 + civSlot * 0x18 + 1] < 0) {
+              DAT_00655506[civSlot * 0x30] = -DAT_00655506[civSlot * 0x30];
+            }
+            // DAT_0065550c negation loop
+            // local_71c[local_21c * 2 + local_738 + civSlot * 0x18 + 4]
+            // = local_728[6 + local_21c * 2 + local_738 + civSlot * 0x18 + 4]
+            // C byte offset: local_21c * 4 + civSlot * 0x30 + local_738 * 2
+            // Int16Array element index: local_21c * 2 + civSlot * 0x18 + local_738
+            for (let local_21c = 0; local_21c < 7; local_21c = local_21c + 1) {
+              for (let local_738 = 0; local_738 < 2; local_738 = local_738 + 1) {
+                if (local_728[6 + local_21c * 2 + local_738 + civSlot * 0x18 + 4] < 0) {
+                  let elemIdx = local_21c * 2 + civSlot * 0x18 + local_738;
+                  DAT_0065550c[elemIdx] = -DAT_0065550c[elemIdx];
+                }
+              }
+            }
           }
         }
       }
     } else {
       // Scenario mode: fix up civ discovery flags
       for (let local_748 = 1; local_748 < 8; local_748 = local_748 + 1) {
-        let civIdx = DAT_0064c6a6[local_748 * 0x594];
+        let civIdx = DAT_0064c6a6[local_748 * (0x594 / 2)];
         let civFlags = u16(DAT_0064c6a0[local_748 * 0x594], DAT_0064c6a0[local_748 * 0x594 + 1]);
         if ((civFlags & 0x200) === 0) {
           DAT_006554fc[civIdx * 0x30] = 0;
         } else {
           DAT_006554fc[civIdx * 0x30] = 1;
         }
-        DAT_0064ca92[local_748 * 0x594] = DAT_0064c6a6[local_748 * 0x594];
+        DAT_0064ca92[local_748 * 0x594] = DAT_0064c6a6[local_748 * (0x594 / 2)];
         if (DAT_006554fc[civIdx * 0x30] !== 0) {
           DAT_0064ca92[local_748 * 0x594] = DAT_0064ca92[local_748 * 0x594] + 0x15;
         }
@@ -1348,8 +1511,16 @@ export function FUN_00475666(param_1) {
           absLeader = DAT_00655504[civIdx * 0x30];
         }
         let pcVar2 = FUN_00428b0c(absLeader);
-        // DEVIATION: File I/O — iVar3 = _strcmp(&DAT_0064bd12 + local_748 * 0xf2, pcVar2)
-        // if match: copy default diplomacy values from DAT_00654fe0
+        // Compare civ leader name to default — if match, copy default diplomacy values
+        let iVar3 = _strcmp(DAT_0064bd12.subarray(local_748 * 0xf2), pcVar2);
+        if (iVar3 === 0) {
+          for (let local_21c = 0; local_21c < 7; local_21c = local_21c + 1) {
+            for (let local_738 = 0; local_738 < 2; local_738 = local_738 + 1) {
+              DAT_0065550c[local_21c * 2 + civIdx * 0x18 + local_738] =
+                DAT_00654fe0[local_738 + local_21c * 2] & 0xffff;
+            }
+          }
+        }
 
         // Negate discovery entries
         DAT_00655502[civIdx * 0x30] = -DAT_00655502[civIdx * 0x30];
@@ -1366,14 +1537,14 @@ export function FUN_00475666(param_1) {
         DAT_0064c778[local_748 * 0x594 + local_730] = 0;
       }
       for (let local_744 = 0; local_744 < DAT_00655b16; local_744 = local_744 + 1) {
-        if ((DAT_0065610a[local_744] !== 0) &&
+        if ((DAT_0065610a[local_744 * 8] !== 0) &&
             (s8(DAT_006560f7[local_744 * 0x20]) === local_748)) {
           DAT_0064c778[local_748 * 0x594 + DAT_006560f6[local_744 * 0x20]] =
             DAT_0064c778[local_748 * 0x594 + DAT_006560f6[local_744 * 0x20]] + 1;
         }
       }
       for (let local_73c = 0; local_73c < DAT_00655b18; local_73c = local_73c + 1) {
-        if ((DAT_0064f394[local_73c] !== 0) &&
+        if ((DAT_0064f394[local_73c * 22] !== 0) &&
             (s8(DAT_0064f348[local_73c * 0x58]) === local_748) &&
             (s8(DAT_0064f379[local_73c * 0x58]) >= 0)) {
           DAT_0064c7f4[local_748 * 0x594 + s8(DAT_0064f379[local_73c * 0x58])] =
@@ -1567,7 +1738,7 @@ export function load_verify_units(param_1, param_2, param_3) {
       DAT_006ad2f7 = 1;
       // Verify unit positions
       for (let local_868 = 0; local_868 < DAT_00655b16; local_868 = local_868 + 1) {
-        if (DAT_0065610a[local_868] === 0) {
+        if (DAT_0065610a[local_868 * 8] === 0) {
           DAT_00656108[local_868] = 0xffff;
           DAT_00656106[local_868] = 0xffff;
         } else {
@@ -2755,7 +2926,27 @@ function FUN_005b2590() { /* update_unit_position */ }
 function FUN_005ae296() { /* manhattan_distance */ }
 function FUN_005ae1b0() { /* tile_distance */ }
 function FUN_005ae31d() { /* distance_between_tiles */ }
-function FUN_005ae006() { /* count_set_bits */ }
+function FUN_005ae006(param_1) {
+  let local_8 = 0;
+  for (let local_c = 0; local_c < 8; local_c = local_c + 1) {
+    if ((param_1 & 1) !== 0) {
+      local_8 = local_8 + 1;
+    }
+    param_1 = param_1 >> 1;
+  }
+  return local_8;
+}
+function _strcmp(a, b) {
+  // Compare null-terminated Uint8Array string against JS string (or two Uint8Arrays)
+  if (a instanceof Uint8Array && typeof b === 'string') {
+    for (let i = 0; i < a.length && i < b.length; i++) {
+      if (a[i] === 0) return b.length > 0 ? -1 : 0;
+      if (a[i] !== b.charCodeAt(i)) return a[i] < b.charCodeAt(i) ? -1 : 1;
+    }
+    return 0;
+  }
+  return a === b ? 0 : 1;
+}
 function FUN_0055339f() { /* button class base init */ }
 function FUN_0040fb00() { /* static init helper A */ }
 function FUN_0040fbb0() { /* static destroy helper A */ }
@@ -2770,8 +2961,17 @@ function FUN_00493b10() { /* get_leader_name */ }
 function FUN_00493ba6() { /* get_civ_adjective */ }
 function FUN_00493c7d() { /* get_civ_plural */ }
 function FUN_004af14b() { /* load_string_resource */ }
-function FUN_004af122() { /* load_string_by_id */ }
-function FUN_004aef20() { /* clear_string */ }
+function FUN_004af122(param_1, param_2) {
+  // Appends civ name string by ID: FUN_005f22e0(param_1, FUN_00428b0c(param_2))
+  // In stub environment, FUN_00428b0c and FUN_005f22e0 are no-ops,
+  // but the clear + append effectively writes the civ name into the byte buffer.
+  let uVar1 = FUN_00428b0c(param_2);
+  FUN_005f22e0(param_1, uVar1);
+}
+function FUN_004aef20(param_1) {
+  // Clears null-terminated string: sets first byte to 0
+  if (param_1 && param_1.length > 0) param_1[0] = 0;
+}
 function FUN_004aef36() { /* trim_string */ }
 function FUN_004af01a() { /* uppercase_string */ }
 function FUN_004af03b() { /* lowercase_string */ }

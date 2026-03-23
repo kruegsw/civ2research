@@ -15,6 +15,11 @@ import { FUN_004bd9f0 as _FUN_004bd9f0 } from './fn_utils.js';
 export { _FUN_004bd9f0 as FUN_004bd9f0 };
 
 
+// Helper: read signed 32-bit int (little-endian) from a Uint8Array
+function ri(arr, off) {
+  return arr[off] | (arr[off + 1] << 8) | (arr[off + 2] << 16) | (arr[off + 3] << 24);
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // STUB: Global DAT_ variables referenced in this block.
 // These are placeholders — in a full integration they would be
@@ -289,7 +294,7 @@ let DAT_0067a9c8 = 0;
 let DAT_0067a9dc = null;
 let DAT_0067a01c = 0;
 let DAT_00679640 = "";
-let DAT_00679fe8 = null;
+let DAT_00679fe8 = 0; // byte offset into mirror buffer (C: pointer into DAT_0062d0bc)
 let DAT_00679fec = 0;
 let DAT_00679ff0 = 0;
 let DAT_00679ff4 = 0;
@@ -457,7 +462,9 @@ export function FUN_004b0905() {
     if (DAT_006ad2f7 !== 0) {
       sVar1 = DAT_0067a400;
     }
-    DAT_0067a408 = sVar1 + DAT_0062d0bc;
+    // C: DAT_0067a408 = sVar1 + (int)DAT_0062d0bc; — end pointer in C.
+    // In JS, store as byte offset (scannable region size) since DAT_0062d0bc is a Uint8Array.
+    DAT_0067a408 = sVar1;
     FUN_004b0a41();
     uVar2 = 1;
   }
@@ -496,7 +503,8 @@ export function FUN_004b0a41() {
     }
     local_8_offset = local_8_offset + DAT_0067a414[local_c * 6];
   }
-  DAT_00679fe8 = DAT_0062d0bc;
+  // C: DAT_00679fe8 = DAT_0062d0bc; — reset scan to mirror start (offset 0)
+  DAT_00679fe8 = 0;
   DAT_0067a404 = 0;
   DAT_00679fec = 0;
   return;
@@ -512,7 +520,8 @@ export function FUN_004b0ad0() {
   let local_c;
 
   FUN_004b0a41();
-  DAT_00679fe8 = DAT_0062d0bc;
+  // C: DAT_00679fe8 = DAT_0062d0bc; — set scan to mirror start (offset 0)
+  DAT_00679fe8 = 0;
   uVar1 = DAT_0067a400 >>> 2;
   for (local_c = 0; local_c < uVar1; local_c = local_c + 1) {
     // Invert each dword: ~*DAT_00679fe8
@@ -524,7 +533,8 @@ export function FUN_004b0ad0() {
       DAT_0062d0bc[off + 3] = (~DAT_0062d0bc[off + 3]) & 0xFF;
     }
   }
-  DAT_00679fe8 = DAT_0062d0bc;
+  // C: DAT_00679fe8 = DAT_0062d0bc; — reset scan to mirror start (offset 0)
+  DAT_00679fe8 = 0;
   DAT_0067a404 = 0;
   DAT_00679fec = 0;
   return;
@@ -536,9 +546,60 @@ export function FUN_004b0ad0() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004b0b53(param_1, param_2, param_3, param_4, param_5) {
-  // DEVIATION: multiplayer diff engine — scans mirror buffer, compresses changed regions,
-  // and sends network packets. Heavy pointer arithmetic on flat memory buffers.
-  // Core logic preserved but pointer-based buffer scanning cannot translate directly to JS.
+  // Diff engine: scans current game state against mirror buffer, detects changed dwords,
+  // optionally RLE-compresses changed regions, and sends diff packets via network.
+  // C pointer arithmetic translated to byte-offset indexing on Uint8Array buffers.
+
+  // Helper: read 4 bytes as a signed 32-bit int (little-endian) from a Uint8Array
+  function readDword(buf, off) {
+    return buf[off] | (buf[off + 1] << 8) | (buf[off + 2] << 16) | (buf[off + 3] << 24);
+  }
+
+  // Helper: write game state fields into mirror buffer at section 1 header offsets.
+  // C: local_1c = DAT_0067a438 + (int)DAT_0062d0bc; then writes at local_1c+0x16, etc.
+  // In JS, DAT_0067a438 is the byte offset of section 1 within the mirror.
+  function writeSection1Header() {
+    let base = DAT_0067a438; // byte offset in mirror buffer
+    // *(uint16 *)(base + 0x16) = DAT_00655afe
+    DAT_0062d0bc[base + 0x16] = DAT_00655afe & 0xFF;
+    DAT_0062d0bc[base + 0x17] = (DAT_00655afe >> 8) & 0xFF;
+    // *(uint16 *)(base + 0x18) = DAT_00655b00
+    DAT_0062d0bc[base + 0x18] = DAT_00655b00 & 0xFF;
+    DAT_0062d0bc[base + 0x19] = (DAT_00655b00 >> 8) & 0xFF;
+    // *(byte *)(base + 0x1a) = DAT_00655b02
+    DAT_0062d0bc[base + 0x1a] = DAT_00655b02 & 0xFF;
+    // *(byte *)(base + 0x1b) = DAT_00655b03
+    DAT_0062d0bc[base + 0x1b] = DAT_00655b03 & 0xFF;
+    // *(byte *)(base + 0x1c) = DAT_00655b04
+    DAT_0062d0bc[base + 0x1c] = DAT_00655b04 & 0xFF;
+    // *(byte *)(base + 0x1d) = DAT_00655b05
+    DAT_0062d0bc[base + 0x1d] = DAT_00655b05 & 0xFF;
+    // *(uint32 *)(base + 2) = DAT_00655aea
+    DAT_0062d0bc[base + 2] = DAT_00655aea & 0xFF;
+    DAT_0062d0bc[base + 3] = (DAT_00655aea >> 8) & 0xFF;
+    DAT_0062d0bc[base + 4] = (DAT_00655aea >> 16) & 0xFF;
+    DAT_0062d0bc[base + 5] = (DAT_00655aea >> 24) & 0xFF;
+    // *(uint16 *)(base + 10) = DAT_00655af2
+    DAT_0062d0bc[base + 10] = DAT_00655af2 & 0xFF;
+    DAT_0062d0bc[base + 11] = (DAT_00655af2 >> 8) & 0xFF;
+  }
+
+  // Helper: compute byte offset of section `s` within the mirror buffer.
+  // Mirror layout = section 0 data (DAT_0067a414[0*6] bytes) || section 1 data || ... || section 0x16 data.
+  function sectionMirrorOffset(s) {
+    let off = 0;
+    for (let i = 0; i < s; i++) {
+      off += DAT_0067a414[i * 6];
+    }
+    return off;
+  }
+
+  // Packet data area: in C, DAT_0067a01c through DAT_0067a400 = 0x3E4 = 996 bytes.
+  // Packet header occupies DAT_00679ff0..DAT_0067a01c = 0x2C = 44 bytes.
+  // Total packet = header + data = up to 0x410 = 1040 bytes.
+  const PKT_HEADER_SIZE = 0x2C; // bytes from DAT_00679ff0 to DAT_0067a01c
+  const PKT_DATA_CAPACITY = 0x3E4; // bytes from DAT_0067a01c to DAT_0067a400
+
   let local_4c;
 
   if (DAT_00655b02 < 3) {
@@ -549,6 +610,7 @@ export function FUN_004b0b53(param_1, param_2, param_3, param_4, param_5) {
     local_4c = 0;
     let local_10 = 0;
     let local_c = 0;
+    // C: local_24 = DAT_00679fe8; — save current mirror scan offset
     let local_24 = DAT_00679fe8;
     DAT_0062d0c4 = DAT_0062d0c4 + 1;
     if ((param_2 & 1) !== 0) {
@@ -562,14 +624,297 @@ export function FUN_004b0b53(param_1, param_2, param_3, param_4, param_5) {
       local_c = FUN_00421bb0();
       local_c = param_3 + local_c;
     }
-    // The inner scanning loop operates on raw memory pointers comparing dwords.
-    // It detects changed regions, optionally RLE-compresses them, and sends via network.
-    // This is inherently a flat-memory operation that requires the actual binary layout.
-    // Preserving the structure but the buffer operations are no-ops in JS context.
-    if ((param_2 & 1) !== 0) {
-      // DEVIATION: XD_FlushSendBuffer(5000) — Win32 network flush
+
+    // C: local_40 = (int *)((&DAT_0067a424)[DAT_0067a404 * 6] + _DAT_00679fec);
+    // → srcOff = byte offset within current section data buffer
+    let srcOff = DAT_00679fec;
+    // C: local_8 = (&DAT_0067a414)[DAT_0067a404 * 6] + (&DAT_0067a424)[DAT_0067a404 * 6]
+    // → secEndOff = byte size of current section (end boundary for srcOff)
+    let secEndOff = DAT_0067a414[DAT_0067a404 * 6];
+    // Current mirror scan offset
+    let mirrorOff = DAT_00679fe8;
+    // End of scannable mirror region (byte offset)
+    let mirrorEnd = DAT_0067a408;
+
+    // C: if (DAT_0067a404 == 1) { write section 1 header into mirror }
+    if (DAT_0067a404 === 1) {
+      writeSection1Header();
     }
-    DAT_00679fec = 0;
+
+    // C: _DAT_00679ff0 = 0x66606660; (packet magic)
+    DAT_00679ff0 = 0x66606660;
+    // C: _DAT_00679ff4 = (param_5 == 0) ? 0x15 : 0x5c;
+    if (param_5 === 0) {
+      DAT_00679ff4 = 0x15;
+    } else {
+      DAT_00679ff4 = 0x5c;
+    }
+
+    // Packet data buffer — analogous to memory from DAT_0067a01c to DAT_0067a400
+    let pktData = new Uint8Array(PKT_DATA_CAPACITY);
+    // C: local_18 = &DAT_0067a01c; → pktOff = 0 (offset within pktData)
+    let pktOff = 0;
+    // C: local_14 = 0; — diff entry count
+    let local_14 = 0;
+
+    // Helper: write a 32-bit value into pktData at given offset
+    function pktWrite32(off, val) {
+      pktData[off] = val & 0xFF;
+      pktData[off + 1] = (val >> 8) & 0xFF;
+      pktData[off + 2] = (val >> 16) & 0xFF;
+      pktData[off + 3] = (val >> 24) & 0xFF;
+    }
+
+    // Helper: send the accumulated packet
+    function flushPacket() {
+      // C: _DAT_00679ff8 = local_18 - 0x19e7fc
+      //  = (int)local_18 - 0x679ff0 = PKT_HEADER_SIZE + pktOff
+      DAT_00679ff8 = PKT_HEADER_SIZE + pktOff;
+      // C: _DAT_0067a000 = local_14;
+      DAT_0067a000 = local_14;
+      // Build the packet buffer: header (DAT_00679ff0..DAT_0067a01c) + data
+      // C: thunk_FUN_0046b14d(0x5c, param_1, 0,0,0,0,0,0,0, &DAT_00679ff0)
+      // Pass the packet header globals + data as the 10th arg
+      let pktBuf = { magic: DAT_00679ff0, type: DAT_00679ff4, size: DAT_00679ff8,
+                     count: DAT_0067a000, data: pktData.slice(0, pktOff) };
+      FUN_0046b14d(0x5c, param_1, 0, 0, 0, 0, 0, 0, 0, pktBuf);
+      if ((param_2 & 1) !== 0) {
+        XD_FlushSendBuffer(5000);
+      }
+    }
+
+    // Helper: advance section — move to next section, handling section 1 header writes
+    function advanceSection() {
+      DAT_0067a404 = DAT_0067a404 + 1;
+      if (DAT_0067a404 === 1) {
+        writeSection1Header();
+      }
+      DAT_00679fec = 0;
+      srcOff = 0;
+      secEndOff = DAT_0067a414[DAT_0067a404 * 6];
+    }
+
+    // Helper: wrap to section 0 (mirror end reached)
+    function wrapToSection0() {
+      mirrorOff = 0; // C: DAT_00679fe8 = DAT_0062d0bc;
+      DAT_0067a404 = 0;
+      DAT_00679fec = 0;
+      srcOff = 0;
+      secEndOff = DAT_0067a414[0];
+    }
+
+    // C: do { ... } while (local_24 != DAT_00679fe8);
+    // Main scan loop — compare dwords between section data and mirror, detect diffs
+    do {
+      // C: _Src = local_40; _Dst = DAT_00679fe8;
+      // Save positions at start of this scan step
+      let savedSrcOff = srcOff;
+      let savedSection = DAT_0067a404;
+      let savedMirrorOff = mirrorOff;
+
+      // Get current section data buffer
+      let secBuf = DAT_0067a424[DAT_0067a404 * 6];
+
+      // C: if (*local_40 == *DAT_00679fe8) — compare dwords (4 bytes)
+      let srcDword = secBuf ? readDword(secBuf, srcOff) : 0;
+      let mirDword = DAT_0062d0bc ? readDword(DAT_0062d0bc, mirrorOff) : 0;
+
+      if (srcDword === mirDword) {
+        // Match — advance both pointers by one dword (4 bytes)
+        // C: DAT_00679fe8 = DAT_00679fe8 + 1; (int pointer, so +4 bytes)
+        mirrorOff += 4;
+        if (mirrorOff < mirrorEnd) {
+          // C: local_40 = local_40 + 1;
+          srcOff += 4;
+          // C: if (local_8 <= local_40) — section boundary crossed
+          if (secEndOff <= srcOff) {
+            advanceSection();
+          }
+        } else {
+          // C: mirror end reached — wrap to start
+          wrapToSection0();
+        }
+      } else {
+        // Mismatch — scan forward to find extent of changed region
+        // C: local_44 = 0; — accumulated diff byte count (set when section/mirror boundary hit)
+        let local_44 = 0;
+        let local_20; // offset of _Src within its section
+        let local_48; // section index of _Src
+
+        // C: inner do-while loop — extend diff region
+        do {
+          // C: DAT_00679fe8 = DAT_00679fe8 + 1;
+          mirrorOff += 4;
+          if (mirrorOff < mirrorEnd) {
+            // C: local_40 = local_40 + 1;
+            srcOff += 4;
+            // C: if (local_8 <= local_40) — section boundary crossed during diff
+            if (secEndOff <= srcOff) {
+              // C: local_20 = (int)_Src - (int)(&DAT_0067a424)[DAT_0067a404 * 6];
+              local_20 = savedSrcOff;
+              // C: local_44 = (int)local_8 - (int)_Src;
+              local_44 = secEndOff - savedSrcOff;
+              // C: local_48 = DAT_0067a404;
+              local_48 = savedSection;
+              advanceSection();
+            }
+          } else {
+            // C: mirror end reached during diff scan
+            // C: local_20 = (int)_Src - (int)(&DAT_0067a424)[DAT_0067a404 * 6];
+            local_20 = savedSrcOff;
+            // C: local_44 = (int)DAT_0067a408 - (int)_Dst;
+            local_44 = mirrorEnd - savedMirrorOff;
+            // C: local_48 = DAT_0067a404;
+            local_48 = savedSection;
+            wrapToSection0();
+          }
+          // C: } while ((local_44 == 0) &&
+          //     ((int)DAT_00679fe8 + (-0x679ff0 - (int)_Dst) + (int)local_18 < DAT_0062d0c0) &&
+          //     (*local_40 != *DAT_00679fe8));
+          // Condition 2: (mirrorOff - savedMirrorOff) + PKT_HEADER_SIZE + pktOff < DAT_0062d0c0
+          // Condition 3: current dwords still differ
+          if (local_44 !== 0) break;
+          if (!((mirrorOff - savedMirrorOff) + PKT_HEADER_SIZE + pktOff < DAT_0062d0c0)) break;
+          secBuf = DAT_0067a424[DAT_0067a404 * 6];
+          srcDword = secBuf ? readDword(secBuf, srcOff) : 0;
+          mirDword = DAT_0062d0bc ? readDword(DAT_0062d0bc, mirrorOff) : 0;
+          if (srcDword === mirDword) break;
+        } while (true);
+
+        // C: if (0x400 < local_44) — warn if diff > 1024 bytes
+        if (0x400 < local_44) {
+          FUN_005dae6b(7, 0, 0, 0xee);
+        }
+
+        // C: if (local_44 == 0) — diff didn't cross a section/mirror boundary
+        if (local_44 === 0) {
+          // C: local_20 = (int)_Src - (int)(&DAT_0067a424)[DAT_0067a404 * 6];
+          local_20 = savedSrcOff;
+          // C: local_48 = DAT_0067a404;
+          local_48 = savedSection;
+          // C: local_44 = (int)DAT_00679fe8 - (int)_Dst;
+          local_44 = mirrorOff - savedMirrorOff;
+        }
+
+        // C: if (0x400 < local_44) — second warning check
+        if (0x400 < local_44) {
+          FUN_005dae6b(7, 0, 0, 0xf7);
+        }
+
+        // C: if ((param_2 & 0x10) == 0) { FID_conflict__memcpy(_Dst, _Src, local_44); }
+        // Update mirror buffer with new data from section — so future scans won't re-detect.
+        // _Dst = savedMirrorOff in mirror, _Src = savedSrcOff in section savedSection's buffer.
+        if ((param_2 & 0x10) === 0) {
+          let srcBuf = DAT_0067a424[local_48 * 6];
+          if (srcBuf && DAT_0062d0bc) {
+            for (let i = 0; i < local_44; i++) {
+              DAT_0062d0bc[savedMirrorOff + i] = srcBuf[local_20 + i] || 0;
+            }
+          }
+        }
+
+        // RLE compression attempt
+        // C: local_38 = _Src; local_34 = _Src + local_44;
+        // C: local_30 = local_18 + 3; local_2c = &DAT_0067a400;
+        // C: iVar1 = thunk_FUN_004b263e(&local_38);
+        // Build the parameter struct for FUN_004b263e:
+        //   [0] = source start, [1] = source end, [2] = dest start, [3] = dest end, [4] = compressed size out
+        // Source is section data at savedSrcOff..savedSrcOff+local_44 in section local_48's buffer.
+        // Dest is pktData at pktOff+12..pktData end.
+        // We pass sub-arrays for the RLE encoder to read/write.
+        let srcBuf = DAT_0067a424[local_48 * 6];
+        let rleOut = new Uint8Array(PKT_DATA_CAPACITY - pktOff - 12);
+        let rleParam = {
+          0: srcBuf ? srcBuf.subarray(local_20, local_20 + local_44) : new Uint8Array(local_44),
+          1: local_44,          // source size (used as end offset)
+          2: rleOut,            // dest buffer
+          3: rleOut.length,     // dest capacity
+          4: 0                  // compressed size output
+        };
+        // Adapt call: FUN_004b263e expects param_1[0]=srcStart, param_1[1]=srcEnd as offsets/pointers
+        // The existing JS FUN_004b263e is itself pointer-based and may not work correctly.
+        // We attempt the call; if it returns 0 (compression failed/bigger), use raw copy.
+        let iVar1 = 0; // default: RLE failed (use raw copy)
+        try {
+          // FUN_004b263e uses param_1[0][0] etc — pass numeric offsets + buffer refs
+          let rleStruct = [0, local_44, rleOut, rleOut.length, 0];
+          // Set [0] to a sub-array view so [0][idx] works for byte access
+          rleStruct[0] = srcBuf ? srcBuf.subarray(local_20, local_20 + local_44) : new Uint8Array(local_44);
+          rleStruct[1] = local_44;
+          rleStruct[2] = rleOut;
+          rleStruct[3] = rleOut.length;
+          rleStruct[4] = 0;
+          iVar1 = FUN_004b263e(rleStruct);
+          if (iVar1 !== 0) {
+            rleParam[4] = rleStruct[4]; // compressed size
+          }
+        } catch (e) {
+          iVar1 = 0; // fall back to raw copy on error
+        }
+        let local_28 = rleParam[4]; // compressed size
+
+        if (iVar1 === 0) {
+          // RLE failed or produced larger output — use raw copy
+          // C: FID_conflict__memcpy(local_18 + 3, _Src, local_44);
+          // Copy raw diff data into packet buffer after 12-byte entry header
+          if (srcBuf) {
+            for (let i = 0; i < local_44; i++) {
+              pktData[pktOff + 12 + i] = srcBuf[local_20 + i] || 0;
+            }
+          }
+          // C: *local_18 = local_48; local_18[1] = local_20; local_18[2] = local_44;
+          pktWrite32(pktOff, local_48);
+          pktWrite32(pktOff + 4, local_20);
+          pktWrite32(pktOff + 8, local_44);
+          // C: local_18 = (uint *)((int)local_18 + local_44 + 0xc);
+          pktOff = pktOff + local_44 + 12;
+        } else {
+          // RLE succeeded — use compressed data
+          // C: *local_18 = local_48 | 0x8000;
+          pktWrite32(pktOff, local_48 | 0x8000);
+          // C: local_18[1] = local_20;
+          pktWrite32(pktOff + 4, local_20);
+          // C: local_18[2] = local_28;
+          pktWrite32(pktOff + 8, local_28);
+          // Copy compressed data into packet
+          for (let i = 0; i < local_28; i++) {
+            pktData[pktOff + 12 + i] = rleOut[i];
+          }
+          // C: local_18 = (uint *)((int)local_18 + local_28 + 0xc);
+          pktOff = pktOff + local_28 + 12;
+        }
+
+        // C: local_14 = local_14 + 1; — increment diff entry count
+        local_14 = local_14 + 1;
+        // C: local_4c = local_4c + local_44; — accumulate total diff bytes
+        local_4c = local_4c + local_44;
+
+        // C: if (DAT_0062d0c0 <= (int)(local_18 + -0x19e7fc))
+        //  = DAT_0062d0c0 <= PKT_HEADER_SIZE + pktOff
+        if (DAT_0062d0c0 <= PKT_HEADER_SIZE + pktOff) {
+          flushPacket();
+          // C: local_18 = &DAT_0067a01c; local_14 = 0;
+          pktData = new Uint8Array(PKT_DATA_CAPACITY);
+          pktOff = 0;
+          local_14 = 0;
+        }
+
+        // C: if (((param_2 & 4) != 0) && (iVar1 = FUN_00421bb0(), local_c < iVar1)) ||
+        //     (((param_2 & 8) != 0 && (local_10--, local_10 == 0)))) break;
+        if (((param_2 & 4) !== 0) && (local_c < FUN_00421bb0())) break;
+        if (((param_2 & 8) !== 0) && (local_10 = local_10 - 1, local_10 === 0)) break;
+      }
+    } while (local_24 !== mirrorOff);
+
+    // C: if (&DAT_0067a01c < local_18) — if any data was written to packet
+    if (pktOff > 0) {
+      flushPacket();
+    }
+
+    // C: _DAT_00679fec = (int)local_40 - (int)(&DAT_0067a424)[DAT_0067a404 * 6];
+    DAT_00679fec = srcOff;
+    // Save mirror offset back to global
+    DAT_00679fe8 = mirrorOff;
   }
   return local_4c;
 }
@@ -3743,6 +4088,9 @@ function FUN_0052e971() { }  // update_advisor_display
 function FUN_0052dd73() { }  // advisor_button_handler
 function FUN_005dfb61(p1) { return 0; }  // decompress_buffer
 function FUN_005dfd8f(p1, p2) { return 1; }  // finalize_buffer
+
+// Network stubs
+function XD_FlushSendBuffer(timeout) { /* flush network send buffer */ }
 
 // Win32 API stubs (no-ops)
 function GetPrivateProfileIntA(p1, p2, p3, p4) { return -1; }
