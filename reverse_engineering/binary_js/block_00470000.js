@@ -1075,7 +1075,7 @@ export function load_game_file(param_1, param_2) {
       local_14 = iVar2 - 2;
     }
     if (DAT_00655b0d !== local_14) {
-      FUN_005d22b7(/* "load_gpk: Fixing up game enemies" */, DAT_00655b0d, DAT_00655b0a);
+      FUN_005d22b7("load_gpk: Fixing up game enemies", DAT_00655b0d, DAT_00655b0a);
       DAT_00655b0d = local_14 & 0xff;
     }
     // DEVIATION: File I/O — _fread(&DAT_0064bcf8, 0x790, 1, param_2) tech data
@@ -1099,7 +1099,7 @@ export function load_game_file(param_1, param_2) {
       local_14 = iVar2 - 2;
     }
     if (DAT_00655b0d !== local_14) {
-      FUN_005d22b7(/* "load_gpk: Fixing up game enemies" */, DAT_00655b0d, DAT_00655b0a);
+      FUN_005d22b7("load_gpk: Fixing up game enemies", DAT_00655b0d, DAT_00655b0a);
       DAT_00655b0d = local_14 & 0xff;
     }
     // DEVIATION: File I/O — _fread(&DAT_0064bcf8, 0x790, 1, param_2) tech data

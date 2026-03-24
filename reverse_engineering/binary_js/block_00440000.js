@@ -2728,7 +2728,10 @@ export function FUN_0044c8e0() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044ca40 — empty_virtual_function (no-op)
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044ca40() { // Source: decompiled/block_00440000.c FUN_0044ca40 (22 bytes); // C: return; (truly empty function); return; }
+// Source: decompiled/block_00440000.c FUN_0044ca40 (22 bytes)
+export function FUN_0044ca40() {
+  // C: return; (truly empty function)
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044ca60 — sprite_base_destructor_wrapper
