@@ -407,6 +407,7 @@ function FUN_005b633f(a) { /* is_unit_active */ return 0; }
 function FUN_005b6512(a,b) { /* find_next_unit */ return -1; }
 function FUN_005b6787(a) { /* wake_unit */ }
 function FUN_005b8a81(a,b) { /* get_continent_id */ return 0; }
+function FUN_005b8aa8(a,b) { /* get_continent_for_land_tile */ return 0; }
 function FUN_005b8b1a(a,b,c) { /* clear_improvements_vis */ }
 function FUN_005b8b65(a,b,c) { /* tile_visible_to_civ */ return 0; }
 function FUN_005b898b(a,b,c) { /* get_tile_vis_ptr */ return [0]; }
