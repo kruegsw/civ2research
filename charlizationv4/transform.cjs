@@ -262,6 +262,18 @@ for (const blockFile of blockFiles) {
       continue;
     }
 
+    // Skip local ri/wi/rs/ws/w8 declarations (provided by transform imports)
+    if (/^(function|const|let|var)\s+(ri|wi|rs|ws|w8|ri32|wi32|rs16|rs32)\b/.test(trimmed)) {
+      // Skip function body if multi-line
+      let depth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+      while (depth > 0 && i + 1 < lines.length) {
+        i++;
+        depth += (lines[i].match(/\{/g) || []).length;
+        depth -= (lines[i].match(/\}/g) || []).length;
+      }
+      continue;
+    }
+
     // Skip `function stub(name) { ... }` definition
     if (trimmed.startsWith('function stub(name)')) {
       let depth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
