@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_00440000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8, s16, u16 } from './mem.js';
+import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -84,6 +84,7 @@ let DAT_00655be6 = new Uint8Array(0x10000).fill(0);
 let DAT_006d1da0 = 0;
 let DAT_006a6560 = 0;
 let DAT_006ad8c8 = 0;
+let DAT_006465d8 = 0;    // building sprite array base
 let DAT_006aa760 = 0;
 let DAT_006c90c8 = 0;
 let DAT_006c8fac = 0;
@@ -265,14 +266,7 @@ export function FUN_00440325(param_1, param_2) {
     DAT_0064f381[param_1 * 0x58 + local_8] = DAT_0064f382[param_1 * 0x58 + local_8];
   }
   DAT_0064f37a[param_1 * 0x58] = DAT_0064f37a[param_1 * 0x58] + -1;
-  let _off = param_1 * 0x58;
-  let _v = (DAT_0064f344[_off] | (DAT_0064f344[_off+1] << 8) |
-            (DAT_0064f344[_off+2] << 16) | (DAT_0064f344[_off+3] << 24));
-  _v = _v | 0x20000;
-  DAT_0064f344[_off] = _v & 0xff;
-  DAT_0064f344[_off+1] = (_v >> 8) & 0xff;
-  DAT_0064f344[_off+2] = (_v >> 16) & 0xff;
-  DAT_0064f344[_off+3] = (_v >> 24) & 0xff;
+  w32(DAT_0064f344, param_1 * 0x58, u32(DAT_0064f344, param_1 * 0x58) | 0x20000);
   return;
 }
 
@@ -288,14 +282,7 @@ export function FUN_004403ec(param_1, param_2, param_3, param_4) {
   DAT_0064f384[param_2 * 2 + param_1 * 0x58 + 1] = (param_3 >> 8) & 0xff;
   uVar1 = FUN_005adfa0(param_4, 0xffffffff, 0xf);
   DAT_0064f381[param_1 * 0x58 + param_2] = uVar1;
-  let _off = param_1 * 0x58;
-  let _v = (DAT_0064f344[_off] | (DAT_0064f344[_off+1] << 8) |
-            (DAT_0064f344[_off+2] << 16) | (DAT_0064f344[_off+3] << 24));
-  _v = _v | 0x20000;
-  DAT_0064f344[_off] = _v & 0xff;
-  DAT_0064f344[_off+1] = (_v >> 8) & 0xff;
-  DAT_0064f344[_off+2] = (_v >> 16) & 0xff;
-  DAT_0064f344[_off+3] = (_v >> 24) & 0xff;
+  w32(DAT_0064f344, param_1 * 0x58, u32(DAT_0064f344, param_1 * 0x58) | 0x20000);
   return;
 }
 
@@ -527,13 +514,13 @@ export function FUN_00440750(param_1, param_2) {
         if (DAT_006d1da0 === iVar4) {
           FUN_004442e0(s_FOODCARAVAN_006262f8, param_1);
         } else if ((1 << (bVar1 & 0x1f) & DAT_00655b0b) !== 0) {
-          FUN_00511880(0x10, DAT_006ad30c[DAT_006ad558[iVar4 * 4] * 0x54], 3, 1, param_1, bVar12);
+          FUN_00511880(0x10, DAT_006ad30c + s32(DAT_006ad558, iVar4 * 4) * 0x54, 3, 1, param_1, bVar12);
         }
         if (iVar4 !== iVar5) {
           if (DAT_006d1da0 === iVar5) {
             FUN_004442e0(s_FOODCARAVAN_00626304, param_1);
           } else if ((1 << (bVar2 & 0x1f) & DAT_00655b0b) !== 0) {
-            FUN_00511880(0x10, DAT_006ad30c[DAT_006ad558[iVar5 * 4] * 0x54], 3, 1, param_1, bVar12);
+            FUN_00511880(0x10, DAT_006ad30c + s32(DAT_006ad558, iVar5 * 4) * 0x54, 3, 1, param_1, bVar12);
           }
         }
       }
@@ -543,13 +530,13 @@ export function FUN_00440750(param_1, param_2) {
       if (DAT_006d1da0 === iVar4) {
         FUN_004442e0(s_CARAVAN_006262dc, param_1);
       } else if ((1 << (bVar1 & 0x1f) & DAT_00655b0b) !== 0) {
-        FUN_00511880(0xf, DAT_006ad30c[DAT_006ad558[iVar4 * 4] * 0x54], 3, 1, param_1, bVar12);
+        FUN_00511880(0xf, DAT_006ad30c + s32(DAT_006ad558, iVar4 * 4) * 0x54, 3, 1, param_1, bVar12);
       }
       if (iVar4 !== iVar5) {
         if (DAT_006d1da0 === iVar5) {
           FUN_004442e0(s_CARAVAN_006262e4, param_1);
         } else if ((1 << (bVar2 & 0x1f) & DAT_00655b0b) !== 0) {
-          FUN_00511880(0xf, DAT_006ad30c[DAT_006ad558[iVar5 * 4] * 0x54], 3, 1, param_1, bVar12);
+          FUN_00511880(0xf, DAT_006ad30c + s32(DAT_006ad558, iVar5 * 4) * 0x54, 3, 1, param_1, bVar12);
         }
       }
     }
@@ -558,24 +545,12 @@ export function FUN_00440750(param_1, param_2) {
   FUN_00456f20(iVar4, iVar5, 0xfffffff6);
   if (uVar8 < 0) {
     FUN_004eb4ed(param_2, 0);
-    let _off35a = param_2 * 0x58;
-    let _cur35a = s16(DAT_0064f35a, _off35a);
-    _cur35a = _cur35a + (((s8(DAT_0064f349[param_2 * 0x58]) + 1) * DAT_006a6560) / 2);
-    DAT_0064f35a[_off35a] = _cur35a & 0xff;
-    DAT_0064f35a[_off35a + 1] = (_cur35a >> 8) & 0xff;
+    w16(DAT_0064f35a, param_2 * 0x58,
+        s16(DAT_0064f35a, param_2 * 0x58) +
+        (((s8(DAT_0064f349[param_2 * 0x58]) + 1) * DAT_006a6560) / 2));
   } else {
-    let _off6a2 = iVar4 * 0x594;
-    let _curGold = DAT_0064c6a2[_off6a2] | (DAT_0064c6a2[_off6a2+1] << 8) |
-                   (DAT_0064c6a2[_off6a2+2] << 16) | (DAT_0064c6a2[_off6a2+3] << 24);
-    _curGold = _curGold + iVar6;
-    DAT_0064c6a2[_off6a2] = _curGold & 0xff;
-    DAT_0064c6a2[_off6a2+1] = (_curGold >> 8) & 0xff;
-    DAT_0064c6a2[_off6a2+2] = (_curGold >> 16) & 0xff;
-    DAT_0064c6a2[_off6a2+3] = (_curGold >> 24) & 0xff;
-    let _cur6a8 = s16(DAT_0064c6a8, _off6a2);
-    _cur6a8 = _cur6a8 + (iVar6 & 0xffff);
-    DAT_0064c6a8[_off6a2] = _cur6a8 & 0xff;
-    DAT_0064c6a8[_off6a2+1] = (_cur6a8 >> 8) & 0xff;
+    w32(DAT_0064c6a2, iVar4 * 0x594, s32(DAT_0064c6a2, iVar4 * 0x594) + iVar6);
+    w16(DAT_0064c6a8, iVar4 * 0x594, s16(DAT_0064c6a8, iVar4 * 0x594) + (iVar6 & 0xffff));
     if (DAT_006d1da0 === iVar4) {
       FUN_00569363(1);
     }
@@ -626,13 +601,13 @@ export function FUN_00440750(param_1, param_2) {
       if ((DAT_006d1da0 === iVar5) && (iVar4 !== iVar5)) {
         FUN_004442a0(s_CARAVANOTHER_00626310, uVar3, (DAT_00633584 === 0) - 1 & 8);
       } else if ((2 < DAT_00655b02) && (DAT_006d1da0 !== iVar5)) {
-        FUN_00511880(0x11, DAT_006ad30c[DAT_006ad558[iVar5 * 4] * 0x54], 5, 0, uVar3, (DAT_00633584 === 0) - 1 & 8);
+        FUN_00511880(0x11, DAT_006ad30c + s32(DAT_006ad558, iVar5 * 4) * 0x54, 5, 0, uVar3, (DAT_00633584 === 0) - 1 & 8);
       }
       if ((2 < DAT_00655b02) && (iVar4 !== iVar5)) {
         if (DAT_006d1da0 === iVar4) {
           FUN_004442a0(s_CARAVANOTHER_00626320, uVar3, (DAT_00633584 === 0) - 1 & 8);
         } else if (((1 << (bVar1 & 0x1f) & DAT_00655b0b) !== 0) && (DAT_006d1da0 !== iVar4)) {
-          FUN_00511880(0x11, DAT_006ad30c[DAT_006ad558[iVar4 * 4] * 0x54], 5, 0, uVar3, (DAT_00633584 === 0) - 1 & 8);
+          FUN_00511880(0x11, DAT_006ad30c + s32(DAT_006ad558, iVar4 * 4) * 0x54, 5, 0, uVar3, (DAT_00633584 === 0) - 1 & 8);
         }
       }
     }
@@ -663,8 +638,7 @@ export function delete_city(param_1, param_2) {
   let local_10;
   let local_c;
 
-  if ((-1 < param_1) && (DAT_0064f394[param_1 * 0x58] !== 0 || DAT_0064f394[param_1 * 0x58+1] !== 0 ||
-      DAT_0064f394[param_1 * 0x58+2] !== 0 || DAT_0064f394[param_1 * 0x58+3] !== 0)) {
+  if ((-1 < param_1) && (s32(DAT_0064f394, param_1 * 0x58) !== 0)) {
     DAT_006ad8c8 = 1;
     if ((DAT_00655b02 < 3) || (cVar1 = FUN_00421f40(), cVar1 !== 0)) {
       iVar2 = DAT_006aa760;
@@ -688,17 +662,13 @@ export function delete_city(param_1, param_2) {
           local_30 = local_30 + -1;
           if (local_30 < 0) {
             // City is fully deleted — clean up references
-            DAT_0064f394[param_1 * 0x58] = 0;
-            DAT_0064f394[param_1 * 0x58+1] = 0;
-            DAT_0064f394[param_1 * 0x58+2] = 0;
-            DAT_0064f394[param_1 * 0x58+3] = 0;
+            w32(DAT_0064f394, param_1 * 0x58, 0);
             if (DAT_00655b18 - 1 === param_1) {
               DAT_00655b18 = DAT_00655b18 + -1;
             }
             // Remove trade route references
             for (local_10 = 0; local_10 < DAT_00655b18; local_10 = local_10 + 1) {
-              if (DAT_0064f394[local_10 * 0x58] !== 0 || DAT_0064f394[local_10 * 0x58+1] !== 0 ||
-                  DAT_0064f394[local_10 * 0x58+2] !== 0 || DAT_0064f394[local_10 * 0x58+3] !== 0) {
+              if (s32(DAT_0064f394, local_10 * 0x58) !== 0) {
                 local_30 = s8(DAT_0064f37a[local_10 * 0x58]);
                 while (local_30 = local_30 + -1, -1 < local_30) {
                   if (s16(DAT_0064f384, local_10 * 0x58 + local_30 * 2) === param_1) {
@@ -710,8 +680,7 @@ export function delete_city(param_1, param_2) {
             // Remove wonder references
             for (local_10 = 0; local_10 < 0x1c; local_10 = local_10 + 1) {
               if (s16(DAT_00655be6, local_10 * 2) === param_1) {
-                DAT_00655be6[local_10 * 2] = 0xfe;
-                DAT_00655be6[local_10 * 2 + 1] = 0xff;
+                w16(DAT_00655be6, local_10 * 2, 0xfffe);
               }
             }
             local_28 = 0;
@@ -746,8 +715,7 @@ export function delete_city(param_1, param_2) {
               }
             }
             for (local_24 = 0; local_24 < DAT_00655b18; local_24 = local_24 + 1) {
-              if (DAT_0064f394[local_24 * 0x58] !== 0 || DAT_0064f394[local_24 * 0x58+1] !== 0 ||
-                  DAT_0064f394[local_24 * 0x58+2] !== 0 || DAT_0064f394[local_24 * 0x58+3] !== 0) {
+              if (s32(DAT_0064f394, local_24 * 0x58) !== 0) {
                 FUN_0043f7a7(local_24);
               }
             }
@@ -766,10 +734,7 @@ export function delete_city(param_1, param_2) {
             return;
           }
           // Skip inactive units and those not homed to this city
-          if ((DAT_0065610a[local_30 * 0x20] === 0 &&
-               DAT_0065610a[local_30 * 0x20+1] === 0 &&
-               DAT_0065610a[local_30 * 0x20+2] === 0 &&
-               DAT_0065610a[local_30 * 0x20+3] === 0) ||
+          if ((s32(DAT_0065610a, local_30 * 0x20) === 0) ||
               (u8(DAT_00656100[local_30 * 0x20]) !== param_1)) {
             continue;
           }
@@ -783,21 +748,15 @@ export function delete_city(param_1, param_2) {
                 s16(DAT_006560f0, local_30 * 0x20),
                 s16(DAT_006560f2, local_30 * 0x20)),
               uVar6 < 0) || (param_1 === uVar6)) {
-            // Kill the unit
+            // C: goto LAB_004416ab — kill unit and restart scan from top
             FUN_005b6042(local_30, 1);
-            continue;
+            _innerDone = true;
+            break;
           }
           if ((DAT_0064b1ca[u8(DAT_006560f6[local_30 * 0x20]) * 0x14] !== 0x01) ||
              (iVar7 = FUN_005b53b6(local_30, 1), iVar7 !== 1)) {
             // C: break inner while → OR 0x20 into city flags → fall through to kill
-            let off344 = uVar6 * 0x58;
-            let v = (DAT_0064f344[off344] | (DAT_0064f344[off344+1] << 8) |
-                     (DAT_0064f344[off344+2] << 16) | (DAT_0064f344[off344+3] << 24));
-            v = v | 0x20;
-            DAT_0064f344[off344] = v & 0xff;
-            DAT_0064f344[off344+1] = (v >> 8) & 0xff;
-            DAT_0064f344[off344+2] = (v >> 16) & 0xff;
-            DAT_0064f344[off344+3] = (v >> 24) & 0xff;
+            w32(DAT_0064f344, uVar6 * 0x58, u32(DAT_0064f344, uVar6 * 0x58) | 0x20);
             // LAB_004416ab: kill unit and restart scan
             FUN_005b6042(local_30, 1);
             _innerDone = true;
@@ -893,8 +852,7 @@ export function FUN_00441b11(param_1, param_2) {
   if (param_2 < 99) {
     if (((1 << (bVar2 & 0x1f) & DAT_00655b0b) !== 0) && (DAT_0062c5b8 === 0)) {
       uVar3 = FUN_004e74df(param_1, param_2);
-      DAT_0064f35c[param_1 * 0x58] = uVar3 & 0xff;
-      DAT_0064f35c[param_1 * 0x58 + 1] = (uVar3 >> 8) & 0xff;
+      w16(DAT_0064f35c, param_1 * 0x58, uVar3);
     }
     DAT_0064f379[param_1 * 0x58] = param_2 & 0xff;
   }
@@ -904,8 +862,7 @@ export function FUN_00441b11(param_1, param_2) {
       local_330 = 0;
       local_2c = 0;
       for (local_14 = 0; local_14 < DAT_00655b18; local_14 = local_14 + 1) {
-        if (((DAT_0064f394[local_14 * 0x58] !== 0 || DAT_0064f394[local_14 * 0x58+1] !== 0 ||
-              DAT_0064f394[local_14 * 0x58+2] !== 0 || DAT_0064f394[local_14 * 0x58+3] !== 0) &&
+        if (((s32(DAT_0064f394, local_14 * 0x58) !== 0) &&
             (DAT_0064f348[param_1 * 0x58] === DAT_0064f348[local_14 * 0x58])) &&
            (local_14 !== param_1)) {
           if (DAT_0064f379[local_14 * 0x58] === cVar1) {
@@ -919,11 +876,7 @@ export function FUN_00441b11(param_1, param_2) {
     }
     if (s8(DAT_0064f379[param_1 * 0x58]) < -0x26) {
       if (-0x27 < s8(cVar1)) {
-        let off35c = param_1 * 0x58;
-        let curShields = s16(DAT_0064f35c, off35c);
-        curShields = (curShields / 2) | 0;
-        DAT_0064f35c[off35c] = curShields & 0xff;
-        DAT_0064f35c[off35c+1] = (curShields >> 8) & 0xff;
+        w16(DAT_0064f35c, param_1 * 0x58, (s16(DAT_0064f35c, param_1 * 0x58) / 2) | 0);
       }
       if (s8(DAT_0064f379[param_1 * 0x58]) < 0x01) {
         local_328 = ~s8(DAT_0064f379[param_1 * 0x58]) + 1;
@@ -943,8 +896,7 @@ export function FUN_00441b11(param_1, param_2) {
            ((local_330 === 0 || (s16(DAT_00655be6, local_324 * 2) !== -1)))) {
           if (local_330 !== 0) {
             for (local_1c = 0; local_1c < DAT_00655b18; local_1c = local_1c + 1) {
-              if (((DAT_0064f394[local_1c * 0x58] !== 0 || DAT_0064f394[local_1c * 0x58+1] !== 0 ||
-                    DAT_0064f394[local_1c * 0x58+2] !== 0 || DAT_0064f394[local_1c * 0x58+3] !== 0) &&
+              if (((s32(DAT_0064f394, local_1c * 0x58) !== 0) &&
                   (s8(DAT_0064f348[local_1c * 0x58]) === iVar4)) &&
                  (DAT_0064f379[local_1c * 0x58] === cVar1)) {
                 DAT_0064f379[local_1c * 0x58] = DAT_0064f379[param_1 * 0x58];
@@ -960,7 +912,8 @@ export function FUN_00441b11(param_1, param_2) {
             FUN_004271e8(2, DAT_0064c488[local_338 * 8]);
             FUN_004271e8(3, DAT_0064c488[local_328 * 8]);
             FUN_0043c9d0(s_SWITCHWONDER_00626380);
-            // UI: play wonder movie (stub)
+            FUN_0059ec88(DAT_00645160 + local_328 * 0x3c, 0, 0);
+            // DEVIATION: CPropertySheet::EnableStackedTabs(local_320, 8) — MFC
             if (2 < DAT_00655b02) {
               FUN_00511880(0x13, 0xff, 4, 0, local_328, 8);
             }
@@ -972,7 +925,8 @@ export function FUN_00441b11(param_1, param_2) {
                  DAT_00654fa8 === 0)) {
           FUN_004271e8(2, DAT_0064c488[local_328 * 8]);
           FUN_0043c9d0(s_STARTWONDER_00626374);
-          // UI: play wonder movie (stub)
+          FUN_0059ec88(DAT_00645160 + local_328 * 0x3c, 0, 0);
+          // DEVIATION: CPropertySheet::EnableStackedTabs(local_320, 8) — MFC
           if (2 < DAT_00655b02) {
             FUN_00511880(0x12, 0xff, 3, 0, local_328, 8);
           }
@@ -1000,9 +954,7 @@ export function FUN_00441b11(param_1, param_2) {
             iVar6 = 0;
           }
           let bonus = (iVar6 & 0xffff) * u8(DAT_0064c48c[local_328 * 8]);
-          shields35c = shields35c + bonus;
-          DAT_0064f35c[off35c2] = shields35c & 0xff;
-          DAT_0064f35c[off35c2+1] = (shields35c >> 8) & 0xff;
+          w16(DAT_0064f35c, param_1 * 0x58, shields35c + bonus);
         }
       }
     }
@@ -1023,7 +975,8 @@ export function FUN_00441b11(param_1, param_2) {
         FUN_0040ff60(1, uVar5);
         FUN_004271e8(2, DAT_0064c488[local_328 * 8]);
         FUN_0043c9d0(s_ABANDONWONDER_00626390);
-        // UI stub
+        FUN_0059ec88(DAT_00645160 + local_328 * 0x3c, 0, 0);
+        // DEVIATION: CPropertySheet::EnableStackedTabs(local_320, 8) — MFC
         if (2 < DAT_00655b02) {
           FUN_00511880(0x14, 0xff, 3, 0, local_328, 8);
         }
@@ -1071,8 +1024,7 @@ export function FUN_00442541(param_1, param_2) {
 
   if ((DAT_00655b02 !== 1) || ((1 << (param_1 & 0x1f) & DAT_006c31a9) === 0)) {
     for (local_8 = 0; local_8 < DAT_00655b18; local_8 = local_8 + 1) {
-      if (((DAT_0064f394[local_8 * 0x58] !== 0 || DAT_0064f394[local_8 * 0x58+1] !== 0 ||
-            DAT_0064f394[local_8 * 0x58+2] !== 0 || DAT_0064f394[local_8 * 0x58+3] !== 0) &&
+      if (((s32(DAT_0064f394, local_8 * 0x58) !== 0) &&
           (s8(DAT_0064f348[local_8 * 0x58]) === (param_1 & 0xff))) &&
          ((param_2 < 0 ||
           (iVar1 = FUN_005b8a81(
@@ -1427,8 +1379,12 @@ export function FUN_00446810() {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_00447170(param_1) {
   // Source: decompiled/block_00440000.c FUN_00447170 (57 bytes)
-  // DEVIATION: C++ scalar_deleting_destructor
-  return;
+  let in_ECX = 0; // DEVIATION: MFC this pointer
+  FUN_00421fad(); // DEVIATION: MFC ~CDialog destructor
+  if ((param_1 & 1) !== 0) {
+    // DEVIATION: operator_delete(in_ECX)
+  }
+  return in_ECX;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1436,8 +1392,12 @@ export function FUN_00447170(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004471c0(param_1) {
   // Source: decompiled/block_00440000.c FUN_004471c0 (57 bytes)
-  // DEVIATION: C++ scalar_deleting_destructor
-  return;
+  let in_ECX = 0; // DEVIATION: MFC this pointer
+  FUN_0056e2c9(); // DEVIATION: MFC destructor
+  if ((param_1 & 1) !== 0) {
+    // DEVIATION: operator_delete(in_ECX)
+  }
+  return in_ECX;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1473,969 +1433,1031 @@ export function FUN_004472f0(param_1) {
 
 // Source: decompiled/block_00440000.c FUN_00447320 (26 bytes)
 export function FUN_00447320() {
-  // DEVIATION: MFC/C++ — calls FUN_0044733a() and FUN_00447362()
+  FUN_0044733a();
+  FUN_00447362();
 }
 // Source: decompiled/block_00440000.c FUN_0044733a (40 bytes)
 export function FUN_0044733a() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00647c40, 0x3c, 0xb, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447362 (29 bytes)
 export function FUN_00447362() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044737f)
 }
 // Source: decompiled/block_00440000.c FUN_0044737f (35 bytes)
 export function FUN_0044737f() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00647c40, 0x3c, 0xb, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004473a2 (26 bytes)
 export function FUN_004473a2() {
-  // DEVIATION: MFC/C++ — calls: FUN_004473bc(); FUN_004473e4()
+  FUN_004473bc();
+  FUN_004473e4();
 }
 // Source: decompiled/block_00440000.c FUN_004473bc (40 bytes)
 export function FUN_004473bc() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00640bd8, 0x3c, 0x34, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004473e4 (29 bytes)
 export function FUN_004473e4() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447401)
 }
 // Source: decompiled/block_00440000.c FUN_00447401 (35 bytes)
 export function FUN_00447401() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00640bd8, 0x3c, 0x34, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447424 (26 bytes)
 export function FUN_00447424() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044743e(); FUN_00447466()
+  FUN_0044743e();
+  FUN_00447466();
 }
 // Source: decompiled/block_00440000.c FUN_0044743e (40 bytes)
 export function FUN_0044743e() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_0063f858, 0x3c, 0x10, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447466 (29 bytes)
 export function FUN_00447466() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447483)
 }
 // Source: decompiled/block_00440000.c FUN_00447483 (35 bytes)
 export function FUN_00447483() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_0063f858, 0x3c, 0x10, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004474a6 (26 bytes)
 export function FUN_004474a6() {
-  // DEVIATION: MFC/C++ — calls: FUN_004474c0(); FUN_004474e8()
+  FUN_004474c0();
+  FUN_004474e8();
 }
 // Source: decompiled/block_00440000.c FUN_004474c0 (40 bytes)
 export function FUN_004474c0() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_006461d8, 0x3c, 0x10, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004474e8 (29 bytes)
 export function FUN_004474e8() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447505)
 }
 // Source: decompiled/block_00440000.c FUN_00447505 (35 bytes)
 export function FUN_00447505() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_006461d8, 0x3c, 0x10, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447528 (26 bytes)
 export function FUN_00447528() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447542(); FUN_0044756a()
+  FUN_00447542();
+  FUN_0044756a();
 }
 // Source: decompiled/block_00440000.c FUN_00447542 (40 bytes)
 export function FUN_00447542() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00647388, 0x3c, 0x10, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044756a (29 bytes)
 export function FUN_0044756a() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447587)
 }
 // Source: decompiled/block_00440000.c FUN_00447587 (35 bytes)
 export function FUN_00447587() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00647388, 0x3c, 0x10, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004475aa (26 bytes)
 export function FUN_004475aa() {
-  // DEVIATION: MFC/C++ — calls: FUN_004475c4(); FUN_004475ec()
+  FUN_004475c4();
+  FUN_004475ec();
 }
 // Source: decompiled/block_00440000.c FUN_004475c4 (40 bytes)
 export function FUN_004475c4() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_006447b0, 0x3c, 0x10, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004475ec (29 bytes)
 export function FUN_004475ec() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447609)
 }
 // Source: decompiled/block_00440000.c FUN_00447609 (35 bytes)
 export function FUN_00447609() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_006447b0, 0x3c, 0x10, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
 export function FID_conflict___E31_44762C() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447646(); FUN_00447660()
+  FUN_00447646();
+  FUN_00447660();
 }
 // Source: decompiled/block_00440000.c FUN_00447646 (26 bytes)
 export function FUN_00447646() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00646158)
 }
 // Source: decompiled/block_00440000.c FUN_00447660 (29 bytes)
 export function FUN_00447660() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044767d)
 }
 // Source: decompiled/block_00440000.c FUN_0044767d (26 bytes)
 export function FUN_0044767d() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_00447697 (26 bytes)
 export function FUN_00447697() {
-  // DEVIATION: MFC/C++ — calls: FUN_004476b1(); FUN_004476d9()
+  FUN_004476b1();
+  FUN_004476d9();
 }
 // Source: decompiled/block_00440000.c FUN_004476b1 (40 bytes)
 export function FUN_004476b1() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00644e88, 0x3c, 2, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004476d9 (29 bytes)
 export function FUN_004476d9() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004476f6)
 }
 // Source: decompiled/block_00440000.c FUN_004476f6 (35 bytes)
 export function FUN_004476f6() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00644e88, 0x3c, 2, FUN_005cde4d)
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447719 (26 bytes)
 export function FID_conflict___E31_447719() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447733(); FUN_0044774d()
+  FUN_00447733();
+  FUN_0044774d();
 }
 // Source: decompiled/block_00440000.c FUN_00447733 (26 bytes)
 export function FUN_00447733() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_0063fcd8)
 }
 // Source: decompiled/block_00440000.c FUN_0044774d (29 bytes)
 export function FUN_0044774d() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044776a)
 }
 // Source: decompiled/block_00440000.c FUN_0044776a (26 bytes)
 export function FUN_0044776a() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447784 (26 bytes)
 export function FID_conflict___E31_447784() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044779e(); FUN_004477b8()
+  FUN_0044779e();
+  FUN_004477b8();
 }
 // Source: decompiled/block_00440000.c FUN_0044779e (26 bytes)
 export function FUN_0044779e() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00647ed8)
 }
 // Source: decompiled/block_00440000.c FUN_004477b8 (29 bytes)
 export function FUN_004477b8() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004477d5)
 }
 // Source: decompiled/block_00440000.c FUN_004477d5 (26 bytes)
 export function FUN_004477d5() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x004477EF (26 bytes)
 export function FID_conflict___E31_4477EF() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447809(); FUN_00447823()
+  FUN_00447809();
+  FUN_00447823();
 }
 // Source: decompiled/block_00440000.c FUN_00447809 (26 bytes)
 export function FUN_00447809() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00646118)
 }
 // Source: decompiled/block_00440000.c FUN_00447823 (29 bytes)
 export function FUN_00447823() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447840)
 }
 // Source: decompiled/block_00440000.c FUN_00447840 (26 bytes)
 export function FUN_00447840() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_0044785a (26 bytes)
 export function FUN_0044785a() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447874(); FUN_0044789c()
+  FUN_00447874();
+  FUN_0044789c();
 }
 // Source: decompiled/block_00440000.c FUN_00447874 (40 bytes)
 export function FUN_00447874() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00643b38, 0x3c, 0x20, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044789c (29 bytes)
 export function FUN_0044789c() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004478b9)
 }
 // Source: decompiled/block_00440000.c FUN_004478b9 (35 bytes)
 export function FUN_004478b9() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00643b38, 0x3c, 0x20, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004478dc (26 bytes)
 export function FUN_004478dc() {
-  // DEVIATION: MFC/C++ — calls: FUN_004478f6(); FUN_0044791e()
+  FUN_004478f6();
+  FUN_0044791e();
 }
 // Source: decompiled/block_00440000.c FUN_004478f6 (40 bytes)
 export function FUN_004478f6() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_0063fd18, 0x3c, 4, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044791e (29 bytes)
 export function FUN_0044791e() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044793b)
 }
 // Source: decompiled/block_00440000.c FUN_0044793b (35 bytes)
 export function FUN_0044793b() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_0063fd18, 0x3c, 4, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044795e (26 bytes)
 export function FUN_0044795e() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447978(); FUN_004479a0()
+  FUN_00447978();
+  FUN_004479a0();
 }
 // Source: decompiled/block_00440000.c FUN_00447978 (40 bytes)
 export function FUN_00447978() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00642710, 0x3c, 0x12, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004479a0 (29 bytes)
 export function FUN_004479a0() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004479bd)
 }
 // Source: decompiled/block_00440000.c FUN_004479bd (35 bytes)
 export function FUN_004479bd() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00642710, 0x3c, 0x12, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004479e0 (26 bytes)
 export function FUN_004479e0() {
-  // DEVIATION: MFC/C++ — calls: FUN_004479fa(); FUN_00447a22()
+  FUN_004479fa();
+  FUN_00447a22();
 }
 // Source: decompiled/block_00440000.c FUN_004479fa (40 bytes)
 export function FUN_004479fa() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_006446b8, 0x3c, 3, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447a22 (29 bytes)
 export function FUN_00447a22() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447a3f)
 }
 // Source: decompiled/block_00440000.c FUN_00447a3f (35 bytes)
 export function FUN_00447a3f() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_006446b8, 0x3c, 3, FUN_005cde4d)
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447A62 (26 bytes)
 export function FID_conflict___E31_447A62() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447a7c(); FUN_00447a96()
+  FUN_00447a7c();
+  FUN_00447a96();
 }
 // Source: decompiled/block_00440000.c FUN_00447a7c (26 bytes)
 export function FUN_00447a7c() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00641808)
 }
 // Source: decompiled/block_00440000.c FUN_00447a96 (29 bytes)
 export function FUN_00447a96() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447ab3)
 }
 // Source: decompiled/block_00440000.c FUN_00447ab3 (26 bytes)
 export function FUN_00447ab3() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447ACD (26 bytes)
 export function FID_conflict___E31_447ACD() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447ae7(); FUN_00447b01()
+  FUN_00447ae7();
+  FUN_00447b01();
 }
 // Source: decompiled/block_00440000.c FUN_00447ae7 (26 bytes)
 export function FUN_00447ae7() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_0063fc18)
 }
 // Source: decompiled/block_00440000.c FUN_00447b01 (29 bytes)
 export function FUN_00447b01() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447b1e)
 }
 // Source: decompiled/block_00440000.c FUN_00447b1e (26 bytes)
 export function FUN_00447b1e() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_00447b38 (26 bytes)
 export function FUN_00447b38() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447b52(); FUN_00447b7a()
+  FUN_00447b52();
+  FUN_00447b7a();
 }
 // Source: decompiled/block_00440000.c FUN_00447b52 (40 bytes)
 export function FUN_00447b52() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_006482f8, 0x3c, 0x16, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447b7a (29 bytes)
 export function FUN_00447b7a() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447b97)
 }
 // Source: decompiled/block_00440000.c FUN_00447b97 (35 bytes)
 export function FUN_00447b97() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_006482f8, 0x3c, 0x16, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447bba (26 bytes)
 export function FUN_00447bba() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447bd4(); FUN_00447bfc()
+  FUN_00447bd4();
+  FUN_00447bfc();
 }
 // Source: decompiled/block_00440000.c FUN_00447bd4 (40 bytes)
 export function FUN_00447bd4() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00647fa0, 0x3c, 2, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447bfc (29 bytes)
 export function FUN_00447bfc() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447c19)
 }
 // Source: decompiled/block_00440000.c FUN_00447c19 (35 bytes)
 export function FUN_00447c19() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00647fa0, 0x3c, 2, FUN_005cde4d)
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447C3C (26 bytes)
 export function FID_conflict___E31_447C3C() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447c56(); FUN_00447c70()
+  FUN_00447c56();
+  FUN_00447c70();
 }
 // Source: decompiled/block_00440000.c FUN_00447c56 (26 bytes)
 export function FUN_00447c56() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00645120)
 }
 // Source: decompiled/block_00440000.c FUN_00447c70 (29 bytes)
 export function FUN_00447c70() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447c8d)
 }
 // Source: decompiled/block_00440000.c FUN_00447c8d (26 bytes)
 export function FUN_00447c8d() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447CA7 (26 bytes)
 export function FID_conflict___E31_447CA7() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447cc1(); FUN_00447cdb()
+  FUN_00447cc1();
+  FUN_00447cdb();
 }
 // Source: decompiled/block_00440000.c FUN_00447cc1 (26 bytes)
 export function FUN_00447cc1() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00648820)
 }
 // Source: decompiled/block_00440000.c FUN_00447cdb (29 bytes)
 export function FUN_00447cdb() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447cf8)
 }
 // Source: decompiled/block_00440000.c FUN_00447cf8 (26 bytes)
 export function FUN_00447cf8() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447D12 (26 bytes)
 export function FID_conflict___E31_447D12() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447d2c(); FUN_00447d46()
+  FUN_00447d2c();
+  FUN_00447d46();
 }
 // Source: decompiled/block_00440000.c FUN_00447d2c (26 bytes)
 export function FUN_00447d2c() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00647788)
 }
 // Source: decompiled/block_00440000.c FUN_00447d46 (29 bytes)
 export function FUN_00447d46() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447d63)
 }
 // Source: decompiled/block_00440000.c FUN_00447d63 (26 bytes)
 export function FUN_00447d63() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447D7D (26 bytes)
 export function FID_conflict___E31_447D7D() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447d97(); FUN_00447db1()
+  FUN_00447d97();
+  FUN_00447db1();
 }
 // Source: decompiled/block_00440000.c FUN_00447d97 (26 bytes)
 export function FUN_00447d97() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00647348)
 }
 // Source: decompiled/block_00440000.c FUN_00447db1 (29 bytes)
 export function FUN_00447db1() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447dce)
 }
 // Source: decompiled/block_00440000.c FUN_00447dce (26 bytes)
 export function FUN_00447dce() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447DE8 (26 bytes)
 export function FID_conflict___E31_447DE8() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447e02(); FUN_00447e1c()
+  FUN_00447e02();
+  FUN_00447e1c();
 }
 // Source: decompiled/block_00440000.c FUN_00447e02 (26 bytes)
 export function FUN_00447e02() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00644770)
 }
 // Source: decompiled/block_00440000.c FUN_00447e1c (29 bytes)
 export function FUN_00447e1c() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447e39)
 }
 // Source: decompiled/block_00440000.c FUN_00447e39 (26 bytes)
 export function FUN_00447e39() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447E53 (26 bytes)
 export function FID_conflict___E31_447E53() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447e6d(); FUN_00447e87()
+  FUN_00447e6d();
+  FUN_00447e87();
 }
 // Source: decompiled/block_00440000.c FUN_00447e6d (26 bytes)
 export function FUN_00447e6d() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_006480d8)
 }
 // Source: decompiled/block_00440000.c FUN_00447e87 (29 bytes)
 export function FUN_00447e87() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447ea4)
 }
 // Source: decompiled/block_00440000.c FUN_00447ea4 (26 bytes)
 export function FUN_00447ea4() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_00447ebe (26 bytes)
 export function FUN_00447ebe() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447ed8(); FUN_00447f00()
+  FUN_00447ed8();
+  FUN_00447f00();
 }
 // Source: decompiled/block_00440000.c FUN_00447ed8 (40 bytes)
 export function FUN_00447ed8() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00644b70, 0x3c, 0xb, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447f00 (29 bytes)
 export function FUN_00447f00() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447f1d)
 }
 // Source: decompiled/block_00440000.c FUN_00447f1d (35 bytes)
 export function FUN_00447f1d() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00644b70, 0x3c, 0xb, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447f40 (26 bytes)
 export function FUN_00447f40() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447f5a(); FUN_00447f82()
+  FUN_00447f5a();
+  FUN_00447f82();
 }
 // Source: decompiled/block_00440000.c FUN_00447f5a (40 bytes)
 export function FUN_00447f5a() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_006477c8, 0x3c, 0xf, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00447f82 (29 bytes)
 export function FUN_00447f82() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00447f9f)
 }
 // Source: decompiled/block_00440000.c FUN_00447f9f (35 bytes)
 export function FUN_00447f9f() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_006477c8, 0x3c, 0xf, FUN_005cde4d)
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00447FC2 (26 bytes)
 export function FID_conflict___E31_447FC2() {
-  // DEVIATION: MFC/C++ — calls: FUN_00447fdc(); FUN_00447ff6()
+  FUN_00447fdc();
+  FUN_00447ff6();
 }
 // Source: decompiled/block_00440000.c FUN_00447fdc (26 bytes)
 export function FUN_00447fdc() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00644e08)
 }
 // Source: decompiled/block_00440000.c FUN_00447ff6 (29 bytes)
 export function FUN_00447ff6() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448013)
 }
 // Source: decompiled/block_00440000.c FUN_00448013 (26 bytes)
 export function FUN_00448013() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x0044802D (26 bytes)
 export function FID_conflict___E31_44802D() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448047(); FUN_00448061()
+  FUN_00448047();
+  FUN_00448061();
 }
 // Source: decompiled/block_00440000.c FUN_00448047 (26 bytes)
 export function FUN_00448047() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_006442b8)
 }
 // Source: decompiled/block_00440000.c FUN_00448061 (29 bytes)
 export function FUN_00448061() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044807e)
 }
 // Source: decompiled/block_00440000.c FUN_0044807e (26 bytes)
 export function FUN_0044807e() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448098 (26 bytes)
 export function FID_conflict___E31_448098() {
-  // DEVIATION: MFC/C++ — calls: FUN_004480b2(); FUN_004480cc()
+  FUN_004480b2();
+  FUN_004480cc();
 }
 // Source: decompiled/block_00440000.c FUN_004480b2 (26 bytes)
 export function FUN_004480b2() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00640b98)
 }
 // Source: decompiled/block_00440000.c FUN_004480cc (29 bytes)
 export function FUN_004480cc() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004480e9)
 }
 // Source: decompiled/block_00440000.c FUN_004480e9 (26 bytes)
 export function FUN_004480e9() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448103 (26 bytes)
 export function FID_conflict___E31_448103() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044811d(); FUN_00448137()
+  FUN_0044811d();
+  FUN_00448137();
 }
 // Source: decompiled/block_00440000.c FUN_0044811d (26 bytes)
 export function FUN_0044811d() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00647f60)
 }
 // Source: decompiled/block_00440000.c FUN_00448137 (29 bytes)
 export function FUN_00448137() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448154)
 }
 // Source: decompiled/block_00440000.c FUN_00448154 (26 bytes)
 export function FUN_00448154() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_0044816e (26 bytes)
 export function FUN_0044816e() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448188(); FUN_004481b0()
+  FUN_00448188();
+  FUN_004481b0();
 }
 // Source: decompiled/block_00440000.c FUN_00448188 (40 bytes)
 export function FUN_00448188() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_0063fe50, 0x3c, 0x30, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004481b0 (29 bytes)
 export function FUN_004481b0() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004481cd)
 }
 // Source: decompiled/block_00440000.c FUN_004481cd (35 bytes)
 export function FUN_004481cd() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_0063fe50, 0x3c, 0x30, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004481f0 (26 bytes)
 export function FUN_004481f0() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044820a(); FUN_00448232()
+  FUN_0044820a();
+  FUN_00448232();
 }
 // Source: decompiled/block_00440000.c FUN_0044820a (40 bytes)
 export function FUN_0044820a() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_006442f8, 0x3c, 0x10, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448232 (29 bytes)
 export function FUN_00448232() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044824f)
 }
 // Source: decompiled/block_00440000.c FUN_0044824f (35 bytes)
 export function FUN_0044824f() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_006442f8, 0x3c, 0x10, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448272 (26 bytes)
 export function FUN_00448272() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044828c(); FUN_004482b4()
+  FUN_0044828c();
+  FUN_004482b4();
 }
 // Source: decompiled/block_00440000.c FUN_0044828c (40 bytes)
 export function FUN_0044828c() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00641848, 0x3c, 0x3f, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004482b4 (29 bytes)
 export function FUN_004482b4() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004482d1)
 }
 // Source: decompiled/block_00440000.c FUN_004482d1 (35 bytes)
 export function FUN_004482d1() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00641848, 0x3c, 0x3f, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004482f4 (26 bytes)
 export function FUN_004482f4() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044830e(); FUN_00448336()
+  FUN_0044830e();
+  FUN_00448336();
 }
 // Source: decompiled/block_00440000.c FUN_0044830e (40 bytes)
 export function FUN_0044830e() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_006465d8, 0x3c, 8, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448336 (29 bytes)
 export function FUN_00448336() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448353)
 }
 // Source: decompiled/block_00440000.c FUN_00448353 (35 bytes)
 export function FUN_00448353() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_006465d8, 0x3c, 8, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448376 (26 bytes)
 export function FUN_00448376() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448390(); FUN_004483b8()
+  FUN_00448390();
+  FUN_004483b8();
 }
 // Source: decompiled/block_00440000.c FUN_00448390 (40 bytes)
 export function FUN_00448390() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00642d48, 0x3c, 0x2c, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004483b8 (29 bytes)
 export function FUN_004483b8() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004483d5)
 }
 // Source: decompiled/block_00440000.c FUN_004483d5 (35 bytes)
 export function FUN_004483d5() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00642d48, 0x3c, 0x2c, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004483f8 (26 bytes)
 export function FUN_004483f8() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448412(); FUN_0044843a()
+  FUN_00448412();
+  FUN_0044843a();
 }
 // Source: decompiled/block_00440000.c FUN_00448412 (40 bytes)
 export function FUN_00448412() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00646a20, 0x3c, 0xb, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044843a (29 bytes)
 export function FUN_0044843a() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448457)
 }
 // Source: decompiled/block_00440000.c FUN_00448457 (35 bytes)
 export function FUN_00448457() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00646a20, 0x3c, 0xb, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044847a (26 bytes)
 export function FUN_0044847a() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448494(); FUN_004484bc()
+  FUN_00448494();
+  FUN_004484bc();
 }
 // Source: decompiled/block_00440000.c FUN_00448494 (40 bytes)
 export function FUN_00448494() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00644f00, 0x3c, 6, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004484bc (29 bytes)
 export function FUN_004484bc() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004484d9)
 }
 // Source: decompiled/block_00440000.c FUN_004484d9 (35 bytes)
 export function FUN_004484d9() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00644f00, 0x3c, 6, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004484fc (26 bytes)
 export function FUN_004484fc() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448516(); FUN_0044853e()
+  FUN_00448516();
+  FUN_0044853e();
 }
 // Source: decompiled/block_00440000.c FUN_00448516 (40 bytes)
 export function FUN_00448516() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00648860, 0x3c, 3, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044853e (29 bytes)
 export function FUN_0044853e() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044855b)
 }
 // Source: decompiled/block_00440000.c FUN_0044855b (35 bytes)
 export function FUN_0044855b() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00648860, 0x3c, 3, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044857e (26 bytes)
 export function FUN_0044857e() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448598(); FUN_004485c0()
+  FUN_00448598();
+  FUN_004485c0();
 }
 // Source: decompiled/block_00440000.c FUN_00448598 (40 bytes)
 export function FUN_00448598() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00645068, 0x3c, 3, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004485c0 (29 bytes)
 export function FUN_004485c0() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004485dd)
 }
 // Source: decompiled/block_00440000.c FUN_004485dd (35 bytes)
 export function FUN_004485dd() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00645068, 0x3c, 3, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448600 (26 bytes)
 export function FUN_00448600() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044861a(); FUN_00448642()
+  FUN_0044861a();
+  FUN_00448642();
 }
 // Source: decompiled/block_00440000.c FUN_0044861a (40 bytes)
 export function FUN_0044861a() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00648918, 0x3c, 3, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448642 (29 bytes)
 export function FUN_00448642() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044865f)
 }
 // Source: decompiled/block_00440000.c FUN_0044865f (35 bytes)
 export function FUN_0044865f() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00648918, 0x3c, 3, FUN_005cde4d)
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448682 (26 bytes)
 export function FID_conflict___E31_448682() {
-  // DEVIATION: MFC/C++ — calls: FUN_0044869c(); FUN_004486b6()
+  FUN_0044869c();
+  FUN_004486b6();
 }
 // Source: decompiled/block_00440000.c FUN_0044869c (26 bytes)
 export function FUN_0044869c() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00646598)
 }
 // Source: decompiled/block_00440000.c FUN_004486b6 (29 bytes)
 export function FUN_004486b6() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004486d3)
 }
 // Source: decompiled/block_00440000.c FUN_004486d3 (26 bytes)
 export function FUN_004486d3() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x004486ED (26 bytes)
 export function FID_conflict___E31_4486ED() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448707(); FUN_00448721()
+  FUN_00448707();
+  FUN_00448721();
 }
 // Source: decompiled/block_00440000.c FUN_00448707 (26 bytes)
 export function FUN_00448707() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00648058)
 }
 // Source: decompiled/block_00440000.c FUN_00448721 (29 bytes)
 export function FUN_00448721() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044873e)
 }
 // Source: decompiled/block_00440000.c FUN_0044873e (26 bytes)
 export function FUN_0044873e() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_00448758 (26 bytes)
 export function FUN_00448758() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448772(); FUN_0044879a()
+  FUN_00448772();
+  FUN_0044879a();
 }
 // Source: decompiled/block_00440000.c FUN_00448772 (40 bytes)
 export function FUN_00448772() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00648118, 0x3c, 4, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044879a (29 bytes)
 export function FUN_0044879a() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004487b7)
 }
 // Source: decompiled/block_00440000.c FUN_004487b7 (35 bytes)
 export function FUN_004487b7() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00648118, 0x3c, 4, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004487da (26 bytes)
 export function FUN_004487da() {
-  // DEVIATION: MFC/C++ — calls: FUN_004487f4(); FUN_0044881c()
+  FUN_004487f4();
+  FUN_0044881c();
 }
 // Source: decompiled/block_00440000.c FUN_004487f4 (40 bytes)
 export function FUN_004487f4() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00648208, 0x3c, 4, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044881c (29 bytes)
 export function FUN_0044881c() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448839)
 }
 // Source: decompiled/block_00440000.c FUN_00448839 (35 bytes)
 export function FUN_00448839() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00648208, 0x3c, 4, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044885c (26 bytes)
 export function FUN_0044885c() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448876(); FUN_0044889e()
+  FUN_00448876();
+  FUN_0044889e();
 }
 // Source: decompiled/block_00440000.c FUN_00448876 (40 bytes)
 export function FUN_00448876() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_0063f6f0, 0x3c, 6, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044889e (29 bytes)
 export function FUN_0044889e() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004488bb)
 }
 // Source: decompiled/block_00440000.c FUN_004488bb (35 bytes)
 export function FUN_004488bb() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_0063f6f0, 0x3c, 6, FUN_005cde4d)
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x004488DE (26 bytes)
 export function FID_conflict___E31_4488DE() {
-  // DEVIATION: MFC/C++ — calls: FUN_004488f8(); FUN_00448912()
+  FUN_004488f8();
+  FUN_00448912();
 }
 // Source: decompiled/block_00440000.c FUN_004488f8 (26 bytes)
 export function FUN_004488f8() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00648098)
 }
 // Source: decompiled/block_00440000.c FUN_00448912 (29 bytes)
 export function FUN_00448912() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_0044892f)
 }
 // Source: decompiled/block_00440000.c FUN_0044892f (26 bytes)
 export function FUN_0044892f() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_00448949 (26 bytes)
 export function FUN_00448949() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448963(); FUN_0044898b()
+  FUN_00448963();
+  FUN_0044898b();
 }
 // Source: decompiled/block_00440000.c FUN_00448963 (40 bytes)
 export function FUN_00448963() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00645160, 0x3c, 0x43, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_0044898b (29 bytes)
 export function FUN_0044898b() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_004489a8)
 }
 // Source: decompiled/block_00440000.c FUN_004489a8 (35 bytes)
 export function FUN_004489a8() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00645160, 0x3c, 0x43, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_004489cb (26 bytes)
 export function FUN_004489cb() {
-  // DEVIATION: MFC/C++ — calls: FUN_004489e5(); FUN_00448a0d()
+  FUN_004489e5();
+  FUN_00448a0d();
 }
 // Source: decompiled/block_00440000.c FUN_004489e5 (40 bytes)
 export function FUN_004489e5() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00646cb8, 0x3c, 0x14, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448a0d (29 bytes)
 export function FUN_00448a0d() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448a2a)
 }
 // Source: decompiled/block_00440000.c FUN_00448a2a (35 bytes)
 export function FUN_00448a2a() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00646cb8, 0x3c, 0x14, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448a4d (26 bytes)
 export function FUN_00448a4d() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448a67(); FUN_00448a8f()
+  FUN_00448a67();
+  FUN_00448a8f();
 }
 // Source: decompiled/block_00440000.c FUN_00448a67 (40 bytes)
 export function FUN_00448a67() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00647168, 0x3c, 8, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448a8f (29 bytes)
 export function FUN_00448a8f() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448aac)
 }
 // Source: decompiled/block_00440000.c FUN_00448aac (35 bytes)
 export function FUN_00448aac() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00647168, 0x3c, 8, FUN_005cde4d)
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448ACF (26 bytes)
 export function FID_conflict___E31_448ACF() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448ae9(); FUN_00448b03()
+  FUN_00448ae9();
+  FUN_00448b03();
 }
 // Source: decompiled/block_00440000.c FUN_00448ae9 (26 bytes)
 export function FUN_00448ae9() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00646198)
 }
 // Source: decompiled/block_00440000.c FUN_00448b03 (29 bytes)
 export function FUN_00448b03() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448b20)
 }
 // Source: decompiled/block_00440000.c FUN_00448b20 (26 bytes)
 export function FUN_00448b20() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 // Source: decompiled/block_00440000.c FUN_00448b3a (26 bytes)
 export function FUN_00448b3a() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448b54(); FUN_00448b7c()
+  FUN_00448b54();
+  FUN_00448b7c();
 }
 // Source: decompiled/block_00440000.c FUN_00448b54 (40 bytes)
 export function FUN_00448b54() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00647b50, 0x3c, 4, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448b7c (29 bytes)
 export function FUN_00448b7c() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448b99)
 }
 // Source: decompiled/block_00440000.c FUN_00448b99 (35 bytes)
 export function FUN_00448b99() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00647b50, 0x3c, 4, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448bbc (26 bytes)
 export function FUN_00448bbc() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448bd6(); FUN_00448bfe()
+  FUN_00448bd6();
+  FUN_00448bfe();
 }
 // Source: decompiled/block_00440000.c FUN_00448bd6 (40 bytes)
 export function FUN_00448bd6() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00646878, 0x3c, 7, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448bfe (29 bytes)
 export function FUN_00448bfe() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448c1b)
 }
 // Source: decompiled/block_00440000.c FUN_00448c1b (35 bytes)
 export function FUN_00448c1b() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00646878, 0x3c, 7, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448c3e (26 bytes)
 export function FUN_00448c3e() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448c58(); FUN_00448c80()
+  FUN_00448c58();
+  FUN_00448c80();
 }
 // Source: decompiled/block_00440000.c FUN_00448c58 (40 bytes)
 export function FUN_00448c58() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_constructor_iterator_(&DAT_00643798, 0x3c, 8, CString::CString, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448c80 (29 bytes)
 export function FUN_00448c80() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448c9d)
 }
 // Source: decompiled/block_00440000.c FUN_00448c9d (35 bytes)
 export function FUN_00448c9d() {
-  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+  // DEVIATION: _eh_vector_destructor_iterator_(&DAT_00643798, 0x3c, 8, FUN_005cde4d)
 }
 // Source: decompiled/block_00440000.c FUN_00448cc0 (26 bytes)
 export function FUN_00448cc0() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448cda(); FUN_00448d1c()
+  FUN_00448cda();
+  FUN_00448d1c();
 }
+// Source: decompiled/block_00440000.c FUN_00448cda (66 bytes)
 export function FUN_00448cda() {
-  // Source: decompiled/block_00440000.c FUN_00448cda (66 bytes)
-  // DEVIATION: Win32/MFC — UI/framework
-    // C: CString::CString((CString *)&DAT_00647748);
-    // C: CString::CString((CString *)&DAT_006409d8);
-    // C: CString::CString((CString *)&DAT_00644e48);
-    // C: CString::CString((CString *)&DAT_0063fc98);
-    // C: CString::CString((CString *)&DAT_00648018);
-  return;
+  // DEVIATION: CString::CString((CString *)&DAT_00647748)
+  // DEVIATION: CString::CString((CString *)&DAT_006409d8)
+  // DEVIATION: CString::CString((CString *)&DAT_00644e48)
+  // DEVIATION: CString::CString((CString *)&DAT_0063fc98)
+  // DEVIATION: CString::CString((CString *)&DAT_00648018)
 }
 // Source: decompiled/block_00440000.c FUN_00448d1c (29 bytes)
 export function FUN_00448d1c() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448d39)
 }
 // Source: decompiled/block_00440000.c FUN_00448d39 (66 bytes)
 export function FUN_00448d39() {
-  // DEVIATION: C++ CString destructor x5
+  FUN_005cde4d(); // DEVIATION: CString destructor x5
+  FUN_005cde4d();
+  FUN_005cde4d();
+  FUN_005cde4d();
+  FUN_005cde4d();
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448D7B (26 bytes)
 export function FID_conflict___E31_448D7B() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448d95(); FUN_00448daf()
+  FUN_00448d95();
+  FUN_00448daf();
 }
 // Source: decompiled/block_00440000.c FUN_00448d95 (26 bytes)
 export function FUN_00448d95() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_0063fc58)
 }
 // Source: decompiled/block_00440000.c FUN_00448daf (29 bytes)
 export function FUN_00448daf() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448dcc)
 }
 // Source: decompiled/block_00440000.c FUN_00448dcc (26 bytes)
 export function FUN_00448dcc() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448DE6 (26 bytes)
 export function FID_conflict___E31_448DE6() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448e00(); FUN_00448e1a()
+  FUN_00448e00();
+  FUN_00448e1a();
 }
 // Source: decompiled/block_00440000.c FUN_00448e00 (26 bytes)
 export function FUN_00448e00() {
-  // DEVIATION: MFC — CString constructo
+  // DEVIATION: CString::CString((CString *)&DAT_00643af8)
 }
 // Source: decompiled/block_00440000.c FUN_00448e1a (29 bytes)
 export function FUN_00448e1a() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448e37)
 }
 // Source: decompiled/block_00440000.c FUN_00448e37 (26 bytes)
 export function FUN_00448e37() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448E51 (26 bytes)
 export function FID_conflict___E31_448E51() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448e6b(); FUN_00448e85()
+  FUN_00448e6b();
+  FUN_00448e85();
 }
 // Source: decompiled/block_00440000.c FUN_00448e6b (26 bytes)
 export function FUN_00448e6b() {
-  // DEVIATION: C++ bitmap constructo
+  FUN_005bd630(); // DEVIATION: bitmap constructor
 }
 // Source: decompiled/block_00440000.c FUN_00448e85 (29 bytes)
 export function FUN_00448e85() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448ea2)
 }
 // Source: decompiled/block_00440000.c FUN_00448ea2 (26 bytes)
 export function FUN_00448ea2() {
-  // DEVIATION: C++ bitmap destructo
+  FUN_005bd915(); // DEVIATION: bitmap destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448EBC (26 bytes)
 export function FID_conflict___E31_448EBC() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448ed6(); FUN_00448ef0()
+  FUN_00448ed6();
+  FUN_00448ef0();
 }
 // Source: decompiled/block_00440000.c FUN_00448ed6 (26 bytes)
 export function FUN_00448ed6() {
-  // DEVIATION: C++ bitmap constructo
+  FUN_005bd630(); // DEVIATION: bitmap constructor
 }
 // Source: decompiled/block_00440000.c FUN_00448ef0 (29 bytes)
 export function FUN_00448ef0() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448f0d)
 }
 // Source: decompiled/block_00440000.c FUN_00448f0d (26 bytes)
 export function FUN_00448f0d() {
-  // DEVIATION: C++ bitmap destructo
+  FUN_005bd915(); // DEVIATION: bitmap destructor
 }
-// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 @ 0x00448F27 (26 bytes)
 export function FID_conflict___E31_448F27() {
-  // DEVIATION: MFC/C++ — calls: FUN_00448f41(); FUN_00448f5b()
+  FUN_00448f41();
+  FUN_00448f5b();
 }
 // Source: decompiled/block_00440000.c FUN_00448f41 (26 bytes)
 export function FUN_00448f41() {
-  // DEVIATION: C++ bitmap constructo
+  FUN_005bd630(); // DEVIATION: bitmap constructor
 }
 // Source: decompiled/block_00440000.c FUN_00448f5b (29 bytes)
 export function FUN_00448f5b() {
-  // DEVIATION: MFC — _atexit registratio
+  // DEVIATION: _atexit(FUN_00448f78)
 }
 // Source: decompiled/block_00440000.c FUN_00448f78 (26 bytes)
 export function FUN_00448f78() {
-  // DEVIATION: C++ bitmap destructo
+  FUN_005bd915(); // DEVIATION: bitmap destructor
 }
 
 
@@ -2478,7 +2500,7 @@ export function FUN_00449030() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044996f (12 bytes)
 export function FUN_0044996f() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2486,7 +2508,7 @@ export function FUN_0044996f() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044997b (9 bytes)
 export function FUN_0044997b() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2527,7 +2549,7 @@ export function FUN_00449a0e() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044ab4e (12 bytes)
 export function FUN_0044ab4e() {
-  // DEVIATION: Win32 — critical section cleanup
+  FUN_005c656b(); // DEVIATION: critical section cleanup
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2559,7 +2581,7 @@ export function FUN_0044aba9(param_1, param_2, param_3, param_4) {
 // FUN_0044abd5 — cut_building_sprite (rendering helper)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044abd5(param_1, param_2, param_3) {
-  FUN_0044ac07(param_1, param_2, param_3); // stub
+  FUN_0044ac07(DAT_006465d8 + param_1 * 0x3c, param_2, param_3);
   return;
 }
 
@@ -2620,7 +2642,7 @@ export function FUN_0044b49e() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044b4f6 (12 bytes)
 export function FUN_0044b4f6() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044cba0()
+  FUN_0044cba0();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2698,31 +2720,12 @@ export function CString_CString() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044c8e0 — zero_init_26_dwords (OOP init helper)
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044c8e0() {
+export function FUN_0044c8e0(in_ECX) {
   // Source: decompiled/block_00440000.c FUN_0044c8e0 (281 bytes)
-  // DEVIATION: Win32/MFC — OOP method
-    // C: *in_ECX = 0;
-    // C: in_ECX[1] = 0;
-    // C: in_ECX[2] = 0;
-    // C: in_ECX[3] = 0;
-    // C: in_ECX[4] = 0;
-    // C: in_ECX[5] = 0;
-    // C: in_ECX[6] = 0;
-    // C: in_ECX[7] = 0;
-    // C: in_ECX[8] = 0;
-    // C: in_ECX[9] = 0;
-    // C: in_ECX[10] = 0;
-    // C: in_ECX[0xb] = 0;
-    // C: in_ECX[0xc] = 0;
-    // C: in_ECX[0xd] = 0;
-    // C: in_ECX[0xe] = 0;
-    // C: in_ECX[0xf] = 0;
-    // C: in_ECX[0x10] = 0;
-    // C: in_ECX[0x11] = 0;
-    // C: in_ECX[0x12] = 0;
-    // C: in_ECX[0x13] = 0;
-    // ... (6 more lines)
-  return;
+  // DEVIATION: MFC this pointer — zeroes 26 dwords of object state
+  if (in_ECX) {
+    for (let i = 0; i < 0x1a; i++) { in_ECX[i] = 0; }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2738,11 +2741,10 @@ export function FUN_0044ca40() {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044ca60() {
   // Source: decompiled/block_00440000.c FUN_0044ca60 (75 bytes)
-  // DEVIATION: Win32 — SEH frame
-    // C: local_8 = 0;
-    // C: FUN_0044caab();
-    // C: FUN_0044cad3();
-    // C: FUN_0044cae6();
+  // DEVIATION: SEH frame setup
+  FUN_0044caab();
+  FUN_0044cad3();
+  FUN_0044cae6();
   return;
 }
 
@@ -2751,15 +2753,8 @@ export function FUN_0044ca60() {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044caab() {
   // Source: decompiled/block_00440000.c FUN_0044caab (40 bytes)
-  // DEVIATION: Win32/MFC — UI/framework
-    // C: if (*(int *)(unaff_EBP + -0x14) == 0) {
-    // C: *(undefined4 *)(unaff_EBP + -0x10) = 0;
-    // C: }
-    // C: else {
-    // C: *(int *)(unaff_EBP + -0x10) = *(int *)(unaff_EBP + -0x14) + 0x10;
-    // C: }
-    // C: thunk_FUN_0044ca40();
-  return;
+  // DEVIATION: stack frame pointer manipulation (unaff_EBP + -0x14/0x10)
+  FUN_0044ca40();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2767,7 +2762,7 @@ export function FUN_0044caab() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044cad3 (9 bytes)
 export function FUN_0044cad3() {
-  // DEVIATION: MFC/C++ — calls: FUN_005db650()
+  FUN_005db650(); // DEVIATION: GDI object destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2783,10 +2778,9 @@ export function FUN_0044cae6() {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044cb20() {
   // Source: decompiled/block_00440000.c FUN_0044cb20 (62 bytes)
-  // DEVIATION: Win32 — SEH frame
-    // C: FUN_0044cb5e();
-    // C: FUN_0044cb71();
-  return;
+  // DEVIATION: SEH frame setup
+  FUN_0044cb5e();
+  FUN_0044cb71();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2794,7 +2788,7 @@ export function FUN_0044cb20() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044cb5e (9 bytes)
 export function FUN_0044cb5e() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044ca60()
+  FUN_0044ca60();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2825,15 +2819,8 @@ export function FUN_0044cba0() {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044cc01() {
   // Source: decompiled/block_00440000.c FUN_0044cc01 (40 bytes)
-  // DEVIATION: Win32/MFC — UI/framework
-    // C: if (*(int *)(unaff_EBP + -0x14) == 0) {
-    // C: *(undefined4 *)(unaff_EBP + -0x10) = 0;
-    // C: }
-    // C: else {
-    // C: *(int *)(unaff_EBP + -0x10) = *(int *)(unaff_EBP + -0x14) + 0x48;
-    // C: }
-    // C: thunk_FUN_0044cb20();
-  return;
+  // DEVIATION: stack frame pointer manipulation (unaff_EBP + -0x14/0x10)
+  FUN_0044cb20();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2841,7 +2828,7 @@ export function FUN_0044cc01() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044cc29 (9 bytes)
 export function FUN_0044cc29() {
-  // DEVIATION: C++ bitmap destructo
+  FUN_005bd915(); // DEVIATION: bitmap destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2865,7 +2852,7 @@ export function FUN_0044cc80(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044cd77 (12 bytes)
 export function FUN_0044cd77() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044d027()
+  FUN_0044d027();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2888,7 +2875,7 @@ export function FUN_0044cd9b(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044cdf2 (12 bytes)
 export function FUN_0044cdf2() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044d027()
+  FUN_0044d027();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2911,19 +2898,18 @@ export function FUN_0044ce16(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044d027() {
   // Source: decompiled/block_00440000.c FUN_0044d027 (177 bytes)
-  // DEVIATION: Win32 — SEH frame
-    // C: DAT_00626810 = 0;
-    // C: thunk_FUN_00450340();
-    // C: FUN_0044d0d8();
-    // C: FUN_0044d0e7();
-    // C: FUN_0044d0f6();
-    // C: FUN_0044d105();
-    // C: FUN_0044d114();
-    // C: FUN_0044d123();
-    // C: FUN_0044d132();
-    // C: FUN_0044d141();
-    // C: FUN_0044d154();
-  return;
+  // DEVIATION: SEH frame setup
+  DAT_00626810 = 0;
+  FUN_00450340();
+  FUN_0044d0d8();
+  FUN_0044d0e7();
+  FUN_0044d0f6();
+  FUN_0044d105();
+  FUN_0044d114();
+  FUN_0044d123();
+  FUN_0044d132();
+  FUN_0044d141();
+  FUN_0044d154();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2931,35 +2917,35 @@ export function FUN_0044d027() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044d0d8 (15 bytes)
 export function FUN_0044d0d8() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0043c520()
+  FUN_0043c520(); // DEVIATION: delete GDI object
 }
 // Source: decompiled/block_00440000.c FUN_0044d0e7 (15 bytes)
 export function FUN_0044d0e7() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0059df8a()
+  FUN_0059df8a(); // DEVIATION: stack dealloc
 }
 // Source: decompiled/block_00440000.c FUN_0044d0f6 (15 bytes)
 export function FUN_0044d0f6() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0046ab49()
+  FUN_0046ab49(); // DEVIATION: sound cleanup
 }
 // Source: decompiled/block_00440000.c FUN_0044d105 (15 bytes)
 export function FUN_0044d105() {
-  // DEVIATION: C++ bitmap destructo
+  FUN_005bd915(); // DEVIATION: bitmap destructor
 }
 // Source: decompiled/block_00440000.c FUN_0044d114 (15 bytes)
 export function FUN_0044d114() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044cba0()
+  FUN_0044cba0(); // sprite manager destructor
 }
 // Source: decompiled/block_00440000.c FUN_0044d123 (15 bytes)
 export function FUN_0044d123() {
-  // DEVIATION: MFC/C++ — calls: _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x4fc))
+  // DEVIATION: _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x4fc))
 }
 // Source: decompiled/block_00440000.c FUN_0044d132 (15 bytes)
 export function FUN_0044d132() {
-  // DEVIATION: Win32 — critical section cleanup
+  FUN_005c656b(); // DEVIATION: critical section cleanup
 }
 // Source: decompiled/block_00440000.c FUN_0044d141 (9 bytes)
 export function FUN_0044d141() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044ca60()
+  FUN_0044ca60(); // sprite base destructor
 }
 // Source: decompiled/block_00440000.c FUN_0044d154 (14 bytes)
 export function FUN_0044d154() {
@@ -3021,7 +3007,7 @@ export function FUN_0044d296() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044d99d (12 bytes)
 export function FUN_0044d99d() {
-  // DEVIATION: MFC/C++ — calls: thunk_FUN_0043c520()
+  FUN_0043c520(); // DEVIATION: delete GDI object
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3037,26 +3023,28 @@ export function FUN_0044d9b3() {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044d9c1() {
   // Source: decompiled/block_00440000.c FUN_0044d9c1 (244 bytes)
-  // DEVIATION: Win32/MFC — OOP method
-    // C: iVar1 = thunk_FUN_0044d162();
-    // C: if ((iVar1 != 0) && (iVar1 = thunk_FUN_0044db92(), iVar1 != 0)) {
-    // C: thunk_FUN_0044dab5();
-    // C: *(undefined4 *)(in_ECX + 0x1924) = 0;
-    // C: thunk_FUN_00408650();
-    // C: thunk_FUN_00419b80();
-    // C: thunk_FUN_00450390(in_ECX + 0xb8);
-    // C: thunk_FUN_004085f0();
-    // C: thunk_FUN_00419b80();
-    // C: if (2 < DAT_00655b02) {
-    // C: CPropertySheet::EnableStackedTabs((CPropertySheet *)(in_ECX + 0x54c),0x403585);
-    // C: }
-    // C: FUN_005c61b0();
-    // C: CPropertySheet::EnableStackedTabs((CPropertySheet *)(in_ECX + 0x54c),0);
-    // C: thunk_FUN_004503d0();
-    // C: thunk_FUN_00419b80();
-    // C: thunk_FUN_00450390(&DAT_006a8c00);
-    // C: thunk_FUN_004503d0();
-    // C: thunk_FUN_00419b80();
+  let iVar1;
+  let in_ECX = 0; // DEVIATION: MFC this pointer
+  iVar1 = FUN_0044d162();
+  if ((iVar1 !== 0) && (iVar1 = FUN_0044db92(), iVar1 !== 0)) {
+    FUN_0044dab5();
+    // DEVIATION: *(undefined4 *)(in_ECX + 0x1924) = 0 — MFC member write
+    FUN_00408650();
+    FUN_00419b80();
+    FUN_00450390(in_ECX + 0xb8); // DEVIATION: in_ECX pointer arithmetic
+    FUN_004085f0();
+    FUN_00419b80();
+    if (2 < DAT_00655b02) {
+      // DEVIATION: CPropertySheet::EnableStackedTabs((CPropertySheet *)(in_ECX + 0x54c), 0x403585)
+    }
+    FUN_005c61b0();
+    // DEVIATION: CPropertySheet::EnableStackedTabs((CPropertySheet *)(in_ECX + 0x54c), 0)
+    FUN_004503d0();
+    FUN_00419b80();
+    FUN_00450390(DAT_006a8c00);
+    FUN_004503d0();
+    FUN_00419b80();
+  }
     // C: }
   return;
 }
@@ -3112,7 +3100,7 @@ export function FUN_0044db92() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044e762 (9 bytes)
 export function FUN_0044e762() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3120,7 +3108,7 @@ export function FUN_0044e762() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044e76b (12 bytes)
 export function FUN_0044e76b() {
-  // DEVIATION: C++ bitmap destructo
+  FUN_005bd915(); // DEVIATION: bitmap destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3162,7 +3150,7 @@ export function FUN_0044e790() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044f498 (12 bytes)
 export function FUN_0044f498() {
-  // DEVIATION: C++ CString destructor call
+  FUN_005cde4d(); // DEVIATION: CString destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3170,7 +3158,7 @@ export function FUN_0044f498() {
 // ═══════════════════════════════════════════════════════════════════
 // Source: decompiled/block_00440000.c FUN_0044f4a4 (12 bytes)
 export function FUN_0044f4a4() {
-  // DEVIATION: C++ bitmap destructo
+  FUN_005bd915(); // DEVIATION: bitmap destructor
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3202,7 +3190,11 @@ export function FUN_0044f717(param_1) {
 // Triggers redraw of throne room if active.
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_0044f799() {
-  return; // UI — stubbed
+  // Source: decompiled/block_00440000.c FUN_0044f799 (64 bytes)
+  if (DAT_00626810 !== 0) {
+    // DEVIATION: *(int *)(DAT_00626810 + 0x1924) == 0 — MFC member access
+    // DEVIATION: CRichEditDoc::InvalidateObjectCache((CRichEditDoc *)(DAT_00626810 + 0x54c))
+  }
 }
 
 
@@ -3269,6 +3261,7 @@ function FUN_00453e51(p1, p2) { return 0; } // can_build_wonder
 function FUN_005b9431(p1, p2) { return 0; } // are_continents_connected
 function FUN_004190d0(p1, p2) { return; } // show_debug_dialog
 function FUN_0059df8a() { return; } // stack_dealloc
+function FUN_0059ec88(_a, _b, _c) { return; } // play_wonder_video
 function FUN_005c656b() { return; } // critical_section_cleanup
 function FUN_005cedad(p1, p2, p3, p4, p5, p6) { return; } // blit_rect
 function FUN_005cf467(p1, p2) { return; } // apply_chroma_key

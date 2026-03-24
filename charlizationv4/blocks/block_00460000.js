@@ -62,6 +62,7 @@ import { FUN_005dce4f, FUN_005dce96, FUN_005dd010, FUN_005dd1a0, FUN_005dd27e, F
 import { FUN_005dd3c2, FUN_005dd51d, FUN_005dd71e, FUN_005ddbc7, FUN_005dde9d, FUN_005ddeff } from './block_005D0000.js';
 import { FUN_005de6fc, FUN_005dea9e, FUN_005deb12 } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 let _DAT_00626a28 = 0;
 
@@ -206,8 +207,10 @@ export function FUN_00460104() {
 // Source: block_00460000.c @ 0x0046011A, 15 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00460000.c FUN_0046011a (15 bytes)
 export function FUN_0046011a() {
-  // SEH frame cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -1559,8 +1562,10 @@ export function FUN_004676bf() {
 // Source: block_00460000.c @ 0x004676DC, 26 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00460000.c FUN_004676dc (26 bytes)
 export function FUN_004676dc() {
-  // _Timevec::~_Timevec — no-op in JS
+  // DEVIATION: Win32 — CRT _Timevec destructor (no game state)
+  // _Timevec::~_Timevec((_Timevec *)&G.DAT_00654fd4);
 }
 
 
@@ -1756,7 +1761,7 @@ export function FUN_00467baf(param_1, param_2) {
             local_8 = 9999;
             local_24 = -1;
             for (local_c = 0; local_c < G.DAT_00655b18; local_c = local_c + 1) {
-              if ((((G.DAT_0064f394[local_c * 0x58] !== 0) &&
+              if ((((s32(G.DAT_0064f394, local_c * 0x58) !== 0) &&
                    (s8(G.DAT_0064f348[local_c * 0x58]) === param_1)) &&
                   (iVar4 = FUN_0044263f(local_c, iVar3), iVar4 !== 0)) &&
                  (iVar4 = FUN_005ae31d(iVar1, iVar2,
@@ -2092,9 +2097,11 @@ export function load_labels_txt() {
       } else {
         for (local_c = 0; local_c < G.DAT_00628424; local_c = local_c + 1) {
           uVar2 = FUN_004a257a();
-          // G.DAT_00628420[local_c * 4] = uVar2; — pointer store
+          // DEVIATION: *(undefined4 *)(G.DAT_00628420 + local_c * 4) = uVar2 — pointer table write
+G.DAT_00628420[local_c * 4] = uVar2; // label string pointer
         }
         if (local_c < 0x378) {
+          let local_110 = G.DAT_0064bb08; // C: FUN_005f22d0(local_110, &G.DAT_0064bb08) — backup
           FUN_005f22d0(G.DAT_0064bb08, G.DAT_00655020);
           iVar1 = FUN_004a2379(s_LABELS_00628440, s_LABELS_00628438);
           if (iVar1 === 0) {
@@ -2105,13 +2112,15 @@ export function load_labels_txt() {
             }
             for (; local_c < iVar1; local_c = local_c + 1) {
               uVar2 = FUN_004a257a();
-              // G.DAT_00628420[local_c * 4] = uVar2;
+              // DEVIATION: *(undefined4 *)(G.DAT_00628420 + local_c * 4) = uVar2 — pointer table write
+G.DAT_00628420[local_c * 4] = uVar2; // scenario label string
             }
           }
           if (local_c < 0x378) {
             uVar2 = FUN_00428a95('_ERROR_LABELS_TXT_');
             for (; local_c < 0x378; local_c = local_c + 1) {
-              // G.DAT_00628420[local_c * 4] = uVar2;
+              // DEVIATION: *(undefined4 *)(G.DAT_00628420 + local_c * 4) = uVar2 — pointer table write
+G.DAT_00628420[local_c * 4] = uVar2; // error fill
             }
           }
         }
@@ -2174,8 +2183,10 @@ export function FUN_0046ab30() {
 // Source: block_00460000.c @ 0x0046AB49, 22 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00460000.c FUN_0046ab49 (22 bytes)
 export function FUN_0046ab49() {
-  // empty
+  // Empty function in original binary — genuinely a no-op
+  return;
 }
 
 
@@ -2432,8 +2443,10 @@ export function load_civ2_art_0046da40() {
 // Source: block_00460000.c @ 0x0046DD98, 12 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00460000.c FUN_0046dd98 (12 bytes)
 export function FUN_0046dd98() {
-  // _Timevec destructor — no-op in JS
+  // DEVIATION: Win32 — CRT _Timevec destructor on stack local (no game state)
+  // _Timevec::~_Timevec((_Timevec *)(unaff_EBP + -0xacc));
 }
 
 
@@ -2472,8 +2485,10 @@ export function FUN_0046ddbc() {
 // Source: block_00460000.c @ 0x0046DDD2, 14 bytes
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_00460000.c FUN_0046ddd2 (14 bytes)
 export function FUN_0046ddd2() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -2540,6 +2555,11 @@ export function FUN_0046e020(param_1, param_2, param_3, param_4) {
   // plays via sndPlaySoundA or FUN_005d6038, calls FUN_00407ff0
   G.DAT_0066bfc4 = param_1;
   G.DAT_0066bfc0 = param_2;
+  if ((param_1 | 0) < 0) {
+    FUN_005d61ab((~param_1 + 1) >>> 0);
+    return;
+  }
+  // Remainder is DEVIATION: Win32 sound playback (sndPlaySoundA, file path resolution)
 }
 
 

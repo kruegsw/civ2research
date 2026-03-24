@@ -73,6 +73,7 @@ import { FUN_005d1f50, FUN_005d2004, FUN_005d2279, FUN_005d2550, FUN_005d2568, F
 import { FUN_005d25a8, FUN_005d268e, FUN_005dae6b, FUN_005dd010, FUN_005dd1a0, FUN_005dd27e } from './block_005D0000.js';
 import { FUN_005dd377, FUN_005dd3c2, FUN_005dd71e } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_00600000.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 function SetRect() { /* no-op */ }
 function OffsetRect() { /* no-op */ }
@@ -110,7 +111,8 @@ export function FUN_004d007e(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004d0160() {
   FUN_0047e94e(1, 0);
-  if (G.DAT_006ad698 === '\0' || G.DAT_006ad698 === 0) {
+  // C: if ((G.DAT_006ad698 == '\0') && (iVar1 = FUN_00421bb0(), iVar1 - G.DAT_006a5b08 < 0x4b1)) return;
+  if (G.DAT_006ad698 === 0) {
     let iVar1 = FUN_00421bb0();
     if (iVar1 - G.DAT_006a5b08 < 0x4b1) {
       return;
@@ -175,8 +177,9 @@ export function FUN_004d0314() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004d032a — seh_frame_cleanup_0
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_004D0000.c FUN_004d032a (14 bytes)
 export function FUN_004d032a() {
-  // SEH frame cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -217,8 +220,9 @@ export function FUN_004d041a() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004d0430 — seh_frame_cleanup_1
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_004D0000.c FUN_004d0430 (14 bytes)
 export function FUN_004d0430() {
-  // SEH frame cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -425,8 +429,9 @@ export function FUN_004d0b37() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004d0b4a — seh_frame_cleanup_2
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_004D0000.c FUN_004d0b4a (14 bytes)
 export function FUN_004d0b4a() {
-  // SEH frame cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -590,8 +595,9 @@ export function FUN_004d1397() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004d13aa — seh_frame_cleanup_3
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_004D0000.c FUN_004d13aa (14 bytes)
 export function FUN_004d13aa() {
-  // SEH frame cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -797,8 +803,9 @@ export function FUN_004d4a56() { FUN_005bd915(); }
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004d4a6c — seh_frame_cleanup_4
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_004D0000.c FUN_004d4a6c (14 bytes)
 export function FUN_004d4a6c() {
-  // SEH frame cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -1022,25 +1029,25 @@ export function FUN_004d56fd() { /* SEH frame cleanup — no-op in JS */ }
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_004d570b() {
   let in_ECX = G.DAT_0062e2d0 || {};
-  // Generate 80 random star positions
+  // Generate 80 random star positions (stride 0xc = 12 bytes per star: x, y, z)
   for (let local_20 = 0; local_20 < 0x50; local_20 = local_20 + 1) {
-    in_ECX[0x1db8 + local_20 * 3] = FUN_0059a791(-32000, 32000);
-    in_ECX[0x1dbc + local_20 * 3] = FUN_0059a791(-24000, 24000);
-    in_ECX[0x1dc0 + local_20 * 3] = FUN_0059a791(1, 100);
+    in_ECX[0x1db8 + local_20 * 0xc] = FUN_0059a791(-32000, 32000);
+    in_ECX[0x1dbc + local_20 * 0xc] = FUN_0059a791(-24000, 24000);
+    in_ECX[0x1dc0 + local_20 * 0xc] = FUN_0059a791(1, 100);
   }
   let yBottom = CRichEditCntrItem_GetActiveView();
   let xRight = CRichEditCntrItem_GetActiveView();
   SetRect(/*local_14*/ 0, 0, 0x14, xRight, yBottom);
   FUN_005c0333(0, 10);
   for (let local_20 = 0; local_20 < 0x50; local_20 = local_20 + 1) {
-    let local_18 = ((in_ECX[0x1db8 + local_20 * 3] / in_ECX[0x1dc0 + local_20 * 3]) | 0) + 0x140;
-    let local_1c = ((in_ECX[0x1dbc + local_20 * 3] / in_ECX[0x1dc0 + local_20 * 3]) | 0) + 0xf0;
+    let local_18 = ((in_ECX[0x1db8 + local_20 * 0xc] / in_ECX[0x1dc0 + local_20 * 0xc]) | 0) + 0x140;
+    let local_1c = ((in_ECX[0x1dbc + local_20 * 0xc] / in_ECX[0x1dc0 + local_20 * 0xc]) | 0) + 0xf0;
     if (0x280 < local_18 || local_18 < 0 || 0x1e0 < local_1c || local_1c < 0) {
-      in_ECX[0x1db8 + local_20 * 3] = FUN_0059a791(-32000, 32000);
-      in_ECX[0x1dbc + local_20 * 3] = FUN_0059a791(-24000, 24000);
-      in_ECX[0x1dc0 + local_20 * 3] = 100;
-      local_18 = ((in_ECX[0x1db8 + local_20 * 3] / in_ECX[0x1dc0 + local_20 * 3]) | 0) + 0x140;
-      local_1c = ((in_ECX[0x1dbc + local_20 * 3] / in_ECX[0x1dc0 + local_20 * 3]) | 0) + 0xf0;
+      in_ECX[0x1db8 + local_20 * 0xc] = FUN_0059a791(-32000, 32000);
+      in_ECX[0x1dbc + local_20 * 0xc] = FUN_0059a791(-24000, 24000);
+      in_ECX[0x1dc0 + local_20 * 0xc] = 100;
+      local_18 = ((in_ECX[0x1db8 + local_20 * 0xc] / in_ECX[0x1dc0 + local_20 * 0xc]) | 0) + 0x140;
+      local_1c = ((in_ECX[0x1dbc + local_20 * 0xc] / in_ECX[0x1dc0 + local_20 * 0xc]) | 0) + 0xf0;
     }
     FUN_005c0c5d(local_18, local_1c, 0x29);
   }
@@ -1283,24 +1290,24 @@ export function FUN_004d63fb() {
   let iVar2 = G.DAT_0062e2d0;
   FUN_00407ff0();
   for (let local_1c = 0; local_1c < 0x50; local_1c = local_1c + 1) {
-    let iVar3 = ((iVar2[0x1db8 + local_1c * 3] / iVar2[0x1dc0 + local_1c * 3]) | 0) + 0x140;
-    let iVar4 = ((iVar2[0x1dbc + local_1c * 3] / iVar2[0x1dc0 + local_1c * 3]) | 0) + 0xf0;
-    iVar2[0x1db8 + local_1c * 3] = iVar2[0x1db8 + local_1c * 3] + 0xfa;
-    iVar2[0x1dbc + local_1c * 3] = iVar2[0x1dbc + local_1c * 3] + 300;
-    iVar2[0x1dc0 + local_1c * 3] = iVar2[0x1dc0 + local_1c * 3] - 1;
-    if (iVar2[0x1dc0 + local_1c * 3] === 0) {
-      iVar2[0x1db8 + local_1c * 3] = FUN_0059a791(-32000, 32000);
-      iVar2[0x1dbc + local_1c * 3] = FUN_0059a791(-24000, 24000);
-      iVar2[0x1dc0 + local_1c * 3] = FUN_0059a791(0x32, 100);
+    let iVar3 = ((iVar2[0x1db8 + local_1c * 0xc] / iVar2[0x1dc0 + local_1c * 0xc]) | 0) + 0x140;
+    let iVar4 = ((iVar2[0x1dbc + local_1c * 0xc] / iVar2[0x1dc0 + local_1c * 0xc]) | 0) + 0xf0;
+    iVar2[0x1db8 + local_1c * 0xc] = iVar2[0x1db8 + local_1c * 0xc] + 0xfa;
+    iVar2[0x1dbc + local_1c * 0xc] = iVar2[0x1dbc + local_1c * 0xc] + 300;
+    iVar2[0x1dc0 + local_1c * 0xc] = iVar2[0x1dc0 + local_1c * 0xc] - 1;
+    if (iVar2[0x1dc0 + local_1c * 0xc] === 0) {
+      iVar2[0x1db8 + local_1c * 0xc] = FUN_0059a791(-32000, 32000);
+      iVar2[0x1dbc + local_1c * 0xc] = FUN_0059a791(-24000, 24000);
+      iVar2[0x1dc0 + local_1c * 0xc] = FUN_0059a791(0x32, 100);
     }
-    let local_14 = ((iVar2[0x1db8 + local_1c * 3] / iVar2[0x1dc0 + local_1c * 3]) | 0) + 0x140;
-    let local_18 = ((iVar2[0x1dbc + local_1c * 3] / iVar2[0x1dc0 + local_1c * 3]) | 0) + 0xf0;
+    let local_14 = ((iVar2[0x1db8 + local_1c * 0xc] / iVar2[0x1dc0 + local_1c * 0xc]) | 0) + 0x140;
+    let local_18 = ((iVar2[0x1dbc + local_1c * 0xc] / iVar2[0x1dc0 + local_1c * 0xc]) | 0) + 0xf0;
     if (0x280 < local_14 || local_14 < 0 || 0x1e0 < local_18 || local_18 < 0) {
-      iVar2[0x1db8 + local_1c * 3] = FUN_0059a791(-32000, 32000);
-      iVar2[0x1dbc + local_1c * 3] = FUN_0059a791(-24000, 24000);
-      iVar2[0x1dc0 + local_1c * 3] = FUN_0059a791(0x32, 100);
-      local_14 = ((iVar2[0x1db8 + local_1c * 3] / iVar2[0x1dc0 + local_1c * 3]) | 0) + 0x140;
-      local_18 = ((iVar2[0x1dbc + local_1c * 3] / iVar2[0x1dc0 + local_1c * 3]) | 0) + 0xf0;
+      iVar2[0x1db8 + local_1c * 0xc] = FUN_0059a791(-32000, 32000);
+      iVar2[0x1dbc + local_1c * 0xc] = FUN_0059a791(-24000, 24000);
+      iVar2[0x1dc0 + local_1c * 0xc] = FUN_0059a791(0x32, 100);
+      local_14 = ((iVar2[0x1db8 + local_1c * 0xc] / iVar2[0x1dc0 + local_1c * 0xc]) | 0) + 0x140;
+      local_18 = ((iVar2[0x1dbc + local_1c * 0xc] / iVar2[0x1dc0 + local_1c * 0xc]) | 0) + 0xf0;
     }
     if (iVar3 < 0x280 && 0 < iVar3 && iVar4 < 0x1e0 && 0 < iVar4) {
       let iVar6 = FUN_005c0bf2(iVar3, iVar4);
@@ -1506,15 +1513,18 @@ export function FUN_004d6cbc(param_1, param_2) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004d6f58 — noop_stub
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_004D0000.c FUN_004d6f58 (6 bytes)
 export function FUN_004d6f58() {
-  // empty function
+  // C: return; (truly empty function)
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004d8af0 — get_vtable_ptr
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_004D0000.c FUN_004d8af0 (27 bytes)
 export function FUN_004d8af0() {
+  // return *in_ECX; // DEVIATION: MFC — get vtable ptr from this
   return 0;
 }
 
@@ -2200,7 +2210,7 @@ export function FUN_004db690(param_1) {
   if (param_1 === 0xe) {
     FUN_004dbab4(0, in_ECX[0x200], local_8, 0);
   }
-  FUN_0046b14d(0x82, G.DAT_006ad30c[G.DAT_006ad558[G.DAT_0067a8c0] * 0x15], 0, 0, 0, 0, 0, 0, 0, puVar2);
+  FUN_0046b14d(0x82, G.DAT_006ad30c + s32(G.DAT_006ad558, G.DAT_0067a8c0 * 4) * 0x54, 0, 0, 0, 0, 0, 0, 0, puVar2);
   return puVar2;
 }
 
@@ -2904,7 +2914,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
   if (param_3 === 0) {
     for (let local_34 = 0; local_34 < G.DAT_00655b16; local_34 = local_34 + 1) {
       if (s32(G.DAT_0065610a, local_34 * 0x20) !== 0 &&
-         ((uVar4 & u8(G.DAT_006560f9, local_34 * 0x20)) !== 0 ||
+         ((uVar4 & u8(G.DAT_006560f9[local_34 * 0x20])) !== 0 ||
           s8(G.DAT_006560f7[local_34 * 0x20]) === param_2)) {
         G.DAT_006560f9[local_34 * 0x20] = G.DAT_006560f9[local_34 * 0x20] | local_24;
         let iVar5 = FUN_005b8931(s16(G.DAT_006560f0, local_34 * 0x20), s16(G.DAT_006560f2, local_34 * 0x20));
@@ -3033,8 +3043,8 @@ export function FUN_004de0e2(param_1, param_2) {
   FUN_0043d289(param_1, 4, 0);
   FUN_0043d289(param_1, 0xb, 0);
   FUN_0043d289(param_1, 7, 0);
-  // G.DAT_0064c6ae = G.DAT_0064caa2 area, offset param_2 * 0x594
-  w16(G.DAT_0064caa2, param_2 * 0x594 + 6, G.DAT_00655af8); // +6 because 0x6ae - 0x6a8 ≈ offset
+  // C: *(undefined2 *)(&G.DAT_0064c6ae + param_2 * 0x594) = G.DAT_00655af8
+  w16(G.DAT_0064c6ae, param_2 * 0x594, G.DAT_00655af8);
   // Increment city count for new owner
   let cityCount = s16(G.DAT_0064c708, param_2 * 0x594);
   w16(G.DAT_0064c708, param_2 * 0x594, cityCount + 1);

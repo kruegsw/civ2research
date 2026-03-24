@@ -2626,7 +2626,7 @@ export function kill_civ(param_1, param_2) {
     if (DAT_00655b02 < 3 || DAT_006ad2f7 !== 0) {
       // Check if civ has any cities left
       for (let local_18 = 0; local_18 < DAT_00655b18; local_18++) {
-        if (DAT_0064f394[local_18 * 0x58] !== 0 &&
+        if (s32(DAT_0064f394, local_18 * 0x58) !== 0 &&
            s8(DAT_0064f348[local_18 * 0x58]) === param_1) {
           DAT_006ad8f4 = 0;
           return 0;
@@ -2644,7 +2644,7 @@ export function kill_civ(param_1, param_2) {
             FUN_00511880(0xe, 0xff, 2, 0, param_1, 0);
           }
           FUN_0046e571(2, 1);
-          FUN_00410030("DESTROYED", DAT_00643798[param_1 * 0x3c], 0);
+          FUN_00410030("DESTROYED", DAT_00643798 + param_1 * 0x3c, 0);
         }
         if (DAT_00655128 < 0xc) {
           iVar1 = DAT_00655128;

@@ -85,10 +85,11 @@ import { FUN_0059d5f5, FUN_0059db08, FUN_0059db65, FUN_0059df8a, FUN_0059ec88 } 
 import { FUN_005adfa0, FUN_005adfd9, FUN_005ae006, FUN_005ae1b0 } from './block_005A0000.js';
 import { FUN_005b29aa, FUN_005b2e69, FUN_005b2f50, FUN_005b3863, FUN_005b3d06, FUN_005b47fa } from './block_005B0000.js';
 import { FUN_005b4c63, FUN_005b633f, FUN_005b6512, FUN_005b6787, FUN_005b898b, FUN_005b8a81 } from './block_005B0000.js';
-import { FUN_005b8b1a, FUN_005b8b65, FUN_005b8c42, FUN_005b8d15, FUN_005b8d62, FUN_005b8da4 } from './block_005B0000.js';
-import { FUN_005b94fc, FUN_005b9646, FUN_005b99e8, FUN_005b9ec6, FUN_005b9f1c } from './block_005B0000.js';
+import { FUN_005b8aa8, FUN_005b8b1a, FUN_005b8b65, FUN_005b8c42, FUN_005b8d15, FUN_005b8d62 } from './block_005B0000.js';
+import { FUN_005b8da4, FUN_005b94fc, FUN_005b9646, FUN_005b99e8, FUN_005b9ec6, FUN_005b9f1c } from './block_005B0000.js';
 import { FUN_005d2004, FUN_005d2279, FUN_005d237d, FUN_005d23bb, FUN_005dae6b } from './block_005D0000.js';
 import { FUN_005f22d0 } from './block_00600000.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 function XD_FlushSendBuffer(a) { /* flush_network */ }
 function debug_log(a) { /* debug_log */ }
@@ -137,6 +138,7 @@ export function FUN_00482311() {
 }
 
 
+// Source: decompiled/block_00480000.c FUN_00482327 (16 bytes)
 // ============================================================
 // Function: FUN_00482327 @ 0x00482327
 // Size: 16 bytes
@@ -144,7 +146,12 @@ export function FUN_00482311() {
 
 // SEH_restore_fs
 export function FUN_00482327() {
-  // Original: SEH frame restore, no-op in JS
+  // DEVIATION: Win32 — SEH frame restore (x86 structured exception handling)
+  // Original C:
+  //   int unaff_EBP;
+  //   undefined4 *unaff_FS_OFFSET;
+  //   *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  // No game state mutations — pure Win32 SEH plumbing, no-op in JS.
   return;
 }
 
@@ -428,9 +435,11 @@ export function FUN_004828a5() {
         }
         debug_log('Reconnected to network as SERVER');
         FUN_005f22d0(0, G.DAT_006665b0);
-        G.DAT_006ad304 = 0; // G.DAT_006ad300 = 0 (adjacent)
+        G.DAT_006ad300 = 0;
+        G.DAT_006ad304 = 0;
+        G.DAT_0067a408 = G.DAT_0067a400 + G.DAT_0062d0bc;
         G.DAT_006ad664 = local_27c[0] + -1;
-        // G.DAT_006ad668 = G.DAT_006ad664;
+        G.DAT_006ad668 = G.DAT_006ad664;
         if (G.DAT_006ad664 < 1) {
           local_8 = local_228[0];
           G.DAT_006ad558[local_8] = 0;
@@ -442,7 +451,7 @@ export function FUN_004828a5() {
           iVar3 = FUN_00421bb0();
           if (G.DAT_006ad8b8 * 0x3c < iVar3 - _DAT_00670d98 && G.DAT_006ad664 !== 0) {
             FUN_005f22d0(0, 0);
-            if (G.DAT_006ad664 === 0 /*G.DAT_006ad668*/) {
+            if (G.DAT_006ad668 === 0) {
               FUN_00410030(0 /*s_NOONESHOWED*/, 0 /*&G.DAT_0063fc58*/, 0);
               G.DAT_00628044 = 0;
               G.DAT_0064b9bc = 0;
@@ -471,7 +480,7 @@ export function FUN_004828a5() {
           XD_FlushSendBuffer(60000);
         }
         _memset(0 /*&G.DAT_0064ba48*/, -1, 0xc0);
-        // G.DAT_006ad640 = 3;
+        G.DAT_006ad640 = 3;
         FUN_0059c2b8();
         _DAT_006c901c = 0;
         G.DAT_006c9038 = 0;
@@ -579,14 +588,16 @@ export function FUN_0048308f() {
       }
       local_10 = local_10 + 0x1c4;
     }
-    for (local_10 = G.DAT_0064b99c; local_10 !== 0; local_10 = local_10 + 0x1bc) {
-      // DEVIATION: Win32 API (string pointer reassignment in raw memory)
-      // Each block walks event structure fields and reassigns string pointers
-      // Offsets checked: 0x8, 0x10, 0x14, 0x20, 0x38-0x88 (20 entries),
-      // 0x88, 0x90, 0xc4, 0xcc, 0xd4, 0xdc, 0x13c, 0x140, 0x148, 0x174, 0x184
-      // Each one advances local_14 by the string length (with min sizes)
-      break; // Cannot iterate linked list in JS without real memory
-    }
+    // DEVIATION: Network event linked list — pointer-based string reassignment
+    // C: Walks each event structure via linked list (local_10 + 0x1bc = next pointer)
+    // For each event, reassigns string fields at these offsets to packed string area:
+    //   +0x08 (min 0x0F), +0x10 (min 0x18), +0x14 (min 0x18), +0x20 (min 0x18),
+    //   +0x38..+0x84 (20 entries, min 1 each), +0x88 (min 0x18), +0x90 (min 0x0F),
+    //   +0xC4 (min 0x18), +0xCC (min 0x18), +0xD4 (min 0x18), +0xDC (min 0x0F),
+    //   +0x13C (min 0x18), +0x140 (min 0x18), +0x148 (min 0x0F),
+    //   +0x174 (min 0x18), +0x184 (min 1)
+    // Each field is checked for non-zero, then pointer is set to local_14, local_14 advances
+    // Cannot function without C pointer arithmetic on raw event buffer
   }
   return;
 }
@@ -736,8 +747,8 @@ export function FUN_00484fec(param_1) {
     local_c = local_c + 1;
   }
   iVar1 = FUN_005adfa0(local_c - 1, 0, 3);
-  if (-1 < G.DAT_00655afe + 0) { // G.DAT_00655afc >= 0 check approximation
-    local_18 = param_1 - G.DAT_00655afe;
+  if (-1 < G.DAT_00655afc) {
+    local_18 = param_1 - G.DAT_00655afc;
     if (local_18 < 1) {
       local_18 = 0;
     }
@@ -1778,14 +1789,14 @@ export function FUN_00487371(param_1) {
         FUN_00511880(6, 0xff, 1, 0, 0, 0);
         FUN_0046b14d(0x6b, 0xff, G.DAT_00655af0, 2, G.DAT_0062c5b4, 0, 0, 0, 0, 0);
       } else {
-        FUN_0046b14d(0x6b, G.DAT_006ad30c[G.DAT_006ad558[local_1c] * 0x54],
+        FUN_0046b14d(0x6b, G.DAT_006ad30c + s32(G.DAT_006ad558, local_1c * 4) * 0x54,
                      G.DAT_00655af0, 1, G.DAT_0062c5b4, 0, 0, 0, 0, 0);
         for (local_18 = 1; local_18 < 8; local_18 = local_18 + 1) {
           if ((1 << (local_18 & 0x1f) &
               (G.DAT_00655b0a & G.DAT_00655b0b) & (1 << (local_18 & 0x1f))) !== 0 &&
              G.DAT_006d1da0 !== local_18 && local_18 !== local_1c) {
-            FUN_00511880(6, G.DAT_006ad30c[G.DAT_006ad558[local_18] * 0x54], 1, 0, 0, 0);
-            FUN_0046b14d(0x6b, G.DAT_006ad30c[G.DAT_006ad558[local_18] * 0x54],
+            FUN_00511880(6, G.DAT_006ad30c + s32(G.DAT_006ad558, local_18 * 4) * 0x54, 1, 0, 0, 0);
+            FUN_0046b14d(0x6b, G.DAT_006ad30c + s32(G.DAT_006ad558, local_18 * 4) * 0x54,
                          G.DAT_00655af0, 2, G.DAT_0062c5b4, 0, 0, 0, 0, 0);
           }
         }
@@ -2040,7 +2051,8 @@ export function FUN_00488937(param_1) {
     FUN_0040bbb0();
     uVar1 = FUN_00493b10(param_1);
     FUN_0040bbe0(uVar1);
-    // DEVIATION: Win32 API (G.DAT_00679642 = 0, string formatting)
+    G.DAT_00679642 = 0;
+    // DEVIATION: Win32 API (string formatting)
     FUN_004d007e(G.DAT_00679640);
     FUN_0040bbe0(0 /*&G.DAT_0062c608*/);
     FUN_0040bc10(0x5c);
@@ -2079,19 +2091,19 @@ export function FUN_00488a45(param_1, param_2, param_3, param_4, param_5) {
 
   local_10 = param_2;
   local_18 = param_3;
-  iVar3 = FUN_005b8a81(param_2, param_3);
-  iVar4 = FUN_005b8a81(param_4, param_5);
+  iVar3 = FUN_005b8aa8(param_2, param_3);
+  iVar4 = FUN_005b8aa8(param_4, param_5);
   local_20 = 0;
   bVar2 = true;
   if (iVar4 === iVar3) {
     iVar3 = FUN_005ae1b0(param_4, param_5, param_2, param_3);
     if (iVar3 < 0x17) {
-      // G.DAT_0062d040 = 1;
-      // G.DAT_0062d044 = 0xffffffff;
-      // G.DAT_00673fa0 = param_4;
-      // G.DAT_00673fa4 = param_5;
-      // G.DAT_0062d03c = 2;
-      // G.DAT_0062d048 = 1;
+      G.DAT_0062d040 = 1;
+      G.DAT_0062d044 = 0xffffffff;
+      G.DAT_00673fa0 = param_4;
+      G.DAT_00673fa4 = param_5;
+      G.DAT_0062d03c = 2;
+      G.DAT_0062d048 = 1;
       bVar1 = true;
       // Original goto: LAB_00488ca7
       // Restructured using a flag
@@ -2133,8 +2145,8 @@ export function FUN_00488a45(param_1, param_2, param_3, param_4, param_5) {
       }
 
       // LAB_00488ca7:
-      // G.DAT_0062d040 = 0;
-      // G.DAT_0062d048 = 0;
+      G.DAT_0062d040 = 0;
+      G.DAT_0062d048 = 0;
       if (bVar1) {
         uVar5 = 0;
       } else if (bVar2) {
@@ -3452,6 +3464,7 @@ export function FUN_0048bf2d() {
 }
 
 
+// Source: decompiled/block_00480000.c FUN_0048bf43 (14 bytes)
 // ============================================================
 // Function: FUN_0048bf43 @ 0x0048BF43
 // Size: 14 bytes
@@ -3459,7 +3472,12 @@ export function FUN_0048bf2d() {
 
 // SEH_restore_sp_loop
 export function FUN_0048bf43() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH frame restore (x86 structured exception handling)
+  // Original C:
+  //   int unaff_EBP;
+  //   undefined4 *unaff_FS_OFFSET;
+  //   *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  // No game state mutations — pure Win32 SEH plumbing, no-op in JS.
   return;
 }
 
@@ -3505,7 +3523,7 @@ export function FUN_0048bfec() {
   uVar3 = FUN_00493c7d(G.DAT_006ad35c[0], G.DAT_006ad35c[0]);
   FUN_005d23bb('Server: %s (%d)', uVar3);
   for (local_31c = 1; local_31c < 8; local_31c = local_31c + 1) {
-    if (G.DAT_006ad30c[G.DAT_006ad558[local_31c] * 0x54] !== 0 &&
+    if (G.DAT_006ad30c + s32(G.DAT_006ad558, local_31c * 4) * 0x54 !== 0 &&
        (1 << (local_31c & 0x1f) & G.DAT_00655b0a) !== 0 &&
        (1 << (local_31c & 0x1f) & G.DAT_00655b0b) !== 0) {
       uVar3 = FUN_00493c7d(local_31c, local_31c);
@@ -3717,6 +3735,7 @@ export function FUN_0048c9ce() {
 }
 
 
+// Source: decompiled/block_00480000.c FUN_0048c9e4 (15 bytes)
 // ============================================================
 // Function: FUN_0048c9e4 @ 0x0048C9E4
 // Size: 15 bytes
@@ -3724,7 +3743,12 @@ export function FUN_0048c9ce() {
 
 // SEH_restore_client_loop
 export function FUN_0048c9e4() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH frame restore (x86 structured exception handling)
+  // Original C:
+  //   int unaff_EBP;
+  //   undefined4 *unaff_FS_OFFSET;
+  //   *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  // No game state mutations — pure Win32 SEH plumbing, no-op in JS.
   return;
 }
 
@@ -3994,7 +4018,7 @@ export function FUN_0048c9f3(param_1) {
             FUN_005f22d0(0 /*&G.DAT_0063cc48*/,
                          0 /*&G.DAT_006ad330 + G.DAT_006ad558[local_32c] * 0x54*/);
             FUN_00511880(0x3f, 0xff, 1, 0,
-                         G.DAT_006ad30c[G.DAT_006ad558[local_32c] * 0x54], 0);
+                         G.DAT_006ad30c + s32(G.DAT_006ad558, local_32c * 4) * 0x54, 0);
             FUN_00410030(0 /*s_NEWPLAYER*/, 0 /*&G.DAT_0063fc58*/, 0);
           }
           FUN_0048d9ad(local_32c);
@@ -4081,6 +4105,7 @@ export function FUN_0048d989() {
 }
 
 
+// Source: decompiled/block_00480000.c FUN_0048d99f (14 bytes)
 // ============================================================
 // Function: FUN_0048d99f @ 0x0048D99F
 // Size: 14 bytes
@@ -4088,7 +4113,12 @@ export function FUN_0048d989() {
 
 // SEH_restore_server_loop
 export function FUN_0048d99f() {
-  // SEH frame restore — no-op in JS
+  // DEVIATION: Win32 — SEH frame restore (x86 structured exception handling)
+  // Original C:
+  //   int unaff_EBP;
+  //   undefined4 *unaff_FS_OFFSET;
+  //   *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
+  // No game state mutations — pure Win32 SEH plumbing, no-op in JS.
   return;
 }
 
@@ -4104,7 +4134,7 @@ export function FUN_0048d9ad(param_1) {
 
   if (G.DAT_006c31d0 === 0) {
     G.DAT_006c9090 = 0;
-    FUN_0046b14d(0x2b, G.DAT_006ad30c[G.DAT_006ad558[param_1] * 0x54], 0, 0, 0, 0, 0, 0, 0, 0);
+    FUN_0046b14d(0x2b, G.DAT_006ad30c + s32(G.DAT_006ad558, param_1 * 4) * 0x54, 0, 0, 0, 0, 0, 0, 0, 0);
   } else {
     G.DAT_006c9090 = 1;
   }
@@ -4182,7 +4212,7 @@ export function FUN_0048dab9() {
           if ((1 << (local_30 & 0x1f) & G.DAT_00654fb0) !== 0) {
             G.DAT_00654fb0 = G.DAT_00654fb0 & ~(1 << (local_30 & 0x1f));
             FUN_0046b14d(0x2a, 0xff, G.DAT_00654fb0, 0, 0, 0, 0, 0, 0, 0);
-            // _DAT_006c90a0 += 1;
+            _DAT_006c90a0 += 1;
           }
           local_28 = local_28 + 1;
         }
@@ -4247,7 +4277,7 @@ export function FUN_0048de75() {
       FUN_0059b96a(G.DAT_006ad30c[local_8 * 0x54]);
       if ((1 << (local_10 & 0x1f) & G.DAT_00654fb0) !== 0) {
         G.DAT_00654fb0 = G.DAT_00654fb0 & ~(1 << (local_10 & 0x1f));
-        // _DAT_006c90a0 += 1;
+        _DAT_006c90a0 += 1;
       }
     }
   }

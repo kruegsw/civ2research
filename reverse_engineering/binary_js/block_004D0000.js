@@ -2377,7 +2377,7 @@ export function FUN_004db690(param_1) {
   if (param_1 === 0xe) {
     FUN_004dbab4(0, in_ECX[0x200], local_8, 0);
   }
-  FUN_0046b14d(0x82, DAT_006ad30c[DAT_006ad558[DAT_0067a8c0] * 0x15], 0, 0, 0, 0, 0, 0, 0, puVar2);
+  FUN_0046b14d(0x82, DAT_006ad30c + s32(DAT_006ad558, DAT_0067a8c0 * 4) * 0x54, 0, 0, 0, 0, 0, 0, 0, puVar2);
   return puVar2;
 }
 
@@ -3081,7 +3081,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
   if (param_3 === 0) {
     for (let local_34 = 0; local_34 < DAT_00655b16; local_34 = local_34 + 1) {
       if (s32(DAT_0065610a, local_34 * 0x20) !== 0 &&
-         ((uVar4 & u8(DAT_006560f9, local_34 * 0x20)) !== 0 ||
+         ((uVar4 & u8(DAT_006560f9[local_34 * 0x20])) !== 0 ||
           s8(DAT_006560f7[local_34 * 0x20]) === param_2)) {
         DAT_006560f9[local_34 * 0x20] = DAT_006560f9[local_34 * 0x20] | local_24;
         let iVar5 = FUN_005b8931(s16(DAT_006560f0, local_34 * 0x20), s16(DAT_006560f2, local_34 * 0x20));

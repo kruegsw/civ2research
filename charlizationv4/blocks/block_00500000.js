@@ -66,6 +66,7 @@ import { FUN_005c0bf2, FUN_005c0cc5, FUN_005c5aeb, FUN_005c64da, FUN_005c656b, F
 import { FUN_005cdea1, FUN_005cedad, FUN_005cef31, FUN_005cf126 } from './block_005C0000.js';
 import { FUN_005d7cb0, FUN_005d8236, FUN_005db0d0 } from './block_005D0000.js';
 import { FUN_005f22d0 } from './block_00600000.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 export function FID_conflict___E51_00500E00() {
   FUN_00500e1a();
@@ -93,9 +94,10 @@ export function FUN_00500e1a() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500e38 (26 bytes)
 // register atexit cleanup
 export function FUN_00500e38() {
-  // _atexit(FUN_00500e55) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500e55);
   return;
 }
 
@@ -146,9 +148,10 @@ export function FUN_00500e89() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500ea7 (26 bytes)
 // register atexit cleanup
 export function FUN_00500ea7() {
-  // _atexit(FUN_00500ec4) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500ec4);
   return;
 }
 
@@ -199,9 +202,10 @@ export function FUN_00500ef8() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500f12 (26 bytes)
 // register atexit cleanup
 export function FUN_00500f12() {
-  // _atexit(FUN_00500f2f) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500f2f);
   return;
 }
 
@@ -252,9 +256,10 @@ export function FUN_00500f63() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500f7d (26 bytes)
 // register atexit cleanup
 export function FUN_00500f7d() {
-  // _atexit(FUN_00500f9a) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00500f9a);
   return;
 }
 
@@ -305,9 +310,10 @@ export function FUN_00500fce() {
 // Size: 29 bytes
 // ============================================================
 
+// Source: decompiled/block_00500000.c FUN_00500fe8 (26 bytes)
 // register atexit cleanup
 export function FUN_00500fe8() {
-  // _atexit(FUN_00501005) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_00501005);
   return;
 }
 
@@ -413,9 +419,11 @@ export function FUN_00501190() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog — restore FS chain (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_005011a6 (26 bytes)
+// SEH epilog — restore FS chain
 export function FUN_005011a6() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -639,9 +647,10 @@ export function FUN_00501682() {
 // Size: 9 bytes
 // ============================================================
 
-// cleanup wrapper — COleCntrFrameWnd destructor (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_00501691 (26 bytes)
+// cleanup wrapper — COleCntrFrameWnd destructor
 export function FUN_00501691() {
-  // COleCntrFrameWnd::~COleCntrFrameWnd — no-op in JS
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(*(unaff_EBP + -0x10));
   return;
 }
 
@@ -652,9 +661,11 @@ export function FUN_00501691() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog — restore FS chain (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_005016a4 (26 bytes)
+// SEH epilog — restore FS chain
 export function FUN_005016a4() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -1903,7 +1914,7 @@ export function FUN_00504c05(param_1, in_ECX) {
     FUN_00501733(in_ECX + 0x15fc, in_ECX);
     FUN_005baee0(0x2c, 10, 1, 1);
     uVar1 = FUN_00407f90(in_ECX + 0x15fc);
-    uVar1 = FUN_00428b0c(G.DAT_00628420[0xac], in_ECX[0x15fc], in_ECX[0x1600], uVar1);
+    uVar1 = FUN_00428b0c(G.DAT_00628420 + 0xac, in_ECX[0x15fc], in_ECX[0x1600], uVar1);
     FUN_0043c910(uVar1);
     uVar1 = FUN_00511690(0xb7);
     uVar2 = FUN_00511690(0x93);
@@ -2539,7 +2550,7 @@ export function FUN_00506637(param_1) {
       FUN_0059ec88(0, param_1, 0);
       uVar5 = 0;
       uVar3 = 4;
-      uVar4 = FUN_00428b0c(G.DAT_00628420[0x4c8], 4, 0);
+      uVar4 = FUN_00428b0c(G.DAT_00628420 + 0x4c8, 4, 0);
       FUN_0059edf0(uVar4, uVar3, uVar5);
       iVar1 = FUN_0040bc80(0);
       if (0 < iVar1) {
@@ -2572,6 +2583,8 @@ export function FUN_00506637(param_1) {
           iVar2 = FUN_005b633f(param_1);
           if (iVar2 === 0) {
             FUN_004897fa(0);
+            FUN_00410d98(s16(G.DAT_006560f0, param_1 * 0x20), s16(G.DAT_006560f2, param_1 * 0x20));
+            FUN_00410402(s16(G.DAT_006560f0, param_1 * 0x20), s16(G.DAT_006560f2, param_1 * 0x20));
           }
           else {
             G.DAT_00655afe = param_1;
@@ -2630,9 +2643,11 @@ export function FUN_00506a1e() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c FUN_00506a34 (26 bytes)
+// SEH epilog — restore FS chain
 export function FUN_00506a34() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -2679,45 +2694,45 @@ export function FUN_00506a42(param_1) {
   // CPropertySheet setup — DEVIATION: Win32 no-op
   FUN_0059ec88(0, iVar1, 0);
   uVar7 = 0; uVar5 = 0;
-  uVar6 = FUN_00428b0c(G.DAT_00628420[0x144], 0, 0);
+  uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x144, 0, 0);
   FUN_0059edf0(uVar6, uVar5, uVar7);
   if (G.DAT_006560ff[iVar1 * 0x20] !== -1) {
     uVar7 = 0; uVar5 = 1;
-    uVar6 = FUN_00428b0c(G.DAT_00628420[0x148], 1, 0);
+    uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x148, 1, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
     FUN_0059ea99(1);
   }
   if (G.DAT_006560ff[iVar1 * 0x20] !== 3) {
     uVar7 = 0; uVar5 = 2;
-    uVar6 = FUN_00428b0c(G.DAT_00628420[0x14c], 2, 0);
+    uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x14c, 2, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
   }
   if ((G.DAT_006560ff[iVar1 * 0x20] !== 1) && (G.DAT_006560ff[iVar1 * 0x20] !== 2)) {
     uVar7 = 0; uVar5 = 3;
-    uVar6 = FUN_00428b0c(G.DAT_00628420[0x150], 3, 0);
+    uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x150, 3, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
   }
   uVar4 = CSplitterWnd_IsTracking(G.DAT_006a91b8);
   if (uVar4 !== u8(G.DAT_00656100[iVar1 * 0x20])) {
     uVar7 = 0; uVar5 = 5;
-    uVar6 = FUN_00428b0c(G.DAT_00628420[0x2cc], 5, 0);
+    uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x2cc, 5, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
     if (G.DAT_00656100[iVar1 * 0x20] !== -1) {
       uVar7 = 0; uVar5 = 6;
-      uVar6 = FUN_00428b0c(G.DAT_00628420[0x2f4], 6, 0);
+      uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x2f4, 6, 0);
       FUN_0059edf0(uVar6, uVar5, uVar7);
     }
   }
   uVar7 = 0; uVar5 = 7;
-  uVar6 = FUN_00428b0c(G.DAT_00628420[0x2d0], 7, 0);
+  uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x2d0, 7, 0);
   FUN_0059edf0(uVar6, uVar5, uVar7);
   if ((((G.DAT_00655b0b & (1 << (G.DAT_006560f7[iVar1 * 0x20] & 0x1f))) !== 0) &&
       (G.DAT_00655b05 !== 0)) && (iVar2 = FUN_005b2c3d(iVar1), iVar2 !== 0)) {
     uVar7 = 0; uVar5 = 8;
-    uVar6 = FUN_00428b0c(G.DAT_00628420[0x2f8], 8, 0);
+    uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x2f8, 8, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
     uVar7 = 0; uVar5 = 9;
-    uVar6 = FUN_00428b0c(G.DAT_00628420[0x2fc], 9, 0);
+    uVar6 = FUN_00428b0c(G.DAT_00628420 + 0x2fc, 9, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
   }
   uVar6 = FUN_0040bc80(0);
@@ -2810,9 +2825,11 @@ export function citywin_70C1() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c citywin_70D7 (26 bytes)
+// SEH epilog — restore FS chain
 export function citywin_70D7() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -3338,7 +3355,7 @@ export function citywin_8552(in_ECX) {
       _Timevec_destructor(in_ECX + 0x16ac);
       local_1c = iVar2 - (0 >> 1);
       FUN_005baee0(0x29, 10, 1, 0);
-      uVar1 = FUN_00428b0c(G.DAT_00628420[0x160], local_2c, local_1c, 0);
+      uVar1 = FUN_00428b0c(G.DAT_00628420 + 0x160, local_2c, local_1c, 0);
       local_2c = FUN_0043c950(uVar1);
       break;
     }
@@ -3437,10 +3454,10 @@ export function citywin_8BC5(param_1, in_ECX) {
 // citywin_calc_pane_rect — calculate pane rectangle from grid coords
 export function citywin_8C84(param_1, param_2, param_3, param_4, param_5, in_ECX) {
   FUN_004086c0(param_1, in_ECX[0x15c4] +
-                         ((in_ECX[0x15d4] * param_2 + 1) / 2) | 0 +
+                         (((in_ECX[0x15d4] * param_2 + 1) / 2) | 0) +
                          in_ECX[0x124],
-                   in_ECX[0x128] + ((in_ECX[0x15d4] * param_3 + 1) / 2) | 0 +
-                   in_ECX[0x15c8], ((in_ECX[0x15d4] * param_4 + 1) / 2) | 0,
+                   in_ECX[0x128] + (((in_ECX[0x15d4] * param_3 + 1) / 2) | 0) +
+                   in_ECX[0x15c8], (((in_ECX[0x15d4] * param_4 + 1) / 2) | 0),
                    ((in_ECX[0x15d4] * param_5 + 1) / 2) | 0);
   return;
 }
@@ -3628,7 +3645,7 @@ export function citywin_92AF(in_ECX) {
 // citywin_full_refresh — full refresh of city window
 export function citywin_9429(in_ECX) {
   if ((((-1 < in_ECX[0x159c]) && (in_ECX[0x159c] < G.DAT_00655b18)) &&
-      (G.DAT_0064f394[in_ECX[0x159c] * 0x58] !== 0)) && (G.DAT_00628044 !== 0)) {
+      (s32(G.DAT_0064f394, in_ECX[0x159c] * 0x58) !== 0)) && (G.DAT_00628044 !== 0)) {
     if ((in_ECX[0x15a0] === 0) && (in_ECX[0x15a4] === 0)) {
       FUN_004eb4ed(in_ECX[0x159c], 1);
       citywin_9028(in_ECX);
@@ -3927,7 +3944,7 @@ export function city_button_buy(param_1) {
     uVar6 = G.DAT_0064bccc;
     iVar5 = CSplitterWnd_IsTracking(G.DAT_006a91b8);
     iVar5 = FUN_005adfa0(uVar6 * local_368 - s16(G.DAT_0064f35c, iVar5 * 0x58), uVar7, uVar8);
-    local_35c = ((iVar5 * iVar5) / 0x14) | 0 + iVar5 * 2;
+    local_35c = (((iVar5 * iVar5) / 0x14) | 0) + iVar5 * 2;
     FUN_004271e8(0, G.DAT_0064b1b8[iVar3 * 0x14]);
   }
   iVar5 = CSplitterWnd_IsTracking(G.DAT_006a91b8);
@@ -3947,9 +3964,9 @@ export function city_button_buy(param_1) {
   FUN_0043c9d0(0);
   iVar5 = CSplitterWnd_IsTracking(G.DAT_006a91b8);
   if (s8(G.DAT_0064f379[iVar5 * 0x58]) < 0) {
-    FUN_0059ec88(G.DAT_00645160[iVar4 * -0x3c], 0, 0);
+    FUN_0059ec88(G.DAT_00645160 + iVar4 * -0x3c, 0, 0);
   } else {
-    FUN_0059ec88(G.DAT_00641848[iVar3 * 0x3c], 0, 0);
+    FUN_0059ec88(G.DAT_00641848 + iVar3 * 0x3c, 0, 0);
   }
   // CPropertySheet — DEVIATION
   if (bVar1) { FUN_0059ea99(1); }
@@ -3994,9 +4011,11 @@ export function citywin_A1B2() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c citywin_A1C8 (26 bytes)
+// SEH epilog — restore FS chain
 export function citywin_A1C8() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -4068,7 +4087,7 @@ export function citywin_A2F7(param_1, param_2, param_3, param_4, param_5, param_
   local_c = 0;
   local_28 = -1;
   for (local_20 = 0; local_20 < G.DAT_00655b18; local_20 = local_20 + 1) {
-    if ((G.DAT_0064f394[local_20 * 0x58] !== 0) &&
+    if ((s32(G.DAT_0064f394, local_20 * 0x58) !== 0) &&
        (s8(G.DAT_0064f348[local_20 * 0x58]) === param_3)) {
       local_8 = s8(G.DAT_0064f349[local_20 * 0x58]);
       iVar1 = FUN_0043d20a(local_20, 1);
@@ -4316,9 +4335,11 @@ export function citywin_B650() {
 // Size: 14 bytes
 // ============================================================
 
-// SEH epilog (no-op in JS)
+// Source: decompiled/block_00500000.c citywin_B666 (26 bytes)
+// SEH epilog — restore FS chain
 export function citywin_B666() {
-  // SEH exception handler restoration — no-op in JS
+  // DEVIATION: Win32 — SEH epilog
+  // *unaff_FS_OFFSET = *(unaff_EBP + -0xc);
   return;
 }
 
@@ -4579,7 +4600,7 @@ export function citywin_BD13(in_ECX) {
       let local_60 = s__00631008;
       let local_b4 = G.DAT_0064f360[local_8 * 0x58];
       for (local_64 = 0; local_64 < G.DAT_00655b18; local_64 = local_64 + 1) {
-        if ((G.DAT_0064f394[local_64 * 0x58] !== 0) &&
+        if ((s32(G.DAT_0064f394, local_64 * 0x58) !== 0) &&
            (G.DAT_0064f348[local_8 * 0x58] === G.DAT_0064f348[local_64 * 0x58])) {
           iVar1 = __strcmpi(G.DAT_0064f360[local_64 * 0x58], local_60);
           if ((0 < iVar1) &&
@@ -4632,7 +4653,7 @@ export function citywin_BF72(in_ECX) {
       let local_60 = s_zzzzzzzzzzzzzzzzzzzzzzzzz_00631024;
       let local_b4 = G.DAT_0064f360[local_8 * 0x58];
       for (local_64 = 0; local_64 < G.DAT_00655b18; local_64 = local_64 + 1) {
-        if ((G.DAT_0064f394[local_64 * 0x58] !== 0) &&
+        if ((s32(G.DAT_0064f394, local_64 * 0x58) !== 0) &&
            (G.DAT_0064f348[local_8 * 0x58] === G.DAT_0064f348[local_64 * 0x58])) {
           iVar1 = __strcmpi(G.DAT_0064f360[local_64 * 0x58], local_60);
           if ((iVar1 < 0) &&
@@ -4943,8 +4964,8 @@ export function citywin_CA8D(param_1, in_ECX) {
   iVar4 = FUN_00511690(0x3a);
   iVar5 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, iVar4 + iVar5, uVar2);
-  uVar2 = FUN_00428b0c(G.DAT_00628420[0x94 +
-                       ((in_ECX[0x15ac] === 2 ? 0xcc : 0) * 4)]);
+  uVar2 = FUN_00428b0c(G.DAT_00628420 + 0x94 +
+                       (s32(in_ECX, 0x15ac) === 2 ? 0xcc : 0) * 4);
   FUN_0040f680(G.DAT_006a9200, 8, local_20, uVar2);
   FUN_0040f840();
   FUN_0040f880(citywin_BC4F);
@@ -4995,7 +5016,7 @@ export function citywin_CCB3(param_1, in_ECX) {
     uVar6 = 0;
     uVar5 = FUN_00511690(0x73);
     FUN_0043c790(local_24, uVar5, uVar6);
-    uVar5 = FUN_00428b0c(G.DAT_00628420[0x510 + ((local_14 === 0 ? 0xfffffee0 : 0) * 4)]);
+    uVar5 = FUN_00428b0c(G.DAT_00628420 + 0x510 + ((local_14 === 0 ? 0xfffffee0 : 0) * 4));
     FUN_0040f680(G.DAT_006a9200, 2, local_24, uVar5);
     FUN_0040f880(city_button_change);
     if (param_1 !== 0) {
@@ -5042,7 +5063,7 @@ export function citywin_CF06(in_ECX) {
   iVar3 = local_2c + iVar3;
   iVar4 = FUN_00511690(0x1ba);
   FUN_004086c0(local_20, local_28 + iVar4, iVar3, uVar2, uVar1);
-  uVar1 = FUN_00428b0c(G.DAT_00628420[0x8c]);
+  uVar1 = FUN_00428b0c(G.DAT_00628420 + 0x8c);
   FUN_0040f680(G.DAT_006a9200, 1, local_20, uVar1);
   FUN_0040f880(city_button_buy);
   G.DAT_00630d24 = 0xff;
@@ -5065,32 +5086,32 @@ export function citywin_CF06(in_ECX) {
   iVar3 = local_2c + iVar3;
   iVar4 = FUN_00511690(0x1cb);
   FUN_004086c0(local_20, local_28 + iVar4, iVar3, uVar2, uVar1);
-  uVar1 = FUN_00428b0c(G.DAT_00628420[0x9c]);
+  uVar1 = FUN_00428b0c(G.DAT_00628420 + 0x9c);
   FUN_0040f680(G.DAT_006a9200, 3, local_20, uVar1);
   FUN_0040f880(citywin_B9A4);
   uVar2 = 0;
   uVar1 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, uVar1, uVar2);
-  uVar1 = FUN_00428b0c(G.DAT_00628420[0xa4]);
+  uVar1 = FUN_00428b0c(G.DAT_00628420 + 0xa4);
   FUN_0040f680(G.DAT_006a9200, 4, local_20, uVar1);
   FUN_0040f880(citywin_BA07);
   uVar2 = 0;
   uVar1 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, uVar1, uVar2);
-  uVar1 = FUN_00428b0c(G.DAT_00628420[0xa8]);
+  uVar1 = FUN_00428b0c(G.DAT_00628420 + 0xa8);
   FUN_0040f680(G.DAT_006a9200, 5, local_20, uVar1);
   FUN_0040f880(city_button_rename);
   uVar1 = FUN_00511690(0x19);
   iVar3 = FUN_00511690(0xffffffc6);
   iVar4 = FUN_00511690(0xffffffc6);
   FUN_0043c790(local_20, iVar3 + iVar4, uVar1);
-  uVar1 = FUN_00428b0c(G.DAT_00628420[0xa0]);
+  uVar1 = FUN_00428b0c(G.DAT_00628420 + 0xa0);
   FUN_0040f680(G.DAT_006a9200, 6, local_20, uVar1);
   FUN_0040f880(citywin_BA6A);
   uVar2 = 0;
   uVar1 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, uVar1, uVar2);
-  uVar1 = FUN_00428b0c(G.DAT_00628420[0x98]);
+  uVar1 = FUN_00428b0c(G.DAT_00628420 + 0x98);
   FUN_0040f680(G.DAT_006a9200, 7, local_20, uVar1);
   FUN_0040f880(city_button_view);
   local_30 = GetSystemMetrics(2);
@@ -5251,7 +5272,7 @@ export function citywin_DCB6(in_ECX) {
   uVar4 = 2;
   uVar5 = G.DAT_00655344;
   uVar6 = G.DAT_00655348;
-  uVar3 = FUN_00428b0c(G.DAT_00628420[0x1c], 2, G.DAT_00655344, G.DAT_00655348, iVar2);
+  uVar3 = FUN_00428b0c(G.DAT_00628420 + 0x1c, 2, G.DAT_00655344, G.DAT_00655348, iVar2);
   FUN_005534bc(uVar3, uVar4, uVar5, uVar6, iVar2, iVar1, uVar7, uVar8, uVar9);
   // CPropertySheet::EnableStackedTabs — DEVIATION: Win32 no-op
   FUN_0055318c(G.DAT_00645120, 1);

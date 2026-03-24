@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_00450000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8 } from './mem.js';
+import { s8, u8, s32 } from './mem.js';
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1835,7 +1835,7 @@ export function FUN_0045705e(param_1, param_2) {
       done_main_loop = true;
       break;
     }
-    if ((((DAT_0064f394[local_18 * 0x58] !== 0) &&
+    if ((((s32(DAT_0064f394, local_18 * 0x58) !== 0) &&
          (s8(DAT_0064f348[local_18 * 0x58]) === param_1)) &&
         (iVar4 = FUN_005b8d62(DAT_0064f340[local_18 * 0x58],
                                DAT_0064f342[local_18 * 0x58]), iVar4 < 0))
@@ -1964,7 +1964,7 @@ export function FUN_0045705e(param_1, param_2) {
   }
   DAT_0064b0f4 = 0;
   for (local_18 = 0; local_18 < DAT_00655b18; local_18 = local_18 + 1) {
-    if (((DAT_0064f394[local_18 * 0x58] !== 0) &&
+    if (((s32(DAT_0064f394, local_18 * 0x58) !== 0) &&
         (s8(DAT_0064f34a[local_18 * 0x58]) === param_2)) &&
        (s8(DAT_0064f348[local_18 * 0x58]) === param_1)) {
       DAT_0064b0f4 = DAT_0064b0f4 + 1;
@@ -2378,7 +2378,7 @@ export function handle_exchange_gift(param_1, param_2, param_3, param_4, param_5
               if (u8(DAT_0064c6b7[param_2 * 0x594 + local_18]) <
                   u8(DAT_0064c6b7[param_1 * 0x594 + local_18])) {
                 for (let local_384 = 0; local_384 < DAT_00655b18; local_384 = local_384 + 1) {
-                  if (((DAT_0064f394[local_384 * 0x58] !== 0) &&
+                  if (((s32(DAT_0064f394, local_384 * 0x58) !== 0) &&
                       (s8(DAT_0064f348[local_384 * 0x58]) === param_2)) &&
                      (s8(DAT_0064f379[local_384 * 0x58]) === -(local_74 + 0x27))) {
                     local_78 = local_74; break;
@@ -2659,7 +2659,7 @@ export function FUN_0045a8e3(param_1, param_2) {
               if (DAT_006d1da0 === param_1) {
                 FUN_00410030(s_ALLYHELPS_00626ba4, 0, 0);
               } else if ((DAT_006d1da0 !== param_1) && (2 < DAT_00655b02)) {
-                FUN_00511880(0x39, DAT_006ad30c[DAT_006ad558[param_1] * 0x54], 4, 0, 0, 0);
+                FUN_00511880(0x39, DAT_006ad30c + s32(DAT_006ad558, param_1 * 4) * 0x54, 4, 0, 0, 0);
               }
             }
             FUN_00467825(local_8, param_2, 0x2401);
@@ -2671,7 +2671,7 @@ export function FUN_0045a8e3(param_1, param_2) {
             if (DAT_006d1da0 === param_2) {
               FUN_00410030(s_ACTIVATEALLY_00626b94, 0, 0);
             } else if ((DAT_006d1da0 !== param_2) && (2 < DAT_00655b02)) {
-              FUN_00511880(0x38, DAT_006ad30c[DAT_006ad558[param_2] * 0x54], 4, 0, 0, 0);
+              FUN_00511880(0x38, DAT_006ad30c + s32(DAT_006ad558, param_2 * 4) * 0x54, 4, 0, 0, 0);
             }
           }
           FUN_00456f20(local_8, param_2, 100);
@@ -3468,10 +3468,10 @@ export function FUN_0045dd7f(param_1, param_2) {
     FUN_00421ea0(s_MERCDECLARE_00626e6c);
     if (2 < DAT_00655b02) {
       if (((1 << (param_2 & 0x1f)) & DAT_00655b0b) !== 0 && (DAT_006d1da0 !== param_2)) {
-        FUN_00511880(0x62, DAT_006ad30c[DAT_006ad558[param_2] * 0x54], 3, 0, 0, 0);
+        FUN_00511880(0x62, DAT_006ad30c + s32(DAT_006ad558, param_2 * 4) * 0x54, 3, 0, 0, 0);
       }
       if (((1 << (iVar5 & 0x1f)) & DAT_00655b0b) !== 0 && (DAT_006d1da0 !== iVar5)) {
-        FUN_00511880(0x62, DAT_006ad30c[DAT_006ad558[iVar5] * 0x54], 3, 0, 0, 0);
+        FUN_00511880(0x62, DAT_006ad30c + s32(DAT_006ad558, iVar5 * 4) * 0x54, 3, 0, 0, 0);
       }
     }
     uVar6 = FUN_00410070(iVar5); FUN_0040ff60(1, uVar6);
@@ -3606,7 +3606,7 @@ export function show_gift_menu(param_1, param_2) {
     let local_32c = 0;
     FUN_0040ffa0(s_MILITARYSOURCE_00626efc, 1);
     for (let local_334 = 0; local_334 < DAT_00655b18; local_334 = local_334 + 1) {
-      if ((DAT_0064f394[local_334 * 0x58] !== 0) &&
+      if ((s32(DAT_0064f394, local_334 * 0x58) !== 0) &&
          (s8(DAT_0064f348[local_334 * 0x58]) === param_1)) {
         FUN_0059edf0(DAT_0064f360[local_334 * 0x58], local_334, 0);
         local_32c = local_32c + 1;

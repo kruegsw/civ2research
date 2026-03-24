@@ -69,6 +69,7 @@ import { FUN_005b976d, FUN_005b99e8, FUN_005b9ec6, FUN_005b9f1c, FUN_005baeb0, F
 import { FUN_005baee0, FUN_005bb4ae, FUN_005bb574, FUN_005bd270 } from './block_005B0000.js';
 import { FUN_005c61b0, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 function _rand() { return Math.floor(Math.random() * 32768); }
 function _strlen(s) { return typeof s === 'string' ? s.length : 0; }
@@ -595,11 +596,12 @@ export function FUN_004c193a() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c1950 — cleanup_research_dialog_2 (SEH cleanup)
-// Source: block_004C0000.c line 544
+// Source: decompiled/block_004C0000.c FUN_004c1950 (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c1950() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -672,7 +674,13 @@ export function FUN_004c195e(param_1, param_2) {
         FUN_0040bbe0(0 /*s_SCIENCE*/);
         FUN_0040ff30(local_630);
         // CSocket::Create — UI stub
-        FUN_0059ec88(0, 0, 0);
+        // C: FUN_0059ec88(&G.DAT_00646cb8 + (char)G.DAT_0062768d[iVar1*0x10]*0x3c +
+        //                 (char)G.DAT_0062768c[iVar1*0x10]*0xf0, (G.DAT_00633584==0)-1 & 8, 0)
+        FUN_0059ec88(G.DAT_00646cb8 +
+                     s8(G.DAT_0062768d[iVar1 * 0x10]) * 0x3c +
+                     s8(G.DAT_0062768c[iVar1 * 0x10]) * 0xf0,
+                     (G.DAT_00633584 !== 0) ? 8 : 0,
+                     0);
         if (local_630 !== 0) {
           FUN_0040bbb0();
           for (local_14 = 0; local_14 < local_620; local_14 = local_14 + 1) {
@@ -710,7 +718,8 @@ export function FUN_004c195e(param_1, param_2) {
         FUN_005a5f34(0, iVar1 + -300);
       }
       iVar1 = FUN_004bd9f0(param_1, 0x26);
-      FUN_004271e8(0, 0 /*icon ptr*/);
+      // C: FUN_004271e8(0, *(undefined4*)(G.DAT_00628420 + 0xc4 + (uint)(iVar1==0)*-4))
+      FUN_004271e8(0, G.DAT_00628420 + 0xc4 + ((iVar1 === 0) ? -4 : 0));
       FUN_0043c9d0(0 /*s_RESEARCH*/);
       if ((G.DAT_00655aea[1] & 2) !== 0) {
         FUN_0059e783(5, 0xfffffc19);
@@ -785,11 +794,12 @@ export function FUN_004c2188() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c219e — cleanup_choose_research_3 (SEH)
-// Source: block_004C0000.c line 769
+// Source: decompiled/block_004C0000.c FUN_004c219e (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c219e() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -836,7 +846,8 @@ export function FUN_004c21d5(param_1, param_2) {
       let uVar3 = FUN_00493d13(param_1);
       FUN_00421d60(0, uVar3);
       iVar2 = FUN_004bd9f0(param_1, 0x26);
-      FUN_004271e8(1, 0 /*icon ptr*/);
+      // C: FUN_004271e8(1, *(undefined4*)(G.DAT_00628420 + 0xc4 + (uint)(iVar2==0)*-4))
+      FUN_004271e8(1, G.DAT_00628420 + 0xc4 + ((iVar2 === 0) ? -4 : 0));
       FUN_0040bbb0();
       FUN_0040ff00(G.DAT_00627684[local_30c]);
       if (local_30c === 0x59) {
@@ -845,7 +856,12 @@ export function FUN_004c21d5(param_1, param_2) {
       }
       FUN_00421d60(2, 0 /*&G.DAT_00679640*/);
       FUN_0043c9d0(0 /*s_CIVADVANCE*/);
-      FUN_0059ec88(0, 0, 0);
+      // C: FUN_0059ec88(&G.DAT_00646cb8 + (char)G.DAT_0062768c[local_30c*0x10]*0xf0 +
+      //                 (char)G.DAT_0062768d[local_30c*0x10]*0x3c, 0, 0)
+      FUN_0059ec88(G.DAT_00646cb8 +
+                   s8(G.DAT_0062768c[local_30c * 0x10]) * 0xf0 +
+                   s8(G.DAT_0062768d[local_30c * 0x10]) * 0x3c,
+                   0, 0);
       // CPropertySheet::EnableStackedTabs — UI stub
       FUN_0040bc80(0);
       if ((G.DAT_00655aea[2] & 8) !== 0) {
@@ -914,11 +930,12 @@ export function FUN_004c2763() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c2779 — cleanup_complete_research_2 (SEH)
-// Source: block_004C0000.c line 933
+// Source: decompiled/block_004C0000.c FUN_004c2779 (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c2779() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -1111,13 +1128,9 @@ export function FUN_004c42a0(param_1, param_2) {
     local_8 = (((uVar7 & 0x10) === 0 ? -2 : 0) + 4) *
               s8(G.DAT_00627cc8[uVar10 * 0x18]);
     pbVar8 = FUN_005b8931(iVar5, iVar6);
-    // In C, *pbVar8 reads byte 0 from tile. In JS we approximate:
-    // Checking if tile byte 0 has bit 0x80 set
-    if (pbVar8 >= 0) {
-      let tileB0 = 0; // would be tileRead(pbVar8, 0)
-      if ((tileB0 & 0x80) !== 0) {
-        local_8 = local_8 + 2;
-      }
+    // C: if ((*pbVar8 & 0x80) != 0) — reads tile byte 0 via pointer
+    if ((tileRead(pbVar8, 0) & 0x80) !== 0) {
+      local_8 = local_8 + 2;
     }
     break;
   case 6:
@@ -1227,7 +1240,7 @@ export function FUN_004c42a0(param_1, param_2) {
           else {
             FUN_005b9646(iVar5, iVar6, s8(G.DAT_00627cc8[uVar10 * 0x18 + param_2]), 1);
             cVar1 = s8(G.DAT_00627cc8[uVar10 * 0x18 + param_2]);
-            if ((s8(DAT_00627cce_fn(cVar1 * 0x18)) !== -2) &&
+            if ((s8(G.DAT_00627cce[cVar1 * 0x18]) !== -2) &&
                (uVar10 = FUN_005b94d5(iVar5, iVar6), (uVar10 & 4) !== 0)) {
               FUN_005b94fc(iVar5, iVar6, 0xc, 0, 1);
             }
@@ -1240,7 +1253,7 @@ export function FUN_004c42a0(param_1, param_2) {
         case 8:
           FUN_005b9646(iVar5, iVar6, s8(G.DAT_00627ccd[uVar10 * 0x18]), 1);
           cVar1 = s8(G.DAT_00627ccd[uVar10 * 0x18]);
-          if ((s8(DAT_00627cce_fn(cVar1 * 0x18)) !== -2) &&
+          if ((s8(G.DAT_00627cce[cVar1 * 0x18]) !== -2) &&
              (uVar10 = FUN_005b94d5(iVar5, iVar6), (uVar10 & 4) !== 0)) {
             FUN_005b94fc(iVar5, iVar6, 0xc, 0, 1);
           }
@@ -1446,8 +1459,8 @@ export function FUN_004c50d0(param_1, param_2) {
      (iVar4 = FUN_00579ed0(s8(bVar1), s8(G.DAT_0064f348[iVar4 * 0x58]), 0xe),
      iVar4 === 0)) {
     iVar4 = FUN_005b8931(iVar2, iVar3);
-    // pbVar5 = iVar4 + 1 — tile byte[1] = improvements
-    let improv = 0; // would be tileRead(iVar4, 1)
+    // C: pbVar5 = (byte *)(iVar4 + 1) — tile byte[1] = improvements
+    let improv = tileRead(iVar4, 1);
     if (param_2 < 1) {
       if ((s8(G.DAT_006560f6[param_1 * 0x20]) === 9) && ((improv & 0x10) !== 0)) {
         if ((improv & 0x20) === 0) {
@@ -1635,8 +1648,8 @@ export function FUN_004c54da(param_1) {
     }
     else {
       G.DAT_006560ff[iVar5 * 0x20] = 0xb;
-      s16(G.DAT_00656102, iVar5 * 0x20) = local_34;
-      s16(G.DAT_00656104, iVar5 * 0x20) = local_3c;
+      w16(G.DAT_00656102, iVar5 * 0x20, local_34);
+      w16(G.DAT_00656104, iVar5 * 0x20, local_3c);
     }
   }
 }
@@ -1951,7 +1964,34 @@ export function FUN_004c66ba(param_1, param_2, param_3) {
       }
     }
     FUN_005b9f1c();
-    // UI notifications omitted for brevity — they are no-ops in JS context
+    // C lines 2051-2079: UI notification + network message block
+    if ((G.DAT_00654fa8 === 0) &&
+       (((((((1 << (u8(param_2) & 0x1f) & G.DAT_00655b0b) !== 0 ||
+            ((1 << (bVar1 & 0x1f) & G.DAT_00655b0b) !== 0)) ||
+           ((G.DAT_0064c6c0[G.DAT_006d1da0 * 0x594 + param_2 * 4] & 0x80) !== 0)) ||
+          ((iVar6 = FUN_00453e51(G.DAT_006d1da0, 0x18), iVar6 !== 0 ||
+           (iVar6 = FUN_00453e51(G.DAT_006d1da0, 9), iVar6 !== 0)))) ||
+         (((G.DAT_0064c6c0[G.DAT_006d1da0 * 0x594 + iVar4 * 4] & 0x80) !== 0 ||
+          ((iVar6 = FUN_00453e51(G.DAT_006d1da0, 0x18), iVar6 !== 0 ||
+           (iVar6 = FUN_00453e51(G.DAT_006d1da0, 9), iVar6 !== 0)))))) || (G.DAT_00655b07 !== 0))
+       )) {
+      if (((G.DAT_00655b07 !== 0) ||
+          ((1 << (u8(G.DAT_006d1da0) & 0x1f) & s8(G.DAT_0064f34c[param_1 * 0x58])) !== 0)) ||
+         (s8(G.DAT_0064f348[param_1 * 0x58]) === (G.DAT_006d1da0 & 0xff))) {
+        FUN_004105f8(s16(G.DAT_0064f340, param_1 * 0x58),
+                           s16(G.DAT_0064f342, param_1 * 0x58),
+                           s8(G.DAT_0064f348[param_1 * 0x58]));
+      }
+      let uVar5_n = FUN_00493c7d(iVar4);
+      FUN_0040ff60(0, uVar5_n);
+      FUN_0040ff60(1, 0 /*&G.DAT_0064f360 + param_1 * 0x58*/);
+      uVar5_n = FUN_00410070(param_2);
+      FUN_0040ff60(2, uVar5_n);
+      FUN_00421ea0(0 /*s_CIVILWAR_0062dd84*/);
+      if (((1 << (bVar1 & 0x1f) & G.DAT_00655b0b) !== 0) && (2 < G.DAT_00655b02)) {
+        FUN_00511880(0x5e, G.DAT_006ad30c + s32(G.DAT_006ad558, iVar4 * 4) * 0x54, 3, 0, 0, 0);
+      }
+    }
     local_20 = G.DAT_00655b16;
     while (local_20 = local_20 + -1, -1 < local_20) {
       if (((G.DAT_0065610a[local_20 * 8] !== 0) &&
@@ -2401,7 +2441,7 @@ export function FUN_004c6bf5(param_1, param_2) {
           }
         }
         if (local_74 === 0) {
-          s16(G.DAT_0064f35c, param_2 * 0x58) = 0;
+          w16(G.DAT_0064f35c, param_2 * 0x58, 0);
           FUN_citywin_C679(param_2);
           FUN_0040ff60(0, 0 /*local_70*/);
           if (((G.DAT_00654fa8 === 0) && ((1 << (u8(local_80) & 0x1f) & G.DAT_00655b0b) !== 0)) &&
@@ -2438,7 +2478,7 @@ export function FUN_004c6bf5(param_1, param_2) {
       iVar3 = FUN_004c654d(local_3b0, local_80);
       if (iVar3 === 0) {
         if (s8(G.DAT_0064f349[param_2 * 0x58]) < 2) {
-          s16(G.DAT_0064f35a, param_2 * 0x58) = 0;
+          w16(G.DAT_0064f35a, param_2 * 0x58, 0);
         }
         else {
           G.DAT_0064f349[param_2 * 0x58] = G.DAT_0064f349[param_2 * 0x58] + -1;
@@ -2588,8 +2628,8 @@ export function FUN_004c6bf5(param_1, param_2) {
           local_3ac = 1;
         }
         if (0 < local_3ac) {
-          s32(G.DAT_0064c6a2, local_3b0 * 0x594) =
-               s32(G.DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac;
+          w32(G.DAT_0064c6a2, local_3b0 * 0x594,
+               s32(G.DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac);
           w16(G.DAT_0064c6bc, local_3b0 * 0x594,
                s16(G.DAT_0064c6bc, local_3b0 * 0x594) + 2);
           if (G.DAT_006d1da0 === local_3b0) {
@@ -2617,8 +2657,8 @@ export function FUN_004c6bf5(param_1, param_2) {
         // goto LAB_004c8f6f — same as above human player path
         local_3ac = 1; // AI always incites
         if (0 < local_3ac) {
-          s32(G.DAT_0064c6a2, local_3b0 * 0x594) =
-               s32(G.DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac;
+          w32(G.DAT_0064c6a2, local_3b0 * 0x594,
+               s32(G.DAT_0064c6a2, local_3b0 * 0x594) - local_388 * local_3ac);
           w16(G.DAT_0064c6bc, local_3b0 * 0x594,
                s16(G.DAT_0064c6bc, local_3b0 * 0x594) + 2);
           if (G.DAT_006d1da0 === local_3b0) {
@@ -2693,11 +2733,12 @@ export function FUN_004c9504() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004c951a — cleanup_spy_mission_2 (SEH)
-// Source: block_004C0000.c line 2895
+// Source: decompiled/block_004C0000.c FUN_004c951a (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004c951a() {
-  // SEH handler cleanup — no-op in JS
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -3199,21 +3240,23 @@ export function FUN_004cc90a() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc924 — library atexit registration_a
-// Source: block_004C0000.c line 3497
+// Source: decompiled/block_004C0000.c FUN_004cc924 (29 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc924() {
-  // _atexit(FUN_004cc941) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_004cc941)
+  // CRT process-exit callback registration — no game state affected
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc941 — library destructor_a
-// Source: block_004C0000.c line 3511
+// Source: decompiled/block_004C0000.c FUN_004cc941 (26 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc941() {
-  // COleCntrFrameWnd::~COleCntrFrameWnd — MFC destructor, no-op
+  // DEVIATION: MFC — COleCntrFrameWnd::~COleCntrFrameWnd(&G.DAT_006a18c0)
+  // MFC OLE container frame destructor — no game state affected
 }
 
 
@@ -3240,11 +3283,12 @@ export function FUN_004cc975() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc98f — library atexit registration_b
-// Source: block_004C0000.c line 3562
+// Source: decompiled/block_004C0000.c FUN_004cc98f (29 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc98f() {
-  // _atexit(FUN_004cc9ac) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_004cc9ac)
+  // CRT process-exit callback registration — no game state affected
 }
 
 
@@ -3281,11 +3325,12 @@ export function FUN_004cc9e0() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cc9fe — library atexit registration_c
-// Source: block_004C0000.c line 3628
+// Source: decompiled/block_004C0000.c FUN_004cc9fe (29 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cc9fe() {
-  // _atexit(FUN_004cca1b) — no-op in JS
+  // DEVIATION: Win32 — _atexit(FUN_004cca1b)
+  // CRT process-exit callback registration — no game state affected
 }
 
 
@@ -3304,8 +3349,13 @@ export function FUN_004cca1b() {
 // Source: block_004C0000.c line 3656
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c show_messagebox_CA35 (132 bytes)
 export function show_messagebox_CA35(param_1, param_2) {
-  // Win32 MessageBoxA wrapper — stub
+  // C: Memory allocation with overflow check
+  // C: If param_2 > param_1's capacity (*(ushort*)(param_1+0x10)):
+  //    Shows "out of memory" MessageBoxA and returns 0
+  // C: Otherwise calls FUN_00498159(param_1, param_2) to allocate
+  // DEVIATION: Win32 MessageBoxA — skip overflow dialog
   return FUN_00498159(param_1, param_2);
 }
 
@@ -3395,22 +3445,27 @@ export function FUN_004ccdb6(param_1) {
 // Source: block_004C0000.c line 3790
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ccdef (318 bytes)
 export function FUN_004ccdef(param_1, param_2) {
-  // Tech name formatting — UI string building
+  // C: Appends tech name to G.DAT_00679640 string buffer
   if (param_1 === -2) {
-    FUN_005f22e0(0 /*&G.DAT_00679640*/, 0);
-  }
-  else if (param_1 === -1) {
-    FUN_005f22e0(0 /*&G.DAT_00679640*/, 0);
-  }
-  else if (param_1 < 100) {
-    FUN_005f22e0(0 /*&G.DAT_00679640*/, 0 /*&G.DAT_00627680 + param_1 * 0x10*/);
+    // C: "no" or "nil" string based on param_2
+    FUN_005f22e0(G.DAT_00679640, (param_2 !== 0) ? G.DAT_0062e024 : G.DAT_0062e024 + 8);
+  } else if (param_1 === -1) {
+    // C: "nil" or "no" string
+    FUN_005f22e0(G.DAT_00679640, (param_2 !== 0) ? G.DAT_0062e030 : G.DAT_0062e030 + 8);
+  } else if (param_1 < 100) {
+    // C: Tech name from G.DAT_00627680 table (stride 0x10)
+    FUN_005f22e0(G.DAT_00679640, G.DAT_00627680[param_1 * 0x10]);
     if (param_2 !== 0) {
-      FUN_005f22e0(0 /*&G.DAT_00679640*/, 0);
+      FUN_005f22e0(G.DAT_00679640, G.DAT_0062e03c);
     }
-  }
-  else {
-    FUN_005f22e0(0 /*&G.DAT_00679640*/, 0);
+    // C: Pad with spaces via FUN_004190a0(3 - min(strlen, 3))
+    let sVar1 = 3; // DEVIATION: string length check simplified
+    FUN_004190a0(3 - sVar1);
+  } else {
+    // C: "Future Tech" or similar
+    FUN_005f22e0(G.DAT_00679640, (param_2 !== 0) ? G.DAT_0062e040 : G.DAT_0062e040 + 8);
   }
 }
 
@@ -3420,11 +3475,98 @@ export function FUN_004ccdef(param_1, param_2) {
 // Source: block_004C0000.c line 3829
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c show_messagebox_CF2D (1149 bytes)
+// Source: decompiled/block_004C0000.c show_messagebox_CF2D (1149 bytes)
 export function show_messagebox_CF2D() {
-  // File I/O function that saves RULES.TXT changes.
-  // Uses _fgets, _fputs, _fclose, __getcwd, __chdir etc.
-  // Not applicable in browser JS context — stub.
-  return 0;
+  let iVar1;
+  let pcVar2;
+  let local_278 = 0;
+  let local_274 = '';
+  let local_224 = null; // DEVIATION: FILE*
+  let local_220 = null; // DEVIATION: FILE*
+  let local_21c = '';
+  let local_118 = '';
+  let local_108 = 0;
+  let local_104 = '';
+
+  local_108 = 0;
+  local_278 = 0;
+  local_224 = null;
+  local_220 = null;
+  FUN_005f22d0(local_118, "RULES."); // DEVIATION: string build
+  FUN_005f22e0(local_118, G.DAT_0062cd24); // DEVIATION: append extension
+  _getcwd(local_21c, 0x104); // DEVIATION: save current dir
+  _chdir(G.DAT_0064bb08); // DEVIATION: chdir to game dir
+  iVar1 = _strcmp(G.DAT_0064bb08, G.DAT_00655020);
+  if (iVar1 === 0 || (iVar1 = FUN_00415133(local_118), iVar1 === 0)) {
+    _chdir(G.DAT_00655020); // DEVIATION: chdir to install dir
+    local_220 = FUN_0041508c(local_118, "r"); // DEVIATION: fopen read
+    iVar1 = _strcmp(G.DAT_0064bb08, G.DAT_00655020);
+    if (iVar1 === 0) {
+      iVar1 = FUN_00415133("RULES.BAK");
+      if (iVar1 !== 0 && (iVar1 = FID_conflict__remove("RULES.BAK"), iVar1 !== 0)) {
+        // goto cleanup
+      } else {
+        local_224 = FUN_0041508c("RULES.BAK", "w"); // DEVIATION: fopen write
+        // DEVIATION: MessageBoxA — "Saving changes in file RULES.BAK"
+      }
+    } else {
+      _chdir(G.DAT_0064bb08); // DEVIATION: chdir
+      local_224 = FUN_0041508c(local_118, "w"); // DEVIATION: fopen write
+    }
+  } else {
+    iVar1 = FUN_00415133("RULES.BAK");
+    if ((iVar1 !== 0 && (iVar1 = FID_conflict__remove("RULES.BAK"), iVar1 !== 0)) ||
+       (iVar1 = FID_conflict___wrename(local_118, "RULES.BAK"), iVar1 !== 0)) {
+      // goto cleanup
+    } else {
+      local_220 = FUN_0041508c("RULES.BAK", "r"); // DEVIATION: fopen
+      local_224 = FUN_0041508c(local_118, "w"); // DEVIATION: fopen
+    }
+  }
+  if (local_220 !== null && local_224 !== null) {
+    // Iterate section table
+    for (; ri(G.DAT_006a1880, local_108 * 8) !== 0; local_108 = local_108 + 1) {
+      local_274 = '@';
+      FUN_005f22e0(local_274, ri(G.DAT_006a1880, local_108 * 8)); // DEVIATION: append section name
+      _strupr(local_274); // DEVIATION: uppercase
+      do {
+        pcVar2 = _fgets(local_104, 0x100, local_220); // DEVIATION: fgets
+        if (pcVar2 === null || (iVar1 = _fputs(local_104, local_224), iVar1 === -1)) {
+          // goto cleanup
+          break;
+        }
+        FUN_0056b810(local_104); // trim
+        FUN_004d007e(local_104); // trim
+        iVar1 = _strcmpi(local_104, local_274);
+      } while (iVar1 !== 0);
+      if (ri(G.DAT_006a1880, local_108 * 8 + 4) !== 0) {
+        // Call section callback: (*(code*)(G.DAT_006a1884 + local_108 * 8))(local_224, local_220)
+        // DEVIATION: function pointer callback
+      }
+      do {
+        pcVar2 = _fgets(local_104, 0x100, local_220);
+        if (pcVar2 === null) break;
+        let sVar3 = _strlen(local_104);
+      } while (1 < _strlen(local_104));
+      iVar1 = _fputs(local_104, local_224);
+      if (iVar1 === -1) break;
+    }
+    // Copy remaining content
+    do {
+      pcVar2 = _fgets(local_104, 0x100, local_220);
+      if (pcVar2 === null) {
+        local_278 = 1;
+        break;
+      }
+      iVar1 = _fputs(local_104, local_224);
+    } while (iVar1 !== -1);
+  }
+  // Cleanup
+  if (local_220 !== null) { _fclose(local_220); } // DEVIATION: fclose
+  if (local_224 !== null) { _fclose(local_224); } // DEVIATION: fclose
+  _chdir(local_21c); // DEVIATION: restore dir
+  return local_278;
 }
 
 
@@ -3433,9 +3575,117 @@ export function show_messagebox_CF2D() {
 // Source: block_004C0000.c line 3935
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cd3d7 (1171 bytes)
 export function FUN_004cd3d7(param_1, param_2, param_3) {
-  // File I/O: edits CITY.TXT entries. Not applicable in JS — stub.
-  return 0;
+  let iVar1;
+  let pcVar2;
+  let local_274 = 0;
+  let local_270 = '';
+  let local_220 = null; // DEVIATION: FILE*
+  let local_21c = null; // DEVIATION: FILE*
+  let local_218 = '';
+  let local_114 = '';
+  let local_14 = '';
+
+  local_220 = null;
+  local_21c = null;
+  local_274 = 0;
+  FUN_005f22d0(local_14, "CITY."); // DEVIATION: string build
+  FUN_005f22e0(local_14, G.DAT_0062cd24); // DEVIATION: append extension
+  _getcwd(local_218, 0x104); // DEVIATION: save dir
+  _chdir(G.DAT_0064bb08); // DEVIATION: chdir
+  iVar1 = _strcmp(G.DAT_0064bb08, G.DAT_00655020);
+  if (iVar1 !== 0 &&
+     (iVar1 = FUN_00415133("CITY.TMP"), iVar1 === 0 ||
+      (iVar1 = FID_conflict__remove("CITY.TMP"), iVar1 === 0))) {
+    iVar1 = FUN_00415133(local_14);
+    if (iVar1 === 0) {
+      iVar1 = FUN_00415133("CITY.BAK");
+      if (iVar1 === 0) {
+        _chdir(G.DAT_00655020); // DEVIATION: chdir
+        local_21c = FUN_0041508c(local_14, "r"); // DEVIATION: fopen
+        _chdir(G.DAT_0064bb08); // DEVIATION: chdir
+        local_220 = FUN_0041508c(local_14, "w"); // DEVIATION: fopen
+      } else {
+        local_21c = FUN_0041508c("CITY.BAK", "r"); // DEVIATION: fopen
+        local_220 = FUN_0041508c(local_14, "w"); // DEVIATION: fopen
+      }
+    } else {
+      iVar1 = FID_conflict___wrename(local_14, "CITY.TMP"); // DEVIATION: rename
+      if (iVar1 !== 0) {
+        // goto cleanup
+        if (local_21c !== null) { _fclose(local_21c); }
+        if (local_220 !== null) { _fclose(local_220); }
+        iVar1 = FUN_00415133("CITY.TMP");
+        if (iVar1 !== 0) { FID_conflict__remove("CITY.TMP"); }
+        _chdir(local_218);
+        return local_274;
+      }
+      local_21c = FUN_0041508c("CITY.TMP", "r"); // DEVIATION: fopen
+      local_220 = FUN_0041508c(local_14, "w"); // DEVIATION: fopen
+    }
+    if (local_21c !== null && local_220 !== null) {
+      // Build section marker "@" + param_1
+      local_270 = '@';
+      FUN_005f22e0(local_270, param_1); // DEVIATION: append section name
+      _strupr(local_270); // DEVIATION: uppercase
+      // Copy lines until section found
+      do {
+        pcVar2 = _fgets(local_114, 0x100, local_21c); // DEVIATION: fgets
+        if (pcVar2 === null || (iVar1 = _fputs(local_114, local_220), iVar1 === -1)) {
+          break; // goto cleanup
+        }
+        FUN_0056b810(local_114); // trim
+        FUN_004d007e(local_114); // trim
+        iVar1 = _strcmpi(local_114, local_270);
+      } while (iVar1 !== 0);
+      // Search for matching key line, replace with param_3
+      do {
+        pcVar2 = _fgets(local_114, 0x100, local_21c); // DEVIATION: fgets
+        if (pcVar2 === null) break;
+        if (local_114[0] === '@') {
+          iVar1 = _fputs(local_114, local_220); // DEVIATION: fputs
+          // goto copy_remaining
+          if (iVar1 !== -1) {
+            // Copy remaining file content
+            while (true) {
+              pcVar2 = _fgets(local_114, 0x100, local_21c);
+              if (pcVar2 === null) { local_274 = 1; break; }
+              iVar1 = _fputs(local_114, local_220);
+              if (iVar1 === -1) break;
+            }
+          }
+          break;
+        }
+        let _MaxCount = _strlen(param_2);
+        iVar1 = _strnicmp(local_114, param_2, _MaxCount);
+        if (iVar1 === 0) {
+          iVar1 = _fputs(param_3, local_220); // DEVIATION: write replacement
+          if (iVar1 !== -1) {
+            iVar1 = _fputs("\n", local_220); // DEVIATION: newline
+            // goto copy_remaining
+            if (iVar1 !== -1) {
+              while (true) {
+                pcVar2 = _fgets(local_114, 0x100, local_21c);
+                if (pcVar2 === null) { local_274 = 1; break; }
+                iVar1 = _fputs(local_114, local_220);
+                if (iVar1 === -1) break;
+              }
+            }
+          }
+          break;
+        }
+        iVar1 = _fputs(local_114, local_220); // DEVIATION: copy unchanged line
+      } while (iVar1 !== -1);
+    }
+  }
+  // Cleanup
+  if (local_21c !== null) { _fclose(local_21c); } // DEVIATION: fclose
+  if (local_220 !== null) { _fclose(local_220); } // DEVIATION: fclose
+  iVar1 = FUN_00415133("CITY.TMP");
+  if (iVar1 !== 0) { FID_conflict__remove("CITY.TMP"); } // DEVIATION: delete temp
+  _chdir(local_218); // DEVIATION: restore dir
+  return local_274;
 }
 
 
@@ -3444,9 +3694,90 @@ export function FUN_004cd3d7(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 4046
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cd8a6 (1069 bytes)
 export function FUN_004cd8a6() {
-  // File I/O: updates CITY.TXT leader names. Stub.
-  return 0;
+  let iVar1;
+  let pcVar2;
+  let local_234, local_230 = 0, local_22c;
+  let local_228 = null; // DEVIATION: FILE*
+  let local_224 = null; // DEVIATION: FILE*
+  let local_220 = '';
+  let local_11c = 0;
+  let local_118 = '';
+  let local_117 = '';
+  let local_18 = '';
+  let local_8;
+
+  local_230 = 0;
+  local_228 = null;
+  local_224 = null;
+  FUN_005f22d0(local_18, "CITY."); // DEVIATION: string build
+  FUN_005f22e0(local_18, G.DAT_0062cd24); // DEVIATION: append ext
+  _getcwd(local_220, 0x104); // DEVIATION: save dir
+  _chdir(G.DAT_0064bb08); // DEVIATION: chdir
+  iVar1 = _strcmp(G.DAT_0064bb08, G.DAT_00655020);
+  if (iVar1 !== 0) {
+    iVar1 = FUN_00415133(local_18);
+    if (iVar1 === 0) {
+      local_230 = 1; // no file to update
+    } else {
+      iVar1 = FUN_00415133("CITY.TMP");
+      if ((iVar1 === 0 || (iVar1 = FID_conflict__remove("CITY.TMP"), iVar1 === 0)) &&
+         (iVar1 = FID_conflict___wrename(local_18, "CITY.TMP"), iVar1 === 0)) {
+        local_224 = FUN_0041508c("CITY.TMP", "r"); // DEVIATION: fopen
+        local_228 = FUN_0041508c(local_18, "w"); // DEVIATION: fopen
+        if (local_224 !== null && local_228 !== null) {
+          do {
+            while (true) {
+              pcVar2 = _fgets(local_118, 0x100, local_224); // DEVIATION: fgets
+              if (pcVar2 === null) { local_230 = 1; break; }
+              if (local_118[0] !== '@' || (iVar1 = _strnicmp(local_117, "RAND", 4), iVar1 === 0)) {
+                break; // not a section header or is @RAND — write as-is
+              }
+              // It's a @SECTION line (not @RAND) — look up personality
+              for (local_11c = 0; local_11c < 0x15; local_11c = local_11c + 1) {
+                local_22c = 1;
+                while (local_22c < 8 && s16(G.DAT_0064c6a6, local_22c * 0x594) !== local_11c) {
+                  local_22c = local_22c + 1;
+                }
+                if (local_22c < 8) {
+                  local_8 = G.DAT_0064bd12 + local_22c * 0xf2;
+                } else {
+                  if (s16(G.DAT_00655504, local_11c * 0x30) < 1) {
+                    local_234 = -(s16(G.DAT_00655504, local_11c * 0x30));
+                  } else {
+                    local_234 = s16(G.DAT_00655504, local_11c * 0x30);
+                  }
+                  local_8 = FUN_00428b0c(local_234);
+                }
+                let _MaxCount = _strlen(local_8);
+                iVar1 = _strnicmp(local_117, local_8, _MaxCount);
+                if (iVar1 === 0) {
+                  _sprintf(local_118, "@%s", G.DAT_006a1d88 + (local_11c * 5 + 0xd2) * 8);
+                  _strupr(local_118); // DEVIATION: uppercase
+                  iVar1 = _fputs(local_118, local_228); // DEVIATION: fputs
+                  if (iVar1 === -1) { break; } // goto cleanup
+                  break;
+                }
+              }
+              if (local_11c === 0x15) {
+                iVar1 = _fputs(local_118, local_228); // write unchanged
+                if (iVar1 === -1) { break; }
+              }
+            }
+            iVar1 = _fputs(local_118, local_228); // DEVIATION: fputs
+          } while (iVar1 !== -1);
+        }
+      }
+    }
+  }
+  // Cleanup
+  if (local_224 !== null) { _fclose(local_224); } // DEVIATION: fclose
+  if (local_228 !== null) { _fclose(local_228); } // DEVIATION: fclose
+  iVar1 = FUN_00415133("CITY.TMP");
+  if (iVar1 !== 0) { FID_conflict__remove("CITY.TMP"); } // DEVIATION: delete temp
+  _chdir(local_220); // DEVIATION: restore dir
+  return local_230;
 }
 
 
@@ -3528,11 +3859,12 @@ export function FUN_004cdf26() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cdf3c — cleanup_checkbox_dialog_2 (SEH)
-// Source: block_004C0000.c line 4249
+// Source: decompiled/block_004C0000.c FUN_004cdf3c (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cdf3c() {
-  // SEH cleanup — no-op
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -3561,9 +3893,45 @@ export function FUN_004cdf4b(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 4291
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cdfa4 (498 bytes)
 export function FUN_004cdfa4(param_1, param_2, param_3, param_4, param_5, param_6,
                              param_7, param_8, param_9) {
-  // Cheat/scenario editor dialog setup — UI, no-op in JS
+  // C: Dialog setup function — initializes dialog state globals
+  if (param_1 === 0) {
+    // C: FUN_005f22d0(&G.DAT_006a19f4, ""); — empty title
+  } else {
+    // C: FUN_005f22d0(&G.DAT_006a19f4, param_1); — set title
+  }
+  // C: Set dialog pointers
+  G.DAT_006a19d4 = param_2;
+  G.DAT_006a19d8 = param_8;
+  G.DAT_006a19dc = param_9;
+  G.DAT_006a19e0 = param_7;
+  G.DAT_006a1abc = 0;
+  G.DAT_006a1b68 = 0;
+  // C: Override with default sounds if flag 4
+  if ((param_2 & 4) !== 0) {
+    G.DAT_006a19d8 = G.DAT_00633598;
+    G.DAT_006a19dc = G.DAT_0063359c;
+  }
+  // C: Window style flags
+  let local_8 = ((param_2 & 8) === 0) ? 0x202 : 0x802;
+  if (G.DAT_006a19d8 !== 0) { local_8 = local_8 | 0x400; }
+  if (param_7 !== 0) { local_8 = local_8 | 0x1000; }
+  // C: Position adjustments
+  if ((param_2 & 2) === 0) {
+    param_5 = param_5 + G.DAT_006a19dc * 2;
+    param_6 = param_6 + G.DAT_006a19d8 + G.DAT_006a19dc;
+  }
+  if ((param_2 & 1) !== 0) {
+    param_3 = (G.DAT_006ab198 >> 1) - (param_5 >> 1);
+    param_4 = (G.DAT_006ab19c >> 1) - (param_6 >> 1);
+  }
+  // DEVIATION: MFC — FUN_005bb4ae creates window, FUN_00497d00 loads sound, FUN_004cff70 loads icon
+  FUN_005bb4ae(0, local_8, param_3, param_4, param_5, param_6, 0, 0);
+  if (G.DAT_006a19d8 !== 0) { FUN_00497d00(G.DAT_006a19d8); }
+  if (G.DAT_006a19e0 !== 0) { FUN_004cff70(G.DAT_006a19e0); }
+  FUN_00552ed2(); // DEVIATION: MFC — show dialog
 }
 
 
@@ -3572,10 +3940,42 @@ export function FUN_004cdfa4(param_1, param_2, param_3, param_4, param_5, param_
 // Source: block_004C0000.c line 4361
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce196 (349 bytes)
 export function FUN_004ce196() {
-  // Loads text strings for popup dialogs — UI init
-  G.DAT_006a4f98 = 1;
-  G.DAT_006a4f9c = 0;
+  let iVar1;
+  let local_108;
+  let local_104 = '';
+
+  // C: Clear popup text array
+  for (local_108 = 0; local_108 < 0x14; local_108 = local_108 + 1) {
+    wi(G.DAT_006a1d78, local_108 * 4, 0);
+  }
+  FUN_004cef35(); // load popup menu items
+  local_108 = 0;
+  do {
+    if (0x13 < local_108) {
+      G.DAT_006a4f98 = 1;
+      G.DAT_006a4f9c = 0;
+      // CRichEditDoc_InvalidateObjectCache(G.DAT_006a1908); // DEVIATION: MFC
+      return;
+    }
+    iVar1 = FUN_004cffb0(local_108, local_104, 0x100);
+    if (iVar1 === 0) {
+      wi(G.DAT_006a1d78, local_108 * 4, 0);
+    } else {
+      let sVar1 = _strlen(local_104);
+      let uVar3 = show_messagebox_CA35(G.DAT_0064b984, sVar1 + 1);
+      wi(G.DAT_006a1d78, local_108 * 4, uVar3);
+      if (ri(G.DAT_006a1d78, local_108 * 4) === 0) {
+        wi(G.DAT_006a1d78, local_108 * 4, 0);
+        G.DAT_006a4f98 = 1;
+        G.DAT_006a4f9c = 0;
+        return;
+      }
+      FUN_005f22d0(ri(G.DAT_006a1d78, local_108 * 4), local_104); // DEVIATION: string copy
+    }
+    local_108 = local_108 + 1;
+  } while (true);
 }
 
 
@@ -3611,10 +4011,29 @@ export function FUN_004ce322() {
 // Source: block_004C0000.c line 4447
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce38a (867 bytes)
 export function FUN_004ce38a(param_1, param_2) {
-  // MFC popup text display — UI, no-op
+  let local_ac;
+
+  // DEVIATION: SEH (FS_OFFSET restore)
+  // DEVIATION: MFC — FUN_0040f3e0 dialog constructor
   G.DAT_006a4f9c = 1;
   G.DAT_006a1d78 = param_1;
+  // DEVIATION: MFC — _Timevec destructors, dialog layout
+  FUN_004cdfa4(param_2, 0xd, 0, 0x14, 600, 0, 0, 0, 0); // dialog setup
+  // DEVIATION: MFC — layout calculations using G.DAT_006a19e4/e8/ec/f0
+  // DEVIATION: MFC — FUN_004bb620 creates text control
+  // C: iterate param_1 text array (up to 20 entries)
+  for (local_ac = 0; local_ac < 0x14 && ri(param_1, local_ac * 4) !== 0; local_ac++) {
+    if (local_ac !== 0) {
+      FUN_00492ae0(0); // DEVIATION: UI — add separator
+    }
+    FUN_00492ae0(ri(param_1, local_ac * 4)); // DEVIATION: UI — add text line
+  }
+  // DEVIATION: MFC — OK/Cancel buttons, dialog show, message loop
+  // C: while (G.DAT_006a4f9c !== 0) { FUN_0040ef50(); }
+  FUN_00553379(); // DEVIATION: UI cleanup
+  // DEVIATION: MFC — destructor chain
 }
 
 
@@ -3640,11 +4059,12 @@ export function FUN_004ce6f9() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004ce70c — cleanup_popup_3 (SEH)
-// Source: block_004C0000.c line 4553
+// Source: decompiled/block_004C0000.c FUN_004ce70c (15 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004ce70c() {
-  // SEH cleanup — no-op
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -3653,9 +4073,24 @@ export function FUN_004ce70c() {
 // Source: block_004C0000.c line 4570
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce71b (290 bytes)
 export function FUN_004ce71b(param_1) {
-  // City name validation dialog — UI
-  return true;
+  let iVar1;
+
+  // C: Search GAME.TXT for city name to check if it's valid
+  iVar1 = FUN_004a2379(0, 0); // DEVIATION: file search
+  if (iVar1 === 0) {
+    // C: Iterate lines until param_1 matches (case-insensitive)
+    // Found — valid city name
+    FUN_004a2020(); // DEVIATION: close file
+    return true;
+  }
+  // C: Not found — show "NOCITY" confirmation dialog
+  FUN_0059d3c9(0); // DEVIATION: sound
+  FUN_0040ff60(0, param_1); // DEVIATION: UI
+  iVar1 = FUN_00444270("NOCITY"); // DEVIATION: UI confirm
+  FUN_0059d3c9(0);
+  return iVar1 === 0;
 }
 
 
@@ -3672,11 +4107,18 @@ export function FUN_004ce83d() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004ce8a4 — read_profile_int
-// Source: block_004C0000.c line 4648
+// Source: decompiled/block_004C0000.c FUN_004ce8a4 (95 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004ce8a4(param_1, param_2, param_3, param_4) {
-  // Registry/INI read — stub
+  // DEVIATION: Win32 — reads INI/registry profile integer value
+  // C source:
+  //   __itoa(param_3, local_1c, 10);
+  //   local_8 = thunk_FUN_0051d63b(param_1, param_2, 6, local_1c, local_120);
+  //   lVar1 = _atol(local_120);
+  //   *param_4 = lVar1;
+  //   return local_8;
+  // Entire function is Win32 GetPrivateProfileString wrapper — no game state
   return 0;
 }
 
@@ -3686,9 +4128,25 @@ export function FUN_004ce8a4(param_1, param_2, param_3, param_4) {
 // Source: block_004C0000.c line 4670
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce903 (139 bytes)
 export function FUN_004ce903(param_1, param_2, param_3) {
-  // Memory allocation + string copy — stub
-  return 0;
+  let sVar1;
+  let iVar2;
+  let local_c;
+
+  sVar1 = _strlen(param_1);
+  if (param_3 < sVar1 + 1) {
+    sVar1 = _strlen(param_1);
+    local_c = sVar1 + 1;
+  } else {
+    local_c = param_3;
+  }
+  iVar2 = FUN_00498159(param_2 + 0x2f4, local_c); // DEVIATION: MFC heap alloc
+  if (iVar2 === 0) {
+    FUN_00589ef8(-9, 3, 0, 0, 0); // DEVIATION: error handler
+  }
+  FUN_005f22d0(iVar2, param_1); // DEVIATION: string copy
+  return iVar2;
 }
 
 
@@ -3697,10 +4155,63 @@ export function FUN_004ce903(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 4700
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004ce98e (1367 bytes)
+// Source: decompiled/block_004C0000.c FUN_004ce98e (1367 bytes)
 export function FUN_004ce98e(param_1, param_2) {
-  // DEVIATION: Deep copy of MFC dialog template linked list (1367 bytes)
-  // Iterates source dialog linked list, allocates copies via FUN_004fa617.
-  // Pure UI infrastructure — no game state modifications.
+  let _Dst;
+  let uVar1;
+  let local_10;
+  let local_c;
+
+  // First pass: copy linked list nodes
+  for (local_c = ri(param_2, 0x30c); local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    _Dst = FUN_004fa617(); // DEVIATION: allocate event struct
+    if (_Dst === 0 || _Dst === null) {
+      FUN_00589ef8(-9, 3, 0, 0, 0); // DEVIATION: error
+    }
+    FID_conflict__memcpy(_Dst, local_c, 0x1bc); // DEVIATION: memcpy
+  }
+  // Second pass: update string pointers in parallel
+  local_c = ri(param_2, 0x30c);
+  local_10 = ri(param_1, 0x30c);
+  do {
+    if (local_c === 0) { return; }
+    // Copy string fields via FUN_004ce903
+    if (ri(local_c, 8) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 8), param_1, 0xf);
+      wi(local_10, 8, uVar1);
+    }
+    if (ri(local_c, 0x10) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 0x10), param_1, 0x18);
+      wi(local_10, 0x10, uVar1);
+    }
+    if (ri(local_c, 0x14) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 0x14), param_1, 0x18);
+      wi(local_10, 0x14, uVar1);
+    }
+    if (ri(local_c, 0x20) !== 0) {
+      uVar1 = FUN_004ce903(ri(local_c, 0x20), param_1, 0x18);
+      wi(local_10, 0x20, uVar1);
+    }
+    // Copy 20 entries at +0x38..+0x84
+    for (let local_8 = 0; local_8 < 0x14; local_8 = local_8 + 1) {
+      if (ri(local_c, local_8 * 4 + 0x38) !== 0) {
+        uVar1 = FUN_004ce903(ri(local_c, local_8 * 4 + 0x38), param_1, 1);
+        wi(local_10, local_8 * 4 + 0x38, uVar1);
+      }
+    }
+    // Copy remaining string fields
+    let offsets = [0x88, 0x90, 0xc4, 0xcc, 0xd4, 0xdc, 0x13c, 0x140, 0x148, 0x174, 0x184];
+    let sizes =   [0x18, 0xf,  0x18, 0x18, 0x18, 0xf,  0x18,  0x18,  0xf,   0x18,  1];
+    for (let idx = 0; idx < offsets.length; idx++) {
+      if (ri(local_c, offsets[idx]) !== 0) {
+        uVar1 = FUN_004ce903(ri(local_c, offsets[idx]), param_1, sizes[idx]);
+        wi(local_10, offsets[idx], uVar1);
+      }
+    }
+    local_c = ri(local_c, 0x1bc); // next in source list
+    local_10 = ri(local_10, 0x1bc); // next in dest list
+  } while (true);
 }
 
 
@@ -3709,10 +4220,18 @@ export function FUN_004ce98e(param_1, param_2) {
 // Source: block_004C0000.c line 4848
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cef35 (144 bytes)
 export function FUN_004cef35() {
-  // Dialog template management — UI init, stub
-  FUN_004cefc5();
-  FUN_004cefdb();
+  // DEVIATION: SEH (FS_OFFSET restore)
+  // C: FUN_004fa4be(50000) — allocate 50000 bytes temp buffer
+  // C: FUN_004fa5d9(50000) — initialize temp buffer
+  // C: FUN_004ce98e(local_320, &G.DAT_0064b690) — copy event data to temp
+  // C: FUN_004fa5d9(50000) — reinit
+  // C: FUN_004ce98e(&G.DAT_0064b690, local_320) — copy temp back to events
+  FUN_004ce98e(0, G.DAT_0064b690); // copy network events
+  FUN_004ce98e(G.DAT_0064b690, 0); // copy back
+  FUN_004cefc5(); // cleanup
+  FUN_004cefdb(); // SEH restore
 }
 
 
@@ -3728,11 +4247,12 @@ export function FUN_004cefc5() {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cefdb — cleanup_dialog_template_2 (SEH)
-// Source: block_004C0000.c line 4894
+// Source: decompiled/block_004C0000.c FUN_004cefdb (14 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cefdb() {
-  // SEH cleanup — no-op
+  // DEVIATION: Win32 — SEH handler cleanup (*unaff_FS_OFFSET = *(unaff_EBP + -0xc))
+  // No game state affected — pure structured exception handling teardown
 }
 
 
@@ -3741,9 +4261,32 @@ export function FUN_004cefdb() {
 // Source: block_004C0000.c line 4911
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cefe9 (347 bytes)
+// Source: decompiled/block_004C0000.c FUN_004cefe9 (347 bytes)
 export function FUN_004cefe9(param_1, param_2) {
-  // Renames leader name strings in dialog linked list — stub
-  return 0;
+  let iVar1;
+  let local_c;
+  let local_8 = 0;
+
+  for (local_c = G.DAT_0064b99c; local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    if (ri(local_c, 8) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 8), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 8), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0x90) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x90), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x90), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0xdc) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0xdc), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0xdc), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0x148) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x148), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x148), param_2, 0xf); local_8 = local_8 + 1; }
+    }
+  }
+  return local_8;
 }
 
 
@@ -3752,9 +4295,25 @@ export function FUN_004cefe9(param_1, param_2) {
 // Source: block_004C0000.c line 4959
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cf144 (630 bytes)
 export function FUN_004cf144(param_1, param_2) {
-  // Renames title strings in dialog linked list — stub
-  return 0;
+  let iVar1;
+  let local_c;
+  let local_8 = 0;
+
+  for (local_c = G.DAT_0064b99c; local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    let offsets = [0x14, 0x20, 0x88, 0xc4, 0xcc, 0xd4, 0x140, 0x174];
+    for (let idx = 0; idx < offsets.length; idx++) {
+      if (ri(local_c, offsets[idx]) !== 0) {
+        iVar1 = _strcmp(ri(local_c, offsets[idx]), param_1);
+        if (iVar1 === 0) {
+          _strncpy(ri(local_c, offsets[idx]), param_2, 0x18);
+          local_8 = local_8 + 1;
+        }
+      }
+    }
+  }
+  return local_8;
 }
 
 
@@ -3763,9 +4322,23 @@ export function FUN_004cf144(param_1, param_2) {
 // Source: block_004C0000.c line 5035
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cf3ba (201 bytes)
 export function FUN_004cf3ba(param_1, param_2) {
-  // Renames tribe name strings in dialog linked list — stub
-  return 0;
+  let iVar1;
+  let local_c;
+  let local_8 = 0;
+
+  for (local_c = G.DAT_0064b99c; local_c !== 0; local_c = ri(local_c, 0x1bc)) {
+    if (ri(local_c, 0x10) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x10), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x10), param_2, 0x18); local_8 = local_8 + 1; }
+    }
+    if (ri(local_c, 0x13c) !== 0) {
+      iVar1 = _strcmp(ri(local_c, 0x13c), param_1);
+      if (iVar1 === 0) { _strncpy(ri(local_c, 0x13c), param_2, 0x18); local_8 = local_8 + 1; }
+    }
+  }
+  return local_8;
 }
 
 
@@ -3782,12 +4355,12 @@ export function FUN_004cff70(param_1) {
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_004cffb0 — get_dialog_text
-// Source: block_004C0000.c line 5085
+// Source: decompiled/block_004C0000.c FUN_004cffb0 (51 bytes)
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004cffb0(param_1, param_2, param_3) {
-  // send_msg_2DED — MFC dialog text retrieval, no-op
-  return 0;
+  // DEVIATION: MFC — send_msg_2DED(*(in_ECX + 0x1c), param_1, param_2, param_3)
+  // MFC dialog text retrieval via Windows message dispatch — no game state affected
 }
 
 
@@ -3796,11 +4369,25 @@ export function FUN_004cffb0(param_1, param_2, param_3) {
 // Source: block_004C0000.c line 5101
 // ═══════════════════════════════════════════════════════════════════
 
+// Source: decompiled/block_004C0000.c FUN_004cfff0 (142 bytes)
 export function FUN_004cfff0(param_1) {
-  // String trimming — modifies C string in place
+  let sVar1;
+  let local_8;
+
+  sVar1 = _strlen(param_1);
+  if (sVar1 !== 0) {
+    for (local_8 = param_1 + (sVar1 - 1);
+        param_1 <= local_8 &&
+        ((local_8 === ' ' || local_8 === '\t') && local_8 !== param_1);
+        local_8 = local_8 - 1) {
+      // C: *local_8 = '\0' — truncate string at trailing whitespace
+    }
+  }
+  // JS equivalent for string types:
   if (typeof param_1 === 'string') {
     return param_1.trimEnd();
   }
+  return param_1;
 }
 
 
@@ -3818,7 +4405,7 @@ function FUN_005ae052_local() { return 0; /* wrap_x — use imported */ }
 function FUN_004440d6() { /* unknown */ }
 function FUN_005b8d15_fn() { return -1; }
 function FUN_004c4210_fn() { }
-function FUN_00627cce_fn() { return 0; /* G.DAT_00627cce accessor */ }
+// FUN_00627cce_fn removed — replaced by direct G.DAT_00627cce[...] array access from mem.js
 function send_msg_2DED() { /* network msg stub */ }
 // FUN_004274a6 (duplicate stub removed)
 // FUN_005b48b1 (duplicate stub removed)

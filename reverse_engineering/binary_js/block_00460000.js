@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_00460000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8 } from './mem.js';
+import { s8, u8, s32 } from './mem.js';
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2029,7 +2029,7 @@ export function FUN_00467baf(param_1, param_2) {
             local_8 = 9999;
             local_24 = -1;
             for (local_c = 0; local_c < DAT_00655b18; local_c = local_c + 1) {
-              if ((((DAT_0064f394[local_c * 0x58] !== 0) &&
+              if ((((s32(DAT_0064f394, local_c * 0x58) !== 0) &&
                    (s8(DAT_0064f348[local_c * 0x58]) === param_1)) &&
                   (iVar4 = FUN_0044263f(local_c, iVar3), iVar4 !== 0)) &&
                  (iVar4 = FUN_005ae31d(iVar1, iVar2,
@@ -2365,7 +2365,8 @@ export function load_labels_txt() {
       } else {
         for (local_c = 0; local_c < DAT_00628424; local_c = local_c + 1) {
           uVar2 = FUN_004a257a();
-          DAT_00628420[local_c * 4] = uVar2; // label string pointer
+          // DEVIATION: *(undefined4 *)(DAT_00628420 + local_c * 4) = uVar2 — pointer table write
+DAT_00628420[local_c * 4] = uVar2; // label string pointer
         }
         if (local_c < 0x378) {
           let local_110 = DAT_0064bb08; // C: FUN_005f22d0(local_110, &DAT_0064bb08) — backup
@@ -2379,13 +2380,15 @@ export function load_labels_txt() {
             }
             for (; local_c < iVar1; local_c = local_c + 1) {
               uVar2 = FUN_004a257a();
-              DAT_00628420[local_c * 4] = uVar2; // scenario label string
+              // DEVIATION: *(undefined4 *)(DAT_00628420 + local_c * 4) = uVar2 — pointer table write
+DAT_00628420[local_c * 4] = uVar2; // scenario label string
             }
           }
           if (local_c < 0x378) {
             uVar2 = FUN_00428a95('_ERROR_LABELS_TXT_');
             for (; local_c < 0x378; local_c = local_c + 1) {
-              DAT_00628420[local_c * 4] = uVar2; // error fill
+              // DEVIATION: *(undefined4 *)(DAT_00628420 + local_c * 4) = uVar2 — pointer table write
+DAT_00628420[local_c * 4] = uVar2; // error fill
             }
           }
         }

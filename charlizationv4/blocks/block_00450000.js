@@ -58,6 +58,7 @@ import { FUN_005c64da, FUN_005c656b, FUN_005c8c83, FUN_005c9499, FUN_005cedad, F
 import { FUN_005cf467 } from './block_005C0000.js';
 import { FUN_005db0d0, FUN_005db140, FUN_005db55b, FUN_005dba95, FUN_005dbab8, FUN_005dcb8c } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0, FUN_005f35f0 } from './block_00600000.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 let bRam0064e854 = 0;
 // hack addresses referenced via offsets
@@ -178,7 +179,9 @@ const s_MSHyperTextClass_00626920 = 'MSHyperTextClass';
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004502b0() {
-  // in_ECX class init — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004502b0 (34 bytes)
+  // DEVIATION: MFC — class constructor sets *this = 0, returns this pointer
+  // C: *in_ECX = 0; return in_ECX;
   return 0;
 }
 
@@ -509,7 +512,9 @@ export function FUN_00452ac1() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00452ad4() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00452ad4 (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -723,7 +728,9 @@ export function FUN_00453bfa() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00453c0d() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00453c0d (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -921,7 +928,8 @@ export function FUN_00454260(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00454344() {
-  // empty function
+  // Source: decompiled/block_00450000.c FUN_00454344 (16 bytes)
+  // C: return; (truly empty function)
 }
 
 
@@ -988,7 +996,9 @@ export function FUN_004547a7() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547b6() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547b6 (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x18ac), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -998,7 +1008,9 @@ export function FUN_004547b6() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547ce() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547ce (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x17bc), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -1008,7 +1020,9 @@ export function FUN_004547ce() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547e6() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547e6 (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x16cc), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -1018,7 +1032,9 @@ export function FUN_004547e6() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_004547fe() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_004547fe (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x15dc), 0x3c, 4, FUN_005cde4d);
 }
 
 
@@ -1028,7 +1044,9 @@ export function FUN_004547fe() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00454816() {
-  // MFC vector destructor — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00454816 (24 bytes)
+  // DEVIATION: MFC — _eh_vector_destructor_iterator_ call
+  // C: _eh_vector_destructor_iterator_((void *)(*(int *)(unaff_EBP + -0x10) + 0x6dc), 0x3c, 0x3c, FUN_005cde4d);
 }
 
 
@@ -1038,7 +1056,9 @@ export function FUN_00454816() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045482e() {
-  // _Timevec::~_Timevec — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045482e (15 bytes)
+  // DEVIATION: MFC — _Timevec::~_Timevec destructor call
+  // C: _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x6d8));
 }
 
 
@@ -1108,7 +1128,9 @@ export function FUN_00454888() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045489b() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045489b (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -1139,7 +1161,9 @@ export function FUN_00454e8b() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00454ea1() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00454ea1 (17 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -1676,7 +1700,7 @@ export function FUN_0045705e(param_1, param_2) {
       done_main_loop = true;
       break;
     }
-    if ((((G.DAT_0064f394[local_18 * 0x58] !== 0) &&
+    if ((((s32(G.DAT_0064f394, local_18 * 0x58) !== 0) &&
          (s8(G.DAT_0064f348[local_18 * 0x58]) === param_1)) &&
         (iVar4 = FUN_005b8d62(G.DAT_0064f340[local_18 * 0x58],
                                G.DAT_0064f342[local_18 * 0x58]), iVar4 < 0))
@@ -1805,17 +1829,17 @@ export function FUN_0045705e(param_1, param_2) {
   }
   G.DAT_0064b0f4 = 0;
   for (local_18 = 0; local_18 < G.DAT_00655b18; local_18 = local_18 + 1) {
-    if (((G.DAT_0064f394[local_18 * 0x58] !== 0) &&
+    if (((s32(G.DAT_0064f394, local_18 * 0x58) !== 0) &&
         (s8(G.DAT_0064f34a[local_18 * 0x58]) === param_2)) &&
        (s8(G.DAT_0064f348[local_18 * 0x58]) === param_1)) {
       G.DAT_0064b0f4 = G.DAT_0064b0f4 + 1;
     }
   }
-  // Remaining complex condition checks for G.DAT_0064b0e8 ...
-  // (extremely long diplomatic logic — abbreviated but all variables set)
-  G.DAT_0064b0e8 = 0;
+  // C: G.DAT_0064b0e8 = 0 is a comma operator INSIDE the condA && condB chain
+  // It only executes when condA is true (short-circuit evaluation)
   let _condA = (G.DAT_00626a1c === 0) ||
                (6 < (u8(G.DAT_0064c6be[param_1 * 0x594]) - s8(G.DAT_0064c6e8[param_2 * 0x594 + param_1])));
+  if (_condA) { G.DAT_0064b0e8 = 0; } // comma operator: only set when condA is true
   let _condB = ((G.DAT_0064c6c1[param_1 * 4 + param_2 * 0x594] & 0x20) === 0) || (4 < G.DAT_0064b0f4);
   let _condC = ((G.DAT_0064c6c0[param_1 * 4 + param_2 * 0x594] & 8) === 0);
   let _condD = (G.DAT_0064b0f8 !== 0) || ((G.DAT_0064b130 !== 0) && (2 < G.DAT_00655b08));
@@ -1982,7 +2006,9 @@ export function FUN_00458dd5() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_00458deb() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_00458deb (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -2087,7 +2113,9 @@ export function FUN_00459169() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045917f() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045917f (15 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -2215,7 +2243,7 @@ export function handle_exchange_gift(param_1, param_2, param_3, param_4, param_5
               if (u8(G.DAT_0064c6b7[param_2 * 0x594 + local_18]) <
                   u8(G.DAT_0064c6b7[param_1 * 0x594 + local_18])) {
                 for (let local_384 = 0; local_384 < G.DAT_00655b18; local_384 = local_384 + 1) {
-                  if (((G.DAT_0064f394[local_384 * 0x58] !== 0) &&
+                  if (((s32(G.DAT_0064f394, local_384 * 0x58) !== 0) &&
                       (s8(G.DAT_0064f348[local_384 * 0x58]) === param_2)) &&
                      (s8(G.DAT_0064f379[local_384 * 0x58]) === -(local_74 + 0x27))) {
                     local_78 = local_74; break;
@@ -2385,7 +2413,9 @@ export function FUN_0045a510() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045a526() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045a526 (15 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -2494,7 +2524,7 @@ export function FUN_0045a8e3(param_1, param_2) {
               if (G.DAT_006d1da0 === param_1) {
                 FUN_00410030(s_ALLYHELPS_00626ba4, 0, 0);
               } else if ((G.DAT_006d1da0 !== param_1) && (2 < G.DAT_00655b02)) {
-                FUN_00511880(0x39, G.DAT_006ad30c[G.DAT_006ad558[param_1] * 0x54], 4, 0, 0, 0);
+                FUN_00511880(0x39, G.DAT_006ad30c + s32(G.DAT_006ad558, param_1 * 4) * 0x54, 4, 0, 0, 0);
               }
             }
             FUN_00467825(local_8, param_2, 0x2401);
@@ -2506,7 +2536,7 @@ export function FUN_0045a8e3(param_1, param_2) {
             if (G.DAT_006d1da0 === param_2) {
               FUN_00410030(s_ACTIVATEALLY_00626b94, 0, 0);
             } else if ((G.DAT_006d1da0 !== param_2) && (2 < G.DAT_00655b02)) {
-              FUN_00511880(0x38, G.DAT_006ad30c[G.DAT_006ad558[param_2] * 0x54], 4, 0, 0, 0);
+              FUN_00511880(0x38, G.DAT_006ad30c + s32(G.DAT_006ad558, param_2 * 4) * 0x54, 4, 0, 0, 0);
             }
           }
           FUN_00456f20(local_8, param_2, 100);
@@ -3303,10 +3333,10 @@ export function FUN_0045dd7f(param_1, param_2) {
     FUN_00421ea0(s_MERCDECLARE_00626e6c);
     if (2 < G.DAT_00655b02) {
       if (((1 << (param_2 & 0x1f)) & G.DAT_00655b0b) !== 0 && (G.DAT_006d1da0 !== param_2)) {
-        FUN_00511880(0x62, G.DAT_006ad30c[G.DAT_006ad558[param_2] * 0x54], 3, 0, 0, 0);
+        FUN_00511880(0x62, G.DAT_006ad30c + s32(G.DAT_006ad558, param_2 * 4) * 0x54, 3, 0, 0, 0);
       }
       if (((1 << (iVar5 & 0x1f)) & G.DAT_00655b0b) !== 0 && (G.DAT_006d1da0 !== iVar5)) {
-        FUN_00511880(0x62, G.DAT_006ad30c[G.DAT_006ad558[iVar5] * 0x54], 3, 0, 0, 0);
+        FUN_00511880(0x62, G.DAT_006ad30c + s32(G.DAT_006ad558, iVar5 * 4) * 0x54, 3, 0, 0, 0);
       }
     }
     uVar6 = FUN_00410070(iVar5); FUN_0040ff60(1, uVar6);
@@ -3351,7 +3381,9 @@ export function FUN_0045f08d() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045f0a3() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045f0a3 (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -3439,7 +3471,7 @@ export function show_gift_menu(param_1, param_2) {
     let local_32c = 0;
     FUN_0040ffa0(s_MILITARYSOURCE_00626efc, 1);
     for (let local_334 = 0; local_334 < G.DAT_00655b18; local_334 = local_334 + 1) {
-      if ((G.DAT_0064f394[local_334 * 0x58] !== 0) &&
+      if ((s32(G.DAT_0064f394, local_334 * 0x58) !== 0) &&
          (s8(G.DAT_0064f348[local_334 * 0x58]) === param_1)) {
         FUN_0059edf0(G.DAT_0064f360[local_334 * 0x58], local_334, 0);
         local_32c = local_32c + 1;
@@ -3541,7 +3573,9 @@ export function FUN_0045fd43() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0045fd59() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00450000.c FUN_0045fd59 (14 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 
@@ -3628,7 +3662,9 @@ export function FUN_00460104() {
 // ═══════════════════════════════════════════════════════════════════
 
 export function FUN_0046011a() {
-  // SEH unwind — no-op in JS
+  // Source: decompiled/block_00460000.c FUN_0046011a (15 bytes)
+  // DEVIATION: Win32 — SEH epilog
+  // C: *unaff_FS_OFFSET = *(undefined4 *)(unaff_EBP + -0xc);
 }
 
 

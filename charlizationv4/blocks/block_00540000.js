@@ -51,6 +51,7 @@ import { FUN_005baec8, FUN_005baee0, FUN_005bb024, FUN_005bb574 } from './block_
 import { FUN_005c61b0, FUN_005c64da, FUN_005c656b, FUN_005cef31 } from './block_005C0000.js';
 import { FUN_005d2550, FUN_005d2568, FUN_005d2590, FUN_005d25a8, FUN_005d268e } from './block_005D0000.js';
 import { FUN_005f22d0, FUN_005f22e0 } from './block_00600000.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 export function FUN_00543b80() {
   let iVar1;
@@ -1070,9 +1071,9 @@ export function FUN_0054ada1() {
 // event_picker_seh_cleanup
 // ============================================================
 
+// Source: decompiled/block_00540000.c FUN_0054adb7 (14 bytes)
 export function FUN_0054adb7() {
-  // SEH (structured exception handling) cleanup — no-op in JS
-  return;
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -2739,9 +2740,9 @@ export function FUN_0054ee8f() {
 // event_editor_action_seh_cleanup
 // ============================================================
 
+// Source: decompiled/block_00540000.c FUN_0054eea5 (14 bytes)
 export function FUN_0054eea5() {
-  // SEH (structured exception handling) cleanup — no-op in JS
-  return;
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 
@@ -3031,9 +3032,9 @@ export function FUN_0054ffa4() {
 // events_editor_init_seh_cleanup
 // ============================================================
 
+// Source: decompiled/block_00540000.c FUN_0054ffba (14 bytes)
 export function FUN_0054ffba() {
-  // SEH (structured exception handling) cleanup — no-op in JS
-  return;
+  // DEVIATION: Win32 — SEH epilog: *FS_OFFSET = *(EBP-0xc)
 }
 
 

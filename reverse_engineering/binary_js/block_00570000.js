@@ -126,6 +126,18 @@ let DAT_00679640 = "";    // text buffer (for dialog messages)
 let DAT_00645160 = 0;     // wonder video/sound table base
 let DAT_00634440 = "";    // SDI defense string 1
 let DAT_00634444 = "";    // SDI defense string 2
+let DAT_0066c7a8 = new Uint8Array(8 * 0x3f0);  // animation sprite state array
+let DAT_0066ca84 = new Uint8Array(8 * 0x3f0);  // animation slot status (at +0x2dc from DAT_0066c7a8)
+let DAT_0066ca8c = new Uint8Array(8 * 0x1f8);  // animation slot frame index
+let DAT_0066ca90 = new Uint8Array(8 * 0xfc);   // animation slot x position
+let DAT_0066ca94 = new Uint8Array(8 * 0xfc);   // animation slot y position
+let DAT_0066cab0 = new Uint8Array(8 * 0x3f0);  // animation slot sprite width
+let DAT_0066cab4 = new Uint8Array(8 * 0x3f0);  // animation slot sprite height
+let DAT_0066cab8 = 0;    // animation slot screen x
+let DAT_0066cabc = 0;    // animation slot screen y
+let DAT_0066cac0 = new Uint8Array(8 * 0x3f0);  // animation slot x offset
+let DAT_0066c8cc = new Uint8Array(8 * 0xfc);   // animation slot clip x
+let DAT_0066c8d0 = new Uint8Array(8 * 0xfc);   // animation slot clip y
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1729,7 +1741,7 @@ export function FUN_00575dec() {
   // DAT_006ac11c = in_ECX; // DEVIATION: MFC (in_ECX)
   // in_ECX[0x2d8] = 0xf0; // DEVIATION: MFC — dialog width
   // in_ECX[0x2dc] = 0xf0; // DEVIATION: MFC — dialog height
-  uVar1 = FUN_00428b0c(DAT_00628420[0x950 / 4], 0xd, 0, 0, 0xf0, 0xf0, 0, 0, 0);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0x950 / 4, 0xd, 0, 0, 0xf0, 0xf0, 0, 0, 0);
   FUN_00574ca6(uVar1); // create dialog
   // _Timevec_destructor(PTR_DAT_006359f0); // DEVIATION: MFC
   // in_ECX[0x2f4] = extraout_EAX + 8; // DEVIATION: MFC layout
@@ -1748,17 +1760,17 @@ export function FUN_00575dec() {
   // in_ECX[0x2f0] = (in_ECX[300] - 8) / 3; // DEVIATION: MFC — button width
   // 3 button layout blocks: OK (0x3f8), Apply (0x954), Cancel (0x3fc)
   // Each: FUN_004086c0 → FUN_0040f680 → FUN_0040f880
-  // let uVar1_ok = FUN_00428b0c(DAT_00628420[0x3f8 / 4]); // DEVIATION: OK string
+  // let uVar1_ok = FUN_00428b0c(DAT_00628420 + 0x3f8 / 4); // DEVIATION: OK string
   // FUN_0040f680(local_2c, 0xc9, local_18, uVar1_ok); // DEVIATION: MFC — OK button
   // FUN_0040f880(0x004013c5); // DEVIATION: MFC — OK handler
   // FUN_0040f7d0(); // DEVIATION: MFC — set default
-  // let uVar1_apply = FUN_00428b0c(DAT_00628420[0x954 / 4]); // DEVIATION: Apply string
+  // let uVar1_apply = FUN_00428b0c(DAT_00628420 + 0x954 / 4); // DEVIATION: Apply string
   // FUN_0040f680(local_30, 0xc9, local_18, uVar1_apply); // DEVIATION: MFC — Apply button
   // FUN_0040f880(0x004029a5); // DEVIATION: MFC — Apply handler
   if (DAT_006ac924 === 5) {
     FUN_00453c40(); // hide apply button for mode 5
   }
-  // let uVar1_cancel = FUN_00428b0c(DAT_00628420[0x3fc / 4]); // DEVIATION: Cancel string
+  // let uVar1_cancel = FUN_00428b0c(DAT_00628420 + 0x3fc / 4); // DEVIATION: Cancel string
   // FUN_0040f680(local_34, 0xca, local_18, uVar1_cancel); // DEVIATION: MFC — Cancel button
   // FUN_0040f880(0x00402cde); // DEVIATION: MFC — Cancel handler
   // FUN_0040f840(); // DEVIATION: MFC — set default button
@@ -1810,10 +1822,10 @@ export function show_messagebox_6267() {
     local_844 = "UNITS"; break;
   }
   do {
-    uVar1 = FUN_00428b0c(DAT_00628420[0x958 / 4], 0, local_844, local_844, 0, 0);
+    uVar1 = FUN_00428b0c(DAT_00628420 + 0x958 / 4, 0, local_844, local_844, 0, 0);
     _sprintf(local_840, "%s.%s", local_844, uVar1); // DEVIATION: sprintf
     _sprintf(local_948, "%s.BMP;%s.GIF", local_844, local_844); // DEVIATION: sprintf
-    uVar1 = FUN_00428b0c(DAT_00628420[0x95c / 4], local_844);
+    uVar1 = FUN_00428b0c(DAT_00628420 + 0x95c / 4, local_844);
     _sprintf(local_9d0, "%s", uVar1); // DEVIATION: sprintf
     iVar2 = FUN_show_open_dialog_31D2(DAT_006ac1f8, local_9d0, local_948, local_840, "BMP;GIF", 1, 0); // DEVIATION: Win32 file dialog
     if (iVar2 === 0) {
@@ -1849,7 +1861,7 @@ export function show_messagebox_6267() {
           iVar2 = load_bitmap(DAT_006ac0a8, local_948, 10, 0xc0, local_73c); // DEVIATION: Win32
           if (iVar2 !== 0) { local_94c = 0; }
           else {
-            // let pCVar4 = FUN_00428b0c(DAT_00628420[0x964 / 4]); // DEVIATION: error string
+            // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x964 / 4); // DEVIATION: error string
             // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
           }
         } else {
@@ -1858,18 +1870,18 @@ export function show_messagebox_6267() {
             iVar2 = FUN_005bf071(local_948, 10, 0xc0, local_73c); // DEVIATION: GIF loader
             if (iVar2 !== 0) { local_94c = 0; }
             else {
-              // let pCVar4 = FUN_00428b0c(DAT_00628420[0x964 / 4]); // DEVIATION: error
+              // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x964 / 4); // DEVIATION: error
               // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
             }
           } else {
-            // let pCVar4 = FUN_00428b0c(DAT_00628420[0x968 / 4]); // DEVIATION: format error
+            // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x968 / 4); // DEVIATION: format error
             // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
           }
         }
       }
     } else {
       // Filename doesn't match — show warning
-      uVar1 = FUN_00428b0c(DAT_00628420[0x960 / 4], local_844);
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x960 / 4, local_844);
       _sprintf(local_9d0, "%s", uVar1);
       // MessageBoxA(0, local_9d0, null, 0x40); // DEVIATION: Win32 warning
     }
@@ -4306,7 +4318,7 @@ export function FUN_0057ebfd(param_1) {
       if (s8(DAT_006560f0[param_1 * 0x20 + 7]) === DAT_006d1da0) {
         FUN_004442e0("PROMOTED", param_1);
       } else if (2 < DAT_00655b02) {
-        FUN_00511880(0x20, 0, 1, 0, param_1, 0);
+        FUN_00511880(0x20, DAT_006ad30c + s32(DAT_006ad558, s8(DAT_006560f0[param_1 * 0x20 + 7]) * 4) * 0x54, 1, 0, param_1, 0);
       }
     }
   }
@@ -4316,12 +4328,142 @@ export function FUN_0057ebfd(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0057ed3f — play_combat_animation (UI)
 // ═══════════════════════════════════════════════════════════════════
+// Source: decompiled/block_00570000.c FUN_0057ed3f (2281 bytes)
 export function FUN_0057ed3f(param_1, param_2, param_3) {
-  // Combat animation — UI only, no-op in JS
+  let iVar1;
+  let uVar2;
+  let local_3d8 = new Uint8Array(16);
+  let local_3c8 = 0;
+  let auStack_3c4 = new Array(8).fill(0);
+  let auStack_3a4 = new Array(8).fill(0);
+  let local_384 = 0;
+  let auStack_380 = new Array(8).fill(0);
+  let aiStack_360 = new Array(8).fill(0);
+  let local_340 = 0;
+  let local_33c = 0;
+  let aiStack_338 = new Array(8).fill(0);
+  let local_318 = new Uint8Array(576);
+  let local_d8 = 0;
+  let aiStack_d4 = new Array(8).fill(0);
+  let local_b4 = 0;
+  let auStack_b0 = new Uint8Array(128);
+  let aiStack_30 = new Array(8).fill(0);
+
+  // DEVIATION: SEH (_eh_vector_constructor_iterator_(local_318,0x48,8,FUN_005bd630,FUN_005bd915))
+  local_340 = 0;
   DAT_006ad908 = 1;
   DAT_006c926c = 0;
-  // ... animation frames ...
+  for (local_b4 = 0; local_b4 < 8; local_b4 = local_b4 + 1) {
+    aiStack_338[local_b4] = 0;
+    if (((local_b4 === 0) || (s16(DAT_0066ca84, local_b4 * 0x3f0) !== 0)) &&
+       (iVar1 = FUN_0047c3e0(param_1, param_2), iVar1 !== 0)) {
+      aiStack_338[local_b4] = 1;
+      local_340 = 1;
+      aiStack_30[local_b4] = DAT_0066ca90[local_b4 * 0xfc];
+      aiStack_d4[local_b4] = DAT_0066ca94[local_b4 * 0xfc];
+      uVar2 = FUN_0047dfb0(0x20);
+      auStack_3a4[local_b4] = uVar2;
+      uVar2 = FUN_0047dfb0(0x20);
+      auStack_3c4[local_b4] = uVar2;
+      // DEVIATION: FUN_0047a6b0(aiStack_360 + local_b4, auStack_380 + local_b4, param_1, param_2) — pointer arithmetic
+      FUN_0047a6b0(aiStack_360, auStack_380, param_1, param_2);
+      aiStack_360[local_b4] = aiStack_360[local_b4] + s32(DAT_0066cac0, local_b4 * 0x3f0);
+      // DEVIATION: FUN_004086c0(auStack_b0 + local_b4 * 0x10, ...) — clip rect setup
+      FUN_004086c0(auStack_b0, aiStack_360[local_b4], auStack_380[local_b4],
+                   auStack_3a4[local_b4], auStack_3c4[local_b4]);
+      // DEVIATION: FUN_005bd65c(*(undefined4 *)(&DAT_0066cab0 + local_b4 * 0x3f0),
+      //                        *(undefined4 *)(&DAT_0066cab4 + local_b4 * 0x3f0)) — sprite setup
+      FUN_005bd65c(s32(DAT_0066cab0, local_b4 * 0x3f0), s32(DAT_0066cab4, local_b4 * 0x3f0));
+      // DEVIATION: FUN_0056c5fc(&DAT_0066c7a8 + local_b4 * 0x3f0, local_318 + local_b4 * 0x48,
+      //   aiStack_360[local_b4], auStack_380[local_b4],
+      //   (&DAT_0066c8cc)[local_b4 * 0xfc], (&DAT_0066c8d0)[local_b4 * 0xfc],
+      //   0, 0, 0, 0, auStack_3a4[local_b4], auStack_3c4[local_b4]) — sprite draw
+      FUN_0056c5fc(DAT_0066c7a8.subarray(local_b4 * 0x3f0), local_318.subarray(local_b4 * 0x48),
+                   aiStack_360[local_b4], auStack_380[local_b4],
+                   DAT_0066c8cc[local_b4 * 0xfc], DAT_0066c8d0[local_b4 * 0xfc],
+                   0, 0, 0, 0, auStack_3a4[local_b4], auStack_3c4[local_b4]);
+    }
+  }
+  if (local_340 === 0) {
+    DAT_006ad908 = 0;
+    local_3c8 = 0;
+    FUN_0057f628();
+    FUN_0057f648();
+    return;
+  }
+  if (param_3 !== 0) {
+    FUN_0046e020(param_3, 1, 0, 0);
+  }
+  // DEVIATION: local_384 = timeGetTime() — Win32 timing
+  local_384 = 0;
+  for (local_d8 = 0; local_d8 < 8; local_d8 = local_d8 + 1) {
+    for (local_b4 = 0; local_b4 < 8; local_b4 = local_b4 + 1) {
+      if (aiStack_338[local_b4] !== 0) {
+        iVar1 = FUN_0047c3e0(param_1, param_2);
+        if (iVar1 === 0) {
+          aiStack_338[local_b4] = 0;
+        } else {
+          if ((DAT_0066ca90[local_b4 * 0xfc] !== aiStack_30[local_b4]) ||
+             (DAT_0066ca94[local_b4 * 0xfc] !== aiStack_d4[local_b4])) {
+            aiStack_30[local_b4] = DAT_0066ca90[local_b4 * 0xfc];
+            aiStack_d4[local_b4] = DAT_0066ca94[local_b4 * 0xfc];
+            uVar2 = FUN_0047dfb0(0x20);
+            auStack_3a4[local_b4] = uVar2;
+            uVar2 = FUN_0047dfb0(0x20);
+            auStack_3c4[local_b4] = uVar2;
+            // DEVIATION: FUN_0047a6b0(aiStack_360 + local_b4, auStack_380 + local_b4, param_1, param_2) — pointer arithmetic
+            FUN_0047a6b0(aiStack_360, auStack_380, param_1, param_2);
+            aiStack_360[local_b4] = aiStack_360[local_b4] + s32(DAT_0066cac0, local_b4 * 0x3f0);
+            // DEVIATION: FUN_004086c0(auStack_b0 + local_b4 * 0x10, ...) — clip rect
+            FUN_004086c0(auStack_b0, aiStack_360[local_b4],
+                         auStack_380[local_b4], auStack_3a4[local_b4], auStack_3c4[local_b4]);
+            // DEVIATION: FUN_005bd65c — sprite setup
+            FUN_005bd65c(s32(DAT_0066cab0, local_b4 * 0x3f0), s32(DAT_0066cab4, local_b4 * 0x3f0));
+            // DEVIATION: FUN_0056c5fc — sprite draw
+            FUN_0056c5fc(DAT_0066c7a8.subarray(local_b4 * 0x3f0), local_318.subarray(local_b4 * 0x48),
+                         aiStack_360[local_b4], auStack_380[local_b4],
+                         DAT_0066c8cc[local_b4 * 0xfc], DAT_0066c8d0[local_b4 * 0xfc],
+                         0, 0, 0, 0, auStack_3a4[local_b4], auStack_3c4[local_b4]);
+          }
+          // DEVIATION: FUN_0047df20((int)(short)(&DAT_0066ca8c)[local_b4 * 0x1f8]) — select frame
+          FUN_0047df20(s16(DAT_0066ca8c, local_b4 * 0x1f8));
+          // DEVIATION: FUN_005cef31(local_3d8, &DAT_0066c7a8 + local_b4 * 0x3f0, ...) — combine frames
+          FUN_005cef31(local_3d8, DAT_0066c7a8.subarray(local_b4 * 0x3f0),
+                       aiStack_360[local_b4], auStack_380[local_b4]);
+          // DEVIATION: FUN_00408490(auStack_b0 + local_b4 * 0x10) — invalidate rect
+          FUN_00408490(auStack_b0);
+        }
+      }
+    }
+    // DEVIATION: do { FUN_00407ff0(); local_33c = timeGetTime();
+    //   if ((2 < DAT_00655b02) && (FUN_0047e94e(1,0), DAT_006c926c != 0)) goto cleanup;
+    // } while ((int)(local_33c - local_384) < 0x40) — timing wait loop
+    FUN_00407ff0();
+    if ((2 < DAT_00655b02) && (FUN_0047e94e(1, 0), DAT_006c926c !== 0)) {
+      // Jump to cleanup (LAB_0057f5f8)
+      FUN_0047df50();
+      DAT_006ad908 = 0;
+      FUN_0057f628();
+      FUN_0057f648();
+      return;
+    }
+    for (local_b4 = 0; local_b4 < 8; local_b4 = local_b4 + 1) {
+      if (aiStack_338[local_b4] !== 0) {
+        // DEVIATION: FUN_0056c5fc — restore background
+        FUN_0056c5fc(local_318.subarray(local_b4 * 0x48), DAT_0066c7a8.subarray(local_b4 * 0x3f0),
+                     0, 0, 0, 0,
+                     aiStack_360[local_b4], auStack_380[local_b4],
+                     DAT_0066c8cc[local_b4 * 0xfc], DAT_0066c8d0[local_b4 * 0xfc],
+                     auStack_3a4[local_b4], auStack_3c4[local_b4]);
+      }
+    }
+  }
+  FUN_0046e287(10);
+  // LAB_0057f5f8:
+  FUN_0047df50();
   DAT_006ad908 = 0;
+  FUN_0057f628();
+  FUN_0057f648();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -4436,7 +4578,7 @@ export function FUN_0057f9e3(param_1, param_2, param_3, param_4) {
   // ── Check for SDI defense ──
   if (param_4 !== 0) {
     for (local_14 = 0; local_14 < DAT_00655b18; local_14 = local_14 + 1) {
-      if (((s16(DAT_0064f340, local_14 * 0x58 + 0x54) !== 0) &&
+      if (((s32(DAT_0064f340, local_14 * 0x58 + 0x54) !== 0) &&
           (s8(DAT_0064f340[local_14 * 0x58 + 8]) !== param_1)) &&
          ((iVar4 = FUN_0043d20a(local_14, 0x11), iVar4 !== 0) &&
           (iVar4 = FUN_005ae1b0(

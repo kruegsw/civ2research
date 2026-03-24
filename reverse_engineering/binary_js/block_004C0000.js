@@ -8,10 +8,7 @@
 // Source: reverse_engineering/decompiled/block_004C0000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import {
-  s8, u8, s16, u16, w16,
-  tileRead, DAT_00627cce,
-} from './mem.js';
+import { s8, u8, s16, u16, w16, tileRead, DAT_00627cce, , s32, w32 } from './mem.js';
 
 import {
   FUN_004087c0, FUN_005ae052, FUN_005b8931,
@@ -2119,7 +2116,7 @@ export function FUN_004c66ba(param_1, param_2, param_3) {
       FUN_0040ff60(2, uVar5_n);
       FUN_00421ea0(0 /*s_CIVILWAR_0062dd84*/);
       if (((1 << (bVar1 & 0x1f) & DAT_00655b0b) !== 0) && (2 < DAT_00655b02)) {
-        FUN_00511880(0x5e, DAT_006ad30c[DAT_006ad558[iVar4] * 0x54], 3, 0, 0, 0);
+        FUN_00511880(0x5e, DAT_006ad30c + s32(DAT_006ad558, iVar4 * 4) * 0x54, 3, 0, 0, 0);
       }
     }
     local_20 = DAT_00655b16;

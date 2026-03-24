@@ -2215,7 +2215,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
   local_54 = iVar5 + local_54;
   local_114 = 0;
   for (local_224 = 0; local_224 < DAT_00655b18; local_224 = local_224 + 1) {
-    if ((((DAT_0064f394[local_224 * 0x58] !== 0) &&
+    if ((((s32(DAT_0064f394, local_224 * 0x58) !== 0) &&
       (s8(DAT_0064f34a[local_224 * 0x58]) === uVar4)) &&
       (s8(DAT_0064f348[local_224 * 0x58]) !== uVar4)) &&
       ((iVar5 = FUN_005b8a81(s16(DAT_0064f340, local_224 * 0x58),

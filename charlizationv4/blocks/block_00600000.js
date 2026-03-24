@@ -27,6 +27,7 @@
 import { G } from '../globals.js';
 import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';
 import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';
+const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };
 
 let PTR_s_R6002___floating_point_not_loade_0063b1bc = [];
 let PTR_DAT_0063a090 = [];
@@ -70,6 +71,7 @@ function CONCAT11(hi, lo) {
 // Function: __NMSG_WRITE @ 0x00600040
 // ============================================================
 export function __NMSG_WRITE(param_1) {
+  // DEVIATION: C runtime
   // Win32 CRT error message display — DEVIATION: C runtime
   // Original writes runtime error messages to console or shows MessageBox
   return;
@@ -239,6 +241,7 @@ export function siglookup(param_1) {
 // Function: ___crtMessageBoxA @ 0x00600930
 // ============================================================
 export function ___crtMessageBoxA(_LpText, _LpCaption, _UType) {
+  // DEVIATION: C runtime
   // Win32 MessageBoxA — DEVIATION: C runtime
   return 0;
 }
@@ -379,6 +382,7 @@ export function __ui64toa(_Val, _DstBuf, _Radix) {
 // Function: _fprintf @ 0x00600D40
 // ============================================================
 export function _fprintf(_File, _Format, ...args) {
+  // DEVIATION: C runtime
   // Win32 CRT fprintf — DEVIATION: C runtime
   return 0;
 }
@@ -389,6 +393,7 @@ export function _fprintf(_File, _Format, ...args) {
 // Function: _setvbuf @ 0x00600DF0
 // ============================================================
 export function _setvbuf(_File, _Buf, _Mode, _Size) {
+  // DEVIATION: C runtime
   // Win32 CRT setvbuf — DEVIATION: C runtime
   return 0;
 }
@@ -419,6 +424,7 @@ export function _E1() {
 // Function: __CxxUnhandledExceptionFilter @ 0x00600FA0
 // ============================================================
 export function __CxxUnhandledExceptionFilter(param_1) {
+  // DEVIATION: C runtime
   // Win32 exception filter — DEVIATION: C runtime
   return 0;
 }
@@ -429,6 +435,7 @@ export function __CxxUnhandledExceptionFilter(param_1) {
 // Function: FUN_00601040 @ 0x00601040
 // ============================================================
 export function FUN_00601040() {
+  // DEVIATION: C runtime
   // Win32 SetUnhandledExceptionFilter — DEVIATION: C runtime
   return;
 }
@@ -469,6 +476,7 @@ export function _ValidateExecute(param_1) {
 // Function: __snprintf @ 0x00601120
 // ============================================================
 export function __snprintf(_Dest, _Count, _Format, ...args) {
+  // DEVIATION: C runtime
   // CRT snprintf — DEVIATION: C runtime
   return 0;
 }
@@ -479,6 +487,7 @@ export function __snprintf(_Dest, _Count, _Format, ...args) {
 // Function: __vsnprintf @ 0x00601210
 // ============================================================
 export function __vsnprintf(_Dest, _Count, _Format, _Args) {
+  // DEVIATION: C runtime
   // CRT vsnprintf — DEVIATION: C runtime
   return 0;
 }
@@ -489,6 +498,7 @@ export function __vsnprintf(_Dest, _Count, _Format, _Args) {
 // Function: ___crtGetStringTypeW @ 0x00601300
 // ============================================================
 export function ___crtGetStringTypeW(param_1, param_2, param_3, param_4, param_5, param_6) {
+  // DEVIATION: C runtime
   // Win32 GetStringTypeW wrapper — DEVIATION: C runtime
   return;
 }
@@ -499,6 +509,7 @@ export function ___crtGetStringTypeW(param_1, param_2, param_3, param_4, param_5
 // Function: ___crtGetStringTypeA @ 0x00601560
 // ============================================================
 export function ___crtGetStringTypeA(_Plocinfo, _DWInfoType, _LpSrcStr, _CchSrc, _LpCharType, _Code_page, _BError) {
+  // DEVIATION: C runtime
   // Win32 GetStringTypeA wrapper — DEVIATION: C runtime
   return 0;
 }
@@ -597,6 +608,7 @@ export function __commit(_FileHandle) {
 // Function: __isatty @ 0x006022C0
 // ============================================================
 export function __isatty(_FileHandle) {
+  // DEVIATION: C runtime
   // CRT isatty — DEVIATION: C runtime
   return 0;
 }
@@ -654,6 +666,7 @@ export function __aullrem(param_1, param_2, param_3, param_4) {
 // Function: __fcloseall @ 0x006024D0
 // ============================================================
 export function __fcloseall() {
+  // DEVIATION: C runtime
   // CRT fcloseall — DEVIATION: C runtime
   return 0;
 }
@@ -664,6 +677,7 @@ export function __fcloseall() {
 // Function: __statusfp @ 0x00602590
 // ============================================================
 export function __statusfp() {
+  // DEVIATION: C runtime
   // CRT floating point status — DEVIATION: C runtime
   return 0;
 }
@@ -674,6 +688,7 @@ export function __statusfp() {
 // Function: __clearfp @ 0x006025C0
 // ============================================================
 export function __clearfp() {
+  // DEVIATION: C runtime
   // CRT clear FP status — DEVIATION: C runtime
   return 0;
 }
@@ -704,6 +719,7 @@ export function __controlfp(_NewValue, _Mask) {
 // Function: __fpreset @ 0x00602670
 // ============================================================
 export function __fpreset() {
+  // DEVIATION: C runtime
   // CRT FP reset — DEVIATION: C runtime
   return;
 }
@@ -930,6 +946,7 @@ export function __ShrMan(param_1, param_2) {
 // Function: __ld12cvt @ 0x00602EA0
 // ============================================================
 export function __ld12cvt(param_1, param_2, param_3) {
+  // DEVIATION: C runtime
   // FP format conversion — DEVIATION: C runtime
   // Original converts 12-byte long double to IEEE double or float
   return 0;
@@ -961,6 +978,7 @@ export function FID_conflict___ld12tod_2(param_1, param_2) {
 // Function: __ld12told @ 0x00603170
 // ============================================================
 export function __ld12told(param_1, param_2) {
+  // DEVIATION: C runtime
   // FP format conversion — DEVIATION: C runtime
   return 0;
 }
@@ -971,6 +989,7 @@ export function __ld12told(param_1, param_2) {
 // Function: FID_conflict:__atodbl @ 0x00603240
 // ============================================================
 export function FID_conflict___atodbl_1(_Result, _Str) {
+  // DEVIATION: C runtime
   // CRT atodbl — DEVIATION: C runtime
   return 0;
 }
@@ -981,6 +1000,7 @@ export function FID_conflict___atodbl_1(_Result, _Str) {
 // Function: __atoldbl @ 0x00603280
 // ============================================================
 export function __atoldbl(_Result, _Str) {
+  // DEVIATION: C runtime
   // CRT atoldbl — DEVIATION: C runtime
   return 0;
 }
@@ -991,6 +1011,7 @@ export function __atoldbl(_Result, _Str) {
 // Function: FID_conflict:__atodbl @ 0x006032C0
 // ============================================================
 export function FID_conflict___atodbl_2(_Result, _Str) {
+  // DEVIATION: C runtime
   // CRT atoflt — DEVIATION: C runtime
   return 0;
 }
@@ -1001,6 +1022,7 @@ export function FID_conflict___atodbl_2(_Result, _Str) {
 // Function: __fptostr @ 0x00603300
 // ============================================================
 export function __fptostr(_Buf, _SizeInBytes, _Digits, _PtFlt) {
+  // DEVIATION: C runtime
   // CRT FP to string conversion — DEVIATION: C runtime
   return 0;
 }
@@ -1011,6 +1033,7 @@ export function __fptostr(_Buf, _SizeInBytes, _Digits, _PtFlt) {
 // Function: __fltout @ 0x006033E0
 // ============================================================
 export function __fltout() {
+  // DEVIATION: C runtime
   // CRT FP output — DEVIATION: C runtime
   return null;
 }
@@ -1021,6 +1044,7 @@ export function __fltout() {
 // Function: ___dtold @ 0x00603450
 // ============================================================
 export function ___dtold(param_1, param_2) {
+  // DEVIATION: C runtime
   // CRT double to extended FP — DEVIATION: C runtime
   return;
 }
@@ -1397,6 +1421,7 @@ export function wcsncnt_1(param_1, param_2) {
 // Function: _getenv @ 0x00605AB0
 // ============================================================
 export function _getenv(_VarName) {
+  // DEVIATION: C runtime
   // CRT getenv — DEVIATION: C runtime
   // In a browser/Node.js context, we could use process.env
   // but for CRT fidelity, return null
@@ -1432,6 +1457,7 @@ export function ___ld12mul(param_1, param_2) {
 // Function: ___multtenpow12 @ 0x00606110
 // ============================================================
 export function ___multtenpow12(param_1, param_2, param_3) {
+  // DEVIATION: C runtime
   // CRT multiply 12-byte float by 10^param_2 — DEVIATION: C runtime
   // Uses precomputed table of powers of 10 in 12-byte format
   return;
@@ -1458,6 +1484,7 @@ export function __mbsnbicoll(_Str1, _Str2, _MaxCount) {
 // Function: ___wtomb_environ @ 0x00606260
 // ============================================================
 export function ___wtomb_environ() {
+  // DEVIATION: C runtime
   // CRT wide-to-multibyte environment conversion — DEVIATION: C runtime
   return 0;
 }
@@ -1526,6 +1553,7 @@ export function _strncnt(_String, _Cnt) {
 // Function: ___crtsetenv @ 0x00606B60
 // ============================================================
 export function ___crtsetenv(_POption, _Primary) {
+  // DEVIATION: C runtime
   // CRT internal setenv — DEVIATION: C runtime
   return 0;
 }
@@ -1546,6 +1574,7 @@ export function findenv(param_1, param_2) {
 // Function: copy_environ @ 0x00606F70
 // ============================================================
 export function copy_environ(param_1) {
+  // DEVIATION: C runtime
   // CRT copy environment array — DEVIATION: C runtime
   return null;
 }
@@ -1583,9 +1612,9 @@ export function __filelength(_FileHandle) {
 // FUN_006076a0 — get field at offset 0x10 from struct pointer
 // Function: FUN_006076a0 @ 0x006076A0
 // ============================================================
+// Source: decompiled/block_00600000.c FUN_006076a0 (22 bytes)
 export function FUN_006076a0(param_1) {
-  // Returns *(param_1 + 0x10) — generic struct field access
-  // Likely a CRT internal accessor
+  // DEVIATION: C runtime
   return 0;
 }
 
@@ -1662,9 +1691,9 @@ export function FUN_005f22e0(dest, src) {
 }
 
 // FUN_005f35f0 — __chkstk / stack probe (from block_005F0000)
+// Source: decompiled/block_005F0000.c FUN_005f35f0 (47 bytes)
 export function FUN_005f35f0() {
-  // CRT stack probe — no-op in JS
-  return;
+  // DEVIATION: C runtime
 }
 
 // FID_conflict__memcpy — memcpy (from another block)
@@ -1675,6 +1704,7 @@ export function FID_conflict__memcpy(dest, src, len) {
 
 // __amsg_exit — CRT fatal message and exit (from CRT)
 export function __amsg_exit(param_1) {
+  // DEVIATION: C runtime
   // CRT amsg_exit — DEVIATION: C runtime
   return;
 }
@@ -1692,30 +1722,58 @@ export function __CrtDbgReport(...args) {
 }
 
 // __stbuf / __ftbuf — CRT stream buffering (from CRT)
-export function __stbuf(_File) { return 0; }
-export function __ftbuf(param_1, _File) { return; }
+// Source: decompiled/block_005F0000.c __stbuf (190 bytes)
+export function __stbuf(_File) {
+  // DEVIATION: C runtime
+  return 0;
+}
+// Source: decompiled/block_005F0000.c __ftbuf (70 bytes)
+export function __ftbuf(param_1, _File) {
+  // DEVIATION: C runtime
+}
 
 // __output — CRT formatted output core (from CRT)
-export function __output(_File, _Format, ...args) { return 0; }
+// Source: decompiled/block_005F0000.c __output (3279 bytes)
+export function __output(_File, _Format, ...args) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __flush / __freebuf — CRT stream flush/free (from CRT)
-export function __flush(_File) { return; }
-export function __freebuf(_File) { return; }
+// Source: decompiled/block_005F0000.c __flush (108 bytes)
+export function __flush(_File) {
+  // DEVIATION: C runtime
+}
+// Source: decompiled/block_005F0000.c __freebuf (58 bytes)
+export function __freebuf(_File) {
+  // DEVIATION: C runtime
+}
 
 // __malloc_dbg / __calloc_dbg / __free_dbg / __realloc_dbg — CRT debug heap (from CRT)
 export function __malloc_dbg(size, ...args) { return new Array(size).fill(0); }
 export function __calloc_dbg(num, size, ...args) { return new Array(num * size).fill(0); }
-export function __free_dbg(ptr, ...args) { return; }
-export function __realloc_dbg(ptr, size, ...args) { return ptr; }
+// Source: decompiled/block_005F0000.c __free_dbg (1057 bytes)
+export function __free_dbg(ptr, ...args) {
+  // DEVIATION: C runtime
+}
+// Source: decompiled/block_005F0000.c __realloc_dbg (55 bytes)
+export function __realloc_dbg(ptr, size, ...args) {
+  // DEVIATION: C runtime  return ptr;
+}
 
 // __flsbuf — CRT flush buffer (from CRT)
-export function __flsbuf(ch, _File) { return 0; }
+// Source: decompiled/block_005F0000.c __flsbuf (328 bytes)
+export function __flsbuf(ch, _File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __lseek — CRT file seek (from CRT)
 export function __lseek(fh, offset, origin) { return -1; }
 
 // __read — CRT file read (from CRT)
-export function __read(fh, buf, count) { return 0; }
+// Source: decompiled/block_005F0000.c __read (1114 bytes)
+export function __read(fh, buf, count) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __write — CRT file write (from CRT)
 export function __write(fh, buf, count) { return -1; }
@@ -1724,10 +1782,16 @@ export function __write(fh, buf, count) { return -1; }
 export function __close(fh) { return -1; }
 
 // _fclose — CRT fclose (from CRT)
-export function _fclose(_File) { return 0; }
+// Source: decompiled/block_005F0000.c _fclose (120 bytes)
+export function _fclose(_File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __dosmaperr — CRT map DOS error to errno (from CRT)
-export function __dosmaperr(err) { return; }
+// Source: decompiled/block_005F0000.c __dosmaperr (89 bytes)
+export function __dosmaperr(err) {
+  // DEVIATION: C runtime
+}
 
 // _strlen — CRT string length (from CRT)
 export function _strlen(str) {
@@ -1780,13 +1844,25 @@ export function __isctype(ch, mask) {
 }
 
 // _atexit — CRT register exit handler (from CRT)
-export function _atexit(func) { return 0; }
+// Source: decompiled/block_005F0000.c _atexit (48 bytes)
+export function _atexit(func) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __setdefaultprecision — CRT FP default precision (from CRT)
-export function __setdefaultprecision() { return; }
+// Source: decompiled/block_005F0000.c __setdefaultprecision (80 bytes)
+export function __setdefaultprecision() {
+  // DEVIATION: C runtime
+}
 
 // ___crtLCMapStringA — CRT locale map string wrapper (from CRT)
-export function ___crtLCMapStringA(...args) { return 0; }
+// Source: decompiled/block_005F0000.c ___crtLCMapStringA (576 bytes)
+export function ___crtLCMapStringA(...args) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // terminate — C++ terminate handler (from CRT)
-export function terminate() { return; }
+// Source: decompiled/block_005F0000.c terminate (38 bytes)
+export function terminate() {
+  // DEVIATION: C runtime
+}

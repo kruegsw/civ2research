@@ -1863,7 +1863,7 @@ export function FUN_00504c05(param_1, in_ECX) {
     FUN_00501733(in_ECX + 0x15fc, in_ECX);
     FUN_005baee0(0x2c, 10, 1, 1);
     uVar1 = FUN_00407f90(in_ECX + 0x15fc);
-    uVar1 = FUN_00428b0c(DAT_00628420[0xac], in_ECX[0x15fc], in_ECX[0x1600], uVar1);
+    uVar1 = FUN_00428b0c(DAT_00628420 + 0xac, in_ECX[0x15fc], in_ECX[0x1600], uVar1);
     FUN_0043c910(uVar1);
     uVar1 = FUN_00511690(0xb7);
     uVar2 = FUN_00511690(0x93);
@@ -2499,7 +2499,7 @@ export function FUN_00506637(param_1) {
       FUN_0059ec88(0, param_1, 0);
       uVar5 = 0;
       uVar3 = 4;
-      uVar4 = FUN_00428b0c(DAT_00628420[0x4c8], 4, 0);
+      uVar4 = FUN_00428b0c(DAT_00628420 + 0x4c8, 4, 0);
       FUN_0059edf0(uVar4, uVar3, uVar5);
       iVar1 = FUN_0040bc80(0);
       if (0 < iVar1) {
@@ -2643,45 +2643,45 @@ export function FUN_00506a42(param_1) {
   // CPropertySheet setup — DEVIATION: Win32 no-op
   FUN_0059ec88(0, iVar1, 0);
   uVar7 = 0; uVar5 = 0;
-  uVar6 = FUN_00428b0c(DAT_00628420[0x144], 0, 0);
+  uVar6 = FUN_00428b0c(DAT_00628420 + 0x144, 0, 0);
   FUN_0059edf0(uVar6, uVar5, uVar7);
   if (DAT_006560ff[iVar1 * 0x20] !== -1) {
     uVar7 = 0; uVar5 = 1;
-    uVar6 = FUN_00428b0c(DAT_00628420[0x148], 1, 0);
+    uVar6 = FUN_00428b0c(DAT_00628420 + 0x148, 1, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
     FUN_0059ea99(1);
   }
   if (DAT_006560ff[iVar1 * 0x20] !== 3) {
     uVar7 = 0; uVar5 = 2;
-    uVar6 = FUN_00428b0c(DAT_00628420[0x14c], 2, 0);
+    uVar6 = FUN_00428b0c(DAT_00628420 + 0x14c, 2, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
   }
   if ((DAT_006560ff[iVar1 * 0x20] !== 1) && (DAT_006560ff[iVar1 * 0x20] !== 2)) {
     uVar7 = 0; uVar5 = 3;
-    uVar6 = FUN_00428b0c(DAT_00628420[0x150], 3, 0);
+    uVar6 = FUN_00428b0c(DAT_00628420 + 0x150, 3, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
   }
   uVar4 = CSplitterWnd_IsTracking(DAT_006a91b8);
   if (uVar4 !== u8(DAT_00656100[iVar1 * 0x20])) {
     uVar7 = 0; uVar5 = 5;
-    uVar6 = FUN_00428b0c(DAT_00628420[0x2cc], 5, 0);
+    uVar6 = FUN_00428b0c(DAT_00628420 + 0x2cc, 5, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
     if (DAT_00656100[iVar1 * 0x20] !== -1) {
       uVar7 = 0; uVar5 = 6;
-      uVar6 = FUN_00428b0c(DAT_00628420[0x2f4], 6, 0);
+      uVar6 = FUN_00428b0c(DAT_00628420 + 0x2f4, 6, 0);
       FUN_0059edf0(uVar6, uVar5, uVar7);
     }
   }
   uVar7 = 0; uVar5 = 7;
-  uVar6 = FUN_00428b0c(DAT_00628420[0x2d0], 7, 0);
+  uVar6 = FUN_00428b0c(DAT_00628420 + 0x2d0, 7, 0);
   FUN_0059edf0(uVar6, uVar5, uVar7);
   if ((((DAT_00655b0b & (1 << (DAT_006560f7[iVar1 * 0x20] & 0x1f))) !== 0) &&
       (DAT_00655b05 !== 0)) && (iVar2 = FUN_005b2c3d(iVar1), iVar2 !== 0)) {
     uVar7 = 0; uVar5 = 8;
-    uVar6 = FUN_00428b0c(DAT_00628420[0x2f8], 8, 0);
+    uVar6 = FUN_00428b0c(DAT_00628420 + 0x2f8, 8, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
     uVar7 = 0; uVar5 = 9;
-    uVar6 = FUN_00428b0c(DAT_00628420[0x2fc], 9, 0);
+    uVar6 = FUN_00428b0c(DAT_00628420 + 0x2fc, 9, 0);
     FUN_0059edf0(uVar6, uVar5, uVar7);
   }
   uVar6 = FUN_0040bc80(0);
@@ -3304,7 +3304,7 @@ export function citywin_8552(in_ECX) {
       _Timevec_destructor(in_ECX + 0x16ac);
       local_1c = iVar2 - (0 >> 1);
       FUN_005baee0(0x29, 10, 1, 0);
-      uVar1 = FUN_00428b0c(DAT_00628420[0x160], local_2c, local_1c, 0);
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x160, local_2c, local_1c, 0);
       local_2c = FUN_0043c950(uVar1);
       break;
     }
@@ -3594,7 +3594,7 @@ export function citywin_92AF(in_ECX) {
 // citywin_full_refresh — full refresh of city window
 export function citywin_9429(in_ECX) {
   if ((((-1 < in_ECX[0x159c]) && (in_ECX[0x159c] < DAT_00655b18)) &&
-      (DAT_0064f394[in_ECX[0x159c] * 0x58] !== 0)) && (DAT_00628044 !== 0)) {
+      (s32(DAT_0064f394, in_ECX[0x159c] * 0x58) !== 0)) && (DAT_00628044 !== 0)) {
     if ((in_ECX[0x15a0] === 0) && (in_ECX[0x15a4] === 0)) {
       FUN_004eb4ed(in_ECX[0x159c], 1);
       citywin_9028(in_ECX);
@@ -3913,9 +3913,9 @@ export function city_button_buy(param_1) {
   FUN_0043c9d0(0);
   iVar5 = CSplitterWnd_IsTracking(DAT_006a91b8);
   if (s8(DAT_0064f379[iVar5 * 0x58]) < 0) {
-    FUN_0059ec88(DAT_00645160[iVar4 * -0x3c], 0, 0);
+    FUN_0059ec88(DAT_00645160 + iVar4 * -0x3c, 0, 0);
   } else {
-    FUN_0059ec88(DAT_00641848[iVar3 * 0x3c], 0, 0);
+    FUN_0059ec88(DAT_00641848 + iVar3 * 0x3c, 0, 0);
   }
   // CPropertySheet — DEVIATION
   if (bVar1) { FUN_0059ea99(1); }
@@ -4036,7 +4036,7 @@ export function citywin_A2F7(param_1, param_2, param_3, param_4, param_5, param_
   local_c = 0;
   local_28 = -1;
   for (local_20 = 0; local_20 < DAT_00655b18; local_20 = local_20 + 1) {
-    if ((DAT_0064f394[local_20 * 0x58] !== 0) &&
+    if ((s32(DAT_0064f394, local_20 * 0x58) !== 0) &&
        (s8(DAT_0064f348[local_20 * 0x58]) === param_3)) {
       local_8 = s8(DAT_0064f349[local_20 * 0x58]);
       iVar1 = FUN_0043d20a(local_20, 1);
@@ -4549,7 +4549,7 @@ export function citywin_BD13(in_ECX) {
       let local_60 = s__00631008;
       let local_b4 = DAT_0064f360[local_8 * 0x58];
       for (local_64 = 0; local_64 < DAT_00655b18; local_64 = local_64 + 1) {
-        if ((DAT_0064f394[local_64 * 0x58] !== 0) &&
+        if ((s32(DAT_0064f394, local_64 * 0x58) !== 0) &&
            (DAT_0064f348[local_8 * 0x58] === DAT_0064f348[local_64 * 0x58])) {
           iVar1 = __strcmpi(DAT_0064f360[local_64 * 0x58], local_60);
           if ((0 < iVar1) &&
@@ -4602,7 +4602,7 @@ export function citywin_BF72(in_ECX) {
       let local_60 = s_zzzzzzzzzzzzzzzzzzzzzzzzz_00631024;
       let local_b4 = DAT_0064f360[local_8 * 0x58];
       for (local_64 = 0; local_64 < DAT_00655b18; local_64 = local_64 + 1) {
-        if ((DAT_0064f394[local_64 * 0x58] !== 0) &&
+        if ((s32(DAT_0064f394, local_64 * 0x58) !== 0) &&
            (DAT_0064f348[local_8 * 0x58] === DAT_0064f348[local_64 * 0x58])) {
           iVar1 = __strcmpi(DAT_0064f360[local_64 * 0x58], local_60);
           if ((iVar1 < 0) &&
@@ -4913,8 +4913,8 @@ export function citywin_CA8D(param_1, in_ECX) {
   iVar4 = FUN_00511690(0x3a);
   iVar5 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, iVar4 + iVar5, uVar2);
-  uVar2 = FUN_00428b0c(DAT_00628420[0x94 +
-                       ((in_ECX[0x15ac] === 2 ? 0xcc : 0) * 4)]);
+  uVar2 = FUN_00428b0c(DAT_00628420 + 0x94 +
+                       (s32(in_ECX, 0x15ac) === 2 ? 0xcc : 0) * 4);
   FUN_0040f680(DAT_006a9200, 8, local_20, uVar2);
   FUN_0040f840();
   FUN_0040f880(citywin_BC4F);
@@ -4965,7 +4965,7 @@ export function citywin_CCB3(param_1, in_ECX) {
     uVar6 = 0;
     uVar5 = FUN_00511690(0x73);
     FUN_0043c790(local_24, uVar5, uVar6);
-    uVar5 = FUN_00428b0c(DAT_00628420[0x510 + ((local_14 === 0 ? 0xfffffee0 : 0) * 4)]);
+    uVar5 = FUN_00428b0c(DAT_00628420 + 0x510 + ((local_14 === 0 ? 0xfffffee0 : 0) * 4));
     FUN_0040f680(DAT_006a9200, 2, local_24, uVar5);
     FUN_0040f880(city_button_change);
     if (param_1 !== 0) {
@@ -5012,7 +5012,7 @@ export function citywin_CF06(in_ECX) {
   iVar3 = local_2c + iVar3;
   iVar4 = FUN_00511690(0x1ba);
   FUN_004086c0(local_20, local_28 + iVar4, iVar3, uVar2, uVar1);
-  uVar1 = FUN_00428b0c(DAT_00628420[0x8c]);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0x8c);
   FUN_0040f680(DAT_006a9200, 1, local_20, uVar1);
   FUN_0040f880(city_button_buy);
   DAT_00630d24 = 0xff;
@@ -5035,32 +5035,32 @@ export function citywin_CF06(in_ECX) {
   iVar3 = local_2c + iVar3;
   iVar4 = FUN_00511690(0x1cb);
   FUN_004086c0(local_20, local_28 + iVar4, iVar3, uVar2, uVar1);
-  uVar1 = FUN_00428b0c(DAT_00628420[0x9c]);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0x9c);
   FUN_0040f680(DAT_006a9200, 3, local_20, uVar1);
   FUN_0040f880(citywin_B9A4);
   uVar2 = 0;
   uVar1 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, uVar1, uVar2);
-  uVar1 = FUN_00428b0c(DAT_00628420[0xa4]);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0xa4);
   FUN_0040f680(DAT_006a9200, 4, local_20, uVar1);
   FUN_0040f880(citywin_BA07);
   uVar2 = 0;
   uVar1 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, uVar1, uVar2);
-  uVar1 = FUN_00428b0c(DAT_00628420[0xa8]);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0xa8);
   FUN_0040f680(DAT_006a9200, 5, local_20, uVar1);
   FUN_0040f880(city_button_rename);
   uVar1 = FUN_00511690(0x19);
   iVar3 = FUN_00511690(0xffffffc6);
   iVar4 = FUN_00511690(0xffffffc6);
   FUN_0043c790(local_20, iVar3 + iVar4, uVar1);
-  uVar1 = FUN_00428b0c(DAT_00628420[0xa0]);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0xa0);
   FUN_0040f680(DAT_006a9200, 6, local_20, uVar1);
   FUN_0040f880(citywin_BA6A);
   uVar2 = 0;
   uVar1 = FUN_00511690(0x3a);
   FUN_0043c790(local_20, uVar1, uVar2);
-  uVar1 = FUN_00428b0c(DAT_00628420[0x98]);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0x98);
   FUN_0040f680(DAT_006a9200, 7, local_20, uVar1);
   FUN_0040f880(city_button_view);
   local_30 = GetSystemMetrics(2);
@@ -5221,7 +5221,7 @@ export function citywin_DCB6(in_ECX) {
   uVar4 = 2;
   uVar5 = DAT_00655344;
   uVar6 = DAT_00655348;
-  uVar3 = FUN_00428b0c(DAT_00628420[0x1c], 2, DAT_00655344, DAT_00655348, iVar2);
+  uVar3 = FUN_00428b0c(DAT_00628420 + 0x1c, 2, DAT_00655344, DAT_00655348, iVar2);
   FUN_005534bc(uVar3, uVar4, uVar5, uVar6, iVar2, iVar1, uVar7, uVar8, uVar9);
   // CPropertySheet::EnableStackedTabs — DEVIATION: Win32 no-op
   FUN_0055318c(DAT_00645120, 1);
