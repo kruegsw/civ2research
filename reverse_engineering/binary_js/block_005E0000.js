@@ -315,7 +315,7 @@ export function FUN_005e0af7(param_1, param_2, param_3) {
 // FUN_005e0b50 — random number in range [0, param_1)
 // ═══════════════════════════════════════════════════════════════════
 export function FUN_005e0b50(param_1) {
-  let iVar1 = Math.floor(Math.random() * 0x7FFF);
+  let iVar1 = _rand(); // C: _rand() — deterministic LCG PRNG
   return ((iVar1 * param_1 + ((iVar1 * param_1 >> 0x1f) & 0x7FFF)) >> 0xf) | 0;
 }
 
