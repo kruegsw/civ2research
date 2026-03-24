@@ -458,6 +458,9 @@ export function FUN_005d056c(param_1, param_2, param_3, param_4, param_5) {
     uVar5 = FUN_00451830(iVar2, 0);
     let iVar6 = FUN_005d1d00(uVar5);
     let local_1c = { left: 0, top: 0, right: iVar6, bottom: iVar4 };
+    // C: OffsetRect(&local_1c, local_28, local_2c) — offset clip rect to sprite position
+    local_1c.left += local_28; local_1c.right += local_28;
+    local_1c.top += local_2c; local_1c.bottom += local_2c;
     let BVar7 = IntersectRect(local_1c, local_1c, param_2);
     if (BVar7 !== 0) {
       let local_30 = 0;
