@@ -32,12 +32,11 @@ function stub(name) {
 }
 
 // External function stubs — replace with real imports as available
-const kill_civ = stub('kill_civ');
-const FUN_00598d45 = stub('FUN_00598d45'); // ai_threat_level
-const FUN_004c9528 = stub('pick_up_unit_004c9528');
-// (duplicate stubs removed: FUN_005b8d15, FUN_00442885, FUN_00598d45 already declared above)
-const FUN_citywin_C679 = stub('citywin_C679');
-const _rand = stub('_rand');
+function kill_civ() {}
+function FUN_00598d45() { return 0; } // ai_threat_level
+function FUN_004c9528() {} // pick_up_unit_004c9528
+function FUN_citywin_C679() {} // citywin_C679
+function _rand() { return Math.floor(Math.random() * 0x7fff); }
 const _atoi = stub('_atoi');
 const __chdir = stub('__chdir');
 
