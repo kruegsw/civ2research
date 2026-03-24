@@ -9,11 +9,15 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  s8, u8,
+  s8, u8, s16, u16, s32, u32, w16, w32,
   DAT_0064c600,
   DAT_006560f0,
   DAT_0064b1bc,
 } from './mem.js';
+
+// Aliases for compatibility
+const ri = s32;  // read int32
+const wi = w32;  // write int32
 
 
 // ============================================================
@@ -80,9 +84,9 @@ export function FUN_00560084(param_1) {
         FUN_0047e94e(1, 0);
       }
       if ((DAT_0064c600[local_10 * 4 + param_1 * 0x594 + 0xC1] & 0x40) === 0) {
-        wi(DAT_006ab5c0, local_10 * 4, 0);
+        w32(DAT_006ab5c0, local_10 * 4, 0);
       } else {
-        wi(DAT_006ab5c0, local_10 * 4, 1);
+        w32(DAT_006ab5c0, local_10 * 4, 1);
       }
       // Clear bits in diplomacy flags
       let dip_flags = read_u32(DAT_0064c600, local_10 * 4 + param_1 * 0x594 + 0xC0);
