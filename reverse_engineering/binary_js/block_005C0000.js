@@ -1181,17 +1181,90 @@ export function FUN_005c201d(param_1, param_2, param_3) {
 
 // FUN_005c2048 — load TGA from resource into 16-bit port
 export function FUN_005c2048(param_1) {
-  // DEVIATION: TGA resource loading — all Win32 API
+  var cVar1;
+  var uVar2;
   var iVar3;
-  var in_ECX = 0;
-  var local_24 = FUN_005c5540([0x54, 0x41, 0x52, 0x47], param_1);
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_40;
+  var local_3c = [0, 0, 0, 0]; // tagRECT
+  var local_2c;
+  var local_28;
+  var local_24;
+  var local_20;
+  var local_18;
+  var local_14;
+  var local_10;
+  var local_c;
+  var local_8;
+
+  local_24 = FUN_005c5540([0x54, 0x41, 0x52, 0x47], param_1);
   if (local_24 === 0) {
-    FUN_005d2279(0, param_1);
+    FUN_005d2279(0, param_1); // "Error: Picture resource not found"
     FUN_005dae6b(3, 0, 0, 0x905);
     return 0;
   }
-  var local_c = FUN_005c5560(local_24);
-  // DEVIATION: TGA parsing, pixel format conversion, all in surface buffers
+  local_c = FUN_005c5560(local_24);
+  local_14 = (local_c[0xc] & 0xff) | ((local_c[0xd] & 0xff) << 8); // ushort at +0xc = width
+  local_18 = (local_c[0xe] & 0xff) | ((local_c[0xf] & 0xff) << 8); // ushort at +0xe = height
+  local_8 = local_c;
+  SetRect(local_3c, 0, 0, local_14, local_18); // DEVIATION: Win32
+  iVar3 = FUN_005c1c99(local_3c);
+  if (iVar3 === 0) {
+    FUN_005c5520(local_24);
+    return 0;
+  }
+  if (local_8[2] === 0x02) {
+    // uncompressed TGA
+    var headerSkip = local_8[0] + 0x12;
+    local_c = local_c + headerSkip; // advance past TGA header + ID
+    if ((local_8[0x11] & 0x20) === 0) {
+      local_10 = FUN_005c19d3(0, local_18 - 1);
+      local_40 = -1; // DEVIATION: -*(in_ECX + 0x10) — negative scanline stride
+    } else {
+      local_10 = FUN_005c19d3(0, 0);
+      local_40 = 1; // DEVIATION: *(in_ECX + 0x10) — positive scanline stride
+    }
+    cVar1 = local_8[0x10]; // bits per pixel
+    if (cVar1 === 0x10) {
+      // 16-bit pixels: direct copy
+      for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {
+        FID_conflict__memcpy(local_10, local_c, local_14 * 2);
+        // DEVIATION: local_10 = (local_10 + local_40) — advance by stride
+        local_c = local_c + local_14 * 2;
+      }
+    } else {
+      if (cVar1 === 0x18) {
+        // 24-bit pixels: convert BGR to 16-bit
+        for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {
+          local_2c = local_10;
+          for (local_28 = 0; local_28 < local_14; local_28 = local_28 + 1) {
+            uVar2 = FUN_005c201d(local_c[2], local_c[1], local_c[0]);
+            // DEVIATION: *local_2c = uVar2; local_2c = local_2c + 1
+            local_c = local_c + 3;
+          }
+          // DEVIATION: local_10 = (local_10 + local_40)
+        }
+      } else if (cVar1 !== 0x20) {
+        // not 16/24/32 — goto LAB_005c231b
+      }
+      // 32-bit pixels (or fallthrough from 24-bit path in C):
+      for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {
+        local_2c = local_10;
+        for (local_28 = 0; local_28 < local_14; local_28 = local_28 + 1) {
+          uVar2 = FUN_005c201d(local_c[2], local_c[1], local_c[0]);
+          // DEVIATION: *local_2c = uVar2; local_2c = local_2c + 1
+          local_c = local_c + 4;
+        }
+        // DEVIATION: local_10 = (local_10 + local_40)
+      }
+    }
+  } else if (local_8[2] === 0x0a) {
+    debug_log("Targa Compression Not Implemented");
+  }
+  // LAB_005c231b:
+  if ((local_8[0x11] & 0x10) !== 0) {
+    debug_log("Why The hell would anyone want to right-to-left a targa?");
+  }
   FUN_005c5580(local_24);
   FUN_005c5520(local_24);
   return 1;
@@ -1199,18 +1272,87 @@ export function FUN_005c2048(param_1) {
 
 // FUN_005c2360 — load TGA from file into 16-bit port
 export function FUN_005c2360(param_1) {
-  // DEVIATION: TGA file loading — all Win32 file I/O and surface operations
+  var cVar1;
+  var uVar2;
+  var iVar3;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_dc;
+  var local_d8 = [0, 0, 0, 0]; // tagRECT
+  var local_c8;
+  var local_c4;
+  var local_c0;
+  var local_bc;
+  var local_b8;
+  var local_b4;
+  var local_18;
+  var local_14;
+
   FUN_005d7c00();
-  var iVar3 = FUN_005deced(param_1); // Realloc
+  iVar3 = FUN_005deced(param_1); // Realloc (open file)
   if (iVar3 === 0) {
-    debug_log(0);
+    debug_log("Error: Targa File not found");
     FUN_005dae6b(3, 0, 0, 0x965);
     FUN_005c2786();
     FUN_005c279c();
     return;
   }
-  FUN_005c5470();
-  // DEVIATION: TGA parsing
+  local_18 = FUN_005c5470();
+  local_b8 = (local_18[0xc] & 0xff) | ((local_18[0xd] & 0xff) << 8); // width
+  local_bc = (local_18[0xe] & 0xff) | ((local_18[0xf] & 0xff) << 8); // height
+  local_14 = local_18;
+  SetRect(local_d8, 0, 0, local_b8, local_bc); // DEVIATION: Win32
+  iVar3 = FUN_005c1c99(local_d8);
+  if (iVar3 !== 0) {
+    if (local_14[2] === 0x02) {
+      // uncompressed TGA
+      local_18 = local_18 + local_14[0] + 0x12; // skip header
+      if ((local_14[0x11] & 0x20) === 0) {
+        local_b4 = FUN_005c19d3(0, local_bc - 1);
+        local_dc = -1; // DEVIATION: -*(in_ECX + 0x10)
+      } else {
+        local_b4 = FUN_005c19d3(0, 0);
+        local_dc = 1; // DEVIATION: *(in_ECX + 0x10)
+      }
+      cVar1 = local_14[0x10]; // bits per pixel
+      if (cVar1 === 0x10) {
+        for (local_c0 = 0; local_c0 < local_bc; local_c0 = local_c0 + 1) {
+          FID_conflict__memcpy(local_b4, local_18, local_b8 * 2);
+          // DEVIATION: local_b4 = (local_b4 + local_dc)
+          local_18 = local_18 + local_b8 * 2;
+        }
+      } else if (cVar1 === 0x18) {
+        for (local_c0 = 0; local_c0 < local_bc; local_c0 = local_c0 + 1) {
+          local_c8 = local_b4;
+          for (local_c4 = 0; local_c4 < local_b8; local_c4 = local_c4 + 1) {
+            uVar2 = FUN_005c201d(local_18[2], local_18[1], local_18[0]);
+            // DEVIATION: *local_c8 = uVar2; local_c8 = local_c8 + 1
+            local_18 = local_18 + 3;
+          }
+          // DEVIATION: local_b4 = (local_b4 + local_dc)
+        }
+      } else if (cVar1 === 0x20) {
+        for (local_c0 = 0; local_c0 < local_bc; local_c0 = local_c0 + 1) {
+          local_c8 = local_b4;
+          for (local_c4 = 0; local_c4 < local_b8; local_c4 = local_c4 + 1) {
+            uVar2 = FUN_005c201d(local_18[2], local_18[1], local_18[0]);
+            // DEVIATION: *local_c8 = uVar2; local_c8 = local_c8 + 1
+            local_18 = local_18 + 4;
+          }
+          // DEVIATION: local_b4 = (local_b4 + local_dc)
+        }
+      }
+    } else if (local_14[2] === 0x0a) {
+      debug_log("Targa Compression Not Implemented");
+    }
+    if ((local_14[0x11] & 0x10) !== 0) {
+      debug_log("Why The hell would anyone want to right-to-left a targa?");
+    }
+    FUN_005c54a0();
+    FUN_00421c30();
+    FUN_005c2786();
+    FUN_005c279c();
+    return;
+  }
   FUN_005c54a0();
   FUN_00421c30();
   FUN_005c2786();
@@ -1229,34 +1371,154 @@ export function FUN_005c279c() {
 
 // FUN_005c27ad — load BMP from resource into 16-bit port
 export function FUN_005c27ad(param_1) {
-  // DEVIATION: BMP resource loading — all Win32 GDI
-  var local_24 = FUN_005db2f8(param_1);
+  var sVar1;
+  var uVar2;
+  var uVar3;
+  var iVar4;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var auStack_23c = new Array(256).fill(0); // palette lookup (16-bit values)
+  var local_3c = [0, 0, 0, 0]; // tagRECT
+  var local_2c;
+  var local_28;
+  var local_24;
+  var local_20;
+  var local_1c;
+  var local_18;
+  var local_14;
+  var local_10;
+  var local_c;
+  var local_8;
+
+  local_24 = FUN_005db2f8(param_1);
   if (local_24 === 0) {
-    FUN_005d2279(0, param_1);
+    FUN_005d2279(0, param_1); // "Error: Bitmap resource not found"
     FUN_005dae6b(3, 0, 0, 0x9c7);
-    return 0;
+    uVar3 = 0;
+  } else {
+    local_c = FUN_005c5560(local_24);
+    local_18 = local_c[4] | (local_c[5] << 8) | (local_c[6] << 16) | (local_c[7] << 24); // int32 at +4 = width
+    local_1c = local_c[8] | (local_c[9] << 8) | (local_c[10] << 16) | (local_c[11] << 24); // int32 at +8 = height
+    SetRect(local_3c, 0, 0, local_18, local_1c); // DEVIATION: Win32
+    iVar4 = FUN_005c1c99(local_3c);
+    if (iVar4 === 0) {
+      FUN_005c5520(local_24);
+      uVar3 = 0;
+    } else {
+      local_18 = FUN_005c55a0(local_18); // align width to 4-byte boundary
+      local_14 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
+      sVar1 = (local_c[0xe] & 0xff) | ((local_c[0xf] & 0xff) << 8); // short at +0xe = bits per pixel
+      if (sVar1 === 8) {
+        // 8-bit BMP: build palette lookup, then remap pixels
+        local_10 = local_c + 0x28; // palette starts at offset 0x28
+        for (local_20 = 0; local_20 < 0x100; local_20 = local_20 + 1) {
+          uVar2 = FUN_005c201d(local_10[2], local_10[1], local_10[0]);
+          auStack_23c[local_20] = uVar2;
+          local_10 = local_10 + 4;
+        }
+        local_8 = local_c + 0x428; // pixel data starts after palette
+        for (local_20 = 0; local_20 < local_1c; local_20 = local_20 + 1) {
+          local_2c = local_14;
+          for (local_28 = 0; local_28 < local_18; local_28 = local_28 + 1) {
+            // DEVIATION: *local_2c = auStack_23c[*local_8]
+            local_8 = local_8 + 1;
+            // DEVIATION: local_2c = local_2c + 1
+          }
+          local_14 = FUN_005c5710(local_14); // retreat by scanline stride
+        }
+      } else if ((sVar1 !== 0x10) && (sVar1 === 0x18)) {
+        // 24-bit BMP: convert BGR to 16-bit
+        local_8 = local_c + 0x28;
+        for (local_20 = 0; local_20 < local_1c; local_20 = local_20 + 1) {
+          local_2c = local_14;
+          for (local_28 = 0; local_28 < local_18; local_28 = local_28 + 1) {
+            uVar2 = FUN_005c201d(local_8[2], local_8[1], local_8[0]);
+            // DEVIATION: *local_2c = uVar2; local_2c = local_2c + 1
+            local_8 = local_8 + 3;
+          }
+          local_14 = FUN_005c5710(local_14);
+        }
+      }
+      FUN_005c5580(local_24);
+      FUN_005c5520(local_24);
+      uVar3 = 1;
+    }
   }
-  var local_c = FUN_005c5560(local_24);
-  // DEVIATION: BMP parsing, palette/pixel conversion
-  FUN_005c5580(local_24);
-  FUN_005c5520(local_24);
-  return 1;
+  return uVar3;
 }
 
 // FUN_005c2a77 — load BMP from file into 16-bit port
 export function FUN_005c2a77(param_1) {
-  // DEVIATION: BMP file loading — all Win32 file I/O
+  var sVar1;
+  var uVar2;
+  var iVar3;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var auStack_2e0 = new Array(256).fill(0); // palette lookup
+  var local_e0;
+  var local_dc = [0, 0, 0, 0]; // tagRECT
+  var local_cc;
+  var local_c8;
+  var local_c4;
+  var local_c0;
+  var local_bc;
+  var local_b8;
+  var local_1c;
+  var local_18;
+  var local_14;
+
   FUN_005d7c00();
-  var iVar3 = FUN_005deced(param_1);
+  iVar3 = FUN_005deced(param_1); // Realloc (open file)
   if (iVar3 === 0) {
-    debug_log(0);
-    FUN_005dae6b(3, 0, 0, 0xa0a);
+    debug_log("Error: Bitmap file not found");
+    FUN_005dae6b(3, 0, 0, 0xa16);
     FUN_005c2e37();
     FUN_005c2e4d();
     return;
   }
-  FUN_005c5470();
-  // DEVIATION: BMP parsing
+  local_e0 = FUN_005c5470();
+  local_18 = local_e0 + 0x0e; // BITMAPINFOHEADER starts at file offset 0xe
+  local_bc = local_e0[0x12] | (local_e0[0x13] << 8) | (local_e0[0x14] << 16) | (local_e0[0x15] << 24); // width at +0x12
+  local_c0 = local_e0[0x16] | (local_e0[0x17] << 8) | (local_e0[0x18] << 16) | (local_e0[0x19] << 24); // height at +0x16
+  SetRect(local_dc, 0, 0, local_bc, local_c0); // DEVIATION: Win32
+  iVar3 = FUN_005c1c99(local_dc);
+  if (iVar3 !== 0) {
+    local_bc = FUN_005c55a0(local_bc); // align width
+    local_b8 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
+    sVar1 = (local_18[0xe] & 0xff) | ((local_18[0xf] & 0xff) << 8); // bits per pixel at header+0xe
+    if (sVar1 === 8) {
+      local_1c = local_18 + 0x28; // palette data
+      for (local_c4 = 0; local_c4 < 0x100; local_c4 = local_c4 + 1) {
+        uVar2 = FUN_005c201d(local_1c[2], local_1c[1], local_1c[0]);
+        auStack_2e0[local_c4] = uVar2;
+        local_1c = local_1c + 4;
+      }
+      local_14 = local_18 + 0x428; // pixel data after palette
+      for (local_c4 = 0; local_c4 < local_c0; local_c4 = local_c4 + 1) {
+        local_cc = local_b8;
+        for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
+          // DEVIATION: *local_cc = auStack_2e0[*local_14]
+          local_14 = local_14 + 1;
+          // DEVIATION: local_cc = local_cc + 1
+        }
+        local_b8 = FUN_005c5710(local_b8);
+      }
+    } else if ((sVar1 !== 0x10) && (sVar1 === 0x18)) {
+      local_14 = local_18 + 0x28; // pixel data (no palette for 24-bit)
+      for (local_c4 = 0; local_c4 < local_c0; local_c4 = local_c4 + 1) {
+        local_cc = local_b8;
+        for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
+          uVar2 = FUN_005c201d(local_14[2], local_14[1], local_14[0]);
+          // DEVIATION: *local_cc = uVar2; local_cc = local_cc + 1
+          local_14 = local_14 + 3;
+        }
+        local_b8 = FUN_005c5710(local_b8);
+      }
+    }
+    FUN_005c54a0();
+    FUN_00421c30();
+    FUN_005c2e37();
+    FUN_005c2e4d();
+    return;
+  }
   FUN_005c54a0();
   FUN_00421c30();
   FUN_005c2e37();
@@ -1275,13 +1537,229 @@ export function FUN_005c2e4d() {
 
 // FUN_005c2e5e — load GIF from resource into 16-bit port
 export function FUN_005c2e5e(param_1) {
-  // DEVIATION: GIF resource loading — all Win32 GDI
-  return 0;
+  var uVar1;
+  var uVar2;
+  var iVar3;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_550;
+  var local_54c = new Array(766).fill(0); // raw palette copy buffer (256*3 max)
+  var local_24c;
+  var local_248 = [0, 0, 0, 0]; // tagRECT
+  var local_238;
+  var local_234;
+  var local_230;
+  var local_22c;
+  var auStack_228 = new Array(256).fill(0); // converted 16-bit palette
+  var local_24;
+  var local_20;
+  var local_1c;
+  var local_18;
+  var local_14;
+  var local_10;
+  var local_c;
+  var local_8;
+
+  local_230 = FUN_005c5540([0x47, 0x49, 0x46, 0x53], param_1);
+  if (local_230 === 0) {
+    FUN_005d2279(0, param_1); // "Error: GIF resource not found"
+    FUN_005dae6b(3, 0, 0, 0xa6c);
+    uVar2 = 0;
+  } else {
+    local_14 = FUN_005c5560(local_230);
+    iVar3 = _strcmp(local_14, 0); // compare with GIF magic
+    if (iVar3 === 0) {
+      FUN_005d2279(0, param_1); // "Error: Resource is not a GIF"
+      FUN_005c5580(local_230);
+      FUN_005c5520(local_230);
+      FUN_005dae6b(4, 0, 0, 0xa77);
+      uVar2 = 0;
+    } else if ((local_14[10] & 0x80) === 0) {
+      FUN_005d2279(0, param_1); // "Error: GIF contains no global color table"
+      FUN_005c5580(local_230);
+      FUN_005c5520(local_230);
+      FUN_005dae6b(4, 0, 0, 0xa80);
+      uVar2 = 0;
+    } else {
+      local_24c = 1 << ((local_14[10] & 7) + 1); // number of palette entries
+      local_10 = local_14 + 0xd; // global color table starts at offset 13
+      FID_conflict__memcpy(local_54c, local_10, local_24c * 3);
+      local_234 = 0;
+      for (local_22c = 0; local_22c < local_24c; local_22c = local_22c + 1) {
+        uVar1 = FUN_005c201d(local_54c[local_234], local_54c[local_234 + 1], local_54c[local_234 + 2]);
+        auStack_228[local_22c] = uVar1;
+        local_234 = local_234 + 3;
+      }
+      // skip past global color table and any padding zeros
+      local_10 = local_14 + local_24c * 3 + 0xd;
+      while (local_10[0] === 0) {
+        local_10 = local_10 + 1;
+      }
+      if ((local_10[0] === 0x2c) || (local_10[0] === 0x21)) {
+        // found image descriptor or extension block
+        local_c = local_10 + 1;
+        local_1c = FUN_005c54d0((local_10[5] & 0xff) | ((local_10[6] & 0xff) << 8));
+        // store width back: *(short*)(local_c + 4) = local_1c
+        local_24 = FUN_005c54d0((local_c[6] & 0xff) | ((local_c[7] & 0xff) << 8));
+        // store height back: *(short*)(local_c + 6) = local_24
+        if ((local_c[8] & 0x80) !== 0) {
+          debug_log("Warning: Skipping local color table");
+        }
+        SetRect(local_248, 0, 0, local_1c, local_24); // DEVIATION: Win32
+        local_20 = create_dib_35B0(local_248);
+        local_18 = local_c[9]; // LZW minimum code size
+        local_8 = local_c + 10; // compressed data starts here
+        uVar2 = FUN_005e3a81(local_20);
+        uVar2 = FUN_005e392a(local_20, local_1c, local_24, uVar2);
+        FUN_005e4d60(local_8, 0, local_18, uVar2); // LZW decode
+        iVar3 = FUN_005e395a(local_20);
+        if (iVar3 === 0) {
+          FUN_005e3988(local_20);
+        }
+        FUN_005c1c99(local_248);
+        local_10 = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34) — surface pointer
+        local_8 = FUN_005e3a81(local_20);
+        // copy decoded indexed pixels through palette to 16-bit surface
+        for (local_22c = 0; local_22c < local_24; local_22c = local_22c + 1) {
+          local_238 = local_10;
+          local_550 = local_8;
+          for (local_234 = 0; local_234 < local_1c; local_234 = local_234 + 1) {
+            // DEVIATION: *local_238 = auStack_228[*local_550]
+            local_550 = local_550 + 1;
+            // DEVIATION: local_238 = local_238 + 1
+          }
+          local_10 = local_10 + 1; // DEVIATION: local_10 + *(in_ECX + 0xc) — stride
+          iVar3 = FUN_005e392a(local_20);
+          local_8 = local_8 + iVar3;
+        }
+        FUN_005e388f(local_20);
+        FUN_005c5580(local_230);
+        FUN_005c5520(local_230);
+        uVar2 = 1;
+      } else {
+        FUN_005d2279(0, param_1); // "Error: GIF Image Block not found"
+        FUN_005c5580(local_230);
+        FUN_005c5520(local_230);
+        FUN_005dae6b(4, 0, 0, 0xa9d);
+        uVar2 = 0;
+      }
+    }
+  }
+  return uVar2;
 }
 
 // FUN_005c3313 — load GIF from file into 16-bit port
 export function FUN_005c3313(param_1) {
-  // DEVIATION: GIF file loading — all Win32 file I/O
+  var uVar1;
+  var iVar2;
+  var uVar3;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_5ec;
+  var local_5e8 = new Array(766).fill(0); // raw palette copy buffer
+  var local_2e8;
+  var local_2e4 = [0, 0, 0, 0]; // tagRECT
+  var local_2d4;
+  var local_2d0;
+  var local_2cc;
+  var auStack_2c8 = new Array(256).fill(0); // converted 16-bit palette
+  var local_c8;
+  var local_c4;
+  var local_c0;
+  var local_24;
+  var local_20;
+  var local_1c;
+  var local_18;
+  var local_14;
+
+  FUN_005d7c00();
+  iVar2 = FUN_005deced(param_1); // Realloc (open file)
+  if (iVar2 === 0) {
+    debug_log("Error: GIF file not found");
+    FUN_005dae6b(3, 0, 0, 0xae3);
+    FUN_005c384d();
+    FUN_005c3863();
+    return;
+  }
+  local_20 = FUN_005c5470();
+  iVar2 = _strcmp(local_20, 0); // compare with GIF magic
+  if (iVar2 === 0) {
+    debug_log("Error: Resource is not a GIF");
+    FUN_005c54a0();
+    FUN_00421c30();
+    FUN_005dae6b(4, 0, 0, 0xaee);
+    FUN_005c384d();
+    FUN_005c3863();
+    return;
+  }
+  if ((local_20[10] & 0x80) === 0) {
+    debug_log("Error: GIF contains no global color table");
+    FUN_005c54a0();
+    FUN_00421c30();
+    FUN_005dae6b(4, 0, 0, 0xaf7);
+    FUN_005c384d();
+    FUN_005c3863();
+    return;
+  }
+  local_2e8 = 1 << ((local_20[10] & 7) + 1);
+  local_1c = local_20 + 0xd;
+  FID_conflict__memcpy(local_5e8, local_1c, local_2e8 * 3);
+  local_2d0 = 0;
+  for (local_2cc = 0; local_2cc < local_2e8; local_2cc = local_2cc + 1) {
+    uVar1 = FUN_005c201d(local_5e8[local_2d0], local_5e8[local_2d0 + 1], local_5e8[local_2d0 + 2]);
+    auStack_2c8[local_2cc] = uVar1;
+    local_2d0 = local_2d0 + 3;
+  }
+  local_1c = local_20 + local_2e8 * 3 + 0xd;
+  while (local_1c[0] === 0) {
+    local_1c = local_1c + 1;
+  }
+  if ((local_1c[0] !== 0x2c) && (local_1c[0] !== 0x21)) {
+    debug_log("Error: GIF Image Block not found");
+    FUN_005c54a0();
+    FUN_00421c30();
+    FUN_005dae6b(4, 0, 0, 0xb14);
+    FUN_005c384d();
+    FUN_005c3863();
+    return;
+  }
+  local_18 = local_1c + 1;
+  local_c0 = FUN_005c54d0((local_1c[5] & 0xff) | ((local_1c[6] & 0xff) << 8));
+  // *(short*)(local_18 + 4) = local_c0
+  local_c8 = FUN_005c54d0((local_18[6] & 0xff) | ((local_18[7] & 0xff) << 8));
+  // *(short*)(local_18 + 6) = local_c8
+  if ((local_18[8] & 0x80) !== 0) {
+    debug_log("Warning: Skipping local color table");
+  }
+  SetRect(local_2e4, 0, 0, local_c0, local_c8); // DEVIATION: Win32
+  local_c4 = create_dib_35B0(local_2e4);
+  local_24 = local_18[9]; // LZW minimum code size
+  local_14 = local_18 + 10; // compressed data
+  uVar3 = FUN_005e3a81(local_c4);
+  uVar3 = FUN_005e392a(local_c4, local_c0, local_c8, uVar3);
+  FUN_005e4d60(local_14, 0, local_24, uVar3); // LZW decode
+  iVar2 = FUN_005e395a(local_c4);
+  if (iVar2 === 0) {
+    FUN_005e3988(local_c4);
+  }
+  FUN_005c1c99(local_2e4);
+  local_1c = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34)
+  local_14 = FUN_005e3a81(local_c4);
+  for (local_2cc = 0; local_2cc < local_c8; local_2cc = local_2cc + 1) {
+    local_2d4 = local_1c;
+    local_5ec = local_14;
+    for (local_2d0 = 0; local_2d0 < local_c0; local_2d0 = local_2d0 + 1) {
+      // DEVIATION: *local_2d4 = auStack_2c8[*local_5ec]
+      local_5ec = local_5ec + 1;
+      // DEVIATION: local_2d4 = local_2d4 + 1
+    }
+    local_1c = local_1c + 1; // DEVIATION: local_1c + *(in_ECX + 0xc)
+    iVar2 = FUN_005e392a(local_c4);
+    local_14 = local_14 + iVar2;
+  }
+  FUN_005e388f(local_c4);
+  FUN_005c54a0();
+  FUN_00421c30();
+  FUN_005c384d();
+  FUN_005c3863();
 }
 
 // FUN_005c384d — SEH destructor trampoline
@@ -1296,13 +1774,149 @@ export function FUN_005c3863() {
 
 // FUN_005c3874 — load CvPic from resource into 16-bit port
 export function FUN_005c3874(param_1) {
-  // DEVIATION: CvPic resource loading
-  return 0;
+  var uVar1;
+  var uVar2;
+  var iVar3;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_548;
+  var local_544 = new Array(766).fill(0); // raw palette buffer
+  var local_244;
+  var local_240 = [0, 0, 0, 0]; // tagRECT
+  var local_230;
+  var local_22c;
+  var local_228;
+  var local_224;
+  var auStack_220 = new Array(256).fill(0); // 16-bit palette lookup
+  var local_1c;
+  var local_18;
+  var local_14;
+  var local_10;
+  var local_c;
+  var local_8;
+
+  local_228 = FUN_005c5540([0x43, 0x76, 0x50, 0x63], param_1); // "CvPc"
+  if (local_228 === 0) {
+    FUN_005d2279(0, param_1); // "Error: Picture resource not found"
+    FUN_005dae6b(3, 0, 0, 0xb59);
+    uVar2 = 0;
+  } else {
+    local_c = FUN_005c5560(local_228);
+    local_14 = FUN_005c5410((local_c[0] & 0xff) | ((local_c[1] & 0xff) << 8)); // endian-swap width
+    local_1c = FUN_005c5410((local_c[2] & 0xff) | ((local_c[3] & 0xff) << 8)); // endian-swap height
+    SetRect(local_240, 0, 0, local_14, local_1c); // DEVIATION: Win32
+    local_244 = (local_c[5] & 0xff) + 1; // number of palette entries = byte at +5 plus 1
+    local_10 = local_c + 6; // palette data starts at offset 6 (short * 3 = byte offset 6)
+    FID_conflict__memcpy(local_544, local_10, local_244 * 3);
+    local_22c = 0;
+    for (local_224 = 0; local_224 < local_244; local_224 = local_224 + 1) {
+      uVar1 = FUN_005c201d(local_544[local_22c], local_544[local_22c + 1], local_544[local_22c + 2]);
+      auStack_220[local_224] = uVar1;
+      local_22c = local_22c + 3;
+    }
+    local_8 = local_c + local_244 * 3 + 6; // pixel data after palette
+    local_18 = create_dib_35B0(local_240);
+    uVar2 = FUN_005e3a81(local_18);
+    uVar2 = FUN_005e392a(local_18, local_14, local_1c, uVar2);
+    FUN_005e4d60(local_8, 0, local_c[4] & 0xff, uVar2); // LZW decode; local_c[2] as short -> low byte = min code size
+    iVar3 = FUN_005e395a(local_18);
+    if (iVar3 === 0) {
+      FUN_005e3988(local_18);
+    }
+    FUN_005c1c99(local_240);
+    local_10 = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34) — surface pointer
+    local_8 = FUN_005e3a81(local_18);
+    for (local_224 = 0; local_224 < local_1c; local_224 = local_224 + 1) {
+      local_230 = local_10;
+      local_548 = local_8;
+      for (local_22c = 0; local_22c < local_14; local_22c = local_22c + 1) {
+        // DEVIATION: *local_230 = auStack_220[*local_548]
+        local_548 = local_548 + 1;
+        // DEVIATION: local_230 = local_230 + 1
+      }
+      local_10 = local_10 + 1; // DEVIATION: local_10 + *(in_ECX + 0xc)
+      iVar3 = FUN_005e392a(local_18);
+      local_8 = local_8 + iVar3;
+    }
+    FUN_005e388f(local_18);
+    FUN_005c5580(local_228);
+    FUN_005c5520(local_228);
+    uVar2 = 1;
+  }
+  return uVar2;
 }
 
 // FUN_005c3b7a — load CvPic from file into 16-bit port
 export function FUN_005c3b7a(param_1) {
-  // DEVIATION: CvPic file loading
+  var uVar1;
+  var iVar2;
+  var uVar3;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_5e4;
+  var local_5e0 = new Array(766).fill(0); // raw palette buffer
+  var local_2e0;
+  var local_2dc = [0, 0, 0, 0]; // tagRECT
+  var local_2cc;
+  var local_2c8;
+  var local_2c4;
+  var auStack_2c0 = new Array(256).fill(0); // 16-bit palette lookup
+  var local_c0;
+  var local_bc;
+  var local_b8;
+  var local_1c;
+  var local_18;
+  var local_14;
+
+  FUN_005d7c00();
+  iVar2 = FUN_005deced(param_1); // Realloc (open file)
+  if (iVar2 === 0) {
+    debug_log("Error: Picture resource not found");
+    FUN_005dae6b(3, 0, 0, 0xba3);
+    FUN_005c3ed5();
+    FUN_005c3eeb();
+    return;
+  }
+  local_18 = FUN_005c5470();
+  local_b8 = FUN_005c5410((local_18[0] & 0xff) | ((local_18[1] & 0xff) << 8)); // endian-swap width
+  local_c0 = FUN_005c5410((local_18[2] & 0xff) | ((local_18[3] & 0xff) << 8)); // endian-swap height
+  SetRect(local_2dc, 0, 0, local_b8, local_c0); // DEVIATION: Win32
+  local_2e0 = (local_18[5] & 0xff) + 1; // palette entry count
+  local_1c = local_18 + 6; // palette data offset (short * 3 = 6 bytes)
+  FID_conflict__memcpy(local_5e0, local_1c, local_2e0 * 3);
+  local_2c8 = 0;
+  for (local_2c4 = 0; local_2c4 < local_2e0; local_2c4 = local_2c4 + 1) {
+    uVar1 = FUN_005c201d(local_5e0[local_2c8], local_5e0[local_2c8 + 1], local_5e0[local_2c8 + 2]);
+    auStack_2c0[local_2c4] = uVar1;
+    local_2c8 = local_2c8 + 3;
+  }
+  local_14 = local_18 + local_2e0 * 3 + 6; // pixel data
+  local_bc = create_dib_35B0(local_2dc);
+  uVar3 = FUN_005e3a81(local_bc);
+  uVar3 = FUN_005e392a(local_bc, local_b8, local_c0, uVar3);
+  FUN_005e4d60(local_14, 0, local_18[4] & 0xff, uVar3); // LZW decode
+  iVar2 = FUN_005e395a(local_bc);
+  if (iVar2 === 0) {
+    FUN_005e3988(local_bc);
+  }
+  FUN_005c1c99(local_2dc);
+  local_1c = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34)
+  local_14 = FUN_005e3a81(local_bc);
+  for (local_2c4 = 0; local_2c4 < local_c0; local_2c4 = local_2c4 + 1) {
+    local_2cc = local_1c;
+    local_5e4 = local_14;
+    for (local_2c8 = 0; local_2c8 < local_b8; local_2c8 = local_2c8 + 1) {
+      // DEVIATION: *local_2cc = auStack_2c0[*local_5e4]
+      local_5e4 = local_5e4 + 1;
+      // DEVIATION: local_2cc = local_2cc + 1
+    }
+    local_1c = local_1c + 1; // DEVIATION: local_1c + *(in_ECX + 0xc)
+    iVar2 = FUN_005e392a(local_bc);
+    local_14 = local_14 + iVar2;
+  }
+  FUN_005e388f(local_bc);
+  FUN_005c54a0();
+  FUN_00421c30();
+  FUN_005c3ed5();
+  FUN_005c3eeb();
 }
 
 // FUN_005c3ed5 — SEH destructor trampoline
@@ -1317,13 +1931,119 @@ export function FUN_005c3eeb() {
 
 // FUN_005c3efc — load BMP from resource into 24-bit port
 export function FUN_005c3efc(param_1) {
-  // DEVIATION: BMP resource loading (24-bit) — all Win32 GDI
-  return 0;
+  var uVar1;
+  var iVar2;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_38 = [0, 0, 0, 0]; // tagRECT
+  var local_28;
+  var local_24;
+  var local_20;
+  var local_1c;
+  var local_18;
+  var local_14;
+  var local_10;
+  var local_c;
+  var local_8;
+
+  local_20 = FUN_005db2f8(param_1);
+  if (local_20 === 0) {
+    FUN_005d2279(0, param_1); // "Error: Bitmap resource not found"
+    FUN_005dae6b(3, 0, 0, 0xbeb);
+    uVar1 = 0;
+  } else {
+    local_c = FUN_005c5560(local_20);
+    local_14 = local_c[4] | (local_c[5] << 8) | (local_c[6] << 16) | (local_c[7] << 24); // width at +4
+    local_18 = local_c[8] | (local_c[9] << 8) | (local_c[10] << 16) | (local_c[11] << 24); // height at +8
+    SetRect(local_38, 0, 0, local_14, local_18); // DEVIATION: Win32
+    iVar2 = FUN_005c1e49(local_38);
+    if (iVar2 === 0) {
+      FUN_005c5520(local_20);
+      uVar1 = 0;
+    } else {
+      local_14 = FUN_005c55a0(local_14); // align width
+      local_10 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
+      if (((local_c[0xe] & 0xff) | ((local_c[0xf] & 0xff) << 8)) === 0x18) {
+        // 24-bit BMP: swap BGR to RGB
+        local_8 = local_c + 0x28;
+        for (local_1c = 0; local_1c < local_18; local_1c = local_1c + 1) {
+          local_28 = local_10;
+          for (local_24 = 0; local_24 < local_14; local_24 = local_24 + 1) {
+            // *local_28 = local_8[2]; (R)
+            // local_28[1] = local_8[1]; (G)
+            // local_28[2] = *local_8; (B)
+            // DEVIATION: pixel write to surface — BGR to RGB byte swap
+            local_28 = local_28 + 3;
+            local_8 = local_8 + 3;
+          }
+          local_10 = FUN_005c5710(local_10); // retreat by stride
+        }
+      }
+      FUN_005c5580(local_20);
+      FUN_005c5520(local_20);
+      uVar1 = 1;
+    }
+  }
+  return uVar1;
 }
 
 // FUN_005c40b6 — load BMP from file into 24-bit port
 export function FUN_005c40b6(param_1) {
-  // DEVIATION: BMP file loading (24-bit) — all Win32 file I/O
+  var iVar1;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_d8 = [0, 0, 0, 0]; // tagRECT
+  var local_c8;
+  var local_c4;
+  var local_c0;
+  var local_bc;
+  var local_b8;
+  var local_b4;
+  var local_18;
+  var local_14;
+
+  FUN_005d7c00();
+  iVar1 = FUN_005deced(param_1); // Realloc (open file)
+  if (iVar1 === 0) {
+    debug_log("Error: Bitmap file not found");
+    FUN_005dae6b(3, 0, 0, 0xc24);
+    FUN_005c434e();
+    FUN_005c4364();
+    return;
+  }
+  iVar1 = FUN_005c5470();
+  local_18 = iVar1 + 0x0e; // BITMAPINFOHEADER
+  local_b8 = iVar1[0x12] | (iVar1[0x13] << 8) | (iVar1[0x14] << 16) | (iVar1[0x15] << 24); // width
+  local_bc = iVar1[0x16] | (iVar1[0x17] << 8) | (iVar1[0x18] << 16) | (iVar1[0x19] << 24); // height
+  SetRect(local_d8, 0, 0, local_b8, local_bc); // DEVIATION: Win32
+  iVar1 = FUN_005c1e49(local_d8);
+  if (iVar1 !== 0) {
+    local_b8 = FUN_005c55a0(local_b8); // align width
+    local_b4 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
+    if (((local_18[0xe] & 0xff) | ((local_18[0xf] & 0xff) << 8)) === 0x18) {
+      // 24-bit BMP: BGR to RGB swap
+      local_14 = local_18 + 0x28;
+      for (local_c0 = 0; local_c0 < local_bc; local_c0 = local_c0 + 1) {
+        local_c8 = local_b4;
+        for (local_c4 = 0; local_c4 < local_b8; local_c4 = local_c4 + 1) {
+          // *local_c8 = local_14[2]; (R)
+          // local_c8[1] = local_14[1]; (G)
+          // local_c8[2] = *local_14; (B)
+          // DEVIATION: pixel write — BGR to RGB byte swap
+          local_c8 = local_c8 + 3;
+          local_14 = local_14 + 3;
+        }
+        local_b4 = FUN_005c5710(local_b4); // retreat by stride
+      }
+    }
+    FUN_005c54a0();
+    FUN_00421c30();
+    FUN_005c434e();
+    FUN_005c4364();
+    return;
+  }
+  FUN_005c54a0();
+  FUN_00421c30();
+  FUN_005c434e();
+  FUN_005c4364();
 }
 
 // FUN_005c434e — SEH destructor trampoline
@@ -1338,13 +2058,178 @@ export function FUN_005c4364() {
 
 // FUN_005c4375 — load TGA from resource into 24-bit port
 export function FUN_005c4375(param_1) {
-  // DEVIATION: TGA resource loading (24-bit)
-  return 0;
+  var uVar1;
+  var iVar2;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_44;
+  var local_40 = [0, 0, 0, 0]; // tagRECT
+  var local_30;
+  var local_2c;
+  var local_28;
+  var local_24;
+  var local_1c;
+  var local_18;
+  var local_14;
+  var local_10;
+  var local_c;
+  var local_8;
+
+  local_28 = FUN_005c5540([0x54, 0x41, 0x52, 0x47], param_1);
+  if (local_28 === 0) {
+    FUN_005d2279(0, param_1); // "Error: Picture resource not found"
+    FUN_005dae6b(3, 0, 0, 0xc60);
+    uVar1 = 0;
+  } else {
+    local_10 = FUN_005c5560(local_28);
+    local_18 = (local_10[0xc] & 0xff) | ((local_10[0xd] & 0xff) << 8); // width
+    local_1c = (local_10[0xe] & 0xff) | ((local_10[0xf] & 0xff) << 8); // height
+    local_8 = local_10;
+    SetRect(local_40, 0, 0, local_18, local_1c); // DEVIATION: Win32
+    iVar2 = FUN_005c1e49(local_40);
+    if (iVar2 === 0) {
+      FUN_005c5520(local_28);
+      uVar1 = 0;
+    } else {
+      if (local_8[2] === 0x02) {
+        // uncompressed TGA
+        local_10 = local_10 + local_8[0] + 0x12; // skip header + ID
+        if ((local_8[0x11] & 0x20) === 0) {
+          local_14 = FUN_005c19d3(0, local_1c - 1);
+          local_44 = -1; // DEVIATION: -*(in_ECX + 0x10)
+        } else {
+          local_14 = FUN_005c19d3(0, 0);
+          local_44 = 1; // DEVIATION: *(in_ECX + 0x10)
+        }
+        if (local_8[0x10] === 0x18) {
+          // 24-bit: BGR to RGB swap
+          for (local_24 = 0; local_24 < local_1c; local_24 = local_24 + 1) {
+            local_30 = local_14;
+            for (local_2c = 0; local_2c < local_18; local_2c = local_2c + 1) {
+              // *local_30 = local_10[2]; (R)
+              // local_30[1] = local_10[1]; (G)
+              // local_30[2] = *local_10; (B)
+              // DEVIATION: pixel write — BGR to RGB byte swap
+              local_30 = local_30 + 3;
+              local_c = local_c + 3;
+            }
+            local_14 = local_14 + local_44;
+          }
+        } else if (local_8[0x10] === 0x20) {
+          // 32-bit: BGRA to RGB swap (skip alpha)
+          for (local_24 = 0; local_24 < local_1c; local_24 = local_24 + 1) {
+            local_30 = local_14;
+            for (local_2c = 0; local_2c < local_18; local_2c = local_2c + 1) {
+              // *local_30 = local_10[2]; (R)
+              // local_30[1] = local_10[1]; (G)
+              // local_30[2] = *local_10; (B)
+              // DEVIATION: pixel write — BGRA to RGB byte swap
+              local_30 = local_30 + 3;
+              local_10 = local_10 + 4;
+            }
+            local_14 = local_14 + local_44;
+          }
+        }
+      } else if (local_8[2] === 0x0a) {
+        debug_log("Targa Compression Not Implemented");
+      }
+      if ((local_8[0x11] & 0x10) !== 0) {
+        debug_log("Why The hell would anyone want to right-to-left a targa?");
+      }
+      FUN_005c5580(local_28);
+      FUN_005c5520(local_28);
+      uVar1 = 1;
+    }
+  }
+  return uVar1;
 }
 
 // FUN_005c463f — load TGA from file into 24-bit port
 export function FUN_005c463f(param_1) {
-  // DEVIATION: TGA file loading (24-bit)
+  var iVar1;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_e0;
+  var local_dc = [0, 0, 0, 0]; // tagRECT
+  var local_cc;
+  var local_c8;
+  var local_c4;
+  var local_c0;
+  var local_bc;
+  var local_b8;
+  var local_1c;
+  var local_18;
+  var local_14;
+
+  FUN_005d7c00();
+  iVar1 = FUN_005deced(param_1); // Realloc (open file)
+  if (iVar1 === 0) {
+    debug_log("Error: Targa File not found");
+    FUN_005dae6b(3, 0, 0, 0xcbd);
+    FUN_005c4a00();
+    FUN_005c4a16();
+    return;
+  }
+  local_1c = FUN_005c5470();
+  local_bc = (local_1c[0xc] & 0xff) | ((local_1c[0xd] & 0xff) << 8); // width
+  local_c0 = (local_1c[0xe] & 0xff) | ((local_1c[0xf] & 0xff) << 8); // height
+  local_14 = local_1c;
+  SetRect(local_dc, 0, 0, local_bc, local_c0); // DEVIATION: Win32
+  iVar1 = FUN_005c1e49(local_dc);
+  if (iVar1 !== 0) {
+    if (local_14[2] === 0x02) {
+      // uncompressed TGA
+      local_1c = local_1c + local_14[0] + 0x12; // skip header
+      if ((local_14[0x11] & 0x20) === 0) {
+        local_b8 = FUN_005c19d3(0, local_c0 - 1);
+        local_e0 = -1; // DEVIATION: -*(in_ECX + 0x10)
+      } else {
+        local_b8 = FUN_005c19d3(0, 0);
+        local_e0 = 1; // DEVIATION: *(in_ECX + 0x10)
+      }
+      if (local_14[0x10] === 0x18) {
+        // 24-bit: BGR to RGB
+        for (local_c4 = 0; local_c4 < local_c0; local_c4 = local_c4 + 1) {
+          local_cc = local_b8;
+          for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
+            // *local_cc = local_1c[2]; (R)
+            // local_cc[1] = local_1c[1]; (G)
+            // local_cc[2] = *local_1c; (B)
+            // DEVIATION: pixel write — BGR to RGB byte swap
+            local_cc = local_cc + 3;
+            local_18 = local_18 + 3;
+          }
+          local_b8 = local_b8 + local_e0;
+        }
+      } else if (local_14[0x10] === 0x20) {
+        // 32-bit: BGRA to RGB
+        for (local_c4 = 0; local_c4 < local_c0; local_c4 = local_c4 + 1) {
+          local_cc = local_b8;
+          for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
+            // *local_cc = local_1c[2]; (R)
+            // local_cc[1] = local_1c[1]; (G)
+            // local_cc[2] = *local_1c; (B)
+            // DEVIATION: pixel write — BGRA to RGB byte swap
+            local_cc = local_cc + 3;
+            local_1c = local_1c + 4;
+          }
+          local_b8 = local_b8 + local_e0;
+        }
+      }
+    } else if (local_14[2] === 0x0a) {
+      debug_log("Targa Compression Not Implemented");
+    }
+    if ((local_14[0x11] & 0x10) !== 0) {
+      debug_log("Why The hell would anyone want to right-to-left a targa?");
+    }
+    FUN_005c54a0();
+    FUN_00421c30();
+    FUN_005c4a00();
+    FUN_005c4a16();
+    return;
+  }
+  FUN_005c54a0();
+  FUN_00421c30();
+  FUN_005c4a00();
+  FUN_005c4a16();
 }
 
 // FUN_005c4a00 — SEH destructor trampoline
@@ -1685,14 +2570,84 @@ export function FUN_005c5b7f() {
 
 // FUN_005c5c2d — find first visible control
 export function FUN_005c5c2d() {
-  // DEVIATION: linked list traversal
-  return 0;
+  var cVar1;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_8;
+
+  local_8 = in_ECX + 0xb8; // DEVIATION: *(in_ECX + 0xb8) — first control in linked list
+  while (true) {
+    if (local_8 === 0) {
+      return 0;
+    }
+    cVar1 = FUN_005c5ea0(); // get visible flag
+    if (cVar1 !== 0) {
+      break;
+    }
+    local_8 = FUN_005c5e80(); // get next control
+  }
+  return local_8;
 }
 
 // FUN_005c5c86 — find control by name (hotkey lookup)
 export function FUN_005c5c86(param_1) {
-  // DEVIATION: linked list traversal + string comparison
-  return 0;
+  var sVar1;
+  var iVar2;
+  var pcVar3;
+  var uVar4;
+  var iVar5;
+  var in_ECX = 0; // DEVIATION: this pointer
+  var local_20;
+  var local_14;
+  var local_10;
+  var local_c;
+  var local_8;
+
+  local_8 = 0; // '\0'
+  local_14 = 0;
+  local_c = param_1;
+  __strlwr(local_c); // lowercase the search char
+  sVar1 = local_c;
+  local_10 = in_ECX + 0xb8; // DEVIATION: *(in_ECX + 0xb8) — first control
+  do {
+    if (local_10 === 0) {
+      return local_14;
+    }
+    if (local_8 !== 0) {
+      return local_14;
+    }
+    if (local_10 + 0x28 < 0) { // DEVIATION: *(local_10 + 0x28) < 0 — hotkey index check
+      iVar2 = FUN_005c5e60(); // get control type
+      if (iVar2 === 3) {
+        iVar2 = FUN_005c5ee0(); // get control data pointer
+        iVar5 = FUN_005c5f00(); // get control item count
+        for (local_20 = 0; local_20 < iVar5; local_20 = local_20 + 1) {
+          if ((-1 < (iVar2 + 0xa0 + local_20 * 0xa4)) &&
+             ((iVar2 + 0x9c + local_20 * 0xa4) === sVar1)) {
+            // DEVIATION: *(iVar2 + 0xa0 + local_20 * 0xa4) >= 0 && *(iVar2 + 0x9c + ...) == sVar1
+            invalidate_9A9A(iVar2 + local_20 * 0xa4); // DEVIATION: *(iVar2 + local_20 * 0xa4)
+            local_14 = 1;
+            local_8 = 1;
+            break;
+          }
+        }
+      }
+    } else if ((local_10 + 0x25) === sVar1) {
+      // DEVIATION: *(local_10 + 0x25) == sVar1 — hotkey char match
+      iVar2 = FUN_005c5e60();
+      if ((iVar2 === 6) && (pcVar3 = streambuf_egptr(local_10), pcVar3 !== 0)) {
+        uVar4 = FUN_00418770();
+        FUN_005cac22(uVar4);
+        return 1;
+      }
+      iVar2 = FUN_005c5e60();
+      if ((iVar2 === 2) && (iVar2 = FUN_005c5ec0(), iVar2 !== 0)) {
+        uVar4 = FUN_00418770();
+        invalidate_C274(uVar4);
+        return 1;
+      }
+    }
+    local_10 = local_10 + 0x20; // DEVIATION: *(local_10 + 0x20) — next control
+  } while (true);
 }
 
 // FUN_005c5e60 — get control type
@@ -1978,24 +2933,25 @@ export function FUN_005c677b(param_1) {
 
 // FUN_005c67a6 — save color table to file (with range)
 export function FUN_005c67a6(param_1, param_2, param_3) {
-  // DEVIATION: file I/O — save palette to file
+  // Save palette data to file
   FUN_005d7c00();
   var uVar1 = FUN_005dce4f(param_3 * 3);
   var uVar2 = FUN_005dcdf9(uVar1);
   FUN_005ded12(0, uVar2, param_2, param_3);
-  var iVar3 = FUN_005deced(param_1); // Realloc
+  var iVar3 = FUN_005deced(param_1); // Realloc — opens file
   if (iVar3 === 0) {
     FUN_005c68ca();
     FUN_005c68e0();
-  } else {
-    // DEVIATION: write palette data to file
-    FUN_005c54a0();
-    FUN_00421c30();
-    FUN_005dce29(uVar1);
-    FUN_005dce96(uVar1);
-    FUN_005c68ca();
-    FUN_005c68e0();
+    return;
   }
+  // DEVIATION: thunk_FUN_00421c60(&param_2, 4) — write start index to file
+  // DEVIATION: thunk_FUN_00421c60(&param_3, 4) — write count to file
+  // DEVIATION: thunk_FUN_00421c60(uVar2, param_3 * 3) — write palette RGB data to file
+  // DEVIATION: FUN_00421c30() — close file
+  FUN_005dce29(uVar1);
+  FUN_005dce96(uVar1);
+  FUN_005c68ca();
+  FUN_005c68e0();
 }
 
 // FUN_005c68ca — SEH destructor trampoline
@@ -2010,20 +2966,27 @@ export function FUN_005c68e0() {
 
 // FUN_005c68f0 — load color table from file
 export function FUN_005c68f0(param_1) {
-  // DEVIATION: file I/O — load palette from file
+  // Load palette data from file
   FUN_005d7c00();
-  var iVar3 = FUN_005deced(param_1);
-  if (iVar3 === 0) {
-    debug_log(0);
+  var iVar1 = FUN_005deced(param_1); // Realloc — opens file
+  if (iVar1 === 0) {
     FUN_005c6a1c();
     FUN_005c6a32();
-  } else {
-    // DEVIATION: read palette data from file
-    FUN_005c54a0();
-    FUN_00421c30();
-    FUN_005c6a1c();
-    FUN_005c6a32();
+    return;
   }
+  var local_14 = [0]; // placeholder for file-read start index
+  var local_b4 = [0]; // placeholder for file-read count
+  // DEVIATION: thunk_FUN_004bb370(&local_14, 4) — read start index from file
+  // DEVIATION: thunk_FUN_004bb370(&local_b4, 4) — read count from file
+  var local_b0 = FUN_005dce4f(local_b4[0] * 3);
+  var uVar2 = FUN_005dcdf9(local_b0);
+  // DEVIATION: thunk_FUN_004bb370(uVar2, local_b4[0] * 3) — read palette RGB data from file
+  // DEVIATION: FUN_00421c30() — close file
+  FUN_005c6da8(local_14[0], local_b4[0], uVar2);
+  FUN_005dce29(local_b0);
+  FUN_005dce96(local_b0);
+  FUN_005c6a1c();
+  FUN_005c6a32();
 }
 
 // FUN_005c6a1c — SEH destructor trampoline
@@ -2179,15 +3142,30 @@ export function FUN_005c6fc3(param_1, param_2) {
 
 // FUN_005c701c — apply palette fade step (to target color)
 export function FUN_005c701c(param_1) {
-  // DEVIATION: palette fade interpolation math on byte arrays
-  var in_ECX = 0;
-  if (param_1 < 0 || in_ECX + 0x40c < param_1) {
-    FUN_005d2279(0, param_1);
+  var in_ECX = this || {}; // DEVIATION: this pointer — palette object
+  if (param_1 < 0 || in_ECX._0x40c < param_1) {
+    FUN_005d2279(0, param_1); // "Color Scale factor out of range"
   } else {
-    var iVar9 = FUN_005dcdf9(in_ECX + 0x430);
-    // DEVIATION: per-entry color interpolation loop
-    update_palette_EA62(in_ECX, in_ECX + 0x404, in_ECX + 0x410, in_ECX + 0x414);
-    FUN_005dce29(in_ECX + 0x430);
+    var bVar1 = in_ECX._0x424 & 0xff; // target R
+    var bVar3 = in_ECX._0x425 & 0xff; // target G
+    var bVar2 = in_ECX._0x426 & 0xff; // target B
+    var iVar4 = in_ECX._0x40c;
+    var iVar5 = in_ECX._0x40c;
+    var iVar6 = in_ECX._0x40c;
+    var cVar8 = (param_1 & 0xff);
+    var cVar7 = ((in_ECX._0x40c & 0xff) - cVar8) & 0xff;
+    var iVar9 = FUN_005dcdf9(in_ECX._0x430);
+    for (var local_20 = 0; local_20 < in_ECX._0x414 * 3; local_20 = local_20 + 3) {
+      var srcR = iVar9[local_20] & 0xff;
+      var srcG = iVar9[local_20 + 1] & 0xff;
+      var srcB = iVar9[local_20 + 2] & 0xff;
+      var newR = (((((srcR / iVar4) | 0) * cVar8) + (cVar7 * (((bVar1 / iVar4) | 0)))) & 0xff);
+      var newG = (((((srcG / iVar6) | 0) * cVar8) + (cVar7 * (((bVar3 / iVar6) | 0)))) & 0xff);
+      var newB = (((((srcB / iVar5) | 0) * cVar8) + (cVar7 * (((bVar2 / iVar5) | 0)))) & 0xff);
+      FUN_005deadb(in_ECX, in_ECX._0x410 + (local_20 / 3), newR, newG, newB);
+    }
+    update_palette_EA62(in_ECX, in_ECX._0x404, in_ECX._0x410, in_ECX._0x414);
+    FUN_005dce29(in_ECX._0x430);
   }
 }
 
@@ -2227,30 +3205,49 @@ export function FUN_005c72f8() {
 
 // FUN_005c738e — apply palette cross-fade step
 export function FUN_005c738e(param_1) {
-  // DEVIATION: palette cross-fade interpolation
-  var in_ECX = 0;
-  if (param_1 < 0 || in_ECX + 0x418 < param_1) {
-    FUN_005d2279(0, param_1);
+  var in_ECX = this || {}; // DEVIATION: this pointer — palette object
+  if (param_1 < 0 || in_ECX._0x418 < param_1) {
+    FUN_005d2279(0, param_1); // "Color Scale factor out of range"
   } else {
-    var iVar3 = FUN_005dcdf9(in_ECX + 0x428);
-    var iVar4 = FUN_005dcdf9(in_ECX + 0x42c);
-    // DEVIATION: per-entry cross-fade loop
-    update_palette_EA62(in_ECX, in_ECX + 0x404, in_ECX + 0x41c, in_ECX + 0x420);
-    FUN_005dce29(in_ECX + 0x428);
-    FUN_005dce29(in_ECX + 0x42c);
+    var cVar2 = (param_1 & 0xff);
+    var cVar1 = ((in_ECX._0x418 & 0xff) - cVar2) & 0xff;
+    var iVar3 = FUN_005dcdf9(in_ECX._0x428); // source palette buffer
+    var iVar4 = FUN_005dcdf9(in_ECX._0x42c); // target palette buffer
+    for (var local_18 = 0; local_18 < in_ECX._0x420 * 3; local_18 = local_18 + 3) {
+      var srcR = iVar3[local_18] & 0xff;
+      var srcG = iVar3[local_18 + 1] & 0xff;
+      var srcB = iVar3[local_18 + 2] & 0xff;
+      var dstR = iVar4[local_18] & 0xff;
+      var dstG = iVar4[local_18 + 1] & 0xff;
+      var dstB = iVar4[local_18 + 2] & 0xff;
+      var newR = (((((srcR / in_ECX._0x418) | 0) * cVar2) + (((dstR / in_ECX._0x418) | 0) * cVar1)) & 0xff);
+      var newG = (((((srcG / in_ECX._0x418) | 0) * cVar2) + (((dstG / in_ECX._0x418) | 0) * cVar1)) & 0xff);
+      var newB = (((((srcB / in_ECX._0x418) | 0) * cVar2) + (((dstB / in_ECX._0x418) | 0) * cVar1)) & 0xff);
+      FUN_005deadb(in_ECX, in_ECX._0x41c + (local_18 / 3), newR, newG, newB);
+    }
+    update_palette_EA62(in_ECX, in_ECX._0x404, in_ECX._0x41c, in_ECX._0x420);
+    FUN_005dce29(in_ECX._0x428);
+    FUN_005dce29(in_ECX._0x42c);
   }
 }
 
 // FUN_005c7579 — build color match table from palette
 export function FUN_005c7579(param_1, param_2, param_3, param_4) {
-  // DEVIATION: KD-tree color matching
   FUN_005c79bf();
   var uVar2 = FUN_005dce4f(param_4 * 3);
   var iVar3 = FUN_005dcdf9(uVar2);
   FUN_005c6b63(iVar3, param_3, param_4);
   FUN_005c7a86(iVar3, param_3, param_4);
   FUN_005c6b63(iVar3, param_3, param_4);
-  // DEVIATION: loop building color match entries via FUN_005c7e06
+  for (var local_834 = 0; local_834 < param_4 * 3; local_834 = local_834 + 3) {
+    var uVar1 = FUN_005c7e06(
+      iVar3[local_834] & 0xff,
+      iVar3[local_834 + 1] & 0xff,
+      iVar3[local_834 + 2] & 0xff,
+      0x20
+    );
+    param_1[(local_834 / 3) | 0] = uVar1 & 0xff;
+  }
   FUN_005dce29(uVar2);
   FUN_005dce96(uVar2);
   FUN_005c76e4();
@@ -2269,13 +3266,21 @@ export function FUN_005c76fa() {
 
 // FUN_005c770a — build color match table with two palettes
 export function FUN_005c770a(param_1, param_2, param_3, param_4, param_5, param_6) {
-  // DEVIATION: dual-palette KD-tree color matching
   FUN_005c79bf();
-  var uVar2 = FUN_005dce4f(param_6 * 3);
+  var uVar2 = FUN_005dce4f(0x300);
   var iVar3 = FUN_005dcdf9(uVar2);
   FUN_005c6b63(iVar3, param_5, param_6);
   FUN_005c7a86(iVar3, param_5, param_6);
-  // DEVIATION: dual palette loop
+  FUN_005c6b63(iVar3, param_3, param_4);
+  for (var iVar7 = 0; iVar7 < param_4 * 3; iVar7 = iVar7 + 3) {
+    var uVar1 = FUN_005c7e06(
+      iVar3[iVar7] & 0xff,
+      iVar3[iVar7 + 1] & 0xff,
+      iVar3[iVar7 + 2] & 0xff,
+      0x20
+    );
+    param_1[(iVar7 / 3) | 0] = uVar1 & 0xff;
+  }
   FUN_005dce29(uVar2);
   FUN_005dce96(uVar2);
   FUN_005c7873();
@@ -2294,10 +3299,14 @@ export function FUN_005c7889() {
 
 // FUN_005c7899 — find nearest palette color to RGB
 export function FUN_005c7899(param_1, param_2, param_3) {
-  // DEVIATION: KD-tree nearest neighbor search
   FUN_005c79bf();
-  FUN_005c7a86(0, 0, 0);
+  var uVar1 = FUN_005dce4f(0x300);
+  var uVar2 = FUN_005dcdf9(uVar1);
+  FUN_005c6b63(uVar2, 0, 0x100);
+  FUN_005c7a86(uVar2, 0, 0x100);
   FUN_005c7e06(param_1, param_2, param_3, 0x20);
+  FUN_005dce29(uVar1);
+  FUN_005dce96(uVar1);
   FUN_005c7998();
   FUN_005c79ae();
 }
@@ -2314,35 +3323,216 @@ export function FUN_005c79ae() {
 
 // FUN_005c79bf — initialize KD-tree for color matching
 export function FUN_005c79bf() {
-  // DEVIATION: KD-tree allocation
-  return 0;
+  var in_ECX = this || {}; // DEVIATION: this pointer — KD-tree object
+  in_ECX._0x818 = 0; // in_ECX[0x206] — tree built flag
+  in_ECX._0x81c = 0; // in_ECX[0x207] — traversal counter
+  in_ECX._0x814 = 0; // in_ECX[0x205] — stack pointer
+  in_ECX._0x04 = 0;  // in_ECX[1] — tree node pointer
+  in_ECX._0x00 = 0;  // in_ECX[0] — tree handle
+  in_ECX._0x0c = 0;  // in_ECX[3] — palette count
+  in_ECX._0x10 = 0;  // in_ECX[4] — palette start
+  in_ECX._0x08 = 0;  // in_ECX[2] — sentinel index
+  return in_ECX;
 }
 
 // FUN_005c7a30 — cleanup KD-tree
 export function FUN_005c7a30() {
-  // DEVIATION: KD-tree deallocation
+  var in_ECX = this || {}; // DEVIATION: this pointer — KD-tree object
+  if (in_ECX._0x04 !== 0) {
+    in_ECX._0x04 = FUN_005dce29(in_ECX._0x00);
+  }
+  if (in_ECX._0x00 !== 0) {
+    in_ECX._0x00 = FUN_005dce96(in_ECX._0x00);
+  }
 }
 
-// FUN_005c7a86 — build KD-tree from palette
+// FUN_005c7a86 — build KD-tree from palette entries
+// param_1 = RGB byte array, param_2 = start index, param_3 = count
 export function FUN_005c7a86(param_1, param_2, param_3) {
-  // DEVIATION: KD-tree construction from palette entries
+  var in_ECX = this || {}; // DEVIATION: this pointer — KD-tree object
+  var local_8 = 1;
+  in_ECX._0x10 = param_2;  // in_ECX[4] = start index
+  in_ECX._0x0c = param_3;  // in_ECX[3] = count
+  // Allocate tree node array: (count + 2) * 16 bytes = (count + 2) * 4 ints
+  var uVar3 = FUN_005dce4f((in_ECX._0x0c + 2) * 0x10);
+  in_ECX._0x00 = uVar3;
+  var tree = FUN_005dcdf9(in_ECX._0x00);
+  if (!tree) tree = new Array((in_ECX._0x0c + 2) * 4).fill(0);
+  in_ECX._0x04 = tree;
+  in_ECX._0x08 = in_ECX._0x0c + 1; // sentinel index
+  // Initialize root sentinel node (node 0)
+  tree[0 * 4 + 1] = -1;                  // index = -1 (sentinel)
+  tree[0 * 4 + 2] = in_ECX._0x08;        // left = sentinel
+  tree[0 * 4 + 3] = in_ECX._0x08;        // right = sentinel
+  // Initialize tail sentinel node
+  tree[in_ECX._0x08 * 4 + 1] = -1;       // index = -1
+  tree[in_ECX._0x08 * 4 + 3] = in_ECX._0x08; // right = self
+  tree[in_ECX._0x08 * 4 + 2] = in_ECX._0x08; // left = self (= right)
+  // Find median entry (closest to gray 0x80)
+  var local_20 = FUN_005c80fd(param_1);
+  // Insert entries: first from median down, then from median+1 up
+  for (var local_1c = local_20; local_1c >= 0; local_1c = local_1c - 1) {
+    var iVar1 = local_1c * 3;
+    // Build node data: [G, R, B, palette_index]
+    var node_data = new Uint8Array(4);
+    node_data[0] = param_1[iVar1 + 1];     // G (byte 0 in node)
+    node_data[1] = param_1[iVar1];          // R (byte 1)
+    node_data[2] = param_1[iVar1 + 2];      // B (byte 2)
+    var iVar2 = local_8;
+    local_8 = local_8 + 1;
+    FUN_005c7c7b(node_data, local_1c, iVar2);
+  }
+  while (local_20 = local_20 + 1, local_20 < in_ECX._0x0c) {
+    var iVar1b = local_20 * 3;
+    var node_data2 = new Uint8Array(4);
+    node_data2[0] = param_1[iVar1b + 1];
+    node_data2[1] = param_1[iVar1b];
+    node_data2[2] = param_1[iVar1b + 2];
+    var iVar2b = local_8;
+    local_8 = local_8 + 1;
+    FUN_005c7c7b(node_data2, local_20, iVar2b);
+  }
+  in_ECX._0x818 = 1; // tree built flag
 }
 
 // FUN_005c7c7b — insert node into KD-tree
-export function FUN_005c7c7b(param_1, param_2) {
-  // DEVIATION: KD-tree node insertion
+// param_1 = [G, R, B, ...] node color data + palette index at param_1[4..7]
+// param_2 = tree slot index for new node
+export function FUN_005c7c7b(param_1, palette_index, param_2) {
+  var in_ECX = this || {}; // DEVIATION: this pointer — KD-tree object
+  var tree = in_ECX._0x04;
+  var local_c = 0;
+  var local_14 = tree[0 * 4 + 3]; // root's right child (start of traversal)
+  var local_8 = -1; // axis (-1 = uninitialized)
+  var bVar1 = true;
+  // Store node data: byte0=G, byte1=R, byte2=B (matches C layout)
+  tree[param_2 * 4 + 0] = (param_1[0] & 0xff) | ((param_1[1] & 0xff) << 8) | ((param_1[2] & 0xff) << 16);
+  tree[param_2 * 4 + 1] = palette_index; // palette index
+  tree[param_2 * 4 + 3] = in_ECX._0x08; // right = sentinel
+  tree[param_2 * 4 + 2] = in_ECX._0x08; // left = sentinel
+  // Traverse tree to find insertion point
+  while (in_ECX._0x08 !== local_14) {
+    local_c = local_14;
+    if (local_8 === 2) {
+      local_8 = 0;
+    } else {
+      local_8 = local_8 + 1;
+    }
+    // Compare on current axis
+    var node_byte = (tree[local_14 * 4] >> (local_8 * 8)) & 0xff;
+    var param_byte = param_1[local_8] & 0xff;
+    bVar1 = param_byte < node_byte;
+    if (bVar1) {
+      local_14 = tree[local_14 * 4 + 2]; // left child
+    } else {
+      local_14 = tree[local_14 * 4 + 3]; // right child
+    }
+    bVar1 = !bVar1;
+  }
+  // Insert at found position
+  if (bVar1) {
+    tree[local_c * 4 + 3] = param_2; // right child
+  } else {
+    tree[local_c * 4 + 2] = param_2; // left child
+  }
 }
 
 // FUN_005c7e06 — nearest-neighbor search in KD-tree
+// param_1 = R, param_2 = G, param_3 = B, param_4 = tolerance
 export function FUN_005c7e06(param_1, param_2, param_3, param_4) {
-  // DEVIATION: KD-tree nearest neighbor search
-  return 0;
+  var in_ECX = this || {}; // DEVIATION: this pointer — KD-tree object
+  var local_c = in_ECX._0x08; // sentinel node index
+  in_ECX._0x814 = 0;
+  if (in_ECX._0x818 === 0) {
+    return -1;
+  }
+  var local_3c = 0x30000; // best distance so far (large initial)
+  in_ECX._0x81c = 0;
+  // Bounding box: [G-tol, G+tol, R-tol, R+tol, B-tol, B+tol]
+  var local_38 = new Array(6);
+  local_38[0] = (param_2 & 0xff) - param_4;
+  local_38[1] = (param_2 & 0xff) + param_4;
+  local_38[2] = (param_1 & 0xff) - param_4;
+  local_38[3] = (param_1 & 0xff) + param_4;
+  local_38[4] = (param_3 & 0xff) - param_4;
+  local_38[5] = (param_3 & 0xff) + param_4;
+  // Push sentinel pair onto stack
+  var stack = in_ECX._stack || (in_ECX._stack = new Array(0x200));
+  stack[in_ECX._0x814] = -1;
+  in_ECX._0x814 = in_ECX._0x814 + 1;
+  stack[in_ECX._0x814] = 0;
+  in_ECX._0x814 = in_ECX._0x814 + 1;
+  var tree = in_ECX._0x04; // pointer to tree node array (16 bytes per node)
+  while (in_ECX._0x814 !== 0 && local_3c !== 0) {
+    // Pop axis
+    in_ECX._0x814 = in_ECX._0x814 - 1;
+    var local_40 = tree[stack[in_ECX._0x814] * 4 + 3]; // child pointer (offset 0xc)
+    // Pop node
+    in_ECX._0x814 = in_ECX._0x814 - 1;
+    var local_8 = stack[in_ECX._0x814];
+    while (in_ECX._0x08 !== local_40 && local_3c !== 0) {
+      in_ECX._0x81c = in_ECX._0x81c + 1;
+      if (local_8 === 2) {
+        local_8 = 0;
+      } else {
+        local_8 = local_8 + 1;
+      }
+      // Extract byte at axis position from packed RGB: byte0=G, byte1=R, byte2=B
+      var local_14 = (tree[local_40 * 4] >> (local_8 * 8)) & 0xff;
+      if (local_38[local_8 * 2] < local_14) {
+        if (local_14 <= local_38[local_8 * 2 + 1]) {
+          // Within bounding box on this axis — push both subtrees
+          stack[in_ECX._0x814] = local_8;
+          in_ECX._0x814 = in_ECX._0x814 + 1;
+          stack[in_ECX._0x814] = local_40;
+          in_ECX._0x814 = in_ECX._0x814 + 1;
+          // Extract node colors: byte1=R, byte0=G, byte2=B
+          var node_R = (tree[local_40 * 4] >> 8) & 0xff;  // byte 1 = R
+          var node_G = tree[local_40 * 4] & 0xff;         // byte 0 = G
+          var node_B = (tree[local_40 * 4] >> 16) & 0xff; // byte 2 = B
+          // Distance: (R-R)^2 + (G-G)^2 + (B-B)^2
+          // C code: (local_1c - param_1)^2 + (local_20 - param_2)^2 + (local_18 - param_3)^2
+          // where local_1c = byte1 = R, local_20 = byte0 = G, local_18 = byte2 = B
+          // param_1 = R query, param_2 = G query, param_3 = B query
+          var local_10 = ((node_R - (param_1 & 0xff)) * (node_R - (param_1 & 0xff))) +
+                         ((node_G - (param_2 & 0xff)) * (node_G - (param_2 & 0xff))) +
+                         ((node_B - (param_3 & 0xff)) * (node_B - (param_3 & 0xff)));
+          if (local_10 < local_3c) {
+            local_c = local_40;
+            local_3c = local_10;
+          }
+        }
+        // Go to left child (offset 0x8 = tree[node*4+2])
+        local_40 = tree[local_40 * 4 + 2];
+      } else {
+        // Go to right child (offset 0xc = tree[node*4+3])
+        local_40 = tree[local_40 * 4 + 3];
+      }
+    }
+  }
+  if (tree[local_c * 4 + 1] === -1) {
+    return 0;
+  } else {
+    return tree[local_c * 4 + 1] + in_ECX._0x10;
+  }
 }
 
 // FUN_005c80fd — find palette entry closest to gray (0x80)
 export function FUN_005c80fd(param_1) {
-  // DEVIATION: palette search for closest gray
-  return 0;
+  var in_ECX = this || {}; // DEVIATION: this pointer — KD-tree object
+  var local_8 = 0;
+  var local_14 = 100000000;
+  for (var local_10 = 0; local_10 < in_ECX._0x0c * 3; local_10 = local_10 + 3) {
+    var r = (param_1[local_10] & 0xff) - 0x80;
+    var g = (param_1[local_10 + 1] & 0xff) - 0x80;
+    var b = (param_1[local_10 + 2] & 0xff) - 0x80;
+    var iVar1 = b * b + g * g + r * r;
+    if (iVar1 < local_14) {
+      local_8 = (local_10 / 3) | 0;
+      local_14 = iVar1;
+    }
+  }
+  return local_8;
 }
 
 // create_font_8200 — create Windows font
@@ -2353,8 +3543,16 @@ export function create_font_8200(param_1, param_2, param_3) {
 
 // FUN_005c8391 — get sub-font from font family
 export function FUN_005c8391(param_1, param_2) {
-  // DEVIATION: font lookup
-  return 0;
+  var local_10 = 0;
+  var iVar1 = FUN_005dcdf9(param_1);
+  if (iVar1 !== 0 && param_2 < iVar1._0x100) {
+    local_10 = FUN_005dce4f(8);
+    var puVar2 = FUN_005dcdf9(local_10);
+    puVar2[0] = iVar1._fonts[param_2]; // *(iVar1 + 0x108 + param_2 * 4)
+    puVar2[1] = 0;
+    FUN_005dce29(local_10);
+  }
+  return local_10;
 }
 
 // FUN_005c841d — delete font handle
@@ -2382,8 +3580,18 @@ export function measure_text_858E(param_1, param_2) {
 
 // FUN_005c861c — load font from file
 export function FUN_005c861c(param_1) {
-  // DEVIATION: Win32 AddFontResourceA
-  return 0;
+  var local_c = 0;
+  // DEVIATION: iVar1 = AddFontResourceA(param_1) — Win32 font loading
+  var iVar1 = 0; // DEVIATION: always 0 in headless
+  if (iVar1 !== 0) {
+    local_c = FUN_005dce4f(0x208);
+    var ptr = FUN_005dcdf9(local_c);
+    FUN_005f22d0(ptr, param_1); // copy filename
+    // DEVIATION: _strncpy(ptr + 0x104, param_1, 3) — copy first 3 chars for matching
+    // DEVIATION: gdi_8736(ptr) — enumerate font families (Win32)
+    FUN_005dce29(local_c);
+  }
+  return local_c;
 }
 
 // create_font_86BC — enum font callback
@@ -2417,8 +3625,18 @@ export function create_font_8908(param_1) {
 
 // FUN_005c8984 — delete font object
 export function FUN_005c8984(param_1) {
-  // DEVIATION: Win32 DeleteObject
-  return 0;
+  var uVar1;
+  if (param_1 === 0) {
+    uVar1 = 0;
+  } else {
+    var piVar2 = FUN_005dcdf9(param_1);
+    if (piVar2[0] !== 0) {
+      // DEVIATION: DeleteObject(piVar2[0]) — Win32 GDI font handle
+    }
+    FUN_005dce29(param_1);
+    uVar1 = FUN_005dce96(param_1);
+  }
+  return uVar1;
 }
 
 // send_msg_89ED — add font resource and broadcast
@@ -2465,9 +3683,75 @@ export function FUN_005c8c83(param_1) {
   }
 }
 
-// FUN_005c8caf — region control window proc
+// FUN_005c8caf — region control window proc (WNDPROC)
 export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
-  // DEVIATION: Win32 window procedure — message dispatch
+  // DEVIATION: Win32 WNDPROC — param_1=HWND, param_2=message, param_3=wParam, param_4=lParam
+  var iVar1 = FUN_005c9563(param_1);
+  iVar1 = iVar1 ? iVar1[1] : 0; // *(iVar1 + 4) — callback table
+  switch (param_2) {
+  case 0x200: // WM_MOUSEMOVE
+    if (DAT_00637c9c === 0) {
+      if (DAT_00637ca0 === 0) {
+        DAT_00637c9c = 1;
+        // DEVIATION: SetCapture(param_1)
+        if (iVar1 !== 0) {
+          // DEVIATION: uVar4 = thunk_FUN_0040f810()
+          // DEVIATION: FUN_005c6303(uVar4)
+          // DEVIATION: uVar4 = thunk_FUN_00418740()
+          FUN_005c8f70(0); // invoke mouse enter callback
+        }
+      }
+    } else {
+      var piVar2 = FUN_005c8f50();
+      // DEVIATION: RECT, OffsetRect, PtInRect — hit testing
+      var BVar3 = 1; // DEVIATION: assume in-rect
+      if (BVar3 === 0) {
+        DAT_00637c9c = 0;
+        if (DAT_00637ca0 === 0) {
+          // DEVIATION: ReleaseCapture()
+          if (iVar1 !== 0) {
+            FUN_005c8fb0(0); // invoke mouse leave callback
+          }
+        }
+      }
+    }
+    break;
+  case 0x201: // WM_LBUTTONDOWN
+    if (DAT_00637c9c !== 0) {
+      DAT_00637ca0 = 1;
+      // DEVIATION: uVar4 = thunk_FUN_0040f810()
+      // DEVIATION: FUN_005c6303(uVar4)
+      // DEVIATION: uVar4 = thunk_FUN_00418740()
+      FUN_005c9030(0); // invoke mouse down callback
+    }
+    break;
+  case 0x202: // WM_LBUTTONUP
+    if (DAT_00637ca0 !== 0) {
+      DAT_00637ca0 = 0;
+      if (DAT_00637c9c === 0) {
+        // DEVIATION: ReleaseCapture()
+        if (iVar1 !== 0) {
+          FUN_005c8fb0(0); // invoke mouse leave callback
+        }
+      } else if (iVar1 !== 0) {
+        // DEVIATION: uVar4 = thunk_FUN_0040f810()
+        // DEVIATION: FUN_005c6303(uVar4)
+        // DEVIATION: uVar4 = thunk_FUN_00418740()
+        FUN_005c8ff0(0); // invoke mouse click callback
+      }
+    }
+    break;
+  case 0x203: // WM_LBUTTONDBLCLK
+    if (DAT_00637c9c !== 0) {
+      // DEVIATION: uVar4 = thunk_FUN_0040f810()
+      // DEVIATION: FUN_005c6303(uVar4)
+      // DEVIATION: uVar4 = thunk_FUN_00418740()
+      FUN_005c9070(0); // invoke double-click callback
+    }
+    break;
+  default:
+    return send_msg_9307(param_1, param_2, param_3, param_4);
+  }
   return 0;
 }
 
@@ -2530,8 +3814,26 @@ export function manage_window_944B() {
 
 // FUN_005c9499 — initialize control data
 export function FUN_005c9499(param_1, param_2) {
-  // DEVIATION: Win32 SetWindowLongA + allocate control data
-  return 0;
+  var local_c = null;
+  if (param_1 === 0) {
+    debug_log(0); // "Error: Tried to initialize NULL control"
+  } else {
+    var uVar1 = FUN_005dce4f(0x30);
+    local_c = FUN_005dcdf9(uVar1);
+    // Initialize the control data structure (12 fields, 0x30 bytes)
+    local_c[2] = 0;  // offset 0x08
+    local_c[5] = 0;  // offset 0x14
+    local_c[4] = 0;  // offset 0x10 = local_c[5]
+    local_c[3] = 0;  // offset 0x0c = local_c[4]
+    local_c[0] = uVar1; // offset 0x00 — self handle
+    local_c[1] = param_2; // offset 0x04 — callback table
+    local_c[6] = 0;  // offset 0x18
+    local_c[7] = 0;  // offset 0x1c
+    local_c[8] = 0;  // offset 0x20
+    local_c[0xb] = 0; // offset 0x2c
+    // DEVIATION: SetWindowLongA(param_1, 0, local_c) — associate data with window
+  }
+  return local_c;
 }
 
 // FUN_005c9563 — get control data from window handle
@@ -3373,13 +4675,363 @@ export function FUN_005cf541(param_1, param_2) {
 }
 
 // FUN_005cf64c — extract sprite from 8-bit port (core)
+// param_1 = port (surface), param_2 = transparency color (-1=auto, -2=no transparency), param_3 = rect[4]
 export function FUN_005cf64c(param_1, param_2, param_3) {
-  // DEVIATION: 1951 bytes of sprite extraction from 8-bit port surface
-  return 0;
+  var in_ECX = this || {}; // DEVIATION: this pointer — sprite object
+  var local_34 = 1;
+  var local_48 = 1;
+  // DEVIATION: SetRect/IntersectRect — compute clipped rectangle
+  var local_64_left = param_3[0];
+  var local_64_top = param_3[1];
+  var local_64_right = param_3[2];
+  var local_64_bottom = param_3[3];
+  // Clip to port bounds: IntersectRect(&local_64, &local_64, param_1 + 0x14)
+  // DEVIATION: rect intersection with port clip rect
+  var local_1c = 10000;
+  var local_14 = 0;
+  var local_c = 0;
+  var local_24 = local_64_right - local_64_left;   // width
+  var local_50 = local_64_bottom - local_64_top;    // height
+  var cVar1 = FUN_005c54f0(); // check if port is locked
+  if (cVar1 === 0) {
+    debug_log(0); // "Warning: Port not locked on Sprite extract"
+    local_34 = 0;
+    FUN_005c01c1(); // lock port
+  }
+  var local_2c = FUN_005c19d3(local_64_left, local_64_top); // pixel address
+  if (local_2c === 0 || local_2c === null) {
+    FUN_005d22b7(0, local_64_left, local_64_top); // "Error: Sprite Extract Illegal Pixel"
+    if (local_34 === 0) {
+      FUN_005c02e0(); // unlock port
+    }
+    return 0;
+  }
+  // Determine transparency color
+  var local_40;
+  if (param_2 === -1) {
+    local_40 = local_2c[0]; // top-left pixel = transparency key
+  } else if (param_2 !== -2) {
+    local_40 = param_2 & 0xff;
+  }
+  // Scan from top to find first non-transparent row
+  var local_44 = 0;
+  while (local_44 < local_50) {
+    var local_54 = local_2c;
+    var local_3c;
+    var found = false;
+    for (local_3c = 0; local_3c < local_24; local_3c = local_3c + 1) {
+      if ((local_54[local_3c] !== local_40) || (param_2 === -2)) {
+        var local_18 = local_44;
+        local_2c = FUN_005c5710(local_2c); // retreat by scanline
+        local_44 = local_50; // break outer
+        local_48 = 0;
+        found = true;
+        break;
+      }
+    }
+    local_44 = local_44 + 1;
+    if (!found) {
+      local_2c = FUN_005c5610(local_2c); // advance by scanline
+    }
+  }
+  if (local_48 === 0) {
+    // Scan from bottom to find last non-transparent row
+    var local_28 = FUN_005c19d3(local_64_left, local_64_top + local_50 - 1);
+    local_44 = 0;
+    var local_10;
+    while (local_44 < local_50) {
+      var local_54b = local_28;
+      var found2 = false;
+      for (local_3c = 0; local_3c < local_24; local_3c = local_3c + 1) {
+        if ((local_54b[local_3c] !== local_40) || (param_2 === -2)) {
+          local_10 = local_50 - local_44;
+          local_44 = local_50; // break outer
+          found2 = true;
+          break;
+        }
+      }
+      local_44 = local_44 + 1;
+      if (!found2) {
+        local_28 = FUN_005c5710(local_28); // retreat by scanline
+      }
+    }
+    // Allocate scan line arrays (up to 0x400 entries each, at 4 bytes each = 0xa00)
+    var local_8 = new Array(0x400).fill(null);  // pixel pointers
+    var local_20 = new Array(0x400).fill(0);    // left offsets
+    var local_38 = new Array(0x400).fill(0);    // run lengths
+    // Scan each row between local_18 and local_10
+    local_44 = 0;
+    while (local_44 < local_10 - local_18) {
+      local_c = local_c + 8;
+      local_20[local_44] = 0;
+      local_38[local_44] = 0;
+      var local_54c = local_2c;
+      // Find first non-transparent pixel from left
+      for (local_3c = 0; local_3c < local_24; local_3c = local_3c + 1) {
+        if ((local_54c[local_3c] !== local_40) || (param_2 === -2)) {
+          local_8[local_44] = local_3c; // store offset into row
+          local_20[local_44] = local_3c;
+          break;
+        }
+      }
+      if (local_24 !== local_3c && local_20[local_44] < local_1c) {
+        local_1c = local_20[local_44];
+      }
+      // Find last non-transparent pixel from right
+      for (local_3c = 0; local_3c < local_24; local_3c = local_3c + 1) {
+        var ridx = local_24 - 1 - local_3c;
+        if ((local_54c[ridx] !== local_40) || (param_2 === -2)) {
+          local_38[local_44] = (local_24 - local_3c) - local_20[local_44];
+          local_c = local_c + local_38[local_44];
+          break;
+        }
+      }
+      if (local_24 !== local_3c && local_14 < local_38[local_44] + local_20[local_44]) {
+        local_14 = local_38[local_44] + local_20[local_44];
+      }
+      local_44 = local_44 + 1;
+      local_2c = FUN_005c5610(local_2c); // advance by scanline
+    }
+    // Free old sprite data if present
+    if (in_ECX._0x3c_right !== 0 && in_ECX._0x3c_right !== undefined) {
+      FUN_005cf337(); // unlock old sprite
+    }
+    if (in_ECX._0x34_top !== 0 && in_ECX._0x34_top !== undefined) {
+      in_ECX._0x34_top = FUN_005dce96(in_ECX._0x34_top);
+    }
+    local_c = local_c + 8;
+    var local_30 = FUN_005dce4f(local_c);
+    if (local_30 === 0) {
+      FUN_005d2279(0, local_c); // "Error: Couldn't allocate memory for sprite"
+      if (local_34 === 0) {
+        FUN_005c02e0(); // unlock port
+      }
+      return 0;
+    }
+    // Store sprite bounding rect
+    // DEVIATION: SetRect(in_ECX + 1, local_1c, local_18, local_14, local_10) — sprite content rect
+    in_ECX._rect1 = [local_1c, local_18, local_14, local_10];
+    // DEVIATION: SetRect(in_ECX, 0, 0, width, height) — full source rect
+    var fullWidth = local_64_right - local_64_left;
+    var fullHeight = local_64_bottom - local_64_top;
+    in_ECX._rect0 = [0, 0, fullWidth, fullHeight];
+    if (param_2 === -2) {
+      in_ECX._transparency = 0;
+    } else {
+      in_ECX._transparency = local_40;
+    }
+    in_ECX._0x20_left = 0; // origin x
+    in_ECX._0x24_top = 0;  // origin y
+    // Build RLE sprite data
+    var local_4c = FUN_005dcdf9(local_30);
+    var writeIdx = 0;
+    for (local_44 = 0; local_44 < local_10 - local_18; local_44 = local_44 + 1) {
+      local_4c[writeIdx] = local_20[local_44];
+      local_4c[writeIdx + 1] = local_38[local_44];
+      writeIdx = writeIdx + 2;
+      // Copy pixel data: FUN_005dced3(src_ptr, dst_ptr, length)
+      // Source is the row pixel data starting at local_8[local_44]
+      // DEVIATION: memcpy of pixel run — local_54c pixels from local_8 offset
+      // In original, local_8 stores a pointer to the first non-transparent pixel
+      // We store the pixel offset instead, so this is a conceptual copy
+      writeIdx = writeIdx + local_38[local_44];
+    }
+    local_4c[writeIdx] = 0; // terminator
+    FUN_005dce29(local_30);
+    if (local_34 === 0) {
+      FUN_005c02e0(); // unlock port
+    }
+    return local_30;
+  } else {
+    // Entirely transparent sprite
+    in_ECX._rect1 = [0, 0, 0, 0];
+    var fullWidth2 = local_64_right - local_64_left;
+    var fullHeight2 = local_64_bottom - local_64_top;
+    in_ECX._rect0 = [0, 0, fullWidth2, fullHeight2];
+    if (param_2 === -2) {
+      in_ECX._transparency = 0;
+    } else {
+      in_ECX._transparency = local_40;
+    }
+    in_ECX._0x20_left = 0;
+    in_ECX._0x24_top = 0;
+    if (local_34 === 0) {
+      FUN_005c02e0(); // unlock port
+    }
+    in_ECX._0x3c_right = 0;
+    return 0;
+  }
 }
 
 // FUN_005cfdeb — extract sprite from direct surface (core)
+// param_1 = direct surface, param_2 = transparency color (-1=auto, -2=no transparency), param_3 = rect[4]
 export function FUN_005cfdeb(param_1, param_2, param_3) {
-  // DEVIATION: 1921 bytes of sprite extraction from direct surface
-  return 0;
+  var in_ECX = this || {}; // DEVIATION: this pointer — sprite object
+  var local_8 = 0;
+  local_8 = FUN_005e6188(); // lock direct surface, get surface pointer
+  if (local_8 === 0) {
+    return 0;
+  }
+  var local_38 = 1;
+  var local_4c = 1;
+  // DEVIATION: SetRect/IntersectRect — compute clipped rectangle
+  var local_68_left = param_3[0];
+  var local_68_top = param_3[1];
+  var local_68_right = param_3[2];
+  var local_68_bottom = param_3[3];
+  // Clip to direct surface bounds: IntersectRect(&local_68, &local_68, param_1 + 0x10)
+  var local_20 = 10000;
+  var local_18 = 0;
+  var local_10 = 0;
+  var local_28 = local_68_right - local_68_left;   // width
+  var local_54 = local_68_bottom - local_68_top;    // height
+  var local_30 = FUN_005e7028(local_68_left, local_68_top, local_8); // pixel address on direct surface
+  if (local_30 === 0 || local_30 === null) {
+    FUN_005d22b7(0, local_68_left, local_68_top); // "Error: Sprite Extract Illegal Pixel"
+    _Timevec_destructor(param_1); // release direct surface
+    return 0;
+  }
+  // Determine transparency color
+  var local_44;
+  if (param_2 === -1) {
+    local_44 = local_30[0]; // top-left pixel = transparency key
+  } else if (param_2 !== -2) {
+    local_44 = param_2 & 0xff;
+  }
+  // Scan from top to find first non-transparent row
+  var local_48 = 0;
+  while (local_48 < local_54) {
+    var local_58 = local_30;
+    var local_40;
+    var found = false;
+    for (local_40 = 0; local_40 < local_28; local_40 = local_40 + 1) {
+      if ((local_58[local_40] !== local_44) || (param_2 === -2)) {
+        var local_1c = local_48;
+        local_30 = FUN_005d1f20(local_30); // retreat by scanline (up)
+        local_48 = local_54; // break outer
+        local_4c = 0;
+        found = true;
+        break;
+      }
+    }
+    local_48 = local_48 + 1;
+    if (!found) {
+      local_30 = FUN_005d1ef0(local_30); // advance by scanline (down)
+    }
+  }
+  if (local_4c === 0) {
+    // Scan from bottom to find last non-transparent row
+    var local_2c = FUN_005e7028(local_68_left, local_68_top + local_54 - 1, local_8);
+    local_48 = 0;
+    var local_14;
+    while (local_48 < local_54) {
+      var local_58b = local_2c;
+      var found2 = false;
+      for (local_40 = 0; local_40 < local_28; local_40 = local_40 + 1) {
+        if ((local_58b[local_40] !== local_44) || (param_2 === -2)) {
+          local_14 = local_54 - local_48;
+          local_48 = local_54; // break outer
+          found2 = true;
+          break;
+        }
+      }
+      local_48 = local_48 + 1;
+      if (!found2) {
+        local_2c = FUN_005d1f20(local_2c); // retreat by scanline (up)
+      }
+    }
+    // Allocate scan line arrays
+    var local_c_arr = new Array(0x400).fill(null);  // pixel pointers
+    var local_24_arr = new Array(0x400).fill(0);    // left offsets
+    var local_3c_arr = new Array(0x400).fill(0);    // run lengths
+    // Scan each row between local_1c and local_14
+    local_48 = 0;
+    while (local_48 < local_14 - local_1c) {
+      local_10 = local_10 + 8;
+      local_24_arr[local_48] = 0;
+      local_3c_arr[local_48] = 0;
+      var local_58c = local_30;
+      // Find first non-transparent pixel from left
+      for (local_40 = 0; local_40 < local_28; local_40 = local_40 + 1) {
+        if ((local_58c[local_40] !== local_44) || (param_2 === -2)) {
+          local_c_arr[local_48] = local_40;
+          local_24_arr[local_48] = local_40;
+          break;
+        }
+      }
+      if (local_28 !== local_40 && local_24_arr[local_48] < local_20) {
+        local_20 = local_24_arr[local_48];
+      }
+      // Find last non-transparent pixel from right
+      for (local_40 = 0; local_40 < local_28; local_40 = local_40 + 1) {
+        var ridx = local_28 - 1 - local_40;
+        if ((local_58c[ridx] !== local_44) || (param_2 === -2)) {
+          local_3c_arr[local_48] = (local_28 - local_40) - local_24_arr[local_48];
+          local_10 = local_10 + local_3c_arr[local_48];
+          break;
+        }
+      }
+      if (local_28 !== local_40 && local_18 < local_3c_arr[local_48] + local_24_arr[local_48]) {
+        local_18 = local_3c_arr[local_48] + local_24_arr[local_48];
+      }
+      local_48 = local_48 + 1;
+      local_30 = FUN_005d1ef0(local_30); // advance by scanline
+    }
+    // Free old sprite data if present
+    if (in_ECX._0x3c_right !== 0 && in_ECX._0x3c_right !== undefined) {
+      FUN_005cf337(); // unlock old sprite
+    }
+    if (in_ECX._0x34_top !== 0 && in_ECX._0x34_top !== undefined) {
+      in_ECX._0x34_top = FUN_005dce96(in_ECX._0x34_top);
+    }
+    local_10 = local_10 + 8;
+    var local_34 = FUN_005dce4f(local_10);
+    if (local_34 === 0) {
+      FUN_005d2279(0, local_10); // "Error: Couldn't allocate memory for sprite"
+      _Timevec_destructor(param_1); // release direct surface
+      return 0;
+    }
+    // Store sprite bounding rect
+    in_ECX._rect1 = [local_20, local_1c, local_18, local_14];
+    var fullWidth = local_68_right - local_68_left;
+    var fullHeight = local_68_bottom - local_68_top;
+    in_ECX._rect0 = [0, 0, fullWidth, fullHeight];
+    if (param_2 === -2) {
+      in_ECX._transparency = 0;
+    } else {
+      in_ECX._transparency = local_44;
+    }
+    in_ECX._0x20_left = 0;
+    in_ECX._0x24_top = 0;
+    // Build RLE sprite data
+    var local_50_ptr = FUN_005dcdf9(local_34);
+    var writeIdx = 0;
+    for (local_48 = 0; local_48 < local_14 - local_1c; local_48 = local_48 + 1) {
+      local_50_ptr[writeIdx] = local_24_arr[local_48];
+      local_50_ptr[writeIdx + 1] = local_3c_arr[local_48];
+      writeIdx = writeIdx + 2;
+      // DEVIATION: FUN_005dced3 — memcpy of pixel run data
+      writeIdx = writeIdx + local_3c_arr[local_48];
+    }
+    local_50_ptr[writeIdx] = 0; // terminator
+    FUN_005dce29(local_34);
+    _Timevec_destructor(param_1); // release direct surface
+    return local_34;
+  } else {
+    // Entirely transparent sprite
+    in_ECX._rect1 = [0, 0, 0, 0];
+    var fullWidth2 = local_68_right - local_68_left;
+    var fullHeight2 = local_68_bottom - local_68_top;
+    in_ECX._rect0 = [0, 0, fullWidth2, fullHeight2];
+    if (param_2 === -2) {
+      in_ECX._transparency = 0;
+    } else {
+      in_ECX._transparency = local_44;
+    }
+    in_ECX._0x20_left = 0;
+    in_ECX._0x24_top = 0;
+    _Timevec_destructor(param_1); // release direct surface
+    in_ECX._0x3c_right = 0;
+    return 0;
+  }
 }
