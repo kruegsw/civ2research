@@ -5082,5 +5082,3 @@ function FUN_004189c0() { }
 function FUN_00418a00() { }
 function FUN_0052263c() { }
 function FUN_00511880() { }
-function s16(base, offset) { return 0; }
-function u16(base, offset) { return 0; }
