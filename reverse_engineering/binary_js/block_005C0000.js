@@ -33,7 +33,7 @@ let DAT_006e47c4 = 0;       // active blit scale table Y
 let DAT_006d4700 = new Array(16).fill(0);  // scale table cache — numerators (stride 0x100c)
 let DAT_006d4704 = new Array(16).fill(0);  // scale table cache — denominators (stride 0x100c)
 let DAT_006d4708 = new Array(16).fill(0);  // scale table cache — timestamps (stride 0x100c)
-let DAT_006d470c = [];      // scale table cache — lookup tables
+let DAT_006d470c = new Array(16 * 0x400).fill(0);  // scale table cache — lookup tables (16 slots x 1024 entries)
 let DAT_006e4ff0 = 0;       // HINSTANCE — app instance handle
 let DAT_00638b48 = 0;       // palette mode flag (1 = 8-bit)
 let DAT_00638b40 = 0;       // shadow color index
@@ -2816,6 +2816,11 @@ export function FUN_005cd6c0() {
 
 // FUN_005cd6e0 — initialize scale table cache
 export function FUN_005cd6e0() {
+  for (var local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
+    DAT_006d4708[local_8] = 0;
+    DAT_006d4700[local_8] = 0;
+    DAT_006d4704[local_8] = 0;
+  }
   FUN_005cd775(1, 1);
   FUN_005cda2a(1, 1, 1, 1);
 }
@@ -2848,7 +2853,7 @@ export function FUN_005cd775(param_1, param_2) {
         local_14 = 0;
         while (local_14 < 0x400) {
           for (; -1 < local_c && local_14 < 0x400; local_14 = local_14 + 1) {
-            // DAT_006d470c[local_14 + local_18 * 0x400] = local_8;
+            DAT_006d470c[local_14 + local_18 * 0x400] = local_8;
             local_c = local_c - DAT_00637f9c;
           }
           local_c = local_c + DAT_00637f98;
@@ -2859,21 +2864,21 @@ export function FUN_005cd775(param_1, param_2) {
         local_14 = 0;
         while (local_14 < 0x400) {
           for (; DAT_00637f9c <= local_c && local_14 < 0x400; local_14 = local_14 + 1) {
-            // DAT_006d470c[local_14 + local_18 * 0x400] = local_8;
+            DAT_006d470c[local_14 + local_18 * 0x400] = local_8;
             local_c = local_c - DAT_00637f9c;
           }
           local_c = local_c + DAT_00637f98;
           local_8 = local_8 + 1;
         }
       }
-      // DAT_006e47c8 = &DAT_006d470c + local_18 * 0x100c;
+      DAT_006e47c8 = local_18;
       return;
     }
     if (DAT_006d4700[local_14] === DAT_00637f98 && DAT_006d4704[local_14] === DAT_00637f9c) {
       uVar1 = FUN_00421bb0();
       DAT_006d4708[local_14] = uVar1;
       local_18 = local_14;
-      // DAT_006e47c8 = &DAT_006d470c + local_18 * 0x100c;
+      DAT_006e47c8 = local_18;
       return;
     }
     if (DAT_006d4708[local_14] <= local_10) {
@@ -2926,7 +2931,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
   if (local_14 >= 0x10) {
     FUN_005cdcdb(local_8, DAT_00637fa0, DAT_00637fa4);
   }
-  // DAT_006e47c0 = &DAT_006d470c + local_8 * 0x100c;
+  DAT_006e47c0 = local_8;
 
   // Y scale table
   local_10 = FUN_00421bb0();
@@ -2936,13 +2941,13 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
     if (0xf < local_14) {
       FUN_005cdcdb(local_c, DAT_00637fa8, DAT_00637fac);
       local_14 = local_c;
-      // DAT_006e47c4 = &DAT_006d470c + local_14 * 0x100c;
+      DAT_006e47c4 = local_14;
       return;
     }
     if (DAT_006d4700[local_14] === DAT_00637fa8 && DAT_006d4704[local_14] === DAT_00637fac) {
       uVar1 = FUN_00421bb0();
       DAT_006d4708[local_14] = uVar1;
-      // DAT_006e47c4 = &DAT_006d470c + local_14 * 0x100c;
+      DAT_006e47c4 = local_14;
       return;
     }
     if (DAT_006d4708[local_14] <= local_10 && local_8 !== local_14) {
@@ -2970,7 +2975,7 @@ export function FUN_005cdcdb(param_1, param_2, param_3) {
     local_10 = 0;
     while (local_10 < 0x400) {
       for (; -1 < local_c && local_10 < 0x400; local_10 = local_10 + 1) {
-        // DAT_006d470c[local_10 + param_1 * 0x400] = local_8;
+        DAT_006d470c[local_10 + param_1 * 0x400] = local_8;
         local_c = local_c - param_3;
       }
       local_c = local_c + param_2;
@@ -2981,7 +2986,7 @@ export function FUN_005cdcdb(param_1, param_2, param_3) {
     local_10 = 0;
     while (local_10 < 0x400) {
       for (; param_3 <= local_c && local_10 < 0x400; local_10 = local_10 + 1) {
-        // DAT_006d470c[local_10 + param_1 * 0x400] = local_8;
+        DAT_006d470c[local_10 + param_1 * 0x400] = local_8;
         local_c = local_c - param_3;
       }
       local_c = local_c + param_2;
@@ -3081,6 +3086,7 @@ export function FUN_005cdfc2(param_1) {
     FUN_005dce29(in_ECX + 0x34);
     FUN_005c5580(iVar1);
     FUN_005c5520(iVar1);
+    FUN_005cf2ff();
   }
 }
 

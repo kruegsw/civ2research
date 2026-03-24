@@ -5008,6 +5008,8 @@ export function FUN_005dbaf6() { // DEVIATION: Win32 — FUN_005bd500(); }
 // app_init — initialize SMEDS application
 export function FUN_005dbb20(param_1, param_2) {
   DAT_006e4ff0 = param_1; DAT_006e4fec = param_2;
+  FUN_005dbbb3();
+  FUN_005dbbd6();
   return 1;
 }
 
@@ -5016,19 +5018,19 @@ export function FUN_005dbb4f() { return 1; }
 
 // Source: decompiled/block_005D0000.c FUN_005dbbb3 (35 bytes)
 // init_subsystems_a — init display subsystem
-export function FUN_005dbbb3() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dbbb3() {
+  // DEVIATION: Win32 — thunk_FUN_00417ef0(2, 0xe);
+  FUN_005cd6e0();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dbbd6 (69 bytes)
 // init_subsystems_b — init windows + timer + RNG
 export function FUN_005dbbd6() {
-  // DEVIATION: Win32 — time_t tVar1;
-  // DEVIATION: Win32 — if (DAT_006e4fec == 0) {
-  // DEVIATION: Win32 — register_wndclass_BC5A();
-  // DEVIATION: Win32 — }
+  // DEVIATION: Win32 — if (DAT_006e4fec == 0) { register_wndclass_BC5A(); }
   // DEVIATION: Win32 — register_wndclass_D8A0();
-  // DEVIATION: Win32 — FUN_005dbc3a();
-  // DEVIATION: Win32 — tVar1 = _time((time_t *)0x0);
-  // DEVIATION: Win32 — FUN_005f2260((int)tVar1);
+  FUN_005dbc3a();
+  var tVar1 = Math.floor(Date.now() / 1000);
+  FUN_005f2260(tVar1);
   // DEVIATION: Win32 — InitCommonControls();
 }
 
