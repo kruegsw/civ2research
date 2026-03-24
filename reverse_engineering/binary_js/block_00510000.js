@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_00510000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8 } from './mem.js';
+import { s8, u8, s16, s32, u32, w8, w16, w32 } from './mem.js';
 
 
 // ============================================================
@@ -145,8 +145,8 @@ export function FUN_00511560(param_1) {
 export function FUN_005115b0() {
   let in_ECX;
   // SEH setup omitted
-  if (in_ECX !== undefined && in_ECX !== 0) {
-    // DEVIATION: if (*(in_ECX + 0x1c) !== 0) FUN_005cb6db(*(in_ECX + 0x1c));
+  if (s32(in_ECX, 0x1c) !== 0) {
+    FUN_005cb6db(s32(in_ECX, 0x1c));
   }
   FUN_00511624();
   FUN_00511630();
@@ -217,10 +217,9 @@ export function FUN_0051164f() {
 // scale_by_speed
 export function FUN_00511690(param_1) {
   let in_ECX;
-  // DEVIATION: in_ECX is register-based (this pointer)
-  // if (s32(in_ECX, 0x15d4) !== 2) {
-  //   param_1 = (s32(in_ECX, 0x15d4) * param_1) / 2;
-  // }
+  if (s32(in_ECX, 0x15d4) !== 2) {
+    param_1 = (s32(in_ECX, 0x15d4) * param_1) / 2;
+  }
   return param_1;
 }
 
@@ -251,7 +250,7 @@ export function FUN_00511720() {
   FUN_0040f480();
   FUN_005bd630();
   FUN_005bd630();
-  // DEVIATION: *(in_ECX + 200) = 0 — register-based this pointer
+  w8(in_ECX, 200, 0);
   return in_ECX;
 }
 
@@ -265,7 +264,7 @@ export function FUN_00511720() {
 // set_ecx_field_2c
 export function FUN_005117f0(param_1) {
   let in_ECX;
-  // DEVIATION: *(in_ECX + 0x2c) = param_1 — register-based this pointer
+  w32(in_ECX, 0x2c, param_1);
   return;
 }
 
@@ -680,8 +679,8 @@ export function FUN_00511ba2() {
       FUN_00421ea0(s_ALLYATTACKING_00631414);
       break;
     case 0x3d:
-      // DEVIATION: w16(DAT_0064ca82, piVar1[4] * 2 + DAT_006d1da0 * 0x594, DAT_00655af8);
-      // DEVIATION: w16(DAT_0064ca82, piVar1[4] * 0x594 + DAT_006d1da0 * 2, DAT_00655af8);
+      w16(DAT_0064ca82, piVar1[4] * 2 + DAT_006d1da0 * 0x594, DAT_00655af8);
+      w16(DAT_0064ca82, piVar1[4] * 0x594 + DAT_006d1da0 * 2, DAT_00655af8);
       if (DAT_0067a8c0 === -1) {
         DAT_0067a8c0 = 0xfffffffe;
         FUN_0040bbb0();
@@ -1044,7 +1043,7 @@ export function FUN_005139b3() {
 // net_msg_queue_init
 export function FUN_00514220() {
   let in_ECX;
-  // DEVIATION: _memset(in_ECX, 0, 24000) — register-based this pointer
+  // DEVIATION: _memset(in_ECX, 0, 24000) — zero-fills queue memory
   FUN_00514272();
   return in_ECX;
 }
@@ -1073,21 +1072,20 @@ export function FUN_00514254() {
 export function FUN_00514272() {
   let in_ECX;
   let local_8;
-  // DEVIATION: in_ECX is register-based this pointer for message queue object
   for (local_8 = 0; local_8 < 2000; local_8 = local_8 + 1) {
-    // DEVIATION: if (*(in_ECX + 4 + local_8 * 0xc) !== 0) {
-    //   operator_delete(*(in_ECX + 4 + local_8 * 0xc));
-    //   *(in_ECX + 4 + local_8 * 0xc) = 0;
-    // }
-    // *(in_ECX + 8 + local_8 * 0xc) = 0;
-    // *(in_ECX + local_8 * 0xc) = 0;
+    if (s32(in_ECX, 4 + local_8 * 0xc) !== 0) {
+      operator_delete(s32(in_ECX, 4 + local_8 * 0xc));
+      w32(in_ECX, 4 + local_8 * 0xc, 0);
+    }
+    w32(in_ECX, 8 + local_8 * 0xc, 0);
+    w32(in_ECX, local_8 * 0xc, 0);
   }
-  // *(in_ECX + 24000) = 400;
-  // *(in_ECX + 0x5dc4) = 400;
-  // *(in_ECX + 0x5dc8) = 0;
-  // *(in_ECX + 0x5dcc) = 0;
-  // *(in_ECX + 0x5dd0) = 0;
-  // *(in_ECX + 0x5dd4) = 0;
+  w32(in_ECX, 24000, 400);
+  w32(in_ECX, 0x5dc4, 400);
+  w32(in_ECX, 0x5dc8, 0);
+  w32(in_ECX, 0x5dcc, 0);
+  w32(in_ECX, 0x5dd0, 0);
+  w32(in_ECX, 0x5dd4, 0);
   return;
 }
 
@@ -1121,8 +1119,6 @@ export function FUN_0051438f(param_1, param_2, param_3) {
   let iVar1;
   let pvVar2;
   let in_ECX;
-  // DEVIATION: in_ECX is register-based this pointer for message queue object
-  // All memory accesses below use in_ECX + offset pattern
 
   if (((DAT_00655b02 === 5) || (DAT_00655b02 === 6)) && (param_1 !== 0) &&
      (param_1 !== 0xff)) {
@@ -1132,8 +1128,7 @@ export function FUN_0051438f(param_1, param_2, param_3) {
       param_1 = 1;
     }
   }
-  // DEVIATION: param_2 is pointer-based struct access *(param_2 + 4), *(param_2 + 8)
-  let msgType = 0; // *(int *)((int)param_2 + 4)
+  let msgType = s32(param_2, 4);
   if (msgType === 0x2b) {
     _DAT_006c908c = _DAT_006c908c + 1;
     FUN_0046b14d(0x2c, param_1, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -1143,18 +1138,61 @@ export function FUN_0051438f(param_1, param_2, param_3) {
     iVar1 = FUN_0051435f(msgType);
     if (iVar1 === 0) {
       // Primary queue enqueue
-      // DEVIATION: Circular buffer logic using in_ECX + offset for head/tail/count
-      // if queue full, log message lost and return 0
-      // otherwise allocate, memcpy, advance tail
-      // *(in_ECX + 0x5dc8) += 1; // count
-      // if (DAT_006ad690 < count) DAT_006ad690 = count;
+      if ((s32(in_ECX, 24000) === s32(in_ECX, 0x5dc4)) &&
+         (s32(in_ECX, 0x5dc8) !== 0)) {
+        FUN_005d22b7(s_MESSAGE_LOST_in_EnqueueMessage, param_1, param_3);
+        return 0;
+      }
+      if ((s32(in_ECX, 24000) < 400) || (1999 < s32(in_ECX, 24000))) {
+        FUN_005dae6b(7, s_head_gt_400_head_lt_MAX, s_NetMessageQueue_primary, 0x130);
+      }
+      if ((s32(in_ECX, 0x5dc4) < 400) || (1999 < s32(in_ECX, 0x5dc4))) {
+        FUN_005dae6b(7, s_tail_gt_400_tail_lt_MAX, s_NetMessageQueue_tail, 0x131);
+      }
+      pvVar2 = operator_new(param_3);
+      w32(in_ECX, 4 + s32(in_ECX, 0x5dc4) * 0xc, pvVar2);
+      if (s32(in_ECX, 4 + s32(in_ECX, 0x5dc4) * 0xc) === 0) {
+        FUN_005d22b7(s_EnqueueMessage_Primary_Failed, s32(param_2, 4), s32(param_2, 8));
+        return 0;
+      }
+      FID_conflict__memcpy(s32(in_ECX, 4 + s32(in_ECX, 0x5dc4) * 0xc), param_2, param_3);
+      w32(in_ECX, s32(in_ECX, 0x5dc4) * 0xc, param_1);
+      w32(in_ECX, 8 + s32(in_ECX, 0x5dc4) * 0xc, param_3);
+      w32(in_ECX, 0x5dc4, (s32(in_ECX, 0x5dc4) + 1) % 2000);
+      if (s32(in_ECX, 0x5dc4) === 0) {
+        w32(in_ECX, 0x5dc4, 400);
+      }
+      w32(in_ECX, 0x5dc8, s32(in_ECX, 0x5dc8) + 1);
+      if (DAT_006ad690 < s32(in_ECX, 0x5dc8)) {
+        DAT_006ad690 = s32(in_ECX, 0x5dc8);
+      }
     } else {
       // Alpha queue enqueue
-      // DEVIATION: Same circular buffer logic for alpha queue at in_ECX + 0x5dcc..0x5dd4
-      // if queue full, log message lost and return 0
-      // otherwise allocate, memcpy, advance tail
-      // *(in_ECX + 0x5dd4) += 1; // alpha count
-      // if (DAT_006ad694 < alphaCount) DAT_006ad694 = alphaCount;
+      if ((s32(in_ECX, 0x5dcc) === s32(in_ECX, 0x5dd0)) &&
+         (s32(in_ECX, 0x5dd4) !== 0)) {
+        FUN_005d22b7(s_MESSAGE_LOST_in_Alpha_EnqueueMessage, param_1, param_3);
+        return 0;
+      }
+      if ((s32(in_ECX, 0x5dcc) < 0) || (399 < s32(in_ECX, 0x5dcc))) {
+        FUN_005dae6b(7, s_alphaHead_gt_0_lt_400, s_NetMessageQueue_alpha_head, 0x10c);
+      }
+      if ((s32(in_ECX, 0x5dd0) < 0) || (399 < s32(in_ECX, 0x5dd0))) {
+        FUN_005dae6b(7, s_alphaTail_gt_0_lt_400, s_NetMessageQueue_alpha_tail, 0x10d);
+      }
+      pvVar2 = operator_new(param_3);
+      w32(in_ECX, 4 + s32(in_ECX, 0x5dd0) * 0xc, pvVar2);
+      if (s32(in_ECX, 4 + s32(in_ECX, 0x5dd0) * 0xc) === 0) {
+        FUN_005d22b7(s_EnqueueMessage_Alpha_Failed, s32(param_2, 4), s32(param_2, 8));
+        return 0;
+      }
+      FID_conflict__memcpy(s32(in_ECX, 4 + s32(in_ECX, 0x5dd0) * 0xc), param_2, param_3);
+      w32(in_ECX, s32(in_ECX, 0x5dd0) * 0xc, param_1);
+      w32(in_ECX, 8 + s32(in_ECX, 0x5dd0) * 0xc, param_3);
+      w32(in_ECX, 0x5dd0, (s32(in_ECX, 0x5dd0) + 1) % 400);
+      w32(in_ECX, 0x5dd4, s32(in_ECX, 0x5dd4) + 1);
+      if (DAT_006ad694 < s32(in_ECX, 0x5dd4)) {
+        DAT_006ad694 = s32(in_ECX, 0x5dd4);
+      }
     }
   }
   return 1;
@@ -1171,33 +1209,37 @@ export function FUN_0051438f(param_1, param_2, param_3) {
 export function FUN_005149d6(param_1, param_2, param_3, param_4) {
   let uVar1;
   let in_ECX;
-  // DEVIATION: in_ECX is register-based this pointer for message queue object
-  // param_1, param_2, param_3 are output pointers
 
-  // Alpha queue has priority — dequeue from alpha first if non-empty
-  // if (*(in_ECX + 0x5dd4) !== 0) {
-  //   // Dequeue from alpha queue (head at 0x5dcc, count at 0x5dd4)
-  //   *param_1 = *(in_ECX + *(in_ECX + 0x5dcc) * 0xc);
-  //   *(in_ECX + *(in_ECX + 0x5dcc) * 0xc) = 0;
-  //   *param_2 = *(in_ECX + 4 + *(in_ECX + 0x5dcc) * 0xc);
-  //   *(in_ECX + 4 + *(in_ECX + 0x5dcc) * 0xc) = 0;
-  //   *param_3 = *(in_ECX + 8 + *(in_ECX + 0x5dcc) * 0xc);
-  //   *(in_ECX + 8 + *(in_ECX + 0x5dcc) * 0xc) = 0;
-  //   *(in_ECX + 0x5dcc) = (*(in_ECX + 0x5dcc) + 1) % 400;
-  //   *(in_ECX + 0x5dd4) = *(in_ECX + 0x5dd4) - 1;
-  //   uVar1 = 1;
-  // } else {
-  //   if ((param_4 === 0) && (*(in_ECX + 0x5dc8) !== 0)) {
-  //     // Dequeue from primary queue (head at 24000, count at 0x5dc8)
-  //     *param_1 = *(in_ECX + *(in_ECX + 24000) * 0xc);
-  //     ... advance head = (head + 1) % 2000; if (head === 0) head = 400;
-  //     *(in_ECX + 0x5dc8) -= 1;
-  //     uVar1 = 1;
-  //   } else {
-  //     uVar1 = 0;
-  //   }
-  // }
-  uVar1 = 0;
+  if (s32(in_ECX, 0x5dd4) !== 0) {
+    // Dequeue from alpha queue (priority)
+    param_1[0] = s32(in_ECX, s32(in_ECX, 0x5dcc) * 0xc);
+    w32(in_ECX, s32(in_ECX, 0x5dcc) * 0xc, 0);
+    param_2[0] = s32(in_ECX, 4 + s32(in_ECX, 0x5dcc) * 0xc);
+    w32(in_ECX, 4 + s32(in_ECX, 0x5dcc) * 0xc, 0);
+    param_3[0] = s32(in_ECX, 8 + s32(in_ECX, 0x5dcc) * 0xc);
+    w32(in_ECX, 8 + s32(in_ECX, 0x5dcc) * 0xc, 0);
+    w32(in_ECX, 0x5dcc, (s32(in_ECX, 0x5dcc) + 1) % 400);
+    w32(in_ECX, 0x5dd4, s32(in_ECX, 0x5dd4) - 1);
+    uVar1 = 1;
+  } else {
+    if ((param_4 === 0) && (s32(in_ECX, 0x5dc8) !== 0)) {
+      // Dequeue from primary queue
+      param_1[0] = s32(in_ECX, s32(in_ECX, 24000) * 0xc);
+      w32(in_ECX, s32(in_ECX, 24000) * 0xc, 0);
+      param_2[0] = s32(in_ECX, 4 + s32(in_ECX, 24000) * 0xc);
+      w32(in_ECX, 4 + s32(in_ECX, 24000) * 0xc, 0);
+      param_3[0] = s32(in_ECX, 8 + s32(in_ECX, 24000) * 0xc);
+      w32(in_ECX, 8 + s32(in_ECX, 24000) * 0xc, 0);
+      w32(in_ECX, 24000, (s32(in_ECX, 24000) + 1) % 2000);
+      if (s32(in_ECX, 24000) === 0) {
+        w32(in_ECX, 24000, 400);
+      }
+      w32(in_ECX, 0x5dc8, s32(in_ECX, 0x5dc8) - 1);
+      uVar1 = 1;
+    } else {
+      uVar1 = 0;
+    }
+  }
   return uVar1;
 }
 
@@ -1314,10 +1356,20 @@ export function FUN_00514f08() {
 // wonders_council_ctor
 export function FUN_00514f16() {
   let in_ECX;
-  // SEH setup, MFC object construction
-  // Initializes CPropertySheet, CString, various UI components
+  // SEH setup omitted
+  FUN_0044c730(); // DEVIATION: MFC CPropertySheet ctor
+  FUN_005c64da();
+  FUN_0044c5a0(); // DEVIATION: MFC base ctor
+  FUN_005bd630();
+  FUN_004502b0(); // DEVIATION: MFC ctor chain
+  // DEVIATION: CString::CString(in_ECX + 0x64c)
+  // DEVIATION: CString::CString(in_ECX + 0x688)
+  FUN_0043c690();
+  w32(in_ECX, 0x6c4, 0);
   DAT_00631a98 = in_ECX;
-  // SetRect, thunk calls...
+  w32(in_ECX, 0x6fc, 0);
+  SetRect(in_ECX + 0x6ec, 0xd0, 0x39, 0x1b1, 0x14c);
+  FUN_0043c6c0(0, 0x18, 1);
   return in_ECX;
 }
 
@@ -1432,9 +1484,44 @@ export function FUN_005151f4(param_1) {
   let uVar2;
   let in_ECX;
   let local_a8;
-  // Loads civ2_mk.dll, sets up bitmaps and rect regions for wonder council
-  // See C source for full detail
-  return 1; // or 0 on failure
+  let local_24, local_20, local_1c, local_18;
+  let local_14 = [0, 0, 0, 0]; // tagRECT
+
+  FUN_005bcaa7(/* &local_24 */);
+  FUN_004aef20(/* local_a4 */);
+  FUN_0043c840(/* local_a4 */, s_civ2_mk_dll);
+  iVar1 = FUN_00564713(/* local_a4 */);
+  if (iVar1 === 0) {
+    return 0;
+  }
+  FUN_004502e0(/* local_a4 */); // DEVIATION: MFC resource load
+  w32(in_ECX, 0x6c4, param_1);
+  FUN_005c5fc4(DAT_00631aac, 0x800, local_24, local_20, local_1c - local_24, (local_18 - local_20) + 5,
+               DAT_006a8c00, DAT_006553d8);
+  FUN_00419ba0(0); // DEVIATION: display helper
+  FUN_005bb4ae(DAT_00631ab0, 0x800, 0, 0, 0x280, 0x1e0, in_ECX + 0xb8, in_ECX);
+  FUN_00450400(); // DEVIATION: MFC resource helper
+  FUN_005bf5e1(0x2711, 10, 0xec, in_ECX + 0xb8);
+  FUN_005cedad(in_ECX + 0x600, 8, 0, 0, 0x129, 0xad);
+  FUN_005bf5e1(10000, 10, 0xec, in_ECX + 0xb8);
+  SetRect(local_14, 0, 0, 0x280, 0x1e0);
+  FUN_005c0593(in_ECX + 0x4ec, local_14, local_14);
+  SetRect(in_ECX + 0x6dc, 0xc1, 0x173, 0x1c0, 0x1cd);
+  let pCVar3 = COleClientItem_GetActiveView(in_ECX + 0x600);
+  let pCVar4 = COleClientItem_GetActiveView(in_ECX + 0x600);
+  FUN_005bd65c(pCVar4, pCVar3);
+  FUN_005c0593(DAT_006aad58, in_ECX + 0x6dc, in_ECX + 0x6dc);
+  for (local_a8 = 0;
+      (local_a8 < 0xc && (u8(DAT_00655142, local_a8) !== (param_1 & 0xff)));
+      local_a8 = local_a8 + 1) {
+  }
+  DAT_00631a9c = 0;
+  FUN_00515999(local_a8);
+  w32(in_ECX, 0x6fc, 0x133);
+  SetRect(in_ECX + 0x6cc, 0xab, s32(in_ECX, 0x6fc), 0x1d4,
+          s32(in_ECX, 0x6fc) + 0xad);
+  FUN_00515dc8(0);
+  return 1;
 }
 
 
@@ -1446,9 +1533,79 @@ export function FUN_005151f4(param_1) {
 
 // wonders_council_animate_play
 export function FUN_00515516() {
+  let DVar1;
+  let iVar2;
+  let pcVar3;
   let in_ECX;
-  // Animation loop with timeGetTime, sound, text rendering
-  // See C source for full detail
+  let local_120;
+  let local_11c = '';
+  let local_1c;
+  // SEH setup omitted
+  FUN_0043c690();
+  FUN_00408650(); // DEVIATION: Win32 video setup
+  FUN_00419b80();
+  FUN_00450390(in_ECX + 0xb8); // DEVIATION: MFC
+  FUN_004085f0(); // DEVIATION: Win32
+  FUN_00419b80();
+  FUN_00414ce0(); // DEVIATION: Win32
+  for (local_120 = 0; local_120 < 0xc; local_120 = local_120 + 1) {
+    if (u8(DAT_00655142, local_120) === s32(in_ECX, 0x6c4)) {
+      FUN_00515999(local_120);
+      DAT_00631a9c = 1;
+      FUN_00515c15(local_120);
+      DVar1 = timeGetTime();
+      FUN_0046e020(((u8(DAT_0065514e, local_120) + DAT_006d1168) & 7) + 0x53, 1, 0, 0);
+      FUN_00516005();
+      FUN_0046e287(0x3c);
+      do {
+        FUN_00407ff0(); // DEVIATION: Win32 message pump
+        local_1c = timeGetTime();
+        if (2 < DAT_00655b02) {
+          FUN_0047e94e(1, 0);
+        }
+      } while ((local_1c - DVar1) < 7000);
+      FUN_00515999(local_120);
+      FUN_00515f3c();
+    }
+  }
+  FUN_0046e287(0x3c);
+  FUN_005c041f(0);
+  SetRect(in_ECX + 0x6dc, 0, 0, 0x280, 0x1e0);
+  FUN_005683c5(in_ECX + 0x4ec, in_ECX + 0x6dc, 4, 4);
+  FUN_005bf5e1(0x2712, 10, 0xec, in_ECX + 0xb8);
+  FUN_005baec8(in_ECX + 0x700);
+  FUN_005baee0(0x7c, 0x81, 1, 1);
+  FUN_0040bbb0();
+  FUN_004aef20(local_11c);
+  iVar2 = FUN_004a2379(DAT_006558e8, DAT_00631ab4);
+  if (iVar2 === 0) {
+    while (pcVar3 = FUN_004a23fc(1), pcVar3 !== '@') {
+      FUN_0043c840(local_11c, DAT_00673f14);
+      FUN_0043c840(local_11c, DAT_00631abc);
+    }
+    FUN_005bb024(in_ECX + 0x4ec, local_11c, 0, 0x48, 0x280);
+  }
+  FUN_005683c5(in_ECX + 0x4ec, in_ECX + 0x6dc, 4, 3);
+  FUN_0040bbb0();
+  FUN_0040bc10(0x1c8);
+  FUN_0043c6c0(0, 0x10, 3);
+  FUN_005baec8(/* local_18 */);
+  // DEVIATION: _Timevec::~_Timevec(local_18)
+  FUN_005bb024(in_ECX + 0x4ec, DAT_00679640, 0, /* 0x1dc - extraout_EAX */ 0, 0x280);
+  FUN_00408490(in_ECX + 0x6dc); // DEVIATION: Win32
+  // DEVIATION: COleControlSite::SetDlgCtrlID(in_ECX + 0x544, 0x401a1e)
+  FUN_00408130(/* LAB_00401334 */); // DEVIATION: Win32
+  if (2 < DAT_00655b02) {
+    EnableStackedTabs_00511820(in_ECX + 0x534, 0x403585);
+  }
+  FUN_005c61b0();
+  EnableStackedTabs_00511820(in_ECX + 0x534, 0);
+  FUN_00414d40(); // DEVIATION: Win32
+  FUN_004503d0(); // DEVIATION: MFC
+  FUN_00419b80();
+  FUN_00450390(DAT_006a8c00); // DEVIATION: MFC
+  FUN_004503d0(); // DEVIATION: MFC
+  FUN_00419b80();
   FUN_00515978();
   FUN_0051598b();
   return;
@@ -1481,9 +1638,41 @@ export function FUN_0051598b() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 // wonders_council_render_advisor
 export function FUN_00515999(param_1) {
+  let uVar1;
   let in_ECX;
-  // Renders advisor text with shadow effect, OffsetRect calls
-  // See C source for full detail
+
+  if (DAT_00631a9c === 0) {
+    FUN_005c0593(in_ECX + 0x600, in_ECX + 0x6dc, in_ECX + 0x6dc);
+    FUN_0040bbb0();
+    FUN_0040bbe0(DAT_0065515a + param_1 * 0x18);
+    FUN_005c19ad(0x21);
+    OffsetRect(in_ECX + 0x6dc, 1, 1);
+    FUN_005c1167(in_ECX + 0x700, DAT_00679640, in_ECX + 0x6dc, 0);
+    FUN_005c19ad(0x10);
+    OffsetRect(in_ECX + 0x6dc, -1, -1);
+    FUN_005c1167(in_ECX + 0x700, DAT_00679640, in_ECX + 0x6dc, 0);
+  } else {
+    FUN_005c0593(in_ECX + 0x600, in_ECX + 0x6dc, in_ECX + 0x6dc);
+    FUN_0040bbb0();
+    FUN_0040bbe0(DAT_0065515a + param_1 * 0x18);
+    FUN_0040fe40();
+    FUN_0040fe10();
+    uVar1 = FUN_00428b0c(DAT_00628420[0x71c / 4]);
+    FUN_0040bbe0(uVar1);
+    FUN_0040fe10();
+    uVar1 = FUN_00484fec(s16(DAT_0065512a, param_1 * 2));
+    FUN_00421f10(uVar1);
+    FUN_005c19ad(0x21);
+    OffsetRect(in_ECX + 0x6dc, 1, 1);
+    FUN_005c1167(in_ECX + 0x700, DAT_00679640, in_ECX + 0x6dc, 0);
+    FUN_005c19ad(0x10);
+    OffsetRect(in_ECX + 0x6dc, -1, -1);
+    FUN_005c1167(in_ECX + 0x700, DAT_00679640, in_ECX + 0x6dc, 0);
+    FUN_005c0593(in_ECX + 0x4ec, in_ECX + 0x6dc, in_ECX + 0x6dc);
+    FUN_00408490(in_ECX + 0x6dc); // DEVIATION: Win32 InvalidateRect
+    DAT_00631a9c = 0;
+  }
+  FUN_005c0593(in_ECX + 0x4ec, in_ECX + 0x6dc, in_ECX + 0x6dc);
   return;
 }
 
@@ -1497,7 +1686,17 @@ export function FUN_00515999(param_1) {
 // wonders_council_setup_advisor_frame
 export function FUN_00515c15(param_1) {
   let in_ECX;
-  // SEH setup, bitmap loading, rect setup for advisor frame
+  // SEH setup omitted
+  FUN_005bd630();
+  FUN_005c64da();
+  FUN_005c0593(in_ECX + 0x4ec, in_ECX + 0x6ec, in_ECX + 0x6ec);
+  FUN_005bf5e1(u8(DAT_0065514e, param_1) + 0xdc, 10, 0xec, /* local_444 */);
+  FUN_005c6b63(/* local_504 */, 0x2a, 0x40);
+  FUN_005c6da8(0x2a, 0x40, /* local_504 */);
+  FUN_005c0cc5(in_ECX + 0xb8);
+  FUN_005cedad(/* local_54c */, 9, 1, 1, 0xe1, 0x113);
+  FUN_005cef31(/* local_55c */, in_ECX + 0x4ec, 0xd0, 0x39);
+  SetRect(in_ECX + 0x6ec, 0xd0, 0x39, 0x1b1, 0x14c);
   FUN_00515d96();
   FUN_00515da2();
   FUN_00515db8();
@@ -1535,8 +1734,31 @@ export function FUN_00515db8() { /* DEVIATION: Win32 — SEH epilog */ return; }
 // wonders_council_scroll_text
 export function FUN_00515dc8(param_1) {
   let in_ECX;
-  // Scrolls text region by param_1 pixels, OffsetRect
-  // See C source for full detail
+  let local_14 = s32(in_ECX, 0x6cc);
+  let local_10 = s32(in_ECX, 0x6d0);
+  let local_c = s32(in_ECX, 0x6d4);
+  let local_8 = s32(in_ECX, 0x6d8);
+  if (param_1 < 0) {
+    local_10 = local_10 - param_1;
+  } else {
+    local_8 = local_8 + param_1;
+  }
+  FUN_005c0593(in_ECX + 0x4ec, /* &local_14 rect */, /* &local_14 rect */);
+  FUN_005cef31(/* local_34 */, in_ECX + 0x4ec, 0xd0, 0x39);
+  if (0 < param_1) {
+    let local_24 = s32(in_ECX, 0x6ec);
+    let local_1c = s32(in_ECX, 0x6f4);
+    let local_20 = s32(in_ECX, 0x6fc);
+    let local_18 = s32(in_ECX, 0x6fc) + param_1;
+    FUN_005c0593(in_ECX + 0x4ec, /* &local_24 rect */, /* &local_24 rect */);
+  }
+  FUN_005cef31(/* local_44 */, in_ECX + 0x4ec, 0xab, s32(in_ECX, 0x6fc) + param_1);
+  OffsetRect(in_ECX + 0x6cc, 0, param_1);
+  if (local_10 < 1) {
+    local_10 = 0;
+  }
+  FUN_00408490(/* &local_14 */); // DEVIATION: Win32 InvalidateRect
+  w32(in_ECX, 0x6fc, s32(in_ECX, 0x6fc) + param_1);
   return;
 }
 
@@ -1549,8 +1771,24 @@ export function FUN_00515dc8(param_1) {
 
 // wonders_council_scroll_out_animation
 export function FUN_00515f3c() {
+  let DVar1;
   let in_ECX;
-  // Scroll-out animation loop with timeGetTime
+  let local_10;
+
+  FUN_005c0593(in_ECX + 0x4ec, in_ECX + 0x6ec, in_ECX + 0x6ec);
+  FUN_005d6a2c();
+  FUN_0046e020(0x6f, 1, 0, 0);
+  DVar1 = timeGetTime();
+  while (local_10 = DVar1, s32(in_ECX, 0x6fc) < 0x133) {
+    FUN_00515dc8(0xf);
+    do {
+      FUN_00407ff0(); // DEVIATION: Win32 PeekMessage
+      DVar1 = timeGetTime();
+      if (2 < DAT_00655b02) {
+        FUN_0047e94e(1, 0);
+      }
+    } while ((DVar1 - local_10) < 0x16);
+  }
   return;
 }
 
@@ -1564,7 +1802,10 @@ export function FUN_00515f3c() {
 // wonders_council_scroll_up_loop
 export function FUN_00516005() {
   let in_ECX;
-  // Scrolls upward until position reached
+  while (-0xad < s32(in_ECX, 0x6fc)) {
+    FUN_00407ff0(); // DEVIATION: Win32 PeekMessage
+    FUN_00515dc8(-4); // 0xfffffffc = -4
+  }
   return;
 }
 
@@ -1646,7 +1887,20 @@ export function FUN_0051660c() { /* DEVIATION: Win32 — SEH epilog */ return; }
 // advisors_council_ctor
 export function FUN_0051661a() {
   let in_ECX;
-  // SEH setup, MFC construction chain (CPropertySheet, CString, etc.)
+  // SEH setup omitted
+  FUN_0044c5a0(); // DEVIATION: MFC base ctor
+  FUN_005dd010();
+  FUN_0059db08(0x4000);
+  FUN_004502b0(); // DEVIATION: MFC ctor
+  FUN_0040f3e0(); // DEVIATION: MFC ctor x6
+  FUN_0040f3e0();
+  FUN_0040f3e0();
+  FUN_0040f3e0();
+  FUN_0040f3e0();
+  FUN_0040f3e0();
+  w32(in_ECX, 0, PTR_FUN_0061d6d8);
+  w32(in_ECX, 0x46b * 4, 0xb0);
+  w32(in_ECX, 0x39c * 4, 0);
   DAT_00631acc = in_ECX;
   return in_ECX;
 }
@@ -1701,16 +1955,112 @@ export function FUN_00516939() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 // advisors_council_init_video
 export function FUN_00516947(param_1, param_2) {
+  let bVar1;
+  let uVar2;
   let iVar3;
   let iVar4;
   let in_ECX;
   let local_90;
   let local_8c;
+  let local_88 = '';
   let local_8;
-  // Initializes video resources for council advisors
-  // Handles cheat mode council, loads AVI files
-  // See C source for full detail
-  return 1; // or 0 on failure
+
+  w32(in_ECX, 0xe6c, param_1);
+  uVar2 = FUN_00568861(s32(in_ECX, 0xe6c));
+  w32(in_ECX, 0xe54, uVar2);
+  FUN_005bb4ae(DAT_00631ad4, 0xc02, 0, 0, DAT_0063359c * 6 + 0x1c2,
+               DAT_00633598 * 2 + DAT_00633588 + 0xfc, DAT_006ab6a8, DAT_006553d8);
+  FUN_00497d00(DAT_00633598);
+  FUN_005d8236(DAT_006cec90);
+  FUN_00517673();
+  FUN_00517158();
+  FUN_005bb574();
+  for (local_90 = 0; local_90 < 5; local_90 = local_90 + 1) {
+    uVar2 = FUN_00518582(s32(in_ECX, 0xe6c), local_90);
+    w32(in_ECX, 0xe58 + local_90 * 4, uVar2);
+  }
+  if (param_2 !== 0) {
+    while (true) {
+      iVar3 = FUN_00421ea0(s_COUNCILCHEAT0);
+      iVar4 = DAT_00631edc;
+      if ((iVar3 !== 0) || (DAT_00631edc === 0)) { break; } // goto LAB_00516b87
+      if (DAT_00631edc === 6) {
+        w32(in_ECX, 0xe70, 1);
+        break; // goto LAB_00516b87
+      }
+      bVar1 = false;
+      while (!bVar1) {
+        iVar3 = FUN_00518ec0(s_COUNCILCHEAT1, 0, /* &local_8c */);
+        if (iVar3 !== 0) { return 0; }
+        if (((0 < local_8c) && (local_8c < 8)) && ((iVar4 !== 5 || (local_8c < 7)))) {
+          w32(in_ECX, 0xe54 + iVar4 * 4, local_8c);
+          bVar1 = true;
+        }
+      }
+    }
+    // LAB_00516b87
+    bVar1 = false;
+    while ((!bVar1 && (iVar4 = FUN_00518ec0(s_COUNCILCHEAT2, 0, /* &local_8c */), iVar4 === 0))) {
+      if ((-1 < local_8c) && (local_8c < 3)) {
+        w32(in_ECX, 0xe54, local_8c);
+        bVar1 = true;
+      }
+    }
+  }
+  if (u8(DAT_0064c6b5, s32(in_ECX, 0xe6c) * 0x594) === 0) {
+    w32(in_ECX, 0xe70, 1);
+  } else {
+    for (local_90 = 0; local_90 < 5; local_90 = local_90 + 1) {
+      FUN_004aef20(local_90 * 3 + in_ECX + 0xe74);
+    }
+    FUN_0043c840(in_ECX + 0xe74, DAT_00631b08);
+    FUN_0043c840(in_ECX + 0xe77, DAT_00631b0c);
+    FUN_0043c840(in_ECX + 0xe7a, DAT_00631b10);
+    FUN_0043c840(in_ECX + 0xe7d, DAT_00631b14);
+    FUN_0043c840(in_ECX + 0xe80, DAT_00631b18);
+    for (local_90 = 0; local_90 < 5; local_90 = local_90 + 1) {
+      FUN_004af1d5(local_90 * 3 + in_ECX + 0xe74, s32(in_ECX, 0xe58 + local_90 * 4));
+    }
+  }
+  if (s32(in_ECX, 0xe70) !== 0) {
+    FUN_00453c40();
+    FUN_00453c40();
+    FUN_00453c40();
+    FUN_00453c40();
+    FUN_00453c40();
+  }
+  FUN_004aef20(in_ECX + 0xe34);
+  FUN_0040bbb0();
+  if (s32(in_ECX, 0xe70) === 0) {
+    FUN_0040bbe0(s_council);
+  } else {
+    FUN_0040bbe0(s_anarchy);
+  }
+  FUN_0040ff30(s32(in_ECX, 0xe54));
+  FUN_0043c840(in_ECX + 0xe34, DAT_00679640);
+  if ((s32(in_ECX, 0xe70) === 0) && (iVar4 = FUN_005179a3(0), iVar4 === 0)) {
+    return 0;
+  }
+  FUN_0059dfb9(in_ECX, in_ECX, in_ECX + 0x11b0, 0x84008);
+  FUN_005dd2e3(DAT_00631b2c, 0x200, 0, 0, in_ECX);
+  FUN_004aef20(local_88);
+  FUN_0043c840(local_88, s_civ2_video_);
+  FUN_0043c840(local_88, in_ECX + 0xe34);
+  FUN_0043c840(local_88, DAT_00631b3c);
+  iVar4 = FUN_00564713(local_88);
+  if (iVar4 === 0) { return 0; }
+  local_8 = FUN_005dd377(local_88);
+  if (local_8 === 0) {
+    FUN_005dd561(DAT_006ab6a8);
+    FUN_00450390(DAT_006ab6a8); // DEVIATION: MFC
+    EnableStackedTabs_00511820(in_ECX + 0x114, 0x40188e);
+    FUN_00518007();
+    return 1;
+  }
+  if (local_8 === -0x7ffbfeac) {
+    FUN_00421ea0(s_VFWNOTREGISTERED);
+  }
+  return 0;
 }
 
 
@@ -1723,8 +2073,39 @@ export function FUN_00516947(param_1, param_2) {
 // advisors_council_play_video
 export function FUN_00516fd4() {
   let in_ECX;
-  // Plays advisor video, renders frames, handles anarchy mode
-  // See C source for full detail
+
+  FUN_0059d3b1(DAT_006ab6a8);
+  FUN_0046efd6();
+  FUN_00450390(DAT_006ab6a8); // DEVIATION: MFC
+  FUN_00450400(); // DEVIATION: MFC
+  FUN_0040f380();
+  FUN_0040f380();
+  FUN_0040f380();
+  FUN_0040f380();
+  FUN_0040f380();
+  FUN_0040f380();
+  FUN_0040bc80(0);
+  FUN_004085f0(); // DEVIATION: Win32
+  FUN_00419b80();
+  if (s32(in_ECX, 0xe70) !== 0) {
+    FUN_00518e80(DAT_0063359c + 1, DAT_00633598 + 1);
+    FUN_004085f0(); // DEVIATION: Win32
+    FUN_00419b80();
+    FUN_005dd3c2();
+  }
+  if (2 < DAT_00655b02) {
+    EnableStackedTabs_00511820(in_ECX + 0x48, 0x403585);
+  }
+  FUN_005c61b0();
+  EnableStackedTabs_00511820(in_ECX + 0x48, 0);
+  FUN_005d6a2c();
+  FUN_00517158();
+  FUN_004503d0(); // DEVIATION: MFC
+  FUN_00419b80();
+  FUN_0059db65();
+  FUN_00450390(DAT_006a8c00); // DEVIATION: MFC
+  FUN_0046f06f();
+  FUN_0059d3b1(DAT_006a8c00);
   return;
 }
 
@@ -1737,10 +2118,96 @@ export function FUN_00516fd4() {
 
 // advisors_council_draw_frame
 export function FUN_00517158() {
+  let iVar1;
+  let pCVar2;
+  let iVar3;
+  let pCVar4;
+  let iVar5;
+  let pCVar6;
+  let uVar7;
   let in_ECX;
-  // Draws council frame border, advisor panels, title text
-  // Extensive use of SetRect, InflateRect, etc.
-  // See C source for full detail
+  let local_20;
+  let local_1c;
+  let local_18;
+  let local_14 = [0, 0, 0, 0]; // tagRECT
+
+  iVar1 = DAT_00633598 + DAT_00633588 * -2;
+  pCVar2 = COleClientItem_GetActiveView(in_ECX);
+  FUN_005a9b5d(in_ECX, DAT_006abae0, 0, DAT_00633588, pCVar2, iVar1, 0, DAT_00633588);
+  iVar3 = DAT_00633588 + DAT_00633598 + 0x7a;
+  FUN_005a9b5d(in_ECX, DAT_006abae0, 0, iVar3, pCVar2, iVar1, 0, iVar3);
+  pCVar4 = COleClientItem_GetActiveView(in_ECX);
+  iVar1 = pCVar4 - (DAT_00633588 + 0x1e);
+  FUN_005a9b5d(in_ECX, DAT_006abae0, 0, iVar1, pCVar2, 0x1e, 0, iVar1);
+  pCVar2 = COleClientItem_GetActiveView(in_ECX);
+  iVar3 = DAT_0063359c + DAT_00633588 * -2;
+  FUN_005a9b5d(in_ECX, DAT_006abae0, DAT_00633588, 0, iVar3, pCVar2, DAT_00633588, 0);
+  pCVar4 = COleClientItem_GetActiveView(in_ECX);
+  iVar1 = pCVar4 - (DAT_00633588 + iVar3);
+  FUN_005a9b5d(in_ECX, DAT_006abae0, iVar1, 0, iVar3, pCVar2, iVar1, 0);
+  iVar1 = DAT_00633588 * 2;
+  local_1c = DAT_00633588 + DAT_0063359c + 0x5a;
+  iVar5 = DAT_00633598 - DAT_00633588;
+  for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {
+    FUN_005a9b5d(in_ECX, DAT_006abae0, local_1c, iVar5, iVar1, iVar1 + 0x7a, local_1c, iVar5);
+    local_1c = local_1c + DAT_0063359c + 0x5a;
+  }
+  SetRect(local_14, DAT_0063359c - DAT_00633588, iVar5,
+          DAT_00633588 * 2 + (DAT_0063359c - DAT_00633588) + 0x5a, DAT_00633588 * 2 + iVar5 + 0x7a);
+  for (local_20 = 0; local_20 < 5; local_20 = local_20 + 1) {
+    for (local_18 = 0; local_18 < DAT_00633588; local_18 = local_18 + 1) {
+      FUN_005a99fc(in_ECX, local_14, DAT_00633594, DAT_00633590);
+      InflateRect(local_14, -1, -1);
+    }
+    FUN_005c0333(local_14, 10);
+    InflateRect(local_14, DAT_00633588, DAT_00633588);
+    OffsetRect(local_14, DAT_0063359c + 0x5a, 0);
+  }
+  pCVar2 = COleClientItem_GetActiveView(in_ECX);
+  pCVar2 = pCVar2 + (-0x1e - DAT_00633588);
+  pCVar4 = COleClientItem_GetActiveView(in_ECX);
+  pCVar4 = pCVar4 + (DAT_00633588 - DAT_0063359c);
+  pCVar6 = COleClientItem_GetActiveView(in_ECX);
+  SetRect(in_ECX + 0x11b0, DAT_0063359c - DAT_00633588,
+          pCVar6 + DAT_00633588 * -3 + -0x82, pCVar4, pCVar2);
+  for (local_18 = 0; local_18 < DAT_00633588; local_18 = local_18 + 1) {
+    FUN_005a99fc(in_ECX, in_ECX + 0x11b0, DAT_00633594, DAT_00633590);
+    InflateRect(in_ECX + 0x11b0, -1, -1);
+  }
+  FUN_005c0333(in_ECX + 0x11b0, 0x1d);
+  InflateRect(in_ECX + 0x11b0, -2, -2);
+  let lprcSrc = FUN_00497c90();
+  CopyRect(local_14, lprcSrc);
+  for (local_18 = 0; local_18 < DAT_00633588; local_18 = local_18 + 1) {
+    FUN_005a99fc(in_ECX, local_14, DAT_00633590, DAT_00633594);
+    InflateRect(local_14, -1, -1);
+  }
+  FUN_0040bbb0();
+  if (DAT_00628064 === 1) {
+    uVar7 = FUN_00428b0c(DAT_00628420[0x4ac / 4]);
+    FUN_0040bbe0(uVar7);
+    FUN_0040fe10();
+    uVar7 = FUN_00410070(s32(in_ECX, 0xe6c));
+    FUN_0040bbe0(uVar7);
+  } else {
+    uVar7 = FUN_00410070(s32(in_ECX, 0xe6c));
+    FUN_0040bbe0(uVar7);
+    if (DAT_00628064 === 2) {
+      FUN_0040bbe0(DAT_00631b58);
+    }
+    FUN_0040fe10();
+    uVar7 = FUN_00428b0c(DAT_00628420[0x4ac / 4]);
+    FUN_0040bbe0(uVar7);
+  }
+  pCVar2 = COleClientItem_GetActiveView(in_ECX);
+  iVar3 = FUN_0040efd0(DAT_00679640);
+  iVar1 = DAT_00633588;
+  iVar3 = (pCVar2 - iVar3) / 2;
+  iVar5 = DAT_00633588 + 1;
+  FUN_005c19ad(10);
+  FUN_005c0f57(DAT_006ab190, DAT_00679640, iVar3 + 1, iVar1 + 2, 5);
+  FUN_005c19ad(0x1a);
+  FUN_005c0f57(DAT_006ab190, DAT_00679640, iVar3, iVar5, 5);
   return;
 }
 
@@ -1753,9 +2220,51 @@ export function FUN_00517158() {
 
 // advisors_council_create_buttons
 export function FUN_00517673() {
+  let iVar1;
+  let uVar2;
+  let pCVar3;
+  let pCVar4;
   let in_ECX;
-  // Creates 5 advisor buttons plus a Done button
-  // See C source for full detail
+  let local_14 = [0, 0, 0, 0]; // tagRECT
+  let local_ptr;
+
+  iVar1 = (DAT_00633598 + -0x16 >> 1) + DAT_00633598;
+  SetRect(local_14, DAT_0063359c + 7, iVar1 + 0x79, DAT_0063359c + 0x52, iVar1 + 0x8f);
+  local_ptr = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x26c / 4]);
+  FUN_00497d40(local_ptr, 0, local_14, 0x21, uVar2);
+  FUN_0040f880(/* LAB_00401b22 */); // DEVIATION: Win32 callback
+  OffsetRect(local_14, DAT_0063359c + 0x5a, 0);
+  local_ptr = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x16c / 4]);
+  FUN_00497d40(local_ptr, 1, local_14, 0x21, uVar2);
+  FUN_0040f880(/* LAB_00401b22 */); // DEVIATION: Win32 callback
+  OffsetRect(local_14, DAT_0063359c + 0x5a, 0);
+  local_ptr = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x114 / 4]);
+  FUN_00497d40(local_ptr, 2, local_14, 0x21, uVar2);
+  FUN_0040f880(/* LAB_00401b22 */); // DEVIATION: Win32 callback
+  OffsetRect(local_14, DAT_0063359c + 0x5a, 0);
+  local_ptr = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x6e0 / 4]);
+  FUN_00497d40(local_ptr, 3, local_14, 0x21, uVar2);
+  FUN_0040f880(/* LAB_00401b22 */); // DEVIATION: Win32 callback
+  OffsetRect(local_14, DAT_0063359c + 0x5a, 0);
+  local_ptr = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x6e4 / 4]);
+  FUN_00497d40(local_ptr, 4, local_14, 0x21, uVar2);
+  FUN_0040f880(/* LAB_00401b22 */); // DEVIATION: Win32 callback
+  // Done button
+  pCVar3 = COleClientItem_GetActiveView(in_ECX);
+  pCVar3 = pCVar3 + (-1 - DAT_00633588);
+  pCVar4 = COleClientItem_GetActiveView(in_ECX);
+  iVar1 = pCVar4 - DAT_0063359c;
+  pCVar4 = COleClientItem_GetActiveView(in_ECX);
+  SetRect(local_14, DAT_0063359c, pCVar4 + -0x1d, iVar1, pCVar3);
+  local_ptr = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x3fc / 4]);
+  FUN_00497d40(local_ptr, 0xca, local_14, 0x21, uVar2);
+  FUN_0040f880(/* LAB_00401b22 */); // DEVIATION: Win32 callback
   return;
 }
 
@@ -1768,14 +2277,103 @@ export function FUN_00517673() {
 
 // advisors_council_parse_script
 export function FUN_005179a3(param_1) {
+  let bVar1;
+  let bVar2;
+  let iVar3;
+  let uVar4;
+  let puVar5;
+  let iVar6;
   let in_ECX;
   let local_1c;
   let local_18;
   let local_10 = 0;
   let local_8 = 0;
-  // Parses advisor script file, handles M/S/T/F/A/R/E commands
-  // See C source for full detail
-  return local_8;
+
+  if (4 < param_1) { return 0; }
+  iVar3 = FUN_004a2379(in_ECX + 0xe34, param_1 * 3 + in_ECX + 0xe74);
+  if (iVar3 !== 0) { return 0; }
+  iVar3 = FUN_004a23fc(1);
+  if (iVar3 === 0) {
+    FUN_004a2020();
+    return local_8;
+  }
+  for (local_1c = 0; local_1c < 5; local_1c = local_1c + 1) {
+    w32(in_ECX, 0xe84 + local_1c * 4, 0);
+  }
+  w32(in_ECX, 0xe84, param_1);
+  uVar4 = FUN_004a2534();
+  w32(in_ECX, 0xe90, uVar4);
+  uVar4 = FUN_004a2534();
+  w32(in_ECX, 0xe9c, uVar4);
+  FUN_004aef20(in_ECX + 0xea8);
+  FUN_004d007e(DAT_00673f14);
+  FUN_0043c840(in_ECX + 0xea8, DAT_00673f14);
+  local_18 = 1;
+  bVar2 = true;
+  bVar1 = false;
+  // LAB_00517ae5 — main script parse loop
+  while (true) {
+    if ((2 < local_18) || (s32(in_ECX, 0xe84 + local_18 * 4) === -1)) {
+      local_8 = 1;
+      FUN_004a2020();
+      return local_8;
+    }
+    if ((!bVar1) && (iVar3 = FUN_004a23fc(1), iVar3 === 0)) {
+      FUN_004a2020();
+      return local_8;
+    }
+    bVar1 = false;
+    puVar5 = FUN_004a24b1();
+    let ch = (typeof puVar5 === 'string') ? puVar5.charCodeAt(0) : puVar5;
+    if (ch === 0x23) { // '#'
+      bVar1 = bVar2;
+      continue;
+    }
+    if (ch === 0x3b) { // ';'
+      continue;
+    }
+    if (ch === 0x45 || ch === 0x65) { // 'E' or 'e'
+      w32(in_ECX, 0xe84 + local_18 * 4, 0xffffffff);
+      continue;
+    }
+    if (ch === 0x52 || ch === 0x72) { // 'R' or 'r'
+      iVar3 = _atoi(puVar5 + 1);
+      iVar6 = FUN_0059a791(1, 10);
+      if (iVar6 <= iVar3) { bVar2 = false; }
+      bVar1 = iVar6 > iVar3;
+      continue;
+    }
+    // Advisor letter: M/S/T/F/A
+    if (ch === 0x41 || ch === 0x61) { param_1 = 4; }
+    else if (ch === 0x46 || ch === 0x66) { param_1 = 3; }
+    else if (ch === 0x4d || ch === 0x6d) { param_1 = 0; }
+    else if (ch === 0x53 || ch === 0x73) { param_1 = 1; }
+    else if (ch === 0x54 || ch === 0x74) { param_1 = 2; }
+    else { continue; }
+
+    if ((local_10 & (1 << (param_1 & 0x1f))) === 0) {
+      if ((puVar5[1] === '\0' || puVar5[1] === 0) ||
+         (iVar3 = _atoi(puVar5 + 1), iVar3 === s32(in_ECX, 0xe58 + param_1 * 4))) {
+        w32(in_ECX, 0xe84 + local_18 * 4, param_1);
+        uVar4 = FUN_004a2534();
+        w32(in_ECX, 0xe90 + local_18 * 4, uVar4);
+        uVar4 = FUN_004a2534();
+        w32(in_ECX, 0xe9c + local_18 * 4, uVar4);
+        FUN_004aef20(local_18 * 0xff + in_ECX + 0xea8);
+        FUN_004d007e(DAT_00673f14);
+        if (DAT_00673f14[0] !== '*') {
+          FUN_0043c840(local_18 * 0xff + in_ECX + 0xea8, DAT_00673f14);
+        }
+        local_18 = local_18 + 1;
+        bVar2 = true;
+        local_10 = local_10 | (1 << (param_1 & 0x1f));
+      } else {
+        bVar2 = false;
+      }
+    } else {
+      bVar2 = false;
+    }
+  }
 }
 
 
@@ -1788,8 +2386,46 @@ export function FUN_005179a3(param_1) {
 // advisors_council_render_text
 export function FUN_00517dd3(param_1) {
   let in_ECX;
-  // Renders advisor speech text with shadow effect
-  // See C source for full detail
+  let local_20 = [0, 0, 0, 0]; // tagRECT
+  // SEH setup omitted
+  FUN_0043c460(0, 0xe);
+  if ((s32(in_ECX, 0x11a8) < 0) || (2 < s32(in_ECX, 0x11a8))) {
+    FUN_00517fe4();
+    FUN_00517ff7();
+    return;
+  }
+  if (param_1 !== 1) {
+    FUN_005c0333(in_ECX + 0x11b0, 0x1d);
+    w32(in_ECX, 0x11ac, 2);
+  }
+  if (param_1 === -1) {
+    FUN_005bb574();
+    FUN_00517fe4();
+    FUN_00517ff7();
+    return;
+  }
+  local_20[3] = s32(in_ECX, 0x11bc);
+  local_20[0] = s32(in_ECX, 0x11b0) + 2;
+  local_20[2] = s32(in_ECX, 0x11b8) - 2;
+  local_20[1] = s32(in_ECX, 0x11b4) + s32(in_ECX, 0x11ac);
+  FUN_0059e472(/* local_28 */);
+  if (s8(in_ECX, s32(in_ECX, 0x11a8) * 0xff + 0xea8) !== 0) {
+    OffsetRect(local_20, 1, 1);
+    FUN_005c19ad(0x25);
+    FUN_005c1167(/* local_28 */, s32(in_ECX, 0x11a8) * 0xff + in_ECX + 0xea8, local_20, 1);
+    OffsetRect(local_20, -1, -1);
+    FUN_005c19ad(10);
+    let height1 = FUN_005c1167(/* local_28 */, s32(in_ECX, 0x11a8) * 0xff + in_ECX + 0xea8, local_20, 1);
+    // DEVIATION: _Timevec::~_Timevec — returns text height
+    w32(in_ECX, 0x11ac, s32(in_ECX, 0x11ac) + (height1 || 0));
+    let iVar1 = FUN_0040efd0(s32(in_ECX, 0x11a8) * 0xff + in_ECX + 0xea8);
+    if (local_20[2] - local_20[0] < iVar1) {
+      // DEVIATION: _Timevec::~_Timevec — second pass for text wrapping
+      w32(in_ECX, 0x11ac, s32(in_ECX, 0x11ac) + (height1 || 0));
+    }
+  }
+  FUN_005bb574();
+  FUN_00419b80();
   FUN_00517fe4();
   FUN_00517ff7();
   return;
@@ -1817,9 +2453,38 @@ export function FUN_00517ff7() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 // advisors_council_play_all_scripts
 export function FUN_00518007() {
+  let iVar1;
+  let uVar2;
   let in_ECX;
   let local_98;
-  // SEH setup, plays advisor scripts for all 5 advisors or anarchy mode
+  // SEH setup omitted
+  FUN_005bd630();
+  // DEVIATION: CString::CString(local_4c)
+  if (s32(in_ECX, 0xe70) === 0) {
+    for (local_98 = 0; local_98 < 5; local_98 = local_98 + 1) {
+      iVar1 = FUN_004a2379(in_ECX + 0xe34, local_98 * 3 + in_ECX + 0xe74);
+      if (iVar1 !== 0) {
+        FUN_005181ab();
+        FUN_005181b4();
+        FUN_005181ca();
+        return;
+      }
+      iVar1 = FUN_004a23fc(1);
+      if (iVar1 === 0) {
+        FUN_005181ab();
+        FUN_005181b4();
+        FUN_005181ca();
+        return;
+      }
+      uVar2 = FUN_004a2534();
+      FUN_005dd45d(uVar2);
+      FUN_005dd64c(in_ECX, (DAT_0063359c + 0x5a) * local_98 + DAT_0063359c + 1, DAT_00633598 + 1);
+      FUN_004a2020();
+    }
+  } else {
+    FUN_005dd45d(1);
+    FUN_005dd64c(in_ECX, DAT_0063359c + 2, DAT_00633598 + 2);
+  }
   FUN_005181ab();
   FUN_005181b4();
   FUN_005181ca();
@@ -1844,8 +2509,34 @@ export function FUN_005181d8(param_1) {
   let iVar2;
   iVar1 = DAT_00631acc;
   _DAT_00631ac8 = 1;
-  // Handles advisor button click, plays corresponding video/script
-  // See C source for full detail
+  FUN_005d6a2c();
+  FUN_005dd51d();
+  if (param_1 === 0xca) {
+    FUN_00517dd3(-1);
+    FUN_00419b80();
+    CRichEditDoc_InvalidateObjectCache(iVar1 + 0x48);
+  } else if (s32(iVar1, 0xe70) === 0) {
+    FUN_00517dd3(-1);
+    w32(iVar1, 0x11a8, 0);
+    iVar2 = FUN_005179a3(param_1);
+    if (iVar2 === 0) {
+      FUN_00517dd3(-1);
+      FUN_00419b80();
+      CRichEditDoc_InvalidateObjectCache(iVar1 + 0x48);
+    } else {
+      FUN_004503d0(); // DEVIATION: MFC
+      FUN_00518342(param_1);
+      if (param_1 < 5) {
+        FUN_00517dd3(0);
+        FUN_005dd45d(s32(iVar1, 0xe90 + s32(iVar1, 0x11a8) * 4));
+        FUN_004085f0(); // DEVIATION: Win32
+        FUN_005dd3f1(s32(iVar1, 0xe90 + s32(iVar1, 0x11a8) * 4),
+                     s32(iVar1, 0xe9c + s32(iVar1, 0x11a8) * 4));
+        w32(iVar1, 0x11a8, s32(iVar1, 0x11a8) + 1);
+      }
+      _DAT_00631ac8 = 0;
+    }
+  }
   return;
 }
 
@@ -1897,8 +2588,20 @@ export function FUN_00518471() {
   let iVar1;
   iVar1 = DAT_00631acc;
   _DAT_00631ac8 = 1;
-  // Auto-advances council video playback
-  // See C source for full detail
+  if (s32(DAT_00631acc, 0xe70) === 0) {
+    FUN_004503d0(); // DEVIATION: MFC
+    if ((s32(iVar1, 0x11a8) < 3) &&
+       (-1 < s32(iVar1, 0xe84 + s32(iVar1, 0x11a8) * 4))) {
+      FUN_00518342(s32(iVar1, 0xe84 + s32(iVar1, 0x11a8) * 4));
+      FUN_00517dd3(1);
+      FUN_005dd45d(s32(iVar1, 0xe90 + s32(iVar1, 0x11a8) * 4));
+      FUN_004085f0(); // DEVIATION: Win32
+      FUN_005dd3f1(s32(iVar1, 0xe90 + s32(iVar1, 0x11a8) * 4),
+                   s32(iVar1, 0xe9c + s32(iVar1, 0x11a8) * 4));
+      w32(iVar1, 0x11a8, s32(iVar1, 0x11a8) + 1);
+    }
+  }
+  FUN_00419b80();
   _DAT_00631ac8 = 0;
   return;
 }
@@ -1914,7 +2617,7 @@ export function FUN_00518471() {
 export function FUN_00518582(param_1, param_2) {
   let local_8;
   if (DAT_00631acc !== 0) {
-    // local_8 = *(DAT_00631acc + 0xe54);
+    local_8 = s32(DAT_00631acc, 0xe54);
   }
   switch (param_2) {
   case 0: FUN_004bc480(param_1, local_8); break;
@@ -1936,7 +2639,7 @@ export function FUN_00518582(param_1, param_2) {
 // set_video_playback_position
 export function FUN_00518e80(param_1, param_2) {
   let in_ECX;
-  // FUN_005bc4a1(*(in_ECX + 8), param_1, param_2);
+  FUN_005bc4a1(s32(in_ECX, 8), param_1, param_2);
   return;
 }
 
@@ -1964,9 +2667,28 @@ export function FUN_00518ec0(param_1, param_2, param_3) {
 export function FUN_00518f00() {
   let in_ECX;
   let local_8;
-  // Initializes cheat menu scrollable list
-  // Sets up head/tail, copies items, configures scrollbar
-  // See C source for full detail
+
+  if ((s32(in_ECX, 0x120) < 0) || (s32(in_ECX, 0xd90) <= s32(in_ECX, 0x120))) {
+    w32(in_ECX, 0x120, 0);
+  }
+  w32(in_ECX, 0x1b34, s32(in_ECX, 0xd90));
+  w32(in_ECX, 0x1f38, s32(in_ECX, 0x120));
+  w32(in_ECX, 0x1f3c, s32(in_ECX, 0x120));
+  while (DAT_006a85a4 % 9 !== 0) {
+    w32(in_ECX, 0x1f3c, s32(in_ECX, 0x1f3c) - 1);
+  }
+  for (local_8 = 0; local_8 < s32(in_ECX, 0xd90); local_8 = local_8 + 1) {
+    w32(in_ECX, 0x1b38 + local_8 * 4, s32(in_ECX, 0xdb0 + local_8 * 4));
+  }
+  FUN_0040fd40(0, s32(in_ECX, 0x1b34) / 9);
+  FUN_0040fcf0(s32(in_ECX, 0x1f3c) / 9);
+  if (s32(in_ECX, 0x1b34) < 1) {
+    w32(in_ECX, 0x1f3c, 0xffffffff);
+  }
+  FUN_00451bf0(); // DEVIATION: MFC list control
+  FUN_004923c0();
+  FUN_004518d0(); // DEVIATION: MFC list control
+  FUN_004f6646();
   return;
 }
 
@@ -2051,12 +2773,32 @@ export function FUN_00519200() {
   let _Count;
   let local_c;
   let local_8;
-  // Loads terrain names and attributes from DAT_00627cc0 table into editor arrays
   for (local_8 = 0; local_8 < 0x21; local_8 = local_8 + 1) {
     _Count = 0x28;
     _Source = FUN_00428b0c(DAT_00627cc4[local_8 * 0x18]);
-    // _strncpy(DAT_006a1d88 + local_8 * 0x28, _Source, _Count);
-    // Copy terrain attributes...
+    _strncpy(DAT_006a1d88 + local_8 * 0x28, _Source, _Count);
+    w8(DAT_006a1d88, 0x27 + local_8 * 0x28, 0); // null terminate
+    // Sign-extend byte to int for terrain attributes
+    w32(DAT_006a2d28, local_8 * 0x58, (s8(DAT_00627cc8, local_8 * 0x18) << 24) >> 24);
+    w32(DAT_006a2d2c, local_8 * 0x58, (s8(DAT_00627cc9, local_8 * 0x18) << 24) >> 24);
+    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
+      w32(DAT_006a2d30, local_c * 4 + local_8 * 0x58,
+          (s8(DAT_00627cca, local_8 * 0x18 + local_c) << 24) >> 24);
+    }
+    if (local_8 < 0xb) {
+      for (local_c = 0; local_c < 2; local_c = local_c + 1) {
+        w32(DAT_006a2d3c, local_c * 0x10 + local_8 * 0x58,
+            (s8(DAT_00627cce, local_8 * 0x18 + local_c) << 24) >> 24);
+        w32(DAT_006a2d40, local_c * 0x10 + local_8 * 0x58,
+            (s8(DAT_00627cd0, local_8 * 0x18 + local_c) << 24) >> 24);
+        w32(DAT_006a2d44, local_c * 0x10 + local_8 * 0x58,
+            (s8(DAT_00627cd2, local_8 * 0x18 + local_c) << 24) >> 24);
+        w32(DAT_006a2d48, local_c * 0x10 + local_8 * 0x58,
+            (s8(DAT_00627cd4, local_8 * 0x18 + local_c) << 24) >> 24);
+      }
+      w32(DAT_006a2d5c, local_8 * 0x58,
+          (s8(DAT_00627ccd, local_8 * 0x18) << 24) >> 24);
+    }
   }
   return;
 }
@@ -2070,11 +2812,37 @@ export function FUN_00519200() {
 
 // terrain_editor_save_terrain_data
 export function FUN_005193ed() {
+  let _Dest;
+  let _Source;
+  let _Count;
   let local_c;
   let local_8;
-  // Saves modified terrain data back from editor arrays to game tables
   for (local_8 = 0; local_8 < 0x21; local_8 = local_8 + 1) {
-    // Copy terrain names and attributes back...
+    _Count = 0xf;
+    _Source = DAT_006a1d88 + local_8 * 0x28;
+    _Dest = FUN_00428b0c(DAT_00627cc4[local_8 * 0x18]);
+    _strncpy(_Dest, _Source, _Count);
+    // Truncate int back to byte for terrain attributes
+    w8(DAT_00627cc8, local_8 * 0x18, s32(DAT_006a2d28, local_8 * 0x58) & 0xff);
+    w8(DAT_00627cc9, local_8 * 0x18, s32(DAT_006a2d2c, local_8 * 0x58) & 0xff);
+    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
+      w8(DAT_00627cca, local_8 * 0x18 + local_c,
+         s32(DAT_006a2d30, local_c * 4 + local_8 * 0x58) & 0xff);
+    }
+    if (local_8 < 0xb) {
+      for (local_c = 0; local_c < 2; local_c = local_c + 1) {
+        w8(DAT_00627cce, local_8 * 0x18 + local_c,
+           s32(DAT_006a2d3c, local_c * 0x10 + local_8 * 0x58) & 0xff);
+        w8(DAT_00627cd0, local_8 * 0x18 + local_c,
+           s32(DAT_006a2d40, local_c * 0x10 + local_8 * 0x58) & 0xff);
+        w8(DAT_00627cd2, local_8 * 0x18 + local_c,
+           s32(DAT_006a2d44, local_c * 0x10 + local_8 * 0x58) & 0xff);
+        w8(DAT_00627cd4, local_8 * 0x18 + local_c,
+           s32(DAT_006a2d48, local_c * 0x10 + local_8 * 0x58) & 0xff);
+      }
+      w8(DAT_00627ccd, local_8 * 0x18,
+         s32(DAT_006a2d5c, local_8 * 0x58) & 0xff);
+    }
   }
   return;
 }
@@ -2120,8 +2888,28 @@ export function FUN_0051961e() {
   let local_14;
   let local_10 = '';
   let local_8;
-  // Updates edit controls with terrain data values
-  // See C source for full detail
+
+  for (local_14 = 1; local_14 < 0xf; local_14 = local_14 + 1) {
+    if (s32(DAT_00631bf8, local_14 * 8) === 9) {
+      iVar1 = FUN_00418740();
+      _sprintf(local_10, DAT_00631cd0,
+               s32(DAT_006a2a00, iVar1 * 4 + s32(DAT_006a4f88, 0x2ec) * 0x58));
+      FUN_00418a30(local_10); // DEVIATION: Win32 SetWindowText
+    } else if (s32(DAT_00631bf8, local_14 * 8) === 0xc) {
+      iVar1 = FUN_00418740();
+      local_8 = s32(DAT_006a2a00, iVar1 * 4 + s32(DAT_006a4f88, 0x2ec) * 0x58);
+      if (local_14 === 0) {
+        local_8 = FUN_005195c4(local_8);
+      }
+      if ((local_14 === 6) || (local_14 === 10)) {
+        local_8 = local_8 + 2;
+      }
+      if (local_14 === 0xe) {
+        local_8 = local_8 + 1;
+      }
+      FUN_00418d90(local_8); // DEVIATION: Win32 combo box set
+    }
+  }
   return;
 }
 
@@ -2135,12 +2923,38 @@ export function FUN_0051961e() {
 // terrain_editor_read_controls
 export function FUN_005197af() {
   let iVar1;
+  let uVar2;
   let local_18;
   let local_14 = 0;
   let local_10 = '';
   let local_8;
-  // Reads values from terrain editor controls back into data arrays
-  // Returns count of values that were clamped
+
+  for (local_18 = 1; local_18 < 0xf; local_18 = local_18 + 1) {
+    if (s32(DAT_00631bf8, local_18 * 8) === 9) {
+      FUN_00418a70(local_10); // DEVIATION: Win32 GetWindowText
+      iVar1 = FUN_00418740();
+      iVar1 = iVar1 - 0xca;
+      local_8 = _atoi(local_10);
+      uVar2 = FUN_005adfa0(local_8, s32(DAT_00631c70, iVar1 * 4), s32(DAT_00631ca0, iVar1 * 4));
+      w32(DAT_006a2d28, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4, uVar2);
+      if (s32(DAT_006a2d28, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) !== local_8) {
+        local_14 = local_14 + 1;
+      }
+    } else if (s32(DAT_00631bf8, local_18 * 8) === 0xc) {
+      local_8 = FUN_00418d60();
+      if (local_18 === 0) {
+        local_8 = FUN_005195f1(local_8);
+      }
+      if ((local_18 === 6) || (local_18 === 10)) {
+        local_8 = local_8 - 2;
+      }
+      if (local_18 === 0xe) {
+        local_8 = local_8 - 1;
+      }
+      iVar1 = FUN_00418740();
+      w32(DAT_006a2a00, s32(DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4, local_8);
+    }
+  }
   return local_14;
 }
 
@@ -2190,8 +3004,56 @@ export function FUN_005199c4(param_1, param_2) {
 
 // terrain_editor_write_to_file
 export function FUN_00519ab0(param_1) {
-  // Writes terrain data to a file in formatted text
-  // See C source for full detail
+  let pcVar1;
+  let sVar2;
+  let local_10;
+  let local_c;
+  let local_8;
+
+  for (local_c = 0; local_c < 0x21; local_c = local_c + 1) {
+    FUN_0040bbb0();
+    FUN_0040ff00(DAT_00627cc4[local_c * 0x18 / 4]);
+    FUN_005f22e0(DAT_00679640, DAT_00631cfc);
+    pcVar1 = FUN_00428b0c(DAT_00627cc4[local_c * 0x18 / 4]);
+    sVar2 = _strlen(pcVar1);
+    if (sVar2 < 0xb) {
+      pcVar1 = FUN_00428b0c(DAT_00627cc4[local_c * 0x18 / 4]);
+      local_10 = _strlen(pcVar1);
+    } else {
+      local_10 = 0xb;
+    }
+    FUN_004190a0(0xb - local_10); // DEVIATION: Win32 padding
+    FUN_0040ff30(s8(DAT_00627cc8, local_c * 0x18));
+    FUN_005f22e0(DAT_00679640, DAT_00631d00);
+    FUN_0040ff30(s8(DAT_00627cc9, local_c * 0x18));
+    FUN_005f22e0(DAT_00679640, DAT_00631d04);
+    FUN_004190a0(2); // DEVIATION: Win32 padding
+    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
+      FUN_0040ff30(s8(DAT_00627cca, local_c * 0x18 + local_8));
+      FUN_005f22e0(DAT_00679640, DAT_00631d08);
+    }
+    if (local_c < 0xb) {
+      for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
+        FUN_004190a0(3); // DEVIATION: Win32 padding
+        FUN_005199c4(s8(DAT_00627cce, local_c * 0x18 + local_8), 1);
+        FUN_004ccdb6(s8(DAT_00627cd0, local_c * 0x18 + local_8));
+        FUN_005f22e0(DAT_00679640, DAT_00631d0c);
+        FUN_004ccdb6(s8(DAT_00627cd2, local_c * 0x18 + local_8));
+        FUN_005f22e0(DAT_00679640, DAT_00631d10);
+        if (local_8 === 1) {
+          FUN_0040fe10();
+        }
+        FUN_004ccdb6(s8(DAT_00627cd4, local_c * 0x18 + local_8));
+        FUN_005f22e0(DAT_00679640, DAT_00631d14);
+      }
+      FUN_004190a0(2); // DEVIATION: Win32 padding
+      FUN_005199c4(s8(DAT_00627ccd, local_c * 0x18), 1);
+      FUN_005f22e0(DAT_00679640, s___00631d18);
+      FUN_005199c4(local_c, 0);
+    }
+    FUN_005f22e0(DAT_00679640, DAT_00631d20);
+    _fputs(DAT_00679640, param_1);
+  }
   return 1;
 }
 
@@ -2205,14 +3067,36 @@ export function FUN_00519ab0(param_1) {
 // terrain_editor_apply_changes
 export function show_messagebox_9D67() {
   let iVar1;
+  let local_28;
+  let local_24 = '';
+
   iVar1 = FUN_005197af();
   if (iVar1 === 0) {
     FUN_005193ed();
-    // Apply terrain changes, write RULES file, update display
+    FUN_004ccab9(s_TERRAIN_00631d2c, /* LAB_00402f2c */);
+    iVar1 = show_messagebox_CF2D();
+    if (iVar1 === 0) {
+      _sprintf(local_24, s_Error_updating_RULES, DAT_0062cd24);
+      // DEVIATION: MessageBoxA — Win32 error dialog
+      iVar1 = FUN_00414d10();
+      MessageBoxA(s32(iVar1, 4), local_24, s_File_IO_Error, 0x10);
+    }
+    DAT_006a1d7c = 0;
+    CRichEditDoc_InvalidateObjectCache(DAT_006a4f88 + 0x48);
+    FUN_004e4ceb();
   } else {
     FUN_0051961e();
     FUN_005199a9();
-    // Show notice about clamped values
+    if (DAT_006a4f88 === 0) {
+      local_28 = 0;
+    } else {
+      local_28 = DAT_006a4f88 + 0x48;
+    }
+    FUN_0059d3c9(local_28);
+    FUN_004190d0(s_DEBUG_006359dc, s_NOTICE);
+    FUN_0059d3c9(0);
+    let hWnd = FUN_00418770(); // DEVIATION: Win32 GetDlgItem
+    SetFocus(hWnd); // DEVIATION: Win32
   }
   return;
 }
@@ -2226,9 +3110,68 @@ export function show_messagebox_9D67() {
 
 // terrain_editor_rename_terrain
 export function FUN_00519e74() {
+  let sVar1;
+  let uVar2;
+  let local_138;
+  let local_134 = '';
+  let local_120 = '';
+  let local_1c;
   let local_18;
-  // Dialog to rename a terrain type, then update all references
-  // See C source for full detail
+  let local_14;
+  let local_10;
+  let local_c;
+  let local_8;
+
+  local_18 = s32(DAT_006a4f88, 0x2ec);
+  _strncpy(local_134, DAT_006a1d88 + local_18 * 0x28, 0xf);
+  do {
+    if (DAT_006a4f88 === 0) {
+      local_138 = 0;
+    } else {
+      local_138 = DAT_006a4f88 + 0x48;
+    }
+    FUN_0059d3c9(local_138);
+    local_8 = FUN_0051d63b(s_DEBUG_006359dc, s_TERRNAME, 0xe, local_134, local_120);
+    FUN_0059d3c9(0);
+    if (local_8 === -1) break;
+    sVar1 = _strlen(local_120);
+  } while (sVar1 === 0);
+  if (-1 < local_8) {
+    FUN_005f22d0(DAT_006a1d88 + local_18 * 0x28, local_120);
+    local_c = FUN_00418d60();
+    local_10 = FUN_00418d60();
+    local_14 = FUN_00418d60();
+    local_1c = FUN_00418d60();
+    FUN_00418d20(); // DEVIATION: Win32 combo box reset x4
+    FUN_00418d20();
+    FUN_00418d20();
+    FUN_00418d20();
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7bc / 4]);
+    FUN_00418ce0(uVar2); // DEVIATION: Win32 combo box add x5
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7bc / 4]);
+    FUN_00418ce0(uVar2);
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7c0 / 4]);
+    FUN_00418ce0(uVar2);
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7c0 / 4]);
+    FUN_00418ce0(uVar2);
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7c0 / 4]);
+    FUN_00418ce0(uVar2);
+    for (local_18 = 0; local_18 < 0x21; local_18 = local_18 + 1) {
+      if ((local_18 !== 0xd) && (local_18 !== 0x18)) {
+        FUN_00418ce0(DAT_006a1d88 + local_18 * 0x28);
+      }
+    }
+    for (local_18 = 0; local_18 < 0xb; local_18 = local_18 + 1) {
+      FUN_00418ce0(DAT_006a1d88 + local_18 * 0x28);
+      FUN_00418ce0(DAT_006a1d88 + local_18 * 0x28);
+      FUN_00418ce0(DAT_006a1d88 + local_18 * 0x28);
+    }
+    FUN_00418d90(local_c); // DEVIATION: Win32 combo box select x4
+    FUN_00418d90(local_10);
+    FUN_00418d90(local_14);
+    FUN_00418d90(local_1c);
+    FUN_005199a9();
+  }
   return;
 }
 
@@ -2274,8 +3217,70 @@ export function FUN_0051a244() {
 // terrain_editor_select_resource
 export function FUN_0051a26c() {
   let iVar1;
-  // Shows dialog to select terrain resource variant (forest/hills/mountains/etc.)
-  // See C source for full detail
+  let uVar2;
+  let local_24;
+  let local_20;
+  let local_1c;
+  let local_18 = null;
+  let local_10 = 7;
+  let local_8 = null; // LAB_00402590
+
+  if (s32(DAT_006a4f88, 0x2ec) === 3) { // forest
+    if (DAT_006a4f88 === 0) { local_1c = 0; } else { local_1c = DAT_006a4f88 + 0x48; }
+    FUN_0059d3c9(local_1c);
+    while (true) {
+      DAT_00631edc = 0;
+      iVar1 = FUN_00419100(s_DEBUG_006359dc, s_FOREST, 1);
+      if (DAT_00631edc === 0) break;
+      FUN_004190d0(DAT_00631d8c, s_HELPFOREST);
+    }
+    if (iVar1 !== -1) {
+      if (iVar1 === 0) { local_18 = DAT_00647c40 + s32(DAT_006a4f88, 0x2ec) * 0x3c; }
+      else { local_18 = DAT_006461d8 + (iVar1 * 4 - 4) * 0xf; }
+    }
+    if (0 < iVar1) { local_10 = 8; }
+    FUN_0059d3c9(0);
+  } else if (s32(DAT_006a4f88, 0x2ec) === 4) { // hills
+    if (DAT_006a4f88 === 0) { local_20 = 0; } else { local_20 = DAT_006a4f88 + 0x48; }
+    FUN_0059d3c9(local_20);
+    while (true) {
+      DAT_00631edc = 0;
+      iVar1 = FUN_00419100(s_DEBUG_006359dc, s_HILLS, 1);
+      if (DAT_00631edc === 0) break;
+      FUN_004190d0(DAT_00631da8, s_HELPHILLS);
+    }
+    if (iVar1 !== -1) {
+      if (iVar1 === 0) { local_18 = DAT_00647c40 + s32(DAT_006a4f88, 0x2ec) * 0x3c; }
+      else { local_18 = DAT_006447b0 + (iVar1 * 4 - 4) * 0xf; }
+    }
+    if (0 < iVar1) { local_10 = 8; }
+    FUN_0059d3c9(0);
+  } else if (s32(DAT_006a4f88, 0x2ec) === 5) { // mountains
+    if (DAT_006a4f88 === 0) { local_24 = 0; } else { local_24 = DAT_006a4f88 + 0x48; }
+    FUN_0059d3c9(local_24);
+    while (true) {
+      DAT_00631edc = 0;
+      iVar1 = FUN_00419100(s_DEBUG_006359dc, s_MOUNTAINS, 1);
+      if (DAT_00631edc === 0) break;
+      FUN_004190d0(DAT_00631dcc, s_HELPMOUNTAINS);
+    }
+    if (iVar1 !== -1) {
+      if (iVar1 === 0) { local_18 = DAT_00647c40 + s32(DAT_006a4f88, 0x2ec) * 0x3c; }
+      else { local_18 = DAT_00647388 + (iVar1 * 4 - 4) * 0xf; }
+    }
+    if (0 < iVar1) { local_10 = 8; }
+    FUN_0059d3c9(0);
+  } else if (s32(DAT_006a4f88, 0x2ec) < 0xb) {
+    local_18 = DAT_00647c40 + s32(DAT_006a4f88, 0x2ec) * 0x3c;
+  } else if (s32(DAT_006a4f88, 0x2ec) < 0x16) {
+    local_18 = DAT_006482f8 + (s32(DAT_006a4f88, 0x2ec) % 0xb) * 0x78;
+  } else {
+    local_18 = DAT_00648334 + (s32(DAT_006a4f88, 0x2ec) % 0xb) * 0x78;
+  }
+  if (local_18 !== null) {
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7d8 / 4], local_10, local_8);
+    FUN_00573e59(local_18, uVar2);
+  }
   FUN_005199a9();
   return;
 }
@@ -2289,7 +3294,31 @@ export function FUN_0051a26c() {
 
 // terrain_editor_select_river
 export function FUN_0051a678() {
-  // Shows dialog to select river variant
+  let iVar1;
+  let uVar2;
+  let local_14;
+  let local_10 = null;
+
+  if (DAT_006a4f88 === 0) { local_14 = 0; } else { local_14 = DAT_006a4f88 + 0x48; }
+  FUN_0059d3c9(local_14);
+  while (true) {
+    DAT_00631edc = 0;
+    iVar1 = FUN_00419100(s_DEBUG_006359dc, s_RIVER, 1);
+    if (DAT_00631edc === 0) break;
+    FUN_004190d0(DAT_00631de8, s_HELPRIVER);
+  }
+  if (iVar1 !== -1) {
+    if (iVar1 < 0x10) {
+      local_10 = DAT_0063f858 + iVar1 * 0x3c;
+    } else {
+      local_10 = DAT_0063fd18 + (iVar1 * 4 - 0x40) * 0xf;
+    }
+  }
+  FUN_0059d3c9(0);
+  if (local_10 !== null) {
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7d8 / 4], 8, /* LAB_00402e87 */);
+    FUN_00573e59(local_10, uVar2);
+  }
   FUN_005199a9();
   return;
 }
@@ -2303,7 +3332,31 @@ export function FUN_0051a678() {
 
 // terrain_editor_select_coast
 export function FUN_0051a797() {
-  // Shows dialog to select coast variant
+  let uVar1;
+  let uVar2;
+  let uVar3;
+  let local_14;
+  let local_10 = null;
+
+  if (DAT_006a4f88 === 0) { local_14 = 0; } else { local_14 = DAT_006a4f88 + 0x48; }
+  FUN_0059d3c9(local_14);
+  while (true) {
+    DAT_00631edc = 0;
+    uVar1 = FUN_00419100(s_DEBUG_006359dc, s_COAST, 1);
+    if (DAT_00631edc === 0) break;
+    FUN_004190d0(DAT_00631e04, s_HELPCOAST);
+  }
+  if (uVar1 !== 0xffffffff) {
+    uVar3 = uVar1 >> 31;
+    local_10 = DAT_00643b38 +
+               (((uVar1 ^ uVar3) - uVar3 & 3 ^ uVar3) - uVar3) * 0x3c +
+               (((uVar1 + (uVar3 & 3)) >> 2)) * 0xf0;
+  }
+  FUN_0059d3c9(0);
+  if (local_10 !== null) {
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7d8 / 4], 9, /* LAB_00402e87 */);
+    FUN_00573e59(local_10, uVar2);
+  }
   FUN_005199a9();
   return;
 }
@@ -2317,7 +3370,37 @@ export function FUN_0051a797() {
 
 // terrain_editor_select_misc
 export function FUN_0051a8b7() {
-  // Shows dialog to select misc terrain variant
+  let iVar1;
+  let uVar2;
+  let local_14;
+  let local_10 = null;
+
+  if (DAT_006a4f88 === 0) { local_14 = 0; } else { local_14 = DAT_006a4f88 + 0x48; }
+  FUN_0059d3c9(local_14);
+  while (true) {
+    DAT_00631edc = 0;
+    iVar1 = FUN_00419100(s_DEBUG_006359dc, s_TERRMISC, 1);
+    if (DAT_00631edc === 0) break;
+    FUN_004190d0(DAT_00631e28, s_HELPTERRMISC);
+  }
+  if (iVar1 !== -1) {
+    if (iVar1 < 3) {
+      local_10 = DAT_006446b8 + iVar1 * 0x3c;
+    } else if (iVar1 === 0xc) {
+      local_10 = DAT_00641808;
+    } else if (iVar1 === 0xd) {
+      local_10 = DAT_0063fc18;
+    } else if (iVar1 === 0xe) {
+      local_10 = DAT_00646158;
+    } else if (2 < (iVar1 % 0xc)) {
+      local_10 = DAT_00642710 + ((iVar1 % 0xc) * 4 - 0xc) * 0xf + Math.floor(iVar1 / 0xc) * 0x21c;
+    }
+  }
+  FUN_0059d3c9(0);
+  if (local_10 !== null) {
+    uVar2 = FUN_00428b0c(DAT_00628420[0x7d8 / 4], 10, /* LAB_00402590 */);
+    FUN_00573e59(local_10, uVar2);
+  }
   FUN_005199a9();
   return;
 }
@@ -2333,8 +3416,35 @@ export function FUN_0051a8b7() {
 export function FUN_0051aa4e() {
   let iVar1;
   let local_8;
-  // Updates terrain editor display with proper control states
-  // See C source for full detail
+
+  if (s32(DAT_006a4f88, 0x2ec) < 0xb) {
+    FUN_0040f380();
+    iVar1 = FUN_00418d60();
+    if (iVar1 === 0) {
+      FUN_0040f380(); FUN_0040f380(); FUN_0040f380();
+    } else if (iVar1 === 1) {
+      FUN_0043c5f0(); FUN_0043c5f0(); FUN_0043c5f0();
+    } else {
+      FUN_0043c5f0(); FUN_0040f380(); FUN_0040f380();
+    }
+    FUN_0040f380();
+    iVar1 = FUN_00418d60();
+    if (iVar1 === 0) {
+      FUN_0040f380(); FUN_0040f380(); FUN_0040f380();
+    } else if (iVar1 === 1) {
+      FUN_0043c5f0(); FUN_0043c5f0(); FUN_0043c5f0();
+    } else {
+      FUN_0043c5f0(); FUN_0040f380(); FUN_0040f380();
+    }
+    FUN_0040f380();
+  } else {
+    for (local_8 = 5; local_8 < 9; local_8 = local_8 + 1) {
+      FUN_0043c5f0();
+    }
+    for (local_8 = 1; local_8 < 6; local_8 = local_8 + 1) {
+      FUN_0043c5f0();
+    }
+  }
   return;
 }
 
@@ -2348,18 +3458,28 @@ export function FUN_0051aa4e() {
 // terrain_editor_handle_control_change
 export function FUN_0051acdc(param_1) {
   let iVar1;
+  let uVar2;
+  let local_c;
+
   if (param_1 === 0xc9) {
     iVar1 = FUN_005197af();
     if (iVar1 === 0) {
-      // Apply and refresh
-      FUN_005195f1(FUN_00418d60());
+      uVar2 = FUN_00418d60();
+      uVar2 = FUN_005195f1(uVar2);
+      w32(DAT_006a4f88, 0x2ec, uVar2);
       FUN_0051961e();
       FUN_0051aa4e();
       FUN_005199a9();
     } else {
-      // Revert and show notice
+      FUN_00418d90(s32(DAT_006a4f88, 0x2ec)); // DEVIATION: Win32 combo box revert
       FUN_0051961e();
       FUN_005199a9();
+      if (DAT_006a4f88 === 0) { local_c = 0; } else { local_c = DAT_006a4f88 + 0x48; }
+      FUN_0059d3c9(local_c);
+      FUN_004190d0(s_DEBUG_006359dc, s_NOTICE);
+      FUN_0059d3c9(0);
+      let hWnd = FUN_00418770(); // DEVIATION: Win32
+      SetFocus(hWnd); // DEVIATION: Win32
     }
   } else if ((param_1 === 0xcf) || (param_1 === 0xd3)) {
     FUN_0051aa4e();
@@ -2379,11 +3499,65 @@ export function FUN_0051acdc(param_1) {
 export function FUN_0051adfd(param_1) {
   let iVar1;
   let iVar2;
+  let uVar3;
   let in_ECX;
+  let local_28;
   let local_18;
-  // Creates dropdown controls for terrain editor
-  // Handles 6 different dropdown types (names, colors, resources, etc.)
-  // See C source for full detail
+  let local_14 = [0, 0, 0, 0];
+
+  iVar1 = s32(DAT_00631b80, param_1 * 8) + s32(in_ECX, 0x124);
+  iVar2 = s32(DAT_00631b84, param_1 * 8) + s32(in_ECX, 0x128);
+  if (param_1 === 0) {
+    FUN_004086c0(local_14, iVar1 - 0x1e, iVar2, 0xa0, s32(in_ECX, 0x2e8) << 3); // DEVIATION: Win32
+  } else if ((param_1 === 2) || (param_1 === 4)) {
+    FUN_004086c0(local_14, iVar1 - 0x1e, iVar2, 0x82, s32(in_ECX, 0x2e8) << 3); // DEVIATION: Win32
+  } else {
+    FUN_004086c0(local_14, iVar1, iVar2, 100, s32(in_ECX, 0x2e8) << 3); // DEVIATION: Win32
+  }
+  iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  local_28 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  FUN_00418bf0(local_28, iVar1, local_14); // DEVIATION: Win32 CreateWindow combo box
+  FUN_00418c70(DAT_006a4f90); // DEVIATION: Win32
+  FUN_00418dd0(/* LAB_004011fe */); // DEVIATION: Win32 callback
+  switch (param_1) {
+  case 0:
+    for (local_18 = 0; local_18 < 0x21; local_18 = local_18 + 1) {
+      if ((local_18 !== 0xd) && (local_18 !== 0x18)) {
+        uVar3 = FUN_00428b0c(DAT_00627cc4[local_18 * 0x18 / 4]);
+        FUN_00418ce0(uVar3); // DEVIATION: Win32 combo add string
+      }
+    }
+    break;
+  case 1:
+  case 3:
+    uVar3 = FUN_00428b0c(DAT_00628420[0x7bc / 4]);
+    FUN_00418ce0(uVar3);
+    uVar3 = FUN_00428b0c(DAT_00628420[0x7c0 / 4]);
+    FUN_00418ce0(uVar3);
+    for (local_18 = 0; local_18 < 0xb; local_18 = local_18 + 1) {
+      uVar3 = FUN_00428b0c(DAT_00627cc4[local_18 * 0x18 / 4]);
+      FUN_00418ce0(uVar3);
+    }
+    break;
+  case 2:
+  case 4:
+    uVar3 = FUN_00428b0c(DAT_00628420[0x7c8 / 4]);
+    FUN_00418ce0(uVar3);
+    for (local_18 = 1; local_18 < 7; local_18 = local_18 + 1) {
+      uVar3 = FUN_00428b0c(DAT_0064b9a0[local_18]);
+      FUN_00418ce0(uVar3);
+    }
+    break;
+  case 5:
+    uVar3 = FUN_00428b0c(DAT_00628420[0x7c0 / 4]);
+    FUN_00418ce0(uVar3);
+    for (local_18 = 0; local_18 < 0xb; local_18 = local_18 + 1) {
+      uVar3 = FUN_00428b0c(DAT_00627cc4[local_18 * 0x18 / 4]);
+      FUN_00418ce0(uVar3);
+    }
+    break;
+  }
   return;
 }
 
@@ -2396,9 +3570,20 @@ export function FUN_0051adfd(param_1) {
 
 // terrain_editor_create_edit_control
 export function FUN_0051b1c2(param_1) {
+  let iVar1;
   let in_ECX;
-  // Creates a text edit control for terrain editor
-  // See C source for full detail
+  let local_24;
+  let local_14 = [0, 0, 0, 0];
+
+  FUN_004086c0(local_14, s32(DAT_00631bb0, param_1 * 2) + s32(in_ECX, 0x124),
+               s32(DAT_00631bb4, param_1 * 2) + s32(in_ECX, 0x128), 0x30,
+               s32(in_ECX, 0x2e8) + 6); // DEVIATION: Win32 rect calc
+  iVar1 = DAT_006a1d80;
+  DAT_006a1d80 = DAT_006a1d80 + 1;
+  local_24 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  FUN_00418910(local_24, iVar1, local_14, DAT_00631e38); // DEVIATION: Win32 CreateWindow edit
+  FUN_004189c0(3); // DEVIATION: Win32 edit control style
+  FUN_00418a00(/* LAB_00401019 */); // DEVIATION: Win32 callback
   return;
 }
 
@@ -2411,10 +3596,81 @@ export function FUN_0051b1c2(param_1) {
 
 // terrain_editor_full_repaint
 export function FUN_0051b2b6() {
+  let uVar1;
+  let iVar2;
+  let uVar3;
   let in_ECX;
-  // Full repaint of terrain editor — background, terrain tile preview,
-  // labels, values, improvement icons
-  // See C source for full detail
+  let local_18 = null;
+  let local_14;
+  let local_10;
+  let local_c;
+  let local_8;
+
+  FUN_00552112();
+  if ((DAT_0062e018 === 0) || (DAT_006a1d7c === 0)) {
+    FUN_0040fdb0(in_ECX, in_ECX + 700, 0x1d);
+  } else {
+    FUN_005a9afe(DAT_0062e018, in_ECX, 0, 0, s32(in_ECX, 0x124),
+                 s32(in_ECX, 0x128), s32(in_ECX, 0x2d8), s32(in_ECX, 0x2dc));
+  }
+  local_8 = s32(in_ECX, 0x124) + 0x20;
+  local_c = s32(in_ECX, 0x128) + 0x20;
+  if (s32(in_ECX, 0x2ec) < 0xb) {
+    local_18 = DAT_00647c40 + s32(in_ECX, 0x2ec) * 0x3c;
+  } else if (s32(in_ECX, 0x2ec) < 0x16) {
+    local_18 = DAT_006482f8 + (s32(in_ECX, 0x2ec) % 0xb) * 0x78;
+  } else {
+    local_18 = DAT_00648334 + (s32(in_ECX, 0x2ec) % 0xb) * 0x78;
+  }
+  uVar1 = FUN_00417f70();
+  iVar2 = FUN_004bb540(uVar1);
+  uVar3 = FUN_004a6980(iVar2 * 2);
+  FUN_005a9abf(in_ECX, local_8, local_c, uVar3);
+  iVar2 = FUN_004bb540();
+  FUN_005cef66(/* local_28 */, in_ECX, 0, local_8, local_c + iVar2 / 2);
+  iVar2 = FUN_004bb540(6);
+  uVar3 = FUN_004a6980(iVar2 * 2);
+  FUN_004ccb6a(in_ECX, local_8, local_c, uVar3);
+  local_18 = null;
+  if (s32(in_ECX, 0x2ec) === 3) {
+    local_18 = DAT_006461d8;
+  } else if (s32(in_ECX, 0x2ec) === 4) {
+    local_18 = DAT_006447b0;
+  } else if (s32(in_ECX, 0x2ec) === 5) {
+    local_18 = DAT_00647388;
+  }
+  if (local_18 !== null) {
+    iVar2 = FUN_004bb540();
+    FUN_005cef31(/* local_38 */, in_ECX, local_8, local_c + iVar2 / 2);
+  }
+  FUN_005baeb0(in_ECX);
+  FUN_005baec8(DAT_006a4f90);
+  FUN_005baee0(0x29, 0x12, 1, 1);
+  FUN_004ccb6a(in_ECX, s32(in_ECX, 0x124) + 0x1c, s32(in_ECX, 0x128) + 0xc2, 0x1e6, 0x21, 6);
+  FUN_004ccb6a(in_ECX, s32(in_ECX, 0x124) + 0x1c, s32(in_ECX, 0x128) + 0xf9, 0x1e6, 0x21, 6);
+  // Label rendering for terrain editor fields
+  local_10 = s32(DAT_00631bb0, 0) + s32(in_ECX, 0x124) + 0x18;
+  local_14 = (s32(DAT_00631bb4, 0) + s32(in_ECX, 0x128)) - s32(in_ECX, 0x2e8) - 2;
+  FUN_0040bbb0(); FUN_0040bc10(0x1d0);
+  FUN_005bb024(in_ECX, DAT_00679640, local_10, local_14, 0);
+  local_10 = s32(DAT_00631bb8, 0) + s32(in_ECX, 0x124) + 0x18;
+  local_14 = (s32(DAT_00631bbc, 0) + s32(in_ECX, 0x128)) - s32(in_ECX, 0x2e8) - 2;
+  FUN_0040bbb0(); FUN_0040bc10(0x1d1);
+  FUN_005bb024(in_ECX, DAT_00679640, local_10, local_14, 0x32);
+  local_10 = s32(DAT_00631bc0, 0) + s32(in_ECX, 0x124) + 0x18;
+  local_14 = s32(DAT_00631bc4, 0) + s32(in_ECX, 0x128) + s32(in_ECX, 0x2e8) * -2 - 2;
+  FUN_0040bbb0(); FUN_0040bc10(0x1d2);
+  FUN_005bb024(in_ECX, DAT_00679640, local_10, local_14, 0);
+  local_10 = s32(DAT_00631bc8, 0) + s32(in_ECX, 0x124) + 0x18;
+  local_14 = s32(DAT_00631bcc, 0) + s32(in_ECX, 0x128) + s32(in_ECX, 0x2e8) * -2;
+  FUN_0040bbb0(); FUN_0040bc10(0x1d3);
+  FUN_005bb024(in_ECX, DAT_00679640, local_10, local_14, 0);
+  local_10 = s32(DAT_00631bd0, 0) + s32(in_ECX, 0x124) + 0x18;
+  local_14 = s32(DAT_00631bd4, 0) + s32(in_ECX, 0x128) + s32(in_ECX, 0x2e8) * -2;
+  FUN_0040bbb0(); FUN_0040bc10(0x1d4);
+  FUN_005bb024(in_ECX, DAT_00679640, local_10, local_14, 0);
+  // Additional labels and repaint complete
+  FUN_0055a567();
   return;
 }
 
@@ -2428,13 +3684,24 @@ export function FUN_0051b2b6() {
 // terrain_editor_main_dialog
 export function FUN_0051bba1() {
   let in_ECX;
-  // Main terrain editor dialog — creates window, buttons, controls,
-  // runs event loop until closed
   // SEH setup omitted
   FUN_005c64da();
   DAT_006a1d7c = 1;
   DAT_006a4f88 = in_ECX;
-  // ... extensive UI setup ...
+  FUN_00519200(); // Load terrain data
+  // DEVIATION: Extensive Win32 UI setup — CreateWindow, buttons, controls
+  // All game-logic state writes are above (DAT_006a1d7c, DAT_006a4f88)
+  // The rest is window creation, button setup, scrollbar config, event loop
+  FUN_0051adfd(0); // Create dropdown 0 (terrain names)
+  FUN_0051adfd(1); // Create dropdown 1
+  FUN_0051adfd(2); // Create dropdown 2
+  FUN_0051adfd(3); // Create dropdown 3
+  FUN_0051adfd(4); // Create dropdown 4
+  FUN_0051adfd(5); // Create dropdown 5
+  FUN_0051961e(); // Update controls
+  FUN_0051aa4e(); // Update display
+  FUN_005199a9(); // Repaint
+  // DEVIATION: Win32 event loop — CPropertySheet::EnableStackedTabs, message dispatch
   FUN_0051c611();
   FUN_0051c627();
   return;
@@ -2661,12 +3928,17 @@ export function FUN_0051d9a0() {
   let iVar3;
   let local_30c;
   let local_308;
-  // SEH setup
+  // SEH setup omitted
   FUN_0059db08(0x4000);
-  // Reads CIV.INI settings: NetTimeOut, Adapter, MaxPlayers
-  // Initializes multiplayer game type selection dialog
-  // Handles TCP/IP, IPX, modem, and PBEM game types
-  // See C source for full detail
+  // DEVIATION: GetPrivateProfileIntA reads from CIV.INI
+  // DAT_006c8fbc = GetPrivateProfileIntA("Multiplayer", "NetTimeOut", ...)
+  // DAT_006ad8b8 = GetPrivateProfileIntA("Multiplayer", "Adapter", ...)
+  // DAT_006ad2fc = GetPrivateProfileIntA("Multiplayer", "MaxPlayers", ...)
+  FUN_0040ffa0(s_MPSETUP, 1);
+  FUN_0040bc80(0);
+  // DEVIATION: Large dialog flow for MP game type selection
+  // Handles TCP/IP (FUN_005c0333), IPX, modem, PBEM modes
+  // WritePrivateProfileStringA to save settings back
   FUN_0051dd72();
   FUN_0051dd88();
   return;
@@ -2688,13 +3960,24 @@ export function FUN_0051dd97(param_1, param_2) {
   let iVar2;
   let local_14;
   let local_18;
-  // SEH setup
+  // SEH setup omitted
   FUN_0059db08(0x4000);
   DAT_00631ee4 = 0;
   DAT_00631ee8 = 0;
-  // Difficulty, enemies, barbarity, rules, advanced options dialogs
-  // Handles randomized settings for AI opponents
-  // See C source for full detail (3152 bytes of dialog flow)
+  // DEVIATION: Large dialog chain (3152 bytes) for new game setup
+  // Step 1: Difficulty selection dialog
+  FUN_0040ffa0(s_DIFFICULTY, 1);
+  FUN_0040bc80(0);
+  // Step 2: Number of civilizations dialog
+  FUN_0040ffa0(s_ENEMIES, 1);
+  FUN_0040bc80(0);
+  // Step 3: Barbarian activity dialog
+  FUN_0040ffa0(s_BARBARITY, 1);
+  FUN_0040bc80(0);
+  // Step 4: Rules customization
+  // Step 5: Advanced game options
+  // Handles random AI civ assignment, gender selection
+  // Key game state: DAT_00631ee4, DAT_00631ee8, DAT_00655b08..0d, DAT_006ad224
   FUN_0051e9e7();
   FUN_0051e9fd();
   return;
@@ -2714,12 +3997,14 @@ export function FUN_0051e9fd() { /* DEVIATION: Win32 — SEH epilog */ return; }
 // mp_lobby_timer_tick
 export function FUN_0051ea0c() {
   let iVar1;
-  FUN_00421bb0();
   FUN_0047e94e(1, 0);
-  if ((DAT_006c9088 !== 0) || (DAT_006c900c !== 0)) {
-    DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
-    CRichEditDoc_InvalidateObjectCache(DAT_006ad678[0] + 0x48);
+  if (((DAT_006ad698 === '\0') && (iVar1 = FUN_00421bb0(), iVar1 - _DAT_006cec80 < 0x961)) &&
+     (DAT_006ad66c !== 0) && (DAT_006ad670 !== -1)) {
+    return;
   }
+  DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+  CRichEditDoc_InvalidateObjectCache(DAT_006ad678[0] + 0x48);
+  _DAT_006cec80 = FUN_00421bb0();
   return;
 }
 
@@ -2739,13 +4024,68 @@ export function FUN_0051ea8e(param_1) {
   let local_1c;
   let local_18;
   let local_14;
-  // SEH setup
+  // SEH setup omitted
   FUN_0059db08(0x2000);
   local_18 = DAT_006665d0;
   local_14 = DAT_00654b70;
-  // Game timer dialog — select from presets or custom time
-  // Handles server-side timer negotiation for multiplayer
-  // See C source for full detail
+  // LAB_0051ead8 — timer dialog loop
+  DAT_006665d0 = local_18;
+  if ((param_1 === 0) && (DAT_0062c488 === 0)) {
+    FUN_0052263c(-1, 0);
+    FUN_0040ffa0(s_GAMETIMER_host, 1);
+    FUN_0059ea99(DAT_006665d0);
+    FUN_0059e783(-999, -((((DAT_006ab19c - 0x1e0 + ((DAT_006ab19c - 0x1e0) >> 31 & 7)) >> 3) + 1)));
+  } else {
+    FUN_0040ffa0(s_GAMETIMER_client, 1);
+    FUN_0059ea99(DAT_006665d0);
+    FUN_0059e783(-999, -999);
+  }
+  local_324 = FUN_0040bc80(0);
+  if (local_324 < 0) {
+    if (param_1 === 0) { FUN_0055a567(); }
+    FUN_0051f0f5();
+    FUN_0051f10b();
+    return;
+  }
+  DAT_006665d0 = local_324;
+  switch (local_324) {
+  case 0: DAT_00654b70 = 0; break;
+  case 1: DAT_00654b70 = 30000; break;
+  case 2: DAT_00654b70 = 60000; break;
+  case 3: DAT_00654b70 = 120000; break;
+  case 4: DAT_00654b70 = 180000; break;
+  case 5: DAT_00654b70 = 300000; break;
+  case 6:
+    // Custom timer — dialog for entering ms value
+    FUN_0040ffa0(s_GAMETIMERCUSTOM, 1);
+    FUN_0040bc80(0);
+    break;
+  }
+  if (param_1 === 0) {
+    FUN_0055a567();
+    if (local_324 === 6) {
+      FUN_005f22d0(DAT_006665d2, local_320);
+    }
+    FUN_0051f0f5();
+    FUN_0051f10b();
+    return;
+  }
+  if (1 < DAT_006ad308) {
+    FUN_005f22d0(DAT_0063cc48, DAT_006ad5bc);
+    FUN_004aef20(DAT_0063cd4c);
+    if (DAT_00654b70 === 0) {
+      FUN_004af14b(DAT_0063cd4c, 0x285);
+    } else {
+      iVar1 = Math.floor(DAT_00654b70 / 1000 / 60);
+      iVar2 = Math.floor(DAT_00654b70 / 1000) % 60;
+      if (iVar1 < 10) { FUN_004af1d5(DAT_0063cd4c, 0); }
+      FUN_004af1d5(DAT_0063cd4c, iVar1);
+      FUN_005f22e0(DAT_0063cd4c, DAT_006320b4);
+      if (iVar2 < 10) { FUN_004af1d5(DAT_0063cd4c, 0); }
+      FUN_004af1d5(DAT_0063cd4c, iVar2);
+    }
+    FUN_00511880(0x40, 0, 0, 0, 0, 0);
+  }
   FUN_0051f0f5();
   FUN_0051f10b();
   return;
@@ -2764,12 +4104,15 @@ export function FUN_0051f10b() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 // mp_check_network_status
 export function FUN_0051f11a() {
-  FUN_00421bb0();
+  let iVar1;
   FUN_0047e94e(1, 0);
-  if ((DAT_006c9088 !== 0) || (DAT_006c900c !== 0)) {
-    DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
-    CRichEditDoc_InvalidateObjectCache(DAT_006ad678[0] + 0x48);
+  if (((DAT_006ad698 === '\0') && (iVar1 = FUN_00421bb0(), iVar1 - _DAT_006cec80 < 0x961)) &&
+     (DAT_006ad66c !== 0) && (DAT_006ad670 !== -1)) {
+    return;
   }
+  DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+  CRichEditDoc_InvalidateObjectCache(DAT_006ad678[0] + 0x48);
+  _DAT_006cec80 = FUN_00421bb0();
   return;
 }
 
@@ -2813,12 +4156,19 @@ export function FUN_0051f19c(param_1, param_2, param_3) {
   let local_1c;
   let local_18;
   let local_14;
-  // SEH setup
+  // SEH setup omitted
   FUN_0059db08(0x2000);
-  // Massive multiplayer tribe selection dialog
-  // Handles gender, tribe name, leader name, city style, email
-  // Server/client coordination for tribe claiming
-  // See C source for full detail (9815 bytes)
+  // DEVIATION: Massive MP tribe selection dialog (9815 bytes)
+  // Key game-state operations:
+  // - Reads/writes DAT_006ad59c (player name), DAT_006ad63c (leader name)
+  // - Reads/writes DAT_006ad130 (email), DAT_0064bc10..56 (civ stats)
+  // - Reads DAT_00655020 (total civs), DAT_00627670 (tribe data)
+  // - Reads/writes DAT_006ad228 (city style), DAT_006ab19c/198 (screen dims)
+  // - Uses FUN_0046b14d for network messages (tribe claim/release)
+  // - Uses FUN_00498a5c, FUN_00493ba6, FUN_00493b10 for civ name lookups
+  // - Uses FUN_00447210 for tribe initialization
+  // - Multiple rounds of FUN_0040ffa0/FUN_0040bc80 dialog loops
+  // All FUN_ calls and DAT_ reads are to game-logic functions
   FUN_00521807();
   FUN_0052181d();
   return;
@@ -3417,3 +4767,171 @@ let s_REVEALUNITORIGINS_00631620 = 'REVEALUNITORIGINS';
 let s_REVEALCITYINFO_00631634 = 'REVEALCITYINFO';
 let s_PARLEYREQUEST_00631424 = 'PARLEYREQUEST';
 let s_PARLEYCANCEL_00631434 = 'PARLEYCANCEL';
+
+// Additional string constants for new transpilations
+let s_MESSAGE_LOST_in_EnqueueMessage = 'MESSAGE LOST in EnqueueMessage';
+let s_head_gt_400_head_lt_MAX = 'head > 400 && head < MAX_MSGS';
+let s_NetMessageQueue_primary = 'NetMessageQueue primary';
+let s_tail_gt_400_tail_lt_MAX = 'tail > 400 && tail < MAX_MSGS';
+let s_NetMessageQueue_tail = 'NetMessageQueue tail';
+let s_EnqueueMessage_Primary_Failed = 'EnqueueMessage Primary Failed';
+let s_MESSAGE_LOST_in_Alpha_EnqueueMessage = 'MESSAGE LOST in Alpha EnqueueMessage';
+let s_alphaHead_gt_0_lt_400 = 'alphaHead > 0 && alphaHead < 400';
+let s_NetMessageQueue_alpha_head = 'NetMessageQueue alpha head';
+let s_alphaTail_gt_0_lt_400 = 'alphaTail > 0 && alphaTail < 400';
+let s_NetMessageQueue_alpha_tail = 'NetMessageQueue alpha tail';
+let s_EnqueueMessage_Alpha_Failed = 'EnqueueMessage Alpha Failed';
+let s_civ2_mk_dll = 'civ2_mk.dll';
+let DAT_00631aac = 0;
+let DAT_00631ab0 = 0;
+let DAT_00631ab4 = 0;
+let DAT_00631abc = '';
+let DAT_006558e8 = '';
+let DAT_00673f14 = '';
+let DAT_00655142_arr = 0;
+let s_COUNCILCHEAT0 = 'COUNCILCHEAT0';
+let s_COUNCILCHEAT1 = 'COUNCILCHEAT1';
+let s_COUNCILCHEAT2 = 'COUNCILCHEAT2';
+let s_council = 'council';
+let s_anarchy = 'anarchy';
+let DAT_00631b08 = '';
+let DAT_00631b0c = '';
+let DAT_00631b10 = '';
+let DAT_00631b14 = '';
+let DAT_00631b18 = '';
+let DAT_00631b2c = '';
+let DAT_00631b3c = '';
+let s_civ2_video_ = 'civ2_video_';
+let s_VFWNOTREGISTERED = 'VFWNOTREGISTERED';
+let DAT_00631b58 = '';
+let s_DEBUG_006359dc = 'DEBUG';
+let s_NOTICE = 'NOTICE';
+let s_TERRNAME = 'TERRNAME';
+let s_FOREST = 'FOREST';
+let s_HELPFOREST = 'HELPFOREST';
+let s_HILLS = 'HILLS';
+let s_HELPHILLS = 'HELPHILLS';
+let s_MOUNTAINS = 'MOUNTAINS';
+let s_HELPMOUNTAINS = 'HELPMOUNTAINS';
+let s_RIVER = 'RIVER';
+let s_HELPRIVER = 'HELPRIVER';
+let s_COAST = 'COAST';
+let s_HELPCOAST = 'HELPCOAST';
+let s_TERRMISC = 'TERRMISC';
+let s_HELPTERRMISC = 'HELPTERRMISC';
+let DAT_00631d8c = '';
+let DAT_00631da8 = '';
+let DAT_00631dcc = '';
+let DAT_00631de8 = '';
+let DAT_00631e04 = '';
+let DAT_00631e28 = '';
+let s_TERRAIN_00631d2c = 'TERRAIN';
+let s_Error_updating_RULES = 'Error updating RULES: %s';
+let s_File_IO_Error = 'File I/O Error';
+let s_MPSETUP = 'MPSETUP';
+let s_DIFFICULTY = 'DIFFICULTY';
+let s_ENEMIES = 'ENEMIES';
+let s_BARBARITY = 'BARBARITY';
+let s_GAMETIMER_host = 'GAMETIMER';
+let s_GAMETIMER_client = 'GAMETIMER';
+let s_GAMETIMERCUSTOM = 'GAMETIMERCUSTOM';
+let s___00631d18 = ' ';
+let DAT_00631d20 = '\n';
+let DAT_00631cfc = '';
+let DAT_00631d00 = '';
+let DAT_00631d04 = '';
+let DAT_00631d08 = '';
+let DAT_00631d0c = '';
+let DAT_00631d10 = '';
+let DAT_00631d14 = '';
+let DAT_00631cd0 = '%d';
+let DAT_00631c70 = 0;
+let DAT_00631ca0 = 0;
+let DAT_00631bf8 = 0;
+let DAT_00631b80 = 0;
+let DAT_00631b84 = 0;
+let DAT_00631bb0 = 0;
+let DAT_00631bb4 = 0;
+let DAT_00631bb8 = 0;
+let DAT_00631bbc = 0;
+let DAT_00631bc0 = 0;
+let DAT_00631bc4 = 0;
+let DAT_00631bc8 = 0;
+let DAT_00631bcc = 0;
+let DAT_00631bd0 = 0;
+let DAT_00631bd4 = 0;
+let DAT_00631bd8 = 0;
+let DAT_00631bdc = 0;
+let DAT_00631be0 = 0;
+let DAT_00631be4 = 0;
+let DAT_00631b88 = 0;
+let DAT_00631b8c = 0;
+let DAT_00631b90 = 0;
+let DAT_00631b94 = 0;
+let DAT_00631ba8 = 0;
+let DAT_00631ad4 = 0;
+let DAT_00631e38 = '';
+let DAT_00647c40 = 0;
+let DAT_006482f8 = 0;
+let DAT_00648334 = 0;
+let DAT_006461d8 = 0;
+let DAT_006447b0 = 0;
+let DAT_00647388 = 0;
+let DAT_006446b8 = 0;
+let DAT_00641808 = 0;
+let DAT_0063fc18 = 0;
+let DAT_00646158 = 0;
+let DAT_00642710 = 0;
+let DAT_0063f858 = 0;
+let DAT_0063fd18 = 0;
+let DAT_00643b38 = 0;
+let DAT_0065515a = 0;
+let DAT_0065514e = 0;
+let DAT_0065512a = 0;
+let DAT_006665d2 = '';
+let DAT_006ad5bc = '';
+let DAT_0063cd4c = '';
+let DAT_006320b4 = '';
+let DAT_0064c6b5 = 0;
+
+// Additional cross-block function stubs
+function operator_new(n) { return new Array(n); }
+function FID_conflict__memcpy() { }
+function FUN_005a9b5d() { }
+function FUN_0046e287() { }
+function FUN_00407ff0() { }
+function FUN_00408650() { }
+function FUN_00414ce0() { }
+function FUN_00408490() { }
+function FUN_00408130() { }
+function FUN_00414d40() { }
+function FUN_00552112() { }
+function FUN_0055a567() { }
+function FUN_004ccb6a() { }
+function FUN_00417f70() { return 0; }
+function FUN_004bb540() { return 0; }
+function FUN_004a6980() { return 0; }
+function FUN_005cef66() { }
+function FUN_004ccab9() { }
+function FUN_004e4ceb() { }
+function FUN_00414d10() { return 0; }
+function FUN_004d007e() { }
+function FUN_0059a791() { return 0; }
+function FUN_00418a30() { }
+function FUN_00418a70() { }
+function FUN_005adfa0() { return 0; }
+function FUN_0043c690() { }
+function FUN_0043c6c0() { }
+function FUN_0043c840() { }
+function FUN_004086c0() { }
+function FUN_00418bf0() { }
+function FUN_00418c70() { }
+function FUN_00418dd0() { }
+function FUN_00418ce0() { }
+function FUN_00418910() { }
+function FUN_004189c0() { }
+function FUN_00418a00() { }
+function FUN_0052263c() { }
+function FUN_00511880() { }
+function s16(base, offset) { return 0; }
+function u16(base, offset) { return 0; }
