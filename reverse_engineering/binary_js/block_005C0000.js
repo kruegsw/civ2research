@@ -3143,9 +3143,9 @@ export function FUN_005c701c(param_1) {
       var srcR = iVar9[local_20] & 0xff;
       var srcG = iVar9[local_20 + 1] & 0xff;
       var srcB = iVar9[local_20 + 2] & 0xff;
-      var newR = ((((srcR / iVar4) | 0) * cVar8 + cVar7 * ((bVar1 / iVar4) | 0)) << 24 >> 24);
-      var newG = ((((srcG / iVar6) | 0) * cVar8 + cVar7 * ((bVar3 / iVar6) | 0)) << 24 >> 24);
-      var newB = ((((srcB / iVar5) | 0) * cVar8 + cVar7 * ((bVar2 / iVar5) | 0)) << 24 >> 24);
+      var newR = (((((srcR / iVar4) | 0) << 24 >> 24) * cVar8 + cVar7 * (((bVar1 / iVar4) | 0) << 24 >> 24)) << 24 >> 24);
+      var newG = (((((srcG / iVar6) | 0) << 24 >> 24) * cVar8 + cVar7 * (((bVar3 / iVar6) | 0) << 24 >> 24)) << 24 >> 24);
+      var newB = (((((srcB / iVar5) | 0) << 24 >> 24) * cVar8 + cVar7 * (((bVar2 / iVar5) | 0) << 24 >> 24)) << 24 >> 24);
       FUN_005deadb(in_ECX, in_ECX._0x410 + (local_20 / 3), newR, newG, newB);
     }
     update_palette_EA62(in_ECX, in_ECX._0x404, in_ECX._0x410, in_ECX._0x414);
@@ -3204,9 +3204,9 @@ export function FUN_005c738e(param_1) {
       var dstR = iVar4[local_18] & 0xff;
       var dstG = iVar4[local_18 + 1] & 0xff;
       var dstB = iVar4[local_18 + 2] & 0xff;
-      var newR = ((((srcR / in_ECX._0x418) | 0) * cVar2 + ((dstR / in_ECX._0x418) | 0) * cVar1) << 24 >> 24);
-      var newG = ((((srcG / in_ECX._0x418) | 0) * cVar2 + ((dstG / in_ECX._0x418) | 0) * cVar1) << 24 >> 24);
-      var newB = ((((srcB / in_ECX._0x418) | 0) * cVar2 + ((dstB / in_ECX._0x418) | 0) * cVar1) << 24 >> 24);
+      var newR = (((((srcR / in_ECX._0x418) | 0) << 24 >> 24) * cVar2 + (((dstR / in_ECX._0x418) | 0) << 24 >> 24) * cVar1) << 24 >> 24);
+      var newG = (((((srcG / in_ECX._0x418) | 0) << 24 >> 24) * cVar2 + (((dstG / in_ECX._0x418) | 0) << 24 >> 24) * cVar1) << 24 >> 24);
+      var newB = (((((srcB / in_ECX._0x418) | 0) << 24 >> 24) * cVar2 + (((dstB / in_ECX._0x418) | 0) << 24 >> 24) * cVar1) << 24 >> 24);
       FUN_005deadb(in_ECX, in_ECX._0x41c + (local_18 / 3), newR, newG, newB);
     }
     update_palette_EA62(in_ECX, in_ECX._0x404, in_ECX._0x41c, in_ECX._0x420);
@@ -4813,9 +4813,9 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
       local_4c[writeIdx] = local_20[local_44];
       local_4c[writeIdx + 1] = local_38[local_44];
       writeIdx = writeIdx + 2;
-      // FUN_005dced3(local_8[local_44], local_4c + writeIdx, local_38[local_44]) — memcpy pixel run
-      // In C: copies pixel bytes from source row. In JS arrays, conceptual copy.
-      FUN_005dced3(local_8[local_44], local_4c, local_38[local_44]);
+      // C: FUN_005dced3(local_8[local_44], local_4c, local_38[local_44]) — memcpy pixel run
+      // local_4c in C is already advanced past headers; in JS use writeIdx offset
+      FUN_005dced3(local_8[local_44], local_4c + writeIdx, local_38[local_44]);
       writeIdx = writeIdx + local_38[local_44];
     }
     local_4c[writeIdx] = 0; // terminator
@@ -4992,8 +4992,8 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
       local_50_ptr[writeIdx] = local_24_arr[local_48];
       local_50_ptr[writeIdx + 1] = local_3c_arr[local_48];
       writeIdx = writeIdx + 2;
-      // FUN_005dced3(local_c_arr[local_48], local_50_ptr + writeIdx, local_3c_arr[local_48]) — memcpy pixel run
-      FUN_005dced3(local_c_arr[local_48], local_50_ptr, local_3c_arr[local_48]);
+      // C: memcpy pixel run — local_50_ptr in C already advanced past headers
+      FUN_005dced3(local_c_arr[local_48], local_50_ptr + writeIdx, local_3c_arr[local_48]);
       writeIdx = writeIdx + local_3c_arr[local_48];
     }
     local_50_ptr[writeIdx] = 0; // terminator
