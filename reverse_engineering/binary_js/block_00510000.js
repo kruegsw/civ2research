@@ -1487,10 +1487,10 @@ export function FUN_005151f4(param_1) {
   let local_24, local_20, local_1c, local_18;
   let local_14 = [0, 0, 0, 0]; // tagRECT
 
-  FUN_005bcaa7(/* &local_24 */);
-  FUN_004aef20(/* local_a4 */);
-  FUN_0043c840(/* local_a4 */, s_civ2_mk_dll);
-  iVar1 = FUN_00564713(/* local_a4 */);
+  FUN_005bcaa7(0 /* &local_24 */);
+  FUN_004aef20(0 /* local_a4 */);
+  FUN_0043c840(0 /* local_a4 */, s_civ2_mk_dll);
+  iVar1 = FUN_00564713(0 /* local_a4 */);
   if (iVar1 === 0) {
     return 0;
   }

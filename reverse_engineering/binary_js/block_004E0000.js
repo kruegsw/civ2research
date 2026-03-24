@@ -1508,7 +1508,7 @@ export function FUN_004e3a86() {
     uVar3 = 0;
     uVar2 = FUN_004a23fc(1,0);
     FUN_00578c12(3,0x340,uVar2,uVar3);
-  FUN_0057940d(0x327,(DAT_00655aea & 0x20);
+  FUN_0057940d(0x327, (DAT_00655aea & 0x20) >> 5);
   iVar1 = FUN_004a2379(0, "");
   if (iVar1 === 0) {
     uVar2 = FUN_004a23fc(1);

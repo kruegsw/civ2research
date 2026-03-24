@@ -1805,9 +1805,14 @@ export function __CrtDbgReport(...args) {
 
 // __stbuf / __ftbuf — CRT stream buffering (from CRT)
 // Source: decompiled/block_005F0000.c __stbuf (190 bytes)
-export function __stbuf(_File) { // DEVIATION: C runtime  return 0; }
+export function __stbuf(_File) {
+  // DEVIATION: C runtime
+  return 0;
+}
 // Source: decompiled/block_005F0000.c __ftbuf (70 bytes)
-export function __ftbuf(param_1, _File) { // DEVIATION: C runtime }
+export function __ftbuf(param_1, _File) {
+  // DEVIATION: C runtime
+}
 
 // __output — CRT formatted output core (from CRT)
 // Source: decompiled/block_005F0000.c __output (3279 bytes)
