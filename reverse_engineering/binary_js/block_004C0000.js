@@ -2103,7 +2103,7 @@ export function FUN_004c66ba(param_1, param_2, param_3) {
            (iVar6 = FUN_00453e51(DAT_006d1da0, 9), iVar6 !== 0)))) ||
          (((DAT_0064c6c0[DAT_006d1da0 * 0x594 + iVar4 * 4] & 0x80) !== 0 ||
           ((iVar6 = FUN_00453e51(DAT_006d1da0, 0x18), iVar6 !== 0 ||
-           (iVar6 = FUN_00453e51(DAT_006d1da0, 9), iVar6 !== 0)))))) || (DAT_00655b07 !== 0)))
+           (iVar6 = FUN_00453e51(DAT_006d1da0, 9), iVar6 !== 0))))) || (DAT_00655b07 !== 0))
        )) {
       if (((DAT_00655b07 !== 0) ||
           ((1 << (u8(DAT_006d1da0) & 0x1f) & s8(DAT_0064f34c[param_1 * 0x58])) !== 0)) ||

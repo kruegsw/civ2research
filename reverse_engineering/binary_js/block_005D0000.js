@@ -1085,7 +1085,9 @@ export function FUN_005d2042(param_1, param_2, param_3) {
 
 // Source: decompiled/block_005D0000.c FUN_005d20e6 (56 bytes)
 // timer_clear — clear a timer slot
-export function FUN_005d20e6(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d20e6(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d211e (100 bytes)
 // timer_construct — construct MrTimer object
@@ -1123,42 +1125,60 @@ export function FUN_005d220a() { FUN_005d246f(); }
 
 // Source: decompiled/block_005D0000.c FUN_005d2224 (29 bytes)
 // register_debug_atexit — register cleanup at exit
-export function FUN_005d2224() { // DEVIATION: Win32 — _atexit(FUN_005d2241); }
+export function FUN_005d2224() {
+  // DEVIATION: Win32 — _atexit(FUN_005d2241);
+}
 
 // debug_cleanup_atexit — atexit callback for debug
 export function FUN_005d2241() { FUN_005d2498(); }
 
 // Source: decompiled/block_005D0000.c debug_log (30 bytes)
 // debug_log — log a debug message
-export function debug_log(param_1) { // DEVIATION: Win32 — FUN_005d24b3(param_1); }
+export function debug_log(param_1) {
+  // DEVIATION: Win32 — FUN_005d24b3(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d2279 (62 bytes)
 // debug_log_fmt1 — log formatted message (1 param)
-export function FUN_005d2279(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d2279(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d22b7 (66 bytes)
 // debug_log_fmt2 — log formatted message (2 params)
-export function FUN_005d22b7(param_1, param_2, param_3) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d22b7(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d22f9 (70 bytes)
 // debug_log_fmt3 — log formatted message (3 params)
-export function FUN_005d22f9(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d22f9(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d233f (62 bytes)
 // debug_log_fmt1b — log formatted message (1 param, variant)
-export function FUN_005d233f(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d233f(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d237d (62 bytes)
 // debug_log_fmt1c — log formatted message (1 param, variant)
-export function FUN_005d237d(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d237d(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d23bb (66 bytes)
 // debug_log_fmt2b — log formatted message (2 params, variant)
-export function FUN_005d23bb(param_1, param_2, param_3) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d23bb(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d23fd (66 bytes)
 // debug_log_fmt2c — log formatted message (2 params, variant)
-export function FUN_005d23fd(param_1, param_2, param_3) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d23fd(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // set_debug_log_to_file_flag
 export function FUN_005d243f(param_1) { DAT_00638304 = param_1; }
@@ -1168,11 +1188,15 @@ export function FUN_005d2457(param_1) { DAT_00638308 = param_1; }
 
 // Source: decompiled/block_005D0000.c FUN_005d246f (41 bytes)
 // init_perf_counter — initialize performance counter
-export function FUN_005d246f() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d246f() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d2498 (27 bytes)
 // destroy_perf_counter — destroy performance counter
-export function FUN_005d2498() { // DEVIATION: Win32 — FUN_005eda65(); }
+export function FUN_005d2498() {
+  // DEVIATION: Win32 — FUN_005eda65();
+}
 
 // debug_log_timestamped — log with timestamp
 export function FUN_005d24b3(param_1) { return 1; }
@@ -1203,11 +1227,15 @@ export function FUN_005d25a8(param_1) { PTR_DAT_00637e68 = param_1; }
 
 // Source: decompiled/block_005D0000.c FUN_005d25c0 (101 bytes)
 // editbox_create — create an edit box control
-export function FUN_005d25c0(param_1, param_2, param_3, param_4, param_5, param_6) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d25c0(param_1, param_2, param_3, param_4, param_5, param_6) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d2625 (105 bytes)
 // editbox_create_with_style — create edit box with extra style
-export function FUN_005d2625(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d2625(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // set_editbox_font_callback
 export function FUN_005d268e(param_1) { PTR_DAT_00637e6c = param_1; }
@@ -1394,7 +1422,9 @@ export function send_msg_2A01(param_1, param_2, param_3, param_4) {
 
 // Source: decompiled/block_005D0000.c FUN_005d2d15 (40 bytes)
 // editbox_enable — enable/disable edit box
-export function FUN_005d2d15(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d2d15(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d2d3d (16 bytes)
 // editbox_noop — empty handler
@@ -1402,71 +1432,105 @@ export function FUN_005d2d3d() { // C: return; (truly empty function) }
 
 // Source: decompiled/block_005D0000.c send_msg_2D4D (50 bytes)
 // editbox_get_text — get edit box text
-export function send_msg_2D4D(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_2D4D(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2D7F (34 bytes)
 // editbox_set_text — set edit box text
-export function send_msg_2D7F(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0xc,0,param_2); }
+export function send_msg_2D7F(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xc,0,param_2);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2DA1 (37 bytes)
 // editbox_set_limit — set text length limit
-export function send_msg_2DA1(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0xc5,param_2,0); }
+export function send_msg_2DA1(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xc5,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2DC6 (39 bytes)
 // editbox_select_all — select all text
-export function send_msg_2DC6(param_1, param_2, param_3) { // DEVIATION: Win32 — SendMessageA(param_1,0xb1,param_2,param_3); }
+export function send_msg_2DC6(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xb1,param_2,param_3);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2DED (68 bytes)
 // editbox_get_line — get a line of text
-export function send_msg_2DED(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_2DED(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2E31 (35 bytes)
 // editbox_get_line_count — get line count
-export function send_msg_2E31(param_1) { // DEVIATION: Win32 — SendMessageA(param_1,0xba,0,0); }
+export function send_msg_2E31(param_1) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xba,0,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2E54 (35 bytes)
 // editbox_undo — undo last edit
-export function send_msg_2E54(param_1) { // DEVIATION: Win32 — SendMessageA(param_1,0xce,0,0); }
+export function send_msg_2E54(param_1) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xce,0,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2E77 (37 bytes)
 // editbox_get_first_visible — get first visible line
-export function send_msg_2E77(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0xc9,param_2,0); }
+export function send_msg_2E77(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xc9,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2E9C (37 bytes)
 // editbox_get_line_index — get line start index
-export function send_msg_2E9C(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0xbb,param_2,0); }
+export function send_msg_2E9C(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xbb,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2EC1 (37 bytes)
 // editbox_get_line_length — get line length
-export function send_msg_2EC1(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0xc1,param_2,0); }
+export function send_msg_2EC1(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xc1,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2EE6 (39 bytes)
 // editbox_scroll — scroll edit box
-export function send_msg_2EE6(param_1, param_2, param_3) { // DEVIATION: Win32 — SendMessageA(param_1,0xb6,param_3,param_2); }
+export function send_msg_2EE6(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xb6,param_3,param_2);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2F0D (58 bytes)
 // editbox_set_caret — set caret position
-export function send_msg_2F0D(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_2F0D(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2F47 (55 bytes)
 // editbox_get_selection_end — get selection end position
-export function send_msg_2F47(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_2F47(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d2f7e (76 bytes)
 // editbox_get_end_of_last_line — compute end of last line
-export function FUN_005d2f7e(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d2f7e(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d2fca (107 bytes)
 // editbox_scroll_to_caret — scroll to caret position
-export function FUN_005d2fca(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d2fca(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3035 (37 bytes)
 // editbox_replace_sel — replace selected text
-export function send_msg_3035(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0xc2,0,param_2); }
+export function send_msg_3035(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0xc2,0,param_2);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d305a (118 bytes)
 // editbox_is_at_end — check if caret is at end
-export function FUN_005d305a(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d305a(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // editbox_validate_char — validate character input
 export function FUN_005d30e0(param_1) { return 1; }
@@ -1599,23 +1663,33 @@ export function FUN_005d356e() { // C: return; (truly empty function) }
 
 // Source: decompiled/block_005D0000.c send_msg_357E (37 bytes)
 // combobox_add_string — add string to combo box
-export function send_msg_357E(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0x143,0,param_2); }
+export function send_msg_357E(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x143,0,param_2);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_35A3 (37 bytes)
 // combobox_set_selection — set selected item
-export function send_msg_35A3(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0x144,param_2,0); }
+export function send_msg_35A3(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x144,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_35C8 (66 bytes)
 // combobox_set_font — set combo box font
-export function send_msg_35C8(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_35C8(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_360A (35 bytes)
 // combobox_reset — clear combo box
-export function send_msg_360A(param_1) { // DEVIATION: Win32 — SendMessageA(param_1,0x14b,0,0); }
+export function send_msg_360A(param_1) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x14b,0,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_362D (39 bytes)
 // combobox_get_item_data — get item data
-export function send_msg_362D(param_1, param_2, param_3) { // DEVIATION: Win32 — SendMessageA(param_1,0x148,param_2,param_3); }
+export function send_msg_362D(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x148,param_2,param_3);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3654 (93 bytes)
 // combobox_get_selected_text — get selected text
@@ -1631,19 +1705,27 @@ export function send_msg_3654(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c send_msg_36B1 (64 bytes)
 // combobox_get_selection — get selection index
-export function send_msg_36B1(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_36B1(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_36F6 (37 bytes)
 // combobox_set_item_height — set item height
-export function send_msg_36F6(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0x14e,param_2,0); }
+export function send_msg_36F6(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x14e,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d3720 (51 bytes)
 // combobox_on_dblclick — handle double click
-export function FUN_005d3720() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d3720() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d3760 (51 bytes)
 // combobox_on_selchange — handle selection change
-export function FUN_005d3760() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d3760() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1786,27 +1868,39 @@ export function FUN_005d3c40() { // C: return; (truly empty function) }
 
 // Source: decompiled/block_005D0000.c send_msg_3C50 (37 bytes)
 // listbox_add_string — add string to list box
-export function send_msg_3C50(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0x180,0,param_2); }
+export function send_msg_3C50(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x180,0,param_2);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3C75 (37 bytes)
 // listbox_set_selection — set selected item
-export function send_msg_3C75(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0x182,param_2,0); }
+export function send_msg_3C75(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x182,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3C9A (66 bytes)
 // listbox_set_font — set list box font
-export function send_msg_3C9A(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_3C9A(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3CDC (35 bytes)
 // listbox_reset — clear list box
-export function send_msg_3CDC(param_1) { // DEVIATION: Win32 — SendMessageA(param_1,0x184,0,0); }
+export function send_msg_3CDC(param_1) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x184,0,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3CFF (39 bytes)
 // listbox_get_item_data — get item data at index
-export function send_msg_3CFF(param_1, param_2, param_3) { // DEVIATION: Win32 — SendMessageA(param_1,0x189,param_2,param_3); }
+export function send_msg_3CFF(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x189,param_2,param_3);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3D26 (60 bytes)
 // listbox_insert_string — insert string at position
-export function send_msg_3D26(param_1, param_2, param_3) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_3D26(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3D62 (93 bytes)
 // listbox_get_selected_text — get selected text
@@ -1822,39 +1916,57 @@ export function send_msg_3D62(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c send_msg_3DBF (64 bytes)
 // listbox_get_selection — get selection index
-export function send_msg_3DBF(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_3DBF(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3E04 (64 bytes)
 // listbox_get_top_index — get top visible index
-export function send_msg_3E04(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_3E04(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3E49 (68 bytes)
 // listbox_find_string — find string in list
-export function send_msg_3E49(param_1, param_2, param_3) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function send_msg_3E49(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3E92 (37 bytes)
 // listbox_delete_string — delete string at index
-export function send_msg_3E92(param_1, param_2) { // DEVIATION: Win32 — SendMessageA(param_1,0x186,param_2,0); }
+export function send_msg_3E92(param_1, param_2) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x186,param_2,0);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3EB7 (39 bytes)
 // listbox_set_item_data — set item data at index
-export function send_msg_3EB7(param_1, param_2, param_3) { // DEVIATION: Win32 — SendMessageA(param_1,0x183,param_2,param_3); }
+export function send_msg_3EB7(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x183,param_2,param_3);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3EDE (39 bytes)
 // listbox_set_item_data_swap — set item data (swapped params)
-export function send_msg_3EDE(param_1, param_2, param_3) { // DEVIATION: Win32 — SendMessageA(param_1,0x183,param_3,param_2); }
+export function send_msg_3EDE(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x183,param_3,param_2);
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3F05 (40 bytes)
 // listbox_set_item_check — set checkbox state
-export function send_msg_3F05(param_1, param_2, param_3) { // DEVIATION: Win32 — SendMessageA(param_1,0x185,(int)param_3,param_2); }
+export function send_msg_3F05(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — SendMessageA(param_1,0x185,(int)param_3,param_2);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d3f30 (51 bytes)
 // listbox_on_dblclick — handle double click
-export function FUN_005d3f30() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d3f30() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d3f70 (51 bytes)
 // listbox_on_selchange — handle selection change
-export function FUN_005d3f70() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d3f70() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1877,19 +1989,27 @@ export function FUN_005d3fb0(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005d4014 (115 bytes)
 // control_invalidate_all — invalidate all controls
-export function FUN_005d4014() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d4014() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d4087 (86 bytes)
 // control_show_all — show all controls
-export function FUN_005d4087() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d4087() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d40dd (69 bytes)
 // control_hide_all — hide all controls
-export function FUN_005d40dd() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d40dd() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d4122 (69 bytes)
 // control_layout_all — layout all controls
-export function FUN_005d4122() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d4122() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // set_button_font_callback
 export function FUN_005d4167(param_1) { PTR_DAT_00637e64 = param_1; }
@@ -2058,15 +2178,21 @@ export function FUN_005d47d0(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005d4870 (41 bytes)
 // sound_play_file — play a sound file
-export function FUN_005d4870(param_1, param_2, param_3) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d4870(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d4899 (55 bytes)
 // sound_init_and_play — init sound system and play
-export function FUN_005d4899(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d4899(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d48d0 (21 bytes)
 // sound_shutdown — shutdown sound system
-export function FUN_005d48d0() { // DEVIATION: Win32 — FUN_005d4965(); }
+export function FUN_005d48d0() {
+  // DEVIATION: Win32 — FUN_005d4965();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d48f0 (117 bytes)
 // sound_open_device — open wave output device
@@ -2085,7 +2211,9 @@ export function FUN_005d48f0(param_1, param_2, param_3) {
 
 // Source: decompiled/block_005D0000.c FUN_005d4965 (62 bytes)
 // sound_cleanup — cleanup sound resources
-export function FUN_005d4965() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d4965() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c show_messagebox_49A3 (105 bytes)
 // sound_show_error — show sound error message
@@ -2169,7 +2297,9 @@ export function FUN_005d4bcb(param_1) {
 
 // Source: decompiled/block_005D0000.c show_messagebox_4C18 (71 bytes)
 // sound_show_wave_error — show wave error text
-export function show_messagebox_4C18(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function show_messagebox_4C18(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d4c5f (779 bytes)
 // sound_load_wav_file — load WAV from file
@@ -2838,7 +2968,9 @@ export function FUN_005d61ab(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005d6222 (97 bytes)
 // sound_mark_done_by_tag — mark sounds done by tag
-export function FUN_005d6222(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d6222(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d6283 (322 bytes)
 // sound_fill_from_file — fill buffer from file
@@ -2912,7 +3044,9 @@ export function FUN_005d63c5(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c FUN_005d6430 (46 bytes)
 // sound_free_global — free global sound memory
-export function FUN_005d6430(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d6430(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d645e (551 bytes)
 // sound_create_buffers — create wave output buffers
@@ -3112,7 +3246,9 @@ export function FUN_005d6a2c() {
 
 // Source: decompiled/block_005D0000.c FUN_005d6b4c (61 bytes)
 // sound_fill_silence — fill buffer with silence
-export function FUN_005d6b4c(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d6b4c(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d6b89 (272 bytes)
 // sound_destroy_all — destroy all sound resources
@@ -3558,7 +3694,9 @@ export function FUN_005d7b94(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005d7c00 (44 bytes)
 // stream_init — initialize stream struct
-export function FUN_005d7c00() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005d7c00() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d7c2c (66 bytes)
 // stream_realloc — reallocate stream buffer
@@ -3574,11 +3712,15 @@ export function FUN_005d7c2c(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c FUN_005d7c6e (30 bytes)
 // stream_finalize — finalize stream
-export function FUN_005d7c6e() { // DEVIATION: Win32 — thunk_FUN_00421c30(); }
+export function FUN_005d7c6e() {
+  // DEVIATION: Win32 — thunk_FUN_00421c30();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d7c8c (28 bytes)
 // debug_output_string — output debug string
-export function FUN_005d7c8c(param_1) { // DEVIATION: Win32 — FUN_005d8d06(param_1); }
+export function FUN_005d7c8c(param_1) {
+  // DEVIATION: Win32 — FUN_005d8d06(param_1);
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3705,7 +3847,9 @@ export function FUN_005d8236(param_1) { PTR_DAT_00637e60 = param_1; }
 
 // Source: decompiled/block_005D0000.c FUN_005d8250 (32 bytes)
 // file_open — open file wrapper
-export function FUN_005d8250(param_1, param_2) { // DEVIATION: Win32 — FUN_005d8270(param_1,param_2); }
+export function FUN_005d8250(param_1, param_2) {
+  // DEVIATION: Win32 — FUN_005d8270(param_1,param_2);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d8270 (321 bytes)
 // file_open_impl — open file implementation
@@ -3750,7 +3894,9 @@ export function FUN_005d8270(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c FUN_005d83b6 (32 bytes)
 // file_create — create new file wrapper
-export function FUN_005d83b6(param_1, param_2) { // DEVIATION: Win32 — FUN_005d83d6(param_1,param_2); }
+export function FUN_005d83b6(param_1, param_2) {
+  // DEVIATION: Win32 — FUN_005d83d6(param_1,param_2);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d83d6 (155 bytes)
 // file_create_impl — create new file implementation
@@ -4044,23 +4190,33 @@ export function FUN_005d8ab8(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005d8b34 (40 bytes)
 // strftime_wrapper — format time with strftime
-export function FUN_005d8b34(param_1, param_2, param_3) { // DEVIATION: Win32 — FUN_005d8bde(param_1,param_2,0,param_3,0); }
+export function FUN_005d8b34(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — FUN_005d8bde(param_1,param_2,0,param_3,0);
+}
 
 // Source: decompiled/block_005D0000.c _strftime (42 bytes)
 // strftime — C library strftime
-export function _strftime(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function _strftime(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d8b86 (42 bytes)
 // strftime_alt — alternate strftime call
-export function FUN_005d8b86(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — FUN_005d8bde(param_1,param_2,param_3,param_4,1); }
+export function FUN_005d8b86(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — FUN_005d8bde(param_1,param_2,param_3,param_4,1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d8bb0 (46 bytes)
 // file_save_dialog — show save file dialog
-export function FUN_005d8bb0(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: Win32 — show_open_dialog_8C0C(param_1,param_2,param_3,param_4,1,param_5); }
+export function FUN_005d8bb0(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — show_open_dialog_8C0C(param_1,param_2,param_3,param_4,1,param_5);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005d8bde (46 bytes)
 // file_open_dialog_wrapper — show open/save dialog wrapper
-export function FUN_005d8bde(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: Win32 — show_open_dialog_8C0C(param_1,param_2,param_3,param_4,param_5,0); }
+export function FUN_005d8bde(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — show_open_dialog_8C0C(param_1,param_2,param_3,param_4,param_5,0);
+}
 
 // Source: decompiled/block_005D0000.c show_open_dialog_8C0C (250 bytes)
 // show_file_dialog — show open/save file dialog
@@ -4834,7 +4990,9 @@ export function FUN_005dab5a(param_1) {
 
 // Source: decompiled/block_005D0000.c invalidate_ABC7 (30 bytes)
 // invalidate_button — invalidate a button rect
-export function invalidate_ABC7(param_1) { // DEVIATION: Win32 — InvalidateRect(param_1,(RECT *)0x0,0); }
+export function invalidate_ABC7(param_1) {
+  // DEVIATION: Win32 — InvalidateRect(param_1,(RECT *)0x0,0);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dabe5 (84 bytes)
 // is_button_selected — check if button is selected
@@ -4877,15 +5035,21 @@ export function FUN_005dad08(param_1, param_2, param_3) {
 
 // Source: decompiled/block_005D0000.c FUN_005dad40 (54 bytes)
 // button_on_click_callback — invoke click callback
-export function FUN_005dad40(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dad40(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dad80 (54 bytes)
 // button_on_dblclick_callback — invoke double-click callback
-export function FUN_005dad80(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dad80(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dadc0 (54 bytes)
 // button_on_rclick_callback — invoke right-click callback
-export function FUN_005dadc0(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dadc0(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -4897,23 +5061,33 @@ export function FID_conflict___E31_005dae00() { FUN_005dae1a(); FUN_005dae34(); 
 
 // Source: decompiled/block_005D0000.c FUN_005dae1a (26 bytes)
 // init_error_subsystem
-export function FUN_005dae1a() { // DEVIATION: Win32 — FUN_005db089(); }
+export function FUN_005dae1a() {
+  // DEVIATION: Win32 — FUN_005db089();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dae34 (29 bytes)
 // register_error_atexit
-export function FUN_005dae34() { // DEVIATION: Win32 — _atexit(FUN_005dae51); }
+export function FUN_005dae34() {
+  // DEVIATION: Win32 — _atexit(FUN_005dae51);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dae51 (26 bytes)
 // error_cleanup_atexit
-export function FUN_005dae51() { // DEVIATION: MFC — Iostream_init::~Iostream_init((Iostream_init *)&DAT_006e4850); }
+export function FUN_005dae51() {
+  // DEVIATION: MFC — Iostream_init::~Iostream_init((Iostream_init *)&DAT_006e4850);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dae6b (70 bytes)
 // fatal_error — report fatal error
-export function FUN_005dae6b(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dae6b(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005daeb1 (70 bytes)
 // warning — report warning
-export function FUN_005daeb1(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005daeb1(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005daef7 (108 bytes)
 // format_error_string — format error message
@@ -4933,31 +5107,45 @@ export function FUN_005daef7(param_1, param_2, param_3, param_4) {
 
 // Source: decompiled/block_005D0000.c FUN_005daf63 (47 bytes)
 // get_error_timestamp — get error timestamp string
-export function FUN_005daf63() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005daf63() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005daf92 (41 bytes)
 // show_fatal_messagebox — show fatal error dialog
-export function FUN_005daf92(param_1) { // DEVIATION: Win32 — show_messagebox_DD00(s_SMEDS_Application_Error_006387b4,param_1); }
+export function FUN_005daf92(param_1) {
+  // DEVIATION: Win32 — show_messagebox_DD00(s_SMEDS_Application_Error_006387b4,param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dafbb (36 bytes)
 // log_warning — log warning to debug
-export function FUN_005dafbb(param_1) { // DEVIATION: Win32 — debug_log(param_1); }
+export function FUN_005dafbb(param_1) {
+  // DEVIATION: Win32 — debug_log(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dafdf (55 bytes)
 // set_error_code — set current error code
-export function FUN_005dafdf(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dafdf(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c IsTracking (31 bytes)
 // IsTracking — CSplitterWnd::IsTracking
-export function IsTracking() { // DEVIATION: Win32 — return *(int *)(this + 0x704); }
+export function IsTracking() {
+  // DEVIATION: Win32 — return *(int *)(this + 0x704);
+}
 
 // Source: decompiled/block_005D0000.c EnableStackedTabs (36 bytes)
 // EnableStackedTabs — CPropertySheet::EnableStackedTabs
-export function EnableStackedTabs(param_1) { // DEVIATION: Win32 — *(int *)(this + 0x708) = param_1; }
+export function EnableStackedTabs(param_1) {
+  // DEVIATION: Win32 — *(int *)(this + 0x708) = param_1;
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db059 (48 bytes)
 // clear_error_state — clear error state
-export function FUN_005db059() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005db059() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db089 (43 bytes)
 // init_error_handler — construct error handler
@@ -4978,11 +5166,15 @@ export function Iostream_init_destructor() { // C: return; (truly empty function
 
 // Source: decompiled/block_005D0000.c FUN_005db0d0 (64 bytes)
 // set_scroll_position — set scroll bar position
-export function FUN_005db0d0(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005db0d0(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db110 (47 bytes)
 // get_scroll_range — get scroll bar range
-export function FUN_005db110(param_1, param_2) { // DEVIATION: Win32 — FUN_005cd535(*(undefined4 *)(in_ECX + 0x1c),param_1,param_2); }
+export function FUN_005db110(param_1, param_2) {
+  // DEVIATION: Win32 — FUN_005cd535(*(undefined4 *)(in_ECX + 0x1c),param_1,param_2);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db140 (155 bytes)
 // load_resource_dll — load a resource DLL
@@ -5004,7 +5196,9 @@ export function FUN_005db140(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005db1e0 (26 bytes)
 // free_resource — free loaded resource
-export function FUN_005db1e0(param_1) { // DEVIATION: Win32 — FreeResource(param_1); }
+export function FUN_005db1e0(param_1) {
+  // DEVIATION: Win32 — FreeResource(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db1fa (249 bytes)
 // find_resource_by_type — find resource by type string
@@ -5124,7 +5318,9 @@ export function FUN_005db3ca(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c FUN_005db531 (26 bytes)
 // lock_resource_data — lock resource for reading
-export function FUN_005db531(param_1) { // DEVIATION: Win32 — LockResource(param_1); }
+export function FUN_005db531(param_1) {
+  // DEVIATION: Win32 — LockResource(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db54b (16 bytes)
 // unlock_resource_noop — no-op resource unlock
@@ -5148,15 +5344,21 @@ export function FUN_005db55b(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005db5e9 (28 bytes)
 // get_resource_size — query resource data size
-export function FUN_005db5e9(param_1) { // DEVIATION: Win32 — FUN_005dcef7(param_1); }
+export function FUN_005db5e9(param_1) {
+  // DEVIATION: Win32 — FUN_005dcef7(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db610 (64 bytes)
 // bitmap_handle_init — initialize bitmap handle struct
-export function FUN_005db610() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005db610() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db650 (43 bytes)
 // bitmap_handle_destroy — destroy bitmap handle
-export function FUN_005db650() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005db650() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db67b (137 bytes)
 // bitmap_create_window — create window for bitmap
@@ -5269,23 +5471,33 @@ export function FUN_005dba15(param_1, param_2, param_3) {
 
 // Source: decompiled/block_005D0000.c FUN_005dba72 (35 bytes)
 // set_display_depth_truecolor
-export function FUN_005dba72() { // DEVIATION: Win32 — gdi_D39E(0x400); }
+export function FUN_005dba72() {
+  // DEVIATION: Win32 — gdi_D39E(0x400);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dba95 (35 bytes)
 // set_display_depth_256
-export function FUN_005dba95() { // DEVIATION: Win32 — gdi_D39E(0x100); }
+export function FUN_005dba95() {
+  // DEVIATION: Win32 — gdi_D39E(0x100);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dbab8 (35 bytes)
 // set_display_depth_hicolor
-export function FUN_005dbab8() { // DEVIATION: Win32 — gdi_D39E(0x200); }
+export function FUN_005dbab8() {
+  // DEVIATION: Win32 — gdi_D39E(0x200);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dbadb (27 bytes)
 // lock_display — lock display surface
-export function FUN_005dbadb() { // DEVIATION: Win32 — FUN_005bd4cd(); }
+export function FUN_005dbadb() {
+  // DEVIATION: Win32 — FUN_005bd4cd();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dbaf6 (27 bytes)
 // unlock_display — unlock display surface
-export function FUN_005dbaf6() { // DEVIATION: Win32 — FUN_005bd500(); }
+export function FUN_005dbaf6() {
+  // DEVIATION: Win32 — FUN_005bd500();
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5323,7 +5535,9 @@ export function FUN_005dbbd6() {
 
 // Source: decompiled/block_005D0000.c FUN_005dbc1b (31 bytes)
 // shutdown_subsystems — shutdown all subsystems
-export function FUN_005dbc1b() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dbc1b() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dbc3a (16 bytes)
 // init_hook_noop — empty init hook
@@ -5775,75 +5989,111 @@ export function fill_rect_BE88(param_1, param_2, param_3, param_4) {
 
 // Source: decompiled/block_005D0000.c FUN_005dcac0 (57 bytes)
 // timer_destructor — destroy MrTimer with optional delete
-export function FUN_005dcac0(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dcac0(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcb00 (28 bytes)
 // mem_duplicate_handle — duplicate memory handle
-export function FUN_005dcb00(param_1) { // DEVIATION: Win32 — FUN_005dcd70(param_1); }
+export function FUN_005dcb00(param_1) {
+  // DEVIATION: Win32 — FUN_005dcd70(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcb1c (28 bytes)
 // mem_lock — lock memory handle
-export function FUN_005dcb1c(param_1) { // DEVIATION: Win32 — FUN_005dcdf9(param_1); }
+export function FUN_005dcb1c(param_1) {
+  // DEVIATION: Win32 — FUN_005dcdf9(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcb38 (28 bytes)
 // mem_unlock — unlock memory handle
-export function FUN_005dcb38(param_1) { // DEVIATION: Win32 — FUN_005dce29(param_1); }
+export function FUN_005dcb38(param_1) {
+  // DEVIATION: Win32 — FUN_005dce29(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcb54 (28 bytes)
 // mem_alloc — allocate memory handle
-export function FUN_005dcb54(param_1) { // DEVIATION: Win32 — FUN_005dce4f(param_1); }
+export function FUN_005dcb54(param_1) {
+  // DEVIATION: Win32 — FUN_005dce4f(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcb70 (28 bytes)
 // mem_free — free memory handle
-export function FUN_005dcb70(param_1) { // DEVIATION: Win32 — FUN_005dce96(param_1); }
+export function FUN_005dcb70(param_1) {
+  // DEVIATION: Win32 — FUN_005dce96(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcb8c (36 bytes)
 // mem_copy — copy memory block
-export function FUN_005dcb8c(param_1, param_2, param_3) { // DEVIATION: Win32 — FUN_005dced3(param_1,param_2,param_3); }
+export function FUN_005dcb8c(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — FUN_005dced3(param_1,param_2,param_3);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcbb0 (28 bytes)
 // mem_size — get memory block size
-export function FUN_005dcbb0(param_1) { // DEVIATION: Win32 — FUN_005dcef7(param_1); }
+export function FUN_005dcbb0(param_1) {
+  // DEVIATION: Win32 — FUN_005dcef7(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcbcc (32 bytes)
 // mem_realloc — reallocate memory block
-export function FUN_005dcbcc(param_1, param_2) { // DEVIATION: Win32 — FUN_005dcf11(param_1,param_2); }
+export function FUN_005dcbcc(param_1, param_2) {
+  // DEVIATION: Win32 — FUN_005dcf11(param_1,param_2);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcbec (21 bytes)
 // mem_get_avail — get available memory
-export function FUN_005dcbec() { // DEVIATION: Win32 — FUN_005dcfb5(); }
+export function FUN_005dcbec() {
+  // DEVIATION: Win32 — FUN_005dcfb5();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcc10 (34 bytes)
 // stream_ctor — construct stream object
-export function FUN_005dcc10() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dcc10() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c ~_Timevec (36 bytes)
 // timevec_destructor — ~_Timevec destructor
-export function _Timevec_destructor(param_1) { // DEVIATION: Win32 — FUN_005e10c7(*(undefined4 *)this); }
+export function _Timevec_destructor(param_1) {
+  // DEVIATION: Win32 — FUN_005e10c7(*(undefined4 *)this);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcc56 (63 bytes)
 // menu_create_from_resource — create menu from resource
-export function FUN_005dcc56(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dcc56(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcc95 (44 bytes)
 // menu_add_item — add menu item
-export function FUN_005dcc95(param_1, param_2, param_3) { // DEVIATION: Win32 — build_menu_1768(param_1,param_3,param_2); }
+export function FUN_005dcc95(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — build_menu_1768(param_1,param_3,param_2);
+}
 
 // Source: decompiled/block_005D0000.c Realloc (40 bytes)
 // Realloc — reallocate buffer (CMemFile)
-export function Realloc(param_1, param_2) { // DEVIATION: Win32 — FUN_005e17db(param_1,param_2); }
+export function Realloc(param_1, param_2) {
+  // DEVIATION: Win32 — FUN_005e17db(param_1,param_2);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcce9 (51 bytes)
 // menu_destroy_from_resource — destroy menu from resource
-export function FUN_005dcce9(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dcce9(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcd1c (36 bytes)
 // menu_destroy — destroy menu
-export function FUN_005dcd1c(param_1) { // DEVIATION: Win32 — build_menu_1805(param_1); }
+export function FUN_005dcd1c(param_1) {
+  // DEVIATION: Win32 — build_menu_1805(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcd40 (42 bytes)
 // menu_seek — seek in menu resource
-export function FUN_005dcd40(param_1) { // DEVIATION: Win32 — FUN_005e1599(*in_ECX,param_1); }
+export function FUN_005dcd40(param_1) {
+  // DEVIATION: Win32 — FUN_005e1599(*in_ECX,param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcd70 (137 bytes)
 // handle_duplicate — duplicate a global memory handle
@@ -5869,11 +6119,15 @@ export function FUN_005dcdf9(param_1) { return param_1 ? param_1 : null; }
 
 // Source: decompiled/block_005D0000.c FUN_005dce29 (38 bytes)
 // handle_unlock — unlock a global handle
-export function FUN_005dce29(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dce29(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dce4f (71 bytes)
 // handle_alloc — allocate global memory
-export function FUN_005dce4f(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dce4f(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dce96 (56 bytes)
 // handle_free — free global memory
@@ -5890,11 +6144,15 @@ export function FUN_005dce96(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005dced3 (36 bytes)
 // mem_copy_raw — raw memory copy
-export function FUN_005dced3(param_1, param_2, param_3) { // DEVIATION: Win32 — FID_conflict__memcpy(param_2,param_1,param_3); }
+export function FUN_005dced3(param_1, param_2, param_3) {
+  // DEVIATION: Win32 — FID_conflict__memcpy(param_2,param_1,param_3);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcef7 (26 bytes)
 // handle_get_size — get global handle size
-export function FUN_005dcef7(param_1) { // DEVIATION: Win32 — GlobalSize(param_1); }
+export function FUN_005dcef7(param_1) {
+  // DEVIATION: Win32 — GlobalSize(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dcf11 (164 bytes)
 // handle_resize — resize global handle
@@ -5918,7 +6176,9 @@ export function FUN_005dcfb5() { return 0x100000; }
 
 // Source: decompiled/block_005D0000.c FUN_005dcfca (58 bytes)
 // is_low_memory — check if memory is low
-export function FUN_005dcfca(param_1) { // DEVIATION: Win32 — return 0x100000 < param_1 << 10; }
+export function FUN_005dcfca(param_1) {
+  // DEVIATION: Win32 — return 0x100000 < param_1 << 10;
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5986,19 +6246,27 @@ export function FUN_005dd1a0() {
 
 // Source: decompiled/block_005D0000.c FUN_005dd230 (15 bytes)
 // app_destruct_bitmaps — destroy bitmap subsystem
-export function FUN_005dd230() { // DEVIATION: Win32 — FUN_005bd915(); }
+export function FUN_005dd230() {
+  // DEVIATION: Win32 — FUN_005bd915();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd23f (15 bytes)
 // app_destruct_fonts — destroy font subsystem
-export function FUN_005dd23f() { // DEVIATION: Win32 — FUN_005c656b(); }
+export function FUN_005dd23f() {
+  // DEVIATION: Win32 — FUN_005c656b();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd24e (15 bytes)
 // app_destruct_animations — destroy animation subsystem
-export function FUN_005dd24e() { // DEVIATION: Win32 — FUN_005eed1b(); }
+export function FUN_005dd24e() {
+  // DEVIATION: Win32 — FUN_005eed1b();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd25d (9 bytes)
 // app_destruct_frame — destroy CFrameWnd
-export function FUN_005dd25d() { // DEVIATION: Win32 — thunk_FUN_0044cba0(); }
+export function FUN_005dd25d() {
+  // DEVIATION: Win32 — thunk_FUN_0044cba0();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd270 (14 bytes)
 // app_destruct_epilog — FS restoration
@@ -6009,7 +6277,9 @@ export function FUN_005dd270() {
 
 // Source: decompiled/block_005D0000.c FUN_005dd27e (101 bytes)
 // dialog_create — create dialog window
-export function FUN_005dd27e(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dd27e(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd2e3 (148 bytes)
 // dialog_create_with_parent — create dialog with parent
@@ -6040,7 +6310,9 @@ export function FUN_005dd377(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005dd3c2 (47 bytes)
 // animation_reset — reset animation state
-export function FUN_005dd3c2() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dd3c2() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd3f1 (108 bytes)
 // animation_set_range — set animation frame range
@@ -6056,27 +6328,39 @@ export function FUN_005dd3f1(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c FUN_005dd45d (42 bytes)
 // animation_clear — clear animation buffers
-export function FUN_005dd45d() { // DEVIATION: Win32 — FUN_005e28cd(); }
+export function FUN_005dd45d() {
+  // DEVIATION: Win32 — FUN_005e28cd();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd487 (59 bytes)
 // animation_play — play animation
-export function FUN_005dd487() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dd487() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd4c2 (91 bytes)
 // animation_set_range_and_play — set range and play
-export function FUN_005dd4c2(param_1, param_2) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dd4c2(param_1, param_2) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd51d (34 bytes)
 // animation_stop — stop animation
-export function FUN_005dd51d() { // DEVIATION: Win32 — FUN_005e2675(); }
+export function FUN_005dd51d() {
+  // DEVIATION: Win32 — FUN_005e2675();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd53f (34 bytes)
 // animation_start — start animation
-export function FUN_005dd53f() { // DEVIATION: Win32 — FUN_005e26f6(); }
+export function FUN_005dd53f() {
+  // DEVIATION: Win32 — FUN_005e26f6();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd561 (67 bytes)
 // set_text_and_scroll — set text with scrolling
-export function FUN_005dd561(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dd561(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd5a4 (168 bytes)
 // resize_to_bitmap — resize window to bitmap size
@@ -6231,15 +6515,21 @@ export function FUN_005dd93f(param_1, param_2, param_3, param_4) {
 
 // Source: decompiled/block_005D0000.c FUN_005dd9d9 (28 bytes)
 // play_sound_async — play sound asynchronously
-export function FUN_005dd9d9(param_1) { // DEVIATION: Win32 — sndPlaySoundA(param_1,1); }
+export function FUN_005dd9d9(param_1) {
+  // DEVIATION: Win32 — sndPlaySoundA(param_1,1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dd9f5 (28 bytes)
 // play_sound_loop — play sound in loop
-export function FUN_005dd9f5(param_1) { // DEVIATION: Win32 — sndPlaySoundA(param_1,9); }
+export function FUN_005dd9f5(param_1) {
+  // DEVIATION: Win32 — sndPlaySoundA(param_1,9);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dda11 (26 bytes)
 // stop_sound — stop sound playback
-export function FUN_005dda11() { // DEVIATION: Win32 — sndPlaySoundA((LPCSTR)0x0,1); }
+export function FUN_005dda11() {
+  // DEVIATION: Win32 — sndPlaySoundA((LPCSTR)0x0,1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dda2b (16 bytes)
 // sound_noop — no-op sound handler
@@ -6247,7 +6537,9 @@ export function FUN_005dda2b() { // C: return; (truly empty function) }
 
 // Source: decompiled/block_005D0000.c FUN_005dda3b (24 bytes)
 // play_beep — play system beep
-export function FUN_005dda3b() { // DEVIATION: Win32 — MessageBeep(0xffffffff); }
+export function FUN_005dda3b() {
+  // DEVIATION: Win32 — MessageBeep(0xffffffff);
+}
 
 // Source: decompiled/block_005D0000.c show_messagebox_DA53 (372 bytes)
 // midi_play — play MIDI file
@@ -6342,7 +6634,9 @@ export function FUN_005ddbc7(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005ddd12 (60 bytes)
 // midi_stop — stop MIDI playback
-export function FUN_005ddd12() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005ddd12() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005ddd4e (265 bytes)
 // cdaudio_open — open CD audio device
@@ -6376,15 +6670,21 @@ export function FUN_005ddd4e() {
 
 // Source: decompiled/block_005D0000.c FUN_005dde57 (70 bytes)
 // cdaudio_close — close CD audio device
-export function FUN_005dde57() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dde57() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dde9d (50 bytes)
 // cdaudio_pause — pause CD audio
-export function FUN_005dde9d() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dde9d() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c manage_window_DECF (48 bytes)
 // mm_shutdown — shutdown multimedia subsystem
-export function manage_window_DECF() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function manage_window_DECF() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005ddeff (270 bytes)
 // cdaudio_get_track_count — get number of CD tracks
@@ -6601,53 +6901,75 @@ export function FUN_005de529(param_1, param_2, param_3) {
 
 // Source: decompiled/block_005D0000.c FUN_005de620 (28 bytes)
 // play_sound_wrapper — play sound wrapper
-export function FUN_005de620(param_1) { // DEVIATION: Win32 — FUN_005dd9d9(param_1); }
+export function FUN_005de620(param_1) {
+  // DEVIATION: Win32 — FUN_005dd9d9(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de63c (28 bytes)
 // play_sound_loop_wrapper — play looping sound wrapper
-export function FUN_005de63c(param_1) { // DEVIATION: Win32 — FUN_005dd9f5(param_1); }
+export function FUN_005de63c(param_1) {
+  // DEVIATION: Win32 — FUN_005dd9f5(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de658 (28 bytes)
 // play_sound_noop_wrapper — no-op sound wrapper
-export function FUN_005de658(param_1) { // DEVIATION: Win32 — FUN_005dda2b(param_1); }
+export function FUN_005de658(param_1) {
+  // DEVIATION: Win32 — FUN_005dda2b(param_1);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de674 (21 bytes)
 // play_beep_wrapper — play beep wrapper
-export function FUN_005de674() { // DEVIATION: Win32 — FUN_005dda3b(); }
+export function FUN_005de674() {
+  // DEVIATION: Win32 — FUN_005dda3b();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de689 (28 bytes)
 // midi_play_wrapper — play MIDI wrapper
-export function FUN_005de689(param_1) { // DEVIATION: Win32 — show_messagebox_DA53(param_1); }
+export function FUN_005de689(param_1) {
+  // DEVIATION: Win32 — show_messagebox_DA53(param_1);
+}
 
 // set_midi_done_callback
 export function FUN_005de6a5(param_1) { DAT_006e5004 = param_1; }
 
 // Source: decompiled/block_005D0000.c FUN_005de6bd (35 bytes)
 // invoke_midi_done_callback
-export function FUN_005de6bd() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005de6bd() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de6e0 (28 bytes)
 // cdaudio_play_wrapper — play CD track wrapper
-export function FUN_005de6e0(param_1) { // DEVIATION: Win32 — FUN_005ddbc7(param_1); }
+export function FUN_005de6e0(param_1) {
+  // DEVIATION: Win32 — FUN_005ddbc7(param_1);
+}
 
 // set_cd_done_callback
 export function FUN_005de6fc(param_1) { DAT_006e5000 = param_1; }
 
 // Source: decompiled/block_005D0000.c FUN_005de714 (35 bytes)
 // invoke_cd_done_callback
-export function FUN_005de714() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005de714() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de737 (21 bytes)
 // midi_stop_wrapper — stop MIDI wrapper
-export function FUN_005de737() { // DEVIATION: Win32 — FUN_005ddd12(); }
+export function FUN_005de737() {
+  // DEVIATION: Win32 — FUN_005ddd12();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de74c (21 bytes)
 // stop_sound_wrapper — stop sound wrapper
-export function FUN_005de74c() { // DEVIATION: Win32 — FUN_005dda11(); }
+export function FUN_005de74c() {
+  // DEVIATION: Win32 — FUN_005dda11();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005de761 (21 bytes)
 // cdaudio_pause_wrapper — pause CD wrapper
-export function FUN_005de761() { // DEVIATION: Win32 — FUN_005dde9d(); }
+export function FUN_005de761() {
+  // DEVIATION: Win32 — FUN_005dde9d();
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -6726,15 +7048,21 @@ export function FUN_005de9e0(param_1, param_2, param_3) {
 
 // Source: decompiled/block_005D0000.c update_palette_EA62 (60 bytes)
 // palette_animate — animate palette entries
-export function update_palette_EA62(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function update_palette_EA62(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dea9e (61 bytes)
 // palette_get_rgb — get RGB values for index
-export function FUN_005dea9e(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dea9e(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005deadb (55 bytes)
 // palette_set_rgb — set RGB values for index
-export function FUN_005deadb(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005deadb(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005deb12 (316 bytes)
 // palette_set_entry — set palette entry with matching
@@ -6773,15 +7101,21 @@ export function FUN_005dec4e(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005dec8a (39 bytes)
 // palette_delete — delete a GDI palette
-export function FUN_005dec8a(param_1) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005dec8a(param_1) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005decb1 (60 bytes)
 // palette_set_entries — set GDI palette entries
-export function FUN_005decb1(param_1, param_2, param_3, param_4) { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005decb1(param_1, param_2, param_3, param_4) {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 // Source: decompiled/block_005D0000.c FUN_005deced (37 bytes)
 // palette_copy — copy entire palette data
-export function FUN_005deced(param_1, param_2) { // DEVIATION: Win32 — FID_conflict__memcpy(param_2,param_1,0x404); }
+export function FUN_005deced(param_1, param_2) {
+  // DEVIATION: Win32 — FID_conflict__memcpy(param_2,param_1,0x404);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005ded12 (123 bytes)
 // palette_extract_rgb — extract RGB array from palette
@@ -6931,7 +7265,9 @@ export function FUN_005df1fd(param_1, param_2, param_3, param_4, param_5) {
 
 // Source: decompiled/block_005D0000.c FUN_005df280 (53 bytes)
 // tooltip_stop — stop tooltip timer
-export function FUN_005df280() { // DEVIATION: Win32 — entire function is Win32 API calls }
+export function FUN_005df280() {
+  // DEVIATION: Win32 — entire function is Win32 API calls
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -7035,11 +7371,15 @@ export function FUN_005df2b5(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c FUN_005df67b (12 bytes)
 // gif_cleanup_a — cleanup helper a
-export function FUN_005df67b() { // DEVIATION: Win32 — FUN_005d7c6e(); }
+export function FUN_005df67b() {
+  // DEVIATION: Win32 — FUN_005d7c6e();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005df687 (12 bytes)
 // gif_cleanup_b — cleanup helper b
-export function FUN_005df687() { // DEVIATION: Win32 — FUN_005d7c6e(); }
+export function FUN_005df687() {
+  // DEVIATION: Win32 — FUN_005d7c6e();
+}
 
 // Source: decompiled/block_005D0000.c FUN_005df69d (14 bytes)
 // gif_cleanup_epilog — FS restoration
@@ -7055,7 +7395,9 @@ export function FUN_005df69d() {
 
 // Source: decompiled/block_005D0000.c FUN_005df6ab (54 bytes)
 // dissolve_effect — run dissolve transition effect
-export function FUN_005df6ab(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { // DEVIATION: Win32 — FUN_005df6e1(param_1,param_2,param_3,param_4,param_5,param_6,param_7,0); }
+export function FUN_005df6ab(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: Win32 — FUN_005df6e1(param_1,param_2,param_3,param_4,param_5,param_6,param_7,0);
+}
 
 // Source: decompiled/block_005D0000.c FUN_005df6e1 (592 bytes)
 // dissolve_effect_impl — dissolve effect implementation

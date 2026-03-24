@@ -1816,32 +1816,46 @@ export function __ftbuf(param_1, _File) {
 
 // __output — CRT formatted output core (from CRT)
 // Source: decompiled/block_005F0000.c __output (3279 bytes)
-export function __output(_File, _Format, ...args) { // DEVIATION: C runtime  return 0; }
+export function __output(_File, _Format, ...args) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __flush / __freebuf — CRT stream flush/free (from CRT)
 // Source: decompiled/block_005F0000.c __flush (108 bytes)
-export function __flush(_File) { // DEVIATION: C runtime }
+export function __flush(_File) {
+  // DEVIATION: C runtime
+}
 // Source: decompiled/block_005F0000.c __freebuf (58 bytes)
-export function __freebuf(_File) { // DEVIATION: C runtime }
+export function __freebuf(_File) {
+  // DEVIATION: C runtime
+}
 
 // __malloc_dbg / __calloc_dbg / __free_dbg / __realloc_dbg — CRT debug heap (from CRT)
 export function __malloc_dbg(size, ...args) { return new Array(size).fill(0); }
 export function __calloc_dbg(num, size, ...args) { return new Array(num * size).fill(0); }
 // Source: decompiled/block_005F0000.c __free_dbg (1057 bytes)
-export function __free_dbg(ptr, ...args) { // DEVIATION: C runtime }
+export function __free_dbg(ptr, ...args) {
+  // DEVIATION: C runtime
+}
 // Source: decompiled/block_005F0000.c __realloc_dbg (55 bytes)
-export function __realloc_dbg(ptr, size, ...args) { // DEVIATION: C runtime  return ptr; }
+export function __realloc_dbg(ptr, size, ...args) {
+  // DEVIATION: C runtime  return ptr;
+}
 
 // __flsbuf — CRT flush buffer (from CRT)
 // Source: decompiled/block_005F0000.c __flsbuf (328 bytes)
-export function __flsbuf(ch, _File) { // DEVIATION: C runtime  return 0; }
+export function __flsbuf(ch, _File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __lseek — CRT file seek (from CRT)
 export function __lseek(fh, offset, origin) { return -1; }
 
 // __read — CRT file read (from CRT)
 // Source: decompiled/block_005F0000.c __read (1114 bytes)
-export function __read(fh, buf, count) { // DEVIATION: C runtime  return 0; }
+export function __read(fh, buf, count) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __write — CRT file write (from CRT)
 export function __write(fh, buf, count) { return -1; }
@@ -1851,11 +1865,15 @@ export function __close(fh) { return -1; }
 
 // _fclose — CRT fclose (from CRT)
 // Source: decompiled/block_005F0000.c _fclose (120 bytes)
-export function _fclose(_File) { // DEVIATION: C runtime  return 0; }
+export function _fclose(_File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __dosmaperr — CRT map DOS error to errno (from CRT)
 // Source: decompiled/block_005F0000.c __dosmaperr (89 bytes)
-export function __dosmaperr(err) { // DEVIATION: C runtime }
+export function __dosmaperr(err) {
+  // DEVIATION: C runtime
+}
 
 // _strlen — CRT string length (from CRT)
 export function _strlen(str) {
@@ -1909,16 +1927,24 @@ export function __isctype(ch, mask) {
 
 // _atexit — CRT register exit handler (from CRT)
 // Source: decompiled/block_005F0000.c _atexit (48 bytes)
-export function _atexit(func) { // DEVIATION: C runtime  return 0; }
+export function _atexit(func) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __setdefaultprecision — CRT FP default precision (from CRT)
 // Source: decompiled/block_005F0000.c __setdefaultprecision (80 bytes)
-export function __setdefaultprecision() { // DEVIATION: C runtime }
+export function __setdefaultprecision() {
+  // DEVIATION: C runtime
+}
 
 // ___crtLCMapStringA — CRT locale map string wrapper (from CRT)
 // Source: decompiled/block_005F0000.c ___crtLCMapStringA (576 bytes)
-export function ___crtLCMapStringA(...args) { // DEVIATION: C runtime  return 0; }
+export function ___crtLCMapStringA(...args) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // terminate — C++ terminate handler (from CRT)
 // Source: decompiled/block_005F0000.c terminate (38 bytes)
-export function terminate() { // DEVIATION: C runtime }
+export function terminate() {
+  // DEVIATION: C runtime
+}

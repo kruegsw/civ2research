@@ -208,7 +208,9 @@ export function FUN_005f04fe(self) {
 
 // FUN_005f0511 — SEH_epilog (no-op in JS)
 // Source: decompiled/block_005F0000.c FUN_005f0511 (14 bytes)
-export function FUN_005f0511() { // DEVIATION: Win32 -- SEH epilog }
+export function FUN_005f0511() {
+  // DEVIATION: Win32 -- SEH epilog
+}
 
 // FUN_005f0520 — ui_linked_list_constructor
 export function FUN_005f0520(self) {
@@ -533,7 +535,9 @@ export function FUN_005f11d2(self) {
 
 // FUN_005f11e8 — SEH_epilog2 (no-op)
 // Source: decompiled/block_005F0000.c FUN_005f11e8 (14 bytes)
-export function FUN_005f11e8() { // DEVIATION: Win32 -- SEH epilog }
+export function FUN_005f11e8() {
+  // DEVIATION: Win32 -- SEH epilog
+}
 
 // FUN_005f11f6 — CTestCmdUI_set_state
 export function FUN_005f11f6(self, param_1) {
@@ -680,15 +684,21 @@ export function FUN_005f17d4(self, param_1, param_2) {
 
 // FUN_005f1811 — invoke_lbutton_callback
 // Source: decompiled/block_005F0000.c FUN_005f1811 (61 bytes)
-export function FUN_005f1811(self, param_1, param_2) { // DEVIATION: MFC }
+export function FUN_005f1811(self, param_1, param_2) {
+  // DEVIATION: MFC
+}
 
 // FUN_005f184e — invoke_click_callback
 // Source: decompiled/block_005F0000.c FUN_005f184e (61 bytes)
-export function FUN_005f184e(self, param_1, param_2) { // DEVIATION: MFC }
+export function FUN_005f184e(self, param_1, param_2) {
+  // DEVIATION: MFC
+}
 
 // FUN_005f188b — invoke_rbutton_callback
 // Source: decompiled/block_005F0000.c FUN_005f188b (61 bytes)
-export function FUN_005f188b(self, param_1, param_2) { // DEVIATION: MFC }
+export function FUN_005f188b(self, param_1, param_2) {
+  // DEVIATION: MFC
+}
 
 // FUN_005f18c8 — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f18c8 (24 bytes)
@@ -779,69 +789,99 @@ export function CSplitterWnd_IsTracking(self) {
 
 // Source: decompiled/block_005F0000.c __onexit (181 bytes)
 // __onexit — register exit callback (DEVIATION: C runtime)
-export function __onexit(_Func) { // DEVIATION: C runtime  return _Func; }
+export function __onexit(_Func) {
+  // DEVIATION: C runtime  return _Func;
+}
 
 // _atexit — register atexit callback (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _atexit (48 bytes)
-export function _atexit(param_1) { // DEVIATION: C runtime  return 0; }
+export function _atexit(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // ___onexitinit — initialize onexit table (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___onexitinit (85 bytes)
-export function ___onexitinit() { // DEVIATION: C runtime }
+export function ___onexitinit() {
+  // DEVIATION: C runtime
+}
 
 // __global_unwind2 — SEH global unwind (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __global_unwind2 (32 bytes)
-export function __global_unwind2(param_1) { // DEVIATION: C runtime }
+export function __global_unwind2(param_1) {
+  // DEVIATION: C runtime
+}
 
 // __local_unwind2 — SEH local unwind (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __local_unwind2 (104 bytes)
-export function __local_unwind2(param_1, param_2) { // DEVIATION: C runtime — SEH local unwind }
+export function __local_unwind2(param_1, param_2) {
+  // DEVIATION: C runtime — SEH local unwind
+}
 
 // __abnormal_termination — SEH check (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __abnormal_termination (35 bytes)
-export function __abnormal_termination() { // DEVIATION: C runtime — SEH status check  return 0; }
+export function __abnormal_termination() {
+  // DEVIATION: C runtime — SEH status check  return 0;
+}
 
 // FUN_005f1d95 — save SEH context registers (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FUN_005f1d95 (9 bytes)
-export function FUN_005f1d95(param_1) { // DEVIATION: C runtime }
+export function FUN_005f1d95(param_1) {
+  // DEVIATION: C runtime
+}
 
 // FUN_005f1d9e — save SEH context (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FUN_005f1d9e (24 bytes)
-export function FUN_005f1d9e() { // DEVIATION: C runtime }
+export function FUN_005f1d9e() {
+  // DEVIATION: C runtime
+}
 
 // _JumpToContinuation — SEH jump (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _JumpToContinuation (47 bytes)
-export function _JumpToContinuation(param_1, param_2) { // DEVIATION: C runtime — SEH jump }
+export function _JumpToContinuation(param_1, param_2) {
+  // DEVIATION: C runtime — SEH jump
+}
 
 // _CallMemberFunction0 — thunk (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _CallMemberFunction0 (7 bytes)
-export function _CallMemberFunction0(param_1, param_2) { // DEVIATION: C runtime }
+export function _CallMemberFunction0(param_1, param_2) {
+  // DEVIATION: C runtime
+}
 
 // FID_conflict:_CallMemberFunction1 (two copies) — thunk (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FID_conflict:_CallMemberFunction1 (7 bytes)
-export function FID_conflict__CallMemberFunction1(param_1, param_2) { // DEVIATION: C runtime }
+export function FID_conflict__CallMemberFunction1(param_1, param_2) {
+  // DEVIATION: C runtime
+}
 
 // _UnwindNestedFrames — SEH unwind (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _UnwindNestedFrames (81 bytes)
-export function _UnwindNestedFrames(param_1, param_2) { // DEVIATION: C runtime — SEH frame unwind }
+export function _UnwindNestedFrames(param_1, param_2) {
+  // DEVIATION: C runtime — SEH frame unwind
+}
 
 // ___CxxFrameHandler — C++ exception handler (DEVIATION: C runtime)
 export function ___CxxFrameHandler(param_1, param_2, param_3, param_4) { return 1; }
 
 // ___CxxLongjmpUnwind@4 — longjmp unwind (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___CxxLongjmpUnwind@4 (49 bytes)
-export function ___CxxLongjmpUnwind_4(param_1) { // DEVIATION: C runtime }
+export function ___CxxLongjmpUnwind_4(param_1) {
+  // DEVIATION: C runtime
+}
 
 // _CallCatchBlock2 — catch block caller (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _CallCatchBlock2 (102 bytes)
-export function _CallCatchBlock2(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: C runtime — C++ EH catch block caller  return 0; }
+export function _CallCatchBlock2(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: C runtime — C++ EH catch block caller  return 0;
+}
 
 // CatchGuardHandler — catch guard (DEVIATION: C runtime)
 export function CatchGuardHandler(param_1, param_2, param_3, param_4) { return 1; }
 
 // _CallSETranslator — SE translator (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _CallSETranslator (209 bytes)
-export function _CallSETranslator(param_1, param_2, param_3, param_4, param_5, param_6, param_7) { // DEVIATION: C runtime — SE translator  return 0; }
+export function _CallSETranslator(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
+  // DEVIATION: C runtime — SE translator  return 0;
+}
 
 // TranslatorGuardHandler — translator guard (DEVIATION: C runtime)
 export function TranslatorGuardHandler(param_1, param_2, param_3, param_4) { return 1; }
@@ -873,26 +913,36 @@ export function FUN_005f22e0(param_1, param_2) { return param_1; }
 
 // operator_delete — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c operator_delete (162 bytes)
-export function operator_delete(param_1) { // DEVIATION: C runtime }
+export function operator_delete(param_1) {
+  // DEVIATION: C runtime
+}
 
 // operator_new — (DEVIATION: C runtime)
 export function operator_new(param_1) { return {}; }
 
 // eh_vector_destructor_iterator — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c `eh_vector_destructor_iterator' (148 bytes)
-export function _eh_vector_destructor_iterator_(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime — EH vector destructor }
+export function _eh_vector_destructor_iterator_(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime — EH vector destructor
+}
 
 // __ArrayUnwind — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ArrayUnwind (108 bytes)
-export function __ArrayUnwind(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime — array unwind }
+export function __ArrayUnwind(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime — array unwind
+}
 
 // FID_conflict:ArrayUnwindFilter — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FID_conflict:ArrayUnwindFilter (65 bytes)
-export function FID_conflict_ArrayUnwindFilter(param_1) { // DEVIATION: C runtime  return 0; }
+export function FID_conflict_ArrayUnwindFilter(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // eh_vector_constructor_iterator — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c `eh_vector_constructor_iterator' (152 bytes)
-export function _eh_vector_constructor_iterator_(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: C runtime — EH vector constructor }
+export function _eh_vector_constructor_iterator_(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: C runtime — EH vector constructor
+}
 
 // FUN_005f26e0 — toupper_offset (subtract 0x20)
 export function FUN_005f26e0(param_1) { return param_1 - 0x20; }
@@ -925,7 +975,9 @@ export function _isspace(_C) { return (_C === 0x20 || (_C >= 0x09 && _C <= 0x0d)
 
 // _ispunct — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _ispunct (68 bytes)
-export function _ispunct(_C) { // DEVIATION: C runtime  return 0; }
+export function _ispunct(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _isalnum — (DEVIATION: C runtime)
 export function _isalnum(_C) { return (_isalpha(_C) || _isdigit(_C)) ? 1 : 0; }
@@ -971,38 +1023,54 @@ export function _strncpy(_Dest, _Source, _Count) { return _Dest; }
 
 // _sprintf — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _sprintf (236 bytes)
-export function _sprintf(_Dest, _Format) { // DEVIATION: C runtime  return 0; }
+export function _sprintf(_Dest, _Format) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _atol — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _atol (282 bytes)
-export function _atol(_Str) { // DEVIATION: C runtime  return 0; }
+export function _atol(_Str) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _atoi — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _atoi (28 bytes)
-export function _atoi(_Str) { // DEVIATION: C runtime  return 0; }
+export function _atoi(_Str) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __atoi64 — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __atoi64 (324 bytes)
-export function __atoi64(_String) { // DEVIATION: C runtime  return 0; }
+export function __atoi64(_String) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _fputs — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _fputs (202 bytes)
-export function _fputs(_Str, _File) { // DEVIATION: C runtime  return 0; }
+export function _fputs(_Str, _File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _strlen — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _strlen (123 bytes)
-export function _strlen(_Str) { // DEVIATION: C runtime  return 0; }
+export function _strlen(_Str) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _memset — (DEVIATION: C runtime)
 export function _memset(_Dst, _Val, _Size) { return _Dst; }
 
 // _strcmp — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _strcmp (129 bytes)
-export function _strcmp(_Str1, _Str2) { // DEVIATION: C runtime  return 0; }
+export function _strcmp(_Str1, _Str2) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // FUN_005f35f0 — stack probe (no-op)
 // Source: decompiled/block_005F0000.c FUN_005f35f0 (47 bytes)
-export function FUN_005f35f0() { // DEVIATION: C runtime }
+export function FUN_005f35f0() {
+  // DEVIATION: C runtime
+}
 
 // _strchr — (DEVIATION: C runtime)
 export function _strchr(_Str, _Val) {
@@ -1012,19 +1080,27 @@ export function _strchr(_Str, _Val) {
 
 // _strncmp — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _strncmp (56 bytes)
-export function _strncmp(_Str1, _Str2, _MaxCount) { // DEVIATION: C runtime  return 0; }
+export function _strncmp(_Str1, _Str2, _MaxCount) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _fread — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _fread (456 bytes)
-export function _fread(_DstBuf, _ElementSize, _Count, _File) { // DEVIATION: C runtime  return 0; }
+export function _fread(_DstBuf, _ElementSize, _Count, _File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _fwrite — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _fwrite (536 bytes)
-export function _fwrite(_Str, _Size, _Count, _File) { // DEVIATION: C runtime  return 0; }
+export function _fwrite(_Str, _Size, _Count, _File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __chdir — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __chdir (226 bytes)
-export function __chdir(_Path) { // DEVIATION: C runtime  return 0; }
+export function __chdir(_Path) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _strrchr — (DEVIATION: C runtime)
 export function _strrchr(_Str, _Ch) {
@@ -1055,35 +1131,51 @@ export function _getc(_File) { return _fgetc(_File); }
 
 // __strnicmp — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __strnicmp (173 bytes)
-export function __strnicmp(_Str1, _Str2, _MaxCount) { // DEVIATION: C runtime  return 0; }
+export function __strnicmp(_Str1, _Str2, _MaxCount) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __cinit — CRT init (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cinit (66 bytes)
-export function __cinit(param_1) { // DEVIATION: C runtime  return 0; }
+export function __cinit(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _exit — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _exit (27 bytes)
-export function _exit_fn(_Code) { // DEVIATION: C runtime }
+export function _exit_fn(_Code) {
+  // DEVIATION: C runtime
+}
 
 // __exit — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __exit (27 bytes)
-export function __exit(param_1) { // DEVIATION: C runtime }
+export function __exit(param_1) {
+  // DEVIATION: C runtime
+}
 
 // __cexit — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cexit (25 bytes)
-export function __cexit() { // DEVIATION: C runtime }
+export function __cexit() {
+  // DEVIATION: C runtime
+}
 
 // __c_exit — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __c_exit (25 bytes)
-export function __c_exit() { // DEVIATION: C runtime }
+export function __c_exit() {
+  // DEVIATION: C runtime
+}
 
 // doexit — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c doexit (251 bytes)
-export function doexit(param_1, param_2, param_3) { // DEVIATION: C runtime }
+export function doexit(param_1, param_2, param_3) {
+  // DEVIATION: C runtime
+}
 
 // __initterm — call initializer table (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __initterm (49 bytes)
-export function __initterm(param_1, param_2) { // DEVIATION: C runtime }
+export function __initterm(param_1, param_2) {
+  // DEVIATION: C runtime
+}
 
 // _strstr — (DEVIATION: C runtime)
 export function _strstr(_Str, _SubStr) {
@@ -1111,7 +1203,9 @@ export function __nh_malloc(_Size, _NhFlag) {
 
 // __nh_malloc_dbg — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __nh_malloc_dbg (101 bytes)
-export function __nh_malloc_dbg(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: C runtime  return 0; }
+export function __nh_malloc_dbg(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __heap_alloc — (DEVIATION: C runtime)
 export function __heap_alloc(_Size) {
@@ -1145,7 +1239,9 @@ export function FID_conflict___expand(_Memory, _NewSize) {
 
 // __realloc_dbg — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __realloc_dbg (55 bytes)
-export function __realloc_dbg(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: C runtime  return 0; }
+export function __realloc_dbg(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // realloc_help — (DEVIATION: C runtime)
 export function realloc_help(param_1, param_2, param_3, param_4, param_5, param_6) {
@@ -1161,26 +1257,36 @@ export function __expand_dbg(param_1, param_2, param_3, param_4, param_5) {
 
 // FUN_005f4f70 — free wrapper (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FUN_005f4f70 (25 bytes)
-export function FUN_005f4f70(param_1) { // DEVIATION: C runtime }
+export function FUN_005f4f70(param_1) {
+  // DEVIATION: C runtime
+}
 
 // __free_dbg — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __free_dbg (1057 bytes)
-export function __free_dbg(param_1, param_2) { // DEVIATION: C runtime }
+export function __free_dbg(param_1, param_2) {
+  // DEVIATION: C runtime
+}
 
 // __msize — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __msize (30 bytes)
-export function __msize(_Memory) { // DEVIATION: C runtime  return 0; }
+export function __msize(_Memory) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __msize_dbg — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __msize_dbg (358 bytes)
-export function __msize_dbg(param_1, param_2) { // DEVIATION: C runtime  return 0; }
+export function __msize_dbg(param_1, param_2) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // FUN_005f5550 — set debug break request (DEVIATION: C runtime)
 export function FUN_005f5550(param_1) { let old = DAT_00639f78; DAT_00639f78 = param_1; return old; }
 
 // __CrtSetDbgBlockType — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtSetDbgBlockType (160 bytes)
-export function __CrtSetDbgBlockType(param_1, param_2) { // DEVIATION: C runtime }
+export function __CrtSetDbgBlockType(param_1, param_2) {
+  // DEVIATION: C runtime
+}
 
 // FUN_005f5620 — set alloc hook (DEVIATION: C runtime)
 export function FUN_005f5620(param_1) {
@@ -1199,7 +1305,9 @@ export function __CrtSetDbgFlag(param_1) { let old = DAT_00639f70; if (param_1 !
 
 // __CrtDoForAllClientObjects — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtDoForAllClientObjects (105 bytes)
-export function __CrtDoForAllClientObjects(param_1, param_2) { // DEVIATION: C runtime }
+export function __CrtDoForAllClientObjects(param_1, param_2) {
+  // DEVIATION: C runtime
+}
 
 // __CrtIsValidPointer — (DEVIATION: C runtime)
 export function __CrtIsValidPointer(param_1, param_2, param_3) { return param_1 !== 0 ? 1 : 0; }
@@ -1209,53 +1317,75 @@ export function __CrtIsValidHeapPointer(param_1) { return param_1 !== 0 ? 1 : 0;
 
 // __CrtIsMemoryBlock — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtIsMemoryBlock (255 bytes)
-export function __CrtIsMemoryBlock(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: C runtime  return 0; }
+export function __CrtIsMemoryBlock(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // FUN_005f5d30 — set dump client hook (DEVIATION: C runtime)
 export function FUN_005f5d30(param_1) { let old = DAT_006e6b48; DAT_006e6b48 = param_1; return old; }
 
 // __CrtMemCheckpoint — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtMemCheckpoint (316 bytes)
-export function __CrtMemCheckpoint(param_1) { // DEVIATION: C runtime }
+export function __CrtMemCheckpoint(param_1) {
+  // DEVIATION: C runtime
+}
 
 // __CrtMemDifference — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtMemDifference (312 bytes)
-export function __CrtMemDifference(param_1, param_2, param_3) { // DEVIATION: C runtime  return 0; }
+export function __CrtMemDifference(param_1, param_2, param_3) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __CrtMemDumpAllObjectsSince — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtMemDumpAllObjectsSince (704 bytes)
-export function __CrtMemDumpAllObjectsSince(param_1) { // DEVIATION: C runtime }
+export function __CrtMemDumpAllObjectsSince(param_1) {
+  // DEVIATION: C runtime
+}
 
 // __printMemBlockData — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __printMemBlockData (252 bytes)
-export function __printMemBlockData(param_1) { // DEVIATION: C runtime }
+export function __printMemBlockData(param_1) {
+  // DEVIATION: C runtime
+}
 
 // __CrtDumpMemoryLeaks — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtDumpMemoryLeaks (132 bytes)
-export function __CrtDumpMemoryLeaks() { // DEVIATION: C runtime  return 0; }
+export function __CrtDumpMemoryLeaks() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __CrtMemDumpStatistics — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtMemDumpStatistics (199 bytes)
-export function __CrtMemDumpStatistics(param_1) { // DEVIATION: C runtime }
+export function __CrtMemDumpStatistics(param_1) {
+  // DEVIATION: C runtime
+}
 
 // FID_conflict:_memcpy (second copy) — (DEVIATION: C runtime, same as first)
 export function FID_conflict__memcpy_2(_Dst, _Src, _Size) { return FID_conflict__memcpy(_Dst, _Src, _Size); }
 
 // FID_conflict:__wrename / _rename — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FID_conflict:__wrename (96 bytes)
-export function FID_conflict___wrename(_OldFilename, _NewFilename) { // DEVIATION: C runtime  return 0; }
+export function FID_conflict___wrename(_OldFilename, _NewFilename) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // FID_conflict:_remove / __wremove — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FID_conflict:_remove (92 bytes)
-export function FID_conflict__remove(_Filename) { // DEVIATION: C runtime  return 0; }
+export function FID_conflict__remove(_Filename) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // FID_conflict:__unlink — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FID_conflict:__unlink (28 bytes)
-export function FID_conflict___unlink(_Filename) { // DEVIATION: C runtime  return 0; }
+export function FID_conflict___unlink(_Filename) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _rewind — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _rewind (192 bytes)
-export function _rewind(_File) { // DEVIATION: C runtime }
+export function _rewind(_File) {
+  // DEVIATION: C runtime
+}
 
 // _fseek — (DEVIATION: C runtime)
 export function _fseek(_File, _Offset, _Origin) { return -1; }
@@ -1265,15 +1395,21 @@ export function _ftell(_File) { return -1; }
 
 // _printf — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _printf (141 bytes)
-export function _printf(_Format) { // DEVIATION: C runtime  return 0; }
+export function _printf(_Format) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ftol — float to long (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ftol (39 bytes)
-export function __ftol() { // DEVIATION: C runtime  return 0; }
+export function __ftol() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __fpmath — FP math init (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __fpmath (38 bytes)
-export function __fpmath(param_1) { // DEVIATION: C runtime }
+export function __fpmath(param_1) {
+  // DEVIATION: C runtime
+}
 
 // FUN_005f6cc0 — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f6cc0 (16 bytes)
@@ -1281,26 +1417,36 @@ export function FUN_005f6cc0() { // C: return; (truly empty function) }
 
 // __cfltcvt_init — float conversion init (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cfltcvt_init (71 bytes)
-export function __cfltcvt_init() { // DEVIATION: C runtime }
+export function __cfltcvt_init() {
+  // DEVIATION: C runtime
+}
 
 // FUN_005f6d20 — set user math error handler (DEVIATION: C runtime)
 export function FUN_005f6d20(param_1) { let old = DAT_00639fa8; DAT_00639fa8 = param_1; return old; }
 
 // _memcmp — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _memcmp (172 bytes)
-export function _memcmp(_Buf1, _Buf2, _Size) { // DEVIATION: C runtime  return 0; }
+export function _memcmp(_Buf1, _Buf2, _Size) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __strcmpi — case-insensitive strcmp (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __strcmpi (140 bytes)
-export function __strcmpi(_Str1, _Str2) { // DEVIATION: C runtime  return 0; }
+export function __strcmpi(_Str1, _Str2) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // entry — program entry point (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c entry (494 bytes)
-export function entry() { // DEVIATION: C runtime — CRT entry point with SEH }
+export function entry() {
+  // DEVIATION: C runtime — CRT entry point with SEH
+}
 
 // __amsg_exit — runtime error exit (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __amsg_exit (55 bytes)
-export function __amsg_exit(param_1) { // DEVIATION: C runtime }
+export function __amsg_exit(param_1) {
+  // DEVIATION: C runtime
+}
 
 // FUN_005f7120 — abs (integer)
 export function FUN_005f7120(param_1) {
@@ -1324,7 +1470,9 @@ export function __validdrive(param_1) { return 1; }
 
 // _time — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _time (390 bytes)
-export function _time(_Time) { // DEVIATION: C runtime  return 0; }
+export function _time(_Time) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _strncat — (DEVIATION: C runtime)
 export function _strncat(_Dest, _Source, _Count) { return _Dest; }
@@ -1340,11 +1488,15 @@ export function ___InternalCxxFrameHandler(param_1, param_2, param_3, param_4, p
 
 // FindHandler — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FindHandler (675 bytes)
-export function FindHandler(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { // DEVIATION: C runtime }
+export function FindHandler(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  // DEVIATION: C runtime
+}
 
 // FindHandlerForForeignException — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FindHandlerForForeignException (288 bytes)
-export function FindHandlerForForeignException(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) { // DEVIATION: C runtime }
+export function FindHandlerForForeignException(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8) {
+  // DEVIATION: C runtime
+}
 
 // GetRangeOfTrysToCheck — C++ EH (DEVIATION: C runtime)
 export function GetRangeOfTrysToCheck(param_1, param_2, param_3, param_4, param_5) {
@@ -1354,11 +1506,15 @@ export function GetRangeOfTrysToCheck(param_1, param_2, param_3, param_4, param_
 
 // TypeMatch — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c TypeMatch (195 bytes)
-export function TypeMatch(param_1, param_2, param_3) { // DEVIATION: C runtime  return 0; }
+export function TypeMatch(param_1, param_2, param_3) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // ___FrameUnwindToState — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___FrameUnwindToState (234 bytes)
-export function ___FrameUnwindToState(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime — C++ EH frame unwind }
+export function ___FrameUnwindToState(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime — C++ EH frame unwind
+}
 
 // Source: decompiled/block_005F0000.c FID_conflict:ArrayUnwindFilter (65 bytes)
 // FID_conflict:ArrayUnwindFilter (second copy) — C++ EH
@@ -1372,7 +1528,9 @@ export function FID_conflict_ArrayUnwindFilter_2(param_1) {
 
 // CatchIt — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c CatchIt (209 bytes)
-export function CatchIt(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) { // DEVIATION: C runtime }
+export function CatchIt(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10) {
+  // DEVIATION: C runtime
+}
 
 // CallCatchBlock — C++ EH (DEVIATION: C runtime)
 export function CallCatchBlock(param_1, param_2, param_3, param_4, param_5, param_6, param_7) {
@@ -1382,26 +1540,36 @@ export function CallCatchBlock(param_1, param_2, param_3, param_4, param_5, para
 
 // ExFilterRethrow — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ExFilterRethrow (96 bytes)
-export function ExFilterRethrow(param_1) { // DEVIATION: C runtime  return 0; }
+export function ExFilterRethrow(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // BuildCatchObject — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c BuildCatchObject (699 bytes)
-export function BuildCatchObject(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime — C++ EH build catch object }
+export function BuildCatchObject(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime — C++ EH build catch object
+}
 
 // DestructExceptionObject — C++ EH (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c DestructExceptionObject (124 bytes)
-export function DestructExceptionObject(param_1, param_2) { // DEVIATION: C runtime — C++ EH destruct exception }
+export function DestructExceptionObject(param_1, param_2) {
+  // DEVIATION: C runtime — C++ EH destruct exception
+}
 
 // AdjustPointer — C++ EH (DEVIATION: C runtime)
 export function AdjustPointer(param_1, param_2) { return param_1; }
 
 // __CallSettingFrame@12 — SEH frame setup (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CallSettingFrame@12 (72 bytes)
-export function __CallSettingFrame_12(param_1, param_2, param_3) { // DEVIATION: C runtime }
+export function __CallSettingFrame_12(param_1, param_2, param_3) {
+  // DEVIATION: C runtime
+}
 
 // terminate — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c terminate (105 bytes)
-export function terminate() { // DEVIATION: C runtime — C++ terminate handler }
+export function terminate() {
+  // DEVIATION: C runtime — C++ terminate handler
+}
 
 // unexpected — (DEVIATION: C runtime)
 export function unexpected() { terminate(); }
@@ -1411,7 +1579,9 @@ export function _inconsistency() { terminate(); }
 
 // __CrtDbgBreak — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtDbgBreak (17 bytes)
-export function __CrtDbgBreak() { // DEVIATION: C runtime }
+export function __CrtDbgBreak() {
+  // DEVIATION: C runtime
+}
 
 // __CrtSetReportMode — (DEVIATION: C runtime)
 export function __CrtSetReportMode(param_1, param_2) { return -1; }
@@ -1424,7 +1594,9 @@ export function FUN_005f8b40(param_1) { let old = DAT_006e6b30; DAT_006e6b30 = p
 
 // __CrtDbgReport — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __CrtDbgReport (998 bytes)
-export function __CrtDbgReport(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: C runtime  return 0; }
+export function __CrtDbgReport(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _CrtMessageWindow — (DEVIATION: C runtime)
 export function _CrtMessageWindow() {
@@ -1434,25 +1606,33 @@ export function _CrtMessageWindow() {
 
 // FUN_005f9355 — SEH local unwind dispatch (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c FUN_005f9355 (27 bytes)
-export function FUN_005f9355(param_1) { // DEVIATION: C runtime }
+export function FUN_005f9355(param_1) {
+  // DEVIATION: C runtime
+}
 
 // ___crtLCMapStringW — locale map (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___crtLCMapStringW (760 bytes)
-export function ___crtLCMapStringW(_LocaleName, _DWMapFlag, _LpSrcStr, _CchSrc, _LpDestStr, _CchDest) { // DEVIATION: C runtime  return 0; }
+export function ___crtLCMapStringW(_LocaleName, _DWMapFlag, _LpSrcStr, _CchSrc, _LpDestStr, _CchDest) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // wcsncnt — wide char count (DEVIATION: C runtime)
 export function wcsncnt(param_1, param_2) { return param_2; }
 
 // ___crtLCMapStringA — locale map (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___crtLCMapStringA (791 bytes)
-export function ___crtLCMapStringA(_Plocinfo, _LocaleName, _DwMapFlag, _LpSrcStr, _CchSrc, _LpDestStr, _CchDest, _Code_page, _BError) { // DEVIATION: C runtime  return 0; }
+export function ___crtLCMapStringA(_Plocinfo, _LocaleName, _DwMapFlag, _LpSrcStr, _CchSrc, _LpDestStr, _CchDest, _Code_page, _BError) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // _strncnt — string count (DEVIATION: C runtime)
 export function _strncnt(_String, _Cnt) { return _Cnt; }
 
 // __isctype — char type check (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __isctype (182 bytes)
-export function __isctype(_C, _Type) { // DEVIATION: C runtime  return 0; }
+export function __isctype(_C, _Type) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __openfile — file open internal (DEVIATION: C runtime)
 export function __openfile(_Filename, _Mode, _ShFlag, _File) {
@@ -1471,66 +1651,96 @@ export function __close(_FileHandle) { return -1; }
 
 // __freebuf — free file buffer (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __freebuf (138 bytes)
-export function __freebuf(_File) { // DEVIATION: C runtime }
+export function __freebuf(_File) {
+  // DEVIATION: C runtime
+}
 
 // _fflush — flush file (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _fflush (126 bytes)
-export function _fflush(_File) { // DEVIATION: C runtime  return 0; }
+export function _fflush(_File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __flush — flush internal (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __flush (186 bytes)
-export function __flush(_File) { // DEVIATION: C runtime  return 0; }
+export function __flush(_File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __flushall — flush all files (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __flushall (26 bytes)
-export function __flushall() { // DEVIATION: C runtime  return 0; }
+export function __flushall() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // flsall — flush all internal (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c flsall (247 bytes)
-export function flsall(param_1) { // DEVIATION: C runtime  return 0; }
+export function flsall(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __flsbuf — flush buffer (DEVIATION: C runtime)
 export function __flsbuf(_Ch, _File) { return -1; }
 
 // __output — printf core (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __output (3177 bytes)
-export function __output(param_1, param_2, param_3) { // DEVIATION: C runtime  return 0; }
+export function __output(param_1, param_2, param_3) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // write_char — output single char (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c write_char (117 bytes)
-export function write_char(param_1, param_2, param_3) { // DEVIATION: C runtime }
+export function write_char(param_1, param_2, param_3) {
+  // DEVIATION: C runtime
+}
 
 // write_multi_char — output repeated char (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c write_multi_char (75 bytes)
-export function write_multi_char(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime }
+export function write_multi_char(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime
+}
 
 // write_string — output string (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c write_string (87 bytes)
-export function write_string(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime }
+export function write_string(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime
+}
 
 // get_int_arg — varargs int (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c get_int_arg (30 bytes)
-export function get_int_arg(param_1) { // DEVIATION: C runtime  return 0; }
+export function get_int_arg(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // get_int64_arg — varargs int64 (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c get_int64_arg (35 bytes)
-export function get_int64_arg(param_1) { // DEVIATION: C runtime  return 0; }
+export function get_int64_arg(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // get_short_arg — varargs short (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c get_short_arg (31 bytes)
-export function get_short_arg(param_1) { // DEVIATION: C runtime  return 0; }
+export function get_short_arg(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __allmul — 64-bit multiply (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __allmul (52 bytes)
-export function __allmul(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime  return 0; }
+export function __allmul(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __stbuf — setup temp buffer (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __stbuf (330 bytes)
-export function __stbuf(_File) { // DEVIATION: C runtime  return 0; }
+export function __stbuf(_File) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ftbuf — free temp buffer (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ftbuf (182 bytes)
-export function __ftbuf(_Flag, _File) { // DEVIATION: C runtime }
+export function __ftbuf(_Flag, _File) {
+  // DEVIATION: C runtime
+}
 
 // __read — read from file (DEVIATION: C runtime)
 export function __read(_FileHandle, _DstBuf, _MaxCharCount) { return -1; }
@@ -1549,15 +1759,21 @@ export function __mbctoupper(_Ch) {
 
 // __ioinit — IO init (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ioinit (808 bytes)
-export function __ioinit() { // DEVIATION: C runtime  return 0; }
+export function __ioinit() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ioterm — IO term (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ioterm (104 bytes)
-export function __ioterm() { // DEVIATION: C runtime }
+export function __ioterm() {
+  // DEVIATION: C runtime
+}
 
 // __getbuf — get file buffer (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __getbuf (188 bytes)
-export function __getbuf(_File) { // DEVIATION: C runtime }
+export function __getbuf(_File) {
+  // DEVIATION: C runtime
+}
 
 // FUN_005fc5c0 — tolower_offset (add 0x20)
 export function FUN_005fc5c0(param_1) { return param_1 + 0x20; }
@@ -1576,7 +1792,9 @@ export function FUN_005fc750() { return DAT_006e54a0; }
 
 // __callnewh — call new handler (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __callnewh (62 bytes)
-export function __callnewh(_Size) { // DEVIATION: C runtime  return 0; }
+export function __callnewh(_Size) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __malloc_base — (DEVIATION: C runtime)
 export function __malloc_base(param_1) {
@@ -1586,7 +1804,9 @@ export function __malloc_base(param_1) {
 
 // __nh_malloc_base — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __nh_malloc_base (150 bytes)
-export function __nh_malloc_base(param_1, param_2) { // DEVIATION: C runtime  return 0; }
+export function __nh_malloc_base(param_1, param_2) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __heap_alloc_base — (DEVIATION: C runtime)
 export function __heap_alloc_base(param_1) {
@@ -1611,7 +1831,9 @@ export function __realloc_base(param_1, param_2) {
 
 // __free_base — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __free_base (105 bytes)
-export function __free_base(param_1) { // DEVIATION: C runtime }
+export function __free_base(param_1) {
+  // DEVIATION: C runtime
+}
 
 // __heapchk — (DEVIATION: C runtime)
 export function __heapchk() { return -2; }
@@ -1624,7 +1846,9 @@ export function __heap_init() { return 1; }
 
 // __heap_term — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __heap_term (93 bytes)
-export function __heap_term() { // DEVIATION: C runtime }
+export function __heap_term() {
+  // DEVIATION: C runtime
+}
 
 // FUN_005fcdc0 — get SBH threshold
 export function FUN_005fcdc0() { return DAT_0063ac54; }
@@ -1640,19 +1864,27 @@ export function ___sbh_new_region() {
 
 // ___sbh_release_region — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___sbh_release_region (132 bytes)
-export function ___sbh_release_region(param_1) { // DEVIATION: C runtime }
+export function ___sbh_release_region(param_1) {
+  // DEVIATION: C runtime
+}
 
 // ___sbh_decommit_pages — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___sbh_decommit_pages (376 bytes)
-export function ___sbh_decommit_pages(param_1) { // DEVIATION: C runtime }
+export function ___sbh_decommit_pages(param_1) {
+  // DEVIATION: C runtime
+}
 
 // ___sbh_find_block — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___sbh_find_block (162 bytes)
-export function ___sbh_find_block(param_1, param_2, param_3) { // DEVIATION: C runtime  return 0; }
+export function ___sbh_find_block(param_1, param_2, param_3) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // ___sbh_free_block — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___sbh_free_block (136 bytes)
-export function ___sbh_free_block(param_1, param_2, param_3) { // DEVIATION: C runtime }
+export function ___sbh_free_block(param_1, param_2, param_3) {
+  // DEVIATION: C runtime
+}
 
 // ___sbh_alloc_block — (DEVIATION: C runtime)
 export function ___sbh_alloc_block(param_1) {
@@ -1662,85 +1894,123 @@ export function ___sbh_alloc_block(param_1) {
 
 // ___sbh_alloc_block_from_page — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___sbh_alloc_block_from_page (763 bytes)
-export function ___sbh_alloc_block_from_page(param_1, param_2, param_3) { // DEVIATION: C runtime  return 0; }
+export function ___sbh_alloc_block_from_page(param_1, param_2, param_3) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // ___sbh_resize_block — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___sbh_resize_block (439 bytes)
-export function ___sbh_resize_block(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime  return 0; }
+export function ___sbh_resize_block(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // ___sbh_heap_check — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___sbh_heap_check (617 bytes)
-export function ___sbh_heap_check() { // DEVIATION: C runtime  return 0; }
+export function ___sbh_heap_check() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __lseek — (DEVIATION: C runtime)
 export function __lseek(_FileHandle, _Offset, _Origin) { return -1; }
 
 // ___initstdio — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___initstdio (338 bytes)
-export function ___initstdio() { // DEVIATION: C runtime }
+export function ___initstdio() {
+  // DEVIATION: C runtime
+}
 
 // ___endstdio — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c ___endstdio (36 bytes)
-export function ___endstdio() { // DEVIATION: C runtime }
+export function ___endstdio() {
+  // DEVIATION: C runtime
+}
 
 // __setdefaultprecision — (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __setdefaultprecision (29 bytes)
-export function __setdefaultprecision() { // DEVIATION: C runtime }
+export function __setdefaultprecision() {
+  // DEVIATION: C runtime
+}
 
 // __ms_p5_test_fdiv — Pentium FDIV bug test (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ms_p5_test_fdiv (94 bytes)
-export function __ms_p5_test_fdiv() { // DEVIATION: C runtime  return 0; }
+export function __ms_p5_test_fdiv() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ms_p5_mp_test_fdiv — Pentium FDIV multiprocessor test (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ms_p5_mp_test_fdiv (86 bytes)
-export function __ms_p5_mp_test_fdiv() { // DEVIATION: C runtime }
+export function __ms_p5_mp_test_fdiv() {
+  // DEVIATION: C runtime
+}
 
 // __forcdecpt — force decimal point (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __forcdecpt (179 bytes)
-export function __forcdecpt(_Buf) { // DEVIATION: C runtime }
+export function __forcdecpt(_Buf) {
+  // DEVIATION: C runtime
+}
 
 // __cropzeros — crop trailing zeros (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cropzeros (223 bytes)
-export function __cropzeros(_Buf) { // DEVIATION: C runtime }
+export function __cropzeros(_Buf) {
+  // DEVIATION: C runtime
+}
 
 // __positive — check if positive (DEVIATION: C runtime)
 export function __positive(arg) { return 1; }
 
 // __fassign — float assign (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __fassign (83 bytes)
-export function __fassign(flag, argument, number) { // DEVIATION: C runtime }
+export function __fassign(flag, argument, number) {
+  // DEVIATION: C runtime
+}
 
 // __cftoe — float to E format (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cftoe (458 bytes)
-export function __cftoe(_Value, _Buf, _SizeInBytes, _Dec, _Caps) { // DEVIATION: C runtime  return 0; }
+export function __cftoe(_Value, _Buf, _SizeInBytes, _Dec, _Caps) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __cftof — float to F format (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cftof (393 bytes)
-export function __cftof(_Value, _Buf, _SizeInBytes, _Dec) { // DEVIATION: C runtime  return 0; }
+export function __cftof(_Value, _Buf, _SizeInBytes, _Dec) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __cftog — float to G format (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cftog (281 bytes)
-export function __cftog(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime }
+export function __cftog(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime
+}
 
 // __cftoe_g — float to E format (g variant) (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cftoe_g (63 bytes)
-export function __cftoe_g(param_1, param_2, param_3, param_4) { // DEVIATION: C runtime  return 0; }
+export function __cftoe_g(param_1, param_2, param_3, param_4) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __cftof_g — float to F format (g variant) (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cftof_g (59 bytes)
-export function __cftof_g(param_1, param_2, param_3) { // DEVIATION: C runtime  return 0; }
+export function __cftof_g(param_1, param_2, param_3) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __cfltcvt — float conversion dispatch (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cfltcvt (119 bytes)
-export function __cfltcvt(arg, buffer, sizeInBytes, format, precision, caps) { // DEVIATION: C runtime  return 0; }
+export function __cfltcvt(arg, buffer, sizeInBytes, format, precision, caps) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __shift — shift string right (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __shift (54 bytes)
-export function __shift(param_1, param_2) { // DEVIATION: C runtime }
+export function __shift(param_1, param_2) {
+  // DEVIATION: C runtime
+}
 
 // __XcptFilter — exception filter (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __XcptFilter (500 bytes)
-export function __XcptFilter(_ExceptionNum, _ExceptionPtr) { // DEVIATION: C runtime  return 0; }
+export function __XcptFilter(_ExceptionNum, _ExceptionPtr) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // xcptlookup — exception table lookup (DEVIATION: C runtime)
 export function xcptlookup(param_1) {
@@ -1750,63 +2020,93 @@ export function xcptlookup(param_1) {
 
 // __ismbbkalnum — multibyte alnum (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbkalnum (32 bytes)
-export function __ismbbkalnum(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbkalnum(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbkprint — multibyte printable (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbkprint (32 bytes)
-export function __ismbbkprint(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbkprint(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbkpunct — multibyte punct (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbkpunct (32 bytes)
-export function __ismbbkpunct(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbkpunct(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbalnum — multibyte alnum (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbalnum (35 bytes)
-export function __ismbbalnum(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbalnum(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbalpha — multibyte alpha (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbalpha (35 bytes)
-export function __ismbbalpha(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbalpha(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbgraph — multibyte graph (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbgraph (35 bytes)
-export function __ismbbgraph(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbgraph(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbprint — multibyte print (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbprint (35 bytes)
-export function __ismbbprint(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbprint(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbpunct — multibyte punct (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbpunct (32 bytes)
-export function __ismbbpunct(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbpunct(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbblead — multibyte lead byte (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbblead (32 bytes)
-export function __ismbblead(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbblead(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbtrail — multibyte trail byte (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbtrail (32 bytes)
-export function __ismbbtrail(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbtrail(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __ismbbkana — multibyte kana (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __ismbbkana (68 bytes)
-export function __ismbbkana(_C) { // DEVIATION: C runtime  return 0; }
+export function __ismbbkana(_C) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // x_ismbbtype — multibyte type check (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c x_ismbbtype (110 bytes)
-export function x_ismbbtype(param_1, param_2, param_3) { // DEVIATION: C runtime  return 0; }
+export function x_ismbbtype(param_1, param_2, param_3) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __setenvp — set environment (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __setenvp (318 bytes)
-export function __setenvp() { // DEVIATION: C runtime  return 0; }
+export function __setenvp() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // __setargv — set argv (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __setargv (204 bytes)
-export function __setargv() { // DEVIATION: C runtime  return 0; }
+export function __setargv() {
+  // DEVIATION: C runtime  return 0;
+}
 
 // parse_cmdline — parse command line (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c parse_cmdline (958 bytes)
-export function parse_cmdline(param_1, param_2, param_3, param_4, param_5) { // DEVIATION: C runtime }
+export function parse_cmdline(param_1, param_2, param_3, param_4, param_5) {
+  // DEVIATION: C runtime
+}
 
 // ___crtGetEnvironmentStringsW — (DEVIATION: C runtime)
 export function ___crtGetEnvironmentStringsW() {
@@ -1822,18 +2122,24 @@ export function ___crtGetEnvironmentStringsA() {
 
 // __setmbcp — set multibyte code page (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __setmbcp (815 bytes)
-export function __setmbcp(_CodePage) { // DEVIATION: C runtime  return 0; }
+export function __setmbcp(_CodePage) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // getSystemCP — get system code page (DEVIATION: C runtime)
 export function getSystemCP(param_1) { return param_1; }
 
 // _CPtoLCID — code page to LCID (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c _CPtoLCID (107 bytes)
-export function _CPtoLCID(param_1) { // DEVIATION: C runtime  return 0; }
+export function _CPtoLCID(param_1) {
+  // DEVIATION: C runtime  return 0;
+}
 
 // setSBCS — set single byte char set (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c setSBCS (120 bytes)
-export function setSBCS() { // DEVIATION: C runtime }
+export function setSBCS() {
+  // DEVIATION: C runtime
+}
 
 // FUN_005fffa0 — get multibyte code page
 export function FUN_005fffa0() { return DAT_0063b0a4; }
@@ -1843,7 +2149,9 @@ export function ___initmbctable() { __setmbcp(-3); }
 
 // __FF_MSGBANNER — runtime error message banner (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __FF_MSGBANNER (95 bytes)
-export function __FF_MSGBANNER() { // DEVIATION: C runtime }
+export function __FF_MSGBANNER() {
+  // DEVIATION: C runtime
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
