@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_005C0000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8 } from './mem.js';
+import { s8, u8, s16, s32, w16, w32 } from './mem.js';
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -295,32 +295,28 @@ export function FUN_005c0023() {
 }
 
 // FUN_005c0034 — set port clip rect from internal fields
-export function FUN_005c0034() {
-  var in_ECX = 0; // DEVIATION: this pointer
-  SetRect(in_ECX + 0x14, in_ECX + 0x24, in_ECX + 0x28, in_ECX + 0x2c, in_ECX + 0x30); // DEVIATION: Win32
+export function FUN_005c0034(in_ECX) {
+  SetRect(in_ECX + 0x14, s32(in_ECX, 0x24), s32(in_ECX, 0x28), s32(in_ECX, 0x2c), s32(in_ECX, 0x30)); // DEVIATION: Win32
 }
 
 // FUN_005c0073 — set port clip rect from param, intersect with bounds
-export function FUN_005c0073(param_1) {
-  var in_ECX = 0; // DEVIATION: this pointer
+export function FUN_005c0073(in_ECX, param_1) {
   SetRect(in_ECX + 0x14, param_1[0], param_1[1], param_1[2], param_1[3]); // DEVIATION: Win32
   IntersectRect(in_ECX + 0x14, in_ECX + 0x14, in_ECX + 0x24); // DEVIATION: Win32
 }
 
 // FUN_005c00ce — get port clip rect into param
-export function FUN_005c00ce(param_1) {
-  var in_ECX = 0; // DEVIATION: this pointer
-  param_1[0] = in_ECX + 0x14;
-  param_1[1] = in_ECX + 0x18;
-  param_1[2] = in_ECX + 0x1c;
-  param_1[3] = in_ECX + 0x20;
+export function FUN_005c00ce(in_ECX, param_1) {
+  param_1[0] = s32(in_ECX, 0x14);
+  param_1[1] = s32(in_ECX, 0x18);
+  param_1[2] = s32(in_ECX, 0x1c);
+  param_1[3] = s32(in_ECX, 0x20);
 }
 
 // FUN_005c0105 — dispatch port allocation by type
-export function FUN_005c0105(param_1) {
+export function FUN_005c0105(in_ECX, param_1) {
   var uVar1;
-  var in_ECX = 0; // DEVIATION: this pointer
-  switch (in_ECX + 0x44) {
+  switch (s32(in_ECX, 0x44)) {
     case 1: uVar1 = FUN_005bd696(param_1); break;
     case 2: uVar1 = FUN_005c1b47(param_1); break;
     case 3: uVar1 = FUN_005c1cf7(param_1); break;
@@ -336,30 +332,29 @@ export function FUN_005c019d(param_1) {
 }
 
 // FUN_005c01c1 — lock port surface (compute scanline offsets)
-export function FUN_005c01c1() {
+export function FUN_005c01c1(in_ECX) {
+  if (in_ECX === undefined) { in_ECX = 0; } // DEVIATION: this pointer
   var uVar1;
   var pvVar2;
   var iVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_8;
-  // DEVIATION: in_ECX + 0x34 is surface pointer
-  if (in_ECX + 0x34 === 0) {
-    uVar1 = FUN_005e3a81(in_ECX + 0x40);
-    // *(in_ECX + 0x34) = uVar1;
+  if (s32(in_ECX, 0x34) === 0) {
+    uVar1 = FUN_005e3a81(s32(in_ECX, 0x40));
+    w32(in_ECX, 0x34, uVar1);
     if (uVar1 !== 0) {
-      pvVar2 = operator_new((in_ECX + 8) << 2);
-      // *(in_ECX + 0x38) = pvVar2;
-      iVar3 = FUN_005e395a(in_ECX + 0x40);
+      pvVar2 = operator_new(s32(in_ECX, 8) << 2);
+      w32(in_ECX, 0x38, pvVar2);
+      iVar3 = FUN_005e395a(s32(in_ECX, 0x40));
       if (iVar3 === 0) {
         // bottom-up scanlines
         // **(in_ECX + 0x38) = ((in_ECX + 8) - 1) * (in_ECX + 0xc);
-        for (local_8 = 1; local_8 < (in_ECX + 8); local_8 = local_8 + 1) {
+        for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
           // scanline[local_8] = scanline[local_8 - 1] - stride
         }
       } else {
         // top-down scanlines
         // **(in_ECX + 0x38) = 0;
-        for (local_8 = 1; local_8 < (in_ECX + 8); local_8 = local_8 + 1) {
+        for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
           // scanline[local_8] = scanline[local_8 - 1] + stride
         }
       }
@@ -368,13 +363,13 @@ export function FUN_005c01c1() {
 }
 
 // FUN_005c02e0 — unlock port surface
-export function FUN_005c02e0() {
+export function FUN_005c02e0(in_ECX) {
+  if (in_ECX === undefined) { in_ECX = 0; } // DEVIATION: this pointer
   var uVar1;
-  var in_ECX = 0; // DEVIATION: this pointer
-  if (in_ECX + 0x34 !== 0) {
-    uVar1 = FUN_005e3aa8(in_ECX + 0x40);
-    // *(in_ECX + 0x34) = uVar1;
-    operator_delete(in_ECX + 0x38);
+  if (s32(in_ECX, 0x34) !== 0) {
+    uVar1 = FUN_005e3aa8(s32(in_ECX, 0x40));
+    w32(in_ECX, 0x34, uVar1);
+    operator_delete(s32(in_ECX, 0x38));
   }
 }
 
@@ -1180,11 +1175,10 @@ export function FUN_005c201d(param_1, param_2, param_3) {
 }
 
 // FUN_005c2048 — load TGA from resource into 16-bit port
-export function FUN_005c2048(param_1) {
+export function FUN_005c2048(in_ECX, param_1) {
   var cVar1;
   var uVar2;
   var iVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_40;
   var local_3c = [0, 0, 0, 0]; // tagRECT
   var local_2c;
@@ -1219,43 +1213,49 @@ export function FUN_005c2048(param_1) {
     local_c = local_c + headerSkip; // advance past TGA header + ID
     if ((local_8[0x11] & 0x20) === 0) {
       local_10 = FUN_005c19d3(0, local_18 - 1);
-      local_40 = -1; // DEVIATION: -*(in_ECX + 0x10) — negative scanline stride
+      local_40 = -s32(in_ECX, 0x10); // negative scanline stride
     } else {
       local_10 = FUN_005c19d3(0, 0);
-      local_40 = 1; // DEVIATION: *(in_ECX + 0x10) — positive scanline stride
+      local_40 = s32(in_ECX, 0x10); // positive scanline stride
     }
     cVar1 = local_8[0x10]; // bits per pixel
     if (cVar1 === 0x10) {
       // 16-bit pixels: direct copy
       for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {
         FID_conflict__memcpy(local_10, local_c, local_14 * 2);
-        // DEVIATION: local_10 = (local_10 + local_40) — advance by stride
+        local_10 = local_10 + local_40;
         local_c = local_c + local_14 * 2;
       }
     } else {
+      var skip32 = false;
       if (cVar1 === 0x18) {
         // 24-bit pixels: convert BGR to 16-bit
         for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {
           local_2c = local_10;
           for (local_28 = 0; local_28 < local_14; local_28 = local_28 + 1) {
             uVar2 = FUN_005c201d(local_c[2], local_c[1], local_c[0]);
-            // DEVIATION: *local_2c = uVar2; local_2c = local_2c + 1
+            w16(local_2c, 0, uVar2);
+            local_2c = local_2c + 2;
             local_c = local_c + 3;
           }
-          // DEVIATION: local_10 = (local_10 + local_40)
+          local_10 = local_10 + local_40;
         }
       } else if (cVar1 !== 0x20) {
-        // not 16/24/32 — goto LAB_005c231b
+        // not 16/24/32 — skip 32-bit loop (goto LAB_005c231b)
+        skip32 = true;
       }
-      // 32-bit pixels (or fallthrough from 24-bit path in C):
-      for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {
-        local_2c = local_10;
-        for (local_28 = 0; local_28 < local_14; local_28 = local_28 + 1) {
-          uVar2 = FUN_005c201d(local_c[2], local_c[1], local_c[0]);
-          // DEVIATION: *local_2c = uVar2; local_2c = local_2c + 1
-          local_c = local_c + 4;
+      if (!skip32) {
+        // 32-bit pixels (fallthrough from 24-bit, or 0x20 match):
+        for (local_20 = 0; local_20 < local_18; local_20 = local_20 + 1) {
+          local_2c = local_10;
+          for (local_28 = 0; local_28 < local_14; local_28 = local_28 + 1) {
+            uVar2 = FUN_005c201d(local_c[2], local_c[1], local_c[0]);
+            w16(local_2c, 0, uVar2);
+            local_2c = local_2c + 2;
+            local_c = local_c + 4;
+          }
+          local_10 = local_10 + local_40;
         }
-        // DEVIATION: local_10 = (local_10 + local_40)
       }
     }
   } else if (local_8[2] === 0x0a) {
@@ -1271,11 +1271,10 @@ export function FUN_005c2048(param_1) {
 }
 
 // FUN_005c2360 — load TGA from file into 16-bit port
-export function FUN_005c2360(param_1) {
+export function FUN_005c2360(in_ECX, param_1) {
   var cVar1;
   var uVar2;
   var iVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_dc;
   var local_d8 = [0, 0, 0, 0]; // tagRECT
   var local_c8;
@@ -1288,7 +1287,7 @@ export function FUN_005c2360(param_1) {
   var local_14;
 
   FUN_005d7c00();
-  iVar3 = FUN_005deced(param_1); // Realloc (open file)
+  iVar3 = FUN_005deced(param_1); // file open (Realloc in C)
   if (iVar3 === 0) {
     debug_log("Error: Targa File not found");
     FUN_005dae6b(3, 0, 0, 0x965);
@@ -1308,16 +1307,16 @@ export function FUN_005c2360(param_1) {
       local_18 = local_18 + local_14[0] + 0x12; // skip header
       if ((local_14[0x11] & 0x20) === 0) {
         local_b4 = FUN_005c19d3(0, local_bc - 1);
-        local_dc = -1; // DEVIATION: -*(in_ECX + 0x10)
+        local_dc = -s32(in_ECX, 0x10);
       } else {
         local_b4 = FUN_005c19d3(0, 0);
-        local_dc = 1; // DEVIATION: *(in_ECX + 0x10)
+        local_dc = s32(in_ECX, 0x10);
       }
       cVar1 = local_14[0x10]; // bits per pixel
       if (cVar1 === 0x10) {
         for (local_c0 = 0; local_c0 < local_bc; local_c0 = local_c0 + 1) {
           FID_conflict__memcpy(local_b4, local_18, local_b8 * 2);
-          // DEVIATION: local_b4 = (local_b4 + local_dc)
+          local_b4 = local_b4 + local_dc;
           local_18 = local_18 + local_b8 * 2;
         }
       } else if (cVar1 === 0x18) {
@@ -1325,20 +1324,22 @@ export function FUN_005c2360(param_1) {
           local_c8 = local_b4;
           for (local_c4 = 0; local_c4 < local_b8; local_c4 = local_c4 + 1) {
             uVar2 = FUN_005c201d(local_18[2], local_18[1], local_18[0]);
-            // DEVIATION: *local_c8 = uVar2; local_c8 = local_c8 + 1
+            w16(local_c8, 0, uVar2);
+            local_c8 = local_c8 + 2;
             local_18 = local_18 + 3;
           }
-          // DEVIATION: local_b4 = (local_b4 + local_dc)
+          local_b4 = local_b4 + local_dc;
         }
       } else if (cVar1 === 0x20) {
         for (local_c0 = 0; local_c0 < local_bc; local_c0 = local_c0 + 1) {
           local_c8 = local_b4;
           for (local_c4 = 0; local_c4 < local_b8; local_c4 = local_c4 + 1) {
             uVar2 = FUN_005c201d(local_18[2], local_18[1], local_18[0]);
-            // DEVIATION: *local_c8 = uVar2; local_c8 = local_c8 + 1
+            w16(local_c8, 0, uVar2);
+            local_c8 = local_c8 + 2;
             local_18 = local_18 + 4;
           }
-          // DEVIATION: local_b4 = (local_b4 + local_dc)
+          local_b4 = local_b4 + local_dc;
         }
       }
     } else if (local_14[2] === 0x0a) {
@@ -1370,12 +1371,11 @@ export function FUN_005c279c() {
 }
 
 // FUN_005c27ad — load BMP from resource into 16-bit port
-export function FUN_005c27ad(param_1) {
+export function FUN_005c27ad(in_ECX, param_1) {
   var sVar1;
   var uVar2;
   var uVar3;
   var iVar4;
-  var in_ECX = 0; // DEVIATION: this pointer
   var auStack_23c = new Array(256).fill(0); // palette lookup (16-bit values)
   var local_3c = [0, 0, 0, 0]; // tagRECT
   var local_2c;
@@ -1396,8 +1396,8 @@ export function FUN_005c27ad(param_1) {
     uVar3 = 0;
   } else {
     local_c = FUN_005c5560(local_24);
-    local_18 = local_c[4] | (local_c[5] << 8) | (local_c[6] << 16) | (local_c[7] << 24); // int32 at +4 = width
-    local_1c = local_c[8] | (local_c[9] << 8) | (local_c[10] << 16) | (local_c[11] << 24); // int32 at +8 = height
+    local_18 = s32(local_c, 4); // int32 at +4 = width
+    local_1c = s32(local_c, 8); // int32 at +8 = height
     SetRect(local_3c, 0, 0, local_18, local_1c); // DEVIATION: Win32
     iVar4 = FUN_005c1c99(local_3c);
     if (iVar4 === 0) {
@@ -1405,8 +1405,8 @@ export function FUN_005c27ad(param_1) {
       uVar3 = 0;
     } else {
       local_18 = FUN_005c55a0(local_18); // align width to 4-byte boundary
-      local_14 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
-      sVar1 = (local_c[0xe] & 0xff) | ((local_c[0xf] & 0xff) << 8); // short at +0xe = bits per pixel
+      local_14 = FUN_005c19d3(0, s32(in_ECX, 8) - 1);
+      sVar1 = s16(local_c, 0xe); // short at +0xe = bits per pixel
       if (sVar1 === 8) {
         // 8-bit BMP: build palette lookup, then remap pixels
         local_10 = local_c + 0x28; // palette starts at offset 0x28
@@ -1419,9 +1419,9 @@ export function FUN_005c27ad(param_1) {
         for (local_20 = 0; local_20 < local_1c; local_20 = local_20 + 1) {
           local_2c = local_14;
           for (local_28 = 0; local_28 < local_18; local_28 = local_28 + 1) {
-            // DEVIATION: *local_2c = auStack_23c[*local_8]
+            w16(local_2c, 0, auStack_23c[local_8[0]]);
             local_8 = local_8 + 1;
-            // DEVIATION: local_2c = local_2c + 1
+            local_2c = local_2c + 2;
           }
           local_14 = FUN_005c5710(local_14); // retreat by scanline stride
         }
@@ -1432,7 +1432,8 @@ export function FUN_005c27ad(param_1) {
           local_2c = local_14;
           for (local_28 = 0; local_28 < local_18; local_28 = local_28 + 1) {
             uVar2 = FUN_005c201d(local_8[2], local_8[1], local_8[0]);
-            // DEVIATION: *local_2c = uVar2; local_2c = local_2c + 1
+            w16(local_2c, 0, uVar2);
+            local_2c = local_2c + 2;
             local_8 = local_8 + 3;
           }
           local_14 = FUN_005c5710(local_14);
@@ -1447,11 +1448,10 @@ export function FUN_005c27ad(param_1) {
 }
 
 // FUN_005c2a77 — load BMP from file into 16-bit port
-export function FUN_005c2a77(param_1) {
+export function FUN_005c2a77(in_ECX, param_1) {
   var sVar1;
   var uVar2;
   var iVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var auStack_2e0 = new Array(256).fill(0); // palette lookup
   var local_e0;
   var local_dc = [0, 0, 0, 0]; // tagRECT
@@ -1466,7 +1466,7 @@ export function FUN_005c2a77(param_1) {
   var local_14;
 
   FUN_005d7c00();
-  iVar3 = FUN_005deced(param_1); // Realloc (open file)
+  iVar3 = FUN_005deced(param_1); // file open (Realloc in C)
   if (iVar3 === 0) {
     debug_log("Error: Bitmap file not found");
     FUN_005dae6b(3, 0, 0, 0xa16);
@@ -1476,14 +1476,14 @@ export function FUN_005c2a77(param_1) {
   }
   local_e0 = FUN_005c5470();
   local_18 = local_e0 + 0x0e; // BITMAPINFOHEADER starts at file offset 0xe
-  local_bc = local_e0[0x12] | (local_e0[0x13] << 8) | (local_e0[0x14] << 16) | (local_e0[0x15] << 24); // width at +0x12
-  local_c0 = local_e0[0x16] | (local_e0[0x17] << 8) | (local_e0[0x18] << 16) | (local_e0[0x19] << 24); // height at +0x16
+  local_bc = s32(local_e0, 0x12); // width at +0x12
+  local_c0 = s32(local_e0, 0x16); // height at +0x16
   SetRect(local_dc, 0, 0, local_bc, local_c0); // DEVIATION: Win32
   iVar3 = FUN_005c1c99(local_dc);
   if (iVar3 !== 0) {
     local_bc = FUN_005c55a0(local_bc); // align width
-    local_b8 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
-    sVar1 = (local_18[0xe] & 0xff) | ((local_18[0xf] & 0xff) << 8); // bits per pixel at header+0xe
+    local_b8 = FUN_005c19d3(0, s32(in_ECX, 8) - 1);
+    sVar1 = s16(local_18, 0xe); // bits per pixel at header+0xe
     if (sVar1 === 8) {
       local_1c = local_18 + 0x28; // palette data
       for (local_c4 = 0; local_c4 < 0x100; local_c4 = local_c4 + 1) {
@@ -1495,9 +1495,9 @@ export function FUN_005c2a77(param_1) {
       for (local_c4 = 0; local_c4 < local_c0; local_c4 = local_c4 + 1) {
         local_cc = local_b8;
         for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
-          // DEVIATION: *local_cc = auStack_2e0[*local_14]
+          w16(local_cc, 0, auStack_2e0[local_14[0]]);
           local_14 = local_14 + 1;
-          // DEVIATION: local_cc = local_cc + 1
+          local_cc = local_cc + 2;
         }
         local_b8 = FUN_005c5710(local_b8);
       }
@@ -1507,7 +1507,8 @@ export function FUN_005c2a77(param_1) {
         local_cc = local_b8;
         for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
           uVar2 = FUN_005c201d(local_14[2], local_14[1], local_14[0]);
-          // DEVIATION: *local_cc = uVar2; local_cc = local_cc + 1
+          w16(local_cc, 0, uVar2);
+          local_cc = local_cc + 2;
           local_14 = local_14 + 3;
         }
         local_b8 = FUN_005c5710(local_b8);
@@ -1536,11 +1537,10 @@ export function FUN_005c2e4d() {
 }
 
 // FUN_005c2e5e — load GIF from resource into 16-bit port
-export function FUN_005c2e5e(param_1) {
+export function FUN_005c2e5e(in_ECX, param_1) {
   var uVar1;
   var uVar2;
   var iVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_550;
   var local_54c = new Array(766).fill(0); // raw palette copy buffer (256*3 max)
   var local_24c;
@@ -1616,18 +1616,18 @@ export function FUN_005c2e5e(param_1) {
           FUN_005e3988(local_20);
         }
         FUN_005c1c99(local_248);
-        local_10 = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34) — surface pointer
+        local_10 = s32(in_ECX, 0x34); // surface pointer
         local_8 = FUN_005e3a81(local_20);
         // copy decoded indexed pixels through palette to 16-bit surface
         for (local_22c = 0; local_22c < local_24; local_22c = local_22c + 1) {
           local_238 = local_10;
           local_550 = local_8;
           for (local_234 = 0; local_234 < local_1c; local_234 = local_234 + 1) {
-            // DEVIATION: *local_238 = auStack_228[*local_550]
+            w16(local_238, 0, auStack_228[local_550[0]]);
             local_550 = local_550 + 1;
-            // DEVIATION: local_238 = local_238 + 1
+            local_238 = local_238 + 2;
           }
-          local_10 = local_10 + 1; // DEVIATION: local_10 + *(in_ECX + 0xc) — stride
+          local_10 = local_10 + s32(in_ECX, 0xc); // stride
           iVar3 = FUN_005e392a(local_20);
           local_8 = local_8 + iVar3;
         }
@@ -1648,11 +1648,10 @@ export function FUN_005c2e5e(param_1) {
 }
 
 // FUN_005c3313 — load GIF from file into 16-bit port
-export function FUN_005c3313(param_1) {
+export function FUN_005c3313(in_ECX, param_1) {
   var uVar1;
   var iVar2;
   var uVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_5ec;
   var local_5e8 = new Array(766).fill(0); // raw palette copy buffer
   var local_2e8;
@@ -1671,7 +1670,7 @@ export function FUN_005c3313(param_1) {
   var local_14;
 
   FUN_005d7c00();
-  iVar2 = FUN_005deced(param_1); // Realloc (open file)
+  iVar2 = FUN_005deced(param_1); // file open (Realloc in C)
   if (iVar2 === 0) {
     debug_log("Error: GIF file not found");
     FUN_005dae6b(3, 0, 0, 0xae3);
@@ -1741,17 +1740,17 @@ export function FUN_005c3313(param_1) {
     FUN_005e3988(local_c4);
   }
   FUN_005c1c99(local_2e4);
-  local_1c = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34)
+  local_1c = s32(in_ECX, 0x34); // surface pointer
   local_14 = FUN_005e3a81(local_c4);
   for (local_2cc = 0; local_2cc < local_c8; local_2cc = local_2cc + 1) {
     local_2d4 = local_1c;
     local_5ec = local_14;
     for (local_2d0 = 0; local_2d0 < local_c0; local_2d0 = local_2d0 + 1) {
-      // DEVIATION: *local_2d4 = auStack_2c8[*local_5ec]
+      w16(local_2d4, 0, auStack_2c8[local_5ec[0]]);
       local_5ec = local_5ec + 1;
-      // DEVIATION: local_2d4 = local_2d4 + 1
+      local_2d4 = local_2d4 + 2;
     }
-    local_1c = local_1c + 1; // DEVIATION: local_1c + *(in_ECX + 0xc)
+    local_1c = local_1c + s32(in_ECX, 0xc); // stride
     iVar2 = FUN_005e392a(local_c4);
     local_14 = local_14 + iVar2;
   }
@@ -1773,11 +1772,10 @@ export function FUN_005c3863() {
 }
 
 // FUN_005c3874 — load CvPic from resource into 16-bit port
-export function FUN_005c3874(param_1) {
+export function FUN_005c3874(in_ECX, param_1) {
   var uVar1;
   var uVar2;
   var iVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_548;
   var local_544 = new Array(766).fill(0); // raw palette buffer
   var local_244;
@@ -1823,17 +1821,17 @@ export function FUN_005c3874(param_1) {
       FUN_005e3988(local_18);
     }
     FUN_005c1c99(local_240);
-    local_10 = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34) — surface pointer
+    local_10 = s32(in_ECX, 0x34); // surface pointer
     local_8 = FUN_005e3a81(local_18);
     for (local_224 = 0; local_224 < local_1c; local_224 = local_224 + 1) {
       local_230 = local_10;
       local_548 = local_8;
       for (local_22c = 0; local_22c < local_14; local_22c = local_22c + 1) {
-        // DEVIATION: *local_230 = auStack_220[*local_548]
+        w16(local_230, 0, auStack_220[local_548[0]]);
         local_548 = local_548 + 1;
-        // DEVIATION: local_230 = local_230 + 1
+        local_230 = local_230 + 2;
       }
-      local_10 = local_10 + 1; // DEVIATION: local_10 + *(in_ECX + 0xc)
+      local_10 = local_10 + s32(in_ECX, 0xc); // stride
       iVar3 = FUN_005e392a(local_18);
       local_8 = local_8 + iVar3;
     }
@@ -1846,11 +1844,10 @@ export function FUN_005c3874(param_1) {
 }
 
 // FUN_005c3b7a — load CvPic from file into 16-bit port
-export function FUN_005c3b7a(param_1) {
+export function FUN_005c3b7a(in_ECX, param_1) {
   var uVar1;
   var iVar2;
   var uVar3;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_5e4;
   var local_5e0 = new Array(766).fill(0); // raw palette buffer
   var local_2e0;
@@ -1867,7 +1864,7 @@ export function FUN_005c3b7a(param_1) {
   var local_14;
 
   FUN_005d7c00();
-  iVar2 = FUN_005deced(param_1); // Realloc (open file)
+  iVar2 = FUN_005deced(param_1); // file open (Realloc in C)
   if (iVar2 === 0) {
     debug_log("Error: Picture resource not found");
     FUN_005dae6b(3, 0, 0, 0xba3);
@@ -1898,17 +1895,17 @@ export function FUN_005c3b7a(param_1) {
     FUN_005e3988(local_bc);
   }
   FUN_005c1c99(local_2dc);
-  local_1c = in_ECX + 0x34; // DEVIATION: *(in_ECX + 0x34)
+  local_1c = s32(in_ECX, 0x34); // surface pointer
   local_14 = FUN_005e3a81(local_bc);
   for (local_2c4 = 0; local_2c4 < local_c0; local_2c4 = local_2c4 + 1) {
     local_2cc = local_1c;
     local_5e4 = local_14;
     for (local_2c8 = 0; local_2c8 < local_b8; local_2c8 = local_2c8 + 1) {
-      // DEVIATION: *local_2cc = auStack_2c0[*local_5e4]
+      w16(local_2cc, 0, auStack_2c0[local_5e4[0]]);
       local_5e4 = local_5e4 + 1;
-      // DEVIATION: local_2cc = local_2cc + 1
+      local_2cc = local_2cc + 2;
     }
-    local_1c = local_1c + 1; // DEVIATION: local_1c + *(in_ECX + 0xc)
+    local_1c = local_1c + s32(in_ECX, 0xc); // stride
     iVar2 = FUN_005e392a(local_bc);
     local_14 = local_14 + iVar2;
   }
@@ -1930,10 +1927,9 @@ export function FUN_005c3eeb() {
 }
 
 // FUN_005c3efc — load BMP from resource into 24-bit port
-export function FUN_005c3efc(param_1) {
+export function FUN_005c3efc(in_ECX, param_1) {
   var uVar1;
   var iVar2;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_38 = [0, 0, 0, 0]; // tagRECT
   var local_28;
   var local_24;
@@ -1952,8 +1948,8 @@ export function FUN_005c3efc(param_1) {
     uVar1 = 0;
   } else {
     local_c = FUN_005c5560(local_20);
-    local_14 = local_c[4] | (local_c[5] << 8) | (local_c[6] << 16) | (local_c[7] << 24); // width at +4
-    local_18 = local_c[8] | (local_c[9] << 8) | (local_c[10] << 16) | (local_c[11] << 24); // height at +8
+    local_14 = s32(local_c, 4); // width at +4
+    local_18 = s32(local_c, 8); // height at +8
     SetRect(local_38, 0, 0, local_14, local_18); // DEVIATION: Win32
     iVar2 = FUN_005c1e49(local_38);
     if (iVar2 === 0) {
@@ -1961,17 +1957,16 @@ export function FUN_005c3efc(param_1) {
       uVar1 = 0;
     } else {
       local_14 = FUN_005c55a0(local_14); // align width
-      local_10 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
-      if (((local_c[0xe] & 0xff) | ((local_c[0xf] & 0xff) << 8)) === 0x18) {
+      local_10 = FUN_005c19d3(0, s32(in_ECX, 8) - 1);
+      if (s16(local_c, 0xe) === 0x18) {
         // 24-bit BMP: swap BGR to RGB
         local_8 = local_c + 0x28;
         for (local_1c = 0; local_1c < local_18; local_1c = local_1c + 1) {
           local_28 = local_10;
           for (local_24 = 0; local_24 < local_14; local_24 = local_24 + 1) {
-            // *local_28 = local_8[2]; (R)
-            // local_28[1] = local_8[1]; (G)
-            // local_28[2] = *local_8; (B)
-            // DEVIATION: pixel write to surface — BGR to RGB byte swap
+            local_28[0] = local_8[2]; // R
+            local_28[1] = local_8[1]; // G
+            local_28[2] = local_8[0]; // B
             local_28 = local_28 + 3;
             local_8 = local_8 + 3;
           }
@@ -1987,9 +1982,8 @@ export function FUN_005c3efc(param_1) {
 }
 
 // FUN_005c40b6 — load BMP from file into 24-bit port
-export function FUN_005c40b6(param_1) {
+export function FUN_005c40b6(in_ECX, param_1) {
   var iVar1;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_d8 = [0, 0, 0, 0]; // tagRECT
   var local_c8;
   var local_c4;
@@ -2001,7 +1995,7 @@ export function FUN_005c40b6(param_1) {
   var local_14;
 
   FUN_005d7c00();
-  iVar1 = FUN_005deced(param_1); // Realloc (open file)
+  iVar1 = FUN_005deced(param_1); // file open (Realloc in C)
   if (iVar1 === 0) {
     debug_log("Error: Bitmap file not found");
     FUN_005dae6b(3, 0, 0, 0xc24);
@@ -2011,23 +2005,22 @@ export function FUN_005c40b6(param_1) {
   }
   iVar1 = FUN_005c5470();
   local_18 = iVar1 + 0x0e; // BITMAPINFOHEADER
-  local_b8 = iVar1[0x12] | (iVar1[0x13] << 8) | (iVar1[0x14] << 16) | (iVar1[0x15] << 24); // width
-  local_bc = iVar1[0x16] | (iVar1[0x17] << 8) | (iVar1[0x18] << 16) | (iVar1[0x19] << 24); // height
+  local_b8 = s32(iVar1, 0x12); // width
+  local_bc = s32(iVar1, 0x16); // height
   SetRect(local_d8, 0, 0, local_b8, local_bc); // DEVIATION: Win32
   iVar1 = FUN_005c1e49(local_d8);
   if (iVar1 !== 0) {
     local_b8 = FUN_005c55a0(local_b8); // align width
-    local_b4 = FUN_005c19d3(0, in_ECX + 8 - 1); // DEVIATION: *(in_ECX + 8) - 1
-    if (((local_18[0xe] & 0xff) | ((local_18[0xf] & 0xff) << 8)) === 0x18) {
+    local_b4 = FUN_005c19d3(0, s32(in_ECX, 8) - 1);
+    if (s16(local_18, 0xe) === 0x18) {
       // 24-bit BMP: BGR to RGB swap
       local_14 = local_18 + 0x28;
       for (local_c0 = 0; local_c0 < local_bc; local_c0 = local_c0 + 1) {
         local_c8 = local_b4;
         for (local_c4 = 0; local_c4 < local_b8; local_c4 = local_c4 + 1) {
-          // *local_c8 = local_14[2]; (R)
-          // local_c8[1] = local_14[1]; (G)
-          // local_c8[2] = *local_14; (B)
-          // DEVIATION: pixel write — BGR to RGB byte swap
+          local_c8[0] = local_14[2]; // R
+          local_c8[1] = local_14[1]; // G
+          local_c8[2] = local_14[0]; // B
           local_c8 = local_c8 + 3;
           local_14 = local_14 + 3;
         }
@@ -2057,10 +2050,9 @@ export function FUN_005c4364() {
 }
 
 // FUN_005c4375 — load TGA from resource into 24-bit port
-export function FUN_005c4375(param_1) {
+export function FUN_005c4375(in_ECX, param_1) {
   var uVar1;
   var iVar2;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_44;
   var local_40 = [0, 0, 0, 0]; // tagRECT
   var local_30;
@@ -2095,20 +2087,19 @@ export function FUN_005c4375(param_1) {
         local_10 = local_10 + local_8[0] + 0x12; // skip header + ID
         if ((local_8[0x11] & 0x20) === 0) {
           local_14 = FUN_005c19d3(0, local_1c - 1);
-          local_44 = -1; // DEVIATION: -*(in_ECX + 0x10)
+          local_44 = -s32(in_ECX, 0x10); // negative scanline stride
         } else {
           local_14 = FUN_005c19d3(0, 0);
-          local_44 = 1; // DEVIATION: *(in_ECX + 0x10)
+          local_44 = s32(in_ECX, 0x10); // positive scanline stride
         }
         if (local_8[0x10] === 0x18) {
           // 24-bit: BGR to RGB swap
           for (local_24 = 0; local_24 < local_1c; local_24 = local_24 + 1) {
             local_30 = local_14;
             for (local_2c = 0; local_2c < local_18; local_2c = local_2c + 1) {
-              // *local_30 = local_10[2]; (R)
-              // local_30[1] = local_10[1]; (G)
-              // local_30[2] = *local_10; (B)
-              // DEVIATION: pixel write — BGR to RGB byte swap
+              local_30[0] = local_10[2]; // R
+              local_30[1] = local_10[1]; // G
+              local_30[2] = local_10[0]; // B
               local_30 = local_30 + 3;
               local_c = local_c + 3;
             }
@@ -2119,10 +2110,9 @@ export function FUN_005c4375(param_1) {
           for (local_24 = 0; local_24 < local_1c; local_24 = local_24 + 1) {
             local_30 = local_14;
             for (local_2c = 0; local_2c < local_18; local_2c = local_2c + 1) {
-              // *local_30 = local_10[2]; (R)
-              // local_30[1] = local_10[1]; (G)
-              // local_30[2] = *local_10; (B)
-              // DEVIATION: pixel write — BGRA to RGB byte swap
+              local_30[0] = local_10[2]; // R
+              local_30[1] = local_10[1]; // G
+              local_30[2] = local_10[0]; // B
               local_30 = local_30 + 3;
               local_10 = local_10 + 4;
             }
@@ -2144,9 +2134,8 @@ export function FUN_005c4375(param_1) {
 }
 
 // FUN_005c463f — load TGA from file into 24-bit port
-export function FUN_005c463f(param_1) {
+export function FUN_005c463f(in_ECX, param_1) {
   var iVar1;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_e0;
   var local_dc = [0, 0, 0, 0]; // tagRECT
   var local_cc;
@@ -2160,7 +2149,7 @@ export function FUN_005c463f(param_1) {
   var local_14;
 
   FUN_005d7c00();
-  iVar1 = FUN_005deced(param_1); // Realloc (open file)
+  iVar1 = FUN_005deced(param_1); // file open (Realloc in C)
   if (iVar1 === 0) {
     debug_log("Error: Targa File not found");
     FUN_005dae6b(3, 0, 0, 0xcbd);
@@ -2180,20 +2169,19 @@ export function FUN_005c463f(param_1) {
       local_1c = local_1c + local_14[0] + 0x12; // skip header
       if ((local_14[0x11] & 0x20) === 0) {
         local_b8 = FUN_005c19d3(0, local_c0 - 1);
-        local_e0 = -1; // DEVIATION: -*(in_ECX + 0x10)
+        local_e0 = -s32(in_ECX, 0x10); // negative scanline stride
       } else {
         local_b8 = FUN_005c19d3(0, 0);
-        local_e0 = 1; // DEVIATION: *(in_ECX + 0x10)
+        local_e0 = s32(in_ECX, 0x10); // positive scanline stride
       }
       if (local_14[0x10] === 0x18) {
         // 24-bit: BGR to RGB
         for (local_c4 = 0; local_c4 < local_c0; local_c4 = local_c4 + 1) {
           local_cc = local_b8;
           for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
-            // *local_cc = local_1c[2]; (R)
-            // local_cc[1] = local_1c[1]; (G)
-            // local_cc[2] = *local_1c; (B)
-            // DEVIATION: pixel write — BGR to RGB byte swap
+            local_cc[0] = local_1c[2]; // R
+            local_cc[1] = local_1c[1]; // G
+            local_cc[2] = local_1c[0]; // B
             local_cc = local_cc + 3;
             local_18 = local_18 + 3;
           }
@@ -2204,10 +2192,9 @@ export function FUN_005c463f(param_1) {
         for (local_c4 = 0; local_c4 < local_c0; local_c4 = local_c4 + 1) {
           local_cc = local_b8;
           for (local_c8 = 0; local_c8 < local_bc; local_c8 = local_c8 + 1) {
-            // *local_cc = local_1c[2]; (R)
-            // local_cc[1] = local_1c[1]; (G)
-            // local_cc[2] = *local_1c; (B)
-            // DEVIATION: pixel write — BGRA to RGB byte swap
+            local_cc[0] = local_1c[2]; // R
+            local_cc[1] = local_1c[1]; // G
+            local_cc[2] = local_1c[0]; // B
             local_cc = local_cc + 3;
             local_1c = local_1c + 4;
           }
@@ -2569,12 +2556,11 @@ export function FUN_005c5b7f() {
 }
 
 // FUN_005c5c2d — find first visible control
-export function FUN_005c5c2d() {
+export function FUN_005c5c2d(in_ECX) {
   var cVar1;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_8;
 
-  local_8 = in_ECX + 0xb8; // DEVIATION: *(in_ECX + 0xb8) — first control in linked list
+  local_8 = s32(in_ECX, 0xb8); // first control in linked list
   while (true) {
     if (local_8 === 0) {
       return 0;
@@ -2589,13 +2575,12 @@ export function FUN_005c5c2d() {
 }
 
 // FUN_005c5c86 — find control by name (hotkey lookup)
-export function FUN_005c5c86(param_1) {
+export function FUN_005c5c86(in_ECX, param_1) {
   var sVar1;
   var iVar2;
   var pcVar3;
   var uVar4;
   var iVar5;
-  var in_ECX = 0; // DEVIATION: this pointer
   var local_20;
   var local_14;
   var local_10;
@@ -2607,7 +2592,7 @@ export function FUN_005c5c86(param_1) {
   local_c = param_1;
   __strlwr(local_c); // lowercase the search char
   sVar1 = local_c;
-  local_10 = in_ECX + 0xb8; // DEVIATION: *(in_ECX + 0xb8) — first control
+  local_10 = s32(in_ECX, 0xb8); // first control in linked list
   do {
     if (local_10 === 0) {
       return local_14;
@@ -2615,24 +2600,23 @@ export function FUN_005c5c86(param_1) {
     if (local_8 !== 0) {
       return local_14;
     }
-    if (local_10 + 0x28 < 0) { // DEVIATION: *(local_10 + 0x28) < 0 — hotkey index check
+    if (s32(local_10, 0x28) < 0) { // hotkey index check
       iVar2 = FUN_005c5e60(); // get control type
       if (iVar2 === 3) {
         iVar2 = FUN_005c5ee0(); // get control data pointer
         iVar5 = FUN_005c5f00(); // get control item count
         for (local_20 = 0; local_20 < iVar5; local_20 = local_20 + 1) {
-          if ((-1 < (iVar2 + 0xa0 + local_20 * 0xa4)) &&
-             ((iVar2 + 0x9c + local_20 * 0xa4) === sVar1)) {
-            // DEVIATION: *(iVar2 + 0xa0 + local_20 * 0xa4) >= 0 && *(iVar2 + 0x9c + ...) == sVar1
-            invalidate_9A9A(iVar2 + local_20 * 0xa4); // DEVIATION: *(iVar2 + local_20 * 0xa4)
+          if ((-1 < s32(iVar2, 0xa0 + local_20 * 0xa4)) &&
+             (s8(iVar2[0x9c + local_20 * 0xa4]) === sVar1)) {
+            invalidate_9A9A(s32(iVar2, local_20 * 0xa4));
             local_14 = 1;
             local_8 = 1;
             break;
           }
         }
       }
-    } else if ((local_10 + 0x25) === sVar1) {
-      // DEVIATION: *(local_10 + 0x25) == sVar1 — hotkey char match
+    } else if (s8(local_10[0x25]) === sVar1) {
+      // hotkey char match
       iVar2 = FUN_005c5e60();
       if ((iVar2 === 6) && (pcVar3 = streambuf_egptr(local_10), pcVar3 !== 0)) {
         uVar4 = FUN_00418770();
@@ -2646,7 +2630,7 @@ export function FUN_005c5c86(param_1) {
         return 1;
       }
     }
-    local_10 = local_10 + 0x20; // DEVIATION: *(local_10 + 0x20) — next control
+    local_10 = s32(local_10, 0x20); // next control in linked list
   } while (true);
 }
 
@@ -3152,16 +3136,16 @@ export function FUN_005c701c(param_1) {
     var iVar4 = in_ECX._0x40c;
     var iVar5 = in_ECX._0x40c;
     var iVar6 = in_ECX._0x40c;
-    var cVar8 = (param_1 & 0xff);
-    var cVar7 = ((in_ECX._0x40c & 0xff) - cVar8) & 0xff;
+    var cVar8 = (param_1 << 24 >> 24); // signed char
+    var cVar7 = ((in_ECX._0x40c - param_1) << 24 >> 24); // signed char
     var iVar9 = FUN_005dcdf9(in_ECX._0x430);
     for (var local_20 = 0; local_20 < in_ECX._0x414 * 3; local_20 = local_20 + 3) {
       var srcR = iVar9[local_20] & 0xff;
       var srcG = iVar9[local_20 + 1] & 0xff;
       var srcB = iVar9[local_20 + 2] & 0xff;
-      var newR = (((((srcR / iVar4) | 0) * cVar8) + (cVar7 * (((bVar1 / iVar4) | 0)))) & 0xff);
-      var newG = (((((srcG / iVar6) | 0) * cVar8) + (cVar7 * (((bVar3 / iVar6) | 0)))) & 0xff);
-      var newB = (((((srcB / iVar5) | 0) * cVar8) + (cVar7 * (((bVar2 / iVar5) | 0)))) & 0xff);
+      var newR = ((((srcR / iVar4) | 0) * cVar8 + cVar7 * ((bVar1 / iVar4) | 0)) << 24 >> 24);
+      var newG = ((((srcG / iVar6) | 0) * cVar8 + cVar7 * ((bVar3 / iVar6) | 0)) << 24 >> 24);
+      var newB = ((((srcB / iVar5) | 0) * cVar8 + cVar7 * ((bVar2 / iVar5) | 0)) << 24 >> 24);
       FUN_005deadb(in_ECX, in_ECX._0x410 + (local_20 / 3), newR, newG, newB);
     }
     update_palette_EA62(in_ECX, in_ECX._0x404, in_ECX._0x410, in_ECX._0x414);
@@ -3209,8 +3193,8 @@ export function FUN_005c738e(param_1) {
   if (param_1 < 0 || in_ECX._0x418 < param_1) {
     FUN_005d2279(0, param_1); // "Color Scale factor out of range"
   } else {
-    var cVar2 = (param_1 & 0xff);
-    var cVar1 = ((in_ECX._0x418 & 0xff) - cVar2) & 0xff;
+    var cVar2 = (param_1 << 24 >> 24); // signed char
+    var cVar1 = ((in_ECX._0x418 - param_1) << 24 >> 24); // signed char
     var iVar3 = FUN_005dcdf9(in_ECX._0x428); // source palette buffer
     var iVar4 = FUN_005dcdf9(in_ECX._0x42c); // target palette buffer
     for (var local_18 = 0; local_18 < in_ECX._0x420 * 3; local_18 = local_18 + 3) {
@@ -3220,9 +3204,9 @@ export function FUN_005c738e(param_1) {
       var dstR = iVar4[local_18] & 0xff;
       var dstG = iVar4[local_18 + 1] & 0xff;
       var dstB = iVar4[local_18 + 2] & 0xff;
-      var newR = (((((srcR / in_ECX._0x418) | 0) * cVar2) + (((dstR / in_ECX._0x418) | 0) * cVar1)) & 0xff);
-      var newG = (((((srcG / in_ECX._0x418) | 0) * cVar2) + (((dstG / in_ECX._0x418) | 0) * cVar1)) & 0xff);
-      var newB = (((((srcB / in_ECX._0x418) | 0) * cVar2) + (((dstB / in_ECX._0x418) | 0) * cVar1)) & 0xff);
+      var newR = ((((srcR / in_ECX._0x418) | 0) * cVar2 + ((dstR / in_ECX._0x418) | 0) * cVar1) << 24 >> 24);
+      var newG = ((((srcG / in_ECX._0x418) | 0) * cVar2 + ((dstG / in_ECX._0x418) | 0) * cVar1) << 24 >> 24);
+      var newB = ((((srcB / in_ECX._0x418) | 0) * cVar2 + ((dstB / in_ECX._0x418) | 0) * cVar1) << 24 >> 24);
       FUN_005deadb(in_ECX, in_ECX._0x41c + (local_18 / 3), newR, newG, newB);
     }
     update_palette_EA62(in_ECX, in_ECX._0x404, in_ECX._0x41c, in_ECX._0x420);
@@ -4829,11 +4813,9 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
       local_4c[writeIdx] = local_20[local_44];
       local_4c[writeIdx + 1] = local_38[local_44];
       writeIdx = writeIdx + 2;
-      // Copy pixel data: FUN_005dced3(src_ptr, dst_ptr, length)
-      // Source is the row pixel data starting at local_8[local_44]
-      // DEVIATION: memcpy of pixel run — local_54c pixels from local_8 offset
-      // In original, local_8 stores a pointer to the first non-transparent pixel
-      // We store the pixel offset instead, so this is a conceptual copy
+      // FUN_005dced3(local_8[local_44], local_4c + writeIdx, local_38[local_44]) — memcpy pixel run
+      // In C: copies pixel bytes from source row. In JS arrays, conceptual copy.
+      FUN_005dced3(local_8[local_44], local_4c, local_38[local_44]);
       writeIdx = writeIdx + local_38[local_44];
     }
     local_4c[writeIdx] = 0; // terminator
@@ -5010,7 +4992,8 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
       local_50_ptr[writeIdx] = local_24_arr[local_48];
       local_50_ptr[writeIdx + 1] = local_3c_arr[local_48];
       writeIdx = writeIdx + 2;
-      // DEVIATION: FUN_005dced3 — memcpy of pixel run data
+      // FUN_005dced3(local_c_arr[local_48], local_50_ptr + writeIdx, local_3c_arr[local_48]) — memcpy pixel run
+      FUN_005dced3(local_c_arr[local_48], local_50_ptr, local_3c_arr[local_48]);
       writeIdx = writeIdx + local_3c_arr[local_48];
     }
     local_50_ptr[writeIdx] = 0; // terminator
