@@ -28,9 +28,10 @@ let DAT_00637fa0 = 0;       // sprite scale X numerator
 let DAT_00637fa4 = 0;       // sprite scale X denominator
 let DAT_00637fa8 = 0;       // sprite scale Y numerator
 let DAT_00637fac = 0;       // sprite scale Y denominator
-let DAT_006e47c0 = 0;       // scale table pointer X
-let DAT_006e47c4 = 0;       // scale table pointer Y
-let DAT_006e47c8 = 0;       // scale table pointer
+let DAT_006e47c0 = 0;       // scale table slot index X
+let DAT_006e47c4 = 0;       // scale table slot index Y
+let DAT_006e47c8 = 0;       // scale table slot index
+let DAT_006d470c = new Array(16 * 0x400).fill(0);  // scale table cache — 16 slots x 1024 entries
 let DAT_00637ef4 = 0;       // MrTimer singleton pointer
 let DAT_00637ef8 = 0;       // timer mode flag
 let DAT_00638304 = 0;       // debug log to file flag
@@ -489,31 +490,283 @@ export function FUN_005d056c(param_1, param_2, param_3, param_4, param_5) {
 
 // sprite_blit_with_target — sprite blit to render target
 export function FUN_005d080d(param_1, param_2, param_3, param_4, param_5) {
-  // DEVIATION: Win32 API — sprite blit to render target
+  let in_ECX = {};
+  if (param_3 === -1) { param_3 = u8(in_ECX[0xc]); }
+  let local_8 = in_ECX[4] - in_ECX[0];
+  let iVar1 = in_ECX[5];
+  let iVar2 = in_ECX[1];
+  let iVar3 = FUN_004a6980();
+  if (((iVar3 * DAT_00637f98) / DAT_00637f9c < 0x401) &&
+     (iVar3 = FUN_004bb540(), (iVar3 * DAT_00637f98) / DAT_00637f9c < 0x401)) {
+    iVar3 = FUN_005d1d00(local_8, 0, 1);
+    let iVar4 = FUN_005d1d00(iVar1 - iVar2, 0, 1);
+    let iVar5 = FUN_005d1d00(in_ECX[8], 0, 0);
+    let local_28 = param_4 + iVar5 + iVar3;
+    iVar5 = FUN_005d1d00(in_ECX[9], 0, 0);
+    let local_2c = param_5 + iVar5 + iVar4;
+    let uVar6 = FUN_00451860(iVar4, 0);
+    iVar5 = FUN_005d1d00(uVar6);
+    uVar6 = FUN_00451830(iVar3, 0);
+    let xRight = FUN_005d1d00(uVar6);
+    let local_1c = { left: 0, top: 0, right: xRight, bottom: iVar5 };
+    // DEVIATION: Win32 — OffsetRect(&local_1c, local_28, local_2c)
+    local_1c.left += local_28; local_1c.right += local_28;
+    local_1c.top += local_2c; local_1c.bottom += local_2c;
+    let BVar7 = IntersectRect(local_1c, local_1c, param_2);
+    if (BVar7 !== 0) {
+      let local_34 = 0;
+      uVar6 = FUN_00407f90(local_1c);
+      if (local_28 < local_1c.left) {
+        local_34 = local_1c.left - local_28;
+        local_28 = local_1c.left;
+      }
+      let local_c = 0;
+      let uVar8 = FUN_00407fc0(local_1c);
+      if (local_2c < local_1c.top) {
+        local_c = local_1c.top - local_2c;
+        local_2c = local_1c.top;
+      }
+      iVar5 = FUN_005e6188();
+      if (iVar5 !== 0) {
+        uVar6 = FUN_005c5660(uVar6, uVar8, local_34, local_c, local_8, iVar1 - iVar2, iVar3, iVar4);
+        uVar6 = FUN_005c56a0(uVar6);
+        FUN_005e518e(in_ECX[0xe], iVar5, DAT_006e47c8, u8(param_3), local_28, local_2c, uVar6);
+        _Timevec_destructor(param_2);
+      }
+    }
+    param_1[0] = local_1c.left;
+    param_1[1] = local_1c.top;
+    param_1[2] = local_1c.right;
+    param_1[3] = local_1c.bottom;
+    return param_1;
+  }
   param_1[0] = 0; param_1[1] = 0; param_1[2] = 0; param_1[3] = 0;
   return param_1;
 }
 
 // sprite_blit_scaled_XY — sprite blit with separate X/Y scaling
 export function FUN_005d0aac(param_1, param_2, param_3, param_4, param_5) {
+  let in_ECX = {};
+  if (param_3 === -1) { param_3 = u8(in_ECX[0xc]); }
+  let local_8 = in_ECX[4] - in_ECX[0];
+  let iVar1 = in_ECX[5] - in_ECX[1];
+  let iVar2 = FUN_004a6980();
+  if (((iVar2 * DAT_00637fa0) / DAT_00637fa4 < 0x401) &&
+     (iVar2 = FUN_004bb540(), (iVar2 * DAT_00637fa8) / DAT_00637fac < 0x401)) {
+    iVar2 = FUN_005d1e00(local_8, 0, 1, DAT_00637fa0, DAT_00637fa4, DAT_006e47c0);
+    let iVar3 = FUN_005d1e00(iVar1, 0, 1, DAT_00637fa8, DAT_00637fac, DAT_006e47c4);
+    let iVar4 = FUN_005d1e00(in_ECX[8], 0, 0, DAT_00637fa0, DAT_00637fa4, DAT_006e47c0);
+    let local_28 = param_4 + iVar4 + iVar2;
+    iVar4 = FUN_005d1e00(in_ECX[9], 0, 0, DAT_00637fa8, DAT_00637fac, DAT_006e47c4);
+    let local_2c = param_5 + iVar4 + iVar3;
+    let uVar5 = FUN_00451860(iVar3, 0, DAT_00637fa8, DAT_00637fac, DAT_006e47c4);
+    iVar4 = FUN_005d1e00(uVar5);
+    uVar5 = FUN_00451830(iVar2, 0, DAT_00637fa0, DAT_00637fa4, DAT_006e47c0);
+    let iVar6 = FUN_005d1e00(uVar5);
+    let local_1c = { left: 0, top: 0, right: iVar6, bottom: iVar4 };
+    // DEVIATION: Win32 — OffsetRect(&local_1c, local_28, local_2c)
+    local_1c.left += local_28; local_1c.right += local_28;
+    local_1c.top += local_2c; local_1c.bottom += local_2c;
+    let BVar7 = IntersectRect(local_1c, local_1c, param_2);
+    if (BVar7 !== 0) {
+      let local_30 = 0;
+      uVar5 = FUN_00407f90(local_1c);
+      if (local_28 < local_1c.left) {
+        local_30 = local_1c.left - local_28;
+        local_28 = local_1c.left;
+      }
+      let local_c = 0;
+      let uVar8 = FUN_00407fc0(local_1c);
+      if (local_2c < local_1c.top) {
+        local_c = local_1c.top - local_2c;
+        local_2c = local_1c.top;
+      }
+      iVar4 = local_c;
+      iVar6 = local_8;
+      let pCVar9 = 0; // DEVIATION: Win32 — COleClientItem::GetActiveView(param_2)
+      let uVar10 = 0; // DEVIATION: Win32 — CCheckListBox::GetCheckStyle(param_2)
+      iVar1 = FUN_005e395a(uVar10, pCVar9, uVar5, uVar8, local_30, iVar4, iVar6, iVar1, iVar2, iVar3);
+      iVar2 = FUN_005c55d0();
+      uVar5 = FUN_005c5640(DAT_006e47c0, DAT_006e47c4, u8(param_3), local_28, local_2c,
+                           ((-(iVar1 === 0 ? 1 : 0) & 0xfffffffe) + 1) * iVar2);
+      FUN_0061a759(in_ECX[0xe], uVar5);
+    }
+    param_1[0] = local_1c.left;
+    param_1[1] = local_1c.top;
+    param_1[2] = local_1c.right;
+    param_1[3] = local_1c.bottom;
+    return param_1;
+  }
   param_1[0] = 0; param_1[1] = 0; param_1[2] = 0; param_1[3] = 0;
   return param_1;
 }
 
 // sprite_blit_scaled_XY_target — scaled XY blit to render target
 export function FUN_005d0dbf(param_1, param_2, param_3, param_4, param_5) {
+  let in_ECX = {};
+  if (param_3 === -1) { param_3 = u8(in_ECX[0xc]); }
+  let local_8 = in_ECX[4] - in_ECX[0];
+  let iVar1 = in_ECX[5];
+  let iVar2 = in_ECX[1];
+  let iVar3 = FUN_004a6980();
+  if (((iVar3 * DAT_00637fa0) / DAT_00637fa4 < 0x401) &&
+     (iVar3 = FUN_004bb540(), (iVar3 * DAT_00637fa8) / DAT_00637fac < 0x401)) {
+    iVar3 = FUN_005d1e00(local_8, 0, 1, DAT_00637fa0, DAT_00637fa4, DAT_006e47c0);
+    let iVar4 = FUN_005d1e00(iVar1 - iVar2, 0, 1, DAT_00637fa8, DAT_00637fac, DAT_006e47c4);
+    let iVar5 = FUN_005d1e00(in_ECX[8], 0, 0, DAT_00637fa0, DAT_00637fa4, DAT_006e47c0);
+    let local_2c = param_4 + iVar5 + iVar3;
+    iVar5 = FUN_005d1e00(in_ECX[9], 0, 0, DAT_00637fa8, DAT_00637fac, DAT_006e47c4);
+    let local_30 = param_5 + iVar5 + iVar4;
+    let uVar6 = FUN_00451860(iVar4, 0, DAT_00637fa8, DAT_00637fac, DAT_006e47c4);
+    iVar5 = FUN_005d1e00(uVar6);
+    uVar6 = FUN_00451830(iVar3, 0, DAT_00637fa0, DAT_00637fa4, DAT_006e47c0);
+    let xRight = FUN_005d1e00(uVar6);
+    let local_20 = { left: 0, top: 0, right: xRight, bottom: iVar5 };
+    // DEVIATION: Win32 — OffsetRect(&local_20, local_2c, local_30)
+    local_20.left += local_2c; local_20.right += local_2c;
+    local_20.top += local_30; local_20.bottom += local_30;
+    let BVar7 = IntersectRect(local_20, local_20, param_2);
+    if (BVar7 !== 0) {
+      let local_34 = 0;
+      uVar6 = FUN_00407f90(local_20);
+      if (local_2c < local_20.left) {
+        local_34 = local_20.left - local_2c;
+        local_2c = local_20.left;
+      }
+      let local_10 = 0;
+      let uVar8 = FUN_00407fc0(local_20);
+      if (local_30 < local_20.top) {
+        local_10 = local_20.top - local_30;
+        local_30 = local_20.top;
+      }
+      let local_c = FUN_005e6188();
+      if (local_c !== 0) {
+        uVar6 = FUN_005c5660(uVar6, uVar8, local_34, local_10, local_8, iVar1 - iVar2, iVar3, iVar4);
+        uVar6 = FUN_005c56a0(uVar6);
+        FUN_0061a759(in_ECX[0xe], local_c, DAT_006e47c0, DAT_006e47c4, u8(param_3), local_2c,
+                     local_30, uVar6);
+        _Timevec_destructor(param_2);
+      }
+    }
+    param_1[0] = local_20.left;
+    param_1[1] = local_20.top;
+    param_1[2] = local_20.right;
+    param_1[3] = local_20.bottom;
+    return param_1;
+  }
   param_1[0] = 0; param_1[1] = 0; param_1[2] = 0; param_1[3] = 0;
   return param_1;
 }
 
 // sprite_blit_with_extra_param — standard blit + extra param
 export function FUN_005d10cd(param_1, param_2, param_3, param_4, param_5, param_6) {
+  let in_ECX = {};
+  if (param_3 === -1) { param_3 = u8(in_ECX[0xc]); }
+  let local_8 = in_ECX[4] - in_ECX[0];
+  let iVar1 = in_ECX[5] - in_ECX[1];
+  let iVar2 = FUN_004a6980();
+  if (((iVar2 * DAT_00637f98) / DAT_00637f9c < 0x401) &&
+     (iVar2 = FUN_004bb540(), (iVar2 * DAT_00637f98) / DAT_00637f9c < 0x401)) {
+    iVar2 = FUN_005d1d00(local_8, 0, 1);
+    let iVar3 = FUN_005d1d00(iVar1, 0, 1);
+    let iVar4 = FUN_005d1d00(in_ECX[8], 0, 0);
+    let local_28 = param_4 + iVar4 + iVar2;
+    iVar4 = FUN_005d1d00(in_ECX[9], 0, 0);
+    let local_2c = param_5 + iVar4 + iVar3;
+    let uVar5 = FUN_00451860(iVar3, 0);
+    iVar4 = FUN_005d1d00(uVar5);
+    uVar5 = FUN_00451830(iVar2, 0);
+    let iVar6 = FUN_005d1d00(uVar5);
+    let local_1c = { left: 0, top: 0, right: iVar6, bottom: iVar4 };
+    // DEVIATION: Win32 — OffsetRect(&local_1c, local_28, local_2c)
+    local_1c.left += local_28; local_1c.right += local_28;
+    local_1c.top += local_2c; local_1c.bottom += local_2c;
+    let BVar7 = IntersectRect(local_1c, local_1c, param_2);
+    if (BVar7 !== 0) {
+      let local_30 = 0;
+      uVar5 = FUN_00407f90(local_1c);
+      if (local_28 < local_1c.left) {
+        local_30 = local_1c.left - local_28;
+        local_28 = local_1c.left;
+      }
+      let local_c = 0;
+      let uVar8 = FUN_00407fc0(local_1c);
+      if (local_2c < local_1c.top) {
+        local_c = local_1c.top - local_2c;
+        local_2c = local_1c.top;
+      }
+      iVar4 = local_c;
+      iVar6 = local_8;
+      let pCVar9 = 0; // DEVIATION: Win32 — COleClientItem::GetActiveView(param_2)
+      let uVar10 = 0; // DEVIATION: Win32 — CCheckListBox::GetCheckStyle(param_2)
+      iVar1 = FUN_005e395a(uVar10, pCVar9, uVar5, uVar8, local_30, iVar4, iVar6, iVar1, iVar2, iVar3, param_6);
+      iVar2 = FUN_005c55d0();
+      uVar5 = FUN_005c5640(DAT_006e47c8, u8(param_3), local_28, local_2c,
+                           ((-(iVar1 === 0 ? 1 : 0) & 0xfffffffe) + 1) * iVar2);
+      FUN_005e52bf(in_ECX[0xe], uVar5);
+    }
+    param_1[0] = local_1c.left;
+    param_1[1] = local_1c.top;
+    param_1[2] = local_1c.right;
+    param_1[3] = local_1c.bottom;
+    return param_1;
+  }
   param_1[0] = 0; param_1[1] = 0; param_1[2] = 0; param_1[3] = 0;
   return param_1;
 }
 
 // sprite_blit_target_extra — target blit + extra param
 export function FUN_005d1372(param_1, param_2, param_3, param_4, param_5, param_6) {
+  let in_ECX = {};
+  if (param_3 === -1) { param_3 = u8(in_ECX[0xc]); }
+  let local_8 = in_ECX[4] - in_ECX[0];
+  let iVar1 = in_ECX[5];
+  let iVar2 = in_ECX[1];
+  let iVar3 = FUN_004a6980();
+  if (((iVar3 * DAT_00637f98) / DAT_00637f9c < 0x401) &&
+     (iVar3 = FUN_004bb540(), (iVar3 * DAT_00637f98) / DAT_00637f9c < 0x401)) {
+    iVar3 = FUN_005d1d00(local_8, 0, 1);
+    let iVar4 = FUN_005d1d00(iVar1 - iVar2, 0, 1);
+    let iVar5 = FUN_005d1d00(in_ECX[8], 0, 0);
+    let local_2c = param_4 + iVar5 + iVar3;
+    iVar5 = FUN_005d1d00(in_ECX[9], 0, 0);
+    let local_30 = param_5 + iVar5 + iVar4;
+    let uVar6 = FUN_00451860(iVar4, 0);
+    iVar5 = FUN_005d1d00(uVar6);
+    uVar6 = FUN_00451830(iVar3, 0);
+    let xRight = FUN_005d1d00(uVar6);
+    let local_20 = { left: 0, top: 0, right: xRight, bottom: iVar5 };
+    // DEVIATION: Win32 — OffsetRect(&local_20, local_2c, local_30)
+    local_20.left += local_2c; local_20.right += local_2c;
+    local_20.top += local_30; local_20.bottom += local_30;
+    let BVar7 = IntersectRect(local_20, local_20, param_2);
+    if (BVar7 !== 0) {
+      let local_34 = 0;
+      uVar6 = FUN_00407f90(local_20);
+      if (local_2c < local_20.left) {
+        local_34 = local_20.left - local_2c;
+        local_2c = local_20.left;
+      }
+      let local_10 = 0;
+      let uVar8 = FUN_00407fc0(local_20);
+      if (local_30 < local_20.top) {
+        local_10 = local_20.top - local_30;
+        local_30 = local_20.top;
+      }
+      let local_c = FUN_005e6188();
+      if (local_c !== 0) {
+        uVar6 = FUN_005c5660(uVar6, uVar8, local_34, local_10, local_8, iVar1 - iVar2, iVar3, iVar4, param_6);
+        uVar6 = FUN_005c56a0(uVar6);
+        FUN_005e52bf(in_ECX[0xe], local_c, DAT_006e47c8, u8(param_3), local_2c, local_30, uVar6);
+        _Timevec_destructor(param_2);
+      }
+    }
+    param_1[0] = local_20.left;
+    param_1[1] = local_20.top;
+    param_1[2] = local_20.right;
+    param_1[3] = local_20.bottom;
+    return param_1;
+  }
   param_1[0] = 0; param_1[1] = 0; param_1[2] = 0; param_1[3] = 0;
   return param_1;
 }
@@ -715,9 +968,24 @@ export function FUN_005d1d00(param_1, param_2, param_3) {
   if (param_1 === 0) return 0;
   let bVar2 = param_1 >= 0;
   if (!bVar2) param_1 = -param_1;
-  let local_10 = param_2 || 0;
-  // Scale table lookup — no-op in JS context
-  return ((bVar2 ? 2 : 0) - 1) * (local_10 - (param_2 || 0));
+  let local_10;
+  let slotOff = DAT_006e47c8 * 0x400;
+  if (DAT_00637f98 < DAT_00637f9c) {
+    local_10 = param_2;
+    param_1 = DAT_006d470c[param_2 + slotOff] + param_1;
+    while (DAT_006d470c[local_10 + slotOff] < param_1) {
+      local_10 = local_10 + 1;
+    }
+    if ((param_3 === 0) && (DAT_006d470c[local_10 + slotOff] !== param_1)) {
+      local_10 = local_10 - 1;
+    }
+  } else {
+    local_10 = param_2;
+    while (DAT_006d470c[local_10 + slotOff] < DAT_006d470c[param_2 + slotOff] + param_1) {
+      local_10 = local_10 + 1;
+    }
+  }
+  return ((bVar2 ? 2 : 0) - 1) * (local_10 - param_2);
 }
 
 // scale_coordinate_XY — map coordinate with explicit scale params
@@ -725,8 +993,24 @@ export function FUN_005d1e00(param_1, param_2, param_3, param_4, param_5, param_
   if (param_1 === 0) return 0;
   let bVar2 = param_1 >= 0;
   if (!bVar2) param_1 = -param_1;
-  let local_10 = param_2 || 0;
-  return ((bVar2 ? 2 : 0) - 1) * (local_10 - (param_2 || 0));
+  let local_10;
+  let slotOff = param_6 * 0x400;
+  if (param_4 < param_5) {
+    local_10 = param_2;
+    param_1 = DAT_006d470c[param_2 + slotOff] + param_1;
+    while (DAT_006d470c[local_10 + slotOff] < param_1) {
+      local_10 = local_10 + 1;
+    }
+    if ((param_3 === 0) && (DAT_006d470c[local_10 + slotOff] !== param_1)) {
+      local_10 = local_10 - 1;
+    }
+  } else {
+    local_10 = param_2;
+    while (DAT_006d470c[local_10 + slotOff] < DAT_006d470c[param_2 + slotOff] + param_1) {
+      local_10 = local_10 + 1;
+    }
+  }
+  return ((bVar2 ? 2 : 0) - 1) * (local_10 - param_2);
 }
 
 // add_to_sprite_offset — add offset to sprite position
