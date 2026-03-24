@@ -789,7 +789,7 @@ export function delete_city(param_1, param_2) {
           }
           if ((DAT_0064b1ca[u8(DAT_006560f6[local_30 * 0x20]) * 0x14] !== 0x01) ||
              (iVar7 = FUN_005b53b6(local_30, 1), iVar7 !== 1)) {
-            // Reassign to nearest city
+            // C: break inner while → OR 0x20 into city flags → fall through to kill
             let off344 = uVar6 * 0x58;
             let v = (DAT_0064f344[off344] | (DAT_0064f344[off344+1] << 8) |
                      (DAT_0064f344[off344+2] << 16) | (DAT_0064f344[off344+3] << 24));
@@ -798,15 +798,16 @@ export function delete_city(param_1, param_2) {
             DAT_0064f344[off344+1] = (v >> 8) & 0xff;
             DAT_0064f344[off344+2] = (v >> 16) & 0xff;
             DAT_0064f344[off344+3] = (v >> 24) & 0xff;
-            // C falls through to LAB_004416ab which kills the unit
+            // LAB_004416ab: kill unit and restart scan
+            FUN_005b6042(local_30, 1);
+            _innerDone = true;
+            break;
+          } else {
+            // C: unit IS type 0x01 AND FUN_005b53b6 == 1 → reassign home city, continue inner loop
+            local_c = uVar6 & 0xff;
+            DAT_00656100[local_30 * 0x20] = local_c;
+            // inner while continues — do NOT kill unit
           }
-          // LAB_004416ab: kill unit and restart scan
-          FUN_005b6042(local_30, 1);
-          _innerDone = true;
-          break;
-          // (unreachable below — left for structure)
-          local_c = uVar6 & 0xff;
-          DAT_00656100[local_30 * 0x20] = local_c;
         }
         if (!_innerDone) {
           _done = true;
