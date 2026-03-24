@@ -253,7 +253,9 @@ export function FUN_005f0640(self) {
 
 // ~CDataBoundProperty — destructor (no-op)
 // Source: decompiled/block_005F0000.c ~CDataBoundProperty (22 bytes)
-export function CDataBoundProperty_destructor(self) { // C: return; (truly empty function) }
+export function CDataBoundProperty_destructor(self) {
+  // C: return; (truly empty function)
+}
 
 // FUN_005f068c — node_set_next
 export function FUN_005f068c(self, param_1) {
@@ -674,7 +676,9 @@ export function FUN_005f179c(self) { FUN_005f1622(self); }
 
 // FUN_005f17bc — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f17bc (24 bytes)
-export function FUN_005f17bc() { // C: return; (truly empty function) }
+export function FUN_005f17bc() {
+  // C: return; (truly empty function)
+}
 
 // FUN_005f17d4 — invoke_paint_child_callback
 // Source: decompiled/block_005F0000.c FUN_005f17d4 (61 bytes)
@@ -702,19 +706,27 @@ export function FUN_005f188b(self, param_1, param_2) {
 
 // FUN_005f18c8 — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f18c8 (24 bytes)
-export function FUN_005f18c8() { // C: return; (truly empty function) }
+export function FUN_005f18c8() {
+  // C: return; (truly empty function)
+}
 
 // FUN_005f18e0 — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f18e0 (24 bytes)
-export function FUN_005f18e0() { // C: return; (truly empty function) }
+export function FUN_005f18e0() {
+  // C: return; (truly empty function)
+}
 
 // FUN_005f18f8 — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f18f8 (24 bytes)
-export function FUN_005f18f8() { // C: return; (truly empty function) }
+export function FUN_005f18f8() {
+  // C: return; (truly empty function)
+}
 
 // FUN_005f1910 — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f1910 (24 bytes)
-export function FUN_005f1910() { // C: return; (truly empty function) }
+export function FUN_005f1910() {
+  // C: return; (truly empty function)
+}
 
 // FUN_005f1928 — child_list_add
 export function FUN_005f1928(self, param_1) {
@@ -1413,7 +1425,9 @@ export function __fpmath(param_1) {
 
 // FUN_005f6cc0 — DEVIATION: Win32 API
 // Source: decompiled/block_005F0000.c FUN_005f6cc0 (16 bytes)
-export function FUN_005f6cc0() { // C: return; (truly empty function) }
+export function FUN_005f6cc0() {
+  // C: return; (truly empty function)
+}
 
 // __cfltcvt_init — float conversion init (DEVIATION: C runtime)
 // Source: decompiled/block_005F0000.c __cfltcvt_init (71 bytes)

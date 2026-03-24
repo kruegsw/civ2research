@@ -1428,7 +1428,9 @@ export function FUN_005d2d15(param_1, param_2) {
 
 // Source: decompiled/block_005D0000.c FUN_005d2d3d (16 bytes)
 // editbox_noop — empty handler
-export function FUN_005d2d3d() { // C: return; (truly empty function) }
+export function FUN_005d2d3d() {
+  // C: return; (truly empty function)
+}
 
 // Source: decompiled/block_005D0000.c send_msg_2D4D (50 bytes)
 // editbox_get_text — get edit box text
@@ -1659,7 +1661,9 @@ export function send_msg_3310(param_1, param_2, param_3, param_4) {
 
 // Source: decompiled/block_005D0000.c FUN_005d356e (16 bytes)
 // combobox_noop
-export function FUN_005d356e() { // C: return; (truly empty function) }
+export function FUN_005d356e() {
+  // C: return; (truly empty function)
+}
 
 // Source: decompiled/block_005D0000.c send_msg_357E (37 bytes)
 // combobox_add_string — add string to combo box
@@ -1864,7 +1868,9 @@ export function send_msg_39E2(param_1, param_2, param_3, param_4) {
 
 // Source: decompiled/block_005D0000.c FUN_005d3c40 (16 bytes)
 // listbox_noop
-export function FUN_005d3c40() { // C: return; (truly empty function) }
+export function FUN_005d3c40() {
+  // C: return; (truly empty function)
+}
 
 // Source: decompiled/block_005D0000.c send_msg_3C50 (37 bytes)
 // listbox_add_string — add string to list box
@@ -5157,7 +5163,9 @@ export function FUN_005db089() {
 
 // Source: decompiled/block_005D0000.c ~Iostream_init (22 bytes)
 // Iostream_init_destructor — ~Iostream_init (no-op)
-export function Iostream_init_destructor() { // C: return; (truly empty function) }
+export function Iostream_init_destructor() {
+  // C: return; (truly empty function)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5324,7 +5332,9 @@ export function FUN_005db531(param_1) {
 
 // Source: decompiled/block_005D0000.c FUN_005db54b (16 bytes)
 // unlock_resource_noop — no-op resource unlock
-export function FUN_005db54b() { // C: return; (truly empty function) }
+export function FUN_005db54b() {
+  // C: return; (truly empty function)
+}
 
 // Source: decompiled/block_005D0000.c FUN_005db55b (142 bytes)
 // unload_resource_dll — unload a resource DLL
@@ -5541,11 +5551,15 @@ export function FUN_005dbc1b() {
 
 // Source: decompiled/block_005D0000.c FUN_005dbc3a (16 bytes)
 // init_hook_noop — empty init hook
-export function FUN_005dbc3a() { // C: return; (truly empty function) }
+export function FUN_005dbc3a() {
+  // C: return; (truly empty function)
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dbc4a (16 bytes)
 // shutdown_hook_noop — empty shutdown hook
-export function FUN_005dbc4a() { // C: return; (truly empty function) }
+export function FUN_005dbc4a() {
+  // C: return; (truly empty function)
+}
 
 // Source: decompiled/block_005D0000.c register_wndclass_BC5A (352 bytes)
 // register_all_window_classes — register SMEDS window classes
@@ -6466,7 +6480,9 @@ export function FUN_005dd7de() {
 
 // Source: decompiled/block_005D0000.c FUN_005dd87d (16 bytes)
 // empty_handler — no-op handler
-export function FUN_005dd87d() { // C: return; (truly empty function) }
+export function FUN_005dd87d() {
+  // C: return; (truly empty function)
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -6533,7 +6549,9 @@ export function FUN_005dda11() {
 
 // Source: decompiled/block_005D0000.c FUN_005dda2b (16 bytes)
 // sound_noop — no-op sound handler
-export function FUN_005dda2b() { // C: return; (truly empty function) }
+export function FUN_005dda2b() {
+  // C: return; (truly empty function)
+}
 
 // Source: decompiled/block_005D0000.c FUN_005dda3b (24 bytes)
 // play_beep — play system beep
