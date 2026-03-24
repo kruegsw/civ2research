@@ -11,7 +11,7 @@
 import {
   s8, u8, s16, u16, s32, u32, w16, w32,
   DAT_006560f0, DAT_0064b1bc, DAT_0064c600, DAT_0064f340,
-  DAT_00627cc0,
+  DAT_00627cc0, DAT_00628350, DAT_00628360,
   getTileOffset, tileRead, tileWrite,
 } from './mem.js';
 
@@ -3179,7 +3179,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
          u8(DAT_00655c22[local_84]) < u8(DAT_00655c22[param_2])) {
         local_88 = 0;
         for (local_1c = 0; local_1c < DAT_00655b18; local_1c = local_1c + 1) {
-          if (((s16(DAT_0064f340, local_1c * 0x58 + 0x54) !== 0) && (local_1c !== param_1)) &&
+          if (((s32(DAT_0064f340, local_1c * 0x58 + 0x54) !== 0) && (local_1c !== param_1)) &&
              ((s8(DAT_0064f340[local_1c * 0x58 + 0xa]) === local_84) &&
               (s8(DAT_0064f340[local_1c * 0x58 + 8]) === param_2))) {
             local_88 = local_88 + 1;
@@ -3233,7 +3233,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
 
     // Find best candidate city for capital relocation
     for (local_1c = 0; local_1c < DAT_00655b18; local_1c = local_1c + 1) {
-      if ((s16(DAT_0064f340, local_1c * 0x58 + 0x54) !== 0) &&
+      if ((s32(DAT_0064f340, local_1c * 0x58 + 0x54) !== 0) &&
          (s8(DAT_0064f340[local_1c * 0x58 + 8]) === local_84) && (local_1c !== param_1) &&
          (s8(DAT_0064f340[param_1 * 0x58 + 9]) / 2 <=
           s8(DAT_0064f340[local_1c * 0x58 + 9])) &&
@@ -3355,7 +3355,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     // Count other cities building the same wonder
     local_94 = 0;
     for (local_1c = 0; local_1c < DAT_00655b18; local_1c = local_1c + 1) {
-      if (((s16(DAT_0064f340, local_1c * 0x58 + 0x54) !== 0) && (local_1c !== param_1)) &&
+      if (((s32(DAT_0064f340, local_1c * 0x58 + 0x54) !== 0) && (local_1c !== param_1)) &&
          ((s8(DAT_0064f340[local_1c * 0x58 + 8]) === local_84) &&
           (DAT_0064f340[local_1c * 0x58 + 0x39] === DAT_0064f340[param_1 * 0x58 + 0x39]))) {
         local_94 = local_94 + 1;
@@ -3363,7 +3363,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
     }
     uVar8 = FUN_00493c7d(local_84);
     FUN_0040ff60(1, uVar8);
-    FUN_004271e8(2, u32(DAT_0064c488, local_3c0 * 2));
+    FUN_004271e8(2, DAT_0064c488[local_3c0 * 2]); // Uint32Array element access
     FUN_00421da0(0, local_94);
     if (local_94 === 0) {
       FUN_0043c9d0("ABANDONWONDER");
@@ -3397,7 +3397,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       uVar9 = FUN_00453e18(local_8c);
       if (uVar9 === param_1) {
         iVar6 = local_8c + 0x27;
-        FUN_004271e8(1, u32(DAT_0064c488, iVar6 * 2));
+        FUN_004271e8(1, DAT_0064c488[iVar6 * 2]); // Uint32Array element access
         FUN_0040bbb0();
         if (((local_8c < 7) || (local_8c === 0x13)) || ((local_8c === 0x14 || (0x16 < local_8c)))) {
           FUN_0040bc10(0xf3);
@@ -3788,8 +3788,8 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       // Reveal surrounding tiles
       FUN_005b9ec6();
       for (local_70 = 0; local_70 < 8; local_70 = local_70 + 1) {
-        uVar8 = FUN_005ae052(s8(DAT_0064f340[0x28350 + local_70]) + iVar4);
-        local_80 = s8(DAT_0064f340[0x28360 + local_70]) + iVar5;
+        uVar8 = FUN_005ae052(s8(DAT_00628350[local_70]) + iVar4);
+        local_80 = s8(DAT_00628360[local_70]) + iVar5;
         iVar6 = FUN_004087c0(uVar8, local_80);
         if (iVar6 !== 0) {
           iVar6 = FUN_005b8931(uVar8, local_80);
@@ -4480,8 +4480,8 @@ export function FUN_0057f9e3(param_1, param_2, param_3, param_4) {
 
   // Kill all units in 9-tile area
   for (local_8 = 0; local_8 < 9; local_8 = local_8 + 1) {
-    uVar3 = FUN_005ae052(s8(DAT_0064f340[0x28350 + local_8]) + param_2);
-    cVar1 = s8(DAT_0064f340[0x28360 + local_8]);
+    uVar3 = FUN_005ae052(s8(DAT_00628350[local_8]) + param_2);
+    cVar1 = s8(DAT_00628360[local_8]);
     iVar2 = FUN_004087c0(uVar3, cVar1 + param_3);
     if ((iVar2 !== 0) && (iVar2 = FUN_005b2e69(uVar3, cVar1 + param_3), -1 < iVar2)) {
       if (s8(DAT_006560f0[iVar2 * 0x20 + 7]) !== param_1) {
