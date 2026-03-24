@@ -439,7 +439,7 @@ export function FUN_00440750(param_1, param_2) {
   if (iVar4 === iVar5) {
     local_1c = local_1c >> 1;
   }
-  uVar8 = u8(DAT_006560fd[param_1 * 0x20]);
+  uVar8 = s8(DAT_006560fd[param_1 * 0x20]); // C: (uint)(char) — sign-extends for < 0 checks (food = negative)
   bVar12 = (DAT_006560f6[param_1 * 0x20] === 0x31); // '1'
   if (bVar12) {
     local_1c = local_1c + (local_1c >> 1);
@@ -798,9 +798,13 @@ export function delete_city(param_1, param_2) {
             DAT_0064f344[off344+1] = (v >> 8) & 0xff;
             DAT_0064f344[off344+2] = (v >> 16) & 0xff;
             DAT_0064f344[off344+3] = (v >> 24) & 0xff;
-            _innerDone = true;
-            break;
+            // C falls through to LAB_004416ab which kills the unit
           }
+          // LAB_004416ab: kill unit and restart scan
+          FUN_005b6042(local_30, 1);
+          _innerDone = true;
+          break;
+          // (unreachable below — left for structure)
           local_c = uVar6 & 0xff;
           DAT_00656100[local_30 * 0x20] = local_c;
         }
