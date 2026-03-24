@@ -4595,8 +4595,9 @@ export function FUN_0043d400(param_1) {
   }
 
   // Sort and assign top-3 wants/needs to city record
-  let local_fc = new Array(16);
-  let local_5c = new Array(16);
+  // (local_fc and local_5c already declared above in pre-zeroing loop)
+  local_fc = new Array(16);
+  local_5c = new Array(16);
   for (let i = 0; i < 16; i++) {
     local_fc[i] = i;
     local_5c[i] = i;

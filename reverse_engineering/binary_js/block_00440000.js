@@ -1471,223 +1471,874 @@ export function FUN_004472f0(param_1) {
 // All are exported as no-op stubs.
 // ═══════════════════════════════════════════════════════════════════
 
-export function FUN_00447320() { // Source: decompiled/block_00440000.c FUN_00447320 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044733a(); FUN_00447362(); return; }
-export function FUN_0044733a() { // Source: decompiled/block_00440000.c FUN_0044733a (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447362() { // Source: decompiled/block_00440000.c FUN_00447362 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044737f() { // Source: decompiled/block_00440000.c FUN_0044737f (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004473a2() { // Source: decompiled/block_00440000.c FUN_004473a2 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004473bc(); FUN_004473e4(); return; }
-export function FUN_004473bc() { // Source: decompiled/block_00440000.c FUN_004473bc (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004473e4() { // Source: decompiled/block_00440000.c FUN_004473e4 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447401() { // Source: decompiled/block_00440000.c FUN_00447401 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447424() { // Source: decompiled/block_00440000.c FUN_00447424 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044743e(); FUN_00447466(); return; }
-export function FUN_0044743e() { // Source: decompiled/block_00440000.c FUN_0044743e (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447466() { // Source: decompiled/block_00440000.c FUN_00447466 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447483() { // Source: decompiled/block_00440000.c FUN_00447483 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004474a6() { // Source: decompiled/block_00440000.c FUN_004474a6 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004474c0(); FUN_004474e8(); return; }
-export function FUN_004474c0() { // Source: decompiled/block_00440000.c FUN_004474c0 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004474e8() { // Source: decompiled/block_00440000.c FUN_004474e8 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447505() { // Source: decompiled/block_00440000.c FUN_00447505 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447528() { // Source: decompiled/block_00440000.c FUN_00447528 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447542(); FUN_0044756a(); return; }
-export function FUN_00447542() { // Source: decompiled/block_00440000.c FUN_00447542 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044756a() { // Source: decompiled/block_00440000.c FUN_0044756a (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447587() { // Source: decompiled/block_00440000.c FUN_00447587 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004475aa() { // Source: decompiled/block_00440000.c FUN_004475aa (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004475c4(); FUN_004475ec(); return; }
-export function FUN_004475c4() { // Source: decompiled/block_00440000.c FUN_004475c4 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004475ec() { // Source: decompiled/block_00440000.c FUN_004475ec (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447609() { // Source: decompiled/block_00440000.c FUN_00447609 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_44762C() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447646(); FUN_00447660(); return; }
-export function FUN_00447646() { // Source: decompiled/block_00440000.c FUN_00447646 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447660() { // Source: decompiled/block_00440000.c FUN_00447660 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044767d() { // Source: decompiled/block_00440000.c FUN_0044767d (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_00447697() { // Source: decompiled/block_00440000.c FUN_00447697 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004476b1(); FUN_004476d9(); return; }
-export function FUN_004476b1() { // Source: decompiled/block_00440000.c FUN_004476b1 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004476d9() { // Source: decompiled/block_00440000.c FUN_004476d9 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004476f6() { // Source: decompiled/block_00440000.c FUN_004476f6 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_447719() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447733(); FUN_0044774d(); return; }
-export function FUN_00447733() { // Source: decompiled/block_00440000.c FUN_00447733 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_0044774d() { // Source: decompiled/block_00440000.c FUN_0044774d (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044776a() { // Source: decompiled/block_00440000.c FUN_0044776a (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_447784() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044779e(); FUN_004477b8(); return; }
-export function FUN_0044779e() { // Source: decompiled/block_00440000.c FUN_0044779e (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_004477b8() { // Source: decompiled/block_00440000.c FUN_004477b8 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004477d5() { // Source: decompiled/block_00440000.c FUN_004477d5 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_4477EF() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447809(); FUN_00447823(); return; }
-export function FUN_00447809() { // Source: decompiled/block_00440000.c FUN_00447809 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447823() { // Source: decompiled/block_00440000.c FUN_00447823 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447840() { // Source: decompiled/block_00440000.c FUN_00447840 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_0044785a() { // Source: decompiled/block_00440000.c FUN_0044785a (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447874(); FUN_0044789c(); return; }
-export function FUN_00447874() { // Source: decompiled/block_00440000.c FUN_00447874 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044789c() { // Source: decompiled/block_00440000.c FUN_0044789c (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004478b9() { // Source: decompiled/block_00440000.c FUN_004478b9 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004478dc() { // Source: decompiled/block_00440000.c FUN_004478dc (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004478f6(); FUN_0044791e(); return; }
-export function FUN_004478f6() { // Source: decompiled/block_00440000.c FUN_004478f6 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044791e() { // Source: decompiled/block_00440000.c FUN_0044791e (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044793b() { // Source: decompiled/block_00440000.c FUN_0044793b (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044795e() { // Source: decompiled/block_00440000.c FUN_0044795e (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447978(); FUN_004479a0(); return; }
-export function FUN_00447978() { // Source: decompiled/block_00440000.c FUN_00447978 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004479a0() { // Source: decompiled/block_00440000.c FUN_004479a0 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004479bd() { // Source: decompiled/block_00440000.c FUN_004479bd (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004479e0() { // Source: decompiled/block_00440000.c FUN_004479e0 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004479fa(); FUN_00447a22(); return; }
-export function FUN_004479fa() { // Source: decompiled/block_00440000.c FUN_004479fa (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447a22() { // Source: decompiled/block_00440000.c FUN_00447a22 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447a3f() { // Source: decompiled/block_00440000.c FUN_00447a3f (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_447A62() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447a7c(); FUN_00447a96(); return; }
-export function FUN_00447a7c() { // Source: decompiled/block_00440000.c FUN_00447a7c (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447a96() { // Source: decompiled/block_00440000.c FUN_00447a96 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447ab3() { // Source: decompiled/block_00440000.c FUN_00447ab3 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_447ACD() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447ae7(); FUN_00447b01(); return; }
-export function FUN_00447ae7() { // Source: decompiled/block_00440000.c FUN_00447ae7 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447b01() { // Source: decompiled/block_00440000.c FUN_00447b01 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447b1e() { // Source: decompiled/block_00440000.c FUN_00447b1e (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_00447b38() { // Source: decompiled/block_00440000.c FUN_00447b38 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447b52(); FUN_00447b7a(); return; }
-export function FUN_00447b52() { // Source: decompiled/block_00440000.c FUN_00447b52 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447b7a() { // Source: decompiled/block_00440000.c FUN_00447b7a (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447b97() { // Source: decompiled/block_00440000.c FUN_00447b97 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447bba() { // Source: decompiled/block_00440000.c FUN_00447bba (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447bd4(); FUN_00447bfc(); return; }
-export function FUN_00447bd4() { // Source: decompiled/block_00440000.c FUN_00447bd4 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447bfc() { // Source: decompiled/block_00440000.c FUN_00447bfc (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447c19() { // Source: decompiled/block_00440000.c FUN_00447c19 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_447C3C() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447c56(); FUN_00447c70(); return; }
-export function FUN_00447c56() { // Source: decompiled/block_00440000.c FUN_00447c56 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447c70() { // Source: decompiled/block_00440000.c FUN_00447c70 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447c8d() { // Source: decompiled/block_00440000.c FUN_00447c8d (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_447CA7() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447cc1(); FUN_00447cdb(); return; }
-export function FUN_00447cc1() { // Source: decompiled/block_00440000.c FUN_00447cc1 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447cdb() { // Source: decompiled/block_00440000.c FUN_00447cdb (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447cf8() { // Source: decompiled/block_00440000.c FUN_00447cf8 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_447D12() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447d2c(); FUN_00447d46(); return; }
-export function FUN_00447d2c() { // Source: decompiled/block_00440000.c FUN_00447d2c (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447d46() { // Source: decompiled/block_00440000.c FUN_00447d46 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447d63() { // Source: decompiled/block_00440000.c FUN_00447d63 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_447D7D() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447d97(); FUN_00447db1(); return; }
-export function FUN_00447d97() { // Source: decompiled/block_00440000.c FUN_00447d97 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447db1() { // Source: decompiled/block_00440000.c FUN_00447db1 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447dce() { // Source: decompiled/block_00440000.c FUN_00447dce (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_447DE8() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447e02(); FUN_00447e1c(); return; }
-export function FUN_00447e02() { // Source: decompiled/block_00440000.c FUN_00447e02 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447e1c() { // Source: decompiled/block_00440000.c FUN_00447e1c (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447e39() { // Source: decompiled/block_00440000.c FUN_00447e39 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_447E53() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447e6d(); FUN_00447e87(); return; }
-export function FUN_00447e6d() { // Source: decompiled/block_00440000.c FUN_00447e6d (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447e87() { // Source: decompiled/block_00440000.c FUN_00447e87 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447ea4() { // Source: decompiled/block_00440000.c FUN_00447ea4 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_00447ebe() { // Source: decompiled/block_00440000.c FUN_00447ebe (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447ed8(); FUN_00447f00(); return; }
-export function FUN_00447ed8() { // Source: decompiled/block_00440000.c FUN_00447ed8 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447f00() { // Source: decompiled/block_00440000.c FUN_00447f00 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447f1d() { // Source: decompiled/block_00440000.c FUN_00447f1d (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447f40() { // Source: decompiled/block_00440000.c FUN_00447f40 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447f5a(); FUN_00447f82(); return; }
-export function FUN_00447f5a() { // Source: decompiled/block_00440000.c FUN_00447f5a (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00447f82() { // Source: decompiled/block_00440000.c FUN_00447f82 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00447f9f() { // Source: decompiled/block_00440000.c FUN_00447f9f (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_447FC2() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00447fdc(); FUN_00447ff6(); return; }
-export function FUN_00447fdc() { // Source: decompiled/block_00440000.c FUN_00447fdc (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00447ff6() { // Source: decompiled/block_00440000.c FUN_00447ff6 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448013() { // Source: decompiled/block_00440000.c FUN_00448013 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_44802D() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448047(); FUN_00448061(); return; }
-export function FUN_00448047() { // Source: decompiled/block_00440000.c FUN_00448047 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00448061() { // Source: decompiled/block_00440000.c FUN_00448061 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044807e() { // Source: decompiled/block_00440000.c FUN_0044807e (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_448098() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004480b2(); FUN_004480cc(); return; }
-export function FUN_004480b2() { // Source: decompiled/block_00440000.c FUN_004480b2 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_004480cc() { // Source: decompiled/block_00440000.c FUN_004480cc (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004480e9() { // Source: decompiled/block_00440000.c FUN_004480e9 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_448103() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044811d(); FUN_00448137(); return; }
-export function FUN_0044811d() { // Source: decompiled/block_00440000.c FUN_0044811d (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00448137() { // Source: decompiled/block_00440000.c FUN_00448137 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448154() { // Source: decompiled/block_00440000.c FUN_00448154 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_0044816e() { // Source: decompiled/block_00440000.c FUN_0044816e (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448188(); FUN_004481b0(); return; }
-export function FUN_00448188() { // Source: decompiled/block_00440000.c FUN_00448188 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004481b0() { // Source: decompiled/block_00440000.c FUN_004481b0 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004481cd() { // Source: decompiled/block_00440000.c FUN_004481cd (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004481f0() { // Source: decompiled/block_00440000.c FUN_004481f0 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044820a(); FUN_00448232(); return; }
-export function FUN_0044820a() { // Source: decompiled/block_00440000.c FUN_0044820a (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448232() { // Source: decompiled/block_00440000.c FUN_00448232 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044824f() { // Source: decompiled/block_00440000.c FUN_0044824f (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448272() { // Source: decompiled/block_00440000.c FUN_00448272 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044828c(); FUN_004482b4(); return; }
-export function FUN_0044828c() { // Source: decompiled/block_00440000.c FUN_0044828c (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004482b4() { // Source: decompiled/block_00440000.c FUN_004482b4 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004482d1() { // Source: decompiled/block_00440000.c FUN_004482d1 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004482f4() { // Source: decompiled/block_00440000.c FUN_004482f4 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044830e(); FUN_00448336(); return; }
-export function FUN_0044830e() { // Source: decompiled/block_00440000.c FUN_0044830e (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448336() { // Source: decompiled/block_00440000.c FUN_00448336 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448353() { // Source: decompiled/block_00440000.c FUN_00448353 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448376() { // Source: decompiled/block_00440000.c FUN_00448376 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448390(); FUN_004483b8(); return; }
-export function FUN_00448390() { // Source: decompiled/block_00440000.c FUN_00448390 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004483b8() { // Source: decompiled/block_00440000.c FUN_004483b8 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004483d5() { // Source: decompiled/block_00440000.c FUN_004483d5 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004483f8() { // Source: decompiled/block_00440000.c FUN_004483f8 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448412(); FUN_0044843a(); return; }
-export function FUN_00448412() { // Source: decompiled/block_00440000.c FUN_00448412 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044843a() { // Source: decompiled/block_00440000.c FUN_0044843a (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448457() { // Source: decompiled/block_00440000.c FUN_00448457 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044847a() { // Source: decompiled/block_00440000.c FUN_0044847a (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448494(); FUN_004484bc(); return; }
-export function FUN_00448494() { // Source: decompiled/block_00440000.c FUN_00448494 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004484bc() { // Source: decompiled/block_00440000.c FUN_004484bc (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004484d9() { // Source: decompiled/block_00440000.c FUN_004484d9 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004484fc() { // Source: decompiled/block_00440000.c FUN_004484fc (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448516(); FUN_0044853e(); return; }
-export function FUN_00448516() { // Source: decompiled/block_00440000.c FUN_00448516 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044853e() { // Source: decompiled/block_00440000.c FUN_0044853e (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044855b() { // Source: decompiled/block_00440000.c FUN_0044855b (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044857e() { // Source: decompiled/block_00440000.c FUN_0044857e (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448598(); FUN_004485c0(); return; }
-export function FUN_00448598() { // Source: decompiled/block_00440000.c FUN_00448598 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004485c0() { // Source: decompiled/block_00440000.c FUN_004485c0 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004485dd() { // Source: decompiled/block_00440000.c FUN_004485dd (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448600() { // Source: decompiled/block_00440000.c FUN_00448600 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044861a(); FUN_00448642(); return; }
-export function FUN_0044861a() { // Source: decompiled/block_00440000.c FUN_0044861a (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448642() { // Source: decompiled/block_00440000.c FUN_00448642 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044865f() { // Source: decompiled/block_00440000.c FUN_0044865f (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_448682() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_0044869c(); FUN_004486b6(); return; }
-export function FUN_0044869c() { // Source: decompiled/block_00440000.c FUN_0044869c (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_004486b6() { // Source: decompiled/block_00440000.c FUN_004486b6 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004486d3() { // Source: decompiled/block_00440000.c FUN_004486d3 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_4486ED() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448707(); FUN_00448721(); return; }
-export function FUN_00448707() { // Source: decompiled/block_00440000.c FUN_00448707 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00448721() { // Source: decompiled/block_00440000.c FUN_00448721 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044873e() { // Source: decompiled/block_00440000.c FUN_0044873e (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_00448758() { // Source: decompiled/block_00440000.c FUN_00448758 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448772(); FUN_0044879a(); return; }
-export function FUN_00448772() { // Source: decompiled/block_00440000.c FUN_00448772 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044879a() { // Source: decompiled/block_00440000.c FUN_0044879a (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004487b7() { // Source: decompiled/block_00440000.c FUN_004487b7 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004487da() { // Source: decompiled/block_00440000.c FUN_004487da (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004487f4(); FUN_0044881c(); return; }
-export function FUN_004487f4() { // Source: decompiled/block_00440000.c FUN_004487f4 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044881c() { // Source: decompiled/block_00440000.c FUN_0044881c (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448839() { // Source: decompiled/block_00440000.c FUN_00448839 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044885c() { // Source: decompiled/block_00440000.c FUN_0044885c (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448876(); FUN_0044889e(); return; }
-export function FUN_00448876() { // Source: decompiled/block_00440000.c FUN_00448876 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044889e() { // Source: decompiled/block_00440000.c FUN_0044889e (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004488bb() { // Source: decompiled/block_00440000.c FUN_004488bb (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_4488DE() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004488f8(); FUN_00448912(); return; }
-export function FUN_004488f8() { // Source: decompiled/block_00440000.c FUN_004488f8 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00448912() { // Source: decompiled/block_00440000.c FUN_00448912 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_0044892f() { // Source: decompiled/block_00440000.c FUN_0044892f (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_00448949() { // Source: decompiled/block_00440000.c FUN_00448949 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448963(); FUN_0044898b(); return; }
-export function FUN_00448963() { // Source: decompiled/block_00440000.c FUN_00448963 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_0044898b() { // Source: decompiled/block_00440000.c FUN_0044898b (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_004489a8() { // Source: decompiled/block_00440000.c FUN_004489a8 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_004489cb() { // Source: decompiled/block_00440000.c FUN_004489cb (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_004489e5(); FUN_00448a0d(); return; }
-export function FUN_004489e5() { // Source: decompiled/block_00440000.c FUN_004489e5 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448a0d() { // Source: decompiled/block_00440000.c FUN_00448a0d (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448a2a() { // Source: decompiled/block_00440000.c FUN_00448a2a (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448a4d() { // Source: decompiled/block_00440000.c FUN_00448a4d (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448a67(); FUN_00448a8f(); return; }
-export function FUN_00448a67() { // Source: decompiled/block_00440000.c FUN_00448a67 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448a8f() { // Source: decompiled/block_00440000.c FUN_00448a8f (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448aac() { // Source: decompiled/block_00440000.c FUN_00448aac (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FID_conflict___E31_448ACF() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448ae9(); FUN_00448b03(); return; }
-export function FUN_00448ae9() { // Source: decompiled/block_00440000.c FUN_00448ae9 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00448b03() { // Source: decompiled/block_00440000.c FUN_00448b03 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448b20() { // Source: decompiled/block_00440000.c FUN_00448b20 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FUN_00448b3a() { // Source: decompiled/block_00440000.c FUN_00448b3a (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448b54(); FUN_00448b7c(); return; }
-export function FUN_00448b54() { // Source: decompiled/block_00440000.c FUN_00448b54 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448b7c() { // Source: decompiled/block_00440000.c FUN_00448b7c (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448b99() { // Source: decompiled/block_00440000.c FUN_00448b99 (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448bbc() { // Source: decompiled/block_00440000.c FUN_00448bbc (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448bd6(); FUN_00448bfe(); return; }
-export function FUN_00448bd6() { // Source: decompiled/block_00440000.c FUN_00448bd6 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448bfe() { // Source: decompiled/block_00440000.c FUN_00448bfe (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448c1b() { // Source: decompiled/block_00440000.c FUN_00448c1b (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448c3e() { // Source: decompiled/block_00440000.c FUN_00448c3e (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448c58(); FUN_00448c80(); return; }
-export function FUN_00448c58() { // Source: decompiled/block_00440000.c FUN_00448c58 (40 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448c80() { // Source: decompiled/block_00440000.c FUN_00448c80 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448c9d() { // Source: decompiled/block_00440000.c FUN_00448c9d (35 bytes); // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_; return; }
-export function FUN_00448cc0() { // Source: decompiled/block_00440000.c FUN_00448cc0 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448cda(); FUN_00448d1c(); return; }
+// Source: decompiled/block_00440000.c FUN_00447320 (26 bytes)
+export function FUN_00447320() {
+  // DEVIATION: MFC/C++ — calls FUN_0044733a() and FUN_00447362()
+}
+// Source: decompiled/block_00440000.c FUN_0044733a (40 bytes)
+export function FUN_0044733a() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447362 (29 bytes)
+export function FUN_00447362() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044737f (35 bytes)
+export function FUN_0044737f() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004473a2 (26 bytes)
+export function FUN_004473a2() {
+  // DEVIATION: MFC/C++ — calls: FUN_004473bc(); FUN_004473e4()
+}
+// Source: decompiled/block_00440000.c FUN_004473bc (40 bytes)
+export function FUN_004473bc() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004473e4 (29 bytes)
+export function FUN_004473e4() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447401 (35 bytes)
+export function FUN_00447401() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447424 (26 bytes)
+export function FUN_00447424() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044743e(); FUN_00447466()
+}
+// Source: decompiled/block_00440000.c FUN_0044743e (40 bytes)
+export function FUN_0044743e() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447466 (29 bytes)
+export function FUN_00447466() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447483 (35 bytes)
+export function FUN_00447483() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004474a6 (26 bytes)
+export function FUN_004474a6() {
+  // DEVIATION: MFC/C++ — calls: FUN_004474c0(); FUN_004474e8()
+}
+// Source: decompiled/block_00440000.c FUN_004474c0 (40 bytes)
+export function FUN_004474c0() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004474e8 (29 bytes)
+export function FUN_004474e8() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447505 (35 bytes)
+export function FUN_00447505() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447528 (26 bytes)
+export function FUN_00447528() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447542(); FUN_0044756a()
+}
+// Source: decompiled/block_00440000.c FUN_00447542 (40 bytes)
+export function FUN_00447542() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044756a (29 bytes)
+export function FUN_0044756a() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447587 (35 bytes)
+export function FUN_00447587() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004475aa (26 bytes)
+export function FUN_004475aa() {
+  // DEVIATION: MFC/C++ — calls: FUN_004475c4(); FUN_004475ec()
+}
+// Source: decompiled/block_00440000.c FUN_004475c4 (40 bytes)
+export function FUN_004475c4() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004475ec (29 bytes)
+export function FUN_004475ec() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447609 (35 bytes)
+export function FUN_00447609() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_44762C() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447646(); FUN_00447660()
+}
+// Source: decompiled/block_00440000.c FUN_00447646 (26 bytes)
+export function FUN_00447646() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447660 (29 bytes)
+export function FUN_00447660() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044767d (26 bytes)
+export function FUN_0044767d() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_00447697 (26 bytes)
+export function FUN_00447697() {
+  // DEVIATION: MFC/C++ — calls: FUN_004476b1(); FUN_004476d9()
+}
+// Source: decompiled/block_00440000.c FUN_004476b1 (40 bytes)
+export function FUN_004476b1() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004476d9 (29 bytes)
+export function FUN_004476d9() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004476f6 (35 bytes)
+export function FUN_004476f6() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447719() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447733(); FUN_0044774d()
+}
+// Source: decompiled/block_00440000.c FUN_00447733 (26 bytes)
+export function FUN_00447733() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_0044774d (29 bytes)
+export function FUN_0044774d() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044776a (26 bytes)
+export function FUN_0044776a() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447784() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044779e(); FUN_004477b8()
+}
+// Source: decompiled/block_00440000.c FUN_0044779e (26 bytes)
+export function FUN_0044779e() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_004477b8 (29 bytes)
+export function FUN_004477b8() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004477d5 (26 bytes)
+export function FUN_004477d5() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_4477EF() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447809(); FUN_00447823()
+}
+// Source: decompiled/block_00440000.c FUN_00447809 (26 bytes)
+export function FUN_00447809() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447823 (29 bytes)
+export function FUN_00447823() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447840 (26 bytes)
+export function FUN_00447840() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_0044785a (26 bytes)
+export function FUN_0044785a() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447874(); FUN_0044789c()
+}
+// Source: decompiled/block_00440000.c FUN_00447874 (40 bytes)
+export function FUN_00447874() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044789c (29 bytes)
+export function FUN_0044789c() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004478b9 (35 bytes)
+export function FUN_004478b9() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004478dc (26 bytes)
+export function FUN_004478dc() {
+  // DEVIATION: MFC/C++ — calls: FUN_004478f6(); FUN_0044791e()
+}
+// Source: decompiled/block_00440000.c FUN_004478f6 (40 bytes)
+export function FUN_004478f6() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044791e (29 bytes)
+export function FUN_0044791e() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044793b (35 bytes)
+export function FUN_0044793b() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044795e (26 bytes)
+export function FUN_0044795e() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447978(); FUN_004479a0()
+}
+// Source: decompiled/block_00440000.c FUN_00447978 (40 bytes)
+export function FUN_00447978() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004479a0 (29 bytes)
+export function FUN_004479a0() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004479bd (35 bytes)
+export function FUN_004479bd() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004479e0 (26 bytes)
+export function FUN_004479e0() {
+  // DEVIATION: MFC/C++ — calls: FUN_004479fa(); FUN_00447a22()
+}
+// Source: decompiled/block_00440000.c FUN_004479fa (40 bytes)
+export function FUN_004479fa() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447a22 (29 bytes)
+export function FUN_00447a22() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447a3f (35 bytes)
+export function FUN_00447a3f() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447A62() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447a7c(); FUN_00447a96()
+}
+// Source: decompiled/block_00440000.c FUN_00447a7c (26 bytes)
+export function FUN_00447a7c() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447a96 (29 bytes)
+export function FUN_00447a96() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447ab3 (26 bytes)
+export function FUN_00447ab3() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447ACD() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447ae7(); FUN_00447b01()
+}
+// Source: decompiled/block_00440000.c FUN_00447ae7 (26 bytes)
+export function FUN_00447ae7() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447b01 (29 bytes)
+export function FUN_00447b01() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447b1e (26 bytes)
+export function FUN_00447b1e() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_00447b38 (26 bytes)
+export function FUN_00447b38() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447b52(); FUN_00447b7a()
+}
+// Source: decompiled/block_00440000.c FUN_00447b52 (40 bytes)
+export function FUN_00447b52() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447b7a (29 bytes)
+export function FUN_00447b7a() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447b97 (35 bytes)
+export function FUN_00447b97() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447bba (26 bytes)
+export function FUN_00447bba() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447bd4(); FUN_00447bfc()
+}
+// Source: decompiled/block_00440000.c FUN_00447bd4 (40 bytes)
+export function FUN_00447bd4() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447bfc (29 bytes)
+export function FUN_00447bfc() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447c19 (35 bytes)
+export function FUN_00447c19() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447C3C() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447c56(); FUN_00447c70()
+}
+// Source: decompiled/block_00440000.c FUN_00447c56 (26 bytes)
+export function FUN_00447c56() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447c70 (29 bytes)
+export function FUN_00447c70() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447c8d (26 bytes)
+export function FUN_00447c8d() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447CA7() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447cc1(); FUN_00447cdb()
+}
+// Source: decompiled/block_00440000.c FUN_00447cc1 (26 bytes)
+export function FUN_00447cc1() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447cdb (29 bytes)
+export function FUN_00447cdb() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447cf8 (26 bytes)
+export function FUN_00447cf8() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447D12() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447d2c(); FUN_00447d46()
+}
+// Source: decompiled/block_00440000.c FUN_00447d2c (26 bytes)
+export function FUN_00447d2c() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447d46 (29 bytes)
+export function FUN_00447d46() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447d63 (26 bytes)
+export function FUN_00447d63() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447D7D() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447d97(); FUN_00447db1()
+}
+// Source: decompiled/block_00440000.c FUN_00447d97 (26 bytes)
+export function FUN_00447d97() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447db1 (29 bytes)
+export function FUN_00447db1() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447dce (26 bytes)
+export function FUN_00447dce() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447DE8() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447e02(); FUN_00447e1c()
+}
+// Source: decompiled/block_00440000.c FUN_00447e02 (26 bytes)
+export function FUN_00447e02() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447e1c (29 bytes)
+export function FUN_00447e1c() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447e39 (26 bytes)
+export function FUN_00447e39() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447E53() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447e6d(); FUN_00447e87()
+}
+// Source: decompiled/block_00440000.c FUN_00447e6d (26 bytes)
+export function FUN_00447e6d() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447e87 (29 bytes)
+export function FUN_00447e87() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447ea4 (26 bytes)
+export function FUN_00447ea4() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_00447ebe (26 bytes)
+export function FUN_00447ebe() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447ed8(); FUN_00447f00()
+}
+// Source: decompiled/block_00440000.c FUN_00447ed8 (40 bytes)
+export function FUN_00447ed8() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447f00 (29 bytes)
+export function FUN_00447f00() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447f1d (35 bytes)
+export function FUN_00447f1d() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447f40 (26 bytes)
+export function FUN_00447f40() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447f5a(); FUN_00447f82()
+}
+// Source: decompiled/block_00440000.c FUN_00447f5a (40 bytes)
+export function FUN_00447f5a() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00447f82 (29 bytes)
+export function FUN_00447f82() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00447f9f (35 bytes)
+export function FUN_00447f9f() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_447FC2() {
+  // DEVIATION: MFC/C++ — calls: FUN_00447fdc(); FUN_00447ff6()
+}
+// Source: decompiled/block_00440000.c FUN_00447fdc (26 bytes)
+export function FUN_00447fdc() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00447ff6 (29 bytes)
+export function FUN_00447ff6() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448013 (26 bytes)
+export function FUN_00448013() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_44802D() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448047(); FUN_00448061()
+}
+// Source: decompiled/block_00440000.c FUN_00448047 (26 bytes)
+export function FUN_00448047() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448061 (29 bytes)
+export function FUN_00448061() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044807e (26 bytes)
+export function FUN_0044807e() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448098() {
+  // DEVIATION: MFC/C++ — calls: FUN_004480b2(); FUN_004480cc()
+}
+// Source: decompiled/block_00440000.c FUN_004480b2 (26 bytes)
+export function FUN_004480b2() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_004480cc (29 bytes)
+export function FUN_004480cc() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004480e9 (26 bytes)
+export function FUN_004480e9() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448103() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044811d(); FUN_00448137()
+}
+// Source: decompiled/block_00440000.c FUN_0044811d (26 bytes)
+export function FUN_0044811d() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448137 (29 bytes)
+export function FUN_00448137() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448154 (26 bytes)
+export function FUN_00448154() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_0044816e (26 bytes)
+export function FUN_0044816e() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448188(); FUN_004481b0()
+}
+// Source: decompiled/block_00440000.c FUN_00448188 (40 bytes)
+export function FUN_00448188() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004481b0 (29 bytes)
+export function FUN_004481b0() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004481cd (35 bytes)
+export function FUN_004481cd() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004481f0 (26 bytes)
+export function FUN_004481f0() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044820a(); FUN_00448232()
+}
+// Source: decompiled/block_00440000.c FUN_0044820a (40 bytes)
+export function FUN_0044820a() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448232 (29 bytes)
+export function FUN_00448232() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044824f (35 bytes)
+export function FUN_0044824f() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448272 (26 bytes)
+export function FUN_00448272() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044828c(); FUN_004482b4()
+}
+// Source: decompiled/block_00440000.c FUN_0044828c (40 bytes)
+export function FUN_0044828c() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004482b4 (29 bytes)
+export function FUN_004482b4() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004482d1 (35 bytes)
+export function FUN_004482d1() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004482f4 (26 bytes)
+export function FUN_004482f4() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044830e(); FUN_00448336()
+}
+// Source: decompiled/block_00440000.c FUN_0044830e (40 bytes)
+export function FUN_0044830e() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448336 (29 bytes)
+export function FUN_00448336() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448353 (35 bytes)
+export function FUN_00448353() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448376 (26 bytes)
+export function FUN_00448376() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448390(); FUN_004483b8()
+}
+// Source: decompiled/block_00440000.c FUN_00448390 (40 bytes)
+export function FUN_00448390() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004483b8 (29 bytes)
+export function FUN_004483b8() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004483d5 (35 bytes)
+export function FUN_004483d5() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004483f8 (26 bytes)
+export function FUN_004483f8() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448412(); FUN_0044843a()
+}
+// Source: decompiled/block_00440000.c FUN_00448412 (40 bytes)
+export function FUN_00448412() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044843a (29 bytes)
+export function FUN_0044843a() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448457 (35 bytes)
+export function FUN_00448457() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044847a (26 bytes)
+export function FUN_0044847a() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448494(); FUN_004484bc()
+}
+// Source: decompiled/block_00440000.c FUN_00448494 (40 bytes)
+export function FUN_00448494() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004484bc (29 bytes)
+export function FUN_004484bc() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004484d9 (35 bytes)
+export function FUN_004484d9() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004484fc (26 bytes)
+export function FUN_004484fc() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448516(); FUN_0044853e()
+}
+// Source: decompiled/block_00440000.c FUN_00448516 (40 bytes)
+export function FUN_00448516() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044853e (29 bytes)
+export function FUN_0044853e() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044855b (35 bytes)
+export function FUN_0044855b() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044857e (26 bytes)
+export function FUN_0044857e() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448598(); FUN_004485c0()
+}
+// Source: decompiled/block_00440000.c FUN_00448598 (40 bytes)
+export function FUN_00448598() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004485c0 (29 bytes)
+export function FUN_004485c0() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004485dd (35 bytes)
+export function FUN_004485dd() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448600 (26 bytes)
+export function FUN_00448600() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044861a(); FUN_00448642()
+}
+// Source: decompiled/block_00440000.c FUN_0044861a (40 bytes)
+export function FUN_0044861a() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448642 (29 bytes)
+export function FUN_00448642() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044865f (35 bytes)
+export function FUN_0044865f() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448682() {
+  // DEVIATION: MFC/C++ — calls: FUN_0044869c(); FUN_004486b6()
+}
+// Source: decompiled/block_00440000.c FUN_0044869c (26 bytes)
+export function FUN_0044869c() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_004486b6 (29 bytes)
+export function FUN_004486b6() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004486d3 (26 bytes)
+export function FUN_004486d3() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_4486ED() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448707(); FUN_00448721()
+}
+// Source: decompiled/block_00440000.c FUN_00448707 (26 bytes)
+export function FUN_00448707() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448721 (29 bytes)
+export function FUN_00448721() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044873e (26 bytes)
+export function FUN_0044873e() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_00448758 (26 bytes)
+export function FUN_00448758() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448772(); FUN_0044879a()
+}
+// Source: decompiled/block_00440000.c FUN_00448772 (40 bytes)
+export function FUN_00448772() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044879a (29 bytes)
+export function FUN_0044879a() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004487b7 (35 bytes)
+export function FUN_004487b7() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004487da (26 bytes)
+export function FUN_004487da() {
+  // DEVIATION: MFC/C++ — calls: FUN_004487f4(); FUN_0044881c()
+}
+// Source: decompiled/block_00440000.c FUN_004487f4 (40 bytes)
+export function FUN_004487f4() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044881c (29 bytes)
+export function FUN_0044881c() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448839 (35 bytes)
+export function FUN_00448839() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044885c (26 bytes)
+export function FUN_0044885c() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448876(); FUN_0044889e()
+}
+// Source: decompiled/block_00440000.c FUN_00448876 (40 bytes)
+export function FUN_00448876() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044889e (29 bytes)
+export function FUN_0044889e() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004488bb (35 bytes)
+export function FUN_004488bb() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_4488DE() {
+  // DEVIATION: MFC/C++ — calls: FUN_004488f8(); FUN_00448912()
+}
+// Source: decompiled/block_00440000.c FUN_004488f8 (26 bytes)
+export function FUN_004488f8() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448912 (29 bytes)
+export function FUN_00448912() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_0044892f (26 bytes)
+export function FUN_0044892f() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_00448949 (26 bytes)
+export function FUN_00448949() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448963(); FUN_0044898b()
+}
+// Source: decompiled/block_00440000.c FUN_00448963 (40 bytes)
+export function FUN_00448963() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_0044898b (29 bytes)
+export function FUN_0044898b() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_004489a8 (35 bytes)
+export function FUN_004489a8() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_004489cb (26 bytes)
+export function FUN_004489cb() {
+  // DEVIATION: MFC/C++ — calls: FUN_004489e5(); FUN_00448a0d()
+}
+// Source: decompiled/block_00440000.c FUN_004489e5 (40 bytes)
+export function FUN_004489e5() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448a0d (29 bytes)
+export function FUN_00448a0d() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448a2a (35 bytes)
+export function FUN_00448a2a() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448a4d (26 bytes)
+export function FUN_00448a4d() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448a67(); FUN_00448a8f()
+}
+// Source: decompiled/block_00440000.c FUN_00448a67 (40 bytes)
+export function FUN_00448a67() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448a8f (29 bytes)
+export function FUN_00448a8f() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448aac (35 bytes)
+export function FUN_00448aac() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448ACF() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448ae9(); FUN_00448b03()
+}
+// Source: decompiled/block_00440000.c FUN_00448ae9 (26 bytes)
+export function FUN_00448ae9() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448b03 (29 bytes)
+export function FUN_00448b03() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448b20 (26 bytes)
+export function FUN_00448b20() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FUN_00448b3a (26 bytes)
+export function FUN_00448b3a() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448b54(); FUN_00448b7c()
+}
+// Source: decompiled/block_00440000.c FUN_00448b54 (40 bytes)
+export function FUN_00448b54() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448b7c (29 bytes)
+export function FUN_00448b7c() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448b99 (35 bytes)
+export function FUN_00448b99() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448bbc (26 bytes)
+export function FUN_00448bbc() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448bd6(); FUN_00448bfe()
+}
+// Source: decompiled/block_00440000.c FUN_00448bd6 (40 bytes)
+export function FUN_00448bd6() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448bfe (29 bytes)
+export function FUN_00448bfe() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448c1b (35 bytes)
+export function FUN_00448c1b() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448c3e (26 bytes)
+export function FUN_00448c3e() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448c58(); FUN_00448c80()
+}
+// Source: decompiled/block_00440000.c FUN_00448c58 (40 bytes)
+export function FUN_00448c58() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448c80 (29 bytes)
+export function FUN_00448c80() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448c9d (35 bytes)
+export function FUN_00448c9d() {
+  // DEVIATION: MFC — _eh_vector_constructor/destructor_iterator_
+}
+// Source: decompiled/block_00440000.c FUN_00448cc0 (26 bytes)
+export function FUN_00448cc0() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448cda(); FUN_00448d1c()
+}
 export function FUN_00448cda() {
   // Source: decompiled/block_00440000.c FUN_00448cda (66 bytes)
   // DEVIATION: Win32/MFC — UI/framework
@@ -1698,28 +2349,94 @@ export function FUN_00448cda() {
     // C: CString::CString((CString *)&DAT_00648018);
   return;
 }
-export function FUN_00448d1c() { // Source: decompiled/block_00440000.c FUN_00448d1c (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448d39() { // Source: decompiled/block_00440000.c FUN_00448d39 (66 bytes); // DEVIATION: C++ CString destructor x5; return; }
-export function FID_conflict___E31_448D7B() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448d95(); FUN_00448daf(); return; }
-export function FUN_00448d95() { // Source: decompiled/block_00440000.c FUN_00448d95 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00448daf() { // Source: decompiled/block_00440000.c FUN_00448daf (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448dcc() { // Source: decompiled/block_00440000.c FUN_00448dcc (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_448DE6() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448e00(); FUN_00448e1a(); return; }
-export function FUN_00448e00() { // Source: decompiled/block_00440000.c FUN_00448e00 (26 bytes); // DEVIATION: MFC — CString constructor; return; }
-export function FUN_00448e1a() { // Source: decompiled/block_00440000.c FUN_00448e1a (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448e37() { // Source: decompiled/block_00440000.c FUN_00448e37 (26 bytes); // DEVIATION: C++ CString destructor call; return; }
-export function FID_conflict___E31_448E51() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448e6b(); FUN_00448e85(); return; }
-export function FUN_00448e6b() { // Source: decompiled/block_00440000.c FUN_00448e6b (26 bytes); // DEVIATION: C++ bitmap constructor; return; }
-export function FUN_00448e85() { // Source: decompiled/block_00440000.c FUN_00448e85 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448ea2() { // Source: decompiled/block_00440000.c FUN_00448ea2 (26 bytes); // DEVIATION: C++ bitmap destructor; return; }
-export function FID_conflict___E31_448EBC() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448ed6(); FUN_00448ef0(); return; }
-export function FUN_00448ed6() { // Source: decompiled/block_00440000.c FUN_00448ed6 (26 bytes); // DEVIATION: C++ bitmap constructor; return; }
-export function FUN_00448ef0() { // Source: decompiled/block_00440000.c FUN_00448ef0 (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448f0d() { // Source: decompiled/block_00440000.c FUN_00448f0d (26 bytes); // DEVIATION: C++ bitmap destructor; return; }
-export function FID_conflict___E31_448F27() { // Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes); // DEVIATION: MFC/C++ — calls: FUN_00448f41(); FUN_00448f5b(); return; }
-export function FUN_00448f41() { // Source: decompiled/block_00440000.c FUN_00448f41 (26 bytes); // DEVIATION: C++ bitmap constructor; return; }
-export function FUN_00448f5b() { // Source: decompiled/block_00440000.c FUN_00448f5b (29 bytes); // DEVIATION: MFC — _atexit registration; return; }
-export function FUN_00448f78() { // Source: decompiled/block_00440000.c FUN_00448f78 (26 bytes); // DEVIATION: C++ bitmap destructor; return; }
+// Source: decompiled/block_00440000.c FUN_00448d1c (29 bytes)
+export function FUN_00448d1c() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448d39 (66 bytes)
+export function FUN_00448d39() {
+  // DEVIATION: C++ CString destructor x5
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448D7B() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448d95(); FUN_00448daf()
+}
+// Source: decompiled/block_00440000.c FUN_00448d95 (26 bytes)
+export function FUN_00448d95() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448daf (29 bytes)
+export function FUN_00448daf() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448dcc (26 bytes)
+export function FUN_00448dcc() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448DE6() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448e00(); FUN_00448e1a()
+}
+// Source: decompiled/block_00440000.c FUN_00448e00 (26 bytes)
+export function FUN_00448e00() {
+  // DEVIATION: MFC — CString constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448e1a (29 bytes)
+export function FUN_00448e1a() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448e37 (26 bytes)
+export function FUN_00448e37() {
+  // DEVIATION: C++ CString destructor call
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448E51() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448e6b(); FUN_00448e85()
+}
+// Source: decompiled/block_00440000.c FUN_00448e6b (26 bytes)
+export function FUN_00448e6b() {
+  // DEVIATION: C++ bitmap constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448e85 (29 bytes)
+export function FUN_00448e85() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448ea2 (26 bytes)
+export function FUN_00448ea2() {
+  // DEVIATION: C++ bitmap destructo
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448EBC() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448ed6(); FUN_00448ef0()
+}
+// Source: decompiled/block_00440000.c FUN_00448ed6 (26 bytes)
+export function FUN_00448ed6() {
+  // DEVIATION: C++ bitmap constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448ef0 (29 bytes)
+export function FUN_00448ef0() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448f0d (26 bytes)
+export function FUN_00448f0d() {
+  // DEVIATION: C++ bitmap destructo
+}
+// Source: decompiled/block_00440000.c FID_conflict:_$E31 (26 bytes)
+export function FID_conflict___E31_448F27() {
+  // DEVIATION: MFC/C++ — calls: FUN_00448f41(); FUN_00448f5b()
+}
+// Source: decompiled/block_00440000.c FUN_00448f41 (26 bytes)
+export function FUN_00448f41() {
+  // DEVIATION: C++ bitmap constructo
+}
+// Source: decompiled/block_00440000.c FUN_00448f5b (29 bytes)
+export function FUN_00448f5b() {
+  // DEVIATION: MFC — _atexit registratio
+}
+// Source: decompiled/block_00440000.c FUN_00448f78 (26 bytes)
+export function FUN_00448f78() {
+  // DEVIATION: C++ bitmap destructo
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1759,17 +2476,26 @@ export function FUN_00449030() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044996f — cstring_dtor_local_4c
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044996f() { // Source: decompiled/block_00440000.c FUN_0044996f (12 bytes); // DEVIATION: C++ CString destructor call; return; }
+// Source: decompiled/block_00440000.c FUN_0044996f (12 bytes)
+export function FUN_0044996f() {
+  // DEVIATION: C++ CString destructor call
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044997b — cstring_dtor_local_ac
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044997b() { // Source: decompiled/block_00440000.c FUN_0044997b (9 bytes); // DEVIATION: C++ CString destructor call; return; }
+// Source: decompiled/block_00440000.c FUN_0044997b (9 bytes)
+export function FUN_0044997b() {
+  // DEVIATION: C++ CString destructor call
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044998e — seh_fs_restore_terrain
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044998e() { // Source: decompiled/block_00440000.c FUN_0044998e (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044998e (14 bytes)
+export function FUN_0044998e() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044999c — cut_terrain_tile_64x32 (rendering helper)
@@ -1799,12 +2525,18 @@ export function FUN_00449a0e() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044ab4e — seh_cleanup_icons_1
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044ab4e() { // Source: decompiled/block_00440000.c FUN_0044ab4e (12 bytes); // DEVIATION: Win32 — critical section cleanup; return; }
+// Source: decompiled/block_00440000.c FUN_0044ab4e (12 bytes)
+export function FUN_0044ab4e() {
+  // DEVIATION: Win32 — critical section cleanup
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044ab64 — seh_fs_restore_icons
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044ab64() { // Source: decompiled/block_00440000.c FUN_0044ab64 (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044ab64 (14 bytes)
+export function FUN_0044ab64() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044ab72 — cut_icon_32x32 (rendering helper)
@@ -1886,12 +2618,18 @@ export function FUN_0044b49e() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044b4f6 — seh_cleanup_sprites
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044b4f6() { // Source: decompiled/block_00440000.c FUN_0044b4f6 (12 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0044cba0(); return; }
+// Source: decompiled/block_00440000.c FUN_0044b4f6 (12 bytes)
+export function FUN_0044b4f6() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044cba0()
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044b50c — seh_fs_restore_sprites
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044b50c() { // Source: decompiled/block_00440000.c FUN_0044b50c (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044b50c (14 bytes)
+export function FUN_0044b50c() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044c5a0 — sprite_manager_constructor (OOP/rendering)
@@ -2024,12 +2762,18 @@ export function FUN_0044caab() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cad3 — win32_dtor_helper
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cad3() { // Source: decompiled/block_00440000.c FUN_0044cad3 (9 bytes); // DEVIATION: MFC/C++ — calls: FUN_005db650(); return; }
+// Source: decompiled/block_00440000.c FUN_0044cad3 (9 bytes)
+export function FUN_0044cad3() {
+  // DEVIATION: MFC/C++ — calls: FUN_005db650()
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cae6 — seh_fs_restore_ca
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cae6() { // Source: decompiled/block_00440000.c FUN_0044cae6 (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044cae6 (14 bytes)
+export function FUN_0044cae6() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cb20 — sprite_sub_destructor_wrapper
@@ -2045,12 +2789,18 @@ export function FUN_0044cb20() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cb5e — sprite_sub_dtor_call
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cb5e() { // Source: decompiled/block_00440000.c FUN_0044cb5e (9 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0044ca60(); return; }
+// Source: decompiled/block_00440000.c FUN_0044cb5e (9 bytes)
+export function FUN_0044cb5e() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044ca60()
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cb71 — seh_fs_restore_cb
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cb71() { // Source: decompiled/block_00440000.c FUN_0044cb71 (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044cb71 (14 bytes)
+export function FUN_0044cb71() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cba0 — sprite_manager_destructor
@@ -2086,12 +2836,18 @@ export function FUN_0044cc01() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cc29 — bitmap_dtor_helper
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cc29() { // Source: decompiled/block_00440000.c FUN_0044cc29 (9 bytes); // DEVIATION: C++ bitmap destructor; return; }
+// Source: decompiled/block_00440000.c FUN_0044cc29 (9 bytes)
+export function FUN_0044cc29() {
+  // DEVIATION: C++ bitmap destructo
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cc3c — seh_fs_restore_cc
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cc3c() { // Source: decompiled/block_00440000.c FUN_0044cc3c (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044cc3c (14 bytes)
+export function FUN_0044cc3c() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cc80 — throne_room_view (UI/rendering)
@@ -2104,12 +2860,18 @@ export function FUN_0044cc80(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cd77 — seh_cleanup_throne_1
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cd77() { // Source: decompiled/block_00440000.c FUN_0044cd77 (12 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0044d027(); return; }
+// Source: decompiled/block_00440000.c FUN_0044cd77 (12 bytes)
+export function FUN_0044cd77() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044d027()
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cd8d — seh_fs_restore_throne
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cd8d() { // Source: decompiled/block_00440000.c FUN_0044cd8d (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044cd8d (14 bytes)
+export function FUN_0044cd8d() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cd9b — throne_room_quick_view (UI/rendering)
@@ -2121,12 +2883,18 @@ export function FUN_0044cd9b(param_1) {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044cdf2 — seh_cleanup_throne_quick
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044cdf2() { // Source: decompiled/block_00440000.c FUN_0044cdf2 (12 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0044d027(); return; }
+// Source: decompiled/block_00440000.c FUN_0044cdf2 (12 bytes)
+export function FUN_0044cdf2() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044d027()
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044ce08 — seh_fs_restore_throne_quick
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044ce08() { // Source: decompiled/block_00440000.c FUN_0044ce08 (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044ce08 (14 bytes)
+export function FUN_0044ce08() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044ce16 — throne_room_init (OOP/rendering)
@@ -2158,15 +2926,42 @@ export function FUN_0044d027() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044d0d8 through FUN_0044d154 — throne room destructor chain
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044d0d8() { // Source: decompiled/block_00440000.c FUN_0044d0d8 (15 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0043c520(); return; }
-export function FUN_0044d0e7() { // Source: decompiled/block_00440000.c FUN_0044d0e7 (15 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0059df8a(); return; }
-export function FUN_0044d0f6() { // Source: decompiled/block_00440000.c FUN_0044d0f6 (15 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0046ab49(); return; }
-export function FUN_0044d105() { // Source: decompiled/block_00440000.c FUN_0044d105 (15 bytes); // DEVIATION: C++ bitmap destructor; return; }
-export function FUN_0044d114() { // Source: decompiled/block_00440000.c FUN_0044d114 (15 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0044cba0(); return; }
-export function FUN_0044d123() { // Source: decompiled/block_00440000.c FUN_0044d123 (15 bytes); // DEVIATION: MFC/C++ — calls: _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x4fc)); return; }
-export function FUN_0044d132() { // Source: decompiled/block_00440000.c FUN_0044d132 (15 bytes); // DEVIATION: Win32 — critical section cleanup; return; }
-export function FUN_0044d141() { // Source: decompiled/block_00440000.c FUN_0044d141 (9 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0044ca60(); return; }
-export function FUN_0044d154() { // Source: decompiled/block_00440000.c FUN_0044d154 (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044d0d8 (15 bytes)
+export function FUN_0044d0d8() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0043c520()
+}
+// Source: decompiled/block_00440000.c FUN_0044d0e7 (15 bytes)
+export function FUN_0044d0e7() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0059df8a()
+}
+// Source: decompiled/block_00440000.c FUN_0044d0f6 (15 bytes)
+export function FUN_0044d0f6() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0046ab49()
+}
+// Source: decompiled/block_00440000.c FUN_0044d105 (15 bytes)
+export function FUN_0044d105() {
+  // DEVIATION: C++ bitmap destructo
+}
+// Source: decompiled/block_00440000.c FUN_0044d114 (15 bytes)
+export function FUN_0044d114() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044cba0()
+}
+// Source: decompiled/block_00440000.c FUN_0044d123 (15 bytes)
+export function FUN_0044d123() {
+  // DEVIATION: MFC/C++ — calls: _Timevec::~_Timevec((_Timevec *)(*(int *)(unaff_EBP + -0x10) + 0x4fc))
+}
+// Source: decompiled/block_00440000.c FUN_0044d132 (15 bytes)
+export function FUN_0044d132() {
+  // DEVIATION: Win32 — critical section cleanup
+}
+// Source: decompiled/block_00440000.c FUN_0044d141 (9 bytes)
+export function FUN_0044d141() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0044ca60()
+}
+// Source: decompiled/block_00440000.c FUN_0044d154 (14 bytes)
+export function FUN_0044d154() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044d162 — throne_room_load_dll (UI/rendering)
@@ -2221,12 +3016,18 @@ export function FUN_0044d296() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044d99d — seh_cleanup_ceremony_1
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044d99d() { // Source: decompiled/block_00440000.c FUN_0044d99d (12 bytes); // DEVIATION: MFC/C++ — calls: thunk_FUN_0043c520(); return; }
+// Source: decompiled/block_00440000.c FUN_0044d99d (12 bytes)
+export function FUN_0044d99d() {
+  // DEVIATION: MFC/C++ — calls: thunk_FUN_0043c520()
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044d9b3 — seh_fs_restore_ceremony
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044d9b3() { // Source: decompiled/block_00440000.c FUN_0044d9b3 (14 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044d9b3 (14 bytes)
+export function FUN_0044d9b3() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044d9c1 — throne_room_show_existing (UI/rendering)
@@ -2306,17 +3107,26 @@ export function FUN_0044db92() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044e762 — cstring_dtor_throne_local
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044e762() { // Source: decompiled/block_00440000.c FUN_0044e762 (9 bytes); // DEVIATION: C++ CString destructor call; return; }
+// Source: decompiled/block_00440000.c FUN_0044e762 (9 bytes)
+export function FUN_0044e762() {
+  // DEVIATION: C++ CString destructor call
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044e76b — bitmap_dtor_throne
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044e76b() { // Source: decompiled/block_00440000.c FUN_0044e76b (12 bytes); // DEVIATION: C++ bitmap destructor; return; }
+// Source: decompiled/block_00440000.c FUN_0044e76b (12 bytes)
+export function FUN_0044e76b() {
+  // DEVIATION: C++ bitmap destructo
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044e781 — seh_fs_restore_throne_scene
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044e781() { // Source: decompiled/block_00440000.c FUN_0044e781 (15 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044e781 (15 bytes)
+export function FUN_0044e781() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044e790 — throne_room_pick_improvement (UI/rendering)
@@ -2347,17 +3157,26 @@ export function FUN_0044e790() {
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044f498 — cstring_dtor_pick
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044f498() { // Source: decompiled/block_00440000.c FUN_0044f498 (12 bytes); // DEVIATION: C++ CString destructor call; return; }
+// Source: decompiled/block_00440000.c FUN_0044f498 (12 bytes)
+export function FUN_0044f498() {
+  // DEVIATION: C++ CString destructor call
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044f4a4 — bitmap_dtor_pick
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044f4a4() { // Source: decompiled/block_00440000.c FUN_0044f4a4 (12 bytes); // DEVIATION: C++ bitmap destructor; return; }
+// Source: decompiled/block_00440000.c FUN_0044f4a4 (12 bytes)
+export function FUN_0044f4a4() {
+  // DEVIATION: C++ bitmap destructo
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044f4ba — seh_fs_restore_pick
 // ═══════════════════════════════════════════════════════════════════
-export function FUN_0044f4ba() { // Source: decompiled/block_00440000.c FUN_0044f4ba (15 bytes); // DEVIATION: Win32 — SEH epilog; return; }
+// Source: decompiled/block_00440000.c FUN_0044f4ba (15 bytes)
+export function FUN_0044f4ba() {
+  // DEVIATION: Win32 — SEH epilog
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // FUN_0044f4c9 — throne_room_handle_click (UI/rendering)
