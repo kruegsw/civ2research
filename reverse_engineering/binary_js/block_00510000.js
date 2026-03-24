@@ -3684,24 +3684,172 @@ export function FUN_0051b2b6() {
 // terrain_editor_main_dialog
 export function FUN_0051bba1() {
   let in_ECX;
+  let local_468;
+  let local_460;
+  let local_454 = [0, 0, 0, 0]; // tagRECT
+  let local_444 = new Uint8Array(1076);
+  let iVar4, iVar5;
+  let uVar2, uVar3;
+  let local_474, local_478, local_47c, local_480, local_484, local_488, local_48c, local_490;
+
   // SEH setup omitted
   FUN_005c64da();
   DAT_006a1d7c = 1;
   DAT_006a4f88 = in_ECX;
+
+  // operator_new(0x48) + FUN_005bd630 → DAT_0062e018
+  let pvVar1 = 0x48; // DEVIATION: operator_new(0x48)
+  if (pvVar1 === 0) {
+    local_468 = 0;
+  } else {
+    local_468 = FUN_005bd630();
+  }
+  DAT_0062e018 = local_468;
+
+  FUN_00417ef0(0, DAT_0062e01c); // DEVIATION: Win32 — thunk_FUN_00417ef0
+  FUN_005d268e(DAT_006a4f90); // DEVIATION: Win32 — init property sheet
+
+  // State init on in_ECX
+  w32(in_ECX, 0x2d8, 0x230);
+  w32(in_ECX, 0x2dc, 0x17c);
+  w32(in_ECX, 0x2ec, 0);
+  DAT_006a1d80 = 0xc9;
+
+  // Load EDITORPT.GIF
+  FUN_005bf071(s_EDITORPT_GIF_00631e3c, 10, 0xc0, local_444); // DEVIATION: Win32 — GIF loader
+
+  // Get parent window handle
+  uVar2 = FUN_0040ef70(); // DEVIATION: Win32 — GetParent
+  w32(in_ECX, 0x2e8, uVar2);
+
+  // Create main editor window
+  uVar3 = FUN_00428b0c(DAT_00628420[0x728 / 4], 0xd, 0, 0,
+                        s32(in_ECX, 0x2d8), s32(in_ECX, 0x2dc), 0, 0, 0); // DEVIATION: Win32 — LoadString
+  FUN_005534bc(uVar3, 0xd, 0, 0,
+               s32(in_ECX, 0x2d8), s32(in_ECX, 0x2dc), 0, 0, 0); // DEVIATION: Win32 — CreateWindow
+
+  // Control dispatch loop — iterate DAT_00631bf8 entries
+  for (local_460 = 0; local_460 < 0xf; local_460 = local_460 + 1) {
+    if (s32(DAT_00631bf8, local_460 * 8) === 9) {
+      FUN_0051b1c2(s32(DAT_00631bf8, local_460 * 8 + 4));
+    } else if (s32(DAT_00631bf8, local_460 * 8) === 0xc) {
+      FUN_0051adfd(s32(DAT_00631bf8, local_460 * 8 + 4));
+    }
+  }
+
+  // DEVIATION: _Timevec::~_Timevec(PTR_DAT_006359f0) — Ghidra misidentification of text height measurement
+  let extraout_EAX = 0; // return value of text height measurement (Win32 GetTextMetrics)
+  w32(in_ECX, 0x2e4, extraout_EAX + 8);
+  let val_12c = s32(in_ECX, 300); // 300 = 0x12c
+  w32(in_ECX, 0x2e0, (val_12c - 10 + ((val_12c - 10) >> 31 & 3)) >> 2);
+
+  // Button 1: top-row left button
+  iVar4 = (s32(in_ECX, 0x128) + s32(in_ECX, 0x130)) - (s32(in_ECX, 0x2e4) + 2);
+  iVar5 = s32(in_ECX, 0x124);
+  FUN_004086c0(local_454, iVar5 + 2, iVar4,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_474 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x3f8 / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_474, 0x65, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_00402711 */); // DEVIATION: Win32 — button callback
+
+  // Button 2
+  iVar5 = iVar5 + 2 + s32(in_ECX, 0x2e0) + 2;
+  FUN_004086c0(local_454, iVar5, iVar4,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_478 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0xa8 / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_478, 0x66, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_00401a69 */); // DEVIATION: Win32 — button callback
+
+  // Button 3
+  iVar5 = iVar5 + s32(in_ECX, 0x2e0) + 2;
+  FUN_004086c0(local_454, iVar5, iVar4,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_47c = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x8ec / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_47c, 0x66, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_0040243c */); // DEVIATION: Win32 — button callback
+
+  // Button 4
+  FUN_004086c0(local_454, iVar5 + s32(in_ECX, 0x2e0) + 2, iVar4,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_480 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x3fc / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_480, 0x66, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_00402347 */); // DEVIATION: Win32 — button callback
+  FUN_0040f840(); // DEVIATION: Win32 — button style
+
+  // Recalculate button dimensions
+  iVar5 = FUN_004a6980(); // DEVIATION: Win32 — GetSystemMetrics
+  w32(in_ECX, 0x2e0, iVar5 + 0xd);
+  // DEVIATION: _Timevec::~_Timevec(PTR_DAT_006359f0) — second text height measurement
+  let extraout_EAX_00 = 0; // return value of text height measurement (Win32 GetTextMetrics)
+  w32(in_ECX, 0x2e4, extraout_EAX_00 + 8);
+
+  // Button 5: lower-left
+  iVar5 = s32(in_ECX, 0x124);
+  iVar4 = FUN_004bb540(); // DEVIATION: Win32 — GetSystemMetrics
+  FUN_004086c0(local_454, iVar5 + 0x19,
+               iVar4 * 2 + s32(in_ECX, 0x128) + 0x28,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_484 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x7cc / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_484, 0x65, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_0040196a */); // DEVIATION: Win32 — button callback
+
+  // Button 6: lower-right area
+  iVar4 = (s32(in_ECX, 300) + s32(in_ECX, 0x124) - 0x19) - s32(in_ECX, 0x2e0);
+  iVar5 = s32(in_ECX, 0x128);
+  FUN_004086c0(local_454, iVar4, iVar5 + 0x28,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_488 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x8f4 / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_488, 0x65, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_00401cfd */); // DEVIATION: Win32 — button callback
+
+  // Button 7: below button 6
+  iVar5 = iVar5 + 0x28 + s32(in_ECX, 0x2e4) + 2;
+  FUN_004086c0(local_454, iVar4, iVar5,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_48c = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x8f8 / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_48c, 0x65, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_00403535 */); // DEVIATION: Win32 — button callback
+
+  // Button 8: below button 7
+  FUN_004086c0(local_454, iVar4, iVar5 + s32(in_ECX, 0x2e4) + 2,
+               s32(in_ECX, 0x2e0), s32(in_ECX, 0x2e4)); // DEVIATION: Win32 — SetRect
+  local_490 = (in_ECX === 0) ? 0 : in_ECX + 0x48;
+  uVar2 = FUN_00428b0c(DAT_00628420[0x8f0 / 4]); // DEVIATION: Win32 — LoadString
+  FUN_0040f680(local_490, 0x65, local_454, uVar2); // DEVIATION: Win32 — CreateButton
+  FUN_0040f880(/* LAB_0040344f */); // DEVIATION: Win32 — button callback
+
+  // Final setup
+  FUN_0040f350(0); // DEVIATION: Win32 — ShowWindow
   FUN_00519200(); // Load terrain data
-  // DEVIATION: Extensive Win32 UI setup — CreateWindow, buttons, controls
-  // All game-logic state writes are above (DAT_006a1d7c, DAT_006a4f88)
-  // The rest is window creation, button setup, scrollbar config, event loop
-  FUN_0051adfd(0); // Create dropdown 0 (terrain names)
-  FUN_0051adfd(1); // Create dropdown 1
-  FUN_0051adfd(2); // Create dropdown 2
-  FUN_0051adfd(3); // Create dropdown 3
-  FUN_0051adfd(4); // Create dropdown 4
-  FUN_0051adfd(5); // Create dropdown 5
+  FUN_00418d90(s32(in_ECX, 0x2ec)); // DEVIATION: Win32 — SetCurSel
   FUN_0051961e(); // Update controls
   FUN_0051aa4e(); // Update display
-  FUN_005199a9(); // Repaint
-  // DEVIATION: Win32 event loop — CPropertySheet::EnableStackedTabs, message dispatch
+  w32(in_ECX, 0x2f8, 6);
+  FUN_00408330(/* LAB_004019d8 */); // DEVIATION: Win32 — SetFocus
+  EnableStackedTabs_00511820(in_ECX, 0x402c7a); // DEVIATION: Win32 — CPropertySheet::EnableStackedTabs
+  FUN_005bb574(); // DEVIATION: Win32 — update window
+  FUN_004085f0(); // DEVIATION: Win32 — ShowWindow
+  FUN_005c61b0(); // DEVIATION: Win32 — UpdateWindow
+
+  // Event loop
+  while (DAT_006a1d7c !== 0) {
+    FUN_0040ef50(); // DEVIATION: Win32 — message pump
+  }
+
+  // Cleanup
+  if (DAT_0062e018 !== 0) {
+    FUN_0040f010(1); // DEVIATION: Win32 — DestroyWindow
+  }
+  DAT_0062e018 = 0;
+  w32(in_ECX, 0x2f8, 0);
+
   FUN_0051c611();
   FUN_0051c627();
   return;
@@ -4718,6 +4866,7 @@ let s_ENEMYINVESTIGATE_0063157c = 'ENEMYINVESTIGATE';
 let s_STEAL_00631590 = 'STEAL';
 let s_FOILEDAGAIN_00631598 = 'FOILEDAGAIN';
 let s_TERRAIN_00631d68 = 'TERRAIN';
+let s_EDITORPT_GIF_00631e3c = 'EDITORPT.GIF';
 let DAT_00631cd4 = '';
 let DAT_00631ce0 = '';
 let DAT_00631cec = '';
