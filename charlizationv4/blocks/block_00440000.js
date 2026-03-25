@@ -761,8 +761,8 @@ export function FUN_00441b11(param_1, param_2) {
             } else {
               local_338 = s8(cVar1);
             }
-            FUN_004271e8(2, G.DAT_0064c488[local_338 * 8]);
-            FUN_004271e8(3, G.DAT_0064c488[local_328 * 8]);
+            FUN_004271e8(2, u32(G.DAT_0064c488, local_338 * 8));
+            FUN_004271e8(3, u32(G.DAT_0064c488, local_328 * 8));
             FUN_0043c9d0(s_SWITCHWONDER_00626380);
             FUN_0059ec88(G.DAT_00645160 + local_328 * 0x3c, 0, 0);
             // DEVIATION: CPropertySheet::EnableStackedTabs(local_320, 8) — MFC
@@ -775,7 +775,7 @@ export function FUN_00441b11(param_1, param_2) {
         else if ((((G.DAT_0063f580[iVar4 * 0x1c + local_28]) & 1) === 0) &&
                 (G.DAT_0063f580[iVar4 * 0x1c + local_28] = G.DAT_0063f580[iVar4 * 0x1c + local_28] | 1,
                  G.DAT_00654fa8 === 0)) {
-          FUN_004271e8(2, G.DAT_0064c488[local_328 * 8]);
+          FUN_004271e8(2, u32(G.DAT_0064c488, local_328 * 8));
           FUN_0043c9d0(s_STARTWONDER_00626374);
           FUN_0059ec88(G.DAT_00645160 + local_328 * 0x3c, 0, 0);
           // DEVIATION: CPropertySheet::EnableStackedTabs(local_320, 8) — MFC
@@ -825,7 +825,7 @@ export function FUN_00441b11(param_1, param_2) {
           G.DAT_00654fa8 === 0)))) {
         uVar5 = FUN_00493c7d(iVar4);
         FUN_0040ff60(1, uVar5);
-        FUN_004271e8(2, G.DAT_0064c488[local_328 * 8]);
+        FUN_004271e8(2, u32(G.DAT_0064c488, local_328 * 8));
         FUN_0043c9d0(s_ABANDONWONDER_00626390);
         FUN_0059ec88(G.DAT_00645160 + local_328 * 0x3c, 0, 0);
         // DEVIATION: CPropertySheet::EnableStackedTabs(local_320, 8) — MFC

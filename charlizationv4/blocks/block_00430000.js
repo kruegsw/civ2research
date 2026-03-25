@@ -233,7 +233,7 @@ export function FUN_0043039d() {
         FUN_0040fea0();
         FUN_0040bc10(0xf4);
         FUN_0040fe10();
-        FUN_0040ff00(G.DAT_0064c488[local_310 * 8]);
+        FUN_0040ff00(u32(G.DAT_0064c488, local_310 * 8));
         FUN_0040fed0();
       }
       FUN_0059edf0(G.DAT_00679640, local_30c, 0);
@@ -728,7 +728,7 @@ export function FUN_00431573() {
           FUN_0040bc10(0xd7);
           FUN_0040fe10();
         }
-        FUN_0040ff00(G.DAT_0064c488[local_60 * 8]);
+        FUN_0040ff00(u32(G.DAT_0064c488, local_60 * 8));
         FUN_0040fe10();
         if (G.DAT_00655be6[local_3c * 2] < 0) {
           FUN_0040fea0();

@@ -1874,7 +1874,7 @@ export function load_city_preferences() {
       local_10 = -1;
       for (local_c = 1; local_c < 0x27; local_c = local_c + 1) {
         _Str2 = G.DAT_00673e10;
-        _Str1 = FUN_00428b0c(G.DAT_0064c488[local_c * 8]);
+        _Str1 = FUN_00428b0c(u32(G.DAT_0064c488, local_c * 8));
         iVar1 = __strcmpi(_Str1, _Str2);
         if (iVar1 === 0) {
           local_10 = local_c;

@@ -71,7 +71,7 @@ export function FUN_004f0221(param_1) {
           DAT_0064c6a2[iVar1 * 0x594] = 0;
           FUN_0043d289(param_1, local_8, 0);
           if (DAT_00654fa8 === 0) {
-            FUN_004271e8(1, DAT_0064c488[local_8 * 8]);
+            FUN_004271e8(1, u32(DAT_0064c488, local_8 * 8));
             FUN_00421da0(0, u8(DAT_0064c48c[local_8 * 8]) * DAT_006a657c);
             FUN_004f3f30(s_INHOCK_0062ef7c, param_1, DAT_00645160 + local_8 * 0x3c);
           }

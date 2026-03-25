@@ -2033,7 +2033,7 @@ export function FUN_0050503e(param_1, in_ECX) {
       local_34 = u8(G.DAT_0064c48c[local_44 * 8]);
       FUN_005baee0(0x54, 10, 1, 1);
       uVar5 = FUN_00407f90(in_ECX + 0x160c);
-      uVar5 = FUN_00428b0c(G.DAT_0064c488[local_44 * 8], in_ECX[0x160c], in_ECX[0x1610], uVar5);
+      uVar5 = FUN_00428b0c(u32(G.DAT_0064c488, local_44 * 8), in_ECX[0x160c], in_ECX[0x1610], uVar5);
       FUN_0043c910(uVar5);
       FUN_0047df20(in_ECX[0x15d4] * 4 + -8);
       iVar1 = FUN_00511690(0x10);
@@ -2335,7 +2335,7 @@ export function FUN_00505d3d(param_1) {
         else {
           bVar1 = u8(G.DAT_0064c48c[local_10 * 8]);
           uVar5 = G.DAT_0064bccc;
-          FUN_004271e8(0, G.DAT_0064c488[local_10 * 8]);
+          FUN_004271e8(0, u32(G.DAT_0064c488, local_10 * 8));
           FUN_00421da0(0, bVar1 * uVar5);
           iVar3 = FUN_004cc870(s_HOCKTHIS_00630db0, local_10, 8);
           if (iVar3 === 0) {
@@ -2442,7 +2442,7 @@ export function FUN_00505ffa(param_1, in_ECX) {
         local_28 = local_3c + local_28;
         local_2c = local_44 + -1;
         FUN_0040bbb0();
-        FUN_0040ff00(G.DAT_0064c488[local_40 * 8]);
+        FUN_0040ff00(u32(G.DAT_0064c488, local_40 * 8));
         FUN_005baee0(0x29, 10, 1, 0);
         FUN_0043c8d0(G.DAT_00679640, local_28, local_2c + -1);
         iVar3 = in_ECX[0x1674];
@@ -3945,7 +3945,7 @@ export function city_button_buy(param_1) {
     iVar5 = FUN_005adfa0(uVar6 * local_368 - s16(G.DAT_0064f35c, iVar5 * 0x58), uVar7, uVar8);
     local_35c = iVar5 * 2;
     if (0x22 < -iVar4) { local_35c = iVar5 << 2; }
-    FUN_004271e8(0, G.DAT_0064c488[iVar4 * -8]);
+    FUN_004271e8(0, u32(G.DAT_0064c488, iVar4 * -8));
   } else {
     local_368 = s8(G.DAT_0064b1c8[iVar3 * 0x14]);
     uVar8 = 999; uVar7 = 0;
@@ -4217,7 +4217,7 @@ export function city_button_change(param_1) {
     iVar3 = FUN_004c03ae(iVar2, iVar4, iVar3);
     if (iVar3 !== 0) {
       FUN_0040bbb0();
-      FUN_0040ff00(G.DAT_0064c488[local_95c * 8]);
+      FUN_0040ff00(u32(G.DAT_0064c488, local_95c * 8));
       FUN_0040fe10();
       FUN_0040bbe0(G.DAT_00630f3c);
       FUN_0040fea0();
@@ -4238,7 +4238,7 @@ export function city_button_change(param_1) {
       FUN_0040bbb0();
       iVar3 = FUN_00453da0(local_6c);
       if (iVar3 !== 0) { FUN_00414d70(G.DAT_00630f40); }
-      FUN_0040ff00(G.DAT_0064c488[local_95c * 8]);
+      FUN_0040ff00(u32(G.DAT_0064c488, local_95c * 8));
       FUN_0040fe10();
       FUN_0040bbe0(G.DAT_00630f44);
       FUN_0040fea0();

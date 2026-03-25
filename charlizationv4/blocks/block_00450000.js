@@ -2292,7 +2292,7 @@ export function handle_exchange_gift(param_1, param_2, param_3, param_4, param_5
     }
     if ((-1 < local_78) && (3 < G.DAT_00655b08)) {
       if (param_5 !== 0) { FUN_0045a510(); FUN_0045a526(); return; }
-      FUN_004271e8(1, G.DAT_0064c488[(local_78 + 0x27) * 8]);
+      FUN_004271e8(1, u32(G.DAT_0064c488, (local_78 + 0x27) * 8));
       FUN_00421ea0(s_NOEXCHANGEWONDER_00626ae8);
       FUN_0045a510(); FUN_0045a526(); return;
     }

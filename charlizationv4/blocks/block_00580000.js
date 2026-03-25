@@ -742,7 +742,7 @@ export function FUN_00580341(param_1, param_2, param_3) {
 
     // ── City improvement defense notifications ──
     if (local_b8 !== 0) {
-      FUN_004271e8(1, G.DAT_0064c488[local_b8 * 8]);
+      FUN_004271e8(1, u32(G.DAT_0064c488, local_b8 * 8));
       FUN_0040ff60(2, G.DAT_0064f360[G.DAT_006acb08 * 0x58]);
       if ((local_24 === 0) || (local_b8 === 0x11)) {
         if (G.DAT_00654fa8 === 0) {

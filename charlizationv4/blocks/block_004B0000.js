@@ -3432,7 +3432,7 @@ export function FUN_004bf05b(param_1, param_2, param_3, param_4, param_5) {
         let local_14 = { 0: 0 }; // C: local_14 = 0, shared across both loops
         for (local_334 = 0; local_334 < 0x43; local_334 = local_334 + 1) {
           if (s8(G.DAT_0064c48e[local_334 * 8]) === param_2) {
-            FUN_004befd1(0, G.DAT_0064c488[local_334 * 8], { 0: local_328, get [0]() { return local_328; }, set [0](v) { local_328 = v; } },
+            FUN_004befd1(0, u32(G.DAT_0064c488, local_334 * 8), { 0: local_328, get [0]() { return local_328; }, set [0](v) { local_328 = v; } },
                          local_14);
           }
         }
@@ -3524,7 +3524,7 @@ export function FUN_004bf05b(param_1, param_2, param_3, param_4, param_5) {
              ((G.DAT_00655b0b & (1 << (G.DAT_0064f348[local_32c * 0x58] & 0x1f))) !== 0)) {
             iVar1 = local_24 + 0x27;
             FUN_004271e8(0, G.DAT_00627684[param_2 * 0x10]);
-            FUN_004271e8(1, G.DAT_0064c488[iVar1 * 8]);
+            FUN_004271e8(1, u32(G.DAT_0064c488, iVar1 * 8));
             FUN_0043c9d0(0);
             if (G.DAT_00626a24 === 0) {
               FUN_0059ec88(G.DAT_00646cb8 + s8(G.DAT_0062768d[param_2 * 0x10]) * 0x3c +

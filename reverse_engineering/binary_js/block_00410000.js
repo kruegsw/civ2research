@@ -3143,7 +3143,7 @@ export function FUN_0041a422(param_1) {
     FUN_004a23fc(1);
     if (param_1 === 0) {
       let uVar2 = FUN_004a26bf(0x19);
-      DAT_0064c488[local_8 * 2] = uVar2;
+      w32(DAT_0064c488, local_8 * 8, uVar2);
     } else {
       FUN_004a24b1();
     }
