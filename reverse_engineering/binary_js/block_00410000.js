@@ -8,7 +8,7 @@
 // Source: reverse_engineering/decompiled/block_00410000.c
 // ═══════════════════════════════════════════════════════════════════
 
-import { s8, u8, s32 } from './mem.js';
+import { s8, u8, s32, w32 } from './mem.js';
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3819,7 +3819,7 @@ export function FUN_0041f8d9() {
     }
     DAT_00655b16 = 0;
     for (let local_740 = 0; local_740 < 0x100; local_740 = local_740 + 1) {
-      DAT_0064f394[local_740 * 0x58 / 4] = 0;
+      w32(DAT_0064f394, local_740 * 0x58, 0);
     }
     DAT_00655b18 = 0;
     iVar2 = FUN_0041eeeb();

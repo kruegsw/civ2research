@@ -6,6 +6,12 @@
 // in reverse_engineering/decompiled/block_004D0000.c if in doubt.
 //
 // Source: reverse_engineering/decompiled/block_004D0000.c
+//
+// DEVIATION: MFC object pointer dereferences throughout this file.
+// C uses *(int *)(ptr + offset) to read/write MFC object members.
+// JS uses ptr[offset] which does NOT correctly dereference. Fixing requires
+// implementing flat memory for dynamically allocated MFC objects.
+// All in_ECX[0xNNN] patterns on MFC object pointers are affected.
 // ═══════════════════════════════════════════════════════════════════
 
 

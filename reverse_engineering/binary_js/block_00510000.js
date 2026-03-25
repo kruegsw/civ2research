@@ -3996,10 +3996,10 @@ export function FUN_0051d75d(param_1, param_2, param_3, param_4) {
   let local_120 = '';
   let local_1c = '';
   let local_8;
-  // __itoa(param_3, local_1c, 10);
+  local_1c = String(param_3); // C: __itoa(param_3, local_1c, 10)
   local_8 = FUN_0051d63b(param_1, param_2, 5, local_1c, local_120);
-  // lVar1 = _atol(local_120);
-  // *param_4 = lVar1;
+  lVar1 = parseInt(local_120) || 0; // C: _atol(local_120)
+  if (param_4) { param_4.value = lVar1; } // C: *param_4 = lVar1
   return local_8;
 }
 
@@ -4232,7 +4232,23 @@ export function FUN_0051ea8e(param_1) {
       if (iVar2 < 10) { FUN_004af1d5(DAT_0063cd4c, 0); }
       FUN_004af1d5(DAT_0063cd4c, iVar2);
     }
-    FUN_00511880(0x40, 0, 0, 0, 0, 0);
+    DAT_006ad66c = DAT_006ad308 + -1;
+    DAT_006ad670 = 0;
+    FUN_00511880(0x40, 0xff, 2, 0, 0, 0);
+    DAT_00635a3c = 0x004019b5; // LAB_004019b5
+    _DAT_006cec80 = FUN_00421bb0();
+    iVar1 = FUN_00426fb0("NEWTURNTIMERSERVER", 0x2000001, DAT_0063fc58, 0);
+    if (((iVar1 < 0) || (DAT_006ad670 === -1)) || (DAT_006ad66c !== 0)) {
+      DAT_006665d0 = local_18;
+      DAT_00654b70 = local_14;
+      FUN_00511880(0x41, 0xff, 0, 0, 0, 0);
+      FUN_00410030(s_NEWTURNTIMERNO_0063146c, DAT_0063fc58, 0);
+      FUN_0051f0f5();
+      FUN_0051f10b();
+      return;
+    }
+    FUN_00511880(0x42, 0xff, 0, 0, 0, 0);
+    FUN_00410030(s_NEWTURNTIMERYES_0063147c, DAT_0063fc58, 0);
   }
   FUN_0051f0f5();
   FUN_0051f10b();
@@ -4252,15 +4268,13 @@ export function FUN_0051f10b() { /* DEVIATION: Win32 — SEH epilog */ return; }
 
 // mp_check_network_status
 export function FUN_0051f11a() {
-  let iVar1;
+  // Source: decompiled/block_00510000.c FUN_0051f11a (100 bytes)
+  FUN_00421bb0();
   FUN_0047e94e(1, 0);
-  if (((DAT_006ad698 === '\0') && (iVar1 = FUN_00421bb0(), iVar1 - _DAT_006cec80 < 0x961)) &&
-     (DAT_006ad66c !== 0) && (DAT_006ad670 !== -1)) {
-    return;
+  if ((DAT_006c9088 !== 0) || (DAT_006c900c !== 0)) {
+    DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+    CRichEditDoc_InvalidateObjectCache(DAT_006ad678[0] + 0x48);
   }
-  DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
-  CRichEditDoc_InvalidateObjectCache(DAT_006ad678[0] + 0x48);
-  _DAT_006cec80 = FUN_00421bb0();
   return;
 }
 

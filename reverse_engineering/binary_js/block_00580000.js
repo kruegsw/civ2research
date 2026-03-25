@@ -2886,12 +2886,12 @@ export function FUN_0058b47e(param_1, param_2) {
   // iVar2 = (DAT_006ace80 + DAT_006ace88) - (local_68 + 2); // DEVIATION: MFC
   // local_64 = DAT_006ace7c + 2; // DEVIATION: MFC
   // FUN_004086c0(local_5c, local_64, iVar2, local_60, local_68); // DEVIATION: MFC
-  // uVar1 = FUN_00428b0c(DAT_00628420 + 0x3f8 / 4); // DEVIATION: MFC — OK string
+  // uVar1 = FUN_00428b0c(DAT_00628420 + 0x3f8); // DEVIATION: MFC — OK string
   // FUN_0040f680(DAT_006acda0, 0x65, local_5c, uVar1); // DEVIATION: MFC — OK button
   // FUN_0040f880(0x004022c0); // DEVIATION: MFC — OK handler
   // local_64 = local_64 + local_60 + 2; // DEVIATION: MFC
   // FUN_004086c0(local_5c, local_64, iVar2, local_60, local_68); // DEVIATION: MFC
-  // uVar1 = FUN_00428b0c(DAT_00628420 + 0x3fc / 4); // DEVIATION: MFC — Cancel string
+  // uVar1 = FUN_00428b0c(DAT_00628420 + 0x3fc); // DEVIATION: MFC — Cancel string
   // FUN_0040f680(DAT_006acda0, 0x66, local_5c, uVar1); // DEVIATION: MFC — Cancel button
   // FUN_0040f880(0x00402da1); // DEVIATION: MFC — Cancel handler
   // FUN_0040f840(); // DEVIATION: MFC — set default button
@@ -3584,7 +3584,7 @@ export function FUN_0058d442() {
       return;
     }
   }
-  uVar2 = FUN_00428b0c(DAT_00628420 + 0xf8 / 4, 1); // DEVIATION: resource string
+  uVar2 = FUN_00428b0c(DAT_00628420 + 0xf8, 1); // DEVIATION: resource string
   local_8 = FUN_005b6aea(local_8, uVar2);
   if (local_8 < 0) return;
   // LAB_0058d58e: activate unit
@@ -4438,7 +4438,7 @@ export function FUN_0058fedb(param_1, param_2) {
      s8(DAT_0064f340[param_2 * 0x58 + 8]) === iVar3 && local_31c !== 0) {
     // DEVIATION: UI dialog — show caravan menu options
     if (s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) < 0) {
-      FUN_004271e8(0, DAT_00628420 + 0x100 / 4); // DEVIATION: Win32 resource
+      FUN_004271e8(0, DAT_00628420 + 0x100); // DEVIATION: Win32 resource
     } else {
       FUN_004271e8(0, DAT_0064b168[s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) * 4]); // DEVIATION
     }
@@ -4466,20 +4466,20 @@ export function FUN_0058fedb(param_1, param_2) {
     }
     uVar7 = 0;
     uVar6 = 0;
-    uVar4 = FUN_00428b0c(DAT_00628420 + 0x284 / 4, 0, 0); // DEVIATION: resource string
+    uVar4 = FUN_00428b0c(DAT_00628420 + 0x284, 0, 0); // DEVIATION: resource string
     FUN_0059edf0(uVar4, uVar6, uVar7); // DEVIATION: UI button
     cVar5 = (DAT_006560f0[param_1 * 0x20 + 0x10] !== param_2) ? 1 : 0;
     if (cVar5) {
       uVar7 = 0;
       uVar6 = 1;
-      uVar4 = FUN_00428b0c(DAT_00628420 + 0x288 / 4, 1, 0); // DEVIATION: resource string
+      uVar4 = FUN_00428b0c(DAT_00628420 + 0x288, 1, 0); // DEVIATION: resource string
       FUN_0059edf0(uVar4, uVar6, uVar7); // DEVIATION: UI button
     }
     // C: (char)(&DAT_0064f379)[param_2 * 0x58] < -0x26
     if (s8(DAT_0064f340[param_2 * 0x58 + 0x39]) < -0x26) {
       uVar7 = 0;
       uVar6 = 2;
-      uVar4 = FUN_00428b0c(DAT_00628420 + 0x28c / 4, 2, 0); // DEVIATION: resource string
+      uVar4 = FUN_00428b0c(DAT_00628420 + 0x28c, 2, 0); // DEVIATION: resource string
       FUN_0059edf0(uVar4, uVar6, uVar7); // DEVIATION: UI button
       cVar5 = cVar5 + 1;
     }

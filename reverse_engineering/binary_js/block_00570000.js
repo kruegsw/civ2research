@@ -1741,7 +1741,7 @@ export function FUN_00575dec() {
   // DAT_006ac11c = in_ECX; // DEVIATION: MFC (in_ECX)
   // in_ECX[0x2d8] = 0xf0; // DEVIATION: MFC — dialog width
   // in_ECX[0x2dc] = 0xf0; // DEVIATION: MFC — dialog height
-  uVar1 = FUN_00428b0c(DAT_00628420 + 0x950 / 4, 0xd, 0, 0, 0xf0, 0xf0, 0, 0, 0);
+  uVar1 = FUN_00428b0c(DAT_00628420 + 0x950, 0xd, 0, 0, 0xf0, 0xf0, 0, 0, 0);
   FUN_00574ca6(uVar1); // create dialog
   // _Timevec_destructor(PTR_DAT_006359f0); // DEVIATION: MFC
   // in_ECX[0x2f4] = extraout_EAX + 8; // DEVIATION: MFC layout
@@ -1760,17 +1760,17 @@ export function FUN_00575dec() {
   // in_ECX[0x2f0] = (in_ECX[300] - 8) / 3; // DEVIATION: MFC — button width
   // 3 button layout blocks: OK (0x3f8), Apply (0x954), Cancel (0x3fc)
   // Each: FUN_004086c0 → FUN_0040f680 → FUN_0040f880
-  // let uVar1_ok = FUN_00428b0c(DAT_00628420 + 0x3f8 / 4); // DEVIATION: OK string
+  // let uVar1_ok = FUN_00428b0c(DAT_00628420 + 0x3f8); // DEVIATION: OK string
   // FUN_0040f680(local_2c, 0xc9, local_18, uVar1_ok); // DEVIATION: MFC — OK button
   // FUN_0040f880(0x004013c5); // DEVIATION: MFC — OK handler
   // FUN_0040f7d0(); // DEVIATION: MFC — set default
-  // let uVar1_apply = FUN_00428b0c(DAT_00628420 + 0x954 / 4); // DEVIATION: Apply string
+  // let uVar1_apply = FUN_00428b0c(DAT_00628420 + 0x954); // DEVIATION: Apply string
   // FUN_0040f680(local_30, 0xc9, local_18, uVar1_apply); // DEVIATION: MFC — Apply button
   // FUN_0040f880(0x004029a5); // DEVIATION: MFC — Apply handler
   if (DAT_006ac924 === 5) {
     FUN_00453c40(); // hide apply button for mode 5
   }
-  // let uVar1_cancel = FUN_00428b0c(DAT_00628420 + 0x3fc / 4); // DEVIATION: Cancel string
+  // let uVar1_cancel = FUN_00428b0c(DAT_00628420 + 0x3fc); // DEVIATION: Cancel string
   // FUN_0040f680(local_34, 0xca, local_18, uVar1_cancel); // DEVIATION: MFC — Cancel button
   // FUN_0040f880(0x00402cde); // DEVIATION: MFC — Cancel handler
   // FUN_0040f840(); // DEVIATION: MFC — set default button
@@ -1822,10 +1822,10 @@ export function show_messagebox_6267() {
     local_844 = "UNITS"; break;
   }
   do {
-    uVar1 = FUN_00428b0c(DAT_00628420 + 0x958 / 4, 0, local_844, local_844, 0, 0);
+    uVar1 = FUN_00428b0c(DAT_00628420 + 0x958, 0, local_844, local_844, 0, 0);
     _sprintf(local_840, "%s.%s", local_844, uVar1); // DEVIATION: sprintf
     _sprintf(local_948, "%s.BMP;%s.GIF", local_844, local_844); // DEVIATION: sprintf
-    uVar1 = FUN_00428b0c(DAT_00628420 + 0x95c / 4, local_844);
+    uVar1 = FUN_00428b0c(DAT_00628420 + 0x95c, local_844);
     _sprintf(local_9d0, "%s", uVar1); // DEVIATION: sprintf
     iVar2 = FUN_show_open_dialog_31D2(DAT_006ac1f8, local_9d0, local_948, local_840, "BMP;GIF", 1, 0); // DEVIATION: Win32 file dialog
     if (iVar2 === 0) {
@@ -1861,7 +1861,7 @@ export function show_messagebox_6267() {
           iVar2 = load_bitmap(DAT_006ac0a8, local_948, 10, 0xc0, local_73c); // DEVIATION: Win32
           if (iVar2 !== 0) { local_94c = 0; }
           else {
-            // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x964 / 4); // DEVIATION: error string
+            // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x964); // DEVIATION: error string
             // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
           }
         } else {
@@ -1870,18 +1870,18 @@ export function show_messagebox_6267() {
             iVar2 = FUN_005bf071(local_948, 10, 0xc0, local_73c); // DEVIATION: GIF loader
             if (iVar2 !== 0) { local_94c = 0; }
             else {
-              // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x964 / 4); // DEVIATION: error
+              // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x964); // DEVIATION: error
               // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
             }
           } else {
-            // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x968 / 4); // DEVIATION: format error
+            // let pCVar4 = FUN_00428b0c(DAT_00628420 + 0x968); // DEVIATION: format error
             // MessageBoxA(0, pCVar4, null, 0x10); // DEVIATION: Win32 error
           }
         }
       }
     } else {
       // Filename doesn't match — show warning
-      uVar1 = FUN_00428b0c(DAT_00628420 + 0x960 / 4, local_844);
+      uVar1 = FUN_00428b0c(DAT_00628420 + 0x960, local_844);
       _sprintf(local_9d0, "%s", uVar1);
       // MessageBoxA(0, local_9d0, null, 0x40); // DEVIATION: Win32 warning
     }

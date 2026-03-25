@@ -6,6 +6,12 @@
 // in reverse_engineering/decompiled/block_005B0000.c if in doubt.
 //
 // Source: reverse_engineering/decompiled/block_005B0000.c
+//
+// DEVIATION: MFC object pointer dereferences throughout this file.
+// C uses *(int *)(ptr + offset) to read/write MFC object members.
+// JS uses ptr[offset] which does NOT correctly dereference. Fixing requires
+// implementing flat memory for dynamically allocated MFC objects.
+// All in_ECX[0xNNN] patterns on MFC object pointers are affected.
 // ═══════════════════════════════════════════════════════════════════
 
 import { s8, u8, DAT_006d1160, DAT_006d1162, DAT_00655ae8, DAT_006560f0, DAT_0064b1bc, DAT_0064bcc8, DAT_00655b16, DAT_00636058, DAT_0064c600, DAT_00627cce, DAT_00627cd4, DAT_00655b12, DAT_00628350, DAT_00628360, DAT_006d1168, DAT_0064f340, tileRead, tileWrite, , w16 } from './mem.js';
@@ -252,9 +258,9 @@ export function FUN_005b0473(param_1) {
     break;
   case 1: // techs (part 1)
   case 2: // techs (part 2)
-    uVar3 = FUN_00428b0c(DAT_00628420 + 0x7c0 / 4); // header 1
+    uVar3 = FUN_00428b0c(DAT_00628420 + 0x7c0); // header 1
     // FUN_00418ce0(uVar3); // DEVIATION: MFC
-    uVar3 = FUN_00428b0c(DAT_00628420 + 0x7c4 / 4); // header 2
+    uVar3 = FUN_00428b0c(DAT_00628420 + 0x7c4); // header 2
     // FUN_00418ce0(uVar3); // DEVIATION: MFC
     for (local_24 = 0; local_24 < 100; local_24 = local_24 + 1) {
       uVar3 = FUN_00428b0c(DAT_00627684[local_24 * 0x10]); // tech name
@@ -2061,7 +2067,7 @@ export function FUN_005b67af(param_1, param_2, param_3, param_4) {
 export function FUN_005b6898(param_1) {
   let puVar1;
   if (DAT_006560f0[param_1 * 0x20 + 0x10] === 0xFF) {
-    puVar1 = FUN_00428b0c(DAT_00628420 + 0x38 / 4); // DEVIATION: resource string "NONE"
+    puVar1 = FUN_00428b0c(DAT_00628420 + 0x38); // DEVIATION: resource string "NONE"
   } else {
     puVar1 = DAT_0064f340 + u8(DAT_006560f0[param_1 * 0x20 + 0x10]) * 0x58 + 0x20; // city name
   }
@@ -2145,7 +2151,7 @@ export function FUN_005b6aea(param_1, param_2, param_3) {
         // Caravan — show cargo
         FUN_00421d30(); // DEVIATION: MFC
         if (s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) < 0) {
-          FUN_0040ff00(DAT_00628420 + 0x300 / 4); // "no cargo"
+          FUN_0040ff00(DAT_00628420 + 0x300); // "no cargo"
         } else {
           FUN_0040ff00(DAT_0064b168[s8(DAT_006560f0[param_1 * 0x20 + 0x0D]) * 4]); // cargo name
         }

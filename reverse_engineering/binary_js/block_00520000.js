@@ -6,6 +6,14 @@
 // in reverse_engineering/decompiled/block_00520000.c if in doubt.
 //
 // Source: reverse_engineering/decompiled/block_00520000.c
+//
+// DEVIATION: MFC object pointer dereferences throughout this file.
+// C uses *(int *)(ptr + offset) to read/write MFC object members.
+// JS uses ptr[offset] which is a byte-level array access on a numeric
+// pointer value — this does NOT correctly dereference. Fixing requires
+// implementing flat memory for dynamically allocated MFC objects.
+// All param_1[0xNNN], in_ECX[0xNNN], local_8[0xNNN] patterns on
+// MFC object pointers are affected by this structural limitation.
 // ═══════════════════════════════════════════════════════════════════
 
 import {
@@ -65,7 +73,7 @@ export function FUN_0052182c(param_1, param_2) {
     FUN_005f22e0(local_84, param_1[0x134]);
   }
   sVar1 = local_84.length; // _strlen
-  uVar2 = FUN_00498159(param_1[0x254], sVar1 + 1);
+  uVar2 = FUN_00498159(param_1 + 0x254, sVar1 + 1);
   param_1[0x134] = uVar2;
   FUN_005f22d0(param_1[0x134], local_84);
   return;
