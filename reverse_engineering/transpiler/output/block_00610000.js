@@ -109,7 +109,7 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
         puVar7 = segment(in_SS,sVar18 + 0x2e);
         puVar8 = segment(in_SS,sVar18 + -0x14);
         puVar11 = segment(in_SS,sVar18 + -0x16);
-        // DEVIATION: C pointer — *(undefined1 *)
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — *(undefined1 *)
          // DEVIATION: SEH
           // DEVIATION(cont): (uint)*puVar7 + (uint)*puVar8) = *puVar11;
       }
@@ -244,7 +244,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
       psVar8 = segment(in_SS,sVar17 + -8);
       psVar9 = segment(in_SS,sVar17 + -0x12);
       w32(psVar9, 0, (s32(psVar4, 0) + s32(psVar5, 0)) * 2 + s32(psVar8, 0));
-      // DEVIATION: C pointer — *(char **)(iVar24 + -0xe) = pcVar26;
+      s32(char **, 0)(iVar24 + -0xe) = pcVar26;
       psVar4 = segment(in_SS,sVar17 + -0x14);
       iVar20 = CONCAT22(uVar21,s32(psVar4, 0));
       puVar3 = segment(in_SS,sVar23 + -6);
@@ -273,7 +273,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
           psVar4 = segment(in_SS,sVar23 + -0x14);
           psVar5 = segment(in_SS,sVar23 + -0x16);
           if (s32(psVar5, 0) <= ((s32(psVar8, 0) - s32(psVar4, 0)) << 16 >> 16)) break;
-          // DEVIATION: C pointer — cVar13 = *(char *)(((ushort) >>> 0)(s32(psVar8, 0) - s32(psVar4, 0)) + iVar22);
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — cVar13 = *(char *)(((ushort) >>> 0)(s32(psVar8, 0) - s32(psVar4, 0)) + iVar22);
           if (cVar13 !== cVar12) {
             w32(pcVar26, 0, cVar13);
           }
@@ -282,7 +282,7 @@ export function FUN_0061a759(unaff_SI, unaff_DI) {
           iVar20 = iVar20 + -1;
         } while (iVar20 !== 0);
       }
-      // DEVIATION: C pointer — pcVar26 = *(char **)(iVar24 + -0xe);
+      pcVar26 = s32(char **, 0)(iVar24 + -0xe);
     }
     psVar4 = segment(in_SS,sVar23 + 0x20);
     pcVar26 = pcVar26 + s32(psVar4, 0);

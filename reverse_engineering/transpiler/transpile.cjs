@@ -269,11 +269,35 @@ function transformLine(line, ctx) {
     // Only match specific Ghidra variable patterns to avoid catching multiplication
     out = out.replace(/(?<![a-zA-Z0-9_])\*([a-zA-Z_]\w*Var\d+|in_E\w+|DAT_[0-9a-fA-F]+|param_\d+|local_\w+|unaff_\w+|extraout_\w+|p[A-Z]\w*Var\d+|_\w+)(?!\s*\()/g,
       (m, name) => 's32(' + name + ', 0)');
-    // ── Bare pointer deref with parens: *(expr + off) → s32(expr, off) ──
-    // Uses balanced paren extraction, only when preceded by = ( , ; or start
-    out = out.replace(/(?<=[=(,;\s])\*\(/g, (m, offset) => {
-      return m; // leave for now — handled by DEVIATION catch-all if needed
-    });
+    // ── Bare pointer deref with parens: *(expr) → s32(expr, offset) ──
+    // Only match when * is a dereference (after =, (, ,, ;, space, start)
+    {
+      let newOut = '';
+      let lastIdx = 0;
+      const derefRe = /(?<=[=(,;\s]|^)\*\(/g;
+      let dm;
+      while ((dm = derefRe.exec(out)) !== null) {
+        const parenStart = dm.index + dm[0].length - 1; // position of (
+        const balanced = extractBalancedParens(out, parenStart);
+        if (!balanced) continue;
+        // Check the content isn't a type cast (would have * inside)
+        if (/\w\s*\*\s*$/.test(balanced.content)) continue;
+        newOut += out.substring(lastIdx, dm.index);
+        const inner = balanced.content.trim();
+        const parts = splitBaseOffset(inner);
+        if (parts) {
+          newOut += 's32(' + parts.base + ', ' + parts.offset + ')';
+        } else {
+          newOut += 's32(' + inner + ', 0)';
+        }
+        lastIdx = balanced.end + 1;
+        derefRe.lastIndex = lastIdx;
+      }
+      if (lastIdx > 0) {
+        newOut += out.substring(lastIdx);
+        out = newOut;
+      }
+    }
 
     // ── C-style pointer casts without dereference: (TYPE *)expr → expr ──
     out = out.replace(/(?<!\*\s*)\(\s*\w+\s*\*\s*\)\s*(?=\()/g, '');
@@ -290,8 +314,13 @@ function transformLine(line, ctx) {
     // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──
     // Catches *(char **), *(void *), etc. — anything with *(TYPE *) still in the line
     if (/\*\s*\(\s*\w[\w\s]*\*+\s*\)/.test(out) && !/\/\/|DEVIATION/.test(out)) {
-      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: C pointer — $2');
-      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
+      // Count open parens before this point to close them if needed
+      let openParens = 0;
+      for (const ch of out) { if (ch === '(') openParens++; if (ch === ')') openParens--; }
+      const closers = openParens > 0 ? ')'.repeat(openParens) : '';
+      // Replace the offending part with a safe expression that closes parens
+      out = out.replace(/^(\s*)(.*)$/, '$1true' + closers + ' // DEVIATION: C pointer — $2');
+      if (!/;\s*$/.test(out.trim()) && !/\{/.test(out)) ctx.deviationContinuation = true;
     }
 
     // ── Equality operators ──

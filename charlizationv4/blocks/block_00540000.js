@@ -275,7 +275,7 @@ export function FUN_00548e23(param_1, param_2) {
         }
         for (local_58 = 0; (local_58 < 0x14 && (s32(param_2, 0x38 + local_58 * 4) !== 0));
             local_58 = local_58 + 1) {
-          // DEVIATION: C pointer — iVar1 = _fputs(*(char **)(param_2 + 0x38 + local_58 * 4),param_1);
+          iVar1 = _fputs(s32(char **, 0)(param_2 + 0x38 + local_58 * 4),param_1);
           if (iVar1 === -1) {
             return;
           }
@@ -435,7 +435,7 @@ export function FUN_00548e23(param_1, param_2) {
             return;
           }
           if (s32(param_2, 0x1b0) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+            // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b0) == -3) {
                 // DEVIATION(cont): _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
               }
@@ -459,7 +459,7 @@ export function FUN_00548e23(param_1, param_2) {
             return;
           }
           if (s32(param_2, 0x1b8) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+            // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b8) == -3) {
                 // DEVIATION(cont): _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
               }
@@ -1324,7 +1324,7 @@ export function FUN_0054ae93() {
     FUN_00453c80();
     local_14 = G.DAT_0064b99c;
     while ((local_14 !== 0x0 && (local_8 !== 0))) {
-      // DEVIATION: C pointer — local_14 = *(byte **)(local_14 + 0x1bc);
+      local_14 = s32(byte **, 0)(local_14 + 0x1bc);
       local_8 = local_8 + -1;
     }
     if ((s32(local_14, 0) & 0x20) === 0) {
@@ -1333,7 +1333,7 @@ export function FUN_0054ae93() {
     else {
       FUN_00453c40();
     }
-    // DEVIATION: C pointer — if (*(int *)local_14 === 0x20) {
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — if (*(int *)local_14 === 0x20) {
       // DEVIATION(cont): local_10 = 0;
       while ((1 << (u8(local_10) & 0x1f) & (u32(local_14, 4) | 0xfffffe6f)) !== 0) {
         local_10 = local_10 + 1;
@@ -1396,7 +1396,7 @@ export function show_messagebox_B0ED_0054B0ED() {
       lpCaption = s_File_I_O_Error_00632b38;
       lpText = local_24;
       iVar1 = FUN_00414d10();
-      MessageBoxA(*(iVar1 + 4),lpText,lpCaption,uType);
+      MessageBoxA(s32(iVar1, 4),lpText,lpCaption,uType);
     }
     G.DAT_006a1d7c = 0;
     // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((G.DAT_006a4f88 + 0x48));
@@ -2074,7 +2074,7 @@ export function FUN_0054bc1a() {
       }
       else if (uVar2 < 0x201) {
         if (uVar2 === 0x200) {
-          // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
+          // DEVIATION(C-syntax): true) // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
                                       // DEVIATION(cont): (&G.DAT_00627cc4 + *(int *)(local_10c + 0x18c) * 0x18));
           _sprintf(local_104,s_CHANGETERRAIN___s__00633004,uVar3);
         }
@@ -2084,7 +2084,7 @@ export function FUN_0054bc1a() {
       }
       else if (uVar2 === 0x400) {
         if (s32(local_10c, 0x1b0) < 0) {
-          // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
             // DEVIATION(cont): if (*(int *)(local_10c + 0x1b0) == -3) {
               // DEVIATION(cont): _sprintf(local_104,s_DESTROYACIVILIZATION__TRIGGERATT_0063305c);
             }
@@ -2106,7 +2106,7 @@ export function FUN_0054bc1a() {
           _sprintf(local_104,s_GIVETECHNOLOGY_00633134);
         }
         else if (s32(local_10c, 0x1b8) < 0) {
-          // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
             // DEVIATION(cont): if (*(int *)(local_10c + 0x1b8) == -3) {
               // DEVIATION(cont): _sprintf(local_11c,s_TRIGGERATTACKER_006330e8);
             }
@@ -2117,12 +2117,12 @@ export function FUN_0054bc1a() {
           else {
             _sprintf(local_11c,s_TRIGGERRECEIVER_006330d8);
           }
-          // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
+          // DEVIATION(C-syntax): true) // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
                                       // DEVIATION(cont): (&G.DAT_00627684 + *(int *)(local_10c + 0x1b4) * 0x10));
           _sprintf(local_104,s_GIVETECHNOLOGY__receiver__s_tech_00633108,local_11c,uVar3);
         }
         else {
-          // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
+          // DEVIATION(C-syntax): true) // DEVIATION: C pointer — uVar3 = FUN_00428b0c(*(undefined4 *)
                                       // DEVIATION(cont): (&G.DAT_00627684 + *(int *)(local_10c + 0x1b4) * 0x10));
           uVar3 = FUN_00493c7d(s32(local_10c, 0x1b8),uVar3);
           _sprintf(local_104,s_GIVETECHNOLOGY__receiver__s_tech_006330ac,uVar3);
@@ -2172,10 +2172,10 @@ export function FUN_0054c36e() {
       local_c = local_c + -1;
     }
     if (s32(local_10, 0x1c0) !== 0) {
-      // DEVIATION: C pointer — s32(s32(local_10, 0x1c0) + 0x1bc, 0) = s32(local_10, 0x1bc);
+      true // DEVIATION: C pointer — s32(s32(local_10, 0x1c0) + 0x1bc, 0) = s32(local_10, 0x1bc);
     }
     if (s32(local_10, 0x1bc) !== 0) {
-      // DEVIATION: C pointer — s32(s32(local_10, 0x1bc) + 0x1c0, 0) = s32(local_10, 0x1c0);
+      true // DEVIATION: C pointer — s32(s32(local_10, 0x1bc) + 0x1c0, 0) = s32(local_10, 0x1c0);
     }
     if (iVar1 === 0) {
       G.DAT_0064b99c = s32(local_10, 0x1bc);
@@ -2871,7 +2871,7 @@ export function show_messagebox_D4E6_0054D4E6() {
       lpCaption = FUN_00428b0c(s32(G.DAT_00628420, 0x8d0));
       lpText = FUN_00428b0c(s32(G.DAT_00628420, 0x8e8));
       iVar2 = FUN_00414d10();
-      MessageBoxA(*(iVar2 + 4),lpText,lpCaption,uType);
+      MessageBoxA(s32(iVar2, 4),lpText,lpCaption,uType);
     }
     else {
       w32(piVar1, 0, 1 << (u8(local_c) & 0x1f));
@@ -2888,7 +2888,7 @@ export function show_messagebox_D4E6_0054D4E6() {
           G.DAT_0064b99c = s32(local_10, 0x1bc);
         }
         else {
-          // DEVIATION: C pointer — s32(s32(local_10, 0x1c0) + 0x1bc, 0) = s32(local_10, 0x1bc);
+          true // DEVIATION: C pointer — s32(s32(local_10, 0x1c0) + 0x1bc, 0) = s32(local_10, 0x1bc);
         }
         FUN_004cef35();
         FUN_0054b635();
@@ -3053,7 +3053,7 @@ export function FUN_0054d7ef() {
         }
         else {
           local_1b8[0x25] = local_18;
-          // DEVIATION: C pointer — local_14[0] = FUN_00428b0c(*(undefined4 *)
+          // DEVIATION(C-syntax): true) // DEVIATION: C pointer — local_14[0] = FUN_00428b0c(*(undefined4 *)
                                                  // DEVIATION(cont): (&G.DAT_0064b1b8 + local_1b8[0x25] * 0x14));
         }
         sVar3 = _strlen(local_14[0]);
@@ -3169,7 +3169,7 @@ export function FUN_0054d7ef() {
       local_18 = FUN_0054a912(local_1b8[0x38],uVar1);
       if (local_18 !== -1) {
         local_1b8[0x38] = local_18;
-        // DEVIATION: C pointer — local_14[0] = FUN_00428b0c(*(undefined4 *)
+        // DEVIATION(C-syntax): true) // DEVIATION: C pointer — local_14[0] = FUN_00428b0c(*(undefined4 *)
                                                // DEVIATION(cont): (&G.DAT_0064b1b8 + local_1b8[0x38] * 0x14));
         sVar3 = _strlen(local_14[0]);
         uVar1 = thunk_show_messagebox_CA35(G.DAT_0064b984,sVar3 + 1);
@@ -3984,7 +3984,7 @@ function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1,
             return;
           }
           if (s32(param_2, 0x1b0) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+            // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b0) == -3) {
                 // DEVIATION(cont): _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
               }
@@ -4008,7 +4008,7 @@ function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1,
             return;
           }
           if (s32(param_2, 0x1b8) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+            // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b8) == -3) {
                 // DEVIATION(cont): _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
               }

@@ -198,6 +198,7 @@ export const G = {
   DAT_0063afa1: new Uint8Array(_BUF, 126777),  // 0x63afa1
   DAT_0063b0b0: new Uint8Array(_BUF, 127048),  // 0x63b0b0
   DAT_0063b0c0: new Uint8Array(_BUF, 127064),  // 0x63b0c0
+  DAT_0063b0c8: new Uint8Array(_BUF, 127072),  // 0x63b0c8
   DAT_0063b0cc: new Uint8Array(_BUF, 127076),  // 0x63b0cc
   DAT_0063b1b8: new Uint8Array(_BUF, 127312),  // 0x63b1b8
   DAT_0063b248: new Uint8Array(_BUF, 127456),  // 0x63b248
@@ -1829,7 +1830,6 @@ export const G = {
   DAT_0063b0a4: 0,
   DAT_0063b0a8: 0,
   DAT_0063b0bc: 0,
-  DAT_0063b0c8: 0,
   DAT_0063b0d8: 0,
   DAT_0063b24c: 0,
   DAT_0063b250: 0,

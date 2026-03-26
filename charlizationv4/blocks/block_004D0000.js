@@ -684,7 +684,7 @@ export function FUN_004d0b58(in_ECX) {
     FUN_00408010(0x1fc);
     FUN_00596eec(s32(in_ECX, 0x1cc),1);
     FUN_004d4a7b();
-    // DEVIATION: C pointer — if ((s16(G.DAT_0064caae, s32(in_ECX, 0x1cc) * 0x594) !== 0) && (G.DAT_006ad0ec !== 0))
+    true // DEVIATION: C pointer — if ((s16(G.DAT_0064caae, s32(in_ECX, 0x1cc) * 0x594) !== 0) && (G.DAT_006ad0ec !== 0))
     // DEVIATION(cont): {
       w32(in_ECX, 0xae0, 1);
     // DEVIATION(cont): }
@@ -3532,7 +3532,7 @@ export function FUN_004d4a7b(in_ECX) {
   bVar2 = false;
   FUN_004aef20(in_ECX + 0x638);
   for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    // DEVIATION: C pointer — sVar1 = s16(G.DAT_0064caa8, s32(in_ECX, 0x1cc) * 0x594 + local_c * 2);
+    true // DEVIATION: C pointer — sVar1 = s16(G.DAT_0064caa8, s32(in_ECX, 0x1cc) * 0x594 + local_c * 2);
     iVar3 = FUN_00596b00(s32(in_ECX, 0x1cc),local_c);
     if (iVar3 < sVar1) {
       bVar2 = true;
@@ -3540,10 +3540,10 @@ export function FUN_004d4a7b(in_ECX) {
   }
   for (local_c = 0; local_c < 6; local_c = local_c + 1) {
     FUN_004af122(in_ECX + 0x638,
-                       // DEVIATION: C pointer — s32(G.DAT_00628420, s32(G.DAT_00634f60, local_c * 0xc) * 4));
+                       true // DEVIATION: C pointer — s32(G.DAT_00628420, s32(G.DAT_00634f60, local_c * 0xc) * 4));
     FUN_004aefb7(in_ECX + 0x638);
     FUN_004af1d5(in_ECX + 0x638,
-                       // DEVIATION: C pointer — (int)*(short *)(G.DAT_0064caa8 +
+                       // DEVIATION(C-syntax): true) // DEVIATION: C pointer — (int)*(short *)(G.DAT_0064caa8 +
                                       // DEVIATION(cont): *(int *)(in_ECX + 0x1cc) * 0x594 + local_c * 2));
     if ((bVar2) && (local_c === 0)) {
       FUN_0043c840(in_ECX + 0x638,G.DAT_0062e2f4);
@@ -3553,7 +3553,7 @@ export function FUN_004d4a7b(in_ECX) {
   FUN_004af14b(in_ECX + 0x638,0x22);
   FUN_004aefb7(in_ECX + 0x638);
   FUN_004af1d5(in_ECX + 0x638,
-                     // DEVIATION: C pointer — s16(G.DAT_0064caae, s32(in_ECX, 0x1cc) * 0x594));
+                     true // DEVIATION: C pointer — s16(G.DAT_0064caae, s32(in_ECX, 0x1cc) * 0x594));
   FUN_0043c840(in_ECX + 0x638,s_0_000_0062e2fc);
   FUN_0043c840(in_ECX + 0x638,G.DAT_0062e304);
   FUN_004af14b(in_ECX + 0x638,0x42);
@@ -3626,7 +3626,7 @@ export function FUN_004d4fd1(in_ECX, param_1) {
     uVar2 = FUN_004d8af0();
     iVar1 = gdi_847F(uVar2);
     FUN_00407ff0();
-    // DEVIATION: C pointer — local_18[0] = *(undefined1 *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX);
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_18[0] = *(undefined1 *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX);
     local_17 = 0;
     FUN_005c19ad(0xf9);
     if (s32(in_ECX, 0x1db4) === 0) {
@@ -3645,7 +3645,7 @@ export function FUN_004d4fd1(in_ECX, param_1) {
     uVar2 = FUN_004d8af0(local_18[0]);
     iVar1 = measure_text_858E(uVar2);
     w32(in_ECX, 0x8b8, s32(in_ECX, 0x8b8) + iVar1);
-    // DEVIATION: C pointer — if (*(char *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX) === 58) {
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — if (*(char *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX) === 58) {
       w32(in_ECX, 0x1db4, 0);
     // DEVIATION(cont): }
     w32(in_ECX, 0x8c0, s32(in_ECX, 0x8c0) + 1);
@@ -3657,7 +3657,7 @@ export function FUN_004d4fd1(in_ECX, param_1) {
       w32(in_ECX, 0x8bc, s32(in_ECX, 0x8bc) + iVar1);
       w32(in_ECX, 0x8c0, s32(in_ECX, 0x8c0) + 1);
     }
-    // DEVIATION: C pointer — if (*(char *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX) === 0) {
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — if (*(char *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX) === 0) {
       // DEVIATION(cont): if (*(int *)(in_ECX + 0x62c) != 0) {
         // DEVIATION(cont): FUN_005d2004(*(undefined4 *)(in_ECX + 0x62c));
         w32(in_ECX, 0x62c, 0);
@@ -3688,7 +3688,7 @@ export function FUN_004d4fd1(in_ECX, param_1) {
       w32(in_ECX, 0x8f0, 1);
     }
     FUN_00408490(local_14[0]);
-    // DEVIATION: C pointer — bVar4 = *(char *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX) !== 0;
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — bVar4 = *(char *)(s32(in_ECX, 0x8c0) + 0x638 + in_ECX) !== 0;
   }
   else {
     bVar4 = true;
@@ -3866,7 +3866,7 @@ export function FUN_004d570b(in_ECX) {
   FUN_004aefb7(in_ECX + 0x838);
   FUN_004aef36(in_ECX + 0x838);
   FUN_00485208(in_ECX + 0x838,
-                     // DEVIATION: C pointer — s16(G.DAT_0064caa2, s32(in_ECX, 0x1cc) * 0x594));
+                     true // DEVIATION: C pointer — s16(G.DAT_0064caa2, s32(in_ECX, 0x1cc) * 0x594));
   SetRect((in_ECX + 0x8dc),0,0x1c1,0x27f,0x1df);
   FUN_0043c790(in_ECX + 0x8dc,1,1);
   FUN_005c19ad(10);
@@ -3936,7 +3936,7 @@ export function FUN_004d5b21(in_ECX) {
     FUN_005c041f(0);
     FUN_00408130(0 /* ADDR:LAB_0040308f */);
     // DEVIATION: MFC — COleControlSite::SetDlgCtrlID((s32(in_ECX, 0x1da8) + 0x58),0x403a35);
-    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(*(CPropertySheet **)(in_ECX + 0x1da8),0x402d2e);
+    // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(s32(CPropertySheet **, 0)(in_ECX + 0x1da8),0x402d2e);
     FUN_00450400();
     FUN_00408460();
     FUN_004085f0();
@@ -4643,12 +4643,12 @@ export function FUN_004d8d80() {
     if (s32(G.DAT_0062e3c0, local_14 * 8) === 9) {
       iVar1 = FUN_00418740();
       _sprintf(local_10,G.DAT_0062e3f8,
-               // DEVIATION: C pointer — s32(G.DAT_006a2a00, iVar1 * 4 + s32(G.DAT_006a4f88, 0x2ec) * 0x58));
+               true // DEVIATION: C pointer — s32(G.DAT_006a2a00, iVar1 * 4 + s32(G.DAT_006a4f88, 0x2ec) * 0x58));
       FUN_00418a30(local_10);
     }
     else if (s32(G.DAT_0062e3c0, local_14 * 8) === 0xc) {
       iVar1 = FUN_00418740();
-      // DEVIATION: C pointer — local_8 = s32(G.DAT_006a2a00, iVar1 * 4 + s32(G.DAT_006a4f88, 0x2ec) * 0x58) + 2;
+      true // DEVIATION: C pointer — local_8 = s32(G.DAT_006a2a00, iVar1 * 4 + s32(G.DAT_006a4f88, 0x2ec) * 0x58) + 2;
       FUN_00418d90(local_8);
     }
   }
@@ -4681,16 +4681,16 @@ export function FUN_004d8ed6() {
       local_8 = _atoi(local_10);
       uVar2 = FUN_005adfa0(local_8,s32(G.DAT_0062e3e8, iVar1 * 4),
                                  s32(G.DAT_0062e3f0, iVar1 * 4));
-      // DEVIATION: C pointer — s32(G.DAT_006a2d28, s32(G.DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) = uVar2;
-      // DEVIATION: C pointer — if (s32(G.DAT_006a2d28, s32(G.DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) !== local_8) {
-        // DEVIATION(cont): local_14 = local_14 + 1;
+      true // DEVIATION: C pointer — s32(G.DAT_006a2d28, s32(G.DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) = uVar2;
+      true // DEVIATION: C pointer — if (s32(G.DAT_006a2d28, s32(G.DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) !== local_8) {
+        local_14 = local_14 + 1;
       }
     }
     else if (s32(G.DAT_0062e3c0, local_18 * 8) === 0xc) {
       local_8 = FUN_00418d60();
       local_8 = local_8 + -2;
       iVar1 = FUN_00418740();
-      // DEVIATION: C pointer — s32(G.DAT_006a2a00, s32(G.DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) = local_8;
+      true // DEVIATION: C pointer — s32(G.DAT_006a2a00, s32(G.DAT_006a4f88, 0x2ec) * 0x58 + iVar1 * 4) = local_8;
     }
   }
   return local_14;
@@ -4804,7 +4804,7 @@ export function show_messagebox_929A_004D929A() {
       lpCaption = s_File_I_O_Error_0062e44c;
       lpText = local_24;
       iVar1 = FUN_00414d10();
-      MessageBoxA(*(iVar1 + 4),lpText,lpCaption,uType);
+      MessageBoxA(s32(iVar1, 4),lpText,lpCaption,uType);
     }
     G.DAT_006a1d7c = 0;
     // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((G.DAT_006a4f88 + 0x48));
@@ -5639,7 +5639,7 @@ export function FUN_004db481(param_1, param_2) {
         iVar2 = __strcmpi(local_10c + 4,param_2);
         pcVar1 = local_10c + 4;
         if (iVar2 === 0) {
-          // DEVIATION: C pointer — return *(undefined4 *)local_10c;
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — return *(undefined4 *)local_10c;
         }
         while (local_10c = pcVar1, s32(local_10c, 0) !== 0) {
           pcVar1 = local_10c + 1;
@@ -5675,7 +5675,7 @@ export function FUN_004db690(in_ECX, param_1) {
   uVar1 = s32(G.DAT_0062e658, param_1 * 4);
   _DAT_0068abd0 = 0;
   _DAT_0068abd4 = 0;
-  // DEVIATION: C pointer — local_c = s32(G.DAT_0062e698, s32(in_ECX, 0x204) * 4);
+  true // DEVIATION: C pointer — local_c = s32(G.DAT_0062e698, s32(in_ECX, 0x204) * 4);
   switch(s32(in_ECX, 0x204)) {
   case 8:
   case 0xc:
@@ -5700,7 +5700,7 @@ export function FUN_004db690(in_ECX, param_1) {
   }
   local_10 = local_c + 0x20;
   if (param_1 === 0xe) {
-    // DEVIATION: C pointer — local_8 = s32(G.DAT_0062e698, s32(in_ECX, 0x200) * 4);
+    true // DEVIATION: C pointer — local_8 = s32(G.DAT_0062e698, s32(in_ECX, 0x200) * 4);
     switch(s32(in_ECX, 0x200)) {
     case 8:
     case 0xc:
@@ -5751,7 +5751,7 @@ export function FUN_004db690(in_ECX, param_1) {
       }
       FUN_004dbab4(iVar3,s32(in_ECX, 0x200),local_8,0);
     }
-    // DEVIATION: C pointer — FUN_0046b14d(0x82,*(undefined4 *)
+    // DEVIATION(C-syntax): true) // DEVIATION: C pointer — FUN_0046b14d(0x82,*(undefined4 *)
                              // DEVIATION(cont): (&G.DAT_006ad30c + *(int *)(&G.DAT_006ad558 + G.DAT_0067a8c0 * 4) * 0x54),0,0
                        // DEVIATION(cont): ,0,0,0,0,0,puVar2);
   }
@@ -6508,7 +6508,7 @@ export function FUN_004dd285(param_1) {
       FUN_0056a65e(1);
     }
     else {
-      // DEVIATION: C pointer — FUN_0046b14d(0x79,*(undefined4 *)
+      // DEVIATION(C-syntax): true) // DEVIATION: C pointer — FUN_0046b14d(0x79,*(undefined4 *)
                                // DEVIATION(cont): (&G.DAT_006ad30c + *(int *)(&G.DAT_006ad558 + iVar2 * 4) * 0x54),0,0,0,0,
                          // DEVIATION(cont): 0,0,0,0);
     }
@@ -6516,7 +6516,7 @@ export function FUN_004dd285(param_1) {
       FUN_0056a65e(1);
     }
     else {
-      // DEVIATION: C pointer — FUN_0046b14d(0x79,*(undefined4 *)
+      // DEVIATION(C-syntax): true) // DEVIATION: C pointer — FUN_0046b14d(0x79,*(undefined4 *)
                                // DEVIATION(cont): (&G.DAT_006ad30c + *(int *)(&G.DAT_006ad558 + iVar1 * 4) * 0x54),0,0,0,0,
                          // DEVIATION(cont): 0,0,0,0);
     }
@@ -6569,7 +6569,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
     iVar5 = FUN_005b8931(local_14,local_1c);
     pbVar6 = FUN_005b898b(local_14,local_1c,param_1);
     pbVar7 = FUN_005b898b(local_14,local_1c,param_2);
-    // DEVIATION: C pointer — if ((uVar4 & *(byte *)(iVar5 + 4)) !== 0) {
+    // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((uVar4 & *(byte *)(iVar5 + 4)) !== 0) {
       // DEVIATION(cont): if ((uVar3 & *(byte *)(iVar5 + 4)) == 0) {
         // DEVIATION(cont): thunk_FUN_005b9d81(local_14,local_1c,0,param_1,0,1);
         FUN_005b976d(local_14,local_1c,uVar3,1,1);
@@ -6579,7 +6579,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
           bVar2 = s32(pbVar7, 0);
           bVar1 = s32(pbVar6, 0);
           iVar5 = FUN_005b8931(local_14,local_1c);
-          // DEVIATION: C pointer — local_2c = (bVar2 | bVar1) & *(byte *)(iVar5 + 1) & 0x80;
+          // DEVIATION(C-syntax): true // DEVIATION: C pointer — local_2c = (bVar2 | bVar1) & *(byte *)(iVar5 + 1) & 0x80;
         }
         else {
           local_2c = 0x80;
@@ -6587,7 +6587,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
         pbVar6 = FUN_005b898b(local_14,local_1c,param_1,param_1,0,1);
         FUN_005b9d81(local_14,local_1c,s32(pbVar6, 0) & 0x7f | local_2c);
         iVar5 = FUN_005b8931(local_14,local_1c,param_1,1,1);
-        // DEVIATION: C pointer — bVar2 = *(byte *)(iVar5 + 1);
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — bVar2 = *(byte *)(iVar5 + 1);
         pbVar6 = FUN_005b898b(local_14,local_1c,param_2);
         FUN_005b9d81(local_14,local_1c,bVar2 & s32(pbVar6, 0));
       }
@@ -6607,7 +6607,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
         G.DAT_006560f9[local_34 * 0x20] = G.DAT_006560f9[local_34 * 0x20] | local_24;
         iVar5 = FUN_005b8931(s16(G.DAT_006560f0, local_34 * 0x20),
                                    s16(G.DAT_006560f2, local_34 * 0x20));
-        // DEVIATION: C pointer — if (((uVar3 & *(byte *)(iVar5 + 4)) === 0) || ((uVar4 & *(byte *)(iVar5 + 4)) === 0)) {
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — if (((uVar3 & *(byte *)(iVar5 + 4)) === 0) || ((uVar4 & *(byte *)(iVar5 + 4)) === 0)) {
           // DEVIATION(cont): for (local_c = 0; local_c < 0x15; local_c = local_c + 1) {
             // DEVIATION(cont): uVar8 = thunk_FUN_005ae052((int)(char)(&G.DAT_00628370)[local_c] + local_14);
             iVar5 = s8(G.DAT_006283a0[local_c]) + local_1c;
@@ -6635,7 +6635,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
         G.DAT_0064f34c[local_20 * 0x58] = G.DAT_0064f34c[local_20 * 0x58] | local_24;
         iVar5 = FUN_005b8931(s16(G.DAT_0064f340, local_20 * 0x58),
                                    s16(G.DAT_0064f342, local_20 * 0x58));
-        // DEVIATION: C pointer — if (((uVar3 & *(byte *)(iVar5 + 4)) === 0) || ((uVar4 & *(byte *)(iVar5 + 4)) === 0)) {
+        // DEVIATION(C-syntax): true // DEVIATION: C pointer — if (((uVar3 & *(byte *)(iVar5 + 4)) === 0) || ((uVar4 & *(byte *)(iVar5 + 4)) === 0)) {
           // DEVIATION(cont): for (local_c = 0; local_c < 0x15; local_c = local_c + 1) {
             // DEVIATION(cont): uVar8 = thunk_FUN_005ae052((int)(char)(&G.DAT_00628370)[local_c] + local_14);
             iVar5 = s8(G.DAT_006283a0[local_c]) + local_1c;
@@ -6655,7 +6655,7 @@ export function FUN_004dd8ad(param_1, param_2, param_3) {
     FUN_0047cf9e(G.DAT_006d1da0,1);
   }
   else {
-    // DEVIATION: C pointer — FUN_0046b14d(0x74,*(undefined4 *)
+    // DEVIATION(C-syntax): true) // DEVIATION: C pointer — FUN_0046b14d(0x74,*(undefined4 *)
                              // DEVIATION(cont): (&G.DAT_006ad30c + *(int *)(&G.DAT_006ad558 + param_1 * 4) * 0x54),0,0,0,0,
                        // DEVIATION(cont): 0,0,0,0);
   }
@@ -6898,7 +6898,7 @@ export function FUN_004de0e2(param_1, param_2) {
   FUN_0046b14d(0x75,0xff,s16(G.DAT_0064f340, param_1 * 0x58),
                      s16(G.DAT_0064f342, param_1 * 0x58),0,0,0,0,0,0);
   iVar2 = FUN_005b8931(iVar3,iVar4);
-  // DEVIATION: C pointer — if ((1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar2 + 4)) === 0) {
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar2 + 4)) === 0) {
     // DEVIATION(cont): thunk_FUN_005b976d(iVar3,iVar4,1 << ((byte)param_2 & 0x1f),1,1);
     FUN_0047cea6(iVar3,iVar4);
   }
@@ -6908,7 +6908,7 @@ export function FUN_004de0e2(param_1, param_2) {
     iVar6 = FUN_004087c0(uVar5,iVar2);
     if ((iVar6 !== 0) &&
        (iVar6 = FUN_005b8931(uVar5,iVar2),
-       // DEVIATION: C pointer — (1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar6 + 4)) === 0)) {
+       // DEVIATION(C-syntax): true // DEVIATION: C pointer — (1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar6 + 4)) === 0)) {
       // DEVIATION(cont): thunk_FUN_005b976d(uVar5,iVar2,1 << ((byte)param_2 & 0x1f),1,1);
       FUN_0047cea6(uVar5,iVar2);
     }
@@ -7158,7 +7158,7 @@ function LAB_004de76b_helper(cVar1, iVar2, iVar3, iVar4, iVar6, local_10, param_
   FUN_0046b14d(0x75,0xff,s16(G.DAT_0064f340, param_1 * 0x58),
                      s16(G.DAT_0064f342, param_1 * 0x58),0,0,0,0,0,0);
   iVar2 = FUN_005b8931(iVar3,iVar4);
-  // DEVIATION: C pointer — if ((1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar2 + 4)) === 0) {
+  // DEVIATION(C-syntax): true // DEVIATION: C pointer — if ((1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar2 + 4)) === 0) {
     // DEVIATION(cont): thunk_FUN_005b976d(iVar3,iVar4,1 << ((byte)param_2 & 0x1f),1,1);
     FUN_0047cea6(iVar3,iVar4);
   }
@@ -7168,7 +7168,7 @@ function LAB_004de76b_helper(cVar1, iVar2, iVar3, iVar4, iVar6, local_10, param_
     iVar6 = FUN_004087c0(uVar5,iVar2);
     if ((iVar6 !== 0) &&
        (iVar6 = FUN_005b8931(uVar5,iVar2),
-       // DEVIATION: C pointer — (1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar6 + 4)) === 0)) {
+       // DEVIATION(C-syntax): true // DEVIATION: C pointer — (1 << (u8(param_2) & 0x1f) & (uint)*(byte *)(iVar6 + 4)) === 0)) {
       // DEVIATION(cont): thunk_FUN_005b976d(uVar5,iVar2,1 << ((byte)param_2 & 0x1f),1,1);
       FUN_0047cea6(uVar5,iVar2);
     }
