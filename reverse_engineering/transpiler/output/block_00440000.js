@@ -279,8 +279,8 @@ export function FUN_00440750(param_1, param_2) {
         }
         else if ((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
           // DEVIATION: C pointer — FUN_00511880(0x10,*(undefined4 *)
-                                   // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),3,1,
-                             // DEVIATION(cont): param_1,bVar12);
+                                    // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),3,1,
+                             ;  // DEVIATION(cont): param_1,bVar12)
         }
         if (iVar4 !== iVar5) {
           if (DAT_006d1da0 === iVar5) {
@@ -288,8 +288,8 @@ export function FUN_00440750(param_1, param_2) {
           }
           else if ((1 << (bVar2 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
             // DEVIATION: C pointer — FUN_00511880(0x10,*(undefined4 *)
-                                     // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),3,
-                               // DEVIATION(cont): 1,param_1,bVar12);
+                                      // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),3,
+                               ;  // DEVIATION(cont): 1,param_1,bVar12)
           }
         }
       }
@@ -303,8 +303,8 @@ export function FUN_00440750(param_1, param_2) {
       }
       else if ((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
         // DEVIATION: C pointer — FUN_00511880(0xf,*(undefined4 *)
-                                // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),3,1,
-                           // DEVIATION(cont): param_1,bVar12);
+                                 // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),3,1,
+                           ;  // DEVIATION(cont): param_1,bVar12)
       }
       if (iVar4 !== iVar5) {
         if (DAT_006d1da0 === iVar5) {
@@ -312,8 +312,8 @@ export function FUN_00440750(param_1, param_2) {
         }
         else if ((1 << (bVar2 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) {
           // DEVIATION: C pointer — FUN_00511880(0xf,*(undefined4 *)
-                                  // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),3,1,
-                             // DEVIATION(cont): param_1,bVar12);
+                                   // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),3,1,
+                             ;  // DEVIATION(cont): param_1,bVar12)
         }
       }
     }
@@ -382,8 +382,8 @@ export function FUN_00440750(param_1, param_2) {
       }
       else if ((2 < DAT_00655b02) && (DAT_006d1da0 !== iVar5)) {
         // DEVIATION: C pointer — FUN_00511880(0x11,*(undefined4 *)
-                                 // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),5,0,
-                           // DEVIATION(cont): uVar3,(DAT_00633584 == 0) - 1U & 8);
+                                  // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar5 * 4) * 0x54),5,0,
+                           ;  // DEVIATION(cont): uVar3,(DAT_00633584 == 0) - 1U & 8)
       }
       if ((2 < DAT_00655b02) && (iVar4 !== iVar5)) {
         if (DAT_006d1da0 === iVar4) {
@@ -391,8 +391,8 @@ export function FUN_00440750(param_1, param_2) {
         }
         else if (((1 << (bVar1 & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0) && (DAT_006d1da0 !== iVar4)) {
           // DEVIATION: C pointer — FUN_00511880(0x11,*(undefined4 *)
-                                   // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),5,0,
-                             // DEVIATION(cont): uVar3,(DAT_00633584 == 0) - 1U & 8);
+                                    // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + iVar4 * 4) * 0x54),5,0,
+                             ;  // DEVIATION(cont): uVar3,(DAT_00633584 == 0) - 1U & 8)
         }
       }
     }
@@ -8730,8 +8730,8 @@ export function FUN_0044f4c9(param_1, param_2) {
           }
         }
         // DEVIATION: C pointer — if ((1 << (*(byte *)(local_8 + 0x192c) & 0x1f) & u8(DAT_0064ca9b[iVar1 * 0x594]))
-            // DEVIATION(cont): != 0) {
-          // DEVIATION(cont): thunk_FUN_0046e020(0x5e,1,0,0);
+            {  // DEVIATION(cont): != 0)
+          FUN_0046e020(0x5e,1,0,0);
           return;
         }
       }

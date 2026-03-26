@@ -651,8 +651,30 @@ function processFunction(headerLines, bodyLines, ctx) {
 
     // ── Continuation of multi-line DEVIATION ──
     if (ctx.deviationContinuation) {
-      result.push(line.replace(/^(\s*)/, '$1// DEVIATION(cont): '));
-      if (/;\s*$/.test(trimmed)) ctx.deviationContinuation = false;
+      const indent = line.match(/^(\s*)/)[1];
+      // Preserve structural tokens — extract leading/trailing { } ; break
+      let prefix = '';
+      let suffix = '';
+      let inner = trimmed;
+
+      // Leading } or } else {
+      if (/^\}\s*else\s*\{/.test(inner)) { prefix = '} else {'; inner = ''; }
+      else if (/^\}/.test(inner)) { prefix = '}'; inner = inner.substring(1).trim(); }
+
+      // Trailing { or ;
+      if (/\{\s*$/.test(inner) && !prefix.includes('{')) { suffix = '{'; inner = inner.replace(/\{\s*$/, '').trim(); }
+      if (/;\s*$/.test(inner)) { suffix = ';'; inner = inner.replace(/;\s*$/, '').trim(); }
+
+      // break;
+      if (/^break\s*;?\s*$/.test(inner)) { prefix = 'break;'; inner = ''; }
+
+      const comment = inner ? ' // DEVIATION(cont): ' + inner : ' // DEVIATION(cont)';
+      // Structural tokens go BEFORE the comment (// consumes rest of line)
+      result.push(indent + prefix + (suffix ? suffix + ' ' : '') + comment);
+
+      if (/;\s*$/.test(trimmed) || /^\s*\}/.test(line) || /break/.test(trimmed) || suffix === '{') {
+        ctx.deviationContinuation = false;
+      }
       continue;
     }
 

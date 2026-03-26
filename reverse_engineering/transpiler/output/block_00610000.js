@@ -111,7 +111,7 @@ export function FUN_0061a000(unaff_SI, unaff_DI) {
         puVar11 = segment(in_SS,sVar18 + -0x16);
         // DEVIATION: C pointer — *(undefined1 *)
          // DEVIATION: SEH
-          // DEVIATION(cont): (uint)*puVar7 + (uint)*puVar8) = *puVar11;
+          ;  // DEVIATION(cont): (uint)*puVar7 + (uint)*puVar8) = *puVar11
       }
       sVar19 = sVar19 + -1;
     } while (0 < sVar19);
