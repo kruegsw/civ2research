@@ -218,38 +218,43 @@ Handled by the goto helper approach (see below).
 
 ## Goto Handling
 
-### Rule
-`goto LAB_X` → `LAB_X_helper(params); return;`
+### Design Principles
+1. `goto LAB_X` → `LAB_X_helper(params); return;` (one line, 1:1)
+2. Code at the label site **stays in place** for 1:1 auditing — it is NOT removed
+3. The same code is **also duplicated** in a helper function appended at end of file
+4. On the fall-through path, the in-place code executes normally
+5. On the goto path, the helper executes (in-place code is dead but kept for audit)
+6. In-place code at the label is marked: `// LAB_X: (code below also in LAB_X_helper, kept for 1:1 audit)`
 
-The labeled code block stays in-place (for 1:1 auditing) AND is duplicated
-in a helper function appended at the end of the file.
-
-### Forward goto (97% of goto cases)
+### Forward goto
 ```
 C:                                        JS:
   goto LAB_X;                               LAB_X_helper(p1, p2); return;
   ...more code...                           ...more code...
-LAB_X:                                    // LAB_X: (code below also in LAB_X_helper)
+LAB_X:                                    // LAB_X: (code below also in LAB_X_helper, kept for 1:1 audit)
   cleanup;                                  cleanup;
   return;                                   return;
 ```
-Helper appended at end:
+Helper appended at end of file:
 ```js
 function LAB_X_helper(p1, p2) {
   cleanup;
   return;
 }
 ```
+The fall-through path reaches `cleanup; return;` in-place. The goto path
+calls `LAB_X_helper()` which runs the same code. Both are correct.
+The in-place code is "dead" on the goto path but stays for line-by-line auditability.
 
-### Backward goto (recursive)
+### Backward goto (recursive helper)
 ```
 C:                                        JS:
-LAB_X:                                    // LAB_X: (code below also in LAB_X_helper)
+LAB_X:                                    // LAB_X: (code below also in LAB_X_helper, kept for 1:1 audit)
   show_menu;                                show_menu;
   if (retry) goto LAB_X;                   if (retry) { LAB_X_helper(p1); return; }
   done;                                     done;
 ```
-Helper calls itself:
+Helper calls itself recursively (safe — these are menu retries, not tight loops):
 ```js
 function LAB_X_helper(p1) {
   show_menu;
@@ -257,11 +262,19 @@ function LAB_X_helper(p1) {
   done;
 }
 ```
+Statistics: 75 functions have backward gotos. All are menu retry / conditional
+retry patterns (the decompiler already converted tight loops to `do-while`).
+Maximum recursion depth is bounded by user interaction count.
 
 ### Variable passing
 Pass all variables used by the labeled block as arguments to the helper.
 Since the caller always does `helper(); return;` immediately, write-back
-of modified locals is not needed.
+of modified locals is not needed — the caller returns right after the call.
+
+### Statistics
+- 4,277 functions (97%): no goto — fully mechanical 1:1
+- 74 functions (2%): forward goto only — helper + in-place code
+- 75 functions (2%): backward goto — recursive helper + in-place code
 
 ---
 
