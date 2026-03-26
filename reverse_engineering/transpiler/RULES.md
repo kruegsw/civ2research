@@ -351,8 +351,17 @@ Mechanical rule.
 
 ## Function Pointer Calls — 5 instances
 
-Only 5 in game logic (158 total, 153 in framework). Too few to automate.
-Manual transpilation with `// MANUAL: function pointer` comment.
+158 total, 153 in framework (DEVIATION). Of the 5 in game logic:
+- 3 are MFC virtual calls via `in_ECX` — DEVIATION stubs
+- 2 are global callbacks — mechanical rule:
+
+```
+C:   if (DAT_006ac888 != (code *)0x0) { (*DAT_006ac888)(); }
+JS:  if (DAT_006ac888 !== null) { DAT_006ac888(); }
+```
+
+`(*DAT_XXX)(args)` → `DAT_XXX(args)`. `(code *)0x0` → `null`.
+All 5 solved mechanically. Zero manual work.
 
 ---
 
@@ -376,7 +385,7 @@ Manual transpilation with `// MANUAL: function pointer` comment.
 | Nested casts | 42 | Simplify to innermost (solved) |
 | Comma in condition | 14 | Split to separate statement (solved) |
 | `va_list` | 11 | Framework only — stub (solved) |
-| Function pointer calls | 5 | Manual — 5 instances (solved) |
+| Function pointer calls | 5 | 3 DEVIATION + 2 global callback rule (solved) |
 | `bRam` | 3 | `DAT_XXX` direct (solved) |
 
 ---
