@@ -1,0 +1,560 @@
+#!/usr/bin/env node
+// ═══════════════════════════════════════════════════════════════════
+// transpile.cjs — C → JS transpiler (1:1 line mapping)
+//
+// Usage:
+//   node transpile.cjs                          # all blocks
+//   node transpile.cjs block_004E0000           # one block
+//   node transpile.cjs --stats                  # UNKNOWN_RULE counts only
+//
+// Reads:  reverse_engineering/decompiled/block_XXXXXXXX.c
+// Writes: reverse_engineering/transpiler/output/block_XXXXXXXX.js
+// Rules:  reverse_engineering/transpiler/RULES.md
+// ═══════════════════════════════════════════════════════════════════
+
+const fs = require('fs');
+const path = require('path');
+
+const C_DIR = path.join(__dirname, '..', 'decompiled');
+const OUT_DIR = path.join(__dirname, 'output');
+
+// Ensure output dir exists
+if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
+
+// ── Line-level transformations ─────────────────────────────────────
+// Applied iteratively (inside-out) until no more changes
+
+function transformLine(line, ctx) {
+  const trimmed = line.trim();
+  if (trimmed === '' || trimmed === '{' || trimmed === '}') return line;
+
+  let out = line;
+  let changed = true;
+  let iterations = 0;
+
+  while (changed && iterations < 20) {
+    changed = false;
+    iterations++;
+    const prev = out;
+
+    // ── Character literals: '\0' → 0, '\xNN' → 0xNN, '\a' → 7, '\n' → 0xa ──
+    out = out.replace(/'\\x([0-9a-fA-F]{2})'/g, (m, hex) => '0x' + hex);
+    out = out.replace(/'\\0'/g, '0');
+    out = out.replace(/'\\a'/g, '7');
+    out = out.replace(/'\\n'/g, '0xa');
+    out = out.replace(/'\\r'/g, '0xd');
+    out = out.replace(/'\\t'/g, '9');
+    // Single printable char: '\x01' style already handled, but 'A' etc:
+    out = out.replace(/'([^\\'])'/g, (m, ch) => String(ch.charCodeAt(0)));
+
+    // ── U suffix on constants ──
+    out = out.replace(/\b(0x[0-9a-fA-F]+)U\b/g, '$1');
+    out = out.replace(/\b(\d+)U\b/g, '$1');
+
+    // ── Drop thunk_ prefix ──
+    out = out.replace(/\bthunk_(FUN_[0-9a-fA-F]+)/g, '$1');
+
+    // ── Drop FID_conflict_ prefix ──
+    out = out.replace(/\bFID_conflict_(\w+)/g, '$1');
+
+    // ── Byte array read: (&DAT_XXX)[expr] → DAT_XXX[expr] ──
+    out = out.replace(/\(\s*&(DAT_[0-9a-fA-F]+)\s*\)\s*\[/g, '$1[');
+
+    // ── Typed pointer READ: *(TYPE *)(base + off) → helper(base, off) ──
+    // Match: *(int/uint/short/ushort/undefined4/undefined2 *)( expr )
+    out = out.replace(
+      /\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2)\s*\*\s*\)\s*\(([^)]+)\)/g,
+      (m, type, inner) => {
+        const helper = ({ 'int': 's32', 'uint': 'u32', 'short': 's16', 'ushort': 'u16',
+                          'undefined4': 's32', 'undefined2': 's16' })[type];
+        // Split inner into base + offset: "&DAT_XXX + expr" or "base + expr"
+        const parts = splitBaseOffset(inner.trim());
+        if (parts) return helper + '(' + parts.base + ', ' + parts.offset + ')';
+        // Single expression (no +), treat as base with offset 0
+        return helper + '(' + inner.trim() + ', 0)';
+      }
+    );
+
+    // ── Typed pointer WRITE: handled at statement level below ──
+
+    // ── Cast: (char)(expr) → s8(expr) ──
+    out = out.replace(/\(\s*char\s*\)\s*\(([^)]+)\)/g, 's8($1)');
+    out = out.replace(/\(\s*char\s*\)(\w+(?:\[[^\]]*\])*)/g, 's8($1)');
+
+    // ── Cast: (byte)(expr) → u8(expr) ──
+    out = out.replace(/\(\s*byte\s*\)\s*\(([^)]+)\)/g, 'u8($1)');
+    out = out.replace(/\(\s*byte\s*\)(\w+(?:\[[^\]]*\])*)/g, 'u8($1)');
+
+    // ── Cast: (undefined1)(expr) → u8(expr) ──
+    out = out.replace(/\(\s*undefined1\s*\)\s*\(([^)]+)\)/g, 'u8($1)');
+    out = out.replace(/\(\s*undefined1\s*\)(\w+)/g, 'u8($1)');
+
+    // ── Nested cast: (uint) after unsigned helper → drop ──
+    out = out.replace(/\(\s*uint\s*\)\s*(u8|u16|u32)\(/g, '$1(');
+
+    // ── Cast: (uint) before a helper function call → helper(...) >>> 0 ──
+    out = out.replace(/\(\s*uint\s*\)\s*(s8|s16|s32)\(([^)]*)\)/g, '($1($2) >>> 0)');
+
+    // ── Cast: (uint)(expr) → (expr) >>> 0 ──
+    out = out.replace(/\(\s*uint\s*\)\s*\(([^)]+)\)/g, '(($1) >>> 0)');
+
+    // ── Cast: (uint)variable → (variable) >>> 0 ──
+    out = out.replace(/\(\s*uint\s*\)(\w+)(?!\s*\()/g, '(($1) >>> 0)');
+
+    // ── Cast: (int)(expr >>> 0) → (expr) | 0 ──
+    out = out.replace(/\(\s*int\s*\)\s*\(\s*\(([^)]+)\)\s*>>>\s*0\s*\)/g, '(($1) | 0)');
+
+    // ── Cast: (int)(expr) → expr (no-op — just remove the cast) ──
+    out = out.replace(/\(\s*int\s*\)\s*(?=\()/g, '');
+    out = out.replace(/\(\s*int\s*\)\s*(?=\w)/g, '');
+
+    // ── Cast: (short)(expr) → ((expr) << 16 >> 16) ──
+    out = out.replace(/\(\s*short\s*\)\s*\(([^)]+)\)/g, '(($1) << 16 >> 16)');
+    out = out.replace(/\(\s*short\s*\)(\w+)/g, '(($1) << 16 >> 16)');
+
+    // ── Cast: (ushort)(expr) → (expr) & 0xFFFF ──
+    out = out.replace(/\(\s*ushort\s*\)\s*\(([^)]+)\)/g, '(($1) & 0xFFFF)');
+    out = out.replace(/\(\s*ushort\s*\)(\w+)/g, '(($1) & 0xFFFF)');
+
+    // ── Cast: (bool)(expr) → (expr) ? 1 : 0 ──
+    out = out.replace(/\(\s*bool\s*\)\s*\(([^)]+)\)/g, '(($1) ? 1 : 0)');
+    out = out.replace(/\(\s*bool\s*\)(\w+)/g, '(($1) ? 1 : 0)');
+
+    // ── Cast: (undefined4)(expr) → expr (no-op) ──
+    out = out.replace(/\(\s*undefined4\s*\)\s*\(([^)]+)\)/g, '($1)');
+    out = out.replace(/\(\s*undefined4\s*\)(\w+)/g, '($1)');
+
+    // ── Cast: (undefined2)(expr) → (expr) & 0xFFFF ──
+    out = out.replace(/\(\s*undefined2\s*\)\s*\(([^)]+)\)/g, '(($1) & 0xFFFF)');
+    out = out.replace(/\(\s*undefined2\s*\)(\w+)/g, '(($1) & 0xFFFF)');
+
+    // ── Cast: (longlong) division → | 0 ──
+    out = out.replace(/\(\s*(?:u?longlong)\s*\)/g, '');
+
+    // ── bRam → DAT_ ──
+    out = out.replace(/\bbRam([0-9a-fA-F]{8})/g, 'DAT_$1');
+
+    // ── Equality operators ──
+    out = out.replace(/([^=!<>])={2}(?!=)/g, '$1===');
+    out = out.replace(/!={1}(?!=)/g, '!==');
+
+    // ── Null pointer: (TYPE *)0x0 → null ──
+    out = out.replace(/\(\s*\w+\s*\*\s*\)\s*0x0\b/g, 'null');
+    out = out.replace(/\(\s*\w+\s*\*\s*\)\s*0\b/g, 'null');
+
+    // ── (code *)0x0 → null ──
+    out = out.replace(/\(\s*code\s*\*\s*\)\s*0x0\b/g, 'null');
+
+    if (out !== prev) changed = true;
+  }
+
+  return out;
+}
+
+// ── Split "base + offset" from pointer dereference inner expression ──
+function splitBaseOffset(expr) {
+  // Handle: &DAT_XXX + expr  →  base=DAT_XXX, offset=expr
+  const datMatch = expr.match(/^&?(DAT_[0-9a-fA-F]+)\s*\+\s*(.+)$/);
+  if (datMatch) return { base: datMatch[1], offset: datMatch[2].trim() };
+
+  // Handle: &DAT_XXX (no offset)
+  const datOnly = expr.match(/^&?(DAT_[0-9a-fA-F]+)$/);
+  if (datOnly) return { base: datOnly[1], offset: '0' };
+
+  // Handle: variable + offset (param_1 + 0xc, in_ECX + 0x48, etc.)
+  const varMatch = expr.match(/^(\w+)\s*\+\s*(.+)$/);
+  if (varMatch) return { base: varMatch[1], offset: varMatch[2].trim() };
+
+  return null;
+}
+
+// ── Function-level processing ──────────────────────────────────────
+
+function processFunction(headerLines, bodyLines, ctx) {
+  const result = [];
+
+  // Output header comments as-is
+  for (const line of headerLines) {
+    result.push(line);
+  }
+
+  // Parse function signature
+  const sigLine = bodyLines.find(l => /^\w/.test(l.trim()) && /\(/.test(l) && !/^\/\//.test(l.trim()));
+  if (!sigLine) {
+    // No signature found, output as-is
+    for (const line of bodyLines) result.push(line);
+    return result;
+  }
+
+  const sigMatch = sigLine.match(/^\w[\w\s*]*\s+(FUN_[0-9a-fA-F]+|handle_\w+|show_\w+)\s*\(([^)]*)\)/);
+  if (!sigMatch) {
+    for (const line of bodyLines) result.push(line);
+    return result;
+  }
+
+  const funcName = sigMatch[1];
+  const rawParams = sigMatch[2].trim();
+
+  // Parse declared params from signature
+  const sigParams = [];
+  if (rawParams && rawParams !== 'void') {
+    for (const p of rawParams.split(',')) {
+      const pm = p.trim().match(/(\w+)\s*$/);
+      if (pm) sigParams.push(pm[1]);
+    }
+  }
+
+  // Detect pointer params (TYPE *param_N)
+  const ptrParams = new Set();
+  for (const p of rawParams.split(',')) {
+    const pm = p.trim().match(/\*\s*(param_\d+)$/);
+    if (pm) ptrParams.add(pm[1]);
+  }
+
+  // Scan body for register params and &local_XX
+  const bodyText = bodyLines.join('\n');
+  const regParams = [];
+  const localArrays = new Set();
+
+  // Find register params (in_EAX, in_ECX, etc.) and callee-saved (unaff_ESI, etc.)
+  const regOrder = ['in_EAX', 'in_ECX', 'in_EDX', 'unaff_ESI', 'unaff_EDI', 'unaff_EBP'];
+  for (const reg of regOrder) {
+    if (new RegExp('\\b' + reg + '\\b').test(bodyText) &&
+        new RegExp('^\\s*(?:int|uint|undefined4|undefined|code)\\s+\\*?' + reg, 'm').test(bodyText)) {
+      regParams.push(reg);
+    }
+  }
+
+  // Find &local_XX patterns
+  for (const m of bodyText.matchAll(/&(local_[0-9a-fA-F]+)/g)) {
+    localArrays.add(m[1]);
+  }
+
+  // Build JS signature
+  const allParams = [...regParams, ...sigParams];
+  const jsSig = 'export function ' + funcName + '(' + allParams.join(', ') + ') {';
+
+  // Check if function returns a value
+  const returnsValue = /^(?:int|uint|undefined4|undefined|byte|char|short|ushort|bool|code)\s/.test(sigLine.trim()) &&
+                       !/^void\s/.test(sigLine.trim());
+
+  // Process body lines
+  let inBody = false;
+  let braceDepth = 0;
+  let sigLineIdx = -1;
+
+  for (let i = 0; i < bodyLines.length; i++) {
+    const line = bodyLines[i];
+    const trimmed = line.trim();
+
+    // Find signature line — replace with JS signature
+    if (!inBody && sigMatch && line.includes(funcName + '(')) {
+      result.push(jsSig);
+      sigLineIdx = i;
+      continue;
+    }
+
+    // Skip blank line after signature (C has blank between sig and {)
+    if (sigLineIdx >= 0 && i === sigLineIdx + 1 && trimmed === '') {
+      result.push('');
+      continue;
+    }
+
+    // Opening brace of function
+    if (!inBody && trimmed === '{') {
+      inBody = true;
+      result.push(''); // brace is already in signature line
+      braceDepth = 1;
+      continue;
+    }
+
+    if (!inBody) {
+      result.push(line);
+      continue;
+    }
+
+    // Track brace depth
+    for (const ch of trimmed) {
+      if (ch === '{') braceDepth++;
+      if (ch === '}') braceDepth--;
+    }
+
+    // Closing brace of function
+    if (braceDepth === 0 && trimmed === '}') {
+      result.push('}');
+      inBody = false;
+      continue;
+    }
+
+    // ── SEH boilerplate ──
+    if (/unaff_FS_OFFSET/.test(trimmed) || /puStack_c\s*=/.test(trimmed) ||
+        /uStack_10\s*=/.test(trimmed)) {
+      result.push(line.replace(trimmed, '// DEVIATION: SEH'));
+      continue;
+    }
+
+    // ── Variable declarations ──
+    if (/^\s*(int|uint|char|byte|short|ushort|undefined[124]?|bool|void|long|ulong|code)\s/.test(line) &&
+        !inBody) {
+      // Already handled above
+    }
+
+    const declMatch = trimmed.match(/^(int|uint|char|byte|short|ushort|undefined[124]?|bool|long|ulong|code)\s+(\*?\s*\w+(?:\s*\[[^\]]*\])?)\s*;$/);
+    if (declMatch) {
+      const varName = declMatch[2].replace(/^\*\s*/, '').replace(/\s*\[.*\]/, '');
+
+      // Register params promoted to parameters — emit comment
+      if (regParams.includes(varName)) {
+        result.push(line.replace(trimmed, '// ' + varName + ' → promoted to parameter'));
+        continue;
+      }
+
+      // SEH locals
+      if (/^(puStack_|uStack_|local_8$)/.test(varName) && /FS_OFFSET|puStack|uStack/.test(bodyText)) {
+        result.push(line.replace(trimmed, '// DEVIATION: SEH local'));
+        continue;
+      }
+
+      // Array locals (has & taken)
+      if (localArrays.has(varName)) {
+        // Check if it's an array declaration like local_20[8]
+        const arrSizeMatch = declMatch[2].match(/\[(\d+)\]/);
+        if (arrSizeMatch) {
+          result.push(line.replace(trimmed, 'let ' + varName + ' = new Array(' + arrSizeMatch[1] + ').fill(0);'));
+        } else {
+          result.push(line.replace(trimmed, 'let ' + varName + ' = [0];'));
+        }
+        continue;
+      }
+
+      // Regular declaration
+      result.push(line.replace(trimmed, 'let ' + declMatch[2].replace(/^\*\s*/, '') + ';'));
+      continue;
+    }
+
+    // ── Multi-variable declaration (rare) ──
+    // e.g., "undefined4 *unaff_FS_OFFSET;"
+    if (/^\s*(undefined4|int|uint)\s*\*\s*unaff_FS_OFFSET\s*;/.test(line)) {
+      result.push(line.replace(trimmed, '// DEVIATION: SEH local'));
+      continue;
+    }
+
+    // ── SEH: local_8 = 0xffffffff ──
+    if (/^\s*local_8\s*=\s*0xffffffff\s*;/.test(line) && /FS_OFFSET/.test(bodyText)) {
+      result.push(line.replace(trimmed, '// DEVIATION: SEH'));
+      continue;
+    }
+
+    // ── SEH: puStack_c = &LAB_ ──
+    if (/^\s*puStack_c\s*=/.test(line)) {
+      result.push(line.replace(trimmed, '// DEVIATION: SEH'));
+      continue;
+    }
+
+    // ── Typed pointer WRITE at statement level ──
+    // *(TYPE *)(base + off) = expr;
+    const writeMatch = trimmed.match(/^\*\s*\(\s*(int|uint|short|ushort|undefined4|undefined2)\s*\*\s*\)\s*\(([^)]+)\)\s*=\s*(.+);$/);
+    if (writeMatch) {
+      const wType = writeMatch[1];
+      const inner = writeMatch[2].trim();
+      let val = writeMatch[3].trim();
+      const wHelper = (wType === 'short' || wType === 'ushort' || wType === 'undefined2') ? 'w16' : 'w32';
+      const parts = splitBaseOffset(inner);
+      // Transform the value expression
+      val = transformLine('  ' + val, ctx).trim();
+      if (parts) {
+        result.push(line.replace(trimmed, wHelper + '(' + parts.base + ', ' + parts.offset + ', ' + val + ');'));
+      } else {
+        result.push(line.replace(trimmed, wHelper + '(' + inner + ', 0, ' + val + ');'));
+      }
+      continue;
+    }
+
+    // ── Byte array WRITE with cast on lvalue ──
+    // (char)(&DAT_XXX)[off] = val; or (byte)(&DAT_XXX)[off] = val;
+    const byteWriteMatch = trimmed.match(/^\(\s*(?:char|byte)\s*\)\s*\(\s*&(DAT_[0-9a-fA-F]+)\s*\)\s*\[([^\]]+)\]\s*=\s*(.+);$/);
+    if (byteWriteMatch) {
+      let val = transformLine('  ' + byteWriteMatch[3], ctx).trim();
+      result.push(line.replace(trimmed, byteWriteMatch[1] + '[' + byteWriteMatch[2] + '] = ' + val + ';'));
+      continue;
+    }
+
+    // ── Apply line-level transformations ──
+    let transformed = transformLine(line, ctx);
+
+    // ── &local_XX → local_XX (drop &) ──
+    transformed = transformed.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
+
+    // ── *param_N → param_N[0] for pointer params ──
+    for (const pp of ptrParams) {
+      transformed = transformed.replace(new RegExp('\\*' + pp + '\\b', 'g'), pp + '[0]');
+    }
+
+    // ── local_XX access: if it's an array local, add [0] ──
+    for (const la of localArrays) {
+      // Replace standalone local_XX reads/writes with local_XX[0]
+      // But not when already followed by [ or when it's &local_XX (already handled)
+      transformed = transformed.replace(
+        new RegExp('\\b' + la + '\\b(?!\\s*\\[|\\s*→)', 'g'),
+        la + '[0]'
+      );
+      // Fix double [0] — if the replacement produced local_XX[0][0]
+      transformed = transformed.replace(la + '[0][0]', la + '[0]');
+    }
+
+    // ── _atexit → // DEVIATION: C runtime ──
+    if (/\b_atexit\b/.test(transformed)) {
+      result.push(line.replace(trimmed, '// DEVIATION: C runtime — ' + trimmed));
+      continue;
+    }
+
+    // ── Post-transform: fix read helpers used as write targets ──
+    // If s32/u32/s16/u16 appears on the LEFT side of =, convert to w32/w16
+    transformed = transformed.replace(
+      /\b(s32|u32)\(([^)]+),\s*([^)]+)\)\s*=\s*/g,
+      (m, fn, base, off) => 'w32(' + base + ', ' + off + ', '
+    );
+    transformed = transformed.replace(
+      /\b(s16|u16)\(([^)]+),\s*([^)]+)\)\s*=\s*/g,
+      (m, fn, base, off) => 'w16(' + base + ', ' + off + ', '
+    );
+    // Fix trailing: the value and semicolon are already there, just need closing paren
+    // w32(base, off, val | 0x10;  →  w32(base, off, val | 0x10);
+    // Actually we need to wrap the rest of the line in the function call
+    // Check if line has w32/w16 without closing paren
+    if (/\bw(?:32|16)\([^)]+,[^)]+,\s*$/.test(transformed.trim())) {
+      // Assignment value continues on next line — leave as-is, will be fixed
+      // when the continuation line adds the closing );
+    }
+
+    result.push(transformed);
+  }
+
+  return result;
+}
+
+// ── Parse a C file into functions ──────────────────────────────────
+
+function parseFile(content) {
+  const lines = content.split('\n');
+  const functions = [];
+  let headerLines = [];
+  let bodyLines = [];
+  let inHeader = true;
+  let state = 'preamble'; // preamble, header, body
+
+  // File preamble (before first function)
+  const preamble = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (/^\/\/\s*={10,}\s*$/.test(trimmed)) {
+      if (state === 'preamble') {
+        // First separator — start of first function header
+        state = 'header';
+        headerLines = [line];
+      } else if (state === 'header') {
+        // Second separator — end of header, body follows
+        headerLines.push(line);
+        state = 'body';
+        bodyLines = [];
+      } else if (state === 'body') {
+        // New function separator — save previous function
+        functions.push({ headerLines, bodyLines, preamble: functions.length === 0 ? [...preamble] : [] });
+        headerLines = [line];
+        state = 'header';
+        bodyLines = [];
+      }
+    } else if (state === 'preamble') {
+      preamble.push(line);
+    } else if (state === 'header') {
+      headerLines.push(line);
+    } else if (state === 'body') {
+      bodyLines.push(line);
+    }
+  }
+
+  // Save last function
+  if (bodyLines.length > 0) {
+    functions.push({ headerLines, bodyLines, preamble: functions.length === 0 ? [...preamble] : [] });
+  }
+
+  return { preamble, functions };
+}
+
+// ── Transpile one block ────────────────────────────────────────────
+
+function transpileBlock(blockName) {
+  const cFile = path.join(C_DIR, blockName + '.c');
+  if (!fs.existsSync(cFile)) {
+    console.error('Not found: ' + cFile);
+    return null;
+  }
+
+  const content = fs.readFileSync(cFile, 'utf8');
+  const { preamble, functions } = parseFile(content);
+  const ctx = { blockName };
+
+  const outputLines = [];
+
+  // File header
+  outputLines.push("import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';");
+  outputLines.push('');
+
+  // Preamble as comments
+  for (const line of preamble) {
+    outputLines.push(line);
+  }
+
+  // Process each function
+  for (const func of functions) {
+    const result = processFunction(func.headerLines, func.bodyLines, ctx);
+    for (const line of result) {
+      outputLines.push(line);
+    }
+  }
+
+  const outputContent = outputLines.join('\n');
+  const outFile = path.join(OUT_DIR, blockName + '.js');
+  fs.writeFileSync(outFile, outputContent);
+
+  // Count UNKNOWN_RULE
+  const unknowns = (outputContent.match(/UNKNOWN_RULE/g) || []).length;
+  const deviations = (outputContent.match(/DEVIATION/g) || []).length;
+  const totalLines = outputLines.length;
+
+  return { blockName, totalLines, unknowns, deviations };
+}
+
+// ── Main ───────────────────────────────────────────────────────────
+
+const args = process.argv.slice(2);
+const statsOnly = args.includes('--stats');
+const specificBlock = args.find(a => a.startsWith('block_'));
+
+const blocks = specificBlock
+  ? [specificBlock]
+  : fs.readdirSync(C_DIR).filter(f => f.endsWith('.c')).map(f => f.replace('.c', '')).sort();
+
+let totalUnknowns = 0;
+
+for (const block of blocks) {
+  const result = transpileBlock(block);
+  if (!result) continue;
+
+  totalUnknowns += result.unknowns;
+
+  if (statsOnly) {
+    if (result.unknowns > 0) {
+      console.log(block + ': ' + result.unknowns + ' UNKNOWN_RULE, ' + result.deviations + ' DEVIATION');
+    }
+  } else {
+    console.log(block + ': ' + result.totalLines + ' lines, ' + result.unknowns + ' UNKNOWN_RULE, ' + result.deviations + ' DEVIATION');
+  }
+}
+
+if (blocks.length > 1) {
+  console.log('\nTotal UNKNOWN_RULE: ' + totalUnknowns);
+}
