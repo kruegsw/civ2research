@@ -66,7 +66,7 @@ Drop type. `int` / `uint` / `char` / `byte` / `short` / `ushort` / `undefined` /
 C:   thunk_FUN_004e015a(param_1, 0x32);
 JS:  FUN_004e015a(param_1, 0x32);
 ```
-Drop `thunk_` prefix.
+Drop `thunk_` prefix. Also drop `FID_conflict_` prefix (C runtime name conflicts).
 
 ### Byte array read
 ```
@@ -94,52 +94,38 @@ JS:  u8(DAT_0064c6be[param_1 * 0x594])
 ```
 Outer `(uint)` is a no-op after `u8()`.
 
-### 16-bit signed read (short pointer)
-```
-C:   *(short *)(&DAT_0064c708 + param_1 * 0x594)
-JS:  s16(DAT_0064c708, param_1 * 0x594)
-```
+### Typed pointer reads — general rule
+`*(TYPE *)(base + offset)` → helper function. Works with ANY base expression:
+`&DAT_XXXXXXXX`, `param_N`, `local_N`, `in_ECX`, `iVarN`, or any computed address.
 
-### 16-bit unsigned read (ushort pointer)
-```
-C:   *(ushort *)(&DAT_0064c70e + param_1 * 0x594)
-JS:  u16(DAT_0064c70e, param_1 * 0x594)
-```
+| C type | Read helper |
+|--------|-------------|
+| `*(short *)(base + off)` | `s16(base, off)` |
+| `*(ushort *)(base + off)` | `u16(base, off)` |
+| `*(int *)(base + off)` | `s32(base, off)` |
+| `*(uint *)(base + off)` | `u32(base, off)` |
+| `*(undefined4 *)(base + off)` | `s32(base, off)` |
+| `*(undefined2 *)(base + off)` | `s16(base, off)` |
 
-### 32-bit signed read (int pointer)
-```
-C:   *(int *)(&DAT_0064c6a2 + param_1 * 0x594)
-JS:  s32(DAT_0064c6a2, param_1 * 0x594)
-```
+For `&DAT_` bases, drop the `&`: `*(int *)(&DAT_XXX + off)` → `s32(DAT_XXX, off)`.
+For other bases, pass through: `*(int *)(param_1 + 0xc)` → `s32(param_1, 0xc)`.
 
-### 32-bit unsigned read (uint pointer)
-```
-C:   *(uint *)(&DAT_0064c6c0 + param_1 * 4 + param_2 * 0x594)
-JS:  u32(DAT_0064c6c0, param_1 * 4 + param_2 * 0x594)
-```
+### Typed pointer writes — general rule
+Same pattern, any base. Signedness doesn't matter for writes.
 
-### 32-bit read (undefined4 pointer)
-```
-C:   *(undefined4 *)(&DAT_0064b9c0 + iVar1 * 4)
-JS:  s32(DAT_0064b9c0, iVar1 * 4)
-```
+| C type | Write helper |
+|--------|--------------|
+| `*(short *)(base + off) = val` | `w16(base, off, val)` |
+| `*(ushort *)(base + off) = val` | `w16(base, off, val)` |
+| `*(int *)(base + off) = val` | `w32(base, off, val)` |
+| `*(uint *)(base + off) = val` | `w32(base, off, val)` |
+| `*(undefined4 *)(base + off) = val` | `w32(base, off, val)` |
+| `*(undefined2 *)(base + off) = val` | `w16(base, off, val)` |
 
-### 16-bit write
+### Read-modify-write
 ```
-C:   *(ushort *)(&DAT_0064c6a0 + param_1 * 0x594) = val;
-JS:  w16(DAT_0064c6a0, param_1 * 0x594, val);
-```
-
-### 32-bit write
-```
-C:   *(uint *)(&DAT_0064c6c0 + expr) = val;
-JS:  w32(DAT_0064c6c0, expr, val);
-```
-
-### 32-bit read-modify-write
-```
-C:   *(uint *)(&DAT + expr) = *(uint *)(&DAT + expr) | 0x100;
-JS:  w32(DAT, expr, u32(DAT, expr) | 0x100);
+C:   *(uint *)(base + expr) = *(uint *)(base + expr) | 0x100;
+JS:  w32(base, expr, u32(base, expr) | 0x100);
 ```
 
 ### Byte write (array assignment)
@@ -200,6 +186,13 @@ C:   (bool)expr         →  (expr) ? 1 : 0
 read or a computed value. `s8()` and `u8()` are value-based helpers that
 sign/zero-extend any input.
 
+**Ghidra `undefined` type casts:**
+```
+C:   (undefined1)expr    →  u8(expr)       (same as byte)
+C:   (undefined2)expr    →  (expr) & 0xFFFF  (same as ushort)
+C:   (undefined4)expr    →  expr           (no-op, like int)
+```
+
 **Operator precedence after cast removal:** When dropping `(int)`,
 preserve parentheses around the operand if it's part of a binary expression.
 `(int)a * b` → `(a) * b`. Ghidra output is already heavily parenthesized,
@@ -226,12 +219,31 @@ JS:  expr !== null
 ```
 `(TYPE *)0x0` → `null` for any pointer type.
 
-### String constants
+### Character literals
 ```
-C:   s_GREETINGS_00626a3c
-JS:  s_GREETINGS_00626a3c
+C:   '\0'         →  0
+C:   '\x05'       →  0x5
+C:   '\a'         →  7         (bell = 7)
+C:   '\n'         →  0xa
+C:   '\x01'       →  1
 ```
-Keep as-is. These are string label references.
+Strip quotes, convert to numeric value.
+
+### Unsigned integer suffix
+```
+C:   0x1fU        →  0x1f
+C:   3U           →  3
+C:   0xfffffffeU  →  0xfffffffe
+```
+Strip the `U`. JS numbers handle the full unsigned 32-bit range.
+
+### String and pointer constants
+```
+C:   s_GREETINGS_00626a3c      →  s_GREETINGS_00626a3c
+C:   PTR_s_CIV2_DAT_0062cec8  →  PTR_s_CIV2_DAT_0062cec8
+C:   PTR_FUN_00410070          →  PTR_FUN_00410070
+```
+Keep as-is. These are string and pointer label references.
 
 ### SEH (Structured Exception Handling)
 ```
@@ -353,9 +365,11 @@ where N = high byte count, M = low byte count.
 
 Examples:
 ```
-CONCAT31(hi, lo)  →  (hi << 8) | lo       (3 high bytes + 1 low byte)
-CONCAT22(hi, lo)  →  (hi << 16) | lo      (2 high bytes + 2 low bytes)
+CONCAT11(hi, lo)  →  (hi << 8) | lo       (1 high byte + 1 low byte = 16-bit)
+CONCAT12(hi, lo)  →  (hi << 16) | lo      (1 high byte + 2 low bytes)
 CONCAT13(hi, lo)  →  (hi << 24) | lo      (1 high byte + 3 low bytes)
+CONCAT22(hi, lo)  →  (hi << 16) | lo      (2 high bytes + 2 low bytes)
+CONCAT31(hi, lo)  →  (hi << 8) | lo       (3 high bytes + 1 low byte)
 CONCAT44(hi, lo)  →  BigInt or paired ops  (8-byte merge — rare, see longlong)
 ```
 
@@ -576,7 +590,7 @@ All 5 solved mechanically. Zero manual work.
 | `switchD_/caseD_` labels | 165 | Goto helper (solved) |
 | Double pointer deref | 163 | All DEVIATION (solved) |
 | `longlong` 64-bit | 69 | `(expr) \| 0` — JS floats sufficient (solved) |
-| Nested casts | 42 | Simplify to innermost (solved) |
+| Nested casts | 42 | Composability — inside-out rules (solved) |
 | Comma in condition | 14 | JS supports comma operator — pass through (solved) |
 | `va_list` | 11 | Framework only — stub (solved) |
 | Function pointer calls | 5 | 3 DEVIATION + 2 global callback rule (solved) |
