@@ -3537,7 +3537,7 @@ export function FUN_004d4a7b(in_ECX) {
     FUN_004af122(in_ECX + 0x638,
                        ); // DEVIATION: C pointer — s32(DAT_00628420, s32(DAT_00634f60, local_c * 0xc) * 4));
     FUN_004aefb7(in_ECX + 0x638);
-    FUN_004af1d5(in_ECX + 0x638,
+    FUN_004af1d5(in_ECX + 0x638, 0
                        // DEVIATION: C pointer — (int)*(short *)(DAT_0064caa8 +
                                       )); // DEVIATION(cont): *(int *)(in_ECX + 0x1cc) * 0x594 + local_c * 2
     if ((bVar2) && (local_c === 0)) {

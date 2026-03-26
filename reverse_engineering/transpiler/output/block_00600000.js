@@ -1469,7 +1469,7 @@ export function __set_osfhnd_00601E40(param_1, param_2) {
 
   let iVar1;
   
-  if ((((param_1) >>> 0) < DAT_006e6b2c) &&
+  if ((((param_1) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — (*(int *)(s32(DAT_006e69f0 + (param_1 & 0xffffffe0 >> 3), 0) +
                { // DEVIATION(cont): (param_1 & 0x1fU) * 8) == -1))
      { // DEVIATION(cont): if (DAT_00639fd0 == 1)
@@ -1513,7 +1513,7 @@ export function __free_osfhnd_00601F40(param_1) {
 
   let iVar1;
   
-  if (((((param_1) >>> 0) < DAT_006e6b2c) &&
+  if (((((param_1) >>> 0) < DAT_006e6b2c) && 0
       // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (param_1 & 0xffffffe0 >> 3), 0) + 4 +
                   // DEVIATION(cont): (param_1 & 0x1fU) * 8) & 1) != 0)) &&
       // DEVIATION(cont): (*(int *)(*(int *)((int)&DAT_006e69f0 + ((int)(param_1 & 0xffffffe0U) >> 3)) +
@@ -1559,7 +1559,7 @@ export function __get_osfhandle_00602060(_FileHandle) {
 
   let iVar1;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0))
      // DEVIATION(cont): iVar1 = *(intptr_t *)
@@ -1647,7 +1647,7 @@ export function __commit_006021E0(_FileHandle) {
   let BVar1;
   let local_8;
   
-  if (((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if (((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
       // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                   // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0)) &&
       // DEVIATION(cont): ((*(byte *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
@@ -3140,7 +3140,7 @@ export function __chsize_00603F30(_FileHandle, _Size) {
   
   FUN_005f35f0();
   local_1020 = 0;
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0))
      { // DEVIATION(cont): if (_Size < 0)
@@ -4276,7 +4276,7 @@ export function __setmode_00605BA0(_FileHandle, _Mode) {
   let cVar1;
   let iVar2;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0))
      // DEVIATION(cont): cVar1 = *(char *)(*(int *)((int)&DAT_006e69f0 + ((int)(_FileHandle & 0xffffffe0U) >> 3)) + 4 +
@@ -5175,7 +5175,7 @@ export function __filelength_006075E0(_FileHandle) {
   let _Offset;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0))
      // DEVIATION(cont): _Offset = __lseek(_FileHandle,0,1);

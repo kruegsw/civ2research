@@ -1534,7 +1534,7 @@ export function FUN_004941ee(param_1) {
 
 
   if ((((DAT_0062ca40 !== 0) && (DAT_0062ca34 !== 0)) &&
-      ((param_1 === 2 || ((param_1 === 3 || (param_1 === 4)))))) &&
+      ((param_1 === 2 || ((param_1 === 3 || (param_1 === 4)))))) && 0
      // DEVIATION: C pointer — ((s32(DAT_0061d2b0, (uint)*(byte *)(DAT_0062ca34 + 0x1084) * 0x28) <
         // DEVIATION(cont): *(int *)(DAT_0062ca34 + 0x1074) &&
        // DEVIATION(cont): (*(int *)(DAT_0062ca34 + 0x1074) <
@@ -2700,7 +2700,7 @@ export function FUN_00495e0c(in_ECX) {
     FUN_00496116();
     return;
   }
-  FUN_005dd2e3(DAT_0062cbb0,0x200,
+  FUN_005dd2e3(DAT_0062cbb0,0x200, 0
                // DEVIATION: C pointer — s32(DAT_0061d200, (uint)*(byte *)(in_ECX + 0x1084) * 8),
                ); // DEVIATION(cont): *(undefined4 *)(&DAT_0061d204 + (uint)*(byte *)(in_ECX + 0x1084) * 8),in_ECX + 200
   local_14 = FUN_005dd377(local_4c8);
@@ -3254,7 +3254,7 @@ export function FUN_00496ecf(param_1) {
   }
   if (((param_1 !== 100) && (param_1 === 0x65)) &&
      (w32(local_8, 0x1e4, s32(local_8, 0x1e0),
-     // DEVIATION: C pointer — DAT_006554fc[s16(DAT_0064c6a6, s32(local_8, 0x1dc) * 0x594) * 0x30] !== 0))
+     0)) // DEVIATION: C pointer — DAT_006554fc[s16(DAT_0064c6a6, s32(local_8, 0x1dc) * 0x594) * 0x30] !== 0))
    { // DEVIATION(cont)
     w32(local_8, 0x1e4, s32(local_8, 0x1e4) + 0x15);
   } // DEVIATION(cont)
@@ -5161,7 +5161,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
         }
         if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) ||
             ((((DAT_00655b0b &
-               // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
+               0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
                // DEVIATION(cont): ((*(short *)(&DAT_00655b98 + (char)(&DAT_0064f379)[param_1 * 0x58] * -2) != -1 ||
                 // DEVIATION(cont): ((int)*(short *)(&DAT_0064f35c + param_1 * 0x58) <
                  // DEVIATION(cont): (int)((uint)(byte)(&DAT_0064c48c)[(char)(&DAT_0064f379)[param_1 * 0x58] * -8] *
@@ -5433,7 +5433,7 @@ export function FUN_00498e8b(param_1, param_2, param_3) {
             local_1c = (local_260 + 1) * local_1c + local_260;
           }
           else if ((1 << (bVar1 & 0x1f) &
-                   // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
+                   0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
                     { // DEVIATION(cont): 0)
              // DEVIATION(cont): local_1c = local_1c * 2 + 1;
           }
@@ -7251,7 +7251,7 @@ if (true) {
         }
         if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) ||
             ((((DAT_00655b0b &
-               // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
+               0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
                // DEVIATION(cont): ((*(short *)(&DAT_00655b98 + (char)(&DAT_0064f379)[param_1 * 0x58] * -2) != -1 ||
                 // DEVIATION(cont): ((int)*(short *)(&DAT_0064f35c + param_1 * 0x58) <
                  // DEVIATION(cont): (int)((uint)(byte)(&DAT_0064c48c)[(char)(&DAT_0064f379)[param_1 * 0x58] * -8] *
@@ -7523,7 +7523,7 @@ if (true) {
             local_1c = (local_260 + 1) * local_1c + local_260;
           }
   if (true) // (orphan else)
-  // (orphan else-if cont): // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
+  // (orphan else-if cont): 0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
   // (orphan else-if cont): { // DEVIATION(cont): 0)
   // (orphan else-if cont): // DEVIATION(cont): local_1c = local_1c * 2 + 1;
   // (orphan else-if cont): }
@@ -8778,7 +8778,7 @@ if (true) {
         }
         if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) ||
             ((((DAT_00655b0b &
-               // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
+               0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
                // DEVIATION(cont): ((*(short *)(&DAT_00655b98 + (char)(&DAT_0064f379)[param_1 * 0x58] * -2) != -1 ||
                 // DEVIATION(cont): ((int)*(short *)(&DAT_0064f35c + param_1 * 0x58) <
                  // DEVIATION(cont): (int)((uint)(byte)(&DAT_0064c48c)[(char)(&DAT_0064f379)[param_1 * 0x58] * -8] *
@@ -9050,7 +9050,7 @@ if (true) {
             local_1c = (local_260 + 1) * local_1c + local_260;
           }
   if (true) // (orphan else)
-  // (orphan else-if cont): // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
+  // (orphan else-if cont): 0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
   // (orphan else-if cont): { // DEVIATION(cont): 0)
   // (orphan else-if cont): // DEVIATION(cont): local_1c = local_1c * 2 + 1;
   // (orphan else-if cont): }
@@ -10317,7 +10317,7 @@ if (true) {
         }
         if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) ||
             ((((DAT_00655b0b &
-               // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
+               0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
                // DEVIATION(cont): ((*(short *)(&DAT_00655b98 + (char)(&DAT_0064f379)[param_1 * 0x58] * -2) != -1 ||
                 // DEVIATION(cont): ((int)*(short *)(&DAT_0064f35c + param_1 * 0x58) <
                  // DEVIATION(cont): (int)((uint)(byte)(&DAT_0064c48c)[(char)(&DAT_0064f379)[param_1 * 0x58] * -8] *
@@ -10589,7 +10589,7 @@ if (true) {
             local_1c = (local_260 + 1) * local_1c + local_260;
           }
   if (true) // (orphan else)
-  // (orphan else-if cont): // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
+  // (orphan else-if cont): 0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
   // (orphan else-if cont): { // DEVIATION(cont): 0)
   // (orphan else-if cont): // DEVIATION(cont): local_1c = local_1c * 2 + 1;
   // (orphan else-if cont): }
@@ -11786,7 +11786,7 @@ if (true) {
         }
         if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) ||
             ((((DAT_00655b0b &
-               // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
+               0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
                // DEVIATION(cont): ((*(short *)(&DAT_00655b98 + (char)(&DAT_0064f379)[param_1 * 0x58] * -2) != -1 ||
                 // DEVIATION(cont): ((int)*(short *)(&DAT_0064f35c + param_1 * 0x58) <
                  // DEVIATION(cont): (int)((uint)(byte)(&DAT_0064c48c)[(char)(&DAT_0064f379)[param_1 * 0x58] * -8] *
@@ -12058,7 +12058,7 @@ if (true) {
             local_1c = (local_260 + 1) * local_1c + local_260;
           }
   if (true) // (orphan else)
-  // (orphan else-if cont): // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
+  // (orphan else-if cont): 0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
   // (orphan else-if cont): { // DEVIATION(cont): 0)
   // (orphan else-if cont): // DEVIATION(cont): local_1c = local_1c * 2 + 1;
   // (orphan else-if cont): }
@@ -13266,7 +13266,7 @@ if (true) {
         }
         if ((((local_78 === 0) || (s8(DAT_0064f379[param_1 * 0x58]) === -local_244)) ||
             ((((DAT_00655b0b &
-               // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
+               0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — *(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) === 0 ||
                // DEVIATION(cont): ((*(short *)(&DAT_00655b98 + (char)(&DAT_0064f379)[param_1 * 0x58] * -2) != -1 ||
                 // DEVIATION(cont): ((int)*(short *)(&DAT_0064f35c + param_1 * 0x58) <
                  // DEVIATION(cont): (int)((uint)(byte)(&DAT_0064c48c)[(char)(&DAT_0064f379)[param_1 * 0x58] * -8] *
@@ -13538,7 +13538,7 @@ if (true) {
             local_1c = (local_260 + 1) * local_1c + local_260;
           }
   if (true) // (orphan else)
-  // (orphan else-if cont): // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
+  // (orphan else-if cont): 0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — (uint)*(byte *)(local_f4[0] + (1 - s8(DAT_0064f379[param_1 * 0x58])))) !==
   // (orphan else-if cont): { // DEVIATION(cont): 0)
   // (orphan else-if cont): // DEVIATION(cont): local_1c = local_1c * 2 + 1;
   // (orphan else-if cont): }

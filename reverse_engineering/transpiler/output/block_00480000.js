@@ -2966,7 +2966,7 @@ export function FUN_0048a416() {
     }
     if (((DAT_00628044 === 0) || (DAT_0064b9bc === 0)) ||
        ((1 << (u8(DAT_006d1da0) & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0)) {
-      if ((DAT_006aa75c === 0) &&
+      if ((DAT_006aa75c === 0) && 0
          // DEVIATION: MFC — (iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8),
           { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar2 * 0x58] != DAT_006d1da0))
          // DEVIATION(cont): thunk_citywin_994F();
@@ -4145,7 +4145,7 @@ export function FUN_0048c9f3(param_1) {
             w32(DAT_006ad644, local_32c * 4, 0);
             FUN_005f22d0(DAT_0063cc48,
                          DAT_006ad330 + s32(DAT_006ad558, local_32c * 4) * 0x54);
-            FUN_00511880(0x3f,0xff,1,0,
+            FUN_00511880(0x3f,0xff,1,0, 0
                                // DEVIATION: C pointer — *(undefined4 *)
                                 ); // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + local_32c * 4) * 0x54),0
             FUN_00410030(s_NEWPLAYER_0062c818,DAT_0063fc58,0);
@@ -4670,7 +4670,7 @@ if (true) {
   // (outer block close)
     if (((DAT_00628044 === 0) || (DAT_0064b9bc === 0)) ||
        ((1 << (u8(DAT_006d1da0) & 0x1f) & ((DAT_00655b0b) >>> 0)) === 0)) {
-      if ((DAT_006aa75c === 0) &&
+      if ((DAT_006aa75c === 0) && 0
          // DEVIATION: MFC — (iVar2 = CSplitterWnd::IsTracking(DAT_006a91b8),
           { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar2 * 0x58] != DAT_006d1da0))
          // DEVIATION(cont): thunk_citywin_994F();
@@ -5073,7 +5073,7 @@ if (true) {
             w32(DAT_006ad644, local_32c * 4, 0);
             FUN_005f22d0(DAT_0063cc48,
                          DAT_006ad330 + s32(DAT_006ad558, local_32c * 4) * 0x54);
-            FUN_00511880(0x3f,0xff,1,0,
+            FUN_00511880(0x3f,0xff,1,0, 0
                                // DEVIATION: C pointer — *(undefined4 *)
                                 ); // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + local_32c * 4) * 0x54),0
             FUN_00410030(s_NEWPLAYER_0062c818,DAT_0063fc58,0);
@@ -5315,7 +5315,7 @@ if (true) {
             w32(DAT_006ad644, local_32c * 4, 0);
             FUN_005f22d0(DAT_0063cc48,
                          DAT_006ad330 + s32(DAT_006ad558, local_32c * 4) * 0x54);
-            FUN_00511880(0x3f,0xff,1,0,
+            FUN_00511880(0x3f,0xff,1,0, 0
                                // DEVIATION: C pointer — *(undefined4 *)
                                 ); // DEVIATION(cont): (&DAT_006ad30c + *(int *)(&DAT_006ad558 + local_32c * 4) * 0x54),0
             FUN_00410030(s_NEWPLAYER_0062c818,DAT_0063fc58,0);

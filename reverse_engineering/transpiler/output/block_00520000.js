@@ -3111,7 +3111,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     uVar3 = FUN_00428b0c(s32(DAT_00628420, 0xc28));
     FUN_0040f680(local_490,param_2 + 0x400,local_17c[0],uVar3);
     FUN_0040f880(0 /* ADDR:LAB_00401f55 */ + ((param_2 === 0) - 1 & 0xfffff637));
-    if ((DAT_0067a994 !== 9) &&
+    if ((DAT_0067a994 !== 9) && 0
        // DEVIATION: C pointer — (((param_2 === 0 && (*(char *)(in_ECX + 0x3bd) === 0)) ||
          { // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0'))))))
        // DEVIATION(cont): thunk_FUN_00453c40();
@@ -3137,7 +3137,7 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     uVar3 = FUN_00428b0c(s32(DAT_00628420, 0xc2c));
     FUN_0040f680(local_494,param_2 + 0x402,local_17c[0],uVar3);
     FUN_0040f880(0 /* ADDR:LAB_004033d7 */ + ((param_2 === 0) - 1 & 0xfffff5a1));
-    if ((DAT_0067a994 !== 9) &&
+    if ((DAT_0067a994 !== 9) && 0
        // DEVIATION: C pointer — (((param_2 === 0 && (*(char *)(in_ECX + 0x3bd) === 0)) ||
          { // DEVIATION(cont): ((param_2 == 1 && (*(char *)(in_ECX + 0x3bc) == '\0'))))))
        // DEVIATION(cont): thunk_FUN_00453c40();

@@ -2220,7 +2220,7 @@ export function FUN_004741be(param_1, param_2) {
           // DEVIATION: C pointer — if (-1 < s16(DAT_00655506, s16(DAT_0064c6a6, local_128 * 0x594) * 0x30))
            { // DEVIATION(cont)
              // DEVIATION(cont): thunk_FUN_004aef20(&DAT_0064bd2a + local_128 * 0xf2);
-            FUN_004af122(DAT_0064bd2a + local_128 * 0xf2,
+            FUN_004af122(DAT_0064bd2a + local_128 * 0xf2, 0
                                // DEVIATION: C pointer — (int)*(short *)(DAT_00655506 +
                                               )) // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + local_128 * 0x594) * 0x30
             ; // DEVIATION(cont)
@@ -2228,7 +2228,7 @@ export function FUN_004741be(param_1, param_2) {
           // DEVIATION: C pointer — if (-1 < s16(DAT_00655504, s16(DAT_0064c6a6, local_128 * 0x594) * 0x30))
            { // DEVIATION(cont)
              // DEVIATION(cont): thunk_FUN_004aef20(&DAT_0064bd12 + local_128 * 0xf2);
-            FUN_004af122(DAT_0064bd12 + local_128 * 0xf2,
+            FUN_004af122(DAT_0064bd12 + local_128 * 0xf2, 0
                                // DEVIATION: C pointer — (int)*(short *)(DAT_00655504 +
                                               )) // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + local_128 * 0x594) * 0x30
             ; // DEVIATION(cont)
@@ -2236,7 +2236,7 @@ export function FUN_004741be(param_1, param_2) {
           // DEVIATION: C pointer — if (-1 < s16(DAT_00655502, s16(DAT_0064c6a6, local_128 * 0x594) * 0x30))
            { // DEVIATION(cont)
              // DEVIATION(cont): thunk_FUN_004aef20(&DAT_0064bcfa + local_128 * 0xf2);
-            FUN_004af122(DAT_0064bcfa + local_128 * 0xf2,
+            FUN_004af122(DAT_0064bcfa + local_128 * 0xf2, 0
                                // DEVIATION: C pointer — (int)*(short *)(DAT_00655502 +
                                               )) // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + local_128 * 0x594) * 0x30
             ; // DEVIATION(cont)

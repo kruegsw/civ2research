@@ -2168,7 +2168,7 @@ export function FUN_0058843f(param_1, param_2, param_3) {
       while (local_14 = local_14 + 1, local_14 <= param_2) {
         // DEVIATION: C pointer — iVar2 = FUN_0043d20a(*(undefined4 *)
                                      // DEVIATION(cont): (local_14 * 4 + param_3 * 0x2004 + 0x3f0 + local_8),1);
-        if ((iVar2 !== 0) ||
+        if ((iVar2 !== 0) || 0
            // DEVIATION: C pointer — ((iVar2 = FUN_0043d20a(*(undefined4 *)
                                           // DEVIATION(cont): (local_10 * 4 + param_3 * 0x2004 + 0x3f0 + local_8),1),
              // DEVIATION(cont): iVar2 == 0 &&
@@ -2292,7 +2292,7 @@ export function FUN_0058878e(param_1) {
         local_44 = DAT_00635a2c;
       }
       local_58 = 0;
-      if ((0 < s32(local_38, 1000 + param_1 * 4)) &&
+      if ((0 < s32(local_38, 1000 + param_1 * 4)) && 0
          // DEVIATION: C pointer — (local_58 = FUN_0052ed95(*(undefined4 *)
                                           // DEVIATION(cont): (param_1 * 0x2004 +
                                            // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) *
@@ -5870,7 +5870,7 @@ if (true) {
         local_44 = DAT_00635a2c;
       }
       local_58 = 0;
-      if ((0 < s32(local_38, 1000 + param_1 * 4)) &&
+      if ((0 < s32(local_38, 1000 + param_1 * 4)) && 0
          // DEVIATION: C pointer — (local_58 = FUN_0052ed95(*(undefined4 *)
                                           // DEVIATION(cont): (param_1 * 0x2004 +
                                            // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) *
@@ -6016,7 +6016,7 @@ if (true) {
         local_44 = DAT_00635a2c;
       }
       local_58 = 0;
-      if ((0 < s32(local_38, 1000 + param_1 * 4)) &&
+      if ((0 < s32(local_38, 1000 + param_1 * 4)) && 0
          // DEVIATION: C pointer — (local_58 = FUN_0052ed95(*(undefined4 *)
                                           // DEVIATION(cont): (param_1 * 0x2004 +
                                            // DEVIATION(cont): (*(int *)(local_38 + 0x10410 + param_1 * 4) + local_54) *

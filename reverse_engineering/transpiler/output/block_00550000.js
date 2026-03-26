@@ -2901,7 +2901,7 @@ export function FUN_00556f54() {
                           uVar2 = FUN_00493b10(local_1c);
                           FUN_0040ff60(1,uVar2);
                           FUN_00421da0(0,DAT_00655af8);
-                          iVar3 = FUN_00518ec0(s_LASTCONTACT_006338ac,
+                          iVar3 = FUN_00518ec0(s_LASTCONTACT_006338ac, 0
                                                      // DEVIATION: C pointer — (int)*(short *)(DAT_0064ca82 +
                                                                      // DEVIATION(cont): iVar1 * 0x594 + local_1c * 2),
                                                      ); // DEVIATION(cont): local_20

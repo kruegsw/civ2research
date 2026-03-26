@@ -5598,7 +5598,7 @@ export function FUN_005e79b1(in_ECX, param_1, param_2, param_3) {
   if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_00639420);
   }
-  else if ((s32(in_ECX, 0) !== 0) &&
+  else if ((s32(in_ECX, 0) !== 0) && 0
           // DEVIATION: C pointer — (iVar1 = FUN_005e9d31(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3),
            { // DEVIATION(cont): iVar1 == -1))
      // DEVIATION(cont): FUN_005e61e9();
@@ -5793,7 +5793,7 @@ export function FUN_005e7e90(in_ECX, param_1, param_2, param_3, param_4, param_5
   if (PTR_DAT_00637e5c === 0x0) {
     debug_log(s_Error__No_current_font_selected_00639480);
   }
-  else if ((s32(in_ECX, 0) !== 0) &&
+  else if ((s32(in_ECX, 0) !== 0) && 0
           // DEVIATION: C pointer — (iVar1 = FUN_005ea32f(s32(in_ECX, 0),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,param_3,
                                  { // DEVIATION(cont): param_4,param_5,param_6), iVar1 == -1))
      // DEVIATION(cont): FUN_005e61e9();
@@ -6147,11 +6147,11 @@ export function FUN_005e87a2(in_ECX, param_1) {
   }
   else {
     local_10 = in_ECX[1] - param_1;
-    local_c = local_10 *
+    local_c = local_10 * 0
               // DEVIATION: C pointer — *(byte *)(in_ECX + 7) / in_ECX[1];
-    local_1c = local_10 *
+    local_1c = local_10 * 0
                // DEVIATION: C pointer — *(byte *)(in_ECX + 0x1d) / in_ECX[1];
-    local_8 = local_10 *
+    local_8 = local_10 * 0
               // DEVIATION: C pointer — *(byte *)(in_ECX + 0x1e) / in_ECX[1];
     iVar3 = FUN_005dcdf9(in_ECX[10]);
     local_18 = 0;
@@ -7829,7 +7829,7 @@ export function FUN_005ea8d3(param_1, param_2, param_3) {
       this = FUN_005ea7d7(param_2,s32(param_1, 0xb8));
       if ((this !== 0x0) &&
          ((((iVar1 = FUN_005c5e60(), iVar1 === 6 &&
-            // DEVIATION: MFC — (pcVar4 = streambuf::egptr(this), pcVar4 !== 0x0)) ||
+            0) // DEVIATION: MFC — (pcVar4 = streambuf::egptr(this), pcVar4 !== 0x0)) ||
             // DEVIATION(cont): ((iVar1 = FUN_005c5e60(), iVar1 == 2 && (iVar1 = FUN_005c5ec0(), iVar1 != 0)))) ||
            // DEVIATION(cont): (((iVar1 = FUN_005c5e60(), iVar1 == 4 || (iVar1 = FUN_005c5e60(), iVar1 == 7)) ||
             { // DEVIATION(cont): (iVar1 = FUN_005c5e60(), iVar1 == 10))))))

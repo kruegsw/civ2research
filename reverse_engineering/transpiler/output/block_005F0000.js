@@ -2655,7 +2655,7 @@ export function operator_delete_005F23C0(param_1) {
   if (param_1 !== 0x0) {
     if (((((u32(param_1 + -0xc, 0) & 0xffff) !== 4) && (s32(param_1 + -0xc, 0) !== 1))
         && ((u32(param_1 + -0xc, 0) & 0xffff) !== 2)) &&
-       ((s32(param_1 + -0xc, 0) !== 3 &&
+       ((s32(param_1 + -0xc, 0) !== 3 && 0
         // DEVIATION: C struct — (iVar2 = __CrtDbgReport(2,"dbgdel.cpp",0x2f,0,"_BLOCK_TYPE_IS_VALID(pHead->nBlockUse)"),
          { // DEVIATION(cont): iVar2 == 1))))
        // DEVIATION(cont): pcVar1 = (code *)swi(3);
@@ -5676,7 +5676,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
       _Dst = (param_1 + -0x20);
       if ((((u32(param_1 + -0xc, 0) & 0xffff) !== 4) && (s32(param_1 + -0xc, 0) !== 1))
          && (((u32(param_1 + -0xc, 0) & 0xffff) !== 2 &&
-             ((s32(param_1 + -0xc, 0) !== 3 &&
+             ((s32(param_1 + -0xc, 0) !== 3 && 0
               // DEVIATION: C struct — (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x3f9,0,"_BLOCK_TYPE_IS_VALID(pHead->nBlockUse)"
                                       { // DEVIATION(cont): ), iVar2 == 1))))))
          // DEVIATION(cont): pcVar1 = (code *)swi(3);
@@ -5705,7 +5705,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
       }
       if (s32(param_1 + -0xc, 0) === 3) {
         if (((s32(param_1 + -0x14, 0) !== -0x1234544) || (s32(param_1 + -8, 0) !== 0))
-           && (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x40e,0,
+           && (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x40e,0, 0
                                       // DEVIATION: C struct — "pHead->nLine === IGNORE_LINE && pHead->lRequest === IGNORE_REQ"
                                       { // DEVIATION(cont): ), iVar2 == 1))
            // DEVIATION(cont): pcVar1 = (code *)swi(3);
@@ -5719,7 +5719,7 @@ export function __free_dbg_005F4F90(param_1, param_2) {
         if ((s32(param_1 + -0xc, 0) === 2) && (param_2 === 1)) {
           param_2 = 2;
         }
-        if ((s32(param_1 + -0xc, 0) !== param_2) &&
+        if ((s32(param_1 + -0xc, 0) !== param_2) && 0
            // DEVIATION: C struct — (iVar2 = __CrtDbgReport(2,"dbgheap.c",0x41b,0,"pHead->nBlockUse === nBlockUse"),
             { // DEVIATION(cont): iVar2 == 1))
            // DEVIATION(cont): pcVar1 = (code *)swi(3);
@@ -8495,7 +8495,7 @@ export function AdjustPointer_005F87E0(param_1, param_2) {
   // DEVIATION: C pointer — local_8 = (*(int *)param_2 + param_1);
   if (-1 < s32(param_2, 4)) {
     local_8 = (local_8 +
-                      s32(param_2, 4) +
+                      s32(param_2, 4) + 0
                       // DEVIATION: C pointer — *(int *)(s32(s32(param_2, 4) + param_1, 0) +
                               ))); // DEVIATION(cont): *(int *)(param_2 + 8
   }
@@ -9478,7 +9478,7 @@ export function __close_005FA010(_FileHandle) {
   let iVar4;
   let local_8;
   
-  if ((DAT_006e6b2c <= ((_FileHandle) >>> 0)) ||
+  if ((DAT_006e6b2c <= ((_FileHandle) >>> 0)) || 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) == 0))
      // DEVIATION(cont): DAT_00639f14 = 9;
@@ -9685,7 +9685,7 @@ export function flsall_005FA310(param_1) {
         }
       }
       else if (((param_1 === 0) &&
-               // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e5694, local_10 * 4) + 0xc) & 2) !== 0)) &&
+               0)) // DEVIATION: C-syntax — 0) // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e5694, local_10 * 4) + 0xc) & 2) !== 0)) &&
                { // DEVIATION(cont): (iVar1 = _fflush(*(FILE **)(DAT_006e5694 + local_10 * 4)), iVar1 == -1))
          // DEVIATION(cont): local_c = -1;
       }
@@ -10538,12 +10538,12 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
   let local_c;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0))
      // DEVIATION(cont): local_1c = 0;
     local_18 = _DstBuf;
-    if ((_MaxCharCount === 0) ||
+    if ((_MaxCharCount === 0) || 0
        // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                    { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 2) != 0))
        // DEVIATION(cont): local_1c = 0;
@@ -10627,7 +10627,7 @@ export function __read_005FB830(_FileHandle, _DstBuf, _MaxCharCount) {
               else {
                 local_8 = local_8 + 1;
                 local_c = 0;
-                BVar1 = ReadFile(*
+                BVar1 = ReadFile(* 0
                                   // DEVIATION: C pointer — (*(int *)(DAT_006e69f0 +
                                             // DEVIATION(cont): ((int)(_FileHandle & 0xffffffe0U) >> 3)) +
                                   ) // DEVIATION(cont): (_FileHandle & 0x1fU) * 8),local_20,1,&local_14,(LPOVERLAPPED)0x0
@@ -10714,7 +10714,7 @@ export function __write_005FBCD0(_FileHandle, _Buf, _MaxCharCount) {
   let local_c;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0))
      // DEVIATION(cont): local_14 = 0;
@@ -12299,7 +12299,7 @@ export function __lseek_005FDF90(_FileHandle, _Offset, _Origin) {
   let hFile;
   let local_8;
   
-  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) &&
+  if ((((_FileHandle) >>> 0) < DAT_006e6b2c) && 0
      // DEVIATION: C pointer — ((*(byte *)(s32(DAT_006e69f0 + (_FileHandle & 0xffffffe0 >> 3), 0) + 4 +
                  { // DEVIATION(cont): (_FileHandle & 0x1fU) * 8) & 1) != 0))
      // DEVIATION(cont): hFile = (HANDLE)__get_osfhandle(_FileHandle);

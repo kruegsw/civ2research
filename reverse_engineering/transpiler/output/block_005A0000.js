@@ -146,7 +146,7 @@ export function FUN_005a120b(in_ECX, param_1, param_2) {
       if (in_ECX !== 0xfffffdf8) {
         local_3c[0] = local_14[0] + in_ECX[param_1[3] + 0x82];
       }
-      if ((in_ECX[0x92] === 0) ||
+      if ((in_ECX[0x92] === 0) || 0
          // DEVIATION: C pointer — (iVar2 = (*(code *)in_ECX[0x92])
                              // DEVIATION(cont): (in_ECX,*in_ECX,param_1[1],iVar2,local_20,local_28,
                               { // DEVIATION(cont): in_ECX[param_1[3] + 0x7c]), iVar2 == 0))
@@ -1827,7 +1827,7 @@ export function FUN_005a53b8(param_1, param_2) {
   
   if ((((DAT_006cec84 !== 0) &&
        (FUN_005a1caf(param_1,param_2), (u32(DAT_006cec84, 0x3c) & 0x41000) === 0x1000))
-      && (s32(DAT_006cec84, 0x28) !== 0)) &&
+      && (s32(DAT_006cec84, 0x28) !== 0)) && 0
      // DEVIATION: C pointer — (((*(byte *)(DAT_006cec84 + 0x3d) & 4) === 0 &&
        { // DEVIATION(cont): (iVar1 = thunk_FUN_005a1a7d(param_1,param_2), -1 < iVar1))))
      // DEVIATION(cont): *(undefined4 *)(DAT_006cec84 + 0x218 + *(int *)(DAT_006cec84 + 0x48) * 4) = 1;

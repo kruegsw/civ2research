@@ -2108,7 +2108,7 @@ export function FUN_00434e39() {
       for (local_28 = 0; local_28 < 0x1c; local_28 = local_28 + 1) {
         if ((((-1 < s16(DAT_00655be6, local_28 * 2)) &&
              (s16(DAT_00655be6, local_28 * 2) < DAT_00655b18)) &&
-            // DEVIATION: C pointer — (s32(DAT_0064f394, s16(DAT_00655be6, local_28 * 2) * 0x58) !== 0)) &&
+            0) // DEVIATION: C pointer — (s32(DAT_0064f394, s16(DAT_00655be6, local_28 * 2) * 0x58) !== 0)) &&
             // DEVIATION(cont): (local_54 = (int)*(short *)(&DAT_00655be6 + local_28 * 2),
             { // DEVIATION(cont): (char)(&DAT_0064f348)[local_54 * 0x58] == local_70))
            // DEVIATION(cont): FUN_005cef31(local_90,&DAT_0063eb10,local_34,local_38);
@@ -5679,7 +5679,7 @@ export function create_city_0043F8B0(param_1, param_2, param_3) {
           iVar5 = FUN_004087c0(uVar6,iVar4);
           if ((((iVar5 !== 0) &&
                (FUN_005b976d(uVar6,iVar4,1 << (u8(param_3) & 0x1f),1,1), 0x27 < DAT_00655af8
-               )) && (local_14 < 8)) &&
+               )) && (local_14 < 8)) && 0
              // DEVIATION: C pointer — ((iVar5 = FUN_005b8931(uVar6,iVar4), (DAT_00655b0b & *(byte *)(iVar5 + 4)) === 0
                // DEVIATION(cont): && (bVar2 = thunk_FUN_005b89bb(uVar6,iVar4), (&DAT_00627cce)[(uint)bVar2 * 0x18] == -2
                   { // DEVIATION(cont): ))))
@@ -5687,7 +5687,7 @@ export function create_city_0043F8B0(param_1, param_2, param_3) {
           }
         }
         FUN_005b9f1c();
-        if ((0x28 < DAT_00655af8) &&
+        if ((0x28 < DAT_00655af8) && 0
            // DEVIATION: C pointer — (iVar4 = FUN_005b8931(param_1,param_2), (DAT_00655b0b & *(byte *)(iVar4 + 4)) === 0)
             { // DEVIATION(cont): )
            // DEVIATION(cont): uVar3 = thunk_FUN_005adfa0((DAT_00655af8 + -0x14) / 0x14,2,10);
@@ -5848,7 +5848,7 @@ function LAB_004355c2_helper(iVar2, local_10, local_14, local_18, local_1c, loca
       for (local_28 = 0; local_28 < 0x1c; local_28 = local_28 + 1) {
         if ((((-1 < s16(DAT_00655be6, local_28 * 2)) &&
              (s16(DAT_00655be6, local_28 * 2) < DAT_00655b18)) &&
-            // DEVIATION: C pointer — (s32(DAT_0064f394, s16(DAT_00655be6, local_28 * 2) * 0x58) !== 0)) &&
+            0) // DEVIATION: C pointer — (s32(DAT_0064f394, s16(DAT_00655be6, local_28 * 2) * 0x58) !== 0)) &&
             // DEVIATION(cont): (local_54 = (int)*(short *)(&DAT_00655be6 + local_28 * 2),
             { // DEVIATION(cont): (char)(&DAT_0064f348)[local_54 * 0x58] == local_70))
            // DEVIATION(cont): FUN_005cef31(local_90,&DAT_0063eb10,local_34,local_38);

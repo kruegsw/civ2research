@@ -197,6 +197,13 @@ function makeDeviation(line, reason, ctx) {
   }
   // Multi-line — set continuation
   ctx.deviationContinuation = true;
+  // Check if line has excess closing parens (extract them)
+  let lineParens = 0;
+  for (const ch of content) { if (ch === '(') lineParens++; if (ch === ')') lineParens--; }
+  if (lineParens < 0) {
+    const excess = -lineParens;
+    return indent + '0' + ')'.repeat(excess) + ' // DEVIATION: ' + reason + ' — ' + content;
+  }
   return indent + '// DEVIATION: ' + reason + ' — ' + content;
 }
 
@@ -834,6 +841,18 @@ function processFunction(headerLines, bodyLines, ctx) {
     }
 
     result.push(transformed);
+  }
+
+  // ── Post-process: fix dangling operators before DEVIATION lines ──
+  // When a code line ends with +, -, *, &&, ||, , and the next line
+  // is a DEVIATION comment, the expression is incomplete. Add 0 to complete it.
+  for (let i = 0; i < result.length - 1; i++) {
+    const code = result[i].split('//')[0].trimEnd();
+    const nextTrimmed = result[i + 1].trim();
+    if (code && /[+\-*&|,]\s*$/.test(code) && nextTrimmed.startsWith('// DEVIATION')) {
+      // Append 0 to complete the dangling expression
+      result[i] = result[i].replace(/([+\-*&|,])\s*$/, '$1 0');
+    }
   }
 
   return result;

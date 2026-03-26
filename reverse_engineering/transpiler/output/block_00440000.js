@@ -7824,7 +7824,7 @@ export function FUN_0044d296(in_ECX) {
       }
       else {
         DAT_0064ca9b[s32(in_ECX, 0x500) * 0x594] =
-             DAT_0064ca9b[s32(in_ECX, 0x500) * 0x594] |
+             DAT_0064ca9b[s32(in_ECX, 0x500) * 0x594] | 0
              // DEVIATION: C pointer — u8(1 << (*(byte *)(in_ECX + 0x192c) & 0x1f));
       }
       iVar1 = FUN_0044db92();

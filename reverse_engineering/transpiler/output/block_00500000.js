@@ -3468,7 +3468,7 @@ export function citywin_70E5_005070E5(in_ECX) {
   for (local_30 = 0; local_30 < s8(DAT_0064f37a[s32(in_ECX, 0x159c) * 0x58]);
       local_30 = local_30 + 1) {
     FUN_0040bbb0();
-    FUN_0040bbe0(DAT_0064f360 +
+    FUN_0040bbe0(DAT_0064f360 + 0
                        // DEVIATION: C pointer — s16(DAT_0064f384, s32(in_ECX, 0x159c) * 0x58 + local_30 * 2) *
                        ); // DEVIATION(cont): 0x58
     FUN_0040fe10();
@@ -3570,7 +3570,7 @@ export function citywin_7B69_00507B69(in_ECX) {
   }
   // DEVIATION: C pointer — iVar6 = FUN_005ae052(s16(DAT_0064f340, s32(in_ECX, 0x159c) * 0x58) - local_8)
   ; // DEVIATION(cont)
-  FUN_00408780(iVar6 * iVar5 + iVar3,
+  FUN_00408780(iVar6 * iVar5 + iVar3, 0
                      // DEVIATION: C pointer — s16(DAT_0064f342, s32(in_ECX, 0x159c) * 0x58) * iVar5 + iVar4,
                      ); // DEVIATION(cont): iVar5,iVar5,0x29
   return;
@@ -3701,7 +3701,7 @@ export function citywin_8177_00508177(in_ECX, param_1, param_2, param_3, param_4
     local_28 = 0;
     for (local_38 = 0; local_38 < DAT_00655b16; local_38 = local_38 + 1) {
       if ((((s32(DAT_0065610a, local_38 * 0x20) !== 0) &&
-           (iVar3 = local_8 >> 1,
+           (iVar3 = local_8 >> 1, 0
            // DEVIATION: C pointer — s16(DAT_0064f340, s32(in_ECX, 0x159c) * 0x58) ===
             // DEVIATION(cont): *(short *)(&DAT_006560f0 + local_38 * 0x20))) &&
            // DEVIATION(cont): (*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58) ==
@@ -4207,10 +4207,10 @@ export function citywin_9429_00509429(in_ECX) {
   // in_ECX → promoted to parameter
   
   if ((((-1 < s32(in_ECX, 0x159c)) && (s32(in_ECX, 0x159c) < DAT_00655b18)) &&
-      // DEVIATION: C pointer — (s32(DAT_0064f394, s32(in_ECX, 0x159c) * 0x58) !== 0)) && (DAT_00628044 !== 0))
+      0)) // DEVIATION: C pointer — (s32(DAT_0064f394, s32(in_ECX, 0x159c) * 0x58) !== 0)) && (DAT_00628044 !== 0))
    { // DEVIATION(cont)
      { // DEVIATION(cont): if ((*(int *)(in_ECX + 0x15a0) == 0) && (*(int *)(in_ECX + 0x15a4) == 0))
-      ); // DEVIATION(cont): thunk_FUN_004eb4ed(*(undefined4 *)(in_ECX + 0x159c),1
+       // DEVIATION(cont): thunk_FUN_004eb4ed(*(undefined4 *)(in_ECX + 0x159c),1);
       thunk_citywin_9028();
       thunk_citywin_92AF();
       FUN_005a9780(in_ECX);
@@ -4594,7 +4594,7 @@ export function city_button_buy_00509B48(param_1) {
     local_58 = 0x31;
   }
   // DEVIATION: MFC — iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if ((-1 < s8(DAT_0064f379[iVar5 * 0x58])) &&
+  if ((-1 < s8(DAT_0064f379[iVar5 * 0x58])) && 0
      // DEVIATION: MFC — (iVar5 = CSplitterWnd::IsTracking(DAT_006a91b8),
       { // DEVIATION(cont): ((&DAT_0064f344)[iVar5 * 0x58] & 1) != 0))
      // DEVIATION(cont): local_58 = 0x32;
@@ -5048,7 +5048,7 @@ export function city_button_change_0050A473(param_1) {
     local_958 = FUN_005a5f34(0,300);
     DAT_00630d30 = 0;
     if ((local_958 < 0) ||
-       // DEVIATION: MFC — (iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar3 === -1))
+       0) // DEVIATION: MFC — (iVar3 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar3 === -1))
      // DEVIATION(cont): LAB_0050b609_helper(local_8); return;
     if ((DAT_00655aea._1_1_ & 2) !== 0) {
       FUN_0059db65();
@@ -5314,7 +5314,7 @@ export function city_button_rename_0050B74E(param_1) {
   let local_108 = new Array(260).fill(0);
   
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if ((iVar1 !== -1) &&
+  if ((iVar1 !== -1) && 0
      // DEVIATION: MFC — (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8),
       { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0))
      // DEVIATION(cont): iVar1 = XD_InFlushSendBuffer();
@@ -5540,7 +5540,7 @@ export function citywin_BD13_0050BD13() {
   let local_8;
   
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if ((iVar1 !== -1) &&
+  if ((iVar1 !== -1) && 0
      // DEVIATION: MFC — ((iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8),
        { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0 || (DAT_00655b07 != '\0'))))
      { // DEVIATION(cont): if (DAT_0062edf8 == 0)
@@ -5601,7 +5601,7 @@ export function citywin_BF72_0050BF72() {
   let local_8;
   
   // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
-  if ((iVar1 !== -1) &&
+  if ((iVar1 !== -1) && 0
      // DEVIATION: MFC — ((iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8),
        { // DEVIATION(cont): (char)(&DAT_0064f348)[iVar1 * 0x58] == DAT_006d1da0 || (DAT_00655b07 != '\0'))))
      { // DEVIATION(cont): if (DAT_0062edf8 == 0)
@@ -5826,7 +5826,7 @@ export function citywin_C6EF_0050C6EF(in_ECX, param_1, param_2) {
   if ((((s32(in_ECX, 0x15a4) === 0) && (s32(in_ECX, 0x15a0) === 0)) &&
       (s32(in_ECX, 0x15a8) === 0)) &&
      ((-1 < s32(in_ECX, 0x159c) &&
-      (iVar1 = FUN_005ae31d(param_1,param_2,
+      (iVar1 = FUN_005ae31d(param_1,param_2, 0
                                   // DEVIATION: C pointer — s16(DAT_0064f340, s32(in_ECX, 0x159c) * 0x58),
                                   )) // DEVIATION(cont): (int)*(short *)(&DAT_0064f342 + *(int *)(in_ECX + 0x159c) * 0x58
        { // DEVIATION(cont): , iVar1 < 3))))

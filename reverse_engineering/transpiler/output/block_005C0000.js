@@ -5008,7 +5008,7 @@ export function FUN_005c701c(in_ECX, param_1) {
     cVar7 = s8(s32(in_ECX, 0x40c)) - cVar8;
     iVar9 = FUN_005dcdf9(s32(in_ECX, 0x430));
     for (local_20 = 0; local_20 < s32(in_ECX, 0x414) * 3; local_20 = local_20 + 3) {
-      FUN_005deadb(in_ECX,s32(in_ECX, 0x410) + local_20 / 3,
+      FUN_005deadb(in_ECX,s32(in_ECX, 0x410) + local_20 / 3, 0
                    // DEVIATION: C pointer — (char)(*(byte *)(local_20 + iVar9) /
                           // DEVIATION(cont): (longlong)*(int *)(in_ECX + 0x40c)) * cVar8 +
                     // DEVIATION(cont): cVar7 * (char)((longlong)(ulonglong)bVar1 / (longlong)iVar4),
@@ -5106,7 +5106,7 @@ export function FUN_005c738e(in_ECX, param_1) {
     iVar3 = FUN_005dcdf9(s32(in_ECX, 0x428));
     iVar4 = FUN_005dcdf9(s32(in_ECX, 0x42c));
     for (local_18 = 0; local_18 < s32(in_ECX, 0x420) * 3; local_18 = local_18 + 3) {
-      FUN_005deadb(in_ECX,s32(in_ECX, 0x41c) + local_18 / 3,
+      FUN_005deadb(in_ECX,s32(in_ECX, 0x41c) + local_18 / 3, 0
                    // DEVIATION: C pointer — (char)(*(byte *)(local_18 + iVar4) /
                           // DEVIATION(cont): (longlong)*(int *)(in_ECX + 0x418)) * cVar1 +
                     // DEVIATION(cont): (char)((longlong)(ulonglong)*(byte *)(local_18 + iVar3) /

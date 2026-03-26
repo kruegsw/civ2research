@@ -1492,11 +1492,11 @@ export function FUN_004a4f89(in_ECX) {
   FUN_004ccb6a(in_ECX,local_8,local_c,0x40,0x40,6);
   local_8 = s32(in_ECX, 300) + s32(in_ECX, 0x124) + -0x60;
   local_c = s32(in_ECX, 0x128) + 0x20;
-  FUN_005a9abf(in_ECX,local_8,local_c,0x40,0x40,
+  FUN_005a9abf(in_ECX,local_8,local_c,0x40,0x40, 0
                      // DEVIATION: C pointer — *(undefined4 *)
                        // DEVIATION(cont): (&DAT_0065535c +
                       )); // DEVIATION(cont): *(short *)(&DAT_006554fe + *(int *)(in_ECX + 0x2ec) * 0x30) * 0x10
-  FUN_005a9abf(in_ECX,local_8 + 0x10,local_c + 0x10,0x20,0x20,
+  FUN_005a9abf(in_ECX,local_8 + 0x10,local_c + 0x10,0x20,0x20, 0
                      // DEVIATION: C pointer — *(undefined4 *)
                        // DEVIATION(cont): (&DAT_00655358 +
                        // DEVIATION(cont): *(short *)(&DAT_006554fe + *(int *)(in_ECX + 0x2ec) * 0x30) * 0x10));
@@ -2810,7 +2810,7 @@ export function new_civ_004A7CE9(param_1) {
               DAT_006554fc[local_24 * 0x30] = 0;
             }
           }
-          w16(DAT_00655502, local_24 * 0x30, 
+          w16(DAT_00655502, local_24 * 0x30, 0
                // DEVIATION: C pointer — *(undefined2 *)
                 ) // DEVIATION(cont): (&DAT_00655508 + (uint)(byte)(&DAT_006554fc)[local_24 * 0x30] * 2 + local_24 * 0x30
           ; // DEVIATION(cont)
@@ -2905,7 +2905,7 @@ export function new_civ_004A7CE9(param_1) {
                           (((iVar4 = FUN_005b8ffa(local_3c,local_140), iVar4 !== 0 &&
                             (local_14c < 0x7d1)) ||
                            (iVar4 = FUN_005b8da4(local_3c,local_140), -1 < iVar4))))));
-          if ((DAT_00655af8 === 0) &&
+          if ((DAT_00655af8 === 0) && 0
              // DEVIATION: C pointer — (iVar4 = FUN_004087c0((int)*(short *)(DAT_00627fe0 +
                                                         ) // DEVIATION(cont): *(short *)(&DAT_0064c6a6 + param_1 * 0x594
                                                          // DEVIATION(cont): * 2),
@@ -2952,7 +2952,7 @@ export function new_civ_004A7CE9(param_1) {
             local_154 = FUN_005b3d06(0,param_1,local_3c,local_140);
             w16(DAT_0064c6ac, param_1 * 0x594, ((local_3c) << 16 >> 16));
             if (((0x14 < DAT_00655af8) && (local_158 === 0)) &&
-               ((iVar4 = FUN_005b8931(local_3c,local_140),
+               ((iVar4 = FUN_005b8931(local_3c,local_140), 0
                 // DEVIATION: C pointer — (DAT_00655b0b & *(byte *)(iVar4 + 4)) === 0 &&
                  // DEVIATION(cont): ((thunk_FUN_005b3d06(0,param_1,local_3c,local_140), 0x28 < DAT_00655af8 &&
                   { // DEVIATION(cont): (iVar4 = thunk_FUN_004bfe5a(param_1,0xffffffff,3), iVar4 != 0))))))
