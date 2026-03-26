@@ -3401,23 +3401,20 @@ export function FUN_005c55d0(in_ECX) {
 // Function: GetCheckStyle @ 0x005C55F0
 // Size: 28 bytes
 // ============================================================
-export function GetCheckStyle_005C55F0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
-  // 
-  // {
-  // return *(uint *)(this + 0x40);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(uint *)(this + 0x40);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005c5610 @ 0x005C5610
 // Size: 33 bytes
@@ -3497,45 +3494,39 @@ export function FUN_005c56a0(in_ECX) {
 // Function: ~_Timevec @ 0x005C56C0
 // Size: 36 bytes
 // ============================================================
-export function __Timevec_005C56C0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall _Timevec::~_Timevec(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall _Timevec::~_Timevec(_Timevec *this)
-  // 
-  // {
-  // FUN_005e92c9(*(undefined4 *)this);
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall _Timevec::~_Timevec(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall _Timevec::~_Timevec(_Timevec *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005e92c9(*(undefined4 *)this);
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: IsTracking @ 0x005C56F0
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005C56F0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0x408);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0x408);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005c5710 @ 0x005C5710
 // Size: 33 bytes
@@ -4241,24 +4232,21 @@ export function FUN_005c61b0(in_ECX) {
 // Function: InvalidateObjectCache @ 0x005C62CB
 // Size: 35 bytes
 // ============================================================
-export function InvalidateObjectCache_005C62CB() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CRichEditDoc::InvalidateObjectCache(CRichEditDoc *this)
-  // 
-  // {
-  // *(undefined4 *)(this + 0x8c) = 0;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CRichEditDoc::InvalidateObjectCache(CRichEditDoc *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(undefined4 *)(this + 0x8c) = 0;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005c62ee @ 0x005C62EE
 // Size: 21 bytes
@@ -4782,26 +4770,23 @@ export function FUN_005c6b05() {
 // Function: Realloc @ 0x005C6B3B
 // Size: 40 bytes
 // ============================================================
-export function Realloc_005C6B3B() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Same Base Name
-  // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-  // long)
-  // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void Realloc(undefined4 param_1,undefined4 param_2)
-  // 
-  // {
-  // FUN_005deced(param_1,param_2);
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Same Base Name
+    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+   // DEVIATION(unparsed): long)
+    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void Realloc(undefined4 param_1,undefined4 param_2)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005deced(param_1,param_2);
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005c6b63 @ 0x005C6B63
 // Size: 48 bytes
@@ -6745,24 +6730,21 @@ export function invalidate_96CC_005C96CC(param_1) {
 // Function: delbuf @ 0x005C9710
 // Size: 33 bytes
 // ============================================================
-export function delbuf_005C9710() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: void __thiscall ios::delbuf(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall ios::delbuf(ios *this,int param_1)
-  // 
-  // {
-  // *(int *)(this + 0x1c) = param_1;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: void __thiscall ios::delbuf(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall ios::delbuf(ios *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(int *)(this + 0x1c) = param_1;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: draw_text_9740 @ 0x005C9740
 // Size: 5302 bytes
@@ -7854,23 +7836,20 @@ export function blit_B6EB_005CB6EB(param_1, param_2, param_3, param_4) {
 // Function: IsTracking @ 0x005CBDB0
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005CBDB0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0x404);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0x404);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cbdd0 @ 0x005CBDD0
 // Size: 31 bytes
@@ -9177,24 +9156,21 @@ export function FUN_005cdcdb(param_1, param_2, param_3) {
 // Function: CString @ 0x005CDE2C
 // Size: 33 bytes
 // ============================================================
-export function CString_005CDE2C() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall CString::CString(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // CString * __thiscall CString::CString(CString *this)
-  // 
-  // {
-  // FUN_005d1b38();
-  // return this;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall CString::CString(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): CString * __thiscall CString::CString(CString *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d1b38();
+  // DEVIATION(unparsed): return this;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cde4d @ 0x005CDE4D
 // Size: 84 bytes
@@ -10095,21 +10071,18 @@ export function FUN_005cef31(param_1, param_2, param_3, param_4) {
 // Function: FUN_005cef66 @ 0x005CEF66
 // Size: 57 bytes
 // ============================================================
-export function FUN_005cef66_005CEF66() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cef66(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // FUN_005d056c(param_1,param_2,param_3,param_4,param_5);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cef66(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d056c(param_1,param_2,param_3,param_4,param_5);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cef9f @ 0x005CEF9F
 // Size: 53 bytes
@@ -10128,21 +10101,18 @@ export function FUN_005cef9f(param_1, param_2, param_3, param_4) {
 // Function: FUN_005cefd4 @ 0x005CEFD4
 // Size: 57 bytes
 // ============================================================
-export function FUN_005cefd4_005CEFD4() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cefd4(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // FUN_005d080d(param_1,param_2,param_3,param_4,param_5);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cefd4(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d080d(param_1,param_2,param_3,param_4,param_5);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cf00d @ 0x005CF00D
 // Size: 53 bytes
@@ -10161,21 +10131,18 @@ export function FUN_005cf00d(param_1, param_2, param_3, param_4) {
 // Function: FUN_005cf042 @ 0x005CF042
 // Size: 57 bytes
 // ============================================================
-export function FUN_005cf042_005CF042() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cf042(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // FUN_005d0aac(param_1,param_2,param_3,param_4,param_5);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cf042(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d0aac(param_1,param_2,param_3,param_4,param_5);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cf07b @ 0x005CF07B
 // Size: 53 bytes
@@ -10194,97 +10161,82 @@ export function FUN_005cf07b(param_1, param_2, param_3, param_4) {
 // Function: FUN_005cf0b0 @ 0x005CF0B0
 // Size: 57 bytes
 // ============================================================
-export function FUN_005cf0b0_005CF0B0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cf0b0(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // FUN_005d0dbf(param_1,param_2,param_3,param_4,param_5);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cf0b0(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d0dbf(param_1,param_2,param_3,param_4,param_5);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cf0e9 @ 0x005CF0E9
 // Size: 61 bytes
 // ============================================================
-export function FUN_005cf0e9_005CF0E9() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cf0e9(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
-  // undefined4 param_5,undefined4 param_6)
-  // 
-  // {
-  // FUN_005d10cd(param_1,param_2,param_3,param_4,param_5,param_6);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cf0e9(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5,undefined4 param_6)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d10cd(param_1,param_2,param_3,param_4,param_5,param_6);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cf126 @ 0x005CF126
 // Size: 57 bytes
 // ============================================================
-export function FUN_005cf126_005CF126() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cf126(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // FUN_005d10cd(param_1,param_2,0xffffffff,param_3,param_4,param_5);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cf126(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d10cd(param_1,param_2,0xffffffff,param_3,param_4,param_5);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cf15f @ 0x005CF15F
 // Size: 61 bytes
 // ============================================================
-export function FUN_005cf15f_005CF15F() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cf15f(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
-  // undefined4 param_5,undefined4 param_6)
-  // 
-  // {
-  // FUN_005d1372(param_1,param_2,param_3,param_4,param_5,param_6);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cf15f(undefined4 param_1,undefined4 param_2,undefined1 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5,undefined4 param_6)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d1372(param_1,param_2,param_3,param_4,param_5,param_6);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cf19c @ 0x005CF19C
 // Size: 57 bytes
 // ============================================================
-export function FUN_005cf19c_005CF19C() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005cf19c(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // FUN_005d1372(param_1,param_2,0xffffffff,param_3,param_4,param_5);
-  // return param_1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005cf19c(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005d1372(param_1,param_2,0xffffffff,param_3,param_4,param_5);
+  // DEVIATION(unparsed): return param_1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005cf1d5 @ 0x005CF1D5
 // Size: 53 bytes

@@ -450,50 +450,44 @@ export function FUN_00471020(param_1) {
 // Function: GetActiveView @ 0x00471070
 // Size: 30 bytes
 // ============================================================
-export function GetActiveView_00471070() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
-  // 
-  // {
-  // CView *pCVar1;
-  // 
-  // pCVar1 = COleClientItem::GetActiveView((COleClientItem *)this);
-  // return (CRichEditView *)pCVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): CView *pCVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): pCVar1 = COleClientItem::GetActiveView((COleClientItem *)this);
+  // DEVIATION(unparsed): return (CRichEditView *)pCVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: GetActiveView @ 0x004710A0
 // Size: 30 bytes
 // ============================================================
-export function GetActiveView_004710A0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
-  // 
-  // {
-  // CView *pCVar1;
-  // 
-  // pCVar1 = COleClientItem::GetActiveView((COleClientItem *)this);
-  // return (CRichEditView *)pCVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: class CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): CRichEditView * __thiscall CRichEditCntrItem::GetActiveView(CRichEditCntrItem *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): CView *pCVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): pCVar1 = COleClientItem::GetActiveView((COleClientItem *)this);
+  // DEVIATION(unparsed): return (CRichEditView *)pCVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_004710d0 @ 0x004710D0
 // Size: 606 bytes
@@ -4641,36 +4635,33 @@ export function FUN_0047c2f2(param_1, param_2, param_3) {
 // Function: FUN_0047c37f @ 0x0047C37F
 // Size: 97 bytes
 // ============================================================
-export function FUN_0047c37f_0047C37F() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_0047c37f(undefined4 param_1,int param_2,undefined4 param_3,int param_4,undefined4 param_5,
-  // int param_6)
-  // 
-  // {
-  // int iVar1;
-  // undefined4 uVar2;
-  // 
-  // iVar1 = thunk_FUN_0047c2f2(param_1,param_3,param_5);
-  // if (iVar1 == 0) {
-  // uVar2 = 0;
-  // }
-  // else if (param_2 < param_4) {
-  // uVar2 = 0;
-  // }
-  // else if (param_2 < param_6 + param_4) {
-  // uVar2 = 1;
-  // }
-  // else {
-  // uVar2 = 0;
-  // }
-  // return uVar2;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_0047c37f(undefined4 param_1,int param_2,undefined4 param_3,int param_4,undefined4 param_5,
+            // DEVIATION(unparsed): int param_6)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): undefined4 uVar2;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): iVar1 = thunk_FUN_0047c2f2(param_1,param_3,param_5);
+  // DEVIATION(unparsed): if (iVar1 == 0) {
+    // DEVIATION(unparsed): uVar2 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if (param_2 < param_4) {
+    // DEVIATION(unparsed): uVar2 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if (param_2 < param_6 + param_4) {
+    // DEVIATION(unparsed): uVar2 = 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): uVar2 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar2;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_0047c3e0 @ 0x0047C3E0
 // Size: 99 bytes
@@ -5175,43 +5166,40 @@ export function FUN_0047dce0(in_ECX) {
 // Function: ~CBitmapButton @ 0x0047DE10
 // Size: 114 bytes
 // ============================================================
-export function _CBitmapButton_0047DE10() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: virtual __thiscall CBitmapButton::~CBitmapButton(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CBitmapButton::~CBitmapButton(CBitmapButton *this)
-  // 
-  // {
-  // undefined4 *unaff_FS_OFFSET;
-  // undefined4 uStack_10;
-  // undefined1 *puStack_c;
-  // int local_8;
-  // 
-  // puStack_c = &LAB_0047dec7;
-  // uStack_10 = *unaff_FS_OFFSET;
-  // *unaff_FS_OFFSET = &uStack_10;
-  // local_8._1_3_ = 0;
-  // local_8._0_1_ = 3;
-  // FUN_0047de82();
-  // local_8._0_1_ = 2;
-  // FUN_0047de91();
-  // local_8._0_1_ = 1;
-  // FUN_0047dea0();
-  // local_8 = (uint)local_8._1_3_ << 8;
-  // FUN_0047deaf();
-  // local_8 = 0xffffffff;
-  // FUN_0047debe();
-  // FUN_0047ded1();
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: virtual __thiscall CBitmapButton::~CBitmapButton(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CBitmapButton::~CBitmapButton(CBitmapButton *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): undefined4 uStack_10;
+  // DEVIATION(unparsed): undefined1 *puStack_c;
+  // DEVIATION(unparsed): int local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puStack_c = &LAB_0047dec7;
+  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
+  // DEVIATION(unparsed): local_8._1_3_ = 0;
+  // DEVIATION(unparsed): local_8._0_1_ = 3;
+  // DEVIATION(unparsed): FUN_0047de82();
+  // DEVIATION(unparsed): local_8._0_1_ = 2;
+  // DEVIATION(unparsed): FUN_0047de91();
+  // DEVIATION(unparsed): local_8._0_1_ = 1;
+  // DEVIATION(unparsed): FUN_0047dea0();
+  // DEVIATION(unparsed): local_8 = (uint)local_8._1_3_ << 8;
+  // DEVIATION(unparsed): FUN_0047deaf();
+  // DEVIATION(unparsed): local_8 = 0xffffffff;
+  // DEVIATION(unparsed): FUN_0047debe();
+  // DEVIATION(unparsed): FUN_0047ded1();
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_0047de82 @ 0x0047DE82
 // Size: 15 bytes

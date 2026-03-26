@@ -6005,73 +6005,70 @@ export function FUN_005d8bde(param_1, param_2, param_3, param_4, param_5) {
 // Function: show_open_dialog_8C0C @ 0x005D8C0C
 // Size: 250 bytes
 // ============================================================
-export function show_open_dialog_8C0C_005D8C0C() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // show_open_dialog_8C0C(LPSTR param_1,LPCSTR param_2,LPCSTR param_3,char param_4,char param_5,int param_6)
-  // 
-  // {
-  // BOOL BVar1;
-  // undefined4 uVar2;
-  // char local_5c;
-  // DWORD local_58;
-  // HWND local_54;
-  // LPCSTR local_4c;
-  // DWORD local_40;
-  // LPSTR local_3c;
-  // DWORD local_38;
-  // char *local_28;
-  // DWORD local_24;
-  // LPCSTR local_1c;
-  // LPSTR local_c;
-  // DWORD local_8;
-  // 
-  // local_c = param_1;
-  // _memset(&local_58,0,0x4c);
-  // local_58 = 0x4c;
-  // if (param_6 == 0) {
-  // local_54 = (HWND)0x0;
-  // }
-  // else {
-  // local_54 = *(HWND *)(param_6 + 4);
-  // }
-  // local_4c = param_2;
-  // local_40 = 1;
-  // local_3c = local_c;
-  // local_38 = 0x100;
-  // local_28 = s_Select_a_File_006386bc;
-  // local_1c = param_3;
-  // if (param_4 == '\0') {
-  // local_24 = 0x80e;
-  // }
-  // else {
-  // local_24 = 0x180e;
-  // }
-  // if (param_5 == '\0') {
-  // BVar1 = GetOpenFileNameA((LPOPENFILENAMEA)&local_58);
-  // local_5c = (char)BVar1;
-  // }
-  // else {
-  // BVar1 = GetSaveFileNameA((LPOPENFILENAMEA)&local_58);
-  // local_5c = (char)BVar1;
-  // }
-  // if (local_5c == '\x01') {
-  // uVar2 = 1;
-  // }
-  // else {
-  // local_8 = CommDlgExtendedError();
-  // if (local_8 != 0) {
-  // FUN_005d2279(s_Error__GetOpenFileName_returned_006386cc,local_8);
-  // }
-  // uVar2 = 0;
-  // }
-  // return uVar2;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): show_open_dialog_8C0C(LPSTR param_1,LPCSTR param_2,LPCSTR param_3,char param_4,char param_5,int param_6)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): BOOL BVar1;
+  // DEVIATION(unparsed): undefined4 uVar2;
+  // DEVIATION(unparsed): char local_5c;
+  // DEVIATION(unparsed): DWORD local_58;
+  // DEVIATION(unparsed): HWND local_54;
+  // DEVIATION(unparsed): LPCSTR local_4c;
+  // DEVIATION(unparsed): DWORD local_40;
+  // DEVIATION(unparsed): LPSTR local_3c;
+  // DEVIATION(unparsed): DWORD local_38;
+  // DEVIATION(unparsed): char *local_28;
+  // DEVIATION(unparsed): DWORD local_24;
+  // DEVIATION(unparsed): LPCSTR local_1c;
+  // DEVIATION(unparsed): LPSTR local_c;
+  // DEVIATION(unparsed): DWORD local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): local_c = param_1;
+  // DEVIATION(unparsed): _memset(&local_58,0,0x4c);
+  // DEVIATION(unparsed): local_58 = 0x4c;
+  // DEVIATION(unparsed): if (param_6 == 0) {
+    // DEVIATION(unparsed): local_54 = (HWND)0x0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_54 = *(HWND *)(param_6 + 4);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): local_4c = param_2;
+  // DEVIATION(unparsed): local_40 = 1;
+  // DEVIATION(unparsed): local_3c = local_c;
+  // DEVIATION(unparsed): local_38 = 0x100;
+  // DEVIATION(unparsed): local_28 = s_Select_a_File_006386bc;
+  // DEVIATION(unparsed): local_1c = param_3;
+  // DEVIATION(unparsed): if (param_4 == '\0') {
+    // DEVIATION(unparsed): local_24 = 0x80e;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_24 = 0x180e;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_5 == '\0') {
+    // DEVIATION(unparsed): BVar1 = GetOpenFileNameA((LPOPENFILENAMEA)&local_58);
+    // DEVIATION(unparsed): local_5c = (char)BVar1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): BVar1 = GetSaveFileNameA((LPOPENFILENAMEA)&local_58);
+    // DEVIATION(unparsed): local_5c = (char)BVar1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (local_5c == '\x01') {
+    // DEVIATION(unparsed): uVar2 = 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_8 = CommDlgExtendedError();
+    // DEVIATION(unparsed): if (local_8 != 0) {
+      // DEVIATION(unparsed): FUN_005d2279(s_Error__GetOpenFileName_returned_006386cc,local_8);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): uVar2 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar2;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005d8d06 @ 0x005D8D06
 // Size: 42 bytes
@@ -6161,297 +6158,291 @@ export function gdi_8DA1_005D8DA1() {
 // Function: create_window_8E3F @ 0x005D8E3F
 // Size: 1239 bytes
 // ============================================================
-export function create_window_8E3F_005D8E3F() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // create_window_8E3F(int *param_1,int *param_2,int param_3,undefined4 param_4,int param_5,int param_6,
-  // int param_7,undefined4 param_8)
-  // 
-  // {
-  // int *piVar1;
-  // HBITMAP pHVar2;
-  // HBITMAP pHVar3;
-  // HBITMAP pHVar4;
-  // undefined4 uVar5;
-  // int iVar6;
-  // int iVar7;
-  // int iVar8;
-  // int nHeight;
-  // int iVar9;
-  // int iVar10;
-  // HWND pHVar11;
-  // size_t sVar12;
-  // int iVar13;
-  // HMENU hMenu;
-  // HINSTANCE hInstance;
-  // LPVOID lpParam;
-  // int local_44;
-  // DWORD local_40;
-  // uint local_28;
-  // char *local_18;
-  // char *local_10;
-  // char local_c [4];
-  // int local_8;
-  // 
-  // pHVar2 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12d);
-  // pHVar3 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12f);
-  // pHVar4 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12e);
-  // uVar5 = FUN_005dce4f(param_5 * 0xa4);
-  // iVar6 = FUN_005dcdf9(uVar5);
-  // iVar7 = thunk_FUN_00407f90(param_2);
-  // iVar7 = iVar7 / param_3;
-  // iVar8 = thunk_FUN_00407fc0(param_2);
-  // iVar8 = (iVar8 * param_3) / param_5;
-  // nHeight = gdi_8DA1(param_8);
-  // local_44 = *param_2;
-  // local_8 = param_2[1];
-  // local_40 = 0x40010000;
-  // if (param_7 != 0) {
-  // local_40 = 0x50010000;
-  // }
-  // local_28 = 0;
-  // do {
-  // if (param_5 <= (int)local_28) {
-  // *param_1 = param_5;
-  // FUN_005dce29(uVar5);
-  // return uVar5;
-  // }
-  // lpParam = (LPVOID)0x0;
-  // hMenu = (HMENU)0x0;
-  // hInstance = DAT_006e4ff0;
-  // thunk_FUN_0040f810();
-  // iVar9 = thunk_FUN_00414d10();
-  // iVar10 = iVar8 >> 1;
-  // iVar13 = nHeight >> 1;
-  // pHVar11 = CreateWindowExA(4,s_MSControlClass_00638708,&DAT_00638704,local_40,local_44,
-  // (iVar10 - iVar13) + local_8,iVar7,nHeight,*(HWND *)(iVar9 + 4),hMenu,
-  // hInstance,lpParam);
-  // *(HWND *)(iVar6 + local_28 * 0xa4) = pHVar11;
-  // iVar9 = FUN_005c9499(*(undefined4 *)(iVar6 + local_28 * 0xa4),param_4);
-  // if (local_28 == 0) {
-  // *(undefined4 *)(iVar9 + 8) = 0;
-  // }
-  // else {
-  // *(undefined4 *)(iVar9 + 8) = 1;
-  // }
-  // *(HBITMAP *)(iVar9 + 0xc) = pHVar2;
-  // *(HBITMAP *)(iVar9 + 0x10) = pHVar3;
-  // *(HBITMAP *)(iVar9 + 0x14) = pHVar4;
-  // *(uint *)(iVar9 + 0x24) = local_28 * 0xa4 + iVar6;
-  // *(undefined4 *)(iVar9 + 0x2c) = 3;
-  // SetWindowLongA(*(HWND *)(iVar6 + local_28 * 0xa4),-4,0x5d9b86);
-  // SetRect((LPRECT)(local_28 * 0xa4 + iVar6 + 4),local_44,(iVar10 - iVar13) + local_8,
-  // local_44 + iVar7,(iVar10 - iVar13) + local_8 + nHeight);
-  // *(uint *)(iVar6 + 0x14 + local_28 * 0xa4) = local_28;
-  // local_10 = *(char **)(param_6 + local_28 * 4);
-  // if (*local_10 == '!') {
-  // *(undefined4 *)(iVar6 + 0x18 + local_28 * 0xa4) = 0;
-  // local_10 = local_10 + 1;
-  // }
-  // else if (*local_10 == '^') {
-  // *(undefined4 *)(iVar6 + 0x18 + local_28 * 0xa4) = 1;
-  // thunk_FUN_004472f0(local_28);
-  // local_10 = local_10 + 1;
-  // }
-  // else {
-  // *(undefined4 *)(iVar6 + 0x18 + local_28 * 0xa4) = 1;
-  // }
-  // FUN_005f22d0(local_28 * 0xa4 + iVar6 + 0x1c,local_10);
-  // local_18 = (char *)(local_28 * 0xa4 + iVar6 + 0x1c);
-  // *(undefined4 *)(iVar6 + 0xa0 + local_28 * 0xa4) = 0;
-  // while( true ) {
-  // if (*local_18 == '\0') LAB_005d9226_helper(); return;
-  // if (*local_18 == '~') break;
-  // piVar1 = (int *)(iVar6 + 0xa0 + local_28 * 0xa4);
-  // *piVar1 = *piVar1 + 1;
-  // local_18 = local_18 + 1;
-  // }
-  // for (local_28 = *(uint *)(iVar6 + 0xa0 + local_28 * 0xa4);
-  // sVar12 = _strlen((char *)(local_28 * 0xa4 + iVar6 + 0x1c)), local_28 < sVar12;
-  // local_28 = local_28 + 1) {
-  // *(undefined1 *)(local_28 * 0xa5 + 0x1c + iVar6) =
-  // *(undefined1 *)(local_28 * 0xa5 + 0x1d + iVar6);
-  // }
-  // LAB_005d9226:
-  // sVar12 = _strlen((char *)(local_28 * 0xa4 + iVar6 + 0x1c));
-  // if (*(uint *)(iVar6 + 0xa0 + local_28 * 0xa4) < sVar12) {
-  // local_c[0] = *(char *)(*(int *)(iVar6 + 0xa0 + local_28 * 0xa4) + local_28 * 0xa4 + 0x1c +
-  // iVar6);
-  // local_c[1] = 0;
-  // __strlwr(local_c);
-  // *(char *)(iVar6 + 0x9c + local_28 * 0xa4) = local_c[0];
-  // }
-  // else {
-  // *(undefined4 *)(iVar6 + 0xa0 + local_28 * 0xa4) = 0xffffffff;
-  // }
-  // local_8 = local_8 + iVar8;
-  // if (param_2[3] <= local_8) {
-  // local_44 = local_44 + iVar7;
-  // local_8 = param_2[1];
-  // }
-  // local_28 = local_28 + 1;
-  // } while( true );
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): create_window_8E3F(int *param_1,int *param_2,int param_3,undefined4 param_4,int param_5,int param_6,
+            // DEVIATION(unparsed): int param_7,undefined4 param_8)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int *piVar1;
+  // DEVIATION(unparsed): HBITMAP pHVar2;
+  // DEVIATION(unparsed): HBITMAP pHVar3;
+  // DEVIATION(unparsed): HBITMAP pHVar4;
+  // DEVIATION(unparsed): undefined4 uVar5;
+  // DEVIATION(unparsed): int iVar6;
+  // DEVIATION(unparsed): int iVar7;
+  // DEVIATION(unparsed): int iVar8;
+  // DEVIATION(unparsed): int nHeight;
+  // DEVIATION(unparsed): int iVar9;
+  // DEVIATION(unparsed): int iVar10;
+  // DEVIATION(unparsed): HWND pHVar11;
+  // DEVIATION(unparsed): size_t sVar12;
+  // DEVIATION(unparsed): int iVar13;
+  // DEVIATION(unparsed): HMENU hMenu;
+  // DEVIATION(unparsed): HINSTANCE hInstance;
+  // DEVIATION(unparsed): LPVOID lpParam;
+  // DEVIATION(unparsed): int local_44;
+  // DEVIATION(unparsed): DWORD local_40;
+  // DEVIATION(unparsed): uint local_28;
+  // DEVIATION(unparsed): char *local_18;
+  // DEVIATION(unparsed): char *local_10;
+  // DEVIATION(unparsed): char local_c [4];
+  // DEVIATION(unparsed): int local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): pHVar2 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12d);
+  // DEVIATION(unparsed): pHVar3 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12f);
+  // DEVIATION(unparsed): pHVar4 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12e);
+  // DEVIATION(unparsed): uVar5 = FUN_005dce4f(param_5 * 0xa4);
+  // DEVIATION(unparsed): iVar6 = FUN_005dcdf9(uVar5);
+  // DEVIATION(unparsed): iVar7 = thunk_FUN_00407f90(param_2);
+  // DEVIATION(unparsed): iVar7 = iVar7 / param_3;
+  // DEVIATION(unparsed): iVar8 = thunk_FUN_00407fc0(param_2);
+  // DEVIATION(unparsed): iVar8 = (iVar8 * param_3) / param_5;
+  // DEVIATION(unparsed): nHeight = gdi_8DA1(param_8);
+  // DEVIATION(unparsed): local_44 = *param_2;
+  // DEVIATION(unparsed): local_8 = param_2[1];
+  // DEVIATION(unparsed): local_40 = 0x40010000;
+  // DEVIATION(unparsed): if (param_7 != 0) {
+    // DEVIATION(unparsed): local_40 = 0x50010000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): local_28 = 0;
+  // DEVIATION(unparsed): do {
+    // DEVIATION(unparsed): if (param_5 <= (int)local_28) {
+      // DEVIATION(unparsed): *param_1 = param_5;
+      // DEVIATION(unparsed): FUN_005dce29(uVar5);
+      // DEVIATION(unparsed): return uVar5;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): lpParam = (LPVOID)0x0;
+    // DEVIATION(unparsed): hMenu = (HMENU)0x0;
+    // DEVIATION(unparsed): hInstance = DAT_006e4ff0;
+    // DEVIATION(unparsed): thunk_FUN_0040f810();
+    // DEVIATION(unparsed): iVar9 = thunk_FUN_00414d10();
+    // DEVIATION(unparsed): iVar10 = iVar8 >> 1;
+    // DEVIATION(unparsed): iVar13 = nHeight >> 1;
+    // DEVIATION(unparsed): pHVar11 = CreateWindowExA(4,s_MSControlClass_00638708,&DAT_00638704,local_40,local_44,
+                              // DEVIATION(unparsed): (iVar10 - iVar13) + local_8,iVar7,nHeight,*(HWND *)(iVar9 + 4),hMenu,
+                              // DEVIATION(unparsed): hInstance,lpParam);
+    // DEVIATION(unparsed): *(HWND *)(iVar6 + local_28 * 0xa4) = pHVar11;
+    // DEVIATION(unparsed): iVar9 = FUN_005c9499(*(undefined4 *)(iVar6 + local_28 * 0xa4),param_4);
+    // DEVIATION(unparsed): if (local_28 == 0) {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar9 + 8) = 0;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar9 + 8) = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): *(HBITMAP *)(iVar9 + 0xc) = pHVar2;
+    // DEVIATION(unparsed): *(HBITMAP *)(iVar9 + 0x10) = pHVar3;
+    // DEVIATION(unparsed): *(HBITMAP *)(iVar9 + 0x14) = pHVar4;
+    // DEVIATION(unparsed): *(uint *)(iVar9 + 0x24) = local_28 * 0xa4 + iVar6;
+    // DEVIATION(unparsed): *(undefined4 *)(iVar9 + 0x2c) = 3;
+    // DEVIATION(unparsed): SetWindowLongA(*(HWND *)(iVar6 + local_28 * 0xa4),-4,0x5d9b86);
+    // DEVIATION(unparsed): SetRect((LPRECT)(local_28 * 0xa4 + iVar6 + 4),local_44,(iVar10 - iVar13) + local_8,
+            // DEVIATION(unparsed): local_44 + iVar7,(iVar10 - iVar13) + local_8 + nHeight);
+    // DEVIATION(unparsed): *(uint *)(iVar6 + 0x14 + local_28 * 0xa4) = local_28;
+    // DEVIATION(unparsed): local_10 = *(char **)(param_6 + local_28 * 4);
+    // DEVIATION(unparsed): if (*local_10 == '!') {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar6 + 0x18 + local_28 * 0xa4) = 0;
+      // DEVIATION(unparsed): local_10 = local_10 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (*local_10 == '^') {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar6 + 0x18 + local_28 * 0xa4) = 1;
+      // DEVIATION(unparsed): thunk_FUN_004472f0(local_28);
+      // DEVIATION(unparsed): local_10 = local_10 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar6 + 0x18 + local_28 * 0xa4) = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): FUN_005f22d0(local_28 * 0xa4 + iVar6 + 0x1c,local_10);
+    // DEVIATION(unparsed): local_18 = (char *)(local_28 * 0xa4 + iVar6 + 0x1c);
+    // DEVIATION(unparsed): *(undefined4 *)(iVar6 + 0xa0 + local_28 * 0xa4) = 0;
+    // DEVIATION(unparsed): while( true ) {
+      // DEVIATION(unparsed): if (*local_18 == '\0') LAB_005d9226_helper(); return;
+      // DEVIATION(unparsed): if (*local_18 == '~') break;
+      // DEVIATION(unparsed): piVar1 = (int *)(iVar6 + 0xa0 + local_28 * 0xa4);
+      // DEVIATION(unparsed): *piVar1 = *piVar1 + 1;
+      // DEVIATION(unparsed): local_18 = local_18 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): for (local_28 = *(uint *)(iVar6 + 0xa0 + local_28 * 0xa4);
+        // DEVIATION(unparsed): sVar12 = _strlen((char *)(local_28 * 0xa4 + iVar6 + 0x1c)), local_28 < sVar12;
+        // DEVIATION(unparsed): local_28 = local_28 + 1) {
+      // DEVIATION(unparsed): *(undefined1 *)(local_28 * 0xa5 + 0x1c + iVar6) =
+           // DEVIATION(unparsed): *(undefined1 *)(local_28 * 0xa5 + 0x1d + iVar6);
+    // DEVIATION(unparsed): }
+// DEVIATION(unparsed): LAB_005d9226:
+    // DEVIATION(unparsed): sVar12 = _strlen((char *)(local_28 * 0xa4 + iVar6 + 0x1c));
+    // DEVIATION(unparsed): if (*(uint *)(iVar6 + 0xa0 + local_28 * 0xa4) < sVar12) {
+      // DEVIATION(unparsed): local_c[0] = *(char *)(*(int *)(iVar6 + 0xa0 + local_28 * 0xa4) + local_28 * 0xa4 + 0x1c +
+                            // DEVIATION(unparsed): iVar6);
+      // DEVIATION(unparsed): local_c[1] = 0;
+      // DEVIATION(unparsed): __strlwr(local_c);
+      // DEVIATION(unparsed): *(char *)(iVar6 + 0x9c + local_28 * 0xa4) = local_c[0];
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar6 + 0xa0 + local_28 * 0xa4) = 0xffffffff;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): local_8 = local_8 + iVar8;
+    // DEVIATION(unparsed): if (param_2[3] <= local_8) {
+      // DEVIATION(unparsed): local_44 = local_44 + iVar7;
+      // DEVIATION(unparsed): local_8 = param_2[1];
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): local_28 = local_28 + 1;
+  // DEVIATION(unparsed): } while( true );
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: create_window_931B @ 0x005D931B
 // Size: 1748 bytes
 // ============================================================
-export function create_window_931B_005D931B() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // create_window_931B(uint *param_1,int *param_2,int param_3,undefined4 param_4,char *param_5,int param_6,
-  // undefined4 param_7)
-  // 
-  // {
-  // int *piVar1;
-  // HBITMAP pHVar2;
-  // HBITMAP pHVar3;
-  // HBITMAP pHVar4;
-  // uint uVar5;
-  // undefined4 uVar6;
-  // int iVar7;
-  // int iVar8;
-  // int iVar9;
-  // int iVar10;
-  // int iVar11;
-  // HWND pHVar12;
-  // size_t sVar13;
-  // int iVar14;
-  // uint uVar15;
-  // HMENU hMenu;
-  // HINSTANCE hInstance;
-  // LPVOID lpParam;
-  // int local_44c;
-  // DWORD local_448;
-  // uint local_430;
-  // int local_42c;
-  // int local_428;
-  // char *local_418;
-  // char *local_410;
-  // char local_40c [4];
-  // char local_408 [1024];
-  // int local_8;
-  // 
-  // pHVar2 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12d);
-  // pHVar3 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12f);
-  // pHVar4 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12e);
-  // _strncpy(local_408,param_5,0x400);
-  // uVar5 = FUN_005d8d50(local_408);
-  // local_410 = local_408;
-  // uVar6 = FUN_005dce4f(uVar5 * 0xa4);
-  // iVar7 = FUN_005dcdf9(uVar6);
-  // iVar8 = thunk_FUN_00407f90(param_2);
-  // iVar8 = iVar8 / param_3;
-  // if ((param_3 == 1) ||
-  // (uVar15 = (int)uVar5 >> 0x1f, ((uVar5 ^ uVar15) - uVar15 & 1 ^ uVar15) == uVar15)) {
-  // iVar9 = thunk_FUN_00407fc0(param_2);
-  // local_428 = (iVar9 * param_3) / (int)uVar5;
-  // }
-  // else {
-  // iVar9 = thunk_FUN_00407fc0(param_2);
-  // local_428 = (iVar9 * param_3) / (int)(uVar5 + 1);
-  // }
-  // iVar9 = gdi_8DA1(param_7);
-  // local_44c = *param_2;
-  // local_8 = param_2[1];
-  // local_448 = 0x40010000;
-  // if (param_6 != 0) {
-  // local_448 = 0x50010000;
-  // }
-  // local_42c = 0;
-  // do {
-  // if ((int)uVar5 <= local_42c) {
-  // *param_1 = uVar5;
-  // FUN_005dce29(uVar6);
-  // return uVar6;
-  // }
-  // lpParam = (LPVOID)0x0;
-  // hMenu = (HMENU)0x0;
-  // hInstance = DAT_006e4ff0;
-  // thunk_FUN_0040f810();
-  // iVar10 = thunk_FUN_00414d10();
-  // iVar11 = local_428 >> 1;
-  // iVar14 = iVar9 >> 1;
-  // pHVar12 = CreateWindowExA(4,s_MSControlClass_0063871c,&DAT_00638718,local_448,local_44c,
-  // (iVar11 - iVar14) + local_8,iVar8,iVar9,*(HWND *)(iVar10 + 4),hMenu,
-  // hInstance,lpParam);
-  // *(HWND *)(iVar7 + local_42c * 0xa4) = pHVar12;
-  // iVar10 = FUN_005c9499(*(undefined4 *)(iVar7 + local_42c * 0xa4),param_4);
-  // if (local_42c == 0) {
-  // *(undefined4 *)(iVar10 + 8) = 0;
-  // }
-  // else {
-  // *(undefined4 *)(iVar10 + 8) = 1;
-  // }
-  // *(HBITMAP *)(iVar10 + 0xc) = pHVar2;
-  // *(HBITMAP *)(iVar10 + 0x10) = pHVar3;
-  // *(HBITMAP *)(iVar10 + 0x14) = pHVar4;
-  // *(int *)(iVar10 + 0x24) = local_42c * 0xa4 + iVar7;
-  // *(undefined4 *)(iVar10 + 0x2c) = 3;
-  // SetWindowLongA(*(HWND *)(iVar7 + local_42c * 0xa4),-4,0x5d9b86);
-  // SetRect((LPRECT)(local_42c * 0xa4 + iVar7 + 4),local_44c,(iVar11 - iVar14) + local_8,
-  // local_44c + iVar8,(iVar11 - iVar14) + iVar9 + local_8);
-  // *(int *)(iVar7 + 0x14 + local_42c * 0xa4) = local_42c;
-  // if (*local_410 == '!') {
-  // *(undefined4 *)(iVar7 + 0x18 + local_42c * 0xa4) = 0;
-  // local_410 = local_410 + 1;
-  // }
-  // else if (*local_410 == '^') {
-  // *(undefined4 *)(iVar7 + 0x18 + local_42c * 0xa4) = 1;
-  // thunk_FUN_004472f0(local_42c);
-  // local_410 = local_410 + 1;
-  // }
-  // else {
-  // *(undefined4 *)(iVar7 + 0x18 + local_42c * 0xa4) = 1;
-  // }
-  // FUN_005f22d0(local_42c * 0xa4 + iVar7 + 0x1c,local_410);
-  // local_418 = (char *)(local_42c * 0xa4 + iVar7 + 0x1c);
-  // *(undefined4 *)(iVar7 + 0xa0 + local_42c * 0xa4) = 0;
-  // while( true ) {
-  // if (*local_418 == '\0') LAB_005d9893_helper(); return;
-  // if (*local_418 == '~') break;
-  // piVar1 = (int *)(iVar7 + 0xa0 + local_42c * 0xa4);
-  // *piVar1 = *piVar1 + 1;
-  // local_418 = local_418 + 1;
-  // }
-  // for (local_430 = *(uint *)(iVar7 + 0xa0 + local_42c * 0xa4);
-  // sVar13 = _strlen((char *)(local_42c * 0xa4 + iVar7 + 0x1c)), local_430 < sVar13;
-  // local_430 = local_430 + 1) {
-  // *(undefined1 *)(local_42c * 0xa4 + local_430 + 0x1c + iVar7) =
-  // *(undefined1 *)(local_430 + local_42c * 0xa4 + 0x1d + iVar7);
-  // }
-  // LAB_005d9893:
-  // sVar13 = _strlen((char *)(local_42c * 0xa4 + iVar7 + 0x1c));
-  // if (*(uint *)(iVar7 + 0xa0 + local_42c * 0xa4) < sVar13) {
-  // local_40c[0] = *(char *)(*(int *)(iVar7 + 0xa0 + local_42c * 0xa4) + local_42c * 0xa4 + 0x1c +
-  // iVar7);
-  // local_40c[1] = 0;
-  // __strlwr(local_40c);
-  // *(char *)(iVar7 + 0x9c + local_42c * 0xa4) = local_40c[0];
-  // }
-  // else {
-  // *(undefined4 *)(iVar7 + 0xa0 + local_42c * 0xa4) = 0xffffffff;
-  // }
-  // sVar13 = _strlen(local_410);
-  // local_410 = local_410 + sVar13 + 1;
-  // local_8 = local_8 + local_428;
-  // if (param_2[3] <= (iVar11 - iVar14) + local_8) {
-  // local_44c = local_44c + iVar8;
-  // local_8 = param_2[1];
-  // }
-  // local_42c = local_42c + 1;
-  // } while( true );
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): create_window_931B(uint *param_1,int *param_2,int param_3,undefined4 param_4,char *param_5,int param_6,
+            // DEVIATION(unparsed): undefined4 param_7)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int *piVar1;
+  // DEVIATION(unparsed): HBITMAP pHVar2;
+  // DEVIATION(unparsed): HBITMAP pHVar3;
+  // DEVIATION(unparsed): HBITMAP pHVar4;
+  // DEVIATION(unparsed): uint uVar5;
+  // DEVIATION(unparsed): undefined4 uVar6;
+  // DEVIATION(unparsed): int iVar7;
+  // DEVIATION(unparsed): int iVar8;
+  // DEVIATION(unparsed): int iVar9;
+  // DEVIATION(unparsed): int iVar10;
+  // DEVIATION(unparsed): int iVar11;
+  // DEVIATION(unparsed): HWND pHVar12;
+  // DEVIATION(unparsed): size_t sVar13;
+  // DEVIATION(unparsed): int iVar14;
+  // DEVIATION(unparsed): uint uVar15;
+  // DEVIATION(unparsed): HMENU hMenu;
+  // DEVIATION(unparsed): HINSTANCE hInstance;
+  // DEVIATION(unparsed): LPVOID lpParam;
+  // DEVIATION(unparsed): int local_44c;
+  // DEVIATION(unparsed): DWORD local_448;
+  // DEVIATION(unparsed): uint local_430;
+  // DEVIATION(unparsed): int local_42c;
+  // DEVIATION(unparsed): int local_428;
+  // DEVIATION(unparsed): char *local_418;
+  // DEVIATION(unparsed): char *local_410;
+  // DEVIATION(unparsed): char local_40c [4];
+  // DEVIATION(unparsed): char local_408 [1024];
+  // DEVIATION(unparsed): int local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): pHVar2 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12d);
+  // DEVIATION(unparsed): pHVar3 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12f);
+  // DEVIATION(unparsed): pHVar4 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x12e);
+  // DEVIATION(unparsed): _strncpy(local_408,param_5,0x400);
+  // DEVIATION(unparsed): uVar5 = FUN_005d8d50(local_408);
+  // DEVIATION(unparsed): local_410 = local_408;
+  // DEVIATION(unparsed): uVar6 = FUN_005dce4f(uVar5 * 0xa4);
+  // DEVIATION(unparsed): iVar7 = FUN_005dcdf9(uVar6);
+  // DEVIATION(unparsed): iVar8 = thunk_FUN_00407f90(param_2);
+  // DEVIATION(unparsed): iVar8 = iVar8 / param_3;
+  // DEVIATION(unparsed): if ((param_3 == 1) ||
+     // DEVIATION(unparsed): (uVar15 = (int)uVar5 >> 0x1f, ((uVar5 ^ uVar15) - uVar15 & 1 ^ uVar15) == uVar15)) {
+    // DEVIATION(unparsed): iVar9 = thunk_FUN_00407fc0(param_2);
+    // DEVIATION(unparsed): local_428 = (iVar9 * param_3) / (int)uVar5;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): iVar9 = thunk_FUN_00407fc0(param_2);
+    // DEVIATION(unparsed): local_428 = (iVar9 * param_3) / (int)(uVar5 + 1);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): iVar9 = gdi_8DA1(param_7);
+  // DEVIATION(unparsed): local_44c = *param_2;
+  // DEVIATION(unparsed): local_8 = param_2[1];
+  // DEVIATION(unparsed): local_448 = 0x40010000;
+  // DEVIATION(unparsed): if (param_6 != 0) {
+    // DEVIATION(unparsed): local_448 = 0x50010000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): local_42c = 0;
+  // DEVIATION(unparsed): do {
+    // DEVIATION(unparsed): if ((int)uVar5 <= local_42c) {
+      // DEVIATION(unparsed): *param_1 = uVar5;
+      // DEVIATION(unparsed): FUN_005dce29(uVar6);
+      // DEVIATION(unparsed): return uVar6;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): lpParam = (LPVOID)0x0;
+    // DEVIATION(unparsed): hMenu = (HMENU)0x0;
+    // DEVIATION(unparsed): hInstance = DAT_006e4ff0;
+    // DEVIATION(unparsed): thunk_FUN_0040f810();
+    // DEVIATION(unparsed): iVar10 = thunk_FUN_00414d10();
+    // DEVIATION(unparsed): iVar11 = local_428 >> 1;
+    // DEVIATION(unparsed): iVar14 = iVar9 >> 1;
+    // DEVIATION(unparsed): pHVar12 = CreateWindowExA(4,s_MSControlClass_0063871c,&DAT_00638718,local_448,local_44c,
+                              // DEVIATION(unparsed): (iVar11 - iVar14) + local_8,iVar8,iVar9,*(HWND *)(iVar10 + 4),hMenu,
+                              // DEVIATION(unparsed): hInstance,lpParam);
+    // DEVIATION(unparsed): *(HWND *)(iVar7 + local_42c * 0xa4) = pHVar12;
+    // DEVIATION(unparsed): iVar10 = FUN_005c9499(*(undefined4 *)(iVar7 + local_42c * 0xa4),param_4);
+    // DEVIATION(unparsed): if (local_42c == 0) {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar10 + 8) = 0;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar10 + 8) = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): *(HBITMAP *)(iVar10 + 0xc) = pHVar2;
+    // DEVIATION(unparsed): *(HBITMAP *)(iVar10 + 0x10) = pHVar3;
+    // DEVIATION(unparsed): *(HBITMAP *)(iVar10 + 0x14) = pHVar4;
+    // DEVIATION(unparsed): *(int *)(iVar10 + 0x24) = local_42c * 0xa4 + iVar7;
+    // DEVIATION(unparsed): *(undefined4 *)(iVar10 + 0x2c) = 3;
+    // DEVIATION(unparsed): SetWindowLongA(*(HWND *)(iVar7 + local_42c * 0xa4),-4,0x5d9b86);
+    // DEVIATION(unparsed): SetRect((LPRECT)(local_42c * 0xa4 + iVar7 + 4),local_44c,(iVar11 - iVar14) + local_8,
+            // DEVIATION(unparsed): local_44c + iVar8,(iVar11 - iVar14) + iVar9 + local_8);
+    // DEVIATION(unparsed): *(int *)(iVar7 + 0x14 + local_42c * 0xa4) = local_42c;
+    // DEVIATION(unparsed): if (*local_410 == '!') {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar7 + 0x18 + local_42c * 0xa4) = 0;
+      // DEVIATION(unparsed): local_410 = local_410 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (*local_410 == '^') {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar7 + 0x18 + local_42c * 0xa4) = 1;
+      // DEVIATION(unparsed): thunk_FUN_004472f0(local_42c);
+      // DEVIATION(unparsed): local_410 = local_410 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar7 + 0x18 + local_42c * 0xa4) = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): FUN_005f22d0(local_42c * 0xa4 + iVar7 + 0x1c,local_410);
+    // DEVIATION(unparsed): local_418 = (char *)(local_42c * 0xa4 + iVar7 + 0x1c);
+    // DEVIATION(unparsed): *(undefined4 *)(iVar7 + 0xa0 + local_42c * 0xa4) = 0;
+    // DEVIATION(unparsed): while( true ) {
+      // DEVIATION(unparsed): if (*local_418 == '\0') LAB_005d9893_helper(); return;
+      // DEVIATION(unparsed): if (*local_418 == '~') break;
+      // DEVIATION(unparsed): piVar1 = (int *)(iVar7 + 0xa0 + local_42c * 0xa4);
+      // DEVIATION(unparsed): *piVar1 = *piVar1 + 1;
+      // DEVIATION(unparsed): local_418 = local_418 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): for (local_430 = *(uint *)(iVar7 + 0xa0 + local_42c * 0xa4);
+        // DEVIATION(unparsed): sVar13 = _strlen((char *)(local_42c * 0xa4 + iVar7 + 0x1c)), local_430 < sVar13;
+        // DEVIATION(unparsed): local_430 = local_430 + 1) {
+      // DEVIATION(unparsed): *(undefined1 *)(local_42c * 0xa4 + local_430 + 0x1c + iVar7) =
+           // DEVIATION(unparsed): *(undefined1 *)(local_430 + local_42c * 0xa4 + 0x1d + iVar7);
+    // DEVIATION(unparsed): }
+// DEVIATION(unparsed): LAB_005d9893:
+    // DEVIATION(unparsed): sVar13 = _strlen((char *)(local_42c * 0xa4 + iVar7 + 0x1c));
+    // DEVIATION(unparsed): if (*(uint *)(iVar7 + 0xa0 + local_42c * 0xa4) < sVar13) {
+      // DEVIATION(unparsed): local_40c[0] = *(char *)(*(int *)(iVar7 + 0xa0 + local_42c * 0xa4) + local_42c * 0xa4 + 0x1c +
+                              // DEVIATION(unparsed): iVar7);
+      // DEVIATION(unparsed): local_40c[1] = 0;
+      // DEVIATION(unparsed): __strlwr(local_40c);
+      // DEVIATION(unparsed): *(char *)(iVar7 + 0x9c + local_42c * 0xa4) = local_40c[0];
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): *(undefined4 *)(iVar7 + 0xa0 + local_42c * 0xa4) = 0xffffffff;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): sVar13 = _strlen(local_410);
+    // DEVIATION(unparsed): local_410 = local_410 + sVar13 + 1;
+    // DEVIATION(unparsed): local_8 = local_8 + local_428;
+    // DEVIATION(unparsed): if (param_2[3] <= (iVar11 - iVar14) + local_8) {
+      // DEVIATION(unparsed): local_44c = local_44c + iVar8;
+      // DEVIATION(unparsed): local_8 = param_2[1];
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): local_42c = local_42c + 1;
+  // DEVIATION(unparsed): } while( true );
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: manage_window_99F4 @ 0x005D99F4
 // Size: 166 bytes
@@ -7296,45 +7287,39 @@ export function FUN_005dafdf(in_ECX, param_1) {
 // Function: IsTracking @ 0x005DB016
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005DB016() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0x704);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0x704);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: EnableStackedTabs @ 0x005DB035
 // Size: 36 bytes
 // ============================================================
-export function EnableStackedTabs_005DB035() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-  // 
-  // {
-  // *(int *)(this + 0x708) = param_1;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(int *)(this + 0x708) = param_1;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005db059 @ 0x005DB059
 // Size: 48 bytes
@@ -7373,23 +7358,20 @@ export function FUN_005db089() {
 // Function: ~Iostream_init @ 0x005DB0B4
 // Size: 22 bytes
 // ============================================================
-export function _Iostream_init_005DB0B4() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall Iostream_init::~Iostream_init(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall Iostream_init::~Iostream_init(Iostream_init *this)
-  // 
-  // {
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall Iostream_init::~Iostream_init(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall Iostream_init::~Iostream_init(Iostream_init *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005db0d0 @ 0x005DB0D0
 // Size: 64 bytes
@@ -8748,24 +8730,21 @@ export function FUN_005dcc10(in_ECX) {
 // Function: ~_Timevec @ 0x005DCC32
 // Size: 36 bytes
 // ============================================================
-export function __Timevec_005DCC32() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall _Timevec::~_Timevec(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall _Timevec::~_Timevec(_Timevec *this)
-  // 
-  // {
-  // FUN_005e10c7(*(undefined4 *)this);
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall _Timevec::~_Timevec(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall _Timevec::~_Timevec(_Timevec *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005e10c7(*(undefined4 *)this);
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005dcc56 @ 0x005DCC56
 // Size: 63 bytes
@@ -8801,26 +8780,23 @@ export function FUN_005dcc95(param_1, param_2, param_3) {
 // Function: Realloc @ 0x005DCCC1
 // Size: 40 bytes
 // ============================================================
-export function Realloc_005DCCC1() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Same Base Name
-  // protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
-  // long)
-  // protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void Realloc(undefined4 param_1,undefined4 param_2)
-  // 
-  // {
-  // FUN_005e17db(param_1,param_2);
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Same Base Name
+    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+   // DEVIATION(unparsed): long)
+    // DEVIATION(unparsed): protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void Realloc(undefined4 param_1,undefined4 param_2)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): FUN_005e17db(param_1,param_2);
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005dcce9 @ 0x005DCCE9
 // Size: 51 bytes

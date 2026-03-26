@@ -3074,65 +3074,59 @@ export function FUN_004f8d51() {
 // Function: FID_conflict:`scalar_deleting_destructor' @ 0x004FA0F0
 // Size: 57 bytes
 // ============================================================
-export function FID_conflict__scalar_deleting_destructor__004FA0F0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Different Base Names
-  // public: void * __thiscall CControlBarInfo::`scalar deleting destructor'(unsigned int)
-  // public: virtual void * __thiscall __non_rtti_object::`scalar deleting destructor'(unsigned int)
-  // public: virtual void * __thiscall bad_cast::`scalar deleting destructor'(unsigned int)
-  // public: virtual void * __thiscall bad_typeid::`scalar deleting destructor'(unsigned int)
-  // 9 names - too many to list
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // CControlBarInfo * FID_conflict__scalar_deleting_destructor_(byte param_1)
-  // 
-  // {
-  // CControlBarInfo *in_ECX;
-  // 
-  // CControlBarInfo::~CControlBarInfo(in_ECX);
-  // if ((param_1 & 1) != 0) {
-  // operator_delete(in_ECX);
-  // }
-  // return in_ECX;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
+    // DEVIATION(unparsed): public: void * __thiscall CControlBarInfo::`scalar deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: virtual void * __thiscall __non_rtti_object::`scalar deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: virtual void * __thiscall bad_cast::`scalar deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: virtual void * __thiscall bad_typeid::`scalar deleting destructor'(unsigned int)
+     // DEVIATION(unparsed): 9 names - too many to list
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): CControlBarInfo * FID_conflict__scalar_deleting_destructor_(byte param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): CControlBarInfo *in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): CControlBarInfo::~CControlBarInfo(in_ECX);
+  // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
+    // DEVIATION(unparsed): operator_delete(in_ECX);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return in_ECX;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: ~CControlBarInfo @ 0x004FA140
 // Size: 62 bytes
 // ============================================================
-export function _CControlBarInfo_004FA140() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall CControlBarInfo::~CControlBarInfo(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CControlBarInfo::~CControlBarInfo(CControlBarInfo *this)
-  // 
-  // {
-  // undefined4 *unaff_FS_OFFSET;
-  // undefined4 uStack_10;
-  // undefined1 *puStack_c;
-  // undefined4 local_8;
-  // 
-  // puStack_c = &LAB_004fa18a;
-  // uStack_10 = *unaff_FS_OFFSET;
-  // *unaff_FS_OFFSET = &uStack_10;
-  // local_8 = 0xffffffff;
-  // FUN_004fa17e();
-  // FUN_004fa194();
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall CControlBarInfo::~CControlBarInfo(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CControlBarInfo::~CControlBarInfo(CControlBarInfo *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): undefined4 uStack_10;
+  // DEVIATION(unparsed): undefined1 *puStack_c;
+  // DEVIATION(unparsed): undefined4 local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puStack_c = &LAB_004fa18a;
+  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
+  // DEVIATION(unparsed): local_8 = 0xffffffff;
+  // DEVIATION(unparsed): FUN_004fa17e();
+  // DEVIATION(unparsed): FUN_004fa194();
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_004fa17e @ 0x004FA17E
 // Size: 12 bytes

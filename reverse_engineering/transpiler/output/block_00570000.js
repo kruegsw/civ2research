@@ -2687,43 +2687,40 @@ export function FUN_005767c9(unaff_EBP) {
 // Function: ~CBitmapButton @ 0x00578390
 // Size: 114 bytes
 // ============================================================
-export function _CBitmapButton_00578390() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: virtual __thiscall CBitmapButton::~CBitmapButton(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CBitmapButton::~CBitmapButton(CBitmapButton *this)
-  // 
-  // {
-  // undefined4 *unaff_FS_OFFSET;
-  // undefined4 uStack_10;
-  // undefined1 *puStack_c;
-  // int local_8;
-  // 
-  // puStack_c = &LAB_00578447;
-  // uStack_10 = *unaff_FS_OFFSET;
-  // *unaff_FS_OFFSET = &uStack_10;
-  // local_8._1_3_ = 0;
-  // local_8._0_1_ = 3;
-  // FUN_00578402();
-  // local_8._0_1_ = 2;
-  // FUN_00578411();
-  // local_8._0_1_ = 1;
-  // FUN_00578420();
-  // local_8 = (uint)local_8._1_3_ << 8;
-  // FUN_0057842f();
-  // local_8 = 0xffffffff;
-  // FUN_0057843e();
-  // FUN_00578451();
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: virtual __thiscall CBitmapButton::~CBitmapButton(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CBitmapButton::~CBitmapButton(CBitmapButton *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): undefined4 uStack_10;
+  // DEVIATION(unparsed): undefined1 *puStack_c;
+  // DEVIATION(unparsed): int local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puStack_c = &LAB_00578447;
+  // DEVIATION(unparsed): uStack_10 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_10;
+  // DEVIATION(unparsed): local_8._1_3_ = 0;
+  // DEVIATION(unparsed): local_8._0_1_ = 3;
+  // DEVIATION(unparsed): FUN_00578402();
+  // DEVIATION(unparsed): local_8._0_1_ = 2;
+  // DEVIATION(unparsed): FUN_00578411();
+  // DEVIATION(unparsed): local_8._0_1_ = 1;
+  // DEVIATION(unparsed): FUN_00578420();
+  // DEVIATION(unparsed): local_8 = (uint)local_8._1_3_ << 8;
+  // DEVIATION(unparsed): FUN_0057842f();
+  // DEVIATION(unparsed): local_8 = 0xffffffff;
+  // DEVIATION(unparsed): FUN_0057843e();
+  // DEVIATION(unparsed): FUN_00578451();
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_00578402 @ 0x00578402
 // Size: 15 bytes
@@ -2851,52 +2848,46 @@ export function FUN_005784a0(in_ECX) {
 // Function: precision @ 0x005785D0
 // Size: 45 bytes
 // ============================================================
-export function precision_005785D0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall ios_base::precision(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall ios_base::precision(ios_base *this,int param_1)
-  // 
-  // {
-  // int iVar1;
-  // 
-  // iVar1 = *(int *)(this + 0x10);
-  // *(int *)(this + 0x10) = param_1;
-  // return iVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall ios_base::precision(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall ios_base::precision(ios_base *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): iVar1 = *(int *)(this + 0x10);
+  // DEVIATION(unparsed): *(int *)(this + 0x10) = param_1;
+  // DEVIATION(unparsed): return iVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: width @ 0x00578610
 // Size: 45 bytes
 // ============================================================
-export function width_00578610() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall ios_base::width(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall ios_base::width(ios_base *this,int param_1)
-  // 
-  // {
-  // int iVar1;
-  // 
-  // iVar1 = *(int *)(this + 0x14);
-  // *(int *)(this + 0x14) = param_1;
-  // return iVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall ios_base::width(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall ios_base::width(ios_base *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): iVar1 = *(int *)(this + 0x14);
+  // DEVIATION(unparsed): *(int *)(this + 0x14) = param_1;
+  // DEVIATION(unparsed): return iVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_00578650 @ 0x00578650
 // Size: 60 bytes
@@ -2918,25 +2909,22 @@ export function FUN_00578650(in_ECX, param_1) {
 // Function: Reset @ 0x0057868C
 // Size: 42 bytes
 // ============================================================
-export function Reset_0057868C() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: virtual void __thiscall CHtmlStream::Reset(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CHtmlStream::Reset(CHtmlStream *this)
-  // 
-  // {
-  // *(undefined4 *)(this + 0x1c) = 0;
-  // *(undefined4 *)(this + 0x18) = 0;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: virtual void __thiscall CHtmlStream::Reset(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CHtmlStream::Reset(CHtmlStream *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(undefined4 *)(this + 0x1c) = 0;
+  // DEVIATION(unparsed): *(undefined4 *)(this + 0x18) = 0;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005786b6 @ 0x005786B6
 // Size: 59 bytes
@@ -3843,24 +3831,21 @@ export function FUN_00579b90(in_ECX) {
 // Function: EnableStackedTabs @ 0x00579BC0
 // Size: 36 bytes
 // ============================================================
-export function EnableStackedTabs_00579BC0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-  // 
-  // {
-  // *(int *)(this + 0x98) = param_1;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(int *)(this + 0x98) = param_1;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_00579bf0 @ 0x00579BF0
 // Size: 52 bytes

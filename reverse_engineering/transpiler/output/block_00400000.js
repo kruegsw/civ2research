@@ -847,57 +847,51 @@ export function FUN_00408170(in_ECX, param_1) {
 // Function: SetDlgCtrlID @ 0x004081B0
 // Size: 45 bytes
 // ============================================================
-export function SetDlgCtrlID_004081B0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: virtual int __thiscall COleControlSite::SetDlgCtrlID(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall COleControlSite::SetDlgCtrlID(COleControlSite *this,int param_1)
-  // 
-  // {
-  // int iVar1;
-  // 
-  // iVar1 = *(int *)(this + 0x28);
-  // *(int *)(this + 0x28) = param_1;
-  // return iVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: virtual int __thiscall COleControlSite::SetDlgCtrlID(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall COleControlSite::SetDlgCtrlID(COleControlSite *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): iVar1 = *(int *)(this + 0x28);
+  // DEVIATION(unparsed): *(int *)(this + 0x28) = param_1;
+  // DEVIATION(unparsed): return iVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: tie @ 0x004081F0
 // Size: 45 bytes
 // ============================================================
-export function tie_004081F0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Same Base Name
-  // public: class basic_ostream<char,struct char_traits<char> > * __thiscall basic_ios<char,struct
-  // char_traits<char> >::tie(class basic_ostream<char,struct char_traits<char> > *)
-  // public: class basic_ostream<unsigned short,struct char_traits<unsigned short> > * __thiscall
-  // basic_ios<unsigned short,struct char_traits<unsigned short> >::tie(class basic_ostream<unsigned
-  // short,struct char_traits<unsigned short> > *)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // undefined4 tie(undefined4 param_1)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int in_ECX;
-  // 
-  // uVar1 = *(undefined4 *)(in_ECX + 0x2c);
-  // *(undefined4 *)(in_ECX + 0x2c) = param_1;
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Same Base Name
+    // DEVIATION(unparsed): public: class basic_ostream<char,struct char_traits<char> > * __thiscall basic_ios<char,struct
+   // DEVIATION(unparsed): char_traits<char> >::tie(class basic_ostream<char,struct char_traits<char> > *)
+    // DEVIATION(unparsed): public: class basic_ostream<unsigned short,struct char_traits<unsigned short> > * __thiscall
+   // DEVIATION(unparsed): basic_ios<unsigned short,struct char_traits<unsigned short> >::tie(class basic_ostream<unsigned
+   // DEVIATION(unparsed): short,struct char_traits<unsigned short> > *)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4 tie(undefined4 param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): uVar1 = *(undefined4 *)(in_ECX + 0x2c);
+  // DEVIATION(unparsed): *(undefined4 *)(in_ECX + 0x2c) = param_1;
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_00408230 @ 0x00408230
 // Size: 45 bytes
@@ -1123,24 +1117,21 @@ export function FUN_00408580(in_ECX, param_1) {
 // Function: EnableStackedTabs @ 0x004085C0
 // Size: 36 bytes
 // ============================================================
-export function EnableStackedTabs_004085C0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-  // 
-  // {
-  // *(int *)(this + 0x110) = param_1;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(int *)(this + 0x110) = param_1;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_004085f0 @ 0x004085F0
 // Size: 33 bytes
@@ -3792,24 +3783,21 @@ export function FUN_0040ef70(in_ECX) {
 // Function: ~_Timevec @ 0x0040EFA0
 // Size: 36 bytes
 // ============================================================
-export function __Timevec_0040EFA0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall _Timevec::~_Timevec(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall _Timevec::~_Timevec(_Timevec *this)
-  // 
-  // {
-  // gdi_8514(*(undefined4 *)this);
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall _Timevec::~_Timevec(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall _Timevec::~_Timevec(_Timevec *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): gdi_8514(*(undefined4 *)this);
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_0040efd0 @ 0x0040EFD0
 // Size: 42 bytes
@@ -4026,24 +4014,21 @@ export function FUN_0040f2c6(unaff_EBP) {
 // Function: EnableStackedTabs @ 0x0040F320
 // Size: 36 bytes
 // ============================================================
-export function EnableStackedTabs_0040F320() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: void __thiscall CPropertySheet::EnableStackedTabs(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
-  // 
-  // {
-  // *(int *)(this + 0xa4) = param_1;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: void __thiscall CPropertySheet::EnableStackedTabs(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CPropertySheet::EnableStackedTabs(CPropertySheet *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(int *)(this + 0xa4) = param_1;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_0040f350 @ 0x0040F350
 // Size: 36 bytes

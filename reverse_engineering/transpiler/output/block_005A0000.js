@@ -2241,266 +2241,263 @@ export function FUN_005a5f34(in_ECX, param_1, param_2) {
 // Function: FUN_005a632a @ 0x005A632A
 // Size: 2287 bytes
 // ============================================================
-export function FUN_005a632a_005A632A() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005a632a(undefined4 param_1,undefined4 param_2,int param_3,char *param_4,undefined4 param_5,
-  // undefined4 param_6,undefined4 param_7,uint param_8)
-  // 
-  // {
-  // int iVar1;
-  // size_t sVar2;
-  // ios *in_ECX;
-  // undefined1 local_17c [256];
-  // int local_7c;
-  // undefined4 local_78;
-  // uint local_74;
-  // char *local_70;
-  // undefined1 local_6c [80];
-  // int local_1c;
-  // char *local_18;
-  // undefined4 local_14;
-  // int local_10;
-  // int local_c;
-  // undefined *local_8;
-  // 
-  // local_78 = 1;
-  // local_7c = 1;
-  // local_10 = 0;
-  // FUN_005f22d0(&DAT_006cecb0,param_2);
-  // iVar1 = thunk_FUN_004a2379(param_1,param_2);
-  // if (iVar1 == 0) {
-  // if ((param_8 & 0x8000) == 0) {
-  // thunk_FUN_0059dfb9(param_5,param_6,param_7,param_8);
-  // }
-  // else {
-  // *(uint *)(in_ECX + 0x3c) = *(uint *)(in_ECX + 0x3c) | param_8;
-  // }
-  // local_74 = (uint)(param_4 != (char *)0x0);
-  // if (local_74 != 0) {
-  // FUN_005f22d0(local_6c,param_4);
-  // }
-  // do {
-  // local_70 = (char *)thunk_FUN_004a23fc(1);
-  // if (local_70 == (char *)0x0) {
-  // local_7c = 3;
-  // }
-  // else {
-  // sVar2 = _strlen(local_70);
-  // if (sVar2 == 0) {
-  // if ((param_8 & 0x4000000) == 0) {
-  // local_7c = local_7c + 1;
-  // }
-  // else {
-  // thunk_FUN_0059e18b(&DAT_00635b70,0xffffffff,0xffffffff,0xffffffff,0);
-  // }
-  // }
-  // else if (*local_70 == '@') {
-  // local_18 = local_70 + 1;
-  // iVar1 = __strcmpi(local_18,s_OPTIONS_00635b74);
-  // if ((iVar1 == 0) || (iVar1 = _strcmp(local_18,s_PROMPT_00635b7c), iVar1 == 0)) {
-  // local_7c = 2;
-  // }
-  // else {
-  // iVar1 = __strcmpi(local_18,&DAT_00635b84);
-  // if (iVar1 == 0) {
-  // local_7c = 1;
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_TITLE_00635b8c,5);
-  // if (iVar1 == 0) {
-  // for (; (*local_18 != '\0' && (*local_18 != '=')); local_18 = local_18 + 1) {
-  // }
-  // if (*local_18 != '\0') {
-  // local_18 = local_18 + 1;
-  // }
-  // thunk_FUN_00426ff0(local_18,local_17c);
-  // thunk_FUN_0059e6a9(local_17c);
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_BUTTON_00635b94,6);
-  // if (iVar1 == 0) {
-  // for (; (*local_18 != '\0' && (*local_18 != '=')); local_18 = local_18 + 1) {
-  // }
-  // if (*local_18 != '\0') {
-  // local_18 = local_18 + 1;
-  // }
-  // thunk_FUN_00426ff0(local_18,local_17c);
-  // thunk_FUN_0059f2a3(local_17c);
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_COLUMNS_00635b9c,7);
-  // if (iVar1 == 0) {
-  // while ((*local_18 != '\0' && (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
-  // local_18 = local_18 + 1;
-  // }
-  // local_c = _atoi(local_18);
-  // thunk_FUN_0059e4e6(local_c);
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_HEIGHT_00635ba4,6);
-  // if (iVar1 == 0) {
-  // while ((*local_18 != '\0' && (iVar1 = _isdigit((int)*local_18), iVar1 == 0)))
-  // {
-  // local_18 = local_18 + 1;
-  // }
-  // local_c = _atoi(local_18);
-  // ios::delbuf(in_ECX,local_c);
-  // }
-  // else {
-  // iVar1 = __strcmpi(local_18,s_SMALLFONT_00635bac);
-  // if (iVar1 != 0) {
-  // iVar1 = __strnicmp(local_18,&DAT_00635bb8,1);
-  // if ((iVar1 == 0) && (iVar1 = _isalpha((int)local_18[1]), iVar1 == 0)) {
-  // while (((*local_18 != '\0' &&
-  // (iVar1 = _isdigit((int)*local_18), iVar1 == 0)) &&
-  // (*local_18 != '-'))) {
-  // local_18 = local_18 + 1;
-  // }
-  // iVar1 = _atoi(local_18);
-  // *(int *)(in_ECX + 0x18) = iVar1;
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,&DAT_00635bbc,1);
-  // if ((iVar1 == 0) && (iVar1 = _isalpha((int)local_18[1]), iVar1 == 0)) {
-  // while (((*local_18 != '\0' &&
-  // (iVar1 = _isdigit((int)*local_18), iVar1 == 0)) &&
-  // (*local_18 != '-'))) {
-  // local_18 = local_18 + 1;
-  // }
-  // iVar1 = _atoi(local_18);
-  // *(int *)(in_ECX + 0x14) = iVar1;
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_WIDTH_00635bc0,5);
-  // if (iVar1 == 0) {
-  // while ((*local_18 != '\0' &&
-  // (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
-  // local_18 = local_18 + 1;
-  // }
-  // local_c = _atoi(local_18);
-  // thunk_FUN_0059e6ff(local_c);
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_LENGTH_00635bc8,6);
-  // if (iVar1 == 0) {
-  // while ((*local_18 != '\0' &&
-  // (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
-  // local_18 = local_18 + 1;
-  // }
-  // if (param_3 == 0) {
-  // param_3 = _atoi(local_18);
-  // }
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_CHECKBOX_00635bd0,7);
-  // if (iVar1 == 0) {
-  // *(uint *)(in_ECX + 0x3c) = *(uint *)(in_ECX + 0x3c) | 5;
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_LISTBOX_00635bdc,7);
-  // if (iVar1 == 0) {
-  // while ((*local_18 != '\0' &&
-  // (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
-  // local_18 = local_18 + 1;
-  // }
-  // local_1c = _atoi(local_18);
-  // if (local_1c == 0) {
-  // local_1c = 0x10;
-  // }
-  // thunk_FUN_0059e5c9(local_1c,*(undefined4 *)(in_ECX + 0x11c),0);
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_SYSTEM_00635be4,6);
-  // if (iVar1 == 0) {
-  // *(uint *)(in_ECX + 0x3c) = *(uint *)(in_ECX + 0x3c) | 0x40000;
-  // }
-  // else {
-  // iVar1 = __strnicmp(local_18,s_DEFAULT_00635bec,7);
-  // if (iVar1 == 0) {
-  // if (local_74 == 0) {
-  // while ((*local_18 != '\0' &&
-  // (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
-  // local_18 = local_18 + 1;
-  // }
-  // if (param_3 == 0) {
-  // param_3 = _atoi(local_18);
-  // }
-  // }
-  // else {
-  // for (; (*local_18 != '\0' && (*local_18 != '='));
-  // local_18 = local_18 + 1) {
-  // }
-  // if (*local_18 != '\0') {
-  // local_18 = local_18 + 1;
-  // }
-  // sVar2 = _strlen(param_4);
-  // if (sVar2 == 0) {
-  // FUN_005f22d0(local_6c,local_18);
-  // }
-  // }
-  // }
-  // else if (*local_18 != '@') {
-  // local_7c = 3;
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // else if (local_7c == 1) {
-  // thunk_FUN_00426ff0(local_70,local_17c);
-  // thunk_FUN_0059e18b(local_17c,0xffffffff,0xffffffff,0xffffffff,0);
-  // }
-  // else if (local_7c == 2) {
-  // thunk_FUN_00426ff0(local_70,local_17c);
-  // if (local_74 == 0) {
-  // if (((byte)in_ECX[0x3c] & 4) == 0) {
-  // local_14 = thunk_FUN_0059edf0(local_17c,local_10,0);
-  // }
-  // else {
-  // local_14 = thunk_FUN_0059f026(local_17c,local_10,0);
-  // }
-  // if (param_3 == local_10) {
-  // *(undefined4 *)(in_ECX + 0x220) = local_14;
-  // }
-  // local_10 = local_10 + 1;
-  // }
-  // else {
-  // if (param_3 == 0) {
-  // param_3 = 5;
-  // }
-  // local_8 = local_6c;
-  // if (*(int *)(in_ECX + 0x24) != 0) {
-  // local_8 = &DAT_0063cc48 + *(int *)(in_ECX + 0x24) * 0x104;
-  // }
-  // thunk_FUN_0059f06d(local_17c,local_8,param_3);
-  // }
-  // }
-  // }
-  // } while (local_7c < 3);
-  // local_78 = 0;
-  // }
-  // else if ((param_8 & 0x8000) == 0) {
-  // thunk_FUN_0059dfb9(param_5,param_6,param_7,param_8);
-  // }
-  // return local_78;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005a632a(undefined4 param_1,undefined4 param_2,int param_3,char *param_4,undefined4 param_5,
+            // DEVIATION(unparsed): undefined4 param_6,undefined4 param_7,uint param_8)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): size_t sVar2;
+  // DEVIATION(unparsed): ios *in_ECX;
+  // DEVIATION(unparsed): undefined1 local_17c [256];
+  // DEVIATION(unparsed): int local_7c;
+  // DEVIATION(unparsed): undefined4 local_78;
+  // DEVIATION(unparsed): uint local_74;
+  // DEVIATION(unparsed): char *local_70;
+  // DEVIATION(unparsed): undefined1 local_6c [80];
+  // DEVIATION(unparsed): int local_1c;
+  // DEVIATION(unparsed): char *local_18;
+  // DEVIATION(unparsed): undefined4 local_14;
+  // DEVIATION(unparsed): int local_10;
+  // DEVIATION(unparsed): int local_c;
+  // DEVIATION(unparsed): undefined *local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): local_78 = 1;
+  // DEVIATION(unparsed): local_7c = 1;
+  // DEVIATION(unparsed): local_10 = 0;
+  // DEVIATION(unparsed): FUN_005f22d0(&DAT_006cecb0,param_2);
+  // DEVIATION(unparsed): iVar1 = thunk_FUN_004a2379(param_1,param_2);
+  // DEVIATION(unparsed): if (iVar1 == 0) {
+    // DEVIATION(unparsed): if ((param_8 & 0x8000) == 0) {
+      // DEVIATION(unparsed): thunk_FUN_0059dfb9(param_5,param_6,param_7,param_8);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): *(uint *)(in_ECX + 0x3c) = *(uint *)(in_ECX + 0x3c) | param_8;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): local_74 = (uint)(param_4 != (char *)0x0);
+    // DEVIATION(unparsed): if (local_74 != 0) {
+      // DEVIATION(unparsed): FUN_005f22d0(local_6c,param_4);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): do {
+      // DEVIATION(unparsed): local_70 = (char *)thunk_FUN_004a23fc(1);
+      // DEVIATION(unparsed): if (local_70 == (char *)0x0) {
+        // DEVIATION(unparsed): local_7c = 3;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): sVar2 = _strlen(local_70);
+        // DEVIATION(unparsed): if (sVar2 == 0) {
+          // DEVIATION(unparsed): if ((param_8 & 0x4000000) == 0) {
+            // DEVIATION(unparsed): local_7c = local_7c + 1;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else {
+            // DEVIATION(unparsed): thunk_FUN_0059e18b(&DAT_00635b70,0xffffffff,0xffffffff,0xffffffff,0);
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else if (*local_70 == '@') {
+          // DEVIATION(unparsed): local_18 = local_70 + 1;
+          // DEVIATION(unparsed): iVar1 = __strcmpi(local_18,s_OPTIONS_00635b74);
+          // DEVIATION(unparsed): if ((iVar1 == 0) || (iVar1 = _strcmp(local_18,s_PROMPT_00635b7c), iVar1 == 0)) {
+            // DEVIATION(unparsed): local_7c = 2;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else {
+            // DEVIATION(unparsed): iVar1 = __strcmpi(local_18,&DAT_00635b84);
+            // DEVIATION(unparsed): if (iVar1 == 0) {
+              // DEVIATION(unparsed): local_7c = 1;
+            // DEVIATION(unparsed): }
+            // DEVIATION(unparsed): else {
+              // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_TITLE_00635b8c,5);
+              // DEVIATION(unparsed): if (iVar1 == 0) {
+                // DEVIATION(unparsed): for (; (*local_18 != '\0' && (*local_18 != '=')); local_18 = local_18 + 1) {
+                // DEVIATION(unparsed): }
+                // DEVIATION(unparsed): if (*local_18 != '\0') {
+                  // DEVIATION(unparsed): local_18 = local_18 + 1;
+                // DEVIATION(unparsed): }
+                // DEVIATION(unparsed): thunk_FUN_00426ff0(local_18,local_17c);
+                // DEVIATION(unparsed): thunk_FUN_0059e6a9(local_17c);
+              // DEVIATION(unparsed): }
+              // DEVIATION(unparsed): else {
+                // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_BUTTON_00635b94,6);
+                // DEVIATION(unparsed): if (iVar1 == 0) {
+                  // DEVIATION(unparsed): for (; (*local_18 != '\0' && (*local_18 != '=')); local_18 = local_18 + 1) {
+                  // DEVIATION(unparsed): }
+                  // DEVIATION(unparsed): if (*local_18 != '\0') {
+                    // DEVIATION(unparsed): local_18 = local_18 + 1;
+                  // DEVIATION(unparsed): }
+                  // DEVIATION(unparsed): thunk_FUN_00426ff0(local_18,local_17c);
+                  // DEVIATION(unparsed): thunk_FUN_0059f2a3(local_17c);
+                // DEVIATION(unparsed): }
+                // DEVIATION(unparsed): else {
+                  // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_COLUMNS_00635b9c,7);
+                  // DEVIATION(unparsed): if (iVar1 == 0) {
+                    // DEVIATION(unparsed): while ((*local_18 != '\0' && (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
+                      // DEVIATION(unparsed): local_18 = local_18 + 1;
+                    // DEVIATION(unparsed): }
+                    // DEVIATION(unparsed): local_c = _atoi(local_18);
+                    // DEVIATION(unparsed): thunk_FUN_0059e4e6(local_c);
+                  // DEVIATION(unparsed): }
+                  // DEVIATION(unparsed): else {
+                    // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_HEIGHT_00635ba4,6);
+                    // DEVIATION(unparsed): if (iVar1 == 0) {
+                      // DEVIATION(unparsed): while ((*local_18 != '\0' && (iVar1 = _isdigit((int)*local_18), iVar1 == 0)))
+                      // DEVIATION(unparsed): {
+                        // DEVIATION(unparsed): local_18 = local_18 + 1;
+                      // DEVIATION(unparsed): }
+                      // DEVIATION(unparsed): local_c = _atoi(local_18);
+                      // DEVIATION(unparsed): ios::delbuf(in_ECX,local_c);
+                    // DEVIATION(unparsed): }
+                    // DEVIATION(unparsed): else {
+                      // DEVIATION(unparsed): iVar1 = __strcmpi(local_18,s_SMALLFONT_00635bac);
+                      // DEVIATION(unparsed): if (iVar1 != 0) {
+                        // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,&DAT_00635bb8,1);
+                        // DEVIATION(unparsed): if ((iVar1 == 0) && (iVar1 = _isalpha((int)local_18[1]), iVar1 == 0)) {
+                          // DEVIATION(unparsed): while (((*local_18 != '\0' &&
+                                  // DEVIATION(unparsed): (iVar1 = _isdigit((int)*local_18), iVar1 == 0)) &&
+                                 // DEVIATION(unparsed): (*local_18 != '-'))) {
+                            // DEVIATION(unparsed): local_18 = local_18 + 1;
+                          // DEVIATION(unparsed): }
+                          // DEVIATION(unparsed): iVar1 = _atoi(local_18);
+                          // DEVIATION(unparsed): *(int *)(in_ECX + 0x18) = iVar1;
+                        // DEVIATION(unparsed): }
+                        // DEVIATION(unparsed): else {
+                          // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,&DAT_00635bbc,1);
+                          // DEVIATION(unparsed): if ((iVar1 == 0) && (iVar1 = _isalpha((int)local_18[1]), iVar1 == 0)) {
+                            // DEVIATION(unparsed): while (((*local_18 != '\0' &&
+                                    // DEVIATION(unparsed): (iVar1 = _isdigit((int)*local_18), iVar1 == 0)) &&
+                                   // DEVIATION(unparsed): (*local_18 != '-'))) {
+                              // DEVIATION(unparsed): local_18 = local_18 + 1;
+                            // DEVIATION(unparsed): }
+                            // DEVIATION(unparsed): iVar1 = _atoi(local_18);
+                            // DEVIATION(unparsed): *(int *)(in_ECX + 0x14) = iVar1;
+                          // DEVIATION(unparsed): }
+                          // DEVIATION(unparsed): else {
+                            // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_WIDTH_00635bc0,5);
+                            // DEVIATION(unparsed): if (iVar1 == 0) {
+                              // DEVIATION(unparsed): while ((*local_18 != '\0' &&
+                                     // DEVIATION(unparsed): (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
+                                // DEVIATION(unparsed): local_18 = local_18 + 1;
+                              // DEVIATION(unparsed): }
+                              // DEVIATION(unparsed): local_c = _atoi(local_18);
+                              // DEVIATION(unparsed): thunk_FUN_0059e6ff(local_c);
+                            // DEVIATION(unparsed): }
+                            // DEVIATION(unparsed): else {
+                              // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_LENGTH_00635bc8,6);
+                              // DEVIATION(unparsed): if (iVar1 == 0) {
+                                // DEVIATION(unparsed): while ((*local_18 != '\0' &&
+                                       // DEVIATION(unparsed): (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
+                                  // DEVIATION(unparsed): local_18 = local_18 + 1;
+                                // DEVIATION(unparsed): }
+                                // DEVIATION(unparsed): if (param_3 == 0) {
+                                  // DEVIATION(unparsed): param_3 = _atoi(local_18);
+                                // DEVIATION(unparsed): }
+                              // DEVIATION(unparsed): }
+                              // DEVIATION(unparsed): else {
+                                // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_CHECKBOX_00635bd0,7);
+                                // DEVIATION(unparsed): if (iVar1 == 0) {
+                                  // DEVIATION(unparsed): *(uint *)(in_ECX + 0x3c) = *(uint *)(in_ECX + 0x3c) | 5;
+                                // DEVIATION(unparsed): }
+                                // DEVIATION(unparsed): else {
+                                  // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_LISTBOX_00635bdc,7);
+                                  // DEVIATION(unparsed): if (iVar1 == 0) {
+                                    // DEVIATION(unparsed): while ((*local_18 != '\0' &&
+                                           // DEVIATION(unparsed): (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
+                                      // DEVIATION(unparsed): local_18 = local_18 + 1;
+                                    // DEVIATION(unparsed): }
+                                    // DEVIATION(unparsed): local_1c = _atoi(local_18);
+                                    // DEVIATION(unparsed): if (local_1c == 0) {
+                                      // DEVIATION(unparsed): local_1c = 0x10;
+                                    // DEVIATION(unparsed): }
+                                    // DEVIATION(unparsed): thunk_FUN_0059e5c9(local_1c,*(undefined4 *)(in_ECX + 0x11c),0);
+                                  // DEVIATION(unparsed): }
+                                  // DEVIATION(unparsed): else {
+                                    // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_SYSTEM_00635be4,6);
+                                    // DEVIATION(unparsed): if (iVar1 == 0) {
+                                      // DEVIATION(unparsed): *(uint *)(in_ECX + 0x3c) = *(uint *)(in_ECX + 0x3c) | 0x40000;
+                                    // DEVIATION(unparsed): }
+                                    // DEVIATION(unparsed): else {
+                                      // DEVIATION(unparsed): iVar1 = __strnicmp(local_18,s_DEFAULT_00635bec,7);
+                                      // DEVIATION(unparsed): if (iVar1 == 0) {
+                                        // DEVIATION(unparsed): if (local_74 == 0) {
+                                          // DEVIATION(unparsed): while ((*local_18 != '\0' &&
+                                                 // DEVIATION(unparsed): (iVar1 = _isdigit((int)*local_18), iVar1 == 0))) {
+                                            // DEVIATION(unparsed): local_18 = local_18 + 1;
+                                          // DEVIATION(unparsed): }
+                                          // DEVIATION(unparsed): if (param_3 == 0) {
+                                            // DEVIATION(unparsed): param_3 = _atoi(local_18);
+                                          // DEVIATION(unparsed): }
+                                        // DEVIATION(unparsed): }
+                                        // DEVIATION(unparsed): else {
+                                          // DEVIATION(unparsed): for (; (*local_18 != '\0' && (*local_18 != '='));
+                                              // DEVIATION(unparsed): local_18 = local_18 + 1) {
+                                          // DEVIATION(unparsed): }
+                                          // DEVIATION(unparsed): if (*local_18 != '\0') {
+                                            // DEVIATION(unparsed): local_18 = local_18 + 1;
+                                          // DEVIATION(unparsed): }
+                                          // DEVIATION(unparsed): sVar2 = _strlen(param_4);
+                                          // DEVIATION(unparsed): if (sVar2 == 0) {
+                                            // DEVIATION(unparsed): FUN_005f22d0(local_6c,local_18);
+                                          // DEVIATION(unparsed): }
+                                        // DEVIATION(unparsed): }
+                                      // DEVIATION(unparsed): }
+                                      // DEVIATION(unparsed): else if (*local_18 != '@') {
+                                        // DEVIATION(unparsed): local_7c = 3;
+                                      // DEVIATION(unparsed): }
+                                    // DEVIATION(unparsed): }
+                                  // DEVIATION(unparsed): }
+                                // DEVIATION(unparsed): }
+                              // DEVIATION(unparsed): }
+                            // DEVIATION(unparsed): }
+                          // DEVIATION(unparsed): }
+                        // DEVIATION(unparsed): }
+                      // DEVIATION(unparsed): }
+                    // DEVIATION(unparsed): }
+                  // DEVIATION(unparsed): }
+                // DEVIATION(unparsed): }
+              // DEVIATION(unparsed): }
+            // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else if (local_7c == 1) {
+          // DEVIATION(unparsed): thunk_FUN_00426ff0(local_70,local_17c);
+          // DEVIATION(unparsed): thunk_FUN_0059e18b(local_17c,0xffffffff,0xffffffff,0xffffffff,0);
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else if (local_7c == 2) {
+          // DEVIATION(unparsed): thunk_FUN_00426ff0(local_70,local_17c);
+          // DEVIATION(unparsed): if (local_74 == 0) {
+            // DEVIATION(unparsed): if (((byte)in_ECX[0x3c] & 4) == 0) {
+              // DEVIATION(unparsed): local_14 = thunk_FUN_0059edf0(local_17c,local_10,0);
+            // DEVIATION(unparsed): }
+            // DEVIATION(unparsed): else {
+              // DEVIATION(unparsed): local_14 = thunk_FUN_0059f026(local_17c,local_10,0);
+            // DEVIATION(unparsed): }
+            // DEVIATION(unparsed): if (param_3 == local_10) {
+              // DEVIATION(unparsed): *(undefined4 *)(in_ECX + 0x220) = local_14;
+            // DEVIATION(unparsed): }
+            // DEVIATION(unparsed): local_10 = local_10 + 1;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else {
+            // DEVIATION(unparsed): if (param_3 == 0) {
+              // DEVIATION(unparsed): param_3 = 5;
+            // DEVIATION(unparsed): }
+            // DEVIATION(unparsed): local_8 = local_6c;
+            // DEVIATION(unparsed): if (*(int *)(in_ECX + 0x24) != 0) {
+              // DEVIATION(unparsed): local_8 = &DAT_0063cc48 + *(int *)(in_ECX + 0x24) * 0x104;
+            // DEVIATION(unparsed): }
+            // DEVIATION(unparsed): thunk_FUN_0059f06d(local_17c,local_8,param_3);
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): } while (local_7c < 3);
+    // DEVIATION(unparsed): local_78 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if ((param_8 & 0x8000) == 0) {
+    // DEVIATION(unparsed): thunk_FUN_0059dfb9(param_5,param_6,param_7,param_8);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return local_78;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005a6c23 @ 0x005A6C23
 // Size: 34 bytes
@@ -2534,110 +2531,101 @@ export function FUN_005a6c45() {
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A9320
 // Size: 110 bytes
 // ============================================================
-export function FID_conflict__vector_deleting_destructor__005A9320() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Different Base Names
-  // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void * FID_conflict__vector_deleting_destructor_(byte param_1)
-  // 
-  // {
-  // void *in_ECX;
-  // 
-  // if ((param_1 & 2) == 0) {
-  // thunk_FUN_0040f930();
-  // if ((param_1 & 1) != 0) {
-  // operator_delete(in_ECX);
-  // }
-  // }
-  // else {
-  // _eh_vector_destructor_iterator_(in_ECX,0x3c,*(int *)((int)in_ECX + -4),thunk_FUN_0040f930);
-  // operator_delete((void *)((int)in_ECX + -4));
-  // }
-  // return in_ECX;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
+    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
+    // DEVIATION(unparsed): thunk_FUN_0040f930();
+    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
+      // DEVIATION(unparsed): operator_delete(in_ECX);
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x3c,*(int *)((int)in_ECX + -4),thunk_FUN_0040f930);
+    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return in_ECX;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A93B0
 // Size: 110 bytes
 // ============================================================
-export function FID_conflict__vector_deleting_destructor__005A93B0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Different Base Names
-  // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void * FID_conflict__vector_deleting_destructor_(byte param_1)
-  // 
-  // {
-  // void *in_ECX;
-  // 
-  // if ((param_1 & 2) == 0) {
-  // thunk_FUN_00418870();
-  // if ((param_1 & 1) != 0) {
-  // operator_delete(in_ECX);
-  // }
-  // }
-  // else {
-  // _eh_vector_destructor_iterator_(in_ECX,0x48,*(int *)((int)in_ECX + -4),thunk_FUN_00418870);
-  // operator_delete((void *)((int)in_ECX + -4));
-  // }
-  // return in_ECX;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
+    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
+    // DEVIATION(unparsed): thunk_FUN_00418870();
+    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
+      // DEVIATION(unparsed): operator_delete(in_ECX);
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x48,*(int *)((int)in_ECX + -4),thunk_FUN_00418870);
+    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return in_ECX;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A9440
 // Size: 110 bytes
 // ============================================================
-export function FID_conflict__vector_deleting_destructor__005A9440() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Different Base Names
-  // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void * FID_conflict__vector_deleting_destructor_(byte param_1)
-  // 
-  // {
-  // void *in_ECX;
-  // 
-  // if ((param_1 & 2) == 0) {
-  // thunk_FUN_0040f570();
-  // if ((param_1 & 1) != 0) {
-  // operator_delete(in_ECX);
-  // }
-  // }
-  // else {
-  // _eh_vector_destructor_iterator_(in_ECX,0x3c,*(int *)((int)in_ECX + -4),thunk_FUN_0040f570);
-  // operator_delete((void *)((int)in_ECX + -4));
-  // }
-  // return in_ECX;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
+    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
+    // DEVIATION(unparsed): thunk_FUN_0040f570();
+    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
+      // DEVIATION(unparsed): operator_delete(in_ECX);
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x3c,*(int *)((int)in_ECX + -4),thunk_FUN_0040f570);
+    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return in_ECX;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005a94d0 @ 0x005A94D0
 // Size: 57 bytes
@@ -2661,38 +2649,35 @@ export function FUN_005a94d0(param_1) {
 // Function: FID_conflict:`vector_deleting_destructor' @ 0x005A9520
 // Size: 110 bytes
 // ============================================================
-export function FID_conflict__vector_deleting_destructor__005A9520() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Multiple Matches With Different Base Names
-  // public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
-  // public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void * FID_conflict__vector_deleting_destructor_(byte param_1)
-  // 
-  // {
-  // void *in_ECX;
-  // 
-  // if ((param_1 & 2) == 0) {
-  // thunk_FUN_00453ba0();
-  // if ((param_1 & 1) != 0) {
-  // operator_delete(in_ECX);
-  // }
-  // }
-  // else {
-  // _eh_vector_destructor_iterator_(in_ECX,0x40,*(int *)((int)in_ECX + -4),thunk_FUN_00453ba0);
-  // operator_delete((void *)((int)in_ECX + -4));
-  // }
-  // return in_ECX;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Multiple Matches With Different Base Names
+    // DEVIATION(unparsed): public: void * __thiscall CDaoIndexFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CDaoRelationFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CODBCFieldInfo::`vector deleting destructor'(unsigned int)
+    // DEVIATION(unparsed): public: void * __thiscall CString::`vector deleting destructor'(unsigned int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void * FID_conflict__vector_deleting_destructor_(byte param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if ((param_1 & 2) == 0) {
+    // DEVIATION(unparsed): thunk_FUN_00453ba0();
+    // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
+      // DEVIATION(unparsed): operator_delete(in_ECX);
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): _eh_vector_destructor_iterator_(in_ECX,0x40,*(int *)((int)in_ECX + -4),thunk_FUN_00453ba0);
+    // DEVIATION(unparsed): operator_delete((void *)((int)in_ECX + -4));
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return in_ECX;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005a95b0 @ 0x005A95B0
 // Size: 57 bytes

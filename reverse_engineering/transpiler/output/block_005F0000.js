@@ -374,23 +374,20 @@ export function FUN_005f05f0(param_1) {
 // Function: lockptr @ 0x005F0620
 // Size: 28 bytes
 // ============================================================
-export function lockptr_005F0620() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // protected: struct _CRT_CRITICAL_SECTION * __thiscall ios::lockptr(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // _CRT_CRITICAL_SECTION * __thiscall ios::lockptr(ios *this)
-  // 
-  // {
-  // return (_CRT_CRITICAL_SECTION *)(this + 0x38);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): protected: struct _CRT_CRITICAL_SECTION * __thiscall ios::lockptr(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): _CRT_CRITICAL_SECTION * __thiscall ios::lockptr(ios *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return (_CRT_CRITICAL_SECTION *)(this + 0x38);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f0640 @ 0x005F0640
 // Size: 54 bytes
@@ -413,23 +410,20 @@ export function FUN_005f0640(in_ECX) {
 // Function: ~CDataBoundProperty @ 0x005F0676
 // Size: 22 bytes
 // ============================================================
-export function _CDataBoundProperty_005F0676() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall CDataBoundProperty::~CDataBoundProperty(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CDataBoundProperty::~CDataBoundProperty(CDataBoundProperty *this)
-  // 
-  // {
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall CDataBoundProperty::~CDataBoundProperty(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CDataBoundProperty::~CDataBoundProperty(CDataBoundProperty *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f068c @ 0x005F068C
 // Size: 33 bytes
@@ -575,31 +569,28 @@ export function FUN_005f07b3(in_ECX) {
 // Function: length @ 0x005F07F9
 // Size: 53 bytes
 // ============================================================
-export function length_005F07F9() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: virtual int __thiscall pDNameNode::length(void)const 
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall pDNameNode::length(pDNameNode *this)
-  // 
-  // {
-  // int iVar1;
-  // 
-  // if (*(int *)(this + 8) == 0) {
-  // iVar1 = 0;
-  // }
-  // else {
-  // iVar1 = FUN_005f0e50();
-  // }
-  // return iVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: virtual int __thiscall pDNameNode::length(void)const 
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall pDNameNode::length(pDNameNode *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (*(int *)(this + 8) == 0) {
+    // DEVIATION(unparsed): iVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): iVar1 = FUN_005f0e50();
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return iVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f0833 @ 0x005F0833
 // Size: 90 bytes
@@ -946,28 +937,25 @@ export function FUN_005f0e90(in_ECX) {
 // Function: `scalar_deleting_destructor' @ 0x005F0EB0
 // Size: 57 bytes
 // ============================================================
-export function _scalar_deleting_destructor__005F0EB0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: void * __thiscall CDataBoundProperty::`scalar deleting destructor'(unsigned int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void * __thiscall
-  // CDataBoundProperty::_scalar_deleting_destructor_(CDataBoundProperty *this,uint param_1)
-  // 
-  // {
-  // ~CDataBoundProperty(this);
-  // if ((param_1 & 1) != 0) {
-  // operator_delete(this);
-  // }
-  // return this;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: void * __thiscall CDataBoundProperty::`scalar deleting destructor'(unsigned int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void * __thiscall
+// DEVIATION(unparsed): CDataBoundProperty::_scalar_deleting_destructor_(CDataBoundProperty *this,uint param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): ~CDataBoundProperty(this);
+  // DEVIATION(unparsed): if ((param_1 & 1) != 0) {
+    // DEVIATION(unparsed): operator_delete(this);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return this;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f0ef0 @ 0x005F0EF0
 // Size: 21 bytes
@@ -1180,25 +1168,22 @@ export function FUN_005f11f6(in_ECX, param_1) {
 // Function: Enable @ 0x005F1221
 // Size: 43 bytes
 // ============================================================
-export function Enable_005F1221() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: virtual void __thiscall CTestCmdUI::Enable(int)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __thiscall CTestCmdUI::Enable(CTestCmdUI *this,int param_1)
-  // 
-  // {
-  // *(int *)(this + 0xc) = param_1;
-  // *(undefined4 *)(this + 8) = 0;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: virtual void __thiscall CTestCmdUI::Enable(int)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __thiscall CTestCmdUI::Enable(CTestCmdUI *this,int param_1)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(int *)(this + 0xc) = param_1;
+  // DEVIATION(unparsed): *(undefined4 *)(this + 8) = 0;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f124c @ 0x005F124C
 // Size: 195 bytes
@@ -1793,23 +1778,20 @@ export function FUN_005f1a40(in_ECX, param_1, param_2, param_3) {
 // Function: IsTracking @ 0x005F1B50
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005F1B50() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0xac);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0xac);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: __onexit @ 0x005F1B80
 // Size: 181 bytes
@@ -2149,27 +2131,24 @@ void _UnwindNestedFrames(EHRegistrationNode *param_1,EHExceptionRecord *param_2)
 // Function: ___CxxFrameHandler @ 0x005F1E90
 // Size: 60 bytes
 // ============================================================
-export function ___CxxFrameHandler_005F1E90() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // ___CxxFrameHandler
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // undefined4
-  // ___CxxFrameHandler(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
-  // 
-  // {
-  // undefined4 uVar1;
-  // 
-  // uVar1 = ___InternalCxxFrameHandler(param_1,param_2,param_3,param_4);
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): ___CxxFrameHandler
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): ___CxxFrameHandler(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): uVar1 = ___InternalCxxFrameHandler(param_1,param_2,param_3,param_4);
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: ___CxxLongjmpUnwind@4 @ 0x005F1ED0
 // Size: 49 bytes
@@ -2717,41 +2696,38 @@ void * __cdecl operator_new(uint param_1)
 // Function: `eh_vector_destructor_iterator' @ 0x005F2490
 // Size: 148 bytes
 // ============================================================
-export function _eh_vector_destructor_iterator__005F2490() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* WARNING: Removing unreachable block (ram,0x005f250e) */
-  // /* Library Function - Single Match
-  // void __stdcall `eh vector destructor iterator'(void *,unsigned int,int,void (__thiscall*)(void
-  // *))
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void _eh_vector_destructor_iterator_
-  // (void *param_1,uint param_2,int param_3,_func_void_void_ptr *param_4)
-  // 
-  // {
-  // void *unaff_EDI;
-  // undefined4 *unaff_FS_OFFSET;
-  // undefined4 uStack_14;
-  // undefined1 *puStack_10;
-  // undefined *puStack_c;
-  // undefined4 local_8;
-  // 
-  // puStack_c = &DAT_0061d790;
-  // puStack_10 = &LAB_005f9298;
-  // uStack_14 = *unaff_FS_OFFSET;
-  // *unaff_FS_OFFSET = &uStack_14;
-  // local_8 = 0;
-  // while (param_3 = param_3 + -1, -1 < param_3) {
-  // (*param_4)(unaff_EDI);
-  // }
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* WARNING: Removing unreachable block (ram,0x005f250e) */
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): void __stdcall `eh vector destructor iterator'(void *,unsigned int,int,void (__thiscall*)(void
+   // DEVIATION(unparsed): *))
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void _eh_vector_destructor_iterator_
+               // DEVIATION(unparsed): (void *param_1,uint param_2,int param_3,_func_void_void_ptr *param_4)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *unaff_EDI;
+  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): undefined4 uStack_14;
+  // DEVIATION(unparsed): undefined1 *puStack_10;
+  // DEVIATION(unparsed): undefined *puStack_c;
+  // DEVIATION(unparsed): undefined4 local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puStack_c = &DAT_0061d790;
+  // DEVIATION(unparsed): puStack_10 = &LAB_005f9298;
+  // DEVIATION(unparsed): uStack_14 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_14;
+  // DEVIATION(unparsed): local_8 = 0;
+  // DEVIATION(unparsed): while (param_3 = param_3 + -1, -1 < param_3) {
+    // DEVIATION(unparsed): (*param_4)(unaff_EDI);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: __ArrayUnwind @ 0x005F2540
 // Size: 108 bytes
@@ -2814,43 +2790,40 @@ undefined4 FID_conflict_ArrayUnwindFilter(undefined4 *param_1)
 // Function: `eh_vector_constructor_iterator' @ 0x005F2620
 // Size: 152 bytes
 // ============================================================
-export function _eh_vector_constructor_iterator__005F2620() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* WARNING: Removing unreachable block (ram,0x005f26a2) */
-  // /* Library Function - Single Match
-  // void __stdcall `eh vector constructor iterator'(void *,unsigned int,int,void (__thiscall*)(void
-  // *),void (__thiscall*)(void *))
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void _eh_vector_constructor_iterator_
-  // (void *param_1,uint param_2,int param_3,_func_void_void_ptr *param_4,
-  // _func_void_void_ptr *param_5)
-  // 
-  // {
-  // void *unaff_EDI;
-  // undefined4 *unaff_FS_OFFSET;
-  // int local_20;
-  // undefined4 uStack_14;
-  // undefined1 *puStack_10;
-  // undefined *puStack_c;
-  // undefined4 local_8;
-  // 
-  // puStack_c = &DAT_0061d7b0;
-  // puStack_10 = &LAB_005f9298;
-  // uStack_14 = *unaff_FS_OFFSET;
-  // *unaff_FS_OFFSET = &uStack_14;
-  // local_8 = 0;
-  // for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-  // (*param_4)(unaff_EDI);
-  // }
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* WARNING: Removing unreachable block (ram,0x005f26a2) */
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): void __stdcall `eh vector constructor iterator'(void *,unsigned int,int,void (__thiscall*)(void
+   // DEVIATION(unparsed): *),void (__thiscall*)(void *))
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void _eh_vector_constructor_iterator_
+               // DEVIATION(unparsed): (void *param_1,uint param_2,int param_3,_func_void_void_ptr *param_4,
+               // DEVIATION(unparsed): _func_void_void_ptr *param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): void *unaff_EDI;
+  // DEVIATION(unparsed): undefined4 *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): int local_20;
+  // DEVIATION(unparsed): undefined4 uStack_14;
+  // DEVIATION(unparsed): undefined1 *puStack_10;
+  // DEVIATION(unparsed): undefined *puStack_c;
+  // DEVIATION(unparsed): undefined4 local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puStack_c = &DAT_0061d7b0;
+  // DEVIATION(unparsed): puStack_10 = &LAB_005f9298;
+  // DEVIATION(unparsed): uStack_14 = *unaff_FS_OFFSET;
+  // DEVIATION(unparsed): *unaff_FS_OFFSET = &uStack_14;
+  // DEVIATION(unparsed): local_8 = 0;
+  // DEVIATION(unparsed): for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
+    // DEVIATION(unparsed): (*param_4)(unaff_EDI);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f26e0 @ 0x005F26E0
 // Size: 22 bytes
@@ -5332,33 +5305,30 @@ export function _calloc_005F4860(_Count, _Size) {
 // Function: __calloc_dbg @ 0x005F4890
 // Size: 110 bytes
 // ============================================================
-export function __calloc_dbg_005F4890() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // __calloc_dbg
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // undefined1 *
-  // __calloc_dbg(int param_1,int param_2,undefined4 param_3,undefined4 param_4,undefined4 param_5)
-  // 
-  // {
-  // undefined1 *puVar1;
-  // undefined1 *local_10;
-  // 
-  // puVar1 = (undefined1 *)__malloc_dbg(param_2 * param_1,param_3,param_4,param_5);
-  // if (puVar1 != (undefined1 *)0x0) {
-  // for (local_10 = puVar1; local_10 < puVar1 + param_2 * param_1; local_10 = local_10 + 1) {
-  // *local_10 = 0;
-  // }
-  // }
-  // return puVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): __calloc_dbg
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined1 *
+// DEVIATION(unparsed): __calloc_dbg(int param_1,int param_2,undefined4 param_3,undefined4 param_4,undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined1 *puVar1;
+  // DEVIATION(unparsed): undefined1 *local_10;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): puVar1 = (undefined1 *)__malloc_dbg(param_2 * param_1,param_3,param_4,param_5);
+  // DEVIATION(unparsed): if (puVar1 != (undefined1 *)0x0) {
+    // DEVIATION(unparsed): for (local_10 = puVar1; local_10 < puVar1 + param_2 * param_1; local_10 = local_10 + 1) {
+      // DEVIATION(unparsed): *local_10 = 0;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return puVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FID_conflict:__expand @ 0x005F4900
 // Size: 38 bytes
@@ -5385,231 +5355,225 @@ export function FID_conflict___expand_005F4900(_Memory, _NewSize) {
 // Function: __realloc_dbg @ 0x005F4930
 // Size: 55 bytes
 // ============================================================
-export function __realloc_dbg_005F4930() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // __realloc_dbg
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // undefined4
-  // __realloc_dbg(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // undefined4 uVar1;
-  // 
-  // uVar1 = realloc_help(param_1,param_2,param_3,param_4,param_5,1);
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): __realloc_dbg
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): __realloc_dbg(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+             // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): uVar1 = realloc_help(param_1,param_2,param_3,param_4,param_5,1);
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: realloc_help @ 0x005F4970
 // Size: 1409 bytes
 // ============================================================
-export function realloc_help_005F4970() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // _realloc_help
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int * __cdecl
-  // realloc_help(int param_1,uint param_2,uint param_3,int param_4,int param_5,int param_6)
-  // 
-  // {
-  // code *pcVar1;
-  // int *piVar2;
-  // int iVar3;
-  // int *piVar4;
-  // int iVar5;
-  // bool bVar6;
-  // int *local_10;
-  // 
-  // if (param_1 == 0) {
-  // piVar2 = (int *)__malloc_dbg(param_2,param_3,param_4,param_5);
-  // }
-  // else if ((param_6 == 0) || (param_2 != 0)) {
-  // if ((((byte)DAT_00639f70 & 4) != 0) &&
-  // ((iVar3 = __CrtCheckMemory(), iVar3 == 0 &&
-  // (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x239,0,"_CrtCheckMemory()"), iVar3 == 1)))) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // iVar3 = DAT_00639f74;
-  // if (DAT_00639f74 == DAT_00639f78) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // iVar5 = (*(code *)PTR_FUN_0063a42c)(2,param_1,param_2,param_3,DAT_00639f74,param_4,param_5);
-  // if (iVar5 == 0) {
-  // if (param_4 == 0) {
-  // iVar3 = __CrtDbgReport(0,0,0,0,&DAT_0061dc40,"Client hook re-allocation failure.\n");
-  // if (iVar3 == 1) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // }
-  // else {
-  // iVar3 = __CrtDbgReport(0,0,0,0,"Client hook re-allocation failure at file %hs line %d.\n",
-  // param_4,param_5);
-  // if (iVar3 == 1) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // }
-  // piVar2 = (int *)0x0;
-  // }
-  // else if (param_2 < 0xffffffdc) {
-  // if ((((param_3 != 1) && ((param_3 & 0xffff) != 4)) && ((param_3 & 0xffff) != 2)) &&
-  // (iVar5 = __CrtDbgReport(1,0,0,0,&DAT_0061dc40,
-  // "Error: memory allocation: bad memory block type.\n"), iVar5 == 1))
-  // {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // iVar5 = __CrtIsValidHeapPointer(param_1);
-  // if ((iVar5 == 0) &&
-  // (iVar5 = __CrtDbgReport(2,"dbgheap.c",0x261,0,"_CrtIsValidHeapPointer(pUserData)"),
-  // iVar5 == 1)) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // piVar4 = (int *)(param_1 + -0x20);
-  // bVar6 = *(int *)(param_1 + -0xc) == 3;
-  // if (bVar6) {
-  // if (((*(int *)(param_1 + -0x14) != -0x1234544) || (*(int *)(param_1 + -8) != 0)) &&
-  // (iVar5 = __CrtDbgReport(2,"dbgheap.c",0x26b,0,
-  // "pOldBlock->nLine == IGNORE_LINE && pOldBlock->lRequest == IGNORE_REQ"
-  // ), iVar5 == 1)) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // }
-  // else {
-  // if (((*(uint *)(param_1 + -0xc) & 0xffff) == 2) && ((param_3 & 0xffff) == 1)) {
-  // param_3 = 2;
-  // }
-  // if ((((*(uint *)(param_1 + -0xc) ^ param_3 & 0xffff) & 0xffff) != 0) &&
-  // (iVar5 = __CrtDbgReport(2,"dbgheap.c",0x272,0,
-  // "_BLOCK_TYPE(pOldBlock->nBlockUse)==_BLOCK_TYPE(nBlockUse)"),
-  // iVar5 == 1)) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // }
-  // if (param_6 == 0) {
-  // local_10 = (int *)__expand_base(piVar4,param_2 + 0x24);
-  // if (local_10 == (int *)0x0) {
-  // return (int *)0x0;
-  // }
-  // }
-  // else {
-  // local_10 = (int *)__realloc_base(piVar4,param_2 + 0x24);
-  // if (local_10 == (int *)0x0) {
-  // return (int *)0x0;
-  // }
-  // }
-  // DAT_00639f74 = DAT_00639f74 + 1;
-  // if (!bVar6) {
-  // DAT_006e5474 = DAT_006e5474 - local_10[4];
-  // DAT_006e5474 = DAT_006e5474 + param_2;
-  // DAT_006e547c = DAT_006e547c - local_10[4];
-  // DAT_006e547c = DAT_006e547c + param_2;
-  // if (DAT_006e5480 < DAT_006e547c) {
-  // DAT_006e5480 = DAT_006e547c;
-  // }
-  // }
-  // piVar2 = local_10 + 8;
-  // if ((uint)local_10[4] < param_2) {
-  // _memset((void *)(local_10[4] + (int)piVar2),(uint)DAT_00639f84,param_2 - local_10[4]);
-  // }
-  // _memset((void *)(param_2 + (int)piVar2),(uint)DAT_00639f7c,4);
-  // if (!bVar6) {
-  // local_10[2] = param_4;
-  // local_10[3] = param_5;
-  // local_10[6] = iVar3;
-  // }
-  // local_10[4] = param_2;
-  // if (((param_6 == 0) && (local_10 != piVar4)) &&
-  // (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2a8,0,
-  // "fRealloc || (!fRealloc && pNewBlock == pOldBlock)"), iVar3 == 1))
-  // {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // if ((local_10 != piVar4) && (!bVar6)) {
-  // if (*local_10 == 0) {
-  // if ((DAT_006e5470 != piVar4) &&
-  // (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2b7,0,"_pLastBlock == pOldBlock"), iVar3 == 1))
-  // {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // DAT_006e5470 = (int *)local_10[1];
-  // }
-  // else {
-  // *(int *)(*local_10 + 4) = local_10[1];
-  // }
-  // if (local_10[1] == 0) {
-  // if ((DAT_006e5478 != piVar4) &&
-  // (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2c2,0,"_pFirstBlock == pOldBlock"), iVar3 == 1)
-  // ) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // DAT_006e5478 = (int *)*local_10;
-  // }
-  // else {
-  // *(int *)local_10[1] = *local_10;
-  // }
-  // if (DAT_006e5478 == (int *)0x0) {
-  // DAT_006e5470 = local_10;
-  // }
-  // else {
-  // DAT_006e5478[1] = (int)local_10;
-  // }
-  // *local_10 = (int)DAT_006e5478;
-  // local_10[1] = 0;
-  // DAT_006e5478 = local_10;
-  // }
-  // }
-  // else {
-  // iVar3 = __CrtDbgReport(1,0,0,0,"Allocation too large or negative: %u bytes.\n",param_2);
-  // if (iVar3 == 1) {
-  // pcVar1 = (code *)swi(3);
-  // piVar4 = (int *)(*pcVar1)();
-  // return piVar4;
-  // }
-  // piVar2 = (int *)0x0;
-  // }
-  // }
-  // else {
-  // __free_dbg(param_1,param_3);
-  // piVar2 = (int *)0x0;
-  // }
-  // return piVar2;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): _realloc_help
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int * __cdecl
+// DEVIATION(unparsed): realloc_help(int param_1,uint param_2,uint param_3,int param_4,int param_5,int param_6)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): code *pcVar1;
+  // DEVIATION(unparsed): int *piVar2;
+  // DEVIATION(unparsed): int iVar3;
+  // DEVIATION(unparsed): int *piVar4;
+  // DEVIATION(unparsed): int iVar5;
+  // DEVIATION(unparsed): bool bVar6;
+  // DEVIATION(unparsed): int *local_10;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (param_1 == 0) {
+    // DEVIATION(unparsed): piVar2 = (int *)__malloc_dbg(param_2,param_3,param_4,param_5);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if ((param_6 == 0) || (param_2 != 0)) {
+    // DEVIATION(unparsed): if ((((byte)DAT_00639f70 & 4) != 0) &&
+       // DEVIATION(unparsed): ((iVar3 = __CrtCheckMemory(), iVar3 == 0 &&
+        // DEVIATION(unparsed): (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x239,0,"_CrtCheckMemory()"), iVar3 == 1)))) {
+      // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+      // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+      // DEVIATION(unparsed): return piVar4;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): iVar3 = DAT_00639f74;
+    // DEVIATION(unparsed): if (DAT_00639f74 == DAT_00639f78) {
+      // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+      // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+      // DEVIATION(unparsed): return piVar4;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): iVar5 = (*(code *)PTR_FUN_0063a42c)(2,param_1,param_2,param_3,DAT_00639f74,param_4,param_5);
+    // DEVIATION(unparsed): if (iVar5 == 0) {
+      // DEVIATION(unparsed): if (param_4 == 0) {
+        // DEVIATION(unparsed): iVar3 = __CrtDbgReport(0,0,0,0,&DAT_0061dc40,"Client hook re-allocation failure.\n");
+        // DEVIATION(unparsed): if (iVar3 == 1) {
+          // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+          // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+          // DEVIATION(unparsed): return piVar4;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): iVar3 = __CrtDbgReport(0,0,0,0,"Client hook re-allocation failure at file %hs line %d.\n",
+                               // DEVIATION(unparsed): param_4,param_5);
+        // DEVIATION(unparsed): if (iVar3 == 1) {
+          // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+          // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+          // DEVIATION(unparsed): return piVar4;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): piVar2 = (int *)0x0;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (param_2 < 0xffffffdc) {
+      // DEVIATION(unparsed): if ((((param_3 != 1) && ((param_3 & 0xffff) != 4)) && ((param_3 & 0xffff) != 2)) &&
+         // DEVIATION(unparsed): (iVar5 = __CrtDbgReport(1,0,0,0,&DAT_0061dc40,
+                                 // DEVIATION(unparsed): "Error: memory allocation: bad memory block type.\n"), iVar5 == 1))
+      // DEVIATION(unparsed): {
+        // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+        // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+        // DEVIATION(unparsed): return piVar4;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): iVar5 = __CrtIsValidHeapPointer(param_1);
+      // DEVIATION(unparsed): if ((iVar5 == 0) &&
+         // DEVIATION(unparsed): (iVar5 = __CrtDbgReport(2,"dbgheap.c",0x261,0,"_CrtIsValidHeapPointer(pUserData)"),
+         // DEVIATION(unparsed): iVar5 == 1)) {
+        // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+        // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+        // DEVIATION(unparsed): return piVar4;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): piVar4 = (int *)(param_1 + -0x20);
+      // DEVIATION(unparsed): bVar6 = *(int *)(param_1 + -0xc) == 3;
+      // DEVIATION(unparsed): if (bVar6) {
+        // DEVIATION(unparsed): if (((*(int *)(param_1 + -0x14) != -0x1234544) || (*(int *)(param_1 + -8) != 0)) &&
+           // DEVIATION(unparsed): (iVar5 = __CrtDbgReport(2,"dbgheap.c",0x26b,0,
+                                   // DEVIATION(unparsed): "pOldBlock->nLine == IGNORE_LINE && pOldBlock->lRequest == IGNORE_REQ"
+                                  // DEVIATION(unparsed): ), iVar5 == 1)) {
+          // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+          // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+          // DEVIATION(unparsed): return piVar4;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): if (((*(uint *)(param_1 + -0xc) & 0xffff) == 2) && ((param_3 & 0xffff) == 1)) {
+          // DEVIATION(unparsed): param_3 = 2;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): if ((((*(uint *)(param_1 + -0xc) ^ param_3 & 0xffff) & 0xffff) != 0) &&
+           // DEVIATION(unparsed): (iVar5 = __CrtDbgReport(2,"dbgheap.c",0x272,0,
+                                   // DEVIATION(unparsed): "_BLOCK_TYPE(pOldBlock->nBlockUse)==_BLOCK_TYPE(nBlockUse)"),
+           // DEVIATION(unparsed): iVar5 == 1)) {
+          // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+          // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+          // DEVIATION(unparsed): return piVar4;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if (param_6 == 0) {
+        // DEVIATION(unparsed): local_10 = (int *)__expand_base(piVar4,param_2 + 0x24);
+        // DEVIATION(unparsed): if (local_10 == (int *)0x0) {
+          // DEVIATION(unparsed): return (int *)0x0;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): local_10 = (int *)__realloc_base(piVar4,param_2 + 0x24);
+        // DEVIATION(unparsed): if (local_10 == (int *)0x0) {
+          // DEVIATION(unparsed): return (int *)0x0;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): DAT_00639f74 = DAT_00639f74 + 1;
+      // DEVIATION(unparsed): if (!bVar6) {
+        // DEVIATION(unparsed): DAT_006e5474 = DAT_006e5474 - local_10[4];
+        // DEVIATION(unparsed): DAT_006e5474 = DAT_006e5474 + param_2;
+        // DEVIATION(unparsed): DAT_006e547c = DAT_006e547c - local_10[4];
+        // DEVIATION(unparsed): DAT_006e547c = DAT_006e547c + param_2;
+        // DEVIATION(unparsed): if (DAT_006e5480 < DAT_006e547c) {
+          // DEVIATION(unparsed): DAT_006e5480 = DAT_006e547c;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): piVar2 = local_10 + 8;
+      // DEVIATION(unparsed): if ((uint)local_10[4] < param_2) {
+        // DEVIATION(unparsed): _memset((void *)(local_10[4] + (int)piVar2),(uint)DAT_00639f84,param_2 - local_10[4]);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): _memset((void *)(param_2 + (int)piVar2),(uint)DAT_00639f7c,4);
+      // DEVIATION(unparsed): if (!bVar6) {
+        // DEVIATION(unparsed): local_10[2] = param_4;
+        // DEVIATION(unparsed): local_10[3] = param_5;
+        // DEVIATION(unparsed): local_10[6] = iVar3;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): local_10[4] = param_2;
+      // DEVIATION(unparsed): if (((param_6 == 0) && (local_10 != piVar4)) &&
+         // DEVIATION(unparsed): (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2a8,0,
+                                 // DEVIATION(unparsed): "fRealloc || (!fRealloc && pNewBlock == pOldBlock)"), iVar3 == 1))
+      // DEVIATION(unparsed): {
+        // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+        // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+        // DEVIATION(unparsed): return piVar4;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((local_10 != piVar4) && (!bVar6)) {
+        // DEVIATION(unparsed): if (*local_10 == 0) {
+          // DEVIATION(unparsed): if ((DAT_006e5470 != piVar4) &&
+             // DEVIATION(unparsed): (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2b7,0,"_pLastBlock == pOldBlock"), iVar3 == 1))
+          // DEVIATION(unparsed): {
+            // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+            // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+            // DEVIATION(unparsed): return piVar4;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): DAT_006e5470 = (int *)local_10[1];
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else {
+          // DEVIATION(unparsed): *(int *)(*local_10 + 4) = local_10[1];
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): if (local_10[1] == 0) {
+          // DEVIATION(unparsed): if ((DAT_006e5478 != piVar4) &&
+             // DEVIATION(unparsed): (iVar3 = __CrtDbgReport(2,"dbgheap.c",0x2c2,0,"_pFirstBlock == pOldBlock"), iVar3 == 1)
+             // DEVIATION(unparsed): ) {
+            // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+            // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+            // DEVIATION(unparsed): return piVar4;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): DAT_006e5478 = (int *)*local_10;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else {
+          // DEVIATION(unparsed): *(int *)local_10[1] = *local_10;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): if (DAT_006e5478 == (int *)0x0) {
+          // DEVIATION(unparsed): DAT_006e5470 = local_10;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else {
+          // DEVIATION(unparsed): DAT_006e5478[1] = (int)local_10;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): *local_10 = (int)DAT_006e5478;
+        // DEVIATION(unparsed): local_10[1] = 0;
+        // DEVIATION(unparsed): DAT_006e5478 = local_10;
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): iVar3 = __CrtDbgReport(1,0,0,0,"Allocation too large or negative: %u bytes.\n",param_2);
+      // DEVIATION(unparsed): if (iVar3 == 1) {
+        // DEVIATION(unparsed): pcVar1 = (code *)swi(3);
+        // DEVIATION(unparsed): piVar4 = (int *)(*pcVar1)();
+        // DEVIATION(unparsed): return piVar4;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): piVar2 = (int *)0x0;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): __free_dbg(param_1,param_3);
+    // DEVIATION(unparsed): piVar2 = (int *)0x0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return piVar2;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FID_conflict:__expand @ 0x005F4F00
 // Size: 38 bytes
@@ -5636,28 +5600,25 @@ export function FID_conflict___expand_005F4F00(_Memory, _NewSize) {
 // Function: __expand_dbg @ 0x005F4F30
 // Size: 55 bytes
 // ============================================================
-export function __expand_dbg_005F4F30() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // __expand_dbg
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // undefined4
-  // __expand_dbg(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // undefined4 uVar1;
-  // 
-  // uVar1 = realloc_help(param_1,param_2,param_3,param_4,param_5,0);
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): __expand_dbg
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): __expand_dbg(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): uVar1 = realloc_help(param_1,param_2,param_3,param_4,param_5,0);
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f4f70 @ 0x005F4F70
 // Size: 25 bytes
@@ -6271,44 +6232,41 @@ export function __CrtIsValidHeapPointer_005F5B60(param_1) {
 // Function: __CrtIsMemoryBlock @ 0x005F5C30
 // Size: 255 bytes
 // ============================================================
-export function __CrtIsMemoryBlock_005F5C30() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // __CrtIsMemoryBlock
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // undefined4
-  // __CrtIsMemoryBlock(int param_1,int param_2,undefined4 *param_3,undefined4 *param_4,
-  // undefined4 *param_5)
-  // 
-  // {
-  // int iVar1;
-  // 
-  // iVar1 = __CrtIsValidHeapPointer(param_1);
-  // if (((iVar1 != 0) &&
-  // (((((*(uint *)(param_1 + -0xc) & 0xffff) == 4 || (*(int *)(param_1 + -0xc) == 1)) ||
-  // ((*(uint *)(param_1 + -0xc) & 0xffff) == 2)) || (*(int *)(param_1 + -0xc) == 3)))) &&
-  // (((iVar1 = __CrtIsValidPointer(param_1,param_2,1), iVar1 != 0 &&
-  // (*(int *)(param_1 + -0x10) == param_2)) && (*(int *)(param_1 + -8) <= DAT_00639f74)))) {
-  // if (param_3 != (undefined4 *)0x0) {
-  // *param_3 = *(undefined4 *)(param_1 + -8);
-  // }
-  // if (param_4 != (undefined4 *)0x0) {
-  // *param_4 = *(undefined4 *)(param_1 + -0x18);
-  // }
-  // if (param_5 != (undefined4 *)0x0) {
-  // *param_5 = *(undefined4 *)(param_1 + -0x14);
-  // }
-  // return 1;
-  // }
-  // return 0;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): __CrtIsMemoryBlock
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): __CrtIsMemoryBlock(int param_1,int param_2,undefined4 *param_3,undefined4 *param_4,
+                  // DEVIATION(unparsed): undefined4 *param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): iVar1 = __CrtIsValidHeapPointer(param_1);
+  // DEVIATION(unparsed): if (((iVar1 != 0) &&
+      // DEVIATION(unparsed): (((((*(uint *)(param_1 + -0xc) & 0xffff) == 4 || (*(int *)(param_1 + -0xc) == 1)) ||
+        // DEVIATION(unparsed): ((*(uint *)(param_1 + -0xc) & 0xffff) == 2)) || (*(int *)(param_1 + -0xc) == 3)))) &&
+     // DEVIATION(unparsed): (((iVar1 = __CrtIsValidPointer(param_1,param_2,1), iVar1 != 0 &&
+       // DEVIATION(unparsed): (*(int *)(param_1 + -0x10) == param_2)) && (*(int *)(param_1 + -8) <= DAT_00639f74)))) {
+    // DEVIATION(unparsed): if (param_3 != (undefined4 *)0x0) {
+      // DEVIATION(unparsed): *param_3 = *(undefined4 *)(param_1 + -8);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (param_4 != (undefined4 *)0x0) {
+      // DEVIATION(unparsed): *param_4 = *(undefined4 *)(param_1 + -0x18);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (param_5 != (undefined4 *)0x0) {
+      // DEVIATION(unparsed): *param_5 = *(undefined4 *)(param_1 + -0x14);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): return 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return 0;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005f5d30 @ 0x005F5D30
 // Size: 38 bytes
@@ -8988,102 +8946,99 @@ export function FUN_005f9355(param_1) {
 // Function: ___crtLCMapStringW @ 0x005F9370
 // Size: 760 bytes
 // ============================================================
-export function ___crtLCMapStringW_005F9370() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // ___crtLCMapStringW
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __cdecl
-  // ___crtLCMapStringW(LPCWSTR _LocaleName,DWORD _DWMapFlag,LPCWSTR _LpSrcStr,int _CchSrc,
-  // LPWSTR _LpDestStr,int _CchDest)
-  // 
-  // {
-  // int in_EAX;
-  // int iVar1;
-  // LPCSTR lpMultiByteStr;
-  // int iVar2;
-  // UINT in_stack_0000001c;
-  // size_t local_14;
-  // char *local_10;
-  // 
-  // if (DAT_0063a068 == 0) {
-  // in_EAX = LCMapStringW(0,0x100,L"",1,(LPWSTR)0x0,0);
-  // if (in_EAX == 0) {
-  // in_EAX = LCMapStringA(0,0x100,"",1,(LPSTR)0x0,0);
-  // if (in_EAX == 0) {
-  // return 0;
-  // }
-  // DAT_0063a068 = 2;
-  // }
-  // else {
-  // DAT_0063a068 = 1;
-  // }
-  // }
-  // if (0 < _CchSrc) {
-  // in_EAX = wcsncnt(_LpSrcStr,_CchSrc);
-  // _CchSrc = in_EAX;
-  // }
-  // if (DAT_0063a068 == 1) {
-  // iVar1 = LCMapStringW((LCID)_LocaleName,_DWMapFlag,_LpSrcStr,_CchSrc,_LpDestStr,_CchDest);
-  // return iVar1;
-  // }
-  // if (DAT_0063a068 != 2) {
-  // return in_EAX;
-  // }
-  // local_10 = (char *)0x0;
-  // if (in_stack_0000001c == 0) {
-  // in_stack_0000001c = DAT_0063a088;
-  // }
-  // iVar1 = WideCharToMultiByte(in_stack_0000001c,0x220,_LpSrcStr,_CchSrc,(LPSTR)0x0,0,(LPCSTR)0x0,
-  // (LPBOOL)0x0);
-  // if (iVar1 == 0) {
-  // return 0;
-  // }
-  // lpMultiByteStr = (LPCSTR)__malloc_dbg(iVar1,2,"aw_map.c",0xcc);
-  // if (lpMultiByteStr == (LPCSTR)0x0) {
-  // return 0;
-  // }
-  // iVar2 = WideCharToMultiByte(in_stack_0000001c,0x220,_LpSrcStr,_CchSrc,lpMultiByteStr,iVar1,
-  // (LPCSTR)0x0,(LPBOOL)0x0);
-  // if ((((iVar2 == 0) ||
-  // (local_14 = LCMapStringA((LCID)_LocaleName,_DWMapFlag,lpMultiByteStr,iVar1,(LPSTR)0x0,0),
-  // local_14 == 0)) ||
-  // (local_10 = (char *)__malloc_dbg(local_14,2,"aw_map.c",0xdb), local_10 == (char *)0x0)) ||
-  // (iVar1 = LCMapStringA((LCID)_LocaleName,_DWMapFlag,lpMultiByteStr,iVar1,local_10,local_14),
-  // iVar1 == 0)) {
-  // LAB_005f9640:
-  // __free_dbg(lpMultiByteStr,2);
-  // __free_dbg(local_10,2);
-  // local_14 = 0;
-  // }
-  // else {
-  // if ((_DWMapFlag & 0x400) == 0) {
-  // if (_CchDest == 0) {
-  // local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,(LPWSTR)0x0,0);
-  // }
-  // else {
-  // local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,_LpDestStr,_CchDest);
-  // }
-  // if (local_14 == 0) LAB_005f9640_helper(); return;
-  // }
-  // else if (_CchDest != 0) {
-  // if ((int)local_14 <= _CchDest) {
-  // _CchDest = local_14;
-  // }
-  // _strncpy((char *)_LpDestStr,local_10,_CchDest);
-  // }
-  // __free_dbg(lpMultiByteStr,2);
-  // __free_dbg(local_10,2);
-  // }
-  // return local_14;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): ___crtLCMapStringW
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __cdecl
+// DEVIATION(unparsed): ___crtLCMapStringW(LPCWSTR _LocaleName,DWORD _DWMapFlag,LPCWSTR _LpSrcStr,int _CchSrc,
+                  // DEVIATION(unparsed): LPWSTR _LpDestStr,int _CchDest)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int in_EAX;
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): LPCSTR lpMultiByteStr;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): UINT in_stack_0000001c;
+  // DEVIATION(unparsed): size_t local_14;
+  // DEVIATION(unparsed): char *local_10;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (DAT_0063a068 == 0) {
+    // DEVIATION(unparsed): in_EAX = LCMapStringW(0,0x100,L"",1,(LPWSTR)0x0,0);
+    // DEVIATION(unparsed): if (in_EAX == 0) {
+      // DEVIATION(unparsed): in_EAX = LCMapStringA(0,0x100,"",1,(LPSTR)0x0,0);
+      // DEVIATION(unparsed): if (in_EAX == 0) {
+        // DEVIATION(unparsed): return 0;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): DAT_0063a068 = 2;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): DAT_0063a068 = 1;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (0 < _CchSrc) {
+    // DEVIATION(unparsed): in_EAX = wcsncnt(_LpSrcStr,_CchSrc);
+    // DEVIATION(unparsed): _CchSrc = in_EAX;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (DAT_0063a068 == 1) {
+    // DEVIATION(unparsed): iVar1 = LCMapStringW((LCID)_LocaleName,_DWMapFlag,_LpSrcStr,_CchSrc,_LpDestStr,_CchDest);
+    // DEVIATION(unparsed): return iVar1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (DAT_0063a068 != 2) {
+    // DEVIATION(unparsed): return in_EAX;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): local_10 = (char *)0x0;
+  // DEVIATION(unparsed): if (in_stack_0000001c == 0) {
+    // DEVIATION(unparsed): in_stack_0000001c = DAT_0063a088;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): iVar1 = WideCharToMultiByte(in_stack_0000001c,0x220,_LpSrcStr,_CchSrc,(LPSTR)0x0,0,(LPCSTR)0x0,
+                              // DEVIATION(unparsed): (LPBOOL)0x0);
+  // DEVIATION(unparsed): if (iVar1 == 0) {
+    // DEVIATION(unparsed): return 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): lpMultiByteStr = (LPCSTR)__malloc_dbg(iVar1,2,"aw_map.c",0xcc);
+  // DEVIATION(unparsed): if (lpMultiByteStr == (LPCSTR)0x0) {
+    // DEVIATION(unparsed): return 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): iVar2 = WideCharToMultiByte(in_stack_0000001c,0x220,_LpSrcStr,_CchSrc,lpMultiByteStr,iVar1,
+                              // DEVIATION(unparsed): (LPCSTR)0x0,(LPBOOL)0x0);
+  // DEVIATION(unparsed): if ((((iVar2 == 0) ||
+       // DEVIATION(unparsed): (local_14 = LCMapStringA((LCID)_LocaleName,_DWMapFlag,lpMultiByteStr,iVar1,(LPSTR)0x0,0),
+       // DEVIATION(unparsed): local_14 == 0)) ||
+      // DEVIATION(unparsed): (local_10 = (char *)__malloc_dbg(local_14,2,"aw_map.c",0xdb), local_10 == (char *)0x0)) ||
+     // DEVIATION(unparsed): (iVar1 = LCMapStringA((LCID)_LocaleName,_DWMapFlag,lpMultiByteStr,iVar1,local_10,local_14),
+     // DEVIATION(unparsed): iVar1 == 0)) {
+// DEVIATION(unparsed): LAB_005f9640:
+    // DEVIATION(unparsed): __free_dbg(lpMultiByteStr,2);
+    // DEVIATION(unparsed): __free_dbg(local_10,2);
+    // DEVIATION(unparsed): local_14 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): if ((_DWMapFlag & 0x400) == 0) {
+      // DEVIATION(unparsed): if (_CchDest == 0) {
+        // DEVIATION(unparsed): local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,(LPWSTR)0x0,0);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): local_14 = MultiByteToWideChar(in_stack_0000001c,1,local_10,local_14,_LpDestStr,_CchDest);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if (local_14 == 0) LAB_005f9640_helper(); return;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (_CchDest != 0) {
+      // DEVIATION(unparsed): if ((int)local_14 <= _CchDest) {
+        // DEVIATION(unparsed): _CchDest = local_14;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): _strncpy((char *)_LpDestStr,local_10,_CchDest);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): __free_dbg(lpMultiByteStr,2);
+    // DEVIATION(unparsed): __free_dbg(local_10,2);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return local_14;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: wcsncnt @ 0x005F9670
 // Size: 108 bytes
@@ -9116,105 +9071,102 @@ export function wcsncnt_005F9670(param_1, param_2) {
 // Function: ___crtLCMapStringA @ 0x005F96E0
 // Size: 791 bytes
 // ============================================================
-export function ___crtLCMapStringA_005F96E0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // ___crtLCMapStringA
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __cdecl
-  // ___crtLCMapStringA(_locale_t _Plocinfo,LPCWSTR _LocaleName,DWORD _DwMapFlag,LPCSTR _LpSrcStr,
-  // int _CchSrc,LPSTR _LpDestStr,int _CchDest,int _Code_page,BOOL _BError)
-  // 
-  // {
-  // LPCSTR in_EAX;
-  // int iVar1;
-  // LPCWSTR lpWideCharStr;
-  // int iVar2;
-  // int local_14;
-  // LPCWSTR local_c;
-  // 
-  // if (DAT_0063a06c == 0) {
-  // in_EAX = (LPCSTR)LCMapStringA(0,0x100,"",1,(LPSTR)0x0,0);
-  // if (in_EAX == (LPCSTR)0x0) {
-  // in_EAX = (LPCSTR)LCMapStringW(0,0x100,L"",1,(LPWSTR)0x0,0);
-  // if (in_EAX == (LPCSTR)0x0) {
-  // return 0;
-  // }
-  // DAT_0063a06c = 1;
-  // }
-  // else {
-  // DAT_0063a06c = 2;
-  // }
-  // }
-  // if (0 < (int)_LpSrcStr) {
-  // in_EAX = (LPCSTR)_strncnt((char *)_DwMapFlag,(size_t)_LpSrcStr);
-  // _LpSrcStr = in_EAX;
-  // }
-  // if (DAT_0063a06c == 2) {
-  // iVar1 = LCMapStringA((LCID)_Plocinfo,(DWORD)_LocaleName,(LPCSTR)_DwMapFlag,(int)_LpSrcStr,
-  // (LPSTR)_CchSrc,(int)_LpDestStr);
-  // return iVar1;
-  // }
-  // if (DAT_0063a06c != 1) {
-  // return (int)in_EAX;
-  // }
-  // local_c = (LPCWSTR)0x0;
-  // if (_CchDest == 0) {
-  // _CchDest = DAT_0063a088;
-  // }
-  // iVar1 = MultiByteToWideChar(_CchDest,9,(LPCSTR)_DwMapFlag,(int)_LpSrcStr,(LPWSTR)0x0,0);
-  // if (iVar1 == 0) {
-  // return 0;
-  // }
-  // lpWideCharStr = (LPCWSTR)__malloc_dbg(iVar1 * 2,2,"aw_map.c",0x16d);
-  // if (lpWideCharStr == (LPCWSTR)0x0) {
-  // return 0;
-  // }
-  // iVar2 = MultiByteToWideChar(_CchDest,1,(LPCSTR)_DwMapFlag,(int)_LpSrcStr,lpWideCharStr,iVar1);
-  // if ((iVar2 != 0) &&
-  // (local_14 = LCMapStringW((LCID)_Plocinfo,(DWORD)_LocaleName,lpWideCharStr,iVar1,(LPWSTR)0x0,0),
-  // local_14 != 0)) {
-  // if (((uint)_LocaleName & 0x400) == 0) {
-  // local_c = (LPCWSTR)__malloc_dbg(local_14 * 2,2,"aw_map.c",0x191);
-  // if ((local_c == (LPCWSTR)0x0) ||
-  // (iVar1 = LCMapStringW((LCID)_Plocinfo,(DWORD)_LocaleName,lpWideCharStr,iVar1,local_c,
-  // local_14), iVar1 == 0)) LAB_005f99cf_helper(); return;
-  // if (_LpDestStr == (LPSTR)0x0) {
-  // local_14 = WideCharToMultiByte(_CchDest,0x220,local_c,local_14,(LPSTR)0x0,0,(LPCSTR)0x0,
-  // (LPBOOL)0x0);
-  // iVar1 = local_14;
-  // }
-  // else {
-  // local_14 = WideCharToMultiByte(_CchDest,0x220,local_c,local_14,(LPSTR)_CchSrc,
-  // (int)_LpDestStr,(LPCSTR)0x0,(LPBOOL)0x0);
-  // iVar1 = local_14;
-  // }
-  // }
-  // else {
-  // if (_LpDestStr == (LPSTR)0x0) LAB_005f99ab_helper(); return;
-  // if ((int)_LpDestStr < local_14) LAB_005f99cf_helper(); return;
-  // iVar1 = LCMapStringW((LCID)_Plocinfo,(DWORD)_LocaleName,lpWideCharStr,iVar1,(LPWSTR)_CchSrc,
-  // (int)_LpDestStr);
-  // }
-  // if (iVar1 != 0) {
-  // LAB_005f99ab:
-  // __free_dbg(lpWideCharStr,2);
-  // __free_dbg(local_c,2);
-  // return local_14;
-  // }
-  // }
-  // LAB_005f99cf:
-  // __free_dbg(lpWideCharStr,2);
-  // __free_dbg(local_c,2);
-  // return 0;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): ___crtLCMapStringA
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __cdecl
+// DEVIATION(unparsed): ___crtLCMapStringA(_locale_t _Plocinfo,LPCWSTR _LocaleName,DWORD _DwMapFlag,LPCSTR _LpSrcStr,
+                  // DEVIATION(unparsed): int _CchSrc,LPSTR _LpDestStr,int _CchDest,int _Code_page,BOOL _BError)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): LPCSTR in_EAX;
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): LPCWSTR lpWideCharStr;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): int local_14;
+  // DEVIATION(unparsed): LPCWSTR local_c;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (DAT_0063a06c == 0) {
+    // DEVIATION(unparsed): in_EAX = (LPCSTR)LCMapStringA(0,0x100,"",1,(LPSTR)0x0,0);
+    // DEVIATION(unparsed): if (in_EAX == (LPCSTR)0x0) {
+      // DEVIATION(unparsed): in_EAX = (LPCSTR)LCMapStringW(0,0x100,L"",1,(LPWSTR)0x0,0);
+      // DEVIATION(unparsed): if (in_EAX == (LPCSTR)0x0) {
+        // DEVIATION(unparsed): return 0;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): DAT_0063a06c = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): DAT_0063a06c = 2;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (0 < (int)_LpSrcStr) {
+    // DEVIATION(unparsed): in_EAX = (LPCSTR)_strncnt((char *)_DwMapFlag,(size_t)_LpSrcStr);
+    // DEVIATION(unparsed): _LpSrcStr = in_EAX;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (DAT_0063a06c == 2) {
+    // DEVIATION(unparsed): iVar1 = LCMapStringA((LCID)_Plocinfo,(DWORD)_LocaleName,(LPCSTR)_DwMapFlag,(int)_LpSrcStr,
+                         // DEVIATION(unparsed): (LPSTR)_CchSrc,(int)_LpDestStr);
+    // DEVIATION(unparsed): return iVar1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (DAT_0063a06c != 1) {
+    // DEVIATION(unparsed): return (int)in_EAX;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): local_c = (LPCWSTR)0x0;
+  // DEVIATION(unparsed): if (_CchDest == 0) {
+    // DEVIATION(unparsed): _CchDest = DAT_0063a088;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): iVar1 = MultiByteToWideChar(_CchDest,9,(LPCSTR)_DwMapFlag,(int)_LpSrcStr,(LPWSTR)0x0,0);
+  // DEVIATION(unparsed): if (iVar1 == 0) {
+    // DEVIATION(unparsed): return 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): lpWideCharStr = (LPCWSTR)__malloc_dbg(iVar1 * 2,2,"aw_map.c",0x16d);
+  // DEVIATION(unparsed): if (lpWideCharStr == (LPCWSTR)0x0) {
+    // DEVIATION(unparsed): return 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): iVar2 = MultiByteToWideChar(_CchDest,1,(LPCSTR)_DwMapFlag,(int)_LpSrcStr,lpWideCharStr,iVar1);
+  // DEVIATION(unparsed): if ((iVar2 != 0) &&
+     // DEVIATION(unparsed): (local_14 = LCMapStringW((LCID)_Plocinfo,(DWORD)_LocaleName,lpWideCharStr,iVar1,(LPWSTR)0x0,0),
+     // DEVIATION(unparsed): local_14 != 0)) {
+    // DEVIATION(unparsed): if (((uint)_LocaleName & 0x400) == 0) {
+      // DEVIATION(unparsed): local_c = (LPCWSTR)__malloc_dbg(local_14 * 2,2,"aw_map.c",0x191);
+      // DEVIATION(unparsed): if ((local_c == (LPCWSTR)0x0) ||
+         // DEVIATION(unparsed): (iVar1 = LCMapStringW((LCID)_Plocinfo,(DWORD)_LocaleName,lpWideCharStr,iVar1,local_c,
+                               // DEVIATION(unparsed): local_14), iVar1 == 0)) LAB_005f99cf_helper(); return;
+      // DEVIATION(unparsed): if (_LpDestStr == (LPSTR)0x0) {
+        // DEVIATION(unparsed): local_14 = WideCharToMultiByte(_CchDest,0x220,local_c,local_14,(LPSTR)0x0,0,(LPCSTR)0x0,
+                                       // DEVIATION(unparsed): (LPBOOL)0x0);
+        // DEVIATION(unparsed): iVar1 = local_14;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): local_14 = WideCharToMultiByte(_CchDest,0x220,local_c,local_14,(LPSTR)_CchSrc,
+                                       // DEVIATION(unparsed): (int)_LpDestStr,(LPCSTR)0x0,(LPBOOL)0x0);
+        // DEVIATION(unparsed): iVar1 = local_14;
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): if (_LpDestStr == (LPSTR)0x0) LAB_005f99ab_helper(); return;
+      // DEVIATION(unparsed): if ((int)_LpDestStr < local_14) LAB_005f99cf_helper(); return;
+      // DEVIATION(unparsed): iVar1 = LCMapStringW((LCID)_Plocinfo,(DWORD)_LocaleName,lpWideCharStr,iVar1,(LPWSTR)_CchSrc,
+                           // DEVIATION(unparsed): (int)_LpDestStr);
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (iVar1 != 0) {
+// DEVIATION(unparsed): LAB_005f99ab:
+      // DEVIATION(unparsed): __free_dbg(lpWideCharStr,2);
+      // DEVIATION(unparsed): __free_dbg(local_c,2);
+      // DEVIATION(unparsed): return local_14;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+// DEVIATION(unparsed): LAB_005f99cf:
+  // DEVIATION(unparsed): __free_dbg(lpWideCharStr,2);
+  // DEVIATION(unparsed): __free_dbg(local_c,2);
+  // DEVIATION(unparsed): return 0;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: _strncnt @ 0x005F9A00
 // Size: 100 bytes
@@ -12876,36 +12828,33 @@ export function __cftof_g_005FEA20(unaff_EDI, param_1, param_2, param_3) {
 // Function: __cfltcvt @ 0x005FEA60
 // Size: 119 bytes
 // ============================================================
-export function __cfltcvt_005FEA60() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // __cfltcvt
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // errno_t __cdecl
-  // __cfltcvt(double *arg,char *buffer,size_t sizeInBytes,int format,int precision,int caps)
-  // 
-  // {
-  // errno_t eVar1;
-  // int unaff_EDI;
-  // 
-  // if ((sizeInBytes == 0x65) || (sizeInBytes == 0x45)) {
-  // eVar1 = __cftoe(arg,buffer,format,precision,unaff_EDI);
-  // }
-  // else if (sizeInBytes == 0x66) {
-  // eVar1 = __cftof(arg,buffer,format,unaff_EDI);
-  // }
-  // else {
-  // eVar1 = __cftog(arg,buffer,format,precision);
-  // }
-  // return eVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): __cfltcvt
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): errno_t __cdecl
+// DEVIATION(unparsed): __cfltcvt(double *arg,char *buffer,size_t sizeInBytes,int format,int precision,int caps)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): errno_t eVar1;
+  // DEVIATION(unparsed): int unaff_EDI;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if ((sizeInBytes == 0x65) || (sizeInBytes == 0x45)) {
+    // DEVIATION(unparsed): eVar1 = __cftoe(arg,buffer,format,precision,unaff_EDI);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if (sizeInBytes == 0x66) {
+    // DEVIATION(unparsed): eVar1 = __cftof(arg,buffer,format,unaff_EDI);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): eVar1 = __cftog(arg,buffer,format,precision);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return eVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: __shift @ 0x005FEAE0
 // Size: 54 bytes
@@ -13394,170 +13343,167 @@ export function __setargv_005FF110() {
 // Function: parse_cmdline @ 0x005FF1E0
 // Size: 958 bytes
 // ============================================================
-export function parse_cmdline_005FF1E0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // _parse_cmdline
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // void __cdecl
-  // parse_cmdline(byte *param_1,undefined4 *param_2,byte *param_3,int *param_4,int *param_5)
-  // 
-  // {
-  // byte *pbVar1;
-  // byte bVar2;
-  // bool bVar3;
-  // bool bVar4;
-  // uint local_14;
-  // byte *local_8;
-  // 
-  // *param_5 = 0;
-  // *param_4 = 1;
-  // local_8 = param_1;
-  // if (param_2 != (undefined4 *)0x0) {
-  // *param_2 = param_3;
-  // param_2 = param_2 + 1;
-  // }
-  // if (*param_1 == 0x22) {
-  // while ((pbVar1 = local_8 + 1, *pbVar1 != 0x22 && (*pbVar1 != 0))) {
-  // if ((((&DAT_0063afa1)[*pbVar1] & 4) != 0) && (*param_5 = *param_5 + 1, param_3 != (byte *)0x0)
-  // ) {
-  // *param_3 = *pbVar1;
-  // param_3 = param_3 + 1;
-  // pbVar1 = local_8 + 2;
-  // }
-  // local_8 = pbVar1;
-  // *param_5 = *param_5 + 1;
-  // if (param_3 != (byte *)0x0) {
-  // *param_3 = *local_8;
-  // param_3 = param_3 + 1;
-  // }
-  // }
-  // *param_5 = *param_5 + 1;
-  // if (param_3 != (byte *)0x0) {
-  // *param_3 = 0;
-  // param_3 = param_3 + 1;
-  // }
-  // if (*pbVar1 == 0x22) {
-  // pbVar1 = local_8 + 2;
-  // }
-  // }
-  // else {
-  // do {
-  // *param_5 = *param_5 + 1;
-  // if (param_3 != (byte *)0x0) {
-  // *param_3 = *local_8;
-  // param_3 = param_3 + 1;
-  // }
-  // bVar2 = *local_8;
-  // pbVar1 = local_8 + 1;
-  // if (((&DAT_0063afa1)[bVar2] & 4) != 0) {
-  // *param_5 = *param_5 + 1;
-  // if (param_3 != (byte *)0x0) {
-  // *param_3 = local_8[1];
-  // param_3 = param_3 + 1;
-  // }
-  // pbVar1 = local_8 + 2;
-  // }
-  // local_8 = pbVar1;
-  // } while (((bVar2 != 0x20) && (bVar2 != 0)) && (bVar2 != 9));
-  // if (bVar2 == 0) {
-  // pbVar1 = local_8 + -1;
-  // }
-  // else {
-  // pbVar1 = local_8;
-  // if (param_3 != (byte *)0x0) {
-  // param_3[-1] = 0;
-  // }
-  // }
-  // }
-  // local_8 = pbVar1;
-  // bVar3 = false;
-  // while( true ) {
-  // if (*local_8 != 0) {
-  // for (; (*local_8 == 0x20 || (*local_8 == 9)); local_8 = local_8 + 1) {
-  // }
-  // }
-  // if (*local_8 == 0) break;
-  // if (param_2 != (undefined4 *)0x0) {
-  // *param_2 = param_3;
-  // param_2 = param_2 + 1;
-  // }
-  // *param_4 = *param_4 + 1;
-  // while( true ) {
-  // bVar4 = true;
-  // local_14 = 0;
-  // for (; *local_8 == 0x5c; local_8 = local_8 + 1) {
-  // local_14 = local_14 + 1;
-  // }
-  // if (*local_8 == 0x22) {
-  // if ((local_14 & 1) == 0) {
-  // if (bVar3) {
-  // bVar4 = local_8[1] == 0x22;
-  // if (bVar4) {
-  // local_8 = local_8 + 1;
-  // }
-  // }
-  // else {
-  // bVar4 = false;
-  // }
-  // if (bVar3) {
-  // bVar3 = false;
-  // }
-  // else {
-  // bVar3 = true;
-  // }
-  // }
-  // local_14 = local_14 >> 1;
-  // }
-  // while (local_14 != 0) {
-  // if (param_3 != (byte *)0x0) {
-  // *param_3 = 0x5c;
-  // param_3 = param_3 + 1;
-  // }
-  // *param_5 = *param_5 + 1;
-  // local_14 = local_14 - 1;
-  // }
-  // if ((*local_8 == 0) || ((!bVar3 && ((*local_8 == 0x20 || (*local_8 == 9)))))) break;
-  // if (bVar4) {
-  // if (param_3 == (byte *)0x0) {
-  // if (((&DAT_0063afa1)[*local_8] & 4) != 0) {
-  // local_8 = local_8 + 1;
-  // *param_5 = *param_5 + 1;
-  // }
-  // }
-  // else {
-  // if (((&DAT_0063afa1)[*local_8] & 4) != 0) {
-  // *param_3 = *local_8;
-  // local_8 = local_8 + 1;
-  // param_3 = param_3 + 1;
-  // *param_5 = *param_5 + 1;
-  // }
-  // *param_3 = *local_8;
-  // param_3 = param_3 + 1;
-  // }
-  // *param_5 = *param_5 + 1;
-  // }
-  // local_8 = local_8 + 1;
-  // }
-  // if (param_3 != (byte *)0x0) {
-  // *param_3 = 0;
-  // param_3 = param_3 + 1;
-  // }
-  // *param_5 = *param_5 + 1;
-  // }
-  // if (param_2 != (undefined4 *)0x0) {
-  // *param_2 = 0;
-  // }
-  // *param_4 = *param_4 + 1;
-  // return;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): _parse_cmdline
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): void __cdecl
+// DEVIATION(unparsed): parse_cmdline(byte *param_1,undefined4 *param_2,byte *param_3,int *param_4,int *param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): byte *pbVar1;
+  // DEVIATION(unparsed): byte bVar2;
+  // DEVIATION(unparsed): bool bVar3;
+  // DEVIATION(unparsed): bool bVar4;
+  // DEVIATION(unparsed): uint local_14;
+  // DEVIATION(unparsed): byte *local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): *param_5 = 0;
+  // DEVIATION(unparsed): *param_4 = 1;
+  // DEVIATION(unparsed): local_8 = param_1;
+  // DEVIATION(unparsed): if (param_2 != (undefined4 *)0x0) {
+    // DEVIATION(unparsed): *param_2 = param_3;
+    // DEVIATION(unparsed): param_2 = param_2 + 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (*param_1 == 0x22) {
+    // DEVIATION(unparsed): while ((pbVar1 = local_8 + 1, *pbVar1 != 0x22 && (*pbVar1 != 0))) {
+      // DEVIATION(unparsed): if ((((&DAT_0063afa1)[*pbVar1] & 4) != 0) && (*param_5 = *param_5 + 1, param_3 != (byte *)0x0)
+         // DEVIATION(unparsed): ) {
+        // DEVIATION(unparsed): *param_3 = *pbVar1;
+        // DEVIATION(unparsed): param_3 = param_3 + 1;
+        // DEVIATION(unparsed): pbVar1 = local_8 + 2;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): local_8 = pbVar1;
+      // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+      // DEVIATION(unparsed): if (param_3 != (byte *)0x0) {
+        // DEVIATION(unparsed): *param_3 = *local_8;
+        // DEVIATION(unparsed): param_3 = param_3 + 1;
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+    // DEVIATION(unparsed): if (param_3 != (byte *)0x0) {
+      // DEVIATION(unparsed): *param_3 = 0;
+      // DEVIATION(unparsed): param_3 = param_3 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (*pbVar1 == 0x22) {
+      // DEVIATION(unparsed): pbVar1 = local_8 + 2;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): do {
+      // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+      // DEVIATION(unparsed): if (param_3 != (byte *)0x0) {
+        // DEVIATION(unparsed): *param_3 = *local_8;
+        // DEVIATION(unparsed): param_3 = param_3 + 1;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): bVar2 = *local_8;
+      // DEVIATION(unparsed): pbVar1 = local_8 + 1;
+      // DEVIATION(unparsed): if (((&DAT_0063afa1)[bVar2] & 4) != 0) {
+        // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+        // DEVIATION(unparsed): if (param_3 != (byte *)0x0) {
+          // DEVIATION(unparsed): *param_3 = local_8[1];
+          // DEVIATION(unparsed): param_3 = param_3 + 1;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): pbVar1 = local_8 + 2;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): local_8 = pbVar1;
+    // DEVIATION(unparsed): } while (((bVar2 != 0x20) && (bVar2 != 0)) && (bVar2 != 9));
+    // DEVIATION(unparsed): if (bVar2 == 0) {
+      // DEVIATION(unparsed): pbVar1 = local_8 + -1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): pbVar1 = local_8;
+      // DEVIATION(unparsed): if (param_3 != (byte *)0x0) {
+        // DEVIATION(unparsed): param_3[-1] = 0;
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): local_8 = pbVar1;
+  // DEVIATION(unparsed): bVar3 = false;
+  // DEVIATION(unparsed): while( true ) {
+    // DEVIATION(unparsed): if (*local_8 != 0) {
+      // DEVIATION(unparsed): for (; (*local_8 == 0x20 || (*local_8 == 9)); local_8 = local_8 + 1) {
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (*local_8 == 0) break;
+    // DEVIATION(unparsed): if (param_2 != (undefined4 *)0x0) {
+      // DEVIATION(unparsed): *param_2 = param_3;
+      // DEVIATION(unparsed): param_2 = param_2 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): *param_4 = *param_4 + 1;
+    // DEVIATION(unparsed): while( true ) {
+      // DEVIATION(unparsed): bVar4 = true;
+      // DEVIATION(unparsed): local_14 = 0;
+      // DEVIATION(unparsed): for (; *local_8 == 0x5c; local_8 = local_8 + 1) {
+        // DEVIATION(unparsed): local_14 = local_14 + 1;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if (*local_8 == 0x22) {
+        // DEVIATION(unparsed): if ((local_14 & 1) == 0) {
+          // DEVIATION(unparsed): if (bVar3) {
+            // DEVIATION(unparsed): bVar4 = local_8[1] == 0x22;
+            // DEVIATION(unparsed): if (bVar4) {
+              // DEVIATION(unparsed): local_8 = local_8 + 1;
+            // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else {
+            // DEVIATION(unparsed): bVar4 = false;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): if (bVar3) {
+            // DEVIATION(unparsed): bVar3 = false;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): else {
+            // DEVIATION(unparsed): bVar3 = true;
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): local_14 = local_14 >> 1;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): while (local_14 != 0) {
+        // DEVIATION(unparsed): if (param_3 != (byte *)0x0) {
+          // DEVIATION(unparsed): *param_3 = 0x5c;
+          // DEVIATION(unparsed): param_3 = param_3 + 1;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+        // DEVIATION(unparsed): local_14 = local_14 - 1;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((*local_8 == 0) || ((!bVar3 && ((*local_8 == 0x20 || (*local_8 == 9)))))) break;
+      // DEVIATION(unparsed): if (bVar4) {
+        // DEVIATION(unparsed): if (param_3 == (byte *)0x0) {
+          // DEVIATION(unparsed): if (((&DAT_0063afa1)[*local_8] & 4) != 0) {
+            // DEVIATION(unparsed): local_8 = local_8 + 1;
+            // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+          // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): else {
+          // DEVIATION(unparsed): if (((&DAT_0063afa1)[*local_8] & 4) != 0) {
+            // DEVIATION(unparsed): *param_3 = *local_8;
+            // DEVIATION(unparsed): local_8 = local_8 + 1;
+            // DEVIATION(unparsed): param_3 = param_3 + 1;
+            // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+          // DEVIATION(unparsed): }
+          // DEVIATION(unparsed): *param_3 = *local_8;
+          // DEVIATION(unparsed): param_3 = param_3 + 1;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): local_8 = local_8 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): if (param_3 != (byte *)0x0) {
+      // DEVIATION(unparsed): *param_3 = 0;
+      // DEVIATION(unparsed): param_3 = param_3 + 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): *param_5 = *param_5 + 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_2 != (undefined4 *)0x0) {
+    // DEVIATION(unparsed): *param_2 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): *param_4 = *param_4 + 1;
+  // DEVIATION(unparsed): return;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: ___crtGetEnvironmentStringsW @ 0x005FF5A0
 // Size: 689 bytes

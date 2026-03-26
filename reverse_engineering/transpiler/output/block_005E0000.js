@@ -3357,42 +3357,39 @@ export function FUN_005e4cc8(param_1, param_2, param_3, param_4, param_5, param_
 // Function: FUN_005e4d60 @ 0x005E4D60
 // Size: 250 bytes
 // ============================================================
-export function FUN_005e4d60_005E4D60() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005e4d60(undefined4 param_1,byte param_2,undefined4 param_3,undefined4 param_4,
-  // undefined4 param_5,undefined4 param_6,undefined4 param_7)
-  // 
-  // {
-  // int iVar1;
-  // undefined4 uVar2;
-  // int iVar3;
-  // short local_18;
-  // 
-  // iVar1 = FUN_005dce4f(0x6000);
-  // if (iVar1 == 0) {
-  // debug_log(s_Error__Cannot_allocate_decompres_00639084);
-  // uVar2 = 0;
-  // }
-  // else {
-  // iVar3 = FUN_005dcdf9(iVar1);
-  // for (local_18 = 0; local_18 < 0x1000; local_18 = local_18 + 1) {
-  // *(undefined2 *)(iVar3 + local_18 * 2) = 0xffff;
-  // *(ushort *)(iVar3 + 0x2000 + local_18 * 2) = (ushort)param_2 + local_18;
-  // *(undefined2 *)(iVar3 + 0x4000 + local_18 * 2) = 1;
-  // }
-  // FUN_005e53f3(param_1,param_7,iVar3,param_5,param_6,param_4,param_3);
-  // FUN_005dce29(iVar1);
-  // FUN_005dce96(iVar1);
-  // uVar2 = 1;
-  // }
-  // return uVar2;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005e4d60(undefined4 param_1,byte param_2,undefined4 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5,undefined4 param_6,undefined4 param_7)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): int iVar1;
+  // DEVIATION(unparsed): undefined4 uVar2;
+  // DEVIATION(unparsed): int iVar3;
+  // DEVIATION(unparsed): short local_18;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): iVar1 = FUN_005dce4f(0x6000);
+  // DEVIATION(unparsed): if (iVar1 == 0) {
+    // DEVIATION(unparsed): debug_log(s_Error__Cannot_allocate_decompres_00639084);
+    // DEVIATION(unparsed): uVar2 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): iVar3 = FUN_005dcdf9(iVar1);
+    // DEVIATION(unparsed): for (local_18 = 0; local_18 < 0x1000; local_18 = local_18 + 1) {
+      // DEVIATION(unparsed): *(undefined2 *)(iVar3 + local_18 * 2) = 0xffff;
+      // DEVIATION(unparsed): *(ushort *)(iVar3 + 0x2000 + local_18 * 2) = (ushort)param_2 + local_18;
+      // DEVIATION(unparsed): *(undefined2 *)(iVar3 + 0x4000 + local_18 * 2) = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): FUN_005e53f3(param_1,param_7,iVar3,param_5,param_6,param_4,param_3);
+    // DEVIATION(unparsed): FUN_005dce29(iVar1);
+    // DEVIATION(unparsed): FUN_005dce96(iVar1);
+    // DEVIATION(unparsed): uVar2 = 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar2;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005e4e60 @ 0x005E4E60
 // Size: 152 bytes
@@ -5926,27 +5923,24 @@ export function FUN_005e8216(in_ECX, param_1, param_2, param_3, param_4) {
 // Function: CReObject @ 0x005E82FB
 // Size: 64 bytes
 // ============================================================
-export function CReObject_005E82FB() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall CReObject::CReObject(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // CReObject * __thiscall CReObject::CReObject(CReObject *this)
-  // 
-  // {
-  // *(undefined4 *)this = 0;
-  // *(undefined4 *)(this + 0x20) = 0;
-  // *(undefined4 *)(this + 0x24) = 0;
-  // *(undefined4 *)(this + 0x28) = 0;
-  // return this;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall CReObject::CReObject(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): CReObject * __thiscall CReObject::CReObject(CReObject *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): *(undefined4 *)this = 0;
+  // DEVIATION(unparsed): *(undefined4 *)(this + 0x20) = 0;
+  // DEVIATION(unparsed): *(undefined4 *)(this + 0x24) = 0;
+  // DEVIATION(unparsed): *(undefined4 *)(this + 0x28) = 0;
+  // DEVIATION(unparsed): return this;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005e833b @ 0x005E833B
 // Size: 141 bytes
@@ -6995,86 +6989,83 @@ export function FUN_005e9944(param_1, param_2) {
 // Function: FUN_005e997c @ 0x005E997C
 // Size: 598 bytes
 // ============================================================
-export function FUN_005e997c_005E997C() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005e997c(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
-  // byte param_7)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int iVar2;
-  // int iVar3;
-  // HGDIOBJ h;
-  // size_t cchText;
-  // tagRECT *lprc;
-  // UINT format;
-  // HDC local_20;
-  // UINT local_1c;
-  // tagRECT local_18;
-  // undefined4 *local_8;
-  // 
-  // if (param_2 == 0) {
-  // debug_log(s_Error__NULL_font_in_MSDrawString_00639708);
-  // uVar1 = 0;
-  // }
-  // else {
-  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-  // iVar2 = gdi_847F(param_2);
-  // iVar2 = param_5 + iVar2;
-  // iVar3 = measure_text_858E(param_2,param_3);
-  // SetRect(&local_18,param_4,param_5,param_4 + iVar3,iVar2);
-  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_20);
-  // if (iVar2 == 0) {
-  // h = SelectObject(local_20,(HGDIOBJ)*local_8);
-  // SetBkMode(local_20,1);
-  // SetTextColor(local_20,(uint)CONCAT12(DAT_006e5226,CONCAT11(DAT_006e5225,DAT_006e5224)));
-  // iVar2 = thunk_FUN_00407fc0(&local_18);
-  // iVar2 = iVar2 / 2;
-  // iVar3 = thunk_FUN_00407f90(&local_18);
-  // iVar3 = iVar3 / 2;
-  // OffsetRect(&local_18,-iVar3,-iVar2);
-  // if ((param_7 & 1) != 0) {
-  // OffsetRect(&local_18,iVar3,0);
-  // }
-  // if ((param_7 & 4) != 0) {
-  // OffsetRect(&local_18,0,iVar2);
-  // }
-  // if ((param_7 & 8) != 0) {
-  // OffsetRect(&local_18,0,-iVar2);
-  // }
-  // if ((param_7 & 2) != 0) {
-  // OffsetRect(&local_18,-iVar3,0);
-  // }
-  // local_1c = GetTextAlign(local_20);
-  // SetTextAlign(local_20,1);
-  // MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
-  // IntersectRect(&local_18,&local_18,param_6);
-  // format = 0;
-  // lprc = &local_18;
-  // cchText = _strlen(param_3);
-  // DrawTextA(local_20,param_3,cchText,lprc,format);
-  // SetTextAlign(local_20,local_1c);
-  // SelectObject(local_20,h);
-  // FUN_005dce29(param_2);
-  // (**(code **)(*param_1 + 0x68))(param_1,local_20);
-  // uVar1 = 1;
-  // }
-  // else if (iVar2 == -0x7789fe3e) {
-  // uVar1 = 0xffffffff;
-  // }
-  // else {
-  // debug_log(s_DrawString___GetDC_Error_0063972c);
-  // uVar1 = 0;
-  // }
-  // }
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005e997c(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
+            // DEVIATION(unparsed): byte param_7)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): int iVar3;
+  // DEVIATION(unparsed): HGDIOBJ h;
+  // DEVIATION(unparsed): size_t cchText;
+  // DEVIATION(unparsed): tagRECT *lprc;
+  // DEVIATION(unparsed): UINT format;
+  // DEVIATION(unparsed): HDC local_20;
+  // DEVIATION(unparsed): UINT local_1c;
+  // DEVIATION(unparsed): tagRECT local_18;
+  // DEVIATION(unparsed): undefined4 *local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (param_2 == 0) {
+    // DEVIATION(unparsed): debug_log(s_Error__NULL_font_in_MSDrawString_00639708);
+    // DEVIATION(unparsed): uVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    // DEVIATION(unparsed): iVar2 = gdi_847F(param_2);
+    // DEVIATION(unparsed): iVar2 = param_5 + iVar2;
+    // DEVIATION(unparsed): iVar3 = measure_text_858E(param_2,param_3);
+    // DEVIATION(unparsed): SetRect(&local_18,param_4,param_5,param_4 + iVar3,iVar2);
+    // DEVIATION(unparsed): iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_20);
+    // DEVIATION(unparsed): if (iVar2 == 0) {
+      // DEVIATION(unparsed): h = SelectObject(local_20,(HGDIOBJ)*local_8);
+      // DEVIATION(unparsed): SetBkMode(local_20,1);
+      // DEVIATION(unparsed): SetTextColor(local_20,(uint)CONCAT12(DAT_006e5226,CONCAT11(DAT_006e5225,DAT_006e5224)));
+      // DEVIATION(unparsed): iVar2 = thunk_FUN_00407fc0(&local_18);
+      // DEVIATION(unparsed): iVar2 = iVar2 / 2;
+      // DEVIATION(unparsed): iVar3 = thunk_FUN_00407f90(&local_18);
+      // DEVIATION(unparsed): iVar3 = iVar3 / 2;
+      // DEVIATION(unparsed): OffsetRect(&local_18,-iVar3,-iVar2);
+      // DEVIATION(unparsed): if ((param_7 & 1) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,iVar3,0);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((param_7 & 4) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,0,iVar2);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((param_7 & 8) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,0,-iVar2);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((param_7 & 2) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,-iVar3,0);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): local_1c = GetTextAlign(local_20);
+      // DEVIATION(unparsed): SetTextAlign(local_20,1);
+      // DEVIATION(unparsed): MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
+      // DEVIATION(unparsed): IntersectRect(&local_18,&local_18,param_6);
+      // DEVIATION(unparsed): format = 0;
+      // DEVIATION(unparsed): lprc = &local_18;
+      // DEVIATION(unparsed): cchText = _strlen(param_3);
+      // DEVIATION(unparsed): DrawTextA(local_20,param_3,cchText,lprc,format);
+      // DEVIATION(unparsed): SetTextAlign(local_20,local_1c);
+      // DEVIATION(unparsed): SelectObject(local_20,h);
+      // DEVIATION(unparsed): FUN_005dce29(param_2);
+      // DEVIATION(unparsed): (**(code **)(*param_1 + 0x68))(param_1,local_20);
+      // DEVIATION(unparsed): uVar1 = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (iVar2 == -0x7789fe3e) {
+      // DEVIATION(unparsed): uVar1 = 0xffffffff;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): debug_log(s_DrawString___GetDC_Error_0063972c);
+      // DEVIATION(unparsed): uVar1 = 0;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005e9bd7 @ 0x005E9BD7
 // Size: 341 bytes
@@ -7237,259 +7228,247 @@ export function FUN_005e9e87(param_1, param_2, param_3, param_4, param_5) {
 // Function: FUN_005e9f8a @ 0x005E9F8A
 // Size: 590 bytes
 // ============================================================
-export function FUN_005e9f8a_005E9F8A() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005e9f8a(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
-  // byte param_7,undefined1 param_8,undefined1 param_9,undefined1 param_10)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int iVar2;
-  // int iVar3;
-  // HGDIOBJ h;
-  // size_t cchText;
-  // tagRECT *lprc;
-  // UINT format;
-  // HDC local_20;
-  // UINT local_1c;
-  // tagRECT local_18;
-  // undefined4 *local_8;
-  // 
-  // if (param_2 == 0) {
-  // debug_log(s_Error__NULL_font_in_MSDrawString_00639768);
-  // uVar1 = 0;
-  // }
-  // else {
-  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-  // iVar2 = gdi_847F(param_2);
-  // iVar2 = param_5 + iVar2;
-  // iVar3 = measure_text_858E(param_2,param_3);
-  // SetRect(&local_18,param_4,param_5,param_4 + iVar3,iVar2);
-  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_20);
-  // if (iVar2 == 0) {
-  // h = SelectObject(local_20,(HGDIOBJ)*local_8);
-  // SetBkMode(local_20,1);
-  // SetTextColor(local_20,(uint)CONCAT12(param_10,CONCAT11(param_9,param_8)));
-  // iVar2 = thunk_FUN_00407fc0(&local_18);
-  // iVar2 = iVar2 / 2;
-  // iVar3 = thunk_FUN_00407f90(&local_18);
-  // iVar3 = iVar3 / 2;
-  // OffsetRect(&local_18,-iVar3,-iVar2);
-  // if ((param_7 & 1) != 0) {
-  // OffsetRect(&local_18,iVar3,0);
-  // }
-  // if ((param_7 & 4) != 0) {
-  // OffsetRect(&local_18,0,iVar2);
-  // }
-  // if ((param_7 & 8) != 0) {
-  // OffsetRect(&local_18,0,-iVar2);
-  // }
-  // if ((param_7 & 2) != 0) {
-  // OffsetRect(&local_18,-iVar3,0);
-  // }
-  // local_1c = GetTextAlign(local_20);
-  // SetTextAlign(local_20,1);
-  // MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
-  // IntersectRect(&local_18,&local_18,param_6);
-  // format = 0;
-  // lprc = &local_18;
-  // cchText = _strlen(param_3);
-  // DrawTextA(local_20,param_3,cchText,lprc,format);
-  // SetTextAlign(local_20,local_1c);
-  // SelectObject(local_20,h);
-  // FUN_005dce29(param_2);
-  // (**(code **)(*param_1 + 0x68))(param_1,local_20);
-  // uVar1 = 1;
-  // }
-  // else if (iVar2 == -0x7789fe3e) {
-  // uVar1 = 0xffffffff;
-  // }
-  // else {
-  // debug_log(s_DrawString___GetDC_Error_0063978c);
-  // uVar1 = 0;
-  // }
-  // }
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005e9f8a(int *param_1,int param_2,char *param_3,int param_4,int param_5,RECT *param_6,
+            // DEVIATION(unparsed): byte param_7,undefined1 param_8,undefined1 param_9,undefined1 param_10)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): int iVar3;
+  // DEVIATION(unparsed): HGDIOBJ h;
+  // DEVIATION(unparsed): size_t cchText;
+  // DEVIATION(unparsed): tagRECT *lprc;
+  // DEVIATION(unparsed): UINT format;
+  // DEVIATION(unparsed): HDC local_20;
+  // DEVIATION(unparsed): UINT local_1c;
+  // DEVIATION(unparsed): tagRECT local_18;
+  // DEVIATION(unparsed): undefined4 *local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (param_2 == 0) {
+    // DEVIATION(unparsed): debug_log(s_Error__NULL_font_in_MSDrawString_00639768);
+    // DEVIATION(unparsed): uVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    // DEVIATION(unparsed): iVar2 = gdi_847F(param_2);
+    // DEVIATION(unparsed): iVar2 = param_5 + iVar2;
+    // DEVIATION(unparsed): iVar3 = measure_text_858E(param_2,param_3);
+    // DEVIATION(unparsed): SetRect(&local_18,param_4,param_5,param_4 + iVar3,iVar2);
+    // DEVIATION(unparsed): iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_20);
+    // DEVIATION(unparsed): if (iVar2 == 0) {
+      // DEVIATION(unparsed): h = SelectObject(local_20,(HGDIOBJ)*local_8);
+      // DEVIATION(unparsed): SetBkMode(local_20,1);
+      // DEVIATION(unparsed): SetTextColor(local_20,(uint)CONCAT12(param_10,CONCAT11(param_9,param_8)));
+      // DEVIATION(unparsed): iVar2 = thunk_FUN_00407fc0(&local_18);
+      // DEVIATION(unparsed): iVar2 = iVar2 / 2;
+      // DEVIATION(unparsed): iVar3 = thunk_FUN_00407f90(&local_18);
+      // DEVIATION(unparsed): iVar3 = iVar3 / 2;
+      // DEVIATION(unparsed): OffsetRect(&local_18,-iVar3,-iVar2);
+      // DEVIATION(unparsed): if ((param_7 & 1) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,iVar3,0);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((param_7 & 4) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,0,iVar2);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((param_7 & 8) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,0,-iVar2);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): if ((param_7 & 2) != 0) {
+        // DEVIATION(unparsed): OffsetRect(&local_18,-iVar3,0);
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): local_1c = GetTextAlign(local_20);
+      // DEVIATION(unparsed): SetTextAlign(local_20,1);
+      // DEVIATION(unparsed): MoveToEx(local_20,local_18.left,local_18.top,(LPPOINT)0x0);
+      // DEVIATION(unparsed): IntersectRect(&local_18,&local_18,param_6);
+      // DEVIATION(unparsed): format = 0;
+      // DEVIATION(unparsed): lprc = &local_18;
+      // DEVIATION(unparsed): cchText = _strlen(param_3);
+      // DEVIATION(unparsed): DrawTextA(local_20,param_3,cchText,lprc,format);
+      // DEVIATION(unparsed): SetTextAlign(local_20,local_1c);
+      // DEVIATION(unparsed): SelectObject(local_20,h);
+      // DEVIATION(unparsed): FUN_005dce29(param_2);
+      // DEVIATION(unparsed): (**(code **)(*param_1 + 0x68))(param_1,local_20);
+      // DEVIATION(unparsed): uVar1 = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (iVar2 == -0x7789fe3e) {
+      // DEVIATION(unparsed): uVar1 = 0xffffffff;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): debug_log(s_DrawString___GetDC_Error_0063978c);
+      // DEVIATION(unparsed): uVar1 = 0;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005ea1dd @ 0x005EA1DD
 // Size: 333 bytes
 // ============================================================
-export function FUN_005ea1dd_005EA1DD() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005ea1dd(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
-  // undefined1 param_7,undefined1 param_8)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int iVar2;
-  // HGDIOBJ h;
-  // size_t cchText;
-  // uint local_18;
-  // HDC local_c;
-  // undefined4 *local_8;
-  // 
-  // if (param_2 == 0) {
-  // uVar1 = 0;
-  // }
-  // else if (param_1 == (int *)0x0) {
-  // uVar1 = 0;
-  // }
-  // else {
-  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_c);
-  // if (iVar2 == 0) {
-  // h = SelectObject(local_c,(HGDIOBJ)*local_8);
-  // SetBkMode(local_c,1);
-  // SetTextColor(local_c,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
-  // local_18 = 0;
-  // if (param_5 == 0) {
-  // local_18 = 0x25;
-  // }
-  // else {
-  // if ((param_5 & 8) != 0) {
-  // local_18 = 8;
-  // }
-  // if ((param_5 & 2) != 0) {
-  // local_18 = local_18 | 2;
-  // }
-  // }
-  // cchText = _strlen(param_3);
-  // DrawTextA(local_c,param_3,cchText,param_4,local_18);
-  // SelectObject(local_c,h);
-  // FUN_005dce29(param_2);
-  // (**(code **)(*param_1 + 0x68))(param_1,local_c);
-  // uVar1 = 1;
-  // }
-  // else if (iVar2 == -0x7789fe3e) {
-  // uVar1 = 0xffffffff;
-  // }
-  // else {
-  // uVar1 = 0;
-  // }
-  // }
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005ea1dd(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
+            // DEVIATION(unparsed): undefined1 param_7,undefined1 param_8)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): HGDIOBJ h;
+  // DEVIATION(unparsed): size_t cchText;
+  // DEVIATION(unparsed): uint local_18;
+  // DEVIATION(unparsed): HDC local_c;
+  // DEVIATION(unparsed): undefined4 *local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (param_2 == 0) {
+    // DEVIATION(unparsed): uVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if (param_1 == (int *)0x0) {
+    // DEVIATION(unparsed): uVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    // DEVIATION(unparsed): iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_c);
+    // DEVIATION(unparsed): if (iVar2 == 0) {
+      // DEVIATION(unparsed): h = SelectObject(local_c,(HGDIOBJ)*local_8);
+      // DEVIATION(unparsed): SetBkMode(local_c,1);
+      // DEVIATION(unparsed): SetTextColor(local_c,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
+      // DEVIATION(unparsed): local_18 = 0;
+      // DEVIATION(unparsed): if (param_5 == 0) {
+        // DEVIATION(unparsed): local_18 = 0x25;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): if ((param_5 & 8) != 0) {
+          // DEVIATION(unparsed): local_18 = 8;
+        // DEVIATION(unparsed): }
+        // DEVIATION(unparsed): if ((param_5 & 2) != 0) {
+          // DEVIATION(unparsed): local_18 = local_18 | 2;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): cchText = _strlen(param_3);
+      // DEVIATION(unparsed): DrawTextA(local_c,param_3,cchText,param_4,local_18);
+      // DEVIATION(unparsed): SelectObject(local_c,h);
+      // DEVIATION(unparsed): FUN_005dce29(param_2);
+      // DEVIATION(unparsed): (**(code **)(*param_1 + 0x68))(param_1,local_c);
+      // DEVIATION(unparsed): uVar1 = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (iVar2 == -0x7789fe3e) {
+      // DEVIATION(unparsed): uVar1 = 0xffffffff;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): uVar1 = 0;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005ea32f @ 0x005EA32F
 // Size: 329 bytes
 // ============================================================
-export function FUN_005ea32f_005EA32F() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005ea32f(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
-  // undefined1 param_7,undefined1 param_8)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int iVar2;
-  // HGDIOBJ h;
-  // size_t cchText;
-  // UINT local_18;
-  // HDC local_c;
-  // undefined4 *local_8;
-  // 
-  // if (param_2 == 0) {
-  // debug_log(s_Error__NULL_font_in_MSDrawText_006397a8);
-  // uVar1 = 0;
-  // }
-  // else if (param_1 == (int *)0x0) {
-  // uVar1 = 0;
-  // }
-  // else {
-  // local_8 = (undefined4 *)FUN_005dcdf9(param_2);
-  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_c);
-  // if (iVar2 == 0) {
-  // h = SelectObject(local_c,(HGDIOBJ)*local_8);
-  // SetBkMode(local_c,1);
-  // SetTextColor(local_c,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
-  // local_18 = 0x10;
-  // if (param_5 == 0) {
-  // local_18 = 0x11;
-  // }
-  // else if ((param_5 & 2) != 0) {
-  // local_18 = 0x12;
-  // }
-  // cchText = _strlen(param_3);
-  // DrawTextA(local_c,param_3,cchText,param_4,local_18);
-  // SelectObject(local_c,h);
-  // FUN_005dce29(param_2);
-  // (**(code **)(*param_1 + 0x68))(param_1,local_c);
-  // uVar1 = 1;
-  // }
-  // else if (iVar2 == -0x7789fe3e) {
-  // uVar1 = 0xffffffff;
-  // }
-  // else {
-  // uVar1 = 0;
-  // }
-  // }
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005ea32f(int *param_1,int param_2,char *param_3,LPRECT param_4,uint param_5,undefined1 param_6,
+            // DEVIATION(unparsed): undefined1 param_7,undefined1 param_8)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): HGDIOBJ h;
+  // DEVIATION(unparsed): size_t cchText;
+  // DEVIATION(unparsed): UINT local_18;
+  // DEVIATION(unparsed): HDC local_c;
+  // DEVIATION(unparsed): undefined4 *local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (param_2 == 0) {
+    // DEVIATION(unparsed): debug_log(s_Error__NULL_font_in_MSDrawText_006397a8);
+    // DEVIATION(unparsed): uVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else if (param_1 == (int *)0x0) {
+    // DEVIATION(unparsed): uVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_8 = (undefined4 *)FUN_005dcdf9(param_2);
+    // DEVIATION(unparsed): iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_c);
+    // DEVIATION(unparsed): if (iVar2 == 0) {
+      // DEVIATION(unparsed): h = SelectObject(local_c,(HGDIOBJ)*local_8);
+      // DEVIATION(unparsed): SetBkMode(local_c,1);
+      // DEVIATION(unparsed): SetTextColor(local_c,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
+      // DEVIATION(unparsed): local_18 = 0x10;
+      // DEVIATION(unparsed): if (param_5 == 0) {
+        // DEVIATION(unparsed): local_18 = 0x11;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else if ((param_5 & 2) != 0) {
+        // DEVIATION(unparsed): local_18 = 0x12;
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): cchText = _strlen(param_3);
+      // DEVIATION(unparsed): DrawTextA(local_c,param_3,cchText,param_4,local_18);
+      // DEVIATION(unparsed): SelectObject(local_c,h);
+      // DEVIATION(unparsed): FUN_005dce29(param_2);
+      // DEVIATION(unparsed): (**(code **)(*param_1 + 0x68))(param_1,local_c);
+      // DEVIATION(unparsed): uVar1 = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (iVar2 == -0x7789fe3e) {
+      // DEVIATION(unparsed): uVar1 = 0xffffffff;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): uVar1 = 0;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005ea47d @ 0x005EA47D
 // Size: 246 bytes
 // ============================================================
-export function FUN_005ea47d_005EA47D() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005ea47d(int *param_1,int param_2,int param_3,int param_4,int param_5,undefined1 param_6,
-  // undefined1 param_7,undefined1 param_8)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int iVar2;
-  // HDC local_10;
-  // HPEN local_c;
-  // HGDIOBJ local_8;
-  // 
-  // if (param_1 == (int *)0x0) {
-  // uVar1 = 0;
-  // }
-  // else {
-  // iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_10);
-  // if (iVar2 == 0) {
-  // SetBkMode(local_10,1);
-  // local_c = CreatePen(0,1,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
-  // local_8 = SelectObject(local_10,local_c);
-  // MoveToEx(local_10,param_2,param_3,(LPPOINT)0x0);
-  // LineTo(local_10,param_4,param_5);
-  // SelectObject(local_10,local_8);
-  // DeleteObject(local_c);
-  // (**(code **)(*param_1 + 0x68))(param_1,local_10);
-  // uVar1 = 1;
-  // }
-  // else if (iVar2 == -0x7789fe52) {
-  // uVar1 = 0xffffffff;
-  // }
-  // else {
-  // uVar1 = 0;
-  // }
-  // }
-  // return uVar1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005ea47d(int *param_1,int param_2,int param_3,int param_4,int param_5,undefined1 param_6,
+            // DEVIATION(unparsed): undefined1 param_7,undefined1 param_8)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int iVar2;
+  // DEVIATION(unparsed): HDC local_10;
+  // DEVIATION(unparsed): HPEN local_c;
+  // DEVIATION(unparsed): HGDIOBJ local_8;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): if (param_1 == (int *)0x0) {
+    // DEVIATION(unparsed): uVar1 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): iVar2 = (**(code **)(*param_1 + 0x44))(param_1,&local_10);
+    // DEVIATION(unparsed): if (iVar2 == 0) {
+      // DEVIATION(unparsed): SetBkMode(local_10,1);
+      // DEVIATION(unparsed): local_c = CreatePen(0,1,(uint)CONCAT12(param_8,CONCAT11(param_7,param_6)));
+      // DEVIATION(unparsed): local_8 = SelectObject(local_10,local_c);
+      // DEVIATION(unparsed): MoveToEx(local_10,param_2,param_3,(LPPOINT)0x0);
+      // DEVIATION(unparsed): LineTo(local_10,param_4,param_5);
+      // DEVIATION(unparsed): SelectObject(local_10,local_8);
+      // DEVIATION(unparsed): DeleteObject(local_c);
+      // DEVIATION(unparsed): (**(code **)(*param_1 + 0x68))(param_1,local_10);
+      // DEVIATION(unparsed): uVar1 = 1;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else if (iVar2 == -0x7789fe52) {
+      // DEVIATION(unparsed): uVar1 = 0xffffffff;
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): uVar1 = 0;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): return uVar1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005ea578 @ 0x005EA578
 // Size: 72 bytes
@@ -9568,107 +9547,92 @@ export function FUN_005ed5f0(in_ECX, param_1) {
 // Function: IsTracking @ 0x005ED640
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005ED640() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0xb0);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0xb0);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: IsTracking @ 0x005ED660
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005ED660() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0xb4);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0xb4);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: IsTracking @ 0x005ED680
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005ED680() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0x90);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0x90);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: IsTracking @ 0x005ED6A0
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005ED6A0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0x94);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0x94);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: IsTracking @ 0x005ED6C0
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005ED6C0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0xb8);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0xb8);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005ed6e0 @ 0x005ED6E0
 // Size: 47 bytes
@@ -10223,169 +10187,166 @@ export function FUN_005ee088(param_1) {
 // Function: FUN_005ee0b1 @ 0x005EE0B1
 // Size: 927 bytes
 // ============================================================
-export function FUN_005ee0b1_005EE0B1() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4 *
-  // FUN_005ee0b1(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int param_6,int param_7
-  // )
-  // 
-  // {
-  // undefined4 uVar1;
-  // undefined4 *puVar2;
-  // int iVar3;
-  // HWND pHVar4;
-  // HDC pHVar5;
-  // HCURSOR pHVar6;
-  // int local_30;
-  // int local_2c;
-  // int local_28;
-  // int local_24;
-  // HWND local_20;
-  // uint local_18;
-  // int local_14;
-  // int local_10;
-  // int local_c;
-  // 
-  // uVar1 = FUN_005dce4f(0x4c);
-  // puVar2 = (undefined4 *)FUN_005dcdf9(uVar1);
-  // *puVar2 = uVar1;
-  // local_14 = GetSystemMetrics(4);
-  // local_18 = 0x2000000;
-  // if ((param_2 & 4) == 0) {
-  // if (((param_2 & 2) == 0) || ((param_2 & 0x40) != 0)) {
-  // if (((param_2 & 2) == 0) || ((param_2 & 0x40) == 0)) {
-  // if ((param_2 & 1) != 0) {
-  // local_18 = 0x2800000;
-  // iVar3 = GetSystemMetrics(5);
-  // local_c = iVar3 * 2;
-  // iVar3 = GetSystemMetrics(6);
-  // local_10 = iVar3 * 2;
-  // }
-  // }
-  // else {
-  // local_18 = 0x2800000;
-  // iVar3 = GetSystemMetrics(5);
-  // local_c = iVar3 * 2;
-  // iVar3 = GetSystemMetrics(6);
-  // local_10 = iVar3 * 2;
-  // }
-  // }
-  // else {
-  // local_18 = 0x2400000;
-  // iVar3 = GetSystemMetrics(0x20);
-  // local_c = iVar3 * 2;
-  // iVar3 = GetSystemMetrics(0x21);
-  // local_10 = iVar3 * 2;
-  // }
-  // }
-  // else {
-  // local_18 = 0x2040000;
-  // iVar3 = GetSystemMetrics(0x20);
-  // local_c = iVar3 * 2;
-  // iVar3 = GetSystemMetrics(0x21);
-  // local_10 = iVar3 * 2;
-  // }
-  // if ((param_2 & 8) != 0) {
-  // local_18 = local_18 | 0x20000;
-  // param_2 = param_2 | 0x40;
-  // }
-  // if ((param_2 & 0x10) != 0) {
-  // local_18 = local_18 | 0x10000;
-  // param_2 = param_2 | 0x40;
-  // }
-  // if ((param_2 & 0x20) != 0) {
-  // local_18 = local_18 | 0x80000;
-  // param_2 = param_2 | 0x40;
-  // }
-  // if ((param_2 & 0x40) == 0) {
-  // local_14 = 0;
-  // }
-  // else {
-  // local_18 = local_18 | 0xc00000;
-  // }
-  // if ((param_2 & 0x80) != 0) {
-  // local_18 = local_18 | 0x200000;
-  // iVar3 = GetSystemMetrics(2);
-  // local_c = local_c + iVar3 + -1;
-  // }
-  // if ((param_2 & 0x100) != 0) {
-  // local_18 = local_18 | 0x100000;
-  // iVar3 = GetSystemMetrics(3);
-  // local_10 = local_10 + iVar3 + -1;
-  // }
-  // if (((param_2 & 0x200) != 0) && (param_7 != 0)) {
-  // local_18 = local_18 | 0x44000000;
-  // }
-  // if ((param_2 & 0x800) != 0) {
-  // local_18 = local_18 & 0xbfffffff | 0x80000000;
-  // }
-  // if ((param_2 & 0x400) == 0) {
-  // puVar2[0xc] = 0;
-  // }
-  // else {
-  // puVar2[0xc] = 1;
-  // }
-  // if ((param_2 & 0x1000) == 0) {
-  // puVar2[0xd] = 0;
-  // }
-  // else {
-  // puVar2[0xd] = 1;
-  // }
-  // if (param_7 == 0) {
-  // local_20 = (HWND)0x0;
-  // }
-  // else {
-  // local_20 = *(HWND *)(param_7 + 4);
-  // }
-  // if (param_6 == -1) {
-  // local_24 = -0x80000000;
-  // }
-  // else {
-  // local_24 = local_10 + local_14 + param_6 + -1;
-  // }
-  // if (param_5 == -1) {
-  // local_28 = -0x80000000;
-  // }
-  // else {
-  // local_28 = local_c + param_5;
-  // }
-  // if (param_4 == -1) {
-  // local_2c = -0x80000000;
-  // }
-  // else {
-  // local_2c = param_4;
-  // }
-  // if (param_3 == -1) {
-  // local_30 = -0x80000000;
-  // }
-  // else {
-  // local_30 = param_3;
-  // }
-  // pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28,
-  // local_24,local_20,(HMENU)0x0,DAT_006e4ff0,(LPVOID)0x0);
-  // puVar2[1] = pHVar4;
-  // FUN_005bc1b5(puVar2[1]);
-  // pHVar5 = GetDC((HWND)puVar2[1]);
-  // puVar2[2] = pHVar5;
-  // pHVar6 = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-  // puVar2[7] = pHVar6;
-  // puVar2[6] = 0;
-  // puVar2[0x11] = 0;
-  // puVar2[5] = 0;
-  // puVar2[3] = 0;
-  // puVar2[9] = 0;
-  // puVar2[10] = 0;
-  // puVar2[0xb] = 0;
-  // puVar2[0x12] = param_2;
-  // puVar2[0xe] = 0;
-  // puVar2[0xf] = 0;
-  // return puVar2;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4 *
+// DEVIATION(unparsed): FUN_005ee0b1(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int param_6,int param_7
+            // DEVIATION(unparsed): )
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): undefined4 *puVar2;
+  // DEVIATION(unparsed): int iVar3;
+  // DEVIATION(unparsed): HWND pHVar4;
+  // DEVIATION(unparsed): HDC pHVar5;
+  // DEVIATION(unparsed): HCURSOR pHVar6;
+  // DEVIATION(unparsed): int local_30;
+  // DEVIATION(unparsed): int local_2c;
+  // DEVIATION(unparsed): int local_28;
+  // DEVIATION(unparsed): int local_24;
+  // DEVIATION(unparsed): HWND local_20;
+  // DEVIATION(unparsed): uint local_18;
+  // DEVIATION(unparsed): int local_14;
+  // DEVIATION(unparsed): int local_10;
+  // DEVIATION(unparsed): int local_c;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): uVar1 = FUN_005dce4f(0x4c);
+  // DEVIATION(unparsed): puVar2 = (undefined4 *)FUN_005dcdf9(uVar1);
+  // DEVIATION(unparsed): *puVar2 = uVar1;
+  // DEVIATION(unparsed): local_14 = GetSystemMetrics(4);
+  // DEVIATION(unparsed): local_18 = 0x2000000;
+  // DEVIATION(unparsed): if ((param_2 & 4) == 0) {
+    // DEVIATION(unparsed): if (((param_2 & 2) == 0) || ((param_2 & 0x40) != 0)) {
+      // DEVIATION(unparsed): if (((param_2 & 2) == 0) || ((param_2 & 0x40) == 0)) {
+        // DEVIATION(unparsed): if ((param_2 & 1) != 0) {
+          // DEVIATION(unparsed): local_18 = 0x2800000;
+          // DEVIATION(unparsed): iVar3 = GetSystemMetrics(5);
+          // DEVIATION(unparsed): local_c = iVar3 * 2;
+          // DEVIATION(unparsed): iVar3 = GetSystemMetrics(6);
+          // DEVIATION(unparsed): local_10 = iVar3 * 2;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): local_18 = 0x2800000;
+        // DEVIATION(unparsed): iVar3 = GetSystemMetrics(5);
+        // DEVIATION(unparsed): local_c = iVar3 * 2;
+        // DEVIATION(unparsed): iVar3 = GetSystemMetrics(6);
+        // DEVIATION(unparsed): local_10 = iVar3 * 2;
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): local_18 = 0x2400000;
+      // DEVIATION(unparsed): iVar3 = GetSystemMetrics(0x20);
+      // DEVIATION(unparsed): local_c = iVar3 * 2;
+      // DEVIATION(unparsed): iVar3 = GetSystemMetrics(0x21);
+      // DEVIATION(unparsed): local_10 = iVar3 * 2;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_18 = 0x2040000;
+    // DEVIATION(unparsed): iVar3 = GetSystemMetrics(0x20);
+    // DEVIATION(unparsed): local_c = iVar3 * 2;
+    // DEVIATION(unparsed): iVar3 = GetSystemMetrics(0x21);
+    // DEVIATION(unparsed): local_10 = iVar3 * 2;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 8) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x20000;
+    // DEVIATION(unparsed): param_2 = param_2 | 0x40;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x10) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x10000;
+    // DEVIATION(unparsed): param_2 = param_2 | 0x40;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x20) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x80000;
+    // DEVIATION(unparsed): param_2 = param_2 | 0x40;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x40) == 0) {
+    // DEVIATION(unparsed): local_14 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_18 = local_18 | 0xc00000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x80) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x200000;
+    // DEVIATION(unparsed): iVar3 = GetSystemMetrics(2);
+    // DEVIATION(unparsed): local_c = local_c + iVar3 + -1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x100) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x100000;
+    // DEVIATION(unparsed): iVar3 = GetSystemMetrics(3);
+    // DEVIATION(unparsed): local_10 = local_10 + iVar3 + -1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (((param_2 & 0x200) != 0) && (param_7 != 0)) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x44000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x800) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 & 0xbfffffff | 0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x400) == 0) {
+    // DEVIATION(unparsed): puVar2[0xc] = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): puVar2[0xc] = 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x1000) == 0) {
+    // DEVIATION(unparsed): puVar2[0xd] = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): puVar2[0xd] = 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_7 == 0) {
+    // DEVIATION(unparsed): local_20 = (HWND)0x0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_20 = *(HWND *)(param_7 + 4);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_6 == -1) {
+    // DEVIATION(unparsed): local_24 = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_24 = local_10 + local_14 + param_6 + -1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_5 == -1) {
+    // DEVIATION(unparsed): local_28 = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_28 = local_c + param_5;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_4 == -1) {
+    // DEVIATION(unparsed): local_2c = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_2c = param_4;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_3 == -1) {
+    // DEVIATION(unparsed): local_30 = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_30 = param_3;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): pHVar4 = CreateWindowExA(0,s_MSMovieClass_00639d34,param_1,local_18,local_30,local_2c,local_28,
+                           // DEVIATION(unparsed): local_24,local_20,(HMENU)0x0,DAT_006e4ff0,(LPVOID)0x0);
+  // DEVIATION(unparsed): puVar2[1] = pHVar4;
+  // DEVIATION(unparsed): FUN_005bc1b5(puVar2[1]);
+  // DEVIATION(unparsed): pHVar5 = GetDC((HWND)puVar2[1]);
+  // DEVIATION(unparsed): puVar2[2] = pHVar5;
+  // DEVIATION(unparsed): pHVar6 = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+  // DEVIATION(unparsed): puVar2[7] = pHVar6;
+  // DEVIATION(unparsed): puVar2[6] = 0;
+  // DEVIATION(unparsed): puVar2[0x11] = 0;
+  // DEVIATION(unparsed): puVar2[5] = 0;
+  // DEVIATION(unparsed): puVar2[3] = 0;
+  // DEVIATION(unparsed): puVar2[9] = 0;
+  // DEVIATION(unparsed): puVar2[10] = 0;
+  // DEVIATION(unparsed): puVar2[0xb] = 0;
+  // DEVIATION(unparsed): puVar2[0x12] = param_2;
+  // DEVIATION(unparsed): puVar2[0xe] = 0;
+  // DEVIATION(unparsed): puVar2[0xf] = 0;
+  // DEVIATION(unparsed): return puVar2;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005ee450 @ 0x005EE450
 // Size: 74 bytes
@@ -10935,23 +10896,20 @@ export function FUN_005eebd6(in_ECX) {
 // Function: IsTracking @ 0x005EEC80
 // Size: 31 bytes
 // ============================================================
-export function IsTracking_005EEC80() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall CSplitterWnd::IsTracking(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
-  // 
-  // {
-  // return *(int *)(this + 0xb0);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall CSplitterWnd::IsTracking(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0xb0);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005eeca0 @ 0x005EECA0
 // Size: 35 bytes
@@ -11824,55 +11782,49 @@ export function FUN_005eff75(unaff_EBP) {
 // Function: FUN_005eff83 @ 0x005EFF83
 // Size: 105 bytes
 // ============================================================
-export function FUN_005eff83_005EFF83() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005eff83(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-  // undefined4 param_5,undefined4 param_6)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int in_ECX;
-  // 
-  // uVar1 = FUN_005ef356(param_1,param_2,param_3,param_4);
-  // *(undefined4 *)(in_ECX + 0xb0) = uVar1;
-  // FUN_005ef320(in_ECX,*(undefined4 *)(in_ECX + 0xb0));
-  // *(undefined4 *)(in_ECX + 0xb4) = param_5;
-  // FUN_005f01ad(param_6);
-  // return 1;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005eff83(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5,undefined4 param_6)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): uVar1 = FUN_005ef356(param_1,param_2,param_3,param_4);
+  // DEVIATION(unparsed): *(undefined4 *)(in_ECX + 0xb0) = uVar1;
+  // DEVIATION(unparsed): FUN_005ef320(in_ECX,*(undefined4 *)(in_ECX + 0xb0));
+  // DEVIATION(unparsed): *(undefined4 *)(in_ECX + 0xb4) = param_5;
+  // DEVIATION(unparsed): FUN_005f01ad(param_6);
+  // DEVIATION(unparsed): return 1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005effec @ 0x005EFFEC
 // Size: 106 bytes
 // ============================================================
-export function FUN_005effec_005EFFEC() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4
-  // FUN_005effec(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-  // undefined4 param_5)
-  // 
-  // {
-  // undefined4 uVar1;
-  // int in_ECX;
-  // 
-  // uVar1 = FUN_005ef356(&DAT_00639dc4,param_1,param_2,param_3);
-  // *(undefined4 *)(in_ECX + 0xb0) = uVar1;
-  // FUN_005ef320(in_ECX,*(undefined4 *)(in_ECX + 0xb0));
-  // *(undefined4 *)(in_ECX + 0xb4) = param_4;
-  // FUN_005f01ad(param_5);
-  // return 1;
-  // }
-  // 
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4
+// DEVIATION(unparsed): FUN_005effec(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+            // DEVIATION(unparsed): undefined4 param_5)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): int in_ECX;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): uVar1 = FUN_005ef356(&DAT_00639dc4,param_1,param_2,param_3);
+  // DEVIATION(unparsed): *(undefined4 *)(in_ECX + 0xb0) = uVar1;
+  // DEVIATION(unparsed): FUN_005ef320(in_ECX,*(undefined4 *)(in_ECX + 0xb0));
+  // DEVIATION(unparsed): *(undefined4 *)(in_ECX + 0xb4) = param_4;
+  // DEVIATION(unparsed): FUN_005f01ad(param_5);
+  // DEVIATION(unparsed): return 1;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 

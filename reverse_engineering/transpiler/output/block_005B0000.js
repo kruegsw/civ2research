@@ -5028,178 +5028,175 @@ export function FUN_005bbbce() {
 // Function: create_window_BC10 @ 0x005BBC10
 // Size: 990 bytes
 // ============================================================
-export function create_window_BC10_005BBC10() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // undefined4 *
-  // create_window_BC10(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int param_6,int param_7
-  // )
-  // 
-  // {
-  // undefined4 uVar1;
-  // undefined4 *puVar2;
-  // int iVar3;
-  // HWND pHVar4;
-  // HDC pHVar5;
-  // HCURSOR pHVar6;
-  // int local_34;
-  // int local_30;
-  // int local_2c;
-  // int local_28;
-  // HWND local_24;
-  // DWORD local_20;
-  // uint local_18;
-  // int local_14;
-  // int local_10;
-  // int local_c;
-  // 
-  // local_20 = 0;
-  // uVar1 = FUN_005dce4f(0x4c);
-  // puVar2 = (undefined4 *)FUN_005dcdf9(uVar1);
-  // *puVar2 = uVar1;
-  // local_c = 0;
-  // local_10 = 0;
-  // local_14 = GetSystemMetrics(4);
-  // local_18 = 0x2000000;
-  // if ((param_2 & 4) == 0) {
-  // if (((param_2 & 2) == 0) || ((param_2 & 0x40) != 0)) {
-  // if (((param_2 & 2) == 0) || ((param_2 & 0x40) == 0)) {
-  // if ((param_2 & 1) != 0) {
-  // local_18 = 0x2800000;
-  // local_c = GetSystemMetrics(7);
-  // local_c = local_c * 2;
-  // local_10 = GetSystemMetrics(8);
-  // local_10 = local_10 * 2;
-  // local_14 = local_14 + 1;
-  // }
-  // }
-  // else {
-  // local_18 = 0x2800000;
-  // local_c = GetSystemMetrics(7);
-  // local_c = local_c * 2;
-  // local_10 = GetSystemMetrics(8);
-  // local_10 = local_10 * 2;
-  // }
-  // }
-  // else {
-  // local_18 = 0x2400000;
-  // local_c = GetSystemMetrics(7);
-  // local_c = local_c * 2;
-  // local_10 = GetSystemMetrics(8);
-  // local_10 = local_10 * 2;
-  // }
-  // }
-  // else {
-  // local_18 = 0x2040000;
-  // local_c = GetSystemMetrics(0x20);
-  // local_c = local_c * 2;
-  // local_10 = GetSystemMetrics(0x21);
-  // local_10 = local_10 * 2;
-  // }
-  // if ((param_2 & 8) != 0) {
-  // local_18 = local_18 | 0x20000;
-  // param_2 = param_2 | 0x40;
-  // }
-  // if ((param_2 & 0x10) != 0) {
-  // local_18 = local_18 | 0x10000;
-  // param_2 = param_2 | 0x40;
-  // }
-  // if ((param_2 & 0x20) != 0) {
-  // local_18 = local_18 | 0x80000;
-  // param_2 = param_2 | 0x40;
-  // }
-  // if ((param_2 & 0x40) == 0) {
-  // local_14 = 0;
-  // }
-  // else {
-  // local_18 = local_18 | 0xc00000;
-  // }
-  // if ((param_2 & 0x80) != 0) {
-  // local_18 = local_18 | 0x200000;
-  // iVar3 = GetSystemMetrics(2);
-  // local_c = local_c + iVar3 + -1;
-  // }
-  // if ((param_2 & 0x100) != 0) {
-  // local_18 = local_18 | 0x100000;
-  // iVar3 = GetSystemMetrics(3);
-  // local_10 = local_10 + iVar3 + -1;
-  // }
-  // if (((param_2 & 0x200) != 0) && (param_7 != 0)) {
-  // local_18 = local_18 | 0x44000000;
-  // local_20 = 4;
-  // }
-  // if ((param_2 & 0x800) != 0) {
-  // local_18 = local_18 & 0xbfffffff | 0x80000000;
-  // }
-  // if ((param_2 & 0x400) == 0) {
-  // puVar2[0xc] = 0;
-  // }
-  // else {
-  // puVar2[0xc] = 1;
-  // }
-  // if ((param_2 & 0x1000) == 0) {
-  // puVar2[0xd] = 0;
-  // }
-  // else {
-  // puVar2[0xd] = 1;
-  // }
-  // if (param_7 == 0) {
-  // local_24 = (HWND)0x0;
-  // }
-  // else {
-  // local_24 = *(HWND *)(param_7 + 4);
-  // }
-  // if (param_6 == -1) {
-  // local_28 = -0x80000000;
-  // }
-  // else {
-  // local_28 = local_10 + local_14 + param_6 + -1;
-  // }
-  // if (param_5 == -1) {
-  // local_2c = -0x80000000;
-  // }
-  // else {
-  // local_2c = local_c + param_5;
-  // }
-  // if (param_4 == -1) {
-  // local_30 = -0x80000000;
-  // }
-  // else {
-  // local_30 = param_4;
-  // }
-  // if (param_3 == -1) {
-  // local_34 = -0x80000000;
-  // }
-  // else {
-  // local_34 = param_3;
-  // }
-  // pHVar4 = CreateWindowExA(local_20,s_MSWindowClass_006366d0,param_1,local_18,local_34,local_30,
-  // local_2c,local_28,local_24,(HMENU)0x0,DAT_006e4ff0,(LPVOID)0x0);
-  // puVar2[1] = pHVar4;
-  // FUN_005bc1b5(puVar2[1]);
-  // pHVar5 = GetDC((HWND)puVar2[1]);
-  // puVar2[2] = pHVar5;
-  // pHVar6 = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-  // puVar2[7] = pHVar6;
-  // puVar2[6] = 0;
-  // puVar2[8] = 0;
-  // puVar2[0x11] = 0;
-  // puVar2[5] = 0;
-  // puVar2[3] = 0;
-  // puVar2[9] = 0;
-  // puVar2[10] = 0;
-  // puVar2[0xb] = 0;
-  // puVar2[0x12] = param_2;
-  // puVar2[0xe] = 0;
-  // puVar2[0xf] = 0;
-  // puVar2[4] = 0;
-  // puVar2[0x10] = 8;
-  // return puVar2;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): undefined4 *
+// DEVIATION(unparsed): create_window_BC10(LPCSTR param_1,uint param_2,int param_3,int param_4,int param_5,int param_6,int param_7
+            // DEVIATION(unparsed): )
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): undefined4 uVar1;
+  // DEVIATION(unparsed): undefined4 *puVar2;
+  // DEVIATION(unparsed): int iVar3;
+  // DEVIATION(unparsed): HWND pHVar4;
+  // DEVIATION(unparsed): HDC pHVar5;
+  // DEVIATION(unparsed): HCURSOR pHVar6;
+  // DEVIATION(unparsed): int local_34;
+  // DEVIATION(unparsed): int local_30;
+  // DEVIATION(unparsed): int local_2c;
+  // DEVIATION(unparsed): int local_28;
+  // DEVIATION(unparsed): HWND local_24;
+  // DEVIATION(unparsed): DWORD local_20;
+  // DEVIATION(unparsed): uint local_18;
+  // DEVIATION(unparsed): int local_14;
+  // DEVIATION(unparsed): int local_10;
+  // DEVIATION(unparsed): int local_c;
+  // DEVIATION(unparsed): 
+  // DEVIATION(unparsed): local_20 = 0;
+  // DEVIATION(unparsed): uVar1 = FUN_005dce4f(0x4c);
+  // DEVIATION(unparsed): puVar2 = (undefined4 *)FUN_005dcdf9(uVar1);
+  // DEVIATION(unparsed): *puVar2 = uVar1;
+  // DEVIATION(unparsed): local_c = 0;
+  // DEVIATION(unparsed): local_10 = 0;
+  // DEVIATION(unparsed): local_14 = GetSystemMetrics(4);
+  // DEVIATION(unparsed): local_18 = 0x2000000;
+  // DEVIATION(unparsed): if ((param_2 & 4) == 0) {
+    // DEVIATION(unparsed): if (((param_2 & 2) == 0) || ((param_2 & 0x40) != 0)) {
+      // DEVIATION(unparsed): if (((param_2 & 2) == 0) || ((param_2 & 0x40) == 0)) {
+        // DEVIATION(unparsed): if ((param_2 & 1) != 0) {
+          // DEVIATION(unparsed): local_18 = 0x2800000;
+          // DEVIATION(unparsed): local_c = GetSystemMetrics(7);
+          // DEVIATION(unparsed): local_c = local_c * 2;
+          // DEVIATION(unparsed): local_10 = GetSystemMetrics(8);
+          // DEVIATION(unparsed): local_10 = local_10 * 2;
+          // DEVIATION(unparsed): local_14 = local_14 + 1;
+        // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): }
+      // DEVIATION(unparsed): else {
+        // DEVIATION(unparsed): local_18 = 0x2800000;
+        // DEVIATION(unparsed): local_c = GetSystemMetrics(7);
+        // DEVIATION(unparsed): local_c = local_c * 2;
+        // DEVIATION(unparsed): local_10 = GetSystemMetrics(8);
+        // DEVIATION(unparsed): local_10 = local_10 * 2;
+      // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): }
+    // DEVIATION(unparsed): else {
+      // DEVIATION(unparsed): local_18 = 0x2400000;
+      // DEVIATION(unparsed): local_c = GetSystemMetrics(7);
+      // DEVIATION(unparsed): local_c = local_c * 2;
+      // DEVIATION(unparsed): local_10 = GetSystemMetrics(8);
+      // DEVIATION(unparsed): local_10 = local_10 * 2;
+    // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_18 = 0x2040000;
+    // DEVIATION(unparsed): local_c = GetSystemMetrics(0x20);
+    // DEVIATION(unparsed): local_c = local_c * 2;
+    // DEVIATION(unparsed): local_10 = GetSystemMetrics(0x21);
+    // DEVIATION(unparsed): local_10 = local_10 * 2;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 8) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x20000;
+    // DEVIATION(unparsed): param_2 = param_2 | 0x40;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x10) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x10000;
+    // DEVIATION(unparsed): param_2 = param_2 | 0x40;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x20) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x80000;
+    // DEVIATION(unparsed): param_2 = param_2 | 0x40;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x40) == 0) {
+    // DEVIATION(unparsed): local_14 = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_18 = local_18 | 0xc00000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x80) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x200000;
+    // DEVIATION(unparsed): iVar3 = GetSystemMetrics(2);
+    // DEVIATION(unparsed): local_c = local_c + iVar3 + -1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x100) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x100000;
+    // DEVIATION(unparsed): iVar3 = GetSystemMetrics(3);
+    // DEVIATION(unparsed): local_10 = local_10 + iVar3 + -1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (((param_2 & 0x200) != 0) && (param_7 != 0)) {
+    // DEVIATION(unparsed): local_18 = local_18 | 0x44000000;
+    // DEVIATION(unparsed): local_20 = 4;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x800) != 0) {
+    // DEVIATION(unparsed): local_18 = local_18 & 0xbfffffff | 0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x400) == 0) {
+    // DEVIATION(unparsed): puVar2[0xc] = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): puVar2[0xc] = 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if ((param_2 & 0x1000) == 0) {
+    // DEVIATION(unparsed): puVar2[0xd] = 0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): puVar2[0xd] = 1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_7 == 0) {
+    // DEVIATION(unparsed): local_24 = (HWND)0x0;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_24 = *(HWND *)(param_7 + 4);
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_6 == -1) {
+    // DEVIATION(unparsed): local_28 = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_28 = local_10 + local_14 + param_6 + -1;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_5 == -1) {
+    // DEVIATION(unparsed): local_2c = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_2c = local_c + param_5;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_4 == -1) {
+    // DEVIATION(unparsed): local_30 = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_30 = param_4;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): if (param_3 == -1) {
+    // DEVIATION(unparsed): local_34 = -0x80000000;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): else {
+    // DEVIATION(unparsed): local_34 = param_3;
+  // DEVIATION(unparsed): }
+  // DEVIATION(unparsed): pHVar4 = CreateWindowExA(local_20,s_MSWindowClass_006366d0,param_1,local_18,local_34,local_30,
+                           // DEVIATION(unparsed): local_2c,local_28,local_24,(HMENU)0x0,DAT_006e4ff0,(LPVOID)0x0);
+  // DEVIATION(unparsed): puVar2[1] = pHVar4;
+  // DEVIATION(unparsed): FUN_005bc1b5(puVar2[1]);
+  // DEVIATION(unparsed): pHVar5 = GetDC((HWND)puVar2[1]);
+  // DEVIATION(unparsed): puVar2[2] = pHVar5;
+  // DEVIATION(unparsed): pHVar6 = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+  // DEVIATION(unparsed): puVar2[7] = pHVar6;
+  // DEVIATION(unparsed): puVar2[6] = 0;
+  // DEVIATION(unparsed): puVar2[8] = 0;
+  // DEVIATION(unparsed): puVar2[0x11] = 0;
+  // DEVIATION(unparsed): puVar2[5] = 0;
+  // DEVIATION(unparsed): puVar2[3] = 0;
+  // DEVIATION(unparsed): puVar2[9] = 0;
+  // DEVIATION(unparsed): puVar2[10] = 0;
+  // DEVIATION(unparsed): puVar2[0xb] = 0;
+  // DEVIATION(unparsed): puVar2[0x12] = param_2;
+  // DEVIATION(unparsed): puVar2[0xe] = 0;
+  // DEVIATION(unparsed): puVar2[0xf] = 0;
+  // DEVIATION(unparsed): puVar2[4] = 0;
+  // DEVIATION(unparsed): puVar2[0x10] = 8;
+  // DEVIATION(unparsed): return puVar2;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_005bbfee @ 0x005BBFEE
 // Size: 43 bytes

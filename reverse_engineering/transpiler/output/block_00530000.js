@@ -8,23 +8,20 @@ import { s8, u8, s16, u16, s32, u32, w16, w32 } from './mem.js';
 // Function: egptr @ 0x00530E80
 // Size: 28 bytes
 // ============================================================
-export function egptr_00530E80() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // protected: char * __thiscall streambuf::egptr(void)const 
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // char * __thiscall streambuf::egptr(streambuf *this)
-  // 
-  // {
-  // return *(char **)(this + 0x2c);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): protected: char * __thiscall streambuf::egptr(void)const 
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): char * __thiscall streambuf::egptr(streambuf *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(char **)(this + 0x2c);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_00530eb0 @ 0x00530EB0
 // Size: 33 bytes
@@ -90,23 +87,20 @@ export function FUN_00530fb0(in_ECX) {
 // Function: width @ 0x00530FE0
 // Size: 28 bytes
 // ============================================================
-export function width_00530FE0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: int __thiscall ios::width(void)const 
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // int __thiscall ios::width(ios *this)
-  // 
-  // {
-  // return *(int *)(this + 0x30);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: int __thiscall ios::width(void)const 
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): int __thiscall ios::width(ios *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(int *)(this + 0x30);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_00531010 @ 0x00531010
 // Size: 93 bytes

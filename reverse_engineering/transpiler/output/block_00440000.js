@@ -2291,23 +2291,20 @@ export function FUN_00447210(in_ECX, param_1) {
 // Function: GetCheckStyle @ 0x004472C0
 // Size: 28 bytes
 // ============================================================
-export function GetCheckStyle_004472C0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
-  // 
-  // {
-  // return *(uint *)(this + 0x40);
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): return *(uint *)(this + 0x40);
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_004472f0 @ 0x004472F0
 // Size: 33 bytes
@@ -7046,24 +7043,21 @@ export function FUN_0044c730(in_ECX) {
 // Function: CString @ 0x0044C8B0
 // Size: 33 bytes
 // ============================================================
-export function CString_0044C8B0() {
-  // DEVIATION: unparsed C++ function
-  // 
-  // /* Library Function - Single Match
-  // public: __thiscall CString::CString(void)
-  // 
-  // Library: Visual Studio 1998 Debug */
-  // 
-  // CString * __thiscall CString::CString(CString *this)
-  // 
-  // {
-  // thunk_FUN_0044c8e0();
-  // return this;
-  // }
-  // 
-  // 
-  // 
-}
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): /* Library Function - Single Match
+    // DEVIATION(unparsed): public: __thiscall CString::CString(void)
+   // DEVIATION(unparsed): 
+   // DEVIATION(unparsed): Library: Visual Studio 1998 Debug */
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): CString * __thiscall CString::CString(CString *this)
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): {
+  // DEVIATION(unparsed): thunk_FUN_0044c8e0();
+  // DEVIATION(unparsed): return this;
+// DEVIATION(unparsed): }
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
+// DEVIATION(unparsed): 
 // ============================================================
 // Function: FUN_0044c8e0 @ 0x0044C8E0
 // Size: 281 bytes
