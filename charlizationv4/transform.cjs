@@ -296,22 +296,22 @@ for (const blockFile of blockFiles) {
   // Phase 2: Insert our imports after the header comment block
   const finalLines = [];
   let importsInserted = false;
+  let importLineIdx = 0;
 
   for (const line of outLines) {
     const trimmed = line.trim();
 
     if (!importsInserted) {
-      // Skip header comment lines and blank lines
+      // Replace first comment/blank lines with imports (preserve line count for 1:1 mapping)
       if (trimmed === '' || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
-        finalLines.push(line);
+        // Use this line's slot for an import if we have imports left to add
+        if (importLineIdx === 0) { finalLines.push(`import { G } from '../globals.js';`); importLineIdx++; }
+        else if (importLineIdx === 1) { finalLines.push(`import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';`); importLineIdx++; }
+        else if (importLineIdx === 2) { finalLines.push(`import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';`); importLineIdx++; }
+        else if (importLineIdx === 3) { finalLines.push(`const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };`); importLineIdx++; }
+        else { finalLines.push(line); } // keep remaining comment/blank lines as-is
         continue;
       }
-      // First non-comment, non-blank line → insert imports before it
-      finalLines.push(`import { G } from '../globals.js';`);
-      finalLines.push(`import { s8, u8, s16, u16, s32, u32, w16, w32, getTileOffset, tileRead, tileWrite, initMapTiles } from '../mem.js';`);
-      finalLines.push(`import { FUN_004087c0, FUN_005ae052, FUN_005b8931, FUN_005b94d5, FUN_005b89bb, FUN_005b89e4, FUN_005b8a1d, FUN_005b8ca6, FUN_005b8ee1, FUN_004bd9f0, FUN_0058c56c, FUN_005b68f6 } from '../fn_utils.js';`);
-      finalLines.push(`const ri = s32, wi = w32, rs = s16, ws = w16, rs16 = s16, rs32 = s32, ri32 = s32, wi32 = w32, w8 = (a,o,v) => { if (a && a[o] !== undefined) a[o] = v & 0xff; };`);
-      finalLines.push('');
       importsInserted = true;
     }
 
