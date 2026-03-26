@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const srcDir = path.join(__dirname, '..', 'reverse_engineering', 'binary_js');
+const srcDir = path.join(__dirname, '..', 'reverse_engineering', 'transpiler', 'output');
 const dstDir = __dirname;
 const blocksDir = path.join(dstDir, 'blocks');
 

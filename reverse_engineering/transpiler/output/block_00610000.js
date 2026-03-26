@@ -40,7 +40,7 @@ export function FUN_0061a000() {
   let in_DS;
   let uVar22;
   // DEVIATION: SEH
-  let auStack_2 [2];
+  let auStack_2 = new Array(2).fill(0);
   let iVar21;
   
   sVar20 = ((auStack_2) << 16 >> 16);
@@ -111,7 +111,7 @@ export function FUN_0061a000() {
         puVar7 = (ushort *)segment(in_SS,sVar18 + 0x2e);
         puVar8 = (ushort *)segment(in_SS,sVar18 + -0x14);
         puVar11 = (undefined1 *)segment(in_SS,sVar18 + -0x16);
-        *(undefined1 *)
+        // DEVIATION: C pointer — *(undefined1 *)
          // DEVIATION: SEH
           (uint)*puVar7 + (uint)*puVar8) = *puVar11;
       }
@@ -164,7 +164,7 @@ export function FUN_0061a759() {
   let pcVar26;
   let in_SS;
   let in_DS;
-  let auStack_2 [2];
+  let auStack_2 = new Array(2).fill(0);
   let iVar24;
   
   sVar23 = ((auStack_2) << 16 >> 16);
@@ -246,7 +246,7 @@ export function FUN_0061a759() {
       psVar8 = (short *)segment(in_SS,sVar17 + -8);
       psVar9 = (short *)segment(in_SS,sVar17 + -0x12);
       *psVar9 = (*psVar4 + *psVar5) * 2 + *psVar8;
-      *(char **)(iVar24 + -0xe) = pcVar26;
+      // DEVIATION: C pointer — *(char **)(iVar24 + -0xe) = pcVar26;
       psVar4 = (short *)segment(in_SS,sVar17 + -0x14);
       iVar20 = CONCAT22(uVar21,*psVar4);
       puVar3 = (undefined2 *)segment(in_SS,sVar23 + -6);
@@ -275,7 +275,7 @@ export function FUN_0061a759() {
           psVar4 = (short *)segment(in_SS,sVar23 + -0x14);
           psVar5 = (short *)segment(in_SS,sVar23 + -0x16);
           if (*psVar5 <= ((*psVar8 - *psVar4) << 16 >> 16)) break;
-          cVar13 = *(char *)(((ushort) >>> 0)(*psVar8 - *psVar4) + iVar22);
+          // DEVIATION: C pointer — cVar13 = *(char *)(((ushort) >>> 0)(*psVar8 - *psVar4) + iVar22);
           if (cVar13 !== cVar12) {
             *pcVar26 = cVar13;
           }
@@ -284,7 +284,7 @@ export function FUN_0061a759() {
           iVar20 = iVar20 + -1;
         } while (iVar20 !== 0);
       }
-      pcVar26 = *(char **)(iVar24 + -0xe);
+      // DEVIATION: C pointer — pcVar26 = *(char **)(iVar24 + -0xe);
     }
     psVar4 = (short *)segment(in_SS,sVar23 + 0x20);
     pcVar26 = pcVar26 + *psVar4;

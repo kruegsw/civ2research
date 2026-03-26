@@ -143,7 +143,7 @@ export function FUN_005c01c1(in_ECX) {
 
 
   let uVar1;
-  void *pvVar2;
+  let pvVar2;
   let iVar3;
   // in_ECX → promoted to parameter
   let local_8;
@@ -153,17 +153,17 @@ export function FUN_005c01c1(in_ECX) {
     w32(in_ECX, 0x34, uVar1);
     if (s32(in_ECX, 0x34) !== 0) {
       pvVar2 = operator_new(s32(in_ECX, 8) << 2);
-      *(void **)(in_ECX + 0x38) = pvVar2;
+      // DEVIATION: C pointer — *(void **)(in_ECX + 0x38) = pvVar2;
       iVar3 = FUN_005e395a(s32(in_ECX, 0x40));
       if (iVar3 === 0) {
-        **(int **)(in_ECX + 0x38) = (s32(in_ECX, 8) + -1) * s32(in_ECX, 0xc);
+        // DEVIATION: C pointer — **(int **)(in_ECX + 0x38) = (s32(in_ECX, 8) + -1) * s32(in_ECX, 0xc);
         for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
           s32(*(int *, 0)(in_ECX + 0x38) + local_8 * 4) =
                s32(*(int *, 0)(in_ECX + 0x38) + -4 + local_8 * 4) - s32(in_ECX, 0xc);
         }
       }
       else {
-        **(undefined4 **)(in_ECX + 0x38) = 0;
+        // DEVIATION: C pointer — **(undefined4 **)(in_ECX + 0x38) = 0;
         for (local_8 = 1; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
           s32(*(int *, 0)(in_ECX + 0x38) + local_8 * 4) =
                s32(*(int *, 0)(in_ECX + 0x38) + -4 + local_8 * 4) + s32(in_ECX, 0xc);
@@ -190,7 +190,7 @@ export function FUN_005c02e0(in_ECX) {
   if (s32(in_ECX, 0x34) !== 0) {
     uVar1 = FUN_005e3aa8(s32(in_ECX, 0x40));
     w32(in_ECX, 0x34, uVar1);
-    operator_delete(*(void **)(in_ECX + 0x38));
+    // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x38));
   }
   return;
 }
@@ -226,8 +226,8 @@ export function FUN_005c0333(param_1, param_2) {
   IntersectRect(local_20[0],param_1,(RECT *)(in_ECX + 0x14));
   local_c = FUN_00407f90(local_20[0]);
   if ((local_c !== 0) && (local_10 = FUN_00407fc0(local_20[0]), local_10 !== 0)) {
-    pCVar2 = COleClientItem::GetActiveView(in_ECX);
-    uVar3 = CCheckListBox::GetCheckStyle((CCheckListBox *)in_ECX);
+    // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView(in_ECX);
+    // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle((CCheckListBox *)in_ECX);
     iVar4 = FUN_005e395a(uVar3,pCVar2);
     iVar5 = FUN_005c55d0();
     FUN_005e4e60(s32(in_ECX, 0x34),param_2,local_20[0].left,local_20[0].top,local_c,local_10,
@@ -368,16 +368,16 @@ export function FUN_005c0593(param_1, param_2, param_3) {
     local_c = local_20[0].bottom - local_20[0].top;
   }
   if ((local_8 !== 0) && (local_c !== 0)) {
-    uVar2 = CCheckListBox::GetCheckStyle(param_1);
+    // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(param_1);
     iVar3 = FUN_005e395a(uVar2);
     iVar4 = FUN_005c55d0();
     iVar4 = ((-((iVar3 === 0) >>> 0) & 0xfffffffe) + 1) * iVar4;
-    uVar2 = CCheckListBox::GetCheckStyle(in_ECX);
+    // DEVIATION: MFC — uVar2 = CCheckListBox::GetCheckStyle(in_ECX);
     iVar3 = FUN_005e395a(uVar2,iVar4);
     iVar4 = FUN_005c55d0();
     iVar4 = ((-((iVar3 === 0) >>> 0) & 0xfffffffe) + 1) * iVar4;
-    pCVar5 = COleClientItem::GetActiveView((COleClientItem *)param_1);
-    pCVar6 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
+    // DEVIATION: MFC — pCVar5 = COleClientItem::GetActiveView((COleClientItem *)param_1);
+    // DEVIATION: MFC — pCVar6 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
     uVar7 = FUN_005c5640(s32(in_ECX, 0x44) * local_20[0].left,local_20[0].top,
                          s32(in_ECX, 0x44) * local_30[0].left,local_30[0].top,
                          s32(in_ECX, 0x44) * local_8,local_c,pCVar6,pCVar5,iVar4);
@@ -440,22 +440,22 @@ export function FUN_005c0753(param_1, param_2, param_3) {
       iVar2 = FUN_005c5680();
       if (iVar2 === 0x140) {
         uVar3 = FUN_005c56a0();
-        uVar4 = CCheckListBox::GetCheckStyle(in_ECX);
+        // DEVIATION: MFC — uVar4 = CCheckListBox::GetCheckStyle(in_ECX);
         iVar2 = FUN_005e395a(uVar4,uVar3);
         iVar5 = FUN_005c55d0();
         uVar3 = FUN_005c5660(((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar5);
-        pCVar6 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
+        // DEVIATION: MFC — pCVar6 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
         uVar3 = FUN_005c5640(local_14,local_24[0].left,local_24[0].top,local_34[0].left,local_34[0].top,local_8,
                              local_c,pCVar6,uVar3);
         FUN_005e511c(uVar3);
       }
       else {
         uVar3 = FUN_005c56a0();
-        uVar4 = CCheckListBox::GetCheckStyle(in_ECX);
+        // DEVIATION: MFC — uVar4 = CCheckListBox::GetCheckStyle(in_ECX);
         iVar2 = FUN_005e395a(uVar4,uVar3);
         iVar5 = FUN_005c55d0();
         uVar3 = FUN_005c5660(((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar5);
-        pCVar6 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
+        // DEVIATION: MFC — pCVar6 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
         uVar3 = FUN_005c5640(local_14,s32(in_ECX, 0x44) * local_24[0].left,local_24[0].top,
                              s32(in_ECX, 0x44) * local_34[0].left,local_34[0].top,
                              s32(in_ECX, 0x44) * local_8,local_c,pCVar6,uVar3);
@@ -567,7 +567,7 @@ export function FUN_005c0b2c(in_ECX, param_1, param_2, param_3) {
   uVar3 = FUN_00407f90(param_3,uVar2);
   uVar2 = param_3[1];
   uVar5 = param_3[0];
-  uVar4 = CCheckListBox::GetCheckStyle(param_1);
+  // DEVIATION: MFC — uVar4 = CCheckListBox::GetCheckStyle(param_1);
   uVar2 = FUN_00407fc0(param_2,uVar4,uVar5,uVar2,uVar3);
   uVar2 = FUN_00407f90(param_2,uVar2);
   stretch_blit_CD66(s32(in_ECX, 0x40),param_2[0],param_2[1],uVar2);
@@ -640,10 +640,10 @@ export function FUN_005c0cc5(in_ECX, param_1) {
   let iVar1;
   // in_ECX → promoted to parameter
   
-  iVar1 = CSplitterWnd::IsTracking(param_1);
+  // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
   if (iVar1 !== s32(in_ECX, 0x3c)) {
     FUN_005e3bdc(s32(in_ECX, 0x40),param_1);
-    iVar1 = CSplitterWnd::IsTracking(param_1);
+    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
     w32(in_ECX, 0x3c, iVar1);
   }
   return;
@@ -663,10 +663,10 @@ export function FUN_005c0d12(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (param_1 !== null) {
-    iVar1 = CSplitterWnd::IsTracking(param_1);
+    // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
     if (iVar1 !== s32(in_ECX, 0x3c)) {
       FUN_005e3bdc(s32(in_ECX, 0x40),param_1);
-      iVar1 = CSplitterWnd::IsTracking(param_1);
+      // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(param_1);
       w32(in_ECX, 0x3c, iVar1);
     }
   }
@@ -693,15 +693,15 @@ export function FUN_005c0d69(in_ECX, param_1, param_2, param_3, param_4) {
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_4 & 0x10) !== 0) {
-      iVar2 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
+      // DEVIATION: C pointer — iVar2 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar2 = iVar2 + (iVar2 >> 0x1f & 7);
       iVar3 = iVar2 >> 3;
       uVar1 = FUN_005c19ad(CONCAT31((int3)(iVar2 >> 0xb),DAT_00638b40));
-      FUN_005e3cb4(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,
+      // DEVIATION: C pointer — FUN_005e3cb4(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,
                    iVar3 + param_2,iVar3 + param_3,in_ECX + 0x14,param_4);
       FUN_005c19ad(uVar1);
     }
-    FUN_005e3cb4(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
+    // DEVIATION: C pointer — FUN_005e3cb4(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
                  param_3,in_ECX + 0x14,param_4);
   }
   return;
@@ -727,7 +727,7 @@ export function FUN_005c0e57(in_ECX, param_1, param_2, param_3) {
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_3 & 0x10) !== 0) {
-      iVar2 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
+      // DEVIATION: C pointer — iVar2 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar2 = (iVar2 + (iVar2 >> 0x1f & 7)) >> 3;
       local_14[0].left = param_2[0];
       local_14[0].top = param_2[1];
@@ -735,11 +735,11 @@ export function FUN_005c0e57(in_ECX, param_1, param_2, param_3) {
       local_14[0].bottom = param_2[3];
       OffsetRect(local_14[0],iVar2,iVar2);
       uVar1 = FUN_005c19ad(DAT_00638b40);
-      handle_colortable_3ECA(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,local_14[0],
+      // DEVIATION: C pointer — handle_colortable_3ECA(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,local_14[0],
                    param_3);
       FUN_005c19ad(uVar1);
     }
-    handle_colortable_3ECA(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
+    // DEVIATION: C pointer — handle_colortable_3ECA(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
                  param_3);
   }
   return;
@@ -825,7 +825,7 @@ export function FUN_005c10fb(in_ECX, param_1, param_2, param_3) {
     debug_log(s_Error__No_current_font_selected_006372e0);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
-    handle_colortable_3FEB(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
+    // DEVIATION: C pointer — handle_colortable_3FEB(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
                  param_3);
   }
   return;
@@ -885,11 +885,11 @@ export function FUN_005c11b2(param_1, param_2, param_3, param_4) {
         param_3 = s32(in_ECX, 0x1c) + -1;
       }
       if (param_3 !== param_1) {
-        uVar1 = CCheckListBox::GetCheckStyle(in_ECX);
+        // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(in_ECX);
         iVar2 = FUN_005e395a(uVar1);
         iVar3 = FUN_005c55d0();
         iVar3 = ((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar3;
-        pCVar4 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
+        // DEVIATION: MFC — pCVar4 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
         iVar2 = param_3;
         if (param_1 <= param_3) {
           iVar2 = param_1;
@@ -913,11 +913,11 @@ export function FUN_005c11b2(param_1, param_2, param_3, param_4) {
         param_4 = s32(in_ECX, 0x20) + -1;
       }
       if (param_4 !== param_2) {
-        uVar1 = CCheckListBox::GetCheckStyle(in_ECX);
+        // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(in_ECX);
         iVar2 = FUN_005e395a(uVar1);
         iVar3 = FUN_005c55d0();
         iVar3 = ((-((iVar2 === 0) >>> 0) & 0xfffffffe) + 1) * iVar3;
-        pCVar4 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
+        // DEVIATION: MFC — pCVar4 = COleClientItem::GetActiveView((COleClientItem *)in_ECX);
         iVar2 = param_4;
         if (param_2 <= param_4) {
           iVar2 = param_2;
@@ -1146,11 +1146,11 @@ export function FUN_005c1a62(in_ECX, param_1, param_2) {
   let local_8;
   
   if (s32(in_ECX, 0x34) !== 0) {
-    local_10 = *(byte **)(in_ECX + 0x34);
+    // DEVIATION: C pointer — local_10 = *(byte **)(in_ECX + 0x34);
     for (local_8 = 0; local_8 < s32(in_ECX, 8); local_8 = local_8 + 1) {
       for (local_c = 0; local_c < s32(in_ECX, 4); local_c = local_c + 1) {
         if (-1 < ((uint)*local_10 - param_2)) {
-          *local_10 = *(byte *)(((uint)*local_10 - param_2) + param_1);
+          // DEVIATION: C pointer — *local_10 = *(byte *)(((uint)*local_10 - param_2) + param_1);
         }
         local_10 = local_10 + 1;
       }
@@ -1682,7 +1682,7 @@ export function FUN_005c27ad(in_ECX, param_1) {
   let iVar4;
   undefined3 uVar5;
   // in_ECX → promoted to parameter
-  let auStack_23c [256];
+  let auStack_23c = new Array(256).fill(0);
   tagRECT local_3c[0];
   let local_2c;
   let local_28;
@@ -1773,7 +1773,7 @@ export function FUN_005c2a77(in_ECX, unaff_ESI, param_1) {
   // in_ECX → promoted to parameter
   // unaff_ESI → promoted to parameter
   // DEVIATION: SEH
-  let auStack_2e0 [256];
+  let auStack_2e0 = new Array(256).fill(0);
   let local_e0;
   tagRECT local_dc[0];
   let local_cc;
@@ -1908,15 +1908,15 @@ export function FUN_005c2e5e(in_ECX, param_1) {
   let iVar3;
   // in_ECX → promoted to parameter
   let local_550;
-  let local_54c [2];
-  let auStack_54a [191];
+  let local_54c = new Array(2).fill(0);
+  let auStack_54a = new Array(191).fill(0);
   let local_24c;
   tagRECT local_248[0];
   let local_238;
   let local_234;
   let local_230;
   let local_22c;
-  let auStack_228 [256];
+  let auStack_228 = new Array(256).fill(0);
   let local_28 = [0];
   let local_27;
   let local_26;
@@ -1942,7 +1942,7 @@ export function FUN_005c2e5e(in_ECX, param_1) {
   }
   else {
     local_14 = (char *)FUN_005c5560(local_230);
-    iVar3 = _strcmp(local_14,&DAT_006375ec);
+    iVar3 = _strcmp(local_14,DAT_006375ec);
     if (iVar3 === 0) {
       FUN_005d2279(s_Error__Resource_is_not_a_GIF___006375f0,param_1);
       FUN_005c5580(local_230);
@@ -1992,7 +1992,7 @@ export function FUN_005c2e5e(in_ECX, param_1) {
           FUN_005e3988(local_20);
         }
         FUN_005c1c99(local_248[0]);
-        local_10 = *(char **)(in_ECX + 0x34);
+        // DEVIATION: C pointer — local_10 = *(char **)(in_ECX + 0x34);
         local_8 = (byte *)FUN_005e3a81(local_20);
         for (local_22c = 0; local_22c < local_24; local_22c = local_22c + 1) {
           local_238 = (undefined2 *)local_10;
@@ -2040,14 +2040,14 @@ export function FUN_005c3313(in_ECX, unaff_ESI, param_1) {
   // unaff_ESI → promoted to parameter
   // DEVIATION: SEH
   let local_5ec;
-  let local_5e8 [2];
-  let auStack_5e6 [191];
+  let local_5e8 = new Array(2).fill(0);
+  let auStack_5e6 = new Array(191).fill(0);
   let local_2e8;
   tagRECT local_2e4[0];
   let local_2d4;
   let local_2d0;
   let local_2cc;
-  let auStack_2c8 [256];
+  let auStack_2c8 = new Array(256).fill(0);
   let local_c8;
   let local_c4;
   let local_c0;
@@ -2076,7 +2076,7 @@ export function FUN_005c3313(in_ECX, unaff_ESI, param_1) {
     return;
   }
   local_20 = (char *)FUN_005c5470();
-  iVar2 = _strcmp(local_20,&DAT_00637758);
+  iVar2 = _strcmp(local_20,DAT_00637758);
   if (iVar2 === 0) {
     debug_log(s_Error__Resource_is_not_a_GIF___0063775c);
     FUN_005c54a0();
@@ -2140,7 +2140,7 @@ export function FUN_005c3313(in_ECX, unaff_ESI, param_1) {
     FUN_005e3988(local_c4);
   }
   FUN_005c1c99(local_2e4[0]);
-  local_1c = *(char **)(in_ECX + 0x34);
+  // DEVIATION: C pointer — local_1c = *(char **)(in_ECX + 0x34);
   local_14 = (byte *)FUN_005e3a81(local_c4);
   for (local_2cc = 0; local_2cc < local_c8; local_2cc = local_2cc + 1) {
     local_2d4 = (undefined2 *)local_1c;
@@ -2209,15 +2209,15 @@ export function FUN_005c3874(in_ECX, param_1) {
   let iVar3;
   // in_ECX → promoted to parameter
   let local_548;
-  let local_544 [2];
-  let auStack_542 [191];
+  let local_544 = new Array(2).fill(0);
+  let auStack_542 = new Array(191).fill(0);
   let local_244;
   tagRECT local_240[0];
   let local_230;
   let local_22c;
   let local_228;
   let local_224;
-  let auStack_220 [256];
+  let auStack_220 = new Array(256).fill(0);
   let local_20 = [0];
   let local_1f;
   let local_1e;
@@ -2244,7 +2244,7 @@ export function FUN_005c3874(in_ECX, param_1) {
     local_14 = FUN_005c5410((int)*local_c);
     local_1c = FUN_005c5410(local_c[1]);
     SetRect(local_240[0],0,0,local_14,local_1c);
-    local_244 = *(byte *)(local_c + 5) + 1;
+    // DEVIATION: C pointer — local_244 = *(byte *)(local_c + 5) + 1;
     local_10 = local_c + 3;
     _memcpy(local_544,local_10,local_244 * 3);
     local_22c = 0;
@@ -2265,7 +2265,7 @@ export function FUN_005c3874(in_ECX, param_1) {
       FUN_005e3988(local_18);
     }
     FUN_005c1c99(local_240[0]);
-    local_10 = *(short **)(in_ECX + 0x34);
+    // DEVIATION: C pointer — local_10 = *(short **)(in_ECX + 0x34);
     local_8 = (byte *)FUN_005e3a81(local_18);
     for (local_224 = 0; local_224 < local_1c; local_224 = local_224 + 1) {
       local_230 = local_10;
@@ -2304,14 +2304,14 @@ export function FUN_005c3b7a(in_ECX, unaff_ESI, param_1) {
   // unaff_ESI → promoted to parameter
   // DEVIATION: SEH
   let local_5e4;
-  let local_5e0 [2];
-  let auStack_5de [191];
+  let local_5e0 = new Array(2).fill(0);
+  let auStack_5de = new Array(191).fill(0);
   let local_2e0;
   tagRECT local_2dc[0];
   let local_2cc;
   let local_2c8;
   let local_2c4;
-  let auStack_2c0 [256];
+  let auStack_2c0 = new Array(256).fill(0);
   let local_c0;
   let local_bc;
   let local_b8;
@@ -2341,7 +2341,7 @@ export function FUN_005c3b7a(in_ECX, unaff_ESI, param_1) {
   local_b8 = FUN_005c5410((int)*local_18);
   local_c0 = FUN_005c5410(local_18[1]);
   SetRect(local_2dc[0],0,0,local_b8,local_c0);
-  local_2e0 = *(byte *)(local_18 + 5) + 1;
+  // DEVIATION: C pointer — local_2e0 = *(byte *)(local_18 + 5) + 1;
   local_1c = local_18 + 3;
   _memcpy(local_5e0,local_1c,local_2e0 * 3);
   local_2c8 = 0;
@@ -2362,7 +2362,7 @@ export function FUN_005c3b7a(in_ECX, unaff_ESI, param_1) {
     FUN_005e3988(local_bc);
   }
   FUN_005c1c99(local_2dc[0]);
-  local_1c = *(short **)(in_ECX + 0x34);
+  // DEVIATION: C pointer — local_1c = *(short **)(in_ECX + 0x34);
   local_14 = (byte *)FUN_005e3a81(local_bc);
   for (local_2c4 = 0; local_2c4 < local_c0; local_2c4 = local_2c4 + 1) {
     local_2cc = local_1c;
@@ -2867,8 +2867,8 @@ export function FUN_005c4a27(param_1, param_2, param_3, param_4) {
   local_c = FUN_00407f90(local_20[0]);
   if ((local_c !== 0) && (local_10 = FUN_00407fc0(local_20[0]), local_10 !== 0)) {
     if (s32(in_ECX, 0x44) === 2) {
-      pCVar2 = COleClientItem::GetActiveView(in_ECX);
-      uVar3 = CCheckListBox::GetCheckStyle((CCheckListBox *)in_ECX);
+      // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView(in_ECX);
+      // DEVIATION: MFC — uVar3 = CCheckListBox::GetCheckStyle((CCheckListBox *)in_ECX);
       iVar4 = FUN_005e395a(uVar3,pCVar2);
       iVar5 = FUN_005c55d0();
       FUN_005e4ef8(s32(in_ECX, 0x34),param_2,param_3,param_4,local_20[0].left,local_20[0].top
@@ -2925,7 +2925,7 @@ export function FUN_005c4b7f(in_ECX, param_1, param_2, param_3) {
     local_c = local_1c[0].bottom - local_1c[0].top;
   }
   if ((local_8 !== 0) && (local_c !== 0)) {
-    uVar1 = CCheckListBox::GetCheckStyle(param_1);
+    // DEVIATION: MFC — uVar1 = CCheckListBox::GetCheckStyle(param_1);
     blit_CC8D(s32(in_ECX, 0x40),local_1c[0].left,local_1c[0].top,local_8,local_c,uVar1,
                  local_2c[0].left,local_2c[0].top);
   }
@@ -3016,12 +3016,12 @@ export function FUN_005c4dd3(in_ECX, param_1, param_2, param_3, param_4, param_5
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_4 & 0x10) !== 0) {
-      iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
+      // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
-      FUN_005e47a5(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,
+      // DEVIATION: C pointer — FUN_005e47a5(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,
                    iVar1 + param_2,iVar1 + param_3,in_ECX + 0x14,param_4,0,0,0);
     }
-    FUN_005e47a5(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
+    // DEVIATION: C pointer — FUN_005e47a5(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
                  param_3,in_ECX + 0x14,param_4,param_5,param_6,param_7);
   }
   return;
@@ -3046,17 +3046,17 @@ export function FUN_005c4eb6(in_ECX, param_1, param_2, param_3) {
   }
   else if (s32(in_ECX, 0x40) !== 0) {
     if ((param_3 & 0x10) !== 0) {
-      iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
+      // DEVIATION: C pointer — iVar1 = gdi_847F(*(undefined4 *)PTR_DAT_00637e5c);
       iVar1 = (iVar1 + (iVar1 >> 0x1f & 7)) >> 3;
       local_14[0].left = param_2[0];
       local_14[0].top = param_2[1];
       local_14[0].right = param_2[2];
       local_14[0].bottom = param_2[3];
       OffsetRect(local_14[0],iVar1,iVar1);
-      FUN_005e49a0(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,local_14[0],
+      // DEVIATION: C pointer — FUN_005e49a0(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,local_14[0],
                    param_3,0,0,0);
     }
-    handle_colortable_3ECA(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
+    // DEVIATION: C pointer — handle_colortable_3ECA(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
                  param_3);
   }
   return;
@@ -3138,7 +3138,7 @@ export function FUN_005c512d(in_ECX, param_1, param_2, param_3, param_4, param_5
     debug_log(s_Error__No_current_font_selected_00637bcc);
   }
   else if (s32(in_ECX, 0x40) !== 0) {
-    FUN_005e4aa6(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
+    // DEVIATION: C pointer — FUN_005e4aa6(s32(in_ECX, 0x40),*(undefined4 *)PTR_DAT_00637e5c,param_1,param_2,
                  param_3,param_4,param_5,param_6);
   }
   return;
@@ -3403,11 +3403,11 @@ export function FUN_005c55d0(in_ECX) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
+    // DEVIATION: MFC — public: unsigned int __thiscall CCheckListBox::GetCheckStyle(void)
    
    Library: Visual Studio 1998 Debug */
 
-uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
+// DEVIATION: MFC — uint __thiscall CCheckListBox::GetCheckStyle(CCheckListBox *this)
 
 {
   return u32(this, 0x40);
@@ -3503,7 +3503,7 @@ export function FUN_005c56a0(in_ECX) {
 void __thiscall _Timevec::~_Timevec(_Timevec *this)
 
 {
-  FUN_005e92c9(*(undefined4 *)this);
+  // DEVIATION: C pointer — FUN_005e92c9(*(undefined4 *)this);
   return;
 }
 
@@ -3515,11 +3515,11 @@ void __thiscall _Timevec::~_Timevec(_Timevec *this)
 // ============================================================
 
 /* Library Function - Single Match
-    public: int __thiscall CSplitterWnd::IsTracking(void)
+    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
    
    Library: Visual Studio 1998 Debug */
 
-int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
 
 {
   return s32(this, 0x408);
@@ -3825,7 +3825,7 @@ export function FUN_005c5b7f(in_ECX) {
   local_8 = s32(in_ECX, 0xb8);
   while( true ) {
     if (local_8 === 0) {
-      if ((s32(in_ECX, 0xb8) !== 0) && (*(char *)(in_ECX + 0xc4) !== 0)) {
+      // DEVIATION: C pointer — if ((s32(in_ECX, 0xb8) !== 0) && (*(char *)(in_ECX + 0xc4) !== 0)) {
         FUN_005eabcc(in_ECX,s32(in_ECX, 0xb8));
       }
       return;
@@ -3834,7 +3834,7 @@ export function FUN_005c5b7f(in_ECX) {
     if (cVar1 !== 0) break;
     local_8 = FUN_005c5e80();
   }
-  if (*(char *)(in_ECX + 0xc4) === 0) {
+  // DEVIATION: C pointer — if (*(char *)(in_ECX + 0xc4) === 0) {
     return;
   }
   FUN_005eabcc(in_ECX,local_8);
@@ -3896,7 +3896,7 @@ export function FUN_005c5c86(in_ECX, param_1) {
   local_b = 0;
   __strlwr((char *)local_c[0]);
   sVar1 = local_c[0];
-  local_10 = *(streambuf **)(in_ECX + 0xb8);
+  // DEVIATION: C pointer — local_10 = *(streambuf **)(in_ECX + 0xb8);
   do {
     if (local_10 === null) {
       return local_14;
@@ -3911,7 +3911,7 @@ export function FUN_005c5c86(in_ECX, param_1) {
         iVar5 = FUN_005c5f00();
         for (local_20 = 0; local_20 < iVar5; local_20 = local_20 + 1) {
           if ((-1 < s32(iVar2, 0xa0 + local_20 * 0xa4)) &&
-             (*(streambuf *)(iVar2 + 0x9c + local_20 * 0xa4) === sVar1)) {
+             // DEVIATION: C pointer — (*(streambuf *)(iVar2 + 0x9c + local_20 * 0xa4) === sVar1)) {
             invalidate_9A9A(s32(iVar2, local_20 * 0xa4));
             local_14 = 1;
             local_8 = 0x01;
@@ -3922,7 +3922,7 @@ export function FUN_005c5c86(in_ECX, param_1) {
     }
     else if (local_10[0x25] === sVar1) {
       iVar2 = FUN_005c5e60();
-      if ((iVar2 === 6) && (pcVar3 = streambuf::egptr(local_10), pcVar3 !== null)) {
+      // DEVIATION: MFC — if ((iVar2 === 6) && (pcVar3 = streambuf::egptr(local_10), pcVar3 !== null)) {
         uVar4 = FUN_00418770();
         FUN_005cac22(uVar4);
         return 1;
@@ -3934,7 +3934,7 @@ export function FUN_005c5c86(in_ECX, param_1) {
         return 1;
       }
     }
-    local_10 = *(streambuf **)(local_10 + 0x20);
+    // DEVIATION: C pointer — local_10 = *(streambuf **)(local_10 + 0x20);
   } while( true );
 }
 
@@ -3980,7 +3980,7 @@ export function FUN_005c5ea0(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  return *(undefined1 *)(in_ECX + 0x24);
+  // DEVIATION: C pointer — return *(undefined1 *)(in_ECX + 0x24);
 }
 
 
@@ -4207,7 +4207,7 @@ export function FUN_005c61b0(in_ECX) {
     while (s32(in_ECX, 0x8c) !== 0) {
       FUN_0040ef50();
       if (s32(in_ECX, 0xa4) !== 0) {
-        (**(code **)(in_ECX + 0xa4))();
+        // DEVIATION: C pointer — (**(code **)(in_ECX + 0xa4))();
       }
     }
     if (DAT_00637ea8 === 0) {
@@ -4234,11 +4234,11 @@ export function FUN_005c61b0(in_ECX) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
+    // DEVIATION: MFC — public: void __thiscall CRichEditDoc::InvalidateObjectCache(void)
    
    Library: Visual Studio 1998 Debug */
 
-void __thiscall CRichEditDoc::InvalidateObjectCache(CRichEditDoc *this)
+// DEVIATION: MFC — void __thiscall CRichEditDoc::InvalidateObjectCache(CRichEditDoc *this)
 
 {
   s32(this, 0x8c) = 0;
@@ -4332,7 +4332,7 @@ export function FUN_005c63af(in_ECX, param_1) {
   
   bVar1 = s32(in_ECX, 0xa0) !== 0;
   if (bVar1) {
-    (**(code **)(in_ECX + 0xa0))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0xa0))(param_1);
   }
   return bVar1;
 }
@@ -4403,9 +4403,9 @@ export function FUN_005c64da(in_ECX) {
   uVar1 = FUN_005dec4e(in_ECX);
   w32(in_ECX, 0x404, uVar1);
   FUN_005c6a42();
-  *(undefined1 *)(in_ECX + 0x424) = 0;
-  *(undefined1 *)(in_ECX + 0x425) = 0;
-  *(undefined1 *)(in_ECX + 0x426) = 0;
+  // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x424) = 0;
+  // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x425) = 0;
+  // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x426) = 0;
   w32(in_ECX, 0x430, 0);
   w32(in_ECX, 0x42c, s32(in_ECX, 0x430));
   w32(in_ECX, 0x428, s32(in_ECX, 0x42c));
@@ -4772,9 +4772,9 @@ export function FUN_005c6b05() {
 // ============================================================
 
 /* Library Function - Multiple Matches With Same Base Name
-    protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
+    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CHtmlStream::Realloc(unsigned char *,unsigned
    long)
-    protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
+    // DEVIATION: MFC — protected: virtual unsigned char * __thiscall CMemFile::Realloc(unsigned char *,unsigned long)
    
    Library: Visual Studio 1998 Debug */
 
@@ -4926,9 +4926,9 @@ export function FUN_005c6edc(in_ECX, param_1, param_2, param_3, param_4, param_5
 
   // in_ECX → promoted to parameter
   
-  *(undefined1 *)(in_ECX + 0x424) = param_4;
-  *(undefined1 *)(in_ECX + 0x425) = param_5;
-  *(undefined1 *)(in_ECX + 0x426) = param_6;
+  // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x424) = param_4;
+  // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x425) = param_5;
+  // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x426) = param_6;
   FUN_005c6e36(param_1,param_2,param_3);
   return;
 }
@@ -5000,24 +5000,24 @@ export function FUN_005c701c(in_ECX, param_1) {
     FUN_005d2279(s_Color_Scale_factor_out_of_range_00637c34,param_1);
   }
   else {
-    bVar1 = *(byte *)(in_ECX + 0x424);
+    // DEVIATION: C pointer — bVar1 = *(byte *)(in_ECX + 0x424);
     iVar4 = s32(in_ECX, 0x40c);
-    bVar2 = *(byte *)(in_ECX + 0x426);
+    // DEVIATION: C pointer — bVar2 = *(byte *)(in_ECX + 0x426);
     iVar5 = s32(in_ECX, 0x40c);
-    bVar3 = *(byte *)(in_ECX + 0x425);
+    // DEVIATION: C pointer — bVar3 = *(byte *)(in_ECX + 0x425);
     iVar6 = s32(in_ECX, 0x40c);
     cVar8 = s8(param_1);
     cVar7 = s8(s32)(in_ECX, 0x40c) - cVar8;
     iVar9 = FUN_005dcdf9(s32(in_ECX, 0x430));
     for (local_20 = 0; local_20 < s32(in_ECX, 0x414) * 3; local_20 = local_20 + 3) {
       FUN_005deadb(in_ECX,s32(in_ECX, 0x410) + local_20 / 3,
-                   s8(*(byte *)(local_20 + iVar9) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_20 + iVar9) /
                          s32(in_ECX, 0x40c)) * cVar8 +
                    cVar7 * s8(bVar1 / iVar4),
-                   s8(*(byte *)(local_20 + 1 + iVar9) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_20 + 1 + iVar9) /
                          s32(in_ECX, 0x40c)) * cVar8 +
                    cVar7 * s8(bVar3 / iVar6),
-                   s8(*(byte *)(local_20 + 2 + iVar9) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_20 + 2 + iVar9) /
                          s32(in_ECX, 0x40c)) * cVar8 +
                    cVar7 * s8(bVar2 / iVar5));
     }
@@ -5109,17 +5109,17 @@ export function FUN_005c738e(in_ECX, param_1) {
     iVar4 = FUN_005dcdf9(s32(in_ECX, 0x42c));
     for (local_18 = 0; local_18 < s32(in_ECX, 0x420) * 3; local_18 = local_18 + 3) {
       FUN_005deadb(in_ECX,s32(in_ECX, 0x41c) + local_18 / 3,
-                   s8(*(byte *)(local_18 + iVar4) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_18 + iVar4) /
                          s32(in_ECX, 0x418)) * cVar1 +
-                   s8(*(byte *)(local_18 + iVar3) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_18 + iVar3) /
                          s32(in_ECX, 0x418)) * cVar2,
-                   s8(*(byte *)(local_18 + 1 + iVar3) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_18 + 1 + iVar3) /
                          s32(in_ECX, 0x418)) * cVar2 +
-                   s8(*(byte *)(local_18 + 1 + iVar4) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_18 + 1 + iVar4) /
                          s32(in_ECX, 0x418)) * cVar1,
-                   s8(*(byte *)(local_18 + 2 + iVar4) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_18 + 2 + iVar4) /
                          s32(in_ECX, 0x418)) * cVar1 +
-                   s8(*(byte *)(local_18 + 2 + iVar3) /
+                   // DEVIATION: C pointer — s8(*(byte *)(local_18 + 2 + iVar3) /
                          s32(in_ECX, 0x418)) * cVar2);
     }
     update_palette_EA62(in_ECX,s32(in_ECX, 0x404),s32(in_ECX, 0x41c),
@@ -5168,10 +5168,10 @@ export function FUN_005c7579(unaff_ESI, param_1, param_2, param_3, param_4) {
   FUN_005c6b63(iVar3,param_3,param_4);
   for (local_834 = 0; local_834 < param_4 * 3; local_834 = local_834 + 3) {
     uVar4 = (undefined3)(((local_834) >>> 0) >> 8);
-    uVar1 = FUN_005c7e06(CONCAT31(uVar4,*(undefined1 *)(local_834 + iVar3)),
-                         CONCAT31(uVar4,*(undefined1 *)(local_834 + 1 + iVar3)),
-                         CONCAT31(uVar4,*(undefined1 *)(local_834 + 2 + iVar3)),0x20);
-    *(undefined1 *)(param_1 + local_834 / 3) = uVar1;
+    // DEVIATION: C pointer — uVar1 = FUN_005c7e06(CONCAT31(uVar4,*(undefined1 *)(local_834 + iVar3)),
+                         // DEVIATION: C pointer — CONCAT31(uVar4,*(undefined1 *)(local_834 + 1 + iVar3)),
+                         // DEVIATION: C pointer — CONCAT31(uVar4,*(undefined1 *)(local_834 + 2 + iVar3)),0x20);
+    // DEVIATION: C pointer — *(undefined1 *)(param_1 + local_834 / 3) = uVar1;
   }
   FUN_005dce29(uVar2);
   uVar2 = FUN_005dce96(uVar2);
@@ -5252,10 +5252,10 @@ export function FUN_005c770a(unaff_ESI, param_1, param_2, param_3, param_4, para
   FUN_005c6b63(iVar3,param_3,param_4);
   for (iVar7 = 0; iVar7 < param_4 * 3; iVar7 = iVar7 + 3) {
     uVar5 = (undefined3)(((iVar7) >>> 0) >> 8);
-    uVar1 = FUN_005c7e06(CONCAT31(uVar5,*(undefined1 *)(iVar7 + iVar3)),
-                         CONCAT31(uVar5,*(undefined1 *)(iVar7 + 1 + iVar3)),
-                         CONCAT31(uVar5,*(undefined1 *)(iVar7 + 2 + iVar3)),0x20);
-    *(undefined1 *)(param_1 + iVar7 / 3) = uVar1;
+    // DEVIATION: C pointer — uVar1 = FUN_005c7e06(CONCAT31(uVar5,*(undefined1 *)(iVar7 + iVar3)),
+                         // DEVIATION: C pointer — CONCAT31(uVar5,*(undefined1 *)(iVar7 + 1 + iVar3)),
+                         // DEVIATION: C pointer — CONCAT31(uVar5,*(undefined1 *)(iVar7 + 2 + iVar3)),0x20);
+    // DEVIATION: C pointer — *(undefined1 *)(param_1 + iVar7 / 3) = uVar1;
   }
   uVar4 = FUN_005dce29(uVar2);
   uVar2 = FUN_005dce96(uVar2);
@@ -5459,18 +5459,18 @@ export function FUN_005c7a86(in_ECX, param_1, param_2, param_3) {
   local_20 = FUN_005c80fd(param_1);
   for (local_1c = local_20; iVar2 = local_8, -1 < local_1c; local_1c = local_1c + -1) {
     iVar1 = local_1c * 3;
-    local_17 = *(undefined1 *)(iVar1 + param_1);
-    local_18[0] = *(undefined1 *)(iVar1 + 1 + param_1);
-    local_16 = *(undefined1 *)(iVar1 + 2 + param_1);
+    // DEVIATION: C pointer — local_17 = *(undefined1 *)(iVar1 + param_1);
+    // DEVIATION: C pointer — local_18[0] = *(undefined1 *)(iVar1 + 1 + param_1);
+    // DEVIATION: C pointer — local_16 = *(undefined1 *)(iVar1 + 2 + param_1);
     local_14 = local_1c;
     local_8 = local_8 + 1;
     FUN_005c7c7b(local_18[0],iVar2);
   }
   while (iVar2 = local_8, local_20 = local_20 + 1, local_20 < in_ECX[3]) {
     iVar1 = local_20 * 3;
-    local_17 = *(undefined1 *)(iVar1 + param_1);
-    local_18[0] = *(undefined1 *)(iVar1 + 1 + param_1);
-    local_16 = *(undefined1 *)(iVar1 + 2 + param_1);
+    // DEVIATION: C pointer — local_17 = *(undefined1 *)(iVar1 + param_1);
+    // DEVIATION: C pointer — local_18[0] = *(undefined1 *)(iVar1 + 1 + param_1);
+    // DEVIATION: C pointer — local_16 = *(undefined1 *)(iVar1 + 2 + param_1);
     local_14 = local_20;
     local_8 = local_8 + 1;
     FUN_005c7c7b(local_18[0],iVar2);
@@ -5499,9 +5499,9 @@ export function FUN_005c7c7b(in_ECX, param_1, param_2) {
   local_14 = s32(*(int *, 0)(in_ECX + 4) + 0xc);
   local_8 = -1;
   bVar1 = true;
-  *(undefined1 *)(s32(in_ECX, 4) + 1 + param_2 * 0x10) = param_1[1];
-  *(undefined1 *)(s32(in_ECX, 4) + param_2 * 0x10) = param_1[0];
-  *(undefined1 *)(s32(in_ECX, 4) + 2 + param_2 * 0x10) = param_1[2];
+  // DEVIATION: C pointer — *(undefined1 *)(s32(in_ECX, 4) + 1 + param_2 * 0x10) = param_1[1];
+  // DEVIATION: C pointer — *(undefined1 *)(s32(in_ECX, 4) + param_2 * 0x10) = param_1[0];
+  // DEVIATION: C pointer — *(undefined1 *)(s32(in_ECX, 4) + 2 + param_2 * 0x10) = param_1[2];
   s32(*(int *, 0)(in_ECX + 4) + 4 + param_2 * 0x10) = s32(param_1, 4);
   s32(*(int *, 0)(in_ECX + 4) + 0xc + param_2 * 0x10) = s32(in_ECX, 8);
   s32(*(int *, 0)(in_ECX + 4) + 8 + param_2 * 0x10) =
@@ -5514,7 +5514,7 @@ export function FUN_005c7c7b(in_ECX, param_1, param_2) {
     else {
       local_8 = local_8 + 1;
     }
-    bVar1 = u8(param_1[local_8]) < *(byte *)(s32(in_ECX, 4) + local_14 * 0x10 + local_8);
+    // DEVIATION: C pointer — bVar1 = u8(param_1[local_8]) < *(byte *)(s32(in_ECX, 4) + local_14 * 0x10 + local_8);
     if (bVar1) {
       local_14 = s32(*(int *, 0)(in_ECX + 4) + 8 + local_14 * 0x10);
     }
@@ -5546,7 +5546,7 @@ export function FUN_005c7e06(in_ECX, param_1, param_2, param_3, param_4) {
   // in_ECX → promoted to parameter
   let local_40;
   let local_3c;
-  let local_38 [4];
+  let local_38 = new Array(4).fill(0);
   let local_28;
   let local_24;
   let local_20;
@@ -5571,16 +5571,16 @@ export function FUN_005c7e06(in_ECX, param_1, param_2, param_3, param_4) {
     local_38[3] = ((param_1) >>> 0) + param_4;
     local_28 = ((param_3) >>> 0) - param_4;
     local_24 = ((param_3) >>> 0) + param_4;
-    s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = 0xffffffff;
+    // DEVIATION: C pointer — s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = 0xffffffff;
     w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
-    s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = 0;
+    // DEVIATION: C pointer — s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = 0;
     w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
     while ((s32(in_ECX, 0x814) !== 0 && (local_3c !== 0))) {
       w32(in_ECX, 0x814, s32(in_ECX, 0x814) + -1);
       local_40 = s32(*(int *, 0)(in_ECX + 0x14 + s32(in_ECX, 0x814) * 4) * 0x10 + 0xc +
                          s32(in_ECX, 4));
       w32(in_ECX, 0x814, s32(in_ECX, 0x814) + -1);
-      local_8 = s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4);
+      // DEVIATION: C pointer — local_8 = s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4);
       while ((s32(in_ECX, 8) !== local_40 && (local_3c !== 0))) {
         w32(in_ECX, 0x81c, s32(in_ECX, 0x81c) + 1);
         if (local_8 === 2) {
@@ -5589,16 +5589,16 @@ export function FUN_005c7e06(in_ECX, param_1, param_2, param_3, param_4) {
         else {
           local_8 = local_8 + 1;
         }
-        local_14 = (uint)*(byte *)(s32(in_ECX, 4) + local_8 + local_40 * 0x10);
+        // DEVIATION: C pointer — local_14 = (uint)*(byte *)(s32(in_ECX, 4) + local_8 + local_40 * 0x10);
         if (local_38[local_8 * 2] < local_14) {
           if (local_14 <= local_38[local_8 * 2 + 1]) {
-            s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = local_8;
+            // DEVIATION: C pointer — s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = local_8;
             w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
-            s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = local_40;
+            // DEVIATION: C pointer — s32(in_ECX, 0x14 + s32(in_ECX, 0x814) * 4) = local_40;
             w32(in_ECX, 0x814, s32(in_ECX, 0x814) + 1);
-            local_1c = (uint)*(byte *)(s32(in_ECX, 4) + 1 + local_40 * 0x10);
-            local_20 = (uint)*(byte *)(s32(in_ECX, 4) + local_40 * 0x10);
-            local_18 = (uint)*(byte *)(s32(in_ECX, 4) + 2 + local_40 * 0x10);
+            // DEVIATION: C pointer — local_1c = (uint)*(byte *)(s32(in_ECX, 4) + 1 + local_40 * 0x10);
+            // DEVIATION: C pointer — local_20 = (uint)*(byte *)(s32(in_ECX, 4) + local_40 * 0x10);
+            // DEVIATION: C pointer — local_18 = (uint)*(byte *)(s32(in_ECX, 4) + 2 + local_40 * 0x10);
             local_10 = (local_1c - param_1) * (local_1c - param_1) +
                        (local_20 - param_2) * (local_20 - param_2) +
                        (local_18 - param_3) * (local_18 - param_3);
@@ -5643,10 +5643,10 @@ export function FUN_005c80fd(in_ECX, param_1) {
   local_8 = 0;
   local_14 = 100000000;
   for (local_10 = 0; local_10 < s32(in_ECX, 0xc) * 3; local_10 = local_10 + 3) {
-    iVar1 = (*(byte *)(local_10 + 2 + param_1) - 0x80) * (*(byte *)(local_10 + 2 + param_1) - 0x80)
-            + (*(byte *)(local_10 + 1 + param_1) - 0x80) *
-              (*(byte *)(local_10 + 1 + param_1) - 0x80) +
-            (*(byte *)(local_10 + param_1) - 0x80) * (*(byte *)(local_10 + param_1) - 0x80);
+    // DEVIATION: C pointer — iVar1 = (*(byte *)(local_10 + 2 + param_1) - 0x80) * (*(byte *)(local_10 + 2 + param_1) - 0x80)
+            // DEVIATION: C pointer — + (*(byte *)(local_10 + 1 + param_1) - 0x80) *
+              // DEVIATION: C pointer — (*(byte *)(local_10 + 1 + param_1) - 0x80) +
+            // DEVIATION: C pointer — (*(byte *)(local_10 + param_1) - 0x80) * (*(byte *)(local_10 + param_1) - 0x80);
     if (iVar1 < local_14) {
       local_8 = local_10 / 3;
       local_14 = iVar1;
@@ -5667,7 +5667,7 @@ export function create_font_8200(param_1, param_2, param_3) {
 
   LOGFONTA local_4c[0];
   let local_10;
-  HFONT local_c;
+  let local_c;
   let local_8;
   
   local_4c[0].lfHeight = -param_2;
@@ -5776,7 +5776,7 @@ export function gdi_847F(param_1) {
 
 
   let iVar1;
-  HDC hdc;
+  let hdc;
   HGDIOBJ h;
   tagTEXTMETRICA local_40[0];
   let local_8;
@@ -5807,7 +5807,7 @@ export function gdi_847F(param_1) {
 export function gdi_8514(param_1) {
 
 
-  HDC hdc;
+  let hdc;
   HGDIOBJ h;
   tagTEXTMETRICA local_40[0];
   let local_8;
@@ -5832,9 +5832,9 @@ export function gdi_8514(param_1) {
 export function measure_text_858E(param_1, param_2) {
 
 
-  HDC hdc;
+  let hdc;
   HGDIOBJ h;
-  size_t c;
+  let c;
   tagSIZE *lpsz;
   tagSIZE local_10[0];
   let local_8;
@@ -5890,8 +5890,8 @@ export function create_font_86BC(param_1, param_2, param_3, param_4) {
   let _Str2;
   let _Str1;
   let iVar1;
-  HFONT pHVar2;
-  size_t _MaxCount;
+  let pHVar2;
+  let _MaxCount;
   
   _MaxCount = 3;
   _Str2 = __strlwr((char *)(param_4 + 0x104));
@@ -5899,7 +5899,7 @@ export function create_font_86BC(param_1, param_2, param_3, param_4) {
   iVar1 = _strncmp(_Str1,_Str2,_MaxCount);
   if (iVar1 === 0) {
     pHVar2 = CreateFontIndirectA(param_1);
-    *(HFONT *)(param_4 + 0x108 + s32(param_4, 0x100) * 4) = pHVar2;
+    // DEVIATION: C pointer — *(HFONT *)(param_4 + 0x108 + s32(param_4, 0x100) * 4) = pHVar2;
     w32(param_4, 0x100, s32(param_4, 0x100) + 1);
   }
   return 1;
@@ -5915,7 +5915,7 @@ export function create_font_86BC(param_1, param_2, param_3, param_4) {
 export function gdi_8736(param_1) {
 
 
-  HDC hdc;
+  let hdc;
   
   hdc = GetDC((HWND)0x0);
   w32(param_1, 0x100, 0);
@@ -5934,14 +5934,14 @@ export function gdi_8736(param_1) {
 export function FUN_005c8791(param_1) {
 
 
-  LPCSTR pCVar1;
-  LPCSTR lpFileName;
+  let pCVar1;
+  let lpFileName;
   let local_c;
   
   lpFileName = (LPCSTR)FUN_005dcdf9(param_1);
   for (local_c = 0; local_c < s32(lpFileName, 0x100); local_c = local_c + 1) {
     if (s32(lpFileName, local_c * 4 + 0x108) !== 0) {
-      DeleteObject(*(HGDIOBJ *)(lpFileName + local_c * 4 + 0x108));
+      // DEVIATION: C pointer — DeleteObject(*(HGDIOBJ *)(lpFileName + local_c * 4 + 0x108));
       pCVar1 = lpFileName + local_c * 4 + 0x108;
       pCVar1[0] = 0;
       pCVar1[1] = 0;
@@ -5966,10 +5966,10 @@ export function render_text_8834(param_1, param_2, param_3, param_4) {
 
 
   let puVar1;
-  HDC hdc;
-  HDC hdc_00;
+  let hdc;
+  let hdc_00;
   HGDIOBJ h;
-  size_t cchText;
+  let cchText;
   tagRECT *lprc;
   UINT format;
   tagRECT local_14[0];
@@ -6004,7 +6004,7 @@ export function render_text_8834(param_1, param_2, param_3, param_4) {
 export function create_font_8908(param_1) {
 
 
-  HFONT pHVar1;
+  let pHVar1;
   let puVar2;
   let local_10;
   
@@ -6062,7 +6062,7 @@ export function send_msg_89ED(param_1) {
 
 
   let iVar1;
-  LPSTR lpString1;
+  let lpString1;
   let local_8;
   
   local_8 = 0;
@@ -6093,8 +6093,8 @@ export function send_msg_89ED(param_1) {
 export function send_msg_8A85(param_1) {
 
 
-  LPCSTR lpFileName;
-  BOOL BVar1;
+  let lpFileName;
+  let BVar1;
   
   if (param_1 !== 0) {
     lpFileName = (LPCSTR)FUN_005dcdf9(param_1);
@@ -6168,7 +6168,7 @@ export function FUN_005c8b83(param_1, param_2, param_3) {
 
   let nHeight;
   let nWidth;
-  BOOL bRepaint;
+  let bRepaint;
   tagRECT local_14[0];
   
   if (param_1 !== (HWND)0x0) {
@@ -6193,9 +6193,9 @@ export function create_window_8BE1(param_1, param_2) {
 
   let iVar1;
   let nWidth;
-  HWND pHVar2;
-  HMENU hMenu;
-  HINSTANCE hInstance;
+  let pHVar2;
+  let hMenu;
+  let hInstance;
   LPVOID lpParam;
   
   lpParam = (LPVOID)0x0;
@@ -6203,10 +6203,10 @@ export function create_window_8BE1(param_1, param_2) {
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  pHVar2 = *(HWND *)(iVar1 + 4);
+  // DEVIATION: C pointer — pHVar2 = *(HWND *)(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   nWidth = FUN_00407f90(param_1);
-  pHVar2 = CreateWindowExA(4,s_MSControlClass_00637ca8,&DAT_00637ca4,0x50000000,param_1[0],param_1[1],
+  pHVar2 = CreateWindowExA(4,s_MSControlClass_00637ca8,DAT_00637ca4,0x50000000,param_1[0],param_1[1],
                            nWidth,iVar1,pHVar2,hMenu,hInstance,lpParam);
   iVar1 = FUN_005c9499(pHVar2,param_2);
   w32(iVar1, 0x2c, 1);
@@ -6242,7 +6242,7 @@ export function FUN_005c8caf(param_1, param_2, param_3, param_4) {
 
   let iVar1;
   let piVar2;
-  BOOL BVar3;
+  let BVar3;
   let uVar4;
   tagRECT local_14[0];
   
@@ -6351,7 +6351,7 @@ export function FUN_005c8f70(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    (**(code **)(in_ECX + 0x2c))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x2c))(param_1);
   }
   return;
 }
@@ -6369,7 +6369,7 @@ export function FUN_005c8fb0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    (**(code **)(in_ECX + 0x30))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x30))(param_1);
   }
   return;
 }
@@ -6387,7 +6387,7 @@ export function FUN_005c8ff0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x34) !== 0) {
-    (**(code **)(in_ECX + 0x34))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x34))(param_1);
   }
   return;
 }
@@ -6405,7 +6405,7 @@ export function FUN_005c9030(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x38) !== 0) {
-    (**(code **)(in_ECX + 0x38))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x38))(param_1);
   }
   return;
 }
@@ -6423,7 +6423,7 @@ export function FUN_005c9070(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x3c) !== 0) {
-    (**(code **)(in_ECX + 0x3c))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x3c))(param_1);
   }
   return;
 }
@@ -6456,12 +6456,12 @@ export function update_palette_90CA(param_1, param_2) {
   CCheckListBox *this;
   let iVar2;
   let cx;
-  HDC hdcSrc;
+  let hdcSrc;
   LONG y1;
-  DWORD rop;
+  let rop;
   tagPOINT local_14[0];
   let local_c;
-  HWND local_8;
+  let local_8;
   
   local_8 = GetParent(param_2);
   LVar1 = GetWindowLongA(local_8,0xc);
@@ -6469,23 +6469,23 @@ export function update_palette_90CA(param_1, param_2) {
     GetWindowLongA(local_8,0);
     iVar2 = FUN_00414d10();
     if (s32(iVar2, 0x14) !== 0) {
-      FillRect((HDC)param_1[0],(RECT *)(param_1 + 2),*(HBRUSH *)(iVar2 + 0x14));
+      // DEVIATION: C pointer — FillRect((HDC)param_1[0],(RECT *)(param_1 + 2),*(HBRUSH *)(iVar2 + 0x14));
     }
   }
   else {
     this = (CCheckListBox *)GetWindowLongA(local_8,0xc);
     GetWindowLongA(local_8,0);
     iVar2 = FUN_00414d10();
-    local_c = CCheckListBox::GetCheckStyle(this);
+    // DEVIATION: MFC — local_c = CCheckListBox::GetCheckStyle(this);
     local_14[0].x = param_1[2];
     local_14[0].y = param_1[3];
-    MapWindowPoints(param_2,*(HWND *)(iVar2 + 4),local_14[0],1);
+    // DEVIATION: C pointer — MapWindowPoints(param_2,*(HWND *)(iVar2 + 4),local_14[0],1);
     if ((s32(iVar2, 0x18) !== 0) && (DAT_00638b48 === 1)) {
-      SelectPalette((HDC)param_1[0],*(HPALETTE *)(iVar2 + 0x18),0);
+      // DEVIATION: C pointer — SelectPalette((HDC)param_1[0],*(HPALETTE *)(iVar2 + 0x18),0);
       RealizePalette((HDC)param_1[0]);
     }
     rop = 0xcc0020;
-    hdcSrc = *(HDC *)(local_c + 4);
+    // DEVIATION: C pointer — hdcSrc = *(HDC *)(local_c + 4);
     LVar1 = local_14[0].x;
     y1 = local_14[0].y;
     iVar2 = FUN_00407fc0(param_1 + 2);
@@ -6505,10 +6505,10 @@ export function update_palette_90CA(param_1, param_2) {
 export function FUN_005c9222(param_1, param_2) {
 
 
-  size_t sVar1;
+  let sVar1;
   let local_10;
   let local_c;
-  let local_8 [4];
+  let local_8 = new Array(4).fill(0);
   
   local_c = param_2;
   w32(param_1, 0x28, 0);
@@ -6528,7 +6528,7 @@ export function FUN_005c9222(param_1, param_2) {
     local_8[0] = param_2[s32(param_1, 0x28)];
     local_8[1] = 0;
     __strlwr(local_8);
-    *(char *)(param_1 + 0x25) = local_8[0];
+    // DEVIATION: C pointer — *(char *)(param_1 + 0x25) = local_8[0];
   }
   else {
     w32(param_1, 0x28, 0xffffffff);
@@ -6546,9 +6546,9 @@ export function FUN_005c9222(param_1, param_2) {
 export function send_msg_9307(param_1, param_2, param_3, param_4) {
 
 
-  HWND hWnd;
+  let hWnd;
   let iVar1;
-  LRESULT LVar2;
+  let LVar2;
   tagPAINTSTRUCT local_44[0];
   
   if (param_2 < 0x10) {
@@ -6562,10 +6562,10 @@ export function send_msg_9307(param_1, param_2, param_3, param_4) {
       iVar1 = FUN_005c9563(param_1);
       if (iVar1 !== 0) {
         if (s32(iVar1, 0x2c) === 3) {
-          **(undefined4 **)(iVar1 + 0x24) = 0;
+          // DEVIATION: C pointer — **(undefined4 **)(iVar1 + 0x24) = 0;
         }
         else {
-          ios::delbuf(*(ios **)(iVar1 + 4),0);
+          // DEVIATION: MFC — ios::delbuf(*(ios **)(iVar1 + 4),0);
         }
         FUN_005c9595(param_1);
       }
@@ -6593,7 +6593,7 @@ export function manage_window_944B() {
 
 
   let iVar1;
-  HWND hWnd;
+  let hWnd;
   
   iVar1 = FUN_005c5e60();
   if ((iVar1 !== 3) && (iVar1 = FUN_00418770(), iVar1 !== 0)) {
@@ -6732,11 +6732,11 @@ export function invalidate_96CC(param_1) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: void __thiscall ios::delbuf(int)
+    // DEVIATION: MFC — public: void __thiscall ios::delbuf(int)
    
    Library: Visual Studio 1998 Debug */
 
-void __thiscall ios::delbuf(ios *this,int param_1)
+// DEVIATION: MFC — void __thiscall ios::delbuf(ios *this,int param_1)
 
 {
   s32(this, 0x1c) = param_1;
@@ -6755,49 +6755,49 @@ export function draw_text_9740(param_1, param_2, param_3, param_4) {
 
   let iVar1;
   let iVar2;
-  HDC hdc;
-  HBITMAP h;
-  HBITMAP h_00;
+  let hdc;
+  let h;
+  let h_00;
   CSplitterWnd *this;
   HPALETTE hPal;
-  HPEN h_01;
-  HPEN h_02;
+  let h_01;
+  let h_02;
   let uVar3;
   let puVar4;
   HGDIOBJ h_03;
   HGDIOBJ h_04;
-  size_t sVar5;
-  HWND hWndParent;
-  HMENU hMenu;
+  let sVar5;
+  let hWndParent;
+  let hMenu;
   LONG LVar6;
-  HINSTANCE hInstance;
+  let hInstance;
   tagRECT *ptVar7;
   LPVOID lpParam;
-  BOOL bForceBkgd;
+  let bForceBkgd;
   UINT UVar8;
   LONG LVar9;
-  DWORD local_2a0;
-  let local_278 [256];
+  let local_2a0;
+  let local_278 = new Array(256).fill(0);
   let local_178;
-  let local_174 [4];
+  let local_174 = new Array(4).fill(0);
   let local_170;
   let local_16c;
-  HBITMAP local_168;
-  HDC local_164;
-  let local_160 [4];
-  let local_15c [4];
+  let local_168;
+  let local_164;
+  let local_160 = new Array(4).fill(0);
+  let local_15c = new Array(4).fill(0);
   let local_158;
-  HWND local_154;
+  let local_154;
   tagRECT local_150[0];
   HGDIOBJ local_140;
-  let local_13c [256];
+  let local_13c = new Array(256).fill(0);
   let local_3c;
   let local_38;
   let local_34;
   let local_30;
   let local_2c;
   tagRECT local_28[0];
-  HPEN local_18;
+  let local_18;
   let local_14;
   let local_10;
   let local_c;
@@ -6814,10 +6814,10 @@ export function draw_text_9740(param_1, param_2, param_3, param_4) {
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  hWndParent = *(HWND *)(iVar1 + 4);
+  // DEVIATION: C pointer — hWndParent = *(HWND *)(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
-  local_154 = CreateWindowExA(4,s_MSControlClass_00637d70,&DAT_00637d6c,local_2a0,param_1[0],
+  local_154 = CreateWindowExA(4,s_MSControlClass_00637d70,DAT_00637d6c,local_2a0,param_1[0],
                               param_1[1],iVar2,iVar1,hWndParent,hMenu,hInstance,lpParam);
   FUN_005c9222(local_170,local_278);
   local_150[0].left = param_1[0];
@@ -6866,7 +6866,7 @@ export function draw_text_9740(param_1, param_2, param_3, param_4) {
             bForceBkgd = 0;
             FUN_0040f810();
             this = (CSplitterWnd *)FUN_00511320();
-            hPal = (HPALETTE)CSplitterWnd::IsTracking(this);
+            // DEVIATION: MFC — hPal = (HPALETTE)CSplitterWnd::IsTracking(this);
             SelectPalette(local_164,hPal,bForceBkgd);
             RealizePalette(local_164);
           }
@@ -7168,9 +7168,9 @@ export function draw_text_9740(param_1, param_2, param_3, param_4) {
         DeleteObject(h_02);
         DeleteDC(local_164);
         iVar1 = FUN_005c9499(local_154,param_2);
-        *(HBITMAP *)(iVar1 + 0xc) = h;
-        *(HBITMAP *)(iVar1 + 0x10) = h_00;
-        *(HBITMAP *)(iVar1 + 0x14) = local_168;
+        // DEVIATION: C pointer — *(HBITMAP *)(iVar1 + 0xc) = h;
+        // DEVIATION: C pointer — *(HBITMAP *)(iVar1 + 0x10) = h_00;
+        // DEVIATION: C pointer — *(HBITMAP *)(iVar1 + 0x14) = local_168;
         w32(iVar1, 0x2c, 6);
         SetWindowLongA(local_154,-4,0x5cacd4);
       }
@@ -7210,7 +7210,7 @@ export function FUN_005cac22(param_1) {
   let uVar3;
   
   iVar1 = FUN_005c9563(param_1);
-  if ((iVar1 !== 0) && (pcVar2 = streambuf::egptr(*(streambuf **)(iVar1 + 4)), pcVar2 !== null)
+  // DEVIATION: MFC — if ((iVar1 !== 0) && (pcVar2 = streambuf::egptr(*(streambuf **)(iVar1 + 4)), pcVar2 !== null)
      ) {
     SetFocus(param_1);
     w32(iVar1, 0x18, 1);
@@ -7239,28 +7239,28 @@ export function blit_ACD4(param_1, param_2, param_3, param_4) {
   let cVar1;
   SHORT SVar2;
   let piVar3;
-  BOOL BVar4;
+  let BVar4;
   LONG *pLVar5;
-  HWND pHVar6;
+  let pHVar6;
   let pcVar7;
   HGDIOBJ h;
   let iVar8;
   let cx;
   let uVar9;
-  HDC hdcSrc;
+  let hdcSrc;
   let x1;
   let y1;
   tagRECT *lpRect;
-  DWORD rop;
+  let rop;
   tagPAINTSTRUCT local_84[0];
   let local_44;
-  HDC local_40;
+  let local_40;
   HGDIOBJ local_3c;
   tagRECT local_38[0];
   streambuf *local_28;
-  HDC local_24;
+  let local_24;
   let local_20;
-  HBRUSH local_1c;
+  let local_1c;
   tagRECT local_18[0];
   let local_8;
   
@@ -7268,7 +7268,7 @@ export function blit_ACD4(param_1, param_2, param_3, param_4) {
   if (local_44 === 0) {
     return 0;
   }
-  local_28 = *(streambuf **)(local_44 + 4);
+  // DEVIATION: C pointer — local_28 = *(streambuf **)(local_44 + 4);
   if (0xf < param_2) {
     if (param_2 < 0x201) {
       if (param_2 !== 0x200) {
@@ -7278,7 +7278,7 @@ export function blit_ACD4(param_1, param_2, param_3, param_4) {
             SendMessageA(pHVar6,param_2,param_3,param_4);
             return 0;
           }
-          if ((param_3 === 0x20) && (pcVar7 = streambuf::egptr(local_28), pcVar7 !== null)) {
+          // DEVIATION: MFC — if ((param_3 === 0x20) && (pcVar7 = streambuf::egptr(local_28), pcVar7 !== null)) {
             FUN_0040f810();
             cVar1 = FUN_005cbdd0();
             if (cVar1 !== 0) {
@@ -7337,7 +7337,7 @@ export function blit_ACD4(param_1, param_2, param_3, param_4) {
         }
         LAB_005cb26a_helper(param_1, param_2, param_3, param_4, uVar9); return;
       }
-      pcVar7 = streambuf::egptr(local_28);
+      // DEVIATION: MFC — pcVar7 = streambuf::egptr(local_28);
       if (pcVar7 === null) {
         return 0;
       }
@@ -7371,7 +7371,7 @@ export function blit_ACD4(param_1, param_2, param_3, param_4) {
     lpRect = local_38[0];
     pHVar6 = GetParent(param_1);
     ValidateRect(pHVar6,lpRect);
-    pcVar7 = streambuf::egptr(local_28);
+    // DEVIATION: MFC — pcVar7 = streambuf::egptr(local_28);
     if (pcVar7 === null) {
       pHVar6 = GetFocus();
       if (pHVar6 === param_1) {
@@ -7380,20 +7380,20 @@ export function blit_ACD4(param_1, param_2, param_3, param_4) {
         if (cVar1 === 0) {
           FUN_0040f810();
           iVar8 = FUN_00414d10();
-          SetFocus(*(HWND *)(iVar8 + 4));
+          // DEVIATION: C pointer — SetFocus(*(HWND *)(iVar8 + 4));
         }
         else {
           SetFocus((HWND)0x0);
         }
       }
-      local_3c = *(HGDIOBJ *)(local_44 + 0x14);
+      // DEVIATION: C pointer — local_3c = *(HGDIOBJ *)(local_44 + 0x14);
     }
     else {
       if (s32(local_44, 0x18) === 0) {
-        local_3c = *(HGDIOBJ *)(local_44 + 0xc);
+        // DEVIATION: C pointer — local_3c = *(HGDIOBJ *)(local_44 + 0xc);
       }
       if (s32(local_44, 0x18) === 1) {
-        local_3c = *(HGDIOBJ *)(local_44 + 0x10);
+        // DEVIATION: C pointer — local_3c = *(HGDIOBJ *)(local_44 + 0x10);
       }
     }
     local_24 = CreateCompatibleDC(local_40);
@@ -7460,14 +7460,14 @@ export function create_window_B319(param_1, param_2, param_3, param_4, param_5, 
   let uVar3;
   let iVar4;
   let nWidth;
-  HWND hWndParent;
-  HMENU hMenu;
-  HINSTANCE hInstance;
+  let hWndParent;
+  let hMenu;
+  let hInstance;
   LPVOID lpParam;
-  DWORD local_44;
+  let local_44;
   tagRECT local_3c[0];
   let local_2c;
-  HWND local_28;
+  let local_28;
   tagRECT local_24[0];
   let local_14 = [0];
   let local_10;
@@ -7475,7 +7475,7 @@ export function create_window_B319(param_1, param_2, param_3, param_4, param_5, 
   let local_8;
   
   local_2c = param_3;
-  if (*(char *)(param_3 + 200) === 0) {
+  // DEVIATION: C pointer — if (*(char *)(param_3 + 200) === 0) {
     FUN_005bf930(param_4,param_6,param_7,s32(param_3, 0xc4));
     FUN_005bf930(param_5,param_6,param_7,s32(local_2c, 0xc4));
   }
@@ -7484,9 +7484,9 @@ export function create_window_B319(param_1, param_2, param_3, param_4, param_5, 
     FUN_005bd7db(param_5,param_6,param_7,s32(local_2c, 0xc4));
   }
   FUN_00453af0();
-  pCVar1 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
+  // DEVIATION: MFC — pCVar1 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
   pCVar1 = pCVar1 + param_2 + -1;
-  pCVar2 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
+  // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
   SetRect(local_3c[0],param_1,param_2,(pCVar2 + param_1 + -1),pCVar1);
   OffsetRect(local_3c[0],-local_3c[0].left,-local_3c[0].top);
   if (param_4 === param_5) {
@@ -7514,9 +7514,9 @@ export function create_window_B319(param_1, param_2, param_3, param_4, param_5, 
   FUN_005c19ad(0xf8);
   FUN_005c19ad(0xf8);
   FUN_005c19ad(0xff);
-  pCVar1 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
+  // DEVIATION: MFC — pCVar1 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
   pCVar1 = pCVar1 + param_2;
-  pCVar2 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
+  // DEVIATION: MFC — pCVar2 = COleClientItem::GetActiveView((COleClientItem *)(local_2c + 0x7c));
   SetRect(local_3c[0],param_1,param_2,(pCVar2 + param_1),pCVar1);
   local_44 = 0x40810000;
   if (param_8 !== 0) {
@@ -7527,10 +7527,10 @@ export function create_window_B319(param_1, param_2, param_3, param_4, param_5, 
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar4 = FUN_00414d10();
-  hWndParent = *(HWND *)(iVar4 + 4);
+  // DEVIATION: C pointer — hWndParent = *(HWND *)(iVar4 + 4);
   iVar4 = FUN_00407fc0(local_3c[0]);
   nWidth = FUN_00407f90(local_3c[0]);
-  local_28 = CreateWindowExA(4,s_MSControlClass_00637e34,&DAT_00637e30,local_44,param_1,param_2,
+  local_28 = CreateWindowExA(4,s_MSControlClass_00637e34,DAT_00637e30,local_44,param_1,param_2,
                              nWidth,iVar4,hWndParent,hMenu,hInstance,lpParam);
   iVar4 = FUN_005c9499(local_28,param_3);
   w32(iVar4, 0x2c, 5);
@@ -7550,14 +7550,14 @@ export function create_window_B601(param_1, param_2, param_3, param_4, param_5, 
 
   let iVar1;
   let nWidth;
-  HWND hWndParent;
-  HMENU hMenu;
-  HINSTANCE hInstance;
+  let hWndParent;
+  let hMenu;
+  let hInstance;
   LPVOID lpParam;
-  DWORD local_24;
+  let local_24;
   tagRECT local_1c[0];
   let local_c;
-  HWND local_8;
+  let local_8;
   
   local_24 = 0x40810000;
   if (param_6 !== 0) {
@@ -7570,10 +7570,10 @@ export function create_window_B601(param_1, param_2, param_3, param_4, param_5, 
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  hWndParent = *(HWND *)(iVar1 + 4);
+  // DEVIATION: C pointer — hWndParent = *(HWND *)(iVar1 + 4);
   iVar1 = FUN_00407fc0(local_1c[0]);
   nWidth = FUN_00407f90(local_1c[0]);
-  local_8 = CreateWindowExA(4,s_MSControlClass_00637e48,&DAT_00637e44,local_24,param_1,param_2,
+  local_8 = CreateWindowExA(4,s_MSControlClass_00637e48,DAT_00637e44,local_24,param_1,param_2,
                             nWidth,iVar1,hWndParent,hMenu,hInstance,lpParam);
   iVar1 = FUN_005c9499(local_8,param_5);
   w32(iVar1, 0x2c, 5);
@@ -7608,21 +7608,21 @@ export function blit_B6EB(param_1, param_2, param_3, param_4) {
   let sVar2;
   let iVar3;
   let piVar4;
-  HWND pHVar5;
+  let pHVar5;
   CSplitterWnd *this;
   HPALETTE hPal;
   let uVar6;
   CView *pCVar7;
   CView *pCVar8;
   let uVar9;
-  HDC pHVar10;
+  let pHVar10;
   let iVar11;
   let y1;
   tagRECT *lpRect;
-  BOOL BVar12;
-  DWORD DVar13;
+  let BVar12;
+  let DVar13;
   tagPAINTSTRUCT local_64[0];
-  HDC local_24;
+  let local_24;
   tagRECT local_20[0];
   let local_10;
   let local_c;
@@ -7650,7 +7650,7 @@ export function blit_B6EB(param_1, param_2, param_3, param_4) {
         BVar12 = 0;
         FUN_0040f810();
         this = (CSplitterWnd *)FUN_00511320();
-        hPal = (HPALETTE)CSplitterWnd::IsTracking(this);
+        // DEVIATION: MFC — hPal = (HPALETTE)CSplitterWnd::IsTracking(this);
         SelectPalette(local_24,hPal,BVar12);
       }
       if (s32(iVar3, 0x18) === 0) {
@@ -7664,10 +7664,10 @@ export function blit_B6EB(param_1, param_2, param_3, param_4) {
         DVar13 = 0xcc0020;
         y1 = 0;
         iVar11 = 0;
-        uVar6 = CCheckListBox::GetCheckStyle((CCheckListBox *)(local_10 + 0x34));
-        pHVar10 = *(HDC *)(uVar6 + 4);
-        pCVar7 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x34));
-        pCVar8 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x34));
+        // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle((CCheckListBox *)(local_10 + 0x34));
+        // DEVIATION: C pointer — pHVar10 = *(HDC *)(uVar6 + 4);
+        // DEVIATION: MFC — pCVar7 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x34));
+        // DEVIATION: MFC — pCVar8 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x34));
         BitBlt(local_24,0,0,pCVar8,pCVar7,pHVar10,iVar11,y1,DVar13);
         FUN_005c02e0();
       }
@@ -7680,10 +7680,10 @@ export function blit_B6EB(param_1, param_2, param_3, param_4) {
         DVar13 = 0xcc0020;
         iVar11 = 0;
         iVar3 = 0;
-        uVar6 = CCheckListBox::GetCheckStyle((CCheckListBox *)(local_10 + 0x7c));
-        pHVar10 = *(HDC *)(uVar6 + 4);
-        pCVar7 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x7c));
-        pCVar8 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x7c));
+        // DEVIATION: MFC — uVar6 = CCheckListBox::GetCheckStyle((CCheckListBox *)(local_10 + 0x7c));
+        // DEVIATION: C pointer — pHVar10 = *(HDC *)(uVar6 + 4);
+        // DEVIATION: MFC — pCVar7 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x7c));
+        // DEVIATION: MFC — pCVar8 = COleClientItem::GetActiveView((COleClientItem *)(local_10 + 0x7c));
         BitBlt(local_24,0,0,pCVar8,pCVar7,pHVar10,iVar3,iVar11,DVar13);
         FUN_005c02e0();
       }
@@ -7838,11 +7838,11 @@ export function blit_B6EB(param_1, param_2, param_3, param_4) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: int __thiscall CSplitterWnd::IsTracking(void)
+    // DEVIATION: MFC — public: int __thiscall CSplitterWnd::IsTracking(void)
    
    Library: Visual Studio 1998 Debug */
 
-int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
+// DEVIATION: MFC — int __thiscall CSplitterWnd::IsTracking(CSplitterWnd *this)
 
 {
   return s32(this, 0x404);
@@ -7860,7 +7860,7 @@ export function FUN_005cbdd0(in_ECX) {
 
   // in_ECX → promoted to parameter
   
-  return *(undefined1 *)(in_ECX + 0xc4);
+  // DEVIATION: C pointer — return *(undefined1 *)(in_ECX + 0xc4);
 }
 
 
@@ -7876,7 +7876,7 @@ export function FUN_005cbdf0(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    (**(code **)(in_ECX + 0x30))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x30))(param_1);
   }
   return;
 }
@@ -7894,7 +7894,7 @@ export function FUN_005cbe30(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    (**(code **)(in_ECX + 0x2c))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x2c))(param_1);
   }
   return;
 }
@@ -7912,7 +7912,7 @@ export function FUN_005cbe70(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    (**(code **)(in_ECX + 0x30))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x30))(param_1);
   }
   return;
 }
@@ -8006,11 +8006,11 @@ export function FUN_005cbf21() {
 export function measure_text_BF40(param_1, param_2, param_3, param_4) {
 
 
-  HDC hdc;
-  HDC hdc_00;
+  let hdc;
+  let hdc_00;
   let uVar1;
   HGDIOBJ h;
-  size_t c;
+  let c;
   tagSIZE *lpsz;
   let local_5c;
   tagSIZE local_4c[0];
@@ -8052,8 +8052,8 @@ export function measure_text_BF40(param_1, param_2, param_3, param_4) {
 export function gdi_C035(param_1, param_2, param_3, param_4) {
 
 
-  HDC hdc;
-  HDC hdc_00;
+  let hdc;
+  let hdc_00;
   let uVar1;
   let local_4c;
   tagTEXTMETRICA local_40[0];
@@ -8087,18 +8087,18 @@ export function gdi_C035(param_1, param_2, param_3, param_4) {
 export function create_window_C0F0(param_1, param_2, param_3, param_4) {
 
 
-  size_t sVar1;
-  void *pvVar2;
+  let sVar1;
+  let pvVar2;
   let iVar3;
   let nWidth;
-  HWND pHVar4;
-  HBITMAP pHVar5;
-  HBITMAP pHVar6;
-  HBITMAP pHVar7;
-  HMENU hMenu;
-  HINSTANCE hInstance;
+  let pHVar4;
+  let pHVar5;
+  let pHVar6;
+  let pHVar7;
+  let hMenu;
+  let hInstance;
   LPVOID lpParam;
-  DWORD local_24;
+  let local_24;
   
   sVar1 = _strlen(param_3);
   pvVar2 = operator_new(sVar1 + 1);
@@ -8112,21 +8112,21 @@ export function create_window_C0F0(param_1, param_2, param_3, param_4) {
   hInstance = DAT_006e4ff0;
   FUN_0040f810();
   iVar3 = FUN_00414d10();
-  pHVar4 = *(HWND *)(iVar3 + 4);
+  // DEVIATION: C pointer — pHVar4 = *(HWND *)(iVar3 + 4);
   iVar3 = FUN_00407fc0(param_1);
   nWidth = FUN_00407f90(param_1);
-  pHVar4 = CreateWindowExA(4,s_MSControlClass_00637f10,&DAT_00637f0c,local_24,param_1[0],param_1[1],
+  pHVar4 = CreateWindowExA(4,s_MSControlClass_00637f10,DAT_00637f0c,local_24,param_1[0],param_1[1],
                            nWidth,iVar3,pHVar4,hMenu,hInstance,lpParam);
   FUN_005c9222(param_2,pvVar2);
   pHVar5 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x132);
   pHVar6 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x131);
   pHVar7 = LoadBitmapA(DAT_006e4ff0,(LPCSTR)0x130);
   iVar3 = FUN_005c9499(pHVar4,param_2);
-  *(HBITMAP *)(iVar3 + 0xc) = pHVar5;
-  *(HBITMAP *)(iVar3 + 0x10) = pHVar6;
-  *(HBITMAP *)(iVar3 + 0x14) = pHVar7;
+  // DEVIATION: C pointer — *(HBITMAP *)(iVar3 + 0xc) = pHVar5;
+  // DEVIATION: C pointer — *(HBITMAP *)(iVar3 + 0x10) = pHVar6;
+  // DEVIATION: C pointer — *(HBITMAP *)(iVar3 + 0x14) = pHVar7;
   w32(iVar3, 0x2c, 2);
-  *(void **)(iVar3 + 0x24) = pvVar2;
+  // DEVIATION: C pointer — *(void **)(iVar3 + 0x24) = pvVar2;
   SetWindowLongA(pHVar4,-4,0x5cc320);
   return pHVar4;
 }
@@ -8163,9 +8163,9 @@ export function invalidate_C274(param_1) {
   
   iVar1 = FUN_005c9563(param_1);
   if (iVar1 !== 0) {
-    this = *(ios **)(iVar1 + 4);
+    // DEVIATION: C pointer — this = *(ios **)(iVar1 + 4);
     SetFocus(param_1);
-    iVar1 = ios::width(this);
+    // DEVIATION: MFC — iVar1 = ios::width(this);
     if (iVar1 === 0) {
       FUN_0040fad0(1);
     }
@@ -8175,7 +8175,7 @@ export function invalidate_C274(param_1) {
     SetCapture(param_1);
     InvalidateRect(param_1,null,0);
     DAT_00637ea4 = FUN_0040f810();
-    iVar1 = ios::width(this);
+    // DEVIATION: MFC — iVar1 = ios::width(this);
     uVar2 = FUN_00418740(iVar1);
     FUN_005cce40(uVar2,iVar1);
   }
@@ -8196,8 +8196,8 @@ export function draw_text_C320(param_1, param_2, param_3, param_4) {
   let iVar2;
   let piVar3;
   let uVar4;
-  size_t sVar5;
-  HWND pHVar6;
+  let sVar5;
+  let pHVar6;
   let uVar7;
   let puVar8;
   let puVar9;
@@ -8205,14 +8205,14 @@ export function draw_text_C320(param_1, param_2, param_3, param_4) {
   let puVar11;
   UINT UVar12;
   tagRECT local_1b0[0];
-  HBITMAP local_1a0;
+  let local_1a0;
   let local_19c;
   ios *local_198;
   tagPAINTSTRUCT local_194[0];
   HGDIOBJ local_154;
   tagSIZE local_150[0];
-  let local_148 [4];
-  HDC local_144;
+  let local_148 = new Array(4).fill(0);
+  let local_144;
   let local_140;
   let local_13c;
   let local_138;
@@ -8220,15 +8220,15 @@ export function draw_text_C320(param_1, param_2, param_3, param_4) {
   let local_130;
   let local_12c;
   let local_128;
-  let local_124 [4];
-  let local_120 [4];
-  HBRUSH local_11c;
+  let local_124 = new Array(4).fill(0);
+  let local_120 = new Array(4).fill(0);
+  let local_11c;
   let local_118;
-  let local_114 [256];
+  let local_114 = new Array(256).fill(0);
   tagRECT local_14[0];
   
   local_19c = FUN_005c9563(param_1);
-  local_198 = *(ios **)(local_19c + 4);
+  // DEVIATION: C pointer — local_198 = *(ios **)(local_19c + 4);
   if (param_2 < 0x10) {
     if (param_2 === 0xf) {
       iVar2 = FUN_005c5ec0();
@@ -8237,15 +8237,15 @@ export function draw_text_C320(param_1, param_2, param_3, param_4) {
         if (pHVar6 === param_1) {
           SetFocus((HWND)0x0);
         }
-        local_1a0 = *(HBITMAP *)(local_19c + 0xc);
+        // DEVIATION: C pointer — local_1a0 = *(HBITMAP *)(local_19c + 0xc);
       }
       else {
-        iVar2 = ios::width(local_198);
+        // DEVIATION: MFC — iVar2 = ios::width(local_198);
         if (iVar2 === 0) {
-          local_1a0 = *(HBITMAP *)(local_19c + 0x10);
+          // DEVIATION: C pointer — local_1a0 = *(HBITMAP *)(local_19c + 0x10);
         }
         else {
-          local_1a0 = *(HBITMAP *)(local_19c + 0x14);
+          // DEVIATION: C pointer — local_1a0 = *(HBITMAP *)(local_19c + 0x14);
         }
       }
       GetBitmapDimensionEx(local_1a0,local_150[0]);
@@ -8275,7 +8275,7 @@ export function draw_text_C320(param_1, param_2, param_3, param_4) {
       SetBkMode(local_144,1);
       FUN_005ed710(local_144,local_1a0,local_1b0[0].left,local_1b0[0].bottom + -0x14 >> 1,0x20,0x14,0,7);
       local_1b0[0].left = local_1b0[0].left + 0x25;
-      local_140 = *(char **)(local_19c + 0x24);
+      // DEVIATION: C pointer — local_140 = *(char **)(local_19c + 0x24);
       if ((DAT_00637e98 !== 0) || (DAT_00637e9c !== 0)) {
         OffsetRect(local_1b0[0],((DAT_00637e98) >>> 0),((DAT_00637e9c) >>> 0));
         puVar11 = local_120;
@@ -8438,7 +8438,7 @@ export function draw_text_C320(param_1, param_2, param_3, param_4) {
     iVar2 = FUN_005c5ec0();
     if ((iVar2 !== 0) && (DAT_00637f08 === 0)) {
       SetFocus(param_1);
-      iVar2 = ios::width(local_198);
+      // DEVIATION: MFC — iVar2 = ios::width(local_198);
       if (iVar2 === 0) {
         FUN_0040fad0(1);
       }
@@ -8450,7 +8450,7 @@ export function draw_text_C320(param_1, param_2, param_3, param_4) {
       InvalidateRect(param_1,null,0);
       uVar7 = FUN_0040f810();
       FUN_005c6303(uVar7);
-      iVar2 = ios::width(local_198);
+      // DEVIATION: MFC — iVar2 = ios::width(local_198);
       uVar7 = FUN_00418740(iVar2);
       FUN_005cce40(uVar7,iVar2);
     }
@@ -8513,7 +8513,7 @@ export function FUN_005cce40(in_ECX, param_1, param_2) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    (**(code **)(in_ECX + 0x2c))(param_1,param_2);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x2c))(param_1,param_2);
   }
   return;
 }
@@ -8528,14 +8528,14 @@ export function FUN_005cce40(in_ECX, param_1, param_2) {
 export function FUN_005cce80(param_1, param_2, param_3, param_4) {
 
 
-  DWORD DVar1;
+  let DVar1;
   let pcVar2;
   ios *this;
   
   DVar1 = GetClassLongA(param_1,-0x12);
   pcVar2 = (code *)GetWindowLongA(param_1,DVar1 - 4);
   if ((param_2 === 2) && (this = (ios *)GetWindowLongA(param_1,DVar1 - 8), this !== null)) {
-    ios::delbuf(this,0);
+    // DEVIATION: MFC — ios::delbuf(this,0);
   }
   (*pcVar2)(param_1,param_2,param_3,param_4);
   return;
@@ -8553,13 +8553,13 @@ export function register_wndclass_CF17(param_1, param_2, param_3, param_4) {
 
   let iVar1;
   let iVar2;
-  HWND pHVar3;
-  HMENU pHVar4;
-  HINSTANCE pHVar5;
+  let pHVar3;
+  let pHVar4;
+  let pHVar5;
   LPVOID pvVar6;
   let local_34;
   WNDCLASSA local_30[0];
-  HWND local_8;
+  let local_8;
   
   local_34 = 0x40000000;
   if (param_4 !== 0) {
@@ -8577,10 +8577,10 @@ export function register_wndclass_CF17(param_1, param_2, param_3, param_4) {
     pHVar5 = DAT_006e4ff0;
     FUN_0040f810();
     iVar1 = FUN_00414d10();
-    pHVar3 = *(HWND *)(iVar1 + 4);
+    // DEVIATION: C pointer — pHVar3 = *(HWND *)(iVar1 + 4);
     iVar1 = FUN_00407fc0(param_1);
     iVar2 = FUN_00407f90(param_1);
-    local_8 = CreateWindowExA(4,s_SCROLLBAR_00637f60,&DAT_00637f5c,param_3 | 0x40000000,param_1[0],
+    local_8 = CreateWindowExA(4,s_SCROLLBAR_00637f60,DAT_00637f5c,param_3 | 0x40000000,param_1[0],
                               param_1[1],iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
     DAT_006d46f8 = (WNDPROC)GetWindowLongA(local_8,-4);
     local_34 = GetWindowLongA(local_8,-0x10);
@@ -8604,10 +8604,10 @@ export function register_wndclass_CF17(param_1, param_2, param_3, param_4) {
   pHVar5 = DAT_006e4ff0;
   FUN_0040f810();
   iVar1 = FUN_00414d10();
-  pHVar3 = *(HWND *)(iVar1 + 4);
+  // DEVIATION: C pointer — pHVar3 = *(HWND *)(iVar1 + 4);
   iVar1 = FUN_00407fc0(param_1);
   iVar2 = FUN_00407f90(param_1);
-  local_8 = CreateWindowExA(4,s_MSScrollBarClass_00637f84,&DAT_00637f80,local_34,param_1[0],param_1[1]
+  local_8 = CreateWindowExA(4,s_MSScrollBarClass_00637f84,DAT_00637f80,local_34,param_1[0],param_1[1]
                             ,iVar2,iVar1,pHVar3,pHVar4,pHVar5,pvVar6);
   SetWindowLongA(local_8,-4,0x5cce80);
   SetWindowLongA(local_8,DAT_006d46f4,param_2);
@@ -8641,13 +8641,13 @@ export function gdi_D149(param_1, param_2, param_3, param_4) {
 
 
   let sVar1;
-  DWORD DVar2;
+  let DVar2;
   LONG LVar3;
   let iVar4;
   let uVar5;
-  WPARAM *pWVar6;
+  let pWVar6;
   let iVar7;
-  LPARAM LVar8;
+  let LVar8;
   
   DVar2 = GetClassLongA(param_1,-0x12);
   LVar3 = GetWindowLongA(param_1,DVar2 - 8);
@@ -8666,7 +8666,7 @@ export function gdi_D149(param_1, param_2, param_3, param_4) {
       iVar7 = FUN_005bd4cd();
       if (iVar7 === 0) {
         iVar4 = FUN_005c8f50();
-        LVar8 = *(LPARAM *)(iVar4 + 4);
+        // DEVIATION: C pointer — LVar8 = *(LPARAM *)(iVar4 + 4);
         pWVar6 = (WPARAM *)FUN_005c8f50();
         PostMessageA(param_1,0x202,*pWVar6,LVar8);
       }
@@ -8683,7 +8683,7 @@ export function gdi_D149(param_1, param_2, param_3, param_4) {
       iVar7 = FUN_005bd4cd();
       if (iVar7 === 0) {
         iVar4 = FUN_005c8f50();
-        LVar8 = *(LPARAM *)(iVar4 + 4);
+        // DEVIATION: C pointer — LVar8 = *(LPARAM *)(iVar4 + 4);
         pWVar6 = (WPARAM *)FUN_005c8f50();
         PostMessageA(param_1,0x202,*pWVar6,LVar8);
       }
@@ -8814,7 +8814,7 @@ export function FUN_005cd559(param_1, param_2) {
 export function FUN_005cd580(param_1, param_2, param_3, param_4) {
 
 
-  SetScrollRange(*(HWND *)(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3,1);
+  // DEVIATION: C pointer — SetScrollRange(*(HWND *)(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3,1);
   FUN_005cd5f0(param_1,param_2,param_4);
   return;
 }
@@ -8829,7 +8829,7 @@ export function FUN_005cd580(param_1, param_2, param_3, param_4) {
 export function FUN_005cd5c3(param_1, param_2, param_3, param_4) {
 
 
-  GetScrollRange(*(HWND *)(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3);
+  // DEVIATION: C pointer — GetScrollRange(*(HWND *)(param_1 + 4),((param_4 !== 0) >>> 0),param_2,param_3);
   return;
 }
 
@@ -8843,7 +8843,7 @@ export function FUN_005cd5c3(param_1, param_2, param_3, param_4) {
 export function FUN_005cd5f0(param_1, param_2, param_3) {
 
 
-  SetScrollPos(*(HWND *)(param_1 + 4),((param_3 !== 0) >>> 0),param_2,1);
+  // DEVIATION: C pointer — SetScrollPos(*(HWND *)(param_1 + 4),((param_3 !== 0) >>> 0),param_2,1);
   return;
 }
 
@@ -8875,7 +8875,7 @@ export function FUN_005cd640(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x2c) !== 0) {
-    (**(code **)(in_ECX + 0x2c))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x2c))(param_1);
   }
   return;
 }
@@ -8893,7 +8893,7 @@ export function FUN_005cd680(in_ECX, param_1) {
   // in_ECX → promoted to parameter
   
   if (s32(in_ECX, 0x30) !== 0) {
-    (**(code **)(in_ECX + 0x30))(param_1);
+    // DEVIATION: C pointer — (**(code **)(in_ECX + 0x30))(param_1);
   }
   return;
 }
@@ -8995,7 +8995,7 @@ export function FUN_005cd775(param_1, param_2) {
         }
       }
 // LAB_005cda01: (code below also in LAB_005cda01_helper, kept for 1:1 audit)
-      DAT_006e47c8 = &DAT_006d470c + local_18 * 0x100c;
+      DAT_006e47c8 = DAT_006d470c + local_18 * 0x100c;
       return;
     }
     if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637f98) &&
@@ -9077,7 +9077,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
   }
   FUN_005cdcdb(local_8,DAT_00637fa0,DAT_00637fa4);
 // LAB_005cdbab: (code below also in LAB_005cdbab_helper, kept for 1:1 audit)
-  DAT_006e47c0 = &DAT_006d470c + local_8 * 0x100c;
+  DAT_006e47c0 = DAT_006d470c + local_8 * 0x100c;
   local_10 = FUN_00421bb0();
   local_c = -1;
   local_14 = 0;
@@ -9086,7 +9086,7 @@ export function FUN_005cda2a(param_1, param_2, param_3, param_4) {
       FUN_005cdcdb(local_c,DAT_00637fa8,DAT_00637fac);
       local_14 = local_c;
 // LAB_005cdcd6: (code below also in LAB_005cdcd6_helper, kept for 1:1 audit)
-      DAT_006e47c4 = &DAT_006d470c + local_14 * 0x100c;
+      DAT_006e47c4 = DAT_006d470c + local_14 * 0x100c;
       return;
     }
     if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637fa8) &&
@@ -9158,11 +9158,11 @@ export function FUN_005cdcdb(param_1, param_2, param_3) {
 // ============================================================
 
 /* Library Function - Single Match
-    public: __thiscall CString::CString(void)
+    // DEVIATION: MFC — public: __thiscall CString::CString(void)
    
    Library: Visual Studio 1998 Debug */
 
-CString * __thiscall CString::CString(CString *this)
+// DEVIATION: MFC — CString * __thiscall CString::CString(CString *this)
 
 {
   FUN_005d1b38();
@@ -9207,7 +9207,7 @@ export function FUN_005cdea1(unaff_ESI, param_1, param_2, param_3) {
   // DEVIATION: SEH
   let extraout_var;
   let iVar1;
-  let local_58 [72];
+  let local_58 = new Array(72).fill(0);
   // DEVIATION: SEH local
   // DEVIATION: SEH local
   // DEVIATION: SEH local
@@ -9335,7 +9335,7 @@ export function FUN_005cdfc2(in_ECX, param_1) {
     w32(in_ECX, 0x24, uVar3);
     FUN_005d1cd0(puVar2 + 2,in_ECX);
     FUN_005d1cd0(puVar2 + 6,in_ECX + 0x10);
-    *(undefined1 *)(in_ECX + 0x30) = *(undefined1 *)(puVar2 + 10);
+    // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x30) = *(undefined1 *)(puVar2 + 10);
     local_8 = FUN_005d1cb0(s32((int, 0)puVar2 + 0x29));
     if (s32(in_ECX, 0x38) !== 0) {
       FUN_005cf337();
@@ -10480,7 +10480,7 @@ export function FUN_005cf467(in_ECX, param_1, param_2) {
     debug_log(s_Warning__Sprite_not_locked_in_Ch_00637ff8);
   }
   local_8 = FUN_00407fc0(in_ECX + 0x10);
-  local_14 = *(char **)(in_ECX + 0x38);
+  // DEVIATION: C pointer — local_14 = *(char **)(in_ECX + 0x38);
   while (iVar1 = local_8 + -1, local_8 !== 0) {
     piVar2 = (int *)(local_14 + 4);
     local_14 = local_14 + 8;
@@ -10523,22 +10523,22 @@ export function FUN_005cf541(in_ECX, param_1, param_2) {
     debug_log(s_Warning__Sprite_not_locked_in_Ch_00638024);
   }
   local_8 = FUN_00407fc0(in_ECX + 0x10);
-  local_14 = *(byte **)(in_ECX + 0x38);
+  // DEVIATION: C pointer — local_14 = *(byte **)(in_ECX + 0x38);
   while (iVar1 = local_8 + -1, local_8 !== 0) {
     pbVar2 = local_14 + 4;
     local_14 = local_14 + 8;
-    local_c = *(int *)pbVar2;
+    // DEVIATION: C pointer — local_c = *(int *)pbVar2;
     while (local_8 = iVar1, local_c !== 0) {
       if (-1 < ((uint)*local_14 - param_2)) {
-        *local_14 = *(byte *)(((uint)*local_14 - param_2) + param_1);
+        // DEVIATION: C pointer — *local_14 = *(byte *)(((uint)*local_14 - param_2) + param_1);
       }
       local_14 = local_14 + 1;
       local_c = local_c + -1;
     }
   }
-  if (-1 < ((uint)*(byte *)(in_ECX + 0x30) - param_2)) {
-    *(undefined1 *)(in_ECX + 0x30) =
-         *(undefined1 *)(((uint)*(byte *)(in_ECX + 0x30) - param_2) + param_1);
+  // DEVIATION: C pointer — if (-1 < ((uint)*(byte *)(in_ECX + 0x30) - param_2)) {
+    // DEVIATION: C pointer — *(undefined1 *)(in_ECX + 0x30) =
+         // DEVIATION: C pointer — *(undefined1 *)(((uint)*(byte *)(in_ECX + 0x30) - param_2) + param_1);
   }
   if (cVar3 === 0) {
     FUN_005cf337();
@@ -10569,19 +10569,19 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
   let local_44;
   let local_40;
   let local_3c;
-  void *local_38;
+  let local_38;
   let local_34;
   let local_30;
   let local_2c;
   let local_28;
   let local_24;
-  void *local_20;
+  let local_20;
   let local_1c;
   let local_18;
   let local_14;
   let local_10;
   let local_c;
-  void *local_8;
+  let local_8;
   
   local_34 = 1;
   local_48 = 1;
@@ -10663,7 +10663,7 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
           local_54 = local_2c;
           for (local_3c = 0; local_3c < local_24; local_3c = local_3c + 1) {
             if ((*local_54 !== local_40) || (param_2 === -2)) {
-              *(char **)(local_8 + local_44 * 4) = local_54;
+              // DEVIATION: C pointer — *(char **)(local_8 + local_44 * 4) = local_54;
               s32((int, 0)local_20 + local_44 * 4) = local_3c;
               break;
             }
@@ -10715,10 +10715,10 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
           iVar3 = FUN_00407f90(local_64[0]);
           SetRect(in_ECX,0,0,iVar3,iVar2);
           if (param_2 === -2) {
-            *(undefined1 *)&in_ECX[3].left = 0;
+            // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
           }
           else {
-            *(char *)&in_ECX[3].left = local_40;
+            // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_40;
           }
           in_ECX[2].left = 0;
           in_ECX[2].top = 0;
@@ -10748,10 +10748,10 @@ export function FUN_005cf64c(param_1, param_2, param_3) {
       iVar3 = FUN_00407f90(local_64[0]);
       SetRect(in_ECX,0,0,iVar3,iVar2);
       if (param_2 === -2) {
-        *(undefined1 *)&in_ECX[3].left = 0;
+        // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
       }
       else {
-        *(char *)&in_ECX[3].left = local_40;
+        // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_40;
       }
       in_ECX[2].left = 0;
       in_ECX[2].top = 0;
@@ -10787,19 +10787,19 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
   let local_48;
   let local_44;
   let local_40;
-  void *local_3c;
+  let local_3c;
   let local_38;
   let local_34;
   let local_30;
   let local_2c;
   let local_28;
-  void *local_24;
+  let local_24;
   let local_20;
   let local_1c;
   let local_18;
   let local_14;
   let local_10;
-  void *local_c;
+  let local_c;
   let local_8;
   
   local_8 = 0;
@@ -10881,7 +10881,7 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
             local_58 = local_30;
             for (local_40 = 0; local_40 < local_28; local_40 = local_40 + 1) {
               if ((*local_58 !== local_44) || (param_2 === -2)) {
-                *(char **)(local_c + local_48 * 4) = local_58;
+                // DEVIATION: C pointer — *(char **)(local_c + local_48 * 4) = local_58;
                 s32((int, 0)local_24 + local_48 * 4) = local_40;
                 break;
               }
@@ -10931,10 +10931,10 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
             iVar2 = FUN_00407f90(local_68[0]);
             SetRect(in_ECX,0,0,iVar2,iVar1);
             if (param_2 === -2) {
-              *(undefined1 *)&in_ECX[3].left = 0;
+              // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
             }
             else {
-              *(char *)&in_ECX[3].left = local_44;
+              // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_44;
             }
             in_ECX[2].left = 0;
             in_ECX[2].top = 0;
@@ -10962,10 +10962,10 @@ export function FUN_005cfdeb(param_1, param_2, param_3) {
         iVar2 = FUN_00407f90(local_68[0]);
         SetRect(in_ECX,0,0,iVar2,iVar1);
         if (param_2 === -2) {
-          *(undefined1 *)&in_ECX[3].left = 0;
+          // DEVIATION: C pointer — *(undefined1 *)&in_ECX[3].left = 0;
         }
         else {
-          *(char *)&in_ECX[3].left = local_44;
+          // DEVIATION: C pointer — *(char *)&in_ECX[3].left = local_44;
         }
         in_ECX[2].left = 0;
         in_ECX[2].top = 0;
@@ -10999,7 +10999,7 @@ function LAB_005c92ae_helper(local_8, param_1, param_2, sVar1) {
     local_8[0] = param_2[s32(param_1, 0x28)];
     local_8[1] = 0;
     __strlwr(local_8);
-    *(char *)(param_1 + 0x25) = local_8[0];
+    // DEVIATION: C pointer — *(char *)(param_1 + 0x25) = local_8[0];
   }
   else {
     w32(param_1, 0x28, 0xffffffff);
@@ -11256,7 +11256,7 @@ function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, loca
     iVar2 = FUN_005c5ec0();
     if ((iVar2 !== 0) && (DAT_00637f08 === 0)) {
       SetFocus(param_1);
-      iVar2 = ios::width(local_198);
+      // DEVIATION: MFC — iVar2 = ios::width(local_198);
       if (iVar2 === 0) {
         FUN_0040fad0(1);
       }
@@ -11268,7 +11268,7 @@ function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, loca
       InvalidateRect(param_1,null,0);
       uVar7 = FUN_0040f810();
       FUN_005c6303(uVar7);
-      iVar2 = ios::width(local_198);
+      // DEVIATION: MFC — iVar2 = ios::width(local_198);
       uVar7 = FUN_00418740(iVar2);
       FUN_005cce40(uVar7,iVar2);
     }
@@ -11285,7 +11285,7 @@ function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, loca
 }
 
 function LAB_005cda01_helper(local_10, local_14, local_18, uVar1) {
-      DAT_006e47c8 = &DAT_006d470c + local_18 * 0x100c;
+      DAT_006e47c8 = DAT_006d470c + local_18 * 0x100c;
       return;
     }
     if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637f98) &&
@@ -11304,7 +11304,7 @@ function LAB_005cda01_helper(local_10, local_14, local_18, uVar1) {
 }
 
 function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
-  DAT_006e47c0 = &DAT_006d470c + local_8 * 0x100c;
+  DAT_006e47c0 = DAT_006d470c + local_8 * 0x100c;
   local_10 = FUN_00421bb0();
   local_c = -1;
   local_14 = 0;
@@ -11313,7 +11313,7 @@ function LAB_005cdbab_helper(local_10, local_14, local_8, local_c, uVar1) {
       FUN_005cdcdb(local_c,DAT_00637fa8,DAT_00637fac);
       local_14 = local_c;
 LAB_005cdcd6:
-      DAT_006e47c4 = &DAT_006d470c + local_14 * 0x100c;
+      DAT_006e47c4 = DAT_006d470c + local_14 * 0x100c;
       return;
     }
     if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637fa8) &&
@@ -11331,7 +11331,7 @@ LAB_005cdcd6:
 }
 
 function LAB_005cdcd6_helper(local_10, local_14, local_8, local_c, uVar1) {
-      DAT_006e47c4 = &DAT_006d470c + local_14 * 0x100c;
+      DAT_006e47c4 = DAT_006d470c + local_14 * 0x100c;
       return;
     }
     if ((s32(DAT_006d4700, local_14 * 0x100c) === DAT_00637fa8) &&

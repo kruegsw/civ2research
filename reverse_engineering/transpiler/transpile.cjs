@@ -137,6 +137,27 @@ function transformLine(line, ctx) {
     // ── &local_XX → local_XX (drop &) ──
     out = out.replace(/&(local_[0-9a-fA-F]+)/g, '$1');
 
+    // ── & (address-of) → drop for arrays, deviate for labels ──
+    out = out.replace(/&(DAT_[0-9a-fA-F]+)/g, '$1');
+    out = out.replace(/&(s_\w+)/g, '$1'); // &s_STRING → s_STRING
+    // &LAB_ / &LAB_XXXX → 0 (label address, usually SEH)
+    out = out.replace(/&(LAB_[0-9a-fA-F]+)/g, '0 /* ADDR:$1 */');
+    out = out.replace(/&(switchD_\w+)/g, '0 /* ADDR:$1 */');
+    out = out.replace(/&(code_r\w+)/g, '0 /* ADDR:$1 */');
+    out = out.replace(/&(joined_r\w+)/g, '0 /* ADDR:$1 */');
+    out = out.replace(/&(PTR_\w+)/g, '$1');
+
+    // ── C++ class method calls → DEVIATION ──
+    if (/\w+::\w+\s*\(/.test(out) && !/\/\//.test(out.split('::')[0])) {
+      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: MFC — $2');
+    }
+
+    // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──
+    // Catches *(char **), *(void *), etc. — anything with *(TYPE *) still in the line
+    if (/\*\s*\(\s*\w[\w\s]*\*+\s*\)/.test(out) && !/\/\/|DEVIATION/.test(out)) {
+      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: C pointer — $2');
+    }
+
     // ── Equality operators ──
     out = out.replace(/([^=!<>])={2}(?!=)/g, '$1===');
     out = out.replace(/!={1}(?!=)/g, '!==');
@@ -330,7 +351,7 @@ function processFunction(headerLines, bodyLines, ctx) {
       // Already handled above
     }
 
-    const declMatch = trimmed.match(/^(int|uint|char|byte|short|ushort|undefined[124]?|bool|long|ulong|code)\s+(\*?\s*\w+(?:\s*\[[^\]]*\])?)\s*;$/);
+    const declMatch = trimmed.match(/^(int|uint|char|byte|short|ushort|undefined[124]?|bool|long|ulong|code|size_t|void|DWORD|BOOL|HRESULT|LRESULT|LPARAM|WPARAM|HANDLE|HWND|HDC|HBITMAP|HBRUSH|HPEN|HFONT|HMENU|HMODULE|HINSTANCE|HGLOBAL|HICON|HCURSOR|RECT|POINT|LPDWORD|LPSECURITY_ATTRIBUTES|float|double|wchar_t|WCHAR|TCHAR|LPSTR|LPCSTR|LPWSTR|LPCWSTR)\s+(\*?\s*\w+(?:\s*\[[^\]]*\])?)\s*;$/);
     if (declMatch) {
       const varName = declMatch[2].replace(/^\*\s*/, '').replace(/\s*\[.*\]/, '');
 
@@ -358,8 +379,14 @@ function processFunction(headerLines, bodyLines, ctx) {
         continue;
       }
 
-      // Regular declaration
-      result.push(line.replace(trimmed, 'let ' + declMatch[2].replace(/^\*\s*/, '') + ';'));
+      // Regular declaration — handle C arrays: type name[size] → let name = new Array(size).fill(0)
+      let declStr = declMatch[2].replace(/^\*\s*/, '');
+      const arrMatch = declStr.match(/^(\w+)\s*\[(\d+)\]$/);
+      if (arrMatch) {
+        result.push(line.replace(trimmed, 'let ' + arrMatch[1] + ' = new Array(' + arrMatch[2] + ').fill(0);'));
+      } else {
+        result.push(line.replace(trimmed, 'let ' + declStr + ';'));
+      }
       continue;
     }
 

@@ -42,22 +42,62 @@ for (const file of files) {
   }
 }
 
-// Also collect DAT_ from the original block sources (local declarations we transformed)
-const srcDir = path.join(__dirname, '..', 'reverse_engineering', 'binary_js');
+// Also collect DAT_ from the transpiler output sources
+// The transpiler output uses DAT_ as arguments to memory helpers (s32, u16, etc.)
+// and as byte array access (DAT_XXX[offset]). Classify based on usage.
+const srcDir = path.join(__dirname, '..', 'reverse_engineering', 'transpiler', 'output');
+const arrayDats = new Set();
+const scalarDats = new Set();
 for (const file of fs.readdirSync(srcDir).filter(f => f.startsWith('block_') && f.endsWith('.js'))) {
   const src = fs.readFileSync(path.join(srcDir, file), 'utf8');
+
+  // DAT_ used as first arg to memory helpers → array
+  for (const m of src.matchAll(/\b(?:s8|u8|s16|u16|s32|u32|w16|w32)\(\s*(DAT_[0-9a-fA-F]+)/g)) {
+    arrayDats.add(m[1]);
+  }
+  // DAT_ used with bracket access → array
+  for (const m of src.matchAll(/\b(DAT_[0-9a-fA-F]+)\s*\[/g)) {
+    arrayDats.add(m[1]);
+  }
+  // All DAT_ references (to catch scalars too)
+  for (const m of src.matchAll(/\b(DAT_[0-9a-fA-F]+)\b/g)) {
+    if (!arrayDats.has(m[1])) scalarDats.add(m[1]);
+  }
+
+  // Also handle old-style declarations if present (mem.js)
   for (const line of src.split('\n')) {
-    if (!line.startsWith('let DAT_')) continue;
-    const stripped = line.replace(/^let\s+/, '').replace(/;.*$/, '').trim();
+    if (!line.startsWith('let DAT_') && !line.startsWith('export let DAT_') &&
+        !line.startsWith('export const DAT_')) continue;
+    const stripped = line.replace(/^(?:export\s+)?(?:let|const)\s+/, '').replace(/;.*$/, '').trim();
     for (const part of stripped.split(/,\s*(?=DAT_)/)) {
-      const m = part.match(/^(DAT_[0-9a-fA-F]+(?:_val)?)\s*=\s*(.+)$/);
-      if (m && !allRefs.has(m[1])) {
-        const val = m[2].trim();
-        const isArr = val.includes('Array') || val === '[]';
-        allRefs.set(m[1], { isArray: isArr, isScalar: !isArr });
+      const m2 = part.match(/^(DAT_[0-9a-fA-F]+(?:_val)?)\s*=\s*(.+)$/);
+      if (m2) {
+        const val = m2[2].trim();
+        if (val.includes('Array') || val === '[]') arrayDats.add(m2[1]);
       }
     }
   }
+}
+// Also scan v4 infrastructure files for DAT_ array usage
+const v4Files = fs.readdirSync(__dirname)
+  .filter(f => f.endsWith('.js') && f !== 'globals.js' && !f.startsWith('block_'));
+for (const file of v4Files) {
+  const src = fs.readFileSync(path.join(__dirname, file), 'utf8');
+  for (const m of src.matchAll(/G\.(DAT_[0-9a-fA-F]+)\s*\[/g)) {
+    arrayDats.add(m[1]);
+  }
+  for (const m of src.matchAll(/\b(?:s16|u16|s32|u32|w16|w32)\(\s*G\.(DAT_[0-9a-fA-F]+)/g)) {
+    arrayDats.add(m[1]);
+  }
+}
+
+// Build allRefs from discovered classifications — always upgrade scalar → array
+for (const name of arrayDats) {
+  if (!allRefs.has(name)) allRefs.set(name, { isArray: true, isScalar: false });
+  else allRefs.get(name).isArray = true; // upgrade to array if already known
+}
+for (const name of scalarDats) {
+  if (!allRefs.has(name) && !arrayDats.has(name)) allRefs.set(name, { isArray: false, isScalar: true });
 }
 
 // ═══════════════════════════════════════════════════════════════════
