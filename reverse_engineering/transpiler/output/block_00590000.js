@@ -7184,11 +7184,11 @@ if (true) {
           }
         }
       }
-  // (orphan else)
-              (((aiStack_80[local_34] = 1, local_24 === 0 ||
-                ((uVar10 === local_34 &&
-                 (DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] === 0x01))))
-               && ((uVar10 !== local_34 || (DAT_006560ff[param_1 * 0x20] === '\v')))))) {
+  if (true) // (orphan else)
+  // (orphan else-if cont): (((aiStack_80[local_34] = 1, local_24 === 0 ||
+  // (orphan else-if cont): ((uVar10 === local_34 &&
+  // (orphan else-if cont): (DAT_0064b1c1[u8(DAT_006560f6[param_1 * 0x20]) * 0x14] === 0x01))))
+  { // (orphan else-if cont)
         aiStack_80[local_34] = 0;
       }
     }

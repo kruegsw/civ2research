@@ -8202,8 +8202,8 @@ function code_r0x005b584c_helper(bVar1, bVar9, cVar2, iVar3, iVar4, iVar5, iVar7
       if ((uVar6 !== 0) || (bVar1)) {
         bVar9 = true;
       }
-  // (orphan else)
-              (s16(DAT_00656102, local_38 * 0x20) === param_1)) {
+  if (true) // (orphan else)
+  { // (orphan else-if cont)
         bVar9 = true;
       }
     }
@@ -8342,8 +8342,8 @@ if (true) {
       if ((uVar6 !== 0) || (bVar1)) {
         bVar9 = true;
       }
-  // (orphan else)
-              (s16(DAT_00656102, local_38 * 0x20) === param_1)) {
+  if (true) // (orphan else)
+  { // (orphan else-if cont)
         bVar9 = true;
       }
     }

@@ -4591,12 +4591,12 @@ if (true) {
                (iVar2 = FUN_005b8b65(local_18,local_1c,DAT_006d1da0), iVar2 !== 0)) {
               FUN_004442e0(s_BARBARIANS_0062c5d0,local_3c);
             }
-  // (orphan else)
-                      (2 < DAT_00655b02)) &&
-                     ((((DAT_00655b0b) >>> 0) & 1 << (DAT_0064f348[local_30 * 0x58] & 0x1f)) !== 0))
-                    && (iVar2 = FUN_005b8b65(local_18,local_1c,
-                                                   s8(DAT_0064f348[local_30 * 0x58])),
-                       iVar2 !== 0)) {
+  if (true) // (orphan else)
+  // (orphan else-if cont): (2 < DAT_00655b02)) &&
+  // (orphan else-if cont): ((((DAT_00655b0b) >>> 0) & 1 << (DAT_0064f348[local_30 * 0x58] & 0x1f)) !== 0))
+  // (orphan else-if cont): && (iVar2 = FUN_005b8b65(local_18,local_1c,
+  // (orphan else-if cont): s8(DAT_0064f348[local_30 * 0x58])),
+  { // (orphan else-if cont)
               // DEVIATION: C pointer — FUN_0046b14d(0x72,*(undefined4 *)
                                         // DEVIATION(cont): (&DAT_006ad30c +
                                         // DEVIATION(cont): *(int *)(&DAT_006ad558 +

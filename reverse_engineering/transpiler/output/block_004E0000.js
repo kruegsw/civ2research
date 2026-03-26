@@ -6259,8 +6259,8 @@ if (true) {
          (u8(DAT_0064c6b7[local_84 * 0x594 + local_18]) < u8(DAT_00673af8[local_18]))) {
         local_34 = s32(DAT_0064c6a2, local_84 * 0x594) >> 6;
       }
-  // (orphan else)
-               u8(DAT_0064c6b7[local_84 * 0x594 + local_18])) {
+  if (true) // (orphan else)
+  { // (orphan else-if cont)
         local_34 = s32(DAT_0064c6a2, local_84 * 0x594) >> 8;
       }
 if (true) {
@@ -6539,8 +6539,8 @@ if (true) {
          (u8(DAT_0064c6b7[local_84 * 0x594 + local_18]) < u8(DAT_00673af8[local_18]))) {
         local_34 = s32(DAT_0064c6a2, local_84 * 0x594) >> 6;
       }
-  // (orphan else)
-               u8(DAT_0064c6b7[local_84 * 0x594 + local_18])) {
+  if (true) // (orphan else)
+  { // (orphan else-if cont)
         local_34 = s32(DAT_0064c6a2, local_84 * 0x594) >> 8;
       }
 if (true) {
@@ -6638,9 +6638,9 @@ function LAB_004ef0c3_helper(bVar1, iVar6, iVar8, local_14, local_28, local_8, p
       if (DAT_006a65cc < DAT_006a6568) {
         if (-1 < local_14) return; // (was break)
       }
-  // (orphan else)
-              (u8(DAT_0064c6b0[((DAT_00655c20) >>> 0) * 0x594]) <=
-               u8(DAT_0064c6b0[iVar6 * 0x594]))) {
+  if (true) // (orphan else)
+  // (orphan else-if cont): (u8(DAT_0064c6b0[((DAT_00655c20) >>> 0) * 0x594]) <=
+  { // (orphan else-if cont)
         if ((0 < local_14) &&
            (DAT_0064b1c1[u8(DAT_006560f6[local_8 * 0x20]) * 0x14] === 0)) {
           iVar8 = FUN_0043cf76(s16(DAT_006560f0, local_8 * 0x20),
@@ -6738,9 +6738,9 @@ function LAB_004eef5f_helper(bVar1, bVar2, bVar3, bVar4, bVar5, iVar6, iVar7, iV
       if (DAT_006a65cc < DAT_006a6568) {
         if (-1 < local_14) break;
       }
-  // (orphan else)
-              (u8(DAT_0064c6b0[((DAT_00655c20) >>> 0) * 0x594]) <=
-               u8(DAT_0064c6b0[iVar6 * 0x594]))) {
+  if (true) // (orphan else)
+  // (orphan else-if cont): (u8(DAT_0064c6b0[((DAT_00655c20) >>> 0) * 0x594]) <=
+  { // (orphan else-if cont)
         if ((0 < local_14) &&
            (DAT_0064b1c1[u8(DAT_006560f6[local_8 * 0x20]) * 0x14] === 0)) {
           iVar8 = FUN_0043cf76(s16(DAT_006560f0, local_8 * 0x20),

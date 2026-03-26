@@ -5877,8 +5877,8 @@ function LAB_00561668_helper(iVar1, iVar6, local_10, local_1c, local_20, local_2
         local_34 = local_34 + -1;
       }
     }
-  // (orphan else)
-            (1 < local_c)) {
+  if (true) // (orphan else)
+  { // (orphan else-if cont)
       iVar6 = (local_c - s8(DAT_006554f8[s16(DAT_0064c6a6, param_1 * 0x594) * 0x30]))
               + -1;
       if (iVar6 < 2) {
@@ -6080,8 +6080,8 @@ if (true) {
         local_34 = local_34 + -1;
       }
     }
-  // (orphan else)
-            (1 < local_c)) {
+  if (true) // (orphan else)
+  { // (orphan else-if cont)
       iVar6 = (local_c - s8(DAT_006554f8[s16(DAT_0064c6a6, param_1 * 0x594) * 0x30]))
               + -1;
       if (iVar6 < 2) {

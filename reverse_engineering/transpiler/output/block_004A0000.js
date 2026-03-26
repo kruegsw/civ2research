@@ -6234,10 +6234,10 @@ if (true) {
                 local_c = local_48;
                 local_20 = FUN_005ae31d(param_3,param_4,local_1c * 4 + 1,local_28 * 4 + 1);
               }
-  // (orphan else)
-                      (local_2c = FUN_005ae31d(param_3,param_4,local_1c * 4 + 1,
-                                                     local_28 * 4 + 1),
-                      local_2c < local_20)) {
+  if (true) // (orphan else)
+  // (orphan else-if cont): (local_2c = FUN_005ae31d(param_3,param_4,local_1c * 4 + 1,
+  // (orphan else-if cont): local_28 * 4 + 1),
+  { // (orphan else-if cont)
                 local_30 = local_14;
                 local_20 = local_2c;
               }

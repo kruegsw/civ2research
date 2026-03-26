@@ -934,6 +934,7 @@ function processGotos(lines) {
     let helperParenDepth = 0;
     let helperLoopDepth = 0;
     let helperSwitchDepth = 0;
+    let helperOrphanElseCont = false;
     // Helper body: transform gotos to this same label into recursive calls
     for (const bodyLine of helperBody) {
       const bt = bodyLine.trim();
@@ -983,9 +984,23 @@ function processGotos(lines) {
         if (/\{\s*$/.test(bt)) {
           helpers.push(bodyLine.replace(/\}\s*else\s*(if\s*\([^)]*\)\s*)?\{/, '} if (true) {').replace(/^\s*else\s*(if\s*\([^)]*\)\s*)?\{/, 'if (true) {'));
         } else {
-          helpers.push('  // (orphan else)');
+          // Multi-line else-if: the condition continues on following lines
+          // Comment out this line AND set flag to comment continuation lines
+          // until we find one ending with ) {
+          helpers.push('  if (true) // (orphan else)');
+          helperOrphanElseCont = true;
         }
-        // Don't skip — fall through to update brace depth
+        continue;
+      }
+      // Continuation of orphan else-if condition
+      if (helperOrphanElseCont) {
+        if (/\{\s*$/.test(bt)) {
+          // Last line of condition — extract the {
+          helpers.push('  { // (orphan else-if cont)');
+          helperOrphanElseCont = false;
+        } else {
+          helpers.push('  // (orphan else-if cont): ' + bt);
+        }
         continue;
       }
 
@@ -1027,6 +1042,21 @@ function processGotos(lines) {
       }
       helpers.push(hl);
     }
+    // Post-process: fix structural balance in the completed helper
+    // Find the start of this helper's body (after the function line)
+    const helperStart = helpers.length - helperBody.length;
+    let fixBrace = 0, fixParen = 0;
+    for (let h = helperStart; h < helpers.length; h++) {
+      const code = helpers[h].split('//')[0]; // only count code, not comments
+      for (const ch of code) {
+        if (ch === '{') fixBrace++;
+        if (ch === '}') fixBrace--;
+        if (ch === '(') fixParen++;
+        if (ch === ')') fixParen--;
+      }
+    }
+    // Add missing closing braces
+    while (fixBrace > 0) { helpers.push('}'); fixBrace--; }
     helpers.push('}');
     helpers.push('');
   }

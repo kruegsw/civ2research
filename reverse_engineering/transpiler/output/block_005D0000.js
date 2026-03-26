@@ -11517,9 +11517,9 @@ function LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4,
       return LVar6;
     }
   // (outer block close)
-  // (orphan else)
-  LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
-  return LVar6;
+  if (true) // (orphan else)
+  // (orphan else-if cont): LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
+  // (orphan else-if cont): return LVar6;
 }
 
 function switchD_005dab35_default_helper(param_1, param_2, param_3, param_4, uVar7) {
