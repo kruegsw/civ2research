@@ -5565,7 +5565,7 @@ export function FUN_005afea8() {
 
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 function LAB_005a43d9_helper(local_8) {
-    if (s32(local_8, 0x10) === 0) break;
+    if (s32(local_8, 0x10) === 0) return; // (was break)
   // (outer block close)
   if ((s32(DAT_006cec84, 0x48) === s32(local_8, 0xc)) &&
      (s32(DAT_006cec84, 0x220) !== local_8)) {
@@ -5575,7 +5575,7 @@ function LAB_005a43d9_helper(local_8) {
 }
 
 function LAB_005a4287_helper(iVar2, iVar3, local_8, uVar4) {
-    if (s32(local_8, 0x14) === 0) break;
+    if (s32(local_8, 0x14) === 0) return; // (was break)
   // (outer block close)
   if (s32(DAT_006cec84, 0x48) !== s32(local_8, 0xc)) {
     return;
@@ -5765,7 +5765,7 @@ LAB_005aa7ee:
         if (local_14 === 1) {
           FUN_0043ca10(DAT_006359d4,s_CASUALTY_00635c98);
         }
-        else {
+if (true) {
           FUN_0043ca10(DAT_006359d4,s_CASUALTIES_00635ca4);
         }
         FUN_0059ec88(DAT_0063fc58,0,0);
@@ -5777,7 +5777,7 @@ LAB_005aa7ee:
           FUN_0043856b(DAT_006d1da0);
         }
       }
-      else {
+if (true) {
         FUN_0043ca10(DAT_006359d4,s_OURTURNTOMOVE_00635cb0);
         FUN_0059ec88(DAT_0063fc58,0,0);
         // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_324,0);
@@ -5793,7 +5793,7 @@ LAB_005aa7ee:
       }
       FUN_0048a416();
     }
-    else {
+if (true) {
       _DAT_00673b08 = ((DAT_00655b0b) >>> 0);
       DAT_00655b0b = 0;
       if (DAT_00654b70 !== 0) {
@@ -5954,7 +5954,7 @@ function LAB_005aa7ee_helper(local_14, local_1c, local_20, local_24, local_248, 
         if (local_14 === 1) {
           FUN_0043ca10(DAT_006359d4,s_CASUALTY_00635c98);
         }
-        else {
+if (true) {
           FUN_0043ca10(DAT_006359d4,s_CASUALTIES_00635ca4);
         }
         FUN_0059ec88(DAT_0063fc58,0,0);
@@ -5966,7 +5966,7 @@ function LAB_005aa7ee_helper(local_14, local_1c, local_20, local_24, local_248, 
           FUN_0043856b(DAT_006d1da0);
         }
       }
-      else {
+if (true) {
         FUN_0043ca10(DAT_006359d4,s_OURTURNTOMOVE_00635cb0);
         FUN_0059ec88(DAT_0063fc58,0,0);
         // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_324,0);
@@ -5982,7 +5982,7 @@ function LAB_005aa7ee_helper(local_14, local_1c, local_20, local_24, local_248, 
       }
       FUN_0048a416();
     }
-    else {
+if (true) {
       _DAT_00673b08 = ((DAT_00655b0b) >>> 0);
       DAT_00655b0b = 0;
       if (DAT_00654b70 !== 0) {
@@ -6161,7 +6161,7 @@ LAB_005aa7ee:
         if (local_14 === 1) {
           FUN_0043ca10(DAT_006359d4,s_CASUALTY_00635c98);
         }
-        else {
+if (true) {
           FUN_0043ca10(DAT_006359d4,s_CASUALTIES_00635ca4);
         }
         FUN_0059ec88(DAT_0063fc58,0,0);
@@ -6173,7 +6173,7 @@ LAB_005aa7ee:
           FUN_0043856b(DAT_006d1da0);
         }
       }
-      else {
+if (true) {
         FUN_0043ca10(DAT_006359d4,s_OURTURNTOMOVE_00635cb0);
         FUN_0059ec88(DAT_0063fc58,0,0);
         // DEVIATION: MFC — CPropertySheet::EnableStackedTabs(local_324,0);
@@ -6189,7 +6189,7 @@ LAB_005aa7ee:
       }
       FUN_0048a416();
     }
-    else {
+if (true) {
       _DAT_00673b08 = ((DAT_00655b0b) >>> 0);
       DAT_00655b0b = 0;
       if (DAT_00654b70 !== 0) {
@@ -6491,14 +6491,14 @@ function LAB_005ab60f_helper(cVar1, iVar4, local_14, local_18, local_20, local_2
                 FUN_0046e020(0x30,0,0,0);
                 FUN_0040bc80(0);
               }
-              else {
+if (true) {
                 w32(DAT_006af240, DAT_006d1da0 * 4, 
                      s32(DAT_006af220, DAT_006d1da0 * 4));
                 FUN_00421da0(0,local_18);
                 if (local_18 === 1) {
                   FUN_0043ca10(DAT_006359d4,s_CASUALTY_00635d3c);
                 }
-                else {
+if (true) {
                   FUN_0043ca10(DAT_006359d4,s_CASUALTIES_00635d48);
                 }
                 FUN_0059ec88(DAT_0063fc58,0,0);
@@ -6516,15 +6516,15 @@ function LAB_005ab60f_helper(cVar1, iVar4, local_14, local_18, local_20, local_2
             }
             FUN_0048a416();
           }
-          else {
+if (true) {
             DAT_006c918c = 0;
           }
         }
-        else {
+if (true) {
           local_20 = 0;
         }
       }
-      else {
+if (true) {
         _DAT_00673b08 = ((DAT_00655b0b) >>> 0);
         DAT_00655b0b = 0;
         if ((DAT_00628048 === 0) || (DAT_0062c488 !== 0)) {
@@ -6557,12 +6557,12 @@ function LAB_005ab60f_helper(cVar1, iVar4, local_14, local_18, local_20, local_2
             DAT_00654faa = 1;
           }
         }
-        else {
+if (true) {
           local_20 = 0;
         }
       }
     }
-    else {
+if (true) {
       local_20 = 0;
     }
     FUN_0055ae80(1);
@@ -6681,7 +6681,7 @@ function LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, uVar2) {
       if (iVar1 === 0) {
         FUN_005f22d0(DAT_0064bb08,DAT_00655020);
       }
-      else {
+if (true) {
         iVar1 = FUN_00521fe0(iVar1);
         if (iVar1 === 0) {
           FUN_004a73d9();
@@ -6693,7 +6693,7 @@ function LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, uVar2) {
         FUN_005f22d0(DAT_0064bb08,DAT_00655020);
       }
     }
-    else {
+if (true) {
       FUN_005f22d0(DAT_0064bb08,DAT_00655020);
     }
     LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, uVar2); return;
@@ -6758,7 +6758,7 @@ switchD_005aea9a_caseD_4:
       DAT_00655aea = DAT_00655aea & 0xfffeffff;
     }
   }
-  else if (DAT_006a9110 !== 0) {
+if (true) {
     DAT_00655aea = DAT_00655aea & 0xfffeffff;
   }
   LAB_005ae610_helper(iVar1, iVar3, local_18, local_310, uVar2); return;
@@ -6780,7 +6780,7 @@ function switchD_005aea9a_caseD_4_helper(iVar1) {
       DAT_00655aea = DAT_00655aea & 0xfffeffff;
     }
   }
-  else if (DAT_006a9110 !== 0) {
+if (true) {
     DAT_00655aea = DAT_00655aea & 0xfffeffff;
   }
   LAB_005ae610_helper(iVar1); return;
@@ -6841,7 +6841,7 @@ switchD_005aea9a_caseD_4:
       DAT_00655aea = DAT_00655aea & 0xfffeffff;
     }
   }
-  else if (DAT_006a9110 !== 0) {
+if (true) {
     DAT_00655aea = DAT_00655aea & 0xfffeffff;
   }
   LAB_005ae610_helper(iVar1, iVar3, local_18, local_310); return;

@@ -11517,7 +11517,7 @@ function LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4,
       return LVar6;
     }
   }
-  else if (uVar2 === 0x204) LAB_005d2c05_helper(iVar3, local_8, param_1, param_2, param_3, param_4, uVar2, uVar5); return;
+  // (orphan else)
   LVar6 = CallWindowProcA(lpPrevWndFunc,param_1,param_2,param_3,param_4);
   return LVar6;
 }
@@ -11542,7 +11542,7 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
       if (s32(iVar6, 0x3c) === 0) {
         local_3c = 0x5;
       }
-      else {
+if (true) {
         // DEVIATION: C pointer — local_3c = *(CView **)(iVar6 + 0x3c);
       }
       GetClientRect(param_1,local_28[0]);
@@ -11551,7 +11551,7 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
       if (local_48 < local_3c) {
         local_58 = -1;
       }
-      else {
+if (true) {
         iVar7 = FUN_00407fc0(local_28[0]);
         if (iVar7 - local_3c < local_48) {
           local_58 = 1;
@@ -11560,7 +11560,7 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
       if (local_40 < local_3c) {
         local_4c = -1;
       }
-      else {
+if (true) {
         iVar7 = FUN_00407f90(local_28[0]);
         if (iVar7 - local_3c < local_40) {
           local_4c = 1;
@@ -11570,7 +11570,7 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
         if (local_40 < local_3c * 4) {
           local_4c = -1;
         }
-        else {
+if (true) {
           iVar7 = FUN_00407f90(local_28[0]);
           if (iVar7 + local_3c * -4 < local_40) {
             local_4c = 1;
@@ -11579,19 +11579,19 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
         if (local_4c < 0) {
           local_a0 = 0xd;
         }
-        else if (local_4c < 1) {
+if (true) {
           local_a0 = 0xc;
         }
-        else {
+if (true) {
           local_a0 = 0xe;
         }
       }
-      else if (local_58 < 1) {
+if (true) {
         if (local_4c < 0) {
           if (local_48 < local_3c * 4) {
             local_58 = -1;
           }
-          else {
+if (true) {
             iVar7 = FUN_00407fc0(local_28[0]);
             if (iVar7 + local_3c * -4 < local_48) {
               local_58 = 1;
@@ -11600,18 +11600,18 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
           if (local_58 < 0) {
             local_a0 = 0xd;
           }
-          else if (local_58 < 1) {
+if (true) {
             local_a0 = 10;
           }
-          else {
+if (true) {
             local_a0 = 0x10;
           }
         }
-        else if (0 < local_4c) {
+if (true) {
           if (local_48 < local_3c * 4) {
             local_58 = -1;
           }
-          else {
+if (true) {
             iVar7 = FUN_00407fc0(local_28[0]);
             if (iVar7 + local_3c * -4 < local_48) {
               local_58 = 1;
@@ -11620,19 +11620,19 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
           if (local_58 < 0) {
             local_a0 = 0xe;
           }
-          else if (local_58 < 1) {
+if (true) {
             local_a0 = 0xb;
           }
-          else {
+if (true) {
             local_a0 = 0x11;
           }
         }
       }
-      else {
+if (true) {
         if (local_40 < local_3c * 4) {
           local_4c = -1;
         }
-        else {
+if (true) {
           iVar7 = FUN_00407f90(local_28[0]);
           if (iVar7 + local_3c * -4 < local_40) {
             local_4c = 1;
@@ -11641,10 +11641,10 @@ function switchD_005dc5f2_caseD_4_helper(iVar6, iVar7, local_14, local_28, local
         if (local_4c < 0) {
           local_a0 = 0x10;
         }
-        else if (local_4c < 1) {
+if (true) {
           local_a0 = 0xf;
         }
-        else {
+if (true) {
           local_a0 = 0x11;
         }
       }
@@ -11675,7 +11675,7 @@ function LAB_005e0071_helper(param_1, uVar3) {
       operator_delete(pcVar2);
       uVar3 = 0xffffffff;
   // (outer block close)
-    else {
+if (true) {
       operator_delete(s32(param_1, 0));
       pvVar5 = operator_new(uVar3);
       w32(param_1, 0, pvVar5);

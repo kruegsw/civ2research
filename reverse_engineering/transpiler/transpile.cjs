@@ -929,20 +929,54 @@ function processGotos(lines) {
 
     // Build helper function
     helpers.push('function ' + helperName + '(' + varList + ') {');
-    // Track brace depth — skip lines that close blocks opened before the label
+    // Track structural context — skip/fix lines referencing blocks opened before label
     let helperBraceDepth = 0;
+    let helperLoopDepth = 0;  // for/while/do-while
+    let helperSwitchDepth = 0;
     // Helper body: transform gotos to this same label into recursive calls
     for (const bodyLine of helperBody) {
-      // Check if this line would make depth negative (excess closing brace)
+      const bt = bodyLine.trim();
+
+      // Track loop/switch depth
+      if (/^\s*(for|while|do)\b/.test(bt)) helperLoopDepth++;
+      if (/^\s*switch\s*\(/.test(bt)) helperSwitchDepth++;
+
+      // Check brace depth
       let lineDepthChange = 0;
       for (const ch of bodyLine) { if (ch === '{') lineDepthChange++; if (ch === '}') lineDepthChange--; }
+
       if (helperBraceDepth + lineDepthChange < 0) {
-        // This closing brace belongs to a block opened before the label — skip or comment
+        // Excess closing brace — belongs to outer block
         helpers.push('  // (outer block close)');
         helperBraceDepth = 0;
+        if (helperLoopDepth > 0) helperLoopDepth--;
+        if (helperSwitchDepth > 0) helperSwitchDepth--;
         continue;
       }
       helperBraceDepth += lineDepthChange;
+
+      // Orphan else — convert to if(true) to preserve block structure
+      if (/^\s*\}\s*else\b/.test(bt) || /^\s*else\b/.test(bt)) {
+        if (/\{\s*$/.test(bt)) {
+          helpers.push(bodyLine.replace(/\}\s*else\s*(if\s*\([^)]*\)\s*)?\{/, '} if (true) {').replace(/^\s*else\s*(if\s*\([^)]*\)\s*)?\{/, 'if (true) {'));
+        } else {
+          helpers.push('  // (orphan else)');
+        }
+        // Don't skip — fall through to update brace depth
+        continue;
+      }
+
+      // Orphan break — no enclosing loop/switch (check if break is at context where loop was before label)
+      if (/\bbreak\s*;/.test(bt) && helperLoopDepth <= 0 && helperSwitchDepth <= 0) {
+        helpers.push(bodyLine.replace(/\bbreak\s*;/, 'return; // (was break)'));
+        continue;
+      }
+
+      // Orphan case/default — no enclosing switch
+      if (/^\s*(case\s+|default\s*:)/.test(bt) && helperSwitchDepth <= 0) {
+        helpers.push('  // (orphan case) ' + bt);
+        continue;
+      }
       let hl = bodyLine;
       // Replace goto to THIS label with recursive call
       if (new RegExp('\\bgoto\\s+' + label + '\\b').test(hl)) {

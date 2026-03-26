@@ -4725,7 +4725,7 @@ LAB_00521c07:
       if (s8(local_14) === 0) {
         DAT_00655aea = DAT_00655aea | 0x100;
       }
-      else {
+if (true) {
         DAT_00655aea = DAT_00655aea & 0xfffffeff;
       }
       while( true ) {
@@ -4743,7 +4743,7 @@ LAB_00521c07:
           DAT_006ad684 = 0;
           DAT_00654c7c = 0;
         }
-        else {
+if (true) {
           FUN_0040bbb0();
           FUN_0040bc10(0x364);
           FUN_0059edf0(DAT_00679640,6,0);
@@ -4803,7 +4803,7 @@ function LAB_00521c07_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, l
       if (s8(local_14) === 0) {
         DAT_00655aea = DAT_00655aea | 0x100;
       }
-      else {
+if (true) {
         DAT_00655aea = DAT_00655aea & 0xfffffeff;
       }
       while( true ) {
@@ -4821,7 +4821,7 @@ function LAB_00521c07_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, l
           DAT_006ad684 = 0;
           DAT_00654c7c = 0;
         }
-        else {
+if (true) {
           FUN_0040bbb0();
           FUN_0040bc10(0x364);
           FUN_0059edf0(DAT_00679640,6,0);
@@ -4908,7 +4908,7 @@ function LAB_00521912_helper(iVar1, local_118, local_11c, local_14, local_3d4, l
     if (DAT_0064bcb8 === 0) {
       FUN_00421f10(2000);
     }
-    else {
+if (true) {
       uVar2 = FUN_00484fec(DAT_0064bcb8);
       FUN_00421f10(uVar2);
     }
@@ -4943,7 +4943,7 @@ LAB_00521c07:
       if (s8(local_14) === 0) {
         DAT_00655aea = DAT_00655aea | 0x100;
       }
-      else {
+if (true) {
         DAT_00655aea = DAT_00655aea & 0xfffffeff;
       }
       while( true ) {
@@ -4961,7 +4961,7 @@ LAB_00521c07:
           DAT_006ad684 = 0;
           DAT_00654c7c = 0;
         }
-        else {
+if (true) {
           FUN_0040bbb0();
           FUN_0040bc10(0x364);
           FUN_0059edf0(DAT_00679640,6,0);
@@ -5013,7 +5013,7 @@ function LAB_0052dcf1_helper(bVar1, local_8) {
       (bVar1)) || (DAT_00655b07 !== 0)) {
     FUN_0043060b(DAT_006d1da0,s32(local_8, 0x118));
   }
-  else {
+if (true) {
     FUN_00410030(s_NOINTEL_006324e8,DAT_0063fc58,0);
   }
   return;

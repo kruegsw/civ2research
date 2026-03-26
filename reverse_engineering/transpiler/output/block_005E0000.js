@@ -11886,7 +11886,7 @@ function LAB_005e549a_helper(iVar10, iVar8, iVar9, local_14, local_20, local_24,
           local_58 = puVar13;
         } while (local_4c !== 0xffff);
       }
-      else {
+if (true) {
         iVar8 = u16(iVar10, ((local_c) >>> 0)) + 1;
         local_24 = local_24 + iVar8;
         local_58 = local_24 + -1;
@@ -11967,7 +11967,7 @@ function LAB_005eb1df_helper(iVar9, local_10, local_14, local_1c, local_20, loca
           FUN_005eb2f0();
   // (outer block close)
   // (outer block close)
-      else {
+if (true) {
         iVar9 = FUN_00414d10();
         // DEVIATION: C pointer — if (((*(byte *)(iVar9 + 0x48) & 0x80) !== 0) ||
             // DEVIATION(cont): (iVar9 = thunk_FUN_00414d10(), (*(byte *)(iVar9 + 0x49) & 1) != 0)) {
@@ -12024,7 +12024,7 @@ function switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, para
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
       }
     }
-    else {
+if (true) {
       switch(param_2) {
       case 0x200:
         DAT_00637ea4 = local_14;
@@ -12110,7 +12110,7 @@ function LAB_005eb8a1_helper(iVar5, local_10, local_14, local_18, param_1, param
           return uVar2;
         }
   // (outer block close)
-      else {
+if (true) {
         if (param_2 === 0x311) {
           if (param_3 === param_1) {
             uVar2 = fill_rect_BE88(param_1,0x311,param_3,param_4);
@@ -12144,7 +12144,7 @@ switchD_005ec033_caseD_4:
         FUN_005ed050(param_4 & 0xffff,param_4 >> 0x10);
       }
     }
-    else {
+if (true) {
       switch(param_2) {
       case 0x200:
         DAT_00637ea4 = local_14;
@@ -12241,7 +12241,7 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
           DAT_00637ea4 = local_14;
           FUN_005ed290();
         }
-        else {
+if (true) {
           DAT_00637ea4 = local_14;
           if (param_3 === 0xf120) {
             FUN_005ed2c0();
@@ -12460,9 +12460,9 @@ function switchD_005ecda6_caseD_5_helper(iVar4, local_10, local_14, local_18, lo
         }
         uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
         return uVar2;
-      case 6:
+  // (orphan case) case 6:
         switchD_005ecda6_caseD_6_helper(iVar4, local_10, local_14, local_18, local_1c, local_20, local_24, local_28, local_2c, local_30, local_34, local_8, local_c, param_1, param_2, param_3, param_4, sVar1, uVar2); return;
-      case 7:
+  // (orphan case) case 7:
         DAT_00637ea4 = local_14;
         FUN_005ed2f0();
         return 0;
@@ -12475,7 +12475,7 @@ function switchD_005ecda6_caseD_5_helper(iVar4, local_10, local_14, local_18, lo
       return uVar2;
     }
   // (outer block close)
-  else {
+if (true) {
     if (param_2 < 0x45) {
       if (param_2 === 0x44) {
         DAT_00637ea4 = local_14;
@@ -12537,7 +12537,7 @@ switchD_005ecda6_caseD_4:
           DAT_00637ea4 = local_14;
           FUN_005ed290();
         }
-        else {
+if (true) {
           DAT_00637ea4 = local_14;
           if (param_3 === 0xf120) {
             FUN_005ed2c0();
@@ -12748,7 +12748,7 @@ function LAB_005edc85_helper(bVar1, cVar6, iVar3, param_1, param_2, uVar2, uVar4
     uVar4 = ((uVar5) & 0xFFFF);
     if (s8(uVar5 >> 8) === 0) LAB_005edca2_helper(bVar1, cVar6, iVar3, param_1, param_2, uVar2, uVar4, uVar5); return;
   }
-  else {
+if (true) {
     bVar1 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
@@ -12778,7 +12778,7 @@ LAB_005edc85:
     uVar4 = ((uVar5) & 0xFFFF);
     if (s8(uVar5 >> 8) === 0) LAB_005edca2_helper(bVar1, cVar6, iVar3, param_1, param_2, param_4, param_5, uVar2, uVar4, uVar5); return;
   }
-  else {
+if (true) {
     bVar1 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar1 ^ 0x80;
@@ -12815,7 +12815,7 @@ function LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3
   if (cVar5 === 0) {
     if (s8(uVar7 >> 8) === 0) LAB_005edcf2_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3, uVar6, uVar7); return;
   }
-  else if (cVar5 !== 0) {
+if (true) {
     bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
@@ -12831,7 +12831,7 @@ function LAB_005edcc5_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, uVar3
       if (s32(param_1, 0) < 0) {
         w32(param_1, 0, 0x7f);
       }
-      else {
+if (true) {
         w32(param_1, 0, -0x80);
       }
     }
@@ -12855,7 +12855,7 @@ LAB_005edcc5:
   if (cVar5 === 0) {
     if (s8(uVar7 >> 8) === 0) LAB_005edcf2_helper(bVar2, cVar1, cVar5, iVar4, param_1, param_2, param_4, param_5, uVar3, uVar6, uVar7); return;
   }
-  else if (cVar5 !== 0) {
+if (true) {
     bVar2 = s32(param_2, 0);
     param_2 = param_2 + 1;
     in_AL = bVar2 ^ 0x80;
@@ -12871,7 +12871,7 @@ LAB_005edcc5:
       if (s32(param_1, 0) < 0) {
         w32(param_1, 0, 0x7f);
       }
-      else {
+if (true) {
         w32(param_1, 0, -0x80);
       }
     }

@@ -10997,7 +10997,7 @@ function LAB_005c92ae_helper(local_8, param_1, param_2, sVar1) {
     __strlwr(local_8);
     // DEVIATION: C pointer — *(char *)(param_1 + 0x25) = local_8[0];
   }
-  else {
+if (true) {
     w32(param_1, 0x28, 0xffffffff);
   }
   return;
@@ -11066,7 +11066,7 @@ LAB_005cb749:
       }
     }
   }
-  else {
+if (true) {
     switch(param_2) {
     case 0x201:
       w32(iVar3, 0x1c, 1);
@@ -11146,7 +11146,7 @@ function LAB_005cb749_helper(iVar3, local_20, local_c, param_1, param_2, param_4
       }
     }
   // (outer block close)
-  else {
+if (true) {
     switch(param_2) {
     case 0x201:
       w32(iVar3, 0x1c, 1);
@@ -11229,12 +11229,12 @@ function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, loca
     DeleteObject(local_11c);
     ReleaseDC(param_1,local_144);
   // (outer block close)
-  else if (param_2 === 0x100) {
+if (true) {
     if (param_3 === 9) {
       pHVar6 = GetParent(param_1);
       SendMessageA(pHVar6,param_2,param_3,param_4);
     }
-    else {
+if (true) {
       if (param_3 === 0x20) {
         FUN_0040f810();
         cVar1 = FUN_005cbdd0();
@@ -11248,7 +11248,7 @@ function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, loca
       SendMessageA(pHVar6,param_2,param_3,param_4);
     }
   }
-  else if (param_2 === 0x201) {
+if (true) {
     iVar2 = FUN_005c5ec0();
     if ((iVar2 !== 0) && (DAT_00637f08 === 0)) {
       SetFocus(param_1);
@@ -11256,7 +11256,7 @@ function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, loca
       if (iVar2 === 0) {
         FUN_0040fad0(1);
       }
-      else {
+if (true) {
         FUN_0040fad0(0);
       }
       DAT_00637f08 = 1;
@@ -11269,7 +11269,7 @@ function LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, loca
       FUN_005cce40(uVar7,iVar2);
     }
   }
-  else {
+if (true) {
     if (param_2 !== 0x202) LAB_005ccd4b_helper(cVar1, iVar2, local_11c, local_144, local_198, local_1b0, param_1, param_2, param_3, param_4, uVar7); return;
     iVar2 = FUN_005c5ec0();
     if (iVar2 !== 0) {

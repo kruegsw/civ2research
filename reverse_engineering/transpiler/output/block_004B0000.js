@@ -7078,7 +7078,7 @@ function LAB_004b4982_helper(in_ECX, uVar2, uVar3, unaff_ESI) {
     // DEVIATION: C pointer — FUN_005bb4ae(0,0x602,**(undefined4 **)(in_ECX + 0x150),
                   // DEVIATION(cont): *(undefined4 *)(*(int *)(in_ECX + 0x150) + 4),uVar3,uVar2,puVar4,puVar5);
   }
-  else {
+if (true) {
     puVar5 = DAT_006553d8;
     puVar4 = DAT_006a8c00;
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),DAT_006a8c00,DAT_006553d8);
@@ -7126,7 +7126,7 @@ LAB_004b4982:
     // DEVIATION: C pointer — FUN_005bb4ae(0,0x602,**(undefined4 **)(in_ECX + 0x150),
                   // DEVIATION(cont): *(undefined4 *)(*(int *)(in_ECX + 0x150) + 4),uVar3,uVar2,puVar4,puVar5);
   }
-  else {
+if (true) {
     puVar5 = DAT_006553d8;
     puVar4 = DAT_006a8c00;
     uVar2 = FUN_00407fc0(s32(in_ECX, 0x150),DAT_006a8c00,DAT_006553d8);
