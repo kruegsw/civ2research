@@ -69,7 +69,7 @@ export function FUN_005113f0(param_1, param_2, param_3) {
 export function FUN_00511430() {
 
 
-  FUN_004af09e;
+  FUN_004af09e(DAT_00679640);
   return;
 }
 
@@ -2552,7 +2552,7 @@ export function FUN_00516947(in_ECX, param_1, param_2) {
   w32(in_ECX, 0xe54, uVar2);
   FUN_005bb4ae(DAT_00631ad4,0xc02,0,0,DAT_0063359c * 6 + 0x1c2,
                DAT_00633598 * 2 + DAT_00633588 + 0xfc,DAT_006ab6a8,DAT_006553d8);
-  FUN_00497d00;
+  FUN_00497d00(DAT_00633598);
   FUN_005d8236(DAT_006cec90);
   FUN_00517673();
   FUN_00517158();
@@ -2799,7 +2799,7 @@ export function FUN_00517158() {
     FUN_0040bbe0(uVar7);
   }
   // DEVIATION: MFC — pCVar2 = CRichEditCntrItem::GetActiveView(in_ECX);
-  iVar3 = FUN_0040efd0;
+  iVar3 = FUN_0040efd0(DAT_00679640);
   iVar1 = DAT_00633588;
   iVar3 = (pCVar2 - iVar3) / 2;
   iVar5 = DAT_00633588 + 1;
@@ -4695,25 +4695,25 @@ export function FUN_0051b2b6(in_ECX) {
   local_14 = DAT_00631b8c + s32(in_ECX, 0x128) + 4;
   FUN_0040bbb0();
   FUN_0040bc10(0x1d6);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   FUN_005bb024(in_ECX,DAT_00679640,local_10,local_14,-10 - iVar2);
   local_10 = DAT_00631b98 + s32(in_ECX, 0x124);
   local_14 = DAT_00631b9c + s32(in_ECX, 0x128) + 4;
   FUN_0040bbb0();
   FUN_0040bc10(0x1d7);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   FUN_005bb024(in_ECX,DAT_00679640,local_10,local_14,-10 - iVar2);
   local_10 = DAT_00631bd8 + s32(in_ECX, 0x124) + 0x30;
   local_14 = DAT_00631bdc + s32(in_ECX, 0x128) + 4;
   FUN_0040bbb0();
   FUN_0040bc10(0x1d2);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   FUN_005bb024(in_ECX,DAT_00679640,local_10,local_14,iVar2 + 10);
   local_10 = DAT_00631be8 + s32(in_ECX, 0x124) + 0x30;
   local_14 = DAT_00631bec + s32(in_ECX, 0x128) + 4;
   FUN_0040bbb0();
   FUN_0040bc10(0x1dd);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   FUN_005bb024(in_ECX,DAT_00679640,local_10,local_14,iVar2 + 10);
   FUN_00408460();
   return;

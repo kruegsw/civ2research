@@ -3291,8 +3291,8 @@ export function FUN_005d4965() {
 
 
   if (DAT_00638578 !== 0) {
-    FUN_005d6b89;
-    FUN_005d4bcb;
+    FUN_005d6b89(DAT_00638578);
+    FUN_005d4bcb(DAT_00638578);
   }
   return;
 }
@@ -4071,7 +4071,7 @@ export function FUN_005d5d11(param_1, param_2, param_3) {
   }
   else {
     if (DAT_00638588 !== DAT_00638584) {
-      FUN_005d687b;
+      FUN_005d687b(DAT_00638584);
     }
     iVar2 = AVIStreamTimeToSample(s32(DAT_006385d0, 0x84),param_1);
     local_10 = AVIStreamTimeToSample(s32(DAT_006385d0, 0x84),param_2);
@@ -4595,7 +4595,7 @@ export function FUN_005d6a2c() {
   _DAT_006385b8 = 0;
   local_14 = DAT_006385d0;
   if (DAT_00638578 !== 0x0) {
-    waveOutReset;
+    waveOutReset(DAT_00638578);
     while (BVar1 = PeekMessageA(local_30[0],DAT_0063857c,0x3bd,0x3bd,1), BVar1 !== 0) {
       _DAT_006385d4 = _DAT_006385d4 + 1;
     }
@@ -4662,7 +4662,7 @@ export function FUN_005d6b89(param_1) {
     waveOutReset(param_1);
   }
   if (DAT_00638588 !== DAT_00638584) {
-    FUN_005d687b;
+    FUN_005d687b(DAT_00638584);
   }
   if (piVar1 !== 0x0) {
     for (local_14 = 0; local_14 < DAT_00638584; local_14 = local_14 + 1) {

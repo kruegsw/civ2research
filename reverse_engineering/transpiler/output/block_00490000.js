@@ -240,13 +240,13 @@ export function FUN_004906fd(in_ECX) {
     FUN_0040bc10(0x295);
     FUN_0040fe40();
     FUN_005c0f57(local_8,DAT_00679640,local_58,local_5c,5);
-    iVar2 = FUN_0040efd0;
+    iVar2 = FUN_0040efd0(DAT_00679640);
     local_58 = local_58 + iVar2 + 10;
     FUN_0040bbb0();
     uVar3 = FUN_00491d61(local_70);
     uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
     FUN_005f22d0(DAT_00679640,uVar3);
-    local_38 = FUN_0040efd0;
+    local_38 = FUN_0040efd0(DAT_00679640);
     // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX);
     FUN_00452c14(local_70,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right,
@@ -297,7 +297,7 @@ export function FUN_004906fd(in_ECX) {
   FUN_0040bbb0();
   _sprintf(DAT_00679640,DAT_0062c968,s8(DAT_00627cca[local_7c * 0x18]));
   FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   local_58 = local_50 + iVar2 + 3;
   iVar4 = local_5c + local_1c / 2;
   iVar2 = FUN_00451860();
@@ -317,7 +317,7 @@ export function FUN_004906fd(in_ECX) {
   }
   _sprintf(DAT_00679640,DAT_0062c96c,cVar1);
   FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   local_58 = local_50 + iVar2 + 3;
   iVar4 = local_5c + local_1c / 2;
   iVar2 = FUN_00451860();
@@ -331,7 +331,7 @@ export function FUN_004906fd(in_ECX) {
   FUN_0040bbb0();
   _sprintf(DAT_00679640,DAT_0062c970,s8(DAT_00627ccc[local_7c * 0x18]));
   FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   local_58 = local_50 + iVar2 + 3;
   iVar4 = local_5c + local_1c / 2;
   iVar2 = FUN_00451860();
@@ -428,7 +428,7 @@ export function FUN_004906fd(in_ECX) {
           _sprintf(DAT_00679640,DAT_0062c974,
                    s8(DAT_00627cd0[local_7c * 0x18 + local_68]));
           FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-          iVar2 = FUN_0040efd0;
+          iVar2 = FUN_0040efd0(DAT_00679640);
           local_58 = local_50 + iVar2 + 3;
           if (local_68 === 0) {
             iVar4 = local_5c + local_1c / 2;
@@ -446,7 +446,7 @@ export function FUN_004906fd(in_ECX) {
         uVar3 = FUN_00491d61(s8(DAT_00627cce[local_7c * 0x18 + local_68]));
         uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
         FUN_005f22d0(DAT_00679640,uVar3);
-        local_38 = FUN_0040efd0;
+        local_38 = FUN_0040efd0(DAT_00679640);
         // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
         SetRect(local_34[0],local_50,local_5c,local_38 + local_50 + 5,local_5c + extraout_EAX_00);
         FUN_00452c14(s8(DAT_00627cce[local_7c * 0x18 + local_68]),local_50,local_5c,
@@ -490,7 +490,7 @@ export function FUN_004906fd(in_ECX) {
       uVar3 = FUN_00491d61(s8(DAT_00627ccd[local_7c * 0x18]));
       uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
       FUN_005f22d0(DAT_00679640,uVar3);
-      local_38 = FUN_0040efd0;
+      local_38 = FUN_0040efd0(DAT_00679640);
       // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_01);
       FUN_00452c14(s8(DAT_00627ccd[local_7c * 0x18]),local_58,local_5c,4,
@@ -519,7 +519,7 @@ export function FUN_004906fd(in_ECX) {
         FUN_0040fe40();
         FUN_0040bbe0(DAT_0062c980);
         FUN_005c0f57(local_8,DAT_00679640,local_58,local_5c,5);
-        iVar2 = FUN_0040efd0;
+        iVar2 = FUN_0040efd0(DAT_00679640);
         local_58 = local_58 + iVar2 + 3;
         iVar4 = local_5c + local_1c / 2;
         iVar2 = FUN_00451860();
@@ -538,7 +538,7 @@ export function FUN_004906fd(in_ECX) {
     uVar3 = FUN_00491d61(local_7c + 0xb);
     uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
     FUN_005f22d0(DAT_00679640,uVar3);
-    local_38 = FUN_0040efd0;
+    local_38 = FUN_0040efd0(DAT_00679640);
     // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_02);
     FUN_00452c14(local_7c + 0xb,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right,
@@ -549,7 +549,7 @@ export function FUN_004906fd(in_ECX) {
       uVar3 = FUN_00491d61(local_7c + 0x16);
       uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
       FUN_005f22d0(DAT_00679640,uVar3);
-      local_38 = FUN_0040efd0;
+      local_38 = FUN_0040efd0(DAT_00679640);
       // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_03);
       FUN_00452c14(local_7c + 0x16,local_58,local_5c,4,local_34[0].left,local_34[0].top,
@@ -734,9 +734,9 @@ export function FUN_004923f0(param_1, param_2) {
     return;
   }
 // switchD_004926f8_default: (code below also in switchD_004926f8_default_helper, kept for 1:1 audit)
-  FUN_00492ae0;
+  FUN_00492ae0(DAT_00679640);
   iVar2 = FUN_00492ab0();
-  sVar4 = _strlen;
+  sVar4 = _strlen(DAT_00679640);
   FUN_00492b20(iVar2 - sVar4,iVar2);
   return;
 }
@@ -787,7 +787,7 @@ export function FUN_0049275a(param_1, param_2) {
   }
   FUN_00492a40(DAT_00679640,0x100);
   FUN_00421c30();
-  sVar2 = _strlen;
+  sVar2 = _strlen(DAT_00679640);
   w32(param_2, 0, s32(param_2, 0) + sVar2 + 2);
   // DEVIATION: SEH
   FUN_00492868();
@@ -2967,7 +2967,7 @@ export function FUN_00496402() {
   FUN_005bb4ae(DAT_0062cbc8,0xc00,0,0,DAT_0063359c * 8 + 0x276,
                DAT_0063359c * 4 + DAT_00633598 + 0x16e,DAT_006a8c00,DAT_006553d8);
   FUN_004964b3();
-  FUN_00497d00;
+  FUN_00497d00(DAT_00633598);
   FUN_00408130(FUN_00496c3c);
   FUN_00414ca0(0 /* ADDR:LAB_00401f14 */);
   FUN_004966c4();
@@ -6128,13 +6128,13 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
     FUN_0040bc10(0x295);
     FUN_0040fe40();
     FUN_005c0f57(local_8,DAT_00679640,local_58,local_5c,5);
-    iVar2 = FUN_0040efd0;
+    iVar2 = FUN_0040efd0(DAT_00679640);
     local_58 = local_58 + iVar2 + 10;
     FUN_0040bbb0();
     uVar3 = FUN_00491d61(local_70);
     uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
     FUN_005f22d0(DAT_00679640,uVar3);
-    local_38 = FUN_0040efd0;
+    local_38 = FUN_0040efd0(DAT_00679640);
     // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX);
     FUN_00452c14(local_70,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right,
@@ -6185,7 +6185,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
   FUN_0040bbb0();
   _sprintf(DAT_00679640,DAT_0062c968,s8(DAT_00627cca[local_7c * 0x18]));
   FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   local_58 = local_50 + iVar2 + 3;
   iVar4 = local_5c + local_1c / 2;
   iVar2 = FUN_00451860();
@@ -6205,7 +6205,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
   }
   _sprintf(DAT_00679640,DAT_0062c96c,cVar1);
   FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   local_58 = local_50 + iVar2 + 3;
   iVar4 = local_5c + local_1c / 2;
   iVar2 = FUN_00451860();
@@ -6219,7 +6219,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
   FUN_0040bbb0();
   _sprintf(DAT_00679640,DAT_0062c970,s8(DAT_00627ccc[local_7c * 0x18]));
   FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-  iVar2 = FUN_0040efd0;
+  iVar2 = FUN_0040efd0(DAT_00679640);
   local_58 = local_50 + iVar2 + 3;
   iVar4 = local_5c + local_1c / 2;
   iVar2 = FUN_00451860();
@@ -6316,7 +6316,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
           _sprintf(DAT_00679640,DAT_0062c974,
                    s8(DAT_00627cd0[local_7c * 0x18 + local_68]));
           FUN_005c0f57(local_8,DAT_00679640,local_50,local_5c,5);
-          iVar2 = FUN_0040efd0;
+          iVar2 = FUN_0040efd0(DAT_00679640);
           local_58 = local_50 + iVar2 + 3;
           if (local_68 === 0) {
             iVar4 = local_5c + local_1c / 2;
@@ -6334,7 +6334,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
         uVar3 = FUN_00491d61(s8(DAT_00627cce[local_7c * 0x18 + local_68]));
         uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
         FUN_005f22d0(DAT_00679640,uVar3);
-        local_38 = FUN_0040efd0;
+        local_38 = FUN_0040efd0(DAT_00679640);
         // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
         SetRect(local_34[0],local_50,local_5c,local_38 + local_50 + 5,local_5c + extraout_EAX_00);
         FUN_00452c14(s8(DAT_00627cce[local_7c * 0x18 + local_68]),local_50,local_5c,
@@ -6378,7 +6378,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
       uVar3 = FUN_00491d61(s8(DAT_00627ccd[local_7c * 0x18]));
       uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
       FUN_005f22d0(DAT_00679640,uVar3);
-      local_38 = FUN_0040efd0;
+      local_38 = FUN_0040efd0(DAT_00679640);
       // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_01);
       FUN_00452c14(s8(DAT_00627ccd[local_7c * 0x18]),local_58,local_5c,4,
@@ -6407,7 +6407,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
         FUN_0040fe40();
         FUN_0040bbe0(DAT_0062c980);
         FUN_005c0f57(local_8,DAT_00679640,local_58,local_5c,5);
-        iVar2 = FUN_0040efd0;
+        iVar2 = FUN_0040efd0(DAT_00679640);
         local_58 = local_58 + iVar2 + 3;
         iVar4 = local_5c + local_1c / 2;
         iVar2 = FUN_00451860();
@@ -6426,7 +6426,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
     uVar3 = FUN_00491d61(local_7c + 0xb);
     uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
     FUN_005f22d0(DAT_00679640,uVar3);
-    local_38 = FUN_0040efd0;
+    local_38 = FUN_0040efd0(DAT_00679640);
     // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
     SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_02);
     FUN_00452c14(local_7c + 0xb,local_58,local_5c,4,local_34[0].left,local_34[0].top,local_34[0].right,
@@ -6437,7 +6437,7 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
       uVar3 = FUN_00491d61(local_7c + 0x16);
       uVar3 = FUN_004f8a9b(DAT_006a7d58,uVar3);
       FUN_005f22d0(DAT_00679640,uVar3);
-      local_38 = FUN_0040efd0;
+      local_38 = FUN_0040efd0(DAT_00679640);
       // DEVIATION: MFC — _Timevec::~_Timevec(local_8);
       SetRect(local_34[0],local_58,local_5c,local_58 + local_38 + 5,local_5c + extraout_EAX_03);
       FUN_00452c14(local_7c + 0x16,local_58,local_5c,4,local_34[0].left,local_34[0].top,
@@ -6451,9 +6451,9 @@ function LAB_00490a7d_helper(cVar1, iVar2, iVar4, in_ECX, local_18, local_1c, lo
 }
 
 function switchD_004926f8_default_helper(iVar2, sVar4) {
-  FUN_00492ae0;
+  FUN_00492ae0(DAT_00679640);
   iVar2 = FUN_00492ab0();
-  sVar4 = _strlen;
+  sVar4 = _strlen(DAT_00679640);
   FUN_00492b20(iVar2 - sVar4,iVar2);
   return;
 }

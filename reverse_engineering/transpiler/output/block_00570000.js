@@ -87,15 +87,15 @@ export function FUN_00570780() {
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_TERRAIN1_GIF_006340b0,10,0xc0,local_550);
     if (iVar2 === 0) {
-      __chdir;
+      __chdir(DAT_00655020);
       FUN_005bf071(s_TERRAIN1_GIF_006340c0,10,0xc0,local_550);
     }
     else {
-      __chdir;
+      __chdir(DAT_00655020);
     }
   }
   else {
-    __chdir;
+    __chdir(DAT_00655020);
   }
   local_554 = 1;
   local_55c = 0x83;
@@ -269,15 +269,15 @@ export function FUN_00570fc6() {
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_TERRAIN2_GIF_00634110,10,0xc0,local_54c);
     if (iVar2 === 0) {
-      __chdir;
+      __chdir(DAT_00655020);
       FUN_005bf071(s_TERRAIN2_GIF_00634120,10,0xc0,local_54c);
     }
     else {
-      __chdir;
+      __chdir(DAT_00655020);
     }
   }
   else {
-    __chdir;
+    __chdir(DAT_00655020);
   }
   local_550 = 1;
   local_55c = 0x43;
@@ -429,15 +429,15 @@ export function FUN_00571910() {
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_ICONS_GIF_0063416c,10,0xc0,local_554);
     if (iVar2 === 0) {
-      __chdir;
+      __chdir(DAT_00655020);
       FUN_005bf071(s_ICONS_GIF_00634178,10,0xc0,local_554);
     }
     else {
-      __chdir;
+      __chdir(DAT_00655020);
     }
   }
   else {
-    __chdir;
+    __chdir(DAT_00655020);
   }
   local_558 = 0xd3;
   for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
@@ -539,15 +539,15 @@ export function FUN_00571bce() {
   if (iVar2 === 0) {
     iVar2 = FUN_005bf071(s_ICONS_GIF_006341b4,10,0xc0,local_550);
     if (iVar2 === 0) {
-      __chdir;
+      __chdir(DAT_00655020);
       FUN_005bf071(s_ICONS_GIF_006341c0,10,0xc0,local_550);
     }
     else {
-      __chdir;
+      __chdir(DAT_00655020);
     }
   }
   else {
-    __chdir;
+    __chdir(DAT_00655020);
   }
   local_11c = 0x157;
   local_554 = 1;
@@ -4723,7 +4723,7 @@ export function FUN_0057b5df(param_1, param_2, param_3) {
       FUN_0040bbe0(s_STILLWONDER_006343bc);
       uVar8 = FUN_005adfa0(local_94,1,2);
       FUN_0040ff30(uVar8);
-      FUN_0043c9d0;
+      FUN_0043c9d0(DAT_00679640);
       iVar6 = FUN_005adfa0(local_94,1,2);
       if (iVar6 === 1) {
         if (DAT_00655b02 < 3) {

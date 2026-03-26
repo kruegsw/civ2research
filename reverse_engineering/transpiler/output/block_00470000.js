@@ -411,7 +411,7 @@ export function FUN_00470c1c() {
       FUN_0043c840(DAT_0062b804 + 0xf24,DAT_0062b864);
     }
     FUN_00426ff0(DAT_0062b804 + 0xf24,DAT_00679640);
-    CharUpperA;
+    CharUpperA(DAT_00679640);
     FUN_004086c0(DAT_0062b804 + 0x136c,0xe5,0x4c,200,0x85);
     FUN_005c19ad(0);
     FUN_005c1167(DAT_0062b804 + 0xf1c,DAT_00679640,DAT_0062b804 + 0x136c,0);
@@ -1580,7 +1580,7 @@ export function FUN_00472f7b() {
 
   let local_8;
   
-  DAT_0066c600 = ( & 0xFFFF);
+  DAT_0066c600 = ((DAT_00655280) & 0xFFFF);
   FUN_0047314e(DAT_00655284,DAT_0066c602);
   FUN_0047314e(DAT_00655294,DAT_0066c60a);
   for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
@@ -2557,10 +2557,10 @@ export function FUN_00475666(param_1) {
   local_10c = _strrchr(param_1,0x5c);
   local_10c = local_10c + 1;
   FUN_005f22d0(DAT_006ad6ae,local_10c);
-  sVar4 = _strlen;
+  sVar4 = _strlen(DAT_00655020);
   iVar3 = __strnicmp(param_1,DAT_00655020,sVar4);
   if (iVar3 === 0) {
-    sVar4 = _strlen;
+    sVar4 = _strlen(DAT_00655020);
     local_10c = param_1 + sVar4;
     sVar4 = _strlen(local_10c);
     sVar5 = _strlen(DAT_006ad6ae);
@@ -2571,7 +2571,7 @@ export function FUN_00475666(param_1) {
       _strncpy(DAT_006ad7b2,local_10c,(sVar4 - sVar5) - 1);
     }
   }
-  __chdir;
+  __chdir(DAT_00655020);
   FUN_00484d52();
   FUN_0041e864(1);
   local_338 = 3;
@@ -2928,10 +2928,10 @@ export function FUN_00475666(param_1) {
   FUN_0041a5c4(1);
   FUN_004a2020();
   DAT_00655280 = 1;
-  iVar3 = FUN_00407f90;
+  iVar3 = FUN_00407f90(DAT_00655284);
   iVar7 = FUN_00407f90(DAT_006ab180);
   if (iVar3 === iVar7) {
-    iVar3 = FUN_00407fc0;
+    iVar3 = FUN_00407fc0(DAT_00655284);
     iVar7 = FUN_00407fc0(DAT_006ab180);
     if ((iVar3 !== iVar7) || (local_220 !== 0)) LAB_0047733e_helper(local_330, local_334, local_338); return;
   }
@@ -3103,7 +3103,7 @@ export function save_game_0047758C(param_1) {
                                  // DEVIATION(cont): acStack_211 + 1,&DAT_0066c4f8,&DAT_0066c4e9,0,1);
       iVar3 = thunk_show_open_dialog_31D2(DAT_006553d8,uVar2);
       if (iVar3 !== 0) {
-        __chdir;
+        __chdir(DAT_00655020);
         iVar3 = FUN_004741be(acStack_211 + 1,param_1);
         if (iVar3 === 0) {
           if (param_1 === 0) {
@@ -3136,7 +3136,7 @@ export function save_game_0047758C(param_1) {
         }
         break;
       }
-      __chdir;
+      __chdir(DAT_00655020);
     } while (DAT_00655b02 === 0x02);
     FUN_0055b046(1);
   }
@@ -3220,10 +3220,10 @@ export function load_verify_units_00477D8C(param_1, param_2, param_3) {
                              // DEVIATION(cont): local_864,&DAT_0066c4f8,&DAT_0066c4e9,1,0);
   iVar3 = thunk_show_open_dialog_31D2(DAT_006553d8,uVar2);
   if (iVar3 === 0) {
-    __chdir;
+    __chdir(DAT_00655020);
   }
   else {
-    __chdir;
+    __chdir(DAT_00655020);
     for (local_11c = 1; local_11c < 8; local_11c = local_11c + 1) {
       if (s16(DAT_0066ca84, local_11c * 0x3f0) !== 0) {
         w16(DAT_0066ca84, local_11c * 0x3f0, 0);
@@ -3311,7 +3311,7 @@ export function load_verify_units_00477D8C(param_1, param_2, param_3) {
           FUN_00421bd0();
         }
       }
-      __chdir;
+      __chdir(DAT_00655020);
       local_760 = 0;
       uVar2 = FUN_00493ba6(DAT_006d1da0);
       FUN_0040ff60(0,uVar2);

@@ -265,8 +265,11 @@ function transformLine(line, ctx) {
     out = out.replace(/(?<!\*\s*)\(\s*\w+\s*\*\s*\)\s*(?=\w)/g, '');
 
     // ── Remaining C type casts: (HWND), (LRESULT), (CWnd *), etc. ──
-    // Any (ALLCAPS_WORD) or (TypeName *) that's still present → drop
-    out = out.replace(/\(\s*[A-Z][A-Z_0-9]+\s*\)/g, '');
+    // Any (ALLCAPS_WORD) that's NOT a DAT_/FUN_/PTR_/LAB_/s_ reference → drop
+    out = out.replace(/\(\s*([A-Z][A-Z_0-9]+)\s*\)/g, (m, name) => {
+      if (/^(DAT_|FUN_|PTR_|LAB_|ADDR)/.test(name)) return m; // keep — it's a reference
+      return ''; // drop — it's a type cast
+    });
     out = out.replace(/\(\s*[A-Z]\w+\s*\*\s*\)/g, '');
 
     // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──

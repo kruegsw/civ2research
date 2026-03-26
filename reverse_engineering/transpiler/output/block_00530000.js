@@ -1683,13 +1683,13 @@ export function FUN_005351aa() {
                     __chdir(DAT_0064bb08);
                     iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
-                      __chdir;
+                      __chdir(DAT_00655020);
                       iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(iVar10, iVar11, iVar8); return;
                     }
-                    __chdir;
+                    __chdir(DAT_00655020);
                     FUN_004a23fc(1);
-                    iVar18 = _atoi;
+                    iVar18 = _atoi(DAT_00679640);
                     if (0 < iVar18) {
                       sVar2 = s16(DAT_0064f342, local_60 * 0x58);
                       sVar3 = s16(DAT_0064f340, local_60 * 0x58);
@@ -7049,13 +7049,13 @@ LAB_005365f1:
                     __chdir(DAT_0064bb08);
                     iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
-                      __chdir;
+                      __chdir(DAT_00655020);
                       iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar21, bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_64, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
                     }
-                    __chdir;
+                    __chdir(DAT_00655020);
                     FUN_004a23fc(1);
-                    iVar18 = _atoi;
+                    iVar18 = _atoi(DAT_00679640);
                     if (0 < iVar18) {
                       sVar2 = s16(DAT_0064f342, local_60 * 0x58);
                       sVar3 = s16(DAT_0064f340, local_60 * 0x58);
@@ -7404,13 +7404,13 @@ LAB_005365f1:
                     __chdir(DAT_0064bb08);
                     iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
-                      __chdir;
+                      __chdir(DAT_00655020);
                       iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_80, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar4, uVar7); return;
                     }
-                    __chdir;
+                    __chdir(DAT_00655020);
                     FUN_004a23fc(1);
-                    iVar18 = _atoi;
+                    iVar18 = _atoi(DAT_00679640);
                     if (0 < iVar18) {
                       sVar2 = s16(DAT_0064f342, local_60 * 0x58);
                       sVar3 = s16(DAT_0064f340, local_60 * 0x58);
@@ -7675,13 +7675,13 @@ function LAB_005365f1_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar1
                     __chdir(DAT_0064bb08);
                     iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
-                      __chdir;
+                      __chdir(DAT_00655020);
                       iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar20, uVar7); return;
                     }
-                    __chdir;
+                    __chdir(DAT_00655020);
                     FUN_004a23fc(1);
-                    iVar18 = _atoi;
+                    iVar18 = _atoi(DAT_00679640);
                     if (0 < iVar18) {
                       sVar2 = s16(DAT_0064f342, local_60 * 0x58);
                       sVar3 = s16(DAT_0064f340, local_60 * 0x58);
@@ -7956,13 +7956,13 @@ LAB_005365f1:
                     __chdir(DAT_0064bb08);
                     iVar18 = FUN_004a2379(DAT_00632544,s_BARBARIANS_00632538);
                     if (iVar18 !== 0) {
-                      __chdir;
+                      __chdir(DAT_00655020);
                       iVar18 = FUN_004a2379(DAT_00632558,s_BARBARIANS_0063254c);
                       if (iVar18 !== 0) LAB_0053692c_helper(bVar6, cVar5, iVar10, iVar11, iVar12, iVar13, iVar15, iVar16, iVar17, iVar18, iVar8, iVar9, local_10, local_14, local_18, local_2c, local_40, local_54, local_60, local_68, local_74, local_84, local_88, local_c, sVar1, sVar2, sVar3, uVar14, uVar19, uVar20, uVar7); return;
                     }
-                    __chdir;
+                    __chdir(DAT_00655020);
                     FUN_004a23fc(1);
-                    iVar18 = _atoi;
+                    iVar18 = _atoi(DAT_00679640);
                     if (0 < iVar18) {
                       sVar2 = s16(DAT_0064f342, local_60 * 0x58);
                       sVar3 = s16(DAT_0064f340, local_60 * 0x58);

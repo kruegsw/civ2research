@@ -2882,7 +2882,7 @@ export function FUN_0058a0ee(param_1, param_2, param_3, param_4) {
   _sprintf(DAT_006acbf8,DAT_0063486c,local_104);
   OutputDebugStringA(DAT_006acbf8);
   debug_log(DAT_006acbf8);
-  sVar1 = _strlen;
+  sVar1 = _strlen(DAT_00634770);
   if (sVar1 !== 0) {
     _sprintf(DAT_006acbf8,s___s__00634870,DAT_00634770);
     OutputDebugStringA(DAT_006acbf8);

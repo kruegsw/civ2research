@@ -2317,7 +2317,7 @@ export function FUN_0054c4a1() {
     else if (uVar4 === 2) {
       do {
         if (local_120[4] === 0) {
-          local_120[4] = ( >>> 0);
+          local_120[4] = ((DAT_00633168) >>> 0);
         }
         if (DAT_006a4f88 === 0) {
           local_130 = 0;

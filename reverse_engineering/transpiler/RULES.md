@@ -11,10 +11,11 @@ Output: `reverse_engineering/transpiler/output/block_XXXXXXXX.js`
 No human, no agent, no Claude instance ever hand-edits `transpiler/output/`.
 If the output is wrong, fix the rule in `transpile.cjs` and re-run.
 
-**2. Re-run and diff is the only definition of "done."**
-No claiming "fully audited" or "verified." Run the transpiler, diff against
-previous output. Zero diff = nothing changed. Non-zero diff = review the
-changed lines. The diff IS the audit.
+**2. C line N vs JS line N is the only definition of "correct."**
+For every line N, JS line N must be a valid transformation of C line N.
+The audit compares each C line against its JS counterpart and flags
+mismatches (missing function calls, dropped arguments, wrong helpers).
+The 1:1 line mapping makes this comparison mechanical.
 
 **3. One rule, one place.**
 Every conversion rule lives in `transpile.cjs`. If a pattern is handled

@@ -165,7 +165,7 @@ export function FUN_00421ca0(in_ECX, param_1) {
 export function FUN_00421d30() {
 
 
-  FUN_004aef96;
+  FUN_004aef96(DAT_00679640);
   return;
 }
 
@@ -737,7 +737,7 @@ export function FUN_00421fcd(param_1) {
             FUN_00421bd0();
           }
         }
-        __chdir;
+        __chdir(DAT_00655020);
         FUN_005f22d0();
         FUN_005f22e0();
         FUN_005f22e0();
@@ -6308,7 +6308,7 @@ export function FUN_0042f293() {
   FUN_0040fe40();
   FUN_0043ca80(local_94);
   iVar2 = local_88;
-  local_7c = FUN_0040efd0;
+  local_7c = FUN_0040efd0(DAT_00679640);
   local_7c = iVar2 - local_7c;
   FUN_0040bbb0();
   FUN_0040bc10(0x99);
@@ -6357,7 +6357,7 @@ export function FUN_0042f293() {
   }
   FUN_0040bbe0(local_6c);
   iVar2 = local_88;
-  local_7c = FUN_0040efd0;
+  local_7c = FUN_0040efd0(DAT_00679640);
   local_7c = iVar2 - local_7c;
   FUN_0040bbb0();
   FUN_0040bc10(0xec);
@@ -6932,7 +6932,7 @@ function LAB_00422d3d_helper(iVar1, iVar5, local_1198, local_11a0, local_8, loca
             FUN_00421bd0();
           }
         }
-        __chdir;
+        __chdir(DAT_00655020);
         FUN_005f22d0();
         FUN_005f22e0();
         FUN_005f22e0();
@@ -7786,7 +7786,7 @@ LAB_00422d3d:
             FUN_00421bd0();
           }
         }
-        __chdir;
+        __chdir(DAT_00655020);
         FUN_005f22d0();
         FUN_005f22e0();
         FUN_005f22e0();

@@ -2856,7 +2856,7 @@ export function FUN_004f7c99(in_ECX) {
           uVar6 = FUN_00428b0c(s32(DAT_00628420, 0xb00));
           FUN_005f22e0(DAT_00679640,uVar6);
         }
-        sVar4 = _strlen;
+        sVar4 = _strlen(DAT_00679640);
         pvVar5 = operator_new(sVar4 + 1);
         w32(local_c, 0, pvVar5);
         FUN_005f22d0(s32(local_c, 0),DAT_00679640);
@@ -2896,7 +2896,7 @@ export function FUN_004f7c99(in_ECX) {
           local_8[2] = local_c;
         }
         local_c[2] = 0;
-        sVar4 = _strlen;
+        sVar4 = _strlen(DAT_00679642);
         pvVar5 = operator_new(sVar4 + 1);
         w32(local_c, 0, pvVar5);
         FUN_005f22d0(s32(local_c, 0),DAT_00679642);
@@ -5926,7 +5926,7 @@ export function FUN_004fc516(in_ECX, param_1, param_2) {
   }
 // LAB_004ff6f7: (code below also in LAB_004ff6f7_helper, kept for 1:1 audit)
   if (local_44 !== 0) {
-    __chdir;
+    __chdir(DAT_00655020);
     FUN_00421ea0(s_BADEVENTSFILE_00630868);
     __chdir(DAT_0064bb08);
   }
@@ -6167,7 +6167,7 @@ function LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2) {
 
 function LAB_004ff6f7_helper(local_44) {
   if (local_44 !== 0) {
-    __chdir;
+    __chdir(DAT_00655020);
     FUN_00421ea0(s_BADEVENTSFILE_00630868);
     __chdir(DAT_0064bb08);
   }
@@ -6774,7 +6774,7 @@ function LAB_004fe0af_helper(iVar1, iVar4, in_ECX, local_14, local_18, local_20,
   }
 LAB_004ff6f7:
   if (local_44 !== 0) {
-    __chdir;
+    __chdir(DAT_00655020);
     FUN_00421ea0(s_BADEVENTSFILE_00630868);
     __chdir(DAT_0064bb08);
   }

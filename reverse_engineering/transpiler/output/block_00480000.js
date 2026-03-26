@@ -2163,7 +2163,7 @@ export function FUN_00488937(param_1) {
     uVar1 = FUN_00493b10(param_1);
     FUN_0040bbe0(uVar1);
     DAT_00679642 = 0;
-    FUN_004d007e;
+    FUN_004d007e(DAT_00679640);
     FUN_0040bbe0(DAT_0062c608);
     FUN_0040bc10(0x5c);
     FUN_005f22d0(local_54,DAT_00679640);
@@ -2506,7 +2506,7 @@ export function FUN_00489553(param_1) {
   if ((DAT_00655aea._1_1_ & 0x20) !== 0) {
     __chdir(DAT_0064bb08);
     FUN_00488937(param_1);
-    __chdir;
+    __chdir(DAT_00655020);
   }
   return;
 }
@@ -3314,7 +3314,7 @@ export function FUN_0048b340() {
       FUN_004fbbdd();
     }
     for (local_32c = 0; (DAT_00628044 !== 0 && (local_32c < 8)); local_32c = local_32c + 1) {
-      if ((( | 0) <= local_32c) &&
+      if ((((DAT_00628048) | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((DAT_00655b0a) >>> 0)) !== 0)) {
         DAT_00655b05 = u8(local_32c);
         if (DAT_00655b02 === 0x01) {
@@ -3976,7 +3976,7 @@ export function FUN_0048c9f3(param_1) {
       DAT_006c31a8 = 0;
       DAT_006d1da0 = DAT_006ad35c[DAT_006ad304 * 0x15];
       DAT_00655b03 = u8(DAT_006d1da0);
-      if ((( | 0) <= local_32c) &&
+      if ((((DAT_00628048) | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((DAT_00655b0a) >>> 0)) !== 0)) {
         if ((((DAT_00628048 !== 0) && (DAT_00628048 !== local_32c)) || (DAT_00628048 === 0)) ||
            (param_1 !== 0)) {
@@ -4904,7 +4904,7 @@ LAB_0048d957:
       DAT_006c31a8 = 0;
       DAT_006d1da0 = DAT_006ad35c[DAT_006ad304 * 0x15];
       DAT_00655b03 = u8(DAT_006d1da0);
-      if ((( | 0) <= local_32c) &&
+      if ((((DAT_00628048) | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((DAT_00655b0a) >>> 0)) !== 0)) {
         if ((((DAT_00628048 !== 0) && (DAT_00628048 !== local_32c)) || (DAT_00628048 === 0)) ||
            (param_1 !== 0)) {
@@ -5146,7 +5146,7 @@ function LAB_0048d957_helper(iVar4, local_14, local_1c, local_20, local_24, loca
       DAT_006c31a8 = 0;
       DAT_006d1da0 = DAT_006ad35c[DAT_006ad304 * 0x15];
       DAT_00655b03 = u8(DAT_006d1da0);
-      if ((( | 0) <= local_32c) &&
+      if ((((DAT_00628048) | 0) <= local_32c) &&
          ((1 << (u8(local_32c) & 0x1f) & ((DAT_00655b0a) >>> 0)) !== 0)) {
         if ((((DAT_00628048 !== 0) && (DAT_00628048 !== local_32c)) || (DAT_00628048 === 0)) ||
            (param_1 !== 0)) {

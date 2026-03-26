@@ -2198,19 +2198,19 @@ export function FUN_004c6bf5(param_1, param_2) {
     if (((DAT_0064c6c0[DAT_006d1da0 * 0x594 + local_80 * 4] & 0x80) === 0) &&
        (iVar3 = FUN_00453e51(DAT_006d1da0,0x18), iVar3 === 0)) {
       if (local_38c !== 0) {
-        FUN_004aef36;
-        FUN_004af01a;
+        FUN_004aef36(DAT_00679640);
+        FUN_004af01a(DAT_00679640);
         FUN_0040bc10(0xed);
-        FUN_004af03b;
+        FUN_004af03b(DAT_00679640);
       }
       FUN_0059edf0(DAT_00679640,0,0);
     }
     FUN_004a23fc(1);
     if (local_38c !== 0) {
-      FUN_004aef36;
-      FUN_004af01a;
+      FUN_004aef36(DAT_00679640);
+      FUN_004af01a(DAT_00679640);
       FUN_0040bc10(0xed);
-      FUN_004af03b;
+      FUN_004af03b(DAT_00679640);
     }
     FUN_0059edf0(DAT_00679640,1,0);
     FUN_004a23fc(1);
@@ -3853,7 +3853,7 @@ export function show_messagebox_CF2D_004CCF2D() {
   __chdir(DAT_0064bb08);
   iVar1 = _strcmp(DAT_0064bb08,DAT_00655020);
   if ((iVar1 === 0) || (iVar1 = FUN_00415133(local_118), iVar1 === 0)) {
-    __chdir;
+    __chdir(DAT_00655020);
     local_220 = FUN_0041508c(local_118,DAT_0062e08c);
     iVar1 = _strcmp(DAT_0064bb08,DAT_00655020);
     if (iVar1 === 0) {
@@ -3962,7 +3962,7 @@ export function FUN_004cd3d7(param_1, param_2, param_3) {
     if (iVar1 === 0) {
       iVar1 = FUN_00415133(s_CITY_BAK_0062e128);
       if (iVar1 === 0) {
-        __chdir;
+        __chdir(DAT_00655020);
         local_21c = FUN_0041508c(local_14,DAT_0062e148);
         __chdir(DAT_0064bb08);
         local_220 = FUN_0041508c(local_14,DAT_0062e14c);
@@ -4583,12 +4583,12 @@ export function FUN_004ce71b(param_1) {
       iVar1 = FUN_004a23fc(1);
       if (iVar1 === 0) LAB_004ce7c5_helper(bVar4, iVar1, local_10, param_1); return;
       sVar2 = _strlen(param_1);
-      sVar3 = _strlen;
+      sVar3 = _strlen(DAT_00679640);
       if (sVar3 < sVar2) {
         local_c = _strlen(param_1);
       }
       else {
-        local_c = _strlen;
+        local_c = _strlen(DAT_00679640);
       }
       iVar1 = __strnicmp(param_1,DAT_00679640,local_c);
     } while (iVar1 !== 0);
