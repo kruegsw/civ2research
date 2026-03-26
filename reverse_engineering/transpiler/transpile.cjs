@@ -1042,20 +1042,13 @@ function processGotos(lines) {
       }
       helpers.push(hl);
     }
-    // Post-process: fix structural balance in the completed helper
-    // Find the start of this helper's body (after the function line)
+    // Post-process: add missing closing braces
     const helperStart = helpers.length - helperBody.length;
-    let fixBrace = 0, fixParen = 0;
+    let fixBrace = 0;
     for (let h = helperStart; h < helpers.length; h++) {
-      const code = helpers[h].split('//')[0]; // only count code, not comments
-      for (const ch of code) {
-        if (ch === '{') fixBrace++;
-        if (ch === '}') fixBrace--;
-        if (ch === '(') fixParen++;
-        if (ch === ')') fixParen--;
-      }
+      const code = helpers[h].split('//')[0];
+      for (const ch of code) { if (ch === '{') fixBrace++; if (ch === '}') fixBrace--; }
     }
-    // Add missing closing braces
     while (fixBrace > 0) { helpers.push('}'); fixBrace--; }
     helpers.push('}');
     helpers.push('');
