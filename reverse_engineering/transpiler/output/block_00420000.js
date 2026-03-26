@@ -2547,9 +2547,9 @@ export function FUN_004274a6(param_1, param_2) {
       if (uVar10 !== 0) {
         pcVar18 = FUN_005b898b(uVar15,iVar14,uVar10);
         if (((bVar24) && (!bVar5)) &&
-           // DEVIATION: C pointer — ((*(char *)(iVar16 + 1) !== s32(pcVar18, 0) || ((uVar23 & *(byte *)(iVar16 + 4)) === 0)))) {
-           // DEVIATION(cont): if (local_10 < 8) {
-             // DEVIATION(cont): local_30 = local_30 | 5;
+           { // DEVIATION: C pointer — ((*(char *)(iVar16 + 1) !== s32(pcVar18, 0) || ((uVar23 & *(byte *)(iVar16 + 4)) === 0)))) {
+          if (local_10 < 8) {
+            local_30 = local_30 | 5;
           }
           else {
             local_30 = local_30 | 10;
@@ -2703,7 +2703,7 @@ export function FUN_004274a6(param_1, param_2) {
                 if ((uVar23 & s8(DAT_0064f34c[iVar16 * 0x58])) === 0) {
                   local_30 = local_30 | 10;
                 }
-                // DEVIATION(C-syntax): else if (DAT_0064f34d[iVar16 * 0x58 + uVar10] !== DAT_0064f349[iVar16 * 0x58])
+                // DEVIATION: C-syntax — else if (DAT_0064f34d[iVar16 * 0x58 + uVar10] !== DAT_0064f349[iVar16 * 0x58])
                  // DEVIATION(cont): {
                    // DEVIATION(cont): local_30 = local_30 | 2;
                 }
@@ -6760,7 +6760,7 @@ function LAB_00422228_helper(iVar1, iVar5, local_8, sVar2, sVar4) {
       }
       XD_CloseConnection();
     }
-  }
+  // (outer block close)
   LAB_00422109_helper(iVar1, iVar5, local_8, sVar2, sVar4); return;
 }
 
@@ -7479,7 +7479,7 @@ function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_
       FUN_005f22d0();
       FUN_005f22d0();
       LAB_00422228_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_11c8, local_320, local_8, local_858, local_85c, local_860, local_964, local_a68, local_a6c, local_d60, param_1, sVar2, sVar4); return;
-    }
+  // (outer block close)
     FUN_0059baf0();
     pvVar3 = operator_new(0x2f4);
     local_8._0_1_ = 2;
@@ -7617,7 +7617,7 @@ function LAB_00422109_helper(iVar1, iVar5, iVar6, local_1198, local_11a0, local_
     }
     w32(extraout_ECX, 0, 0);
     FUN_00419b80();
-  }
+  // (outer block close)
 LAB_00422d3d:
   DAT_00635a3c = 0 /* ADDR:LAB_00402b58 */;
   _DAT_006ad674 = FUN_00421bb0();

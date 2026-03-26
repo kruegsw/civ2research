@@ -1265,8 +1265,8 @@ export function FUN_00523f02(param_1) {
       iVar3 = FUN_005a5f34(local_440,0);
       if (iVar3 === 0) {
         FUN_005f22d0(DAT_0064bcfa + iVar2 * 0xf2,local_440);
-        // DEVIATION: C pointer — if (0 < s16(DAT_00655502, s16(DAT_0064c6a6, iVar2 * 0x594) * 0x30)) {
-           // DEVIATION(cont): *(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + iVar2 * 0x594) * 0x30) =
+        if (true) { // DEVIATION: C pointer — if (0 < s16(DAT_00655502, s16(DAT_0064c6a6, iVar2 * 0x594) * 0x30)) {
+          // DEVIATION: C pointer — s16(DAT_00655502, s16(DAT_0064c6a6, iVar2 * 0x594) * 0x30) =
                 // DEVIATION(cont): -*(short *)(&DAT_00655502 + *(short *)(&DAT_0064c6a6 + iVar2 * 0x594) * 0x30);
         }
         iVar2 = FUN_00498a5c(DAT_006d1da0);
@@ -3070,16 +3070,16 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
       }
       FUN_0040f680(local_484,param_2 + 0x406,local_17c[0],local_480);
       FUN_0040f880(0 /* ADDR:LAB_004034d1 */ + ((param_2 === 0) - 1 & 0xffffdf58));
-      // DEVIATION: C pointer — if ((param_2 === 0) && (*(char *)(in_ECX + 0x3bd) !== 0)) {
-         // DEVIATION(cont): thunk_FUN_0043c5f0();
+      if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((param_2 === 0) && (*(char *)(in_ECX + 0x3bd) !== 0)) {
+        FUN_0043c5f0();
         FUN_0040f380();
       }
       else if (param_2 === 0) {
         FUN_0040f380();
         FUN_0043c5f0();
       }
-      // DEVIATION: C pointer — if ((param_2 === 1) && (*(char *)(in_ECX + 0x3bc) !== 0)) {
-         // DEVIATION(cont): thunk_FUN_0043c5f0();
+      if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((param_2 === 1) && (*(char *)(in_ECX + 0x3bc) !== 0)) {
+        FUN_0043c5f0();
         FUN_0040f380();
         FUN_00453c40();
       }
@@ -3665,16 +3665,16 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
       }
       FUN_0040f680(local_53c,param_2 + 0x40a,local_1f0[0],local_538);
       FUN_0040f880(0 /* ADDR:LAB_00401979 */ + ((param_2 === 0) - 1 & 0xfffffccc));
-      // DEVIATION: C pointer — if ((param_2 === 0) && (*(char *)(in_ECX + 0x3be) !== 0)) {
-         // DEVIATION(cont): thunk_FUN_0043c5f0();
+      if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((param_2 === 0) && (*(char *)(in_ECX + 0x3be) !== 0)) {
+        FUN_0043c5f0();
         FUN_0040f380();
       }
       else if (param_2 === 0) {
         FUN_0040f380();
         FUN_0043c5f0();
       }
-      // DEVIATION: C pointer — if ((param_2 === 1) && (*(char *)(in_ECX + 0x3bf) !== 0)) {
-         // DEVIATION(cont): thunk_FUN_0043c5f0();
+      if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((param_2 === 1) && (*(char *)(in_ECX + 0x3bf) !== 0)) {
+        FUN_0043c5f0();
         FUN_0040f380();
         FUN_00453c40();
       }
@@ -3738,8 +3738,8 @@ export function FUN_00526ca0(in_ECX, param_1, param_2) {
     FUN_0040f380();
     FUN_00453c40();
     FUN_00453c40();
-    // DEVIATION: C pointer — if ((*(char *)(in_ECX + 0x3bd) === 0) && (*(char *)(in_ECX + 0x3be) === 0)) {
-       // DEVIATION(cont): thunk_FUN_0043c5f0();
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(char *)(in_ECX + 0x3bd) === 0) && (*(char *)(in_ECX + 0x3be) === 0)) {
+      FUN_0043c5f0();
       FUN_00453c40();
       FUN_0040f380();
       FUN_00453c80();
@@ -4080,8 +4080,8 @@ export function FUN_0052d9a1(param_1) {
   }
   // DEVIATION: MFC — pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x348));
   if ((pcVar1 !== 0x0) ||
-     // DEVIATION: MFC — (pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x34c)), pcVar1 !== 0x0)) {
-    ); // DEVIATION(cont): thunk_FUN_004518d0(
+     { // DEVIATION: MFC — (pcVar1 = streambuf::egptr(*(streambuf **)(local_8 + 0x34c)), pcVar1 !== 0x0)) {
+    FUN_004518d0();
     FUN_0052dd73(param_1);
   }
   return;
@@ -4577,8 +4577,8 @@ export function FUN_0052e971(in_ECX) {
       FUN_0040f380();
       FUN_00453c40();
       if (s32(in_ECX, 0x1ec) === 2) {
-        // DEVIATION: C pointer — if ((*(char *)(in_ECX + 0x3bd) === 0) && (*(char *)(in_ECX + 0x3be) === 0)) {
-           // DEVIATION(cont): thunk_FUN_0043c5f0();
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(char *)(in_ECX + 0x3bd) === 0) && (*(char *)(in_ECX + 0x3be) === 0)) {
+          FUN_0043c5f0();
           FUN_00453c40();
           FUN_0040f380();
           FUN_00453c80();
@@ -4864,7 +4864,7 @@ function LAB_00521c07_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, l
         }
       }
     }
-  }
+  // (outer block close)
   LAB_00521912_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, local_8, param_1); return;
 }
 
@@ -5024,7 +5024,7 @@ function LAB_0052ed47_helper(bVar4, cVar1, iVar6, local_20, local_8, sVar2, sVar
         local_20 = -2;
       }
       return local_20;
-    }
+  // (outer block close)
     uVar5 = FUN_005ae052(s8(DAT_00628350[local_8]) + sVar2);
     cVar1 = DAT_00628360[local_8];
     iVar6 = FUN_004087c0(uVar5,cVar1 + sVar3);
@@ -5033,5 +5033,5 @@ function LAB_0052ed47_helper(bVar4, cVar1, iVar6, local_20, local_8, sVar2, sVar
       LAB_0052ed47_helper(bVar4, cVar1, iVar6, local_20, local_8, sVar2, sVar3, uVar5); return;
     }
     local_8 = local_8 + 1;
-  } while( true );
+  // (outer block close)
 }

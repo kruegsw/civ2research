@@ -7110,7 +7110,7 @@ function LAB_004b4982_helper(in_ECX, uVar2, uVar3, unaff_ESI) {
 
 function LAB_004b496e_helper(in_ECX, uVar2, uVar3, unaff_ESI) {
     w32(DAT_0062d870, 0, 0);
-  }
+  // (outer block close)
   // DEVIATION: SEH
   FUN_004b4be3();
 LAB_004b4982:

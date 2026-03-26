@@ -1191,56 +1191,56 @@ export function FUN_004f4809(in_ECX) {
   
   while (s32(in_ECX, 0x16dc) !== 0) {
     // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x16dc) + 8, 0);
-    // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16dc) !== 0) {
-       // DEVIATION(cont): operator_delete((void *)**(undefined4 **)(in_ECX + 0x16dc));
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16dc) !== 0) {
+      // DEVIATION: C pointer — operator_delete((void *)**(undefined4 **)(in_ECX + 0x16dc));
     }
     // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x16dc));
     w32(in_ECX, 0x16dc, uVar1);
   }
   while (s32(in_ECX, 0x16e0) !== 0) {
     // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x16e0) + 8, 0);
-    // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16e0) !== 0) {
-       // DEVIATION(cont): operator_delete((void *)**(undefined4 **)(in_ECX + 0x16e0));
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16e0) !== 0) {
+      // DEVIATION: C pointer — operator_delete((void *)**(undefined4 **)(in_ECX + 0x16e0));
     }
     // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x16e0));
     w32(in_ECX, 0x16e0, uVar1);
   }
   while (s32(in_ECX, 0x16e4) !== 0) {
     // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x16e4) + 8, 0);
-    // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16e4) !== 0) {
-       // DEVIATION(cont): operator_delete((void *)**(undefined4 **)(in_ECX + 0x16e4));
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16e4) !== 0) {
+      // DEVIATION: C pointer — operator_delete((void *)**(undefined4 **)(in_ECX + 0x16e4));
     }
     // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x16e4));
     w32(in_ECX, 0x16e4, uVar1);
   }
   while (s32(in_ECX, 0x16e8) !== 0) {
     // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x16e8) + 8, 0);
-    // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16e8) !== 0) {
-       // DEVIATION(cont): operator_delete((void *)**(undefined4 **)(in_ECX + 0x16e8));
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16e8) !== 0) {
+      // DEVIATION: C pointer — operator_delete((void *)**(undefined4 **)(in_ECX + 0x16e8));
     }
     // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x16e8));
     w32(in_ECX, 0x16e8, uVar1);
   }
   while (s32(in_ECX, 0x16ec) !== 0) {
     // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x16ec) + 8, 0);
-    // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16ec) !== 0) {
-       // DEVIATION(cont): operator_delete((void *)**(undefined4 **)(in_ECX + 0x16ec));
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16ec) !== 0) {
+      // DEVIATION: C pointer — operator_delete((void *)**(undefined4 **)(in_ECX + 0x16ec));
     }
     // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x16ec));
     w32(in_ECX, 0x16ec, uVar1);
   }
   while (s32(in_ECX, 0x16f0) !== 0) {
     // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x16f0) + 8, 0);
-    // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16f0) !== 0) {
-       // DEVIATION(cont): operator_delete((void *)**(undefined4 **)(in_ECX + 0x16f0));
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16f0) !== 0) {
+      // DEVIATION: C pointer — operator_delete((void *)**(undefined4 **)(in_ECX + 0x16f0));
     }
     // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x16f0));
     w32(in_ECX, 0x16f0, uVar1);
   }
   while (s32(in_ECX, 0x16f4) !== 0) {
     // DEVIATION: C pointer — uVar1 = s32(s32(in_ECX, 0x16f4) + 8, 0);
-    // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16f4) !== 0) {
-       // DEVIATION(cont): operator_delete((void *)**(undefined4 **)(in_ECX + 0x16f4));
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (**(int **)(in_ECX + 0x16f4) !== 0) {
+      // DEVIATION: C pointer — operator_delete((void *)**(undefined4 **)(in_ECX + 0x16f4));
     }
     // DEVIATION: C pointer — operator_delete(*(void **)(in_ECX + 0x16f4));
     w32(in_ECX, 0x16f4, uVar1);
@@ -2382,9 +2382,9 @@ export function FUN_004f74eb(param_1) {
     local_c = 0;
   }
   while ((local_14 !== 0 &&
-         // DEVIATION: C pointer — (iVar1 = __toupper_lk((int)*(char *)s32(local_8, 0)), iVar1 !== param_1))) {
-     // DEVIATION(cont): if (local_8[2] == 0) {
-       // DEVIATION(cont): local_8 = local_10;
+         { // DEVIATION: C pointer — (iVar1 = __toupper_lk((int)*(char *)s32(local_8, 0)), iVar1 !== param_1))) {
+    if (local_8[2] === 0) {
+      local_8 = local_10;
       local_c = 0;
     }
     else {
@@ -4474,43 +4474,43 @@ export function FUN_004fc3ae(param_1) {
 
   let uVar1;
   
-  // DEVIATION: C pointer — if (((*(byte *)(param_1 + 4) & 0x40) === 0) || ((*(byte *)(param_1 + 5) & 0x20) === 0)) {
-     // DEVIATION(cont): if ((*(byte *)(param_1 + 4) & 0x10) != 0) {
-       // DEVIATION(cont): thunk_FUN_004fa707(param_1);
+  if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (((*(byte *)(param_1 + 4) & 0x40) === 0) || ((*(byte *)(param_1 + 5) & 0x20) === 0)) {
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 0x10) !== 0) {
+      FUN_004fa707(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 0x80) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004fa854(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 0x80) !== 0) {
+      FUN_004fa854(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 4) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004faed4(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 4) !== 0) {
+      FUN_004faed4(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 2) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004fb29f(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 2) !== 0) {
+      FUN_004fb29f(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 2) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004fb5b2(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 2) !== 0) {
+      FUN_004fb5b2(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 0x20) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004faba6(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 0x20) !== 0) {
+      FUN_004faba6(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 8) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004fa944(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 8) !== 0) {
+      FUN_004fa944(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 4) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004fad02(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 4) !== 0) {
+      FUN_004fad02(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 8) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004fadfb(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 8) !== 0) {
+      FUN_004fadfb(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 1) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004faab0(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 1) !== 0) {
+      FUN_004faab0(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 1) !== 0) {
-       // DEVIATION(cont): thunk_FUN_004fa82d(param_1);
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 5) & 1) !== 0) {
+      FUN_004fa82d(param_1);
     }
-    // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 0x40) !== 0) {
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_1 + 4) & 0x40) !== 0) {
       w32(param_1, 4, u32(param_1, 4) | 0x2000);
-    } // DEVIATION(cont)
+    }
     uVar1 = 1;
   }
   else {
@@ -6066,17 +6066,17 @@ function LAB_004f6d04_helper(iVar1, iVar2, iVar3, in_ECX, local_10c, local_11c, 
         FUN_005c19ad(local_34);
         FUN_005c0f57(local_8,DAT_00679640,local_40 + local_50,local_7c + local_58,5);
         FUN_005c0073(in_ECX + 0x1b24);
-      }
-    }
+  // (outer block close)
+  // (outer block close)
     local_50 = s32(in_ECX, 0x1b24) + (local_64 + 1) * local_74;
     local_64 = local_64 + 1;
-  } while( true );
+  // (outer block close)
 }
 
 function joined_r0x004fb11d_helper(iVar2, iVar3, iVar4, local_14, local_18, local_8, local_c, param_1, uVar1) {
             if (iVar2 === local_c) break;
-          }
-        }
+  // (outer block close)
+  // (outer block close)
         else {
           iVar2 = FUN_005b89e4(iVar3,iVar4);
           if (((iVar2 === 0) || (DAT_0064b1c1[s32(param_1, 0xe0) * 0x14] === 0x01)) &&
@@ -6090,8 +6090,8 @@ function joined_r0x004fb11d_helper(iVar2, iVar3, iVar4, local_14, local_18, loca
             break;
           }
         }
-      }
-    }
+  // (outer block close)
+  // (outer block close)
     local_14 = iVar3;
     local_18 = iVar4;
     if ((local_14 === 10000) && (local_18 === 10000)) {
@@ -6123,7 +6123,7 @@ function joined_r0x004fb11d_helper(iVar2, iVar3, iVar4, local_14, local_18, loca
         uVar1 = 1;
       }
     }
-  }
+  // (outer block close)
   return uVar1;
 }
 
@@ -6134,7 +6134,7 @@ function LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2) {
         }
         FUN_004fc3ae(piVar1);
         return 1;
-      }
+  // (outer block close)
       if ((2 < DAT_00655b02) &&
          (((1 << (u8(param_1) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0 &&
           ((1 << (u8(param_2) & 0x1f) & ((DAT_00655b0b) >>> 0)) !== 0)))) {
@@ -6160,9 +6160,9 @@ function LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2) {
         }
         if ((bVar2) && (bVar3)) LAB_004fc1a5_helper(bVar2, bVar3, param_1, param_2); return;
       }
-    }
+  // (outer block close)
     piVar1 = piVar1[0x6f];
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_004ff6f7_helper(local_44) {
@@ -6316,7 +6316,7 @@ function LAB_004fe0af_helper(iVar1, iVar4, in_ECX, local_14, local_18, local_20,
               }
               local_68[0x4d] = local_24;
               local_68[1] = local_68[1] | 4;
-            }
+  // (outer block close)
             else {
               iVar1 = __strcmpi(local_3c,s_CHANGEMONEY_006300d0);
               if (iVar1 === 0) {
@@ -6766,12 +6766,12 @@ function LAB_004fe0af_helper(iVar1, iVar4, in_ECX, local_14, local_18, local_20,
                 }
               }
             }
-          }
-        }
-      }
-    } while (local_4c < 10);
+  // (outer block close)
+  // (outer block close)
+  // (outer block close)
+  // (outer block close)
     local_44 = 0;
-  }
+  // (outer block close)
 LAB_004ff6f7:
   if (local_44 !== 0) {
     __chdir(DAT_00655020);

@@ -8784,8 +8784,8 @@ export function FUN_0044f799() {
 // ── GOTO HELPERS (not mapped to C lines — see RULES.md) ──
 function LAB_004416ab_helper(iVar2, iVar3, local_30, param_1) {
         FUN_005b6042(local_30,1);
-      } while( true );
-    }
+  // (outer block close)
+  // (outer block close)
     DAT_006ad8c8 = 0;
     DAT_006c90c8 = -2;
     FUN_0046b14d(0x39,0,param_1,0,0,0,0,0,0,0);
@@ -8801,7 +8801,7 @@ function LAB_004416ab_helper(iVar2, iVar3, local_30, param_1) {
     while ((DAT_006c8fac !== 0 || (DAT_006c8fa0 !== 0))) {
       FUN_0047e94e(1,0);
     }
-  }
+  // (outer block close)
   return;
 }
 
@@ -8832,7 +8832,7 @@ function joined_r0x00444b3b_helper(iVar2, iVar4, local_14, local_18, local_1c, l
     }
     LAB_0044465c_helper(iVar2, iVar4, local_14, local_18, local_1c, local_20, local_8, local_854, local_874, local_888, param_1, sVar1, sVar7); return;
   case 5:
-  }
+  // (outer block close)
   DAT_00654fb0 = 0;
   FUN_004a73d9();
   DAT_00654fd8 = 0;
@@ -9281,12 +9281,12 @@ function LAB_004451fb_helper(local_18, local_8) {
         FUN_00445269();
         FUN_0044527f();
         return;
-      }
+  // (outer block close)
       FUN_0059b293(1);
       DAT_006ad7b2 = 0;
       FUN_00484cc0();
-    }
-  }
+  // (outer block close)
+  // (outer block close)
   LAB_0044465c_helper(local_18, local_8); return;
 }
 
@@ -9302,7 +9302,7 @@ function LAB_0044501d_helper(iVar2, local_18, local_20, local_8, local_888, para
         FUN_005f22e0(pcVar6,DAT_006665b0);
         operator_delete(DAT_006ad63c);
         DAT_006ad63c = pcVar6;
-      }
+  // (outer block close)
       else if (((param_1 === 1) || (param_1 === 4)) && (iVar2 = FUN_0044528e(), iVar2 === 0)) {
         FUN_0059b293(1);
         LAB_0044465c_helper(iVar2, local_18, local_20, local_8, local_888, param_1, sVar1, sVar7); return;
@@ -9337,8 +9337,8 @@ LAB_004451fb:
       FUN_0059b293(1);
       DAT_006ad7b2 = 0;
       FUN_00484cc0();
-    }
-  }
+  // (outer block close)
+  // (outer block close)
   LAB_0044465c_helper(iVar2, local_18, local_20, local_8, local_888, param_1, sVar1, sVar7); return;
 }
 
@@ -9507,7 +9507,7 @@ function LAB_00445a4e_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, l
         }
       }
     }
-  }
+  // (outer block close)
   LAB_00445759_helper(iVar1, local_11c, local_14, local_3d4, local_3e8, local_8); return;
 }
 
@@ -9809,5 +9809,5 @@ function LAB_00446036_helper(iVar1, iVar4, local_14, local_250, local_254, local
         }
       }
     }
-  } while( true );
+  // (outer block close)
 }

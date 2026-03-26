@@ -5046,8 +5046,8 @@ export function FUN_0056f372(in_ECX) {
   FUN_0040bc10(0x28c);
   iVar1 = s32(in_ECX, 0x28);
   if (((iVar1 !== 0) && (s32(iVar1, 0x10) === 0)) &&
-     // DEVIATION: C pointer — (iVar2 = _strcmp(DAT_00679640,*(char **)(iVar1 + 8)), iVar2 === 0)) {
-     // DEVIATION(cont): return iVar1;
+     { // DEVIATION: C pointer — (iVar2 = _strcmp(DAT_00679640,*(char **)(iVar1 + 8)), iVar2 === 0)) {
+    return iVar1;
   }
   return 0;
 }
@@ -6016,7 +6016,7 @@ function LAB_00561364_helper(iVar1, iVar6, local_10, local_1c, local_20, local_2
             FUN_00421ea0(s_SENATESCANDAL_00633c9c);
             FUN_0055c69d(param_2,0);
           }
-        }
+  // (outer block close)
         else {
           uVar4 = _rand();
           uVar7 = uVar4 >> 0x1f;
@@ -6028,10 +6028,10 @@ function LAB_00561364_helper(iVar1, iVar6, local_10, local_1c, local_20, local_2
         uVar3 = FUN_00493c7d(param_1);
         FUN_0040ff60(1,uVar3);
         FUN_00410030(s_VIOLATE_00633cac,DAT_00644e48,0);
-      }
+  // (outer block close)
       FUN_0045918e();
-    }
-  }
+  // (outer block close)
+  // (outer block close)
   for (local_30 = 0; local_30 < DAT_00655b16; local_30 = local_30 + 1) {
     if (s32(DAT_0065610a, local_30 * 0x20) !== 0) {
       w16(DAT_006560f4, local_30 * 0x20, 
@@ -6221,7 +6221,7 @@ function LAB_005646e1_helper(local_10, local_114, local_19c, local_1a0, local_8,
         puVar2 = DAT_006ab680;
       }
       return puVar2;
-    }
+  // (outer block close)
     local_10 = 1 << (u8(local_1a0) & 0x1f);
     if ((DVar1 & local_10) !== 0) {
       local_114 = GetDriveTypeA(local_c);
@@ -6241,7 +6241,7 @@ function LAB_005646e1_helper(local_10, local_114, local_19c, local_1a0, local_8,
       local_c = local_c + 1;
     }
     local_1a0 = local_1a0 + 1;
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_0056c5e8_helper() {
@@ -6254,7 +6254,7 @@ function LAB_0056c269_helper(bVar1, iVar2, iVar4, local_128, local_138, local_14
     if ((s16(DAT_006560f4, local_c8 * 0x20) & 0x8000) !== 0) {
       local_18 = 42;
     }
-  }
+  // (outer block close)
   else if (local_d8 < 0xb) {
     // DEVIATION: C pointer — local_18 = *(char *)(local_d8 * 8 + 0x655494);
   }

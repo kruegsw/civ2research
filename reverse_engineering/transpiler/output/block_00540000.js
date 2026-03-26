@@ -430,9 +430,9 @@ export function FUN_00548e23(param_1, param_2) {
             return;
           }
           if (s32(param_2, 0x1b0) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b0) == -3) {
-                 // DEVIATION(cont): _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
+            if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+              if (s32(param_2, 0x1b0) === -3) {
+                _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
               }
               else {
                 _sprintf(local_54,s_whom_TRIGGERDEFENDER_006327b8);
@@ -454,9 +454,9 @@ export function FUN_00548e23(param_1, param_2) {
             return;
           }
           if (s32(param_2, 0x1b8) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b8) == -3) {
-                 // DEVIATION(cont): _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
+            if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+              if (s32(param_2, 0x1b8) === -3) {
+                _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
               }
               else {
                 _sprintf(local_54,s_receiver_TRIGGERDEFENDER_00632828);
@@ -1328,8 +1328,8 @@ export function FUN_0054ae93() {
     else {
       FUN_00453c40();
     }
-    // DEVIATION: C pointer — if (*(int *)local_14 === 0x20) {
-       // DEVIATION(cont): local_10 = 0;
+    if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(int *)local_14 === 0x20) {
+      local_10 = 0;
       while ((1 << (u8(local_10) & 0x1f) & (u32(local_14, 4) | 0xfffffe6f)) !== 0) {
         local_10 = local_10 + 1;
       }
@@ -2079,9 +2079,9 @@ export function FUN_0054bc1a() {
       }
       else if (uVar2 === 0x400) {
         if (s32(local_10c, 0x1b0) < 0) {
-          // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
-             // DEVIATION(cont): if (*(int *)(local_10c + 0x1b0) == -3) {
-               // DEVIATION(cont): _sprintf(local_104,s_DESTROYACIVILIZATION__TRIGGERATT_0063305c);
+          if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
+            if (s32(local_10c, 0x1b0) === -3) {
+              _sprintf(local_104,s_DESTROYACIVILIZATION__TRIGGERATT_0063305c);
             }
             else {
               _sprintf(local_104,s_DESTROYACIVILIZATION__TRIGGERDEF_00633084);
@@ -2101,9 +2101,9 @@ export function FUN_0054bc1a() {
           _sprintf(local_104,s_GIVETECHNOLOGY_00633134);
         }
         else if (s32(local_10c, 0x1b8) < 0) {
-          // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
-             // DEVIATION(cont): if (*(int *)(local_10c + 0x1b8) == -3) {
-               // DEVIATION(cont): _sprintf(local_11c,s_TRIGGERATTACKER_006330e8);
+          if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_10c + 1) & 1) === 0) {
+            if (s32(local_10c, 0x1b8) === -3) {
+              _sprintf(local_11c,s_TRIGGERATTACKER_006330e8);
             }
             else {
               _sprintf(local_11c,s_TRIGGERDEFENDER_006330f8);
@@ -3916,14 +3916,14 @@ function LAB_005499f7_helper(local_5c) {
     if (local_5c === 0x8000) {
       return;
     }
-  } while( true );
+  // (outer block close)
 }
 
 function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1, param_2, uVar2, uVar3) {
       if (iVar1 === -1) {
         return;
       }
-    }
+  // (outer block close)
     else {
       if (0x20 < uVar2) {
         if (uVar2 < 0x81) {
@@ -3979,9 +3979,9 @@ function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1,
             return;
           }
           if (s32(param_2, 0x1b0) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b0) == -3) {
-                 // DEVIATION(cont): _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
+            if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+              if (s32(param_2, 0x1b0) === -3) {
+                _sprintf(local_54,s_whom_TRIGGERATTACKER_006327a0);
               }
               else {
                 _sprintf(local_54,s_whom_TRIGGERDEFENDER_006327b8);
@@ -4003,9 +4003,9 @@ function joined_r0x0054934c_helper(iVar1, local_54, local_58, local_5c, param_1,
             return;
           }
           if (s32(param_2, 0x1b8) < 0) {
-            // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
-               // DEVIATION(cont): if (*(int *)(param_2 + 0x1b8) == -3) {
-                 // DEVIATION(cont): _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
+            if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(param_2 + 1) & 1) === 0) {
+              if (s32(param_2, 0x1b8) === -3) {
+                _sprintf(local_54,s_receiver_TRIGGERATTACKER_0063280c);
               }
               else {
                 _sprintf(local_54,s_receiver_TRIGGERDEFENDER_00632828);
@@ -4077,8 +4077,8 @@ function LAB_0054a7eb_helper(local_21c, local_220, local_224, local_228) {
 
 function LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, local_228) {
           local_228 = 1;
-        }
-      }
+  // (outer block close)
+  // (outer block close)
       else {
         do {
           pcVar2 = _fgets(local_108,0x100,local_224);
@@ -4094,8 +4094,8 @@ function LAB_0054a7e1_helper(iVar1, local_108, local_21c, local_220, local_224, 
           iVar1 = _fputs(local_108,local_220);
         }
       }
-    }
-  }
+  // (outer block close)
+  // (outer block close)
 LAB_0054a7eb:
   if (local_224 !== 0x0) {
     _fclose(local_224);

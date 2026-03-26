@@ -3738,8 +3738,8 @@ export function FUN_005e52bf(param_1, param_2, param_3, param_4, param_5, param_
         do {
           iVar5 = s32(piVar2, 0) - iVar4;
           if (iVar1 <= iVar5) break;
-          // DEVIATION: C pointer — if (*(char *)(iVar5 + param_1) !== param_4) {
-             // DEVIATION(cont): *puVar7 = param_17;
+          if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(char *)(iVar5 + param_1) !== param_4) {
+            w32(puVar7, 0, param_17);
           }
           piVar2 = piVar2 + 1;
           puVar7 = puVar7 + 1;
@@ -6363,9 +6363,9 @@ export function FUN_005e8d58(param_1, param_2, param_3, param_4) {
   let local_8;
   
   if ((param_1 !== 0x0) &&
-     // DEVIATION: C pointer — (iVar1 = (**(code **)(s32(param_1, 0) + 0x10))(param_1,0,param_2,param_3,local_408), iVar1 === 0)) {
-     // DEVIATION(cont): for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-       // DEVIATION(cont): *param_4 = local_408[(param_2 + local_8) * 4];
+     { // DEVIATION: C pointer — (iVar1 = (**(code **)(s32(param_1, 0) + 0x10))(param_1,0,param_2,param_3,local_408), iVar1 === 0)) {
+    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
+      w32(param_4, 0, local_408[(param_2 + local_8) * 4]);
       param_4[1] = local_408[(param_2 + local_8) * 4 + 1];
       param_4[2] = local_408[(param_2 + local_8) * 4 + 2];
       param_4 = param_4 + 3;
@@ -8530,8 +8530,8 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
         DAT_00637ea4 = local_14;
-        // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
+          SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -8552,8 +8552,8 @@ export function FUN_005eb447(param_1, param_2, param_3, param_4) {
       case 0x204:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
-        // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
+          SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -8906,8 +8906,8 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
         DAT_00637ea4 = local_14;
-        // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
+          SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -8928,8 +8928,8 @@ export function FUN_005ec317(param_1, param_2, param_3, param_4) {
       case 0x204:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
-        // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
+          SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -11939,7 +11939,7 @@ function LAB_005e5d32_helper(local_8, local_c, param_2, param_5) {
     if (local_c === 0) {
       return;
     }
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_005e5e7e_helper(local_8, local_c, param_5) {
@@ -11948,7 +11948,7 @@ function LAB_005e5e7e_helper(local_8, local_c, param_5) {
     if (local_c === 0) {
       return;
     }
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_005eb241_helper(param_1, param_2, param_3, param_4) {
@@ -11959,14 +11959,14 @@ function LAB_005eb241_helper(param_1, param_2, param_3, param_4) {
 function LAB_005eb1df_helper(iVar9, local_10, local_14, local_1c, local_20, local_24, local_28, local_2c, local_3c, local_4c, local_8, local_c, param_1, param_2, param_3, param_4, uVar4) {
             LVar3 = FUN_005eb447(param_1,0x111,param_3,param_4);
             return LVar3;
-          }
+  // (outer block close)
           local_10 = param_4;
           DVar8 = GetClassLongA(param_4,-0x12);
           local_20 = DVar8 - 4;
           local_14 = GetWindowLongA(local_10,local_20);
           FUN_005eb2f0();
-        }
-      }
+  // (outer block close)
+  // (outer block close)
       else {
         iVar9 = FUN_00414d10();
         // DEVIATION: C pointer — if (((*(byte *)(iVar9 + 0x48) & 0x80) !== 0) ||
@@ -11978,7 +11978,7 @@ function LAB_005eb1df_helper(iVar9, local_10, local_14, local_1c, local_20, loca
         gdi_D149(param_4,param_2,param_3,param_4);
       }
       return 0;
-    }
+  // (outer block close)
     if (param_2 === 0x216) {
       local_24 = GetWindowLongA(param_1,0);
       local_28 = FUN_00414d10();
@@ -12004,7 +12004,7 @@ function LAB_005eb1df_helper(iVar9, local_10, local_14, local_1c, local_20, loca
       LVar3 = FUN_005eb447(param_1,0x216,param_3,param_4);
       return LVar3;
     }
-  }
+  // (outer block close)
 LAB_005eb241:
   LVar3 = FUN_005eb447(param_1,param_2,param_3,param_4);
   return LVar3;
@@ -12013,7 +12013,7 @@ LAB_005eb241:
 function switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, param_3, param_4, sVar1, uVar2) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
-    }
+  // (outer block close)
     if (param_2 === 0x210) {
       if ((((param_3) >>> 0) & 0xffff) === 0x201) {
         DAT_00637ea4 = local_14;
@@ -12034,8 +12034,8 @@ function switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, para
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
         DAT_00637ea4 = local_14;
-        // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
+          SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12056,8 +12056,8 @@ function switchD_005ec033_caseD_4_helper(iVar5, local_14, param_1, param_2, para
       case 0x204:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
-        // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
+          SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12092,7 +12092,7 @@ function LAB_005eb8a1_helper(iVar5, local_10, local_14, local_18, param_1, param
           }
           ReleaseDC(param_1,local_18);
           return ((local_10 !== 0) >>> 0);
-        }
+  // (outer block close)
         if (param_2 === 0x231) {
           GetWindowLongA(param_1,0);
           FUN_00414d10();
@@ -12109,7 +12109,7 @@ function LAB_005eb8a1_helper(iVar5, local_10, local_14, local_18, param_1, param
           uVar2 = fill_rect_BE88(param_1,0x232,param_3,param_4);
           return uVar2;
         }
-      }
+  // (outer block close)
       else {
         if (param_2 === 0x311) {
           if (param_3 === param_1) {
@@ -12133,7 +12133,7 @@ function LAB_005eb8a1_helper(iVar5, local_10, local_14, local_18, param_1, param
 switchD_005ec033_caseD_4:
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
-    }
+  // (outer block close)
     if (param_2 === 0x210) {
       if ((((param_3) >>> 0) & 0xffff) === 0x201) {
         DAT_00637ea4 = local_14;
@@ -12154,8 +12154,8 @@ switchD_005ec033_caseD_4:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
         DAT_00637ea4 = local_14;
-        // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
+          SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12176,8 +12176,8 @@ switchD_005ec033_caseD_4:
       case 0x204:
         GetWindowLongA(param_1,0);
         iVar5 = FUN_00414d10();
-        // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(iVar5 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(iVar5 + 0x49) & 2) !== 0) {
+          SetFocus(s32(iVar5, 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12203,7 +12203,7 @@ switchD_005ec033_caseD_4:
 function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, local_24, local_34, param_1, param_2, param_3, param_4, sVar1, uVar2) {
       uVar2 = fill_rect_BE88(param_1,param_2,param_3,param_4);
       return uVar2;
-    }
+  // (outer block close)
     if (param_2 < 0x112) {
       if (param_2 === 0x111) {
         DAT_00637ea4 = local_14;
@@ -12376,8 +12376,8 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
         DAT_00637ea4 = local_14;
-        // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
+          SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12398,8 +12398,8 @@ function switchD_005ecda6_caseD_4_helper(iVar4, local_10, local_14, local_18, lo
       case 0x204:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
-        // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
+          SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12447,7 +12447,7 @@ function switchD_005ecda6_caseD_6_helper(local_10, local_14, local_34, param_1, 
     }
     mciSendCommandA(s32(local_10, 8),0x840,s32(local_10, 0x10),
                     local_34);
-  }
+  // (outer block close)
   return 0;
 }
 
@@ -12466,15 +12466,15 @@ function switchD_005ecda6_caseD_5_helper(iVar4, local_10, local_14, local_18, lo
         DAT_00637ea4 = local_14;
         FUN_005ed2f0();
         return 0;
-      }
-    }
+  // (outer block close)
+  // (outer block close)
     DAT_00637ea4 = local_14;
     iVar4 = FUN_005ed250();
     if (iVar4 !== 0) {
       uVar2 = fill_rect_BE88(param_1,0x10,param_3,param_4);
       return uVar2;
     }
-  }
+  // (outer block close)
   else {
     if (param_2 < 0x45) {
       if (param_2 === 0x44) {
@@ -12672,8 +12672,8 @@ switchD_005ecda6_caseD_4:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
         DAT_00637ea4 = local_14;
-        // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
+          SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
         w32(local_14, 0xa8, 1);
@@ -12694,8 +12694,8 @@ switchD_005ecda6_caseD_4:
       case 0x204:
         GetWindowLongA(param_1,0);
         local_24 = FUN_00414d10();
-        // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
-           // DEVIATION(cont): SetFocus(*(HWND *)(local_24 + 4));
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if ((*(byte *)(local_24 + 0x49) & 2) !== 0) {
+          SetFocus(s32(local_24, 4));
           BringWindowToTop(param_1);
         }
         DAT_00637ea4 = local_14;
@@ -12890,10 +12890,10 @@ LAB_005edcf2:
 function switchD_005efc68_default_helper(param_1, param_2, param_3, param_4) {
       LVar3 = DefWindowProcA(param_1,param_2,param_3,param_4);
       return LVar3;
-    }
+  // (outer block close)
     if (param_4 === 0x20d) {
       FUN_005ed4e0(0);
     }
-  }
+  // (outer block close)
   return 0;
 }

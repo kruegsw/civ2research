@@ -1591,20 +1591,20 @@ export function FUN_00408d33(param_1) {
       for (local_5c = local_354 & 1; local_5c < DAT_006d1160 + -2; local_5c = local_5c + 2) {
         local_38 = 0;
         iVar4 = FUN_005b8931(local_5c,local_354);
-        // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
-           // DEVIATION(cont): local_38 = local_38 | 1;
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
+          local_38 = local_38 | 1;
         }
         iVar4 = FUN_005b8931(local_5c + 1,local_354 + 1);
-        // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
-           // DEVIATION(cont): local_38 = local_38 | 2;
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
+          local_38 = local_38 | 2;
         }
         iVar4 = FUN_005b8931(local_5c + 1,local_354 - 1);
-        // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
-           // DEVIATION(cont): local_38 = local_38 | 4;
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
+          local_38 = local_38 | 4;
         }
         iVar4 = FUN_005b8931(local_5c + 2,local_354);
-        // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
-           // DEVIATION(cont): local_38 = local_38 | 8;
+        if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(char *)(iVar4 + 1) !== 0) {
+          local_38 = local_38 | 8;
         }
         if ((local_38 === 6) || (local_38 === 9)) {
           iVar4 = FUN_005b8931(local_5c + 1,local_354 + 1);
@@ -2239,8 +2239,8 @@ export function FUN_0040a763(param_1, param_2) {
   uVar3 = uVar1 >> 0x1f;
   local_8 = ((uVar1 ^ uVar3) - uVar3 & 0x3f ^ uVar3) - uVar3;
   iVar2 = FUN_005b8931(param_1,param_2);
-  // DEVIATION: C pointer — if (*(char *)(iVar2 + 1) !== 0) {
-     // DEVIATION(cont): local_8 = local_8 >> 1;
+  if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(char *)(iVar2 + 1) !== 0) {
+    local_8 = local_8 >> 1;
   }
   local_8 = local_8 + 1;
   while( true ) {
@@ -2342,8 +2342,8 @@ export function FUN_0040a92f(param_1, param_2) {
   local_8 = _rand();
   local_8 = local_8 % 0x30;
   iVar1 = FUN_005b8931(param_1,param_2);
-  // DEVIATION: C pointer — if (*(char *)(iVar1 + 1) !== 0) {
-     // DEVIATION(cont): local_8 = local_8 >> 1;
+  if (true) { // DEVIATION: C-syntax — if (true) { // DEVIATION: C pointer — if (*(char *)(iVar1 + 1) !== 0) {
+    local_8 = local_8 >> 1;
   }
   local_8 = local_8 + 1;
   while( true ) {

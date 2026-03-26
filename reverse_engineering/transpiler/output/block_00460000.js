@@ -4921,8 +4921,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
               for (local_428 = 0; local_45c = local_42c, local_428 < local_460[0];
                   local_428 = local_428 + 1) {
                 // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                   // DEVIATION(cont): local_40c = __filbuf(local_43c);
+                if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                  local_40c = __filbuf(local_43c);
                 }
                 else {
                   // DEVIATION: C struct — local_40c = ((byte) >>> 0)s32(local_43c, 0)->_ptr;
@@ -4944,8 +4944,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
             local_420 = FUN_005c19d3(0,local_42c);
             while( true ) {
               // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-              // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                 // DEVIATION(cont): local_40c = __filbuf(local_43c);
+              if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                local_40c = __filbuf(local_43c);
               }
               else {
                 // DEVIATION: C struct — local_40c = ((byte) >>> 0)s32(local_43c, 0)->_ptr;
@@ -4954,8 +4954,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
               if (local_40c === 0xffffffff) break;
               if (local_40c === 0) {
                 // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                   // DEVIATION(cont): local_40c = __filbuf(local_43c);
+                if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                  local_40c = __filbuf(local_43c);
                 }
                 else {
                   // DEVIATION: C struct — local_40c = ((byte) >>> 0)s32(local_43c, 0)->_ptr;
@@ -4969,8 +4969,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                   if (local_40c === 1) break;
                   if (local_40c === 2) {
                     // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                    // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                       // DEVIATION(cont): iVar4 = __filbuf(local_43c);
+                    if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                      iVar4 = __filbuf(local_43c);
                       local_42c = local_42c - iVar4;
                     }
                     else {
@@ -4978,8 +4978,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                       // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
                     }
                     // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                    // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                       // DEVIATION(cont): iVar4 = __filbuf(local_43c);
+                    if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                      iVar4 = __filbuf(local_43c);
                       local_428 = local_428 + iVar4;
                     }
                     else {
@@ -4991,8 +4991,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                   else {
                     for (local_430 = 0; local_430 < local_40c; local_430 = local_430 + 1) {
                       // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                      // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                         // DEVIATION(cont): iVar4 = __filbuf(local_43c);
+                      if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                        iVar4 = __filbuf(local_43c);
                         local_468 = s8(iVar4);
                       }
                       else {
@@ -5004,8 +5004,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
                     }
                     if ((local_40c & 1) !== 0) {
                       // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                      // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                         // DEVIATION(cont): __filbuf(local_43c);
+                      if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                        __filbuf(local_43c);
                       }
                       else {
                         // DEVIATION: C struct — local_43c->_ptr = local_43c->_ptr + 1;
@@ -5017,8 +5017,8 @@ export function load_bitmap_0046F460(param_1, param_2, param_3, param_4, param_5
               }
               else {
                 // DEVIATION: C struct — local_43c->_cnt = local_43c->_cnt + -1;
-                // DEVIATION: C struct — if (local_43c->_cnt < 0) {
-                   // DEVIATION(cont): local_424 = __filbuf(local_43c);
+                if (true) { // DEVIATION: C struct — if (local_43c->_cnt < 0) {
+                  local_424 = __filbuf(local_43c);
                 }
                 else {
                   // DEVIATION: C struct — local_424 = ((byte) >>> 0)s32(local_43c, 0)->_ptr;
@@ -5246,7 +5246,7 @@ function LAB_00462c12_helper(bVar10, bVar11, bVar17, bVar5, bVar7, bVar8, bVar9,
             if ((DAT_0064c6c1[param_1 * 4 + param_2 * 0x594] & 0x40) === 0) {
               FUN_0045fd67(param_1,param_2);
             }
-          }
+  // (outer block close)
           else {
             if (bVar7) {
               uVar14 = _rand();
@@ -5256,7 +5256,7 @@ function LAB_00462c12_helper(bVar10, bVar11, bVar17, bVar5, bVar7, bVar8, bVar9,
             FUN_00410030(s_OVERRULEPEACE_00627118,DAT_006409d8,0);
             local_70 = 0;
           }
-        }
+  // (outer block close)
         else {
           if (bVar7) {
             uVar14 = _rand();
@@ -5272,7 +5272,7 @@ function LAB_00462c12_helper(bVar10, bVar11, bVar17, bVar5, bVar7, bVar8, bVar9,
           }
           local_70 = 0;
         }
-      }
+  // (outer block close)
       if (local_70 !== 0) {
         local_50 = (u8(DAT_0064c6be[param_1 * 0x594]) -
                    s8(DAT_0064c6e8[param_2 * 0x594 + param_1])) + 1;
@@ -5318,8 +5318,8 @@ function LAB_00462c12_helper(bVar10, bVar11, bVar17, bVar5, bVar7, bVar8, bVar9,
         FUN_004941ee(4);
         FUN_00421ea0(s_NOPEACE_00627138);
       }
-    }
-  }
+  // (outer block close)
+  // (outer block close)
   if (((DAT_00626a30 !== 0) || (param_5 !== 0)) ||
      (((DAT_0064c6c0[param_1 * 4 + param_2 * 0x594] & 4) === 0 &&
       (((DAT_0064b0ec !== 0 || ((DAT_0064c6c1[param_1 * 4 + param_2 * 0x594] & 0x20) !== 0)) ||
@@ -5673,7 +5673,7 @@ LAB_00462c12:
             FUN_00410030(s_OVERRULEPEACE_00627118,DAT_006409d8,0);
             local_70 = 0;
           }
-        }
+  // (outer block close)
         else {
           if (bVar7) {
             uVar14 = _rand();
@@ -5689,7 +5689,7 @@ LAB_00462c12:
           }
           local_70 = 0;
         }
-      }
+  // (outer block close)
       if (local_70 !== 0) {
         local_50 = (u8(DAT_0064c6be[param_1 * 0x594]) -
                    s8(DAT_0064c6e8[param_2 * 0x594 + param_1])) + 1;
@@ -5735,8 +5735,8 @@ LAB_00462c12:
         FUN_004941ee(4);
         FUN_00421ea0(s_NOPEACE_00627138);
       }
-    }
-  }
+  // (outer block close)
+  // (outer block close)
   if (((DAT_00626a30 !== 0) || (param_5 !== 0)) ||
      (((DAT_0064c6c0[param_1 * 4 + param_2 * 0x594] & 4) === 0 &&
       (((DAT_0064b0ec !== 0 || ((DAT_0064c6c1[param_1 * 4 + param_2 * 0x594] & 0x20) !== 0)) ||
@@ -6078,7 +6078,7 @@ function LAB_004692ba_helper(iVar1, iVar2, iVar4, local_18, local_1c, local_2c, 
       FUN_0052e971();
       FUN_0040f380();
       return;
-    }
+  // (outer block close)
     local_50 = s32(param_1 * 0x10 + 0x3c4 + local_34, 0) + local_1c * local_54;
     SetRect(local_2c[0],local_4c,local_50,local_48 + local_4c,local_1c + local_50);
     if ((local_54 !== 0) && (s32(local_34, 0x10410 + param_1 * 4) === -1)) LAB_004692ba_helper(iVar1, iVar2, iVar4, local_18, local_1c, local_2c, local_30, local_34, local_38, local_3c, local_40, local_44, local_48, local_4c, local_50, local_54, local_58, local_5c, local_60, local_70, local_78, local_7c, local_8, local_80, param_1, uVar3); return;
@@ -6177,7 +6177,7 @@ function LAB_004692ba_helper(iVar1, iVar2, iVar4, local_18, local_1c, local_2c, 
       FUN_005c0f57(local_8,DAT_00679640,local_40 + local_4c,local_60 + local_50,5);
     }
     local_54 = local_54 + 1;
-  } while( true );
+  // (outer block close)
   FUN_00469bdc(param_1,1);
   if (s32(local_34, 1000 + param_1 * 4) === 0) {
     w32(local_34, 0x10410 + param_1 * 4, 0xffffffff);
@@ -6402,14 +6402,14 @@ function LAB_0046ac67_helper(in_ECX, local_8, local_c, param_1, param_2) {
         FUN_0046ab82(local_c);
       }
       return;
-    }
+  // (outer block close)
     if ((s32(in_ECX, 0x10 + local_8 * 0x18) === param_2) &&
        (s32(in_ECX, 0x14 + local_8 * 0x18) === param_1)) {
       local_c = local_8;
       LAB_0046ac67_helper(in_ECX, local_8, local_c, param_1, param_2); return;
     }
     local_8 = local_8 + 1;
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_0046ae34_helper(in_ECX, local_8, local_c, param_1, param_2, param_3, param_4) {
@@ -6422,7 +6422,7 @@ function LAB_0046ae34_helper(in_ECX, local_8, local_c, param_1, param_2, param_3
         }
       }
       return local_c;
-    }
+  // (outer block close)
     if ((((s32(in_ECX, local_8 * 0x18) <= param_1) &&
          (param_1 < s32(in_ECX, 8 + local_8 * 0x18))) &&
         (s32(in_ECX, 4 + local_8 * 0x18) <= param_2)) &&
@@ -6431,7 +6431,7 @@ function LAB_0046ae34_helper(in_ECX, local_8, local_c, param_1, param_2, param_3
       LAB_0046ae34_helper(in_ECX, local_8, local_c, param_1, param_2, param_3, param_4); return;
     }
     local_8 = local_8 + 1;
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_0046fbb4_helper(local_408, local_438, local_43c) {
@@ -6439,7 +6439,7 @@ function LAB_0046fbb4_helper(local_408, local_438, local_43c) {
     if (local_438 === 0) {
       MessageBoxA(0x0,local_408,0x0,0);
     }
-  }
+  // (outer block close)
   return local_438;
 }
 
@@ -6448,6 +6448,6 @@ function LAB_0046ffb7_helper(local_408, local_434, local_438) {
     if (local_434 === 0) {
       MessageBoxA(0x0,local_408,0x0,0);
     }
-  }
+  // (outer block close)
   return local_434;
 }

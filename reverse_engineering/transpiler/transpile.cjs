@@ -155,6 +155,42 @@ function replaceCast(line, castType, helper, transformFn) {
   return result;
 }
 
+// ── DEVIATION helper: comment out C code while preserving JS structure ──
+function makeDeviation(line, reason, ctx) {
+  const indent = line.match(/^(\s*)/)[1];
+  const content = line.trim();
+
+  // Extract structural elements that must remain as code
+  // if (...) { → if (true) { // DEVIATION
+  if (/\bif\s*\(/.test(content) && /\{\s*$/.test(content)) {
+    ctx.deviationContinuation = false;
+    return indent + 'if (true) { // DEVIATION: ' + reason + ' — ' + content;
+  }
+  // else if (...) { → } else if (true) {
+  if (/\belse\s+if\s*\(/.test(content) && /\{\s*$/.test(content)) {
+    ctx.deviationContinuation = false;
+    return indent + 'else if (true) { // DEVIATION: ' + reason + ' — ' + content;
+  }
+  // else { → else {
+  if (/^\s*else\s*\{/.test(content)) {
+    ctx.deviationContinuation = false;
+    return indent + 'else { // DEVIATION: ' + reason;
+  }
+  // Line ends with { but no if/else → just {
+  if (/\{\s*$/.test(content)) {
+    ctx.deviationContinuation = false;
+    return indent + '{ // DEVIATION: ' + reason + ' — ' + content;
+  }
+  // Line ends with ;
+  if (/;\s*$/.test(content)) {
+    ctx.deviationContinuation = false;
+    return indent + '// DEVIATION: ' + reason + ' — ' + content;
+  }
+  // Multi-line — set continuation
+  ctx.deviationContinuation = true;
+  return indent + '// DEVIATION: ' + reason + ' — ' + content;
+}
+
 // ── Line-level transformations ─────────────────────────────────────
 // Applied iteratively (inside-out) until no more changes
 
@@ -242,11 +278,9 @@ function transformLine(line, ctx) {
     // ── bRam → DAT_ ──
     out = out.replace(/\bbRam([0-9a-fA-F]{8})/g, 'DAT_$1');
 
-    // ── C struct member access: expr->member → s32(expr, 0).member ──
-    // or just comment out as DEVIATION since -> is typically MFC object access
+    // ── C struct member access: expr->member → DEVIATION ──
     if (/->/.test(out) && !/\/\/|DEVIATION/.test(out)) {
-      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: C struct — $2');
-      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
+      out = makeDeviation(out, 'C struct', ctx);
     }
 
     // ── &local_XX → local_XX (drop &) ──
@@ -266,8 +300,7 @@ function transformLine(line, ctx) {
 
     // ── C++ class method calls and destructor calls → DEVIATION ──
     if (/\w+::~?\w+\s*[(\[,]/.test(out) && !/\/\//.test(out.split('::')[0])) {
-      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: MFC — $2');
-      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
+      out = makeDeviation(out, 'MFC', ctx);
     }
 
     // ── Bare pointer dereference: *variable → s32(variable, 0) ──
@@ -317,10 +350,8 @@ function transformLine(line, ctx) {
     out = out.replace(/\(\s*[A-Z]\w+\s*\*\s*\)/g, '');
 
     // ── Remaining C-style pointer derefs that weren't handled → DEVIATION ──
-    // Catches *(char **), *(void *), etc. — anything with *(TYPE *) still in the line
     if (/\*\s*\(\s*\w[\w\s]*\*+\s*\)/.test(out) && !/\/\/|DEVIATION/.test(out)) {
-      out = out.replace(/^(\s*)(.*)$/, '$1// DEVIATION: C pointer — $2');
-      if (!/;\s*$/.test(out.trim())) ctx.deviationContinuation = true;
+      out = makeDeviation(out, 'C pointer', ctx);
     }
 
     // ── Equality operators ──
@@ -784,8 +815,7 @@ function processFunction(headerLines, bodyLines, ctx) {
           /\b(void|struct|union|enum|typedef|register|volatile|extern|static|signed|unsigned)\s+\w/.test(ft) ||
           /^\w+\s+\w+\s*\(/.test(ft) && /\)$/.test(ft) ||  // C function signature
           /^[A-Z]\w+\s*::\s*~?[A-Z]/.test(ft)) {  // C++ class::method
-        transformed = transformed.replace(/^(\s*)/, '$1// DEVIATION(C-syntax): ');
-        if (!/;\s*$/.test(ft)) ctx.deviationContinuation = true;
+        transformed = makeDeviation(transformed, 'C-syntax', ctx);
       }
     }
 
@@ -899,8 +929,20 @@ function processGotos(lines) {
 
     // Build helper function
     helpers.push('function ' + helperName + '(' + varList + ') {');
+    // Track brace depth — skip lines that close blocks opened before the label
+    let helperBraceDepth = 0;
     // Helper body: transform gotos to this same label into recursive calls
     for (const bodyLine of helperBody) {
+      // Check if this line would make depth negative (excess closing brace)
+      let lineDepthChange = 0;
+      for (const ch of bodyLine) { if (ch === '{') lineDepthChange++; if (ch === '}') lineDepthChange--; }
+      if (helperBraceDepth + lineDepthChange < 0) {
+        // This closing brace belongs to a block opened before the label — skip or comment
+        helpers.push('  // (outer block close)');
+        helperBraceDepth = 0;
+        continue;
+      }
+      helperBraceDepth += lineDepthChange;
       let hl = bodyLine;
       // Replace goto to THIS label with recursive call
       if (new RegExp('\\bgoto\\s+' + label + '\\b').test(hl)) {

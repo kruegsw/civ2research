@@ -5275,9 +5275,9 @@ export function citywin_B674_0050B674() {
   let iVar1;
   
   if (((DAT_00633a74 !== 0) && (DAT_00633a78 < 1)) ||
-     // DEVIATION: MFC — (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar1 === -1)) {
-     // DEVIATION(cont): if (DAT_006ad2f7 == '\0') {
-       // DEVIATION(cont): DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
+     { // DEVIATION: MFC — (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar1 === -1)) {
+    if (DAT_006ad2f7 === 0) {
+      DAT_006ad678[0xf] = DAT_006ad678[0xf] | 0x400;
       // DEVIATION: MFC — CRichEditDoc::InvalidateObjectCache((s32(DAT_006ad678, 0) + 0x48));
     }
     else if (DAT_00630d30 === 0) {
@@ -5333,8 +5333,8 @@ export function city_button_rename_0050B74E(param_1) {
       // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
       iVar1 = FUN_00421ed0(s_RENAMECITY_00630fb4,0xf,DAT_0064f360 + iVar1 * 0x58,puVar2);
       if ((iVar1 === 0) &&
-         // DEVIATION: MFC — (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar1 !== -1)) {
-        ); // DEVIATION(cont): thunk_FUN_0046e020(0x68,0,0,0
+         { // DEVIATION: MFC — (iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8), iVar1 !== -1)) {
+        FUN_0046e020(0x68,0,0,0);
         puVar2 = local_108;
         // DEVIATION: MFC — iVar1 = CSplitterWnd::IsTracking(DAT_006a91b8);
         FUN_005f22d0(DAT_0064f360 + iVar1 * 0x58,puVar2);
@@ -6533,12 +6533,12 @@ function LAB_0050708f_helper(local_8) {
 
 function LAB_00507f6b_helper(local_c) {
     local_c = local_c + 1;
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_00508678_helper(local_18) {
     local_18 = local_18 + 1;
-  } while( true );
+  // (outer block close)
 }
 
 function LAB_0050b609_helper(local_8) {
